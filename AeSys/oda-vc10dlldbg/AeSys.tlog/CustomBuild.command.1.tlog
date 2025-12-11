@@ -1,0 +1,10 @@
+^D:\SYNOLOGYDRIVE\VISUALSTUDIO\MIGRATIONS\EO111222\AESYS\HLP\AESYS.HHP
+start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "D:\SynologyDrive\VisualStudio\Migrations\Eo111222\oda-vc10dlldbg\AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.

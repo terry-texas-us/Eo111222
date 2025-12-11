@@ -1,0 +1,2153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="oda-vc10dlldbg|Win32">
+      <Configuration>oda-vc10dlldbg</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="oda-vc10mtdbg|Win32">
+      <Configuration>oda-vc10mtdbg</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="oda-vc10mt|Win32">
+      <Configuration>oda-vc10mt</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="oda-vc10dll|Win32">
+      <Configuration>oda-vc10dll</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="vc11dlldbg|Win32">
+      <Configuration>vc11dlldbg</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="vc11dll|Win32">
+      <Configuration>vc11dll</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="vc11mt|Win32">
+      <Configuration>vc11mt</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="vc11mtdbg|Win32">
+      <Configuration>vc11mtdbg</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{99616C98-7844-41E8-BC1F-B16C4044EB44}</ProjectGuid>
+    <RootNamespace>AeSys</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
+    <SccProjectName>SAK</SccProjectName>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccProvider>SAK</SccProvider>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='vc11mt|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10mt|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='vc11dll|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10dll|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='vc11mt|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10mt|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='vc11dll|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10dll|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='vc11mt|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='oda-vc10mt|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='vc11dll|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='oda-vc10dll|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='vc11mt|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='oda-vc10mt|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='vc11dll|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='oda-vc10dll|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'" />
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='vc11mt|Win32'" />
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='oda-vc10mt|Win32'" />
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='vc11dll|Win32'" />
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='oda-vc10dll|Win32'" />
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='vc11mt|Win32'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='oda-vc10mt|Win32'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='vc11dll|Win32'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='oda-vc10dll|Win32'">false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'">
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'">
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'">
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>D:\Projects\Eo\AeSys;D:\Projects\Eo\Lex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <EnablePREfast>false</EnablePREfast>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <MinimalRebuild>true</MinimalRebuild>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;WindowsCodecs.lib;dwrite.lib;xmllite.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>
+      </AssemblyDebug>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>D:\Projects\Eo\AeSys;D:\Projects\Eo\Lex;D:\Teigha\TD_vc10mtdbg\TD\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USING_ODA;WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <EnablePREfast>false</EnablePREfast>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <MinimalRebuild>true</MinimalRebuild>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;WindowsCodecs.lib;dwrite.lib;TD_Root.lib;TD_DbRoot.lib;TD_Ge.lib;TD_Gi.lib;TD_Db.lib;TD_Gs.lib;WinDirectX.lib;TD_SpatialIndex.lib;xmllite.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Teigha\TD_vc10mtdbg\lib\vc10mtdbg;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>
+      </AssemblyDebug>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>D:\Projects\Eo\AeSys;D:\Projects\Eo\Lex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <EnablePREfast>false</EnablePREfast>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAsManaged>false</CompileAsManaged>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <MinimalRebuild>false</MinimalRebuild>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;WindowsCodecs.lib;dwrite.lib;xmllite.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>
+      </AssemblyDebug>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>D:\Projects\Eo\AeSys;D:\Projects\Eo\Lex;$(DXSDK_DIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_TOOLKIT_IN_DLL_;WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <WarningLevel>Level2</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <EnablePREfast>false</EnablePREfast>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAsManaged>false</CompileAsManaged>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <PrecompiledHeaderFile>Stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;WindowsCodecs.lib;dwrite.lib;xmllite.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>d2d1.dll;WindowsCodecs.dll;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>
+      </AssemblyDebug>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='vc11mt|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>D:\Projects\Eo\AeSys;D:\Projects\Eo\Lex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <EnablePREfast>false</EnablePREfast>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <BrowseInformation>true</BrowseInformation>
+      <ExceptionHandling>Async</ExceptionHandling>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;WindowsCodecs.lib;dwrite.lib;xmllite.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>
+      </AssemblyDebug>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10mt|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>D:\Projects\Eo\AeSys;D:\Projects\Eo\Lex;D:\Teigha\TD_vc10mt\TD\Include;D:\Teigha\TD_vc10mt\TD\Extensions\ExServices;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USING_ODA;WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <EnablePREfast>false</EnablePREfast>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <BrowseInformation>true</BrowseInformation>
+      <ExceptionHandling>Async</ExceptionHandling>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;WindowsCodecs.lib;dwrite.lib;TD_Root.lib;TD_DbRoot.lib;TD_Ge.lib;TD_Gi.lib;TD_Db.lib;TD_Gs.lib;WinDirectX.lib;TD_SpatialIndex.lib;xmllite.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Teigha\TD_vc10mt\lib\vc10mt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>
+      </AssemblyDebug>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='vc11dll|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>D:\Projects\Eo\AeSys;D:\Projects\Eo\Lex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <EnablePREfast>false</EnablePREfast>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <BrowseInformation>true</BrowseInformation>
+      <ExceptionHandling>Async</ExceptionHandling>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;WindowsCodecs.lib;dwrite.lib;xmllite.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>
+      </AssemblyDebug>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='oda-vc10dll|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>D:\Projects\Eo\AeSys;D:\Projects\Eo\Lex;D:\Teigha\TD_vc10dll\TD\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USING_ODA;_TOOLKIT_IN_DLL_;WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <EnablePREfast>false</EnablePREfast>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <BrowseInformation>true</BrowseInformation>
+      <ExceptionHandling>Async</ExceptionHandling>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;WindowsCodecs.lib;dwrite.lib;TD_Root.lib;TD_DbRoot.lib;TD_Ge.lib;TD_Gi.lib;TD_Db.lib;TD_Gs.lib;TD_Alloc.lib;TD_Key.lib;xmllite.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Teigha\TD_vc10dll\lib\vc10dll;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>
+      </AssemblyDebug>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AeSys.cpp" />
+    <ClCompile Include="AeSysDoc.cpp" />
+    <ClCompile Include="AeSysView.cpp" />
+    <ClCompile Include="EoDbCharacterCellDefinition.cpp" />
+    <ClCompile Include="ChildFrm.cpp" />
+    <ClCompile Include="Dde.cpp" />
+    <ClCompile Include="DdeCmds.cpp" />
+    <ClCompile Include="DdeConversation.cpp" />
+    <ClCompile Include="DdeGItms.cpp" />
+    <ClCompile Include="DdeItem.cpp" />
+    <ClCompile Include="DdeSys.cpp" />
+    <ClCompile Include="DdeTopic.cpp" />
+    <ClCompile Include="EoDlgActiveViewKeyplan.cpp" />
+    <ClCompile Include="EoDlgLowPressureDuctOptions.cpp" />
+    <ClCompile Include="EoDlgSelectGotoHomePoint.cpp" />
+    <ClCompile Include="EoDlgSetupCustomMouseCharacters.cpp" />
+    <ClCompile Include="EoCtrlColorsButton.cpp" />
+    <ClCompile Include="EoDlgAnnotateOptions.cpp" />
+    <ClCompile Include="EoDlgBlockInsert.cpp" />
+    <ClCompile Include="EoDlgDrawOptions.cpp" />
+    <ClCompile Include="EoDlgEditOptions.cpp" />
+    <ClCompile Include="EoDlgEditTrapCommandsQuery.cpp" />
+    <ClCompile Include="EoDlgFileManage.cpp" />
+    <ClCompile Include="EoGePoint4d.cpp" />
+    <ClCompile Include="EoGePolyline.cpp" />
+    <ClCompile Include="EoViModelView.cpp" />
+    <ClCompile Include="OFNHookProcFileTracing.cpp" />
+    <ClCompile Include="EoDlgFixupOptions.cpp" />
+    <ClCompile Include="EoDlgSetHomePoint.cpp" />
+    <ClCompile Include="EoDlgModeLetter.cpp" />
+    <ClCompile Include="EoDlgModeRevise.cpp" />
+    <ClCompile Include="EoDlgPipeOptions.cpp" />
+    <ClCompile Include="EoDlgPipeSymbol.cpp" />
+    <ClCompile Include="EoDlgSetPastePosition.cpp" />
+    <ClCompile Include="EoDlgSetupHatch.cpp" />
+    <ClCompile Include="EoDlgSetupConstraints.cpp" />
+    <ClCompile Include="EoDlgSetupLineType.cpp" />
+    <ClCompile Include="EoDlgSetupColor.cpp" />
+    <ClCompile Include="EoDlgSetUnitsAndPrecision.cpp" />
+    <ClCompile Include="EoDlgTrapModify.cpp" />
+    <ClCompile Include="EoDlgSetAngle.cpp" />
+    <ClCompile Include="EoDlgSetLength.cpp" />
+    <ClCompile Include="EoDlgSetScale.cpp" />
+    <ClCompile Include="EoDlgSetText.cpp" />
+    <ClCompile Include="EoDlgSetupNote.cpp" />
+    <ClCompile Include="EoDlgViewZoom.cpp" />
+    <ClCompile Include="EoDbDwgToPegFile.cpp" />
+    <ClCompile Include="EntityToPrimitiveProtocolExtension.cpp" />
+    <ClCompile Include="EoApOptions.cpp" />
+    <ClCompile Include="EoGsAbstractView.cpp" />
+    <ClCompile Include="EoDbBlock.cpp" />
+    <ClCompile Include="EoDBBlockReference.cpp" />
+    <ClCompile Include="EoDbDimension.cpp" />
+    <ClCompile Include="EoDbEllipse.cpp" />
+    <ClCompile Include="EoDbGroup.cpp" />
+    <ClCompile Include="EoDbGroupList.cpp" />
+    <ClCompile Include="EoDbLine.cpp" />
+    <ClCompile Include="EoDbLineTypeTable.cpp" />
+    <ClCompile Include="EoDbPegBlockTable.cpp" />
+    <ClCompile Include="EoDbPoint.cpp" />
+    <ClCompile Include="EoDbPolygon.cpp" />
+    <ClCompile Include="EoDbPolyline.cpp" />
+    <ClCompile Include="EoDbPrimitive.cpp" />
+    <ClCompile Include="EoDbSpline.cpp" />
+    <ClCompile Include="EoDbText.cpp" />
+    <ClCompile Include="EoDbTrappedGroups.cpp" />
+    <ClCompile Include="EoGePoint3d.cpp" />
+    <ClCompile Include="EoGeVector3d.cpp" />
+    <ClCompile Include="EoDlgLineWeight.cpp" />
+    <ClCompile Include="EoMfOutputDockablePane.cpp" />
+    <ClCompile Include="EoMfPropertiesDockablePane.cpp" />
+    <ClCompile Include="EoViAnnotateMode.cpp" />
+    <ClCompile Include="EoViCutMode.cpp" />
+    <ClCompile Include="EoViDimensionMode.cpp" />
+    <ClCompile Include="EoViDraw2Mode.cpp" />
+    <ClCompile Include="EoViDrawMode.cpp" />
+    <ClCompile Include="EoViEditMode.cpp" />
+    <ClCompile Include="EoViFixupMode.cpp" />
+    <ClCompile Include="EoViGroupSubModeEdit.cpp" />
+    <ClCompile Include="EoViLPDMode.cpp" />
+    <ClCompile Include="EoViNodalMode.cpp" />
+    <ClCompile Include="EoViPipeMode.cpp" />
+    <ClCompile Include="EoViPowerMode.cpp" />
+    <ClCompile Include="EoViPrimitiveSubModeEdit.cpp" />
+    <ClCompile Include="EoViPrimitiveSubModeMend.cpp" />
+    <ClCompile Include="EoViTrapMode.cpp" />
+    <ClCompile Include="EoDbBitmapFile.cpp" />
+    <ClCompile Include="EoDbBlockFile.cpp" />
+    <ClCompile Include="EoDbJobFile.cpp" />
+    <ClCompile Include="EoDbPegFile.cpp" />
+    <ClCompile Include="EoDbTracingFile.cpp" />
+    <ClCompile Include="EoCtrlFindComboBox.cpp" />
+    <ClCompile Include="EoDbFontDefinition.cpp" />
+    <ClCompile Include="EoViConstraints.cpp" />
+    <ClCompile Include="EoDbLayer.cpp" />
+    <ClCompile Include="EoDlgLayerPropertiesManager.cpp" />
+    <ClCompile Include="Lex.cpp" />
+    <ClCompile Include="EoGeLine.cpp" />
+    <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="EoGeMatrix.cpp" />
+    <ClCompile Include="ModeLine.cpp" />
+    <ClCompile Include="EoGsModelTransform.cpp" />
+    <ClCompile Include="EoGsViewTransform.cpp" />
+    <ClCompile Include="EoDbLineType.cpp" />
+    <ClCompile Include="PrimState.cpp" />
+    <ClCompile Include="EoGeReferenceSystem.cpp" />
+    <ClCompile Include="Section.cpp" />
+    <ClCompile Include="EoDlgSelectIsometricView.cpp" />
+    <ClCompile Include="Stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="EoGeTransformMatrix.cpp" />
+    <ClCompile Include="EoDlgTrapFilter.cpp" />
+    <ClCompile Include="EoDlgViewParameters.cpp" />
+    <ClCompile Include="EoGsViewport.cpp" />
+    <ClCompile Include="WndProcKeyPlan.cpp" />
+    <ClCompile Include="WndProcPreview.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\AeSys.ico" />
+    <None Include="res\AeSys.rc2" />
+    <None Include="res\AeSys_Gold.ico" />
+    <None Include="res\AnnotateMode.cur" />
+    <None Include="res\CutMode.cur" />
+    <None Include="res\DimensionMode.cur" />
+    <None Include="res\Draw2Mode.cur" />
+    <None Include="res\DrawMode.cur" />
+    <None Include="res\EditMode.cur" />
+    <None Include="res\FixupMode.cur" />
+    <None Include="res\layer_filters.bmp" />
+    <None Include="res\LayerStates.bmp" />
+    <None Include="res\LayerStates_hc.bmp" />
+    <None Include="res\LowPressureDuct.cur" />
+    <None Include="res\NodalMode.cur" />
+    <None Include="res\NodalRMode.cur" />
+    <None Include="res\output_wnd.ico" />
+    <None Include="res\output_wnd_hc.ico" />
+    <None Include="res\PipeMode.cur" />
+    <None Include="res\PowerMode.cur" />
+    <None Include="res\properties.bmp" />
+    <None Include="res\properties_hc.bmp" />
+    <None Include="res\properties_wnd.ico" />
+    <None Include="res\properties_wnd_hc.ico" />
+    <None Include="res\Simplex.psf" />
+    <None Include="res\Toolbar.bmp" />
+    <None Include="res\Toolbar256.bmp" />
+    <None Include="res\TrapMode.cur" />
+    <None Include="res\TrapRMode.cur" />
+    <None Include="hlp\AeSys.hhc" />
+    <None Include="hlp\AeSys.hhk" />
+    <CustomBuild Include="hlp\AeSys.hhp">
+      <FileType>Document</FileType>
+      <Message Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'">Making help file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'">Making help file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'">Making help file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">Making help file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='vc11mt|Win32'">Making help file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='oda-vc10mt|Win32'">Making help file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='vc11dll|Win32'">Making help file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='oda-vc10dll|Win32'">Making help file...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='vc11mt|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='oda-vc10mt|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='vc11dll|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='oda-vc10dll|Win32'">start /wait hhc "hlp\AeSys.hhp"
+if not exist "hlp\AeSys.chm" goto :HelpError
+copy "hlp\AeSys.chm" "$(OutDir)AeSys.chm"
+goto :HelpDone
+:HelpError
+echo hlp\AeSys.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'">hlp\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'">hlp\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'">hlp\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">hlp\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='vc11mt|Win32'">hlp\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='oda-vc10mt|Win32'">hlp\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='vc11dll|Win32'">hlp\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='oda-vc10dll|Win32'">hlp\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='vc11mtdbg|Win32'">$(OutDir)$(ProjectName).chm;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='oda-vc10mtdbg|Win32'">$(OutDir)$(ProjectName).chm;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='vc11dlldbg|Win32'">$(OutDir)$(ProjectName).chm;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='oda-vc10dlldbg|Win32'">$(OutDir)$(ProjectName).chm;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='vc11mt|Win32'">$(OutDir)$(ProjectName).chm;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='oda-vc10mt|Win32'">$(OutDir)$(ProjectName).chm;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='vc11dll|Win32'">$(OutDir)$(ProjectName).chm;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='oda-vc10dll|Win32'">$(OutDir)$(ProjectName).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="hlp\acon0002.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon050f.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon0fow.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon0iyh.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon0koe.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon0xmc.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon12sw.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon171h.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon1q3n.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon1q46.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon1q48.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon1whg.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon1yy4.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon22w5.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon250l.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon26ec.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon29np.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon3cvk.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon3hkk.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon3ueq.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon48it.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon4kf9.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon4lda.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon4wv7.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon5dil.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon5i3r.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon5mb6.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon5ohj.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon5rcj.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon65sv.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon6lr8.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon7yhx.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon80dj.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon85kj.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon8cv6.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon8khg.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon8n5l.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon92jy.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon9g9z.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon9gxf.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon9j1g.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon9jok.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\acon9sqf.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidd_color.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidd_fileopen.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidd_filesave.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidd_find.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidd_font.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidd_newtypedlg.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidd_print.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidd_printdlg.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidd_printsetup.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidd_replace.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidp_default.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidw_dockbar_top.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidw_preview_bar.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidw_status_bar.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\afx_hidw_toolbar.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_advise.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_commands.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_example1.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_example2.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_example3.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_example4.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_execute.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_executedrawingcommands.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_foxpro.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_initiate.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_linkexecute.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_linkitem.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_linkmode.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_linkpoke.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_linkrequest.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_linktopic.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_poke.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_request.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_send_char_command.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_send_key_command.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_terminate.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_topic_names_general.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\dde_variable.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_add.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_attribute.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_axis.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_buffer.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_cancel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_captionbar.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_circle.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_compress.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_constructionline.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_diamondkeys.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_dimension.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_drag.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_draw.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_drawing.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_edit.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_ellipse.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_engage.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_expand.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_expansion.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_file.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_filter.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_fixup.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_flip.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_font.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_invert.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_layer.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_line.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_linestyle.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_map.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_mode.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_modify.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_new.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_odometer.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_open.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_orthogonal.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_path.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_pencolor.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_polygon.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_primitive.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_quad.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_query.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_remove.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_rotate.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_rotation.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_segment.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_sheet.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_snap.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_square.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_symbol.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_tracing.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_trap.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_vector.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_view.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\definitions_vista.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\display.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\draw6zu4.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\EoStyles.css" />
+    <None Include="hlp\features.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\file_structure.htm" />
+    <None Include="hlp\global_keys.htm" />
+    <None Include="hlp\group_edit.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\h_snap_commands.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_annotate_mode_1.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_annotate_mode_arrow.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_annotate_mode_box.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_annotate_mode_bubble.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_annotate_mode_constructionline.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_annotate_mode_cutin.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_annotate_mode_hook.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_annotate_mode_line.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_annotate_mode_options.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_annotate_mode_underline.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_app_about.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_app_exit.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_context_help.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_cut_mode_clip.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_cut_mode_divide.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_cut_mode_field.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_cut_mode_options.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_cut_mode_slice.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_cut_mode_torch.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_dimension_mode_angle.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_dimension_mode_arrow.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_dimension_mode_convert.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_dimension_mode_diameter.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_dimension_mode_dline.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_dimension_mode_dline2.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_dimension_mode_exten.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_dimension_mode_line.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_dimension_mode_options.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_dimension_mode_radius.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw2_mode_join.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw2_mode_options.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw2_mode_wall.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw_mode_arc.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw_mode_bspline.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw_mode_circle.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw_mode_ellipse.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw_mode_insert.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw_mode_line.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw_mode_options.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw_mode_point.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw_mode_polygon.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_draw_mode_quad.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_clear.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_clear_all.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_copy.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_cut.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_find.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_mode_copy.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_mode_enlarge.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_mode_flip.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_mode_move.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_mode_options.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_mode_pivot.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_mode_reduce.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_mode_rotccw.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_mode_rotcw.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_paste.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_redo.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_repeat.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_replace.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_edit_undo.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_file_close.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_file_mru_file1.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_file_new.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_file_open.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_file_page_setup.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_file_print.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_file_print_preview.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_file_print_setup.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_file_save.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_file_save_as.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_file_send_mail.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_fixup_mode_chamfer.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_fixup_mode_fillet.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_fixup_mode_mend.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_fixup_mode_options.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_fixup_mode_parallel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_fixup_mode_reference.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_fixup_mode_square.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_help_index.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_help_using.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_ht_caption.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_ht_nowhere.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_mode_annotate.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_mode_cut.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_mode_dimension.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_mode_draw.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_mode_draw2.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_mode_edit.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_mode_fixup.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_mode_nodal.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_mode_trap.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_next_pane.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_nodal_mode_addremove.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_nodal_mode_area.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_nodal_mode_copy.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_nodal_mode_empty.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_nodal_mode_engage.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_nodal_mode_line.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_nodal_mode_move.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_nodal_mode_point.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_nodal_mode_toline.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_nodal_mode_topolygon.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_prev_pane.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_sc_close.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_sc_maximize.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_sc_minimize.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_sc_move.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_sc_nextwindow.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_sc_prevwindow.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_sc_restore.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_sc_size.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_sc_tasklist.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_setup_pencolor.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_setup_penstyle.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_setup_scale.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_setup_units.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_tools_primitive_snapto.htm" />
+    <None Include="hlp\hid_trap_mode_addremove.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_trap_mode_engage.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_trap_mode_field.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_trap_mode_last.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_trap_mode_menu.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_trap_mode_modify.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_trap_mode_point.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_trap_mode_stitch.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_view_ruler.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_view_status_bar.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_view_toolbar.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_window_all.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_window_arrange.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_window_cascade.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_window_new.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_window_split.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_window_tile.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_window_tile_horz.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hid_window_tile_vert.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\hidr_pegaesystype.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\history.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\introduction.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\keyindex.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\main_index.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\menu_edit.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\menu_file.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\menu_help.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\menu_mode.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\menu_mode_0.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\menu_setup.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\menu_tools.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\menu_view.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\menu_window.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\menubar.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\noda61q1.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\ortho_tabs.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\personal_note.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\primarymodes.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\primitive_edit.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom0eup.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom0euq.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom0eur.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom0eus.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom0eut.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom0euu.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom0euv.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom0euw.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom0eux.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom6els.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom6elt.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom6elu.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom6elv.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom6elw.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom6elx.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom6ely.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\prom6elz.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\reportbar.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\scrollbars.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\secondary_modes.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\setu0777.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\setu15kk.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\setu2qic.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\setu2yyb.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\setu3wbw.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\setu414i.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\setu4euq.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\setu9dut.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\setu9odp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\setu9ued.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee0001.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee05d2.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee065q.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee0a1x.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee0aia.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee0put.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee1g8k.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee1muf.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee1x6a.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee2czb.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee3cdh.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee3j8l.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee3n72.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee3rzo.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee471v.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee4f78.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee4m5v.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee4tk5.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee4tph.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee5ktq.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee5v1v.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee6hwr.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee6isl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee6jla.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee6njo.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee6pwl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee6y7i.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee712o.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee731w.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee7eic.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee85yr.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee85ys.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee8x4c.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee96lw.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee9pdc.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee9ter.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\shee9xut.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\snaps_centersnap.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\snaps_intersectionwithpreviouspick.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\snaps_inthedirectionof.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\snaps_lineorsegment.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\snaps_nodeorpoint.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\snaps_perpendicular.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\snaps_polygonsurfaceortangent.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\tag_key.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\toolbar.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap06n8.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap0bdt.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap0bdv.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap0bdx.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap0bdy.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap0be1.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap0be6.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap0be9.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap0beb.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap0bef.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap223p.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap51wl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap7mxw.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\trap9855.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\tutorial.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="hlp\welcome.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AeSys.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AeSys.h" />
+    <ClInclude Include="AeSysDoc.h" />
+    <ClInclude Include="AeSysView.h" />
+    <ClInclude Include="eodb.h" />
+    <ClInclude Include="EoDbCharacterCellDefinition.h" />
+    <ClInclude Include="ChildFrm.h" />
+    <ClInclude Include="Dde.h" />
+    <ClInclude Include="DdeCmds.h" />
+    <ClInclude Include="DdeGItms.h" />
+    <ClInclude Include="DdeSys.h" />
+    <ClInclude Include="EoDlgActiveViewKeyplan.h" />
+    <ClInclude Include="EoDlgBlockInsert.h" />
+    <ClInclude Include="EoDlgDrawOptions.h" />
+    <ClInclude Include="EoDlgFixupOptions.h" />
+    <ClInclude Include="EoDlgModeLetter.h" />
+    <ClInclude Include="EoDlgModeRevise.h" />
+    <ClInclude Include="EoDlgSetHomePoint.h" />
+    <ClInclude Include="EoDlgLowPressureDuctOptions.h" />
+    <ClInclude Include="EoDlgEditOptions.h" />
+    <ClInclude Include="EoDlgEditTrapCommandsQuery.h" />
+    <ClInclude Include="EoCtrlColorsButton.h" />
+    <ClInclude Include="EoDlgAnnotateOptions.h" />
+    <ClInclude Include="EoDlgFileManage.h" />
+    <ClInclude Include="EoDlgTrapFilter.h" />
+    <ClInclude Include="EoDlgTrapModify.h" />
+    <ClInclude Include="EoDlgPipeOptions.h" />
+    <ClInclude Include="EoDlgPipeSymbol.h" />
+    <ClInclude Include="EoDlgSelectGotoHomePoint.h" />
+    <ClInclude Include="EoDlgSetAngle.h" />
+    <ClInclude Include="EoDlgSetPastePosition.h" />
+    <ClInclude Include="EoDlgSetUnitsAndPrecision.h" />
+    <ClInclude Include="EoDlgSetupConstraints.h" />
+    <ClInclude Include="EoDlgSetLength.h" />
+    <ClInclude Include="EoDlgSetScale.h" />
+    <ClInclude Include="EoDlgSetText.h" />
+    <ClInclude Include="EoDlgSetupColor.h" />
+    <ClInclude Include="EoDlgSetupCustomMouseCharacters.h" />
+    <ClInclude Include="EoDlgSetupHatch.h" />
+    <ClInclude Include="EoDlgSetupNote.h" />
+    <ClInclude Include="EoDlgViewZoom.h" />
+    <ClInclude Include="EoDbDwgToPegFile.h" />
+    <ClInclude Include="EntityToPrimitiveProtocolExtension.h" />
+    <ClInclude Include="EoApOptions.h" />
+    <ClInclude Include="EoDbBlock.h" />
+    <ClInclude Include="EoDbBlockReference.h" />
+    <ClInclude Include="EoDbDimension.h" />
+    <ClInclude Include="EoDbEllipse.h" />
+    <ClInclude Include="EoDbGroup.h" />
+    <ClInclude Include="EoDbGroupList.h" />
+    <ClInclude Include="EoDbLine.h" />
+    <ClInclude Include="EoDbLineTypeTable.h" />
+    <ClInclude Include="EoDbMaskedPrimitive.h" />
+    <ClInclude Include="EoDbPoint.h" />
+    <ClInclude Include="EoDbPolygon.h" />
+    <ClInclude Include="EoDbPolyline.h" />
+    <ClInclude Include="EoDbPrimitive.h" />
+    <ClInclude Include="EoDbSpline.h" />
+    <ClInclude Include="EoDbText.h" />
+    <ClInclude Include="EoDlgSetupLineType.h" />
+    <ClInclude Include="EoGePoint3d.h" />
+    <ClInclude Include="EoGePoint4d.h" />
+    <ClInclude Include="EoGePolyline.h" />
+    <ClInclude Include="EoGeUniquePoint.h" />
+    <ClInclude Include="EoGeVector3d.h" />
+    <ClInclude Include="EoDlgLineWeight.h" />
+    <ClInclude Include="EoGsAbstractView.h" />
+    <ClInclude Include="EoMfOutputDockablePane.h" />
+    <ClInclude Include="EoMfPropertiesDockablePane.h" />
+    <ClInclude Include="EoDbBitmapFile.h" />
+    <ClInclude Include="EoDbBlockFile.h" />
+    <ClInclude Include="EoDbJobFile.h" />
+    <ClInclude Include="EoDbPegFile.h" />
+    <ClInclude Include="EoDbTracingFile.h" />
+    <ClInclude Include="EoCtrlFindComboBox.h" />
+    <ClInclude Include="EoDbFontDefinition.h" />
+    <ClInclude Include="Hatch.h" />
+    <ClInclude Include="EoDbLayer.h" />
+    <ClInclude Include="EoDlgLayerPropertiesManager.h" />
+    <ClInclude Include="Lex.h" />
+    <ClInclude Include="EoGeLine.h" />
+    <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="EoGeMatrix.h" />
+    <ClInclude Include="EoGsModelTransform.h" />
+    <ClInclude Include="EoGsViewTransform.h" />
+    <ClInclude Include="PegColors.h" />
+    <ClInclude Include="EoDbLineType.h" />
+    <ClInclude Include="Preview.h" />
+    <ClInclude Include="PrimState.h" />
+    <ClInclude Include="EoGeReferenceSystem.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="SafeMath.h" />
+    <ClInclude Include="Section.h" />
+    <ClInclude Include="EoDlgSelectIsometricView.h" />
+    <ClInclude Include="Stdafx.h" />
+    <ClInclude Include="TargetVer.h" />
+    <ClInclude Include="EoGeTransformMatrix.h" />
+    <ClInclude Include="EoDlgViewParameters.h" />
+    <ClInclude Include="EoGsViewport.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="AeSys.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

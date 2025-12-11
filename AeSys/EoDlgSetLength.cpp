@@ -1,0 +1,38 @@
+#include "stdafx.h"
+#include "AeSys.h"
+
+#include "EoDlgSetLength.h"
+
+// EoDlgSetLength dialog
+
+IMPLEMENT_DYNAMIC(EoDlgSetLength, CDialog)
+
+BEGIN_MESSAGE_MAP(EoDlgSetLength, CDialog)
+END_MESSAGE_MAP()
+
+EoDlgSetLength::EoDlgSetLength(CWnd* pParent /*=NULL*/) :
+	CDialog(EoDlgSetLength::IDD, pParent) {
+}
+EoDlgSetLength::~EoDlgSetLength() {
+}
+void EoDlgSetLength::DoDataExchange(CDataExchange* pDX) {
+	CDialog::DoDataExchange(pDX);
+}
+BOOL EoDlgSetLength::OnInitDialog() {
+	CDialog::OnInitDialog();
+	if (!m_strTitle.IsEmpty()) {
+		SetWindowTextW(m_strTitle);
+	}
+	CString Length;
+	app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), m_dLength, 16, 8);
+	SetDlgItemTextW(IDC_DISTANCE, Length);
+	return TRUE;
+}
+void EoDlgSetLength::OnOK() {
+	WCHAR szBuf[32];
+
+	GetDlgItemTextW(IDC_DISTANCE, (LPTSTR) szBuf, 32);
+	m_dLength = app.ParseLength(app.GetUnits(), szBuf);
+
+	CDialog::OnOK();
+}
