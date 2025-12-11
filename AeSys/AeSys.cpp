@@ -287,7 +287,7 @@ int AeSys::ConfirmMessageBox(UINT stringResourceIdentifier, const CString& strin
   CString FormatSpecification = EoAppLoadStringResource(stringResourceIdentifier);
 
   CString FormattedResourceString;
-  FormattedResourceString.Format(FormatSpecification, string);
+  FormattedResourceString.Format(FormatSpecification, string.GetString());
 
   int NextToken = 0;
   CString Message = FormattedResourceString.Tokenize(L"\t", NextToken);
@@ -316,7 +316,7 @@ void AeSys::AddStringToMessageList(UINT stringResourceIdentifier, const CString&
   CString FormatSpecification = EoAppLoadStringResource(stringResourceIdentifier);
 
   CString FormattedResourceString;
-  FormattedResourceString.Format(FormatSpecification, string);
+  FormattedResourceString.Format(FormatSpecification, string.GetString());
 
   AddStringToMessageList(FormattedResourceString);
 }
@@ -333,7 +333,7 @@ void AeSys::WarningMessageBox(UINT stringResourceIdentifier, const CString& stri
   CString FormatSpecification = EoAppLoadStringResource(stringResourceIdentifier);
 
   CString FormattedResourceString;
-  FormattedResourceString.Format(FormatSpecification, string);
+  FormattedResourceString.Format(FormatSpecification, string.GetString());
 
   int NextToken = 0;
   CString Message = FormattedResourceString.Tokenize(L"\t", NextToken);

@@ -114,7 +114,7 @@ void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
 }
 void EoDbDimension::AddReportToMessageList(EoGePoint3d pt) {
   CString str;
-  str.Format(L"<Dim> Color: %s Line Type: %s", FormatPenColor(), FormatLineType());
+  str.Format(L"<Dim> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
   app.AddStringToMessageList(str);
 
   double dLen = Length();
@@ -135,7 +135,9 @@ void EoDbDimension::AddReportToMessageList(EoGePoint3d pt) {
   dde::PostAdvise(dde::EngAngZInfo);
 #endif  // USING_DDE
 }
-void EoDbDimension::FormatExtra(CString& str) { str.Format(L"Color;%s\tStyle;%s", FormatPenColor(), FormatLineType()); }
+void EoDbDimension::FormatExtra(CString& str) {
+  str.Format(L"Color;%s\tStyle;%s", FormatPenColor().GetString(), FormatLineType().GetString());
+}
 void EoDbDimension::FormatGeometry(CString& str) {
   str += L"Begin Point;" + m_ln.begin.ToString();
   str += L"End Point;" + m_ln.end.ToString();

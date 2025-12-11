@@ -858,8 +858,8 @@ void AeSysView::PushViewTransform() { m_ViewTransforms.AddTail(m_ViewTransform);
 void AeSysView::ModelViewAdjustWindow(float& uMin, float& vMin, float& uMax, float& vMax, float ratio) {
   float AspectRatio = m_Viewport.Height() / m_Viewport.Width();
 
-  float UExtent = fabs(uMax - uMin);
-  float VExtent = fabs(vMax - vMin);
+  float UExtent = static_cast<float>(fabs(uMax - uMin));
+  float VExtent = static_cast<float>(fabs(vMax - vMin));
 
   float XAdjustment = 0.0f;
   float YAdjustment = 0.0f;
@@ -2107,8 +2107,7 @@ void AeSysView::SetModeCursor(int mode) {
       break;
 
     default:
-      ::SetCursor(
-          (HCURSOR)::LoadImage(HINSTANCE(NULL), MAKEINTRESOURCE(IDC_CROSS), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+      ::SetCursor((HCURSOR)::LoadImage(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
       return;
   }
   HCURSOR CursorHandle =

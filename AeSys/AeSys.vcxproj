@@ -658,6 +658,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
     </ClCompile>
     <Link>
       <AdditionalDependencies>xmllite.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -785,6 +786,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include=".clang-tidy" />
     <None Include="res\AeSys.ico" />
     <None Include="res\AeSys.rc2" />
     <None Include="res\AeSys_Gold.ico" />

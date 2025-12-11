@@ -254,7 +254,8 @@ void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
 }
 void EoDbEllipse::AddReportToMessageList(EoGePoint3d) {
   CString str;
-  str.Format(L"<Ellipse> Color: %s Line Type: %s SweepAngle %f MajorAxisLength: %f", FormatPenColor(), FormatLineType(),
+  str.Format(L"<Ellipse> Color: %s Line Type: %s SweepAngle %f MajorAxisLength: %f", FormatPenColor().GetString(),
+             FormatLineType().GetString(),
              m_dSwpAng, m_vMajAx.Length());
   app.AddStringToMessageList(str);
 }
@@ -285,7 +286,8 @@ void EoDbEllipse::FormatGeometry(CString& str) {
   str += L"Plane Normal;" + (EoGeCrossProduct(m_vMajAx, m_vMinAx)).ToString();
 }
 void EoDbEllipse::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tSweep Angle;%f\tMajor Axis Length;%f", FormatPenColor(), FormatLineType(), m_dSwpAng,
+  str.Format(L"Color;%s\tStyle;%s\tSweep Angle;%f\tMajor Axis Length;%f", FormatPenColor().GetString(),
+             FormatLineType().GetString(), m_dSwpAng,
              m_vMajAx.Length());
 }
 EoGePoint3d EoDbEllipse::GetBegPt() { return (m_ptCenter + m_vMajAx); }

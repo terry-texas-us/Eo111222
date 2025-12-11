@@ -44,8 +44,8 @@ BOOL EoDlgActiveViewKeyplan::OnInitDialog() {
 
 	m_ActiveView->ModelViewAdjustWindow(UMin, VMin, UMax, VMax, 1.0f);
 
-	float UExtent = fabs(UMax - UMin);
-	float VExtent = fabs(VMax - VMin);
+	auto UExtent = static_cast<float>(fabs(UMax - UMin));
+	auto VExtent = static_cast<float>(fabs(VMax - VMin));
 
 	EoGePoint3d CursorPosition = app.GetCursorPosition();
 	EoGeVector3d Direction = m_ActiveView->CameraDirection();
@@ -88,7 +88,7 @@ void EoDlgActiveViewKeyplan::OnOK() {
 	float VMin = (- m_rcWnd.bottom / static_cast<float>(rcKey.bottom + 1)) * m_ActiveView->OverviewVExt() + OverviewVMin;
 	float VMax = (- m_rcWnd.top / static_cast<float>(rcKey.bottom + 1)) * m_ActiveView->OverviewVExt() + OverviewVMin;
 
-	float Ratio = m_ActiveView->WidthInInches() / fabs(UMax - UMin);
+	float Ratio = static_cast<float>(m_ActiveView->WidthInInches() / fabs(UMax - UMin));
 	m_ActiveView->CopyActiveModelViewToPreviousModelView();
 	m_ActiveView->ModelViewAdjustWindow(UMin, VMin, UMax, VMax, Ratio);
 	m_ActiveView->SetViewWindow(UMin, VMin, UMax, VMax);

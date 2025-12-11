@@ -51,7 +51,7 @@ void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
 }
 void EoDbSpline::AddReportToMessageList(EoGePoint3d) {
   CString str;
-  str.Format(L"<BSpline> Color: %s Line Type: %s", FormatPenColor(), FormatLineType());
+  str.Format(L"<BSpline> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
   app.AddStringToMessageList(str);
 }
 void EoDbSpline::FormatGeometry(CString& str) {
@@ -59,7 +59,8 @@ void EoDbSpline::FormatGeometry(CString& str) {
 }
 
 void EoDbSpline::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tControl Points;%d", FormatPenColor(), FormatLineType(), m_pts.GetSize());
+  str.Format(L"Color;%s\tStyle;%s\tControl Points;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
+             m_pts.GetSize());
 }
 
 EoGePoint3d EoDbSpline::GetCtrlPt() {

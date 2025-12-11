@@ -220,7 +220,7 @@ CString EoDbPolygon::FormatIntStyle() {
   return (str);
 }
 void EoDbPolygon::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor(), FormatLineType(), m_NumberOfPoints);
+  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(), m_NumberOfPoints);
 }
 EoGePoint3d EoDbPolygon::GetCtrlPt() {
   EoUInt16 wBeg = EoUInt16(sm_Edge - 1);

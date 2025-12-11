@@ -103,8 +103,8 @@ void EoDbPolyline::AddReportToMessageList(EoGePoint3d ptPic) {
     app.FormatAngle(AngleAsString, AngleInXYPlane, 8, 3);
 
     CString Message;
-    Message.Format(L"<Polyline Edge> Color: %s Line Type: %s - %s @ %s", FormatPenColor(), FormatLineType(),
-                   LengthAsString.TrimLeft(), AngleAsString);
+    Message.Format(L"<Polyline Edge> Color: %s Line Type: %s - %s @ %s", FormatPenColor().GetString(),
+                   FormatLineType().GetString(), LengthAsString.TrimLeft().GetString(), AngleAsString.GetString());
     app.AddStringToMessageList(Message);
 
     app.SetEngagedLength(EdgeLength);
@@ -120,7 +120,8 @@ void EoDbPolyline::FormatGeometry(CString& str) {
   for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) { str += L"Point;" + m_pts[w].ToString(); }
 }
 void EoDbPolyline::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor(), FormatLineType(), m_pts.GetSize());
+  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
+             m_pts.GetSize());
 }
 EoGePoint3d EoDbPolyline::GetCtrlPt() {
   EoUInt16 wPts = EoUInt16(m_pts.GetSize());

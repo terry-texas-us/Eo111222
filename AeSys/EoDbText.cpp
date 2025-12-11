@@ -68,9 +68,11 @@ void EoDbText::AddReportToMessageList(EoGePoint3d) {
 }
 void EoDbText::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tFont;%s\tPrecision;%s\tPath;%s\tAlignment;(%s,%s)\tSpacing;%f\tLength;%d\tText;%s",
-             FormatPenColor(), m_fd.FontName(), m_fd.FormatPrecision(), m_fd.FormatPath(),
-             m_fd.FormatHorizonatlAlignment(), m_fd.FormatVerticalAlignment(), m_fd.CharacterSpacing(),
-             m_strText.GetLength(), m_strText);
+             FormatPenColor().GetString(), m_fd.FontName().GetString(), m_fd.FormatPrecision().GetString(),
+             m_fd.FormatPath().GetString(),
+             m_fd.FormatHorizonatlAlignment().GetString(), m_fd.FormatVerticalAlignment().GetString(),
+             m_fd.CharacterSpacing(),
+             m_strText.GetLength(), m_strText.GetString());
 }
 void EoDbText::FormatGeometry(CString& str) {
   EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;

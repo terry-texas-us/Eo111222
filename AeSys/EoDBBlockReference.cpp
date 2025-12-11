@@ -102,12 +102,15 @@ void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
 }
 void EoDbBlockReference::AddReportToMessageList(EoGePoint3d) {
   CString str;
-  str.Format(L"<SegRef> Color: %s Line Type: %s SegmentName %s", FormatPenColor(), FormatLineType(), m_strName);
+  str.Format(L"<SegRef> Color: %s Line Type: %s SegmentName %s", FormatPenColor().GetString(),
+             FormatLineType().GetString(),
+             m_strName.GetString());
   app.AddStringToMessageList(str);
 }
 void EoDbBlockReference::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tSegment Name;%s\tRotation Angle;%f", FormatPenColor(), FormatLineType(), m_strName,
-             m_dRotation);
+  str.Format(L"Color;%s\tStyle;%s\tSegment Name;%s\tRotation Angle;%f", FormatPenColor().GetString(),
+             FormatLineType().GetString(),
+             m_strName.GetString(), m_dRotation);
 }
 void EoDbBlockReference::FormatGeometry(CString& str) {
   str += L"Insertion Point;" + m_pt.ToString();

@@ -1673,6 +1673,7 @@
       <Filter>Resource Files\Icons</Filter>
     </None>
     <None Include=".clang-format" />
+    <None Include=".clang-tidy" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">

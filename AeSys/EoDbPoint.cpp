@@ -115,10 +115,12 @@ void EoDbPoint::Display(AeSysView* view, CDC* deviceContext) {
 }
 void EoDbPoint::AddReportToMessageList(EoGePoint3d) {
   CString str;
-  str.Format(L"<Point> Color: %s Line Type: %s", FormatPenColor(), FormatLineType());
+  str.Format(L"<Point> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
   app.AddStringToMessageList(str);
 }
-void EoDbPoint::FormatExtra(CString& str) { str.Format(L"Color;%s\tStyle;%d", FormatPenColor(), m_PointStyle); }
+void EoDbPoint::FormatExtra(CString& str) {
+  str.Format(L"Color;%s\tStyle;%d", FormatPenColor().GetString(), m_PointStyle);
+}
 void EoDbPoint::FormatGeometry(CString& str) { str += L"Point;" + m_Point.ToString(); }
 EoGePoint3d EoDbPoint::GetCtrlPt() { return (m_Point); }
 void EoDbPoint::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {

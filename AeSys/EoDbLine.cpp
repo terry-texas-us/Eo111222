@@ -107,8 +107,8 @@ void EoDbLine::AddReportToMessageList(EoGePoint3d pt) {
   app.FormatAngle(AngleAsString, AngleInXYPlane, 8, 3);
 
   CString Message;
-  Message.Format(L"<Line> Color: %s Line Type: %s - %s @ %s", FormatPenColor(), FormatLineType(),
-                 LengthAsString.TrimLeft(), AngleAsString);
+  Message.Format(L"<Line> Color: %s Line Type: %s - %s @ %s", FormatPenColor().GetString(),
+                 FormatLineType().GetString(), LengthAsString.TrimLeft().GetString(), AngleAsString.GetString());
   app.AddStringToMessageList(Message);
 
   app.SetEngagedLength(dLen);
@@ -123,8 +123,8 @@ void EoDbLine::FormatExtra(CString& str) {
   CString FormattedLength;
   app.FormatLength(FormattedLength, app.GetUnits(), Length(), 16, 6);
 
-  str.Format(L"Color;%s\tStyle;%s\tLength;%s\tZ-Angle;%f", FormatPenColor(), FormatLineType(),
-             FormattedLength.TrimLeft(), EoToDegree(m_ln.AngleFromXAxisXY()));
+  str.Format(L"Color;%s\tStyle;%s\tLength;%s\tZ-Angle;%f", FormatPenColor().GetString(), FormatLineType().GetString(),
+             FormattedLength.TrimLeft().GetString(), EoToDegree(m_ln.AngleFromXAxisXY()));
 }
 void EoDbLine::FormatGeometry(CString& str) {
   str += L"Begin Point;" + m_ln.begin.ToString();
