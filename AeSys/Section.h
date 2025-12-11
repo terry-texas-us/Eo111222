@@ -1,30 +1,30 @@
-#pragma once
+﻿#pragma once
 
 class Section {
-public:
-	static const long Round = 0x0001;
-	static const long Oval = 0x0002;
-	static const long Rectangular = 0x0004;
-	static const long Fixed = 0x0010;
+ public:
+  static const long Round = 0x0001;
+  static const long Oval = 0x0002;
+  static const long Rectangular = 0x0004;
+  static const long Fixed = 0x0010;
 
-private:
-	double m_Width;
-	double m_Depth;
-	int m_Properties;
+ private:
+  double m_Width;
+  double m_Depth;
+  int m_Properties;
 
-public:
-	Section(void);
-	Section(double width, double depth, long properties);
-	~Section(void);
+ public:
+  Section(void);
+  Section(double width, double depth, long properties);
+  ~Section(void);
 
-	bool operator==(const Section& section);
-	bool operator!=(const Section& section);
-	void operator()(double width, double depth, long properties);
-	void SetWidth(double width);
-	void SetDepth(double depth);
-	double Width(void) const;
-	double Depth(void) const;
-	bool Identical(const Section& section);
-	bool IsRectangular();
-	bool IsRound();
+  bool operator==(const Section& section);
+  bool operator!=(const Section& section);
+  void operator()(double width, double depth, long properties);
+  void SetWidth(double width);
+  void SetDepth(double depth);
+  double Width(void) const;
+  double Depth(void) const;
+  bool Identical(const Section& section);
+  bool IsRectangular();
+  bool IsRound();
 };

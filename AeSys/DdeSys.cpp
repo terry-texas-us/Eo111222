@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 
 #if defined(USING_DDE)
 #include "ddeSys.h"

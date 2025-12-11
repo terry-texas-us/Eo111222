@@ -1,78 +1,62 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 
 EoGsViewport::EoGsViewport(const EoGsViewport& viewport) {
-	m_DeviceHeightInPixels = viewport.m_DeviceHeightInPixels;
-	m_DeviceWidthInPixels = viewport.m_DeviceWidthInPixels;
-	m_DeviceHeightInInches = viewport.m_DeviceHeightInInches;
-	m_DeviceWidthInInches = viewport.m_DeviceWidthInInches;
-	m_Height = viewport.m_Height;
-	m_Width = viewport.m_Width;
+  m_DeviceHeightInPixels = viewport.m_DeviceHeightInPixels;
+  m_DeviceWidthInPixels = viewport.m_DeviceWidthInPixels;
+  m_DeviceHeightInInches = viewport.m_DeviceHeightInInches;
+  m_DeviceWidthInInches = viewport.m_DeviceWidthInInches;
+  m_Height = viewport.m_Height;
+  m_Width = viewport.m_Width;
 }
 EoGsViewport& EoGsViewport::operator=(const EoGsViewport& viewport) {
-	m_DeviceHeightInPixels = viewport.m_DeviceHeightInPixels;
-	m_DeviceWidthInPixels = viewport.m_DeviceWidthInPixels;
-	m_Width = viewport.m_Width;
-	m_Height = viewport.m_Height;
-	m_DeviceHeightInInches = viewport.m_DeviceHeightInInches;
-	m_DeviceWidthInInches = viewport.m_DeviceWidthInInches;
+  m_DeviceHeightInPixels = viewport.m_DeviceHeightInPixels;
+  m_DeviceWidthInPixels = viewport.m_DeviceWidthInPixels;
+  m_Width = viewport.m_Width;
+  m_Height = viewport.m_Height;
+  m_DeviceHeightInInches = viewport.m_DeviceHeightInInches;
+  m_DeviceWidthInInches = viewport.m_DeviceWidthInInches;
 
-	return *this;
+  return *this;
 }
 CPoint EoGsViewport::DoProjection(const EoGePoint4d& pt) {
-	CPoint pnt;
+  CPoint pnt;
 
-	pnt.x = EoRound((pt.x / pt.w + 1.) * ((m_Width - 1.0f) / 2.0f));
-	pnt.y = EoRound((- pt.y / pt.w + 1.) * ((m_Height - 1.0f) / 2.0f));
+  pnt.x = EoRound((pt.x / pt.w + 1.) * ((m_Width - 1.0f) / 2.0f));
+  pnt.y = EoRound((-pt.y / pt.w + 1.) * ((m_Height - 1.0f) / 2.0f));
 
-	return pnt;
+  return pnt;
 }
 void EoGsViewport::DoProjection(CPoint* pnt, int iPts, EoGePoint4d* pt) {
-	for (int i = 0; i < iPts; i++) {
-		pt[i] /= pt[i].w;
+  for (int i = 0; i < iPts; i++) {
+    pt[i] /= pt[i].w;
 
-		pnt[i].x = EoRound((pt[i].x + 1.) * ((m_Width - 1.0f) / 2.0f));
-		pnt[i].y = EoRound((- pt[i].y + 1.) * ((m_Height - 1.0f) / 2.0f));
-	}
+    pnt[i].x = EoRound((pt[i].x + 1.) * ((m_Width - 1.0f) / 2.0f));
+    pnt[i].y = EoRound((-pt[i].y + 1.) * ((m_Height - 1.0f) / 2.0f));
+  }
 }
 void EoGsViewport::DoProjection(CPoint* pnt, EoGePoint4dArray& pointsArray) {
-	int iPts = (int) pointsArray.GetSize();
+  int iPts = (int)pointsArray.GetSize();
 
-	for (int i = 0; i < iPts; i++) {
-		pointsArray[i] /= pointsArray[i].w;
+  for (int i = 0; i < iPts; i++) {
+    pointsArray[i] /= pointsArray[i].w;
 
-		pnt[i].x = EoRound((pointsArray[i].x + 1.) * ((m_Width - 1.0f) / 2.0f));
-		pnt[i].y = EoRound((- pointsArray[i].y + 1.) * ((m_Height - 1.0f) / 2.0f));
-	}
+    pnt[i].x = EoRound((pointsArray[i].x + 1.) * ((m_Width - 1.0f) / 2.0f));
+    pnt[i].y = EoRound((-pointsArray[i].y + 1.) * ((m_Height - 1.0f) / 2.0f));
+  }
 }
 void EoGsViewport::DoProjectionInverse(EoGePoint3d& pt) {
-	pt.x = (pt.x * 2.) / (m_Width - 1.) - 1.;
-	pt.y = - ((pt.y * 2.) / (m_Height - 1.) - 1.);
+  pt.x = (pt.x * 2.) / (m_Width - 1.) - 1.;
+  pt.y = -((pt.y * 2.) / (m_Height - 1.) - 1.);
 }
-float EoGsViewport::Height() const {
-	return m_Height;
-}
-float EoGsViewport::HeightInInches() const {
-	return m_Height / (m_DeviceHeightInPixels / m_DeviceHeightInInches);
-}
-float EoGsViewport::Width() const {
-	return m_Width;
-}
-float EoGsViewport::WidthInInches() const {
-	return m_Width / (m_DeviceWidthInPixels / m_DeviceWidthInInches);
-}
-void EoGsViewport::SetDeviceHeightInInches(const float height) {
-	m_DeviceHeightInInches = height;
-}
-void EoGsViewport::SetDeviceWidthInInches(const float width) {
-	m_DeviceWidthInInches = width;
-}
+float EoGsViewport::Height() const { return m_Height; }
+float EoGsViewport::HeightInInches() const { return m_Height / (m_DeviceHeightInPixels / m_DeviceHeightInInches); }
+float EoGsViewport::Width() const { return m_Width; }
+float EoGsViewport::WidthInInches() const { return m_Width / (m_DeviceWidthInPixels / m_DeviceWidthInInches); }
+void EoGsViewport::SetDeviceHeightInInches(const float height) { m_DeviceHeightInInches = height; }
+void EoGsViewport::SetDeviceWidthInInches(const float width) { m_DeviceWidthInInches = width; }
 void EoGsViewport::SetSize(int width, int height) {
-	m_Width = static_cast<float>(width);
-	m_Height = static_cast<float>(height);
+  m_Width = static_cast<float>(width);
+  m_Height = static_cast<float>(height);
 }
-void EoGsViewport::SetDeviceHeightInPixels(const float height) {
-	m_DeviceHeightInPixels = height;
-}
-void EoGsViewport::SetDeviceWidthInPixels(const float width) {
-	m_DeviceWidthInPixels = width;
-}
+void EoGsViewport::SetDeviceHeightInPixels(const float height) { m_DeviceHeightInPixels = height; }
+void EoGsViewport::SetDeviceWidthInPixels(const float width) { m_DeviceWidthInPixels = width; }

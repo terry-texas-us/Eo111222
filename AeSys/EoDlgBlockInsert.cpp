@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "Preview.h"

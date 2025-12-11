@@ -1,4 +1,4 @@
-// EoDlgSelectIsometricView.cpp : implementation file
+﻿// EoDlgSelectIsometricView.cpp : implementation file
 //
 
 #include "stdafx.h"

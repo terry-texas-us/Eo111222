@@ -1,249 +1,241 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "AeSys.h"
 #include "AeSysView.h"
 
 EoDbSpline::EoDbSpline(EoUInt16 wPts, EoGePoint3d* pt) {
-	m_PenColor = pstate.PenColor();
-	m_LineType = pstate.LineType();
+  m_PenColor = pstate.PenColor();
+  m_LineType = pstate.LineType();
 
-	for (EoUInt16 w = 0; w < wPts; w++)
-		m_pts.Add(pt[w]);
+  for (EoUInt16 w = 0; w < wPts; w++) m_pts.Add(pt[w]);
 }
 EoDbSpline::EoDbSpline(EoGePoint3dArray& points) {
-	m_PenColor = pstate.PenColor();
-	m_LineType = pstate.LineType();
-	m_pts.Copy(points);
+  m_PenColor = pstate.PenColor();
+  m_LineType = pstate.LineType();
+  m_pts.Copy(points);
 }
 EoDbSpline::EoDbSpline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& points) {
-	m_PenColor = penColor;
-	m_LineType = lineType;
-	m_pts.Copy(points);
+  m_PenColor = penColor;
+  m_LineType = lineType;
+  m_pts.Copy(points);
 }
 EoDbSpline::EoDbSpline(const EoDbSpline& src) {
-	m_PenColor = src.m_PenColor;
-	m_LineType = src.m_LineType;
-	m_pts.Copy(src.m_pts);
+  m_PenColor = src.m_PenColor;
+  m_LineType = src.m_LineType;
+  m_pts.Copy(src.m_pts);
 }
 
 const EoDbSpline& EoDbSpline::operator=(const EoDbSpline& src) {
-	m_PenColor = src.m_PenColor;
-	m_LineType = src.m_LineType;
-	m_pts.Copy(src.m_pts);
+  m_PenColor = src.m_PenColor;
+  m_LineType = src.m_LineType;
+  m_pts.Copy(src.m_pts);
 
-	return (*this);
+  return (*this);
 }
 
-void EoDbSpline::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
-	tvAddItem(hTree, hParent, L"<BSpline>", this);
-}
+void EoDbSpline::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, L"<BSpline>", this); }
 
 EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
-	primitive = new EoDbSpline(*this);
-	return (primitive);
+  primitive = new EoDbSpline(*this);
+  return (primitive);
 }
 
 void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
-	EoInt16 nPenColor = LogicalPenColor();
-	EoInt16 LineType = LogicalLineType();
+  EoInt16 nPenColor = LogicalPenColor();
+  EoInt16 LineType = LogicalLineType();
 
-	pstate.SetPen(view, deviceContext, nPenColor, LineType);
+  pstate.SetPen(view, deviceContext, nPenColor, LineType);
 
-	polyline::BeginLineStrip();
-	GenPts(3, m_pts);
-	polyline::__End(view, deviceContext, LineType);
+  polyline::BeginLineStrip();
+  GenPts(3, m_pts);
+  polyline::__End(view, deviceContext, LineType);
 }
 void EoDbSpline::AddReportToMessageList(EoGePoint3d) {
-	CString str;
-	str.Format(L"<BSpline> Color: %s Line Type: %s", FormatPenColor(), FormatLineType());
-	app.AddStringToMessageList(str);
+  CString str;
+  str.Format(L"<BSpline> Color: %s Line Type: %s", FormatPenColor(), FormatLineType());
+  app.AddStringToMessageList(str);
 }
 void EoDbSpline::FormatGeometry(CString& str) {
-	for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) {
-		str += L"Control Point;" + m_pts[w].ToString();
-	}
+  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) { str += L"Control Point;" + m_pts[w].ToString(); }
 }
 
 void EoDbSpline::FormatExtra(CString& str) {
-	str.Format(L"Color;%s\tStyle;%s\tControl Points;%d", FormatPenColor(), FormatLineType(), m_pts.GetSize());
+  str.Format(L"Color;%s\tStyle;%s\tControl Points;%d", FormatPenColor(), FormatLineType(), m_pts.GetSize());
 }
 
 EoGePoint3d EoDbSpline::GetCtrlPt() {
-	EoGePoint3d pt;
-	pt = m_pts[m_pts.GetSize() / 2];
-	return (pt);
+  EoGePoint3d pt;
+  pt = m_pts[m_pts.GetSize() / 2];
+  return (pt);
 }
 
 void EoDbSpline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
-	EoGePoint3d pt;
+  EoGePoint3d pt;
 
-	for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) {
-		pt = m_pts[w];
-		view->ModelTransformPoint(pt);
-		pt = tm * pt;
-		ptMin = EoGePoint3d::Min(ptMin, pt);
-		ptMax = EoGePoint3d::Max(ptMax, pt);
-	}
+  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) {
+    pt = m_pts[w];
+    view->ModelTransformPoint(pt);
+    pt = tm * pt;
+    ptMin = EoGePoint3d::Min(ptMin, pt);
+    ptMax = EoGePoint3d::Max(ptMax, pt);
+  }
 }
 EoGePoint3d EoDbSpline::GoToNxtCtrlPt() {
-	EoGePoint3d pt;
+  EoGePoint3d pt;
 
-	int i = m_pts.GetSize() - 1;
+  int i = m_pts.GetSize() - 1;
 
-	if (sm_RelationshipOfPoint <= DBL_EPSILON)
-		pt = m_pts[i];
-	else if (sm_RelationshipOfPoint >= 1. - DBL_EPSILON)
-		pt = m_pts[0];
-	else if (m_pts[i].x > m_pts[0].x)
-		pt = m_pts[0];
-	else if (m_pts[i].x < m_pts[0].x)
-		pt = m_pts[i];
-	else if (m_pts[i].y > m_pts[0].y)
-		pt = m_pts[0];
-	else
-		pt = m_pts[i];
-	return (pt);
+  if (sm_RelationshipOfPoint <= DBL_EPSILON)
+    pt = m_pts[i];
+  else if (sm_RelationshipOfPoint >= 1. - DBL_EPSILON)
+    pt = m_pts[0];
+  else if (m_pts[i].x > m_pts[0].x)
+    pt = m_pts[0];
+  else if (m_pts[i].x < m_pts[0].x)
+    pt = m_pts[i];
+  else if (m_pts[i].y > m_pts[0].y)
+    pt = m_pts[0];
+  else
+    pt = m_pts[i];
+  return (pt);
 }
 bool EoDbSpline::IsInView(AeSysView* view) {
-	EoGePoint4d pt[2];
+  EoGePoint4d pt[2];
 
-	pt[0] = m_pts[0];
+  pt[0] = m_pts[0];
 
-	view->ModelViewTransformPoint(pt[0]);
+  view->ModelViewTransformPoint(pt[0]);
 
-	for (EoUInt16 w = 1; w < m_pts.GetSize(); w++) {
-		pt[1] = m_pts[w];
+  for (EoUInt16 w = 1; w < m_pts.GetSize(); w++) {
+    pt[1] = m_pts[w];
 
-		view->ModelViewTransformPoint(pt[1]);
+    view->ModelViewTransformPoint(pt[1]);
 
-		if (EoGePoint4d::ClipLine(pt[0], pt[1]))
-			return true;
+    if (EoGePoint4d::ClipLine(pt[0], pt[1])) return true;
 
-		pt[0] = pt[1];
-	}
-	return false;
+    pt[0] = pt[1];
+  }
+  return false;
 }
 EoGePoint3d EoDbSpline::SelectAtControlPoint(AeSysView*, const EoGePoint4d& point) {
-	sm_ControlPointIndex = USHRT_MAX;
-	return (point);
+  sm_ControlPointIndex = USHRT_MAX;
+  return (point);
 }
 bool EoDbSpline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
-	polyline::BeginLineStrip();
+  polyline::BeginLineStrip();
 
-	GenPts(3, m_pts);
+  GenPts(3, m_pts);
 
-	return (polyline::SelectUsingPoint(view, point, sm_RelationshipOfPoint, ptProj));
+  return (polyline::SelectUsingPoint(view, point, sm_RelationshipOfPoint, ptProj));
 }
 bool EoDbSpline::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
-	return polyline::SelectUsingRectangle(view, pt1, pt2, m_pts);
+  return polyline::SelectUsingRectangle(view, pt1, pt2, m_pts);
 }
 void EoDbSpline::Transform(EoGeTransformMatrix& tm) {
-	for (EoUInt16 w = 0; w < m_pts.GetSize(); w++)
-		m_pts[w] = tm * m_pts[w];
+  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w] = tm * m_pts[w];
 }
 
 void EoDbSpline::Translate(EoGeVector3d v) {
-	for (EoUInt16 w = 0; w < m_pts.GetSize(); w++)
-		m_pts[w] += v;
+  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w] += v;
 }
 
 void EoDbSpline::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
-	for (EoUInt16 w = 0; w < m_pts.GetSize(); w++)
-		if (((mask >> w) & 1UL) == 1)
-			m_pts[w] += v;
+  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++)
+    if (((mask >> w) & 1UL) == 1) m_pts[w] += v;
 }
 
 bool EoDbSpline::Write(CFile& file) {
-	EoDb::Write(file, EoUInt16(EoDb::kSplinePrimitive));
-	EoDb::Write(file, m_PenColor);
-	EoDb::Write(file, m_LineType);
-	EoDb::Write(file, EoUInt16(m_pts.GetSize()));
+  EoDb::Write(file, EoUInt16(EoDb::kSplinePrimitive));
+  EoDb::Write(file, m_PenColor);
+  EoDb::Write(file, m_LineType);
+  EoDb::Write(file, EoUInt16(m_pts.GetSize()));
 
-	for (EoUInt16 w = 0; w < m_pts.GetSize(); w++)
-		m_pts[w].Write(file);
+  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w].Write(file);
 
-	return true;
+  return true;
 }
 
 int EoDbSpline::GenPts(const int iOrder, EoGePoint3dArray& pts) {
-	double* dKnot = new double[65 * 66];
-	if (dKnot == 0) {
-		app.WarningMessageBox(IDS_MSG_MEM_ALLOC_ERR);
-		return 0;
-	}
-	int iPts = 8 * pts.GetSize();
-	double* dWght = &dKnot[65];
+  double* dKnot = new double[65 * 66];
+  if (dKnot == 0) {
+    app.WarningMessageBox(IDS_MSG_MEM_ALLOC_ERR);
+    return 0;
+  }
+  int iPts = 8 * pts.GetSize();
+  double* dWght = &dKnot[65];
 
-	int i, i2, i4;
+  int i, i2, i4;
 
-	int iTMax = (pts.GetSize() - 1) - iOrder + 2;
-	int iKnotVecMax = (pts.GetSize() - 1) + iOrder;							// Maximum number of dKnot vectors
+  int iTMax = (pts.GetSize() - 1) - iOrder + 2;
+  int iKnotVecMax = (pts.GetSize() - 1) + iOrder;  // Maximum number of dKnot vectors
 
-	for (i = 0; i < 65 * 65; i++)									// Set weighting value array with zeros
-		dWght[i] = 0.;
+  for (i = 0; i < 65 * 65; i++)  // Set weighting value array with zeros
+    dWght[i] = 0.;
 
-	for (i = 0; i <= iKnotVecMax; i++) { // Determine dKnot vectors
-		if (i <= iOrder - 1)									// Beginning of curve
-			dKnot[i] = 0.;
-		else if (i >= iTMax + iOrder)							// End of curve
-			dKnot[i] = dKnot[i - 1];
-		else {
-			i2 = i - iOrder;
-			if (pts[i2] == pts[i2 + 1])					// Repeating vertices
-				dKnot[i] = dKnot[i - 1];
-			else												// Successive internal vectors
-				dKnot[i] = dKnot[i - 1] + 1.;
-		}
-	}
-	if (dKnot[iKnotVecMax] != 0.0) {
-		double G = 0.;
-		double H = 0.;
-		double Z = 0.;
-		double T, W1, W2;
-		double dStep = dKnot[iKnotVecMax] / (double) (iPts - 1);
-		int iPts2 = 0;
-		for (i4 = iOrder - 1; i4 <= iOrder + iTMax; i4++) {
-			for (i = 0; i <= iKnotVecMax - 1; i++) { // Calculate values for weighting value
-				if (i != i4 || dKnot[i] == dKnot[i + 1])
-					dWght[65 * i + 1] = 0.;
-				else
-					dWght[65 * i + 1] = 1.;
-			}
-			for (T = dKnot[i4]; T <= dKnot[i4 + 1] - dStep; T += dStep) {
-				iPts2++;
-				for (i2 = 2; i2 <= iOrder; i2++) {
-					for (i = 0; i <= pts.GetSize() - 1; i++) { // Determine first term of weighting function equation
-						if (dWght[65 * i + i2 - 1] == 0.0)
-							W1 = 0.;
-						else
-							W1 = ((T - dKnot[i]) * dWght[65 * i + i2 - 1]) / (dKnot[i + i2 - 1] - dKnot[i]);
+  for (i = 0; i <= iKnotVecMax; i++) {  // Determine dKnot vectors
+    if (i <= iOrder - 1)                // Beginning of curve
+      dKnot[i] = 0.;
+    else if (i >= iTMax + iOrder)  // End of curve
+      dKnot[i] = dKnot[i - 1];
+    else {
+      i2 = i - iOrder;
+      if (pts[i2] == pts[i2 + 1])  // Repeating vertices
+        dKnot[i] = dKnot[i - 1];
+      else  // Successive internal vectors
+        dKnot[i] = dKnot[i - 1] + 1.;
+    }
+  }
+  if (dKnot[iKnotVecMax] != 0.0) {
+    double G = 0.;
+    double H = 0.;
+    double Z = 0.;
+    double T, W1, W2;
+    double dStep = dKnot[iKnotVecMax] / (double)(iPts - 1);
+    int iPts2 = 0;
+    for (i4 = iOrder - 1; i4 <= iOrder + iTMax; i4++) {
+      for (i = 0; i <= iKnotVecMax - 1; i++) {  // Calculate values for weighting value
+        if (i != i4 || dKnot[i] == dKnot[i + 1])
+          dWght[65 * i + 1] = 0.;
+        else
+          dWght[65 * i + 1] = 1.;
+      }
+      for (T = dKnot[i4]; T <= dKnot[i4 + 1] - dStep; T += dStep) {
+        iPts2++;
+        for (i2 = 2; i2 <= iOrder; i2++) {
+          for (i = 0; i <= pts.GetSize() - 1; i++) {  // Determine first term of weighting function equation
+            if (dWght[65 * i + i2 - 1] == 0.0)
+              W1 = 0.;
+            else
+              W1 = ((T - dKnot[i]) * dWght[65 * i + i2 - 1]) / (dKnot[i + i2 - 1] - dKnot[i]);
 
-						if (dWght[65 * (i + 1) + i2 - 1] == 0.0) 	// Determine second term of weighting function equation
-							W2 = 0.;
-						else
-							W2 = ((dKnot[i + i2] - T) * dWght[65 * (i + 1) + i2 - 1]) / (dKnot[i + i2] - dKnot[i + 1]);
+            if (dWght[65 * (i + 1) + i2 - 1] == 0.0)  // Determine second term of weighting function equation
+              W2 = 0.;
+            else
+              W2 = ((dKnot[i + i2] - T) * dWght[65 * (i + 1) + i2 - 1]) / (dKnot[i + i2] - dKnot[i + 1]);
 
-						dWght[65 * i + i2] = W1 + W2;
-						G = pts[i].x * dWght[65 * i + i2] + G;
-						H = pts[i].y * dWght[65 * i + i2] + H;
-						Z = pts[i].z * dWght[65 * i + i2] + Z;
-					}
-					if (i2 == iOrder)
-						break;
-					G = 0.; H = 0.; Z = 0.;
-				}
-				polyline::SetVertex(EoGePoint3d(G, H, Z));
-				G = 0.; H = 0.; Z = 0.;
-			}
-		}
-		iPts = iPts2 + 1;
-	}
-	else { // either iOrder greater than number of control points or all control points coincidental
-		iPts = 2;
-		polyline::SetVertex(pts[0]);
-	}
-	polyline::SetVertex(pts[pts.GetUpperBound()]);
+            dWght[65 * i + i2] = W1 + W2;
+            G = pts[i].x * dWght[65 * i + i2] + G;
+            H = pts[i].y * dWght[65 * i + i2] + H;
+            Z = pts[i].z * dWght[65 * i + i2] + Z;
+          }
+          if (i2 == iOrder) break;
+          G = 0.;
+          H = 0.;
+          Z = 0.;
+        }
+        polyline::SetVertex(EoGePoint3d(G, H, Z));
+        G = 0.;
+        H = 0.;
+        Z = 0.;
+      }
+    }
+    iPts = iPts2 + 1;
+  } else {  // either iOrder greater than number of control points or all control points coincidental
+    iPts = 2;
+    polyline::SetVertex(pts[0]);
+  }
+  polyline::SetVertex(pts[pts.GetUpperBound()]);
 
-	delete [] dKnot;
+  delete[] dKnot;
 
-	return (iPts);
+  return (iPts);
 }

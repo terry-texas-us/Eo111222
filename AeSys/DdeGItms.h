@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if defined(USING_DDE)
 #include "dde.h"

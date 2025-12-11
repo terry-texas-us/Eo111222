@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 /// <remarks>
 /// There a two versions of this file type. The origins, and number of these files produced has forced the
@@ -205,46 +205,44 @@
 /// </remarks>
 
 class EoDbJobFile {
-private:
-	int m_Version;
-	EoByte*	m_PrimBuf;
+ private:
+  int m_Version;
+  EoByte* m_PrimBuf;
 
-public:
-	EoDbJobFile() {
-		m_Version = 3;
-		m_PrimBuf = new EoByte[EoDbPrimitive::BUFFER_SIZE];
-	}
-	virtual ~EoDbJobFile() {
-		delete [] m_PrimBuf;
-	}
-	/// <summary>Reads document data from a memory file and adds all groups to the trap with a translation. This is a data stream retrieved from the clipboard.</summary>
-	void ReadMemFile(CFile& file, EoGeVector3d translateVector);
-	void ReadHeader(CFile& file);
-	void ReadLayer(CFile& file, EoDbLayer* layer);
+ public:
+  EoDbJobFile() {
+    m_Version = 3;
+    m_PrimBuf = new EoByte[EoDbPrimitive::BUFFER_SIZE];
+  }
+  virtual ~EoDbJobFile() { delete[] m_PrimBuf; }
+  /// <summary>Reads document data from a memory file and adds all groups to the trap with a translation. This is a data stream retrieved from the clipboard.</summary>
+  void ReadMemFile(CFile& file, EoGeVector3d translateVector);
+  void ReadHeader(CFile& file);
+  void ReadLayer(CFile& file, EoDbLayer* layer);
 
-	bool GetNextVisibleGroup(CFile& file, EoDbGroup*& group);
-	bool GetNextPrimitive(CFile& file, EoDbPrimitive*& primitve);
-	bool ReadNextPrimitive(CFile &file, EoByte *buffer, EoInt16& primitiveType);
+  bool GetNextVisibleGroup(CFile& file, EoDbGroup*& group);
+  bool GetNextPrimitive(CFile& file, EoDbPrimitive*& primitve);
+  bool ReadNextPrimitive(CFile& file, EoByte* buffer, EoInt16& primitiveType);
 
-	int Version();
-	static bool IsValidPrimitive(EoInt16 primitiveType);
-	static bool IsValidVersion1Primitive(EoInt16 primitiveType);
+  int Version();
+  static bool IsValidPrimitive(EoInt16 primitiveType);
+  static bool IsValidVersion1Primitive(EoInt16 primitiveType);
 
-	void WriteHeader(CFile& file);
-	void WriteLayer(CFile& file, EoDbLayer* layer);
-	void WriteGroup(CFile& file, EoDbGroup* group);
-	void ConstructPrimitive(EoDbPrimitive *&primitive, EoInt16 PrimitiveType);
-	void ConstructPrimitiveFromVersion1(EoDbPrimitive *&primitive);
+  void WriteHeader(CFile& file);
+  void WriteLayer(CFile& file, EoDbLayer* layer);
+  void WriteGroup(CFile& file, EoDbGroup* group);
+  void ConstructPrimitive(EoDbPrimitive*& primitive, EoInt16 PrimitiveType);
+  void ConstructPrimitiveFromVersion1(EoDbPrimitive*& primitive);
 
-	EoDbPrimitive* ConvertEllipsePrimitive();
-	EoDbPrimitive* ConvertLinePrimitive();
-	EoDbPrimitive* ConvertPointPrimitive();
+  EoDbPrimitive* ConvertEllipsePrimitive();
+  EoDbPrimitive* ConvertLinePrimitive();
+  EoDbPrimitive* ConvertPointPrimitive();
 
-	EoDbPrimitive* ConvertVersion1EllipsePrimitive();
-	EoDbPrimitive* ConvertVersion1LinePrimitive();
-	EoDbPrimitive* ConvertVersion1PointPrimitive();
+  EoDbPrimitive* ConvertVersion1EllipsePrimitive();
+  EoDbPrimitive* ConvertVersion1LinePrimitive();
+  EoDbPrimitive* ConvertVersion1PointPrimitive();
 
-	/// <summary> Converts a deprecated version 1 CSpline to a BSpline</summary>
-	void ConvertCSplineToBSpline();
-	void ConvertTagToPoint();
+  /// <summary> Converts a deprecated version 1 CSpline to a BSpline</summary>
+  void ConvertCSplineToBSpline();
+  void ConvertTagToPoint();
 };

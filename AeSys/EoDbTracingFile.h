@@ -1,19 +1,17 @@
-#pragma once
+﻿#pragma once
 
 class EoDbLayer;
 
 class EoDbTracingFile : public CFile {
-public:
-	EoDbTracingFile() {
-	}
-	virtual ~EoDbTracingFile() {
-	}
-	void ReadHeader(CFile& file);
-	bool ReadLayer(CFile& file, EoDbLayer* layer);
-	EoDbGroup* ReadGroup(CFile &file);
+ public:
+  EoDbTracingFile() {}
+  virtual ~EoDbTracingFile() {}
+  void ReadHeader(CFile& file);
+  bool ReadLayer(CFile& file, EoDbLayer* layer);
+  EoDbGroup* ReadGroup(CFile& file);
 
-	void WriteHeader(CFile& file);
-	void WriteLayer(CFile& file, EoDbLayer* layer);
+  void WriteHeader(CFile& file);
+  void WriteLayer(CFile& file, EoDbLayer* layer);
 };
 // EoDb::kHeaderSection sentinel				EoUInt16 0x0101
 //		{0 or more key-value pairs}
@@ -22,4 +20,3 @@ public:
 //		Number of group definitions				EoUInt16
 //		{0 or more group definitions}
 // EoDb::kEndOfSection sentinel					EoUInt16 0x01ff
-

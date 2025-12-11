@@ -1,28 +1,22 @@
-#pragma once
+﻿#pragma once
 
 class EoApOptions {
-private:
+ private:
+ public:  // Constructors and destructor
+  EoApOptions();
+  ~EoApOptions();
 
-public: // Constructors and destructor
-	EoApOptions();
-	~EoApOptions();
+  enum TabsStyle { None, Standard, Grouped };
+  TabsStyle m_nTabsStyle;
 
-	enum TabsStyle {
-		None,
-		Standard,
-		Grouped
-	};
-	TabsStyle m_nTabsStyle;
+  CMDITabInfo m_MdiTabInfo;
 
-	CMDITabInfo m_MdiTabInfo;
+  BOOL m_bTabsContextMenu;
+  BOOL m_bDisableSetRedraw;
 
-	BOOL m_bTabsContextMenu;
-	BOOL m_bDisableSetRedraw;
-
-public: // Operators
-
-public: // Methods - absolute virtuals
-public: // Methods
-	void Load();
-	void Save();
+ public:  // Operators
+ public:  // Methods - absolute virtuals
+ public:  // Methods
+  void Load();
+  void Save();
 };

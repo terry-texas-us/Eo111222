@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if defined(USING_DDE)
 // String names for some standard DDE strings not defined in DDEML.H

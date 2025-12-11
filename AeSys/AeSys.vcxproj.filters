@@ -45,6 +45,9 @@
     <Filter Include="Header Files\DDE">
       <UniqueIdentifier>{d920cbc4-d86a-47e0-b3f1-825b7af3c2a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="NewFilter1">
+      <UniqueIdentifier>{13ac146d-b23d-4c63-8efc-4e5f50bae295}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Stdafx.cpp">
@@ -1669,6 +1672,7 @@
     <None Include="res\properties_wnd_hc.ico">
       <Filter>Resource Files\Icons</Filter>
     </None>
+    <None Include=".clang-format" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">
