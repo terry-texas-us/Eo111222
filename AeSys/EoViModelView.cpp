@@ -19,26 +19,26 @@ void AeSysView::SetCameraTarget(const EoGePoint3d& target) {
   m_ViewTransform.SetTarget(target);
   m_ViewTransform.BuildTransformMatrix();
 }
-void AeSysView::SetCenteredWindow(const float uExtent, const float vExtent) {
+void AeSysView::SetCenteredWindow(const double uExtent, const double vExtent) {
   m_ViewTransform.SetCenteredWindow(m_Viewport, uExtent, vExtent);
 }
 void AeSysView::SetViewTransform(EoGsViewTransform& viewTransform) {
   m_ViewTransform = viewTransform;
   m_ViewTransform.BuildTransformMatrix();
 }
-void AeSysView::SetViewWindow(const float uMin, const float vMin, const float uMax, const float vMax) {
+void AeSysView::SetViewWindow(const double uMin, const double vMin, const double uMax, const double vMax) {
   m_ViewTransform.SetWindow(uMin, vMin, uMax, vMax);
 }
 void AeSysView::ModelViewGetViewport(EoGsViewport& viewport) { viewport = m_Viewport; }
 EoGeTransformMatrix& AeSysView::ModelViewGetMatrix() { return m_ViewTransform.GetMatrix(); }
 EoGeTransformMatrix& AeSysView::ModelViewGetMatrixInverse() { return m_ViewTransform.GetMatrixInverse(); }
-float AeSysView::UExtent() const { return m_ViewTransform.UExtent(); }
-float AeSysView::UMax() const { return m_ViewTransform.UMax(); }
-float AeSysView::UMin() const { return m_ViewTransform.UMin(); }
+double AeSysView::UExtent() const { return m_ViewTransform.UExtent(); }
+double AeSysView::UMax() const { return m_ViewTransform.UMax(); }
+double AeSysView::UMin() const { return m_ViewTransform.UMin(); }
 EoGeVector3d AeSysView::ViewUp() const { return m_ViewTransform.ViewUp(); }
-float AeSysView::VExtent() const { return m_ViewTransform.VExtent(); }
-float AeSysView::VMax() const { return m_ViewTransform.VMax(); }
-float AeSysView::VMin() const { return m_ViewTransform.VMin(); }
+double AeSysView::VExtent() const { return m_ViewTransform.VExtent(); }
+double AeSysView::VMax() const { return m_ViewTransform.VMax(); }
+double AeSysView::VMin() const { return m_ViewTransform.VMin(); }
 void AeSysView::ModelViewInitialize() { m_ViewTransform.Initialize(m_Viewport); }
 void AeSysView::ModelTransformPoint(EoGePoint3d& point) { m_ModelTransform.TransformPoint(point); }
 void AeSysView::ModelTransformPoint(EoGePoint4d& point) { m_ModelTransform.TransformPoint(point); }

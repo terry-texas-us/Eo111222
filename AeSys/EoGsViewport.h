@@ -1,12 +1,12 @@
 ﻿#pragma once
 
 class EoGsViewport {
-  float m_DeviceHeightInPixels;
-  float m_DeviceWidthInPixels;
-  float m_DeviceHeightInInches;
-  float m_DeviceWidthInInches;
-  float m_Height;
-  float m_Width;
+  double m_DeviceHeightInPixels;
+  double m_DeviceWidthInPixels;
+  double m_DeviceHeightInInches;
+  double m_DeviceWidthInInches;
+  double m_Height;
+  double m_Width;
 
  public:  // Constructors and destructors
   EoGsViewport() {}
@@ -27,14 +27,16 @@ class EoGsViewport {
   void DoProjection(CPoint* pnt, EoGePoint4dArray& pointsArray);
   void DoProjectionInverse(EoGePoint3d& pt);
 
-  float Height() const;
-  float HeightInInches() const;
-  float Width() const;
-  float WidthInInches() const;
-  void SetDeviceHeightInInches(const float height);
-  void SetDeviceWidthInInches(const float width);
+  double Height() const;
+  double HeightInInches() const;
+  double Width() const;
+  /// @brief Calculates the width of the viewport in inches.
+  /// @return The width of the viewport in inches.
+  double WidthInInches() const;
+  void SetDeviceHeightInInches(const double height);
+  void SetDeviceWidthInInches(const double width);
   void SetSize(int width, int height);
-  void SetDeviceHeightInPixels(const float height);
-  void SetDeviceWidthInPixels(const float width);
+  void SetDeviceHeightInPixels(const double height);
+  void SetDeviceWidthInPixels(const double width);
 };
 typedef CList<EoGsViewport> CViewports;

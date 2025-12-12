@@ -76,18 +76,19 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
 
 	EoGePoint3d Target = ActiveView->CameraTarget();
 
-	float UMin = static_cast<float>(Target.x) + ActiveView->UMin();
-	float UMax = static_cast<float>(Target.x) + ActiveView->UMax();
-	float VMin = static_cast<float>(Target.y) + ActiveView->VMin();
-	float VMax = static_cast<float>(Target.y) + ActiveView->VMax();
-	float UMinOverview = static_cast<float>(Target.x) + ActiveView->OverviewUMin();
-	float VMinOverview = static_cast<float>(Target.y) + ActiveView->OverviewVMin();
+	double UMin = Target.x + ActiveView->UMin();
+	double UMax = Target.x + ActiveView->UMax();
+	double VMin = Target.y + ActiveView->VMin();
+	double VMax = Target.y + ActiveView->VMax();
+	
+	double UMinOverview = Target.x + ActiveView->OverviewUMin();
+	double VMinOverview = Target.y + ActiveView->OverviewVMin();
 
 	CRect rc;
 	rc.left = EoRound((UMin - UMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
 	rc.right = EoRound((UMax - UMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
-	rc.top = EoRound((1.0f - (VMax - VMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
-	rc.bottom = EoRound((1.0f - (VMin - VMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
+	rc.top = EoRound((1.0 - (VMax - VMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
+	rc.bottom = EoRound((1.0 - (VMin - VMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
 
 	int DrawMode = dc.SetROP2(R2_XORPEN);
 
@@ -160,12 +161,12 @@ void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
 
 	EoGePoint3d Target = ActiveView->CameraTarget();
 
-	float UExtent = ActiveView->WidthInInches() / static_cast<float>(Ratio);
-	float UMin = static_cast<float>(Target.x) - (UExtent * 0.5f);
-	float UMax = UMin + UExtent;
-	float VExtent = ActiveView->HeightInInches() / static_cast<float>(Ratio);
-	float VMin = static_cast<float>(Target.y) - (VExtent * 0.5f);
-	float VMax = VMin + VExtent;
+	double UExtent = ActiveView->WidthInInches() / Ratio;
+	double UMin = Target.x - (UExtent * 0.5);
+	double UMax = UMin + UExtent;
+	double VExtent = ActiveView->HeightInInches() / Ratio;
+	double VMin = Target.y - (VExtent * 0.5);
+	double VMax = VMin + VExtent;
 
 	HDC hDCKeyplan = ::GetDC(hwnd);
 	int DrawMode = ::SetROP2(hDCKeyplan, R2_XORPEN);
@@ -181,13 +182,13 @@ void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
 	dcMem.SelectObject(CBitmap::FromHandle(EoDlgActiveViewKeyplan::m_hbmKeyplan));
 	BITMAP bitmap; ::GetObject(EoDlgActiveViewKeyplan::m_hbmKeyplan, sizeof(BITMAP), (LPSTR) &bitmap);
 
-	float dUMinOverview = static_cast<float>(Target.x) + ActiveView->OverviewUMin();
-	float dVMinOverview = static_cast<float>(Target.y) + ActiveView->OverviewVMin();
+	double dUMinOverview = Target.x + ActiveView->OverviewUMin();
+	double dVMinOverview = Target.y + ActiveView->OverviewVMin();
 
 	EoDlgActiveViewKeyplan::m_rcWnd.left = EoRound((UMin - dUMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
-	EoDlgActiveViewKeyplan::m_rcWnd.top = EoRound((1.0f - (VMax - dVMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
+	EoDlgActiveViewKeyplan::m_rcWnd.top = EoRound((1.0 - (VMax - dVMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
 	EoDlgActiveViewKeyplan::m_rcWnd.right = EoRound((UMax - dUMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
-	EoDlgActiveViewKeyplan::m_rcWnd.bottom = EoRound((1.0f - (VMin - dVMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
+	EoDlgActiveViewKeyplan::m_rcWnd.bottom = EoRound((1.0 - (VMin - dVMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
 
 	::Rectangle(hDCKeyplan, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top, EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 	::SelectObject(hDCKeyplan, hPen);

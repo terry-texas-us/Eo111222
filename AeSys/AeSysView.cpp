@@ -35,8 +35,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-const float AeSysView::m_MaximumWindowRatio = 999.0f;
-const float AeSysView::m_MinimumWindowRatio = 0.001f;
+const double AeSysView::m_MaximumWindowRatio = 999.0;
+const double AeSysView::m_MinimumWindowRatio = 0.001;
 
 IMPLEMENT_DYNCREATE(AeSysView, CView)
 
@@ -370,7 +370,7 @@ AeSysView::AeSysView() {
 
   m_PowerArrow = false;
   m_PowerConductor = false;
-  m_PowerConductorSpacing = .04;
+  m_PowerConductorSpacing = 0.04;
 
   m_Viewport.SetDeviceWidthInPixels(app.DeviceWidthInPixels());
   m_Viewport.SetDeviceHeightInPixels(app.DeviceHeightInPixels());
@@ -595,8 +595,8 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
 
   SetViewportSize(HorizontalPixelWidth, VerticalPixelWidth);
 
-  float HorizontalSize = static_cast<float>(deviceContext->GetDeviceCaps(HORZSIZE));
-  float VerticalSize = static_cast<float>(deviceContext->GetDeviceCaps(VERTSIZE));
+  double HorizontalSize = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE));
+  double VerticalSize = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE));
 
   SetDeviceWidthInInches(HorizontalSize / EoMmPerInch);
   SetDeviceHeightInInches(VerticalSize / EoMmPerInch);
@@ -606,7 +606,7 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
     UINT VerticalPages;
     pInfo->SetMaxPage(NumPages(deviceContext, m_PlotScaleFactor, HorizontalPages, VerticalPages));
   } else {
-    m_ViewTransform.AdjustWindow(static_cast<float>(VerticalPixelWidth) / static_cast<float>(HorizontalPixelWidth));
+    m_ViewTransform.AdjustWindow(static_cast<double>(VerticalPixelWidth) / static_cast<double>(HorizontalPixelWidth));
   }
 }
 void AeSysView::OnEndPrinting(CDC* /* deviceContext */, CPrintInfo* /* printInformation */) {
@@ -636,13 +636,13 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
 
   if (deviceContext->IsPrinting()) {
     if (m_Plot) {
-      float HorizontalSizeInInches =
-          static_cast<float>(deviceContext->GetDeviceCaps(HORZSIZE) / EoMmPerInch) / m_PlotScaleFactor;
-      float VerticalSizeInInches =
-          static_cast<float>(deviceContext->GetDeviceCaps(VERTSIZE) / EoMmPerInch) / m_PlotScaleFactor;
+      double HorizontalSizeInInches =
+          static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / EoMmPerInch / m_PlotScaleFactor;
+      double VerticalSizeInInches =
+          static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / EoMmPerInch / m_PlotScaleFactor;
 
       m_ViewTransform.Initialize(m_Viewport);
-      m_ViewTransform.SetWindow(0.0f, 0.0f, HorizontalSizeInInches, VerticalSizeInInches);
+      m_ViewTransform.SetWindow(0.0, 0.0, HorizontalSizeInInches, VerticalSizeInInches);
 
       UINT nHorzPages;
       UINT nVertPages;
@@ -855,23 +855,23 @@ void AeSysView::PopViewTransform() {
   m_ViewTransform.BuildTransformMatrix();
 }
 void AeSysView::PushViewTransform() { m_ViewTransforms.AddTail(m_ViewTransform); }
-void AeSysView::ModelViewAdjustWindow(float& uMin, float& vMin, float& uMax, float& vMax, float ratio) {
-  float AspectRatio = m_Viewport.Height() / m_Viewport.Width();
+void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, double& vMax, double ratio) {
+  double AspectRatio = static_cast<double>(m_Viewport.Height() / m_Viewport.Width());
 
-  float UExtent = static_cast<float>(fabs(uMax - uMin));
-  float VExtent = static_cast<float>(fabs(vMax - vMin));
+  double UExtent = fabs(static_cast<double>(uMax - uMin));
+  double VExtent = fabs(static_cast<double>(vMax - vMin));
 
-  float XAdjustment = 0.0f;
-  float YAdjustment = 0.0f;
+  double XAdjustment = 0.0;
+  double YAdjustment = 0.0;
 
-  float Scale = 1.0f - (m_Viewport.WidthInInches() / UExtent) / ratio;
+  double Scale = 1.0 - (m_Viewport.WidthInInches() / UExtent) / ratio;
 
   if (fabs(Scale) > FLT_EPSILON) {
     XAdjustment = Scale * UExtent;
     YAdjustment = Scale * VExtent;
   }
   if (UExtent <= FLT_EPSILON || VExtent / UExtent > AspectRatio) {
-    XAdjustment += (VExtent / AspectRatio - UExtent) * 0.5f;
+    XAdjustment += (VExtent / AspectRatio - UExtent) * 0.5;
   } else {
     YAdjustment += (UExtent * AspectRatio - VExtent) * 0.5f;
   }
@@ -900,19 +900,15 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
 
     EoGePoint3d Target = m_ViewTransform.Target();
     EoGePoint3d ptTargetOver = m_OverviewViewTransform.Target();
-    float dU = static_cast<float>(Target.x - ptTargetOver.x);
-    float dV = static_cast<float>(Target.y - ptTargetOver.y);
+    double dU = Target.x - ptTargetOver.x;
+    double dV = Target.y - ptTargetOver.y;
 
     // Determine the region of the bitmap to tranfer to display
     CRect rcWnd;
-    rcWnd.left =
-        EoRound((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<float>(bm.bmWidth));
-    rcWnd.top = EoRound((1.0f - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) *
-                        static_cast<float>(bm.bmHeight));
-    rcWnd.right =
-        EoRound((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<float>(bm.bmWidth));
-    rcWnd.bottom = EoRound((1.0f - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) *
-                           static_cast<float>(bm.bmHeight));
+    rcWnd.left = EoRound((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
+    rcWnd.top = EoRound((1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
+    rcWnd.right = EoRound((m_ViewTransform.UMax() - OverviewUMin() + dU) /  OverviewUExt() * static_cast<double>(bm.bmWidth));
+    rcWnd.bottom = EoRound((1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
 
     int iWidSrc = rcWnd.Width();
     int iHgtSrc = rcWnd.Height();
@@ -956,8 +952,8 @@ UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizonta
 
   GetDocument()->GetExtents(this, ptMin, ptMax, tm);
 
-  float HorizontalSizeInInches = static_cast<float>(deviceContext->GetDeviceCaps(HORZSIZE)) / EoMmPerInch;
-  float VerticalSizeInInches = static_cast<float>(deviceContext->GetDeviceCaps(VERTSIZE)) / EoMmPerInch;
+  double HorizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / EoMmPerInch;
+  double VerticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / EoMmPerInch;
 
   horizontalPages = static_cast<UINT>(EoRound(((ptMax.x - ptMin.x) * scaleFactor / HorizontalSizeInInches) + 0.5f));
   verticalPages = static_cast<UINT>(EoRound(((ptMax.y - ptMin.y) * scaleFactor / VerticalSizeInInches) + 0.5f));
@@ -1005,11 +1001,11 @@ void AeSysView::DoCameraRotate(int iDir) {
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(NULL, TRUE);
 }
-void AeSysView::DoWindowPan(float ratio) {
+void AeSysView::DoWindowPan(double ratio) {
   ratio = EoMin(EoMax(ratio, m_MinimumWindowRatio), m_MaximumWindowRatio);
 
-  float UExtent = m_Viewport.WidthInInches() / ratio;
-  float VExtent = m_Viewport.HeightInInches() / ratio;
+  double UExtent = m_Viewport.WidthInInches() / ratio;
+  double VExtent = m_Viewport.HeightInInches() / ratio;
 
   m_ViewTransform.SetCenteredWindow(m_Viewport, UExtent, VExtent);
 
@@ -1025,7 +1021,7 @@ void AeSysView::DoWindowPan(float ratio) {
   m_ViewTransform.BuildTransformMatrix();
 
   SetCursorPosition(CursorPosition);
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnSetupScale() {
   EoDlgSetScale dlg;
@@ -1110,7 +1106,7 @@ void AeSysView::On3dViewsIsometric() {
     ViewUp.Normalize();
 
     m_ViewTransform.SetViewUp(ViewUp);
-    m_ViewTransform.SetCenteredWindow(m_Viewport, 0.0f, 0.0f);
+    m_ViewTransform.SetCenteredWindow(m_Viewport, 0.0, 0.0);
   }
   InvalidateRect(NULL, TRUE);
 }
@@ -1173,7 +1169,7 @@ void AeSysView::OnUpdateViewWireframe(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewW
 
 void AeSysView::OnWindowNormal() {
   CopyActiveModelViewToPreviousModelView();
-  DoWindowPan(1.0f);
+  DoWindowPan(1.0);
 }
 void AeSysView::OnWindowBest() {
   EoGePoint3d ptMin;
@@ -1186,8 +1182,8 @@ void AeSysView::OnWindowBest() {
   if (ptMin.x < ptMax.x) {
     m_PreviousViewTransform = m_ViewTransform;
 
-    float UExtent = m_ViewTransform.UExtent() * static_cast<float>(ptMax.x - ptMin.x) / 2.0f;
-    float VExtent = m_ViewTransform.VExtent() * static_cast<float>(ptMax.y - ptMin.y) / 2.0f;
+    double UExtent = m_ViewTransform.UExtent() * (ptMax.x - ptMin.x) / 2.0;
+    double VExtent = m_ViewTransform.VExtent() * (ptMax.y - ptMin.y) / 2.0;
 
     m_ViewTransform.SetCenteredWindow(m_Viewport, UExtent, VExtent);
 
@@ -1214,39 +1210,43 @@ void AeSysView::OnWindowSheet() {
   ModelViewInitialize();
   InvalidateRect(NULL, TRUE);
 }
-void AeSysView::OnWindowZoomIn() { DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() / 0.9f); }
-void AeSysView::OnWindowZoomOut() { DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() * 0.9f); }
+void AeSysView::OnWindowZoomIn() {
+  DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() / 0.9);
+}
+void AeSysView::OnWindowZoomOut() {
+  DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() * 0.9);
+}
 void AeSysView::OnWindowPan() {
   CopyActiveModelViewToPreviousModelView();
   DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnWindowPanLeft() {
   EoGePoint3d Target = m_ViewTransform.Target();
 
-  Target.x -= 1.0f / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
+  Target.x -= 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
   m_ViewTransform.SetTarget(Target);
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnWindowPanRight() {
   EoGePoint3d Target = m_ViewTransform.Target();
 
-  Target.x += 1.0f / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
+  Target.x += 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
   m_ViewTransform.SetTarget(Target);
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnWindowPanUp() {
   EoGePoint3d Target = m_ViewTransform.Target();
 
-  Target.y += 1.0f / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
+  Target.y += 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
   m_ViewTransform.SetTarget(Target);
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
@@ -1257,13 +1257,13 @@ void AeSysView::OnWindowPanUp() {
 void AeSysView::OnWindowPanDown() {
   EoGePoint3d Target = m_ViewTransform.Target();
 
-  Target.y -= 1.0f / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
+  Target.y -= 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
   m_ViewTransform.SetTarget(Target);
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnWindowZoomSpecial() {
   EoDlgViewZoom dlg(this);
@@ -1273,7 +1273,7 @@ void AeSysView::OnWindowZoomSpecial() {
   if (dlg.DoModal() == IDOK) {
     CopyActiveModelViewToPreviousModelView();
     DoWindowPan(dlg.m_Ratio);
-    InvalidateRect(NULL, TRUE);
+    InvalidateRect(nullptr, TRUE);
   }
 }
 void AeSysView::OnSetupDimLength() {
@@ -2188,7 +2188,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     }
     if ((item & WndRatio) == WndRatio) {
       rc.SetRect(48 * tm.tmAveCharWidth, ClientRect.top, 58 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      float Ratio = WidthInInches() / UExtent();
+      double Ratio = WidthInInches() / UExtent();
       CString RatioAsString;
       RatioAsString.Format(L"=%-8.3f", Ratio);
       DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, RatioAsString,

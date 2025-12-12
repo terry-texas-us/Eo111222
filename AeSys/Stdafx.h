@@ -104,7 +104,7 @@ const double QUARTER_PI = PI / 4.;
 const double RADIAN = PI / 180.;
 const double TWOPI = PI + PI;
 
-const float EoMmPerInch = 25.4f;
+const double EoMmPerInch = 25.4;
 
 #include "SafeMath.h"
 
