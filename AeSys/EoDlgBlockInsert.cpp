@@ -24,9 +24,9 @@ EoDlgBlockInsert::EoDlgBlockInsert(AeSysDoc* document, CWnd* pParent /*=NULL*/) 
 }
 EoDlgBlockInsert::~EoDlgBlockInsert() {
 }
-void EoDlgBlockInsert::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_BLOCKS_LIST, m_BlocksListBoxControl);
+void EoDlgBlockInsert::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Control(dataExchange, IDC_BLOCKS_LIST, m_BlocksListBoxControl);
 }
 BOOL EoDlgBlockInsert::OnInitDialog() {
 	CDialog::OnInitDialog();
@@ -51,8 +51,8 @@ BOOL EoDlgBlockInsert::OnInitDialog() {
 	else {
 		BlockPosition = m_Document->GetFirstBlockPosition();
 		m_Document->GetNextBlock(BlockPosition, BlockName, Block);
-		SetDlgItemInt(IDC_GROUPS, (UINT) Block->GetCount(), FALSE);
-		SetDlgItemInt(IDC_REFERENCES, m_Document->GetBlockReferenceCount(BlockName), FALSE);
+		SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(Block->GetCount()), FALSE);
+		SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_Document->GetBlockReferenceCount(BlockName)), FALSE);
 		WndProcPreviewUpdate(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd(), Block);
 	}
 	return TRUE;
@@ -81,8 +81,8 @@ void EoDlgBlockInsert::OnLbnSelchangeBlocksList() {
 
 		EoDbBlock* Block;
 		m_Document->LookupBlock(BlockName, Block);
-		SetDlgItemInt(IDC_GROUPS, (UINT) Block->GetCount(), FALSE);
-		SetDlgItemInt(IDC_REFERENCES, m_Document->GetBlockReferenceCount(BlockName), FALSE);
+		SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(Block->GetCount()), FALSE);
+		SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_Document->GetBlockReferenceCount(BlockName)), FALSE);
 		WndProcPreviewUpdate(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd(), Block);
 	}
 }

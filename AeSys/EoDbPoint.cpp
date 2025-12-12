@@ -142,7 +142,7 @@ EoGePoint3d EoDbPoint::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& 
   EoGePoint4d pt(m_Point);
   view->ModelViewTransformPoint(pt);
 
-  sm_ControlPointIndex = (point.DistanceToPointXY(pt) < sm_SelectApertureSize) ? 0 : USHRT_MAX;
+  sm_ControlPointIndex = (point.DistanceToPointXY(pt) < sm_SelectApertureSize) ? 0U : USHRT_MAX;
   return (sm_ControlPointIndex == 0) ? m_Point : EoGePoint3d::kOrigin;
 }
 bool EoDbPoint::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {

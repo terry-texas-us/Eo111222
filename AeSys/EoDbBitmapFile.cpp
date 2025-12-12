@@ -21,7 +21,7 @@ bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& bmReference, CPalett
   int nColors;
 
   if (ds.dsBmih.biClrUsed != 0) {
-    nColors = ds.dsBmih.biClrUsed;
+    nColors = static_cast<int>(ds.dsBmih.biClrUsed);
   } else {
     nColors = 1 << ds.dsBmih.biBitCount;
   }
@@ -29,13 +29,13 @@ bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& bmReference, CPalett
   if (nColors > 256) {
     palReference.CreateHalftonePalette(&dc);
   } else {  // Create a custom palette from the DIB section's color table
-    RGBQUAD* pRGB = new RGBQUAD[nColors];
+    RGBQUAD* pRGB = new RGBQUAD[static_cast<size_t>(nColors)];
 
     CDC dcMem;
     dcMem.CreateCompatibleDC(&dc);
 
     CBitmap* pBitmap = dcMem.SelectObject(&bmReference);
-    ::GetDIBColorTable((HDC)dcMem, 0, nColors, pRGB);
+    ::GetDIBColorTable((HDC)dcMem, 0U, static_cast<UINT>(nColors), pRGB);
     dcMem.SelectObject(pBitmap);
 
     UINT nSize = sizeof(LOGPALETTE) + (sizeof(PALETTEENTRY) * (nColors - 1));

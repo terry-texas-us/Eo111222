@@ -109,7 +109,7 @@ void __End(AeSysView* view, CDC* deviceContext, EoInt16 lineTypeIndex) {
     EoDbLineTypeTable* LineTypeTable = AeSysDoc::GetDoc()->LineTypeTable();
 
     EoDbLineType* LineType;
-    if (!LineTypeTable->__Lookup(lineTypeIndex, LineType)) { return; }
+    if (!LineTypeTable->__Lookup(static_cast<EoUInt16>(lineTypeIndex), LineType)) { return; }
     pstate.SetLineType(deviceContext, 1);
     __Display(view, deviceContext, pts_, LineType);
     pstate.SetLineType(deviceContext, lineTypeIndex);

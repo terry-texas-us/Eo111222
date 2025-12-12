@@ -17,7 +17,7 @@ class EoGsViewTransform : public EoGsAbstractView {
   EoGsViewTransform();
   EoGsViewTransform(EoGsViewTransform& src);
 
-  ~EoGsViewTransform() {}
+  ~EoGsViewTransform() override {}
 
  public:  // Operators
   EoGsViewTransform& operator=(const EoGsViewTransform& src);

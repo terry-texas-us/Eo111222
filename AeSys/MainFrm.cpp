@@ -60,7 +60,7 @@ static UINT indicators[] = {
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame() : m_CurrentProgress(0), m_InProgress(false) {
-  m_ApplicationLook = app.GetInt(L"ApplicationLook", ID_VIEW_APPLOOK_OFF_2007_BLACK);
+  m_ApplicationLook = static_cast<UINT>(app.GetInt(L"ApplicationLook", ID_VIEW_APPLOOK_OFF_2007_BLACK));
 }
 CMainFrame::~CMainFrame() {}
 int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
@@ -79,7 +79,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   CMFCPopupMenu::SetForceMenuFocus(FALSE);
   DWORD Style(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
   if (!m_StandardToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
-      !m_StandardToolBar.LoadToolBar(app.HighColorMode() ? IDR_MAINFRAME_256 : IDR_MAINFRAME)) {
+      !m_StandardToolBar.LoadToolBar(static_cast<UINT>(app.HighColorMode() ? IDR_MAINFRAME_256 : IDR_MAINFRAME))) {
     ATLTRACE2(atlTraceGeneral, 0, L"Failed to create toolbar\n");
     return -1;
   }
@@ -258,7 +258,7 @@ void CMainFrame::OnApplicationLook(UINT look) {
   RecalcLayout();
   RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_FRAME | RDW_ERASE | RDW_UPDATENOW);
 
-  app.WriteInt(L"ApplicationLook", m_ApplicationLook);
+  app.WriteInt(L"ApplicationLook", static_cast<int>(m_ApplicationLook));
 }
 void CMainFrame::OnUpdateApplicationLook(CCmdUI* pCmdUI) { pCmdUI->SetRadio(m_ApplicationLook == pCmdUI->m_nID); }
 BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWindow, CCreateContext* createContext) {
@@ -350,7 +350,7 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
     }
     case EoApOptions::Standard: {
       HWND ActiveWnd = (HWND)m_wndClientArea.SendMessage(WM_MDIGETACTIVE);
-      m_wndClientArea.PostMessage(WM_MDIMAXIMIZE, LPARAM(ActiveWnd), 0L);
+      m_wndClientArea.PostMessageW(WM_MDIMAXIMIZE, WPARAM(ActiveWnd), 0L);
       ::BringWindowToTop(ActiveWnd);
 
       EnableMDITabs(TRUE, app.m_Options.m_MdiTabInfo.m_bTabIcons, app.m_Options.m_MdiTabInfo.m_tabLocation,
@@ -367,7 +367,7 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
     }
     case EoApOptions::Grouped: {
       HWND ActiveWnd = (HWND)m_wndClientArea.SendMessage(WM_MDIGETACTIVE);
-      m_wndClientArea.PostMessage(WM_MDIMAXIMIZE, LPARAM(ActiveWnd), 0L);
+      m_wndClientArea.PostMessage(WM_MDIMAXIMIZE, WPARAM(ActiveWnd), 0L);
       ::BringWindowToTop(ActiveWnd);
 
       EnableMDITabbedGroups(TRUE, app.m_Options.m_MdiTabInfo);

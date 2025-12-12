@@ -302,7 +302,7 @@ void AeSys::AddStringToMessageList(const CString& message) {
   if (!MainFrame->GetOutputPane().IsWindowVisible()) { MainFrame->SetPaneText(1, message); }
 }
 void AeSys::AddModeInformationToMessageList() {
-  CString ResourceString = EoAppLoadStringResource(m_CurrentMode);
+  CString ResourceString = EoAppLoadStringResource(static_cast<UINT>(m_CurrentMode));
   int NextToken = 0;
   ResourceString = ResourceString.Tokenize(L"\n", NextToken);
   AddStringToMessageList(ResourceString);
@@ -652,7 +652,7 @@ void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
   } else {
     HRSRC ResourceHandle = FindResource(NULL, MAKEINTRESOURCE(IDR_PEGSTROKEFONT), L"STROKEFONT");
     if (ResourceHandle != NULL) {
-      int ResourceSize = SizeofResource(NULL, ResourceHandle);
+      rsize_t ResourceSize = SizeofResource(NULL, ResourceHandle);
       m_SimplexStrokeFont = new char[ResourceSize];
       LPVOID Resource = LockResource(LoadResource(NULL, ResourceHandle));
       memcpy_s(m_SimplexStrokeFont, ResourceSize, Resource, ResourceSize);
@@ -716,7 +716,7 @@ void AeSys::BuildModifiedAcceleratorTable(void) {
   AcceleratorTableHandle = ::LoadAccelerators(m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
   int AcceleratorTableEntries = ::CopyAcceleratorTable(AcceleratorTableHandle, NULL, 0);
 
-  LPACCEL ModifiedAcceleratorTable = new ACCEL[AcceleratorTableEntries + ModeAcceleratorTableEntries];
+  LPACCEL ModifiedAcceleratorTable = new ACCEL[static_cast<size_t>(AcceleratorTableEntries + ModeAcceleratorTableEntries)];
 
   ::CopyAcceleratorTable(ModeAcceleratorTableHandle, ModifiedAcceleratorTable, ModeAcceleratorTableEntries);
   ::CopyAcceleratorTable(AcceleratorTableHandle, &ModifiedAcceleratorTable[ModeAcceleratorTableEntries],
@@ -774,7 +774,7 @@ void AeSys::FormatLength_s(LPWSTR lengthAsString, const int bufSize, Units units
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   if (units == kArchitectural || units == kArchitecturalS) {
-    wcscpy_s(lengthAsString, bufSize, (length >= 0.0) ? L" " : L"-");
+    wcscpy_s(lengthAsString, static_cast<size_t>(bufSize), (length >= 0.0) ? L" " : L"-");
     ScaledLength = fabs(ScaledLength);
 
     int Feet = int(ScaledLength / 12.);
@@ -794,38 +794,38 @@ void AeSys::FormatLength_s(LPWSTR lengthAsString, const int bufSize, Units units
       Numerator = 0;
     }
     _itow_s(Feet, szBuf, 16, 10);
-    wcscat_s(lengthAsString, bufSize, szBuf);
-    wcscat_s(lengthAsString, bufSize, L"'");
+    wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
+    wcscat_s(lengthAsString, static_cast<size_t>(bufSize), L"'");
 
     _itow_s(Inches, szBuf, 16, 10);
-    wcscat_s(lengthAsString, bufSize, szBuf);
+    wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
     if (Numerator > 0) {
-      wcscat_s(lengthAsString, bufSize, (units == kArchitecturalS) ? L"\\S" : L"�" /* middle dot [U+00B7] */);
+      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), (units == kArchitecturalS) ? L"\\S" : L"�" /* middle dot [U+00B7] */);
       int iGrtComDivisor = GreatestCommonDivisor(Numerator, FractionPrecision);
       Numerator /= iGrtComDivisor;
       int Denominator = FractionPrecision / iGrtComDivisor;  // Add fractional component of inches
       _itow_s(Numerator, szBuf, 16, 10);
-      wcscat_s(lengthAsString, bufSize, szBuf);
-      wcscat_s(lengthAsString, bufSize, L"/");
+      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
+      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), L"/");
       _itow_s(Denominator, szBuf, 16, 10);
-      wcscat_s(lengthAsString, bufSize, szBuf);
-      if (units == kArchitecturalS) wcscat_s(lengthAsString, bufSize, L";");
+      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
+      if (units == kArchitecturalS) wcscat_s(lengthAsString, static_cast<size_t>(bufSize), L";");
     }
-    wcscat_s(lengthAsString, bufSize, L"\"");
+    wcscat_s(lengthAsString, static_cast<size_t>(bufSize), L"\"");
   } else if (units == kEngineering) {
-    wcscpy_s(lengthAsString, bufSize, (length >= 0.0) ? L" " : L"-");
+    wcscpy_s(lengthAsString, static_cast<size_t>(bufSize), (length >= 0.0) ? L" " : L"-");
     ScaledLength = fabs(ScaledLength);
 
     int Precision = (ScaledLength >= 1.) ? precision - int(log10(ScaledLength)) - 1 : precision;
 
     if (Precision >= 0) {
       _itow_s(int(ScaledLength / 12.), szBuf, 16, 10);
-      wcscat_s(lengthAsString, bufSize, szBuf);
+      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
       ScaledLength = fmod(ScaledLength, 12.);
-      wcscat_s(lengthAsString, bufSize, L"'");
+      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), L"'");
 
       _itow_s(int(ScaledLength), szBuf, 16, 10);
-      wcscat_s(lengthAsString, bufSize, szBuf);
+      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
 
       if (Precision > 0) {
         CString FormatSpecification;
@@ -836,7 +836,7 @@ void AeSys::FormatLength_s(LPWSTR lengthAsString, const int bufSize, Units units
         int DecimalPointPosition = FractionalInches.Find('.');
         FractionalInches = FractionalInches.Mid(DecimalPointPosition) + L"\"";
 
-        wcscat_s(lengthAsString, bufSize, FractionalInches);
+        wcscat_s(lengthAsString, static_cast<size_t>(bufSize), FractionalInches);
       }
     }
   } else {
@@ -846,32 +846,39 @@ void AeSys::FormatLength_s(LPWSTR lengthAsString, const int bufSize, Units units
     switch (units) {
       case kFeet:
         FormatSpecification.Append(L"'");
-        swprintf_s(lengthAsString, bufSize, FormatSpecification, ScaledLength / 12.);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength / 12.);
         break;
       case kInches:
         FormatSpecification.Append(L"\"");
-        swprintf_s(lengthAsString, bufSize, FormatSpecification, ScaledLength);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength);
         break;
       case kMeters:
         FormatSpecification.Append(L"m");
-        swprintf_s(lengthAsString, bufSize, FormatSpecification, ScaledLength * .0254);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength * 0.0254);
         break;
       case kMillimeters:
         FormatSpecification.Append(L"mm");
-        swprintf_s(lengthAsString, bufSize, FormatSpecification, ScaledLength * 25.4);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength * 25.4);
         break;
       case kCentimeters:
         FormatSpecification.Append(L"cm");
-        swprintf_s(lengthAsString, bufSize, FormatSpecification, ScaledLength * 2.54);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength * 2.54);
         break;
       case kDecimeters:
         FormatSpecification.Append(L"dm");
-        swprintf_s(lengthAsString, bufSize, FormatSpecification, ScaledLength * .254);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength * 0.254);
         break;
       case kKilometers:
         FormatSpecification.Append(L"km");
-        swprintf_s(lengthAsString, bufSize, FormatSpecification, ScaledLength * .0000254);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength * 0.0000254);
         break;
+
+      case kArchitecturalS:
+      case kArchitectural:
+      case kEngineering:
+        // Handled above
+        break;
+
       default:
         lengthAsString[0] = '\0';
         break;
@@ -937,11 +944,11 @@ double AeSys::ParseLength(Units units, LPWSTR aszLen) {
           break;
 
         case kMillimeters:
-          dVal[0] *= .03937007874015748;
+          dVal[0] *= 0.03937007874015748;
           break;
 
         case kCentimeters:
-          dVal[0] *= .3937007874015748;
+          dVal[0] *= 0.3937007874015748;
           break;
 
         case kDecimeters:
@@ -950,6 +957,11 @@ double AeSys::ParseLength(Units units, LPWSTR aszLen) {
 
         case kKilometers:
           dVal[0] *= 39370.07874015748;
+          break;
+        
+        case AeSys::kArchitecturalS:
+        case AeSys::kInches:
+          break;
       }
       dVal[0] /= AeSysView::GetActiveView()->GetWorldScale();
     }
@@ -965,25 +977,25 @@ double AeSys::ParseLength(Units units, LPWSTR aszLen) {
 class EoDlgAbout : public CDialogEx {
  public:
   EoDlgAbout();
+  EoDlgAbout(const EoDlgAbout&) = delete;
+  EoDlgAbout& operator=(const EoDlgAbout&) = delete;
 
   enum { IDD = IDD_ABOUTBOX };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* pDX);
-
- protected:
-  DECLARE_MESSAGE_MAP()
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual void OnOK();
 };
-EoDlgAbout::EoDlgAbout() : CDialogEx(EoDlgAbout::IDD) {}
-void EoDlgAbout::DoDataExchange(CDataExchange* pDX) { CDialogEx::DoDataExchange(pDX); }
 
-BEGIN_MESSAGE_MAP(EoDlgAbout, CDialogEx)
-END_MESSAGE_MAP()
+EoDlgAbout::EoDlgAbout() : CDialogEx(EoDlgAbout::IDD) {}
+void EoDlgAbout::DoDataExchange(CDataExchange* dataExchange) { CDialogEx::DoDataExchange(dataExchange); }
+void EoDlgAbout::OnOK() { CDialogEx::OnOK(); }
 
 void AeSys::OnAppAbout() {
   EoDlgAbout dlg;
   dlg.DoModal();
 }
+
 CString EoAppLoadStringResource(UINT resourceIdentifier) {
   CString String;
   VERIFY(String.LoadStringW(resourceIdentifier) == TRUE);

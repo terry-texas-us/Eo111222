@@ -20,7 +20,7 @@ void AeSysView::ModeLineDisplay() {
     // Note: Using active view device context for sizing status bar panes
     CSize size = DeviceContext->GetTextExtent(ModeOp);
 
-    GetStatusBar().SetPaneInfo(::nStatusOp0 + i, ID_OP0 + i, SBPS_NORMAL, size.cx);
+    GetStatusBar().SetPaneInfo(::nStatusOp0 + i, static_cast<UINT>(ID_OP0 + i), SBPS_NORMAL, size.cx);
     GetStatusBar().SetPaneText(::nStatusOp0 + i, ModeOp);
     GetStatusBar().SetTipText(::nStatusOp0 + i, L"Mode Command Tip Text");
   }
@@ -44,7 +44,7 @@ void AeSysView::ModeLineDisplay() {
 
       CRect rc(i * Width, rcClient.bottom - tm.tmHeight, (i + 1) * Width, rcClient.bottom);
 
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, ModeOp, ModeOp.GetLength(), 0);
+      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, ModeOp, static_cast<UINT>(ModeOp.GetLength()), 0);
     }
     DeviceContext->SetBkColor(crBk);
     DeviceContext->SetTextColor(crText);

@@ -1,28 +1,24 @@
 ﻿#pragma once
 
-// EoDlgPipeOptions dialog
-
+/// @brief Dialog class for configuring pipe-related options.
 class EoDlgPipeOptions : public CDialog {
-	DECLARE_DYNAMIC(EoDlgPipeOptions)
+  DECLARE_DYNAMIC(EoDlgPipeOptions)
 
-public:
-	EoDlgPipeOptions(CWnd* pParent = NULL);
-	virtual ~EoDlgPipeOptions();
+ public:
+  EoDlgPipeOptions(CWnd* parent = nullptr);
+  EoDlgPipeOptions(const EoDlgPipeOptions&) = delete;
+  EoDlgPipeOptions& operator=(const EoDlgPipeOptions&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_PIPE_OPTIONS };
+  virtual ~EoDlgPipeOptions();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+  enum { IDD = IDD_PIPE_OPTIONS };
 
-public:
-	double m_PipeTicSize;
-	double m_PipeRiseDropRadius;
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ public:
+  double m_PipeTicSize;
+  double m_PipeRiseDropRadius;
 };
-
-

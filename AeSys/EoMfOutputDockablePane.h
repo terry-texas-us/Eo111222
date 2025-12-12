@@ -3,6 +3,8 @@
 class EoMfOutputListBox : public CListBox {
  public:  // Construction
   EoMfOutputListBox();
+  EoMfOutputListBox(const EoMfOutputListBox&) = delete;
+  EoMfOutputListBox& operator=(const EoMfOutputListBox&) = delete;
 
  public:  // Implementation
   virtual ~EoMfOutputListBox();
@@ -19,6 +21,8 @@ class EoMfOutputListBox : public CListBox {
 class EoMfOutputDockablePane : public CDockablePane {
  public:  // Construction
   EoMfOutputDockablePane();
+  EoMfOutputDockablePane(const EoMfOutputDockablePane&) = delete;
+  EoMfOutputDockablePane& operator=(const EoMfOutputDockablePane&) = delete;
 
  protected:  // Attributes
   CFont m_Font;

@@ -3,34 +3,34 @@
 // EoDlgSetupLineType dialog
 
 class EoDlgSetupLineType : public CDialog {
-	DECLARE_DYNAMIC(EoDlgSetupLineType)
+  DECLARE_DYNAMIC(EoDlgSetupLineType)
 
-public:
-	EoDlgSetupLineType(CWnd* pParent = NULL);
-	EoDlgSetupLineType(EoDbLineTypeTable* lineTypeTable, CWnd* pParent = NULL);
-	virtual ~EoDlgSetupLineType();
+ public:
+  EoDlgSetupLineType(CWnd* parent = nullptr);
+  EoDlgSetupLineType(EoDbLineTypeTable* lineTypeTable, CWnd* parent = nullptr);
 
-// Dialog Data
-	enum { IDD = IDD_SETUP_LINETYPE };
+  EoDlgSetupLineType(const EoDlgSetupLineType&) = delete;
+  EoDlgSetupLineType& operator=(const EoDlgSetupLineType&) = delete;
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+  virtual ~EoDlgSetupLineType();
 
-	enum LineTypesListColumnLabels {
-		Name,
-		Appearance,
-		Description
-	};
-	EoDbLineTypeTable* m_LineTypeTable;
-	CListCtrl m_LineTypesListControl;
+  // Dialog Data
+  enum { IDD = IDD_SETUP_LINETYPE };
 
-public:
-	EoDbLineType* m_LineType;
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
-	afx_msg void OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT drawItemStruct);
+  enum LineTypesListColumnLabels { Name, Appearance, Description };
+  EoDbLineTypeTable* m_LineTypeTable;
+  CListCtrl m_LineTypesListControl;
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ public:
+  EoDbLineType* m_LineType;
+
+  afx_msg void OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT drawItemStruct);
+
+ protected:
+  DECLARE_MESSAGE_MAP()
 };

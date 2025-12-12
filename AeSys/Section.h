@@ -13,17 +13,17 @@ class Section {
   int m_Properties;
 
  public:
-  Section(void);
+  Section();
   Section(double width, double depth, long properties);
-  ~Section(void);
+  ~Section();
 
   bool operator==(const Section& section);
   bool operator!=(const Section& section);
   void operator()(double width, double depth, long properties);
   void SetWidth(double width);
   void SetDepth(double depth);
-  double Width(void) const;
-  double Depth(void) const;
+  double Width() const;
+  double Depth() const;
   bool Identical(const Section& section);
   bool IsRectangular();
   bool IsRound();

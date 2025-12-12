@@ -27,23 +27,23 @@ EoDlgEditOptions::EoDlgEditOptions(AeSysView* view, CWnd* pParent /* = NULL */) 
 	}
 EoDlgEditOptions::~EoDlgEditOptions() {
 }
-void EoDlgEditOptions::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_EDIT_OP_MIR_X, m_MirrorXCheckControl);
-	DDX_Control(pDX, IDC_EDIT_OP_MIR_Y, m_MirrorYCheckControl);
-	DDX_Control(pDX, IDC_EDIT_OP_MIR_Z, m_MirrorZCheckControl);
-	DDX_Control(pDX, IDC_EDIT_OP_SIZ_X, m_SizingXEditControl);
-	DDX_Control(pDX, IDC_EDIT_OP_SIZ_Y, m_SizingYEditControl);
-	DDX_Control(pDX, IDC_EDIT_OP_SIZ_Z, m_SizingZEditControl);
-	DDX_Control(pDX, IDC_EDIT_OP_ROT_X, m_RotationXEditControl);
-	DDX_Control(pDX, IDC_EDIT_OP_ROT_Y, m_RotationYEditControl);
-	DDX_Control(pDX, IDC_EDIT_OP_ROT_Z, m_RotationZEditControl);
-	DDX_Text(pDX, IDC_EDIT_OP_SIZ_X, m_EditModeScaleX);
-	DDX_Text(pDX, IDC_EDIT_OP_SIZ_Y, m_EditModeScaleY);
-	DDX_Text(pDX, IDC_EDIT_OP_SIZ_Z, m_EditModeScaleZ);
-	DDX_Text(pDX, IDC_EDIT_OP_ROT_X, m_EditModeRotationAngleX);
-	DDX_Text(pDX, IDC_EDIT_OP_ROT_Y, m_EditModeRotationAngleY);
-	DDX_Text(pDX, IDC_EDIT_OP_ROT_Z, m_EditModeRotationAngleZ);
+void EoDlgEditOptions::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Control(dataExchange, IDC_EDIT_OP_MIR_X, m_MirrorXCheckControl);
+	DDX_Control(dataExchange, IDC_EDIT_OP_MIR_Y, m_MirrorYCheckControl);
+	DDX_Control(dataExchange, IDC_EDIT_OP_MIR_Z, m_MirrorZCheckControl);
+	DDX_Control(dataExchange, IDC_EDIT_OP_SIZ_X, m_SizingXEditControl);
+	DDX_Control(dataExchange, IDC_EDIT_OP_SIZ_Y, m_SizingYEditControl);
+	DDX_Control(dataExchange, IDC_EDIT_OP_SIZ_Z, m_SizingZEditControl);
+	DDX_Control(dataExchange, IDC_EDIT_OP_ROT_X, m_RotationXEditControl);
+	DDX_Control(dataExchange, IDC_EDIT_OP_ROT_Y, m_RotationYEditControl);
+	DDX_Control(dataExchange, IDC_EDIT_OP_ROT_Z, m_RotationZEditControl);
+	DDX_Text(dataExchange, IDC_EDIT_OP_SIZ_X, m_EditModeScaleX);
+	DDX_Text(dataExchange, IDC_EDIT_OP_SIZ_Y, m_EditModeScaleY);
+	DDX_Text(dataExchange, IDC_EDIT_OP_SIZ_Z, m_EditModeScaleZ);
+	DDX_Text(dataExchange, IDC_EDIT_OP_ROT_X, m_EditModeRotationAngleX);
+	DDX_Text(dataExchange, IDC_EDIT_OP_ROT_Y, m_EditModeRotationAngleY);
+	DDX_Text(dataExchange, IDC_EDIT_OP_ROT_Z, m_EditModeRotationAngleZ);
 }
 BOOL EoDlgEditOptions::OnInitDialog() {
 	CDialog::OnInitDialog();

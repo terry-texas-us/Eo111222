@@ -19,9 +19,9 @@ EoDlgLowPressureDuctOptions::EoDlgLowPressureDuctOptions(CWnd* pParent /*=NULL*/
 }
 EoDlgLowPressureDuctOptions::~EoDlgLowPressureDuctOptions() {
 }
-void EoDlgLowPressureDuctOptions::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_RADIUS_FACTOR, m_RadiusFactor);
+void EoDlgLowPressureDuctOptions::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Text(dataExchange, IDC_RADIUS_FACTOR, m_RadiusFactor);
 }
 BOOL EoDlgLowPressureDuctOptions::OnInitDialog() {
 	CDialog::OnInitDialog();
@@ -34,8 +34,8 @@ BOOL EoDlgLowPressureDuctOptions::OnInitDialog() {
 	app.FormatLength(Length, Units, m_Depth, 12, 3);
 	SetDlgItemTextW(IDC_DEPTH, Length);
 	CheckRadioButton(IDC_LEFT, IDC_RIGHT, IDC_CENTER + m_Justification);
-	CheckDlgButton(IDC_GEN_VANES, m_GenerateVanes ? 1 : 0);
-	CheckDlgButton(IDC_BEGINWITHTRANSITION, m_BeginWithTransition ? 1 : 0);
+	CheckDlgButton(IDC_GEN_VANES, m_GenerateVanes ? 1U : 0U);
+	CheckDlgButton(IDC_BEGINWITHTRANSITION, m_BeginWithTransition ? 1U : 0U);
 	return TRUE;
 }
 

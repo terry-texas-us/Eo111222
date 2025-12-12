@@ -8,16 +8,13 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetPastePosition, CDialog)
 
-BEGIN_MESSAGE_MAP(EoDlgSetPastePosition, CDialog)
-END_MESSAGE_MAP()
-
 EoDlgSetPastePosition::EoDlgSetPastePosition(CWnd* pParent /*=NULL*/) :
 	CDialog(EoDlgSetPastePosition::IDD, pParent) {
 }
 EoDlgSetPastePosition::~EoDlgSetPastePosition() {
 }
-void EoDlgSetPastePosition::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
+void EoDlgSetPastePosition::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
 }
 void EoDlgSetPastePosition::OnOK() {
 	AeSysDoc::GetDoc()->SetTrapPivotPoint(app.GetCursorPosition());

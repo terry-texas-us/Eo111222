@@ -384,7 +384,7 @@ void AeSysView::DoAnnotateModeMouseMove() {
 
     case ID_OP4:
     case ID_OP5: {
-      EoGePoint3d m_PreviousPnt(pts[0]);
+      m_PreviousPnt = pts[0];
       if (CorrectLeaderEndpoints(m_PreviousOp, 0, pts[0], pts[1])) {
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
         GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);

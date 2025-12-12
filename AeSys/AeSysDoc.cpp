@@ -242,9 +242,11 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR lpszPathName) {
 
   EoDb::FileTypes FileType = AeSys::GetFileTypeFromPath(lpszPathName);
   switch (FileType) {
-#if defined(USING_ODA)
     case EoDb::kDwg:
-    case EoDb::kDxf: {
+    case EoDb::kDxf:
+    case EoDb::kDxb:
+#if defined(USING_ODA)
+    {
       m_DatabasePtr = app.readFile(lpszPathName, true, false);
 
       CString FileAndVersion;
@@ -257,9 +259,9 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR lpszPathName) {
       File.ConvertToPeg(this);
       m_SaveAsType = FileType;
       SetWorkLayer(GetLayerTableLayerAt(0));
-      break;
     }
 #endif  // USING_ODA
+    break;
     case EoDb::kPeg: {
 #if defined(USING_ODA)
       m_DatabasePtr = app.createDatabase(true, OdDb::kEnglish);
@@ -286,6 +288,8 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR lpszPathName) {
       TracingOpen(lpszPathName);
       break;
 
+    case EoDb::kUnknown:
+      // Let the base class handle it and probably fail
     default:
       return CDocument::OnOpenDocument(lpszPathName);
   }
@@ -328,15 +332,18 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR lpszPathName) {
       }
       break;
     }
-#if defined(USING_ODA)
+    case EoDb::kDwg:
     case EoDb::kDxf:
-    case EoDb::kDwg: {
-      //ConvertPegDocument();
+    case EoDb::kDxb:
+#if defined(USING_ODA)
       m_DatabasePtr->writeFile(lpszPathName, OdDb::kDwg, OdDb::kDHL_CURRENT);
       ReturnStatus = TRUE;
-      break;
-    }
 #endif  // USING_ODA
+      break;
+
+    case EoDb::kUnknown:
+      break;
+
     default:
       app.WarningMessageBox(IDS_MSG_NOTHING_TO_SAVE);
   }
@@ -728,6 +735,10 @@ void AeSysDoc::LoadLineTypesFromXmlFile(const CString& pathName) {
 
       case XmlNodeType_DocumentType:
         ATLTRACE2(atlTraceGeneral, 0, L"DOCTYPE is not printed\n");
+        break;
+
+      case XmlNodeType_None:
+      case XmlNodeType_Attribute:
         break;
     }
   }
@@ -1157,15 +1168,23 @@ void AeSysDoc::OnFileQuery() {
     SubMenu->ModifyMenu(0, MF_BYPOSITION | MF_STRING, 0, m_IdentifiedLayerName);
 
     if (MenuResource == IDR_LAYER) {
-      SubMenu->CheckMenuItem(ID_LAYER_WORK, (MF_BYCOMMAND | Layer->IsWork()) ? MF_CHECKED : MF_UNCHECKED);
-      SubMenu->CheckMenuItem(ID_LAYER_ACTIVE, (MF_BYCOMMAND | Layer->IsActive()) ? MF_CHECKED : MF_UNCHECKED);
-      SubMenu->CheckMenuItem(ID_LAYER_STATIC, (MF_BYCOMMAND | Layer->IsStatic()) ? MF_CHECKED : MF_UNCHECKED);
-      SubMenu->CheckMenuItem(ID_LAYER_HIDDEN, (MF_BYCOMMAND | Layer->IsOff()) ? MF_CHECKED : MF_UNCHECKED);
+      SubMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_WORK),
+                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsWork() ? MF_CHECKED : MF_UNCHECKED)));
+      SubMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_ACTIVE),
+                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsActive() ? MF_CHECKED : MF_UNCHECKED)));
+      SubMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_STATIC),
+                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsStatic() ? MF_CHECKED : MF_UNCHECKED)));
+      SubMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_HIDDEN),
+                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsOff() ? MF_CHECKED : MF_UNCHECKED)));
     } else {
-      SubMenu->CheckMenuItem(ID_TRACING_OPEN, (MF_BYCOMMAND | Layer->IsOpened()) ? MF_CHECKED : MF_UNCHECKED);
-      SubMenu->CheckMenuItem(ID_TRACING_MAP, (MF_BYCOMMAND | Layer->IsMapped()) ? MF_CHECKED : MF_UNCHECKED);
-      SubMenu->CheckMenuItem(ID_TRACING_VIEW, (MF_BYCOMMAND | Layer->IsViewed()) ? MF_CHECKED : MF_UNCHECKED);
-      SubMenu->CheckMenuItem(ID_TRACING_CLOAK, (MF_BYCOMMAND | Layer->IsOff()) ? MF_CHECKED : MF_UNCHECKED);
+      SubMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_OPEN),
+                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsOpened() ? MF_CHECKED : MF_UNCHECKED)));
+      SubMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_MAP),
+                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsMapped() ? MF_CHECKED : MF_UNCHECKED)));
+      SubMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_VIEW),
+                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsViewed() ? MF_CHECKED : MF_UNCHECKED)));
+      SubMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_CLOAK),
+                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsOff() ? MF_CHECKED : MF_UNCHECKED)));
     }
     SubMenu->TrackPopupMenuEx(0, CurrentPosition.x, CurrentPosition.y, AfxGetMainWnd(), 0);
     ::DestroyMenu(LayerTracingMenu);
@@ -1471,20 +1490,20 @@ void AeSysDoc::OnTrapCommandsBlock() {
 void AeSysDoc::OnTrapCommandsUnblock() { m_TrappedGroupList.BreakSegRefs(); }
 void AeSysDoc::OnSetupPenColor() {
   EoDlgSetupColor Dialog;
-  Dialog.m_ColorIndex = pstate.PenColor();
+  Dialog.m_ColorIndex = static_cast<EoUInt16>(pstate.PenColor());
 
   if (Dialog.DoModal() == IDOK) {
-    pstate.SetPenColor(NULL, Dialog.m_ColorIndex);
+    pstate.SetPenColor(nullptr, static_cast<EoInt16>(Dialog.m_ColorIndex));
 
     AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Pen);
   }
 }
 void AeSysDoc::OnSetupLineType() {
   EoDlgSetupLineType Dialog(&m_LineTypeTable);
-  m_LineTypeTable.__Lookup(pstate.LineType(), Dialog.m_LineType);
+  m_LineTypeTable.__Lookup(static_cast<EoUInt16>(pstate.LineType()), Dialog.m_LineType);
 
   if (Dialog.DoModal() == IDOK) {
-    pstate.SetLineType(NULL, Dialog.m_LineType->Index());
+    pstate.SetLineType(nullptr, static_cast<EoInt16>(Dialog.m_LineType->Index()));
     AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
   }
 }

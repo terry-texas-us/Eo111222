@@ -20,46 +20,46 @@ class EoDbPolyline : public EoDbPrimitive {
   EoDbPolyline(EoGePoint3dArray& pts);
   EoDbPolyline(const EoDbPolyline& polyline);
 
-  ~EoDbPolyline() {}
+  ~EoDbPolyline() override {}
 
  public:  // Operators
   const EoDbPolyline& operator=(const EoDbPolyline& polyline);
 
  public:  // Methods - absolute virtuals
-  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent);
-  void Assign(EoDbPrimitive* primitive) { *this = *static_cast<EoDbPolyline*>(primitive); }
+  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
+  void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolyline*>(primitive); }
 #if defined(USING_ODA)
   OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
 #endif  // USING_ODA
-  EoDbPrimitive*& Copy(EoDbPrimitive*&);
-  void Display(AeSysView* view, CDC* deviceContext);
-  void AddReportToMessageList(EoGePoint3d);
-  void GetAllPts(EoGePoint3dArray& pts) {
+  EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
+  void Display(AeSysView* view, CDC* deviceContext) override;
+  void AddReportToMessageList(EoGePoint3d) override;
+  void GetAllPts(EoGePoint3dArray& pts) override {
     pts.SetSize(0);
     pts.Copy(m_pts);
   }
-  void FormatExtra(CString& str);
-  void FormatGeometry(CString& str);
-  EoGePoint3d GetCtrlPt();
+  void FormatExtra(CString& str) override;
+  void FormatGeometry(CString& str) override;
+  EoGePoint3d GetCtrlPt() override;
   /// <summary>Determines the extent.</summary>
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&);
-  EoGePoint3d GoToNxtCtrlPt();
-  bool Identical(EoDbPrimitive*) { return false; }
-  bool Is(EoUInt16 type) { return type == EoDb::kPolylinePrimitive; }
-  bool IsInView(AeSysView* view);
-  bool IsPointOnControlPoint(AeSysView* /* view */, const EoGePoint4d& /* point */) { return false; }
-  bool PvtOnCtrlPt(AeSysView* view, const EoGePoint4d& ptView);
-  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point);
-  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) { return false; }
-  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&);
-  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d);
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
+  EoGePoint3d GoToNxtCtrlPt() override;
+  bool Identical(EoDbPrimitive*) override { return false; }
+  bool Is(EoUInt16 type) override { return type == EoDb::kPolylinePrimitive; }
+  bool IsInView(AeSysView* view) override;
+  bool IsPointOnControlPoint(AeSysView* /* view */, const EoGePoint4d& /* point */) override { return false; }
+  bool PvtOnCtrlPt(AeSysView* view, const EoGePoint4d& ptView) override;
+  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) override { return false; }
+  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
+  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
   void SetFlag(const EoUInt16 w) { m_wFlags = w; }
   void SetPt(int index, const EoGePoint3d& pt) { m_pts[index] = pt; }
-  void Transform(EoGeTransformMatrix&);
-  void Translate(EoGeVector3d translate);
-  void TranslateUsingMask(EoGeVector3d, const DWORD);
-  bool Write(CFile& file);
-  void Write(CFile& /* file */, EoByte* /* buffer */) {};
+  void Transform(EoGeTransformMatrix&) override;
+  void Translate(EoGeVector3d translate) override;
+  void TranslateUsingMask(EoGeVector3d, const DWORD) override;
+  bool Write(CFile& file) override;
+  void Write(CFile& /* file */, EoByte* /* buffer */) override {};
 
  private:
   EoUInt16 SwingVertex();

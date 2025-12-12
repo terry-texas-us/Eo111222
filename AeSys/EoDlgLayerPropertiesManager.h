@@ -7,77 +7,78 @@
 // EoDlgLayerPropertiesManager dialog
 
 class EoDlgLayerPropertiesManager : public CDialog {
-	DECLARE_DYNAMIC(EoDlgLayerPropertiesManager)
+  DECLARE_DYNAMIC(EoDlgLayerPropertiesManager)
 
-public:
-	EoDlgLayerPropertiesManager(CWnd* parent = NULL);
-	EoDlgLayerPropertiesManager(OdDbDatabase* database, CWnd* parent = NULL);
+ public:
+  EoDlgLayerPropertiesManager(CWnd* parent = NULL);
+  EoDlgLayerPropertiesManager(OdDbDatabase* database, CWnd* parent = NULL);
 
-	virtual ~EoDlgLayerPropertiesManager();
+  virtual ~EoDlgLayerPropertiesManager();
 
-	// Dialog Data
-	enum { IDD = IDD_LAYER_PROPERTIES_MANAGER };
+  // Dialog Data
+  enum { IDD = IDD_LAYER_PROPERTIES_MANAGER };
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog(void);
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog(void);
 
-	DECLARE_MESSAGE_MAP()
-public:
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT drawItemStruct);
-	afx_msg void OnSize(UINT type, int cx, int cy);
-	afx_msg void OnSizing(UINT side, LPRECT rectangle);
-	afx_msg void OnBnClickedButtonAdd();
-	afx_msg void OnBnClickedButtonCurrent();
-	afx_msg void OnNMDblclkLayerFilterTree(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnTvnKeydownLayerFilterTree(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnNMClickListLayersList(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnNMDblclkListLayersList(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnNMRClickListLayersList(NMHDR *pNMHDR, LRESULT *pResult);
-public:
-	enum ColumnLabels {
-		column_status,
-		column_name,
-		column_on,
-		column_freeze,
-		column_lock,
-		column_color,
-		column_linetype,
-		column_lineweight,
-		column_plotstyle,
-		column_plot,
-		column_vpfreeze,
-		column_vpcolor,
-		column_vplinetype,
-		column_vplineweight,
-		column_vpplotstyle,
-		column_descr
-	};
-	int m_InititialWidth;
-	int m_InititialHeight;
+  DECLARE_MESSAGE_MAP()
+ public:
+  afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+  afx_msg void OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT drawItemStruct);
+  afx_msg void OnSize(UINT type, int cx, int cy);
+  afx_msg void OnSizing(UINT side, LPRECT rectangle);
+  afx_msg void OnBnClickedButtonAdd();
+  afx_msg void OnBnClickedButtonCurrent();
+  afx_msg void OnNMDblclkLayerFilterTree(NMHDR* pNMHDR, LRESULT* pResult);
+  afx_msg void OnTvnKeydownLayerFilterTree(NMHDR* pNMHDR, LRESULT* pResult);
+  afx_msg void OnNMClickListLayersList(NMHDR* pNMHDR, LRESULT* pResult);
+  afx_msg void OnNMDblclkListLayersList(NMHDR* pNMHDR, LRESULT* pResult);
+  afx_msg void OnNMRClickListLayersList(NMHDR* pNMHDR, LRESULT* pResult);
 
-	int m_DeltaWidth;
-	int m_DeltaHeight;
+ public:
+  enum ColumnLabels {
+    column_status,
+    column_name,
+    column_on,
+    column_freeze,
+    column_lock,
+    column_color,
+    column_linetype,
+    column_lineweight,
+    column_plotstyle,
+    column_plot,
+    column_vpfreeze,
+    column_vpcolor,
+    column_vplinetype,
+    column_vplineweight,
+    column_vpplotstyle,
+    column_descr
+  };
+  int m_InititialWidth;
+  int m_InititialHeight;
 
-	int column_desc;
-	int columns_count;
+  int m_DeltaWidth;
+  int m_DeltaHeight;
 
-	OdDbDatabase* m_Database;
-	OdDbObjectId  m_ActiveViewport;
+  int column_desc;
+  int columns_count;
 
-	bool m_ClickToColumnName;
-	CListCtrl m_LayerList;
-	CTreeCtrl m_TreeFilters;
+  OdDbDatabase* m_Database;
+  OdDbObjectId m_ActiveViewport;
 
-	OdLyLayerFilterPtr m_pRootFilter;
+  bool m_ClickToColumnName;
+  CListCtrl m_LayerList;
+  CTreeCtrl m_TreeFilters;
 
-	CImageList m_pTreeImages;
-	CImageList m_stateImages;
+  OdLyLayerFilterPtr m_pRootFilter;
 
-	bool OpenSelectedLayer(OdSmartPtr<OdDbLayerTableRecord>& layer);
-	void UpdateFiltersTree();
-	void UpdateCurrentLayerInfoField();
-	void DrawItem(CDC& deviceContext, int itemID, int labelIndex, const RECT& rcItem);
+  CImageList m_pTreeImages;
+  CImageList m_stateImages;
+
+  bool OpenSelectedLayer(OdSmartPtr<OdDbLayerTableRecord>& layer);
+  void UpdateFiltersTree();
+  void UpdateCurrentLayerInfoField();
+  void DrawItem(CDC& deviceContext, int itemID, int labelIndex, const RECT& rcItem);
 };
-#endif // USING_ODA
+#endif  // USING_ODA

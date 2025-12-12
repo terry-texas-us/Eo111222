@@ -12,20 +12,20 @@ class EoDbSpline : public EoDbPrimitive {
   EoDbSpline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& points);
   EoDbSpline(const EoDbSpline&);
 
-  ~EoDbSpline() {}
+  ~EoDbSpline() override {}
 
  public:  // Operators
   const EoDbSpline& operator=(const EoDbSpline&);
 
  public:  // Methods - absolute virtuals
-  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent);
-  void Assign(EoDbPrimitive* primitive) { *this = *static_cast<EoDbSpline*>(primitive); }
+  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
+  void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbSpline*>(primitive); }
 #if defined(USING_ODA)
   OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
 #endif  // USING_ODA
-  EoDbPrimitive*& Copy(EoDbPrimitive*&);
-  void Display(AeSysView* view, CDC* deviceContext);
-  void AddReportToMessageList(EoGePoint3d);
+  EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
+  void Display(AeSysView* view, CDC* deviceContext) override;
+  void AddReportToMessageList(EoGePoint3d) override;
   /// <summary>
   ///Generates the required B-spline basis dKnot vectors and B-spline curves of various iOrder
   ///using the Cox and de Boor algorithm.
@@ -40,28 +40,28 @@ class EoDbSpline : public EoDbPrimitive {
   /// <param name="iOrder">iOrder of B-spline basis</param>
   /// <param name="pts">array of points generated</param>
   int GenPts(const int iOrder, EoGePoint3dArray& pts);
-  void GetAllPts(EoGePoint3dArray& pts) {
+  void GetAllPts(EoGePoint3dArray& pts) override {
     pts.SetSize(0);
     pts.Copy(m_pts);
   }
-  void FormatExtra(CString& str);
-  void FormatGeometry(CString& str);
-  EoGePoint3d GetCtrlPt();
+  void FormatExtra(CString& str) override;
+  void FormatGeometry(CString& str) override;
+  EoGePoint3d GetCtrlPt() override;
   /// <summary>Determines the extent.</summary>
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&);
-  EoGePoint3d GoToNxtCtrlPt();
-  bool Identical(EoDbPrimitive*) { return false; }
-  bool Is(EoUInt16 type) { return type == EoDb::kSplinePrimitive; }
-  bool IsInView(AeSysView* view);
-  bool IsPointOnControlPoint(AeSysView* /* view */, const EoGePoint4d& /* point */) { return false; }
-  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point);
-  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) { return false; }
-  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&);
-  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d);
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
+  EoGePoint3d GoToNxtCtrlPt() override;
+  bool Identical(EoDbPrimitive*) override { return false; }
+  bool Is(EoUInt16 type) override { return type == EoDb::kSplinePrimitive; }
+  bool IsInView(AeSysView* view) override;
+  bool IsPointOnControlPoint(AeSysView* /* view */, const EoGePoint4d& /* point */) override { return false; }
+  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) override { return false; }
+  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
+  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
   void SetPt(EoUInt16 w, EoGePoint3d pt) { m_pts[w] = pt; }
-  void Transform(EoGeTransformMatrix&);
-  void Translate(EoGeVector3d translate);
-  void TranslateUsingMask(EoGeVector3d, const DWORD);
-  bool Write(CFile& file);
-  void Write(CFile& file, EoByte* buffer);
+  void Transform(EoGeTransformMatrix&) override;
+  void Translate(EoGeVector3d translate) override;
+  void TranslateUsingMask(EoGeVector3d, const DWORD) override;
+  bool Write(CFile& file) override;
+  void Write(CFile& file, EoByte* buffer) override;
 };

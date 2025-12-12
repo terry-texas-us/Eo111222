@@ -266,9 +266,9 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
 
   if (NumberOfLayers != document->GetLayerTableSize()) {
     ULONGLONG CurrentFilePosition = CFile::GetPosition();
-    CFile::Seek(SavedFilePosition, CFile::begin);
+    CFile::Seek(static_cast<LONGLONG>(SavedFilePosition), CFile::begin);
     EoDb::Write(*this, EoUInt16(NumberOfLayers));
-    CFile::Seek(CurrentFilePosition, CFile::begin);
+    CFile::Seek(static_cast<LONGLONG>(CurrentFilePosition), CFile::begin);
   }
 }
 void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
@@ -298,9 +298,9 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
       if (Primitive->Write(*this)) NumberOfPrimitives++;
     }
     ULONGLONG CurrentFilePosition = CFile::GetPosition();
-    CFile::Seek(SavedFilePosition, CFile::begin);
+    CFile::Seek(static_cast<LONGLONG>(SavedFilePosition), CFile::begin);
     EoDb::Write(*this, NumberOfPrimitives);
-    CFile::Seek(CurrentFilePosition, CFile::begin);
+    CFile::Seek(static_cast<LONGLONG>(CurrentFilePosition), CFile::begin);
   }
 
   EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
@@ -411,7 +411,7 @@ EoUInt16 EoDb::ReadUInt16(CFile& file) {
 void EoDb::Write(CFile& file, const CString& string) {
   int NumberOfCharacters = string.GetLength();
   for (int n = 0; n < NumberOfCharacters; n++) {
-    char c = EoByte(string.GetAt(n));
+    char c = EoSbyte(string.GetAt(n));
     file.Write(&c, 1);
   }
   file.Write("\t", 1);
@@ -433,7 +433,7 @@ void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primiti
   /* double ColumnSpacing = */ EoDb::ReadDouble(file);
   /* double RowSpacing = */ EoDb::ReadDouble(file);
 
-  primitive = new EoDbBlockReference(PenColor, LineType, Name, Point, Normal, ScaleFactors, Rotation);
+  primitive = new EoDbBlockReference(static_cast<EoUInt16>(PenColor), static_cast<EoUInt16>(LineType), Name, Point, Normal, ScaleFactors, Rotation);
 }
 void EoDb::ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& /* file */, EoDbPrimitive*& /* primitive */) {}
 void EoDb::ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive) {

@@ -32,7 +32,7 @@ void AeSysView::OnModePrimitiveMend() {
   if (m_PrimitiveToMend != 0) {
     m_PrimitiveToMend->Copy(m_PrimitiveToMendCopy);
     m_MendPrimitiveBegin = m_PrimitiveToMend->SelectAtControlPoint(this, ptView);
-    m_MendPrimitiveVertexIndex = 1 << EoDbPrimitive::ControlPointIndex();
+    m_MendPrimitiveVertexIndex = 1U << EoDbPrimitive::ControlPointIndex();
 
     app.LoadModeResources(ID_MODE_PRIMITIVE_MEND);
   }

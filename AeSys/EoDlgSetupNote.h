@@ -3,31 +3,31 @@
 // EoDlgSetupNote dialog
 
 class EoDlgSetupNote : public CDialog {
-	DECLARE_DYNAMIC(EoDlgSetupNote)
+  DECLARE_DYNAMIC(EoDlgSetupNote)
 
-public:
-	EoDlgSetupNote(CWnd* pParent = NULL);
-	EoDlgSetupNote(EoDbFontDefinition* fontDefinition, CWnd* pParent = NULL);
-	virtual ~EoDlgSetupNote();
+ public:
+  EoDlgSetupNote(CWnd* pParent = nullptr);
+  EoDlgSetupNote(EoDbFontDefinition* fontDefinition, CWnd* pParent = nullptr);
+  EoDlgSetupNote(const EoDlgSetupNote&) = delete;
+  EoDlgSetupNote& operator=(const EoDlgSetupNote&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_SETUP_NOTE };
+  virtual ~EoDlgSetupNote();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+  // Dialog Data
+  enum { IDD = IDD_SETUP_NOTE };
 
-public:
-	EoDbFontDefinition* m_FontDefinition;
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
-	CMFCFontComboBox m_MfcFontComboControl;
+ public:
+  EoDbFontDefinition* m_FontDefinition;
 
-	double m_TextHeight;
-	double m_TextExpansionFactor;
-	double m_CharacterSlantAngle;
-	double m_TextRotationAngle;
+  CMFCFontComboBox m_MfcFontComboControl;
 
-protected:
-	DECLARE_MESSAGE_MAP()
+  double m_TextHeight;
+  double m_TextExpansionFactor;
+  double m_CharacterSlantAngle;
+  double m_TextRotationAngle;
 };

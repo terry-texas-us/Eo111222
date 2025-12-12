@@ -9,40 +9,33 @@
 
 #include "Preview.h"
 
-// EoDlgGetLayerName dialog
-
+/// @brief Dialog class for getting a layer name from the user.
 class EoDlgGetLayerName : public CDialog {
   DECLARE_DYNAMIC(EoDlgGetLayerName)
 
  public:
-  EoDlgGetLayerName(CWnd* pParent = NULL);
+  EoDlgGetLayerName(CWnd* parent = nullptr);
+  EoDlgGetLayerName(const EoDlgGetLayerName&) = delete;
+  EoDlgGetLayerName& operator=(const EoDlgGetLayerName&) = delete;
+
   virtual ~EoDlgGetLayerName();
 
-  // Dialog Data
   enum { IDD = IDD_GET_LAYER_NAME };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* pDX);
+  virtual void DoDataExchange(CDataExchange* dataExchange);
 
  public:
   CString m_Name;
-
- protected:
-  DECLARE_MESSAGE_MAP()
 };
-
-// EoDlgGetLayerName dialog
 
 IMPLEMENT_DYNAMIC(EoDlgGetLayerName, CDialog)
 
-BEGIN_MESSAGE_MAP(EoDlgGetLayerName, CDialog)
-END_MESSAGE_MAP()
-
 EoDlgGetLayerName::EoDlgGetLayerName(CWnd* pParent /*=NULL*/) : CDialog(EoDlgGetLayerName::IDD, pParent) {}
 EoDlgGetLayerName::~EoDlgGetLayerName() {}
-void EoDlgGetLayerName::DoDataExchange(CDataExchange* pDX) {
-  CDialog::DoDataExchange(pDX);
-  DDX_Text(pDX, IDC_NAME, m_Name);
+void EoDlgGetLayerName::DoDataExchange(CDataExchange* dataExchange) {
+  CDialog::DoDataExchange(dataExchange);
+  DDX_Text(dataExchange, IDC_NAME, m_Name);
 }
 
 /// EoDlgFileManage dialog
@@ -74,17 +67,17 @@ EoDlgFileManage::EoDlgFileManage(CWnd* parent /*=NULL*/) : CDialog(EoDlgFileMana
 EoDlgFileManage::EoDlgFileManage(AeSysDoc* document, CWnd* parent /*=NULL*/)
     : CDialog(EoDlgFileManage::IDD, parent), m_Document(document) {}
 EoDlgFileManage::~EoDlgFileManage() {}
-void EoDlgFileManage::DoDataExchange(CDataExchange* pDX) {
-  CDialog::DoDataExchange(pDX);
-  DDX_Control(pDX, IDC_TRA, m_TracingList);
-  DDX_Control(pDX, IDC_LAYERS_LIST_CONTROL, m_LayersListControl);
-  DDX_Control(pDX, IDC_BLOCKS_LIST, m_BlocksList);
-  DDX_Control(pDX, IDC_REFERENCES, m_References);
-  DDX_Control(pDX, IDC_GROUPS, m_Groups);
-  DDX_Control(pDX, IDC_TRACLOAK, m_TracingCloakRadioButton);
-  DDX_Control(pDX, IDC_TRAOPEN, m_TracingOpenRadioButton);
-  DDX_Control(pDX, IDC_TRAMAP, m_TracingMapRadioButton);
-  DDX_Control(pDX, IDC_TRAVIEW, m_TracingViewRadioButton);
+void EoDlgFileManage::DoDataExchange(CDataExchange* dataExchange) {
+  CDialog::DoDataExchange(dataExchange);
+  DDX_Control(dataExchange, IDC_TRA, m_TracingList);
+  DDX_Control(dataExchange, IDC_LAYERS_LIST_CONTROL, m_LayersListControl);
+  DDX_Control(dataExchange, IDC_BLOCKS_LIST, m_BlocksList);
+  DDX_Control(dataExchange, IDC_REFERENCES, m_References);
+  DDX_Control(dataExchange, IDC_GROUPS, m_Groups);
+  DDX_Control(dataExchange, IDC_TRACLOAK, m_TracingCloakRadioButton);
+  DDX_Control(dataExchange, IDC_TRAOPEN, m_TracingOpenRadioButton);
+  DDX_Control(dataExchange, IDC_TRAMAP, m_TracingMapRadioButton);
+  DDX_Control(dataExchange, IDC_TRAVIEW, m_TracingViewRadioButton);
 }
 BOOL EoDlgFileManage::OnInitDialog() {
   CDialog::OnInitDialog();
@@ -244,7 +237,7 @@ void EoDlgFileManage::OnBnClickedTracingFuse() {
       EoDbLayer* Layer = (EoDbLayer*)m_TracingList.GetItemData(CurrentSelection);
 
       m_Document->TracingFuse(LayerName);
-      m_TracingList.DeleteString(CurrentSelection);
+      m_TracingList.DeleteString(static_cast<UINT>(CurrentSelection));
 
       int ItemCount = m_LayersListControl.GetItemCount();
       m_LayersListControl.InsertItem(ItemCount, NULL);
@@ -261,7 +254,7 @@ void EoDlgFileManage::OnBnClickedTracingExclude() {
       EoDbLayer* Layer = (EoDbLayer*)m_TracingList.GetItemData(CurrentSelection);
       m_Document->UpdateAllViews(NULL, EoDb::kLayerErase, Layer);
       m_Document->RemoveLayerTableLayer(LayerName);
-      m_TracingList.DeleteString(CurrentSelection);
+      m_TracingList.DeleteString(static_cast<UINT>(CurrentSelection));
     }
   }
 }
@@ -323,8 +316,8 @@ void EoDlgFileManage::OnLbnSelchangeBlocksList() {
 
       EoDbBlock* Block = (EoDbBlock*)m_BlocksList.GetItemData(CurrentSelection);
 
-      m_Groups.SetDlgItemInt(IDC_GROUPS, Block->GetCount(), FALSE);
-      m_References.SetDlgItemInt(IDC_REFERENCES, m_Document->GetBlockReferenceCount(BlockName), FALSE);
+      m_Groups.SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(Block->GetCount()), FALSE);
+      m_References.SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_Document->GetBlockReferenceCount(BlockName)), FALSE);
       WndProcPreviewUpdate(m_PreviewWindowHandle, Block);
     }
   }
@@ -415,7 +408,7 @@ void EoDlgFileManage::DrawItem(CDC& deviceContext, int itemID, int labelIndex, c
     case Name: {
       CString LayerName = Layer->Name();
       deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, LayerName,
-                                LayerName.GetLength(), NULL);
+                                static_cast<UINT>(LayerName.GetLength()), nullptr);
     } break;
     case On:
       m_StateImages.Draw(&deviceContext, Layer->IsOff() ? 3 : 2, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
@@ -443,13 +436,13 @@ void EoDlgFileManage::DrawItem(CDC& deviceContext, int itemID, int labelIndex, c
         CString ColorName;
         ColorName.Format(L"%i", Layer->ColorIndex());
         deviceContext.ExtTextOutW(ItemRectangle.right + 4, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle,
-                                  ColorName, ColorName.GetLength(), NULL);
+                                  ColorName, static_cast<UINT>(ColorName.GetLength()), nullptr);
       }
     } break;
     case LineType: {
       CString LineTypeName = Layer->LineTypeName();
       deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle,
-                                LineTypeName, LineTypeName.GetLength(), NULL);
+                                LineTypeName, static_cast<UINT>(LineTypeName.GetLength()), nullptr);
     } break;
     case LineWeight:
       //::DrawLineWeight(deviceContext, itemRectangle, Layer->lineWeight());
@@ -469,7 +462,7 @@ void EoDlgFileManage::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT lpDrawI
         CBrush br(rgbBkgnd);
         DeviceContext.FillRect(rcItem, &br);
         if (lpDrawItemStruct->itemState & ODS_FOCUS) { DeviceContext.DrawFocusRect(rcItem); }
-        int itemID = lpDrawItemStruct->itemID;
+        int itemID = static_cast<int>(lpDrawItemStruct->itemID);
         if (itemID != -1) {
           // The text color is stored as the item data.
           COLORREF rgbText = (lpDrawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
@@ -538,8 +531,8 @@ void EoDlgFileManage::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult
       break;
     case Color: {
       EoDlgSetupColor Dialog;
-      Dialog.m_ColorIndex = Layer->ColorIndex();
-      if (Dialog.DoModal() == IDOK) { Layer->SetColorIndex(Dialog.m_ColorIndex); }
+      Dialog.m_ColorIndex = static_cast<EoUInt16>(Layer->ColorIndex());
+      if (Dialog.DoModal() == IDOK) { Layer->SetColorIndex(static_cast<EoInt16>(Dialog.m_ColorIndex)); }
       break;
     }
     case LineType: {

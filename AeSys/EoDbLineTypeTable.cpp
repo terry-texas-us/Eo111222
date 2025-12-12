@@ -46,7 +46,7 @@ EoUInt16 EoDbLineTypeTable::LegacyLineTypeIndex(const CString& name) {
     Index = EoDbPrimitive::LINETYPE_BYLAYER;
   } else {
     while (Index < NumberOfLegacyLineTypes && name.CompareNoCase(LegacyLineTypes[Index]) != 0) { Index++; }
-    Index = (Index < NumberOfLegacyLineTypes) ? Index : 0;
+    Index = (Index < NumberOfLegacyLineTypes) ? Index : 0U;
   }
   return Index;
 }

@@ -31,27 +31,27 @@ EoDbPolygon::EoDbPolygon() {
   m_vPosYAx = EoGeVector3d::kYAxis;
 }
 
-EoDbPolygon::EoDbPolygon(EoGePoint3dArray& pts) {
+EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
   m_PenColor = pstate.PenColor();
   m_InteriorStyle = pstate.PolygonIntStyle();
   m_InteriorStyleIndex = pstate.PolygonIntStyleId();
 
-  m_HatchOrigin = pts[0];
+  m_HatchOrigin = points[0];
 
-  m_NumberOfPoints = EoUInt16(pts.GetSize());
+  m_NumberOfPoints = EoUInt16(points.GetSize());
 
   if (m_NumberOfPoints >= 3) {
-    EoGeVector3d m_vPosXAx(pts[0], pts[1]);
-    EoGeVector3d m_vPosYAx(pts[0], pts[2]);
-    EoGeVector3d vPlnNorm = EoGeCrossProduct(m_vPosXAx, m_vPosYAx);
-    vPlnNorm.Normalize();
+    m_vPosXAx = EoGeVector3d(points[0], points[1]);
+    m_vPosYAx = EoGeVector3d(points[0], points[2]);
+    auto planeNormal = EoGeCrossProduct(m_vPosXAx, m_vPosYAx);
+    planeNormal.Normalize();
 
-    if (vPlnNorm.z < 0) vPlnNorm = -vPlnNorm;
+    if (planeNormal.z < 0) planeNormal = -planeNormal;
 
     m_vPosXAx.Normalize();
-    m_vPosXAx.RotAboutArbAx(vPlnNorm, hatch::dOffAng);
+    m_vPosXAx.RotAboutArbAx(planeNormal, hatch::dOffAng);
     m_vPosYAx = m_vPosXAx;
-    m_vPosYAx.RotAboutArbAx(vPlnNorm, HALF_PI);
+    m_vPosYAx.RotAboutArbAx(planeNormal, HALF_PI);
     m_vPosXAx *= hatch::dXAxRefVecScal;
     m_vPosYAx *= hatch::dYAxRefVecScal;
 
@@ -59,7 +59,7 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& pts) {
 
     m_Pt = new EoGePoint3d[m_NumberOfPoints];
 
-    for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) m_Pt[w] = pts[w];
+    for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) m_Pt[w] = points[w];
   }
 }
 EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d* pt) {
@@ -220,7 +220,8 @@ CString EoDbPolygon::FormatIntStyle() {
   return (str);
 }
 void EoDbPolygon::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(), m_NumberOfPoints);
+  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
+             m_NumberOfPoints);
 }
 EoGePoint3d EoDbPolygon::GetCtrlPt() {
   EoUInt16 wBeg = EoUInt16(sm_Edge - 1);
@@ -635,9 +636,9 @@ EoUInt16 EoDbPolygon::SwingVertex() {
   return (wSwingVertex);
 }
 void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArray) {
-  int iPts = (int)pointsArray.GetSize();
+  int iPts = static_cast<int>(pointsArray.GetSize());
   if (iPts >= 2) {
-    CPoint* pnt = new CPoint[iPts];
+    auto* pnt = new CPoint[static_cast<size_t>(iPts)];
 
     view->DoProjection(pnt, pointsArray);
 

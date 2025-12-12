@@ -8,9 +8,19 @@ class EoGeUniquePoint : public CObject {
   int m_References;
 
  public:
-  EoGeUniquePoint() {
-    m_References = 0;
-    m_Point = EoGePoint3d::kOrigin;
+  EoGeUniquePoint() : m_References(0), m_Point(EoGePoint3d::kOrigin) {}
+
+  EoGeUniquePoint(const EoGeUniquePoint& other) {
+    m_Point = other.m_Point;
+    m_References = other.m_References;
+  }
+
+  EoGeUniquePoint& operator=(const EoGeUniquePoint& other) {
+    if (this != &other) {
+      m_Point = other.m_Point;
+      m_References = other.m_References;
+    }
+    return *this;
   }
   EoGeUniquePoint(int references, const EoGePoint3d& point) {
     m_References = references;

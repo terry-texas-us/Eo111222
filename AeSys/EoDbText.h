@@ -11,47 +11,47 @@ class EoDbText : public EoDbPrimitive {
   EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text);
   EoDbText(const EoDbText&);
 
-  ~EoDbText() {};
+  ~EoDbText() override {};
 
  public:  // Operators
   const EoDbText& operator=(const EoDbText&);
 
  public:  // Methods - absolute virtuals
-  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent);
-  void Assign(EoDbPrimitive* primitive) { *this = *static_cast<EoDbText*>(primitive); }
+  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
+  void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbText*>(primitive); }
 #if defined(USING_ODA)
   OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
 #endif  // USING_ODA
-  EoDbPrimitive*& Copy(EoDbPrimitive*&);
-  void Display(AeSysView* view, CDC* deviceContext);
-  void AddReportToMessageList(EoGePoint3d);
-  void GetAllPts(EoGePoint3dArray& pts) {
+  EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
+  void Display(AeSysView* view, CDC* deviceContext) override;
+  void AddReportToMessageList(EoGePoint3d) override;
+  void GetAllPts(EoGePoint3dArray& pts) override {
     pts.SetSize(0);
     EoGePoint3d pt = m_ReferenceSystem.Origin();
     pts.Add(pt);
   }
-  void FormatExtra(CString& str);
-  void FormatGeometry(CString& str);
-  EoGePoint3d GetCtrlPt();
+  void FormatExtra(CString& str) override;
+  void FormatGeometry(CString& str) override;
+  EoGePoint3d GetCtrlPt() override;
   /// <summary>Determines the extent.</summary>
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&);
-  EoGePoint3d GoToNxtCtrlPt() { return (m_ReferenceSystem.Origin()); }
-  bool Identical(EoDbPrimitive*) { return false; }
-  bool IsInView(AeSysView* view);
-  bool Is(EoUInt16 type) { return type == EoDb::kTextPrimitive; }
-  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point);
-  void ModifyState();
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
+  EoGePoint3d GoToNxtCtrlPt() override { return (m_ReferenceSystem.Origin()); }
+  bool Identical(EoDbPrimitive*) override { return false; }
+  bool IsInView(AeSysView* view) override;
+  bool Is(EoUInt16 type) override { return type == EoDb::kTextPrimitive; }
+  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  void ModifyState() override;
   void ModifyNotes(EoDbFontDefinition& fd, EoDbCharacterCellDefinition& ccd, int iAtt);
-  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point);
-  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) { return false; }
+  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) override { return false; }
   /// <summary>Evaluates whether a point lies within the bounding region of text.</summary>
-  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&);
-  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d);
-  void Translate(EoGeVector3d v) { m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v); }
-  void TranslateUsingMask(EoGeVector3d, const DWORD);
-  void Transform(EoGeTransformMatrix&);
-  bool Write(CFile& file);
-  void Write(CFile& file, EoByte* buffer);
+  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
+  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
+  void Translate(EoGeVector3d v) override { m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v); }
+  void TranslateUsingMask(EoGeVector3d, const DWORD) override;
+  void Transform(EoGeTransformMatrix&) override;
+  bool Write(CFile& file) override;
+  void Write(CFile& file, EoByte* buffer) override;
 
  public:  // Methods
   void ConvertFormattingCharacters();

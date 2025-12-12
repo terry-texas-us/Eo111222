@@ -24,6 +24,8 @@ class EoCtrlColorsButton : public CMFCButton {
 
  public:
   EoCtrlColorsButton();
+  EoCtrlColorsButton(const EoCtrlColorsButton&) = delete;
+  EoCtrlColorsButton& operator=(const EoCtrlColorsButton&) = delete;
 
   virtual ~EoCtrlColorsButton();
 

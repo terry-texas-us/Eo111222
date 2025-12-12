@@ -35,7 +35,10 @@ class EoDbPrimitive : public CObject {
  public:  // Constructors and destructor
   EoDbPrimitive();
   EoDbPrimitive(EoInt16 penColor, EoInt16 lineType);
-  virtual ~EoDbPrimitive();
+  EoDbPrimitive(const EoDbPrimitive&) = delete;
+  EoDbPrimitive& operator=(const EoDbPrimitive&) = delete;
+
+  ~EoDbPrimitive() override;
 
  public:  // Methods - absolute virtuals
   virtual void AddToTreeViewControl(HWND, HTREEITEM) = 0;

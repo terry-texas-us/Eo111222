@@ -5,18 +5,15 @@
 
 IMPLEMENT_DYNAMIC(EoDlgViewZoom, CDialog)
 
-BEGIN_MESSAGE_MAP(EoDlgViewZoom, CDialog)
-END_MESSAGE_MAP()
-
 EoDlgViewZoom::EoDlgViewZoom(CWnd* pParent /*=NULL*/) :
 	CDialog(EoDlgViewZoom::IDD, pParent), m_Ratio(0) {
 }
 EoDlgViewZoom::~EoDlgViewZoom() {
 }
-void EoDlgViewZoom::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_RATIO, m_Ratio);
-	DDV_MinMaxFloat(pDX, m_Ratio, 0.001f, 999.0f);
+void EoDlgViewZoom::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Text(dataExchange, IDC_RATIO, m_Ratio);
+	DDV_MinMaxFloat(dataExchange, m_Ratio, 0.001f, 999.0f);
 }
 BOOL EoDlgViewZoom::OnInitDialog() {
 	m_Ratio = static_cast<float>(EoRound(m_Ratio, 3));

@@ -7,16 +7,13 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetLength, CDialog)
 
-BEGIN_MESSAGE_MAP(EoDlgSetLength, CDialog)
-END_MESSAGE_MAP()
-
 EoDlgSetLength::EoDlgSetLength(CWnd* pParent /*=NULL*/) :
 	CDialog(EoDlgSetLength::IDD, pParent) {
 }
 EoDlgSetLength::~EoDlgSetLength() {
 }
-void EoDlgSetLength::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
+void EoDlgSetLength::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
 }
 BOOL EoDlgSetLength::OnInitDialog() {
 	CDialog::OnInitDialog();

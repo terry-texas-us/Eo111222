@@ -3,22 +3,22 @@
 // EoDlgFixupOptions dialog
 
 class EoDlgFixupOptions : public CDialog {
-	DECLARE_DYNAMIC(EoDlgFixupOptions)
+  DECLARE_DYNAMIC(EoDlgFixupOptions)
 
-public:
-	EoDlgFixupOptions(CWnd* pParent = NULL);
-	virtual ~EoDlgFixupOptions();
+ public:
+  EoDlgFixupOptions(CWnd* parent = nullptr);
+  EoDlgFixupOptions(const EoDlgFixupOptions& other) = delete;
+  EoDlgFixupOptions& operator=(const EoDlgFixupOptions& other) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_FIXUP_OPTIONS };
+  virtual ~EoDlgFixupOptions();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
+  // Dialog Data
+  enum { IDD = IDD_FIXUP_OPTIONS };
 
-public:
-	double m_FixupAxisTolerance;
-	double m_FixupModeCornerSize;
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ public:
+  double m_FixupAxisTolerance;
+  double m_FixupModeCornerSize;
 };

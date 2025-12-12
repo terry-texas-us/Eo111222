@@ -3,29 +3,30 @@
 // EoDlgLineWeight dialog
 
 class EoDlgLineWeight : public CDialog {
-	DECLARE_DYNAMIC(EoDlgLineWeight)
+  DECLARE_DYNAMIC(EoDlgLineWeight)
 
-public:
-	EoDlgLineWeight(CWnd* parent = NULL);
-	EoDlgLineWeight(int originalLineWeight, CWnd* parent = NULL);
-	virtual ~EoDlgLineWeight();
+ public:
+  EoDlgLineWeight(CWnd* parent = NULL);
+  EoDlgLineWeight(int originalLineWeight, CWnd* parent = NULL);
+  virtual ~EoDlgLineWeight();
 
-// Dialog Data
-	enum { IDD = IDD_LINEWEIGHT };
+  // Dialog Data
+  enum { IDD = IDD_LINEWEIGHT };
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog(void);
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog(void);
 
-private:
-	int m_OriginalLineWeight;
-public:
-	CListBox m_LineWeightList;
-	OdDb::LineWeight m_LineWeight;
+ private:
+  int m_OriginalLineWeight;
 
-	afx_msg void OnBnClickedOk();
-	afx_msg void OnLbnDblclkListLineweight();
+ public:
+  CListBox m_LineWeightList;
+  OdDb::LineWeight m_LineWeight;
 
-protected:
-	DECLARE_MESSAGE_MAP()
+  afx_msg void OnBnClickedOk();
+  afx_msg void OnLbnDblclkListLineweight();
+
+ protected:
+  DECLARE_MESSAGE_MAP()
 };

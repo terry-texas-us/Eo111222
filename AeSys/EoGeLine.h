@@ -236,21 +236,25 @@ class EoGeLine {
   //		   2 lines are parallel or 4 points are not coplanar
   static int Intersection(EoGeLine ln1, EoGeLine ln2, EoGePoint3d& ptInt) {
     EoGeVector3d v1(ln1.begin, ln1.end);
-    if (v1.IsNearNull())  // Endpoints of first line coincide
+    if (v1.IsNearNull()) {  // Endpoints of first line coincide
       return (FALSE);
+}
 
     EoGeVector3d v2(ln2.begin, ln2.end);
-    if (v2.IsNearNull())  // Endpoints of second line coincide
+    if (v2.IsNearNull()) {  // Endpoints of second line coincide
       return (FALSE);
+}
 
     EoGeVector3d vPlnNorm = EoGeCrossProduct(v1, v2);
     vPlnNorm.Normalize();
-    if (vPlnNorm.IsNearNull())  // Two lines are parallel
+    if (vPlnNorm.IsNearNull()) {  // Two lines are parallel
       return (FALSE);
+}
 
     EoGeVector3d v3(ln1.begin, ln2.begin);
-    if (fabs(EoGeDotProduct(vPlnNorm, v3)) > DBL_EPSILON)  // Four points are not coplanar
+    if (fabs(EoGeDotProduct(vPlnNorm, v3)) > DBL_EPSILON) {  // Four points are not coplanar
       return (FALSE);
+}
 
     EoGeTransformMatrix tm(ln1.begin, vPlnNorm);
 

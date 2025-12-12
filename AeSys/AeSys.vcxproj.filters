@@ -45,8 +45,8 @@
     <Filter Include="Header Files\DDE">
       <UniqueIdentifier>{d920cbc4-d86a-47e0-b3f1-825b7af3c2a2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="NewFilter1">
-      <UniqueIdentifier>{13ac146d-b23d-4c63-8efc-4e5f50bae295}</UniqueIdentifier>
+    <Filter Include="Markdowns">
+      <UniqueIdentifier>{e1740f9f-fe31-4a83-ad2f-669deaf7b712}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1674,6 +1674,18 @@
     </None>
     <None Include=".clang-format" />
     <None Include=".clang-tidy" />
+    <None Include="..\Markdowns\Dde Description and Few Uses.md">
+      <Filter>Markdowns</Filter>
+    </None>
+    <None Include="..\Markdowns\Job File Format.md">
+      <Filter>Markdowns</Filter>
+    </None>
+    <None Include="..\Markdowns\Micro Modernization Steps.md">
+      <Filter>Markdowns</Filter>
+    </None>
+    <None Include="..\Markdowns\Peg &amp; Tra File Formats.md">
+      <Filter>Markdowns</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">

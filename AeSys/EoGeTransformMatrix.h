@@ -67,7 +67,11 @@ class EoGeTransformMatrix : public EoGeMatrix {
   /// <summary>Initializes a matrix for rotation about the z-axis, the x-axis rotates to the y-axis</summary>
   EoGeTransformMatrix ZAxisRotation(const double dSinAng, const double dCosAng);
   void Scale(EoGeVector3d scaleFactors);
-  void Translate(EoGeVector3d translate);
+  inline void Translate(EoGeVector3d translate) {
+    m_4X4[0][3] += translate.x;
+    m_4X4[1][3] += translate.y;
+    m_4X4[2][3] += translate.z;
+  }
 };
 
 typedef CList<EoGeTransformMatrix> EoGeTransformMatrixList;

@@ -9,9 +9,6 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSelectIsometricView, CDialog)
 
-BEGIN_MESSAGE_MAP(EoDlgSelectIsometricView, CDialog)
-END_MESSAGE_MAP()
-
 EoDlgSelectIsometricView::EoDlgSelectIsometricView(CWnd* pParent /*=NULL*/)
 	: CDialog(EoDlgSelectIsometricView::IDD, pParent) {
 
@@ -20,11 +17,11 @@ EoDlgSelectIsometricView::EoDlgSelectIsometricView(CWnd* pParent /*=NULL*/)
 EoDlgSelectIsometricView::~EoDlgSelectIsometricView() {
 }
 
-void EoDlgSelectIsometricView::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Radio(pDX, IDC_VIEW_ISO_LEFT, m_LeftRight);
-	DDX_Radio(pDX, IDC_VIEW_ISO_FRONT, m_FrontBack);
-	DDX_Radio(pDX, IDC_VIEW_ISO_ABOVE, m_AboveUnder);
+void EoDlgSelectIsometricView::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Radio(dataExchange, IDC_VIEW_ISO_LEFT, m_LeftRight);
+	DDX_Radio(dataExchange, IDC_VIEW_ISO_FRONT, m_FrontBack);
+	DDX_Radio(dataExchange, IDC_VIEW_ISO_ABOVE, m_AboveUnder);
 }
 
 // EoDlgSelectIsometricView message handlers

@@ -227,11 +227,7 @@ void EoGeTransformMatrix::Scale(EoGeVector3d v) {
     m_4X4[2][i] *= v.z;
   }
 }
-void EoGeTransformMatrix::Translate(EoGeVector3d v) {
-  m_4X4[0][3] += v.x;
-  m_4X4[1][3] += v.y;
-  m_4X4[2][3] += v.z;
-}
+
 EoGeLine EoGeTransformMatrix::operator*(EoGeLine line) {
   EoGeLine lineOut;
 

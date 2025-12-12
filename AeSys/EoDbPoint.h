@@ -15,49 +15,49 @@ class EoDbPoint : public EoDbPrimitive {
 
   EoDbPoint(const EoDbPoint& src);
 
-  ~EoDbPoint();
+  ~EoDbPoint() override;
 
  public:  // Operators
   const EoDbPoint& operator=(const EoDbPoint& src);
 
  public:  // Methods - absolute virtuals
-  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent);
-  void Assign(EoDbPrimitive* primitive) { *this = *static_cast<EoDbPoint*>(primitive); }
+  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
+  void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPoint*>(primitive); }
 #if defined(USING_ODA)
   OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
 #endif  // USING_ODA
-  EoDbPrimitive*& Copy(EoDbPrimitive*&);
-  void Display(AeSysView* view, CDC* deviceContext);
-  void AddReportToMessageList(EoGePoint3d);
-  void FormatExtra(CString& str);
-  void FormatGeometry(CString& str);
-  void GetAllPts(EoGePoint3dArray& pts) {
+  EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
+  void Display(AeSysView* view, CDC* deviceContext) override;
+  void AddReportToMessageList(EoGePoint3d) override;
+  void FormatExtra(CString& str) override;
+  void FormatGeometry(CString& str) override;
+  void GetAllPts(EoGePoint3dArray& pts) override {
     pts.SetSize(0);
     pts.Add(m_Point);
   }
-  EoGePoint3d GetCtrlPt();
+  EoGePoint3d GetCtrlPt() override;
   /// <summary>Determines the extent.</summary>
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&);
-  EoGePoint3d GoToNxtCtrlPt() { return (m_Point); }
-  bool Identical(EoDbPrimitive* primitive) { return m_Point == static_cast<EoDbPoint*>(primitive)->m_Point; }
-  bool Is(EoUInt16 wType) { return wType == EoDb::kPointPrimitive; }
-  bool IsInView(AeSysView* view);
-  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point);
-  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point);
-  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) { return false; }
-  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&);
-  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d);
-  void Transform(EoGeTransformMatrix&);
-  void Translate(EoGeVector3d v) { m_Point += v; }
-  void TranslateUsingMask(EoGeVector3d, const DWORD);
-  bool Write(CFile& file);
-  void Write(CFile& file, EoByte* buffer);
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
+  EoGePoint3d GoToNxtCtrlPt() override { return (m_Point); }
+  bool Identical(EoDbPrimitive* primitive) override { return m_Point == static_cast<EoDbPoint*>(primitive)->m_Point; }
+  bool Is(EoUInt16 wType) override { return wType == EoDb::kPointPrimitive; }
+  bool IsInView(AeSysView* view) override;
+  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) override { return false; }
+  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
+  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
+  void Transform(EoGeTransformMatrix&) override;
+  void Translate(EoGeVector3d v) override { m_Point += v; }
+  void TranslateUsingMask(EoGeVector3d, const DWORD) override;
+  bool Write(CFile& file) override;
+  void Write(CFile& file, EoByte* buffer) override;
 
  public:  // Methods
   double GetDat(EoUInt16 wDat) { return (m_Data[wDat]); }
   EoGePoint3d GetPt() { return (m_Point); }
   EoInt16& PointStyle() { return m_PointStyle; }
-  void ModifyState();
+  void ModifyState() override;
   void SetDat(EoUInt16, double*);
   void SetPt(EoGePoint3d pt) { m_Point = pt; }
 };

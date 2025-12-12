@@ -4,29 +4,29 @@
 
 /// <summary>Modifies attributes of all group primatives in current trap to current settings.</summary>
 /// <remarks>Trap color index is not modified.</remarks>
-
 class EoDlgTrapModify : public CDialog {
-	DECLARE_DYNAMIC(EoDlgTrapModify)
+  DECLARE_DYNAMIC(EoDlgTrapModify)
 
-public:
-	EoDlgTrapModify(CWnd* pParent = NULL);
-	EoDlgTrapModify(AeSysDoc* document, CWnd* pParent = NULL);
-	virtual ~EoDlgTrapModify();
+ public:
+  EoDlgTrapModify(CWnd* parent = nullptr);
+  EoDlgTrapModify(AeSysDoc* document, CWnd* parent = nullptr);
 
-// Dialog Data
-	enum { IDD = IDD_TRAP_MODIFY };
+  EoDlgTrapModify(const EoDlgTrapModify&) = delete;
+  EoDlgTrapModify& operator=(const EoDlgTrapModify&) = delete;
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual void OnOK();
+  virtual ~EoDlgTrapModify();
 
-	AeSysDoc* m_Document;
+  // Dialog Data
+  enum { IDD = IDD_TRAP_MODIFY };
 
-public:
-	void ModifyPolygons(void);
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual void OnOK();
 
-protected:
-	DECLARE_MESSAGE_MAP()
+  AeSysDoc* m_Document;
+
+ public:
+  void ModifyPolygons(void);
 };
 
 const int TM_TEXT_ALL = 0;

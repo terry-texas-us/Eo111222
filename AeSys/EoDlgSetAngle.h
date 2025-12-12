@@ -3,22 +3,23 @@
 // EoDlgSetAngle dialog
 
 class EoDlgSetAngle : public CDialog {
-	DECLARE_DYNAMIC(EoDlgSetAngle)
+  DECLARE_DYNAMIC(EoDlgSetAngle)
 
-public:
-	EoDlgSetAngle(CWnd* pParent = NULL);
-	virtual ~EoDlgSetAngle();
+ public:
+  EoDlgSetAngle(CWnd* pParent = nullptr);
+  EoDlgSetAngle(const EoDlgSetAngle&) = delete;
+  EoDlgSetAngle& operator=(const EoDlgSetAngle&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_SET_ANGLE };
+  virtual ~EoDlgSetAngle();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-public:
-	double m_dAngle;
-	CString m_strTitle;
+  // Dialog Data
+  enum { IDD = IDD_SET_ANGLE };
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+
+ public:
+  double m_dAngle;
+  CString m_strTitle;
 };

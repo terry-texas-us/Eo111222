@@ -673,7 +673,7 @@ void AeSysView::DoCustomMouseClick(const CString& characters) {
     if (characters.Find(L'{', Position) == Position) {
       Position++;
       CString VirtualKey = characters.Tokenize(L"}", Position);
-      PostMessageW(WM_KEYDOWN, _wtoi(VirtualKey), 0L);
+      PostMessageW(WM_KEYDOWN, static_cast<WPARAM>(_wtoi(VirtualKey)), 0L);
     } else {
       PostMessageW(WM_CHAR, characters[Position++], 0L);
     }
@@ -949,7 +949,7 @@ void AeSysView::OnFilePrint() {
   m_PlotScaleFactor = 1.0f;
   CView::OnFilePrint();
 }
-UINT AeSysView::NumPages(CDC* deviceContext, double dScaleFactor, UINT& nHorzPages, UINT& nVertPages) {
+UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizontalPages, UINT& verticalPages) {
   EoGePoint3d ptMin;
   EoGePoint3d ptMax;
   EoGeTransformMatrix tm;
@@ -959,10 +959,10 @@ UINT AeSysView::NumPages(CDC* deviceContext, double dScaleFactor, UINT& nHorzPag
   float HorizontalSizeInInches = static_cast<float>(deviceContext->GetDeviceCaps(HORZSIZE)) / EoMmPerInch;
   float VerticalSizeInInches = static_cast<float>(deviceContext->GetDeviceCaps(VERTSIZE)) / EoMmPerInch;
 
-  nHorzPages = EoRound(((ptMax.x - ptMin.x) * dScaleFactor / HorizontalSizeInInches) + 0.5f);
-  nVertPages = EoRound(((ptMax.y - ptMin.y) * dScaleFactor / VerticalSizeInInches) + 0.5f);
+  horizontalPages = static_cast<UINT>(EoRound(((ptMax.x - ptMin.x) * scaleFactor / HorizontalSizeInInches) + 0.5f));
+  verticalPages = static_cast<UINT>(EoRound(((ptMax.y - ptMin.y) * scaleFactor / VerticalSizeInInches) + 0.5f));
 
-  return nHorzPages * nVertPages;
+  return horizontalPages * verticalPages;
 }
 void AeSysView::DisplayPixel(CDC* deviceContext, COLORREF cr, const EoGePoint3d& point) {
   EoGePoint4d ptView(point);
@@ -1960,7 +1960,7 @@ void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CStrin
       Position++;
     }
     if (Position < Count) {  // Text need to move to initial position
-      ComboBox->DeleteString(Position);
+      ComboBox->DeleteString(static_cast<UINT>(Position));
     }
     ComboBox->InsertString(0, findText);
     ComboBox->SetCurSel(0);

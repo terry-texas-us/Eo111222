@@ -497,8 +497,8 @@ void AeSysView::GenerateRiseDrop(EoUInt16 riseDropIndicator, Section section, Eo
   GenerateRectangularSection(referenceLine, m_CenterLineEccentricity, section, group);
   // need to allow continuation perpendicular to vertical section ?
 
-  group->AddTail(new EoDbLine(pstate.PenColor(), riseDropIndicator, LeftLine.begin, RightLine.end));
-  group->AddTail(new EoDbLine(pstate.PenColor(), riseDropIndicator, RightLine.begin, LeftLine.end));
+  group->AddTail(new EoDbLine(pstate.PenColor(), static_cast<EoInt16>(riseDropIndicator), LeftLine.begin, RightLine.end));
+  group->AddTail(new EoDbLine(pstate.PenColor(), static_cast<EoInt16>(riseDropIndicator), RightLine.begin, LeftLine.end));
 }
 void AeSysView::GenerateRectangularElbow(EoGeLine& previousReferenceLine, Section previousSection,
                                          EoGeLine& currentReferenceLine, Section currentSection, EoDbGroup* group) {

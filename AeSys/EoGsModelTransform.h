@@ -8,6 +8,10 @@ class EoGsModelTransform {
 
  public:
   EoGsModelTransform();
+  EoGsModelTransform(const EoGsModelTransform&) = delete;
+  EoGsModelTransform& operator=(const EoGsModelTransform&) = delete;
+
+
   ~EoGsModelTransform();
   /// <summary> Places an identity transform on the top of the current transformation stack.</summary>
   void InvokeNew();

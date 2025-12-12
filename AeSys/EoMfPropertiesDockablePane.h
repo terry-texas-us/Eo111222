@@ -2,6 +2,10 @@
 
 class EoMfPropertiesMFCToolBar : public CMFCToolBar {
  public:
+  EoMfPropertiesMFCToolBar() = default;
+  EoMfPropertiesMFCToolBar(const EoMfPropertiesMFCToolBar&) = delete;
+  EoMfPropertiesMFCToolBar& operator=(const EoMfPropertiesMFCToolBar&) = delete;
+
   virtual void OnUpdateCmdUI(CFrameWnd* /* target */, BOOL disableIfNoHndler) {
     CMFCToolBar::OnUpdateCmdUI((CFrameWnd*)GetOwner(), disableIfNoHndler);
   }
@@ -10,6 +14,8 @@ class EoMfPropertiesMFCToolBar : public CMFCToolBar {
 class EoMfPropertiesDockablePane : public CDockablePane {
  public:  // Construction
   EoMfPropertiesDockablePane();
+  EoMfPropertiesDockablePane(const EoMfPropertiesDockablePane&) = delete;
+  EoMfPropertiesDockablePane& operator=(const EoMfPropertiesDockablePane&) = delete;
 
  protected:  // Attributes
   CMFCPropertyGridCtrl m_PropertyGrid;

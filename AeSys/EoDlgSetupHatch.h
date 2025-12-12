@@ -6,18 +6,18 @@ class EoDlgSetupHatch : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetupHatch)
 
  public:
-  EoDlgSetupHatch(CWnd* pParent = NULL);
+  EoDlgSetupHatch(CWnd* pParent = nullptr);
+  EoDlgSetupHatch(const EoDlgSetupHatch&) = delete;
+  EoDlgSetupHatch& operator=(const EoDlgSetupHatch&) = delete;
+  
   virtual ~EoDlgSetupHatch();
 
   // Dialog Data
   enum { IDD = IDD_SETUP_HATCH };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* pDX);
+  virtual void DoDataExchange(CDataExchange* dataExchange);
 
- public:
- protected:
-  DECLARE_MESSAGE_MAP()
  public:
   virtual BOOL OnInitDialog();
   virtual void OnOK();

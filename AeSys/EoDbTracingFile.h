@@ -5,6 +5,9 @@ class EoDbLayer;
 class EoDbTracingFile : public CFile {
  public:
   EoDbTracingFile() {}
+  EoDbTracingFile(const EoDbTracingFile&) = delete;
+  EoDbTracingFile& operator=(const EoDbTracingFile&) = delete;
+
   virtual ~EoDbTracingFile() {}
   void ReadHeader(CFile& file);
   bool ReadLayer(CFile& file, EoDbLayer* layer);

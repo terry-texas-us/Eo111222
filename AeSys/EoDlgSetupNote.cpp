@@ -8,9 +8,6 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetupNote, CDialog)
 
-BEGIN_MESSAGE_MAP(EoDlgSetupNote, CDialog)
-END_MESSAGE_MAP()
-
 EoDlgSetupNote::EoDlgSetupNote(CWnd* pParent /*=NULL*/) :
 	CDialog(EoDlgSetupNote::IDD, pParent), m_TextExpansionFactor(0), m_TextHeight(0), m_CharacterSlantAngle(0), m_TextRotationAngle(0) {
 }
@@ -19,13 +16,13 @@ EoDlgSetupNote::EoDlgSetupNote(EoDbFontDefinition* fontDefinition, CWnd* pParent
 }
 EoDlgSetupNote::~EoDlgSetupNote() {
 }
-void EoDlgSetupNote::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_TEXT_HEIGHT, m_TextHeight);
-	DDX_Text(pDX, IDC_TEXT_EXP_FAC, m_TextExpansionFactor);
-	DDX_Text(pDX, IDC_TEXT_INCLIN, m_CharacterSlantAngle);
-	DDX_Text(pDX, IDC_TEXT_ROTATION, m_TextRotationAngle);
-	DDX_Control(pDX, IDC_MFCFONTCOMBO, m_MfcFontComboControl);
+void EoDlgSetupNote::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Text(dataExchange, IDC_TEXT_HEIGHT, m_TextHeight);
+	DDX_Text(dataExchange, IDC_TEXT_EXP_FAC, m_TextExpansionFactor);
+	DDX_Text(dataExchange, IDC_TEXT_INCLIN, m_CharacterSlantAngle);
+	DDX_Text(dataExchange, IDC_TEXT_ROTATION, m_TextRotationAngle);
+	DDX_Control(dataExchange, IDC_MFCFONTCOMBO, m_MfcFontComboControl);
 }
 
 BOOL EoDlgSetupNote::OnInitDialog() {

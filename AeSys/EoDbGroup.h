@@ -11,7 +11,11 @@ class EoDbGroup : public CObList {
  public:
   EoDbGroup();
   EoDbGroup(EoDbPrimitive* primitive);
-  virtual ~EoDbGroup() {}
+
+  EoDbGroup& operator=(const EoDbGroup&) = delete;
+
+  ~EoDbGroup() override {}
+
   EoDbGroup(const EoDbGroup& group);
   EoDbGroup(const EoDbBlock& group);
 

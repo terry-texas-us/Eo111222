@@ -3,31 +3,31 @@
 // EoDlgTrapFilter dialog
 
 class EoDlgTrapFilter : public CDialog {
-	DECLARE_DYNAMIC(EoDlgTrapFilter)
+  DECLARE_DYNAMIC(EoDlgTrapFilter)
 
-public:
-	EoDlgTrapFilter(CWnd* pParent = NULL);
-	EoDlgTrapFilter(AeSysDoc* document, CWnd* pParent = NULL);
-	virtual ~EoDlgTrapFilter();
+ public:
+  EoDlgTrapFilter(CWnd* pParent = nullptr);
+  EoDlgTrapFilter(AeSysDoc* document, CWnd* pParent = nullptr);
+  EoDlgTrapFilter(const EoDlgTrapFilter&) = delete;
+  EoDlgTrapFilter& operator=(const EoDlgTrapFilter&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_TRAP_FILTER };
+  virtual ~EoDlgTrapFilter();
 
-	AeSysDoc* m_Document;
+  // Dialog Data
+  enum { IDD = IDD_TRAP_FILTER };
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+  AeSysDoc* m_Document;
 
-public:
-	CComboBox m_FilterLineComboBoxControl;
-	CListBox m_FilterPrimitiveTypeListBoxControl;
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
-	void FilterByColor(EoInt16 colorIndex);
-	void FilterByLineType(int lineType);
-	void FilterByPrimitiveType(const EoDb::PrimitiveTypes primitiveType);
+ public:
+  CComboBox m_FilterLineComboBoxControl;
+  CListBox m_FilterPrimitiveTypeListBoxControl;
 
-protected:
-	DECLARE_MESSAGE_MAP()
+  void FilterByColor(EoInt16 colorIndex);
+  void FilterByLineType(int lineType);
+  void FilterByPrimitiveType(const EoDb::PrimitiveTypes primitiveType);
 };

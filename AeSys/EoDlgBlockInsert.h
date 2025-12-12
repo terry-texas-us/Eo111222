@@ -1,30 +1,31 @@
 ﻿#pragma once
 
-// EoDlgBlockInsert dialog
-
 class EoDlgBlockInsert : public CDialog {
-	DECLARE_DYNAMIC(EoDlgBlockInsert)
+  DECLARE_DYNAMIC(EoDlgBlockInsert)
 
-public:
-	EoDlgBlockInsert(CWnd* pParent = NULL);
-	EoDlgBlockInsert(AeSysDoc* document, CWnd* pParent = NULL);
-	virtual ~EoDlgBlockInsert();
+ public:
+  EoDlgBlockInsert(CWnd* parent = nullptr);
+  EoDlgBlockInsert(AeSysDoc* document, CWnd* parent = nullptr);
+  EoDlgBlockInsert(const EoDlgBlockInsert&) = delete;
+  EoDlgBlockInsert& operator=(const EoDlgBlockInsert&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_INSERT_BLOCK };
+  virtual ~EoDlgBlockInsert();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+  enum { IDD = IDD_INSERT_BLOCK };
 
-	static EoGePoint3d InsertionPoint;
-	AeSysDoc* m_Document;
-public:
-	CListBox m_BlocksListBoxControl;
-	afx_msg void OnLbnSelchangeBlocksList();
-	afx_msg void OnBnClickedPurge();
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
-protected:
-	DECLARE_MESSAGE_MAP()
+  static EoGePoint3d InsertionPoint;
+  AeSysDoc* m_Document;
+
+ public:
+  CListBox m_BlocksListBoxControl;
+  afx_msg void OnLbnSelchangeBlocksList();
+  afx_msg void OnBnClickedPurge();
+
+ protected:
+  DECLARE_MESSAGE_MAP()
 };

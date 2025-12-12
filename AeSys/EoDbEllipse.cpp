@@ -50,55 +50,56 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& centerPoint, EoGePoint3d& beginPoint) {
   m_vMinAx.RotAboutArbAx(vPlnNorm, HALF_PI);
   m_dSwpAng = TWOPI;
 }
-EoDbEllipse::EoDbEllipse(EoGePoint3d beginPoint, EoGePoint3d ptInt, EoGePoint3d endPoint) {
+
+EoDbEllipse::EoDbEllipse(EoGePoint3d beginPoint, EoGePoint3d intermediatePoint, EoGePoint3d endPoint) {
   m_PenColor = pstate.PenColor();
   m_LineType = pstate.LineType();
 
   m_dSwpAng = 0.;
 
-  EoGeVector3d vBegInt(beginPoint, ptInt);
-  EoGeVector3d vBegEnd(beginPoint, endPoint);
-  EoGeVector3d vPlnNorm = EoGeCrossProduct(vBegInt, vBegEnd);
-  vPlnNorm.Normalize();
+  EoGeVector3d beginToIntermediate(beginPoint, intermediatePoint);
+  EoGeVector3d beginToEnd(beginPoint, endPoint);
+  EoGeVector3d planeNormal = EoGeCrossProduct(beginToIntermediate, beginToEnd);
+  planeNormal.Normalize();
 
   // Build transformation matrix which will get int and end points to
   // z=0 plane with beg point as origin
 
-  EoGeTransformMatrix tm(beginPoint, vPlnNorm);
+  EoGeTransformMatrix transformMatrix(beginPoint, planeNormal);
 
   EoGePoint3d pt[3];
 
   pt[0] = beginPoint;
-  pt[1] = ptInt;
+  pt[1] = intermediatePoint;
   pt[2] = endPoint;
 
-  pt[1] = tm * pt[1];
-  pt[2] = tm * pt[2];
+  pt[1] = transformMatrix * pt[1];
+  pt[2] = transformMatrix * pt[2];
 
-  double dDet = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
+  double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
 
-  if (fabs(dDet) > DBL_EPSILON) {  // Three points are not colinear
-    double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / dDet;
+  if (fabs(determinant) > DBL_EPSILON) {  // Three points are not colinear
+    double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
 
-    m_ptCenter.x = (pt[1].x - pt[1].y * dT) * .5;
-    m_ptCenter.y = (pt[1].y + pt[1].x * dT) * .5;
+    m_ptCenter.x = (pt[1].x - pt[1].y * dT) * 0.5;
+    m_ptCenter.y = (pt[1].y + pt[1].x * dT) * 0.5;
     m_ptCenter.z = 0.;
-    tm.Inverse();
+    transformMatrix.Inverse();
 
     // Transform back to original plane
-    m_ptCenter = tm * m_ptCenter;
+    m_ptCenter = transformMatrix * m_ptCenter;
 
     // None of the points coincide with center point
 
-    EoGeTransformMatrix tm(m_ptCenter, vPlnNorm);
+    transformMatrix = EoGeTransformMatrix(m_ptCenter, planeNormal);
 
-    double dAng[3];
+    double dAng[3]{};
 
-    pt[1] = ptInt;
+    pt[1] = intermediatePoint;
     pt[2] = endPoint;
 
     for (int i = 0; i < 3; i++) {  // Translate points into z=0 plane with center point at origin
-      pt[i] = tm * pt[i];
+      pt[i] = transformMatrix * pt[i];
       dAng[i] = atan2(pt[i].y, pt[i].x);
       if (dAng[i] < 0.0) dAng[i] += TWOPI;
     }
@@ -114,7 +115,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d beginPoint, EoGePoint3d ptInt, EoGePoint3d 
         m_dSwpAng = TWOPI - m_dSwpAng;
         if (dAng[2] == dMax) m_dSwpAng = -m_dSwpAng;
       }
-      EoGePoint3d ptRot = beginPoint.RotateAboutAxis(m_ptCenter, vPlnNorm, HALF_PI);
+      EoGePoint3d ptRot = beginPoint.RotateAboutAxis(m_ptCenter, planeNormal, HALF_PI);
 
       m_vMajAx = EoGeVector3d(m_ptCenter, beginPoint);
       m_vMinAx = EoGeVector3d(m_ptCenter, ptRot);

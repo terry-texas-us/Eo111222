@@ -39,8 +39,8 @@ EoDbBlockReference::EoDbBlockReference(EoUInt16 penColor, EoUInt16 lineType, con
                                        const EoGePoint3d& point, const EoGeVector3d& normal,
                                        const EoGeVector3d scaleFactors, double rotation)
     : m_strName(name), m_pt(point), m_vNormal(normal), m_vScaleFactors(scaleFactors) {
-  m_PenColor = penColor;
-  m_LineType = lineType;
+  m_PenColor = static_cast<EoInt16>(penColor);
+  m_LineType = static_cast<EoInt16>(lineType);
   m_dRotation = rotation;
 
   m_wColCnt = 1;

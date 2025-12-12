@@ -28,9 +28,9 @@ EoDlgLineWeight::EoDlgLineWeight(int originalLineWeight, CWnd* parent)
 EoDlgLineWeight::~EoDlgLineWeight() {
 }
 
-void EoDlgLineWeight::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_LIST_LINEWEIGHT, m_LineWeightList);
+void EoDlgLineWeight::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Control(dataExchange, IDC_LIST_LINEWEIGHT, m_LineWeightList);
 }
 
 

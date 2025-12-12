@@ -3,21 +3,19 @@
 // EoDlgSetupCustomMouseCharacters dialog
 
 class EoDlgSetupCustomMouseCharacters : public CDialog {
-	DECLARE_DYNAMIC(EoDlgSetupCustomMouseCharacters)
+  DECLARE_DYNAMIC(EoDlgSetupCustomMouseCharacters)
 
-public:
-	EoDlgSetupCustomMouseCharacters(CWnd* pParent = NULL);
-	virtual ~EoDlgSetupCustomMouseCharacters();
+ public:
+  EoDlgSetupCustomMouseCharacters(CWnd* pParent = nullptr);
+  EoDlgSetupCustomMouseCharacters(const EoDlgSetupCustomMouseCharacters&) = delete;
+  EoDlgSetupCustomMouseCharacters& operator=(const EoDlgSetupCustomMouseCharacters&) = delete;
 
-	enum { IDD = IDD_MOUSEKEYS };
+  virtual ~EoDlgSetupCustomMouseCharacters();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+  enum { IDD = IDD_MOUSEKEYS };
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 };
-
-

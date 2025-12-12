@@ -25,10 +25,10 @@ EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(AeSysView* view, CWnd* pParent /*
 }
 EoDlgActiveViewKeyplan::~EoDlgActiveViewKeyplan() {
 }
-void EoDlgActiveViewKeyplan::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_RATIO, m_dRatio);
-	DDV_MinMaxDouble(pDX, m_dRatio, .0001, 10000.);
+void EoDlgActiveViewKeyplan::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Text(dataExchange, IDC_RATIO, m_dRatio);
+	DDV_MinMaxDouble(dataExchange, m_dRatio, 0.0001, 10000.);
 }
 BOOL EoDlgActiveViewKeyplan::OnInitDialog() {
 	CDialog::OnInitDialog();

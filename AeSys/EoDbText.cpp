@@ -106,7 +106,7 @@ bool EoDbText::IsInView(AeSysView* view) {
 
   text_GetBoundingBox(m_fd, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
 
-  for (size_t n = 0; n <= 2;) {
+  for (INT_PTR n = 0; n <= 2;) {
     pt[0] = pts[n++];
     pt[1] = pts[n++];
 

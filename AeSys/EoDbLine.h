@@ -16,56 +16,56 @@ class EoDbLine : public EoDbPrimitive {
 
   EoDbLine(const EoDbLine& src);
 
-  ~EoDbLine() {};
+  ~EoDbLine() override {};
 
  public:  // Operators
   const EoDbLine& operator=(const EoDbLine& src);
 
  public:  //	Methods - absolute virtuals
-  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent);
-  void Assign(EoDbPrimitive* primitive) { *this = *static_cast<EoDbLine*>(primitive); }
+  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
+  void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbLine*>(primitive); }
 #if defined(USING_ODA)
   OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
 #endif  // USING_ODA
-  EoDbPrimitive*& Copy(EoDbPrimitive*&);
-  void Display(AeSysView* view, CDC* deviceContext);
-  void AddReportToMessageList(EoGePoint3d);
-  void FormatExtra(CString& str);
-  void FormatGeometry(CString& str);
-  void GetAllPts(EoGePoint3dArray& pts);
-  EoGePoint3d GetCtrlPt() { return m_ln.Midpoint(); }
+  EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
+  void Display(AeSysView* view, CDC* deviceContext) override;
+  void AddReportToMessageList(EoGePoint3d) override;
+  void FormatExtra(CString& str) override;
+  void FormatGeometry(CString& str) override;
+  void GetAllPts(EoGePoint3dArray& pts) override;
+  EoGePoint3d GetCtrlPt() override { return m_ln.Midpoint(); }
   /// <summary>Determines the extent.</summary>
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&);
-  EoGePoint3d GoToNxtCtrlPt();
-  bool Identical(EoDbPrimitive* primitive);
-  bool Is(EoUInt16 wType) { return wType == EoDb::kLinePrimitive; }
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
+  EoGePoint3d GoToNxtCtrlPt() override;
+  bool Identical(EoDbPrimitive* primitive) override;
+  bool Is(EoUInt16 wType) override { return wType == EoDb::kLinePrimitive; }
   /// <summary>Tests whether a line is wholly or partially within the current view volume.</summary>
-  bool IsInView(AeSysView* view);
+  bool IsInView(AeSysView* view) override;
   /// <summary>Determines if a line is identified by a point.</summary>
-  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point);
-  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point);
+  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   /// <summary>Evaluates whether a line intersects line.</summary>
-  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt);
+  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt) override;
   /// <summary>Evaluates whether a point lies within tolerance specified of line.</summary>
-  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&);
+  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   /// <summary>Determines whether a line is partially or wholly within the area defined by the two points passed.</summary>
-  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d);
-  void Transform(EoGeTransformMatrix& tm) {
+  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
+  void Transform(EoGeTransformMatrix& tm) override {
     BeginPoint(tm * BeginPoint());
     EndPoint(tm * EndPoint());
   }
-  void Translate(EoGeVector3d v) { m_ln += v; }
-  void TranslateUsingMask(EoGeVector3d, const DWORD);
-  bool Write(CFile& file);
-  void Write(CFile& file, EoByte*);
+  void Translate(EoGeVector3d v) override { m_ln += v; }
+  void TranslateUsingMask(EoGeVector3d, const DWORD) override;
+  bool Write(CFile& file) override;
+  void Write(CFile& file, EoByte*) override;
 
  public:  // Methods - virtuals
   /// <summary>Cuts a line at two points.</summary>
   // Notes:	Line segment between to points goes in groups.
-  void CutAt2Pts(EoGePoint3d*, EoDbGroupList*, EoDbGroupList*);
+  void CutAt2Pts(EoGePoint3d*, EoDbGroupList*, EoDbGroupList*) override;
   /// <summary>Cuts a line a point.</summary>
-  void CutAtPt(EoGePoint3d&, EoDbGroup*);
-  int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*);
+  void CutAtPt(EoGePoint3d&, EoDbGroup*) override;
+  int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) override;
 
  public:  // Methods
   void GetLine(EoGeLine& ln) { ln = m_ln; }

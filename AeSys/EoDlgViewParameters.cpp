@@ -26,9 +26,9 @@ EoDlgViewParameters::EoDlgViewParameters(CWnd* pParent /*=NULL*/)
 }
 EoDlgViewParameters::~EoDlgViewParameters() {
 }
-void EoDlgViewParameters::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Check(pDX, IDC_PERSPECTIVE_PROJECTION, m_PerspectiveProjection);
+void EoDlgViewParameters::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Check(dataExchange, IDC_PERSPECTIVE_PROJECTION, m_PerspectiveProjection);
 }
 // EoDlgViewParameters message handlers
 

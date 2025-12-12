@@ -16,10 +16,10 @@ EoDlgSetUnitsAndPrecision::EoDlgSetUnitsAndPrecision(CWnd* pParent /*=NULL*/) :
 }
 EoDlgSetUnitsAndPrecision::~EoDlgSetUnitsAndPrecision() {
 }
-void EoDlgSetUnitsAndPrecision::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_METRIC_UNITS, m_MetricUnitsListBoxControl);
-	DDX_Text(pDX, IDC_PRECISION, m_Precision);
+void EoDlgSetUnitsAndPrecision::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Control(dataExchange, IDC_METRIC_UNITS, m_MetricUnitsListBoxControl);
+	DDX_Text(dataExchange, IDC_PRECISION, m_Precision);
 }
 BOOL EoDlgSetUnitsAndPrecision::OnInitDialog() {
 	CDialog::OnInitDialog();

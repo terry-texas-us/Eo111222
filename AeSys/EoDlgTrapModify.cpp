@@ -8,9 +8,6 @@
 
 IMPLEMENT_DYNAMIC(EoDlgTrapModify, CDialog)
 
-BEGIN_MESSAGE_MAP(EoDlgTrapModify, CDialog)
-END_MESSAGE_MAP()
-
 EoDlgTrapModify::EoDlgTrapModify(CWnd* pParent /*=NULL*/) :
 	CDialog(EoDlgTrapModify::IDD, pParent) {
 }
@@ -19,8 +16,8 @@ EoDlgTrapModify::EoDlgTrapModify(AeSysDoc* document, CWnd* pParent /*=NULL*/) :
 }
 EoDlgTrapModify::~EoDlgTrapModify() {
 }
-void EoDlgTrapModify::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
+void EoDlgTrapModify::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
 }
 void EoDlgTrapModify::OnOK() {
 	if (IsDlgButtonChecked(IDC_MOD_PEN)) {

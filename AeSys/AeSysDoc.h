@@ -9,6 +9,9 @@
 class AeSysDoc : public CDocument {
  protected:  // create from serialization only
   AeSysDoc();
+  AeSysDoc(const AeSysDoc&) = delete;
+  AeSysDoc& operator=(const AeSysDoc&) = delete;
+
   DECLARE_DYNCREATE(AeSysDoc)
 
  public:  // Attributes

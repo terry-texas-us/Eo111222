@@ -1,42 +1,41 @@
 ﻿#pragma once
 
-// EoDlgActiveViewKeyplan dialog
-
 class EoDlgActiveViewKeyplan : public CDialog {
-	DECLARE_DYNAMIC(EoDlgActiveViewKeyplan)
+  DECLARE_DYNAMIC(EoDlgActiveViewKeyplan)
 
-public:
-	EoDlgActiveViewKeyplan(CWnd* pParent = NULL);
-	EoDlgActiveViewKeyplan(AeSysView* view, CWnd* pParent = NULL);
-	virtual ~EoDlgActiveViewKeyplan();
+ public:
+  EoDlgActiveViewKeyplan(CWnd* pParent = nullptr);
+  EoDlgActiveViewKeyplan(AeSysView* view, CWnd* pParent = nullptr);
+  EoDlgActiveViewKeyplan(const EoDlgActiveViewKeyplan&) = delete;
+  EoDlgActiveViewKeyplan& operator=(const EoDlgActiveViewKeyplan&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_ACTIVE_VIEW_KEYPLAN };
+  virtual ~EoDlgActiveViewKeyplan();
 
-	static HBITMAP	m_hbmKeyplan;
-	static CRect	m_rcWnd;
+  enum { IDD = IDD_ACTIVE_VIEW_KEYPLAN };
 
-	double m_dRatio;
+  static HBITMAP m_hbmKeyplan;
+  static CRect m_rcWnd;
 
-protected:
-	static bool	bKeyplan;
+  double m_dRatio;
 
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+ protected:
+  static bool bKeyplan;
 
-	AeSysView* m_ActiveView;
-	void Refresh();
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
-public:
-	afx_msg void OnBnClickedRecall();
-	afx_msg void OnBnClickedSave();
-	afx_msg void OnEnKillfocusRatio();
+  AeSysView* m_ActiveView;
+  void Refresh();
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ public:
+  afx_msg void OnBnClickedRecall();
+  afx_msg void OnBnClickedSave();
+  afx_msg void OnEnKillfocusRatio();
+
+ protected:
+  DECLARE_MESSAGE_MAP()
 };
 
 // User defined message sent by EoDlgActiveViewKeyplan to WndProcKeyPlan when a new zoom ratio is set using an edit control (LPARAM is the new value of ratio)
 #define WM_USER_ON_NEW_RATIO WM_USER + 1
-

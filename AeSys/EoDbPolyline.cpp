@@ -160,7 +160,7 @@ EoGePoint3d EoDbPolyline::GoToNxtCtrlPt() {
     if (sm_Edge == 1)
       sm_PivotVertex = 1;
     else
-      sm_PivotVertex = wPts - 1;
+      sm_PivotVertex = wPts - 1U;
   } else if (sm_PivotVertex == wPts - 1) {
     if (sm_Edge == wPts)
       sm_PivotVertex = 0;

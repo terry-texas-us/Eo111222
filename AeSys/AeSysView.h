@@ -23,6 +23,9 @@ class AeSysView : public CView
 
  protected:  // create from serialization only
   AeSysView();
+  AeSysView(const AeSysView&) = delete;
+  AeSysView& operator=(const AeSysView&) = delete;
+
   DECLARE_DYNCREATE(AeSysView)
 
  public:
@@ -499,6 +502,7 @@ class AeSysView : public CView
   afx_msg void OnNodalModeToLine();
   afx_msg void OnNodalModeToPolygon();
   afx_msg void OnNodalModeEmpty();
+  /// @brief Handles the engagement of nodal mode by updating the nodal list with all points from the currently engaged primitive.
   afx_msg void OnNodalModeEngage();
   afx_msg void OnNodalModeReturn();
   afx_msg void OnNodalModeEscape();
@@ -528,19 +532,19 @@ class AeSysView : public CView
   EoGeVector3d m_EditModeRotationAngles;
   EoGeVector3d m_EditModeScale;
 
-  EoGeVector3d AeSysView::EditModeRotationAngles() { return m_EditModeRotationAngles; }
-  EoGeTransformMatrix AeSysView::EditModeInvertedRotationTMat() {
+  EoGeVector3d EditModeRotationAngles() { return m_EditModeRotationAngles; }
+  EoGeTransformMatrix EditModeInvertedRotationTMat() {
     EoGeTransformMatrix Matrix;
     Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
     Matrix.Inverse();
     return Matrix;
   }
-  EoGeTransformMatrix AeSysView::EditModeRotationTMat() {
+  EoGeTransformMatrix EditModeRotationTMat() {
     EoGeTransformMatrix Matrix;
     Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
     return Matrix;
   }
-  EoGeVector3d AeSysView::EditModeInvertedScaleFactors() {
+  EoGeVector3d EditModeInvertedScaleFactors() {
     EoGeVector3d InvertedScaleFactors;
 
     InvertedScaleFactors.x = fabs(m_EditModeScale.x) > DBL_EPSILON ? 1. / m_EditModeScale.x : 1.;
@@ -549,19 +553,19 @@ class AeSysView : public CView
 
     return InvertedScaleFactors;
   }
-  EoGeVector3d AeSysView::EditModeScaleFactors() const { return m_EditModeScale; }
-  void AeSysView::SetEditModeScaleFactors(const double x, const double y, const double z) {
+  EoGeVector3d EditModeScaleFactors() const { return m_EditModeScale; }
+  void SetEditModeScaleFactors(const double x, const double y, const double z) {
     m_EditModeScale.x = x;
     m_EditModeScale.y = y;
     m_EditModeScale.z = z;
   }
-  void AeSysView::SetEditModeRotationAngles(double x, double y, double z) {
+  void SetEditModeRotationAngles(double x, double y, double z) {
     m_EditModeRotationAngles.x = x;
     m_EditModeRotationAngles.y = y;
     m_EditModeRotationAngles.z = z;
   }
-  EoGeVector3d AeSysView::EditModeMirrorScale() const { return m_EditModeMirrorScale; }
-  void AeSysView::SetMirrorScale(double x, double y, double z) {
+  EoGeVector3d EditModeMirrorScale() const { return m_EditModeMirrorScale; }
+  void SetMirrorScale(double x, double y, double z) {
     m_EditModeMirrorScale.x = x;
     m_EditModeMirrorScale.y = y;
     m_EditModeMirrorScale.z = z;

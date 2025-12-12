@@ -3,28 +3,31 @@
 // EoDlgSetUnitsAndPrecision dialog
 
 class EoDlgSetUnitsAndPrecision : public CDialog {
-	DECLARE_DYNAMIC(EoDlgSetUnitsAndPrecision)
+  DECLARE_DYNAMIC(EoDlgSetUnitsAndPrecision)
 
-public:
-	EoDlgSetUnitsAndPrecision(CWnd* pParent = NULL);
-	virtual ~EoDlgSetUnitsAndPrecision();
+ public:
+  EoDlgSetUnitsAndPrecision(CWnd* pParent = nullptr);
 
-// Dialog Data
-	enum { IDD = IDD_UNITS };
+  EoDlgSetUnitsAndPrecision(const EoDlgSetUnitsAndPrecision&) = delete;
+  EoDlgSetUnitsAndPrecision& operator=(const EoDlgSetUnitsAndPrecision&) = delete;
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
-public:
-	CListBox m_MetricUnitsListBoxControl;
-	AeSys::Units m_Units;
-	int m_Precision;
+  virtual ~EoDlgSetUnitsAndPrecision();
 
-	afx_msg void OnBnClickedMetric();
+  // Dialog Data
+  enum { IDD = IDD_UNITS };
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
+
+ public:
+  CListBox m_MetricUnitsListBoxControl;
+  AeSys::Units m_Units;
+  int m_Precision;
+
+  afx_msg void OnBnClickedMetric();
+
+ protected:
+  DECLARE_MESSAGE_MAP()
 };
-
-

@@ -83,9 +83,9 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
       }
     }
     int AllocationSize = strBuf.GetLength() + 1;
-    GLOBALHANDLE ClipboardDataHandle = GlobalAlloc(GHND, AllocationSize);
+    GLOBALHANDLE ClipboardDataHandle = GlobalAlloc(GHND, static_cast<SIZE_T>(AllocationSize));
     LPTSTR ClipboardData = (LPTSTR)GlobalLock(ClipboardDataHandle);
-    wcscpy_s(ClipboardData, AllocationSize, strBuf);
+    wcscpy_s(ClipboardData, static_cast<rsize_t>(AllocationSize), strBuf);
     GlobalUnlock(ClipboardDataHandle);
     ::SetClipboardData(CF_TEXT, ClipboardDataHandle);
   }

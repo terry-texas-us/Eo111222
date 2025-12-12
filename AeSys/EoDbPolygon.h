@@ -18,7 +18,10 @@ class EoDbPolygon : public EoDbPrimitive {
  public:  // Constructors and destructor
   EoDbPolygon();
   EoDbPolygon(EoByte* buffer, int version);
-  EoDbPolygon(EoGePoint3dArray& pts);
+
+  /// @brief Constructs an EoDbPolygon object from an array of 3D points.
+  /// @param points An array of 3D points that define the vertices of the polygon. Must contain at least 3 points for proper initialization of the plane vectors.
+  EoDbPolygon(EoGePoint3dArray& points);
   EoDbPolygon(EoUInt16, EoGePoint3d*);
   EoDbPolygon(EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d& yAxis, EoGePoint3dArray& pts);
   EoDbPolygon(EoInt16 penColor, EoInt16 style, EoInt16 styleIndex, EoGePoint3d& origin, EoGeVector3d& xAxis,
@@ -33,44 +36,44 @@ class EoDbPolygon : public EoDbPrimitive {
   EoGePoint3d& operator[](int i) { return m_Pt[i]; }
   const EoGePoint3d& operator[](int i) const { return m_Pt[i]; }
 
-  ~EoDbPolygon();
+  ~EoDbPolygon() override;
 
  public:  // Methods - absolute virtuals
-  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent);
-  void Assign(EoDbPrimitive* primitive) { *this = *static_cast<EoDbPolygon*>(primitive); }
+  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
+  void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolygon*>(primitive); }
 #if defined(USING_ODA)
   OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
 #endif  // USING_ODA
-  EoDbPrimitive*& Copy(EoDbPrimitive*&);
-  void Display(AeSysView* view, CDC* deviceContext);
-  void AddReportToMessageList(EoGePoint3d);
-  void FormatExtra(CString& str);
-  void FormatGeometry(CString& str);
-  void GetAllPts(EoGePoint3dArray& pts);
-  EoGePoint3d GetCtrlPt();
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&);
-  EoGePoint3d GoToNxtCtrlPt();
-  bool Identical(EoDbPrimitive*) { return false; }
-  bool Is(EoUInt16 wType) { return wType == EoDb::kPolygonPrimitive; }
-  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point);
-  bool IsInView(AeSysView* view);
-  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point);
-  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) { return false; }
-  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&);
-  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d);
-  void Transform(EoGeTransformMatrix&);
-  void Translate(EoGeVector3d translate);
-  void TranslateUsingMask(EoGeVector3d, const DWORD);
-  bool Write(CFile& file);
-  void Write(CFile& file, EoByte* buffer);
+  EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
+  void Display(AeSysView* view, CDC* deviceContext) override;
+  void AddReportToMessageList(EoGePoint3d) override;
+  void FormatExtra(CString& str) override;
+  void FormatGeometry(CString& str) override;
+  void GetAllPts(EoGePoint3dArray& pts) override;
+  EoGePoint3d GetCtrlPt() override;
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
+  EoGePoint3d GoToNxtCtrlPt() override;
+  bool Identical(EoDbPrimitive*) override { return false; }
+  bool Is(EoUInt16 wType) override { return wType == EoDb::kPolygonPrimitive; }
+  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  bool IsInView(AeSysView* view) override;
+  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) override { return false; }
+  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
+  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
+  void Transform(EoGeTransformMatrix&) override;
+  void Translate(EoGeVector3d translate) override;
+  void TranslateUsingMask(EoGeVector3d, const DWORD) override;
+  bool Write(CFile& file) override;
+  void Write(CFile& file, EoByte* buffer) override;
 
   CString FormatIntStyle();
   const EoInt16& IntStyle() { return (m_InteriorStyle); }
   const EoInt16& IntStyleId() { return (m_InteriorStyleIndex); }
   EoGePoint3d GetPt(int i) { return (m_Pt[i]); }
   int GetPts() { return (m_NumberOfPoints); }
-  void ModifyState();
-  bool PvtOnCtrlPt(AeSysView* view, const EoGePoint4d&);
+  void ModifyState() override;
+  bool PvtOnCtrlPt(AeSysView* view, const EoGePoint4d&) override;
   void SetIntStyle(const EoInt16 n) { m_InteriorStyle = n; }
   void SetIntStyleId(const EoInt16 n) { m_InteriorStyleIndex = n; }
   void SetHatRefVecs(double, double, double);

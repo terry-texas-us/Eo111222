@@ -30,8 +30,10 @@ class EoDbLayer : public EoDbGroupList {
   };
   EoDbLayer(const CString& name, EoUInt16 flags);
   EoDbLayer(const CString& name, EoUInt16 flags, EoDbLineType* lineType);
+  EoDbLayer(const EoDbLayer& layer) = delete;
+  EoDbLayer& operator=(const EoDbLayer&) = delete;
 
-  ~EoDbLayer() {}
+  ~EoDbLayer() override {}
   void Display(AeSysView* view, CDC* deviceContext);
   void Display(AeSysView* view, CDC* deviceContext, bool identifyTrap);
 

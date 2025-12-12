@@ -14,7 +14,7 @@ class EoDbLineType : public CObject {
 
   EoDbLineType(const EoDbLineType& lineType);
 
-  ~EoDbLineType();
+  ~EoDbLineType() override;
 
   EoDbLineType& operator=(const EoDbLineType& lineType);
 

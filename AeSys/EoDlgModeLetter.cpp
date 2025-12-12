@@ -19,9 +19,9 @@ EoDlgModeLetter::EoDlgModeLetter(CWnd* pParent /*=NULL*/) :
 }
 EoDlgModeLetter::~EoDlgModeLetter() {
 }
-void EoDlgModeLetter::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_TEXT, m_TextEditControl);
+void EoDlgModeLetter::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Control(dataExchange, IDC_TEXT, m_TextEditControl);
 }
 BOOL EoDlgModeLetter::OnInitDialog() {
 	CDialog::OnInitDialog();

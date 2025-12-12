@@ -39,7 +39,8 @@ class AeSys : public CWinAppEx
 
  public:
   AeSys();
-
+  AeSys(const AeSys&) = delete;  
+  AeSys& operator=(const AeSys&) = delete;
   // Overrides
  public:
   virtual BOOL InitInstance(void);

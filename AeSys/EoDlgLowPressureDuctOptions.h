@@ -3,31 +3,34 @@
 // EoDlgLowPressureDuctOptions dialog
 
 class EoDlgLowPressureDuctOptions : public CDialog {
-	DECLARE_DYNAMIC(EoDlgLowPressureDuctOptions)
+  DECLARE_DYNAMIC(EoDlgLowPressureDuctOptions)
 
-public:
-	EoDlgLowPressureDuctOptions(CWnd* pParent = NULL);
-	virtual ~EoDlgLowPressureDuctOptions();
+ public:
+  EoDlgLowPressureDuctOptions(CWnd* parent = nullptr);
+  EoDlgLowPressureDuctOptions(const EoDlgLowPressureDuctOptions&) = delete; 
+  EoDlgLowPressureDuctOptions& operator=(const EoDlgLowPressureDuctOptions&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_DLGPROC_LPD_OPTIONS };
+  virtual ~EoDlgLowPressureDuctOptions();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
+  // Dialog Data
+  enum { IDD = IDD_DLGPROC_LPD_OPTIONS };
 
-public:
-	double m_Width;
-	double m_Depth;
-	double m_RadiusFactor;
-	bool m_GenerateVanes;
-	int m_Justification;
-	bool m_BeginWithTransition;
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
 
-	afx_msg void OnBnClickedOk();
-	afx_msg void OnBnClickedGenVanes();
-	afx_msg void OnEnChangeWidth();
+ public:
+  double m_Width;
+  double m_Depth;
+  double m_RadiusFactor;
+  bool m_GenerateVanes;
+  int m_Justification;
+  bool m_BeginWithTransition;
 
-protected:
-	DECLARE_MESSAGE_MAP()
+  afx_msg void OnBnClickedOk();
+  afx_msg void OnBnClickedGenVanes();
+  afx_msg void OnEnChangeWidth();
+
+ protected:
+  DECLARE_MESSAGE_MAP()
 };

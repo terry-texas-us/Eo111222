@@ -9,7 +9,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-double NodalModePickTolerance = .05;
+double NodalModePickTolerance = 0.05;
 EoUInt16 PreviousNodalCommand = 0;
 EoGePoint3d PreviousNodalCursorPosition;
 
@@ -220,15 +220,16 @@ void AeSysView::OnNodalModeToPolygon(void) {
   }
 }
 void AeSysView::OnNodalModeEmpty(void) { OnNodalModeEscape(); }
-void AeSysView::OnNodalModeEngage(void) {
+
+void AeSysView::OnNodalModeEngage() {
   if (GroupIsEngaged()) {
-    DWORD Mask = GetDocument()->GetPrimitiveMask(EngagedPrimitive());
-    EoGePoint3dArray pts;
+    auto mask = GetDocument()->GetPrimitiveMask(EngagedPrimitive());
+    EoGePoint3dArray points;
 
-    EngagedPrimitive()->GetAllPts(pts);
+    EngagedPrimitive()->GetAllPts(points);
 
-    for (int i = 0; i < pts.GetSize(); i++) {
-      GetDocument()->UpdateNodalList(EngagedGroup(), EngagedPrimitive(), Mask, i, pts[i]);
+    for (int i = 0; i < points.GetSize(); i++) {
+      GetDocument()->UpdateNodalList(EngagedGroup(), EngagedPrimitive(), mask, i, points[i]);
     }
   }
 }

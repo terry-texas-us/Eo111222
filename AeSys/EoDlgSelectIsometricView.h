@@ -3,24 +3,24 @@
 // EoDlgSelectIsometricView dialog
 
 class EoDlgSelectIsometricView : public CDialog {
-	DECLARE_DYNAMIC(EoDlgSelectIsometricView)
+  DECLARE_DYNAMIC(EoDlgSelectIsometricView)
 
-public:
-	EoDlgSelectIsometricView(CWnd* pParent = NULL);
-	virtual ~EoDlgSelectIsometricView();
+ public:
+  EoDlgSelectIsometricView(CWnd* pParent = nullptr);
+  EoDlgSelectIsometricView(const EoDlgSelectIsometricView&) = delete;	
+  EoDlgSelectIsometricView& operator=(const EoDlgSelectIsometricView&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_SELECT_ISOMETRIC_VIEW };
+  virtual ~EoDlgSelectIsometricView();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
+  // Dialog Data
+  enum { IDD = IDD_SELECT_ISOMETRIC_VIEW };
 
-public:
-	int m_LeftRight;
-	int m_FrontBack;
-	int m_AboveUnder;
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ public:
+  int m_LeftRight;
+  int m_FrontBack;
+  int m_AboveUnder;
 };

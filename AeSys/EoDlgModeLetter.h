@@ -3,27 +3,31 @@
 // EoDlgModeLetter dialog
 
 class EoDlgModeLetter : public CDialog {
-	DECLARE_DYNAMIC(EoDlgModeLetter)
+  DECLARE_DYNAMIC(EoDlgModeLetter)
 
-public:
-	EoDlgModeLetter(CWnd* pParent = NULL);
-	virtual ~EoDlgModeLetter();
+ public:
+  EoDlgModeLetter(CWnd* pParent = nullptr);
+  EoDlgModeLetter(const EoDlgModeLetter&) = delete;
+  EoDlgModeLetter& operator=(const EoDlgModeLetter&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_ADD_NOTE };
+  virtual ~EoDlgModeLetter();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+  // Dialog Data
+  enum { IDD = IDD_ADD_NOTE };
 
-	static EoGePoint3d m_Point;
-public:
-	CEdit m_TextEditControl;
-	/// <summary> Effectively resizes the edit control to use the entire client area of the dialog.</summary>
-	/// <remarks> OnSize can be called before OnInitialUpdate so check is made for valid control window.</remarks>
-	afx_msg void OnSize(UINT nType, int cx, int cy);
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
-protected:
-	DECLARE_MESSAGE_MAP()
+  static EoGePoint3d m_Point;
+
+ public:
+  CEdit m_TextEditControl;
+  /// <summary> Effectively resizes the edit control to use the entire client area of the dialog.</summary>
+  /// <remarks> OnSize can be called before OnInitialUpdate so check is made for valid control window.</remarks>
+  afx_msg void OnSize(UINT nType, int cx, int cy);
+
+ protected:
+  DECLARE_MESSAGE_MAP()
 };

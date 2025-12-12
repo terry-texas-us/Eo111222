@@ -17,6 +17,7 @@ class EoDbBlock : public EoDbGroup {
   EoDbBlock() { m_wBlkTypFlgs = 0; }
   EoDbBlock(EoUInt16 flags, EoGePoint3d);
   EoDbBlock(EoUInt16 flags, EoGePoint3d, const CString&);
+  EoDbBlock& operator=(const EoDbBlock&) = delete;
 
   EoGePoint3d GetBasePt() { return m_ptBase; }
   EoUInt16 GetBlkTypFlgs() { return m_wBlkTypFlgs; }

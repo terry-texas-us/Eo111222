@@ -22,8 +22,8 @@ EoDlgDrawOptions::EoDlgDrawOptions(CWnd* pParent /*=NULL*/) :
 }
 EoDlgDrawOptions::~EoDlgDrawOptions() {
 }
-void EoDlgDrawOptions::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
+void EoDlgDrawOptions::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
 }
 BOOL EoDlgDrawOptions::OnInitDialog() {
 	CDialog::OnInitDialog();

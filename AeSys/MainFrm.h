@@ -12,7 +12,8 @@ class CMainFrame : public CMDIFrameWndEx {
   DECLARE_DYNAMIC(CMainFrame)
  public:
   CMainFrame();
-
+  CMainFrame(const CMainFrame&) = delete;
+  CMainFrame& operator=(const CMainFrame&) = delete;
   // Attributes
  private:
   UINT m_ApplicationLook;

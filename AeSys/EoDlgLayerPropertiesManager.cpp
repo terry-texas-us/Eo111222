@@ -111,10 +111,10 @@ EoDlgLayerPropertiesManager::EoDlgLayerPropertiesManager(OdDbDatabase* database,
 
 EoDlgLayerPropertiesManager::~EoDlgLayerPropertiesManager() {}
 
-void EoDlgLayerPropertiesManager::DoDataExchange(CDataExchange* pDX) {
-  CDialog::DoDataExchange(pDX);
-  DDX_Control(pDX, IDC_LAYERS_LIST_CONTROL, m_LayerList);
-  DDX_Control(pDX, IDC_LAYER_FILTER_TREE, m_TreeFilters);
+void EoDlgLayerPropertiesManager::DoDataExchange(CDataExchange* dataExchange) {
+  CDialog::DoDataExchange(dataExchange);
+  DDX_Control(dataExchange, IDC_LAYERS_LIST_CONTROL, m_LayerList);
+  DDX_Control(dataExchange, IDC_LAYER_FILTER_TREE, m_TreeFilters);
 }
 
 // EoDlgLayerPropertiesManager message handlers

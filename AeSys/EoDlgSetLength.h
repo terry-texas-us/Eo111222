@@ -3,23 +3,24 @@
 // EoDlgSetLength dialog
 
 class EoDlgSetLength : public CDialog {
-	DECLARE_DYNAMIC(EoDlgSetLength)
+  DECLARE_DYNAMIC(EoDlgSetLength)
 
-public:
-	EoDlgSetLength(CWnd* pParent = NULL);
-	virtual ~EoDlgSetLength();
+ public:
+  EoDlgSetLength(CWnd* pParent = nullptr);
+  EoDlgSetLength(const EoDlgSetLength&) = delete;
+  EoDlgSetLength& operator=(const EoDlgSetLength&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_SET_LENGTH };
+  virtual ~EoDlgSetLength();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
-public:
-	double	m_dLength;
-	CString m_strTitle;
+  // Dialog Data
+  enum { IDD = IDD_SET_LENGTH };
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
+
+ public:
+  double m_dLength;
+  CString m_strTitle;
 };

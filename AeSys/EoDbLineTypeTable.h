@@ -8,6 +8,10 @@ class EoDbLineTypeTable {
   CTypedPtrMap<CMapStringToOb, CString, EoDbLineType*> m_MapLineTypes;
 
  public:
+  EoDbLineTypeTable() = default;
+  EoDbLineTypeTable(const EoDbLineTypeTable&) = delete;
+  EoDbLineTypeTable& operator=(const EoDbLineTypeTable&) = delete;
+
   int FillComboBox(CComboBox& comboBox);
   int FillListControl(CListCtrl& listControl);
   POSITION GetStartPosition() { return m_MapLineTypes.GetStartPosition(); }

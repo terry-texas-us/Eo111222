@@ -3,31 +3,34 @@
 // EoDlgModeRevise dialog
 
 class EoDlgModeRevise : public CDialog {
-	DECLARE_DYNAMIC(EoDlgModeRevise)
+  DECLARE_DYNAMIC(EoDlgModeRevise)
 
-public:
-	EoDlgModeRevise(CWnd* pParent = NULL);
-	virtual ~EoDlgModeRevise();
+ public:
+  EoDlgModeRevise(CWnd* pParent = nullptr);
+  EoDlgModeRevise(const EoDlgModeRevise&) = delete;
+  EoDlgModeRevise& operator=(const EoDlgModeRevise&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_ADD_NOTE };
+  virtual ~EoDlgModeRevise();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+  // Dialog Data
+  enum { IDD = IDD_ADD_NOTE };
 
-	//static EoGePoint3d sm_Point;
-	static EoDbFontDefinition sm_FontDefinition;
-	static EoGeReferenceSystem sm_ReferenceSystem;
-	static EoDbText* sm_TextPrimitive;
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
-public:
-	CEdit m_TextEditControl;
-	/// <summary> Effectively resizes the edit control to use the entire client area of the dialog.</summary>
-	/// <remarks> OnSize can be called before OnInitialUpdate so check is made for valid control window.</remarks>
-	afx_msg void OnSize(UINT nType, int cx, int cy);
+  //static EoGePoint3d sm_Point;
+  static EoDbFontDefinition sm_FontDefinition;
+  static EoGeReferenceSystem sm_ReferenceSystem;
+  static EoDbText* sm_TextPrimitive;
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ public:
+  CEdit m_TextEditControl;
+  /// <summary> Effectively resizes the edit control to use the entire client area of the dialog.</summary>
+  /// <remarks> OnSize can be called before OnInitialUpdate so check is made for valid control window.</remarks>
+  afx_msg void OnSize(UINT nType, int cx, int cy);
+
+ protected:
+  DECLARE_MESSAGE_MAP()
 };

@@ -1,9 +1,12 @@
 ﻿#pragma once
 
 class EoDbGroupList : public CObList {
- public:  // Constructors and destructor
-  EoDbGroupList() {};
-  virtual ~EoDbGroupList() {}
+ public:
+  EoDbGroupList() {}
+  EoDbGroupList(const EoDbGroupList&) = delete;
+  EoDbGroupList& operator=(const EoDbGroupList&) = delete;
+
+  ~EoDbGroupList() override {}
 
  public:  // Base class wrappers
   POSITION AddHead(EoDbGroup* group) { return (CObList::AddHead((CObject*)group)); }

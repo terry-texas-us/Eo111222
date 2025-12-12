@@ -26,9 +26,9 @@ EoDlgModeRevise::EoDlgModeRevise(CWnd* pParent /*=NULL*/) :
 }
 EoDlgModeRevise::~EoDlgModeRevise() {
 }
-void EoDlgModeRevise::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_TEXT, m_TextEditControl);
+void EoDlgModeRevise::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Control(dataExchange, IDC_TEXT, m_TextEditControl);
 }
 BOOL EoDlgModeRevise::OnInitDialog() {
 	CDialog::OnInitDialog();

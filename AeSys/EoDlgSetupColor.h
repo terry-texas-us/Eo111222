@@ -3,43 +3,45 @@
 #include "EoCtrlColorsButton.h"
 
 class EoDlgSetupColor : public CDialog {
-	DECLARE_DYNAMIC(EoDlgSetupColor)
+  DECLARE_DYNAMIC(EoDlgSetupColor)
 
-public:
+ public:
+  EoDlgSetupColor(CWnd* pParent = nullptr);
+  EoDlgSetupColor(const EoDlgSetupColor&) = delete;
+  EoDlgSetupColor& operator=(const EoDlgSetupColor&) = delete;
 
-	EoDlgSetupColor(CWnd* pParent = NULL);
-	virtual ~EoDlgSetupColor();
+  virtual ~EoDlgSetupColor();
 
-// Dialog Data
-	enum { IDD = IDD_SETUP_COLOR };
+  // Dialog Data
+  enum { IDD = IDD_SETUP_COLOR };
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
-	virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
+  virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 
-	EoCtrlColorsButton m_EvenColorsButton;
-	EoCtrlColorsButton m_OddColorsButton;
-	EoCtrlColorsButton m_NamedColorsButton;
-	EoCtrlColorsButton m_GraysButton;
-	EoCtrlColorsButton m_SelectionButton;
+  EoCtrlColorsButton m_EvenColorsButton;
+  EoCtrlColorsButton m_OddColorsButton;
+  EoCtrlColorsButton m_NamedColorsButton;
+  EoCtrlColorsButton m_GraysButton;
+  EoCtrlColorsButton m_SelectionButton;
 
-	CEdit m_ColorEditControl;
+  CEdit m_ColorEditControl;
 
-	void DrawSelectionInformation(EoUInt16 index);
+  void DrawSelectionInformation(EoUInt16 index);
 
-public:
-	EoUInt16 m_ColorIndex;
+ public:
+  EoUInt16 m_ColorIndex;
 
-	afx_msg void OnBnClickedByblockButton();
-	afx_msg void OnBnClickedBylayerButton();
-	afx_msg void OnClickedEvenColors();
-	afx_msg void OnClickedGrays();
-	afx_msg void OnClickedNamedColors();
-	afx_msg void OnClickedOddColors();
-	afx_msg void OnChangeColorEdit();
+  afx_msg void OnBnClickedByblockButton();
+  afx_msg void OnBnClickedBylayerButton();
+  afx_msg void OnClickedEvenColors();
+  afx_msg void OnClickedGrays();
+  afx_msg void OnClickedNamedColors();
+  afx_msg void OnClickedOddColors();
+  afx_msg void OnChangeColorEdit();
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ protected:
+  DECLARE_MESSAGE_MAP()
 };

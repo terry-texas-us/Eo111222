@@ -22,14 +22,14 @@ CDialog(EoDlgSetupColor::IDD, pParent)
 }
 EoDlgSetupColor::~EoDlgSetupColor() {
 }
-void EoDlgSetupColor::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_EVEN_COLORS, m_EvenColorsButton);
-	DDX_Control(pDX, IDC_ODD_COLORS, m_OddColorsButton);
-	DDX_Control(pDX, IDC_NAMED_COLORS, m_NamedColorsButton);
-	DDX_Control(pDX, IDC_GRAYS, m_GraysButton);
-	DDX_Control(pDX, IDC_SELECTION_COLOR, m_SelectionButton);
-	DDX_Control(pDX, IDC_COLOR_EDIT, m_ColorEditControl);
+void EoDlgSetupColor::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Control(dataExchange, IDC_EVEN_COLORS, m_EvenColorsButton);
+	DDX_Control(dataExchange, IDC_ODD_COLORS, m_OddColorsButton);
+	DDX_Control(dataExchange, IDC_NAMED_COLORS, m_NamedColorsButton);
+	DDX_Control(dataExchange, IDC_GRAYS, m_GraysButton);
+	DDX_Control(dataExchange, IDC_SELECTION_COLOR, m_SelectionButton);
+	DDX_Control(dataExchange, IDC_COLOR_EDIT, m_ColorEditControl);
 }
 BOOL EoDlgSetupColor::OnInitDialog() {
 	CDialog::OnInitDialog();

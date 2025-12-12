@@ -3,35 +3,38 @@
 // EoDlgViewParameters dialog
 
 class EoDlgViewParameters : public CDialog {
-	DECLARE_DYNAMIC(EoDlgViewParameters)
+  DECLARE_DYNAMIC(EoDlgViewParameters)
 
-public:
-	EoDlgViewParameters(CWnd* pParent = NULL);
-	virtual ~EoDlgViewParameters();
+ public:
+  EoDlgViewParameters(CWnd* parent = nullptr);
+  EoDlgViewParameters(const EoDlgViewParameters&) = delete;
+  EoDlgViewParameters& operator=(const EoDlgViewParameters&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_VIEW_PARAMETERS };
+  virtual ~EoDlgViewParameters();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+  // Dialog Data
+  enum { IDD = IDD_VIEW_PARAMETERS };
 
-public:
-	BOOL m_PerspectiveProjection;
-	unsigned long m_ModelView;
-	afx_msg void OnBnClickedApply();
-	afx_msg void OnEnChangePositionX();
-	afx_msg void OnEnChangePositionY();
-	afx_msg void OnEnChangePositionZ();
-	afx_msg void OnEnChangeTargetX();
-	afx_msg void OnEnChangeTargetY();
-	afx_msg void OnEnChangeTargetZ();
-	afx_msg void OnEnChangeFrontClipDistance();
-	afx_msg void OnEnChangeBackClipDistance();
-	afx_msg void OnEnChangeLensLength();
-	afx_msg void OnBnClickedPerspectiveProjection();
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ public:
+  BOOL m_PerspectiveProjection;
+  unsigned long m_ModelView;
+  afx_msg void OnBnClickedApply();
+  afx_msg void OnEnChangePositionX();
+  afx_msg void OnEnChangePositionY();
+  afx_msg void OnEnChangePositionZ();
+  afx_msg void OnEnChangeTargetX();
+  afx_msg void OnEnChangeTargetY();
+  afx_msg void OnEnChangeTargetZ();
+  afx_msg void OnEnChangeFrontClipDistance();
+  afx_msg void OnEnChangeBackClipDistance();
+  afx_msg void OnEnChangeLensLength();
+  afx_msg void OnBnClickedPerspectiveProjection();
+
+ protected:
+  DECLARE_MESSAGE_MAP()
 };

@@ -3,23 +3,23 @@
 // EoDlgSetText dialog
 
 class EoDlgSetText : public CDialog {
-	DECLARE_DYNAMIC(EoDlgSetText)
+  DECLARE_DYNAMIC(EoDlgSetText)
 
-public:
-	EoDlgSetText(CWnd* pParent = NULL);
-	virtual ~EoDlgSetText();
+ public:
+  EoDlgSetText(CWnd* pParent = nullptr);
+  EoDlgSetText(const EoDlgSetText&) = delete;
+  EoDlgSetText& operator=(const EoDlgSetText&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_SET_TEXT };
+  virtual ~EoDlgSetText();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog(void);
+  // Dialog Data
+  enum { IDD = IDD_SET_TEXT };
 
-public:
-	CString m_sText;
-	CString m_strTitle;
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog(void);
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ public:
+  CString m_sText;
+  CString m_strTitle;
 };

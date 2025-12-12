@@ -7,17 +7,14 @@
 
 IMPLEMENT_DYNAMIC(EoDlgPipeSymbol, CDialog)
 
-BEGIN_MESSAGE_MAP(EoDlgPipeSymbol, CDialog)
-END_MESSAGE_MAP()
-
 EoDlgPipeSymbol::EoDlgPipeSymbol(CWnd* pParent /*=NULL*/) :
 	CDialog(EoDlgPipeSymbol::IDD, pParent), m_CurrentPipeSymbolIndex(0) {
 }
 EoDlgPipeSymbol::~EoDlgPipeSymbol() {
 }
-void EoDlgPipeSymbol::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_LIST, m_PipeSymbolsListBoxControl);
+void EoDlgPipeSymbol::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Control(dataExchange, IDC_LIST, m_PipeSymbolsListBoxControl);
 }
 BOOL EoDlgPipeSymbol::OnInitDialog() {
 	CDialog::OnInitDialog();

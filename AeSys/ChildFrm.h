@@ -4,15 +4,12 @@ class CChildFrame : public CMDIChildWndEx {
   DECLARE_DYNCREATE(CChildFrame)
  public:
   CChildFrame();
+  CChildFrame(const CChildFrame&) = delete;
+  CChildFrame& operator=(const CChildFrame&) = delete;
 
-  // Attributes
  public:
-  // Operations
- public:
-  // Overrides
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
-  // Implementation
  public:
   virtual ~CChildFrame();
 #ifdef _DEBUG
@@ -20,7 +17,6 @@ class CChildFrame : public CMDIChildWndEx {
   virtual void Dump(CDumpContext& dc) const;
 #endif
 
-  // Generated message map functions
  protected:
   DECLARE_MESSAGE_MAP()
  public:

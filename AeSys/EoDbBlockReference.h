@@ -19,45 +19,45 @@ class EoDbBlockReference : public EoDbPrimitive {
   EoDbBlockReference(const EoDbBlockReference&);
   EoDbBlockReference(EoUInt16 penColor, EoUInt16 lineType, const CString& name, const EoGePoint3d& point,
                      const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation);
-  virtual ~EoDbBlockReference() {};
+  ~EoDbBlockReference() override {};
 
  public:  // Operators
   const EoDbBlockReference& operator=(const EoDbBlockReference&);
 
  public:  // Methods - absolute virtuals
-  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent);
-  void Assign(EoDbPrimitive* primitive) { *this = *static_cast<EoDbBlockReference*>(primitive); }
+  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
+  void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbBlockReference*>(primitive); }
   EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& ptBase);
 #if defined(USING_ODA)
   OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
 #endif  // USING_ODA
-  EoDbPrimitive*& Copy(EoDbPrimitive*&);
-  void Display(AeSysView* view, CDC* deviceContext);
-  void AddReportToMessageList(EoGePoint3d);
-  void GetAllPts(EoGePoint3dArray& pts) {
+  EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
+  void Display(AeSysView* view, CDC* deviceContext) override;
+  void AddReportToMessageList(EoGePoint3d) override;
+  void GetAllPts(EoGePoint3dArray& pts) override {
     pts.SetSize(0);
     pts.Add(m_pt);
   }
-  void FormatExtra(CString& str);
-  void FormatGeometry(CString& str);
-  EoGePoint3d GetCtrlPt();
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&);
-  EoGePoint3d GoToNxtCtrlPt() { return m_pt; }
-  bool Identical(EoDbPrimitive*) { return false; }
-  bool Is(EoUInt16 type) { return type == EoDb::kGroupReferencePrimitive; }
-  bool IsInView(AeSysView* view);
-  bool IsPointOnControlPoint(AeSysView* /* view */, const EoGePoint4d& /* point */) { return false; }
+  void FormatExtra(CString& str) override;
+  void FormatGeometry(CString& str) override;
+  EoGePoint3d GetCtrlPt() override;
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
+  EoGePoint3d GoToNxtCtrlPt() override { return m_pt; }
+  bool Identical(EoDbPrimitive*) override { return false; }
+  bool Is(EoUInt16 type) override { return type == EoDb::kGroupReferencePrimitive; }
+  bool IsInView(AeSysView* view) override;
+  bool IsPointOnControlPoint(AeSysView* /* view */, const EoGePoint4d& /* point */) override { return false; }
   void Read(CFile&);
-  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point);
-  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) { return false; }
+  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) override { return false; }
   /// <summary>Evaluates whether a point lies within tolerance specified of block.</summary>
-  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&);
-  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d);
-  void Transform(EoGeTransformMatrix&);
-  void Translate(EoGeVector3d v) { m_pt += v; }
-  void TranslateUsingMask(EoGeVector3d v, const DWORD mask);
-  bool Write(CFile& file);
-  void Write(CFile& /* file */, EoByte* /* buffer */) {};
+  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
+  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
+  void Transform(EoGeTransformMatrix&) override;
+  void Translate(EoGeVector3d v) override { m_pt += v; }
+  void TranslateUsingMask(EoGeVector3d v, const DWORD mask) override;
+  bool Write(CFile& file) override;
+  void Write(CFile& /* file */, EoByte* /* buffer */) override {};
 
  public:  // Methods
   EoUInt16& ColCnt() { return m_wColCnt; }

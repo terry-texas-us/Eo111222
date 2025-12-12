@@ -1,7 +1,7 @@
 ﻿//{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by AeSys.rc
-// ??M
+//
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
 #define IDR_MAINFRAME                   101
@@ -294,6 +294,8 @@
 #define IDC_RGBNUMBERS                  1435
 #define IDC_SELECTION_COLOR             1436
 #define IDC_MFCFONTCOMBO                1448
+#define IDC_MFCBUTTON1                  1453
+#define ID_OK                           1454
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -767,12 +769,12 @@
 #define ID_LPD_MODE_SHIFT_RETURN        6312
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        339
+#define _APS_NEXT_RESOURCE_VALUE        342
 #define _APS_NEXT_COMMAND_VALUE         4903
-#define _APS_NEXT_CONTROL_VALUE         1453
+#define _APS_NEXT_CONTROL_VALUE         1455
 #define _APS_NEXT_SYMED_VALUE           500
 #endif
 #endif

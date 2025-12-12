@@ -5,14 +5,19 @@ class EoDbBlock;
 class EoDbBlockFile : public CFile {
  public:
   EoDbBlockFile() {}
-  EoDbBlockFile(const CString& strPathName);
+  EoDbBlockFile(const CString& pathName);
+  EoDbBlockFile(const EoDbBlockFile&) = delete;
+  EoDbBlockFile& operator=(const EoDbBlockFile&) = delete;
 
-  virtual ~EoDbBlockFile() {}
-  void ReadFile(const CString&, CBlocks& blks);
-  void ReadBlocks(CBlocks& blks);
+  ~EoDbBlockFile() override {}
+
+  void ReadFile(const CString&, CBlocks& blocks);
+  void ReadBlocks(CBlocks& blocks);
+
+  /// @brief Reads and validates the header section of an EoDb block file.
   void ReadHeader();
-  void WriteBlock(const CString& strName, EoDbBlock* Block);
-  void WriteBlocks(CBlocks& blks);
-  void WriteFile(const CString& strPathName, CBlocks& blks);
+  void WriteBlock(const CString& name, EoDbBlock* block);
+  void WriteBlocks(CBlocks& blocks);
+  void WriteFile(const CString& pathName, CBlocks& blocks);
   void WriteHeader();
 };

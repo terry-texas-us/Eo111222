@@ -3,27 +3,29 @@
 // EoDlgDrawOptions dialog
 
 class EoDlgDrawOptions : public CDialog {
-	DECLARE_DYNAMIC(EoDlgDrawOptions)
+  DECLARE_DYNAMIC(EoDlgDrawOptions)
 
-public:
-	EoDlgDrawOptions(CWnd* pParent = NULL);
-	virtual ~EoDlgDrawOptions();
+ public:
+  EoDlgDrawOptions(CWnd* parent = nullptr);
+  EoDlgDrawOptions(const EoDlgDrawOptions&) = delete;
+  EoDlgDrawOptions& operator=(const EoDlgDrawOptions&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_DRAW_OPTIONS };
+  virtual ~EoDlgDrawOptions();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+  enum { IDD = IDD_DRAW_OPTIONS };
 
-public:
-	afx_msg void OnBnClickedPen();
-	afx_msg void OnBnClickedLine();
-	afx_msg void OnBnClickedText();
-	afx_msg void OnBnClickedFill();
-	afx_msg void OnBnClickedConstraints();
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ public:
+  afx_msg void OnBnClickedPen();
+  afx_msg void OnBnClickedLine();
+  afx_msg void OnBnClickedText();
+  afx_msg void OnBnClickedFill();
+  afx_msg void OnBnClickedConstraints();
+
+ protected:
+  DECLARE_MESSAGE_MAP()
 };

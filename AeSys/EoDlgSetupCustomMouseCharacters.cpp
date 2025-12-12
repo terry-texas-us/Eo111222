@@ -8,16 +8,13 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetupCustomMouseCharacters, CDialog)
 
-BEGIN_MESSAGE_MAP(EoDlgSetupCustomMouseCharacters, CDialog)
-END_MESSAGE_MAP()
-
 EoDlgSetupCustomMouseCharacters::EoDlgSetupCustomMouseCharacters(CWnd* pParent /* = NULL */) :
 	CDialog(EoDlgSetupCustomMouseCharacters::IDD, pParent) {
 }
 EoDlgSetupCustomMouseCharacters::~EoDlgSetupCustomMouseCharacters() {
 }
-void EoDlgSetupCustomMouseCharacters::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
+void EoDlgSetupCustomMouseCharacters::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
 }
 
 BOOL EoDlgSetupCustomMouseCharacters::OnInitDialog() {

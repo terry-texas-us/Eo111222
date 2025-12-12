@@ -1,31 +1,31 @@
 ﻿#pragma once
 
-// EoDlgEditTrapCommandsQuery dialog
-
 class EoDlgEditTrapCommandsQuery : public CDialog {
-	DECLARE_DYNAMIC(EoDlgEditTrapCommandsQuery)
+  DECLARE_DYNAMIC(EoDlgEditTrapCommandsQuery)
 
-public:
-	EoDlgEditTrapCommandsQuery(CWnd* pParent = NULL);
-	virtual ~EoDlgEditTrapCommandsQuery();
+ public:
+  EoDlgEditTrapCommandsQuery(CWnd* parent = nullptr);
+  EoDlgEditTrapCommandsQuery(const EoDlgEditTrapCommandsQuery&) = delete;
+  EoDlgEditTrapCommandsQuery& operator=(const EoDlgEditTrapCommandsQuery&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_EDIT_TRAPCOMMANDS_QUERY };
+  virtual ~EoDlgEditTrapCommandsQuery();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
+  enum { IDD = IDD_EDIT_TRAPCOMMANDS_QUERY };
 
-	CTreeCtrl m_GroupTreeViewControl;
-	CListCtrl m_GeometryListViewControl;
-	CListCtrl m_ExtraListViewControl;
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
 
-public:
-	void FillExtraList(EoDbPrimitive* primitive);
-	void FillGeometryList(EoDbPrimitive* primitive);
+  CTreeCtrl m_GroupTreeViewControl;
+  CListCtrl m_GeometryListViewControl;
+  CListCtrl m_ExtraListViewControl;
 
-	afx_msg void OnTvnSelchangedGroupTree(NMHDR *pNMHDR, LRESULT *pResult);
+ public:
+  void FillExtraList(EoDbPrimitive* primitive);
+  void FillGeometryList(EoDbPrimitive* primitive);
 
-protected:
-	DECLARE_MESSAGE_MAP()
+  afx_msg void OnTvnSelchangedGroupTree(NMHDR* pNMHDR, LRESULT* pResult);
+
+ protected:
+  DECLARE_MESSAGE_MAP()
 };

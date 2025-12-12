@@ -3,23 +3,21 @@
 // EoDlgViewZoom dialog
 
 class EoDlgViewZoom : public CDialog {
-	DECLARE_DYNAMIC(EoDlgViewZoom)
+  DECLARE_DYNAMIC(EoDlgViewZoom)
 
-public:
-	EoDlgViewZoom(CWnd* pParent = NULL);
-	virtual ~EoDlgViewZoom();
+ public:
+  EoDlgViewZoom(CWnd* pParent = nullptr);
+  EoDlgViewZoom(const EoDlgViewZoom&) = delete;
+  EoDlgViewZoom& operator=(const EoDlgViewZoom&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_VIEW_ZOOM };
+  virtual ~EoDlgViewZoom();
 
-	float m_Ratio;
+  // Dialog Data
+  enum { IDD = IDD_VIEW_ZOOM };
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
+  float m_Ratio;
 
-public:
-
-protected:
-	DECLARE_MESSAGE_MAP()
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
 };

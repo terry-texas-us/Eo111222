@@ -63,7 +63,7 @@ class EoGsAbstractView {
   EoGsAbstractView& operator=(const EoGsAbstractView& av);
 
  public:  // Methods
-  EoGeVector3d Direction(void) const;
+  EoGeVector3d Direction() const;
   void EnableFarClipping(bool enabled);
   void EnableNearClipping(bool enabled);
   void EnablePerspective(bool enabled);
@@ -78,7 +78,7 @@ class EoGsAbstractView {
   /// <summary> Returns the near (front) clip distance from the target of this Viewport object. </summary>
   float NearClipDistance() const;
   /// <summary> Returns the WCS camera (eye) location for this Viewport object.</summary>
-  EoGePoint3d Position(void) const;
+  EoGePoint3d Position() const;
   void SetFarClipDistance(const float distance);
   void SetDirection(const EoGeVector3d& direction);
   void SetLensLength(const float length);
@@ -88,8 +88,9 @@ class EoGsAbstractView {
   void SetTarget(const EoGePoint3d& target);
   void SetView(const EoGePoint3d& position, const EoGePoint3d& target, const EoGeVector3d& viewUp);
   void SetViewUp(EoGeVector3d viewUp);
+
   /// <summary> Returns the WCS camera target for this Viewport object.</summary>
-  EoGePoint3d Target(void) const;
+  EoGePoint3d Target() const;
   /// <summary> Returns the WCS camera �up� vector for this Viewport object.</summary>
   EoGeVector3d ViewUp() const;
 };

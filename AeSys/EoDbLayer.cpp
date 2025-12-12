@@ -65,7 +65,7 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
   } catch (CException* e) { e->Delete(); }
 }
 EoDbLineType* EoDbLayer::LineType() const { return m_LineType; }
-EoInt16 EoDbLayer::LineTypeIndex() { return (m_LineType->Index()); }
+EoInt16 EoDbLayer::LineTypeIndex() { return (static_cast<EoInt16>(m_LineType->Index())); }
 void EoDbLayer::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) {
   for (int i = 0; i < wCols; i++) {
     if (m_ColorIndex == pCol[i]) {

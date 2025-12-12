@@ -23,12 +23,12 @@ EoDlgSetHomePoint::EoDlgSetHomePoint(AeSysView* activeView, CWnd* pParent /*=NUL
 }
 EoDlgSetHomePoint::~EoDlgSetHomePoint() {
 }
-void EoDlgSetHomePoint::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_LIST, m_HomePointNames);
-	DDX_Control(pDX, IDC_X, m_X);
-	DDX_Control(pDX, IDC_Y, m_Y);
-	DDX_Control(pDX, IDC_Z, m_Z);
+void EoDlgSetHomePoint::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Control(dataExchange, IDC_LIST, m_HomePointNames);
+	DDX_Control(dataExchange, IDC_X, m_X);
+	DDX_Control(dataExchange, IDC_Y, m_Y);
+	DDX_Control(dataExchange, IDC_Z, m_Z);
 }
 BOOL EoDlgSetHomePoint::OnInitDialog() {
 	CDialog::OnInitDialog();

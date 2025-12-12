@@ -28,11 +28,11 @@ EoDlgEditTrapCommandsQuery::EoDlgEditTrapCommandsQuery(CWnd* pParent /*=NULL*/) 
 }
 EoDlgEditTrapCommandsQuery::~EoDlgEditTrapCommandsQuery() {
 }
-void EoDlgEditTrapCommandsQuery::DoDataExchange(CDataExchange* pDX) {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_GROUP_TREE, m_GroupTreeViewControl);
-	DDX_Control(pDX, IDC_GEOMETRY_LIST, m_GeometryListViewControl);
-	DDX_Control(pDX, IDC_EXTRA_LIST_CTRL, m_ExtraListViewControl);
+void EoDlgEditTrapCommandsQuery::DoDataExchange(CDataExchange* dataExchange) {
+	CDialog::DoDataExchange(dataExchange);
+	DDX_Control(dataExchange, IDC_GROUP_TREE, m_GroupTreeViewControl);
+	DDX_Control(dataExchange, IDC_GEOMETRY_LIST, m_GeometryListViewControl);
+	DDX_Control(dataExchange, IDC_EXTRA_LIST_CTRL, m_ExtraListViewControl);
 }
 BOOL EoDlgEditTrapCommandsQuery::OnInitDialog() {
 	CDialog::OnInitDialog();
@@ -89,15 +89,15 @@ void EoDlgEditTrapCommandsQuery::FillExtraList(EoDbPrimitive* primitive) {
 	CString str;
 	primitive->FormatExtra(str);
 
-	size_t nOff = 0;
-	for (size_t nDel = str.Mid(nOff).Find(';'); nDel != - 1;) {
+	int nOff = 0;
+	for (int nDel = str.Mid(nOff).Find(';'); nDel != - 1;) {
 		wcscpy_s(szBuf, str.Mid(nOff, nDel));
 
 		m_ExtraListViewControl.InsertItem(iItem, szBuf);
 
 		nOff += nDel + 1;
 		nDel = str.Mid(nOff).Find('\t');
-		size_t nLen = min(nDel, sizeof(szBuf) / sizeof(WCHAR) - 1);
+		int nLen = min(nDel, static_cast<int>(sizeof(szBuf) / sizeof(WCHAR)) - 1);
 		wcscpy_s(szBuf, 64, str.Mid(nOff, nLen));
 
 		m_ExtraListViewControl.SetItemText(iItem++, 1, szBuf);
@@ -113,8 +113,8 @@ void EoDlgEditTrapCommandsQuery::FillGeometryList(EoDbPrimitive* primitive) {
 	CString strBuf;
 	primitive->FormatGeometry(strBuf);
 
-	size_t nOff = 0;
-	for (size_t nDel = strBuf.Mid(nOff).Find(';'); nDel != - 1;) {
+	int nOff = 0;
+	for (int nDel = strBuf.Mid(nOff).Find(';'); nDel != - 1;) {
 		wcscpy_s(szBuf, 64, strBuf.Mid(nOff, nDel));
 		m_GeometryListViewControl.InsertItem(iItem, szBuf);
 		nOff += nDel + 1;

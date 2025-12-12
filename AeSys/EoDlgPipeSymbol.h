@@ -3,26 +3,24 @@
 // EoDlgPipeSymbol dialog
 
 class EoDlgPipeSymbol : public CDialog {
-	DECLARE_DYNAMIC(EoDlgPipeSymbol)
+  DECLARE_DYNAMIC(EoDlgPipeSymbol)
 
-public:
-	EoDlgPipeSymbol(CWnd* pParent = NULL);
-	virtual ~EoDlgPipeSymbol();
+ public:
+  EoDlgPipeSymbol(CWnd* pParent = nullptr);
+  EoDlgPipeSymbol(const EoDlgPipeSymbol&) = delete;
+  EoDlgPipeSymbol& operator=(const EoDlgPipeSymbol&) = delete;
 
-// Dialog Data
-	enum { IDD = IDD_PIPE_SYMBOL };
+  virtual ~EoDlgPipeSymbol();
 
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+  // Dialog Data
+  enum { IDD = IDD_PIPE_SYMBOL };
 
-public:
-	CListBox m_PipeSymbolsListBoxControl;
-	int m_CurrentPipeSymbolIndex;
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+  virtual void OnOK();
 
-protected:
-	DECLARE_MESSAGE_MAP()
+ public:
+  CListBox m_PipeSymbolsListBoxControl;
+  int m_CurrentPipeSymbolIndex;
 };
-
-
