@@ -72,10 +72,10 @@ class AeSys : public CWinAppEx
   bool m_ClipboardDataText;
   UINT m_ClipboardFormatIdentifierForEoGroups;
   int m_CurrentMode;
-  float m_DeviceHeightInMillimeters;
-  float m_DeviceHeightInPixels;
-  float m_DeviceWidthInMillimeters;
-  float m_DeviceWidthInPixels;
+  double m_DeviceHeightInMillimeters;
+  double m_DeviceHeightInPixels;
+  double m_DeviceWidthInMillimeters;
+  double m_DeviceWidthInPixels;
   double m_DimensionAngle;
   double m_DimensionLength;
   double m_EngagedAngle;
@@ -114,10 +114,10 @@ class AeSys : public CWinAppEx
   UINT ClipboardFormatIdentifierForEoGroups() { return (m_ClipboardFormatIdentifierForEoGroups); }
   int ConfirmMessageBox(UINT stringResourceIdentifier, const CString& string);
   int CurrentMode() const { return m_CurrentMode; }
-  float DeviceHeightInMillimeters() const { return m_DeviceHeightInMillimeters; }
-  float DeviceHeightInPixels() const { return m_DeviceHeightInPixels; }
-  float DeviceWidthInMillimeters() const { return m_DeviceWidthInMillimeters; }
-  float DeviceWidthInPixels() const { return m_DeviceWidthInPixels; }
+  double DeviceHeightInMillimeters() const { return m_DeviceHeightInMillimeters; }
+  double DeviceHeightInPixels() const { return m_DeviceHeightInPixels; }
+  double DeviceWidthInMillimeters() const { return m_DeviceWidthInMillimeters; }
+  double DeviceWidthInPixels() const { return m_DeviceWidthInPixels; }
   double DimensionAngle() const { return (m_DimensionAngle); }
   double DimensionLength() const { return (m_DimensionLength); }
   void EditColorPalette();

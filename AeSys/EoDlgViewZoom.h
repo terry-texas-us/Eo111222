@@ -15,7 +15,7 @@ class EoDlgViewZoom : public CDialog {
   // Dialog Data
   enum { IDD = IDD_VIEW_ZOOM };
 
-  float m_Ratio;
+  double m_Ratio;
 
  protected:
   virtual void DoDataExchange(CDataExchange* dataExchange);

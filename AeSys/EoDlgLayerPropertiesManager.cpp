@@ -522,8 +522,8 @@ void DrawColorBox(CDC& deviceContext, const RECT& itemRectangle, const OdCmColor
   }
 }
 void DrawLineWeight(CDC& deviceContext, const RECT& itemRectangle, const OdDb::LineWeight lineWeight) {
-  float PixelsPerLogicalMillimeter = static_cast<float>(deviceContext.GetDeviceCaps(LOGPIXELSY) / EoMmPerInch);
-  int PixelWidth = (lineWeight <= 0) ? 0 : int((float(lineWeight) / 100. * PixelsPerLogicalMillimeter) + .5);
+  double PixelsPerLogicalMillimeter = static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSY) / EoMmPerInch);
+  int PixelWidth = (lineWeight <= 0) ? 0 : int((double(lineWeight) / 100. * PixelsPerLogicalMillimeter) + 0.5);
 
   LOGBRUSH Brush;
   Brush.lbStyle = BS_SOLID;

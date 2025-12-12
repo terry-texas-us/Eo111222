@@ -13,16 +13,16 @@ EoDlgViewZoom::~EoDlgViewZoom() {
 void EoDlgViewZoom::DoDataExchange(CDataExchange* dataExchange) {
 	CDialog::DoDataExchange(dataExchange);
 	DDX_Text(dataExchange, IDC_RATIO, m_Ratio);
-	DDV_MinMaxFloat(dataExchange, m_Ratio, 0.001f, 999.0f);
+	DDV_MinMaxDouble(dataExchange, m_Ratio, 0.001, 999.0);
 }
 BOOL EoDlgViewZoom::OnInitDialog() {
-	m_Ratio = static_cast<float>(EoRound(m_Ratio, 3));
+	m_Ratio = EoRound(m_Ratio, 3);
 	int Precision = (m_Ratio >= 1.) ? 3 - int(log10(m_Ratio)) - 1 : 3;
 	CString FormatSpecification;
 	FormatSpecification.Format(L"%%8.%if", Precision);
 	CString RatioAsString;
 	RatioAsString.Format(FormatSpecification, m_Ratio);
-	m_Ratio = static_cast<float>(_wtof(RatioAsString));
+	m_Ratio = _wtof(RatioAsString);
 
 	CDialog::OnInitDialog();
 	return TRUE;

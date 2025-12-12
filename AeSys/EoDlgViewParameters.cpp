@@ -60,12 +60,12 @@ void EoDlgViewParameters::OnBnClickedApply() {
 	ModelView->SetTarget(Target);
 
 	GetDlgItemTextW(IDC_FRONT_CLIP_DISTANCE, (LPWSTR) szBuf, 32);
-	float NearClipDistance = static_cast<float>(app.ParseLength(app.GetUnits(), szBuf));
+	double NearClipDistance = app.ParseLength(app.GetUnits(), szBuf);
 	GetDlgItemTextW(IDC_BACK_CLIP_DISTANCE, (LPWSTR) szBuf, 32);
-	float FarClipDistance = static_cast<float>(app.ParseLength(app.GetUnits(), szBuf));
+	double FarClipDistance = app.ParseLength(app.GetUnits(), szBuf);
 
 	GetDlgItemTextW(IDC_LENS_LENGTH, (LPWSTR) szBuf, 32);
-	float LensLength = static_cast<float>(app.ParseLength(app.GetUnits(), szBuf));
+	double LensLength = app.ParseLength(app.GetUnits(), szBuf);
 
 	EoGeVector3d Direction = Position - Target;
 
@@ -85,7 +85,7 @@ void EoDlgViewParameters::OnBnClickedApply() {
 	ModelView->SetNearClipDistance(NearClipDistance);
 	ModelView->SetFarClipDistance(FarClipDistance);
 	ModelView->EnablePerspective(m_PerspectiveProjection == TRUE);
-	ModelView->SetCenteredWindow(Viewport, 0.0f, 0.0f);
+	ModelView->SetCenteredWindow(Viewport, 0.0, 0.0);
 
 	ModelView->BuildTransformMatrix();
 

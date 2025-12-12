@@ -45,14 +45,13 @@ class EoGsAbstractView {
   XMFLOAT3 mx_ViewUp;
 
   // View-Specific coordinate systems
-  float m_Height;
-  float m_Width;
-  float m_TwistAngle;  // in radians
+  double m_Height;
+  double m_Width;
+  double m_TwistAngle;  // in radians
 
-  float m_LensLength;  // lens length used for perspective mode in this view
-  float
-      m_NearClipDistance;   // distance from the target to the near (front) clipping plane along the target-camera line.
-  float m_FarClipDistance;  // distance from the target to the far (back) clipping plane along the target-camera line
+  double m_LensLength;  // lens length used for perspective mode in this view
+  double m_NearClipDistance;   // distance from the target to the near (front) clipping plane along the target-camera line.
+  double m_FarClipDistance;  // distance from the target to the far (back) clipping plane along the target-camera line
 
  public:  // Constructors and destructor
   EoGsAbstractView();
@@ -68,21 +67,21 @@ class EoGsAbstractView {
   void EnableNearClipping(bool enabled);
   void EnablePerspective(bool enabled);
   /// <summary> Returns the far (back) clip distance from the target of this Viewport object.</summary>
-  float FarClipDistance() const;
-  float Height() const;
+  double FarClipDistance() const;
+  double Height() const;
   bool IsFarClipOn() const;
   bool IsNearClipAtEyeOn() const;
   bool IsNearClipOn() const;
   bool IsPerspectiveOn() const;
-  float LensLength() const;
+  double LensLength() const;
   /// <summary> Returns the near (front) clip distance from the target of this Viewport object. </summary>
-  float NearClipDistance() const;
+  double NearClipDistance() const;
   /// <summary> Returns the WCS camera (eye) location for this Viewport object.</summary>
   EoGePoint3d Position() const;
-  void SetFarClipDistance(const float distance);
+  void SetFarClipDistance(const double distance);
   void SetDirection(const EoGeVector3d& direction);
-  void SetLensLength(const float length);
-  void SetNearClipDistance(const float distance);
+  void SetLensLength(const double length);
+  void SetNearClipDistance(const double distance);
   void SetPosition(const EoGePoint3d& position);
   void SetPosition(const EoGeVector3d& direction);
   void SetTarget(const EoGePoint3d& target);

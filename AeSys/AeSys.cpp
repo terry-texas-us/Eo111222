@@ -220,10 +220,10 @@ BOOL AeSys::InitInstance() {
 
   CDC* DeviceContext = MainFrame->GetDC();
 
-  m_DeviceWidthInPixels = static_cast<float>(DeviceContext->GetDeviceCaps(HORZRES));
-  m_DeviceHeightInPixels = static_cast<float>(DeviceContext->GetDeviceCaps(VERTRES));
-  m_DeviceWidthInMillimeters = static_cast<float>(DeviceContext->GetDeviceCaps(HORZSIZE));
-  m_DeviceHeightInMillimeters = static_cast<float>(DeviceContext->GetDeviceCaps(VERTSIZE));
+  m_DeviceWidthInPixels = static_cast<double>(DeviceContext->GetDeviceCaps(HORZRES));
+  m_DeviceHeightInPixels = static_cast<double>(DeviceContext->GetDeviceCaps(VERTRES));
+  m_DeviceWidthInMillimeters = static_cast<double>(DeviceContext->GetDeviceCaps(HORZSIZE));
+  m_DeviceHeightInMillimeters = static_cast<double>(DeviceContext->GetDeviceCaps(VERTSIZE));
 
   InitGbls(DeviceContext);
   MainFrame->ReleaseDC(DeviceContext);
@@ -529,7 +529,8 @@ void AeSys::LoadHatchesFromFile(const CString& strFileName) {
       LPWSTR NextToken = NULL;
       LPWSTR pTok = wcstok_s(szLn, szValDel, &NextToken);
       while (pTok != 0) {
-        hatch::fTableValue[iTblId] = float(_wtof(pTok));
+        volatile double tempValue = _wtof(pTok);
+        hatch::fTableValue[iTblId] = static_cast<float>(tempValue);
         iNmbEnts++;
         if (iNmbEnts >= 6) dTotStrsLen = dTotStrsLen + hatch::fTableValue[iTblId];
         iTblId++;

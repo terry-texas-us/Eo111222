@@ -45,8 +45,8 @@ class AeSysView : public CView
   enum ERubs { None, Lines, Rectangles };
 
  private:
-  static const float m_MaximumWindowRatio;
-  static const float m_MinimumWindowRatio;
+  static const double m_MaximumWindowRatio;
+  static const double m_MinimumWindowRatio;
 
   EoGsModelTransform m_ModelTransform;
   EoGsViewport m_Viewport;
@@ -59,7 +59,7 @@ class AeSysView : public CView
   EoUInt16 m_OpHighlighted;
   EoGsViewTransform m_OverviewViewTransform;
   bool m_Plot;
-  float m_PlotScaleFactor;
+  double m_PlotScaleFactor;
   EoDbGroup m_PreviewGroup;
   EoGsViewTransform m_PreviousViewTransform;
   EoUInt16 m_PreviousOp;
@@ -281,7 +281,7 @@ class AeSysView : public CView
   /// <remarks> This is a legacy feature.</remarks>
   void DoCustomMouseClick(const CString& characters);
   void DoCameraRotate(int iDir);
-  void DoWindowPan(float ratio);
+  void DoWindowPan(double ratio);
 
   void CopyActiveModelViewToPreviousModelView();
   EoGsViewTransform PreviousModelView();
@@ -294,18 +294,18 @@ class AeSysView : public CView
   void ModelTransformPoints(int numberOfPoints, EoGePoint4d* points);
   void ModelTransformPoints(EoGePoint4dArray& pointsArray);
   void ModelTransformVector(EoGeVector3d vector);
-  void ModelViewAdjustWindow(float& uMin, float& vMin, float& uMax, float& vMax, float ratio);
+  void ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, double& vMax, double ratio);
   void ModelViewGetViewport(EoGsViewport& viewport);
   EoGeVector3d CameraDirection() const;
   EoGeTransformMatrix& ModelViewGetMatrix();
   EoGeTransformMatrix& ModelViewGetMatrixInverse();
   EoGePoint3d CameraTarget() const;
-  float UExtent() const;
-  float UMax() const;
-  float UMin() const;
-  float VExtent() const;
-  float VMax() const;
-  float VMin() const;
+  double UExtent() const;
+  double UMax() const;
+  double UMin() const;
+  double VExtent() const;
+  double VMax() const;
+  double VMin() const;
   EoGeVector3d ViewUp() const;
   void ModelViewInitialize();
 
@@ -316,29 +316,29 @@ class AeSysView : public CView
   void ModelViewTransformPoints(int numberOfPoints, EoGePoint4d* points);
   void ModelViewTransformVector(EoGeVector3d& vector);
   void SetViewTransform(EoGsViewTransform& viewTransform);
-  void SetCenteredWindow(const float uExtent, const float vExtent);
+  void SetCenteredWindow(const double uExtent, const double vExtent);
   void SetCameraPosition(const EoGeVector3d& direction);
   void SetCameraTarget(const EoGePoint3d& target);
-  void SetViewWindow(const float uMin, const float vMin, const float uMax, const float vMax);
+  void SetViewWindow(const double uMin, const double vMin, const double uMax, const double vMax);
 
   /// <summary>Determines the number of pages for 1 to 1 print</summary>
   UINT NumPages(CDC* deviceContext, double dScaleFactor, UINT& nHorzPages, UINT& nVertPages);
 
-  float OverviewUExt() { return m_OverviewViewTransform.UExtent(); }
-  float OverviewUMin() { return m_OverviewViewTransform.UMin(); }
-  float OverviewVExt() { return m_OverviewViewTransform.VExtent(); }
-  float OverviewVMin() { return m_OverviewViewTransform.VMin(); }
+  double OverviewUExt() { return m_OverviewViewTransform.UExtent(); }
+  double OverviewUMin() { return m_OverviewViewTransform.UMin(); }
+  double OverviewVExt() { return m_OverviewViewTransform.VExtent(); }
+  double OverviewVMin() { return m_OverviewViewTransform.VMin(); }
   CPoint DoProjection(const EoGePoint4d& pt) { return m_Viewport.DoProjection(pt); }
   void DoProjection(CPoint* pnt, int iPts, EoGePoint4d* pt) { m_Viewport.DoProjection(pnt, iPts, pt); }
   void DoProjection(CPoint* pnt, EoGePoint4dArray& pointsArray) { m_Viewport.DoProjection(pnt, pointsArray); }
   void DoProjectionInverse(EoGePoint3d& pt) { m_Viewport.DoProjectionInverse(pt); }
-  float HeightInInches() { return m_Viewport.HeightInInches(); }
-  float WidthInInches() { return m_Viewport.WidthInInches(); }
+  double HeightInInches() { return m_Viewport.HeightInInches(); }
+  double WidthInInches() { return m_Viewport.WidthInInches(); }
   void ViewportPopActive();
   void ViewportPushActive();
   void SetViewportSize(const int width, const int height) { m_Viewport.SetSize(width, height); }
-  void SetDeviceHeightInInches(double height) { m_Viewport.SetDeviceHeightInInches(static_cast<float>(height)); }
-  void SetDeviceWidthInInches(double width) { m_Viewport.SetDeviceWidthInInches(static_cast<float>(width)); }
+  void SetDeviceHeightInInches(double height) { m_Viewport.SetDeviceHeightInInches(height); }
+  void SetDeviceWidthInInches(double width) { m_Viewport.SetDeviceWidthInInches(width); }
 
  public:  // Group and Primitive operations
   EoDbGroup* m_SubModeEditGroup;

@@ -81,19 +81,19 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           ActiveView->SetViewportSize(SubItemRectangle.right + SubItemRectangle.left,
                                       SubItemRectangle.bottom + SubItemRectangle.top);
 
-          float UExtent = static_cast<float>(SubItemRectangle.right + SubItemRectangle.left) /
-                          static_cast<float>(DeviceContext.GetDeviceCaps(LOGPIXELSX));
-          float VExtent = static_cast<float>(SubItemRectangle.bottom + SubItemRectangle.top) /
-                          static_cast<float>(DeviceContext.GetDeviceCaps(LOGPIXELSY));
+          double UExtent = static_cast<double>(SubItemRectangle.right + SubItemRectangle.left) /
+                           static_cast<double>(DeviceContext.GetDeviceCaps(LOGPIXELSX));
+          double VExtent = static_cast<double>(SubItemRectangle.bottom + SubItemRectangle.top) /
+                           static_cast<double>(DeviceContext.GetDeviceCaps(LOGPIXELSY));
           ActiveView->ModelViewInitialize();
 
-          ActiveView->SetViewWindow(0.0f, 0.0f, UExtent, VExtent);
+          ActiveView->SetViewWindow(0.0, 0.0, UExtent, VExtent);
           ActiveView->SetCameraTarget(EoGePoint3d::kOrigin);
           ActiveView->SetCameraPosition(EoGeVector3d::kZAxis);
-          float UMin =
-              static_cast<float>(SubItemRectangle.left) / static_cast<float>(DeviceContext.GetDeviceCaps(LOGPIXELSX));
-          float UMax =
-              static_cast<float>(SubItemRectangle.right) / static_cast<float>(DeviceContext.GetDeviceCaps(LOGPIXELSX));
+          double UMin =
+              static_cast<double>(SubItemRectangle.left) / static_cast<double>(DeviceContext.GetDeviceCaps(LOGPIXELSX));
+          double UMax = static_cast<double>(SubItemRectangle.right) /
+                        static_cast<double>(DeviceContext.GetDeviceCaps(LOGPIXELSX));
 
           EoGeLine Line(EoGePoint3d(UMin, VExtent / 2., 0.0), EoGePoint3d(UMax, VExtent / 2., 0.0));
           Line.Display(ActiveView, &DeviceContext);

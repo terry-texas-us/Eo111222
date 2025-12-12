@@ -104,8 +104,8 @@ void WndProcPreviewUpdate(HWND previewWindow, EoDbBlock* block) {
 
 	ActiveView->ViewportPushActive();
 	ActiveView->SetViewportSize(rc.right, rc.bottom);
-	ActiveView->SetDeviceWidthInInches(static_cast<float>(dcMem.GetDeviceCaps(HORZSIZE)) / EoMmPerInch);
-	ActiveView->SetDeviceHeightInInches(static_cast<float>(dcMem.GetDeviceCaps(VERTSIZE)) / EoMmPerInch);
+	ActiveView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / EoMmPerInch);
+	ActiveView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / EoMmPerInch);
 
 	EoGeTransformMatrix tm;
 
@@ -114,8 +114,8 @@ void WndProcPreviewUpdate(HWND previewWindow, EoDbBlock* block) {
 
 	block->GetExtents(ActiveView, ptMin, ptMax, tm);
 
-	float UExtent = static_cast<float>(ptMax.x - ptMin.x);
-	float VExtent = static_cast<float>(ptMax.y - ptMin.y);
+	double UExtent = ptMax.x - ptMin.x;
+	double VExtent = ptMax.y - ptMin.y;
 
 	ActiveView->PushViewTransform();
 
@@ -151,8 +151,8 @@ void _WndProcPreviewUpdate(HWND previewWindow, EoDbGroupList* groups) {
 
 	ActiveView->ViewportPushActive();
 	ActiveView->SetViewportSize(rc.right, rc.bottom);
-	ActiveView->SetDeviceWidthInInches(static_cast<float>(dcMem.GetDeviceCaps(HORZSIZE)) / EoMmPerInch);
-	ActiveView->SetDeviceHeightInInches(static_cast<float>(dcMem.GetDeviceCaps(VERTSIZE)) / EoMmPerInch);
+	ActiveView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / EoMmPerInch);
+	ActiveView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / EoMmPerInch);
 
 	EoGeTransformMatrix tm;
 
@@ -161,8 +161,8 @@ void _WndProcPreviewUpdate(HWND previewWindow, EoDbGroupList* groups) {
 
 	groups->GetExtents(ActiveView, ptMin, ptMax, tm);
 
-	float UExtent = static_cast<float>(ptMax.x - ptMin.x);
-	float VExtent = static_cast<float>(ptMax.y - ptMin.y);
+	double UExtent = ptMax.x - ptMin.x;
+	double VExtent = ptMax.y - ptMin.y;
 	EoGePoint3d ptTarget((ptMin.x + ptMax.x) / 2., (ptMin.y + ptMax.y) / 2., 0.0);
 
 	ActiveView->PushViewTransform();
