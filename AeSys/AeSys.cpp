@@ -847,31 +847,31 @@ void AeSys::FormatLength_s(LPWSTR lengthAsString, const int bufSize, Units units
     switch (units) {
       case kFeet:
         FormatSpecification.Append(L"'");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength / 12.);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength / 12.);
         break;
       case kInches:
         FormatSpecification.Append(L"\"");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength);
         break;
       case kMeters:
         FormatSpecification.Append(L"m");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength * 0.0254);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength * 0.0254);
         break;
       case kMillimeters:
         FormatSpecification.Append(L"mm");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength * 25.4);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength * 25.4);
         break;
       case kCentimeters:
         FormatSpecification.Append(L"cm");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength * 2.54);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength * 2.54);
         break;
       case kDecimeters:
         FormatSpecification.Append(L"dm");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength * 0.254);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength * 0.254);
         break;
       case kKilometers:
         FormatSpecification.Append(L"km");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification, ScaledLength * 0.0000254);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength * 0.0000254);
         break;
 
       case kArchitecturalS:
