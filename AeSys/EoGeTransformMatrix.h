@@ -8,22 +8,20 @@ class EoGeTransformMatrix : public EoGeMatrix {
   EoGeTransformMatrix(EoGeMatrixRow& row0, EoGeMatrixRow& row1, EoGeMatrixRow& row2, EoGeMatrixRow& row3)
       : EoGeMatrix(row0, row1, row2, row3) {}
   EoGeTransformMatrix(EoGePoint3d pt, EoGeVector3d v) { DefUsingArbPtAndAx(pt, v); }
-  /// <summary>
-  ///Constructs transformation matrix required to transform points about a reference point and axis.
-  /// </summary>
-  /// <remarks>
-  ///Assumes reference vector is a unit vector. Uses right handed convention.
-  ///Based on the following equation: [ti] * [r] * [t], where
-  ///	ti translation of reference point to origin
-  ///	r  rotation about origin =
-  ///	| ax*ax+(1-ax*ax)*ca  ax*ay*(1-ca)+az*sa  ax*az*(1-ca)-ay*sa |
-  ///	| ax*ay*(1-ca)-az*sa  ay*ay+(1-ay*ay)*ca  ay*az*(1-ca)+ax*sa |
-  ///	| ax*az*(1-ca)+ay*sa  ay*az*(1-ca)-ax*sa  az*az+(1-az*az)*ca |
-  ///	t	translation of reference point back to intitial position
-  /// </remarks>
-  /// <param name="refPoint">reference point</param>
-  /// <param name="refAxis">reference axis vector (unit)</param>
-  /// <param name="angle">angle (radians)</param>
+
+  /// @brief Constructs transformation matrix required to transform points about a reference point and axis.
+  /// @param refPoint reference point
+  /// @param refAxis reference axis vector (unit)
+  /// @param angle angle (radians)
+  /// @note Assumes reference vector is a unit vector. Uses right handed convention. Based on the following equation: [ti] * [r] * [t], where
+  /// \verbatim
+  /// ti translation of reference point to origin
+  /// r rotation about origin =
+  ///   | ax*ax+(1-ax*ax)*ca | ax*ay*(1-ca)+az*sa | ax*az*(1-ca)-ay*sa |
+  ///   | ax*ay*(1-ca)-az*sa | ay*ay+(1-ay*ay)*ca | ay*az*(1-ca)+ax*sa |
+  ///   | ax*az*(1-ca)+ay*sa | ay*az*(1-ca)-ax*sa | az*az+(1-az*az)*ca |
+  /// t translation of reference point back to initial position
+  /// \endverbatim
   EoGeTransformMatrix(const EoGePoint3d& refPoint, EoGeVector3d refAxis, const double angle);
   /// <summary>Build matrix which will transform points onto z=0 plane with origin at 0,0</summary>
   /// <remarks>
@@ -35,7 +33,6 @@ class EoGeTransformMatrix : public EoGeMatrix {
   /// <param name="yReference">y-axis of reference system</param>
   EoGeTransformMatrix(EoGePoint3d pt, EoGeVector3d xReference, EoGeVector3d yReference);
   //EoGeTransformMatrix(int*, EoGeVector3d);
-  ~EoGeTransformMatrix() {}
 
  public:  // Operators
   EoGeLine operator*(EoGeLine line);

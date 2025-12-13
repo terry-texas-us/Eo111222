@@ -262,7 +262,7 @@ void EoDbJobFile::ConstructPrimitive(EoDbPrimitive*& primitive, EoInt16 Primitiv
   switch (PrimitiveType) {
     case EoDb::kTagPrimitive:
       ConvertTagToPoint();
-      // fall through and construct a EoDbPoint instead
+      [[fallthrough]];  // fall through and construct a EoDbPoint instead
     case EoDb::kPointPrimitive:
       primitive = ConvertPointPrimitive();
       break;
@@ -277,7 +277,7 @@ void EoDbJobFile::ConstructPrimitive(EoDbPrimitive*& primitive, EoInt16 Primitiv
       break;
     case EoDb::kCSplinePrimitive:
       ConvertCSplineToBSpline();
-      // fall through and construct a EoDbSpline instead
+      [[fallthrough]];  // fall through and construct a EoDbSpline instead
     case EoDb::kSplinePrimitive:
       primitive = new EoDbSpline(m_PrimBuf, 3);
       break;

@@ -16,8 +16,11 @@ static char THIS_FILE[] = __FILE__;
 EoMfOutputDockablePane::EoMfOutputDockablePane() {}
 EoMfOutputDockablePane::~EoMfOutputDockablePane() {}
 BEGIN_MESSAGE_MAP(EoMfOutputDockablePane, CDockablePane)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 ON_WM_CREATE()
 ON_WM_SIZE()
+#pragma warning(pop)
 END_MESSAGE_MAP()
 
 int EoMfOutputDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
@@ -63,11 +66,14 @@ void EoMfOutputDockablePane::OnSize(UINT type, int cx, int cy) {
 EoMfOutputListBox::EoMfOutputListBox() {}
 EoMfOutputListBox::~EoMfOutputListBox() {}
 BEGIN_MESSAGE_MAP(EoMfOutputListBox, CListBox)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 ON_WM_CONTEXTMENU()
+ON_WM_WINDOWPOSCHANGING()
+#pragma warning(pop)
 ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
 ON_COMMAND(ID_VIEW_OUTPUTWND, OnViewOutput)
-ON_WM_WINDOWPOSCHANGING()
 END_MESSAGE_MAP()
 
 // EoMfOutputListBox message handlers

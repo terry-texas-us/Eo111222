@@ -7,7 +7,10 @@
 IMPLEMENT_DYNAMIC(EoDlgSetupLineType, CDialog)
 
 BEGIN_MESSAGE_MAP(EoDlgSetupLineType, CDialog)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 ON_WM_DRAWITEM()
+#pragma warning(pop)
 END_MESSAGE_MAP()
 
 EoDlgSetupLineType::EoDlgSetupLineType(CWnd* pParent /*=NULL*/) : CDialog(EoDlgSetupLineType::IDD, pParent) {}

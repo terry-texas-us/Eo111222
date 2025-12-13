@@ -7,8 +7,8 @@ class EoDbEllipse : public EoDbPrimitive {
   EoGeVector3d m_vMinAx;
   double m_dSwpAng;
 
- public:  // Constructors and destructor
-  EoDbEllipse() {}
+ public:
+  EoDbEllipse() : m_ptCenter {}, m_vMajAx {}, m_vMinAx {}, m_dSwpAng {0.0} {}
   
   /// <summary>Ellipse segment is constructed using a center point, a major and minor vector and a sweep ang.</summary>
   EoDbEllipse(const EoGePoint3d& centerPoint, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis,

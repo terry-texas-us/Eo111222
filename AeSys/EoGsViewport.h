@@ -1,18 +1,18 @@
 ﻿#pragma once
 
 class EoGsViewport {
-  double m_DeviceHeightInPixels;
-  double m_DeviceWidthInPixels;
-  double m_DeviceHeightInInches;
-  double m_DeviceWidthInInches;
-  double m_Height;
-  double m_Width;
+  double m_DeviceHeightInPixels {0.0};
+  double m_DeviceWidthInPixels {0.0};
+  double m_DeviceHeightInInches {0.0};
+  double m_DeviceWidthInInches {0.0};
+  double m_Height {0.0};
+  double m_Width {0.0};
 
  public:  // Constructors and destructors
-  EoGsViewport() {}
+  EoGsViewport() = default;
   EoGsViewport(const EoGsViewport& src);
 
-  ~EoGsViewport() {};
+  ~EoGsViewport() = default;
   EoGsViewport& operator=(const EoGsViewport& src);
 
  public:  // Methods

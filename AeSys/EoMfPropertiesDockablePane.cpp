@@ -14,17 +14,26 @@ static const WCHAR* TabsStyles[] = {L"None", L"Standard", L"Grouped", NULL};
 static const WCHAR* TabLocations[] = {L"On Bottom", L"On Top", NULL};
 
 BEGIN_MESSAGE_MAP(EoMfPropertiesDockablePane, CDockablePane)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 ON_WM_CREATE()
 ON_WM_SETFOCUS()
 ON_WM_SETTINGCHANGE()
 ON_WM_SIZE()
-ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, OnPropertyChanged)
+#pragma warning(pop)
 ON_COMMAND(ID_EXPAND_ALL, OnExpandAllProperties)
 ON_COMMAND(ID_PROPERTIES1, OnProperties1)
 ON_COMMAND(ID_SORTPROPERTIES, OnSortProperties)
+#pragma warning(push)
+#pragma warning(disable : 4191)
+ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, OnPropertyChanged)
+#pragma warning(pop)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 ON_UPDATE_COMMAND_UI(ID_EXPAND_ALL, OnUpdateExpandAllProperties)
 ON_UPDATE_COMMAND_UI(ID_PROPERTIES1, OnUpdateProperties1)
 ON_UPDATE_COMMAND_UI(ID_SORTPROPERTIES, OnUpdateSortProperties)
+#pragma warning(pop)
 END_MESSAGE_MAP()
 
 EoMfPropertiesDockablePane::EoMfPropertiesDockablePane() {}

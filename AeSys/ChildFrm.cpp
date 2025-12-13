@@ -11,7 +11,10 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWndEx)
 
 BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWndEx)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 ON_WM_TIMER()
+#pragma warning(pop)
 END_MESSAGE_MAP()
 
 // Construction/destruction

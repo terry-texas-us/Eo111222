@@ -6,6 +6,7 @@ class EoCtrlFindComboBox : public CMFCToolBarComboBoxButton {
  public:
   EoCtrlFindComboBox()
       : CMFCToolBarComboBoxButton(ID_EDIT_FIND_COMBO, GetCmdMgr()->GetCmdImage(ID_EDIT_FIND), CBS_DROPDOWN) {}
+  
   EoCtrlFindComboBox(const EoCtrlFindComboBox&) = delete;
   EoCtrlFindComboBox& operator=(const EoCtrlFindComboBox&) = delete;
 
@@ -13,7 +14,7 @@ class EoCtrlFindComboBox : public CMFCToolBarComboBoxButton {
   static BOOL m_HasFocus;
 
  public:
-  static BOOL HasFocus() { return m_HasFocus; }
+  BOOL HasFocus() const override { return m_HasFocus; }
 
  protected:
   virtual BOOL NotifyCommand(int notifyCode);

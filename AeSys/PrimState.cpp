@@ -17,7 +17,7 @@ const CPrimState& CPrimState::operator=(const CPrimState& src) {
   return (*this);
 }
 void CPrimState::Restore(CDC* deviceContext, int iSaveId) {
-  if (iSaveId >= sizeof(psSav) / sizeof(psSav[0])) return;
+  if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) return;
 
   if (psSav[iSaveId] != 0) {
     SetPen(NULL, deviceContext, psSav[iSaveId]->PenColor(), psSav[iSaveId]->LineType());

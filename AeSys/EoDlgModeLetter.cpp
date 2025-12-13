@@ -9,7 +9,10 @@
 IMPLEMENT_DYNAMIC(EoDlgModeLetter, CDialog)
 
 BEGIN_MESSAGE_MAP(EoDlgModeLetter, CDialog)
-	ON_WM_SIZE()
+#pragma warning(push)
+#pragma warning(disable : 4191)
+ON_WM_SIZE()
+#pragma warning(pop)
 END_MESSAGE_MAP()
 
 EoGePoint3d EoDlgModeLetter::m_Point = EoGePoint3d::kOrigin;

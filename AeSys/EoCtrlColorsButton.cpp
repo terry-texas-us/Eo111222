@@ -10,12 +10,18 @@ EoUInt16 EoCtrlColorsButton::m_SelectedIndex;
 IMPLEMENT_DYNAMIC(EoCtrlColorsButton, CMFCButton)
 
 BEGIN_MESSAGE_MAP(EoCtrlColorsButton, CMFCButton)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 ON_WM_GETDLGCODE()
 ON_WM_KEYDOWN()
 ON_WM_LBUTTONUP()
 ON_WM_MOUSEMOVE()
+#pragma warning(pop)
 ON_WM_PAINT()
+#pragma warning(push)
+#pragma warning(disable : 4191)
 ON_WM_SETFOCUS()
+#pragma warning(pop)
 END_MESSAGE_MAP()
 
 EoCtrlColorsButton::EoCtrlColorsButton() {

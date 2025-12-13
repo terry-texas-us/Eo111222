@@ -15,7 +15,6 @@ class Section {
  public:
   Section();
   Section(double width, double depth, long properties);
-  ~Section();
 
   bool operator==(const Section& section);
   bool operator!=(const Section& section);

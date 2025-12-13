@@ -20,7 +20,10 @@ HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR text, LPCVOID object) {
 IMPLEMENT_DYNAMIC(EoDlgEditTrapCommandsQuery, CDialog)
 
 BEGIN_MESSAGE_MAP(EoDlgEditTrapCommandsQuery, CDialog)
-	ON_NOTIFY(TVN_SELCHANGED, IDC_GROUP_TREE, &EoDlgEditTrapCommandsQuery::OnTvnSelchangedGroupTree)
+#pragma warning(push)
+#pragma warning(disable : 4191)
+ON_NOTIFY(TVN_SELCHANGED, IDC_GROUP_TREE, &EoDlgEditTrapCommandsQuery::OnTvnSelchangedGroupTree)
+#pragma warning(pop)
 END_MESSAGE_MAP()
 
 EoDlgEditTrapCommandsQuery::EoDlgEditTrapCommandsQuery(CWnd* pParent /*=NULL*/) :

@@ -14,7 +14,10 @@
 IMPLEMENT_DYNAMIC(EoDlgModeRevise, CDialog)
 
 BEGIN_MESSAGE_MAP(EoDlgModeRevise, CDialog)
-	ON_WM_SIZE()
+#pragma warning(push)
+#pragma warning(disable : 4191)
+ON_WM_SIZE()
+#pragma warning(pop)
 END_MESSAGE_MAP()
 
 EoDbFontDefinition EoDlgModeRevise::sm_FontDefinition;

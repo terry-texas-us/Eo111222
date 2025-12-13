@@ -6,7 +6,6 @@ Section::Section(double width, double depth, long properties) {
   m_Depth = depth;
   m_Properties = properties;
 }
-Section::~Section(void) {}
 bool Section::operator==(const Section& section) { return Identical(section); }
 bool Section::operator!=(const Section& section) { return !Identical(section); }
 void Section::operator()(double width, double depth, long properties) {

@@ -90,6 +90,8 @@ ON_COMMAND(ID_MODE_TRAP, &AeSys::OnModeTrap)
 ON_COMMAND(ID_TRAPCOMMANDS_ADDGROUPS, &AeSys::OnTrapCommandsAddGroups)
 ON_COMMAND(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnTrapCommandsHighlight)
 ON_COMMAND(ID_VIEW_MODEINFORMATION, &AeSys::OnViewModeInformation)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 ON_UPDATE_COMMAND_UI(ID_EDIT_CF_GROUPS, &AeSys::OnUpdateEditCfGroups)
 ON_UPDATE_COMMAND_UI(ID_EDIT_CF_IMAGE, &AeSys::OnUpdateEditCfImage)
 ON_UPDATE_COMMAND_UI(ID_EDIT_CF_TEXT, &AeSys::OnUpdateEditCfText)
@@ -108,6 +110,7 @@ ON_UPDATE_COMMAND_UI(ID_MODE_TRAP, &AeSys::OnUpdateModeTrap)
 ON_UPDATE_COMMAND_UI(ID_VIEW_MODEINFORMATION, &AeSys::OnUpdateViewModeinformation)
 ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_ADDGROUPS, &AeSys::OnUpdateTrapcommandsAddgroups)
 ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnUpdateTrapcommandsHighlight)
+#pragma warning(pop)
 END_MESSAGE_MAP()
 
 // AeSys construction
@@ -435,19 +438,33 @@ void AeSys::OnFileRun() {
   }
 }
 void AeSys::OnHelpContents() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_CONTENTS, 0L); }
-void AeSys::LoadPenWidthsFromFile(const CString& strFileName) {
-  CStdioFile fl;
 
-  if (fl.Open(strFileName, CFile::modeRead | CFile::typeText)) {
+
+void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
+  CStdioFile file;
+
+  if (file.Open(fileName, CFile::modeRead | CFile::typeText)) {
     WCHAR PenWidths[64];
 
-    while (fl.ReadString(PenWidths, sizeof(PenWidths) / sizeof(WCHAR) - 1) != 0) {
-      LPWSTR NextToken = NULL;
+    while (file.ReadString(PenWidths, sizeof(PenWidths) / sizeof(WCHAR) - 1) != 0) {
+      LPWSTR context = nullptr;
 
-      int iId = _wtoi(wcstok_s(PenWidths, L"=", &NextToken));
-      double dVal = _wtof(wcstok_s(NULL, L",\n", &NextToken));
+      LPWSTR penIndexText = wcstok_s(PenWidths, L"=", &context);
+      if (penIndexText == nullptr) continue;
 
-      if (iId >= 0 && iId < sizeof(dPWids) / sizeof(dPWids[0])) dPWids[iId] = dVal;
+      wchar_t* penIndexEnd = nullptr;
+      unsigned long penIndex = std::wcstoul(penIndexText, &penIndexEnd, 10);
+      if (penIndexEnd == penIndexText) continue;
+
+      LPWSTR penWidthText = wcstok_s(nullptr, L",\n", &context);
+      if (penWidthText == nullptr) continue;
+
+      wchar_t* penValueEnd = nullptr;
+      double penWidth = std::wcstod(penWidthText, &penValueEnd);
+      if (penValueEnd == penWidthText) continue;
+
+      const size_t count = sizeof(dPWids) / sizeof(dPWids[0]);
+      if (static_cast<size_t>(penIndex) < count) dPWids[penIndex] = penWidth;
     }
   }
 }
@@ -717,7 +734,8 @@ void AeSys::BuildModifiedAcceleratorTable(void) {
   AcceleratorTableHandle = ::LoadAccelerators(m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
   int AcceleratorTableEntries = ::CopyAcceleratorTable(AcceleratorTableHandle, NULL, 0);
 
-  LPACCEL ModifiedAcceleratorTable = new ACCEL[static_cast<size_t>(AcceleratorTableEntries + ModeAcceleratorTableEntries)];
+  LPACCEL ModifiedAcceleratorTable =
+      new ACCEL[static_cast<size_t>(AcceleratorTableEntries + ModeAcceleratorTableEntries)];
 
   ::CopyAcceleratorTable(ModeAcceleratorTableHandle, ModifiedAcceleratorTable, ModeAcceleratorTableEntries);
   ::CopyAcceleratorTable(AcceleratorTableHandle, &ModifiedAcceleratorTable[ModeAcceleratorTableEntries],
@@ -758,7 +776,7 @@ int AeSys::GreatestCommonDivisor(const int number1, const int number2) {
 }
 void AeSys::FormatAngle(CString& angleAsString, const double angle, const int width, const int precision) {
   CString FormatSpecification;
-  FormatSpecification.Format(L"%%%i.%if�", width, precision);
+  FormatSpecification.Format(L"%%%i.%if\u00B0", width, precision);
   angleAsString.Format(FormatSpecification, EoToDegree(angle));
 }
 void AeSys::FormatLength(CString& lengthAsString, Units units, const double length, const int width,
@@ -801,7 +819,8 @@ void AeSys::FormatLength_s(LPWSTR lengthAsString, const int bufSize, Units units
     _itow_s(Inches, szBuf, 16, 10);
     wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
     if (Numerator > 0) {
-      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), (units == kArchitecturalS) ? L"\\S" : L"�" /* middle dot [U+00B7] */);
+      wcscat_s(lengthAsString, static_cast<size_t>(bufSize),
+               (units == kArchitecturalS) ? L"\\S" : L"�" /* middle dot [U+00B7] */);
       int iGrtComDivisor = GreatestCommonDivisor(Numerator, FractionPrecision);
       Numerator /= iGrtComDivisor;
       int Denominator = FractionPrecision / iGrtComDivisor;  // Add fractional component of inches
@@ -855,7 +874,8 @@ void AeSys::FormatLength_s(LPWSTR lengthAsString, const int bufSize, Units units
         break;
       case kMeters:
         FormatSpecification.Append(L"m");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength * 0.0254);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(),
+                   ScaledLength * 0.0254);
         break;
       case kMillimeters:
         FormatSpecification.Append(L"mm");
@@ -871,7 +891,8 @@ void AeSys::FormatLength_s(LPWSTR lengthAsString, const int bufSize, Units units
         break;
       case kKilometers:
         FormatSpecification.Append(L"km");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength * 0.0000254);
+        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(),
+                   ScaledLength * 0.0000254);
         break;
 
       case kArchitecturalS:
@@ -959,7 +980,7 @@ double AeSys::ParseLength(Units units, LPWSTR aszLen) {
         case kKilometers:
           dVal[0] *= 39370.07874015748;
           break;
-        
+
         case AeSys::kArchitecturalS:
         case AeSys::kInches:
           break;
