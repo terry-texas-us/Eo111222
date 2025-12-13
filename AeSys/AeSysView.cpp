@@ -394,12 +394,12 @@ AeSysDoc* AeSysView::GetDocument() const {  // non-debug version is inline
 // Base class overides ////////////////////////////////////////////////////////////////////////
 
 void AeSysView::OnActivateFrame(UINT state, CFrameWnd* deactivateFrame) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnActivateFrame(%i, %08.8lx)\n", this, state, deactivateFrame);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state, deactivateFrame);
 
   CView::OnActivateFrame(state, deactivateFrame);
 }
 void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deactiveView) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnActivateView(%i, %08.8lx, %08.8lx))\n", this, activate,
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate,
             activateView, deactiveView);
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
@@ -416,19 +416,19 @@ void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deacti
   CView::OnActivateView(activate, activateView, deactiveView);
 }
 BOOL AeSysView::PreCreateWindow(CREATESTRUCT& createStructure) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::PreCreateWindow(%08.8lx) ", this, createStructure);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::PreCreateWindow(%08.8lx) ", this, createStructure);
 
   // TODO: Modify the Window class or styles here by modifying the CREATESTRUCT
   return CView::PreCreateWindow(createStructure);
 }
 int AeSysView::OnCreate(LPCREATESTRUCT createStructure) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnCreate(%08.8lx)\n", this, createStructure);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnCreate(%08.8lx)\n", this, createStructure);
 
   if (CView::OnCreate(createStructure) == -1) { return -1; }
   return 0;
 }
 void AeSysView::OnSetFocus(CWnd* oldWindow) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnSetFocus(%08.8lx)\n", this, oldWindow);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnSetFocus(%08.8lx)\n", this, oldWindow);
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
   if (::CopyAcceleratorTable(MainFrame->m_hAccelTable, NULL, 0) ==
@@ -438,7 +438,7 @@ void AeSysView::OnSetFocus(CWnd* oldWindow) {
   CView::OnSetFocus(oldWindow);
 }
 void AeSysView::OnKillFocus(CWnd* newWindow) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnKillFocus(%08.8lx)\n", this, newWindow);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnKillFocus(%08.8lx)\n", this, newWindow);
 
   HACCEL AcceleratorTableHandle = ((CMainFrame*)AfxGetMainWnd())->m_hAccelTable;
 
@@ -447,15 +447,15 @@ void AeSysView::OnKillFocus(CWnd* newWindow) {
   CView::OnKillFocus(newWindow);
 }
 void AeSysView::OnPaint(void) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnPaint()\n", this);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnPaint()\n", this);
   CView::OnPaint();
 }
 void AeSysView::OnDraw(CDC* deviceContext) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnDraw(%08.8lx) +", this, deviceContext);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnDraw(%08.8lx) +", this, deviceContext);
 
   CRect Rect;
   deviceContext->GetClipBox(Rect);
-  ATLTRACE2(atlTraceGeneral, 1, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right, Rect.bottom);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right, Rect.bottom);
 
   if (Rect.IsRectEmpty()) { return; }
 
@@ -513,7 +513,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 ///Override this function to perform any one-time initialization that requires information about the document.
 /// </remarks>
 void AeSysView::OnInitialUpdate() {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnInitialUpdate()\n", this);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnInitialUpdate()\n", this);
 
   ::SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(ViewBackgroundColor));
 
@@ -537,7 +537,7 @@ void AeSysView::OnInitialUpdate() {
   CView::OnInitialUpdate();
 }
 void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnUpdate(%08.8lx, %08.8lx, %08.8lx)\n", this, sender, hint,
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint,
             hintObject);
 
   CDC* DeviceContext = GetDC();
@@ -795,7 +795,7 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
 }
 /// <remarks> Consider using zDelta with WHEEL_DELTA for fine and coarse zooming</remarks>
 BOOL AeSysView::OnMouseWheel(UINT nFlags, EoInt16 zDelta, CPoint point) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnMouseWheel(%i, %i, %08.8lx)\n", this, nFlags, zDelta, point);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnMouseWheel(%i, %i, %08.8lx)\n", this, nFlags, zDelta, point);
 
   if (zDelta > 0) {
     OnWindowZoomIn();
@@ -820,7 +820,7 @@ BOOL AeSysView::OnMouseWheel(UINT nFlags, EoInt16 zDelta, CPoint point) {
   return __super::OnMouseWheel(nFlags, zDelta, point);
 }
 void AeSysView::OnSize(UINT type, int cx, int cy) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnSize(%i, %i, %i)\n", this, type, cx, cy);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnSize(%i, %i, %i)\n", this, type, cx, cy);
 
   if (cx && cy) {
     SetViewportSize(cx, cy);
@@ -844,7 +844,7 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
   }
 }
 void AeSysView::OnTimer(UINT_PTR nIDEvent) {
-  ATLTRACE2(atlTraceGeneral, 1, L"AeSysView<%08.8lx>::OnTimer(%i)\n", this, nIDEvent);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnTimer(%i)\n", this, nIDEvent);
 
   CView::OnTimer(nIDEvent);
 }
@@ -905,10 +905,14 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
 
     // Determine the region of the bitmap to tranfer to display
     CRect rcWnd;
-    rcWnd.left = EoRound((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.top = EoRound((1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
-    rcWnd.right = EoRound((m_ViewTransform.UMax() - OverviewUMin() + dU) /  OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.bottom = EoRound((1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
+    rcWnd.left =
+        EoRound((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
+    rcWnd.top = EoRound((1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) *
+                        static_cast<double>(bm.bmHeight));
+    rcWnd.right =
+        EoRound((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
+    rcWnd.bottom = EoRound((1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) *
+                           static_cast<double>(bm.bmHeight));
 
     int iWidSrc = rcWnd.Width();
     int iHgtSrc = rcWnd.Height();
@@ -1119,7 +1123,7 @@ void AeSysView::OnViewParameters() {
 
   EoGsViewTransform ModelView(m_ViewTransform);
 
-  Dialog.m_ModelView = unsigned long(&ModelView);
+  Dialog.m_ModelView = reinterpret_cast<uintptr_t>(&ModelView);
   Dialog.m_PerspectiveProjection = m_ViewTransform.IsPerspectiveOn();
 
   if (Dialog.DoModal() == IDOK) { m_ViewTransform.EnablePerspective(Dialog.m_PerspectiveProjection == TRUE); }
@@ -1210,12 +1214,8 @@ void AeSysView::OnWindowSheet() {
   ModelViewInitialize();
   InvalidateRect(NULL, TRUE);
 }
-void AeSysView::OnWindowZoomIn() {
-  DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() / 0.9);
-}
-void AeSysView::OnWindowZoomOut() {
-  DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() * 0.9);
-}
+void AeSysView::OnWindowZoomIn() { DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() / 0.9); }
+void AeSysView::OnWindowZoomOut() { DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() * 0.9); }
 void AeSysView::OnWindowPan() {
   CopyActiveModelViewToPreviousModelView();
   DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
@@ -1484,7 +1484,9 @@ void AeSysView::OnPrimPerpJump() {
     }
   }
 }
-void AeSysView::OnHelpKey() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, (DWORD)(LPWSTR)L"READY"); }
+void AeSysView::OnHelpKey() { 
+    ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"READY")); 
+}
 AeSysView* AeSysView::GetActiveView(void) {
   CMDIFrameWndEx* MDIFrameWnd = (CMDIFrameWndEx*)AfxGetMainWnd();
 
@@ -1931,12 +1933,26 @@ void AeSysView::OnEscape() {
       break;
   }
 }
-void AeSysView::OnFind(void) {
-  CString FindComboText;
-  VerifyFindString(((CMainFrame*)AfxGetMainWnd())->GetFindCombo(), FindComboText);
+void AeSysView::OnFind() {
+  CString findComboText;
 
-  if (!FindComboText.IsEmpty()) {
-    ATLTRACE2(atlTraceGeneral, 1, L"AeSysView::OnFind() ComboText = %s\n", FindComboText);
+  CWnd* mainWnd = AfxGetMainWnd();
+  CMainFrame* mainFrame = mainWnd ? DYNAMIC_DOWNCAST(CMainFrame, mainWnd) : nullptr;
+  if (!mainFrame) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"AeSysView::OnFind() - main frame is null\n");
+    return;
+  }
+
+  auto* findCombo = mainFrame->GetFindCombo();
+  if (!findCombo) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"AeSysView::OnFind() - find combo is null\n");
+    return;
+  }
+
+  VerifyFindString(findCombo, findComboText);
+
+  if (!findComboText.IsEmpty()) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnFind() ComboText = %ls\n", static_cast<LPCTSTR>(findComboText));
   }
 }
 void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CString& findText) {
@@ -1968,7 +1984,7 @@ void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CStrin
     if (!IsLastCommandFromButton) { findComboBox->SetText(findText); }
   }
 }
-void AeSysView::OnEditFind() { ATLTRACE2(atlTraceGeneral, 1, L"AeSysView::OnEditFind() - Entering\n"); }
+void AeSysView::OnEditFind() { ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnEditFind() - Entering\n"); }
 // Disables rubberbanding.
 void AeSysView::RubberBandingDisable() {
   if (m_RubberbandType != None) {
@@ -2114,7 +2130,7 @@ void AeSysView::SetModeCursor(int mode) {
       (HCURSOR)::LoadImage(app.GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE);
   VERIFY(CursorHandle);
   ::SetCursor(CursorHandle);
-  ::SetClassLongPtr(this->GetSafeHwnd(), GCLP_HCURSOR, (LONG)CursorHandle);
+  ::SetClassLongPtr(this->GetSafeHwnd(), GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(CursorHandle));
 }
 void AeSysView::SetWorldScale(const double scale) {
   if (scale > FLT_EPSILON) {
@@ -2161,7 +2177,8 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     }
     if ((item & TrapCount) == TrapCount) {
       rc.SetRect(8 * tm.tmAveCharWidth, ClientRect.top, 16 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      swprintf_s(szBuf, 32, L"%-4i", Document->TrapGroupCount());
+      long trapCount = static_cast<long>(Document->TrapGroupCount());
+      swprintf_s(szBuf, 32, L"%-4ld", trapCount);
       DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
     }
     if ((item & Pen) == Pen) {

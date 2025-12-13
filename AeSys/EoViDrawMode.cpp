@@ -41,7 +41,7 @@ void AeSysView::OnDrawModePolygon() {
     pts.RemoveAll();
     pts.Add(CurrentPnt);
   } else {
-    int NumberOfPoints = pts.GetSize();
+    INT_PTR NumberOfPoints = pts.GetSize();
 
     if (pts[NumberOfPoints - 1] != CurrentPnt) {
       CurrentPnt = SnapPointToAxis(pts[NumberOfPoints - 1], CurrentPnt);
@@ -122,7 +122,7 @@ void AeSysView::OnDrawModeInsert() {
 void AeSysView::OnDrawModeReturn() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
 
-  int NumberOfPoints = pts.GetSize();
+  INT_PTR NumberOfPoints = pts.GetSize();
   EoDbGroup* Group = 0;
 
   switch (PreviousDrawCommand) {
@@ -239,7 +239,7 @@ void AeSysView::OnDrawModeShiftReturn() {
 }
 void AeSysView::DoDrawModeMouseMove() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
-  int NumberOfPoints = pts.GetSize();
+  INT_PTR NumberOfPoints = pts.GetSize();
 
   switch (PreviousDrawCommand) {
     case ID_OP2:

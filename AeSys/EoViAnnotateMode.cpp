@@ -365,7 +365,7 @@ bool AeSysView::CorrectLeaderEndpoints(int beginType, int endType, EoGePoint3d& 
 }
 void AeSysView::DoAnnotateModeMouseMove() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
-  int NumberOfPoints = pts.GetSize();
+  INT_PTR NumberOfPoints = pts.GetSize();
   pts.Add(CurrentPnt);
 
   GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);

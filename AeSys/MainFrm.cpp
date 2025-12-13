@@ -70,7 +70,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   UpdateMDITabs(FALSE);
 
   if (!m_MenuBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE)) {
-    ATLTRACE2(atlTraceGeneral, 0, L"Failed to create menubar\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create menubar\n");
     return -1;
   }
   m_MenuBar.SetPaneStyle(m_MenuBar.GetPaneStyle() | CBRS_SIZE_DYNAMIC | CBRS_TOOLTIPS | CBRS_FLYBY);
@@ -80,7 +80,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   DWORD Style(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
   if (!m_StandardToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
       !m_StandardToolBar.LoadToolBar(static_cast<UINT>(app.HighColorMode() ? IDR_MAINFRAME_256 : IDR_MAINFRAME))) {
-    ATLTRACE2(atlTraceGeneral, 0, L"Failed to create toolbar\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create toolbar\n");
     return -1;
   }
   m_StandardToolBar.SetWindowTextW(L"Standard");
@@ -89,7 +89,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   InitUserToolbars(NULL, uiFirstUserToolBarId, uiLastUserToolBarId);
 
   if (!m_StatusBar.Create(this)) {
-    ATLTRACE2(atlTraceGeneral, 0, L"Failed to create status bar\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create status bar\n");
     return -1;
   }
   m_StatusBar.SetIndicators(indicators, sizeof(indicators) / sizeof(UINT));
@@ -99,7 +99,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_StatusBar.SetPaneWidth(nStatusProgress, 80);
 
   if (!CreateDockablePanes()) {
-    ATLTRACE2(atlTraceGeneral, 0, L"Failed to create dockable panes\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create dockable panes\n");
     return -1;
   }
   m_MenuBar.EnableDocking(CBRS_ALIGN_ANY);
@@ -149,12 +149,12 @@ BOOL CMainFrame::CreateDockablePanes() {
 
   CString Caption = EoAppLoadStringResource(IDS_OUTPUT);
   if (!m_OutputPane.Create(Caption, this, DefaultSize, TRUE, ID_VIEW_OUTPUTWND, SharedStyles | CBRS_BOTTOM)) {
-    ATLTRACE2(atlTraceGeneral, 0, L"Failed to create Output pane\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Output pane\n");
     return FALSE;
   }
   Caption = EoAppLoadStringResource(IDS_PROPERTIES);
   if (!m_PropertiesPane.Create(Caption, this, DefaultSize, TRUE, ID_VIEW_PROPERTIESWND, SharedStyles | CBRS_RIGHT)) {
-    ATLTRACE2(atlTraceGeneral, 0, L"Failed to create Properties pane\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Properties pane\n");
     return FALSE;
   }
   SetDockablePanesIcons(app.HighColorMode());
@@ -209,7 +209,7 @@ LRESULT CMainFrame::OnToolbarCreateNew(WPARAM wp, LPARAM name) {
   return Result;
 }
 LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
-  ATLTRACE2(atlTraceGeneral, 1, L"CMainFrame::OnToolbarReset(%i, %i)\n", toolbarResourceId, lparam);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CMainFrame::OnToolbarReset(%i, %i)\n", toolbarResourceId, lparam);
 
   switch (toolbarResourceId) {
     case IDR_MAINFRAME:
@@ -461,7 +461,7 @@ void CMainFrame::OnMdiTabbed() {
 }
 void CMainFrame::OnUpdateMdiTabbed(CCmdUI* pCmdUI) { pCmdUI->SetCheck(); }
 void CMainFrame::OnDestroy() {
-  ATLTRACE2(atlTraceGeneral, 1, L"CMainFrame::OnDestroy() - Entering\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CMainFrame::OnDestroy() - Entering\n");
 
 #if defined(USING_ODA)
   odUninitialize();
@@ -495,7 +495,7 @@ void CMainFrame::OnStartProgress(void) {
   TimerId = SetTimer(2, 1, NULL);
 }
 void CMainFrame::OnTimer(UINT_PTR nIDEvent) {
-  ATLTRACE2(atlTraceGeneral, 0, L"CMainFrame::OnTimer(%i)\n", nIDEvent);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"CMainFrame::OnTimer(%i)\n", nIDEvent);
 
   if (nIDEvent == TimerId) {
     m_CurrentProgress += 10;

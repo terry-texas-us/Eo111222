@@ -69,7 +69,7 @@ LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM l
 
 	case WM_LBUTTONDOWN:
 		::SetFocus(hwnd);
-		ATLTRACE2(atlTraceGeneral, 0, L"Preview WM_LBUTTONDOWN message\n");
+		ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Preview WM_LBUTTONDOWN message\n");
 		return (FALSE);
 
 	}

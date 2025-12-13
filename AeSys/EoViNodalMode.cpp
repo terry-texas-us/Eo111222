@@ -302,7 +302,7 @@ void AeSysView::OnNodalModeEscape(void) {
 }
 void AeSysView::DoNodalModeMouseMove() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
-  int NumberOfPoints = pts.GetSize();
+  INT_PTR NumberOfPoints = pts.GetSize();
 
   switch (PreviousNodalCommand) {
     case ID_OP4:

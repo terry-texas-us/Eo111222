@@ -741,10 +741,10 @@ void AeSys::OnFileOpen(void) {
   CString Title = EoAppLoadStringResource(AFX_IDS_OPENFILE);
   FileDialog.m_ofn.lpstrTitle = Title;
 
-  int Result = FileDialog.DoModal();
+  INT_PTR result = FileDialog.DoModal();
   FileName.ReleaseBuffer();
 
-  if (Result == IDOK) { OpenDocumentFile(FileName); }
+  if (result == IDOK) { OpenDocumentFile(FileName); }
 }
 int AeSys::GreatestCommonDivisor(const int number1, const int number2) {
   int ReturnValue = abs(number1);

@@ -85,22 +85,22 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
 }
 void __End(AeSysView* view, CDC* deviceContext, EoInt16 lineTypeIndex) {
   if (EoDbPrimitive::IsSupportedTyp(lineTypeIndex)) {
-    int Size = pts_.GetSize();
-    if (Size > 1) {
+    INT_PTR size = pts_.GetSize();
+    if (size > 1) {
       view->ModelViewTransformPoints(pts_);
 
       if (AnyPointsInView(pts_)) {
-        CPoint pnt;
-        pnt = view->DoProjection(pts_[0]);
-        deviceContext->MoveTo(pnt);
+        CPoint point;
+        point = view->DoProjection(pts_[0]);
+        deviceContext->MoveTo(point);
 
-        for (int i = 1; i < Size; i++) {
-          pnt = view->DoProjection(pts_[i]);
-          deviceContext->LineTo(pnt);
+        for (INT_PTR i = 1; i < size; i++) {
+          point = view->DoProjection(pts_[i]);
+          deviceContext->LineTo(point);
         }
         if (LoopLine) {
-          pnt = view->DoProjection(pts_[0]);
-          deviceContext->LineTo(pnt);
+          point = view->DoProjection(pts_[0]);
+          deviceContext->LineTo(point);
         }
         return;
       }

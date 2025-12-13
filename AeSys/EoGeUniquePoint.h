@@ -4,11 +4,13 @@
 
 class EoGeUniquePoint : public CObject {
  public:
-  EoGePoint3d m_Point;
-  int m_References;
+  EoGePoint3d m_Point = EoGePoint3d::kOrigin;
+  int m_References = 0;
 
  public:
-  EoGeUniquePoint() : m_References(0), m_Point(EoGePoint3d::kOrigin) {}
+  EoGeUniquePoint() = default;
+
+  EoGeUniquePoint(const EoGePoint3d& point, int references) : m_Point(point), m_References(references) {}
 
   EoGeUniquePoint(const EoGeUniquePoint& other) {
     m_Point = other.m_Point;
@@ -21,9 +23,5 @@ class EoGeUniquePoint : public CObject {
       m_References = other.m_References;
     }
     return *this;
-  }
-  EoGeUniquePoint(int references, const EoGePoint3d& point) {
-    m_References = references;
-    m_Point = point;
   }
 };

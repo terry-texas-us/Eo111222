@@ -83,7 +83,7 @@ void EoDbSpline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& pt
 EoGePoint3d EoDbSpline::GoToNxtCtrlPt() {
   EoGePoint3d pt;
 
-  int i = m_pts.GetSize() - 1;
+  INT_PTR i = m_pts.GetSize() - 1;
 
   if (sm_RelationshipOfPoint <= DBL_EPSILON)
     pt = m_pts[i];
@@ -161,13 +161,13 @@ int EoDbSpline::GenPts(const int iOrder, EoGePoint3dArray& pts) {
     app.WarningMessageBox(IDS_MSG_MEM_ALLOC_ERR);
     return 0;
   }
-  int iPts = 8 * pts.GetSize();
+  int iPts = 8 * static_cast<int>(pts.GetSize());
   double* dWght = &dKnot[65];
 
   int i, i2, i4;
 
-  int iTMax = (pts.GetSize() - 1) - iOrder + 2;
-  int iKnotVecMax = (pts.GetSize() - 1) + iOrder;  // Maximum number of dKnot vectors
+  int iTMax = (static_cast<int>(pts.GetSize()) - 1) - iOrder + 2;
+  int iKnotVecMax = (static_cast<int>(pts.GetSize()) - 1) + iOrder;  // Maximum number of dKnot vectors
 
   for (i = 0; i < 65 * 65; i++)  // Set weighting value array with zeros
     dWght[i] = 0.;

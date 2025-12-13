@@ -180,7 +180,7 @@ class AeSysDoc : public CDocument {
   void SquareTrappedGroups(AeSysView* view);
   void TransformTrappedGroups(EoGeTransformMatrix& tm);
   void TranslateTrappedGroups(EoGeVector3d translate);
-  int TrapGroupCount() { return m_TrappedGroupList.GetCount(); }
+  INT_PTR TrapGroupCount() { return m_TrappedGroupList.GetCount(); }
   EoDbGroupList* GroupsInTrap() { return &m_TrappedGroupList; }
 
   // Nodal list interface (includes list of groups, primitives and unique points)

@@ -612,7 +612,7 @@ void AeSysView::OnPipeModeEscape() {
 
 void AeSysView::DoPipeModeMouseMove() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
-  int NumberOfPoints = pts.GetSize();
+  INT_PTR NumberOfPoints = pts.GetSize();
 
   switch (m_PreviousOp) {
     case ID_OP2:

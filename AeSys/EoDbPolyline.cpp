@@ -63,7 +63,7 @@ EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
-  ATLTRACE2(atlTraceGeneral, 1, L"EoDbPolyline::Display(%08.8lx, %08.8lx)\n", view, deviceContext);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"EoDbPolyline::Display(%p, %p)\n", view, deviceContext);
 
   EoInt16 nPenColor = LogicalPenColor();
   EoInt16 LineType = LogicalLineType();

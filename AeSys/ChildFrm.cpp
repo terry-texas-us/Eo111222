@@ -22,12 +22,12 @@ CChildFrame::~CChildFrame() {}
 // Overrides
 
 void CChildFrame::ActivateFrame(int nCmdShow) {
-  ATLTRACE2(atlTraceGeneral, 1, L"CChildFrame::ActivateFrame(%i)\n", nCmdShow);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CChildFrame::ActivateFrame(%i)\n", nCmdShow);
   CMDIChildWndEx::ActivateFrame(nCmdShow);
-  ATLTRACE2(atlTraceGeneral, 1, L"CChildFrame::ActivateFrame() - Leaving\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CChildFrame::ActivateFrame() - Leaving\n");
 }
 BOOL CChildFrame::DestroyWindow() {
-  ATLTRACE2(atlTraceGeneral, 1, L"CChildFrame::DestroyWindow() - Entering\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CChildFrame::DestroyWindow() - Entering\n");
 
   CDC* DeviceContext = GetDC();
 
@@ -50,7 +50,7 @@ void CChildFrame::AssertValid() const { CMDIChildWndEx::AssertValid(); }
 void CChildFrame::Dump(CDumpContext& dc) const { CMDIChildWndEx::Dump(dc); }
 #endif  //_DEBUG
 void CChildFrame::OnTimer(UINT_PTR nIDEvent) {
-  ATLTRACE2(atlTraceGeneral, 1, L"CChildFrame::OnTimer() - Entering\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CChildFrame::OnTimer() - Entering\n");
 
   CMDIChildWndEx::OnTimer(nIDEvent);
 }

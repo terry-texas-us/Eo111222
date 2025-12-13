@@ -38,7 +38,7 @@ void EoDlgViewParameters::OnBnClickedApply() {
 	EoGsViewport Viewport;
 	ActiveView->ModelViewGetViewport(Viewport);
 
-	EoGsViewTransform* ModelView = (EoGsViewTransform*) m_ModelView;
+	EoGsViewTransform* ModelView = reinterpret_cast<EoGsViewTransform*>(static_cast<uintptr_t>(m_ModelView));
 
 	WCHAR szBuf[32];
 	EoGePoint3d Position;
@@ -97,7 +97,7 @@ void EoDlgViewParameters::OnBnClickedApply() {
 BOOL EoDlgViewParameters::OnInitDialog() {
 	CDialog::OnInitDialog();
 
-	EoGsViewTransform* ModelView = (EoGsViewTransform*) m_ModelView;
+    EoGsViewTransform* ModelView = reinterpret_cast<EoGsViewTransform*>(static_cast<uintptr_t>(m_ModelView));
 
 	CString Length;
 	AeSys::Units Units = max(app.GetUnits(), AeSys::kEngineering);

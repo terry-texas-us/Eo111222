@@ -9,7 +9,7 @@ bool	bPtInRect = FALSE;
 LRESULT CALLBACK WndProcKeyPlan(HWND, UINT, WPARAM, LPARAM);
 
 void WndProcKeyPlanOnDraw(HWND);
-void WndProcKeyPlanOnMouseMove(HWND, UINT, LPARAM);
+void WndProcKeyPlanOnMouseMove(HWND, WPARAM, LPARAM);
 void WndProcKeyPlanOnNewRatio(HWND, LPARAM);
 
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance) {
@@ -113,7 +113,7 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
 	::EndPaint(hwnd, &ps);
 }
 
-void WndProcKeyPlanOnMouseMove(HWND hwnd, UINT nParam, LPARAM lParam) {
+void WndProcKeyPlanOnMouseMove(HWND hwnd, WPARAM nParam, LPARAM lParam) {
 	if (LOWORD(nParam) == MK_LBUTTON) {
 		CPoint pntCur;
 

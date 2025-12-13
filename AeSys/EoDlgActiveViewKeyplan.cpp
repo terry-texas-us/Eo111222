@@ -20,7 +20,7 @@ END_MESSAGE_MAP()
 EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(CWnd* pParent /*=NULL*/)
     : CDialog(EoDlgActiveViewKeyplan::IDD, pParent), m_dRatio(0) {}
 EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(AeSysView* view, CWnd* pParent /*=NULL*/)
-    : CDialog(EoDlgActiveViewKeyplan::IDD, pParent), m_ActiveView(view), m_dRatio(0) {}
+    : CDialog(EoDlgActiveViewKeyplan::IDD, pParent), m_dRatio(0), m_ActiveView(view) {}
 EoDlgActiveViewKeyplan::~EoDlgActiveViewKeyplan() {}
 void EoDlgActiveViewKeyplan::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);

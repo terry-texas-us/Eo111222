@@ -152,7 +152,7 @@ EoGeMatrix& EoGeMatrix::Inverse() {  // Gauss-Jordan elimination with partial pi
 
     // Scale row iCol to have mA unit diagonal
     if (mA.m_4X4[iCol][iCol] == 0.0) {
-      ATLTRACE2(atlTraceGeneral, 1, L"EoGeMatrix::Inverse: singular matrix, can't invert\n");
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"EoGeMatrix::Inverse: singular matrix, can't invert\n");
     }
     (*this)[iCol] /= mA.m_4X4[iCol][iCol];
     mA[iCol] /= mA.m_4X4[iCol][iCol];

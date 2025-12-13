@@ -20,7 +20,7 @@ int EoDbLineTypeTable::FillComboBox(CComboBox& comboBox) {
     int ItemIndex = comboBox.AddString(Name);
     comboBox.SetItemData(ItemIndex, DWORD_PTR(LineType));
   }
-  return (m_MapLineTypes.GetSize());
+  return (static_cast<int>(m_MapLineTypes.GetSize()));
 }
 int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
   CString Name;
@@ -33,7 +33,7 @@ int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
     listControl.InsertItem(ItemIndex, NULL);
     listControl.SetItemData(ItemIndex++, DWORD_PTR(LineType));
   }
-  return (m_MapLineTypes.GetSize());
+  return (static_cast<int>(m_MapLineTypes.GetSize()));
 }
 /// <remarks>
 /// ByBlock and ByLayer should not be permitted in a legacy file. This should be managed in the outbound conversions back to legacy file.
