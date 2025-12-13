@@ -29,22 +29,22 @@ CString EoDbFontDefinition::FormatHorizonatlAlignment() {
   CString strAlign[] = {L"Left", L"Center", L"Right"};
   return (m_HorizontalAlignment >= EoDb::kAlignLeft && m_HorizontalAlignment <= EoDb::kAlignRight)
              ? strAlign[m_HorizontalAlignment - 1]
-             : L"Invalid!";
+             : const_cast<LPWSTR>(L"Invalid!");
 }
 CString EoDbFontDefinition::FormatPath() {
   CString strPath[] = {L"Right", L"Left", L"Up", L"Down"};
-  return (m_Path >= EoDb::kPathRight && m_Path <= EoDb::kPathDown) ? strPath[m_Path] : L"Invalid!";
+  return (m_Path >= EoDb::kPathRight && m_Path <= EoDb::kPathDown) ? strPath[m_Path] : const_cast<LPWSTR>(L"Invalid!");
 }
 CString EoDbFontDefinition::FormatPrecision() {
   CString strPrec[] = {L"True Type", L"Stroke"};
   return (m_Precision >= EoDb::kEoTrueType && m_Precision <= EoDb::kStrokeType) ? strPrec[m_Precision - 1]
-                                                                                : L"Invalid!";
+                                                                                : const_cast<LPWSTR>(L"Invalid!");
 }
 CString EoDbFontDefinition::FormatVerticalAlignment() {
   CString strAlign[] = {L"Top", L"Middle", L"Bottom"};
   return (m_VerticalAlignment >= EoDb::kAlignTop && m_VerticalAlignment <= EoDb::kAlignBottom)
              ? strAlign[m_VerticalAlignment - 2]
-             : L"Invalid!";
+             : const_cast<LPWSTR>(L"Invalid!");
 }
 void EoDbFontDefinition::Read(CFile& file) {
   EoDb::Read(file, m_Precision);

@@ -42,7 +42,7 @@
 #include "EoDlgTrapFilter.h"
 #include "lex.h"
 
-UINT CALLBACK OFNHookProcFileTracing(HWND, UINT, WPARAM, LPARAM);
+UINT_PTR CALLBACK OFNHookProcFileTracing(HWND, UINT, WPARAM, LPARAM);
 
 UINT AFXAPI HashKey(CString& str) {
   LPCWSTR pStr = (LPCWSTR)str;

@@ -44,7 +44,7 @@ const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& src) {
 
   return (*this);
 }
-void EoDbDimension::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, L"<Dim>", this); }
+void EoDbDimension::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Dim>"), this); }
 EoDbPrimitive*& EoDbDimension::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbDimension(*this);
   return (primitive);

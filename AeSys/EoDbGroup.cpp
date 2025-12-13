@@ -27,7 +27,7 @@ void EoDbGroup::AddPrimsToTreeViewControl(HWND tree, HTREEITEM parent) {
   }
 }
 HTREEITEM EoDbGroup::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  HTREEITEM TreeItem = tvAddItem(tree, parent, L"<Group>", this);
+  HTREEITEM TreeItem = tvAddItem(tree, parent, const_cast<LPWSTR>(L"<Group>"), this);
   AddPrimsToTreeViewControl(tree, TreeItem);
   return TreeItem;
 }

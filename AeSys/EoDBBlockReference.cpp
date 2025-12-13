@@ -65,7 +65,7 @@ void EoDbBlockReference::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
   EoDbBlock* Block;
   if (AeSysDoc::GetDoc()->LookupBlock(m_strName, Block) == 0) { return; }
 
-  HTREEITEM hti = tvAddItem(hTree, hParent, L"<SegRef>", this);
+  HTREEITEM hti = tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<SegRef>"), this);
 
   ((EoDbGroup*)Block)->AddPrimsToTreeViewControl(hTree, hti);
 }

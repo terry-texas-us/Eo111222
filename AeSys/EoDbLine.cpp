@@ -40,7 +40,7 @@ const EoDbLine& EoDbLine::operator=(const EoDbLine& src) {
 
   return (*this);
 }
-void EoDbLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Line>", this); }
+void EoDbLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, const_cast<LPWSTR>(L"<Line>"), this); }
 EoDbPrimitive*& EoDbLine::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbLine(*this);
   return (primitive);

@@ -24,7 +24,7 @@ ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance) {
 
 	return ::RegisterClass(&Class);
 }
-LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, UINT nParam, LPARAM lParam) {
+LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM lParam) {
 	switch (message) {
 	case WM_CREATE: {
 			AeSysView* ActiveView = AeSysView::GetActiveView();

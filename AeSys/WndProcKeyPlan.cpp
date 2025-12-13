@@ -29,7 +29,7 @@ ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance) {
 	return ::RegisterClass(&Class);
 }
 
-LRESULT CALLBACK WndProcKeyPlan(HWND hwnd, UINT message, UINT nParam, LPARAM lParam) {
+LRESULT CALLBACK WndProcKeyPlan(HWND hwnd, UINT message, WPARAM nParam, LPARAM lParam) {
 	switch (message) {
 	case WM_USER_ON_NEW_RATIO:
 		WndProcKeyPlanOnNewRatio(hwnd, lParam);

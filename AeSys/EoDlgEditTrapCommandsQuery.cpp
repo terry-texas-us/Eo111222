@@ -39,7 +39,7 @@ BOOL EoDlgEditTrapCommandsQuery::OnInitDialog() {
 
 	HWND hWndGroupTree = ::GetDlgItem(this->GetSafeHwnd(), IDC_GROUP_TREE);
 	EoDbGroupList* GroupsInTrap = AeSysDoc::GetDoc()->GroupsInTrap();
-	HTREEITEM htiGroupList = tvAddItem(hWndGroupTree, TVI_ROOT, L"<Groups>", GroupsInTrap);
+	HTREEITEM htiGroupList = tvAddItem(hWndGroupTree, TVI_ROOT, const_cast<LPWSTR>(L"<Groups>"), GroupsInTrap);
 	GroupsInTrap->AddToTreeViewControl(hWndGroupTree, htiGroupList);
 
 	m_ExtraListViewControl.InsertColumn(0, L"Property", LVCFMT_LEFT, 75);

@@ -32,7 +32,7 @@ const EoDbSpline& EoDbSpline::operator=(const EoDbSpline& src) {
   return (*this);
 }
 
-void EoDbSpline::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, L"<BSpline>", this); }
+void EoDbSpline::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<BSpline>"), this); }
 
 EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbSpline(*this);

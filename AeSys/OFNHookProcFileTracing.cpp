@@ -5,7 +5,7 @@
 
 #include "Preview.h"
 
-UINT CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, LPARAM lParam) {
+UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, LPARAM lParam) {
 	AeSysDoc* Document = AeSysDoc::GetDoc();
 	AeSysView* ActiveView = AeSysView::GetActiveView();
 

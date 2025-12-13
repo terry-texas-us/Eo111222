@@ -10,8 +10,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static WCHAR* TabsStyles[] = {L"None", L"Standard", L"Grouped", NULL};
-static WCHAR* TabLocations[] = {L"On Bottom", L"On Top", NULL};
+static const WCHAR* TabsStyles[] = {L"None", L"Standard", L"Grouped", NULL};
+static const WCHAR* TabLocations[] = {L"On Bottom", L"On Top", NULL};
 
 BEGIN_MESSAGE_MAP(EoMfPropertiesDockablePane, CDockablePane)
 ON_WM_CREATE()

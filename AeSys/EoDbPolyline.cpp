@@ -54,7 +54,7 @@ const EoDbPolyline& EoDbPolyline::operator=(const EoDbPolyline& src) {
 }
 
 void EoDbPolyline::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
-  tvAddItem(hTree, hParent, L"<Polyline>", this);
+  tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Polyline>"), this);
 }
 
 EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {

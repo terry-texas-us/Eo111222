@@ -887,6 +887,7 @@ class AeSysView : public CView
  protected:
   DECLARE_MESSAGE_MAP()
 };
+
 #ifndef _DEBUG  // debug version in PegView.cpp
 inline AeSysDoc* AeSysView::GetDocument() const { return reinterpret_cast<AeSysDoc*>(m_pDocument); }
 #endif

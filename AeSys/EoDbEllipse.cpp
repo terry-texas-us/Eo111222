@@ -144,7 +144,7 @@ const EoDbEllipse& EoDbEllipse::operator=(const EoDbEllipse& src) {
   m_dSwpAng = src.m_dSwpAng;
   return (*this);
 }
-void EoDbEllipse::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, L"<Arc>", this); }
+void EoDbEllipse::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Arc>"), this); }
 EoDbPrimitive*& EoDbEllipse::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbEllipse(*this);
   return (primitive);
