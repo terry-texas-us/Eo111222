@@ -66,34 +66,34 @@ class AeSys : public CWinAppEx
   static CString CustomRButtonUpCharacters;
 
  private:
-  int m_ArchitecturalUnitsFractionPrecision;
-  bool m_ClipboardDataEoGroups;
-  bool m_ClipboardDataImage;
-  bool m_ClipboardDataText;
-  UINT m_ClipboardFormatIdentifierForEoGroups;
-  int m_CurrentMode;
-  double m_DeviceHeightInMillimeters;
-  double m_DeviceHeightInPixels;
-  double m_DeviceWidthInMillimeters;
-  double m_DeviceWidthInPixels;
-  double m_DimensionAngle;
-  double m_DimensionLength;
-  double m_EngagedAngle;
-  double m_EngagedLength;
-  bool m_HighColorMode;
+  int m_ArchitecturalUnitsFractionPrecision{0};
+  bool m_ClipboardDataEoGroups{false};
+  bool m_ClipboardDataImage{false};
+  bool m_ClipboardDataText{false};
+  UINT m_ClipboardFormatIdentifierForEoGroups{0};
+  int m_CurrentMode{0};
+  double m_DeviceHeightInMillimeters{0.0};
+  double m_DeviceHeightInPixels{0.0};
+  double m_DeviceWidthInMillimeters{0.0};
+  double m_DeviceWidthInPixels{0.0};
+  double m_DimensionAngle{0.0};
+  double m_DimensionLength{0.0};
+  double m_EngagedAngle{0.0};
+  double m_EngagedLength{0.0};
+  bool m_HighColorMode{false};
   EoGePoint3d m_HomePoints[9];
-  HMENU m_MainFrameMenuHandle;
-  bool m_ModeInformationOverView;
-  int m_ModeResourceIdentifier;
-  CMultiDocTemplate* m_PegDocTemplate;
-  int m_PrimaryMode;
+  HMENU m_MainFrameMenuHandle{nullptr};
+  bool m_ModeInformationOverView{false};
+  int m_ModeResourceIdentifier{0};
+  CMultiDocTemplate* m_PegDocTemplate{nullptr};
+  int m_PrimaryMode{0};
   CString m_ShadowFolderPath;
-  char* m_SimplexStrokeFont;
-  CMultiDocTemplate* m_TracingDocTemplate;
-  EoInt16 m_TrapHighlightColor;
-  bool m_TrapHighlighted;
-  bool m_TrapModeAddGroups;
-  Units m_Units;
+  char* m_SimplexStrokeFont{nullptr};
+  CMultiDocTemplate* m_TracingDocTemplate{nullptr};
+  EoInt16 m_TrapHighlightColor{0};
+  bool m_TrapHighlighted{false};
+  bool m_TrapModeAddGroups{false};
+  Units m_Units{kEngineering};
 
  public:
   bool m_NodalModeAddGroups;
@@ -124,12 +124,12 @@ class AeSys : public CWinAppEx
   double EngagedAngle() const { return (m_EngagedAngle); }
   double EngagedLength() const { return (m_EngagedLength); }
   void FormatAngle(CString& angleAsString, const double angle, const int width, const int precision);
-  
+
   /// @brief Formats a length value as a string with specified units and formatting options.
   /// @param lengthAsString Output parameter that receives the formatted length string.
   /// @param units The unit system to use for formatting the length.
   /// @param length The length value to format.
-  /// @param width The minimum field width for the formatted output.
+  /// @param minWidth The minimum field width for the formatted output.
   /// @param precision The number of decimal places to display.
   /// @note Formatting rules follow:
   /// @verbatim
@@ -141,22 +141,24 @@ class AeSys : public CWinAppEx
   ///	[feet]'[inches].[decimal inches]"
   /// All other units formatted using floating decimal.
   /// @endverbatim
-  void FormatLength(CString& lengthAsString, Units units, const double length, const int width, const int precision);
-  
+  void FormatLength(CString& lengthAsString, Units units, const double length, const int minWidth = 0,
+                    const int precision = 4);
+
   /// @brief Formats a length value as an architectural measurement string in feet and inches with fractional inches.
   /// @param lengthAsBuffer The output buffer to receive the formatted architectural length string.
   /// @param bufSize The size of the output buffer in wide characters.
   /// @param units The architectural units style to use for formatting (e.g., kArchitecturalS for stacked fractions).
   /// @param length The length value to format, in the internal unit system.
   void FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length);
-  
+
   /// @brief Formats a length value in engineering units (feet and inches) and stores it in a buffer.
   /// @param lengthAsBuffer Output buffer to receive the formatted length string.
   /// @param bufSize The size of the output buffer in characters.
   /// @param length The length value to format, in internal units.
   /// @param width The minimum field width for formatting the fractional part.
   /// @param precision The number of significant digits to display in the formatted output.
-  void FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width, const int precision);
+  void FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width,
+                               const int precision);
 
   /// @brief Formats a length value as a string with the specified units, width, and precision.
   /// @param lengthAsString Output buffer that receives the formatted length string.
@@ -165,7 +167,8 @@ class AeSys : public CWinAppEx
   /// @param length The length value to format, in the base measurement system.
   /// @param width The minimum field width for the formatted number.
   /// @param precision The number of decimal places to display in the formatted number.
-  void FormatLengthSimple(LPWSTR lengthAsBuffr, const size_t bufSize, Units units, const double length, const int width, const int precision);
+  void FormatLengthSimple(LPWSTR lengthAsBuffr, const size_t bufSize, Units units, const double length, const int width,
+                          const int precision);
 
   int GetArchitecturalUnitsFractionPrecision() { return (m_ArchitecturalUnitsFractionPrecision); }
   EoGePoint3d GetCursorPosition();
@@ -198,7 +201,7 @@ class AeSys : public CWinAppEx
   int PrimaryMode() const { return m_PrimaryMode; }
   void ReleaseSimplexStrokeFont();
   void SetArchitecturalUnitsFractionPrecision(const int precision) {
-    if (precision > 0) m_ArchitecturalUnitsFractionPrecision = precision;
+    if (precision > 0) { m_ArchitecturalUnitsFractionPrecision = precision; }
   }
   /// <summary> Positions cursor at targeted position.</summary>
   void SetCursorPosition(EoGePoint3d pt);

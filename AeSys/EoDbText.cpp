@@ -398,7 +398,7 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, CDC* deviceContext, Eo
   UINT uTextAlign = deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);
   int iBkMode = deviceContext->SetBkMode(TRANSPARENT);
 
-  deviceContext->TextOut(ProjectedStartPoint.x, ProjectedStartPoint.y, (LPCWSTR)text.Mid(startPosition),
+  deviceContext->TextOutW(ProjectedStartPoint.x, ProjectedStartPoint.y, (LPCWSTR)text.Mid(startPosition),
                          numberOfCharacters);
   deviceContext->SetBkMode(iBkMode);
   deviceContext->SetTextAlign(uTextAlign);

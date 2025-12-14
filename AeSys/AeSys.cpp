@@ -179,7 +179,7 @@ BOOL AeSys::InitInstance() {
 
   // InitCommonControlsEx() is required on Windows XP if an application manifest specifies use of ComCtl32.dll version 6 or later to enable visual styles.
   // Otherwise, any window creation will fail.
-  INITCOMMONCONTROLSEX InitCtrls;
+  INITCOMMONCONTROLSEX InitCtrls {};
   InitCtrls.dwSize = sizeof(InitCtrls);
   // Indicates common controls to load from the dll;
   // animate control, header, hot key, list-view, progress bar, status bar, tab, tooltip, toolbar, trackbar, tree-view, and up-down control classes.
@@ -299,10 +299,10 @@ int AeSys::ConfirmMessageBox(UINT stringResourceIdentifier, const CString& strin
   return (MessageBoxW(0, Message, Caption, MB_ICONINFORMATION | MB_YESNOCANCEL | MB_DEFBUTTON2));
 }
 void AeSys::AddStringToMessageList(const CString& message) {
-  CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
+  auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
 
-  MainFrame->GetOutputPane().AddStringToMessageList(message);
-  if (!MainFrame->GetOutputPane().IsWindowVisible()) { MainFrame->SetPaneText(1, message); }
+  mainFrame->GetOutputPane().AddStringToMessageList(message);
+  if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message); }
 }
 void AeSys::AddModeInformationToMessageList() {
   CString ResourceString = EoAppLoadStringResource(static_cast<UINT>(m_CurrentMode));
@@ -780,7 +780,7 @@ void AeSys::FormatAngle(CString& angleAsString, const double angle, const int wi
   angleAsString.Format(FormatSpecification, EoToDegree(angle));
 }
 
-void AeSys::FormatLength(CString& lengthAsString, Units units, const double length, const int width,
+void AeSys::FormatLength(CString& lengthAsString, Units units, const double length, const int minWidth,
                          const int precision) {
   const size_t bufSize = 32;
   auto lengthAsBuffer = lengthAsString.GetBufferSetLength(bufSize);
@@ -788,9 +788,9 @@ void AeSys::FormatLength(CString& lengthAsString, Units units, const double leng
   if (units == kArchitectural || units == kArchitecturalS) {
     FormatLengthArchitectural(lengthAsBuffer, bufSize, units, length);
   } else if (units == kEngineering) {
-    FormatLengthEngineering(lengthAsBuffer, bufSize, length, width, precision);
+    FormatLengthEngineering(lengthAsBuffer, bufSize, length, minWidth, precision);
   } else {
-    FormatLengthSimple(lengthAsBuffer, bufSize, units, length, width, precision);
+    FormatLengthSimple(lengthAsBuffer, bufSize, units, length, minWidth, precision);
   }
   lengthAsString.ReleaseBuffer();
 }
@@ -932,7 +932,7 @@ double AeSys::ParseLength(LPWSTR aszLen) {
 
     case 'M':
       if (toupper((int)szEndPtr[1]) == 'M')
-        dRetVal *= .03937007874015748;
+        dRetVal *= 0.03937007874015748;
       else
         dRetVal *= 39.37007874015748;
       break;

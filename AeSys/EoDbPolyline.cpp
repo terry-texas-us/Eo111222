@@ -99,11 +99,11 @@ void EoDbPolyline::AddReportToMessageList(EoGePoint3d ptPic) {
     }
     CString LengthAsString;
     CString AngleAsString;
-    app.FormatLength(LengthAsString, app.GetUnits(), EdgeLength, 16, 8);
+    app.FormatLength(LengthAsString, app.GetUnits(), EdgeLength);
     app.FormatAngle(AngleAsString, AngleInXYPlane, 8, 3);
 
     CString Message;
-    Message.Format(L"<Polyline Edge> Color: %s Line Type: %s - %s @ %s", FormatPenColor().GetString(),
+    Message.Format(L"<Polyline Edge> Color: %s Line Type: %s \u2022 %s @ %s", FormatPenColor().GetString(),
                    FormatLineType().GetString(), LengthAsString.TrimLeft().GetString(), AngleAsString.GetString());
     app.AddStringToMessageList(Message);
 

@@ -7,21 +7,17 @@
 
 class AeSysDoc;
 class EoMfOutputDockablePane;
-
-class AeSysView : public CView
 #if defined(USING_ODA)
-    ,
-                  OdGiContextForDbDatabase {
+//class AeSysView : public CView, OdGiContextForDbDatabase {
+// protected:
+//  using CView::operator new;
+//  using CView::operator delete;
+//  void addRef() {}
+//  void release() {}
+#else
+class AeSysView : public CView {
+#endif      // USING_ODA
  protected:
-  using CView::operator new;
-  using CView::operator delete;
-  void addRef() {}
-  void release() {}
-#else   // ! USING_ODA
-{
-#endif  // USING_ODA
-
- protected:  // create from serialization only
   AeSysView();
   AeSysView(const AeSysView&) = delete;
   AeSysView& operator=(const AeSysView&) = delete;
@@ -152,7 +148,7 @@ class AeSysView : public CView
   void ViewZoomExtents();
 
   const ODCOLORREF* CurrentPalette() const;
-#else   // !USING_ODA
+#else
   void ViewZoomExtents() {}
 #endif  // USING_ODA
 #if defined(USING_Direct2D)
@@ -160,7 +156,6 @@ class AeSysView : public CView
   ID2D1SolidColorBrush* m_LightSlateGrayBrush;
   ID2D1SolidColorBrush* m_RedBrush;
 
-  /// <summary>Creates resources that are bound to a particular Direct3D device. These resources need to be recreated if the Direct3D device dissapears, such as when the display changes, the window is remoted, etc.</summary>
   HRESULT CreateDeviceResources();
   void DiscardDeviceResources();
 #endif  // USING_Direct2D
@@ -782,12 +777,22 @@ class AeSysView : public CView
   void GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint);
   void DoPowerModeConductor(EoUInt16 conductorType);
 
- public:  // Status & Mode Line
+ public:
+  /// @brief Updates the status bar mode line display with mode-specific operation information and optionally draws the pane text in the active view.
   void ModeLineDisplay();
-  EoUInt16 ModeLineHighlightOp(EoUInt16 op);
-  void ModeLineUnhighlightOp(EoUInt16& op);
 
-  CMFCStatusBar& GetStatusBar(void) const;
+  /// @brief Highlights a mode line operation by setting its text color to red in the status bar and optionally in the active view.
+  /// @param command The operation command identifier to highlight. A value of 0 indicates no operation should be highlighted.
+  /// @return The command identifier that was highlighted, or 0 if no operation was highlighted.
+  EoUInt16 ModeLineHighlightOp(EoUInt16 command);
+
+  /// @brief Removes highlighting from a mode line operation pane and updates the display.
+  /// @param command Reference to the command identifier to unhighlight. Set to 0 after unhighlighting is complete.
+  void ModeLineUnhighlightOp(EoUInt16& command);
+
+  /// @brief Gets a reference to the application's status bar.
+  /// @return A reference to the CMFCStatusBar object from the main frame window.
+  CMFCStatusBar& GetStatusBar() const;
 
  public:
   afx_msg void OnBackgroundImageLoad();

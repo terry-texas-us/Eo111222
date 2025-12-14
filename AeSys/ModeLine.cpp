@@ -4,132 +4,142 @@
 
 #include "MainFrm.h"
 
+/// @brief Retrieves the DPI (dots per inch) for a window. The function tries to call GetDpiForWindow from user32.dll if available; if not available or the window handle is invalid, it falls back to the screen DPI obtained from the device context, defaulting to 96 if detection fails.
+/// @param hwnd Handle to the window whose DPI should be retrieved. If nullptr or not a valid window, the function falls back to the primary screen DPI.
+/// @return The DPI value (horizontal dots per inch) as a UINT for the specified window or screen. Returns 96 if the DPI cannot be determined.
+static UINT GetWindowDpi(HWND hwnd) {
+  UINT dpi = 96;
+  HMODULE user32Module = ::GetModuleHandleW(L"user32.dll");
+  if (user32Module != nullptr) {
+    typedef UINT(WINAPI * GetDpiForWindow_t)(HWND);
+    auto GetDpiForWindow =
+        reinterpret_cast<GetDpiForWindow_t>(reinterpret_cast<void*>(::GetProcAddress(user32Module, "GetDpiForWindow")));
+    if (GetDpiForWindow != nullptr && hwnd != nullptr && ::IsWindow(hwnd)) {
+      dpi = GetDpiForWindow(hwnd);
+    } else {
+      HDC screenContext = ::GetDC(nullptr);
+      if (screenContext != nullptr) {
+        dpi = static_cast<UINT>(::GetDeviceCaps(screenContext, LOGPIXELSX));
+        ::ReleaseDC(nullptr, screenContext);
+      }
+    }
+  }
+  return dpi;
+}
+
+static int ScaleHeightForDpi(HWND hwnd, int baseHeight) {
+  if (baseHeight <= 0) { return 0; }
+  UINT dpi = GetWindowDpi(hwnd);
+  int scaled = MulDiv(baseHeight, static_cast<int>(dpi), 96);
+  return (scaled > 0) ? scaled : 0;
+}
+
+/// @brief Scales a base width value according to the DPI of a given window.
+/// @param hwnd Handle to the window whose DPI is used for scaling.
+/// @param baseWidth The base width in pixels at the standard 96 DPI. If <= 0, the function returns 0.
+/// @return The width scaled to the window's DPI (using 96 DPI as the baseline), or 0 if baseWidth <= 0 or the computed scaled value is not positive.
+static int ScaleWidthForDpi(HWND hwnd, int baseWidth) {
+  if (baseWidth <= 0) { return 0; }
+  UINT dpi = GetWindowDpi(hwnd);
+  int scaled = MulDiv(baseWidth, static_cast<int>(dpi), 96);
+  return (scaled > 0) ? scaled : 0;
+}
+
+/// @brief Draws a line of text into a pane area of the given view using the provided device context and font.
+/// @param context Pointer to the device context (CDC) used for drawing. If nullptr, the function returns immediately.
+/// @param view Pointer to the view (CPegView) whose client rectangle is used to compute the pane area. If nullptr, the function returns immediately.
+/// @param paneIndex Zero-based index of the pane in which to draw the text; used to compute the left and right boundaries for the pane.
+/// @param paneText The text to draw (CString).
+/// @param font Font (CFont) to select into the device context for drawing the text.
+/// @param textColor COLORREF specifying the text color to use while drawing.
+static void DrawPaneTextInView(CDC* context, AeSysView* view, int paneIndex, const CString& paneText, int font,
+                               COLORREF textColor) {
+  if (context == nullptr || view == nullptr) { return; }
+
+  auto* oldFont = context->SelectObject(static_cast<CFont*>(context->SelectStockObject(font)));
+  auto oldTextAlignment = context->SetTextAlign(TA_LEFT | TA_TOP);
+  auto oldTextColor = context->SetTextColor(textColor);
+  auto oldBackgroundColor = context->SetBkColor(~AppGetTextCol() & 0x00ffffff);
+
+  TEXTMETRIC metrics;
+  context->GetTextMetrics(&metrics);
+
+  CRect clientArea;
+  view->GetClientRect(&clientArea);
+
+  int paneWidth = clientArea.Width() / 10;
+
+  int left = paneIndex * paneWidth;
+  int top = clientArea.bottom - metrics.tmHeight;
+  int right = (paneIndex + 1) * paneWidth;
+  int bottom = clientArea.bottom;
+  CRect rc(left, top, right, bottom);
+
+  auto paneTextLength = static_cast<UINT>(paneText.GetLength());
+  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, paneText, paneTextLength, nullptr);
+
+  context->SetBkColor(oldBackgroundColor);
+  context->SetTextColor(oldTextColor);
+  context->SetTextAlign(oldTextAlignment);
+  context->SelectObject(oldFont);
+}
+
 void AeSysView::ModeLineDisplay() {
   if (app.CurrentMode() == 0) { return; }
   m_OpHighlighted = 0;
 
-  CString ModeInformation = EoAppLoadStringResource(UINT(app.CurrentMode()));
+  auto modeInformation = EoAppLoadStringResource(UINT(app.CurrentMode()));
 
-  CString ModeOp;
+  CString paneText;
 
-  CDC* DeviceContext = GetDC();
+  auto* context = GetDC();
 
   for (int i = 0; i < 10; i++) {
-    AfxExtractSubString(ModeOp, ModeInformation, i + 1, '\n');
+    AfxExtractSubString(paneText, modeInformation, i + 1, '\n');
 
-    // Note: Using active view device context for sizing status bar panes
-    CSize size = DeviceContext->GetTextExtent(ModeOp);
+    auto textExtent = context->GetTextExtent(paneText);
 
-    GetStatusBar().SetPaneInfo(::nStatusOp0 + i, static_cast<UINT>(ID_OP0 + i), SBPS_NORMAL, size.cx);
-    GetStatusBar().SetPaneText(::nStatusOp0 + i, ModeOp);
+    GetStatusBar().SetPaneInfo(::nStatusOp0 + i, static_cast<UINT>(ID_OP0 + i), SBPS_NORMAL, textExtent.cx);
+    GetStatusBar().SetPaneText(::nStatusOp0 + i, paneText);
     GetStatusBar().SetTipText(::nStatusOp0 + i, L"Mode Command Tip Text");
-  }
-  if (app.ModeInformationOverView()) {
-    CFont* Font = (CFont*)DeviceContext->SelectStockObject(ANSI_VAR_FONT);
-    UINT nTextAlign = DeviceContext->SetTextAlign(TA_LEFT | TA_TOP);
-    COLORREF crText = DeviceContext->SetTextColor(AppGetTextCol());
-    COLORREF crBk = DeviceContext->SetBkColor(~AppGetTextCol() & 0x00ffffff);
 
-    TEXTMETRIC tm;
-    DeviceContext->GetTextMetrics(&tm);
-
-    CRect rcClient;
-    GetClientRect(&rcClient);
-
-    int iMaxChrs = (rcClient.Width() / 10) / tm.tmAveCharWidth;
-    int Width = iMaxChrs * tm.tmAveCharWidth;
-
-    for (int i = 0; i < 10; i++) {
-      ModeOp = GetStatusBar().GetPaneText(::nStatusOp0 + i);
-
-      CRect rc(i * Width, rcClient.bottom - tm.tmHeight, (i + 1) * Width, rcClient.bottom);
-
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, ModeOp, static_cast<UINT>(ModeOp.GetLength()), 0);
+    if (app.ModeInformationOverView()) {
+      DrawPaneTextInView(context, GetActiveView(), i, paneText, DEFAULT_GUI_FONT, AppGetTextCol());
     }
-    DeviceContext->SetBkColor(crBk);
-    DeviceContext->SetTextColor(crText);
-    DeviceContext->SetTextAlign(nTextAlign);
-    DeviceContext->SelectObject(Font);
   }
-  ReleaseDC(DeviceContext);
+  ReleaseDC(context);
 }
+
 EoUInt16 AeSysView::ModeLineHighlightOp(EoUInt16 command) {
   ModeLineUnhighlightOp(m_OpHighlighted);
 
   m_OpHighlighted = command;
 
   if (command == 0) { return 0; }
-  int PaneIndex = ::nStatusOp0 + m_OpHighlighted - ID_OP0;
+  int paneIndex = ::nStatusOp0 + m_OpHighlighted - ID_OP0;
 
-  GetStatusBar().SetPaneTextColor(PaneIndex, RGB(255, 0, 0));
+  GetStatusBar().SetPaneTextColor(paneIndex, RGB(255, 0, 0));
 
   if (app.ModeInformationOverView()) {
-    CString ModeOp = GetStatusBar().GetPaneText(PaneIndex);
-
-    CDC* DeviceContext = GetDC();
-
-    CFont* Font = (CFont*)DeviceContext->SelectStockObject(ANSI_VAR_FONT);
-    UINT TextAlign = DeviceContext->SetTextAlign(TA_LEFT | TA_TOP);
-    COLORREF crText = DeviceContext->SetTextColor(RGB(255, 0, 0));
-    COLORREF crBk = DeviceContext->SetBkColor(~AppGetTextCol() & 0x00ffffff);
-
-    TEXTMETRIC tm;
-    DeviceContext->GetTextMetrics(&tm);
-
-    CRect rcClient;
-    GetClientRect(&rcClient);
-
-    int iMaxChrs = (rcClient.Width() / 10) / tm.tmAveCharWidth;
-    int Width = iMaxChrs * tm.tmAveCharWidth;
-    int i = m_OpHighlighted - ID_OP0;
-
-    CRect rc(i * Width, rcClient.bottom - tm.tmHeight, (i + 1) * Width, rcClient.bottom);
-
-    DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, ModeOp, (UINT)ModeOp.GetLength(), 0);
-
-    DeviceContext->SetBkColor(crBk);
-    DeviceContext->SetTextColor(crText);
-    DeviceContext->SetTextAlign(TextAlign);
-    DeviceContext->SelectObject(Font);
-    ReleaseDC(DeviceContext);
+    CString paneText = GetStatusBar().GetPaneText(paneIndex);
+    CDC* context = GetDC();
+    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::nStatusOp0, paneText, DEFAULT_GUI_FONT, RGB(255, 0, 0));
+    ReleaseDC(context);
   }
   return (command);
 }
+
 void AeSysView::ModeLineUnhighlightOp(EoUInt16& command) {
   if (command == 0 || m_OpHighlighted == 0) { return; }
-  int PaneIndex = ::nStatusOp0 + m_OpHighlighted - ID_OP0;
+  int paneIndex = ::nStatusOp0 + m_OpHighlighted - ID_OP0;
 
-  GetStatusBar().SetPaneTextColor(PaneIndex);
+  GetStatusBar().SetPaneTextColor(paneIndex);
 
   if (app.ModeInformationOverView()) {
-    CString ModeOp = GetStatusBar().GetPaneText(PaneIndex);
-
-    CDC* DeviceContext = GetDC();
-
-    CFont* Font = (CFont*)DeviceContext->SelectStockObject(ANSI_VAR_FONT);
-    UINT TextAlign = DeviceContext->SetTextAlign(TA_LEFT | TA_TOP);
-    COLORREF crText = DeviceContext->SetTextColor(AppGetTextCol());
-    COLORREF crBk = DeviceContext->SetBkColor(~AppGetTextCol() & 0x00ffffff);
-
-    TEXTMETRIC tm;
-    DeviceContext->GetTextMetrics(&tm);
-
-    CRect rcClient;
-    GetClientRect(&rcClient);
-
-    int iMaxChrs = (rcClient.Width() / 10) / tm.tmAveCharWidth;
-    int Width = iMaxChrs * tm.tmAveCharWidth;
-    int i = m_OpHighlighted - ID_OP0;
-
-    CRect rc(i * Width, rcClient.bottom - tm.tmHeight, (i + 1) * Width, rcClient.bottom);
-
-    DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, ModeOp, (UINT)ModeOp.GetLength(), 0);
-
-    DeviceContext->SetBkColor(crBk);
-    DeviceContext->SetTextColor(crText);
-    DeviceContext->SetTextAlign(TextAlign);
-    DeviceContext->SelectObject(Font);
-    ReleaseDC(DeviceContext);
+    CString paneText = GetStatusBar().GetPaneText(paneIndex);
+    CDC* context = GetDC();
+    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::nStatusOp0, paneText, DEFAULT_GUI_FONT, AppGetTextCol());
+    ReleaseDC(context);
   }
   command = 0;
   m_OpHighlighted = 0;

@@ -312,7 +312,7 @@ void EoDbDimension::SetDefaultNote() {
 
   AeSys::Units Units = app.GetUnits();
   if (Units == AeSys::kArchitectural) { Units = AeSys::kArchitecturalS; }
-  app.FormatLength(m_strText, Units, m_ln.Length(), 16, 8);
+  app.FormatLength(m_strText, Units, m_ln.Length());
   m_strText.TrimLeft();
   if (cText0 == 'R' || cText0 == 'D') { m_strText = cText0 + m_strText; }
 }

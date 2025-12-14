@@ -98,16 +98,16 @@ void EoDbLine::AddReportToMessageList(EoGePoint3d pt) {
   double dRel;
   m_ln.RelOfPtToEndPts(pt, dRel);
 
-  if (dRel > .5) { AngleInXYPlane += PI; }
+  if (dRel > 0.5) { AngleInXYPlane += PI; }
   AngleInXYPlane = fmod(AngleInXYPlane, TWOPI);
 
   CString LengthAsString;
   CString AngleAsString;
-  app.FormatLength(LengthAsString, app.GetUnits(), dLen, 16, 8);
+  app.FormatLength(LengthAsString, app.GetUnits(), dLen);
   app.FormatAngle(AngleAsString, AngleInXYPlane, 8, 3);
 
   CString Message;
-  Message.Format(L"<Line> Color: %s Line Type: %s - %s @ %s", FormatPenColor().GetString(),
+  Message.Format(L"<Line> Color: %s Line Type: %s \u2022 %s @ %s", FormatPenColor().GetString(),
                  FormatLineType().GetString(), LengthAsString.TrimLeft().GetString(), AngleAsString.GetString());
   app.AddStringToMessageList(Message);
 
@@ -121,7 +121,7 @@ void EoDbLine::AddReportToMessageList(EoGePoint3d pt) {
 }
 void EoDbLine::FormatExtra(CString& str) {
   CString FormattedLength;
-  app.FormatLength(FormattedLength, app.GetUnits(), Length(), 16, 6);
+  app.FormatLength(FormattedLength, app.GetUnits(), Length());
 
   str.Format(L"Color;%s\tStyle;%s\tLength;%s\tZ-Angle;%f", FormatPenColor().GetString(), FormatLineType().GetString(),
              FormattedLength.TrimLeft().GetString(), EoToDegree(m_ln.AngleFromXAxisXY()));

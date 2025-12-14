@@ -189,7 +189,7 @@ void EoDbPolygon::AddReportToMessageList(EoGePoint3d ptPic) {
       dAng = EoGeLine(*pBegPt, *pEndPt).AngleFromXAxisXY();
 
     CString FormattedLength;
-    app.FormatLength(FormattedLength, app.GetUnits(), dLen, 16, 8);
+    app.FormatLength(FormattedLength, app.GetUnits(), dLen);
     Message.Append(FormattedLength.TrimLeft());
     WCHAR szBuf[24];
     swprintf_s(szBuf, 24, L" @ %6.2f degrees", EoToDegree(dAng));

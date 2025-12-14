@@ -45,29 +45,29 @@ BOOL EoDlgSetupConstraints::OnInitDialog() {
 	m_ActiveView->GetGridSnapSpacing(x, y, z);
 
 	CString Length;
-	app.FormatLength(Length, CurrentUnits, x, 12, 4);
+	app.FormatLength(Length, CurrentUnits, x);
 	m_GridXSnapSpacing.SetWindowTextW(Length);
-	app.FormatLength(Length, CurrentUnits, y, 12, 4);
+	app.FormatLength(Length, CurrentUnits, y);
 	m_GridYSnapSpacing.SetWindowTextW(Length);
-	app.FormatLength(Length, CurrentUnits, z, 12, 4);
+	app.FormatLength(Length, CurrentUnits, z);
 	m_GridZSnapSpacing.SetWindowTextW(Length);
 
 	m_ActiveView->GetGridPointSpacing(x, y, z);
 
-	app.FormatLength(Length, CurrentUnits, x, 12, 4);
+	app.FormatLength(Length, CurrentUnits, x);
 	m_GridXPointSpacing.SetWindowTextW(Length);
-	app.FormatLength(Length, CurrentUnits, y, 12, 4);
+	app.FormatLength(Length, CurrentUnits, y);
 	m_GridYPointSpacing.SetWindowTextW(Length);
-	app.FormatLength(Length, CurrentUnits, z, 12, 4);
+	app.FormatLength(Length, CurrentUnits, z);
 	m_GridZPointSpacing.SetWindowTextW(Length);
 
 	m_ActiveView->GetGridLineSpacing(x, y, z);
 
-	app.FormatLength(Length, CurrentUnits, x, 12, 4);
+	app.FormatLength(Length, CurrentUnits, x);
 	m_GridXLineSpacing.SetWindowTextW(Length);
-	app.FormatLength(Length, CurrentUnits, y, 12, 4);
+	app.FormatLength(Length, CurrentUnits, y);
 	m_GridYLineSpacing.SetWindowTextW(Length);
-	app.FormatLength(Length, CurrentUnits, z, 12, 4);
+	app.FormatLength(Length, CurrentUnits, z);
 	m_GridZLineSpacing.SetWindowTextW(Length);
 
 	m_GridSnapEnableCheckBox.SetCheck(m_ActiveView->GridSnap() ? BST_CHECKED : BST_UNCHECKED);

@@ -398,7 +398,8 @@ AeSysDoc* AeSysView::GetDocument() const {  // non-debug version is inline
 // Base class overides ////////////////////////////////////////////////////////////////////////
 
 void AeSysView::OnActivateFrame(UINT state, CFrameWnd* deactivateFrame) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state, deactivateFrame);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state,
+            deactivateFrame);
 
   CView::OnActivateFrame(state, deactivateFrame);
 }
@@ -459,7 +460,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
   CRect Rect;
   deviceContext->GetClipBox(Rect);
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right, Rect.bottom);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right,
+            Rect.bottom);
 
   if (Rect.IsRectEmpty()) { return; }
 
@@ -799,7 +801,8 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
 }
 /// <remarks> Consider using zDelta with WHEEL_DELTA for fine and coarse zooming</remarks>
 BOOL AeSysView::OnMouseWheel(UINT nFlags, EoInt16 zDelta, CPoint point) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnMouseWheel(%i, %i, %08.8lx)\n", this, nFlags, zDelta, point);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnMouseWheel(%i, %i, %08.8lx)\n", this, nFlags,
+            zDelta, point);
 
   if (zDelta > 0) {
     OnWindowZoomIn();
@@ -852,8 +855,11 @@ void AeSysView::OnTimer(UINT_PTR nIDEvent) {
 
   CView::OnTimer(nIDEvent);
 }
-// Command events /////////////////////////////////////////////////////////////////////////////
-CMFCStatusBar& AeSysView::GetStatusBar(void) const { return ((CMainFrame*)AfxGetMainWnd())->GetStatusBar(); }
+
+CMFCStatusBar& AeSysView::GetStatusBar() const {
+  return (static_cast<CMainFrame*>(AfxGetMainWnd()))->GetStatusBar();
+}
+
 void AeSysView::PopViewTransform() {
   if (!m_ViewTransforms.IsEmpty()) { m_ViewTransform = m_ViewTransforms.RemoveTail(); }
   m_ViewTransform.BuildTransformMatrix();
@@ -1488,9 +1494,7 @@ void AeSysView::OnPrimPerpJump() {
     }
   }
 }
-void AeSysView::OnHelpKey() { 
-    ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"READY")); 
-}
+void AeSysView::OnHelpKey() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"READY")); }
 AeSysView* AeSysView::GetActiveView(void) {
   CMDIFrameWndEx* MDIFrameWnd = (CMDIFrameWndEx*)AfxGetMainWnd();
 
@@ -1507,74 +1511,82 @@ AeSysView* AeSysView::GetActiveView(void) {
   return (AeSysView*)View;
 }
 void AeSysView::OnUpdateViewOdometer(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewOdometer); }
-void AeSysView::DisplayOdometer() {
-  EoGePoint3d pt = GetCursorPosition();
 
-  m_vRelPos = GridOrign() - pt;
+#define LEGACY_ODOMETER
+#if defined(LEGACY_ODOMETER)
+
+static void DrawOdometerInView(AeSysView* view, CDC* context, AeSys::Units Units, EoGeVector3d& position) {
+  auto* oldFont = static_cast<CFont*>(context->SelectStockObject(DEFAULT_GUI_FONT));
+  auto oldTextAlign = context->SetTextAlign(TA_LEFT | TA_TOP);
+  auto oldTextColor = context->SetTextColor(AppGetTextCol());
+  auto oldBackgroundColor = context->SetBkColor(~AppGetTextCol() & 0x00ffffff);
+
+  CRect clientArea;
+  view->GetClientRect(&clientArea);
+  TEXTMETRIC metrics;
+  context->GetTextMetrics(&metrics);
+
+  CString length;
+
+  int left = clientArea.right - 16 * metrics.tmAveCharWidth;
+
+  CRect rc(left, clientArea.top, clientArea.right, clientArea.top + metrics.tmHeight);
+  app.FormatLength(length, Units, position.x);
+  length.TrimLeft();
+  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
+
+  rc.SetRect(left, clientArea.top + 1 * metrics.tmHeight, clientArea.right, clientArea.top + 2 * metrics.tmHeight);
+  app.FormatLength(length, Units, position.y);
+  length.TrimLeft();
+  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
+
+  rc.SetRect(left, clientArea.top + 2 * metrics.tmHeight, clientArea.right, clientArea.top + 3 * metrics.tmHeight);
+  app.FormatLength(length, Units, position.z);
+  length.TrimLeft();
+  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
+
+  context->SetBkColor(oldBackgroundColor);
+  context->SetTextColor(oldTextColor);
+  context->SetTextAlign(oldTextAlign);
+  context->SelectObject(oldFont);
+}
+#endif  // defined(LEGACY_ODOMETER)
+
+/// @brief Displays the odometer information showing the relative position from the grid origin to the current cursor position, and optionally the line length and angle if in rubber band line mode.
+void AeSysView::DisplayOdometer() {
+  EoGePoint3d position = GetCursorPosition();
+
+  m_vRelPos = GridOrign() - position;
 
   if (m_ViewOdometer) {
     AeSys::Units Units = app.GetUnits();
 
-    CString Length;
+    CString lengthText;
 
-    app.FormatLength(Length, Units, m_vRelPos.x, 16, 8);
-    CString Position = Length.TrimLeft();
-    app.FormatLength(Length, Units, m_vRelPos.y, 16, 8);
-    Position.Append(L", " + Length.TrimLeft());
-    app.FormatLength(Length, Units, m_vRelPos.z, 16, 8);
-    Position.Append(L", " + Length.TrimLeft());
+    app.FormatLength(lengthText, Units, m_vRelPos.x);
+    CString Position = lengthText.TrimLeft();
+    app.FormatLength(lengthText, Units, m_vRelPos.y);
+    Position.Append(L", " + lengthText.TrimLeft());
+    app.FormatLength(lengthText, Units, m_vRelPos.z);
+    Position.Append(L", " + lengthText.TrimLeft());
 
     if (m_RubberbandType == Lines) {
-      EoGeLine Line(m_RubberbandBeginPoint, pt);
+      EoGeLine line(m_RubberbandBeginPoint, position);
 
-      double LineLength = Line.Length();
-      double AngleInXYPlane = Line.AngleFromXAxisXY();
-      app.FormatLength(Length, Units, LineLength, 16, 8);
+      auto lineLength = line.Length();
+      auto angleInXYPlane = line.AngleFromXAxisXY();
+      app.FormatLength(lengthText, Units, lineLength);
 
-      CString Angle;
-      app.FormatAngle(Angle, AngleInXYPlane, 8, 3);
-      Angle.ReleaseBuffer();
-      Position.Append(L" [" + Length.TrimLeft() + L" @ " + Angle + L"]");
+      CString angle;
+      app.FormatAngle(angle, angleInXYPlane, 8, 3);
+      angle.ReleaseBuffer();
+      Position.Append(L" [" + lengthText.TrimLeft() + L" @ " + angle + L"]");
     }
-    CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
-    MainFrame->SetPaneText(1, Position);
-
+    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+    mainFrame->SetPaneText(1, Position);
 #if defined(LEGACY_ODOMETER)
-    CDC* DeviceContext = GetDC();
-
-    CFont* Font = (CFont*)DeviceContext->SelectStockObject(ANSI_VAR_FONT);
-    UINT nTextAlign = DeviceContext->SetTextAlign(TA_LEFT | TA_TOP);
-    COLORREF crText = DeviceContext->SetTextColor(AppGetTextCol());
-    COLORREF crBk = DeviceContext->SetBkColor(~AppGetTextCol() & 0x00ffffff);
-
-    CRect ClientRect;
-    GetClientRect(&ClientRect);
-    TEXTMETRIC tm;
-    DeviceContext->GetTextMetrics(&tm);
-
-    int iLeft = ClientRect.right - 16 * tm.tmAveCharWidth;
-
-    CRect rc(iLeft, ClientRect.top, ClientRect.right, ClientRect.top + tm.tmHeight);
-    app.FormatLength(Length, Units, m_vRelPos.x, 16, 8);
-    Length.TrimLeft();
-    DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, Length, (UINT)Length.GetLength(), 0);
-
-    rc.SetRect(iLeft, ClientRect.top + 1 * tm.tmHeight, ClientRect.right, ClientRect.top + 2 * tm.tmHeight);
-    app.FormatLength(Length, Units, m_vRelPos.y, 16, 8);
-    Length.TrimLeft();
-    DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, Length, (UINT)Length.GetLength(), 0);
-
-    rc.SetRect(iLeft, ClientRect.top + 2 * tm.tmHeight, ClientRect.right, ClientRect.top + 3 * tm.tmHeight);
-    app.FormatLength(Length, Units, m_vRelPos.z, 16, 8);
-    Length.TrimLeft();
-    DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, Length, (UINT)Length.GetLength(), 0);
-
-    DeviceContext->SetBkColor(crBk);
-    DeviceContext->SetTextColor(crText);
-    DeviceContext->SetTextAlign(nTextAlign);
-    DeviceContext->SelectObject(Font);
-    ReleaseDC(DeviceContext);
-#endif  // LEGACY_ODOMETER
+    DrawOdometerInView(this, GetDC(), Units, m_vRelPos);
+#endif  // defined(LEGACY_ODOMETER)
   }
 #if defined(USING_DDE)
   dde::PostAdvise(dde::RelPosXInfo);
@@ -1956,7 +1968,8 @@ void AeSysView::OnFind() {
   VerifyFindString(findCombo, findComboText);
 
   if (!findComboText.IsEmpty()) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnFind() ComboText = %ls\n", static_cast<LPCTSTR>(findComboText));
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnFind() ComboText = %ls\n",
+              static_cast<LPCTSTR>(findComboText));
   }
 }
 void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CString& findText) {
@@ -1988,7 +2001,9 @@ void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CStrin
     if (!IsLastCommandFromButton) { findComboBox->SetText(findText); }
   }
 }
-void AeSysView::OnEditFind() { ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnEditFind() - Entering\n"); }
+void AeSysView::OnEditFind() {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnEditFind() - Entering\n");
+}
 // Disables rubberbanding.
 void AeSysView::RubberBandingDisable() {
   if (m_RubberbandType != None) {
@@ -2159,7 +2174,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     AeSysDoc* Document = AeSysDoc::GetDoc();
     CDC* DeviceContext = GetDC();
 
-    CFont* Font = (CFont*)DeviceContext->SelectStockObject(ANSI_VAR_FONT);
+    CFont* Font = (CFont*)DeviceContext->SelectStockObject(DEFAULT_GUI_FONT);
     UINT nTextAlign = DeviceContext->SetTextAlign(TA_LEFT | TA_TOP);
     COLORREF crText = DeviceContext->SetTextColor(AppGetTextCol());
     COLORREF crBk = DeviceContext->SetBkColor(~AppGetTextCol() & 0x00ffffff);
@@ -2218,7 +2233,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     if ((item & DimLen) == DimLen || (item & DimAng) == DimAng) {
       rc.SetRect(58 * tm.tmAveCharWidth, ClientRect.top, 90 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
       CString LengthAndAngle;
-      app.FormatLength(LengthAndAngle, app.GetUnits(), app.DimensionLength(), 16, 8);
+      app.FormatLength(LengthAndAngle, app.GetUnits(), app.DimensionLength());
       LengthAndAngle.TrimLeft();
       CString Angle;
       app.FormatAngle(Angle, EoToRadian(app.DimensionAngle()), 8, 3);

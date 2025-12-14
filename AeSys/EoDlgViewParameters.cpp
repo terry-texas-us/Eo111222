@@ -101,26 +101,26 @@ BOOL EoDlgViewParameters::OnInitDialog() {
 
 	CString Length;
 	AeSys::Units Units = max(app.GetUnits(), AeSys::kEngineering);
-	app.FormatLength(Length, Units, ModelView->Position().x, 16, 8);
+	app.FormatLength(Length, Units, ModelView->Position().x);
 	SetDlgItemTextW(IDC_POSITION_X, Length);
-	app.FormatLength(Length, Units, ModelView->Position().y, 16, 8);
+	app.FormatLength(Length, Units, ModelView->Position().y);
 	SetDlgItemTextW(IDC_POSITION_Y, Length);
-	app.FormatLength(Length, Units, ModelView->Position().z, 16, 8);
+	app.FormatLength(Length, Units, ModelView->Position().z);
 	SetDlgItemTextW(IDC_POSITION_Z, Length);
 
-	app.FormatLength(Length, Units, ModelView->Target().x, 16, 8);
+	app.FormatLength(Length, Units, ModelView->Target().x);
 	SetDlgItemTextW(IDC_TARGET_X, Length);
-	app.FormatLength(Length, Units, ModelView->Target().y, 16, 8);
+	app.FormatLength(Length, Units, ModelView->Target().y);
 	SetDlgItemTextW(IDC_TARGET_Y, Length);
-	app.FormatLength(Length, Units, ModelView->Target().z, 16, 8);
+	app.FormatLength(Length, Units, ModelView->Target().z);
 	SetDlgItemTextW(IDC_TARGET_Z, Length);
 
-	app.FormatLength(Length, Units, ModelView->NearClipDistance(), 16, 8);
+	app.FormatLength(Length, Units, ModelView->NearClipDistance());
 	SetDlgItemTextW(IDC_FRONT_CLIP_DISTANCE, Length);
-	app.FormatLength(Length, Units, ModelView->FarClipDistance(), 16, 8);
+	app.FormatLength(Length, Units, ModelView->FarClipDistance());
 	SetDlgItemTextW(IDC_BACK_CLIP_DISTANCE, Length);
 
-	app.FormatLength(Length, Units, ModelView->LensLength(), 16, 8);
+	app.FormatLength(Length, Units, ModelView->LensLength());
 	SetDlgItemTextW(IDC_LENS_LENGTH, Length);
 
 	GetDlgItem(IDC_APPLY)->EnableWindow(FALSE);

@@ -48,6 +48,9 @@
     <Filter Include="Markdowns">
       <UniqueIdentifier>{e1740f9f-fe31-4a83-ad2f-669deaf7b712}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AeSysView">
+      <UniqueIdentifier>{3cbedda0-8fe6-48d0-97e3-c422057fff08}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Stdafx.cpp">
@@ -66,51 +69,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Lex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViTrapMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViPrimitiveSubModeMend.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViPrimitiveSubModeEdit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViPowerMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViPipeMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViNodalMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViLPDMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViGroupSubModeEdit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViFixupMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViEditMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViDrawMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViDraw2Mode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViDimensionMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViCutMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViAnnotateMode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EoMfPropertiesDockablePane.cpp">
@@ -179,9 +137,6 @@
     <ClCompile Include="ChildFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AeSysView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AeSysDoc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -219,9 +174,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EoCtrlColorsButton.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViConstraints.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EoDlgEditOptions.cpp">
@@ -386,14 +338,65 @@
     <ClCompile Include="EoDbCharacterCellDefinition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EoViModelView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EoDbDwgToPegFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EoGePolyline.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AeSysView.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViTrapMode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViPrimitiveSubModeMend.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViPrimitiveSubModeEdit.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViPowerMode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViPipeMode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViNodalMode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViModelView.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViLPDMode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViGroupSubModeEdit.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViFixupMode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViEditMode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViDrawMode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViDraw2Mode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViDimensionMode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViCutMode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViConstraints.cpp">
+      <Filter>Source Files\AeSysView</Filter>
+    </ClCompile>
+    <ClCompile Include="EoViAnnotateMode.cpp">
+      <Filter>Source Files\AeSysView</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

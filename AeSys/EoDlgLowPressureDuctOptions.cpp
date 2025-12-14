@@ -29,9 +29,9 @@ BOOL EoDlgLowPressureDuctOptions::OnInitDialog() {
 	AeSys::Units Units = max(app.GetUnits(), AeSys::kInches);
 
 	CString Length;
-	app.FormatLength(Length, Units, m_Width, 12, 3);
+	app.FormatLength(Length, Units, m_Width, 0, 2);
 	SetDlgItemTextW(IDC_WIDTH, Length);
-	app.FormatLength(Length, Units, m_Depth, 12, 3);
+	app.FormatLength(Length, Units, m_Depth, 0, 2);
 	SetDlgItemTextW(IDC_DEPTH, Length);
 	CheckRadioButton(IDC_LEFT, IDC_RIGHT, IDC_CENTER + m_Justification);
 	CheckDlgButton(IDC_GEN_VANES, m_GenerateVanes ? 1U : 0U);

@@ -45,11 +45,11 @@ BOOL EoDlgSelectGotoHomePoint::OnInitDialog() {
 
 	CString Length;
 
-	app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Origin.x, 16, 8);
+	app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Origin.x);
 	SetDlgItemTextW(IDC_X, Length);
-	app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Origin.y, 16, 8);
+	app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Origin.y);
 	SetDlgItemTextW(IDC_Y, Length);
-	app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Origin.z, 16, 8);
+	app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Origin.z);
 	SetDlgItemTextW(IDC_Z, Length);
 
 	return TRUE;
@@ -105,11 +105,11 @@ void EoDlgSelectGotoHomePoint::OnCbnSelchangeList() {
 			Point = app.HomePointGet(NamesItemIndex);
 		}
 		CString Length;
-		app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Point.x, 16, 8);
+		app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Point.x);
 		SetDlgItemTextW(IDC_X, Length);
-		app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Point.y, 16, 8);
+		app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Point.y);
 		SetDlgItemTextW(IDC_Y, Length);
-		app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Point.z, 16, 8);
+		app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), Point.z);
 		SetDlgItemTextW(IDC_Z, Length);
 	}
 }

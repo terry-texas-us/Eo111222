@@ -552,9 +552,9 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   EoGeReferenceSystem ReferenceSystem(point, XDirection, YDirection);
 
   CString Width;
-  app.FormatLength(Width, max(app.GetUnits(), AeSys::kInches), section.Width(), 8, 0);
+  app.FormatLength(Width, max(app.GetUnits(), AeSys::kInches), section.Width(), 0, 2);
   CString Depth;
-  app.FormatLength(Depth, max(app.GetUnits(), AeSys::kInches), section.Depth(), 8, 0);
+  app.FormatLength(Depth, max(app.GetUnits(), AeSys::kInches), section.Depth(), 0, 2);
   CString Note = Width.TrimLeft() + L"/" + Depth.TrimLeft();
 
   CDC* DeviceContext = GetDC();

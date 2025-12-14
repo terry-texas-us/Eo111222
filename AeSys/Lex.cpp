@@ -1,8 +1,8 @@
 ﻿#include "stdafx.h"
 #include "AeSys.h"
 
-#pragma warning(push)
-#pragma warning(disable : 4996)
+//#pragma warning(push)
+//#pragma warning(disable : 4996)
 
 #include "Lex.h"
 using namespace lex;
@@ -697,4 +697,4 @@ LPTSTR lex::ScanForString(LPTSTR* ppStr, LPTSTR pszTerm, LPTSTR* ppArgBuf) {
 
   return pStart;
 }
-#pragma warning(pop)
+//#pragma warning(pop)
