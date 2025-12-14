@@ -158,8 +158,8 @@ HDDEDATA WINAPI dde::StdCallback(UINT wType, UINT wFmt, HCONV hConv, HSZ hsz1, H
 		ConversationRemove(hConv, hsz1);
 		break;
 
-	case XTYP_WILDCONNECT:				// Sent when service name and/or topic name is NULL
-		if ((hsz2 == NULL) || !DdeCmpStringHandles(hsz2, ServerInfo.hszServiceName))
+	case XTYP_WILDCONNECT:				// Sent when service name and/or topic name is nullptr
+		if ((hsz2 == nullptr) || !DdeCmpStringHandles(hsz2, ServerInfo.hszServiceName))
 			return (DoWildConnect(hsz1));
 		break;
 

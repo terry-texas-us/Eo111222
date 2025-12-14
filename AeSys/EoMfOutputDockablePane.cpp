@@ -61,7 +61,7 @@ void EoMfOutputDockablePane::OnSize(UINT type, int cx, int cy) {
   CDockablePane::OnSize(type, cx, cy);
 
   // Tab control should cover the whole client area:
-  m_wndTabs.SetWindowPos(NULL, -1, -1, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
+  m_wndTabs.SetWindowPos(nullptr, -1, -1, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
 }
 EoMfOutputListBox::EoMfOutputListBox() {}
 EoMfOutputListBox::~EoMfOutputListBox() {}
@@ -100,7 +100,7 @@ void EoMfOutputListBox::OnViewOutput() {
   CDockablePane* pParentBar = DYNAMIC_DOWNCAST(CDockablePane, GetOwner());
   CMDIFrameWndEx* pMainFrame = DYNAMIC_DOWNCAST(CMDIFrameWndEx, GetTopLevelFrame());
 
-  if (pMainFrame != NULL && pParentBar != NULL) {
+  if (pMainFrame != nullptr && pParentBar != nullptr) {
     pMainFrame->SetFocus();
     pMainFrame->ShowPane(pParentBar, FALSE, FALSE, FALSE);
     pMainFrame->RecalcLayout();

@@ -360,7 +360,7 @@ void ExamineFile(LPWSTR oldFile, const int oldFileBufferSize, LPTSTR newFile, co
       return;
     }
     size_t RequiredSize;
-    _wgetenv_s(&RequiredSize, NULL, 0, L"ACAD");
+    _wgetenv_s(&RequiredSize, nullptr, 0, L"ACAD");
 
     if (RequiredSize == 0) {  // no ACAD environment to search
       return;

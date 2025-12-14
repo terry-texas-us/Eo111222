@@ -7,7 +7,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetupHatch, CDialog)
 
-EoDlgSetupHatch::EoDlgSetupHatch(CWnd* pParent /*=NULL*/) :
+EoDlgSetupHatch::EoDlgSetupHatch(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSetupHatch::IDD, pParent), m_HatchXScaleFactor(0), m_HatchYScaleFactor(0), m_HatchRotationAngle(0) {
 }
 EoDlgSetupHatch::~EoDlgSetupHatch() {

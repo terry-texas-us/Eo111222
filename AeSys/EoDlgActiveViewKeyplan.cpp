@@ -4,7 +4,7 @@
 #include "AeSysView.h"
 #include "EoDlgActiveViewKeyplan.h"
 
-HBITMAP EoDlgActiveViewKeyplan::m_hbmKeyplan = NULL;
+HBITMAP EoDlgActiveViewKeyplan::m_hbmKeyplan = nullptr;
 CRect EoDlgActiveViewKeyplan::m_rcWnd;
 
 // EoDlgActiveViewKeyplan dialog
@@ -17,9 +17,9 @@ ON_BN_CLICKED(IDC_SAVE, &EoDlgActiveViewKeyplan::OnBnClickedSave)
 ON_EN_KILLFOCUS(IDC_RATIO, &EoDlgActiveViewKeyplan::OnEnKillfocusRatio)
 END_MESSAGE_MAP()
 
-EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(CWnd* pParent /*=NULL*/)
+EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(CWnd* pParent /*=nullptr*/)
     : CDialog(EoDlgActiveViewKeyplan::IDD, pParent), m_dRatio(0) {}
-EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(AeSysView* view, CWnd* pParent /*=NULL*/)
+EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(AeSysView* view, CWnd* pParent /*=nullptr*/)
     : CDialog(EoDlgActiveViewKeyplan::IDD, pParent), m_dRatio(0), m_ActiveView(view) {}
 EoDlgActiveViewKeyplan::~EoDlgActiveViewKeyplan() {}
 void EoDlgActiveViewKeyplan::DoDataExchange(CDataExchange* dataExchange) {
@@ -101,7 +101,7 @@ void EoDlgActiveViewKeyplan::OnBnClickedSave() {
 
 void EoDlgActiveViewKeyplan::Refresh() {
   CDC dcMem;
-  dcMem.CreateCompatibleDC(NULL);
+  dcMem.CreateCompatibleDC(nullptr);
   if (m_hbmKeyplan == 0) {
     CRect rcKey;
     GetDlgItem(IDC_KEYPLAN_AREA)->GetClientRect(&rcKey);

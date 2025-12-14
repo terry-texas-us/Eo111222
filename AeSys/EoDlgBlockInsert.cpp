@@ -16,10 +16,10 @@ END_MESSAGE_MAP()
 
 EoGePoint3d EoDlgBlockInsert::InsertionPoint;
 
-EoDlgBlockInsert::EoDlgBlockInsert(CWnd* pParent /*=NULL*/) :
+EoDlgBlockInsert::EoDlgBlockInsert(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgBlockInsert::IDD, pParent) {
 }
-EoDlgBlockInsert::EoDlgBlockInsert(AeSysDoc* document, CWnd* pParent /*=NULL*/) :
+EoDlgBlockInsert::EoDlgBlockInsert(AeSysDoc* document, CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgBlockInsert::IDD, pParent), m_Document(document) {
 }
 EoDlgBlockInsert::~EoDlgBlockInsert() {
@@ -37,7 +37,7 @@ BOOL EoDlgBlockInsert::OnInitDialog() {
 	EoDbBlock* Block;
 
 	POSITION BlockPosition = m_Document->GetFirstBlockPosition();
-	while (BlockPosition != NULL) {
+	while (BlockPosition != nullptr) {
 		m_Document->GetNextBlock(BlockPosition, BlockName, Block);
 		if (!Block->IsAnonymous()) {
 			m_BlocksListBoxControl.AddString(BlockName);
@@ -68,7 +68,7 @@ void EoDlgBlockInsert::OnOK() {
 
 		EoDbGroup* Group = new EoDbGroup(BlockReference);
 		m_Document->AddWorkLayerGroup(Group);
-		m_Document->UpdateAllViews(NULL, EoDb::kGroup, Group);
+		m_Document->UpdateAllViews(nullptr, EoDb::kGroup, Group);
 	}
 	CDialog::OnOK();
 }

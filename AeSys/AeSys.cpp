@@ -116,8 +116,8 @@ END_MESSAGE_MAP()
 // AeSys construction
 
 AeSys::AeSys() {
-  m_PegDocTemplate = NULL;
-  m_TracingDocTemplate = NULL;
+  m_PegDocTemplate = nullptr;
+  m_TracingDocTemplate = nullptr;
 
   EnableHtmlHelp();
 
@@ -236,7 +236,7 @@ BOOL AeSys::InitInstance() {
   ParseCommandLine(CommandLineInfo);
 
   if (CommandLineInfo.m_nShellCommand == CCommandLineInfo::FileNew) {
-    if (!MainFrame->LoadMDIState(GetRegSectionPath())) { m_PegDocTemplate->OpenDocumentFile(NULL); }
+    if (!MainFrame->LoadMDIState(GetRegSectionPath())) { m_PegDocTemplate->OpenDocumentFile(nullptr); }
   } else {  // Dispatch commands specified on the command line
     if (!ProcessShellCommand(CommandLineInfo)) { return FALSE; }
   }
@@ -348,7 +348,7 @@ void AeSys::UpdateMDITabs(BOOL resetMDIChild) { ((CMainFrame*)AfxGetMainWnd())->
 void AeSys::OnTrapCommandsHighlight() {
   m_TrapHighlighted = !m_TrapHighlighted;
   //LPARAM lHint = m_TrapHighlighted ? EoDb::kGroupsSafeTrap : EoDb::kGroupsSafe;
-  //UpdateAllViews(NULL, lHint, &m_TrappedGroupList);
+  //UpdateAllViews(nullptr, lHint, &m_TrappedGroupList);
 }
 void AeSys::OnEditCfGroups() { m_ClipboardDataEoGroups = !m_ClipboardDataEoGroups; }
 void AeSys::OnEditCfImage() { m_ClipboardDataImage = !m_ClipboardDataImage; }
@@ -510,7 +510,7 @@ int AeSys::SetShadowFolderPath(const CString& folder) {
 }
 EoGePoint3d AeSys::GetCursorPosition() {
   AeSysView* ActiveView = AeSysView::GetActiveView();
-  return (ActiveView == NULL) ? EoGePoint3d::kOrigin : ActiveView->GetCursorPosition();
+  return (ActiveView == nullptr) ? EoGePoint3d::kOrigin : ActiveView->GetCursorPosition();
 }
 void AeSys::SetCursorPosition(EoGePoint3d pt) {
   AeSysView* ActiveView = AeSysView::GetActiveView();
@@ -542,7 +542,7 @@ void AeSys::LoadHatchesFromFile(const CString& strFileName) {
       iTblId += 2;
       iNmbEnts = 0;
       dTotStrsLen = 0.;
-      LPWSTR NextToken = NULL;
+      LPWSTR NextToken = nullptr;
       LPWSTR pTok = wcstok_s(szLn, szValDel, &NextToken);
       while (pTok != 0) {
         volatile double tempValue = _wtof(pTok);
@@ -591,7 +591,7 @@ void AeSys::InitGbls(CDC* deviceContext) {
   m_TrapHighlightColor = 15;
 
   //Document->InitializeGroupAndPrimitiveEdit();
-  pstate.SetPen(NULL, deviceContext, 1, 1);
+  pstate.SetPen(nullptr, deviceContext, 1, 1);
   pstate.SetPointStyle(1);
 }
 void AeSys::EditColorPalette() {
@@ -609,10 +609,10 @@ void AeSys::EditColorPalette() {
   cc.lpCustColors = GreyPalette;
   ::ChooseColor(&cc);
 
-  MessageBoxW(NULL, L"The background color is no longer associated with the pen Color Palette.", L"Deprecation Notice",
+  MessageBoxW(nullptr, L"The background color is no longer associated with the pen Color Palette.", L"Deprecation Notice",
               MB_OK | MB_ICONINFORMATION);
 
-  AeSysDoc::GetDoc()->UpdateAllViews(NULL, 0L, NULL);
+  AeSysDoc::GetDoc()->UpdateAllViews(nullptr, 0L, nullptr);
 }
 // Loads the color table.
 void AeSys::LoadPenColorsFromFile(const CString& strFileName) {
@@ -625,7 +625,7 @@ void AeSys::LoadPenColorsFromFile(const CString& strFileName) {
     while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(WCHAR) - 1) != 0 && _tcsnicmp(pBuf, L"<Colors>", 8) != 0);
 
     while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(WCHAR) - 1) != 0 && *pBuf != '<') {
-      LPWSTR NextToken = NULL;
+      LPWSTR NextToken = nullptr;
       pId = wcstok_s(pBuf, L"=", &NextToken);
       pRed = wcstok_s(0, L",", &NextToken);
       pGreen = wcstok_s(0, L",", &NextToken);
@@ -667,11 +667,11 @@ void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
     }
     CloseHandle(OpenHandle);
   } else {
-    HRSRC ResourceHandle = FindResource(NULL, MAKEINTRESOURCE(IDR_PEGSTROKEFONT), L"STROKEFONT");
-    if (ResourceHandle != NULL) {
-      rsize_t ResourceSize = SizeofResource(NULL, ResourceHandle);
+    HRSRC ResourceHandle = FindResourceW(nullptr, MAKEINTRESOURCE(IDR_PEGSTROKEFONT), L"STROKEFONT");
+    if (ResourceHandle != nullptr) {
+      rsize_t ResourceSize = SizeofResource(nullptr, ResourceHandle);
       m_SimplexStrokeFont = new char[ResourceSize];
-      LPVOID Resource = LockResource(LoadResource(NULL, ResourceHandle));
+      LPVOID Resource = LockResource(LoadResource(nullptr, ResourceHandle));
       memcpy_s(m_SimplexStrokeFont, ResourceSize, Resource, ResourceSize);
     }
   }
@@ -694,7 +694,7 @@ void AeSys::OnUpdateModePower(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode =
 void AeSys::OnUpdateModePipe(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_PIPE); }
 void AeSys::OnViewModeInformation() {
   m_ModeInformationOverView = !m_ModeInformationOverView;
-  AeSysDoc::GetDoc()->UpdateAllViews(NULL, 0L, NULL);
+  AeSysDoc::GetDoc()->UpdateAllViews(nullptr, 0L, nullptr);
 }
 void AeSys::OnUpdateEditCfGroups(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataEoGroups); }
 void AeSys::OnUpdateEditCfImage(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataImage); }
@@ -728,10 +728,10 @@ void AeSys::BuildModifiedAcceleratorTable(void) {
   ::DestroyAcceleratorTable(AcceleratorTableHandle);
 
   HACCEL ModeAcceleratorTableHandle = ::LoadAccelerators(m_hInstance, MAKEINTRESOURCE(m_ModeResourceIdentifier));
-  int ModeAcceleratorTableEntries = ::CopyAcceleratorTable(ModeAcceleratorTableHandle, NULL, 0);
+  int ModeAcceleratorTableEntries = ::CopyAcceleratorTableW(ModeAcceleratorTableHandle, nullptr, 0);
 
   AcceleratorTableHandle = ::LoadAccelerators(m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
-  int AcceleratorTableEntries = ::CopyAcceleratorTable(AcceleratorTableHandle, NULL, 0);
+  int AcceleratorTableEntries = ::CopyAcceleratorTableW(AcceleratorTableHandle, nullptr, 0);
 
   LPACCEL ModifiedAcceleratorTable =
       new ACCEL[static_cast<size_t>(AcceleratorTableEntries + ModeAcceleratorTableEntries)];
@@ -750,7 +750,7 @@ void AeSys::OnFileOpen(void) {
 
   DWORD Flags(OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
 
-  CFileDialog FileDialog(TRUE, NULL, NULL, Flags, Filter);
+  CFileDialog FileDialog(TRUE, nullptr, nullptr, Flags, Filter);
 
   CString FileName;
   FileDialog.m_ofn.lpstrFile = FileName.GetBuffer(_MAX_PATH);

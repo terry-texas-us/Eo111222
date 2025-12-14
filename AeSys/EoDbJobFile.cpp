@@ -607,7 +607,7 @@ EoDbText::EoDbText(EoByte* buffer, int version) {
       YDirection = RotateVectorAboutZAxis(YDirection, Angle);
       m_ReferenceSystem.SetYDirection(YDirection);
     }
-    char* NextToken = NULL;
+    char* NextToken = nullptr;
     char* pChr = strtok_s((char*)&buffer[44], "\\", &NextToken);
 
     if (pChr == 0)

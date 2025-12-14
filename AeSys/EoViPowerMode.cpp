@@ -68,7 +68,7 @@ void AeSysView::OnPowerModeHome() {
   m_PowerConductor = false;
   m_PreviousOp = 0;
 
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
   if (!m_PowerArrow || (PointOnCircuit != CurrentPnt)) {
@@ -105,7 +105,7 @@ void AeSysView::DoPowerModeMouseMove() {
   switch (m_PreviousOp) {
     case ID_OP2:
       if (pts[0] != CurrentPnt) {
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         EoDbEllipse* SymbolCircle;
@@ -119,7 +119,7 @@ void AeSysView::DoPowerModeMouseMove() {
         }
         EoGePoint3d pt1 = pts[0].ProjectToward(CurrentPnt, m_PreviousRadius);
         m_PreviewGroup.AddTail(new EoDbLine(pt1, CurrentPnt));
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;
   }
@@ -133,7 +133,7 @@ void AeSysView::DoPowerModeConductor(EoUInt16 conductorType) {
   m_PowerArrow = false;
   m_PreviousOp = 0;
 
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
   if (!m_PowerConductor || PointOnCircuit != CurrentPnt) {
@@ -176,7 +176,7 @@ void AeSysView::OnPowerModeEscape() {
   ModeLineUnhighlightOp(m_PreviousOp);
   m_PreviousOp = 0;
 
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 }
 
@@ -195,7 +195,7 @@ void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& e
   EoDbGroup* Group = new EoDbGroup;
   GetDocument()->AddWorkLayerGroup(Group);
   Group->AddTail(new EoDbPolyline(2, 1, Points));
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 }
 void AeSysView::GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d& pointOnCircuit,
                                              EoGePoint3d& endPoint) {
@@ -243,5 +243,5 @@ void AeSysView::GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d
       return;
   }
   GetDocument()->AddWorkLayerGroup(Group);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 }

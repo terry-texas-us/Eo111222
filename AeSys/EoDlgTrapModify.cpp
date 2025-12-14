@@ -8,10 +8,10 @@
 
 IMPLEMENT_DYNAMIC(EoDlgTrapModify, CDialog)
 
-EoDlgTrapModify::EoDlgTrapModify(CWnd* pParent /*=NULL*/) :
+EoDlgTrapModify::EoDlgTrapModify(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgTrapModify::IDD, pParent) {
 }
-EoDlgTrapModify::EoDlgTrapModify(AeSysDoc* document, CWnd* pParent /*=NULL*/) :
+EoDlgTrapModify::EoDlgTrapModify(AeSysDoc* document, CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgTrapModify::IDD, pParent), m_Document(document) {
 }
 EoDlgTrapModify::~EoDlgTrapModify() {

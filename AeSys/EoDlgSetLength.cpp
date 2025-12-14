@@ -7,7 +7,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetLength, CDialog)
 
-EoDlgSetLength::EoDlgSetLength(CWnd* pParent /*=NULL*/) :
+EoDlgSetLength::EoDlgSetLength(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSetLength::IDD, pParent) {
 }
 EoDlgSetLength::~EoDlgSetLength() {

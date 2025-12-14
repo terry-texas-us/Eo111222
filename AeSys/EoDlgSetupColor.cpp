@@ -19,7 +19,7 @@ ON_WM_GETDLGCODE()
 #pragma warning(pop)
 ON_WM_PAINT()
 END_MESSAGE_MAP()
-EoDlgSetupColor::EoDlgSetupColor(CWnd* pParent /*=NULL*/) : CDialog(EoDlgSetupColor::IDD, pParent), m_ColorIndex(0) {}
+EoDlgSetupColor::EoDlgSetupColor(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgSetupColor::IDD, pParent), m_ColorIndex(0) {}
 EoDlgSetupColor::~EoDlgSetupColor() {}
 void EoDlgSetupColor::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);

@@ -6,7 +6,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetAngle, CDialog)
 
-EoDlgSetAngle::EoDlgSetAngle(CWnd* pParent /*=NULL*/) :
+EoDlgSetAngle::EoDlgSetAngle(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSetAngle::IDD, pParent), m_dAngle(0) {
 }
 EoDlgSetAngle::~EoDlgSetAngle() {

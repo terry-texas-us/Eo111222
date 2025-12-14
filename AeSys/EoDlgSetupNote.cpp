@@ -8,14 +8,14 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetupNote, CDialog)
 
-EoDlgSetupNote::EoDlgSetupNote(CWnd* pParent /*=NULL*/)
+EoDlgSetupNote::EoDlgSetupNote(CWnd* pParent /*=nullptr*/)
     : CDialog(EoDlgSetupNote::IDD, pParent),
       m_TextHeight(0),
       m_TextExpansionFactor(0),
       m_CharacterSlantAngle(0),
       m_TextRotationAngle(0) {}
 
-EoDlgSetupNote::EoDlgSetupNote(EoDbFontDefinition* fontDefinition, CWnd* pParent /*= NULL*/)
+EoDlgSetupNote::EoDlgSetupNote(EoDbFontDefinition* fontDefinition, CWnd* pParent /*= nullptr*/)
     : CDialog(EoDlgSetupNote::IDD, pParent),
       m_FontDefinition(fontDefinition),
       m_TextHeight(0),

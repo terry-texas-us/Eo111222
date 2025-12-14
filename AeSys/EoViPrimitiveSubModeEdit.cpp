@@ -25,7 +25,7 @@ void AeSysView::DoEditPrimitiveCopy() {
     m_SubModeEditGroup = new EoDbGroup(m_SubModeEditPrimitive);
     GetDocument()->AddWorkLayerGroup(m_SubModeEditGroup);
 
-    GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
     m_tmEditSeg.Identity();
   }
 }
@@ -33,9 +33,9 @@ void AeSysView::DoEditPrimitiveEscape() {
   if (m_SubModeEditPrimitive != 0) {
     m_tmEditSeg.Inverse();
 
-    GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
     m_SubModeEditPrimitive->Transform(m_tmEditSeg);
-    GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
 
     InitializeGroupAndPrimitiveEdit();
 
@@ -63,9 +63,9 @@ void AeSysView::DoEditPrimitiveTransform(EoUInt16 operation) {
     }
     tm.Translate(-TranslateVector);
 
-    GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
     m_SubModeEditPrimitive->Transform(tm);
-    GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
 
     m_tmEditSeg *= tm;
   }
@@ -79,9 +79,9 @@ void AeSysView::PreviewPrimitiveEdit() {
     if (app.IsTrapHighlighted() && GetDocument()->FindTrappedGroup(m_SubModeEditGroup) != 0)
       EoDbPrimitive::SetSpecialPenColorIndex(app.TrapHighlightColor());
 
-    GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
     m_SubModeEditPrimitive->Transform(tm);
-    GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
 
     EoDbPrimitive::SetSpecialPenColorIndex(0);
 

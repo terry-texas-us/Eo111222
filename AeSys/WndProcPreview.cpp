@@ -4,7 +4,7 @@
 
 #include "Preview.h"
 
-CBitmap* WndProcPreview_Bitmap = NULL;
+CBitmap* WndProcPreview_Bitmap = nullptr;
 
 LRESULT CALLBACK WndProcPreview(HWND, UINT, WPARAM, LPARAM);
 
@@ -28,7 +28,7 @@ LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM l
 	switch (message) {
 	case WM_CREATE: {
 			AeSysView* ActiveView = AeSysView::GetActiveView();
-			CDC* DeviceContext = (ActiveView == NULL) ? NULL : ActiveView->GetDC();
+			CDC* DeviceContext = (ActiveView == nullptr) ? nullptr : ActiveView->GetDC();
 
 			CRect rc;
 			::GetClientRect(hwnd, &rc);
@@ -38,9 +38,9 @@ LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM l
 		return (FALSE);
 
 	case WM_DESTROY:
-		if (WndProcPreview_Bitmap != NULL) {
+		if (WndProcPreview_Bitmap != nullptr) {
 			delete WndProcPreview_Bitmap;
-			WndProcPreview_Bitmap = NULL;
+			WndProcPreview_Bitmap = nullptr;
 		}
 		return (FALSE);
 
@@ -54,7 +54,7 @@ LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM l
 			dc.Attach(::BeginPaint(hwnd, &ps));
 
 			CDC dcMem;
-			dcMem.CreateCompatibleDC(NULL);
+			dcMem.CreateCompatibleDC(nullptr);
 
 			CBitmap* Bitmap = dcMem.SelectObject(WndProcPreview_Bitmap);
 			dc.BitBlt(0, 0, rc.right, rc.bottom, &dcMem, 0, 0, SRCCOPY);
@@ -97,7 +97,7 @@ void WndProcPreviewUpdate(HWND previewWindow, EoDbBlock* block) {
 	::GetClientRect(previewWindow, &rc);
 
 	CDC dcMem;
-	dcMem.CreateCompatibleDC(NULL);
+	dcMem.CreateCompatibleDC(nullptr);
 
 	CBitmap* Bitmap = dcMem.SelectObject(WndProcPreview_Bitmap);
 	dcMem.PatBlt(0, 0, rc.right, rc.bottom, BLACKNESS);
@@ -144,7 +144,7 @@ void _WndProcPreviewUpdate(HWND previewWindow, EoDbGroupList* groups) {
 	::GetClientRect(previewWindow, &rc);
 
 	CDC dcMem;
-	dcMem.CreateCompatibleDC(NULL);
+	dcMem.CreateCompatibleDC(nullptr);
 
 	CBitmap* Bitmap = dcMem.SelectObject(WndProcPreview_Bitmap);
 	dcMem.PatBlt(0, 0, rc.right, rc.bottom, BLACKNESS);

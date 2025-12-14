@@ -104,9 +104,9 @@ ON_NOTIFY(NM_DBLCLK, IDC_LAYERS_LIST_CONTROL, &EoDlgLayerPropertiesManager::OnNM
 ON_NOTIFY(NM_RCLICK, IDC_LAYERS_LIST_CONTROL, &EoDlgLayerPropertiesManager::OnNMRClickListLayersList)
 END_MESSAGE_MAP()
 
-EoDlgLayerPropertiesManager::EoDlgLayerPropertiesManager(CWnd* parent /*=NULL*/)
+EoDlgLayerPropertiesManager::EoDlgLayerPropertiesManager(CWnd* parent /*=nullptr*/)
     : CDialog(EoDlgLayerPropertiesManager::IDD, parent) {}
-EoDlgLayerPropertiesManager::EoDlgLayerPropertiesManager(OdDbDatabase* database, CWnd* parent /*=NULL*/)
+EoDlgLayerPropertiesManager::EoDlgLayerPropertiesManager(OdDbDatabase* database, CWnd* parent /*=nullptr*/)
     : CDialog(EoDlgLayerPropertiesManager::IDD, parent), m_Database(database) {}
 
 EoDlgLayerPropertiesManager::~EoDlgLayerPropertiesManager() {}
@@ -271,7 +271,7 @@ void EoDlgLayerPropertiesManager::OnBnClickedButtonAdd() {
   Layers->add(Layer);
 
   int ItemCount = m_LayerList.GetItemCount();
-  m_LayerList.InsertItem(ItemCount, NULL);
+  m_LayerList.InsertItem(ItemCount, nullptr);
   m_LayerList.SetItemData(ItemCount, (unsigned long)(OdDbStub*)Layer->objectId());
 }
 
@@ -444,7 +444,7 @@ BOOL EoDlgLayerPropertiesManager::OnInitDialog(void) {
   OdDbSymbolTableIteratorPtr Iterator = Layers->newIterator();
   int i = 0;
   for (Iterator->start(); !Iterator->done(); Iterator->step(), ++i) {
-    m_LayerList.InsertItem(i, NULL);
+    m_LayerList.InsertItem(i, nullptr);
     m_LayerList.SetItemData(i, (unsigned long)(OdDbStub*)Iterator->getRecordId());
   }
 
@@ -518,7 +518,7 @@ void DrawColorBox(CDC& deviceContext, const RECT& itemRectangle, const OdCmColor
   if (ItemRectangle.left <= itemRectangle.right) {
     OdString TextOut = color.colorNameForDisplay();
     deviceContext.ExtTextOutW(ItemRectangle.left, ItemRectangle.top, ETO_CLIPPED, &itemRectangle, TextOut,
-                              TextOut.getLength(), NULL);
+                              TextOut.getLength(), nullptr);
   }
 }
 void DrawLineWeight(CDC& deviceContext, const RECT& itemRectangle, const OdDb::LineWeight lineWeight) {
@@ -547,7 +547,7 @@ void DrawLineWeight(CDC& deviceContext, const RECT& itemRectangle, const OdDb::L
   if (ItemRectangle.left <= itemRectangle.right) {
     OdString TextOut = StringByLineWeight(lineWeight, false);
     deviceContext.ExtTextOutW(ItemRectangle.left, ItemRectangle.top, ETO_CLIPPED, &itemRectangle, TextOut,
-                              TextOut.getLength(), NULL);
+                              TextOut.getLength(), nullptr);
   }
 }
 void DrawPlotStyle(CDC& deviceContext, const RECT& itemRectangle, const CString& textOut,
@@ -555,11 +555,11 @@ void DrawPlotStyle(CDC& deviceContext, const RECT& itemRectangle, const CString&
   if (database->getPSTYLEMODE() == 1) {
     COLORREF OldTextColor = deviceContext.SetTextColor(GetSysColor(COLOR_GRAYTEXT));
     deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, textOut,
-                              textOut.GetLength(), NULL);
+                              textOut.GetLength(), nullptr);
     deviceContext.SetTextColor(OldTextColor);
   } else {
     deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, textOut,
-                              textOut.GetLength(), NULL);
+                              textOut.GetLength(), nullptr);
   }
 }
 ///<remarks>The list item data is the layer table record object</remarks>
@@ -578,7 +578,7 @@ void EoDlgLayerPropertiesManager::DrawItem(CDC& deviceContext, int itemID, int l
     case column_name:
       TextOut = (LPCWSTR)Layer->getName();
       deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, TextOut,
-                                TextOut.GetLength(), NULL);
+                                TextOut.GetLength(), nullptr);
       break;
     case column_on:
       m_stateImages.Draw(&deviceContext, Layer->isOff() ? 3 : 2, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
@@ -595,7 +595,7 @@ void EoDlgLayerPropertiesManager::DrawItem(CDC& deviceContext, int itemID, int l
     case column_linetype:
       TextOut = (LPCWSTR)OdDbSymUtil::getSymbolName(Layer->linetypeObjectId());
       deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, TextOut,
-                                TextOut.GetLength(), NULL);
+                                TextOut.GetLength(), nullptr);
       break;
     case column_lineweight:
       ::DrawLineWeight(deviceContext, itemRectangle, Layer->lineWeight());
@@ -619,7 +619,7 @@ void EoDlgLayerPropertiesManager::DrawItem(CDC& deviceContext, int itemID, int l
       } else {
         TextOut = (LPCWSTR)Layer->description();
         deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, TextOut,
-                                  TextOut.GetLength(), NULL);
+                                  TextOut.GetLength(), nullptr);
       }
       break;
     case column_vpcolor:
@@ -628,7 +628,7 @@ void EoDlgLayerPropertiesManager::DrawItem(CDC& deviceContext, int itemID, int l
     case column_vplinetype:
       TextOut = (LPCWSTR)OdDbSymUtil::getSymbolName(Layer->linetypeObjectId(m_ActiveViewport));
       deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, TextOut,
-                                TextOut.GetLength(), NULL);
+                                TextOut.GetLength(), nullptr);
       break;
     case column_vplineweight:
       ::DrawLineWeight(deviceContext, itemRectangle, Layer->lineWeight(m_ActiveViewport));

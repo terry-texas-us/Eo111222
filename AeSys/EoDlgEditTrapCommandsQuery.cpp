@@ -7,7 +7,7 @@ HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR text, LPCVOID object) {
 	tvIS.hParent = parent;
 	tvIS.hInsertAfter = TVI_LAST;
 	tvIS.item.mask = TVIF_TEXT | TVIF_PARAM;
-	tvIS.item.hItem = NULL;
+	tvIS.item.hItem = nullptr;
 	tvIS.item.iImage = 0;
 
 	tvIS.item.pszText = (LPWSTR) text;
@@ -26,7 +26,7 @@ ON_NOTIFY(TVN_SELCHANGED, IDC_GROUP_TREE, &EoDlgEditTrapCommandsQuery::OnTvnSelc
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
-EoDlgEditTrapCommandsQuery::EoDlgEditTrapCommandsQuery(CWnd* pParent /*=NULL*/) :
+EoDlgEditTrapCommandsQuery::EoDlgEditTrapCommandsQuery(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgEditTrapCommandsQuery::IDD, pParent) {
 }
 EoDlgEditTrapCommandsQuery::~EoDlgEditTrapCommandsQuery() {

@@ -17,7 +17,7 @@ BEGIN_MESSAGE_MAP(EoDlgDrawOptions, CDialog)
 	ON_BN_CLICKED(IDC_CONSTRAINTS, &EoDlgDrawOptions::OnBnClickedConstraints)
 END_MESSAGE_MAP()
 
-EoDlgDrawOptions::EoDlgDrawOptions(CWnd* pParent /*=NULL*/) :
+EoDlgDrawOptions::EoDlgDrawOptions(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgDrawOptions::IDD, pParent) {
 }
 EoDlgDrawOptions::~EoDlgDrawOptions() {

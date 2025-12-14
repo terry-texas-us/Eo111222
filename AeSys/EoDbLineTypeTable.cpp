@@ -30,7 +30,7 @@ int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
   while (Position) {
     m_MapLineTypes.GetNextAssoc(Position, Name, LineType);
 
-    listControl.InsertItem(ItemIndex, NULL);
+    listControl.InsertItem(ItemIndex, nullptr);
     listControl.SetItemData(ItemIndex++, DWORD_PTR(LineType));
   }
   return (static_cast<int>(m_MapLineTypes.GetSize()));
@@ -51,11 +51,11 @@ EoUInt16 EoDbLineTypeTable::LegacyLineTypeIndex(const CString& name) {
   return Index;
 }
 bool EoDbLineTypeTable::Lookup(const CString& name, EoDbLineType*& lineType) {
-  lineType = NULL;
+  lineType = nullptr;
   return (m_MapLineTypes.Lookup(name, lineType) != 0);
 }
 bool EoDbLineTypeTable::__Lookup(EoUInt16 index, EoDbLineType*& lineType) {
-  lineType = NULL;
+  lineType = nullptr;
   return (index < NumberOfLegacyLineTypes) && m_MapLineTypes.Lookup(LegacyLineTypes[index], lineType);
 }
 int EoDbLineTypeTable::ReferenceCount(EoInt16 lineType) {
@@ -73,7 +73,7 @@ int EoDbLineTypeTable::ReferenceCount(EoInt16 lineType) {
 
   CBlocks* BlocksTable = Document->BlocksTable();
   POSITION Position = BlocksTable->GetStartPosition();
-  while (Position != NULL) {
+  while (Position != nullptr) {
     BlocksTable->GetNextAssoc(Position, Key, Block);
     Count += Block->GetLineTypeRefCount(lineType);
   }

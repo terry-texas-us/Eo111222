@@ -21,7 +21,7 @@ BEGIN_MESSAGE_MAP(EoDlgViewParameters, CDialog)
 	ON_BN_CLICKED(IDC_PERSPECTIVE_PROJECTION, &EoDlgViewParameters::OnBnClickedPerspectiveProjection)
 END_MESSAGE_MAP()
 
-EoDlgViewParameters::EoDlgViewParameters(CWnd* pParent /*=NULL*/)
+EoDlgViewParameters::EoDlgViewParameters(CWnd* pParent /*=nullptr*/)
 	: CDialog(EoDlgViewParameters::IDD, pParent), m_ModelView(0) {
 }
 EoDlgViewParameters::~EoDlgViewParameters() {
@@ -90,7 +90,7 @@ void EoDlgViewParameters::OnBnClickedApply() {
 	ModelView->BuildTransformMatrix();
 
 	ActiveView->SetViewTransform(*ModelView);
-	ActiveView->InvalidateRect(NULL, TRUE);
+	ActiveView->InvalidateRect(nullptr, TRUE);
 
 	GetDlgItem(IDC_APPLY)->EnableWindow(FALSE);
 }

@@ -40,23 +40,23 @@ void AeSysView::OnModePrimitiveMend() {
 void AeSysView::PreviewMendPrimitive() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
   EoGeVector3d Translate(m_MendPrimitiveBegin, CurrentPnt);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, m_PrimitiveToMendCopy);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_PrimitiveToMendCopy);
   m_PrimitiveToMendCopy->TranslateUsingMask(Translate, m_MendPrimitiveVertexIndex);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveSafe, m_PrimitiveToMendCopy);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, m_PrimitiveToMendCopy);
   m_MendPrimitiveBegin = CurrentPnt;
 }
 void AeSysView::MendPrimitiveReturn() {
-  GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, m_PrimitiveToMendCopy);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_PrimitiveToMendCopy);
   m_PrimitiveToMend->Assign(m_PrimitiveToMendCopy);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveSafe, m_PrimitiveToMend);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, m_PrimitiveToMend);
 
   delete m_PrimitiveToMendCopy;
 
   app.LoadModeResources(app.PrimaryMode());
 }
 void AeSysView::MendPrimitiveEscape() {
-  GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, m_PrimitiveToMendCopy);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveSafe, m_PrimitiveToMend);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_PrimitiveToMendCopy);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, m_PrimitiveToMend);
 
   delete m_PrimitiveToMendCopy;
 

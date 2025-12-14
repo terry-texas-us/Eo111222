@@ -15,7 +15,7 @@ BEGIN_MESSAGE_MAP(EoDlgLineWeight, CDialog)
 	ON_BN_CLICKED(IDOK, &EoDlgLineWeight::OnBnClickedOk)
 END_MESSAGE_MAP()
 
-EoDlgLineWeight::EoDlgLineWeight(CWnd* parent /*=NULL*/)
+EoDlgLineWeight::EoDlgLineWeight(CWnd* parent /*=nullptr*/)
 	: CDialog(EoDlgLineWeight::IDD, parent), m_OriginalLineWeight(0) {
 }
 

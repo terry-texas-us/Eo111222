@@ -8,11 +8,11 @@
 
 IMPLEMENT_DYNAMIC(EoDlgAnnotateOptions, CDialog)
 
-EoDlgAnnotateOptions::EoDlgAnnotateOptions(CWnd* pParent /* = NULL */) :
+EoDlgAnnotateOptions::EoDlgAnnotateOptions(CWnd* pParent /* = nullptr */) :
 	CDialog(EoDlgAnnotateOptions::IDD, pParent)
 	, m_GapSpaceFactor(0), m_CircleRadius(0), m_EndItemSize(0), m_BubbleRadius(0), m_NumberOfSides(0), m_DefaultText(_T("")) {
 }
-EoDlgAnnotateOptions::EoDlgAnnotateOptions(AeSysView* view, CWnd* pParent /* = NULL */) :
+EoDlgAnnotateOptions::EoDlgAnnotateOptions(AeSysView* view, CWnd* pParent /* = nullptr */) :
 	CDialog(EoDlgAnnotateOptions::IDD, pParent), m_ActiveView(view) {
 	m_GapSpaceFactor = view->GapSpaceFactor();
 	m_CircleRadius = view->CircleRadius();

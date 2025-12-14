@@ -28,7 +28,7 @@ class CMainFrame : public CMDIFrameWndEx {
  public:
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
   virtual BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
-                         CWnd* pParentWnd = NULL, CCreateContext* pContext = NULL);
+                         CWnd* pParentWnd = nullptr, CCreateContext* pContext = nullptr);
 
   // Implementation
  public:

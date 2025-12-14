@@ -14,10 +14,10 @@ BEGIN_MESSAGE_MAP(EoDlgSelectGotoHomePoint, CDialog)
 	ON_CBN_SELCHANGE(IDC_LIST, &EoDlgSelectGotoHomePoint::OnCbnSelchangeList)
 END_MESSAGE_MAP()
 
-EoDlgSelectGotoHomePoint::EoDlgSelectGotoHomePoint(CWnd* pParent /*=NULL*/) :
+EoDlgSelectGotoHomePoint::EoDlgSelectGotoHomePoint(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSelectGotoHomePoint::IDD, pParent) {
 }
-EoDlgSelectGotoHomePoint::EoDlgSelectGotoHomePoint(AeSysView* activeView, CWnd* pParent /*=NULL*/) :
+EoDlgSelectGotoHomePoint::EoDlgSelectGotoHomePoint(AeSysView* activeView, CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSelectGotoHomePoint::IDD, pParent), m_ActiveView(activeView) {
 }
 EoDlgSelectGotoHomePoint::~EoDlgSelectGotoHomePoint() {

@@ -23,13 +23,13 @@ void AeSysView::OnPipeModeLine() {
   } else {
     CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
 
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
     EoDbGroup* Group = new EoDbGroup;
     GetDocument()->AddWorkLayerGroup(Group);
     GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP2, CurrentPnt, Group);
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, Group);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
 
     pts[0] = CurrentPnt;
   }
@@ -54,7 +54,7 @@ void AeSysView::OnPipeModeFitting() {
     GenerateTicMark(CurrentPnt, BeginPoint, m_PipeRiseDropRadius, Group);
     GenerateTicMark(CurrentPnt, EndPoint, m_PipeRiseDropRadius, Group);
     GetDocument()->AddWorkLayerGroup(Group);
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
     if (pts.IsEmpty()) {
       pts.Add(CurrentPnt);
@@ -65,7 +65,7 @@ void AeSysView::OnPipeModeFitting() {
       Group = new EoDbGroup;
       GenerateLineWithFittings(m_PreviousOp, pts[0], 0, CurrentPnt, Group);
       GetDocument()->AddWorkLayerGroup(Group);
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, Group);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
       OnPipeModeEscape();
     }
   } else {
@@ -81,7 +81,7 @@ void AeSysView::OnPipeModeFitting() {
         Group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP5, CurrentPnt, Group);
         GetDocument()->AddWorkLayerGroup(Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
         OnPipeModeEscape();
       }
     } else {
@@ -90,13 +90,13 @@ void AeSysView::OnPipeModeFitting() {
       } else {
         CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
 
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         Group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, CurrentPnt, Group);
         GetDocument()->AddWorkLayerGroup(Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
 
         pts[0] = CurrentPnt;
       }
@@ -121,7 +121,7 @@ void AeSysView::OnPipeModeRise() {
       Group = new EoDbGroup;
       GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP5, CurrentPnt, Group);
       GetDocument()->AddWorkLayerGroup(Group);
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
     m_PreviousOp = ModeLineHighlightOp(ID_OP5);
   } else {
@@ -133,16 +133,16 @@ void AeSysView::OnPipeModeRise() {
         pts.Add(CurrentPnt);
         m_PreviousOp = ModeLineHighlightOp(ID_OP4);
       } else {  // Rising into an existing vertical pipe section
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
         Group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP5, CurrentPnt, Group);
         GetDocument()->AddWorkLayerGroup(Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         OnPipeModeEscape();
       }
     } else {
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
       if (pts.IsEmpty()) {
@@ -152,11 +152,11 @@ void AeSysView::OnPipeModeRise() {
         Group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP5, CurrentPnt, Group);
         GetDocument()->AddWorkLayerGroup(Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
       Group = new EoDbGroup(new EoDbEllipse(1, 1, CurrentPnt, m_PipeRiseDropRadius));
       GetDocument()->AddWorkLayerGroup(Group);
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       m_PreviousOp = ModeLineHighlightOp(ID_OP5);
       pts[0] = CurrentPnt;
     }
@@ -179,7 +179,7 @@ void AeSysView::OnPipeModeDrop() {
       Group = new EoDbGroup;
       GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP4, CurrentPnt, Group);
       GetDocument()->AddWorkLayerGroup(Group);
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
     m_PreviousOp = ModeLineHighlightOp(ID_OP4);
   } else {
@@ -191,16 +191,16 @@ void AeSysView::OnPipeModeDrop() {
         pts.Add(CurrentPnt);
         m_PreviousOp = ModeLineHighlightOp(ID_OP5);
       } else {  // Dropping into an existing vertical pipe section
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
         Group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP4, CurrentPnt, Group);
         GetDocument()->AddWorkLayerGroup(Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         OnPipeModeEscape();
       }
     } else {
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
       if (pts.IsEmpty()) {
@@ -211,11 +211,11 @@ void AeSysView::OnPipeModeDrop() {
         Group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP4, CurrentPnt, Group);
         GetDocument()->AddWorkLayerGroup(Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
       Group = new EoDbGroup(new EoDbEllipse(1, 1, CurrentPnt, m_PipeRiseDropRadius));
       GetDocument()->AddWorkLayerGroup(Group);
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
       m_PreviousOp = ModeLineHighlightOp(ID_OP4);
       pts[0] = CurrentPnt;
@@ -248,18 +248,18 @@ void AeSysView::OnPipeModeSymbol() {
   EoGeLine BeginSection(PointOnSection, BeginPoint);
   EoGeLine EndSection(PointOnSection, EndPoint);
 
-  GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, HorizontalSection);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, HorizontalSection);
 
   EoGePoint3d SymbolBeginPoint = PointOnSection.ProjectToward(BeginPoint, SymbolSize[m_CurrentPipeSymbolIndex]);
   EoGePoint3d SymbolEndPoint = PointOnSection.ProjectToward(EndPoint, SymbolSize[m_CurrentPipeSymbolIndex]);
   double TicSize = m_PipeTicSize;
 
   HorizontalSection->EndPoint(SymbolBeginPoint);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveSafe, HorizontalSection);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, HorizontalSection);
   Group = new EoDbGroup(
       new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), SymbolEndPoint, EndPoint));
   GetDocument()->AddWorkLayerGroup(Group);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
   Group = new EoDbGroup;
   GenerateTicMark(PointOnSection, BeginPoint, TicDistance[m_CurrentPipeSymbolIndex], Group);
@@ -518,7 +518,7 @@ void AeSysView::OnPipeModeSymbol() {
   }
   m_PipeTicSize = TicSize;
   GetDocument()->AddWorkLayerGroup(Group);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 }
 
 void AeSysView::OnPipeModeWye() {
@@ -537,7 +537,7 @@ void AeSysView::OnPipeModeWye() {
     double DistanceToSection = EoGeVector3d(pts[0], BeginPointProjectedToSection).Length();
 
     if (DistanceToSection >= .25) {
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
       EoGePoint3d BeginPoint = HorizontalSection->BeginPoint();
       EoGePoint3d EndPoint = HorizontalSection->EndPoint();
@@ -556,12 +556,12 @@ void AeSysView::OnPipeModeWye() {
         GenerateTicMark(PointOnSection, BeginPoint, m_PipeRiseDropRadius, Group);
         GenerateTicMark(PointOnSection, EndPoint, m_PipeRiseDropRadius, Group);
         GetDocument()->AddWorkLayerGroup(Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
         Group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, PointOnSection, Group);
         GetDocument()->AddWorkLayerGroup(Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       } else {
         EoGePoint3d PointAtBend;
 
@@ -580,7 +580,7 @@ void AeSysView::OnPipeModeWye() {
         GenerateTicMark(PointOnSection, BeginPoint, m_PipeRiseDropRadius, Group);
         GenerateTicMark(PointOnSection, EndPoint, m_PipeRiseDropRadius, Group);
         GetDocument()->AddWorkLayerGroup(Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
         Group = new EoDbGroup(
             new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), PointOnSection, EndPoint));
@@ -588,11 +588,11 @@ void AeSysView::OnPipeModeWye() {
         Group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, PointAtBend, Group);
         GetDocument()->AddWorkLayerGroup(Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         Group = new EoDbGroup;
         GenerateLineWithFittings(ID_OP3, PointAtBend, ID_OP3, PointOnSection, Group);
         GetDocument()->AddWorkLayerGroup(Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
     }
     OnPipeModeEscape();
@@ -602,7 +602,7 @@ void AeSysView::OnPipeModeWye() {
 void AeSysView::OnPipeModeReturn() { OnPipeModeEscape(); }
 
 void AeSysView::OnPipeModeEscape() {
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   pts.RemoveAll();
 
@@ -620,11 +620,11 @@ void AeSysView::DoPipeModeMouseMove() {
         CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
         pts.Add(CurrentPnt);
 
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP2, CurrentPnt, &m_PreviewGroup);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;
 
@@ -633,11 +633,11 @@ void AeSysView::DoPipeModeMouseMove() {
         CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
         pts.Add(CurrentPnt);
 
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, CurrentPnt, &m_PreviewGroup);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;
 
@@ -647,11 +647,11 @@ void AeSysView::DoPipeModeMouseMove() {
       CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
       pts.Add(CurrentPnt);
 
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
       GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, CurrentPnt, &m_PreviewGroup);
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;
     }
   }
@@ -685,7 +685,7 @@ void AeSysView::GenerateLineWithFittings(int beginType, EoGePoint3d& beginPoint,
   group->AddTail(new EoDbLine(pt1, pt2));
 }
 void AeSysView::DropIntoOrRiseFromHorizontalSection(EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) {
-  GetDocument()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, section);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, section);
 
   EoGePoint3d BeginPoint = section->BeginPoint();
   EoGePoint3d EndPoint = section->EndPoint();
@@ -694,14 +694,14 @@ void AeSysView::DropIntoOrRiseFromHorizontalSection(EoGePoint3d& point, EoDbGrou
   section->EndPoint(CutPoint);
   CutPoint = point.ProjectToward(EndPoint, m_PipeRiseDropRadius);
   group->AddTail(new EoDbLine(section->PenColor(), section->LineType(), CutPoint, EndPoint));
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, group);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
   group = new EoDbGroup;
   GenerateTicMark(point, BeginPoint, 2. * m_PipeRiseDropRadius, group);
   group->AddTail(new EoDbEllipse(1, 1, point, m_PipeRiseDropRadius));
   GenerateTicMark(point, EndPoint, 2. * m_PipeRiseDropRadius, group);
   GetDocument()->AddWorkLayerGroup(group);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, group);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
 void AeSysView::DropFromOrRiseIntoHorizontalSection(EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) {
   EoGePoint3d BeginPoint = section->BeginPoint();
@@ -715,7 +715,7 @@ void AeSysView::DropFromOrRiseIntoHorizontalSection(EoGePoint3d& point, EoDbGrou
   group->AddTail(new EoDbEllipse(1, 1, point, m_PipeRiseDropRadius));
   GenerateTicMark(point, EndPoint, 2. * m_PipeRiseDropRadius, group);
   GetDocument()->AddWorkLayerGroup(group);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, group);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
 bool AeSysView::GenerateTicMark(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, double distance, EoDbGroup* group) {
   EoGePoint3d PointOnLine = beginPoint.ProjectToward(endPoint, distance);

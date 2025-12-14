@@ -6,7 +6,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetText, CDialog)
 
-EoDlgSetText::EoDlgSetText(CWnd* pParent /*=NULL*/) :
+EoDlgSetText::EoDlgSetText(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSetText::IDD, pParent) {
 }
 EoDlgSetText::~EoDlgSetText() {

@@ -59,7 +59,7 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
 	dc.Attach(::BeginPaint(hwnd, &ps));
 
 	CDC dcMem;
-	dcMem.CreateCompatibleDC(NULL);
+	dcMem.CreateCompatibleDC(nullptr);
 
 	dcMem.SelectObject(CBitmap::FromHandle(EoDlgActiveViewKeyplan::m_hbmKeyplan));
 	BITMAP bitmap;
@@ -177,7 +177,7 @@ void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
 	::Rectangle(hDCKeyplan, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top, EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
 	CDC dcMem;
-	dcMem.CreateCompatibleDC(NULL);
+	dcMem.CreateCompatibleDC(nullptr);
 
 	dcMem.SelectObject(CBitmap::FromHandle(EoDlgActiveViewKeyplan::m_hbmKeyplan));
 	BITMAP bitmap; ::GetObject(EoDlgActiveViewKeyplan::m_hbmKeyplan, sizeof(BITMAP), (LPSTR) &bitmap);

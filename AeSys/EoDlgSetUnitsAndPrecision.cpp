@@ -11,7 +11,7 @@ BEGIN_MESSAGE_MAP(EoDlgSetUnitsAndPrecision, CDialog)
 ON_BN_CLICKED(IDC_METRIC, &EoDlgSetUnitsAndPrecision::OnBnClickedMetric)
 END_MESSAGE_MAP()
 
-EoDlgSetUnitsAndPrecision::EoDlgSetUnitsAndPrecision(CWnd* pParent /*=NULL*/)
+EoDlgSetUnitsAndPrecision::EoDlgSetUnitsAndPrecision(CWnd* pParent /*=nullptr*/)
     : CDialog(EoDlgSetUnitsAndPrecision::IDD, pParent), m_Units(AeSys::kInches), m_Precision(8) {}
 
 EoDlgSetUnitsAndPrecision::~EoDlgSetUnitsAndPrecision() {}

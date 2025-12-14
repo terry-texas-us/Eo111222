@@ -6,7 +6,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgFixupOptions, CDialog)
 
-EoDlgFixupOptions::EoDlgFixupOptions(CWnd* pParent /*=NULL*/) :
+EoDlgFixupOptions::EoDlgFixupOptions(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgFixupOptions::IDD, pParent) {
 }
 EoDlgFixupOptions::~EoDlgFixupOptions() {

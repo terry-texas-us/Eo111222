@@ -8,8 +8,8 @@
 
 IMPLEMENT_DYNAMIC(EoDlgTrapFilter, CDialog)
 
-EoDlgTrapFilter::EoDlgTrapFilter(CWnd* pParent /*=NULL*/) : CDialog(EoDlgTrapFilter::IDD, pParent) {}
-EoDlgTrapFilter::EoDlgTrapFilter(AeSysDoc* document, CWnd* pParent /*=NULL*/)
+EoDlgTrapFilter::EoDlgTrapFilter(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgTrapFilter::IDD, pParent) {}
+EoDlgTrapFilter::EoDlgTrapFilter(AeSysDoc* document, CWnd* pParent /*=nullptr*/)
     : CDialog(EoDlgTrapFilter::IDD, pParent), m_Document(document) {}
 EoDlgTrapFilter::~EoDlgTrapFilter() {}
 void EoDlgTrapFilter::DoDataExchange(CDataExchange* dataExchange) {
@@ -95,7 +95,7 @@ void EoDlgTrapFilter::FilterByColor(EoInt16 colorIndex) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->PenColor() == colorIndex) {
         m_Document->RemoveTrappedGroup(Group);
-        m_Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         break;
       }
     }
@@ -112,7 +112,7 @@ void EoDlgTrapFilter::FilterByLineType(int lineType) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->LineType() == lineType) {
         m_Document->RemoveTrappedGroup(Group);
-        m_Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         break;
       }
     }
@@ -162,7 +162,7 @@ void EoDlgTrapFilter::FilterByPrimitiveType(const EoDb::PrimitiveTypes primitive
       }
       if (bFilter) {
         m_Document->RemoveTrappedGroup(Group);
-        m_Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         break;
       }
     }

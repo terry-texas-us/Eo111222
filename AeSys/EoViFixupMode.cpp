@@ -41,7 +41,7 @@ void AeSysView::OnFixupModeReference(void) {
   EoGeVector3d vMajAx;
   EoGeVector3d vPlnNorm;
 
-  if (pSegRef != 0) { Document->UpdateAllViews(NULL, EoDb::kPrimitive, pPrimRef); }
+  if (pSegRef != 0) { Document->UpdateAllViews(nullptr, EoDb::kPrimitive, pPrimRef); }
   pSegRef = SelectGroupAndPrimitive(ptCurPos);
   if (pSegRef == 0) { return; }
   pPrimRef = EngagedPrimitive();
@@ -60,12 +60,12 @@ void AeSysView::OnFixupModeReference(void) {
       return;
     }
     if (PreviousFixupCommand == ID_OP2) {
-      Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegPrv);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
       if (EoGeVector3d(pLinePrv->EndPoint(), ptInt).Length() < EoGeVector3d(pLinePrv->EndPoint(), ptInt).Length())
         pLinePrv->BeginPoint(ptInt);
       else
         pLinePrv->EndPoint(ptInt);
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegPrv);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
     } else if (PreviousFixupCommand == ID_OP3) {
       if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
       lnPrv.end = ptInt;
@@ -74,11 +74,11 @@ void AeSysView::OnFixupModeReference(void) {
       if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, lnRef.begin, lnRef.end, &ptCP)) {
         lnPrv.end = lnPrv.ProjPt(ptCP);
         lnRef.begin = lnRef.ProjPt(ptCP);
-        Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
         pLinePrv->BeginPoint(lnPrv.begin);
         pLinePrv->EndPoint(lnPrv.end);
         pSegPrv->AddTail(new EoDbLine(lnPrv.end, lnRef.begin));
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
       }
     } else if (PreviousFixupCommand == ID_OP4) {
       if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
@@ -90,10 +90,10 @@ void AeSysView::OnFixupModeReference(void) {
         lnPrv.end = lnPrv.ProjPt(ptCP);
         lnRef.begin = lnRef.ProjPt(ptCP);
 
-        Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
         pLinePrv->BeginPoint(lnPrv.begin);
         pLinePrv->EndPoint(lnPrv.end);
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
 
         EoGeVector3d rPrvEndInter(lnPrv.end, ptInt);
         EoGeVector3d rPrvEndRefBeg(lnPrv.end, lnRef.begin);
@@ -106,7 +106,7 @@ void AeSysView::OnFixupModeReference(void) {
 
         EoDbGroup* Group = new EoDbGroup(new EoDbEllipse(ptCP, vMajAx, vMinAx, dAng));
         Document->AddWorkLayerGroup(Group);
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
     }
     ModeLineUnhighlightOp(PreviousFixupCommand);
@@ -144,12 +144,12 @@ void AeSysView::OnFixupModeMend(void) {
       app.AddModeInformationToMessageList();
       return;
     }
-    Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegSec);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
     if (EoGeVector3d(pLine->BeginPoint(), ptInt).Length() < EoGeVector3d(pLine->EndPoint(), ptInt).Length())
       pLine->BeginPoint(ptInt);
     else
       pLine->EndPoint(ptInt);
-    Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegSec);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
   } else {
     if (!EoGeLine::Intersection(lnPrv, lnSec, ptInt)) {
       app.AddModeInformationToMessageList();
@@ -157,12 +157,12 @@ void AeSysView::OnFixupModeMend(void) {
     }
     if (PreviousFixupCommand == ID_OP2) {
       pLine = static_cast<EoDbLine*>(pPrimPrv);
-      Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegPrv);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
       if (EoGeVector3d(pLine->BeginPoint(), ptInt).Length() < EoGeVector3d(pLine->EndPoint(), ptInt).Length())
         pLine->BeginPoint(ptInt);
       else
         pLine->EndPoint(ptInt);
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegPrv);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
     } else if (PreviousFixupCommand == ID_OP3) {
       if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
       lnPrv.end = ptInt;
@@ -172,11 +172,11 @@ void AeSysView::OnFixupModeMend(void) {
         pLine = static_cast<EoDbLine*>(pPrimPrv);
         lnPrv.end = lnPrv.ProjPt(ptCP);
         lnSec.begin = lnSec.ProjPt(ptCP);
-        Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
         pLine->BeginPoint(lnPrv.begin);
         pLine->EndPoint(lnPrv.end);
         pSegPrv->AddTail(new EoDbLine(lnPrv.end, lnSec.begin));
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
       }
     } else if (PreviousFixupCommand == ID_OP4) {
       if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
@@ -188,7 +188,7 @@ void AeSysView::OnFixupModeMend(void) {
         pLine = static_cast<EoDbLine*>(pPrimPrv);
         lnPrv.end = lnPrv.ProjPt(ptCP);
         lnSec.begin = lnSec.ProjPt(ptCP);
-        Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
         pLine->BeginPoint(lnPrv.begin);
         pLine->EndPoint(lnPrv.end);
         EoGeVector3d rPrvEndInter(lnPrv.end, ptInt);
@@ -200,16 +200,16 @@ void AeSysView::OnFixupModeMend(void) {
         EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, HALF_PI);
         vMinAx = EoGeVector3d(ptCP, rTmp);
         pSegPrv->AddTail(new EoDbEllipse(ptCP, vMajAx, vMinAx, dAng));
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
       }
     }
-    Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegSec);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
     pLine = static_cast<EoDbLine*>(pPrimSec);
     if (EoGeVector3d(pLine->BeginPoint(), ptInt).Length() < EoGeVector3d(pLine->EndPoint(), ptInt).Length())
       pLine->BeginPoint(ptInt);
     else
       pLine->EndPoint(ptInt);
-    Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegSec);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
     ModeLineUnhighlightOp(PreviousFixupCommand);
   }
 }
@@ -259,25 +259,25 @@ void AeSysView::OnFixupModeChamfer(void) {
         ;
       else if (PreviousFixupCommand == ID_OP2) {
         pLine = static_cast<EoDbLine*>(pPrimPrv);
-        Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
         pLine->BeginPoint(lnPrv.begin);
         pLine->EndPoint(ptInt);
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
       } else if (PreviousFixupCommand == ID_OP3 || PreviousFixupCommand == ID_OP4) {
         pLine = static_cast<EoDbLine*>(pPrimPrv);
-        Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
         pLine->BeginPoint(lnPrv.begin);
         pLine->EndPoint(lnPrv.end);
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
       }
       pLine = static_cast<EoDbLine*>(pPrimSec);
-      Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegSec);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
       pLine->BeginPoint(lnSec.begin);
       pLine->EndPoint(lnSec.end);
 
       pSegSec->AddTail(new EoDbLine(lnPrv.end, lnSec.begin));
 
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegSec);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
     }
     ModeLineUnhighlightOp(PreviousFixupCommand);
   }
@@ -328,19 +328,19 @@ void AeSysView::OnFixupModeFillet(void) {
         ;
       else if (PreviousFixupCommand == ID_OP2) {
         pLine = static_cast<EoDbLine*>(pPrimPrv);
-        Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
         pLine->BeginPoint(lnPrv.begin);
         pLine->EndPoint(ptInt);
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
       } else if (PreviousFixupCommand == ID_OP3 || PreviousFixupCommand == ID_OP4) {
         pLine = static_cast<EoDbLine*>(pPrimPrv);
-        Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
         pLine->BeginPoint(lnPrv.begin);
         pLine->EndPoint(lnPrv.end);
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegPrv);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
       }
       pLine = static_cast<EoDbLine*>(pPrimSec);
-      Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegSec);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
       pLine->BeginPoint(lnSec.begin);
       pLine->EndPoint(lnSec.end);
 
@@ -355,7 +355,7 @@ void AeSysView::OnFixupModeFillet(void) {
       vMinAx = EoGeVector3d(ptCP, rTmp);
       pSegSec->AddTail(new EoDbEllipse(ptCP, vMajAx, vMinAx, dAng));
 
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegSec);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
     }
     ModeLineUnhighlightOp(PreviousFixupCommand);
   }
@@ -375,12 +375,12 @@ void AeSysView::OnFixupModeSquare(void) {
       pLine = static_cast<EoDbLine*>(pPrimSec);
       pLine->GetLine(lnSec);
       double dLen = lnSec.Length();
-      Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegSec);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
       lnSec.begin = SnapPointToAxis(ptCurPos, lnSec.begin);
       lnSec.end = lnSec.begin.ProjectToward(ptCurPos, dLen);
       pLine->BeginPoint(SnapPointToGrid(lnSec.begin));
       pLine->EndPoint(SnapPointToGrid(lnSec.end));
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegSec);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
     }
   }
 }
@@ -399,10 +399,10 @@ void AeSysView::OnFixupModeParallel(void) {
 
       lnSec.begin = lnRef.ProjPt(pLine->BeginPoint());
       lnSec.end = lnRef.ProjPt(pLine->EndPoint());
-      Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, pSegSec);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
       pLine->BeginPoint(lnSec.begin.ProjectToward(pLine->BeginPoint(), app.DimensionLength()));
       pLine->EndPoint(lnSec.end.ProjectToward(pLine->EndPoint(), app.DimensionLength()));
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, pSegSec);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
     }
   }
 }
@@ -410,7 +410,7 @@ void AeSysView::OnFixupModeReturn(void) {
   AeSysDoc* Document = GetDocument();
 
   if (pSegRef != 0) {
-    Document->UpdateAllViews(NULL, EoDb::kPrimitive, pPrimRef);
+    Document->UpdateAllViews(nullptr, EoDb::kPrimitive, pPrimRef);
     pSegRef = 0;
     pPrimRef = 0;
   }
@@ -420,7 +420,7 @@ void AeSysView::OnFixupModeEscape(void) {
   AeSysDoc* Document = GetDocument();
 
   if (pSegRef != 0) {
-    Document->UpdateAllViews(NULL, EoDb::kPrimitive, pPrimRef);
+    Document->UpdateAllViews(nullptr, EoDb::kPrimitive, pPrimRef);
     pSegRef = 0;
     pPrimRef = 0;
   }

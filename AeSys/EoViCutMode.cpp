@@ -31,16 +31,16 @@ void AeSysView::OnCutModeTorch(void) {
         EoDbGroup* NewGroup = new EoDbGroup;
 
         ptCut = tm * ptCut;
-        Document->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, Primitive);
+        Document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, Primitive);
         Primitive->CutAtPt(ptCut, NewGroup);
-        Document->UpdateAllViews(NULL, EoDb::kPrimitiveSafe, Primitive);
+        Document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, Primitive);
         Groups->AddTail(NewGroup);
         break;
       }
     }
   }
   Document->AddWorkLayerGroups(Groups);
-  Document->UpdateAllViews(NULL, EoDb::kGroupsSafe, Groups);
+  Document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, Groups);
   delete Groups;
 }
 void AeSysView::OnCutModeSlice(void) {
@@ -82,15 +82,15 @@ void AeSysView::OnCutModeSlice(void) {
 
           ptsInt[w] = tm * ptsInt[w];
 
-          Document->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, Primitive);
+          Document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, Primitive);
           Primitive->CutAtPt(ptsInt[w], NewGroup);
-          Document->UpdateAllViews(NULL, EoDb::kPrimitiveSafe, Primitive);
+          Document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, Primitive);
           Groups->AddTail(NewGroup);
         }
       }
     }
     Document->AddWorkLayerGroups(Groups);
-    Document->UpdateAllViews(NULL, EoDb::kGroupsSafe, Groups);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, Groups);
     delete Groups;
 
     RubberBandingDisable();
@@ -158,7 +158,7 @@ void AeSysView::OnCutModeField(void) {
 
     if (GroupsOut->GetCount() > 0) {
       Document->AddWorkLayerGroups(GroupsOut);
-      Document->UpdateAllViews(NULL, EoDb::kGroups, GroupsOut);
+      Document->UpdateAllViews(nullptr, EoDb::kGroups, GroupsOut);
     }
     if (GroupsIn->GetCount() > 0) {
       Document->AddWorkLayerGroups(GroupsIn);
@@ -242,12 +242,12 @@ void AeSysView::OnCutModeClip(void) {
     }
     if (GroupsOut->GetCount() > 0) {
       Document->AddWorkLayerGroups(GroupsOut);
-      Document->UpdateAllViews(NULL, EoDb::kGroups, GroupsOut);
+      Document->UpdateAllViews(nullptr, EoDb::kGroups, GroupsOut);
     }
     if (GroupsIn->GetCount() > 0) {
       Document->AddWorkLayerGroups(GroupsIn);
       Document->AddGroupsToTrap(GroupsIn);
-      Document->UpdateAllViews(NULL, EoDb::kGroupsTrap, GroupsIn);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupsTrap, GroupsIn);
     }
     delete GroupsIn;
     delete GroupsOut;

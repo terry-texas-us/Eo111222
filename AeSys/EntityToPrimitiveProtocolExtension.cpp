@@ -1520,7 +1520,7 @@ class Converters {
     OdDbXline::desc()->delX(EoDbConvertEntityToPrimitive::desc());
   }
 };
-AeSysDoc* ProtocolExtension_ConvertEntityToPegPrimitive::m_Document = NULL;
+AeSysDoc* ProtocolExtension_ConvertEntityToPegPrimitive::m_Document = nullptr;
 
 ProtocolExtension_ConvertEntityToPegPrimitive::ProtocolExtension_ConvertEntityToPegPrimitive(AeSysDoc* document) {
   m_Document = document;

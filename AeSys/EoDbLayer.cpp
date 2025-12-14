@@ -7,7 +7,7 @@ EoDbLayer::EoDbLayer(const CString& name, EoUInt16 stateFlags) {
   m_TracingFlgs = 0;
   m_StateFlags = stateFlags;
   m_ColorIndex = 1;
-  m_LineType = NULL;
+  m_LineType = nullptr;
 }
 EoDbLayer::EoDbLayer(const CString& name, EoUInt16 stateFlags, EoDbLineType* lineType) {
   m_Name = name;

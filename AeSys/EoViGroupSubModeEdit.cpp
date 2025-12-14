@@ -23,7 +23,7 @@ void AeSysView::DoEditGroupCopy() {
     Document->AddWorkLayerGroup(Group);
     m_SubModeEditGroup = Group;
 
-    Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
     m_tmEditSeg.Identity();
   }
 }
@@ -31,9 +31,9 @@ void AeSysView::DoEditGroupEscape() {
   if (m_SubModeEditGroup != 0) {
     m_tmEditSeg.Inverse();
 
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
     m_SubModeEditGroup->Transform(m_tmEditSeg);
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
 
     InitializeGroupAndPrimitiveEdit();
 
@@ -62,9 +62,9 @@ void AeSysView::DoEditGroupTransform(EoUInt16 operation) {
     }
     tm.Translate(-TranslateVector);
 
-    Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
     m_SubModeEditGroup->Transform(tm);
-    Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
 
     m_tmEditSeg *= tm;
   }
@@ -79,9 +79,9 @@ void AeSysView::PreviewGroupEdit() {
     if (app.IsTrapHighlighted() && Document->FindTrappedGroup(m_SubModeEditGroup) != 0) {
       EoDbPrimitive::SetSpecialPenColorIndex(app.TrapHighlightColor());
     }
-    Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
     m_SubModeEditGroup->Transform(tm);
-    Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
 
     EoDbPrimitive::SetSpecialPenColorIndex(0);
 

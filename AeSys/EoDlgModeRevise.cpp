@@ -24,7 +24,7 @@ EoDbFontDefinition EoDlgModeRevise::sm_FontDefinition;
 EoGeReferenceSystem EoDlgModeRevise::sm_ReferenceSystem;
 EoDbText* EoDlgModeRevise::sm_TextPrimitive;
 
-EoDlgModeRevise::EoDlgModeRevise(CWnd* pParent /*=NULL*/) :
+EoDlgModeRevise::EoDlgModeRevise(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgModeRevise::IDD, pParent) {
 }
 EoDlgModeRevise::~EoDlgModeRevise() {
@@ -52,15 +52,15 @@ void EoDlgModeRevise::OnOK() {
 	m_TextEditControl.GetWindowTextW(Text);
 
 	if (sm_TextPrimitive != 0) {
-		AeSysDoc::GetDoc()->UpdateAllViews(NULL, EoDb::kPrimitiveEraseSafe, sm_TextPrimitive);
+		AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, sm_TextPrimitive);
 		sm_TextPrimitive->SetText(Text);
-		AeSysDoc::GetDoc()->UpdateAllViews(NULL, EoDb::kPrimitiveSafe, sm_TextPrimitive);
+		AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, sm_TextPrimitive);
 	}
 	else {
 		EoDbText* TextPrimitive = new EoDbText(sm_FontDefinition, sm_ReferenceSystem, Text);
 		EoDbGroup* Group = new EoDbGroup(TextPrimitive);
 		AeSysDoc::GetDoc()->AddWorkLayerGroup(Group);
-		AeSysDoc::GetDoc()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+		AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 	}
 	sm_ReferenceSystem.SetOrigin(text_GetNewLinePos(sm_FontDefinition, sm_ReferenceSystem, 1.0, 0));
 

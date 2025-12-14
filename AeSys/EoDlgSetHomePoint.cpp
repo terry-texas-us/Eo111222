@@ -15,10 +15,10 @@ END_MESSAGE_MAP()
 
 EoGePoint3d EoDlgSetHomePoint::m_CursorPosition = EoGePoint3d::kOrigin;
 
-EoDlgSetHomePoint::EoDlgSetHomePoint(CWnd* pParent /*=NULL*/) :
+EoDlgSetHomePoint::EoDlgSetHomePoint(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSetHomePoint::IDD, pParent) {
 }
-EoDlgSetHomePoint::EoDlgSetHomePoint(AeSysView* activeView, CWnd* pParent /*=NULL*/) :
+EoDlgSetHomePoint::EoDlgSetHomePoint(AeSysView* activeView, CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSetHomePoint::IDD, pParent), m_ActiveView(activeView) {
 }
 EoDlgSetHomePoint::~EoDlgSetHomePoint() {

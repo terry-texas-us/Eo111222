@@ -162,7 +162,7 @@ bool dde::ExecNote(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 
 	EoDbGroup* Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, ppArgs[0]));
 	Document->AddWorkLayerGroup(Group);
-	Document->UpdateAllViews(NULL, EoDb::kGroup, Group);
+	Document->UpdateAllViews(nullptr, EoDb::kGroup, Group);
 
 	ptPvt = text_GetNewLinePos(fd, ReferenceSystem, 1., 0);
 	app.SetCursorPosition(ptPvt);

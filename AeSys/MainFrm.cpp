@@ -100,7 +100,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_StandardToolBar.SetWindowTextW(L"Standard");
   m_StandardToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, L"Customize...");
 
-  InitUserToolbars(NULL, uiFirstUserToolBarId, uiLastUserToolBarId);
+  InitUserToolbars(nullptr, uiFirstUserToolBarId, uiLastUserToolBarId);
 
   if (!m_StatusBar.Create(this)) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create status bar\n");
@@ -139,7 +139,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
 
   CMFCToolBar::EnableQuickCustomization();
 
-  if (CMFCToolBar::GetUserImages() == NULL) {
+  if (CMFCToolBar::GetUserImages() == nullptr) {
     // load user-defined toolbar images
     if (m_UserImages.Load(L"\\UserImages.bmp")) {
       m_UserImages.SetImageSize(CSize(16, 16), FALSE);
@@ -270,7 +270,7 @@ void CMainFrame::OnApplicationLook(UINT look) {
   DockingManager->SetDockingMode(DT_SMART);
 
   RecalcLayout();
-  RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_FRAME | RDW_ERASE | RDW_UPDATENOW);
+  RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_FRAME | RDW_ERASE | RDW_UPDATENOW);
 
   app.WriteInt(L"ApplicationLook", static_cast<int>(m_ApplicationLook));
 }
@@ -280,7 +280,7 @@ BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWind
 
   // Add some tools for example....
   CUserToolsManager* UserToolsManager = app.GetUserToolsManager();
-  if (UserToolsManager != NULL && UserToolsManager->GetUserTools().IsEmpty()) {
+  if (UserToolsManager != nullptr && UserToolsManager->GetUserTools().IsEmpty()) {
     CUserTool* Tool1 = UserToolsManager->CreateNewTool();
     Tool1->m_strLabel = L"&Notepad";
     Tool1->SetCommand(L"notepad.exe");
@@ -303,7 +303,7 @@ BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWind
 
   for (int i = 0; i < iMaxUserToolbars; i++) {
     CMFCToolBar* UserToolbar = GetUserToolBarByIndex(i);
-    if (UserToolbar != NULL) { UserToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, Customize); }
+    if (UserToolbar != nullptr) { UserToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, Customize); }
   }
   return TRUE;
 }
@@ -312,7 +312,7 @@ LRESULT CMainFrame::OnToolbarContextMenu(WPARAM, LPARAM point) {
   VERIFY(PopupToolbarMenu.LoadMenu(IDR_POPUP_TOOLBAR));
 
   CMenu* SubMenu = PopupToolbarMenu.GetSubMenu(0);
-  ASSERT(SubMenu != NULL);
+  ASSERT(SubMenu != nullptr);
 
   if (SubMenu) {
     CPoint Point(AFX_GET_X_LPARAM(point), AFX_GET_Y_LPARAM(point));
@@ -325,7 +325,7 @@ LRESULT CMainFrame::OnToolbarContextMenu(WPARAM, LPARAM point) {
 BOOL CMainFrame::OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) {
   CMDIFrameWndEx::OnShowPopupMenu(pMenuPopup);
 
-  if (pMenuPopup != NULL && pMenuPopup->GetMenuBar()->CommandToIndex(ID_VIEW_TOOLBARS) >= 0) {
+  if (pMenuPopup != nullptr && pMenuPopup->GetMenuBar()->CommandToIndex(ID_VIEW_TOOLBARS) >= 0) {
     if (CMFCToolBar::IsCustomizeMode()) {
       // Don't show toolbars list in the cuztomization mode!
       return FALSE;
@@ -336,7 +336,7 @@ BOOL CMainFrame::OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) {
     VERIFY(menu.LoadMenu(IDR_POPUP_TOOLBAR));
 
     CMenu* PopupSubMenu = menu.GetSubMenu(0);
-    ASSERT(PopupSubMenu != NULL);
+    ASSERT(PopupSubMenu != nullptr);
 
     if (PopupSubMenu) { pMenuPopup->GetMenuBar()->ImportFromMenu(*PopupSubMenu, TRUE); }
   }
@@ -389,7 +389,7 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
     }
   }
   CList<UINT, UINT> lstCommands;
-  if (AreMDITabs(NULL)) {
+  if (AreMDITabs(nullptr)) {
     lstCommands.AddTail(ID_WINDOW_ARRANGE);
     lstCommands.AddTail(ID_WINDOW_CASCADE);
     lstCommands.AddTail(ID_WINDOW_TILE_HORZ);
@@ -400,9 +400,9 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
     BOOL bMaximize = app.m_Options.m_nTabsStyle != EoApOptions::None;
 
     HWND hwndT = ::GetWindow(m_hWndMDIClient, GW_CHILD);
-    while (hwndT != NULL) {
+    while (hwndT != nullptr) {
       CMDIChildWndEx* pFrame = DYNAMIC_DOWNCAST(CMDIChildWndEx, CWnd::FromHandle(hwndT));
-      if (pFrame != NULL) {
+      if (pFrame != nullptr) {
         ASSERT_VALID(pFrame);
         if (bMaximize) {
           pFrame->ModifyStyle(WS_SYSMENU, 0);
@@ -413,9 +413,9 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
           // Force a resize to happen on all the "restored" MDI child windows
           CRect rectFrame;
           pFrame->GetWindowRect(rectFrame);
-          pFrame->SetWindowPos(NULL, -1, -1, rectFrame.Width() + 1, rectFrame.Height(),
+          pFrame->SetWindowPos(nullptr, -1, -1, rectFrame.Width() + 1, rectFrame.Height(),
                                SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
-          pFrame->SetWindowPos(NULL, -1, -1, rectFrame.Width(), rectFrame.Height(),
+          pFrame->SetWindowPos(nullptr, -1, -1, rectFrame.Width(), rectFrame.Height(),
                                SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
         }
       }
@@ -426,12 +426,12 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
   if (m_PropertiesPane.IsAutoHideMode()) {
     m_PropertiesPane.BringWindowToTop();
     CPaneDivider* Divider = m_PropertiesPane.GetDefaultPaneDivider();
-    if (Divider != NULL) { Divider->BringWindowToTop(); }
+    if (Divider != nullptr) { Divider->BringWindowToTop(); }
   }
   CMDIFrameWndEx::m_bDisableSetRedraw = app.m_Options.m_bDisableSetRedraw;
 
   RecalcLayout();
-  RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
+  RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 }
 
 // CMainFrame message handlers
@@ -442,7 +442,7 @@ BOOL CMainFrame::OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOO
   VERIFY(menu.LoadMenu(IDR_POPUP_MDITABS));
 
   CMenu* PopupSubMenu = menu.GetSubMenu(0);
-  ASSERT(PopupSubMenu != NULL);
+  ASSERT(PopupSubMenu != nullptr);
 
   if (PopupSubMenu) {
     if ((dwAllowedItems & AFX_MDI_CAN_BE_DOCKED) == 0) { PopupSubMenu->DeleteMenu(ID_MDI_TABBED, MF_BYCOMMAND); }
@@ -456,7 +456,7 @@ BOOL CMainFrame::OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOO
 }
 LRESULT CMainFrame::OnGetTabToolTip(WPARAM /*wp*/, LPARAM lp) {
   CMFCTabToolTipInfo* pInfo = (CMFCTabToolTipInfo*)lp;
-  ASSERT(pInfo != NULL);
+  ASSERT(pInfo != nullptr);
 
   if (pInfo) {
     ASSERT_VALID(pInfo->m_pTabWnd);
@@ -467,7 +467,7 @@ LRESULT CMainFrame::OnGetTabToolTip(WPARAM /*wp*/, LPARAM lp) {
 }
 void CMainFrame::OnMdiTabbed() {
   CMDIChildWndEx* pMDIChild = DYNAMIC_DOWNCAST(CMDIChildWndEx, MDIGetActive());
-  if (pMDIChild == NULL) {
+  if (pMDIChild == nullptr) {
     ASSERT(FALSE);
     return;
   }
@@ -506,7 +506,7 @@ void CMainFrame::OnStartProgress(void) {
   m_CurrentProgress = 0;
   m_InProgress = true;
 
-  TimerId = SetTimer(2, 1, NULL);
+  TimerId = SetTimer(2, 1, nullptr);
 }
 void CMainFrame::OnTimer(UINT_PTR nIDEvent) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"CMainFrame::OnTimer(%i)\n", nIDEvent);
@@ -520,14 +520,14 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent) {
 }
 void CMainFrame::OnViewFullScreen(void) { ShowFullScreen(); }
 CMFCToolBarComboBoxButton* CMainFrame::GetFindCombo(void) {
-  CMFCToolBarComboBoxButton* FoundCombo = NULL;
+  CMFCToolBarComboBoxButton* FoundCombo = nullptr;
 
   CObList ButtonsList;
   if (CMFCToolBar::GetCommandButtons(ID_EDIT_FIND_COMBO, ButtonsList) > 0) {
-    for (POSITION Position = ButtonsList.GetHeadPosition(); FoundCombo == NULL && Position != NULL;) {
+    for (POSITION Position = ButtonsList.GetHeadPosition(); FoundCombo == nullptr && Position != nullptr;) {
       CMFCToolBarComboBoxButton* Combo = DYNAMIC_DOWNCAST(CMFCToolBarComboBoxButton, ButtonsList.GetNext(Position));
 
-      if (Combo != NULL && Combo->GetEditCtrl()->GetSafeHwnd() == ::GetFocus()) { FoundCombo = Combo; }
+      if (Combo != nullptr && Combo->GetEditCtrl()->GetSafeHwnd() == ::GetFocus()) { FoundCombo = Combo; }
     }
   }
   return FoundCombo;

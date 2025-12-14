@@ -12,7 +12,7 @@ int AeSysDoc::GetBlockReferenceCount(const CString& name) {
   EoDbBlock* Block;
 
   POSITION Position = m_BlocksTable.GetStartPosition();
-  while (Position != NULL) {
+  while (Position != nullptr) {
     m_BlocksTable.GetNextAssoc(Position, Key, Block);
     Count += Block->GetBlockRefCount(name);
   }
@@ -20,7 +20,7 @@ int AeSysDoc::GetBlockReferenceCount(const CString& name) {
 }
 bool AeSysDoc::LookupBlock(CString name, EoDbBlock*& block) {
   if (m_BlocksTable.Lookup(name, block)) { return true; }
-  block = NULL;
+  block = nullptr;
   return false;
 }
 void AeSysDoc::RemoveAllBlocks() {
@@ -28,7 +28,7 @@ void AeSysDoc::RemoveAllBlocks() {
   EoDbBlock* Block;
 
   POSITION BlockPosition = m_BlocksTable.GetStartPosition();
-  while (BlockPosition != NULL) {
+  while (BlockPosition != nullptr) {
     m_BlocksTable.GetNextAssoc(BlockPosition, Name, Block);
     Block->DeletePrimitivesAndRemoveAll();
     delete Block;
@@ -40,7 +40,7 @@ void AeSysDoc::RemoveUnusedBlocks() {
   EoDbBlock* Block;
 
   POSITION BlockPosition = m_BlocksTable.GetStartPosition();
-  while (BlockPosition != NULL) {
+  while (BlockPosition != nullptr) {
     m_BlocksTable.GetNextAssoc(BlockPosition, Name, Block);
     if (GetBlockReferenceCount(Name) == 0) {
       //Note: Deletion by key may cause loop problems

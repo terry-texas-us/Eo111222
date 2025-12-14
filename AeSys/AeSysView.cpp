@@ -409,7 +409,7 @@ void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deacti
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
   if (activate) {
-    if (::CopyAcceleratorTable(MainFrame->m_hAccelTable, NULL, 0) ==
+    if (::CopyAcceleratorTable(MainFrame->m_hAccelTable, nullptr, 0) ==
         0) {  // Accelerator table was destroyed when keyboard focus was killed - reload resource
       app.BuildModifiedAcceleratorTable();
     }
@@ -436,7 +436,7 @@ void AeSysView::OnSetFocus(CWnd* oldWindow) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnSetFocus(%08.8lx)\n", this, oldWindow);
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
-  if (::CopyAcceleratorTable(MainFrame->m_hAccelTable, NULL, 0) ==
+  if (::CopyAcceleratorTable(MainFrame->m_hAccelTable, nullptr, 0) ==
       0) {  // Accelerator table was destroyed when keyboard focus was killed - reload resource
     app.BuildModifiedAcceleratorTable();
   }
@@ -511,7 +511,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     }
     UpdateStateInformation(All);
     ModeLineDisplay();
-    ValidateRect(NULL);
+    ValidateRect(nullptr);
   } catch (CException* e) { e->Delete(); }
 }
 /// <remarks>
@@ -524,7 +524,7 @@ void AeSysView::OnInitialUpdate() {
   ::SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(ViewBackgroundColor));
 
 #if defined(USING_Direct2D)
-  m_RenderTarget = NULL;
+  m_RenderTarget = nullptr;
   CreateDeviceResources();
 #endif  // USING_Direct2D
 
@@ -624,8 +624,8 @@ BOOL AeSysView::OnPreparePrinting(CPrintInfo* pInfo) {
     CPrintInfo pi;
     if (AfxGetApp()->GetPrinterDeviceDefaults(&pi.m_pPD->m_pd)) {
       HDC hDC = pi.m_pPD->m_pd.hDC;
-      if (hDC == NULL) { hDC = pi.m_pPD->CreatePrinterDC(); }
-      if (hDC != NULL) {
+      if (hDC == nullptr) { hDC = pi.m_pPD->CreatePrinterDC(); }
+      if (hDC != nullptr) {
         UINT nHorzPages;
         UINT nVertPages;
         CDC DeviceContext;
@@ -821,7 +821,7 @@ BOOL AeSysView::OnMouseWheel(UINT nFlags, EoInt16 zDelta, CPoint point) {
   Dolly(-x, -y);
   View->zoom(zDelta > 0 ? 1.0 / 0.9 : 0.9);
   Dolly(x, y);
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 #endif  // USING_ODA
 
   return __super::OnMouseWheel(nFlags, zDelta, point);
@@ -903,7 +903,7 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
     BITMAP bm;
     m_BackgroundImageBitmap.GetBitmap(&bm);
     CDC dcMem;
-    dcMem.CreateCompatibleDC(NULL);
+    dcMem.CreateCompatibleDC(nullptr);
     CBitmap* pBitmap = dcMem.SelectObject(&m_BackgroundImageBitmap);
     CPalette* pPalette = deviceContext->SelectPalette(&m_BackgroundImagePalette, FALSE);
     deviceContext->RealizePalette();
@@ -1013,7 +1013,7 @@ void AeSysView::DoCameraRotate(int iDir) {
   m_ViewTransform.SetPosition(Position);
   m_ViewTransform.SetViewUp(vV);
   m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::DoWindowPan(double ratio) {
   ratio = EoMin(EoMax(ratio, m_MinimumWindowRatio), m_MaximumWindowRatio);
@@ -1049,7 +1049,7 @@ void AeSysView::On3dViewsTop() {
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
 
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::On3dViewsBottom() {
   m_ViewTransform.SetPosition(-EoGeVector3d::kZAxis);
@@ -1057,7 +1057,7 @@ void AeSysView::On3dViewsBottom() {
   m_ViewTransform.SetViewUp(EoGeVector3d::kYAxis);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::On3dViewsLeft() {
   m_ViewTransform.SetPosition(-EoGeVector3d::kXAxis);
@@ -1065,7 +1065,7 @@ void AeSysView::On3dViewsLeft() {
   m_ViewTransform.SetViewUp(EoGeVector3d::kZAxis);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::On3dViewsRight() {
   m_ViewTransform.SetPosition(EoGeVector3d::kXAxis);
@@ -1073,7 +1073,7 @@ void AeSysView::On3dViewsRight() {
   m_ViewTransform.SetViewUp(EoGeVector3d::kZAxis);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::On3dViewsFront() {
   m_ViewTransform.SetPosition(-EoGeVector3d::kYAxis);
@@ -1081,7 +1081,7 @@ void AeSysView::On3dViewsFront() {
   m_ViewTransform.SetViewUp(EoGeVector3d::kZAxis);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::On3dViewsBack() {
   m_ViewTransform.SetPosition(EoGeVector3d::kYAxis);
@@ -1089,7 +1089,7 @@ void AeSysView::On3dViewsBack() {
   m_ViewTransform.SetViewUp(EoGeVector3d::kZAxis);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::On3dViewsIsometric() {
   static int iLeftRight = 0;
@@ -1122,7 +1122,7 @@ void AeSysView::On3dViewsIsometric() {
     m_ViewTransform.SetViewUp(ViewUp);
     m_ViewTransform.SetCenteredWindow(m_Viewport, 0.0, 0.0);
   }
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnCameraRotateLeft() { DoCameraRotate(ID_CAMERA_ROTATELEFT); }
 void AeSysView::OnCameraRotateRight() { DoCameraRotate(ID_CAMERA_ROTATERIGHT); }
@@ -1144,15 +1144,15 @@ void AeSysView::OnViewRendered() {
   SetRenderMode(OdGsView::kFlatShaded);
 #endif  // USING_ODA
   m_ViewRendered = !m_ViewRendered;
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnViewTrueTypeFonts() {
   m_ViewTrueTypeFonts = !m_ViewTrueTypeFonts;
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnViewPenWidths() {
   m_ViewPenWidths = !m_ViewPenWidths;
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnViewSolid() {}
 void AeSysView::OnViewWindow() {
@@ -1165,19 +1165,19 @@ void AeSysView::OnViewWindow() {
 }
 void AeSysView::OnViewWireframe() {
   m_ViewWireframe = !m_ViewWireframe;
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnViewWindowKeyplan() {
   EoDlgActiveViewKeyplan dlg(this);
   dlg.m_dRatio = m_Viewport.WidthInInches() / m_ViewTransform.UExtent();
 
-  if (dlg.DoModal() == IDOK) { InvalidateRect(NULL, TRUE); }
+  if (dlg.DoModal() == IDOK) { InvalidateRect(nullptr, TRUE); }
 }
 void AeSysView::OnViewOdometer() {
   m_ViewOdometer = !m_ViewOdometer;
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
-void AeSysView::OnViewRefresh() { InvalidateRect(NULL, TRUE); }
+void AeSysView::OnViewRefresh() { InvalidateRect(nullptr, TRUE); }
 void AeSysView::OnUpdateViewRendered(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewRendered); }
 void AeSysView::OnUpdateViewWireframe(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewWireframe); }
 
@@ -1213,16 +1213,16 @@ void AeSysView::OnWindowBest() {
     ViewZoomExtents();
 
     SetCursorPosition(Target);
-    InvalidateRect(NULL, TRUE);
+    InvalidateRect(nullptr, TRUE);
   }
 }
 void AeSysView::OnWindowLast() {
   ExchangeActiveAndPreviousModelViews();
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnWindowSheet() {
   ModelViewInitialize();
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnWindowZoomIn() { DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() / 0.9); }
 void AeSysView::OnWindowZoomOut() { DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() * 0.9); }
@@ -1262,7 +1262,7 @@ void AeSysView::OnWindowPanUp() {
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnWindowPanDown() {
   EoGePoint3d Target = m_ViewTransform.Target();
@@ -1498,15 +1498,15 @@ void AeSysView::OnHelpKey() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, re
 AeSysView* AeSysView::GetActiveView(void) {
   CMDIFrameWndEx* MDIFrameWnd = (CMDIFrameWndEx*)AfxGetMainWnd();
 
-  if (MDIFrameWnd == NULL) { return NULL; }
+  if (MDIFrameWnd == nullptr) { return nullptr; }
   CMDIChildWndEx* MDIChildWnd = DYNAMIC_DOWNCAST(CMDIChildWndEx, MDIFrameWnd->MDIGetActive());
 
-  if (MDIChildWnd == NULL) { return NULL; }
+  if (MDIChildWnd == nullptr) { return nullptr; }
   CView* View = MDIChildWnd->GetActiveView();
 
   if (!View->IsKindOf(RUNTIME_CLASS(
           AeSysView))) {  // View is the wrong kind (this could occur with splitter windows, or additional views in a single document.
-    return NULL;
+    return nullptr;
   }
   return (AeSysView*)View;
 }
@@ -1604,7 +1604,7 @@ void AeSysView::OnBackgroundImageLoad() {
 
     BitmapFile.Load(dlg.GetPathName(), m_BackgroundImageBitmap, m_BackgroundImagePalette);
     m_ViewBackgroundImage = true;
-    InvalidateRect(NULL, TRUE);
+    InvalidateRect(nullptr, TRUE);
   }
 }
 void AeSysView::OnBackgroundImageRemove() {
@@ -1613,12 +1613,12 @@ void AeSysView::OnBackgroundImageRemove() {
     m_BackgroundImagePalette.DeleteObject();
     m_ViewBackgroundImage = false;
 
-    InvalidateRect(NULL, TRUE);
+    InvalidateRect(nullptr, TRUE);
   }
 }
 void AeSysView::OnViewBackgroundImage() {
   m_ViewBackgroundImage = !m_ViewBackgroundImage;
-  InvalidateRect(NULL, TRUE);
+  InvalidateRect(nullptr, TRUE);
 }
 void AeSysView::OnUpdateViewBackgroundImage(CCmdUI* pCmdUI) {
   pCmdUI->Enable((HBITMAP)m_BackgroundImageBitmap != 0);
@@ -1636,10 +1636,10 @@ void AeSysView::DeleteLastGroup() {
 
     Document->AnyLayerRemove(Group);
     if (Document->RemoveTrappedGroup(Group) != 0) {  // Display it normal color so the erase xor will work
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       UpdateStateInformation(TrapCount);
     }
-    Document->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, Group);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
     Document->DeletedGroupsAddHead(Group);
     app.AddStringToMessageList(IDS_SEG_DEL_TO_RESTORE);
   }
@@ -1973,7 +1973,7 @@ void AeSysView::OnFind() {
   }
 }
 void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CString& findText) {
-  if (findComboBox == NULL) { return; }
+  if (findComboBox == nullptr) { return; }
   BOOL IsLastCommandFromButton = CMFCToolBar::IsLastCommandFromButton(findComboBox);
 
   if (IsLastCommandFromButton) { findText = findComboBox->GetText(); }
@@ -2068,7 +2068,7 @@ void AeSysView::SetCursorPosition(EoGePoint3d cursorPosition) {
     m_ViewTransform.SetPosition(m_ViewTransform.Direction());
     m_ViewTransform.BuildTransformMatrix();
 
-    InvalidateRect(NULL, TRUE);
+    InvalidateRect(nullptr, TRUE);
 
     ptView = cursorPosition;
     ModelViewTransformPoint(ptView);
@@ -2166,7 +2166,7 @@ void AeSysView::SetWorldScale(const double scale) {
 }
 void AeSysView::OnViewStateInformation() {
   m_ViewStateInformation = !m_ViewStateInformation;
-  AeSysDoc::GetDoc()->UpdateAllViews(NULL, 0L, NULL);
+  AeSysDoc::GetDoc()->UpdateAllViews(nullptr, 0L, nullptr);
 }
 void AeSysView::OnUpdateViewStateinformation(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewStateInformation); }
 void AeSysView::UpdateStateInformation(EStateInformationItem item) {

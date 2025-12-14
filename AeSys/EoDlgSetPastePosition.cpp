@@ -8,7 +8,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetPastePosition, CDialog)
 
-EoDlgSetPastePosition::EoDlgSetPastePosition(CWnd* pParent /*=NULL*/) :
+EoDlgSetPastePosition::EoDlgSetPastePosition(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSetPastePosition::IDD, pParent) {
 }
 EoDlgSetPastePosition::~EoDlgSetPastePosition() {

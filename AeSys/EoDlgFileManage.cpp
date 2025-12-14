@@ -31,7 +31,7 @@ class EoDlgGetLayerName : public CDialog {
 
 IMPLEMENT_DYNAMIC(EoDlgGetLayerName, CDialog)
 
-EoDlgGetLayerName::EoDlgGetLayerName(CWnd* pParent /*=NULL*/) : CDialog(EoDlgGetLayerName::IDD, pParent) {}
+EoDlgGetLayerName::EoDlgGetLayerName(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgGetLayerName::IDD, pParent) {}
 EoDlgGetLayerName::~EoDlgGetLayerName() {}
 void EoDlgGetLayerName::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);
@@ -69,8 +69,8 @@ ON_NOTIFY(LVN_ITEMCHANGED, IDC_LAYERS_LIST_CONTROL, &EoDlgFileManage::OnItemchan
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
-EoDlgFileManage::EoDlgFileManage(CWnd* parent /*=NULL*/) : CDialog(EoDlgFileManage::IDD, parent) {}
-EoDlgFileManage::EoDlgFileManage(AeSysDoc* document, CWnd* parent /*=NULL*/)
+EoDlgFileManage::EoDlgFileManage(CWnd* parent /*=nullptr*/) : CDialog(EoDlgFileManage::IDD, parent) {}
+EoDlgFileManage::EoDlgFileManage(AeSysDoc* document, CWnd* parent /*=nullptr*/)
     : CDialog(EoDlgFileManage::IDD, parent), m_Document(document) {}
 EoDlgFileManage::~EoDlgFileManage() {}
 void EoDlgFileManage::DoDataExchange(CDataExchange* dataExchange) {
@@ -113,7 +113,7 @@ BOOL EoDlgFileManage::OnInitDialog() {
     EoDbLayer* Layer = m_Document->GetLayerTableLayerAt(i);
 
     if (Layer->IsInternal()) {
-      m_LayersListControl.InsertItem(i, NULL);
+      m_LayersListControl.InsertItem(i, nullptr);
       m_LayersListControl.SetItemData(i, DWORD_PTR(Layer));
     } else {
       int ItemIndex = m_TracingList.AddString(Layer->Name());
@@ -126,7 +126,7 @@ BOOL EoDlgFileManage::OnInitDialog() {
   EoDbBlock* Block;
 
   POSITION Position = m_Document->GetFirstBlockPosition();
-  while (Position != NULL) {
+  while (Position != nullptr) {
     m_Document->GetNextBlock(Position, BlockName, Block);
     if (!Block->IsAnonymous()) {
       int ItemIndex = m_BlocksList.AddString(BlockName);
@@ -144,7 +144,7 @@ BOOL EoDlgFileManage::OnInitDialog() {
 }
 void EoDlgFileManage::OnBnClickedLayerRename() {
   POSITION Position = m_LayersListControl.GetFirstSelectedItemPosition();
-  if (Position != NULL) {
+  if (Position != nullptr) {
     int Item = m_LayersListControl.GetNextSelectedItem(Position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
 
@@ -172,7 +172,7 @@ void EoDlgFileManage::OnBnClickedLayerRename() {
 }
 void EoDlgFileManage::OnBnClickedLayerMelt() {
   POSITION Position = m_LayersListControl.GetFirstSelectedItemPosition();
-  if (Position != NULL) {
+  if (Position != nullptr) {
     int Item = m_LayersListControl.GetNextSelectedItem(Position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
 
@@ -227,7 +227,7 @@ void EoDlgFileManage::OnBnClickedTracingCloak() {
         m_TracingCloakRadioButton.SetCheck(0);
         m_TracingOpenRadioButton.SetCheck(1);
       } else {
-        m_Document->UpdateAllViews(NULL, EoDb::kLayerErase, Layer);
+        m_Document->UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
         Layer->SetStateOff();
         Layer->SetTracingFlg(EoDbLayer::kTracingIsCloaked);
       }
@@ -246,7 +246,7 @@ void EoDlgFileManage::OnBnClickedTracingFuse() {
       m_TracingList.DeleteString(static_cast<UINT>(CurrentSelection));
 
       int ItemCount = m_LayersListControl.GetItemCount();
-      m_LayersListControl.InsertItem(ItemCount, NULL);
+      m_LayersListControl.InsertItem(ItemCount, nullptr);
       m_LayersListControl.SetItemData(ItemCount, DWORD_PTR(Layer));
     }
   }
@@ -258,7 +258,7 @@ void EoDlgFileManage::OnBnClickedTracingExclude() {
       CString LayerName;
       m_TracingList.GetText(CurrentSelection, LayerName);
       EoDbLayer* Layer = (EoDbLayer*)m_TracingList.GetItemData(CurrentSelection);
-      m_Document->UpdateAllViews(NULL, EoDb::kLayerErase, Layer);
+      m_Document->UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
       m_Document->RemoveLayerTableLayer(LayerName);
       m_TracingList.DeleteString(static_cast<UINT>(CurrentSelection));
     }
@@ -347,7 +347,7 @@ void EoDlgFileManage::OnLbnSelchangeTracingList() {
 }
 void EoDlgFileManage::OnBnClickedMfcbuttonWork() {
   POSITION Position = m_LayersListControl.GetFirstSelectedItemPosition();
-  if (Position != NULL) {
+  if (Position != nullptr) {
     int Item = m_LayersListControl.GetNextSelectedItem(Position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
     EoDbLayer* PreviousWorkLayer = m_Document->SetWorkLayer(Layer);
@@ -358,8 +358,8 @@ void EoDlgFileManage::OnBnClickedMfcbuttonWork() {
 
     PreviousWorkLayer->MakeStateActive();
 
-    m_Document->UpdateAllViews(NULL, EoDb::kLayerSafe, PreviousWorkLayer);
-    m_Document->UpdateAllViews(NULL, EoDb::kLayerSafe, Layer);
+    m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, PreviousWorkLayer);
+    m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, Layer);
 
     GetDlgItem(IDC_LAYERS_LIST_CONTROL)->RedrawWindow();
   }
@@ -375,12 +375,12 @@ void EoDlgFileManage::OnBnClickedMfcbuttonNew() {
   m_Document->AddLayerTableLayer(Layer);
 
   int ItemCount = m_LayersListControl.GetItemCount();
-  m_LayersListControl.InsertItem(ItemCount, NULL);
+  m_LayersListControl.InsertItem(ItemCount, nullptr);
   m_LayersListControl.SetItemData(ItemCount, DWORD_PTR(Layer));
 }
 void EoDlgFileManage::OnBnClickedMfcbuttonDel() {
   POSITION Position = m_LayersListControl.GetFirstSelectedItemPosition();
-  if (Position != NULL) {
+  if (Position != nullptr) {
     int Item = m_LayersListControl.GetNextSelectedItem(Position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
 
@@ -389,7 +389,7 @@ void EoDlgFileManage::OnBnClickedMfcbuttonDel() {
     } else if (Layer->IsWork()) {
       app.WarningMessageBox(IDS_MSG_LAYER_NO_DELETE_WORK, Layer->Name());
     } else {
-      m_Document->UpdateAllViews(NULL, EoDb::kLayerErase, Layer);
+      m_Document->UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
 
       int LayerTableIndex = m_Document->FindLayerTableLayer(Layer->Name());
       m_Document->RemoveLayerTableLayerAt(LayerTableIndex);
@@ -514,9 +514,9 @@ void EoDlgFileManage::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult
       } else {
         if (Layer->IsOff()) {
           Layer->ClearStateFlag(EoDbLayer::kIsOff);
-          m_Document->UpdateAllViews(NULL, EoDb::kLayer, Layer);
+          m_Document->UpdateAllViews(nullptr, EoDb::kLayer, Layer);
         } else {
-          m_Document->UpdateAllViews(NULL, EoDb::kLayerErase, Layer);
+          m_Document->UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
           Layer->SetStateOff();
         }
       }
@@ -577,8 +577,8 @@ void EoDlgFileManage::OnNMDblclkLayersListControl(NMHDR* pNMHDR, LRESULT* pResul
 
       PreviousWorkLayer->MakeStateActive();
 
-      m_Document->UpdateAllViews(NULL, EoDb::kLayerSafe, PreviousWorkLayer);
-      m_Document->UpdateAllViews(NULL, EoDb::kLayerSafe, Layer);
+      m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, PreviousWorkLayer);
+      m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, Layer);
 
       GetDlgItem(IDC_LAYERS_LIST_CONTROL)->RedrawWindow();
     }

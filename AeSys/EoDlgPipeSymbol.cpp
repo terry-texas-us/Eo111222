@@ -7,7 +7,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgPipeSymbol, CDialog)
 
-EoDlgPipeSymbol::EoDlgPipeSymbol(CWnd* pParent /*=NULL*/) :
+EoDlgPipeSymbol::EoDlgPipeSymbol(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgPipeSymbol::IDD, pParent), m_CurrentPipeSymbolIndex(0) {
 }
 EoDlgPipeSymbol::~EoDlgPipeSymbol() {

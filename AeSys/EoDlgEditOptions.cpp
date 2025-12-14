@@ -17,12 +17,12 @@ BEGIN_MESSAGE_MAP(EoDlgEditOptions, CDialog)
 	ON_BN_CLICKED(IDC_EDIT_OP_MIR_Z, &EoDlgEditOptions::OnBnClickedEditOpMirZ)
 END_MESSAGE_MAP()
 
-EoDlgEditOptions::EoDlgEditOptions(CWnd* pParent /* = NULL */) :
+EoDlgEditOptions::EoDlgEditOptions(CWnd* pParent /* = nullptr */) :
 	CDialog(EoDlgEditOptions::IDD, pParent)
 	, m_EditModeScaleX(0), m_EditModeScaleY(0), m_EditModeScaleZ(0)
 	, m_EditModeRotationAngleX(0), m_EditModeRotationAngleY(0), m_EditModeRotationAngleZ(0) {
 }
-EoDlgEditOptions::EoDlgEditOptions(AeSysView* view, CWnd* pParent /* = NULL */) :
+EoDlgEditOptions::EoDlgEditOptions(AeSysView* view, CWnd* pParent /* = nullptr */) :
 	CDialog(EoDlgEditOptions::IDD, pParent), m_ActiveView(view) {
 	}
 EoDlgEditOptions::~EoDlgEditOptions() {

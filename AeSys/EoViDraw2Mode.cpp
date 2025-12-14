@@ -44,7 +44,7 @@ void AeSysView::OnDraw2ModeWall() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
 
   if (m_PreviousOp != 0) {
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   }
   if (m_EndSectionGroup == 0) {
@@ -68,7 +68,7 @@ void AeSysView::OnDraw2ModeWall() {
       m_AssemblyGroup->AddTail(new EoDbLine(pstate.PenColor(), pstate.LineType(), m_CurrentRightLine));
 
       m_AssemblyGroup->AddTail(new EoDbLine(m_CurrentRightLine.end, m_CurrentLeftLine.end));
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, m_AssemblyGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_AssemblyGroup);
       m_ContinueCorner = true;
       m_PreviousReferenceLine = m_CurrentReferenceLine;
     }
@@ -89,13 +89,13 @@ void AeSysView::OnDraw2ModeWall() {
       GetDocument()->AddWorkLayerGroup(m_AssemblyGroup);
       m_AssemblyGroup->AddTail(new EoDbLine(m_CurrentLeftLine.begin, m_CurrentRightLine.begin));
     }
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, m_EndSectionGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_EndSectionGroup);
     ptBeg = m_EndSectionLine->BeginPoint();
     ptEnd = m_EndSectionLine->EndPoint();
 
     m_AssemblyGroup->AddTail(new EoDbLine(pstate.PenColor(), pstate.LineType(), m_CurrentLeftLine));
     m_AssemblyGroup->AddTail(new EoDbLine(pstate.PenColor(), pstate.LineType(), m_CurrentRightLine));
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, m_AssemblyGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_AssemblyGroup);
 
     EoDbLine* LinePrimitive = new EoDbLine(*m_EndSectionLine);
     if (EoGeLine(m_PreviousPnt, CurrentPnt).DirRelOfPt(ptBeg) < 0.0) {
@@ -106,7 +106,7 @@ void AeSysView::OnDraw2ModeWall() {
       LinePrimitive->BeginPoint(m_CurrentRightLine.end);
     }
     m_EndSectionGroup->AddTail(LinePrimitive);
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, m_EndSectionGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_EndSectionGroup);
     m_EndSectionGroup = 0;
 
     ModeLineUnhighlightOp(m_PreviousOp);
@@ -122,7 +122,7 @@ void AeSysView::OnDraw2ModeReturn() {
 }
 
 void AeSysView::OnDraw2ModeEscape() {
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
   ModeLineUnhighlightOp(m_PreviousOp);
@@ -152,7 +152,7 @@ bool AeSysView::CleanPreviousLines() {
   EoGeLine::Intersection_xy(PreviousRightLine, m_CurrentRightLine, ptInt);
   PreviousRightLine.end = m_CurrentRightLine.begin = ptInt;
 
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, m_AssemblyGroup);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_AssemblyGroup);
 
   delete m_AssemblyGroup->RemoveTail();
   POSITION Position = m_AssemblyGroup->GetTailPosition();
@@ -173,7 +173,7 @@ bool AeSysView::StartAssemblyFromLine() {
   EoGePoint3d ptInt;
   m_AssemblyGroup = m_BeginSectionGroup;
 
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, m_AssemblyGroup);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_AssemblyGroup);
 
   EoGeLine::Intersection_xy(Line, m_CurrentLeftLine, ptInt);
   m_CurrentLeftLine.begin = ptInt;
@@ -201,7 +201,7 @@ void AeSysView::DoDraw2ModeMouseMove() {
   if (m_PreviousOp == 0) {
     CurrentPnt = GetCursorPosition();
   } else if (m_PreviousOp == ID_OP1 || m_PreviousOp == ID_OP2) {
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
     CurrentPnt = GetCursorPosition();
@@ -215,6 +215,6 @@ void AeSysView::DoDraw2ModeMouseMove() {
     m_PreviewGroup.AddTail(new EoDbLine(pstate.PenColor(), pstate.LineType(), PreviewLines[0]));
     m_PreviewGroup.AddTail(new EoDbLine(pstate.PenColor(), pstate.LineType(), PreviewLines[1]));
     m_PreviewGroup.AddTail(new EoDbLine(PreviewLines[1].end, PreviewLines[0].end));
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   }
 }

@@ -14,7 +14,7 @@ void AeSysView::OnDrawModePoint() {
 
   EoDbGroup* Group = new EoDbGroup(new EoDbPoint(pstate.PenColor(), pstate.PointStyle(), CurrentPnt));
   GetDocument()->AddWorkLayerGroup(Group);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 }
 
 void AeSysView::OnDrawModeLine() {
@@ -221,7 +221,7 @@ void AeSysView::OnDrawModeReturn() {
 }
 
 void AeSysView::OnDrawModeEscape() {
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
 
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   pts.RemoveAll();
@@ -232,7 +232,7 @@ void AeSysView::OnDrawModeShiftReturn() {
   if (PreviousDrawCommand == ID_OP3) {
     EoDbGroup* Group = new EoDbGroup(new EoDbPolyline(pts));
     GetDocument()->AddWorkLayerGroup(Group);
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
   }
   ModeLineUnhighlightOp(PreviousDrawCommand);
   pts.RemoveAll();
@@ -249,10 +249,10 @@ void AeSysView::DoDrawModeMouseMove() {
         CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
         pts.Add(CurrentPnt);
 
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;
 
@@ -260,65 +260,65 @@ void AeSysView::DoDrawModeMouseMove() {
       CurrentPnt = SnapPointToAxis(pts[NumberOfPoints - 1], CurrentPnt);
       pts.Add(CurrentPnt);
 
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
       if (NumberOfPoints == 1) {
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
       } else {
         m_PreviewGroup.AddTail(new EoDbPolygon(pts));
       }
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;
 
     case ID_OP4:
       CurrentPnt = SnapPointToAxis(pts[NumberOfPoints - 1], CurrentPnt);
       pts.Add(CurrentPnt);
 
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       if (NumberOfPoints == 2) {
         pts.Add(pts[0] + EoGeVector3d(pts[1], CurrentPnt));
         pts.Add(pts[0]);
       }
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
       m_PreviewGroup.AddTail(new EoDbPolyline(pts));
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;
 
     case ID_OP5:
       pts.Add(CurrentPnt);
 
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
       if (NumberOfPoints == 1) { m_PreviewGroup.AddTail(new EoDbPolyline(pts)); }
       if (NumberOfPoints == 2) { m_PreviewGroup.AddTail(new EoDbEllipse(pts[0], pts[1], CurrentPnt)); }
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;
 
     case ID_OP6:
       pts.Add(CurrentPnt);
 
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
 
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
       m_PreviewGroup.AddTail(new EoDbSpline(pts));
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;
 
     case ID_OP7:
       if (pts[0] != CurrentPnt) {
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
 
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
         m_PreviewGroup.AddTail(new EoDbEllipse(pts[0], CurrentPnt));
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;
 
     case ID_OP8:
       pts.Add(CurrentPnt);
 
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
       if (NumberOfPoints == 1) {
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
@@ -328,7 +328,7 @@ void AeSysView::DoDrawModeMouseMove() {
 
         m_PreviewGroup.AddTail(new EoDbEllipse(pts[0], MajorAxis, MinorAxis, TWOPI));
       }
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;
   }
   pts.SetSize(NumberOfPoints);

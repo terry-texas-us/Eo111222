@@ -127,7 +127,7 @@ void lex::ConvertValToString(LPTSTR acVal, CD* arCD, LPTSTR acPic, int* aiLen) {
         if (lTyp == TOK_REAL) {
           iLoc = 1;
           // pCvtDoubToFltDecTxt(*dVal, 7, iLoc, cVal);
-          LPTSTR NextToken = NULL;
+          LPTSTR NextToken = nullptr;
           szpVal = wcstok_s(cVal, L" ", &NextToken);
           wcscpy(&acPic[iLnLoc], szpVal);
           iLnLoc += (int)wcslen(szpVal);

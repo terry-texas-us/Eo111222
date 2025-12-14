@@ -8,7 +8,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetupCustomMouseCharacters, CDialog)
 
-EoDlgSetupCustomMouseCharacters::EoDlgSetupCustomMouseCharacters(CWnd* pParent /* = NULL */) :
+EoDlgSetupCustomMouseCharacters::EoDlgSetupCustomMouseCharacters(CWnd* pParent /* = nullptr */) :
 	CDialog(EoDlgSetupCustomMouseCharacters::IDD, pParent) {
 }
 EoDlgSetupCustomMouseCharacters::~EoDlgSetupCustomMouseCharacters() {

@@ -17,7 +17,7 @@ END_MESSAGE_MAP()
 
 EoGePoint3d EoDlgModeLetter::m_Point = EoGePoint3d::kOrigin;
 
-EoDlgModeLetter::EoDlgModeLetter(CWnd* pParent /*=NULL*/) :
+EoDlgModeLetter::EoDlgModeLetter(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgModeLetter::IDD, pParent) {
 }
 EoDlgModeLetter::~EoDlgModeLetter() {
@@ -49,7 +49,7 @@ void EoDlgModeLetter::OnOK() {
 		EoDbText* TextPrimitive = new EoDbText(FontDefinition, ReferenceSystem, Text);
 		EoDbGroup* Group = new EoDbGroup(TextPrimitive);
 		AeSysDoc::GetDoc()->AddWorkLayerGroup(Group);
-		AeSysDoc::GetDoc()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+		AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 	}
 	m_Point = text_GetNewLinePos(FontDefinition, ReferenceSystem, 1., 0);
 	m_TextEditControl.SetFocus();

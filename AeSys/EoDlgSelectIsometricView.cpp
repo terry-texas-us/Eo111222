@@ -9,7 +9,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSelectIsometricView, CDialog)
 
-EoDlgSelectIsometricView::EoDlgSelectIsometricView(CWnd* pParent /*=NULL*/)
+EoDlgSelectIsometricView::EoDlgSelectIsometricView(CWnd* pParent /*=nullptr*/)
 	: CDialog(EoDlgSelectIsometricView::IDD, pParent) {
 
 }

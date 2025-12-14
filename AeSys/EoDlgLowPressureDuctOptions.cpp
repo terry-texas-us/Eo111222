@@ -13,7 +13,7 @@ BEGIN_MESSAGE_MAP(EoDlgLowPressureDuctOptions, CDialog)
 	ON_BN_CLICKED(IDC_GEN_VANES, &EoDlgLowPressureDuctOptions::OnBnClickedGenVanes)
 END_MESSAGE_MAP()
 
-EoDlgLowPressureDuctOptions::EoDlgLowPressureDuctOptions(CWnd* pParent /*=NULL*/)
+EoDlgLowPressureDuctOptions::EoDlgLowPressureDuctOptions(CWnd* pParent /*=nullptr*/)
 	: CDialog(EoDlgLowPressureDuctOptions::IDD, pParent)
 	, m_Width(0), m_Depth(0), m_RadiusFactor(0), m_Justification(0) {
 }

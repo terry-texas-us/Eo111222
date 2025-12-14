@@ -128,7 +128,7 @@ void AeSysView::OnLpdModeTap() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
 
   if (m_PreviousOp != 0) {
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   }
   EoDbLine* LinePrimitive;
@@ -181,7 +181,7 @@ void AeSysView::OnLpdModeEll() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
 
   if (m_PreviousOp != 0) {
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   }
   if (m_PreviousOp == ID_OP2) {
@@ -210,12 +210,12 @@ void AeSysView::OnLpdModeEll() {
           EoDbGroup* Group = new EoDbGroup;
           GetDocument()->AddWorkLayerGroup(Group);
           GenerateRectangularSection(m_CurrentReferenceLine, m_CenterLineEccentricity, m_PreviousSection, Group);
-          GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+          GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         }
         EoDbGroup* Group = new EoDbGroup;
         GetDocument()->AddWorkLayerGroup(Group);
         GenerateFullElbowTakeoff(ExistingGroup, ExistingSectionReferenceLine, ExistingSection, Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
     }
     // determine where cursor should be moved to.
@@ -228,7 +228,7 @@ void AeSysView::OnLpdModeTee() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
 
   if (m_PreviousOp != 0) {
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   }
   //m_PreviousPnt = GenerateBullheadTee(this, m_PreviousPnt, CurrentPnt, m_PreviousSection);
@@ -261,13 +261,13 @@ void AeSysView::OnLpdModeUpDown() {
         EoDbGroup* Group = new EoDbGroup;
         GetDocument()->AddWorkLayerGroup(Group);
         GenerateRectangularSection(ReferenceLine, m_CenterLineEccentricity, m_PreviousSection, Group);
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         m_CurrentReferenceLine.begin = ReferenceLine.end;
       }
       EoDbGroup* Group = new EoDbGroup;
       GetDocument()->AddWorkLayerGroup(Group);
       GenerateRiseDrop(1, m_PreviousSection, m_CurrentReferenceLine, Group);
-      GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
     m_ContinueSection = false;
     m_PreviousOp = ID_OP2;
@@ -305,11 +305,11 @@ void AeSysView::OnLpdModeReturn() {
 }
 
 void AeSysView::OnLpdModeEscape() {
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
   if (!m_OriginalPreviousGroupDisplayed) {
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, m_OriginalPreviousGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_OriginalPreviousGroup);
     m_OriginalPreviousGroupDisplayed = true;
   }
   ModeLineUnhighlightOp(m_PreviousOp);
@@ -325,7 +325,7 @@ void AeSysView::DoDuctModeMouseMove() {
     CurrentPnt = GetCursorPosition();
     m_OriginalPreviousGroupDisplayed = true;
   } else if (m_PreviousOp == ID_OP2) {
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
     CurrentPnt = GetCursorPosition();
@@ -336,7 +336,7 @@ void AeSysView::DoDuctModeMouseMove() {
         m_CurrentReferenceLine.Length() > m_PreviousSection.Width() * m_CenterLineEccentricity + m_DuctSeamSize) {
       EoGeLine PreviousReferenceLine = m_PreviousReferenceLine;
       if (m_OriginalPreviousGroupDisplayed) {
-        GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, m_OriginalPreviousGroup);
+        GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_OriginalPreviousGroup);
         m_OriginalPreviousGroupDisplayed = false;
       }
       GenerateRectangularElbow(PreviousReferenceLine, m_PreviousSection, m_CurrentReferenceLine, m_CurrentSection,
@@ -400,7 +400,7 @@ void AeSysView::DoDuctModeMouseMove() {
       }
     }
     m_PreviewGroup.RemoveDuplicatePrimitives();
-    GetDocument()->UpdateAllViews(NULL, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   }
 }
 void AeSysView::GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, Section section, EoDbGroup* group) {
@@ -473,7 +473,7 @@ void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionRe
 		Group->AddTail(new EoDbLine(1, pstate.LineType(), lnLead[0], Points[2]));
 		Group->AddTail(new EoDbEllipse(1, pstate.LineType(), Points[3], .01));
 		Group->AddTail(new EoDbLine(1, pstate.LineType(), Points[3], Points[4]));
-		GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+		GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 */
   }
 }
@@ -573,7 +573,7 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
 
   EoDbGroup* Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, Note));
   GetDocument()->AddWorkLayerGroup(Group);
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
   pstate.Restore(DeviceContext, PrimitiveState);
   ReleaseDC(DeviceContext);
 }
@@ -618,7 +618,7 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
     Section->AddTail(new EoDbEllipse(1, pstate.LineType(), BeginPoint, .01));
     Section->AddTail(new EoDbLine(1, pstate.LineType(), BeginPoint, EndPoint));
   }
-  GetDocument()->UpdateAllViews(NULL, EoDb::kGroupSafe, Section);
+  GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Section);
   return true;
 }
 void AeSysView::GenerateTransition(EoGeLine& referenceLine, double eccentricity, EJust justification, double slope,

@@ -85,7 +85,7 @@ void AeSysView::OnDimensionModeArrow(void) {
           pt = TestLine.end;
         }
         Document->AddWorkLayerGroup(NewGroup);
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, NewGroup);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, NewGroup);
 
         SetCursorPosition(pt);
         PreviousDimensionCursorPosition = pt;
@@ -108,7 +108,7 @@ void AeSysView::OnDimensionModeLine(void) {
     if (PreviousDimensionCursorPosition != ptCur) {
       EoDbGroup* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, ptCur));
       Document->AddWorkLayerGroup(Group);
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
     PreviousDimensionCursorPosition = ptCur;
   }
@@ -134,7 +134,7 @@ void AeSysView::OnDimensionModeDLine(void) {
 
       Group->AddTail(pDim);
       Document->AddWorkLayerGroup(Group);
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
       PreviousDimensionCursorPosition = ptCur;
     }
@@ -173,7 +173,7 @@ void AeSysView::OnDimensionModeDLine2(void) {
       Group->AddTail(pDim);
       GenerateLineEndItem(1, .1, PreviousDimensionCursorPosition, ptCur, Group);
       Document->AddWorkLayerGroup(Group);
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
       PreviousDimensionCursorPosition = ptCur;
     } else
@@ -200,7 +200,7 @@ void AeSysView::OnDimensionModeExten(void) {
 
       EoDbGroup* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, ptCur));
       Document->AddWorkLayerGroup(Group);
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
     PreviousDimensionCursorPosition = ptCur;
     ModeLineUnhighlightOp(PreviousDimensionCommand);
@@ -232,7 +232,7 @@ void AeSysView::OnDimensionModeRadius(void) {
 
       GenerateLineEndItem(1, .1, ptBeg, ptEnd, Group);
       Document->AddWorkLayerGroup(Group);
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
       PreviousDimensionCursorPosition = ptEnd;
     }
@@ -267,7 +267,7 @@ void AeSysView::OnDimensionModeDiameter() {
 
       GenerateLineEndItem(1, .1, ptBeg, ptEnd, Group);
       Document->AddWorkLayerGroup(Group);
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
       PreviousDimensionCursorPosition = ptEnd;
     }
@@ -355,7 +355,7 @@ void AeSysView::OnDimensionModeAngle(void) {
         app.FormatAngle(Note, dAng, 8, 3);
         Group->AddTail(new EoDbText(fd, ReferenceSystem, Note));
         Document->AddWorkLayerGroup(Group);
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         pstate.Restore(DeviceContext, PrimitiveState);
       }
       ModeLineUnhighlightOp(PreviousDimensionCommand);

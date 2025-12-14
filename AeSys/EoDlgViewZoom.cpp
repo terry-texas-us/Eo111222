@@ -5,7 +5,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgViewZoom, CDialog)
 
-EoDlgViewZoom::EoDlgViewZoom(CWnd* pParent /*=NULL*/) :
+EoDlgViewZoom::EoDlgViewZoom(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgViewZoom::IDD, pParent), m_Ratio(0) {
 }
 EoDlgViewZoom::~EoDlgViewZoom() {

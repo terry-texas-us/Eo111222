@@ -9,10 +9,10 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetupConstraints, CDialog)
 
-EoDlgSetupConstraints::EoDlgSetupConstraints(CWnd* pParent /* = NULL */) :
+EoDlgSetupConstraints::EoDlgSetupConstraints(CWnd* pParent /* = nullptr */) :
 	CDialog(EoDlgSetupConstraints::IDD, pParent) {
 }
-EoDlgSetupConstraints::EoDlgSetupConstraints(AeSysView* view, CWnd* pParent /* = NULL */) :
+EoDlgSetupConstraints::EoDlgSetupConstraints(AeSysView* view, CWnd* pParent /* = nullptr */) :
 	CDialog(EoDlgSetupConstraints::IDD, pParent), m_ActiveView(view) {
 }
 EoDlgSetupConstraints::~EoDlgSetupConstraints() {

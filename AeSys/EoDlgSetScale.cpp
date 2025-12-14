@@ -6,7 +6,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgSetScale, CDialog)
 
-EoDlgSetScale::EoDlgSetScale(CWnd* pParent /*=NULL*/) :
+EoDlgSetScale::EoDlgSetScale(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSetScale::IDD, pParent), m_Scale(0) {
 }
 EoDlgSetScale::~EoDlgSetScale() {

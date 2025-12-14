@@ -13,8 +13,8 @@ ON_WM_DRAWITEM()
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
-EoDlgSetupLineType::EoDlgSetupLineType(CWnd* pParent /*=NULL*/) : CDialog(EoDlgSetupLineType::IDD, pParent) {}
-EoDlgSetupLineType::EoDlgSetupLineType(EoDbLineTypeTable* lineTypeTable, CWnd* pParent /*=NULL*/)
+EoDlgSetupLineType::EoDlgSetupLineType(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgSetupLineType::IDD, pParent) {}
+EoDlgSetupLineType::EoDlgSetupLineType(EoDbLineTypeTable* lineTypeTable, CWnd* pParent /*=nullptr*/)
     : CDialog(EoDlgSetupLineType::IDD, pParent), m_LineTypeTable(lineTypeTable) {}
 EoDlgSetupLineType::~EoDlgSetupLineType() {}
 void EoDlgSetupLineType::DoDataExchange(CDataExchange* dataExchange) {
@@ -37,7 +37,7 @@ BOOL EoDlgSetupLineType::OnInitDialog() {
 }
 void EoDlgSetupLineType::OnOK() {
   POSITION Position = m_LineTypesListControl.GetFirstSelectedItemPosition();
-  if (Position != NULL) {
+  if (Position != nullptr) {
     int Item = m_LineTypesListControl.GetNextSelectedItem(Position);
     m_LineType = (EoDbLineType*)m_LineTypesListControl.GetItemData(Item);
   }
@@ -74,7 +74,7 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
 
           m_LineTypesListControl.GetSubItemRect(Item, Appearance, LVIR_LABEL, SubItemRectangle);
 
-          pstate.SetPen(NULL, &DeviceContext, 0, static_cast<EoInt16>(LineType->Index()));
+          pstate.SetPen(nullptr, &DeviceContext, 0, static_cast<EoInt16>(LineType->Index()));
 
           AeSysView* ActiveView = AeSysView::GetActiveView();
 

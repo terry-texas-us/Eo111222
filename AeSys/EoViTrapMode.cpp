@@ -131,7 +131,7 @@ void AeSysView::OnTrapModeMenu() {
 void AeSysView::OnTrapModeModify() {
   if (!GetDocument()->IsTrapEmpty()) {
     EoDlgTrapModify Dialog(GetDocument());
-    if (Dialog.DoModal() == IDOK) { GetDocument()->UpdateAllViews(NULL, 0L, NULL); }
+    if (Dialog.DoModal() == IDOK) { GetDocument()->UpdateAllViews(nullptr, 0L, nullptr); }
   } else {
     app.AddModeInformationToMessageList();
   }
@@ -160,7 +160,7 @@ void AeSysView::OnTraprModePoint() {
 
     if (Group->SelectUsingPoint_(this, ptView)) {
       Document->RemoveTrappedGroupAt(Document->FindTrappedGroup(Group));
-      Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
   }
   UpdateStateInformation(TrapCount);
@@ -187,7 +187,7 @@ void AeSysView::OnTraprModeStitch() {
 
       if (Group->SelectUsingLine(this, ptView[0], ptView[1])) {
         Document->RemoveTrappedGroupAt(Document->FindTrappedGroup(Group));
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
     }
     RubberBandingDisable();
@@ -220,7 +220,7 @@ void AeSysView::OnTraprModeField() {
 
       if (Group->SelectUsingRectangle(this, ptMin, ptMax)) {
         Document->RemoveTrappedGroupAt(Document->FindTrappedGroup(Group));
-        Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
     }
     RubberBandingDisable();
@@ -233,7 +233,7 @@ void AeSysView::OnTraprModeLast() {
 
   if (!Document->IsTrapEmpty()) {
     EoDbGroup* Group = Document->RemoveLastTrappedGroup();
-    Document->UpdateAllViews(NULL, EoDb::kGroupSafe, Group);
+    Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     UpdateStateInformation(TrapCount);
   }
 }
@@ -251,7 +251,7 @@ void AeSysView::OnTraprModeMenu() {
 void AeSysView::OnTraprModeModify() {
   if (!GetDocument()->IsTrapEmpty()) {
     EoDlgTrapModify Dialog(GetDocument());
-    if (Dialog.DoModal() == IDOK) { GetDocument()->UpdateAllViews(NULL, 0L, NULL); }
+    if (Dialog.DoModal() == IDOK) { GetDocument()->UpdateAllViews(nullptr, 0L, nullptr); }
   } else {
     app.AddModeInformationToMessageList();
   }

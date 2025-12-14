@@ -2,7 +2,7 @@
 
 EoDbLineType::EoDbLineType() {
   m_NumberOfDashElements = 0;
-  m_DashElements = NULL;
+  m_DashElements = nullptr;
 }
 EoDbLineType::EoDbLineType(EoUInt16 index, const CString& name, const CString& description,
                            EoUInt16 numberOfDashElements, double* dashLengths) {

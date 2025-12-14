@@ -54,9 +54,9 @@
 
 template <class Interface>
 inline void SafeRelease(Interface** ppInterfaceToRelease) {
-  if (*ppInterfaceToRelease != NULL) {
+  if (*ppInterfaceToRelease != nullptr) {
     (*ppInterfaceToRelease)->Release();
-    (*ppInterfaceToRelease) = NULL;
+    (*ppInterfaceToRelease) = nullptr;
   }
 }
 

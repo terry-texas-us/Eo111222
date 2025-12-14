@@ -10,8 +10,8 @@ class EoDlgLayerPropertiesManager : public CDialog {
   DECLARE_DYNAMIC(EoDlgLayerPropertiesManager)
 
  public:
-  EoDlgLayerPropertiesManager(CWnd* parent = NULL);
-  EoDlgLayerPropertiesManager(OdDbDatabase* database, CWnd* parent = NULL);
+  EoDlgLayerPropertiesManager(CWnd* parent = nullptr);
+  EoDlgLayerPropertiesManager(OdDbDatabase* database, CWnd* parent = nullptr);
 
   virtual ~EoDlgLayerPropertiesManager();
 

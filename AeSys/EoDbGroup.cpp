@@ -2,7 +2,7 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 
-EoDbPrimitive* EoDbGroup::sm_PrimitiveToIgnore = static_cast<EoDbPrimitive*>(NULL);
+EoDbPrimitive* EoDbGroup::sm_PrimitiveToIgnore = static_cast<EoDbPrimitive*>(nullptr);
 
 EoDbGroup::EoDbGroup() {}
 EoDbGroup::EoDbGroup(EoDbPrimitive* primitive) { AddTail(primitive); }

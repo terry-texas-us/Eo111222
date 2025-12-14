@@ -59,7 +59,7 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
 					EoDbLayer*	Layer = Document->GetWorkLayer();
 
 					Document->TracingLoadLayer(szFilePath, Layer);
-					Document->UpdateAllViews(NULL, EoDb::kLayerSafe, Layer);
+					Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, Layer);
 					return (TRUE);
 				}
 

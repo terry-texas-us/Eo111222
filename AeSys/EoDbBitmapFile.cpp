@@ -8,12 +8,12 @@ EoDbBitmapFile::EoDbBitmapFile(const CString& fileName) {
 }
 bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& bmReference, CPalette& palReference) {
   HBITMAP hBitmap = (HBITMAP)::LoadImage(0, fileName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE);
-  if (hBitmap == NULL) { return false; }
+  if (hBitmap == nullptr) { return false; }
   bmReference.Attach(hBitmap);
 
   // Return now if device does not support palettes
 
-  CClientDC dc(NULL);
+  CClientDC dc(nullptr);
   if ((dc.GetDeviceCaps(RASTERCAPS) & RC_PALETTE) == 0) { return true; }
   DIBSECTION ds;
   bmReference.GetObject(sizeof(DIBSECTION), &ds);
