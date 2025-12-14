@@ -39,7 +39,7 @@ class AeSys : public CWinAppEx
 
  public:
   AeSys();
-  AeSys(const AeSys&) = delete;  
+  AeSys(const AeSys&) = delete;
   AeSys& operator=(const AeSys&) = delete;
   // Overrides
  public:
@@ -124,19 +124,49 @@ class AeSys : public CWinAppEx
   double EngagedAngle() const { return (m_EngagedAngle); }
   double EngagedLength() const { return (m_EngagedLength); }
   void FormatAngle(CString& angleAsString, const double angle, const int width, const int precision);
-  void FormatLength(CString& lengthAsString, Units units, const double length, const int width, const int precision);
-  /// <summary>
-  ///Produces a string formatted to type units from a "length" value
-  ///ArchitecturalS units formatted as follows:
+  
+  /// @brief Formats a length value as a string with specified units and formatting options.
+  /// @param lengthAsString Output parameter that receives the formatted length string.
+  /// @param units The unit system to use for formatting the length.
+  /// @param length The length value to format.
+  /// @param width The minimum field width for the formatted output.
+  /// @param precision The number of decimal places to display.
+  /// @note Formatting rules follow:
+  /// @verbatim
+  /// ArchitecturalS units formatted as follows:
   ///	\S[feet]'[inches].[fraction numerator]/[fraction denominator];"
-  ///Architectural units formatted as follows:
+  /// Architectural units formatted as follows:
   ///	[feet]'[inches].[fraction numerator] [fraction denominator]"
-  ///Engineering units formatted as follows:
+  /// Engineering units formatted as follows:
   ///	[feet]'[inches].[decimal inches]"
-  ///All other units formatted using floating decimal.
-  /// </summary>
-  void FormatLength_s(LPWSTR lengthAsString, const int bufSize, Units units, const double length, const int width,
-                      const int precision);
+  /// All other units formatted using floating decimal.
+  /// @endverbatim
+  void FormatLength(CString& lengthAsString, Units units, const double length, const int width, const int precision);
+  
+  /// @brief Formats a length value as an architectural measurement string in feet and inches with fractional inches.
+  /// @param lengthAsBuffer The output buffer to receive the formatted architectural length string.
+  /// @param bufSize The size of the output buffer in wide characters.
+  /// @param units The architectural units style to use for formatting (e.g., kArchitecturalS for stacked fractions).
+  /// @param length The length value to format, in the internal unit system.
+  void FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length);
+  
+  /// @brief Formats a length value in engineering units (feet and inches) and stores it in a buffer.
+  /// @param lengthAsBuffer Output buffer to receive the formatted length string.
+  /// @param bufSize The size of the output buffer in characters.
+  /// @param length The length value to format, in internal units.
+  /// @param width The minimum field width for formatting the fractional part.
+  /// @param precision The number of significant digits to display in the formatted output.
+  void FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width, const int precision);
+
+  /// @brief Formats a length value as a string with the specified units, width, and precision.
+  /// @param lengthAsString Output buffer that receives the formatted length string.
+  /// @param bufSize The size of the output buffer in characters.
+  /// @param units The units to use for formatting the length (e.g., feet, inches, meters, millimeters).
+  /// @param length The length value to format, in the base measurement system.
+  /// @param width The minimum field width for the formatted number.
+  /// @param precision The number of decimal places to display in the formatted number.
+  void FormatLengthSimple(LPWSTR lengthAsBuffr, const size_t bufSize, Units units, const double length, const int width, const int precision);
+
   int GetArchitecturalUnitsFractionPrecision() { return (m_ArchitecturalUnitsFractionPrecision); }
   EoGePoint3d GetCursorPosition();
   bool IsClipboardDataGroups() { return m_ClipboardDataEoGroups; }

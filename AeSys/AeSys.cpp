@@ -439,7 +439,6 @@ void AeSys::OnFileRun() {
 }
 void AeSys::OnHelpContents() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_CONTENTS, 0L); }
 
-
 void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
   CStdioFile file;
 
@@ -774,138 +773,151 @@ int AeSys::GreatestCommonDivisor(const int number1, const int number2) {
   }
   return (ReturnValue);
 }
+
 void AeSys::FormatAngle(CString& angleAsString, const double angle, const int width, const int precision) {
   CString FormatSpecification;
   FormatSpecification.Format(L"%%%i.%if\u00B0", width, precision);
   angleAsString.Format(FormatSpecification, EoToDegree(angle));
 }
+
 void AeSys::FormatLength(CString& lengthAsString, Units units, const double length, const int width,
                          const int precision) {
-  LPWSTR LengthAsString = lengthAsString.GetBufferSetLength(32);
-  FormatLength_s(LengthAsString, 32, units, length, width, precision);
+  const size_t bufSize = 32;
+  auto lengthAsBuffer = lengthAsString.GetBufferSetLength(bufSize);
+
+  if (units == kArchitectural || units == kArchitecturalS) {
+    FormatLengthArchitectural(lengthAsBuffer, bufSize, units, length);
+  } else if (units == kEngineering) {
+    FormatLengthEngineering(lengthAsBuffer, bufSize, length, width, precision);
+  } else {
+    FormatLengthSimple(lengthAsBuffer, bufSize, units, length, width, precision);
+  }
   lengthAsString.ReleaseBuffer();
 }
 
-void AeSys::FormatLength_s(LPWSTR lengthAsString, const int bufSize, Units units, const double length, const int width,
-                           const int precision) {
+void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length) {
   WCHAR szBuf[16];
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
-  if (units == kArchitectural || units == kArchitecturalS) {
-    wcscpy_s(lengthAsString, static_cast<size_t>(bufSize), (length >= 0.0) ? L" " : L"-");
-    ScaledLength = fabs(ScaledLength);
+  wcscpy_s(lengthAsBuffer, bufSize, (length >= 0.0) ? L" " : L"-");
+  ScaledLength = fabs(ScaledLength);
 
-    int Feet = int(ScaledLength / 12.);
-    int Inches = abs(int(fmod(ScaledLength, 12.)));
+  int Feet = int(ScaledLength / 12.);
+  int Inches = abs(int(fmod(ScaledLength, 12.)));
 
-    int FractionPrecision = GetArchitecturalUnitsFractionPrecision();
-    int Numerator = int(fabs(fmod(ScaledLength, 1.)) * (double)(FractionPrecision) +
-                        .5);  // Numerator of fractional component of inches
+  int FractionPrecision = GetArchitecturalUnitsFractionPrecision();
+  int Numerator = int(fabs(fmod(ScaledLength, 1.)) * (double)(FractionPrecision) + 0.5);
 
-    if (Numerator == FractionPrecision) {
-      if (Inches == 11) {
-        Feet++;
-        Inches = 0;
-      } else {
-        Inches++;
-      }
-      Numerator = 0;
+  if (Numerator == FractionPrecision) {
+    if (Inches == 11) {
+      Feet++;
+      Inches = 0;
+    } else {
+      Inches++;
     }
-    _itow_s(Feet, szBuf, 16, 10);
-    wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
-    wcscat_s(lengthAsString, static_cast<size_t>(bufSize), L"'");
+    Numerator = 0;
+  }
+  _itow_s(Feet, szBuf, 16, 10);
+  wcscat_s(lengthAsBuffer, bufSize, szBuf);
+  wcscat_s(lengthAsBuffer, bufSize, L"'");
 
-    _itow_s(Inches, szBuf, 16, 10);
-    wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
-    if (Numerator > 0) {
-      wcscat_s(lengthAsString, static_cast<size_t>(bufSize),
-               (units == kArchitecturalS) ? L"\\S" : L"�" /* middle dot [U+00B7] */);
-      int iGrtComDivisor = GreatestCommonDivisor(Numerator, FractionPrecision);
-      Numerator /= iGrtComDivisor;
-      int Denominator = FractionPrecision / iGrtComDivisor;  // Add fractional component of inches
-      _itow_s(Numerator, szBuf, 16, 10);
-      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
-      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), L"/");
-      _itow_s(Denominator, szBuf, 16, 10);
-      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
-      if (units == kArchitecturalS) wcscat_s(lengthAsString, static_cast<size_t>(bufSize), L";");
-    }
-    wcscat_s(lengthAsString, static_cast<size_t>(bufSize), L"\"");
-  } else if (units == kEngineering) {
-    wcscpy_s(lengthAsString, static_cast<size_t>(bufSize), (length >= 0.0) ? L" " : L"-");
-    ScaledLength = fabs(ScaledLength);
+  _itow_s(Inches, szBuf, 16, 10);
+  wcscat_s(lengthAsBuffer, bufSize, szBuf);
+  if (Numerator > 0) {
+    wcscat_s(lengthAsBuffer, static_cast<size_t>(bufSize),
+             (units == kArchitecturalS) ? L"\\S" : L"\u00B7"); /* middle dot [U+00B7] */
+    int iGrtComDivisor = GreatestCommonDivisor(Numerator, FractionPrecision);
+    Numerator /= iGrtComDivisor;
+    int Denominator = FractionPrecision / iGrtComDivisor;
+    _itow_s(Numerator, szBuf, 16, 10);
+    wcscat_s(lengthAsBuffer, bufSize, szBuf);
+    wcscat_s(lengthAsBuffer, bufSize, L"/");
+    _itow_s(Denominator, szBuf, 16, 10);
+    wcscat_s(lengthAsBuffer, bufSize, szBuf);
+    if (units == kArchitecturalS) wcscat_s(lengthAsBuffer, bufSize, L";");
+  }
+  wcscat_s(lengthAsBuffer, bufSize, L"\"");
+}
+void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width,
+                                    const int precision) {
+  WCHAR szBuf[16];
 
-    int Precision = (ScaledLength >= 1.) ? precision - int(log10(ScaledLength)) - 1 : precision;
+  double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
-    if (Precision >= 0) {
-      _itow_s(int(ScaledLength / 12.), szBuf, 16, 10);
-      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
-      ScaledLength = fmod(ScaledLength, 12.);
-      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), L"'");
+  wcscpy_s(lengthAsBuffer, bufSize, (length >= 0.0) ? L" " : L"-");
+  ScaledLength = fabs(ScaledLength);
 
-      _itow_s(int(ScaledLength), szBuf, 16, 10);
-      wcscat_s(lengthAsString, static_cast<size_t>(bufSize), szBuf);
+  int Precision = (ScaledLength >= 1.) ? precision - int(log10(ScaledLength)) - 1 : precision;
 
-      if (Precision > 0) {
-        CString FormatSpecification;
-        FormatSpecification.Format(L"%%%i.%if", width, Precision);
+  if (Precision >= 0) {
+    _itow_s(int(ScaledLength / 12.), szBuf, 16, 10);
+    wcscat_s(lengthAsBuffer, bufSize, szBuf);
+    ScaledLength = fmod(ScaledLength, 12.);
+    wcscat_s(lengthAsBuffer, bufSize, L"'");
 
-        CString FractionalInches;
-        FractionalInches.Format(FormatSpecification, ScaledLength);
-        int DecimalPointPosition = FractionalInches.Find('.');
-        FractionalInches = FractionalInches.Mid(DecimalPointPosition) + L"\"";
+    _itow_s(int(ScaledLength), szBuf, 16, 10);
+    wcscat_s(lengthAsBuffer, bufSize, szBuf);
 
-        wcscat_s(lengthAsString, static_cast<size_t>(bufSize), FractionalInches);
-      }
-    }
-  } else {
-    CString FormatSpecification;
-    FormatSpecification.Format(L"%%%i.%if", width, precision);
+    if (Precision > 0) {
+      CString FormatSpecification;
+      FormatSpecification.Format(L"%%%i.%if", width, Precision);
 
-    switch (units) {
-      case kFeet:
-        FormatSpecification.Append(L"'");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength / 12.);
-        break;
-      case kInches:
-        FormatSpecification.Append(L"\"");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength);
-        break;
-      case kMeters:
-        FormatSpecification.Append(L"m");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(),
-                   ScaledLength * 0.0254);
-        break;
-      case kMillimeters:
-        FormatSpecification.Append(L"mm");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength * 25.4);
-        break;
-      case kCentimeters:
-        FormatSpecification.Append(L"cm");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength * 2.54);
-        break;
-      case kDecimeters:
-        FormatSpecification.Append(L"dm");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(), ScaledLength * 0.254);
-        break;
-      case kKilometers:
-        FormatSpecification.Append(L"km");
-        swprintf_s(lengthAsString, static_cast<size_t>(bufSize), FormatSpecification.GetString(),
-                   ScaledLength * 0.0000254);
-        break;
+      CString FractionalInches;
+      FractionalInches.Format(FormatSpecification, ScaledLength);
+      int DecimalPointPosition = FractionalInches.Find('.');
+      FractionalInches = FractionalInches.Mid(DecimalPointPosition) + L"\"";
 
-      case kArchitecturalS:
-      case kArchitectural:
-      case kEngineering:
-        // Handled above
-        break;
-
-      default:
-        lengthAsString[0] = '\0';
-        break;
+      wcscat_s(lengthAsBuffer, bufSize, FractionalInches);
     }
   }
+}
+void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length,
+                               const int width, const int precision) {
+  double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
+
+  CString formatSpecification;
+  formatSpecification.Format(L"%%%i.%if", width, precision);
+  CString formatted { };
+
+  switch (units) {
+    case kFeet:
+      formatSpecification.Append(L"'");
+      formatted.Format(formatSpecification, ScaledLength / 12.);
+      break;
+    case kInches:
+      formatSpecification.Append(L"\"");
+      formatted.Format(formatSpecification, ScaledLength);
+      break;
+    case kMeters:
+      formatSpecification.Append(L"m");
+      formatted.Format(formatSpecification, ScaledLength * 0.0254);
+      break;
+    case kMillimeters:
+      formatSpecification.Append(L"mm");
+      formatted.Format(formatSpecification, ScaledLength * 25.4);
+      break;
+    case kCentimeters:
+      formatSpecification.Append(L"cm");
+      formatted.Format(formatSpecification, ScaledLength * 2.54);
+      break;
+    case kDecimeters:
+      formatSpecification.Append(L"dm");
+      formatted.Format(formatSpecification, ScaledLength * 0.254);
+      break;
+    case kKilometers:
+      formatSpecification.Append(L"km");
+      formatted.Format(formatSpecification, ScaledLength * 0.0000254);
+      break;
+
+    case kArchitectural:
+    case kArchitecturalS:
+    case kEngineering:
+      [[fallthrough]];  // Handled by specialized implementations;
+    default:
+      break;
+  }
+  wcsncpy_s(lengthAsBuffer, bufSize, formatted, _TRUNCATE);
 }
 double AeSys::ParseLength(LPWSTR aszLen) {
   LPWSTR szEndPtr;
