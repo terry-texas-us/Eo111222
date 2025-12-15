@@ -1,8 +1,8 @@
 ﻿#include "stdafx.h"
-#include "MainFrm.h"
-#include "AeSys.h"
 
+#include "AeSys.h"
 #include "EoCtrlFindComboBox.h"
+#include "MainFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

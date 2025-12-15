@@ -6,13 +6,6 @@
 #include "EoDlgLowPressureDuctOptions.h"
 #include "Section.h"
 
-LPWSTR TrimLeadingSpace(LPWSTR szString) {
-  LPWSTR p = szString;
-
-  while (p && *p && isspace(*p)) { p++; }
-  return p;
-}
-
 /// <remarks>
 ///Only check for actual end-cap marker is by attributes. No error processing for invalid width or depth values.
 ///Group data contains whatever primative follows marker (hopefully this is associated end-cap line).
@@ -404,6 +397,7 @@ void AeSysView::DoDuctModeMouseMove() {
     GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   }
 }
+
 void AeSysView::GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, Section section, EoDbGroup* group) {
   EoGePoint3d Midpoint = EoGePoint3d::Mid(beginPoint, endPoint);
 
@@ -414,6 +408,7 @@ void AeSysView::GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, S
   group->AddTail(PointPrimitive);
   group->AddTail(new EoDbLine(beginPoint, endPoint));
 }
+
 void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionReferenceLine, Section existingSection,
                                          EoDbGroup* group) {
   EoGeVector3d NewSectionDirection(existingSectionReferenceLine.begin, existingSectionReferenceLine.end);
@@ -478,6 +473,7 @@ void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionRe
 */
   }
 }
+
 void AeSysView::GenerateRiseDrop(EoUInt16 riseDropIndicator, Section section, EoGeLine& referenceLine,
                                  EoDbGroup* group) {
   double SectionLength = referenceLine.Length();
@@ -501,6 +497,7 @@ void AeSysView::GenerateRiseDrop(EoUInt16 riseDropIndicator, Section section, Eo
   group->AddTail(new EoDbLine(pstate.PenColor(), static_cast<EoInt16>(riseDropIndicator), LeftLine.begin, RightLine.end));
   group->AddTail(new EoDbLine(pstate.PenColor(), static_cast<EoInt16>(riseDropIndicator), RightLine.begin, LeftLine.end));
 }
+
 void AeSysView::GenerateRectangularElbow(EoGeLine& previousReferenceLine, Section previousSection,
                                          EoGeLine& currentReferenceLine, Section currentSection, EoDbGroup* group) {
   if (previousReferenceLine.ParallelTo(currentReferenceLine)) return;
@@ -534,6 +531,7 @@ void AeSysView::GenerateRectangularElbow(EoGeLine& previousReferenceLine, Sectio
   if (m_GenerateTurningVanes) { group->AddTail(new EoDbLine(2, 2, InsideCorner, OutsideCorner)); }
   GenerateEndCap(CurrentLeftLine.begin, CurrentRightLine.begin, currentSection, group);
 }
+
 void AeSysView::GenerateRectangularSection(EoGeLine& referenceLine, double eccentricity, Section section,
                                            EoDbGroup* group) {
   EoGeLine LeftLine;
@@ -547,6 +545,7 @@ void AeSysView::GenerateRectangularSection(EoGeLine& referenceLine, double eccen
     group->AddTail(new EoDbLine(RightLine));
   }
 }
+
 void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   EoGeVector3d XDirection = RotateVectorAboutZAxis(EoGeVector3d(0.06, 0.0, 0.0), angle);
   EoGeVector3d YDirection = RotateVectorAboutZAxis(EoGeVector3d(0.0, 0.1, 0.0), angle);
@@ -578,6 +577,7 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   pstate.Restore(DeviceContext, PrimitiveState);
   ReleaseDC(DeviceContext);
 }
+
 bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
   EoGeLine LeftLine;
   EoGeLine RightLine;
@@ -622,6 +622,7 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
   GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Section);
   return true;
 }
+
 void AeSysView::GenerateTransition(EoGeLine& referenceLine, double eccentricity, EJust justification, double slope,
                                    Section previousSection, Section currentSection, EoDbGroup* group) {
   double ReferenceLength = referenceLine.Length();
@@ -648,6 +649,7 @@ void AeSysView::GenerateTransition(EoGeLine& referenceLine, double eccentricity,
   GenerateEndCap(RightLine.end, LeftLine.end, currentSection, group);
   group->AddTail(new EoDbLine(LeftLine.end, LeftLine.begin));
 }
+
 void AeSysView::SetDuctOptions(Section& section) {
   AeSys::Units Units = app.GetUnits();
   app.SetUnits(max(Units, AeSys::kInches));
@@ -670,6 +672,7 @@ void AeSysView::SetDuctOptions(Section& section) {
   }
   app.SetUnits(Units);
 }
+
 double AeSysView::LengthOfTransition(EJust justification, double slope, Section previousSection,
                                      Section currentSection) {
   double WidthChange = currentSection.Width() - previousSection.Width();
@@ -679,6 +682,7 @@ double AeSysView::LengthOfTransition(EJust justification, double slope, Section 
   if (justification == Center) { Length *= 0.5; }
   return (Length);
 }
+
 bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double angularTolerance, EoGeLine& leftLine,
                                              EoGeLine& rightLine) {
   EoGeLine Line;

@@ -1,10 +1,46 @@
 ﻿#include "stdafx.h"
 
-#include "MainFrm.h"
-#include "ChildFrm.h"
+#include <ShlObj_core.h>
+#include <Windows.h>
+#include <afx.h>
+#include <afxbutton.h>
+#include <afxdialogex.h>
+#include <afxdisp.h>
+#include <afxdlgs.h>
+#include <afxmsg_.h>
+#include <afxres.h>
+#include <afxstr.h>
+#include <afxtooltipctrl.h>
+#include <afxtooltipmanager.h>
+#include <afxusertool.h>
+#include <afxwin.h>
+#include <afxwinappex.h>
+#include <cctype>
+#include <cmath>
+#include <corecrt.h>
+#include <cstdlib>
+#include <direct.h>
+#include <string.h>
+#include <tchar.h>
+#include <wchar.h>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "ChildFrm.h"
+#include "EoApOptions.h"
+#include "EoDb.h"
+#include "EoDbCharacterCellDefinition.h"
+#include "EoDbFontDefinition.h"
+#include "EoDlgModeLetter.h"
+#include "EoDlgModeRevise.h"
+#include "EoGePoint3d.h"
+#include "Lex.h"
+#include "MainFrm.h"
+#include "PegColors.h"
+#include "PrimState.h"
+#include "Resource.h"
+#include "SafeMath.h"
 
 #if defined(USING_ODA)
 #include "RxDynamicModule.h"
@@ -13,11 +49,6 @@
 #include "Dde.h"
 #include "ddeGItms.h"
 #endif  // USING_DDE
-#include "EoApOptions.h"
-
-#include "EoDlgModeLetter.h"
-#include "EoDlgModeRevise.h"
-#include "Lex.h"
 
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);
 ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance);
@@ -31,8 +62,6 @@ float fTableValue[1536];
 }  // namespace hatch
 double dPWids[] = {0.0,  0.0075, 0.015, 0.02,   0.03, 0.0075, 0.015, 0.0225,
                    0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
-
-#include "PegColors.h"
 
 COLORREF* pColTbl = ColorPalette;
 

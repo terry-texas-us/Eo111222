@@ -43,7 +43,7 @@
 #endif
 
 #include <cfloat>
-#include <math.h>
+#include <cmath>
 #include <memory>
 
 #if defined(USING_Direct2D)
@@ -91,20 +91,20 @@ using namespace DirectX;
 
 #endif  // USING_ODA
 
-typedef unsigned char EoByte;
-typedef char EoSbyte;
-typedef short EoInt16;
-typedef unsigned short EoUInt16;
+using EoByte = unsigned char;
+using EoSbyte = char;
+using EoInt16 = short;
+using EoUInt16 = unsigned short;
 
 UINT AFXAPI HashKey(CString& str);
 
-const double PI = 3.141592653589793;
-const double HALF_PI = PI / 2.0;
-const double QUARTER_PI = PI / 4.0;
-const double RADIAN = PI / 180.0;
-const double TWOPI = PI + PI;
+constexpr double PI = 3.141592653589793;
+constexpr double HALF_PI = PI / 2.0;
+constexpr double QUARTER_PI = PI / 4.0;
+constexpr double RADIAN = PI / 180.0;
+constexpr double TWOPI = PI + PI;
 
-const double EoMmPerInch = 25.4;
+constexpr double EoMmPerInch = 25.4;
 
 #include "SafeMath.h"
 

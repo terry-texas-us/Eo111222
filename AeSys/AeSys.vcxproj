@@ -182,7 +182,10 @@
     <ClCompile Include="EoDlgLayerPropertiesManager.cpp" />
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="EoGeLine.cpp" />
-    <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="MainFrm.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="EoGeMatrix.cpp" />
     <ClCompile Include="ModeLine.cpp" />
     <ClCompile Include="EoGsModelTransform.cpp" />

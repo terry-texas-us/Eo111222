@@ -364,6 +364,7 @@ class AeSysView : public CView {
   void MendPrimitiveEscape();
   void MendPrimitiveReturn();
 
+/// Annotate Mode Interface ///////////////////////////////////////////////////
  private:                   // Annotate and Dimension interface
   double m_GapSpaceFactor;  // Edge space factor 25 percent of character height
   double m_CircleRadius;
@@ -413,7 +414,9 @@ class AeSysView : public CView {
   void GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group);
   bool CorrectLeaderEndpoints(int beginType, int endType, EoGePoint3d& beginPoint, EoGePoint3d& endPoint);
 
- public:  // Draw mode interface
+  
+/// Draw Mode Interface ///////////////////////////////////////////////////////
+ public:
   void DoDrawModeMouseMove();
 
   afx_msg void OnDrawModeOptions();
@@ -430,14 +433,16 @@ class AeSysView : public CView {
   afx_msg void OnDrawModeEscape();
   afx_msg void OnDrawModeShiftReturn();
 
- private:                           // Draw2 mode interface
+/// Draw Mode2 Interface //////////////////////////////////////////////////////
+
+ private:
   double m_CenterLineEccentricity;  // Center line eccentricity for parallel lines
   bool m_ContinueCorner;
+  double m_DistanceBetweenLines;
   EoGeLine m_CurrentLeftLine;
   EoGeLine m_CurrentRightLine;
   EoGeLine m_PreviousReferenceLine;
   EoGeLine m_CurrentReferenceLine;
-  double m_DistanceBetweenLines;
   EoDbGroup* m_AssemblyGroup;
   EoDbGroup* m_EndSectionGroup;
   EoDbGroup* m_BeginSectionGroup;

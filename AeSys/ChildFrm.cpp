@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
-#include "ChildFrm.h"
+
 #include "AeSys.h"
+#include "ChildFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

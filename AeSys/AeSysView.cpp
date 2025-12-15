@@ -1,10 +1,64 @@
 ﻿#include "stdafx.h"
+
+#include <Windows.h>
+#include <afx.h>
+#include <afxdlgs.h>
+#include <afxext.h>
+#include <afxmdichildwndex.h>
+#include <afxmdiframewndex.h>
+#include <afxmsg_.h>
+#include <afxpropertygridctrl.h>
+#include <afxres.h>
+#include <afxstatusbar.h>
+#include <afxstr.h>
+#include <afxtoolbar.h>
+#include <afxtoolbarcomboboxbutton.h>
+#include <afxwin.h>
+#include <atltrace.h>
+#include <atltypes.h>
+#include <cfloat>
+#include <cmath>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <wchar.h>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-#include "MainFrm.h"
-
+#include "EoDb.h"
+#include "EoDbBitmapFile.h"
+#include "EoDbCharacterCellDefinition.h"
+#include "EoDbEllipse.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
+#include "EoDbLayer.h"
+#include "EoDbLine.h"
+#include "EoDbPoint.h"
+#include "EoDbPolygon.h"
+#include "EoDbPrimitive.h"
+#include "EoDbText.h"
+#include "EoDlgActiveViewKeyplan.h"
+#include "EoDlgSelectIsometricView.h"
+#include "EoDlgSetAngle.h"
+#include "EoDlgSetLength.h"
+#include "EoDlgSetScale.h"
+#include "EoDlgSetUnitsAndPrecision.h"
+#include "EoDlgSetupConstraints.h"
+#include "EoDlgSetupCustomMouseCharacters.h"
+#include "EoDlgViewParameters.h"
+#include "EoDlgViewZoom.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 #include "EoGsModelTransform.h"
+#include "EoGsViewTransform.h"
+#include "MainFrm.h"
+#include "PrimState.h"
+#include "Resource.h"
+#include "SafeMath.h"
 #include "Section.h"
 
 #if defined(USING_ODA)
@@ -18,21 +72,6 @@
 #include "Dde.h"
 #include "DdeGItms.h"
 #endif  // USING_DDE
-
-#include "EoDlgActiveViewKeyplan.h"
-#include "EoDlgSetAngle.h"
-#include "EoDlgSetUnitsAndPrecision.h"
-#include "EoDlgSetupConstraints.h"
-#include "EoDlgSetupCustomMouseCharacters.h"
-#include "EoDlgSetLength.h"
-#include "EoDlgViewZoom.h"
-#include "EoDlgSetScale.h"
-#include "EoDbBitmapFile.h"
-#include "EoDbGroup.h"
-#include "EoDlgSelectIsometricView.h"
-#include "EoDlgViewParameters.h"
-
-#include <atltypes.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -311,76 +350,128 @@ ON_COMMAND(ID_NODAL_MODE_RETURN, &AeSysView::OnNodalModeReturn)
 ON_COMMAND(ID_NODAL_MODE_ESCAPE, &AeSysView::OnNodalModeEscape)
 END_MESSAGE_MAP()
 
-// AeSysView construction/destruction /////////////////////////////////////////////////////////
+/// AeSysView construction/destruction ////////////////////////////////////////
 
-AeSysView::AeSysView() {
-  m_PreviousOp = 0;
-
-  m_Plot = false;
-  m_ViewStateInformation = true;  // View state info within the view
-  m_ViewBackgroundImage = false;
-  m_ViewOdometer = true;
-  m_ViewPenWidths = false;
-  m_WorldScale = 1.;
-  m_ViewRendered = false;
-  m_ViewTrueTypeFonts = true;
-  m_ViewWireframe = false;
-  m_SelectApertureSize = 0.005;
-  m_PlotScaleFactor = 1.0f;
-
-  m_GapSpaceFactor = 0.5;    // Edge space factor 50 percent of character height
-  m_CircleRadius = 0.03125;  // Circle radius
-  m_EndItemType = 1;        // Arrow type
-  m_EndItemSize = 0.1;       // Arrow size
-  m_BubbleRadius = 0.125;    // Bubble radius
-  m_NumberOfSides = 0;      // Number of sides on bubble (0 indicating circle)
-  m_EngagedPrimitive = 0;
-  m_EngagedGroup = 0;
-
-  m_CenterLineEccentricity = 0.5;  // Center line eccentricity for parallel lines
-  m_ContinueCorner = false;
-  m_AssemblyGroup = 0;
-  m_BeginSectionGroup = 0;
-  m_EndSectionGroup = 0;
-  m_BeginSectionLine = 0;
-  m_EndSectionLine = 0;
-  m_DistanceBetweenLines = 0.0625;
-
-  InitializeConstraints();
-
-  SetMirrorScale(-1, 1., 1.);
-  SetEditModeScaleFactors(2., 2., 2.);
-
-  SetEditModeRotationAngles(0.0, 0.0, 45.);
-
-  m_FixupModeAxisTolerance = 2.;
-  m_FixupModeCornerSize = 0.25;
-
-  m_GenerateTurningVanes = true;  // turning vanes generation flag
-  m_InsideRadiusFactor = 1.5;     // inside radius elbow factor
-  m_DuctSeamSize = 0.03125;
-  m_DuctTapSize = 0.09375;  // tap size
-  m_ContinueSection = false;
-  m_BeginWithTransition = false;
-  m_DuctJustification = Center;  // justification (Left, Center or Right)
-  m_TransitionSlope = 4.;
-  m_ElbowType = Mittered;  // elbow type (Mittered or Radial)
-  m_EndCapGroup = 0;
-  m_EndCapPoint = 0;
-  m_EndCapLocation = 0;
-  m_OriginalPreviousGroupDisplayed = true;
-  m_OriginalPreviousGroup = 0;
-
-  m_PreviousSection(0.125, 0.0625, Section::Rectangular);
-  m_CurrentSection(0.125, 0.0625, Section::Rectangular);
-  m_PipeTicSize = 0.03125;
-  m_PipeRiseDropRadius = 0.03125;
-  m_CurrentPipeSymbolIndex = 0;
-
-  m_PowerArrow = false;
-  m_PowerConductor = false;
-  m_PowerConductorSpacing = 0.04;
-
+AeSysView::AeSysView()
+    : m_ModelTransform(),
+      m_Viewport(),
+      m_ViewTransform(),
+      m_BackgroundImageBitmap(),
+      m_BackgroundImagePalette(),
+      m_EngagedPrimitive(nullptr),
+      m_EngagedGroup(nullptr),
+      m_OpHighlighted(0),
+      m_OverviewViewTransform(),
+      m_Plot(false),
+      m_PlotScaleFactor(1.0),
+      m_PreviewGroup(),
+      m_PreviousViewTransform(),
+      m_PreviousOp(0),
+      m_PreviousPnt(),
+      m_SelectApertureSize(0.005),
+      m_ViewBackgroundImage(false),
+      m_ViewOdometer(true),
+      m_ViewPenWidths(false),
+      m_Viewports(),
+      m_ViewRendered(false),
+      m_ViewTransforms(),
+      m_ViewTrueTypeFonts(true),
+      m_ViewWireframe(false),
+      m_VisibleGroupList(),
+      m_WorldScale(1.0),
+      m_ptDet(),
+      m_vRelPos(),
+      // Grid constraints
+      m_GridOrigin(),
+      m_MaximumDotsPerLine(64),
+      m_XGridLineSpacing(12.0),
+      m_YGridLineSpacing(12.0),
+      m_ZGridLineSpacing(12.0),
+      m_XGridSnapSpacing(1.0),
+      m_YGridSnapSpacing(1.0),
+      m_ZGridSnapSpacing(1.0),
+      m_XGridPointSpacing(3.0),
+      m_YGridPointSpacing(3.0),
+      m_ZGridPointSpacing(0.0),
+      m_AxisConstraintInfluenceAngle(5.0),
+      m_AxisConstraintOffsetAngle(0.0),
+      m_DisplayGridWithLines(false),
+      m_DisplayGridWithPoints(false),
+      m_GridSnap(false),
+      // Cursor/Selection
+      m_ViewStateInformation(true),
+      m_RubberbandType(None),
+      m_RubberbandBeginPoint(),
+      m_RubberbandLogicalBeginPoint(),
+      m_RubberbandLogicalEndPoint(),
+      m_ptCursorPosDev(),
+      m_ptCursorPosWorld(),
+      // Sub-mode edit
+      m_SubModeEditGroup(nullptr),
+      m_SubModeEditPrimitive(nullptr),
+      m_SubModeEditBeginPoint(),
+      m_SubModeEditEndPoint(),
+      m_tmEditSeg(),
+      // Mend
+      m_MendPrimitiveBegin(),
+      m_MendPrimitiveVertexIndex(0),
+      m_PrimitiveToMend(nullptr),
+      m_PrimitiveToMendCopy(nullptr),
+      // Annotate
+      m_GapSpaceFactor(0.5),
+      m_CircleRadius(0.03125),
+      m_EndItemType(1),
+      m_EndItemSize(0.1),
+      m_BubbleRadius(0.125),
+      m_NumberOfSides(0),
+      m_DefaultText(),
+      /// Draw2 Mode Interface
+      m_CenterLineEccentricity(0.5),
+      m_ContinueCorner(false),
+      m_DistanceBetweenLines(0.0625),
+      m_CurrentLeftLine(),
+      m_CurrentRightLine(),
+      m_PreviousReferenceLine(),
+      m_CurrentReferenceLine(),
+      m_AssemblyGroup(nullptr),
+      m_BeginSectionGroup(nullptr),
+      m_EndSectionGroup(nullptr),
+      m_BeginSectionLine(nullptr),
+      m_EndSectionLine(nullptr),
+      /// Fixup Mode Interface
+      m_FixupModeAxisTolerance(2.0),
+      m_FixupModeCornerSize(0.25),
+      // Edit Mode interface
+      m_EditModeMirrorScale(-1.0, 1.0, 1.0),
+      m_EditModeRotationAngles(0.0, 0.0, 45.0),
+      m_EditModeScale(2.0, 2.0, 2.0),
+      /// Low Pressure Duct Mode Interface
+      m_GenerateTurningVanes(true),
+      m_InsideRadiusFactor(1.5),
+      m_DuctSeamSize(0.03125),
+      m_DuctTapSize(0.09375),
+      m_ContinueSection(false),
+      m_BeginWithTransition(false),
+      m_DuctJustification(Center),
+      m_TransitionSlope(4.0),
+      m_ElbowType(Mittered),
+      m_EndCapGroup(nullptr),
+      m_EndCapPoint(nullptr),
+      m_EndCapLocation(0),
+      m_OriginalPreviousGroupDisplayed(true),
+      m_OriginalPreviousGroup(nullptr),
+      m_PreviousSection(0.125, 0.0625, Section::Rectangular),
+      m_CurrentSection(0.125, 0.0625, Section::Rectangular),
+      /// Pipe Mode Interface
+      m_PipeTicSize(0.03125),
+      m_PipeRiseDropRadius(0.03125),
+      m_CurrentPipeSymbolIndex(0),
+      /// Power Mode Interface (initializers)
+      m_PowerArrow(false),
+      m_PowerConductor(false),
+      m_CircuitEndPoint(),
+      m_PowerConductorSpacing(0.04),
+      m_PreviousRadius(0) {
   m_Viewport.SetDeviceWidthInPixels(app.DeviceWidthInPixels());
   m_Viewport.SetDeviceHeightInPixels(app.DeviceHeightInPixels());
   m_Viewport.SetDeviceWidthInInches(app.DeviceWidthInMillimeters() / EoMmPerInch);
@@ -389,7 +480,7 @@ AeSysView::AeSysView() {
 
 AeSysView::~AeSysView() {}
 
-// AeSysView diagnostics //////////////////////////////////////////////////////////////////////
+// AeSysView diagnostics //////////////////////////////////////////////////////
 
 #ifdef _DEBUG
 void AeSysView::AssertValid() const { CView::AssertValid(); }
@@ -400,7 +491,7 @@ AeSysDoc* AeSysView::GetDocument() const {  // non-debug version is inline
 }
 #endif  //_DEBUG
 
-// Base class overides ////////////////////////////////////////////////////////////////////////
+// Base class overides ////////////////////////////////////////////////////////
 
 void AeSysView::OnActivateFrame(UINT state, CFrameWnd* deactivateFrame) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state,
@@ -547,6 +638,7 @@ void AeSysView::OnInitialUpdate() {
 
   CView::OnInitialUpdate();
 }
+
 void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint,
             hintObject);
@@ -597,6 +689,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   DeviceContext->SetBkColor(BackgroundColor);
   ReleaseDC(DeviceContext);
 }
+
 void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
   ViewportPushActive();
   PushViewTransform();
@@ -620,10 +713,12 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
     m_ViewTransform.AdjustWindow(static_cast<double>(VerticalPixelWidth) / static_cast<double>(HorizontalPixelWidth));
   }
 }
+
 void AeSysView::OnEndPrinting(CDC* /* deviceContext */, CPrintInfo* /* printInformation */) {
   PopViewTransform();
   ViewportPopActive();
 }
+
 BOOL AeSysView::OnPreparePrinting(CPrintInfo* pInfo) {
   if (m_Plot) {
     CPrintInfo pi;
@@ -642,6 +737,7 @@ BOOL AeSysView::OnPreparePrinting(CPrintInfo* pInfo) {
   }
   return DoPreparePrinting(pInfo);
 }
+
 void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
   CView::OnPrepareDC(deviceContext, pInfo);
 
@@ -670,13 +766,16 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
     }
   }
 }
-// Window messages ////////////////////////////////////////////////////////////////////////////
+
+// Window messages ////////////////////////////////////////////////////////////
 void AeSysView::OnContextMenu(CWnd*, CPoint point) { app.ShowPopupMenu(IDR_CONTEXT_MENU, point, this); }
+
 BOOL AeSysView::OnEraseBkgnd(CDC* deviceContext) {
   // TODO: Add your message handler code here and/or call default
 
   return __super::OnEraseBkgnd(deviceContext);
 }
+
 void AeSysView::DoCustomMouseClick(const CString& characters) {
   int Position = 0;
 
@@ -690,6 +789,7 @@ void AeSysView::DoCustomMouseClick(const CString& characters) {
     }
   }
 }
+
 void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
   if (AeSys::CustomLButtonDownCharacters.IsEmpty()) {
     CView::OnLButtonDown(flags, point);
@@ -697,6 +797,7 @@ void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
     DoCustomMouseClick(AeSys::CustomLButtonDownCharacters);
   }
 }
+
 void AeSysView::OnLButtonUp(UINT flags, CPoint point) {
   if (AeSys::CustomLButtonUpCharacters.IsEmpty()) {
     CView::OnLButtonUp(flags, point);
@@ -704,6 +805,7 @@ void AeSysView::OnLButtonUp(UINT flags, CPoint point) {
     DoCustomMouseClick(AeSys::CustomLButtonUpCharacters);
   }
 }
+
 void AeSysView::OnRButtonDown(UINT flags, CPoint point) {
   if (AeSys::CustomRButtonDownCharacters.IsEmpty()) {
     CView::OnRButtonDown(flags, point);
@@ -711,6 +813,7 @@ void AeSysView::OnRButtonDown(UINT flags, CPoint point) {
     DoCustomMouseClick(AeSys::CustomRButtonDownCharacters);
   }
 }
+
 void AeSysView::OnRButtonUp(UINT flags, CPoint point) {
   if (AeSys::CustomRButtonUpCharacters.IsEmpty()) {
     CView::OnRButtonUp(flags, point);
@@ -718,14 +821,17 @@ void AeSysView::OnRButtonUp(UINT flags, CPoint point) {
     DoCustomMouseClick(AeSys::CustomRButtonUpCharacters);
   }
 }
+
 void AeSysView::OnMButtonDown(UINT /* flags */, CPoint /* point */) {
   CMainFrame* MainFrame = (CMainFrame*)AfxGetMainWnd();
   MainFrame->OnStartProgress();
 }
+
 void AeSysView::OnMButtonUp(UINT /* flags */, CPoint /* point */) {
   CMainFrame* MainFrame = (CMainFrame*)AfxGetMainWnd();
   MainFrame->OnStartProgress();
 }
+
 void AeSysView::OnMouseMove(UINT, CPoint point) {
   DisplayOdometer();
 
@@ -804,6 +910,7 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
     ReleaseDC(DeviceContext);
   }
 }
+
 /// <remarks> Consider using zDelta with WHEEL_DELTA for fine and coarse zooming</remarks>
 BOOL AeSysView::OnMouseWheel(UINT nFlags, EoInt16 zDelta, CPoint point) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnMouseWheel(%i, %i, %08.8lx)\n", this, nFlags,
@@ -831,6 +938,7 @@ BOOL AeSysView::OnMouseWheel(UINT nFlags, EoInt16 zDelta, CPoint point) {
 
   return __super::OnMouseWheel(nFlags, zDelta, point);
 }
+
 void AeSysView::OnSize(UINT type, int cx, int cy) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnSize(%i, %i, %i)\n", this, type, cx, cy);
 
@@ -855,15 +963,16 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
     m_OverviewViewTransform = m_ViewTransform;
   }
 }
+
 void AeSysView::OnTimer(UINT_PTR nIDEvent) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnTimer(%i)\n", this, nIDEvent);
 
   CView::OnTimer(nIDEvent);
 }
 
-CMFCStatusBar& AeSysView::GetStatusBar() const {
-  return (static_cast<CMainFrame*>(AfxGetMainWnd()))->GetStatusBar();
-}
+///////////////////////////////////////////////////////////////////////////////
+
+CMFCStatusBar& AeSysView::GetStatusBar() const { return (static_cast<CMainFrame*>(AfxGetMainWnd()))->GetStatusBar(); }
 
 void AeSysView::PopViewTransform() {
   if (!m_ViewTransforms.IsEmpty()) { m_ViewTransform = m_ViewTransforms.RemoveTail(); }
@@ -895,11 +1004,15 @@ void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, 
   vMin -= YAdjustment;
   vMax += YAdjustment;
 }
+
 void AeSysView::InvokeNewModelTransform() { m_ModelTransform.InvokeNew(); }
+
 void AeSysView::SetLocalModelTransform(EoGeTransformMatrix& transformation) {
   m_ModelTransform.SetLocalTM(transformation);
 }
+
 void AeSysView::ReturnModelTransform() { m_ModelTransform.Return(); }
+
 void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
   if (m_ViewBackgroundImage && ((HBITMAP)m_BackgroundImageBitmap != 0)) {
     int iWidDst = int(m_Viewport.Width());
@@ -939,31 +1052,38 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
     deviceContext->SelectPalette(pPalette, FALSE);
   }
 }
+
 void AeSysView::ViewportPopActive() {
   if (!m_Viewports.IsEmpty()) { m_Viewport = m_Viewports.RemoveTail(); }
 }
+
 void AeSysView::ViewportPushActive() { m_Viewports.AddTail(m_Viewport); }
 // AeSysView printing
+
 void AeSysView::OnFilePlotFull() {
   m_Plot = true;
   m_PlotScaleFactor = 1.0f;
   CView::OnFilePrint();
 }
+
 void AeSysView::OnFilePlotHalf() {
   m_Plot = true;
   m_PlotScaleFactor = 0.5f;
   CView::OnFilePrint();
 }
+
 void AeSysView::OnFilePlotQuarter() {
   m_Plot = true;
   m_PlotScaleFactor = 0.25f;
   CView::OnFilePrint();
 }
+
 void AeSysView::OnFilePrint() {
   m_Plot = false;
   m_PlotScaleFactor = 1.0f;
   CView::OnFilePrint();
 }
+
 UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizontalPages, UINT& verticalPages) {
   EoGePoint3d ptMin;
   EoGePoint3d ptMax;
@@ -979,6 +1099,7 @@ UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizonta
 
   return horizontalPages * verticalPages;
 }
+
 void AeSysView::DisplayPixel(CDC* deviceContext, COLORREF cr, const EoGePoint3d& point) {
   EoGePoint4d ptView(point);
 
@@ -986,6 +1107,7 @@ void AeSysView::DisplayPixel(CDC* deviceContext, COLORREF cr, const EoGePoint3d&
 
   if (ptView.IsInView()) { deviceContext->SetPixel(DoProjection(ptView), cr); }
 }
+
 void AeSysView::DoCameraRotate(int iDir) {
   EoGeVector3d vN = m_ViewTransform.Target() - m_ViewTransform.Position();
   vN.Normalize();
@@ -1020,6 +1142,7 @@ void AeSysView::DoCameraRotate(int iDir) {
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::DoWindowPan(double ratio) {
   ratio = EoMin(EoMax(ratio, m_MinimumWindowRatio), m_MaximumWindowRatio);
 
@@ -1042,11 +1165,13 @@ void AeSysView::DoWindowPan(double ratio) {
   SetCursorPosition(CursorPosition);
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnSetupScale() {
   EoDlgSetScale dlg;
   dlg.m_Scale = GetWorldScale();
   if (dlg.DoModal() == IDOK) { SetWorldScale(dlg.m_Scale); }
 }
+
 void AeSysView::On3dViewsTop() {
   m_ViewTransform.SetPosition(EoGeVector3d::kZAxis);
   m_ViewTransform.SetDirection(EoGeVector3d::kZAxis);
@@ -1056,6 +1181,7 @@ void AeSysView::On3dViewsTop() {
 
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::On3dViewsBottom() {
   m_ViewTransform.SetPosition(-EoGeVector3d::kZAxis);
   m_ViewTransform.SetDirection(-EoGeVector3d::kZAxis);
@@ -1064,6 +1190,7 @@ void AeSysView::On3dViewsBottom() {
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::On3dViewsLeft() {
   m_ViewTransform.SetPosition(-EoGeVector3d::kXAxis);
   m_ViewTransform.SetDirection(-EoGeVector3d::kXAxis);
@@ -1072,6 +1199,7 @@ void AeSysView::On3dViewsLeft() {
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::On3dViewsRight() {
   m_ViewTransform.SetPosition(EoGeVector3d::kXAxis);
   m_ViewTransform.SetDirection(EoGeVector3d::kXAxis);
@@ -1080,6 +1208,7 @@ void AeSysView::On3dViewsRight() {
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::On3dViewsFront() {
   m_ViewTransform.SetPosition(-EoGeVector3d::kYAxis);
   m_ViewTransform.SetDirection(-EoGeVector3d::kYAxis);
@@ -1088,6 +1217,7 @@ void AeSysView::On3dViewsFront() {
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::On3dViewsBack() {
   m_ViewTransform.SetPosition(EoGeVector3d::kYAxis);
   m_ViewTransform.SetDirection(EoGeVector3d::kYAxis);
@@ -1096,6 +1226,7 @@ void AeSysView::On3dViewsBack() {
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::On3dViewsIsometric() {
   static int iLeftRight = 0;
   static int iFrontBack = 0;
@@ -1129,10 +1260,15 @@ void AeSysView::On3dViewsIsometric() {
   }
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnCameraRotateLeft() { DoCameraRotate(ID_CAMERA_ROTATELEFT); }
+
 void AeSysView::OnCameraRotateRight() { DoCameraRotate(ID_CAMERA_ROTATERIGHT); }
+
 void AeSysView::OnCameraRotateUp() { DoCameraRotate(ID_CAMERA_ROTATEUP); }
+
 void AeSysView::OnCameraRotateDown() { DoCameraRotate(ID_CAMERA_ROTATEDOWN); }
+
 void AeSysView::OnViewParameters() {
   EoDlgViewParameters Dialog;
 
@@ -1143,7 +1279,9 @@ void AeSysView::OnViewParameters() {
 
   if (Dialog.DoModal() == IDOK) { m_ViewTransform.EnablePerspective(Dialog.m_PerspectiveProjection == TRUE); }
 }
+
 void AeSysView::OnViewLighting() {}
+
 void AeSysView::OnViewRendered() {
 #if defined(USING_ODA)
   SetRenderMode(OdGsView::kFlatShaded);
@@ -1151,15 +1289,19 @@ void AeSysView::OnViewRendered() {
   m_ViewRendered = !m_ViewRendered;
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnViewTrueTypeFonts() {
   m_ViewTrueTypeFonts = !m_ViewTrueTypeFonts;
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnViewPenWidths() {
   m_ViewPenWidths = !m_ViewPenWidths;
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnViewSolid() {}
+
 void AeSysView::OnViewWindow() {
   CPoint CurrentPosition;
   ::GetCursorPos(&CurrentPosition);
@@ -1168,28 +1310,35 @@ void AeSysView::OnViewWindow() {
   SubMenu->TrackPopupMenuEx(TPM_LEFTALIGN, CurrentPosition.x, CurrentPosition.y, AfxGetMainWnd(), 0);
   ::DestroyMenu(WindowMenu);
 }
+
 void AeSysView::OnViewWireframe() {
   m_ViewWireframe = !m_ViewWireframe;
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnViewWindowKeyplan() {
   EoDlgActiveViewKeyplan dlg(this);
   dlg.m_dRatio = m_Viewport.WidthInInches() / m_ViewTransform.UExtent();
 
   if (dlg.DoModal() == IDOK) { InvalidateRect(nullptr, TRUE); }
 }
+
 void AeSysView::OnViewOdometer() {
   m_ViewOdometer = !m_ViewOdometer;
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnViewRefresh() { InvalidateRect(nullptr, TRUE); }
+
 void AeSysView::OnUpdateViewRendered(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewRendered); }
+
 void AeSysView::OnUpdateViewWireframe(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewWireframe); }
 
 void AeSysView::OnWindowNormal() {
   CopyActiveModelViewToPreviousModelView();
   DoWindowPan(1.0);
 }
+
 void AeSysView::OnWindowBest() {
   EoGePoint3d ptMin;
   EoGePoint3d ptMax;
@@ -1221,21 +1370,27 @@ void AeSysView::OnWindowBest() {
     InvalidateRect(nullptr, TRUE);
   }
 }
+
 void AeSysView::OnWindowLast() {
   ExchangeActiveAndPreviousModelViews();
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnWindowSheet() {
   ModelViewInitialize();
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnWindowZoomIn() { DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() / 0.9); }
+
 void AeSysView::OnWindowZoomOut() { DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() * 0.9); }
+
 void AeSysView::OnWindowPan() {
   CopyActiveModelViewToPreviousModelView();
   DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnWindowPanLeft() {
   EoGePoint3d Target = m_ViewTransform.Target();
 
@@ -1247,6 +1402,7 @@ void AeSysView::OnWindowPanLeft() {
 
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnWindowPanRight() {
   EoGePoint3d Target = m_ViewTransform.Target();
 
@@ -1258,6 +1414,7 @@ void AeSysView::OnWindowPanRight() {
 
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnWindowPanUp() {
   EoGePoint3d Target = m_ViewTransform.Target();
 
@@ -1269,6 +1426,7 @@ void AeSysView::OnWindowPanUp() {
 
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnWindowPanDown() {
   EoGePoint3d Target = m_ViewTransform.Target();
 
@@ -1280,6 +1438,7 @@ void AeSysView::OnWindowPanDown() {
 
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnWindowZoomSpecial() {
   EoDlgViewZoom dlg(this);
 
@@ -1291,6 +1450,7 @@ void AeSysView::OnWindowZoomSpecial() {
     InvalidateRect(nullptr, TRUE);
   }
 }
+
 void AeSysView::OnSetupDimLength() {
   EoDlgSetLength dlg;
 
@@ -1304,6 +1464,7 @@ void AeSysView::OnSetupDimLength() {
 #endif  // USING_DDE
   }
 }
+
 void AeSysView::OnSetupDimAngle() {
   EoDlgSetAngle dlg;
 
@@ -1317,6 +1478,7 @@ void AeSysView::OnSetupDimAngle() {
 #endif  // USING_DDE
   }
 }
+
 void AeSysView::OnSetupUnits() {
   EoDlgSetUnitsAndPrecision Dialog;
   Dialog.m_Units = app.GetUnits();
@@ -1327,15 +1489,18 @@ void AeSysView::OnSetupUnits() {
     app.SetArchitecturalUnitsFractionPrecision(Dialog.m_Precision);
   }
 }
+
 void AeSysView::OnSetupConstraints() {
   EoDlgSetupConstraints Dialog(this);
 
   if (Dialog.DoModal() == IDOK) { UpdateStateInformation(All); }
 }
+
 void AeSysView::OnSetupMouseButtons() {
   EoDlgSetupCustomMouseCharacters Dialog;
   if (Dialog.DoModal() == IDOK) {}
 }
+
 void AeSysView::OnRelativeMovesEngDown() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1343,6 +1508,7 @@ void AeSysView::OnRelativeMovesEngDown() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle());
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesEngDownRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1350,11 +1516,13 @@ void AeSysView::OnRelativeMovesEngDownRotate() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + EoToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesEngIn() {
   EoGePoint3d pt = GetCursorPosition();
   pt.z -= app.EngagedLength();
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesEngLeft() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1362,6 +1530,7 @@ void AeSysView::OnRelativeMovesEngLeft() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle());
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesEngLeftRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1369,11 +1538,13 @@ void AeSysView::OnRelativeMovesEngLeftRotate() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + EoToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesEngOut() {
   EoGePoint3d pt = GetCursorPosition();
   pt.z += app.EngagedLength();
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesEngRight() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1381,6 +1552,7 @@ void AeSysView::OnRelativeMovesEngRight() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle());
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesEngRightRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1388,6 +1560,7 @@ void AeSysView::OnRelativeMovesEngRightRotate() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + EoToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesEngUp() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1395,6 +1568,7 @@ void AeSysView::OnRelativeMovesEngUp() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle());
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesEngUpRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1402,36 +1576,43 @@ void AeSysView::OnRelativeMovesEngUpRotate() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + EoToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesRight() {
   EoGePoint3d pt = GetCursorPosition();
   pt.x += app.DimensionLength();
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesUp() {
   EoGePoint3d pt = GetCursorPosition();
   pt.y += app.DimensionLength();
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesLeft() {
   EoGePoint3d pt = GetCursorPosition();
   pt.x -= app.DimensionLength();
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesDown() {
   EoGePoint3d pt = GetCursorPosition();
   pt.y -= app.DimensionLength();
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesIn() {
   EoGePoint3d pt = GetCursorPosition();
   pt.z -= app.DimensionLength();
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesOut() {
   EoGePoint3d pt = GetCursorPosition();
   pt.z += app.DimensionLength();
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesRightRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1439,6 +1620,7 @@ void AeSysView::OnRelativeMovesRightRotate() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, EoToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesUpRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1446,6 +1628,7 @@ void AeSysView::OnRelativeMovesUpRotate() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, EoToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesLeftRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1453,6 +1636,7 @@ void AeSysView::OnRelativeMovesLeftRotate() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, EoToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnRelativeMovesDownRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
@@ -1460,6 +1644,7 @@ void AeSysView::OnRelativeMovesDownRotate() {
   pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, EoToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
+
 void AeSysView::OnToolsPrimitiveSnapto() {
   EoGePoint3d pt = GetCursorPosition();
 
@@ -1488,6 +1673,7 @@ void AeSysView::OnToolsPrimitiveSnapto() {
     SetCursorPosition(ptDet);
   }
 }
+
 void AeSysView::OnPrimPerpJump() {
   EoGePoint3d pt = GetCursorPosition();
 
@@ -1499,7 +1685,9 @@ void AeSysView::OnPrimPerpJump() {
     }
   }
 }
+
 void AeSysView::OnHelpKey() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"READY")); }
+
 AeSysView* AeSysView::GetActiveView() {
   CMDIFrameWndEx* MDIFrameWnd = (CMDIFrameWndEx*)AfxGetMainWnd();
 
@@ -1515,11 +1703,11 @@ AeSysView* AeSysView::GetActiveView() {
   }
   return (AeSysView*)View;
 }
+
 void AeSysView::OnUpdateViewOdometer(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewOdometer); }
 
 #define LEGACY_ODOMETER
 #if defined(LEGACY_ODOMETER)
-
 static void DrawOdometerInView(AeSysView* view, CDC* context, AeSys::Units Units, EoGeVector3d& position) {
   auto* oldFont = static_cast<CFont*>(context->SelectStockObject(DEFAULT_GUI_FONT));
   auto oldTextAlign = context->SetTextAlign(TA_LEFT | TA_TOP);
@@ -1599,7 +1787,9 @@ void AeSysView::DisplayOdometer() {
   dde::PostAdvise(dde::RelPosZInfo);
 #endif  // USING_DDE
 }
+
 void AeSysView::OnUpdateViewTrueTypeFonts(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewTrueTypeFonts); }
+
 void AeSysView::OnBackgroundImageLoad() {
   CFileDialog dlg(TRUE, L"bmp", L"*.bmp");
   dlg.m_ofn.lpstrTitle = L"Load Background Image";
@@ -1612,6 +1802,7 @@ void AeSysView::OnBackgroundImageLoad() {
     InvalidateRect(nullptr, TRUE);
   }
 }
+
 void AeSysView::OnBackgroundImageRemove() {
   if ((HBITMAP)m_BackgroundImageBitmap != 0) {
     m_BackgroundImageBitmap.DeleteObject();
@@ -1621,17 +1812,23 @@ void AeSysView::OnBackgroundImageRemove() {
     InvalidateRect(nullptr, TRUE);
   }
 }
+
 void AeSysView::OnViewBackgroundImage() {
   m_ViewBackgroundImage = !m_ViewBackgroundImage;
   InvalidateRect(nullptr, TRUE);
 }
+
 void AeSysView::OnUpdateViewBackgroundImage(CCmdUI* pCmdUI) {
   pCmdUI->Enable((HBITMAP)m_BackgroundImageBitmap != 0);
   pCmdUI->SetCheck(m_ViewBackgroundImage);
 }
+
 void AeSysView::OnUpdateBackgroundimageLoad(CCmdUI* pCmdUI) { pCmdUI->Enable((HBITMAP)m_BackgroundImageBitmap == 0); }
+
 void AeSysView::OnUpdateBackgroundimageRemove(CCmdUI* pCmdUI) { pCmdUI->Enable((HBITMAP)m_BackgroundImageBitmap != 0); }
+
 void AeSysView::OnUpdateViewPenwidths(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewPenWidths); }
+
 void AeSysView::DeleteLastGroup() {
   if (m_VisibleGroupList.IsEmpty()) {
     app.AddStringToMessageList(IDS_MSG_NO_DET_GROUPS_IN_VIEW);
@@ -1649,6 +1846,7 @@ void AeSysView::DeleteLastGroup() {
     app.AddStringToMessageList(IDS_SEG_DEL_TO_RESTORE);
   }
 }
+
 void AeSysView::BreakAllPolylines() {
   POSITION Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
@@ -1656,6 +1854,7 @@ void AeSysView::BreakAllPolylines() {
     Group->BreakPolylines();
   }
 }
+
 void AeSysView::BreakAllSegRefs() {
   POSITION Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
@@ -1663,10 +1862,12 @@ void AeSysView::BreakAllSegRefs() {
     Group->BreakSegRefs();
   }
 }
+
 void AeSysView::ResetView() {
   m_EngagedGroup = 0;
   m_EngagedPrimitive = 0;
 }
+
 EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
   EoDbPrimitive* Primitive;
   EoGePoint3d ptEng;
@@ -1689,6 +1890,7 @@ EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
   }
   return (m_EngagedGroup);
 }
+
 EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& pt) {
   EoGePoint3d ptEng;
 
@@ -1718,6 +1920,7 @@ EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& pt) {
   }
   return 0;
 }
+
 EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbEllipse*& circle) {
   POSITION GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != 0) {
@@ -1740,6 +1943,7 @@ EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double toleranc
   }
   return 0;
 }
+
 EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) {
   EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
@@ -1761,6 +1965,7 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
   }
   return 0;
 }
+
 EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor,
                                             EoInt16 pointStyle, EoDbPoint*& primitive) {
   POSITION GroupPosition = GetFirstVisibleGroupPosition();
@@ -1783,6 +1988,7 @@ EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& point, double tolerance
   }
   return 0;
 }
+
 EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
   m_EngagedGroup = 0;
   m_EngagedPrimitive = 0;
@@ -1816,6 +2022,7 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
   }
   return (m_EngagedGroup);
 }
+
 EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& pt) {
   EoGePoint4d ptView(pt);
   ModelViewTransformPoint(ptView);
@@ -1835,6 +2042,7 @@ EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& pt) {
   }
   return 0;
 }
+
 void AeSysView::OnOp0() {
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
@@ -1843,6 +2051,7 @@ void AeSysView::OnOp0() {
       break;
   }
 }
+
 void AeSysView::OnOp2() {
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
@@ -1854,6 +2063,7 @@ void AeSysView::OnOp2() {
       break;
   }
 }
+
 void AeSysView::OnOp3() {
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
@@ -1865,6 +2075,7 @@ void AeSysView::OnOp3() {
       break;
   }
 }
+
 void AeSysView::OnOp4() {
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
@@ -1878,6 +2089,7 @@ void AeSysView::OnOp4() {
       break;
   }
 }
+
 void AeSysView::OnOp5() {
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
@@ -1889,6 +2101,7 @@ void AeSysView::OnOp5() {
       break;
   }
 }
+
 void AeSysView::OnOp6() {
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
@@ -1900,6 +2113,7 @@ void AeSysView::OnOp6() {
       break;
   }
 }
+
 void AeSysView::OnOp7() {
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
@@ -1911,6 +2125,7 @@ void AeSysView::OnOp7() {
       break;
   }
 }
+
 void AeSysView::OnOp8() {
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
@@ -1922,6 +2137,7 @@ void AeSysView::OnOp8() {
       break;
   }
 }
+
 void AeSysView::OnReturn() {
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
@@ -1939,6 +2155,7 @@ void AeSysView::OnReturn() {
       break;
   }
 }
+
 void AeSysView::OnEscape() {
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
@@ -1954,6 +2171,7 @@ void AeSysView::OnEscape() {
       break;
   }
 }
+
 void AeSysView::OnFind() {
   CString findComboText;
 
@@ -1977,6 +2195,7 @@ void AeSysView::OnFind() {
               static_cast<LPCTSTR>(findComboText));
   }
 }
+
 void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CString& findText) {
   if (findComboBox == nullptr) { return; }
   BOOL IsLastCommandFromButton = CMFCToolBar::IsLastCommandFromButton(findComboBox);
@@ -2006,9 +2225,11 @@ void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CStrin
     if (!IsLastCommandFromButton) { findComboBox->SetText(findText); }
   }
 }
+
 void AeSysView::OnEditFind() {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnEditFind() - Entering\n");
 }
+
 // Disables rubberbanding.
 void AeSysView::RubberBandingDisable() {
   if (m_RubberbandType != None) {
@@ -2032,6 +2253,7 @@ void AeSysView::RubberBandingDisable() {
     m_RubberbandType = None;
   }
 }
+
 void AeSysView::RubberBandingStartAtEnable(EoGePoint3d pt, ERubs type) {
   EoGePoint4d ptView(pt);
 
@@ -2045,6 +2267,7 @@ void AeSysView::RubberBandingStartAtEnable(EoGePoint3d pt, ERubs type) {
   }
   m_RubberbandType = type;
 }
+
 EoGePoint3d AeSysView::GetCursorPosition() {
   CPoint CursorPosition;
 
@@ -2063,6 +2286,7 @@ EoGePoint3d AeSysView::GetCursorPosition() {
   }
   return (m_ptCursorPosWorld);
 }
+
 void AeSysView::SetCursorPosition(EoGePoint3d cursorPosition) {
   EoGePoint4d ptView(cursorPosition);
 
@@ -2086,6 +2310,7 @@ void AeSysView::SetCursorPosition(EoGePoint3d cursorPosition) {
   ClientToScreen(&pntCurPos);
   ::SetCursorPos(pntCurPos.x, pntCurPos.y);
 }
+
 void AeSysView::SetModeCursor(int mode) {
   EoUInt16 ResourceIdentifier;
 
@@ -2156,6 +2381,7 @@ void AeSysView::SetModeCursor(int mode) {
   ::SetCursor(CursorHandle);
   ::SetClassLongPtr(this->GetSafeHwnd(), GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(CursorHandle));
 }
+
 void AeSysView::SetWorldScale(const double scale) {
   if (scale > FLT_EPSILON) {
     m_WorldScale = scale;
@@ -2169,11 +2395,14 @@ void AeSysView::SetWorldScale(const double scale) {
 #endif  // USING_DDE
   }
 }
+
 void AeSysView::OnViewStateInformation() {
   m_ViewStateInformation = !m_ViewStateInformation;
   AeSysDoc::GetDoc()->UpdateAllViews(nullptr, 0L, nullptr);
 }
+
 void AeSysView::OnUpdateViewStateinformation(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewStateInformation); }
+
 void AeSysView::UpdateStateInformation(EStateInformationItem item) {
   if (m_ViewStateInformation) {
     AeSysDoc* Document = AeSysDoc::GetDoc();
@@ -2260,10 +2489,12 @@ const ODCOLORREF* AeSysView::CurrentPalette() const {
   const ODCOLORREF* Color = odcmAcadPalette(m_Background);
   return Color;
 }
+
 void AeSysView::ViewZoomExtents() {
   OdGsView* View = ViewAt(0);
   OdAbstractViewPEPtr(View)->zoomExtents(View);
 }
+
 void AeSysView::ResetDevice(bool zoomExtents) {
   CRect ClientRectangle;
   GetClientRect(&ClientRectangle);
@@ -2295,6 +2526,7 @@ void AeSysView::ResetDevice(bool zoomExtents) {
     }
   }
 }
+
 void AeSysView::SetRenderMode(OdGsView::RenderMode renderMode) {
   OdGsViewPtr FirstView = ViewAt(0);
 
@@ -2309,6 +2541,7 @@ void AeSysView::SetRenderMode(OdGsView::RenderMode renderMode) {
     }
   }
 }
+
 /// <remarks>
 /// If current layout is Model, and it has more then one viewport then make their borders visible.
 /// If current layout is Paper, then make visible the borders of all but the overall viewport.
@@ -2323,6 +2556,7 @@ void AeSysView::SetViewportBorderProperties(OdGsDevice* device, bool modelLayout
     }
   }
 }
+
 void AeSysView::Dolly(int x, int y) {
   OdGsViewPtr View = ViewAt(0);
 
@@ -2356,6 +2590,7 @@ HRESULT AeSysView::CreateDeviceResources() {
   }
   return hr;
 }
+
 void AeSysView::DiscardDeviceResources() {
   SafeRelease(&m_RenderTarget);
   SafeRelease(&m_LightSlateGrayBrush);

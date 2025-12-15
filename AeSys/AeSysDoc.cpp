@@ -1,11 +1,72 @@
 ﻿#include "stdafx.h"
 
 #include "xmllite.h"
+#include <Shlwapi.h>
+#include <Windows.h>
+#include <afx.h>
+#include <afxdlgs.h>
+#include <afxmdichildwndex.h>
+#include <afxmdiframewndex.h>
+#include <afxmsg_.h>
+#include <afxres.h>
+#include <afxstr.h>
+#include <afxver_.h>
+#include <afxwin.h>
+#include <atlcomcli.h>
+#include <atltrace.h>
+#include <atltypes.h>
+#include <cfloat>
+#include <cstdio>
+#include <cstdlib>
 #include <strsafe.h>
+#include <wchar.h>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDb.h"
+#include "EoDbBlock.h"
+#include "EoDbBlockFile.h"
+#include "EoDbBlockReference.h"
+#include "EoDbCharacterCellDefinition.h"
+#include "EoDbDimension.h"
+#include "EoDbFontDefinition.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
+#include "EoDbJobFile.h"
+#include "EoDbLayer.h"
+#include "EoDbLine.h"
+#include "EoDbLineType.h"
+#include "EoDbMaskedPrimitive.h"
+#include "EoDbPegFile.h"
+#include "EoDbPoint.h"
+#include "EoDbPolygon.h"
+#include "EoDbPolyline.h"
+#include "EoDbPrimitive.h"
+#include "EoDbText.h"
+#include "EoDbTracingFile.h"
+#include "EoDlgDrawOptions.h"
+#include "EoDlgEditTrapCommandsQuery.h"
+#include "EoDlgFileManage.h"
+#include "EoDlgSelectGotoHomePoint.h"
+#include "EoDlgSetHomePoint.h"
+#include "EoDlgSetPastePosition.h"
+#include "EoDlgSetupColor.h"
+#include "EoDlgSetupHatch.h"
+#include "EoDlgSetupLineType.h"
+#include "EoDlgSetupNote.h"
+#include "EoDlgTrapFilter.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeReferenceSystem.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeUniquePoint.h"
+#include "EoGeVector3d.h"
+#include "Hatch.h"
+#include "Lex.h"
+#include "PrimState.h"
+#include "Resource.h"
+#include "SafeMath.h"
 
 #if defined(USING_ODA)
 #include "DbBlockTable.h"
@@ -19,26 +80,7 @@
 #endif  // USING_ODA
 #if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif // USING_DDE
-
-#include "EoDbBlockFile.h"
-#include "EoDbJobFile.h"
-#include "EoDbLayer.h"
-#include "EoDbTracingFile.h"
-#include "EoDbPegFile.h"
-#include "EoDlgDrawOptions.h"
-#include "EoDlgEditTrapCommandsQuery.h"
-#include "EoDlgFileManage.h"
-#include "EoDlgSelectGotoHomePoint.h"
-#include "EoDlgSetHomePoint.h"
-#include "EoDlgSetPastePosition.h"
-#include "EoDlgSetupColor.h"
-#include "EoDlgSetupHatch.h"
-#include "EoDlgSetupLineType.h"
-#include "EoDlgSetupNote.h"
-#include "EoDlgTrapFilter.h"
-#include "Hatch.h"
-#include "lex.h"
+#endif  // USING_DDE
 
 UINT_PTR CALLBACK OFNHookProcFileTracing(HWND, UINT, WPARAM, LPARAM);
 
@@ -135,10 +177,21 @@ END_MESSAGE_MAP()
 
 // AeSysDoc construction/destruction
 
-AeSysDoc::AeSysDoc() {
-  m_WorkLayer = nullptr;
-  m_SaveAsType = EoDb::kUnknown;
-}
+AeSysDoc::AeSysDoc()
+    : m_IdentifiedLayerName(),
+      m_SaveAsType(EoDb::kUnknown),
+      m_LineTypeTable(),
+      m_ContinuousLineType(nullptr),
+      m_BlocksTable(),
+      m_LayerTable(),
+      m_WorkLayer(nullptr),
+      m_DeletedGroupList(),
+      m_TrappedGroupList(),
+      m_TrapPivotPoint(),
+      m_NodalGroupList(),
+      m_MaskedPrimitives(),
+      m_UniquePoints() {}
+
 AeSysDoc::~AeSysDoc() {}
 
 void AeSysDoc::DeleteContents() {
@@ -415,7 +468,8 @@ int AeSysDoc::NumberOfGroupsInActiveLayers() {
   return static_cast<int>(count);
 }
 void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view, deviceContext);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view,
+            deviceContext);
 
   try {
     bool IdentifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
@@ -622,7 +676,8 @@ void AeSysDoc::LoadLineTypesFromXmlFile(const CString& pathName) {
     return;
   }
   if (FAILED(hr = Reader->SetProperty(XmlReaderProperty_DtdProcessing, DtdProcessing_Prohibit))) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error setting XmlReaderProperty_DtdProcessing, error is %08.8lx", hr);
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error setting XmlReaderProperty_DtdProcessing, error is %08.8lx",
+              hr);
     return;
   }
   if (FAILED(hr = Reader->SetInput(FileStream))) {
@@ -723,7 +778,8 @@ void AeSysDoc::LoadLineTypesFromXmlFile(const CString& pathName) {
           ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting value, error is %08.8lx", hr);
           return;
         }
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Processing Instruction name:%ls value:%ls\n", localName, value);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Processing Instruction name:%ls value:%ls\n", localName,
+                  value);
         break;
 
       case XmlNodeType_Comment:
