@@ -4,6 +4,7 @@
 #include "AeSysView.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
+#include "EoGePolyline.h"
 #include "Hatch.h"
 #include "PrimState.h"
 

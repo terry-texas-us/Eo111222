@@ -2,6 +2,7 @@
 
 #include "EoDbFontDefinition.h"
 #include "EoDbPrimitive.h"
+#include "EoGeLine.h"
 #include "EoGeReferenceSystem.h"
 
 class EoDbDimension : public EoDbPrimitive {

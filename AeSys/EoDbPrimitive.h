@@ -2,9 +2,12 @@
 
 HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR pszText, LPCVOID object);
 
+#include "EoGeLine.h"
+
 class AeSysView;
 class EoDbGroupList;
 class EoDbGroup;
+class EoGeTransformMatrix;
 
 #if defined(USING_ODA)
 class OdDbEntity;

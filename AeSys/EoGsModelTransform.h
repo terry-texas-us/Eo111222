@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include "EoGeTransformMatrix.h"
+
+class EoGeTransformMatrix;
+
 class EoGsModelTransform {
   EoUInt16 m_Depth;
 

@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "EoGeTransformMatrix.h"
 #include "EoGsAbstractView.h"
 
 class EoGsViewport;

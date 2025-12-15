@@ -8,6 +8,8 @@
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
+#include "EoGeLine.h"
+#include "EoGeTransformMatrix.h"
 #include "EoGsModelTransform.h"
 #include "EoGsViewport.h"
 #include "EoGsViewTransform.h"

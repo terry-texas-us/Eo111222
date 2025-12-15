@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include "EoGeLine.h"
+
 EoGePoint4d::EoGePoint4d() { x = y = z = w = 0.; }
 EoGePoint4d::EoGePoint4d(const double initialX, const double initialY, const double initialZ, const double initialW) {
   x = initialX;

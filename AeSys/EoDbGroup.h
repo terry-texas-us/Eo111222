@@ -1,10 +1,12 @@
 ﻿#pragma once
 
+class AeSysView;
 class EoDbBlock;
 class EoDbCharacterCellDefinition;
 class EoDbFontDefinition;
 class EoDbPoint;
 class EoDbPrimitive;
+class EoGeTransformMatrix;
 
 class EoDbGroup : public CObList {
   static EoDbPrimitive* sm_PrimitiveToIgnore;

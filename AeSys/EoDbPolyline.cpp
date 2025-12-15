@@ -3,6 +3,7 @@
 #include "AeSys.h"
 #include "AeSysView.h"
 #include "EoDbPolyline.h"
+#include "EoGePolyline.h"
 #include "PrimState.h"
 
 #if defined(USING_ODA)

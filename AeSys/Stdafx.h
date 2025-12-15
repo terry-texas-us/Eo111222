@@ -112,9 +112,6 @@ constexpr double EoMmPerInch = 25.4;
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeMatrix.h"
-#include "EoGeTransformMatrix.h"
-#include "EoGeLine.h"
-#include "EoGePolyline.h"
 
 #if defined(USING_DDE)
 #include <ddeml.h>

@@ -2,6 +2,7 @@
 
 #include "AeSysView.h"
 #include "EoDbPrimitive.h"
+#include "EoGePolyline.h"
 #include "PrimState.h"
 
 EoGeLine EoGeLine::operator-(EoGeVector3d v) { return (EoGeLine(begin - v, end - v)); }

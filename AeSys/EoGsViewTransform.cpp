@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 
+#include "EoGeTransformMatrix.h"
 #include "EoGsViewTransform.h"
 #include "EoGsViewport.h"
 

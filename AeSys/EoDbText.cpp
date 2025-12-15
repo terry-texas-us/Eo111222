@@ -7,6 +7,7 @@
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
 #include "EoDlgTrapModify.h"
+#include "EoGePolyline.h"
 #include "EoGeReferenceSystem.h"
 #include "PrimState.h"
 

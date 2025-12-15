@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "EoGeTransformMatrix.h"
+
 class AeSysView;
 class EoGeLine {
  public:

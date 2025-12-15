@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include "EoGeTransformMatrix.h"
+
 const EoGePoint3d EoGePoint3d::kOrigin(0.0, 0.0, 0.0);
 
 EoGePoint3d::EoGePoint3d() { x = y = z = 0.; }

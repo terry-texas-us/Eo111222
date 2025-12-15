@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include "EoGeTransformMatrix.h"
+
 const EoGeVector3d EoGeVector3d::kXAxis(1.0, 0.0, 0.0);
 const EoGeVector3d EoGeVector3d::kYAxis(0.0, 1.0, 0.0);
 const EoGeVector3d EoGeVector3d::kZAxis(0.0, 0.0, 1.0);

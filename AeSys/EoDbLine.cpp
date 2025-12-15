@@ -5,6 +5,7 @@
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbLine.h"
+#include "EoGePolyline.h"
 #include "PrimState.h"
 
 #if defined(USING_ODA)

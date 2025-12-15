@@ -3,6 +3,7 @@
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbFontDefinition.h"
 
+class AeSysView;
 
 class CPrimState {
  private:

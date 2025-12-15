@@ -8,6 +8,7 @@
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
+#include "EoGePolyline.h"
 #include "PrimState.h"
 
 #if defined(USING_ODA)

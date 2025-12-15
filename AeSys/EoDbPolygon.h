@@ -2,6 +2,7 @@
 
 #include "EoDb.h"
 #include "EoDbPrimitive.h"
+#include "EoGeLine.h"
 
 class EoDbPolygon : public EoDbPrimitive {
   static EoUInt16 sm_EdgeToEvaluate;

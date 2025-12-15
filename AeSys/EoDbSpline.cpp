@@ -3,6 +3,7 @@
 #include "AeSys.h"
 #include "AeSysView.h"
 #include "EoDbSpline.h"
+#include "EoGePolyline.h"
 #include "PrimState.h"
 
 EoDbSpline::EoDbSpline(EoUInt16 wPts, EoGePoint3d* pt) {

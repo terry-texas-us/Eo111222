@@ -6,6 +6,7 @@
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
+#include "EoGePolyline.h"
 #include "PrimState.h"
 
 #if defined(USING_ODA)

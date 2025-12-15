@@ -9,6 +9,7 @@
 #include "EoDbMaskedPrimitive.h"
 #include "EoGeUniquePoint.h"
 
+class EoGeTransformMatrix;
 
 #if defined(USING_ODA)
 #include "DbDatabase.h"
