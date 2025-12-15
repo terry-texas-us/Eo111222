@@ -2,8 +2,6 @@
 #include "AeSys.h"
 #include "AeSysView.h"
 
-#include "EoDlgSetupConstraints.h"
-
 void AeSysView::InitializeConstraints() {
   m_AxisConstraintInfluenceAngle = 5.;
   m_AxisConstraintOffsetAngle = 0.;

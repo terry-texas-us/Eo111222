@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 #include "AeSys.h"
+#include "EoDbLayer.h"
 #include "EoDbTracingFile.h"
 
 void EoDbTracingFile::ReadHeader(CFile& file) {

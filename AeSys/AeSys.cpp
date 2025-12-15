@@ -9,14 +9,14 @@
 #if defined(USING_ODA)
 #include "RxDynamicModule.h"
 #endif  // USING_ODA
-
+#if defined(USING_DDE)
+#include "Dde.h"
+#include "ddeGItms.h"
+#endif  // USING_DDE
 #include "EoApOptions.h"
 
-#include "ddeGItms.h"
 #include "EoDlgModeLetter.h"
 #include "EoDlgModeRevise.h"
-#include "Hatch.h"
-#include "Dde.h"
 #include "Lex.h"
 
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);

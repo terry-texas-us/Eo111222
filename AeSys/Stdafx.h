@@ -117,16 +117,13 @@ const double EoMmPerInch = 25.4;
 #include "EoGeLine.h"
 #include "EoGePolyline.h"
 #include "EoGeUniquePoint.h"
-
 #include "EoGsViewport.h"
 #include "EoGsModelTransform.h"
 #include "EoGsViewTransform.h"
-
 #include "EoDb.h"
 #include "EoDbLineType.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbFontDefinition.h"
-
 #include "EoDbPrimitive.h"
 #include "EoDbBlockReference.h"
 #include "EoDbDimension.h"
@@ -138,13 +135,10 @@ const double EoMmPerInch = 25.4;
 #include "EoDbSpline.h"
 #include "EoDbText.h"
 #include "EoDbMaskedPrimitive.h"
-#include "EoDbGroup.h"
 #include "EoDbBlock.h"
 #include "EoDbGroupList.h"
-#include "EoDbLayer.h"
 
 #include "PrimState.h"
-#include "Section.h"
 
 #if defined(USING_DDE)
 #include <ddeml.h>

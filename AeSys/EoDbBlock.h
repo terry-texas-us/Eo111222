@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "EoDbGroup.h"
+
 class EoDbBlock : public EoDbGroup {
  private:
   EoUInt16 m_wBlkTypFlgs;     // block type flag values

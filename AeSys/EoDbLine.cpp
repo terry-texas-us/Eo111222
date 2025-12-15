@@ -1,8 +1,10 @@
 ﻿#include "stdafx.h"
 #include "AeSys.h"
 #include "AeSysView.h"
-
+#if defined(USING_ODA)
 #include "ddeGItms.h"
+#endif  // USING_ODA
+#include "EoDbLine.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

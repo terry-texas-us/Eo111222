@@ -1,6 +1,5 @@
 ﻿#include "stdafx.h"
 
-#include "MainFrm.h"
 #include "AeSys.h"
 
 #include "EoMfOutputDockablePane.h"

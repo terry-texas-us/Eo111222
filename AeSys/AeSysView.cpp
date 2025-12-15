@@ -1,10 +1,11 @@
 ﻿#include "stdafx.h"
-#include "MainFrm.h"
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "MainFrm.h"
 
 #include "EoGsModelTransform.h"
+#include "Section.h"
 
 #if defined(USING_ODA)
 #include "AbstractViewPE.h"
@@ -13,8 +14,11 @@
 #include "ColorMapping.h"
 #endif  // USING_ODA
 
+#if defined(USING_DDE)
 #include "Dde.h"
 #include "DdeGItms.h"
+#endif  // USING_DDE
+
 #include "EoDlgActiveViewKeyplan.h"
 #include "EoDlgSetAngle.h"
 #include "EoDlgSetUnitsAndPrecision.h"
@@ -24,6 +28,7 @@
 #include "EoDlgViewZoom.h"
 #include "EoDlgSetScale.h"
 #include "EoDbBitmapFile.h"
+#include "EoDbGroup.h"
 #include "EoDlgSelectIsometricView.h"
 #include "EoDlgViewParameters.h"
 

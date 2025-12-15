@@ -5,8 +5,11 @@
 #include "GiContextForDbDatabase.h"
 #endif  // USING_ODA
 
+#include "Section.h"
+
 class AeSysDoc;
 class EoMfOutputDockablePane;
+
 #if defined(USING_ODA)
 //class AeSysView : public CView, OdGiContextForDbDatabase {
 // protected:

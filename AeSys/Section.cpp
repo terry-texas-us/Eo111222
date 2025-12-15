@@ -1,6 +1,8 @@
 ﻿#include "StdAfx.h"
 
-Section::Section(void) {}
+#include "Section.h"
+
+Section::Section() {}
 Section::Section(double width, double depth, long properties) {
   m_Width = width;
   m_Depth = depth;

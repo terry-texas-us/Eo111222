@@ -2,6 +2,7 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 
+#include "EoDbGroup.h"
 #include "EoDlgModeLetter.h"
 
 // EoDlgModeLetter dialog

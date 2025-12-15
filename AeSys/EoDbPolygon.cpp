@@ -2,7 +2,11 @@
 #include "AeSys.h"
 #include "AeSysView.h"
 
+#if defined(USING_ODA)
 #include "ddeGItms.h"
+#endif  // USING_ODA
+#include "EoDbPolygon.h"
+
 #include "Hatch.h"
 
 EoInt16 EoDbPolygon::sm_SpecialPolygonStyle = -1;

@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
-#include "AeSysDoc.h"
 #include "AeSysView.h"
 
+#include "EoDbLineTypeTable.h"
 #include "EoDlgSetupLineType.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSetupLineType, CDialog)

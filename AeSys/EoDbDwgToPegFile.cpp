@@ -1,5 +1,4 @@
 ﻿#include "stdafx.h"
-#include "AeSysDoc.h"
 
 #if defined(USING_ODA)
 #include "DbDictionary.h"

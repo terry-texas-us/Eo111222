@@ -1,6 +1,4 @@
 ﻿#include "stdafx.h"
-#include "AeSys.h"
-//#include "AeSysView.h"
 
 #include "EoDlgSetupNote.h"
 

@@ -1,10 +1,8 @@
 ﻿#include "stdafx.h"
 
-#include <atlbase.h>
 #include "xmllite.h"
 #include <strsafe.h>
 
-#include "MainFrm.h"
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
@@ -17,29 +15,29 @@
 #include "DbLinetypeTable.h"
 #include "DbLinetypeTableRecord.h"
 #include "ColorMapping.h"
-
 #include "EoDbDwgToPegFile.h"
 #endif  // USING_ODA
-
+#if defined(USING_DDE)
 #include "ddeGItms.h"
+#endif // USING_DDE
+
 #include "EoDbBlockFile.h"
 #include "EoDbJobFile.h"
+#include "EoDbLayer.h"
 #include "EoDbTracingFile.h"
 #include "EoDbPegFile.h"
-#include "Hatch.h"
-#include "EoDlgLayerPropertiesManager.h"
 #include "EoDlgDrawOptions.h"
 #include "EoDlgEditTrapCommandsQuery.h"
 #include "EoDlgFileManage.h"
 #include "EoDlgSelectGotoHomePoint.h"
 #include "EoDlgSetHomePoint.h"
-#include "EoDlgSetLength.h"
 #include "EoDlgSetPastePosition.h"
 #include "EoDlgSetupColor.h"
 #include "EoDlgSetupHatch.h"
-#include "EoDlgSetupNote.h"
 #include "EoDlgSetupLineType.h"
+#include "EoDlgSetupNote.h"
 #include "EoDlgTrapFilter.h"
+#include "Hatch.h"
 #include "lex.h"
 
 UINT_PTR CALLBACK OFNHookProcFileTracing(HWND, UINT, WPARAM, LPARAM);

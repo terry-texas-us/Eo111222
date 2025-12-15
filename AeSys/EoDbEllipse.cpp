@@ -2,7 +2,10 @@
 #include "AeSys.h"
 #include "AeSysView.h"
 
+#if defined(USING_ODA)
 #include "ddeGItms.h"
+#endif  // USING_ODA
+#include "EoDbEllipse.h"
 
 EoDbEllipse::EoDbEllipse(const EoGePoint3d& centerPoint, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis,
                          double sweepAngle)

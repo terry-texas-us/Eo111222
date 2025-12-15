@@ -2,7 +2,10 @@
 #include "AeSys.h"
 #include "AeSysView.h"
 
+#if defined(USING_ODA)
 #include "ddeGItms.h"
+#endif  // USING_ODA
+#include "EoDbDimension.h"
 
 EoUInt16 EoDbDimension::sm_wFlags = 0;
 

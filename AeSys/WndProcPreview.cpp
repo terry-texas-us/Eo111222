@@ -2,8 +2,6 @@
 
 #include "AeSysView.h"
 
-#include "Preview.h"
-
 CBitmap* WndProcPreview_Bitmap = nullptr;
 
 LRESULT CALLBACK WndProcPreview(HWND, UINT, WPARAM, LPARAM);

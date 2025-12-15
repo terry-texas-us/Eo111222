@@ -4,6 +4,7 @@
 #include "AeSysView.h"
 
 #include "EoDlgLowPressureDuctOptions.h"
+#include "Section.h"
 
 LPWSTR TrimLeadingSpace(LPWSTR szString) {
   LPWSTR p = szString;

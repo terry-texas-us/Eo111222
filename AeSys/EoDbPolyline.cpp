@@ -1,8 +1,10 @@
 ﻿#include "stdafx.h"
 #include "AeSys.h"
 #include "AeSysView.h"
-
+#if defined(USING_ODA)
 #include "ddeGItms.h"
+#endif  // USING_ODA
+#include "EoDbPolyline.h"
 
 EoUInt16 EoDbPolyline::sm_EdgeToEvaluate = 0;
 EoUInt16 EoDbPolyline::sm_Edge = 0;

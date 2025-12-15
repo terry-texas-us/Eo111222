@@ -1,5 +1,4 @@
 ﻿#include "stdafx.h"
-#include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "EoDlgPipeOptions.h"
