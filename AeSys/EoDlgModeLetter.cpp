@@ -2,9 +2,11 @@
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
+#include "EoDbCharacterCellDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbText.h"
 #include "EoDlgModeLetter.h"
+#include "EoGeReferenceSystem.h"
 #include "PrimState.h"
 
 // EoDlgModeLetter dialog

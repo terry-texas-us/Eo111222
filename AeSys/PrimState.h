@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include "EoDbCharacterCellDefinition.h"
+#include "EoDbFontDefinition.h"
+
+
 class CPrimState {
  private:
   EoInt16 m_PointStyle {0};

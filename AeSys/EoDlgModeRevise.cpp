@@ -3,11 +3,11 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-#include "EoDbPrimitive.h"
+#include "EoDbFontDefinition.h"
 #include "EoDbText.h"
 #include "EoDlgModeRevise.h"
+#include "EoGeReferenceSystem.h"
 
-// EoDlgModeRevise dialog
 /// <remarks>
 ///Text related attributes for all notes generated will be same as those of the text last picked.
 ///Upon exit attributes restored to their entry values.

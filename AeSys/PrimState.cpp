@@ -2,6 +2,7 @@
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDbFontDefinition.h"
 #include "EoDbPrimitive.h"
 #include "PrimState.h"
 

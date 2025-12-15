@@ -3,10 +3,12 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbCharacterCellDefinition.h"
 #include "EoDbDimension.h"
 #include "EoDbEllipse.h"
 #include "EoDbLine.h"
 #include "EoDbText.h"
+#include "EoGeReferenceSystem.h"
 #include "PrimState.h"
 
 double DimensionModePickTolerance = 0.05;

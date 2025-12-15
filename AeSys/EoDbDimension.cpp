@@ -3,6 +3,7 @@
 #include "AeSys.h"
 #include "AeSysView.h"
 #include "EoDbDimension.h"
+#include "EoDbFontDefinition.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
 #include "PrimState.h"

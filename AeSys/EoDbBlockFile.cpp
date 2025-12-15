@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 
+#include "EoDb.h"
 #include "EoDbBlockFile.h"
 #include "EoDbPrimitive.h"
 

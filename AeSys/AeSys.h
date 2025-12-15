@@ -10,6 +10,8 @@
 #endif  // USING_ODA
 
 #include "EoApOptions.h"
+#include "EoDb.h"
+
 
 extern COLORREF ViewBackgroundColor;
 extern COLORREF RubberbandColor;

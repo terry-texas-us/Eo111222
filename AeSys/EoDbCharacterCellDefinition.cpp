@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include "EoDbCharacterCellDefinition.h"
+
 EoDbCharacterCellDefinition::EoDbCharacterCellDefinition() {
   m_dChrHgt = 0.1;
   m_dChrExpFac = 1.;

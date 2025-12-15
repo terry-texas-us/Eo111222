@@ -6,6 +6,7 @@
 #include "AeSysView.h"
 
 #include "ddeCmds.h"
+#include "EoDbCharacterCellDefinition.h"
 #include "EoDbJobFile.h"
 
 using namespace dde;

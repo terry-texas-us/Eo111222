@@ -1,5 +1,8 @@
 ﻿#include "stdafx.h"
+
 #include "AeSysView.h"
+#include "EoDbCharacterCellDefinition.h"
+#include "EoGeReferenceSystem.h"
 
 EoGeReferenceSystem::EoGeReferenceSystem()
     : m_Origin(EoGePoint3d::kOrigin), m_XDirection(EoGeVector3d::kXAxis), m_YDirection(EoGeVector3d::kYAxis) {}

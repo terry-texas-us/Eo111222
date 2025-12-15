@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+class EoDbCharacterCellDefinition;
+
 class EoDbGroupList : public CObList {
  public:
   EoDbGroupList() {}

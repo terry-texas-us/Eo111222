@@ -1,7 +1,10 @@
 ﻿#pragma once
 
 class EoDbBlock;
+class EoDbCharacterCellDefinition;
+class EoDbFontDefinition;
 class EoDbPoint;
+class EoDbPrimitive;
 
 class EoDbGroup : public CObList {
   static EoDbPrimitive* sm_PrimitiveToIgnore;

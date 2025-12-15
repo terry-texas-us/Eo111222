@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "EoDb.h"
 #include "EoDbPrimitive.h"
 
 class EoDbPolygon : public EoDbPrimitive {

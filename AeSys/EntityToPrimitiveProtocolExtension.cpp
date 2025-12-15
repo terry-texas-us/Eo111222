@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
+
 #include "AeSysDoc.h"
+#include "EoDbCharacterCellDefinition.h"
 
 #if defined(USING_ODA)
 #include "RxObjectImpl.h"

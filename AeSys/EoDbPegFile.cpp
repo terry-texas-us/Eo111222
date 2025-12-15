@@ -12,6 +12,7 @@
 #include "EoDbPolyline.h"
 #include "EoDbSpline.h"
 #include "EoDbText.h"
+#include "EoGeReferenceSystem.h"
 
 void EoDbPegFile::Load(AeSysDoc* document) {
   ReadHeaderSection(document);

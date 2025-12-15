@@ -1,7 +1,8 @@
 ﻿#pragma once
 
+#include "EoDbFontDefinition.h"
 #include "EoDbPrimitive.h"
-
+#include "EoGeReferenceSystem.h"
 
 class EoDbDimension : public EoDbPrimitive {
   EoGeLine m_ln;

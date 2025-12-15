@@ -3,11 +3,13 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbCharacterCellDefinition.h"
 #include "EoDbEllipse.h"
 #include "EoDbLine.h"
 #include "EoDbPoint.h"
 #include "EoDbText.h"
 #include "EoDlgLowPressureDuctOptions.h"
+#include "EoGeReferenceSystem.h"
 #include "PrimState.h"
 #include "Section.h"
 

@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include "EoDb.h"
+#include "EoDbFontDefinition.h"
 #include "EoDlgSetupNote.h"
 
 // EoDlgSetupNote dialog

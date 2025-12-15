@@ -1,5 +1,8 @@
 ﻿#include "stdafx.h"
 
+#include "EoDb.h"
+#include "EoDbFontDefinition.h"
+
 EoDbFontDefinition::EoDbFontDefinition() {
   Set(EoDb::kStrokeType, L"Simplex.psf", EoDb::kPathRight, EoDb::kAlignLeft, EoDb::kAlignBottom, 0.0);
 }

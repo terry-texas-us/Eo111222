@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "AeSysDoc.h"
 
+#include "EoDbCharacterCellDefinition.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgTrapModify.h"

@@ -10,6 +10,7 @@
 #include "EoDbPolygon.h"
 #include "EoDbSpline.h"
 #include "EoDbText.h"
+#include "EoGeReferenceSystem.h"
 
 /// <remarks>
 /// Vax: the excess 128 exponent .. range is -128 (0x00 - 0x80) to 127 (0xff - 0x80)
