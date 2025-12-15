@@ -98,10 +98,10 @@ typedef unsigned short EoUInt16;
 
 UINT AFXAPI HashKey(CString& str);
 
-const double PI = 3.14159265358979323846;
-const double HALF_PI = PI / 2.;
-const double QUARTER_PI = PI / 4.;
-const double RADIAN = PI / 180.;
+const double PI = 3.141592653589793;
+const double HALF_PI = PI / 2.0;
+const double QUARTER_PI = PI / 4.0;
+const double RADIAN = PI / 180.0;
 const double TWOPI = PI + PI;
 
 const double EoMmPerInch = 25.4;

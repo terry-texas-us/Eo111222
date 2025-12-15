@@ -588,7 +588,7 @@ EoDbText::EoDbText(EoByte* buffer, int version) {
     m_ReferenceSystem.SetOrigin(((CVaxPnt*)&buffer[8])->Convert() * 1.e-3);
 
     double dChrHgt = ((CVaxFloat*)&buffer[20])->Convert();
-    dChrHgt = min(max(dChrHgt, .01e3), 100.e3);
+    dChrHgt = min(max(dChrHgt, 0.01e3), 100.e3);
 
     double dChrExpFac = ((CVaxFloat*)&buffer[24])->Convert();
     dChrExpFac = min(max(dChrExpFac, 0.0), 10.);

@@ -20,7 +20,7 @@ class EoDlgLayerPropertiesManager : public CDialog {
 
  protected:
   virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog(void);
+  virtual BOOL OnInitDialog();
 
   DECLARE_MESSAGE_MAP()
  public:

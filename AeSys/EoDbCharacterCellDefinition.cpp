@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
 
 EoDbCharacterCellDefinition::EoDbCharacterCellDefinition() {
-  m_dChrHgt = .1;
+  m_dChrHgt = 0.1;
   m_dChrExpFac = 1.;
   m_dTextRotAng = 0.;
   m_dChrSlantAng = 0.;
@@ -34,7 +34,7 @@ void CharCellDef_EncdRefSys(const EoGeVector3d& normal, EoDbCharacterCellDefinit
 
   yAxis = EoGeCrossProduct(normal, xAxis);
 
-  xAxis *= .6 * ccd.ChrHgtGet() * ccd.ChrExpFacGet();
+  xAxis *= 0.6 * ccd.ChrHgtGet() * ccd.ChrExpFacGet();
 
   yAxis.RotAboutArbAx(normal, ccd.ChrSlantAngGet());
   yAxis *= ccd.ChrHgtGet();

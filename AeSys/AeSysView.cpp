@@ -325,26 +325,26 @@ AeSysView::AeSysView() {
   m_ViewRendered = false;
   m_ViewTrueTypeFonts = true;
   m_ViewWireframe = false;
-  m_SelectApertureSize = .005;
+  m_SelectApertureSize = 0.005;
   m_PlotScaleFactor = 1.0f;
 
-  m_GapSpaceFactor = .5;    // Edge space factor 50 percent of character height
-  m_CircleRadius = .03125;  // Circle radius
+  m_GapSpaceFactor = 0.5;    // Edge space factor 50 percent of character height
+  m_CircleRadius = 0.03125;  // Circle radius
   m_EndItemType = 1;        // Arrow type
-  m_EndItemSize = .1;       // Arrow size
-  m_BubbleRadius = .125;    // Bubble radius
+  m_EndItemSize = 0.1;       // Arrow size
+  m_BubbleRadius = 0.125;    // Bubble radius
   m_NumberOfSides = 0;      // Number of sides on bubble (0 indicating circle)
   m_EngagedPrimitive = 0;
   m_EngagedGroup = 0;
 
-  m_CenterLineEccentricity = .5;  // Center line eccentricity for parallel lines
+  m_CenterLineEccentricity = 0.5;  // Center line eccentricity for parallel lines
   m_ContinueCorner = false;
   m_AssemblyGroup = 0;
   m_BeginSectionGroup = 0;
   m_EndSectionGroup = 0;
   m_BeginSectionLine = 0;
   m_EndSectionLine = 0;
-  m_DistanceBetweenLines = .0625;
+  m_DistanceBetweenLines = 0.0625;
 
   InitializeConstraints();
 
@@ -354,12 +354,12 @@ AeSysView::AeSysView() {
   SetEditModeRotationAngles(0.0, 0.0, 45.);
 
   m_FixupModeAxisTolerance = 2.;
-  m_FixupModeCornerSize = .25;
+  m_FixupModeCornerSize = 0.25;
 
   m_GenerateTurningVanes = true;  // turning vanes generation flag
   m_InsideRadiusFactor = 1.5;     // inside radius elbow factor
-  m_DuctSeamSize = .03125;
-  m_DuctTapSize = .09375;  // tap size
+  m_DuctSeamSize = 0.03125;
+  m_DuctTapSize = 0.09375;  // tap size
   m_ContinueSection = false;
   m_BeginWithTransition = false;
   m_DuctJustification = Center;  // justification (Left, Center or Right)
@@ -371,10 +371,10 @@ AeSysView::AeSysView() {
   m_OriginalPreviousGroupDisplayed = true;
   m_OriginalPreviousGroup = 0;
 
-  m_PreviousSection(.125, .0625, Section::Rectangular);
-  m_CurrentSection(.125, .0625, Section::Rectangular);
-  m_PipeTicSize = .03125;
-  m_PipeRiseDropRadius = .03125;
+  m_PreviousSection(0.125, 0.0625, Section::Rectangular);
+  m_CurrentSection(0.125, 0.0625, Section::Rectangular);
+  m_PipeTicSize = 0.03125;
+  m_PipeRiseDropRadius = 0.03125;
   m_CurrentPipeSymbolIndex = 0;
 
   m_PowerArrow = false;
@@ -456,7 +456,7 @@ void AeSysView::OnKillFocus(CWnd* newWindow) {
 
   CView::OnKillFocus(newWindow);
 }
-void AeSysView::OnPaint(void) {
+void AeSysView::OnPaint() {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnPaint()\n", this);
   CView::OnPaint();
 }
@@ -1112,9 +1112,9 @@ void AeSysView::On3dViewsIsometric() {
 
     EoGeVector3d Direction;
 
-    Direction.x = iLeftRight == 0 ? .5773503 : -.5773503;
-    Direction.y = iFrontBack == 0 ? .5773503 : -.5773503;
-    Direction.z = iAboveUnder == 0 ? -.5773503 : .5773503;
+    Direction.x = iLeftRight == 0 ? 0.5773503 : -0.5773503;
+    Direction.y = iFrontBack == 0 ? 0.5773503 : -0.5773503;
+    Direction.z = iAboveUnder == 0 ? -0.5773503 : 0.5773503;
 
     m_ViewTransform.SetPosition(-Direction);
     m_ViewTransform.SetDirection(-Direction);
@@ -1500,7 +1500,7 @@ void AeSysView::OnPrimPerpJump() {
   }
 }
 void AeSysView::OnHelpKey() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"READY")); }
-AeSysView* AeSysView::GetActiveView(void) {
+AeSysView* AeSysView::GetActiveView() {
   CMDIFrameWndEx* MDIFrameWnd = (CMDIFrameWndEx*)AfxGetMainWnd();
 
   if (MDIFrameWnd == nullptr) { return nullptr; }

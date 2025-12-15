@@ -412,7 +412,7 @@ void EoDlgLayerPropertiesManager::OnNMRClickListLayersList(NMHDR* /* pNMHDR */, 
   *pResult = 0;
 }
 
-BOOL EoDlgLayerPropertiesManager::OnInitDialog(void) {
+BOOL EoDlgLayerPropertiesManager::OnInitDialog() {
   CDialog::OnInitDialog();
 
   m_LayerList.DeleteAllItems();

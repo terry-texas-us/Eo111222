@@ -5,8 +5,8 @@
 EoUInt16 wPrvKeyDwn = 0;
 EoGePoint3d rPrvPos;
 
-void AeSysView::OnCutModeOptions(void) {}
-void AeSysView::OnCutModeTorch(void) {
+void AeSysView::OnCutModeOptions() {}
+void AeSysView::OnCutModeTorch() {
   AeSysDoc* Document = GetDocument();
 
   EoGePoint3d pt = GetCursorPosition();
@@ -43,7 +43,7 @@ void AeSysView::OnCutModeTorch(void) {
   Document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, Groups);
   delete Groups;
 }
-void AeSysView::OnCutModeSlice(void) {
+void AeSysView::OnCutModeSlice() {
   EoGePoint3d ptCur = GetCursorPosition();
   if (wPrvKeyDwn != ID_OP2) {
     rPrvPos = ptCur;
@@ -97,7 +97,7 @@ void AeSysView::OnCutModeSlice(void) {
     ModeLineUnhighlightOp(wPrvKeyDwn);
   }
 }
-void AeSysView::OnCutModeField(void) {
+void AeSysView::OnCutModeField() {
   CDC* DeviceContext = GetDC();
   EoGePoint3d ptCur = GetCursorPosition();
   if (wPrvKeyDwn != ID_OP4) {
@@ -174,7 +174,7 @@ void AeSysView::OnCutModeField(void) {
     ModeLineUnhighlightOp(wPrvKeyDwn);
   }
 }
-void AeSysView::OnCutModeClip(void) {
+void AeSysView::OnCutModeClip() {
   CDC* DeviceContext = GetDC();
   EoGePoint3d ptCur = GetCursorPosition();
   if (wPrvKeyDwn != ID_OP7) {
@@ -258,12 +258,12 @@ void AeSysView::OnCutModeClip(void) {
     ModeLineUnhighlightOp(wPrvKeyDwn);
   }
 }
-void AeSysView::OnCutModeDivide(void) {}
-void AeSysView::OnCutModeReturn(void) {
+void AeSysView::OnCutModeDivide() {}
+void AeSysView::OnCutModeReturn() {
   RubberBandingDisable();
   ModeLineUnhighlightOp(wPrvKeyDwn);
 }
-void AeSysView::OnCutModeEscape(void) {
+void AeSysView::OnCutModeEscape() {
   RubberBandingDisable();
   ModeLineUnhighlightOp(wPrvKeyDwn);
 }

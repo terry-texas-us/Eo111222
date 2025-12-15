@@ -312,7 +312,7 @@ class AeSysDoc : public CDocument {
   afx_msg void OnTrapCommandsSquare();
   afx_msg void OnTrapCommandsUnblock();
   // Returns a pointer to the currently active document.
-  static AeSysDoc* GetDoc(void);
+  static AeSysDoc* GetDoc();
 
  protected:
   DECLARE_MESSAGE_MAP()

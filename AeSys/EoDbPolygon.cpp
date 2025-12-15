@@ -187,7 +187,7 @@ void EoDbPolygon::AddReportToMessageList(EoGePoint3d ptPic) {
     double dAng;
     double dLen = EoGeVector3d(*pBegPt, *pEndPt).Length();  // Length of edge
 
-    if (EoGeVector3d(ptPic, *pBegPt).Length() > dLen * .5)
+    if (EoGeVector3d(ptPic, *pBegPt).Length() > dLen * 0.5)
       dAng = EoGeLine(*pEndPt, *pBegPt).AngleFromXAxisXY();
     else
       dAng = EoGeLine(*pBegPt, *pEndPt).AngleFromXAxisXY();

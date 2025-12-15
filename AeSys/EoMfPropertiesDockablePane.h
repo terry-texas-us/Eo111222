@@ -27,7 +27,7 @@ class EoMfPropertiesDockablePane : public CDockablePane {
 
  public:  // Overrides
  public:  // Implementation
-  virtual ~EoMfPropertiesDockablePane(void);
+  virtual ~EoMfPropertiesDockablePane();
 
  protected:
   afx_msg int OnCreate(LPCREATESTRUCT createStruct);
@@ -37,9 +37,9 @@ class EoMfPropertiesDockablePane : public CDockablePane {
 
   afx_msg LRESULT OnPropertyChanged(WPARAM, LPARAM);
 
-  afx_msg void OnExpandAllProperties(void);
-  afx_msg void OnProperties1(void);
-  afx_msg void OnSortProperties(void);
+  afx_msg void OnExpandAllProperties();
+  afx_msg void OnProperties1();
+  afx_msg void OnSortProperties();
   afx_msg void OnUpdateExpandAllProperties(CCmdUI* pCmdUI);
   afx_msg void OnUpdateProperties1(CCmdUI* pCmdUI);
   afx_msg void OnUpdateSortProperties(CCmdUI* pCmdUI);
@@ -47,14 +47,14 @@ class EoMfPropertiesDockablePane : public CDockablePane {
   DECLARE_MESSAGE_MAP()
 
  protected:  // Operations
-  void AdjustLayout(void);
-  void InitializePropertyGrid(void);
-  void SetPropertyGridFont(void);
-  void SetWorkspaceTabsSubItemsState(void);
+  void AdjustLayout();
+  void InitializePropertyGrid();
+  void SetPropertyGridFont();
+  void SetWorkspaceTabsSubItemsState();
 
  public:  // Operations
-  CMFCPropertyGridCtrl& GetPropertyGridCtrl(void) { return m_PropertyGrid; }
-  CMFCPropertyGridProperty& GetActiveViewScaleProperty(void) {
+  CMFCPropertyGridCtrl& GetPropertyGridCtrl() { return m_PropertyGrid; }
+  CMFCPropertyGridProperty& GetActiveViewScaleProperty() {
     return *m_PropertyGrid.FindItemByData(kActiveViewScale);
   }
 };

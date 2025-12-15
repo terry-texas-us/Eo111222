@@ -85,8 +85,8 @@ void AeSysView::OnAnnotateModeBubble() {
     EoGeVector3d MajorAxis = MinorAxis;
     MajorAxis.RotAboutArbAx(PlaneNormal, -HALF_PI);
 
-    MajorAxis *= .06;
-    MinorAxis *= .1;
+    MajorAxis *= 0.06;
+    MinorAxis *= 0.1;
     EoGeReferenceSystem ReferenceSystem(CurrentPnt, MajorAxis, MinorAxis);
 
     int PrimitiveState = pstate.Save();
@@ -247,15 +247,15 @@ void AeSysView::OnAnnotateModeCutIn() {
     if (!CurrentText.IsEmpty()) {
       EoGeLine Line = pLine->Ln();
       double dAng = Line.AngleFromXAxisXY();
-      if (dAng > .25 * TWOPI && dAng < .75 * TWOPI) dAng += PI;
+      if (dAng > 0.25 * TWOPI && dAng < 0.75 * TWOPI) dAng += PI;
 
       EoGeVector3d PlaneNormal = CameraDirection();
       EoGeVector3d MinorAxis = ViewUp();
       MinorAxis.RotAboutArbAx(PlaneNormal, dAng);
       EoGeVector3d MajorAxis = MinorAxis;
       MajorAxis.RotAboutArbAx(PlaneNormal, -HALF_PI);
-      MajorAxis *= .06;
-      MinorAxis *= .1;
+      MajorAxis *= 0.06;
+      MinorAxis *= 0.1;
       EoGeReferenceSystem ReferenceSystem(CurrentPnt, MajorAxis, MinorAxis);
 
       EoInt16 nPenColor = pstate.PenColor();
@@ -413,8 +413,8 @@ void AeSysView::GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoi
   EoGePoint3dArray ItemPoints;
 
   if (type == 1 || type == 2) {
-    double dAng = .244978663127;
-    double dLen = size / .970142500145;
+    double dAng = 0.244978663127;
+    double dLen = size / 0.970142500145;
 
     EoGePoint3d pt(endPoint.ProjectToward(beginPoint, dLen));
     ItemPoints.Add(pt.RotateAboutAxis(endPoint, PlaneNormal, dAng));
@@ -425,7 +425,7 @@ void AeSysView::GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoi
     group->AddTail(Primitive);
   } else if (type == 3) {
     double dAng = 9.96686524912e-2;
-    double dLen = size / .99503719021;
+    double dLen = size / 0.99503719021;
 
     EoGePoint3d pt(endPoint.ProjectToward(beginPoint, dLen));
     ItemPoints.Add(pt.RotateAboutAxis(endPoint, PlaneNormal, dAng));
@@ -433,8 +433,8 @@ void AeSysView::GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoi
 
     group->AddTail(new EoDbPolyline(1, 1, ItemPoints));
   } else if (type == 4) {
-    double dAng = .785398163397;
-    double dLen = .5 * size / .707106781187;
+    double dAng = 0.785398163397;
+    double dLen = 0.5 * size / 0.707106781187;
 
     EoGePoint3d pt(endPoint.ProjectToward(beginPoint, dLen));
     ItemPoints.Add(pt.RotateAboutAxis(endPoint, PlaneNormal, dAng));

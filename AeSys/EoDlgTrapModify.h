@@ -26,7 +26,7 @@ class EoDlgTrapModify : public CDialog {
   AeSysDoc* m_Document;
 
  public:
-  void ModifyPolygons(void);
+  void ModifyPolygons();
 };
 
 const int TM_TEXT_ALL = 0;

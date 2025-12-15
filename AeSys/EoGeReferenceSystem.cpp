@@ -16,7 +16,7 @@ EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin, EoDbCharacte
   m_XDirection = m_YDirection;
   m_XDirection.RotAboutArbAx(vNorm, -HALF_PI);
   m_YDirection.RotAboutArbAx(vNorm, ccd.ChrSlantAngGet());
-  m_XDirection *= .6 * ccd.ChrHgtGet() * ccd.ChrExpFacGet();
+  m_XDirection *= 0.6 * ccd.ChrHgtGet() * ccd.ChrExpFacGet();
   m_YDirection *= ccd.ChrHgtGet();
 }
 EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin, EoGeVector3d xDirection, EoGeVector3d yDirection)
@@ -53,7 +53,7 @@ void EoGeReferenceSystem::Rescale(EoDbCharacterCellDefinition& ccd) {
   m_XDirection.Normalize();
   m_YDirection = m_XDirection;
   m_YDirection.RotAboutArbAx(vNorm, HALF_PI + ccd.ChrSlantAngGet());
-  m_XDirection *= .6 * ccd.ChrHgtGet() * ccd.ChrExpFacGet();
+  m_XDirection *= 0.6 * ccd.ChrHgtGet() * ccd.ChrExpFacGet();
   m_YDirection *= ccd.ChrHgtGet();
 }
 void EoGeReferenceSystem::Set(const EoGePoint3d& origin, const EoGeVector3d xDirection, const EoGeVector3d yDirection) {

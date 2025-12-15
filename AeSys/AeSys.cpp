@@ -29,7 +29,8 @@ double dOffAng;
 int iTableOffset[64];
 float fTableValue[1536];
 }  // namespace hatch
-double dPWids[] = {0.0, .0075, .015, .02, .03, .0075, .015, .0225, .03, .0075, .015, .0225, .03, .0075, .015, .0225};
+double dPWids[] = {0.0,  0.0075, 0.015, 0.02,   0.03, 0.0075, 0.015, 0.0225,
+                   0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
 
 #include "PegColors.h"
 
@@ -132,8 +133,8 @@ AeSys::AeSys() {
   m_TrapModeAddGroups = true;
   m_NodalModeAddGroups = true;
   m_ClipboardFormatIdentifierForEoGroups = 0;
-  m_EngagedLength = 0.;
-  m_EngagedAngle = 0.;
+  m_EngagedLength = 0.0;
+  m_EngagedAngle = 0.0;
   m_DimensionLength = 0.125;
   m_DimensionAngle = 45.;
   m_Units = kInches;
@@ -179,7 +180,7 @@ BOOL AeSys::InitInstance() {
 
   // InitCommonControlsEx() is required on Windows XP if an application manifest specifies use of ComCtl32.dll version 6 or later to enable visual styles.
   // Otherwise, any window creation will fail.
-  INITCOMMONCONTROLSEX InitCtrls {};
+  INITCOMMONCONTROLSEX InitCtrls{};
   InitCtrls.dwSize = sizeof(InitCtrls);
   // Indicates common controls to load from the dll;
   // animate control, header, hot key, list-view, progress bar, status bar, tab, tooltip, toolbar, trackbar, tree-view, and up-down control classes.
@@ -410,7 +411,7 @@ void AeSys::OnModeRevise() {
   EoDlgModeRevise Dialog;
   Dialog.DoModal();
 }
-void AeSys::OnModeTrap(void) {
+void AeSys::OnModeTrap() {
   if (m_TrapModeAddGroups) {
     m_ModeResourceIdentifier = IDR_TRAP_MODE;
     LoadModeResources(ID_MODE_TRAP);
@@ -572,8 +573,8 @@ void AeSys::InitGbls(CDC* deviceContext) {
 
   pstate.SetPolygonIntStyleId(1);
 
-  hatch::dXAxRefVecScal = .1;
-  hatch::dYAxRefVecScal = .1;
+  hatch::dXAxRefVecScal = 0.1;
+  hatch::dYAxRefVecScal = 0.1;
   hatch::dOffAng = 0.;
 
   EoDbCharacterCellDefinition ccd;
@@ -584,7 +585,7 @@ void AeSys::InitGbls(CDC* deviceContext) {
 
   SetUnits(kInches);
   SetArchitecturalUnitsFractionPrecision(8);
-  SetDimensionLength(.125);
+  SetDimensionLength(0.125);
   SetDimensionAngle(45.);
 
   m_TrapHighlighted = true;
@@ -609,8 +610,8 @@ void AeSys::EditColorPalette() {
   cc.lpCustColors = GreyPalette;
   ::ChooseColor(&cc);
 
-  MessageBoxW(nullptr, L"The background color is no longer associated with the pen Color Palette.", L"Deprecation Notice",
-              MB_OK | MB_ICONINFORMATION);
+  MessageBoxW(nullptr, L"The background color is no longer associated with the pen Color Palette.",
+              L"Deprecation Notice", MB_OK | MB_ICONINFORMATION);
 
   AeSysDoc::GetDoc()->UpdateAllViews(nullptr, 0L, nullptr);
 }
@@ -721,7 +722,7 @@ ALLOCDLL_EXPORT void odrxFree(void* p) { ::free(p); }
 #endif  // USING_ODA
 
 // Modifies the base accelerator table by defining the mode specific keys.
-void AeSys::BuildModifiedAcceleratorTable(void) {
+void AeSys::BuildModifiedAcceleratorTable() {
   CMainFrame* MainFrame = (CMainFrame*)AfxGetMainWnd();
 
   HACCEL AcceleratorTableHandle = MainFrame->m_hAccelTable;
@@ -745,7 +746,7 @@ void AeSys::BuildModifiedAcceleratorTable(void) {
 
   delete[] ModifiedAcceleratorTable;
 }
-void AeSys::OnFileOpen(void) {
+void AeSys::OnFileOpen() {
   CString Filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER);
 
   DWORD Flags(OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
@@ -878,7 +879,7 @@ void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Unit
 
   CString formatSpecification;
   formatSpecification.Format(L"%%%i.%if", width, precision);
-  CString formatted { };
+  CString formatted{};
 
   switch (units) {
     case kFeet:
@@ -938,7 +939,7 @@ double AeSys::ParseLength(LPWSTR aszLen) {
       break;
 
     case 'C':
-      dRetVal *= .3937007874015748;
+      dRetVal *= 0.3937007874015748;
       break;
 
     case 'D':

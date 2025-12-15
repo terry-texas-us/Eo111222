@@ -17,8 +17,8 @@ void Section::operator()(double width, double depth, long properties) {
 }
 void Section::SetWidth(double width) { m_Width = width; }
 void Section::SetDepth(double depth) { m_Depth = depth; }
-double Section::Width(void) const { return m_Width; }
-double Section::Depth(void) const { return m_Depth; }
+double Section::Width() const { return m_Width; }
+double Section::Depth() const { return m_Depth; }
 bool Section::Identical(const Section& section) {
   return (m_Width == section.m_Width && m_Depth == section.m_Depth && m_Properties == section.m_Properties) ? true
                                                                                                             : false;

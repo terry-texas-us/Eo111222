@@ -126,7 +126,7 @@ void EoDbDimension::AddReportToMessageList(EoGePoint3d pt) {
   double dRel;
   m_ln.RelOfPtToEndPts(pt, dRel);
 
-  if (dRel > .5)
+  if (dRel > 0.5)
     // Normalize line prior to angle determination
     dAng += PI;
 
@@ -289,7 +289,7 @@ void EoDbDimension::SetDefaultNote() {
   WCHAR cText0 = m_strText[0];
   if (cText0 != 'R' && cText0 != 'D') {
     dAng = m_ln.AngleFromXAxisXY();
-    double dDis = .075;
+    double dDis = 0.075;
     if (dAng > HALF_PI + RADIAN && dAng < TWOPI - HALF_PI + RADIAN) {
       dAng -= PI;
       dDis = -dDis;
@@ -305,10 +305,10 @@ void EoDbDimension::SetDefaultNote() {
 
   vRefYAx = ActiveView->ViewUp();
   vRefYAx.RotAboutArbAx(vPlnNorm, dAng);
-  vRefYAx *= .1;
+  vRefYAx *= 0.1;
   vRefXAx = vRefYAx;
   vRefXAx.RotAboutArbAx(vPlnNorm, -HALF_PI);
-  vRefXAx *= .6;
+  vRefXAx *= 0.6;
 
   m_ReferenceSystem.SetXDirection(vRefXAx);
   m_ReferenceSystem.SetYDirection(vRefYAx);

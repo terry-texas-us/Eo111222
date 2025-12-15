@@ -1519,8 +1519,8 @@ void AeSysDoc::OnSetupFillHatch() {
 
   if (Dialog.DoModal() == IDOK) {
     pstate.SetPolygonIntStyle(EoDb::kHatch);
-    hatch::dXAxRefVecScal = EoMax(.01, Dialog.m_HatchXScaleFactor);
-    hatch::dYAxRefVecScal = EoMax(.01, Dialog.m_HatchYScaleFactor);
+    hatch::dXAxRefVecScal = EoMax(0.01, Dialog.m_HatchXScaleFactor);
+    hatch::dYAxRefVecScal = EoMax(0.01, Dialog.m_HatchYScaleFactor);
     hatch::dOffAng = EoArcLength(Dialog.m_HatchRotationAngle);
   }
 }
@@ -1853,7 +1853,7 @@ void AeSysDoc::OnPrimExtractStr() {
   return;
 }
 // Returns a pointer to the currently active document.
-AeSysDoc* AeSysDoc::GetDoc(void) {
+AeSysDoc* AeSysDoc::GetDoc() {
   CMDIFrameWndEx* Frame = (CMDIFrameWndEx*)AfxGetMainWnd();
   if (Frame == nullptr) { return nullptr; }
   CMDIChildWndEx* Child = (CMDIChildWndEx*)Frame->MDIGetActive();

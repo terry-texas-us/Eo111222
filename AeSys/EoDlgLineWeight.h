@@ -15,7 +15,7 @@ class EoDlgLineWeight : public CDialog {
 
  protected:
   virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog(void);
+  virtual BOOL OnInitDialog();
 
  private:
   int m_OriginalLineWeight;

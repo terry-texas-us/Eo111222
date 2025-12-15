@@ -292,7 +292,7 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDb
   tm.Inverse();
 
   long* plStrokeChrDef = plStrokeFontDef + 96;
-  double dChrSpac = 1. + (.32 + fd.CharacterSpacing()) / .6;
+  double dChrSpac = 1. + (0.32 + fd.CharacterSpacing()) / 0.6;
 
   EoGePoint3d ptStroke = EoGePoint3d::kOrigin;
   EoGePoint3d ptChrPos = ptStroke;
@@ -312,7 +312,7 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDb
       int iX = (int)((plStrokeChrDef[i - 1] / 4096L) % 4096L);
       if ((iX & 2048) != 0) iX = -(iX - 2048);
 
-      ptStroke += EoGeVector3d(.01 / .6 * iX, .01 * iY, 0.0);
+      ptStroke += EoGeVector3d(0.01 / 0.6 * iX, 0.01 * iY, 0.0);
 
       if (plStrokeChrDef[i - 1] / 16777216 == 5) {
         polyline::__End(view, deviceContext, 1);
@@ -454,7 +454,7 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
 
                 // Offset the line position left of current position
                 ReferenceSystem.SetOrigin(
-                    text_GetNewLinePos(fd, referenceSystem, 0.0, NumberOfCharactersToDisplay * (1 + .32 / .6)));
+                    text_GetNewLinePos(fd, referenceSystem, 0.0, NumberOfCharactersToDisplay * (1 + 0.32 / 0.6)));
                 BottomLeftCorner = ReferenceSystem.Origin();
               }
               StartPosition = EndSemicolon + 1;
@@ -462,9 +462,9 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
               NumberOfCharactersToDisplay = text.GetLength() - StartPosition;
 
               if (Parameter == '1') {
-                ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, .5, 0.0));
+                ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 0.5, 0.0));
               } else if (Parameter == '2') {
-                ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, -.5, 0.0));
+                ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, -0.5, 0.0));
               }
               DisplayTextSegment(view, deviceContext, fd, ReferenceSystem, StartPosition, NumberOfCharactersToDisplay,
                                  text);
@@ -486,7 +486,7 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
             }
             // Offset the line position up and conditionally left of current position
             ReferenceSystem.SetOrigin(
-                text_GetNewLinePos(fd, ReferenceSystem, -.35, NumberOfCharactersToDisplay * (1 + .32 / .6)));
+                text_GetNewLinePos(fd, ReferenceSystem, -0.35, NumberOfCharactersToDisplay * (1 + 0.32 / 0.6)));
             BottomLeftCorner = ReferenceSystem.Origin();
             StartPosition += 2;  // skip the formatting characters
             NumberOfCharactersToDisplay = TextSegmentDelimiter - StartPosition;
@@ -497,7 +497,7 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
             }
             // Offset the line position back down left
             ReferenceSystem.SetOrigin(
-                text_GetNewLinePos(fd, ReferenceSystem, .35, NumberOfCharactersToDisplay * (1 + .32 / .6) - .72));
+                text_GetNewLinePos(fd, ReferenceSystem, 0.35, NumberOfCharactersToDisplay * (1 + 0.32 / 0.6) - 0.72));
             BottomLeftCorner = ReferenceSystem.Origin();
 
             if (text[TextSegmentDelimiter] == '/') {  // display the text segment delimitier
@@ -506,7 +506,7 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
             StartPosition = TextSegmentDelimiter + 1;
             NumberOfCharactersToDisplay = EndSemicolon - StartPosition;
             //Offset the line position down
-            ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, .35, .72));
+            ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 0.35, 0.72));
             BottomLeftCorner = ReferenceSystem.Origin();
 
             if (NumberOfCharactersToDisplay > 0) {  // Display subscripted text segment
@@ -515,7 +515,7 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
               StartPosition += NumberOfCharactersToDisplay;
             }
             ReferenceSystem.SetOrigin(
-                text_GetNewLinePos(fd, ReferenceSystem, -.35, NumberOfCharactersToDisplay * (1 + .32 / .6)));
+                text_GetNewLinePos(fd, ReferenceSystem, -0.35, NumberOfCharactersToDisplay * (1 + 0.32 / 0.6)));
             BottomLeftCorner = ReferenceSystem.Origin();
 
             NumberOfCharactersToDisplay = 0;
@@ -563,21 +563,21 @@ int LengthSansFormattingCharacters(const CString& text) {
 }
 void GetBottomLeftCorner(EoDbFontDefinition& fd, int iChrs, EoGePoint3d& pt) {
   if (iChrs > 0) {
-    double dTxtExt = iChrs + (iChrs - 1) * (.32 + fd.CharacterSpacing()) / .6;
+    double dTxtExt = iChrs + (iChrs - 1) * (0.32 + fd.CharacterSpacing()) / 0.6;
 
     if (fd.Path() == EoDb::kPathRight || fd.Path() == EoDb::kPathLeft) {
       if (fd.Path() == EoDb::kPathRight) {
         if (fd.HorizontalAlignment() == EoDb::kAlignLeft)
           pt.x = 0.;
         else if (fd.HorizontalAlignment() == EoDb::kAlignCenter)
-          pt.x = -dTxtExt * .5;
+          pt.x = -dTxtExt * 0.5;
         else if (fd.HorizontalAlignment() == EoDb::kAlignRight)
           pt.x = -dTxtExt;
       } else {
         if (fd.HorizontalAlignment() == EoDb::kAlignLeft)
           pt.x = dTxtExt;
         else if (fd.HorizontalAlignment() == EoDb::kAlignCenter)
-          pt.x = dTxtExt * .5;
+          pt.x = dTxtExt * 0.5;
         else if (fd.HorizontalAlignment() == EoDb::kAlignRight)
           pt.x = 0.;
         pt.x = pt.x - 1.;
@@ -585,28 +585,28 @@ void GetBottomLeftCorner(EoDbFontDefinition& fd, int iChrs, EoGePoint3d& pt) {
       if (fd.VerticalAlignment() == EoDb::kAlignBottom)
         pt.y = 0.;
       else if (fd.VerticalAlignment() == EoDb::kAlignMiddle)
-        pt.y = -.5;
+        pt.y = -0.5;
       else if (fd.VerticalAlignment() == EoDb::kAlignTop)
         pt.y = -1.;
     } else if (fd.Path() == EoDb::kPathDown || fd.Path() == EoDb::kPathUp) {
       if (fd.HorizontalAlignment() == EoDb::kAlignLeft)
         pt.x = 0.;
       else if (fd.HorizontalAlignment() == EoDb::kAlignCenter)
-        pt.x = -.5;
+        pt.x = -0.5;
       else if (fd.HorizontalAlignment() == EoDb::kAlignRight)
         pt.x = -1.;
       if (fd.Path() == EoDb::kPathUp) {
         if (fd.VerticalAlignment() == EoDb::kAlignBottom)
           pt.y = 0.;
         else if (fd.VerticalAlignment() == EoDb::kAlignMiddle)
-          pt.y = -dTxtExt * .5;
+          pt.y = -dTxtExt * 0.5;
         else if (fd.VerticalAlignment() == EoDb::kAlignTop)
           pt.y = -dTxtExt;
       } else {
         if (fd.VerticalAlignment() == EoDb::kAlignBottom)
           pt.y = dTxtExt;
         else if (fd.VerticalAlignment() == EoDb::kAlignMiddle)
-          pt.y = dTxtExt * .5;
+          pt.y = dTxtExt * 0.5;
         else if (fd.VerticalAlignment() == EoDb::kAlignTop)
           pt.y = 0.;
         pt.y = pt.y - 1.;
@@ -629,7 +629,7 @@ void text_GetBoundingBox(EoDbFontDefinition& fd, EoGeReferenceSystem& referenceS
     double TextHeight = 1.;
     double TextWidth = 1.;
 
-    double CharacterSpacing = (.32 + fd.CharacterSpacing()) / .6;
+    double CharacterSpacing = (0.32 + fd.CharacterSpacing()) / 0.6;
     double d = (double)numberOfCharacters + CharacterSpacing * (double)(numberOfCharacters - 1);
 
     if (fd.Path() == EoDb::kPathRight || fd.Path() == EoDb::kPathLeft) {
@@ -645,7 +645,7 @@ void text_GetBoundingBox(EoDbFontDefinition& fd, EoGeReferenceSystem& referenceS
     if (fd.HorizontalAlignment() == EoDb::kAlignLeft) {
       ptsBox[2].x = TextWidth;
     } else if (fd.HorizontalAlignment() == EoDb::kAlignCenter) {
-      ptsBox[0].x = -TextWidth * .5;
+      ptsBox[0].x = -TextWidth * 0.5;
       ptsBox[2].x = ptsBox[0].x + TextWidth;
     } else {
       ptsBox[0].x = -TextWidth;
@@ -653,15 +653,15 @@ void text_GetBoundingBox(EoDbFontDefinition& fd, EoGeReferenceSystem& referenceS
     if (fd.VerticalAlignment() == EoDb::kAlignTop) {
       ptsBox[0].y = -TextHeight;
     } else if (fd.VerticalAlignment() == EoDb::kAlignMiddle) {
-      ptsBox[0].y = -TextHeight * .5;
+      ptsBox[0].y = -TextHeight * 0.5;
       ptsBox[2].y = ptsBox[0].y + TextHeight;
     } else {
       ptsBox[2].y = TextHeight;
     }
     if (spaceFactor > DBL_EPSILON) {
-      ptsBox[0].x -= spaceFactor / .6;
+      ptsBox[0].x -= spaceFactor / 0.6;
       ptsBox[0].y -= spaceFactor;
-      ptsBox[2].x += spaceFactor / .6;
+      ptsBox[2].x += spaceFactor / 0.6;
       ptsBox[2].y += spaceFactor;
     }
     ptsBox[1].x = ptsBox[2].x;

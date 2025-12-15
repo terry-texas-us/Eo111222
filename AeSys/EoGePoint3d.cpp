@@ -83,7 +83,7 @@ bool EoGePoint3d::IsContained(const EoGePoint3d& lowerLeftPoint, const EoGePoint
 EoGePoint3d EoGePoint3d::Max(EoGePoint3d& ptA, EoGePoint3d& ptB) {
   return EoGePoint3d(EoMax(ptA.x, ptB.x), EoMax(ptA.y, ptB.y), EoMax(ptA.z, ptB.z));
 }
-EoGePoint3d EoGePoint3d::Mid(EoGePoint3d& ptA, EoGePoint3d& ptB) { return ptA + (ptA - ptB) * .5; }
+EoGePoint3d EoGePoint3d::Mid(EoGePoint3d& ptA, EoGePoint3d& ptB) { return ptA + (ptA - ptB) * 0.5; }
 EoGePoint3d EoGePoint3d::Min(EoGePoint3d& ptA, EoGePoint3d& ptB) {
   return EoGePoint3d(EoMin(ptA.x, ptB.x), EoMin(ptA.y, ptB.y), EoMin(ptA.z, ptB.z));
 }

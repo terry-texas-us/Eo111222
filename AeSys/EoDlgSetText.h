@@ -17,7 +17,7 @@ class EoDlgSetText : public CDialog {
 
  protected:
   virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog(void);
+  virtual BOOL OnInitDialog();
 
  public:
   CString m_sText;

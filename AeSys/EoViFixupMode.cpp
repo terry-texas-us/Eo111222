@@ -18,7 +18,7 @@ EoGeLine lnPrv;
 EoGeLine lnRef;
 EoGeLine lnSec;
 
-void AeSysView::OnFixupModeOptions(void) {
+void AeSysView::OnFixupModeOptions() {
   EoDlgFixupOptions Dialog;
   Dialog.m_FixupAxisTolerance = m_FixupModeAxisTolerance;
   Dialog.m_FixupModeCornerSize = m_FixupModeCornerSize;
@@ -29,7 +29,7 @@ void AeSysView::OnFixupModeOptions(void) {
   }
 }
 
-void AeSysView::OnFixupModeReference(void) {
+void AeSysView::OnFixupModeReference() {
   AeSysDoc* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
@@ -112,7 +112,7 @@ void AeSysView::OnFixupModeReference(void) {
     ModeLineUnhighlightOp(PreviousFixupCommand);
   }
 }
-void AeSysView::OnFixupModeMend(void) {
+void AeSysView::OnFixupModeMend() {
   AeSysDoc* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
@@ -213,7 +213,7 @@ void AeSysView::OnFixupModeMend(void) {
     ModeLineUnhighlightOp(PreviousFixupCommand);
   }
 }
-void AeSysView::OnFixupModeChamfer(void) {
+void AeSysView::OnFixupModeChamfer() {
   AeSysDoc* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
@@ -282,7 +282,7 @@ void AeSysView::OnFixupModeChamfer(void) {
     ModeLineUnhighlightOp(PreviousFixupCommand);
   }
 }
-void AeSysView::OnFixupModeFillet(void) {
+void AeSysView::OnFixupModeFillet() {
   AeSysDoc* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
@@ -360,7 +360,7 @@ void AeSysView::OnFixupModeFillet(void) {
     ModeLineUnhighlightOp(PreviousFixupCommand);
   }
 }
-void AeSysView::OnFixupModeSquare(void) {
+void AeSysView::OnFixupModeSquare() {
   AeSysDoc* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
@@ -384,7 +384,7 @@ void AeSysView::OnFixupModeSquare(void) {
     }
   }
 }
-void AeSysView::OnFixupModeParallel(void) {
+void AeSysView::OnFixupModeParallel() {
   AeSysDoc* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
@@ -406,7 +406,7 @@ void AeSysView::OnFixupModeParallel(void) {
     }
   }
 }
-void AeSysView::OnFixupModeReturn(void) {
+void AeSysView::OnFixupModeReturn() {
   AeSysDoc* Document = GetDocument();
 
   if (pSegRef != 0) {
@@ -416,7 +416,7 @@ void AeSysView::OnFixupModeReturn(void) {
   }
   ModeLineUnhighlightOp(PreviousFixupCommand);
 }
-void AeSysView::OnFixupModeEscape(void) {
+void AeSysView::OnFixupModeEscape() {
   AeSysDoc* Document = GetDocument();
 
   if (pSegRef != 0) {

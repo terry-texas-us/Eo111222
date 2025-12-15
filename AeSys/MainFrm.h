@@ -32,7 +32,7 @@ class CMainFrame : public CMDIFrameWndEx {
 
   // Implementation
  public:
-  static CMFCToolBarComboBoxButton* GetFindCombo(void);
+  static CMFCToolBarComboBoxButton* GetFindCombo();
   virtual ~CMainFrame();
 #ifdef _DEBUG
   virtual void AssertValid() const;
@@ -53,8 +53,8 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg void OnWindowManager();
   afx_msg void OnMdiTabbed();
   afx_msg void OnUpdateMdiTabbed(CCmdUI* pCmdUI);
-  afx_msg void OnViewCustomize(void);
-  afx_msg void OnViewFullScreen(void);
+  afx_msg void OnViewCustomize();
+  afx_msg void OnViewFullScreen();
   afx_msg LRESULT OnToolbarContextMenu(WPARAM, LPARAM);
   afx_msg void OnApplicationLook(UINT id);
   afx_msg void OnUpdateApplicationLook(CCmdUI* pCmdUI);
@@ -82,9 +82,9 @@ class CMainFrame : public CMDIFrameWndEx {
   BOOL SetPaneText(int index, LPCWSTR newText);
   void SetPaneStyle(int index, UINT style);
   void SetPaneTextColor(int index, COLORREF textColor = COLORREF(-1));
-  void OnStartProgress(void);
+  void OnStartProgress();
 
-  CMFCStatusBar& GetStatusBar(void) { return m_StatusBar; }
-  EoMfOutputDockablePane& GetOutputPane(void) { return m_OutputPane; }
-  EoMfPropertiesDockablePane& GetPropertiesPane(void) { return m_PropertiesPane; }
+  CMFCStatusBar& GetStatusBar() { return m_StatusBar; }
+  EoMfOutputDockablePane& GetOutputPane() { return m_OutputPane; }
+  EoMfPropertiesDockablePane& GetPropertiesPane() { return m_PropertiesPane; }
 };

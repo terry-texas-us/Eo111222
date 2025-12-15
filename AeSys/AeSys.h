@@ -43,8 +43,8 @@ class AeSys : public CWinAppEx
   AeSys& operator=(const AeSys&) = delete;
   // Overrides
  public:
-  virtual BOOL InitInstance(void);
-  virtual int ExitInstance(void);
+  virtual BOOL InitInstance();
+  virtual int ExitInstance();
   virtual void PreLoadState();
 
  public:
@@ -109,7 +109,7 @@ class AeSys : public CWinAppEx
   void AddStringToMessageList(UINT stringResourceIdentifier);
   void AddStringToMessageList(UINT stringResourceIdentifier, const CString& string);
   // Modifies the base accelerator table by defining the mode specific keys.
-  void BuildModifiedAcceleratorTable(void);
+  void BuildModifiedAcceleratorTable();
   UINT CheckMenuItem(UINT uId, UINT uCheck) { return (::CheckMenuItem(m_MainFrameMenuHandle, uId, uCheck)); }
   UINT ClipboardFormatIdentifierForEoGroups() { return (m_ClipboardFormatIdentifierForEoGroups); }
   int ConfirmMessageBox(UINT stringResourceIdentifier, const CString& string);
@@ -220,10 +220,10 @@ class AeSys : public CWinAppEx
   void WarningMessageBox(UINT stringResourceIdentifier, const CString& string);
 
  public:
-  afx_msg void OnAppAbout(void);
+  afx_msg void OnAppAbout();
   afx_msg void OnEditClipboardDataGroups();
   afx_msg void OnEditClipboardDataText();
-  afx_msg void OnFileOpen(void);
+  afx_msg void OnFileOpen();
   afx_msg void OnFileRun();
   afx_msg void OnHelpContents();
   afx_msg void OnModeAnnotate();

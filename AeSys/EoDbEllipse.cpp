@@ -267,7 +267,7 @@ void EoDbEllipse::GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVe
   // Number of points based on angle and a smothness coefficient
   double dLen = EoMax(majorAxis.Length(), minorAxis.Length());
   int iPts = EoMax(2, abs(EoRound(sweepAngle / TWOPI * 32.)));
-  iPts = EoMin(128, EoMax(iPts, abs(EoRound(sweepAngle * dLen / .250))));
+  iPts = EoMin(128, EoMax(iPts, abs(EoRound(sweepAngle * dLen / 0.250))));
 
   EoGeTransformMatrix tm(centerPoint, majorAxis, minorAxis);
   tm.Inverse();

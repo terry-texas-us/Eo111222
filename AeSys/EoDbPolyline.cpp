@@ -94,7 +94,7 @@ void EoDbPolyline::AddReportToMessageList(EoGePoint3d ptPic) {
     double AngleInXYPlane;
     double EdgeLength = EoGeVector3d(ptBeg, ptEnd).Length();
 
-    if (EoGeVector3d(ptPic, ptBeg).Length() > EdgeLength * .5) {
+    if (EoGeVector3d(ptPic, ptBeg).Length() > EdgeLength * 0.5) {
       AngleInXYPlane = EoGeLine(ptEnd, ptBeg).AngleFromXAxisXY();
     } else {
       AngleInXYPlane = EoGeLine(ptBeg, ptEnd).AngleFromXAxisXY();

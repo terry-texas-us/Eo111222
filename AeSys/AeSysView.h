@@ -214,7 +214,7 @@ class AeSysView : public CView {
 
  public:  // Operations
   /// <summary>Returns a pointer to the currently active view.</summary>
-  static AeSysView* GetActiveView(void);
+  static AeSysView* GetActiveView();
 
   void VerifyFindString(CMFCToolBarComboBoxButton* findCombo, CString& findText);
 
@@ -804,7 +804,7 @@ class AeSysView : public CView {
   afx_msg void OnFilePlotFull();
   afx_msg void OnFilePlotQuarter();
   afx_msg void OnFilePrint();
-  afx_msg void OnFind(void);
+  afx_msg void OnFind();
   afx_msg void On3dViewsBack();
   afx_msg void On3dViewsBottom();
   afx_msg void On3dViewsFront();

@@ -3,7 +3,7 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 
-double DimensionModePickTolerance = .05;
+double DimensionModePickTolerance = 0.05;
 EoGePoint3d PreviousDimensionCursorPosition;
 EoUInt16 PreviousDimensionCommand = 0;
 
@@ -31,13 +31,13 @@ EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
         continue;
 
       if (ln.IsSelectedByPointXY(pt, DimensionModePickTolerance, ptProj, dRel))
-        return (*dRel <= .5) ? ln.begin : ln.end;
+        return (*dRel <= 0.5) ? ln.begin : ln.end;
     }
   }
   return (pt);
 }
 
-void AeSysView::OnDimensionModeOptions(void) {
+void AeSysView::OnDimensionModeOptions() {
   if (PreviousDimensionCommand != 0) {
     RubberBandingDisable();
     ModeLineUnhighlightOp(PreviousDimensionCommand);
@@ -45,7 +45,7 @@ void AeSysView::OnDimensionModeOptions(void) {
   PreviousDimensionCursorPosition = GetCursorPosition();
 }
 
-void AeSysView::OnDimensionModeArrow(void) {
+void AeSysView::OnDimensionModeArrow() {
   AeSysDoc* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
 
@@ -77,11 +77,11 @@ void AeSysView::OnDimensionModeArrow(void) {
         EoGePoint3d pt;
 
         EoDbGroup* NewGroup = new EoDbGroup;
-        if (*dRel <= .5) {
-          GenerateLineEndItem(1, .1, TestLine.end, TestLine.begin, NewGroup);
+        if (*dRel <= 0.5) {
+          GenerateLineEndItem(1, 0.1, TestLine.end, TestLine.begin, NewGroup);
           pt = TestLine.begin;
         } else {
-          GenerateLineEndItem(1, .1, TestLine.begin, TestLine.end, NewGroup);
+          GenerateLineEndItem(1, 0.1, TestLine.begin, TestLine.end, NewGroup);
           pt = TestLine.end;
         }
         Document->AddWorkLayerGroup(NewGroup);
@@ -96,7 +96,7 @@ void AeSysView::OnDimensionModeArrow(void) {
   PreviousDimensionCursorPosition = ptCur;
 }
 
-void AeSysView::OnDimensionModeLine(void) {
+void AeSysView::OnDimensionModeLine() {
   AeSysDoc* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
   RubberBandingDisable();
@@ -114,7 +114,7 @@ void AeSysView::OnDimensionModeLine(void) {
   }
   RubberBandingStartAtEnable(ptCur, Lines);
 }
-void AeSysView::OnDimensionModeDLine(void) {
+void AeSysView::OnDimensionModeDLine() {
   AeSysDoc* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
   if (PreviousDimensionCommand == ID_OP3 || PreviousDimensionCommand == ID_OP4) {
@@ -123,7 +123,7 @@ void AeSysView::OnDimensionModeDLine(void) {
       EoDbGroup* Group = new EoDbGroup;
 
       if (PreviousDimensionCommand == ID_OP4) {
-        GenerateLineEndItem(1, .1, ptCur, PreviousDimensionCursorPosition, Group);
+        GenerateLineEndItem(1, 0.1, ptCur, PreviousDimensionCursorPosition, Group);
         ModeLineUnhighlightOp(PreviousDimensionCommand);
         PreviousDimensionCommand = ModeLineHighlightOp(ID_OP3);
       }
@@ -149,7 +149,7 @@ void AeSysView::OnDimensionModeDLine(void) {
   SetCursorPosition(ptCur);
   RubberBandingStartAtEnable(ptCur, Lines);
 }
-void AeSysView::OnDimensionModeDLine2(void) {
+void AeSysView::OnDimensionModeDLine2() {
   AeSysDoc* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
   if (PreviousDimensionCommand == 0) {
@@ -160,7 +160,7 @@ void AeSysView::OnDimensionModeDLine2(void) {
     if (PreviousDimensionCursorPosition != ptCur) {
       EoDbGroup* Group = new EoDbGroup;
       if (PreviousDimensionCommand == ID_OP4)
-        GenerateLineEndItem(1, .1, ptCur, PreviousDimensionCursorPosition, Group);
+        GenerateLineEndItem(1, 0.1, ptCur, PreviousDimensionCursorPosition, Group);
       else {
         ModeLineUnhighlightOp(PreviousDimensionCommand);
         PreviousDimensionCommand = ModeLineHighlightOp(ID_OP4);
@@ -171,7 +171,7 @@ void AeSysView::OnDimensionModeDLine2(void) {
       pDim->SetTextVerAlign(EoDb::kAlignMiddle);
 
       Group->AddTail(pDim);
-      GenerateLineEndItem(1, .1, PreviousDimensionCursorPosition, ptCur, Group);
+      GenerateLineEndItem(1, 0.1, PreviousDimensionCursorPosition, ptCur, Group);
       Document->AddWorkLayerGroup(Group);
       Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
@@ -184,7 +184,7 @@ void AeSysView::OnDimensionModeDLine2(void) {
   SetCursorPosition(ptCur);
   RubberBandingStartAtEnable(ptCur, Lines);
 }
-void AeSysView::OnDimensionModeExten(void) {
+void AeSysView::OnDimensionModeExten() {
   AeSysDoc* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
   if (PreviousDimensionCommand != ID_OP5) {
@@ -195,8 +195,8 @@ void AeSysView::OnDimensionModeExten(void) {
   } else {
     ptCur = ProjPtToLn(ptCur);
     if (PreviousDimensionCursorPosition != ptCur) {
-      ptCur = ptCur.ProjectToward(PreviousDimensionCursorPosition, -.1875);
-      PreviousDimensionCursorPosition = PreviousDimensionCursorPosition.ProjectToward(ptCur, .0625);
+      ptCur = ptCur.ProjectToward(PreviousDimensionCursorPosition, -0.1875);
+      PreviousDimensionCursorPosition = PreviousDimensionCursorPosition.ProjectToward(ptCur, 0.0625);
 
       EoDbGroup* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, ptCur));
       Document->AddWorkLayerGroup(Group);
@@ -206,7 +206,7 @@ void AeSysView::OnDimensionModeExten(void) {
     ModeLineUnhighlightOp(PreviousDimensionCommand);
   }
 }
-void AeSysView::OnDimensionModeRadius(void) {
+void AeSysView::OnDimensionModeRadius() {
   AeSysDoc* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
 
@@ -230,7 +230,7 @@ void AeSysView::OnDimensionModeRadius(void) {
 
       Group->AddTail(pDim);
 
-      GenerateLineEndItem(1, .1, ptBeg, ptEnd, Group);
+      GenerateLineEndItem(1, 0.1, ptBeg, ptEnd, Group);
       Document->AddWorkLayerGroup(Group);
       Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
@@ -254,7 +254,7 @@ void AeSysView::OnDimensionModeDiameter() {
 
       EoDbGroup* Group = new EoDbGroup;
 
-      GenerateLineEndItem(1, .1, ptEnd, ptBeg, Group);
+      GenerateLineEndItem(1, 0.1, ptEnd, ptBeg, Group);
 
       EoDbDimension* pDim = new EoDbDimension(1, 1, EoGeLine(ptBeg, ptEnd));
       pDim->SetText(L"D" + pDim->Text());
@@ -265,7 +265,7 @@ void AeSysView::OnDimensionModeDiameter() {
       pDim->SetTextVerAlign(EoDb::kAlignMiddle);
       Group->AddTail(pDim);
 
-      GenerateLineEndItem(1, .1, ptBeg, ptEnd, Group);
+      GenerateLineEndItem(1, 0.1, ptBeg, ptEnd, Group);
       Document->AddWorkLayerGroup(Group);
       Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
@@ -275,7 +275,7 @@ void AeSysView::OnDimensionModeDiameter() {
     PreviousDimensionCursorPosition = ptCur;
   }
 }
-void AeSysView::OnDimensionModeAngle(void) {
+void AeSysView::OnDimensionModeAngle() {
   CDC* DeviceContext = GetDC();
 
   AeSysDoc* Document = GetDocument();
@@ -329,10 +329,10 @@ void AeSysView::OnDimensionModeAngle(void) {
         EoGePoint3d ptArrow = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, RADIAN);
 
         EoDbGroup* Group = new EoDbGroup;
-        GenerateLineEndItem(1, .1, ptArrow, ln.begin, Group);
+        GenerateLineEndItem(1, 0.1, ptArrow, ln.begin, Group);
         Group->AddTail(new EoDbEllipse(1, 1, ptCen, vXAx, vYAx, dAng));
         ptArrow = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, dAng - RADIAN);
-        GenerateLineEndItem(1, .1, ptArrow, ln.end, Group);
+        GenerateLineEndItem(1, 0.1, ptArrow, ln.end, Group);
 
         int PrimitiveState = pstate.Save();
 
@@ -345,10 +345,10 @@ void AeSysView::OnDimensionModeAngle(void) {
         EoDbCharacterCellDefinition ccd;
         pstate.GetCharCellDef(ccd);
         ccd.TextRotAngSet(0.0);
-        ccd.ChrHgtSet(.1);
+        ccd.ChrHgtSet(0.1);
         pstate.SetCharCellDef(ccd);
 
-        EoGePoint3d ptPvt = ptCur.ProjectToward(ptCen, -.25);
+        EoGePoint3d ptPvt = ptCur.ProjectToward(ptCen, -0.25);
         CharCellDef_EncdRefSys(vPlnNorm, ccd, vXAx, vYAx);
         EoGeReferenceSystem ReferenceSystem(ptPvt, vXAx, vYAx);
         CString Note;
@@ -363,7 +363,7 @@ void AeSysView::OnDimensionModeAngle(void) {
     }
   }
 }
-void AeSysView::OnDimensionModeConvert(void) {
+void AeSysView::OnDimensionModeConvert() {
   EoGePoint3d ptCur = GetCursorPosition();
   if (PreviousDimensionCommand != 0) {
     RubberBandingDisable();
@@ -421,7 +421,7 @@ void AeSysView::OnDimensionModeConvert(void) {
   }
   PreviousDimensionCursorPosition = ptCur;
 }
-void AeSysView::OnDimensionModeReturn(void) {
+void AeSysView::OnDimensionModeReturn() {
   EoGePoint3d ptCur = GetCursorPosition();
   if (PreviousDimensionCommand != 0) {
     RubberBandingDisable();
@@ -429,7 +429,7 @@ void AeSysView::OnDimensionModeReturn(void) {
   }
   PreviousDimensionCursorPosition = ptCur;
 }
-void AeSysView::OnDimensionModeEscape(void) {
+void AeSysView::OnDimensionModeEscape() {
   EoGePoint3d ptCur = GetCursorPosition();
 
   RubberBandingDisable();

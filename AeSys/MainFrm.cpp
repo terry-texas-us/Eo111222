@@ -492,7 +492,7 @@ void CMainFrame::SetPaneStyle(int index, UINT style) { m_StatusBar.SetPaneStyle(
 void CMainFrame::SetPaneTextColor(int index, COLORREF textColor) { m_StatusBar.SetPaneTextColor(index, textColor); }
 static UINT_PTR TimerId = 2;
 
-void CMainFrame::OnStartProgress(void) {
+void CMainFrame::OnStartProgress() {
   if (m_InProgress) {
     KillTimer(TimerId);
     m_StatusBar.EnablePaneProgressBar(nStatusProgress, -1);
@@ -518,8 +518,8 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent) {
     m_StatusBar.SetPaneProgress(nStatusProgress, m_CurrentProgress);
   }
 }
-void CMainFrame::OnViewFullScreen(void) { ShowFullScreen(); }
-CMFCToolBarComboBoxButton* CMainFrame::GetFindCombo(void) {
+void CMainFrame::OnViewFullScreen() { ShowFullScreen(); }
+CMFCToolBarComboBoxButton* CMainFrame::GetFindCombo() {
   CMFCToolBarComboBoxButton* FoundCombo = nullptr;
 
   CObList ButtonsList;

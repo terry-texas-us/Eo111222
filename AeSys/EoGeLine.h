@@ -75,7 +75,7 @@ class EoGeLine {
   /// In general; left is (eccentricity * distanceBetweenLines) to the left of this line.
   ///			 right is distanceBetweenLines to the right of the left line
   /// Left Justifification (0.0) left line on this line and right line is distanceBetweenLines to right of this line
-  /// Center Justification (.5) left and right lines the same distance from this line
+  /// Center Justification (0.5) left and right lines the same distance from this line
   /// Right Justifification (1.) right line on this line and left line is distanceBetweenLines to left of this line
   /// </param>
   bool GetParallels(double dDis, double eccentricity, EoGeLine& leftLine, EoGeLine& rightLine);
@@ -100,7 +100,7 @@ class EoGeLine {
   /// </returns>
   bool IsSelectedByPointXY(EoGePoint3d pt, const double apert, EoGePoint3d& ptProj, double* rel);
   double Length();
-  EoGePoint3d Midpoint() { return ProjectBeginPointToEndPoint(.5); }
+  EoGePoint3d Midpoint() { return ProjectBeginPointToEndPoint(0.5); }
   /// <summary>Determines if lines are parallel.</summary>
   bool ParallelTo(const EoGeLine& line);
   /// <summary>Projects a point onto line.</summary>

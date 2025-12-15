@@ -7,7 +7,7 @@ EoInt16 EoDbPrimitive::sm_SpecialPenColorIndex = 0;
 
 EoUInt16 EoDbPrimitive::sm_ControlPointIndex = USHRT_MAX;
 double EoDbPrimitive::sm_RelationshipOfPoint = 0.;
-double EoDbPrimitive::sm_SelectApertureSize = .02;
+double EoDbPrimitive::sm_SelectApertureSize = 0.02;
 
 EoDbPrimitive::EoDbPrimitive() {
   m_PenColor = 0;
