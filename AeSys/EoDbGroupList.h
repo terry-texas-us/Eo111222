@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 class EoDbCharacterCellDefinition;
+class EoDbGroup;
+class EoDbFontDefinition;
 
 class EoDbGroupList : public CObList {
  public:

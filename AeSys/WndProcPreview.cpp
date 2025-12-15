@@ -1,6 +1,8 @@
 ﻿#include "stdafx.h"
 
 #include "AeSysView.h"
+#include "EoDbBlock.h"
+#include "EoDbGroupList.h"
 #include "PrimState.h"
 
 CBitmap* WndProcPreview_Bitmap = nullptr;

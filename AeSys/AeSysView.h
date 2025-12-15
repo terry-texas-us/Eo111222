@@ -5,11 +5,20 @@
 #include "GiContextForDbDatabase.h"
 #endif  // USING_ODA
 
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
+#include "EoDbPrimitive.h"
+#include "EoGsModelTransform.h"
+#include "EoGsViewport.h"
+#include "EoGsViewTransform.h"
 #include "Section.h"
 
 class AeSysDoc;
+class EoDbBlock;
 class EoDbEllipse;
+class EoDbGroup;
 class EoDbLine;
+class EoDbPoint;
 class EoDbText;
 class EoMfOutputDockablePane;
 

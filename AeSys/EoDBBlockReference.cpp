@@ -3,6 +3,7 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
 #include "EoDbPrimitive.h"
 

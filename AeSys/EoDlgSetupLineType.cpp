@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "AeSysView.h"
 
+#include "EoDbLineType.h"
 #include "EoDbLineTypeTable.h"
 #include "EoDlgSetupLineType.h"
 #include "PrimState.h"

@@ -1,5 +1,8 @@
 ﻿#include "stdafx.h"
 
+#include "EoGsViewTransform.h"
+#include "EoGsViewport.h"
+
 EoGsViewTransform::EoGsViewTransform() {
   m_UMin = -1.0;
   m_VMin = -1.0f;
@@ -139,8 +142,9 @@ void EoGsViewTransform::BuildTransformMatrix() {
     m_ProjectionMatrix[3][2] = 0.0f;
     m_ProjectionMatrix[3][3] = 1.0f;
 
-    XMMATRIX XProjectionMatrix = XMMatrixOrthographicRH(static_cast<float>(UExtent), static_cast<float>(VExtent),
-                                                        static_cast<float>(m_NearClipDistance), static_cast<float>(m_FarClipDistance));
+    XMMATRIX XProjectionMatrix =
+        XMMatrixOrthographicRH(static_cast<float>(UExtent), static_cast<float>(VExtent),
+                               static_cast<float>(m_NearClipDistance), static_cast<float>(m_FarClipDistance));
     XProjectionMatrix = XMMatrixTranspose(XProjectionMatrix);
   }
   m_Matrix *= m_ProjectionMatrix;

@@ -2,6 +2,7 @@
 #include "AeSysDoc.h"
 
 #include "EoDbCharacterCellDefinition.h"
+#include "EoDbGroup.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgTrapModify.h"

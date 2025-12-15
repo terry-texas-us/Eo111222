@@ -3,6 +3,8 @@
 #include "AeSys.h"
 #include "AeSysView.h"
 #include "EoDbEllipse.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
 #include "PrimState.h"
 

@@ -2,6 +2,8 @@
 
 #include "AeSysView.h"
 #include "EoDbCharacterCellDefinition.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
 #include "EoDbPolygon.h"
 
 void EoDbGroupList::AddToTreeViewControl(HWND hTree, HTREEITEM htiParent) {

@@ -1,6 +1,8 @@
 ﻿#include "stdafx.h"
 
 #include "AeSys.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
 #include "EoDbLayer.h"
 #include "EoDbPrimitive.h"
 #include "EoDbTracingFile.h"

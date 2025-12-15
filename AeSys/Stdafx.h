@@ -115,13 +115,6 @@ constexpr double EoMmPerInch = 25.4;
 #include "EoGeTransformMatrix.h"
 #include "EoGeLine.h"
 #include "EoGePolyline.h"
-#include "EoGeUniquePoint.h"
-#include "EoGsViewport.h"
-#include "EoGsModelTransform.h"
-#include "EoGsViewTransform.h"
-#include "EoDbLineType.h"
-#include "EoDbBlock.h"
-#include "EoDbGroupList.h"
 
 #if defined(USING_DDE)
 #include <ddeml.h>

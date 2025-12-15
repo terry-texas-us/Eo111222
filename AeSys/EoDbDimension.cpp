@@ -4,6 +4,8 @@
 #include "AeSysView.h"
 #include "EoDbDimension.h"
 #include "EoDbFontDefinition.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
 #include "PrimState.h"

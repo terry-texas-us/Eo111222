@@ -2,6 +2,7 @@
 
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbLine.h"

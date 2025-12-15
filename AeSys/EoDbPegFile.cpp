@@ -2,6 +2,7 @@
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
+#include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
 #include "EoDbDimension.h"
 #include "EoDbEllipse.h"

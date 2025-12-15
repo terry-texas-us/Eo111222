@@ -2,6 +2,8 @@
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
 #include "EoDbLine.h"
 #include "PrimState.h"
 

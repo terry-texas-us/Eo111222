@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "EoDbLineType.h"
+
 class EoDbLayer : public EoDbGroupList {
  private:
   CString m_Name;  // layer name. If layer is externally referenced this is the full specification of the file name.

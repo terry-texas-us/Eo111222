@@ -1,9 +1,14 @@
 ﻿#pragma once
 
 #include "EoDb.h"
+#include "EoDbBlock.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
 #include "EoDbLayer.h"
 #include "EoDbLineTypeTable.h"
 #include "EoDbMaskedPrimitive.h"
+#include "EoGeUniquePoint.h"
+
 
 #if defined(USING_ODA)
 #include "DbDatabase.h"

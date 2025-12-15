@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include "EoDbLineType.h"
+
 EoDbLineType::EoDbLineType() {
   m_NumberOfDashElements = 0;
   m_DashElements = nullptr;

@@ -4,6 +4,7 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "EoDbFontDefinition.h"
+#include "EoDbGroup.h"
 #include "EoDbText.h"
 #include "EoDlgModeRevise.h"
 #include "EoGeReferenceSystem.h"

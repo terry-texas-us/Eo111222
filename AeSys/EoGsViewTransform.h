@@ -2,6 +2,8 @@
 
 #include "EoGsAbstractView.h"
 
+class EoGsViewport;
+
 class EoGsViewTransform : public EoGsAbstractView {
   double m_UMin;
   double m_VMin;
