@@ -1,7 +1,8 @@
 ﻿#include "stdafx.h"
-#include "AeSysDoc.h"
 
+#include "AeSysDoc.h"
 #include "EoDbLineTypeTable.h"
+#include "EoDbPrimitive.h"
 
 const WCHAR* EoDbLineTypeTable::LegacyLineTypes[] = {
     L"0",      L"Continuous", L"2",        L"3",       L"4",        L"5",        L"6",       L"7",        L"8",

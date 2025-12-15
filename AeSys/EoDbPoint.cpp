@@ -1,6 +1,10 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDbPoint.h"
+#include "EoDbPrimitive.h"
+#include "PrimState.h"
 
 EoDbPoint::EoDbPoint() {
   m_PenColor = 1;
@@ -58,7 +62,9 @@ const EoDbPoint& EoDbPoint::operator=(const EoDbPoint& src) {
   for (EoUInt16 n = 0; n < m_NumberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
   return (*this);
 }
-void EoDbPoint::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Point>"), this); }
+void EoDbPoint::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
+  tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Point>"), this);
+}
 EoDbPrimitive*& EoDbPoint::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPoint(*this);
   return (primitive);

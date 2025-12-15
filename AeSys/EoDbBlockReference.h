@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "EoDbPrimitive.h"
+
 class EoDbBlockReference : public EoDbPrimitive {
  private:
   CString m_strName;

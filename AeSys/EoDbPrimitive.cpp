@@ -1,5 +1,8 @@
 ﻿#include "stdafx.h"
 
+#include "EoDbPrimitive.h"
+#include "PrimState.h"
+
 EoInt16 EoDbPrimitive::sm_LayerPenColor = 1;
 EoInt16 EoDbPrimitive::sm_LayerLineType = 1;
 EoInt16 EoDbPrimitive::sm_SpecialLineTypeIndex = 0;

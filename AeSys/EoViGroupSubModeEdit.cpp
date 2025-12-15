@@ -1,7 +1,9 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbPrimitive.h"
 
 void AeSysView::OnModeGroupEdit() {
   InitializeGroupAndPrimitiveEdit();

@@ -1,10 +1,13 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDbLine.h"
+#include "PrimState.h"
+
 #if defined(USING_ODA)
 #include "ddeGItms.h"
 #endif  // USING_ODA
-#include "EoDbLine.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,7 +45,9 @@ const EoDbLine& EoDbLine::operator=(const EoDbLine& src) {
 
   return (*this);
 }
-void EoDbLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, const_cast<LPWSTR>(L"<Line>"), this); }
+void EoDbLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+  tvAddItem(tree, parent, const_cast<LPWSTR>(L"<Line>"), this);
+}
 EoDbPrimitive*& EoDbLine::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbLine(*this);
   return (primitive);

@@ -1,11 +1,14 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDbEllipse.h"
+#include "EoDbPrimitive.h"
+#include "PrimState.h"
 
 #if defined(USING_ODA)
 #include "ddeGItms.h"
 #endif  // USING_ODA
-#include "EoDbEllipse.h"
 
 EoDbEllipse::EoDbEllipse(const EoGePoint3d& centerPoint, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis,
                          double sweepAngle)
@@ -147,7 +150,9 @@ const EoDbEllipse& EoDbEllipse::operator=(const EoDbEllipse& src) {
   m_dSwpAng = src.m_dSwpAng;
   return (*this);
 }
-void EoDbEllipse::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Arc>"), this); }
+void EoDbEllipse::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
+  tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Arc>"), this);
+}
 EoDbPrimitive*& EoDbEllipse::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbEllipse(*this);
   return (primitive);
@@ -259,8 +264,7 @@ void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
 void EoDbEllipse::AddReportToMessageList(EoGePoint3d) {
   CString str;
   str.Format(L"<Ellipse> Color: %s Line Type: %s SweepAngle %f MajorAxisLength: %f", FormatPenColor().GetString(),
-             FormatLineType().GetString(),
-             m_dSwpAng, m_vMajAx.Length());
+             FormatLineType().GetString(), m_dSwpAng, m_vMajAx.Length());
   app.AddStringToMessageList(str);
 }
 void EoDbEllipse::GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) {
@@ -291,8 +295,7 @@ void EoDbEllipse::FormatGeometry(CString& str) {
 }
 void EoDbEllipse::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tStyle;%s\tSweep Angle;%f\tMajor Axis Length;%f", FormatPenColor().GetString(),
-             FormatLineType().GetString(), m_dSwpAng,
-             m_vMajAx.Length());
+             FormatLineType().GetString(), m_dSwpAng, m_vMajAx.Length());
 }
 EoGePoint3d EoDbEllipse::GetBegPt() { return (m_ptCenter + m_vMajAx); }
 void EoDbEllipse::GetBoundingBox(EoGePoint3dArray& ptsBox) {

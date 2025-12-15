@@ -1,7 +1,10 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbBlockReference.h"
+#include "EoDbPrimitive.h"
 
 EoDbBlockReference::EoDbBlockReference() {
   m_pt = EoGePoint3d::kOrigin;

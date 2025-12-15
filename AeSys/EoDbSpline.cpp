@@ -1,6 +1,9 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDbSpline.h"
+#include "PrimState.h"
 
 EoDbSpline::EoDbSpline(EoUInt16 wPts, EoGePoint3d* pt) {
   m_PenColor = pstate.PenColor();
@@ -32,7 +35,9 @@ const EoDbSpline& EoDbSpline::operator=(const EoDbSpline& src) {
   return (*this);
 }
 
-void EoDbSpline::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<BSpline>"), this); }
+void EoDbSpline::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
+  tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<BSpline>"), this);
+}
 
 EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbSpline(*this);

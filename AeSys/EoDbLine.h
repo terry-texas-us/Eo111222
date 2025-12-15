@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "EoDbPrimitive.h"
+
 class EoDbLine : public EoDbPrimitive {
  private:
   EoGeLine m_ln;

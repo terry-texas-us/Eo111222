@@ -1,7 +1,11 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbEllipse.h"
+#include "EoDbLine.h"
+#include "EoDbPrimitive.h"
 #include "EoDlgFixupOptions.h"
 
 EoUInt16 PreviousFixupCommand = 0;

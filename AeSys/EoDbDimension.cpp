@@ -1,11 +1,15 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDbDimension.h"
+#include "EoDbPrimitive.h"
+#include "EoDbText.h"
+#include "PrimState.h"
 
 #if defined(USING_ODA)
 #include "ddeGItms.h"
 #endif  // USING_ODA
-#include "EoDbDimension.h"
 
 EoUInt16 EoDbDimension::sm_wFlags = 0;
 
@@ -47,7 +51,9 @@ const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& src) {
 
   return (*this);
 }
-void EoDbDimension::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Dim>"), this); }
+void EoDbDimension::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
+  tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Dim>"), this);
+}
 EoDbPrimitive*& EoDbDimension::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbDimension(*this);
   return (primitive);

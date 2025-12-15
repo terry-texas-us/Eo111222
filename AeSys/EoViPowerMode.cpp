@@ -1,6 +1,10 @@
 ﻿#include "stdafx.h"
+
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbEllipse.h"
+#include "EoDbLine.h"
+#include "EoDbPolyline.h"
 
 void AeSysView::OnPowerModeOptions() {
   // TODO: Add your command handler code here

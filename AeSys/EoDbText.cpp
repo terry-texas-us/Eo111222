@@ -1,8 +1,11 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysView.h"
-
+#include "EoDbPrimitive.h"
+#include "EoDbText.h"
 #include "EoDlgTrapModify.h"
+#include "PrimState.h"
 
 EoDbText::EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text) {
   m_PenColor = pstate.PenColor();
@@ -24,7 +27,9 @@ const EoDbText& EoDbText::operator=(const EoDbText& src) {
 
   return (*this);
 }
-void EoDbText::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Text>"), this); }
+void EoDbText::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
+  tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Text>"), this);
+}
 EoDbPrimitive*& EoDbText::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbText(*this);
   return (primitive);
@@ -69,10 +74,9 @@ void EoDbText::AddReportToMessageList(EoGePoint3d) {
 void EoDbText::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tFont;%s\tPrecision;%s\tPath;%s\tAlignment;(%s,%s)\tSpacing;%f\tLength;%d\tText;%s",
              FormatPenColor().GetString(), m_fd.FontName().GetString(), m_fd.FormatPrecision().GetString(),
-             m_fd.FormatPath().GetString(),
-             m_fd.FormatHorizonatlAlignment().GetString(), m_fd.FormatVerticalAlignment().GetString(),
-             m_fd.CharacterSpacing(),
-             m_strText.GetLength(), m_strText.GetString());
+             m_fd.FormatPath().GetString(), m_fd.FormatHorizonatlAlignment().GetString(),
+             m_fd.FormatVerticalAlignment().GetString(), m_fd.CharacterSpacing(), m_strText.GetLength(),
+             m_strText.GetString());
 }
 void EoDbText::FormatGeometry(CString& str) {
   EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;
@@ -399,7 +403,7 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, CDC* deviceContext, Eo
   int iBkMode = deviceContext->SetBkMode(TRANSPARENT);
 
   deviceContext->TextOutW(ProjectedStartPoint.x, ProjectedStartPoint.y, (LPCWSTR)text.Mid(startPosition),
-                         numberOfCharacters);
+                          numberOfCharacters);
   deviceContext->SetBkMode(iBkMode);
   deviceContext->SetTextAlign(uTextAlign);
   deviceContext->SelectObject(pfntold);

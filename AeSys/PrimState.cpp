@@ -1,6 +1,9 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDbPrimitive.h"
+#include "PrimState.h"
 
 // State list maintenance
 CPrimState* psSav[] = {0, 0, 0, 0};

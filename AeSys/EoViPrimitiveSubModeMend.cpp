@@ -1,7 +1,10 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbPolygon.h"
+#include "EoDbPrimitive.h"
 
 void AeSysView::OnModePrimitiveMend() {
   EoGePoint3d CurrentPnt = GetCursorPosition();

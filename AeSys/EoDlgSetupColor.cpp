@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "AeSys.h"
 
+#include "EoDbPrimitive.h"
 #include "EoDlgSetupColor.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSetupColor, CDialog)

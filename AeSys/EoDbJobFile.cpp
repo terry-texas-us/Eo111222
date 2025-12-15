@@ -1,7 +1,15 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
+#include "EoDbDimension.h"
+#include "EoDbEllipse.h"
 #include "EoDbJobFile.h"
+#include "EoDbLine.h"
+#include "EoDbPoint.h"
+#include "EoDbPolygon.h"
+#include "EoDbSpline.h"
+#include "EoDbText.h"
 
 /// <remarks>
 /// Vax: the excess 128 exponent .. range is -128 (0x00 - 0x80) to 127 (0xff - 0x80)

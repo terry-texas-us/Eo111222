@@ -3,6 +3,7 @@
 
 #include "EoDbLineTypeTable.h"
 #include "EoDlgSetupLineType.h"
+#include "PrimState.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSetupLineType, CDialog)
 

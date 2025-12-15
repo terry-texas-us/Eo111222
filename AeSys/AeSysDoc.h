@@ -1,11 +1,12 @@
 ﻿#pragma once
 
+#include "EoDbLayer.h"
+#include "EoDbLineTypeTable.h"
+#include "EoDbMaskedPrimitive.h"
+
 #if defined(USING_ODA)
 #include "DbDatabase.h"
 #endif  // USING_ODA
-
-#include "EoDbLayer.h"
-#include "EoDbLineTypeTable.h"
 
 class AeSysDoc : public CDocument {
  protected:  // create from serialization only

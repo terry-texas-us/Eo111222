@@ -1,8 +1,13 @@
 ﻿#include "stdafx.h"
+
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbEllipse.h"
+#include "EoDbLine.h"
+#include "EoDbPrimitive.h"
 #include "EoDlgPipeOptions.h"
 #include "EoDlgPipeSymbol.h"
+#include "PrimState.h"
 
 void AeSysView::OnPipeModeOptions() {
   EoDlgPipeOptions Dialog;
@@ -224,7 +229,7 @@ void AeSysView::OnPipeModeDrop() {
 
 void AeSysView::OnPipeModeSymbol() {
   double SymbolSize[] = {0.09375, 0.09375, 0.09375, 0.09375, 0.125, 0.125, 0.125, 0.125, 0.125,
-                         0.125,   0.125,   0.125,   0.125,   0.125, 0.125, 0.0,  0.0,  0.09375};
+                         0.125,   0.125,   0.125,   0.125,   0.125, 0.125, 0.0,   0.0,   0.09375};
   double TicDistance[] = {0.125,   0.125,   0.125,   0.125,   0.15625, 0.15625, 0.15625, 0.15625, 0.15625,
                           0.15625, 0.15625, 0.15625, 0.15625, 0.15625, 0.15625, 0.03125, 0.03125, 0.125};
 

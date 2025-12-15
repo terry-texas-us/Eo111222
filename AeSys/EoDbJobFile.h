@@ -204,6 +204,8 @@
 ///			Text								EoByte[]	[55]...
 /// </remarks>
 
+#include "EoDbPrimitive.h"
+
 class EoDbJobFile {
  private:
   int m_Version;

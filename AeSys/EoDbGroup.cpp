@@ -1,6 +1,12 @@
 ﻿#include "stdafx.h"
+
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbBlockReference.h"
+#include "EoDbLine.h"
+#include "EoDbPoint.h"
+#include "EoDbPolyline.h"
+#include "EoDbText.h"
 
 EoDbPrimitive* EoDbGroup::sm_PrimitiveToIgnore = static_cast<EoDbPrimitive*>(nullptr);
 

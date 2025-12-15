@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "EoDbPrimitive.h"
+
 class EoDbText : public EoDbPrimitive {
   EoDbFontDefinition m_fd;
   EoGeReferenceSystem m_ReferenceSystem;

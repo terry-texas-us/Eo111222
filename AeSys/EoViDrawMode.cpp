@@ -1,9 +1,17 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbEllipse.h"
+#include "EoDbLine.h"
+#include "EoDbPoint.h"
+#include "EoDbPolygon.h"
+#include "EoDbPolyline.h"
+#include "EoDbSpline.h"
 #include "EoDlgBlockInsert.h"
+#include "PrimState.h"
 
 EoUInt16 PreviousDrawCommand = 0;
 

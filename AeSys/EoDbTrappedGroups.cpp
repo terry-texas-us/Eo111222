@@ -1,7 +1,11 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbPrimitive.h"
+#include "EoDbText.h"
+#include "PrimState.h"
 
 POSITION AeSysDoc::AddGroupToTrap(EoDbGroup* group) {
   if (app.IsTrapHighlighted()) { UpdateAllViews(nullptr, EoDb::kGroupSafeTrap, group); }

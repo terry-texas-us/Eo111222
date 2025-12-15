@@ -1,11 +1,11 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
-
+#include "EoDbPrimitive.h"
 #include "EoDlgFileManage.h"
 #include "EoDlgSetupColor.h"
 #include "EoDlgSetupLineType.h"
-
 #include "Preview.h"
 
 /// @brief Dialog class for getting a layer name from the user.

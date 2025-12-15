@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "EoDbPrimitive.h"
+
 class EoDbEllipse : public EoDbPrimitive {
  private:
   EoGePoint3d m_ptCenter;

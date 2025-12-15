@@ -1,6 +1,8 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
+#include "EoDbPrimitive.h"
 
 EoDbLayer::EoDbLayer(const CString& name, EoUInt16 stateFlags) {
   m_Name = name;

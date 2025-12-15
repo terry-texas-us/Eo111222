@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "EoDbPrimitive.h"
+
 class EoDbPolyline : public EoDbPrimitive {
   static EoUInt16 sm_EdgeToEvaluate;
   static EoUInt16 sm_Edge;

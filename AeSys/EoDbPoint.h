@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "EoDbPrimitive.h"
+
 class EoDbPoint : public EoDbPrimitive {
  private:
   EoInt16 m_PointStyle;

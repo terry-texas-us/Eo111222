@@ -1,13 +1,15 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDbPolygon.h"
+#include "EoDbPrimitive.h"
+#include "Hatch.h"
+#include "PrimState.h"
 
 #if defined(USING_ODA)
 #include "ddeGItms.h"
 #endif  // USING_ODA
-#include "EoDbPolygon.h"
-
-#include "Hatch.h"
 
 EoInt16 EoDbPolygon::sm_SpecialPolygonStyle = -1;
 
@@ -143,7 +145,9 @@ const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& src) {
   return (*this);
 }
 EoDbPolygon::~EoDbPolygon() { delete[] m_Pt; }
-void EoDbPolygon::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Polygon>"), this); }
+void EoDbPolygon::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
+  tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Polygon>"), this);
+}
 EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPolygon(*this);
   return (primitive);
@@ -219,7 +223,8 @@ void EoDbPolygon::FormatGeometry(CString& str) {
 CString EoDbPolygon::FormatIntStyle() {
   CString strStyle[] = {L"Hollow", L"Solid", L"Pattern", L"Hatch"};
 
-  CString str = (m_InteriorStyle >= 0 && m_InteriorStyle <= 3) ? strStyle[m_InteriorStyle] : const_cast<LPWSTR>(L"Invalid!");
+  CString str =
+      (m_InteriorStyle >= 0 && m_InteriorStyle <= 3) ? strStyle[m_InteriorStyle] : const_cast<LPWSTR>(L"Invalid!");
 
   return (str);
 }

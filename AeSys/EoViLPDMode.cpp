@@ -1,9 +1,14 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-
+#include "EoDbEllipse.h"
+#include "EoDbLine.h"
+#include "EoDbPoint.h"
+#include "EoDbText.h"
 #include "EoDlgLowPressureDuctOptions.h"
+#include "PrimState.h"
 #include "Section.h"
 
 /// <remarks>
@@ -494,8 +499,10 @@ void AeSysView::GenerateRiseDrop(EoUInt16 riseDropIndicator, Section section, Eo
   GenerateRectangularSection(referenceLine, m_CenterLineEccentricity, section, group);
   // need to allow continuation perpendicular to vertical section ?
 
-  group->AddTail(new EoDbLine(pstate.PenColor(), static_cast<EoInt16>(riseDropIndicator), LeftLine.begin, RightLine.end));
-  group->AddTail(new EoDbLine(pstate.PenColor(), static_cast<EoInt16>(riseDropIndicator), RightLine.begin, LeftLine.end));
+  group->AddTail(
+      new EoDbLine(pstate.PenColor(), static_cast<EoInt16>(riseDropIndicator), LeftLine.begin, RightLine.end));
+  group->AddTail(
+      new EoDbLine(pstate.PenColor(), static_cast<EoInt16>(riseDropIndicator), RightLine.begin, LeftLine.end));
 }
 
 void AeSysView::GenerateRectangularElbow(EoGeLine& previousReferenceLine, Section previousSection,

@@ -124,21 +124,8 @@ constexpr double EoMmPerInch = 25.4;
 #include "EoDbLineType.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbFontDefinition.h"
-#include "EoDbPrimitive.h"
-#include "EoDbBlockReference.h"
-#include "EoDbDimension.h"
-#include "EoDbEllipse.h"
-#include "EoDbLine.h"
-#include "EoDbPoint.h"
-#include "EoDbPolygon.h"
-#include "EoDbPolyline.h"
-#include "EoDbSpline.h"
-#include "EoDbText.h"
-#include "EoDbMaskedPrimitive.h"
 #include "EoDbBlock.h"
 #include "EoDbGroupList.h"
-
-#include "PrimState.h"
 
 #if defined(USING_DDE)
 #include <ddeml.h>

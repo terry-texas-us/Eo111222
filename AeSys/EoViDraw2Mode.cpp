@@ -1,8 +1,10 @@
 ﻿#include "stdafx.h"
+
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-
+#include "EoDbLine.h"
 #include "EoDlgSetLength.h"
+#include "PrimState.h"
 
 void AeSysView::OnDraw2ModeOptions() {
   EoDlgSetLength dlg;

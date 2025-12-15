@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 class EoDbBlock;
+class EoDbPoint;
 
 class EoDbGroup : public CObList {
   static EoDbPrimitive* sm_PrimitiveToIgnore;

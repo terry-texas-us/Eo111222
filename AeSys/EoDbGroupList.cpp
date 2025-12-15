@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
+
 #include "AeSysView.h"
+#include "EoDbPolygon.h"
 
 void EoDbGroupList::AddToTreeViewControl(HWND hTree, HTREEITEM htiParent) {
   POSITION position = GetHeadPosition();

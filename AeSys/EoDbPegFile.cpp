@@ -1,8 +1,17 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
-
+#include "EoDbBlockReference.h"
+#include "EoDbDimension.h"
+#include "EoDbEllipse.h"
+#include "EoDbLine.h"
 #include "EoDbPegFile.h"
+#include "EoDbPoint.h"
+#include "EoDbPolygon.h"
+#include "EoDbPolyline.h"
+#include "EoDbSpline.h"
+#include "EoDbText.h"
 
 void EoDbPegFile::Load(AeSysDoc* document) {
   ReadHeaderSection(document);
@@ -433,7 +442,8 @@ void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primiti
   /* double ColumnSpacing = */ EoDb::ReadDouble(file);
   /* double RowSpacing = */ EoDb::ReadDouble(file);
 
-  primitive = new EoDbBlockReference(static_cast<EoUInt16>(PenColor), static_cast<EoUInt16>(LineType), Name, Point, Normal, ScaleFactors, Rotation);
+  primitive = new EoDbBlockReference(static_cast<EoUInt16>(PenColor), static_cast<EoUInt16>(LineType), Name, Point,
+                                     Normal, ScaleFactors, Rotation);
 }
 void EoDb::ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& /* file */, EoDbPrimitive*& /* primitive */) {}
 void EoDb::ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive) {

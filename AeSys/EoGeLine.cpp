@@ -1,5 +1,8 @@
 ﻿#include "stdafx.h"
+
 #include "AeSysView.h"
+#include "EoDbPrimitive.h"
+#include "PrimState.h"
 
 EoGeLine EoGeLine::operator-(EoGeVector3d v) { return (EoGeLine(begin - v, end - v)); }
 EoGeLine EoGeLine::operator+(EoGeVector3d v) { return (EoGeLine(begin + v, end + v)); }

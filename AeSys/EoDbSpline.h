@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "EoDbPrimitive.h"
+
 class EoDbSpline : public EoDbPrimitive {
  private:
   EoGePoint3dArray m_pts;

@@ -1,6 +1,9 @@
 ﻿#include "stdafx.h"
+
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbPrimitive.h"
+#include "PrimState.h"
 
 namespace polyline {
 EoGePoint4dArray pts_;

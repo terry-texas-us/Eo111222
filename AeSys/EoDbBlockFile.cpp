@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 
 #include "EoDbBlockFile.h"
+#include "EoDbPrimitive.h"
 
 // EoDb::kHeaderSection sentinel				EoUInt16 0x0101
 //		{0 or more key-value pairs}

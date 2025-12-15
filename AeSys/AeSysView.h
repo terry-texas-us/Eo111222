@@ -8,6 +8,9 @@
 #include "Section.h"
 
 class AeSysDoc;
+class EoDbEllipse;
+class EoDbLine;
+class EoDbText;
 class EoMfOutputDockablePane;
 
 #if defined(USING_ODA)
