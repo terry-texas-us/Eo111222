@@ -39,6 +39,9 @@ class EoGeVector3d {
   double Length() const;
   void Normalize();
   void RotAboutArbAx(const EoGeVector3d& axis, double angle);
+  /** @brief Returns the square of the length of the vector.
+   * @return The squared length.
+   */
   double SquaredLength() const;
   CString ToString();
   void Read(CFile& file);

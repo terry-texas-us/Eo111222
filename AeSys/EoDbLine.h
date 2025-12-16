@@ -2,6 +2,7 @@
 
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
+#include "EoGeTransformMatrix.h"
 
 class EoDbLine : public EoDbPrimitive {
  private:
