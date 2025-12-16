@@ -7,6 +7,7 @@
 #include "EoDbLayer.h"
 #include "EoDbLineTypeTable.h"
 #include "EoDbMaskedPrimitive.h"
+#include "EoGePoint3d.h"
 #include "EoGeUniquePoint.h"
 
 class EoGeTransformMatrix;

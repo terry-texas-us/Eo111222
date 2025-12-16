@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include "EoGeMatrix.h"
+#include "EoGePoint4d.h"
 #include "EoGsModelTransform.h"
 
 EoGsModelTransform::EoGsModelTransform() { m_Depth = 0; }

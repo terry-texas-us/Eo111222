@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+class EoGeVector3d;
+
 class EoDbCharacterCellDefinition {
  private:
   double m_dChrHgt;       // height of character cell

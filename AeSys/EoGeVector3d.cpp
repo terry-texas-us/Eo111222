@@ -1,6 +1,13 @@
 ﻿#include "stdafx.h"
 
 #include "EoGeTransformMatrix.h"
+#include "EoGePoint3d.h"
+#include "EoGeVector3d.h"
+
+#if define(USING_ODA)
+#include "OdGeScale3d.h"
+#include "OdGeVector3d.h"
+#endif  // USING_ODA
 
 const EoGeVector3d EoGeVector3d::kXAxis(1.0, 0.0, 0.0);
 const EoGeVector3d EoGeVector3d::kYAxis(0.0, 1.0, 0.0);
@@ -60,15 +67,15 @@ void EoGeVector3d::operator()(double xNew, double yNew, double zNew) {
   z = zNew;
 }
 EoGeVector3d EoGeVector3d::operator-() const { return EoGeVector3d(-x, -y, -z); }
-EoGeVector3d EoGeVector3d::operator-(const EoGeVector3d& vector) {
+EoGeVector3d EoGeVector3d::operator-(const EoGeVector3d& vector) const {
   return EoGeVector3d(x - vector.x, y - vector.y, z - vector.z);
 }
-EoGeVector3d EoGeVector3d::operator+(const EoGeVector3d& vector) {
+EoGeVector3d EoGeVector3d::operator+(const EoGeVector3d& vector) const {
   return EoGeVector3d(x + vector.x, y + vector.y, z + vector.z);
 }
 EoGeVector3d EoGeVector3d::operator*(double t) const { return EoGeVector3d(x * t, y * t, z * t); }
 // Methods
-bool EoGeVector3d::IsNearNull() {
+bool EoGeVector3d::IsNearNull() const {
   return (fabs(x) > DBL_EPSILON || fabs(y) > DBL_EPSILON || fabs(z) > DBL_EPSILON ? false : true);
 }
 double EoGeVector3d::Length() const { return (sqrt(SquaredLength())); }
@@ -93,7 +100,7 @@ void EoGeVector3d::RotAboutArbAx(const EoGeVector3d& axis, double angle) {
   }
 }
 double EoGeVector3d::SquaredLength() const { return (x * x + y * y + z * z); }
-CString EoGeVector3d::ToString() {
+CString EoGeVector3d::ToString() const {
   CString str;
   str.Format(L"%f;%f;%f\t", x, y, z);
   return (str);

@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGsViewport.h"
 
 EoGsViewport::EoGsViewport(const EoGsViewport& viewport) {

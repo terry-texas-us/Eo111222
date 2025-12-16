@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 
+#include "EoGeVector3d.h"
 #include "EoDbCharacterCellDefinition.h"
 
 EoDbCharacterCellDefinition::EoDbCharacterCellDefinition() {

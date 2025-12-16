@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include "EoGeMatrix.h"
+
 EoGeMatrixRow EoGeMatrixRow::operator-() {
   EoGeMatrixRow Row;
 

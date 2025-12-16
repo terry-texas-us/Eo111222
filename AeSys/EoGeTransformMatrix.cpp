@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 
 #include "EoGeLine.h"
+#include "EoGeMatrix.h"
 #include "EoGeTransformMatrix.h"
 
 EoGeTransformMatrix::EoGeTransformMatrix(const EoGePoint3d& refPoint, EoGeVector3d refAxis, const double angle) {

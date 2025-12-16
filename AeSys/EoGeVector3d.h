@@ -1,8 +1,13 @@
 ﻿#pragma once
 
+#include <afxstr.h>
+
+class CFile;
 class EoGePoint3d;
+#if defined(USING_ODA)
 class OdGeVector3d;
 class OdGeScale3d;
+#endif  // USING_ODA
 
 class EoGeVector3d {
  public:
@@ -29,13 +34,13 @@ class EoGeVector3d {
 
   void operator()(double xNew, double yNew, double zNew);
   EoGeVector3d operator-() const;
-  EoGeVector3d operator-(const EoGeVector3d& vector);
-  EoGeVector3d operator+(const EoGeVector3d& vector);
+  EoGeVector3d operator-(const EoGeVector3d& vector) const;
+  EoGeVector3d operator+(const EoGeVector3d& vector) const;
 
   EoGeVector3d operator*(double t) const;
 
  public:  // Methods
-  bool IsNearNull();
+  bool IsNearNull() const;
   double Length() const;
   void Normalize();
   void RotAboutArbAx(const EoGeVector3d& axis, double angle);
@@ -43,7 +48,7 @@ class EoGeVector3d {
    * @return The squared length.
    */
   double SquaredLength() const;
-  CString ToString();
+  CString ToString() const;
   void Read(CFile& file);
   void Write(CFile& file);
 

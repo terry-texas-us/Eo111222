@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 
 const EoGePoint3d EoGePoint3d::kOrigin(0.0, 0.0, 0.0);

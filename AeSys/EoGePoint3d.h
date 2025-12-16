@@ -1,7 +1,10 @@
 ﻿#pragma once
 
 class OdGePoint3d;
+
+class EoGePoint3d;
 class EoGePoint4d;
+class EoGeVector3d;
 
 typedef CArray<EoGePoint3d, const EoGePoint3d&> EoGePoint3dArray;
 

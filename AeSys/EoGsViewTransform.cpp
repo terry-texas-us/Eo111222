@@ -1,14 +1,16 @@
 ﻿#include "stdafx.h"
 
+#include "EoGeMatrix.h"
+#include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGsViewTransform.h"
 #include "EoGsViewport.h"
 
 EoGsViewTransform::EoGsViewTransform() {
   m_UMin = -1.0;
-  m_VMin = -1.0f;
+  m_VMin = -1.0;
   m_UMax = 1.0;
-  m_VMax = 1.0f;
+  m_VMax = 1.0;
 }
 
 EoGsViewTransform::EoGsViewTransform(EoGsViewTransform& src) : EoGsAbstractView(src) {

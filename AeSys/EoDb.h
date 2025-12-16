@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include "EoGePoint3d.h"
+#include "EoGeVector3d.h"
+
 class EoDbPrimitive;
 
 namespace EoDb {

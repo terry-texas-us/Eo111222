@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include "EoGePoint3d.h"
+#include "EoGeVector3d.h"
 #include "EoGsAbstractView.h"
 
 EoGsAbstractView::EoGsAbstractView() {

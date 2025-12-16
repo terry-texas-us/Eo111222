@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include "EoGeMatrix.h"
+#include "EoGePoint3d.h"
+#include "EoGeVector3d.h"
+
 class EoGeLine;
 class EoGeTransformMatrix : public EoGeMatrix {
  public:  // Constructors amd destructor

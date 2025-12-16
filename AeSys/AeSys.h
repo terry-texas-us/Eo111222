@@ -11,7 +11,7 @@
 
 #include "EoApOptions.h"
 #include "EoDb.h"
-
+#include "EoGePoint3d.h"
 
 extern COLORREF ViewBackgroundColor;
 extern COLORREF RubberbandColor;
