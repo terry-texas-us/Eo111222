@@ -165,7 +165,7 @@ bool dde::ExecNote(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 	Document->AddWorkLayerGroup(Group);
 	Document->UpdateAllViews(nullptr, EoDb::kGroup, Group);
 
-	ptPvt = text_GetNewLinePos(fd, ReferenceSystem, 1., 0);
+	ptPvt = text_GetNewLinePos(fd, ReferenceSystem, 1.0, 0);
 	app.SetCursorPosition(ptPvt);
 
 	return true;

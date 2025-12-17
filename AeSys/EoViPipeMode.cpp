@@ -273,9 +273,9 @@ void AeSysView::OnPipeModeSymbol() {
     case 0:  // Generate flow switch
       Group->AddTail(new EoDbEllipse(PointOnSection, SymbolBeginPoint));
       EndSection.ProjPtFrom_xy(SymbolSize[0], -SymbolSize[0] * 1.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[0], -SymbolSize[0] * 2., &pts[1]);
+      EndSection.ProjPtFrom_xy(SymbolSize[0], -SymbolSize[0] * 2.0, &pts[1]);
       BeginSection.ProjPtFrom_xy(SymbolSize[0], SymbolSize[0] * 1.5, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[0], SymbolSize[0] * 2., &SymbolEndPoint);
+      BeginSection.ProjPtFrom_xy(SymbolSize[0], SymbolSize[0] * 2.0, &SymbolEndPoint);
       Group->AddTail(new EoDbLine(pts[1], SymbolEndPoint));
       Group->AddTail(new EoDbLine(SymbolEndPoint, SymbolBeginPoint));
       Group->AddTail(new EoDbLine(SymbolBeginPoint, pts[0]));
@@ -285,11 +285,11 @@ void AeSysView::OnPipeModeSymbol() {
 
     case 1:  // Generate float and thermostatic trap
       Group->AddTail(new EoDbEllipse(PointOnSection, SymbolBeginPoint));
-      pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, PI / 4.0);
-      pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, PI);
+      pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, Eo::QuarterPi);
+      pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, Eo::Pi);
       Group->AddTail(new EoDbLine(pts[0], pts[1]));
-      pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, 3.0 * PI / 4.0);
-      pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, PI);
+      pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, Eo::ThreeQuartersPi);
+      pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, Eo::Pi);
       Group->AddTail(new EoDbLine(pts[0], pts[1]));
       break;
 
@@ -461,8 +461,8 @@ void AeSysView::OnPipeModeSymbol() {
       BeginSection.ProjPtFrom_xy(SymbolSize[12] * 1.25, -SymbolSize[12] * 0.5, &pts[0]);
       Group->AddTail(new EoDbLine(pstate.PenColor(), 2, SymbolBeginPoint, pts[0]));
       BeginSection.ProjPtFrom_xy(SymbolSize[12] * 1.25, -SymbolSize[12] * 0.75, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[12] * 2., -SymbolSize[12] * 0.75, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[12] * 2., -SymbolSize[12] * 0.5, &SymbolEndPoint);
+      BeginSection.ProjPtFrom_xy(SymbolSize[12] * 2.0, -SymbolSize[12] * 0.75, &SymbolBeginPoint);
+      BeginSection.ProjPtFrom_xy(SymbolSize[12] * 2.0, -SymbolSize[12] * 0.5, &SymbolEndPoint);
       Group->AddTail(new EoDbLine(pts[0], pts[1]));
       Group->AddTail(new EoDbLine(pts[1], SymbolBeginPoint));
       Group->AddTail(new EoDbLine(SymbolBeginPoint, SymbolEndPoint));

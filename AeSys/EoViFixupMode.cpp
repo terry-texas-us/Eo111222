@@ -27,8 +27,8 @@ void AeSysView::OnFixupModeOptions() {
   Dialog.m_FixupAxisTolerance = m_FixupModeAxisTolerance;
   Dialog.m_FixupModeCornerSize = m_FixupModeCornerSize;
   if (Dialog.DoModal() == IDOK) {
-    m_FixupModeCornerSize = EoMax(0.0, Dialog.m_FixupModeCornerSize);
-    m_FixupModeAxisTolerance = EoMax(0.0, Dialog.m_FixupAxisTolerance);
+    m_FixupModeCornerSize = std::max(0.0, Dialog.m_FixupModeCornerSize);
+    m_FixupModeAxisTolerance = std::max(0.0, Dialog.m_FixupAxisTolerance);
     SetAxisConstraintInfluenceAngle(m_FixupModeAxisTolerance);
   }
 }
@@ -105,7 +105,7 @@ void AeSysView::OnFixupModeReference() {
         vPlnNorm.Normalize();
         pFndSwpAngGivPlnAnd3Lns(vPlnNorm, lnPrv.end, ptInt, lnRef.begin, ptCP, &dAng);
         vMajAx = EoGeVector3d(ptCP, lnPrv.end);
-        EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, HALF_PI);
+        EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, Eo::HalfPi);
         vMinAx = EoGeVector3d(ptCP, rTmp);
 
         EoDbGroup* Group = new EoDbGroup(new EoDbEllipse(ptCP, vMajAx, vMinAx, dAng));
@@ -201,7 +201,7 @@ void AeSysView::OnFixupModeMend() {
         vPlnNorm.Normalize();
         pFndSwpAngGivPlnAnd3Lns(vPlnNorm, lnPrv.end, ptInt, lnSec.begin, ptCP, &dAng);
         vMajAx = EoGeVector3d(ptCP, lnPrv.end);
-        EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, HALF_PI);
+        EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, Eo::HalfPi);
         vMinAx = EoGeVector3d(ptCP, rTmp);
         pSegPrv->AddTail(new EoDbEllipse(ptCP, vMajAx, vMinAx, dAng));
         Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
@@ -355,7 +355,7 @@ void AeSysView::OnFixupModeFillet() {
       vPlnNorm.Normalize();
       pFndSwpAngGivPlnAnd3Lns(vPlnNorm, lnPrv.end, ptInt, lnSec.begin, ptCP, &dAng);
       vMajAx = EoGeVector3d(ptCP, lnPrv.end);
-      EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, HALF_PI);
+      EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, Eo::HalfPi);
       vMinAx = EoGeVector3d(ptCP, rTmp);
       pSegSec->AddTail(new EoDbEllipse(ptCP, vMajAx, vMinAx, dAng));
 

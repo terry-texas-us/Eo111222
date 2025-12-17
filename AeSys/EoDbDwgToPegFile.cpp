@@ -333,7 +333,7 @@ OdDbEntity* EoDbPoint::Convert(const OdDbObjectId&) { return 0; }
 OdDbEntity* EoDbDimension::Convert(const OdDbObjectId&) { return 0; }
 OdDbEntity* EoDbBlockReference::Convert(const OdDbObjectId&) { return 0; }
 
-void ExamineFile(LPWSTR oldFile, const int oldFileBufferSize, LPTSTR newFile, const int newFileBufferSize) {
+void ExamineFile(LPWSTR oldFile, const int oldFileBufferSize, LPWSTR newFile, const int newFileBufferSize) {
   const int kExistenceOnly = 0;
 
   static WCHAR pathchar = '\\';

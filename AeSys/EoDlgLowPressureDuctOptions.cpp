@@ -25,7 +25,7 @@ void EoDlgLowPressureDuctOptions::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgLowPressureDuctOptions::OnInitDialog() {
 	CDialog::OnInitDialog();
 
-	AeSys::Units Units = max(app.GetUnits(), AeSys::kInches);
+	AeSys::Units Units = std::max(app.GetUnits(), AeSys::kInches);
 
 	CString Length;
 	app.FormatLength(Length, Units, m_Width, 0, 2);

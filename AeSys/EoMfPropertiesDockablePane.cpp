@@ -137,7 +137,7 @@ LRESULT EoMfPropertiesDockablePane::OnPropertyChanged(WPARAM, LPARAM lparam) {
 
     case kTabBorderSize: {
       int nBorder = Property->GetValue().iVal;
-      app.m_Options.m_MdiTabInfo.m_nTabBorderSize = min(8, max(0, nBorder));
+      app.m_Options.m_MdiTabInfo.m_nTabBorderSize = std::min(8, std::max(0, nBorder));
       break;
     }
     case kActiveViewScale: {
@@ -278,10 +278,10 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   CMFCPropertyGridProperty* PointGrid = new CMFCPropertyGridProperty(L"Point Grid", 0, TRUE);
 
   CMFCPropertyGridProperty* pProp =
-      new CMFCPropertyGridProperty(L"X", (_variant_t)3., L"Specifies the point grid x spacing");
+      new CMFCPropertyGridProperty(L"X", (_variant_t)3.0, L"Specifies the point grid x spacing");
   PointGrid->AddSubItem(pProp);
 
-  pProp = new CMFCPropertyGridProperty(L"Y", (_variant_t)3., L"Specifies the point grid y spacing");
+  pProp = new CMFCPropertyGridProperty(L"Y", (_variant_t)3.0, L"Specifies the point grid y spacing");
   PointGrid->AddSubItem(pProp);
 
   pProp = new CMFCPropertyGridProperty(L"Z", (_variant_t)0.0, L"Specifies the point grid z spacing");

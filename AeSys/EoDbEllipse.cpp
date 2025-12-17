@@ -29,8 +29,8 @@ EoDbEllipse::EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& center
 
   m_vMinAx = ActiveView->ViewUp() * radius;
   m_vMajAx = m_vMinAx;
-  m_vMajAx.RotAboutArbAx(PlaneNormal, -HALF_PI);
-  m_dSwpAng = TWOPI;
+  m_vMajAx.RotAboutArbAx(PlaneNormal, -Eo::HalfPi);
+  m_dSwpAng = Eo::TwoPi;
 }
 EoDbEllipse::EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& planeNormal,
                          double radius)
@@ -41,9 +41,9 @@ EoDbEllipse::EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& center
   m_vMajAx.Normalize();
   m_vMajAx *= radius;
   m_vMinAx = m_vMajAx;
-  EoGeTransformMatrix tm(centerPoint, PlaneNormal, HALF_PI);
+  EoGeTransformMatrix tm(centerPoint, PlaneNormal, Eo::HalfPi);
   m_vMinAx = tm * m_vMinAx;
-  m_dSwpAng = TWOPI;
+  m_dSwpAng = Eo::TwoPi;
 }
 EoDbEllipse::EoDbEllipse(EoGePoint3d& centerPoint, EoGePoint3d& beginPoint) {
   AeSysView* ActiveView = AeSysView::GetActiveView();
@@ -56,8 +56,8 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& centerPoint, EoGePoint3d& beginPoint) {
   m_ptCenter = centerPoint;
   m_vMajAx = EoGeVector3d(centerPoint, beginPoint);
   m_vMinAx = m_vMajAx;
-  m_vMinAx.RotAboutArbAx(vPlnNorm, HALF_PI);
-  m_dSwpAng = TWOPI;
+  m_vMinAx.RotAboutArbAx(vPlnNorm, Eo::HalfPi);
+  m_dSwpAng = Eo::TwoPi;
 }
 
 EoDbEllipse::EoDbEllipse(EoGePoint3d beginPoint, EoGePoint3d intermediatePoint, EoGePoint3d endPoint) {
@@ -110,10 +110,10 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d beginPoint, EoGePoint3d intermediatePoint, 
     for (int i = 0; i < 3; i++) {  // Translate points into z=0 plane with center point at origin
       pt[i] = transformMatrix * pt[i];
       dAng[i] = atan2(pt[i].y, pt[i].x);
-      if (dAng[i] < 0.0) dAng[i] += TWOPI;
+      if (dAng[i] < 0.0) dAng[i] += Eo::TwoPi;
     }
-    double dMin = EoMin(dAng[0], dAng[2]);
-    double dMax = EoMax(dAng[0], dAng[2]);
+    double dMin = std::min(dAng[0], dAng[2]);
+    double dMax = std::max(dAng[0], dAng[2]);
 
     if (fabs(dAng[1] - dMax) > DBL_EPSILON &&
         fabs(dAng[1] - dMin) > DBL_EPSILON) {  // Inside line is not colinear with outside lines
@@ -121,10 +121,10 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d beginPoint, EoGePoint3d intermediatePoint, 
       if (dAng[1] > dMin && dAng[1] < dMax) {
         if (dAng[0] == dMax) m_dSwpAng = -m_dSwpAng;
       } else {
-        m_dSwpAng = TWOPI - m_dSwpAng;
+        m_dSwpAng = Eo::TwoPi - m_dSwpAng;
         if (dAng[2] == dMax) m_dSwpAng = -m_dSwpAng;
       }
-      EoGePoint3d ptRot = beginPoint.RotateAboutAxis(m_ptCenter, planeNormal, HALF_PI);
+      EoGePoint3d ptRot = beginPoint.RotateAboutAxis(m_ptCenter, planeNormal, Eo::HalfPi);
 
       m_vMajAx = EoGeVector3d(m_ptCenter, beginPoint);
       m_vMinAx = EoGeVector3d(m_ptCenter, ptRot);
@@ -174,18 +174,18 @@ void EoDbEllipse::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupLis
     EoGeVector3d vPlnNorm = EoGeCrossProduct(m_vMajAx, m_vMinAx);
     vPlnNorm.Normalize();
 
-    if (fabs(m_dSwpAng - TWOPI) <= DBL_EPSILON) {  // Closed arc
-      m_dSwpAng = (dRel[1] - dRel[0]) * TWOPI;
+    if (fabs(m_dSwpAng - Eo::TwoPi) <= DBL_EPSILON) {  // Closed arc
+      m_dSwpAng = (dRel[1] - dRel[0]) * Eo::TwoPi;
 
-      m_vMajAx.RotAboutArbAx(vPlnNorm, dRel[0] * TWOPI);
-      m_vMinAx.RotAboutArbAx(vPlnNorm, dRel[0] * TWOPI);
+      m_vMajAx.RotAboutArbAx(vPlnNorm, dRel[0] * Eo::TwoPi);
+      m_vMinAx.RotAboutArbAx(vPlnNorm, dRel[0] * Eo::TwoPi);
 
       pArc = new EoDbEllipse(*this);
 
       m_vMajAx.RotAboutArbAx(vPlnNorm, m_dSwpAng);
       m_vMinAx.RotAboutArbAx(vPlnNorm, m_dSwpAng);
 
-      m_dSwpAng = TWOPI - m_dSwpAng;
+      m_dSwpAng = Eo::TwoPi - m_dSwpAng;
     } else {  // Arc section with a cut
       pArc = new EoDbEllipse(*this);
       double dSwpAng = m_dSwpAng;
@@ -229,7 +229,7 @@ void EoDbEllipse::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupLis
   newGroups->AddTail(new EoDbGroup(pArc));
 }
 void EoDbEllipse::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
-  if (fabs(m_dSwpAng - TWOPI) <= DBL_EPSILON)
+  if (fabs(m_dSwpAng - Eo::TwoPi) <= DBL_EPSILON)
     // Do not fragment a circle
     return;
 
@@ -272,9 +272,9 @@ void EoDbEllipse::AddReportToMessageList(EoGePoint3d) {
 }
 void EoDbEllipse::GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) {
   // Number of points based on angle and a smothness coefficient
-  double dLen = EoMax(majorAxis.Length(), minorAxis.Length());
-  int iPts = EoMax(2, abs(EoRound(sweepAngle / TWOPI * 32.)));
-  iPts = EoMin(128, EoMax(iPts, abs(EoRound(sweepAngle * dLen / 0.250))));
+  double dLen = std::max(majorAxis.Length(), minorAxis.Length());
+  int iPts = std::max(2, abs(Eo::Round(sweepAngle / Eo::TwoPi * 32.0)));
+  iPts = std::min(128, std::max(iPts, abs(Eo::Round(sweepAngle * dLen / 0.250))));
 
   EoGeTransformMatrix tm(centerPoint, majorAxis, minorAxis);
   tm.Inverse();
@@ -283,7 +283,7 @@ void EoDbEllipse::GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVe
   double dCos = cos(dAng);
   double dSin = sin(dAng);
 
-  EoGePoint3d pt(1., 0.0, 0.0);
+  EoGePoint3d pt(1.0, 0.0, 0.0);
 
   for (int i = 0; i < iPts; i++) {
     polyline::SetVertex(tm * pt);
@@ -303,12 +303,12 @@ void EoDbEllipse::FormatExtra(CString& str) {
 EoGePoint3d EoDbEllipse::GetBegPt() { return (m_ptCenter + m_vMajAx); }
 void EoDbEllipse::GetBoundingBox(EoGePoint3dArray& ptsBox) {
   ptsBox.SetSize(4);
-  ptsBox[0] = EoGePoint3d(-1., -1., 0.0);
-  ptsBox[1] = EoGePoint3d(1., -1., 0.0);
-  ptsBox[2] = EoGePoint3d(1., 1., 0.0);
-  ptsBox[3] = EoGePoint3d(-1., 1., 0.0);
+  ptsBox[0] = EoGePoint3d(-1.0, -1.0, 0.0);
+  ptsBox[1] = EoGePoint3d(1.0, -1.0, 0.0);
+  ptsBox[2] = EoGePoint3d(1.0, 1.0, 0.0);
+  ptsBox[3] = EoGePoint3d(-1.0, 1.0, 0.0);
 
-  if (m_dSwpAng < 3. * TWOPI / 4.) {
+  if (m_dSwpAng < 3. * Eo::TwoPi / 4.0) {
     double dEndX = cos(m_dSwpAng);
     double dEndY = sin(m_dSwpAng);
 
@@ -369,11 +369,11 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
             (*arMax).y = arEnd.y;
           }
         } else  // Arc ends in quadrant four
-          (*arMax).x = EoMax(arBeg.x, arEnd.x);
+          (*arMax).x = std::max(arBeg.x, arEnd.x);
       } else {
         if (arEnd.y >= m_ptCenter.y) {  // Arc ends in quadrant two
           (*arMin).x = arEnd.x;
-          (*arMin).y = EoMin(arBeg.y, arEnd.y);
+          (*arMin).y = std::min(arBeg.y, arEnd.y);
         } else  // Arc ends in quadrant three
           (*arMin).y = arEnd.y;
         (*arMax).x = arBeg.x;
@@ -381,7 +381,7 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
     } else {  // Arc begins in quadrant four
       if (arEnd.x >= m_ptCenter.x) {
         if (arEnd.y >= m_ptCenter.y) {  // Arc ends in quadrant one
-          (*arMin).x = EoMin(arBeg.x, arEnd.x);
+          (*arMin).x = std::min(arBeg.x, arEnd.x);
           (*arMin).y = arBeg.y;
           (*arMax).y = arEnd.y;
         } else {                    // Arc ends in quadrant four
@@ -397,14 +397,14 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
           (*arMin).x = arEnd.x;
           (*arMin).y = arBeg.y;
         } else  // Arc ends in quadrant three
-          (*arMin).y = EoMin(arBeg.y, arEnd.y);
+          (*arMin).y = std::min(arBeg.y, arEnd.y);
       }
     }
   } else {
     if (arBeg.y >= m_ptCenter.y) {  // Arc begins in quadrant two
       if (arEnd.x >= m_ptCenter.x) {
         if (arEnd.y >= m_ptCenter.y)  // Arc ends in quadrant one
-          (*arMax).y = EoMax(arBeg.y, arEnd.y);
+          (*arMax).y = std::max(arBeg.y, arEnd.y);
         else {  // Arc ends in quadrant four
           (*arMax).x = arEnd.x;
           (*arMax).y = arBeg.y;
@@ -419,7 +419,7 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
           }
         } else {  // Arc ends in quadrant three
           (*arMin).y = arEnd.y;
-          (*arMax).x = EoMax(arBeg.x, arEnd.x);
+          (*arMax).x = std::max(arBeg.x, arEnd.x);
           (*arMax).y = arBeg.y;
         }
       }
@@ -429,12 +429,12 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
           (*arMax).y = arEnd.y;
         else {  // Arc ends in quadrant four
           (*arMax).x = arEnd.x;
-          (*arMax).y = EoMax(arBeg.y, arEnd.y);
+          (*arMax).y = std::max(arBeg.y, arEnd.y);
         }
         (*arMin).x = arBeg.x;
       } else {
         if (arEnd.y >= m_ptCenter.y)  // Arc ends in quadrant two
-          (*arMin).x = EoMin(arBeg.x, arEnd.x);
+          (*arMin).x = std::min(arBeg.x, arEnd.x);
         else {                      // Arc ends in quadrant three
           if (arBeg.x < arEnd.x) {  // Arc in qraudrant three only
             (*arMin).x = arBeg.x;
@@ -578,7 +578,7 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
   for (int i2 = 0; i2 < iSecs; i2++) {                                        // Loop thru possible intersections
     dWrkAng = atan2(ptWrk[i2].y - m_ptCenter.y, ptWrk[i2].x - m_ptCenter.x);  // Current intersection angle (- pi to
     dIntAng[iInts] = dWrkAng - dBegAng;                                       // Sweep from begin to intersection
-    if (dIntAng[iInts] < 0.0) dIntAng[iInts] += TWOPI;
+    if (dIntAng[iInts] < 0.0) dIntAng[iInts] += Eo::TwoPi;
     if (fabs(dIntAng[iInts]) - m_dSwpAng < 0.0) {  // Intersection lies on arc
       int i;
       for (i = 0; i < iInts && ptWrk[i2] != ptInt[i]; i++);
@@ -602,7 +602,7 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
       }
     }
   }
-  if (fabs(m_dSwpAng - TWOPI) <= DBL_EPSILON) {  // Arc is a circle in disuise
+  if (fabs(m_dSwpAng - Eo::TwoPi) <= DBL_EPSILON) {  // Arc is a circle in disuise
 
   } else {
     if (ptBeg.x >= ptLL.x && ptBeg.x <= ptUR.x && ptBeg.y >= ptLL.y && ptBeg.y <= ptUR.y) {  // Add beg point to int set
@@ -722,7 +722,7 @@ EoGePoint3d pFndPtOnArc(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVec
   pt = tm * pt;
   return (pt);
 }
-bool pFndCPGivRadAnd4Pts(double adRad, EoGePoint3d arLn1Beg, EoGePoint3d arLn1End, EoGePoint3d arLn2Beg,
+bool pFndCPGivRadAnd4Pts(double radius, EoGePoint3d arLn1Beg, EoGePoint3d arLn1End, EoGePoint3d arLn2Beg,
                          EoGePoint3d arLn2End, EoGePoint3d* centerPoint) {
   double dA1, dA2, dB1, dB2, dC1RAB1, dC2RAB2, dDet, dSgnRad, dV1Mag, dV2Mag;
   EoGeVector3d vPlnNorm;
@@ -755,7 +755,7 @@ bool pFndCPGivRadAnd4Pts(double adRad, EoGePoint3d arLn1Beg, EoGePoint3d arLn1En
   dB2 = v2.x / dV2Mag;
   dDet = dA2 * dB1 - dA1 * dB2;
 
-  dSgnRad = (arLn1End.x * arLn2End.y - arLn2End.x * arLn1End.y) >= 0. ? -fabs(adRad) : fabs(adRad);
+  dSgnRad = (arLn1End.x * arLn2End.y - arLn2End.x * arLn1End.y) >= 0. ? -fabs(radius) : fabs(radius);
 
   dC1RAB1 = dSgnRad;
   dC2RAB2 = (arLn2Beg.x * arLn2End.y - arLn2End.x * arLn2Beg.y) / dV2Mag + dSgnRad;
@@ -781,17 +781,17 @@ int pFndSwpAngGivPlnAnd3Lns(EoGeVector3d planeNormal, EoGePoint3d arP1, EoGePoin
   for (int i = 0; i < 3; i++) {  // Translate points into z=0 plane with center point at origin
     rR[i] = tm * rR[i];
     dT[i] = atan2(rR[i].y, rR[i].x);
-    if (dT[i] < 0.0) dT[i] += TWOPI;
+    if (dT[i] < 0.0) dT[i] += Eo::TwoPi;
   }
-  double dTMin = EoMin(dT[0], dT[2]);
-  double dTMax = EoMax(dT[0], dT[2]);
+  double dTMin = std::min(dT[0], dT[2]);
+  double dTMax = std::max(dT[0], dT[2]);
   if (fabs(dT[1] - dTMax) > DBL_EPSILON &&
       fabs(dT[1] - dTMin) > DBL_EPSILON) {  // Inside line is not colinear with outside lines
     double dTheta = dTMax - dTMin;
     if (dT[1] > dTMin && dT[1] < dTMax) {
       if (dT[0] == dTMax) dTheta = -dTheta;
     } else {
-      dTheta = TWOPI - dTheta;
+      dTheta = Eo::TwoPi - dTheta;
       if (dT[2] == dTMax) dTheta = -dTheta;
     }
     *adTheta = dTheta;

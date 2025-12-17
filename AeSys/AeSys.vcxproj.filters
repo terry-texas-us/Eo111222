@@ -1980,7 +1980,7 @@
     <ClInclude Include="EoGePolyline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="eodb.h">
+    <ClInclude Include="EoDb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Dde.h">

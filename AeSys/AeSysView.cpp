@@ -14,6 +14,7 @@
 #include <afxtoolbar.h>
 #include <afxtoolbarcomboboxbutton.h>
 #include <afxwin.h>
+#include <algorithm>
 #include <atltrace.h>
 #include <atltypes.h>
 #include <cfloat>
@@ -58,7 +59,6 @@
 #include "MainFrm.h"
 #include "PrimState.h"
 #include "Resource.h"
-#include "SafeMath.h"
 #include "Section.h"
 
 #if defined(USING_ODA)
@@ -434,8 +434,8 @@ AeSysView::AeSysView()
       m_PreviousReferenceLine(),
       m_CurrentReferenceLine(),
       m_AssemblyGroup(nullptr),
-      m_BeginSectionGroup(nullptr),
       m_EndSectionGroup(nullptr),
+      m_BeginSectionGroup(nullptr),
       m_BeginSectionLine(nullptr),
       m_EndSectionLine(nullptr),
       /// Fixup Mode Interface
@@ -445,37 +445,40 @@ AeSysView::AeSysView()
       m_EditModeMirrorScale(-1.0, 1.0, 1.0),
       m_EditModeRotationAngles(0.0, 0.0, 45.0),
       m_EditModeScale(2.0, 2.0, 2.0),
-      /// Low Pressure Duct Mode Interface
-      m_GenerateTurningVanes(true),
+      
+  /// Low Pressure Duct Mode Interface
       m_InsideRadiusFactor(1.5),
       m_DuctSeamSize(0.03125),
       m_DuctTapSize(0.09375),
-      m_ContinueSection(false),
-      m_BeginWithTransition(false),
+      m_GenerateTurningVanes(true),
+      m_ElbowType(Mittered),
       m_DuctJustification(Center),
       m_TransitionSlope(4.0),
-      m_ElbowType(Mittered),
-      m_EndCapGroup(nullptr),
-      m_EndCapPoint(nullptr),
+      m_BeginWithTransition(false),
+      m_ContinueSection(false),
       m_EndCapLocation(0),
+      m_EndCapPoint(nullptr),
+      m_EndCapGroup(nullptr),
       m_OriginalPreviousGroupDisplayed(true),
       m_OriginalPreviousGroup(nullptr),
       m_PreviousSection(0.125, 0.0625, Section::Rectangular),
       m_CurrentSection(0.125, 0.0625, Section::Rectangular),
+      
       /// Pipe Mode Interface
+      m_CurrentPipeSymbolIndex(0),
       m_PipeTicSize(0.03125),
       m_PipeRiseDropRadius(0.03125),
-      m_CurrentPipeSymbolIndex(0),
+      
       /// Power Mode Interface (initializers)
       m_PowerArrow(false),
       m_PowerConductor(false),
-      m_CircuitEndPoint(),
       m_PowerConductorSpacing(0.04),
+      m_CircuitEndPoint(),
       m_PreviousRadius(0) {
   m_Viewport.SetDeviceWidthInPixels(app.DeviceWidthInPixels());
   m_Viewport.SetDeviceHeightInPixels(app.DeviceHeightInPixels());
-  m_Viewport.SetDeviceWidthInInches(app.DeviceWidthInMillimeters() / EoMmPerInch);
-  m_Viewport.SetDeviceHeightInInches(app.DeviceHeightInMillimeters() / EoMmPerInch);
+  m_Viewport.SetDeviceWidthInInches(app.DeviceWidthInMillimeters() / Eo::MmPerInch);
+  m_Viewport.SetDeviceHeightInInches(app.DeviceHeightInMillimeters() / Eo::MmPerInch);
 }
 
 AeSysView::~AeSysView() {}
@@ -702,8 +705,8 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
   double HorizontalSize = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE));
   double VerticalSize = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE));
 
-  SetDeviceWidthInInches(HorizontalSize / EoMmPerInch);
-  SetDeviceHeightInInches(VerticalSize / EoMmPerInch);
+  SetDeviceWidthInInches(HorizontalSize / Eo::MmPerInch);
+  SetDeviceHeightInInches(VerticalSize / Eo::MmPerInch);
 
   if (m_Plot) {
     UINT HorizontalPages;
@@ -744,9 +747,9 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
   if (deviceContext->IsPrinting()) {
     if (m_Plot) {
       double HorizontalSizeInInches =
-          static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / EoMmPerInch / m_PlotScaleFactor;
+          static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
       double VerticalSizeInInches =
-          static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / EoMmPerInch / m_PlotScaleFactor;
+          static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
 
       m_ViewTransform.Initialize(m_Viewport);
       m_ViewTransform.SetWindow(0.0, 0.0, HorizontalSizeInInches, VerticalSizeInInches);
@@ -954,7 +957,7 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
 
       OdGsView* View = m_Device->viewAt(0);
 
-      OdGePoint3d Target = OdGePoint3d(m_ViewTransform.UExtent() / 2., m_ViewTransform.VExtent() / 2., 0.0);
+      OdGePoint3d Target = OdGePoint3d(m_ViewTransform.UExtent() / 2.0, m_ViewTransform.VExtent() / 2.0, 0.0);
       OdGePoint3d Position = Target + (OdGeVector3d::kZAxis * m_ViewTransform.LensLength());
 
       View->setView(Position, Target, OdGeVector3d::kYAxis, m_ViewTransform.UExtent(), m_ViewTransform.VExtent());
@@ -1034,12 +1037,12 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
     // Determine the region of the bitmap to tranfer to display
     CRect rcWnd;
     rcWnd.left =
-        EoRound((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.top = EoRound((1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) *
+        Eo::Round((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
+    rcWnd.top = Eo::Round((1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) *
                         static_cast<double>(bm.bmHeight));
     rcWnd.right =
-        EoRound((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.bottom = EoRound((1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) *
+        Eo::Round((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
+    rcWnd.bottom = Eo::Round((1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) *
                            static_cast<double>(bm.bmHeight));
 
     int iWidSrc = rcWnd.Width();
@@ -1091,11 +1094,11 @@ UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizonta
 
   GetDocument()->GetExtents(this, ptMin, ptMax, tm);
 
-  double HorizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / EoMmPerInch;
-  double VerticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / EoMmPerInch;
+  double HorizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch;
+  double VerticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch;
 
-  horizontalPages = static_cast<UINT>(EoRound(((ptMax.x - ptMin.x) * scaleFactor / HorizontalSizeInInches) + 0.5f));
-  verticalPages = static_cast<UINT>(EoRound(((ptMax.y - ptMin.y) * scaleFactor / VerticalSizeInInches) + 0.5f));
+  horizontalPages = static_cast<UINT>(Eo::Round(((ptMax.x - ptMin.x) * scaleFactor / HorizontalSizeInInches) + 0.5f));
+  verticalPages = static_cast<UINT>(Eo::Round(((ptMax.y - ptMin.y) * scaleFactor / VerticalSizeInInches) + 0.5f));
 
   return horizontalPages * verticalPages;
 }
@@ -1122,19 +1125,19 @@ void AeSysView::DoCameraRotate(int iDir) {
   EoGePoint3d Target = m_ViewTransform.Target();
   switch (iDir) {
     case ID_CAMERA_ROTATELEFT: {
-      Position = Position.RotateAboutAxis(Target, vV, EoToRadian(-10.));
+      Position = Position.RotateAboutAxis(Target, vV, Eo::DegreeToRadian(-10.0));
       break;
     }
     case ID_CAMERA_ROTATERIGHT:
-      Position = Position.RotateAboutAxis(Target, vV, EoToRadian(10.));
+      Position = Position.RotateAboutAxis(Target, vV, Eo::DegreeToRadian(10.0));
       break;
 
     case ID_CAMERA_ROTATEUP:
-      Position = Position.RotateAboutAxis(Target, vU, EoToRadian(-10.));
+      Position = Position.RotateAboutAxis(Target, vU, Eo::DegreeToRadian(-10.0));
       break;
 
     case ID_CAMERA_ROTATEDOWN:
-      Position = Position.RotateAboutAxis(Target, vU, EoToRadian(10.));
+      Position = Position.RotateAboutAxis(Target, vU, Eo::DegreeToRadian(10.0));
       break;
   }
   m_ViewTransform.SetPosition(Position);
@@ -1144,7 +1147,7 @@ void AeSysView::DoCameraRotate(int iDir) {
 }
 
 void AeSysView::DoWindowPan(double ratio) {
-  ratio = EoMin(EoMax(ratio, m_MinimumWindowRatio), m_MaximumWindowRatio);
+  ratio = std::min(std::max(ratio, m_MinimumWindowRatio), m_MaximumWindowRatio);
 
   double UExtent = m_Viewport.WidthInInches() / ratio;
   double VExtent = m_Viewport.HeightInInches() / ratio;
@@ -1358,7 +1361,7 @@ void AeSysView::OnWindowBest() {
     EoGeTransformMatrix tm;
     GetDocument()->GetExtents(this, ptMin, ptMax, tm);
 
-    EoGePoint3d Target = EoGePoint3d((ptMin.x + ptMax.x) / 2., (ptMin.y + ptMax.y) / 2., (ptMin.z + ptMax.z) / 2.);
+    EoGePoint3d Target = EoGePoint3d((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, (ptMin.z + ptMax.z) / 2.0);
 
     m_ViewTransform.SetTarget(Target);
     m_ViewTransform.SetPosition(m_ViewTransform.Direction());
@@ -1513,7 +1516,7 @@ void AeSysView::OnRelativeMovesEngDownRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.y -= app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + EoToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1535,7 +1538,7 @@ void AeSysView::OnRelativeMovesEngLeftRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.x -= app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + EoToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1557,7 +1560,7 @@ void AeSysView::OnRelativeMovesEngRightRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.x += app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + EoToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1573,7 +1576,7 @@ void AeSysView::OnRelativeMovesEngUpRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.y += app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + EoToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1617,7 +1620,7 @@ void AeSysView::OnRelativeMovesRightRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.x += app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, EoToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1625,7 +1628,7 @@ void AeSysView::OnRelativeMovesUpRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.y += app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, EoToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1633,7 +1636,7 @@ void AeSysView::OnRelativeMovesLeftRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.x -= app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, EoToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1641,7 +1644,7 @@ void AeSysView::OnRelativeMovesDownRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.y -= app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, EoToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1931,7 +1934,7 @@ EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double toleranc
       if (Primitive->Is(EoDb::kEllipsePrimitive)) {
         EoDbEllipse* Arc = static_cast<EoDbEllipse*>(Primitive);
 
-        if (fabs(Arc->GetSwpAng() - TWOPI) <= DBL_EPSILON &&
+        if (fabs(Arc->GetSwpAng() - Eo::TwoPi) <= DBL_EPSILON &&
             (Arc->GetMajAx().SquaredLength() - Arc->GetMinAx().SquaredLength()) <= DBL_EPSILON) {
           if (point.DistanceTo(Arc->Center()) <= tolerance) {
             circle = Arc;
@@ -2470,7 +2473,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
       app.FormatLength(LengthAndAngle, app.GetUnits(), app.DimensionLength());
       LengthAndAngle.TrimLeft();
       CString Angle;
-      app.FormatAngle(Angle, EoToRadian(app.DimensionAngle()), 8, 3);
+      app.FormatAngle(Angle, Eo::DegreeToRadian(app.DimensionAngle()), 8, 3);
       Angle.ReleaseBuffer();
       LengthAndAngle.Append(L" @ " + Angle);
       DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, LengthAndAngle,

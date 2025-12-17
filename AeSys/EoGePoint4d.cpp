@@ -77,10 +77,10 @@ bool EoGePoint4d::ClipLine(EoGePoint4d& ptA, EoGePoint4d& ptB) {
   for (int i = 0; i < 6; i++) {
     if (BoundaryCodeB[i] < 0.0) {
       dTHit = BoundaryCodeA[i] / (BoundaryCodeA[i] - BoundaryCodeB[i]);
-      dTOut = EoMin(dTOut, dTHit);
+      dTOut = std::min(dTOut, dTHit);
     } else if (BoundaryCodeA[i] < 0.0) {
       dTHit = BoundaryCodeA[i] / (BoundaryCodeA[i] - BoundaryCodeB[i]);
-      dTIn = EoMax(dTIn, dTHit);
+      dTIn = std::max(dTIn, dTHit);
     }
     if (dTIn > dTOut) return false;
   }
@@ -160,8 +160,8 @@ bool EoGePoint4d::IsInView() {
   return true;
 }
 EoGePoint4d EoGePoint4d::Max(EoGePoint4d& ptA, EoGePoint4d& ptB) {
-  return EoGePoint4d(EoMax(ptA.x, ptB.x), EoMax(ptA.y, ptB.y), EoMax(ptA.z, ptB.z), EoMax(ptA.w, ptB.w));
+  return EoGePoint4d(std::max(ptA.x, ptB.x), std::max(ptA.y, ptB.y), std::max(ptA.z, ptB.z), std::max(ptA.w, ptB.w));
 }
 EoGePoint4d EoGePoint4d::Min(EoGePoint4d& ptA, EoGePoint4d& ptB) {
-  return EoGePoint4d(EoMin(ptA.x, ptB.x), EoMin(ptA.y, ptB.y), EoMin(ptA.z, ptB.z), EoMin(ptA.w, ptB.w));
+  return EoGePoint4d(std::min(ptA.x, ptB.x), std::min(ptA.y, ptB.y), std::min(ptA.z, ptB.z), std::min(ptA.w, ptB.w));
 }

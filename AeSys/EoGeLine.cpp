@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include <algorithm>
+
 #include "AeSysView.h"
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
@@ -9,7 +11,6 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "PrimState.h"
-#include "SafeMath.h"
 
 inline EoGeLine::EoGeLine(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint)
     : begin(beginPoint), end(endPoint) {}
@@ -60,7 +61,7 @@ double EoGeLine::AngleFromXAxisXY() const {
   if (fabs(Vector.x) > DBL_EPSILON || fabs(Vector.y) > DBL_EPSILON) {
     Angle = atan2(Vector.y, Vector.x);
 
-    if (Angle < 0.0) Angle += TWOPI;
+    if (Angle < 0.0) Angle += Eo::TwoPi;
   }
   return (Angle);
 }
@@ -70,7 +71,7 @@ EoGePoint3d EoGeLine::ConstrainToAxis(double dInfAng, double dAxOffAng) {
   tm.Translate(EoGeVector3d(begin, EoGePoint3d::kOrigin));
 
   EoGeTransformMatrix tmZRot;
-  tm *= tmZRot.ZAxisRotation(-sin(EoToRadian(dAxOffAng)), cos(EoToRadian(dAxOffAng)));
+  tm *= tmZRot.ZAxisRotation(-sin(Eo::DegreeToRadian(dAxOffAng)), cos(Eo::DegreeToRadian(dAxOffAng)));
 
   EoGePoint3d pt = end;
 
@@ -83,24 +84,24 @@ EoGePoint3d EoGeLine::ConstrainToAxis(double dInfAng, double dAxOffAng) {
   double dLen = sqrt(dX + dY + dZ);
 
   if (dLen > DBL_EPSILON) {     // Not a zero length line
-    if (dX >= EoMax(dY, dZ)) {  // Major component of line is along x-axis
+    if (dX >= std::max(dY, dZ)) {  // Major component of line is along x-axis
       dLen = sqrt(dY + dZ);
       if (dLen > DBL_EPSILON)                                // Not already on the x-axis
-        if (dLen / fabs(pt.x) < tan(EoToRadian(dInfAng))) {  // Within cone of influence .. snap to x-axis
+        if (dLen / fabs(pt.x) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to x-axis
           pt.y = 0.;
           pt.z = 0.;
         }
     } else if (dY >= dZ) {  // Major component of line is along y-axis
       dLen = sqrt(dX + dZ);
       if (dLen > DBL_EPSILON)                                // Not already on the y-axis
-        if (dLen / fabs(pt.y) < tan(EoToRadian(dInfAng))) {  // Within cone of influence .. snap to y-axis
+        if (dLen / fabs(pt.y) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to y-axis
           pt.x = 0.;
           pt.z = 0.;
         }
     } else {
       dLen = sqrt(dX + dY);
       if (dLen > DBL_EPSILON)                                // Not already on the z-axis
-        if (dLen / fabs(pt.z) < tan(EoToRadian(dInfAng))) {  // Within cone of influence .. snap to z-axis
+        if (dLen / fabs(pt.z) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to z-axis
           pt.x = 0.;
           pt.y = 0.;
         }
@@ -158,8 +159,8 @@ void EoGeLine::Display(AeSysView* view, CDC* deviceContext) {
 }
 
 void EoGeLine::Extents(EoGePoint3d& minExtent, EoGePoint3d& maxExtent) {
-  minExtent(EoMin(begin.x, end.x), EoMin(begin.y, end.y), EoMin(begin.z, end.z));
-  maxExtent(EoMax(begin.x, end.x), EoMax(begin.y, end.y), EoMax(begin.z, end.z));
+  minExtent(std::min(begin.x, end.x), std::min(begin.y, end.y), std::min(begin.z, end.z));
+  maxExtent(std::max(begin.x, end.x), std::max(begin.y, end.y), std::max(begin.z, end.z));
 }
 
 bool EoGeLine::Identical(const EoGeLine& line, double tolerance) const {
@@ -229,10 +230,10 @@ bool EoGeLine::IsContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3
 }
 
 bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, const double apert, EoGePoint3d& ptProj, double* rel) {
-  if (pt.x < EoMin(begin.x, end.x) - apert) return false;
-  if (pt.x > EoMax(begin.x, end.x) + apert) return false;
-  if (pt.y < EoMin(begin.y, end.y) - apert) return false;
-  if (pt.y > EoMax(begin.y, end.y) + apert) return false;
+  if (pt.x < std::min(begin.x, end.x) - apert) return false;
+  if (pt.x > std::max(begin.x, end.x) + apert) return false;
+  if (pt.y < std::min(begin.y, end.y) - apert) return false;
+  if (pt.y > std::max(begin.y, end.y) + apert) return false;
 
   double dPBegX = begin.x - pt.x;
   double dPBegY = begin.y - pt.y;
@@ -248,7 +249,7 @@ bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, const double apert, EoGePoint
     DistanceSquared = dPBegX * dPBegX + dPBegY * dPBegY;
   } else {
     *rel = -(dPBegX * dBegEndX + dPBegY * dBegEndY) / dDivr;
-    *rel = EoMax(0.0, EoMin(1., *rel));
+    *rel = std::max(0.0, std::min(1.0, *rel));
     double dx = dPBegX + *rel * dBegEndX;
     double dy = dPBegY + *rel * dBegEndY;
     DistanceSquared = dx * dx + dy * dy;
@@ -375,7 +376,7 @@ double EoGeLine::AngleBetweenLn_xy(EoGeLine firstLine, EoGeLine secondLine) {
   if (dSumProd > DBL_EPSILON) {
     double value = EoGeDotProduct(firstVector, secondVector) / sqrt(dSumProd);
 
-    value = EoMax(-1.0, EoMin(1.0, value));
+    value = std::max(-1.0, std::min(1.0, value));
 
     return (acos(value));
   }

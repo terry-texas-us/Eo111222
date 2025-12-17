@@ -216,7 +216,7 @@ void AeSysView::OnDrawModeReturn() {
       EoGeVector3d MajorAxis(pts[0], pts[1]);
       EoGeVector3d MinorAxis(pts[0], pts[2]);
 
-      Group = new EoDbGroup(new EoDbEllipse(pts[0], MajorAxis, MinorAxis, TWOPI));
+      Group = new EoDbGroup(new EoDbEllipse(pts[0], MajorAxis, MinorAxis, Eo::TwoPi));
       break;
     }
     default:
@@ -334,7 +334,7 @@ void AeSysView::DoDrawModeMouseMove() {
         EoGeVector3d MajorAxis(pts[0], pts[1]);
         EoGeVector3d MinorAxis(pts[0], CurrentPnt);
 
-        m_PreviewGroup.AddTail(new EoDbEllipse(pts[0], MajorAxis, MinorAxis, TWOPI));
+        m_PreviewGroup.AddTail(new EoDbEllipse(pts[0], MajorAxis, MinorAxis, Eo::TwoPi));
       }
       GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;

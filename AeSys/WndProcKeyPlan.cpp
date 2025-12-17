@@ -85,10 +85,10 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
 	double VMinOverview = Target.y + ActiveView->OverviewVMin();
 
 	CRect rc;
-	rc.left = EoRound((UMin - UMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
-	rc.right = EoRound((UMax - UMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
-	rc.top = EoRound((1.0 - (VMax - VMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
-	rc.bottom = EoRound((1.0 - (VMin - VMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
+	rc.left = Eo::Round((UMin - UMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
+	rc.right = Eo::Round((UMax - UMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
+	rc.top = Eo::Round((1.0 - (VMax - VMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
+	rc.bottom = Eo::Round((1.0 - (VMin - VMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
 
 	int DrawMode = dc.SetROP2(R2_XORPEN);
 
@@ -185,10 +185,10 @@ void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
 	double dUMinOverview = Target.x + ActiveView->OverviewUMin();
 	double dVMinOverview = Target.y + ActiveView->OverviewVMin();
 
-	EoDlgActiveViewKeyplan::m_rcWnd.left = EoRound((UMin - dUMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
-	EoDlgActiveViewKeyplan::m_rcWnd.top = EoRound((1.0 - (VMax - dVMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
-	EoDlgActiveViewKeyplan::m_rcWnd.right = EoRound((UMax - dUMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
-	EoDlgActiveViewKeyplan::m_rcWnd.bottom = EoRound((1.0 - (VMin - dVMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
+	EoDlgActiveViewKeyplan::m_rcWnd.left = Eo::Round((UMin - dUMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
+	EoDlgActiveViewKeyplan::m_rcWnd.top = Eo::Round((1.0 - (VMax - dVMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
+	EoDlgActiveViewKeyplan::m_rcWnd.right = Eo::Round((UMax - dUMinOverview) / ActiveView->OverviewUExt() * bitmap.bmWidth);
+	EoDlgActiveViewKeyplan::m_rcWnd.bottom = Eo::Round((1.0 - (VMin - dVMinOverview) / ActiveView->OverviewVExt()) * bitmap.bmHeight);
 
 	::Rectangle(hDCKeyplan, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top, EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 	::SelectObject(hDCKeyplan, hPen);

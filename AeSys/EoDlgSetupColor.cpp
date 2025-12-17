@@ -64,7 +64,7 @@ BOOL EoDlgSetupColor::OnInitDialog() {
 }
 void EoDlgSetupColor::OnOK() {
   m_ColorIndex = EoUInt16(GetDlgItemInt(IDC_COLOR_EDIT));
-  m_ColorIndex = EoMin(m_ColorIndex, EoUInt16(255));
+  m_ColorIndex = std::min(m_ColorIndex, EoUInt16(255));
   CDialog::OnOK();
 }
 void EoDlgSetupColor::OnClickedNamedColors() {

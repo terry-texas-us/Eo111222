@@ -66,7 +66,6 @@
 #include "Lex.h"
 #include "PrimState.h"
 #include "Resource.h"
-#include "SafeMath.h"
 
 #if defined(USING_ODA)
 #include "DbBlockTable.h"
@@ -427,7 +426,7 @@ void AeSysDoc::AddTextBlock(LPWSTR pszText) {
       AddWorkLayerGroup(Group);
       UpdateAllViews(nullptr, EoDb::kGroup, Group);
     }
-    ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 1., 0));
+    ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 1.0, 0));
     pText = wcstok_s(0, L"\r", &NextToken);
     if (pText == 0) break;
     pText++;
@@ -1571,13 +1570,13 @@ void AeSysDoc::OnSetupFillHatch() {
   EoDlgSetupHatch Dialog;
   Dialog.m_HatchXScaleFactor = hatch::dXAxRefVecScal;
   Dialog.m_HatchYScaleFactor = hatch::dYAxRefVecScal;
-  Dialog.m_HatchRotationAngle = EoToDegree(hatch::dOffAng);
+  Dialog.m_HatchRotationAngle = Eo::RadianToDegree(hatch::dOffAng);
 
   if (Dialog.DoModal() == IDOK) {
     pstate.SetPolygonIntStyle(EoDb::kHatch);
-    hatch::dXAxRefVecScal = EoMax(0.01, Dialog.m_HatchXScaleFactor);
-    hatch::dYAxRefVecScal = EoMax(0.01, Dialog.m_HatchYScaleFactor);
-    hatch::dOffAng = EoArcLength(Dialog.m_HatchRotationAngle);
+    hatch::dXAxRefVecScal = std::max(0.01, Dialog.m_HatchXScaleFactor);
+    hatch::dYAxRefVecScal = std::max(0.01, Dialog.m_HatchYScaleFactor);
+    hatch::dOffAng = Eo::DegreeToRadian(Dialog.m_HatchRotationAngle);
   }
 }
 void AeSysDoc::OnSetupNote() {
@@ -1590,15 +1589,15 @@ void AeSysDoc::OnSetupNote() {
   pstate.GetCharCellDef(CCD);
 
   Dialog.m_TextHeight = CCD.ChrHgtGet();
-  Dialog.m_TextRotationAngle = EoToDegree(CCD.TextRotAngGet());
+  Dialog.m_TextRotationAngle = Eo::RadianToDegree(CCD.TextRotAngGet());
   Dialog.m_TextExpansionFactor = CCD.ChrExpFacGet();
-  Dialog.m_CharacterSlantAngle = EoToDegree(CCD.ChrSlantAngGet());
+  Dialog.m_CharacterSlantAngle = Eo::RadianToDegree(CCD.ChrSlantAngGet());
 
   if (Dialog.DoModal() == IDOK) {
     CCD.ChrHgtSet(Dialog.m_TextHeight);
-    CCD.TextRotAngSet(EoToRadian(Dialog.m_TextRotationAngle));
+    CCD.TextRotAngSet(Eo::DegreeToRadian(Dialog.m_TextRotationAngle));
     CCD.ChrExpFacSet(Dialog.m_TextExpansionFactor);
-    CCD.ChrSlantAngSet(EoToRadian(Dialog.m_CharacterSlantAngle));
+    CCD.ChrSlantAngSet(Eo::DegreeToRadian(Dialog.m_CharacterSlantAngle));
     pstate.SetCharCellDef(CCD);
 
     AeSysView* ActiveView = AeSysView::GetActiveView();
@@ -2139,7 +2138,7 @@ void AeSysDoc::ConvertLinetypesTableRecord(EoDbLineType* lineType) {
         Linetype->setShapeStyleAt(n, OdDbObjectId::kNull);
         Linetype->setShapeNumberAt(n, 0);
         Linetype->setTextAt(n, L" ");
-        Linetype->setShapeScaleAt(n, 1.);
+        Linetype->setShapeScaleAt(n, 1.0);
         Linetype->setShapeOffsetAt(n, OdGeVector2d(0.0, 0.0));
         Linetype->setShapeRotationAt(n, 0.0);
         Linetype->setShapeIsUcsOrientedAt(n, false);

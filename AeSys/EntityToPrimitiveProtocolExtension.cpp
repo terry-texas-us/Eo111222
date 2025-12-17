@@ -402,13 +402,13 @@ class EoDbArc_Converter : public EoDbConvertEntityToPrimitive {
     double StartAngle = ArcEntity->startAngle();
     double EndAngle = ArcEntity->endAngle();
 
-    if (StartAngle >= TWOPI) {  // need to rationalize angs to first period angles in range on (0 to twopi)
-      StartAngle -= TWOPI;
-      EndAngle -= TWOPI;
+    if (StartAngle >= Eo::TwoPi) {  // need to rationalize angs to first period angles in range on (0 to twopi)
+      StartAngle -= Eo::TwoPi;
+      EndAngle -= Eo::TwoPi;
     }
     double SweepAngle = EndAngle - StartAngle;
 
-    if (SweepAngle <= FLT_EPSILON) SweepAngle += TWOPI;
+    if (SweepAngle <= FLT_EPSILON) SweepAngle += Eo::TwoPi;
 
     OdGePoint3d StartPoint;
     ArcEntity->getStartPoint(StartPoint);
@@ -507,7 +507,7 @@ class EoDbCircle_Converter : public EoDbConvertEntityToPrimitive {
     MajorAxis *= CircleEntity->radius();
     MinorAxis *= CircleEntity->radius();
 
-    EoDbEllipse* CirclePrimitive = new EoDbEllipse(CircleEntity->center(), MajorAxis, MinorAxis, TWOPI);
+    EoDbEllipse* CirclePrimitive = new EoDbEllipse(CircleEntity->center(), MajorAxis, MinorAxis, Eo::TwoPi);
 
     ConvertEntityData(CircleEntity, CirclePrimitive);
     group->AddTail(CirclePrimitive);
@@ -537,17 +537,17 @@ class EoDbEllipse_Converter : public EoDbConvertEntityToPrimitive {
     double StartAngle = EllipseEntity->startAngle();
     double EndAngle = EllipseEntity->endAngle();
 
-    if (StartAngle >= TWOPI) {  // need to rationalize angs to first period angles in range on (0 to twopi)
-      StartAngle -= TWOPI;
-      EndAngle -= TWOPI;
+    if (StartAngle >= Eo::TwoPi) {  // need to rationalize angs to first period angles in range on (0 to twopi)
+      StartAngle -= Eo::TwoPi;
+      EndAngle -= Eo::TwoPi;
     }
     double SweepAngle = EndAngle - StartAngle;
-    if (SweepAngle <= FLT_EPSILON) SweepAngle += TWOPI;
+    if (SweepAngle <= FLT_EPSILON) SweepAngle += Eo::TwoPi;
 
     if (StartAngle != 0.0) {
       MajorAxis.RotAboutArbAx(EllipseEntity->normal(), StartAngle);
       MinorAxis.RotAboutArbAx(EllipseEntity->normal(), StartAngle);
-      if (EllipseEntity->radiusRatio() != 1.) {
+      if (EllipseEntity->radiusRatio() != 1.0) {
         ATLTRACE2(traceOdDb, 2, L"Ellipse: Non radial with start parameter not 0.\n");
       }
     }
@@ -899,7 +899,7 @@ class EoDbMText_Converter : public EoDbConvertEntityToPrimitive {
     EoDbFontDefinition FontDefinition(EoDb::kEoTrueType, (PCTSTR)FileName, EoDb::kPathRight, HorizontalAlignment,
                                       VerticalAlignment, 0.0);
 
-    EoDbCharacterCellDefinition ccd(MTextEntity->rotation(), 0.0, 1., MTextEntity->textHeight());
+    EoDbCharacterCellDefinition ccd(MTextEntity->rotation(), 0.0, 1.0, MTextEntity->textHeight());
 
     EoGeVector3d XDirection;
     EoGeVector3d YDirection;

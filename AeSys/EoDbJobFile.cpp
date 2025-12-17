@@ -340,7 +340,7 @@ EoDbPrimitive* EoDbJobFile::ConvertEllipsePrimitive() {
 
   double SweepAngle = ((CVaxFloat*)&m_PrimBuf[44])->Convert();
 
-  if (SweepAngle > TWOPI || SweepAngle < -TWOPI) SweepAngle = TWOPI;
+  if (SweepAngle > Eo::TwoPi || SweepAngle < -Eo::TwoPi) SweepAngle = Eo::TwoPi;
 
   return new EoDbEllipse(PenColor, LineType, CenterPoint, MajorAxis, MinorAxis, SweepAngle);
 }
@@ -487,8 +487,8 @@ EoDbPolygon::EoDbPolygon(EoByte* buffer, int version) {
           m_vPosYAx *= dYScal * 1.e-3;
         } else if (fabs(dXScal) > FLT_EPSILON) {  // Vertical hatch lines
           m_InteriorStyleIndex = 1;
-          m_vPosXAx.x = cos(dAng + HALF_PI);
-          m_vPosXAx.y = sin(dAng + HALF_PI);
+          m_vPosXAx.x = cos(dAng + Eo::HalfPi);
+          m_vPosXAx.y = sin(dAng + Eo::HalfPi);
           m_vPosYAx.x = -m_vPosXAx.y;
           m_vPosYAx.y = m_vPosXAx.x;
           m_vPosYAx *= dXScal * 1.e-3;
@@ -583,30 +583,30 @@ EoDbText::EoDbText(EoByte* buffer, int version) {
   if (version == 1) {
     m_PenColor = EoInt16(buffer[4] & 0x000f);
     m_fd.CharacterSpacing(((CVaxFloat*)&buffer[36])->Convert());
-    m_fd.CharacterSpacing(min(max(m_fd.CharacterSpacing(), 0.0), 4.));
+    m_fd.CharacterSpacing(std::min(std::max(m_fd.CharacterSpacing(), 0.0), 4.0));
 
     double d = ((CVaxFloat*)&buffer[40])->Convert();
 
-    m_fd.Path(EoUInt16(fmod(d, 10.)));
+    m_fd.Path(EoUInt16(fmod(d, 10.0)));
     if (m_fd.Path() < 0 || m_fd.Path() > 4) m_fd.Path(EoDb::kPathRight);
-    m_fd.HorizontalAlignment(EoUInt16(fmod(d / 10., 10.)));
+    m_fd.HorizontalAlignment(EoUInt16(fmod(d / 10.0, 10.0)));
     if (m_fd.HorizontalAlignment() < 1 || m_fd.HorizontalAlignment() > 3) m_fd.HorizontalAlignment(EoDb::kAlignCenter);
-    m_fd.VerticalAlignment(EoUInt16((d / 100.)));
+    m_fd.VerticalAlignment(EoUInt16((d / 100.0)));
     if (m_fd.VerticalAlignment() < 2 || m_fd.VerticalAlignment() > 4) m_fd.VerticalAlignment(EoDb::kAlignMiddle);
 
     m_ReferenceSystem.SetOrigin(((CVaxPnt*)&buffer[8])->Convert() * 1.e-3);
 
     double dChrHgt = ((CVaxFloat*)&buffer[20])->Convert();
-    dChrHgt = min(max(dChrHgt, 0.01e3), 100.e3);
+    dChrHgt = std::min(std::max(dChrHgt, 0.01e3), 100.e3);
 
     double dChrExpFac = ((CVaxFloat*)&buffer[24])->Convert();
-    dChrExpFac = min(max(dChrExpFac, 0.0), 10.);
+    dChrExpFac = std::min(std::max(dChrExpFac, 0.0), 10.0);
 
     m_ReferenceSystem.SetXDirection(EoGeVector3d(0.6 * dChrHgt * dChrExpFac, 0.0, 0.0) * 1.e-3);
     m_ReferenceSystem.SetYDirection(EoGeVector3d(0.0, dChrHgt, 0.0) * 1.e-3);
 
     double Angle = ((CVaxFloat*)&buffer[28])->Convert();
-    Angle = min(max(Angle, -TWOPI), TWOPI);
+    Angle = std::min(std::max(Angle, -Eo::TwoPi), Eo::TwoPi);
 
     if (fabs(Angle) > FLT_EPSILON) {
       EoGeVector3d XDirection(m_ReferenceSystem.XDirection());

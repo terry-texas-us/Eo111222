@@ -30,6 +30,6 @@ class EoDbDwgToPegFile {
 /// <summary>
 /// the default file examine -- if the file isn't pathed to the right place, then search the ACAD environment variable for the oldFile
 /// </summary>
-void ExamineFile(LPTSTR oldFile, const int oldFileBufferSize, LPTSTR newFile, const int newFileBufferSize);
+void ExamineFile(LPWSTR oldFile, const int oldFileBufferSize, LPWSTR newFile, const int newFileBufferSize);
 
 #endif  // USING_ODA

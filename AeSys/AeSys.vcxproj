@@ -57,6 +57,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>5045</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>xmllite.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -67,8 +68,7 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
-      <DisableSpecificWarnings>
-      </DisableSpecificWarnings>
+      <DisableSpecificWarnings>5045</DisableSpecificWarnings>
       <WarningVersion>
       </WarningVersion>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -1429,7 +1429,7 @@
     <ClInclude Include="AeSys.h" />
     <ClInclude Include="AeSysDoc.h" />
     <ClInclude Include="AeSysView.h" />
-    <ClInclude Include="eodb.h" />
+    <ClInclude Include="EoDb.h" />
     <ClInclude Include="EoDbCharacterCellDefinition.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="Dde.h" />

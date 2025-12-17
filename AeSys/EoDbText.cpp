@@ -255,7 +255,7 @@ void DisplayText(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd, Eo
       DisplayTextSegment(view, deviceContext, fd, ReferenceSystem, StartPosition, NumberOfCharactersToDisplay, text);
 
       ReferenceSystem.SetOrigin(BottomLeftCorner);
-      ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 1., 0));
+      ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 1.0, 0));
       BottomLeftCorner = ReferenceSystem.Origin();
 
       StartPosition += 2 + NumberOfCharactersToDisplay;
@@ -351,8 +351,8 @@ int FontEscapementAngle(const EoGeVector3d& xAxis) {
   double Angle = 0.0;
 
   Angle = atan2(xAxis.y, xAxis.x);  // -pi to pi radians
-  if (Angle < 0.0) { Angle += TWOPI; }
-  return EoRound(EoToDegree(Angle) * 10.);
+  if (Angle < 0.0) { Angle += Eo::TwoPi; }
+  return Eo::Round(Eo::RadianToDegree(Angle) * 10.0);
 }
 bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd,
                                          EoGeReferenceSystem& referenceSystem, int startPosition,
@@ -385,7 +385,7 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, CDC* deviceContext, Eo
   double dHeight = vY.Length();
   if (dHeight == 0.0) { return true; }
   LOGFONT logfont;
-  logfont.lfHeight = -EoRound(1.33 * dHeight);
+  logfont.lfHeight = -Eo::Round(1.33 * dHeight);
   logfont.lfWidth = 0;
   logfont.lfEscapement = -FontEscapementAngle(vX);
   logfont.lfOrientation = logfont.lfEscapement;
@@ -444,7 +444,7 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
                              text);
 
           ReferenceSystem.SetOrigin(BottomLeftCorner);
-          ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 1., 0));
+          ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 1.0, 0));
           BottomLeftCorner = ReferenceSystem.Origin();
           StartPosition += 2 + NumberOfCharactersToDisplay;
           CurrentPosition = StartPosition;
@@ -695,7 +695,7 @@ EoGePoint3d text_GetNewLinePos(EoDbFontDefinition& fd, EoGeReferenceSystem& refe
 
     vPath.Normalize();
     vPath *= -(YDirection.Length() * dLineSpaceFac);
-    vPath.RotAboutArbAx(vRefNorm, HALF_PI);
+    vPath.RotAboutArbAx(vRefNorm, Eo::HalfPi);
   }
   return (pt + (vPath * 1.5));
 }

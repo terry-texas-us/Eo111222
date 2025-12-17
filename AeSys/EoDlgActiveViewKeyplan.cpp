@@ -27,7 +27,7 @@ EoDlgActiveViewKeyplan::~EoDlgActiveViewKeyplan() {}
 void EoDlgActiveViewKeyplan::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);
   DDX_Text(dataExchange, IDC_RATIO, m_dRatio);
-  DDV_MinMaxDouble(dataExchange, m_dRatio, 0.0001, 10000.);
+  DDV_MinMaxDouble(dataExchange, m_dRatio, 0.0001, 10000.0);
 }
 BOOL EoDlgActiveViewKeyplan::OnInitDialog() {
   CDialog::OnInitDialog();
@@ -62,10 +62,10 @@ BOOL EoDlgActiveViewKeyplan::OnInitDialog() {
   double UMinOverview = Target.x + m_ActiveView->OverviewUMin();
   double VMinOverview = Target.y + m_ActiveView->OverviewVMin();
 
-  m_rcWnd.left = EoRound((UMin - UMinOverview) / m_ActiveView->OverviewUExt() * KeyplanArea.right);
-  m_rcWnd.right = EoRound((UMax - UMinOverview) / m_ActiveView->OverviewUExt() * KeyplanArea.right);
-  m_rcWnd.top = EoRound((1.0 - (VMax - VMinOverview) / m_ActiveView->OverviewVExt()) * KeyplanArea.bottom);
-  m_rcWnd.bottom = EoRound((1.0 - (VMin - VMinOverview) / m_ActiveView->OverviewVExt()) * KeyplanArea.bottom);
+  m_rcWnd.left = Eo::Round((UMin - UMinOverview) / m_ActiveView->OverviewUExt() * KeyplanArea.right);
+  m_rcWnd.right = Eo::Round((UMax - UMinOverview) / m_ActiveView->OverviewUExt() * KeyplanArea.right);
+  m_rcWnd.top = Eo::Round((1.0 - (VMax - VMinOverview) / m_ActiveView->OverviewVExt()) * KeyplanArea.bottom);
+  m_rcWnd.bottom = Eo::Round((1.0 - (VMin - VMinOverview) / m_ActiveView->OverviewVExt()) * KeyplanArea.bottom);
 
   Refresh();
   return TRUE;
@@ -121,8 +121,8 @@ void EoDlgActiveViewKeyplan::Refresh() {
 
   m_ActiveView->ViewportPushActive();
   m_ActiveView->SetViewportSize(bitmap.bmWidth, bitmap.bmHeight);
-  m_ActiveView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / EoMmPerInch);
-  m_ActiveView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / EoMmPerInch);
+  m_ActiveView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
+  m_ActiveView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
   m_ActiveView->PushViewTransform();
   m_ActiveView->ModelViewInitialize();

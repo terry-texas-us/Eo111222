@@ -190,7 +190,7 @@ void EoCtrlColorsButton::OnKeyDown(UINT keyCode, UINT repeatCount, UINT flags) {
           break;
       }
     }
-    m_SubItem = EoMax(m_BeginIndex, EoMin(m_EndIndex, m_SubItem));
+    m_SubItem = std::max(m_BeginIndex, std::min(m_EndIndex, m_SubItem));
 
     CRect CurrentSubItemRectangle;
     SubItemRectangleByIndex(m_SubItem, CurrentSubItemRectangle);

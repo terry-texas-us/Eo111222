@@ -45,7 +45,7 @@ EoGeTransformMatrix::EoGeTransformMatrix(EoGePoint3d ptO, EoGeVector3d vXAx, EoG
   double dX = vXAxT.x;
   double dY = vXAxT.y;
 
-  EoGeVector3d vScale(1. / sqrt(dX * dX + dY * dY), 1., 1.);
+  EoGeVector3d vScale(1. / sqrt(dX * dX + dY * dY), 1.0, 1.0);
 
   vXAxT.Normalize();
 
@@ -105,21 +105,21 @@ EoGeTransformMatrix EoGeTransformMatrix::BuildRotationTransformMatrix(const EoGe
 }
 void EoGeTransformMatrix::AppendXAxisRotation(double xAxisAngle) {
   if (fabs(xAxisAngle) != 0.0) {
-    double Angle = EoArcLength(xAxisAngle);
+    double Angle = Eo::DegreeToRadian(xAxisAngle);
     EoGeTransformMatrix Matrix;
     *this *= Matrix.XAxisRotation(sin(Angle), cos(Angle));
   }
 }
 void EoGeTransformMatrix::AppendYAxisRotation(double yAxisAngle) {
   if (fabs(yAxisAngle) != 0.0) {
-    double Angle = EoArcLength(yAxisAngle);
+    double Angle = Eo::DegreeToRadian(yAxisAngle);
     EoGeTransformMatrix Matrix;
     *this *= Matrix.YAxisRotation(sin(Angle), cos(Angle));
   }
 }
 void EoGeTransformMatrix::AppendZAxisRotation(double zAxisAngle) {
   if (fabs(zAxisAngle) != 0.0) {
-    double Angle = EoArcLength(zAxisAngle);
+    double Angle = Eo::DegreeToRadian(zAxisAngle);
     EoGeTransformMatrix Matrix;
     *this *= Matrix.ZAxisRotation(sin(Angle), cos(Angle));
   }

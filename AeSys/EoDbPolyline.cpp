@@ -25,7 +25,7 @@ EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& cent
   EoGeVector3d PlaneNormal = ActiveView->CameraDirection();
   EoGeVector3d MinorAxis = ActiveView->ViewUp();
   EoGeVector3d MajorAxis(MinorAxis);
-  MajorAxis.RotAboutArbAx(PlaneNormal, -HALF_PI);
+  MajorAxis.RotAboutArbAx(PlaneNormal, -Eo::HalfPi);
 
   MajorAxis *= radius;
   MinorAxis *= radius;

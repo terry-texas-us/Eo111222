@@ -14,7 +14,7 @@ EoDlgSetAngle::~EoDlgSetAngle() {
 void EoDlgSetAngle::DoDataExchange(CDataExchange* dataExchange) {
 	CDialog::DoDataExchange(dataExchange);
 	DDX_Text(dataExchange, IDC_ANGLE, m_dAngle);
-	DDV_MinMaxDouble(dataExchange, m_dAngle, - 360., 360.);
+	DDV_MinMaxDouble(dataExchange, m_dAngle, - 360.0, 360.0);
 }
 BOOL EoDlgSetAngle::OnInitDialog() {
 	CDialog::OnInitDialog();

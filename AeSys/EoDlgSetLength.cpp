@@ -21,7 +21,7 @@ BOOL EoDlgSetLength::OnInitDialog() {
 		SetWindowTextW(m_strTitle);
 	}
 	CString Length;
-	app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), m_dLength);
+	app.FormatLength(Length, std::max(app.GetUnits(), AeSys::kEngineering), m_dLength);
 	SetDlgItemTextW(IDC_DISTANCE, Length);
 	return TRUE;
 }

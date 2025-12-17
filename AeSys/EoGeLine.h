@@ -32,7 +32,7 @@ class EoGeLine {
   EoGeLine operator-(const EoGeVector3d& offset) const;
 
   /** @brief Determines the angle of the line segment from the X-axis in the XY plane.
-  * @return The angle (in radians) from the X axis (0 to TWOPI) to the line segment.
+  * @return The angle (in radians) from the X axis (0 to Eo::TwoPi) to the line segment.
   * note If null length or parallel to z-axis, angle is 0.
   */
   double AngleFromXAxisXY() const;

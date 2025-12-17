@@ -37,7 +37,7 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
 
   lineType->GetDashLen(dDash);
 
-  double dSecLen = EoMax(0.025 /* * 96.*/, fabs(dDash[iDashDefId]));
+  double dSecLen = std::max(0.025 /* * 96.*/, fabs(dDash[iDashDefId]));
 
   for (int i = 0; i < pointsArray.GetSize() - 1; i++) {
     EoGeVector3d vLn(pointsArray[i], pointsArray[i + 1]);
@@ -64,7 +64,7 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
       }
       pt[0] = pt[1];
       iDashDefId = (iDashDefId + 1) % wDefLen;
-      dSecLen = EoMax(0.025 /* * 96.*/, fabs(dDash[iDashDefId]));
+      dSecLen = std::max(0.025 /* * 96.*/, fabs(dDash[iDashDefId]));
     }
     if (dRemDisToEnd > DBL_EPSILON) {  // Partial component of dash section must produced
       if (dDash[iDashDefId] >= 0.0) {
@@ -125,7 +125,7 @@ void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, Eo
   tm.Inverse();
 
   // Determine the parameter (angular increment)
-  double AngleIncrement = TWOPI / double(numberOfPoints);
+  double AngleIncrement = Eo::TwoPi / double(numberOfPoints);
   double CosIncrement = cos(AngleIncrement);
   double SinIncrement = sin(AngleIncrement);
   pts.SetSize(numberOfPoints);

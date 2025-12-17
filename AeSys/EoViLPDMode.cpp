@@ -38,9 +38,9 @@ void AeSysView::OnLpdModeJoin() {
 
     CString Message(L"Cross sectional dimension (Width by Depth) is ");
     CString Length;
-    app.FormatLength(Length, max(app.GetUnits(), AeSys::kInches), m_PreviousSection.Width(), 12, 2);
+    app.FormatLength(Length, std::max(app.GetUnits(), AeSys::kInches), m_PreviousSection.Width(), 12, 2);
     CString Width;
-    app.FormatLength(Width, max(app.GetUnits(), AeSys::kInches), m_PreviousSection.Depth(), 12, 2);
+    app.FormatLength(Width, std::max(app.GetUnits(), AeSys::kInches), m_PreviousSection.Depth(), 12, 2);
     Message.Append(Length.TrimLeft() + L" by " + Width.TrimLeft());
     app.AddStringToMessageList(Message);
     SetCursorPosition(m_PreviousPnt);
@@ -286,9 +286,9 @@ void AeSysView::OnLpdModeSize() {
       m_EndCapGroup->GetNext(Position);
       EoDbLine* pLine = static_cast<EoDbLine*>(m_EndCapGroup->GetAt(Position));
       EoGeLine Line = pLine->Ln();
-      dAng = fmod(Line.AngleFromXAxisXY(), PI);
-      if (dAng <= RADIAN) dAng += PI;
-      dAng -= HALF_PI;
+      dAng = fmod(Line.AngleFromXAxisXY(), Eo::Pi);
+      if (dAng <= Eo::Radian) { dAng += Eo::Pi; }
+      dAng -= Eo::HalfPi;
     }
     m_EndCapPoint = 0;
   }
@@ -431,7 +431,7 @@ void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionRe
   double Relationship;
   if (existingSectionReferenceLine.RelOfPtToEndPts(IntersectionPoint, Relationship)) {
     if (fabs(Relationship) > FLT_EPSILON &&
-        fabs(Relationship - 1.) > FLT_EPSILON) {  // need to add a section either from the elbow or the existing section
+        fabs(Relationship - 1.0) > FLT_EPSILON) {  // need to add a section either from the elbow or the existing section
       double SectionLength = existingSectionReferenceLine.Length();
       double DistanceToBeginPoint = Relationship * SectionLength;
       if (Relationship > FLT_EPSILON && Relationship < 1. - FLT_EPSILON) {  // section from the elbow
@@ -439,7 +439,7 @@ void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionRe
             CurrentReferenceLine.begin.ProjectToward(CurrentReferenceLine.end, SectionLength - DistanceToBeginPoint);
         GenerateRectangularSection(CurrentReferenceLine, m_CenterLineEccentricity, m_PreviousSection, group);
       } else {
-        DistanceToBeginPoint = EoMax(DistanceToBeginPoint, SectionLength);
+        DistanceToBeginPoint = std::max(DistanceToBeginPoint, SectionLength);
         existingSectionReferenceLine.end =
             existingSectionReferenceLine.begin.ProjectToward(existingSectionReferenceLine.end, DistanceToBeginPoint);
       }
@@ -561,9 +561,9 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   EoGeReferenceSystem ReferenceSystem(point, XDirection, YDirection);
 
   CString Width;
-  app.FormatLength(Width, max(app.GetUnits(), AeSys::kInches), section.Width(), 0, 2);
+  app.FormatLength(Width, std::max(app.GetUnits(), AeSys::kInches), section.Width(), 0, 2);
   CString Depth;
-  app.FormatLength(Depth, max(app.GetUnits(), AeSys::kInches), section.Depth(), 0, 2);
+  app.FormatLength(Depth, std::max(app.GetUnits(), AeSys::kInches), section.Depth(), 0, 2);
   CString Note = Width.TrimLeft() + L"/" + Depth.TrimLeft();
 
   CDC* DeviceContext = GetDC();
@@ -622,8 +622,8 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
   Section->AddTail(new EoDbLine(LeftLine.end, LeftLine.begin));
 
   if (m_GenerateTurningVanes) {
-    EoGePoint3d BeginPoint = ((justification == Left) ? RightLine : LeftLine).ProjToBegPt(-m_DuctTapSize / 3.);
-    EoGePoint3d EndPoint = m_CurrentReferenceLine.ProjToBegPt(-m_DuctTapSize / 2.);
+    EoGePoint3d BeginPoint = ((justification == Left) ? RightLine : LeftLine).ProjToBegPt(-m_DuctTapSize / 3.0);
+    EoGePoint3d EndPoint = m_CurrentReferenceLine.ProjToBegPt(-m_DuctTapSize / 2.0);
 
     Section->AddTail(new EoDbEllipse(1, pstate.LineType(), BeginPoint, 0.01));
     Section->AddTail(new EoDbLine(1, pstate.LineType(), BeginPoint, EndPoint));
@@ -639,7 +639,7 @@ void AeSysView::GenerateTransition(EoGeLine& referenceLine, double eccentricity,
 
   double WidthChange = currentSection.Width() - previousSection.Width();
   double TransitionLength = LengthOfTransition(justification, slope, previousSection, currentSection);
-  TransitionLength = EoMin(TransitionLength, ReferenceLength);
+  TransitionLength = std::min(TransitionLength, ReferenceLength);
 
   EoGeLine LeftLine;
   EoGeLine RightLine;
@@ -661,7 +661,7 @@ void AeSysView::GenerateTransition(EoGeLine& referenceLine, double eccentricity,
 
 void AeSysView::SetDuctOptions(Section& section) {
   AeSys::Units Units = app.GetUnits();
-  app.SetUnits(max(Units, AeSys::kInches));
+  app.SetUnits(std::max(Units, AeSys::kInches));
 
   EoDlgLowPressureDuctOptions dlg(this);
 
@@ -687,7 +687,7 @@ double AeSysView::LengthOfTransition(EJust justification, double slope, Section 
   double WidthChange = currentSection.Width() - previousSection.Width();
   double DepthChange = currentSection.Depth() - previousSection.Depth();
 
-  double Length = EoMax(fabs(WidthChange), fabs(DepthChange)) * slope;
+  double Length = std::max(fabs(WidthChange), fabs(DepthChange)) * slope;
   if (justification == Center) { Length *= 0.5; }
   return (Length);
 }
@@ -703,7 +703,7 @@ bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double
   EoGeLine TestLine;
   testLinePrimitive->GetLine(TestLine);
 
-  double TestLineAngle = fmod(TestLine.AngleFromXAxisXY(), PI);
+  double TestLineAngle = fmod(TestLine.AngleFromXAxisXY(), Eo::Pi);
 
   POSITION GroupPosition = GetLastGroupPosition();
   while (GroupPosition != 0) {
@@ -724,8 +724,8 @@ bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double
                  Line.end != TestLine.end) {  //	No endpoint coincides with one of the test line endpoints
         continue;
       }
-      double LineAngle = fmod(Line.AngleFromXAxisXY(), PI);
-      if (fabs(fabs(TestLineAngle - LineAngle) - HALF_PI) <= angularTolerance) {
+      double LineAngle = fmod(Line.AngleFromXAxisXY(), Eo::Pi);
+      if (fabs(fabs(TestLineAngle - LineAngle) - Eo::HalfPi) <= angularTolerance) {
         if (LeftLinePrimitive == 0) {  // No qualifiers yet
           DirectedRelationship = TestLine.DirRelOfPt(Line.begin);
           LeftLinePrimitive = LinePrimitive;

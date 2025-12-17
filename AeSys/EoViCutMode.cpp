@@ -110,10 +110,10 @@ void AeSysView::OnCutModeField() {
   } else {
     EoGePoint3d rLL, rUR;
 
-    rLL.x = EoMin(rPrvPos.x, ptCur.x);
-    rLL.y = EoMin(rPrvPos.y, ptCur.y);
-    rUR.x = EoMax(rPrvPos.x, ptCur.x);
-    rUR.y = EoMax(rPrvPos.y, ptCur.y);
+    rLL.x = std::min(rPrvPos.x, ptCur.x);
+    rLL.y = std::min(rPrvPos.y, ptCur.y);
+    rUR.x = std::max(rPrvPos.x, ptCur.x);
+    rUR.y = std::max(rPrvPos.y, ptCur.y);
 
     EoGePoint3d ptLL = rLL;
     EoGePoint3d ptUR = rUR;

@@ -60,13 +60,13 @@ BOOL EoDlgEditOptions::OnInitDialog() {
 }
 void EoDlgEditOptions::OnOK() {
 	if (m_MirrorXCheckControl.GetCheck() == BST_CHECKED) {
-		m_ActiveView->SetMirrorScale(- 1, 1., 1.);
+		m_ActiveView->SetMirrorScale(- 1, 1.0, 1.0);
 	}
 	else if (m_MirrorYCheckControl.GetCheck() == BST_CHECKED) {
-		m_ActiveView->SetMirrorScale(1., - 1., 1.);
+		m_ActiveView->SetMirrorScale(1.0, - 1.0, 1.0);
 	}
 	else {
-		m_ActiveView->SetMirrorScale(1., 1., - 1.);
+		m_ActiveView->SetMirrorScale(1.0, 1.0, - 1.0);
 	}
 	CDialog::OnOK();
 }

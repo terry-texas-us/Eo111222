@@ -332,14 +332,14 @@ void AeSysView::OnDimensionModeAngle() {
         ln.end = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, dAng);
 
         EoGeVector3d vXAx = EoGeVector3d(ptCen, ln.begin);
-        EoGePoint3d ptRot(ln.begin.RotateAboutAxis(ptCen, vPlnNorm, HALF_PI));
+        EoGePoint3d ptRot(ln.begin.RotateAboutAxis(ptCen, vPlnNorm, Eo::HalfPi));
         EoGeVector3d vYAx = EoGeVector3d(ptCen, ptRot);
-        EoGePoint3d ptArrow = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, RADIAN);
+        EoGePoint3d ptArrow = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, Eo::Radian);
 
         EoDbGroup* Group = new EoDbGroup;
         GenerateLineEndItem(1, 0.1, ptArrow, ln.begin, Group);
         Group->AddTail(new EoDbEllipse(1, 1, ptCen, vXAx, vYAx, dAng));
-        ptArrow = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, dAng - RADIAN);
+        ptArrow = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, dAng - Eo::Radian);
         GenerateLineEndItem(1, 0.1, ptArrow, ln.end, Group);
 
         int PrimitiveState = pstate.Save();

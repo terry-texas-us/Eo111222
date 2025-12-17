@@ -104,8 +104,8 @@ void WndProcPreviewUpdate(HWND previewWindow, EoDbBlock* block) {
 
   ActiveView->ViewportPushActive();
   ActiveView->SetViewportSize(rc.right, rc.bottom);
-  ActiveView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / EoMmPerInch);
-  ActiveView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / EoMmPerInch);
+  ActiveView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
+  ActiveView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
   EoGeTransformMatrix tm;
 
@@ -121,7 +121,7 @@ void WndProcPreviewUpdate(HWND previewWindow, EoDbBlock* block) {
 
   ActiveView->SetCenteredWindow(UExtent, VExtent);
 
-  EoGePoint3d ptTarget((ptMin.x + ptMax.x) / 2., (ptMin.y + ptMax.y) / 2., 0.0);
+  EoGePoint3d ptTarget((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, 0.0);
 
   ActiveView->SetCameraTarget(ptTarget);
   ActiveView->SetCameraPosition(ActiveView->CameraDirection());
@@ -151,8 +151,8 @@ void _WndProcPreviewUpdate(HWND previewWindow, EoDbGroupList* groups) {
 
   ActiveView->ViewportPushActive();
   ActiveView->SetViewportSize(rc.right, rc.bottom);
-  ActiveView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / EoMmPerInch);
-  ActiveView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / EoMmPerInch);
+  ActiveView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
+  ActiveView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
   EoGeTransformMatrix tm;
 
@@ -163,7 +163,7 @@ void _WndProcPreviewUpdate(HWND previewWindow, EoDbGroupList* groups) {
 
   double UExtent = ptMax.x - ptMin.x;
   double VExtent = ptMax.y - ptMin.y;
-  EoGePoint3d ptTarget((ptMin.x + ptMax.x) / 2., (ptMin.y + ptMax.y) / 2., 0.0);
+  EoGePoint3d ptTarget((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, 0.0);
 
   ActiveView->PushViewTransform();
   ActiveView->SetCenteredWindow(UExtent, VExtent);

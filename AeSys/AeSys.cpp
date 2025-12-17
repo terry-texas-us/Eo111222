@@ -40,7 +40,6 @@
 #include "PegColors.h"
 #include "PrimState.h"
 #include "Resource.h"
-#include "SafeMath.h"
 
 #if defined(USING_ODA)
 #include "RxDynamicModule.h"
@@ -615,7 +614,7 @@ void AeSys::InitGbls(CDC* deviceContext) {
   SetUnits(kInches);
   SetArchitecturalUnitsFractionPrecision(8);
   SetDimensionLength(0.125);
-  SetDimensionAngle(45.);
+  SetDimensionAngle(45.0);
 
   m_TrapHighlighted = true;
   m_TrapHighlightColor = 15;
@@ -807,7 +806,7 @@ int AeSys::GreatestCommonDivisor(const int number1, const int number2) {
 void AeSys::FormatAngle(CString& angleAsString, const double angle, const int width, const int precision) {
   CString FormatSpecification;
   FormatSpecification.Format(L"%%%i.%if\u00B0", width, precision);
-  angleAsString.Format(FormatSpecification, EoToDegree(angle));
+  angleAsString.Format(FormatSpecification, Eo::RadianToDegree(angle));
 }
 
 void AeSys::FormatLength(CString& lengthAsString, Units units, const double length, const int minWidth,
@@ -833,11 +832,11 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   wcscpy_s(lengthAsBuffer, bufSize, (length >= 0.0) ? L" " : L"-");
   ScaledLength = fabs(ScaledLength);
 
-  int Feet = int(ScaledLength / 12.);
-  int Inches = abs(int(fmod(ScaledLength, 12.)));
+  int Feet = int(ScaledLength / 12.0);
+  int Inches = abs(int(fmod(ScaledLength, 12.0)));
 
   int FractionPrecision = GetArchitecturalUnitsFractionPrecision();
-  int Numerator = int(fabs(fmod(ScaledLength, 1.)) * (double)(FractionPrecision) + 0.5);
+  int Numerator = int(fabs(fmod(ScaledLength, 1.0)) * (double)(FractionPrecision) + 0.5);
 
   if (Numerator == FractionPrecision) {
     if (Inches == 11) {
@@ -878,12 +877,12 @@ void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize,
   wcscpy_s(lengthAsBuffer, bufSize, (length >= 0.0) ? L" " : L"-");
   ScaledLength = fabs(ScaledLength);
 
-  int Precision = (ScaledLength >= 1.) ? precision - int(log10(ScaledLength)) - 1 : precision;
+  int Precision = (ScaledLength >= 1.0) ? precision - int(log10(ScaledLength)) - 1 : precision;
 
   if (Precision >= 0) {
-    _itow_s(int(ScaledLength / 12.), szBuf, 16, 10);
+    _itow_s(int(ScaledLength / 12.0), szBuf, 16, 10);
     wcscat_s(lengthAsBuffer, bufSize, szBuf);
-    ScaledLength = fmod(ScaledLength, 12.);
+    ScaledLength = fmod(ScaledLength, 12.0);
     wcscat_s(lengthAsBuffer, bufSize, L"'");
 
     _itow_s(int(ScaledLength), szBuf, 16, 10);
@@ -913,7 +912,7 @@ void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Unit
   switch (units) {
     case kFeet:
       formatSpecification.Append(L"'");
-      formatted.Format(formatSpecification, ScaledLength / 12.);
+      formatted.Format(formatSpecification, ScaledLength / 12.0);
       break;
     case kInches:
       formatSpecification.Append(L"\"");

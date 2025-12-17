@@ -25,8 +25,8 @@ EoGsViewport& EoGsViewport::operator=(const EoGsViewport& viewport) {
 CPoint EoGsViewport::DoProjection(const EoGePoint4d& pt) {
   CPoint pnt;
 
-  pnt.x = EoRound((pt.x / pt.w + 1.) * ((m_Width - 1.0) / 2.0));
-  pnt.y = EoRound((-pt.y / pt.w + 1.) * ((m_Height - 1.0) / 2.0));
+  pnt.x = Eo::Round((pt.x / pt.w + 1.0) * ((m_Width - 1.0) / 2.0));
+  pnt.y = Eo::Round((-pt.y / pt.w + 1.0) * ((m_Height - 1.0) / 2.0));
 
   return pnt;
 }
@@ -34,8 +34,8 @@ void EoGsViewport::DoProjection(CPoint* pnt, int iPts, EoGePoint4d* pt) {
   for (int i = 0; i < iPts; i++) {
     pt[i] /= pt[i].w;
 
-    pnt[i].x = EoRound((pt[i].x + 1.) * ((m_Width - 1.0) / 2.0));
-    pnt[i].y = EoRound((-pt[i].y + 1.) * ((m_Height - 1.0) / 2.0));
+    pnt[i].x = Eo::Round((pt[i].x + 1.0) * ((m_Width - 1.0) / 2.0));
+    pnt[i].y = Eo::Round((-pt[i].y + 1.0) * ((m_Height - 1.0) / 2.0));
   }
 }
 void EoGsViewport::DoProjection(CPoint* pnt, EoGePoint4dArray& pointsArray) {
@@ -44,13 +44,13 @@ void EoGsViewport::DoProjection(CPoint* pnt, EoGePoint4dArray& pointsArray) {
   for (int i = 0; i < iPts; i++) {
     pointsArray[i] /= pointsArray[i].w;
 
-    pnt[i].x = EoRound((pointsArray[i].x + 1.) * ((m_Width - 1.0) / 2.0));
-    pnt[i].y = EoRound((-pointsArray[i].y + 1.) * ((m_Height - 1.0) / 2.0));
+    pnt[i].x = Eo::Round((pointsArray[i].x + 1.0) * ((m_Width - 1.0) / 2.0));
+    pnt[i].y = Eo::Round((-pointsArray[i].y + 1.0) * ((m_Height - 1.0) / 2.0));
   }
 }
 void EoGsViewport::DoProjectionInverse(EoGePoint3d& pt) {
-  pt.x = (pt.x * 2.) / (m_Width - 1.) - 1.;
-  pt.y = -((pt.y * 2.) / (m_Height - 1.) - 1.);
+  pt.x = (pt.x * 2.0) / (m_Width - 1.0) - 1.;
+  pt.y = -((pt.y * 2.0) / (m_Height - 1.0) - 1.0);
 }
 double EoGsViewport::Height() const { return m_Height; }
 double EoGsViewport::HeightInInches() const { 

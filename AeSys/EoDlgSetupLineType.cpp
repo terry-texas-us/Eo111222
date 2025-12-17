@@ -100,7 +100,7 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           double UMax = static_cast<double>(SubItemRectangle.right) /
                         static_cast<double>(DeviceContext.GetDeviceCaps(LOGPIXELSX));
 
-          EoGeLine Line(EoGePoint3d(UMin, VExtent / 2., 0.0), EoGePoint3d(UMax, VExtent / 2., 0.0));
+          EoGeLine Line(EoGePoint3d(UMin, VExtent / 2.0, 0.0), EoGePoint3d(UMax, VExtent / 2.0, 0.0));
           Line.Display(ActiveView, &DeviceContext);
 
           ActiveView->PopViewTransform();

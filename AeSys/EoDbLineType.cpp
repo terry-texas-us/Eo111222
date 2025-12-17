@@ -16,7 +16,7 @@ EoDbLineType::EoDbLineType(EoUInt16 index, const CString& name, const CString& d
     m_DashElements = 0;
   } else {
     m_DashElements = new double[m_NumberOfDashElements];
-    for (int i = 0; i < m_NumberOfDashElements; i++) { m_DashElements[i] = EoMax(-99., EoMin(dashLengths[i], 99.)); }
+    for (int i = 0; i < m_NumberOfDashElements; i++) { m_DashElements[i] = std::max(-99.0, std::min(dashLengths[i], 99.0)); }
   }
 }
 EoDbLineType::EoDbLineType(const EoDbLineType& lineType) {

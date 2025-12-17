@@ -11,7 +11,7 @@ EoDbBlockReference::EoDbBlockReference() {
   m_pt = EoGePoint3d::kOrigin;
   m_vNormal = EoGeVector3d::kZAxis;
 
-  m_vScaleFactors(1., 1., 1.);
+  m_vScaleFactors(1.0, 1.0, 1.0);
   m_dRotation = 0.;
 
   m_wColCnt = 1;
@@ -21,7 +21,7 @@ EoDbBlockReference::EoDbBlockReference() {
 }
 EoDbBlockReference::EoDbBlockReference(const CString& strName, const EoGePoint3d& pt) : m_strName(strName), m_pt(pt) {
   m_vNormal = EoGeVector3d::kZAxis;
-  m_vScaleFactors(1., 1., 1.);
+  m_vScaleFactors(1.0, 1.0, 1.0);
   m_dRotation = 0.;
   m_wColCnt = 1;
   m_wRowCnt = 1;

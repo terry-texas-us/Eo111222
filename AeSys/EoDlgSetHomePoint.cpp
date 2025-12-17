@@ -45,11 +45,11 @@ BOOL EoDlgSetHomePoint::OnInitDialog() {
 	m_CursorPosition = app.GetCursorPosition();
 
 	CString Length;
-	app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), m_CursorPosition.x);
+	app.FormatLength(Length, std::max(app.GetUnits(), AeSys::kEngineering), m_CursorPosition.x);
 	SetDlgItemTextW(IDC_X, Length);
-	app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), m_CursorPosition.y);
+	app.FormatLength(Length, std::max(app.GetUnits(), AeSys::kEngineering), m_CursorPosition.y);
 	SetDlgItemTextW(IDC_Y, Length);
-	app.FormatLength(Length, max(app.GetUnits(), AeSys::kEngineering), m_CursorPosition.z);
+	app.FormatLength(Length, std::max(app.GetUnits(), AeSys::kEngineering), m_CursorPosition.z);
 	SetDlgItemTextW(IDC_Z, Length);
 
 	return TRUE;

@@ -156,17 +156,17 @@ EoGePoint3d AeSysView::SnapPointToGrid(EoGePoint3d& arPt) {
     if (fabs(m_XGridSnapSpacing) > DBL_EPSILON) {
       pt.x -= fmod((arPt.x - m_GridOrigin.x), m_XGridSnapSpacing);
       if (fabs(pt.x - arPt.x) > m_XGridSnapSpacing * 0.5)
-        pt.x += EoSignTransfer(m_XGridSnapSpacing, arPt.x - m_GridOrigin.x);
+        pt.x += Eo::CopySign(m_XGridSnapSpacing, arPt.x - m_GridOrigin.x);
     }
     if (fabs(m_YGridSnapSpacing) > DBL_EPSILON) {
       pt.y -= fmod((arPt.y - m_GridOrigin.y), m_YGridSnapSpacing);
       if (fabs(pt.y - arPt.y) > m_YGridSnapSpacing * 0.5)
-        pt.y += EoSignTransfer(m_YGridSnapSpacing, arPt.y - m_GridOrigin.y);
+        pt.y += Eo::CopySign(m_YGridSnapSpacing, arPt.y - m_GridOrigin.y);
     }
     if (fabs(m_ZGridSnapSpacing) > DBL_EPSILON) {
       pt.z -= fmod((arPt.z - m_GridOrigin.z), m_ZGridSnapSpacing);
       if (fabs(pt.z - arPt.z) > m_ZGridSnapSpacing * 0.5)
-        pt.z += EoSignTransfer(m_ZGridSnapSpacing, arPt.z - m_GridOrigin.z);
+        pt.z += Eo::CopySign(m_ZGridSnapSpacing, arPt.z - m_GridOrigin.z);
     }
   }
   return (pt);

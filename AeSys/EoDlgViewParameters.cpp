@@ -100,7 +100,7 @@ BOOL EoDlgViewParameters::OnInitDialog() {
     EoGsViewTransform* ModelView = reinterpret_cast<EoGsViewTransform*>(static_cast<uintptr_t>(m_ModelView));
 
 	CString Length;
-	AeSys::Units Units = max(app.GetUnits(), AeSys::kEngineering);
+	AeSys::Units Units = std::max(app.GetUnits(), AeSys::kEngineering);
 	app.FormatLength(Length, Units, ModelView->Position().x);
 	SetDlgItemTextW(IDC_POSITION_X, Length);
 	app.FormatLength(Length, Units, ModelView->Position().y);

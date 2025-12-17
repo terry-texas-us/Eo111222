@@ -111,4 +111,4 @@ int pFndSwpAngGivPlnAnd3Lns(EoGeVector3d, EoGePoint3d, EoGePoint3d, EoGePoint3d,
 // Returns: TRUE	center point determined
 //			FALSE	endpoints of first line coincide or endpoints of second line coincide or
 //					two lines are parallel or four points are not coplanar
-bool pFndCPGivRadAnd4Pts(double, EoGePoint3d, EoGePoint3d, EoGePoint3d, EoGePoint3d, EoGePoint3d*);
+bool pFndCPGivRadAnd4Pts(double radius, EoGePoint3d, EoGePoint3d, EoGePoint3d, EoGePoint3d, EoGePoint3d*);

@@ -58,7 +58,7 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
     m_vPosXAx.Normalize();
     m_vPosXAx.RotAboutArbAx(planeNormal, hatch::dOffAng);
     m_vPosYAx = m_vPosXAx;
-    m_vPosYAx.RotAboutArbAx(planeNormal, HALF_PI);
+    m_vPosYAx.RotAboutArbAx(planeNormal, Eo::HalfPi);
     m_vPosXAx *= hatch::dXAxRefVecScal;
     m_vPosYAx *= hatch::dYAxRefVecScal;
 
@@ -201,7 +201,7 @@ void EoDbPolygon::AddReportToMessageList(EoGePoint3d ptPic) {
     app.FormatLength(FormattedLength, app.GetUnits(), dLen);
     Message.Append(FormattedLength.TrimLeft());
     WCHAR szBuf[24];
-    swprintf_s(szBuf, 24, L" @ %6.2f degrees", EoToDegree(dAng));
+    swprintf_s(szBuf, 24, L" @ %6.2f degrees", Eo::RadianToDegree(dAng));
     Message.Append(szBuf);
     app.AddStringToMessageList(Message);
 
@@ -418,7 +418,7 @@ void EoDbPolygon::SetHatRefVecs(double dOffAng, double dXScal, double dYScal) {
   m_vPosXAx.Normalize();
   m_vPosXAx.RotAboutArbAx(vPlnNorm, dOffAng);
   m_vPosYAx = m_vPosXAx;
-  m_vPosYAx.RotAboutArbAx(vPlnNorm, HALF_PI);
+  m_vPosYAx.RotAboutArbAx(vPlnNorm, Eo::HalfPi);
   m_vPosXAx *= dXScal;
   m_vPosYAx *= dYScal;
 }
@@ -528,7 +528,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
         vEdg.x = ln.end.x - ln.begin.x;  // Determine x and y-components of edge
         vEdg.y = ln.end.y - ln.begin.y;
         if (fabs(vEdg.y) > DBL_EPSILON * sqrt(vEdg.x * vEdg.x + vEdg.y * vEdg.y)) {  // Edge is not horizontal
-          dMaxY = EoMax(ln.begin.y, ln.end.y);
+          dMaxY = std::max(ln.begin.y, ln.end.y);
           iCurEdg = iActEdgs + 1;
           // Find correct insertion point for edge in edge list using ymax as sort key
           while (iCurEdg != 1 && edg[iCurEdg - 1].dMaxY < dMaxY) {

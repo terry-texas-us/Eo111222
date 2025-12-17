@@ -108,8 +108,8 @@ void EoDbLine::AddReportToMessageList(EoGePoint3d pt) {
   double dRel;
   m_ln.RelOfPtToEndPts(pt, dRel);
 
-  if (dRel > 0.5) { AngleInXYPlane += PI; }
-  AngleInXYPlane = fmod(AngleInXYPlane, TWOPI);
+  if (dRel > 0.5) { AngleInXYPlane += Eo::Pi; }
+  AngleInXYPlane = fmod(AngleInXYPlane, Eo::TwoPi);
 
   CString LengthAsString;
   CString AngleAsString;
@@ -134,7 +134,7 @@ void EoDbLine::FormatExtra(CString& str) {
   app.FormatLength(FormattedLength, app.GetUnits(), Length());
 
   str.Format(L"Color;%s\tStyle;%s\tLength;%s\tZ-Angle;%f", FormatPenColor().GetString(), FormatLineType().GetString(),
-             FormattedLength.TrimLeft().GetString(), EoToDegree(m_ln.AngleFromXAxisXY()));
+             FormattedLength.TrimLeft().GetString(), Eo::RadianToDegree(m_ln.AngleFromXAxisXY()));
 }
 void EoDbLine::FormatGeometry(CString& str) {
   str += L"Begin Point;" + m_ln.begin.ToString();

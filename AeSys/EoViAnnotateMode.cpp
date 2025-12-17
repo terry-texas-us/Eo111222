@@ -91,7 +91,7 @@ void AeSysView::OnAnnotateModeBubble() {
     EoGeVector3d PlaneNormal = CameraDirection();
     EoGeVector3d MinorAxis = ViewUp();
     EoGeVector3d MajorAxis = MinorAxis;
-    MajorAxis.RotAboutArbAx(PlaneNormal, -HALF_PI);
+    MajorAxis.RotAboutArbAx(PlaneNormal, -Eo::HalfPi);
 
     MajorAxis *= 0.06;
     MinorAxis *= 0.1;
@@ -202,16 +202,16 @@ void AeSysView::OnAnnotateModeBox() {
       pts[0] = ptsBox1[0];
       pts[2] = ptsBox1[0];
       for (int i = 1; i < 4; i++) {
-        pts[0].x = EoMin(pts[0].x, ptsBox1[i].x);
-        pts[2].x = EoMax(pts[2].x, ptsBox1[i].x);
-        pts[0].y = EoMin(pts[0].y, ptsBox1[i].y);
-        pts[2].y = EoMax(pts[2].y, ptsBox1[i].y);
+        pts[0].x = std::min(pts[0].x, ptsBox1[i].x);
+        pts[2].x = std::max(pts[2].x, ptsBox1[i].x);
+        pts[0].y = std::min(pts[0].y, ptsBox1[i].y);
+        pts[2].y = std::max(pts[2].y, ptsBox1[i].y);
       }
       for (int i = 0; i < 4; i++) {
-        pts[0].x = EoMin(pts[0].x, ptsBox2[i].x);
-        pts[2].x = EoMax(pts[2].x, ptsBox2[i].x);
-        pts[0].y = EoMin(pts[0].y, ptsBox2[i].y);
-        pts[2].y = EoMax(pts[2].y, ptsBox2[i].y);
+        pts[0].x = std::min(pts[0].x, ptsBox2[i].x);
+        pts[2].x = std::max(pts[2].x, ptsBox2[i].x);
+        pts[0].y = std::min(pts[0].y, ptsBox2[i].y);
+        pts[2].y = std::max(pts[2].y, ptsBox2[i].y);
       }
       pts[1].x = pts[2].x;
       pts[1].y = pts[0].y;
@@ -255,13 +255,13 @@ void AeSysView::OnAnnotateModeCutIn() {
     if (!CurrentText.IsEmpty()) {
       EoGeLine Line = pLine->Ln();
       double dAng = Line.AngleFromXAxisXY();
-      if (dAng > 0.25 * TWOPI && dAng < 0.75 * TWOPI) dAng += PI;
+      if (dAng > 0.25 * Eo::TwoPi && dAng < 0.75 * Eo::TwoPi) dAng += Eo::Pi;
 
       EoGeVector3d PlaneNormal = CameraDirection();
       EoGeVector3d MinorAxis = ViewUp();
       MinorAxis.RotAboutArbAx(PlaneNormal, dAng);
       EoGeVector3d MajorAxis = MinorAxis;
-      MajorAxis.RotAboutArbAx(PlaneNormal, -HALF_PI);
+      MajorAxis.RotAboutArbAx(PlaneNormal, -Eo::HalfPi);
       MajorAxis *= 0.06;
       MinorAxis *= 0.1;
       EoGeReferenceSystem ReferenceSystem(CurrentPnt, MajorAxis, MinorAxis);
@@ -289,8 +289,8 @@ void AeSysView::OnAnnotateModeCutIn() {
 
       double dGap = EoGeVector3d(ptsBox[0], ptsBox[1]).Length();
 
-      ptsBox[0] = CurrentPnt.ProjectToward(pLine->BeginPoint(), dGap / 2.);
-      ptsBox[1] = CurrentPnt.ProjectToward(pLine->EndPoint(), dGap / 2.);
+      ptsBox[0] = CurrentPnt.ProjectToward(pLine->BeginPoint(), dGap / 2.0);
+      ptsBox[1] = CurrentPnt.ProjectToward(pLine->EndPoint(), dGap / 2.0);
 
       double dRel[2];
 
@@ -322,8 +322,8 @@ void AeSysView::OnAnnotateModeConstructionLine() {
     pts.Add(CurrentPnt);
   } else {
     CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
-    pts.Add(pts[0].ProjectToward(CurrentPnt, 48.));
-    pts.Add(pts[1].ProjectToward(pts[0], 96.));
+    pts.Add(pts[0].ProjectToward(CurrentPnt, 48.0));
+    pts.Add(pts[1].ProjectToward(pts[0], 96.0));
 
     EoDbGroup* Group = new EoDbGroup(new EoDbLine(15, 2, pts[1], pts[2]));
     GetDocument()->AddWorkLayerGroup(Group);
@@ -404,8 +404,8 @@ void AeSysView::DoAnnotateModeMouseMove() {
       if (pts[0] != CurrentPnt) {
         CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
 
-        pts.Add(pts[0].ProjectToward(CurrentPnt, 48.));
-        pts.Add(pts[2].ProjectToward(pts[0], 96.));
+        pts.Add(pts[0].ProjectToward(CurrentPnt, 48.0));
+        pts.Add(pts[2].ProjectToward(pts[0], 96.0));
 
         m_PreviewGroup.AddTail(new EoDbGroup(new EoDbLine(15, 2, pts[2], pts[3])));
         GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
@@ -446,7 +446,7 @@ void AeSysView::GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoi
 
     EoGePoint3d pt(endPoint.ProjectToward(beginPoint, dLen));
     ItemPoints.Add(pt.RotateAboutAxis(endPoint, PlaneNormal, dAng));
-    ItemPoints.Add(ItemPoints[0].RotateAboutAxis(endPoint, PlaneNormal, PI));
+    ItemPoints.Add(ItemPoints[0].RotateAboutAxis(endPoint, PlaneNormal, Eo::Pi));
     group->AddTail(new EoDbPolyline(1, 1, ItemPoints));
   }
 }

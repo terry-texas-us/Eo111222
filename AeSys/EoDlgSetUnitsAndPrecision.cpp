@@ -23,7 +23,7 @@ void EoDlgSetUnitsAndPrecision::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgSetUnitsAndPrecision::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  int CheckButtonId = EoMin(IDC_ARCHITECTURAL + m_Units, IDC_METRIC);
+  int CheckButtonId = std::min(IDC_ARCHITECTURAL + m_Units, IDC_METRIC);
   CheckRadioButton(IDC_ARCHITECTURAL, IDC_METRIC, CheckButtonId);
 
   CString MetricUnits = EoAppLoadStringResource(IDS_METRIC_UNITS);

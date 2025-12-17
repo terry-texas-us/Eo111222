@@ -65,8 +65,8 @@ void CPrimState::SetPen(AeSysView* view, CDC* deviceContext, EoInt16 penColor, E
   if (view && view->PenWidthsOn()) {
     int LogicalPixelsX = deviceContext->GetDeviceCaps(LOGPIXELSX);
     LogicalWidth = app.PenWidthsGet(penColor) * double(LogicalPixelsX);
-    LogicalWidth *= EoMin(1.0, view->WidthInInches() / view->UExtent());
-    LogicalWidth = EoRound(LogicalWidth);
+    LogicalWidth *= std::min(1.0, view->WidthInInches() / view->UExtent());
+    LogicalWidth = Eo::Round(LogicalWidth);
   }
   if (deviceContext) { ManagePenResources(deviceContext, penColor, int(LogicalWidth), lineType); }
 }
