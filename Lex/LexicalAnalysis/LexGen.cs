@@ -76,32 +76,49 @@ namespace Lex
 				string line = srReadLine.ReadLine();
 				Console.WriteLine(line);
 				int lp = 0;
-				while (lp < line.Length && line[lp] == ' ') lp++;
-				
-				if (lp == line.Length || line[lp] == '!')
-					continue;
-				else if (is_ival(ref ival, line, ref lp))
+				while (lp < line.Length && line[lp] == ' ')
+                {
+                    lp++;
+                }
+
+                if (lp == line.Length || line[lp] == '!')
+                {
+                    continue;
+                }
+                else if (is_ival(ref ival, line, ref lp))
 				{
-					while (lp < line.Length && line[lp] == ' ') lp++;
-				
-					if (lp == line.Length || line[lp] != '=')
-						Console.WriteLine("Missing assignment operator");
-					else 
+					while (lp < line.Length && line[lp] == ' ')
+                    {
+                        lp++;
+                    }
+
+                    if (lp == line.Length || line[lp] != '=')
+                    {
+                        Console.WriteLine("Missing assignment operator");
+                    }
+                    else 
 					{
 						lp++;
 						startstate[i++] = s;
 						olds = s;
 						mknfa(ref s, nfa, line, ref lp);
 						if (s == olds)
-							Console.WriteLine("No NFA states generated for the token {0}", ival);
-						else
-							nfa[s].iToken = ival;
-						s++;
+                        {
+                            Console.WriteLine("No NFA states generated for the token {0}", ival);
+                        }
+                        else
+                        {
+                            nfa[s].iToken = ival;
+                        }
+
+                        s++;
 					}
 				}
 				else
-					Console.WriteLine("Invalid token value");
-			}
+                {
+                    Console.WriteLine("Invalid token value");
+                }
+            }
 			srReadLine.Close();
 
 			s--;
@@ -153,8 +170,12 @@ namespace Lex
 		public static void bubblesort(ref int[] a)
 		{
 			int i = 1;
-			while (i < a.Length && a[i] != ENDLIST) i++;
-			i--;
+			while (i < a.Length && a[i] != ENDLIST)
+            {
+                i++;
+            }
+
+            i--;
 			while (i >= 2)
 			{
 				for (int j = 1; j <= i - 1; j++)
@@ -194,8 +215,11 @@ namespace Lex
 					int k = 1;
 					while (!found && k < j)
 					{
-						if (clset[k++] == epstab[i]) found = true;
-					}
+						if (clset[k++] == epstab[i])
+                        {
+                            found = true;
+                        }
+                    }
 					if (!found)
 					{
 						stack.Push(epstab[i]);
@@ -215,8 +239,12 @@ namespace Lex
 			int [] tmpset1 = new int[256];
 			int [] tmpset2 = new int[256];
 			int i = 1;
-			while (P[i] != ENDLIST) i++;
-			clset[1] = ENDLIST;
+			while (P[i] != ENDLIST)
+            {
+                i++;
+            }
+
+            clset[1] = ENDLIST;
 			if (i != 1)
 			{
 				for (int k = 1; k <= i - 1; k++)
@@ -238,8 +266,11 @@ namespace Lex
 		{
 			for (int i = 1; i <= n; i++)
 			{
-				if (a1[i] != a2[i]) return false;
-			}
+				if (a1[i] != a2[i])
+                {
+                    return false;
+                }
+            }
 			return true;
 		}
 
@@ -289,8 +320,11 @@ namespace Lex
 		{
 			while (set[setp] != ENDLIST)
 			{
-				if (set[setp++] == element) return true;
-			}
+				if (set[setp++] == element)
+                {
+                    return true;
+                }
+            }
 			return false;
 		}
 
@@ -303,16 +337,26 @@ namespace Lex
 		/// </remarks>
 		public static bool is_ival(ref int ival, string line, ref int lp)
 		{
-			while (line[lp] == ' ') lp++;
-			
-			int i = lp;
-			if (line[i] == '+' || line[i] == '-') i++;
-			
-			bool bIsInt = Char.IsDigit(line, i) ? true : false; 
+			while (line[lp] == ' ')
+            {
+                lp++;
+            }
+
+            int i = lp;
+			if (line[i] == '+' || line[i] == '-')
+            {
+                i++;
+            }
+
+            bool bIsInt = Char.IsDigit(line, i) ? true : false; 
 			if (bIsInt)
 			{
-				while (i < line.Length && Char.IsDigit(line, i)) i++;
-				ival = Int32.Parse(line.Substring(lp, i - lp));
+				while (i < line.Length && Char.IsDigit(line, i))
+                {
+                    i++;
+                }
+
+                ival = Int32.Parse(line.Substring(lp, i - lp));
 				lp = i;
 			}
 			return bIsInt;
@@ -414,13 +458,19 @@ namespace Lex
 					while (subtab[j] != ENDLIST)
 					{
 						if (nfa[subtab[j]].ts == transitionState.LITCHAR)
-							found = nfa[subtab[j]].cval1 == i;
-						else if (nfa[subtab[j]].ts == transitionState.RANGE)
-							found = (i >= nfa[subtab[j]].cval1 && i <= nfa[subtab[j]].cval2);
-						else
-							found = false;
-						
-						if (found) {P[k++] = subtab[j] + 1;}
+                        {
+                            found = nfa[subtab[j]].cval1 == i;
+                        }
+                        else if (nfa[subtab[j]].ts == transitionState.RANGE)
+                        {
+                            found = (i >= nfa[subtab[j]].cval1 && i <= nfa[subtab[j]].cval2);
+                        }
+                        else
+                        {
+                            found = false;
+                        }
+
+                        if (found) {P[k++] = subtab[j] + 1;}
 						j++;
 					}
 					P[k] = ENDLIST;
@@ -440,8 +490,10 @@ namespace Lex
 							found = eqvset(N, subset[j], subtab);
 						}
 						if (found)
-							dfanext[M, i] = j;
-						else
+                        {
+                            dfanext[M, i] = j;
+                        }
+                        else
 						{
 							d++;
 							stack.Push(d);
@@ -514,8 +566,12 @@ namespace Lex
 							same[k] = (
 								(dfanext[i, k] == 0 && dfanext[j, k] == 0) ||
 								(dfanext[i, k] != 0 && dfanext[j, k] != 0));
-							if (!same[k]) sameset = false;
-							k++;
+							if (!same[k])
+                            {
+                                sameset = false;
+                            }
+
+                            k++;
 						}
 						if (sameset)
 						{
@@ -542,8 +598,11 @@ namespace Lex
 								used[j] = true;
 								for (k = 0; k <= MAXCHAR; k++)
 								{
-									if (same[k]) dfanext[i, k] = 0;
-								}
+									if (same[k])
+                                    {
+                                        dfanext[i, k] = 0;
+                                    }
+                                }
 								goto l1;
 							}
 						}
@@ -569,9 +628,12 @@ namespace Lex
 			int freep = MAXCHAR + 1;
 			for (int s = 2; s <= d; s++)
 			{
-				while (check[freep] != 0) freep++;
-			
-				int p = freep;
+				while (check[freep] != 0)
+                {
+                    freep++;
+                }
+
+                int p = freep;
 				bool done = false;
 				while (!done)
 				{
@@ -583,14 +645,20 @@ namespace Lex
 					{
 						if (dfanext[s, i] != 0)
 						{
-							if (check[iBase[s] + i] != 0) conflict = true;
-						}
+							if (check[iBase[s] + i] != 0)
+                            {
+                                conflict = true;
+                            }
+                        }
 					}
 					if (conflict)
 					{
 						p++;
-						while (check[p] != 0) p++;
-					}
+						while (check[p] != 0)
+                        {
+                            p++;
+                        }
+                    }
 					else
 					{
 						done = true;
@@ -608,7 +676,11 @@ namespace Lex
 			nstates = d;
 			nentries = iBase[d] + MAXCHAR;
 			int iUnused = 0;
-			for (int s = 0; s <= nentries; s++) {if (check[s] == 0) iUnused++;}
+			for (int s = 0; s <= nentries; s++) {if (check[s] == 0)
+                {
+                    iUnused++;
+                }
+            }
 			Console.WriteLine("Table entries (total/unused) = ({0}/{1})", nentries, iUnused);
 		}
 
@@ -641,21 +713,32 @@ namespace Lex
 						nfa[s].cval1 = escchar(line, ref lp);
 					}
 					else
-						nfa[s].cval1 = c;
-					if (nextc(out c, line, ref lp) != '-')
-						Console.WriteLine("Invalid range syntax");
-					if (nextc(out c, line, ref lp) == '\\')
+                    {
+                        nfa[s].cval1 = c;
+                    }
+
+                    if (nextc(out c, line, ref lp) != '-')
+                    {
+                        Console.WriteLine("Invalid range syntax");
+                    }
+
+                    if (nextc(out c, line, ref lp) == '\\')
 					{
 						lp--;
 						nfa[s].cval2 = escchar(line, ref lp);
 					}
 					else
-						nfa[s].cval2 = c;
-					nfa[s++].epsset = epstabp;
+                    {
+                        nfa[s].cval2 = c;
+                    }
+
+                    nfa[s++].epsset = epstabp;
 					epstab[epstabp++] = ENDLIST;
 					if (nextc(out c, line, ref lp) != ']')
-						Console.WriteLine("Expecting ], encountered {0}.", c);
-				}
+                    {
+                        Console.WriteLine("Expecting ], encountered {0}.", c);
+                    }
+                }
 				else if (c == '{')
 				{
 					entry[++sp].type = entryTypes.CLOSURE;
@@ -664,8 +747,10 @@ namespace Lex
 				else if (c == '}')
 				{
 					if (entry[sp].type != entryTypes.CLOSURE)
-						Console.WriteLine("Closure delimiter mismatch");
-					else
+                    {
+                        Console.WriteLine("Closure delimiter mismatch");
+                    }
+                    else
 					{
 						int [] tmpset = new int[4];
 						nfa[s].epsset = epstabp;
@@ -725,8 +810,10 @@ namespace Lex
 							done = true;
 						}
 						else
-							Console.WriteLine("Or delimiter mismatch");
-					}
+                        {
+                            Console.WriteLine("Or delimiter mismatch");
+                        }
+                    }
 				}
 				else
 				{
@@ -816,8 +903,11 @@ namespace Lex
 								if (nextG[group[j], c] != nextG[group[i], c]) {same = false;}
 								c++;
 							}
-							if (same) found = true;
-						}
+							if (same)
+                            {
+                                found = true;
+                            }
+                        }
 						if (!found)
 						{
 							r++;
@@ -859,8 +949,12 @@ namespace Lex
 		/// </remarks>
 		public static char nextc(out char c, string line, ref int lp)
 		{
-			while (line[lp] == ' ') lp++;
-			c = line[lp++];
+			while (line[lp] == ' ')
+            {
+                lp++;
+            }
+
+            c = line[lp++];
 			return c;
 		}
 
