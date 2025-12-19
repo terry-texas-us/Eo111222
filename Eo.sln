@@ -3,16 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 18.1.11304.174
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AeSys", "AeSys\AeSys.vcxproj", "{99616C98-7844-41E8-BC1F-B16C4044EB44}"
-	ProjectSection(ProjectDependencies) = postProject
-		{1CA46EF6-31E9-401B-AE99-AC7B6A3092FC} = {1CA46EF6-31E9-401B-AE99-AC7B6A3092FC}
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableGenerator", "Lex\LexicalAnalysis\TableGenerator.csproj", "{1CA46EF6-31E9-401B-AE99-AC7B6A3092FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E0126F78-1720-481C-94CA-D04F1A04D4E1}"
 	ProjectSection(SolutionItems) = preProject
 		Eo.vsmdi = Eo.vsmdi
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexTableGenerator", "LexTableGenerator\LexTableGenerator.csproj", "{C9E7EB7D-8A96-48E3-96AE-71AAD9C72A33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,13 +26,14 @@ Global
 		{99616C98-7844-41E8-BC1F-B16C4044EB44}.Release|Win32.ActiveCfg = vc11mtdbg|Win32
 		{99616C98-7844-41E8-BC1F-B16C4044EB44}.Release|x64.ActiveCfg = oda-vc10dlldbg|x64
 		{99616C98-7844-41E8-BC1F-B16C4044EB44}.Release|x64.Build.0 = oda-vc10dlldbg|x64
-		{1CA46EF6-31E9-401B-AE99-AC7B6A3092FC}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{1CA46EF6-31E9-401B-AE99-AC7B6A3092FC}.Debug|Win32.Build.0 = Debug|Any CPU
-		{1CA46EF6-31E9-401B-AE99-AC7B6A3092FC}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{1CA46EF6-31E9-401B-AE99-AC7B6A3092FC}.Debug|x64.Build.0 = Debug|Any CPU
-		{1CA46EF6-31E9-401B-AE99-AC7B6A3092FC}.Release|Win32.ActiveCfg = Release|Any CPU
-		{1CA46EF6-31E9-401B-AE99-AC7B6A3092FC}.Release|x64.ActiveCfg = Release|Any CPU
-		{1CA46EF6-31E9-401B-AE99-AC7B6A3092FC}.Release|x64.Build.0 = Release|Any CPU
+		{C9E7EB7D-8A96-48E3-96AE-71AAD9C72A33}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{C9E7EB7D-8A96-48E3-96AE-71AAD9C72A33}.Debug|Win32.Build.0 = Debug|Any CPU
+		{C9E7EB7D-8A96-48E3-96AE-71AAD9C72A33}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C9E7EB7D-8A96-48E3-96AE-71AAD9C72A33}.Debug|x64.Build.0 = Debug|Any CPU
+		{C9E7EB7D-8A96-48E3-96AE-71AAD9C72A33}.Release|Win32.ActiveCfg = Release|Any CPU
+		{C9E7EB7D-8A96-48E3-96AE-71AAD9C72A33}.Release|Win32.Build.0 = Release|Any CPU
+		{C9E7EB7D-8A96-48E3-96AE-71AAD9C72A33}.Release|x64.ActiveCfg = Release|Any CPU
+		{C9E7EB7D-8A96-48E3-96AE-71AAD9C72A33}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

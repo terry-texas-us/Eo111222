@@ -73,7 +73,11 @@ namespace Lex
 			
 			while (srReadLine.Peek() > -1) 
 			{
-				string line = srReadLine.ReadLine();
+				string? line = srReadLine.ReadLine();
+				if (line == null)
+				{
+					break;
+				}
 				Console.WriteLine(line);
 				int lp = 0;
 				while (lp < line.Length && line[lp] == ' ')
@@ -978,7 +982,7 @@ namespace Lex
 			while (set2[i] != ENDLIST)
 			{
 				uset[j] = set2[i];
-				i++;
+			 i++;
 				j++;
 			}
 			uset[j] = ENDLIST;
