@@ -12,9 +12,9 @@ enum ETokClass {
   OpenParen,
   CloseParen
 };
-struct CD {   // column definition
-  long lDef;  // data definition
-  long lTyp;  // data type
+struct ColumnDefinition {
+  long dataDefinition;
+  long dataType;
 };
 struct tokent {
   int iInComPrio;
@@ -23,10 +23,9 @@ struct tokent {
 };
 
 namespace lex {
-#include "LexTable.h"
 
-const int TOKS_MAX = 128;  // maximum number of tokens
-const int VALS_MAX = 256;
+constexpr int MaxTokens = 128;
+constexpr int MaxValues = 256;
 
 const int TOK_UNARY_OPERATOR = 1;
 const int TOK_BINARY_OPERATOR = 2;
@@ -50,12 +49,12 @@ const int TOK_TOREAL = 14;
 const int TOK_UNARY_PLUS = 15;
 const int TOK_UNARY_MINUS = 16;
 
-const int TOK_INTEGER = 20;
-const int TOK_REAL = 21;
-const int TOK_LENGTH_OPERAND = 22;
-const int TOK_AREA_OPERAND = 23;
-const int TOK_STRING = 24;
-const int TOK_IDENTIFIER = 25;
+constexpr int IntegerToken = 20;
+constexpr int RealToken = 21;
+constexpr int LengthToken = 22;
+constexpr int AreaToken = 23;
+constexpr int StringToken = 24;
+constexpr int IdentifierToken = 25;
 const int TOK_EXPONENTIATE = 26;
 const int TOK_MULTIPLY = 27;
 const int TOK_DIVIDE = 28;
@@ -117,64 +116,98 @@ static tokent TokenTable[] = {
     {110, 1, OpenParen},      // (
     {0, 0, CloseParen}        // )
 };
-/// <summary>
-///Converts a stream of tokens into a postfix stack for evaluation.
-/// </summary>
-/// <param name="firstTokenLocation">
-///	  (in)  location of first token in stream to consider
-///		 (out) location of first token not part of expression
-/// </param>
-/// <param name="numberOfTokens">number of tokens on stack</param>
-/// <param name="typeOfTokens">type of tokens on stack</param>
-/// <param name="locationOfTokens">location of tokens on stack</param>
+
+/** @brief Converts a stream of tokens into a postfix stack for evaluation.
+* @param firstTokenLocation (in)  location of first token in stream to consider. (out) location of first token not part of expression
+* @param numberOfTokens (out) number of tokens on stack
+* @param typeOfTokens (out) type of tokens on stack
+* @param locationOfTokens (out) location of tokens on stack
+*/
 void BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTokens, int* locationOfTokens);
-/// <summary>Converts a literal user units string to a double precision value.</summary>
-// Notes:	Assumes that a valid liter user units string is passed with no suffix characters evaluated.
-// Effect:
-// Parameters:	aiTyp		type of value(s) required
-//				alDef		dimension (lo word) and length (hi word) of string
-//				aszVal		string to convert
-//				alDefReq	dimension (lo word) and length (hi word) of result
-//				aVal		result
-void ConvertStringToVal(int iTyp, long lDef, LPTSTR szVal, long* lDefReq, void* p);
-void ConvertValToString(LPTSTR, CD*, LPTSTR, int*);
-/// <summary>Does value type conversion</summary>
-// Parameters:	aiTyp		type of value(s)
-//				aiTypReq	type of value(s) required
-//				alDef		dimension (lo word) and length (hi word) of result
-//				apVal		value(s)
-void ConvertValTyp(int, int, long*, void*);
-/// <summary> Evaluates an expression.</summary>
-// Returns: 1 infix expression successfully evaluated
-//			0 unspecified syntax error
-// Parameters:	aiTokId
-//				alDef		dimension (lo word) and length (hi word) of result
-//				aiTyp		type of result
-//				apOp		result
-void EvalTokenStream(int*, long*, int*, void*);
+
+/** @brief Converts a string representation of a value to its internal representation.
+* @param valueType (in) type of value
+* @param valueDefinition (in) dimension (lo word) and length (hi word) of string
+* @param valueText (in) string to convert
+* @param resultDefinition (out) dimension (lo word) and length (hi word) of result
+* @param resultValue (out) result
+* @note Assumes that a valid literal user units string is passed with no suffix characters evaluated.
+*/
+void ConvertStringToVal(int tokenType, long tokenDefinition, LPWSTR token, long* resultDefinition, void* resultValue);
+
+/** @brief Converts an internal representation of a value to its string representation.
+ * @param valueBuffer buffer containing value to convert
+ * @param columnDefinition definition of value (dimension and length)
+ * @param acPic output buffer for string representation
+ * @param aiLen (out) length of resulting string
+ */
+void ConvertValToString(void* valueBuffer, ColumnDefinition* columnDefinition, wchar_t* acPic, int* aiLen);
+
+/** @brief Does value type conversion
+ * @param currentType current type of value
+ * @param requiredType required type of value
+ * @param valueDefinition definition of value (dimension and length)
+ * @param valueBuffer buffer containing value to convert; on return contains converted value
+ */
+void ConvertValTyp(int currentType, int requiredType, long* valueDefinition, void* valueBuffer);
+
+/** @brief Evaluates a stream of tokens representing an expression.
+ *
+ * @param aiTokId Array of token IDs representing the expression.
+ * @param operandDefinition Pointer to store the definition (dimension and length) of the result.
+ * @param operandType Pointer to store the type of the resulting value.
+ * @param operandBuffer Buffer to store the resulting value.
+ */
+void EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandType, void* operandBuffer);
+
 void Init();
-/// <summary>Parses line into tokens.</summary>
-void Parse(LPCWSTR pszLine);
-void ParseStringOperand(LPCWSTR pszTok);
-/// <summary>Scan a buffer for a given character.</summary>
-// Notes:	If the character is found the scan pointer is updated
-//			to point to the character following the one found.
-// Returns: Pointer to the character if found,	0 if not.
-LPTSTR ScanForChar(WCHAR c, LPTSTR* ppStr);
-/// <summary>Scan for a string.</summary>
-// Notes:	The scan pointer is updated to point past the string.  The
-//			arg buffer pointer is updated to point to the next free character.
-// Returns: Pointer tot he string or 0 if an error occurs.
-LPTSTR ScanForString(LPTSTR* ppStr, LPTSTR pszTerm, LPTSTR* ppArgBuf);
-int Scan(LPTSTR aszTok, LPCWSTR pszLine, int& iLP);
-/// <summary>Skip over any white space characters.</summary>
-/// <param name="pszString">Pointer to the current buffer position.</param>
-/// <returns>Pointer to the first non-white character.</returns>
-LPTSTR SkipWhiteSpace(LPTSTR pszString);
-/// <summary> Fetches specified tokens type from current token stream.</summary>
-// Returns:  token type
-//		 - 1 if token identifier out of range
-int TokType(int);
+
+/** @brief Parses a line buffer into tokens for evaluation.
+ *
+ * @param lineBuffer The line buffer to parse.
+ */
+void Parse(const wchar_t* inputLine);
+
+
+void ParseStringOperand(wchar_t* token);
+
+/** @brief Scans the line buffer for a specific character, skipping whitespace.
+  * @param character The character to scan for.
+ * @param lineBuffer A pointer to the lineBuffer to scan; updated to point after the found character.
+ * @return A pointer to the found character in the string, or nullptr if not found.
+ */
+wchar_t* ScanForChar(wchar_t character, wchar_t** lineBuffer);
+
+/** * @brief Scans the line buffer for a string token, handling quotes and escapes.
+ *
+ * @param ppStr A pointer to the current position in the line buffer; updated to point after the scanned string.
+ * @param pszTerm A pointer to store the terminating character after the string.
+ * @param ppArgBuf A pointer to the argument buffer to store the scanned string; updated to point to the next free position.
+ * @return A pointer to the start of the scanned string in the argument buffer.
+ */
+wchar_t* ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBuf);
+
+/** @brief Scans the input line for the next token starting at linePosition.
+ *
+ * @param token The scanned token.
+ * @param inputLine The input line to scan.
+ * @param linePosition The current position in the input line; updated to the position after the scanned token.
+ * @return The token ID of the scanned token, or -1 if no valid token is found.
+ */
+int Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition);
+
+
+/** @brief Skips whitespace characters in the input string.
+ *
+ * @param inputLine The input string to process.
+ * @return A pointer to the first non-whitespace character in the string.
+ */
+wchar_t* SkipWhiteSpace(wchar_t* inputLine);
+
+
+int TokType(int tokenType);
+
 void UnaryOp(int, int*, long*, double*);
+
 void UnaryOp(int, int*, long*, long*);
 }  // namespace lex

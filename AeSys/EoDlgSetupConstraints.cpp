@@ -88,42 +88,42 @@ BOOL EoDlgSetupConstraints::OnInitDialog() {
 void EoDlgSetupConstraints::OnOK() {
 	AeSys::Units CurrentUnits = app.GetUnits();
 
-	WCHAR szBuf[32];
+	wchar_t windowText[32]{};
 
 	double x, y, z;
 
-	m_GridXSnapSpacing.GetWindowTextW(szBuf, 32);
-	x = app.ParseLength(CurrentUnits, szBuf);
-	m_GridYSnapSpacing.GetWindowTextW(szBuf, 32);
-	y = app.ParseLength(CurrentUnits, szBuf);
-	m_GridZSnapSpacing.GetWindowTextW(szBuf, 32);
-	z = app.ParseLength(CurrentUnits, szBuf);
+	m_GridXSnapSpacing.GetWindowTextW(windowText, 32);
+	x = app.ParseLength(CurrentUnits, windowText);
+	m_GridYSnapSpacing.GetWindowTextW(windowText, 32);
+	y = app.ParseLength(CurrentUnits, windowText);
+	m_GridZSnapSpacing.GetWindowTextW(windowText, 32);
+	z = app.ParseLength(CurrentUnits, windowText);
 	m_ActiveView->SetGridSnapSpacing(x, y, z);
 
-	m_GridXPointSpacing.GetWindowTextW(szBuf, 32);
-	x = app.ParseLength(CurrentUnits, szBuf);
-	m_GridYPointSpacing.GetWindowTextW(szBuf, 32);
-	y = app.ParseLength(CurrentUnits, szBuf);
-	m_GridZPointSpacing.GetWindowTextW(szBuf, 32);
-	z = app.ParseLength(CurrentUnits, szBuf);
+	m_GridXPointSpacing.GetWindowTextW(windowText, 32);
+	x = app.ParseLength(CurrentUnits, windowText);
+	m_GridYPointSpacing.GetWindowTextW(windowText, 32);
+	y = app.ParseLength(CurrentUnits, windowText);
+	m_GridZPointSpacing.GetWindowTextW(windowText, 32);
+	z = app.ParseLength(CurrentUnits, windowText);
 	m_ActiveView->SetGridPointSpacing(x, y, z);
 
-	m_GridXLineSpacing.GetWindowTextW(szBuf, 32);
-	x = app.ParseLength(CurrentUnits, szBuf);
-	m_GridYLineSpacing.GetWindowTextW(szBuf, 32);
-	y = app.ParseLength(CurrentUnits, szBuf);
-	m_GridZLineSpacing.GetWindowTextW(szBuf, 32);
-	z = app.ParseLength(CurrentUnits, szBuf);
+	m_GridXLineSpacing.GetWindowTextW(windowText, 32);
+	x = app.ParseLength(CurrentUnits, windowText);
+	m_GridYLineSpacing.GetWindowTextW(windowText, 32);
+	y = app.ParseLength(CurrentUnits, windowText);
+	m_GridZLineSpacing.GetWindowTextW(windowText, 32);
+	z = app.ParseLength(CurrentUnits, windowText);
 	m_ActiveView->SetGridLineSpacing(x, y, z);
 
 	m_ActiveView->EnableGridSnap(m_GridSnapEnableCheckBox.GetCheck() == BST_CHECKED);
 	m_ActiveView->EnableDisplayGridWithPoints(m_GridDisplayCheckBox.GetCheck() == BST_CHECKED);
 	m_ActiveView->EnableDisplayGridWithLines(m_GridLineDisplayCheckBox.GetCheck() == BST_CHECKED);
 
-	m_AxisInfluenceAngle.GetWindowTextW(szBuf, 32);
-	m_ActiveView->SetAxisConstraintInfluenceAngle(_wtof(szBuf));
-	m_AxisZOffsetAngle.GetWindowTextW(szBuf, 32);
-	m_ActiveView->SetAxisConstraintOffsetAngle(_wtof(szBuf));
+	m_AxisInfluenceAngle.GetWindowTextW(windowText, 32);
+	m_ActiveView->SetAxisConstraintInfluenceAngle(_wtof(windowText));
+	m_AxisZOffsetAngle.GetWindowTextW(windowText, 32);
+	m_ActiveView->SetAxisConstraintOffsetAngle(_wtof(windowText));
 
 	CDialog::OnOK();
 }

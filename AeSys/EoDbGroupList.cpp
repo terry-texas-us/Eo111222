@@ -132,25 +132,25 @@ void EoDbGroupList::DeleteGroupsAndRemoveAll() {
   RemoveAll();
 }
 EoDbGroup* EoDbGroupList::SelectGroupUsingPoint(const EoGePoint3d& pt) {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
   EoGePoint3d ptEng;
 
   EoDbGroup* pPicSeg = 0;
 
   EoGePoint4d ptView(pt);
-  ActiveView->ModelViewTransformPoint(ptView);
+  activeView->ModelViewTransformPoint(ptView);
 
-  EoGeTransformMatrix tm = ActiveView->ModelViewGetMatrixInverse();
+  EoGeTransformMatrix tm = activeView->ModelViewGetMatrixInverse();
 
-  double dPicApert = ActiveView->SelectApertureSize();
+  double dPicApert = activeView->SelectApertureSize();
 
   EoDbPolygon::EdgeToEvaluate() = 0;
 
   POSITION position = GetHeadPosition();
   while (position != 0) {
     EoDbGroup* Group = GetNext(position);
-    if (Group->SelPrimUsingPoint(ActiveView, ptView, dPicApert, ptEng) != 0) { pPicSeg = Group; }
+    if (Group->SelPrimUsingPoint(activeView, ptView, dPicApert, ptEng) != 0) { pPicSeg = Group; }
   }
   return (pPicSeg);
 }

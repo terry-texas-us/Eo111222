@@ -23,11 +23,11 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& centerPoint, const EoGeVector3d& maj
 
 EoDbEllipse::EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius)
     : EoDbPrimitive(penColor, lineType), m_ptCenter(centerPoint) {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  EoGeVector3d PlaneNormal = ActiveView->CameraDirection();
+  EoGeVector3d PlaneNormal = activeView->CameraDirection();
 
-  m_vMinAx = ActiveView->ViewUp() * radius;
+  m_vMinAx = activeView->ViewUp() * radius;
   m_vMajAx = m_vMinAx;
   m_vMajAx.RotAboutArbAx(PlaneNormal, -Eo::HalfPi);
   m_dSwpAng = Eo::TwoPi;
@@ -46,12 +46,12 @@ EoDbEllipse::EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& center
   m_dSwpAng = Eo::TwoPi;
 }
 EoDbEllipse::EoDbEllipse(EoGePoint3d& centerPoint, EoGePoint3d& beginPoint) {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
   m_PenColor = pstate.PenColor();
   m_LineType = pstate.LineType();
 
-  EoGeVector3d vPlnNorm = -ActiveView->CameraDirection();
+  EoGeVector3d vPlnNorm = -activeView->CameraDirection();
 
   m_ptCenter = centerPoint;
   m_vMajAx = EoGeVector3d(centerPoint, beginPoint);

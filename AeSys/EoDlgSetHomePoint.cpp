@@ -55,16 +55,16 @@ BOOL EoDlgSetHomePoint::OnInitDialog() {
 	return TRUE;
 }
 void EoDlgSetHomePoint::OnOK() {
-	WCHAR szBuf[32];
+	wchar_t itemText[32]{};
 
 	AeSys::Units CurrentUnits = app.GetUnits();
 
-	m_X.GetWindowTextW(szBuf, 32);
-	m_CursorPosition.x = app.ParseLength(CurrentUnits, szBuf);
-	m_Y.GetWindowTextW(szBuf, 32);
-	m_CursorPosition.y = app.ParseLength(CurrentUnits, szBuf);
-	m_Z.GetWindowTextW(szBuf, 32);
-	m_CursorPosition.z = app.ParseLength(CurrentUnits, szBuf);
+	m_X.GetWindowTextW(itemText, 32);
+	m_CursorPosition.x = app.ParseLength(CurrentUnits, itemText);
+	m_Y.GetWindowTextW(itemText, 32);
+	m_CursorPosition.y = app.ParseLength(CurrentUnits, itemText);
+	m_Z.GetWindowTextW(itemText, 32);
+	m_CursorPosition.z = app.ParseLength(CurrentUnits, itemText);
 
 	int NamesItemIndex = m_HomePointNames.GetCurSel();
 

@@ -15,8 +15,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-double NodalModePickTolerance = 0.05;
-EoUInt16 PreviousNodalCommand = 0;
+double NodalModePickTolerance{0.05};
+EoUInt16 PreviousNodalCommand{0};
 EoGePoint3d PreviousNodalCursorPosition;
 
 void AeSysView::OnNodalModeAddRemove() {

@@ -7,7 +7,7 @@
 
 UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, LPARAM lParam) {
 	AeSysDoc* Document = AeSysDoc::GetDoc();
-	AeSysView* ActiveView = AeSysView::GetActiveView();
+	auto* activeView = AeSysView::GetActiveView();
 
 	switch (uiMsg) {
 	case WM_INITDIALOG:
@@ -74,7 +74,7 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
 
 					Document->RemoveAllTrappedGroups();
 					Document->AddGroupsToTrap(pLayer);
-					Document->CopyTrappedGroupsToClipboard(ActiveView);
+					Document->CopyTrappedGroupsToClipboard(activeView);
 					Document->RemoveAllTrappedGroups();
 
 					pLayer->DeleteGroupsAndRemoveAll();

@@ -28,8 +28,8 @@ ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance) {
 LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM lParam) {
   switch (message) {
     case WM_CREATE: {
-      AeSysView* ActiveView = AeSysView::GetActiveView();
-      CDC* DeviceContext = (ActiveView == nullptr) ? nullptr : ActiveView->GetDC();
+      auto* activeView = AeSysView::GetActiveView();
+      CDC* DeviceContext = (activeView == nullptr) ? nullptr : activeView->GetDC();
 
       CRect rc;
       ::GetClientRect(hwnd, &rc);
@@ -91,7 +91,7 @@ void WndProcPreviewClear(HWND previewWindow) {
 }
 
 void WndProcPreviewUpdate(HWND previewWindow, EoDbBlock* block) {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
   CRect rc;
   ::GetClientRect(previewWindow, &rc);
@@ -102,35 +102,35 @@ void WndProcPreviewUpdate(HWND previewWindow, EoDbBlock* block) {
   CBitmap* Bitmap = dcMem.SelectObject(WndProcPreview_Bitmap);
   dcMem.PatBlt(0, 0, rc.right, rc.bottom, BLACKNESS);
 
-  ActiveView->ViewportPushActive();
-  ActiveView->SetViewportSize(rc.right, rc.bottom);
-  ActiveView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
-  ActiveView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
+  activeView->ViewportPushActive();
+  activeView->SetViewportSize(rc.right, rc.bottom);
+  activeView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
+  activeView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
   EoGeTransformMatrix tm;
 
   EoGePoint3d ptMin(FLT_MAX, FLT_MAX, FLT_MAX);
   EoGePoint3d ptMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-  block->GetExtents(ActiveView, ptMin, ptMax, tm);
+  block->GetExtents(activeView, ptMin, ptMax, tm);
 
   double UExtent = ptMax.x - ptMin.x;
   double VExtent = ptMax.y - ptMin.y;
 
-  ActiveView->PushViewTransform();
+  activeView->PushViewTransform();
 
-  ActiveView->SetCenteredWindow(UExtent, VExtent);
+  activeView->SetCenteredWindow(UExtent, VExtent);
 
   EoGePoint3d ptTarget((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, 0.0);
 
-  ActiveView->SetCameraTarget(ptTarget);
-  ActiveView->SetCameraPosition(ActiveView->CameraDirection());
+  activeView->SetCameraTarget(ptTarget);
+  activeView->SetCameraPosition(activeView->CameraDirection());
 
   int PrimitiveState = pstate.Save();
-  block->Display(ActiveView, &dcMem);
+  block->Display(activeView, &dcMem);
 
-  ActiveView->PopViewTransform();
-  ActiveView->ViewportPopActive();
+  activeView->PopViewTransform();
+  activeView->ViewportPopActive();
 
   pstate.Restore(&dcMem, PrimitiveState);
   dcMem.SelectObject(Bitmap);
@@ -138,7 +138,7 @@ void WndProcPreviewUpdate(HWND previewWindow, EoDbBlock* block) {
 }
 
 void _WndProcPreviewUpdate(HWND previewWindow, EoDbGroupList* groups) {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
   CRect rc;
   ::GetClientRect(previewWindow, &rc);
@@ -149,33 +149,33 @@ void _WndProcPreviewUpdate(HWND previewWindow, EoDbGroupList* groups) {
   CBitmap* Bitmap = dcMem.SelectObject(WndProcPreview_Bitmap);
   dcMem.PatBlt(0, 0, rc.right, rc.bottom, BLACKNESS);
 
-  ActiveView->ViewportPushActive();
-  ActiveView->SetViewportSize(rc.right, rc.bottom);
-  ActiveView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
-  ActiveView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
+  activeView->ViewportPushActive();
+  activeView->SetViewportSize(rc.right, rc.bottom);
+  activeView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
+  activeView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
   EoGeTransformMatrix tm;
 
   EoGePoint3d ptMin(FLT_MAX, FLT_MAX, FLT_MAX);
   EoGePoint3d ptMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-  groups->GetExtents(ActiveView, ptMin, ptMax, tm);
+  groups->GetExtents(activeView, ptMin, ptMax, tm);
 
   double UExtent = ptMax.x - ptMin.x;
   double VExtent = ptMax.y - ptMin.y;
   EoGePoint3d ptTarget((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, 0.0);
 
-  ActiveView->PushViewTransform();
-  ActiveView->SetCenteredWindow(UExtent, VExtent);
-  ActiveView->SetCameraTarget(ptTarget);
-  ActiveView->SetCameraPosition(ActiveView->CameraDirection());
+  activeView->PushViewTransform();
+  activeView->SetCenteredWindow(UExtent, VExtent);
+  activeView->SetCameraTarget(ptTarget);
+  activeView->SetCameraPosition(activeView->CameraDirection());
 
   int PrimitiveState = pstate.Save();
-  groups->Display(ActiveView, &dcMem);
+  groups->Display(activeView, &dcMem);
   pstate.Restore(&dcMem, PrimitiveState);
 
-  ActiveView->PopViewTransform();
-  ActiveView->ViewportPopActive();
+  activeView->PopViewTransform();
+  activeView->ViewportPopActive();
 
   dcMem.SelectObject(Bitmap);
   ::InvalidateRect(previewWindow, 0, TRUE);

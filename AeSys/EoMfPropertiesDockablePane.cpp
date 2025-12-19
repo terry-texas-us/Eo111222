@@ -141,9 +141,9 @@ LRESULT EoMfPropertiesDockablePane::OnPropertyChanged(WPARAM, LPARAM lparam) {
       break;
     }
     case kActiveViewScale: {
-      AeSysView* ActiveView = AeSysView::GetActiveView();
-      ActiveView->SetWorldScale(Property->GetValue().dblVal);
-      ActiveView->UpdateStateInformation(AeSysView::Scale);
+      auto* activeView = AeSysView::GetActiveView();
+      activeView->SetWorldScale(Property->GetValue().dblVal);
+      activeView->UpdateStateInformation(AeSysView::Scale);
       return LRESULT(0);
     }
   }
@@ -232,9 +232,9 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
 
   m_PropertyGrid.AddProperty(WorkspaceTabsGroup);
 
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  double Scale = (ActiveView == nullptr) ? 1. : ActiveView->GetWorldScale();
+  double Scale = (activeView == nullptr) ? 1. : activeView->GetWorldScale();
 
   CMFCPropertyGridProperty* ActiveViewGroup = new CMFCPropertyGridProperty(L"Active View");
   CMFCPropertyGridProperty* WorldScaleProperty = new CMFCPropertyGridProperty(
@@ -243,7 +243,7 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   ActiveViewGroup->AddSubItem(new CMFCPropertyGridProperty(L"Use True Type fonts", (_variant_t) true,
                                                            L"Specifies that the Active View uses True Type fonts"));
   m_PropertyGrid.AddProperty(ActiveViewGroup);
-  WorldScaleProperty->Enable(ActiveView != nullptr);
+  WorldScaleProperty->Enable(activeView != nullptr);
 
   CMFCPropertyGridProperty* AppearanceGroup = new CMFCPropertyGridProperty(L"Appearance");
 

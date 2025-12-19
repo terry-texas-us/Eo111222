@@ -1516,7 +1516,6 @@
     <ClInclude Include="PrimState.h" />
     <ClInclude Include="EoGeReferenceSystem.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="SafeMath.h" />
     <ClInclude Include="Section.h" />
     <ClInclude Include="EoDlgSelectIsometricView.h" />
     <ClInclude Include="Stdafx.h" />

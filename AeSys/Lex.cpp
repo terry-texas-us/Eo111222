@@ -1,27 +1,35 @@
 ﻿#include "stdafx.h"
+
 #include "AeSys.h"
-
-//#pragma warning(push)
-//#pragma warning(disable : 4996)
-
 #include "Lex.h"
-using namespace lex;
+#include "..//Lex/LexTable.h"
+#include "Resource.h"
+#include <algorithm>
+#include <atltrace.h>
+#include <cctype>
+#include <cfloat>
+#include <cmath>
+#include <corecrt.h>
+#include <cstddef>
+#include <cstdlib>
+#include <wchar.h>
 
 namespace lex {
-int iTokenType[TOKS_MAX];  // token type identifier
-int iToks;                 // number of tokens in current token stream
-int iValsCount;            // number of values
-int iValLoc[TOKS_MAX];     // location of value
-long lValues[VALS_MAX];
+int tokenTypeIdentifiers[lex::MaxTokens];
+int valueLocation[lex::MaxTokens];
+int numberOfTokensInStream;
+int numberOfValues;
+long lValues[lex::MaxValues];
 }  // namespace lex
+
 void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTokens, int* locationOfTokens) {
-  int NumberOfOpenParentheses = 0;
-  int PreviousTokenType = 0;
+  int NumberOfOpenParentheses{0};
+  int PreviousTokenType{0};
 
-  int OperatorStack[32];
-  int TopOfOperatorStack = 1;
+  int OperatorStack[32]{};
+  int TopOfOperatorStack{1};
 
-  OperatorStack[TopOfOperatorStack] = TOK_IDENTIFIER;
+  OperatorStack[TopOfOperatorStack] = lex::IdentifierToken;
 
   numberOfTokens = 0;
 
@@ -39,7 +47,7 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
         break;
 
       case CloseParen:
-        if (NumberOfOpenParentheses == 0) break;
+        if (NumberOfOpenParentheses == 0) { break; }
 
         while (OperatorStack[TopOfOperatorStack] != TOK_LPAREN) {  // Move operator to token stack
           typeOfTokens[numberOfTokens++] = OperatorStack[TopOfOperatorStack--];
@@ -77,36 +85,37 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
     PreviousTokenType = CurrentTokenType;
     CurrentTokenType = TokType(++firstTokenLocation);
   }
-  if (NumberOfOpenParentheses > 0) throw L"Unbalanced parentheses";
+  if (NumberOfOpenParentheses > 0) { throw L"Unbalanced parentheses"; }
 
-  while (TopOfOperatorStack > 1) typeOfTokens[numberOfTokens++] = OperatorStack[TopOfOperatorStack--];
+  while (TopOfOperatorStack > 1) { typeOfTokens[numberOfTokens++] = OperatorStack[TopOfOperatorStack--]; }
 
-  if (numberOfTokens == 0) throw L"Syntax error";
+  if (numberOfTokens == 0) { throw L"Syntax error"; }
 }
-void lex::ConvertValToString(LPTSTR acVal, CD* arCD, LPTSTR acPic, int* aiLen) {
-  long lTyp = arCD->lTyp;
-  int iDim = LOWORD(arCD->lDef);
 
-  if (lTyp == TOK_STRING) {
+void lex::ConvertValToString(void* valueBuffer, ColumnDefinition* columnDefinition, wchar_t* acPic, int* aiLen) {
+  long lTyp = columnDefinition->dataType;
+  int iDim = LOWORD(columnDefinition->dataDefinition);
+
+  if (lTyp == lex::StringToken) {
     *aiLen = iDim;
     acPic[0] = '\'';
-    memmove(&acPic[1], acVal, static_cast<size_t>(*aiLen));
+    memmove(&acPic[1], valueBuffer, static_cast<size_t>(*aiLen));
     acPic[++*aiLen] = '\'';
     acPic[++*aiLen] = '\0';
   } else {
-    WCHAR cVal[32];
+    wchar_t cVal[32]{};
     long* lVal = (long*)cVal;
     double* dVal = (double*)cVal;
 
-    LPTSTR szpVal;
+    wchar_t* szpVal{nullptr};
     int iLoc;
 
     int iVLen = 0;
-    int iValId = 0;
+    int byteOfset = 0;
     int iLnLoc = 0;
-    int iLen = HIWORD(arCD->lDef);
+    int iLen = HIWORD(columnDefinition->dataDefinition);
 
-    if (lTyp != TOK_INTEGER) iLen = iLen / 2;
+    if (lTyp != lex::IntegerToken) { iLen = iLen / 2; }
 
     if (iDim != iLen) {  // Matrix
       acPic[0] = '[';
@@ -114,397 +123,426 @@ void lex::ConvertValToString(LPTSTR acVal, CD* arCD, LPTSTR acPic, int* aiLen) {
     }
     for (int i1 = 0; i1 < iLen; i1++) {
       iLnLoc++;
-      if (iLen != 1 && (i1 % iDim) == 0) acPic[iLnLoc++] = '[';
-      if (lTyp == TOK_INTEGER) {
-        memcpy(lVal, &acVal[iValId], 4);
-        iValId += 4;
+      if (iLen != 1 && (i1 % iDim) == 0) { acPic[iLnLoc++] = '['; }
+      if (lTyp == lex::IntegerToken) {
+        memcpy(lVal, reinterpret_cast<const std::byte*>(valueBuffer) + byteOfset, 4);
+        byteOfset += 4;
         _ltow(*lVal, &acPic[iLnLoc], 10);
         iVLen = (int)wcslen(&acPic[iLnLoc]);
         iLnLoc += iVLen;
       } else {
-        memcpy(dVal, &acVal[iValId], 8);
-        iValId += 8;
-        if (lTyp == TOK_REAL) {
+        memcpy(dVal, reinterpret_cast<const std::byte*>(valueBuffer) + byteOfset, 8);
+        byteOfset += 8;
+        if (lTyp == lex::RealToken) {
           iLoc = 1;
           // pCvtDoubToFltDecTxt(*dVal, 7, iLoc, cVal);
           LPTSTR NextToken = nullptr;
           szpVal = wcstok_s(cVal, L" ", &NextToken);
           wcscpy(&acPic[iLnLoc], szpVal);
           iLnLoc += (int)wcslen(szpVal);
-        } else if (lTyp == TOK_LENGTH_OPERAND) {
+        } else if (lTyp == lex::LengthToken) {
           //TODO: Length to length string
           iLnLoc += iVLen;
-        } else if (lTyp == TOK_AREA_OPERAND) {
+        } else if (lTyp == lex::AreaToken) {
           // pCvtWrldToUsrAreaStr(*dVal, &acPic[iLnLoc], iVLen);
           iLnLoc += iVLen;
         }
       }
-      if (iLen != 1 && (i1 % iDim) == iDim - 1) acPic[iLnLoc++] = ']';
+      if (iLen != 1 && (i1 % iDim) == iDim - 1) { acPic[iLnLoc++] = ']'; }
     }
-    if (iDim == iLen)
+    if (iDim == iLen) {
       *aiLen = iLnLoc - 1;
-    else {
+    } else {
       acPic[iLnLoc] = ']';
       *aiLen = iLnLoc;
     }
   }
 }
-void lex::ConvertValTyp(int aiTyp, int aiTypReq, long* alDef, void* apVal) {
-  if (aiTyp == aiTypReq) return;
 
-  double* pdVal = (double*)apVal;
-  long* piVal = (long*)apVal;
+void lex::ConvertValTyp(int currentType, int requiredType, long* valueDefinition, void* buffer) {
+  if (currentType == requiredType) { return; }
 
-  if (aiTyp == TOK_STRING) {
-    WCHAR szVal[256];
+  double* doubleInterpretedBuffer = reinterpret_cast<double*>(buffer);
+  long* longInterpretedBuffer = reinterpret_cast<long*>(buffer);
 
-    wcscpy_s(szVal, 256, (LPTSTR)apVal);
-    if (aiTypReq == TOK_INTEGER) {
-      piVal[0] = _wtoi(szVal);
-      *alDef = MAKELONG(1, 1);
+  if (currentType == lex::StringToken) {
+    if (requiredType == lex::IntegerToken) {
+      longInterpretedBuffer[0] = _wtoi(reinterpret_cast<wchar_t*>(buffer));
+      *valueDefinition = MAKELONG(1, 1);
     } else {
-      pdVal[0] = _wtof(szVal);
-      *alDef = MAKELONG(1, 2);
+      doubleInterpretedBuffer[0] = _wtof(reinterpret_cast<wchar_t*>(buffer));
+      *valueDefinition = MAKELONG(1, 2);
     }
-  } else if (aiTyp == TOK_INTEGER) {
-    if (aiTypReq == TOK_STRING) {
-      // integer to string
+  } else if (currentType == lex::IntegerToken) {
+    if (requiredType == lex::StringToken) {
     } else {
-      pdVal[0] = (double)piVal[0];
-      *alDef = MAKELONG(1, 2);
+      doubleInterpretedBuffer[0] = static_cast<double>(longInterpretedBuffer[0]);
+      *valueDefinition = MAKELONG(1, 2);
     }
-  } else {
-    if (aiTypReq == TOK_STRING) {
-      // real to string
-    } else if (aiTypReq == TOK_INTEGER) {
-      // real to integer
+  } else {  // currentType is double
+    if (requiredType == lex::StringToken) {
+    } else if (requiredType == lex::IntegerToken) {
     }
   }
 }
-void lex::ConvertStringToVal(int aiTyp, long alDef, LPTSTR aszVal, long* alDefReq, void* aVal) {
-  if (LOWORD(alDef) <= 0) throw L"Empty string";
+
+void lex::ConvertStringToVal(int tokenType, long tokenDefinition, LPWSTR token, long* resultDefinition,
+                             void* resultValue) {
+  if (LOWORD(tokenDefinition) <= 0) { throw L"Empty string"; }
 
   WCHAR szTok[64];
   int iNxt = 0;
 
-  int iTyp = Scan(szTok, aszVal, iNxt);
-  if (aiTyp == TOK_INTEGER) {  // Conversion to integer
-    long* pVal = (long*)aVal;
+  int iTyp = Scan(szTok, token, iNxt);
+  if (tokenType == lex::IntegerToken) {
+    long* pVal = (long*)resultValue;
 
-    if (iTyp == TOK_INTEGER)
+    if (iTyp == lex::IntegerToken) {
       *pVal = _wtol(szTok);
-    else if (iTyp == TOK_REAL)
+    } else if (iTyp == lex::RealToken) {
       *pVal = (long)_wtof(szTok);
-    else
+    } else {
       throw L"String format conversion error";
-    *alDefReq = MAKELONG(1, 1);
+    }
+    *resultDefinition = MAKELONG(1, 1);
   } else {
-    double* pVal = (double*)aVal;
+    double* pVal = (double*)resultValue;
 
-    if (iTyp == TOK_INTEGER)
+    if (iTyp == lex::IntegerToken) {
       *pVal = (double)_wtoi(szTok);
-    else if (iTyp == TOK_REAL)
+    } else if (iTyp == lex::RealToken) {
       *pVal = _wtof(szTok);
-    else
+    } else {
       throw L"String format conversion error";
-    *alDefReq = MAKELONG(1, 2);
+    }
+    *resultDefinition = MAKELONG(1, 2);
   }
 }
-void lex::EvalTokenStream(int* aiTokId, long* alDef, int* aiTyp, void* apOp) {
-  WCHAR szTok[256];
 
-  int iDim;
-  int iTyp;
+void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandType, void* operandBuffer) {
+  WCHAR szTok[256]{};
+
+  int iDim{0};
+  int iTyp{0};
 
   long lDef1 = MAKELONG(1, 1);
-  int iDim1;
-  int iLen1;
-  int iTyp1 = TOK_INTEGER;
+  int iDim1{0};
+  int iLen1{0};
+  int iTyp1{lex::IntegerToken};
 
   long lDef2;
-  int iDim2;
-  int iLen2;
-  int iTyp2;
+  int iDim2{0};
+  int iLen2{0};
+  int iTyp2{0};
 
-  int NumberOfTokens;
-  int iExprTokTyp[32];
-  int iExprTokLoc[32];
+  int numberOfTokens{0};
+  int iExprTokTyp[32]{};
+  int iExprTokLoc[32]{};
 
-  BreakExpression(*aiTokId, NumberOfTokens, iExprTokTyp, iExprTokLoc);
+  BreakExpression(*aiTokId, numberOfTokens, iExprTokTyp, iExprTokLoc);
 
-  int iOpStkTyp[32];
-  long lOpStk[32][32];
-  long lOpStkDef[32];
+  int operandStack[32]{};
+  long lOpStk[32][32]{};
+  long lOpStkDef[32]{};
 
-  LPTSTR cOp1 = (LPTSTR)apOp;
-  double* dOp1 = (double*)apOp;
-  long* lOp1 = (long*)apOp;
+  wchar_t* cOp1 = reinterpret_cast<wchar_t*>(operandBuffer);
+  double* dOp1 = reinterpret_cast<double*>(operandBuffer);
+  long* lOp1 = reinterpret_cast<long*>(operandBuffer);
 
-  WCHAR cOp2[256];
-  double* dOp2 = (double*)cOp2;
-  long* lOp2 = (long*)cOp2;
+  /**
+ * @brief Zero-initialized buffer for operand storage, sized for 256 wchar_t but aligned for numeric reinterpretation.
+ *
+ * This buffer supports type punning for mixed-use in expression parsing (e.g., strings, reals, or ints per grammar).
+ * It uses a byte array for flexibility, with reinterpret_cast to view as double or long arrays.
+ * Alignment ensures no undefined behavior on access; size calculation adapts to platform-specific wchar_t sizes.
+ *
+ * @note if not needing char-specific operations. For even safer modernization, explore std::variant or unions for operands.
+ */
+  alignas(double) std::byte secondOperandBuffer[256 * sizeof(wchar_t)]{};
+  wchar_t* cOp2 = reinterpret_cast<wchar_t*>(secondOperandBuffer);
+  double* dOp2 = reinterpret_cast<double*>(secondOperandBuffer);
+  long* lOp2 = reinterpret_cast<long*>(secondOperandBuffer);
 
-  int iOpStkTop = 0;  // Empty operand stack
-  int iTokStkId = 0;  // Start with first token
+  int operandStackTop{0};  // Empty operand stack
+  int iTokStkId{0};        // Start with first token
 
-  while (iTokStkId < NumberOfTokens) {
-    int iTokTyp = iExprTokTyp[iTokStkId];
+  while (iTokStkId < numberOfTokens) {
+    int tokenType = iExprTokTyp[iTokStkId];
     int iTokLoc = iExprTokLoc[iTokStkId];
-    if (TokenTable[iTokTyp].eClass == Identifier) {
+    if (TokenTable[tokenType].eClass == Identifier) {
       // symbol table stuff if desired
       throw L"Identifier token class not implemented";
-    } else if (TokenTable[iTokTyp].eClass == Constant) {
-      iTyp1 = iTokTyp;
-      lDef1 = lValues[iValLoc[iTokLoc]];
-      memcpy(cOp1, &lValues[iValLoc[iTokLoc] + 1], static_cast<size_t>(HIWORD(lDef1) * 4));
+    } else if (TokenTable[tokenType].eClass == Constant) {
+      iTyp1 = tokenType;
+      lDef1 = lex::lValues[lex::valueLocation[iTokLoc]];
+      memcpy(operandBuffer, &lex::lValues[lex::valueLocation[iTokLoc] + 1], static_cast<size_t>(HIWORD(lDef1) * 4));
     } else {  // Token is an operator .. Pop an operand from operand stack
-      if (iOpStkTop == 0) throw L"Operand stack is empty";
+      if (operandStackTop == 0) { throw L"Operand stack is empty"; }
 
-      iTyp1 = iOpStkTyp[iOpStkTop];
-      lDef1 = lOpStkDef[iOpStkTop];
+      iTyp1 = operandStack[operandStackTop];
+      lDef1 = lOpStkDef[operandStackTop];
       iLen1 = HIWORD(lDef1);
-      memcpy(cOp1, &lOpStk[iOpStkTop--][0], static_cast<size_t>(iLen1 * 4));
+      memcpy(operandBuffer, &lOpStk[operandStackTop--][0], static_cast<size_t>(iLen1 * 4));
 
-      if (TokenTable[iTokTyp].eClass == Other) {  // intrinsics and oddball unary minus/plus
-        if (iTyp1 == TOK_STRING) {
+      if (TokenTable[tokenType].eClass == Other) {  // intrinsics and oddball unary minus/plus
+        if (iTyp1 == lex::StringToken) {
           iDim1 = LOWORD(lDef1);
-          wcscpy_s(szTok, 256, cOp1);
-          if (iTokTyp == TOK_TOINTEGER) {
-            iTyp1 = TOK_INTEGER;
-            ConvertStringToVal(TOK_INTEGER, lDef1, szTok, &lDef1, cOp1);
-          } else if (iTokTyp == TOK_REAL) {
-            iTyp1 = TOK_REAL;
-            ConvertStringToVal(TOK_REAL, lDef1, szTok, &lDef1, cOp1);
-          } else if (iTokTyp == TOK_STRING)
+          wcscpy_s(szTok, 256, reinterpret_cast<wchar_t*>(operandBuffer));
+          if (tokenType == TOK_TOINTEGER) {
+            iTyp1 = lex::IntegerToken;
+            ConvertStringToVal(lex::IntegerToken, lDef1, szTok, &lDef1, operandBuffer);
+          } else if (tokenType == lex::RealToken) {
+            iTyp1 = lex::RealToken;
+            ConvertStringToVal(lex::RealToken, lDef1, szTok, &lDef1, operandBuffer);
+          } else if (tokenType == lex::StringToken) {
             ;
-          else
+          } else {
             throw L"String operand conversions error: unknown";
-        } else if (iTyp1 == TOK_INTEGER)
-          UnaryOp(iTokTyp, &iTyp1, &lDef1, lOp1);
-        else
-          UnaryOp(iTokTyp, &iTyp1, &lDef1, dOp1);
-      } else if (TokenTable[iTokTyp].eClass == BinaryArithOp) {  // Binary arithmetic operator
-        if (iOpStkTop == 0) throw L"Binary Arithmetic: Only one operand.";
-        iTyp2 = iOpStkTyp[iOpStkTop];  // Pop second operand from operand stack
-        lDef2 = lOpStkDef[iOpStkTop];
+          }
+        } else if (iTyp1 == lex::IntegerToken) {
+          UnaryOp(tokenType, &iTyp1, &lDef1, lOp1);
+        } else {
+          UnaryOp(tokenType, &iTyp1, &lDef1, dOp1);
+        }
+      } else if (TokenTable[tokenType].eClass == BinaryArithOp) {  // Binary arithmetic operator
+        if (operandStackTop == 0) { throw L"Binary Arithmetic: Only one operand."; }
+        iTyp2 = operandStack[operandStackTop];  // Pop second operand from operand stack
+        lDef2 = lOpStkDef[operandStackTop];
         iLen2 = HIWORD(lDef2);
-        memcpy(cOp2, &lOpStk[iOpStkTop--][0], static_cast<size_t>(iLen2 * 4));
-        iTyp = EoMin(iTyp2, TOK_REAL);
+        memcpy(secondOperandBuffer, &lOpStk[operandStackTop--][0], static_cast<size_t>(iLen2 * 4));
+        iTyp = std::min(iTyp2, lex::RealToken);
         if (iTyp1 < iTyp) {  // Convert first operand
           ConvertValTyp(iTyp1, iTyp, &lDef1, lOp1);
           iTyp1 = iTyp;
           iLen1 = HIWORD(lDef1);
         } else {
-          iTyp = EoMin(iTyp1, TOK_REAL);
+          iTyp = std::min(iTyp1, lex::RealToken);
           if (iTyp2 < iTyp) {  // Convert second operand
             ConvertValTyp(iTyp2, iTyp, &lDef2, lOp2);
             iTyp2 = iTyp;
             iLen2 = HIWORD(lDef2);
           }
         }
-        if (iTokTyp == TOK_BINARY_PLUS) {
-          if (iTyp1 == TOK_STRING) {
+        if (tokenType == TOK_BINARY_PLUS) {
+          if (iTyp1 == lex::StringToken) {
             iDim1 = LOWORD(lDef1);
             iDim2 = LOWORD(lDef2);
             iDim = iDim2 + iDim1;
-            wcscpy(cOp1, _tcscat(cOp2, cOp1));
+
+            errno_t err = wcscat_s(cOp2, 256, reinterpret_cast<wchar_t*>(operandBuffer));
+            if (err != 0) { throw L"String concatenation overflow!"; }
+
+            wcscpy_s(reinterpret_cast<wchar_t*>(operandBuffer), HIWORD(lDef1) * 4, cOp2);
             iLen1 = 1 + (iDim - 1) / 4;
             lDef1 = MAKELONG(iDim, iLen1);
           } else {
-            if (iTyp1 == TOK_INTEGER)
+            if (iTyp1 == lex::IntegerToken) {
               lOp1[0] += lOp2[0];
-            else
+            } else {
               dOp1[0] += dOp2[0];
+            }
           }
-        } else if (iTokTyp == TOK_BINARY_MINUS) {
-          if (iTyp1 == TOK_STRING) throw L"Can not subtract strings";
-          if (iTyp1 == TOK_INTEGER)
+        } else if (tokenType == TOK_BINARY_MINUS) {
+          if (iTyp1 == lex::StringToken) { throw L"Can not subtract strings"; }
+          if (iTyp1 == lex::IntegerToken) {
             lOp1[0] = lOp2[0] - lOp1[0];
-          else
+          } else {
             dOp1[0] = dOp2[0] - dOp1[0];
-        } else if (iTokTyp == TOK_MULTIPLY) {
-          if (iTyp1 == TOK_STRING) throw L"Can not mutiply strings";
-          if (iTyp1 == TOK_INTEGER)
+          }
+        } else if (tokenType == TOK_MULTIPLY) {
+          if (iTyp1 == lex::StringToken) { throw L"Can not mutiply strings"; }
+          if (iTyp1 == lex::IntegerToken) {
             lOp1[0] *= lOp2[0];
-          else {
-            if (iTyp1 == TOK_REAL)
+          } else {
+            if (iTyp1 == lex::RealToken) {
               iTyp1 = iTyp2;
-            else if (iTyp2 == TOK_REAL)
+            } else if (iTyp2 == lex::RealToken) {
               ;
-            else if (iTyp1 == TOK_LENGTH_OPERAND && iTyp2 == TOK_LENGTH_OPERAND)
-              iTyp1 = TOK_AREA_OPERAND;
-            else
+            } else if (iTyp1 == lex::LengthToken && iTyp2 == lex::LengthToken) {
+              iTyp1 = lex::AreaToken;
+            } else {
               throw L"Invalid mix of multiplicands";
+            }
 
             dOp1[0] *= dOp2[0];
           }
-        } else if (iTokTyp == TOK_DIVIDE) {
-          if (iTyp1 == TOK_STRING) throw L"Can not divide strings";
-          if (iTyp1 == TOK_INTEGER) {
-            if (lOp1[0] == 0) throw L"Attempting to divide by 0";
+        } else if (tokenType == TOK_DIVIDE) {
+          if (iTyp1 == lex::StringToken) { throw L"Can not divide strings"; }
+          if (iTyp1 == lex::IntegerToken) {
+            if (lOp1[0] == 0) { throw L"Attempting to divide by 0"; }
             lOp1[0] = lOp2[0] / lOp1[0];
           } else if (iTyp1 <= iTyp2) {
-            if (dOp1[0] == 0.0) throw L"Attempting to divide by 0.";
-            if (iTyp1 == iTyp2)
-              iTyp1 = TOK_REAL;
-            else if (iTyp1 == TOK_REAL)
+            if (dOp1[0] == 0.0) { throw L"Attempting to divide by 0."; }
+            if (iTyp1 == iTyp2) {
+              iTyp1 = lex::RealToken;
+            } else if (iTyp1 == lex::RealToken) {
               iTyp1 = iTyp2;
-            else
-              iTyp1 = TOK_LENGTH_OPERAND;
+            } else {
+              iTyp1 = lex::LengthToken;
+            }
             dOp1[0] = dOp2[0] / dOp1[0];
-          } else
+          } else {
             throw L"Division type error";
-        } else if (iTokTyp == TOK_EXPONENTIATE) {
-          if (iTyp1 == TOK_INTEGER) {
-            if ((lOp1[0] >= 0 && lOp1[0] > DBL_MAX_10_EXP) || (lOp1[0] < 0 && lOp1[0] < DBL_MIN_10_EXP))
+          }
+        } else if (tokenType == TOK_EXPONENTIATE) {
+          if (iTyp1 == lex::IntegerToken) {
+            if ((lOp1[0] >= 0 && lOp1[0] > DBL_MAX_10_EXP) || (lOp1[0] < 0 && lOp1[0] < DBL_MIN_10_EXP)) {
               throw L"Exponentiation error";
+            }
 
             lOp1[0] = (int)pow((double)lOp2[0], lOp1[0]);
-          } else if (iTyp1 == TOK_REAL) {
+          } else if (iTyp1 == lex::RealToken) {
             int iExp = (int)dOp1[0];
 
-            if ((iExp >= 0 && iExp > DBL_MAX_10_EXP) || (iExp < 0 && iExp < DBL_MIN_10_EXP))
+            if ((iExp >= 0 && iExp > DBL_MAX_10_EXP) || (iExp < 0 && iExp < DBL_MIN_10_EXP)) {
               throw L"Exponentiation error";
+            }
             dOp1[0] = pow(dOp2[0], dOp1[0]);
           }
         }
-      } else if (TokenTable[iTokTyp].eClass == BinaryRelatOp) {
+      } else if (TokenTable[tokenType].eClass == BinaryRelatOp) {
         // if support for binary relational operators desired (== != > >= < <=)
         throw L"Binary relational operators not implemented";
-      } else if (TokenTable[iTokTyp].eClass == BinaryLogicOp) {
+      } else if (TokenTable[tokenType].eClass == BinaryLogicOp) {
         // if support for binary logical operators desired (& |)
         throw L"Binary logical operators not implemented";
-      } else if (TokenTable[iTokTyp].eClass == UnaryLogicOp) {
+      } else if (TokenTable[tokenType].eClass == UnaryLogicOp) {
         // if support for unary logical operator desired (!)
         throw L"Unary logical operator not implemented";
       }
     }
-    iOpStkTop++;                   // Increment opernad stack pointer
-    iOpStkTyp[iOpStkTop] = iTyp1;  // Push operand onto operand stack
-    lOpStkDef[iOpStkTop] = lDef1;
-    memcpy(&lOpStk[iOpStkTop][0], cOp1, static_cast<size_t>(HIWORD(lDef1) * 4));
+    operandStackTop++;                      // Increment opernad stack pointer
+    operandStack[operandStackTop] = iTyp1;  // Push operand onto operand stack
+    lOpStkDef[operandStackTop] = lDef1;
+    memcpy(&lOpStk[operandStackTop][0], operandBuffer, static_cast<size_t>(HIWORD(lDef1) * 4));
     iTokStkId++;
   }
-  *aiTyp = iTyp1;
-  *alDef = lDef1;
+  *operandType = iTyp1;
+  *operandDefinition = lDef1;
 }
+
 void lex::Init() {
-  iToks = 0;
-  iValsCount = 0;
+  numberOfTokensInStream = 0;
+  numberOfValues = 0;
 }
-void lex::Parse(LPCWSTR szLine) {
-  iToks = 0;
-  iValsCount = 0;
 
-  WCHAR szTok[256];
+void lex::Parse(const wchar_t* inputLine) {
+  numberOfTokensInStream = 0;
+  numberOfValues = 0;
 
-  int iBeg = 0;
-  int iLnLen = (int)wcslen(szLine);
+  wchar_t token[256]{};
 
-  while (iBeg < iLnLen) {
-    int iTyp = Scan(szTok, szLine, iBeg);
+  int linePosition{0};
+  int lineLength = static_cast<int>(wcslen(inputLine));
 
-    if (iTyp == -1) return;
-    if (iToks == TOKS_MAX) return;
+  while (linePosition < lineLength) {
+    int tokenId = lex::Scan(token, inputLine, linePosition);
 
-    iTokenType[iToks] = iTyp;
-    int iLen = (int)wcslen(szTok);
-    int iDim;
-    double dVal;
+    if (tokenId == -1) { return; }
+    if (lex::numberOfTokensInStream == lex::MaxTokens) { return; }
 
-    switch (iTyp) {
-      case TOK_IDENTIFIER:
-        iDim = (int)wcslen(szTok);
+    lex::tokenTypeIdentifiers[lex::numberOfTokensInStream] = tokenId;
+    int iLen = static_cast<int>(wcslen(token));
+    int iDim{0};
+    double dVal{0.0};
+
+    switch (tokenId) {
+      case lex::IdentifierToken:
+        iDim = static_cast<int>(wcslen(token));
         iLen = 1 + (iDim - 1) / 4;
 
-        iValLoc[iToks] = iValsCount + 1;
-        lValues[iValsCount + 1] = iDim + iLen * 65536;
-        memcpy(&lValues[iValsCount + 2], szTok, static_cast<size_t>(iDim));
-        iValsCount = iValsCount + 1 + iLen;
+        lex::valueLocation[lex::numberOfTokensInStream] = lex::numberOfValues + 1;
+        lex::lValues[lex::numberOfValues + 1] = iDim + iLen * 65536;
+        memcpy(&lex::lValues[lex::numberOfValues + 2], token, static_cast<size_t>(iDim));
+        lex::numberOfValues = lex::numberOfValues + 1 + iLen;
         break;
 
-      case TOK_STRING:
-        ParseStringOperand(szTok);
+      case lex::StringToken:
+        ParseStringOperand(token);
         break;
 
-      case TOK_INTEGER:
-        iValLoc[iToks] = iValsCount;
-        lValues[iValsCount++] = MAKELONG(1, 1);
-        lValues[iValsCount++] = _wtoi(szTok);
+      case lex::IntegerToken:
+        lex::valueLocation[lex::numberOfTokensInStream] = lex::numberOfValues;
+        lex::lValues[lex::numberOfValues++] = MAKELONG(1, 1);
+        lex::lValues[lex::numberOfValues++] = _wtoi(token);
         break;
 
-      case TOK_REAL:
-      case TOK_LENGTH_OPERAND:
-        dVal = (iTyp == TOK_REAL) ? _wtof(szTok) : app.ParseLength(szTok);
+      case lex::RealToken:
+      case lex::LengthToken:
+        dVal = (tokenId == lex::RealToken) ? _wtof(token) : app.ParseLength(token);
 
-        iValLoc[iToks] = iValsCount;
-        lValues[iValsCount++] = MAKELONG(1, 2);
-        memcpy(&lValues[iValsCount++], &dVal, sizeof(double));
-        iValsCount++;
+        lex::valueLocation[lex::numberOfTokensInStream] = lex::numberOfValues;
+        lex::lValues[lex::numberOfValues++] = MAKELONG(1, 2);
+        memcpy(&lex::lValues[lex::numberOfValues++], &dVal, sizeof(double));
+        lex::numberOfValues++;
         break;
     }
-    iToks++;
+    lex::numberOfTokensInStream++;
   }
 }
-void lex::ParseStringOperand(LPCWSTR pszTok) {
-  if (wcslen(pszTok) < 3) {
+
+void lex::ParseStringOperand(wchar_t* token) {
+  if (wcslen(token) < 3) {
     app.AddStringToMessageList(IDS_MSG_ZERO_LENGTH_STRING);
     return;
   }
 
-  LPTSTR pszValues = (LPTSTR)&lValues[iValsCount + 2];
+  auto values = (LPWSTR)&lex::lValues[lex::numberOfValues + 2];
 
-  int iDim = 0;
-  int iNxt = 1;
-  while (pszTok[iNxt] != '\0') {
-    if (pszTok[iNxt] == '"' && pszTok[iNxt + 1] == '"') iNxt++;
-    pszValues[iDim++] = pszTok[iNxt++];
+  int iDim{0};
+  int next{1};
+  while (token[next] != '\0') {
+    if (token[next] == '"' && token[next + 1] == '"') { next++; }
+    values[iDim++] = token[next++];
   }
-  pszValues[--iDim] = '\0';
+  values[--iDim] = '\0';
   int iLen = 1 + (iDim - 1) / 4;
-  iValLoc[iToks] = ++iValsCount;
-  lValues[iValsCount] = MAKELONG(iDim, iLen);
-  iValsCount += iLen;
+  lex::valueLocation[lex::numberOfTokensInStream] = ++lex::numberOfValues;
+  lex::lValues[lex::numberOfValues] = MAKELONG(iDim, iLen);
+  lex::numberOfValues += iLen;
 }
 
-int lex::Scan(LPTSTR aszTok, LPCWSTR szLine, int& iLP) {
-  int iLen;
+int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
+  while (inputLine[linePosition] == ' ') { linePosition++; }
 
-  while (szLine[iLP] == ' ') { iLP++; }
+  int beginPosition = linePosition;
+  int tokenPosition = linePosition;
+  int tokenId{-1};
+  int scanPosition{1};
 
-  int iBegLoc = iLP;
-  int iTokLoc = iLP;
-  int iRetVal = -1;
-  int iS = 1;
+  bool done{false};
+  while (!done) {
+    int address = iBase[scanPosition] + inputLine[linePosition];
 
-  bool bDone = false;
-  while (!bDone) {
-    int iAddr = iBase[iS] + szLine[iLP];
-
-    if (iCheck[iAddr] == iS) {
-      iS = iNext[iAddr];
-      if (iTokVal[iS] != 0) {
-        iRetVal = iTokVal[iS];
-        iTokLoc = iLP;
+    if (iCheck[address] == scanPosition) {
+      scanPosition = iNext[address];
+      if (iTokVal[scanPosition] != 0) {
+        tokenId = iTokVal[scanPosition];
+        tokenPosition = linePosition;
       }
-      iLP++;
-    } else if (iDefault[iS] != 0)
-      iS = iDefault[iS];
-    else
-      bDone = true;
+      linePosition++;
+    } else if (iDefault[scanPosition] != 0) {
+      scanPosition = iDefault[scanPosition];
+    } else {
+      done = true;
+    }
   }
 
-  iLen = iTokLoc - iBegLoc + 1;
-  wcsncpy(aszTok, &szLine[iBegLoc], static_cast<size_t>(iLen));
-  aszTok[iLen] = '\0';
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"LinePointer = %d, TokenID = %d\n", iLP, iRetVal);
-  if (iRetVal == -1) { iLP = iBegLoc + 1; }
-  return (iRetVal);
+  int tokenLength = tokenPosition - beginPosition + 1;
+  wcsncpy_s(token, tokenLength + 1, &inputLine[beginPosition], static_cast<size_t>(tokenLength));
+  token[tokenLength] = '\0';
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"LinePosition = %d, TokenID = %d\n", linePosition, tokenId);
+  if (tokenId == -1) { linePosition = beginPosition + 1; }
+  return (tokenId);
 }
-int lex::TokType(int aiTokId) { return (aiTokId >= 0 && aiTokId < lex::iToks) ? iTokenType[aiTokId] : -1; }
+
+int lex::TokType(int tokenType) {
+  return (tokenType >= 0 && tokenType < numberOfTokensInStream) ? tokenTypeIdentifiers[tokenType] : -1;
+}
+
 void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
-  CD cd;
-  WCHAR szTok[32];
+  ColumnDefinition columnDefinition{};
+  WCHAR szTok[32]{};
   int i;
 
   int iDim = LOWORD(*alDef);
@@ -512,7 +550,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
 
   switch (aiTokTyp) {
     case TOK_UNARY_MINUS:
-      for (i = 0; i < iLen / 2; i++) adOp[i] = -adOp[i];
+      for (i = 0; i < iLen / 2; i++) { adOp[i] = -adOp[i]; }
       break;
 
     case TOK_UNARY_PLUS:
@@ -523,25 +561,27 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       break;
 
     case TOK_ACOS:
-      if (fabs(adOp[0]) > 1.)
+      if (fabs(adOp[0]) > 1.0) {
         throw L"Math error: acos of a value greater than 1.";
-      else
-        adOp[0] = acos(EoToDegree(adOp[0]));
+      } else {
+        adOp[0] = acos(Eo::RadianToDegree(adOp[0]));
+      }
       break;
 
     case TOK_ASIN:
-      if (fabs(adOp[0]) > 1.)
+      if (fabs(adOp[0]) > 1.0) {
         throw L"Math error: asin of a value greater than 1.";
-      else
-        adOp[0] = asin(EoToDegree(adOp[0]));
+      } else {
+        adOp[0] = asin(Eo::RadianToDegree(adOp[0]));
+      }
       break;
 
     case TOK_ATAN:
-      adOp[0] = atan(EoToDegree(adOp[0]));
+      adOp[0] = atan(Eo::RadianToDegree(adOp[0]));
       break;
 
     case TOK_COS:
-      adOp[0] = cos(EoToRadian(adOp[0]));
+      adOp[0] = cos(Eo::DegreeToRadian(adOp[0]));
       break;
 
     case TOK_TOREAL:
@@ -552,44 +592,47 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       break;
 
     case TOK_TOINTEGER:  // Conversion to integer
-      ConvertValTyp(TOK_REAL, TOK_INTEGER, alDef, (void*)adOp);
-      *aiTyp = TOK_INTEGER;
+      ConvertValTyp(lex::RealToken, lex::IntegerToken, alDef, (void*)adOp);
+      *aiTyp = lex::IntegerToken;
       break;
 
     case TOK_LN:
-      if (adOp[0] <= 0.0)
+      if (adOp[0] <= 0.0) {
         throw L"Math error: ln of a non-positive number";
-      else
+      } else {
         adOp[0] = log(adOp[0]);
+      }
       break;
 
     case TOK_LOG:
-      if (adOp[0] <= 0.0)
+      if (adOp[0] <= 0.0) {
         throw L"Math error: log of a non-positive number";
-      else
+      } else {
         adOp[0] = log10(adOp[0]);
+      }
       break;
 
     case TOK_SIN:
-      adOp[0] = sin(EoToRadian(adOp[0]));
+      adOp[0] = sin(Eo::DegreeToRadian(adOp[0]));
       break;
 
     case TOK_SQRT:
-      if (adOp[0] < 0.0)
+      if (adOp[0] < 0.0) {
         throw L"Math error: sqrt of a negative number";
-      else
+      } else {
         adOp[0] = sqrt(adOp[0]);
+      }
       break;
 
     case TOK_TAN:
-      adOp[0] = tan(EoToRadian(adOp[0]));
+      adOp[0] = tan(Eo::DegreeToRadian(adOp[0]));
       break;
 
     case TOK_TOSTRING:  // Conversion to string
-      *aiTyp = TOK_STRING;
-      cd.lTyp = TOK_REAL;
-      cd.lDef = *alDef;
-      ConvertValToString((LPTSTR)adOp, &cd, szTok, &iDim);
+      *aiTyp = lex::StringToken;
+      columnDefinition.dataType = lex::RealToken;
+      columnDefinition.dataDefinition = *alDef;
+      ConvertValToString((LPTSTR)adOp, &columnDefinition, szTok, &iDim);
       iLen = 1 + (iDim - 1) / 4;
       wcscpy((LPTSTR)adOp, szTok);
       *alDef = MAKELONG(iDim, iLen);
@@ -599,9 +642,10 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       throw L"Unknown operation";
   }
 }
-void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, long* alOp) {
-  CD cd;
-  WCHAR szTok[32];
+
+void lex::UnaryOp(int aiTokTyp, int* tokenType, long* alDef, long* alOp) {
+  ColumnDefinition columnDefinition{};
+  WCHAR szTok[32]{};
 
   int iDim = LOWORD(*alDef);
   int iLen = HIWORD(*alDef);
@@ -622,17 +666,17 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, long* alOp) {
       break;
 
     case TOK_TOREAL:
-      ConvertValTyp(TOK_INTEGER, TOK_REAL, alDef, (void*)alOp);
-      *aiTyp = TOK_REAL;
+      ConvertValTyp(lex::IntegerToken, lex::RealToken, alDef, (void*)alOp);
+      *tokenType = lex::RealToken;
       break;
 
     case TOK_TOSTRING:
-      *aiTyp = TOK_STRING;
-      cd.lTyp = TOK_INTEGER;
-      cd.lDef = *alDef;
-      ConvertValToString((LPTSTR)alOp, &cd, szTok, &iDim);
+      *tokenType = lex::StringToken;
+      columnDefinition.dataType = lex::IntegerToken;
+      columnDefinition.dataDefinition = *alDef;
+      ConvertValToString((LPTSTR)alOp, &columnDefinition, szTok, &iDim);
       iLen = 1 + (iDim - 1) / 4;
-      wcscpy((LPTSTR)alOp, szTok);
+      wcscpy_s((LPWSTR)alOp, 32, szTok);
       *alDef = MAKELONG(iDim, iLen);
       break;
 
@@ -640,28 +684,31 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, long* alOp) {
       throw L"Unknown operation";
   }
 }
-LPTSTR lex::ScanForChar(WCHAR c, LPTSTR* ppStr) {
-  LPTSTR p = lex::SkipWhiteSpace(*ppStr);
 
-  if (*p == c) {
-    *ppStr = p + 1;
-    return p;
+wchar_t* lex::ScanForChar(wchar_t character, wchar_t** lineBuffer) {
+  auto position = SkipWhiteSpace(*lineBuffer);
+
+  if (*position == character) {
+    *lineBuffer = position + 1;
+    return position;
   }
-  return 0;  // not found
+  return nullptr;  // not found
 }
-LPTSTR lex::SkipWhiteSpace(LPTSTR pszString) {
-  while (pszString && *pszString && isspace(*pszString)) pszString++;
 
-  return pszString;
+wchar_t* lex::SkipWhiteSpace(wchar_t* inputLine) {
+  while (inputLine && *inputLine && isspace(*inputLine)) { inputLine++; }
+
+  return inputLine;
 }
-LPTSTR lex::ScanForString(LPTSTR* ppStr, LPTSTR pszTerm, LPTSTR* ppArgBuf) {
-  LPTSTR pIn = lex::SkipWhiteSpace(*ppStr);
-  LPTSTR pStart = *ppArgBuf;
-  LPTSTR pOut = pStart;
+
+wchar_t* lex::ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBuf) {
+  wchar_t* pIn = SkipWhiteSpace(*ppStr);
+  wchar_t* pStart = *ppArgBuf;
+  wchar_t* pOut = pStart;
 
   bool bInQuotes = *pIn == '"';
 
-  if (bInQuotes) pIn++;
+  if (bInQuotes) { pIn++; }
 
   do {
     if (bInQuotes) {
@@ -669,18 +716,20 @@ LPTSTR lex::ScanForString(LPTSTR* ppStr, LPTSTR pszTerm, LPTSTR* ppArgBuf) {
         pIn++;
         break;
       }
-    } else if (isalnum(*pIn))
+    } else if (isalnum(*pIn)) {
       ;
-    else {  // allow some peg specials
-      if (!(*pIn == '_' || *pIn == '$' || *pIn == '.' || *pIn == '-' || *pIn == ':' || *pIn == '\\')) break;
+    } else {  // allow some peg specials
+      if (!(*pIn == '_' || *pIn == '$' || *pIn == '.' || *pIn == '-' || *pIn == ':' || *pIn == '\\')) { break; }
     }
-    if ((*pIn == '"') && (*(pIn + 1) == '"'))
+    if ((*pIn == '"') && (*(pIn + 1) == '"')) {
       // Skip the escaping first quote
       pIn++;
+    }
 
-    if (*pIn == '\\' && *(pIn + 1) == '\\')
+    if (*pIn == '\\' && *(pIn + 1) == '\\') {
       // Skip the escaping backslash
       pIn++;
+    }
 
     *pOut++ = *pIn++;  // the char to the arg buffer
 
@@ -688,13 +737,13 @@ LPTSTR lex::ScanForString(LPTSTR* ppStr, LPTSTR pszTerm, LPTSTR* ppArgBuf) {
 
   *pOut++ = '\0';  // Set up the terminating char and update the scan pointer
   *pszTerm = *pIn;
-  if (*pIn)
+  if (*pIn) {
     *ppStr = pIn + 1;
-  else
+  } else {
     *ppStr = pIn;
+  }
 
   *ppArgBuf = pOut;  // Update the arg buffer to the next free bit
 
   return pStart;
 }
-//#pragma warning(pop)

@@ -20,10 +20,10 @@ EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& cent
     : EoDbPrimitive(penColor, lineType) {
   m_wFlags = 0x0010;  // polyline is closed
 
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  EoGeVector3d PlaneNormal = ActiveView->CameraDirection();
-  EoGeVector3d MinorAxis = ActiveView->ViewUp();
+  EoGeVector3d PlaneNormal = activeView->CameraDirection();
+  EoGeVector3d MinorAxis = activeView->ViewUp();
   EoGeVector3d MajorAxis(MinorAxis);
   MajorAxis.RotAboutArbAx(PlaneNormal, -Eo::HalfPi);
 

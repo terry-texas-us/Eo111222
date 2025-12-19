@@ -294,8 +294,6 @@
 #define IDC_RGBNUMBERS                  1435
 #define IDC_SELECTION_COLOR             1436
 #define IDC_MFCFONTCOMBO                1448
-#define IDC_MFCBUTTON1                  1453
-#define ID_OK                           1454
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -359,6 +357,7 @@
 #define IDS_SAVEFILE_FILTER             3844
 #define IDS_METRIC_UNITS                3845
 #define IDS_PRIMITIVE_FILTER_LIST       3846
+#define IDS_MSG_INVALID_NUMBER_EXTRACT  3847
 #define ID_OP0                          4112
 #define ID_OP1                          4113
 #define ID_OP2                          4114

@@ -7,13 +7,13 @@
 EoGeReferenceSystem::EoGeReferenceSystem()
     : m_Origin(EoGePoint3d::kOrigin), m_XDirection(EoGeVector3d::kXAxis), m_YDirection(EoGeVector3d::kYAxis) {}
 EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin, EoDbCharacterCellDefinition& ccd) {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
   m_Origin = origin;
 
-  EoGeVector3d vNorm = ActiveView->CameraDirection();
+  EoGeVector3d vNorm = activeView->CameraDirection();
 
-  m_YDirection = ActiveView->ViewUp();
+  m_YDirection = activeView->ViewUp();
   m_YDirection.RotAboutArbAx(vNorm, ccd.TextRotAngGet());
 
   m_XDirection = m_YDirection;

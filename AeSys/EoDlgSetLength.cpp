@@ -26,10 +26,10 @@ BOOL EoDlgSetLength::OnInitDialog() {
 	return TRUE;
 }
 void EoDlgSetLength::OnOK() {
-	WCHAR szBuf[32];
+	wchar_t itemText[32]{};
 
-	GetDlgItemTextW(IDC_DISTANCE, (LPTSTR) szBuf, 32);
-	m_dLength = app.ParseLength(app.GetUnits(), szBuf);
+	GetDlgItemTextW(IDC_DISTANCE, itemText, 32);
+	m_dLength = app.ParseLength(app.GetUnits(), itemText);
 
 	CDialog::OnOK();
 }

@@ -8,51 +8,52 @@
 IMPLEMENT_DYNAMIC(EoDlgLowPressureDuctOptions, CDialog)
 
 BEGIN_MESSAGE_MAP(EoDlgLowPressureDuctOptions, CDialog)
-	ON_BN_CLICKED(IDOK, &EoDlgLowPressureDuctOptions::OnBnClickedOk)
-	ON_BN_CLICKED(IDC_GEN_VANES, &EoDlgLowPressureDuctOptions::OnBnClickedGenVanes)
+ON_BN_CLICKED(IDOK, &EoDlgLowPressureDuctOptions::OnBnClickedOk)
+ON_BN_CLICKED(IDC_GEN_VANES, &EoDlgLowPressureDuctOptions::OnBnClickedGenVanes)
 END_MESSAGE_MAP()
 
 EoDlgLowPressureDuctOptions::EoDlgLowPressureDuctOptions(CWnd* pParent /*=nullptr*/)
-	: CDialog(EoDlgLowPressureDuctOptions::IDD, pParent)
-	, m_Width(0), m_Depth(0), m_RadiusFactor(0), m_Justification(0) {
-}
-EoDlgLowPressureDuctOptions::~EoDlgLowPressureDuctOptions() {
-}
+    : CDialog(EoDlgLowPressureDuctOptions::IDD, pParent),
+      m_Width(0),
+      m_Depth(0),
+      m_RadiusFactor(0),
+      m_Justification(0) {}
+EoDlgLowPressureDuctOptions::~EoDlgLowPressureDuctOptions() {}
 void EoDlgLowPressureDuctOptions::DoDataExchange(CDataExchange* dataExchange) {
-	CDialog::DoDataExchange(dataExchange);
-	DDX_Text(dataExchange, IDC_RADIUS_FACTOR, m_RadiusFactor);
+  CDialog::DoDataExchange(dataExchange);
+  DDX_Text(dataExchange, IDC_RADIUS_FACTOR, m_RadiusFactor);
 }
 BOOL EoDlgLowPressureDuctOptions::OnInitDialog() {
-	CDialog::OnInitDialog();
+  CDialog::OnInitDialog();
 
-	AeSys::Units Units = std::max(app.GetUnits(), AeSys::kInches);
+  AeSys::Units Units = std::max(app.GetUnits(), AeSys::kInches);
 
-	CString Length;
-	app.FormatLength(Length, Units, m_Width, 0, 2);
-	SetDlgItemTextW(IDC_WIDTH, Length);
-	app.FormatLength(Length, Units, m_Depth, 0, 2);
-	SetDlgItemTextW(IDC_DEPTH, Length);
-	CheckRadioButton(IDC_LEFT, IDC_RIGHT, IDC_CENTER + m_Justification);
-	CheckDlgButton(IDC_GEN_VANES, m_GenerateVanes ? 1U : 0U);
-	CheckDlgButton(IDC_BEGINWITHTRANSITION, m_BeginWithTransition ? 1U : 0U);
-	return TRUE;
+  CString Length;
+  app.FormatLength(Length, Units, m_Width, 0, 2);
+  SetDlgItemTextW(IDC_WIDTH, Length);
+  app.FormatLength(Length, Units, m_Depth, 0, 2);
+  SetDlgItemTextW(IDC_DEPTH, Length);
+  CheckRadioButton(IDC_LEFT, IDC_RIGHT, IDC_CENTER + m_Justification);
+  CheckDlgButton(IDC_GEN_VANES, m_GenerateVanes ? 1U : 0U);
+  CheckDlgButton(IDC_BEGINWITHTRANSITION, m_BeginWithTransition ? 1U : 0U);
+  return TRUE;
 }
 
 // EoDlgLowPressureDuctOptions message handlers
 
 void EoDlgLowPressureDuctOptions::OnBnClickedOk() {
-	WCHAR szBuf[32];
+  wchar_t itemText[32]{};
 
-	GetDlgItemTextW(IDC_WIDTH, szBuf, 32);
-	m_Width = app.ParseLength(app.GetUnits(), szBuf);
-	GetDlgItemTextW(IDC_DEPTH, szBuf, 32);
-	m_Depth = app.ParseLength(app.GetUnits(), szBuf);
-	m_Justification = GetCheckedRadioButton(IDC_LEFT, IDC_RIGHT) - IDC_CENTER;
-	m_GenerateVanes = IsDlgButtonChecked(IDC_GEN_VANES) == 0 ? false : true;
-	m_BeginWithTransition = IsDlgButtonChecked(IDC_BEGINWITHTRANSITION) == 0 ? false : true;
+  GetDlgItemTextW(IDC_WIDTH, itemText, 32);
+  m_Width = app.ParseLength(app.GetUnits(), itemText);
+  GetDlgItemTextW(IDC_DEPTH, itemText, 32);
+  m_Depth = app.ParseLength(app.GetUnits(), itemText);
+  m_Justification = GetCheckedRadioButton(IDC_LEFT, IDC_RIGHT) - IDC_CENTER;
+  m_GenerateVanes = IsDlgButtonChecked(IDC_GEN_VANES) == 0 ? false : true;
+  m_BeginWithTransition = IsDlgButtonChecked(IDC_BEGINWITHTRANSITION) == 0 ? false : true;
 
-	OnOK();
+  OnOK();
 }
 void EoDlgLowPressureDuctOptions::OnBnClickedGenVanes() {
-	// TODO: Add your control notification handler code here
+  // TODO: Add your control notification handler code here
 }

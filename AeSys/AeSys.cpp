@@ -538,12 +538,12 @@ int AeSys::SetShadowFolderPath(const CString& folder) {
   return (_wmkdir(m_ShadowFolderPath));
 }
 EoGePoint3d AeSys::GetCursorPosition() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
-  return (ActiveView == nullptr) ? EoGePoint3d::kOrigin : ActiveView->GetCursorPosition();
+  auto* activeView = AeSysView::GetActiveView();
+  return (activeView == nullptr) ? EoGePoint3d::kOrigin : activeView->GetCursorPosition();
 }
 void AeSys::SetCursorPosition(EoGePoint3d pt) {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
-  ActiveView->SetCursorPosition(pt);
+  auto* activeView = AeSysView::GetActiveView();
+  activeView->SetCursorPosition(pt);
 }
 // Loads the hatch table.
 void AeSys::LoadHatchesFromFile(const CString& strFileName) {
@@ -673,11 +673,11 @@ void AeSys::LoadModeResources(int mode) {
   m_CurrentMode = mode;
   AddModeInformationToMessageList();
 
-  AeSysView* ActiveView = AeSysView::GetActiveView();
-  if (ActiveView != 0) {
-    ActiveView->SetModeCursor(m_CurrentMode);
-    ActiveView->ModeLineDisplay();
-    ActiveView->RubberBandingDisable();
+  auto* activeView = AeSysView::GetActiveView();
+  if (activeView != 0) {
+    activeView->SetModeCursor(m_CurrentMode);
+    activeView->ModeLineDisplay();
+    activeView->RubberBandingDisable();
   }
 }
 /// <remarks> Font stroke table encoded as follows:
@@ -811,7 +811,7 @@ void AeSys::FormatAngle(CString& angleAsString, const double angle, const int wi
 
 void AeSys::FormatLength(CString& lengthAsString, Units units, const double length, const int minWidth,
                          const int precision) {
-  const size_t bufSize = 32;
+  const size_t bufSize{32};
   auto lengthAsBuffer = lengthAsString.GetBufferSetLength(bufSize);
 
   if (units == kArchitectural || units == kArchitecturalS) {
@@ -825,7 +825,7 @@ void AeSys::FormatLength(CString& lengthAsString, Units units, const double leng
 }
 
 void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length) {
-  WCHAR szBuf[16];
+  WCHAR szBuf[16]{};
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
@@ -870,7 +870,7 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
 }
 void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width,
                                     const int precision) {
-  WCHAR szBuf[16];
+  WCHAR szBuf[16]{};
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
@@ -948,89 +948,101 @@ void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Unit
   }
   wcsncpy_s(lengthAsBuffer, bufSize, formatted, _TRUNCATE);
 }
-double AeSys::ParseLength(LPWSTR aszLen) {
-  LPWSTR szEndPtr;
 
-  double dRetVal = _tcstod(aszLen, &szEndPtr);
+/** @brief Parses a length string with optional unit suffix.
+    @param lengthBuffer The length string to parse.
+    @return The parsed length in internal units (inches).
+*/
+double AeSys::ParseLength(wchar_t* inputLine) {
+  wchar_t* end{nullptr};
 
-  switch (toupper((int)szEndPtr[0])) {
-    case '\'':                                      // Feet and maybe inches
-      dRetVal *= 12.;                               // Reduce to inches
-      dRetVal += _tcstod(&szEndPtr[1], &szEndPtr);  // Begin scan for inches at character following foot delimeter
+  double length = wcstod(inputLine, &end);
+
+  switch (toupper(static_cast<int>(end[0]))) {
+    case '\'':                          // Feet and maybe inches
+      length *= 12.;                    // Reduce to inches
+      length += wcstod(&end[1], &end);  // Begin scan for inches at character following foot delimeter
       break;
 
     case 'M':
-      if (toupper((int)szEndPtr[1]) == 'M')
-        dRetVal *= 0.03937007874015748;
-      else
-        dRetVal *= 39.37007874015748;
+      if (toupper(static_cast<int>(end[1])) == 'M') {
+        length *= 0.03937007874015748;
+      } else {
+        length *= 39.37007874015748;
+      }
       break;
 
     case 'C':
-      dRetVal *= 0.3937007874015748;
+      length *= 0.3937007874015748;
       break;
 
     case 'D':
-      dRetVal *= 3.937007874015748;
+      length *= 3.937007874015748;
       break;
 
     case 'K':
-      dRetVal *= 39370.07874015748;
+      length *= 39370.07874015748;
   }
-  return (dRetVal / AeSysView::GetActiveView()->GetWorldScale());
+  return (length / AeSysView::GetActiveView()->GetWorldScale());
 }
-// Convert length expression to double value.
-double AeSys::ParseLength(Units units, LPWSTR aszLen) {
+
+/** @brief Parses a length string according to the current units setting.
+    @param units The units to use for parsing.
+    @param inputLine The length string to parse.
+    @return The parsed length in internal units (inches).
+    @throws wchar_t* If an error occurs during parsing, an error message is thrown.
+*/
+double AeSys::ParseLength(Units units, wchar_t* inputLine) {
   try {
-    int iTokId = 0;
-    long lDef;
-    int iTyp;
-    double dVal[32];
+    int iTokId{0};
+    long lDef{};
+    int iTyp{};
+    double length[32]{};
 
-    lex::Parse(aszLen);
-    lex::EvalTokenStream(&iTokId, &lDef, &iTyp, (void*)dVal);
+    lex::Parse(inputLine);
+    lex::EvalTokenStream(&iTokId, &lDef, &iTyp, length);
 
-    if (iTyp == lex::TOK_LENGTH_OPERAND)
-      return (dVal[0]);
-    else {
-      lex::ConvertValTyp(iTyp, lex::TOK_REAL, &lDef, dVal);
+    if (iTyp == lex::LengthToken) {
+      return (length[0]);
+    } else {
+      lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, length);
 
       switch (units) {
         case kArchitectural:
         case kEngineering:
         case kFeet:
-          dVal[0] *= 12.;
+          length[0] *= 12.0;
           break;
 
         case kMeters:
-          dVal[0] *= 39.37007874015748;
+          length[0] *= 39.37007874015748;
           break;
 
         case kMillimeters:
-          dVal[0] *= 0.03937007874015748;
+          length[0] *= 0.03937007874015748;
           break;
 
         case kCentimeters:
-          dVal[0] *= 0.3937007874015748;
+          length[0] *= 0.3937007874015748;
           break;
 
         case kDecimeters:
-          dVal[0] *= 3.937007874015748;
+          length[0] *= 3.937007874015748;
           break;
 
         case kKilometers:
-          dVal[0] *= 39370.07874015748;
+          length[0] *= 39370.07874015748;
           break;
 
         case AeSys::kArchitecturalS:
         case AeSys::kInches:
           break;
       }
-      dVal[0] /= AeSysView::GetActiveView()->GetWorldScale();
+      length[0] /= AeSysView::GetActiveView()->GetWorldScale();
     }
-    return (dVal[0]);
-  } catch (LPWSTR szMessage) {
-    ::MessageBoxW(0, szMessage, 0, MB_ICONWARNING | MB_OK);
+    return (length[0]);
+  } catch (LPWSTR errorMessage) {
+    ::MessageBoxW(0, errorMessage, 0, MB_ICONWARNING | MB_OK);
     return (0.0);
   }
 }

@@ -5,7 +5,7 @@
 #include "EoDbPrimitive.h"
 #include "PrimState.h"
 
-EoUInt16 wPrvKeyDwn = 0;
+EoUInt16 wPrvKeyDwn{0};
 EoGePoint3d rPrvPos;
 
 void AeSysView::OnCutModeOptions() {}

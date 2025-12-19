@@ -8,15 +8,15 @@
 #include "EoDbPrimitive.h"
 #include "EoDlgFixupOptions.h"
 
-EoUInt16 PreviousFixupCommand = 0;
+EoUInt16 PreviousFixupCommand{0};
 
-EoDbGroup* pSegPrv;
-EoDbGroup* pSegRef;
-EoDbGroup* pSegSec;
+EoDbGroup* pSegPrv{nullptr};
+EoDbGroup* pSegRef{nullptr};
+EoDbGroup* pSegSec{nullptr};
 
-EoDbPrimitive* pPrimPrv;
-EoDbPrimitive* pPrimRef;
-EoDbPrimitive* pPrimSec;
+EoDbPrimitive* pPrimPrv{nullptr};
+EoDbPrimitive* pPrimRef{nullptr};
+EoDbPrimitive* pPrimSec{nullptr};
 
 EoGeLine lnPrv;
 EoGeLine lnRef;

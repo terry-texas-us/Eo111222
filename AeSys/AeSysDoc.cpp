@@ -806,9 +806,9 @@ void AeSysDoc::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) {
   }
 }
 EoDbLayer* AeSysDoc::LayersSelUsingPoint(const EoGePoint3d& pt) {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  EoDbGroup* Group = ActiveView->SelectGroupAndPrimitive(pt);
+  EoDbGroup* Group = activeView->SelectGroupAndPrimitive(pt);
 
   if (Group != 0) {
     for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
@@ -1140,11 +1140,11 @@ void AeSysDoc::OnClearViewedTracings() {
   }
 }
 void AeSysDoc::OnPrimBreak() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  EoDbGroup* Group = ActiveView->SelectGroupAndPrimitive(ActiveView->GetCursorPosition());
-  if (Group != 0 && ActiveView->EngagedPrimitive() != 0) {
-    EoDbPrimitive* Primitive = ActiveView->EngagedPrimitive();
+  EoDbGroup* Group = activeView->SelectGroupAndPrimitive(activeView->GetCursorPosition());
+  if (Group != 0 && activeView->EngagedPrimitive() != 0) {
+    EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
 
     EoInt16 nPenColor = Primitive->PenColor();
     EoInt16 LineType = Primitive->LineType();
@@ -1353,10 +1353,10 @@ void AeSysDoc::OnBlocksUnload() {
   }
 }
 void AeSysDoc::OnEditImageToClipboard() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
   HDC hdcEMF = ::CreateEnhMetaFile(0, 0, 0, 0);
-  DisplayAllLayers(ActiveView, CDC::FromHandle(hdcEMF));
+  DisplayAllLayers(activeView, CDC::FromHandle(hdcEMF));
   HENHMETAFILE hemf = ::CloseEnhMetaFile(hdcEMF);
 
   ::OpenClipboard(nullptr);
@@ -1410,12 +1410,12 @@ void AeSysDoc::OnEditTrapQuit() {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::TrapCount);
 }
 void AeSysDoc::OnEditTrapCopy() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
-  CopyTrappedGroupsToClipboard(ActiveView);
+  auto* activeView = AeSysView::GetActiveView();
+  CopyTrappedGroupsToClipboard(activeView);
 }
 void AeSysDoc::OnEditTrapCut() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
-  CopyTrappedGroupsToClipboard(ActiveView);
+  auto* activeView = AeSysView::GetActiveView();
+  CopyTrappedGroupsToClipboard(activeView);
   DeleteAllTrappedGroups();
   UpdateAllViews(nullptr, 0L, nullptr);
 }
@@ -1505,8 +1505,8 @@ void AeSysDoc::OnTrapCommandsInvert() {
   UpdateAllViews(nullptr, 0L, nullptr);
 }
 void AeSysDoc::OnTrapCommandsSquare() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
-  SquareTrappedGroups(ActiveView);
+  auto* activeView = AeSysView::GetActiveView();
+  SquareTrappedGroups(activeView);
 }
 void AeSysDoc::OnTrapCommandsQuery() {
   EoDlgEditTrapCommandsQuery Dialog;
@@ -1600,38 +1600,38 @@ void AeSysDoc::OnSetupNote() {
     CCD.ChrSlantAngSet(Eo::DegreeToRadian(Dialog.m_CharacterSlantAngle));
     pstate.SetCharCellDef(CCD);
 
-    AeSysView* ActiveView = AeSysView::GetActiveView();
-    CDC* DeviceContext = (ActiveView == nullptr) ? nullptr : ActiveView->GetDC();
+    auto* activeView = AeSysView::GetActiveView();
+    CDC* DeviceContext = (activeView == nullptr) ? nullptr : activeView->GetDC();
 
     pstate.SetFontDef(DeviceContext, FontDefinition);
   }
 }
 void AeSysDoc::OnToolsGroupBreak() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  ActiveView->BreakAllPolylines();
-  ActiveView->BreakAllSegRefs();
+  activeView->BreakAllPolylines();
+  activeView->BreakAllSegRefs();
 }
 void AeSysDoc::OnToolsGroupDelete() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  EoGePoint3d pt = ActiveView->GetCursorPosition();
+  EoGePoint3d pt = activeView->GetCursorPosition();
 
-  EoDbGroup* Group = ActiveView->SelectGroupAndPrimitive(pt);
+  EoDbGroup* Group = activeView->SelectGroupAndPrimitive(pt);
 
   if (Group != 0) {
     AnyLayerRemove(Group);
     RemoveGroupFromAllViews(Group);
-    if (RemoveTrappedGroup(Group) != nullptr) { ActiveView->UpdateStateInformation(AeSysView::TrapCount); }
+    if (RemoveTrappedGroup(Group) != nullptr) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
     UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
     DeletedGroupsAddTail(Group);
     app.AddStringToMessageList(IDS_SEG_DEL_TO_RESTORE);
   }
 }
 void AeSysDoc::OnToolsGroupDeletelast() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  ActiveView->DeleteLastGroup();
+  activeView->DeleteLastGroup();
 }
 void AeSysDoc::OnToolsGroupExchange() {
   if (!DeletedGroupsIsEmpty()) {
@@ -1642,43 +1642,43 @@ void AeSysDoc::OnToolsGroupExchange() {
   }
 }
 void AeSysDoc::OnToolsPrimitiveSnaptoendpoint() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  EoGePoint4d ptView(ActiveView->GetCursorPosition());
-  ActiveView->ModelViewTransformPoint(ptView);
+  EoGePoint4d ptView(activeView->GetCursorPosition());
+  activeView->ModelViewTransformPoint(ptView);
 
-  if (ActiveView->GroupIsEngaged()) {
-    EoDbPrimitive* Primitive = ActiveView->EngagedPrimitive();
+  if (activeView->GroupIsEngaged()) {
+    EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
 
-    if (Primitive->PvtOnCtrlPt(ActiveView, ptView)) {
-      EoGePoint3d ptEng = ActiveView->DetPt();
+    if (Primitive->PvtOnCtrlPt(activeView, ptView)) {
+      EoGePoint3d ptEng = activeView->DetPt();
       Primitive->AddReportToMessageList(ptEng);
-      ActiveView->SetCursorPosition(ptEng);
+      activeView->SetCursorPosition(ptEng);
       return;
     }
     // Did not pivot on engaged primitive
-    if (Primitive->IsPointOnControlPoint(ActiveView, ptView)) { EoDbGroup::SetPrimitiveToIgnore(Primitive); }
+    if (Primitive->IsPointOnControlPoint(activeView, ptView)) { EoDbGroup::SetPrimitiveToIgnore(Primitive); }
   }
-  if (ActiveView->SelSegAndPrimAtCtrlPt(ptView) != 0) {
-    EoGePoint3d ptEng = ActiveView->DetPt();
-    ActiveView->EngagedPrimitive()->AddReportToMessageList(ptEng);
-    ActiveView->SetCursorPosition(ptEng);
+  if (activeView->SelSegAndPrimAtCtrlPt(ptView) != 0) {
+    EoGePoint3d ptEng = activeView->DetPt();
+    activeView->EngagedPrimitive()->AddReportToMessageList(ptEng);
+    activeView->SetCursorPosition(ptEng);
   }
   EoDbGroup::SetPrimitiveToIgnore(static_cast<EoDbPrimitive*>(nullptr));
 }
 void AeSysDoc::OnPrimGotoCenterPoint() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
-  if (ActiveView->GroupIsEngaged()) {
-    EoGePoint3d pt = ActiveView->EngagedPrimitive()->GetCtrlPt();
-    ActiveView->SetCursorPosition(pt);
+  auto* activeView = AeSysView::GetActiveView();
+  if (activeView->GroupIsEngaged()) {
+    EoGePoint3d pt = activeView->EngagedPrimitive()->GetCtrlPt();
+    activeView->SetCursorPosition(pt);
   }
 }
 void AeSysDoc::OnToolsPrimitiveDelete() {
   EoGePoint3d pt = app.GetCursorPosition();
 
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  EoDbGroup* Group = ActiveView->SelectGroupAndPrimitive(pt);
+  EoDbGroup* Group = activeView->SelectGroupAndPrimitive(pt);
 
   if (Group != 0) {
     POSITION Position = FindTrappedGroup(Group);
@@ -1688,7 +1688,7 @@ void AeSysDoc::OnToolsPrimitiveDelete() {
     UpdateAllViews(nullptr, lHint, Group);
 
     if (Group->GetCount() > 1) {  // remove primitive from group
-      EoDbPrimitive* Primitive = ActiveView->EngagedPrimitive();
+      EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
       Group->FindAndRemovePrim(Primitive);
       lHint = (Position != 0) ? EoDb::kGroupSafeTrap : EoDb::kGroupSafe;
       // display the group with the primitive removed
@@ -1699,22 +1699,22 @@ void AeSysDoc::OnToolsPrimitiveDelete() {
       AnyLayerRemove(Group);
       RemoveGroupFromAllViews(Group);
 
-      if (RemoveTrappedGroup(Group) != 0) { ActiveView->UpdateStateInformation(AeSysView::TrapCount); }
+      if (RemoveTrappedGroup(Group) != 0) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
     }
     DeletedGroupsAddTail(Group);
     app.AddStringToMessageList(IDS_MSG_PRIM_ADDED_TO_DEL_GROUPS);
   }
 }
 void AeSysDoc::OnPrimModifyAttributes() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  EoGePoint3d pt = ActiveView->GetCursorPosition();
+  EoGePoint3d pt = activeView->GetCursorPosition();
 
-  EoDbGroup* Group = ActiveView->SelectGroupAndPrimitive(pt);
+  EoDbGroup* Group = activeView->SelectGroupAndPrimitive(pt);
 
   if (Group != 0) {
-    ActiveView->EngagedPrimitive()->ModifyState();
-    UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, ActiveView->EngagedPrimitive());
+    activeView->EngagedPrimitive()->ModifyState();
+    UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, activeView->EngagedPrimitive());
   }
 }
 void AeSysDoc::OnSetupSavePoint() {
@@ -1845,36 +1845,43 @@ void AeSysDoc::OnFile() {
   CMenu* FileSubMenu = CMenu::FromHandle(app.GetSubMenu(0));
   FileSubMenu->TrackPopupMenuEx(TPM_LEFTALIGN, Position.x, Position.y, AfxGetMainWnd(), 0);
 }
+
 void AeSysDoc::OnPrimExtractNum() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  EoGePoint3d pt = ActiveView->GetCursorPosition();
+  auto cursorPosition = activeView->GetCursorPosition();
 
-  if (ActiveView->SelectGroupAndPrimitive(pt)) {
-    EoDbPrimitive* Primitive = ActiveView->EngagedPrimitive();
+  if (activeView->SelectGroupAndPrimitive(cursorPosition)) {
+    auto* primitive = activeView->EngagedPrimitive();
 
-    CString Number;
+    CString number;
 
-    if (Primitive->Is(EoDb::kTextPrimitive)) {
-      Number = static_cast<EoDbText*>(Primitive)->Text();
-    } else if (Primitive->Is(EoDb::kDimensionPrimitive)) {
-      Number = static_cast<EoDbDimension*>(Primitive)->Text();
+    if (primitive->Is(EoDb::kTextPrimitive)) {
+      number = static_cast<EoDbText*>(primitive)->Text();
+    } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
+      number = static_cast<EoDbDimension*>(primitive)->Text();
     } else {
       return;
     }
-    double dVal[32];
-    int iTyp;
-    long lDef;
-    int iTokId = 0;
+    double value[32]{};
+    int iTyp{};
+    long lDef{};
+    int iTokId{0};
 
-    lex::Parse(Number);
-    lex::EvalTokenStream(&iTokId, &lDef, &iTyp, (void*)dVal);
+    try {
+      lex::Parse(number);
+      lex::EvalTokenStream(&iTokId, &lDef, &iTyp, value);
 
-    if (iTyp != lex::TOK_LENGTH_OPERAND) { lex::ConvertValTyp(iTyp, lex::TOK_REAL, &lDef, dVal); }
-    WCHAR Message[64];
-    swprintf_s(Message, 64, L"%10.4f ", dVal[0]);
-    wcscat_s(Message, 64, L"was extracted from drawing");
-    app.AddStringToMessageList(Message);
+      if (iTyp != lex::LengthToken) { lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, value); }
+
+      wchar_t Message[64]{};
+      swprintf_s(Message, 64, L"%10.4f ", value[0]);
+      wcscat_s(Message, 64, L"was extracted from drawing");
+      app.AddStringToMessageList(Message);
+    } catch (...) {
+      app.WarningMessageBox(IDS_MSG_INVALID_NUMBER_EXTRACT);
+      return;
+    }
 #if defined(USING_DDE)
     app.SetExtractedNumber(dVal[0]);
     dde::PostAdvise(dde::ExtNumInfo);
@@ -1882,12 +1889,12 @@ void AeSysDoc::OnPrimExtractNum() {
   }
 }
 void AeSysDoc::OnPrimExtractStr() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
-  EoGePoint3d pt = ActiveView->GetCursorPosition();
+  EoGePoint3d pt = activeView->GetCursorPosition();
 
-  if (ActiveView->SelectGroupAndPrimitive(pt)) {
-    EoDbPrimitive* Primitive = ActiveView->EngagedPrimitive();
+  if (activeView->SelectGroupAndPrimitive(pt)) {
+    EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
 
     CString String;
 

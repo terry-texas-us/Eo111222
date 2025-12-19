@@ -78,33 +78,33 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
 
           pstate.SetPen(nullptr, &DeviceContext, 0, static_cast<EoInt16>(LineType->Index()));
 
-          AeSysView* ActiveView = AeSysView::GetActiveView();
+          auto* activeView = AeSysView::GetActiveView();
 
-          ActiveView->ViewportPushActive();
-          ActiveView->PushViewTransform();
+          activeView->ViewportPushActive();
+          activeView->PushViewTransform();
 
-          ActiveView->SetViewportSize(SubItemRectangle.right + SubItemRectangle.left,
+          activeView->SetViewportSize(SubItemRectangle.right + SubItemRectangle.left,
                                       SubItemRectangle.bottom + SubItemRectangle.top);
 
           double UExtent = static_cast<double>(SubItemRectangle.right + SubItemRectangle.left) /
                            static_cast<double>(DeviceContext.GetDeviceCaps(LOGPIXELSX));
           double VExtent = static_cast<double>(SubItemRectangle.bottom + SubItemRectangle.top) /
                            static_cast<double>(DeviceContext.GetDeviceCaps(LOGPIXELSY));
-          ActiveView->ModelViewInitialize();
+          activeView->ModelViewInitialize();
 
-          ActiveView->SetViewWindow(0.0, 0.0, UExtent, VExtent);
-          ActiveView->SetCameraTarget(EoGePoint3d::kOrigin);
-          ActiveView->SetCameraPosition(EoGeVector3d::kZAxis);
+          activeView->SetViewWindow(0.0, 0.0, UExtent, VExtent);
+          activeView->SetCameraTarget(EoGePoint3d::kOrigin);
+          activeView->SetCameraPosition(EoGeVector3d::kZAxis);
           double UMin =
               static_cast<double>(SubItemRectangle.left) / static_cast<double>(DeviceContext.GetDeviceCaps(LOGPIXELSX));
           double UMax = static_cast<double>(SubItemRectangle.right) /
                         static_cast<double>(DeviceContext.GetDeviceCaps(LOGPIXELSX));
 
           EoGeLine Line(EoGePoint3d(UMin, VExtent / 2.0, 0.0), EoGePoint3d(UMax, VExtent / 2.0, 0.0));
-          Line.Display(ActiveView, &DeviceContext);
+          Line.Display(activeView, &DeviceContext);
 
-          ActiveView->PopViewTransform();
-          ActiveView->ViewportPopActive();
+          activeView->PopViewTransform();
+          activeView->ViewportPopActive();
 
           m_LineTypesListControl.GetSubItemRect(Item, Description, LVIR_LABEL, SubItemRectangle);
           CString Description = LineType->Description();

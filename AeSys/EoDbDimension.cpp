@@ -292,7 +292,7 @@ bool EoDbDimension::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGeP
   return true;
 }
 void EoDbDimension::SetDefaultNote() {
-  AeSysView* ActiveView = AeSysView::GetActiveView();
+  auto* activeView = AeSysView::GetActiveView();
 
   m_ReferenceSystem.SetOrigin(m_ln.Midpoint());
   double dAng = 0.;
@@ -308,12 +308,12 @@ void EoDbDimension::SetDefaultNote() {
     EoGeLine(m_ReferenceSystem.Origin(), m_ln.end).ProjPtFrom_xy(0.0, dDis, &ptOrigin);
     m_ReferenceSystem.SetOrigin(ptOrigin);
   }
-  EoGeVector3d vPlnNorm = ActiveView->CameraDirection();
+  EoGeVector3d vPlnNorm = activeView->CameraDirection();
 
   EoGeVector3d vRefXAx;
   EoGeVector3d vRefYAx;
 
-  vRefYAx = ActiveView->ViewUp();
+  vRefYAx = activeView->ViewUp();
   vRefYAx.RotAboutArbAx(vPlnNorm, dAng);
   vRefYAx *= 0.1;
   vRefXAx = vRefYAx;

@@ -33,39 +33,39 @@ void EoDlgViewParameters::DoDataExchange(CDataExchange* dataExchange) {
 // EoDlgViewParameters message handlers
 
 void EoDlgViewParameters::OnBnClickedApply() {
-	AeSysView* ActiveView = AeSysView::GetActiveView();
+	auto* activeView = AeSysView::GetActiveView();
 
 	EoGsViewport Viewport;
-	ActiveView->ModelViewGetViewport(Viewport);
+	activeView->ModelViewGetViewport(Viewport);
 
 	EoGsViewTransform* ModelView = reinterpret_cast<EoGsViewTransform*>(static_cast<uintptr_t>(m_ModelView));
 
-	WCHAR szBuf[32];
+	wchar_t itemText[32]{};
 	EoGePoint3d Position;
-	GetDlgItemTextW(IDC_POSITION_X, (LPWSTR) szBuf, 32);
-	Position.x = app.ParseLength(app.GetUnits(), szBuf);
-	GetDlgItemTextW(IDC_POSITION_Y, (LPWSTR) szBuf, 32);
-	Position.y = app.ParseLength(app.GetUnits(), szBuf);
-	GetDlgItemTextW(IDC_POSITION_Z, (LPWSTR) szBuf, 32);
-	Position.z = app.ParseLength(app.GetUnits(), szBuf);
+	GetDlgItemTextW(IDC_POSITION_X, itemText, 32);
+	Position.x = app.ParseLength(app.GetUnits(), itemText);
+	GetDlgItemTextW(IDC_POSITION_Y, itemText, 32);
+	Position.y = app.ParseLength(app.GetUnits(), itemText);
+	GetDlgItemTextW(IDC_POSITION_Z, itemText, 32);
+	Position.z = app.ParseLength(app.GetUnits(), itemText);
 	ModelView->SetPosition(Position);
 
 	EoGePoint3d Target;
-	GetDlgItemTextW(IDC_TARGET_X, (LPWSTR) szBuf, 32);
-	Target.x = app.ParseLength(app.GetUnits(), szBuf);
-	GetDlgItemTextW(IDC_TARGET_Y, (LPWSTR) szBuf, 32);
-	Target.y = app.ParseLength(app.GetUnits(), szBuf);
-	GetDlgItemTextW(IDC_TARGET_Z, (LPWSTR) szBuf, 32);
-	Target.z = app.ParseLength(app.GetUnits(), szBuf);
+	GetDlgItemTextW(IDC_TARGET_X, itemText, 32);
+	Target.x = app.ParseLength(app.GetUnits(), itemText);
+	GetDlgItemTextW(IDC_TARGET_Y, itemText, 32);
+	Target.y = app.ParseLength(app.GetUnits(), itemText);
+	GetDlgItemTextW(IDC_TARGET_Z, itemText, 32);
+	Target.z = app.ParseLength(app.GetUnits(), itemText);
 	ModelView->SetTarget(Target);
 
-	GetDlgItemTextW(IDC_FRONT_CLIP_DISTANCE, (LPWSTR) szBuf, 32);
-	double NearClipDistance = app.ParseLength(app.GetUnits(), szBuf);
-	GetDlgItemTextW(IDC_BACK_CLIP_DISTANCE, (LPWSTR) szBuf, 32);
-	double FarClipDistance = app.ParseLength(app.GetUnits(), szBuf);
+	GetDlgItemTextW(IDC_FRONT_CLIP_DISTANCE, itemText, 32);
+	double NearClipDistance = app.ParseLength(app.GetUnits(), itemText);
+	GetDlgItemTextW(IDC_BACK_CLIP_DISTANCE, itemText, 32);
+	double FarClipDistance = app.ParseLength(app.GetUnits(), itemText);
 
-	GetDlgItemTextW(IDC_LENS_LENGTH, (LPWSTR) szBuf, 32);
-	double LensLength = app.ParseLength(app.GetUnits(), szBuf);
+	GetDlgItemTextW(IDC_LENS_LENGTH, itemText, 32);
+	double LensLength = app.ParseLength(app.GetUnits(), itemText);
 
 	EoGeVector3d Direction = Position - Target;
 
@@ -89,8 +89,8 @@ void EoDlgViewParameters::OnBnClickedApply() {
 
 	ModelView->BuildTransformMatrix();
 
-	ActiveView->SetViewTransform(*ModelView);
-	ActiveView->InvalidateRect(nullptr, TRUE);
+	activeView->SetViewTransform(*ModelView);
+	activeView->InvalidateRect(nullptr, TRUE);
 
 	GetDlgItem(IDC_APPLY)->EnableWindow(FALSE);
 }

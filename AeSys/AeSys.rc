@@ -3134,6 +3134,8 @@ BEGIN
     IDS_METRIC_UNITS        "Meters\nMillimeters\nCentimeters\nDecimeters\nKilometers"
     IDS_PRIMITIVE_FILTER_LIST 
                             "Arc\nInsert\nLine\nPoint\nText\nPanel\nPolyline"
+    IDS_MSG_INVALID_NUMBER_EXTRACT 
+                            "Malformed numeric literal or expression. Extraction aborted."
 END
 
 STRINGTABLE

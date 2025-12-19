@@ -188,8 +188,8 @@ bool IsTrapHighlighted() { return m_TrapHighlighted; }
 void LoadModeResources(int mode);
 void LoadSimplexStrokeFont(const CString& pathName);
 bool ModeInformationOverView() const { return m_ModeInformationOverView; }
-double ParseLength(LPWSTR lengthAsString);
-double ParseLength(Units units, LPWSTR);
+double ParseLength(wchar_t* lengthAsString);
+double ParseLength(Units units, wchar_t* inputLine);
 COLORREF PenColorsGetHot(EoInt16 nPenColor) { return (ColorPalette[nPenColor]); }
 void LoadPenColorsFromFile(const CString& pathName);
 double PenWidthsGet(EoInt16 nPenColor) { return (dPWids[nPenColor]); }

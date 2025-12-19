@@ -11,9 +11,9 @@
 #include "EoGeReferenceSystem.h"
 #include "PrimState.h"
 
-double DimensionModePickTolerance = 0.05;
+double DimensionModePickTolerance{0.05};
 EoGePoint3d PreviousDimensionCursorPosition;
-EoUInt16 PreviousDimensionCommand = 0;
+EoUInt16 PreviousDimensionCommand{0};
 
 EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
   AeSysDoc* Document = AeSysDoc::GetDoc();

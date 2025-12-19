@@ -13,7 +13,7 @@
 #include "EoDlgBlockInsert.h"
 #include "PrimState.h"
 
-EoUInt16 PreviousDrawCommand = 0;
+EoUInt16 PreviousDrawCommand{0};
 
 void AeSysView::OnDrawModeOptions() { AeSysDoc::GetDoc()->OnSetupOptionsDraw(); }
 
