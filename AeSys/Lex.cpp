@@ -1,8 +1,8 @@
 ﻿#include "stdafx.h"
 
-#include "..//Lex/LexTable.h"
 #include "AeSys.h"
 #include "Lex.h"
+#include "LexTable.h"
 #include "Resource.h"
 #include <algorithm>
 #include <atltrace.h>
