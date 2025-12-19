@@ -191,7 +191,6 @@ BOOL AeSys::InitInstance() {
   SetRegistryBase(L"Settings");
 
   m_Options.Load();
-  lex::Init();
 
   // Initialize all Managers for usage. They are automatically constructed if not yet present
   InitContextMenuManager();

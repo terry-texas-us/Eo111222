@@ -1,8 +1,8 @@
 ﻿#include "stdafx.h"
 
+#include "..//Lex/LexTable.h"
 #include "AeSys.h"
 #include "Lex.h"
-#include "..//Lex/LexTable.h"
 #include "Resource.h"
 #include <algorithm>
 #include <atltrace.h>
@@ -35,18 +35,18 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
 
   int CurrentTokenType = TokType(firstTokenLocation);
   while (CurrentTokenType != -1) {
-    switch (TokenTable[CurrentTokenType].eClass) {
+    switch (TokenPropertiesTable[CurrentTokenType].tokenClass) {
       case Constant:
         typeOfTokens[numberOfTokens] = CurrentTokenType;
         locationOfTokens[numberOfTokens++] = firstTokenLocation;
         break;
 
-      case OpenParen:
+      case OpenParentheses:
         OperatorStack[++TopOfOperatorStack] = CurrentTokenType;  // Push to operator stack
         NumberOfOpenParentheses++;
         break;
 
-      case CloseParen:
+      case CloseParentheses:
         if (NumberOfOpenParentheses == 0) { break; }
 
         while (OperatorStack[TopOfOperatorStack] != TOK_LPAREN) {  // Move operator to token stack
@@ -56,16 +56,17 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
         NumberOfOpenParentheses--;  // One less open parentheses
         break;
 
-      case BinaryArithOp:
+      case BinaryArithmeticOperator:
       case Other:
         if (CurrentTokenType == TOK_BINARY_PLUS || CurrentTokenType == TOK_BINARY_MINUS) {
-          ETokClass eClassPrv = TokenTable[PreviousTokenType].eClass;
-          if (eClassPrv != Constant && eClassPrv != Identifier && eClassPrv != CloseParen) {
+          TokenClass eClassPrv = TokenPropertiesTable[PreviousTokenType].tokenClass;
+          if (eClassPrv != Constant && eClassPrv != Identifier && eClassPrv != CloseParentheses) {
             CurrentTokenType = (CurrentTokenType == TOK_BINARY_PLUS) ? TOK_UNARY_PLUS : TOK_UNARY_MINUS;
           }
         }
         // Pop higher priority operators from stack
-        while (TokenTable[OperatorStack[TopOfOperatorStack]].iInStkPrio >= TokenTable[CurrentTokenType].iInComPrio) {
+        while (TokenPropertiesTable[OperatorStack[TopOfOperatorStack]].inStackPriority >=
+               TokenPropertiesTable[CurrentTokenType].inComingPriority) {
           typeOfTokens[numberOfTokens++] = OperatorStack[TopOfOperatorStack--];
         }
         // Push new operator onto stack
@@ -74,9 +75,9 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
 
         // TODO .. classes of tokens which might be implemented
       case Identifier:
-      case BinaryRelatOp:
-      case BinaryLogicOp:
-      case UnaryLogicOp:
+      case BinaryRelationalOperator:
+      case BinaryLogicOperator:
+      case UnaryLogicOperator:
       case AssignOp:
 
       default:
@@ -269,10 +270,10 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
   while (iTokStkId < numberOfTokens) {
     int tokenType = iExprTokTyp[iTokStkId];
     int iTokLoc = iExprTokLoc[iTokStkId];
-    if (TokenTable[tokenType].eClass == Identifier) {
+    if (TokenPropertiesTable[tokenType].tokenClass == Identifier) {
       // symbol table stuff if desired
       throw L"Identifier token class not implemented";
-    } else if (TokenTable[tokenType].eClass == Constant) {
+    } else if (TokenPropertiesTable[tokenType].tokenClass == Constant) {
       iTyp1 = tokenType;
       lDef1 = lex::lValues[lex::valueLocation[iTokLoc]];
       memcpy(operandBuffer, &lex::lValues[lex::valueLocation[iTokLoc] + 1], static_cast<size_t>(HIWORD(lDef1) * 4));
@@ -284,7 +285,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
       iLen1 = HIWORD(lDef1);
       memcpy(operandBuffer, &lOpStk[operandStackTop--][0], static_cast<size_t>(iLen1 * 4));
 
-      if (TokenTable[tokenType].eClass == Other) {  // intrinsics and oddball unary minus/plus
+      if (TokenPropertiesTable[tokenType].tokenClass == Other) {  // intrinsics and oddball unary minus/plus
         if (iTyp1 == lex::StringToken) {
           iDim1 = LOWORD(lDef1);
           wcscpy_s(szTok, 256, reinterpret_cast<wchar_t*>(operandBuffer));
@@ -304,7 +305,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
         } else {
           UnaryOp(tokenType, &iTyp1, &lDef1, dOp1);
         }
-      } else if (TokenTable[tokenType].eClass == BinaryArithOp) {  // Binary arithmetic operator
+      } else if (TokenPropertiesTable[tokenType].tokenClass == BinaryArithmeticOperator) {  // Binary arithmetic operator
         if (operandStackTop == 0) { throw L"Binary Arithmetic: Only one operand."; }
         iTyp2 = operandStack[operandStackTop];  // Pop second operand from operand stack
         lDef2 = lOpStkDef[operandStackTop];
@@ -400,13 +401,13 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             dOp1[0] = pow(dOp2[0], dOp1[0]);
           }
         }
-      } else if (TokenTable[tokenType].eClass == BinaryRelatOp) {
+      } else if (TokenPropertiesTable[tokenType].tokenClass == BinaryRelationalOperator) {
         // if support for binary relational operators desired (== != > >= < <=)
         throw L"Binary relational operators not implemented";
-      } else if (TokenTable[tokenType].eClass == BinaryLogicOp) {
+      } else if (TokenPropertiesTable[tokenType].tokenClass == BinaryLogicOperator) {
         // if support for binary logical operators desired (& |)
         throw L"Binary logical operators not implemented";
-      } else if (TokenTable[tokenType].eClass == UnaryLogicOp) {
+      } else if (TokenPropertiesTable[tokenType].tokenClass == UnaryLogicOperator) {
         // if support for unary logical operator desired (!)
         throw L"Unary logical operator not implemented";
       }
@@ -419,11 +420,6 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
   }
   *operandType = iTyp1;
   *operandDefinition = lDef1;
-}
-
-void lex::Init() {
-  numberOfTokensInStream = 0;
-  numberOfValues = 0;
 }
 
 void lex::Parse(const wchar_t* inputLine) {

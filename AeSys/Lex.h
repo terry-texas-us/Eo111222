@@ -1,36 +1,33 @@
 ﻿#pragma once
 
-enum ETokClass {
+enum TokenClass {
   Other,
   Constant,
   Identifier,
-  BinaryArithOp,
-  BinaryRelatOp,
-  BinaryLogicOp,
-  UnaryLogicOp,
+  BinaryArithmeticOperator,
+  BinaryRelationalOperator,
+  BinaryLogicOperator,
+  UnaryLogicOperator,
   AssignOp,
-  OpenParen,
-  CloseParen
+  OpenParentheses,
+  CloseParentheses
 };
+
 struct ColumnDefinition {
   long dataDefinition;
   long dataType;
 };
-struct tokent {
-  int iInComPrio;
-  int iInStkPrio;
-  ETokClass eClass;
+
+struct TokenProperties {
+  int inComingPriority;
+  int inStackPriority;
+  TokenClass tokenClass;
 };
 
 namespace lex {
 
 constexpr int MaxTokens = 128;
 constexpr int MaxValues = 256;
-
-const int TOK_UNARY_OPERATOR = 1;
-const int TOK_BINARY_OPERATOR = 2;
-const int TOK_COMPARISON_OPERATOR = 4;
-const int TOK_LOGICAL_OPERATOR = 8;
 
 const int TOK_ABS = 1;
 const int TOK_ACOS = 2;
@@ -72,52 +69,53 @@ const int TOK_NOT = 39;
 const int TOK_LPAREN = 40;
 const int TOK_RPAREN = 41;
 
-static tokent TokenTable[] = {
-    {0, 0, Other},            // unused
-    {110, 85, Other},         // abs
-    {110, 85, Other},         // acos
-    {110, 85, Other},         // asin
-    {110, 85, Other},         // atan
-    {110, 85, Other},         // string
-    {110, 85, Other},         // cos
-    {110, 85, Other},         // exp
-    {110, 85, Other},         // int
-    {110, 85, Other},         // ln
-    {110, 85, Other},         // log
-    {110, 85, Other},         // sin
-    {110, 85, Other},         // sqrt
-    {110, 85, Other},         // tan
-    {110, 85, Other},         // real
-    {110, 85, Other},         // unary+
-    {110, 85, Other},         // unary-
-    {0, 0, Other},            // unused
-    {0, 0, Other},            // unused
-    {0, 0, Other},            // unused
-    {0, 0, Constant},         // integer
-    {0, 0, Constant},         // real
-    {0, 0, Constant},         // length
-    {0, 0, Constant},         // area
-    {0, 0, Constant},         // string
-    {0, 0, Identifier},       // identifier
-    {80, 79, BinaryArithOp},  // **
-    {70, 71, BinaryArithOp},  // *
-    {70, 71, BinaryArithOp},  // /
-    {60, 61, BinaryArithOp},  // +
-    {60, 61, BinaryArithOp},  // -
-    {40, 41, BinaryRelatOp},  // ==
-    {40, 41, BinaryRelatOp},  // !=
-    {40, 41, BinaryRelatOp},  // >
-    {40, 41, BinaryRelatOp},  // >=
-    {40, 41, BinaryRelatOp},  // <
-    {40, 41, BinaryRelatOp},  // <=
-    {20, 21, BinaryLogicOp},  // &
-    {10, 11, BinaryLogicOp},  // |
-    {30, 31, UnaryLogicOp},   // !
-    {110, 1, OpenParen},      // (
-    {0, 0, CloseParen}        // )
+//* Static array of TokenProperties structures that defines a mapping of various tokens, their precedence, and types used in a lexical analysis context, with a total of 42 entries. */
+static TokenProperties TokenPropertiesTable[] = {
+    {0, 0, Other},                       // unused
+    {110, 85, Other},                    // abs
+    {110, 85, Other},                    // acos
+    {110, 85, Other},                    // asin
+    {110, 85, Other},                    // atan
+    {110, 85, Other},                    // string
+    {110, 85, Other},                    // cos
+    {110, 85, Other},                    // exp
+    {110, 85, Other},                    // int
+    {110, 85, Other},                    // ln
+    {110, 85, Other},                    // log
+    {110, 85, Other},                    // sin
+    {110, 85, Other},                    // sqrt
+    {110, 85, Other},                    // tan
+    {110, 85, Other},                    // real
+    {110, 85, Other},                    // unary+
+    {110, 85, Other},                    // unary-
+    {0, 0, Other},                       // unused
+    {0, 0, Other},                       // unused
+    {0, 0, Other},                       // unused
+    {0, 0, Constant},                    // integer
+    {0, 0, Constant},                    // real
+    {0, 0, Constant},                    // length
+    {0, 0, Constant},                    // area
+    {0, 0, Constant},                    // string
+    {0, 0, Identifier},                  // identifier
+    {80, 79, BinaryArithmeticOperator},  // **
+    {70, 71, BinaryArithmeticOperator},  // *
+    {70, 71, BinaryArithmeticOperator},  // /
+    {60, 61, BinaryArithmeticOperator},  // +
+    {60, 61, BinaryArithmeticOperator},  // -
+    {40, 41, BinaryRelationalOperator},  // ==
+    {40, 41, BinaryRelationalOperator},  // !=
+    {40, 41, BinaryRelationalOperator},  // >
+    {40, 41, BinaryRelationalOperator},  // >=
+    {40, 41, BinaryRelationalOperator},  // <
+    {40, 41, BinaryRelationalOperator},  // <=
+    {20, 21, BinaryLogicOperator},       // &
+    {10, 11, BinaryLogicOperator},       // |
+    {30, 31, UnaryLogicOperator},        // !
+    {110, 1, OpenParentheses},           // (
+    {0, 0, CloseParentheses}             // )
 };
 
-/** @brief Converts a stream of tokens into a postfix stack for evaluation.
+/** @brief Processes a sequence of tokens starting from a specified location, categorizing them into types and handling operator precedence, while managing parentheses and throwing errors for unbalanced expressions or syntax issues.
 * @param firstTokenLocation (in)  location of first token in stream to consider. (out) location of first token not part of expression
 * @param numberOfTokens (out) number of tokens on stack
 * @param typeOfTokens (out) type of tokens on stack
@@ -151,7 +149,7 @@ void ConvertValToString(void* valueBuffer, ColumnDefinition* columnDefinition, w
  */
 void ConvertValTyp(int currentType, int requiredType, long* valueDefinition, void* valueBuffer);
 
-/** @brief Evaluates a stream of tokens representing an expression.
+/** @brief Processes a stream of tokens, evaluating expressions and performing operations based on their types, while managing an operand stack and handling various token classes such as identifiers, constants, and operators.
  *
  * @param aiTokId Array of token IDs representing the expression.
  * @param operandDefinition Pointer to store the definition (dimension and length) of the result.
@@ -160,14 +158,10 @@ void ConvertValTyp(int currentType, int requiredType, long* valueDefinition, voi
  */
 void EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandType, void* operandBuffer);
 
-void Init();
-
-/** @brief Parses a line buffer into tokens for evaluation.
- *
- * @param lineBuffer The line buffer to parse.
+/** @brief Processes a wide-character input line to tokenize it, categorizing each token and storing relevant values in predefined arrays while managing the number of tokens and values encountered.
+ * @param inputLine The wide-character input line to parse.
  */
 void Parse(const wchar_t* inputLine);
-
 
 void ParseStringOperand(wchar_t* token);
 
@@ -196,14 +190,12 @@ wchar_t* ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBuf);
  */
 int Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition);
 
-
 /** @brief Skips whitespace characters in the input string.
  *
  * @param inputLine The input string to process.
  * @return A pointer to the first non-whitespace character in the string.
  */
 wchar_t* SkipWhiteSpace(wchar_t* inputLine);
-
 
 int TokType(int tokenType);
 
