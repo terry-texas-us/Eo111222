@@ -1689,6 +1689,9 @@
     <None Include="..\Markdowns\Peg &amp; Tra File Formats.md">
       <Filter>Markdowns</Filter>
     </None>
+    <None Include="lex_regexp.dat">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">
@@ -1991,6 +1994,9 @@
     </ClInclude>
     <ClInclude Include="DdeSys.h">
       <Filter>Header Files\DDE</Filter>
+    </ClInclude>
+    <ClInclude Include="LexTable.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

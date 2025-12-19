@@ -213,6 +213,7 @@
     <None Include="..\Markdowns\Peg &amp; Tra File Formats.md" />
     <None Include=".clang-format" />
     <None Include=".clang-tidy" />
+    <None Include="lex_regexp.dat" />
     <None Include="res\AeSys.ico" />
     <None Include="res\AeSys.rc2" />
     <None Include="res\AeSys_Gold.ico" />
@@ -1506,6 +1507,7 @@
     <ClInclude Include="EoDlgLayerPropertiesManager.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="EoGeLine.h" />
+    <ClInclude Include="LexTable.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="EoGeMatrix.h" />
     <ClInclude Include="EoGsModelTransform.h" />

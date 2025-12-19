@@ -57,7 +57,7 @@ namespace Lex
 			int [] startstate = new int[256];
 			nfaStruct[] nfa = new nfaStruct[MAXNFA + 1];
 	
-			StreamReader srReadLine = new StreamReader("D:\\Projects\\Eo\\Lex\\lex_regexp.dat", System.Text.Encoding.ASCII);
+			StreamReader srReadLine = new StreamReader("D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_regexp.dat", System.Text.Encoding.ASCII);
 			srReadLine.BaseStream.Seek(0, SeekOrigin.Begin);
 			
 			Console.WriteLine("Constructing NFA...");
@@ -275,12 +275,8 @@ namespace Lex
 				case '0': c = '\0'; lp++; break;
 				case 'f': c = (char) 12; lp++; break;
 				case '\\': c = (char) 26; lp++; break;
-				case 'd':
-					int iVal = int.Parse(line.Substring(lp + 1, 3));
-					c = (char) iVal; lp += 4;					
-					break;
-				case 'h':
-					iVal = int.Parse(line.Substring(lp + 1, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+				case 'x':
+					int iVal = int.Parse(line.Substring(lp + 1, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
 					c = (char) iVal; lp += 3;					
 					break;
                 		
@@ -324,7 +320,7 @@ namespace Lex
 
 		public static void lexdump(int nstates, int nentries)
 		{
-			FileStream fs = new FileStream("D:\\Projects\\Eo\\Lex\\LexTable_.h", FileMode.Create, FileAccess.Write, FileShare.None);
+			FileStream fs = new FileStream("D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\LexTable.h", FileMode.Create, FileAccess.Write, FileShare.None);
  
 			StreamWriter swLex = new StreamWriter(fs);
 			
