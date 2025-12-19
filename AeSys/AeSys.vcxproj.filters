@@ -1677,20 +1677,20 @@
     </None>
     <None Include=".clang-format" />
     <None Include=".clang-tidy" />
-    <None Include="..\Markdowns\Dde Description and Few Uses.md">
-      <Filter>Markdowns</Filter>
-    </None>
-    <None Include="..\Markdowns\Job File Format.md">
-      <Filter>Markdowns</Filter>
-    </None>
-    <None Include="..\Markdowns\Micro Modernization Steps.md">
-      <Filter>Markdowns</Filter>
-    </None>
-    <None Include="..\Markdowns\Peg &amp; Tra File Formats.md">
-      <Filter>Markdowns</Filter>
-    </None>
     <None Include="lex_regexp.dat">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Markdowns\Dde Description and Few Uses.md">
+      <Filter>Markdowns</Filter>
+    </None>
+    <None Include="Markdowns\Job File Format.md">
+      <Filter>Markdowns</Filter>
+    </None>
+    <None Include="Markdowns\Micro Modernization Steps.md">
+      <Filter>Markdowns</Filter>
+    </None>
+    <None Include="Markdowns\Peg &amp; Tra File Formats.md">
+      <Filter>Markdowns</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

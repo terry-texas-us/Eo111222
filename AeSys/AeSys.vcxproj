@@ -207,13 +207,13 @@
     <ClCompile Include="WndProcPreview.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Markdowns\Dde Description and Few Uses.md" />
-    <None Include="..\Markdowns\Job File Format.md" />
-    <None Include="..\Markdowns\Micro Modernization Steps.md" />
-    <None Include="..\Markdowns\Peg &amp; Tra File Formats.md" />
     <None Include=".clang-format" />
     <None Include=".clang-tidy" />
     <None Include="lex_regexp.dat" />
+    <None Include="Markdowns\Dde Description and Few Uses.md" />
+    <None Include="Markdowns\Job File Format.md" />
+    <None Include="Markdowns\Micro Modernization Steps.md" />
+    <None Include="Markdowns\Peg &amp; Tra File Formats.md" />
     <None Include="res\AeSys.ico" />
     <None Include="res\AeSys.rc2" />
     <None Include="res\AeSys_Gold.ico" />
