@@ -14,7 +14,7 @@ class EoDbLineTypeTable {
 
   int FillComboBox(CComboBox& comboBox);
   int FillListControl(CListCtrl& listControl);
-  POSITION GetStartPosition() { return m_MapLineTypes.GetStartPosition(); }
+  auto GetStartPosition() { return m_MapLineTypes.GetStartPosition(); }
   void GetNextAssoc(POSITION& position, CString& name, EoDbLineType*& lineType) {
     m_MapLineTypes.GetNextAssoc(position, name, lineType);
   }

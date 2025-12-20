@@ -175,7 +175,7 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
   view->InvokeNewModelTransform();
   view->SetLocalModelTransform(tm);
 
-  POSITION Position = Block->GetHeadPosition();
+  auto Position = Block->GetHeadPosition();
   while (Position != 0) {
     EoDbPrimitive* Primitive = Block->GetNext(Position);
     ptCtrl = Primitive->SelectAtControlPoint(view, point);
@@ -217,7 +217,7 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
   view->InvokeNewModelTransform();
   view->SetLocalModelTransform(tm);
 
-  POSITION Position = Block->GetHeadPosition();
+  auto Position = Block->GetHeadPosition();
   while (Position != 0) {
     if ((Block->GetNext(Position))->SelectUsingPoint(view, point, ptProj)) {
       bResult = true;

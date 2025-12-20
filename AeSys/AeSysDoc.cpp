@@ -836,7 +836,7 @@ int AeSysDoc::RemoveEmptyNotesAndDelete() {
   CString Key;
   EoDbBlock* Block;
 
-  POSITION Position = m_BlocksTable.GetStartPosition();
+  auto Position = m_BlocksTable.GetStartPosition();
   while (Position != nullptr) { m_BlocksTable.GetNextAssoc(Position, Key, Block); }
   return (iCount);
 }
@@ -853,7 +853,7 @@ int AeSysDoc::RemoveEmptyGroups() {
   CString Key;
   EoDbBlock* Block;
 
-  POSITION Position = m_BlocksTable.GetStartPosition();
+  auto Position = m_BlocksTable.GetStartPosition();
   while (Position != nullptr) { m_BlocksTable.GetNextAssoc(Position, Key, Block); }
   return (iCount);
 }
@@ -871,7 +871,7 @@ void AeSysDoc::AddWorkLayerGroups(EoDbGroupList* groups) {
   SetModifiedFlag(TRUE);
 }
 EoDbGroup* AeSysDoc::GetLastWorkLayerGroup() const {
-  POSITION Position = m_WorkLayer->GetTailPosition();
+  auto Position = m_WorkLayer->GetTailPosition();
   return ((EoDbGroup*)(Position != 0 ? m_WorkLayer->GetPrev(Position) : 0));
 }
 void AeSysDoc::InitializeWorkLayer() {
@@ -1490,10 +1490,10 @@ void AeSysDoc::OnTrapCommandsInvert() {
   for (int i = 0; i < iTblSize; i++) {
     EoDbLayer* Layer = GetLayerTableLayerAt(i);
     if (Layer->IsWork() || Layer->IsActive()) {
-      POSITION LayerPosition = Layer->GetHeadPosition();
+      auto LayerPosition = Layer->GetHeadPosition();
       while (LayerPosition != 0) {
         EoDbGroup* Group = Layer->GetNext(LayerPosition);
-        POSITION GroupPosition = FindTrappedGroup(Group);
+        auto GroupPosition = FindTrappedGroup(Group);
         if (GroupPosition != 0) {
           m_TrappedGroupList.RemoveAt(GroupPosition);
         } else {
@@ -1528,7 +1528,7 @@ void AeSysDoc::OnTrapCommandsBlock() {
 
   Block = new EoDbBlock;
 
-  POSITION Position = GetFirstTrappedGroupPosition();
+  auto Position = GetFirstTrappedGroupPosition();
   while (Position != 0) {
     EoDbGroup* Group = GetNextTrappedGroup(Position);
 
@@ -1681,7 +1681,7 @@ void AeSysDoc::OnToolsPrimitiveDelete() {
   EoDbGroup* Group = activeView->SelectGroupAndPrimitive(pt);
 
   if (Group != 0) {
-    POSITION Position = FindTrappedGroup(Group);
+    auto Position = FindTrappedGroup(Group);
 
     LPARAM lHint = (Position != 0) ? EoDb::kGroupEraseSafeTrap : EoDb::kGroupEraseSafe;
     // erase entire group even if group has more than one primitive
@@ -1923,35 +1923,35 @@ AeSysDoc* AeSysDoc::GetDoc() {
   return (Child == nullptr) ? nullptr : (AeSysDoc*)Child->GetActiveDocument();
 }
 void AeSysDoc::AddGroupToAllViews(EoDbGroup* group) {
-  POSITION ViewPosition = GetFirstViewPosition();
+  auto ViewPosition = GetFirstViewPosition();
   while (ViewPosition != 0) {
     AeSysView* View = (AeSysView*)GetNextView(ViewPosition);
     View->AddGroup(group);
   }
 }
 void AeSysDoc::AddGroupsToAllViews(EoDbGroupList* groups) {
-  POSITION ViewPosition = GetFirstViewPosition();
+  auto ViewPosition = GetFirstViewPosition();
   while (ViewPosition != 0) {
     AeSysView* View = (AeSysView*)GetNextView(ViewPosition);
     View->AddGroups(groups);
   }
 }
 void AeSysDoc::RemoveAllGroupsFromAllViews() {
-  POSITION ViewPosition = GetFirstViewPosition();
+  auto ViewPosition = GetFirstViewPosition();
   while (ViewPosition != 0) {
     AeSysView* View = (AeSysView*)GetNextView(ViewPosition);
     View->RemoveAllGroups();
   }
 }
 void AeSysDoc::RemoveGroupFromAllViews(EoDbGroup* group) {
-  POSITION ViewPosition = GetFirstViewPosition();
+  auto ViewPosition = GetFirstViewPosition();
   while (ViewPosition != 0) {
     AeSysView* View = (AeSysView*)GetNextView(ViewPosition);
     View->RemoveGroup(group);
   }
 }
 void AeSysDoc::ResetAllViews() {
-  POSITION ViewPosition = GetFirstViewPosition();
+  auto ViewPosition = GetFirstViewPosition();
   while (ViewPosition != 0) {
     AeSysView* View = (AeSysView*)GetNextView(ViewPosition);
     View->ResetView();
@@ -1976,10 +1976,10 @@ void AeSysDoc::OnHelpKey() {
 }
 
 void AeSysDoc::DeleteNodalResources() {
-  POSITION UniquePointPosition = GetFirstUniquePointPosition();
+  auto UniquePointPosition = GetFirstUniquePointPosition();
   while (UniquePointPosition != 0) { delete GetNextUniquePoint(UniquePointPosition); }
   RemoveAllUniquePoints();
-  POSITION MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
+  auto MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
   while (MaskedPrimitivePosition != 0) { delete GetNextMaskedPrimitive(MaskedPrimitivePosition); }
   RemoveAllMaskedPrimitives();
   RemoveAllNodalGroups();
@@ -2007,7 +2007,7 @@ void AeSysDoc::UpdateNodalList(EoDbGroup* group, EoDbPrimitive* primitive, DWORD
 }
 
 int AeSysDoc::AddUniquePoint(const EoGePoint3d& point) {
-  POSITION UniquePointPosition = GetFirstUniquePointPosition();
+  auto UniquePointPosition = GetFirstUniquePointPosition();
   while (UniquePointPosition != 0) {
     EoGeUniquePoint* UniquePoint = GetNextUniquePoint(UniquePointPosition);
     if (point == UniquePoint->m_Point) {
@@ -2020,7 +2020,7 @@ int AeSysDoc::AddUniquePoint(const EoGePoint3d& point) {
 }
 void AeSysDoc::DisplayUniquePoints() {
   EoDbGroup Group;
-  POSITION UniquePointPosition = GetFirstUniquePointPosition();
+  auto UniquePointPosition = GetFirstUniquePointPosition();
   while (UniquePointPosition != 0) {
     EoGeUniquePoint* UniquePoint = GetNextUniquePoint(UniquePointPosition);
     Group.AddTail(new EoDbPoint(252, 8, UniquePoint->m_Point));
@@ -2031,9 +2031,9 @@ void AeSysDoc::DisplayUniquePoints() {
 int AeSysDoc::RemoveUniquePoint(const EoGePoint3d& point) {
   int References = 0;
 
-  POSITION UniquePointPosition = GetFirstUniquePointPosition();
+  auto UniquePointPosition = GetFirstUniquePointPosition();
   while (UniquePointPosition != 0) {
-    POSITION Position = UniquePointPosition;
+    auto Position = UniquePointPosition;
     EoGeUniquePoint* UniquePoint = GetNextUniquePoint(UniquePointPosition);
     if (point == UniquePoint->m_Point) {
       References = --(UniquePoint->m_References);
@@ -2050,9 +2050,9 @@ int AeSysDoc::RemoveUniquePoint(const EoGePoint3d& point) {
 void AeSysDoc::AddPrimitiveBit(EoDbPrimitive* primitive, int bit) {
   EoDbMaskedPrimitive* MaskedPrimitive = 0;
 
-  POSITION MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
+  auto MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
   while (MaskedPrimitivePosition != 0) {
-    POSITION posCur = MaskedPrimitivePosition;
+    auto posCur = MaskedPrimitivePosition;
     MaskedPrimitive = GetNextMaskedPrimitive(MaskedPrimitivePosition);
     if (MaskedPrimitive->GetPrimitive() == primitive) {
       MaskedPrimitivePosition = posCur;
@@ -2068,9 +2068,9 @@ void AeSysDoc::AddPrimitiveBit(EoDbPrimitive* primitive, int bit) {
 void AeSysDoc::RemovePrimitiveBit(EoDbPrimitive* primitive, int bit) {
   EoDbMaskedPrimitive* MaskedPrimitive = 0;
 
-  POSITION MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
+  auto MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
   while (MaskedPrimitivePosition != 0) {
-    POSITION posCur = MaskedPrimitivePosition;
+    auto posCur = MaskedPrimitivePosition;
     MaskedPrimitive = GetNextMaskedPrimitive(MaskedPrimitivePosition);
     if (MaskedPrimitive->GetPrimitive() == primitive) {
       MaskedPrimitivePosition = posCur;
@@ -2082,9 +2082,9 @@ void AeSysDoc::RemovePrimitiveBit(EoDbPrimitive* primitive, int bit) {
 DWORD AeSysDoc::GetPrimitiveMask(EoDbPrimitive* primitive) {
   EoDbMaskedPrimitive* MaskedPrimitive = 0;
 
-  POSITION MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
+  auto MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
   while (MaskedPrimitivePosition != 0) {
-    POSITION posCur = MaskedPrimitivePosition;
+    auto posCur = MaskedPrimitivePosition;
     MaskedPrimitive = GetNextMaskedPrimitive(MaskedPrimitivePosition);
     if (MaskedPrimitive->GetPrimitive() == primitive) {
       MaskedPrimitivePosition = posCur;
@@ -2114,7 +2114,7 @@ void AeSysDoc::ConvertLinetypesTable() {
   CString Name;
   EoDbLineType* LineType;
 
-  POSITION Position = m_LineTypeTable.GetStartPosition();
+  auto Position = m_LineTypeTable.GetStartPosition();
   while (Position) {
     m_LineTypeTable.GetNextAssoc(Position, Name, LineType);
     ConvertLinetypesTableRecord(LineType);
@@ -2189,7 +2189,7 @@ void AeSysDoc::ConvertBlockTable() {
   CString Name;
   EoDbBlock* PegBlock;
 
-  POSITION position = GetFirstBlockPosition();
+  auto position = GetFirstBlockPosition();
   while (position != 0) {
     GetNextBlock(position, Name, PegBlock);
     if (Blocks->getAt(OdString(Name)).isNull()) {
@@ -2205,7 +2205,7 @@ void AeSysDoc::ConvertGroupsInBlocks() {
   CString Key;
   EoDbBlock* Block;
 
-  POSITION position = GetFirstBlockPosition();
+  auto position = GetFirstBlockPosition();
   while (position != 0) {
     GetNextBlock(position, Key, Block);
 
@@ -2227,7 +2227,7 @@ void AeSysDoc::ConvertGroupsInLayers() {
     OdDbObjectId LayerRecord = Layers->getAt((LPCWSTR)Layer->Name());
     m_DatabasePtr->setCLAYER(LayerRecord);
 
-    POSITION position = Layer->GetHeadPosition();
+    auto position = Layer->GetHeadPosition();
     while (position != 0) {
       EoDbGroup* Group = Layer->GetNext(position);
       ConvertGroup(Group, ModelSpace);
@@ -2236,7 +2236,7 @@ void AeSysDoc::ConvertGroupsInLayers() {
   m_DatabasePtr->setCLAYER(m_DatabasePtr->getLayerZeroId());
 }
 void AeSysDoc::ConvertGroup(EoDbGroup* group, const OdDbObjectId& modelSpace) {
-  POSITION position = group->GetHeadPosition();
+  auto position = group->GetHeadPosition();
   while (position != 0) {
     EoDbPrimitive* Primitive = group->GetNext(position);
     /* OdDbEntity* Entity = */ Primitive->Convert(modelSpace);

@@ -38,7 +38,7 @@ BOOL EoDlgSetupLineType::OnInitDialog() {
   return TRUE;
 }
 void EoDlgSetupLineType::OnOK() {
-  POSITION Position = m_LineTypesListControl.GetFirstSelectedItemPosition();
+  auto Position = m_LineTypesListControl.GetFirstSelectedItemPosition();
   if (Position != nullptr) {
     int Item = m_LineTypesListControl.GetNextSelectedItem(Position);
     m_LineType = (EoDbLineType*)m_LineTypesListControl.GetItemData(Item);

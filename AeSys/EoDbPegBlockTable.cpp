@@ -11,7 +11,7 @@ int AeSysDoc::GetBlockReferenceCount(const CString& name) {
   CString Key;
   EoDbBlock* Block;
 
-  POSITION Position = m_BlocksTable.GetStartPosition();
+  auto Position = m_BlocksTable.GetStartPosition();
   while (Position != nullptr) {
     m_BlocksTable.GetNextAssoc(Position, Key, Block);
     Count += Block->GetBlockRefCount(name);
@@ -27,7 +27,7 @@ void AeSysDoc::RemoveAllBlocks() {
   CString Name;
   EoDbBlock* Block;
 
-  POSITION BlockPosition = m_BlocksTable.GetStartPosition();
+  auto BlockPosition = m_BlocksTable.GetStartPosition();
   while (BlockPosition != nullptr) {
     m_BlocksTable.GetNextAssoc(BlockPosition, Name, Block);
     Block->DeletePrimitivesAndRemoveAll();
@@ -39,7 +39,7 @@ void AeSysDoc::RemoveUnusedBlocks() {
   CString Name;
   EoDbBlock* Block;
 
-  POSITION BlockPosition = m_BlocksTable.GetStartPosition();
+  auto BlockPosition = m_BlocksTable.GetStartPosition();
   while (BlockPosition != nullptr) {
     m_BlocksTable.GetNextAssoc(BlockPosition, Name, Block);
     if (GetBlockReferenceCount(Name) == 0) {

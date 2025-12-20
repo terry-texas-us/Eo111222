@@ -53,7 +53,7 @@ void EoDbTracingFile::WriteLayer(CFile& file, EoDbLayer* layer) {
 
   EoDb::Write(file, EoUInt16(layer->GetCount()));
 
-  POSITION position = layer->GetHeadPosition();
+  auto position = layer->GetHeadPosition();
   while (position != 0) {
     EoDbGroup* Group = layer->GetNext(position);
     Group->Write(file);

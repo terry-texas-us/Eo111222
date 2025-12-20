@@ -13,10 +13,10 @@ class EoDbGroupList : public CObList {
   ~EoDbGroupList() override {}
 
  public:  // Base class wrappers
-  POSITION AddHead(EoDbGroup* group) { return (CObList::AddHead((CObject*)group)); }
-  POSITION AddTail(EoDbGroup* group) { return (CObList::AddTail((CObject*)group)); }
+  auto AddHead(EoDbGroup* group) { return (CObList::AddHead((CObject*)group)); }
+  auto AddTail(EoDbGroup* group) { return (CObList::AddTail((CObject*)group)); }
   void AddTail(EoDbGroupList* groupList) { CObList::AddTail((CObList*)groupList); }
-  POSITION Find(EoDbGroup* group) { return (CObList::Find((CObject*)group)); }
+  auto Find(EoDbGroup* group) { return (CObList::Find((CObject*)group)); }
   EoDbGroup* GetNext(POSITION& position) { return (EoDbGroup*)CObList::GetNext(position); }
   EoDbGroup* GetPrev(POSITION& position) { return (EoDbGroup*)CObList::GetPrev(position); }
   EoDbGroup* RemoveHead() { return (EoDbGroup*)CObList::RemoveHead(); }

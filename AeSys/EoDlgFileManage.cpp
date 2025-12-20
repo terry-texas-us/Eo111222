@@ -124,7 +124,7 @@ BOOL EoDlgFileManage::OnInitDialog() {
   CString BlockName;
   EoDbBlock* Block;
 
-  POSITION Position = m_Document->GetFirstBlockPosition();
+  auto Position = m_Document->GetFirstBlockPosition();
   while (Position != nullptr) {
     m_Document->GetNextBlock(Position, BlockName, Block);
     if (!Block->IsAnonymous()) {
@@ -142,7 +142,7 @@ BOOL EoDlgFileManage::OnInitDialog() {
   return TRUE;
 }
 void EoDlgFileManage::OnBnClickedLayerRename() {
-  POSITION Position = m_LayersListControl.GetFirstSelectedItemPosition();
+  auto Position = m_LayersListControl.GetFirstSelectedItemPosition();
   if (Position != nullptr) {
     int Item = m_LayersListControl.GetNextSelectedItem(Position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
@@ -170,7 +170,7 @@ void EoDlgFileManage::OnBnClickedLayerRename() {
   }
 }
 void EoDlgFileManage::OnBnClickedLayerMelt() {
-  POSITION Position = m_LayersListControl.GetFirstSelectedItemPosition();
+  auto Position = m_LayersListControl.GetFirstSelectedItemPosition();
   if (Position != nullptr) {
     int Item = m_LayersListControl.GetNextSelectedItem(Position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
@@ -345,7 +345,7 @@ void EoDlgFileManage::OnLbnSelchangeTracingList() {
   }
 }
 void EoDlgFileManage::OnBnClickedMfcbuttonWork() {
-  POSITION Position = m_LayersListControl.GetFirstSelectedItemPosition();
+  auto Position = m_LayersListControl.GetFirstSelectedItemPosition();
   if (Position != nullptr) {
     int Item = m_LayersListControl.GetNextSelectedItem(Position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
@@ -378,7 +378,7 @@ void EoDlgFileManage::OnBnClickedMfcbuttonNew() {
   m_LayersListControl.SetItemData(ItemCount, DWORD_PTR(Layer));
 }
 void EoDlgFileManage::OnBnClickedMfcbuttonDel() {
-  POSITION Position = m_LayersListControl.GetFirstSelectedItemPosition();
+  auto Position = m_LayersListControl.GetFirstSelectedItemPosition();
   if (Position != nullptr) {
     int Item = m_LayersListControl.GetNextSelectedItem(Position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);

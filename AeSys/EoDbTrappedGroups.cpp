@@ -34,7 +34,7 @@ void AeSysDoc::CompressTrappedGroups() {
   if (m_TrappedGroupList.GetCount() <= 1) { return; }
   EoDbGroup* NewGroup = new EoDbGroup;
 
-  POSITION GroupPosition = m_TrappedGroupList.GetHeadPosition();
+  auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
 
@@ -52,7 +52,7 @@ void AeSysDoc::CompressTrappedGroups() {
   NewGroup->SortTextOnY();
 }
 void AeSysDoc::CopyTrappedGroups(EoGeVector3d translate) {
-  POSITION GroupPosition = m_TrappedGroupList.GetHeadPosition();
+  auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
     EoDbGroup* NewGroup = new EoDbGroup(*Group);
@@ -73,11 +73,11 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
     // UNDONE possible
     CString strBuf;
 
-    POSITION GroupPosition = GetFirstTrappedGroupPosition();
+    auto GroupPosition = GetFirstTrappedGroupPosition();
     while (GroupPosition != 0) {
       EoDbGroup* Group = GetNextTrappedGroup(GroupPosition);
 
-      POSITION PrimitivePosition = Group->GetHeadPosition();
+      auto PrimitivePosition = Group->GetHeadPosition();
       while (PrimitivePosition != 0) {
         EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
         if (Primitive->Is(EoDb::kTextPrimitive)) {
@@ -141,7 +141,7 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
   ::CloseClipboard();
 }
 void AeSysDoc::DeleteAllTrappedGroups() {
-  POSITION GroupPosition = m_TrappedGroupList.GetHeadPosition();
+  auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
     AnyLayerRemove(Group);
@@ -161,11 +161,11 @@ void AeSysDoc::ExpandTrappedGroups() {
   Groups->AddTail(&m_TrappedGroupList);
   m_TrappedGroupList.RemoveAll();
 
-  POSITION GroupPosition = Groups->GetHeadPosition();
+  auto GroupPosition = Groups->GetHeadPosition();
   while (GroupPosition != 0) {
     Group = Groups->GetNext(GroupPosition);
 
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       Primitive = Group->GetNext(PrimitivePosition);
       NewGroup = new EoDbGroup(Primitive);
@@ -181,7 +181,7 @@ void AeSysDoc::ExpandTrappedGroups() {
 void AeSysDoc::SquareTrappedGroups(AeSysView* view) {
   UpdateAllViews(nullptr, EoDb::kGroupsEraseSafeTrap, &m_TrappedGroupList);
 
-  POSITION GroupPosition = m_TrappedGroupList.GetHeadPosition();
+  auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
     Group->Square(view);

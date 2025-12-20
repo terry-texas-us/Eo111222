@@ -81,7 +81,7 @@ class AeSysDoc : public CDocument {
   bool BlockTableIsEmpty() { return m_BlocksTable.IsEmpty() == TRUE; }
   EoUInt16 BlockTableSize() { return (EoUInt16(m_BlocksTable.GetSize())); }
   int GetBlockReferenceCount(const CString& name);
-  POSITION GetFirstBlockPosition() { return m_BlocksTable.GetStartPosition(); }
+  auto GetFirstBlockPosition() { return m_BlocksTable.GetStartPosition(); }
   void GetNextBlock(POSITION& position, CString& name, EoDbBlock*& block) {
     m_BlocksTable.GetNextAssoc(position, name, block);
   }
@@ -136,10 +136,10 @@ class AeSysDoc : public CDocument {
   // Work Layer interface
   void AddWorkLayerGroup(EoDbGroup* group);
   void AddWorkLayerGroups(EoDbGroupList* groups);
-  POSITION FindWorkLayerGroup(EoDbGroup* group) const { return (m_WorkLayer->Find(group)); }
-  POSITION GetFirstWorkLayerGroupPosition() const { return m_WorkLayer->GetHeadPosition(); }
+  auto FindWorkLayerGroup(EoDbGroup* group) const { return (m_WorkLayer->Find(group)); }
+  auto GetFirstWorkLayerGroupPosition() const { return m_WorkLayer->GetHeadPosition(); }
   EoDbGroup* GetLastWorkLayerGroup() const;
-  POSITION GetLastWorkLayerGroupPosition() const { return m_WorkLayer->GetTailPosition(); }
+  auto GetLastWorkLayerGroupPosition() const { return m_WorkLayer->GetTailPosition(); }
   EoDbGroup* GetNextWorkLayerGroup(POSITION& position) const { return m_WorkLayer->GetNext(position); }
   EoDbGroup* GetPreviousWorkLayerGroup(POSITION& position) const { return m_WorkLayer->GetPrev(position); }
   EoDbLayer* GetWorkLayer() const { return m_WorkLayer; }
@@ -149,8 +149,8 @@ class AeSysDoc : public CDocument {
   void WriteShadowFile();
 
   // Deleted groups interface
-  POSITION DeletedGroupsAddHead(EoDbGroup* group) { return (m_DeletedGroupList.AddHead(group)); }
-  POSITION DeletedGroupsAddTail(EoDbGroup* group) { return (m_DeletedGroupList.AddTail(group)); }
+  auto DeletedGroupsAddHead(EoDbGroup* group) { return (m_DeletedGroupList.AddHead(group)); }
+  auto DeletedGroupsAddTail(EoDbGroup* group) { return (m_DeletedGroupList.AddTail(group)); }
   bool DeletedGroupsIsEmpty() { return (m_DeletedGroupList.IsEmpty() == TRUE); }
   // CobList asserts on calls to RemoveHead & RemoveTail if list is empty!
   EoDbGroup* DeletedGroupsRemoveHead() { return (m_DeletedGroupList.RemoveHead()); }
@@ -173,8 +173,8 @@ class AeSysDoc : public CDocument {
   // The new groups are added to the hot layer even if the trap contained
   // groups from one or more warm layers.
   void ExpandTrappedGroups();
-  POSITION FindTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Find(group); }
-  POSITION GetFirstTrappedGroupPosition() const { return m_TrappedGroupList.GetHeadPosition(); }
+  auto FindTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Find(group); }
+  auto GetFirstTrappedGroupPosition() const { return m_TrappedGroupList.GetHeadPosition(); }
   EoDbGroup* GetNextTrappedGroup(POSITION& position) { return m_TrappedGroupList.GetNext(position); }
   EoGePoint3d GetTrapPivotPoint() { return m_TrapPivotPoint; }
   BOOL IsTrapEmpty() const { return m_TrappedGroupList.IsEmpty(); }
@@ -184,7 +184,7 @@ class AeSysDoc : public CDocument {
                                          int attributes);
   void RemoveAllTrappedGroups();
   EoDbGroup* RemoveLastTrappedGroup() { return m_TrappedGroupList.RemoveTail(); }
-  POSITION RemoveTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Remove(group); }
+  auto RemoveTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Remove(group); }
   void RemoveTrappedGroupAt(POSITION position) { m_TrappedGroupList.RemoveAt(position); }
   void SetTrapPivotPoint(const EoGePoint3d& pt) { m_TrapPivotPoint = pt; }
   void SquareTrappedGroups(AeSysView* view);
@@ -198,15 +198,15 @@ class AeSysDoc : public CDocument {
   /// <summary>Maintains a list of the primatives with at least one identified node.</summary>
   void UpdateNodalList(EoDbGroup* group, EoDbPrimitive* primitive, DWORD mask, int bit, EoGePoint3d point);
 
-  POSITION AddNodalGroup(EoDbGroup* group) { return m_NodalGroupList.AddTail(group); }
-  POSITION FindNodalGroup(EoDbGroup* group) { return m_NodalGroupList.Find(group); }
-  POSITION GetFirstNodalGroupPosition() const { return m_NodalGroupList.GetHeadPosition(); }
+  auto AddNodalGroup(EoDbGroup* group) { return m_NodalGroupList.AddTail(group); }
+  auto FindNodalGroup(EoDbGroup* group) { return m_NodalGroupList.Find(group); }
+  auto GetFirstNodalGroupPosition() const { return m_NodalGroupList.GetHeadPosition(); }
   EoDbGroup* GetNextNodalGroup(POSITION& position) { return m_NodalGroupList.GetNext(position); }
   void RemoveAllNodalGroups() { m_NodalGroupList.RemoveAll(); }
   POSITION AddMaskedPrimitive(EoDbMaskedPrimitive* maskedPrimitive) {
     return m_MaskedPrimitives.AddTail((CObject*)maskedPrimitive);
   }
-  POSITION GetFirstMaskedPrimitivePosition() const { return m_MaskedPrimitives.GetHeadPosition(); }
+  auto GetFirstMaskedPrimitivePosition() const { return m_MaskedPrimitives.GetHeadPosition(); }
   EoDbMaskedPrimitive* GetNextMaskedPrimitive(POSITION& position) {
     return (EoDbMaskedPrimitive*)m_MaskedPrimitives.GetNext(position);
   }
@@ -216,9 +216,9 @@ class AeSysDoc : public CDocument {
   void RemovePrimitiveBit(EoDbPrimitive* primitive, int bit);
 
   int AddUniquePoint(const EoGePoint3d& point);
-  POSITION AddUniquePoint(EoGeUniquePoint* uniquePoint) { return m_UniquePoints.AddTail((CObject*)uniquePoint); }
+  auto AddUniquePoint(EoGeUniquePoint* uniquePoint) { return m_UniquePoints.AddTail((CObject*)uniquePoint); }
   void DisplayUniquePoints();
-  POSITION GetFirstUniquePointPosition() const { return m_UniquePoints.GetHeadPosition(); }
+  auto GetFirstUniquePointPosition() const { return m_UniquePoints.GetHeadPosition(); }
   EoGeUniquePoint* GetNextUniquePoint(POSITION& position) { return (EoGeUniquePoint*)m_UniquePoints.GetNext(position); }
   void RemoveUniquePointAt(POSITION position) { m_UniquePoints.RemoveAt(position); }
   void RemoveAllUniquePoints() { m_UniquePoints.RemoveAll(); }

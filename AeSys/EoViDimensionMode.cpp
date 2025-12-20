@@ -23,11 +23,11 @@ EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
 
   double dRel[2];
 
-  POSITION GroupPosition = Document->GetFirstWorkLayerGroupPosition();
+  auto GroupPosition = Document->GetFirstWorkLayerGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = Document->GetNextWorkLayerGroup(GroupPosition);
 
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 
@@ -62,11 +62,11 @@ void AeSysView::OnDimensionModeArrow() {
     ModeLineUnhighlightOp(PreviousDimensionCommand);
   }
   EoGeLine TestLine;
-  POSITION GroupPosition = GetFirstVisibleGroupPosition();
+  auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
 
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kLinePrimitive)) {
@@ -387,11 +387,11 @@ void AeSysView::OnDimensionModeConvert() {
   EoGePoint4d ptView(ptCur);
   ModelViewTransformPoint(ptView);
 
-  POSITION GroupPosition = GetFirstVisibleGroupPosition();
+  auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != 0) {
     Group = GetNextVisibleGroup(GroupPosition);
 
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       posPrimCur = PrimitivePosition;
       Primitive = Group->GetNext(PrimitivePosition);

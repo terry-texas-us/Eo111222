@@ -28,7 +28,7 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
 
   CString Name;
   EoDbLineType* LineType;
-  POSITION Position = LineTypeTable->GetStartPosition();
+  auto Position = LineTypeTable->GetStartPosition();
   while (Position) {
     LineTypeTable->GetNextAssoc(Position, Name, LineType);
     m_FilterLineComboBoxControl.AddString(Name);
@@ -88,11 +88,11 @@ void EoDlgTrapFilter::OnOK() {
   CDialog::OnOK();
 }
 void EoDlgTrapFilter::FilterByColor(EoInt16 colorIndex) {
-  POSITION GroupPosition = m_Document->GetFirstTrappedGroupPosition();
+  auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = m_Document->GetNextTrappedGroup(GroupPosition);
 
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->PenColor() == colorIndex) {
@@ -105,11 +105,11 @@ void EoDlgTrapFilter::FilterByColor(EoInt16 colorIndex) {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::TrapCount);
 }
 void EoDlgTrapFilter::FilterByLineType(int lineType) {
-  POSITION GroupPosition = m_Document->GetFirstTrappedGroupPosition();
+  auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = m_Document->GetNextTrappedGroup(GroupPosition);
 
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->LineType() == lineType) {
@@ -122,13 +122,13 @@ void EoDlgTrapFilter::FilterByLineType(int lineType) {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::TrapCount);
 }
 void EoDlgTrapFilter::FilterByPrimitiveType(const EoDb::PrimitiveTypes primitiveType) {
-  POSITION GroupPosition = m_Document->GetFirstTrappedGroupPosition();
+  auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
   while (GroupPosition != 0) {
     bool bFilter = FALSE;
 
     EoDbGroup* Group = m_Document->GetNextTrappedGroup(GroupPosition);
 
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 

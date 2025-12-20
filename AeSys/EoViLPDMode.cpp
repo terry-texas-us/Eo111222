@@ -282,7 +282,7 @@ void AeSysView::OnLpdModeSize() {
   double dAng = 0.;
   if (m_EndCapPoint != 0) {
     if (m_EndCapPoint->PenColor() == 15 && m_EndCapPoint->PointStyle() == 8) {
-      POSITION Position = m_EndCapGroup->Find(m_EndCapPoint);
+      auto Position = m_EndCapGroup->Find(m_EndCapPoint);
       m_EndCapGroup->GetNext(Position);
       EoDbLine* pLine = static_cast<EoDbLine*>(m_EndCapGroup->GetAt(Position));
       EoGeLine Line = pLine->Ln();
@@ -705,11 +705,11 @@ bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double
 
   double TestLineAngle = fmod(TestLine.AngleFromXAxisXY(), Eo::Pi);
 
-  POSITION GroupPosition = GetLastGroupPosition();
+  auto GroupPosition = GetLastGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = GetPreviousGroup(GroupPosition);
 
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive == testLinePrimitive || !Primitive->Is(EoDb::kLinePrimitive)) continue;

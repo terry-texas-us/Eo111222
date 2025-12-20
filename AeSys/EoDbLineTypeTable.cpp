@@ -15,7 +15,7 @@ int EoDbLineTypeTable::FillComboBox(CComboBox& comboBox) {
 
   CString Name;
   EoDbLineType* LineType;
-  POSITION Position = m_MapLineTypes.GetStartPosition();
+  auto Position = m_MapLineTypes.GetStartPosition();
   while (Position) {
     m_MapLineTypes.GetNextAssoc(Position, Name, LineType);
     int ItemIndex = comboBox.AddString(Name);
@@ -27,7 +27,7 @@ int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
   CString Name;
   int ItemIndex = 0;
   EoDbLineType* LineType;
-  POSITION Position = m_MapLineTypes.GetStartPosition();
+  auto Position = m_MapLineTypes.GetStartPosition();
   while (Position) {
     m_MapLineTypes.GetNextAssoc(Position, Name, LineType);
 
@@ -73,7 +73,7 @@ int EoDbLineTypeTable::ReferenceCount(EoInt16 lineType) {
   EoDbBlock* Block;
 
   CBlocks* BlocksTable = Document->BlocksTable();
-  POSITION Position = BlocksTable->GetStartPosition();
+  auto Position = BlocksTable->GetStartPosition();
   while (Position != nullptr) {
     BlocksTable->GetNextAssoc(Position, Key, Block);
     Count += Block->GetLineTypeRefCount(lineType);
@@ -123,7 +123,7 @@ void EoDbLineTypeTable::RemoveAll() {
   CString Name;
   EoDbLineType* LineType;
 
-  POSITION Position = m_MapLineTypes.GetStartPosition();
+  auto Position = m_MapLineTypes.GetStartPosition();
   while (Position) {
     m_MapLineTypes.GetNextAssoc(Position, Name, LineType);
     delete LineType;

@@ -18,7 +18,7 @@ void AeSysView::OnTrapModePoint() {
 
   EoDbPolygon::EdgeToEvaluate() = 0;
 
-  POSITION Position = GetFirstVisibleGroupPosition();
+  auto Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(Position);
 
@@ -45,7 +45,7 @@ void AeSysView::OnTrapModeStitch() {
 
     ModelViewTransformPoints(2, ptView);
 
-    POSITION Position = GetFirstVisibleGroupPosition();
+    auto Position = GetFirstVisibleGroupPosition();
     while (Position != 0) {
       EoDbGroup* Group = GetNextVisibleGroup(Position);
 
@@ -77,7 +77,7 @@ void AeSysView::OnTrapModeField() {
     EoGePoint3d ptMin = EoGePoint4d::Min(ptView[0], ptView[1]);
     EoGePoint3d ptMax = EoGePoint4d::Max(ptView[0], ptView[1]);
 
-    POSITION Position = GetFirstVisibleGroupPosition();
+    auto Position = GetFirstVisibleGroupPosition();
     while (Position != 0) {
       EoDbGroup* Group = GetNextVisibleGroup(Position);
 
@@ -94,7 +94,7 @@ void AeSysView::OnTrapModeField() {
 void AeSysView::OnTrapModeLast() {
   AeSysDoc* Document = GetDocument();
 
-  POSITION Position = Document->GetLastWorkLayerGroupPosition();
+  auto Position = Document->GetLastWorkLayerGroupPosition();
   while (Position != 0) {
     EoDbGroup* Group = Document->GetPreviousWorkLayerGroup(Position);
 
@@ -110,7 +110,7 @@ void AeSysView::OnTrapModeEngage() {
   if (GroupIsEngaged()) {
     AeSysDoc* Document = GetDocument();
 
-    POSITION Position = Document->FindWorkLayerGroup(EngagedGroup());
+    auto Position = Document->FindWorkLayerGroup(EngagedGroup());
 
     EoDbGroup* Group = Document->GetNextWorkLayerGroup(Position);
 
@@ -156,7 +156,7 @@ void AeSysView::OnTraprModePoint() {
 
   EoDbPolygon::EdgeToEvaluate() = 0;
 
-  POSITION Position = Document->GetFirstTrappedGroupPosition();
+  auto Position = Document->GetFirstTrappedGroupPosition();
   while (Position != 0) {
     EoDbGroup* Group = Document->GetNextTrappedGroup(Position);
 
@@ -183,7 +183,7 @@ void AeSysView::OnTraprModeStitch() {
 
     ModelViewTransformPoints(2, ptView);
 
-    POSITION Position = Document->GetFirstTrappedGroupPosition();
+    auto Position = Document->GetFirstTrappedGroupPosition();
     while (Position != 0) {
       EoDbGroup* Group = Document->GetNextTrappedGroup(Position);
 
@@ -216,7 +216,7 @@ void AeSysView::OnTraprModeField() {
     EoGePoint3d ptMin = EoGePoint4d::Min(ptView[0], ptView[1]);
     EoGePoint3d ptMax = EoGePoint4d::Max(ptView[0], ptView[1]);
 
-    POSITION Position = Document->GetFirstTrappedGroupPosition();
+    auto Position = Document->GetFirstTrappedGroupPosition();
     while (Position != 0) {
       EoDbGroup* Group = Document->GetNextTrappedGroup(Position);
 

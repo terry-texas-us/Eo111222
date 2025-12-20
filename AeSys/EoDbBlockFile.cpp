@@ -71,7 +71,7 @@ void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
   EoDb::Write(*this, strName);
   EoDb::Write(*this, block->GetBlkTypFlgs());
 
-  POSITION BlockPosition = block->GetHeadPosition();
+  auto BlockPosition = block->GetHeadPosition();
   while (BlockPosition != nullptr) {
     EoDbPrimitive* Primitive = block->GetNext(BlockPosition);
     if (Primitive->Write(*this)) wPrims++;
@@ -88,7 +88,7 @@ void EoDbBlockFile::WriteBlocks(CBlocks& blocks) {
   CString Key;
   EoDbBlock* Block;
 
-  POSITION Position = blocks.GetStartPosition();
+  auto Position = blocks.GetStartPosition();
   while (Position != nullptr) {
     blocks.GetNextAssoc(Position, Key, Block);
     WriteBlock(Key, Block);

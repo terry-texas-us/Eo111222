@@ -276,15 +276,15 @@ bool PenWidthsOn() { return m_ViewPenWidths; }
 double GetWorldScale() { return m_WorldScale; }
 void SetWorldScale(const double scale);
 bool RenderAsWireframe() { return m_ViewWireframe; }
-POSITION AddGroup(EoDbGroup* group) { return m_VisibleGroupList.AddTail(group); }
+auto AddGroup(EoDbGroup* group) { return m_VisibleGroupList.AddTail(group); }
 void AddGroups(EoDbGroupList* groups) { return m_VisibleGroupList.AddTail(groups); }
-POSITION RemoveGroup(EoDbGroup* group) { return m_VisibleGroupList.Remove(group); }
+auto RemoveGroup(EoDbGroup* group) { return m_VisibleGroupList.Remove(group); }
 void RemoveAllGroups() { m_VisibleGroupList.RemoveAll(); }
 void ResetView();
 /// <summary> Deletes last group detectable in the this view.</summary>
 void DeleteLastGroup();
-POSITION GetFirstVisibleGroupPosition() const { return m_VisibleGroupList.GetHeadPosition(); }
-POSITION GetLastGroupPosition() const { return m_VisibleGroupList.GetTailPosition(); }
+auto GetFirstVisibleGroupPosition() const { return m_VisibleGroupList.GetHeadPosition(); }
+auto GetLastGroupPosition() const { return m_VisibleGroupList.GetTailPosition(); }
 EoDbGroup* GetNextVisibleGroup(POSITION& position) { return m_VisibleGroupList.GetNext(position); }
 EoDbGroup* GetPreviousGroup(POSITION& position) { return m_VisibleGroupList.GetPrev(position); }
 void BackgroundImageDisplay(CDC* deviceContext);

@@ -93,7 +93,7 @@ void AeSysView::PreviewGroupEdit() {
   }
 }
 void AeSysDoc::InitializeGroupAndPrimitiveEdit() {
-  POSITION position = GetFirstViewPosition();
+  auto position = GetFirstViewPosition();
   while (position != 0) {
     AeSysView* View = (AeSysView*)GetNextView(position);
     View->InitializeGroupAndPrimitiveEdit();

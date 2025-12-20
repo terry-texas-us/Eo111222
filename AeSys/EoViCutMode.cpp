@@ -22,11 +22,11 @@ void AeSysView::OnCutModeTorch() {
   EoGePoint4d ptView(pt);
   ModelViewTransformPoint(ptView);
 
-  POSITION GroupPosition = GetFirstVisibleGroupPosition();
+  auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
 
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 
@@ -68,13 +68,13 @@ void AeSysView::OnCutModeSlice() {
 
     EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
 
-    POSITION GroupPosition = GetFirstVisibleGroupPosition();
+    auto GroupPosition = GetFirstVisibleGroupPosition();
     while (GroupPosition != 0) {
       EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
 
       if (Document->FindTrappedGroup(Group) != 0) continue;
 
-      POSITION PrimitivePosition = Group->GetHeadPosition();
+      auto PrimitivePosition = Group->GetHeadPosition();
       while (PrimitivePosition != 0) {
         EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 

@@ -1851,7 +1851,7 @@ void AeSysView::DeleteLastGroup() {
 }
 
 void AeSysView::BreakAllPolylines() {
-  POSITION Position = GetFirstVisibleGroupPosition();
+  auto Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(Position);
     Group->BreakPolylines();
@@ -1859,7 +1859,7 @@ void AeSysView::BreakAllPolylines() {
 }
 
 void AeSysView::BreakAllSegRefs() {
-  POSITION Position = GetFirstVisibleGroupPosition();
+  auto Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(Position);
     Group->BreakSegRefs();
@@ -1880,7 +1880,7 @@ EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
 
   EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
 
-  POSITION Position = GetFirstVisibleGroupPosition();
+  auto Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(Position);
     Primitive = Group->SelPrimAtCtrlPt(this, pt, &ptEng);
@@ -1909,7 +1909,7 @@ EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& pt) {
 
   EoDbPolygon::EdgeToEvaluate() = 0;
 
-  POSITION Position = GetFirstVisibleGroupPosition();
+  auto Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(Position);
     EoDbPrimitive* Primitive = Group->SelPrimUsingPoint(this, ptView, dPicApert, ptEng);
@@ -1925,10 +1925,10 @@ EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& pt) {
 }
 
 EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbEllipse*& circle) {
-  POSITION GroupPosition = GetFirstVisibleGroupPosition();
+  auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kEllipsePrimitive)) {
@@ -1951,10 +1951,10 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
   EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
 
-  POSITION GroupPosition = GetFirstVisibleGroupPosition();
+  auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kLinePrimitive)) {
@@ -1971,10 +1971,10 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
 
 EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor,
                                             EoInt16 pointStyle, EoDbPoint*& primitive) {
-  POSITION GroupPosition = GetFirstVisibleGroupPosition();
+  auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kPointPrimitive)) {
@@ -2005,10 +2005,10 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
 
   EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
 
-  POSITION GroupPosition = GetFirstVisibleGroupPosition();
+  auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kLinePrimitive)) {
@@ -2030,10 +2030,10 @@ EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& pt) {
   EoGePoint4d ptView(pt);
   ModelViewTransformPoint(ptView);
 
-  POSITION GroupPosition = GetFirstVisibleGroupPosition();
+  auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kTextPrimitive)) {

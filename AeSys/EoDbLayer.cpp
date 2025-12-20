@@ -47,7 +47,7 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
 
       pColTbl = LayerIsDetectable ? ColorPalette : GreyPalette;
 
-      POSITION position = GetHeadPosition();
+      auto position = GetHeadPosition();
       while (position != 0) {
         EoDbGroup* Group = GetNext(position);
 

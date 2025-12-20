@@ -524,7 +524,7 @@ CMFCToolBarComboBoxButton* CMainFrame::GetFindCombo() {
 
   CObList ButtonsList;
   if (CMFCToolBar::GetCommandButtons(ID_EDIT_FIND_COMBO, ButtonsList) > 0) {
-    for (POSITION Position = ButtonsList.GetHeadPosition(); FoundCombo == nullptr && Position != nullptr;) {
+    for (auto Position = ButtonsList.GetHeadPosition(); FoundCombo == nullptr && Position != nullptr;) {
       CMFCToolBarComboBoxButton* Combo = DYNAMIC_DOWNCAST(CMFCToolBarComboBoxButton, ButtonsList.GetNext(Position));
 
       if (Combo != nullptr && Combo->GetEditCtrl()->GetSafeHwnd() == ::GetFocus()) { FoundCombo = Combo; }

@@ -39,11 +39,11 @@ void EoDlgTrapModify::OnOK() {
   CDialog::OnOK();
 }
 void EoDlgTrapModify::ModifyPolygons() {
-  POSITION Position = m_Document->GetFirstTrappedGroupPosition();
+  auto Position = m_Document->GetFirstTrappedGroupPosition();
   while (Position != 0) {
     EoDbGroup* Group = m_Document->GetNextTrappedGroup(Position);
 
-    POSITION PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 

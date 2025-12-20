@@ -156,7 +156,7 @@ bool AeSysView::CleanPreviousLines() {
   GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_AssemblyGroup);
 
   delete m_AssemblyGroup->RemoveTail();
-  POSITION Position = m_AssemblyGroup->GetTailPosition();
+  auto Position = m_AssemblyGroup->GetTailPosition();
 
   EoDbLine* pLine = static_cast<EoDbLine*>(m_AssemblyGroup->GetPrev(Position));
   pLine->EndPoint(PreviousRightLine.end);

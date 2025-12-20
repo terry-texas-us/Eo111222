@@ -231,7 +231,7 @@ void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
   CString Name;
   EoDbLineType* Linetype;
 
-  POSITION Position = LineTypeTable->GetStartPosition();
+  auto Position = LineTypeTable->GetStartPosition();
   while (Position) {
     LineTypeTable->GetNextAssoc(Position, Name, Linetype);
 
@@ -291,7 +291,7 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
   CString Name;
   EoDbBlock* Block;
 
-  POSITION Position = document->GetFirstBlockPosition();
+  auto Position = document->GetFirstBlockPosition();
   while (Position != 0) {
     document->GetNextBlock(Position, Name, Block);
 
@@ -303,7 +303,7 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
     EoDb::Write(*this, Block->GetBlkTypFlgs());
     Block->GetBasePt().Write(*this);
 
-    POSITION PrimitivePosition = Block->GetHeadPosition();
+    auto PrimitivePosition = Block->GetHeadPosition();
     while (PrimitivePosition != 0) {
       EoDbPrimitive* Primitive = Block->GetNext(PrimitivePosition);
       if (Primitive->Write(*this)) NumberOfPrimitives++;
@@ -327,7 +327,7 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
     if (Layer->IsInternal()) {
       EoDb::Write(*this, EoUInt16(Layer->GetCount()));
 
-      POSITION Position = Layer->GetHeadPosition();
+      auto Position = Layer->GetHeadPosition();
       while (Position != 0) {
         EoDbGroup* Group = Layer->GetNext(Position);
         Group->Write(*this);
