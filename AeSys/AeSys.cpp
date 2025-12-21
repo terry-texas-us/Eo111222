@@ -20,6 +20,7 @@
 #include <corecrt.h>
 #include <cstdlib>
 #include <direct.h>
+#include <iostream>
 #include <string.h>
 #include <tchar.h>
 #include <wchar.h>
@@ -48,6 +49,7 @@
 #include "Dde.h"
 #include "ddeGItms.h"
 #endif  // USING_DDE
+#include <stdexcept>
 
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);
 ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance);
@@ -1040,7 +1042,8 @@ double AeSys::ParseLength(Units units, wchar_t* inputLine) {
       length[0] /= AeSysView::GetActiveView()->GetWorldScale();
     }
     return (length[0]);
-  } catch (LPWSTR errorMessage) {
+
+  } catch (const wchar_t* errorMessage) {
     ::MessageBoxW(0, errorMessage, 0, MB_ICONWARNING | MB_OK);
     return (0.0);
   }

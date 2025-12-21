@@ -329,7 +329,7 @@ HDDEDATA dde::DoWildConnect(HSZ hszTopic) {
     return (HDDEDATA)0;
 
   // Big enough for all the HSZPAIRS we'll be sending back plus space for a 0 entry on the end
-  hData = DdeCreateDataHandle(ServerInfo.dwInstance, 0, (iTopics + 1) * sizeof(HSZPAIR), 0, 0, 0, 0);
+  hData = DdeCreateDataHandle(ServerInfo.dwInstance, 0, (iTopics + 1) * sizeof(HSZPAIR), 0, hszItem, wFmt, 0);
 
   if (!hData)  // Failed to create mem object!
     return (HDDEDATA)0;
@@ -361,7 +361,7 @@ PEXECCMDFNINFO dde::ExecCmdAdd(LPTSTR pszTopic, LPTSTR pszCmdName, PEXECCMDFN pE
 
   PTOPICINFO pTopic = TopicFind(pszTopic);
 
-  if (!pTopic)  // Do Not already have this topic.	We need to add this as a new topic
+  if (!pTopic)  // Do Not already have this topic.\tWe need to add this as a new topic
     pTopic = TopicAdd(pszTopic, 0, 0, 0);
 
   if (!pTopic) return 0;  // failed
@@ -485,10 +485,10 @@ void dde::PostAdvise(PITEMINFO pItemInfo) {
 // DDE Execute command parser
 
 /// <summary>Process a DDE execute command line.</summary>
-// Notes:	Support for the 'Execute Control 1' protocol is provided allowing
-//			return information to be sent back to the caller.
+// Notes:\tSupport for the 'Execute Control 1' protocol is provided allowing
+//\t\treturn information to be sent back to the caller.
 // Returns: true if no errors occur in parsing or executing the commands.
-//			false if any error occurs.
+//\t\tfalse if any error occurs.
 bool dde::ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData) {
   bool bResult = false;
   POP OpTable[MAXOPS];
@@ -559,15 +559,15 @@ PER_exit:
   return bResult;
 }
 /// <summary>Parses a single command.</summary>
-// Notes:	Error information may be set in the error return buffer.
+// Notes:\tError information may be set in the error return buffer.
 // Returns: true if there are no errors, else it is false.
-//	ppszCmdLine	Pointer to a a pointer which addresses the command line to be parsed.
-//	pTopic		Pointer to the topic info structure.
-//	pszError	Pointer to a buffer to receive the error string.
-//	uiErrorSize	Size of the error return buffer.
-//	pOpTable	Pointer to a table in which the operator and operands are to be inserted.
-//				The size of the op table.
-//	pArgBuf		Pointer to a buffer in which the arguments are to be constructed.
+//\tppszCmdLine\tPointer to the a pointer which addresses the command line to be parsed.
+//\tpTopic\t\tPointer to the topic info structure.
+//\tpszError\tPointer to a buffer to receive the error string.
+//\tuiErrorSize\tSize of the error return buffer.
+//\tpOpTable\tPointer to a table in which the operator and operands are to be inserted.
+//\t\t\tThe size of the op table.
+//\tpArgBuf\t\tPointer to a buffer in which the arguments are to be constructed.
 bool dde::ParseCmd(LPTSTR* ppszCmdLine, PTOPICINFO pTopic, LPTSTR pszError, UINT uiErrorSize, PPOP pOpTable, UINT,
                    LPTSTR pArgBuf) {
   LPTSTR pArg;
@@ -580,7 +580,7 @@ bool dde::ParseCmd(LPTSTR* ppszCmdLine, PTOPICINFO pTopic, LPTSTR pszError, UINT
   LPTSTR pCmd = lex::SkipWhiteSpace(*ppszCmdLine);
 
   if (!lex::ScanForChar('[', &pCmd)) {  // Scan for a command leading
-    _tcsncpy_s(pszError, uiErrorSize, L"Missing '['", uiErrorSize - 1);
+    _tcsncpy_s(pszError, uiErrorSize, L"Missing '[']", uiErrorSize - 1);
     return false;
   }
 
@@ -626,14 +626,14 @@ bool dde::ParseCmd(LPTSTR* ppszCmdLine, PTOPICINFO pTopic, LPTSTR pszError, UINT
   return true;
 }
 /// <summary>Process a DDE Execute 'Result' command.</summary>
-// Notes:	This command creates a temporary item under the current topic
-//			which will contain the result of the next command to be executed.
+// Notes:\tThis command creates a temporary item under the current topic
+//\t\twhich will contain the result of the next command to be executed.
 // Returns: true if the command executes with no errors, otherwise it is false.
-//	pTopic	Pointer to a topic info structure.
-//			Pointer the the buffer to receive the result string.
-//			Size of the return buffer.
-//			Number of arguments in the argument list.
-//	ppArgs	A list of pointers to the arguments.
+//\tpTopic\tPointer to a topic info structure.
+//\t\t\tPointer the the buffer to receive the result string.
+//\t\t\tSize of the return buffer.
+//\t\t\tNumber of arguments in the argument list.
+//\t\t\tppArgs\tA list of pointers to the arguments.
 bool dde::SysResultExecCmd(PTOPICINFO pTopic, LPTSTR, UINT, UINT, LPTSTR* ppArgs) {
   PCONVERSATIONINFO pCI = ConversationFind(pTopic->hszTopicName);
 
@@ -648,7 +648,7 @@ bool dde::SysResultExecCmd(PTOPICINFO pTopic, LPTSTR, UINT, UINT, LPTSTR* ppArgs
   return true;
 }
 /// <summary>Return the 'result' info for a given item and delete the item.</summary>
-// Notes:	The item is deleted after the data is returned.
+// Notes:\tThe item is deleted after the data is returned.
 // Returns: A DDE data handle to an object containing the return string.
 HDDEDATA dde::SysReqResultInfo(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
   PTOPICINFO pTopic = TopicFind(hszTopic);
@@ -663,10 +663,10 @@ HDDEDATA dde::SysReqResultInfo(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
   return hData;
 }
 /// <summary>Scan for a valid comamnd.</summary>
-// Notes:	If found, the scan pointer is updated.
+// Notes:\tIf found, the scan pointer is updated.
 // Returns: Pointer to the command info if found, 0 if not.
-//	pCmdInfo	Pointer to the current command list.
-//	ppStr		Pointer to the current scan pointer.
+//\tpCmdInfo\tPointer to the current command list.
+//\tppStr\t\tPointer to the current scan pointer.
 PEXECCMDFNINFO dde::ScanForCommand(PEXECCMDFNINFO pCmdInfo, LPTSTR* ppStr) {
   LPTSTR pStart = lex::SkipWhiteSpace(*ppStr);
   LPTSTR p = pStart;
