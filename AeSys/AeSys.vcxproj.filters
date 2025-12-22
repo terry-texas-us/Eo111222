@@ -1692,6 +1692,9 @@
     <None Include="Markdowns\Peg &amp; Tra File Formats.md">
       <Filter>Markdowns</Filter>
     </None>
+    <None Include="Markdowns\Grok Report.md">
+      <Filter>Markdowns</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">

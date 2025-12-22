@@ -19,24 +19,73 @@
 #include <wchar.h>
 
 namespace {
-/**
-   * @brief Promotes an integer value to a real (double) in-place.
-   *
-   * This function converts the internal representation of an integer value to a real (double) value
-   * directly within the provided value buffer. It also updates the associated metadata to reflect
-   * the new type.
-   *
-   * @param valueMetaData Pointer to the long integer defining the value's metadata (dimension and length).
-   * @param valueBuffer Pointer to the buffer containing the value to be promoted.
-   * @param resultType Pointer to an integer that will be updated to indicate the new type (RealToken).
-   */
 inline void PromoteIntegerToReal(long* valueMetaData, void* valueBuffer, int* resultType) noexcept {
-  // Convert internal integer representation to real in-place and update metadata
   lex::ConvertValTyp(lex::IntegerToken, lex::RealToken, valueMetaData, valueBuffer);
   *resultType = lex::RealToken;
 }
 
-}  // anonymous namespace
+// Helper: construct an Operand from lex::lValues storage
+lex::Operand MakeOperandFromStoredValues(int valueIndex, int tokenType) {
+  lex::Operand op;
+  long lDef = lex::lValues[valueIndex];
+  op.meta = lDef;
+  int len = HIWORD(lDef);
+  switch (tokenType) {
+    case lex::StringToken: {
+      int dim = LOWORD(lDef);
+      // characters stored starting at lValues[valueIndex + 1]
+      auto ptr = reinterpret_cast<const wchar_t*>(&lex::lValues[valueIndex + 1]);
+      op.v = std::wstring(ptr, static_cast<size_t>(dim));
+      break;
+    }
+    case lex::IntegerToken: {
+      // integer stored in next long (32-bit)
+      std::int32_t iv = static_cast<std::int32_t>(lex::lValues[valueIndex + 1]);
+      op.v = static_cast<std::int64_t>(iv);
+      break;
+    }
+    case lex::RealToken:
+    case lex::LengthToken:
+    default: {
+      double d{};
+      // double occupies next two longs (assuming 8 bytes)
+      memcpy(&d, &lex::lValues[valueIndex + 1], sizeof(double));
+      op.v = d;
+      break;
+    }
+  }
+  return op;
+}
+
+// Helper: write Operand into legacy buffer format (operandBuffer) and produce legacy definition and token type
+void OperandToLegacyBuffer(const lex::Operand& op, void* operandBuffer, long& outDef, int& outType) {
+  if (auto ps = std::get_if<std::wstring>(&op.v)) {
+    outType = lex::StringToken;
+    const std::wstring& s = *ps;
+    int dim = static_cast<int>(s.size());
+    int len = 1 + (dim - 1) / 4;
+    outDef = MAKELONG(dim, len);
+    // copy characters into operandBuffer (as wchar_t)
+    wchar_t* dst = reinterpret_cast<wchar_t*>(operandBuffer);
+    wcsncpy_s(dst, static_cast<rsize_t>(dim + 1), s.c_str(), static_cast<rsize_t>(dim));
+    dst[dim] = L'\0';
+  } else if (auto pi = std::get_if<std::int64_t>(&op.v)) {
+    outType = lex::IntegerToken;
+    outDef = MAKELONG(1, 1);
+    // legacy stores 32-bit int; cast/truncate
+    long* dst = reinterpret_cast<long*>(operandBuffer);
+    dst[0] = static_cast<long>(*pi);
+  } else if (auto pd = std::get_if<double>(&op.v)) {
+    outType = lex::RealToken;
+    outDef = MAKELONG(1, 2);
+    // copy double into buffer
+    memcpy(operandBuffer, pd, sizeof(double));
+  } else {
+    throw std::logic_error("Unknown operand variant type");
+  }
+}
+
+} // anonymous namespace
 
 namespace lex {
 int tokenTypeIdentifiers[lex::MaxTokens];
@@ -286,28 +335,12 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
 
   BreakExpression(*aiTokId, numberOfTokens, iExprTokTyp, iExprTokLoc);
 
-  int operandStack[32]{};
-  long lOpStk[32][32]{};
-  long lOpStkDef[32]{};
+  // Operand stacks using new Operand type
+  Operand opStk[32];
+  int opTypeStk[32]{}; // token type codes for operands
+  long lOpStkDef[32]{}; // legacy defs
 
-  double* dOp1 = reinterpret_cast<double*>(operandBuffer);
-  long* lOp1 = reinterpret_cast<long*>(operandBuffer);
-
-  /**
-   * @brief Zero-initialized buffer for operand storage, sized for 256 wchar_t but aligned for numeric reinterpretation.
-   *
-   * This buffer supports type punning for mixed-use in expression parsing (e.g., strings, reals, or ints per grammar).
-   * It uses a byte array for flexibility, with reinterpret_cast to view as double or long arrays.
-   * Alignment ensures no undefined behavior on access; size calculation adapts to platform-specific wchar_t sizes.
-   *
-   * @note if not needing char-specific operations. For even safer modernization, explore std::variant or unions for operands.
-   */
-  alignas(double) std::byte secondOperandBuffer[256 * sizeof(wchar_t)]{};
-  wchar_t* cOp2 = reinterpret_cast<wchar_t*>(secondOperandBuffer);
-  double* dOp2 = reinterpret_cast<double*>(secondOperandBuffer);
-  long* lOp2 = reinterpret_cast<long*>(secondOperandBuffer);
-
-  int operandStackTop{0};  // Empty operand stack
+  int operandStackTop{0};  // Empty operand stack (index of top)
   int iTokStkId{0};        // Start with first token
 
   while (iTokStkId < numberOfTokens) {
@@ -317,134 +350,199 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
       // symbol table stuff if desired
       throw L"Identifier token class not implemented";
     } else if (TokenPropertiesTable[tokenType].tokenClass == Constant) {
-      iTyp1 = tokenType;
-      lDef1 = lex::lValues[lex::valueLocation[iTokLoc]];
-      memcpy(operandBuffer, &lex::lValues[lex::valueLocation[iTokLoc] + 1], static_cast<size_t>(HIWORD(lDef1) * 4));
+      // Push constant as Operand
+      Operand op = MakeOperandFromStoredValues(lex::valueLocation[iTokLoc], tokenType);
+      operandStackTop++;
+      opStk[operandStackTop] = op;
+      opTypeStk[operandStackTop] = tokenType;
+      lOpStkDef[operandStackTop] = op.meta;
     } else {  // Token is an operator .. Pop an operand from operand stack
       if (operandStackTop == 0) { throw L"Operand stack is empty"; }
 
-      iTyp1 = operandStack[operandStackTop];
-      lDef1 = lOpStkDef[operandStackTop];
-      iLen1 = HIWORD(lDef1);
-      memcpy(operandBuffer, &lOpStk[operandStackTop--][0], static_cast<size_t>(iLen1 * 4));
+      // Pop right operand
+      Operand right = opStk[operandStackTop];
+      int rightType = opTypeStk[operandStackTop];
+      long rightDef = lOpStkDef[operandStackTop];
+      operandStackTop--;
 
       if (TokenPropertiesTable[tokenType].tokenClass == Other) {  // intrinsics and oddball unary minus/plus
-        if (iTyp1 == lex::StringToken) {
-          iDim1 = LOWORD(lDef1);
-          wcscpy_s(szTok, 256, reinterpret_cast<wchar_t*>(operandBuffer));
-          if (tokenType == lex::IntUnaryOperator) {
-            iTyp1 = lex::IntegerToken;
-            ConvertStringToVal(lex::IntegerToken, lDef1, szTok, &lDef1, operandBuffer);
-          } else if (tokenType == lex::RealToken) {
-            iTyp1 = lex::RealToken;
-            ConvertStringToVal(lex::RealToken, lDef1, szTok, &lDef1, operandBuffer);
+        // Handle string conversions first
+        if (std::holds_alternative<std::wstring>(right.v)) {
+          std::wstring s = std::get<std::wstring>(right.v);
+          if (tokenType == lex::IntUnaryOperator || tokenType == lex::RealToken || tokenType == lex::RealUnaryOperator) {
+            // convert string to numeric using existing helper
+            long newDef{};
+            if (tokenType == lex::IntUnaryOperator) {
+              long tmpInt{};
+              ConvertStringToVal(lex::IntegerToken, rightDef, const_cast<LPWSTR>(s.c_str()), &newDef, &tmpInt);
+              Operand res; res.v = static_cast<std::int64_t>(tmpInt); res.meta = newDef;
+              operandStackTop++; opStk[operandStackTop] = res; opTypeStk[operandStackTop] = lex::IntegerToken; lOpStkDef[operandStackTop] = res.meta;
+            } else {
+              double tmpD{};
+              ConvertStringToVal(lex::RealToken, rightDef, const_cast<LPWSTR>(s.c_str()), &newDef, &tmpD);
+              Operand res; res.v = tmpD; res.meta = newDef;
+              operandStackTop++; opStk[operandStackTop] = res; opTypeStk[operandStackTop] = lex::RealToken; lOpStkDef[operandStackTop] = res.meta;
+            }
           } else if (tokenType == lex::StringToken) {
-            ;
+            // noop
+            operandStackTop++; opStk[operandStackTop] = right; opTypeStk[operandStackTop] = lex::StringToken; lOpStkDef[operandStackTop] = right.meta;
           } else {
             throw L"String operand conversions error: unknown";
           }
-        } else if (iTyp1 == lex::IntegerToken) {
-          UnaryOp(tokenType, &iTyp1, &lDef1, lOp1);
         } else {
-          UnaryOp(tokenType, &iTyp1, &lDef1, dOp1);
+          // numeric unary operations: use existing UnaryOp by converting to legacy buffer
+          // prepare buffer
+          long tmpDef = right.meta;
+          long outType = 0;
+          // use 32-byte local buffer as before
+          unsigned char localBuf[256]{};
+          void* bufPtr = localBuf;
+          int callType = 0;
+          OperandToLegacyBuffer(right, bufPtr, tmpDef, callType);
+
+          if (std::holds_alternative<std::int64_t>(right.v)) {
+            // call UnaryOp with long (note: legacy used 32-bit long)
+            long tmpLong = static_cast<long>(std::get<std::int64_t>(right.v));
+            UnaryOp<long>(tokenType, &callType, &tmpDef, &tmpLong);
+            // pack result back into operand and push
+            Operand res; res.v = static_cast<std::int64_t>(tmpLong); res.meta = tmpDef;
+            operandStackTop++; opStk[operandStackTop] = res; opTypeStk[operandStackTop] = callType; lOpStkDef[operandStackTop] = tmpDef;
+          } else {
+            double tmpDouble = std::get<double>(right.v);
+            UnaryOp<double>(tokenType, &callType, &tmpDef, &tmpDouble);
+            Operand res; res.v = tmpDouble; res.meta = tmpDef;
+            operandStackTop++; opStk[operandStackTop] = res; opTypeStk[operandStackTop] = callType; lOpStkDef[operandStackTop] = tmpDef;
+          }
         }
       } else if (TokenPropertiesTable[tokenType].tokenClass ==
                  BinaryArithmeticOperator) {  // Binary arithmetic operator
         if (operandStackTop == 0) { throw L"Binary Arithmetic: Only one operand."; }
-        iTyp2 = operandStack[operandStackTop];  // Pop second operand from operand stack
-        lDef2 = lOpStkDef[operandStackTop];
-        iLen2 = HIWORD(lDef2);
-        memcpy(secondOperandBuffer, &lOpStk[operandStackTop--][0], static_cast<size_t>(iLen2 * 4));
-        iTyp = std::min(iTyp2, lex::RealToken);
-        if (iTyp1 < iTyp) {  // Convert first operand
-          ConvertValTyp(iTyp1, iTyp, &lDef1, lOp1);
-          iTyp1 = iTyp;
-          iLen1 = HIWORD(lDef1);
-        } else {
-          iTyp = std::min(iTyp1, lex::RealToken);
-          if (iTyp2 < iTyp) {  // Convert second operand
-            ConvertValTyp(iTyp2, iTyp, &lDef2, lOp2);
-            iTyp2 = iTyp;
-            iLen2 = HIWORD(lDef2);
-          }
-        }
+        // Pop left operand
+        Operand left = opStk[operandStackTop];
+        int leftType = opTypeStk[operandStackTop];
+        long leftDef = lOpStkDef[operandStackTop];
+        operandStackTop--;
+
+        // Determine operand kinds
+        bool leftIsStr = std::holds_alternative<std::wstring>(left.v);
+        bool rightIsStr = std::holds_alternative<std::wstring>(right.v);
+        bool leftIsInt = std::holds_alternative<std::int64_t>(left.v);
+        bool rightIsInt = std::holds_alternative<std::int64_t>(right.v);
+        bool leftIsReal = std::holds_alternative<double>(left.v);
+        bool rightIsReal = std::holds_alternative<double>(right.v);
+
+        // Result operand
+        Operand result;
+        int resultType = 0;
+        long resultDef = 0;
+
         if (tokenType == lex::AdditionOperator) {
-          if (iTyp1 == lex::StringToken) {
-            iDim1 = LOWORD(lDef1);
-            iDim2 = LOWORD(lDef2);
-            iDim = iDim2 + iDim1;
-
-            errno_t err = wcscat_s(cOp2, 256, reinterpret_cast<wchar_t*>(operandBuffer));
-            if (err != 0) { throw L"String concatenation overflow!"; }
-
-            wcscpy_s(reinterpret_cast<wchar_t*>(operandBuffer), static_cast<size_t>(HIWORD(lDef1) * 4), cOp2);
-            iLen1 = 1 + (iDim - 1) / 4;
-            lDef1 = MAKELONG(iDim, iLen1);
+          if (leftIsStr && rightIsStr) {
+            const std::wstring& ls = std::get<std::wstring>(left.v);
+            const std::wstring& rs = std::get<std::wstring>(right.v);
+            std::wstring concat = ls + rs;
+            result.v = concat;
+            int dim = static_cast<int>(concat.size());
+            int len = 1 + (dim - 1) / 4;
+            result.meta = MAKELONG(dim, len);
+            resultType = lex::StringToken;
+            resultDef = result.meta;
+          } else if (leftIsInt && rightIsInt) {
+            std::int64_t lv = std::get<std::int64_t>(left.v);
+            std::int64_t rv = std::get<std::int64_t>(right.v);
+            result.v = lv + rv;
+            resultType = lex::IntegerToken;
+            resultDef = MAKELONG(1, 1);
+            result.meta = resultDef;
           } else {
-            if (iTyp1 == lex::IntegerToken) {
-              lOp1[0] += lOp2[0];
-            } else {
-              dOp1[0] += dOp2[0];
-            }
+            // numeric promotion to double
+            double ld = leftIsReal ? std::get<double>(left.v) : static_cast<double>(std::get<std::int64_t>(left.v));
+            double rd = rightIsReal ? std::get<double>(right.v) : static_cast<double>(std::get<std::int64_t>(right.v));
+            result.v = ld + rd;
+            resultType = lex::RealToken;
+            resultDef = MAKELONG(1, 2);
+            result.meta = resultDef;
           }
         } else if (tokenType == lex::SubtractionOperator) {
-          if (iTyp1 == lex::StringToken) { throw L"Can not subtract strings"; }
-          if (iTyp1 == lex::IntegerToken) {
-            lOp1[0] = lOp2[0] - lOp1[0];
+          if (leftIsStr || rightIsStr) { throw L"Can not subtract strings"; }
+          if (leftIsInt && rightIsInt) {
+            std::int64_t lv = std::get<std::int64_t>(left.v);
+            std::int64_t rv = std::get<std::int64_t>(right.v);
+            result.v = lv - rv;
+            resultType = lex::IntegerToken;
+            resultDef = MAKELONG(1, 1);
+            result.meta = resultDef;
           } else {
-            dOp1[0] = dOp2[0] - dOp1[0];
+            double ld = leftIsReal ? std::get<double>(left.v) : static_cast<double>(std::get<std::int64_t>(left.v));
+            double rd = rightIsReal ? std::get<double>(right.v) : static_cast<double>(std::get<std::int64_t>(right.v));
+            result.v = ld - rd;
+            resultType = lex::RealToken;
+            resultDef = MAKELONG(1, 2);
+            result.meta = resultDef;
           }
         } else if (tokenType == lex::MultiplicationOperator) {
-          if (iTyp1 == lex::StringToken) { throw L"Can not mutiply strings"; }
-          if (iTyp1 == lex::IntegerToken) {
-            lOp1[0] *= lOp2[0];
+          if (leftIsStr || rightIsStr) { throw L"Can not mutiply strings"; }
+          if (leftIsInt && rightIsInt) {
+            std::int64_t lv = std::get<std::int64_t>(left.v);
+            std::int64_t rv = std::get<std::int64_t>(right.v);
+            result.v = lv * rv;
+            resultType = lex::IntegerToken;
+            resultDef = MAKELONG(1, 1);
+            result.meta = resultDef;
           } else {
-            if (iTyp1 == lex::RealToken) {
-              iTyp1 = iTyp2;
-            } else if (iTyp2 == lex::RealToken) {
-              ;
-            } else if (iTyp1 == lex::LengthToken && iTyp2 == lex::LengthToken) {
-              iTyp1 = lex::AreaToken;
-            } else {
-              throw L"Invalid mix of multiplicands";
-            }
-
-            dOp1[0] *= dOp2[0];
+            double ld = leftIsReal ? std::get<double>(left.v) : static_cast<double>(std::get<std::int64_t>(left.v));
+            double rd = rightIsReal ? std::get<double>(right.v) : static_cast<double>(std::get<std::int64_t>(right.v));
+            result.v = ld * rd;
+            resultType = lex::RealToken;
+            resultDef = MAKELONG(1, 2);
+            result.meta = resultDef;
           }
         } else if (tokenType == lex::DivisionOperator) {
-          if (iTyp1 == lex::StringToken) { throw L"Can not divide strings"; }
-          if (iTyp1 == lex::IntegerToken) {
-            if (lOp1[0] == 0) { throw L"Attempting to divide by 0"; }
-            lOp1[0] = lOp2[0] / lOp1[0];
-          } else if (iTyp1 <= iTyp2) {
-            if (dOp1[0] == 0.0) { throw L"Attempting to divide by 0."; }
-            if (iTyp1 == iTyp2) {
-              iTyp1 = lex::RealToken;
-            } else if (iTyp1 == lex::RealToken) {
-              iTyp1 = iTyp2;
-            } else {
-              iTyp1 = lex::LengthToken;
-            }
-            dOp1[0] = dOp2[0] / dOp1[0];
+          if (leftIsStr || rightIsStr) { throw L"Can not divide strings"; }
+          if (leftIsInt && rightIsInt) {
+            std::int64_t lv = std::get<std::int64_t>(left.v);
+            std::int64_t rv = std::get<std::int64_t>(right.v);
+            if (rv == 0) { throw L"Attempting to divide by 0"; }
+            result.v = lv / rv;
+            resultType = lex::IntegerToken;
+            resultDef = MAKELONG(1, 1);
+            result.meta = resultDef;
           } else {
-            throw L"Division type error";
+            double ld = leftIsReal ? std::get<double>(left.v) : static_cast<double>(std::get<std::int64_t>(left.v));
+            double rd = rightIsReal ? std::get<double>(right.v) : static_cast<double>(std::get<std::int64_t>(right.v));
+            if (rd == 0.0) { throw L"Attempting to divide by 0."; }
+            result.v = ld / rd;
+            resultType = lex::RealToken;
+            resultDef = MAKELONG(1, 2);
+            result.meta = resultDef;
           }
         } else if (tokenType == lex::ExponentiationOperator) {
-          if (iTyp1 == lex::IntegerToken) {
-            if ((lOp1[0] >= 0 && lOp1[0] > DBL_MAX_10_EXP) || (lOp1[0] < 0 && lOp1[0] < DBL_MIN_10_EXP)) {
-              throw L"Exponentiation error";
-            }
-
-            lOp1[0] = (int)pow((double)lOp2[0], lOp1[0]);
-          } else if (iTyp1 == lex::RealToken) {
-            int iExp = (int)dOp1[0];
-
-            if ((iExp >= 0 && iExp > DBL_MAX_10_EXP) || (iExp < 0 && iExp < DBL_MIN_10_EXP)) {
-              throw L"Exponentiation error";
-            }
-            dOp1[0] = pow(dOp2[0], dOp1[0]);
+          if (leftIsInt && rightIsInt) {
+            std::int64_t exp = std::get<std::int64_t>(right.v);
+            double base = static_cast<double>(std::get<std::int64_t>(left.v));
+            // be conservative using pow
+            double val = pow(base, static_cast<double>(exp));
+            result.v = static_cast<std::int64_t>(val);
+            resultType = lex::IntegerToken;
+            resultDef = MAKELONG(1, 1);
+            result.meta = resultDef;
+          } else {
+            double ld = leftIsReal ? std::get<double>(left.v) : static_cast<double>(std::get<std::int64_t>(left.v));
+            double rd = rightIsReal ? std::get<double>(right.v) : static_cast<double>(std::get<std::int64_t>(right.v));
+            double val = pow(ld, rd);
+            result.v = val;
+            resultType = lex::RealToken;
+            resultDef = MAKELONG(1, 2);
+            result.meta = resultDef;
           }
         }
+
+        // push result
+        operandStackTop++;
+        opStk[operandStackTop] = result;
+        opTypeStk[operandStackTop] = resultType;
+        lOpStkDef[operandStackTop] = result.meta;
+
       } else if (TokenPropertiesTable[tokenType].tokenClass == BinaryRelationalOperator) {
         // if support for binary relational operators desired (== != > >= < <=)
         throw L"Binary relational operators not implemented";
@@ -456,14 +554,18 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
         throw L"Unary logical operator not implemented";
       }
     }
-    operandStackTop++;                      // Increment opernad stack pointer
-    operandStack[operandStackTop] = iTyp1;  // Push operand onto operand stack
-    lOpStkDef[operandStackTop] = lDef1;
-    memcpy(&lOpStk[operandStackTop][0], operandBuffer, static_cast<size_t>(HIWORD(lDef1) * 4));
     iTokStkId++;
   }
-  *operandType = iTyp1;
-  *operandDefinition = lDef1;
+
+  if (operandStackTop == 0) { throw L"No result on operand stack"; }
+  // Final result is on top
+  Operand finalOp = opStk[operandStackTop];
+  long outDef{};
+  int outType{};
+  OperandToLegacyBuffer(finalOp, operandBuffer, outDef, outType);
+
+  *operandType = outType;
+  *operandDefinition = outDef;
 }
 
 void lex::Parse(const wchar_t* inputLine) {

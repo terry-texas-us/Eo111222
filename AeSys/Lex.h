@@ -1,6 +1,9 @@
 ﻿#pragma once
 
 #include <cwctype>
+#include <variant>
+#include <string>
+#include <cstdint>
 
 enum TokenClass {
   Other,
@@ -27,6 +30,17 @@ struct TokenProperties {
 };
 
 namespace lex {
+
+using ValueVariant = std::variant<std::wstring, std::int64_t, double>;
+
+/// Operand is a typed value container used by the expression evaluator.
+/// `meta` preserves legacy dimension/length encoding (LOWORD/HIWORD) for staged migration.
+struct Operand {
+  ValueVariant v;
+  long meta; // legacy value definition: LOWORD = dimension, HIWORD = length
+
+  Operand() : v(std::int64_t(0)), meta(0) {}
+};
 
 constexpr int MaxTokens = 128;
 constexpr int MaxValues = 256;
@@ -237,5 +251,7 @@ inline wchar_t* ScanForChar(wchar_t character, wchar_t** lineBuffer) noexcept {
  * @param ppArgBuf Pointer to an argument buffer pointer; scanned characters are written into *ppArgBuf and the pointer is updated to the end of the written data. Returns pointer to the start of the stored string inside the argument buffer, or nullptr on failure.
  */
 wchar_t* ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBuf);
+
+extern long lValues[lex::MaxValues];
 
 }  // namespace lex
