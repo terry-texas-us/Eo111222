@@ -84,7 +84,7 @@ void OperandToLegacyBuffer(const lex::Operand& op, void* operandBuffer, long& ou
   }
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
 namespace lex {
 int tokenTypeIdentifiers[lex::MaxTokens];
@@ -114,8 +114,7 @@ wchar_t* ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBuf) {
       // ok
     } else {
       // allow some peg specials when not quoted
-      if (!(*pIn == L'_' || *pIn == L'$' || *pIn == L'.' || *pIn == L'-' || *pIn == L':' || *pIn == L'\\'))
-        break;
+      if (!(*pIn == L'_' || *pIn == L'$' || *pIn == L'.' || *pIn == L'-' || *pIn == L':' || *pIn == L'\\')) break;
     }
 
     // handle escaped double-quote inside quoted string
@@ -124,9 +123,7 @@ wchar_t* ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBuf) {
     }
 
     // handle escaped backslash
-    if (*pIn == L'\\' && *(pIn + 1) == L'\\') {
-      ++pIn;
-    }
+    if (*pIn == L'\\' && *(pIn + 1) == L'\\') { ++pIn; }
 
     *pOut++ = *pIn++;
   }
@@ -145,7 +142,7 @@ wchar_t* ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBuf) {
   return pStart;
 }
 
-} // namespace lex
+}  // namespace lex
 
 void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTokens, int* locationOfTokens) {
   int NumberOfOpenParentheses{0};
@@ -321,8 +318,8 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
 
   // Operand stacks using new Operand type
   Operand opStk[32];
-  int opTypeStk[32]{}; // token type codes for operands
-  long lOpStkDef[32]{}; // legacy defs
+  int opTypeStk[32]{};   // token type codes for operands
+  long lOpStkDef[32]{};  // legacy defs
 
   int operandStackTop{0};  // Empty operand stack (index of top)
   int iTokStkId{0};        // Start with first token
@@ -352,23 +349,37 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
         // Handle string conversions first
         if (std::holds_alternative<std::wstring>(right.v)) {
           std::wstring s = std::get<std::wstring>(right.v);
-          if (tokenType == lex::IntUnaryOperator || tokenType == lex::RealToken || tokenType == lex::RealUnaryOperator) {
+          if (tokenType == lex::IntUnaryOperator || tokenType == lex::RealToken ||
+              tokenType == lex::RealUnaryOperator) {
             // convert string to numeric using existing helper
             long newDef{};
             if (tokenType == lex::IntUnaryOperator) {
               long tmpInt{};
               ConvertStringToVal(lex::IntegerToken, rightDef, const_cast<LPWSTR>(s.c_str()), &newDef, &tmpInt);
-              Operand res; res.v = static_cast<std::int64_t>(tmpInt); res.meta = newDef;
-              operandStackTop++; opStk[operandStackTop] = res; opTypeStk[operandStackTop] = lex::IntegerToken; lOpStkDef[operandStackTop] = res.meta;
+              Operand res;
+              res.v = static_cast<std::int64_t>(tmpInt);
+              res.meta = newDef;
+              operandStackTop++;
+              opStk[operandStackTop] = res;
+              opTypeStk[operandStackTop] = lex::IntegerToken;
+              lOpStkDef[operandStackTop] = res.meta;
             } else {
               double tmpD{};
               ConvertStringToVal(lex::RealToken, rightDef, const_cast<LPWSTR>(s.c_str()), &newDef, &tmpD);
-              Operand res; res.v = tmpD; res.meta = newDef;
-              operandStackTop++; opStk[operandStackTop] = res; opTypeStk[operandStackTop] = lex::RealToken; lOpStkDef[operandStackTop] = res.meta;
+              Operand res;
+              res.v = tmpD;
+              res.meta = newDef;
+              operandStackTop++;
+              opStk[operandStackTop] = res;
+              opTypeStk[operandStackTop] = lex::RealToken;
+              lOpStkDef[operandStackTop] = res.meta;
             }
           } else if (tokenType == lex::StringToken) {
             // noop
-            operandStackTop++; opStk[operandStackTop] = right; opTypeStk[operandStackTop] = lex::StringToken; lOpStkDef[operandStackTop] = right.meta;
+            operandStackTop++;
+            opStk[operandStackTop] = right;
+            opTypeStk[operandStackTop] = lex::StringToken;
+            lOpStkDef[operandStackTop] = right.meta;
           } else {
             throw L"String operand conversions error: unknown";
           }
@@ -385,15 +396,25 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
           if (std::holds_alternative<std::int64_t>(right.v)) {
             // call UnaryOp with long (note: legacy used 32-bit long)
             long tmpLong = static_cast<long>(std::get<std::int64_t>(right.v));
-            UnaryOp<long>(tokenType, &callType, &tmpDef, &tmpLong);
+            lex::UnaryOp(tokenType, &right, &callType);
             // pack result back into operand and push
-            Operand res; res.v = static_cast<std::int64_t>(tmpLong); res.meta = tmpDef;
-            operandStackTop++; opStk[operandStackTop] = res; opTypeStk[operandStackTop] = callType; lOpStkDef[operandStackTop] = tmpDef;
+            Operand res;
+            res.v = static_cast<std::int64_t>(tmpLong);
+            res.meta = tmpDef;
+            operandStackTop++;
+            opStk[operandStackTop] = res;
+            opTypeStk[operandStackTop] = callType;
+            lOpStkDef[operandStackTop] = tmpDef;
           } else {
             double tmpDouble = std::get<double>(right.v);
-            UnaryOp<double>(tokenType, &callType, &tmpDef, &tmpDouble);
-            Operand res; res.v = tmpDouble; res.meta = tmpDef;
-            operandStackTop++; opStk[operandStackTop] = res; opTypeStk[operandStackTop] = callType; lOpStkDef[operandStackTop] = tmpDef;
+            lex::UnaryOp(tokenType, &right, &callType);
+            Operand res;
+            res.v = tmpDouble;
+            res.meta = tmpDef;
+            operandStackTop++;
+            opStk[operandStackTop] = res;
+            opTypeStk[operandStackTop] = callType;
+            lOpStkDef[operandStackTop] = tmpDef;
           }
         }
       } else if (TokenPropertiesTable[tokenType].tokenClass ==
@@ -662,153 +683,166 @@ int lex::TokType(int tokenType) {
   return (tokenType >= 0 && tokenType < numberOfTokensInStream) ? tokenTypeIdentifiers[tokenType] : -1;
 }
 
-template <typename T>
-void lex::UnaryOp(int operatorType, int* resultType, long* valueMetaData, T* value) {
-  ColumnDefinition columnDefinition{};
+int lex::GetTokenType(const ValueVariant& v) {
+  if (std::holds_alternative<std::int64_t>(v)) return IntegerToken;
+  if (std::holds_alternative<double>(v)) return RealToken;
+  if (std::holds_alternative<std::wstring>(v)) return StringToken;
+  throw std::runtime_error("Unknown variant type");
+}
 
-  int iDim = LOWORD(*valueMetaData);
-  int iLen = HIWORD(*valueMetaData);
+void lex::UnaryOp(int operatorType, Operand* operand, int* resultType) {
+  auto new_variant = std::visit(
+      [operatorType](auto&& val) -> ValueVariant {
+        using U = std::decay_t<decltype(val)>;
 
-  double* doubleValue = reinterpret_cast<double*>(value);
+        switch (operatorType) {
+          case UnaryPlusOperator:
+            return val;  // No-op
 
-  switch (operatorType) {
-    case lex::UnaryMinusOperator:
-      value[0] = -value[0];
-      break;
+          case UnaryMinusOperator:
+            if constexpr (std::is_same_v<U, std::int64_t>) {
+              return -val;
+            } else if constexpr (std::is_same_v<U, double>) {
+              return -val;
+            } else {
+              throw std::runtime_error("Unary minus not supported on string");
+            }
 
-    case lex::UnaryPlusOperator:
-      break;
+          case NotOperator:
+            if constexpr (std::is_same_v<U, std::int64_t>) {
+              return std::int64_t(!val);
+            } else if constexpr (std::is_same_v<U, double>) {
+              return double(!val);
+            } else {
+              throw std::runtime_error("Logical not not supported on string");
+            }
 
-    case lex::AbsOperator:
-      if constexpr (std::is_same_v<T, double>) {
-        value[0] = fabs(value[0]);
-      } else if constexpr (std::is_same_v<T, long>) {
-        value[0] = labs(value[0]);
-      }
-      break;
+          case AbsOperator:
+            if constexpr (std::is_same_v<U, std::int64_t>) {
+              return std::abs(val);
+            } else if constexpr (std::is_same_v<U, double>) {
+              return std::fabs(val);  // Use fabs for double
+            } else {
+              throw std::runtime_error("Abs not supported on string");
+            }
 
-    case lex::AcosOperator:
-      if constexpr (std::is_same_v<T, long>) {
-        PromoteIntegerToReal(valueMetaData, reinterpret_cast<void*>(value), resultType);
-      }
-      if (fabs(value[0]) > 1.0) {
-        throw L"Math error: acos value < -1. or > 1.";
-      } else {
-        // compute acos in radians then convert result to degrees
-        doubleValue[0] = Eo::RadianToDegree(acos(doubleValue[0]));
-      }
-      break;
+          case AcosOperator:
+            if constexpr (std::is_same_v<U, double>) {
+              return std::acos(val);
+            } else {
+              throw std::runtime_error("Acos requires double");
+            }
 
-    case lex::AsinOperator:
-      if constexpr (std::is_same_v<T, long>) {
-        PromoteIntegerToReal(valueMetaData, reinterpret_cast<void*>(value), resultType);
-      }
-      if (fabs(value[0]) > 1.0) {
-        throw L"Math error: asin value < -1. or > 1.";
-      } else {
-        // compute asin in radians then convert result to degrees
-        doubleValue[0] = Eo::RadianToDegree(asin(doubleValue[0]));
-      }
-      break;
+          case AsinOperator:
+            if constexpr (std::is_same_v<U, double>) {
+              return std::asin(val);
+            } else {
+              throw std::runtime_error("Asin requires double");
+            }
 
-    case lex::AtanOperator:
-      if constexpr (std::is_same_v<T, long>) {
-        PromoteIntegerToReal(valueMetaData, reinterpret_cast<void*>(value), resultType);
-      }
-      // compute atan in radians then convert result to degrees
-      doubleValue[0] = Eo::RadianToDegree(atan(doubleValue[0]));
-      break;
+          case AtanOperator:
+            if constexpr (std::is_same_v<U, double>) {
+              return std::atan(val);
+            } else {
+              throw std::runtime_error("Atan requires double");
+            }
 
-    case lex::CosOperator:
-      if constexpr (std::is_same_v<T, long>) {
-        PromoteIntegerToReal(valueMetaData, reinterpret_cast<void*>(value), resultType);
-      }
-      doubleValue[0] = cos(Eo::DegreeToRadian(doubleValue[0]));
-      break;
+          case CosOperator:
+            if constexpr (std::is_same_v<U, double>) {
+              return std::cos(val);
+            } else {
+              throw std::runtime_error("Cos requires double");
+            }
 
-    case lex::ExpOperator:  // exponential function (e^x)
-      if constexpr (std::is_same_v<T, long>) {
-        PromoteIntegerToReal(valueMetaData, reinterpret_cast<void*>(value), resultType);
-      }
-      doubleValue[0] = exp(doubleValue[0]);
-      break;
+          case ExpOperator:
+            if constexpr (std::is_same_v<U, double>) {
+              return std::exp(val);
+            } else {
+              throw std::runtime_error("Exp requires double");
+            }
 
-    case lex::IntUnaryOperator:  // Conversion to integer
-      if constexpr (std::is_same_v<T, double>) {
-        ConvertValTyp(lex::RealToken, lex::IntegerToken, valueMetaData, reinterpret_cast<void*>(value));
-        *resultType = lex::IntegerToken;
-      }
-      break;
+          case IntUnaryOperator:
+            if constexpr (std::is_same_v<U, std::int64_t>) {
+              return val;
+            } else if constexpr (std::is_same_v<U, double>) {
+              return static_cast<std::int64_t>(std::floor(val));  // Or trunc/round as per legacy
+            } else if constexpr (std::is_same_v<U, std::wstring>) {
+              return std::wcstoll(val.c_str(), nullptr, 10);
+            }
 
-    case lex::LnOperator:
-      if constexpr (std::is_same_v<T, long>) {
-        PromoteIntegerToReal(valueMetaData, reinterpret_cast<void*>(value), resultType);
-      }
-      if (value[0] <= 0.0) {
-        throw L"Math error: ln of a non-positive number";
-      } else {
-        doubleValue[0] = log(doubleValue[0]);
-      }
-      break;
+          case LnOperator:
+            if constexpr (std::is_same_v<U, double>) {
+              return std::log(val);  // Natural log
+            } else {
+              throw std::runtime_error("Ln requires double");
+            }
 
-    case lex::LogOperator:
-      if constexpr (std::is_same_v<T, long>) {
-        PromoteIntegerToReal(valueMetaData, reinterpret_cast<void*>(value), resultType);
-      }
-      if (value[0] <= 0.0) {
-        throw L"Math error: log of a non-positive number";
-      } else {
-        doubleValue[0] = log10(doubleValue[0]);
-      }
-      break;
+          case LogOperator:
+            if constexpr (std::is_same_v<U, double>) {
+              return std::log10(val);  // Assuming base-10; confirm if natural
+            } else {
+              throw std::runtime_error("Log requires double");
+            }
 
-    case lex::RealUnaryOperator:  // Conversion to real (double)
-      if constexpr (std::is_same_v<T, long>) {
-        PromoteIntegerToReal(valueMetaData, reinterpret_cast<void*>(value), resultType);
-      }
-      break;
+          case SinOperator:
+            if constexpr (std::is_same_v<U, double>) {
+              return std::sin(val);
+            } else {
+              throw std::runtime_error("Sin requires double");
+            }
 
-    case lex::SinOperator:
-      if constexpr (std::is_same_v<T, long>) {
-        PromoteIntegerToReal(valueMetaData, reinterpret_cast<void*>(value), resultType);
-      }
-      doubleValue[0] = sin(Eo::DegreeToRadian(doubleValue[0]));
-      break;
+          case SqrtOperator:
+            if constexpr (std::is_same_v<U, double>) {
+              return std::sqrt(val);
+            } else {
+              throw std::runtime_error("Sqrt requires double");
+            }
 
-    case lex::SqrtOperator:
-      if constexpr (std::is_same_v<T, long>) {
-        PromoteIntegerToReal(valueMetaData, reinterpret_cast<void*>(value), resultType);
-      }
-      if (value[0] < 0.0) {
-        throw L"Math error: sqrt of a negative number";
-      } else {
-        doubleValue[0] = sqrt(doubleValue[0]);
-      }
-      break;
+          case TanOperator:
+            if constexpr (std::is_same_v<U, double>) {
+              return std::tan(val);
+            } else {
+              throw std::runtime_error("Tan requires double");
+            }
 
-    case lex::TanOperator:
-      if constexpr (std::is_same_v<T, long>) {
-        PromoteIntegerToReal(valueMetaData, reinterpret_cast<void*>(value), resultType);
-      }
-      doubleValue[0] = tan(Eo::DegreeToRadian(doubleValue[0]));
-      break;
+          case RealUnaryOperator:
+            if constexpr (std::is_same_v<U, std::int64_t>) {
+              return static_cast<double>(val);
+            } else if constexpr (std::is_same_v<U, double>) {
+              return val;
+            } else if constexpr (std::is_same_v<U, std::wstring>) {
+              return std::wcstod(val.c_str(), nullptr);
+            }
 
-    case lex::StringUnaryOperator: {  // Conversion to string
-      wchar_t valueAsString[32]{};
-      *resultType = lex::StringToken;
-      columnDefinition.dataDefinition = *valueMetaData;
-      if constexpr (std::is_same_v<T, long>) {
-        columnDefinition.dataType = lex::IntegerToken;
-      } else if constexpr (std::is_same_v<T, double>) {
-        columnDefinition.dataType = lex::RealToken;
-      }
-      ConvertValToString((wchar_t*)value, &columnDefinition, valueAsString, &iDim);
-      iLen = 1 + (iDim - 1) / 4;
-      wcscpy_s((wchar_t*)value, 32, valueAsString);
-      *valueMetaData = MAKELONG(iDim, iLen);
-      break;
-    }
-    default:
-      throw std::logic_error("Unknown operation");
+          case StringUnaryOperator:
+            if constexpr (std::is_same_v<U, std::int64_t>) {
+              return std::to_wstring(val);
+            } else if constexpr (std::is_same_v<U, double>) {
+              return std::to_wstring(val);
+            } else {
+              return val;
+            }
+
+          default:
+            throw std::runtime_error("Unknown unary operator");
+        }
+      },
+      operand->v);
+
+  operand->v = std::move(new_variant);
+
+  // Update meta based on new type
+  if (std::holds_alternative<std::int64_t>(operand->v)) {
+    operand->meta = MAKELONG(1, 1);
+  } else if (std::holds_alternative<double>(operand->v)) {
+    operand->meta = MAKELONG(1, 2);
+  } else if (std::holds_alternative<std::wstring>(operand->v)) {
+    const auto& str = std::get<std::wstring>(operand->v);
+    size_t char_len = str.length();
+    size_t byte_len = char_len * sizeof(wchar_t);
+    size_t long_len = (byte_len + 3) / 4;  // Padded to longs
+    operand->meta = MAKELONG(static_cast<long>(char_len), static_cast<long>(long_len));
   }
+
+  *resultType = GetTokenType(operand->v);
 }

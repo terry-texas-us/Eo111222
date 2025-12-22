@@ -165,15 +165,21 @@ void BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTo
 */
 void ConvertStringToVal(int tokenType, long tokenDefinition, LPWSTR token, long* resultDefinition, void* resultValue);
 
-/** @brief Performs a unary operation on a value based on the specified operator type.
+
+/*** @brief Retrieves the token type identifier for a given value variant.
+ *
+ * @param v The value variant to evaluate.
+ * @return The corresponding token type identifier.
+ */
+int GetTokenType(const ValueVariant& v);
+
+/** @brief Performs a unary operation on a given operand and determines the result type.
  *
  * @param operatorType The type of unary operator to apply.
- * @param resultType Pointer to store the resulting type after the operation.
- * @param valueMetaData Pointer to the metadata of the value (dimension and length).
- * @tparam value Pointer to the value to be processed.
+ * @param operand The operand on which the unary operation is performed.
+ * @param resultType Pointer to store the type of the resulting value.
  */
-template <typename T>
-void UnaryOp(int operatorType, int* resultType, long* valueMetaData, T* value);
+void UnaryOp(int operatorType, Operand* operand, int* resultType);
 
 /** @brief Retrieves the token type identifier for a given token type.
  *
