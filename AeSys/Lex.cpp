@@ -29,7 +29,6 @@ lex::Operand MakeOperandFromStoredValues(int valueIndex, int tokenType) {
   lex::Operand op;
   long lDef = lex::lValues[valueIndex];
   op.meta = lDef;
-  int len = HIWORD(lDef);
   switch (tokenType) {
     case lex::StringToken: {
       int dim = LOWORD(lDef);
@@ -63,7 +62,7 @@ void OperandToLegacyBuffer(const lex::Operand& op, void* operandBuffer, long& ou
     outType = lex::StringToken;
     const std::wstring& s = *ps;
     int dim = static_cast<int>(s.size());
-    int len = 1 + (dim - 1) / 4;
+    int len = 1 + (dim - 1) / 2;
     outDef = MAKELONG(dim, len);
     // copy characters into operandBuffer (as wchar_t)
     wchar_t* dst = reinterpret_cast<wchar_t*>(operandBuffer);
@@ -71,7 +70,7 @@ void OperandToLegacyBuffer(const lex::Operand& op, void* operandBuffer, long& ou
     dst[dim] = L'\0';
   } else if (auto pi = std::get_if<std::int64_t>(&op.v)) {
     outType = lex::IntegerToken;
-    outDef = MAKELONG(1, 1);
+    outDef = MAKELONG(1, 2);
     // legacy stores 32-bit int; cast/truncate
     long* dst = reinterpret_cast<long*>(operandBuffer);
     dst[0] = static_cast<long>(*pi);
@@ -261,8 +260,8 @@ void lex::ConvertValTyp(int currentType, int requiredType, long* valueDefinition
 
   if (currentType == lex::StringToken) {
     if (requiredType == lex::IntegerToken) {
-      longInterpretedBuffer[0] = _wtoi(reinterpret_cast<wchar_t*>(buffer));
-      *valueDefinition = MAKELONG(1, 1);
+      longInterpretedBuffer[0] = static_cast<int64_t>(_wtoi(reinterpret_cast<wchar_t*>(buffer)));
+      *valueDefinition = MAKELONG(1, 2);
     } else {
       doubleInterpretedBuffer[0] = _wtof(reinterpret_cast<wchar_t*>(buffer));
       *valueDefinition = MAKELONG(1, 2);
@@ -314,21 +313,6 @@ void lex::ConvertStringToVal(int tokenType, long tokenDefinition, LPWSTR token, 
 }
 
 void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandType, void* operandBuffer) {
-  WCHAR szTok[256]{};
-
-  int iDim{0};
-  int iTyp{0};
-
-  long lDef1 = MAKELONG(1, 1);
-  int iDim1{0};
-  int iLen1{0};
-  int iTyp1{lex::IntegerToken};
-
-  long lDef2;
-  int iDim2{0};
-  int iLen2{0};
-  int iTyp2{0};
-
   int numberOfTokens{0};
   int iExprTokTyp[32]{};
   int iExprTokLoc[32]{};
@@ -361,7 +345,6 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
 
       // Pop right operand
       Operand right = opStk[operandStackTop];
-      int rightType = opTypeStk[operandStackTop];
       long rightDef = lOpStkDef[operandStackTop];
       operandStackTop--;
 
@@ -393,7 +376,6 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
           // numeric unary operations: use existing UnaryOp by converting to legacy buffer
           // prepare buffer
           long tmpDef = right.meta;
-          long outType = 0;
           // use 32-byte local buffer as before
           unsigned char localBuf[256]{};
           void* bufPtr = localBuf;
@@ -419,8 +401,6 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
         if (operandStackTop == 0) { throw L"Binary Arithmetic: Only one operand."; }
         // Pop left operand
         Operand left = opStk[operandStackTop];
-        int leftType = opTypeStk[operandStackTop];
-        long leftDef = lOpStkDef[operandStackTop];
         operandStackTop--;
 
         // Determine operand kinds
@@ -443,7 +423,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             std::wstring concat = ls + rs;
             result.v = concat;
             int dim = static_cast<int>(concat.size());
-            int len = 1 + (dim - 1) / 4;
+            int len = 1 + (dim - 1) / 2;
             result.meta = MAKELONG(dim, len);
             resultType = lex::StringToken;
             resultDef = result.meta;
@@ -452,7 +432,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             std::int64_t rv = std::get<std::int64_t>(right.v);
             result.v = lv + rv;
             resultType = lex::IntegerToken;
-            resultDef = MAKELONG(1, 1);
+            resultDef = MAKELONG(1, 2);
             result.meta = resultDef;
           } else {
             // numeric promotion to double
@@ -470,7 +450,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             std::int64_t rv = std::get<std::int64_t>(right.v);
             result.v = lv - rv;
             resultType = lex::IntegerToken;
-            resultDef = MAKELONG(1, 1);
+            resultDef = MAKELONG(1, 2);
             result.meta = resultDef;
           } else {
             double ld = leftIsReal ? std::get<double>(left.v) : static_cast<double>(std::get<std::int64_t>(left.v));
@@ -487,7 +467,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             std::int64_t rv = std::get<std::int64_t>(right.v);
             result.v = lv * rv;
             resultType = lex::IntegerToken;
-            resultDef = MAKELONG(1, 1);
+            resultDef = MAKELONG(1, 2);
             result.meta = resultDef;
           } else {
             double ld = leftIsReal ? std::get<double>(left.v) : static_cast<double>(std::get<std::int64_t>(left.v));
@@ -505,7 +485,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             if (rv == 0) { throw L"Attempting to divide by 0"; }
             result.v = lv / rv;
             resultType = lex::IntegerToken;
-            resultDef = MAKELONG(1, 1);
+            resultDef = MAKELONG(1, 2);
             result.meta = resultDef;
           } else {
             double ld = leftIsReal ? std::get<double>(left.v) : static_cast<double>(std::get<std::int64_t>(left.v));
@@ -524,7 +504,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             double val = pow(base, static_cast<double>(exp));
             result.v = static_cast<std::int64_t>(val);
             resultType = lex::IntegerToken;
-            resultDef = MAKELONG(1, 1);
+            resultDef = MAKELONG(1, 2);
             result.meta = resultDef;
           } else {
             double ld = leftIsReal ? std::get<double>(left.v) : static_cast<double>(std::get<std::int64_t>(left.v));
