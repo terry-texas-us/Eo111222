@@ -1686,13 +1686,10 @@
     <None Include="Markdowns\Job File Format.md">
       <Filter>Markdowns</Filter>
     </None>
-    <None Include="Markdowns\Micro Modernization Steps.md">
-      <Filter>Markdowns</Filter>
-    </None>
     <None Include="Markdowns\Peg &amp; Tra File Formats.md">
       <Filter>Markdowns</Filter>
     </None>
-    <None Include="Markdowns\Grok Report.md">
+    <None Include="Markdowns\Analysis of lex.cpp and Modernization Suggestions.md">
       <Filter>Markdowns</Filter>
     </None>
   </ItemGroup>

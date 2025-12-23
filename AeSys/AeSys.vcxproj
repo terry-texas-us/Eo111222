@@ -211,9 +211,8 @@
     <None Include=".clang-tidy" />
     <None Include="lex_regexp.dat" />
     <None Include="Markdowns\Dde Description and Few Uses.md" />
-    <None Include="Markdowns\Grok Report.md" />
+    <None Include="Markdowns\Analysis of lex.cpp and Modernization Suggestions.md" />
     <None Include="Markdowns\Job File Format.md" />
-    <None Include="Markdowns\Micro Modernization Steps.md" />
     <None Include="Markdowns\Peg &amp; Tra File Formats.md" />
     <None Include="res\AeSys.ico" />
     <None Include="res\AeSys.rc2" />
