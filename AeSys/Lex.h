@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include <cwctype>
-#include <variant>
-#include <string>
 #include <cstdint>
+#include <cwctype>
+#include <string>
+#include <variant>
 
 enum TokenClass {
   Other,
@@ -37,7 +37,7 @@ using ValueVariant = std::variant<std::wstring, std::int64_t, double>;
 /// `meta` preserves legacy dimension/length encoding (LOWORD/HIWORD) for staged migration.
 struct Operand {
   ValueVariant v;
-  long meta; // legacy value definition: LOWORD = dimension, HIWORD = length
+  long meta;  // legacy value definition: LOWORD = dimension, HIWORD = length
 
   Operand() : v(std::int64_t(0)), meta(0) {}
 };
@@ -90,7 +90,9 @@ constexpr int NotOperator = 39;
 constexpr int LeftParenthesis = 40;
 constexpr int RightParenthesis = 41;
 
-/** Static array of TokenProperties structures that defines a mapping of various tokens, their precedence, and types used in a lexical analysis context, with a total of 42 entries. */
+/** Static array of TokenProperties structures that defines a mapping of various tokens, 
+ * their precedence, and types used in a lexical analysis context, with a total of 42 entries. 
+ */
 static TokenProperties TokenPropertiesTable[] = {
     {0, 0, Other},                       // unused
     {110, 85, Other},                    // abs
@@ -165,7 +167,6 @@ void BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTo
 */
 void ConvertStringToVal(int tokenType, long tokenDefinition, LPWSTR token, long* resultDefinition, void* resultValue);
 
-
 /*** @brief Retrieves the token type identifier for a given value variant.
  *
  * @param v The value variant to evaluate.
@@ -177,9 +178,8 @@ int GetTokenType(const ValueVariant& v);
  *
  * @param operatorType The type of unary operator to apply.
  * @param operand The operand on which the unary operation is performed.
- * @param resultType Pointer to store the type of the resulting value.
  */
-void UnaryOp(int operatorType, Operand* operand, int* resultType);
+void UnaryOp(int operatorType, Operand* operand);
 
 /** @brief Retrieves the token type identifier for a given token type.
  *
@@ -207,7 +207,10 @@ void ConvertValToString(void* valueBuffer, ColumnDefinition* columnDefinition, w
 
 ///////////////// Parse and dependencies /////////////////////
 
-/** @brief Processes a wide-character input line to tokenize it, categorizing each token and storing relevant values in predefined arrays while managing the number of tokens and values encountered.
+/** @brief Processes a wide-character input line to tokenize it,
+ * categorizing each token and storing relevant values in predefined arrays while managing the
+ * number of tokens and values encountered.
+ *
  * @param inputLine The wide-character input line to parse.
  */
 void Parse(const wchar_t* inputLine);
@@ -220,8 +223,6 @@ void Parse(const wchar_t* inputLine);
  * @return The token ID of the scanned token, or -1 if no valid token is found.
  */
 int Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition);
-
-void ParseStringOperand(wchar_t* token);
 
 /** @brief Skips leading whitespace characters in the input line.
  *
@@ -258,6 +259,6 @@ inline wchar_t* ScanForChar(wchar_t character, wchar_t** lineBuffer) noexcept {
  */
 wchar_t* ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBuf);
 
-extern long lValues[lex::MaxValues];
+extern long tokenValues[lex::MaxValues];
 
 }  // namespace lex
