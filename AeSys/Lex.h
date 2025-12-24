@@ -13,11 +13,18 @@ enum TokenClass {
   CloseParentheses
 };
 
-struct ColumnDefinition {
-  long dataDefinition;
-  long dataType;
+/** @brief Structure defining a value's definition (int16_t dimension and int_16_t length packed into a long) and type.
+ */
+struct ValueMetaInformation {
+  long definition;
+  long type;
+
+  constexpr int GetDimension() const noexcept { return LOWORD(definition); }
+  constexpr int GetLength() const noexcept { return HIWORD(definition); }
 };
 
+/** @brief Structure defining token properties such as precedence and type.
+ */
 struct TokenProperties {
   int inComingPriority;
   int inStackPriority;
@@ -135,11 +142,12 @@ void ConvertStringToVal(int tokenType, long tokenDefinition, LPWSTR token, long*
 
 /** @brief Converts an internal representation of a value to its string representation.
  * @param valueBuffer buffer containing value to convert
- * @param columnDefinition definition of value (dimension and length)
- * @param acPic output buffer for string representation
- * @param aiLen (out) length of resulting string
+ * @param valueMetaInformation definition of value (dimension and length)
+ * @param[out] stringBuffer output buffer for string representation
+ * @param[out] stringLength length of resulting string
  */
-void ConvertValToString(void* valueBuffer, ColumnDefinition* columnDefinition, wchar_t* acPic, int* aiLen);
+void ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaInformation, wchar_t* stringbuffer,
+                        int* stringLength);
 
 /** @brief Does value type conversion
  * @param currentType current type of value

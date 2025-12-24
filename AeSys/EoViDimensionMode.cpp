@@ -10,6 +10,7 @@
 #include "EoDbText.h"
 #include "EoGeReferenceSystem.h"
 #include "PrimState.h"
+#include <string>
 
 double DimensionModePickTolerance{0.05};
 EoGePoint3d PreviousDimensionCursorPosition;
@@ -304,7 +305,7 @@ void AeSysView::OnDimensionModeAngle() {
       rProjPt[0] = DetPt();
       pLine->GetLine(ln);
       PreviousDimensionCommand = ModeLineHighlightOp(ID_OP8);
-      app.AddStringToMessageList(L"Select the second line.");
+      app.AddStringToMessageList(std::wstring(L"Select the second line."));
       iLns = 1;
     }
   } else {
@@ -315,7 +316,7 @@ void AeSysView::OnDimensionModeAngle() {
         rProjPt[1] = DetPt();
         if (EoGeLine::Intersection(ln, pLine->Ln(), ptCen)) {
           iLns++;
-          app.AddStringToMessageList(L"Specify the location for the dimension arc.");
+          app.AddStringToMessageList(std::wstring(L"Specify the location for the dimension arc."));
         }
       }
     } else {

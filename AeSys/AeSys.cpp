@@ -1,5 +1,21 @@
 ﻿#include "stdafx.h"
 
+#include "AeSys.h"
+#include "AeSysDoc.h"
+#include "AeSysView.h"
+#include "ChildFrm.h"
+#include "EoApOptions.h"
+#include "EoDb.h"
+#include "EoDbCharacterCellDefinition.h"
+#include "EoDbFontDefinition.h"
+#include "EoDlgModeLetter.h"
+#include "EoDlgModeRevise.h"
+#include "EoGePoint3d.h"
+#include "Lex.h"
+#include "MainFrm.h"
+#include "PegColors.h"
+#include "PrimState.h"
+#include "Resource.h"
 #include <ShlObj_core.h>
 #include <Windows.h>
 #include <afx.h>
@@ -21,26 +37,10 @@
 #include <cstdlib>
 #include <direct.h>
 #include <iostream>
+#include <string>
 #include <string.h>
 #include <tchar.h>
 #include <wchar.h>
-
-#include "AeSys.h"
-#include "AeSysDoc.h"
-#include "AeSysView.h"
-#include "ChildFrm.h"
-#include "EoApOptions.h"
-#include "EoDb.h"
-#include "EoDbCharacterCellDefinition.h"
-#include "EoDbFontDefinition.h"
-#include "EoDlgModeLetter.h"
-#include "EoDlgModeRevise.h"
-#include "EoGePoint3d.h"
-#include "Lex.h"
-#include "MainFrm.h"
-#include "PegColors.h"
-#include "PrimState.h"
-#include "Resource.h"
 
 #if defined(USING_ODA)
 #include "RxDynamicModule.h"
@@ -333,6 +333,12 @@ void AeSys::AddStringToMessageList(const CString& message) {
 
   mainFrame->GetOutputPane().AddStringToMessageList(message);
   if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message); }
+}
+void AeSys::AddStringToMessageList(const std::wstring& message) {
+  auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+
+  mainFrame->GetOutputPane().AddStringToMessageList(message);
+  if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message.c_str()); }
 }
 void AeSys::AddModeInformationToMessageList() {
   CString ResourceString = EoAppLoadStringResource(static_cast<UINT>(m_CurrentMode));
@@ -1001,7 +1007,15 @@ double AeSys::ParseLength(Units units, wchar_t* inputLine) {
     double length[32]{};
 
     lex::Parse(inputLine);
-    lex::EvalTokenStream(&iTokId, &lDef, &iTyp, length);
+
+    try {
+      lex::EvalTokenStream(&iTokId, &lDef, &iTyp, length);
+    } catch (const std::domain_error& e) {
+      app.AddStringToMessageList(MultiByteToWString(e.what()));
+      return (0.0);
+    } catch (const wchar_t* errorMessage) {
+      app.AddStringToMessageList(std::wstring(errorMessage));
+    }
 
     if (iTyp == lex::LengthToken) {
       return (length[0]);

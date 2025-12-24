@@ -1692,6 +1692,9 @@
     <None Include="Markdowns\Analysis of lex.cpp and Modernization Suggestions.md">
       <Filter>Markdowns</Filter>
     </None>
+    <None Include="vshints.hm">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">

@@ -1,8 +1,8 @@
 ﻿#include "stdafx.h"
 
-#include "LexTable.h"
 #include "AeSys.h"
 #include "Lex.h"
+#include "LexTable.h"
 #include "Resource.h"
 #include <algorithm>
 #include <atltrace.h>
@@ -12,6 +12,7 @@
 #include <corecrt.h>
 #include <cstddef>
 #include <cstdlib>
+#include <stdexcept>
 #include <wchar.h>
 
 namespace lex {
@@ -93,16 +94,16 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
   if (numberOfTokens == 0) { throw L"Syntax error"; }
 }
 
-void lex::ConvertValToString(void* valueBuffer, ColumnDefinition* columnDefinition, wchar_t* acPic, int* aiLen) {
-  long lTyp = columnDefinition->dataType;
-  int iDim = LOWORD(columnDefinition->dataDefinition);
+void lex::ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaInformation, wchar_t* stringBuffer,
+                             int* stringLength) {
+  int iDim = valueMetaInformation->GetDimension();
 
-  if (lTyp == lex::StringToken) {
-    *aiLen = iDim;
-    acPic[0] = '\'';
-    memmove(&acPic[1], valueBuffer, static_cast<size_t>(*aiLen));
-    acPic[++*aiLen] = '\'';
-    acPic[++*aiLen] = '\0';
+  if (valueMetaInformation->type == lex::StringToken) {
+    *stringLength = iDim;
+    stringBuffer[0] = '\'';
+    memmove(&stringBuffer[1], valueBuffer, static_cast<size_t>(*stringLength));
+    stringBuffer[++*stringLength] = '\'';
+    stringBuffer[++*stringLength] = '\0';
   } else {
     wchar_t cVal[32]{};
     long* lVal = (long*)cVal;
@@ -114,48 +115,45 @@ void lex::ConvertValToString(void* valueBuffer, ColumnDefinition* columnDefiniti
     int iVLen = 0;
     int byteOfset = 0;
     int iLnLoc = 0;
-    int iLen = HIWORD(columnDefinition->dataDefinition);
+    int iLen = valueMetaInformation->GetLength();
 
-    if (lTyp != lex::IntegerToken) { iLen = iLen / 2; }
+    if (valueMetaInformation->type != lex::IntegerToken) { iLen = iLen / 2; }
 
     if (iDim != iLen) {  // Matrix
-      acPic[0] = '[';
+      stringBuffer[0] = '[';
       iLnLoc++;
     }
     for (int i1 = 0; i1 < iLen; i1++) {
       iLnLoc++;
-      if (iLen != 1 && (i1 % iDim) == 0) { acPic[iLnLoc++] = '['; }
-      if (lTyp == lex::IntegerToken) {
+      if (iLen != 1 && (i1 % iDim) == 0) { stringBuffer[iLnLoc++] = '['; }
+      if (valueMetaInformation->type == lex::IntegerToken) {
         memcpy(lVal, reinterpret_cast<const std::byte*>(valueBuffer) + byteOfset, 4);
         byteOfset += 4;
-        _ltow(*lVal, &acPic[iLnLoc], 10);
-        iVLen = (int)wcslen(&acPic[iLnLoc]);
+        _ltow_s(*lVal, &stringBuffer[iLnLoc], static_cast<size_t>(32 - iLnLoc), 10);
+        iVLen = (int)wcslen(&stringBuffer[iLnLoc]);
         iLnLoc += iVLen;
       } else {
         memcpy(dVal, reinterpret_cast<const std::byte*>(valueBuffer) + byteOfset, 8);
         byteOfset += 8;
-        if (lTyp == lex::RealToken) {
+        if (valueMetaInformation->type == lex::RealToken) {
           iLoc = 1;
-          // pCvtDoubToFltDecTxt(*dVal, 7, iLoc, cVal);
-          LPTSTR NextToken = nullptr;
+          wchar_t* NextToken{nullptr};
           szpVal = wcstok_s(cVal, L" ", &NextToken);
-          wcscpy(&acPic[iLnLoc], szpVal);
+          wcscpy_s(&stringBuffer[iLnLoc], static_cast<size_t>(32 - iLnLoc), szpVal);
           iLnLoc += (int)wcslen(szpVal);
-        } else if (lTyp == lex::LengthToken) {
-          //TODO: Length to length string
+        } else if (valueMetaInformation->type == lex::LengthToken) {
           iLnLoc += iVLen;
-        } else if (lTyp == lex::AreaToken) {
-          // pCvtWrldToUsrAreaStr(*dVal, &acPic[iLnLoc], iVLen);
+        } else if (valueMetaInformation->type == lex::AreaToken) {
           iLnLoc += iVLen;
         }
       }
-      if (iLen != 1 && (i1 % iDim) == iDim - 1) { acPic[iLnLoc++] = ']'; }
+      if (iLen != 1 && (i1 % iDim) == iDim - 1) { stringBuffer[iLnLoc++] = ']'; }
     }
     if (iDim == iLen) {
-      *aiLen = iLnLoc - 1;
+      *stringLength = iLnLoc - 1;
     } else {
-      acPic[iLnLoc] = ']';
-      *aiLen = iLnLoc;
+      stringBuffer[iLnLoc] = ']';
+      *stringLength = iLnLoc;
     }
   }
 }
@@ -191,7 +189,7 @@ void lex::ConvertStringToVal(int tokenType, long tokenDefinition, LPWSTR token, 
                              void* resultValue) {
   if (LOWORD(tokenDefinition) <= 0) { throw L"Empty string"; }
 
-  WCHAR szTok[64];
+  wchar_t szTok[64];
   int iNxt = 0;
 
   int iTyp = Scan(szTok, token, iNxt);
@@ -221,7 +219,7 @@ void lex::ConvertStringToVal(int tokenType, long tokenDefinition, LPWSTR token, 
 }
 
 void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandType, void* operandBuffer) {
-  WCHAR szTok[256]{};
+  wchar_t szTok[256]{};
 
   int iDim{0};
   int iTyp{0};
@@ -246,7 +244,6 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
   long lOpStk[32][32]{};
   long lOpStkDef[32]{};
 
-  wchar_t* cOp1 = reinterpret_cast<wchar_t*>(operandBuffer);
   double* dOp1 = reinterpret_cast<double*>(operandBuffer);
   long* lOp1 = reinterpret_cast<long*>(operandBuffer);
 
@@ -334,7 +331,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             errno_t err = wcscat_s(cOp2, 256, reinterpret_cast<wchar_t*>(operandBuffer));
             if (err != 0) { throw L"String concatenation overflow!"; }
 
-            wcscpy_s(reinterpret_cast<wchar_t*>(operandBuffer), HIWORD(lDef1) * 4, cOp2);
+            wcscpy_s(reinterpret_cast<wchar_t*>(operandBuffer), static_cast<size_t>(HIWORD(lDef1) * 4), cOp2);
             iLen1 = 1 + (iDim - 1) / 4;
             lDef1 = MAKELONG(iDim, iLen1);
           } else {
@@ -371,10 +368,10 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
         } else if (tokenType == TOK_DIVIDE) {
           if (iTyp1 == lex::StringToken) { throw L"Can not divide strings"; }
           if (iTyp1 == lex::IntegerToken) {
-            if (lOp1[0] == 0) { throw L"Attempting to divide by 0"; }
+            if (lOp1[0] == 0) { throw std::domain_error("Attempting to divide by 0"); }
             lOp1[0] = lOp2[0] / lOp1[0];
           } else if (iTyp1 <= iTyp2) {
-            if (dOp1[0] == 0.0) { throw L"Attempting to divide by 0."; }
+            if (dOp1[0] == 0.0) { throw std::domain_error("Attempting to divide by 0."); }
             if (iTyp1 == iTyp2) {
               iTyp1 = lex::RealToken;
             } else if (iTyp1 == lex::RealToken) {
@@ -524,12 +521,11 @@ int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
       done = true;
     }
   }
-
   int tokenLength = tokenPosition - beginPosition + 1;
-  wcsncpy_s(token, tokenLength + 1, &inputLine[beginPosition], static_cast<size_t>(tokenLength));
+  wcsncpy_s(token, static_cast<size_t>(tokenLength + 1), &inputLine[beginPosition], static_cast<size_t>(tokenLength));
   token[tokenLength] = '\0';
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"LinePosition = %d, TokenID = %d\n", linePosition, tokenId);
   if (tokenId == -1) { linePosition = beginPosition + 1; }
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Token `%s` TokenID = %d\n", token, tokenId);
   return (tokenId);
 }
 
@@ -538,16 +534,11 @@ int lex::TokType(int tokenType) {
 }
 
 void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
-  ColumnDefinition columnDefinition{};
-  WCHAR szTok[32]{};
-  int i;
-
-  int iDim = LOWORD(*alDef);
-  int iLen = HIWORD(*alDef);
+  ValueMetaInformation valueMetaInformation{};
 
   switch (aiTokTyp) {
     case TOK_UNARY_MINUS:
-      for (i = 0; i < iLen / 2; i++) { adOp[i] = -adOp[i]; }
+      for (int i = 0; i < HIWORD(*alDef) / 2; i++) { adOp[i] = -adOp[i]; }
       break;
 
     case TOK_UNARY_PLUS:
@@ -559,7 +550,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
 
     case TOK_ACOS:
       if (fabs(adOp[0]) > 1.0) {
-        throw L"Math error: acos of a value greater than 1.";
+        throw std::domain_error("acos of a value greater than 1. or less than -1.");
       } else {
         adOp[0] = acos(Eo::RadianToDegree(adOp[0]));
       }
@@ -567,7 +558,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
 
     case TOK_ASIN:
       if (fabs(adOp[0]) > 1.0) {
-        throw L"Math error: asin of a value greater than 1.";
+        throw std::domain_error("asin of a value greater than 1. or less than -1.");
       } else {
         adOp[0] = asin(Eo::RadianToDegree(adOp[0]));
       }
@@ -595,7 +586,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
 
     case TOK_LN:
       if (adOp[0] <= 0.0) {
-        throw L"Math error: ln of a non-positive number";
+        throw std::domain_error("ln of a non-positive number");
       } else {
         adOp[0] = log(adOp[0]);
       }
@@ -603,7 +594,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
 
     case TOK_LOG:
       if (adOp[0] <= 0.0) {
-        throw L"Math error: log of a non-positive number";
+        throw std::domain_error("log of a non-positive number");
       } else {
         adOp[0] = log10(adOp[0]);
       }
@@ -615,7 +606,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
 
     case TOK_SQRT:
       if (adOp[0] < 0.0) {
-        throw L"Math error: sqrt of a negative number";
+        throw std::domain_error("sqrt of a negative number");
       } else {
         adOp[0] = sqrt(adOp[0]);
       }
@@ -625,27 +616,25 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       adOp[0] = tan(Eo::DegreeToRadian(adOp[0]));
       break;
 
-    case TOK_TOSTRING:  // Conversion to string
+    case TOK_TOSTRING: {  // Conversion to string
+      wchar_t stringBuffer[32]{};
+      int iDim = LOWORD(*alDef);
       *aiTyp = lex::StringToken;
-      columnDefinition.dataType = lex::RealToken;
-      columnDefinition.dataDefinition = *alDef;
-      ConvertValToString((LPTSTR)adOp, &columnDefinition, szTok, &iDim);
-      iLen = 1 + (iDim - 1) / 4;
-      wcscpy((LPTSTR)adOp, szTok);
+      valueMetaInformation.type = lex::RealToken;
+      valueMetaInformation.definition = *alDef;
+      ConvertValToString(static_cast<void*>(adOp), &valueMetaInformation, stringBuffer, &iDim);
+      int iLen = 1 + (iDim - 1) / 4;
+      wcscpy_s(reinterpret_cast<wchar_t*>(adOp), 32, stringBuffer);
       *alDef = MAKELONG(iDim, iLen);
-      break;
+    } break;
 
     default:
-      throw L"Unknown operation";
+      throw "Unknown operation";
   }
 }
 
 void lex::UnaryOp(int aiTokTyp, int* tokenType, long* alDef, long* alOp) {
-  ColumnDefinition columnDefinition{};
-  WCHAR szTok[32]{};
-
-  int iDim = LOWORD(*alDef);
-  int iLen = HIWORD(*alDef);
+  ValueMetaInformation valueMetaInformation{};
 
   switch (aiTokTyp) {
     case TOK_UNARY_MINUS:
@@ -667,15 +656,19 @@ void lex::UnaryOp(int aiTokTyp, int* tokenType, long* alDef, long* alOp) {
       *tokenType = lex::RealToken;
       break;
 
-    case TOK_TOSTRING:
+    case TOK_TOSTRING: {  // Conversion to string
+      wchar_t stringBuffer[32]{};
+      int iDim = LOWORD(*alDef);
+      int iLen = HIWORD(*alDef);
+
       *tokenType = lex::StringToken;
-      columnDefinition.dataType = lex::IntegerToken;
-      columnDefinition.dataDefinition = *alDef;
-      ConvertValToString((LPTSTR)alOp, &columnDefinition, szTok, &iDim);
+      valueMetaInformation.type = lex::IntegerToken;
+      valueMetaInformation.definition = *alDef;
+      ConvertValToString(static_cast<void*>(alOp), &valueMetaInformation, stringBuffer, &iDim);
       iLen = 1 + (iDim - 1) / 4;
-      wcscpy_s((LPWSTR)alOp, 32, szTok);
+      wcscpy_s((LPWSTR)alOp, 32, stringBuffer);
       *alDef = MAKELONG(iDim, iLen);
-      break;
+    } break;
 
     default:
       throw L"Unknown operation";

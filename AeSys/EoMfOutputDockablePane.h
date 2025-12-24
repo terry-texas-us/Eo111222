@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <string>
 
 class EoMfOutputListBox : public CListBox {
  public:  // Construction
@@ -35,6 +36,7 @@ class EoMfOutputDockablePane : public CDockablePane {
   virtual ~EoMfOutputDockablePane();
   void ModifyCaption(const CString& string) { SetWindowTextW(string); }
   void AddStringToMessageList(const CString& string) { m_OutputMessagesList.InsertString(0, string); }
+  void AddStringToMessageList(const std::wstring& message) { m_OutputMessagesList.InsertString(0, message.c_str()); }
   void AddStringToReportsList(const CString& string) { m_OutputReportsList.AddString(string); }
 
  protected:

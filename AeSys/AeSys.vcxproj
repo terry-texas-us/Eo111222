@@ -58,6 +58,7 @@
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableSpecificWarnings>5045</DisableSpecificWarnings>
+      <BrowseInformationFile>$(ProjectDir)vshints.hm</BrowseInformationFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>xmllite.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -77,6 +78,7 @@
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <BrowseInformationFile>$(ProjectDir)vshints.hm</BrowseInformationFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>xmllite.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -1422,6 +1424,7 @@
     <None Include="hlp\welcome.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
+    <None Include="vshints.hm" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc" />

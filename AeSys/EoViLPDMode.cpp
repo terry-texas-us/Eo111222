@@ -12,6 +12,7 @@
 #include "EoGeReferenceSystem.h"
 #include "PrimState.h"
 #include "Section.h"
+#include <string>
 
 /// <remarks>
 ///Only check for actual end-cap marker is by attributes. No error processing for invalid width or depth values.
@@ -147,7 +148,7 @@ void AeSysView::OnLpdModeTap() {
     } else if (Relationship == -1) {
       Justification = Right;
     } else {
-      app.AddStringToMessageList(L"Could not determine orientation of component");
+      app.AddStringToMessageList(std::wstring(L"Could not determine orientation of component"));
       return;
     }
     if (m_PreviousOp == ID_OP2) {

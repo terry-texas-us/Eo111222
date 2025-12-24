@@ -11,6 +11,7 @@
 #include "EoDbSpline.h"
 #include "EoDbText.h"
 #include "EoGeReferenceSystem.h"
+#include <string>
 
 /// <remarks>
 /// Vax: the excess 128 exponent .. range is -128 (0x00 - 0x80) to 127 (0xff - 0x80)
@@ -155,7 +156,7 @@ bool EoDbJobFile::GetNextVisibleGroup(CFile& file, EoDbGroup*& group) {
         if (!GetNextPrimitive(file, Primitive)) throw L"Exception.FileJob: Unexpected end of file.";
         group->AddTail(Primitive);
       } catch (LPWSTR szMessage) {
-        app.AddStringToMessageList(szMessage);
+        app.AddStringToMessageList(std::wstring(szMessage));
         file.Seek(static_cast<LONGLONG>(Position + 32), CFile::begin);
       }
     }

@@ -12,6 +12,7 @@
 #include "EoApOptions.h"
 #include "EoDb.h"
 #include "EoGePoint3d.h"
+#include <string>
 
 extern COLORREF ViewBackgroundColor;
 extern COLORREF RubberbandColor;
@@ -102,6 +103,7 @@ ID2D1Factory* m_Direct2dFactory;
 public:
 void AddModeInformationToMessageList();
 void AddStringToMessageList(const CString& message);
+void AddStringToMessageList(const std::wstring& message);
 void AddStringToMessageList(UINT stringResourceIdentifier);
 void AddStringToMessageList(UINT stringResourceIdentifier, const CString& string);
 // Modifies the base accelerator table by defining the mode specific keys.

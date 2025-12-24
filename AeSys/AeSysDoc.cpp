@@ -1877,7 +1877,7 @@ void AeSysDoc::OnPrimExtractNum() {
       wchar_t Message[64]{};
       swprintf_s(Message, 64, L"%10.4f ", value[0]);
       wcscat_s(Message, 64, L"was extracted from drawing");
-      app.AddStringToMessageList(Message);
+      app.AddStringToMessageList(std::wstring(Message));
     } catch (...) {
       app.WarningMessageBox(IDS_MSG_INVALID_NUMBER_EXTRACT);
       return;
