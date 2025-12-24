@@ -294,28 +294,41 @@ namespace Lex
 			return equiv && (settab[j] == ENDLIST);
 		}
 
-		/// <summary>
-		/// Interprets escaped characters
-		/// </summary>
-		public static char escchar(string line, ref int lp)
+        /// <summary>
+        /// Interprets escaped characters
+        /// </summary>
+        public static char escchar(string line, ref int lp)
 		{
-			lp++;
-			
-			char c;
+            if (lp >= line.Length) throw new Exception("Unexpected end after escape");
+            lp++; // skip the backslash
+
+            char c;
 			switch (line[lp])
 			{
-				case 'n': c = '\n'; lp++; break;
-				case 't': c = '\t'; lp++; break;
-				case 'b': c = (char) 32; lp++; break;
-				case '0': c = '\0'; lp++; break;
-				case 'f': c = (char) 12; lp++; break;
-				case '\\': c = (char) 26; lp++; break;
-				case 'x':
-					int iVal = int.Parse(line.Substring(lp + 1, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
-					c = (char) iVal; lp += 3;					
-					break;
-                		
-				default:
+				case 'a': lp++; return '\a'; // Bell (alert)
+                case 'b': lp++; return '\b'; // Backspace
+                case 'f': lp++; return '\f'; // Formfeed
+                case 'n': lp++; return '\n'; // Newline
+				case 'r': lp++; return '\r'; // Carriage return
+                case 't': lp++; return '\t'; // Tab
+				case 'v': lp++; return '\v'; // Vertical tab
+
+                case '\\': lp++; return '\\'; // Literal backslash
+
+                case 'x':
+				
+					lp++;
+                    if (lp + 1 >= line.Length) { throw new Exception("Invalid hex escape sequence"); }
+					string hexCharacters = line.Substring(lp, 2);
+					lp += 2;
+					try {
+						return (char)Convert.ToByte(hexCharacters, 16);
+                    }
+					catch {
+						throw new Exception($"Invalid hex escape sequence: \\x{hexCharacters}");
+                    }
+
+                default:
 					c = line[lp]; lp++; break;
 			}
 			return c;
