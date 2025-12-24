@@ -443,7 +443,7 @@ void lex::Parse(const wchar_t* inputLine) {
     switch (tokenId) {
       case lex::IdentifierToken:
         iDim = static_cast<int>(wcslen(token));
-        iLen = 1 + (iDim - 1) / 4;
+        iLen = 1 + (iDim - 1) / 2;
 
         lex::valueLocation[lex::numberOfTokensInStream] = lex::numberOfValues + 1;
         lex::lValues[lex::numberOfValues + 1] = iDim + iLen * 65536;
@@ -476,7 +476,7 @@ void lex::Parse(const wchar_t* inputLine) {
 }
 
 void lex::ParseStringOperand(wchar_t* token) {
-  if (wcslen(token) < 3) {
+if (wcslen(token) < 3) {
     app.AddStringToMessageList(IDS_MSG_ZERO_LENGTH_STRING);
     return;
   }
@@ -490,7 +490,7 @@ void lex::ParseStringOperand(wchar_t* token) {
     values[iDim++] = token[next++];
   }
   values[--iDim] = '\0';
-  int iLen = 1 + (iDim - 1) / 4;
+  int iLen = 1 + (iDim - 1) / 2;
   lex::valueLocation[lex::numberOfTokensInStream] = ++lex::numberOfValues;
   lex::lValues[lex::numberOfValues] = MAKELONG(iDim, iLen);
   lex::numberOfValues += iLen;
