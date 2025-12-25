@@ -3,8 +3,8 @@ using System.IO;
 using System.Collections.Generic;
 namespace Lex
 {
-	enum transitionState {NONE, LITCHAR, RANGE};
-	enum entryTypes {CLOSURE = 1, ALT, OR};
+	enum transitionState : int{None=0, LitChar=1, Range=2};
+	enum entryTypes : int{Closure=1, Alt=2, Or=3};
 	
 	/// <summary>
 	/// Lexical analyzer table generator					.
@@ -472,11 +472,11 @@ namespace Lex
 					int k = 1;
 					while (subtab[j] != ENDLIST)
 					{
-						if (nfa[subtab[j]].ts == transitionState.LITCHAR)
+						if (nfa[subtab[j]].ts == transitionState.LitChar)
                         {
                             found = nfa[subtab[j]].cval1 == i;
                         }
-                        else if (nfa[subtab[j]].ts == transitionState.RANGE)
+                        else if (nfa[subtab[j]].ts == transitionState.Range)
                         {
                             found = (i >= nfa[subtab[j]].cval1 && i <= nfa[subtab[j]].cval2);
                         }
@@ -716,14 +716,14 @@ namespace Lex
                 if (c == '\\')
 			{
 				lp--;
-				nfa[s].ts = transitionState.LITCHAR;
+				nfa[s].ts = transitionState.LitChar;
 				nfa[s].cval1 = escchar(line, ref lp);
 				nfa[s++].epsset = epstabp;
 				epstab[epstabp++] = ENDLIST;
 			}
 			else if (c == '[')
 			{
-				nfa[s].ts = transitionState.RANGE;
+				nfa[s].ts = transitionState.Range;
 				if (nextc(out c, line, ref lp) == '\\')
 				{
 					lp--;
@@ -758,12 +758,12 @@ namespace Lex
                 }
 			else if (c == '{')
 			{
-				entry[++sp].type = entryTypes.CLOSURE;
+				entry[++sp].type = entryTypes.Closure;
 				entry[sp].startstate = s++;
 			}
 			else if (c == '}')
 			{
-				if (entry[sp].type != entryTypes.CLOSURE)
+				if (entry[sp].type != entryTypes.Closure)
                     {
                         Console.WriteLine("Closure delimiter mismatch");
                     }
@@ -776,7 +776,7 @@ namespace Lex
 					tmpset[3] = ENDLIST;
 					bubblesort(ref tmpset);
 					ascopy(tmpset, ref epstabp, ref epstab);
-					nfa[s].ts = transitionState.NONE;
+					nfa[s].ts = transitionState.None;
 					
 					tmpset[1] = s + 1;
 					tmpset[2] = entry[sp].startstate + 1;
@@ -784,21 +784,21 @@ namespace Lex
 					nfa[entry[sp].startstate].epsset = epstabp;
 					bubblesort(ref tmpset);
 					ascopy(tmpset, ref epstabp, ref epstab);
-					nfa[entry[sp--].startstate].ts = transitionState.NONE;
+					nfa[entry[sp--].startstate].ts = transitionState.None;
 					s++;
 				}
 			}
 			else if (c == '(')
 			{
-				entry[++sp].type = entryTypes.ALT;
+				entry[++sp].type = entryTypes.Alt;
 				entry[sp].startstate = s++;
-				entry[++sp].type = entryTypes.OR;
+				entry[++sp].type = entryTypes.Or;
 				entry[sp].startstate = s;
 			}
 			else if (c == '|')
 			{
 				entry[sp].endstate = s++;
-				entry[++sp].type = entryTypes.OR;
+				entry[++sp].type = entryTypes.Or;
 				entry[sp].startstate = s;
 			}
 			else if (c == ')')
@@ -809,21 +809,21 @@ namespace Lex
 				bool done = false;
 				while (!done)
 				{
-					if (entry[sp].type == entryTypes.OR)
+					if (entry[sp].type == entryTypes.Or)
 					{
 						tmpset[i++] = entry[sp].startstate;
 						nfa[entry[sp].endstate].epsset = epstabp;
 						epstab[epstabp++] = s;
 						epstab[epstabp++] = ENDLIST;
-						nfa[entry[sp--].endstate].ts = transitionState.NONE;
+						nfa[entry[sp--].endstate].ts = transitionState.None;
 					}
-					else if (entry[sp].type == entryTypes.ALT)
+					else if (entry[sp].type == entryTypes.Alt)
 					{
 						tmpset[i] = ENDLIST;
 						nfa[entry[sp].startstate].epsset = epstabp;
 						bubblesort(ref tmpset);
 						ascopy(tmpset, ref epstabp, ref epstab);
-						nfa[entry[sp--].startstate].ts = transitionState.NONE;
+						nfa[entry[sp--].startstate].ts = transitionState.None;
 						done = true;
 					}
 					else
@@ -834,7 +834,7 @@ namespace Lex
 			}
 			else
 			{
-				nfa[s].ts = transitionState.LITCHAR;
+				nfa[s].ts = transitionState.LitChar;
 				nfa[s].cval1 = c;
 				nfa[s++].epsset = epstabp;
 				epstab[epstabp++] = ENDLIST;
