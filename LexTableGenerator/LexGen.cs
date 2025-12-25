@@ -54,10 +54,25 @@ namespace Lex
 		[STAThread]
 		static void Main(string[] args)
 		{
+			// Defaults mirror the previous hard-coded paths
+			var defaultInput = "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_regexp.dat";
+			var defaultOutput = "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\LexTable.h";
+
+			if (args.Length > 0 && (args[0] == "-h" || args[0] == "--help"))
+			{
+				Console.WriteLine("Usage: LexGen [inputFilePath] [outputFilePath]");
+				Console.WriteLine("Defaults: input -> {0}", defaultInput);
+				Console.WriteLine("          output -> {0}", defaultOutput);
+				return;
+			}
+
+			var inputPath = (args.Length > 0 && !string.IsNullOrWhiteSpace(args[0])) ? args[0] : defaultInput;
+			var outputPath = (args.Length > 1 && !string.IsNullOrWhiteSpace(args[1])) ? args[1] : defaultOutput;
+
 			int [] startstate = new int[256];
 			nfaStruct[] nfa = new nfaStruct[MAXNFA + 1];
 	
-			using var srReadLine = new StreamReader("D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_regexp.dat", System.Text.Encoding.ASCII);
+			using var srReadLine = new StreamReader(inputPath, System.Text.Encoding.ASCII);
 			srReadLine.BaseStream.Seek(0, SeekOrigin.Begin);
 			
 			Console.WriteLine("Constructing NFA...");
@@ -153,8 +168,8 @@ namespace Lex
 
 			Console.WriteLine("Creating compacted table...");
 			mklex(out nstates, out nentries);
-			Console.WriteLine("Writing output...");
-			lexdump(nstates, nentries);
+			Console.WriteLine("Writing output to {0}...", outputPath);
+			lexdump(nstates, nentries, outputPath);
 		}
 
 		/// <summary>
@@ -215,7 +230,7 @@ namespace Lex
 				while (epstab[i] != ENDLIST)
 				{
 					found = false;
-					int k = 1;
+				 int k = 1;
 					while (!found && k < j)
 					{
 						if (clset[k++] == epstab[i])
@@ -378,9 +393,15 @@ namespace Lex
 			return bIsInt;
 		}
 
-		public static void lexdump(int nstates, int nentries)
+		public static void lexdump(int nstates, int nentries, string outputPath)
 		{
-			using var fs = new FileStream("D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\LexTable.h", FileMode.Create, FileAccess.Write, FileShare.None);
+			var dir = Path.GetDirectoryName(outputPath);
+			if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+			{
+				Directory.CreateDirectory(dir);
+			}
+
+			using var fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None);
  
 			using var swLex = new StreamWriter(fs);
 			
@@ -914,7 +935,7 @@ namespace Lex
 						{
 							j++;
 							same = true;
-							int c = 0;
+						 int c = 0;
 							while (c <= MAXCHAR && same)
 							{
 								if (nextG[group[j], c] != nextG[group[i], c]) {same = false;}
@@ -928,7 +949,7 @@ namespace Lex
 						if (!found)
 						{
 							r++;
-						 G[group[i]] = r;
+							G[group[i]] = r;
 						}
 						else
 						{
