@@ -57,7 +57,7 @@ namespace Lex
 			int [] startstate = new int[256];
 			nfaStruct[] nfa = new nfaStruct[MAXNFA + 1];
 	
-			StreamReader srReadLine = new StreamReader("D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_regexp.dat", System.Text.Encoding.ASCII);
+			using var srReadLine = new StreamReader("D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_regexp.dat", System.Text.Encoding.ASCII);
 			srReadLine.BaseStream.Seek(0, SeekOrigin.Begin);
 			
 			Console.WriteLine("Constructing NFA...");
@@ -90,8 +90,8 @@ namespace Lex
                     continue;
                 }
                 else if (is_ival(ref ival, line, ref lp))
-				{
-					while (lp < line.Length && line[lp] == ' ')
+			{
+				while (lp < line.Length && line[lp] == ' ')
                     {
                         lp++;
                     }
@@ -101,12 +101,12 @@ namespace Lex
                         Console.WriteLine("Missing assignment operator");
                     }
                     else 
-				{
-					lp++;
-					startstate[i++] = s;
-					olds = s;
-					mknfa(ref s, nfa, line, ref lp);
-					if (s == olds)
+			{
+				lp++;
+				startstate[i++] = s;
+				olds = s;
+				mknfa(ref s, nfa, line, ref lp);
+				if (s == olds)
                         {
                             Console.WriteLine("No NFA states generated for the token {0}", ival);
                         }
@@ -116,18 +116,17 @@ namespace Lex
                         }
 
                         s++;
-				}
-				}
-				else
+			}
+			}
+			else
                 {
                     Console.WriteLine("Invalid token value");
                 }
             }
-			srReadLine.Close();
 
-			s--;
+			s--; 
 			Console.WriteLine("# NFA states = {0}", s);
-	
+		
 			startstate[i] = ENDLIST;
 			nfa[1].epsset = epstabp;
 			bubblesort(ref startstate);
@@ -381,9 +380,9 @@ namespace Lex
 
 		public static void lexdump(int nstates, int nentries)
 		{
-			FileStream fs = new FileStream("D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\LexTable.h", FileMode.Create, FileAccess.Write, FileShare.None);
+			using var fs = new FileStream("D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\LexTable.h", FileMode.Create, FileAccess.Write, FileShare.None);
  
-			StreamWriter swLex = new StreamWriter(fs);
+			using var swLex = new StreamWriter(fs);
 			
 			swLex.WriteLine("static int iBase[] =");
 			swLex.WriteLine("{");
@@ -415,8 +414,7 @@ namespace Lex
 			swLex.WriteLine("{0}", check[nentries - 1]);
 			swLex.WriteLine("};");
 			
-			swLex.Flush();
-			swLex.Close();
+			// using declarations will dispose streams automatically
 		}
 
 		/// <summary>
@@ -716,22 +714,22 @@ namespace Lex
                 nextc(out c, line, ref lp);
 
                 if (c == '\\')
+			{
+				lp--;
+				nfa[s].ts = transitionState.LITCHAR;
+				nfa[s].cval1 = escchar(line, ref lp);
+				nfa[s++].epsset = epstabp;
+				epstab[epstabp++] = ENDLIST;
+			}
+			else if (c == '[')
+			{
+				nfa[s].ts = transitionState.RANGE;
+				if (nextc(out c, line, ref lp) == '\\')
 				{
 					lp--;
-					nfa[s].ts = transitionState.LITCHAR;
 					nfa[s].cval1 = escchar(line, ref lp);
-					nfa[s++].epsset = epstabp;
-					epstab[epstabp++] = ENDLIST;
 				}
-				else if (c == '[')
-				{
-					nfa[s].ts = transitionState.RANGE;
-					if (nextc(out c, line, ref lp) == '\\')
-					{
-						lp--;
-						nfa[s].cval1 = escchar(line, ref lp);
-					}
-					else
+				else
                     {
                         nfa[s].cval1 = c;
                     }
@@ -742,105 +740,105 @@ namespace Lex
                     }
 
                     if (nextc(out c, line, ref lp) == '\\')
-					{
-						lp--;
-						nfa[s].cval2 = escchar(line, ref lp);
-					}
-					else
+				{
+					lp--;
+					nfa[s].cval2 = escchar(line, ref lp);
+				}
+				else
                     {
                         nfa[s].cval2 = c;
                     }
 
                     nfa[s++].epsset = epstabp;
-					epstab[epstabp++] = ENDLIST;
-					if (nextc(out c, line, ref lp) != ']')
+				epstab[epstabp++] = ENDLIST;
+				if (nextc(out c, line, ref lp) != ']')
                     {
                         Console.WriteLine("Expecting ], encountered {0}.", c);
                     }
                 }
-				else if (c == '{')
-				{
-					entry[++sp].type = entryTypes.CLOSURE;
-					entry[sp].startstate = s++;
-				}
-				else if (c == '}')
-				{
-					if (entry[sp].type != entryTypes.CLOSURE)
+			else if (c == '{')
+			{
+				entry[++sp].type = entryTypes.CLOSURE;
+				entry[sp].startstate = s++;
+			}
+			else if (c == '}')
+			{
+				if (entry[sp].type != entryTypes.CLOSURE)
                     {
                         Console.WriteLine("Closure delimiter mismatch");
                     }
                     else
+				{
+					int [] tmpset = new int[4];
+					nfa[s].epsset = epstabp;
+					tmpset[1] = entry[sp].startstate + 1;
+					tmpset[2] = s + 1;
+					tmpset[3] = ENDLIST;
+					bubblesort(ref tmpset);
+					ascopy(tmpset, ref epstabp, ref epstab);
+					nfa[s].ts = transitionState.NONE;
+					
+					tmpset[1] = s + 1;
+					tmpset[2] = entry[sp].startstate + 1;
+					tmpset[3] = ENDLIST;
+					nfa[entry[sp].startstate].epsset = epstabp;
+					bubblesort(ref tmpset);
+					ascopy(tmpset, ref epstabp, ref epstab);
+					nfa[entry[sp--].startstate].ts = transitionState.NONE;
+					s++;
+				}
+			}
+			else if (c == '(')
+			{
+				entry[++sp].type = entryTypes.ALT;
+				entry[sp].startstate = s++;
+				entry[++sp].type = entryTypes.OR;
+				entry[sp].startstate = s;
+			}
+			else if (c == '|')
+			{
+				entry[sp].endstate = s++;
+				entry[++sp].type = entryTypes.OR;
+				entry[sp].startstate = s;
+			}
+			else if (c == ')')
+			{
+				int [] tmpset = new int[20];
+				entry[sp].endstate = s++;
+				int i = 1;
+				bool done = false;
+				while (!done)
+				{
+					if (entry[sp].type == entryTypes.OR)
 					{
-						int [] tmpset = new int[4];
-						nfa[s].epsset = epstabp;
-						tmpset[1] = entry[sp].startstate + 1;
-						tmpset[2] = s + 1;
-						tmpset[3] = ENDLIST;
-						bubblesort(ref tmpset);
-						ascopy(tmpset, ref epstabp, ref epstab);
-						nfa[s].ts = transitionState.NONE;
-						
-						tmpset[1] = s + 1;
-						tmpset[2] = entry[sp].startstate + 1;
-						tmpset[3] = ENDLIST;
+						tmpset[i++] = entry[sp].startstate;
+						nfa[entry[sp].endstate].epsset = epstabp;
+						epstab[epstabp++] = s;
+						epstab[epstabp++] = ENDLIST;
+						nfa[entry[sp--].endstate].ts = transitionState.NONE;
+					}
+					else if (entry[sp].type == entryTypes.ALT)
+					{
+						tmpset[i] = ENDLIST;
 						nfa[entry[sp].startstate].epsset = epstabp;
 						bubblesort(ref tmpset);
 						ascopy(tmpset, ref epstabp, ref epstab);
 						nfa[entry[sp--].startstate].ts = transitionState.NONE;
-						s++;
+						done = true;
 					}
-				}
-				else if (c == '(')
-				{
-					entry[++sp].type = entryTypes.ALT;
-					entry[sp].startstate = s++;
-					entry[++sp].type = entryTypes.OR;
-					entry[sp].startstate = s;
-				}
-				else if (c == '|')
-				{
-					entry[sp].endstate = s++;
-					entry[++sp].type = entryTypes.OR;
-					entry[sp].startstate = s;
-				}
-				else if (c == ')')
-				{
-					int [] tmpset = new int[20];
-					entry[sp].endstate = s++;
-					int i = 1;
-					bool done = false;
-					while (!done)
-					{
-						if (entry[sp].type == entryTypes.OR)
-						{
-							tmpset[i++] = entry[sp].startstate;
-							nfa[entry[sp].endstate].epsset = epstabp;
-							epstab[epstabp++] = s;
-							epstab[epstabp++] = ENDLIST;
-							nfa[entry[sp--].endstate].ts = transitionState.NONE;
-						}
-						else if (entry[sp].type == entryTypes.ALT)
-						{
-							tmpset[i] = ENDLIST;
-							nfa[entry[sp].startstate].epsset = epstabp;
-							bubblesort(ref tmpset);
-							ascopy(tmpset, ref epstabp, ref epstab);
-							nfa[entry[sp--].startstate].ts = transitionState.NONE;
-							done = true;
-						}
-						else
+					else
                         {
                             Console.WriteLine("Or delimiter mismatch");
                         }
                     }
-				}
-				else
-				{
-					nfa[s].ts = transitionState.LITCHAR;
-					nfa[s].cval1 = c;
-					nfa[s++].epsset = epstabp;
-					epstab[epstabp++] = ENDLIST;
-				}	
+			}
+			else
+			{
+				nfa[s].ts = transitionState.LITCHAR;
+				nfa[s].cval1 = c;
+				nfa[s++].epsset = epstabp;
+				epstab[epstabp++] = ENDLIST;
+			}	
 			}
 			nfa[s].epsset = epstabp;
 			epstab[epstabp++] = ENDLIST;
@@ -930,7 +928,7 @@ namespace Lex
 						if (!found)
 						{
 							r++;
-							G[group[i]] = r;
+						 G[group[i]] = r;
 						}
 						else
 						{
@@ -997,7 +995,7 @@ namespace Lex
 			while (set2[i] != ENDLIST)
 			{
 				uset[j] = set2[i];
-			 i++;
+			 	i++;
 			 j++;
 			}
 			uset[j] = ENDLIST;
