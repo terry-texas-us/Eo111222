@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Collections;
+using System.Collections.Generic;
 namespace Lex
 {
 	enum transitionState {NONE, LITCHAR, RANGE};
@@ -84,7 +84,7 @@ namespace Lex
                 {
                     lp++;
                 }
-
+                // skip blank lines and comments
                 if (lp == line.Length || line[lp] == '!')
                 {
                     continue;
@@ -101,12 +101,12 @@ namespace Lex
                         Console.WriteLine("Missing assignment operator");
                     }
                     else 
-					{
-						lp++;
-						startstate[i++] = s;
-						olds = s;
-						mknfa(ref s, nfa, line, ref lp);
-						if (s == olds)
+				{
+					lp++;
+					startstate[i++] = s;
+					olds = s;
+					mknfa(ref s, nfa, line, ref lp);
+					if (s == olds)
                         {
                             Console.WriteLine("No NFA states generated for the token {0}", ival);
                         }
@@ -116,7 +116,7 @@ namespace Lex
                         }
 
                         s++;
-					}
+				}
 				}
 				else
                 {
@@ -199,7 +199,7 @@ namespace Lex
 		/// </summary>
 		public static void eps_closure(ref int[] clset, int s, nfaStruct[] nfa, int[] epstab)
 		{
-			Stack stack = new Stack();
+			Stack<int> stack = new Stack<int>();
 
 			bool found;
 			clset[1] = s;
@@ -212,7 +212,7 @@ namespace Lex
 			}
 			while (stack.Count > 0)
 			{
-				i = nfa[(int) stack.Pop()].epsset;
+				i = nfa[stack.Pop()].epsset;
 				while (epstab[i] != ENDLIST)
 				{
 					found = false;
@@ -319,17 +319,17 @@ namespace Lex
 				
 					lp++;
                     if (lp + 1 >= line.Length) { throw new Exception("Invalid hex escape sequence"); }
-					string hexCharacters = line.Substring(lp, 2);
-					lp += 2;
-					try {
-						return (char)Convert.ToByte(hexCharacters, 16);
+				string hexCharacters = line.Substring(lp, 2);
+				lp += 2;
+				try {
+					return (char)Convert.ToByte(hexCharacters, 16);
                     }
-					catch {
-						throw new Exception($"Invalid hex escape sequence: \\x{hexCharacters}");
+				catch {
+					throw new Exception($"Invalid hex escape sequence: \\x{hexCharacters}");
                     }
 
                 default:
-					c = line[lp]; lp++; break;
+				c = line[lp]; lp++; break;
 			}
 			return c;
 		}
@@ -459,7 +459,7 @@ namespace Lex
 			bubblesort(ref N);
 			ascopy(N, ref subp, ref subtab);
 			
-			Stack stack = new Stack();
+			Stack<int> stack = new Stack<int>();
 			stack.Push(1);
 			
 			d = 1;
@@ -467,7 +467,7 @@ namespace Lex
 
 			while (stack.Count > 0)
 			{
-				int M = (int) stack.Pop();
+				int M = stack.Pop();
 				for (int i = 0; i <= MAXCHAR; i++)
 				{
 					int j = subset[M];
@@ -625,7 +625,7 @@ namespace Lex
 						}
 					}
 				}
-			l1:				continue;
+			l1: 			continue;
 			}
 		}
 
@@ -711,9 +711,11 @@ namespace Lex
 			entryStruct[] entry = new entryStruct[32];
 			int sp = 0;
 			
-			while (lp < line.Length && nextc(out c, line, ref lp) != '!')
+			while (lp < line.Length)
 			{
-				if (c == '\\')
+                nextc(out c, line, ref lp);
+
+                if (c == '\\')
 				{
 					lp--;
 					nfa[s].ts = transitionState.LITCHAR;
@@ -996,7 +998,7 @@ namespace Lex
 			{
 				uset[j] = set2[i];
 			 i++;
-				j++;
+			 j++;
 			}
 			uset[j] = ENDLIST;
 		}
