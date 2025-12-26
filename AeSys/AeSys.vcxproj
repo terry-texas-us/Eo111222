@@ -1529,6 +1529,9 @@
     <ClInclude Include="EoDlgViewParameters.h" />
     <ClInclude Include="EoGsViewport.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="lex_rules.l" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

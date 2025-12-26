@@ -2002,4 +2002,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="lex_rules.l" />
+  </ItemGroup>
 </Project>
