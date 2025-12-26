@@ -362,3 +362,10 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /RE-flex-master
+/custom_build_rules
+/data
+/changelog.md
+/FlexLexer.h
+/README.md
+/win_bison.exe
+/win_flex.exe

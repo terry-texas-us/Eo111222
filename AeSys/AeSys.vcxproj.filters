@@ -1695,6 +1695,7 @@
     <None Include="vshints.hm">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="Tools\win_flex.exe" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">

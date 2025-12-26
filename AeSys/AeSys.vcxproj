@@ -64,6 +64,9 @@
       <AdditionalDependencies>xmllite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(ProjectDir)tools\win_flex.exe" -Ca -o"$(ProjectDir)LexTable.cpp" "$(ProjectDir)lex_rules.l"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -84,6 +87,9 @@
       <AdditionalDependencies>xmllite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(ProjectDir)tools\win_flex.exe" -Ca -o"$(ProjectDir)LexTable.cpp" "$(ProjectDir)lex_rules.l"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AeSys.cpp" />
@@ -1424,6 +1430,7 @@
     <None Include="hlp\welcome.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
+    <None Include="Tools\win_flex.exe" />
     <None Include="vshints.hm" />
   </ItemGroup>
   <ItemGroup>
