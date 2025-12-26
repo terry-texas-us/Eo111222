@@ -132,7 +132,14 @@ class LexGen
                     lp++;
                     startstate[i++] = s;
                     olds = s;
-                    mknfa(ref s, nfa, line, ref lp);
+                    // mknfa(ref s, nfa, line, ref lp);
+                    // Extract the pattern after '=' and expand modern '*' into legacy closure braces
+                    string pattern = line.Substring(lp);
+                    // Trim leading spaces from pattern before expansion
+                    pattern = pattern.TrimStart();
+                    pattern = ExpandStarSyntax(pattern);
+                    int lp2 = 0;
+                    mknfa(ref s, nfa, pattern, ref lp2);
                     if (s == olds)
                     {
                         Console.WriteLine("No NFA states generated for the token {0}", ival);
@@ -184,6 +191,103 @@ class LexGen
         lexdump(nstates, nentries, outputPath);
     }
 
+    // Expand modern postfix '*' into legacy closure braces '{...}' so existing parser can handle closures.
+    // This supports atoms that are parenthesized groups, character classes, escaped sequences, or single characters.
+    public static string ExpandStarSyntax(string pattern)
+    {
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+            // Handle escape sequences: copy backslash and next char (and possible hex following 'x') as-is
+            if (c == '\\')
+            {
+                sb.Append(c);
+                if (i + 1 < pattern.Length)
+                {
+                    sb.Append(pattern[i + 1]);
+                    // if \xhh style, also append two hex digits if present
+                    if (pattern[i + 1] == 'x' && i + 3 < pattern.Length)
+                    {
+                        sb.Append(pattern[i + 2]);
+                        sb.Append(pattern[i + 3]);
+                        i += 3;
+                    }
+                    else
+                    {
+                        i++;
+                    }
+                }
+                continue;
+            }
+
+            if (c == '*')
+            {
+                if (sb.Length == 0)
+                {
+                    // nothing to apply to, treat '*' as literal
+                    sb.Append(c);
+                    continue;
+                }
+
+                int atomStart = sb.Length - 1;
+                // if atom ends with ']' find the matching '['
+                if (sb[sb.Length - 1] == ']')
+                {
+                    int nest = 0;
+                    for (int j = sb.Length - 1; j >= 0; j--)
+                    {
+                        if (sb[j] == ']') nest++;
+                        else if (sb[j] == '[')
+                        {
+                            nest--;
+                            if (nest == 0)
+                            {
+                                atomStart = j;
+                                break;
+                            }
+            }
+                    }
+                }
+                else if (sb[sb.Length - 1] == ')')
+                {
+                    int nest = 0;
+                    for (int j = sb.Length - 1; j >= 0; j--)
+                    {
+                        if (sb[j] == ')') nest++;
+                        else if (sb[j] == '(')
+                        {
+                            nest--;
+                            if (nest == 0)
+                            {
+                                atomStart = j;
+                                break;
+                            }
+            }
+                    }
+                }
+                else if (sb.Length >= 2 && sb[sb.Length - 2] == '\\')
+                {
+                    atomStart = sb.Length - 2; // include escape
+                }
+                else
+                {
+                    atomStart = sb.Length - 1;
+                }
+
+                string atom = sb.ToString(atomStart, sb.Length - atomStart);
+                sb.Remove(atomStart, sb.Length - atomStart);
+                sb.Append('{');
+                sb.Append(atom);
+                sb.Append('}');
+                continue;
+            }
+
+            sb.Append(c);
+        }
+        return sb.ToString();
+    }
+     
     /// <summary>
     /// Copies an integer array tp settab, and updates setp
     /// </summary>
