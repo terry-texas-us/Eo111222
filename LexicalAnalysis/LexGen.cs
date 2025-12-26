@@ -275,12 +275,8 @@ namespace Lex
 				case '0': c = '\0'; lp++; break;
 				case 'f': c = (char) 12; lp++; break;
 				case '\\': c = (char) 26; lp++; break;
-				case 'd':
-					int iVal = int.Parse(line.Substring(lp + 1, 3));
-					c = (char) iVal; lp += 4;					
-					break;
-				case 'h':
-					iVal = int.Parse(line.Substring(lp + 1, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+				case 'x':
+					int iVal = int.Parse(line.Substring(lp + 1, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
 					c = (char) iVal; lp += 3;					
 					break;
                 		
