@@ -133,11 +133,10 @@ class LexGen
                     startstate[i++] = s;
                     olds = s;
                     // mknfa(ref s, nfa, line, ref lp);
-                    // Extract the pattern after '=' and expand modern '*' into legacy closure braces
+                    // Use pattern directly and allow '*' handling in mknfa
                     string pattern = line.Substring(lp);
-                    // Trim leading spaces from pattern before expansion
+                    // Trim leading spaces from pattern
                     pattern = pattern.TrimStart();
-                    pattern = ExpandStarSyntax(pattern);
                     int lp2 = 0;
                     mknfa(ref s, nfa, pattern, ref lp2);
                     if (s == olds)
@@ -191,103 +190,6 @@ class LexGen
         lexdump(nstates, nentries, outputPath);
     }
 
-    // Expand modern postfix '*' into legacy closure braces '{...}' so existing parser can handle closures.
-    // This supports atoms that are parenthesized groups, character classes, escaped sequences, or single characters.
-    public static string ExpandStarSyntax(string pattern)
-    {
-        var sb = new System.Text.StringBuilder();
-        for (int i = 0; i < pattern.Length; i++)
-        {
-            char c = pattern[i];
-            // Handle escape sequences: copy backslash and next char (and possible hex following 'x') as-is
-            if (c == '\\')
-            {
-                sb.Append(c);
-                if (i + 1 < pattern.Length)
-                {
-                    sb.Append(pattern[i + 1]);
-                    // if \xhh style, also append two hex digits if present
-                    if (pattern[i + 1] == 'x' && i + 3 < pattern.Length)
-                    {
-                        sb.Append(pattern[i + 2]);
-                        sb.Append(pattern[i + 3]);
-                        i += 3;
-                    }
-                    else
-                    {
-                        i++;
-                    }
-                }
-                continue;
-            }
-
-            if (c == '*')
-            {
-                if (sb.Length == 0)
-                {
-                    // nothing to apply to, treat '*' as literal
-                    sb.Append(c);
-                    continue;
-                }
-
-                int atomStart = sb.Length - 1;
-                // if atom ends with ']' find the matching '['
-                if (sb[sb.Length - 1] == ']')
-                {
-                    int nest = 0;
-                    for (int j = sb.Length - 1; j >= 0; j--)
-                    {
-                        if (sb[j] == ']') nest++;
-                        else if (sb[j] == '[')
-                        {
-                            nest--;
-                            if (nest == 0)
-                            {
-                                atomStart = j;
-                                break;
-                            }
-            }
-                    }
-                }
-                else if (sb[sb.Length - 1] == ')')
-                {
-                    int nest = 0;
-                    for (int j = sb.Length - 1; j >= 0; j--)
-                    {
-                        if (sb[j] == ')') nest++;
-                        else if (sb[j] == '(')
-                        {
-                            nest--;
-                            if (nest == 0)
-                            {
-                                atomStart = j;
-                                break;
-                            }
-            }
-                    }
-                }
-                else if (sb.Length >= 2 && sb[sb.Length - 2] == '\\')
-                {
-                    atomStart = sb.Length - 2; // include escape
-                }
-                else
-                {
-                    atomStart = sb.Length - 1;
-                }
-
-                string atom = sb.ToString(atomStart, sb.Length - atomStart);
-                sb.Remove(atomStart, sb.Length - atomStart);
-                sb.Append('{');
-                sb.Append(atom);
-                sb.Append('}');
-                continue;
-            }
-
-            sb.Append(c);
-        }
-        return sb.ToString();
-    }
-     
     /// <summary>
     /// Copies an integer array tp settab, and updates setp
     /// </summary>
@@ -911,17 +813,155 @@ class LexGen
         entryStruct[] entry = new entryStruct[32];
         int sp = 0;
 
+        int lastAtomStart = -1; // track most recently created atom/group start for '*' and '+' operators
+
         while (lp < line.Length)
         {
             nextc(out c, line, ref lp);
 
             if (c == '\\')
             {
+                // nextc advanced past the backslash; move back to examine escape
                 lp--;
+
+                // Handle \d as digit range [0-9]
+                if (lp + 1 < line.Length && line[lp + 1] == 'd')
+                {
+                    // consume the escape sequence (\\d)
+                    lp += 2;
+                    nfa[s].ts = transitionState.Range;
+                    nfa[s].cval1 = '0';
+                    nfa[s].cval2 = '9';
+                    nfa[s++].epsset = epstabp;
+                    epstab[epstabp++] = ENDLIST;
+
+                    lastAtomStart = s - 1;
+
+                    // peek for '*' or '+'
+                    int savedLp = lp;
+                    while (lp < line.Length && line[lp] == ' ') lp++;
+                    if (lp < line.Length && (line[lp] == '*' || line[lp] == '+'))
+                    {
+                        char op = line[lp++]; // consume operator
+                        int start = lastAtomStart;
+
+                        if (op == '*')
+                        {
+                            int[] tmpset = new int[4];
+                            nfa[s].epsset = epstabp;
+                            tmpset[1] = start + 1;
+                            tmpset[2] = s + 1;
+                            tmpset[3] = ENDLIST;
+                            bubblesort(ref tmpset);
+                            ascopy(tmpset, ref epstabp, ref epstab);
+                            nfa[s].ts = transitionState.None;
+
+                            tmpset[1] = s + 1;
+                            tmpset[2] = start + 1;
+                            tmpset[3] = ENDLIST;
+                            nfa[start].epsset = epstabp;
+                            bubblesort(ref tmpset);
+                            ascopy(tmpset, ref epstabp, ref epstab);
+                            nfa[start].ts = transitionState.None;
+                            s++;
+
+                            lastAtomStart = s - 1; // the newly created state becomes the last atom
+                        }
+                        else // '+'
+                        {
+                            int[] tmpset = new int[4];
+                            nfa[s].epsset = epstabp;
+                            tmpset[1] = start + 1;
+                            tmpset[2] = ENDLIST;
+                            bubblesort(ref tmpset);
+                            ascopy(tmpset, ref epstabp, ref epstab);
+                            nfa[s].ts = transitionState.None;
+
+                            tmpset[1] = s + 1;
+                            tmpset[2] = start + 1;
+                            tmpset[3] = ENDLIST;
+                            nfa[start].epsset = epstabp;
+                            bubblesort(ref tmpset);
+                            ascopy(tmpset, ref epstabp, ref epstab);
+                            nfa[start].ts = transitionState.None;
+                            s++;
+
+                            lastAtomStart = s - 1;
+                        }
+                    }
+                    else
+                    {
+                        lp = savedLp;
+                    }
+
+                    // continue main loop
+                    continue;
+                }
+
+                // fallback: regular escaped literal
                 nfa[s].ts = transitionState.LitChar;
                 nfa[s].cval1 = escchar(line, ref lp);
                 nfa[s++].epsset = epstabp;
                 epstab[epstabp++] = ENDLIST;
+
+                lastAtomStart = s - 1;
+
+                // peek for '*' or '+'
+                int savedLpFallback = lp;
+                while (lp < line.Length && line[lp] == ' ') lp++;
+                if (lp < line.Length && (line[lp] == '*' || line[lp] == '+'))
+                {
+                    char op = line[lp++]; // consume operator
+                    int start = lastAtomStart;
+
+                    if (op == '*')
+                    {
+                        int[] tmpset = new int[4];
+                        nfa[s].epsset = epstabp;
+                        tmpset[1] = start + 1;
+                        tmpset[2] = s + 1;
+                        tmpset[3] = ENDLIST;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[s].ts = transitionState.None;
+
+                        tmpset[1] = s + 1;
+                        tmpset[2] = start + 1;
+                        tmpset[3] = ENDLIST;
+                        nfa[start].epsset = epstabp;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[start].ts = transitionState.None;
+                        s++;
+
+                        lastAtomStart = s - 1; // the newly created state becomes the last atom
+                    }
+                    else // '+'
+                    {
+                        int[] tmpset = new int[4];
+                        nfa[s].epsset = epstabp;
+                        tmpset[1] = start + 1;
+                        tmpset[2] = ENDLIST;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[s].ts = transitionState.None;
+
+                        tmpset[1] = s + 1;
+                        tmpset[2] = start + 1;
+                        tmpset[3] = ENDLIST;
+                        nfa[start].epsset = epstabp;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[start].ts = transitionState.None;
+                        s++;
+
+                        lastAtomStart = s - 1;
+                    }
+                }
+                else
+                {
+                    lp = savedLpFallback;
+                }
             }
             else if (c == '[')
             {
@@ -957,37 +997,64 @@ class LexGen
                 {
                     Console.WriteLine("Expecting ], encountered {0}.", c);
                 }
-            }
-            else if (c == '{')
-            {
-                entry[++sp].type = entryTypes.Closure;
-                entry[sp].startstate = s++;
-            }
-            else if (c == '}')
-            {
-                if (entry[sp].type != entryTypes.Closure)
+
+                lastAtomStart = s - 1;
+
+                // peek for '*' or '+'
+                int savedLp2 = lp;
+                while (lp < line.Length && line[lp] == ' ') lp++;
+                if (lp < line.Length && (line[lp] == '*' || line[lp] == '+'))
                 {
-                    Console.WriteLine("Closure delimiter mismatch");
+                    char op = line[lp++];
+                    int start = lastAtomStart;
+
+                    if (op == '*')
+                    {
+                        int[] tmpset = new int[4];
+                        nfa[s].epsset = epstabp;
+                        tmpset[1] = start + 1;
+                        tmpset[2] = s + 1;
+                        tmpset[3] = ENDLIST;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[s].ts = transitionState.None;
+
+                        tmpset[1] = s + 1;
+                        tmpset[2] = start + 1;
+                        tmpset[3] = ENDLIST;
+                        nfa[start].epsset = epstabp;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[start].ts = transitionState.None;
+                        s++;
+
+                        lastAtomStart = s - 1;
+                    }
+                    else // '+'
+                    {
+                        int[] tmpset = new int[4];
+                        nfa[s].epsset = epstabp;
+                        tmpset[1] = start + 1;
+                        tmpset[2] = ENDLIST;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[s].ts = transitionState.None;
+
+                        tmpset[1] = s + 1;
+                        tmpset[2] = start + 1;
+                        tmpset[3] = ENDLIST;
+                        nfa[start].epsset = epstabp;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[start].ts = transitionState.None;
+                        s++;
+
+                        lastAtomStart = s - 1;
+                    }
                 }
                 else
                 {
-                    int[] tmpset = new int[4];
-                    nfa[s].epsset = epstabp;
-                    tmpset[1] = entry[sp].startstate + 1;
-                    tmpset[2] = s + 1;
-                    tmpset[3] = ENDLIST;
-                    bubblesort(ref tmpset);
-                    ascopy(tmpset, ref epstabp, ref epstab);
-                    nfa[s].ts = transitionState.None;
-
-                    tmpset[1] = s + 1;
-                    tmpset[2] = entry[sp].startstate + 1;
-                    tmpset[3] = ENDLIST;
-                    nfa[entry[sp].startstate].epsset = epstabp;
-                    bubblesort(ref tmpset);
-                    ascopy(tmpset, ref epstabp, ref epstab);
-                    nfa[entry[sp--].startstate].ts = transitionState.None;
-                    s++;
+                    lp = savedLp2;
                 }
             }
             else if (c == '(')
@@ -1009,6 +1076,7 @@ class LexGen
                 entry[sp].endstate = s++;
                 int i = 1;
                 bool done = false;
+                int groupStart = -1;
                 while (!done)
                 {
                     if (entry[sp].type == entryTypes.Or)
@@ -1025,7 +1093,10 @@ class LexGen
                         nfa[entry[sp].startstate].epsset = epstabp;
                         bubblesort(ref tmpset);
                         ascopy(tmpset, ref epstabp, ref epstab);
-                        nfa[entry[sp--].startstate].ts = transitionState.None;
+                        // capture group start before popping
+                        groupStart = entry[sp].startstate;
+                        nfa[entry[sp].startstate].ts = transitionState.None;
+                        sp--;
                         done = true;
                     }
                     else
@@ -1033,6 +1104,70 @@ class LexGen
                         Console.WriteLine("Or delimiter mismatch");
                     }
                 }
+
+                lastAtomStart = groupStart;
+
+                // peek for '*' or '+'
+                int savedLp3 = lp;
+                while (lp < line.Length && line[lp] == ' ') lp++;
+                if (lp < line.Length && (line[lp] == '*' || line[lp] == '+'))
+                {
+                    char op = line[lp++];
+                    int start = lastAtomStart;
+
+                    if (op == '*')
+                    {
+                        int[] tmpset2 = new int[4];
+                        nfa[s].epsset = epstabp;
+                        tmpset2[1] = start + 1;
+                        tmpset2[2] = s + 1;
+                        tmpset2[3] = ENDLIST;
+                        bubblesort(ref tmpset2);
+                        ascopy(tmpset2, ref epstabp, ref epstab);
+                        nfa[s].ts = transitionState.None;
+
+                        tmpset2[1] = s + 1;
+                        tmpset2[2] = start + 1;
+                        tmpset2[3] = ENDLIST;
+                        nfa[start].epsset = epstabp;
+                        bubblesort(ref tmpset2);
+                        ascopy(tmpset2, ref epstabp, ref epstab);
+                        nfa[start].ts = transitionState.None;
+                        s++;
+
+                        lastAtomStart = s - 1;
+                    }
+                    else // '+'
+                    {
+                        int[] tmpset2 = new int[4];
+                        nfa[s].epsset = epstabp;
+                        tmpset2[1] = start + 1;
+                        tmpset2[2] = ENDLIST;
+                        bubblesort(ref tmpset2);
+                        ascopy(tmpset2, ref epstabp, ref epstab);
+                        nfa[s].ts = transitionState.None;
+
+                        tmpset2[1] = s + 1;
+                        tmpset2[2] = start + 1;
+                        tmpset2[3] = ENDLIST;
+                        nfa[start].epsset = epstabp;
+                        bubblesort(ref tmpset2);
+                        ascopy(tmpset2, ref epstabp, ref epstab);
+                        nfa[start].ts = transitionState.None;
+                        s++;
+
+                        lastAtomStart = s - 1;
+                    }
+                }
+                else
+                {
+                    lp = savedLp3;
+                }
+            }
+            else if (c == '{' || c == '}')
+            {
+                // legacy closure braces are not supported anymore
+                Console.WriteLine("Legacy closure braces '{' or '}' are not supported. Use '*' or '+' instead.");
             }
             else
             {
@@ -1040,6 +1175,65 @@ class LexGen
                 nfa[s].cval1 = c;
                 nfa[s++].epsset = epstabp;
                 epstab[epstabp++] = ENDLIST;
+
+                lastAtomStart = s - 1;
+
+                // peek for '*' or '+'
+                int savedLp4 = lp;
+                while (lp < line.Length && line[lp] == ' ') lp++;
+                if (lp < line.Length && (line[lp] == '*' || line[lp] == '+'))
+                {
+                    char op = line[lp++];
+                    int start = lastAtomStart;
+
+                    if (op == '*')
+                    {
+                        int[] tmpset = new int[4];
+                        nfa[s].epsset = epstabp;
+                        tmpset[1] = start + 1;
+                        tmpset[2] = s + 1;
+                        tmpset[3] = ENDLIST;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[s].ts = transitionState.None;
+
+                        tmpset[1] = s + 1;
+                        tmpset[2] = start + 1;
+                        tmpset[3] = ENDLIST;
+                        nfa[start].epsset = epstabp;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[start].ts = transitionState.None;
+                        s++;
+
+                        lastAtomStart = s - 1; // the newly created state becomes the last atom
+                    }
+                    else // '+'
+                    {
+                        int[] tmpset = new int[4];
+                        nfa[s].epsset = epstabp;
+                        tmpset[1] = start + 1;
+                        tmpset[2] = ENDLIST;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[s].ts = transitionState.None;
+
+                        tmpset[1] = s + 1;
+                        tmpset[2] = start + 1;
+                        tmpset[3] = ENDLIST;
+                        nfa[start].epsset = epstabp;
+                        bubblesort(ref tmpset);
+                        ascopy(tmpset, ref epstabp, ref epstab);
+                        nfa[start].ts = transitionState.None;
+                        s++;
+
+                        lastAtomStart = s - 1;
+                    }
+                }
+                else
+                {
+                    lp = savedLp4;
+                }
             }
         }
         nfa[s].epsset = epstabp;
