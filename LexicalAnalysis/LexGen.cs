@@ -622,8 +622,12 @@ namespace Lex
 			entryStruct[] entry = new entryStruct[32];
 			int sp = 0;
 			
-			while (lp < line.Length && nextc(out c, line, ref lp) != '!')
+			// Stop using '!' as an end-of-line sentinel here; keep '!' as a full-line comment marker in Main()
+			while (lp < line.Length)
 			{
+				c = nextc(out c, line, ref lp);
+				if (c == '!') break; // if user included '!' explicitly in regex, treat rest of line as comment
+				
 				if (c == '\\')
 				{
 					lp--;
@@ -856,10 +860,12 @@ namespace Lex
 		/// </summary>
 		/// <remarks>
 		/// The line pointer is left pointing just past the character returned.
+		/// Returns '\0' when end-of-line is reached.
 		/// </remarks>
 		public static char nextc(out char c, string line, ref int lp)
 		{
-			while (line[lp] == ' ') lp++;
+			while (lp < line.Length && line[lp] == ' ') lp++;
+			if (lp >= line.Length) { c = '\0'; return c; }
 			c = line[lp++];
 			return c;
 		}
