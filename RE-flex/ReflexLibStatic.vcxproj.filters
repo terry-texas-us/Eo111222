@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\convert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\error.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\matcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\matcher_avx2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\matcher_avx512bw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\pattern.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\posix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\simd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\simd_avx2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\simd_avx512bw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\unicode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\lib\utf8.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\unicode\block_scripts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\unicode\language_scripts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\unicode\letter_scripts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\unicode\letter_case.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\unicode\composer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\SynologyDrive\VisualStudio\Migrations\Eo111222\RE-flex\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{D419343C-4630-3DEE-A4A9-DA6272361AC2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

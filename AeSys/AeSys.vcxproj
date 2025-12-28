@@ -65,7 +65,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)tools\win_flex.exe" -Ca -o"$(ProjectDir)LexTable.cpp" "$(ProjectDir)lex_rules.l"</Command>
+      <Command>$(SolutionDir)AeSys\Tools\Reflex "$(ProjectDir)lex_rules.l"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -88,7 +88,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)tools\win_flex.exe" -Ca -o"$(ProjectDir)LexTable.cpp" "$(ProjectDir)lex_rules.l"</Command>
+      <Command>$(SolutionDir)AeSys\Tools\Reflex "$(ProjectDir)lex_rules.l"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
