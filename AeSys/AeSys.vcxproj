@@ -1441,7 +1441,6 @@
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="Tools\reflex_static_lib.pdb" />
-    <None Include="Tools\win_flex.exe" />
     <None Include="vshints.hm" />
   </ItemGroup>
   <ItemGroup>

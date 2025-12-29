@@ -1698,7 +1698,6 @@
     <None Include="vshints.hm">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="Tools\win_flex.exe" />
     <None Include="Tools\reflex_static_lib.pdb" />
   </ItemGroup>
   <ItemGroup>

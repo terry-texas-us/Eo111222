@@ -1,0 +1,9 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Delete SARIF files produced by native/native code analysis when running Clean -->
+  <Target Name="RemoveSarifFiles" AfterTargets="Clean">
+    <ItemGroup>
+      <_SarifFiles Include="$(IntDir)**\*.nativecodeanalysis.sarif;$(IntDir)**\*.sarif" />
+    </ItemGroup>
+    <Delete Files="@(_SarifFiles)" ContinueOnError="true" />
+  </Target>
+</Project>

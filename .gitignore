@@ -373,3 +373,7 @@ FodyWeavers.xsd
 /RE-flex/examples
 /*.suo
 /*.sdf
+/Eo.suo.old
+/Doxyfile
+/AeSys/Tools/reflex.exe
+/AeSys/Tools/reflex_static_lib.lib
