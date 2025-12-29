@@ -1699,6 +1699,7 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="Tools\win_flex.exe" />
+    <None Include="Tools\reflex_static_lib.pdb" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">
@@ -2005,8 +2006,14 @@
     <ClInclude Include="LexTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lex.yy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="lex_rules.l" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Tools\reflex_static_lib.lib" />
   </ItemGroup>
 </Project>

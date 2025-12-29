@@ -62,12 +62,12 @@
       <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>xmllite.lib;$(SolutionDir)RE-flex\Debug\reflex_static_lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>xmllite.lib;$(ProjectDir)Tools\reflex_static_lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)AeSys\Tools\Reflex --unicode --header-file --full "$(ProjectDir)lex_rules.l"</Command>
+      <Command>$(ProjectDir)Tools\Reflex --full --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l" --verbose</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -87,12 +87,12 @@
       <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>xmllite.lib;$(SolutionDir)RE-flex\Debug\reflex_static_lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>xmllite.lib;$(ProjectDir)Tools\reflex_static_lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)AeSys\Tools\Reflex --unicode --header-file --full "$(ProjectDir)lex_rules.l"</Command>
+      <Command>$(ProjectDir)Tools\Reflex --full --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l" --verbose</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -1440,6 +1440,7 @@
     <None Include="hlp\welcome.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
+    <None Include="Tools\reflex_static_lib.pdb" />
     <None Include="Tools\win_flex.exe" />
     <None Include="vshints.hm" />
   </ItemGroup>
@@ -1527,6 +1528,7 @@
     <ClInclude Include="EoDlgLayerPropertiesManager.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="EoGeLine.h" />
+    <ClInclude Include="lex.yy.h" />
     <ClInclude Include="LexTable.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="EoGeMatrix.h" />
@@ -1548,6 +1550,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="lex_rules.l" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Tools\reflex_static_lib.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
