@@ -8,61 +8,20 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+#define REFLEX_OPTION_full                true
+#define REFLEX_OPTION_header_file         "lex.yy.h"
 #define REFLEX_OPTION_lex                 lex
 #define REFLEX_OPTION_lexer               Lexer
 #define REFLEX_OPTION_outfile             "lex.yy.cpp"
+#define REFLEX_OPTION_unicode             true
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-//  REGEX MATCHER                                                             //
+//  LEXER CLASS INCLUDE                                                       //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <reflex/matcher.h>
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//  ABSTRACT LEXER CLASS                                                      //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-#include <reflex/abslexer.h>
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//  LEXER CLASS                                                               //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-class Lexer : public reflex::AbstractLexer<reflex::Matcher> {
- public:
-  typedef reflex::AbstractLexer<reflex::Matcher> AbstractBaseLexer;
-  Lexer(
-      // a persistent source of input, empty by default
-      const reflex::Input& input = reflex::Input(),
-      // optional output stream, std::cout by default
-      std::ostream& os = std::cout)
-    :
-      AbstractBaseLexer(input, os)
-  {
-  }
-  static const int INITIAL = 0;
-  // the lexer function defined by SECTION 2
-  virtual int lex(void);
-  // lexer functions accepting new input to scan
-  int lex(const reflex::Input& input)
-  {
-    in(input);
-    return lex();
-  }
-  int lex(const reflex::Input& input, std::ostream *os)
-  {
-    in(input);
-    if (os)
-      out(*os);
-    return lex();
-  }
-};
+#include "lex.yy.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -70,10 +29,11 @@ class Lexer : public reflex::AbstractLexer<reflex::Matcher> {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+extern const reflex::Pattern::Opcode reflex_code_INITIAL[];
+
 int Lexer::lex(void)
 {
-  static const char *REGEX_INITIAL = "(?m)(abs)|(acos)|(asin)|(atan)|(string)|(cos)|(exp)|(int)|(ln)|(log)|(sin)|(sqrt)|(tan)|(real)|([0-9]+)|((?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+))|((?:[0-9]+|(?:[0-9]+\\.[0-9]*|\\.[0-9]+))(?:'(?:[0-9]+|(?:[0-9]+\\.[0-9]*|\\.[0-9]+))*'|\"|mm|cm|dm|m|km))|(\"(?:[\\x20!\\x23-~]|\"\")*\")|([A-Za-z][0-9A-Z_a-z]*)|((?:\\Q**\\E))|((?:\\Q*\\E))|((?:\\Q/\\E))|((?:\\Q+\\E))|((?:\\Q-\\E))|((?:\\Q==\\E))|((?:\\Q!=\\E))|((?:\\Q>\\E))|((?:\\Q>=\\E))|((?:\\Q<\\E))|((?:\\Q<=\\E))|((?:\\Q&\\E))|((?:\\Q|\\E))|((?:\\Q!\\E))|((?:\\Q(\\E))|((?:\\Q)\\E))|((?:\\Q,\\E))|([\\x09\\x0a\\x0d\\x20]+)|(.)";
-  static const reflex::Pattern PATTERN_INITIAL(REGEX_INITIAL);
+  static const reflex::Pattern PATTERN_INITIAL(reflex_code_INITIAL);
   if (!has_matcher())
   {
     matcher(new Matcher(PATTERN_INITIAL, stdinit(), this));
@@ -247,3 +207,10 @@ int Lexer::lex(void)
         }
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//  TABLES                                                                    //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
