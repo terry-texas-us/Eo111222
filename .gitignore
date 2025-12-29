@@ -371,3 +371,5 @@ FodyWeavers.xsd
 /win_flex.exe
 /RE-flex/doc
 /RE-flex/examples
+/*.suo
+/*.sdf
