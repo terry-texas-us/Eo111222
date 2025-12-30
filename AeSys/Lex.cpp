@@ -4,6 +4,10 @@
 #include "Lex.h"
 #include "LexTable.h"
 #include "Resource.h"
+#pragma warning(push)
+#pragma warning(disable : 4003 4242 4244 4263 4264 4365 4800)
+#include "lex.yy.h"
+#pragma warning(pop)
 #include <algorithm>
 #include <atltrace.h>
 #include <cctype>
@@ -496,6 +500,7 @@ if (wcslen(token) < 3) {
   lex::numberOfValues += iLen;
 }
 
+/*
 int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
   while (inputLine[linePosition] == ' ') { linePosition++; }
 
@@ -528,6 +533,37 @@ int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Token `%s` TokenID = %d\n", token, tokenId);
   return (tokenId);
 }
+*/
+////
+int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
+  while (inputLine[linePosition] == L' ') { linePosition++; }
+
+  if (inputLine[linePosition] == L'\0') { return -1; }  // End of line, no token
+
+  Lexer lexer(reflex::Input(inputLine + linePosition));
+
+  int tokenId = lexer.lex();
+
+  if (tokenId == 0) {  // Unmatched input (error or unexpected char)
+    token[0] = inputLine[linePosition];
+    token[1] = L'\0';
+    linePosition++;  // Advance one char, like old behavior
+    tokenId = -1;    // Signal error
+  } else {
+    // Copy matched text (wtext() returns wchar_t*)
+    std::wstring matched = lexer.wstr();
+    size_t length = lexer.wsize();
+    wcsncpy_s(token, length + 1, matched.c_str(), length);
+    token[length] = L'\0';
+    linePosition += static_cast<int>(length);
+  }
+
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Token `%s` TokenID = %d\n", token, tokenId);
+  return tokenId;
+}
+////
+
+
 
 int lex::TokType(int tokenType) {
   return (tokenType >= 0 && tokenType < numberOfTokensInStream) ? tokenTypeIdentifiers[tokenType] : -1;

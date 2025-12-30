@@ -8,73 +8,19 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#define REFLEX_OPTION_flex                true
-#define REFLEX_OPTION_full                true
-#define REFLEX_OPTION_lex                 yylex
-#define REFLEX_OPTION_lexer               yyFlexLexer
+#define REFLEX_OPTION_header_file         "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex.yy.h"
+#define REFLEX_OPTION_lex                 lex
+#define REFLEX_OPTION_lexer               Lexer
 #define REFLEX_OPTION_outfile             "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex.yy.cpp"
-#define REFLEX_OPTION_prefix              yy
-#define REFLEX_OPTION_verbose             true
+#define REFLEX_OPTION_unicode             true
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-//  FLEX-COMPATIBLE DEFINITIONS                                               //
+//  LEXER CLASS INCLUDE                                                       //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#define INITIAL (0)
-#define YY_NUM_RULES (38)
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//  REGEX MATCHER                                                             //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-#include <reflex/matcher.h>
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//  FLEX-COMPATIBLE ABSTRACT LEXER CLASS                                      //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-#include <reflex/flexlexer.h>
-typedef reflex::FlexLexer<reflex::Matcher> FlexLexer;
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//  LEXER CLASS                                                               //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-class yyFlexLexer : public FlexLexer {
- public:
-  yyFlexLexer(
-      // a persistent source of input, empty by default
-      const reflex::Input& input = reflex::Input(),
-      // optional output stream, NULL means std::cout by default
-      std::ostream *os = NULL)
-    :
-      FlexLexer(input, os)
-  {
-  }
-  // the flex lexer function defined by SECTION 2
-  virtual int yylex(void);
-  // lexer functions accepting new input to scan
-  int yylex(const reflex::Input& input)
-  {
-    in(input);
-    return yylex();
-  }
-  int yylex(const reflex::Input& input, std::ostream *os)
-  {
-    in(input);
-    if (os)
-      out(*os);
-    return yylex();
-  }
-};
+#include "D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex.yy.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -82,15 +28,13 @@ class yyFlexLexer : public FlexLexer {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-extern const reflex::Pattern::Opcode reflex_code_INITIAL[];
-
-int yyFlexLexer::yylex(void)
+int Lexer::lex(void)
 {
-  static const reflex::Pattern PATTERN_INITIAL(reflex_code_INITIAL);
+  static const char *REGEX_INITIAL = "(?m)(abs)|(acos)|(asin)|(atan)|(string)|(cos)|(exp)|(int)|(ln)|(log)|(sin)|(sqrt)|(tan)|(real)|([0-9]+)|((?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+))|((?:[0-9]+|(?:[0-9]+\\.[0-9]*|\\.[0-9]+))(?:'(?:[0-9]+|(?:[0-9]+\\.[0-9]*|\\.[0-9]+))*'|\"|mm|cm|dm|m|km))|(\"(?:[\\x20!\\x23-~]|\"\")*\")|([A-Za-z][0-9A-Z_a-z]*)|((?:\\Q**\\E))|((?:\\Q*\\E))|((?:\\Q/\\E))|((?:\\Q+\\E))|((?:\\Q-\\E))|((?:\\Q==\\E))|((?:\\Q!=\\E))|((?:\\Q>\\E))|((?:\\Q>=\\E))|((?:\\Q<\\E))|((?:\\Q<=\\E))|((?:\\Q&\\E))|((?:\\Q|\\E))|((?:\\Q!\\E))|((?:\\Q(\\E))|((?:\\Q)\\E))|((?:\\Q,\\E))|([\\x09\\x0a\\x0d\\x20]+)|((?:.[\\x80-\\xbf]*))";
+  static const reflex::Pattern PATTERN_INITIAL(REGEX_INITIAL);
   if (!has_matcher())
   {
     matcher(new Matcher(PATTERN_INITIAL, stdinit(), this));
-    YY_USER_INIT
   }
   while (true)
   {
@@ -99,210 +43,165 @@ int yyFlexLexer::yylex(void)
           case 0:
             if (matcher().at_end())
             {
-              yyterminate();
+              return int();
             }
             else
             {
-              output(matcher().input());
+              out().put(matcher().input());
             }
-            YY_BREAK
+            break;
           case 1: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:2: abs :
-            YY_USER_ACTION
 #line 2 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 1; }
-            YY_BREAK
+            break;
           case 2: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:3: acos :
-            YY_USER_ACTION
 #line 3 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 2; }
-            YY_BREAK
+            break;
           case 3: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:4: asin :
-            YY_USER_ACTION
 #line 4 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 3; }
-            YY_BREAK
+            break;
           case 4: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:5: atan :
-            YY_USER_ACTION
 #line 5 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 4; }
-            YY_BREAK
+            break;
           case 5: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:6: string :
-            YY_USER_ACTION
 #line 6 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 5; }
-            YY_BREAK
+            break;
           case 6: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:7: cos :
-            YY_USER_ACTION
 #line 7 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 6; }
-            YY_BREAK
+            break;
           case 7: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:8: exp :
-            YY_USER_ACTION
 #line 8 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 7; }
-            YY_BREAK
+            break;
           case 8: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:9: int :
-            YY_USER_ACTION
 #line 9 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 8; }
-            YY_BREAK
+            break;
           case 9: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:10: ln :
-            YY_USER_ACTION
 #line 10 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 9; }
-            YY_BREAK
+            break;
           case 10: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:11: log :
-            YY_USER_ACTION
 #line 11 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 10; }
-            YY_BREAK
+            break;
           case 11: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:12: sin :
-            YY_USER_ACTION
 #line 12 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 11; }
-            YY_BREAK
+            break;
           case 12: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:13: sqrt :
-            YY_USER_ACTION
 #line 13 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 12; }
-            YY_BREAK
+            break;
           case 13: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:14: tan :
-            YY_USER_ACTION
 #line 14 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 13; }
-            YY_BREAK
+            break;
           case 14: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:15: real :
-            YY_USER_ACTION
 #line 15 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 14; }
-            YY_BREAK
+            break;
           case 15: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:16: [0-9]+ :
-            YY_USER_ACTION
 #line 16 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 20; }
-            YY_BREAK
+            break;
           case 16: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:17: ([0-9]+(\.[0-9]*)?|\.[0-9]+) :
-            YY_USER_ACTION
 #line 17 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 21; }
-            YY_BREAK
+            break;
           case 17: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:18: ([0-9]+|([0-9]+\.[0-9]*|\.[0-9]+))(\'([0-9]+|([0-9]+\.[0-9]*|\.[0-9]+))*\'|\"|mm|cm|dm|m|km) :
-            YY_USER_ACTION
 #line 18 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 22; }
-            YY_BREAK
+            break;
           case 18: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:19: \"([\x20-\x21\x23-\x7e]|\"\")*\" :
-            YY_USER_ACTION
 #line 19 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 24; }
-            YY_BREAK
+            break;
           case 19: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:20: [a-zA-Z][a-zA-Z0-9_]* :
-            YY_USER_ACTION
 #line 20 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 25; }
-            YY_BREAK
+            break;
           case 20: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:21: "**" :
-            YY_USER_ACTION
 #line 21 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 26; }
-            YY_BREAK
+            break;
           case 21: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:22: "*" :
-            YY_USER_ACTION
 #line 22 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 27; }
-            YY_BREAK
+            break;
           case 22: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:23: "/" :
-            YY_USER_ACTION
 #line 23 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 28; }
-            YY_BREAK
+            break;
           case 23: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:24: "+" :
-            YY_USER_ACTION
 #line 24 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 29; }
-            YY_BREAK
+            break;
           case 24: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:25: "-" :
-            YY_USER_ACTION
 #line 25 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 30; }
-            YY_BREAK
+            break;
           case 25: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:26: "==" :
-            YY_USER_ACTION
 #line 26 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 31; }
-            YY_BREAK
+            break;
           case 26: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:27: "!=" :
-            YY_USER_ACTION
 #line 27 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 32; }
-            YY_BREAK
+            break;
           case 27: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:28: ">" :
-            YY_USER_ACTION
 #line 28 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 33; }
-            YY_BREAK
+            break;
           case 28: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:29: ">=" :
-            YY_USER_ACTION
 #line 29 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 34; }
-            YY_BREAK
+            break;
           case 29: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:30: "<" :
-            YY_USER_ACTION
 #line 30 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 35; }
-            YY_BREAK
+            break;
           case 30: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:31: "<=" :
-            YY_USER_ACTION
 #line 31 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 36; }
-            YY_BREAK
+            break;
           case 31: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:32: "&" :
-            YY_USER_ACTION
 #line 32 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 37; }
-            YY_BREAK
+            break;
           case 32: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:33: "|" :
-            YY_USER_ACTION
 #line 33 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 38; }
-            YY_BREAK
+            break;
           case 33: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:34: "!" :
-            YY_USER_ACTION
 #line 34 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 39; }
-            YY_BREAK
+            break;
           case 34: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:35: "(" :
-            YY_USER_ACTION
 #line 35 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 40; }
-            YY_BREAK
+            break;
           case 35: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:36: ")" :
-            YY_USER_ACTION
 #line 36 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 41; }
-            YY_BREAK
+            break;
           case 36: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:37: "," :
-            YY_USER_ACTION
 #line 37 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 42; }
-            YY_BREAK
+            break;
           case 37: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:38: [ \t\n\r]+ :
-            YY_USER_ACTION
 #line 38 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { /* ignore whitespace */ }
-            YY_BREAK
+            break;
           case 38: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:39: . :
-            YY_USER_ACTION
 #line 39 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { /* error or unexpected char */ }
-            YY_BREAK
+            break;
         }
   }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//  TABLES                                                                    //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
