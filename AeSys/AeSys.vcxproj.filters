@@ -398,9 +398,6 @@
     <ClCompile Include="EoViAnnotateMode.cpp">
       <Filter>Source Files\AeSysView</Filter>
     </ClCompile>
-    <ClCompile Include="lex.yy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\AeSys.rc2">

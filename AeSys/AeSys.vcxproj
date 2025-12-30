@@ -67,7 +67,7 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(ProjectDir)Tools\Reflex --full --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l" --verbose</Command>
+      <Command>$(ProjectDir)Tools\Reflex --flex --full --verbose --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -92,7 +92,7 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(ProjectDir)Tools\Reflex --full --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l" --verbose</Command>
+      <Command>$(ProjectDir)Tools\Reflex --flex --full --verbose --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -122,12 +122,6 @@
     <ClCompile Include="EoGePoint4d.cpp" />
     <ClCompile Include="EoGePolyline.cpp" />
     <ClCompile Include="EoViModelView.cpp" />
-    <ClCompile Include="lex.yy.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level3</WarningLevel>
-    </ClCompile>
     <ClCompile Include="OFNHookProcFileTracing.cpp" />
     <ClCompile Include="EoDlgFixupOptions.cpp" />
     <ClCompile Include="EoDlgSetHomePoint.cpp" />
