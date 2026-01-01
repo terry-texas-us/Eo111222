@@ -31,9 +31,6 @@ struct TokenProperties {
 
 namespace lex {
 
-constexpr int MaxTokens = 128;
-constexpr int MaxValues = 256;
-
 constexpr int AbsoluteValue = 1;
 constexpr int ArcCosine = 2;
 constexpr int ArcSine = 3;

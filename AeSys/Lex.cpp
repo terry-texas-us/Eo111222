@@ -21,14 +21,26 @@
 
 namespace {
 constexpr size_t TokenBufferSize = 64;
-}
-namespace lex {
-int tokenTypeIdentifiers[lex::MaxTokens];
-int valueLocation[lex::MaxTokens];
-int numberOfTokensInStream;
-int numberOfValues;
-long lValues[lex::MaxValues];
-}  // namespace lex
+constexpr int MaxTokens = 128;
+constexpr int MaxValues = 256;
+
+int numberOfValues = 0;
+int numberOfTokensInStream = 0;
+
+/**
+ * @brief Zero-initialized buffer for operand value storage, sized for MaxValues long.
+ *
+ * This base long buffer supports type punning for mixed-use in expression parsing (e.g.,  long's, double's or wchar_t's per grammar).
+ * Each operand entry used first a packed long containing dimension and length, followed by the actual value(s).
+ * Use with reinterpret_cast to view as double or wchar_t arrays.
+ * Alignment ensures no undefined behavior on access; size calculation adapts to platform-specific wchar_t sizes.
+ *
+ * @note For modernization, explore std::variant or unions for operands and this buffer.
+ */
+long lValues[MaxValues]{0};
+int valueLocation[MaxTokens];
+int tokenTypeIdentifiers[MaxTokens];
+}  // namespace
 
 void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTokens, int* locationOfTokens) {
   int NumberOfOpenParentheses{0};
@@ -37,7 +49,7 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
   int OperatorStack[32]{};
   int TopOfOperatorStack{1};
 
-  OperatorStack[TopOfOperatorStack] = lex::IdentifierToken;
+  OperatorStack[TopOfOperatorStack] = IdentifierToken;
 
   numberOfTokens = 0;
 
@@ -103,7 +115,7 @@ void lex::ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaI
                              int* stringLength) {
   int iDim = valueMetaInformation->GetDimension();
 
-  if (valueMetaInformation->type == lex::StringToken) {
+  if (valueMetaInformation->type == StringToken) {
     *stringLength = iDim;
     stringBuffer[0] = '\'';
     memmove(&stringBuffer[1], valueBuffer, static_cast<size_t>(*stringLength));
@@ -122,7 +134,7 @@ void lex::ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaI
     int iLnLoc = 0;
     int iLen = valueMetaInformation->GetLength();
 
-    if (valueMetaInformation->type != lex::IntegerToken) { iLen = iLen / 2; }
+    if (valueMetaInformation->type != IntegerToken) { iLen = iLen / 2; }
 
     if (iDim != iLen) {  // Matrix
       stringBuffer[0] = '[';
@@ -131,7 +143,7 @@ void lex::ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaI
     for (int i1 = 0; i1 < iLen; i1++) {
       iLnLoc++;
       if (iLen != 1 && (i1 % iDim) == 0) { stringBuffer[iLnLoc++] = '['; }
-      if (valueMetaInformation->type == lex::IntegerToken) {
+      if (valueMetaInformation->type == IntegerToken) {
         memcpy(lVal, reinterpret_cast<const std::byte*>(valueBuffer) + byteOfset, 4);
         byteOfset += 4;
         _ltow_s(*lVal, &stringBuffer[iLnLoc], static_cast<size_t>(32 - iLnLoc), 10);
@@ -140,17 +152,17 @@ void lex::ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaI
       } else {
         memcpy(dVal, reinterpret_cast<const std::byte*>(valueBuffer) + byteOfset, 8);
         byteOfset += 8;
-        if (valueMetaInformation->type == lex::RealToken) {
+        if (valueMetaInformation->type == RealToken) {
           iLoc = 1;
           wchar_t* NextToken{nullptr};
           szpVal = wcstok_s(cVal, L" ", &NextToken);
           wcscpy_s(&stringBuffer[iLnLoc], static_cast<size_t>(32 - iLnLoc), szpVal);
           iLnLoc += (int)wcslen(szpVal);
-        } else if (valueMetaInformation->type == lex::ArchitecturalUnitsLengthToken) {
+        } else if (valueMetaInformation->type == ArchitecturalUnitsLengthToken) {
           iLnLoc += iVLen;
-        } else if (valueMetaInformation->type == lex::EngineeringUnitsLengthToken) {
+        } else if (valueMetaInformation->type == EngineeringUnitsLengthToken) {
           iLnLoc += iVLen;
-        } else if (valueMetaInformation->type == lex::SimpleUnitsLengthToken) {
+        } else if (valueMetaInformation->type == SimpleUnitsLengthToken) {
           iLnLoc += iVLen;
         }
       }
@@ -171,23 +183,23 @@ void lex::ConvertValTyp(int currentType, int requiredType, long* valueDefinition
   double* doubleInterpretedBuffer = reinterpret_cast<double*>(buffer);
   long* longInterpretedBuffer = reinterpret_cast<long*>(buffer);
 
-  if (currentType == lex::StringToken) {
-    if (requiredType == lex::IntegerToken) {
+  if (currentType == StringToken) {
+    if (requiredType == IntegerToken) {
       longInterpretedBuffer[0] = _wtoi(reinterpret_cast<wchar_t*>(buffer));
       *valueDefinition = MAKELONG(1, 1);
     } else {
       doubleInterpretedBuffer[0] = _wtof(reinterpret_cast<wchar_t*>(buffer));
       *valueDefinition = MAKELONG(1, 2);
     }
-  } else if (currentType == lex::IntegerToken) {
-    if (requiredType == lex::StringToken) {
+  } else if (currentType == IntegerToken) {
+    if (requiredType == StringToken) {
     } else {
       doubleInterpretedBuffer[0] = static_cast<double>(longInterpretedBuffer[0]);
       *valueDefinition = MAKELONG(1, 2);
     }
   } else {  // currentType is double
-    if (requiredType == lex::StringToken) {
-    } else if (requiredType == lex::IntegerToken) {
+    if (requiredType == StringToken) {
+    } else if (requiredType == IntegerToken) {
     }
   }
 }
@@ -203,12 +215,12 @@ void lex::ConvertStringToVal(int desiredType, long tokenDefinition, const wchar_
 
   auto throwConversionError = []() { throw std::invalid_argument("String format conversion error"); };
 
-  if (desiredType == lex::IntegerToken) {
+  if (desiredType == IntegerToken) {
     long* longInterpretedValue = reinterpret_cast<long*>(resultValue);
 
-    if (tokenType == lex::IntegerToken) {
+    if (tokenType == IntegerToken) {
       *longInterpretedValue = _wtol(token);
-    } else if (tokenType == lex::RealToken) {
+    } else if (tokenType == RealToken) {
       *longInterpretedValue = static_cast<long>(_wtof(token));
     } else {
       throwConversionError();
@@ -217,9 +229,9 @@ void lex::ConvertStringToVal(int desiredType, long tokenDefinition, const wchar_
   } else {
     double* doubleInterpretedValue = reinterpret_cast<double*>(resultValue);
 
-    if (tokenType == lex::IntegerToken) {
+    if (tokenType == IntegerToken) {
       *doubleInterpretedValue = static_cast<double>(_wtoi(token));
-    } else if (tokenType == lex::RealToken) {
+    } else if (tokenType == RealToken) {
       *doubleInterpretedValue = _wtof(token);
     } else {
       throwConversionError();
@@ -237,7 +249,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
   long lDef1 = MAKELONG(1, 1);
   int iDim1{0};
   int iLen1{0};
-  int iTyp1{lex::IntegerToken};
+  int iTyp1{IntegerToken};
 
   long lDef2;
   int iDim2{0};
@@ -282,8 +294,8 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
       throw L"Identifier token class not implemented";
     } else if (TokenPropertiesTable[tokenType].tokenClass == Constant) {
       iTyp1 = tokenType;
-      lDef1 = lex::lValues[lex::valueLocation[iTokLoc]];
-      memcpy(operandBuffer, &lex::lValues[lex::valueLocation[iTokLoc] + 1], static_cast<size_t>(HIWORD(lDef1) * 4));
+      lDef1 = lValues[valueLocation[iTokLoc]];
+      memcpy(operandBuffer, &lValues[valueLocation[iTokLoc] + 1], static_cast<size_t>(HIWORD(lDef1) * 4));
     } else {  // Token is an operator .. Pop an operand from operand stack
       if (operandStackTop == 0) { throw L"Operand stack is empty"; }
 
@@ -293,21 +305,21 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
       memcpy(operandBuffer, &lOpStk[operandStackTop--][0], static_cast<size_t>(iLen1 * 4));
 
       if (TokenPropertiesTable[tokenType].tokenClass == Other) {  // intrinsics and oddball unary minus/plus
-        if (iTyp1 == lex::StringToken) {
+        if (iTyp1 == StringToken) {
           iDim1 = LOWORD(lDef1);
           wcscpy_s(szTok, 256, reinterpret_cast<wchar_t*>(operandBuffer));
           if (tokenType == Int) {
-            iTyp1 = lex::IntegerToken;
-            ConvertStringToVal(lex::IntegerToken, lDef1, szTok, &lDef1, operandBuffer);
-          } else if (tokenType == lex::RealToken) {
-            iTyp1 = lex::RealToken;
-            ConvertStringToVal(lex::RealToken, lDef1, szTok, &lDef1, operandBuffer);
-          } else if (tokenType == lex::StringToken) {
+            iTyp1 = IntegerToken;
+            ConvertStringToVal(IntegerToken, lDef1, szTok, &lDef1, operandBuffer);
+          } else if (tokenType == RealToken) {
+            iTyp1 = RealToken;
+            ConvertStringToVal(RealToken, lDef1, szTok, &lDef1, operandBuffer);
+          } else if (tokenType == StringToken) {
             ;
           } else {
             throw L"String operand conversions error: unknown";
           }
-        } else if (iTyp1 == lex::IntegerToken) {
+        } else if (iTyp1 == IntegerToken) {
           UnaryOp(tokenType, &iTyp1, &lDef1, lOp1);
         } else {
           UnaryOp(tokenType, &iTyp1, &lDef1, dOp1);
@@ -318,13 +330,13 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
         lDef2 = lOpStkDef[operandStackTop];
         iLen2 = HIWORD(lDef2);
         memcpy(secondOperandBuffer, &lOpStk[operandStackTop--][0], static_cast<size_t>(iLen2 * 4));
-        iTyp = std::min(iTyp2, lex::RealToken);
+        iTyp = std::min(iTyp2, RealToken);
         if (iTyp1 < iTyp) {  // Convert first operand
           ConvertValTyp(iTyp1, iTyp, &lDef1, lOp1);
           iTyp1 = iTyp;
           iLen1 = HIWORD(lDef1);
         } else {
-          iTyp = std::min(iTyp1, lex::RealToken);
+          iTyp = std::min(iTyp1, RealToken);
           if (iTyp2 < iTyp) {  // Convert second operand
             ConvertValTyp(iTyp2, iTyp, &lDef2, lOp2);
             iTyp2 = iTyp;
@@ -332,7 +344,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
           }
         }
         if (tokenType == BinaryAddToken) {
-          if (iTyp1 == lex::StringToken) {
+          if (iTyp1 == StringToken) {
             iDim1 = LOWORD(lDef1);
             iDim2 = LOWORD(lDef2);
             iDim = iDim2 + iDim1;
@@ -344,27 +356,27 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             iLen1 = 1 + (iDim - 1) / 4;
             lDef1 = MAKELONG(iDim, iLen1);
           } else {
-            if (iTyp1 == lex::IntegerToken) {
+            if (iTyp1 == IntegerToken) {
               lOp1[0] += lOp2[0];
             } else {
               dOp1[0] += dOp2[0];
             }
           }
         } else if (tokenType == BinarySubtractToken) {
-          if (iTyp1 == lex::StringToken) { throw L"Can not subtract strings"; }
-          if (iTyp1 == lex::IntegerToken) {
+          if (iTyp1 == StringToken) { throw L"Can not subtract strings"; }
+          if (iTyp1 == IntegerToken) {
             lOp1[0] = lOp2[0] - lOp1[0];
           } else {
             dOp1[0] = dOp2[0] - dOp1[0];
           }
         } else if (tokenType == MultiplyToken) {
-          if (iTyp1 == lex::StringToken) { throw L"Can not mutiply strings"; }
-          if (iTyp1 == lex::IntegerToken) {
+          if (iTyp1 == StringToken) { throw L"Can not mutiply strings"; }
+          if (iTyp1 == IntegerToken) {
             lOp1[0] *= lOp2[0];
           } else {
-            if (iTyp1 == lex::RealToken) {
+            if (iTyp1 == RealToken) {
               iTyp1 = iTyp2;
-            } else if (iTyp2 == lex::RealToken) {
+            } else if (iTyp2 == RealToken) {
               ;
             } else {
               throw L"Invalid mix of multiplicands";
@@ -372,35 +384,35 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             dOp1[0] *= dOp2[0];
           }
         } else if (tokenType == DivideToken) {
-          if (iTyp1 == lex::StringToken) { throw L"Can not divide strings"; }
-          if (iTyp1 == lex::IntegerToken) {
+          if (iTyp1 == StringToken) { throw L"Can not divide strings"; }
+          if (iTyp1 == IntegerToken) {
             if (lOp1[0] == 0) { throw std::domain_error("Attempting to divide by 0"); }
             lOp1[0] = lOp2[0] / lOp1[0];
           } else if (iTyp1 <= iTyp2) {
             if (dOp1[0] == 0.0) { throw std::domain_error("Attempting to divide by 0."); }
             if (iTyp1 == iTyp2) {
-              iTyp1 = lex::RealToken;
-            } else if (iTyp1 == lex::RealToken) {
+              iTyp1 = RealToken;
+            } else if (iTyp1 == RealToken) {
               iTyp1 = iTyp2;
-            } else if (iTyp1 == lex::ArchitecturalUnitsLengthToken) {
-              iTyp1 = lex::ArchitecturalUnitsLengthToken;
-            } else if (iTyp1 == lex::EngineeringUnitsLengthToken) {
-              iTyp1 = lex::EngineeringUnitsLengthToken;
-            } else if (iTyp1 == lex::SimpleUnitsLengthToken) {
-              iTyp1 = lex::SimpleUnitsLengthToken;
+            } else if (iTyp1 == ArchitecturalUnitsLengthToken) {
+              iTyp1 = ArchitecturalUnitsLengthToken;
+            } else if (iTyp1 == EngineeringUnitsLengthToken) {
+              iTyp1 = EngineeringUnitsLengthToken;
+            } else if (iTyp1 == SimpleUnitsLengthToken) {
+              iTyp1 = SimpleUnitsLengthToken;
             }
             dOp1[0] = dOp2[0] / dOp1[0];
           } else {
             throw L"Division type error";
           }
         } else if (tokenType == ExponentiateToken) {
-          if (iTyp1 == lex::IntegerToken) {
+          if (iTyp1 == IntegerToken) {
             if ((lOp1[0] >= 0 && lOp1[0] > DBL_MAX_10_EXP) || (lOp1[0] < 0 && lOp1[0] < DBL_MIN_10_EXP)) {
               throw L"Exponentiation error";
             }
 
             lOp1[0] = (int)pow((double)lOp2[0], lOp1[0]);
-          } else if (iTyp1 == lex::RealToken) {
+          } else if (iTyp1 == RealToken) {
             int iExp = (int)dOp1[0];
 
             if ((iExp >= 0 && iExp > DBL_MAX_10_EXP) || (iExp < 0 && iExp < DBL_MIN_10_EXP)) {
@@ -437,47 +449,47 @@ void lex::Parse(const wchar_t* inputLine) {
     int tokenId = lex::Scan(token, inputLine, linePosition);
 
     if (tokenId == -1) { return; }
-    if (lex::numberOfTokensInStream == lex::MaxTokens) { return; }
+    if (numberOfTokensInStream == MaxTokens) { return; }
 
-    lex::tokenTypeIdentifiers[lex::numberOfTokensInStream] = tokenId;
+    tokenTypeIdentifiers[numberOfTokensInStream] = tokenId;
     int iLen = static_cast<int>(wcslen(token));
     int iDim{0};
     double dVal{0.0};
 
     switch (tokenId) {
-      case lex::IdentifierToken:
+      case IdentifierToken:
         iDim = static_cast<int>(wcslen(token));
         iLen = 1 + (iDim - 1) / 2;
 
-        lex::valueLocation[lex::numberOfTokensInStream] = lex::numberOfValues + 1;
-        lex::lValues[lex::numberOfValues + 1] = iDim + iLen * 65536;
-        memcpy(&lex::lValues[lex::numberOfValues + 2], token, static_cast<size_t>(iDim));
-        lex::numberOfValues = lex::numberOfValues + 1 + iLen;
+        valueLocation[numberOfTokensInStream] = numberOfValues + 1;
+        lValues[numberOfValues + 1] = iDim + iLen * 65536;
+        memcpy(&lValues[numberOfValues + 2], token, static_cast<size_t>(iDim));
+        numberOfValues = numberOfValues + 1 + iLen;
         break;
 
-      case lex::StringToken:
+      case StringToken:
         ParseStringOperand(token);
         break;
 
-      case lex::IntegerToken:
-        lex::valueLocation[lex::numberOfTokensInStream] = lex::numberOfValues;
-        lex::lValues[lex::numberOfValues++] = MAKELONG(1, 1);
-        lex::lValues[lex::numberOfValues++] = _wtoi(token);
+      case IntegerToken:
+        valueLocation[numberOfTokensInStream] = numberOfValues;
+        lValues[numberOfValues++] = MAKELONG(1, 1);
+        lValues[numberOfValues++] = _wtoi(token);
         break;
 
-      case lex::RealToken:
-      case lex::ArchitecturalUnitsLengthToken:
-      case lex::EngineeringUnitsLengthToken:
-      case lex::SimpleUnitsLengthToken:
-        dVal = (tokenId == lex::RealToken) ? _wtof(token) : app.ParseLength(token);
+      case RealToken:
+      case ArchitecturalUnitsLengthToken:
+      case EngineeringUnitsLengthToken:
+      case SimpleUnitsLengthToken:
+        dVal = (tokenId == RealToken) ? _wtof(token) : app.ParseLength(token);
 
-        lex::valueLocation[lex::numberOfTokensInStream] = lex::numberOfValues;
-        lex::lValues[lex::numberOfValues++] = MAKELONG(1, 2);
-        memcpy(&lex::lValues[lex::numberOfValues++], &dVal, sizeof(double));
-        lex::numberOfValues++;
+        valueLocation[numberOfTokensInStream] = numberOfValues;
+        lValues[numberOfValues++] = MAKELONG(1, 2);
+        memcpy(&lValues[numberOfValues++], &dVal, sizeof(double));
+        numberOfValues++;
         break;
     }
-    lex::numberOfTokensInStream++;
+    numberOfTokensInStream++;
   }
 }
 
@@ -487,7 +499,7 @@ void lex::ParseStringOperand(wchar_t* token) {
     return;
   }
 
-  auto values = (LPWSTR)&lex::lValues[lex::numberOfValues + 2];
+  auto values = (LPWSTR)&lValues[numberOfValues + 2];
 
   int iDim{0};
   int next{1};
@@ -497,9 +509,9 @@ void lex::ParseStringOperand(wchar_t* token) {
   }
   values[--iDim] = '\0';
   int iLen = 1 + (iDim - 1) / 2;
-  lex::valueLocation[lex::numberOfTokensInStream] = ++lex::numberOfValues;
-  lex::lValues[lex::numberOfValues] = MAKELONG(iDim, iLen);
-  lex::numberOfValues += iLen;
+  valueLocation[numberOfTokensInStream] = ++numberOfValues;
+  lValues[numberOfValues] = MAKELONG(iDim, iLen);
+  numberOfValues += iLen;
 }
 
 int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
@@ -578,8 +590,8 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       break;
 
     case Int:  // Conversion to integer
-      ConvertValTyp(lex::RealToken, lex::IntegerToken, alDef, (void*)adOp);
-      *aiTyp = lex::IntegerToken;
+      ConvertValTyp(RealToken, IntegerToken, alDef, (void*)adOp);
+      *aiTyp = IntegerToken;
       break;
 
     case NaturalLogarithm:
@@ -617,8 +629,8 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
     case String: {  // Conversion to string
       wchar_t stringBuffer[32]{};
       int iDim = LOWORD(*alDef);
-      *aiTyp = lex::StringToken;
-      valueMetaInformation.type = lex::RealToken;
+      *aiTyp = StringToken;
+      valueMetaInformation.type = RealToken;
       valueMetaInformation.definition = *alDef;
       ConvertValToString(static_cast<void*>(adOp), &valueMetaInformation, stringBuffer, &iDim);
       int iLen = 1 + (iDim - 1) / 4;
@@ -650,8 +662,8 @@ void lex::UnaryOp(int aiTokTyp, int* tokenType, long* alDef, long* alOp) {
       break;
 
     case Real:
-      ConvertValTyp(lex::IntegerToken, lex::RealToken, alDef, (void*)alOp);
-      *tokenType = lex::RealToken;
+      ConvertValTyp(IntegerToken, RealToken, alDef, (void*)alOp);
+      *tokenType = RealToken;
       break;
 
     case String: {  // Conversion to string
@@ -659,8 +671,8 @@ void lex::UnaryOp(int aiTokTyp, int* tokenType, long* alDef, long* alOp) {
       int iDim = LOWORD(*alDef);
       int iLen = HIWORD(*alDef);
 
-      *tokenType = lex::StringToken;
-      valueMetaInformation.type = lex::IntegerToken;
+      *tokenType = StringToken;
+      valueMetaInformation.type = IntegerToken;
       valueMetaInformation.definition = *alDef;
       ConvertValToString(static_cast<void*>(alOp), &valueMetaInformation, stringBuffer, &iDim);
       iLen = 1 + (iDim - 1) / 4;
