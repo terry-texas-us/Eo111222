@@ -1872,8 +1872,10 @@ void AeSysDoc::OnPrimExtractNum() {
       lex::Parse(number);
       lex::EvalTokenStream(&iTokId, &lDef, &iTyp, value);
 
-      if (iTyp != lex::LengthToken) { lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, value); }
-
+      if (iTyp != lex::ArchitecturalUnitsLengthToken && iTyp != lex::EngineeringUnitsLengthToken &&
+          iTyp != lex::SimpleUnitsLengthToken) {
+        lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, value);
+      }
       wchar_t Message[64]{};
       swprintf_s(Message, 64, L"%10.4f ", value[0]);
       wcscat_s(Message, 64, L"was extracted from drawing");
@@ -1888,6 +1890,7 @@ void AeSysDoc::OnPrimExtractNum() {
 #endif  // USING_DDE
   }
 }
+
 void AeSysDoc::OnPrimExtractStr() {
   auto* activeView = AeSysView::GetActiveView();
 

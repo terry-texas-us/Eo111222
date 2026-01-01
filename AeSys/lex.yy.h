@@ -14,6 +14,7 @@
 #define REFLEX_OPTION_header_file         "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex.yy.h"
 #define REFLEX_OPTION_lex                 lex
 #define REFLEX_OPTION_lexer               Lexer
+#define REFLEX_OPTION_noyywrap            true
 #define REFLEX_OPTION_outfile             "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex.yy.cpp"
 #define REFLEX_OPTION_unicode             true
 

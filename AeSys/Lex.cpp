@@ -2,7 +2,6 @@
 
 #include "AeSys.h"
 #include "Lex.h"
-#include "LexTable.h"
 #include "Resource.h"
 #pragma warning(push)
 #pragma warning(disable : 4003 4242 4244 4263 4264 4365 4800)
@@ -17,6 +16,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <stdexcept>
+#include <string>
 #include <wchar.h>
 
 namespace lex {
@@ -54,7 +54,7 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
       case CloseParentheses:
         if (NumberOfOpenParentheses == 0) { break; }
 
-        while (OperatorStack[TopOfOperatorStack] != TOK_LPAREN) {  // Move operator to token stack
+        while (OperatorStack[TopOfOperatorStack] != OpenParenthesesToken) {  // Move operator to token stack
           typeOfTokens[numberOfTokens++] = OperatorStack[TopOfOperatorStack--];
         }
         TopOfOperatorStack--;       // Discard open parentheses
@@ -63,10 +63,10 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
 
       case BinaryArithmeticOperator:
       case Other:
-        if (CurrentTokenType == TOK_BINARY_PLUS || CurrentTokenType == TOK_BINARY_MINUS) {
+        if (CurrentTokenType == BinaryAddToken || CurrentTokenType == BinarySubtractToken) {
           TokenClass eClassPrv = TokenPropertiesTable[PreviousTokenType].tokenClass;
           if (eClassPrv != Constant && eClassPrv != Identifier && eClassPrv != CloseParentheses) {
-            CurrentTokenType = (CurrentTokenType == TOK_BINARY_PLUS) ? TOK_UNARY_PLUS : TOK_UNARY_MINUS;
+            CurrentTokenType = (CurrentTokenType == BinaryAddToken) ? UnaryPlus : UnaryMinus;
           }
         }
         // Pop higher priority operators from stack
@@ -78,12 +78,10 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
         OperatorStack[++TopOfOperatorStack] = CurrentTokenType;
         break;
 
-        // TODO .. classes of tokens which might be implemented
+      // TODO .. classes of tokens which might be implemented 
+      // (AssignmentOperator, BinaryRelationalOperator, BinaryLogicOperator and UnaryLogicOperator) should go here
       case Identifier:
-      case BinaryRelationalOperator:
-      case BinaryLogicOperator:
-      case UnaryLogicOperator:
-      case AssignOp:
+      case PlaceHolderForZero:
 
       default:
         break;
@@ -145,9 +143,11 @@ void lex::ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaI
           szpVal = wcstok_s(cVal, L" ", &NextToken);
           wcscpy_s(&stringBuffer[iLnLoc], static_cast<size_t>(32 - iLnLoc), szpVal);
           iLnLoc += (int)wcslen(szpVal);
-        } else if (valueMetaInformation->type == lex::LengthToken) {
+        } else if (valueMetaInformation->type == lex::ArchitecturalUnitsLengthToken) {
           iLnLoc += iVLen;
-        } else if (valueMetaInformation->type == lex::AreaToken) {
+        } else if (valueMetaInformation->type == lex::EngineeringUnitsLengthToken) {
+          iLnLoc += iVLen;
+        } else if (valueMetaInformation->type == lex::SimpleUnitsLengthToken) {
           iLnLoc += iVLen;
         }
       }
@@ -290,7 +290,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
         if (iTyp1 == lex::StringToken) {
           iDim1 = LOWORD(lDef1);
           wcscpy_s(szTok, 256, reinterpret_cast<wchar_t*>(operandBuffer));
-          if (tokenType == TOK_TOINTEGER) {
+          if (tokenType == ToInt) {
             iTyp1 = lex::IntegerToken;
             ConvertStringToVal(lex::IntegerToken, lDef1, szTok, &lDef1, operandBuffer);
           } else if (tokenType == lex::RealToken) {
@@ -306,8 +306,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
         } else {
           UnaryOp(tokenType, &iTyp1, &lDef1, dOp1);
         }
-      } else if (TokenPropertiesTable[tokenType].tokenClass ==
-                 BinaryArithmeticOperator) {  // Binary arithmetic operator
+      } else if (TokenPropertiesTable[tokenType].tokenClass == BinaryArithmeticOperator) {
         if (operandStackTop == 0) { throw L"Binary Arithmetic: Only one operand."; }
         iTyp2 = operandStack[operandStackTop];  // Pop second operand from operand stack
         lDef2 = lOpStkDef[operandStackTop];
@@ -326,7 +325,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             iLen2 = HIWORD(lDef2);
           }
         }
-        if (tokenType == TOK_BINARY_PLUS) {
+        if (tokenType == BinaryAddToken) {
           if (iTyp1 == lex::StringToken) {
             iDim1 = LOWORD(lDef1);
             iDim2 = LOWORD(lDef2);
@@ -345,14 +344,14 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
               dOp1[0] += dOp2[0];
             }
           }
-        } else if (tokenType == TOK_BINARY_MINUS) {
+        } else if (tokenType == BinarySubtractToken) {
           if (iTyp1 == lex::StringToken) { throw L"Can not subtract strings"; }
           if (iTyp1 == lex::IntegerToken) {
             lOp1[0] = lOp2[0] - lOp1[0];
           } else {
             dOp1[0] = dOp2[0] - dOp1[0];
           }
-        } else if (tokenType == TOK_MULTIPLY) {
+        } else if (tokenType == MultiplyToken) {
           if (iTyp1 == lex::StringToken) { throw L"Can not mutiply strings"; }
           if (iTyp1 == lex::IntegerToken) {
             lOp1[0] *= lOp2[0];
@@ -361,15 +360,12 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
               iTyp1 = iTyp2;
             } else if (iTyp2 == lex::RealToken) {
               ;
-            } else if (iTyp1 == lex::LengthToken && iTyp2 == lex::LengthToken) {
-              iTyp1 = lex::AreaToken;
             } else {
               throw L"Invalid mix of multiplicands";
             }
-
             dOp1[0] *= dOp2[0];
           }
-        } else if (tokenType == TOK_DIVIDE) {
+        } else if (tokenType == DivideToken) {
           if (iTyp1 == lex::StringToken) { throw L"Can not divide strings"; }
           if (iTyp1 == lex::IntegerToken) {
             if (lOp1[0] == 0) { throw std::domain_error("Attempting to divide by 0"); }
@@ -380,14 +376,18 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
               iTyp1 = lex::RealToken;
             } else if (iTyp1 == lex::RealToken) {
               iTyp1 = iTyp2;
-            } else {
-              iTyp1 = lex::LengthToken;
+            } else if (iTyp1 == lex::ArchitecturalUnitsLengthToken) {
+              iTyp1 = lex::ArchitecturalUnitsLengthToken;
+            } else if (iTyp1 == lex::EngineeringUnitsLengthToken) {
+              iTyp1 = lex::EngineeringUnitsLengthToken;
+            } else if (iTyp1 == lex::SimpleUnitsLengthToken) {
+              iTyp1 = lex::SimpleUnitsLengthToken;
             }
             dOp1[0] = dOp2[0] / dOp1[0];
           } else {
             throw L"Division type error";
           }
-        } else if (tokenType == TOK_EXPONENTIATE) {
+        } else if (tokenType == ExponentiateToken) {
           if (iTyp1 == lex::IntegerToken) {
             if ((lOp1[0] >= 0 && lOp1[0] > DBL_MAX_10_EXP) || (lOp1[0] < 0 && lOp1[0] < DBL_MIN_10_EXP)) {
               throw L"Exponentiation error";
@@ -403,15 +403,9 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             dOp1[0] = pow(dOp2[0], dOp1[0]);
           }
         }
-      } else if (TokenPropertiesTable[tokenType].tokenClass == BinaryRelationalOperator) {
-        // if support for binary relational operators desired (== != > >= < <=)
-        throw L"Binary relational operators not implemented";
-      } else if (TokenPropertiesTable[tokenType].tokenClass == BinaryLogicOperator) {
-        // if support for binary logical operators desired (& |)
-        throw L"Binary logical operators not implemented";
-      } else if (TokenPropertiesTable[tokenType].tokenClass == UnaryLogicOperator) {
-        // if support for unary logical operator desired (!)
-        throw L"Unary logical operator not implemented";
+        // TODO: Support for BinaryRelationalOperator (== != > >= < <=) should go here
+        //       Support for BinaryLogicOperator (& |) should go here
+        //       Support for UnaryLogicOperator (!) should go here
       }
     }
     operandStackTop++;                      // Increment opernad stack pointer
@@ -466,7 +460,9 @@ void lex::Parse(const wchar_t* inputLine) {
         break;
 
       case lex::RealToken:
-      case lex::LengthToken:
+      case lex::ArchitecturalUnitsLengthToken:
+      case lex::EngineeringUnitsLengthToken:
+      case lex::SimpleUnitsLengthToken:
         dVal = (tokenId == lex::RealToken) ? _wtof(token) : app.ParseLength(token);
 
         lex::valueLocation[lex::numberOfTokensInStream] = lex::numberOfValues;
@@ -500,41 +496,6 @@ if (wcslen(token) < 3) {
   lex::numberOfValues += iLen;
 }
 
-/*
-int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
-  while (inputLine[linePosition] == ' ') { linePosition++; }
-
-  int beginPosition = linePosition;
-  int tokenPosition = linePosition;
-  int tokenId{-1};
-  int scanPosition{1};
-
-  bool done{false};
-  while (!done) {
-    int address = iBase[scanPosition] + inputLine[linePosition];
-
-    if (iCheck[address] == scanPosition) {
-      scanPosition = iNext[address];
-      if (iTokVal[scanPosition] != 0) {
-        tokenId = iTokVal[scanPosition];
-        tokenPosition = linePosition;
-      }
-      linePosition++;
-    } else if (iDefault[scanPosition] != 0) {
-      scanPosition = iDefault[scanPosition];
-    } else {
-      done = true;
-    }
-  }
-  int tokenLength = tokenPosition - beginPosition + 1;
-  wcsncpy_s(token, static_cast<size_t>(tokenLength + 1), &inputLine[beginPosition], static_cast<size_t>(tokenLength));
-  token[tokenLength] = '\0';
-  if (tokenId == -1) { linePosition = beginPosition + 1; }
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Token `%s` TokenID = %d\n", token, tokenId);
-  return (tokenId);
-}
-*/
-////
 int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
   while (inputLine[linePosition] == L' ') { linePosition++; }
 
@@ -547,23 +508,18 @@ int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
   if (tokenId == 0) {  // Unmatched input (error or unexpected char)
     token[0] = inputLine[linePosition];
     token[1] = L'\0';
-    linePosition++;  // Advance one char, like old behavior
+    linePosition++;  // Advance one char
     tokenId = -1;    // Signal error
-  } else {
-    // Copy matched text (wtext() returns wchar_t*)
+  } else { // Copy matched text
     std::wstring matched = lexer.wstr();
     size_t length = lexer.wsize();
     wcsncpy_s(token, length + 1, matched.c_str(), length);
     token[length] = L'\0';
     linePosition += static_cast<int>(length);
   }
-
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Token `%s` TokenID = %d\n", token, tokenId);
   return tokenId;
 }
-////
-
-
 
 int lex::TokType(int tokenType) {
   return (tokenType >= 0 && tokenType < numberOfTokensInStream) ? tokenTypeIdentifiers[tokenType] : -1;
@@ -573,18 +529,18 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
   ValueMetaInformation valueMetaInformation{};
 
   switch (aiTokTyp) {
-    case TOK_UNARY_MINUS:
+    case UnaryMinus:
       for (int i = 0; i < HIWORD(*alDef) / 2; i++) { adOp[i] = -adOp[i]; }
       break;
 
-    case TOK_UNARY_PLUS:
+    case UnaryPlus:
       break;
 
-    case TOK_ABS:
+    case AbsoluteValue:
       adOp[0] = fabs(adOp[0]);
       break;
 
-    case TOK_ACOS:
+    case ArcCosine:
       if (fabs(adOp[0]) > 1.0) {
         throw std::domain_error("acos of a value greater than 1. or less than -1.");
       } else {
@@ -592,7 +548,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       }
       break;
 
-    case TOK_ASIN:
+    case ArcSine:
       if (fabs(adOp[0]) > 1.0) {
         throw std::domain_error("asin of a value greater than 1. or less than -1.");
       } else {
@@ -600,27 +556,27 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       }
       break;
 
-    case TOK_ATAN:
+    case ArcTangent:
       adOp[0] = atan(Eo::RadianToDegree(adOp[0]));
       break;
 
-    case TOK_COS:
+    case Cosine:
       adOp[0] = cos(Eo::DegreeToRadian(adOp[0]));
       break;
 
-    case TOK_TOREAL:
+    case ToReal:
       break;
 
-    case TOK_EXP:
+    case ExponentialValue:
       adOp[0] = exp(adOp[0]);
       break;
 
-    case TOK_TOINTEGER:  // Conversion to integer
+    case ToInt:  // Conversion to integer
       ConvertValTyp(lex::RealToken, lex::IntegerToken, alDef, (void*)adOp);
       *aiTyp = lex::IntegerToken;
       break;
 
-    case TOK_LN:
+    case NaturalLogarithm:
       if (adOp[0] <= 0.0) {
         throw std::domain_error("ln of a non-positive number");
       } else {
@@ -628,7 +584,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       }
       break;
 
-    case TOK_LOG:
+    case Base10Logarithm:
       if (adOp[0] <= 0.0) {
         throw std::domain_error("log of a non-positive number");
       } else {
@@ -636,11 +592,11 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       }
       break;
 
-    case TOK_SIN:
+    case Sine:
       adOp[0] = sin(Eo::DegreeToRadian(adOp[0]));
       break;
 
-    case TOK_SQRT:
+    case SquareRoot:
       if (adOp[0] < 0.0) {
         throw std::domain_error("sqrt of a negative number");
       } else {
@@ -648,11 +604,11 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       }
       break;
 
-    case TOK_TAN:
+    case Tangent:
       adOp[0] = tan(Eo::DegreeToRadian(adOp[0]));
       break;
 
-    case TOK_TOSTRING: {  // Conversion to string
+    case ToString: {  // Conversion to string
       wchar_t stringBuffer[32]{};
       int iDim = LOWORD(*alDef);
       *aiTyp = lex::StringToken;
@@ -673,26 +629,26 @@ void lex::UnaryOp(int aiTokTyp, int* tokenType, long* alDef, long* alOp) {
   ValueMetaInformation valueMetaInformation{};
 
   switch (aiTokTyp) {
-    case TOK_UNARY_MINUS:
+    case UnaryMinus:
       alOp[0] = -alOp[0];
       break;
 
-    case TOK_UNARY_PLUS:
+    case UnaryPlus:
       break;
 
-    case TOK_ABS:
+    case AbsoluteValue:
       alOp[0] = labs(alOp[0]);
       break;
 
-    case TOK_TOINTEGER:
+    case ToInt:
       break;
 
-    case TOK_TOREAL:
+    case ToReal:
       ConvertValTyp(lex::IntegerToken, lex::RealToken, alDef, (void*)alOp);
       *tokenType = lex::RealToken;
       break;
 
-    case TOK_TOSTRING: {  // Conversion to string
+    case ToString: {  // Conversion to string
       wchar_t stringBuffer[32]{};
       int iDim = LOWORD(*alDef);
       int iLen = HIWORD(*alDef);

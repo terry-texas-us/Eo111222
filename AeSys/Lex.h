@@ -1,14 +1,12 @@
 ﻿#pragma once
+#include <Windows.h>
 
 enum TokenClass {
+  PlaceHolderForZero,
   Other,
   Constant,
   Identifier,
   BinaryArithmeticOperator,
-  BinaryRelationalOperator,
-  BinaryLogicOperator,
-  UnaryLogicOperator,
-  AssignOp,
   OpenParentheses,
   CloseParentheses
 };
@@ -36,90 +34,70 @@ namespace lex {
 constexpr int MaxTokens = 128;
 constexpr int MaxValues = 256;
 
-const int TOK_ABS = 1;
-const int TOK_ACOS = 2;
-const int TOK_ASIN = 3;
-const int TOK_ATAN = 4;
-const int TOK_TOSTRING = 5;
-const int TOK_COS = 6;
-const int TOK_EXP = 7;
-const int TOK_TOINTEGER = 8;
-const int TOK_LN = 9;
-const int TOK_LOG = 10;
-const int TOK_SIN = 11;
-const int TOK_SQRT = 12;
-const int TOK_TAN = 13;
-const int TOK_TOREAL = 14;
-const int TOK_UNARY_PLUS = 15;
-const int TOK_UNARY_MINUS = 16;
+constexpr int AbsoluteValue = 1;
+constexpr int ArcCosine = 2;
+constexpr int ArcSine = 3;
+constexpr int ArcTangent = 4;
+constexpr int ToString = 5;
+constexpr int Cosine = 6;
+constexpr int ExponentialValue = 7;
+constexpr int ToInt = 8;
+constexpr int NaturalLogarithm = 9;
+constexpr int Base10Logarithm = 10;
+constexpr int Sine = 11;
+constexpr int SquareRoot = 12;
+constexpr int Tangent = 13;
+constexpr int ToReal = 14;
+constexpr int UnaryPlus = 15;
+constexpr int UnaryMinus = 16;
+constexpr int IntegerToken = 17;
+constexpr int RealToken = 18;
+constexpr int ArchitecturalUnitsLengthToken = 19;
+constexpr int EngineeringUnitsLengthToken = 20;
+constexpr int SimpleUnitsLengthToken = 21;
+constexpr int StringToken = 22;
+constexpr int IdentifierToken = 23;
+constexpr int ExponentiateToken = 24;
+constexpr int MultiplyToken = 25;
+constexpr int DivideToken = 26;
+constexpr int BinaryAddToken = 27;
+constexpr int BinarySubtractToken = 28;
+constexpr int OpenParenthesesToken = 29;
+constexpr int CloseParenthesesToken = 30;
 
-constexpr int IntegerToken = 20;
-constexpr int RealToken = 21;
-constexpr int LengthToken = 22;
-constexpr int AreaToken = 23;
-constexpr int StringToken = 24;
-constexpr int IdentifierToken = 25;
-const int TOK_EXPONENTIATE = 26;
-const int TOK_MULTIPLY = 27;
-const int TOK_DIVIDE = 28;
-const int TOK_BINARY_PLUS = 29;
-const int TOK_BINARY_MINUS = 30;
-const int TOK_EQ = 31;
-const int TOK_NE = 32;
-const int TOK_GT = 33;
-const int TOK_GE = 34;
-const int TOK_LT = 35;
-const int TOK_LE = 36;
-const int TOK_AND = 37;
-const int TOK_OR = 38;
-const int TOK_NOT = 39;
-const int TOK_LPAREN = 40;
-const int TOK_RPAREN = 41;
-
-//* Static array of TokenProperties structures that defines a mapping of various tokens, their precedence, and types used in a lexical analysis context, with a total of 42 entries. */
+//* Static array of TokenProperties structures that defines a mapping of various tokens, their precedence, and types used in a lexical analysis context. */
 static TokenProperties TokenPropertiesTable[] = {
-    {0, 0, Other},                       // unused
-    {110, 85, Other},                    // abs
-    {110, 85, Other},                    // acos
-    {110, 85, Other},                    // asin
-    {110, 85, Other},                    // atan
-    {110, 85, Other},                    // string
-    {110, 85, Other},                    // cos
-    {110, 85, Other},                    // exp
-    {110, 85, Other},                    // int
-    {110, 85, Other},                    // ln
-    {110, 85, Other},                    // log
-    {110, 85, Other},                    // sin
-    {110, 85, Other},                    // sqrt
-    {110, 85, Other},                    // tan
-    {110, 85, Other},                    // real
-    {110, 85, Other},                    // unary+
-    {110, 85, Other},                    // unary-
-    {0, 0, Other},                       // unused
-    {0, 0, Other},                       // unused
-    {0, 0, Other},                       // unused
-    {0, 0, Constant},                    // integer
-    {0, 0, Constant},                    // real
-    {0, 0, Constant},                    // length
-    {0, 0, Constant},                    // area
-    {0, 0, Constant},                    // string
-    {0, 0, Identifier},                  // identifier
-    {80, 79, BinaryArithmeticOperator},  // **
-    {70, 71, BinaryArithmeticOperator},  // *
-    {70, 71, BinaryArithmeticOperator},  // /
-    {60, 61, BinaryArithmeticOperator},  // +
-    {60, 61, BinaryArithmeticOperator},  // -
-    {40, 41, BinaryRelationalOperator},  // ==
-    {40, 41, BinaryRelationalOperator},  // !=
-    {40, 41, BinaryRelationalOperator},  // >
-    {40, 41, BinaryRelationalOperator},  // >=
-    {40, 41, BinaryRelationalOperator},  // <
-    {40, 41, BinaryRelationalOperator},  // <=
-    {20, 21, BinaryLogicOperator},       // &
-    {10, 11, BinaryLogicOperator},       // |
-    {30, 31, UnaryLogicOperator},        // !
-    {110, 1, OpenParentheses},           // (
-    {0, 0, CloseParentheses}             // )
+    {0, 0, PlaceHolderForZero},          // unused
+    {110, 85, Other},                    // AbsoluteValue
+    {110, 85, Other},                    // ArcCosine
+    {110, 85, Other},                    // ArcSine
+    {110, 85, Other},                    // ArcTangent
+    {110, 85, Other},                    // ToString
+    {110, 85, Other},                    // Cosine
+    {110, 85, Other},                    // ExponentialValue
+    {110, 85, Other},                    // ToInt
+    {110, 85, Other},                    // NaturalLogarithm
+    {110, 85, Other},                    // Base10Logarithm
+    {110, 85, Other},                    // Sine
+    {110, 85, Other},                    // SquareRoot
+    {110, 85, Other},                    // Tangent
+    {110, 85, Other},                    // ToReal
+    {110, 85, Other},                    // UnaryPlus
+    {110, 85, Other},                    // UnaryMinus
+    {0, 0, Constant},                    // IntegerToken
+    {0, 0, Constant},                    // RealToken
+    {0, 0, Constant},                    // ArchitecturalUnitsLengthToken
+    {0, 0, Constant},                    // EngineeringUnitsLengthToken
+    {0, 0, Constant},                    // SimpleUnitsLengthToken
+    {0, 0, Constant},                    // StringToken
+    {0, 0, Identifier},                  // IdentifierToken
+    {80, 79, BinaryArithmeticOperator},  // ExponentiateToken
+    {70, 71, BinaryArithmeticOperator},  // MultiplyToken
+    {70, 71, BinaryArithmeticOperator},  // DivideToken
+    {60, 61, BinaryArithmeticOperator},  // BinaryAddToken
+    {60, 61, BinaryArithmeticOperator},  // BinarySubtractToken
+    {110, 1, OpenParentheses},           // OpenParenthesesToken
+    {0, 0, CloseParentheses}             // CloseParenthesesToken
 };
 
 /** @brief Processes a sequence of tokens starting from a specified location, categorizing them into types and handling operator precedence, while managing parentheses and throwing errors for unbalanced expressions or syntax issues.
@@ -189,12 +167,12 @@ wchar_t* ScanForChar(wchar_t character, wchar_t** lineBuffer);
  */
 wchar_t* ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBuf);
 
-/** @brief Scans the input line for the next token starting at linePosition.
+/** @brief Scans the input line for the next token, skipping whitespace and returning the token ID and updating the line position.
  *
- * @param token The scanned token.
+ * @param token A buffer to store the scanned token.
  * @param inputLine The input line to scan.
- * @param linePosition The current position in the input line; updated to the position after the scanned token.
- * @return The token ID of the scanned token, or -1 if no valid token is found.
+ * @param linePosition A reference to the current position in the line; updated to point after the scanned token.
+ * @return The token ID of the scanned token, or -1 if no token is found.
  */
 int Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition);
 

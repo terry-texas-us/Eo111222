@@ -862,7 +862,7 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   wcscat_s(lengthAsBuffer, bufSize, szBuf);
   if (Numerator > 0) {
     wcscat_s(lengthAsBuffer, static_cast<size_t>(bufSize),
-             (units == kArchitecturalS) ? L"\\S" : L"\u00B7"); /* middle dot [U+00B7] */
+             (units == kArchitecturalS) ? L"\\S" : L"-");
     int iGrtComDivisor = GreatestCommonDivisor(Numerator, FractionPrecision);
     Numerator /= iGrtComDivisor;
     int Denominator = FractionPrecision / iGrtComDivisor;
@@ -956,19 +956,67 @@ void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Unit
   wcsncpy_s(lengthAsBuffer, bufSize, formatted, _TRUNCATE);
 }
 
-/** @brief Parses a length string with optional unit suffix.
-    @param lengthBuffer The length string to parse.
-    @return The parsed length in internal units (inches).
+/** @brief Adds optional inches and fraction to a length given in feet.
+    @param inputLine The original input line containing the length string.
+    @param feetLength The length in feet.
+    @param[in, out] end Pointer to the character in inputLine immediately following the feet portion, updated to point to the character after the optional inches and fraction portion.
+    @return The total length in inches after adding optional inches and fraction.
+    @note Fraction is validated by lex::Scan typing token as AcrchitecturalUnitsLengthToken.
+    @throws wchar_t* If an error occurs during parsing, an error message is thrown.
 */
+static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* end) {
+  wchar_t token[32]{0};
+  int linePosition{0};
+  int tokenType = lex::Scan(token, inputLine, linePosition);
+
+  double totalLength = feetLength;
+
+  // Check if end of feet portion is end of inputLine and investigate inches portion if not
+  if (end[1] != L'\0') {  // Parse inches portion
+    double inches = wcstod(&end[1], &end);
+    if (end == nullptr) { throw L"Invalid inches value in length string."; }
+    // Add/subtract inches to totallength
+    totalLength += std::copysign(inches, totalLength);
+    if (tokenType == lex::ArchitecturalUnitsLengthToken) {
+      // the inches component possibly looks like 1'2-3/4". end should be `-` character.If so, parse and add/subtract that also
+      if (*end == L'-') {
+        wchar_t* fractionEnd{nullptr};
+        double numerator = wcstod(&end[1], &fractionEnd);
+        if (fractionEnd == &end[1]) { throw L"Invalid fraction in length string."; }  // allowing 0.0 numerator here
+        end = fractionEnd;
+        double denominator = wcstod(&end[1], &fractionEnd);
+        if (fractionEnd == &end[1] || denominator == 0.0) { throw L"Invalid fraction denominator in length string."; }
+        double fraction = numerator / denominator;
+        // Add/subtract fraction to totallength
+        totalLength += std::copysign(fraction, totalLength);
+        end = fractionEnd;
+      }
+    }
+  }
+  if (*end == L'\"') end++;  // the inches component had the optional `"` character, skip it
+  return totalLength;
+}
+
 double AeSys::ParseLength(wchar_t* inputLine) {
   wchar_t* end{nullptr};
 
+  // Parse the leading numeric portion of the string or possible the numerator of a fraction
   double length = wcstod(inputLine, &end);
 
+  if (end == inputLine) { throw L"Invalid length format."; }
+  // The only valid case for a leading fraction is a variation of SimpleUnitsLengthToken `{sign}{fraction}(\'|\"|{metric_units})`
+  if (*end == L'/') {
+    wchar_t* fractionEnd{nullptr};
+    double denominator = wcstod(&end[1], &fractionEnd);
+    if (fractionEnd == &end[1] || denominator == 0.0) { throw L"Invalid length format."; }
+    length = length / denominator;
+    end = fractionEnd;
+  }
+
   switch (toupper(static_cast<int>(end[0]))) {
-    case '\'':                          // Feet and maybe inches
-      length *= 12.;                    // Reduce to inches
-      length += wcstod(&end[1], &end);  // Begin scan for inches at character following foot delimeter
+    case '\'':  // Feet optional inches
+      length *= 12.0;
+      length = AddOptionalInches(inputLine, length, end);
       break;
 
     case 'M':
@@ -1013,11 +1061,10 @@ double AeSys::ParseLength(Units units, wchar_t* inputLine) {
     } catch (const std::domain_error& e) {
       app.AddStringToMessageList(MultiByteToWString(e.what()));
       return (0.0);
-    } catch (const wchar_t* errorMessage) {
-      app.AddStringToMessageList(std::wstring(errorMessage));
-    }
+    } catch (const wchar_t* errorMessage) { app.AddStringToMessageList(std::wstring(errorMessage)); }
 
-    if (iTyp == lex::LengthToken) {
+    if (iTyp == lex::ArchitecturalUnitsLengthToken || iTyp == lex::EngineeringUnitsLengthToken ||
+        iTyp == lex::SimpleUnitsLengthToken) {
       return (length[0]);
     } else {
       lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, length);
