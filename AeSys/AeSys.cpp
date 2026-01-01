@@ -1061,6 +1061,9 @@ double AeSys::ParseLength(Units units, wchar_t* inputLine) {
     } catch (const std::domain_error& e) {
       app.AddStringToMessageList(MultiByteToWString(e.what()));
       return (0.0);
+    } catch (const std::invalid_argument& e) {
+      app.AddStringToMessageList(MultiByteToWString(e.what()));
+      return (0.0);
     } catch (const wchar_t* errorMessage) { app.AddStringToMessageList(std::wstring(errorMessage)); }
 
     if (iTyp == lex::ArchitecturalUnitsLengthToken || iTyp == lex::EngineeringUnitsLengthToken ||

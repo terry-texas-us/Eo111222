@@ -31,7 +31,7 @@
 
 int Lexer::lex(void)
 {
-  static const char *REGEX_INITIAL = "(?m)(abs)|(acos)|(asin)|(atan)|(string)|(cos)|(exp)|(int)|(ln)|(log)|(sin)|(sqrt)|(tan)|(real)|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))'(?:(?:[0-9])+)-(?:(?:(?:[0-9])+)/(?:(?:[0-9])+))\"?)|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))'(?:(?:[0-9])+)\"?)|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))'(?:(?:[0-9])+\\.(?:[0-9])*)\"?)|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))'(?:\\.(?:[0-9])+)\"?)|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))-(?:(?:(?:[0-9])+)/(?:(?:[0-9])+))(?:'|\"|(?:(?:mm|cm|dm|m|km))))|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))(?:'|\"|(?:(?:mm|cm|dm|m|km))))|((?:[\\x2b\\x2d]?)(?:(?:[0-9])+\\.(?:[0-9])*)(?:'|\"|(?:(?:mm|cm|dm|m|km))))|((?:[\\x2b\\x2d]?)(?:\\.(?:[0-9])+)(?:'|\"|(?:(?:mm|cm|dm|m|km))))|((?:[\\x2b\\x2d]?)(?:[0-9])*(?:\\Q.\\E)(?:[0-9])+)|((?:[\\x2b\\x2d]?)(?:[0-9])+(?:\\Q.\\E)(?:[0-9])*)|((?:[0-9])+)|(\"(?:(?:[\\x00-!]|[\\x23-\\x5b]|[\\x5d-\\x7f]|[\\xc2-\\xdf][\\x80-\\xbf]|\\xe0[\\xa0-\\xbf][\\x80-\\xbf]|[\\xe1-\\xec][\\x80-\\xbf][\\x80-\\xbf]|\\xed[\\x80-\\x9f][\\x80-\\xbf]|[\\xee\\xef][\\x80-\\xbf][\\x80-\\xbf]|\\xf0[\\x90-\\xbf][\\x80-\\xbf][\\x80-\\xbf]|[\\xf1-\\xf3][\\x80-\\xbf][\\x80-\\xbf][\\x80-\\xbf]|\\xf4[\\x80-\\x8f][\\x80-\\xbf][\\x80-\\xbf])|\\\\(?:.[\\x80-\\xbf]*))*\")|((?:[A-Z_a-z])(?:(?:[A-Z_a-z])|(?:[0-9]))*)|((?:\\Q**\\E))|((?:\\Q*\\E))|((?:\\Q/\\E))|((?:\\Q+\\E))|((?:\\Q-\\E))|((?:\\Q(\\E))|((?:\\Q)\\E))|([\\x09\\x0a\\x0d\\x20]+)|((?:.[\\x80-\\xbf]*))";
+  static const char *REGEX_INITIAL = "(?m)(abs)|(acos)|(asin)|(atan)|(string)|(cos)|(exp)|(int)|(ln)|(log)|(sin)|(sqrt)|(tan)|(real)|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))'(?:(?:[0-9])+)-(?:(?:(?:[0-9])+)/(?:(?:[0-9])+))\"?)|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))'(?:(?:[0-9])+)\"?)|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))'(?:(?:[0-9])+\\.(?:[0-9])*)\"?)|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))'(?:\\.(?:[0-9])+)\"?)|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))-(?:(?:(?:[0-9])+)/(?:(?:[0-9])+))(?:'|\"|(?:(?:mm|cm|dm|m|km))))|((?:[\\x2b\\x2d]?)(?:(?:(?:[0-9])+)/(?:(?:[0-9])+))(?:'|\"|(?:(?:mm|cm|dm|m|km))))|((?:(?:[\\x2b\\x2d]?)(?:(?:[0-9])+))(?:'|\"|(?:(?:mm|cm|dm|m|km))))|((?:[\\x2b\\x2d]?)(?:(?:[0-9])+\\.(?:[0-9])*)(?:'|\"|(?:(?:mm|cm|dm|m|km))))|((?:[\\x2b\\x2d]?)(?:\\.(?:[0-9])+)(?:'|\"|(?:(?:mm|cm|dm|m|km))))|((?:[\\x2b\\x2d]?)(?:[0-9])*(?:\\Q.\\E)(?:[0-9])+)|((?:[\\x2b\\x2d]?)(?:[0-9])+(?:\\Q.\\E)(?:[0-9])*)|((?:[0-9])+)|(\"(?:(?:[\\x00-!]|[\\x23-\\x5b]|[\\x5d-\\x7f]|[\\xc2-\\xdf][\\x80-\\xbf]|\\xe0[\\xa0-\\xbf][\\x80-\\xbf]|[\\xe1-\\xec][\\x80-\\xbf][\\x80-\\xbf]|\\xed[\\x80-\\x9f][\\x80-\\xbf]|[\\xee\\xef][\\x80-\\xbf][\\x80-\\xbf]|\\xf0[\\x90-\\xbf][\\x80-\\xbf][\\x80-\\xbf]|[\\xf1-\\xf3][\\x80-\\xbf][\\x80-\\xbf][\\x80-\\xbf]|\\xf4[\\x80-\\x8f][\\x80-\\xbf][\\x80-\\xbf])|\\\\(?:.[\\x80-\\xbf]*))*\")|((?:[A-Z_a-z])(?:(?:[A-Z_a-z])|(?:[0-9]))*)|((?:\\Q**\\E))|((?:\\Q*\\E))|((?:\\Q/\\E))|((?:\\Q+\\E))|((?:\\Q-\\E))|((?:\\Q(\\E))|((?:\\Q)\\E))|([\\x09\\x0a\\x0d\\x20]+)|((?:.[\\x80-\\xbf]*))";
   static const reflex::Pattern PATTERN_INITIAL(REGEX_INITIAL);
   if (!has_matcher())
   {
@@ -129,77 +129,80 @@ int Lexer::lex(void)
           case 19: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:39: {signed_integer}-{fraction}(\'|\"|{metric_units}) :
 #line 39 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 21; }
-	    { return 21; }
             break;
-          case 20: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:41: {signed_integer}(\'|\"|{metric_units}) :
+          case 20: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:40: {sign}{fraction}(\'|\"|{metric_units}) :
+#line 40 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
+{ return 21; }
+            break;
+          case 21: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:41: {signed_integer}(\'|\"|{metric_units}) :
 #line 41 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 21; }
             break;
-          case 21: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:42: {sign}{int_dot}(\'|\"|{metric_units}) :
+          case 22: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:42: {sign}{int_dot}(\'|\"|{metric_units}) :
 #line 42 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 21; }
             break;
-          case 22: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:43: {sign}{dot_int}(\'|\"|{metric_units}) :
+          case 23: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:43: {sign}{dot_int}(\'|\"|{metric_units}) :
 #line 43 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 21; }
 
             break;
-          case 23: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:45: {sign}{digit}*"."{digit}+ :
+          case 24: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:45: {sign}{digit}*"."{digit}+ :
 #line 45 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 18; }
             break;
-          case 24: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:46: {sign}{digit}+"."{digit}* :
+          case 25: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:46: {sign}{digit}+"."{digit}* :
 #line 46 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 18; }
             break;
-          case 25: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:47: {digit}+ :
+          case 26: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:47: {digit}+ :
 #line 47 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 17; }
 
             break;
-          case 26: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:49: \"([^\\\"]|\\.)*\" :
+          case 27: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:49: \"([^\\\"]|\\.)*\" :
 #line 49 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 22; }
             break;
-          case 27: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:50: {letter}({letter}|{digit})* :
+          case 28: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:50: {letter}({letter}|{digit})* :
 #line 50 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 23; }
 
             break;
-          case 28: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:52: "**" :
+          case 29: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:52: "**" :
 #line 52 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 24; }
             break;
-          case 29: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:53: "*" :
+          case 30: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:53: "*" :
 #line 53 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 25; }
             break;
-          case 30: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:54: "/" :
+          case 31: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:54: "/" :
 #line 54 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 26; }
             break;
-          case 31: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:55: "+" :
+          case 32: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:55: "+" :
 #line 55 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 27; }
             break;
-          case 32: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:56: "-" :
+          case 33: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:56: "-" :
 #line 56 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 28; }
             break;
-          case 33: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:57: "(" :
+          case 34: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:57: "(" :
 #line 57 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 29; }
             break;
-          case 34: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:58: ")" :
+          case 35: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:58: ")" :
 #line 58 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { return 30; }
 
             break;
-          case 35: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:60: [ \t\n\r]+ :
+          case 36: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:60: [ \t\n\r]+ :
 #line 60 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { /* ignore whitespace */ }
             break;
-          case 36: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:61: . :
+          case 37: // rule D:\SynologyDrive\VisualStudio\Migrations\Eo111222\AeSys\lex_rules.l:61: . :
 #line 61 "D:\\SynologyDrive\\VisualStudio\\Migrations\\Eo111222\\AeSys\\lex_rules.l"
 { /* error or unexpected char */ }
 

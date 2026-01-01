@@ -19,6 +19,9 @@
 #include <string>
 #include <wchar.h>
 
+namespace {
+constexpr size_t TokenBufferSize = 64;
+}
 namespace lex {
 int tokenTypeIdentifiers[lex::MaxTokens];
 int valueLocation[lex::MaxTokens];
@@ -78,7 +81,7 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
         OperatorStack[++TopOfOperatorStack] = CurrentTokenType;
         break;
 
-      // TODO .. classes of tokens which might be implemented 
+      // TODO .. classes of tokens which might be implemented
       // (AssignmentOperator, BinaryRelationalOperator, BinaryLogicOperator and UnaryLogicOperator) should go here
       case Identifier:
       case PlaceHolderForZero:
@@ -189,34 +192,37 @@ void lex::ConvertValTyp(int currentType, int requiredType, long* valueDefinition
   }
 }
 
-void lex::ConvertStringToVal(int tokenType, long tokenDefinition, LPWSTR token, long* resultDefinition,
+void lex::ConvertStringToVal(int desiredType, long tokenDefinition, const wchar_t* inputLine, long* resultDefinition,
                              void* resultValue) {
-  if (LOWORD(tokenDefinition) <= 0) { throw L"Empty string"; }
+  if (LOWORD(tokenDefinition) <= 0) { throw std::invalid_argument("Empty string"); }
 
-  wchar_t szTok[64];
-  int iNxt = 0;
+  wchar_t token[TokenBufferSize]{0};
+  int linePosition = 0;
 
-  int iTyp = Scan(szTok, token, iNxt);
-  if (tokenType == lex::IntegerToken) {
-    long* pVal = (long*)resultValue;
+  int tokenType = Scan(token, inputLine, linePosition);
 
-    if (iTyp == lex::IntegerToken) {
-      *pVal = _wtol(szTok);
-    } else if (iTyp == lex::RealToken) {
-      *pVal = (long)_wtof(szTok);
+  auto throwConversionError = []() { throw std::invalid_argument("String format conversion error"); };
+
+  if (desiredType == lex::IntegerToken) {
+    long* longInterpretedValue = reinterpret_cast<long*>(resultValue);
+
+    if (tokenType == lex::IntegerToken) {
+      *longInterpretedValue = _wtol(token);
+    } else if (tokenType == lex::RealToken) {
+      *longInterpretedValue = static_cast<long>(_wtof(token));
     } else {
-      throw L"String format conversion error";
+      throwConversionError();
     }
     *resultDefinition = MAKELONG(1, 1);
   } else {
-    double* pVal = (double*)resultValue;
+    double* doubleInterpretedValue = reinterpret_cast<double*>(resultValue);
 
-    if (iTyp == lex::IntegerToken) {
-      *pVal = (double)_wtoi(szTok);
-    } else if (iTyp == lex::RealToken) {
-      *pVal = _wtof(szTok);
+    if (tokenType == lex::IntegerToken) {
+      *doubleInterpretedValue = static_cast<double>(_wtoi(token));
+    } else if (tokenType == lex::RealToken) {
+      *doubleInterpretedValue = _wtof(token);
     } else {
-      throw L"String format conversion error";
+      throwConversionError();
     }
     *resultDefinition = MAKELONG(1, 2);
   }
@@ -290,7 +296,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
         if (iTyp1 == lex::StringToken) {
           iDim1 = LOWORD(lDef1);
           wcscpy_s(szTok, 256, reinterpret_cast<wchar_t*>(operandBuffer));
-          if (tokenType == ToInt) {
+          if (tokenType == Int) {
             iTyp1 = lex::IntegerToken;
             ConvertStringToVal(lex::IntegerToken, lDef1, szTok, &lDef1, operandBuffer);
           } else if (tokenType == lex::RealToken) {
@@ -476,7 +482,7 @@ void lex::Parse(const wchar_t* inputLine) {
 }
 
 void lex::ParseStringOperand(wchar_t* token) {
-if (wcslen(token) < 3) {
+  if (wcslen(token) < 3) {
     app.AddStringToMessageList(IDS_MSG_ZERO_LENGTH_STRING);
     return;
   }
@@ -510,7 +516,7 @@ int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
     token[1] = L'\0';
     linePosition++;  // Advance one char
     tokenId = -1;    // Signal error
-  } else { // Copy matched text
+  } else {           // Copy matched text
     std::wstring matched = lexer.wstr();
     size_t length = lexer.wsize();
     wcsncpy_s(token, length + 1, matched.c_str(), length);
@@ -564,14 +570,14 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       adOp[0] = cos(Eo::DegreeToRadian(adOp[0]));
       break;
 
-    case ToReal:
+    case Real:
       break;
 
     case ExponentialValue:
       adOp[0] = exp(adOp[0]);
       break;
 
-    case ToInt:  // Conversion to integer
+    case Int:  // Conversion to integer
       ConvertValTyp(lex::RealToken, lex::IntegerToken, alDef, (void*)adOp);
       *aiTyp = lex::IntegerToken;
       break;
@@ -608,7 +614,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       adOp[0] = tan(Eo::DegreeToRadian(adOp[0]));
       break;
 
-    case ToString: {  // Conversion to string
+    case String: {  // Conversion to string
       wchar_t stringBuffer[32]{};
       int iDim = LOWORD(*alDef);
       *aiTyp = lex::StringToken;
@@ -640,15 +646,15 @@ void lex::UnaryOp(int aiTokTyp, int* tokenType, long* alDef, long* alOp) {
       alOp[0] = labs(alOp[0]);
       break;
 
-    case ToInt:
+    case Int:  // Conversion to integer
       break;
 
-    case ToReal:
+    case Real:
       ConvertValTyp(lex::IntegerToken, lex::RealToken, alDef, (void*)alOp);
       *tokenType = lex::RealToken;
       break;
 
-    case ToString: {  // Conversion to string
+    case String: {  // Conversion to string
       wchar_t stringBuffer[32]{};
       int iDim = LOWORD(*alDef);
       int iLen = HIWORD(*alDef);

@@ -38,16 +38,16 @@ constexpr int AbsoluteValue = 1;
 constexpr int ArcCosine = 2;
 constexpr int ArcSine = 3;
 constexpr int ArcTangent = 4;
-constexpr int ToString = 5;
+constexpr int String = 5;
 constexpr int Cosine = 6;
 constexpr int ExponentialValue = 7;
-constexpr int ToInt = 8;
+constexpr int Int = 8;
 constexpr int NaturalLogarithm = 9;
 constexpr int Base10Logarithm = 10;
 constexpr int Sine = 11;
 constexpr int SquareRoot = 12;
 constexpr int Tangent = 13;
-constexpr int ToReal = 14;
+constexpr int Real = 14;
 constexpr int UnaryPlus = 15;
 constexpr int UnaryMinus = 16;
 constexpr int IntegerToken = 17;
@@ -75,13 +75,13 @@ static TokenProperties TokenPropertiesTable[] = {
     {110, 85, Other},                    // ToString
     {110, 85, Other},                    // Cosine
     {110, 85, Other},                    // ExponentialValue
-    {110, 85, Other},                    // ToInt
+    {110, 85, Other},                    // Int
     {110, 85, Other},                    // NaturalLogarithm
     {110, 85, Other},                    // Base10Logarithm
     {110, 85, Other},                    // Sine
     {110, 85, Other},                    // SquareRoot
     {110, 85, Other},                    // Tangent
-    {110, 85, Other},                    // ToReal
+    {110, 85, Other},                    // Real
     {110, 85, Other},                    // UnaryPlus
     {110, 85, Other},                    // UnaryMinus
     {0, 0, Constant},                    // IntegerToken
@@ -108,15 +108,14 @@ static TokenProperties TokenPropertiesTable[] = {
 */
 void BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTokens, int* locationOfTokens);
 
-/** @brief Converts a string representation of a value to its internal representation.
-* @param valueType (in) type of value
-* @param valueDefinition (in) dimension (lo word) and length (hi word) of string
-* @param valueText (in) string to convert
-* @param resultDefinition (out) dimension (lo word) and length (hi word) of result
-* @param resultValue (out) result
-* @note Assumes that a valid literal user units string is passed with no suffix characters evaluated.
-*/
-void ConvertStringToVal(int tokenType, long tokenDefinition, LPWSTR token, long* resultDefinition, void* resultValue);
+/** @brief Converts a string representation of a value to its internal representation based on the desired type.
+ * @param desiredType the type to convert the string to
+ * @param tokenDefinition definition of the input token (dimension and length)
+ * @param inputLine the string representation of the value
+ * @param[out] resultDefinition definition of the resulting value (dimension and length)
+ * @param[out] resultValue buffer to store the resulting value
+ */
+void ConvertStringToVal(int desiredType, long tokenDefinition, const wchar_t* inputLine, long* resultDefinition, void* resultValue);
 
 /** @brief Converts an internal representation of a value to its string representation.
  * @param valueBuffer buffer containing value to convert
