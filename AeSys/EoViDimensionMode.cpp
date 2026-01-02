@@ -17,16 +17,16 @@ EoGePoint3d PreviousDimensionCursorPosition;
 EoUInt16 PreviousDimensionCommand{0};
 
 EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
-  AeSysDoc* Document = AeSysDoc::GetDoc();
+  auto* document = AeSysDoc::GetDoc();
 
   EoGeLine ln;
   EoGePoint3d ptProj;
 
   double dRel[2];
 
-  auto GroupPosition = Document->GetFirstWorkLayerGroupPosition();
+  auto GroupPosition = document->GetFirstWorkLayerGroupPosition();
   while (GroupPosition != 0) {
-    EoDbGroup* Group = Document->GetNextWorkLayerGroup(GroupPosition);
+    EoDbGroup* Group = document->GetNextWorkLayerGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {
@@ -55,7 +55,7 @@ void AeSysView::OnDimensionModeOptions() {
 }
 
 void AeSysView::OnDimensionModeArrow() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
 
   if (PreviousDimensionCommand != 0) {
@@ -106,7 +106,7 @@ void AeSysView::OnDimensionModeArrow() {
 }
 
 void AeSysView::OnDimensionModeLine() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
   RubberBandingDisable();
   if (PreviousDimensionCommand != ID_OP2) {
@@ -124,7 +124,7 @@ void AeSysView::OnDimensionModeLine() {
   RubberBandingStartAtEnable(ptCur, Lines);
 }
 void AeSysView::OnDimensionModeDLine() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
   if (PreviousDimensionCommand == ID_OP3 || PreviousDimensionCommand == ID_OP4) {
     RubberBandingDisable();
@@ -159,7 +159,7 @@ void AeSysView::OnDimensionModeDLine() {
   RubberBandingStartAtEnable(ptCur, Lines);
 }
 void AeSysView::OnDimensionModeDLine2() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
   if (PreviousDimensionCommand == 0) {
     PreviousDimensionCommand = ModeLineHighlightOp(ID_OP4);
@@ -194,7 +194,7 @@ void AeSysView::OnDimensionModeDLine2() {
   RubberBandingStartAtEnable(ptCur, Lines);
 }
 void AeSysView::OnDimensionModeExten() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
   if (PreviousDimensionCommand != ID_OP5) {
     RubberBandingDisable();
@@ -216,7 +216,7 @@ void AeSysView::OnDimensionModeExten() {
   }
 }
 void AeSysView::OnDimensionModeRadius() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
 
   if (SelectGroupAndPrimitive(ptCur) != 0) {
@@ -250,7 +250,7 @@ void AeSysView::OnDimensionModeRadius() {
   }
 }
 void AeSysView::OnDimensionModeDiameter() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
 
   if (SelectGroupAndPrimitive(ptCur) != 0) {
@@ -287,7 +287,7 @@ void AeSysView::OnDimensionModeDiameter() {
 void AeSysView::OnDimensionModeAngle() {
   CDC* DeviceContext = GetDC();
 
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
   EoGePoint3d ptCur = GetCursorPosition();
 
   static EoGePoint3d rProjPt[2];

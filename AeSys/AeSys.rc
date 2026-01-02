@@ -3062,7 +3062,7 @@ BEGIN
     IDS_MSG_BAD_PRIM_TYPE   "Primitive type error."
     IDS_MSG_LAYER_IS_RESIDENT "Layer %s is resident."
     IDS_OPENFILE_FILTER     "Drawing (*.peg)|*.peg|Tracing (*.tra)|*.tra|DXF (*.dxf)|*.dxf|DWG (*.dwg)|*.dwg||"
-    IDS_OPENFILE_FILTER_TRACINGS "Tracing Files (.tra)"
+    IDS_OPENFILE_FILTER_TRACINGS "Tracing Files (*.tra)|*.tra||"
     IDS_OPENFILE_FILTER_PENCOLORS "Pen Color Files (.txt)"
     IDS_OPENFILE_FILTER_APPS "Application Files (.exe)"
     IDS_OPENFILE_FILTER_BLOCKS "Block Files (.blk)"
@@ -3136,6 +3136,8 @@ BEGIN
                             "Arc\nInsert\nLine\nPoint\nText\nPanel\nPolyline"
     IDS_MSG_INVALID_NUMBER_EXTRACT 
                             "Malformed numeric literal or expression. Extraction aborted."
+    IDS_OPENFILE_LOAD_PENCOLORS_TITLE "Load Pen Colors"
+    IDS_MSG_OPENFILE_DIALOG_ERROR "Error opening pen colors file."
 END
 
 STRINGTABLE

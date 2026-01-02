@@ -19,25 +19,27 @@ void AeSysView::OnModePrimitiveEdit() {
   }
 }
 void AeSysView::DoEditPrimitiveCopy() {
+  auto* document = GetDocument();
   if (m_SubModeEditPrimitive != 0) {
     EoDbPrimitive* Primitive;
 
     m_SubModeEditPrimitive->Copy(Primitive);
     m_SubModeEditPrimitive = Primitive;
     m_SubModeEditGroup = new EoDbGroup(m_SubModeEditPrimitive);
-    GetDocument()->AddWorkLayerGroup(m_SubModeEditGroup);
+    document->AddWorkLayerGroup(m_SubModeEditGroup);
 
-    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
     m_tmEditSeg.Identity();
   }
 }
 void AeSysView::DoEditPrimitiveEscape() {
+  auto* document = GetDocument();
   if (m_SubModeEditPrimitive != 0) {
     m_tmEditSeg.Inverse();
 
-    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
     m_SubModeEditPrimitive->Transform(m_tmEditSeg);
-    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
 
     InitializeGroupAndPrimitiveEdit();
 
@@ -46,6 +48,7 @@ void AeSysView::DoEditPrimitiveEscape() {
 }
 void AeSysView::DoEditPrimitiveTransform(EoUInt16 operation) {
   if (m_SubModeEditPrimitive != 0) {
+    auto* document = GetDocument();
     EoGeTransformMatrix tm;
 
     EoGeVector3d TranslateVector(m_SubModeEditBeginPoint, EoGePoint3d::kOrigin);
@@ -65,25 +68,26 @@ void AeSysView::DoEditPrimitiveTransform(EoUInt16 operation) {
     }
     tm.Translate(-TranslateVector);
 
-    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
     m_SubModeEditPrimitive->Transform(tm);
-    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
 
     m_tmEditSeg *= tm;
   }
 }
 void AeSysView::PreviewPrimitiveEdit() {
   if (m_SubModeEditPrimitive != 0) {
+    auto* document = GetDocument();
     EoGeTransformMatrix tm;
     m_SubModeEditEndPoint = GetCursorPosition();
     tm.Translate(EoGeVector3d(m_SubModeEditBeginPoint, m_SubModeEditEndPoint));
 
-    if (app.IsTrapHighlighted() && GetDocument()->FindTrappedGroup(m_SubModeEditGroup) != 0)
+    if (app.IsTrapHighlighted() && document->FindTrappedGroup(m_SubModeEditGroup) != 0)
       EoDbPrimitive::SetSpecialPenColorIndex(app.TrapHighlightColor());
 
-    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
     m_SubModeEditPrimitive->Transform(tm);
-    GetDocument()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
+    document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
 
     EoDbPrimitive::SetSpecialPenColorIndex(0);
 

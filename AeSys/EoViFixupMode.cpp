@@ -34,7 +34,7 @@ void AeSysView::OnFixupModeOptions() {
 }
 
 void AeSysView::OnFixupModeReference() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
 
@@ -117,7 +117,7 @@ void AeSysView::OnFixupModeReference() {
   }
 }
 void AeSysView::OnFixupModeMend() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
 
@@ -218,7 +218,7 @@ void AeSysView::OnFixupModeMend() {
   }
 }
 void AeSysView::OnFixupModeChamfer() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
 
@@ -287,7 +287,7 @@ void AeSysView::OnFixupModeChamfer() {
   }
 }
 void AeSysView::OnFixupModeFillet() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
 
@@ -365,7 +365,7 @@ void AeSysView::OnFixupModeFillet() {
   }
 }
 void AeSysView::OnFixupModeSquare() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
 
@@ -389,7 +389,7 @@ void AeSysView::OnFixupModeSquare() {
   }
 }
 void AeSysView::OnFixupModeParallel() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d ptCurPos = GetCursorPosition();
 
@@ -411,7 +411,7 @@ void AeSysView::OnFixupModeParallel() {
   }
 }
 void AeSysView::OnFixupModeReturn() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   if (pSegRef != 0) {
     Document->UpdateAllViews(nullptr, EoDb::kPrimitive, pPrimRef);
@@ -421,7 +421,7 @@ void AeSysView::OnFixupModeReturn() {
   ModeLineUnhighlightOp(PreviousFixupCommand);
 }
 void AeSysView::OnFixupModeEscape() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   if (pSegRef != 0) {
     Document->UpdateAllViews(nullptr, EoDb::kPrimitive, pPrimRef);

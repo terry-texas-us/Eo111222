@@ -176,18 +176,18 @@ BOOL CMainFrame::CreateDockablePanes() {
 }
 
 void CMainFrame::SetDockablePanesIcons(bool highColorMode) {
-  CSize SmallIconSize(::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON));
-  HINSTANCE ResourceHandle(::AfxGetResourceHandle());
+  CSize smallIconSize(::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON));
+  HINSTANCE resourceHandle(::AfxGetResourceHandle());
 
-  HICON PropertiesPaneIcon =
-      (HICON)::LoadImage(ResourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_PROPERTIES_WND_HC : IDI_PROPERTIES_WND),
-                         IMAGE_ICON, SmallIconSize.cx, SmallIconSize.cy, 0);
-  m_PropertiesPane.SetIcon(PropertiesPaneIcon, FALSE);
+  HICON propertiesPaneIcon =
+      (HICON)::LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_PROPERTIES_WND_HC : IDI_PROPERTIES_WND),
+                         IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0);
+  m_PropertiesPane.SetIcon(propertiesPaneIcon, FALSE);
 
-  HICON OutputPaneIcon =
-      (HICON)::LoadImage(ResourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND),
-                         IMAGE_ICON, SmallIconSize.cx, SmallIconSize.cy, 0);
-  m_OutputPane.SetIcon(OutputPaneIcon, FALSE);
+  HICON outputPaneIcon =
+      (HICON)::LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND),
+                         IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0);
+  m_OutputPane.SetIcon(outputPaneIcon, FALSE);
 
   UpdateMDITabbedBarsIcons();
 }

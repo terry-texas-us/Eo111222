@@ -160,10 +160,10 @@ void EoMfPropertiesDockablePane::OnSortProperties() {
   m_PropertyGrid.SetAlphabeticMode(!m_PropertyGrid.IsAlphabeticMode());
 }
 void EoMfPropertiesDockablePane::OnUpdateExpandAllProperties(CCmdUI* /* pCmdUI */) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"EoMfPropertiesDockablePane::OnUpdatExpandAllProperties\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 4, L"EoMfPropertiesDockablePane::OnUpdatExpandAllProperties\n");
 }
 void EoMfPropertiesDockablePane::OnUpdateProperties1(CCmdUI* /* pCmdUI */) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"EoMfPropertiesDockablePane::OnUpdatProperties1\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 4, L"EoMfPropertiesDockablePane::OnUpdatProperties1\n");
 }
 void EoMfPropertiesDockablePane::OnUpdateSortProperties(CCmdUI* pCmdUI) {
   pCmdUI->SetCheck(m_PropertyGrid.IsAlphabeticMode());

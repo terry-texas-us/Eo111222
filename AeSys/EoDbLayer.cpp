@@ -34,7 +34,7 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"EoDbLayer<%p>::Display(%p, %p, %i) + Name: %ls\n", this, view,
             deviceContext, identifyTrap, static_cast<LPCWSTR>(this->Name()));
 
-  AeSysDoc* Document = AeSysDoc::GetDoc();
+  auto* document = AeSysDoc::GetDoc();
 
   try {
     if (!IsOff()) {
@@ -52,8 +52,8 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
         EoDbGroup* Group = GetNext(position);
 
         if (Group->IsInView(view)) {
-          if (LayerIsDetectable) { Document->AddGroupToAllViews(Group); }
-          if (identifyTrap && Document->FindTrappedGroup(Group) != 0) {
+          if (LayerIsDetectable) { document->AddGroupToAllViews(Group); }
+          if (identifyTrap && document->FindTrappedGroup(Group) != 0) {
             EoDbPrimitive::SetSpecialPenColorIndex(app.TrapHighlightColor());
             Group->Display(view, deviceContext);
             EoDbPrimitive::SetSpecialPenColorIndex(0);

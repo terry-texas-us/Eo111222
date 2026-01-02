@@ -499,7 +499,7 @@ void lex::ParseStringOperand(wchar_t* token) {
     return;
   }
 
-  auto values = (LPWSTR)&lValues[numberOfValues + 2];
+  auto values = (wchar_t*)&lValues[numberOfValues + 2];
 
   int iDim{0};
   int next{1};
@@ -676,7 +676,7 @@ void lex::UnaryOp(int aiTokTyp, int* tokenType, long* alDef, long* alOp) {
       valueMetaInformation.definition = *alDef;
       ConvertValToString(static_cast<void*>(alOp), &valueMetaInformation, stringBuffer, &iDim);
       iLen = 1 + (iDim - 1) / 4;
-      wcscpy_s((LPWSTR)alOp, 32, stringBuffer);
+      wcscpy_s((wchar_t*)alOp, 32, stringBuffer);
       *alDef = MAKELONG(iDim, iLen);
     } break;
 

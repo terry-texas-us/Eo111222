@@ -60,19 +60,19 @@ bool EoDbLineTypeTable::__Lookup(EoUInt16 index, EoDbLineType*& lineType) {
   return (index < NumberOfLegacyLineTypes) && m_MapLineTypes.Lookup(LegacyLineTypes[index], lineType);
 }
 int EoDbLineTypeTable::ReferenceCount(EoInt16 lineType) {
-  AeSysDoc* Document = AeSysDoc::GetDoc();
+  auto* document = AeSysDoc::GetDoc();
 
   int Count = 0;
 
-  for (EoUInt16 w = 0; w < Document->GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = Document->GetLayerTableLayerAt(w);
+  for (EoUInt16 w = 0; w < document->GetLayerTableSize(); w++) {
+    EoDbLayer* Layer = document->GetLayerTableLayerAt(w);
     Count += Layer->GetLineTypeRefCount(lineType);
   }
 
   CString Key;
   EoDbBlock* Block;
 
-  CBlocks* BlocksTable = Document->BlocksTable();
+  CBlocks* BlocksTable = document->BlocksTable();
   auto Position = BlocksTable->GetStartPosition();
   while (Position != nullptr) {
     BlocksTable->GetNextAssoc(Position, Key, Block);

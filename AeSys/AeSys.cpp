@@ -31,12 +31,13 @@
 #include <afxusertool.h>
 #include <afxwin.h>
 #include <afxwinappex.h>
+#include <atlsimpstr.h>
+#include <atltrace.h>
 #include <cctype>
 #include <cmath>
 #include <corecrt.h>
 #include <cstdlib>
 #include <direct.h>
-#include <iostream>
 #include <string>
 #include <string.h>
 #include <tchar.h>
@@ -186,6 +187,7 @@ BOOL AeSys::InitInstance() {
   AfxEnableControlContainer();
 
   // Standard initialization
+  CTrace::SetLevel(2);
 
   // Set the registry key under which our settings are stored
   SetRegistryKey(L"Engineers Office");
@@ -861,8 +863,7 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   _itow_s(Inches, szBuf, 16, 10);
   wcscat_s(lengthAsBuffer, bufSize, szBuf);
   if (Numerator > 0) {
-    wcscat_s(lengthAsBuffer, static_cast<size_t>(bufSize),
-             (units == kArchitecturalS) ? L"\\S" : L"-");
+    wcscat_s(lengthAsBuffer, static_cast<size_t>(bufSize), (units == kArchitecturalS) ? L"\\S" : L"-");
     int iGrtComDivisor = GreatestCommonDivisor(Numerator, FractionPrecision);
     Numerator /= iGrtComDivisor;
     int Denominator = FractionPrecision / iGrtComDivisor;
@@ -1148,15 +1149,4 @@ CString EoAppGetPathFromCommandLine() {
   PathName = PathName.Mid(1, LastPathDelimiter - 1);
 
   return PathName;
-
-  //LPWSTR PathName = new WCHAR[MAX_PATH];
-  //wcscpy_s(PathName, MAX_PATH, pathName);
-  //int n = wcslen(PathName) - 1;
-  //while (n != 0 && PathName[n] != '\\')
-  //{
-  //	n--;
-  //}
-  //PathName[n] = 0;
-  //pathName = &PathName[1];
-  //delete [] PathName;
 }

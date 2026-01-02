@@ -80,6 +80,8 @@
 #if defined(USING_DDE)
 #include "ddeGItms.h"
 #endif  // USING_DDE
+#include <memory>
+#include <new>
 
 UINT_PTR CALLBACK OFNHookProcFileTracing(HWND, UINT, WPARAM, LPARAM);
 
@@ -909,14 +911,13 @@ EoDbLayer* AeSysDoc::AnyLayerRemove(EoDbGroup* group) {
   return 0;
 }
 void AeSysDoc::TracingFuse(CString& nameAndLocation) {
-  EoDbLayer* Layer = GetLayerTableLayer(nameAndLocation);
-  if (Layer != 0) {
-    LPWSTR Title = new WCHAR[MAX_PATH];
-    GetFileTitle(nameAndLocation, Title, MAX_PATH);
-    LPWSTR NextToken = nullptr;
-    wcstok_s(Title, L".", &NextToken);
-    nameAndLocation = Title;
-    delete[] Title;
+  auto* Layer = GetLayerTableLayer(nameAndLocation);
+  if (Layer != nullptr) {
+    wchar_t title[MAX_PATH]{0};
+    GetFileTitleW(nameAndLocation, title, MAX_PATH);
+    wchar_t* NextToken{nullptr};
+    wcstok_s(title, L".", &NextToken);
+    nameAndLocation = title;
 
     Layer->ClrTracingFlg();
     Layer->ClearStateFlag();
@@ -1738,33 +1739,34 @@ void AeSysDoc::OnFileManage() {
   if (dlg.DoModal() == IDOK) {}
 }
 void AeSysDoc::OnFileTracing() {
-  static DWORD nFilterIndex = 1;
+  static DWORD filterIndex = 1;
 
-  CString Filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
+  CString filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
+
+  wchar_t fileBuffer[MAX_PATH]{0};
 
   OPENFILENAME of;
   ::ZeroMemory(&of, sizeof(OPENFILENAME));
   of.lStructSize = sizeof(OPENFILENAME);
-  of.hwndOwner = 0;
+  of.hwndOwner = AfxGetMainWnd() ? AfxGetMainWnd()->GetSafeHwnd() : nullptr;
   of.hInstance = app.GetInstance();
-  of.lpstrFilter = Filter;
-  of.lpstrFile = new WCHAR[MAX_PATH];
-  of.lpstrFile[0] = 0;
+  of.lpstrFilter = L"Tracing Files (*.tra)\0*.tra\0\0";
+  of.lpstrFile = fileBuffer;
   of.nMaxFile = MAX_PATH;
   of.lpstrTitle = L"Tracing File";
   of.Flags = OFN_EXPLORER | OFN_ENABLETEMPLATE | OFN_ENABLEHOOK | OFN_HIDEREADONLY | OFN_FILEMUSTEXIST;
   of.lpstrDefExt = L"tra";
   of.lpfnHook = OFNHookProcFileTracing;
   of.lpTemplateName = MAKEINTRESOURCE(IDD_TRACING_EX);
+  of.nFilterIndex = filterIndex;
 
   if (GetOpenFileNameW(&of)) {
-    nFilterIndex = of.nFilterIndex;
+    filterIndex = of.nFilterIndex;
 
     TracingOpen(of.lpstrFile);
   }
-
-  delete[] of.lpstrFile;
 }
+
 void AeSysDoc::OnMaintenanceRemoveEmptyNotes() {
   int NumberOfEmptyNotes = RemoveEmptyNotesAndDelete();
   int NumberOfEmptyGroups = RemoveEmptyGroups();
@@ -1780,33 +1782,41 @@ void AeSysDoc::OnMaintenanceRemoveEmptyGroups() {
   app.AddStringToMessageList(str);
 }
 void AeSysDoc::OnPensEditColors() { app.EditColorPalette(); }
+
 void AeSysDoc::OnPensLoadColors() {
-  CString Filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_PENCOLORS);
+  CString filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_PENCOLORS);
+  CString title = EoAppLoadStringResource(IDS_OPENFILE_LOAD_PENCOLORS_TITLE);
+  CString initialDir = EoAppGetPathFromCommandLine();
+
+  CString file;
+  file.GetBufferSetLength(MAX_PATH);
 
   OPENFILENAME of;
   ::ZeroMemory(&of, sizeof(OPENFILENAME));
   of.lStructSize = sizeof(OPENFILENAME);
   of.hwndOwner = 0;
   of.hInstance = app.GetInstance();
-  of.lpstrFilter = Filter;
-  of.lpstrFile = new WCHAR[MAX_PATH];
-  of.lpstrFile[0] = 0;
+  of.lpstrFilter = filter;
+  of.lpstrFile = file.GetBuffer();
   of.nMaxFile = MAX_PATH;
-  of.lpstrTitle = L"Load Pen Colors";
-  of.lpstrInitialDir = EoAppGetPathFromCommandLine();
+  of.lpstrTitle = title;
+  of.lpstrInitialDir = initialDir;
   of.Flags = OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
   of.lpstrDefExt = L"txt";
 
   if (GetOpenFileNameW(&of)) {
     if ((of.Flags & OFN_EXTENSIONDIFFERENT) == 0) {
       app.LoadPenColorsFromFile(of.lpstrFile);
-
       UpdateAllViews(nullptr, 0L, nullptr);
-    } else
+    } else {
       app.WarningMessageBox(IDS_MSG_FILE_TYPE_ERROR);
+    }
+  } else {
+    auto error = CommDlgExtendedError();
+    if (error != 0) { app.WarningMessageBox(IDS_MSG_OPENFILE_DIALOG_ERROR); }
   }
-  delete[] of.lpstrFile;
 }
+
 void AeSysDoc::OnPensTranslate() {
   CStdioFile fl;
 

@@ -9,7 +9,7 @@
 void AeSysView::OnTrapModeRemoveAdd() { app.OnTrapCommandsAddGroups(); }
 
 void AeSysView::OnTrapModePoint() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d pt = GetCursorPosition();
 
@@ -39,7 +39,7 @@ void AeSysView::OnTrapModeStitch() {
 
     if (m_PreviousPnt == pt) return;
 
-    AeSysDoc* Document = GetDocument();
+    auto* Document = GetDocument();
 
     EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(pt)};
 
@@ -68,7 +68,7 @@ void AeSysView::OnTrapModeField() {
     EoGePoint3d pt = GetCursorPosition();
     if (m_PreviousPnt == pt) return;
 
-    AeSysDoc* Document = GetDocument();
+    auto* Document = GetDocument();
 
     EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(pt)};
 
@@ -92,7 +92,7 @@ void AeSysView::OnTrapModeField() {
 }
 
 void AeSysView::OnTrapModeLast() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   auto Position = Document->GetLastWorkLayerGroupPosition();
   while (Position != 0) {
@@ -108,7 +108,7 @@ void AeSysView::OnTrapModeLast() {
 
 void AeSysView::OnTrapModeEngage() {
   if (GroupIsEngaged()) {
-    AeSysDoc* Document = GetDocument();
+    auto* Document = GetDocument();
 
     auto Position = Document->FindWorkLayerGroup(EngagedGroup());
 
@@ -131,9 +131,10 @@ void AeSysView::OnTrapModeMenu() {
   ::DestroyMenu(TrapMenu);
 }
 void AeSysView::OnTrapModeModify() {
-  if (!GetDocument()->IsTrapEmpty()) {
-    EoDlgTrapModify Dialog(GetDocument());
-    if (Dialog.DoModal() == IDOK) { GetDocument()->UpdateAllViews(nullptr, 0L, nullptr); }
+  auto* document = GetDocument();
+  if (!document->IsTrapEmpty()) {
+    EoDlgTrapModify Dialog(document);
+    if (Dialog.DoModal() == IDOK) { document->UpdateAllViews(nullptr, 0L, nullptr); }
   } else {
     app.AddModeInformationToMessageList();
   }
@@ -147,7 +148,7 @@ void AeSysView::OnTrapModeEscape() {
 void AeSysView::OnTraprModeRemoveAdd() { app.OnTrapCommandsAddGroups(); }
 
 void AeSysView::OnTraprModePoint() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d pt = GetCursorPosition();
 
@@ -177,7 +178,7 @@ void AeSysView::OnTraprModeStitch() {
     EoGePoint3d pt = GetCursorPosition();
 
     if (m_PreviousPnt == pt) return;
-    AeSysDoc* Document = GetDocument();
+    auto* Document = GetDocument();
 
     EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(pt)};
 
@@ -207,7 +208,7 @@ void AeSysView::OnTraprModeField() {
     EoGePoint3d pt = GetCursorPosition();
     if (m_PreviousPnt == pt) return;
 
-    AeSysDoc* Document = GetDocument();
+    auto* Document = GetDocument();
 
     EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(pt)};
 
@@ -231,7 +232,7 @@ void AeSysView::OnTraprModeField() {
   }
 }
 void AeSysView::OnTraprModeLast() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   if (!Document->IsTrapEmpty()) {
     EoDbGroup* Group = Document->RemoveLastTrappedGroup();
@@ -251,9 +252,10 @@ void AeSysView::OnTraprModeMenu() {
   ::DestroyMenu(TrapMenu);
 }
 void AeSysView::OnTraprModeModify() {
-  if (!GetDocument()->IsTrapEmpty()) {
-    EoDlgTrapModify Dialog(GetDocument());
-    if (Dialog.DoModal() == IDOK) { GetDocument()->UpdateAllViews(nullptr, 0L, nullptr); }
+  auto* document = GetDocument();
+  if (!document->IsTrapEmpty()) {
+    EoDlgTrapModify Dialog(document);
+    if (Dialog.DoModal() == IDOK) { document->UpdateAllViews(nullptr, 0L, nullptr); }
   } else {
     app.AddModeInformationToMessageList();
   }

@@ -343,7 +343,7 @@ class AeSysDoc : public CDocument {
   /// No new groups may be added to the tracing. Any number of tracings may be mapped.
   /// </remarks>
   bool TracingMap(const CString& pathName);
-  bool TracingOpen(const CString& pathName);
+  bool TracingOpen(const CString& pathName);  
   bool TracingView(const CString& pathName);
 
  public:

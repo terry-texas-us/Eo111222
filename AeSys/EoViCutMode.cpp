@@ -10,7 +10,7 @@ EoGePoint3d rPrvPos;
 
 void AeSysView::OnCutModeOptions() {}
 void AeSysView::OnCutModeTorch() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d pt = GetCursorPosition();
   EoDbGroupList* Groups = new EoDbGroupList;
@@ -56,7 +56,7 @@ void AeSysView::OnCutModeSlice() {
     EoGePoint3d pt1 = rPrvPos;
     EoGePoint3d pt2 = ptCur;
 
-    AeSysDoc* Document = GetDocument();
+    auto* Document = GetDocument();
 
     EoDbGroupList* Groups = new EoDbGroupList;
 
@@ -124,7 +124,7 @@ void AeSysView::OnCutModeField() {
     int iInts;
     EoGePoint3d ptInt[10];
 
-    AeSysDoc* Document = GetDocument();
+    auto* Document = GetDocument();
 
     EoInt16 nPenColor = pstate.PenColor();
     EoInt16 LineType = pstate.LineType();
@@ -195,7 +195,7 @@ void AeSysView::OnCutModeClip() {
     EoInt16 nPenColor = pstate.PenColor();
     EoInt16 LineType = pstate.LineType();
 
-    AeSysDoc* Document = GetDocument();
+    auto* Document = GetDocument();
 
     EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
 

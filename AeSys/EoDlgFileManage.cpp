@@ -323,7 +323,7 @@ void EoDlgFileManage::OnLbnSelchangeBlocksList() {
 
       m_Groups.SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(Block->GetCount()), FALSE);
       m_References.SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_Document->GetBlockReferenceCount(BlockName)), FALSE);
-      WndProcPreviewUpdate(m_PreviewWindowHandle, Block);
+      WndProcPreviewUpdateBlock(m_PreviewWindowHandle, Block);
     }
   }
 }
@@ -341,7 +341,7 @@ void EoDlgFileManage::OnLbnSelchangeTracingList() {
     NumberOfGroups.Format(L"%-4i", Layer->GetCount());
     m_Groups.SetWindowTextW(NumberOfGroups);
 
-    _WndProcPreviewUpdate(m_PreviewWindowHandle, Layer);
+    WndProcPreviewUpdateLayer(m_PreviewWindowHandle, Layer);
   }
 }
 void EoDlgFileManage::OnBnClickedMfcbuttonWork() {
@@ -598,7 +598,7 @@ void EoDlgFileManage::OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESULT* pRe
   EoDbPrimitive::SetLayerPenColorIndex(Layer->ColorIndex());
   EoDbPrimitive::SetLayerLineTypeIndex(Layer->LineTypeIndex());
 
-  _WndProcPreviewUpdate(m_PreviewWindowHandle, Layer);
+  WndProcPreviewUpdateLayer(m_PreviewWindowHandle, Layer);
 
   *pResult = 0;
 }

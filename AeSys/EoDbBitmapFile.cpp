@@ -7,7 +7,7 @@ EoDbBitmapFile::EoDbBitmapFile(const CString& fileName) {
   if (CFile::Open(fileName, modeRead | shareDenyNone, &e)) {}
 }
 bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& bmReference, CPalette& palReference) {
-  HBITMAP hBitmap = (HBITMAP)::LoadImage(0, fileName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE);
+  HBITMAP hBitmap = (HBITMAP)::LoadImageW(0, fileName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE);
   if (hBitmap == nullptr) { return false; }
   bmReference.Attach(hBitmap);
 

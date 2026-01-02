@@ -23,7 +23,7 @@ void AeSysView::OnEditModeOptions() {
 }
 
 void AeSysView::OnEditModePivot() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d pt = GetCursorPosition();
   Document->SetTrapPivotPoint(pt);
@@ -31,7 +31,7 @@ void AeSysView::OnEditModePivot() {
 }
 
 void AeSysView::OnEditModeRotccw() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGeTransformMatrix Matrix;
   Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
@@ -45,7 +45,7 @@ void AeSysView::OnEditModeRotccw() {
 }
 
 void AeSysView::OnEditModeRotcw() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGeTransformMatrix Matrix;
   Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
@@ -60,7 +60,7 @@ void AeSysView::OnEditModeRotcw() {
 }
 
 void AeSysView::OnEditModeMove() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d pt = GetCursorPosition();
   if (m_PreviousOp != ID_OP4) {
@@ -79,7 +79,7 @@ void AeSysView::OnEditModeMove() {
 }
 
 void AeSysView::OnEditModeCopy() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGePoint3d pt = GetCursorPosition();
   if (m_PreviousOp != ID_OP5) {
@@ -95,7 +95,7 @@ void AeSysView::OnEditModeCopy() {
 }
 
 void AeSysView::OnEditModeFlip() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGeTransformMatrix tm;
   EoGeVector3d TranslateVector(Document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
@@ -107,7 +107,7 @@ void AeSysView::OnEditModeFlip() {
 }
 
 void AeSysView::OnEditModeReduce() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGeTransformMatrix tm;
   EoGeVector3d TranslateVector(Document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
@@ -119,7 +119,7 @@ void AeSysView::OnEditModeReduce() {
 }
 
 void AeSysView::OnEditModeEnlarge() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
 
   EoGeTransformMatrix tm;
   EoGeVector3d TranslateVector(Document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);

@@ -1,12 +1,12 @@
 ﻿#include "stdafx.h"
 #include "AeSys.h"
 #include "AeSysDoc.h"
-#include "Preview.h"
-
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
 #include "EoDbGroup.h"
 #include "EoDlgBlockInsert.h"
+#include "Preview.h"
+#include "Resource.h"
 
 // EoDlgBlockInsert dialog
 
@@ -49,7 +49,7 @@ BOOL EoDlgBlockInsert::OnInitDialog() {
     m_Document->GetNextBlock(BlockPosition, BlockName, Block);
     SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(Block->GetCount()), FALSE);
     SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_Document->GetBlockReferenceCount(BlockName)), FALSE);
-    WndProcPreviewUpdate(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd(), Block);
+    WndProcPreviewUpdateBlock(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd(), Block);
   }
   return TRUE;
 }
@@ -79,7 +79,7 @@ void EoDlgBlockInsert::OnLbnSelchangeBlocksList() {
     m_Document->LookupBlock(BlockName, Block);
     SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(Block->GetCount()), FALSE);
     SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_Document->GetBlockReferenceCount(BlockName)), FALSE);
-    WndProcPreviewUpdate(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd(), Block);
+    WndProcPreviewUpdateBlock(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd(), Block);
   }
 }
 void EoDlgBlockInsert::OnBnClickedPurge() {

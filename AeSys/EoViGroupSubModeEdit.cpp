@@ -18,7 +18,7 @@ void AeSysView::OnModeGroupEdit() {
   }
 }
 void AeSysView::DoEditGroupCopy() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
   if (m_SubModeEditGroup != 0) {
     EoDbGroup* Group = new EoDbGroup(*m_SubModeEditGroup);
 
@@ -31,11 +31,12 @@ void AeSysView::DoEditGroupCopy() {
 }
 void AeSysView::DoEditGroupEscape() {
   if (m_SubModeEditGroup != 0) {
+    auto* document = GetDocument();
     m_tmEditSeg.Inverse();
 
-    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
     m_SubModeEditGroup->Transform(m_tmEditSeg);
-    GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
 
     InitializeGroupAndPrimitiveEdit();
 
@@ -43,7 +44,7 @@ void AeSysView::DoEditGroupEscape() {
   }
 }
 void AeSysView::DoEditGroupTransform(EoUInt16 operation) {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
   if (m_SubModeEditGroup != 0) {
     EoGeTransformMatrix tm;
 
@@ -72,7 +73,7 @@ void AeSysView::DoEditGroupTransform(EoUInt16 operation) {
   }
 }
 void AeSysView::PreviewGroupEdit() {
-  AeSysDoc* Document = GetDocument();
+  auto* Document = GetDocument();
   if (m_SubModeEditGroup != 0) {
     EoGeTransformMatrix tm;
     m_SubModeEditEndPoint = GetCursorPosition();

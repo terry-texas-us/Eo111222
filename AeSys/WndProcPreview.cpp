@@ -1,111 +1,66 @@
 ﻿#include "stdafx.h"
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxwin.h>
+#include <atltrace.h>
+#include <atltypes.h>
+#include <cfloat>
+
 #include "AeSysView.h"
 #include "EoDbBlock.h"
 #include "EoDbGroupList.h"
+#include "EoGePoint3d.h"
+#include "EoGeTransformMatrix.h"
 #include "PrimState.h"
 
-CBitmap* WndProcPreview_Bitmap = nullptr;
+namespace {
+CBitmap* previewBitmap{nullptr};
+}  // namespace
 
-LRESULT CALLBACK WndProcPreview(HWND, UINT, WPARAM, LPARAM);
-
-ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance) {
-  WNDCLASS Class;
-
-  Class.style = CS_HREDRAW | CS_VREDRAW;
-  Class.lpfnWndProc = WndProcPreview;
-  Class.cbClsExtra = 0;
-  Class.cbWndExtra = 0;
-  Class.hInstance = instance;
-  Class.hIcon = 0;
-  Class.hCursor = (HCURSOR)::LoadImage(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE);
-  Class.hbrBackground = (HBRUSH)::GetStockObject(BLACK_BRUSH);
-  Class.lpszMenuName = 0;
-  Class.lpszClassName = L"PreviewWindow";
-
-  return ::RegisterClass(&Class);
-}
-LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM lParam) {
-  switch (message) {
-    case WM_CREATE: {
-      auto* activeView = AeSysView::GetActiveView();
-      CDC* DeviceContext = (activeView == nullptr) ? nullptr : activeView->GetDC();
-
-      CRect rc;
-      ::GetClientRect(hwnd, &rc);
-      WndProcPreview_Bitmap = new CBitmap;
-      WndProcPreview_Bitmap->CreateCompatibleBitmap(DeviceContext, int(rc.right), int(rc.bottom));
-    }
-      return (FALSE);
-
-    case WM_DESTROY:
-      if (WndProcPreview_Bitmap != nullptr) {
-        delete WndProcPreview_Bitmap;
-        WndProcPreview_Bitmap = nullptr;
-      }
-      return (FALSE);
-
-    case WM_PAINT: {
-      PAINTSTRUCT ps;
-
-      CRect rc;
-      ::GetClientRect(hwnd, &rc);
-
-      CDC dc;
-      dc.Attach(::BeginPaint(hwnd, &ps));
-
-      CDC dcMem;
-      dcMem.CreateCompatibleDC(nullptr);
-
-      CBitmap* Bitmap = dcMem.SelectObject(WndProcPreview_Bitmap);
-      dc.BitBlt(0, 0, rc.right, rc.bottom, &dcMem, 0, 0, SRCCOPY);
-      dcMem.SelectObject(Bitmap);
-
-      dc.Detach();
-
-      ::EndPaint(hwnd, &ps);
-    }
-
-      return (FALSE);
-
-    case WM_LBUTTONDOWN:
-      ::SetFocus(hwnd);
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Preview WM_LBUTTONDOWN message\n");
-      return (FALSE);
-  }
-  return DefWindowProc(hwnd, message, nParam, lParam);
-}
-
+/** Clears the preview window by filling it with black.
+ *
+ * @param previewWindow Handle to the preview window.
+ */
 void WndProcPreviewClear(HWND previewWindow) {
-  CRect rc;
-  ::GetClientRect(previewWindow, &rc);
+  if (previewWindow == nullptr || previewBitmap == nullptr) { return; }
 
-  CDC dcMem;
-  dcMem.CreateCompatibleDC(0);
+  CRect previewWindowRect;
+  if (!GetClientRect(previewWindow, &previewWindowRect)) { return; }
 
-  CBitmap* Bitmap = (CBitmap*)dcMem.SelectObject(WndProcPreview_Bitmap);
-  dcMem.PatBlt(0, 0, rc.right, rc.bottom, BLACKNESS);
+  CDC memoryContext;
+  if (!memoryContext.CreateCompatibleDC(nullptr)) { return; }
 
-  dcMem.SelectObject(Bitmap);
-  ::InvalidateRect(previewWindow, 0, TRUE);
+  auto* bitmap = memoryContext.SelectObject(previewBitmap);
+  if (bitmap == nullptr) { return; }
+
+  memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, BLACKNESS);
+
+  memoryContext.SelectObject(bitmap);
+  ::InvalidateRect(previewWindow, nullptr, TRUE);
 }
 
-void WndProcPreviewUpdate(HWND previewWindow, EoDbBlock* block) {
+/** Updates the preview window to display the given block.
+ *
+ * @param previewWindow Handle to the preview window.
+ * @param block Pointer to the block to display.
+ */
+void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   auto* activeView = AeSysView::GetActiveView();
 
-  CRect rc;
-  ::GetClientRect(previewWindow, &rc);
+  CRect previewWindowRect;
+  GetClientRect(previewWindow, &previewWindowRect);
 
-  CDC dcMem;
-  dcMem.CreateCompatibleDC(nullptr);
+  CDC memoryContext;
+  memoryContext.CreateCompatibleDC(nullptr);
 
-  CBitmap* Bitmap = dcMem.SelectObject(WndProcPreview_Bitmap);
-  dcMem.PatBlt(0, 0, rc.right, rc.bottom, BLACKNESS);
+  CBitmap* Bitmap = memoryContext.SelectObject(previewBitmap);
+  memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, BLACKNESS);
 
   activeView->ViewportPushActive();
-  activeView->SetViewportSize(rc.right, rc.bottom);
-  activeView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
-  activeView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
+  activeView->SetViewportSize(previewWindowRect.right, previewWindowRect.bottom);
+  activeView->SetDeviceWidthInInches(static_cast<double>(memoryContext.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
+  activeView->SetDeviceHeightInInches(static_cast<double>(memoryContext.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
   EoGeTransformMatrix tm;
 
@@ -127,32 +82,37 @@ void WndProcPreviewUpdate(HWND previewWindow, EoDbBlock* block) {
   activeView->SetCameraPosition(activeView->CameraDirection());
 
   int PrimitiveState = pstate.Save();
-  block->Display(activeView, &dcMem);
+  block->Display(activeView, &memoryContext);
 
   activeView->PopViewTransform();
   activeView->ViewportPopActive();
 
-  pstate.Restore(&dcMem, PrimitiveState);
-  dcMem.SelectObject(Bitmap);
-  ::InvalidateRect(previewWindow, 0, TRUE);
+  pstate.Restore(&memoryContext, PrimitiveState);
+  memoryContext.SelectObject(Bitmap);
+  InvalidateRect(previewWindow, 0, TRUE);
 }
 
-void _WndProcPreviewUpdate(HWND previewWindow, EoDbGroupList* groups) {
+/** Updates the preview window to display the given group list.
+ *
+ * @param previewWindow Handle to the preview window.
+ * @param groups Pointer to the group list to display.
+ */
+void WndProcPreviewUpdateLayer(HWND previewWindow, EoDbGroupList* groups) {
   auto* activeView = AeSysView::GetActiveView();
 
-  CRect rc;
-  ::GetClientRect(previewWindow, &rc);
+  CRect previewWindowRect;
+  GetClientRect(previewWindow, &previewWindowRect);
 
-  CDC dcMem;
-  dcMem.CreateCompatibleDC(nullptr);
+  CDC memoryContext;
+  memoryContext.CreateCompatibleDC(nullptr);
 
-  CBitmap* Bitmap = dcMem.SelectObject(WndProcPreview_Bitmap);
-  dcMem.PatBlt(0, 0, rc.right, rc.bottom, BLACKNESS);
+  CBitmap* Bitmap = memoryContext.SelectObject(previewBitmap);
+  memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, BLACKNESS);
 
   activeView->ViewportPushActive();
-  activeView->SetViewportSize(rc.right, rc.bottom);
-  activeView->SetDeviceWidthInInches(static_cast<double>(dcMem.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
-  activeView->SetDeviceHeightInInches(static_cast<double>(dcMem.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
+  activeView->SetViewportSize(previewWindowRect.right, previewWindowRect.bottom);
+  activeView->SetDeviceWidthInInches(static_cast<double>(memoryContext.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
+  activeView->SetDeviceHeightInInches(static_cast<double>(memoryContext.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
   EoGeTransformMatrix tm;
 
@@ -171,12 +131,93 @@ void _WndProcPreviewUpdate(HWND previewWindow, EoDbGroupList* groups) {
   activeView->SetCameraPosition(activeView->CameraDirection());
 
   int PrimitiveState = pstate.Save();
-  groups->Display(activeView, &dcMem);
-  pstate.Restore(&dcMem, PrimitiveState);
+  groups->Display(activeView, &memoryContext);
+  pstate.Restore(&memoryContext, PrimitiveState);
 
   activeView->PopViewTransform();
   activeView->ViewportPopActive();
 
-  dcMem.SelectObject(Bitmap);
-  ::InvalidateRect(previewWindow, 0, TRUE);
+  memoryContext.SelectObject(Bitmap);
+  InvalidateRect(previewWindow, 0, TRUE);
+}
+
+/** Window procedure for the preview window.
+ *
+ * @param hwnd Handle to the window.
+ * @param message Message identifier.
+ * @param nParam Additional message information.
+ * @param lParam Additional message information.
+ * @return The result of the message processing.
+ */
+LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM lParam) {
+  switch (message) {
+    case WM_CREATE: {
+      auto* activeView = AeSysView::GetActiveView();
+      CDC* deviceContext = (activeView == nullptr) ? nullptr : activeView->GetDC();
+
+      CRect previewWindowRect;
+      GetClientRect(hwnd, &previewWindowRect);
+      previewBitmap = new CBitmap;
+      previewBitmap->CreateCompatibleBitmap(deviceContext, int(previewWindowRect.right), int(previewWindowRect.bottom));
+    }
+      return (FALSE);
+
+    case WM_DESTROY:
+      if (previewBitmap != nullptr) {
+        delete previewBitmap;
+        previewBitmap = nullptr;
+      }
+      return (FALSE);
+
+    case WM_PAINT: {
+      PAINTSTRUCT paintStruct;
+
+      CRect previewWindowRect;
+      GetClientRect(hwnd, &previewWindowRect);
+
+      CDC dc;
+      dc.Attach(BeginPaint(hwnd, &paintStruct));
+
+      CDC memoryContext;
+      memoryContext.CreateCompatibleDC(nullptr);
+
+      CBitmap* Bitmap = memoryContext.SelectObject(previewBitmap);
+      dc.BitBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, &memoryContext, 0, 0, SRCCOPY);
+      memoryContext.SelectObject(Bitmap);
+
+      dc.Detach();
+
+      EndPaint(hwnd, &paintStruct);
+    }
+
+      return (FALSE);
+
+    case WM_LBUTTONDOWN:
+      ::SetFocus(hwnd);
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Preview WM_LBUTTONDOWN message\n");
+      return (FALSE);
+  }
+  return DefWindowProc(hwnd, message, nParam, lParam);
+}
+
+/** Registers the preview window class.
+ *
+ * @param instance Handle to the application instance.
+ * @return The atom identifying the registered class.
+ */
+ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance) {
+  WNDCLASS previewWindowClass{};
+
+  previewWindowClass.style = CS_HREDRAW | CS_VREDRAW;
+  previewWindowClass.lpfnWndProc = WndProcPreview;
+  previewWindowClass.cbClsExtra = 0;
+  previewWindowClass.cbWndExtra = 0;
+  previewWindowClass.hInstance = instance;
+  previewWindowClass.hIcon = nullptr;
+  previewWindowClass.hCursor = (HCURSOR)::LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE);
+  previewWindowClass.hbrBackground = (HBRUSH)::GetStockObject(BLACK_BRUSH);
+  previewWindowClass.lpszMenuName = nullptr;
+  previewWindowClass.lpszClassName = L"PreviewWindow";
+
+  return ::RegisterClass(&previewWindowClass);
 }

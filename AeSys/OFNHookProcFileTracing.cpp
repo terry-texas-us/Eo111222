@@ -6,7 +6,7 @@
 #include "Preview.h"
 
 UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, LPARAM lParam) {
-	AeSysDoc* Document = AeSysDoc::GetDoc();
+	auto* document = AeSysDoc::GetDoc();
 	auto* activeView = AeSysView::GetActiveView();
 
 	switch (uiMsg) {
@@ -27,16 +27,16 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
 
 				CFileStatus	fs;
 				if (CFile::GetStatus(psz, fs)) {
-					EoDbLayer* Layer = Document->GetLayerTableLayer(psz);
+					EoDbLayer* Layer = document->GetLayerTableLayer(psz);
 
 					if (Layer != 0) {
-						_WndProcPreviewUpdate(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), Layer);
+						WndProcPreviewUpdateLayer(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), Layer);
 					}
 					else {
 						Layer = new EoDbLayer(L"",  EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
 
-						Document->TracingLoadLayer(psz, Layer);
-						_WndProcPreviewUpdate(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), Layer);
+						document->TracingLoadLayer(psz, Layer);
+						WndProcPreviewUpdateLayer(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), Layer);
 
 						Layer->DeleteGroupsAndRemoveAll();
 						delete Layer;
@@ -56,26 +56,26 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
 			}
 			switch (LOWORD(wParam)) {
 			case IDC_APPEND: {
-					EoDbLayer*	Layer = Document->GetWorkLayer();
+					EoDbLayer*	Layer = document->GetWorkLayer();
 
-					Document->TracingLoadLayer(szFilePath, Layer);
-					Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, Layer);
+					document->TracingLoadLayer(szFilePath, Layer);
+					document->UpdateAllViews(nullptr, EoDb::kLayerSafe, Layer);
 					return (TRUE);
 				}
 
 			case IDC_TRAMAP:
-				Document->TracingMap(szFilePath);
+				document->TracingMap(szFilePath);
 				return (TRUE);
 
 			case IDC_TRAP: {
 					EoDbLayer* pLayer = new EoDbLayer(L"", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
 
-					Document->TracingLoadLayer(szFilePath, pLayer);
+					document->TracingLoadLayer(szFilePath, pLayer);
 
-					Document->RemoveAllTrappedGroups();
-					Document->AddGroupsToTrap(pLayer);
-					Document->CopyTrappedGroupsToClipboard(activeView);
-					Document->RemoveAllTrappedGroups();
+					document->RemoveAllTrappedGroups();
+					document->AddGroupsToTrap(pLayer);
+					document->CopyTrappedGroupsToClipboard(activeView);
+					document->RemoveAllTrappedGroups();
 
 					pLayer->DeleteGroupsAndRemoveAll();
 					delete pLayer;
@@ -84,7 +84,7 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
 				}
 
 			case IDC_TRAVIEW:
-				Document->TracingView(szFilePath);
+				document->TracingView(szFilePath);
 
 				return (TRUE);
 			}

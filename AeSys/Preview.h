@@ -1,5 +1,5 @@
 ﻿#pragma once
 
 void WndProcPreviewClear(HWND previewWindow);
-void WndProcPreviewUpdate(HWND previewWindow, EoDbBlock* block);
-void _WndProcPreviewUpdate(HWND previewWindow, EoDbGroupList* groups);
+void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block);
+void WndProcPreviewUpdateLayer(HWND previewWindow, EoDbGroupList* groups);

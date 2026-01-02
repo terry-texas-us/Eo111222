@@ -55,8 +55,8 @@ bool dde::ExecDA(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 bool dde::ExecTracingBlank(PTOPICINFO , LPTSTR , UINT , UINT uiNargs, LPTSTR *ppArgs) {
 	int PathKey = uiNargs - 1;
 
-	AeSysDoc* Document = AeSysDoc::GetDoc();
-	Document->LayerBlank(ppArgs[PathKey]);
+	auto* document = AeSysDoc::GetDoc();
+	document->LayerBlank(ppArgs[PathKey]);
 
 	return true;
 }
@@ -64,8 +64,8 @@ bool dde::ExecTracingBlank(PTOPICINFO , LPTSTR , UINT , UINT uiNargs, LPTSTR *pp
 bool dde::ExecTracingMap(PTOPICINFO , LPTSTR , UINT , UINT uiNargs, LPTSTR *ppArgs) {
 	int PathKey = uiNargs - 1;
 
-	AeSysDoc* Document = AeSysDoc::GetDoc();
-	Document->TracingMap(ppArgs[PathKey]);
+	auto* document = AeSysDoc::GetDoc();
+	document->TracingMap(ppArgs[PathKey]);
 
 	return true;
 }
@@ -73,8 +73,8 @@ bool dde::ExecTracingMap(PTOPICINFO , LPTSTR , UINT , UINT uiNargs, LPTSTR *ppAr
 bool dde::ExecTracingOpen(PTOPICINFO , LPTSTR , UINT , UINT uiNargs, LPTSTR *ppArgs) {
 	int PathKey = uiNargs - 1;
 
-	AeSysDoc* Document = AeSysDoc::GetDoc();
-	Document->TracingOpen(ppArgs[PathKey]);
+	auto* document = AeSysDoc::GetDoc();
+	document->TracingOpen(ppArgs[PathKey]);
 
 	return true;
 }
@@ -82,8 +82,8 @@ bool dde::ExecTracingOpen(PTOPICINFO , LPTSTR , UINT , UINT uiNargs, LPTSTR *ppA
 bool dde::ExecTracingView(PTOPICINFO , LPTSTR , UINT , UINT uiNargs, LPTSTR *ppArgs) {
 	int PathKey = uiNargs - 1;
 
-	AeSysDoc* Document = AeSysDoc::GetDoc();
-	Document->TracingView(ppArgs[PathKey]);
+	auto* document = AeSysDoc::GetDoc();
+	document->TracingView(ppArgs[PathKey]);
 
 	return true;
 }
@@ -96,9 +96,9 @@ bool dde::ExecFileGet(PTOPICINFO , LPTSTR , UINT , UINT uiNargs, LPTSTR *ppArgs)
 		app.WarningMessageBox(IDS_MSG_TRACING_OPEN_FAILURE, PathName);
 		return false;
 	}
-	AeSysDoc* Document = AeSysDoc::GetDoc();
+	auto* document = AeSysDoc::GetDoc();
 
-	EoDbLayer* Layer = Document->GetWorkLayer();
+	EoDbLayer* Layer = document->GetWorkLayer();
 
 	EoDbJobFile JobFile;
 	JobFile.ReadHeader(File);
@@ -150,7 +150,7 @@ bool dde::ExecLine(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 }
 /// <summary>Adds a note the drawing at the current cursor position.</summary>
 bool dde::ExecNote(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
-	AeSysDoc* Document = AeSysDoc::GetDoc();
+	auto* document = AeSysDoc::GetDoc();
 
 	EoGePoint3d ptPvt = app.GetCursorPosition();
 

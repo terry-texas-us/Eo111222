@@ -112,16 +112,16 @@ class CVaxVec {
 };
 
 void EoDbJobFile::ReadMemFile(CFile& file, EoGeVector3d translateVector) {
-  AeSysDoc* Document = AeSysDoc::GetDoc();
+  auto* document = AeSysDoc::GetDoc();
 
-  Document->RemoveAllTrappedGroups();
+  document->RemoveAllTrappedGroups();
 
   EoDbGroup* Group;
   while (GetNextVisibleGroup(file, Group)) {
-    Document->AddWorkLayerGroup(Group);
-    Document->AddGroupToTrap(Group);
+    document->AddWorkLayerGroup(Group);
+    document->AddGroupToTrap(Group);
   }
-  Document->TranslateTrappedGroups(translateVector);
+  document->TranslateTrappedGroups(translateVector);
 }
 void EoDbJobFile::ReadHeader(CFile& file) {
   if (file.Read(m_PrimBuf, 32) == 32) {

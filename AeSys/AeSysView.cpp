@@ -595,7 +595,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     }
 #endif  // USING_Direct2D
 
-    AeSysDoc* Document = GetDocument();
+    auto* Document = GetDocument();
     ASSERT_VALID(Document);
     if (m_ViewRendered) {
 #if defined(USING_ODA)
@@ -628,7 +628,7 @@ void AeSysView::OnInitialUpdate() {
 #endif  // USING_Direct2D
 
 #if defined(USING_ODA)
-  AeSysDoc* Document = static_cast<AeSysDoc*>(GetDocument());
+  auto* Document = static_cast<AeSysDoc*>(GetDocument());
   OdDbDatabase* Database = Document->m_DatabasePtr;
   OdGiContextForDbDatabase::setDatabase(Database);
 
@@ -1091,8 +1091,9 @@ UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizonta
   EoGePoint3d ptMin;
   EoGePoint3d ptMax;
   EoGeTransformMatrix tm;
+  auto* document = GetDocument();
 
-  GetDocument()->GetExtents(this, ptMin, ptMax, tm);
+  document->GetExtents(this, ptMin, ptMax, tm);
 
   double HorizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch;
   double VerticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch;
@@ -1343,10 +1344,11 @@ void AeSysView::OnWindowNormal() {
 }
 
 void AeSysView::OnWindowBest() {
+  auto* document = GetDocument();
   EoGePoint3d ptMin;
   EoGePoint3d ptMax;
 
-  GetDocument()->GetExtents(this, ptMin, ptMax, ModelViewGetMatrix());
+  document->GetExtents(this, ptMin, ptMax, ModelViewGetMatrix());
 
   // extents return range - 1 to 1
 
@@ -1359,7 +1361,7 @@ void AeSysView::OnWindowBest() {
     m_ViewTransform.SetCenteredWindow(m_Viewport, UExtent, VExtent);
 
     EoGeTransformMatrix tm;
-    GetDocument()->GetExtents(this, ptMin, ptMax, tm);
+    document->GetExtents(this, ptMin, ptMax, tm);
 
     EoGePoint3d Target = EoGePoint3d((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, (ptMin.z + ptMax.z) / 2.0);
 
@@ -1836,7 +1838,7 @@ void AeSysView::DeleteLastGroup() {
   if (m_VisibleGroupList.IsEmpty()) {
     app.AddStringToMessageList(IDS_MSG_NO_DET_GROUPS_IN_VIEW);
   } else {
-    AeSysDoc* Document = GetDocument();
+    auto* Document = GetDocument();
     EoDbGroup* Group = m_VisibleGroupList.RemoveTail();
 
     Document->AnyLayerRemove(Group);
@@ -2080,15 +2082,16 @@ void AeSysView::OnOp3() {
 }
 
 void AeSysView::OnOp4() {
+  auto* document = GetDocument();
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
       app.LoadModeResources(app.PrimaryMode());
-      GetDocument()->InitializeGroupAndPrimitiveEdit();
+      document->InitializeGroupAndPrimitiveEdit();
       break;
 
     case ID_MODE_GROUP_EDIT:
       app.LoadModeResources(app.PrimaryMode());
-      GetDocument()->InitializeGroupAndPrimitiveEdit();
+      document->InitializeGroupAndPrimitiveEdit();
       break;
   }
 }
@@ -2375,11 +2378,11 @@ void AeSysView::SetModeCursor(int mode) {
       break;
 
     default:
-      ::SetCursor((HCURSOR)::LoadImage(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+      ::SetCursor((HCURSOR)::LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
       return;
   }
   HCURSOR CursorHandle =
-      (HCURSOR)::LoadImage(app.GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE);
+      (HCURSOR)::LoadImageW(app.GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE);
   VERIFY(CursorHandle);
   ::SetCursor(CursorHandle);
   ::SetClassLongPtr(this->GetSafeHwnd(), GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(CursorHandle));
@@ -2408,7 +2411,7 @@ void AeSysView::OnUpdateViewStateinformation(CCmdUI* pCmdUI) { pCmdUI->SetCheck(
 
 void AeSysView::UpdateStateInformation(EStateInformationItem item) {
   if (m_ViewStateInformation) {
-    AeSysDoc* Document = AeSysDoc::GetDoc();
+    auto* document = AeSysDoc::GetDoc();
     CDC* DeviceContext = GetDC();
 
     CFont* Font = (CFont*)DeviceContext->SelectStockObject(DEFAULT_GUI_FONT);
@@ -2428,12 +2431,12 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
 
     if ((item & WorkCount) == WorkCount) {
       rc.SetRect(0, ClientRect.top, 8 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      swprintf_s(szBuf, 32, L"%-4i", Document->NumberOfGroupsInWorkLayer() + Document->NumberOfGroupsInActiveLayers());
+      swprintf_s(szBuf, 32, L"%-4i", document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers());
       DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
     }
     if ((item & TrapCount) == TrapCount) {
       rc.SetRect(8 * tm.tmAveCharWidth, ClientRect.top, 16 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      long trapCount = static_cast<long>(Document->TrapGroupCount());
+      long trapCount = static_cast<long>(document->TrapGroupCount());
       swprintf_s(szBuf, 32, L"%-4ld", trapCount);
       DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
     }
@@ -2499,6 +2502,7 @@ void AeSysView::ViewZoomExtents() {
 }
 
 void AeSysView::ResetDevice(bool zoomExtents) {
+  auto* document = GetDocument();
   CRect ClientRectangle;
   GetClientRect(&ClientRectangle);
 
@@ -2520,7 +2524,7 @@ void AeSysView::ResetDevice(bool zoomExtents) {
       m_Device = OdDbGsManager::setupActiveLayoutViews(m_Device, this);
 
       // Return true if and only the current layout is a paper space layout.
-      m_bPsOverall = (GetDocument()->m_DatabasePtr->getTILEMODE() == 0);
+      m_bPsOverall = (document->m_DatabasePtr->getTILEMODE() == 0);
       SetViewportBorderProperties(m_Device, !m_bPsOverall);
 
       if (zoomExtents) { ViewZoomExtents(); }
