@@ -173,11 +173,7 @@ AeSys::AeSys() {
   m_SimplexStrokeFont = 0;
 }
 
-// The one and only AeSys object
-
 AeSys app;
-
-// AeSys initialization
 
 BOOL AeSys::InitInstance() {
   if (!AfxOleInit()) {
@@ -186,35 +182,29 @@ BOOL AeSys::InitInstance() {
   }
   AfxEnableControlContainer();
 
-  // Standard initialization
   CTrace::SetLevel(2);
 
-  // Set the registry key under which our settings are stored
   SetRegistryKey(L"Engineers Office");
-  LoadStdProfileSettings();  // Load standard INI file options (including MRU)
+  LoadStdProfileSettings();
   SetRegistryBase(L"Settings");
 
   m_Options.Load();
 
-  // Initialize all Managers for usage. They are automatically constructed if not yet present
+  // Initialize managers
   InitContextMenuManager();
   InitKeyboardManager();
   InitTooltipManager();
 
   CMFCToolTipInfo params;
   params.m_bVislManagerTheme = TRUE;
-
   GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL, RUNTIME_CLASS(CMFCToolTipCtrl), &params);
 
   EnableUserTools(ID_TOOLS_ENTRY, ID_USER_TOOL1, ID_USER_TOOL10, RUNTIME_CLASS(CUserTool), IDR_MENU_ARGS,
                   IDR_MENU_DIRS);
 
-  // InitCommonControlsEx() is required on Windows XP if an application manifest specifies use of ComCtl32.dll version 6 or later to enable visual styles.
-  // Otherwise, any window creation will fail.
+  // Initialize common controls required to enable visual styles.
   INITCOMMONCONTROLSEX InitCtrls{};
   InitCtrls.dwSize = sizeof(InitCtrls);
-  // Indicates common controls to load from the dll;
-  // animate control, header, hot key, list-view, progress bar, status bar, tab, tooltip, toolbar, trackbar, tree-view, and up-down control classes.
   InitCtrls.dwICC = ICC_WIN95_CLASSES;
   InitCommonControlsEx(&InitCtrls);
 
@@ -233,53 +223,51 @@ BOOL AeSys::InitInstance() {
   if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_Direct2dFactory))) { return FALSE; }
 #endif  // USING_Direct2D
 
-  // Register the application's document templates.  Document templates serve as the connection between documents, frame windows and views.
+  // Register document templates
 
-  m_PegDocTemplate = new CMultiDocTemplate(IDR_AESYSTYPE, RUNTIME_CLASS(AeSysDoc), RUNTIME_CLASS(CChildFrame),
-                                           RUNTIME_CLASS(AeSysView));
+  auto* documentClass = RUNTIME_CLASS(AeSysDoc);
+  auto* frameClass = RUNTIME_CLASS(CChildFrame);
+  auto* viewClass = RUNTIME_CLASS(AeSysView);
+
+  m_PegDocTemplate = new CMultiDocTemplate(IDR_AESYSTYPE, documentClass, frameClass, viewClass);
   AddDocTemplate(m_PegDocTemplate);
 
-  m_TracingDocTemplate = new CMultiDocTemplate(IDR_TRACINGTYPE, RUNTIME_CLASS(AeSysDoc), RUNTIME_CLASS(CChildFrame),
-                                               RUNTIME_CLASS(AeSysView));
+  m_TracingDocTemplate = new CMultiDocTemplate(IDR_TRACINGTYPE, documentClass, frameClass, viewClass);
   AddDocTemplate(m_TracingDocTemplate);
 
   // Create main MDI Frame window
-  CMainFrame* MainFrame = new CMainFrame;
-
-  if (!MainFrame || !MainFrame->LoadFrame(IDR_MAINFRAME)) {
-    delete MainFrame;
+  CMainFrame* mainFrame = new CMainFrame;
+  if (!mainFrame || !mainFrame->LoadFrame(IDR_MAINFRAME)) {
+    delete mainFrame;
     return FALSE;
   }
-  m_pMainWnd = MainFrame;
-  MainFrame->DragAcceptFiles();
+  m_pMainWnd = mainFrame;
+  mainFrame->DragAcceptFiles();
 
-  CDC* DeviceContext = MainFrame->GetDC();
-
+  CDC* DeviceContext = mainFrame->GetDC();
   m_DeviceWidthInPixels = static_cast<double>(DeviceContext->GetDeviceCaps(HORZRES));
   m_DeviceHeightInPixels = static_cast<double>(DeviceContext->GetDeviceCaps(VERTRES));
   m_DeviceWidthInMillimeters = static_cast<double>(DeviceContext->GetDeviceCaps(HORZSIZE));
   m_DeviceHeightInMillimeters = static_cast<double>(DeviceContext->GetDeviceCaps(VERTSIZE));
-
   InitGbls(DeviceContext);
-  MainFrame->ReleaseDC(DeviceContext);
+  mainFrame->ReleaseDC(DeviceContext);
 
-  // Parse command line for standard shell commands, DDE, file open
+  // Parse command line and process shell commands
   CCommandLineInfo CommandLineInfo;
   ParseCommandLine(CommandLineInfo);
 
   if (CommandLineInfo.m_nShellCommand == CCommandLineInfo::FileNew) {
-    if (!MainFrame->LoadMDIState(GetRegSectionPath())) { m_PegDocTemplate->OpenDocumentFile(nullptr); }
-  } else {  // Dispatch commands specified on the command line
+    if (!mainFrame->LoadMDIState(GetRegSectionPath())) { m_PegDocTemplate->OpenDocumentFile(nullptr); }
+  } else {
     if (!ProcessShellCommand(CommandLineInfo)) { return FALSE; }
   }
-  m_MainFrameMenuHandle = ::LoadMenu(m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
+  m_MainFrameMenuHandle = LoadMenuW(m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
 
   if (!RegisterKeyPlanWindowClass(m_hInstance)) { return FALSE; }
   if (!RegisterPreviewWindowClass(m_hInstance)) { return FALSE; }
   SetShadowFolderPath(L"AeSys Shadow Folder");
 
   CString ResourceFolder = ResourceFolderPath();
-
   LoadSimplexStrokeFont(ResourceFolder + L"Simplex.psf");
   LoadHatchesFromFile(ResourceFolder + L"Hatches\\DefaultSet.txt");
   LoadPenWidthsFromFile(ResourceFolder + L"Pens\\Widths.txt");
@@ -300,6 +288,7 @@ BOOL AeSys::InitInstance() {
 
   return TRUE;
 }
+
 // AeSys message handlers
 int AeSys::ExitInstance() {
   m_Options.Save();
@@ -528,11 +517,7 @@ EoDb::FileTypes AeSys::GetFileTypeFromPath(const CString& pathName) {
 }
 CString AeSys::ResourceFolderPath() {
   CString ApplicationPath = EoAppGetPathFromCommandLine();
-  // TODO: Resource is to be a subdirectory (res) of the application path on general release
-
-  //return ApplicationPath + L"\\res\\";
-
-  return L"D:\\Projects\\Eo\\res\\";
+  return ApplicationPath + L"\\res\\";
 }
 int AeSys::SetShadowFolderPath(const CString& folder) {
   WCHAR Path[MAX_PATH];
@@ -766,16 +751,16 @@ void AeSys::BuildModifiedAcceleratorTable() {
   ::DestroyAcceleratorTable(AcceleratorTableHandle);
 
   HACCEL ModeAcceleratorTableHandle = ::LoadAccelerators(m_hInstance, MAKEINTRESOURCE(m_ModeResourceIdentifier));
-  int ModeAcceleratorTableEntries = ::CopyAcceleratorTableW(ModeAcceleratorTableHandle, nullptr, 0);
+  int ModeAcceleratorTableEntries = CopyAcceleratorTableW(ModeAcceleratorTableHandle, nullptr, 0);
 
   AcceleratorTableHandle = ::LoadAccelerators(m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
-  int AcceleratorTableEntries = ::CopyAcceleratorTableW(AcceleratorTableHandle, nullptr, 0);
+  int AcceleratorTableEntries = CopyAcceleratorTableW(AcceleratorTableHandle, nullptr, 0);
 
   LPACCEL ModifiedAcceleratorTable =
       new ACCEL[static_cast<size_t>(AcceleratorTableEntries + ModeAcceleratorTableEntries)];
 
-  ::CopyAcceleratorTable(ModeAcceleratorTableHandle, ModifiedAcceleratorTable, ModeAcceleratorTableEntries);
-  ::CopyAcceleratorTable(AcceleratorTableHandle, &ModifiedAcceleratorTable[ModeAcceleratorTableEntries],
+  CopyAcceleratorTableW(ModeAcceleratorTableHandle, ModifiedAcceleratorTable, ModeAcceleratorTableEntries);
+  CopyAcceleratorTableW(AcceleratorTableHandle, &ModifiedAcceleratorTable[ModeAcceleratorTableEntries],
                          AcceleratorTableEntries);
 
   MainFrame->m_hAccelTable =

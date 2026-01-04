@@ -185,7 +185,7 @@ AeSysDoc::AeSysDoc()
       m_ContinuousLineType(nullptr),
       m_BlocksTable(),
       m_LayerTable(),
-      m_WorkLayer(nullptr),
+      m_workLayer(nullptr),
       m_DeletedGroupList(),
       m_TrappedGroupList(),
       m_TrapPivotPoint(),
@@ -206,7 +206,7 @@ void AeSysDoc::DeleteContents() {
 
   RemoveAllBlocks();
   RemoveAllLayerTableLayers();
-  m_WorkLayer = nullptr;
+  m_workLayer = nullptr;
   DeletedGroupsRemoveGroups();
 
   RemoveAllTrappedGroups();
@@ -272,17 +272,17 @@ BOOL AeSysDoc::OnNewDocument() {
   File.ConvertToPeg(this);
 #else   // Not USING_ODA
   m_LineTypeTable.SetAt(L"0", new EoDbLineType(0, L"Null", L"null", 0, nullptr));
-  EoDbLineType* LineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
-  m_LineTypeTable.SetAt(L"Continuous", LineType);
-  m_WorkLayer = new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, LineType);
-  AddLayerTableLayer(m_WorkLayer);
+  auto* lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
+  m_LineTypeTable.SetAt(L"Continuous", lineType);
+  m_workLayer = new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, lineType);
+  AddLayerTableLayer(m_workLayer);
 #endif  // USING_ODA
-  m_LineTypeTable.Lookup(L"Continuous",
-                         m_ContinuousLineType);  // Assumes both creation paths create a "Continuous" LineType
-
-  //m_LineTypeTable.LoadLineTypesFromTxtFile(app.ResourceFolderPath() + L"Pens\\LineTypes.txt");
-  //LoadLineTypesFromXmlFile(app.ResourceFolderPath() + L"Pens\\LineTypes.xml");
-
+  CString applicationPath = EoAppGetPathFromCommandLine();
+  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
+  //LoadLineTypesFromXmlFile(applicationPath + L"\\res\\LineTypes\\LineTypes.xml");
+  
+  m_LineTypeTable.Lookup(L"Continuous", m_ContinuousLineType);
+    
   m_SaveAsType = EoDb::kPeg;
   SetWorkLayer(GetLayerTableLayerAt(0));
   InitializeGroupAndPrimitiveEdit();
@@ -322,10 +322,10 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR lpszPathName) {
       m_LineTypeTable.SetAt(L"0", LineType);
       LineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
       m_LineTypeTable.SetAt(L"Continuous", LineType);
-      m_WorkLayer =
+      m_workLayer =
           new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, LineType);
       m_ContinuousLineType = LineType;
-      AddLayerTableLayer(m_WorkLayer);
+      AddLayerTableLayer(m_workLayer);
 
       EoDbPegFile File;
       CFileException e;
@@ -716,7 +716,7 @@ void AeSysDoc::LoadLineTypesFromXmlFile(const CString& pathName) {
         if (prefixLength > 0) {
           ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Element: %ls:%ls\n", prefix, localName);
         } else {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Element: %ls\n", localName);
+          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Element: %ls\n", localName); // ItemGroup, LineDefinition, Appearance, DashGroup, DashLength
         }
         if (FAILED(hr = WriteAttributes(Reader))) {
           ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error writing attributes, error is %08.8lx", hr);
@@ -861,23 +861,27 @@ int AeSysDoc::RemoveEmptyGroups() {
 }
 // Work Layer interface
 void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
-  m_WorkLayer->AddTail(group);
+  m_workLayer->AddTail(group);
   AddGroupToAllViews(group);
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
   SetModifiedFlag(TRUE);
 }
 void AeSysDoc::AddWorkLayerGroups(EoDbGroupList* groups) {
-  m_WorkLayer->AddTail(groups);
+  m_workLayer->AddTail(groups);
   AddGroupsToAllViews(groups);
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
   SetModifiedFlag(TRUE);
 }
+/** @brief Retrieves the last group in the work layer.
+  @return Pointer to the last EoDbGroup in the work layer, or nullptr if the work layer is not defined or contains no groups.
+*/
 EoDbGroup* AeSysDoc::GetLastWorkLayerGroup() const {
-  auto Position = m_WorkLayer->GetTailPosition();
-  return ((EoDbGroup*)(Position != 0 ? m_WorkLayer->GetPrev(Position) : 0));
+  if (m_workLayer == nullptr) { return nullptr; }
+  auto position = m_workLayer->GetTailPosition();
+  return (position != nullptr) ? static_cast<EoDbGroup*>(m_workLayer->GetPrev(position)) : nullptr;
 }
 void AeSysDoc::InitializeWorkLayer() {
-  m_WorkLayer->DeleteGroupsAndRemoveAll();
+  m_workLayer->DeleteGroupsAndRemoveAll();
 
   RemoveAllTrappedGroups();
   RemoveAllGroupsFromAllViews();
@@ -885,13 +889,13 @@ void AeSysDoc::InitializeWorkLayer() {
   m_DeletedGroupList.DeleteGroupsAndRemoveAll();
 }
 EoDbLayer* AeSysDoc::SetWorkLayer(EoDbLayer* layer) {
-  EoDbLayer* PreviousWorkLayer = m_WorkLayer;
-  m_WorkLayer = layer;
-  m_WorkLayer->SetStateWork();
+  EoDbLayer* previousWorkLayer = m_workLayer;
+  m_workLayer = layer;
+  m_workLayer->SetStateWork();
 
   // TODO: File Name and Work Layer display? (was appended to MenuBar File command)
 
-  return PreviousWorkLayer;
+  return previousWorkLayer;
 }
 
 // Locates the layer containing a group and removes it.
@@ -1929,45 +1933,45 @@ void AeSysDoc::OnPrimExtractStr() {
 }
 // Returns a pointer to the currently active document.
 AeSysDoc* AeSysDoc::GetDoc() {
-  CMDIFrameWndEx* Frame = (CMDIFrameWndEx*)AfxGetMainWnd();
-  if (Frame == nullptr) { return nullptr; }
-  CMDIChildWndEx* Child = (CMDIChildWndEx*)Frame->MDIGetActive();
+  auto* frame = static_cast<CMDIFrameWndEx*>(AfxGetMainWnd());
+  if (frame == nullptr) { return nullptr; }
+  auto* child = static_cast<CMDIChildWndEx*>(frame->MDIGetActive());
 
-  return (Child == nullptr) ? nullptr : (AeSysDoc*)Child->GetActiveDocument();
+  return (child == nullptr) ? nullptr : static_cast<AeSysDoc*>(child->GetActiveDocument());
 }
 void AeSysDoc::AddGroupToAllViews(EoDbGroup* group) {
-  auto ViewPosition = GetFirstViewPosition();
-  while (ViewPosition != 0) {
-    AeSysView* View = (AeSysView*)GetNextView(ViewPosition);
-    View->AddGroup(group);
+  auto viewPosition = GetFirstViewPosition();
+  while (viewPosition != 0) {
+    auto* view = static_cast<AeSysView*>(GetNextView(viewPosition));
+    view->AddGroup(group);
   }
 }
 void AeSysDoc::AddGroupsToAllViews(EoDbGroupList* groups) {
-  auto ViewPosition = GetFirstViewPosition();
-  while (ViewPosition != 0) {
-    AeSysView* View = (AeSysView*)GetNextView(ViewPosition);
-    View->AddGroups(groups);
+  auto viewPosition = GetFirstViewPosition();
+  while (viewPosition != 0) {
+    auto* view = static_cast<AeSysView*>(GetNextView(viewPosition));
+    view->AddGroups(groups);
   }
 }
 void AeSysDoc::RemoveAllGroupsFromAllViews() {
-  auto ViewPosition = GetFirstViewPosition();
-  while (ViewPosition != 0) {
-    AeSysView* View = (AeSysView*)GetNextView(ViewPosition);
-    View->RemoveAllGroups();
+  auto viewPosition = GetFirstViewPosition();
+  while (viewPosition != 0) {
+    auto* view = static_cast<AeSysView*>(GetNextView(viewPosition));
+    view->RemoveAllGroups();
   }
 }
 void AeSysDoc::RemoveGroupFromAllViews(EoDbGroup* group) {
-  auto ViewPosition = GetFirstViewPosition();
-  while (ViewPosition != 0) {
-    AeSysView* View = (AeSysView*)GetNextView(ViewPosition);
-    View->RemoveGroup(group);
+  auto viewPosition = GetFirstViewPosition();
+  while (viewPosition != 0) {
+    auto* view = static_cast<AeSysView*>(GetNextView(viewPosition));
+    view->RemoveGroup(group);
   }
 }
 void AeSysDoc::ResetAllViews() {
-  auto ViewPosition = GetFirstViewPosition();
-  while (ViewPosition != 0) {
-    AeSysView* View = (AeSysView*)GetNextView(ViewPosition);
-    View->ResetView();
+  auto viewPosition = GetFirstViewPosition();
+  while (viewPosition != 0) {
+    auto* view = static_cast<AeSysView*>(GetNextView(viewPosition));
+    view->ResetView();
   }
 }
 void AeSysDoc::OnHelpKey() {

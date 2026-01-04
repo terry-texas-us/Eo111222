@@ -1,0 +1,40 @@
+;;
+;;  ISO 128 (ISO/DIS 12011) linetypes
+;;
+;;  The size of the line segments for each defined ISO line, is 
+;;  defined for an usage with a pen width of 1 mm. To use them with 
+;;  the other ISO predefined pen widths, the line has to be scaled 
+;;  with the appropriate value (e.g. pen width 0,5 mm -> ltscale 0.5).
+;;
+;; No.=Description,Representation(20 characters)
+;;
+01=Continuous line,____________________
+0,0
+02=Dashed line,__ __ __ __ __ __ __
+12,-3
+03=Dashed spaced line,__    __    __    __
+12,-18
+04=Long-dashed dotted line,____ . ____ . ____ .
+24,-3,0,-3
+05=Long-dashed double-dotted line,____ .. ____ .. ____
+24,-3,0,-3,0,-3
+06=Long-dashed triple-dotted line,____ ... ____ ... __
+24,-3,0,-3,0,-3,0,-3
+07=Dotted line,. . . . . . . . . . 
+0,-3
+08=Long-dashed short-dashed line,____ __ ____ __ ____
+24,-3,6,-3
+09=Long-dashed double-short-dashed line,____ __ __ ____ __ _
+24,-3,6,-3,6,-3
+10=Dashed dotted line,__ . __ . __ . __ . 
+12,-3,0,-3
+11=Double-dashed dotted line,__ __ . __ __ . __ _
+12,-3,12,-3,0,-3
+12=Dashed double-dotted line,__ . . __ . . __ . .
+12,-3,0,-3,0,-3
+13=Double-dashed double-dotted line,__ __ . . __ __ . . 
+12,-3,12,-3,0,-3,0,-3
+14=Dashed triple-dotted line,__ . . . __ . . . __
+12,-3,0,-3,0,-3,0,-3
+15=Double-dashed triple-dotted line,__ __ . . . __ __ . 
+12,-3,12,-3,0,-3,0,-3,0,-3

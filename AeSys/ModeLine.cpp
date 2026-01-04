@@ -1,8 +1,16 @@
 ﻿#include "stdafx.h"
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "Resource.h"
+#include <Windows.h>
+#include <afxext.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <atltypes.h>
 
-#include "MainFrm.h"
+namespace {
+constexpr int statusOp0{3};
+}
 
 /// @brief Retrieves the DPI (dots per inch) for a window. The function tries to call GetDpiForWindow from user32.dll if available; if not available or the window handle is invalid, it falls back to the screen DPI obtained from the device context, defaulting to 96 if detection fails.
 /// @param hwnd Handle to the window whose DPI should be retrieved. If nullptr or not a valid window, the function falls back to the primary screen DPI.
@@ -99,9 +107,9 @@ void AeSysView::ModeLineDisplay() {
 
     auto textExtent = context->GetTextExtent(paneText);
 
-    GetStatusBar().SetPaneInfo(::nStatusOp0 + i, static_cast<UINT>(ID_OP0 + i), SBPS_NORMAL, textExtent.cx);
-    GetStatusBar().SetPaneText(::nStatusOp0 + i, paneText);
-    GetStatusBar().SetTipText(::nStatusOp0 + i, L"Mode Command Tip Text");
+    GetStatusBar().SetPaneInfo(::statusOp0 + i, static_cast<UINT>(ID_OP0 + i), SBPS_NORMAL, textExtent.cx);
+    GetStatusBar().SetPaneText(::statusOp0 + i, paneText);
+    GetStatusBar().SetTipText(::statusOp0 + i, L"Mode Command Tip Text");
 
     if (app.ModeInformationOverView()) {
       DrawPaneTextInView(context, GetActiveView(), i, paneText, DEFAULT_GUI_FONT, AppGetTextCol());
@@ -116,14 +124,14 @@ EoUInt16 AeSysView::ModeLineHighlightOp(EoUInt16 command) {
   m_OpHighlighted = command;
 
   if (command == 0) { return 0; }
-  int paneIndex = ::nStatusOp0 + m_OpHighlighted - ID_OP0;
+  int paneIndex = ::statusOp0 + m_OpHighlighted - ID_OP0;
 
   GetStatusBar().SetPaneTextColor(paneIndex, RGB(255, 0, 0));
 
   if (app.ModeInformationOverView()) {
     CString paneText = GetStatusBar().GetPaneText(paneIndex);
     CDC* context = GetDC();
-    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::nStatusOp0, paneText, DEFAULT_GUI_FONT, RGB(255, 0, 0));
+    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT, RGB(255, 0, 0));
     ReleaseDC(context);
   }
   return (command);
@@ -131,14 +139,14 @@ EoUInt16 AeSysView::ModeLineHighlightOp(EoUInt16 command) {
 
 void AeSysView::ModeLineUnhighlightOp(EoUInt16& command) {
   if (command == 0 || m_OpHighlighted == 0) { return; }
-  int paneIndex = ::nStatusOp0 + m_OpHighlighted - ID_OP0;
+  int paneIndex = ::statusOp0 + m_OpHighlighted - ID_OP0;
 
   GetStatusBar().SetPaneTextColor(paneIndex);
 
   if (app.ModeInformationOverView()) {
     CString paneText = GetStatusBar().GetPaneText(paneIndex);
     CDC* context = GetDC();
-    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::nStatusOp0, paneText, DEFAULT_GUI_FONT, AppGetTextCol());
+    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT, AppGetTextCol());
     ReleaseDC(context);
   }
   command = 0;

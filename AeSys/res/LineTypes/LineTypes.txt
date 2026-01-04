@@ -1,0 +1,36 @@
+
+;; AeSys linetypes (named for quick select by index)
+
+02=2.Short-dashed line,             _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    
+.05,-.05
+03=3.Dashed line,                   __ __ __ __ __ __ __ __ __ __ __ __ __  
+.1,-.05
+04=4.Long-dashed line,              ____ ____ ____ ____ ____ ____ ____ ___ 
+.2,-.05
+05=5.Long-dashed short-dashed line, ____ _ ____ _ ____ _ ____ _ ____ _ ___  
+.2,-.05,.05,-.05
+06=6.Long-dashed dotted line,       ____ . ____ . ____ . ____ . ____ . ___
+.2,-.05,0.,-.05
+07=7.Long-dashed double-dotted line,____ . . ____ . . ____ . . ____ . . __
+.2,-.05,0.,-.05,0.,-.05
+08=8.Long-dashed triple-dotted line,____ . . . ____ . . . ____ . . . ____ 
+.2,-.05,0.,-.05,0.,-.05,0.,-.05
+09=9.Short-dashed (same as 01),     _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _   
+.05,-.05
+
+;; Additional AeSys linetypes (not named for quick select by index)
+
+10=LongX2-dashed dotted line,        ________ . ________ . ________ . _____
+.4,-.05,0.,-.05
+12=LongX2-dashed double-dotted line, ________ . . ________ . . ________ . .
+.4,-.05,0.,-.05,0.,-.05
+13=LongX2-dashed triple-dotted line, ________ . . . ________ . . . ________ 
+.4,-.05,0.,-.05,0.,-.05,0.,-.05
+14=LongX4-dashed short-dashed line,  ________________ _ ________________ _ 
+.8,-.05,.05,-.05
+15=LongX4-dashed dotted line,        ________________ . ________________ . 
+.8,-.05,0.,-.05
+16=LongX4-dashed double-dotted line, ________________ . . ________________ 
+.8,-.05,0.,-.05,0.,-.05
+17=LongX4-dashed triple-dotted line, ________________ . . . _______________ 
+.8,-.05,0.,-.05,0.,-.05,0.,-.05

@@ -1,62 +1,101 @@
 ﻿#include "stdafx.h"
 
 #include "EoDbBitmapFile.h"
+#include <afx.h>
+#include <afxstr.h>
+#include <atltrace.h>
+#include <memory>
+#include <new>
 
 EoDbBitmapFile::EoDbBitmapFile(const CString& fileName) {
   CFileException e;
   if (CFile::Open(fileName, modeRead | shareDenyNone, &e)) {}
 }
-bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& bmReference, CPalette& palReference) {
-  HBITMAP hBitmap = (HBITMAP)::LoadImageW(0, fileName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE);
-  if (hBitmap == nullptr) { return false; }
-  bmReference.Attach(hBitmap);
 
-  // Return now if device does not support palettes
+/**
+ * Loads a bitmap and its associated palette from a file.
+ * @param fileName The path to the bitmap file.
+ * @param[out] loadedBitmap A reference to a CBitmap object that will receive the loaded bitmap.
+ * @param[out] loadedPalette A reference to a CPalette object that will receive the loaded palette.
+ * @return true if the bitmap and palette were successfully loaded; false otherwise.
+ */
+bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalette& loadedPalette) {
+  HBITMAP bitmap =
+      static_cast<HBITMAP>(LoadImageW(0, fileName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE));
+  if (bitmap == nullptr) { return false; }
+  loadedBitmap.Attach(bitmap);
 
-  CClientDC dc(nullptr);
-  if ((dc.GetDeviceCaps(RASTERCAPS) & RC_PALETTE) == 0) { return true; }
-  DIBSECTION ds;
-  bmReference.GetObject(sizeof(DIBSECTION), &ds);
-
-  int nColors;
-
-  if (ds.dsBmih.biClrUsed != 0) {
-    nColors = static_cast<int>(ds.dsBmih.biClrUsed);
-  } else {
-    nColors = 1 << ds.dsBmih.biBitCount;
+  CClientDC clientContext(nullptr);
+  if ((clientContext.GetDeviceCaps(RASTERCAPS) & RC_PALETTE) == 0) {
+    Close();
+    return true;
   }
-  // Create a halftone palette if the DIB section contains more than 256 colors
-  if (nColors > 256) {
-    palReference.CreateHalftonePalette(&dc);
-  } else {  // Create a custom palette from the DIB section's color table
-    RGBQUAD* pRGB = new RGBQUAD[static_cast<size_t>(nColors)];
-
-    CDC dcMem;
-    dcMem.CreateCompatibleDC(&dc);
-
-    CBitmap* pBitmap = dcMem.SelectObject(&bmReference);
-    ::GetDIBColorTable((HDC)dcMem, 0U, static_cast<UINT>(nColors), pRGB);
-    dcMem.SelectObject(pBitmap);
-
-    UINT nSize = sizeof(LOGPALETTE) + (sizeof(PALETTEENTRY) * (nColors - 1));
-
-    LOGPALETTE* pLogPal = (LOGPALETTE*)new BYTE[nSize];
-
-    pLogPal->palVersion = 0x300;
-    pLogPal->palNumEntries = EoUInt16(nColors);
-
-    for (int i = 0; i < nColors; i++) {
-      pLogPal->palPalEntry[i].peRed = pRGB[i].rgbRed;
-      pLogPal->palPalEntry[i].peGreen = pRGB[i].rgbGreen;
-      pLogPal->palPalEntry[i].peBlue = pRGB[i].rgbBlue;
-      pLogPal->palPalEntry[i].peFlags = 0;
+  DIBSECTION deviceIndependentBitmapStruct{};
+  if (loadedBitmap.GetObject(sizeof(DIBSECTION), &deviceIndependentBitmapStruct) == 0) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to get DIBSECTION");
+    Close();
+    return false;
+  }
+  size_t colors{0};
+  if (deviceIndependentBitmapStruct.dsBmih.biClrUsed != 0) {
+    colors = static_cast<size_t>(deviceIndependentBitmapStruct.dsBmih.biClrUsed);
+  } else {
+    colors = static_cast<size_t>(1) << deviceIndependentBitmapStruct.dsBmih.biBitCount;
+  }
+  if (colors > 256) {
+    if (!loadedPalette.CreateHalftonePalette(&clientContext)) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create halftone palette");
+      Close();
+      return false;
     }
-    palReference.CreatePalette(pLogPal);
+  } else {
+    std::unique_ptr<RGBQUAD[]> rgbQuad(new (std::nothrow) RGBQUAD[colors]);
+    if (!rgbQuad) {
+      Close();
+      return false;
+    }
+    CDC memoryContext;
+    if (!memoryContext.CreateCompatibleDC(&clientContext)) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create compatible DC");
+      Close();
+      return false;
+    }
+    CBitmap* customBitmap = memoryContext.SelectObject(&loadedBitmap);
+    if (!customBitmap) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to select bitmap into DC");
+      Close();
+      return false;
+    }
+    if (GetDIBColorTable((HDC)memoryContext, 0U, static_cast<UINT>(colors), rgbQuad.get()) == 0) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to get DIB color table");
+      memoryContext.SelectObject(customBitmap);
+      Close();
+      return false;
+    }
+    memoryContext.SelectObject(customBitmap);
 
-    delete[] pLogPal;
-    delete[] pRGB;
+    size_t paletteSize = sizeof(LOGPALETTE) + (sizeof(PALETTEENTRY) * (colors - 1));
+    std::unique_ptr<BYTE[]> paletteBuffer(new (std::nothrow) BYTE[paletteSize]);
+    if (!paletteBuffer) {
+      Close();
+      return false;
+    }
+    LOGPALETTE* logicalPalette = reinterpret_cast<LOGPALETTE*>(paletteBuffer.get());
+    logicalPalette->palVersion = 0x300;
+    logicalPalette->palNumEntries = EoUInt16(colors);
+
+    for (size_t i = 0; i < colors; i++) {
+      logicalPalette->palPalEntry[i].peRed = rgbQuad[i].rgbRed;
+      logicalPalette->palPalEntry[i].peGreen = rgbQuad[i].rgbGreen;
+      logicalPalette->palPalEntry[i].peBlue = rgbQuad[i].rgbBlue;
+      logicalPalette->palPalEntry[i].peFlags = 0;
+    }
+    if (!loadedPalette.CreatePalette(logicalPalette)) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create palette");
+      Close();
+      return false;
+    }
   }
   Close();
-
   return true;
 }

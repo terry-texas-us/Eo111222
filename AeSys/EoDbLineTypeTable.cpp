@@ -1,41 +1,68 @@
 ﻿#include "stdafx.h"
+#include <Windows.h>
+#include <afx.h>
+#include <afxcmn.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <atltrace.h>
+#include <cstdlib>
+#include <vector>
 
 #include "AeSysDoc.h"
+#include "EoDbBlock.h"
+#include "EoDbLayer.h"
+#include "EoDbLineType.h"
 #include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 
-const WCHAR* EoDbLineTypeTable::LegacyLineTypes[] = {
+namespace {
+constexpr EoUInt16 maxNumberOfDashElementsDefault{8};
+
+const wchar_t* legacyLineTypes[] = {
     L"0",      L"Continuous", L"2",        L"3",       L"4",        L"5",        L"6",       L"7",        L"8",
     L"9",      L"10",         L"11",       L"12",      L"13",       L"14",       L"15",      L"16",       L"17",
     L"BORDER", L"BORDER2",    L"BORDERX2", L"CENTER",  L"CENTER2",  L"CENTERX2", L"DASHDOT", L"DASHDOT2", L"DASHDOTX2",
     L"DASHED", L"DASHED2",    L"DASHEDX2", L"DIVIDE",  L"DIVIDE2",  L"DIVIDEX2", L"DOT",     L"DOT2",     L"DOTX2",
     L"HIDDEN", L"HIDDEN2",    L"HIDDENX2", L"PHANTOM", L"PHANTOM2", L"PHANTOMX2"};
+constexpr EoUInt16 NumberOfLegacyLineTypes{42};
+}  // namespace
+
 int EoDbLineTypeTable::FillComboBox(CComboBox& comboBox) {
   comboBox.ResetContent();
 
-  CString Name;
-  EoDbLineType* LineType;
-  auto Position = m_MapLineTypes.GetStartPosition();
-  while (Position) {
-    m_MapLineTypes.GetNextAssoc(Position, Name, LineType);
-    int ItemIndex = comboBox.AddString(Name);
-    comboBox.SetItemData(ItemIndex, DWORD_PTR(LineType));
+  CString name;
+  EoDbLineType* lineType;
+  auto position = m_MapLineTypes.GetStartPosition();
+  while (position) {
+    m_MapLineTypes.GetNextAssoc(position, name, lineType);
+    int itemIndex = comboBox.AddString(name);
+    comboBox.SetItemData(itemIndex, DWORD_PTR(lineType));
   }
   return (static_cast<int>(m_MapLineTypes.GetSize()));
 }
-int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
-  CString Name;
-  int ItemIndex = 0;
-  EoDbLineType* LineType;
-  auto Position = m_MapLineTypes.GetStartPosition();
-  while (Position) {
-    m_MapLineTypes.GetNextAssoc(Position, Name, LineType);
 
-    listControl.InsertItem(ItemIndex, nullptr);
-    listControl.SetItemData(ItemIndex++, DWORD_PTR(LineType));
+/**
+ * Fills a list control with the line types in the line type table.
+ * @param listControl The list control to fill.
+ * @return The number of line types added to the list control.
+ */
+int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
+  listControl.SetRedraw(FALSE);
+  listControl.DeleteAllItems();
+
+  int item{0};
+  CString name;
+  EoDbLineType* lineType;
+  auto position = m_MapLineTypes.GetStartPosition();
+  while (position) {
+    m_MapLineTypes.GetNextAssoc(position, name, lineType);
+
+    listControl.InsertItem(item, name);
+    listControl.SetItemData(item++, DWORD_PTR(lineType));
   }
   return (static_cast<int>(m_MapLineTypes.GetSize()));
 }
+
 /// <remarks>
 /// ByBlock and ByLayer should not be permitted in a legacy file. This should be managed in the outbound conversions back to legacy file.
 /// </remarks>
@@ -46,19 +73,22 @@ EoUInt16 EoDbLineTypeTable::LegacyLineTypeIndex(const CString& name) {
   } else if (name.CompareNoCase(L"ByLayer") == 0) {
     Index = EoDbPrimitive::LINETYPE_BYLAYER;
   } else {
-    while (Index < NumberOfLegacyLineTypes && name.CompareNoCase(LegacyLineTypes[Index]) != 0) { Index++; }
+    while (Index < NumberOfLegacyLineTypes && name.CompareNoCase(legacyLineTypes[Index]) != 0) { Index++; }
     Index = (Index < NumberOfLegacyLineTypes) ? Index : 0U;
   }
   return Index;
 }
+
 bool EoDbLineTypeTable::Lookup(const CString& name, EoDbLineType*& lineType) {
   lineType = nullptr;
   return (m_MapLineTypes.Lookup(name, lineType) != 0);
 }
+
 bool EoDbLineTypeTable::__Lookup(EoUInt16 index, EoDbLineType*& lineType) {
   lineType = nullptr;
-  return (index < NumberOfLegacyLineTypes) && m_MapLineTypes.Lookup(LegacyLineTypes[index], lineType);
+  return (index < NumberOfLegacyLineTypes) && m_MapLineTypes.Lookup(legacyLineTypes[index], lineType);
 }
+
 int EoDbLineTypeTable::ReferenceCount(EoInt16 lineType) {
   auto* document = AeSysDoc::GetDoc();
 
@@ -80,45 +110,59 @@ int EoDbLineTypeTable::ReferenceCount(EoInt16 lineType) {
   }
   return (Count);
 }
+
 void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
-  CStdioFile fl;
+  EoUInt16 maxNumberOfDashElements{maxNumberOfDashElementsDefault};
+  std::vector<double> dashLengths;
+  dashLengths.resize(maxNumberOfDashElements);
 
-  if (fl.Open(pathName, CFile::modeRead | CFile::typeText)) {
-    CString Description;
-    CString Name;
-    CString Line;
+  CStdioFile file;
+  CFileException e;
+  if (file.Open(pathName, CFile::modeRead | CFile::typeText, &e)) {
+    CString inputLine;
 
-    EoUInt16 MaxNumberOfDashElements = 8;
-    double* DashLengths = new double[MaxNumberOfDashElements];
+    while (file.ReadString(inputLine) != 0) {
+      if (inputLine.IsEmpty() || inputLine[0] == L';') { continue; }
 
-    while (fl.ReadString(Line) != 0) {
-      int NextToken = 0;
-      EoUInt16 Label = EoUInt16(_wtoi(Line.Tokenize(L"=", NextToken)));
+      int nextToken{0};
+      auto label = EoUInt16(_wtoi(inputLine.Tokenize(L"=", nextToken)));
 
-      Name = Line.Tokenize(L",", NextToken);
-      Description = Line.Tokenize(L"\n", NextToken);
+      auto name = inputLine.Tokenize(L",", nextToken);
+      auto comment = inputLine.Tokenize(L"\n", nextToken);
+      comment.Trim();
 
-      fl.ReadString(Line);
-
-      NextToken = 0;
-      EoUInt16 NumberOfDashElements = EoUInt16(_wtoi(Line.Tokenize(L",\n", NextToken)));
-
-      if (NumberOfDashElements > MaxNumberOfDashElements) {
-        delete[] DashLengths;
-        DashLengths = new double[NumberOfDashElements];
-        MaxNumberOfDashElements = NumberOfDashElements;
+      // Second line definines dash lengths
+      file.ReadString(inputLine);
+      // Determine number of dash elements by counting commas
+      EoUInt16 numberOfDashElements = 0;
+      for (int i = 0; i < inputLine.GetLength(); i++) {
+        if (inputLine[i] == L',') { numberOfDashElements++; }
       }
-      for (EoUInt16 Index = 0; Index < NumberOfDashElements; Index++) {
-        DashLengths[Index] = _wtof(Line.Tokenize(L",\n", NextToken));
+      numberOfDashElements++;  // Account for the last element
+
+      if (numberOfDashElements > maxNumberOfDashElements) {
+        dashLengths.resize(numberOfDashElements);
+        maxNumberOfDashElements = numberOfDashElements;
       }
-      EoDbLineType* LineType;
-      if (!Lookup(Name, LineType)) {
-        m_MapLineTypes.SetAt(Name, new EoDbLineType(Label, Name, Description, NumberOfDashElements, DashLengths));
+      nextToken = 0;
+      for (EoUInt16 i = 0; i < numberOfDashElements; i++) {
+        dashLengths[i] = _wtof(inputLine.Tokenize(L",\n", nextToken));
+      }
+      EoDbLineType* lineType;
+      if (!Lookup(name, lineType)) {
+        m_MapLineTypes.SetAt(name, new EoDbLineType(label, name, comment, numberOfDashElements, dashLengths.data()));
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"%d - Name: %s `%s`\n", label, name.GetString(),
+                  comment.GetString());
+        for (size_t i = 0; i < numberOfDashElements; ++i) {
+          ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"  Dash[%d] = %f\n", i, dashLengths[i]);
+        }
       }
     }
-    delete[] DashLengths;
+  } else {
+    ATLTRACE2(L"Exception opening file: %s", pathName.GetString());
   }
 }
+
 void EoDbLineTypeTable::RemoveAll() {
   CString Name;
   EoDbLineType* LineType;
@@ -130,6 +174,7 @@ void EoDbLineTypeTable::RemoveAll() {
   }
   m_MapLineTypes.RemoveAll();
 }
+
 void EoDbLineTypeTable::RemoveUnused() {
   //Note: test new logic for RemoveUnused required since LookupName is gone
   //int i = m_LineTypes.GetSize();

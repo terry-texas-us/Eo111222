@@ -67,7 +67,11 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"</Command>
+      <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes-ACAD\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes-ISO128\"
+</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -92,7 +96,11 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"</Command>
+      <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes-ACAD\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes-ISO128\"
+</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -201,8 +209,8 @@
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="EoGeLine.cpp" />
     <ClCompile Include="MainFrm.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="EoGeMatrix.cpp" />
     <ClCompile Include="ModeLine.cpp" />
@@ -227,6 +235,7 @@
   <ItemGroup>
     <None Include=".clang-format" />
     <None Include=".clang-tidy" />
+    <None Include="C:\Users\tsmit\Desktop\Help Peg.pdf" />
     <None Include="lex_regexp.dat" />
     <None Include="Markdowns\Dde Description and Few Uses.md" />
     <None Include="Markdowns\Analysis of lex.cpp and Modernization Suggestions.md" />
@@ -1549,6 +1558,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="lex_rules.l" />
+    <Text Include="res\LineTypes\LineTypes-ACAD.txt" />
+    <Text Include="res\LineTypes\LineTypes-ISO128.txt" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Tools\reflex_static_lib.lib" />

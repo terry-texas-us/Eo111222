@@ -1,8 +1,40 @@
-﻿#include "stdafx.h"
+﻿
+#include "StdAfx.h"
 
 #include "AeSys.h"
+#include "EoApOptions.h"
 #include "EoCtrlFindComboBox.h"
 #include "MainFrm.h"
+#include "Resource.h"
+#include <Windows.h>
+#include <afx.h>
+#include <afxbasetabctrl.h>
+#include <afxcoll.h>
+#include <afxcontrolbarutil.h>
+#include <afxdockingmanager.h>
+#include <afxext.h>
+#include <afxglobals.h>
+#include <afxmdichildwndex.h>
+#include <afxmdiclientareawnd.h>
+#include <afxmdiframewndex.h>
+#include <afxmsg_.h>
+#include <afxpane.h>
+#include <afxpanedivider.h>
+#include <afxpopupmenu.h>
+#include <afxres.h>
+#include <afxstr.h>
+#include <afxtempl.h>
+#include <afxtoolbar.h>
+#include <afxtoolbarcomboboxbutton.h>
+#include <afxtoolbarscustomizedialog.h>
+#include <afxusertool.h>
+#include <afxusertoolsmanager.h>
+#include <afxvisualmanager.h>
+#include <afxvisualmanageroffice2007.h>
+#include <afxvisualmanagerwindows7.h>
+#include <afxwin.h>
+#include <atltrace.h>
+#include <atltypes.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -10,7 +42,29 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// CMainFrame
+namespace {
+constexpr int statusIcon = 0;
+constexpr int statusInfo = 1;
+constexpr int statusProgress = 2;
+constexpr int maxUserToolbars = 10;
+constexpr unsigned int firstUserToolBarId = AFX_IDW_CONTROLBAR_FIRST + 40;
+constexpr unsigned int lastUserToolBarId = firstUserToolBarId + maxUserToolbars - 1;
+constexpr unsigned int indicators[] = {
+    ID_INDICATOR_ICON,
+    ID_SEPARATOR,
+    ID_INDICATOR_PROGRESS,
+    ID_OP0,
+    ID_OP1,
+    ID_OP2,
+    ID_OP3,
+    ID_OP4,
+    ID_OP5,
+    ID_OP6,
+    ID_OP7,
+    ID_OP8,
+    ID_OP9,
+};
+}  // namespace
 
 IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndEx)
 
@@ -51,82 +105,60 @@ ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_APPLOOK_OFF_2007_BLUE, ID_VIEW_APPLOOK_WINDOW
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
-const int iMaxUserToolbars = 10;
-const UINT uiFirstUserToolBarId = AFX_IDW_CONTROLBAR_FIRST + 40;
-const UINT uiLastUserToolBarId = uiFirstUserToolBarId + iMaxUserToolbars - 1;
-
-static UINT indicators[] = {
-    ID_INDICATOR_ICON,      // status icon
-    ID_SEPARATOR,           // status line indicator
-    ID_INDICATOR_PROGRESS,  // progress bar
-    ID_OP0,
-    ID_OP1,
-    ID_OP2,
-    ID_OP3,
-    ID_OP4,
-    ID_OP5,
-    ID_OP6,
-    ID_OP7,
-    ID_OP8,
-    ID_OP9,
-};
-
-// CMainFrame construction/destruction
-
-CMainFrame::CMainFrame() : m_CurrentProgress(0), m_InProgress(false) {
-  m_ApplicationLook = static_cast<UINT>(app.GetInt(L"ApplicationLook", ID_VIEW_APPLOOK_OFF_2007_BLACK));
+CMainFrame::CMainFrame() : m_currentProgress(0), m_inProgress(false) {
+  m_applicationLook = static_cast<UINT>(app.GetInt(L"ApplicationLook", ID_VIEW_APPLOOK_OFF_2007_BLACK));
 }
 CMainFrame::~CMainFrame() {}
 int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   if (CMDIFrameWndEx::OnCreate(createStruct) == -1) return -1;
 
-  OnApplicationLook(m_ApplicationLook);
+  OnApplicationLook(m_applicationLook);
   UpdateMDITabs(FALSE);
 
-  if (!m_MenuBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE)) {
+  if (!m_menuBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE)) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create menubar\n");
     return -1;
   }
-  m_MenuBar.SetPaneStyle(m_MenuBar.GetPaneStyle() | CBRS_SIZE_DYNAMIC | CBRS_TOOLTIPS | CBRS_FLYBY);
+  m_menuBar.SetPaneStyle(m_menuBar.GetPaneStyle() | CBRS_SIZE_DYNAMIC | CBRS_TOOLTIPS | CBRS_FLYBY);
 
   // Prevent the menu bar from taking the focus on activation
   CMFCPopupMenu::SetForceMenuFocus(FALSE);
   DWORD Style(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
-  if (!m_StandardToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
-      !m_StandardToolBar.LoadToolBar(static_cast<UINT>(app.HighColorMode() ? IDR_MAINFRAME_256 : IDR_MAINFRAME))) {
+  if (!m_standardToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
+      !m_standardToolBar.LoadToolBar(static_cast<UINT>(app.HighColorMode() ? IDR_MAINFRAME_256 : IDR_MAINFRAME))) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create toolbar\n");
     return -1;
   }
-  m_StandardToolBar.SetWindowTextW(L"Standard");
-  m_StandardToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, L"Customize...");
+  m_standardToolBar.SetWindowTextW(L"Standard");
+  m_standardToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, L"Customize...");
 
-  InitUserToolbars(nullptr, uiFirstUserToolBarId, uiLastUserToolBarId);
+  InitUserToolbars(nullptr, firstUserToolBarId, lastUserToolBarId);
 
-  if (!m_StatusBar.Create(this)) {
+  if (!m_statusBar.Create(this)) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create status bar\n");
     return -1;
   }
-  m_StatusBar.SetIndicators(indicators, sizeof(indicators) / sizeof(UINT));
+  m_statusBar.SetIndicators(indicators, sizeof(indicators) / sizeof(unsigned int));
 
-  m_StatusBar.SetPaneStyle(nStatusIcon, SBPS_NOBORDERS);
-  m_StatusBar.SetPaneStyle(nStatusInfo, SBPS_STRETCH | SBPS_NOBORDERS);
-  m_StatusBar.SetPaneWidth(nStatusProgress, 80);
+  m_statusBar.SetPaneStyle(statusIcon, SBPS_NOBORDERS);
+  m_statusBar.SetPaneStyle(statusInfo, SBPS_STRETCH | SBPS_NOBORDERS);
+  m_statusBar.SetPaneWidth(statusProgress, 80);
 
   if (!CreateDockablePanes()) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create dockable panes\n");
     return -1;
   }
-  m_MenuBar.EnableDocking(CBRS_ALIGN_ANY);
-  m_StandardToolBar.EnableDocking(CBRS_ALIGN_ANY);
-  m_PropertiesPane.EnableDocking(CBRS_ALIGN_ANY);
-  m_OutputPane.EnableDocking(CBRS_ALIGN_ANY);
+  m_menuBar.EnableDocking(CBRS_ALIGN_ANY);
+  m_standardToolBar.EnableDocking(CBRS_ALIGN_ANY);
+  m_propertiesPane.EnableDocking(CBRS_ALIGN_ANY);
+  m_outputPane.EnableDocking(CBRS_ALIGN_ANY);
 
   EnableDocking(CBRS_ALIGN_ANY);
 
-  DockPane(&m_MenuBar);
-  DockPane(&m_StandardToolBar);
-  DockPane(&m_PropertiesPane);
-  DockPane(&m_OutputPane);
+  DockPane(&m_menuBar);
+  DockPane(&m_standardToolBar);
+  DockPane(&m_propertiesPane);
+  DockPane(&m_outputPane);
 
   EnableAutoHidePanes(CBRS_ALIGN_ANY);
 
@@ -141,9 +173,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
 
   if (CMFCToolBar::GetUserImages() == nullptr) {
     // load user-defined toolbar images
-    if (m_UserImages.Load(L"\\UserImages.bmp")) {
-      m_UserImages.SetImageSize(CSize(16, 16), FALSE);
-      CMFCToolBar::SetUserImages(&m_UserImages);
+    if (m_userImages.Load(L"\\UserImages.bmp")) {
+      m_userImages.SetImageSize(CSize(16, 16), FALSE);
+      CMFCToolBar::SetUserImages(&m_userImages);
     }
   }
   // Shows the document name after thumbnail before the application name in a frame window title.
@@ -162,12 +194,12 @@ BOOL CMainFrame::CreateDockablePanes() {
   const DWORD SharedStyles(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_FLOAT_MULTI);
 
   CString Caption = EoAppLoadStringResource(IDS_OUTPUT);
-  if (!m_OutputPane.Create(Caption, this, DefaultSize, TRUE, ID_VIEW_OUTPUTWND, SharedStyles | CBRS_BOTTOM)) {
+  if (!m_outputPane.Create(Caption, this, DefaultSize, TRUE, ID_VIEW_OUTPUTWND, SharedStyles | CBRS_BOTTOM)) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Output pane\n");
     return FALSE;
   }
   Caption = EoAppLoadStringResource(IDS_PROPERTIES);
-  if (!m_PropertiesPane.Create(Caption, this, DefaultSize, TRUE, ID_VIEW_PROPERTIESWND, SharedStyles | CBRS_RIGHT)) {
+  if (!m_propertiesPane.Create(Caption, this, DefaultSize, TRUE, ID_VIEW_PROPERTIESWND, SharedStyles | CBRS_RIGHT)) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Properties pane\n");
     return FALSE;
   }
@@ -180,14 +212,14 @@ void CMainFrame::SetDockablePanesIcons(bool highColorMode) {
   HINSTANCE resourceHandle(::AfxGetResourceHandle());
 
   HICON propertiesPaneIcon =
-      (HICON)::LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_PROPERTIES_WND_HC : IDI_PROPERTIES_WND),
-                         IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0);
-  m_PropertiesPane.SetIcon(propertiesPaneIcon, FALSE);
+      static_cast<HICON>(LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_PROPERTIES_WND_HC : IDI_PROPERTIES_WND),
+                          IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
+  m_propertiesPane.SetIcon(propertiesPaneIcon, FALSE);
 
   HICON outputPaneIcon =
-      (HICON)::LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND),
-                         IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0);
-  m_OutputPane.SetIcon(outputPaneIcon, FALSE);
+      static_cast<HICON>(LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND),
+                          IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
+  m_outputPane.SetIcon(outputPaneIcon, FALSE);
 
   UpdateMDITabbedBarsIcons();
 }
@@ -228,7 +260,7 @@ LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
   switch (toolbarResourceId) {
     case IDR_MAINFRAME:
     case IDR_MAINFRAME_256: {
-      m_StandardToolBar.ReplaceButton(ID_EDIT_FIND, EoCtrlFindComboBox(), FALSE);
+      m_standardToolBar.ReplaceButton(ID_EDIT_FIND, EoCtrlFindComboBox(), FALSE);
       break;
     }
     case IDR_PROPERTIES:
@@ -237,15 +269,15 @@ LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
   return 0;
 }
 void CMainFrame::OnApplicationLook(UINT look) {
-  m_ApplicationLook = look;
+  m_applicationLook = look;
 
-  switch (m_ApplicationLook) {
+  switch (m_applicationLook) {
     case ID_VIEW_APPLOOK_WINDOWS_7:
       CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows7));
       break;
 
     default:
-      switch (m_ApplicationLook) {
+      switch (m_applicationLook) {
         case ID_VIEW_APPLOOK_OFF_2007_BLUE:
           CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_LunaBlue);
           break;
@@ -272,9 +304,9 @@ void CMainFrame::OnApplicationLook(UINT look) {
   RecalcLayout();
   RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_FRAME | RDW_ERASE | RDW_UPDATENOW);
 
-  app.WriteInt(L"ApplicationLook", static_cast<int>(m_ApplicationLook));
+  app.WriteInt(L"ApplicationLook", static_cast<int>(m_applicationLook));
 }
-void CMainFrame::OnUpdateApplicationLook(CCmdUI* pCmdUI) { pCmdUI->SetRadio(m_ApplicationLook == pCmdUI->m_nID); }
+void CMainFrame::OnUpdateApplicationLook(CCmdUI* pCmdUI) { pCmdUI->SetRadio(m_applicationLook == pCmdUI->m_nID); }
 BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWindow, CCreateContext* createContext) {
   if (!CMDIFrameWndEx::LoadFrame(resourceId, defaultStyle, parentWindow, createContext)) { return FALSE; }
 
@@ -301,7 +333,7 @@ BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWind
   // Enable customization button for all user toolbars
   CString Customize = EoAppLoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
 
-  for (int i = 0; i < iMaxUserToolbars; i++) {
+  for (int i = 0; i < maxUserToolbars; i++) {
     CMFCToolBar* UserToolbar = GetUserToolBarByIndex(i);
     if (UserToolbar != nullptr) { UserToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, Customize); }
   }
@@ -421,11 +453,11 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
       }
       hwndT = ::GetWindow(hwndT, GW_HWNDNEXT);
     }
-    if (bMaximize) { m_MenuBar.SetMaximizeMode(FALSE); }
+    if (bMaximize) { m_menuBar.SetMaximizeMode(FALSE); }
   }
-  if (m_PropertiesPane.IsAutoHideMode()) {
-    m_PropertiesPane.BringWindowToTop();
-    CPaneDivider* Divider = m_PropertiesPane.GetDefaultPaneDivider();
+  if (m_propertiesPane.IsAutoHideMode()) {
+    m_propertiesPane.BringWindowToTop();
+    CPaneDivider* Divider = m_propertiesPane.GetDefaultPaneDivider();
     if (Divider != nullptr) { Divider->BringWindowToTop(); }
   }
   CMDIFrameWndEx::m_bDisableSetRedraw = app.m_Options.m_bDisableSetRedraw;
@@ -483,28 +515,28 @@ void CMainFrame::OnDestroy() {
 
   PostQuitMessage(0);  // Force WM_QUIT message to terminate message loop
 }
-CString CMainFrame::GetPaneText(int index) { return m_StatusBar.GetPaneText(index); }
+CString CMainFrame::GetPaneText(int index) { return m_statusBar.GetPaneText(index); }
 void CMainFrame::SetPaneInfo(int index, UINT newId, UINT style, int width) {
-  m_StatusBar.SetPaneInfo(index, newId, style, width);
+  m_statusBar.SetPaneInfo(index, newId, style, width);
 }
-BOOL CMainFrame::SetPaneText(int index, LPCWSTR newText) { return m_StatusBar.SetPaneText(index, newText); }
-void CMainFrame::SetPaneStyle(int index, UINT style) { m_StatusBar.SetPaneStyle(index, style); }
-void CMainFrame::SetPaneTextColor(int index, COLORREF textColor) { m_StatusBar.SetPaneTextColor(index, textColor); }
+BOOL CMainFrame::SetPaneText(int index, LPCWSTR newText) { return m_statusBar.SetPaneText(index, newText); }
+void CMainFrame::SetPaneStyle(int index, UINT style) { m_statusBar.SetPaneStyle(index, style); }
+void CMainFrame::SetPaneTextColor(int index, COLORREF textColor) { m_statusBar.SetPaneTextColor(index, textColor); }
 static UINT_PTR TimerId = 2;
 
 void CMainFrame::OnStartProgress() {
-  if (m_InProgress) {
+  if (m_inProgress) {
     KillTimer(TimerId);
-    m_StatusBar.EnablePaneProgressBar(nStatusProgress, -1);
+    m_statusBar.EnablePaneProgressBar(statusProgress, -1);
 
-    m_InProgress = false;
+    m_inProgress = false;
 
     return;
   }
-  m_StatusBar.EnablePaneProgressBar(nStatusProgress, 100);
+  m_statusBar.EnablePaneProgressBar(statusProgress, 100);
 
-  m_CurrentProgress = 0;
-  m_InProgress = true;
+  m_currentProgress = 0;
+  m_inProgress = true;
 
   TimerId = SetTimer(2, 1, nullptr);
 }
@@ -512,10 +544,10 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"CMainFrame::OnTimer(%i)\n", nIDEvent);
 
   if (nIDEvent == TimerId) {
-    m_CurrentProgress += 10;
+    m_currentProgress += 10;
 
-    if (m_CurrentProgress > 100) { m_CurrentProgress = 0; }
-    m_StatusBar.SetPaneProgress(nStatusProgress, m_CurrentProgress);
+    if (m_currentProgress > 100) { m_currentProgress = 0; }
+    m_statusBar.SetPaneProgress(statusProgress, m_currentProgress);
   }
 }
 void CMainFrame::OnViewFullScreen() { ShowFullScreen(); }

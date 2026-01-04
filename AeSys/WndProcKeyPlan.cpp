@@ -198,8 +198,8 @@ ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance) {
   Class.cbWndExtra = 0;
   Class.hInstance = instance;
   Class.hIcon = 0;
-  Class.hCursor = (HCURSOR)::LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE);
-  Class.hbrBackground = (HBRUSH)::GetStockObject(BLACK_BRUSH);
+  Class.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+  Class.hbrBackground = static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
   Class.lpszMenuName = 0;
   Class.lpszClassName = L"KeyPlanWindow";
 

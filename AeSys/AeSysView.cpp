@@ -356,8 +356,8 @@ AeSysView::AeSysView()
     : m_ModelTransform(),
       m_Viewport(),
       m_ViewTransform(),
-      m_BackgroundImageBitmap(),
-      m_BackgroundImagePalette(),
+      m_backgroundImageBitmap(),
+      m_backgroundImagePalette(),
       m_EngagedPrimitive(nullptr),
       m_EngagedGroup(nullptr),
       m_OpHighlighted(0),
@@ -369,7 +369,7 @@ AeSysView::AeSysView()
       m_PreviousOp(0),
       m_PreviousPnt(),
       m_SelectApertureSize(0.005),
-      m_ViewBackgroundImage(false),
+      m_viewBackgroundImage(false),
       m_ViewOdometer(true),
       m_ViewPenWidths(false),
       m_Viewports(),
@@ -445,8 +445,8 @@ AeSysView::AeSysView()
       m_EditModeMirrorScale(-1.0, 1.0, 1.0),
       m_EditModeRotationAngles(0.0, 0.0, 45.0),
       m_EditModeScale(2.0, 2.0, 2.0),
-      
-  /// Low Pressure Duct Mode Interface
+
+      /// Low Pressure Duct Mode Interface
       m_InsideRadiusFactor(1.5),
       m_DuctSeamSize(0.03125),
       m_DuctTapSize(0.09375),
@@ -463,12 +463,12 @@ AeSysView::AeSysView()
       m_OriginalPreviousGroup(nullptr),
       m_PreviousSection(0.125, 0.0625, Section::Rectangular),
       m_CurrentSection(0.125, 0.0625, Section::Rectangular),
-      
+
       /// Pipe Mode Interface
       m_CurrentPipeSymbolIndex(0),
       m_PipeTicSize(0.03125),
       m_PipeRiseDropRadius(0.03125),
-      
+
       /// Power Mode Interface (initializers)
       m_PowerArrow(false),
       m_PowerConductor(false),
@@ -508,7 +508,7 @@ void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deacti
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
   if (activate) {
-    if (::CopyAcceleratorTable(MainFrame->m_hAccelTable, nullptr, 0) ==
+    if (CopyAcceleratorTableW(MainFrame->m_hAccelTable, nullptr, 0) ==
         0) {  // Accelerator table was destroyed when keyboard focus was killed - reload resource
       app.BuildModifiedAcceleratorTable();
     }
@@ -535,8 +535,8 @@ void AeSysView::OnSetFocus(CWnd* oldWindow) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnSetFocus(%08.8lx)\n", this, oldWindow);
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
-  if (::CopyAcceleratorTable(MainFrame->m_hAccelTable, nullptr, 0) ==
-      0) {  // Accelerator table was destroyed when keyboard focus was killed - reload resource
+  if (CopyAcceleratorTableW(MainFrame->m_hAccelTable, nullptr, 0) == 0) {
+    // Accelerator table was destroyed when keyboard focus was killed - reload resource
     app.BuildModifiedAcceleratorTable();
   }
   CView::OnSetFocus(oldWindow);
@@ -1017,16 +1017,16 @@ void AeSysView::SetLocalModelTransform(EoGeTransformMatrix& transformation) {
 void AeSysView::ReturnModelTransform() { m_ModelTransform.Return(); }
 
 void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
-  if (m_ViewBackgroundImage && ((HBITMAP)m_BackgroundImageBitmap != 0)) {
+  if (m_viewBackgroundImage && (static_cast<HBITMAP>(m_backgroundImageBitmap) != 0)) {
     int iWidDst = int(m_Viewport.Width());
     int iHgtDst = int(m_Viewport.Height());
 
     BITMAP bm;
-    m_BackgroundImageBitmap.GetBitmap(&bm);
+    m_backgroundImageBitmap.GetBitmap(&bm);
     CDC dcMem;
     dcMem.CreateCompatibleDC(nullptr);
-    CBitmap* pBitmap = dcMem.SelectObject(&m_BackgroundImageBitmap);
-    CPalette* pPalette = deviceContext->SelectPalette(&m_BackgroundImagePalette, FALSE);
+    CBitmap* pBitmap = dcMem.SelectObject(&m_backgroundImageBitmap);
+    CPalette* pPalette = deviceContext->SelectPalette(&m_backgroundImagePalette, FALSE);
     deviceContext->RealizePalette();
 
     EoGePoint3d Target = m_ViewTransform.Target();
@@ -1039,11 +1039,11 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
     rcWnd.left =
         Eo::Round((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
     rcWnd.top = Eo::Round((1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) *
-                        static_cast<double>(bm.bmHeight));
+                          static_cast<double>(bm.bmHeight));
     rcWnd.right =
         Eo::Round((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
     rcWnd.bottom = Eo::Round((1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) *
-                           static_cast<double>(bm.bmHeight));
+                             static_cast<double>(bm.bmHeight));
 
     int iWidSrc = rcWnd.Width();
     int iHgtSrc = rcWnd.Height();
@@ -1802,35 +1802,35 @@ void AeSysView::OnBackgroundImageLoad() {
   if (dlg.DoModal() == IDOK) {
     EoDbBitmapFile BitmapFile(dlg.GetPathName());
 
-    BitmapFile.Load(dlg.GetPathName(), m_BackgroundImageBitmap, m_BackgroundImagePalette);
-    m_ViewBackgroundImage = true;
+    BitmapFile.Load(dlg.GetPathName(), m_backgroundImageBitmap, m_backgroundImagePalette);
+    m_viewBackgroundImage = true;
     InvalidateRect(nullptr, TRUE);
   }
 }
 
 void AeSysView::OnBackgroundImageRemove() {
-  if ((HBITMAP)m_BackgroundImageBitmap != 0) {
-    m_BackgroundImageBitmap.DeleteObject();
-    m_BackgroundImagePalette.DeleteObject();
-    m_ViewBackgroundImage = false;
+  if (static_cast<HBITMAP>(m_backgroundImageBitmap) != 0) {
+    m_backgroundImageBitmap.DeleteObject();
+    m_backgroundImagePalette.DeleteObject();
+    m_viewBackgroundImage = false;
 
     InvalidateRect(nullptr, TRUE);
   }
 }
 
 void AeSysView::OnViewBackgroundImage() {
-  m_ViewBackgroundImage = !m_ViewBackgroundImage;
+  m_viewBackgroundImage = !m_viewBackgroundImage;
   InvalidateRect(nullptr, TRUE);
 }
 
 void AeSysView::OnUpdateViewBackgroundImage(CCmdUI* pCmdUI) {
-  pCmdUI->Enable((HBITMAP)m_BackgroundImageBitmap != 0);
-  pCmdUI->SetCheck(m_ViewBackgroundImage);
+  pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) != 0);
+  pCmdUI->SetCheck(m_viewBackgroundImage);
 }
 
-void AeSysView::OnUpdateBackgroundimageLoad(CCmdUI* pCmdUI) { pCmdUI->Enable((HBITMAP)m_BackgroundImageBitmap == 0); }
+void AeSysView::OnUpdateBackgroundimageLoad(CCmdUI* pCmdUI) { pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) == 0); }
 
-void AeSysView::OnUpdateBackgroundimageRemove(CCmdUI* pCmdUI) { pCmdUI->Enable((HBITMAP)m_BackgroundImageBitmap != 0); }
+void AeSysView::OnUpdateBackgroundimageRemove(CCmdUI* pCmdUI) { pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) != 0); }
 
 void AeSysView::OnUpdateViewPenwidths(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewPenWidths); }
 
@@ -2378,14 +2378,14 @@ void AeSysView::SetModeCursor(int mode) {
       break;
 
     default:
-      ::SetCursor((HCURSOR)::LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+      SetCursor(static_cast<HCURSOR>(LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE)));
       return;
   }
-  HCURSOR CursorHandle =
-      (HCURSOR)::LoadImageW(app.GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE);
-  VERIFY(CursorHandle);
-  ::SetCursor(CursorHandle);
-  ::SetClassLongPtr(this->GetSafeHwnd(), GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(CursorHandle));
+  auto cursorHandle = static_cast<HCURSOR>(
+      LoadImageW(app.GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+  VERIFY(cursorHandle);
+  SetCursor(cursorHandle);
+  SetClassLongPtr(this->GetSafeHwnd(), GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursorHandle));
 }
 
 void AeSysView::SetWorldScale(const double scale) {

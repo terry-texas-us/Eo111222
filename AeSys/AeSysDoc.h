@@ -38,7 +38,7 @@ class AeSysDoc : public CDocument {
   EoDbLineType* m_ContinuousLineType;
   CBlocks m_BlocksTable;
   CLayers m_LayerTable;
-  EoDbLayer* m_WorkLayer;
+  EoDbLayer* m_workLayer;
   EoDbGroupList m_DeletedGroupList;
   EoDbGroupList m_TrappedGroupList;
   EoGePoint3d m_TrapPivotPoint;
@@ -136,13 +136,13 @@ class AeSysDoc : public CDocument {
   // Work Layer interface
   void AddWorkLayerGroup(EoDbGroup* group);
   void AddWorkLayerGroups(EoDbGroupList* groups);
-  auto FindWorkLayerGroup(EoDbGroup* group) const { return (m_WorkLayer->Find(group)); }
-  auto GetFirstWorkLayerGroupPosition() const { return m_WorkLayer->GetHeadPosition(); }
+  auto FindWorkLayerGroup(EoDbGroup* group) const { return (m_workLayer->Find(group)); }
+  auto GetFirstWorkLayerGroupPosition() const { return m_workLayer->GetHeadPosition(); }
   EoDbGroup* GetLastWorkLayerGroup() const;
-  auto GetLastWorkLayerGroupPosition() const { return m_WorkLayer->GetTailPosition(); }
-  EoDbGroup* GetNextWorkLayerGroup(POSITION& position) const { return m_WorkLayer->GetNext(position); }
-  EoDbGroup* GetPreviousWorkLayerGroup(POSITION& position) const { return m_WorkLayer->GetPrev(position); }
-  EoDbLayer* GetWorkLayer() const { return m_WorkLayer; }
+  auto GetLastWorkLayerGroupPosition() const { return m_workLayer->GetTailPosition(); }
+  EoDbGroup* GetNextWorkLayerGroup(POSITION& position) const { return m_workLayer->GetNext(position); }
+  EoDbGroup* GetPreviousWorkLayerGroup(POSITION& position) const { return m_workLayer->GetPrev(position); }
+  EoDbLayer* GetWorkLayer() const { return m_workLayer; }
   void InitializeWorkLayer();
   EoDbLayer* SetWorkLayer(EoDbLayer* layer);
 

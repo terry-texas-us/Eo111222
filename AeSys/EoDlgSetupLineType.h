@@ -1,36 +1,38 @@
 ﻿#pragma once
+#include <Windows.h>
+#include <afx.h>
+#include <afxcmn.h>
+#include <afxwin.h>
 
-// EoDlgSetupLineType dialog
+#include "EoDbLineType.h"
+#include "EoDbLineTypeTable.h"
+#include "Resource.h"
 
 class EoDlgSetupLineType : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetupLineType)
 
  public:
+  EoDbLineType* m_LineType{nullptr};
+  EoDbLineTypeTable* m_LineTypeTable{nullptr};
+  CListCtrl m_LineTypesListControl;
+
   EoDlgSetupLineType(CWnd* parent = nullptr);
   EoDlgSetupLineType(EoDbLineTypeTable* lineTypeTable, CWnd* parent = nullptr);
 
   EoDlgSetupLineType(const EoDlgSetupLineType&) = delete;
   EoDlgSetupLineType& operator=(const EoDlgSetupLineType&) = delete;
 
-  virtual ~EoDlgSetupLineType();
+  ~EoDlgSetupLineType() override;
 
-  // Dialog Data
   enum { IDD = IDD_SETUP_LINETYPE };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog();
-  virtual void OnOK();
-
-  enum LineTypesListColumnLabels { Name, Appearance, Description };
-  EoDbLineTypeTable* m_LineTypeTable;
-  CListCtrl m_LineTypesListControl;
-
- public:
-  EoDbLineType* m_LineType;
+  void DoDataExchange(CDataExchange* dataExchange) override;
+  BOOL OnInitDialog() override;
+  void OnOK() override;
 
   afx_msg void OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT drawItemStruct);
 
- protected:
+ private:
   DECLARE_MESSAGE_MAP()
 };

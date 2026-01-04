@@ -214,8 +214,8 @@ ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance) {
   previewWindowClass.cbWndExtra = 0;
   previewWindowClass.hInstance = instance;
   previewWindowClass.hIcon = nullptr;
-  previewWindowClass.hCursor = (HCURSOR)::LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE);
-  previewWindowClass.hbrBackground = (HBRUSH)::GetStockObject(BLACK_BRUSH);
+  previewWindowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+  previewWindowClass.hbrBackground = static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
   previewWindowClass.lpszMenuName = nullptr;
   previewWindowClass.lpszClassName = L"PreviewWindow";
 

@@ -2,11 +2,19 @@
 
 #include "EoMfOutputDockablePane.h"
 #include "EoMfPropertiesDockablePane.h"
-
-const int nStatusIcon = 0;
-const int nStatusInfo = 1;
-const int nStatusProgress = 2;
-const int nStatusOp0 = 3;
+#include <Windows.h>
+#include <afx.h>
+#include <afxext.h>
+#include <afxmdiframewndex.h>
+#include <afxmenubar.h>
+#include <afxpopupmenu.h>
+#include <afxstatusbar.h>
+#include <afxstr.h>
+#include <afxtoolbar.h>
+#include <afxtoolbarcomboboxbutton.h>
+#include <afxtoolbarimages.h>
+#include <afxwin.h>
+#include <atltypes.h>
 
 class CMainFrame : public CMDIFrameWndEx {
   DECLARE_DYNAMIC(CMainFrame)
@@ -16,9 +24,9 @@ class CMainFrame : public CMDIFrameWndEx {
   CMainFrame& operator=(const CMainFrame&) = delete;
   // Attributes
  private:
-  UINT m_ApplicationLook;
-  int m_CurrentProgress;
-  bool m_InProgress;
+  UINT m_applicationLook;
+  int m_currentProgress;
+  bool m_inProgress;
 
   // Operations
  public:
@@ -40,12 +48,12 @@ class CMainFrame : public CMDIFrameWndEx {
 #endif
 
  protected:  // control bar embedded members
-  CMFCMenuBar m_MenuBar;
-  CMFCToolBar m_StandardToolBar;
-  CMFCStatusBar m_StatusBar;
-  EoMfOutputDockablePane m_OutputPane;
-  EoMfPropertiesDockablePane m_PropertiesPane;
-  CMFCToolBarImages m_UserImages;
+  CMFCMenuBar m_menuBar;
+  CMFCToolBar m_standardToolBar;
+  CMFCStatusBar m_statusBar;
+  EoMfOutputDockablePane m_outputPane;
+  EoMfPropertiesDockablePane m_propertiesPane;
+  CMFCToolBarImages m_userImages;
 
  protected:
   afx_msg int OnCreate(LPCREATESTRUCT createStruct);
@@ -84,7 +92,7 @@ class CMainFrame : public CMDIFrameWndEx {
   void SetPaneTextColor(int index, COLORREF textColor = COLORREF(-1));
   void OnStartProgress();
 
-  CMFCStatusBar& GetStatusBar() { return m_StatusBar; }
-  EoMfOutputDockablePane& GetOutputPane() { return m_OutputPane; }
-  EoMfPropertiesDockablePane& GetPropertiesPane() { return m_PropertiesPane; }
+  CMFCStatusBar& GetStatusBar() { return m_statusBar; }
+  EoMfOutputDockablePane& GetOutputPane() { return m_outputPane; }
+  EoMfPropertiesDockablePane& GetPropertiesPane() { return m_propertiesPane; }
 };

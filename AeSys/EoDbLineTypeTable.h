@@ -1,12 +1,25 @@
 ﻿#pragma once
+#include "EoDbLineType.h"
+#include <Windows.h>
+#include <afx.h>
+#include <afxcmn.h>
+#include <afxcoll.h>
+#include <afxstr.h>
+#include <afxtempl.h>
+#include <afxwin.h>
 
+/**
+ * @brief Manages a collection of line types for a CAD application.
+ *
+ * This class provides functionality to store, retrieve, and manage line types,
+ * including legacy line types and custom-defined types. It supports operations
+ * such as filling UI elements (combo boxes and list controls) with line type data,
+ * looking up line types by name or index, counting references to line types,
+ * loading line types from text files, and removing unused line types.
+ */
 class EoDbLineTypeTable {
  private:
-  static const WCHAR* LegacyLineTypes[];
-  static const EoUInt16 NumberOfLegacyLineTypes = 42;
-
   CTypedPtrMap<CMapStringToOb, CString, EoDbLineType*> m_MapLineTypes;
-
  public:
   EoDbLineTypeTable() = default;
   EoDbLineTypeTable(const EoDbLineTypeTable&) = delete;
