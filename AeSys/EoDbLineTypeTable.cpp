@@ -27,6 +27,29 @@ const wchar_t* legacyLineTypes[] = {
 constexpr EoUInt16 NumberOfLegacyLineTypes{42};
 }  // namespace
 
+/**
+ * Assignment operator for EoDbLineTypeTable.
+ * Performs a deep copy of the line types from another EoDbLineTypeTable.
+ * @param other The other EoDbLineTypeTable to copy from.
+ * @return A reference to this EoDbLineTypeTable.
+ */
+EoDbLineTypeTable& EoDbLineTypeTable::operator=(const EoDbLineTypeTable& other) {
+  if (this != &other) {
+    RemoveAll();
+    POSITION position = other.m_MapLineTypes.GetStartPosition();
+    while (position != nullptr) {
+      CString name;
+      EoDbLineType* otherLineType = nullptr;
+      other.m_MapLineTypes.GetNextAssoc(position, name, otherLineType);
+      if (otherLineType != nullptr) {
+        auto* thisLineType = new EoDbLineType(*otherLineType);
+        m_MapLineTypes.SetAt(name, thisLineType);
+      }
+    }
+  }
+  return *this;
+}
+
 int EoDbLineTypeTable::FillComboBox(CComboBox& comboBox) {
   comboBox.ResetContent();
 
@@ -164,13 +187,13 @@ void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
 }
 
 void EoDbLineTypeTable::RemoveAll() {
-  CString Name;
-  EoDbLineType* LineType;
+  CString name;
+  EoDbLineType* lineType;
 
   auto Position = m_MapLineTypes.GetStartPosition();
   while (Position) {
-    m_MapLineTypes.GetNextAssoc(Position, Name, LineType);
-    delete LineType;
+    m_MapLineTypes.GetNextAssoc(Position, name, lineType);
+    delete lineType;
   }
   m_MapLineTypes.RemoveAll();
 }

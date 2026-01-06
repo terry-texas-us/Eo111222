@@ -26,12 +26,12 @@ CChildFrame::~CChildFrame() {}
 // Overrides
 
 void CChildFrame::ActivateFrame(int nCmdShow) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CChildFrame::ActivateFrame(%i)\n", nCmdShow);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"CChildFrame::ActivateFrame(%i)\n", nCmdShow);
   CMDIChildWndEx::ActivateFrame(nCmdShow);
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CChildFrame::ActivateFrame() - Leaving\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"CChildFrame::ActivateFrame() - Leaving\n");
 }
 BOOL CChildFrame::DestroyWindow() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CChildFrame::DestroyWindow() - Entering\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"CChildFrame::DestroyWindow() - Entering\n");
 
   CDC* DeviceContext = GetDC();
 

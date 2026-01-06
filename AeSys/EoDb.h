@@ -1,4 +1,7 @@
 ﻿#pragma once
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
 
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
@@ -83,7 +86,8 @@ EoInt16 ReadInt16(CFile& file);
 EoGePoint3d ReadPoint3d(CFile& file);
 EoGeVector3d ReadVector3d(CFile& file);
 EoUInt16 ReadUInt16(CFile& file);
-void Write(CFile& file, const CString& string);
+
+void Write(CFile& file, const CString& string, UINT codePage = CP_ACP);
 void Write(CFile& file, double number);
 void Write(CFile& file, EoInt16 number);
 void Write(CFile& file, EoUInt16 number);

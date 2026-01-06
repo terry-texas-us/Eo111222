@@ -69,8 +69,9 @@
     <PreBuildEvent>
       <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
 xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes-ACAD\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes-ISO128\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes(X5).txt" "$(OutDir)res\LineTypes\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD.txt" "$(OutDir)res\LineTypes\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128.txt" "$(OutDir)res\LineTypes\"
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -98,8 +99,9 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineType
     <PreBuildEvent>
       <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
 xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes-ACAD\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes-ISO128\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes(X5).txt" "$(OutDir)res\LineTypes\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD.txt" "$(OutDir)res\LineTypes\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128.txt" "$(OutDir)res\LineTypes\"
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -117,6 +119,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineType
     <ClCompile Include="DdeSys.cpp" />
     <ClCompile Include="DdeTopic.cpp" />
     <ClCompile Include="EoDlgActiveViewKeyplan.cpp" />
+    <ClCompile Include="EoDlgLineTypesSelection.cpp" />
     <ClCompile Include="EoDlgLowPressureDuctOptions.cpp" />
     <ClCompile Include="EoDlgSelectGotoHomePoint.cpp" />
     <ClCompile Include="EoDlgSetupCustomMouseCharacters.cpp" />
@@ -1470,6 +1473,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineType
     <ClInclude Include="EoDlgBlockInsert.h" />
     <ClInclude Include="EoDlgDrawOptions.h" />
     <ClInclude Include="EoDlgFixupOptions.h" />
+    <ClInclude Include="EoDlgLineTypesSelection.h" />
     <ClInclude Include="EoDlgModeLetter.h" />
     <ClInclude Include="EoDlgModeRevise.h" />
     <ClInclude Include="EoDlgSetHomePoint.h" />
@@ -1558,6 +1562,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineType
   </ItemGroup>
   <ItemGroup>
     <Text Include="lex_rules.l" />
+    <Text Include="res\LineTypes\LineTypes(X5).txt" />
     <Text Include="res\LineTypes\LineTypes-ACAD.txt" />
     <Text Include="res\LineTypes\LineTypes-ISO128.txt" />
   </ItemGroup>

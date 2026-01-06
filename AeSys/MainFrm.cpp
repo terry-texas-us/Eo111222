@@ -507,7 +507,7 @@ void CMainFrame::OnMdiTabbed() {
 }
 void CMainFrame::OnUpdateMdiTabbed(CCmdUI* pCmdUI) { pCmdUI->SetCheck(); }
 void CMainFrame::OnDestroy() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CMainFrame::OnDestroy() - Entering\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"CMainFrame::OnDestroy() - Entering\n");
 
 #if defined(USING_ODA)
   odUninitialize();

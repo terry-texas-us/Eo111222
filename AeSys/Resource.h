@@ -92,6 +92,7 @@
 #define IDB_LAYER_STATES_HC             289
 #define IDD_LINEWEIGHT                  301
 #define IDD_ACTIVE_VIEW_KEYPLAN         338
+#define IDD_LINE_TYPES_DIALOG           342
 #define IDC_ARCHITECTURAL               1000
 #define IDC_ENGINEERING                 1001
 #define IDC_FEET                        1002
@@ -294,6 +295,7 @@
 #define IDC_RGBNUMBERS                  1435
 #define IDC_SELECTION_COLOR             1436
 #define IDC_MFCFONTCOMBO                1448
+#define IDC_LINE_TYPES_LIST             1455
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -773,9 +775,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        342
+#define _APS_NEXT_RESOURCE_VALUE        344
 #define _APS_NEXT_COMMAND_VALUE         4903
-#define _APS_NEXT_CONTROL_VALUE         1455
+#define _APS_NEXT_CONTROL_VALUE         1456
 #define _APS_NEXT_SYMED_VALUE           500
 #endif
 #endif

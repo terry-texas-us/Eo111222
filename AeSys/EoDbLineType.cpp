@@ -1,46 +1,39 @@
 ﻿#include "stdafx.h"
 
 #include "EoDbLineType.h"
+#include <afxstr.h>
+#include <algorithm>
+#include <cstdlib>
 
-EoDbLineType::EoDbLineType() {
-  m_NumberOfDashElements = 0;
-  m_DashElements = nullptr;
-}
+EoDbLineType::EoDbLineType() : m_Index(0), m_Name(L""), m_Description(L""), m_DashElements() {}
+
 EoDbLineType::EoDbLineType(EoUInt16 index, const CString& name, const CString& description,
-                           EoUInt16 numberOfDashElements, double* dashLengths) {
-  m_Index = index;
-  m_Name = name;
-  m_Description = description;
-  m_NumberOfDashElements = numberOfDashElements;
-  if (m_NumberOfDashElements == 0) {
-    m_DashElements = 0;
-  } else {
-    m_DashElements = new double[m_NumberOfDashElements];
-    for (int i = 0; i < m_NumberOfDashElements; i++) { m_DashElements[i] = std::max(-99.0, std::min(dashLengths[i], 99.0)); }
+                           EoUInt16 numberOfDashElements, double* dashLengths)
+    : m_Index(index), m_Name(name), m_Description(description) {
+  m_DashElements.reserve(numberOfDashElements);
+  for (EoUInt16 i = 0; i < numberOfDashElements; i++) {
+    m_DashElements.push_back(std::clamp(dashLengths[i], -99.0, 99.0));
   }
 }
-EoDbLineType::EoDbLineType(const EoDbLineType& lineType) {
-  m_Index = lineType.m_Index;
-  m_Name = lineType.m_Name;
-  m_Description = lineType.m_Description;
-  m_NumberOfDashElements = lineType.m_NumberOfDashElements;
-  m_DashElements = new double[m_NumberOfDashElements];
-  for (int i = 0; i < m_NumberOfDashElements; i++) { m_DashElements[i] = lineType.m_DashElements[i]; }
-}
-EoDbLineType::~EoDbLineType() { delete[] m_DashElements; }
-EoDbLineType& EoDbLineType::operator=(const EoDbLineType& lineType) {
-  m_Index = lineType.m_Index;
-  m_Name = lineType.m_Name;
-  m_Description = lineType.m_Description;
-  m_NumberOfDashElements = lineType.m_NumberOfDashElements;
-  m_DashElements = new double[m_NumberOfDashElements];
-  for (int i = 0; i < m_NumberOfDashElements; i++) { m_DashElements[i] = lineType.m_DashElements[i]; }
-  return *this;
-}
-double EoDbLineType::GetPatternLen() {
-  double dLen = 0.;
+EoDbLineType::EoDbLineType(const EoDbLineType& other)
+    : m_Index(other.m_Index),
+      m_Name(other.m_Name),
+      m_Description(other.m_Description),
+      m_DashElements(other.m_DashElements) {}
 
-  for (int i = 0; i < m_NumberOfDashElements; i++) dLen += fabs(m_DashElements[i]);
+EoDbLineType& EoDbLineType::operator=(const EoDbLineType& other) {
+  if (this != &other) {
+    m_Index = other.m_Index;
+    m_Name = other.m_Name;
+    m_Description = other.m_Description;
+    m_DashElements = other.m_DashElements;
+  }
+  return (*this);
+}
 
-  return (dLen);
+double EoDbLineType::GetPatternLength() const {
+  double length{0.0};
+
+  for (double dash : m_DashElements) { length += std::abs(dash); }
+  return (length);
 }

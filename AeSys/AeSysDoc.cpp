@@ -48,6 +48,7 @@
 #include "EoDlgDrawOptions.h"
 #include "EoDlgEditTrapCommandsQuery.h"
 #include "EoDlgFileManage.h"
+#include "EoDlgLineTypesSelection.h"
 #include "EoDlgSelectGotoHomePoint.h"
 #include "EoDlgSetHomePoint.h"
 #include "EoDlgSetPastePosition.h"
@@ -196,7 +197,7 @@ AeSysDoc::AeSysDoc()
 AeSysDoc::~AeSysDoc() {}
 
 void AeSysDoc::DeleteContents() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysDoc<%p>)::DeleteContents()\n", this);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysDoc<%p>)::DeleteContents()\n", this);
 
 #if defined(USING_ODA)
   m_DatabasePtr.release();
@@ -271,17 +272,18 @@ BOOL AeSysDoc::OnNewDocument() {
 
   File.ConvertToPeg(this);
 #else   // Not USING_ODA
-  m_LineTypeTable.SetAt(L"0", new EoDbLineType(0, L"Null", L"null", 0, nullptr));
-  auto* lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
-  m_LineTypeTable.SetAt(L"Continuous", lineType);
+  m_LineTypeTable.SetAt(L"0", new EoDbLineType(0, L"00.Null", L"null", 0, nullptr));
+  auto* lineType = new EoDbLineType(1, L"01.Continuous", L"Continuous", 0, nullptr);
+  m_LineTypeTable.SetAt(L"01.Continuous", lineType);
   m_workLayer = new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, lineType);
   AddLayerTableLayer(m_workLayer);
 #endif  // USING_ODA
   CString applicationPath = EoAppGetPathFromCommandLine();
-  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
-  //LoadLineTypesFromXmlFile(applicationPath + L"\\res\\LineTypes\\LineTypes.xml");
+  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes(X5).txt");
+  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD.txt");
+  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128.txt");
   
-  m_LineTypeTable.Lookup(L"Continuous", m_ContinuousLineType);
+  m_LineTypeTable.Lookup(L"01.Continuous", m_ContinuousLineType);
     
   m_SaveAsType = EoDb::kPeg;
   SetWorkLayer(GetLayerTableLayerAt(0));
@@ -318,10 +320,10 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR lpszPathName) {
 #if defined(USING_ODA)
       m_DatabasePtr = app.createDatabase(true, OdDb::kEnglish);
 #endif  // USING_ODA
-      EoDbLineType* LineType = new EoDbLineType(0, L"Null", L"null", 0, nullptr);
+      EoDbLineType* LineType = new EoDbLineType(0, L"00.Null", L"null", 0, nullptr);
       m_LineTypeTable.SetAt(L"0", LineType);
-      LineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
-      m_LineTypeTable.SetAt(L"Continuous", LineType);
+      LineType = new EoDbLineType(1, L"01.Continuous", L"Solid line", 0, nullptr);
+      m_LineTypeTable.SetAt(L"01.Continuous", LineType);
       m_workLayer =
           new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, LineType);
       m_ContinuousLineType = LineType;
@@ -469,7 +471,7 @@ int AeSysDoc::NumberOfGroupsInActiveLayers() {
   return static_cast<int>(count);
 }
 void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view,
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view,
             deviceContext);
 
   try {
@@ -1560,11 +1562,12 @@ void AeSysDoc::OnSetupPenColor() {
   }
 }
 void AeSysDoc::OnSetupLineType() {
-  EoDlgSetupLineType Dialog(&m_LineTypeTable);
-  m_LineTypeTable.__Lookup(static_cast<EoUInt16>(pstate.LineType()), Dialog.m_LineType);
+  //EoDlgSetupLineType Dialog(&m_LineTypeTable);
+  EoDlgLineTypesSelection Dialog(m_LineTypeTable);
+  //m_LineTypeTable.__Lookup(static_cast<EoUInt16>(pstate.LineType()), Dialog.m_LineType);
 
-  if (Dialog.DoModal() == IDOK) {
-    pstate.SetLineType(nullptr, static_cast<EoInt16>(Dialog.m_LineType->Index()));
+  if (Dialog.DoModal() == IDOK) { 
+    //pstate.SetLineType(nullptr, static_cast<EoInt16>(Dialog.m_LineType->Index()));
     AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
   }
 }

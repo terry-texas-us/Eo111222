@@ -401,6 +401,9 @@
     <ClCompile Include="lex.yy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EoDlgLineTypesSelection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\AeSys.rc2">
@@ -2009,11 +2012,15 @@
     <ClInclude Include="lex.yy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EoDlgLineTypesSelection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="lex_rules.l" />
     <Text Include="res\LineTypes\LineTypes-ISO128.txt" />
     <Text Include="res\LineTypes\LineTypes-ACAD.txt" />
+    <Text Include="res\LineTypes\LineTypes(X5).txt" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Tools\reflex_static_lib.lib" />

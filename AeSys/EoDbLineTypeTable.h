@@ -1,12 +1,12 @@
 ﻿#pragma once
-#include "EoDbLineType.h"
-#include <Windows.h>
 #include <afx.h>
 #include <afxcmn.h>
 #include <afxcoll.h>
 #include <afxstr.h>
 #include <afxtempl.h>
 #include <afxwin.h>
+
+#include "EoDbLineType.h"
 
 /**
  * @brief Manages a collection of line types for a CAD application.
@@ -20,10 +20,13 @@
 class EoDbLineTypeTable {
  private:
   CTypedPtrMap<CMapStringToOb, CString, EoDbLineType*> m_MapLineTypes;
+
  public:
   EoDbLineTypeTable() = default;
   EoDbLineTypeTable(const EoDbLineTypeTable&) = delete;
-  EoDbLineTypeTable& operator=(const EoDbLineTypeTable&) = delete;
+
+  EoDbLineTypeTable& operator=(const EoDbLineTypeTable& other);
+  ~EoDbLineTypeTable() { RemoveAll(); }
 
   int FillComboBox(CComboBox& comboBox);
   int FillListControl(CListCtrl& listControl);

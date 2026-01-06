@@ -1,19 +1,34 @@
 ﻿#include "stdafx.h"
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <vector>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
+#include "EoDb.h"
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
 #include "EoDbDimension.h"
 #include "EoDbEllipse.h"
+#include "EoDbFontDefinition.h"
+#include "EoDbGroup.h"
+#include "EoDbLayer.h"
 #include "EoDbLine.h"
+#include "EoDbLineType.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPegFile.h"
 #include "EoDbPoint.h"
 #include "EoDbPolygon.h"
 #include "EoDbPolyline.h"
+#include "EoDbPrimitive.h"
 #include "EoDbSpline.h"
 #include "EoDbText.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
 #include "EoGeReferenceSystem.h"
+#include "EoGeVector3d.h"
+#include "Resource.h"
 
 void EoDbPegFile::Load(AeSysDoc* document) {
   ReadHeaderSection(document);
@@ -221,32 +236,32 @@ void EoDbPegFile::WriteVPortTable(AeSysDoc*) {
   EoDb::Write(*this, EoUInt16(EoDb::kEndOfTable));
 }
 void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
-  EoDbLineTypeTable* LineTypeTable = document->LineTypeTable();
+  auto* lineTypeTable = document->LineTypeTable();
 
-  EoUInt16 NumberOfLinetypes = EoUInt16(LineTypeTable->Size());
+  EoUInt16 numberOfLinetypes = EoUInt16(lineTypeTable->Size());
 
   EoDb::Write(*this, EoUInt16(EoDb::kLinetypeTable));
-  EoDb::Write(*this, NumberOfLinetypes);
+  EoDb::Write(*this, numberOfLinetypes);
 
-  CString Name;
-  EoDbLineType* Linetype;
+  CString name;
+  EoDbLineType* linetype{nullptr};
 
-  auto Position = LineTypeTable->GetStartPosition();
-  while (Position) {
-    LineTypeTable->GetNextAssoc(Position, Name, Linetype);
+  auto position = lineTypeTable->GetStartPosition();
+  while (position) {
+    lineTypeTable->GetNextAssoc(position, name, linetype);
 
-    EoDb::Write(*this, (LPCWSTR)Name);
+    EoDb::Write(*this, (LPCWSTR)name);
     EoDb::Write(*this, EoUInt16(0));
-    EoDb::Write(*this, (LPCWSTR)Linetype->Description());
+    EoDb::Write(*this, (LPCWSTR)linetype->Description());
 
-    EoUInt16 DefinitionLength = Linetype->GetNumberOfDashes();
+    EoUInt16 DefinitionLength = linetype->GetNumberOfDashes();
     EoDb::Write(*this, DefinitionLength);
-    double PatternLength = Linetype->GetPatternLen();
+    double PatternLength = linetype->GetPatternLength();
     EoDb::Write(*this, PatternLength);
 
     if (DefinitionLength > 0) {
       double* DashLength = new double[DefinitionLength];
-      Linetype->GetDashLen(DashLength);
+      linetype->GetDashLen(DashLength);
       for (EoUInt16 w = 0; w < DefinitionLength; w++) EoDb::Write(*this, DashLength[w]);
 
       delete[] DashLength;
@@ -383,14 +398,37 @@ bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive) {
   }
   return true;
 }
+
+/**
+ * Reads a string from the file until a tab character is encountered.
+ *
+ * @param file The file to read from.
+ * @param string The string to store the read value.
+ * @note Use the code page CP_ACP gives you the same pre-Unicode behavior, but now correctly represented in Unicode CString. Will require adding a file format version number at the beginning of the file to read strings as CP_UTF8.
+ */
 void EoDb::Read(CFile& file, CString& string) {
   string.Empty();
-  char c;
-  while (file.Read(&c, 1) == 1) {
-    if (c == '\t') return;
-    string += c;
+
+  std::vector<char> buffer;
+  char character;
+
+  while (file.Read(&character, 1) == 1) {
+    if (character == '\t') break;
+    buffer.push_back(character);
+  }
+  if (buffer.empty()) return;
+
+  int wideLength = MultiByteToWideChar(CP_ACP, 0, buffer.data(), static_cast<int>(buffer.size()), nullptr, 0);
+
+  if (wideLength <= 0) { return; }
+
+  wchar_t* wideBuffer = string.GetBuffer(wideLength);
+  if (wideBuffer) {
+    MultiByteToWideChar(CP_ACP, 0, buffer.data(), static_cast<int>(buffer.size()), wideBuffer, wideLength);
+    string.ReleaseBuffer(wideLength);
   }
 }
+
 void EoDb::Read(CFile& file, double& number) { file.Read(&number, sizeof(double)); }
 void EoDb::Read(CFile& file, EoInt16& number) { file.Read(&number, sizeof(EoInt16)); }
 EoGePoint3d EoDb::ReadPoint3d(CFile& file) {
@@ -419,14 +457,27 @@ EoUInt16 EoDb::ReadUInt16(CFile& file) {
   file.Read(&number, sizeof(EoUInt16));
   return number;
 }
-void EoDb::Write(CFile& file, const CString& string) {
-  int NumberOfCharacters = string.GetLength();
-  for (int n = 0; n < NumberOfCharacters; n++) {
-    char c = EoSbyte(string.GetAt(n));
-    file.Write(&c, 1);
+/**
+ * Writes a string to the file using the specified code page.
+ *
+ * @param file The file to write to.
+ * @param string The string to write.
+ * @param codePage The code page to use for encoding the string.
+ */
+void EoDb::Write(CFile& file, const CString& string, UINT codePage) {
+  int wideLength = string.GetLength();
+  if (wideLength > 0) {
+    auto bufferSize = static_cast<size_t>(WideCharToMultiByte(codePage, 0, string, wideLength, nullptr, 0, nullptr, nullptr));
+    if (bufferSize > 0) {
+      char* buffer = new char[bufferSize];
+      WideCharToMultiByte(codePage, 0, string, wideLength, buffer, static_cast<int>(bufferSize), nullptr, nullptr);
+      file.Write(buffer, static_cast<UINT>(bufferSize));
+      delete[] buffer;
+    }
   }
   file.Write("\t", 1);
 }
+
 void EoDb::Write(CFile& file, double number) { file.Write(&number, sizeof(double)); }
 void EoDb::Write(CFile& file, EoInt16 number) { file.Write(&number, sizeof(EoInt16)); }
 void EoDb::Write(CFile& file, EoUInt16 number) { file.Write(&number, sizeof(EoUInt16)); }

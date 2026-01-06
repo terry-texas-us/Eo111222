@@ -497,13 +497,13 @@ AeSysDoc* AeSysView::GetDocument() const {  // non-debug version is inline
 // Base class overides ////////////////////////////////////////////////////////
 
 void AeSysView::OnActivateFrame(UINT state, CFrameWnd* deactivateFrame) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state,
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state,
             deactivateFrame);
 
   CView::OnActivateFrame(state, deactivateFrame);
 }
 void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deactiveView) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate,
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate,
             activateView, deactiveView);
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
@@ -520,19 +520,19 @@ void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deacti
   CView::OnActivateView(activate, activateView, deactiveView);
 }
 BOOL AeSysView::PreCreateWindow(CREATESTRUCT& createStructure) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::PreCreateWindow(%08.8lx) ", this, createStructure);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::PreCreateWindow(%08.8lx) ", this, createStructure);
 
   // TODO: Modify the Window class or styles here by modifying the CREATESTRUCT
   return CView::PreCreateWindow(createStructure);
 }
 int AeSysView::OnCreate(LPCREATESTRUCT createStructure) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnCreate(%08.8lx)\n", this, createStructure);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnCreate(%08.8lx)\n", this, createStructure);
 
   if (CView::OnCreate(createStructure) == -1) { return -1; }
   return 0;
 }
 void AeSysView::OnSetFocus(CWnd* oldWindow) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnSetFocus(%08.8lx)\n", this, oldWindow);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnSetFocus(%08.8lx)\n", this, oldWindow);
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
   if (CopyAcceleratorTableW(MainFrame->m_hAccelTable, nullptr, 0) == 0) {
@@ -542,7 +542,7 @@ void AeSysView::OnSetFocus(CWnd* oldWindow) {
   CView::OnSetFocus(oldWindow);
 }
 void AeSysView::OnKillFocus(CWnd* newWindow) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnKillFocus(%08.8lx)\n", this, newWindow);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnKillFocus(%08.8lx)\n", this, newWindow);
 
   HACCEL AcceleratorTableHandle = ((CMainFrame*)AfxGetMainWnd())->m_hAccelTable;
 
@@ -551,15 +551,15 @@ void AeSysView::OnKillFocus(CWnd* newWindow) {
   CView::OnKillFocus(newWindow);
 }
 void AeSysView::OnPaint() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnPaint()\n", this);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnPaint()\n", this);
   CView::OnPaint();
 }
 void AeSysView::OnDraw(CDC* deviceContext) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnDraw(%08.8lx) +", this, deviceContext);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnDraw(%08.8lx) +", this, deviceContext);
 
   CRect Rect;
   deviceContext->GetClipBox(Rect);
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right,
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right,
             Rect.bottom);
 
   if (Rect.IsRectEmpty()) { return; }
@@ -618,7 +618,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 ///Override this function to perform any one-time initialization that requires information about the document.
 /// </remarks>
 void AeSysView::OnInitialUpdate() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnInitialUpdate()\n", this);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnInitialUpdate()\n", this);
 
   ::SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(ViewBackgroundColor));
 
@@ -643,7 +643,7 @@ void AeSysView::OnInitialUpdate() {
 }
 
 void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint,
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint,
             hintObject);
 
   CDC* DeviceContext = GetDC();
@@ -943,7 +943,7 @@ BOOL AeSysView::OnMouseWheel(UINT nFlags, EoInt16 zDelta, CPoint point) {
 }
 
 void AeSysView::OnSize(UINT type, int cx, int cy) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnSize(%i, %i, %i)\n", this, type, cx, cy);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnSize(%i, %i, %i)\n", this, type, cx, cy);
 
   if (cx && cy) {
     SetViewportSize(cx, cy);
