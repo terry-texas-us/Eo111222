@@ -69,9 +69,8 @@
     <PreBuildEvent>
       <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
 xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes(X5).txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD.txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128.txt" "$(OutDir)res\LineTypes\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -99,9 +98,8 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128.txt" "$(OutDir)res\L
     <PreBuildEvent>
       <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
 xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes(X5).txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD.txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128.txt" "$(OutDir)res\LineTypes\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
+xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -1563,7 +1561,9 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128.txt" "$(OutDir)res\L
   <ItemGroup>
     <Text Include="lex_rules.l" />
     <Text Include="res\LineTypes\LineTypes(X5).txt" />
+    <Text Include="res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" />
     <Text Include="res\LineTypes\LineTypes-ACAD.txt" />
+    <Text Include="res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" />
     <Text Include="res\LineTypes\LineTypes-ISO128.txt" />
   </ItemGroup>
   <ItemGroup>

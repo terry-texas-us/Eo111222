@@ -1,6 +1,10 @@
 ﻿#include "stdafx.h"
-
+#include <afx.h>
+#include <afxwin.h>
 #include <algorithm>
+#include <atltypes.h>
+#include <cfloat>
+#include <cmath>
 
 #include "AeSysView.h"
 #include "EoDbPrimitive.h"
@@ -83,24 +87,24 @@ EoGePoint3d EoGeLine::ConstrainToAxis(double dInfAng, double dAxOffAng) {
 
   double dLen = sqrt(dX + dY + dZ);
 
-  if (dLen > DBL_EPSILON) {     // Not a zero length line
+  if (dLen > DBL_EPSILON) {        // Not a zero length line
     if (dX >= std::max(dY, dZ)) {  // Major component of line is along x-axis
       dLen = sqrt(dY + dZ);
-      if (dLen > DBL_EPSILON)                                // Not already on the x-axis
+      if (dLen > DBL_EPSILON)                                        // Not already on the x-axis
         if (dLen / fabs(pt.x) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to x-axis
           pt.y = 0.;
           pt.z = 0.;
         }
     } else if (dY >= dZ) {  // Major component of line is along y-axis
       dLen = sqrt(dX + dZ);
-      if (dLen > DBL_EPSILON)                                // Not already on the y-axis
+      if (dLen > DBL_EPSILON)                                        // Not already on the y-axis
         if (dLen / fabs(pt.y) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to y-axis
           pt.x = 0.;
           pt.z = 0.;
         }
     } else {
       dLen = sqrt(dX + dY);
-      if (dLen > DBL_EPSILON)                                // Not already on the z-axis
+      if (dLen > DBL_EPSILON)                                        // Not already on the z-axis
         if (dLen / fabs(pt.z) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to z-axis
           pt.x = 0.;
           pt.y = 0.;

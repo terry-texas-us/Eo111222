@@ -105,41 +105,40 @@ void EoDlgLineTypesSelection::OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result)
     case CDDS_ITEMPREPAINT | CDDS_SUBITEM:
       if (listViewCustomDraw->iSubItem == 2)  // Line type preview column
       {
-        // Get the item data
         int item = static_cast<int>(listViewCustomDraw->nmcd.dwItemSpec);
         EoDbLineType* lineType = reinterpret_cast<EoDbLineType*>(m_lineTypesListControl.GetItemData(item));
 
         if (lineType) {
-          // Attach DC and draw
           CDC controlContext;
           controlContext.Attach(listViewCustomDraw->nmcd.hdc);
           CRect controlRect(listViewCustomDraw->nmcd.rc);
 
-          // Fill background (match list theme or use GetBkColor() for consistency)
-          controlContext.FillSolidRect(controlRect, listViewCustomDraw->clrTextBk);
+          //CRgn clipRegion;
+          //clipRegion.CreateRectRgn(controlRect.left, controlRect.top, controlRect.right, controlRect.bottom);
+          //controlContext.SelectClipRgn(&clipRegion);
 
-          // Draw the line type pattern asa horizontal preview line centered in the control rectangle
-          int yCenter = controlRect.top + controlRect.Height() / 2;
-          double x = controlRect.left + 5.0;  // Padding
-          double xEnd = controlRect.right - 5.0;
+          controlContext.FillSolidRect(controlRect, GetSysColor(COLOR_WINDOW));
+
           const auto& pattern = lineType->DashElements();  // returns vector<double>: +ve dash, -ve space, 0 dot
 
           if (!pattern.empty()) {
-            CPen pen(PS_SOLID, 1, RGB(255, 0, 0));
-            // CSelectObject selectPen(dc, &pen);    // RAII helper if you have one
+            // Draw the line type pattern as a horizontal preview line centered in the control rectangle
+            int yCenter = controlRect.top + controlRect.Height() / 2;
+            double x = controlRect.left + 5.0;  // Padding
+            double xEnd = controlRect.right - 5.0;
+
+            CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
+            CPen* oldPen = controlContext.SelectObject(&pen);
 
             while (x < xEnd) {
               for (double len : pattern) {
-                if (len > 0.0)  // Dash
-                {
+                if (len > 0.0) {
                   controlContext.MoveTo(static_cast<int>(x), yCenter);
-                  x += len;
+                  x += len * 96.;
                   controlContext.LineTo(static_cast<int>(x), yCenter);
-                } else if (len < 0.0)  // Space
-                {
-                  x -= len;  // Negative to positive
-                } else       // Dot (len == 0)
-                {
+                } else if (len < 0.0) {
+                  x -= len * 96.;
+                } else {
                   controlContext.SetPixel(static_cast<int>(x), yCenter, RGB(0, 0, 0));
                   x += 1.0;  // Small advance
                 }
@@ -147,6 +146,8 @@ void EoDlgLineTypesSelection::OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result)
                 if (x >= xEnd) break;
               }
             }
+            //controlContext.SelectClipRgn(nullptr);
+            controlContext.SelectObject(oldPen);
           }
           controlContext.Detach();
         }

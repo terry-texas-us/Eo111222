@@ -87,19 +87,26 @@ int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
 }
 
 /// <remarks>
-/// ByBlock and ByLayer should not be permitted in a legacy file. This should be managed in the outbound conversions back to legacy file.
+
 /// </remarks>
+
+/**
+ * Gets the index of a legacy line type by its name.
+ * @param name The name of the line type.
+ * @return The index of the line type, or 0 if not found.
+ * @note ByBlock (0x7FFE) and ByLayer (0x7FFF) should not be permitted in a legacy file. This should be managed in the outbound conversions back to legacy file.
+ */
 EoUInt16 EoDbLineTypeTable::LegacyLineTypeIndex(const CString& name) {
-  EoUInt16 Index = 0;
+  EoUInt16 index = 0;
   if (name.CompareNoCase(L"ByBlock") == 0) {
-    Index = EoDbPrimitive::LINETYPE_BYBLOCK;
+    index = EoDbPrimitive::LINETYPE_BYBLOCK;
   } else if (name.CompareNoCase(L"ByLayer") == 0) {
-    Index = EoDbPrimitive::LINETYPE_BYLAYER;
+    index = EoDbPrimitive::LINETYPE_BYLAYER;
   } else {
-    while (Index < NumberOfLegacyLineTypes && name.CompareNoCase(legacyLineTypes[Index]) != 0) { Index++; }
-    Index = (Index < NumberOfLegacyLineTypes) ? Index : 0U;
+    while (index < NumberOfLegacyLineTypes && name.CompareNoCase(legacyLineTypes[index]) != 0) { index++; }
+    index = (index < NumberOfLegacyLineTypes) ? index : 0U;
   }
-  return Index;
+  return index;
 }
 
 bool EoDbLineTypeTable::Lookup(const CString& name, EoDbLineType*& lineType) {

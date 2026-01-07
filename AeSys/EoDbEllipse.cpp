@@ -1,12 +1,27 @@
 ﻿#include "stdafx.h"
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <algorithm>
+#include <cfloat>
+#include <climits>
+#include <cmath>
+#include <cstdlib>
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDb.h"
 #include "EoDbEllipse.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGePolyline.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 #include "PrimState.h"
 
 #if defined(USING_ODA)
@@ -253,16 +268,16 @@ void EoDbEllipse::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
   m_dSwpAng -= dSwpAng;
 }
 void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
-  if (fabs(m_dSwpAng) <= DBL_EPSILON) return;
+  if (fabs(m_dSwpAng) <= DBL_EPSILON) { return; }
 
-  EoInt16 nPenColor = LogicalPenColor();
-  EoInt16 LineType = LogicalLineType();
+  auto penColor = LogicalPenColor();
+  auto lineType = LogicalLineType();
 
-  pstate.SetPen(view, deviceContext, nPenColor, LineType);
+  pstate.SetPen(view, deviceContext, penColor, lineType);
 
   polyline::BeginLineStrip();
   GenPts(m_ptCenter, m_vMajAx, m_vMinAx, m_dSwpAng);
-  polyline::__End(view, deviceContext, LineType);
+  polyline::__End(view, deviceContext, lineType);
 }
 void EoDbEllipse::AddReportToMessageList(EoGePoint3d) {
   CString str;

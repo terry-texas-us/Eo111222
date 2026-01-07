@@ -1,8 +1,21 @@
 ﻿#include "stdafx.h"
+#include <Windows.h>
+#include <afxwin.h>
+#include <algorithm>
+#include <atltypes.h>
+#include <cfloat>
+#include <cmath>
 
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDbLineType.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 #include "PrimState.h"
 
 namespace polyline {

@@ -1,10 +1,23 @@
 ﻿#include "stdafx.h"
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <cfloat>
+#include <climits>
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDb.h"
+#include "EoDbPrimitive.h"
 #include "EoDbSpline.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGePolyline.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 #include "PrimState.h"
+#include "Resource.h"
 
 EoDbSpline::EoDbSpline(EoUInt16 wPts, EoGePoint3d* pt) {
   m_PenColor = pstate.PenColor();
@@ -46,14 +59,14 @@ EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 nPenColor = LogicalPenColor();
-  EoInt16 LineType = LogicalLineType();
+  EoInt16 penColor = LogicalPenColor();
+  EoInt16 lineType = LogicalLineType();
 
-  pstate.SetPen(view, deviceContext, nPenColor, LineType);
+  pstate.SetPen(view, deviceContext, penColor, lineType);
 
   polyline::BeginLineStrip();
   GenPts(3, m_pts);
-  polyline::__End(view, deviceContext, LineType);
+  polyline::__End(view, deviceContext, lineType);
 }
 void EoDbSpline::AddReportToMessageList(EoGePoint3d) {
   CString str;

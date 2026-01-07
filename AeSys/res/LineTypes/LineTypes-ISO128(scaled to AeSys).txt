@@ -1,0 +1,35 @@
+
+;;  ISO 128 (ISO/DIS 12011) linetypes(1/60 scaled for AeSys standard)
+
+;; Only six of these linetypes do not have equivalents in AeSys standard
+42=42.Dashed line (same as 04),____ ____ ____ ____ 
+.2,-.05
+43=43.Dashed spaced line,____      ____      ____  
+.2,-.3
+
+44=44.Long-dashed dotted line (same as 11),________ . ________ 
+.4,-.05,0,-.05
+45=45.Long-dashed double-dotted line (same as 12),________ . . _______ 
+.4,-.05,0,-.05,0,-.05
+46=46.Long-dashed triple-dotted line (same as 13),________ . . . _____
+.4,-.05,0,-.05,0,-.05,0,-.05
+
+47=47.Dotted line (same as 09),. . . . . . . . . . 
+0,-.05
+
+48=48.Long-dashed short-dashed line,________ __ ____ __ 
+.4,-.05,.1,-.05
+49=49.Long-dashed double-short-dashed line,________ __ __ _____
+.4,-.05,.1,-.05,.1,-.05
+50=50.Dashed dotted line (same as 06),____ . ____ . ____ . ____ 
+.2,-.05,0,-.05
+51=51.Double-dashed dotted line,____ ____ . ____ ____ . ____ __
+.2,-.05,.2,-.05,0,-.05
+52=52.Dashed double-dotted line (same as 07),____ . . ____ . . 
+.2,-.05,0,-.05,0,-.05
+53=53.Double-dashed double-dotted line,____ ____ . . ____ ____  
+.2,-.05,.2,-.05,0,-.05,0,-.05
+54=54.Dashed triple-dotted line (same as 08),____ . . . ____ . .
+.2,-.05,0,-.05,0,-.05,0,-.05
+55=55.Double-dashed triple-dotted line,____ ____ . . . ____ ____ 
+.2,-.05,.2,-.05,0,-.05,0,-.05,0,-.05

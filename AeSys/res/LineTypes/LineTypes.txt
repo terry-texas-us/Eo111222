@@ -20,9 +20,10 @@
 .2,-.05,0.,-.05,0.,-.05
 08=08.Short dash-triple-dot,  ____ . . . ____ . . . ____ . . . ____ 
 .2,-.05,0.,-.05,0.,-.05,0.,-.05
-
-09=09.Short dash (same as 01),_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _   
-.05,-.05
+;; 09.Short dash was defined twice in the original file (same as 02)
+;; redfined here as dot line for variety
+09=09.Dot line,               . . . . . . . . . . . . . . . . . . . .   
+0.,-.05
 
 10=10.Center,                 ________ _ ________ _ ________ _ _____
 .4,-.05,.05,-.05

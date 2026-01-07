@@ -1,9 +1,22 @@
 ﻿#include "stdafx.h"
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <atltrace.h>
+#include <climits>
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDb.h"
 #include "EoDbPolyline.h"
+#include "EoDbPrimitive.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGePolyline.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 #include "PrimState.h"
 
 #if defined(USING_ODA)
@@ -68,22 +81,28 @@ EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
   return (primitive);
 }
 
+/** Display the polyline on the given device context within the specified view.
+ *
+ * @param view Pointer to the AeSysView where the polyline will be displayed.
+ * @param deviceContext Pointer to the CDC device context for rendering.
+ */
 void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"EoDbPolyline::Display(%p, %p)\n", view, deviceContext);
 
-  EoInt16 nPenColor = LogicalPenColor();
-  EoInt16 LineType = LogicalLineType();
+  EoInt16 penColor = LogicalPenColor();
+  EoInt16 lineType = LogicalLineType();
 
-  pstate.SetPen(view, deviceContext, nPenColor, LineType);
+  pstate.SetPen(view, deviceContext, penColor, lineType);
 
-  if (IsLooped())
+  if (IsLooped()) {
     polyline::BeginLineLoop();
-  else
+  } else {
     polyline::BeginLineStrip();
-
+  }
   for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) { polyline::SetVertex(m_pts[w]); }
-  polyline::__End(view, deviceContext, LineType);
+  polyline::__End(view, deviceContext, lineType);
 }
+
 void EoDbPolyline::AddReportToMessageList(EoGePoint3d ptPic) {
   EoUInt16 NumberOfVertices = EoUInt16(m_pts.GetSize());
 

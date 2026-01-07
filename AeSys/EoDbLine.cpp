@@ -1,11 +1,25 @@
 ﻿#include "stdafx.h"
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <cfloat>
+#include <climits>
+#include <cmath>
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "EoDb.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbLine.h"
+#include "EoDbPrimitive.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGePolyline.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 #include "PrimState.h"
 
 #if defined(USING_ODA)
@@ -91,15 +105,15 @@ void EoDbLine::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
   if (m_ln.CutAtPt(pt, ln) != 0) group->AddTail(new EoDbLine(m_PenColor, m_LineType, ln));
 }
 void EoDbLine::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 PenColor = LogicalPenColor();
-  EoInt16 LineType = LogicalLineType();
+  EoInt16 penColor = LogicalPenColor();
+  EoInt16 lineType = LogicalLineType();
 
-  pstate.SetPen(view, deviceContext, PenColor, LineType);
+  pstate.SetPen(view, deviceContext, penColor, lineType);
 
   polyline::BeginLineStrip();
   polyline::SetVertex(m_ln.begin);
   polyline::SetVertex(m_ln.end);
-  polyline::__End(view, deviceContext, LineType);
+  polyline::__End(view, deviceContext, lineType);
 }
 void EoDbLine::AddReportToMessageList(EoGePoint3d pt) {
   double dLen = Length();

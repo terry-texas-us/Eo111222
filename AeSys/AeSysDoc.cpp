@@ -279,9 +279,9 @@ BOOL AeSysDoc::OnNewDocument() {
   AddLayerTableLayer(m_workLayer);
 #endif  // USING_ODA
   CString applicationPath = EoAppGetPathFromCommandLine();
-  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes(X5).txt");
-  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD.txt");
-  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128.txt");
+  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
+  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to AeSys).txt");
+  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
   
   m_LineTypeTable.Lookup(L"01.Continuous", m_ContinuousLineType);
     
