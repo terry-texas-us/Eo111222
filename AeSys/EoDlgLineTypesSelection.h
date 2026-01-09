@@ -1,12 +1,14 @@
 #pragma once
 #include <Windows.h>
+
+#include "afxdialogex.h"
 #include <afx.h>
 #include <afxcmn.h>
 #include <afxwin.h>
 
-#include "afxdialogex.h"
-
 #include "EoDbLineTypeTable.h"
+
+// Consider std::vector<std::shared_ptr<EoDbLineType>> for LineTypeTable to modernize
 
 class EoDbLineType;
 
@@ -14,8 +16,12 @@ class EoDlgLineTypesSelection : public CDialogEx {
   DECLARE_DYNAMIC(EoDlgLineTypesSelection)
 
  public:
-  EoDbLineTypeTable m_lineTypes;  // Consider std::vector<std::shared_ptr<EoDbLineType>> for modernization
+  EoDbLineTypeTable m_lineTypes;
   CListCtrl m_lineTypesListControl;
+
+  // Getter and setter for m_selectedLineType
+  EoDbLineType* GetSelectedLineType() const { return m_selectedLineType; }
+  void SetSelectedLineType(EoDbLineType* lineType) { m_selectedLineType = lineType; }
 
   EoDlgLineTypesSelection(CWnd* parent = nullptr);
   EoDlgLineTypesSelection(EoDbLineTypeTable& lineTypes, CWnd* pParent = nullptr);
@@ -32,10 +38,19 @@ class EoDlgLineTypesSelection : public CDialogEx {
  protected:
   virtual void DoDataExchange(CDataExchange* pDX) override;
   virtual BOOL OnInitDialog() override;
+  void OnOK() override;
+  BOOL PreTranslateMessage(MSG* message) override;
+
+  afx_msg void OnSize(UINT type, int x, int y);
 
   DECLARE_MESSAGE_MAP()
 
  private:
-  void PopulateList();
+  EoDbLineType* m_selectedLineType{nullptr};
+
+   void PopulateList();
   afx_msg void OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result);
+
+  public:
+   afx_msg void OnBnClickedOk();
 };

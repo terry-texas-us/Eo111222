@@ -1,35 +1,48 @@
 
-;;  ISO 128 (ISO/DIS 12011) linetypes(1/60 scaled for AeSys standard)
+;;  ISO 128 (ISO/DIS 12011) linetypes(scaled for AeSys standard)
+
+;; modified to a standard line width of ~0.42mm (between 0 and 1 pens)
+;; and then converted to inches 
 
 ;; Only six of these linetypes do not have equivalents in AeSys standard
-42=42.Dashed line (same as 04),____ ____ ____ ____ 
+;; 42, 48, 49, 51, 53, 55
+
+;; same as 04
+42=Long dash,____ ____ ____ ____ 
 .2,-.05
-43=43.Dashed spaced line,____      ____      ____  
+43=Long dash-long space,____      ____      ____  
 .2,-.3
 
-44=44.Long-dashed dotted line (same as 11),________ . ________ 
+;; same as 11
+44=Dash dot,________ . ________ 
 .4,-.05,0,-.05
-45=45.Long-dashed double-dotted line (same as 12),________ . . _______ 
+;; same as .2
+45=Divide,________ . . _______ 
 .4,-.05,0,-.05,0,-.05
-46=46.Long-dashed triple-dotted line (same as 13),________ . . . _____
+;; same as 13
+46=Dash-triple-dot,________ . . . _____
 .4,-.05,0,-.05,0,-.05,0,-.05
 
-47=47.Dotted line (same as 09),. . . . . . . . . . 
+;; same as 09
+47=Dot line,. . . . . . . . . . 
 0,-.05
 
-48=48.Long-dashed short-dashed line,________ __ ____ __ 
+48=Long dash-short dash,________ __ ____ __ 
 .4,-.05,.1,-.05
-49=49.Long-dashed double-short-dashed line,________ __ __ _____
+49=Long dash double-short-dash,________ __ __ _____
 .4,-.05,.1,-.05,.1,-.05
-50=50.Dashed dotted line (same as 06),____ . ____ . ____ . ____ 
+;; same as 06
+50=Short dash-dot,____ . ____ . ____ . ____ 
 .2,-.05,0,-.05
-51=51.Double-dashed dotted line,____ ____ . ____ ____ . ____ __
+51=Double-dash-dot,____ ____ . ____ ____ . ____ __
 .2,-.05,.2,-.05,0,-.05
-52=52.Dashed double-dotted line (same as 07),____ . . ____ . . 
+;; same as 07
+52=Short divide,____ . . ____ . . 
 .2,-.05,0,-.05,0,-.05
-53=53.Double-dashed double-dotted line,____ ____ . . ____ ____  
+53=Double-dash-double-dot,____ ____ . . ____ ____  
 .2,-.05,.2,-.05,0,-.05,0,-.05
-54=54.Dashed triple-dotted line (same as 08),____ . . . ____ . .
+;; same as 08
+54=Short dash-triple-dot,____ . . . ____ . .
 .2,-.05,0,-.05,0,-.05,0,-.05
-55=55.Double-dashed triple-dotted line,____ ____ . . . ____ ____ 
+55=Double short dash-triple-dot,____ ____ . . . ____ ____ 
 .2,-.05,.2,-.05,0,-.05,0,-.05,0,-.05

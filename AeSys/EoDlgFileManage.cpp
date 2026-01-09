@@ -4,6 +4,7 @@
 #include "AeSysDoc.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgFileManage.h"
+#include "EoDlgLineTypesSelection.h"
 #include "EoDlgSetupColor.h"
 #include "EoDlgSetupLineType.h"
 #include "Preview.h"
@@ -535,14 +536,15 @@ void EoDlgFileManage::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult
       }
       break;
     case Color: {
-      EoDlgSetupColor Dialog;
-      Dialog.m_ColorIndex = static_cast<EoUInt16>(Layer->ColorIndex());
-      if (Dialog.DoModal() == IDOK) { Layer->SetColorIndex(static_cast<EoInt16>(Dialog.m_ColorIndex)); }
+      EoDlgSetupColor dialog;
+      dialog.m_ColorIndex = static_cast<EoUInt16>(Layer->ColorIndex());
+      if (dialog.DoModal() == IDOK) { Layer->SetColorIndex(static_cast<EoInt16>(dialog.m_ColorIndex)); }
       break;
     }
     case LineType: {
-      EoDlgSetupLineType Dialog(m_Document->LineTypeTable());
-      if (Dialog.DoModal() == IDOK) { Layer->SetLineType(Dialog.m_LineType); }
+      auto lineTypes = m_Document->LineTypeTable();
+      EoDlgLineTypesSelection dialog(*lineTypes);
+      if (dialog.DoModal() == IDOK) { Layer->SetLineType(dialog.GetSelectedLineType()); }
       break;
     }
     case LineWeight: {

@@ -5,6 +5,7 @@
 #include <afxstr.h>
 #include <afxtempl.h>
 #include <afxwin.h>
+#include <string>
 
 #include "EoDbLineType.h"
 
@@ -28,21 +29,39 @@ class EoDbLineTypeTable {
   EoDbLineTypeTable& operator=(const EoDbLineTypeTable& other);
   ~EoDbLineTypeTable() { RemoveAll(); }
 
-  int FillComboBox(CComboBox& comboBox);
   int FillListControl(CListCtrl& listControl);
   auto GetStartPosition() { return m_MapLineTypes.GetStartPosition(); }
   void GetNextAssoc(POSITION& position, CString& name, EoDbLineType*& lineType) {
     m_MapLineTypes.GetNextAssoc(position, name, lineType);
   }
-  EoUInt16 LegacyLineTypeIndex(const CString& name);
+  bool IsEmpty() { return m_MapLineTypes.IsEmpty(); }
+  EoUInt16 LegacyLineTypeIndex(CString& name);
+  
+  /** @brief Looks up a line type by its name.
+   *
+   * This method searches for a line type in the collection based on its name.
+   *
+   * @param name The name of the line type to look up.
+   * @param lineType A reference to a pointer that will be set to the found line type, if any.
+   * @return true if the line type was found; false otherwise.
+   */
   bool Lookup(const CString& name, EoDbLineType*& lineType);
-  bool __Lookup(EoUInt16 index, EoDbLineType*& lineType);
+
+  /** @brief Looks up a line type using its legacy index.
+   *
+   * This method searches for a line type in the collection based on its legacy index.
+   *
+   * @param index The legacy index of the line type to look up.
+   * @param lineType A reference to a pointer that will be set to the found line type, if any.
+   * @return true if the line type was found; false otherwise.
+   */
+  bool LookupUsingLegacyIndex(EoUInt16 index, EoDbLineType*& lineType);
+  
   void SetAt(const CString& name, EoDbLineType* lineType) { m_MapLineTypes.SetAt(name, lineType); }
   int ReferenceCount(EoInt16 lineType);
   int Size() { return (int)m_MapLineTypes.GetSize(); }
   /// <summary>Loads the Line Type table.</summary>
   void LoadLineTypesFromTxtFile(const CString& pathName);
   void RemoveAll();
-  /// <summary>Removes line types which have no references.</summary>
   void RemoveUnused();
 };

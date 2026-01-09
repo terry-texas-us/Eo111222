@@ -362,6 +362,7 @@
 #define IDS_MSG_INVALID_NUMBER_EXTRACT  3847
 #define IDS_OPENFILE_LOAD_PENCOLORS_TITLE 3848
 #define IDS_MSG_OPENFILE_DIALOG_ERROR   3849
+#define IDS_MSG_NO_LINETYPES_DEFINED    3850
 #define ID_OP0                          4112
 #define ID_OP1                          4113
 #define ID_OP2                          4114

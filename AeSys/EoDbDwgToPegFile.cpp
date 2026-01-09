@@ -305,7 +305,7 @@ void ConvertPrimitiveData(const EoDbPrimitive* primitive, OdDbBlockTableRecordPt
     EoDbLineTypeTable* LineTypeTable = AeSysDoc::GetDoc()->LineTypeTable();
 
     EoDbLineType* LineType;
-    LineTypeTable->__Lookup(primitive->LineType(), LineType);
+    LineTypeTable->LookupUsingLegacyIndex(primitive->LineType(), LineType);
 
     OdString Name = LineType->Name();
     Linetype = Linetypes->getAt(Name);

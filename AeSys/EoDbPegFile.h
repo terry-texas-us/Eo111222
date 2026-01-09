@@ -1,4 +1,7 @@
 ﻿#pragma once
+#include <afx.h>
+#include <afxstr.h>
+#include <vector>
 
 class AeSysDoc;
 
@@ -15,7 +18,7 @@ class EoDbPegFile : public CFile {
   void ReadHeaderSection(AeSysDoc* document);
   void ReadLayerTable(AeSysDoc* document);
   void ReadLinetypesTable(AeSysDoc* document);
-  void ReadLinetypeDefinition(double* dashLength, CString& name, CString& description, EoUInt16& definitionLength);
+  void ReadLinetypeDefinition(std::vector<double>& dashLength, CString& name, CString& description, EoUInt16& definitionLength);
   void ReadTablesSection(AeSysDoc* document);
   void ReadViewportTable(AeSysDoc* document);
   void Unload(AeSysDoc* document);

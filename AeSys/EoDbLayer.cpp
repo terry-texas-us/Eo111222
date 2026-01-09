@@ -31,8 +31,8 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext) {
   pColTbl = pCurColTbl;
 }
 void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"EoDbLayer<%p>::Display(%p, %p, %i) + Name: %ls\n", this, view,
-            deviceContext, identifyTrap, static_cast<LPCWSTR>(this->Name()));
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"EoDbLayer<%p>::Display(%p, %p, %i) + Name: %ls\n", this, view, deviceContext,
+            identifyTrap, static_cast<LPCWSTR>(this->Name()));
 
   auto* document = AeSysDoc::GetDoc();
 
@@ -67,7 +67,10 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
   } catch (CException* e) { e->Delete(); }
 }
 EoDbLineType* EoDbLayer::LineType() const { return m_LineType; }
-EoInt16 EoDbLayer::LineTypeIndex() { return (static_cast<EoInt16>(m_LineType->Index())); }
+EoInt16 EoDbLayer::LineTypeIndex() {
+  EoInt16 index = (m_LineType == nullptr ? 0 : m_LineType->Index());
+  return index;
+}
 void EoDbLayer::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) {
   for (int i = 0; i < wCols; i++) {
     if (m_ColorIndex == pCol[i]) {

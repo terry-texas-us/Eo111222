@@ -5,6 +5,7 @@
 #include <atltypes.h>
 #include <cfloat>
 #include <cmath>
+#include <vector>
 
 #include "AeSysDoc.h"
 #include "AeSysView.h"
@@ -17,6 +18,9 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "PrimState.h"
+
+
+namespace { constexpr unsigned int defaultDpi = 96; }
 
 namespace polyline {
 EoGePoint4dArray pts_;
@@ -36,69 +40,82 @@ bool AnyPointsInView(EoGePoint4dArray& pointsArray) {
   }
   return false;
 }
+
+/** @brief Renders a polyline with a specified line type.
+ *
+ * This function takes a view, device context, an array of 4D points representing the polyline,
+ * and a line type definition. It processes the dash pattern defined in the line type and
+ * draws the polyline segments accordingly, handling dashes and spaces as specified.
+ *
+ * @param view Pointer to the AeSysView object for rendering context.
+ * @param deviceContext Pointer to the CDC object for drawing operations.
+ * @param pointsArray Array of EoGePoint4d representing the vertices of the polyline.
+ * @param lineType Pointer to the EoDbLineType object defining the dash pattern.
+ */
 void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArray, EoDbLineType* lineType) {
-  EoUInt16 wDefLen = lineType->GetNumberOfDashes();
-  if (wDefLen == 0) return;
+  const auto numberOfDashElements = lineType->GetNumberOfDashes();
+  if (numberOfDashElements == 0 || pointsArray.GetSize() < 2) { return; }
 
-  EoGePoint4d ln[2];
-  CPoint pnt[2];
-  EoGePoint3d pt[2];
+  EoGePoint3d modelPoints[2];
+  CPoint devicePoints[2];
+  EoGePoint4d viewPoints[2];
 
-  int iDashDefId = 0;
+  size_t dashElementIndex{0};
+  std::vector<double> dashElements(numberOfDashElements);
+  lineType->GetDashElements(dashElements.data());
 
-  double* dDash = new double[wDefLen];
+  const double dpi = static_cast<double>(std::max(defaultDpi, GetDpiForSystem()));
+  const double pixelSize = 1.0 / dpi; // Will only be used for dots where dash element length is 0.0
 
-  lineType->GetDashLen(dDash);
-
-  double dSecLen = std::max(0.025 /* * 96.*/, fabs(dDash[iDashDefId]));
+  double dashElementSize = std::max(pixelSize, fabs(dashElements[dashElementIndex]));
 
   for (int i = 0; i < pointsArray.GetSize() - 1; i++) {
-    EoGeVector3d vLn(pointsArray[i], pointsArray[i + 1]);
-    pt[0] = pointsArray[i];
+    EoGeVector3d lineAsVector(pointsArray[i], pointsArray[i + 1]);
+    modelPoints[0] = pointsArray[i];
 
-    double dVecLen = vLn.Length();
-    double dRemDisToEnd = dVecLen;
+    double lineLength = lineAsVector.Length();
+    double remainingDistanceToEnd = lineLength;
 
-    while (dSecLen <= dRemDisToEnd + DBL_EPSILON) {
-      EoGeVector3d vDash(vLn);
-      vDash *= dSecLen / dVecLen;
-      pt[1] = pt[0] + vDash;
-      dRemDisToEnd -= dSecLen;
-      if (dDash[iDashDefId] >= 0.0) {
-        ln[0] = pt[0];
-        ln[1] = pt[1];
+    while (dashElementSize <= remainingDistanceToEnd + DBL_EPSILON) {
+      EoGeVector3d dashAsVector(lineAsVector);
+      dashAsVector *= dashElementSize / lineLength;
+      modelPoints[1] = modelPoints[0] + dashAsVector;
+      remainingDistanceToEnd -= dashElementSize;
+      if (dashElements[dashElementIndex] >= 0.0) {
+        viewPoints[0] = modelPoints[0];
+        viewPoints[1] = modelPoints[1];
 
-        view->ModelViewTransformPoints(2, ln);
+        view->ModelViewTransformPoints(2, viewPoints);
 
-        if (EoGePoint4d::ClipLine(ln[0], ln[1])) {
-          view->DoProjection(pnt, 2, &ln[0]);
-          deviceContext->Polyline(pnt, 2);
+        if (EoGePoint4d::ClipLine(viewPoints[0], viewPoints[1])) {
+          view->DoProjection(devicePoints, 2, &viewPoints[0]);
+          deviceContext->Polyline(devicePoints, 2);
         }
       }
-      pt[0] = pt[1];
-      iDashDefId = (iDashDefId + 1) % wDefLen;
-      dSecLen = std::max(0.025 /* * 96.*/, fabs(dDash[iDashDefId]));
+      modelPoints[0] = modelPoints[1];
+      dashElementIndex = (dashElementIndex + 1) % numberOfDashElements;
+      dashElementSize = std::max(pixelSize, fabs(dashElements[dashElementIndex]));
     }
-    if (dRemDisToEnd > DBL_EPSILON) {  // Partial component of dash section must produced
-      if (dDash[iDashDefId] >= 0.0) {
-        pt[1] = pointsArray[i + 1];
+    if (remainingDistanceToEnd > DBL_EPSILON) {  // Partial component of dash section must produced
+      if (dashElements[dashElementIndex] >= 0.0) {
+        modelPoints[1] = pointsArray[i + 1];
 
-        ln[0] = pt[0];
-        ln[1] = pt[1];
+        viewPoints[0] = modelPoints[0];
+        viewPoints[1] = modelPoints[1];
 
-        view->ModelViewTransformPoints(2, ln);
+        view->ModelViewTransformPoints(2, viewPoints);
 
-        if (EoGePoint4d::ClipLine(ln[0], ln[1])) {
-          view->DoProjection(pnt, 2, &ln[0]);
-          deviceContext->Polyline(pnt, 2);
+        if (EoGePoint4d::ClipLine(viewPoints[0], viewPoints[1])) {
+          view->DoProjection(devicePoints, 2, &viewPoints[0]);
+          deviceContext->Polyline(devicePoints, 2);
         }
       }
     }
     // Length of dash remaining
-    dSecLen -= dRemDisToEnd;
+    dashElementSize -= remainingDistanceToEnd;
   }
-  delete[] dDash;
 }
+
 void __End(AeSysView* view, CDC* deviceContext, EoInt16 lineTypeIndex) {
   if (EoDbPrimitive::IsSupportedTyp(lineTypeIndex)) {
     INT_PTR size = pts_.GetSize();
@@ -125,7 +142,7 @@ void __End(AeSysView* view, CDC* deviceContext, EoInt16 lineTypeIndex) {
     EoDbLineTypeTable* LineTypeTable = AeSysDoc::GetDoc()->LineTypeTable();
 
     EoDbLineType* LineType;
-    if (!LineTypeTable->__Lookup(static_cast<EoUInt16>(lineTypeIndex), LineType)) { return; }
+    if (!LineTypeTable->LookupUsingLegacyIndex(static_cast<EoUInt16>(lineTypeIndex), LineType)) { return; }
     pstate.SetLineType(deviceContext, 1);
     __Display(view, deviceContext, pts_, LineType);
     pstate.SetLineType(deviceContext, lineTypeIndex);

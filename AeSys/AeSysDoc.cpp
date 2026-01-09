@@ -54,7 +54,6 @@
 #include "EoDlgSetPastePosition.h"
 #include "EoDlgSetupColor.h"
 #include "EoDlgSetupHatch.h"
-#include "EoDlgSetupLineType.h"
 #include "EoDlgSetupNote.h"
 #include "EoDlgTrapFilter.h"
 #include "EoGePoint3d.h"
@@ -272,40 +271,48 @@ BOOL AeSysDoc::OnNewDocument() {
 
   File.ConvertToPeg(this);
 #else   // Not USING_ODA
-  m_LineTypeTable.SetAt(L"0", new EoDbLineType(0, L"00.Null", L"null", 0, nullptr));
-  auto* lineType = new EoDbLineType(1, L"01.Continuous", L"Continuous", 0, nullptr);
-  m_LineTypeTable.SetAt(L"01.Continuous", lineType);
+  auto* lineType = new EoDbLineType(0, L"Null", L"null", 0, nullptr);
+  m_LineTypeTable.SetAt(L"0", lineType);
+  lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
+  m_LineTypeTable.SetAt(L"Continuous", lineType);
+  
   m_workLayer = new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, lineType);
+  m_ContinuousLineType = lineType;
   AddLayerTableLayer(m_workLayer);
 #endif  // USING_ODA
   CString applicationPath = EoAppGetPathFromCommandLine();
   m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
-  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to AeSys).txt");
-  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
-  
+  //m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to AeSys).txt");
+  //m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath +
+  //                                         L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
+
   m_LineTypeTable.Lookup(L"01.Continuous", m_ContinuousLineType);
-    
+
   m_SaveAsType = EoDb::kPeg;
   SetWorkLayer(GetLayerTableLayerAt(0));
   InitializeGroupAndPrimitiveEdit();
 
   return TRUE;
 }
-BOOL AeSysDoc::OnOpenDocument(LPCWSTR lpszPathName) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"AeSysDoc<%p>::OnOpenDocument(%s)\n", this, lpszPathName);
+BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"AeSysDoc<%p>::OnOpenDocument(%s)\n", this, pathName);
 
-  EoDb::FileTypes FileType = AeSys::GetFileTypeFromPath(lpszPathName);
-  switch (FileType) {
+  switch (AeSys::GetFileTypeFromPath(pathName)) {
     case EoDb::kDwg:
+      break;
     case EoDb::kDxf:
     case EoDb::kDxb:
+      // read dxf/dxb file and save pointer to the database
+      // determine the version of the file
+      // create EoDbDxfToPegFile object and convert to peg
+      // set m_SaveAsType to EoDb::kDxf or EoDb::kDxb
+      // set work layer to layer `0`
 #if defined(USING_ODA)
     {
       m_DatabasePtr = app.readFile(lpszPathName, true, false);
 
       CString FileAndVersion;
-      FileAndVersion.Format(L"Opened %s (Version: %d)\n", (LPCWSTR)m_DatabasePtr->getFilename(),
-                            m_DatabasePtr->originalFileVersion());
+      FileAndVersion.Format(L"Opened %s (Version: %d)\n", (LPCWSTR)m_DatabasePtr->getFilename(), m_DatabasePtr->originalFileVersion());
       app.AddStringToMessageList(FileAndVersion);
 
       EoDbDwgToPegFile File(m_DatabasePtr);
@@ -320,36 +327,48 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR lpszPathName) {
 #if defined(USING_ODA)
       m_DatabasePtr = app.createDatabase(true, OdDb::kEnglish);
 #endif  // USING_ODA
-      EoDbLineType* LineType = new EoDbLineType(0, L"00.Null", L"null", 0, nullptr);
-      m_LineTypeTable.SetAt(L"0", LineType);
-      LineType = new EoDbLineType(1, L"01.Continuous", L"Solid line", 0, nullptr);
-      m_LineTypeTable.SetAt(L"01.Continuous", LineType);
-      m_workLayer =
-          new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, LineType);
-      m_ContinuousLineType = LineType;
-      AddLayerTableLayer(m_workLayer);
+      //auto* lineType = new EoDbLineType(0, L"Null", L"null", 0, nullptr);
+      //m_LineTypeTable.SetAt(L"0", lineType);
+      //lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
+      //m_LineTypeTable.SetAt(L"Continuous", lineType);
+     
+      //m_workLayer = new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, lineType);
+      //m_ContinuousLineType = lineType;
+      //AddLayerTableLayer(m_workLayer);
 
-      EoDbPegFile File;
+      EoDbPegFile file;
       CFileException e;
-      if (File.Open(lpszPathName, CFile::modeRead | CFile::shareDenyNone, &e)) {
-        File.Load(this);
+      if (file.Open(pathName, CFile::modeRead | CFile::shareDenyNone, &e)) {
+        file.Load(this);
+        SetWorkLayer(GetLayerTableLayerAt(0));
+        if (m_LineTypeTable.Size() == 0) {
+          auto* lineType = new EoDbLineType(0, L"Null", L"null", 0, nullptr);
+          m_LineTypeTable.SetAt(L"0", lineType);
+          lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
+          m_LineTypeTable.SetAt(L"Continuous", lineType);
+          CString applicationPath = EoAppGetPathFromCommandLine();
+          m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
+        } else {
+          m_workLayer = GetLayerTableLayer(L"0");
+          if (m_LineTypeTable.Lookup(L"Continuous", m_ContinuousLineType)) { m_workLayer->SetLineType(m_ContinuousLineType); }
+        }
         m_SaveAsType = EoDb::kPeg;
       }
       break;
     }
     case EoDb::kTracing:
     case EoDb::kJob:
-      TracingOpen(lpszPathName);
+      TracingOpen(pathName);
       break;
 
     case EoDb::kUnknown:
       // Let the base class handle it and probably fail
     default:
-      return CDocument::OnOpenDocument(lpszPathName);
+      return CDocument::OnOpenDocument(pathName);
   }
   return TRUE;
 }
-BOOL AeSysDoc::OnSaveDocument(LPCWSTR lpszPathName) {
+BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
   BOOL ReturnStatus = FALSE;
 
   switch (m_SaveAsType) {
@@ -357,7 +376,7 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR lpszPathName) {
       WriteShadowFile();
       EoDbPegFile File;
       CFileException e;
-      if (File.Open(lpszPathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive, &e)) {
+      if (File.Open(pathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive, &e)) {
         File.Unload(this);
         ReturnStatus = TRUE;
       }
@@ -365,11 +384,11 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR lpszPathName) {
     }
     case EoDb::kTracing:
     case EoDb::kJob: {
-      EoDbLayer* Layer = GetLayerTableLayer(lpszPathName);
+      EoDbLayer* Layer = GetLayerTableLayer(pathName);
       if (Layer != 0) {
-        CFile File(lpszPathName, CFile::modeCreate | CFile::modeWrite);
+        CFile File(pathName, CFile::modeCreate | CFile::modeWrite);
         if (File == CFile::hFileNull) {
-          app.WarningMessageBox(IDS_MSG_TRACING_WRITE_FAILURE, lpszPathName);
+          app.WarningMessageBox(IDS_MSG_TRACING_WRITE_FAILURE, pathName);
           return FALSE;
         }
         if (m_SaveAsType == EoDb::kJob) {
@@ -381,7 +400,7 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR lpszPathName) {
           TracingFile.WriteHeader(File);
           TracingFile.WriteLayer(File, Layer);
         }
-        app.AddStringToMessageList(IDS_MSG_TRACING_SAVE_SUCCESS, lpszPathName);
+        app.AddStringToMessageList(IDS_MSG_TRACING_SAVE_SUCCESS, pathName);
         ReturnStatus = TRUE;
       }
       break;
@@ -471,8 +490,7 @@ int AeSysDoc::NumberOfGroupsInActiveLayers() {
   return static_cast<int>(count);
 }
 void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view,
-            deviceContext);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view, deviceContext);
 
   try {
     bool IdentifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
@@ -679,8 +697,7 @@ void AeSysDoc::LoadLineTypesFromXmlFile(const CString& pathName) {
     return;
   }
   if (FAILED(hr = Reader->SetProperty(XmlReaderProperty_DtdProcessing, DtdProcessing_Prohibit))) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error setting XmlReaderProperty_DtdProcessing, error is %08.8lx",
-              hr);
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error setting XmlReaderProperty_DtdProcessing, error is %08.8lx", hr);
     return;
   }
   if (FAILED(hr = Reader->SetInput(FileStream))) {
@@ -718,7 +735,8 @@ void AeSysDoc::LoadLineTypesFromXmlFile(const CString& pathName) {
         if (prefixLength > 0) {
           ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Element: %ls:%ls\n", prefix, localName);
         } else {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Element: %ls\n", localName); // ItemGroup, LineDefinition, Appearance, DashGroup, DashLength
+          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Element: %ls\n",
+                    localName);  // ItemGroup, LineDefinition, Appearance, DashGroup, DashLength
         }
         if (FAILED(hr = WriteAttributes(Reader))) {
           ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error writing attributes, error is %08.8lx", hr);
@@ -781,8 +799,7 @@ void AeSysDoc::LoadLineTypesFromXmlFile(const CString& pathName) {
           ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting value, error is %08.8lx", hr);
           return;
         }
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Processing Instruction name:%ls value:%ls\n", localName,
-                  value);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Processing Instruction name:%ls value:%ls\n", localName, value);
         break;
 
       case XmlNodeType_Comment:
@@ -1164,11 +1181,9 @@ void AeSysDoc::OnPrimBreak() {
       EoGePoint3dArray Points;
       pPolyline->GetAllPts(Points);
 
-      for (EoUInt16 w = 0; w < Points.GetSize() - 1; w++)
-        Group->AddTail(new EoDbLine(nPenColor, LineType, Points[w], Points[w + 1]));
+      for (EoUInt16 w = 0; w < Points.GetSize() - 1; w++) Group->AddTail(new EoDbLine(nPenColor, LineType, Points[w], Points[w + 1]));
 
-      if (pPolyline->IsLooped())
-        Group->AddTail(new EoDbLine(nPenColor, LineType, Points[Points.GetUpperBound()], Points[0]));
+      if (pPolyline->IsLooped()) Group->AddTail(new EoDbLine(nPenColor, LineType, Points[Points.GetUpperBound()], Points[0]));
 
       delete Primitive;
       ResetAllViews();
@@ -1561,16 +1576,37 @@ void AeSysDoc::OnSetupPenColor() {
     AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Pen);
   }
 }
-void AeSysDoc::OnSetupLineType() {
-  //EoDlgSetupLineType Dialog(&m_LineTypeTable);
-  EoDlgLineTypesSelection Dialog(m_LineTypeTable);
-  //m_LineTypeTable.__Lookup(static_cast<EoUInt16>(pstate.LineType()), Dialog.m_LineType);
 
-  if (Dialog.DoModal() == IDOK) { 
-    //pstate.SetLineType(nullptr, static_cast<EoInt16>(Dialog.m_LineType->Index()));
-    AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
+/** @brief Handles the command to set up the line type for drawing.
+  This function checks if there are any line types defined in the document's line type table.
+  If none are defined, it displays a warning message. Otherwise, it opens a dialog to allow
+  the user to select a line type. If the user selects a line type and confirms, it updates
+  the current drawing state with the selected line type and refreshes the view to reflect
+  the change.
+*/
+void AeSysDoc::OnSetupLineType() {
+  if (m_LineTypeTable.IsEmpty()) {
+    app.WarningMessageBox(IDS_MSG_NO_LINETYPES_DEFINED);
+    return;
   }
+  EoDlgLineTypesSelection dialog(m_LineTypeTable);
+
+  EoDbLineType* currentLineType{nullptr};
+
+  m_LineTypeTable.LookupUsingLegacyIndex(static_cast<EoUInt16>(pstate.LineType()), currentLineType);
+  dialog.SetSelectedLineType(currentLineType);
+
+  if (dialog.DoModal() != IDOK) { return; }
+
+  EoDbLineType* selectedLineType = dialog.GetSelectedLineType();
+  if (selectedLineType == nullptr) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysDoc::OnSetupLineType: No line type selected.\n");
+    return;
+  }
+  pstate.SetLineType(nullptr, static_cast<EoInt16>(selectedLineType->Index()));
+  AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
 }
+
 void AeSysDoc::OnSetupFillHollow() { pstate.SetPolygonIntStyle(EoDb::kHollow); }
 void AeSysDoc::OnSetupFillSolid() { pstate.SetPolygonIntStyle(EoDb::kSolid); }
 void AeSysDoc::OnSetupFillPattern() {}
@@ -1778,8 +1814,7 @@ void AeSysDoc::OnMaintenanceRemoveEmptyNotes() {
   int NumberOfEmptyNotes = RemoveEmptyNotesAndDelete();
   int NumberOfEmptyGroups = RemoveEmptyGroups();
   CString str;
-  str.Format(L"%d notes were removed resulting in %d empty groups which were also removed.", NumberOfEmptyNotes,
-             NumberOfEmptyGroups);
+  str.Format(L"%d notes were removed resulting in %d empty groups which were also removed.", NumberOfEmptyNotes, NumberOfEmptyGroups);
   app.AddStringToMessageList(str);
 }
 void AeSysDoc::OnMaintenanceRemoveEmptyGroups() {
@@ -1889,8 +1924,7 @@ void AeSysDoc::OnPrimExtractNum() {
       lex::Parse(number);
       lex::EvalTokenStream(&iTokId, &lDef, &iTyp, value);
 
-      if (iTyp != lex::ArchitecturalUnitsLengthToken && iTyp != lex::EngineeringUnitsLengthToken &&
-          iTyp != lex::SimpleUnitsLengthToken) {
+      if (iTyp != lex::ArchitecturalUnitsLengthToken && iTyp != lex::EngineeringUnitsLengthToken && iTyp != lex::SimpleUnitsLengthToken) {
         lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, value);
       }
       wchar_t Message[64]{};
@@ -2277,18 +2311,12 @@ BOOL AeSysDoc::DoPromptFileName(CString& fileName, UINT titleResourceIdentifier,
   DWORD FilterIndex(1);
 
   if (Extension.CompareNoCase(L"peg") == 0) { FilterIndex = 1; }
-  if ((DrawingVersion == OdDb::vAC24 || DrawingVersion == OdDb::kDHL_1024) && Extension.CompareNoCase(L"dxf") == 0) {
-    FilterIndex = 2;
-  }
-  if ((DrawingVersion == OdDb::vAC21 || DrawingVersion == OdDb::kDHL_1021) && Extension.CompareNoCase(L"dxf") == 0) {
-    FilterIndex = 3;
-  }
-  if ((DrawingVersion == OdDb::kDHL_2400a || DrawingVersion == OdDb::kDHL_1024) &&
-      Extension.CompareNoCase(L"dxf") == 0) {
+  if ((DrawingVersion == OdDb::vAC24 || DrawingVersion == OdDb::kDHL_1024) && Extension.CompareNoCase(L"dxf") == 0) { FilterIndex = 2; }
+  if ((DrawingVersion == OdDb::vAC21 || DrawingVersion == OdDb::kDHL_1021) && Extension.CompareNoCase(L"dxf") == 0) { FilterIndex = 3; }
+  if ((DrawingVersion == OdDb::kDHL_2400a || DrawingVersion == OdDb::kDHL_1024) && Extension.CompareNoCase(L"dxf") == 0) {
     FilterIndex = 4;
   }
-  if ((DrawingVersion == OdDb::kDHL_2100a || DrawingVersion == OdDb::kDHL_1021) &&
-      Extension.CompareNoCase(L"dxf") == 0) {
+  if ((DrawingVersion == OdDb::kDHL_2100a || DrawingVersion == OdDb::kDHL_1021) && Extension.CompareNoCase(L"dxf") == 0) {
     FilterIndex = 5;
   }
   if (DrawingVersion == OdDb::vAC24 && Extension.CompareNoCase(L"dwg") == 0) { FilterIndex = 6; }

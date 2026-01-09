@@ -70,7 +70,7 @@ double EoGeLine::AngleFromXAxisXY() const {
   return (Angle);
 }
 
-EoGePoint3d EoGeLine::ConstrainToAxis(double dInfAng, double dAxOffAng) {
+EoGePoint3d EoGeLine::ConstrainToAxis(double dInfAng, double dAxOffAng) const {
   EoGeTransformMatrix tm;
   tm.Translate(EoGeVector3d(begin, EoGePoint3d::kOrigin));
 
@@ -130,7 +130,7 @@ EoUInt16 EoGeLine::CutAtPt(EoGePoint3d& pt, EoGeLine& ln) {
   return (wRet);
 }
 
-int EoGeLine::DirRelOfPt(EoGePoint3d pt) {
+int EoGeLine::DirRelOfPt(EoGePoint3d pt) const {
   double dDet = begin.x * (end.y - pt.y) - end.x * (begin.y - pt.y) + pt.x * (begin.y - end.y);
 
   if (dDet > DBL_EPSILON)
@@ -141,10 +141,10 @@ int EoGeLine::DirRelOfPt(EoGePoint3d pt) {
     return 0;
 }
 
-void EoGeLine::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 LineType = pstate.LineType();
+void EoGeLine::Display(AeSysView* view, CDC* deviceContext) const {
+  EoInt16 lineType = pstate.LineType();
 
-  if (EoDbPrimitive::IsSupportedTyp(LineType)) {
+  if (EoDbPrimitive::IsSupportedTyp(lineType)) {
     EoGePoint4d pt[] = {EoGePoint4d(begin), EoGePoint4d(end)};
 
     view->ModelViewTransformPoints(2, pt);
@@ -158,11 +158,11 @@ void EoGeLine::Display(AeSysView* view, CDC* deviceContext) {
     polyline::BeginLineStrip();
     polyline::SetVertex(begin);
     polyline::SetVertex(end);
-    polyline::__End(view, deviceContext, LineType);
+    polyline::__End(view, deviceContext, lineType);
   }
 }
 
-void EoGeLine::Extents(EoGePoint3d& minExtent, EoGePoint3d& maxExtent) {
+void EoGeLine::Extents(EoGePoint3d& minExtent, EoGePoint3d& maxExtent) const {
   minExtent(std::min(begin.x, end.x), std::min(begin.y, end.y), std::min(begin.z, end.z));
   maxExtent(std::max(begin.x, end.x), std::max(begin.y, end.y), std::max(begin.z, end.z));
 }
@@ -178,9 +178,10 @@ double EoGeLine::Length() const {
   return (vector.Length());
 }
 
-EoGePoint3d EoGeLine::Midpoint() { return ProjectBeginPointToEndPoint(0.5); }
+EoGePoint3d EoGeLine::Midpoint() const { return ProjectBeginPointToEndPoint(0.5); }
 
-bool EoGeLine::GetParallels(double distanceBetweenLines, double eccentricity, EoGeLine& leftLine, EoGeLine& rightLine) {
+bool EoGeLine::GetParallels(double distanceBetweenLines, double eccentricity, EoGeLine& leftLine,
+                            EoGeLine& rightLine) const {
   leftLine = *this;
   rightLine = *this;
 
@@ -207,7 +208,7 @@ bool EoGeLine::IsContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3
   double dY = end.y - begin.y;
   int i = 1;
 
-  int iOut[2];
+  int iOut[2]{};
   iOut[0] = pt[0].RelationshipToRectangle(lowerLeftPoint, upperRightPoint);
 
   for (;;) {
@@ -233,7 +234,7 @@ bool EoGeLine::IsContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3
   }
 }
 
-bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, const double apert, EoGePoint3d& ptProj, double* rel) {
+bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, const double apert, EoGePoint3d& ptProj, double* rel) const {
   if (pt.x < std::min(begin.x, end.x) - apert) return false;
   if (pt.x > std::max(begin.x, end.x) + apert) return false;
   if (pt.y < std::min(begin.y, end.y) - apert) return false;
@@ -292,7 +293,7 @@ EoGePoint3d EoGeLine::ProjPt(const EoGePoint3d& point) const {
 
 EoGePoint3d EoGeLine::ProjectBeginPointToEndPoint(const double t) const { return begin + (begin - end) * t; }
 
-int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistance, EoGePoint3d* projectedPoint) {
+int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistance, EoGePoint3d* projectedPoint) const {
   double dX = end.x - begin.x;
   double dY = end.y - begin.y;
 
@@ -318,7 +319,7 @@ int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistanc
   return (TRUE);
 }
 
-EoGePoint3d EoGeLine::ProjToBegPt(double distance) {
+EoGePoint3d EoGeLine::ProjToBegPt(double distance) const {
   EoGeVector3d vEndBeg(end, begin);
 
   double length = vEndBeg.Length();
@@ -328,7 +329,7 @@ EoGePoint3d EoGeLine::ProjToBegPt(double distance) {
   return (end + vEndBeg);
 }
 
-EoGePoint3d EoGeLine::ProjToEndPt(double distance) {
+EoGePoint3d EoGeLine::ProjToEndPt(double distance) const {
   EoGeVector3d vBegEnd(begin, end);
 
   double length = vBegEnd.Length();
@@ -343,7 +344,7 @@ void EoGeLine::Read(CFile& file) {
   end.Read(file);
 }
 
-bool EoGeLine::RelOfPtToEndPts(EoGePoint3d point, double& pointParametricRelationship) {
+bool EoGeLine::RelOfPtToEndPts(EoGePoint3d point, double& pointParametricRelationship) const {
   EoGeVector3d Vector(begin, end);
 
   if (fabs(Vector.x) > DBL_EPSILON) {

@@ -15,15 +15,115 @@
 #include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 
+#include <utility>
+
 namespace {
+
+typedef enum { ELEMENT_TYPE_TEXT, ELEMENT_TYPE_SHAPE } ElementType;
+
+typedef struct {
+  ElementType type;      // ELEMENT_TYPE_TEXT or ELEMENT_TYPE_SHAPE
+  char* file;            // Text style name (e.g., "Standard") or SHP/SHX file name
+  union {
+    char* text;          // Text string for text elements (e.g., "Text")
+    int shape_num;       // Shape number for shape elements
+  } content;
+  double length;         // Dash length (often negative for the space occupied by the element)
+  double scale;          // Scale factor (S value)
+  double rotation;       // Rotation angle (R or U value)
+  int absolute_rotation; // 0 for relative rotation (No), 1 for absolute
+  int upright;           // 0 for no upright orientation (No), 1 for upright (keeps text readable)
+  double offset_x;       // X offset
+  double offset_y;       // Y offset
+} LinetypeElement;
+
 constexpr EoUInt16 maxNumberOfDashElementsDefault{8};
 
-const wchar_t* legacyLineTypes[] = {
-    L"0",      L"Continuous", L"2",        L"3",       L"4",        L"5",        L"6",       L"7",        L"8",
-    L"9",      L"10",         L"11",       L"12",      L"13",       L"14",       L"15",      L"16",       L"17",
-    L"BORDER", L"BORDER2",    L"BORDERX2", L"CENTER",  L"CENTER2",  L"CENTERX2", L"DASHDOT", L"DASHDOT2", L"DASHDOTX2",
-    L"DASHED", L"DASHED2",    L"DASHEDX2", L"DIVIDE",  L"DIVIDE2",  L"DIVIDEX2", L"DOT",     L"DOT2",     L"DOTX2",
-    L"HIDDEN", L"HIDDEN2",    L"HIDDENX2", L"PHANTOM", L"PHANTOM2", L"PHANTOMX2"};
+const std::pair<const wchar_t*, const wchar_t*> legacyLineTypes[] = {{L"Null", L"0"},
+                                                                     {L"Continuous", L"Continuous"},
+                                                                     {L"Dash2", L"2"},
+                                                                     {L"Dash", L"3"},
+                                                                     {L"DashX2", L"4"},
+                                                                     {L"Center2", L"5"},
+                                                                     {L"DashX2-dot", L"6"},
+                                                                     {L"Divide2", L"7"},
+                                                                     {L"DashX2-triple-dot", L"8"},
+                                                                     {L"Dot", L"9"},
+                                                                     {L"Center", L"10"},
+                                                                     {L"DashX4-dot", L"11"},
+                                                                     {L"Divide", L"12"},
+                                                                     {L"DashX4-triple-dot", L"13"},
+                                                                     {L"CenterX2", L"14"},
+                                                                     {L"DashX8-dot", L"15"},
+                                                                     {L"DivideX2", L"16"},
+                                                                     {L"DashX8-triple-dot", L"17"},
+                                                                     {L"BORDER", L"BORDER"},
+                                                                     {L"BORDER2", L"BORDER2"},
+                                                                     {L"BORDERX2", L"BORDERX2"},
+                                                                     {L"CENTER", L"CENTER"},
+                                                                     {L"CENTER2", L"CENTER2"},
+                                                                     {L"CENTERX2", L"CENTERX2"},
+                                                                     {L"DASHDOT", L"DASHDOT"},
+                                                                     {L"DASHDOT2", L"DASHDOT2"},
+                                                                     {L"DASHDOTX2", L"DASHDOTX2"},
+                                                                     {L"DASHED", L"DASHED"},
+                                                                     {L"DASHED2", L"DASHED2"},
+                                                                     {L"DASHEDX2", L"DASHEDX2"},
+                                                                     {L"DIVIDE", L"DIVIDE"},
+                                                                     {L"DIVIDE2", L"DIVIDE2"},
+                                                                     {L"DIVIDEX2", L"DIVIDEX2"},
+                                                                     {L"DOT", L"DOT"},
+                                                                     {L"DOT2", L"DOT2"},
+                                                                     {L"DOTX2", L"DOTX2"},
+                                                                     {L"HIDDEN", L"HIDDEN"},
+                                                                     {L"HIDDEN2", L"HIDDEN2"},
+                                                                     {L"HIDDENX2", L"HIDDENX2"},
+                                                                     {L"PHANTOM", L"PHANTOM"},
+                                                                     {L"PHANTOM2", L"PHANTOM2"},
+                                                                     {L"PHANTOMX2", L"PHANTOMX2"}};
+
+const wchar_t* stockLineTypes[] = {L"00.Null",
+                                   L"01.Continuous",
+                                   L"02.Dash2",
+                                   L"03.Dash",
+                                   L"04.DashX2",
+                                   L"05.Center2",
+                                   L"06.DashX2-dot",
+                                   L"07.Divide2",
+                                   L"08.DashX2-triple-dot",
+                                   L"09.Dot",
+                                   L"10.Center",
+                                   L"11.DashX4-dot",
+                                   L"12.Divide",
+                                   L"13.DashX4-triple-dot",
+                                   L"14.CenterX2",
+                                   L"15.DashX8-dot",
+                                   L"16.DivideX2",
+                                   L"17.DashX8-triple-dot",
+                                   L"18.BORDER",
+                                   L"19.BORDER2",
+                                   L"20.BORDERX2",
+                                   L"21.CENTER",
+                                   L"22.CENTER2",
+                                   L"23.CENTERX2",
+                                   L"24.DASHDOT",
+                                   L"25.DASHDOT2",
+                                   L"26.DASHDOTX2",
+                                   L"27.DASHED",
+                                   L"28.DASHED2",
+                                   L"29.DASHEDX2",
+                                   L"30.DIVIDE",
+                                   L"31.DIVIDE2",
+                                   L"32.DIVIDEX2",
+                                   L"33.DOT",
+                                   L"34.DOT2",
+                                   L"35.DOTX2",
+                                   L"36.HIDDEN",
+                                   L"37.HIDDEN2",
+                                   L"38.HIDDENX2",
+                                   L"39.PHANTOM",
+                                   L"40.PHANTOM2",
+                                   L"41.PHANTOMX2"};
 constexpr EoUInt16 NumberOfLegacyLineTypes{42};
 }  // namespace
 
@@ -50,20 +150,6 @@ EoDbLineTypeTable& EoDbLineTypeTable::operator=(const EoDbLineTypeTable& other) 
   return *this;
 }
 
-int EoDbLineTypeTable::FillComboBox(CComboBox& comboBox) {
-  comboBox.ResetContent();
-
-  CString name;
-  EoDbLineType* lineType;
-  auto position = m_MapLineTypes.GetStartPosition();
-  while (position) {
-    m_MapLineTypes.GetNextAssoc(position, name, lineType);
-    int itemIndex = comboBox.AddString(name);
-    comboBox.SetItemData(itemIndex, DWORD_PTR(lineType));
-  }
-  return (static_cast<int>(m_MapLineTypes.GetSize()));
-}
-
 /**
  * Fills a list control with the line types in the line type table.
  * @param listControl The list control to fill.
@@ -86,37 +172,28 @@ int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
   return (static_cast<int>(m_MapLineTypes.GetSize()));
 }
 
-/// <remarks>
-
-/// </remarks>
-
-/**
- * Gets the index of a legacy line type by its name.
- * @param name The name of the line type.
- * @return The index of the line type, or 0 if not found.
- * @note ByBlock (0x7FFE) and ByLayer (0x7FFF) should not be permitted in a legacy file. This should be managed in the outbound conversions back to legacy file.
- */
-EoUInt16 EoDbLineTypeTable::LegacyLineTypeIndex(const CString& name) {
-  EoUInt16 index = 0;
+EoUInt16 EoDbLineTypeTable::LegacyLineTypeIndex(CString& name) {
+  EoUInt16 index{0};
   if (name.CompareNoCase(L"ByBlock") == 0) {
     index = EoDbPrimitive::LINETYPE_BYBLOCK;
   } else if (name.CompareNoCase(L"ByLayer") == 0) {
     index = EoDbPrimitive::LINETYPE_BYLAYER;
   } else {
-    while (index < NumberOfLegacyLineTypes && name.CompareNoCase(legacyLineTypes[index]) != 0) { index++; }
-    index = (index < NumberOfLegacyLineTypes) ? index : 0U;
+    while (index < NumberOfLegacyLineTypes && name.CompareNoCase(legacyLineTypes[index].second) != 0) { index++; }
+    if (index < NumberOfLegacyLineTypes) { return index; }
   }
-  return index;
+  return 0;
 }
 
 bool EoDbLineTypeTable::Lookup(const CString& name, EoDbLineType*& lineType) {
   lineType = nullptr;
-  return (m_MapLineTypes.Lookup(name, lineType) != 0);
+  m_MapLineTypes.Lookup(name, lineType);
+  return (lineType != nullptr);
 }
 
-bool EoDbLineTypeTable::__Lookup(EoUInt16 index, EoDbLineType*& lineType) {
+bool EoDbLineTypeTable::LookupUsingLegacyIndex(EoUInt16 index, EoDbLineType*& lineType) {
   lineType = nullptr;
-  return (index < NumberOfLegacyLineTypes) && m_MapLineTypes.Lookup(legacyLineTypes[index], lineType);
+  return (index < NumberOfLegacyLineTypes) && m_MapLineTypes.Lookup(legacyLineTypes[index].second, lineType);
 }
 
 int EoDbLineTypeTable::ReferenceCount(EoInt16 lineType) {
@@ -175,14 +252,11 @@ void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
         maxNumberOfDashElements = numberOfDashElements;
       }
       nextToken = 0;
-      for (EoUInt16 i = 0; i < numberOfDashElements; i++) {
-        dashLengths[i] = _wtof(inputLine.Tokenize(L",\n", nextToken));
-      }
+      for (EoUInt16 i = 0; i < numberOfDashElements; i++) { dashLengths[i] = _wtof(inputLine.Tokenize(L",\n", nextToken)); }
       EoDbLineType* lineType;
       if (!Lookup(name, lineType)) {
         m_MapLineTypes.SetAt(name, new EoDbLineType(label, name, comment, numberOfDashElements, dashLengths.data()));
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"%d - Name: %s `%s`\n", label, name.GetString(),
-                  comment.GetString());
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"%d - Name: %s `%s`\n", label, name.GetString(), comment.GetString());
         for (size_t i = 0; i < numberOfDashElements; ++i) {
           ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"  Dash[%d] = %f\n", i, dashLengths[i]);
         }

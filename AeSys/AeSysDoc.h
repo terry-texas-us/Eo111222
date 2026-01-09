@@ -10,21 +10,30 @@
 #include "EoGePoint3d.h"
 #include "EoGeUniquePoint.h"
 
-class EoGeTransformMatrix;
-
 #if defined(USING_ODA)
 #include "DbDatabase.h"
 #endif  // USING_ODA
+#include <Windows.h>
+#include <afx.h>
+#include <afxcoll.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include "EoDbFontDefinition.h"
+#include "EoDbLineType.h"
+#include "EoDbPrimitive.h"
+#include "EoGeVector3d.h"
+
+class EoGeTransformMatrix;
 
 class AeSysDoc : public CDocument {
- protected:  // create from serialization only
+ protected:
   AeSysDoc();
   AeSysDoc(const AeSysDoc&) = delete;
   AeSysDoc& operator=(const AeSysDoc&) = delete;
 
   DECLARE_DYNCREATE(AeSysDoc)
 
- public:  // Attributes
+ public:
 #if defined(USING_ODA)
   OdDbDatabasePtr m_DatabasePtr;
   OdDb::DwgVersion m_SaveAsVersion;
@@ -82,9 +91,7 @@ class AeSysDoc : public CDocument {
   EoUInt16 BlockTableSize() { return (EoUInt16(m_BlocksTable.GetSize())); }
   int GetBlockReferenceCount(const CString& name);
   auto GetFirstBlockPosition() { return m_BlocksTable.GetStartPosition(); }
-  void GetNextBlock(POSITION& position, CString& name, EoDbBlock*& block) {
-    m_BlocksTable.GetNextAssoc(position, name, block);
-  }
+  void GetNextBlock(POSITION& position, CString& name, EoDbBlock*& block) { m_BlocksTable.GetNextAssoc(position, name, block); }
   bool LookupBlock(CString name, EoDbBlock*& block);
   /// <summary>Removes all blocks and defining primitives.</summary>
   void RemoveAllBlocks();
@@ -180,8 +187,7 @@ class AeSysDoc : public CDocument {
   BOOL IsTrapEmpty() const { return m_TrappedGroupList.IsEmpty(); }
   void ModifyTrappedGroupsPenColor(EoInt16 penColor) { m_TrappedGroupList.ModifyPenColor(penColor); }
   void ModifyTrappedGroupsLineType(EoInt16 lineType) { m_TrappedGroupList.ModifyLineType(lineType); }
-  void ModifyTrappedGroupsNoteAttributes(EoDbFontDefinition& fontDef, EoDbCharacterCellDefinition& cellDef,
-                                         int attributes);
+  void ModifyTrappedGroupsNoteAttributes(EoDbFontDefinition& fontDef, EoDbCharacterCellDefinition& cellDef, int attributes);
   void RemoveAllTrappedGroups();
   EoDbGroup* RemoveLastTrappedGroup() { return m_TrappedGroupList.RemoveTail(); }
   auto RemoveTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Remove(group); }
@@ -203,13 +209,9 @@ class AeSysDoc : public CDocument {
   auto GetFirstNodalGroupPosition() const { return m_NodalGroupList.GetHeadPosition(); }
   EoDbGroup* GetNextNodalGroup(POSITION& position) { return m_NodalGroupList.GetNext(position); }
   void RemoveAllNodalGroups() { m_NodalGroupList.RemoveAll(); }
-  POSITION AddMaskedPrimitive(EoDbMaskedPrimitive* maskedPrimitive) {
-    return m_MaskedPrimitives.AddTail((CObject*)maskedPrimitive);
-  }
+  POSITION AddMaskedPrimitive(EoDbMaskedPrimitive* maskedPrimitive) { return m_MaskedPrimitives.AddTail((CObject*)maskedPrimitive); }
   auto GetFirstMaskedPrimitivePosition() const { return m_MaskedPrimitives.GetHeadPosition(); }
-  EoDbMaskedPrimitive* GetNextMaskedPrimitive(POSITION& position) {
-    return (EoDbMaskedPrimitive*)m_MaskedPrimitives.GetNext(position);
-  }
+  EoDbMaskedPrimitive* GetNextMaskedPrimitive(POSITION& position) { return (EoDbMaskedPrimitive*)m_MaskedPrimitives.GetNext(position); }
   void RemoveAllMaskedPrimitives() { m_MaskedPrimitives.RemoveAll(); }
   DWORD GetPrimitiveMask(EoDbPrimitive* primitive);
   void AddPrimitiveBit(EoDbPrimitive* primitive, int bit);
@@ -343,7 +345,7 @@ class AeSysDoc : public CDocument {
   /// No new groups may be added to the tracing. Any number of tracings may be mapped.
   /// </remarks>
   bool TracingMap(const CString& pathName);
-  bool TracingOpen(const CString& pathName);  
+  bool TracingOpen(const CString& pathName);
   bool TracingView(const CString& pathName);
 
  public:

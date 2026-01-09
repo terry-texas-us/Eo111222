@@ -3,7 +3,7 @@
 #include <afx.h>
 #include <afxstr.h>
 #include <algorithm>
-#include <vector>
+#include<vector>
 
 class EoDbLineType : public CObject {
  public:
@@ -21,17 +21,23 @@ class EoDbLineType : public CObject {
    */
   EoUInt16 Index() const { return m_Index; }
   
+  CString IndexToString() const {
+    CString indexAsString;
+    indexAsString.Format(L"%03u", m_Index);
+    return indexAsString;
+  }
+  
   /** @brief Retrieves the number of dash elements in the line type.
    *
    * @return The number of dash elements as an EoUInt16.
    */
   EoUInt16 GetNumberOfDashes() const { return static_cast<EoUInt16>(m_DashElements.size()); }
-  
-  /** @brief Copies the dash lengths into the provided array.
+    
+  /** @brief Copies the dash elements of the line type into the provided array.
    *
-   * @param dDash A pointer to an array where the dash lengths will be copied.
+   * @param dashElements A pointer to an array where the dash elements will be copied.
    */
-  void GetDashLen(double* dDash) const { std::copy(m_DashElements.begin(), m_DashElements.end(), dDash); }
+  void GetDashElements(double* dashElements) const { std::copy(m_DashElements.begin(), m_DashElements.end(), dashElements); }
   
   /** @brief Retrieves the dash elements of the line type.
    *
