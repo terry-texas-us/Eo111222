@@ -1,28 +1,29 @@
 ﻿#pragma once
 
-#include "EoDb.h"
-#include "EoDbBlock.h"
-#include "EoDbGroup.h"
-#include "EoDbGroupList.h"
-#include "EoDbLayer.h"
-#include "EoDbLineTypeTable.h"
-#include "EoDbMaskedPrimitive.h"
-#include "EoGePoint3d.h"
-#include "EoGeUniquePoint.h"
-
-#if defined(USING_ODA)
-#include "DbDatabase.h"
-#endif  // USING_ODA
 #include <Windows.h>
 #include <afx.h>
 #include <afxcoll.h>
 #include <afxstr.h>
 #include <afxwin.h>
+
+#include "EoDb.h"
+#include "EoDbBlock.h"
 #include "EoDbFontDefinition.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
 #include "EoDbHeaderSection.h"
+#include "EoDbLayer.h"
 #include "EoDbLineType.h"
+#include "EoDbLineTypeTable.h"
+#include "EoDbMaskedPrimitive.h"
 #include "EoDbPrimitive.h"
+#include "EoGePoint3d.h"
+#include "EoGeUniquePoint.h"
 #include "EoGeVector3d.h"
+
+#if defined(USING_ODA)
+#include "DbDatabase.h"
+#endif  // USING_ODA
 
 class EoGeTransformMatrix;
 
@@ -64,15 +65,15 @@ class AeSysDoc : public CDocument {
   virtual BOOL OnNewDocument();
   virtual BOOL OnOpenDocument(LPCWSTR lpszPathName);
   virtual BOOL OnSaveDocument(LPCWSTR lpszPathName);
-  /// <summary>
-  // Called by the framework to delete the document's data without destroying the CDocument object itself.
-  // It is called just before the document is to be destroyed. It is also called to ensure that a document
-  // is empty before it is reused. Call this function to implement an "Edit Clear All" or similar command
-  // that deletes all of the document's data.
-  /// </summary>
+
+  /** @brief Deletes the contents of the document.
+   *
+   * This method is called to clear the document's data without destroying the CDocument object itself.
+   * It is typically invoked before the document is destroyed or when reusing the document.
+   * It can also be called to implement commands like "Edit Clear All" that require deleting all of the document's data.
+   */
   virtual void DeleteContents();
 
-  // Implementation
  public:
   virtual ~AeSysDoc();
 #ifdef _DEBUG
@@ -80,7 +81,6 @@ class AeSysDoc : public CDocument {
   virtual void Dump(CDumpContext& dc) const;
 #endif
 
-  // Operations
  public:
   void InitializeGroupAndPrimitiveEdit();
 
@@ -133,8 +133,6 @@ class AeSysDoc : public CDocument {
   // Line Type Table interface
   EoDbLineTypeTable* LineTypeTable() { return &m_LineTypeTable; }
   EoDbLineType* ContinuousLineType() { return m_ContinuousLineType; }
-  /// <summary>Loads the Line Type table.</summary>
-  void LoadLineTypesFromXmlFile(const CString& pathName);
 
   void PenTranslation(EoUInt16, EoInt16*, EoInt16*);
 
@@ -270,12 +268,12 @@ class AeSysDoc : public CDocument {
   afx_msg void OnLayerMelt();
   afx_msg void OnLayerStatic();
   afx_msg void OnLayerWork();
-  /// <summary>
-  ///All layers are made active with the exception of the current working layer.
-  ///This is a warm state meaning the layer is displayed using hot color set, is detectable,
-  ///and may have its groups modified or deleted. No new groups are added to an active layer.
-  ///Zero or more layers may be active.
-  /// </summary>
+
+  /** @brief Activates all layers, except for the current working layer.
+   * This is a warm state meaning the layer is displayed using hot color set, is detectable,
+   * and may have its groups modified or deleted. No new groups are added to an active layer.
+   * Zero or more layers may be active.
+   */
   afx_msg void OnLayersActiveAll();
   afx_msg void OnLayersStaticAll();
   afx_msg void OnLayersRemoveEmpty();
@@ -298,11 +296,13 @@ class AeSysDoc : public CDocument {
   afx_msg void OnToolsPrimitiveSnaptoendpoint();
   /// <summary>Reduces complex primitives and group references to a simpler form</summary>
   afx_msg void OnToolsGroupBreak();
-  /// <summary>
-  /// Searches for closest detectible group.  If found, group is removed
-  /// from all general group lists and added to deleted group list.
-  /// Notes: The group resources are not freed.
-  /// </summary>
+
+  /** @brief Handles the deletion of a group in the active view.
+    This function retrieves the current cursor position from the active view and attempts to select a group and its primitive at that position.
+    If a group is found, it removes the group from any layer it belongs to, removes it from all views, and checks if it is trapped.
+    If it is trapped, it updates the state information of the active view. The function then updates all views to reflect the deletion of the group and adds the deleted group to a list for potential restoration.
+    Finally, it adds a message to inform the user that the segment has been deleted and can be restored.
+  */
   afx_msg void OnToolsGroupDelete();
   afx_msg void OnToolsGroupDeletelast();
   /// <summary>Exchanges the first and last groups on the deleted group list.</summary>

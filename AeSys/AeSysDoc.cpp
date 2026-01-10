@@ -1,7 +1,5 @@
 ﻿#include "stdafx.h"
 
-#include "xmllite.h"
-#include <Shlwapi.h>
 #include <Windows.h>
 #include <afx.h>
 #include <afxdlgs.h>
@@ -12,7 +10,7 @@
 #include <afxstr.h>
 #include <afxver_.h>
 #include <afxwin.h>
-#include <atlcomcli.h>
+#include <algorithm>
 #include <atltrace.h>
 #include <atltypes.h>
 #include <cfloat>
@@ -20,6 +18,7 @@
 #include <cstdlib>
 #include <new>
 #include <stdexcept>
+#include <string>
 #include <strsafe.h>
 #include <wchar.h>
 
@@ -35,7 +34,6 @@
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
-#include "EoDbHeaderSection.h"
 #include "EoDbJobFile.h"
 #include "EoDbLayer.h"
 #include "EoDbLine.h"
@@ -67,10 +65,9 @@
 #include "EoGeVector3d.h"
 #include "Hatch.h"
 #include "Lex.h"
+#include "libdxfrw.h"
 #include "PrimState.h"
 #include "Resource.h"
-
-#include "libdxfrw.h"
 
 #if defined(USING_ODA)
 #include "DbBlockTable.h"
@@ -648,185 +645,6 @@ void AeSysDoc::RemoveLayerTableLayer(const CString& strName) {
   int i = FindLayerTableLayer(strName);
 
   if (i >= 0) RemoveLayerTableLayerAt(i);
-}
-/// @brief Writes all attributes of the current XML element to the debug trace output.
-/// @param reader Pointer to an IXmlReader interface positioned at an XML element whose attributes should be written.
-/// @return S_OK if attributes were successfully processed, S_FALSE if there are no attributes, or an error HRESULT if the operation failed. Returns -1 for certain error conditions.
-HRESULT WriteAttributes(IXmlReader* reader) {
-  HRESULT hr = reader->MoveToFirstAttribute();
-
-  if (S_FALSE == hr) { return hr; }
-  if (S_OK != hr) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error moving to first attribute, error is %08.8lx", hr);
-    return -1;
-  } else {
-    const WCHAR* prefix = nullptr;
-    const WCHAR* localName = nullptr;
-    const WCHAR* value = nullptr;
-
-    while (TRUE) {
-      if (!reader->IsDefault()) {
-        UINT prefixLength = 0;
-        if (FAILED(hr = reader->GetPrefix(&prefix, &prefixLength))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting prefix, error is %08.8lx", hr);
-          return -1;
-        }
-        if (FAILED(hr = reader->GetLocalName(&localName, nullptr))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting local name, error is %08.8lx", hr);
-          return -1;
-        }
-        if (FAILED(hr = reader->GetValue(&value, nullptr))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting value, error is %08.8lx", hr);
-          return -1;
-        }
-        if (prefixLength > 0) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Attr: %ls:%ls=\"%ls\" \n", prefix, localName, value);
-        } else {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Attr: %ls=\"%s\" \n", localName, value);
-        }
-      }
-      if (S_OK != reader->MoveToNextAttribute()) { break; }
-    }
-  }
-  return hr;
-}
-void AeSysDoc::LoadLineTypesFromXmlFile(const CString& pathName) {
-  HRESULT hr;
-  CComPtr<IStream> FileStream;
-  CComPtr<IXmlReader> Reader;
-
-  // Open read-only input stream
-  if (FAILED(hr = SHCreateStreamOnFile(pathName, STGM_READ, &FileStream))) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error creating file reader, error is %08.8lx", hr);
-    return;
-  }
-  if (FAILED(hr = CreateXmlReader(__uuidof(IXmlReader), (void**)&Reader, nullptr))) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error creating xml reader, error is %08.8lx", hr);
-    return;
-  }
-  if (FAILED(hr = Reader->SetProperty(XmlReaderProperty_DtdProcessing, DtdProcessing_Prohibit))) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error setting XmlReaderProperty_DtdProcessing, error is %08.8lx", hr);
-    return;
-  }
-  if (FAILED(hr = Reader->SetInput(FileStream))) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error setting input for reader, error is %08.8lx", hr);
-    return;
-  }
-
-  XmlNodeType NodeType;
-  const WCHAR* prefix = nullptr;
-  const WCHAR* localName = nullptr;
-  const WCHAR* value = nullptr;
-
-  UINT prefixLength = 0;
-
-  // read until there are no more nodes
-  while (S_OK == (hr = Reader->Read(&NodeType))) {
-    switch (NodeType) {
-      case XmlNodeType_XmlDeclaration:
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"XmlDeclaration\n");
-        if (FAILED(hr = WriteAttributes(Reader))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error writing attributes, error is %08.8lx", hr);
-          return;
-        }
-        break;
-
-      case XmlNodeType_Element:
-        if (FAILED(hr = Reader->GetPrefix(&prefix, &prefixLength))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting prefix, error is %08.8lx", hr);
-          return;
-        }
-        if (FAILED(hr = Reader->GetLocalName(&localName, nullptr))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting local name, error is %08.8lx", hr);
-          return;
-        }
-        if (prefixLength > 0) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Element: %ls:%ls\n", prefix, localName);
-        } else {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Element: %ls\n",
-                    localName);  // ItemGroup, LineDefinition, Appearance, DashGroup, DashLength
-        }
-        if (FAILED(hr = WriteAttributes(Reader))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error writing attributes, error is %08.8lx", hr);
-          return;
-        }
-        if (FAILED(hr = Reader->MoveToElement())) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0,
-                    L"Error moving to the element that owns the current attribute node, error is %08.8lx", hr);
-          return;
-        }
-        if (Reader->IsEmptyElement()) { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L" (empty element)\n"); }
-        break;
-
-      case XmlNodeType_EndElement:
-        if (FAILED(hr = Reader->GetPrefix(&prefix, &prefixLength))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting prefix, error is %08.8lx", hr);
-          return;
-        }
-        if (FAILED(hr = Reader->GetLocalName(&localName, nullptr))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting local name, error is %08.8lx", hr);
-          return;
-        }
-        if (prefixLength > 0) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"End Element: %ls:%ls\n", prefix, localName);
-        } else {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"End Element: %ls\n", localName);
-        }
-        break;
-
-      case XmlNodeType_Text:
-        if (FAILED(hr = Reader->GetValue(&value, nullptr))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting value, error is %08.8lx", hr);
-          return;
-        }
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Text: >%ls<\n", value);
-        break;
-
-      case XmlNodeType_Whitespace:
-        if (FAILED(hr = Reader->GetValue(&value, nullptr))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting value, error is %08.8lx", hr);
-          return;
-        }
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"Whitespace text: >%ls<\n", value);
-        break;
-
-      case XmlNodeType_CDATA:
-        if (FAILED(hr = Reader->GetValue(&value, nullptr))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting value, error is %08.8lx", hr);
-          return;
-        }
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"CDATA: %ls\n", value);
-        break;
-
-      case XmlNodeType_ProcessingInstruction:
-        if (FAILED(hr = Reader->GetLocalName(&localName, nullptr))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting name, error is %08.8lx", hr);
-          return;
-        }
-        if (FAILED(hr = Reader->GetValue(&value, nullptr))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting value, error is %08.8lx", hr);
-          return;
-        }
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Processing Instruction name:%ls value:%ls\n", localName, value);
-        break;
-
-      case XmlNodeType_Comment:
-        if (FAILED(hr = Reader->GetValue(&value, nullptr))) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error getting value, error is %08.8lx", hr);
-          return;
-        }
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Comment: %ls\n", value);
-        break;
-
-      case XmlNodeType_DocumentType:
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DOCTYPE is not printed\n");
-        break;
-
-      case XmlNodeType_None:
-      case XmlNodeType_Attribute:
-        break;
-    }
-  }
 }
 void AeSysDoc::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) {
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
@@ -1664,6 +1482,7 @@ void AeSysDoc::OnToolsGroupBreak() {
   activeView->BreakAllPolylines();
   activeView->BreakAllSegRefs();
 }
+
 void AeSysDoc::OnToolsGroupDelete() {
   auto* activeView = AeSysView::GetActiveView();
 

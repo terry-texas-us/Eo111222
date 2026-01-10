@@ -94,6 +94,12 @@ using namespace DirectX;
 
 #endif  // USING_ODA
 
+#include <atltrace.h>
+#ifdef TRACE
+#undef TRACE
+#endif
+
+
 UINT AFXAPI HashKey(CString& str);
 
 using EoByte = unsigned char;
