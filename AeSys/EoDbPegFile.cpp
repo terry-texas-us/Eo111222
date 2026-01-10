@@ -3,6 +3,9 @@
 #include <afx.h>
 #include <afxstr.h>
 #include <atltrace.h>
+#include <string>
+#include <type_traits>
+#include <variant>
 #include <vector>
 
 #include "AeSys.h"
@@ -14,6 +17,7 @@
 #include "EoDbEllipse.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
+#include "EoDbHeaderSection.h"
 #include "EoDbLayer.h"
 #include "EoDbLine.h"
 #include "EoDbLineType.h"
@@ -37,13 +41,36 @@ void EoDbPegFile::Load(AeSysDoc* document) {
   ReadBlocksSection(document);
   ReadEntitiesSection(document);
 }
-void EoDbPegFile::ReadHeaderSection(AeSysDoc*) {
-  if (EoDb::ReadUInt16(*this) != EoDb::kHeaderSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kHeaderSection.";
 
-  // 	with addition of info here will loop key-value pairs till EoDb::kEndOfSection sentinel
-
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+/**
+ * Reads the header section from the PEG file into the document's header section.
+ * @param document Pointer to the AeSysDoc object where the header section will be populated.
+ * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kHeaderSection." if the expected sentinel is not found.
+ * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection." if the expected end of section sentinel is not found.
+ */
+void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
+  if (EoDb::ReadUInt16(*this) != EoDb::kHeaderSection) { throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kHeaderSection."; }
+  EoDbHeaderSection& headerSection = document->HeaderSection();
+  
+  auto& variables = headerSection.GetVariables();
+  if (variables.empty()) {
+    // Legacy AeSys file
+    headerSection.SetVariable(L"$AESVER", HeaderVariable(L"AE2011"));  // AeSys version AE2011
+    headerSection.SetVariable(L"$CLAYER", HeaderVariable(L"0"));       // Current Layer default to `0`
+    headerSection.SetVariable(L"$PDMODE", HeaderVariable(2));          // Point display mode is `+`
+    headerSection.SetVariable(L"$PDSIZE", HeaderVariable(1.0));        // default point size 1.0
+  }
+  // 	With addition of info here will loop key-value pairs till EoDb::kEndOfSection sentinel
+  
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) { throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection."; }
 }
+
+/**
+ * Reads the tables section from the PEG file into the document's tables.
+ * @param document Pointer to the AeSysDoc object where the tables will be populated.
+ * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kTablesSection." if the expected sentinel is not found.
+ * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection." if the expected end of section sentinel is not found.
+ */
 void EoDbPegFile::ReadTablesSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kTablesSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kTablesSection.";
 
@@ -230,10 +257,32 @@ void EoDbPegFile::Unload(AeSysDoc* document) {
 
   CFile::Flush();
 }
-void EoDbPegFile::WriteHeaderSection(AeSysDoc*) {
+void EoDbPegFile::WriteHeaderSection(AeSysDoc* document) {
   EoDb::Write(*this, EoUInt16(EoDb::kHeaderSection));
 
-  // header variable items go here
+  EoDbHeaderSection& headerSection = document->HeaderSection();
+  auto& variables = headerSection.GetVariables();
+
+  // write header variant
+  for (const auto& [name, value] : variables) {
+    // Write the variable name
+    EoDb::Write(*this, CString(name.c_str()));
+
+    std::visit(
+        [&](auto&& arg) {
+          using T = std::decay_t<decltype(arg)>;
+          if constexpr (std::is_same_v<T, double>) {
+            EoDb::Write(*this, arg);
+          } else if constexpr (std::is_same_v<T, std::wstring>) {
+            EoDb::Write(*this, arg.c_str());
+          } else if constexpr (std::is_same_v<T, EoGePoint3d>) {
+            arg.Write(*this);
+          } else if constexpr (std::is_same_v<T, EoGeVector3d>) {
+            arg.Write(*this);
+          }
+        },
+        value);
+  }
 
   EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
 }

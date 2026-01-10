@@ -59,7 +59,7 @@ class EoGeVector3d {
   double SquaredLength() const;
   CString ToString() const;
   void Read(CFile& file);
-  void Write(CFile& file);
+  void Write(CFile& file) const;
 
   static const EoGeVector3d kXAxis;
   static const EoGeVector3d kYAxis;

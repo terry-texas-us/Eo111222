@@ -64,7 +64,6 @@ BOOL EoDlgLineTypesSelection::OnInitDialog() {
 
   PopulateList();
 
-  int columnCount = m_lineTypesListControl.GetHeaderCtrl()->GetItemCount();
   m_lineTypesListControl.SetColumnWidth(lineTypePreviewColumnIndex, LVSCW_AUTOSIZE_USEHEADER);
 
   if (m_selectedLineType != nullptr) {

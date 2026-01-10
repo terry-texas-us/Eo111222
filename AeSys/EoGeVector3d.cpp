@@ -115,7 +115,7 @@ CString EoGeVector3d::ToString() const {
   return (str);
 }
 
-void EoGeVector3d::Write(CFile& file) {
+void EoGeVector3d::Write(CFile& file) const {
   file.Write(&x, sizeof(double));
   file.Write(&y, sizeof(double));
   file.Write(&z, sizeof(double));

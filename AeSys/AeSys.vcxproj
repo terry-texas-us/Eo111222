@@ -240,6 +240,10 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <None Include="lex_regexp.dat" />
     <None Include="Markdowns\Dde Description and Few Uses.md" />
     <None Include="Markdowns\Analysis of lex.cpp and Modernization Suggestions.md" />
+    <None Include="Markdowns\dxf header.md">
+      <SubType>
+      </SubType>
+    </None>
     <None Include="Markdowns\Job File Format.md" />
     <None Include="Markdowns\Peg &amp; Tra File Formats.md" />
     <None Include="res\AeSys.ico" />
@@ -1467,6 +1471,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="DdeCmds.h" />
     <ClInclude Include="DdeGItms.h" />
     <ClInclude Include="DdeSys.h" />
+    <ClInclude Include="EoDbHeaderSection.h" />
     <ClInclude Include="EoDlgActiveViewKeyplan.h" />
     <ClInclude Include="EoDlgBlockInsert.h" />
     <ClInclude Include="EoDlgDrawOptions.h" />

@@ -18,6 +18,7 @@
 #include <cfloat>
 #include <cstdio>
 #include <cstdlib>
+#include <stdexcept>
 #include <strsafe.h>
 #include <wchar.h>
 
@@ -33,6 +34,7 @@
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
+#include "EoDbHeaderSection.h"
 #include "EoDbJobFile.h"
 #include "EoDbLayer.h"
 #include "EoDbLine.h"
@@ -181,6 +183,7 @@ END_MESSAGE_MAP()
 AeSysDoc::AeSysDoc()
     : m_IdentifiedLayerName(),
       m_SaveAsType(EoDb::kUnknown),
+      m_HeaderSection(),
       m_LineTypeTable(),
       m_ContinuousLineType(nullptr),
       m_BlocksTable(),
@@ -275,7 +278,7 @@ BOOL AeSysDoc::OnNewDocument() {
   m_LineTypeTable.SetAt(L"0", lineType);
   lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
   m_LineTypeTable.SetAt(L"Continuous", lineType);
-  
+
   m_workLayer = new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, lineType);
   m_ContinuousLineType = lineType;
   AddLayerTableLayer(m_workLayer);
@@ -327,32 +330,37 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
 #if defined(USING_ODA)
       m_DatabasePtr = app.createDatabase(true, OdDb::kEnglish);
 #endif  // USING_ODA
-      //auto* lineType = new EoDbLineType(0, L"Null", L"null", 0, nullptr);
-      //m_LineTypeTable.SetAt(L"0", lineType);
-      //lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
-      //m_LineTypeTable.SetAt(L"Continuous", lineType);
-     
+
       //m_workLayer = new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, lineType);
       //m_ContinuousLineType = lineType;
       //AddLayerTableLayer(m_workLayer);
 
-      EoDbPegFile file;
-      CFileException e;
-      if (file.Open(pathName, CFile::modeRead | CFile::shareDenyNone, &e)) {
-        file.Load(this);
-        SetWorkLayer(GetLayerTableLayerAt(0));
-        if (m_LineTypeTable.Size() == 0) {
-          auto* lineType = new EoDbLineType(0, L"Null", L"null", 0, nullptr);
-          m_LineTypeTable.SetAt(L"0", lineType);
-          lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
-          m_LineTypeTable.SetAt(L"Continuous", lineType);
-          CString applicationPath = EoAppGetPathFromCommandLine();
-          m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
-        } else {
-          m_workLayer = GetLayerTableLayer(L"0");
-          if (m_LineTypeTable.Lookup(L"Continuous", m_ContinuousLineType)) { m_workLayer->SetLineType(m_ContinuousLineType); }
+      try {
+        EoDbPegFile file;
+        if (file.Open(pathName, CFile::modeRead | CFile::shareDenyNone)) {
+          file.Load(this);
+          SetWorkLayer(GetLayerTableLayerAt(0));
+          if (m_LineTypeTable.Size() == 0) {
+            auto* lineType = new EoDbLineType(0, L"Null", L"null", 0, nullptr);
+            m_LineTypeTable.SetAt(L"0", lineType);
+            lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
+            m_LineTypeTable.SetAt(L"Continuous", lineType);
+            CString applicationPath = EoAppGetPathFromCommandLine();
+            m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
+          } else {
+            m_workLayer = GetLayerTableLayer(L"0");
+            if (m_LineTypeTable.Lookup(L"Continuous", m_ContinuousLineType)) { m_workLayer->SetLineType(m_ContinuousLineType); }
+          }
+          m_SaveAsType = EoDb::kPeg;
         }
-        m_SaveAsType = EoDb::kPeg;
+      } catch (const wchar_t* e) {
+        app.WarningMessageBox(IDS_MSG_PEGFILE_OPEN_FAILURE, pathName);
+        CString errorMessage = CString(pathName) + L" (" + CString(e) + L")";
+        break;
+      } catch (const std::runtime_error& e) {
+        CString errorMessage = CString(pathName) + L" (" + CString(e.what()) + L")";
+        app.WarningMessageBox(IDS_MSG_PEGFILE_OPEN_FAILURE, errorMessage);
+        break;
       }
       break;
     }

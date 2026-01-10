@@ -67,7 +67,7 @@ class EoGePoint3d {
                               const double angle);
   CString ToString();
   void Read(CFile& file);
-  void Write(CFile& file);
+  void Write(CFile& file) const;
 
  public:
   static const EoGePoint3d kOrigin;

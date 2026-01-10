@@ -6,6 +6,9 @@
 #include <afxwin.h>
 #include <atltrace.h>
 #include <cstdlib>
+#include <string>
+#include <utility>
+#include <variant>
 #include <vector>
 
 #include "AeSysDoc.h"
@@ -15,27 +18,24 @@
 #include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 
-#include <utility>
 
 namespace {
 
-typedef enum { ELEMENT_TYPE_TEXT, ELEMENT_TYPE_SHAPE } ElementType;
+enum class ElementType {Text, Shape };
 
-typedef struct {
-  ElementType type;      // ELEMENT_TYPE_TEXT or ELEMENT_TYPE_SHAPE
-  char* file;            // Text style name (e.g., "Standard") or SHP/SHX file name
-  union {
-    char* text;          // Text string for text elements (e.g., "Text")
-    int shape_num;       // Shape number for shape elements
-  } content;
+using SymbolContent = std::variant<int, std::wstring>;
+struct EoDbLineTypeSymbol {
   double length;         // Dash length (often negative for the space occupied by the element)
   double scale;          // Scale factor (S value)
   double rotation;       // Rotation angle (R or U value)
-  int absolute_rotation; // 0 for relative rotation (No), 1 for absolute
+  double xOffset;        // X offset
+  double yOffset;        // Y offset
+  std::wstring file;     // Text style name (e.g., "Standard" or SHP/SHX file name)
+  SymbolContent content; // Text string (e.g. "HW" or shape number)
+  ElementType type;      // Text or Shape
+  int absoluteRotation;  // 0 for relative rotation (No), 1 for absolute
   int upright;           // 0 for no upright orientation (No), 1 for upright (keeps text readable)
-  double offset_x;       // X offset
-  double offset_y;       // Y offset
-} LinetypeElement;
+};
 
 constexpr EoUInt16 maxNumberOfDashElementsDefault{8};
 
@@ -82,48 +82,6 @@ const std::pair<const wchar_t*, const wchar_t*> legacyLineTypes[] = {{L"Null", L
                                                                      {L"PHANTOM2", L"PHANTOM2"},
                                                                      {L"PHANTOMX2", L"PHANTOMX2"}};
 
-const wchar_t* stockLineTypes[] = {L"00.Null",
-                                   L"01.Continuous",
-                                   L"02.Dash2",
-                                   L"03.Dash",
-                                   L"04.DashX2",
-                                   L"05.Center2",
-                                   L"06.DashX2-dot",
-                                   L"07.Divide2",
-                                   L"08.DashX2-triple-dot",
-                                   L"09.Dot",
-                                   L"10.Center",
-                                   L"11.DashX4-dot",
-                                   L"12.Divide",
-                                   L"13.DashX4-triple-dot",
-                                   L"14.CenterX2",
-                                   L"15.DashX8-dot",
-                                   L"16.DivideX2",
-                                   L"17.DashX8-triple-dot",
-                                   L"18.BORDER",
-                                   L"19.BORDER2",
-                                   L"20.BORDERX2",
-                                   L"21.CENTER",
-                                   L"22.CENTER2",
-                                   L"23.CENTERX2",
-                                   L"24.DASHDOT",
-                                   L"25.DASHDOT2",
-                                   L"26.DASHDOTX2",
-                                   L"27.DASHED",
-                                   L"28.DASHED2",
-                                   L"29.DASHEDX2",
-                                   L"30.DIVIDE",
-                                   L"31.DIVIDE2",
-                                   L"32.DIVIDEX2",
-                                   L"33.DOT",
-                                   L"34.DOT2",
-                                   L"35.DOTX2",
-                                   L"36.HIDDEN",
-                                   L"37.HIDDEN2",
-                                   L"38.HIDDENX2",
-                                   L"39.PHANTOM",
-                                   L"40.PHANTOM2",
-                                   L"41.PHANTOMX2"};
 constexpr EoUInt16 NumberOfLegacyLineTypes{42};
 }  // namespace
 

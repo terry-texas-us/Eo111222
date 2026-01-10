@@ -3163,6 +3163,7 @@ BEGIN
     IDS_OPENFILE_LOAD_PENCOLORS_TITLE "Load Pen Colors"
     IDS_MSG_OPENFILE_DIALOG_ERROR "Error opening pen colors file."
     IDS_MSG_NO_LINETYPES_DEFINED "Current drawing has no line types defined."
+    IDS_MSG_PEGFILE_OPEN_FAILURE "Peg file open failure."
 END
 
 STRINGTABLE

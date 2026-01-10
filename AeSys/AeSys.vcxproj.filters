@@ -1703,6 +1703,7 @@
     </None>
     <None Include="Tools\reflex_static_lib.pdb" />
     <None Include="C:\Users\tsmit\Desktop\Help Peg.pdf" />
+    <None Include="Markdowns\dxf header.md" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">
@@ -2013,6 +2014,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EoDlgLineTypesSelection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EoDbHeaderSection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

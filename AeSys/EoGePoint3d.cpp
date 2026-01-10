@@ -142,7 +142,7 @@ CString EoGePoint3d::ToString() {
   str.Format(L"%f;%f;%f\t", x, y, z);
   return (str);
 }
-void EoGePoint3d::Write(CFile& file) {
+void EoGePoint3d::Write(CFile& file) const {
   file.Write(&x, sizeof(double));
   file.Write(&y, sizeof(double));
   file.Write(&z, sizeof(double));

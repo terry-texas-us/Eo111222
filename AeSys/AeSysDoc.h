@@ -19,6 +19,7 @@
 #include <afxstr.h>
 #include <afxwin.h>
 #include "EoDbFontDefinition.h"
+#include "EoDbHeaderSection.h"
 #include "EoDbLineType.h"
 #include "EoDbPrimitive.h"
 #include "EoGeVector3d.h"
@@ -43,6 +44,7 @@ class AeSysDoc : public CDocument {
   CString m_IdentifiedLayerName;
   EoDb::FileTypes m_SaveAsType;
 
+  EoDbHeaderSection m_HeaderSection;
   EoDbLineTypeTable m_LineTypeTable;
   EoDbLineType* m_ContinuousLineType;
   CBlocks m_BlocksTable;
@@ -81,6 +83,13 @@ class AeSysDoc : public CDocument {
   // Operations
  public:
   void InitializeGroupAndPrimitiveEdit();
+
+  /** @brief Provides access to the document's header section.
+   *
+   * @return A reference to the EoDbHeaderSection object.
+   */
+  EoDbHeaderSection& HeaderSection() { return m_HeaderSection; }
+  const EoDbHeaderSection& HeaderSection() const { return m_HeaderSection; }
 
   /// <summary>Constructs 0 to many seperate text primitives for each "\r\n" delimited substr.</summary>
   void AddTextBlock(LPWSTR pszText);
