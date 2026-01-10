@@ -59,10 +59,10 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableSpecificWarnings>5045</DisableSpecificWarnings>
       <BrowseInformationFile>$(ProjectDir)vshints.hm</BrowseInformationFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;$(SolutionDir)libdxfrw\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>xmllite.lib;$(ProjectDir)Tools\reflex_static_lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>xmllite.lib;$(ProjectDir)Tools\reflex_static_lib.lib;$(SolutionDir)libdxfrw\vs2013\Debug\libdxfrw.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
@@ -88,10 +88,10 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <BrowseInformationFile>$(ProjectDir)vshints.hm</BrowseInformationFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;$(SolutionDir)libdxfrw\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>xmllite.lib;$(ProjectDir)Tools\reflex_static_lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>xmllite.lib;$(ProjectDir)Tools\reflex_static_lib.lib;$(SolutionDir)libdxfrw\vs2013\Debug\libdxfrw.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
@@ -245,6 +245,10 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
       </SubType>
     </None>
     <None Include="Markdowns\Job File Format.md" />
+    <None Include="Markdowns\libdxfrw - Technical Specifications.md">
+      <SubType>
+      </SubType>
+    </None>
     <None Include="Markdowns\Peg &amp; Tra File Formats.md" />
     <None Include="res\AeSys.ico" />
     <None Include="res\AeSys.rc2" />

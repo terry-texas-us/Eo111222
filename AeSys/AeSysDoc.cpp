@@ -18,6 +18,7 @@
 #include <cfloat>
 #include <cstdio>
 #include <cstdlib>
+#include <new>
 #include <stdexcept>
 #include <strsafe.h>
 #include <wchar.h>
@@ -69,6 +70,8 @@
 #include "PrimState.h"
 #include "Resource.h"
 
+#include "libdxfrw.h"
+
 #if defined(USING_ODA)
 #include "DbBlockTable.h"
 #include "DbBlockTableRecord.h"
@@ -82,9 +85,6 @@
 #if defined(USING_DDE)
 #include "ddeGItms.h"
 #endif  // USING_DDE
-#include <memory>
-#include <new>
-
 UINT_PTR CALLBACK OFNHookProcFileTracing(HWND, UINT, WPARAM, LPARAM);
 
 UINT AFXAPI HashKey(CString& str) {
