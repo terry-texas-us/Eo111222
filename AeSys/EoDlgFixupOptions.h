@@ -19,6 +19,6 @@ class EoDlgFixupOptions : public CDialog {
   virtual void DoDataExchange(CDataExchange* dataExchange);
 
  public:
-  double m_FixupAxisTolerance;
-  double m_FixupModeCornerSize;
+  double m_FixupAxisTolerance{0.0};
+  double m_FixupModeCornerSize{0.25};
 };

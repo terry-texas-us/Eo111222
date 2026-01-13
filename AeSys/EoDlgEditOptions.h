@@ -18,7 +18,7 @@ class EoDlgEditOptions : public CDialog {
   virtual BOOL OnInitDialog();
   virtual void OnOK();
 
-  AeSysView* m_ActiveView;
+  AeSysView* m_ActiveView{nullptr};
 
  public:
   CEdit m_RotationXEditControl;
@@ -41,10 +41,10 @@ class EoDlgEditOptions : public CDialog {
  protected:
   DECLARE_MESSAGE_MAP()
  public:
-  double m_EditModeScaleX;
-  double m_EditModeScaleY;
-  double m_EditModeScaleZ;
-  double m_EditModeRotationAngleX;
-  double m_EditModeRotationAngleY;
-  double m_EditModeRotationAngleZ;
+  double m_EditModeScaleX{1.0};
+  double m_EditModeScaleY{1.0};
+  double m_EditModeScaleZ{1.0};
+  double m_EditModeRotationAngleX{0.0};
+  double m_EditModeRotationAngleY{0.0};
+  double m_EditModeRotationAngleZ{0.0};
 };

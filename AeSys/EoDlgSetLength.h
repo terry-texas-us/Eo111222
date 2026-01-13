@@ -1,6 +1,9 @@
 ﻿#pragma once
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
 
-// EoDlgSetLength dialog
+#include "Resource.h"
 
 class EoDlgSetLength : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetLength)
@@ -21,6 +24,6 @@ class EoDlgSetLength : public CDialog {
   virtual void OnOK();
 
  public:
-  double m_dLength;
+  double m_dLength{0.0};
   CString m_strTitle;
 };

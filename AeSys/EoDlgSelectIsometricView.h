@@ -20,7 +20,7 @@ class EoDlgSelectIsometricView : public CDialog {
   virtual BOOL OnInitDialog();
 
  public:
-  int m_LeftRight;
-  int m_FrontBack;
-  int m_AboveUnder;
+  int m_LeftRight{0};
+  int m_FrontBack{0};
+  int m_AboveUnder{0};
 };

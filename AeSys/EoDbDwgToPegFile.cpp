@@ -26,10 +26,6 @@ CTraceCategory traceOdDb(L"traceOdDb", 3);
 EoDbDwgToPegFile::EoDbDwgToPegFile(OdDbDatabasePtr database) { m_DatabasePtr = database; }
 void EoDbDwgToPegFile::ConvertToPeg(AeSysDoc* document) {
   if (m_DatabasePtr.isNull()) { return; }
-  ConvertHeaderSectionToPeg(document);
-  ConvertViewportTableToPeg(document);
-  ConvertLinetypesTableToPeg(document);
-  ConvertLayerTableToPeg(document);
 
   ConvertBlockTableToPeg(document);
 
@@ -71,103 +67,6 @@ void EoDbDwgToPegFile::ConvertBlockTableToPeg(AeSysDoc* document) {
     EoGePoint3d ptBase(Origin.x, Origin.y, Origin.z);
     pBlock = new EoDbBlock(0 /* m_htb->blkh.flag */, ptBase, (PCTSTR)Block->pathName());
     document->InsertBlock((PCTSTR)Block->getName(), pBlock);
-  }
-}
-void EoDbDwgToPegFile::ConvertLayerTableToPeg(AeSysDoc* document) {
-  OdDbLayerTablePtr Layers = m_DatabasePtr->getLayerTableId().safeOpenObject();
-  ATLTRACE2(traceOdDb, 0, L"%s   Loading layer definitions ...\n", (LPCWSTR)Layers->desc()->name());
-
-  OdDbSymbolTableIteratorPtr Iterator = Layers->newIterator();
-
-  for (Iterator->start(); !Iterator->done(); Iterator->step()) {
-    OdDbLayerTableRecordPtr Layer = Iterator->getRecordId().safeOpenObject();
-    ATLTRACE2(traceOdDb, 0, L"%s  %s\n", (LPCWSTR)Layer->desc()->name(), (LPCWSTR)Layer->getName());
-    if (document->FindLayerTableLayer((LPCWSTR)Layer->getName()) < 0) {
-      EoDbLayer* pegLayer = new EoDbLayer((LPCWSTR)Layer->getName(),
-                                          EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
-
-      pegLayer->SetColorIndex(EoInt16(abs(Layer->colorIndex())));
-
-      OdDbObjectId LinetypeObjectId = Layer->linetypeObjectId();
-
-      OdDbLinetypeTableRecordPtr Linetype = LinetypeObjectId.safeOpenObject();
-
-      EoDbLineType* LineType;
-      document->LineTypeTable()->Lookup((LPCWSTR)Linetype->getName(), LineType);
-      pegLayer->SetLineType(LineType);
-
-      if (Layer->isFrozen() || Layer->isOff()) { pegLayer->SetStateOff(); }
-      document->AddLayerTableLayer(pegLayer);
-
-      ATLTRACE2(traceOdDb, 2, L"Line weight: %i\n", Layer->lineWeight());
-      ATLTRACE2(traceOdDb, 2, L"Plot style name: %s\n", (PCTSTR)Layer->plotStyleName());
-      ATLTRACE2(traceOdDb, 2, L"Plot style name object: %08.8lx\n", Layer->plotStyleNameId());
-      ATLTRACE2(traceOdDb, 2, L"Layer is locked: %i\n", Layer->isLocked());
-      ATLTRACE2(traceOdDb, 2, L"Layer is plottable: %i\n", Layer->isPlottable());
-      ATLTRACE2(traceOdDb, 2, L"Viewport default: %i\n", Layer->VPDFLT());
-      OdDbObjectId ObjectId = Layer->extensionDictionary();
-      if (!ObjectId.isNull()) {
-        OdDbObjectPtr ObjectPtr = ObjectId.safeOpenObject();
-        OdDbDictionaryPtr Dictionary = ObjectPtr;
-
-        OdDbDictionaryIteratorPtr Iterator = Dictionary->newIterator();
-        for (; !Iterator->done(); Iterator->next()) {
-          ATLTRACE2(traceOdDb, 2, L"Dictionary name: %s\n", (PCTSTR)Iterator->name());
-        }
-      }
-    }
-  }
-}
-void EoDbDwgToPegFile::ConvertLinetypesTableToPeg(AeSysDoc* document) {
-  OdDbLinetypeTablePtr Linetypes = m_DatabasePtr->getLinetypeTableId().safeOpenObject();
-  ATLTRACE2(traceOdDb, 0, L"%s   Loading line type definitions ...\n", (LPCWSTR)Linetypes->desc()->name());
-
-  EoDbLineTypeTable* LineTypeTable = document->LineTypeTable();
-
-  OdDbSymbolTableIteratorPtr Iterator = Linetypes->newIterator();
-
-  for (Iterator->start(); !Iterator->done(); Iterator->step()) {
-    OdDbLinetypeTableRecordPtr Linetype = Iterator->getRecordId().safeOpenObject();
-    ATLTRACE2(traceOdDb, 0, L"%s  %s\n", (LPCWSTR)Linetype->desc()->name(), (LPCWSTR)Linetype->getName());
-    CString Name = Linetype->getName();
-    EoDbLineType* LineType;
-    if (!LineTypeTable->Lookup(Name, LineType)) {
-      EoUInt16 NumberOfDashes = EoUInt16(Linetype->numDashes());
-      //Linetype->patternLength();
-      //Linetype->isScaledToFit();
-      if (Linetype->extensionDictionary()) { ATLTRACE2(traceOdDb, 0, L" {Extention Dictionary entry skipped}\n"); }
-      double* DashLengths = new double[NumberOfDashes];
-
-      for (EoUInt16 Index = 0; Index < NumberOfDashes; Index++) {
-        DashLengths[Index] = Linetype->dashLengthAt(Index);
-        //Linetype->shapeStyleAt(Index);
-        //Linetype->shapeNumberAt(Index);
-        //Linetype->textAt(Index);
-        //Linetype->shapeScaleAt(Index);
-        //Linetype->shapeOffsetAt(Index);
-        //Linetype->shapeRotationAt(Index);
-        //Linetype->shapeIsUcsOrientedAt(Index);
-      }
-      EoUInt16 LineTypeIndex = LineTypeTable->LegacyLineTypeIndex(Name);
-
-      LineType = new EoDbLineType(LineTypeIndex, Name, (LPCWSTR)Linetype->comments(), NumberOfDashes, DashLengths);
-      LineTypeTable->SetAt(Name, LineType);
-
-      delete[] DashLengths;
-    }
-  }
-}
-void EoDbDwgToPegFile::ConvertViewportTableToPeg(AeSysDoc* /* document */) {
-  OdDbViewportTablePtr Viewports = m_DatabasePtr->getViewportTableId().safeOpenObject();
-  ATLTRACE2(traceOdDb, 0, L"%s   Loading viewport definitions ...\n", (LPCWSTR)Viewports->desc()->name());
-
-  OdDbSymbolTableIteratorPtr Iterator = Viewports->newIterator();
-
-  for (Iterator->start(); !Iterator->done(); Iterator->step()) {
-    OdDbViewportTableRecordPtr Viewport = Iterator->getRecordId().safeOpenObject();
-    ATLTRACE2(traceOdDb, 0, L"%s  %s\n", (LPCWSTR)Viewport->desc()->name(), (LPCWSTR)Viewport->getName());
-
-    if (Viewport->extensionDictionary()) {}
   }
 }
 

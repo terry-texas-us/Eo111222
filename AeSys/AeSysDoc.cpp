@@ -738,22 +738,22 @@ EoDbLayer* AeSysDoc::AnyLayerRemove(EoDbGroup* group) {
   }
   return 0;
 }
+
 void AeSysDoc::TracingFuse(CString& nameAndLocation) {
-  auto* Layer = GetLayerTableLayer(nameAndLocation);
-  if (Layer != nullptr) {
+  auto* layer = GetLayerTableLayer(nameAndLocation);
+  if (layer != nullptr) {
     wchar_t title[MAX_PATH]{0};
     GetFileTitleW(nameAndLocation, title, MAX_PATH);
-    wchar_t* NextToken{nullptr};
-    wcstok_s(title, L".", &NextToken);
-    nameAndLocation = title;
+    wchar_t* context{nullptr};
+    wchar_t* baseName = wcstok_s(title, L".", &context);
+    nameAndLocation = baseName;
+    layer->ClrTracingFlg();
+    layer->ClearStateFlag();
+    layer->MakeResident();
+    layer->MakeInternal();
+    layer->SetStateStatic();
 
-    Layer->ClrTracingFlg();
-    Layer->ClearStateFlag();
-    Layer->MakeResident();
-    Layer->MakeInternal();
-    Layer->SetStateStatic();
-
-    Layer->SetName(nameAndLocation);
+    layer->SetName(baseName);
   }
 }
 bool AeSysDoc::TracingLoadLayer(const CString& pathName, EoDbLayer* layer) {
@@ -1246,56 +1246,65 @@ void AeSysDoc::OnEditTrapCut() {
   DeleteAllTrappedGroups();
   UpdateAllViews(nullptr, 0L, nullptr);
 }
+
 void AeSysDoc::OnEditTrapPaste() {
   if (::OpenClipboard(nullptr)) {
-    UINT nClipboardFormat = app.ClipboardFormatIdentifierForEoGroups();
+    UINT clipboardFormat = app.ClipboardFormatIdentifierForEoGroups();
 
-    if (IsClipboardFormatAvailable(nClipboardFormat)) {
-      EoDlgSetPastePosition Dialog;
-      if (Dialog.DoModal() == IDOK) {
-        HGLOBAL hGbl = GetClipboardData(nClipboardFormat);
-        if (hGbl != 0) {
-          EoGePoint3d ptMin;
+    if (IsClipboardFormatAvailable(clipboardFormat)) {
+      EoDlgSetPastePosition dialog;
+      if (dialog.DoModal() == IDOK) {
+        HGLOBAL globalHandle = GetClipboardData(clipboardFormat);
+        if (globalHandle != 0) {
+          EoGePoint3d minPoint;
 
-          EoGePoint3d ptPvt(app.GetCursorPosition());
-          SetTrapPivotPoint(ptPvt);
+          EoGePoint3d pivotPoint(app.GetCursorPosition());
+          SetTrapPivotPoint(pivotPoint);
 
-          LPCSTR lpBuffer = (LPCSTR)GlobalLock(hGbl);
+          LPCSTR buffer = (LPCSTR)GlobalLock(globalHandle);
 
-          DWORD dwSizeOfBuffer = *((DWORD*)lpBuffer);
+          DWORD sizeOfBuffer{0};
+          if (buffer == nullptr) {
+            GlobalUnlock(globalHandle);
+            CloseClipboard();
+            app.WarningMessageBox(IDS_MSG_CLIPBOARD_LOCKED);
+            return;
+          }
+          sizeOfBuffer = *((DWORD*)buffer);
 
-          CMemFile mf;
-          mf.Write(lpBuffer, UINT(dwSizeOfBuffer));
+          CMemFile memoryFile;
+          memoryFile.Write(buffer, UINT(sizeOfBuffer));
 
-          mf.Seek(sizeof(DWORD), CFile::begin);
-          ptMin.Read(mf);
+          memoryFile.Seek(sizeof(DWORD), CFile::begin);
+          minPoint.Read(memoryFile);
 
-          EoGeVector3d vTrns(ptMin, ptPvt);
+          EoGeVector3d translateVector(minPoint, pivotPoint);
 
-          GlobalUnlock(hGbl);
+          GlobalUnlock(globalHandle);
 
-          mf.Seek(96, CFile::begin);
-          EoDbJobFile JobFile;
-          JobFile.ReadMemFile(mf, vTrns);
+          memoryFile.Seek(96, CFile::begin);
+          EoDbJobFile jobFile;
+          jobFile.ReadMemFile(memoryFile, translateVector);
         }
       }
     } else if (IsClipboardFormatAvailable(CF_TEXT)) {
-      HGLOBAL ClipboardDataHandle = GetClipboardData(CF_TEXT);
+      HGLOBAL clipboardDataHandle = GetClipboardData(CF_TEXT);
 
-      LPWSTR lpText = new WCHAR[GlobalSize(ClipboardDataHandle)];
+      LPWSTR clipboardText = new WCHAR[GlobalSize(clipboardDataHandle)];
 
-      LPCWSTR ClipboardData = (LPCWSTR)GlobalLock(ClipboardDataHandle);
-      lstrcpyW(lpText, ClipboardData);
-      GlobalUnlock(ClipboardDataHandle);
+      LPCWSTR clipboardData = (LPCWSTR)GlobalLock(clipboardDataHandle);
+      lstrcpyW(clipboardText, clipboardData);
+      GlobalUnlock(clipboardDataHandle);
 
-      AddTextBlock(lpText);
+      AddTextBlock(clipboardText);
 
-      delete[] lpText;
+      delete[] clipboardText;
     }
     CloseClipboard();
   } else
     app.WarningMessageBox(IDS_MSG_CLIPBOARD_LOCKED);
 }
+
 void AeSysDoc::OnEditTrapWork() {
   RemoveAllTrappedGroups();
   AddGroupsToTrap(GetWorkLayer());
@@ -1956,93 +1965,11 @@ DWORD AeSysDoc::GetPrimitiveMask(EoDbPrimitive* primitive) {
 
 #if defined(USING_ODA)
 void AeSysDoc::ConvertPegDocument() {
-  ConvertHeaderSection();
-  ConvertViewportTable();
-  ConvertLinetypesTable();
-  ConvertLayerTable();
   ConvertBlockTable();
-
   ConvertGroupsInLayers();
   ConvertGroupsInBlocks();
 }
-void AeSysDoc::ConvertHeaderSection() {}
-void AeSysDoc::ConvertViewportTable() {}
-/// <remarks>
-///linetypes ByBlock, ByLayer & Continuous table entry are database defaults
-/// </remarks>
-void AeSysDoc::ConvertLinetypesTable() {
-  CString Name;
-  EoDbLineType* LineType;
 
-  auto Position = m_LineTypeTable.GetStartPosition();
-  while (Position) {
-    m_LineTypeTable.GetNextAssoc(Position, Name, LineType);
-    ConvertLinetypesTableRecord(LineType);
-  }
-}
-void AeSysDoc::ConvertLinetypesTableRecord(EoDbLineType* lineType) {
-  OdDbLinetypeTablePtr Linetypes = m_DatabasePtr->getLinetypeTableId().safeOpenObject(OdDb::kForWrite);
-
-  OdString LinetypeName = lineType->Name();
-  if (Linetypes->getAt(LinetypeName).isNull()) {
-    OdDbLinetypeTableRecordPtr Linetype = OdDbLinetypeTableRecord::createObject();
-
-    Linetype->setName(LinetypeName);
-    OdString Description = lineType->Description();
-    Linetype->setComments(Description);
-
-    int NumberOfDashes = lineType->GetNumberOfDashes();
-    Linetype->setNumDashes(NumberOfDashes);
-    Linetype->setPatternLength(lineType->GetPatternLen());
-
-    if (NumberOfDashes > 0) {
-      double* DashLengths = new double[NumberOfDashes];
-      lineType->GetDashLen(DashLengths);
-
-      for (int n = 0; n < NumberOfDashes; n++) {
-        Linetype->setDashLengthAt(n, DashLengths[n]);
-
-        Linetype->setShapeStyleAt(n, OdDbObjectId::kNull);
-        Linetype->setShapeNumberAt(n, 0);
-        Linetype->setTextAt(n, L" ");
-        Linetype->setShapeScaleAt(n, 1.0);
-        Linetype->setShapeOffsetAt(n, OdGeVector2d(0.0, 0.0));
-        Linetype->setShapeRotationAt(n, 0.0);
-        Linetype->setShapeIsUcsOrientedAt(n, false);
-      }
-      delete[] DashLengths;
-    }
-    Linetypes->add(Linetype);
-  }
-}
-void AeSysDoc::ConvertLayerTable() {
-  for (int n = 0; n < GetLayerTableSize(); n++) { ConvertLayerTableRecord(GetLayerTableLayerAt(n)); }
-}
-void AeSysDoc::ConvertLayerTableRecord(EoDbLayer* layer) {
-  OdDbLayerTablePtr Layers = m_DatabasePtr->getLayerTableId().safeOpenObject(OdDb::kForWrite);
-
-  if (Layers->getAt(OdString(layer->Name())).isNull()) {
-    OdDbLayerTableRecordPtr Layer = OdDbLayerTableRecord::createObject();
-
-    Layer->setName((LPCWSTR)layer->Name());
-
-    Layer->setColorIndex(layer->ColorIndex());
-
-    OdString LinetypeName = layer->LineTypeName();
-    Layer->setLinetypeObjectId(Layers->getAt(LinetypeName));
-
-    Layer->setLineWeight(OdDb::kLnWtByLwDefault);
-    Layer->setIsOff(layer->IsOff());
-    Layer->setIsFrozen(layer->IsOff());
-    Layer->setPlotStyleName(L" ");
-    Layer->setIsLocked(layer->IsStatic());
-    Layer->setIsPlottable(true);
-    Layer->setVPDFLT(false);
-    Layers->add(Layer);
-    if (layer->IsWork()) { m_DatabasePtr->setCLAYER(Layer->objectId()); }
-    Layers->generateUsageData();
-  }
-}
 void AeSysDoc::ConvertBlockTable() {
   OdDbBlockTablePtr Blocks = m_DatabasePtr->getBlockTableId().safeOpenObject(OdDb::kForWrite);
 

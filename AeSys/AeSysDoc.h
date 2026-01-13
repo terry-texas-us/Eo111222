@@ -254,8 +254,15 @@ class AeSysDoc : public CDocument {
   afx_msg void OnEditTrapDelete();
   /// <summary>Initializes current trap and all trap component lists.</summary>
   afx_msg void OnEditTrapQuit();
-  /// <summary>Pastes clipboard to drawing. If the clipboard has the EoGroups format, all other formats are ignored.</summary>
+
+  /** @brief Pastes the contents of the clipboard into the current drawing.
+   *
+   * This method checks the clipboard for data in the EoGroups format, which is specific to the application or CF_TEXT format.
+   * If EoGroups format is found, it is pasted into the current drawing, and any other formats present in the clipboard are ignored.
+   * This ensures that only compatible data is processed and integrated into the drawing.
+   */
   afx_msg void OnEditTrapPaste();
+
   /// <summary>Adds all groups in the work layer to the trap.</summary>
   afx_msg void OnEditTrapWork();
   /// <summary>Add all groups in all work and active layers to the trap.</summary>
@@ -340,14 +347,18 @@ class AeSysDoc : public CDocument {
  public:
   afx_msg void OnHelpKey();
 
-  /// <summary>Tracing is converted to a static layer.</summary>
-  /// <remarks>
-  ///This is a cold state meaning the layer is displayed using warm color set,
-  ///is not detectable, and may not have its groups modified or deleted.
-  /// No new groups may be added to the layer.
-  /// </remarks>
+  /** @brief Fuses a tracing layer into the main document converting it to a static layer.
+   *
+   * This method modifies the specified tracing layer by removing its tracing flags,
+   * making it resident and internal, and setting its state to static. It also updates
+   * the layer's name based on the provided file name.
+   *
+   * @param nameAndLocation A reference to a CString containing the name and location of the tracing layer file.
+   * @note This is a cold state meaning the layer is displayed using warm color set, is not detectable, and may not have its groups modified or deleted. No new groups may be added to the layer.
+   */
   void TracingFuse(CString& nameAndLocation);
   bool TracingLoadLayer(const CString& pathName, EoDbLayer* layer);
+  
   /// <summary>Selected tracing is mapped.</summary>
   /// <remarks>
   /// This is a cold state meaning the tracing is displayed using warm color set, is not detectable,
@@ -361,13 +372,6 @@ class AeSysDoc : public CDocument {
  public:
 #if defined(USING_ODA)
   void ConvertPegDocument();
-
-  void ConvertHeaderSection();
-  void ConvertViewportTable();
-  void ConvertLinetypesTable();
-  void ConvertLinetypesTableRecord(EoDbLineType* lineType);
-  void ConvertLayerTable();
-  void ConvertLayerTableRecord(EoDbLayer* layer);
 
   void ConvertBlockTable();
 

@@ -182,9 +182,6 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
       document->AddLayerTableLayer(layer);
 
       if (layer->IsWork()) { document->SetWorkLayer(layer); }
-#if defined(USING_ODA)
-      document->ConvertLayerTable();
-#endif  // USING_ODA
     }
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) { throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable."; }

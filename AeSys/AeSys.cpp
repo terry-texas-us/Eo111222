@@ -1,21 +1,5 @@
 ﻿#include "stdafx.h"
 
-#include "AeSys.h"
-#include "AeSysDoc.h"
-#include "AeSysView.h"
-#include "ChildFrm.h"
-#include "EoApOptions.h"
-#include "EoDb.h"
-#include "EoDbCharacterCellDefinition.h"
-#include "EoDbFontDefinition.h"
-#include "EoDlgModeLetter.h"
-#include "EoDlgModeRevise.h"
-#include "EoGePoint3d.h"
-#include "Lex.h"
-#include "MainFrm.h"
-#include "PegColors.h"
-#include "PrimState.h"
-#include "Resource.h"
 #include <ShlObj_core.h>
 #include <Windows.h>
 #include <afx.h>
@@ -33,27 +17,51 @@
 #include <afxwinappex.h>
 #include <atlsimpstr.h>
 #include <atltrace.h>
+
+#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <corecrt.h>
 #include <cstdlib>
 #include <direct.h>
+#include <iterator>
+#include <stdexcept>
 #include <string>
 #include <string.h>
 #include <tchar.h>
 #include <wchar.h>
 
-#if defined(USING_ODA)
-#include "RxDynamicModule.h"
-#endif  // USING_ODA
+#include "AeSys.h"
+#include "AeSysDoc.h"
+#include "AeSysView.h"
+#include "ChildFrm.h"
+#include "EoApOptions.h"
+#include "EoDb.h"
+#include "EoDbCharacterCellDefinition.h"
+#include "EoDbFontDefinition.h"
+#include "EoDlgModeLetter.h"
+#include "EoDlgModeRevise.h"
+#include "EoGePoint3d.h"
+#include "Lex.h"
+#include "MainFrm.h"
+#include "PegColors.h"
+#include "PrimState.h"
+#include "Resource.h"
+
 #if defined(USING_DDE)
 #include "Dde.h"
 #include "ddeGItms.h"
 #endif  // USING_DDE
-#include <stdexcept>
-
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);
 ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance);
+
+namespace {
+constexpr size_t numberOfPenWidths{16};
+constexpr double defaultPenWidths[numberOfPenWidths] = {0.0,  0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225,
+                                                        0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
+}  // namespace
+double penWidths[numberOfPenWidths] = {0.0, 0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
+static void ResetPenWidthsToDefault() { std::copy(std::begin(defaultPenWidths), std::end(defaultPenWidths), penWidths); }
 
 namespace hatch {
 double dXAxRefVecScal;
@@ -62,8 +70,6 @@ double dOffAng;
 int iTableOffset[64];
 float fTableValue[1536];
 }  // namespace hatch
-double dPWids[] = {0.0,  0.0075, 0.015, 0.02,   0.03, 0.0075, 0.015, 0.0225,
-                   0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
 
 COLORREF* pColTbl = ColorPalette;
 
@@ -199,8 +205,7 @@ BOOL AeSys::InitInstance() {
   params.m_bVislManagerTheme = TRUE;
   GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL, RUNTIME_CLASS(CMFCToolTipCtrl), &params);
 
-  EnableUserTools(ID_TOOLS_ENTRY, ID_USER_TOOL1, ID_USER_TOOL10, RUNTIME_CLASS(CUserTool), IDR_MENU_ARGS,
-                  IDR_MENU_DIRS);
+  EnableUserTools(ID_TOOLS_ENTRY, ID_USER_TOOL1, ID_USER_TOOL10, RUNTIME_CLASS(CUserTool), IDR_MENU_ARGS, IDR_MENU_DIRS);
 
   // Initialize common controls required to enable visual styles.
   INITCOMMONCONTROLSEX InitCtrls{};
@@ -270,7 +275,6 @@ BOOL AeSys::InitInstance() {
   CString ResourceFolder = ResourceFolderPath();
   LoadSimplexStrokeFont(ResourceFolder + L"Simplex.psf");
   LoadHatchesFromFile(ResourceFolder + L"Hatches\\DefaultSet.txt");
-  LoadPenWidthsFromFile(ResourceFolder + L"Pens\\Widths.txt");
   //LoadPenColorsFromFile(ResourceFolder + L"Pens\\Colors\\Default.txt"));
 
 #if defined(USING_DDE)
@@ -466,34 +470,38 @@ void AeSys::OnFileRun() {
 }
 void AeSys::OnHelpContents() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_CONTENTS, 0L); }
 
+double AeSys::PenWidthsGet(EoInt16 penIndex) { return (penWidths[penIndex]); }
+
 void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
   CStdioFile file;
 
-  if (file.Open(fileName, CFile::modeRead | CFile::typeText)) {
-    WCHAR PenWidths[64];
+  if (!file.Open(fileName, CFile::modeRead | CFile::typeText)) { return; }
 
-    while (file.ReadString(PenWidths, sizeof(PenWidths) / sizeof(WCHAR) - 1) != 0) {
-      LPWSTR context = nullptr;
+  constexpr size_t bufferSize{128};
+  wchar_t inputLine[bufferSize];
 
-      LPWSTR penIndexText = wcstok_s(PenWidths, L"=", &context);
-      if (penIndexText == nullptr) continue;
+  while (file.ReadString(inputLine, bufferSize - 1) != 0) {
+    if (inputLine[0] == L'\0' || inputLine[0] == L'#' || inputLine[0] == L';') { continue; }
 
-      wchar_t* penIndexEnd = nullptr;
-      unsigned long penIndex = std::wcstoul(penIndexText, &penIndexEnd, 10);
-      if (penIndexEnd == penIndexText) continue;
+    wchar_t* context = nullptr;
+    wchar_t* penIndexText = wcstok_s(inputLine, L"=", &context);
+    if (penIndexText == nullptr) { continue; }
 
-      LPWSTR penWidthText = wcstok_s(nullptr, L",\n", &context);
-      if (penWidthText == nullptr) continue;
+    wchar_t* penIndexEnd = nullptr;
+    unsigned long penIndex = std::wcstoul(penIndexText, &penIndexEnd, 10);
+    if (penIndexEnd == penIndexText) { continue; }
 
-      wchar_t* penValueEnd = nullptr;
-      double penWidth = std::wcstod(penWidthText, &penValueEnd);
-      if (penValueEnd == penWidthText) continue;
+    wchar_t* penWidthText = wcstok_s(nullptr, L",\n", &context);
+    if (penWidthText == nullptr) { continue; }
 
-      const size_t count = sizeof(dPWids) / sizeof(dPWids[0]);
-      if (static_cast<size_t>(penIndex) < count) dPWids[penIndex] = penWidth;
-    }
+    wchar_t* penValueEnd = nullptr;
+    double penWidth = std::wcstod(penWidthText, &penValueEnd);
+    if (penValueEnd == penWidthText) { continue; }
+
+    if (static_cast<size_t>(penIndex) < numberOfPenWidths) { penWidths[penIndex] = penWidth; }
   }
 }
+
 EoDb::FileTypes AeSys::GetFileTypeFromPath(const CString& pathName) {
   EoDb::FileTypes Type(EoDb::kUnknown);
   CString Extension = pathName.Right(3);
@@ -581,7 +589,7 @@ void AeSys::LoadHatchesFromFile(const CString& strFileName) {
     }
   }
 }
-EoGePoint3d AeSys::HomePointGet(int i) {
+EoGePoint3d AeSys::HomePointGet(int i) const {
   if (i >= 0 && i < 9) return (m_HomePoints[i]);
 
   return (EoGePoint3d::kOrigin);
@@ -632,8 +640,7 @@ void AeSys::EditColorPalette() {
   cc.lpCustColors = GreyPalette;
   ::ChooseColor(&cc);
 
-  MessageBoxW(nullptr, L"The background color is no longer associated with the pen Color Palette.",
-              L"Deprecation Notice", MB_OK | MB_ICONINFORMATION);
+  MessageBoxW(nullptr, L"The background color is no longer associated with the pen Color Palette.", L"Deprecation Notice", MB_OK | MB_ICONINFORMATION);
 
   AeSysDoc::GetDoc()->UpdateAllViews(nullptr, 0L, nullptr);
 }
@@ -725,23 +732,6 @@ void AeSys::OnUpdateEditCfText(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDat
 void AeSys::OnUpdateTrapcommandsAddgroups(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_TrapModeAddGroups); }
 void AeSys::OnUpdateTrapcommandsHighlight(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_TrapHighlighted); }
 void AeSys::OnUpdateViewModeinformation(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ModeInformationOverView); }
-#if defined(USING_ODA)
-#ifdef _MT
-#ifndef _DLL
-
-// For MT configurations only
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-extern "C" {
-
-ALLOCDLL_EXPORT void* odrxAlloc(size_t s) { return ::malloc(s); }
-ALLOCDLL_EXPORT void* odrxRealloc(void* p, size_t new_size, size_t /*old_size*/) { return ::realloc(p, new_size); }
-ALLOCDLL_EXPORT void odrxFree(void* p) { ::free(p); }
-
-}  // extern "C"
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#endif
-#endif
-#endif  // USING_ODA
 
 // Modifies the base accelerator table by defining the mode specific keys.
 void AeSys::BuildModifiedAcceleratorTable() {
@@ -756,15 +746,12 @@ void AeSys::BuildModifiedAcceleratorTable() {
   AcceleratorTableHandle = ::LoadAccelerators(m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
   int AcceleratorTableEntries = CopyAcceleratorTableW(AcceleratorTableHandle, nullptr, 0);
 
-  LPACCEL ModifiedAcceleratorTable =
-      new ACCEL[static_cast<size_t>(AcceleratorTableEntries + ModeAcceleratorTableEntries)];
+  LPACCEL ModifiedAcceleratorTable = new ACCEL[static_cast<size_t>(AcceleratorTableEntries + ModeAcceleratorTableEntries)];
 
   CopyAcceleratorTableW(ModeAcceleratorTableHandle, ModifiedAcceleratorTable, ModeAcceleratorTableEntries);
-  CopyAcceleratorTableW(AcceleratorTableHandle, &ModifiedAcceleratorTable[ModeAcceleratorTableEntries],
-                         AcceleratorTableEntries);
+  CopyAcceleratorTableW(AcceleratorTableHandle, &ModifiedAcceleratorTable[ModeAcceleratorTableEntries], AcceleratorTableEntries);
 
-  MainFrame->m_hAccelTable =
-      ::CreateAcceleratorTable(ModifiedAcceleratorTable, AcceleratorTableEntries + ModeAcceleratorTableEntries);
+  MainFrame->m_hAccelTable = ::CreateAcceleratorTable(ModifiedAcceleratorTable, AcceleratorTableEntries + ModeAcceleratorTableEntries);
 
   delete[] ModifiedAcceleratorTable;
 }
@@ -803,8 +790,7 @@ void AeSys::FormatAngle(CString& angleAsString, const double angle, const int wi
   angleAsString.Format(FormatSpecification, Eo::RadianToDegree(angle));
 }
 
-void AeSys::FormatLength(CString& lengthAsString, Units units, const double length, const int minWidth,
-                         const int precision) {
+void AeSys::FormatLength(CString& lengthAsString, Units units, const double length, const int minWidth, const int precision) {
   const size_t bufSize{32};
   auto lengthAsBuffer = lengthAsString.GetBufferSetLength(bufSize);
 
@@ -861,8 +847,7 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   }
   wcscat_s(lengthAsBuffer, bufSize, L"\"");
 }
-void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width,
-                                    const int precision) {
+void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width, const int precision) {
   WCHAR szBuf[16]{};
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
@@ -894,8 +879,7 @@ void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize,
     }
   }
 }
-void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length,
-                               const int width, const int precision) {
+void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length, const int width, const int precision) {
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   CString formatSpecification;
@@ -1052,8 +1036,7 @@ double AeSys::ParseLength(Units units, wchar_t* inputLine) {
       return (0.0);
     } catch (const wchar_t* errorMessage) { app.AddStringToMessageList(std::wstring(errorMessage)); }
 
-    if (iTyp == lex::ArchitecturalUnitsLengthToken || iTyp == lex::EngineeringUnitsLengthToken ||
-        iTyp == lex::SimpleUnitsLengthToken) {
+    if (iTyp == lex::ArchitecturalUnitsLengthToken || iTyp == lex::EngineeringUnitsLengthToken || iTyp == lex::SimpleUnitsLengthToken) {
       return (length[0]);
     } else {
       lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, length);

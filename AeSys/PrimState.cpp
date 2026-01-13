@@ -1,4 +1,6 @@
 ﻿#include "stdafx.h"
+#include <Windows.h>
+#include <algorithm>
 
 #include "AeSys.h"
 #include "AeSysView.h"

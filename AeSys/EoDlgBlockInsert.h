@@ -1,4 +1,9 @@
 ﻿#pragma once
+#include <Windows.h>
+#include <afx.h>
+
+#include "EoGePoint3d.h"
+#include "Resource.h"
 
 class EoDlgBlockInsert : public CDialog {
   DECLARE_DYNAMIC(EoDlgBlockInsert)
@@ -19,7 +24,7 @@ class EoDlgBlockInsert : public CDialog {
   virtual void OnOK();
 
   static EoGePoint3d InsertionPoint;
-  AeSysDoc* m_Document;
+  AeSysDoc* m_Document{nullptr};
 
  public:
   CListBox m_BlocksListBoxControl;

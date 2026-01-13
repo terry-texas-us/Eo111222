@@ -21,7 +21,7 @@ class EoDlgSetupConstraints : public CDialog {
   virtual BOOL OnInitDialog();
   virtual void OnOK();
 
-  AeSysView* m_ActiveView;
+  AeSysView* m_ActiveView{nullptr};
 
   CEdit m_GridXSnapSpacing;
   CEdit m_GridYSnapSpacing;

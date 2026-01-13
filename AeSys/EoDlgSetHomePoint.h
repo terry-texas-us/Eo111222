@@ -21,7 +21,7 @@ class EoDlgSetHomePoint : public CDialog {
   virtual BOOL OnInitDialog();
   virtual void OnOK();
 
-  AeSysView* m_ActiveView;
+  AeSysView* m_ActiveView{nullptr};
   static EoGePoint3d m_CursorPosition;
 
  public:

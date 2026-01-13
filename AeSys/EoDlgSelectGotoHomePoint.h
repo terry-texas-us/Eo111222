@@ -21,7 +21,7 @@ class EoDlgSelectGotoHomePoint : public CDialog {
   virtual BOOL OnInitDialog();
   virtual void OnOK();
 
-  AeSysView* m_ActiveView;
+  AeSysView* m_ActiveView{nullptr};
 
  public:
   CComboBox m_HomePointNames;

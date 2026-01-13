@@ -25,7 +25,7 @@ class EoDlgActiveViewKeyplan : public CDialog {
   virtual BOOL OnInitDialog();
   virtual void OnOK();
 
-  AeSysView* m_ActiveView;
+  AeSysView* m_ActiveView{nullptr};
   void Refresh();
 
  public:

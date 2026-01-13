@@ -23,9 +23,9 @@ class EoDlgLowPressureDuctOptions : public CDialog {
   double m_Width;
   double m_Depth;
   double m_RadiusFactor;
-  bool m_GenerateVanes;
+  bool m_GenerateVanes{false};
   int m_Justification;
-  bool m_BeginWithTransition;
+  bool m_BeginWithTransition{false};
 
   afx_msg void OnBnClickedOk();
   afx_msg void OnBnClickedGenVanes();

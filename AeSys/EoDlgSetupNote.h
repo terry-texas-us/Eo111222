@@ -22,7 +22,7 @@ class EoDlgSetupNote : public CDialog {
   virtual void OnOK();
 
  public:
-  EoDbFontDefinition* m_FontDefinition;
+  EoDbFontDefinition* m_FontDefinition{nullptr};
 
   CMFCFontComboBox m_MfcFontComboControl;
 

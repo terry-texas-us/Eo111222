@@ -8,25 +8,6 @@
 #include "drw_interface.h"
 #include "drw_objects.h"
 
-namespace {
-bool inBlockDefinition{false};
-bool entitiesSectionStarted{false};
-
-/** @brief Checks if the ENTITIES section has started and logs a trace message if it has not.
- *
- * This function checks the global flags `inBlockDefinition` and `entitiesSectionStarted`.
- * If not currently in a block definition and the entities section has not started,
- * it sets the `entitiesSectionStarted` flag to true and logs a trace message indicating
- * that the ENTITIES section has started.
- */
-void CheckEntitiesStart() {
-  if (!inBlockDefinition && !entitiesSectionStarted) {
-    entitiesSectionStarted = true;
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"ENTITIES Section started\n");
-  }
-}
-}
-
 // Minimal implementation of DRW_Interface
 // In a real scenario, implement these methods to handle the parsed entities
 class EoDbDrwInterface : public DRW_Interface {
@@ -68,17 +49,19 @@ class EoDbDrwInterface : public DRW_Interface {
 
   // Blocks
   void addBlock(const DRW_Block& block) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addBlock called\n");
     inBlockDefinition = true;
+    blockName = StringToWString(block.name.c_str());
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addBlock <%s>\n", blockName.c_str());
     ConvertBlock(block, m_document);
   }
-  void setBlock(const int handle) override { 
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::setBlock called\n"); 
+  void setBlock(const int handle) override {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::setBlock\n");
     ConvertBlockSet(handle, m_document);
   }
   void endBlock() override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::endBlock called\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::endBlock\n");
     inBlockDefinition = false;
+    blockName.clear();
     ConvertBlockEnd(m_document);
   }
 
@@ -91,9 +74,15 @@ class EoDbDrwInterface : public DRW_Interface {
   void addImage(const DRW_Image* /* image */) override {}
   void addInsert(const DRW_Insert& /* insert */) override {}
   void addKnot(const DRW_Entity& /* knot */) override {}
+
   void addLine(const DRW_Line& line) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addLine called\n");
-    ConvertLineEntity(line, m_document);
+    if (inBlockDefinition) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
+      ConvertLineEntity(line, m_document);
+    } else {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addLine - entities section\n");
+      ConvertLineEntity(line, m_document);
+    }
   }
   void addLWPolyline(const DRW_LWPolyline& /* lwPolyline */) override {}
   void addMText(const DRW_MText& /* mText */) override {}
@@ -201,4 +190,6 @@ class EoDbDrwInterface : public DRW_Interface {
 
  private:
   AeSysDoc* m_document{nullptr};
+  std::wstring blockName{};
+  bool inBlockDefinition{false};
 };

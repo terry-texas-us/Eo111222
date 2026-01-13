@@ -1,4 +1,9 @@
 ﻿#pragma once
+#include <Windows.h>
+#include <afx.h>
+#include <cstdarg>
+
+#include "Resource.h"
 
 // EoDlgViewParameters dialog
 
@@ -21,7 +26,7 @@ class EoDlgViewParameters : public CDialog {
   virtual void OnOK();
 
  public:
-  BOOL m_PerspectiveProjection;
+  BOOL m_PerspectiveProjection{0};
   uintptr_t m_ModelView;
   afx_msg void OnBnClickedApply();
   afx_msg void OnEnChangePositionX();

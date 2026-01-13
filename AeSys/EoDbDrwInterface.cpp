@@ -22,10 +22,6 @@
 #include "drw_header.h"
 #include "drw_objects.h"
 
-namespace {
-const auto traceGeneral = static_cast<int>(atlTraceGeneral);
-}
-
 /** Convert a std::wstring to a UTF-8 encoded std::string.
  *
  * @param wstr The std::wstring to convert.
@@ -68,6 +64,7 @@ void EoDbDrwInterface::SetHeaderSectionVariable(const DRW_Header* header, const 
         // TODO: Does a COORD variant ever populate a EoGeVector3d
         value = EoGePoint3d(second.content.v->x, second.content.v->y, second.content.v->z);
         break;
+      case DRW_Variant::INVALID:
       default:
         value = L"";
         break;
@@ -85,12 +82,12 @@ void EoDbDrwInterface::ConvertHeaderSection(const DRW_Header* header, AeSysDoc* 
   for (const auto& key : keys) { SetHeaderSectionVariable(header, key, headerSection); }
 }
 
-void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, AeSysDoc* /* document */) {
   std::wstring appIdName = StringToWString(appId.name.c_str());
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
 }
 
-void EoDbDrwInterface::ConvertDimStyle(const DRW_Dimstyle& dimStyle, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertDimStyle(const DRW_Dimstyle& dimStyle, AeSysDoc* /* document */) {
   std::wstring dimStyleName = StringToWString(dimStyle.name.c_str());
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DimStyle - Name: <%s> (unsupported in AeSys)\n", dimStyleName.c_str());
 }
@@ -135,15 +132,15 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
     The lineweights are in 100ths of a millimeter, except for the negative values.
     The negative values denote the default indicated by their constant's name.
   */
-  ATLTRACE2(traceGeneral, 2, L"Line weight: %i\n", layer.lWeight);
-  ATLTRACE2(traceGeneral, 2, L"Layer is locked: %i\n", isLocked);
-  ATLTRACE2(traceGeneral, 2, L"Layer is plottable: %i\n", layer.plotF);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Line weight: %i\n", layer.lWeight);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Layer is locked: %i\n", isLocked);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Layer is plottable: %i\n", layer.plotF);
 
   // Hard-pointer to ID/handle of PlotStyleName object (not supported in AeSys) group code 390
-  ATLTRACE2(traceGeneral, 3, L"Plot style name objects not supported\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"Plot style name objects not supported\n");
 
   // Hard-pointer to ID/handle of Material object (not supported in AeSys) group code 347
-  ATLTRACE2(traceGeneral, 3, L"Material objects not supported\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"Material objects not supported\n");
 
   // It is possible to have an Extension Dictionary associated with layer. (not supported in AeSys) group code 102
   // Not used very often. The most common application is for per-viewport overrides of layer properties.
@@ -161,7 +158,7 @@ void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* do
 
   if (!lineTypeTable->Lookup(lineTypeName.c_str(), LineType)) {
     auto numberOfElements = static_cast<EoUInt16>(data.size);  // Number of linetype elements (group code 73)
-    double patternLength = data.length;                        // group code 40
+    // double patternLength = data.length;                        // group code 40
 
     std::vector<double> dashLengths(numberOfElements);
 
@@ -177,24 +174,23 @@ void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* do
   }
 }
 
-void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeSysDoc* /* document */) {
   std::wstring textStyleName = StringToWString(textStyle.name.c_str());
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Text Style - Name: %s (unsupported in AeSys)\n", textStyleName.c_str());
 
-  auto height = textStyle.height;         // Fixed text height; 0 if not fixed (group code 40)
-  auto width = textStyle.width;           // Width factor (group code 41)
-  auto obliqueAngle = textStyle.oblique;  // Oblique angle (group code 50)
-  auto textGenerationFlags =
+  // auto height = textStyle.height;         // Fixed text height; 0 if not fixed (group code 40)
+  // auto width = textStyle.width;           // Width factor (group code 41)
+  // auto obliqueAngle = textStyle.oblique;  // Oblique angle (group code 50)
+  // auto textGenerationFlags =
       textStyle.flags;  // Text generation flags (group code 71) 0x02 - text is backward, mirrored in X - 0x04 - text is upside down, mirrored in Y
-  auto lastHeight = textStyle.lastHeight;  // Last height used (group code 42)
+  // auto lastHeight = textStyle.lastHeight;  // Last height used (group code 42)
 
-  auto& font = textStyle.font;        // Primary font file name (group code 3)
-  auto& bigFont = textStyle.bigFont;  // Bigfont file name; blank if none (group code 4)
-  auto fontFamily =
-      textStyle.fontFamily;  // A long value which contains a truetype font's pitch and family, charset, and italic and bold flags (group code 1071)
+  // auto& font = textStyle.font;        // Primary font file name (group code 3)
+  // auto& bigFont = textStyle.bigFont;  // Bigfont file name; blank if none (group code 4)
+  //auto fontFamily = textStyle.fontFamily;  // A long value which contains a truetype font's pitch and family, charset, and italic and bold flags (group code 1071)
 }
 
-void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc* /* document */) {
   std::wstring viewportName = StringToWString(viewport.name.c_str());
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Viewport - Name: %s (unsupported in AeSys)\n", viewportName.c_str());
 
@@ -207,16 +203,16 @@ void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc*
   auto viewDirection = EoGeVector3d(viewport.viewDir.x, viewport.viewDir.y, viewport.viewDir.z);           // group codes 16, 26 and 36 (3D point in WCS)
   auto viewTarget = EoGeVector3d(viewport.viewTarget.x, viewport.viewTarget.y, viewport.viewTarget.z);     // group codes 17, 27 and 37 (3D point in WCS)
 
-  auto height = viewport.height;  // group code 45
-  auto ratio = viewport.ratio;
-  auto lensHeight = viewport.lensHeight;        // group code 42
-  auto frontClip = viewport.frontClip;          // group code 43
-  auto backClip = viewport.backClip;            // group code 44
-  auto snapRotationAngle = viewport.snapAngle;  // group code 50
-  auto viewTwistAngle = viewport.twistAngle;    // group code 51
+  // auto height = viewport.height;  // group code 45
+  // auto ratio = viewport.ratio;
+  // auto lensHeight = viewport.lensHeight;        // group code 42
+  // auto frontClip = viewport.frontClip;          // group code 43
+  // auto backClip = viewport.backClip;            // group code 44
+  // auto snapRotationAngle = viewport.snapAngle;  // group code 50
+  // auto viewTwistAngle = viewport.twistAngle;    // group code 51
 
-  auto viewMode = viewport.viewMode;  // group code 71
-  auto ucsIcon = viewport.ucsIcon;    // group code 74
+  // auto viewMode = viewport.viewMode;  // group code 71
+  // auto ucsIcon = viewport.ucsIcon;    // group code 74
 }
 
 /** @brief This method is invoked when a new block definition is encountered in the file. 
@@ -235,26 +231,25 @@ void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc*
  * The interleaving between model space and paper space no longer occurs. Instead, all paper space entities are output, followed by model space entities. The flag distinguishing them is the group code 67.
  */
 void EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* document) {
-  std::wstring blockName = StringToWString(block.name.c_str());
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block - Name: %s\n", blockName.c_str());
+  std::wstring blockName = StringToWString(block.name.c_str()); // Block Name (group code 2)
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"Block - Name: %s\n", blockName.c_str());
 
-  auto handle = block.handle;              // group code 5
-  auto parentHandle = block.parentHandle;  // Soft-pointer ID/handle to owner object (group code 330)
-  auto name = blockName;                   // BLock Name (group code 2)
+  // auto handle = block.handle;              // group code 5
+  // auto parentHandle = block.parentHandle;  // Soft-pointer ID/handle to owner object (group code 330)
 
   // Group codes 3, 1 and 4 are for XREF definition. Modern XREF indicated by group 70 with 0x04 bit set and the presence of group code 1
 
-  EoDbBlock* Block = new EoDbBlock(block.flags,  //  Block-type bit-coded (see note) which may be combined (group code 70)
+  EoDbBlock* newBlock = new EoDbBlock(static_cast<EoUInt16>(block.flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
                                    EoGePoint3d(block.basePoint.x, block.basePoint.y, block.basePoint.z),  // group codes 10, 20 and 30
                                    blockName.c_str());
 
-  document->InsertBlock(blockName.c_str(), Block);
+  document->InsertBlock(blockName.c_str(), newBlock);
 }
 /** @brief This method is primarily used in DWG files when the parser switches to entities belonging to a different block than the current one. The handle parameter corresponds to the block handle previously provided via addBlock (accessible as DRW_Block::handleBlock). In your implementation, switch the current block context to the one matching this handle. For DXF files, this callback may not be triggered, or it may be used sparingly if blocks are referenced out of sequence. */
-void EoDbDrwInterface::ConvertBlockSet(const int handle, AeSysDoc* document) { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block set\n"); }
+void EoDbDrwInterface::ConvertBlockSet(const int /* handle */, AeSysDoc* /* document */) { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block set\n"); }
 
 /** @brief This method signals the end of the current block definition. In your implementation, finalize the block (e.g., add it to a document's block table or collection) and reset the context to the default (model space or paper space).*/
-void EoDbDrwInterface::ConvertBlockEnd(AeSysDoc* document) { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block end\n"); }
+void EoDbDrwInterface::ConvertBlockEnd(AeSysDoc* /* document */) { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block end\n"); }
 
 // Entities
 /*
@@ -311,8 +306,8 @@ void EoDbDrwInterface::ConvertLineEntity(const DRW_Line& line, AeSysDoc* documen
   auto endPoint = EoGePoint3d{line.secPoint.x, line.secPoint.y, line.secPoint.z};
 
   auto newLine = new EoDbLine(beginPoint, endPoint);
-  newLine->PenColor(penColor);
-  newLine->LineType(lineTypeIndex);
+  newLine->PenColor(static_cast<EoInt16>(penColor));
+  newLine->LineType(static_cast<EoInt16>(lineTypeIndex));
 
   auto* group = new EoDbGroup();
   group->AddTail(newLine);

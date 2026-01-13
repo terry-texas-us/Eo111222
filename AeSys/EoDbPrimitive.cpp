@@ -1,4 +1,5 @@
 ﻿#include "stdafx.h"
+#include <afxstr.h>
 
 #include "EoDbPrimitive.h"
 #include "PrimState.h"

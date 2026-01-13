@@ -7,11 +7,6 @@ class Section {
   static const long Rectangular = 0x0004;
   static const long Fixed = 0x0010;
 
- private:
-  double m_Width;
-  double m_Depth;
-  int m_Properties;
-
  public:
   Section();
   Section(double width, double depth, long properties);
@@ -21,9 +16,14 @@ class Section {
   void operator()(double width, double depth, long properties);
   void SetWidth(double width);
   void SetDepth(double depth);
-  double Width() const;
-  double Depth() const;
-  bool Identical(const Section& section);
-  bool IsRectangular();
-  bool IsRound();
+  [[nodiscard]] double Width() const;
+  [[nodiscard]] double Depth() const;
+  bool Identical(const Section& section) const;
+  bool IsRectangular() const;
+  bool IsRound() const;
+
+ private:
+  double m_width;
+  double m_depth;
+  int m_properties;
 };
