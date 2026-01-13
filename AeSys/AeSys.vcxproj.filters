@@ -404,6 +404,9 @@
     <ClCompile Include="EoDlgLineTypesSelection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EoDbDrwInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\AeSys.rc2">
@@ -2018,6 +2021,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EoDbHeaderSection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EoDbDrwInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -62,9 +62,9 @@
       <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;$(SolutionDir)libdxfrw\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(ProjectDir)Tools\reflex_static_lib.lib;$(SolutionDir)libdxfrw\vs2013\Debug\libdxfrw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)Tools\reflex_static_lib.lib;$(SolutionDir)libdxfrw\vs2013\x64\Debug\libdxfrw.lib;$(SolutionDir)libiconv\Debug_x64\libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libiconv\Debug_x64\;$(ProjectDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
@@ -73,6 +73,13 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" 
 xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
 </Command>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>xcopy /Y /I /E "$(SolutionDir)libiconv\Debug_x64\libiconv.dll" "$(SolutionDir)x64\Debug\"</Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -116,6 +123,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="DdeItem.cpp" />
     <ClCompile Include="DdeSys.cpp" />
     <ClCompile Include="DdeTopic.cpp" />
+    <ClCompile Include="EoDbDrwInterface.cpp" />
     <ClCompile Include="EoDlgActiveViewKeyplan.cpp" />
     <ClCompile Include="EoDlgLineTypesSelection.cpp" />
     <ClCompile Include="EoDlgLowPressureDuctOptions.cpp" />
@@ -1553,6 +1561,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="EoGeMatrix.h" />
     <ClInclude Include="EoGsModelTransform.h" />
     <ClInclude Include="EoGsViewTransform.h" />
+    <ClInclude Include="EoDbDrwInterface.h" />
     <ClInclude Include="PegColors.h" />
     <ClInclude Include="EoDbLineType.h" />
     <ClInclude Include="Preview.h" />

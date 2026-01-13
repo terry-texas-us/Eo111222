@@ -51,7 +51,7 @@ void EoDbPegFile::Load(AeSysDoc* document) {
 void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kHeaderSection) { throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kHeaderSection."; }
   EoDbHeaderSection& headerSection = document->HeaderSection();
-  
+
   auto& variables = headerSection.GetVariables();
   if (variables.empty()) {
     // Legacy AeSys file

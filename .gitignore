@@ -378,3 +378,4 @@ FodyWeavers.xsd
 /AeSys/Tools/reflex.exe
 /AeSys/Tools/reflex_static_lib.lib
 /RE-flex/CMakeFiles/generate.stamp
+/libiconv

@@ -19,7 +19,7 @@
 #include <new>
 #include <stdexcept>
 #include <string>
-#include <strsafe.h>
+#include <vector>
 #include <wchar.h>
 
 #include "AeSys.h"
@@ -31,6 +31,7 @@
 #include "EoDbBlockReference.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbDimension.h"
+#include "EoDbDrwInterface.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
@@ -65,9 +66,10 @@
 #include "EoGeVector3d.h"
 #include "Hatch.h"
 #include "Lex.h"
-#include "libdxfrw.h"
 #include "PrimState.h"
 #include "Resource.h"
+#include "drw_base.h"
+#include "libdxfrw.h"
 
 #if defined(USING_ODA)
 #include "DbBlockTable.h"
@@ -259,34 +261,36 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
   if (replace) { SetPathName(PathName); }
   return TRUE;
 }
-BOOL AeSysDoc::OnNewDocument() {
-  if (!CDocument::OnNewDocument()) { return FALSE; }
-#if defined(USING_ODA)
-  m_DatabasePtr = app.createDatabase(true, OdDb::kEnglish);
-  const ODCOLORREF* DarkPalette = odcmAcadDarkPalette();
-  ODCOLORREF LocalDarkPalette[256];
-  memcpy(LocalDarkPalette, DarkPalette, 256 * sizeof(ODCOLORREF));
 
-  EoDbDwgToPegFile File(m_DatabasePtr);
-
-  File.ConvertToPeg(this);
-#else   // Not USING_ODA
-  auto* lineType = new EoDbLineType(0, L"Null", L"null", 0, nullptr);
-  m_LineTypeTable.SetAt(L"0", lineType);
+/** @brief Sets up common entries in the line type and layer tables.
+ *
+ * This method initializes the line type table with standard line types
+ * and creates the default working layer. It adds the working layer to the
+ * layer table and sets the continuous line type for later use.
+ */
+void AeSysDoc::SetCommonTableEntries() {
+  auto* lineType = new EoDbLineType(0, L"ByBlock", L"ByBlock", 0, nullptr);
+  m_LineTypeTable.SetAt(L"ByBlock", lineType);
+  lineType = new EoDbLineType(0, L"ByLayer", L"ByLayer", 0, nullptr);
+  m_LineTypeTable.SetAt(L"ByLayer", lineType);
   lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
   m_LineTypeTable.SetAt(L"Continuous", lineType);
 
   m_workLayer = new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, lineType);
   m_ContinuousLineType = lineType;
   AddLayerTableLayer(m_workLayer);
-#endif  // USING_ODA
+}
+
+BOOL AeSysDoc::OnNewDocument() {
+  if (!CDocument::OnNewDocument()) { return FALSE; }
+
+  SetCommonTableEntries();
   CString applicationPath = EoAppGetPathFromCommandLine();
+
+  // TODO: Load standard line types from the text file rather than hardcoding them
   m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
   //m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to AeSys).txt");
-  //m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath +
-  //                                         L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
-
-  m_LineTypeTable.Lookup(L"01.Continuous", m_ContinuousLineType);
+  //m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
 
   m_SaveAsType = EoDb::kPeg;
   SetWorkLayer(GetLayerTableLayerAt(0));
@@ -297,57 +301,33 @@ BOOL AeSysDoc::OnNewDocument() {
 BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"AeSysDoc<%p>::OnOpenDocument(%s)\n", this, pathName);
 
+  SetCommonTableEntries();
+
   switch (AeSys::GetFileTypeFromPath(pathName)) {
     case EoDb::kDwg:
       break;
     case EoDb::kDxf:
-    case EoDb::kDxb:
+    case EoDb::kDxb: {
+      EoDbDrwInterface dxfInterface(this);
+      dxfRW dxfReader(dxfInterface.WStringToString(pathName).data());
+      //dxfReader.setDebug(static_cast<DRW::DBG_LEVEL>(1)); // messages to stdout only
+      bool success = dxfReader.read(&dxfInterface, true);  // true for verbose output, false for silent
+      if (success) {
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DXF file loaded successfully.\n");
+      } else {
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error loading DXF file.\n");
+      }
       // read dxf/dxb file and save pointer to the database
-      // determine the version of the file
-      // create EoDbDxfToPegFile object and convert to peg
-      // set m_SaveAsType to EoDb::kDxf or EoDb::kDxb
+      // determine the version of the file (from header section) and set m_SaveAsType to EoDb::kDxf or EoDb::kDxb
+      // create EoDbDrwInterface object and do conversion
       // set work layer to layer `0`
-#if defined(USING_ODA)
-    {
-      m_DatabasePtr = app.readFile(lpszPathName, true, false);
-
-      CString FileAndVersion;
-      FileAndVersion.Format(L"Opened %s (Version: %d)\n", (LPCWSTR)m_DatabasePtr->getFilename(), m_DatabasePtr->originalFileVersion());
-      app.AddStringToMessageList(FileAndVersion);
-
-      EoDbDwgToPegFile File(m_DatabasePtr);
-
-      File.ConvertToPeg(this);
-      m_SaveAsType = FileType;
-      SetWorkLayer(GetLayerTableLayerAt(0));
-    }
-#endif  // USING_ODA
-    break;
-    case EoDb::kPeg: {
-#if defined(USING_ODA)
-      m_DatabasePtr = app.createDatabase(true, OdDb::kEnglish);
-#endif  // USING_ODA
-
-      //m_workLayer = new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, lineType);
-      //m_ContinuousLineType = lineType;
-      //AddLayerTableLayer(m_workLayer);
-
+    } break;
+    case EoDb::kPeg:
       try {
         EoDbPegFile file;
         if (file.Open(pathName, CFile::modeRead | CFile::shareDenyNone)) {
+          SetCommonTableEntries();
           file.Load(this);
-          SetWorkLayer(GetLayerTableLayerAt(0));
-          if (m_LineTypeTable.Size() == 0) {
-            auto* lineType = new EoDbLineType(0, L"Null", L"null", 0, nullptr);
-            m_LineTypeTable.SetAt(L"0", lineType);
-            lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
-            m_LineTypeTable.SetAt(L"Continuous", lineType);
-            CString applicationPath = EoAppGetPathFromCommandLine();
-            m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
-          } else {
-            m_workLayer = GetLayerTableLayer(L"0");
-            if (m_LineTypeTable.Lookup(L"Continuous", m_ContinuousLineType)) { m_workLayer->SetLineType(m_ContinuousLineType); }
-          }
           m_SaveAsType = EoDb::kPeg;
         }
       } catch (const wchar_t* e) {
@@ -360,7 +340,6 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
         break;
       }
       break;
-    }
     case EoDb::kTracing:
     case EoDb::kJob:
       TracingOpen(pathName);

@@ -62,6 +62,7 @@ class AeSysDoc : public CDocument {
   // Overrides
  public:
   virtual BOOL DoSave(LPCWSTR lpszPathName, BOOL bReplace = TRUE);
+  void SetCommonTableEntries();
   virtual BOOL OnNewDocument();
   virtual BOOL OnOpenDocument(LPCWSTR lpszPathName);
   virtual BOOL OnSaveDocument(LPCWSTR lpszPathName);

@@ -1,13 +1,16 @@
 ﻿#include "stdafx.h"
+#include <afxstr.h>
 
 #include "EoDbBlock.h"
+#include "EoGePoint3d.h"
 
-EoDbBlock::EoDbBlock(EoUInt16 wBlkTypFlgs, EoGePoint3d ptBase) {
-  m_wBlkTypFlgs = wBlkTypFlgs;
-  m_ptBase = ptBase;
+EoDbBlock::EoDbBlock(EoUInt16 blockTypeFlags, EoGePoint3d basePoint) {
+  m_blockTypeFlags = blockTypeFlags;
+  m_basePoint = basePoint;
 }
-EoDbBlock::EoDbBlock(EoUInt16 wBlkTypFlgs, EoGePoint3d ptBase, const CString& strXRefPathName) {
-  m_wBlkTypFlgs = wBlkTypFlgs;
-  m_ptBase = ptBase;
-  m_strXRefPathName = strXRefPathName;
+
+EoDbBlock::EoDbBlock(EoUInt16 blockTypeFlags, EoGePoint3d basePoint, const CString& xRefPathName) {
+  m_blockTypeFlags = blockTypeFlags;
+  m_basePoint = basePoint;
+  m_xRefPathName = xRefPathName;
 }
