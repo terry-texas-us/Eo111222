@@ -114,6 +114,9 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="AeSys.cpp" />
     <ClCompile Include="AeSysDoc.cpp" />
     <ClCompile Include="AeSysView.cpp" />
+    <ClCompile Include="EoDlgSetupPointStyle.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="EoDbCharacterCellDefinition.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="Dde.cpp" />
@@ -147,7 +150,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     </ClCompile>
     <ClCompile Include="OFNHookProcFileTracing.cpp" />
     <ClCompile Include="EoDlgFixupOptions.cpp" />
-    <ClCompile Include="EoDlgSetHomePoint.cpp" />
+    <ClCompile Include="EoDlgSetupHomePoint.cpp" />
     <ClCompile Include="EoDlgModeLetter.cpp" />
     <ClCompile Include="EoDlgModeRevise.cpp" />
     <ClCompile Include="EoDlgPipeOptions.cpp" />
@@ -1476,6 +1479,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="AeSys.h" />
     <ClInclude Include="AeSysDoc.h" />
     <ClInclude Include="AeSysView.h" />
+    <ClInclude Include="EoDlgSetupPointStyle.h" />
     <ClInclude Include="EoDb.h" />
     <ClInclude Include="EoDbCharacterCellDefinition.h" />
     <ClInclude Include="ChildFrm.h" />

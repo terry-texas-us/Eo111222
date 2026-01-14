@@ -4,10 +4,6 @@
 
 class CFile;
 class EoGePoint3d;
-#if defined(USING_ODA)
-class OdGeVector3d;
-class OdGeScale3d;
-#endif  // USING_ODA
 
 class EoGeVector3d {
  public:
@@ -21,7 +17,7 @@ class EoGeVector3d {
 #if defined(USING_ODA)
   EoGeVector3d(const OdGeVector3d& initialVector);
   EoGeVector3d(const OdGeScale3d& initialScale);
-#endif  // USING_ODA
+#endif
 
   bool operator==(const EoGeVector3d& vector) const;
   bool operator!=(const EoGeVector3d& vector) const;

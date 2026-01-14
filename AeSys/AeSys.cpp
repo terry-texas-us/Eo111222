@@ -56,6 +56,21 @@ ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);
 ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance);
 
 namespace {
+
+  /** @brief Converts a multi-byte (UTF-8) string to a wide-character string.
+* @param multiByte The multi-byte (UTF-8) string to convert.
+* @return The converted wide-character string.
+*/
+std::wstring MultiByteToWString(const char* multiByte) {
+  if (!multiByte) return {L""};
+  int size = ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, nullptr, 0);
+  if (size == 0) return {L""};
+  std::wstring string;
+  string.resize(static_cast<size_t>(size) - 1);
+  ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, &string[0], size - 1);
+  return string;
+}
+  
 constexpr size_t numberOfPenWidths{16};
 constexpr double defaultPenWidths[numberOfPenWidths] = {0.0,  0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225,
                                                         0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
@@ -88,15 +103,6 @@ CString AeSys::CustomRButtonUpCharacters(L"" /* L"{27}" for VK_ESCAPE */);
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-#if defined(USING_ODA) && !defined(_TOOLKIT_IN_DLL_)
-ODRX_DECLARE_STATIC_MODULE_ENTRY_POINT(WinDirectXModule);
-ODRX_BEGIN_STATIC_MODULE_MAP()
-ODRX_DEFINE_STATIC_APPMODULE(OdWinDirectXModuleName, WinDirectXModule)
-ODRX_END_STATIC_MODULE_MAP()
-#endif  // USING_ODA && !_TOOLKIT_IN_DLL_
-
-// AeSys
 
 BEGIN_MESSAGE_MAP(AeSys, CWinAppEx)
 ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)
@@ -216,13 +222,6 @@ BOOL AeSys::InitInstance() {
   CMFCButton::EnableWindowsTheming();
 
   CWinAppEx::InitInstance();
-
-#if defined(USING_ODA)
-#if !defined(_TOOLKIT_IN_DLL_)
-  ODRX_INIT_STATIC_MODULE_MAP();
-#endif  // !_TOOLKIT_IN_DLL_
-  odInitialize(this);
-#endif  // USING_ODA
 
 #if defined(USING_Direct2D)
   if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_Direct2dFactory))) { return FALSE; }
@@ -623,7 +622,7 @@ void AeSys::InitGbls(CDC* deviceContext) {
 
   //Document->InitializeGroupAndPrimitiveEdit();
   pstate.SetPen(nullptr, deviceContext, 1, 1);
-  pstate.SetPointStyle(1);
+  pstate.SetPointStyle(0);
 }
 void AeSys::EditColorPalette() {
   CHOOSECOLOR cc;

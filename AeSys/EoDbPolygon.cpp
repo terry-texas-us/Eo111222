@@ -8,9 +8,9 @@
 #include "Hatch.h"
 #include "PrimState.h"
 
-#if defined(USING_ODA)
+#if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif  // USING_ODA
+#endif  // USING_DDE
 
 EoInt16 EoDbPolygon::sm_SpecialPolygonStyle = -1;
 

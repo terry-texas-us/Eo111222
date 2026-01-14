@@ -7,25 +7,23 @@ class AeSysView;
 
 class CPrimState {
  private:
-  EoInt16 m_PointStyle {0};
-  EoInt16 m_PenColor {7};
-  EoInt16 m_LineType {0};
+  EoInt16 m_pointStyle{0};
+  EoInt16 m_PenColor{7};
+  EoInt16 m_LineType{0};
   EoDbFontDefinition m_fd;
   EoDbCharacterCellDefinition m_ccd;
-  EoInt16 m_PolygonInteriorStyle {0};
-  EoInt16 m_PolygonInteriorStyleIndex {0};
+  EoInt16 m_PolygonInteriorStyle{0};
+  EoInt16 m_PolygonInteriorStyleIndex{0};
 
- public:  // Constructors and destructor
- public:  // Operators
-  CPrimState()
-      : m_PointStyle(0), m_PenColor(7), m_LineType(0), m_PolygonInteriorStyle(0), m_PolygonInteriorStyleIndex(0) {}
+ public:
+  CPrimState() : m_pointStyle(0), m_PenColor(7), m_LineType(0), m_PolygonInteriorStyle(0), m_PolygonInteriorStyleIndex(0) {}
 
   const CPrimState& operator=(const CPrimState&);
 
- public:  // Methods
+ public:
   void GetCharCellDef(EoDbCharacterCellDefinition& ccd) { ccd = m_ccd; }
   void GetFontDef(EoDbFontDefinition& fd) { fd = m_fd; }
-  const EoInt16& PointStyle() { return m_PointStyle; }
+  const EoInt16& PointStyle() { return m_pointStyle; }
   const EoInt16& PenColor() { return (m_PenColor); }
   const EoInt16& LineType() { return (m_LineType); }
   const EoInt16& PolygonIntStyle() { return (m_PolygonInteriorStyle); }
@@ -34,7 +32,7 @@ class CPrimState {
   int Save();
   void SetCharCellDef(EoDbCharacterCellDefinition& ccd) { m_ccd = ccd; }
   void SetFontDef(CDC* deviceContext, const EoDbFontDefinition& fd);
-  void SetPointStyle(EoInt16 pointStyle) { m_PointStyle = pointStyle; }
+  void SetPointStyle(EoInt16 pointStyle) { m_pointStyle = pointStyle; }
   void SetPolygonIntStyle(EoInt16 interiorStyle) { m_PolygonInteriorStyle = interiorStyle; }
   void SetPolygonIntStyleId(EoInt16 styleIndex) { m_PolygonInteriorStyleIndex = styleIndex; }
   void SetPen(AeSysView* view, CDC* deviceContext, EoInt16 penColor, EoInt16 lineType);

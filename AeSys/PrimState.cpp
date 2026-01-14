@@ -16,7 +16,7 @@ const CPrimState& CPrimState::operator=(const CPrimState& src) {
 
   m_PenColor = src.m_PenColor;
   m_LineType = src.m_LineType;
-  m_PointStyle = src.m_PointStyle;
+  m_pointStyle = src.m_pointStyle;
   m_PolygonInteriorStyle = src.m_PolygonInteriorStyle;
   m_PolygonInteriorStyleIndex = src.m_PolygonInteriorStyleIndex;
 

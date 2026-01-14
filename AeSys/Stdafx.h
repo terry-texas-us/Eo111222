@@ -43,11 +43,6 @@
     "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
 #endif
-#include <algorithm>
-#include <cfloat>
-#include <cmath>
-#include <memory>
-#include <numbers>
 
 #if defined(USING_Direct2D)
 #include <d2d1.h>
@@ -82,23 +77,10 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 #include "Resource.h"
 
-#if defined(USING_ODA)
-#include <xnamath.h>
-#include "OdaCommon.h"
-#include "Ge/GeVector3d.h"
-#include "Ge/GePoint3d.h"
-#include "Ge/GeScale3d.h"
-#else  // !USING_ODA
-#include <DirectXMath.h>
-using namespace DirectX;
-
-#endif  // USING_ODA
-
 #include <atltrace.h>
 #ifdef TRACE
 #undef TRACE
 #endif
-
 
 UINT AFXAPI HashKey(CString& str);
 
@@ -106,6 +88,9 @@ using EoByte = unsigned char;
 using EoSbyte = char;
 using EoInt16 = short;
 using EoUInt16 = unsigned short;
+
+#include <cmath>
+#include <numbers>
 
 namespace Eo {
 constexpr double MmPerInch = 25.4;
@@ -132,21 +117,6 @@ constexpr double CopySign(const double a, const double b) { return (b >= 0.0 ? f
 */
 inline int Round(const double number) { return static_cast<int>(std::round(number)); }
 }  // namespace Eo
-
-#include <string>
-/** @brief Converts a multi-byte (UTF-8) string to a wide-character string.
-* @param multiByte The multi-byte (UTF-8) string to convert.
-* @return The converted wide-character string.
-*/
-inline std::wstring MultiByteToWString(const char* multiByte) {
-  if (!multiByte) return {L""};
-  int size = ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, nullptr, 0);
-  if (size == 0) return {L""};
-  std::wstring string;
-  string.resize(static_cast<size_t>(size) - 1);
-  ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, &string[0], size - 1);
-  return string;
-}
 
 #if defined(USING_DDE)
 #include <ddeml.h>

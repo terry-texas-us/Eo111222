@@ -21,10 +21,11 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "PrimState.h"
+#include "drw_base.h"
 
-#if defined(USING_ODA)
+#if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif  // USING_ODA
+#endif  // USING_DDE
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,21 +45,22 @@ EoDbLine::EoDbLine(EoGeLine& line) : m_ln(line) {
 EoDbLine::EoDbLine(EoInt16 penColor, EoInt16 lineType, EoGeLine line) : EoDbPrimitive(penColor, lineType), m_ln(line) {}
 EoDbLine::EoDbLine(EoInt16 penColor, EoInt16 lineType, const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint)
     : EoDbPrimitive(penColor, lineType), m_ln(beginPoint, endPoint) {}
-#if defined(USING_ODA)
-EoDbLine::EoDbLine(const OdGePoint3d& beginPoint, const OdGePoint3d& endPoint) {
+
+
+EoDbLine::EoDbLine(const DRW_Coord& beginPoint, const DRW_Coord& endPoint) {
   m_ln.begin(beginPoint.x, beginPoint.y, beginPoint.z);
   m_ln.end(endPoint.x, endPoint.y, endPoint.z);
 }
-#endif  // USING_ODA
-EoDbLine::EoDbLine(const EoDbLine& src) {
-  m_PenColor = src.m_PenColor;
-  m_LineType = src.m_LineType;
-  m_ln = src.m_ln;
+
+EoDbLine::EoDbLine(const EoDbLine& other) {
+  m_PenColor = other.m_PenColor;
+  m_LineType = other.m_LineType;
+  m_ln = other.m_ln;
 }
-const EoDbLine& EoDbLine::operator=(const EoDbLine& src) {
-  m_PenColor = src.m_PenColor;
-  m_LineType = src.m_LineType;
-  m_ln = src.m_ln;
+const EoDbLine& EoDbLine::operator=(const EoDbLine& other) {
+  m_PenColor = other.m_PenColor;
+  m_LineType = other.m_LineType;
+  m_ln = other.m_ln;
 
   return (*this);
 }

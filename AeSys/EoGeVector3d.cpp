@@ -4,11 +4,6 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 
-#if defined(USING_ODA)
-#include "OdGeScale3d.h"
-#include "OdGeVector3d.h"
-#endif  // USING_ODA
-
 const EoGeVector3d EoGeVector3d::kXAxis(1.0, 0.0, 0.0);
 const EoGeVector3d EoGeVector3d::kYAxis(0.0, 1.0, 0.0);
 const EoGeVector3d EoGeVector3d::kZAxis(0.0, 0.0, 1.0);
@@ -30,7 +25,7 @@ EoGeVector3d::EoGeVector3d(const OdGeScale3d& initialScale) {
   y = initialScale.sy;
   z = initialScale.sz;
 }
-#endif  // USING_ODA
+#endif
 
 bool EoGeVector3d::operator==(const EoGeVector3d& vector) const { return (EoGeNearEqual(*this, vector, FLT_EPSILON)); }
 

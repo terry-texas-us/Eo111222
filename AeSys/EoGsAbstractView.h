@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <DirectXMath.h>
+
 /*
 The view target and the direction create a display coordinate system (DCS).
 The z-direction equals the direction from target to camera (points toward viewer)
@@ -39,10 +41,10 @@ class EoGsAbstractView {
 
   double m_Elevation;  // elevation of the UCS plane for this view
 
-  XMFLOAT3 mx_Position;
-  XMFLOAT3 mx_Target;
-  XMFLOAT3 mx_Direction;
-  XMFLOAT3 mx_ViewUp;
+  DirectX::XMFLOAT3 mx_Position;
+  DirectX::XMFLOAT3 mx_Target;
+  DirectX::XMFLOAT3 mx_Direction;
+  DirectX::XMFLOAT3 mx_ViewUp;
 
   // View-Specific coordinate systems
   double m_Height;

@@ -1,9 +1,8 @@
 ﻿#include "stdafx.h"
+#if defined(USING_ODA)
 
 #include "AeSysDoc.h"
 #include "EoDbCharacterCellDefinition.h"
-
-#if defined(USING_ODA)
 #include "RxObjectImpl.h"
 #include "Db2LineAngularDimension.h"
 #include "Db2dPolyline.h"
@@ -1542,4 +1541,4 @@ void ProtocolExtension_ConvertEntityToPegPrimitive::Uninitialize() {
   delete m_Converters;
   m_Converters = 0;
 }
-#endif  // USING_ODA
+#endif

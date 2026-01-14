@@ -81,4 +81,4 @@ class EoDlgLayerPropertiesManager : public CDialog {
   void UpdateCurrentLayerInfoField();
   void DrawItem(CDC& deviceContext, int itemID, int labelIndex, const RECT& rcItem);
 };
-#endif  // USING_ODA
+#endif

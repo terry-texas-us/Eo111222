@@ -11,9 +11,9 @@
 #include "EoGePolyline.h"
 #include "PrimState.h"
 
-#if defined(USING_ODA)
+#if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif  // USING_ODA
+#endif  // USING_DDE
 
 EoUInt16 EoDbDimension::sm_wFlags = 0;
 

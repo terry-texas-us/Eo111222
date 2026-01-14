@@ -639,4 +639,4 @@ void EoDlgLayerPropertiesManager::DrawItem(CDC& deviceContext, int itemID, int l
       break;
   }
 }
-#endif  // USING_ODA
+#endif

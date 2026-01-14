@@ -707,7 +707,7 @@ void EoDbPoint::Write(CFile& file, EoByte* buffer) {
   buffer[3] = 1;
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kPointPrimitive);
   buffer[6] = static_cast<EoByte>(m_PenColor == PENCOLOR_BYLAYER ? sm_LayerPenColor : m_PenColor);
-  buffer[7] = static_cast<EoByte>(m_PointStyle);
+  buffer[7] = static_cast<EoByte>(m_pointStyle);
 
   ((CVaxPnt*)&buffer[8])->Convert(m_Point);
 

@@ -465,6 +465,7 @@ BEGIN
     BEGIN
         MENUITEM "&Pen Color\tP",               ID_SETUP_PENCOLOR
         MENUITEM "&Line Type\tL",               ID_SETUP_LINETYPE
+        MENUITEM "Po&int Style",                ID_SETUP_POINTSTYLE
         POPUP "&Fill"
         BEGIN
             MENUITEM "&Hollow",                     ID_SETUP_FILL_HOLLOW
@@ -1986,6 +1987,26 @@ BEGIN
     CONTROL         "",IDC_LINE_TYPES_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SORTASCENDING | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,5,5,240,75
 END
 
+IDD_SET_POINT_STYLE DIALOGEX 0, 0, 234, 133
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Set Point Style"
+FONT 8, "MS Shell Dlg 2", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Basic Point Style",IDC_STATIC,16,8,93,115
+    CONTROL         "Simple Dot [.]",IDC_RADIO_POINT_STYLE_0,"Button",BS_AUTORADIOBUTTON | WS_GROUP,22,23,60,10
+    CONTROL         "No Visible Marker [ ]",IDC_RADIO_POINT_STYLE_1,"Button",BS_AUTORADIOBUTTON,22,42,81,10
+    CONTROL         "Plus Sign [+]",IDC_RADIO_POINT_STYLE_2,"Button",BS_AUTORADIOBUTTON,22,61,58,10
+    CONTROL         "Cross [X]",IDC_RADIO_POINT_STYLE_3,"Button",BS_AUTORADIOBUTTON,22,80,45,10
+    CONTROL         "Vertical Tick [|]",IDC_RADIO_POINT_STYLE_4,"Button",BS_AUTORADIOBUTTON,22,99,64,10
+    GROUPBOX        "Enclosing Shape (optional)",IDC_STATIC,127,8,97,50
+    CONTROL         "Circle",IDC_CHECK_CIRCLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,138,21,33,10
+    CONTROL         "Square",IDC_CHECK_SQUARE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,138,40,38,10
+    LTEXT           "Point Size:",IDC_STATIC,130,79,37,8
+    EDITTEXT        IDC_EDIT_POINT_SIZE,173,77,51,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,118,108,51,14
+    PUSHBUTTON      "Cancel",IDCANCEL,173,108,51,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2303,6 +2324,10 @@ BEGIN
         RIGHTMARGIN, 243
         TOPMARGIN, 7
         BOTTOMMARGIN, 97
+    END
+
+    IDD_SET_POINT_STYLE, DIALOG
+    BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2925,6 +2950,11 @@ BEGIN
     0,
     100, 100, 0, 0,
     0, 0, 0, 0
+END
+
+IDD_SET_POINT_STYLE AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 

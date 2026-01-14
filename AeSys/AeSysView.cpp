@@ -61,13 +61,6 @@
 #include "Resource.h"
 #include "Section.h"
 
-#if defined(USING_ODA)
-#include "AbstractViewPE.h"
-#include "DbAbstractViewportData.h"
-#include "RxVariantValue.h"
-#include "ColorMapping.h"
-#endif  // USING_ODA
-
 #if defined(USING_DDE)
 #include "Dde.h"
 #include "DdeGItms.h"
@@ -497,19 +490,16 @@ AeSysDoc* AeSysView::GetDocument() const {  // non-debug version is inline
 // Base class overides ////////////////////////////////////////////////////////
 
 void AeSysView::OnActivateFrame(UINT state, CFrameWnd* deactivateFrame) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state,
-            deactivateFrame);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state, deactivateFrame);
 
   CView::OnActivateFrame(state, deactivateFrame);
 }
 void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deactiveView) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate,
-            activateView, deactiveView);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate, activateView, deactiveView);
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
   if (activate) {
-    if (CopyAcceleratorTableW(MainFrame->m_hAccelTable, nullptr, 0) ==
-        0) {  // Accelerator table was destroyed when keyboard focus was killed - reload resource
+    if (CopyAcceleratorTableW(MainFrame->m_hAccelTable, nullptr, 0) == 0) {  // Accelerator table was destroyed when keyboard focus was killed - reload resource
       app.BuildModifiedAcceleratorTable();
     }
   }
@@ -559,8 +549,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
   CRect Rect;
   deviceContext->GetClipBox(Rect);
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right,
-            Rect.bottom);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right, Rect.bottom);
 
   if (Rect.IsRectEmpty()) { return; }
 
@@ -579,10 +568,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
       m_RenderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE::D2D1_ANTIALIAS_MODE_ALIASED);
 
-      D2D1_RECT_F rectangle1 = D2D1::RectF(rtSize.width / 2 - 50.0f, rtSize.height / 2 - 50.0f,
-                                           rtSize.width / 2 + 50.0f, rtSize.height / 2 + 50.0f);
-      D2D1_RECT_F rectangle2 = D2D1::RectF(rtSize.width / 2 - 100.0f, rtSize.height / 2 - 100.0f,
-                                           rtSize.width / 2 + 100.0f, rtSize.height / 2 + 100.0f);
+      D2D1_RECT_F rectangle1 = D2D1::RectF(rtSize.width / 2 - 50.0f, rtSize.height / 2 - 50.0f, rtSize.width / 2 + 50.0f, rtSize.height / 2 + 50.0f);
+      D2D1_RECT_F rectangle2 = D2D1::RectF(rtSize.width / 2 - 100.0f, rtSize.height / 2 - 100.0f, rtSize.width / 2 + 100.0f, rtSize.height / 2 + 100.0f);
 
       m_RenderTarget->FillRectangle(&rectangle1, m_RedBrush);
       m_RenderTarget->DrawRectangle(&rectangle2, m_LightSlateGrayBrush);
@@ -598,9 +585,6 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     auto* Document = GetDocument();
     ASSERT_VALID(Document);
     if (m_ViewRendered) {
-#if defined(USING_ODA)
-      if (!m_Device.isNull()) { m_Device->update(); }
-#endif  // USING_ODA
     } else {
       BackgroundImageDisplay(deviceContext);
       DisplayGrid(deviceContext);
@@ -620,31 +604,18 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 void AeSysView::OnInitialUpdate() {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnInitialUpdate()\n", this);
 
-  ::SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(ViewBackgroundColor));
+  SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(ViewBackgroundColor));
 
 #if defined(USING_Direct2D)
   m_RenderTarget = nullptr;
   CreateDeviceResources();
 #endif  // USING_Direct2D
 
-#if defined(USING_ODA)
-  auto* Document = static_cast<AeSysDoc*>(GetDocument());
-  OdDbDatabase* Database = Document->m_DatabasePtr;
-  OdGiContextForDbDatabase::setDatabase(Database);
-
-  enableGsModel(true);
-  ResetDevice(true);
-
-  m_Background = ViewBackgroundColor;
-  m_RenderMode = OdGsView::k2DOptimized;
-#endif  // USING_ODA
-
   CView::OnInitialUpdate();
 }
 
 void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint,
-            hintObject);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint, hintObject);
 
   CDC* DeviceContext = GetDC();
   COLORREF BackgroundColor = DeviceContext->GetBkColor();
@@ -746,10 +717,8 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
 
   if (deviceContext->IsPrinting()) {
     if (m_Plot) {
-      double HorizontalSizeInInches =
-          static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
-      double VerticalSizeInInches =
-          static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
+      double HorizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
+      double VerticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
 
       m_ViewTransform.Initialize(m_Viewport);
       m_ViewTransform.SetWindow(0.0, 0.0, HorizontalSizeInInches, VerticalSizeInInches);
@@ -901,12 +870,10 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
     CPen* Pen = DeviceContext->SelectObject(&GreyPen);
     CBrush* Brush = (CBrush*)DeviceContext->SelectStockObject(NULL_BRUSH);
 
-    DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
-                             m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+    DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y, m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
 
     m_RubberbandLogicalEndPoint = point;
-    DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
-                             m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+    DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y, m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
     DeviceContext->SelectObject(Brush);
     DeviceContext->SelectObject(Pen);
     DeviceContext->SetROP2(DrawMode);
@@ -914,36 +881,19 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
   }
 }
 
-/// <remarks> Consider using zDelta with WHEEL_DELTA for fine and coarse zooming</remarks>
-BOOL AeSysView::OnMouseWheel(UINT nFlags, EoInt16 zDelta, CPoint point) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnMouseWheel(%i, %i, %08.8lx)\n", this, nFlags,
-            zDelta, point);
+BOOL AeSysView::OnMouseWheel(UINT flags, EoInt16 zDelta, CPoint point) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>OnMouseWheel(%i, %i, %08.8lx)\n", this, flags, zDelta, point);
 
   if (zDelta > 0) {
     OnWindowZoomIn();
   } else {
     OnWindowZoomOut();
   }
-#if defined(USING_ODA)
-  OdGsView* View = ViewAt(0);
-  OdGePoint3d Position(View->position());
-  Position.transformBy(View->worldToDeviceMatrix());
-
-  int x = int(OdRound(Position.x));
-  int y = int(OdRound(Position.y));
-  x = point.x - x;
-  y = point.y - y;
-  Dolly(-x, -y);
-  View->zoom(zDelta > 0 ? 1.0 / 0.9 : 0.9);
-  Dolly(x, y);
-  InvalidateRect(nullptr, TRUE);
-#endif  // USING_ODA
-
-  return __super::OnMouseWheel(nFlags, zDelta, point);
+  return __super::OnMouseWheel(flags, zDelta, point);
 }
 
 void AeSysView::OnSize(UINT type, int cx, int cy) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnSize(%i, %i, %i)\n", this, type, cx, cy);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>OnSize(%i, %i, %i)\n", this, type, cx, cy);
 
   if (cx && cy) {
     SetViewportSize(cx, cy);
@@ -951,18 +901,6 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
 #if defined(USING_Direct2D)
     if (m_RenderTarget) { m_RenderTarget->Resize(D2D1::SizeU(cx, cy)); }
 #endif  // USING_Direct2D
-#if defined(USING_ODA)
-    if (!m_Device.isNull()) {
-      m_Device->onSize(OdGsDCRect(0, cx, cy, 0));
-
-      OdGsView* View = m_Device->viewAt(0);
-
-      OdGePoint3d Target = OdGePoint3d(m_ViewTransform.UExtent() / 2.0, m_ViewTransform.VExtent() / 2.0, 0.0);
-      OdGePoint3d Position = Target + (OdGeVector3d::kZAxis * m_ViewTransform.LensLength());
-
-      View->setView(Position, Target, OdGeVector3d::kYAxis, m_ViewTransform.UExtent(), m_ViewTransform.VExtent());
-    }
-#endif  // USING_ODA
     m_OverviewViewTransform = m_ViewTransform;
   }
 }
@@ -1010,9 +948,7 @@ void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, 
 
 void AeSysView::InvokeNewModelTransform() { m_ModelTransform.InvokeNew(); }
 
-void AeSysView::SetLocalModelTransform(EoGeTransformMatrix& transformation) {
-  m_ModelTransform.SetLocalTM(transformation);
-}
+void AeSysView::SetLocalModelTransform(EoGeTransformMatrix& transformation) { m_ModelTransform.SetLocalTM(transformation); }
 
 void AeSysView::ReturnModelTransform() { m_ModelTransform.Return(); }
 
@@ -1036,20 +972,15 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
 
     // Determine the region of the bitmap to tranfer to display
     CRect rcWnd;
-    rcWnd.left =
-        Eo::Round((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.top = Eo::Round((1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) *
-                          static_cast<double>(bm.bmHeight));
-    rcWnd.right =
-        Eo::Round((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.bottom = Eo::Round((1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) *
-                             static_cast<double>(bm.bmHeight));
+    rcWnd.left = Eo::Round((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
+    rcWnd.top = Eo::Round((1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
+    rcWnd.right = Eo::Round((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
+    rcWnd.bottom = Eo::Round((1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
 
     int iWidSrc = rcWnd.Width();
     int iHgtSrc = rcWnd.Height();
 
-    deviceContext->StretchBlt(0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc,
-                              SRCCOPY);
+    deviceContext->StretchBlt(0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
 
     dcMem.SelectObject(pBitmap);
     deviceContext->SelectPalette(pPalette, FALSE);
@@ -1287,9 +1218,6 @@ void AeSysView::OnViewParameters() {
 void AeSysView::OnViewLighting() {}
 
 void AeSysView::OnViewRendered() {
-#if defined(USING_ODA)
-  SetRenderMode(OdGsView::kFlatShaded);
-#endif  // USING_ODA
   m_ViewRendered = !m_ViewRendered;
   InvalidateRect(nullptr, TRUE);
 }
@@ -1702,8 +1630,7 @@ AeSysView* AeSysView::GetActiveView() {
   if (MDIChildWnd == nullptr) { return nullptr; }
   CView* View = MDIChildWnd->GetActiveView();
 
-  if (!View->IsKindOf(RUNTIME_CLASS(
-          AeSysView))) {  // View is the wrong kind (this could occur with splitter windows, or additional views in a single document.
+  if (!View->IsKindOf(RUNTIME_CLASS(AeSysView))) {  // View is the wrong kind (this could occur with splitter windows, or additional views in a single document.
     return nullptr;
   }
   return (AeSysView*)View;
@@ -1936,8 +1863,7 @@ EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double toleranc
       if (Primitive->Is(EoDb::kEllipsePrimitive)) {
         EoDbEllipse* Arc = static_cast<EoDbEllipse*>(Primitive);
 
-        if (fabs(Arc->GetSwpAng() - Eo::TwoPi) <= DBL_EPSILON &&
-            (Arc->GetMajAx().SquaredLength() - Arc->GetMinAx().SquaredLength()) <= DBL_EPSILON) {
+        if (fabs(Arc->GetSwpAng() - Eo::TwoPi) <= DBL_EPSILON && (Arc->GetMajAx().SquaredLength() - Arc->GetMinAx().SquaredLength()) <= DBL_EPSILON) {
           if (point.DistanceTo(Arc->Center()) <= tolerance) {
             circle = Arc;
             return Group;
@@ -1971,8 +1897,7 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
   return 0;
 }
 
-EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor,
-                                            EoInt16 pointStyle, EoDbPoint*& primitive) {
+EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor, EoInt16 pointStyle, EoDbPoint*& primitive) {
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != 0) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
@@ -2040,8 +1965,7 @@ EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& pt) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kTextPrimitive)) {
         EoGePoint3d ptProj;
-        if (static_cast<EoDbText*>(Primitive)->SelectUsingPoint(this, ptView, ptProj))
-          return static_cast<EoDbText*>(Primitive);
+        if (static_cast<EoDbText*>(Primitive)->SelectUsingPoint(this, ptView, ptProj)) return static_cast<EoDbText*>(Primitive);
       }
     }
   }
@@ -2197,8 +2121,7 @@ void AeSysView::OnFind() {
   VerifyFindString(findCombo, findComboText);
 
   if (!findComboText.IsEmpty()) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnFind() ComboText = %ls\n",
-              static_cast<LPCTSTR>(findComboText));
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnFind() ComboText = %ls\n", static_cast<LPCTSTR>(findComboText));
   }
 }
 
@@ -2232,9 +2155,7 @@ void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CStrin
   }
 }
 
-void AeSysView::OnEditFind() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnEditFind() - Entering\n");
-}
+void AeSysView::OnEditFind() { ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnEditFind() - Entering\n"); }
 
 // Disables rubberbanding.
 void AeSysView::RubberBandingDisable() {
@@ -2249,8 +2170,7 @@ void AeSysView::RubberBandingDisable() {
       DeviceContext->LineTo(m_RubberbandLogicalEndPoint);
     } else if (m_RubberbandType == Rectangles) {
       CBrush* Brush = (CBrush*)DeviceContext->SelectStockObject(NULL_BRUSH);
-      DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
-                               m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+      DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y, m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
       DeviceContext->SelectObject(Brush);
     }
     DeviceContext->SelectObject(Pen);
@@ -2381,8 +2301,7 @@ void AeSysView::SetModeCursor(int mode) {
       SetCursor(static_cast<HCURSOR>(LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE)));
       return;
   }
-  auto cursorHandle = static_cast<HCURSOR>(
-      LoadImageW(app.GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+  auto cursorHandle = static_cast<HCURSOR>(LoadImageW(app.GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
   VERIFY(cursorHandle);
   SetCursor(cursorHandle);
   SetClassLongPtr(this->GetSafeHwnd(), GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursorHandle));
@@ -2467,8 +2386,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
       double Ratio = WidthInInches() / UExtent();
       CString RatioAsString;
       RatioAsString.Format(L"=%-8.3f", Ratio);
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, RatioAsString,
-                                 (UINT)RatioAsString.GetLength(), 0);
+      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, RatioAsString, (UINT)RatioAsString.GetLength(), 0);
     }
     if ((item & DimLen) == DimLen || (item & DimAng) == DimAng) {
       rc.SetRect(58 * tm.tmAveCharWidth, ClientRect.top, 90 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
@@ -2479,8 +2397,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
       app.FormatAngle(Angle, Eo::DegreeToRadian(app.DimensionAngle()), 8, 3);
       Angle.ReleaseBuffer();
       LengthAndAngle.Append(L" @ " + Angle);
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, LengthAndAngle,
-                                 (UINT)LengthAndAngle.GetLength(), 0);
+      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, LengthAndAngle, (UINT)LengthAndAngle.GetLength(), 0);
     }
     DeviceContext->SetBkColor(crBk);
     DeviceContext->SetTextColor(crText);
@@ -2489,90 +2406,6 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     ReleaseDC(DeviceContext);
   }
 }
-
-#if defined(USING_ODA)
-const ODCOLORREF* AeSysView::CurrentPalette() const {
-  const ODCOLORREF* Color = odcmAcadPalette(m_Background);
-  return Color;
-}
-
-void AeSysView::ViewZoomExtents() {
-  OdGsView* View = ViewAt(0);
-  OdAbstractViewPEPtr(View)->zoomExtents(View);
-}
-
-void AeSysView::ResetDevice(bool zoomExtents) {
-  auto* document = GetDocument();
-  CRect ClientRectangle;
-  GetClientRect(&ClientRectangle);
-
-#if defined(_TOOLKIT_IN_DLL_)
-  OdGsModulePtr Module = ::odrxDynamicLinker()->loadModule(L"WinDirectX_3.05_10.txv");
-#else   // !_TOOLKIT_IN_DLL_
-  OdGsModulePtr Module = ::odrxDynamicLinker()->loadModule(OdWinDirectXModuleName);
-#endif  // _TOOLKIT_IN_DLL_
-  m_Device = Module->createDevice();
-  if (!m_Device.isNull()) {
-    // Dictionary entity containing the device <WindowHWND> property
-    OdRxDictionaryPtr DeviceProperties = m_Device->properties();
-    DeviceProperties->putAt("WindowHWND", OdRxVariantValue(long(m_hWnd)));
-
-    m_Device->setBackgroundColor(m_Background);
-    m_Device->setLogicalPalette(CurrentPalette(), 256);
-
-    if (database()) {
-      m_Device = OdDbGsManager::setupActiveLayoutViews(m_Device, this);
-
-      // Return true if and only the current layout is a paper space layout.
-      m_bPsOverall = (document->m_DatabasePtr->getTILEMODE() == 0);
-      SetViewportBorderProperties(m_Device, !m_bPsOverall);
-
-      if (zoomExtents) { ViewZoomExtents(); }
-      OnSize(0, ClientRectangle.Width(), ClientRectangle.Height());
-      RedrawWindow();
-    }
-  }
-}
-
-void AeSysView::SetRenderMode(OdGsView::RenderMode renderMode) {
-  OdGsViewPtr FirstView = ViewAt(0);
-
-  if (FirstView->mode() != renderMode) {
-    FirstView->setMode(renderMode);
-
-    if (FirstView->mode() != renderMode) {
-      MessageBoxW(L"Sorry, this render mode is not supported by the current device", L"OpenCAD", MB_ICONWARNING);
-    } else {
-      PostMessage(WM_PAINT);
-      m_RenderMode = renderMode;
-    }
-  }
-}
-
-/// <remarks>
-/// If current layout is Model, and it has more then one viewport then make their borders visible.
-/// If current layout is Paper, then make visible the borders of all but the overall viewport.
-/// </remarks>
-void AeSysView::SetViewportBorderProperties(OdGsDevice* device, bool modelLayout) {
-  int NumberOfViews = device->numViews();
-  if (NumberOfViews > 1) {
-    for (int ViewIndex = modelLayout ? 0 : 1; ViewIndex < NumberOfViews; ++ViewIndex) {
-      OdGsViewPtr View = device->viewAt(ViewIndex);
-      View->setViewportBorderVisibility(true);
-      View->setViewportBorderProperties(CurrentPalette()[7], 1);
-    }
-  }
-}
-
-void AeSysView::Dolly(int x, int y) {
-  OdGsViewPtr View = ViewAt(0);
-
-  OdGeVector3d DollyVector(double(-x), double(-y), 0.0);
-  DollyVector.transformBy((View->screenMatrix() * View->projectionMatrix()).inverse());
-
-  View->dolly(DollyVector);
-}
-#endif  // USING_ODA
 
 #if defined(USING_Direct2D)
 HRESULT AeSysView::CreateDeviceResources() {
@@ -2585,15 +2418,10 @@ HRESULT AeSysView::CreateDeviceResources() {
     D2D1_SIZE_U size = D2D1::SizeU(rc.right - rc.left, rc.bottom - rc.top);
 
     HWND WindowHandle = GetSafeHwnd();
-    hr = app.m_Direct2dFactory->CreateHwndRenderTarget(
-        D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(WindowHandle, size), &m_RenderTarget);
+    hr = app.m_Direct2dFactory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(WindowHandle, size), &m_RenderTarget);
 
-    if (SUCCEEDED(hr)) {
-      hr = m_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::LightSlateGray), &m_LightSlateGrayBrush);
-    }
-    if (SUCCEEDED(hr)) {
-      hr = m_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red, 0.3f), &m_RedBrush);
-    }
+    if (SUCCEEDED(hr)) { hr = m_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::LightSlateGray), &m_LightSlateGrayBrush); }
+    if (SUCCEEDED(hr)) { hr = m_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red, 0.3f), &m_RedBrush); }
   }
   return hr;
 }

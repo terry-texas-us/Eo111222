@@ -294,4 +294,4 @@ void ExamineFile(LPWSTR oldFile, const int oldFileBufferSize, LPWSTR newFile, co
     delete[] envptr;
   }
 }
-#endif  // USING_ODA
+#endif

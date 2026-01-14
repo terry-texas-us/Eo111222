@@ -3,6 +3,7 @@
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
 #include "EoGeTransformMatrix.h"
+#include "drw_Base.h"
 
 class EoDbLine : public EoDbPrimitive {
  private:
@@ -14,18 +15,16 @@ class EoDbLine : public EoDbPrimitive {
   EoDbLine(EoGeLine& line);
   EoDbLine(EoInt16 penColor, EoInt16 lineType, EoGeLine line);
   EoDbLine(EoInt16 penColor, EoInt16 lineType, const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint);
-#if defined(USING_ODA)
-  EoDbLine(const OdGePoint3d& beginPoint, const OdGePoint3d& endPoint);
-#endif  // USING_ODA
+  EoDbLine(const DRW_Coord& beginPoint, const DRW_Coord& endPoint);
 
-  EoDbLine(const EoDbLine& src);
+  EoDbLine(const EoDbLine& other);
 
   ~EoDbLine() override {};
 
- public:  // Operators
-  const EoDbLine& operator=(const EoDbLine& src);
+ public:
+  const EoDbLine& operator=(const EoDbLine& other);
 
- public:  //	Methods - absolute virtuals
+ public:
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbLine*>(primitive); }
 #if defined(USING_ODA)

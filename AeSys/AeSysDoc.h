@@ -21,10 +21,6 @@
 #include "EoGeUniquePoint.h"
 #include "EoGeVector3d.h"
 
-#if defined(USING_ODA)
-#include "DbDatabase.h"
-#endif  // USING_ODA
-
 class EoGeTransformMatrix;
 
 class AeSysDoc : public CDocument {
@@ -34,12 +30,6 @@ class AeSysDoc : public CDocument {
   AeSysDoc& operator=(const AeSysDoc&) = delete;
 
   DECLARE_DYNCREATE(AeSysDoc)
-
- public:
-#if defined(USING_ODA)
-  OdDbDatabasePtr m_DatabasePtr;
-  OdDb::DwgVersion m_SaveAsVersion;
-#endif  // USING_ODA
 
  private:
   CString m_IdentifiedLayerName;
@@ -58,6 +48,8 @@ class AeSysDoc : public CDocument {
   EoDbGroupList m_NodalGroupList;
   CObList m_MaskedPrimitives;
   CObList m_UniquePoints;
+  double m_pointSize{0.0};  // in drawing units when greater than zero; in pixels when less than zero; default otherwise
+
 
   // Overrides
  public:
@@ -130,6 +122,11 @@ class AeSysDoc : public CDocument {
   void RemoveEmptyLayers();
 
   EoDbLayer* LayersSelUsingPoint(const EoGePoint3d&);
+
+  /// Get the stored point size. Positive => drawing units; negative => pixels.
+  double GetPointSize() const noexcept { return m_pointSize; }
+  void SetPointSize(double size) noexcept { m_pointSize = size; }
+
 
   // Line Type Table interface
   EoDbLineTypeTable* LineTypeTable() { return &m_LineTypeTable; }
@@ -321,6 +318,7 @@ class AeSysDoc : public CDocument {
   afx_msg void OnSetupFillPattern();
   afx_msg void OnSetupFillSolid();
   afx_msg void OnSetupGotoPoint();
+  afx_msg void OnSetupPointStyle();
   afx_msg void OnSetupNote();
   afx_msg void OnSetupOptionsDraw();
   afx_msg void OnSetupPenColor();
@@ -381,5 +379,5 @@ class AeSysDoc : public CDocument {
 
   afx_msg void OnSetupLayerproperties();
   BOOL DoPromptFileName(CString& fileName, UINT titleResourceIdentifier, DWORD flags);
-#endif  // USING_ODA
+#endif
 };

@@ -19,9 +19,9 @@
 #include "EoGeVector3d.h"
 #include "PrimState.h"
 
-#if defined(USING_ODA)
+#if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif  // USING_ODA
+#endif  // USING_DDE
 
 EoUInt16 EoDbPolyline::sm_EdgeToEvaluate = 0;
 EoUInt16 EoDbPolyline::sm_Edge = 0;

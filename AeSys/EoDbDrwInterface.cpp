@@ -11,8 +11,11 @@
 #include "AeSysDoc.h"
 #include "EoDbBlock.h"
 #include "EoDbDrwInterface.h"
+#include "EoDbGroup.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbLayer.h"
+#include "EoDbLine.h"
+
 #include "EoDbLineType.h"
 #include "EoDbLineTypeTable.h"
 #include "EoGePoint3d.h"
@@ -231,9 +234,8 @@ void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc*
  * The interleaving between model space and paper space no longer occurs. Instead, all paper space entities are output, followed by model space entities. The flag distinguishing them is the group code 67.
  */
 void EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* document) {
-  std::wstring blockName = StringToWString(block.name.c_str()); // Block Name (group code 2)
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"Block - Name: %s\n", blockName.c_str());
-
+  blockName = StringToWString(block.name.c_str()); // Block Name (group code 2)
+  
   // auto handle = block.handle;              // group code 5
   // auto parentHandle = block.parentHandle;  // Soft-pointer ID/handle to owner object (group code 330)
 
@@ -252,6 +254,29 @@ void EoDbDrwInterface::ConvertBlockSet(const int /* handle */, AeSysDoc* /* docu
 void EoDbDrwInterface::ConvertBlockEnd(AeSysDoc* /* document */) { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block end\n"); }
 
 // Entities
+
+void EoDbDrwInterface::ConvertLineEntity(const DRW_Line& line, AeSysDoc* document) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Line entity conversion\n");
+
+  auto penColor = line.color;
+
+  auto* lineTypeTable = document->LineTypeTable();
+  auto lineTypeName = CString(StringToWString(line.lineType.c_str()).c_str());
+  auto lineTypeIndex = lineTypeTable->LegacyLineTypeIndex(lineTypeName);
+  
+  auto newLine = new EoDbLine(line.basePoint, line.secPoint);
+  newLine->PenColor(static_cast<EoInt16>(penColor));
+  newLine->LineType(static_cast<EoInt16>(lineTypeIndex));
+
+  auto* group = new EoDbGroup();
+  group->AddTail(newLine);
+
+  auto layerName = StringToWString(line.layer.c_str());
+  auto* layer = document->GetLayerTableLayer(layerName.c_str());
+  layer->AddTail(group);
+}
+
+
 /*
 void ConvertPrimitiveData(const EoDbPrimitive* primitive, OdDbBlockTableRecordPtr block, OdDbEntity* entity) {
   OdDbDatabase* Database = entity->database();
@@ -290,29 +315,3 @@ OdDbEntity* EoDbLine::Convert(const OdDbObjectId& blockTableRecord) {
   return LineEntity;
 }
 */
-#include "EoDbLine.h"
-#include "EoDbGroup.h"
-
-void EoDbDrwInterface::ConvertLineEntity(const DRW_Line& line, AeSysDoc* document) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Line entity conversion\n");
-
-  auto penColor = line.color;
-
-  auto* lineTypeTable = document->LineTypeTable();
-  auto lineTypeName = CString(StringToWString(line.lineType.c_str()).c_str());
-  auto lineTypeIndex = lineTypeTable->LegacyLineTypeIndex(lineTypeName);
-  
-  auto beginPoint = EoGePoint3d{line.basePoint.x, line.basePoint.y, line.basePoint.z};
-  auto endPoint = EoGePoint3d{line.secPoint.x, line.secPoint.y, line.secPoint.z};
-
-  auto newLine = new EoDbLine(beginPoint, endPoint);
-  newLine->PenColor(static_cast<EoInt16>(penColor));
-  newLine->LineType(static_cast<EoInt16>(lineTypeIndex));
-
-  auto* group = new EoDbGroup();
-  group->AddTail(newLine);
-
-  auto layerName = StringToWString(line.layer.c_str());
-  auto* layer = document->GetLayerTableLayer(layerName.c_str());
-  layer->AddTail(group);
-}

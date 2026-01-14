@@ -1,4 +1,5 @@
 ﻿#include "stdafx.h"
+#include <afxwin.h>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -19,8 +20,7 @@ ON_BN_CLICKED(IDC_SAVE, &EoDlgActiveViewKeyplan::OnBnClickedSave)
 ON_EN_KILLFOCUS(IDC_RATIO, &EoDlgActiveViewKeyplan::OnEnKillfocusRatio)
 END_MESSAGE_MAP()
 
-EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(CWnd* pParent /*=nullptr*/)
-    : CDialog(EoDlgActiveViewKeyplan::IDD, pParent), m_dRatio(0) {}
+EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgActiveViewKeyplan::IDD, pParent), m_dRatio(0) {}
 EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(AeSysView* view, CWnd* pParent /*=nullptr*/)
     : CDialog(EoDlgActiveViewKeyplan::IDD, pParent), m_dRatio(0), m_ActiveView(view) {}
 EoDlgActiveViewKeyplan::~EoDlgActiveViewKeyplan() {}

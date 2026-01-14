@@ -508,11 +508,6 @@ void CMainFrame::OnMdiTabbed() {
 void CMainFrame::OnUpdateMdiTabbed(CCmdUI* pCmdUI) { pCmdUI->SetCheck(); }
 void CMainFrame::OnDestroy() {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"CMainFrame::OnDestroy() - Entering\n");
-
-#if defined(USING_ODA)
-  odUninitialize();
-#endif  // USING_ODA
-
   PostQuitMessage(0);  // Force WM_QUIT message to terminate message loop
 }
 CString CMainFrame::GetPaneText(int index) { return m_statusBar.GetPaneText(index); }

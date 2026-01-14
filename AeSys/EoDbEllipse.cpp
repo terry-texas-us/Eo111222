@@ -24,9 +24,9 @@
 #include "EoGeVector3d.h"
 #include "PrimState.h"
 
-#if defined(USING_ODA)
+#if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif  // USING_ODA
+#endif  // USING_DDE
 
 EoDbEllipse::EoDbEllipse(const EoGePoint3d& centerPoint, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis,
                          double sweepAngle)

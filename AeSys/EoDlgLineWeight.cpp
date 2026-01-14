@@ -62,4 +62,4 @@ void EoDlgLineWeight::OnBnClickedOk() {
 void EoDlgLineWeight::OnLbnDblclkListLineweight() {
 	OnBnClickedOk();
 }
-#endif // USING_ODA
+#endif

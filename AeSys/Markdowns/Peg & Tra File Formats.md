@@ -1,4 +1,4 @@
-### Tracing File Format (production)
+Ôªø### Tracing File Format (production)
     EoDb::kHeaderSection sentinel          uint16_t 0x0101
     {0 or more key-value pairs}
     EoDb::kEndOfSection sentinel           uint16_t 0x01ff
@@ -11,7 +11,7 @@
 ### Notes: 
 - When a tracing (tra) file is loaded the required Linetype Table can no longer
   be assumed to contain the required definitions. More than likely the only
-  linetype preloaded will be the default ìContinuousî linetype (index = 1).
+  linetype preloaded will be the default ‚ÄúContinuous‚Äù linetype (index = 1).
   The primitives must be reviewed before the first display to determine which (if any)
   linetype should be loaded from the external linetype file. The Legacy linetype file
   will always be maintained in the original indexed order. So, a lookup of the linetype

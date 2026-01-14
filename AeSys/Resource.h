@@ -40,6 +40,7 @@
 #define IDD_TRAP_MODIFY                 156
 #define IDD_HOME_POINT_GO               157
 #define IDD_TRAP_FILTER                 158
+#define IDD_SET_POINT_STYLE             159
 #define IDD_INSERT_BLOCK                162
 #define IDD_VIEW_PARAMETERS             163
 #define IDD_PASTE_POSITION              164
@@ -225,7 +226,6 @@
 #define IDC_SOLO                        1314
 #define IDC_BLOCKS_LIST                 1315
 #define IDC_REFERENCES                  1316
-#define IDC_CHECK1                      1319
 #define IDC_APPEND                      1320
 #define IDC_INSERT                      1320
 #define IDC_RADIO1                      1323
@@ -294,8 +294,18 @@
 #define IDC_INDEX_COLOR                 1429
 #define IDC_RGBNUMBERS                  1435
 #define IDC_SELECTION_COLOR             1436
+#define IDC_RADIO_POINT_STYLE_0         1437
+#define IDC_RADIO_POINT_STYLE_1         1438
+#define IDC_RADIO_POINT_STYLE_2         1439
+#define IDC_RADIO_POINT_STYLE_3         1440
+#define IDC_RADIO_POINT_STYLE_4         1441
+#define IDC_CHECK1                      1442
+#define IDC_CHECK2                      1443
+#define IDC_CHECK_SQUARE                1443
 #define IDC_MFCFONTCOMBO                1448
 #define IDC_LINE_TYPES_LIST             1455
+#define IDC_CHECK_CIRCLE                1456
+#define IDC_EDIT_POINT_SIZE             1457
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -603,6 +613,7 @@
 #define ID_VIEW_APPLOOK_WINDOWS_7       4810
 #define ID_VIEW_WINDOW_KEYPLAN          4901
 #define ID_WINDOW_ZOOMSPECIAL           4902
+#define ID_SETUP_POINTSTYLE             4903
 #define ID_DRAW_MODE_OPTIONS            5100
 #define ID_DRAW_MODE_POINT              5101
 #define ID_DRAW_MODE_LINE               5102
@@ -777,9 +788,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        344
-#define _APS_NEXT_COMMAND_VALUE         4903
-#define _APS_NEXT_CONTROL_VALUE         1456
+#define _APS_NEXT_RESOURCE_VALUE        345
+#define _APS_NEXT_COMMAND_VALUE         4904
+#define _APS_NEXT_CONTROL_VALUE         1458
 #define _APS_NEXT_SYMED_VALUE           500
 #endif
 #endif

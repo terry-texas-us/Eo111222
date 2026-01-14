@@ -33,7 +33,7 @@ class EoDbPolyline : public EoDbPrimitive {
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolyline*>(primitive); }
 #if defined(USING_ODA)
   OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
-#endif  // USING_ODA
+#endif
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
   void AddReportToMessageList(EoGePoint3d) override;

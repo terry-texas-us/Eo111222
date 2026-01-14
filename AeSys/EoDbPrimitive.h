@@ -9,11 +9,6 @@ class EoDbGroupList;
 class EoDbGroup;
 class EoGeTransformMatrix;
 
-#if defined(USING_ODA)
-class OdDbEntity;
-class OdDbObjectId;
-#endif  // USING_ODA
-
 class EoDbPrimitive : public CObject {
  public:
   static const EoUInt16 BUFFER_SIZE = 2048;
@@ -48,7 +43,7 @@ class EoDbPrimitive : public CObject {
   virtual void Assign(EoDbPrimitive* primitive) = 0;
 #if defined(USING_ODA)
   virtual OdDbEntity* Convert(const OdDbObjectId& blockTableRecord) = 0;
-#endif  // USING_ODA
+#endif
   virtual EoDbPrimitive*& Copy(EoDbPrimitive*&) = 0;
   virtual void Display(AeSysView* view, CDC* deviceContext) = 0;
   virtual void AddReportToMessageList(EoGePoint3d) = 0;

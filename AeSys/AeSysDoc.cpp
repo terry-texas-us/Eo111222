@@ -57,6 +57,7 @@
 #include "EoDlgSetupColor.h"
 #include "EoDlgSetupHatch.h"
 #include "EoDlgSetupNote.h"
+#include "EoDlgSetupPointStyle.h"
 #include "EoDlgTrapFilter.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -71,16 +72,6 @@
 #include "drw_base.h"
 #include "libdxfrw.h"
 
-#if defined(USING_ODA)
-#include "DbBlockTable.h"
-#include "DbBlockTableRecord.h"
-#include "DbLayerTable.h"
-#include "DbLayerTableRecord.h"
-#include "DbLinetypeTable.h"
-#include "DbLinetypeTableRecord.h"
-#include "ColorMapping.h"
-#include "EoDbDwgToPegFile.h"
-#endif  // USING_ODA
 #if defined(USING_DDE)
 #include "ddeGItms.h"
 #endif  // USING_DDE
@@ -154,6 +145,7 @@ ON_COMMAND(ID_SETUP_FILL_HOLLOW, OnSetupFillHollow)
 ON_COMMAND(ID_SETUP_FILL_SOLID, OnSetupFillSolid)
 ON_COMMAND(ID_SETUP_FILL_PATTERN, OnSetupFillPattern)
 ON_COMMAND(ID_SETUP_FILL_HATCH, OnSetupFillHatch)
+ON_COMMAND(ID_SETUP_POINTSTYLE, OnSetupPointStyle)
 ON_COMMAND(ID_SETUP_NOTE, OnSetupNote)
 ON_COMMAND(ID_SETUP_SAVEPOINT, OnSetupSavePoint)
 ON_COMMAND(ID_SETUP_GOTOPOINT, OnSetupGotoPoint)
@@ -172,12 +164,7 @@ ON_COMMAND(ID_TRAPCOMMANDS_FILTER, OnTrapCommandsFilter)
 ON_COMMAND(ID_TRAPCOMMANDS_BLOCK, OnTrapCommandsBlock)
 ON_COMMAND(ID_TRAPCOMMANDS_UNBLOCK, OnTrapCommandsUnblock)
 ON_COMMAND(ID_HELP_KEY, OnHelpKey)
-#if defined(USING_ODA)
-ON_COMMAND(ID_SETUP_LAYERPROPERTIES, &AeSysDoc::OnSetupLayerproperties)
-#endif  // USING_ODA
 END_MESSAGE_MAP()
-
-// AeSysDoc construction/destruction
 
 AeSysDoc::AeSysDoc()
     : m_IdentifiedLayerName(),
@@ -200,9 +187,7 @@ AeSysDoc::~AeSysDoc() {}
 void AeSysDoc::DeleteContents() {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysDoc<%p>)::DeleteContents()\n", this);
 
-#if defined(USING_ODA)
-  m_DatabasePtr.release();
-#endif  // USING_ODA
+  // TODO: Release EoDbDrwInterface resources if any
 
   m_LineTypeTable.RemoveAll();
 
@@ -220,9 +205,6 @@ void AeSysDoc::DeleteContents() {
   CDocument::DeleteContents();
 }
 BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
-#if defined(USING_ODA)
-  m_SaveAsVersion = m_DatabasePtr->originalFileVersion();
-#endif  // USING_ODA
   CString PathName = pathName;
   if (PathName.IsEmpty()) {
     CDocTemplate* Template = GetDocTemplate();
@@ -240,12 +222,7 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
         PathName += Extension;
       }
     }
-#if defined(USING_ODA)
-    if (!DoPromptFileName(PathName, replace ? AFX_IDS_SAVEFILE : AFX_IDS_SAVEFILECOPY,
-                          OFN_HIDEREADONLY | OFN_EXPLORER | OFN_PATHMUSTEXIST)) {
-      return FALSE;
-    }
-#endif  // USING_ODA
+    // TODO: Implement a EoDbDrwInterface Save As dialog if needed
   }
   if (!OnSaveDocument(PathName)) {
     if (pathName == nullptr) {
@@ -392,10 +369,7 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
     case EoDb::kDwg:
     case EoDb::kDxf:
     case EoDb::kDxb:
-#if defined(USING_ODA)
-      m_DatabasePtr->writeFile(lpszPathName, OdDb::kDwg, OdDb::kDHL_CURRENT);
-      ReturnStatus = TRUE;
-#endif  // USING_ODA
+      // TODO: Implement DXF/DXB saving using EoDbDrwInterface and libdxfrw
       break;
 
     case EoDb::kUnknown:
@@ -1464,6 +1438,23 @@ void AeSysDoc::OnSetupNote() {
     pstate.SetFontDef(DeviceContext, FontDefinition);
   }
 }
+
+void AeSysDoc::OnSetupPointStyle() {
+  CDlgSetPointStyle dlg;
+  // Preload dialog from global state and document
+  dlg.m_pointStyle = pstate.PointStyle();
+  dlg.m_pointSize = GetPointSize();
+
+  if (dlg.DoModal() == IDOK) {
+    // Apply to global primitive state
+    pstate.SetPointStyle(static_cast<short>(dlg.m_pointStyle));
+    // Store into document
+    SetPointSize(dlg.m_pointSize);
+
+    UpdateAllViews(nullptr, 0L, nullptr);
+  }
+}
+
 void AeSysDoc::OnToolsGroupBreak() {
   auto* activeView = AeSysView::GetActiveView();
 
@@ -2107,4 +2098,4 @@ BOOL AeSysDoc::DoPromptFileName(CString& fileName, UINT titleResourceIdentifier,
   }
   return Result == IDOK;
 }
-#endif  // USING_ODA
+#endif

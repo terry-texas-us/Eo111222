@@ -23,4 +23,4 @@ class ProtocolExtension_ConvertEntityToPegPrimitive {
   void Initialize();
   void Uninitialize();
 };
-#endif  // USING_ODA
+#endif

@@ -33,7 +33,7 @@ class EoDbBlockReference : public EoDbPrimitive {
   EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& ptBase);
 #if defined(USING_ODA)
   OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
-#endif  // USING_ODA
+#endif
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
   void AddReportToMessageList(EoGePoint3d) override;

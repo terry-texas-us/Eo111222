@@ -1,4 +1,5 @@
 ﻿#include "stdafx.h"
+#include <algorithm>
 
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"

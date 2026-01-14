@@ -224,7 +224,7 @@
     <ClCompile Include="EoDlgSelectGotoHomePoint.cpp">
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="EoDlgSetHomePoint.cpp">
+    <ClCompile Include="EoDlgSetupHomePoint.cpp">
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="EoDlgAnnotateOptions.cpp">
@@ -405,6 +405,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EoDbDrwInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EoDlgSetupPointStyle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2024,6 +2027,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EoDbDrwInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EoDlgSetupPointStyle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,7 +5,7 @@
 
 class EoDbPoint : public EoDbPrimitive {
  private:
-  EoInt16 m_PointStyle;
+  EoInt16 m_pointStyle;
   EoGePoint3d m_Point;
   EoUInt16 m_NumberOfDatums;
   double* m_Data;
@@ -28,9 +28,10 @@ class EoDbPoint : public EoDbPrimitive {
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPoint*>(primitive); }
 #if defined(USING_ODA)
   OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
-#endif  // USING_ODA
+#endif
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
-  void Display(AeSysView* view, CDC* deviceContext) override;
+  
+  void Display(AeSysView* view, CDC* context) override;
   void AddReportToMessageList(EoGePoint3d) override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
@@ -59,7 +60,7 @@ class EoDbPoint : public EoDbPrimitive {
  public:  // Methods
   double GetDat(EoUInt16 wDat) { return (m_Data[wDat]); }
   EoGePoint3d GetPt() { return (m_Point); }
-  EoInt16& PointStyle() { return m_PointStyle; }
+  EoInt16& PointStyle() { return m_pointStyle; }
   void ModifyState() override;
   void SetDat(EoUInt16, double*);
   void SetPt(EoGePoint3d pt) { m_Point = pt; }
