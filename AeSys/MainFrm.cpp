@@ -1,11 +1,5 @@
 ﻿
 #include "StdAfx.h"
-
-#include "AeSys.h"
-#include "EoApOptions.h"
-#include "EoCtrlFindComboBox.h"
-#include "MainFrm.h"
-#include "Resource.h"
 #include <Windows.h>
 #include <afx.h>
 #include <afxbasetabctrl.h>
@@ -35,6 +29,12 @@
 #include <afxwin.h>
 #include <atltrace.h>
 #include <atltypes.h>
+
+#include "AeSys.h"
+#include "EoApOptions.h"
+#include "EoCtrlFindComboBox.h"
+#include "MainFrm.h"
+#include "Resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

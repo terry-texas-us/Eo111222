@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgFileManage dialog
+#include "Resource.h"
 
 class EoDlgFileManage : public CDialog {
   DECLARE_DYNAMIC(EoDlgFileManage)

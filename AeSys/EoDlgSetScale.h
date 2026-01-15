@@ -1,4 +1,8 @@
 ﻿#pragma once
+#include <afx.h>
+#include <afxwin.h>
+
+#include "Resource.h"
 
 class EoDlgSetScale : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetScale)

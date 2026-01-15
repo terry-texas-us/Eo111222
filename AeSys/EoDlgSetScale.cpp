@@ -1,8 +1,6 @@
 ﻿#include "stdafx.h"
-
 #include "EoDlgSetScale.h"
-
-// EoDlgSetScale dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSetScale, CDialog)
 

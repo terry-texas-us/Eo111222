@@ -4,9 +4,11 @@
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbPrimitive.h"
 #include "PrimState.h"
+#include "Resource.h"
 
 // State list maintenance
 CPrimState* psSav[] = {0, 0, 0, 0};

@@ -11,6 +11,7 @@
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDb.h"
 #include "EoDbEllipse.h"
 #include "EoDbGroup.h"

@@ -1,5 +1,5 @@
 ﻿#include "stdafx.h"
-
+#include "Eo.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"

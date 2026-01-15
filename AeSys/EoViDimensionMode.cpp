@@ -1,8 +1,10 @@
 ﻿#include "stdafx.h"
+#include <string>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbDimension.h"
 #include "EoDbEllipse.h"
@@ -10,7 +12,7 @@
 #include "EoDbText.h"
 #include "EoGeReferenceSystem.h"
 #include "PrimState.h"
-#include <string>
+#include "Resource.h"
 
 double DimensionModePickTolerance{0.05};
 EoGePoint3d PreviousDimensionCursorPosition;

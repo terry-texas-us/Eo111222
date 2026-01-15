@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgFixupOptions dialog
+#include "Resource.h"
 
 class EoDlgFixupOptions : public CDialog {
   DECLARE_DYNAMIC(EoDlgFixupOptions)

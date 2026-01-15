@@ -1,12 +1,13 @@
 ﻿#include "stdafx.h"
-#include "AeSys.h"
-#include "AeSysView.h"
-#include "Resource.h"
 #include <Windows.h>
 #include <afxext.h>
 #include <afxstr.h>
 #include <afxwin.h>
 #include <atltypes.h>
+
+#include "AeSys.h"
+#include "AeSysView.h"
+#include "Resource.h"
 
 namespace {
 constexpr int statusOp0{3};

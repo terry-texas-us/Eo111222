@@ -2,7 +2,6 @@
 #include <Windows.h>
 #include <afx.h>
 #include <afxstr.h>
-
 #include "Resource.h"
 
 class EoDlgSetLength : public CDialog {

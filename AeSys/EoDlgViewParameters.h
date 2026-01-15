@@ -5,8 +5,6 @@
 
 #include "Resource.h"
 
-// EoDlgViewParameters dialog
-
 class EoDlgViewParameters : public CDialog {
   DECLARE_DYNAMIC(EoDlgViewParameters)
 

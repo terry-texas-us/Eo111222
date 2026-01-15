@@ -3,6 +3,7 @@
 #include "AeSysView.h"
 
 #include "EoMfPropertiesDockablePane.h"
+#include "Resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

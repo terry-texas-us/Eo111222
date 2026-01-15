@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 
+#include "Eo.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGsViewport.h"

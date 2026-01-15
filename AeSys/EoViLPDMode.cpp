@@ -3,6 +3,7 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbEllipse.h"
 #include "EoDbLine.h"

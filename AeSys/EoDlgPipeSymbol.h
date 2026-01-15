@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgPipeSymbol dialog
+#include "Resource.h"
 
 class EoDlgPipeSymbol : public CDialog {
   DECLARE_DYNAMIC(EoDlgPipeSymbol)

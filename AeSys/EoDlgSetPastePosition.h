@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgSetPastePosition dialog
+#include "Resource.h"
 
 class EoDlgSetPastePosition : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetPastePosition)

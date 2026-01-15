@@ -1,8 +1,6 @@
 ﻿#include "stdafx.h"
-
 #include "EoDlgSetAngle.h"
-
-// EoDlgSetAngle dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSetAngle, CDialog)
 

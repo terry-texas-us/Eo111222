@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Resource.h"
 
 class EoDlgEditTrapCommandsQuery : public CDialog {
   DECLARE_DYNAMIC(EoDlgEditTrapCommandsQuery)

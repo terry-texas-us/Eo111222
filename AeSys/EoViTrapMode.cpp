@@ -1,10 +1,10 @@
 ﻿#include "stdafx.h"
-
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "EoDbPolygon.h"
 #include "EoDlgTrapModify.h"
+#include "Resource.h"
 
 void AeSysView::OnTrapModeRemoveAdd() { app.OnTrapCommandsAddGroups(); }
 

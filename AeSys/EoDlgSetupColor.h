@@ -1,6 +1,6 @@
 ﻿#pragma once
-
 #include "EoCtrlColorsButton.h"
+#include "Resource.h"
 
 class EoDlgSetupColor : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetupColor)

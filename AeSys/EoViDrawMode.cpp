@@ -1,9 +1,8 @@
 ﻿#include "stdafx.h"
-
-#include "AeSys.h"
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbEllipse.h"
 #include "EoDbLine.h"
 #include "EoDbPoint.h"

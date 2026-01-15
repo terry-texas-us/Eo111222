@@ -1,11 +1,8 @@
 ﻿#include "stdafx.h"
-
 #include "AeSys.h"
 #include "AeSysView.h"
-
 #include "EoDlgSetupConstraints.h"
-
-// EoDlgSetContraints dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSetupConstraints, CDialog)
 

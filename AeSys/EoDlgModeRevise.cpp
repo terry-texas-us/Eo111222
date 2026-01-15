@@ -1,5 +1,4 @@
 ﻿#include "stdafx.h"
-
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
@@ -8,6 +7,7 @@
 #include "EoDbText.h"
 #include "EoDlgModeRevise.h"
 #include "EoGeReferenceSystem.h"
+#include "Resource.h"
 
 /// <remarks>
 ///Text related attributes for all notes generated will be same as those of the text last picked.

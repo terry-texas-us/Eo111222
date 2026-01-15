@@ -9,6 +9,7 @@
 
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbLineType.h"
 #include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"

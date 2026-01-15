@@ -1,10 +1,8 @@
 ﻿#include "stdafx.h"
-
 #include "EoDb.h"
 #include "EoDbFontDefinition.h"
 #include "EoDlgSetupNote.h"
-
-// EoDlgSetupNote dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSetupNote, CDialog)
 

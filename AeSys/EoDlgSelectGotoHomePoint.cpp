@@ -2,10 +2,8 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-
 #include "EoDlgSelectGotoHomePoint.h"
-
-// EoDlgSelectGotoHomePoint dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSelectGotoHomePoint, CDialog)
 

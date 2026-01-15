@@ -1,8 +1,8 @@
 ﻿#include "stdafx.h"
-
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbEllipse.h"
 #include "EoDbLine.h"
@@ -12,6 +12,7 @@
 #include "EoDlgSetText.h"
 #include "EoGeReferenceSystem.h"
 #include "PrimState.h"
+#include "Resource.h"
 
 void AeSysView::OnAnnotateModeOptions() {
   EoDlgAnnotateOptions Dialog(this);

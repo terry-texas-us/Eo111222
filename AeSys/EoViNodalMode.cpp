@@ -1,5 +1,4 @@
 ﻿#include "stdafx.h"
-
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
@@ -8,6 +7,7 @@
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
 #include "PrimState.h"
+#include "Resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -35,6 +35,7 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "ChildFrm.h"
+#include "Eo.h"
 #include "EoApOptions.h"
 #include "EoDb.h"
 #include "EoDbCharacterCellDefinition.h"
@@ -90,13 +91,13 @@ COLORREF* pColTbl = ColorPalette;
 
 CPrimState pstate;
 
-// This is a legacy feature. ALl values are empty strings now for normal MouseButton command processing.
+// This is a legacy feature. All values are empty strings now for normal MouseButton command processing.
 // User may still change through user interface, so must not assume empty.
 
 CString AeSys::CustomLButtonDownCharacters(L"");
-CString AeSys::CustomLButtonUpCharacters(L"" /* L"{13}" for VK_RETURN */);
+CString AeSys::CustomLButtonUpCharacters(L"{13}");
 CString AeSys::CustomRButtonDownCharacters(L"");
-CString AeSys::CustomRButtonUpCharacters(L"" /* L"{27}" for VK_ESCAPE */);
+CString AeSys::CustomRButtonUpCharacters(L"{27}");
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

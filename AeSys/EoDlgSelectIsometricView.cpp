@@ -1,8 +1,6 @@
 ﻿#include "stdafx.h"
 #include "EoDlgSelectIsometricView.h"
-
-
-// EoDlgSelectIsometricView dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSelectIsometricView, CDialog)
 

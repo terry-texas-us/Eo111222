@@ -1,5 +1,4 @@
 ﻿#include "stdafx.h"
-
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "EoDbCharacterCellDefinition.h"
@@ -8,8 +7,7 @@
 #include "EoDlgModeLetter.h"
 #include "EoGeReferenceSystem.h"
 #include "PrimState.h"
-
-// EoDlgModeLetter dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgModeLetter, CDialog)
 

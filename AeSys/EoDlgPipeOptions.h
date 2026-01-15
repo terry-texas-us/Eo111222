@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Resource.h"
 
 /// @brief Dialog class for configuring pipe-related options.
 class EoDlgPipeOptions : public CDialog {

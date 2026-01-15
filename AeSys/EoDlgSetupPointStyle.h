@@ -1,13 +1,10 @@
 #pragma once
+#include <Windows.h>
 
 #include "afxdialogex.h"
 #include <afxwin.h>
 
-#include "Resource.h"
-
 class CDlgSetPointStyle : public CDialogEx {
-  DECLARE_DYNAMIC(CDlgSetPointStyle)
-
  public:
   CDlgSetPointStyle(CWnd* pParent = nullptr);  // standard constructor
   virtual ~CDlgSetPointStyle() override;
@@ -22,8 +19,7 @@ class CDlgSetPointStyle : public CDialogEx {
 
   // Full flag value (radio index in low bits plus checkbox flags)
 
-  int m_pointStyle{0};  // current point style (default simple pixel)
-
+  int m_pointStyle{0};        // current point style (default simple pixel)
   int m_radioPoint{0};        // radio button selection
   BOOL m_checkCircle{FALSE};  // corresponds to first 0x32 circle
   BOOL m_checkSquare{FALSE};  // corresponds to second 0x64 box
@@ -36,6 +32,4 @@ class CDlgSetPointStyle : public CDialogEx {
  protected:
   BOOL OnInitDialog() override;
   void OnOK() override;
-
-  DECLARE_MESSAGE_MAP()
 };

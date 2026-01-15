@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Resource.h"
 
 class EoCtrlFindComboBox : public CMFCToolBarComboBoxButton {
   DECLARE_SERIAL(EoCtrlFindComboBox)

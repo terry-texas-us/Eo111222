@@ -1479,6 +1479,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="AeSys.h" />
     <ClInclude Include="AeSysDoc.h" />
     <ClInclude Include="AeSysView.h" />
+    <ClInclude Include="Eo.h" />
     <ClInclude Include="EoDlgSetupPointStyle.h" />
     <ClInclude Include="EoDb.h" />
     <ClInclude Include="EoDbCharacterCellDefinition.h" />
@@ -1557,6 +1558,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="Hatch.h" />
     <ClInclude Include="EoDbLayer.h" />
     <ClInclude Include="EoDlgLayerPropertiesManager.h" />
+    <ClInclude Include="Header.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="EoGeLine.h" />
     <ClInclude Include="lex.yy.h" />

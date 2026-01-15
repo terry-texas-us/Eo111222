@@ -1,13 +1,14 @@
 ﻿#include "stdafx.h"
-
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbEllipse.h"
 #include "EoDbLine.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgPipeOptions.h"
 #include "EoDlgPipeSymbol.h"
 #include "PrimState.h"
+#include "Resource.h"
 
 void AeSysView::OnPipeModeOptions() {
   EoDlgPipeOptions Dialog;

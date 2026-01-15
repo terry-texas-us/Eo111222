@@ -2,6 +2,7 @@
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbDimension.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"

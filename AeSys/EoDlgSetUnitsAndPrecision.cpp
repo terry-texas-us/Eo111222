@@ -1,9 +1,7 @@
 ﻿#include "stdafx.h"
 #include "AeSys.h"
-
 #include "EoDlgSetUnitsAndPrecision.h"
-
-// EoDlgSetUnitsAndPrecision dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSetUnitsAndPrecision, CDialog)
 

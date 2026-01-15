@@ -1,6 +1,9 @@
 ﻿#pragma once
-
-// EoDlgSetAngle dialog
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include "Resource.h"
 
 class EoDlgSetAngle : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetAngle)

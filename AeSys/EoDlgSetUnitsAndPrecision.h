@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgSetUnitsAndPrecision dialog
+#include "Resource.h"
 
 class EoDlgSetUnitsAndPrecision : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetUnitsAndPrecision)

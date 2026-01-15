@@ -1,9 +1,7 @@
 ﻿#include "stdafx.h"
-
 #include "EoDlgSetupHatch.h"
 #include "PrimState.h"
-
-// EoDlgSetupHatch dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSetupHatch, CDialog)
 

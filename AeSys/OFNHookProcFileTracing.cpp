@@ -2,8 +2,8 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-
 #include "Preview.h"
+#include "Resource.h"
 
 UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, LPARAM lParam) {
 	auto* document = AeSysDoc::GetDoc();

@@ -3,8 +3,7 @@
 #include "AeSysView.h"
 
 #include "EoDlgDrawOptions.h"
-
-// EoDlgDrawOptions dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgDrawOptions, CDialog)
 

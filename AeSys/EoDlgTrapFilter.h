@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgTrapFilter dialog
+#include "Resource.h"
 
 class EoDlgTrapFilter : public CDialog {
   DECLARE_DYNAMIC(EoDlgTrapFilter)

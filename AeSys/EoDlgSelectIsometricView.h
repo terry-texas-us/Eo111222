@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgSelectIsometricView dialog
+#include "Resource.h"
 
 class EoDlgSelectIsometricView : public CDialog {
   DECLARE_DYNAMIC(EoDlgSelectIsometricView)

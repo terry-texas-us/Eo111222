@@ -1,6 +1,5 @@
 ﻿#include "stdafx.h"
 #include "AeSysDoc.h"
-
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbPolygon.h"
@@ -8,8 +7,7 @@
 #include "EoDlgTrapModify.h"
 #include "Hatch.h"
 #include "PrimState.h"
-
-// EoDlgTrapModify dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgTrapModify, CDialog)
 

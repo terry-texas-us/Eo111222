@@ -1,6 +1,6 @@
 ﻿#include "stdafx.h"
-
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoGeReferenceSystem.h"
 

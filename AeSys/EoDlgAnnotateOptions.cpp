@@ -1,9 +1,7 @@
 ﻿#include "stdafx.h"
 #include "AeSysView.h"
-
 #include "EoDlgAnnotateOptions.h"
-
-// EoDlgAnnotateOptions dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgAnnotateOptions, CDialog)
 

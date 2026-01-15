@@ -27,6 +27,7 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDb.h"
 #include "EoDbBitmapFile.h"
 #include "EoDbCharacterCellDefinition.h"
@@ -393,6 +394,8 @@ AeSysView::AeSysView()
       m_GridSnap(false),
       // Cursor/Selection
       m_ViewStateInformation(true),
+      m_middleButtonPanStartPoint(),
+      m_middleButtonPanInProgress{false},
       m_RubberbandType(None),
       m_RubberbandBeginPoint(),
       m_RubberbandLogicalBeginPoint(),
@@ -763,7 +766,7 @@ void AeSysView::DoCustomMouseClick(const CString& characters) {
 }
 
 void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
-  if (AeSys::CustomLButtonDownCharacters.IsEmpty()) {
+  if (AeSys::CustomLButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
     CView::OnLButtonDown(flags, point);
   } else {
     DoCustomMouseClick(AeSys::CustomLButtonDownCharacters);
@@ -771,7 +774,7 @@ void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
 }
 
 void AeSysView::OnLButtonUp(UINT flags, CPoint point) {
-  if (AeSys::CustomLButtonUpCharacters.IsEmpty()) {
+  if (AeSys::CustomLButtonUpCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
     CView::OnLButtonUp(flags, point);
   } else {
     DoCustomMouseClick(AeSys::CustomLButtonUpCharacters);
@@ -779,7 +782,7 @@ void AeSysView::OnLButtonUp(UINT flags, CPoint point) {
 }
 
 void AeSysView::OnRButtonDown(UINT flags, CPoint point) {
-  if (AeSys::CustomRButtonDownCharacters.IsEmpty()) {
+  if (AeSys::CustomRButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
     CView::OnRButtonDown(flags, point);
   } else {
     DoCustomMouseClick(AeSys::CustomRButtonDownCharacters);
@@ -787,24 +790,43 @@ void AeSysView::OnRButtonDown(UINT flags, CPoint point) {
 }
 
 void AeSysView::OnRButtonUp(UINT flags, CPoint point) {
-  if (AeSys::CustomRButtonUpCharacters.IsEmpty()) {
+  if (AeSys::CustomRButtonUpCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
     CView::OnRButtonUp(flags, point);
   } else {
     DoCustomMouseClick(AeSys::CustomRButtonUpCharacters);
   }
 }
 
-void AeSysView::OnMButtonDown(UINT /* flags */, CPoint /* point */) {
-  CMainFrame* MainFrame = (CMainFrame*)AfxGetMainWnd();
-  MainFrame->OnStartProgress();
+void AeSysView::OnMButtonDown(UINT /* flags */, CPoint point) {
+  m_middleButtonPanStartPoint = point;
+  m_middleButtonPanInProgress = true;
+  SetCapture();
 }
 
 void AeSysView::OnMButtonUp(UINT /* flags */, CPoint /* point */) {
-  CMainFrame* MainFrame = (CMainFrame*)AfxGetMainWnd();
-  MainFrame->OnStartProgress();
+  if (m_middleButtonPanInProgress) {
+    m_middleButtonPanInProgress = false;
+    ReleaseCapture();
+  }
 }
 
 void AeSysView::OnMouseMove(UINT, CPoint point) {
+  if (m_middleButtonPanInProgress) {
+    auto delta = point - m_middleButtonPanStartPoint;
+    m_middleButtonPanStartPoint = point;
+
+    EoGePoint3d target = m_ViewTransform.Target();
+  
+    // Convert delta to world coordinates (scale as needed)
+    target.x += static_cast<double>(-delta.cx) * m_ViewTransform.UExtent() / m_Viewport.Width();
+    target.y += static_cast<double>(delta.cy) * m_ViewTransform.VExtent() / m_Viewport.Height();
+
+    m_ViewTransform.SetTarget(target);
+    m_ViewTransform.SetPosition(m_ViewTransform.Direction());
+    m_ViewTransform.BuildTransformMatrix();
+
+    InvalidateRect(nullptr, TRUE);  // Redraw view
+  }
   DisplayOdometer();
 
   switch (app.CurrentMode()) {

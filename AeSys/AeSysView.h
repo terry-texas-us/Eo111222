@@ -228,6 +228,9 @@ class AeSysView : public CView {
   bool m_ViewStateInformation;
   void UpdateStateInformation(EStateInformationItem item);
 
+  CPoint m_middleButtonPanStartPoint;
+  bool m_middleButtonPanInProgress;
+
   ERubs m_RubberbandType;
   EoGePoint3d m_RubberbandBeginPoint;
   CPoint m_RubberbandLogicalBeginPoint;

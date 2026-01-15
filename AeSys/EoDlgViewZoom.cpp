@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
+#include "Eo.h"
 #include "EoDlgViewZoom.h"
-
-// EoDlgViewZoom dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgViewZoom, CDialog)
 

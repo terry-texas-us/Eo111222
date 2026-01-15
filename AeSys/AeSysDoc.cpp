@@ -25,6 +25,7 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDb.h"
 #include "EoDbBlock.h"
 #include "EoDbBlockFile.h"
@@ -69,7 +70,6 @@
 #include "Lex.h"
 #include "PrimState.h"
 #include "Resource.h"
-#include "drw_base.h"
 #include "libdxfrw.h"
 
 #if defined(USING_DDE)

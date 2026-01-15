@@ -1,8 +1,6 @@
 ﻿#include "stdafx.h"
-
 #include "EoDlgPipeOptions.h"
-
-// EoDlgPipeOptions dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgPipeOptions, CDialog)
 

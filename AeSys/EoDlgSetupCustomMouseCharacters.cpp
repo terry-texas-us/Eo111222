@@ -1,10 +1,7 @@
 ﻿#include "stdafx.h"
-
 #include "AeSys.h"
-
 #include "EoDlgSetupCustomMouseCharacters.h"
-
-// EoDlgSetupCustomMouseCharacters dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSetupCustomMouseCharacters, CDialog)
 

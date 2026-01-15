@@ -4,8 +4,10 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbPolygon.h"
 #include "EoDlgActiveViewKeyplan.h"
+#include "Resource.h"
 
 HBITMAP EoDlgActiveViewKeyplan::m_hbmKeyplan = nullptr;
 CRect EoDlgActiveViewKeyplan::m_rcWnd;

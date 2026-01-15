@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Resource.h"
 
 class EoDlgAnnotateOptions : public CDialog {
   DECLARE_DYNAMIC(EoDlgAnnotateOptions)

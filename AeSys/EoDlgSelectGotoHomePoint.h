@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgSelectGotHomePoint dialog
+#include "Resource.h"
 
 class EoDlgSelectGotoHomePoint : public CDialog {
   DECLARE_DYNAMIC(EoDlgSelectGotoHomePoint)

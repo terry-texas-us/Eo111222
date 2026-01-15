@@ -5,8 +5,7 @@
 #include "AeSysView.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgTrapFilter.h"
-
-// EoDlgTrapFilter dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgTrapFilter, CDialog)
 

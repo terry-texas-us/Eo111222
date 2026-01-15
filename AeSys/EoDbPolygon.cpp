@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
-
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
 #include "EoGePolyline.h"

@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgViewZoom dialog
+#include "Resource.h"
 
 class EoDlgViewZoom : public CDialog {
   DECLARE_DYNAMIC(EoDlgViewZoom)

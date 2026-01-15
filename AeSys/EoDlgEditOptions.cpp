@@ -1,11 +1,7 @@
 ﻿#include "stdafx.h"
 #include "AeSysView.h"
-
 #include "EoDlgEditOptions.h"
-
-// EoDlgEditOptions dialog
-
-IMPLEMENT_DYNAMIC(EoDlgEditOptions, CDialog)
+#include "Resource.h"
 
 BEGIN_MESSAGE_MAP(EoDlgEditOptions, CDialog)
 	ON_COMMAND(IDC_EDIT_OP_ROTATION, &EoDlgEditOptions::OnEditOpRotation)

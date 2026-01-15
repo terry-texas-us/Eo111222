@@ -1,7 +1,7 @@
 ﻿#pragma once
+#include "Resource.h"
 
 class EoDlgEditOptions : public CDialog {
-  DECLARE_DYNAMIC(EoDlgEditOptions)
 
  public:
   EoDlgEditOptions(CWnd* parent = nullptr);

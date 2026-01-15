@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgSetupHatch dialog
+#include "Resource.h"
 
 class EoDlgSetupHatch : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetupHatch)

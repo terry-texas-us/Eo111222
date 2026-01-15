@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgDrawOptions dialog
+#include "Resource.h"
 
 class EoDlgDrawOptions : public CDialog {
   DECLARE_DYNAMIC(EoDlgDrawOptions)

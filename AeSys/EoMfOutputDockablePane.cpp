@@ -1,8 +1,7 @@
 ﻿#include "stdafx.h"
-
 #include "AeSys.h"
-
 #include "EoMfOutputDockablePane.h"
+#include "Resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

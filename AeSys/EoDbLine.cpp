@@ -9,6 +9,7 @@
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDb.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"

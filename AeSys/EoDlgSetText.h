@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgSetText dialog
+#include "Resource.h"
 
 class EoDlgSetText : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetText)

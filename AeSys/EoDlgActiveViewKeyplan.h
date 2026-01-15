@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Resource.h"
 
 class EoDlgActiveViewKeyplan : public CDialog {
   DECLARE_DYNAMIC(EoDlgActiveViewKeyplan)

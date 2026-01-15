@@ -8,6 +8,7 @@
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDb.h"
 #include "EoDbPolyline.h"
 #include "EoDbPrimitive.h"

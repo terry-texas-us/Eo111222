@@ -1,8 +1,8 @@
 ﻿#include "stdafx.h"
-
 #include "AeSysDoc.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgEditTrapCommandsQuery.h"
+#include "Resource.h"
 
 HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR text, LPCVOID object) {
 	TV_INSERTSTRUCT tvIS;

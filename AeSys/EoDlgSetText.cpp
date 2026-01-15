@@ -1,8 +1,6 @@
 ﻿#include "stdafx.h"
-
 #include "EoDlgSetText.h"
-
-// EoDlgSetText dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSetText, CDialog)
 

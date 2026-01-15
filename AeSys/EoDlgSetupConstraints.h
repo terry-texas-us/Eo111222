@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgSetupConstraints dialog
+#include "Resource.h"
 
 class EoDlgSetupConstraints : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetupConstraints)

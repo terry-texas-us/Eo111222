@@ -1,11 +1,11 @@
 ﻿#include "stdafx.h"
-
 #include "AeSys.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbLayer.h"
 #include "EoDbPrimitive.h"
 #include "EoDbTracingFile.h"
+#include "Resource.h"
 
 void EoDbTracingFile::ReadHeader(CFile& file) {
   if (EoDb::ReadUInt16(file) != EoDb::kHeaderSection)

@@ -1,9 +1,7 @@
 ﻿#include "stdafx.h"
 #include "AeSys.h"
-
 #include "EoDlgPipeSymbol.h"
-
-// EoDlgPipeSymbol dialog
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgPipeSymbol, CDialog)
 

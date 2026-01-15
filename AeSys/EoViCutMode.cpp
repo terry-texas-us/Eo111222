@@ -1,9 +1,9 @@
 ﻿#include "stdafx.h"
-
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "EoDbPrimitive.h"
 #include "PrimState.h"
+#include "Resource.h"
 
 EoUInt16 wPrvKeyDwn{0};
 EoGePoint3d rPrvPos;

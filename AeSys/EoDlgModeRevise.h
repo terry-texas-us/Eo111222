@@ -1,6 +1,6 @@
 ﻿#pragma once
-
 #include "EoGeReferenceSystem.h"
+#include "Resource.h"
 
 /// @file EoDlgModeRevise.h
 /// @brief Modal dialog for revising text primitives in the active view.

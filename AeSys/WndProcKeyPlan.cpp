@@ -1,8 +1,8 @@
 ﻿#include "stdafx.h"
-
 #include "AeSysView.h"
-
+#include "Eo.h"
 #include "EoDlgActiveViewKeyplan.h"
+
 CPoint pnt;
 
 namespace {

@@ -87,23 +87,17 @@ void EoDbPoint::Display(AeSysView* view, CDC* context) {
 
   auto point = view->DoProjection(pt);
 
-  // Compute pixel size for mark
-  double markSize = AeSysDoc::GetDoc()->GetPointSize();
+  // Compute pixel size for point
+  double pointSize = AeSysDoc::GetDoc()->GetPointSize();
 
   int pixelSize = 8;  // default used if markSize == 0.0
-  if (markSize > 0.0) {
-    // offset point in world by markSize along X
-    EoGePoint3d offset = m_Point + EoGeVector3d(markSize, 0.0, 0.0);
-    EoGePoint4d offset4(offset);
-    view->ModelTransformPoint(offset4);
-    auto offScreen = view->DoProjection(offset4);
-    int px = abs(offScreen.x - point.x);
-    pixelSize = std::max(1, px);
-  } else if (markSize < 0.0) {
+  if (pointSize > 0.0) {
+    auto dpi = static_cast<double>(GetDpiForSystem());
+    pixelSize = static_cast<int>(std::max(2.0, (pointSize * dpi)) / 2.0);
+  } else if (pointSize < 0.0) {
     // treat absolute pixels (common convention)
-    pixelSize = static_cast<int>(fabs(markSize));
+    pixelSize = static_cast<int>(std::max(2.0, fabs(pointSize)) / 2.0);
   }
-
   int i;
   switch (m_pointStyle & 0x0F) {  // Low nibble defines basic shape
     

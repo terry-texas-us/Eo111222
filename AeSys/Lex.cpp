@@ -1,12 +1,4 @@
 ﻿#include "stdafx.h"
-
-#include "AeSys.h"
-#include "Lex.h"
-#include "Resource.h"
-#pragma warning(push)
-#pragma warning(disable : 4003 4242 4244 4263 4264 4365 4800)
-#include "lex.yy.h"
-#pragma warning(pop)
 #include <algorithm>
 #include <atltrace.h>
 #include <cctype>
@@ -18,6 +10,15 @@
 #include <stdexcept>
 #include <string>
 #include <wchar.h>
+
+#include "AeSys.h"
+#include "Eo.h"
+#include "Lex.h"
+#include "Resource.h"
+#pragma warning(push)
+#pragma warning(disable : 4003 4242 4244 4263 4264 4365 4800)
+#include "lex.yy.h"
+#pragma warning(pop)
 
 namespace {
 constexpr size_t TokenBufferSize = 64;

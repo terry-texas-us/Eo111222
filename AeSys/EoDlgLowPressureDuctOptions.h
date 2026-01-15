@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgLowPressureDuctOptions dialog
+#include "Resource.h"
 
 class EoDlgLowPressureDuctOptions : public CDialog {
   DECLARE_DYNAMIC(EoDlgLowPressureDuctOptions)

@@ -1,6 +1,5 @@
 ﻿#pragma once
-
-// EoDlgSetupCustomMouseCharacters dialog
+#include "Resource.h"
 
 class EoDlgSetupCustomMouseCharacters : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetupCustomMouseCharacters)

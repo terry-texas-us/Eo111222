@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
 #include "AeSys.h"
-
 #include "EoDlgLowPressureDuctOptions.h"
+#include "Resource.h"
 
 // EoDlgLowPressureDuctOptions dialog
 

@@ -8,6 +8,7 @@
 #include <cfloat>
 
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbBlock.h"
 #include "EoDbGroupList.h"
 #include "EoGePoint3d.h"

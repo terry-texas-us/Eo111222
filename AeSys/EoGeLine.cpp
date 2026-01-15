@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"

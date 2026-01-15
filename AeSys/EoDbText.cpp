@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
-
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbPrimitive.h"
