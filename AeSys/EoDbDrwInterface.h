@@ -111,16 +111,16 @@ class EoDbDrwInterface : public DRW_Interface {
   void linkImage(const DRW_ImageDef* /* imageDefinition */) override {}
 
   // Writing methods
-  void writeAppId() {};
-  void writeBlockRecords() {};
-  void writeBlocks() {};
-  void writeDimstyles() {};
-  void writeEntities() {};
-  void writeHeader(DRW_Header& /* header */) {};
-  void writeLayers() {};
-  void writeLTypes() {};
-  void writeTextstyles() {};
-  void writeVports() {};
+  void writeAppId() override {};
+  void writeBlockRecords() override {};
+  void writeBlocks() override {};
+  void writeDimstyles() override {};
+  void writeEntities() override {};
+  void writeHeader(DRW_Header& /* header */) override {};
+  void writeLayers() override {};
+  void writeLTypes() override {};
+  void writeTextstyles() override {};
+  void writeVports() override {};
 
   void SetHeaderSectionVariable(const DRW_Header* header, const std::string& keyToFind, EoDbHeaderSection& headerSection);
 

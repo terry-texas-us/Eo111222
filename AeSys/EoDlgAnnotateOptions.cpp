@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include "AeSysView.h"
 #include "EoDlgAnnotateOptions.h"
 #include "Resource.h"

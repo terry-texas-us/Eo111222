@@ -16,8 +16,8 @@ class EoDlgFileManage : public CDialog {
   enum { IDD = IDD_FILE_MANAGE };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog();
+  void DoDataExchange(CDataExchange* dataExchange) override;
+  BOOL OnInitDialog() override;
 
  public:
   enum LayerListColumnLabels {

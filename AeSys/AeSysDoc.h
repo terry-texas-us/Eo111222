@@ -50,14 +50,13 @@ class AeSysDoc : public CDocument {
   CObList m_UniquePoints;
   double m_pointSize{0.0};  // in drawing units when greater than zero; in pixels when less than zero; default otherwise
 
-
   // Overrides
  public:
-  virtual BOOL DoSave(LPCWSTR lpszPathName, BOOL bReplace = TRUE);
+  BOOL DoSave(LPCWSTR lpszPathName, BOOL bReplace = TRUE) override;
   void SetCommonTableEntries();
-  virtual BOOL OnNewDocument();
-  virtual BOOL OnOpenDocument(LPCWSTR lpszPathName);
-  virtual BOOL OnSaveDocument(LPCWSTR lpszPathName);
+  BOOL OnNewDocument() override;
+  BOOL OnOpenDocument(LPCWSTR lpszPathName) override;
+  BOOL OnSaveDocument(LPCWSTR lpszPathName) override;
 
   /** @brief Deletes the contents of the document.
    *
@@ -65,13 +64,13 @@ class AeSysDoc : public CDocument {
    * It is typically invoked before the document is destroyed or when reusing the document.
    * It can also be called to implement commands like "Edit Clear All" that require deleting all of the document's data.
    */
-  virtual void DeleteContents();
+  void DeleteContents() override;
 
  public:
-  virtual ~AeSysDoc();
+  ~AeSysDoc() override;
 #ifdef _DEBUG
-  virtual void AssertValid() const;
-  virtual void Dump(CDumpContext& dc) const;
+  void AssertValid() const override;
+  void Dump(CDumpContext& dc) const override;
 #endif
 
  public:
@@ -127,7 +126,6 @@ class AeSysDoc : public CDocument {
   double GetPointSize() const noexcept { return m_pointSize; }
   void SetPointSize(double size) noexcept { m_pointSize = size; }
 
-
   // Line Type Table interface
   EoDbLineTypeTable* LineTypeTable() { return &m_LineTypeTable; }
   EoDbLineType* ContinuousLineType() { return m_ContinuousLineType; }
@@ -179,11 +177,25 @@ class AeSysDoc : public CDocument {
   void CompressTrappedGroups();
   void CopyTrappedGroups(EoGeVector3d translate);
   void DeleteAllTrappedGroups();
-  /// <summary>The current trap is copied to the clipboard. This is done with two independent clipboard formats. The standard enhanced metafile and the private EoDbGroupList which is read exclusively by Peg.</summary>
+
+  /** @brief Copies the trapped groups to the clipboard in various formats.
+   *
+   * This method opens the clipboard, empties its current contents, and then copies the trapped groups
+   * to the clipboard in text, image, or group formats based on the application's clipboard settings.
+   * After copying the data, it closes the clipboard.
+   *
+   * @param view A pointer to the AeSysView object used for rendering the groups.
+   * @note This is done with two independent clipboard formats. The standard enhanced metafile and the private EoDbGroupList which is read exclusively by Peg.
+   */
   void CopyTrappedGroupsToClipboard(AeSysView* view);
-  /// <summary>Expands compressed groups.</summary>
-  // The new groups are added to the hot layer even if the trap contained
-  // groups from one or more warm layers.
+  
+  /** @brief Expands each trapped group into separate groups for each primitive.
+   *
+   * This method iterates through the list of trapped groups and for each group,
+   * it creates new groups containing individual primitives from the original group.
+   * The original groups are removed from the document and deleted.
+   * The new groups are added to the work layer and the trapped group list.
+   */
   void ExpandTrappedGroups();
   auto FindTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Find(group); }
   auto GetFirstTrappedGroupPosition() const { return m_TrappedGroupList.GetHeadPosition(); }
@@ -356,7 +368,7 @@ class AeSysDoc : public CDocument {
    */
   void TracingFuse(CString& nameAndLocation);
   bool TracingLoadLayer(const CString& pathName, EoDbLayer* layer);
-  
+
   /// <summary>Selected tracing is mapped.</summary>
   /// <remarks>
   /// This is a cold state meaning the tracing is displayed using warm color set, is not detectable,

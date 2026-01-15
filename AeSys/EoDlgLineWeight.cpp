@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 
 #if defined(USING_ODA)
 #include "EoDlgLineWeight.h"

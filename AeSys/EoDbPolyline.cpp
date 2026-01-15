@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include <Windows.h>
 #include <afx.h>
 #include <afxstr.h>
@@ -147,7 +147,7 @@ void EoDbPolyline::FormatGeometry(CString& str) {
 }
 void EoDbPolyline::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
-             m_pts.GetSize());
+             static_cast<int>(m_pts.GetSize()));
 }
 EoGePoint3d EoDbPolyline::GetCtrlPt() {
   EoUInt16 wPts = EoUInt16(m_pts.GetSize());

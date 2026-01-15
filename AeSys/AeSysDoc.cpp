@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 
 #include <Windows.h>
 #include <afx.h>
@@ -1267,7 +1267,11 @@ void AeSysDoc::OnEditTrapPaste() {
       LPWSTR clipboardText = new WCHAR[GlobalSize(clipboardDataHandle)];
 
       LPCWSTR clipboardData = (LPCWSTR)GlobalLock(clipboardDataHandle);
-      lstrcpyW(clipboardText, clipboardData);
+      if (clipboardData != nullptr) {
+        lstrcpyW(clipboardText, clipboardData);
+      } else {
+        clipboardText[0] = L'\0';
+      }
       GlobalUnlock(clipboardDataHandle);
 
       AddTextBlock(clipboardText);
@@ -1294,7 +1298,15 @@ void AeSysDoc::OnEditTrapWorkAndActive() {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::TrapCount);
 }
 void AeSysDoc::OnTrapCommandsCompress() { CompressTrappedGroups(); }
-void AeSysDoc::OnTrapCommandsExpand() { ExpandTrappedGroups(); }
+
+void AeSysDoc::OnTrapCommandsExpand() {
+  try {
+    ExpandTrappedGroups();
+  } catch (...) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysDoc::OnTrapCommandsExpand: Failed to expand trapped groups.\n");
+  }
+}
+
 void AeSysDoc::OnTrapCommandsInvert() {
   int iTblSize = GetLayerTableSize();
   for (int i = 0; i < iTblSize; i++) {

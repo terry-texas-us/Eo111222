@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include "Eo.h"
 #include "EoDlgViewZoom.h"
 #include "Resource.h"

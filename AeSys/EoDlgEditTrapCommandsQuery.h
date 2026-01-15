@@ -14,8 +14,8 @@ class EoDlgEditTrapCommandsQuery : public CDialog {
   enum { IDD = IDD_EDIT_TRAPCOMMANDS_QUERY };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog();
+  void DoDataExchange(CDataExchange* dataExchange) override;
+  BOOL OnInitDialog() override;
 
   CTreeCtrl m_GroupTreeViewControl;
   CListCtrl m_GeometryListViewControl;

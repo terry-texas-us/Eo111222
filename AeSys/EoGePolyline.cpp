@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include <Windows.h>
 #include <afxwin.h>
 #include <algorithm>

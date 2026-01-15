@@ -19,9 +19,9 @@ class EoDlgBlockInsert : public CDialog {
   enum { IDD = IDD_INSERT_BLOCK };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog();
-  virtual void OnOK();
+  void DoDataExchange(CDataExchange* dataExchange) override;
+  BOOL OnInitDialog() override;
+  void OnOK() override;
 
   static EoGePoint3d InsertionPoint;
   AeSysDoc* m_Document{nullptr};

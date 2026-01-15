@@ -162,27 +162,27 @@ class AeSysView : public CView {
   AeSysDoc* GetDocument() const;
 
  protected:  // Overrides
-  virtual void OnActivateFrame(UINT nState, CFrameWnd* pDeactivateFrame);
-  virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView);
+  void OnActivateFrame(UINT nState, CFrameWnd* pDeactivateFrame) override;
+  void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) override;
 
  public:
-  virtual void OnDraw(CDC* deviceContext);  // overridden to draw this view
-  virtual void OnInitialUpdate();
-  virtual BOOL PreCreateWindow(CREATESTRUCT& createStructure);
+  void OnDraw(CDC* deviceContext) override;  // overridden to draw this view
+  void OnInitialUpdate() override;
+  BOOL PreCreateWindow(CREATESTRUCT& createStructure) override;
 
  protected:
-  virtual BOOL OnPreparePrinting(CPrintInfo* printInformation);
-  virtual void OnBeginPrinting(CDC* deviceContext, CPrintInfo* printInformation);
-  virtual void OnPrepareDC(CDC* deviceContext, CPrintInfo* printInformation);
-  virtual void OnEndPrinting(CDC* deviceContext, CPrintInfo* printInformation);
-  virtual void OnUpdate(CView* sender, LPARAM hint, CObject* hintObject);
+  BOOL OnPreparePrinting(CPrintInfo* printInformation) override;
+  void OnBeginPrinting(CDC* deviceContext, CPrintInfo* printInformation) override;
+  void OnPrepareDC(CDC* deviceContext, CPrintInfo* printInformation) override;
+  void OnEndPrinting(CDC* deviceContext, CPrintInfo* printInformation) override;
+  void OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) override;
 
  public:
   virtual ~AeSysView();
 
 #ifdef _DEBUG
-  virtual void AssertValid() const;
-  virtual void Dump(CDumpContext& dc) const;
+  void AssertValid() const override;
+  void Dump(CDumpContext& dc) const override;
 #endif
 
  protected:  // Windows messages

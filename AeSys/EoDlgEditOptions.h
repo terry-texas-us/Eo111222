@@ -14,9 +14,9 @@ class EoDlgEditOptions : public CDialog {
   enum { IDD = IDD_EDIT_OPTIONS };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog();
-  virtual void OnOK();
+  void DoDataExchange(CDataExchange* dataExchange) override;
+  BOOL OnInitDialog() override;
+  void OnOK() override;
 
   AeSysView* m_ActiveView{nullptr};
 

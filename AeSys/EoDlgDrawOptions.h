@@ -14,9 +14,9 @@ class EoDlgDrawOptions : public CDialog {
   enum { IDD = IDD_DRAW_OPTIONS };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog();
-  virtual void OnOK();
+  void DoDataExchange(CDataExchange* dataExchange) override;
+  BOOL OnInitDialog() override;
+  void OnOK() override;
 
  public:
   afx_msg void OnBnClickedPen();

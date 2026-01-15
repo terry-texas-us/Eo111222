@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 
 #include "EoDbLineType.h"
 #include <afxstr.h>

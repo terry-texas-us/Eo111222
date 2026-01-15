@@ -15,8 +15,8 @@ class EoDlgLowPressureDuctOptions : public CDialog {
   enum { IDD = IDD_DLGPROC_LPD_OPTIONS };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog();
+  void DoDataExchange(CDataExchange* dataExchange) override;
+  BOOL OnInitDialog() override;
 
  public:
   double m_Width;

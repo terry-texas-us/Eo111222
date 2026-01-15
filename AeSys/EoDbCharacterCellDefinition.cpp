@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 
 #include "EoGeVector3d.h"
 #include "EoDbCharacterCellDefinition.h"

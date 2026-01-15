@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include <algorithm>
 #include <atltrace.h>
 #include <cctype>
@@ -86,8 +86,8 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
           }
         }
         // Pop higher priority operators from stack
-        while (TokenPropertiesTable[OperatorStack[TopOfOperatorStack]].inStackPriority >=
-               TokenPropertiesTable[CurrentTokenType].inComingPriority) {
+        while (TopOfOperatorStack > 0 &&
+               TokenPropertiesTable[OperatorStack[TopOfOperatorStack]].inStackPriority >= TokenPropertiesTable[CurrentTokenType].inComingPriority) {
           typeOfTokens[numberOfTokens++] = OperatorStack[TopOfOperatorStack--];
         }
         // Push new operator onto stack
@@ -112,8 +112,7 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
   if (numberOfTokens == 0) { throw L"Syntax error"; }
 }
 
-void lex::ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaInformation, wchar_t* stringBuffer,
-                             int* stringLength) {
+void lex::ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaInformation, wchar_t* stringBuffer, int* stringLength) {
   int iDim = valueMetaInformation->GetDimension();
 
   if (valueMetaInformation->type == StringToken) {
@@ -205,8 +204,7 @@ void lex::ConvertValTyp(int currentType, int requiredType, long* valueDefinition
   }
 }
 
-void lex::ConvertStringToVal(int desiredType, long tokenDefinition, const wchar_t* inputLine, long* resultDefinition,
-                             void* resultValue) {
+void lex::ConvertStringToVal(int desiredType, long tokenDefinition, const wchar_t* inputLine, long* resultDefinition, void* resultValue) {
   if (LOWORD(tokenDefinition) <= 0) { throw std::invalid_argument("Empty string"); }
 
   wchar_t token[TokenBufferSize]{0};
@@ -408,17 +406,13 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
           }
         } else if (tokenType == ExponentiateToken) {
           if (iTyp1 == IntegerToken) {
-            if ((lOp1[0] >= 0 && lOp1[0] > DBL_MAX_10_EXP) || (lOp1[0] < 0 && lOp1[0] < DBL_MIN_10_EXP)) {
-              throw L"Exponentiation error";
-            }
+            if ((lOp1[0] >= 0 && lOp1[0] > DBL_MAX_10_EXP) || (lOp1[0] < 0 && lOp1[0] < DBL_MIN_10_EXP)) { throw L"Exponentiation error"; }
 
             lOp1[0] = (int)pow((double)lOp2[0], lOp1[0]);
           } else if (iTyp1 == RealToken) {
             int iExp = (int)dOp1[0];
 
-            if ((iExp >= 0 && iExp > DBL_MAX_10_EXP) || (iExp < 0 && iExp < DBL_MIN_10_EXP)) {
-              throw L"Exponentiation error";
-            }
+            if ((iExp >= 0 && iExp > DBL_MAX_10_EXP) || (iExp < 0 && iExp < DBL_MIN_10_EXP)) { throw L"Exponentiation error"; }
             dOp1[0] = pow(dOp2[0], dOp1[0]);
           }
         }
@@ -540,9 +534,7 @@ int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
   return tokenId;
 }
 
-int lex::TokType(int tokenType) {
-  return (tokenType >= 0 && tokenType < numberOfTokensInStream) ? tokenTypeIdentifiers[tokenType] : -1;
-}
+int lex::TokType(int tokenType) { return (tokenType >= 0 && tokenType < numberOfTokensInStream) ? tokenTypeIdentifiers[tokenType] : -1; }
 
 void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
   ValueMetaInformation valueMetaInformation{};

@@ -951,6 +951,7 @@ class BufferedInput : public Input {
   BufferedInput()
     :
       Input(),
+      buf_{},
       len_(0),
       pos_(0)
   { }

@@ -19,9 +19,9 @@ class EoDlgViewParameters : public CDialog {
   enum { IDD = IDD_VIEW_PARAMETERS };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog();
-  virtual void OnOK();
+  void DoDataExchange(CDataExchange* dataExchange) override;
+  BOOL OnInitDialog() override;
+  void OnOK() override;
 
  public:
   BOOL m_PerspectiveProjection{0};

@@ -1,9 +1,7 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
+
 #include "AeSys.h"
-
 #include "EoDlgSetLength.h"
-
-// EoDlgSetLength dialog
 
 IMPLEMENT_DYNAMIC(EoDlgSetLength, CDialog)
 

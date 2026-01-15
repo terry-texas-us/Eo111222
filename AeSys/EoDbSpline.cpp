@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include <Windows.h>
 #include <afx.h>
 #include <afxstr.h>
@@ -79,7 +79,7 @@ void EoDbSpline::FormatGeometry(CString& str) {
 
 void EoDbSpline::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tStyle;%s\tControl Points;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
-             m_pts.GetSize());
+             static_cast<int>(m_pts.GetSize()));
 }
 
 EoGePoint3d EoDbSpline::GetCtrlPt() {

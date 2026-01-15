@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include "AeSysDoc.h"
 
 int AeSysDoc::GetBlockReferenceCount(const CString& name) {

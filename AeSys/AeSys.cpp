@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 
 #include <ShlObj_core.h>
 #include <Windows.h>

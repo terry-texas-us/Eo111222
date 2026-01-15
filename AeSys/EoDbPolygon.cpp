@@ -1,10 +1,27 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <algorithm>
+#include <atltypes.h>
+#include <cfloat>
+#include <climits>
+#include <cmath>
+#include <cstdio>
+
 #include "AeSys.h"
 #include "AeSysView.h"
 #include "Eo.h"
+#include "EoDb.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGePolyline.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 #include "Hatch.h"
 #include "PrimState.h"
 
@@ -81,8 +98,7 @@ EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d* pt) {
 
   for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) m_Pt[w] = pt[w];
 }
-EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d ptOrig, EoGeVector3d vXAx, EoGeVector3d vYAx,
-                         const EoGePoint3d* ppt) {
+EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d ptOrig, EoGeVector3d vXAx, EoGeVector3d vYAx, const EoGePoint3d* ppt) {
   m_PenColor = pstate.PenColor();
   m_InteriorStyle = pstate.PolygonIntStyle();
   m_InteriorStyleIndex = pstate.PolygonIntStyleId();
@@ -106,8 +122,8 @@ EoDbPolygon::EoDbPolygon(EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d&
 
   for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) m_Pt[w] = pts[w];
 }
-EoDbPolygon::EoDbPolygon(EoInt16 penColor, EoInt16 style, EoInt16 styleIndex, EoGePoint3d& origin, EoGeVector3d& xAxis,
-                         EoGeVector3d& yAxis, EoGePoint3dArray& points)
+EoDbPolygon::EoDbPolygon(EoInt16 penColor, EoInt16 style, EoInt16 styleIndex, EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d& yAxis,
+                         EoGePoint3dArray& points)
     : m_HatchOrigin(origin), m_vPosXAx(xAxis), m_vPosYAx(yAxis) {
   m_PenColor = penColor;
   m_InteriorStyle = style;
@@ -146,9 +162,7 @@ const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& src) {
   return (*this);
 }
 EoDbPolygon::~EoDbPolygon() { delete[] m_Pt; }
-void EoDbPolygon::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
-  tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Polygon>"), this);
-}
+void EoDbPolygon::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Polygon>"), this); }
 EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPolygon(*this);
   return (primitive);
@@ -224,14 +238,12 @@ void EoDbPolygon::FormatGeometry(CString& str) {
 CString EoDbPolygon::FormatIntStyle() {
   CString strStyle[] = {L"Hollow", L"Solid", L"Pattern", L"Hatch"};
 
-  CString str =
-      (m_InteriorStyle >= 0 && m_InteriorStyle <= 3) ? strStyle[m_InteriorStyle] : const_cast<LPWSTR>(L"Invalid!");
+  CString str = (m_InteriorStyle >= 0 && m_InteriorStyle <= 3) ? strStyle[m_InteriorStyle] : const_cast<LPWSTR>(L"Invalid!");
 
   return (str);
 }
 void EoDbPolygon::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
-             m_NumberOfPoints);
+  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(), m_NumberOfPoints);
 }
 EoGePoint3d EoDbPolygon::GetCtrlPt() {
   EoUInt16 wBeg = EoUInt16(sm_Edge - 1);
@@ -457,15 +469,14 @@ bool EoDbPolygon::Write(CFile& file) {
 
   return true;
 }
-void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& tm, const int iSets,
-                         const int* iPtLstsId, EoGePoint3d* pta) {
+void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& tm, const int iSets, const int* iPtLstsId, EoGePoint3d* pta) {
   double dCurStrLen;
   double dEps1;
   double dMaxY;
   double dRemDisToEdg;
   double dScan;
   double dSecBeg;
-  double dStrLen[8];
+  double dStrLen[8]{0.0};
   int i;
   int i2;
   int iBegEdg;
@@ -476,7 +487,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
 
   EoGeTransformMatrix tmInv;
 
-  pFilAreaEdgLis edg[65];
+  pFilAreaEdgLis edg[65]{};
 
   EoGeLine ln;
   EoGeLine lnS;

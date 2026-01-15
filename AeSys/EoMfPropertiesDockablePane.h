@@ -47,7 +47,7 @@ class EoMfPropertiesDockablePane : public CDockablePane {
   DECLARE_MESSAGE_MAP()
 
  protected:  // Operations
-  void AdjustLayout();
+  void AdjustLayout() override;
   void InitializePropertyGrid();
   void SetPropertyGridFont();
   void SetWorkspaceTabsSubItemsState();

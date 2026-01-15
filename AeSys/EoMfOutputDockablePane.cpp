@@ -1,4 +1,5 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
+
 #include "AeSys.h"
 #include "EoMfOutputDockablePane.h"
 #include "Resource.h"

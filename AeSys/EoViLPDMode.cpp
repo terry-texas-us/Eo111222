@@ -1,4 +1,5 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
+#include <string>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -13,7 +14,6 @@
 #include "EoGeReferenceSystem.h"
 #include "PrimState.h"
 #include "Section.h"
-#include <string>
 
 /// <remarks>
 ///Only check for actual end-cap marker is by attributes. No error processing for invalid width or depth values.
@@ -231,7 +231,7 @@ void AeSysView::OnLpdModeEll() {
 }
 
 void AeSysView::OnLpdModeTee() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  //EoGePoint3d CurrentPnt = GetCursorPosition();
 
   if (m_PreviousOp != 0) {
     auto* document = GetDocument();
@@ -709,9 +709,9 @@ bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double
                                              EoGeLine& rightLine) {
   EoGeLine Line;
 
-  EoDbLine* LeftLinePrimitive = 0;
-  EoDbLine* RightLinePrimitive = 0;
-  int DirectedRelationship = 0;
+  EoDbLine* LeftLinePrimitive{nullptr};
+  EoDbLine* RightLinePrimitive{nullptr};
+  int DirectedRelationship{0};
 
   EoGeLine TestLine;
   testLinePrimitive->GetLine(TestLine);
@@ -720,7 +720,7 @@ bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double
 
   auto GroupPosition = GetLastGroupPosition();
   while (GroupPosition != 0) {
-    EoDbGroup* Group = GetPreviousGroup(GroupPosition);
+    auto* Group = GetPreviousGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != 0) {

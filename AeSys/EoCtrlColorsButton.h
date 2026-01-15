@@ -40,8 +40,8 @@ class EoCtrlColorsButton : public CMFCButton {
     m_EndIndex = endIndex;
   }
 
-  virtual void OnDraw(CDC* deviceContext, const CRect& rectangle, UINT state);
-  virtual CSize SizeToContent(BOOL calculateOnly = FALSE);
+  void OnDraw(CDC* deviceContext, const CRect& rectangle, UINT state) override;
+  CSize SizeToContent(BOOL calculateOnly = FALSE) override;
 
   afx_msg UINT OnGetDlgCode();
   afx_msg void OnKeyDown(UINT keyCode, UINT repeatCount, UINT flags);

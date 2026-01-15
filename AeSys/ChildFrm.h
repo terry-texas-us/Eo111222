@@ -8,19 +8,19 @@ class CChildFrame : public CMDIChildWndEx {
   CChildFrame& operator=(const CChildFrame&) = delete;
 
  public:
-  virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+  BOOL PreCreateWindow(CREATESTRUCT& cs) override;
 
  public:
-  virtual ~CChildFrame();
+  ~CChildFrame() override;
 #ifdef _DEBUG
-  virtual void AssertValid() const;
-  virtual void Dump(CDumpContext& dc) const;
+  void AssertValid() const override;
+  void Dump(CDumpContext& dc) const override;
 #endif
 
  protected:
   DECLARE_MESSAGE_MAP()
  public:
-  virtual void ActivateFrame(int nCmdShow = -1);
-  virtual BOOL DestroyWindow();
+  void ActivateFrame(int nCmdShow = -1) override;
+  BOOL DestroyWindow() override;
   afx_msg void OnTimer(UINT_PTR nIDEvent);
 };

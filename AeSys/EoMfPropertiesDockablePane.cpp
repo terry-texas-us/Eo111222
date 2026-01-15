@@ -1,7 +1,26 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
+#include <Windows.h>
+#include <afx.h>
+#include <afxdisp.h>
+#include <afxdockablepane.h>
+#include <afxglobals.h>
+#include <afxmsg_.h>
+#include <afxpane.h>
+#include <afxpropertygridctrl.h>
+#include <afxres.h>
+#include <afxstr.h>
+#include <afxtabctrl.h>
+#include <afxver_.h>
+#include <afxwin.h>
+#include <algorithm>
+#include <atltrace.h>
+#include <atltypes.h>
+#include <comutil.h>
+#include <wchar.h>
+
 #include "AeSys.h"
 #include "AeSysView.h"
-
+#include "EoApOptions.h"
 #include "EoMfPropertiesDockablePane.h"
 #include "Resource.h"
 
@@ -44,9 +63,7 @@ int EoMfPropertiesDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   CRect EmptyRect;
   EmptyRect.SetRectEmpty();
 
-  if (!m_wndObjectCombo.Create(
-          WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_BORDER | CBS_SORT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-          EmptyRect, this, 1)) {
+  if (!m_wndObjectCombo.Create(WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_BORDER | CBS_SORT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, EmptyRect, this, 1)) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Properties Combo\n");
     return -1;
   }
@@ -69,8 +86,7 @@ int EoMfPropertiesDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
 
   m_PropertiesToolBar.SetPaneStyle(m_PropertiesToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
   m_PropertiesToolBar.SetPaneStyle(m_PropertiesToolBar.GetPaneStyle() &
-                                   ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM |
-                                     CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
+                                   ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
   m_PropertiesToolBar.SetOwner(this);
 
   // All commands will be routed via this control , not via the parent frame:
@@ -124,8 +140,7 @@ LRESULT EoMfPropertiesDockablePane::OnPropertyChanged(WPARAM, LPARAM lparam) {
     }
     case kTabLocation: {
       CString TabLocation = (LPCWSTR)(_bstr_t)Property->GetValue();
-      app.m_Options.m_MdiTabInfo.m_tabLocation =
-          (TabLocation == TabLocations[0] ? CMFCTabCtrl::LOCATION_BOTTOM : CMFCTabCtrl::LOCATION_TOP);
+      app.m_Options.m_MdiTabInfo.m_tabLocation = (TabLocation == TabLocations[0] ? CMFCTabCtrl::LOCATION_BOTTOM : CMFCTabCtrl::LOCATION_TOP);
       break;
     }
     case kTabsAutoColor:
@@ -154,21 +169,15 @@ LRESULT EoMfPropertiesDockablePane::OnPropertyChanged(WPARAM, LPARAM lparam) {
 }
 
 void EoMfPropertiesDockablePane::OnExpandAllProperties() { m_PropertyGrid.ExpandAll(); }
-void EoMfPropertiesDockablePane::OnProperties1() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoMfPropertiesDockablePane::OnProperties1\n");
-}
-void EoMfPropertiesDockablePane::OnSortProperties() {
-  m_PropertyGrid.SetAlphabeticMode(!m_PropertyGrid.IsAlphabeticMode());
-}
+void EoMfPropertiesDockablePane::OnProperties1() { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoMfPropertiesDockablePane::OnProperties1\n"); }
+void EoMfPropertiesDockablePane::OnSortProperties() { m_PropertyGrid.SetAlphabeticMode(!m_PropertyGrid.IsAlphabeticMode()); }
 void EoMfPropertiesDockablePane::OnUpdateExpandAllProperties(CCmdUI* /* pCmdUI */) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 4, L"EoMfPropertiesDockablePane::OnUpdatExpandAllProperties\n");
 }
 void EoMfPropertiesDockablePane::OnUpdateProperties1(CCmdUI* /* pCmdUI */) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 4, L"EoMfPropertiesDockablePane::OnUpdatProperties1\n");
 }
-void EoMfPropertiesDockablePane::OnUpdateSortProperties(CCmdUI* pCmdUI) {
-  pCmdUI->SetCheck(m_PropertyGrid.IsAlphabeticMode());
-}
+void EoMfPropertiesDockablePane::OnUpdateSortProperties(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_PropertyGrid.IsAlphabeticMode()); }
 void EoMfPropertiesDockablePane::AdjustLayout() {
   if (GetSafeHwnd() == nullptr) { return; }
   CRect rectClient, rectCombo;
@@ -179,12 +188,10 @@ void EoMfPropertiesDockablePane::AdjustLayout() {
   int cyCmb = rectCombo.Size().cy;
   int cyTlb = m_PropertiesToolBar.CalcFixedLayout(FALSE, TRUE).cy;
 
-  m_wndObjectCombo.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), 200,
-                                SWP_NOACTIVATE | SWP_NOZORDER);
-  m_PropertiesToolBar.SetWindowPos(nullptr, rectClient.left, rectClient.top + cyCmb, rectClient.Width(), cyTlb,
-                                   SWP_NOACTIVATE | SWP_NOZORDER);
-  m_PropertyGrid.SetWindowPos(nullptr, rectClient.left, rectClient.top + cyCmb + cyTlb, rectClient.Width(),
-                              rectClient.Height() - (cyCmb + cyTlb), SWP_NOACTIVATE | SWP_NOZORDER);
+  m_wndObjectCombo.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), 200, SWP_NOACTIVATE | SWP_NOZORDER);
+  m_PropertiesToolBar.SetWindowPos(nullptr, rectClient.left, rectClient.top + cyCmb, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
+  m_PropertyGrid.SetWindowPos(nullptr, rectClient.left, rectClient.top + cyCmb + cyTlb, rectClient.Width(), rectClient.Height() - (cyCmb + cyTlb),
+                              SWP_NOACTIVATE | SWP_NOZORDER);
 }
 void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   SetPropertyGridFont();
@@ -199,8 +206,8 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
 
   CMFCPropertyGridProperty* WorkspaceTabsGroup = new CMFCPropertyGridProperty(L"Workspace Tabs");
 
-  CMFCPropertyGridProperty* TabsStyle = new CMFCPropertyGridProperty(
-      L"Tabs Style", L"", L"Set the Tabs Style to None, Standard, or Grouped", kTabsStyle, nullptr, nullptr, nullptr);
+  CMFCPropertyGridProperty* TabsStyle =
+      new CMFCPropertyGridProperty(L"Tabs Style", L"", L"Set the Tabs Style to None, Standard, or Grouped", kTabsStyle, nullptr, nullptr, nullptr);
   TabsStyle->AddOption(::TabsStyles[0], TRUE);
   TabsStyle->AddOption(::TabsStyles[1], TRUE);
   TabsStyle->AddOption(::TabsStyles[2], TRUE);
@@ -208,8 +215,8 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   TabsStyle->AllowEdit(FALSE);
   WorkspaceTabsGroup->AddSubItem(TabsStyle);
 
-  CMFCPropertyGridProperty* TabLocation = new CMFCPropertyGridProperty(
-      L"Tab Location", L"", L"Set the Tab Location to Top or Bottom", kTabLocation, nullptr, nullptr, nullptr);
+  CMFCPropertyGridProperty* TabLocation =
+      new CMFCPropertyGridProperty(L"Tab Location", L"", L"Set the Tab Location to Top or Bottom", kTabLocation, nullptr, nullptr, nullptr);
   TabLocation->AddOption(::TabLocations[0], TRUE);
   TabLocation->AddOption(::TabLocations[1], TRUE);
   TabLocation->SetValue(::TabLocations[app.m_Options.m_MdiTabInfo.m_tabLocation]);
@@ -217,16 +224,14 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   WorkspaceTabsGroup->AddSubItem(TabLocation);
 
   COleVariant TabsAutoColor((short)(app.m_Options.m_MdiTabInfo.m_bAutoColor == TRUE), VT_BOOL);
-  WorkspaceTabsGroup->AddSubItem(new CMFCPropertyGridProperty(
-      L"Tabs auto-color", TabsAutoColor, L"Set Workspace Tabs to use automatic color", kTabsAutoColor));
+  WorkspaceTabsGroup->AddSubItem(new CMFCPropertyGridProperty(L"Tabs auto-color", TabsAutoColor, L"Set Workspace Tabs to use automatic color", kTabsAutoColor));
 
   COleVariant TabIcons((short)(app.m_Options.m_MdiTabInfo.m_bTabIcons == TRUE), VT_BOOL);
-  WorkspaceTabsGroup->AddSubItem(
-      new CMFCPropertyGridProperty(L"Tab icons", TabIcons, L"Show document icons on Workspace Tabs", kTabIcons));
+  WorkspaceTabsGroup->AddSubItem(new CMFCPropertyGridProperty(L"Tab icons", TabIcons, L"Show document icons on Workspace Tabs", kTabIcons));
 
   COleVariant TabBorderSize((short)(app.m_Options.m_MdiTabInfo.m_nTabBorderSize), VT_I2);
-  CMFCPropertyGridProperty* BorderSize = new CMFCPropertyGridProperty(
-      L"Border Size", TabBorderSize, L"Set Workspace border size from 0 to 8 pixels", kTabBorderSize);
+  CMFCPropertyGridProperty* BorderSize =
+      new CMFCPropertyGridProperty(L"Border Size", TabBorderSize, L"Set Workspace border size from 0 to 8 pixels", kTabBorderSize);
   BorderSize->EnableSpinControl(TRUE, 0, 8);
   BorderSize->AllowEdit(FALSE);
   WorkspaceTabsGroup->AddSubItem(BorderSize);
@@ -238,22 +243,19 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   double Scale = (activeView == nullptr) ? 1. : activeView->GetWorldScale();
 
   CMFCPropertyGridProperty* ActiveViewGroup = new CMFCPropertyGridProperty(L"Active View");
-  CMFCPropertyGridProperty* WorldScaleProperty = new CMFCPropertyGridProperty(
-      L"World Scale", (_variant_t)Scale, L"Specifies the world scale used in the Active View", kActiveViewScale);
+  CMFCPropertyGridProperty* WorldScaleProperty =
+      new CMFCPropertyGridProperty(L"World Scale", (_variant_t)Scale, L"Specifies the world scale used in the Active View", kActiveViewScale);
   ActiveViewGroup->AddSubItem(WorldScaleProperty);
-  ActiveViewGroup->AddSubItem(new CMFCPropertyGridProperty(L"Use True Type fonts", (_variant_t) true,
-                                                           L"Specifies that the Active View uses True Type fonts"));
+  ActiveViewGroup->AddSubItem(new CMFCPropertyGridProperty(L"Use True Type fonts", (_variant_t) true, L"Specifies that the Active View uses True Type fonts"));
   m_PropertyGrid.AddProperty(ActiveViewGroup);
   WorldScaleProperty->Enable(activeView != nullptr);
 
   CMFCPropertyGridProperty* AppearanceGroup = new CMFCPropertyGridProperty(L"Appearance");
 
   AppearanceGroup->AddSubItem(
-      new CMFCPropertyGridProperty(L"3D Look", (_variant_t) false,
-                                   L"Specifies the window's font will be non-bold and controls will have a 3D border"));
+      new CMFCPropertyGridProperty(L"3D Look", (_variant_t) false, L"Specifies the window's font will be non-bold and controls will have a 3D border"));
 
-  CMFCPropertyGridProperty* LengthUnits =
-      new CMFCPropertyGridProperty(L"Length Units", L"Engineering", L"Specifies the units used to display lengths");
+  CMFCPropertyGridProperty* LengthUnits = new CMFCPropertyGridProperty(L"Length Units", L"Engineering", L"Specifies the units used to display lengths");
   LengthUnits->AddOption(L"Architectural", TRUE);
   LengthUnits->AddOption(L"Engineering", TRUE);
   LengthUnits->AddOption(L"Feet", TRUE);
@@ -266,20 +268,19 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   LengthUnits->AllowEdit(FALSE);
   AppearanceGroup->AddSubItem(LengthUnits);
 
-  CMFCPropertyGridProperty* LengthPrecision = new CMFCPropertyGridProperty(
-      L"Length Precision", (_variant_t)8l, L"Specifies the precision used to display lengths");
+  CMFCPropertyGridProperty* LengthPrecision =
+      new CMFCPropertyGridProperty(L"Length Precision", (_variant_t)8l, L"Specifies the precision used to display lengths");
   LengthPrecision->EnableSpinControl(TRUE, 0, 256);
   AppearanceGroup->AddSubItem(LengthPrecision);
 
-  AppearanceGroup->AddSubItem(new CMFCPropertyGridProperty(
-      L"Caption", (_variant_t)L"About", L"Specifies the text that will be displayed in the window's title bar"));
+  AppearanceGroup->AddSubItem(
+      new CMFCPropertyGridProperty(L"Caption", (_variant_t)L"About", L"Specifies the text that will be displayed in the window's title bar"));
 
   m_PropertyGrid.AddProperty(AppearanceGroup);
 
   CMFCPropertyGridProperty* PointGrid = new CMFCPropertyGridProperty(L"Point Grid", 0, TRUE);
 
-  CMFCPropertyGridProperty* pProp =
-      new CMFCPropertyGridProperty(L"X", (_variant_t)3.0, L"Specifies the point grid x spacing");
+  CMFCPropertyGridProperty* pProp = new CMFCPropertyGridProperty(L"X", (_variant_t)3.0, L"Specifies the point grid x spacing");
   PointGrid->AddSubItem(pProp);
 
   pProp = new CMFCPropertyGridProperty(L"Y", (_variant_t)3.0, L"Specifies the point grid y spacing");
@@ -298,29 +299,26 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
 
   lstrcpy(lf.lfFaceName, L"Arial");
 
-  NoteGroup->AddSubItem(new CMFCPropertyGridFontProperty(L"Font", lf, CF_EFFECTS | CF_SCREENFONTS,
-                                                         L"Specifies the default font for the window"));
-  NoteGroup->AddSubItem(new CMFCPropertyGridProperty(L"Use System Font", (_variant_t) true,
-                                                     L"Specifies that the window uses MS Shell Dlg font"));
+  NoteGroup->AddSubItem(new CMFCPropertyGridFontProperty(L"Font", lf, CF_EFFECTS | CF_SCREENFONTS, L"Specifies the default font for the window"));
+  NoteGroup->AddSubItem(new CMFCPropertyGridProperty(L"Use System Font", (_variant_t) true, L"Specifies that the window uses MS Shell Dlg font"));
 
-  CMFCPropertyGridProperty* HorizontalAlignment = new CMFCPropertyGridProperty(
-      L"Horizontal Alignment", L"Left", L"Specifies the horizontal alignment used for new notes");
+  CMFCPropertyGridProperty* HorizontalAlignment =
+      new CMFCPropertyGridProperty(L"Horizontal Alignment", L"Left", L"Specifies the horizontal alignment used for new notes");
   HorizontalAlignment->AddOption(L"Left", TRUE);
   HorizontalAlignment->AddOption(L"Center", TRUE);
   HorizontalAlignment->AddOption(L"Right", TRUE);
   HorizontalAlignment->AllowEdit(FALSE);
   NoteGroup->AddSubItem(HorizontalAlignment);
 
-  CMFCPropertyGridProperty* VerticalAlignment = new CMFCPropertyGridProperty(
-      L"Vertical Alignment", L"Bottom", L"Specifies the vertical alignment used for new notes");
+  CMFCPropertyGridProperty* VerticalAlignment =
+      new CMFCPropertyGridProperty(L"Vertical Alignment", L"Bottom", L"Specifies the vertical alignment used for new notes");
   VerticalAlignment->AddOption(L"Bottom", TRUE);
   VerticalAlignment->AddOption(L"Middle", TRUE);
   VerticalAlignment->AddOption(L"Top", TRUE);
   HorizontalAlignment->AllowEdit(FALSE);
   NoteGroup->AddSubItem(VerticalAlignment);
 
-  CMFCPropertyGridProperty* Path =
-      new CMFCPropertyGridProperty(L"Path", L"Right", L"Specifies the text path used for new notes");
+  CMFCPropertyGridProperty* Path = new CMFCPropertyGridProperty(L"Path", L"Right", L"Specifies the text path used for new notes");
   Path->AddOption(L"Right", TRUE);
   Path->AddOption(L"Left", TRUE);
   Path->AddOption(L"Up", TRUE);
@@ -335,15 +333,14 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   pProp->Enable(FALSE);
   MiscGroup->AddSubItem(pProp);
 
-  CMFCPropertyGridColorProperty* ColorProperty = new CMFCPropertyGridColorProperty(
-      L"Window Color", RGB(210, 192, 254), nullptr, L"Specifies the default window color");
+  CMFCPropertyGridColorProperty* ColorProperty =
+      new CMFCPropertyGridColorProperty(L"Window Color", RGB(210, 192, 254), nullptr, L"Specifies the default window color");
   ColorProperty->EnableOtherButton(L"Other...");
   ColorProperty->EnableAutomaticButton(L"Default", ::GetSysColor(COLOR_3DFACE));
   MiscGroup->AddSubItem(ColorProperty);
 
   static WCHAR BASED_CODE szFilter[] = L"Icon Files(*.ico)|*.ico|All Files(*.*)|*.*||";
-  MiscGroup->AddSubItem(
-      new CMFCPropertyGridFileProperty(L"Icon", TRUE, L"", L"ico", 0, szFilter, L"Specifies the window icon"));
+  MiscGroup->AddSubItem(new CMFCPropertyGridFileProperty(L"Icon", TRUE, L"", L"ico", 0, szFilter, L"Specifies the window icon"));
 
   MiscGroup->AddSubItem(new CMFCPropertyGridFileProperty(L"Shadow Folder Path", app.ShadowFolderPath(), 0, nullptr));
 
@@ -355,7 +352,7 @@ void EoMfPropertiesDockablePane::SetPropertyGridFont() {
   LOGFONT LogFont;
   afxGlobalData.fontRegular.GetLogFont(&LogFont);
 
-  NONCLIENTMETRICS Info;
+  NONCLIENTMETRICS Info{};
   Info.cbSize = sizeof(Info);
 
   afxGlobalData.GetNonClientMetrics(Info);

@@ -1,5 +1,7 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #if defined(USING_ODA)
+#include <Windows.h>
+#include <cmath>
 
 #include "AeSysDoc.h"
 #include "EoDbCharacterCellDefinition.h"
@@ -82,7 +84,7 @@ static char THIS_FILE[] = __FILE__;
 
 ODRX_NO_CONS_DEFINE_MEMBERS(EoDbConvertEntityToPrimitive, OdRxObject)
 
-void ConvertEntityData(OdDbEntity* entity, EoDbPrimitive* primitive) {
+static void ConvertEntityData(OdDbEntity* entity, EoDbPrimitive* primitive) {
   OdDbDatabasePtr DatabasePtr = entity->database();
 
   OdCmColor Color = entity->color();
@@ -140,7 +142,7 @@ void ConvertEntityData(OdDbEntity* entity, EoDbPrimitive* primitive) {
     ATLTRACE2(traceOdDb, 2, L"v-Axis: %f, %f, %f\n", vAxis);
   }
 }
-void ConvertTextData(OdDbText* text, EoDbGroup* group) {
+static void ConvertTextData(OdDbText* text, EoDbGroup* group) {
   ATLTRACE2(traceOdDb, 0, L"Converting %s to EoDbText ...\n", (PCTSTR)text->desc()->name());
 
   ATLTRACE2(traceOdDb, 2, L"Text Style: %i\n", text->textStyle());
@@ -232,7 +234,7 @@ void ConvertTextData(OdDbText* text, EoDbGroup* group) {
   ATLTRACE2(traceOdDb, 2, L"Normal: %f, %f, %f\n", text->normal());
   ATLTRACE2(traceOdDb, 2, L"Thickness: %f\n", text->thickness());
 };
-void ConvertAttributeData(OdDbAttribute* attribute) {
+static void ConvertAttributeData(OdDbAttribute* attribute) {
   ATLTRACE2(traceOdDb, 2, L"Tag: %s\n", (PCTSTR)attribute->tag());
   ATLTRACE2(traceOdDb, 2, L"Field Length: %s\n", (PCTSTR)attribute->fieldLength());
   ATLTRACE2(traceOdDb, 2, L"Invisible: %i\n", (PCTSTR)attribute->isInvisible());
@@ -242,7 +244,7 @@ void ConvertAttributeData(OdDbAttribute* attribute) {
   ATLTRACE2(traceOdDb, 2, L"Constant: %i\n", (PCTSTR)attribute->isConstant());
 };
 
-void ConvertDimensionData(OdDbDimension* dimension) {
+static void ConvertDimensionData(OdDbDimension* dimension) {
   OdDbBlockTableRecordPtr Block = dimension->dimBlockId().safeOpenObject();
   ATLTRACE2(traceOdDb, 2, L"Measurement: %f\n", dimension->getMeasurement());
   ATLTRACE2(traceOdDb, 2, L"Dimension Text: %s\n", (PCTSTR)dimension->dimensionText());
@@ -275,7 +277,7 @@ void ConvertDimensionData(OdDbDimension* dimension) {
             dimension->normal()[2]);
 };
 
-void ConvertCurveData(OdDbEntity* entity, EoDbPrimitive* primitive) {
+static void ConvertCurveData(OdDbEntity* entity, EoDbPrimitive* primitive) {
   OdDbCurvePtr Curve = entity;
   OdGePoint3d StartPoint;
   if (eOk == Curve->getStartPoint(StartPoint)) { ATLTRACE2(traceOdDb, 2, L"Start Point: %f, %f, %f\n", StartPoint); }

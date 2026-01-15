@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -113,7 +113,7 @@ BOOL EoDlgFileManage::OnInitDialog() {
     EoDbLayer* Layer = m_Document->GetLayerTableLayerAt(i);
 
     if (Layer->IsInternal()) {
-      m_LayersListControl.InsertItem(i, nullptr);
+      m_LayersListControl.InsertItem(i, L"");
       m_LayersListControl.SetItemData(i, DWORD_PTR(Layer));
     } else {
       int ItemIndex = m_TracingList.AddString(Layer->Name());
@@ -246,7 +246,7 @@ void EoDlgFileManage::OnBnClickedTracingFuse() {
       m_TracingList.DeleteString(static_cast<UINT>(CurrentSelection));
 
       int ItemCount = m_LayersListControl.GetItemCount();
-      m_LayersListControl.InsertItem(ItemCount, nullptr);
+      m_LayersListControl.InsertItem(ItemCount, L"");
       m_LayersListControl.SetItemData(ItemCount, DWORD_PTR(Layer));
     }
   }
@@ -339,7 +339,7 @@ void EoDlgFileManage::OnLbnSelchangeTracingList() {
     m_TracingCloakRadioButton.SetCheck(Layer->IsOff());
 
     CString NumberOfGroups;
-    NumberOfGroups.Format(L"%-4i", Layer->GetCount());
+    NumberOfGroups.Format(L"%-4i", static_cast<int>(Layer->GetCount()));
     m_Groups.SetWindowTextW(NumberOfGroups);
 
     WndProcPreviewUpdateLayer(m_PreviewWindowHandle, Layer);
@@ -375,7 +375,7 @@ void EoDlgFileManage::OnBnClickedMfcbuttonNew() {
   m_Document->AddLayerTableLayer(Layer);
 
   int ItemCount = m_LayersListControl.GetItemCount();
-  m_LayersListControl.InsertItem(ItemCount, nullptr);
+  m_LayersListControl.InsertItem(ItemCount, L"");
   m_LayersListControl.SetItemData(ItemCount, DWORD_PTR(Layer));
 }
 void EoDlgFileManage::OnBnClickedMfcbuttonDel() {
@@ -594,7 +594,7 @@ void EoDlgFileManage::OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESULT* pRe
   EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
 
   CString NumberOfGroups;
-  NumberOfGroups.Format(L"%-4i", Layer->GetCount());
+  NumberOfGroups.Format(L"%-4i", static_cast<int>(Layer->GetCount()));
   m_Groups.SetWindowTextW(NumberOfGroups);
 
   EoDbPrimitive::SetLayerPenColorIndex(Layer->ColorIndex());

@@ -173,7 +173,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
 
   if (CMFCToolBar::GetUserImages() == nullptr) {
     // load user-defined toolbar images
-    if (m_userImages.Load(L"\\UserImages.bmp")) {
+    if (m_userImages.Load(L".\\res\\UserImages.bmp")) {
       m_userImages.SetImageSize(CSize(16, 16), FALSE);
       CMFCToolBar::SetUserImages(&m_userImages);
     }

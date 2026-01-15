@@ -1,10 +1,8 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
-
 #include "EoDlgSetPastePosition.h"
-
-// EoDlgSetPastePosition dialog
 
 IMPLEMENT_DYNAMIC(EoDlgSetPastePosition, CDialog)
 

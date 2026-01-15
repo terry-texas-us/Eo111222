@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include <string>
 
 #include "AeSys.h"
@@ -441,8 +441,6 @@ void AeSysView::OnDimensionModeReturn() {
   PreviousDimensionCursorPosition = ptCur;
 }
 void AeSysView::OnDimensionModeEscape() {
-  EoGePoint3d ptCur = GetCursorPosition();
-
   RubberBandingDisable();
   ModeLineUnhighlightOp(PreviousDimensionCommand);
 }

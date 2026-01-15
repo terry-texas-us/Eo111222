@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "Stdafx.h"
 #include "afxdialogex.h"
 #include <Windows.h>
 #include <afx.h>

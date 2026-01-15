@@ -1,10 +1,25 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <cfloat>
+#include <corecrt.h>
+#include <wchar.h>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDb.h"
+#include "EoDbCharacterCellDefinition.h"
+#include "EoDbFontDefinition.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
+#include "EoGePoint3d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 #include "PrimState.h"
 
 POSITION AeSysDoc::AddGroupToTrap(EoDbGroup* group) {
@@ -15,8 +30,7 @@ void AeSysDoc::AddGroupsToTrap(EoDbGroupList* groups) {
   if (app.IsTrapHighlighted()) { UpdateAllViews(nullptr, EoDb::kGroupsSafeTrap, groups); }
   m_TrappedGroupList.AddTail(groups);
 }
-void AeSysDoc::ModifyTrappedGroupsNoteAttributes(EoDbFontDefinition& fontDef, EoDbCharacterCellDefinition& cellDef,
-                                                 int attributes) {
+void AeSysDoc::ModifyTrappedGroupsNoteAttributes(EoDbFontDefinition& fontDef, EoDbCharacterCellDefinition& cellDef, int attributes) {
   m_TrappedGroupList.ModifyNotes(fontDef, cellDef, attributes);
 }
 void AeSysDoc::RemoveAllTrappedGroups() {
@@ -65,6 +79,7 @@ void AeSysDoc::CopyTrappedGroups(EoGeVector3d translate) {
     UpdateAllViews(nullptr, Hint, Group);
   }
 }
+
 void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
   ::OpenClipboard(nullptr);
   ::EmptyClipboard();
@@ -73,73 +88,77 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
     // UNDONE possible
     CString strBuf;
 
-    auto GroupPosition = GetFirstTrappedGroupPosition();
-    while (GroupPosition != 0) {
-      EoDbGroup* Group = GetNextTrappedGroup(GroupPosition);
+    auto groupPosition = GetFirstTrappedGroupPosition();
+    while (groupPosition != 0) {
+      auto* group = GetNextTrappedGroup(groupPosition);
 
-      auto PrimitivePosition = Group->GetHeadPosition();
-      while (PrimitivePosition != 0) {
-        EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-        if (Primitive->Is(EoDb::kTextPrimitive)) {
-          strBuf += static_cast<EoDbText*>(Primitive)->Text();
+      auto primitivePosition = group->GetHeadPosition();
+      while (primitivePosition != 0) {
+        auto* primitive = group->GetNext(primitivePosition);
+        if (primitive->Is(EoDb::kTextPrimitive)) {
+          strBuf += static_cast<EoDbText*>(primitive)->Text();
           strBuf += L"\r\n";
         }
       }
     }
-    int AllocationSize = strBuf.GetLength() + 1;
-    GLOBALHANDLE ClipboardDataHandle = GlobalAlloc(GHND, static_cast<SIZE_T>(AllocationSize));
-    LPTSTR ClipboardData = (LPTSTR)GlobalLock(ClipboardDataHandle);
-    wcscpy_s(ClipboardData, static_cast<rsize_t>(AllocationSize), strBuf);
-    GlobalUnlock(ClipboardDataHandle);
-    ::SetClipboardData(CF_TEXT, ClipboardDataHandle);
+    int allocationSize = strBuf.GetLength() + 1;
+    GLOBALHANDLE clipboardDataHandle = GlobalAlloc(GHND, static_cast<SIZE_T>(allocationSize));
+    if (clipboardDataHandle != nullptr) {
+      auto clipboardData = (LPTSTR)GlobalLock(clipboardDataHandle);
+
+      if (clipboardData != nullptr) { wcscpy_s(clipboardData, static_cast<rsize_t>(allocationSize), strBuf); }
+      GlobalUnlock(clipboardDataHandle);
+      ::SetClipboardData(CF_TEXT, clipboardDataHandle);
+    }
   }
   if (app.IsClipboardDataImage()) {
     int PrimitiveState = pstate.Save();
 
-    HDC hdcEMF = ::CreateEnhMetaFile(0, 0, 0, 0);
-    m_TrappedGroupList.Display(view, CDC::FromHandle(hdcEMF));
-    HENHMETAFILE hemf = ::CloseEnhMetaFile(hdcEMF);
-    ::SetClipboardData(CF_ENHMETAFILE, hemf);
+    auto enhancedMetafileContext = ::CreateEnhMetaFileW(0, 0, 0, 0);
+    m_TrappedGroupList.Display(view, CDC::FromHandle(enhancedMetafileContext));
+    auto enhancedMetafileHandle = ::CloseEnhMetaFile(enhancedMetafileContext);
+    ::SetClipboardData(CF_ENHMETAFILE, enhancedMetafileHandle);
 
-    pstate.Restore(CDC::FromHandle(hdcEMF), PrimitiveState);
+    pstate.Restore(CDC::FromHandle(enhancedMetafileContext), PrimitiveState);
   }
   if (app.IsClipboardDataGroups()) {
-    EoGePoint3d ptMin(FLT_MAX, FLT_MAX, FLT_MAX);
-    EoGePoint3d ptMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+    EoGePoint3d minPoint(FLT_MAX, FLT_MAX, FLT_MAX);
+    EoGePoint3d maxPoint(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-    CMemFile mf;
+    CMemFile memoryFile;
 
-    mf.SetLength(96);
-    mf.SeekToEnd();
+    memoryFile.SetLength(96);
+    memoryFile.SeekToEnd();
 
-    EoByte* pBuf = new EoByte[EoDbPrimitive::BUFFER_SIZE];
+    auto* primitiveBuffer = new EoByte[EoDbPrimitive::BUFFER_SIZE];
 
-    m_TrappedGroupList.Write(mf, pBuf);
-    m_TrappedGroupList.GetExtents(view, ptMin, ptMax, view->ModelViewGetMatrix());
+    m_TrappedGroupList.Write(memoryFile, primitiveBuffer);
+    m_TrappedGroupList.GetExtents(view, minPoint, maxPoint, view->ModelViewGetMatrix());
 
-    delete[] pBuf;
+    delete[] primitiveBuffer;
 
-    ptMin = view->ModelViewGetMatrixInverse() * ptMin;
+    minPoint = view->ModelViewGetMatrixInverse() * minPoint;
 
-    ULONGLONG dwSizeOfBuffer = mf.GetLength();
+    auto memoryFileLength = memoryFile.GetLength();
 
-    mf.SeekToBegin();
-    mf.Write(&dwSizeOfBuffer, sizeof(DWORD));
-    ptMin.Write(mf);
+    memoryFile.SeekToBegin();
+    memoryFile.Write(&memoryFileLength, sizeof(DWORD));
+    minPoint.Write(memoryFile);
 
-    GLOBALHANDLE ClipboardDataHandle = GlobalAlloc(GHND, SIZE_T(dwSizeOfBuffer));
-    if (ClipboardDataHandle != nullptr) {
-      LPTSTR ClipboardData = (LPTSTR)GlobalLock(ClipboardDataHandle);
+    GLOBALHANDLE clipboardDataHandle = GlobalAlloc(GHND, SIZE_T(memoryFileLength));
+    if (clipboardDataHandle != nullptr) {
+      auto clipboardData = (LPTSTR)GlobalLock(clipboardDataHandle);
 
-      mf.SeekToBegin();
-      mf.Read(ClipboardData, UINT(dwSizeOfBuffer));
+      memoryFile.SeekToBegin();
+      memoryFile.Read(clipboardData, UINT(memoryFileLength));
 
-      GlobalUnlock(ClipboardDataHandle);
-      ::SetClipboardData(app.ClipboardFormatIdentifierForEoGroups(), ClipboardDataHandle);
+      GlobalUnlock(clipboardDataHandle);
+      ::SetClipboardData(app.ClipboardFormatIdentifierForEoGroups(), clipboardDataHandle);
     }
   }
   ::CloseClipboard();
 }
+
 void AeSysDoc::DeleteAllTrappedGroups() {
   auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
   while (GroupPosition != 0) {
@@ -151,33 +170,37 @@ void AeSysDoc::DeleteAllTrappedGroups() {
   }
   m_TrappedGroupList.RemoveAll();
 }
+
 void AeSysDoc::ExpandTrappedGroups() {
   if (m_TrappedGroupList.IsEmpty()) { return; }
-  EoDbGroup* Group;
-  EoDbGroup* NewGroup;
-  EoDbPrimitive* Primitive;
+  auto* groups = new EoDbGroupList;
 
-  EoDbGroupList* Groups = new EoDbGroupList;
-  Groups->AddTail(&m_TrappedGroupList);
-  m_TrappedGroupList.RemoveAll();
+  try {
+    groups->AddTail(&m_TrappedGroupList);
+    m_TrappedGroupList.RemoveAll();
 
-  auto GroupPosition = Groups->GetHeadPosition();
-  while (GroupPosition != 0) {
-    Group = Groups->GetNext(GroupPosition);
+    auto groupPosition = groups->GetHeadPosition();
+    while (groupPosition != 0) {
+      auto group = groups->GetNext(groupPosition);
 
-    auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
-      Primitive = Group->GetNext(PrimitivePosition);
-      NewGroup = new EoDbGroup(Primitive);
-      AddWorkLayerGroup(NewGroup);
-      m_TrappedGroupList.AddTail(NewGroup);
+      auto primitivePosition = group->GetHeadPosition();
+      while (primitivePosition != 0) {
+        auto primitive = group->GetNext(primitivePosition);
+        auto newGroup = new EoDbGroup(primitive);
+        AddWorkLayerGroup(newGroup);
+        m_TrappedGroupList.AddTail(newGroup);
+      }
+      AnyLayerRemove(group);
+      RemoveGroupFromAllViews(group);
+      delete group;
     }
-    AnyLayerRemove(Group);
-    RemoveGroupFromAllViews(Group);
-    delete Group;
+    delete groups;
+  } catch (...) {
+    delete groups;
+    throw;
   }
-  delete Groups;
 }
+
 void AeSysDoc::SquareTrappedGroups(AeSysView* view) {
   UpdateAllViews(nullptr, EoDb::kGroupsEraseSafeTrap, &m_TrappedGroupList);
 

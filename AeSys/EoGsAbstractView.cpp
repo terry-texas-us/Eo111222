@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"

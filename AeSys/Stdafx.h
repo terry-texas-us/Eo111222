@@ -9,7 +9,7 @@
 
 #define NOMINMAX
 
-#include "targetver.h"
+#include "TargetVer.h"
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS  // some CString constructors will be explicit
 

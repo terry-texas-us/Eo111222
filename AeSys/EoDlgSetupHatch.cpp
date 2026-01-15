@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include "EoDlgSetupHatch.h"
 #include "PrimState.h"
 #include "Resource.h"

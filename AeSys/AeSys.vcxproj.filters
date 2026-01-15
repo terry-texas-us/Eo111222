@@ -1709,8 +1709,12 @@
     </None>
     <None Include="Tools\reflex_static_lib.pdb" />
     <None Include="C:\Users\tsmit\Desktop\Help Peg.pdf" />
-    <None Include="Markdowns\dxf header.md" />
-    <None Include="Markdowns\libdxfrw - Technical Specifications.md" />
+    <None Include="Markdowns\dxf header.md">
+      <Filter>Markdowns</Filter>
+    </None>
+    <None Include="Markdowns\libdxfrw - Technical Specifications.md">
+      <Filter>Markdowns</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">

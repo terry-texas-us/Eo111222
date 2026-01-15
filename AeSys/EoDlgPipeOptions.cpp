@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include "EoDlgPipeOptions.h"
 #include "Resource.h"
 

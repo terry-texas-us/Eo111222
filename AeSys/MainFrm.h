@@ -34,17 +34,17 @@ class CMainFrame : public CMDIFrameWndEx {
 
   // Overrides
  public:
-  virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-  virtual BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
-                         CWnd* pParentWnd = nullptr, CCreateContext* pContext = nullptr);
+  BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+  BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
+                 CWnd* pParentWnd = nullptr, CCreateContext* pContext = nullptr) override;
 
   // Implementation
  public:
   static CMFCToolBarComboBoxButton* GetFindCombo();
-  virtual ~CMainFrame();
+  ~CMainFrame() override;
 #ifdef _DEBUG
-  virtual void AssertValid() const;
-  virtual void Dump(CDumpContext& dc) const;
+  void AssertValid() const override;
+  void Dump(CDumpContext& dc) const override;
 #endif
 
  protected:  // control bar embedded members
@@ -74,8 +74,8 @@ class CMainFrame : public CMDIFrameWndEx {
 
   DECLARE_MESSAGE_MAP()
 
-  virtual BOOL OnShowPopupMenu(CMFCPopupMenu* pMenuPopup);
-  virtual BOOL OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOOL bDrop);
+  BOOL OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) override;
+  BOOL OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOOL bDrop) override;
 
   /// <summary></summary>
   /// <remarks>

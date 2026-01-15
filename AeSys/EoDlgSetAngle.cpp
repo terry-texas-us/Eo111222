@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include "EoDlgSetAngle.h"
 #include "Resource.h"
 

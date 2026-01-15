@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "Stdafx.h"
 #include "EoDlgSetScale.h"
 #include "Resource.h"
 

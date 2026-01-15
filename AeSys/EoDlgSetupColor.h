@@ -16,10 +16,10 @@ class EoDlgSetupColor : public CDialog {
   enum { IDD = IDD_SETUP_COLOR };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog();
-  virtual void OnOK();
-  virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+  void DoDataExchange(CDataExchange* dataExchange) override;
+  BOOL OnInitDialog() override;
+  void OnOK() override;
+  BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult) override;
 
   EoCtrlColorsButton m_EvenColorsButton;
   EoCtrlColorsButton m_OddColorsButton;

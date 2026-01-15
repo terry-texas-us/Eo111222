@@ -16,9 +16,9 @@ class EoDlgSetUnitsAndPrecision : public CDialog {
   enum { IDD = IDD_UNITS };
 
  protected:
-  virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual BOOL OnInitDialog();
-  virtual void OnOK();
+  void DoDataExchange(CDataExchange* dataExchange) override;
+  BOOL OnInitDialog() override;
+  void OnOK() override;
 
  public:
   CListBox m_MetricUnitsListBoxControl;

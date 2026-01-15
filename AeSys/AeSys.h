@@ -1,9 +1,11 @@
 ﻿#pragma once
-
 #ifndef __AFXWIN_H__
-#error include 'Stdafx.h' befor including this file for PCH
+#error include 'Stdafx.h' before including this file for PCH
 #endif
 
+#include <Windows.h>
+#include <afxstr.h>
+#include <afxwin.h>
 #include <afxwinappex.h>
 
 #include "EoApOptions.h"
@@ -26,9 +28,9 @@ class AeSys : public CWinAppEx {
   AeSys& operator=(const AeSys&) = delete;
   // Overrides
  public:
-  virtual BOOL InitInstance();
-  virtual int ExitInstance();
-  virtual void PreLoadState();
+  BOOL InitInstance() override;
+  int ExitInstance() override;
+  void PreLoadState() override;
 
  public:
   enum Units {
