@@ -255,6 +255,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
       <SubType>
       </SubType>
     </None>
+    <None Include="Markdowns\DXF Symbol Tables.md" />
     <None Include="Markdowns\Job File Format.md" />
     <None Include="Markdowns\libdxfrw - Technical Specifications.md">
       <SubType>

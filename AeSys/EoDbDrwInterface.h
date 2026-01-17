@@ -20,6 +20,7 @@ class EoDbDrwInterface : public DRW_Interface {
   }
 
   // Table objects
+
   void addAppId(const DRW_AppId& appId) override {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addAppId called\n");
     ConvertAppIdTable(appId, m_document);
@@ -106,7 +107,9 @@ class EoDbDrwInterface : public DRW_Interface {
   void addDimRadial(const DRW_DimRadial* /* dimRadial */) override {}
 
   // Others
-  void addComment(const char* /* comment */) override {}
+  void addComment(const char* comment) override {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addComment(%s)\n", comment);
+  }
   void addLeader(const DRW_Leader* /* leader */) override {}
   void linkImage(const DRW_ImageDef* /* imageDefinition */) override {}
 

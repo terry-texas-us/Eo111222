@@ -1715,6 +1715,7 @@
     <None Include="Markdowns\libdxfrw - Technical Specifications.md">
       <Filter>Markdowns</Filter>
     </None>
+    <None Include="Markdowns\DXF Symbol Tables.md" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">

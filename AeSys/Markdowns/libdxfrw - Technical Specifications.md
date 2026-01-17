@@ -448,12 +448,12 @@ libdxfrw supports multiple character code pages:
 ### Debug Level Settings
 
 ```cpp
-void setDebug(DRW::DBG_LEVEL lvl);
+void setDebug(DRW::DebugTraceLevel lvl);
 ```
 
 **Debug Levels**:
-- `DRW::NONE`: No debug output
-- `DRW::DEBUG`: Debug information output
+- `DRW::none`: No debug output
+- `DRW::debug`: Debug information output
 
 ### Debug Utilities
 

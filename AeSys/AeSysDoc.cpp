@@ -70,6 +70,7 @@
 #include "Lex.h"
 #include "PrimState.h"
 #include "Resource.h"
+#include "drw_base.h"
 #include "libdxfrw.h"
 
 #if defined(USING_DDE)
@@ -287,7 +288,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
     case EoDb::kDxb: {
       EoDbDrwInterface dxfInterface(this);
       dxfRW dxfReader(dxfInterface.WStringToString(pathName).data());
-      //dxfReader.setDebug(static_cast<DRW::DBG_LEVEL>(1)); // messages to stdout only
+      dxfReader.setDebug(static_cast<DRW::DebugTraceLevel>(DRW::debug));
       bool success = dxfReader.read(&dxfInterface, true);  // true for verbose output, false for silent
       if (success) {
         ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DXF file loaded successfully.\n");
