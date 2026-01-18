@@ -4,7 +4,6 @@
 #include <afxcoll.h>
 #include <afxstr.h>
 #include <afxtempl.h>
-#include <afxwin.h>
 #include <string>
 
 #include "EoDbLineType.h"
@@ -35,7 +34,9 @@ class EoDbLineTypeTable {
     m_MapLineTypes.GetNextAssoc(position, name, lineType);
   }
   bool IsEmpty() { return m_MapLineTypes.IsEmpty(); }
-  EoUInt16 LegacyLineTypeIndex(CString& name);
+  
+  EoInt16 LegacyLineTypeIndex(CString& name);
+  EoInt16 LegacyLineTypeIndex(std::wstring& name);
   
   /** @brief Looks up a line type by its name.
    *

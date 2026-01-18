@@ -3,6 +3,9 @@
 #include <string>
 
 #include "AeSysDoc.h"
+#include "Eo.h"
+#include "EoDbHeaderSection.h"
+#include "EoDbPrimitive.h"
 #include "drw_entities.h"
 #include "drw_header.h"
 #include "drw_interface.h"
@@ -51,7 +54,7 @@ class EoDbDrwInterface : public DRW_Interface {
   // Blocks
   void addBlock(const DRW_Block& block) override {
     inBlockDefinition = true;
-    blockName = StringToWString(block.name.c_str());
+    blockName = Eo::MultiByteToWString(block.name.c_str());
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addBlock <%s>\n", blockName.c_str());
     ConvertBlock(block, m_document);
   }
@@ -67,49 +70,69 @@ class EoDbDrwInterface : public DRW_Interface {
   }
 
   // Entities
-  void add3dFace(const DRW_3Dface& /* 3dFace */) override {}
-  void addArc(const DRW_Arc& /* arc */) override {}
-  void addCircle(const DRW_Circle& /* circle */) override {}
-  void addEllipse(const DRW_Ellipse& /* ellipse */) override {}
-  void addHatch(const DRW_Hatch* /* hatch */) override {}
-  void addImage(const DRW_Image* /* image */) override {}
-  void addInsert(const DRW_Insert& /* insert */) override {}
-  void addKnot(const DRW_Entity& /* knot */) override {}
+
+  void add3dFace(const DRW_3Dface& /* 3dFace */) override { countOf3dFace++; }
+  void addArc(const DRW_Arc& /* arc */) override { countOfArc++; }
+  void addCircle(const DRW_Circle& /* circle */) override { countOfCircle++; }
+  void addEllipse(const DRW_Ellipse& /* ellipse */) override { countOfEllipse++; }
+  void addHatch(const DRW_Hatch* /* hatch */) override { countOfHatch++; }
+  void addImage(const DRW_Image* /* image */) override { countOfImage++; }
+  void addInsert(const DRW_Insert& /* insert */) override { countOfInsert++; }
+  void addKnot(const DRW_Entity& /* knot */) override { countOfKnot++; }
 
   void addLine(const DRW_Line& line) override {
+    countOfLine++;
     if (inBlockDefinition) {
       ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
       ConvertLineEntity(line, m_document);
     } else {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addLine - entities section\n");
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addLine - entities section\n");
       ConvertLineEntity(line, m_document);
     }
   }
-  void addLWPolyline(const DRW_LWPolyline& /* lwPolyline */) override {}
-  void addMText(const DRW_MText& /* mText */) override {}
-  void addPoint(const DRW_Point& /* point */) override {}
-  void addPolyline(const DRW_Polyline& /* polyline */) override {}
-  void addRay(const DRW_Ray& /* ray */) override {}
-  void addSolid(const DRW_Solid& /* solid */) override {}
-  void addSpline(const DRW_Spline* /* spline */) override {}
-  void addText(const DRW_Text& /* text */) override {}
-  void addTrace(const DRW_Trace& /* trace */) override {}
-  void addViewport(const DRW_Viewport& /* viewport */) override {}
-  void addXline(const DRW_Xline& /* Xline */) override {}
+  void addLWPolyline(const DRW_LWPolyline& lwPolyline) override {
+    countOfLWPolyline++;
+    if (inBlockDefinition) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
+      ConvertLWPolylineEntity(lwPolyline, m_document);
+    } else {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addLine - entities section\n");
+      ConvertLWPolylineEntity(lwPolyline, m_document);
+    }
+  }
+  void addMText(const DRW_MText& /* mText */) override { countOfMText++; }
+
+  void addPoint(const DRW_Point& point) override {
+    countOfPoint++;
+    if (inBlockDefinition) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addPoint - block <%s>\n", blockName.c_str());
+      ConvertPointEntity(point, m_document);
+    } else {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addPoint - entities section\n");
+      ConvertPointEntity(point, m_document);
+    }
+  }
+
+  void addPolyline(const DRW_Polyline& /* polyline */) override { countOfPolyline++; }
+  void addRay(const DRW_Ray& /* ray */) override { countOfRay++; }
+  void addSolid(const DRW_Solid& /* solid */) override { countOfSolid++; }
+  void addSpline(const DRW_Spline* /* spline */) override { countOfSpline++; }
+  void addText(const DRW_Text& /* text */) override { countOfText++; }
+  void addTrace(const DRW_Trace& /* trace */) override { countOfTrace++; }
+  void addViewport(const DRW_Viewport& /* viewport */) override { countOfViewport++; }
+  void addXline(const DRW_Xline& /* Xline */) override { countOfXline++; }
 
   // Dimensions
-  void addDimAlign(const DRW_DimAligned* /* dimAlign */) override {}
-  void addDimAngular(const DRW_DimAngular* /* dimAngular */) override {}
-  void addDimAngular3P(const DRW_DimAngular3p* /* dimAngular3P */) override {}
-  void addDimDiametric(const DRW_DimDiametric* /* dimDiametric */) override {}
-  void addDimLinear(const DRW_DimLinear* /* dimLinear */) override {}
-  void addDimOrdinate(const DRW_DimOrdinate* /* dimOrdinate */) override {}
-  void addDimRadial(const DRW_DimRadial* /* dimRadial */) override {}
+  void addDimAlign(const DRW_DimAligned* /* dimAlign */) override { countOfDimAlign++; }
+  void addDimAngular(const DRW_DimAngular* /* dimAngular */) override { countOfDimAngular++; }
+  void addDimAngular3P(const DRW_DimAngular3p* /* dimAngular3P */) override { countOfDimAngular3P++; }
+  void addDimDiametric(const DRW_DimDiametric* /* dimDiametric */) override { countOfDimDiametric++; }
+  void addDimLinear(const DRW_DimLinear* /* dimLinear */) override { countOfDimLinear++; }
+  void addDimOrdinate(const DRW_DimOrdinate* /* dimOrdinate */) override { countOfDimOrdinate++; }
+  void addDimRadial(const DRW_DimRadial* /* dimRadial */) override { countOfDimRadial++; }
 
   // Others
-  void addComment(const char* comment) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addComment(%s)\n", comment);
-  }
+  void addComment(const char* comment) override { ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addComment(%s)\n", comment); }
   void addLeader(const DRW_Leader* /* leader */) override {}
   void linkImage(const DRW_ImageDef* /* imageDefinition */) override {}
 
@@ -186,13 +209,17 @@ class EoDbDrwInterface : public DRW_Interface {
   void ConvertBlockSet(const int handle, AeSysDoc* document);
   void ConvertBlockEnd(AeSysDoc* document);
 
-  void ConvertLineEntity(const DRW_Line& line, AeSysDoc* document);
+  void AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document);
 
-  std::string WStringToString(const std::wstring& wstr);
-  std::wstring StringToWString(const std::string& str);
+  void ConvertLineEntity(const DRW_Line& line, AeSysDoc* document);
+  void ConvertLWPolylineEntity(const DRW_LWPolyline& lwPolyline, AeSysDoc* document);
+  void ConvertPointEntity(const DRW_Point& point, AeSysDoc* document);
 
  private:
   AeSysDoc* m_document{nullptr};
   std::wstring blockName{};
   bool inBlockDefinition{false};
+
+ public:
+  int countOf3dFace{0}; int countOfArc{0}; int countOfCircle{0}; int countOfDimAlign{0}; int countOfDimAngular{0}; int countOfDimAngular3P{0}; int countOfDimDiametric{0}; int countOfDimLinear{0}; int countOfDimOrdinate{0}; int countOfDimRadial{0}; int countOfEllipse{0}; int countOfHatch{0}; int countOfImage{0}; int countOfInsert{0}; int countOfKnot{0}; int countOfLine{0}; int countOfLWPolyline{0}; int countOfMText{0}; int countOfPoint{0}; int countOfPolyline{0}; int countOfRay{0}; int countOfSolid{0}; int countOfSpline{0}; int countOfText{0}; int countOfTrace{0}; int countOfViewport{0}; int countOfXline{0}; 
 };

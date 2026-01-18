@@ -7,7 +7,7 @@ using namespace dde;
 
 /// <summary>Return the Help info</summary>
 HDDEDATA dde::SysReqHelp(UINT wFmt, HSZ , HSZ hszItem) {
-	static WCHAR sz[] =
+  static wchar_t sz[] =
 		L"DDE Help for the AeSys Service.\r\n\t"
 		L"Request or advise on 'General!<item>' to get the current value.\r\n\t"
 		L"Items are:  RelPosX, RelPosY, RelPosZ,...";
@@ -67,7 +67,7 @@ HDDEDATA dde::SysReqFormats(UINT wFmt, HSZ , HSZ hszItem) {
 // Process a request for the list of protocols supported by the server.  The default is to return the
 // 'Execute Control 1' protocol.
 HDDEDATA dde::SysReqProtocols(UINT , HSZ , HSZ hszItem) {
-	static WCHAR sz[] = L"Execute Control 1";
+  static wchar_t sz[] = L"Execute Control 1";
 
 	return DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE) sz, wcslen(sz) + 1, 0, hszItem, CF_TEXT, 0);
 // Return a DDE data handle to the data object containing the return data.

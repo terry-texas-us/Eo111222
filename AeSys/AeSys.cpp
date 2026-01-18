@@ -528,7 +528,7 @@ CString AeSys::ResourceFolderPath() {
   return ApplicationPath + L"\\res\\";
 }
 int AeSys::SetShadowFolderPath(const CString& folder) {
-  WCHAR Path[MAX_PATH];
+  wchar_t Path[MAX_PATH]{};
 
   if (SHGetSpecialFolderPathW(m_pMainWnd->GetSafeHwnd(), Path, CSIDL_PERSONAL, TRUE)) {
     m_ShadowFolderPath = Path;
@@ -554,16 +554,16 @@ void AeSys::LoadHatchesFromFile(const CString& strFileName) {
 
   if (!fl.Open(strFileName, CFile::modeRead | CFile::typeText, &e)) return;
 
-  WCHAR szLn[128];
+  wchar_t szLn[128]{};
   double dTotStrsLen;
   int iNmbEnts, iNmbStrsId;
 
-  WCHAR szValDel[] = L",\0";
+  wchar_t szValDel[] = L",\0";
   int iHatId = 0;
   int iNmbHatLns = 0;
   int iTblId = 0;
 
-  while (fl.ReadString(szLn, sizeof(szLn) / sizeof(WCHAR) - 1) != 0) {
+  while (fl.ReadString(szLn, sizeof(szLn) / sizeof(wchar_t) - 1) != 0) {
     if (*szLn == '!') {  // New Hatch index
       if (iHatId != 0) hatch::fTableValue[hatch::iTableOffset[iHatId]] = float(iNmbHatLns);
       hatch::iTableOffset[++iHatId] = iTblId++;
@@ -626,16 +626,12 @@ void AeSys::InitGbls(CDC* deviceContext) {
   pstate.SetPointStyle(0);
 }
 void AeSys::EditColorPalette() {
-  CHOOSECOLOR cc;
-
-  ::ZeroMemory(&cc, sizeof(CHOOSECOLOR));
+  CHOOSECOLOR cc{};
   cc.lStructSize = sizeof(CHOOSECOLOR);
-
   cc.rgbResult = ColorPalette[pstate.PenColor()];
   cc.lpCustColors = ColorPalette;
   cc.Flags = CC_FULLOPEN | CC_RGBINIT | CC_SOLIDCOLOR;
   ::ChooseColor(&cc);
-
   cc.rgbResult = GreyPalette[pstate.PenColor()];
   cc.lpCustColors = GreyPalette;
   ::ChooseColor(&cc);
@@ -649,12 +645,12 @@ void AeSys::LoadPenColorsFromFile(const CString& strFileName) {
   CStdioFile fl;
 
   if (fl.Open(strFileName, CFile::modeRead | CFile::typeText)) {
-    WCHAR pBuf[128];
+    wchar_t pBuf[128]{};
     LPWSTR pId, pRed, pGreen, pBlue;
 
-    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(WCHAR) - 1) != 0 && _tcsnicmp(pBuf, L"<Colors>", 8) != 0);
+    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0 && _tcsnicmp(pBuf, L"<Colors>", 8) != 0);
 
-    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(WCHAR) - 1) != 0 && *pBuf != '<') {
+    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0 && *pBuf != '<') {
       LPWSTR NextToken = nullptr;
       pId = wcstok_s(pBuf, L"=", &NextToken);
       pRed = wcstok_s(0, L",", &NextToken);
@@ -805,7 +801,7 @@ void AeSys::FormatLength(CString& lengthAsString, Units units, const double leng
 }
 
 void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length) {
-  WCHAR szBuf[16]{};
+  wchar_t szBuf[16]{};
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
@@ -848,7 +844,7 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   wcscat_s(lengthAsBuffer, bufSize, L"\"");
 }
 void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width, const int precision) {
-  WCHAR szBuf[16]{};
+  wchar_t szBuf[16]{};
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
@@ -935,7 +931,7 @@ void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Unit
     @throws wchar_t* If an error occurs during parsing, an error message is thrown.
 */
 static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* end) {
-  wchar_t token[32]{0};
+  wchar_t token[32]{};
   int linePosition{0};
   int tokenType = lex::Scan(token, inputLine, linePosition);
 

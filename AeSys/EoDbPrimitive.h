@@ -1,9 +1,20 @@
 ﻿#pragma once
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <string>
+
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeVector3d.h"
+#include "drw_entities.h"
 
 HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR pszText, LPCVOID object);
 
-#include "EoGeLine.h"
 
+class AeSysDoc;
 class AeSysView;
 class EoDbGroupList;
 class EoDbGroup;
@@ -13,7 +24,7 @@ class EoDbPrimitive : public CObject {
  public:
   static const EoUInt16 BUFFER_SIZE = 2048;
 
-  static const EoInt16 PENCOLOR_BYBLOCK = 0x0000;
+  static const EoInt16 PENCOLOR_BYBLOCK = 0;
   static const EoInt16 PENCOLOR_BYLAYER = 256;
   static const EoInt16 LINETYPE_BYBLOCK = 32766;
   static const EoInt16 LINETYPE_BYLAYER = 32767;
@@ -21,6 +32,8 @@ class EoDbPrimitive : public CObject {
  protected:
   EoInt16 m_PenColor;
   EoInt16 m_LineType;
+  std::wstring m_linetypeName;
+  std::wstring m_layerName;
 
   static EoInt16 sm_LayerPenColor;
   static EoInt16 sm_LayerLineType;
@@ -41,9 +54,6 @@ class EoDbPrimitive : public CObject {
  public:  // Methods - absolute virtuals
   virtual void AddToTreeViewControl(HWND, HTREEITEM) = 0;
   virtual void Assign(EoDbPrimitive* primitive) = 0;
-#if defined(USING_ODA)
-  virtual OdDbEntity* Convert(const OdDbObjectId& blockTableRecord) = 0;
-#endif
   virtual EoDbPrimitive*& Copy(EoDbPrimitive*&) = 0;
   virtual void Display(AeSysView* view, CDC* deviceContext) = 0;
   virtual void AddReportToMessageList(EoGePoint3d) = 0;
@@ -75,14 +85,21 @@ class EoDbPrimitive : public CObject {
   virtual bool PvtOnCtrlPt(AeSysView*, const EoGePoint4d&);
 
  public:  // Methods
-  CString FormatPenColor();
-  CString FormatLineType();
-  EoInt16 LogicalPenColor();
-  EoInt16 LogicalLineType();
+  void SetBaseProperties(const DRW_Entity* entity, AeSysDoc* document);
+
+  CString FormatPenColor() const;
+  CString FormatLineType() const;
+  EoInt16 LogicalPenColor() const;
+  EoInt16 LogicalLineType() const;
   EoInt16 PenColor() const;
   EoInt16 LineType() const;
   void PenColor(EoInt16 penColor);
   void LineType(EoInt16 lineType);
+
+  const std::wstring& GetLinetypeName() const noexcept { return m_linetypeName; }
+  void SetLinetypeName(const std::wstring& name) { m_linetypeName = name; }
+  const std::wstring& GetLayerName() const noexcept { return m_layerName; }
+  void SetLayerName(const std::wstring& name) { m_layerName = name; }
 
  public:  // Methods - static
   static EoUInt16 ControlPointIndex();
@@ -95,4 +112,8 @@ class EoDbPrimitive : public CObject {
   static EoInt16 SpecialLineTypeIndex();
   static EoInt16 SpecialPenColorIndex();
   static void SetSpecialPenColorIndex(EoInt16 colorIndex);
+
+#if defined(USING_ODA)
+  virtual OdDbEntity* Convert(const OdDbObjectId& blockTableRecord) = 0;
+#endif
 };

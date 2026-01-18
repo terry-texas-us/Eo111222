@@ -1,17 +1,25 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+#include <afx.h>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
+#include "EoDb.h"
 #include "EoDbEllipse.h"
+#include "EoDbGroup.h"
 #include "EoDbLine.h"
 #include "EoDbPoint.h"
 #include "EoDbPolygon.h"
 #include "EoDbPolyline.h"
 #include "EoDbSpline.h"
 #include "EoDlgBlockInsert.h"
+#include "EoGePoint3d.h"
+#include "EoGeVector3d.h"
 #include "PrimState.h"
+#include "Resource.h"
 
 EoUInt16 PreviousDrawCommand{0};
 

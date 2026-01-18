@@ -1,8 +1,19 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxdd_.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <climits>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDb.h"
+#include "EoDbGroup.h"
+#include "EoDbLineType.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgTrapFilter.h"
 #include "Resource.h"
@@ -10,8 +21,7 @@
 IMPLEMENT_DYNAMIC(EoDlgTrapFilter, CDialog)
 
 EoDlgTrapFilter::EoDlgTrapFilter(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgTrapFilter::IDD, pParent) {}
-EoDlgTrapFilter::EoDlgTrapFilter(AeSysDoc* document, CWnd* pParent /*=nullptr*/)
-    : CDialog(EoDlgTrapFilter::IDD, pParent), m_Document(document) {}
+EoDlgTrapFilter::EoDlgTrapFilter(AeSysDoc* document, CWnd* pParent /*=nullptr*/) : CDialog(EoDlgTrapFilter::IDD, pParent), m_Document(document) {}
 EoDlgTrapFilter::~EoDlgTrapFilter() {}
 void EoDlgTrapFilter::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);
@@ -37,9 +47,7 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
   CString PrimitiveTypes = EoAppLoadStringResource(IDS_PRIMITIVE_FILTER_LIST);
 
   int TypesPosition = 0;
-  while (TypesPosition < PrimitiveTypes.GetLength()) {
-    m_FilterPrimitiveTypeListBoxControl.AddString(PrimitiveTypes.Tokenize(L"\n", TypesPosition));
-  }
+  while (TypesPosition < PrimitiveTypes.GetLength()) { m_FilterPrimitiveTypeListBoxControl.AddString(PrimitiveTypes.Tokenize(L"\n", TypesPosition)); }
   m_FilterPrimitiveTypeListBoxControl.SetCurSel(0);
 
   return TRUE;
@@ -50,10 +58,10 @@ void EoDlgTrapFilter::OnOK() {
     FilterByColor(nPenColor);
   }
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_LINE)) {
-    EoUInt16 LineTypeIndex = SHRT_MAX;
-    WCHAR szBuf[32];
+    EoInt16 LineTypeIndex = SHRT_MAX;
+    wchar_t szBuf[32]{};
 
-    if (GetDlgItemTextW(IDC_TRAP_FILTER_LINE_LIST, (LPTSTR)szBuf, sizeof(szBuf) / sizeof(WCHAR))) {
+    if (GetDlgItemTextW(IDC_TRAP_FILTER_LINE_LIST, (LPTSTR)szBuf, sizeof(szBuf) / sizeof(wchar_t))) {
       EoDbLineTypeTable* LineTypeTable = m_Document->LineTypeTable();
       EoDbLineType* LineType;
       if (LineTypeTable->Lookup(szBuf, LineType)) { LineTypeIndex = LineType->Index(); }

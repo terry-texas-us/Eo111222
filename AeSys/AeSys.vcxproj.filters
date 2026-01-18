@@ -410,6 +410,9 @@
     <ClCompile Include="EoDlgSetupPointStyle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Eo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\AeSys.rc2">
@@ -1716,6 +1719,7 @@
       <Filter>Markdowns</Filter>
     </None>
     <None Include="Markdowns\DXF Symbol Tables.md" />
+    <None Include="Markdowns\PegFileFormatWithHandles.md" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">

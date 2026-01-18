@@ -458,7 +458,7 @@ HDDEDATA dde::MakeCFText(UINT wFmt, LPTSTR lpszStr, HSZ hszItem) {
 // Returns: A DDE data handle to a list of the format names.
 HDDEDATA dde::MakeDataFromFormatList(LPWORD pFmt, EoUInt16 wFmt, HSZ hszItem) {
   int cb;
-  WCHAR Buffer[256];
+  wchar_t Buffer[256]{};
 
   HDDEDATA hData = DdeCreateDataHandle(ServerInfo.dwInstance, 0, 0, 0, hszItem, wFmt, 0);  // Empty data object to fill
   int cbOffset = 0;
@@ -468,7 +468,7 @@ HDDEDATA dde::MakeDataFromFormatList(LPWORD pFmt, EoUInt16 wFmt, HSZ hszItem) {
       DdeAddData(hData, (LPBYTE)L"\t", 1, cbOffset);
       cbOffset++;
     }
-    GetCFNameFromId(*pFmt, Buffer, sizeof(Buffer) / sizeof(WCHAR));  // the string name of the format
+    GetCFNameFromId(*pFmt, Buffer, sizeof(Buffer) / sizeof(wchar_t));  // the string name of the format
     cb = lstrlen(Buffer);
     DdeAddData(hData, (LPBYTE)Buffer, cb, cbOffset);
     cbOffset += cb;
@@ -496,7 +496,7 @@ bool dde::ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData) {
   UINT uiNargs;
   LPTSTR pArgBuf = 0;
   PCONVERSATIONINFO pCI;
-  WCHAR szResult[MAXRESULTSIZE];
+  wchar_t szResult[MAXRESULTSIZE];
 
   if (!hData) return false;
 
@@ -505,7 +505,7 @@ bool dde::ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData) {
   if (!pData) return false;
 
   // Allocate double required size we might need so we can avoid doing any space tests.
-  pArgBuf = (LPTSTR) new WCHAR[2 * wcslen(pData)];
+  pArgBuf = (LPTSTR) new wchar_t[2 * wcslen(pData)];
   if (!pArgBuf) goto PER_exit;
 
   ::ZeroMemory(pArgBuf, 2 * wcslen(pData));
@@ -513,7 +513,7 @@ bool dde::ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData) {
 
   while (pData && *pData) {  // Parse and execute each command in turn
     szResult[0] = '\0';
-    bResult = ParseCmd(&pData, pTopic, szResult, sizeof(szResult) / sizeof(WCHAR), OpTable, MAXOPS,
+    bResult = ParseCmd(&pData, pTopic, szResult, sizeof(szResult) / sizeof(wchar_t), OpTable, MAXOPS,
                        pArgBuf);  // Parse a single command
 
     if (!bResult) {
@@ -574,7 +574,7 @@ bool dde::ParseCmd(LPTSTR* ppszCmdLine, PTOPICINFO pTopic, LPTSTR pszError, UINT
   PPOP ppOp = pOpTable;
   PEXECCMDFNINFO pExecFnInfo;
   UINT uiNargs;
-  WCHAR cTerm;
+  wchar_t cTerm;
 
   *ppOp = 0;
   LPTSTR pCmd = lex::SkipWhiteSpace(*ppszCmdLine);
@@ -677,7 +677,7 @@ PEXECCMDFNINFO dde::ScanForCommand(PEXECCMDFNINFO pCmdInfo, LPTSTR* ppStr) {
   while (isalnum(*p))  // Collect alpha-num chars until we get to a non-alpha.
     p++;
 
-  WCHAR cSave = *p;  // Terminate the source temporarily with a null
+  wchar_t cSave = *p;  // Terminate the source temporarily with a null
   *p = '\0';
 
   while (pCmdInfo) {                                    // Search for a command that matches the name we have

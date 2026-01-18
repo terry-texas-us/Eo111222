@@ -3,54 +3,52 @@
 #include <afx.h>
 #include <afxstr.h>
 #include <algorithm>
-#include<vector>
+#include <vector>
 
 class EoDbLineType : public CObject {
  public:
-
   EoDbLineType();
-  EoDbLineType(EoUInt16 index, const CString& name, const CString& comment, EoUInt16 numberOfDashLengths,
-               double* dashLengths);
+  EoDbLineType(EoInt16 index, const CString& name, const CString& comment, EoUInt16 numberOfDashLengths, double* dashLengths);
 
   EoDbLineType(const EoDbLineType& other);
   EoDbLineType& operator=(const EoDbLineType& other);
- 
+
   /** @brief Retrieves the index of the line type.
    *
-   * @return The index of the line type as an EoUInt16.
+   * @return The index of the line type as an EoInt16.
    */
-  EoUInt16 Index() const { return m_Index; }
-  
+  EoInt16 Index() const { return m_Index; }
+
   CString IndexToString() const {
     CString indexAsString;
     indexAsString.Format(L"%03u", m_Index);
     return indexAsString;
   }
-  
+
   /** @brief Retrieves the number of dash elements in the line type.
    *
    * @return The number of dash elements as an EoUInt16.
    */
   EoUInt16 GetNumberOfDashes() const { return static_cast<EoUInt16>(m_DashElements.size()); }
-    
+
   /** @brief Copies the dash elements of the line type into the provided array.
    *
    * @param dashElements A pointer to an array where the dash elements will be copied.
    */
   void GetDashElements(double* dashElements) const { std::copy(m_DashElements.begin(), m_DashElements.end(), dashElements); }
-  
+
   /** @brief Retrieves the dash elements of the line type.
    *
    * @return A constant reference to a vector containing the dash elements.
    */
   const std::vector<double>& DashElements() const { return m_DashElements; }
-  
+
   /** @brief Retrieves the description of the line type.
    *
    * @return The description of the line type as a CString.
    */
   CString Description() const { return m_Description; }
-  
+
   /** @brief Retrieves the name of the line type.
    *
    * @return The name of the line type as a CString.
@@ -68,7 +66,7 @@ class EoDbLineType : public CObject {
   double GetPatternLength() const;
 
  private:
-  EoUInt16 m_Index;
+  EoInt16 m_Index;
   CString m_Name;
   CString m_Description;
   std::vector<double> m_DashElements;

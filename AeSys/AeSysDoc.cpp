@@ -19,7 +19,6 @@
 #include <new>
 #include <stdexcept>
 #include <string>
-#include <vector>
 #include <wchar.h>
 
 #include "AeSys.h"
@@ -257,18 +256,20 @@ void AeSysDoc::SetCommonTableEntries() {
   m_workLayer = new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, lineType);
   m_ContinuousLineType = lineType;
   AddLayerTableLayer(m_workLayer);
+
+  CString applicationPath = EoAppGetPathFromCommandLine();
+
+  // TODO: Peg uses index for line types, need to map names to indexes (index 0 to 41 have been hard coded in Peg).
+  //       Need to ensure that line types loaded here match those indexes.
+  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
+  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to AeSys).txt");
+//  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
 }
 
 BOOL AeSysDoc::OnNewDocument() {
   if (!CDocument::OnNewDocument()) { return FALSE; }
 
   SetCommonTableEntries();
-  CString applicationPath = EoAppGetPathFromCommandLine();
-
-  // TODO: Load standard line types from the text file rather than hardcoding them
-  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
-  //m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to AeSys).txt");
-  //m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
 
   m_SaveAsType = EoDb::kPeg;
   SetWorkLayer(GetLayerTableLayerAt(0));
@@ -287,11 +288,37 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
     case EoDb::kDxf:
     case EoDb::kDxb: {
       EoDbDrwInterface dxfInterface(this);
-      dxfRW dxfReader(dxfInterface.WStringToString(pathName).data());
-      dxfReader.setDebug(static_cast<DRW::DebugTraceLevel>(DRW::debug));
+      dxfRW dxfReader(Eo::WStringToMultiByte(pathName).data());
+      dxfReader.setDebug(static_cast<DRW::DebugTraceLevel>(DRW::none));
       bool success = dxfReader.read(&dxfInterface, true);  // true for verbose output, false for silent
       if (success) {
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DXF file loaded successfully.\n");
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"3dFace: %d.\n", dxfInterface.countOf3dFace);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Arc: %d.\n", dxfInterface.countOfArc);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Circle: %d.\n", dxfInterface.countOfCircle);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DimAlign: %d.\n", dxfInterface.countOfDimAlign);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DimLinear: %d.\n", dxfInterface.countOfDimLinear);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DimAngular: %d.\n", dxfInterface.countOfDimAngular);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DimAngular3P: %d.\n", dxfInterface.countOfDimAngular3P);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DimDiametric: %d.\n", dxfInterface.countOfDimDiametric);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DimLinear: %d.\n", dxfInterface.countOfDimLinear);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DimOrdinate: %d.\n", dxfInterface.countOfDimOrdinate);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"DimRadial: %d.\n", dxfInterface.countOfDimRadial);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Ellipse: %d.\n", dxfInterface.countOfEllipse);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Hatch: %d.\n", dxfInterface.countOfHatch);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Image: %d.\n", dxfInterface.countOfImage);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Insert: %d.\n", dxfInterface.countOfInsert);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Knot: %d.\n", dxfInterface.countOfKnot);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Line: %d.\n", dxfInterface.countOfLine);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"LWPolyline: %d.\n", dxfInterface.countOfLWPolyline);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"MText: %d.\n", dxfInterface.countOfMText);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Point: %d.\n", dxfInterface.countOfPoint);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Polyline: %d.\n", dxfInterface.countOfPolyline);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Ray: %d.\n", dxfInterface.countOfRay);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Solid: %d.\n", dxfInterface.countOfSolid);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Spline: %d.\n", dxfInterface.countOfSpline);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Text: %d.\n", dxfInterface.countOfText);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Trace: %d.\n", dxfInterface.countOfTrace);
+        ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Viewport: %d.\n", dxfInterface.countOfViewport);
       } else {
         ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Error loading DXF file.\n");
       }
@@ -549,14 +576,11 @@ bool AeSysDoc::LayerMelt(CString& strName) {
 
   CString Filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
 
-  OPENFILENAME of;
-
-  ::ZeroMemory(&of, sizeof(OPENFILENAME));
+  OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);
-  of.hwndOwner = 0;
   of.hInstance = app.GetInstance();
   of.lpstrFilter = Filter;
-  of.lpstrFile = new WCHAR[MAX_PATH];
+  of.lpstrFile = new wchar_t[MAX_PATH];
   wcscpy_s(of.lpstrFile, MAX_PATH, strName);
   of.nMaxFile = MAX_PATH;
   of.lpstrTitle = L"Melt As";
@@ -717,7 +741,7 @@ EoDbLayer* AeSysDoc::AnyLayerRemove(EoDbGroup* group) {
 void AeSysDoc::TracingFuse(CString& nameAndLocation) {
   auto* layer = GetLayerTableLayer(nameAndLocation);
   if (layer != nullptr) {
-    wchar_t title[MAX_PATH]{0};
+    wchar_t title[MAX_PATH]{};
     GetFileTitleW(nameAndLocation, title, MAX_PATH);
     wchar_t* context{nullptr};
     wchar_t* baseName = wcstok_s(title, L".", &context);
@@ -1168,7 +1192,7 @@ void AeSysDoc::OnEditImageToClipboard() {
 }
 void AeSysDoc::OnEditTrace() {
   if (::OpenClipboard(nullptr)) {
-    WCHAR sBuf[16];
+    wchar_t sBuf[16]{};
 
     UINT ClipboardFormat;
     UINT Format = 0;
@@ -1265,7 +1289,7 @@ void AeSysDoc::OnEditTrapPaste() {
     } else if (IsClipboardFormatAvailable(CF_TEXT)) {
       HGLOBAL clipboardDataHandle = GetClipboardData(CF_TEXT);
 
-      LPWSTR clipboardText = new WCHAR[GlobalSize(clipboardDataHandle)];
+      LPWSTR clipboardText = new wchar_t[GlobalSize(clipboardDataHandle)];
 
       LPCWSTR clipboardData = (LPCWSTR)GlobalLock(clipboardDataHandle);
       if (clipboardData != nullptr) {
@@ -1345,7 +1369,7 @@ void AeSysDoc::OnTrapCommandsBlock() {
 
   EoDbBlock* Block;
   EoUInt16 w = BlockTableSize();
-  WCHAR szBlkNam[16];
+  wchar_t szBlkNam[16]{};
 
   do { swprintf_s(szBlkNam, 16, L"_%.3i", ++w); } while (LookupBlock(szBlkNam, Block));
 
@@ -1605,10 +1629,9 @@ void AeSysDoc::OnFileTracing() {
 
   CString filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
 
-  wchar_t fileBuffer[MAX_PATH]{0};
+  wchar_t fileBuffer[MAX_PATH]{};
 
-  OPENFILENAME of;
-  ::ZeroMemory(&of, sizeof(OPENFILENAME));
+  OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);
   of.hwndOwner = AfxGetMainWnd() ? AfxGetMainWnd()->GetSafeHwnd() : nullptr;
   of.hInstance = app.GetInstance();
@@ -1652,10 +1675,8 @@ void AeSysDoc::OnPensLoadColors() {
   CString file;
   file.GetBufferSetLength(MAX_PATH);
 
-  OPENFILENAME of;
-  ::ZeroMemory(&of, sizeof(OPENFILENAME));
+  OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);
-  of.hwndOwner = 0;
   of.hInstance = app.GetInstance();
   of.lpstrFilter = filter;
   of.lpstrFile = file.GetBuffer();
@@ -1682,10 +1703,10 @@ void AeSysDoc::OnPensTranslate() {
   CStdioFile fl;
 
   if (fl.Open(EoAppGetPathFromCommandLine() + L"\\Pens\\xlate.txt", CFile::modeRead | CFile::typeText)) {
-    WCHAR pBuf[128];
+    wchar_t pBuf[128]{};
     EoUInt16 wCols = 0;
 
-    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(WCHAR) - 1) != 0) wCols++;
+    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0) wCols++;
 
     if (wCols > 0) {
       EoInt16* pColNew = new EoInt16[wCols];
@@ -1696,7 +1717,7 @@ void AeSysDoc::OnPensTranslate() {
       fl.SeekToBegin();
 
       LPWSTR NextToken;
-      while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(WCHAR) - 1) != 0) {
+      while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0) {
         NextToken = nullptr;
         pCol[w] = EoInt16(_wtoi(wcstok_s(pBuf, L",", &NextToken)));
         pColNew[w++] = EoInt16(_wtoi(wcstok_s(0, L"\n", &NextToken)));
@@ -2000,7 +2021,7 @@ void AeSysDoc::ConvertGroupsInBlocks() {
   while (position != 0) {
     GetNextBlock(position, Key, Block);
 
-    WCHAR szName[64];
+    wchar_t szName[64]{};
     wcscpy_s(szName, 64, Key);
 
     ConvertGroup(Block, Blocks->getAt(szName));

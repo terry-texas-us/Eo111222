@@ -148,6 +148,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level3</WarningLevel>
     </ClCompile>
+    <ClCompile Include="Eo.cpp" />
     <ClCompile Include="OFNHookProcFileTracing.cpp" />
     <ClCompile Include="EoDlgFixupOptions.cpp" />
     <ClCompile Include="EoDlgSetupHomePoint.cpp" />
@@ -262,6 +263,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
       </SubType>
     </None>
     <None Include="Markdowns\Peg &amp; Tra File Formats.md" />
+    <None Include="Markdowns\PegFileFormatWithHandles.md" />
     <None Include="res\AeSys.ico" />
     <None Include="res\AeSys.rc2" />
     <None Include="res\AeSys_Gold.ico" />

@@ -1,15 +1,30 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <cfloat>
+#include <climits>
+#include <cmath>
+
 #include "AeSys.h"
 #include "AeSysView.h"
 #include "Eo.h"
+#include "EoDb.h"
 #include "EoDbDimension.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGePolyline.h"
+#include "EoGeReferenceSystem.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 #include "PrimState.h"
 
 #if defined(USING_DDE)
@@ -26,9 +41,8 @@ EoDbDimension::EoDbDimension(EoInt16 nPenColor, EoInt16 lineType, EoGeLine line)
   pstate.GetFontDef(m_fd);
   SetDefaultNote();
 }
-EoDbDimension::EoDbDimension(EoInt16 penColor, EoInt16 lineType, EoGeLine line, EoInt16 textPenColor,
-                             const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
-                             const CString& text)
+EoDbDimension::EoDbDimension(EoInt16 penColor, EoInt16 lineType, EoGeLine line, EoInt16 textPenColor, const EoDbFontDefinition& fontDefinition,
+                             const EoGeReferenceSystem& referenceSystem, const CString& text)
     : m_ln(line), m_fd(fontDefinition), m_ReferenceSystem(referenceSystem), m_strText(text) {
   m_PenColor = penColor;
   m_LineType = lineType;
@@ -56,16 +70,14 @@ const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& src) {
 
   return (*this);
 }
-void EoDbDimension::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
-  tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Dim>"), this);
-}
+void EoDbDimension::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Dim>"), this); }
 EoDbPrimitive*& EoDbDimension::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbDimension(*this);
   return (primitive);
 }
 void EoDbDimension::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupList* newGroups) {
   EoDbDimension* pDim;
-  double dRel[2];
+  double dRel[2]{};
 
   m_ln.RelOfPtToEndPts(pt[0], dRel[0]);
   m_ln.RelOfPtToEndPts(pt[1], dRel[1]);
@@ -149,9 +161,7 @@ void EoDbDimension::AddReportToMessageList(EoGePoint3d pt) {
   dde::PostAdvise(dde::EngAngZInfo);
 #endif  // USING_DDE
 }
-void EoDbDimension::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s", FormatPenColor().GetString(), FormatLineType().GetString());
-}
+void EoDbDimension::FormatExtra(CString& str) { str.Format(L"Color;%s\tStyle;%s", FormatPenColor().GetString(), FormatLineType().GetString()); }
 void EoDbDimension::FormatGeometry(CString& str) {
   str += L"Begin Point;" + m_ln.begin.ToString();
   str += L"End Point;" + m_ln.end.ToString();
@@ -297,7 +307,7 @@ void EoDbDimension::SetDefaultNote() {
 
   m_ReferenceSystem.SetOrigin(m_ln.Midpoint());
   double dAng = 0.;
-  WCHAR cText0 = m_strText[0];
+  wchar_t cText0 = m_strText[0];
   if (cText0 != 'R' && cText0 != 'D') {
     dAng = m_ln.AngleFromXAxisXY();
     double dDis = 0.075;

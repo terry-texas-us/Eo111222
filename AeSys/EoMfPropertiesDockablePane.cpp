@@ -30,8 +30,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static const WCHAR* TabsStyles[] = {L"None", L"Standard", L"Grouped", nullptr};
-static const WCHAR* TabLocations[] = {L"On Bottom", L"On Top", nullptr};
+static const wchar_t* TabsStyles[] = {L"None", L"Standard", L"Grouped", nullptr};
+static const wchar_t* TabLocations[] = {L"On Bottom", L"On Top", nullptr};
 
 BEGIN_MESSAGE_MAP(EoMfPropertiesDockablePane, CDockablePane)
 #pragma warning(push)
@@ -339,7 +339,7 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   ColorProperty->EnableAutomaticButton(L"Default", ::GetSysColor(COLOR_3DFACE));
   MiscGroup->AddSubItem(ColorProperty);
 
-  static WCHAR BASED_CODE szFilter[] = L"Icon Files(*.ico)|*.ico|All Files(*.*)|*.*||";
+  static wchar_t BASED_CODE szFilter[] = L"Icon Files(*.ico)|*.ico|All Files(*.*)|*.*||";
   MiscGroup->AddSubItem(new CMFCPropertyGridFileProperty(L"Icon", TRUE, L"", L"ico", 0, szFilter, L"Specifies the window icon"));
 
   MiscGroup->AddSubItem(new CMFCPropertyGridFileProperty(L"Shadow Folder Path", app.ShadowFolderPath(), 0, nullptr));

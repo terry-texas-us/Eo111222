@@ -43,14 +43,14 @@ void EoDbDwgToPegFile::ConvertBlockTableToPeg(AeSysDoc* document) {
     ATLTRACE2(traceOdDb, 1, L"%s  %s\n", LPCWSTR(Block->desc()->name()), LPCWSTR(Block->getName()));
 
     if (Block->isAnonymous()) {
-      //WCHAR szBuf[8];
+      //wchar_t szBuf[8]{};
       //errno_t Error = _itow_s(lBlockHeader, szBuf, 8, 10);
       //_tcscat(m_htb->blkh.name, szBuf);
       //adReplaceBlockheader(hdb, &m_htb->blkh);
     }
     if (Block->isFromExternalReference()) {
-      //WCHAR NewFile[256];
-      //WCHAR OldFile[256];
+      //wchar_t NewFile[256]{};
+      //wchar_t OldFile[256]{};
       //wcscpy(OldFile, (PCTSTR) Block->pathName());
       //ExamineFile(OldFile, 256, NewFile, 256);
       //Block->setPathName((PCTSTR) NewFile);
@@ -58,7 +58,7 @@ void EoDbDwgToPegFile::ConvertBlockTableToPeg(AeSysDoc* document) {
     }
     EoDbBlock* pBlock;
     if (document->LookupBlock((PCTSTR)Block->getName(), pBlock)) {
-      //WCHAR szBuf[8];
+      //wchar_t szBuf[8]{};
       //errno_t Error = _itow_s(lBlockHeader, szBuf, 8, 10);
       //_tcscat(m_htb->blkh.name, szBuf);
       //adReplaceBlockheader(hdb, &m_htb->blkh);
@@ -113,9 +113,7 @@ void EoDbDwgToPegFile::ConvertBlockToPeg(OdDbBlockTableRecordPtr Block, AeSysDoc
     OdDbDictionaryPtr Dictionary = ObjectPtr;
 
     OdDbDictionaryIteratorPtr Iterator = Dictionary->newIterator();
-    for (; !Iterator->done(); Iterator->next()) {
-      ATLTRACE2(traceOdDb, 0, L"Dictionary name: %s\n", (PCTSTR)Iterator->name());
-    }
+    for (; !Iterator->done(); Iterator->next()) { ATLTRACE2(traceOdDb, 0, L"Dictionary name: %s\n", (PCTSTR)Iterator->name()); }
   }
 }
 void EoDbDwgToPegFile::ConvertEntitiesToPeg(AeSysDoc* document) {
@@ -158,9 +156,7 @@ void EoDbDwgToPegFile::ConvertEntitiesToPeg(AeSysDoc* document) {
     OdDbDictionaryPtr Dictionary = ObjectPtr;
 
     OdDbDictionaryIteratorPtr Iterator = Dictionary->newIterator();
-    for (; !Iterator->done(); Iterator->next()) {
-      ATLTRACE2(traceOdDb, 0, L"Dictionary name: %s\n", (PCTSTR)Iterator->name());
-    }
+    for (; !Iterator->done(); Iterator->next()) { ATLTRACE2(traceOdDb, 0, L"Dictionary name: %s\n", (PCTSTR)Iterator->name()); }
   }
 
   EntitiesNotLoaded = 0;
@@ -188,7 +184,7 @@ void EoDbDwgToPegFile::ConvertEntitiesToPeg(AeSysDoc* document) {
   ATLTRACE2(traceOdDb, 0, L"      %d Paperspace entitities not loaded\n", EntitiesNotLoaded);
 }
 
-void ConvertPrimitiveData(const EoDbPrimitive* primitive, OdDbBlockTableRecordPtr block, OdDbEntity* entity) {
+static void ConvertPrimitiveData(const EoDbPrimitive* primitive, OdDbBlockTableRecordPtr block, OdDbEntity* entity) {
   OdDbDatabase* Database = entity->database();
   entity->setDatabaseDefaults(Database);
 
@@ -235,8 +231,8 @@ OdDbEntity* EoDbBlockReference::Convert(const OdDbObjectId&) { return 0; }
 void ExamineFile(LPWSTR oldFile, const int oldFileBufferSize, LPWSTR newFile, const int newFileBufferSize) {
   const int kExistenceOnly = 0;
 
-  static WCHAR pathchar = '\\';
-  static WCHAR oldpathchar = '/';
+  static wchar_t pathchar = '\\';
+  static wchar_t oldpathchar = '/';
 
   // replace path characters, if present, with proper ones for platform
   for (int i = 0; i < int(wcslen(oldFile)); i++) {
@@ -263,13 +259,13 @@ void ExamineFile(LPWSTR oldFile, const int oldFileBufferSize, LPWSTR newFile, co
     if (RequiredSize == 0) {  // no ACAD environment to search
       return;
     }
-    LPWSTR envptr = new WCHAR[RequiredSize];
+    LPWSTR envptr = new wchar_t[RequiredSize];
 
     _wgetenv_s(&RequiredSize, envptr, RequiredSize, L"ACAD");
 
     LPWSTR cptr = envptr;
-    WCHAR testpath[256];
-    WCHAR holdch;
+    wchar_t testpath[256]{};
+    wchar_t holdch;
     do {
       while (*cptr != ';' && *cptr != 0) { cptr++; }
       holdch = *cptr;  // grab terminating character

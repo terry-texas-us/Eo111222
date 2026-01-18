@@ -1,8 +1,18 @@
 ﻿#pragma once
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+
+#include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 
 class EoDbPolygon : public EoDbPrimitive {
   static EoUInt16 sm_EdgeToEvaluate;
@@ -28,8 +38,7 @@ class EoDbPolygon : public EoDbPrimitive {
   EoDbPolygon(EoGePoint3dArray& points);
   EoDbPolygon(EoUInt16, EoGePoint3d*);
   EoDbPolygon(EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d& yAxis, EoGePoint3dArray& pts);
-  EoDbPolygon(EoInt16 penColor, EoInt16 style, EoInt16 styleIndex, EoGePoint3d& origin, EoGeVector3d& xAxis,
-              EoGeVector3d& yAxis, EoGePoint3dArray& points);
+  EoDbPolygon(EoInt16 penColor, EoInt16 style, EoInt16 styleIndex, EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d& yAxis, EoGePoint3dArray& points);
   EoDbPolygon(EoUInt16, EoGePoint3d, EoGeVector3d, EoGeVector3d, const EoGePoint3d*);
 
   EoDbPolygon(const EoDbPolygon& src);
@@ -75,7 +84,7 @@ class EoDbPolygon : public EoDbPrimitive {
   const EoInt16& IntStyle() { return (m_InteriorStyle); }
   const EoInt16& IntStyleId() { return (m_InteriorStyleIndex); }
   EoGePoint3d GetPt(int i) { return (m_Pt[i]); }
-  int GetPts() { return (m_NumberOfPoints); }
+  int GetPts() const { return (m_NumberOfPoints); }
   void ModifyState() override;
   bool PvtOnCtrlPt(AeSysView* view, const EoGePoint4d&) override;
   void SetIntStyle(const EoInt16 n) { m_InteriorStyle = n; }
@@ -83,7 +92,7 @@ class EoDbPolygon : public EoDbPrimitive {
   void SetHatRefVecs(double, double, double);
 
  private:
-  EoUInt16 SwingVertex();
+  EoUInt16 SwingVertex() const;
 
  public:
   static void SetSpecialPolygonStyle(EoInt16 polygonStyle) { sm_SpecialPolygonStyle = polygonStyle; }
@@ -94,8 +103,7 @@ class EoDbPolygon : public EoDbPrimitive {
 // Parameters:	deviceContext
 //				iSets		number of point lists
 //				iPtLstsId	starting indicies for point lists
-void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& tm, const int iSets,
-                         const int* iPtLstsId, EoGePoint3d*);
+void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& tm, const int iSets, const int* iPtLstsId, EoGePoint3d*);
 /// <summary>Generates polygon.</summary>
 // The polygon is closed automatically by drawing a line from the last vertex to the first.
 // Arrays of vertices are previously modelview transformed and clipped to view volume.

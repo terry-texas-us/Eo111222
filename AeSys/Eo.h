@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <numbers>
+#include <string>
 
 namespace Eo {
 constexpr double MmPerInch = 25.4;
@@ -26,4 +27,8 @@ constexpr double CopySign(const double a, const double b) { return (b >= 0.0 ? f
 * @note This function uses std::round for rounding, which follows the "round half away from zero" rule. Legacy implementation had a different "round half toward infinity" rule.
 */
 inline int Round(const double number) { return static_cast<int>(std::round(number)); }
+
+std::wstring MultiByteToWString(const char* multiByte);
+std::string WStringToMultiByte(const std::wstring& wideString);
+
 }  // namespace Eo

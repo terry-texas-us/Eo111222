@@ -1,30 +1,23 @@
 ﻿#include "Stdafx.h"
+
+#include <afx.h>
+#include <afxstr.h>
 #include <algorithm>
+#include <cfloat>
+#include <cmath>
 
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 
 const EoGePoint3d EoGePoint3d::kOrigin(0.0, 0.0, 0.0);
 
-EoGePoint3d::EoGePoint3d() { x = y = z = 0.; }
-EoGePoint3d::EoGePoint3d(double initialX, double initialY, double initialZ) {
-  x = initialX;
-  y = initialY;
-  z = initialZ;
-}
 EoGePoint3d::EoGePoint3d(const EoGePoint4d& initialPoint) {
   x = initialPoint.x / initialPoint.w;
   y = initialPoint.y / initialPoint.w;
   z = initialPoint.z / initialPoint.w;
 }
-#if defined(USING_ODA)
-EoGePoint3d::EoGePoint3d(const OdGePoint3d& initialPoint) {
-  x = initialPoint.x;
-  y = initialPoint.y;
-  z = initialPoint.z;
-}
-#endif  // USING_ODA
 bool EoGePoint3d::operator==(const EoGePoint3d& point) const { return (IsEqualTo(point, FLT_EPSILON)); }
 bool EoGePoint3d::operator!=(const EoGePoint3d& point) const { return (!IsEqualTo(point, FLT_EPSILON)); }
 void EoGePoint3d::operator+=(const EoGeVector3d& vector) {
@@ -54,17 +47,15 @@ void EoGePoint3d::operator()(double xNew, double yNew, double zNew) {
   y = yNew;
   z = zNew;
 }
-EoGeVector3d EoGePoint3d::operator-(const EoGePoint3d& ptQ) const {
-  return EoGeVector3d(ptQ.x - x, ptQ.y - y, ptQ.z - z);
-}
-EoGePoint3d EoGePoint3d::operator-(const EoGeVector3d& vector) const {
-  return EoGePoint3d(x - vector.x, y - vector.y, z - vector.z);
-}
-EoGePoint3d EoGePoint3d::operator+(const EoGeVector3d& vector) const {
-  return EoGePoint3d(x + vector.x, y + vector.y, z + vector.z);
-}
+EoGeVector3d EoGePoint3d::operator-(const EoGePoint3d& ptQ) const { return EoGeVector3d(ptQ.x - x, ptQ.y - y, ptQ.z - z); }
+EoGePoint3d EoGePoint3d::operator-(const EoGeVector3d& vector) const { return EoGePoint3d(x - vector.x, y - vector.y, z - vector.z); }
+EoGePoint3d EoGePoint3d::operator+(const EoGeVector3d& vector) const { return EoGePoint3d(x + vector.x, y + vector.y, z + vector.z); }
 EoGePoint3d EoGePoint3d::operator*(double t) const { return EoGePoint3d(x * t, y * t, z * t); }
-EoGePoint3d EoGePoint3d::operator/(double t) const { return EoGePoint3d(x / t, y / t, z / t); }
+
+EoGePoint3d EoGePoint3d::operator/(double t) const {
+  if (fabs(t) > FLT_EPSILON) { return EoGePoint3d(x / t, y / t, z / t); }
+  return EoGePoint3d(x, y, z);
+}
 
 double EoGePoint3d::DistanceTo(const EoGePoint3d& point) const {
   double X = point.x - x;
@@ -85,13 +76,9 @@ bool EoGePoint3d::IsContained(const EoGePoint3d& lowerLeftPoint, const EoGePoint
 
   return true;
 }
-EoGePoint3d EoGePoint3d::Max(EoGePoint3d& ptA, EoGePoint3d& ptB) {
-  return EoGePoint3d(std::max(ptA.x, ptB.x), std::max(ptA.y, ptB.y), std::max(ptA.z, ptB.z));
-}
+EoGePoint3d EoGePoint3d::Max(EoGePoint3d& ptA, EoGePoint3d& ptB) { return EoGePoint3d(std::max(ptA.x, ptB.x), std::max(ptA.y, ptB.y), std::max(ptA.z, ptB.z)); }
 EoGePoint3d EoGePoint3d::Mid(EoGePoint3d& ptA, EoGePoint3d& ptB) { return ptA + (ptA - ptB) * 0.5; }
-EoGePoint3d EoGePoint3d::Min(EoGePoint3d& ptA, EoGePoint3d& ptB) {
-  return EoGePoint3d(std::min(ptA.x, ptB.x), std::min(ptA.y, ptB.y), std::min(ptA.z, ptB.z));
-}
+EoGePoint3d EoGePoint3d::Min(EoGePoint3d& ptA, EoGePoint3d& ptB) { return EoGePoint3d(std::min(ptA.x, ptB.x), std::min(ptA.y, ptB.y), std::min(ptA.z, ptB.z)); }
 EoGePoint3d EoGePoint3d::ProjectToward(const EoGePoint3d& ptQ, const double distance) {
   EoGeVector3d v(*this, ptQ);
 
@@ -123,22 +110,20 @@ int EoGePoint3d::RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint, cons
   }
   return (returnValue);
 }
-EoGePoint3d EoGePoint3d::RotateAboutAxis(const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis,
-                                         const double angle) {
+EoGePoint3d EoGePoint3d::RotateAboutAxis(const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis, const double angle) {
   if (referenceAxis == EoGeVector3d::kZAxis) {
     double SinAng = sin(angle);
     double CosAng = cos(angle);
 
     EoGeVector3d v(referenceOrigin, *this);
 
-    return (EoGePoint3d(referenceOrigin.x + (v.x * CosAng - v.y * SinAng),
-                        referenceOrigin.y + (v.x * SinAng + v.y * CosAng), z));
+    return (EoGePoint3d(referenceOrigin.x + (v.x * CosAng - v.y * SinAng), referenceOrigin.y + (v.x * SinAng + v.y * CosAng), z));
   } else {
     EoGeTransformMatrix tm(referenceOrigin, referenceAxis, angle);
     return (tm * (*this));
   }
 }
-CString EoGePoint3d::ToString() {
+CString EoGePoint3d::ToString() const {
   CString str;
   str.Format(L"%f;%f;%f\t", x, y, z);
   return (str);

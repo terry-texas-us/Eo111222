@@ -1,17 +1,22 @@
 ﻿#include "Stdafx.h"
+
 #include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
 #include <algorithm>
-#include <atltypes.h>
+#include <climits>
 #include <cmath>
-#include <cstdlib>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDb.h"
 #include "EoDbPoint.h"
 #include "EoDbPrimitive.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
+#include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "PrimState.h"
 
@@ -57,7 +62,7 @@ EoDbPoint::~EoDbPoint() {
 const EoDbPoint& EoDbPoint::operator=(const EoDbPoint& src) {
   m_PenColor = src.m_PenColor;
   m_pointStyle = src.m_pointStyle;
-  
+
   m_Point = src.m_Point;
   if (m_NumberOfDatums != src.m_NumberOfDatums) {
     if (m_NumberOfDatums != 0) delete[] m_Data;
@@ -100,7 +105,7 @@ void EoDbPoint::Display(AeSysView* view, CDC* context) {
   }
   int i;
   switch (m_pointStyle & 0x0F) {  // Low nibble defines basic shape
-    
+
     case 0:  // single pixel
       context->SetPixel(point, hotPenColor);
       break;
@@ -114,7 +119,7 @@ void EoDbPoint::Display(AeSysView* view, CDC* context) {
         context->SetPixel(point.x, point.y + i, hotPenColor);
       }
       break;
-    
+
     case 4:  // small |
       for (i = -pixelSize; i <= pixelSize; i++) { context->SetPixel(point.x, point.y + i, hotPenColor); }
       break;
@@ -206,6 +211,13 @@ void EoDbPoint::SetDat(EoUInt16 wDats, double* dDat) {
   }
   for (EoUInt16 w = 0; w < m_NumberOfDatums; w++) { m_Data[w] = dDat[w]; }
 }
+
+void EoDbPoint::SetPoint(double x, double y, double z) {
+  m_Point.x = x;
+  m_Point.y = y;
+  m_Point.z = z;
+}
+
 void EoDbPoint::Transform(EoGeTransformMatrix& tm) { m_Point = tm * m_Point; }
 void EoDbPoint::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if (mask != 0) m_Point += v;

@@ -1,17 +1,29 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <algorithm>
+#include <cfloat>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
+#include "EoDb.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbEllipse.h"
+#include "EoDbFontDefinition.h"
+#include "EoDbGroup.h"
 #include "EoDbLine.h"
 #include "EoDbPolyline.h"
 #include "EoDbText.h"
 #include "EoDlgAnnotateOptions.h"
 #include "EoDlgSetText.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
 #include "EoGeReferenceSystem.h"
+#include "EoGeVector3d.h"
 #include "PrimState.h"
 #include "Resource.h"
 
@@ -301,7 +313,7 @@ void AeSysView::OnAnnotateModeCutIn() {
       ptsBox[0] = CurrentPnt.ProjectToward(pLine->BeginPoint(), dGap / 2.0);
       ptsBox[1] = CurrentPnt.ProjectToward(pLine->EndPoint(), dGap / 2.0);
 
-      double dRel[2];
+      double dRel[2]{};
 
       dRel[0] = pLine->RelOfPt(ptsBox[0]);
       dRel[1] = pLine->RelOfPt(ptsBox[1]);
@@ -394,8 +406,7 @@ void AeSysView::DoAnnotateModeMouseMove() {
     case ID_OP2:
     case ID_OP3:
       if (pts[0] != CurrentPnt) {
-        if (m_PreviousOp == ID_OP3)
-          GenerateLineEndItem(EndItemType(), EndItemSize(), CurrentPnt, pts[0], &m_PreviewGroup);
+        if (m_PreviousOp == ID_OP3) GenerateLineEndItem(EndItemType(), EndItemSize(), CurrentPnt, pts[0], &m_PreviewGroup);
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
@@ -425,8 +436,7 @@ void AeSysView::DoAnnotateModeMouseMove() {
   }
   pts.SetSize(NumberOfPoints);
 }
-void AeSysView::GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint,
-                                    EoDbGroup* group) {
+void AeSysView::GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group) {
   EoGeVector3d PlaneNormal = CameraDirection();
 
   EoGePoint3dArray ItemPoints;

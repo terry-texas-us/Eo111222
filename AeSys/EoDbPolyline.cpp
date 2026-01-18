@@ -28,54 +28,59 @@ EoUInt16 EoDbPolyline::sm_EdgeToEvaluate = 0;
 EoUInt16 EoDbPolyline::sm_Edge = 0;
 EoUInt16 EoDbPolyline::sm_PivotVertex = 0;
 
-EoDbPolyline::EoDbPolyline() { m_wFlags = 0; }
-EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius,
-                           int numberOfSides)
-    : EoDbPrimitive(penColor, lineType) {
-  m_wFlags = 0x0010;  // polyline is closed
+EoDbPolyline::EoDbPolyline() { m_flags = 0; }
+
+/** Constructs a closed polyline approximating a regular polygon.
+ *
+ * @param penColor The pen color for the polyline.
+ * @param lineType The line type for the polyline.
+ * @param centerPoint The center point of the polygon.
+ * @param radius The radius of the circumscribed circle.
+ * @param numberOfSides The number of sides for the polygon.
+ */
+EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius, int numberOfSides) : EoDbPrimitive(penColor, lineType) {
+  m_flags = 0x0010;  // polyline is closed
 
   auto* activeView = AeSysView::GetActiveView();
 
-  EoGeVector3d PlaneNormal = activeView->CameraDirection();
-  EoGeVector3d MinorAxis = activeView->ViewUp();
-  EoGeVector3d MajorAxis(MinorAxis);
-  MajorAxis.RotAboutArbAx(PlaneNormal, -Eo::HalfPi);
+  auto planeNormal = activeView->CameraDirection();
+  auto minorAxis = activeView->ViewUp();
+  auto majorAxis = minorAxis;
+  majorAxis.RotAboutArbAx(planeNormal, -Eo::HalfPi);
 
-  MajorAxis *= radius;
-  MinorAxis *= radius;
+  majorAxis *= radius;
+  minorAxis *= radius;
 
-  polyline::GeneratePointsForNPoly(centerPoint, MajorAxis, MinorAxis, numberOfSides, m_pts);
+  polyline::GeneratePointsForNPoly(centerPoint, majorAxis, minorAxis, numberOfSides, m_pts);
 }
-EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& pts)
-    : EoDbPrimitive(penColor, lineType) {
-  m_wFlags = 0;  // not closed
+
+EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& pts) : EoDbPrimitive(penColor, lineType) {
+  m_flags = 0;  // not closed
   m_pts.Copy(pts);
 }
 EoDbPolyline::EoDbPolyline(EoGePoint3dArray& pts) {
   m_PenColor = pstate.PenColor();
   m_LineType = pstate.LineType();
 
-  m_wFlags = 0;
+  m_flags = 0;
   m_pts.Copy(pts);
 }
-EoDbPolyline::EoDbPolyline(const EoDbPolyline& src) {
-  m_PenColor = src.m_PenColor;
-  m_LineType = src.m_LineType;
-  m_wFlags = src.m_wFlags;
-  m_pts.Copy(src.m_pts);
+EoDbPolyline::EoDbPolyline(const EoDbPolyline& other) {
+  m_PenColor = other.m_PenColor;
+  m_LineType = other.m_LineType;
+  m_flags = other.m_flags;
+  m_pts.Copy(other.m_pts);
 }
 
-const EoDbPolyline& EoDbPolyline::operator=(const EoDbPolyline& src) {
-  m_PenColor = src.m_PenColor;
-  m_LineType = src.m_LineType;
-  m_wFlags = src.m_wFlags;
-  m_pts.Copy(src.m_pts);
+const EoDbPolyline& EoDbPolyline::operator=(const EoDbPolyline& other) {
+  m_PenColor = other.m_PenColor;
+  m_LineType = other.m_LineType;
+  m_flags = other.m_flags;
+  m_pts.Copy(other.m_pts);
   return (*this);
 }
 
-void EoDbPolyline::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
-  tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Polyline>"), this);
-}
+void EoDbPolyline::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Polyline>"), this); }
 
 EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPolyline(*this);
@@ -129,8 +134,8 @@ void EoDbPolyline::AddReportToMessageList(EoGePoint3d ptPic) {
     app.FormatAngle(AngleAsString, AngleInXYPlane, 8, 3);
 
     CString Message;
-    Message.Format(L"<Polyline Edge> Color: %s Line Type: %s \u2022 %s @ %s", FormatPenColor().GetString(),
-                   FormatLineType().GetString(), LengthAsString.TrimLeft().GetString(), AngleAsString.GetString());
+    Message.Format(L"<Polyline Edge> Color: %s Line Type: %s \u2022 %s @ %s", FormatPenColor().GetString(), FormatLineType().GetString(),
+                   LengthAsString.TrimLeft().GetString(), AngleAsString.GetString());
     app.AddStringToMessageList(Message);
 
     app.SetEngagedLength(EdgeLength);
@@ -146,8 +151,7 @@ void EoDbPolyline::FormatGeometry(CString& str) {
   for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) { str += L"Point;" + m_pts[w].ToString(); }
 }
 void EoDbPolyline::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
-             static_cast<int>(m_pts.GetSize()));
+  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(), static_cast<int>(m_pts.GetSize()));
 }
 EoGePoint3d EoDbPolyline::GetCtrlPt() {
   EoUInt16 wPts = EoUInt16(m_pts.GetSize());
@@ -302,9 +306,7 @@ bool EoDbPolyline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoin
   }
   return false;
 }
-bool EoDbPolyline::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
-  return polyline::SelectUsingRectangle(view, pt1, pt2, m_pts);
-}
+bool EoDbPolyline::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) { return polyline::SelectUsingRectangle(view, pt1, pt2, m_pts); }
 void EoDbPolyline::Transform(EoGeTransformMatrix& tm) {
   for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w] = tm * m_pts[w];
 }

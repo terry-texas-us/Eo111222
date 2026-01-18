@@ -1,13 +1,24 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxdd_.h>
+#include <afxmsg_.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <atltypes.h>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
+#include "EoDb.h"
+#include "EoDbBlock.h"
+#include "EoDbLayer.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgFileManage.h"
 #include "EoDlgLineTypesSelection.h"
 #include "EoDlgSetupColor.h"
-#include "EoDlgSetupLineType.h"
 #include "Preview.h"
+#include "Resource.h"
 
 /// @brief Dialog class for getting a layer name from the user.
 class EoDlgGetLayerName : public CDialog {
@@ -70,8 +81,7 @@ ON_NOTIFY(LVN_ITEMCHANGED, IDC_LAYERS_LIST_CONTROL, &EoDlgFileManage::OnItemchan
 END_MESSAGE_MAP()
 
 EoDlgFileManage::EoDlgFileManage(CWnd* parent /*=nullptr*/) : CDialog(EoDlgFileManage::IDD, parent) {}
-EoDlgFileManage::EoDlgFileManage(AeSysDoc* document, CWnd* parent /*=nullptr*/)
-    : CDialog(EoDlgFileManage::IDD, parent), m_Document(document) {}
+EoDlgFileManage::EoDlgFileManage(AeSysDoc* document, CWnd* parent /*=nullptr*/) : CDialog(EoDlgFileManage::IDD, parent), m_Document(document) {}
 EoDlgFileManage::~EoDlgFileManage() {}
 void EoDlgFileManage::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);
@@ -155,8 +165,7 @@ void EoDlgFileManage::OnBnClickedLayerRename() {
       Dialog.m_Name = Layer->Name();
 
       if (Dialog.DoModal() == IDOK) {
-        LVFINDINFO ListViewFindInfo;
-
+        LVFINDINFO ListViewFindInfo{};
         ListViewFindInfo.flags = LVFI_STRING;
         ListViewFindInfo.psz = Dialog.m_Name;
 
@@ -269,14 +278,12 @@ void EoDlgFileManage::OnBnClickedTracingInclude() {
 
   CString Filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
 
-  OPENFILENAME of;
-  ::ZeroMemory(&of, sizeof(OPENFILENAME));
+  OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);
-  of.hwndOwner = 0;
   of.hInstance = app.GetInstance();
   of.lpstrFilter = Filter;
   of.nFilterIndex = nFilterIndex;
-  of.lpstrFile = new WCHAR[MAX_PATH];
+  of.lpstrFile = new wchar_t[MAX_PATH];
   of.lpstrFile[0] = 0;
   of.nMaxFile = MAX_PATH;
   of.lpstrTitle = L"Include Tracing";
@@ -370,8 +377,7 @@ void EoDlgFileManage::OnBnClickedMfcbuttonNew() {
   int Suffix = 1;
   do { Name.Format(L"Layer%d", Suffix++); } while (m_Document->FindLayerTableLayer(Name) != -1);
 
-  EoDbLayer* Layer = new EoDbLayer(Name, EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive,
-                                   m_Document->ContinuousLineType());
+  EoDbLayer* Layer = new EoDbLayer(Name, EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, m_Document->ContinuousLineType());
   m_Document->AddLayerTableLayer(Layer);
 
   int ItemCount = m_LayersListControl.GetItemCount();
@@ -413,15 +419,14 @@ void EoDlgFileManage::DrawItem(CDC& deviceContext, int itemID, int labelIndex, c
       break;
     case Name: {
       CString LayerName = Layer->Name();
-      deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, LayerName,
-                                static_cast<UINT>(LayerName.GetLength()), nullptr);
+      deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, LayerName, static_cast<UINT>(LayerName.GetLength()),
+                                nullptr);
     } break;
     case On:
       m_StateImages.Draw(&deviceContext, Layer->IsOff() ? 3 : 2, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
       break;
     case Freeze:
-      m_StateImages.Draw(&deviceContext, /*Layer->isFrozen() ? 4 :*/ 5, ((CRect&)itemRectangle).TopLeft(),
-                         ILD_TRANSPARENT);
+      m_StateImages.Draw(&deviceContext, /*Layer->isFrozen() ? 4 :*/ 5, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
       break;
     case Lock:
       m_StateImages.Draw(&deviceContext, Layer->IsStatic() ? 0 : 1, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
@@ -441,14 +446,14 @@ void EoDlgFileManage::DrawItem(CDC& deviceContext, int itemID, int labelIndex, c
       if (ItemRectangle.right + 4 < itemRectangle.right) {
         CString ColorName;
         ColorName.Format(L"%i", Layer->ColorIndex());
-        deviceContext.ExtTextOutW(ItemRectangle.right + 4, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle,
-                                  ColorName, static_cast<UINT>(ColorName.GetLength()), nullptr);
+        deviceContext.ExtTextOutW(ItemRectangle.right + 4, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, ColorName,
+                                  static_cast<UINT>(ColorName.GetLength()), nullptr);
       }
     } break;
     case LineType: {
       CString LineTypeName = Layer->LineTypeName();
-      deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle,
-                                LineTypeName, static_cast<UINT>(LineTypeName.GetLength()), nullptr);
+      deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, LineTypeName,
+                                static_cast<UINT>(LineTypeName.GetLength()), nullptr);
     } break;
     case LineWeight:
       //::DrawLineWeight(deviceContext, itemRectangle, Layer->lineWeight());
@@ -462,8 +467,7 @@ void EoDlgFileManage::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT lpDrawI
         //clear item
         CRect rcItem(lpDrawItemStruct->rcItem);
         CDC DeviceContext;
-        COLORREF rgbBkgnd =
-            ::GetSysColor((lpDrawItemStruct->itemState & ODS_SELECTED) ? COLOR_HIGHLIGHT : COLOR_WINDOW);
+        COLORREF rgbBkgnd = ::GetSysColor((lpDrawItemStruct->itemState & ODS_SELECTED) ? COLOR_HIGHLIGHT : COLOR_WINDOW);
         DeviceContext.Attach(lpDrawItemStruct->hDC);
         CBrush br(rgbBkgnd);
         DeviceContext.FillRect(rcItem, &br);
@@ -471,8 +475,7 @@ void EoDlgFileManage::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT lpDrawI
         int itemID = static_cast<int>(lpDrawItemStruct->itemID);
         if (itemID != -1) {
           // The text color is stored as the item data.
-          COLORREF rgbText = (lpDrawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
-                                                                          : ::GetSysColor(COLOR_WINDOWTEXT);
+          COLORREF rgbText = (lpDrawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : ::GetSysColor(COLOR_WINDOWTEXT);
           DeviceContext.SetBkColor(rgbBkgnd);
           DeviceContext.SetTextColor(rgbText);
           for (int labelIndex = 0; labelIndex < NumberOfColumns; ++labelIndex) {

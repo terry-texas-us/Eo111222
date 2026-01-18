@@ -214,7 +214,7 @@ void EoDbPolygon::AddReportToMessageList(EoGePoint3d ptPic) {
     CString FormattedLength;
     app.FormatLength(FormattedLength, app.GetUnits(), dLen);
     Message.Append(FormattedLength.TrimLeft());
-    WCHAR szBuf[24];
+    wchar_t szBuf[24]{};
     swprintf_s(szBuf, 24, L" @ %6.2f degrees", Eo::RadianToDegree(dAng));
     Message.Append(szBuf);
     app.AddStringToMessageList(Message);
@@ -476,7 +476,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
   double dRemDisToEdg;
   double dScan;
   double dSecBeg;
-  double dStrLen[8]{0.0};
+  double dStrLen[8]{};
   int i;
   int i2;
   int iBegEdg;
@@ -644,7 +644,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
   pstate.SetPen(view, deviceContext, nPenColor, LineType);
 }
 
-EoUInt16 EoDbPolygon::SwingVertex() {
+EoUInt16 EoDbPolygon::SwingVertex() const {
   EoUInt16 wSwingVertex;
 
   if (sm_PivotVertex == 0)

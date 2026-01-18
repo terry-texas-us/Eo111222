@@ -38,7 +38,7 @@ int numberOfTokensInStream = 0;
  *
  * @note For modernization, explore std::variant or unions for operands and this buffer.
  */
-long lValues[MaxValues]{0};
+long lValues[MaxValues]{};
 int valueLocation[MaxTokens];
 int tokenTypeIdentifiers[MaxTokens];
 }  // namespace
@@ -207,7 +207,7 @@ void lex::ConvertValTyp(int currentType, int requiredType, long* valueDefinition
 void lex::ConvertStringToVal(int desiredType, long tokenDefinition, const wchar_t* inputLine, long* resultDefinition, void* resultValue) {
   if (LOWORD(tokenDefinition) <= 0) { throw std::invalid_argument("Empty string"); }
 
-  wchar_t token[TokenBufferSize]{0};
+  wchar_t token[TokenBufferSize]{};
   int linePosition = 0;
 
   int tokenType = Scan(token, inputLine, linePosition);

@@ -1,6 +1,10 @@
 ﻿#pragma once
 
-class OdGePoint3d;
+#include <afx.h>
+#include <afxstr.h>
+#include <afxtempl.h>
+
+#include "drw_base.h"
 
 class EoGePoint3d;
 class EoGePoint4d;
@@ -15,12 +19,10 @@ class EoGePoint3d {
   double z;
 
  public:  // Constructors and destructor
-  EoGePoint3d();
-  EoGePoint3d(double initialX, double initialY, double initialZ);
+  EoGePoint3d() : x(0.0), y(0.0), z(0.0) {}
+  EoGePoint3d(double xInitial, double yInitial, double zInitial) : x(xInitial), y(yInitial), z(zInitial) {}
   EoGePoint3d(const EoGePoint4d& initialPoint);
-#if defined(USING_ODA)
-  EoGePoint3d(const OdGePoint3d& initialPoint);
-#endif  // USING_ODA
+  EoGePoint3d(const DRW_Coord& initialPoint) : x(initialPoint.x), y(initialPoint.y), z(initialPoint.z) {}
 
  public:  // Operators
   bool operator==(const EoGePoint3d& point) const;
@@ -63,9 +65,8 @@ class EoGePoint3d {
   /// <param name="referenceAxis">unit vector defining rotation axis</param>
   /// <param name="angle">rotation angle (ccw positive) in radians</param>
   /// <returns>Point after rotation</returns>
-  EoGePoint3d RotateAboutAxis(const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis,
-                              const double angle);
-  CString ToString();
+  EoGePoint3d RotateAboutAxis(const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis, const double angle);
+  CString ToString() const;
   void Read(CFile& file);
   void Write(CFile& file) const;
 

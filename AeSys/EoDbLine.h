@@ -1,8 +1,19 @@
 ﻿#pragma once
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
 
+#include "AeSysView.h"
+#include "EoDb.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 #include "drw_Base.h"
 
 class EoDbLine : public EoDbPrimitive {
@@ -71,11 +82,24 @@ class EoDbLine : public EoDbPrimitive {
   int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) override;
 
  public:  // Methods
-  void GetLine(EoGeLine& ln) { ln = m_ln; }
-  void GetPts(EoGePoint3d& ptBeg, EoGePoint3d& ptEnd) {
-    ptBeg = m_ln.begin;
-    ptEnd = m_ln.end;
+  void GetLine(EoGeLine& line) const { line = m_ln; }
+  void GetPts(EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const {
+    beginPoint = m_ln.begin;
+    endPoint = m_ln.end;
   }
+
+  void SetBeginPoint(double x, double y, double z) {
+    m_ln.begin.x = x;
+    m_ln.begin.y = y;
+    m_ln.begin.z = z;
+  }
+
+  void SetEndPoint(double x, double y, double z) {
+    m_ln.end.x = x;
+    m_ln.end.y = y;
+    m_ln.end.z = z;
+  }
+
   EoGePoint3d& BeginPoint() { return m_ln.begin; }
   EoGePoint3d& EndPoint() { return m_ln.end; }
   EoGeLine& Ln() { return m_ln; }

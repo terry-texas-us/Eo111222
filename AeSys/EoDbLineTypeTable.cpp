@@ -1,4 +1,5 @@
 ﻿#include "Stdafx.h"
+
 #include <Windows.h>
 #include <afx.h>
 #include <afxcmn.h>
@@ -130,8 +131,8 @@ int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
   return (static_cast<int>(m_MapLineTypes.GetSize()));
 }
 
-EoUInt16 EoDbLineTypeTable::LegacyLineTypeIndex(CString& name) {
-  EoUInt16 index{0};
+EoInt16 EoDbLineTypeTable::LegacyLineTypeIndex(CString& name) {
+  EoInt16 index{0};
   if (name.CompareNoCase(L"ByBlock") == 0) {
     index = EoDbPrimitive::LINETYPE_BYBLOCK;
   } else if (name.CompareNoCase(L"ByLayer") == 0) {
@@ -140,7 +141,12 @@ EoUInt16 EoDbLineTypeTable::LegacyLineTypeIndex(CString& name) {
     while (index < NumberOfLegacyLineTypes && name.CompareNoCase(legacyLineTypes[index].second) != 0) { index++; }
     if (index < NumberOfLegacyLineTypes) { return index; }
   }
-  return 0;
+  return 1;
+}
+
+EoInt16 EoDbLineTypeTable::LegacyLineTypeIndex(std::wstring& name) {
+  CString cstrName(name.c_str());
+  return LegacyLineTypeIndex(cstrName);
 }
 
 bool EoDbLineTypeTable::Lookup(const CString& name, EoDbLineType*& lineType) {
@@ -190,7 +196,7 @@ void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
       if (inputLine.IsEmpty() || inputLine[0] == L';') { continue; }
 
       int nextToken{0};
-      auto label = EoUInt16(_wtoi(inputLine.Tokenize(L"=", nextToken)));
+      auto label = EoInt16(_wtoi(inputLine.Tokenize(L"=", nextToken)));
 
       auto name = inputLine.Tokenize(L",", nextToken);
       auto comment = inputLine.Tokenize(L"\n", nextToken);

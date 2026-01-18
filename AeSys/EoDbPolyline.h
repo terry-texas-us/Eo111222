@@ -1,7 +1,20 @@
 ﻿#pragma once
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <cstdint>
+
+#include "AeSysView.h"
+#include "EoDb.h"
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
+#include "drw_base.h"
 
 class EoDbPolyline : public EoDbPrimitive {
   static EoUInt16 sm_EdgeToEvaluate;
@@ -12,12 +25,11 @@ class EoDbPolyline : public EoDbPrimitive {
   static const EoUInt16 sm_Closed = 0x0010;
 
  private:
-  EoUInt16 m_wFlags;
+  EoUInt16 m_flags;
   EoGePoint3dArray m_pts;
 
- public:  // Constructors and destructor
+ public:
   EoDbPolyline();
-  EoDbPolyline(EoByte* buffer);
   EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius, int numberOfSides);
   EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& pts);
   EoDbPolyline(EoGePoint3dArray& pts);
@@ -25,15 +37,12 @@ class EoDbPolyline : public EoDbPrimitive {
 
   ~EoDbPolyline() override {}
 
- public:  // Operators
+ public:
   const EoDbPolyline& operator=(const EoDbPolyline& polyline);
 
- public:  // Methods - absolute virtuals
+ public:
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolyline*>(primitive); }
-#if defined(USING_ODA)
-  OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
-#endif
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
   void AddReportToMessageList(EoGePoint3d) override;
@@ -56,8 +65,6 @@ class EoDbPolyline : public EoDbPrimitive {
   bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) override { return false; }
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
-  void SetFlag(const EoUInt16 w) { m_wFlags = w; }
-  void SetPt(int index, const EoGePoint3d& pt) { m_pts[index] = pt; }
   void Transform(EoGeTransformMatrix&) override;
   void Translate(EoGeVector3d translate) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
@@ -70,5 +77,14 @@ class EoDbPolyline : public EoDbPrimitive {
  public:
   static EoUInt16& EdgeToEvaluate() { return sm_EdgeToEvaluate; }
   static EoUInt16& Edge() { return sm_Edge; }
-  bool IsLooped() { return (m_wFlags != 0); }
+  bool IsLooped() const { return (m_flags != 0); }
+  void SetFlag(const EoUInt16 flags) { m_flags = flags; }
+
+  void SetNumberOfVertices(const size_t numberOfVertices) { m_pts.SetSize(static_cast<int64_t>(numberOfVertices)); }
+
+  void SetVertex2D(size_t index, const DRW_Vertex2D& vertex) {
+    m_pts[static_cast<int64_t>(index)].x = vertex.x;
+    m_pts[static_cast<int64_t>(index)].y = vertex.y;
+    m_pts[static_cast<int64_t>(index)].z = 0.0;
+  }
 };

@@ -1,7 +1,18 @@
 ﻿#pragma once
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+
+#include "AeSysView.h"
+#include "EoDb.h"
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 
 class EoDbPoint : public EoDbPrimitive {
  private:
@@ -30,7 +41,7 @@ class EoDbPoint : public EoDbPrimitive {
   OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
 #endif
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
-  
+
   void Display(AeSysView* view, CDC* context) override;
   void AddReportToMessageList(EoGePoint3d) override;
   void FormatExtra(CString& str) override;
@@ -59,9 +70,10 @@ class EoDbPoint : public EoDbPrimitive {
 
  public:  // Methods
   double GetDat(EoUInt16 wDat) { return (m_Data[wDat]); }
-  EoGePoint3d GetPt() { return (m_Point); }
+  EoGePoint3d GetPt() const { return (m_Point); }
   EoInt16& PointStyle() { return m_pointStyle; }
   void ModifyState() override;
   void SetDat(EoUInt16, double*);
   void SetPt(EoGePoint3d pt) { m_Point = pt; }
+  void SetPoint(double x, double y, double z);
 };

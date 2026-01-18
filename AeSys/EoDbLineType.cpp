@@ -7,7 +7,7 @@
 
 EoDbLineType::EoDbLineType() : m_Index(0), m_Name(L""), m_Description(L""), m_DashElements() {}
 
-EoDbLineType::EoDbLineType(EoUInt16 index, const CString& name, const CString& description, EoUInt16 numberOfDashElements,
+EoDbLineType::EoDbLineType(EoInt16 index, const CString& name, const CString& description, EoUInt16 numberOfDashElements,
                            double* dashLengths)
     : m_Index(index), m_Name(name), m_Description(description) {
   m_DashElements.reserve(numberOfDashElements);
