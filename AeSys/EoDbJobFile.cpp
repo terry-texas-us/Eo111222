@@ -654,10 +654,10 @@ void EoDbEllipse::Write(CFile& file, EoByte* buffer) {
   buffer[7] = static_cast<EoByte>(m_LineType == LINETYPE_BYLAYER ? sm_LayerLineType : m_LineType);
   if (buffer[7] >= 16) buffer[7] = 2;
 
-  ((CVaxPnt*)&buffer[8])->Convert(m_ptCenter);
-  ((CVaxVec*)&buffer[20])->Convert(m_vMajAx);
-  ((CVaxVec*)&buffer[32])->Convert(m_vMinAx);
-  ((CVaxFloat*)&buffer[44])->Convert(m_dSwpAng);
+  ((CVaxPnt*)&buffer[8])->Convert(m_centerPoint);
+  ((CVaxVec*)&buffer[20])->Convert(m_majorAxis);
+  ((CVaxVec*)&buffer[32])->Convert(m_minorAxis);
+  ((CVaxFloat*)&buffer[44])->Convert(m_sweepAngle);
 
   file.Write(buffer, 64);
 }

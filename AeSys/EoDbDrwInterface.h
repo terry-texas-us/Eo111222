@@ -4,6 +4,7 @@
 
 #include "AeSysDoc.h"
 #include "Eo.h"
+#include "EoDbBlock.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbPrimitive.h"
 #include "drw_entities.h"
@@ -56,7 +57,7 @@ class EoDbDrwInterface : public DRW_Interface {
     inBlockDefinition = true;
     blockName = Eo::MultiByteToWString(block.name.c_str());
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addBlock <%s>\n", blockName.c_str());
-    ConvertBlock(block, m_document);
+    currentOpenBlockDefinition = ConvertBlock(block, m_document);
   }
   void setBlock(const int handle) override {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::setBlock\n");
@@ -65,21 +66,65 @@ class EoDbDrwInterface : public DRW_Interface {
   void endBlock() override {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::endBlock\n");
     inBlockDefinition = false;
+    currentOpenBlockDefinition = nullptr;
     blockName.clear();
     ConvertBlockEnd(m_document);
   }
 
-  // Entities
+  // AutoDesk DXF Reference for Entities Section
+  // https://help.autodesk.com/view/OARX/2018/ENU/?guid=GUID-7D07C886-FD1D-4A0C-A7AB-B4D21F18E484
 
   void add3dFace(const DRW_3Dface& /* 3dFace */) override { countOf3dFace++; }
-  void addArc(const DRW_Arc& /* arc */) override { countOfArc++; }
+  // 3DSOLID not implemented in DRW
+  // ACAD_PROXY_ENTITY not implemented in DRW
+  
+  void addArc(const DRW_Arc& arc) override { 
+    countOfArc++; 
+    if (inBlockDefinition) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addArc - block <%s>\n", blockName.c_str());
+    } else {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addPoint - entities section\n");
+    }
+    ConvertArcEntity(arc, m_document);
+  }
+  // ATTDEF not implemented in DRW
+  // ATTRIB not implemented in DRW
+  // BODY not implemented in DRW
   void addCircle(const DRW_Circle& /* circle */) override { countOfCircle++; }
+  // COORDINATION_MODEL not implemented in DRW
+
+  // Dimensions
+  //   Aligned dimension group
+  void addDimAlign(const DRW_DimAligned* /* dimAlign */) override { countOfDimAlign++; }
+  //   Angular dimension group
+  void addDimAngular(const DRW_DimAngular* /* dimAngular */) override { countOfDimAngular++; }
+  void addDimAngular3P(const DRW_DimAngular3p* /* dimAngular3P */) override { countOfDimAngular3P++; }
+  //   Linear and Rotated dimension group
+  void addDimLinear(const DRW_DimLinear* /* dimLinear */) override { countOfDimLinear++; }
+  //   Ordinate dimension group
+  void addDimOrdinate(const DRW_DimOrdinate* /* dimOrdinate */) override { countOfDimOrdinate++; }
+  //   Radial and Diameter dimension group
+  void addDimRadial(const DRW_DimRadial* /* dimRadial */) override { countOfDimRadial++; }
+  void addDimDiametric(const DRW_DimDiametric* /* dimDiametric */) override { countOfDimDiametric++; }
+  
   void addEllipse(const DRW_Ellipse& /* ellipse */) override { countOfEllipse++; }
   void addHatch(const DRW_Hatch* /* hatch */) override { countOfHatch++; }
+  // HELIX not implemented in DRW
   void addImage(const DRW_Image* /* image */) override { countOfImage++; }
-  void addInsert(const DRW_Insert& /* insert */) override { countOfInsert++; }
-  void addKnot(const DRW_Entity& /* knot */) override { countOfKnot++; }
-
+  
+  void addInsert(const DRW_Insert& insert) override { 
+    countOfInsert++; 
+    if (inBlockDefinition) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
+      ConvertInsertEntity(insert, m_document);
+    } else {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addLine - entities section\n");
+      ConvertInsertEntity(insert, m_document);
+    }
+  }
+  void addLeader(const DRW_Leader* /* leader */) override {}
+  // LIGHT not implemented in DRW  
+  
   void addLine(const DRW_Line& line) override {
     countOfLine++;
     if (inBlockDefinition) {
@@ -90,6 +135,7 @@ class EoDbDrwInterface : public DRW_Interface {
       ConvertLineEntity(line, m_document);
     }
   }
+
   void addLWPolyline(const DRW_LWPolyline& lwPolyline) override {
     countOfLWPolyline++;
     if (inBlockDefinition) {
@@ -100,7 +146,14 @@ class EoDbDrwInterface : public DRW_Interface {
       ConvertLWPolylineEntity(lwPolyline, m_document);
     }
   }
+  // MESH not implemented in DRW
+  // MLeader not implemented in DRW
+  // MLINE not implemented in DRW
+
   void addMText(const DRW_MText& /* mText */) override { countOfMText++; }
+
+  // OLEFRAME not implemented in DRW
+  // OLE2FRAME not implemented in DRW
 
   void addPoint(const DRW_Point& point) override {
     countOfPoint++;
@@ -115,26 +168,29 @@ class EoDbDrwInterface : public DRW_Interface {
 
   void addPolyline(const DRW_Polyline& /* polyline */) override { countOfPolyline++; }
   void addRay(const DRW_Ray& /* ray */) override { countOfRay++; }
+  // REGION not implemented in DRW
+  // SECTION not implemented in DRW
+  // SEQEND not implemented in DRW
+  // SHAPE not implemented in DRW
+
   void addSolid(const DRW_Solid& /* solid */) override { countOfSolid++; }
   void addSpline(const DRW_Spline* /* spline */) override { countOfSpline++; }
+  // SUN not implemented in DRW
+  // SURFACE not implemented in DRW
+  // TABLE not implemented in DRW
   void addText(const DRW_Text& /* text */) override { countOfText++; }
+  // TOLERANCE not implemented in DRW
   void addTrace(const DRW_Trace& /* trace */) override { countOfTrace++; }
+  // UNDERLAY not implemented in DRW
+  // VERTEX not implemented in DRW
   void addViewport(const DRW_Viewport& /* viewport */) override { countOfViewport++; }
+  // WIPEOUT not implemented in DRW
   void addXline(const DRW_Xline& /* Xline */) override { countOfXline++; }
-
-  // Dimensions
-  void addDimAlign(const DRW_DimAligned* /* dimAlign */) override { countOfDimAlign++; }
-  void addDimAngular(const DRW_DimAngular* /* dimAngular */) override { countOfDimAngular++; }
-  void addDimAngular3P(const DRW_DimAngular3p* /* dimAngular3P */) override { countOfDimAngular3P++; }
-  void addDimDiametric(const DRW_DimDiametric* /* dimDiametric */) override { countOfDimDiametric++; }
-  void addDimLinear(const DRW_DimLinear* /* dimLinear */) override { countOfDimLinear++; }
-  void addDimOrdinate(const DRW_DimOrdinate* /* dimOrdinate */) override { countOfDimOrdinate++; }
-  void addDimRadial(const DRW_DimRadial* /* dimRadial */) override { countOfDimRadial++; }
 
   // Others
   void addComment(const char* comment) override { ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addComment(%s)\n", comment); }
-  void addLeader(const DRW_Leader* /* leader */) override {}
   void linkImage(const DRW_ImageDef* /* imageDefinition */) override {}
+  void addKnot(const DRW_Entity& /* knot */) override { countOfKnot++; }
 
   // Writing methods
   void writeAppId() override {};
@@ -205,12 +261,14 @@ class EoDbDrwInterface : public DRW_Interface {
    */
   void ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc* document);
 
-  void ConvertBlock(const DRW_Block& block, AeSysDoc* document);
+  EoDbBlock* ConvertBlock(const DRW_Block& block, AeSysDoc* document);
   void ConvertBlockSet(const int handle, AeSysDoc* document);
   void ConvertBlockEnd(AeSysDoc* document);
 
   void AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document);
 
+  void ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document);
+  void ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* document);
   void ConvertLineEntity(const DRW_Line& line, AeSysDoc* document);
   void ConvertLWPolylineEntity(const DRW_LWPolyline& lwPolyline, AeSysDoc* document);
   void ConvertPointEntity(const DRW_Point& point, AeSysDoc* document);
@@ -219,7 +277,34 @@ class EoDbDrwInterface : public DRW_Interface {
   AeSysDoc* m_document{nullptr};
   std::wstring blockName{};
   bool inBlockDefinition{false};
+  EoDbBlock* currentOpenBlockDefinition{nullptr};
 
  public:
-  int countOf3dFace{0}; int countOfArc{0}; int countOfCircle{0}; int countOfDimAlign{0}; int countOfDimAngular{0}; int countOfDimAngular3P{0}; int countOfDimDiametric{0}; int countOfDimLinear{0}; int countOfDimOrdinate{0}; int countOfDimRadial{0}; int countOfEllipse{0}; int countOfHatch{0}; int countOfImage{0}; int countOfInsert{0}; int countOfKnot{0}; int countOfLine{0}; int countOfLWPolyline{0}; int countOfMText{0}; int countOfPoint{0}; int countOfPolyline{0}; int countOfRay{0}; int countOfSolid{0}; int countOfSpline{0}; int countOfText{0}; int countOfTrace{0}; int countOfViewport{0}; int countOfXline{0}; 
+  int countOf3dFace{0};
+  int countOfArc{0};
+  int countOfCircle{0};
+  int countOfDimAlign{0};
+  int countOfDimAngular{0};
+  int countOfDimAngular3P{0};
+  int countOfDimDiametric{0};
+  int countOfDimLinear{0};
+  int countOfDimOrdinate{0};
+  int countOfDimRadial{0};
+  int countOfEllipse{0};
+  int countOfHatch{0};
+  int countOfImage{0};
+  int countOfInsert{0};
+  int countOfKnot{0};
+  int countOfLine{0};
+  int countOfLWPolyline{0};
+  int countOfMText{0};
+  int countOfPoint{0};
+  int countOfPolyline{0};
+  int countOfRay{0};
+  int countOfSolid{0};
+  int countOfSpline{0};
+  int countOfText{0};
+  int countOfTrace{0};
+  int countOfViewport{0};
+  int countOfXline{0};
 };

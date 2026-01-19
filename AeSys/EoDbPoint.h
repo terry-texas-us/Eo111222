@@ -37,9 +37,6 @@ class EoDbPoint : public EoDbPrimitive {
  public:  // Methods - absolute virtuals
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPoint*>(primitive); }
-#if defined(USING_ODA)
-  OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
-#endif
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
 
   void Display(AeSysView* view, CDC* context) override;

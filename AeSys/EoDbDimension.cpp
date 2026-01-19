@@ -70,7 +70,10 @@ const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& src) {
 
   return (*this);
 }
-void EoDbDimension::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Dim>"), this); }
+void EoDbDimension::AddToTreeViewControl(HWND tree, HTREEITEM parent) { 
+  CString label{L"<Dim>"};
+  tvAddItem(tree, parent, label.GetBuffer(), this);
+}
 EoDbPrimitive*& EoDbDimension::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbDimension(*this);
   return (primitive);

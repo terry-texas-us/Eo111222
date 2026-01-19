@@ -14,10 +14,6 @@ class EoGeVector3d {
   EoGeVector3d();
   EoGeVector3d(double initialX, double initialY, double initialZ);
   EoGeVector3d(const EoGePoint3d& ptP, const EoGePoint3d& ptQ);
-#if defined(USING_ODA)
-  EoGeVector3d(const OdGeVector3d& initialVector);
-  EoGeVector3d(const OdGeScale3d& initialScale);
-#endif
 
   bool operator==(const EoGeVector3d& vector) const;
   bool operator!=(const EoGeVector3d& vector) const;

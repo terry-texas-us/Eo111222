@@ -66,8 +66,10 @@ const EoDbLine& EoDbLine::operator=(const EoDbLine& other) {
   return (*this);
 }
 void EoDbLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  tvAddItem(tree, parent, const_cast<LPWSTR>(L"<Line>"), this);
+  CString label{L"<Line>"};
+  tvAddItem(tree, parent, label.GetBuffer(), this);
 }
+
 EoDbPrimitive*& EoDbLine::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbLine(*this);
   return (primitive);

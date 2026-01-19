@@ -162,7 +162,12 @@ const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& src) {
   return (*this);
 }
 EoDbPolygon::~EoDbPolygon() { delete[] m_Pt; }
-void EoDbPolygon::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Polygon>"), this); }
+
+void EoDbPolygon::AddToTreeViewControl(HWND tree, HTREEITEM parent) { 
+  CString label{L"<Polygon>"};
+  tvAddItem(tree, parent, label.GetBuffer(), this);
+}
+
 EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPolygon(*this);
   return (primitive);

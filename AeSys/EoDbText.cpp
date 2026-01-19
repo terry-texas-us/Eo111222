@@ -93,7 +93,11 @@ const EoDbText& EoDbText::operator=(const EoDbText& src) {
 
   return (*this);
 }
-void EoDbText::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Text>"), this); }
+void EoDbText::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+  CString label{L"<Text>"};
+  tvAddItem(tree, parent, label.GetBuffer(), this);
+}
+
 EoDbPrimitive*& EoDbText::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbText(*this);
   return (primitive);

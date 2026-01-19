@@ -1,10 +1,12 @@
 ﻿#include "Stdafx.h"
+
 #include <Windows.h>
 #include <afx.h>
 #include <afxstr.h>
 #include <afxwin.h>
 #include <atltrace.h>
 #include <climits>
+#include <string>
 
 #include "AeSys.h"
 #include "AeSysView.h"
@@ -80,7 +82,10 @@ const EoDbPolyline& EoDbPolyline::operator=(const EoDbPolyline& other) {
   return (*this);
 }
 
-void EoDbPolyline::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) { tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<Polyline>"), this); }
+void EoDbPolyline::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+  CString label{L"<Polyline>"};
+  tvAddItem(tree, parent, label.GetBuffer(), this);
+}
 
 EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPolyline(*this);

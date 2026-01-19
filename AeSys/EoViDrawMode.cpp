@@ -133,7 +133,7 @@ void AeSysView::OnDrawModeEllipse() {
 void AeSysView::OnDrawModeInsert() {
   auto* document = GetDocument();
   if (document->BlockTableSize() > 0) {
-    EoDlgBlockInsert Dialog;
+    EoDlgBlockInsert Dialog(document);
     Dialog.DoModal();
   }
 }

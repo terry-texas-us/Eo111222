@@ -413,6 +413,9 @@
     <ClCompile Include="Eo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Tests\TestEllipseGeneration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\AeSys.rc2">
@@ -2045,6 +2048,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Eo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tests\TestEllipseGeneration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

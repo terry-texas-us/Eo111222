@@ -119,11 +119,11 @@
       Column spacing         double
       Row spacing            double
 
-#### SegRef primitive
+#### BlockReference primitive
       Type code <0x0102>     uint16_t  [0-1]
       Pen color              uint16_t  [2-3]
       Line type              uint16_t  [4-5]
-      Segment name           string
+      Block name             string
       Insertion point        point3d
       Local normal vector    vector3d
       Scale factors(x, y, z) vector3d

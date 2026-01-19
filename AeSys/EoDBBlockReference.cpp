@@ -1,98 +1,118 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+#include <cfloat>
+#include <climits>
+#include <cmath>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDb.h"
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
+#include "EoDbGroup.h"
 #include "EoDbPrimitive.h"
+#include "EoGeMatrix.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 
 EoDbBlockReference::EoDbBlockReference() {
-  m_pt = EoGePoint3d::kOrigin;
-  m_vNormal = EoGeVector3d::kZAxis;
+  m_insertionPoint = EoGePoint3d::kOrigin;
+  m_normal = EoGeVector3d::kZAxis;
+  m_scaleFactors = EoGeVector3d(1.0, 1.0, 1.0);
+  m_rotation = 0.0;
+  m_columnCount = 1;
+  m_rowCount = 1;
+  m_columnSpacing = 0.0;
+  m_rowSpacing = 0.0;
+}
 
-  m_vScaleFactors(1.0, 1.0, 1.0);
-  m_dRotation = 0.;
+EoDbBlockReference::EoDbBlockReference(const CString& name, const EoGePoint3d& insertionPoint) : m_blockName(name), m_insertionPoint(insertionPoint) {
+  m_normal = EoGeVector3d::kZAxis;
+  m_scaleFactors = EoGeVector3d(1.0, 1.0, 1.0);
+  m_rotation = 0.0;
+  m_columnCount = 1;
+  m_rowCount = 1;
+  m_columnSpacing = 0.0;
+  m_rowSpacing = 0.0;
+}
 
-  m_wColCnt = 1;
-  m_wRowCnt = 1;
-  m_dColSpac = 0.;
-  m_dRowSpac = 0.;
+EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) {
+  m_blockName = other.m_blockName;
+  m_insertionPoint = other.m_insertionPoint;
+  m_normal = other.m_normal;
+  m_scaleFactors = other.m_scaleFactors;
+  m_rotation = other.m_rotation;
+  m_columnCount = other.m_columnCount;
+  m_rowCount = other.m_rowCount;
+  m_columnSpacing = other.m_columnSpacing;
+  m_rowSpacing = other.m_rowSpacing;
 }
-EoDbBlockReference::EoDbBlockReference(const CString& strName, const EoGePoint3d& pt) : m_strName(strName), m_pt(pt) {
-  m_vNormal = EoGeVector3d::kZAxis;
-  m_vScaleFactors(1.0, 1.0, 1.0);
-  m_dRotation = 0.;
-  m_wColCnt = 1;
-  m_wRowCnt = 1;
-  m_dColSpac = 0.;
-  m_dRowSpac = 0.;
-}
-EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& src) {
-  m_strName = src.m_strName;
-  m_pt = src.m_pt;
-  m_vNormal = src.m_vNormal;
-  m_vScaleFactors = src.m_vScaleFactors;
-  m_dRotation = src.m_dRotation;
-  m_wColCnt = src.m_wColCnt;
-  m_wRowCnt = src.m_wRowCnt;
-  m_dColSpac = src.m_dColSpac;
-  m_dRowSpac = src.m_dRowSpac;
-}
-EoDbBlockReference::EoDbBlockReference(EoUInt16 penColor, EoUInt16 lineType, const CString& name,
-                                       const EoGePoint3d& point, const EoGeVector3d& normal,
+EoDbBlockReference::EoDbBlockReference(EoUInt16 penColor, EoUInt16 lineType, const CString& name, const EoGePoint3d& point, const EoGeVector3d& normal,
                                        const EoGeVector3d scaleFactors, double rotation)
-    : m_strName(name), m_pt(point), m_vNormal(normal), m_vScaleFactors(scaleFactors) {
+    : m_blockName(name), m_insertionPoint(point), m_normal(normal), m_scaleFactors(scaleFactors) {
   m_PenColor = static_cast<EoInt16>(penColor);
   m_LineType = static_cast<EoInt16>(lineType);
-  m_dRotation = rotation;
-
-  m_wColCnt = 1;
-  m_wRowCnt = 1;
-  m_dColSpac = 0.;
-  m_dRowSpac = 0.;
+  
+  m_rotation = rotation;
+  m_columnCount = 1;
+  m_rowCount = 1;
+  m_columnSpacing = 0.0;
+  m_rowSpacing = 0.0;
 }
-const EoDbBlockReference& EoDbBlockReference::operator=(const EoDbBlockReference& src) {
-  m_strName = src.m_strName;
-  m_pt = src.m_pt;
-  m_vNormal = src.m_vNormal;
-  m_vScaleFactors = src.m_vScaleFactors;
-  m_dRotation = src.m_dRotation;
-  m_wColCnt = src.m_wColCnt;
-  m_wRowCnt = src.m_wRowCnt;
-  m_dColSpac = src.m_dColSpac;
-  m_dRowSpac = src.m_dRowSpac;
+const EoDbBlockReference& EoDbBlockReference::operator=(const EoDbBlockReference& other) {
+  m_blockName = other.m_blockName;
+  m_insertionPoint = other.m_insertionPoint;
+  m_normal = other.m_normal;
+  m_scaleFactors = other.m_scaleFactors;
+  m_rotation = other.m_rotation;
+  m_columnCount = other.m_columnCount;
+  m_rowCount = other.m_rowCount;
+  m_columnSpacing = other.m_columnSpacing;
+  m_rowSpacing = other.m_rowSpacing;
 
   return (*this);
 }
-void EoDbBlockReference::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
+void EoDbBlockReference::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   EoDbBlock* Block;
-  if (AeSysDoc::GetDoc()->LookupBlock(m_strName, Block) == 0) { return; }
+  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return; }
 
-  HTREEITEM hti = tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<SegRef>"), this);
+  CString label{L"<BlockReference>"};
+  auto hti = tvAddItem(tree, parent, label.GetBuffer(), this);
 
-  ((EoDbGroup*)Block)->AddPrimsToTreeViewControl(hTree, hti);
+  ((EoDbGroup*)Block)->AddPrimsToTreeViewControl(tree, hti);
 }
-EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(const EoGePoint3d& ptBase) {
+
+EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(const EoGePoint3d& insertionPoint) {
+
+  // TODO: Validate normal vector
+
   EoGeTransformMatrix tm1;
-  tm1.Translate(EoGeVector3d(ptBase, EoGePoint3d::kOrigin));
+  tm1.Translate(EoGeVector3d(insertionPoint, EoGePoint3d::kOrigin));
   EoGeTransformMatrix tm2;
-  tm2.Scale(m_vScaleFactors);
+  tm2.Scale(m_scaleFactors);
   EoGeTransformMatrix tm3;
-  tm3.ZAxisRotation(sin(m_dRotation), cos(m_dRotation));
-  EoGeTransformMatrix tm4(EoGePoint3d::kOrigin, m_vNormal);
+  tm3.ZAxisRotation(sin(m_rotation), cos(m_rotation));
+  EoGeTransformMatrix tm4(EoGePoint3d::kOrigin, m_normal);
   EoGeTransformMatrix tm5;
-  tm5.Translate(EoGeVector3d(EoGePoint3d::kOrigin, m_pt));
+  tm5.Translate(EoGeVector3d(EoGePoint3d::kOrigin, m_insertionPoint));
 
   return ((EoGeMatrix)tm1 * (EoGeMatrix)tm2 * (EoGeMatrix)tm3 * (EoGeMatrix)tm4 * (EoGeMatrix)tm5);
 }
+
 EoDbPrimitive*& EoDbBlockReference::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbBlockReference(*this);
   return (primitive);
 }
 void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
   EoDbBlock* Block;
-  if (AeSysDoc::GetDoc()->LookupBlock(m_strName, Block) == 0) return;
+  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) return;
 
   EoGePoint3d ptBase = Block->GetBasePt();
   EoGeTransformMatrix tm = BuildTransformMatrix(ptBase);
@@ -105,31 +125,28 @@ void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
   view->ReturnModelTransform();
 }
 void EoDbBlockReference::AddReportToMessageList(EoGePoint3d) {
-  CString str;
-  str.Format(L"<SegRef> Color: %s Line Type: %s SegmentName %s", FormatPenColor().GetString(),
-             FormatLineType().GetString(),
-             m_strName.GetString());
-  app.AddStringToMessageList(str);
+  CString message;
+  message.Format(L"<BlockReference> Color: %s Line Type: %s BlockName %s", FormatPenColor().GetString(), FormatLineType().GetString(), m_blockName.GetString());
+  app.AddStringToMessageList(message);
 }
-void EoDbBlockReference::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tSegment Name;%s\tRotation Angle;%f", FormatPenColor().GetString(),
-             FormatLineType().GetString(),
-             m_strName.GetString(), m_dRotation);
+void EoDbBlockReference::FormatExtra(CString& extra) {
+  extra.Format(L"Color;%s\tStyle;%s\tSegment Name;%s\tRotation Angle;%f", FormatPenColor().GetString(), FormatLineType().GetString(), m_blockName.GetString(),
+             m_rotation);
 }
-void EoDbBlockReference::FormatGeometry(CString& str) {
-  str += L"Insertion Point;" + m_pt.ToString();
-  str += L"Normal;" + m_vNormal.ToString();
-  str += L"Scale;" + m_vScaleFactors.ToString();
+void EoDbBlockReference::FormatGeometry(CString& geometry) {
+  geometry += L"Insertion Point;" + m_insertionPoint.ToString();
+  geometry += L"Normal;" + m_normal.ToString();
+  geometry += L"Scale;" + m_scaleFactors.ToString();
 }
 EoGePoint3d EoDbBlockReference::GetCtrlPt() {
-  EoGePoint3d pt;
-  pt = m_pt;
-  return (pt);
+  EoGePoint3d point;
+  point = m_insertionPoint;
+  return (point);
 }
 void EoDbBlockReference::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
   EoDbBlock* Block;
 
-  if (AeSysDoc::GetDoc()->LookupBlock(m_strName, Block) == 0) { return; }
+  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return; }
 
   EoGePoint3d ptBase = Block->GetBasePt();
 
@@ -146,7 +163,7 @@ bool EoDbBlockReference::IsInView(AeSysView* view) {
   // Test whether an instance of a block is wholly or partially within the current view volume.
   EoDbBlock* Block;
 
-  if (AeSysDoc::GetDoc()->LookupBlock(m_strName, Block) == 0) { return false; }
+  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return false; }
 
   EoGePoint3d ptBase = Block->GetBasePt();
 
@@ -166,7 +183,7 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
 
   EoDbBlock* Block;
 
-  if (AeSysDoc::GetDoc()->LookupBlock(m_strName, Block) == 0) { return ptCtrl; }
+  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return ptCtrl; }
 
   EoGePoint3d ptBase = Block->GetBasePt();
 
@@ -190,7 +207,7 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
 bool EoDbBlockReference::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
   EoDbBlock* Block;
 
-  if (AeSysDoc::GetDoc()->LookupBlock(m_strName, Block) == 0) { return false; }
+  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return false; }
 
   EoGePoint3d ptBase = Block->GetBasePt();
 
@@ -209,7 +226,7 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
 
   EoDbBlock* Block;
 
-  if (AeSysDoc::GetDoc()->LookupBlock(m_strName, Block) == 0) { return (bResult); }
+  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return (bResult); }
   EoGePoint3d ptBase = Block->GetBasePt();
 
   EoGeTransformMatrix tm = BuildTransformMatrix(ptBase);
@@ -228,27 +245,27 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
   return (bResult);
 }
 void EoDbBlockReference::Transform(EoGeTransformMatrix& tm) {
-  m_pt = tm * m_pt;
-  m_vNormal = tm * m_vNormal;
+  m_insertionPoint = tm * m_insertionPoint;
+  m_normal = tm * m_normal;
 
-  if (fabs(m_vNormal.x) <= FLT_EPSILON && fabs(m_vNormal.y) <= FLT_EPSILON) { m_vScaleFactors = tm * m_vScaleFactors; }
+  if (fabs(m_normal.x) <= FLT_EPSILON && fabs(m_normal.y) <= FLT_EPSILON) { m_scaleFactors = tm * m_scaleFactors; }
 }
 void EoDbBlockReference::TranslateUsingMask(EoGeVector3d v, DWORD mask) {
-  if (mask != 0) { m_pt += v; }
+  if (mask != 0) { m_insertionPoint += v; }
 }
 bool EoDbBlockReference::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kGroupReferencePrimitive));
   EoDb::Write(file, m_PenColor);
   EoDb::Write(file, m_LineType);
-  EoDb::Write(file, m_strName);
-  m_pt.Write(file);
-  m_vNormal.Write(file);
-  m_vScaleFactors.Write(file);
-  EoDb::Write(file, m_dRotation);
-  EoDb::Write(file, m_wColCnt);
-  EoDb::Write(file, m_wRowCnt);
-  EoDb::Write(file, m_dColSpac);
-  EoDb::Write(file, m_dRowSpac);
+  EoDb::Write(file, m_blockName);
+  m_insertionPoint.Write(file);
+  m_normal.Write(file);
+  m_scaleFactors.Write(file);
+  EoDb::Write(file, m_rotation);
+  EoDb::Write(file, m_columnCount);
+  EoDb::Write(file, m_rowCount);
+  EoDb::Write(file, m_columnSpacing);
+  EoDb::Write(file, m_rowSpacing);
 
   return true;
 }

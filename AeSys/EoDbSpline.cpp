@@ -49,8 +49,9 @@ const EoDbSpline& EoDbSpline::operator=(const EoDbSpline& src) {
   return (*this);
 }
 
-void EoDbSpline::AddToTreeViewControl(HWND hTree, HTREEITEM hParent) {
-  tvAddItem(hTree, hParent, const_cast<LPWSTR>(L"<BSpline>"), this);
+void EoDbSpline::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+  CString label{L"<BSpline>"};
+  tvAddItem(tree, parent, label.GetBuffer(), this);
 }
 
 EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {

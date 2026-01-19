@@ -10,7 +10,9 @@
 #include "AeSysDoc.h"
 #include "Eo.h"
 #include "EoDbBlock.h"
+#include "EoDbBlockReference.h"
 #include "EoDbDrwInterface.h"
+#include "EoDbEllipse.h"
 #include "EoDbGroup.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbLayer.h"
@@ -212,7 +214,7 @@ void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc*
  * @note Three empty definitions always appear in the BLOCKS section. They are titled *Model_Space, *Paper_Space and *Paper_Space0. These definitions manifest the representations of model space and paper space as block definitions internally. The internal name of the first paper space layout is *Paper_Space, the second is *Paper_Space0, the third is *Paper_Space1, and so on.
  * The interleaving between model space and paper space no longer occurs. Instead, all paper space entities are output, followed by model space entities. The flag distinguishing them is the group code 67.
  */
-void EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* document) {
+EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* document) {
   blockName = Eo::MultiByteToWString(block.name.c_str());  // Block Name (group code 2)
 
   // auto handle = block.handle;              // group code 5
@@ -225,7 +227,9 @@ void EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* document) 
                                       blockName.c_str());
 
   document->InsertBlock(blockName.c_str(), newBlock);
+  return newBlock;
 }
+
 /** @brief This method is primarily used in DWG files when the parser switches to entities belonging to a different block than the current one. The handle parameter corresponds to the block handle previously provided via addBlock (accessible as DRW_Block::handleBlock). In your implementation, switch the current block context to the one matching this handle. For DXF files, this callback may not be triggered, or it may be used sparingly if blocks are referenced out of sequence. */
 void EoDbDrwInterface::ConvertBlockSet(const int /* handle */, AeSysDoc* /* document */) { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block set\n"); }
 
@@ -263,9 +267,33 @@ void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
     delete primitive;
     return;
   }
-  auto* group = new EoDbGroup();
-  group->AddTail(primitive);
-  layer->AddTail(group);
+  if (currentOpenBlockDefinition == nullptr) {
+    auto* group = new EoDbGroup();
+    group->AddTail(primitive);
+    layer->AddTail(group);
+    return;
+  }
+  currentOpenBlockDefinition->AddTail(primitive);
+}
+
+void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Arc entity conversion\n");
+  auto arcPrimitive = new EoDbEllipse(arc.basePoint, arc.radious, arc.staangle, arc.endangle);
+  arcPrimitive->SetBaseProperties(&arc, document);
+  AddToDocument(arcPrimitive, document);
+}
+
+void EoDbDrwInterface::ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* document) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Insert entity conversion\n");
+  auto insertPrimitive = new EoDbBlockReference();
+  insertPrimitive->SetBaseProperties(&insert, document);
+  auto name = Eo::MultiByteToWString(insert.name.c_str());
+  insertPrimitive->SetName(CString(name.c_str()));
+  insertPrimitive->SetInsertionPoint(insert.basePoint);
+  insertPrimitive->SetScaleFactors(EoGeVector3d(insert.xscale, insert.yscale, insert.zscale));
+  insertPrimitive->SetRotation(insert.angle);
+  
+  AddToDocument(insertPrimitive, document);
 }
 
 void EoDbDrwInterface::ConvertLineEntity(const DRW_Line& line, AeSysDoc* document) {

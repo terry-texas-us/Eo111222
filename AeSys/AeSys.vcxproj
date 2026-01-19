@@ -59,7 +59,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableSpecificWarnings>5045</DisableSpecificWarnings>
       <BrowseInformationFile>$(ProjectDir)vshints.hm</BrowseInformationFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;$(SolutionDir)libdxfrw\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;$(SolutionDir)libdxfrw\src\;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(ProjectDir)Tools\reflex_static_lib.lib;$(SolutionDir)libdxfrw\vs2013\x64\Debug\libdxfrw.lib;$(SolutionDir)libiconv\Debug_x64\libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -242,6 +242,9 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="EoDlgTrapFilter.cpp" />
     <ClCompile Include="EoDlgViewParameters.cpp" />
     <ClCompile Include="EoGsViewport.cpp" />
+    <ClCompile Include="Tests\TestEllipseGeneration.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="WndProcKeyPlan.cpp" />
     <ClCompile Include="WndProcPreview.cpp" />
   </ItemGroup>
@@ -1584,6 +1587,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="EoGeTransformMatrix.h" />
     <ClInclude Include="EoDlgViewParameters.h" />
     <ClInclude Include="EoGsViewport.h" />
+    <ClInclude Include="Tests\TestEllipseGeneration.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="lex_rules.l" />

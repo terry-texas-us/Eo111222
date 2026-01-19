@@ -38,9 +38,6 @@ class EoDbLine : public EoDbPrimitive {
  public:
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbLine*>(primitive); }
-#if defined(USING_ODA)
-  OdDbEntity* Convert(const OdDbObjectId& blockTableRecord);
-#endif  // USING_ODA
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
   void AddReportToMessageList(EoGePoint3d) override;

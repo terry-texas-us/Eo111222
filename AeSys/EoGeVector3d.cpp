@@ -1,4 +1,5 @@
 ﻿#include "Stdafx.h"
+
 #include "Eo.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
@@ -13,19 +14,6 @@ EoGeVector3d::EoGeVector3d() : x(0.0), y(0.0), z(0.0) {}
 EoGeVector3d::EoGeVector3d(double initialX, double initialY, double initialZ) : x(initialX), y(initialY), z(initialZ) {}
 
 EoGeVector3d::EoGeVector3d(const EoGePoint3d& ptA, const EoGePoint3d& ptB) : x(ptB.x - ptA.x), y(ptB.y - ptA.y), z(ptB.z - ptA.z) {}
-
-#if defined(USING_ODA)
-EoGeVector3d::EoGeVector3d(const OdGeVector3d& initialVector) {
-  x = initialVector.x;
-  y = initialVector.y;
-  z = initialVector.z;
-}
-EoGeVector3d::EoGeVector3d(const OdGeScale3d& initialScale) {
-  x = initialScale.sx;
-  y = initialScale.sy;
-  z = initialScale.sz;
-}
-#endif
 
 bool EoGeVector3d::operator==(const EoGeVector3d& vector) const { return (EoGeNearEqual(*this, vector, FLT_EPSILON)); }
 

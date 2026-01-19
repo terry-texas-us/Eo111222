@@ -380,16 +380,4 @@ class AeSysDoc : public CDocument {
   bool TracingView(const CString& pathName);
 
  public:
-#if defined(USING_ODA)
-  void ConvertPegDocument();
-
-  void ConvertBlockTable();
-
-  void ConvertGroupsInLayers();
-  void ConvertGroup(EoDbGroup* group, const OdDbObjectId& modelSpace);
-  void ConvertGroupsInBlocks();
-
-  afx_msg void OnSetupLayerproperties();
-  BOOL DoPromptFileName(CString& fileName, UINT titleResourceIdentifier, DWORD flags);
-#endif
 };

@@ -15,7 +15,7 @@
 #include "Resource.h"
 
 HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR text, LPCVOID object) {
-  TV_INSERTSTRUCT tvIS{0};
+  TV_INSERTSTRUCT tvIS{};
   tvIS.hParent = parent;
   tvIS.hInsertAfter = TVI_LAST;
   tvIS.item.mask = TVIF_TEXT | TVIF_PARAM;
@@ -48,7 +48,8 @@ BOOL EoDlgEditTrapCommandsQuery::OnInitDialog() {
 
   auto groupTreeWindow = ::GetDlgItem(this->GetSafeHwnd(), IDC_GROUP_TREE);
   auto* groupsInTrap = AeSysDoc::GetDoc()->GroupsInTrap();
-  auto groupListTreeItem = tvAddItem(groupTreeWindow, TVI_ROOT, const_cast<LPWSTR>(L"<Groups>"), groupsInTrap);
+  CString label{L"<Groups>"};
+  auto groupListTreeItem = tvAddItem(groupTreeWindow, TVI_ROOT, label.GetBuffer(), groupsInTrap);
   groupsInTrap->AddToTreeViewControl(groupTreeWindow, groupListTreeItem);
 
   const auto oneInchWidth = static_cast<int>(GetDpiForSystem());

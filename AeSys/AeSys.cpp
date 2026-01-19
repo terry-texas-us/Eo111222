@@ -56,6 +56,8 @@
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);
 ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance);
 
+#include ".//Tests//TestEllipseGeneration.h"
+
 namespace {
 
   /** @brief Converts a multi-byte (UTF-8) string to a wide-character string.
@@ -75,6 +77,23 @@ std::wstring MultiByteToWString(const char* multiByte) {
 constexpr size_t numberOfPenWidths{16};
 constexpr double defaultPenWidths[numberOfPenWidths] = {0.0,  0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225,
                                                         0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
+
+int RunEllipseTests() {
+  TestArc(5.0, 5.0, 0.0, 7.07107, 3.92678, 0.78540);
+
+  TestArc(15.0, 15.0, 0.0, 7.07107, 0.78540, 3.92678);
+
+  // Simple CCW arc 0.0 -> PI/2
+  TestArc(0.0, 0.0, 0.0, 10.0, 0.0, Eo::HalfPi);
+  // Simple CW arc 0.0 -> -PI/2
+  TestArc(0.0, 0.0, 0.0, 10.0, 0.0, -Eo::HalfPi);
+  // Full circle (same start/end)
+  TestArc(1.0, 2.0, 0.0, 5.0, 0.0, 0.0);
+  // Large negative sweep across boundary
+  TestArc(0.0, 0.0, 0.0, 7.0, Eo::ThreeQuartersPi, -Eo::QuarterPi);
+  return 0;
+}
+
 }  // namespace
 double penWidths[numberOfPenWidths] = {0.0, 0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
 static void ResetPenWidthsToDefault() { std::copy(std::begin(defaultPenWidths), std::end(defaultPenWidths), penWidths); }
@@ -289,6 +308,9 @@ BOOL AeSys::InitInstance() {
 
   m_pMainWnd->ShowWindow(m_nCmdShow);
   m_pMainWnd->UpdateWindow();
+
+  // Testing code
+  RunEllipseTests();
 
   return TRUE;
 }

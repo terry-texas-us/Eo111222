@@ -13,7 +13,6 @@
 
 HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR pszText, LPCVOID object);
 
-
 class AeSysDoc;
 class AeSysView;
 class EoDbGroupList;
@@ -112,8 +111,4 @@ class EoDbPrimitive : public CObject {
   static EoInt16 SpecialLineTypeIndex();
   static EoInt16 SpecialPenColorIndex();
   static void SetSpecialPenColorIndex(EoInt16 colorIndex);
-
-#if defined(USING_ODA)
-  virtual OdDbEntity* Convert(const OdDbObjectId& blockTableRecord) = 0;
-#endif
 };
