@@ -84,6 +84,15 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& centerPoint, const EoGeVector3d& maj
   m_sweepAngle = sweepAngle;
 }
 
+
+/**
+ * @brief Constructs a circle primitive defined by a center point and radius in the current view.
+ *
+ * @param penColor The pen color.
+ * @param lineType The line type index.
+ * @param centerPoint The center point of the circle.
+ * @param radius The radius of the circle.
+ */
 EoDbEllipse::EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius)
     : EoDbPrimitive(penColor, lineType), m_centerPoint(centerPoint) {
   auto* activeView = AeSysView::GetActiveView();

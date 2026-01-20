@@ -63,7 +63,7 @@ void EoDbGroup::BreakPolylines() {
     EoDbPrimitive* Primitive = GetNext(Position);
     if (Primitive->Is(EoDb::kPolylinePrimitive)) {
       EoInt16 nPenColor = Primitive->PenColor();
-      EoInt16 LineType = Primitive->LineType();
+      EoInt16 LineType = Primitive->LineTypeIndex();
 
       EoGePoint3dArray pts;
       static_cast<EoDbPolyline*>(Primitive)->GetAllPts(pts);
@@ -163,7 +163,7 @@ int EoDbGroup::GetLineTypeRefCount(EoInt16 lineType) {
   while (position != 0) {
     EoDbPrimitive* Primitive = GetNext(position);
 
-    if (Primitive->LineType() == lineType) { iCount++; }
+    if (Primitive->LineTypeIndex() == lineType) { iCount++; }
   }
   return (iCount);
 }
@@ -214,14 +214,14 @@ void EoDbGroup::ModifyPenColor(EoInt16 nPenColor) {
   auto position = GetHeadPosition();
   while (position != 0) {
     EoDbPrimitive* Primitive = GetNext(position);
-    Primitive->PenColor(nPenColor);
+    Primitive->SetPenColor(nPenColor);
   }
 }
 void EoDbGroup::ModifyLineType(EoInt16 lineType) {
   auto position = GetHeadPosition();
   while (position != 0) {
     EoDbPrimitive* Primitive = GetNext(position);
-    Primitive->LineType(lineType);
+    Primitive->SetLineTypeIndex(lineType);
   }
 }
 void EoDbGroup::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) {
@@ -231,7 +231,7 @@ void EoDbGroup::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) 
 
     for (EoUInt16 w = 0; w < wCols; w++) {
       if (Primitive->PenColor() == pCol[w]) {
-        Primitive->PenColor(pColNew[w]);
+        Primitive->SetPenColor(pColNew[w]);
         break;
       }
     }

@@ -426,7 +426,7 @@ void AeSysView::OnDimensionModeConvert() {
         if (Primitive->Is(EoDb::kLinePrimitive)) {
           EoDbLine* pPrimLine = static_cast<EoDbLine*>(Primitive);
           pPrimLine->GetLine(ln);
-          EoDbDimension* pPrimDim = new EoDbDimension(pPrimLine->PenColor(), pPrimLine->LineType(), ln);
+          EoDbDimension* pPrimDim = new EoDbDimension(pPrimLine->PenColor(), pPrimLine->LineTypeIndex(), ln);
           pPrimDim->SetTextPenColor(5);
           pPrimDim->SetTextHorAlign(EoDb::kAlignCenter);
           pPrimDim->SetTextVerAlign(EoDb::kAlignMiddle);
@@ -439,9 +439,9 @@ void AeSysView::OnDimensionModeConvert() {
           EoDbDimension* pPrimDim = static_cast<EoDbDimension*>(Primitive);
           EoGeReferenceSystem ReferenceSystem;
           pPrimDim->GetRefSys(ReferenceSystem);
-          EoDbLine* pPrimLine = new EoDbLine(pPrimDim->PenColor(), pPrimDim->LineType(), pPrimDim->Line());
+          EoDbLine* pPrimLine = new EoDbLine(pPrimDim->PenColor(), pPrimDim->LineTypeIndex(), pPrimDim->Line());
           EoDbText* pPrimText = new EoDbText(pPrimDim->FontDef(), ReferenceSystem, pPrimDim->Text());
-          pPrimText->PenColor(pPrimDim->TextPenColor());
+          pPrimText->SetPenColor(pPrimDim->TextPenColor());
           Group->InsertAfter(posPrimCur, pPrimLine);
           Group->InsertAfter(posPrimCur, pPrimText);
           Group->RemoveAt(posPrimCur);

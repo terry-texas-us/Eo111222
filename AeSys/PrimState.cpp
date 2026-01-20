@@ -59,7 +59,6 @@ int CPrimState::Save() {
 void CPrimState::SetPen(AeSysView* view, CDC* deviceContext, EoInt16 penColor, EoInt16 lineType) {
   if (EoDbPrimitive::SpecialPenColorIndex() != 0) { penColor = EoDbPrimitive::SpecialPenColorIndex(); }
   if (penColor == EoDbPrimitive::PENCOLOR_BYLAYER) { penColor = EoDbPrimitive::LayerPenColorIndex(); }
-  if (EoDbPrimitive::SpecialLineTypeIndex() != 0) { lineType = EoDbPrimitive::SpecialLineTypeIndex(); }
   if (lineType == EoDbPrimitive::LINETYPE_BYLAYER) { lineType = EoDbPrimitive::LayerLineTypeIndex(); }
   m_PenColor = penColor;
   m_LineType = lineType;

@@ -33,7 +33,6 @@ class EoDbEllipse : public EoDbPrimitive {
   /// <summary>Ellipse segment is constructed using a center point, a major and minor vector and a sweep ang.</summary>
   EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle);
 
-  /// <summary>Ellipse is constructed using a center point and a radius about view plane normal</summary>
   EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius);
 
   /// <summary>Ellipse is constructed using a center point, plane normal and a radius</summary>

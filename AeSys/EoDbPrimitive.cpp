@@ -14,9 +14,8 @@
 #include "PrimState.h"
 #include "drw_Entities.h"
 
-EoInt16 EoDbPrimitive::sm_LayerPenColor = 1;
-EoInt16 EoDbPrimitive::sm_LayerLineType = 1;
-EoInt16 EoDbPrimitive::sm_SpecialLineTypeIndex = 0;
+EoInt16 EoDbPrimitive::sm_LayerPenColor{PENCOLOR_BYLAYER};
+EoInt16 EoDbPrimitive::sm_LayerLineType{LINETYPE_BYLAYER};
 EoInt16 EoDbPrimitive::sm_SpecialPenColorIndex = 0;
 
 EoUInt16 EoDbPrimitive::sm_ControlPointIndex = USHRT_MAX;
@@ -90,23 +89,20 @@ EoInt16 EoDbPrimitive::LogicalPenColor() const {
   return (nPenColor);
 }
 EoInt16 EoDbPrimitive::LogicalLineType() const {
-  EoInt16 LineType = sm_SpecialLineTypeIndex == 0 ? m_LineType : sm_SpecialLineTypeIndex;
+  EoInt16 lineTypeIndex = m_LineType;
 
-  if (LineType == LINETYPE_BYLAYER)
-    LineType = sm_LayerLineType;
-  else if (LineType == LINETYPE_BYBLOCK)
-    LineType = 1;
+  if (lineTypeIndex == LINETYPE_BYLAYER)
+    lineTypeIndex = sm_LayerLineType;
+  else if (lineTypeIndex == LINETYPE_BYBLOCK)
+    lineTypeIndex = 1;
 
-  return (LineType);
+  return (lineTypeIndex);
 }
+
 void EoDbPrimitive::ModifyState() {
   m_PenColor = pstate.PenColor();
   m_LineType = pstate.LineType();
 }
-EoInt16 EoDbPrimitive::PenColor() const { return m_PenColor; }
-EoInt16 EoDbPrimitive::LineType() const { return m_LineType; }
-void EoDbPrimitive::PenColor(EoInt16 penColor) { m_PenColor = penColor; }
-void EoDbPrimitive::LineType(EoInt16 lineType) { m_LineType = lineType; }
 
 EoUInt16 EoDbPrimitive::ControlPointIndex() { return sm_ControlPointIndex; }
 bool EoDbPrimitive::IsSupportedTyp(int iTyp) { return (iTyp <= 7 && iTyp != 4 && iTyp != 5); }
@@ -115,6 +111,5 @@ void EoDbPrimitive::SetLayerPenColorIndex(EoInt16 colorIndex) { sm_LayerPenColor
 EoInt16 EoDbPrimitive::LayerLineTypeIndex() { return sm_LayerLineType; }
 void EoDbPrimitive::SetLayerLineTypeIndex(EoInt16 lineTypeIndex) { sm_LayerLineType = lineTypeIndex; }
 double& EoDbPrimitive::Rel() { return sm_RelationshipOfPoint; }
-EoInt16 EoDbPrimitive::SpecialLineTypeIndex() { return sm_SpecialLineTypeIndex; }
 EoInt16 EoDbPrimitive::SpecialPenColorIndex() { return sm_SpecialPenColorIndex; }
 void EoDbPrimitive::SetSpecialPenColorIndex(EoInt16 colorIndex) { sm_SpecialPenColorIndex = colorIndex; }

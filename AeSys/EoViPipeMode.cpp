@@ -65,7 +65,7 @@ void AeSysView::OnPipeModeFitting() {
     if (!pts.IsEmpty()) { CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt); }
     CurrentPnt = HorizontalSection->ProjPt(CurrentPnt);
     HorizontalSection->EndPoint(CurrentPnt);
-    Group->AddTail(new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), CurrentPnt, EndPoint));
+    Group->AddTail(new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineTypeIndex(), CurrentPnt, EndPoint));
 
     Group = new EoDbGroup;
     GenerateTicMark(CurrentPnt, BeginPoint, m_PipeRiseDropRadius, Group);
@@ -275,7 +275,7 @@ void AeSysView::OnPipeModeSymbol() {
 
   HorizontalSection->EndPoint(SymbolBeginPoint);
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, HorizontalSection);
-  Group = new EoDbGroup(new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), SymbolEndPoint, EndPoint));
+  Group = new EoDbGroup(new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineTypeIndex(), SymbolEndPoint, EndPoint));
   document->AddWorkLayerGroup(Group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
@@ -566,7 +566,7 @@ void AeSysView::OnPipeModeWye() {
       if (fabs(DistanceBetweenSectionPoints - DistanceToSection) <= 0.25) {  // Just need to shift point on section and do a single 45 degree line
         PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, DistanceToSection);
         HorizontalSection->EndPoint(PointOnSection);
-        Group = new EoDbGroup(new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), PointOnSection, EndPoint));
+        Group = new EoDbGroup(new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineTypeIndex(), PointOnSection, EndPoint));
         document->AddWorkLayerGroup(Group);
 
         Group = new EoDbGroup;
@@ -598,7 +598,7 @@ void AeSysView::OnPipeModeWye() {
         document->AddWorkLayerGroup(Group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
-        Group = new EoDbGroup(new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), PointOnSection, EndPoint));
+        Group = new EoDbGroup(new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineTypeIndex(), PointOnSection, EndPoint));
         document->AddWorkLayerGroup(Group);
         Group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, PointAtBend, Group);
@@ -710,7 +710,7 @@ void AeSysView::DropIntoOrRiseFromHorizontalSection(EoGePoint3d& point, EoDbGrou
   EoGePoint3d CutPoint = point.ProjectToward(BeginPoint, m_PipeRiseDropRadius);
   section->EndPoint(CutPoint);
   CutPoint = point.ProjectToward(EndPoint, m_PipeRiseDropRadius);
-  group->AddTail(new EoDbLine(section->PenColor(), section->LineType(), CutPoint, EndPoint));
+  group->AddTail(new EoDbLine(section->PenColor(), section->LineTypeIndex(), CutPoint, EndPoint));
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
   group = new EoDbGroup;
@@ -726,7 +726,7 @@ void AeSysView::DropFromOrRiseIntoHorizontalSection(EoGePoint3d& point, EoDbGrou
   EoGePoint3d EndPoint = section->EndPoint();
 
   section->EndPoint(point);
-  group->AddTail(new EoDbLine(section->PenColor(), section->LineType(), point, EndPoint));
+  group->AddTail(new EoDbLine(section->PenColor(), section->LineTypeIndex(), point, EndPoint));
 
   group = new EoDbGroup;
   GenerateTicMark(point, BeginPoint, 2. * m_PipeRiseDropRadius, group);

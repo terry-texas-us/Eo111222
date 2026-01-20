@@ -975,7 +975,7 @@ void AeSysDoc::OnPrimBreak() {
     EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
 
     EoInt16 nPenColor = Primitive->PenColor();
-    EoInt16 LineType = Primitive->LineType();
+    EoInt16 LineType = Primitive->LineTypeIndex();
 
     if (Primitive->Is(EoDb::kPolylinePrimitive)) {
       Group->FindAndRemovePrim(Primitive);

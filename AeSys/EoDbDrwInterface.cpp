@@ -261,9 +261,10 @@ class EoGeVertex2D {
  * @param document Pointer to the AeSysDoc where the primitive will be added.
  */
 void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document) {
-  auto* layer = document->GetLayerTableLayer(primitive->GetLayerName().c_str());
+  auto layerName = primitive->LayerName().c_str();
+  auto* layer = document->GetLayerTableLayer(layerName);
   if (layer == nullptr) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Layer '%s' not found.\n", primitive->GetLayerName().c_str());
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Layer '%s' not found.\n", layerName);
     delete primitive;
     return;
   }

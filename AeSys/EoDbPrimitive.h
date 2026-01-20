@@ -4,6 +4,7 @@
 #include <afxstr.h>
 #include <afxwin.h>
 #include <string>
+#include <utility>
 
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
@@ -21,23 +22,22 @@ class EoGeTransformMatrix;
 
 class EoDbPrimitive : public CObject {
  public:
-  static const EoUInt16 BUFFER_SIZE = 2048;
+  static constexpr EoUInt16 BUFFER_SIZE{2048};
 
-  static const EoInt16 PENCOLOR_BYBLOCK = 0;
-  static const EoInt16 PENCOLOR_BYLAYER = 256;
-  static const EoInt16 LINETYPE_BYBLOCK = 32766;
-  static const EoInt16 LINETYPE_BYLAYER = 32767;
+  static constexpr EoInt16 PENCOLOR_BYBLOCK{0};
+  static constexpr EoInt16 PENCOLOR_BYLAYER{256};
+  static constexpr EoInt16 LINETYPE_BYBLOCK{32766};
+  static constexpr EoInt16 LINETYPE_BYLAYER{32767};
 
  protected:
-  EoInt16 m_PenColor;
-  EoInt16 m_LineType;
-  std::wstring m_linetypeName;
-  std::wstring m_layerName;
+  EoInt16 m_PenColor{PENCOLOR_BYLAYER};
+  EoInt16 m_LineType{LINETYPE_BYLAYER};
+  std::wstring m_linetypeName{};
+  std::wstring m_layerName{};
 
   static EoInt16 sm_LayerPenColor;
   static EoInt16 sm_LayerLineType;
   static EoInt16 sm_SpecialPenColorIndex;
-  static EoInt16 sm_SpecialLineTypeIndex;
   static EoUInt16 sm_ControlPointIndex;
   static double sm_RelationshipOfPoint;
   static double sm_SelectApertureSize;
@@ -90,15 +90,17 @@ class EoDbPrimitive : public CObject {
   CString FormatLineType() const;
   EoInt16 LogicalPenColor() const;
   EoInt16 LogicalLineType() const;
-  EoInt16 PenColor() const;
-  EoInt16 LineType() const;
-  void PenColor(EoInt16 penColor);
-  void LineType(EoInt16 lineType);
 
-  const std::wstring& GetLinetypeName() const noexcept { return m_linetypeName; }
-  void SetLinetypeName(const std::wstring& name) { m_linetypeName = name; }
-  const std::wstring& GetLayerName() const noexcept { return m_layerName; }
-  void SetLayerName(const std::wstring& name) { m_layerName = name; }
+  EoInt16 PenColor() const noexcept { return m_PenColor; }
+  void SetPenColor(EoInt16 penColor) { m_PenColor = penColor; }
+  EoInt16 LineTypeIndex() const noexcept { return m_LineType; }
+  void SetLineTypeIndex(EoInt16 lineType) { m_LineType = lineType; }
+
+  const std::wstring& LinetypeName() const noexcept { return m_linetypeName; }
+  void SetLinetypeName(std::wstring name) { m_linetypeName = std::move(name); }
+  
+  const std::wstring& LayerName() const noexcept { return m_layerName; }
+  void SetLayerName(std::wstring name) { m_layerName = std::move(name); }
 
  public:  // Methods - static
   static EoUInt16 ControlPointIndex();
@@ -108,7 +110,6 @@ class EoDbPrimitive : public CObject {
   static EoInt16 LayerLineTypeIndex();
   static void SetLayerLineTypeIndex(EoInt16 lineTypeIndex);
   static double& Rel();
-  static EoInt16 SpecialLineTypeIndex();
   static EoInt16 SpecialPenColorIndex();
   static void SetSpecialPenColorIndex(EoInt16 colorIndex);
 };

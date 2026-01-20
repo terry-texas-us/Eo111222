@@ -119,7 +119,7 @@ void EoDlgTrapFilter::FilterByLineType(int lineType) {
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive->LineType() == lineType) {
+      if (Primitive->LineTypeIndex() == lineType) {
         m_Document->RemoveTrappedGroup(Group);
         m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         break;

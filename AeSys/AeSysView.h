@@ -420,8 +420,8 @@ class AeSysView : public CView {
   /// <param name="beginPoint">tail of line segment defining arrow head</param>
   /// <param name="endPoint">head of line segment defining arrow head</param>
   /// <param name="group">group where primitives are placed</param>
-  void GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group);
-  bool CorrectLeaderEndpoints(int beginType, int endType, EoGePoint3d& beginPoint, EoGePoint3d& endPoint);
+  void GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group) const;
+  bool CorrectLeaderEndpoints(int beginType, int endType, EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const;
 
   /// Draw Mode Interface ///////////////////////////////////////////////////////
  public:

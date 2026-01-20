@@ -15,7 +15,7 @@ class EoDbDimension : public EoDbPrimitive {
   CString m_strText;
 
  public:  // Constructors and destructor
-  EoDbDimension() : EoDbPrimitive(), m_nTextPenColor(EoDbPrimitive::PENCOLOR_BYLAYER), m_fd(), m_ReferenceSystem(), m_strText() {}
+  EoDbDimension() : EoDbPrimitive(), m_nTextPenColor(PENCOLOR_BYLAYER), m_fd(), m_ReferenceSystem(), m_strText() {}
 
   EoDbDimension(EoInt16 penColor, EoInt16 lineType, EoGeLine line);
   EoDbDimension(EoInt16 penColor, EoInt16 lineType, EoGeLine line, EoInt16 textPenColor, const EoDbFontDefinition& fontDefinition,
