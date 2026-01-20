@@ -2,6 +2,7 @@
 #include <afxcoll.h>
 #include <afxstr.h>
 #include <afxtempl.h>
+#include <utility>
 
 #include "EoDbGroup.h"
 #include "EoGePoint3d.h"
@@ -25,13 +26,13 @@ class EoDbBlock : public EoDbGroup {
   EoDbBlock(EoUInt16 flags, EoGePoint3d basePoint, const CString& name);
   EoDbBlock& operator=(const EoDbBlock&) = delete;
 
-  EoGePoint3d GetBasePt() const { return m_basePoint; }
-  EoUInt16 GetBlkTypFlgs() const { return m_blockTypeFlags; }
+  const EoGePoint3d& BasePoint() const noexcept { return m_basePoint; }
+  EoUInt16 BlockTypeFlags() const noexcept { return m_blockTypeFlags; }
   bool HasAttributes() const { return (m_blockTypeFlags & 2) == 2; }
   bool IsAnonymous() const { return (m_blockTypeFlags & 1) == 1; }
   bool IsFromExternalReference() const { return (m_blockTypeFlags & 4) == 4; }
-  void SetBlkTypFlgs(EoUInt16 flags) { m_blockTypeFlags = flags; }
-  void SetBasePt(EoGePoint3d& pt) { m_basePoint = pt; }
+  void SetBlockTypeFlags(EoUInt16 flags) { m_blockTypeFlags = flags; }
+  void SetBasePoint(EoGePoint3d basePoint) { m_basePoint = std::move(basePoint); }
 };
 
 typedef CTypedPtrMap<CMapStringToOb, CString, EoDbBlock*> CBlocks;

@@ -709,9 +709,9 @@ bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double
                                              EoGeLine& rightLine) {
   EoGeLine Line;
 
-  EoDbLine* LeftLinePrimitive{nullptr};
-  EoDbLine* RightLinePrimitive{nullptr};
-  int DirectedRelationship{0};
+  EoDbLine* LeftLinePrimitive{};
+  EoDbLine* RightLinePrimitive{};
+  int DirectedRelationship{};
 
   EoGeLine TestLine;
   testLinePrimitive->GetLine(TestLine);

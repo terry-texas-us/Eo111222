@@ -105,6 +105,7 @@ class EoDbEllipse : public EoDbPrimitive {
   void SetMajorAxis(EoGeVector3d majorAxis) { m_majorAxis = std::move(majorAxis); }
   void SetMinorAxis(EoGeVector3d minorAxis) { m_minorAxis = std::move(minorAxis); }
   void SetSweepAngle(double sweepAngle) { m_sweepAngle = sweepAngle; }
+  
   double SweepAngleToPoint(EoGePoint3d point);
 
  private:

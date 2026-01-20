@@ -123,7 +123,7 @@ void EoDlgLineTypesSelection::PopulateList() {
   int index = 0;
   while (position != nullptr) {
     CString name;
-    EoDbLineType* lineType{nullptr};
+    EoDbLineType* lineType{};
     m_lineTypes.GetNextAssoc(position, name, lineType);
 
     CString indexString = lineType->IndexToString();

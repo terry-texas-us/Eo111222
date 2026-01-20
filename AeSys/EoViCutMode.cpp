@@ -1,11 +1,23 @@
 ﻿#include "Stdafx.h"
+
+#include <afx.h>
+#include <afxwin.h>
+#include <algorithm>
+
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDb.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeTransformMatrix.h"
 #include "PrimState.h"
 #include "Resource.h"
 
-EoUInt16 wPrvKeyDwn{0};
+EoUInt16 wPrvKeyDwn{};
 EoGePoint3d rPrvPos;
 
 void AeSysView::OnCutModeOptions() {}

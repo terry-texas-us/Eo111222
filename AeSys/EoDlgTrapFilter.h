@@ -15,7 +15,7 @@ class EoDlgTrapFilter : public CDialog {
   // Dialog Data
   enum { IDD = IDD_TRAP_FILTER };
 
-  AeSysDoc* m_Document{nullptr};
+  AeSysDoc* m_Document{};
 
  protected:
   virtual void DoDataExchange(CDataExchange* dataExchange);

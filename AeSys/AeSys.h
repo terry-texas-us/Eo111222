@@ -51,12 +51,12 @@ class AeSys : public CWinAppEx {
   static CString CustomRButtonUpCharacters;
 
  private:
-  int m_ArchitecturalUnitsFractionPrecision{0};
-  bool m_ClipboardDataEoGroups{false};
-  bool m_ClipboardDataImage{false};
-  bool m_ClipboardDataText{false};
-  UINT m_ClipboardFormatIdentifierForEoGroups{0};
-  int m_CurrentMode{0};
+  int m_ArchitecturalUnitsFractionPrecision{};
+  bool m_ClipboardDataEoGroups{};
+  bool m_ClipboardDataImage{};
+  bool m_ClipboardDataText{};
+  UINT m_ClipboardFormatIdentifierForEoGroups{};
+  int m_CurrentMode{};
   double m_DeviceHeightInMillimeters{0.0};
   double m_DeviceHeightInPixels{0.0};
   double m_DeviceWidthInMillimeters{0.0};
@@ -65,19 +65,19 @@ class AeSys : public CWinAppEx {
   double m_DimensionLength{0.0};
   double m_EngagedAngle{0.0};
   double m_EngagedLength{0.0};
-  bool m_HighColorMode{false};
+  bool m_HighColorMode{};
   EoGePoint3d m_HomePoints[9];
-  HMENU m_MainFrameMenuHandle{nullptr};
-  bool m_ModeInformationOverView{false};
-  int m_ModeResourceIdentifier{0};
-  CMultiDocTemplate* m_PegDocTemplate{nullptr};
-  int m_PrimaryMode{0};
+  HMENU m_MainFrameMenuHandle{};
+  bool m_ModeInformationOverView{};
+  int m_ModeResourceIdentifier{};
+  CMultiDocTemplate* m_PegDocTemplate{};
+  int m_PrimaryMode{};
   CString m_ShadowFolderPath;
-  char* m_SimplexStrokeFont{nullptr};
-  CMultiDocTemplate* m_TracingDocTemplate{nullptr};
-  EoInt16 m_TrapHighlightColor{0};
-  bool m_TrapHighlighted{false};
-  bool m_TrapModeAddGroups{false};
+  char* m_SimplexStrokeFont{};
+  CMultiDocTemplate* m_TracingDocTemplate{};
+  EoInt16 m_TrapHighlightColor{};
+  bool m_TrapHighlighted{};
+  bool m_TrapModeAddGroups{};
   Units m_Units{kEngineering};
 
  public:

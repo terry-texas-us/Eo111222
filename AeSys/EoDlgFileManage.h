@@ -39,7 +39,7 @@ class EoDlgFileManage : public CDialog {
     Descr
   };
 
-  AeSysDoc* m_Document{nullptr};
+  AeSysDoc* m_Document{};
   CImageList m_StateImages;
 
   CListBox m_BlocksList;
@@ -52,10 +52,10 @@ class EoDlgFileManage : public CDialog {
   CEdit m_Groups;
   CStatic m_References;
 
-  int NumberOfColumns{0};
-  bool m_ClickToColumnName{false};
+  int NumberOfColumns{};
+  bool m_ClickToColumnName{};
 
-  HWND m_PreviewWindowHandle{nullptr};
+  HWND m_PreviewWindowHandle{};
 
   void DrawItem(CDC& deviceContext, int itemID, int labelIndex, const RECT& rcItem);
 

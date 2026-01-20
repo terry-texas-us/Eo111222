@@ -7,13 +7,13 @@ class AeSysView;
 
 class CPrimState {
  private:
-  EoInt16 m_pointStyle{0};
+  EoInt16 m_pointStyle{};
   EoInt16 m_PenColor{7};
-  EoInt16 m_LineType{0};
+  EoInt16 m_LineType{};
   EoDbFontDefinition m_fd;
   EoDbCharacterCellDefinition m_ccd;
-  EoInt16 m_PolygonInteriorStyle{0};
-  EoInt16 m_PolygonInteriorStyleIndex{0};
+  EoInt16 m_PolygonInteriorStyle{};
+  EoInt16 m_PolygonInteriorStyleIndex{};
 
  public:
   CPrimState() : m_pointStyle(0), m_PenColor(7), m_LineType(0), m_PolygonInteriorStyle(0), m_PolygonInteriorStyleIndex(0) {}

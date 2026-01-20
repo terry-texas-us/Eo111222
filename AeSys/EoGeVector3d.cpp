@@ -105,15 +105,15 @@ void EoGeVector3d::Write(CFile& file) const {
 }
 
 EoGeVector3d ComputeArbitraryAxis(const EoGeVector3d& normal) {
-  const double Epsilon = 1.0 / 64.0;
+  const double epsilon = 1.0 / 64.0;
 
-  EoGeVector3d ArbitraryAxis;
-  if ((fabs(normal.x) < Epsilon) && (fabs(normal.y) < Epsilon)) {
-    ArbitraryAxis = EoGeCrossProduct(EoGeVector3d::kYAxis, normal);
+  EoGeVector3d arbitraryAxis;
+  if ((fabs(normal.x) < epsilon) && (fabs(normal.y) < epsilon)) {
+    arbitraryAxis = EoGeCrossProduct(EoGeVector3d::kYAxis, normal);
   } else {
-    ArbitraryAxis = EoGeCrossProduct(EoGeVector3d::kZAxis, normal);
+    arbitraryAxis = EoGeCrossProduct(EoGeVector3d::kZAxis, normal);
   }
-  return ArbitraryAxis;
+  return arbitraryAxis;
 }
 
 EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle) {

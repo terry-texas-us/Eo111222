@@ -21,7 +21,7 @@ class EoDlgSetupNote : public CDialog {
   virtual void OnOK();
 
  public:
-  EoDbFontDefinition* m_FontDefinition{nullptr};
+  EoDbFontDefinition* m_FontDefinition{};
 
   CMFCFontComboBox m_MfcFontComboControl;
 

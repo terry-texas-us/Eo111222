@@ -61,7 +61,7 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
   CPoint devicePoints[2];
   EoGePoint4d viewPoints[2];
 
-  size_t dashElementIndex{0};
+  size_t dashElementIndex{};
   std::vector<double> dashElements(numberOfDashElements);
   lineType->GetDashElements(dashElements.data());
 

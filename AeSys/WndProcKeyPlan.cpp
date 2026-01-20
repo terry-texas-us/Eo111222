@@ -6,7 +6,7 @@
 CPoint pnt;
 
 namespace {
-bool leftButtonDownInKeyplanRectangle{false};
+bool leftButtonDownInKeyplanRectangle{};
 
 void WndProcKeyPlanOnDraw(HWND hwnd) {
   PAINTSTRUCT ps;

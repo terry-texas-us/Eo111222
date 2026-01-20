@@ -118,7 +118,7 @@ int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
   listControl.SetRedraw(FALSE);
   listControl.DeleteAllItems();
 
-  int item{0};
+  int item{};
   CString name;
   EoDbLineType* lineType;
   auto position = m_MapLineTypes.GetStartPosition();
@@ -132,7 +132,7 @@ int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
 }
 
 EoInt16 EoDbLineTypeTable::LegacyLineTypeIndex(CString& name) {
-  EoInt16 index{0};
+  EoInt16 index{};
   if (name.CompareNoCase(L"ByBlock") == 0) {
     index = EoDbPrimitive::LINETYPE_BYBLOCK;
   } else if (name.CompareNoCase(L"ByLayer") == 0) {
@@ -195,7 +195,7 @@ void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
     while (file.ReadString(inputLine) != 0) {
       if (inputLine.IsEmpty() || inputLine[0] == L';') { continue; }
 
-      int nextToken{0};
+      int nextToken{};
       auto label = EoInt16(_wtoi(inputLine.Tokenize(L"=", nextToken)));
 
       auto name = inputLine.Tokenize(L",", nextToken);

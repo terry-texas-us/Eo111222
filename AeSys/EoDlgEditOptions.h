@@ -18,7 +18,7 @@ class EoDlgEditOptions : public CDialog {
   BOOL OnInitDialog() override;
   void OnOK() override;
 
-  AeSysView* m_ActiveView{nullptr};
+  AeSysView* m_ActiveView{};
 
  public:
   CEdit m_RotationXEditControl;

@@ -77,7 +77,7 @@ void EoDbGroup::BreakPolylines() {
       delete Primitive;
     } else if (Primitive->Is(EoDb::kGroupReferencePrimitive)) {
       EoDbBlock* Block;
-      if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(Primitive)->GetName(), Block) != 0) { Block->BreakPolylines(); }
+      if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(Primitive)->BlockName(), Block) != 0) { Block->BreakPolylines(); }
     }
   }
 }
@@ -91,11 +91,11 @@ void EoDbGroup::BreakSegRefs() {
       EoDbPrimitive* Primitive = GetNext(Position);
       if (Primitive->Is(EoDb::kGroupReferencePrimitive)) {
         iSegRefs++;
-        EoDbBlock* Block;
-        if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(Primitive)->GetName(), Block) != 0) {
-          EoDbGroup* pSegT = new EoDbGroup(*Block);
-          EoGePoint3d ptBase = Block->GetBasePt();
-          EoGeTransformMatrix tm = static_cast<EoDbBlockReference*>(Primitive)->BuildTransformMatrix(ptBase);
+        EoDbBlock* block;
+        if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(Primitive)->BlockName(), block) != 0) {
+          EoDbGroup* pSegT = new EoDbGroup(*block);
+          EoGePoint3d basePoint = block->BasePoint();
+          EoGeTransformMatrix tm = static_cast<EoDbBlockReference*>(Primitive)->BuildTransformMatrix(basePoint);
           pSegT->Transform(tm);
 
           this->InsertBefore(PrimitivePosition, pSegT);
@@ -144,7 +144,7 @@ int EoDbGroup::GetBlockRefCount(const CString& strBlkNam) {
   while (position != 0) {
     EoDbPrimitive* Primitive = GetNext(position);
     if (Primitive->Is(EoDb::kGroupReferencePrimitive)) {
-      if (static_cast<EoDbBlockReference*>(Primitive)->GetName() == strBlkNam) iCount++;
+      if (static_cast<EoDbBlockReference*>(Primitive)->BlockName() == strBlkNam) iCount++;
     }
   }
   return (iCount);

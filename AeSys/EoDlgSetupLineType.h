@@ -12,8 +12,8 @@ class EoDlgSetupLineType : public CDialog {
   DECLARE_DYNAMIC(EoDlgSetupLineType)
 
  public:
-  EoDbLineType* m_LineType{nullptr};
-  EoDbLineTypeTable* m_LineTypeTable{nullptr};
+  EoDbLineType* m_LineType{};
+  EoDbLineTypeTable* m_LineTypeTable{};
   CListCtrl m_LineTypesListControl;
 
   EoDlgSetupLineType(CWnd* parent = nullptr);

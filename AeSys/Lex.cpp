@@ -44,8 +44,8 @@ int tokenTypeIdentifiers[MaxTokens];
 }  // namespace
 
 void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTokens, int* locationOfTokens) {
-  int NumberOfOpenParentheses{0};
-  int PreviousTokenType{0};
+  int NumberOfOpenParentheses{};
+  int PreviousTokenType{};
 
   int OperatorStack[32]{};
   int TopOfOperatorStack{1};
@@ -126,7 +126,7 @@ void lex::ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaI
     long* lVal = (long*)cVal;
     double* dVal = (double*)cVal;
 
-    wchar_t* szpVal{nullptr};
+    wchar_t* szpVal{};
     int iLoc;
 
     int iVLen = 0;
@@ -154,7 +154,7 @@ void lex::ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaI
         byteOfset += 8;
         if (valueMetaInformation->type == RealToken) {
           iLoc = 1;
-          wchar_t* NextToken{nullptr};
+          wchar_t* NextToken{};
           szpVal = wcstok_s(cVal, L" ", &NextToken);
           wcscpy_s(&stringBuffer[iLnLoc], static_cast<size_t>(32 - iLnLoc), szpVal);
           iLnLoc += (int)wcslen(szpVal);
@@ -242,20 +242,20 @@ void lex::ConvertStringToVal(int desiredType, long tokenDefinition, const wchar_
 void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandType, void* operandBuffer) {
   wchar_t szTok[256]{};
 
-  int iDim{0};
-  int iTyp{0};
+  int iDim{};
+  int iTyp{};
 
   long lDef1 = MAKELONG(1, 1);
-  int iDim1{0};
-  int iLen1{0};
+  int iDim1{};
+  int iLen1{};
   int iTyp1{IntegerToken};
 
   long lDef2;
-  int iDim2{0};
-  int iLen2{0};
-  int iTyp2{0};
+  int iDim2{};
+  int iLen2{};
+  int iTyp2{};
 
-  int numberOfTokens{0};
+  int numberOfTokens{};
   int iExprTokTyp[32]{};
   int iExprTokLoc[32]{};
 
@@ -282,8 +282,8 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
   double* dOp2 = reinterpret_cast<double*>(secondOperandBuffer);
   long* lOp2 = reinterpret_cast<long*>(secondOperandBuffer);
 
-  int operandStackTop{0};  // Empty operand stack
-  int iTokStkId{0};        // Start with first token
+  int operandStackTop{};  // Empty operand stack
+  int iTokStkId{};        // Start with first token
 
   while (iTokStkId < numberOfTokens) {
     int tokenType = iExprTokTyp[iTokStkId];
@@ -437,7 +437,7 @@ void lex::Parse(const wchar_t* inputLine) {
 
   wchar_t token[256]{};
 
-  int linePosition{0};
+  int linePosition{};
   int lineLength = static_cast<int>(wcslen(inputLine));
 
   while (linePosition < lineLength) {
@@ -448,7 +448,7 @@ void lex::Parse(const wchar_t* inputLine) {
 
     tokenTypeIdentifiers[numberOfTokensInStream] = tokenId;
     int iLen = static_cast<int>(wcslen(token));
-    int iDim{0};
+    int iDim{};
     double dVal{0.0};
 
     switch (tokenId) {
@@ -496,7 +496,7 @@ void lex::ParseStringOperand(wchar_t* token) {
 
   auto values = (wchar_t*)&lValues[numberOfValues + 2];
 
-  int iDim{0};
+  int iDim{};
   int next{1};
   while (token[next] != '\0') {
     if (token[next] == '"' && token[next + 1] == '"') { next++; }

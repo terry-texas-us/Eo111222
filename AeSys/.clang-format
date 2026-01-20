@@ -1,7 +1,7 @@
 BasedOnStyle: Google
 ReflowComments: Never
 PointerAlignment: Left
-ColumnLimit: 160
+ColumnLimit: 120
 SortIncludes: false
 AllowShortIfStatementsOnASingleLine: true
 AllowShortBlocksOnASingleLine: true

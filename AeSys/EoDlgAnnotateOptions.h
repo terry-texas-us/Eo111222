@@ -19,7 +19,7 @@ class EoDlgAnnotateOptions : public CDialog {
   virtual BOOL OnInitDialog();
   virtual void OnOK();
 
-  AeSysView* m_ActiveView{nullptr};
+  AeSysView* m_ActiveView{};
 
  public:
   CComboBox m_EndItemTypeComboBox;

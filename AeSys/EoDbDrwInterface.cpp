@@ -138,7 +138,7 @@ void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* do
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"Converting Linetype: %s\n", lineTypeName.c_str());
 
   EoDbLineTypeTable* lineTypeTable = document->LineTypeTable();
-  EoDbLineType* LineType{nullptr};
+  EoDbLineType* LineType{};
 
   if (!lineTypeTable->Lookup(lineTypeName.c_str(), LineType)) {
     auto numberOfElements = static_cast<EoUInt16>(data.size);  // Number of linetype elements (group code 73)

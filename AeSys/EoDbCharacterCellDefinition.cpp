@@ -1,7 +1,7 @@
 ﻿#include "Stdafx.h"
 
-#include "EoGeVector3d.h"
 #include "EoDbCharacterCellDefinition.h"
+#include "EoGeVector3d.h"
 
 EoDbCharacterCellDefinition::EoDbCharacterCellDefinition() {
   m_dChrHgt = 0.1;
@@ -9,8 +9,7 @@ EoDbCharacterCellDefinition::EoDbCharacterCellDefinition() {
   m_dTextRotAng = 0.;
   m_dChrSlantAng = 0.;
 }
-EoDbCharacterCellDefinition::EoDbCharacterCellDefinition(double dTxtOffAng, double dChrSlantAng, double dChrExpFac,
-                                                         double dChrHgt) {
+EoDbCharacterCellDefinition::EoDbCharacterCellDefinition(double dTxtOffAng, double dChrSlantAng, double dChrExpFac, double dChrHgt) {
   m_dChrHgt = dChrHgt;
   m_dChrExpFac = dChrExpFac;
   m_dTextRotAng = dTxtOffAng;
@@ -30,8 +29,7 @@ EoDbCharacterCellDefinition& EoDbCharacterCellDefinition::operator=(const EoDbCh
 
   return (*this);
 }
-void CharCellDef_EncdRefSys(const EoGeVector3d& normal, EoDbCharacterCellDefinition& ccd, EoGeVector3d& xAxis,
-                            EoGeVector3d& yAxis) {
+void CharCellDef_EncdRefSys(const EoGeVector3d& normal, EoDbCharacterCellDefinition& ccd, EoGeVector3d& xAxis, EoGeVector3d& yAxis) {
   xAxis = ComputeArbitraryAxis(normal);
   xAxis.RotAboutArbAx(normal, ccd.TextRotAngGet());
 

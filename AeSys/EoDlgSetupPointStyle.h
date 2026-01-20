@@ -19,8 +19,8 @@ class CDlgSetPointStyle : public CDialogEx {
 
   // Full flag value (radio index in low bits plus checkbox flags)
 
-  int m_pointStyle{0};        // current point style (default simple pixel)
-  int m_radioPoint{0};        // radio button selection
+  int m_pointStyle{};        // current point style (default simple pixel)
+  int m_radioPoint{};        // radio button selection
   BOOL m_checkCircle{FALSE};  // corresponds to first 0x32 circle
   BOOL m_checkSquare{FALSE};  // corresponds to second 0x64 box
 

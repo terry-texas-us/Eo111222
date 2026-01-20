@@ -36,7 +36,7 @@ bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalet
     Close();
     return false;
   }
-  size_t colors{0};
+  size_t colors{};
   if (deviceIndependentBitmapStruct.dsBmih.biClrUsed != 0) {
     colors = static_cast<size_t>(deviceIndependentBitmapStruct.dsBmih.biClrUsed);
   } else {

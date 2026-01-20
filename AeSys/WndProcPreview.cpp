@@ -16,7 +16,7 @@
 #include "PrimState.h"
 
 namespace {
-CBitmap* previewBitmap{nullptr};
+CBitmap* previewBitmap{};
 }  // namespace
 
 /** Clears the preview window by filling it with black.

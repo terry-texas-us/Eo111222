@@ -24,7 +24,7 @@ class EoDlgViewParameters : public CDialog {
   void OnOK() override;
 
  public:
-  BOOL m_PerspectiveProjection{0};
+  BOOL m_PerspectiveProjection{};
   uintptr_t m_ModelView;
   afx_msg void OnBnClickedApply();
   afx_msg void OnEnChangePositionX();

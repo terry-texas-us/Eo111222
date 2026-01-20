@@ -22,7 +22,7 @@ class EoDlgTrapModify : public CDialog {
   virtual void DoDataExchange(CDataExchange* dataExchange);
   virtual void OnOK();
 
-  AeSysDoc* m_Document{nullptr};
+  AeSysDoc* m_Document{};
 
  public:
   void ModifyPolygons();

@@ -743,7 +743,7 @@ void AeSysDoc::TracingFuse(CString& nameAndLocation) {
   if (layer != nullptr) {
     wchar_t title[MAX_PATH]{};
     GetFileTitleW(nameAndLocation, title, MAX_PATH);
-    wchar_t* context{nullptr};
+    wchar_t* context{};
     wchar_t* baseName = wcstok_s(title, L".", &context);
     nameAndLocation = baseName;
     layer->ClrTracingFlg();
@@ -992,19 +992,17 @@ void AeSysDoc::OnPrimBreak() {
       delete Primitive;
       ResetAllViews();
     } else if (Primitive->Is(EoDb::kGroupReferencePrimitive)) {
-      EoDbBlockReference* pSegRef = static_cast<EoDbBlockReference*>(Primitive);
+      auto* blockReference = static_cast<EoDbBlockReference*>(Primitive);
 
-      EoDbBlock* Block;
+      EoDbBlock* block;
 
-      if (LookupBlock(pSegRef->GetName(), Block) != 0) {
+      if (LookupBlock(blockReference->BlockName(), block) != 0) {
         Group->FindAndRemovePrim(Primitive);
 
-        EoGePoint3d ptBase = Block->GetBasePt();
+        auto transformMatrix = blockReference->BuildTransformMatrix(block->BasePoint());
 
-        EoGeTransformMatrix tm = pSegRef->BuildTransformMatrix(ptBase);
-
-        EoDbGroup* pSegT = new EoDbGroup(*Block);
-        pSegT->Transform(tm);
+        EoDbGroup* pSegT = new EoDbGroup(*block);
+        pSegT->Transform(transformMatrix);
         Group->AddTail(pSegT);
 
         delete Primitive;
@@ -1262,7 +1260,7 @@ void AeSysDoc::OnEditTrapPaste() {
 
           LPCSTR buffer = (LPCSTR)GlobalLock(globalHandle);
 
-          DWORD sizeOfBuffer{0};
+          DWORD sizeOfBuffer{};
           if (buffer == nullptr) {
             GlobalUnlock(globalHandle);
             CloseClipboard();
@@ -1364,32 +1362,34 @@ void AeSysDoc::OnTrapCommandsFilter() {
   EoDlgTrapFilter Dialog(this);
   if (Dialog.DoModal() == IDOK) {}
 }
+
 void AeSysDoc::OnTrapCommandsBlock() {
-  if (m_TrappedGroupList.GetCount() == 0) return;
+  if (m_TrappedGroupList.GetCount() == 0) { return; }
 
-  EoDbBlock* Block;
-  EoUInt16 w = BlockTableSize();
-  wchar_t szBlkNam[16]{};
+  EoDbBlock* block{};
+  auto blockTableSize = BlockTableSize();
+  wchar_t name[16]{};
 
-  do { swprintf_s(szBlkNam, 16, L"_%.3i", ++w); } while (LookupBlock(szBlkNam, Block));
+  do { swprintf_s(name, 16, L"_%.3i", ++blockTableSize); } while (LookupBlock(name, block));
 
-  Block = new EoDbBlock;
+  block = new EoDbBlock;
 
-  auto Position = GetFirstTrappedGroupPosition();
-  while (Position != 0) {
-    EoDbGroup* Group = GetNextTrappedGroup(Position);
+  auto position = GetFirstTrappedGroupPosition();
+  while (position != nullptr) {
+    auto* group = GetNextTrappedGroup(position);
 
-    EoDbGroup* pSeg2 = new EoDbGroup(*Group);
+    auto* newGroup = new EoDbGroup(*group);
 
-    Block->AddTail(pSeg2);
+    block->AddTail(newGroup);
 
-    pSeg2->RemoveAll();
+    newGroup->RemoveAll();
 
-    delete pSeg2;
+    delete newGroup;
   }
-  Block->SetBasePt(m_TrapPivotPoint);
-  InsertBlock(CString(szBlkNam), Block);
+  block->SetBasePoint(m_TrapPivotPoint);
+  InsertBlock(CString(name), block);
 }
+
 void AeSysDoc::OnTrapCommandsUnblock() { m_TrappedGroupList.BreakSegRefs(); }
 void AeSysDoc::OnSetupPenColor() {
   EoDlgSetupColor Dialog;
@@ -1416,7 +1416,7 @@ void AeSysDoc::OnSetupLineType() {
   }
   EoDlgLineTypesSelection dialog(m_LineTypeTable);
 
-  EoDbLineType* currentLineType{nullptr};
+  EoDbLineType* currentLineType{};
 
   m_LineTypeTable.LookupUsingLegacyIndex(static_cast<EoUInt16>(pstate.LineType()), currentLineType);
   dialog.SetSelectedLineType(currentLineType);
@@ -1758,7 +1758,7 @@ void AeSysDoc::OnPrimExtractNum() {
     double value[32]{};
     int iTyp{};
     long lDef{};
-    int iTokId{0};
+    int iTokId{};
 
     try {
       lex::Parse(number);

@@ -46,7 +46,7 @@ class EoDlgLineTypesSelection : public CDialogEx {
   DECLARE_MESSAGE_MAP()
 
  private:
-  EoDbLineType* m_selectedLineType{nullptr};
+  EoDbLineType* m_selectedLineType{};
 
    void PopulateList();
   afx_msg void OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result);

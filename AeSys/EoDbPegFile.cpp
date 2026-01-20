@@ -105,10 +105,10 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
   for (EoUInt16 n = 0; n < numberOfLinetypes; n++) {
     CString name;
     CString description;
-    EoUInt16 definitionLength{0};
+    EoUInt16 definitionLength{};
     ReadLinetypeDefinition(dashElements, name, description, definitionLength);
 
-    EoDbLineType* lineType{nullptr};
+    EoDbLineType* lineType{};
     if (!lineTypeTable->Lookup(name, lineType)) {
       const auto index = lineTypeTable->LegacyLineTypeIndex(name);
       lineType = new EoDbLineType(index, name, description, definitionLength, dashElements.data());
@@ -305,7 +305,7 @@ void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
   EoDb::Write(*this, numberOfLinetypes);
 
   CString name;
-  EoDbLineType* linetype{nullptr};
+  EoDbLineType* linetype{};
 
   auto position = lineTypeTable->GetStartPosition();
   while (position) {
@@ -376,8 +376,8 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
     EoUInt16 NumberOfPrimitives = 0;
 
     EoDb::Write(*this, Name);
-    EoDb::Write(*this, Block->GetBlkTypFlgs());
-    Block->GetBasePt().Write(*this);
+    EoDb::Write(*this, Block->BlockTypeFlags());
+    Block->BasePoint().Write(*this);
 
     auto PrimitivePosition = Block->GetHeadPosition();
     while (PrimitivePosition != nullptr) {

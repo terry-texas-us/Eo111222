@@ -24,7 +24,7 @@ class EoDlgBlockInsert : public CDialog {
   void OnOK() override;
 
   static EoGePoint3d InsertionPoint;
-  AeSysDoc* m_Document{nullptr};
+  AeSysDoc* m_Document{};
 
  public:
   CListBox m_BlocksListBoxControl;

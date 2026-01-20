@@ -934,7 +934,7 @@ void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Unit
 */
 static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* end) {
   wchar_t token[32]{};
-  int linePosition{0};
+  int linePosition{};
   int tokenType = lex::Scan(token, inputLine, linePosition);
 
   double totalLength = feetLength;
@@ -948,7 +948,7 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
     if (tokenType == lex::ArchitecturalUnitsLengthToken) {
       // the inches component possibly looks like 1'2-3/4". end should be `-` character.If so, parse and add/subtract that also
       if (*end == L'-') {
-        wchar_t* fractionEnd{nullptr};
+        wchar_t* fractionEnd{};
         double numerator = wcstod(&end[1], &fractionEnd);
         if (fractionEnd == &end[1]) { throw L"Invalid fraction in length string."; }  // allowing 0.0 numerator here
         end = fractionEnd;
@@ -966,7 +966,7 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
 }
 
 double AeSys::ParseLength(wchar_t* inputLine) {
-  wchar_t* end{nullptr};
+  wchar_t* end{};
 
   // Parse the leading numeric portion of the string or possible the numerator of a fraction
   double length = wcstod(inputLine, &end);
@@ -974,7 +974,7 @@ double AeSys::ParseLength(wchar_t* inputLine) {
   if (end == inputLine) { throw L"Invalid length format."; }
   // The only valid case for a leading fraction is a variation of SimpleUnitsLengthToken `{sign}{fraction}(\'|\"|{metric_units})`
   if (*end == L'/') {
-    wchar_t* fractionEnd{nullptr};
+    wchar_t* fractionEnd{};
     double denominator = wcstod(&end[1], &fractionEnd);
     if (fractionEnd == &end[1] || denominator == 0.0) { throw L"Invalid length format."; }
     length = length / denominator;
@@ -1017,7 +1017,7 @@ double AeSys::ParseLength(wchar_t* inputLine) {
 */
 double AeSys::ParseLength(Units units, wchar_t* inputLine) {
   try {
-    int iTokId{0};
+    int iTokId{};
     long lDef{};
     int iTyp{};
     double length[32]{};

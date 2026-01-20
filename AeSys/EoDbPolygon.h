@@ -27,7 +27,7 @@ class EoDbPolygon : public EoDbPrimitive {
   EoGePoint3d m_HatchOrigin;
   EoGeVector3d m_vPosXAx;
   EoGeVector3d m_vPosYAx;
-  EoGePoint3d* m_Pt{nullptr};
+  EoGePoint3d* m_Pt{};
 
  public:  // Constructors and destructor
   EoDbPolygon();

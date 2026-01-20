@@ -69,7 +69,7 @@ void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
 
   EoDb::Write(*this, wPrims);
   EoDb::Write(*this, strName);
-  EoDb::Write(*this, block->GetBlkTypFlgs());
+  EoDb::Write(*this, block->BlockTypeFlags());
 
   auto BlockPosition = block->GetHeadPosition();
   while (BlockPosition != nullptr) {

@@ -4,6 +4,7 @@
 #include <afx.h>
 #include <afxstr.h>
 #include <afxwin.h>
+#include <utility>
 
 #include "AeSysView.h"
 #include "EoDb.h"
@@ -44,10 +45,7 @@ class EoDbBlockReference : public EoDbPrimitive {
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
   void AddReportToMessageList(EoGePoint3d) override;
-  void GetAllPts(EoGePoint3dArray& pts) override {
-    pts.SetSize(0);
-    pts.Add(m_insertionPoint);
-  }
+  void GetAllPts(EoGePoint3dArray& pts) override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
   EoGePoint3d GetCtrlPt() override;
@@ -69,28 +67,23 @@ class EoDbBlockReference : public EoDbPrimitive {
   void Write(CFile& /* file */, EoByte* /* buffer */) override {};
 
  public:  // Methods
-  EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& ptBase);
+  EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& insertionPoint);
 
-  EoUInt16& ColumnCount() { return m_columnCount; }
-  double& ColumnSpacing() { return m_columnSpacing; }
-  CString GetName() { return m_blockName; }
-  double GetRotation() const { return m_rotation; }
-  EoGeVector3d GetScaleFactors() const { return m_scaleFactors; }
-  EoGePoint3d& InsertionPoint() { return m_insertionPoint; }
-  EoGeVector3d Normal() const { return m_normal; }
-  EoUInt16& RowCount() { return m_rowCount; }
-  double& RowSpacing() { return m_rowSpacing; }
+  EoUInt16 ColumnCount() const noexcept { return m_columnCount; }
+  double ColumnSpacing() const noexcept { return m_columnSpacing; }
+  const CString& BlockName() const noexcept { return m_blockName; }
+  double Rotation() const noexcept { return m_rotation; }
+  const EoGeVector3d& ScaleFactors() const noexcept { return m_scaleFactors; }
+  const EoGePoint3d& InsertionPoint() const noexcept { return m_insertionPoint; }
+  const EoGeVector3d& Normal() const noexcept { return m_normal; }
+  EoUInt16 RowCount() const noexcept { return m_rowCount; }
+  double RowSpacing() const noexcept { return m_rowSpacing; }
 
   void SetColumns(EoUInt16 columns) { m_columnCount = columns; }
   void SetColumnSpacing(double columnSpacing) { m_columnSpacing = columnSpacing; }
-  void SetName(const CString& name) { m_blockName = name; }
-  void SetNormal(const EoGeVector3d& normal) { m_normal = normal; }
-
-  void SetInsertionPoint(const DRW_Coord& point) {
-    m_insertionPoint.x = point.x;
-    m_insertionPoint.y = point.y;
-    m_insertionPoint.z = point.z;
-  }
+  void SetName(CString name) { m_blockName = std::move(name); }
+  void SetNormal(EoGeVector3d normal) { m_normal = std::move(normal); }
+  void SetInsertionPoint(const DRW_Coord& point);
   void SetInsertionPoint(const EoGePoint3d& point) { m_insertionPoint = point; }
   void SetRotation(double rotation) { m_rotation = rotation; }
   void SetRows(EoUInt16 rows) { m_rowCount = rows; }

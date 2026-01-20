@@ -21,7 +21,7 @@
 #include "PrimState.h"
 #include "Resource.h"
 
-EoUInt16 PreviousDrawCommand{0};
+EoUInt16 PreviousDrawCommand{};
 
 void AeSysView::OnDrawModeOptions() { AeSysDoc::GetDoc()->OnSetupOptionsDraw(); }
 

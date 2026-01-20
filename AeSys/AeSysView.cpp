@@ -395,7 +395,7 @@ AeSysView::AeSysView()
       // Cursor/Selection
       m_ViewStateInformation(true),
       m_middleButtonPanStartPoint(),
-      m_middleButtonPanInProgress{false},
+      m_middleButtonPanInProgress{},
       m_RubberbandType(None),
       m_RubberbandBeginPoint(),
       m_RubberbandLogicalBeginPoint(),
