@@ -49,7 +49,7 @@ void AeSysDoc::CompressTrappedGroups() {
   EoDbGroup* NewGroup = new EoDbGroup;
 
   auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
 
     AnyLayerRemove(Group);
@@ -67,7 +67,7 @@ void AeSysDoc::CompressTrappedGroups() {
 }
 void AeSysDoc::CopyTrappedGroups(EoGeVector3d translate) {
   auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
     EoDbGroup* NewGroup = new EoDbGroup(*Group);
 
@@ -161,7 +161,7 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
 
 void AeSysDoc::DeleteAllTrappedGroups() {
   auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
     AnyLayerRemove(Group);
     RemoveGroupFromAllViews(Group);
@@ -205,7 +205,7 @@ void AeSysDoc::SquareTrappedGroups(AeSysView* view) {
   UpdateAllViews(nullptr, EoDb::kGroupsEraseSafeTrap, &m_TrappedGroupList);
 
   auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
     Group->Square(view);
   }

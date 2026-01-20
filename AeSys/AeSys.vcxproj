@@ -1527,7 +1527,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="EoDlgSetupNote.h" />
     <ClInclude Include="EoDlgViewZoom.h" />
     <ClInclude Include="EoDbDwgToPegFile.h" />
-    <ClInclude Include="EntityToPrimitiveProtocolExtension.h" />
     <ClInclude Include="EoApOptions.h" />
     <ClInclude Include="EoDbBlock.h" />
     <ClInclude Include="EoDbBlockReference.h" />

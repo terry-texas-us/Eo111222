@@ -1,12 +1,22 @@
 ﻿#include "Stdafx.h"
+
+#include <Windows.h>
+#include <cfloat>
+#include <cmath>
+
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
+#include "EoDb.h"
 #include "EoDbEllipse.h"
+#include "EoDbGroup.h"
 #include "EoDbLine.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgPipeOptions.h"
 #include "EoDlgPipeSymbol.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGeVector3d.h"
 #include "PrimState.h"
 #include "Resource.h"
 
@@ -79,7 +89,7 @@ void AeSysView::OnPipeModeFitting() {
     EoDbEllipse* VerticalSection;
     Group = SelectCircleUsingPoint(CurrentPnt, m_PipeRiseDropRadius, VerticalSection);
     if (Group != 0) {
-      CurrentPnt = VerticalSection->Center();
+      CurrentPnt = VerticalSection->CenterPoint();
 
       if (pts.IsEmpty()) {
         pts.Add(CurrentPnt);
@@ -136,7 +146,7 @@ void AeSysView::OnPipeModeRise() {
     EoDbEllipse* VerticalSection;
     Group = SelectCircleUsingPoint(CurrentPnt, m_PipeRiseDropRadius, VerticalSection);
     if (Group != 0) {  // On an existing vertical pipe section
-      CurrentPnt = VerticalSection->Center();
+      CurrentPnt = VerticalSection->CenterPoint();
       if (pts.IsEmpty()) {
         pts.Add(CurrentPnt);
         m_PreviousOp = ModeLineHighlightOp(ID_OP4);
@@ -195,7 +205,7 @@ void AeSysView::OnPipeModeDrop() {
     EoDbEllipse* VerticalSection;
     Group = SelectCircleUsingPoint(CurrentPnt, m_PipeRiseDropRadius, VerticalSection);
     if (Group != 0) {  // On an existing vertical pipe section
-      CurrentPnt = VerticalSection->Center();
+      CurrentPnt = VerticalSection->CenterPoint();
       if (pts.IsEmpty()) {
         pts.Add(CurrentPnt);
         m_PreviousOp = ModeLineHighlightOp(ID_OP5);
@@ -233,8 +243,7 @@ void AeSysView::OnPipeModeDrop() {
 }
 
 void AeSysView::OnPipeModeSymbol() {
-  double SymbolSize[] = {0.09375, 0.09375, 0.09375, 0.09375, 0.125, 0.125, 0.125, 0.125, 0.125,
-                         0.125,   0.125,   0.125,   0.125,   0.125, 0.125, 0.0,   0.0,   0.09375};
+  double SymbolSize[] = {0.09375, 0.09375, 0.09375, 0.09375, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.0, 0.0, 0.09375};
   double TicDistance[] = {0.125,   0.125,   0.125,   0.125,   0.15625, 0.15625, 0.15625, 0.15625, 0.15625,
                           0.15625, 0.15625, 0.15625, 0.15625, 0.15625, 0.15625, 0.03125, 0.03125, 0.125};
 
@@ -266,8 +275,7 @@ void AeSysView::OnPipeModeSymbol() {
 
   HorizontalSection->EndPoint(SymbolBeginPoint);
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, HorizontalSection);
-  Group = new EoDbGroup(
-      new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), SymbolEndPoint, EndPoint));
+  Group = new EoDbGroup(new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), SymbolEndPoint, EndPoint));
   document->AddWorkLayerGroup(Group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
@@ -555,12 +563,10 @@ void AeSysView::OnPipeModeWye() {
 
       double DistanceBetweenSectionPoints = EoGeVector3d(BeginPointProjectedToSection, PointOnSection).Length();
 
-      if (fabs(DistanceBetweenSectionPoints - DistanceToSection) <=
-          0.25) {  // Just need to shift point on section and do a single 45 degree line
+      if (fabs(DistanceBetweenSectionPoints - DistanceToSection) <= 0.25) {  // Just need to shift point on section and do a single 45 degree line
         PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, DistanceToSection);
         HorizontalSection->EndPoint(PointOnSection);
-        Group = new EoDbGroup(
-            new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), PointOnSection, EndPoint));
+        Group = new EoDbGroup(new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), PointOnSection, EndPoint));
         document->AddWorkLayerGroup(Group);
 
         Group = new EoDbGroup;
@@ -581,8 +587,7 @@ void AeSysView::OnPipeModeWye() {
           PointAtBend = BeginPointProjectedToSection.ProjectToward(pts[0], d3);
           PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, d3);
         } else {
-          PointAtBend = BeginPointProjectedToSection.ProjectToward(PointOnSection,
-                                                                   DistanceBetweenSectionPoints - DistanceToSection);
+          PointAtBend = BeginPointProjectedToSection.ProjectToward(PointOnSection, DistanceBetweenSectionPoints - DistanceToSection);
           PointAtBend = pts[0] + EoGeVector3d(BeginPointProjectedToSection, PointAtBend);
         }
         HorizontalSection->EndPoint(PointOnSection);
@@ -593,8 +598,7 @@ void AeSysView::OnPipeModeWye() {
         document->AddWorkLayerGroup(Group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
-        Group = new EoDbGroup(
-            new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), PointOnSection, EndPoint));
+        Group = new EoDbGroup(new EoDbLine(HorizontalSection->PenColor(), HorizontalSection->LineType(), PointOnSection, EndPoint));
         document->AddWorkLayerGroup(Group);
         Group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, PointAtBend, Group);
@@ -670,8 +674,7 @@ void AeSysView::DoPipeModeMouseMove() {
   }
   pts.SetSize(NumberOfPoints);
 }
-void AeSysView::GenerateLineWithFittings(int beginType, EoGePoint3d& beginPoint, int endType, EoGePoint3d& endPoint,
-                                         EoDbGroup* group) {
+void AeSysView::GenerateLineWithFittings(int beginType, EoGePoint3d& beginPoint, int endType, EoGePoint3d& endPoint, EoDbGroup* group) {
   EoGePoint3d pt1 = beginPoint;
   EoGePoint3d pt2 = endPoint;
 
@@ -732,7 +735,7 @@ void AeSysView::DropFromOrRiseIntoHorizontalSection(EoGePoint3d& point, EoDbGrou
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
-bool AeSysView::GenerateTicMark(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, double distance, EoDbGroup* group) {
+bool AeSysView::GenerateTicMark(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, double distance, EoDbGroup* group) const {
   EoGePoint3d PointOnLine = beginPoint.ProjectToward(endPoint, distance);
 
   EoGeVector3d Projection(PointOnLine, endPoint);

@@ -380,7 +380,7 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
     Block->GetBasePt().Write(*this);
 
     auto PrimitivePosition = Block->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Block->GetNext(PrimitivePosition);
       if (Primitive->Write(*this)) NumberOfPrimitives++;
     }

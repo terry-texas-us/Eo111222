@@ -1,27 +1,100 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+#include <algorithm>
+#include <cfloat>
+#include <cmath>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
+#include "EoDb.h"
 #include "EoDbEllipse.h"
+#include "EoDbGroup.h"
 #include "EoDbLine.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgFixupOptions.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
+#include "Resource.h"
 
-EoUInt16 PreviousFixupCommand{0};
+namespace {
+
+EoUInt16 PreviousFixupCommand{};
 
 EoDbGroup* pSegPrv{nullptr};
-EoDbGroup* pSegRef{nullptr};
-EoDbGroup* pSegSec{nullptr};
-
 EoDbPrimitive* pPrimPrv{nullptr};
-EoDbPrimitive* pPrimRef{nullptr};
-EoDbPrimitive* pPrimSec{nullptr};
+EoGeLine lnPrv{};
 
-EoGeLine lnPrv;
-EoGeLine lnRef;
-EoGeLine lnSec;
+EoDbGroup* pSegRef{nullptr};
+EoDbPrimitive* pPrimRef{nullptr};
+EoGeLine lnRef{};
+
+EoDbGroup* pSegSec{nullptr};
+EoDbPrimitive* pPrimSec{nullptr};
+EoGeLine lnSec{};
+
+
+/** @brief Finds center point of a circle given radius and two tangent vectors.
+ * @param radius The radius of the circle.
+ * @param arLn1Beg The beginning point of the first line.
+ * @param arLn1End The ending point of the first line.
+ * @param arLn2Beg The beginning point of the second line.
+ * @param arLn2End The ending point of the second line.
+ * @param centerPoint Output parameter that receives the center point of the circle.
+ * @note A radius and two lines define four center points.  The center point
+ *       selected is on the concave side of the angle formed by the two vectors
+ *       defined by the line endpoints.	These two vectors are oriented with
+ *       the tail of the second vector at the head of the first.
+ * @return true if center point found, false otherwise.
+ */
+bool pFndCPGivRadAnd4Pts(double radius, EoGePoint3d arLn1Beg, EoGePoint3d arLn1End, EoGePoint3d arLn2Beg, EoGePoint3d arLn2End, EoGePoint3d* centerPoint) {
+  double dA1, dA2, dB1, dB2, dC1RAB1, dC2RAB2, dDet, dSgnRad, dV1Mag, dV2Mag;
+  EoGeVector3d vPlnNorm;
+
+  EoGeVector3d v1(arLn1Beg, arLn1End);  // Determine vector defined by endpoints of first line
+  dV1Mag = v1.Length();
+  if (dV1Mag <= DBL_EPSILON) return false;
+
+  EoGeVector3d v2(arLn2Beg, arLn2End);
+  dV2Mag = v2.Length();
+  if (dV2Mag <= DBL_EPSILON) return false;
+
+  vPlnNorm = EoGeCrossProduct(v1, v2);  // Determine vector normal to tangent vectors
+  vPlnNorm.Normalize();
+  if (vPlnNorm.IsNearNull()) return false;
+
+  if (fabs((EoGeDotProduct(vPlnNorm, EoGeVector3d(arLn1Beg, arLn2Beg)))) > DBL_EPSILON)  // Four points are not coplanar
+    return false;
+
+  EoGeTransformMatrix tm(arLn1Beg, vPlnNorm);
+
+  arLn1End = tm * arLn1End;
+  arLn2Beg = tm * arLn2Beg;
+  arLn2End = tm * arLn2End;
+  dA1 = -arLn1End.y / dV1Mag;
+  dB1 = arLn1End.x / dV1Mag;
+  v2.x = arLn2End.x - arLn2Beg.x;
+  v2.y = arLn2End.y - arLn2Beg.y;
+  dA2 = -v2.y / dV2Mag;
+  dB2 = v2.x / dV2Mag;
+  dDet = dA2 * dB1 - dA1 * dB2;
+
+  dSgnRad = (arLn1End.x * arLn2End.y - arLn2End.x * arLn1End.y) >= 0. ? -fabs(radius) : fabs(radius);
+
+  dC1RAB1 = dSgnRad;
+  dC2RAB2 = (arLn2Beg.x * arLn2End.y - arLn2End.x * arLn2Beg.y) / dV2Mag + dSgnRad;
+  (*centerPoint).x = (dB2 * dC1RAB1 - dB1 * dC2RAB2) / dDet;
+  (*centerPoint).y = (dA1 * dC2RAB2 - dA2 * dC1RAB1) / dDet;
+  (*centerPoint).z = 0.;
+  tm.Inverse();
+  *centerPoint = tm * (*centerPoint);
+  return true;
+}
+}  // namespace
 
 void AeSysView::OnFixupModeOptions() {
   EoDlgFixupOptions Dialog;
@@ -104,7 +177,7 @@ void AeSysView::OnFixupModeReference() {
         EoGeVector3d rPrvEndRefBeg(lnPrv.end, lnRef.begin);
         vPlnNorm = EoGeCrossProduct(rPrvEndInter, rPrvEndRefBeg);
         vPlnNorm.Normalize();
-        pFndSwpAngGivPlnAnd3Lns(vPlnNorm, lnPrv.end, ptInt, lnRef.begin, ptCP, &dAng);
+        SweepAngleFromNormalAnd3Points(vPlnNorm, lnPrv.end, ptInt, lnRef.begin, ptCP, &dAng);
         vMajAx = EoGeVector3d(ptCP, lnPrv.end);
         EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, Eo::HalfPi);
         vMinAx = EoGeVector3d(ptCP, rTmp);
@@ -117,6 +190,7 @@ void AeSysView::OnFixupModeReference() {
     ModeLineUnhighlightOp(PreviousFixupCommand);
   }
 }
+
 void AeSysView::OnFixupModeMend() {
   auto* Document = GetDocument();
 
@@ -200,7 +274,7 @@ void AeSysView::OnFixupModeMend() {
         EoGeVector3d rPrvEndSecBeg(lnPrv.end, lnSec.begin);
         vPlnNorm = EoGeCrossProduct(rPrvEndInter, rPrvEndSecBeg);
         vPlnNorm.Normalize();
-        pFndSwpAngGivPlnAnd3Lns(vPlnNorm, lnPrv.end, ptInt, lnSec.begin, ptCP, &dAng);
+        SweepAngleFromNormalAnd3Points(vPlnNorm, lnPrv.end, ptInt, lnSec.begin, ptCP, &dAng);
         vMajAx = EoGeVector3d(ptCP, lnPrv.end);
         EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, Eo::HalfPi);
         vMinAx = EoGeVector3d(ptCP, rTmp);
@@ -218,6 +292,7 @@ void AeSysView::OnFixupModeMend() {
     ModeLineUnhighlightOp(PreviousFixupCommand);
   }
 }
+
 void AeSysView::OnFixupModeChamfer() {
   auto* Document = GetDocument();
 
@@ -287,6 +362,7 @@ void AeSysView::OnFixupModeChamfer() {
     ModeLineUnhighlightOp(PreviousFixupCommand);
   }
 }
+
 void AeSysView::OnFixupModeFillet() {
   auto* Document = GetDocument();
 
@@ -354,7 +430,7 @@ void AeSysView::OnFixupModeFillet() {
       EoGeVector3d rPrvEndSecBeg(lnPrv.end, lnSec.begin);
       vPlnNorm = EoGeCrossProduct(rPrvEndInter, rPrvEndSecBeg);
       vPlnNorm.Normalize();
-      pFndSwpAngGivPlnAnd3Lns(vPlnNorm, lnPrv.end, ptInt, lnSec.begin, ptCP, &dAng);
+      SweepAngleFromNormalAnd3Points(vPlnNorm, lnPrv.end, ptInt, lnSec.begin, ptCP, &dAng);
       vMajAx = EoGeVector3d(ptCP, lnPrv.end);
       EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, Eo::HalfPi);
       vMinAx = EoGeVector3d(ptCP, rTmp);
@@ -365,6 +441,7 @@ void AeSysView::OnFixupModeFillet() {
     ModeLineUnhighlightOp(PreviousFixupCommand);
   }
 }
+
 void AeSysView::OnFixupModeSquare() {
   auto* Document = GetDocument();
 
@@ -389,6 +466,7 @@ void AeSysView::OnFixupModeSquare() {
     }
   }
 }
+
 void AeSysView::OnFixupModeParallel() {
   auto* Document = GetDocument();
 
@@ -411,6 +489,7 @@ void AeSysView::OnFixupModeParallel() {
     }
   }
 }
+
 void AeSysView::OnFixupModeReturn() {
   auto* Document = GetDocument();
 
@@ -421,6 +500,7 @@ void AeSysView::OnFixupModeReturn() {
   }
   ModeLineUnhighlightOp(PreviousFixupCommand);
 }
+
 void AeSysView::OnFixupModeEscape() {
   auto* Document = GetDocument();
 

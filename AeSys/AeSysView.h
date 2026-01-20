@@ -716,8 +716,8 @@ class AeSysView : public CView {
  *  identifies the second section, and the direction from the point to the cursor location defines the direction for the two elbow turns.
  *  @note Placeholder until implementation is return of (0.0, 0.0, 0.0)
  */
-  EoGePoint3d GenerateBullheadTee(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine, double existingSectionWidth, double existingSectionDepth,
-                                  EoDbGroup* group);
+  EoGePoint3d GenerateBullheadTee(EoDbGroup* /* existingGroup */, EoGeLine& /* existingSectionReferenceLine */, double /* existingSectionWidth */,
+                                  double /* existingSectionDepth */, EoDbGroup* /* group */) {};
   /// <summary>Generates a full elbow takeoff fitting.</summary>
   void GenerateFullElbowTakeoff(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine, Section existingSection, EoDbGroup* group);
   /// <summary>Generates section which transitions from one rectangle to another</summary>
@@ -748,7 +748,7 @@ class AeSysView : public CView {
   /// <summary>Adds a fitting indication to horizontal pipe section as required by previous fitting type.</summary>
   void GenerateLineWithFittings(int beginType, EoGePoint3d& beginPoint, int endType, EoGePoint3d& endPoint, EoDbGroup* group);
   /// <summary>Draws tic mark at a point distance from begin point on the line defined by begin and end points.</summary>
-  bool GenerateTicMark(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, double distance, EoDbGroup* group);
+  bool GenerateTicMark(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, double distance, EoDbGroup* group) const;
   void DropFromOrRiseIntoHorizontalSection(EoGePoint3d& point, EoDbGroup* group, EoDbLine* section);
   void DropIntoOrRiseFromHorizontalSection(EoGePoint3d& point, EoDbGroup* group, EoDbLine* section);
 
@@ -786,8 +786,8 @@ class AeSysView : public CView {
   afx_msg void OnPowerModeReturn();
   afx_msg void OnPowerModeEscape();
 
-  void GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint);
-  void GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint);
+  void GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const;
+  void GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const;
   void DoPowerModeConductor(EoUInt16 conductorType);
 
  public:

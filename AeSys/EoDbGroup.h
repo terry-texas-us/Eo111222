@@ -1,6 +1,14 @@
 ﻿#pragma once
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxcoll.h>
+#include <afxstr.h>
+#include <afxwin.h>
+
 #include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeVector3d.h"
 
 class AeSysView;
 class EoDbBlock;

@@ -1877,16 +1877,16 @@ EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& pt) {
 
 EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbEllipse*& circle) {
   auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
     auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kEllipsePrimitive)) {
         EoDbEllipse* Arc = static_cast<EoDbEllipse*>(Primitive);
 
-        if (fabs(Arc->GetSwpAng() - Eo::TwoPi) <= DBL_EPSILON && (Arc->GetMajAx().SquaredLength() - Arc->GetMinAx().SquaredLength()) <= DBL_EPSILON) {
-          if (point.DistanceTo(Arc->Center()) <= tolerance) {
+        if (fabs(Arc->SweepAngle() - Eo::TwoPi) <= DBL_EPSILON && (Arc->MajorAxis().SquaredLength() - Arc->MinorAxis().SquaredLength()) <= DBL_EPSILON) {
+          if (point.DistanceTo(Arc->CenterPoint()) <= tolerance) {
             circle = Arc;
             return Group;
           }
@@ -1902,10 +1902,10 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
   ModelViewTransformPoint(ptView);
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
     auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kLinePrimitive)) {
         EoGePoint3d PointOnLine;
@@ -1921,10 +1921,10 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
 
 EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor, EoInt16 pointStyle, EoDbPoint*& primitive) {
   auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
     auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kPointPrimitive)) {
         EoDbPoint* Point = static_cast<EoDbPoint*>(Primitive);
@@ -1955,10 +1955,10 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
   EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
     auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kLinePrimitive)) {
         if (Primitive->SelectUsingPoint(this, ptView, ptEng)) {
@@ -1980,10 +1980,10 @@ EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& pt) {
   ModelViewTransformPoint(ptView);
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
     auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kTextPrimitive)) {
         EoGePoint3d ptProj;

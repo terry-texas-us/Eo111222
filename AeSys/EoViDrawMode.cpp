@@ -190,13 +190,13 @@ void AeSysView::OnDrawModeReturn() {
 
       if (NumberOfPoints == 1) return;
 
-      EoDbEllipse* pArc = new EoDbEllipse(pts[0], pts[1], pts[2]);
-      if (pArc->GetSwpAng() == 0.0) {
-        delete pArc;
+      EoDbEllipse* arc = new EoDbEllipse(pts[0], pts[1], pts[2]);
+      if (arc->SweepAngle() == 0.0) {
+        delete arc;
         app.AddStringToMessageList(IDS_MSG_PTS_COLINEAR);
         return;
       }
-      Group = new EoDbGroup(pArc);
+      Group = new EoDbGroup(arc);
       break;
     }
     case ID_OP6:

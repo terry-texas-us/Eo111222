@@ -1341,7 +1341,7 @@ void AeSysDoc::OnTrapCommandsInvert() {
       while (LayerPosition != 0) {
         EoDbGroup* Group = Layer->GetNext(LayerPosition);
         auto GroupPosition = FindTrappedGroup(Group);
-        if (GroupPosition != 0) {
+        if (GroupPosition != nullptr) {
           m_TrappedGroupList.RemoveAt(GroupPosition);
         } else {
           AddGroupToTrap(Group);

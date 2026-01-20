@@ -42,7 +42,7 @@ void EoDlgTrapModify::ModifyPolygons() {
     EoDbGroup* Group = m_Document->GetNextTrappedGroup(Position);
 
     auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 
       if (Primitive->Is(EoDb::kPolygonPrimitive)) {

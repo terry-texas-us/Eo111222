@@ -1,15 +1,22 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxdd_.h>
+#include <afxmsg_.h>
+#include <afxstr.h>
+#include <afxwin.h>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
+#include "EoDb.h"
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
 #include "EoDbGroup.h"
 #include "EoDlgBlockInsert.h"
+#include "EoGePoint3d.h"
 #include "Preview.h"
 #include "Resource.h"
-
-// EoDlgBlockInsert dialog
 
 IMPLEMENT_DYNAMIC(EoDlgBlockInsert, CDialog)
 
@@ -21,8 +28,7 @@ END_MESSAGE_MAP()
 EoGePoint3d EoDlgBlockInsert::InsertionPoint;
 
 EoDlgBlockInsert::EoDlgBlockInsert(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgBlockInsert::IDD, pParent) {}
-EoDlgBlockInsert::EoDlgBlockInsert(AeSysDoc* document, CWnd* pParent /*=nullptr*/)
-    : CDialog(EoDlgBlockInsert::IDD, pParent), m_Document(document) {}
+EoDlgBlockInsert::EoDlgBlockInsert(AeSysDoc* document, CWnd* pParent /*=nullptr*/) : CDialog(EoDlgBlockInsert::IDD, pParent), m_Document(document) {}
 EoDlgBlockInsert::~EoDlgBlockInsert() {}
 void EoDlgBlockInsert::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);

@@ -1,270 +1,307 @@
 ﻿#include "Stdafx.h"
+
+#include <cfloat>
+#include <cmath>
+
 #include "Eo.h"
 #include "EoGeLine.h"
 #include "EoGeMatrix.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 
-EoGeTransformMatrix::EoGeTransformMatrix(const EoGePoint3d& refPoint, EoGeVector3d refAxis, const double angle) {
+/** @brief Constructs transformation matrix required to transform points about a reference point and axis.
+ * @param referencePoint reference point
+ * @param referenceAxis reference axis vector (unit)
+ * @param angle angle (radians)
+ * @note Assumes reference vector is a unit vector. Uses right handed convention. Based on the following equation:
+ *  [ti] * [r] * [t], where [ti] translation of reference point to origin
+ *  and [r] rotation about origin matrix defined as:
+ *  | ax*ax+(1-ax*ax)*ca | ax*ay*(1-ca)+az*sa | ax*az*(1-ca)-ay*sa |
+ *  | ax*ay*(1-ca)-az*sa | ay*ay+(1-ay*ay)*ca | ay*az*(1-ca)+ax*sa |
+ *  | ax*az*(1-ca)+ay*sa | ay*az*(1-ca)-ax*sa | az*az+(1-az*az)*ca | and
+ *  [t] translation of reference point back to initial position
+ */
+EoGeTransformMatrix::EoGeTransformMatrix(const EoGePoint3d& referencePoint, EoGeVector3d referenceAxis, const double angle) {
   double SinAng = sin(angle);
   double CosAng = cos(angle);
 
-  double dXSqrd = refAxis.x * refAxis.x;
-  double dYSqrd = refAxis.y * refAxis.y;
-  double dZSqrd = refAxis.z * refAxis.z;
+  double xSquared = referenceAxis.x * referenceAxis.x;
+  double ySquared = referenceAxis.y * referenceAxis.y;
+  double zSquared = referenceAxis.z * referenceAxis.z;
 
-  m_4X4[0][0] = (dXSqrd + (1. - dXSqrd) * CosAng);
-  m_4X4[0][1] = (refAxis.x * refAxis.y * (1. - CosAng) - refAxis.z * SinAng);
-  m_4X4[0][2] = (refAxis.x * refAxis.z * (1. - CosAng) + refAxis.y * SinAng);
-  m_4X4[0][3] = -m_4X4[0][0] * refPoint.x - m_4X4[0][1] * refPoint.y - m_4X4[0][2] * refPoint.z + refPoint.x;
+  m_4X4[0][0] = (xSquared + (1.0 - xSquared) * CosAng);
+  m_4X4[0][1] = (referenceAxis.x * referenceAxis.y * (1.0 - CosAng) - referenceAxis.z * SinAng);
+  m_4X4[0][2] = (referenceAxis.x * referenceAxis.z * (1.0 - CosAng) + referenceAxis.y * SinAng);
+  m_4X4[0][3] = -m_4X4[0][0] * referencePoint.x - m_4X4[0][1] * referencePoint.y - m_4X4[0][2] * referencePoint.z + referencePoint.x;
 
-  m_4X4[1][0] = (refAxis.x * refAxis.y * (1. - CosAng) + refAxis.z * SinAng);
-  m_4X4[1][1] = (dYSqrd + (1. - dYSqrd) * CosAng);
-  m_4X4[1][2] = (refAxis.y * refAxis.z * (1. - CosAng) - refAxis.x * SinAng);
-  m_4X4[1][3] = -m_4X4[1][0] * refPoint.x - m_4X4[1][1] * refPoint.y - m_4X4[1][2] * refPoint.z + refPoint.y;
+  m_4X4[1][0] = (referenceAxis.x * referenceAxis.y * (1.0 - CosAng) + referenceAxis.z * SinAng);
+  m_4X4[1][1] = (ySquared + (1.0 - ySquared) * CosAng);
+  m_4X4[1][2] = (referenceAxis.y * referenceAxis.z * (1.0 - CosAng) - referenceAxis.x * SinAng);
+  m_4X4[1][3] = -m_4X4[1][0] * referencePoint.x - m_4X4[1][1] * referencePoint.y - m_4X4[1][2] * referencePoint.z + referencePoint.y;
 
-  m_4X4[2][0] = (refAxis.x * refAxis.z * (1. - CosAng) - refAxis.y * SinAng);
-  m_4X4[2][1] = (refAxis.y * refAxis.z * (1. - CosAng) + refAxis.x * SinAng);
-  m_4X4[2][2] = (dZSqrd + (1. - dZSqrd) * CosAng);
-  m_4X4[2][3] = -m_4X4[2][0] * refPoint.x - m_4X4[2][1] * refPoint.y - m_4X4[2][2] * refPoint.z + refPoint.z;
+  m_4X4[2][0] = (referenceAxis.x * referenceAxis.z * (1.0 - CosAng) - referenceAxis.y * SinAng);
+  m_4X4[2][1] = (referenceAxis.y * referenceAxis.z * (1.0 - CosAng) + referenceAxis.x * SinAng);
+  m_4X4[2][2] = (zSquared + (1.0 - zSquared) * CosAng);
+  m_4X4[2][3] = -m_4X4[2][0] * referencePoint.x - m_4X4[2][1] * referencePoint.y - m_4X4[2][2] * referencePoint.z + referencePoint.z;
 
-  m_4X4[3][0] = 0.;
-  m_4X4[3][1] = 0.;
-  m_4X4[3][2] = 0.;
-  m_4X4[3][3] = 1.;
+  m_4X4[3][0] = 0.0;
+  m_4X4[3][1] = 0.0;
+  m_4X4[3][2] = 0.0;
+  m_4X4[3][3] = 1.0;
 }
-EoGeTransformMatrix::EoGeTransformMatrix(EoGePoint3d ptO, EoGeVector3d vXAx, EoGeVector3d vYAx) {
-  EoGeVector3d vN = EoGeCrossProduct(vXAx, vYAx);
-  vN.Normalize();
 
-  DefUsingArbPtAndAx(ptO, vN);
+/** @brief Constructs a transformation matrix to align an arbitrary coordinate system defined by a point and two reference vectors.
+ * 
+ * This constructor initializes a transformation matrix that aligns an arbitrary coordinate system defined by a reference point and two reference vectors (x and y axes).
+ * The z-axis is derived from the cross product of the x and y reference vectors. The resulting transformation matrix maps the specified coordinate system to the standard Cartesian coordinate system.
+ * 
+ * @param referencePoint The origin point of the reference coordinate system.
+ * @param xAxis The reference vector defining the x-axis of the coordinate system.
+ * @param yAxis The reference vector defining the y-axis of the coordinate system.
+ * 
+ * @note The x and y reference axis vectors do not need to be normalized; appropriate scaling is applied as needed.
+ */
+EoGeTransformMatrix::EoGeTransformMatrix(EoGePoint3d referencePoint, EoGeVector3d xAxis, EoGeVector3d yAxis) {
+  EoGeVector3d normal = EoGeCrossProduct(xAxis, yAxis);
+  normal.Normalize();
+
+  ConstructUsingReferencePointAndNormal(referencePoint, normal);
 
   // Transform x-axis reference vector onto z=0 plane
-  EoGeVector3d vXAxT = vXAx;
-  vXAxT = *this * vXAxT;
+  EoGeVector3d xAxisTransformed = xAxis;
+  xAxisTransformed = *this * xAxisTransformed;
 
-  double dX = vXAxT.x;
-  double dY = vXAxT.y;
+  EoGeVector3d scaleVector(1.0 / sqrt(xAxisTransformed.x * xAxisTransformed.x + xAxisTransformed.y * xAxisTransformed.y), 1.0, 1.0);
 
-  EoGeVector3d vScale(1. / sqrt(dX * dX + dY * dY), 1.0, 1.0);
-
-  vXAxT.Normalize();
+  xAxisTransformed.Normalize();
 
   // To get x-axis reference vector as x-axis
-  EoGeTransformMatrix tm;
-  *this *= tm.ZAxisRotation(-vXAxT.y, vXAxT.x);
+  EoGeTransformMatrix transformMatrix;
+  *this *= transformMatrix.ZAxisRotation(-xAxisTransformed.y, xAxisTransformed.x);
 
   // Transform y-axis reference vector onto z=0 plane
-  EoGeVector3d vYAxT = vYAx;
-  vYAxT = *this * vYAxT;
+  EoGeVector3d yAxisTransformed = yAxis;
+  yAxisTransformed = *this * yAxisTransformed;
 
-  if (fabs(vYAxT.y) <= DBL_EPSILON) return;
+  if (fabs(yAxisTransformed.y) <= DBL_EPSILON) { return; }
 
-  vScale.y = 1. / vYAxT.y;
-  vScale.z = 1.;
+  scaleVector.y = 1.0 / yAxisTransformed.y;
+  scaleVector.z = 1.0;
 
   // Add shear to matrix which gets positive y-axis reference vector as y-axis
-  if (fabs(vYAxT.x) > DBL_EPSILON) {
-    double dShrFac = -vYAxT.x / vYAxT.y;
-    for (int i = 0; i < 4; i++) { m_4X4[0][i] += m_4X4[1][i] * dShrFac; }
+  if (fabs(yAxisTransformed.x) > DBL_EPSILON) {
+    double shearFactor = -yAxisTransformed.x / yAxisTransformed.y;
+    for (int i = 0; i < 4; i++) { m_4X4[0][i] += m_4X4[1][i] * shearFactor; }
   }
-  Scale(vScale);
+  Scale(scaleVector);
 }
-//EoGeTransformMatrix::EoGeTransformMatrix(int* iOrd, EoGeVector3d angleVector) {
-//	Identity();
-//	double AngleVector[3] = {angleVector.x, angleVector.y, angleVector.z};
-//
-//	for (int i = 0; i < 3; i++) {
-//		double Angle = EoArcLength(AngleVector[iOrd[i]]);
-//		if (fabs(Angle) > FLT_EPSILON) {
-//			double SinAng = sin(Angle);
-//			double CosAng = cos(Angle);
-//
-//			EoGeTransformMatrix tm;
-//			if (iOrd[i] == 0) {
-//				*this *= tm.XAxisRotation(SinAng, CosAng);
-//			}
-//			else if (iOrd[i] == 1) {
-//				*this *= tm.YAxisRotation(SinAng, CosAng);
-//			}
-//			else {
-//				*this *= tm.ZAxisRotation(SinAng, CosAng);
-//			}
-//		}
-//	}
-//}
 
+EoGeTransformMatrix::EoGeTransformMatrix(EoGePoint3d referencePoint, EoGeVector3d normal) { 
+  ConstructUsingReferencePointAndNormal(referencePoint, normal); 
+}
+
+/** @brief Builds rotation transformation matrices.
+ * @param rotationAngles Angles (in degrees) for each axis
+ * @note Rotations are applied in X, Y, Z order. Angles (in degrees) for each axis
+ * @return The resulting rotation transformation matrix.
+ */
 EoGeTransformMatrix EoGeTransformMatrix::BuildRotationTransformMatrix(const EoGeVector3d& rotationAngles) const {
-  EoGeTransformMatrix Matrix;
+  EoGeTransformMatrix matrix;
 
-  Matrix.Identity();
-  Matrix.AppendXAxisRotation(rotationAngles.x);
-  Matrix.AppendYAxisRotation(rotationAngles.y);
-  Matrix.AppendZAxisRotation(rotationAngles.z);
+  matrix.Identity();
+  matrix.AppendXAxisRotation(rotationAngles.x);
+  matrix.AppendYAxisRotation(rotationAngles.y);
+  matrix.AppendZAxisRotation(rotationAngles.z);
 
-  return Matrix;
+  return matrix;
 }
+
 void EoGeTransformMatrix::AppendXAxisRotation(double xAxisAngle) {
   if (fabs(xAxisAngle) != 0.0) {
-    double Angle = Eo::DegreeToRadian(xAxisAngle);
-    EoGeTransformMatrix Matrix;
-    *this *= Matrix.XAxisRotation(sin(Angle), cos(Angle));
+    double angleInRadians = Eo::DegreeToRadian(xAxisAngle);
+    EoGeTransformMatrix matrix;
+    *this *= matrix.XAxisRotation(sin(angleInRadians), cos(angleInRadians));
   }
 }
+
 void EoGeTransformMatrix::AppendYAxisRotation(double yAxisAngle) {
   if (fabs(yAxisAngle) != 0.0) {
-    double Angle = Eo::DegreeToRadian(yAxisAngle);
-    EoGeTransformMatrix Matrix;
-    *this *= Matrix.YAxisRotation(sin(Angle), cos(Angle));
+    double angleInRadians = Eo::DegreeToRadian(yAxisAngle);
+    EoGeTransformMatrix matrix;
+    *this *= matrix.YAxisRotation(sin(angleInRadians), cos(angleInRadians));
   }
 }
+
 void EoGeTransformMatrix::AppendZAxisRotation(double zAxisAngle) {
   if (fabs(zAxisAngle) != 0.0) {
-    double Angle = Eo::DegreeToRadian(zAxisAngle);
-    EoGeTransformMatrix Matrix;
-    *this *= Matrix.ZAxisRotation(sin(Angle), cos(Angle));
+    double angleInRadians = Eo::DegreeToRadian(zAxisAngle);
+    EoGeTransformMatrix matrix;
+    *this *= matrix.ZAxisRotation(sin(angleInRadians), cos(angleInRadians));
   }
 }
-void EoGeTransformMatrix::DefUsingArbPtAndAx(EoGePoint3d ptO, EoGeVector3d vN) {
+
+/** @brief Constructs transformation matrix required to transform points about a reference point and normal.
+ *  @param referencePoint reference point on plane which defines origin
+ *  @param normal unit vector defining plane normal
+ *  @note Assumes plane normal is a unit vector. Uses right handed convention. See Rodgers, 3-9 Rotation about an arbitrary axis in space.
+*/
+void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(EoGePoint3d referencePoint, EoGeVector3d normal) {
   Identity();
-  Translate(EoGeVector3d(ptO, EoGePoint3d::kOrigin));
+  Translate(EoGeVector3d(referencePoint, EoGePoint3d::kOrigin));
 
-  double dAbsNy = fabs(vN.y);
-  double dAbsNz = fabs(vN.z);
+  double yNormalAbs = fabs(normal.y);
+  double zNormalAbs = fabs(normal.z);
 
-  // avoid sqrt use if Ny or Nz are 0.
-
-  double d = 0.;
-  if (dAbsNz <= DBL_EPSILON)
-    d = dAbsNy;
-  else if (dAbsNy <= DBL_EPSILON)
-    d = dAbsNz;
-  else
-    d = sqrt(dAbsNy * dAbsNy + dAbsNz * dAbsNz);
-
-  // sin(Rx) = Ny / d; cos(Rx) = Nz / d
-
-  EoGeTransformMatrix tm;
-  if (d > DBL_EPSILON) {
-    tm.XAxisRotation(vN.y / d, vN.z / d);
-    *this *= tm;
+  double d = 0.0;
+  if (zNormalAbs <= DBL_EPSILON) {
+    d = yNormalAbs;
+  } else if (yNormalAbs <= DBL_EPSILON) {
+    d = zNormalAbs;
+  } else {
+    d = sqrt(yNormalAbs * yNormalAbs + zNormalAbs * zNormalAbs);
   }
-  // sin(Ry) = Nx; cos(Ry) = d;
 
-  if (fabs(vN.x) > DBL_EPSILON) {
-    tm.YAxisRotation(-vN.x, d);
-    *this *= tm;
+  EoGeTransformMatrix transformMatrix;
+  if (d > DBL_EPSILON) {
+    transformMatrix.XAxisRotation(normal.y / d, normal.z / d);
+    *this *= transformMatrix;
+  }
+  if (fabs(normal.x) > DBL_EPSILON) {
+    transformMatrix.YAxisRotation(-normal.x, d);
+    *this *= transformMatrix;
   }
 }
-EoGeTransformMatrix EoGeTransformMatrix::XAxisRotation(const double sinAngle, const double cosAngle) {
-  m_4X4[0][0] = 1.;
-  m_4X4[0][1] = 0.;
-  m_4X4[0][2] = 0.;
-  m_4X4[0][3] = 0.;
 
-  m_4X4[1][0] = 0.;
+/** @brief Initializes a matrix for rotation about the x-axis, the y-axis rotates to the z-axis
+ *  @param sinAngle sine of rotation angle
+ *  @param cosAngle cosine of rotation angle
+ */
+EoGeTransformMatrix EoGeTransformMatrix::XAxisRotation(const double sinAngle, const double cosAngle) {
+  m_4X4[0][0] = 1.0;
+  m_4X4[0][1] = 0.0;
+  m_4X4[0][2] = 0.0;
+  m_4X4[0][3] = 0.0;
+
+  m_4X4[1][0] = 0.0;
   m_4X4[1][1] = cosAngle;
   m_4X4[1][2] = -sinAngle;
-  m_4X4[1][3] = 0.;
+  m_4X4[1][3] = 0.0;
 
-  m_4X4[2][0] = 0.;
+  m_4X4[2][0] = 0.0;
   m_4X4[2][1] = sinAngle;
   m_4X4[2][2] = cosAngle;
-  m_4X4[2][3] = 0.;
+  m_4X4[2][3] = 0.0;
 
-  m_4X4[3][0] = 0.;
-  m_4X4[3][1] = 0.;
-  m_4X4[3][2] = 0.;
-  m_4X4[3][3] = 1.;
+  m_4X4[3][0] = 0.0;
+  m_4X4[3][1] = 0.0;
+  m_4X4[3][2] = 0.0;
+  m_4X4[3][3] = 1.0;
 
   return (*this);
 }
+
+/** @brief Initializes a matrix for rotation about the y-axis, the z-axis rotates to the x-axis
+ *  @param sinAngle sine of rotation angle
+ *  @param cosAngle cosine of rotation angle
+ */
 EoGeTransformMatrix EoGeTransformMatrix::YAxisRotation(const double sinAngle, const double cosAngle) {
   m_4X4[0][0] = cosAngle;
-  m_4X4[0][1] = 0.;
+  m_4X4[0][1] = 0.0;
   m_4X4[0][2] = sinAngle;
-  m_4X4[0][3] = 0.;
+  m_4X4[0][3] = 0.0;
 
-  m_4X4[1][0] = 0.;
-  m_4X4[1][1] = 1.;
-  m_4X4[1][2] = 0.;
-  m_4X4[1][3] = 0.;
+  m_4X4[1][0] = 0.0;
+  m_4X4[1][1] = 1.0;
+  m_4X4[1][2] = 0.0;
+  m_4X4[1][3] = 0.0;
 
   m_4X4[2][0] = -sinAngle;
-  m_4X4[2][1] = 0.;
+  m_4X4[2][1] = 0.0;
   m_4X4[2][2] = cosAngle;
-  m_4X4[2][3] = 0.;
+  m_4X4[2][3] = 0.0;
 
-  m_4X4[3][0] = 0.;
-  m_4X4[3][1] = 0.;
-  m_4X4[3][2] = 0.;
-  m_4X4[3][3] = 1.;
+  m_4X4[3][0] = 0.0;
+  m_4X4[3][1] = 0.0;
+  m_4X4[3][2] = 0.0;
+  m_4X4[3][3] = 1.0;
 
   return (*this);
 }
+
+/** @brief Initializes a matrix for rotation about the z-axis, the x-axis rotates to the y-axis
+ *  @param sinAngle sine of rotation angle
+ *  @param cosAngle cosine of rotation angle
+ */
 EoGeTransformMatrix EoGeTransformMatrix::ZAxisRotation(const double sinAngle, const double cosAngle) {
   m_4X4[0][0] = cosAngle;
   m_4X4[0][1] = -sinAngle;
-  m_4X4[0][2] = 0.;
-  m_4X4[0][3] = 0.;
+  m_4X4[0][2] = 0.0;
+  m_4X4[0][3] = 0.0;
 
   m_4X4[1][0] = sinAngle;
   m_4X4[1][1] = cosAngle;
-  m_4X4[1][2] = 0.;
-  m_4X4[1][3] = 0.;
+  m_4X4[1][2] = 0.0;
+  m_4X4[1][3] = 0.0;
 
-  m_4X4[2][0] = 0.;
-  m_4X4[2][1] = 0.;
-  m_4X4[2][2] = 1.;
-  m_4X4[2][3] = 0.;
+  m_4X4[2][0] = 0.0;
+  m_4X4[2][1] = 0.0;
+  m_4X4[2][2] = 1.0;
+  m_4X4[2][3] = 0.0;
 
-  m_4X4[3][0] = 0.;
-  m_4X4[3][1] = 0.;
-  m_4X4[3][2] = 0.;
-  m_4X4[3][3] = 1.;
+  m_4X4[3][0] = 0.0;
+  m_4X4[3][1] = 0.0;
+  m_4X4[3][2] = 0.0;
+  m_4X4[3][3] = 1.0;
 
   return (*this);
 }
-void EoGeTransformMatrix::Scale(EoGeVector3d v) {
+
+void EoGeTransformMatrix::Scale(EoGeVector3d scaleVector) {
   for (int i = 0; i < 4; i++) {
-    m_4X4[0][i] *= v.x;
-    m_4X4[1][i] *= v.y;
-    m_4X4[2][i] *= v.z;
+    m_4X4[0][i] *= scaleVector.x;
+    m_4X4[1][i] *= scaleVector.y;
+    m_4X4[2][i] *= scaleVector.z;
   }
 }
 
-EoGeLine EoGeTransformMatrix::operator*(EoGeLine line) {
-  EoGeLine lineOut;
+EoGeLine EoGeTransformMatrix::operator*(const EoGeLine& line) {
+  EoGeLine transformedLine;
 
-  lineOut.begin = *this * line.begin;
-  lineOut.end = *this * line.end;
+  transformedLine.begin = *this * line.begin;
+  transformedLine.end = *this * line.end;
 
-  return lineOut;
+  return transformedLine;
 }
+
 EoGePoint3d EoGeTransformMatrix::operator*(const EoGePoint3d& point) {
-  EoGePoint3d ptOut;
+  EoGePoint3d transformedPoint;
 
-  ptOut.x = point.x * m_4X4[0][0] + point.y * m_4X4[0][1] + point.z * m_4X4[0][2] + m_4X4[0][3];
-  ptOut.y = point.x * m_4X4[1][0] + point.y * m_4X4[1][1] + point.z * m_4X4[1][2] + m_4X4[1][3];
-  ptOut.z = point.x * m_4X4[2][0] + point.y * m_4X4[2][1] + point.z * m_4X4[2][2] + m_4X4[2][3];
+  transformedPoint.x = point.x * m_4X4[0][0] + point.y * m_4X4[0][1] + point.z * m_4X4[0][2] + m_4X4[0][3];
+  transformedPoint.y = point.x * m_4X4[1][0] + point.y * m_4X4[1][1] + point.z * m_4X4[1][2] + m_4X4[1][3];
+  transformedPoint.z = point.x * m_4X4[2][0] + point.y * m_4X4[2][1] + point.z * m_4X4[2][2] + m_4X4[2][3];
 
-  return ptOut;
+  return transformedPoint;
 }
-EoGePoint4d EoGeTransformMatrix::operator*(EoGePoint4d& point) {
-  EoGePoint4d ptOut;
 
-  ptOut.x = point.x * m_4X4[0][0] + point.y * m_4X4[0][1] + point.z * m_4X4[0][2] + point.w * m_4X4[0][3];
-  ptOut.y = point.x * m_4X4[1][0] + point.y * m_4X4[1][1] + point.z * m_4X4[1][2] + point.w * m_4X4[1][3];
-  ptOut.z = point.x * m_4X4[2][0] + point.y * m_4X4[2][1] + point.z * m_4X4[2][2] + point.w * m_4X4[2][3];
-  ptOut.w = point.x * m_4X4[3][0] + point.y * m_4X4[3][1] + point.z * m_4X4[3][2] + point.w * m_4X4[3][3];
+EoGePoint4d EoGeTransformMatrix::operator*(const EoGePoint4d& point) {
+  EoGePoint4d transformedPoint;
 
-  return ptOut;
+  transformedPoint.x = point.x * m_4X4[0][0] + point.y * m_4X4[0][1] + point.z * m_4X4[0][2] + point.w * m_4X4[0][3];
+  transformedPoint.y = point.x * m_4X4[1][0] + point.y * m_4X4[1][1] + point.z * m_4X4[1][2] + point.w * m_4X4[1][3];
+  transformedPoint.z = point.x * m_4X4[2][0] + point.y * m_4X4[2][1] + point.z * m_4X4[2][2] + point.w * m_4X4[2][3];
+  transformedPoint.w = point.x * m_4X4[3][0] + point.y * m_4X4[3][1] + point.z * m_4X4[3][2] + point.w * m_4X4[3][3];
+
+  return transformedPoint;
 }
-EoGeVector3d EoGeTransformMatrix::operator*(EoGeVector3d vector) {
-  EoGeVector3d vOut;
 
-  vOut.x = vector.x * m_4X4[0][0] + vector.y * m_4X4[0][1] + vector.z * m_4X4[0][2];
-  vOut.y = vector.x * m_4X4[1][0] + vector.y * m_4X4[1][1] + vector.z * m_4X4[1][2];
-  vOut.z = vector.x * m_4X4[2][0] + vector.y * m_4X4[2][1] + vector.z * m_4X4[2][2];
+EoGeVector3d EoGeTransformMatrix::operator*(const EoGeVector3d& vector) {
+  EoGeVector3d transformedVector;
 
-  return vOut;
+  transformedVector.x = vector.x * m_4X4[0][0] + vector.y * m_4X4[0][1] + vector.z * m_4X4[0][2];
+  transformedVector.y = vector.x * m_4X4[1][0] + vector.y * m_4X4[1][1] + vector.z * m_4X4[1][2];
+  transformedVector.z = vector.x * m_4X4[2][0] + vector.y * m_4X4[2][1] + vector.z * m_4X4[2][2];
+
+  return transformedVector;
 }

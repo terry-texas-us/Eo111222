@@ -719,11 +719,11 @@ bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double
   double TestLineAngle = fmod(TestLine.AngleFromXAxisXY(), Eo::Pi);
 
   auto GroupPosition = GetLastGroupPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     auto* Group = GetPreviousGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive == testLinePrimitive || !Primitive->Is(EoDb::kLinePrimitive)) continue;
 

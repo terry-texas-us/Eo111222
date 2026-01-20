@@ -78,7 +78,6 @@ class EoDbBlockReference : public EoDbPrimitive {
   EoGeVector3d GetScaleFactors() const { return m_scaleFactors; }
   EoGePoint3d& InsertionPoint() { return m_insertionPoint; }
   EoGeVector3d Normal() const { return m_normal; }
-  void Read(CFile&);
   EoUInt16& RowCount() { return m_rowCount; }
   double& RowSpacing() { return m_rowSpacing; }
 

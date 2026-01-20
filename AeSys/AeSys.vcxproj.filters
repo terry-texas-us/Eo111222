@@ -1825,9 +1825,6 @@
     <ClInclude Include="EoApOptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EntityToPrimitiveProtocolExtension.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ChildFrm.h">
       <Filter>Header Files</Filter>
     </ClInclude>

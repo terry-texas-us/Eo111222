@@ -1,18 +1,34 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <algorithm>
+#include <cctype>
+#include <cfloat>
+#include <cmath>
+#include <string>
+#include <string.h>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "Eo.h"
+#include "EoDb.h"
 #include "EoDbDimension.h"
 #include "EoDbEllipse.h"
+#include "EoDbGroup.h"
 #include "EoDbJobFile.h"
+#include "EoDbLayer.h"
 #include "EoDbLine.h"
 #include "EoDbPoint.h"
 #include "EoDbPolygon.h"
+#include "EoDbPrimitive.h"
 #include "EoDbSpline.h"
 #include "EoDbText.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
 #include "EoGeReferenceSystem.h"
-#include <string>
+#include "EoGeVector3d.h"
 
 /// <remarks>
 /// Vax: the excess 128 exponent .. range is -128 (0x00 - 0x80) to 127 (0xff - 0x80)
@@ -187,9 +203,7 @@ bool EoDbJobFile::ReadNextPrimitive(CFile& file, EoByte* buffer, EoInt16& primit
     UINT BytesRemaining = static_cast<UINT>(LengthInChunks - 1) * 32U;
 
     if (BytesRemaining >= EoDbPrimitive::BUFFER_SIZE - 32) { throw L"Exception.FileJob: Primitive buffer overflow."; }
-    if (file.Read(&buffer[32], BytesRemaining) < BytesRemaining) {
-      throw L"Exception.FileJob: Unexpected end of file.";
-    }
+    if (file.Read(&buffer[32], BytesRemaining) < BytesRemaining) { throw L"Exception.FileJob: Unexpected end of file."; }
   }
   return true;
 }
@@ -362,7 +376,7 @@ EoDbPrimitive* EoDbJobFile::ConvertPointPrimitive() {
 
   EoGePoint3d Point = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
 
-  double Data[3];
+  double Data[3]{};
 
   Data[0] = ((CVaxFloat*)&m_PrimBuf[20])->Convert();
   Data[1] = ((CVaxFloat*)&m_PrimBuf[24])->Convert();
@@ -386,10 +400,8 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
   EoGeVector3d MajorAxis;
   if (SweepAngle < 0.0) {
     EoGePoint3d pt;
-    pt.x = (CenterPoint.x +
-            ((BeginPoint.x - CenterPoint.x) * cos(SweepAngle) - (BeginPoint.y - CenterPoint.y) * sin(SweepAngle)));
-    pt.y = (CenterPoint.y +
-            ((BeginPoint.x - CenterPoint.x) * sin(SweepAngle) + (BeginPoint.y - CenterPoint.y) * cos(SweepAngle)));
+    pt.x = (CenterPoint.x + ((BeginPoint.x - CenterPoint.x) * cos(SweepAngle) - (BeginPoint.y - CenterPoint.y) * sin(SweepAngle)));
+    pt.y = (CenterPoint.y + ((BeginPoint.x - CenterPoint.x) * sin(SweepAngle) + (BeginPoint.y - CenterPoint.y) * cos(SweepAngle)));
     MajorAxis = CenterPoint - pt;
   } else {
     MajorAxis = CenterPoint - BeginPoint;
@@ -416,7 +428,7 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1PointPrimitive() {
   EoGePoint3d Point = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
   Point *= 1.e-3;
 
-  double Data[3];
+  double Data[3]{};
 
   Data[0] = ((CVaxFloat*)&m_PrimBuf[20])->Convert();
   Data[1] = ((CVaxFloat*)&m_PrimBuf[24])->Convert();

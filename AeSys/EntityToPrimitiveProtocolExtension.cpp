@@ -1,6 +1,7 @@
 ﻿#include "Stdafx.h"
 #if defined(USING_ODA)
 #include <Windows.h>
+#include <cfloat>
 #include <cmath>
 
 #include "AeSysDoc.h"

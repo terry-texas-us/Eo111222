@@ -96,11 +96,11 @@ void EoDlgTrapFilter::OnOK() {
 }
 void EoDlgTrapFilter::FilterByColor(EoInt16 colorIndex) {
   auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = m_Document->GetNextTrappedGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->PenColor() == colorIndex) {
         m_Document->RemoveTrappedGroup(Group);
@@ -113,11 +113,11 @@ void EoDlgTrapFilter::FilterByColor(EoInt16 colorIndex) {
 }
 void EoDlgTrapFilter::FilterByLineType(int lineType) {
   auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = m_Document->GetNextTrappedGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->LineType() == lineType) {
         m_Document->RemoveTrappedGroup(Group);
@@ -130,13 +130,13 @@ void EoDlgTrapFilter::FilterByLineType(int lineType) {
 }
 void EoDlgTrapFilter::FilterByPrimitiveType(const EoDb::PrimitiveTypes primitiveType) {
   auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
-  while (GroupPosition != 0) {
-    bool bFilter = FALSE;
+  while (GroupPosition != nullptr) {
+    bool bFilter{};
 
-    EoDbGroup* Group = m_Document->GetNextTrappedGroup(GroupPosition);
+    auto* Group = m_Document->GetNextTrappedGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 
       switch (primitiveType) {

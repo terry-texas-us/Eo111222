@@ -1,9 +1,17 @@
 ﻿#include "Stdafx.h"
+
+#include <Windows.h>
+#include <cmath>
+
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDb.h"
 #include "EoDbEllipse.h"
+#include "EoDbGroup.h"
 #include "EoDbLine.h"
 #include "EoDbPolyline.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
 #include "Resource.h"
 
 void AeSysView::OnPowerModeOptions() {
@@ -22,8 +30,8 @@ void AeSysView::OnPowerModeCircuit() {
   EoDbEllipse* SymbolCircle;
   EoDbGroup* Group = SelectCircleUsingPoint(CurrentPnt, 0.02, SymbolCircle);
   if (Group != 0) {
-    CurrentPnt = SymbolCircle->Center();
-    double CurrentRadius = SymbolCircle->GetMajAx().Length();
+    CurrentPnt = SymbolCircle->CenterPoint();
+    double CurrentRadius = SymbolCircle->MajorAxis().Length();
 
     if (pts.IsEmpty()) {
       pts.Add(CurrentPnt);
@@ -117,8 +125,8 @@ void AeSysView::DoPowerModeMouseMove() {
         EoDbEllipse* SymbolCircle;
         EoDbGroup* Group = SelectCircleUsingPoint(CurrentPnt, 0.02, SymbolCircle);
         if (Group != 0) {
-          double CurrentRadius = SymbolCircle->GetMajAx().Length();
-          CurrentPnt = SymbolCircle->Center();
+          double CurrentRadius = SymbolCircle->MajorAxis().Length();
+          CurrentPnt = SymbolCircle->CenterPoint();
           CurrentPnt = CurrentPnt.ProjectToward(pts[0], CurrentRadius);
         } else {
           CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
@@ -188,7 +196,7 @@ void AeSysView::OnPowerModeEscape() {
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 }
 
-void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) {
+void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const {
   auto* document = GetDocument();
   EoGePoint3dArray Points;
   Points.SetSize(3);
@@ -206,8 +214,7 @@ void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& e
   Group->AddTail(new EoDbPolyline(2, 1, Points));
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 }
-void AeSysView::GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d& pointOnCircuit,
-                                             EoGePoint3d& endPoint) {
+void AeSysView::GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const {
   auto* document = GetDocument();
   EoGePoint3d Points[5];
 

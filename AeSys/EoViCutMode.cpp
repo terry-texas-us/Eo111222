@@ -23,11 +23,11 @@ void AeSysView::OnCutModeTorch() {
   ModelViewTransformPoint(ptView);
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != 0) {
+  while (GroupPosition != nullptr) {
     EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != 0) {
+    while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 
       if (Primitive->SelectUsingPoint(this, ptView, ptCut)) {  // Pick point is within tolerance of primative
@@ -69,13 +69,13 @@ void AeSysView::OnCutModeSlice() {
     EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
 
     auto GroupPosition = GetFirstVisibleGroupPosition();
-    while (GroupPosition != 0) {
+    while (GroupPosition != nullptr) {
       EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
 
       if (Document->FindTrappedGroup(Group) != 0) continue;
 
       auto PrimitivePosition = Group->GetHeadPosition();
-      while (PrimitivePosition != 0) {
+      while (PrimitivePosition != nullptr) {
         EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 
         ln = EoGeLine(ptView[0], ptView[1]);

@@ -1,7 +1,14 @@
 ﻿#include "Stdafx.h"
+
+#include <Windows.h>
+
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "EoDlgEditOptions.h"
+#include "EoGePoint3d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
+#include "Resource.h"
 
 void AeSysView::OnEditModeOptions() {
   EoDlgEditOptions Dialog(this);
