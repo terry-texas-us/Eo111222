@@ -12,6 +12,7 @@
 #include "Eo.h"
 #include "EoDb.h"
 #include "EoDbCharacterCellDefinition.h"
+#include "EoDbCircle.h"
 #include "EoDbEllipse.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
@@ -132,7 +133,10 @@ void AeSysView::OnAnnotateModeBubble() {
     ReleaseDC(DeviceContext);
   }
   if (NumberOfSides() == 0) {
-    Group->AddTail(new EoDbEllipse(1, 1, CurrentPnt, BubbleRadius()));
+/////////////////////////////////////////////////////////////////////////////////////
+    Group->AddTail(new EoDbCircle(1, 1, CurrentPnt, BubbleRadius()));
+/////////////////////////////////////////////////////////////////////////////////////
+    //Group->AddTail(new EoDbEllipse(1, 1, CurrentPnt, BubbleRadius()));
   } else {
     Group->AddTail(new EoDbPolyline(1, 1, CurrentPnt, BubbleRadius(), NumberOfSides()));
   }

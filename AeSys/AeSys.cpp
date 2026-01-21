@@ -58,7 +58,7 @@ ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance);
 
 namespace {
 
-  /** @brief Converts a multi-byte (UTF-8) string to a wide-character string.
+/** @brief Converts a multi-byte (UTF-8) string to a wide-character string.
 * @param multiByte The multi-byte (UTF-8) string to convert.
 * @return The converted wide-character string.
 */
@@ -71,13 +71,16 @@ std::wstring MultiByteToWString(const char* multiByte) {
   ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, &string[0], size - 1);
   return string;
 }
-  
+
 constexpr size_t numberOfPenWidths{16};
-constexpr double defaultPenWidths[numberOfPenWidths] = {0.0,  0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225,
+constexpr double defaultPenWidths[numberOfPenWidths] = {0.0,  0.0075, 0.015, 0.02,   0.03, 0.0075, 0.015, 0.0225,
                                                         0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
 }  // namespace
-double penWidths[numberOfPenWidths] = {0.0, 0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
-static void ResetPenWidthsToDefault() { std::copy(std::begin(defaultPenWidths), std::end(defaultPenWidths), penWidths); }
+double penWidths[numberOfPenWidths] = {0.0,  0.0075, 0.015, 0.02,   0.03, 0.0075, 0.015, 0.0225,
+                                       0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
+static void ResetPenWidthsToDefault() {
+  std::copy(std::begin(defaultPenWidths), std::end(defaultPenWidths), penWidths);
+}
 
 namespace hatch {
 double dXAxRefVecScal;
@@ -212,7 +215,8 @@ BOOL AeSys::InitInstance() {
   params.m_bVislManagerTheme = TRUE;
   GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL, RUNTIME_CLASS(CMFCToolTipCtrl), &params);
 
-  EnableUserTools(ID_TOOLS_ENTRY, ID_USER_TOOL1, ID_USER_TOOL10, RUNTIME_CLASS(CUserTool), IDR_MENU_ARGS, IDR_MENU_DIRS);
+  EnableUserTools(ID_TOOLS_ENTRY, ID_USER_TOOL1, ID_USER_TOOL10, RUNTIME_CLASS(CUserTool), IDR_MENU_ARGS,
+                  IDR_MENU_DIRS);
 
   // Initialize common controls required to enable visual styles.
   INITCOMMONCONTROLSEX InitCtrls{};
@@ -638,7 +642,8 @@ void AeSys::EditColorPalette() {
   cc.lpCustColors = GreyPalette;
   ::ChooseColor(&cc);
 
-  MessageBoxW(nullptr, L"The background color is no longer associated with the pen Color Palette.", L"Deprecation Notice", MB_OK | MB_ICONINFORMATION);
+  MessageBoxW(nullptr, L"The background color is no longer associated with the pen Color Palette.",
+              L"Deprecation Notice", MB_OK | MB_ICONINFORMATION);
 
   AeSysDoc::GetDoc()->UpdateAllViews(nullptr, 0L, nullptr);
 }
@@ -744,12 +749,15 @@ void AeSys::BuildModifiedAcceleratorTable() {
   AcceleratorTableHandle = ::LoadAccelerators(m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
   int AcceleratorTableEntries = CopyAcceleratorTableW(AcceleratorTableHandle, nullptr, 0);
 
-  LPACCEL ModifiedAcceleratorTable = new ACCEL[static_cast<size_t>(AcceleratorTableEntries + ModeAcceleratorTableEntries)];
+  LPACCEL ModifiedAcceleratorTable =
+      new ACCEL[static_cast<size_t>(AcceleratorTableEntries + ModeAcceleratorTableEntries)];
 
   CopyAcceleratorTableW(ModeAcceleratorTableHandle, ModifiedAcceleratorTable, ModeAcceleratorTableEntries);
-  CopyAcceleratorTableW(AcceleratorTableHandle, &ModifiedAcceleratorTable[ModeAcceleratorTableEntries], AcceleratorTableEntries);
+  CopyAcceleratorTableW(AcceleratorTableHandle, &ModifiedAcceleratorTable[ModeAcceleratorTableEntries],
+                        AcceleratorTableEntries);
 
-  MainFrame->m_hAccelTable = ::CreateAcceleratorTable(ModifiedAcceleratorTable, AcceleratorTableEntries + ModeAcceleratorTableEntries);
+  MainFrame->m_hAccelTable =
+      ::CreateAcceleratorTable(ModifiedAcceleratorTable, AcceleratorTableEntries + ModeAcceleratorTableEntries);
 
   delete[] ModifiedAcceleratorTable;
 }
@@ -788,7 +796,8 @@ void AeSys::FormatAngle(CString& angleAsString, const double angle, const int wi
   angleAsString.Format(FormatSpecification, Eo::RadianToDegree(angle));
 }
 
-void AeSys::FormatLength(CString& lengthAsString, Units units, const double length, const int minWidth, const int precision) {
+void AeSys::FormatLength(CString& lengthAsString, Units units, const double length, const int minWidth,
+                         const int precision) {
   const size_t bufSize{32};
   auto lengthAsBuffer = lengthAsString.GetBufferSetLength(bufSize);
 
@@ -845,7 +854,8 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   }
   wcscat_s(lengthAsBuffer, bufSize, L"\"");
 }
-void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width, const int precision) {
+void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width,
+                                    const int precision) {
   wchar_t szBuf[16]{};
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
@@ -877,7 +887,8 @@ void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize,
     }
   }
 }
-void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length, const int width, const int precision) {
+void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length,
+                               const int width, const int precision) {
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   CString formatSpecification;
@@ -1034,7 +1045,8 @@ double AeSys::ParseLength(Units units, wchar_t* inputLine) {
       return (0.0);
     } catch (const wchar_t* errorMessage) { app.AddStringToMessageList(std::wstring(errorMessage)); }
 
-    if (iTyp == lex::ArchitecturalUnitsLengthToken || iTyp == lex::EngineeringUnitsLengthToken || iTyp == lex::SimpleUnitsLengthToken) {
+    if (iTyp == lex::ArchitecturalUnitsLengthToken || iTyp == lex::EngineeringUnitsLengthToken ||
+        iTyp == lex::SimpleUnitsLengthToken) {
       return (length[0]);
     } else {
       lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, length);

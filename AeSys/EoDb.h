@@ -17,6 +17,8 @@ enum PrimitiveTypes {
   kGroupReferencePrimitive = 0x0102,
   kLinePrimitive = 0x0200,
   kPolygonPrimitive = 0x0400,
+  kCirclePrimitive = 0x1001,
+  kArcPrimitive = 0x1002,
   kEllipsePrimitive = 0x1003,
   kSplinePrimitive = 0x2000,
   kCSplinePrimitive = 0x2001,

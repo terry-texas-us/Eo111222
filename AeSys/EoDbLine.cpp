@@ -225,6 +225,15 @@ bool EoDbLine::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) 
 
   return false;
 }
+
+/** @brief Clips line to area defined by two points.
+ * @param ptLL Lower left point of area.
+ * @param ptUR Upper right point of area.
+ * @param ptInt Array of two points to receive clipped line.
+ * @return
+ *		0 - line is completely outside area
+ *		2 - line is completely or partially within area (ptInt contains clipped line)
+ */
 int EoDbLine::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptInt) {
   int i;
   int iLoc[2]{};

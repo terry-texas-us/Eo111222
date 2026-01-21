@@ -16,6 +16,7 @@ constexpr double DegreeToRadian(double angleInDegrees) noexcept { return angleIn
 constexpr double RadianToDegree(double angleInRadians) noexcept { return angleInRadians * (180.0 / std::numbers::pi); }
 
 constexpr double angularEpsilon = 1e-12;
+constexpr double lengthEpsilon = 1e-9;
 
 /** @brief Returns the sign of a number: -1 if negative, 1 if positive, 0 if zero. */
 constexpr int Signum(const double number) { return (number < 0.0 ? -1 : (number > 0.0 ? 1 : 0)); }

@@ -1065,7 +1065,7 @@ void AeSysView::DisplayPixel(CDC* deviceContext, COLORREF cr, const EoGePoint3d&
   if (ptView.IsInView()) { deviceContext->SetPixel(DoProjection(ptView), cr); }
 }
 
-void AeSysView::DoCameraRotate(int iDir) {
+void AeSysView::DoCameraRotate(int rotationDirection) {
   EoGeVector3d vN = m_ViewTransform.Target() - m_ViewTransform.Position();
   vN.Normalize();
 
@@ -1073,28 +1073,28 @@ void AeSysView::DoCameraRotate(int iDir) {
   vU.Normalize();
 
   EoGeVector3d vV = EoGeCrossProduct(vN, vU);
-  vU.Normalize();
+  vV.Normalize();
 
-  EoGePoint3d Position = m_ViewTransform.Position();
-  EoGePoint3d Target = m_ViewTransform.Target();
-  switch (iDir) {
+  EoGePoint3d position = m_ViewTransform.Position();
+  EoGePoint3d target = m_ViewTransform.Target();
+  switch (rotationDirection) {
     case ID_CAMERA_ROTATELEFT: {
-      Position = Position.RotateAboutAxis(Target, vV, Eo::DegreeToRadian(-10.0));
+      position = position.RotateAboutAxis(target, vV, Eo::DegreeToRadian(-10.0));
       break;
     }
     case ID_CAMERA_ROTATERIGHT:
-      Position = Position.RotateAboutAxis(Target, vV, Eo::DegreeToRadian(10.0));
+      position = position.RotateAboutAxis(target, vV, Eo::DegreeToRadian(10.0));
       break;
 
     case ID_CAMERA_ROTATEUP:
-      Position = Position.RotateAboutAxis(Target, vU, Eo::DegreeToRadian(-10.0));
+      position = position.RotateAboutAxis(target, vU, Eo::DegreeToRadian(-10.0));
       break;
 
     case ID_CAMERA_ROTATEDOWN:
-      Position = Position.RotateAboutAxis(Target, vU, Eo::DegreeToRadian(10.0));
+      position = position.RotateAboutAxis(target, vU, Eo::DegreeToRadian(10.0));
       break;
   }
-  m_ViewTransform.SetPosition(Position);
+  m_ViewTransform.SetPosition(position);
   m_ViewTransform.SetViewUp(vV);
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);

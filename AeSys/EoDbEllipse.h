@@ -19,13 +19,13 @@
 
 class EoDbEllipse : public EoDbPrimitive {
  private:
-  EoGePoint3d m_centerPoint;
+  EoGePoint3d m_center;
   EoGeVector3d m_majorAxis;
   EoGeVector3d m_minorAxis;
   double m_sweepAngle;
 
  public:
-  EoDbEllipse() : m_centerPoint{}, m_majorAxis{}, m_minorAxis{}, m_sweepAngle{0.0} {}
+  EoDbEllipse() : m_center{}, m_majorAxis{}, m_minorAxis{}, m_sweepAngle{0.0} {}
 
   /// <summary>Ellipse segment is constructed using a center point, a major and minor vector and a sweep ang.</summary>
   EoDbEllipse(const EoGePoint3d& centerPoint, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle);
@@ -60,9 +60,9 @@ class EoDbEllipse : public EoDbPrimitive {
   void AddReportToMessageList(EoGePoint3d) override;
   void GetAllPts(EoGePoint3dArray& pts) override {
     pts.SetSize(0);
-    pts.Add(m_centerPoint);
+    pts.Add(m_center);
   }
-  EoGePoint3d GetCtrlPt() override { return (m_centerPoint); }
+  EoGePoint3d GetCtrlPt() override { return (m_center); }
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
   /// <summary>Determines the extent. Actually the extents of the bounding region of the arc.</summary>
@@ -79,7 +79,7 @@ class EoDbEllipse : public EoDbPrimitive {
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
   void Transform(EoGeTransformMatrix&) override;
-  void Translate(EoGeVector3d v) override { m_centerPoint += v; }
+  void Translate(EoGeVector3d v) override { m_center += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
   void Write(CFile& file, EoUInt8* buffer) override;
@@ -96,11 +96,11 @@ class EoDbEllipse : public EoDbPrimitive {
   EoGePoint3d GetEndPt();
   const EoGeVector3d& MajorAxis() const noexcept { return (m_majorAxis); }
   const EoGeVector3d& MinorAxis() const noexcept { return (m_minorAxis); }
-  const EoGePoint3d& CenterPoint() const noexcept { return (m_centerPoint); }
+  const EoGePoint3d& CenterPoint() const noexcept { return (m_center); }
   double SweepAngle() const noexcept { return (m_sweepAngle); }
   void GetXYExtents(EoGePoint3d, EoGePoint3d, EoGePoint3d*, EoGePoint3d*) const;
   int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) override;
-  void SetCenterPoint(EoGePoint3d centerPoint) { m_centerPoint = std::move(centerPoint); }
+  void SetCenterPoint(EoGePoint3d centerPoint) { m_center = std::move(centerPoint); }
   void SetMajorAxis(EoGeVector3d majorAxis) { m_majorAxis = std::move(majorAxis); }
   void SetMinorAxis(EoGeVector3d minorAxis) { m_minorAxis = std::move(minorAxis); }
   void SetSweepAngle(double sweepAngle) { m_sweepAngle = sweepAngle; }

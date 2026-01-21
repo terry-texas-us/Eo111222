@@ -161,6 +161,12 @@ void EoDlgTrapFilter::FilterByPrimitiveType(const EoDb::PrimitiveTypes primitive
         case EoDb::kPointPrimitive:
           bFilter = Primitive->Is(EoDb::kPointPrimitive);
           break;
+        case EoDb::kArcPrimitive:
+          bFilter = Primitive->Is(EoDb::kArcPrimitive);
+          break;
+        case EoDb::kCirclePrimitive:
+          bFilter = Primitive->Is(EoDb::kCirclePrimitive);
+          break;
         case EoDb::kInsertPrimitive:
         case EoDb::kSplinePrimitive:
         case EoDb::kCSplinePrimitive:

@@ -37,7 +37,7 @@ class EoDbPrimitive : public CObject {
 
   static EoInt16 sm_layerColor;
   static EoInt16 sm_layerLineTypeIndex;
-  
+
   static EoInt16 sm_specialColor;
   static EoUInt16 sm_ControlPointIndex;
   static double sm_RelationshipOfPoint;
@@ -46,9 +46,25 @@ class EoDbPrimitive : public CObject {
  public:  // Constructors and destructor
   EoDbPrimitive();
   EoDbPrimitive(EoInt16 penColor, EoInt16 lineType);
-  EoDbPrimitive(const EoDbPrimitive&) = delete;
-  EoDbPrimitive& operator=(const EoDbPrimitive&) = delete;
+  
+ protected:
+  EoDbPrimitive(const EoDbPrimitive& other)
+      : m_color(other.m_color),
+        m_lineTypeIndex(other.m_lineTypeIndex),
+        m_lineTypeName(other.m_lineTypeName),
+        m_layerName(other.m_layerName) {}
 
+  EoDbPrimitive& operator=(const EoDbPrimitive& other) {
+    if (this != &other) {
+      m_color = other.m_color;
+      m_lineTypeIndex = other.m_lineTypeIndex;
+      m_lineTypeName = other.m_lineTypeName;
+      m_layerName = other.m_layerName;
+    }
+    return *this;
+  }
+
+ public:
   ~EoDbPrimitive() override;
 
  public:  // Methods - absolute virtuals
@@ -99,7 +115,7 @@ class EoDbPrimitive : public CObject {
 
   const std::wstring& LineTypeName() const noexcept { return m_lineTypeName; }
   void SetLineTypeName(std::wstring name) { m_lineTypeName = std::move(name); }
-  
+
   const std::wstring& LayerName() const noexcept { return m_layerName; }
   void SetLayerName(std::wstring name) { m_layerName = std::move(name); }
 

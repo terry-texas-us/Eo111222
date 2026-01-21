@@ -666,7 +666,7 @@ void EoDbEllipse::Write(CFile& file, EoUInt8* buffer) {
   buffer[7] = static_cast<EoUInt8>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
   if (buffer[7] >= 16) buffer[7] = 2;
 
-  ((CVaxPnt*)&buffer[8])->Convert(m_centerPoint);
+  ((CVaxPnt*)&buffer[8])->Convert(m_center);
   ((CVaxVec*)&buffer[20])->Convert(m_majorAxis);
   ((CVaxVec*)&buffer[32])->Convert(m_minorAxis);
   ((CVaxFloat*)&buffer[44])->Convert(m_sweepAngle);
