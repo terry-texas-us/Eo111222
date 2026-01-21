@@ -8,7 +8,7 @@ class AeSysView;
 class CPrimState {
  private:
   EoInt16 m_pointStyle{};
-  EoInt16 m_PenColor{7};
+  EoInt16 m_color{7};
   EoInt16 m_LineType{};
   EoDbFontDefinition m_fd;
   EoDbCharacterCellDefinition m_ccd;
@@ -16,15 +16,15 @@ class CPrimState {
   EoInt16 m_PolygonInteriorStyleIndex{};
 
  public:
-  CPrimState() : m_pointStyle(0), m_PenColor(7), m_LineType(0), m_PolygonInteriorStyle(0), m_PolygonInteriorStyleIndex(0) {}
+  CPrimState() : m_pointStyle(0), m_color(7), m_LineType(0), m_PolygonInteriorStyle(0), m_PolygonInteriorStyleIndex(0) {}
 
   const CPrimState& operator=(const CPrimState&);
 
  public:
-  void GetCharCellDef(EoDbCharacterCellDefinition& ccd) { ccd = m_ccd; }
-  void GetFontDef(EoDbFontDefinition& fd) { fd = m_fd; }
+  void GetCharCellDef(EoDbCharacterCellDefinition& ccd) const { ccd = m_ccd; }
+  void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fd; }
   const EoInt16& PointStyle() { return m_pointStyle; }
-  const EoInt16& PenColor() { return (m_PenColor); }
+  const EoInt16& PenColor() { return (m_color); }
   const EoInt16& LineType() { return (m_LineType); }
   const EoInt16& PolygonIntStyle() { return (m_PolygonInteriorStyle); }
   const EoInt16& PolygonIntStyleId() { return (m_PolygonInteriorStyleIndex); }
@@ -38,7 +38,7 @@ class CPrimState {
   void SetPen(AeSysView* view, CDC* deviceContext, EoInt16 penColor, EoInt16 lineType);
   /// <summary>Manages a small set of pen definitions.</summary>
   void ManagePenResources(CDC* deviceContext, EoInt16 penColor, int penWidth, EoInt16 lineType);
-  void SetPenColor(CDC* deviceContext, EoInt16 penColor);
+  void SetColor(CDC* deviceContext, EoInt16 color);
   void SetLineType(CDC* deviceContext, EoInt16 lineType);
   int SetROP2(CDC* deviceContext, int drawMode);
   void SetTxtAlign(CDC* deviceContext, EoUInt16 horizontalAlignment, EoUInt16 verticalAlignment);

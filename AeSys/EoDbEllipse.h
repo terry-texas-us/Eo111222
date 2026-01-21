@@ -82,7 +82,7 @@ class EoDbEllipse : public EoDbPrimitive {
   void Translate(EoGeVector3d v) override { m_centerPoint += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoByte* buffer) override;
+  void Write(CFile& file, EoUInt8* buffer) override;
 
  public:
   void CutAtPt(EoGePoint3d&, EoDbGroup*) override;

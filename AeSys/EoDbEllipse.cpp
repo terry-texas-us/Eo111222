@@ -79,8 +79,8 @@ double EoDbEllipse::NormalizeTo2Pi(double angle) {
  */
 EoDbEllipse::EoDbEllipse(const EoGePoint3d& centerPoint, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle)
     : m_centerPoint(centerPoint), m_majorAxis(majorAxis), m_minorAxis(minorAxis) {
-  m_PenColor = pstate.PenColor();
-  m_LineType = pstate.LineType();
+  m_color = pstate.PenColor();
+  m_lineTypeIndex = pstate.LineType();
   m_sweepAngle = sweepAngle;
 }
 
@@ -88,13 +88,13 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& centerPoint, const EoGeVector3d& maj
 /**
  * @brief Constructs a circle primitive defined by a center point and radius in the current view.
  *
- * @param penColor The pen color.
+ * @param color The color.
  * @param lineType The line type index.
  * @param centerPoint The center point of the circle.
  * @param radius The radius of the circle.
  */
-EoDbEllipse::EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius)
-    : EoDbPrimitive(penColor, lineType), m_centerPoint(centerPoint) {
+EoDbEllipse::EoDbEllipse(EoInt16 color, EoInt16 lineType, EoGePoint3d& centerPoint, double radius)
+    : EoDbPrimitive(color, lineType), m_centerPoint(centerPoint) {
   auto* activeView = AeSysView::GetActiveView();
 
   EoGeVector3d PlaneNormal = activeView->CameraDirection();
@@ -105,8 +105,8 @@ EoDbEllipse::EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& center
   m_sweepAngle = Eo::TwoPi;
 }
 
-EoDbEllipse::EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& planeNormal, double radius)
-    : EoDbPrimitive(penColor, lineType), m_centerPoint(centerPoint) {
+EoDbEllipse::EoDbEllipse(EoInt16 color, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& planeNormal, double radius)
+    : EoDbPrimitive(color, lineType), m_centerPoint(centerPoint) {
   EoGeVector3d PlaneNormal(planeNormal);
   PlaneNormal.Normalize();
   m_majorAxis = ComputeArbitraryAxis(PlaneNormal);
@@ -121,8 +121,8 @@ EoDbEllipse::EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& center
 EoDbEllipse::EoDbEllipse(EoGePoint3d& centerPoint, EoGePoint3d& beginPoint) {
   auto* activeView = AeSysView::GetActiveView();
 
-  m_PenColor = pstate.PenColor();
-  m_LineType = pstate.LineType();
+  m_color = pstate.PenColor();
+  m_lineTypeIndex = pstate.LineType();
 
   EoGeVector3d vPlnNorm = -activeView->CameraDirection();
 
@@ -145,8 +145,8 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& centerPoint, EoGePoint3d& beginPoint) {
  * @param endPoint The ending point of the elliptical arc.
  */
 EoDbEllipse::EoDbEllipse(EoGePoint3d beginPoint, EoGePoint3d intermediatePoint, EoGePoint3d endPoint) {
-  m_PenColor = pstate.PenColor();
-  m_LineType = pstate.LineType();
+  m_color = pstate.PenColor();
+  m_lineTypeIndex = pstate.LineType();
 
   m_sweepAngle = 0.;
 
@@ -159,7 +159,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d beginPoint, EoGePoint3d intermediatePoint, 
 
   EoGeTransformMatrix transformMatrix(beginPoint, planeNormal);
 
-  EoGePoint3d pt[3];
+  EoGePoint3d pt[3]{};
 
   pt[0] = beginPoint;
   pt[1] = intermediatePoint;
@@ -247,14 +247,14 @@ EoDbEllipse::EoDbEllipse(const DRW_Coord& centerPoint, double radius, double sta
   m_minorAxis.RotAboutArbAx(EoGeVector3d::kZAxis, Eo::HalfPi);
 }
 
-EoDbEllipse::EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle)
-    : EoDbPrimitive(penColor, lineType), m_centerPoint(centerPoint), m_majorAxis(majorAxis), m_minorAxis(minorAxis) {
+EoDbEllipse::EoDbEllipse(EoInt16 color, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle)
+    : EoDbPrimitive(color, lineType), m_centerPoint(centerPoint), m_majorAxis(majorAxis), m_minorAxis(minorAxis) {
   m_sweepAngle = sweepAngle;
 }
 
 EoDbEllipse::EoDbEllipse(const EoDbEllipse& other) {
-  m_PenColor = other.m_PenColor;
-  m_LineType = other.m_LineType;
+  m_color = other.m_color;
+  m_lineTypeIndex = other.m_lineTypeIndex;
   m_centerPoint = other.m_centerPoint;
   m_majorAxis = other.m_majorAxis;
   m_minorAxis = other.m_minorAxis;
@@ -262,8 +262,8 @@ EoDbEllipse::EoDbEllipse(const EoDbEllipse& other) {
 }
 
 const EoDbEllipse& EoDbEllipse::operator=(const EoDbEllipse& other) {
-  m_PenColor = other.m_PenColor;
-  m_LineType = other.m_LineType;
+  m_color = other.m_color;
+  m_lineTypeIndex = other.m_lineTypeIndex;
   m_centerPoint = other.m_centerPoint;
   m_majorAxis = other.m_majorAxis;
   m_minorAxis = other.m_minorAxis;
@@ -378,10 +378,10 @@ void EoDbEllipse::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
 void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
   if (fabs(m_sweepAngle) <= DBL_EPSILON) { return; }
 
-  auto penColor = LogicalPenColor();
+  auto color = LogicalColor();
   auto lineType = LogicalLineType();
 
-  pstate.SetPen(view, deviceContext, penColor, lineType);
+  pstate.SetPen(view, deviceContext, color, lineType);
 
   polyline::BeginLineStrip();
   GenPts(m_centerPoint, m_majorAxis, m_minorAxis, m_sweepAngle);
@@ -608,7 +608,7 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
     // No extent overlap
     return 0;
 
-  EoGePoint3d ptWrk[8];
+  EoGePoint3d ptWrk[8]{};
 
   double dDis;
   double dOff;
@@ -789,8 +789,8 @@ void EoDbEllipse::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 
 bool EoDbEllipse::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kEllipsePrimitive));
-  EoDb::Write(file, m_PenColor);
-  EoDb::Write(file, m_LineType);
+  EoDb::Write(file, m_color);
+  EoDb::Write(file, m_lineTypeIndex);
   m_centerPoint.Write(file);
   m_majorAxis.Write(file);
   m_minorAxis.Write(file);

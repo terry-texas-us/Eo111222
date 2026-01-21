@@ -28,7 +28,7 @@ void AeSysView::OnPowerModeCircuit() {
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
   EoDbEllipse* SymbolCircle;
-  EoDbGroup* Group = SelectCircleUsingPoint(CurrentPnt, 0.02, SymbolCircle);
+  auto* Group = SelectCircleUsingPoint(CurrentPnt, 0.02, SymbolCircle);
   if (Group != 0) {
     CurrentPnt = SymbolCircle->CenterPoint();
     double CurrentRadius = SymbolCircle->MajorAxis().Length();
@@ -87,7 +87,7 @@ void AeSysView::OnPowerModeHome() {
   if (!m_PowerArrow || (PointOnCircuit != CurrentPnt)) {
     m_PowerArrow = false;
     EoDbLine* Circuit;
-    EoDbGroup* Group = SelectLineUsingPoint(CurrentPnt, Circuit);
+    auto* Group = SelectLineUsingPoint(CurrentPnt, Circuit);
     if (Group != 0) {
       CurrentPnt = Circuit->ProjPt(CurrentPnt);
       if (Circuit->RelOfPt(CurrentPnt) <= 0.5) {
@@ -123,7 +123,7 @@ void AeSysView::DoPowerModeMouseMove() {
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         EoDbEllipse* SymbolCircle;
-        EoDbGroup* Group = SelectCircleUsingPoint(CurrentPnt, 0.02, SymbolCircle);
+        auto* Group = SelectCircleUsingPoint(CurrentPnt, 0.02, SymbolCircle);
         if (Group != 0) {
           double CurrentRadius = SymbolCircle->MajorAxis().Length();
           CurrentPnt = SymbolCircle->CenterPoint();
@@ -154,7 +154,7 @@ void AeSysView::DoPowerModeConductor(EoUInt16 conductorType) {
   if (!m_PowerConductor || PointOnCircuit != CurrentPnt) {
     m_PowerConductor = false;
     EoDbLine* Circuit;
-    EoDbGroup* Group = SelectLineUsingPoint(CurrentPnt, Circuit);
+    auto* Group = SelectLineUsingPoint(CurrentPnt, Circuit);
     if (Group != 0) {
       CurrentPnt = Circuit->ProjPt(CurrentPnt);
 
@@ -209,17 +209,17 @@ void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& e
   Points[1] = pointOnCircuit;
   Circuit.ProjPtFrom_xy(0.0, 0.075, &Points[2]);
 
-  EoDbGroup* Group = new EoDbGroup;
+  auto* Group = new EoDbGroup;
   document->AddWorkLayerGroup(Group);
   Group->AddTail(new EoDbPolyline(2, 1, Points));
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 }
 void AeSysView::GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const {
   auto* document = GetDocument();
-  EoGePoint3d Points[5];
+  EoGePoint3d Points[5]{};
 
   EoGeLine Circuit(pointOnCircuit, endPoint);
-  EoDbGroup* Group = new EoDbGroup;
+  auto* Group = new EoDbGroup;
 
   switch (conductorType) {
     case ID_OP4:

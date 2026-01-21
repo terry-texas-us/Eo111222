@@ -93,7 +93,7 @@ static void ConvertEntityData(OdDbEntity* entity, EoDbPrimitive* primitive) {
   if (Color.isByBlock()) {
     primitive->PenColor(7);
   } else if (Color.isByLayer()) {
-    primitive->PenColor(EoDbPrimitive::PENCOLOR_BYLAYER);
+    primitive->PenColor(EoDbPrimitive::COLOR_BYLAYER);
   } else {
     primitive->PenColor(Color.colorIndex());
   }

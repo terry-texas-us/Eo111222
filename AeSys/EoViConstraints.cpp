@@ -36,7 +36,7 @@ void AeSysView::EnableDisplayGridWithPoints(bool display) { m_DisplayGridWithPoi
 bool AeSysView::DisplayGridWithPoints() const { return m_DisplayGridWithPoints; }
 bool AeSysView::GridSnap() const { return m_GridSnap; }
 void AeSysView::EnableGridSnap(bool snap) { m_GridSnap = snap; }
-void AeSysView::GetGridLineSpacing(double& x, double& y, double& z) {
+void AeSysView::GetGridLineSpacing(double& x, double& y, double& z) const {
   x = m_XGridLineSpacing;
   y = m_YGridLineSpacing;
   z = m_ZGridLineSpacing;
@@ -46,7 +46,7 @@ void AeSysView::SetGridLineSpacing(double x, double y, double z) {
   m_YGridLineSpacing = y;
   m_ZGridLineSpacing = z;
 }
-void AeSysView::GetGridPointSpacing(double& x, double& y, double& z) {
+void AeSysView::GetGridPointSpacing(double& x, double& y, double& z) const {
   x = m_XGridPointSpacing;
   y = m_YGridPointSpacing;
   z = m_ZGridPointSpacing;
@@ -56,7 +56,7 @@ void AeSysView::SetGridPointSpacing(double x, double y, double z) {
   m_YGridPointSpacing = y;
   m_ZGridPointSpacing = z;
 }
-void AeSysView::GetGridSnapSpacing(double& x, double& y, double& z) {
+void AeSysView::GetGridSnapSpacing(double& x, double& y, double& z) const {
   x = m_XGridSnapSpacing;
   y = m_YGridSnapSpacing;
   z = m_ZGridSnapSpacing;
@@ -120,7 +120,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
       EoGeLine ln;
 
       int i;
-      EoInt16 nPenColor = pstate.PenColor();
+      EoInt16 color = pstate.PenColor();
       EoInt16 LineType = pstate.LineType();
       pstate.SetPen(this, deviceContext, 250, 1);
 
@@ -141,16 +141,16 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
         ln.Display(this, deviceContext);
         ln.begin.x += m_XGridLineSpacing;
       }
-      pstate.SetPen(this, deviceContext, nPenColor, LineType);
+      pstate.SetPen(this, deviceContext, color, LineType);
     }
   }
 }
-EoGePoint3d AeSysView::SnapPointToAxis(EoGePoint3d& beginPoint, EoGePoint3d& endPoint) {
+EoGePoint3d AeSysView::SnapPointToAxis(EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const {
   EoGeLine Line(beginPoint, endPoint);
 
   return (Line.ConstrainToAxis(m_AxisConstraintInfluenceAngle, m_AxisConstraintOffsetAngle));
 }
-EoGePoint3d AeSysView::SnapPointToGrid(EoGePoint3d& arPt) {
+EoGePoint3d AeSysView::SnapPointToGrid(EoGePoint3d& arPt) const {
   EoGePoint3d pt = arPt;
 
   if (GridSnap()) {

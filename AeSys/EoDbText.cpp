@@ -74,19 +74,19 @@ bool HasFormattingCharacters(const CString& text) {
 
 }  // namespace
 EoDbText::EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text) {
-  m_PenColor = pstate.PenColor();
+  m_color = pstate.PenColor();
   m_fd = fd;
   m_ReferenceSystem = referenceSystem;
   m_strText = text;
 }
 EoDbText::EoDbText(const EoDbText& src) {
-  m_PenColor = src.m_PenColor;
+  m_color = src.m_color;
   m_fd = src.m_fd;
   m_ReferenceSystem = src.m_ReferenceSystem;
   m_strText = src.m_strText;
 }
 const EoDbText& EoDbText::operator=(const EoDbText& src) {
-  m_PenColor = src.m_PenColor;
+  m_color = src.m_color;
   m_fd = src.m_fd;
   m_ReferenceSystem = src.m_ReferenceSystem;
   m_strText = src.m_strText;
@@ -122,8 +122,8 @@ void EoDbText::ConvertFormattingCharacters() {
   }
 }
 void EoDbText::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 nPenColor = LogicalPenColor();
-  pstate.SetPenColor(deviceContext, nPenColor);
+  EoInt16 color = LogicalColor();
+  pstate.SetColor(deviceContext, color);
 
   EoInt16 LineType = pstate.LineType();
   pstate.SetLineType(deviceContext, 1);
@@ -169,7 +169,7 @@ void EoDbText::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMa
   }
 }
 bool EoDbText::IsInView(AeSysView* view) {
-  EoGePoint4d pt[2];
+  EoGePoint4d pt[2]{};
 
   EoGePoint3dArray pts;
 
@@ -208,7 +208,7 @@ void EoDbText::ModifyState() {
 }
 void EoDbText::ModifyNotes(EoDbFontDefinition& fd, EoDbCharacterCellDefinition& ccd, int iAtt) {
   if (iAtt == TM_TEXT_ALL) {
-    m_PenColor = pstate.PenColor();
+    m_color = pstate.PenColor();
     m_fd = fd;
     m_ReferenceSystem.Rescale(ccd);
   } else if (iAtt == TM_TEXT_FONT) {
@@ -249,8 +249,8 @@ void EoDbText::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 }
 bool EoDbText::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kTextPrimitive));
-  EoDb::Write(file, m_PenColor);
-  EoDb::Write(file, m_LineType);
+  EoDb::Write(file, m_color);
+  EoDb::Write(file, m_lineTypeIndex);
   m_fd.Write(file);
   m_ReferenceSystem.Write(file);
   EoDb::Write(file, m_strText);
@@ -384,7 +384,7 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, CDC* deviceContext, Eo
   view->ModelViewTransformPoint(StartPoint);
   CPoint ProjectedStartPoint = view->DoProjection(StartPoint);
 
-  EoGePoint4d ptsBox[3];
+  EoGePoint4d ptsBox[3]{};
 
   ptsBox[1] = tm * EoGePoint3d(0.0, 1.0, 0.0);
   ptsBox[2] = tm * EoGePoint3d(1.0, 0.0, 0.0);
@@ -392,7 +392,7 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, CDC* deviceContext, Eo
   view->ModelViewTransformPoint(ptsBox[1]);
   view->ModelViewTransformPoint(ptsBox[2]);
 
-  CPoint pnt[4];
+  CPoint pnt[4]{};
 
   pnt[1] = view->DoProjection(ptsBox[1]);
   pnt[2] = view->DoProjection(ptsBox[2]);

@@ -21,26 +21,26 @@
 #include "PrimState.h"
 
 EoDbPoint::EoDbPoint() {
-  m_PenColor = 1;
+  m_color = 1;
   m_pointStyle = 0;  // single pixel
   m_Point = EoGePoint3d::kOrigin;
   m_NumberOfDatums = 0;
   m_Data = nullptr;
 }
 EoDbPoint::EoDbPoint(const EoGePoint3d& point) : m_Point(point) {
-  m_PenColor = 1;
+  m_color = 1;
   m_pointStyle = 0;  // single pixel
   m_NumberOfDatums = 0;
   m_Data = nullptr;
 }
 EoDbPoint::EoDbPoint(EoInt16 penColor, EoInt16 pointStyle, const EoGePoint3d& point) : m_Point(point) {
-  m_PenColor = penColor;
+  m_color = penColor;
   m_pointStyle = pointStyle;
   m_NumberOfDatums = 0;
   m_Data = nullptr;
 }
 EoDbPoint::EoDbPoint(EoInt16 penColor, EoInt16 pointStyle, const EoGePoint3d& point, EoUInt16 numberOfDatums, double* data) : m_Point(point) {
-  m_PenColor = penColor;
+  m_color = penColor;
   m_pointStyle = pointStyle;
   m_NumberOfDatums = numberOfDatums;
   m_Data = (numberOfDatums == 0) ? nullptr : new double[numberOfDatums];
@@ -48,7 +48,7 @@ EoDbPoint::EoDbPoint(EoInt16 penColor, EoInt16 pointStyle, const EoGePoint3d& po
   for (EoUInt16 n = 0; n < numberOfDatums; n++) { m_Data[n] = data[n]; }
 }
 EoDbPoint::EoDbPoint(const EoDbPoint& src) {
-  m_PenColor = src.m_PenColor;
+  m_color = src.m_color;
   m_pointStyle = src.m_pointStyle;
   m_Point = src.m_Point;
   m_NumberOfDatums = src.m_NumberOfDatums;
@@ -60,7 +60,7 @@ EoDbPoint::~EoDbPoint() {
   if (m_NumberOfDatums != 0) delete[] m_Data;
 }
 const EoDbPoint& EoDbPoint::operator=(const EoDbPoint& src) {
-  m_PenColor = src.m_PenColor;
+  m_color = src.m_color;
   m_pointStyle = src.m_pointStyle;
 
   m_Point = src.m_Point;
@@ -85,9 +85,9 @@ EoDbPrimitive*& EoDbPoint::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbPoint::Display(AeSysView* view, CDC* context) {
-  EoInt16 penColor = LogicalPenColor();
+  EoInt16 color = LogicalColor();
 
-  COLORREF hotPenColor = app.PenColorsGetHot(penColor);
+  COLORREF hotPenColor = app.PenColorsGetHot(color);
 
   EoGePoint4d pt(m_Point);
   view->ModelViewTransformPoint(pt);
@@ -228,7 +228,7 @@ void EoDbPoint::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 }
 bool EoDbPoint::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kPointPrimitive));
-  EoDb::Write(file, m_PenColor);
+  EoDb::Write(file, m_color);
   EoDb::Write(file, m_pointStyle);
   m_Point.Write(file);
   EoDb::Write(file, m_NumberOfDatums);

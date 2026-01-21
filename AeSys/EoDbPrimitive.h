@@ -24,20 +24,21 @@ class EoDbPrimitive : public CObject {
  public:
   static constexpr EoUInt16 BUFFER_SIZE{2048};
 
-  static constexpr EoInt16 PENCOLOR_BYBLOCK{0};
-  static constexpr EoInt16 PENCOLOR_BYLAYER{256};
+  static constexpr EoInt16 COLOR_BYBLOCK{0};
+  static constexpr EoInt16 COLOR_BYLAYER{256};
   static constexpr EoInt16 LINETYPE_BYBLOCK{32766};
   static constexpr EoInt16 LINETYPE_BYLAYER{32767};
 
  protected:
-  EoInt16 m_PenColor{PENCOLOR_BYLAYER};
-  EoInt16 m_LineType{LINETYPE_BYLAYER};
-  std::wstring m_linetypeName{};
+  EoInt16 m_color{COLOR_BYLAYER};
+  EoInt16 m_lineTypeIndex{LINETYPE_BYLAYER};
+  std::wstring m_lineTypeName{};
   std::wstring m_layerName{};
 
-  static EoInt16 sm_LayerPenColor;
-  static EoInt16 sm_LayerLineType;
-  static EoInt16 sm_SpecialPenColorIndex;
+  static EoInt16 sm_layerColor;
+  static EoInt16 sm_layerLineTypeIndex;
+  
+  static EoInt16 sm_specialColor;
   static EoUInt16 sm_ControlPointIndex;
   static double sm_RelationshipOfPoint;
   static double sm_SelectApertureSize;
@@ -74,7 +75,7 @@ class EoDbPrimitive : public CObject {
   virtual void Translate(EoGeVector3d translate) = 0;
   virtual void TranslateUsingMask(EoGeVector3d, const DWORD) = 0;
   virtual bool Write(CFile& file) = 0;
-  virtual void Write(CFile& file, EoByte* buffer) = 0;
+  virtual void Write(CFile& file, EoUInt8* buffer) = 0;
 
  public:  // Methods - virtuals
   virtual void CutAt2Pts(EoGePoint3d*, EoDbGroupList*, EoDbGroupList*);
@@ -88,28 +89,28 @@ class EoDbPrimitive : public CObject {
 
   CString FormatPenColor() const;
   CString FormatLineType() const;
-  EoInt16 LogicalPenColor() const;
+  EoInt16 LogicalColor() const;
   EoInt16 LogicalLineType() const;
 
-  EoInt16 PenColor() const noexcept { return m_PenColor; }
-  void SetPenColor(EoInt16 penColor) { m_PenColor = penColor; }
-  EoInt16 LineTypeIndex() const noexcept { return m_LineType; }
-  void SetLineTypeIndex(EoInt16 lineType) { m_LineType = lineType; }
+  EoInt16 Color() const noexcept { return m_color; }
+  void SetColor(EoInt16 color) { m_color = color; }
+  EoInt16 LineTypeIndex() const noexcept { return m_lineTypeIndex; }
+  void SetLineTypeIndex(EoInt16 lineTypeIndex) { m_lineTypeIndex = lineTypeIndex; }
 
-  const std::wstring& LinetypeName() const noexcept { return m_linetypeName; }
-  void SetLinetypeName(std::wstring name) { m_linetypeName = std::move(name); }
+  const std::wstring& LineTypeName() const noexcept { return m_lineTypeName; }
+  void SetLineTypeName(std::wstring name) { m_lineTypeName = std::move(name); }
   
   const std::wstring& LayerName() const noexcept { return m_layerName; }
   void SetLayerName(std::wstring name) { m_layerName = std::move(name); }
 
  public:  // Methods - static
   static EoUInt16 ControlPointIndex();
-  static bool IsSupportedTyp(int iTyp);
-  static EoInt16 LayerPenColorIndex();
-  static void SetLayerPenColorIndex(EoInt16 colorIndex);
+  static bool IsSupportedTyp(int type);
+  static EoInt16 LayerColor();
+  static void SetLayerColor(EoInt16 layerColor);
   static EoInt16 LayerLineTypeIndex();
   static void SetLayerLineTypeIndex(EoInt16 lineTypeIndex);
   static double& Rel();
-  static EoInt16 SpecialPenColorIndex();
-  static void SetSpecialPenColorIndex(EoInt16 colorIndex);
+  static EoInt16 SpecialColor();
+  static void SetSpecialColor(EoInt16 specialColor);
 };

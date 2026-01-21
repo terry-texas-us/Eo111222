@@ -51,7 +51,7 @@ class EoDbGroup : public CObList {
   void InsertBefore(POSITION position, EoDbGroup* group);
   bool IsInView(AeSysView* view);
   void ModifyNotes(EoDbFontDefinition& fd, EoDbCharacterCellDefinition& ccd, int iAtt = 0);
-  void ModifyPenColor(EoInt16 penColor);
+  void ModifyColor(EoInt16 color);
   void ModifyLineType(EoInt16 lineType);
   void PenTranslation(EoUInt16, EoInt16*, EoInt16*);
   void RemoveDuplicatePrimitives();
@@ -67,5 +67,5 @@ class EoDbGroup : public CObList {
   void Transform(EoGeTransformMatrix& tm);
   void Translate(EoGeVector3d translate);
   void Write(CFile& file);
-  void Write(CFile& file, EoByte* buffer);
+  void Write(CFile& file, EoUInt8* buffer);
 };

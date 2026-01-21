@@ -33,7 +33,7 @@ class EoDbGroupList : public CObList {
   void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, EoGeTransformMatrix& tm);
   int GetLineTypeRefCount(EoInt16 lineType);
   void ModifyNotes(EoDbFontDefinition& cd, EoDbCharacterCellDefinition& ccd, int iAtt = 0);
-  void ModifyPenColor(EoInt16 penColor);
+  void ModifyColor(EoInt16 color);
   void ModifyLineType(EoInt16 lineType);
   void PenTranslation(EoUInt16, EoInt16*, EoInt16*);
   int RemoveEmptyNotesAndDelete();
@@ -42,5 +42,5 @@ class EoDbGroupList : public CObList {
   EoDbGroup* SelectGroupUsingPoint(const EoGePoint3d& pt);
   void Transform(EoGeTransformMatrix& tm);
   void Translate(EoGeVector3d translate);
-  void Write(CFile& file, EoByte* buffer);
+  void Write(CFile& file, EoUInt8* buffer);
 };

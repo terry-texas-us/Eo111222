@@ -11,7 +11,7 @@ void AeSysView::OnModeGroupEdit() {
 
   m_SubModeEditBeginPoint = GetCursorPosition();
 
-  EoDbGroup* Group = SelectGroupAndPrimitive(m_SubModeEditBeginPoint);
+  auto* Group = SelectGroupAndPrimitive(m_SubModeEditBeginPoint);
 
   if (Group != 0) {
     m_SubModeEditGroup = Group;
@@ -21,7 +21,7 @@ void AeSysView::OnModeGroupEdit() {
 void AeSysView::DoEditGroupCopy() {
   auto* Document = GetDocument();
   if (m_SubModeEditGroup != 0) {
-    EoDbGroup* Group = new EoDbGroup(*m_SubModeEditGroup);
+    auto* Group = new EoDbGroup(*m_SubModeEditGroup);
 
     Document->AddWorkLayerGroup(Group);
     m_SubModeEditGroup = Group;
@@ -81,13 +81,13 @@ void AeSysView::PreviewGroupEdit() {
     tm.Translate(EoGeVector3d(m_SubModeEditBeginPoint, m_SubModeEditEndPoint));
 
     if (app.IsTrapHighlighted() && Document->FindTrappedGroup(m_SubModeEditGroup) != 0) {
-      EoDbPrimitive::SetSpecialPenColorIndex(app.TrapHighlightColor());
+      EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor());
     }
     Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
     m_SubModeEditGroup->Transform(tm);
     Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
 
-    EoDbPrimitive::SetSpecialPenColorIndex(0);
+    EoDbPrimitive::SetSpecialColor(0);
 
     m_tmEditSeg *= tm;
 

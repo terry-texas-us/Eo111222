@@ -15,12 +15,13 @@ class EoDbDimension : public EoDbPrimitive {
   CString m_strText;
 
  public:  // Constructors and destructor
-  EoDbDimension() : EoDbPrimitive(), m_nTextPenColor(PENCOLOR_BYLAYER), m_fd(), m_ReferenceSystem(), m_strText() {}
+  EoDbDimension() : EoDbPrimitive(), m_nTextPenColor(COLOR_BYLAYER), m_fd(), m_ReferenceSystem(), m_strText() {}
 
-  EoDbDimension(EoInt16 penColor, EoInt16 lineType, EoGeLine line);
-  EoDbDimension(EoInt16 penColor, EoInt16 lineType, EoGeLine line, EoInt16 textPenColor, const EoDbFontDefinition& fontDefinition,
-                const EoGeReferenceSystem& referenceSystem, const CString& text);
-  EoDbDimension(EoByte* buffer);
+  EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line);
+  EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line, EoInt16 textPenColor,
+                const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
+                const CString& text);
+  EoDbDimension(EoUInt8* buffer);
 
   EoDbDimension(const EoDbDimension& src);
 
@@ -55,7 +56,7 @@ class EoDbDimension : public EoDbPrimitive {
   void Translate(EoGeVector3d translate) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoByte* buffer) override;
+  void Write(CFile& file, EoUInt8* buffer) override;
 
  public:  // Methods - virtuals
   /// <summary>Cuts a dimension line at two points.</summary>
@@ -71,11 +72,11 @@ class EoDbDimension : public EoDbPrimitive {
   void GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac);
   const EoDbFontDefinition& FontDef() { return m_fd; }
   const EoGeLine& Line() { return m_ln; }
-  void GetPts(EoGePoint3d& ptBeg, EoGePoint3d& ptEnd) {
-    ptBeg = m_ln.begin;
-    ptEnd = m_ln.end;
+  void GetPts(EoGePoint3d& begin, EoGePoint3d& end) const {
+    begin = m_ln.begin;
+    end = m_ln.end;
   }
-  void GetRefSys(EoGeReferenceSystem& referenceSystem) { referenceSystem = m_ReferenceSystem; }
+  void GetRefSys(EoGeReferenceSystem& referenceSystem) const { referenceSystem = m_ReferenceSystem; }
   double Length() { return m_ln.Length(); }
   double RelOfPt(EoGePoint3d pt);
   void SetDefaultNote();
@@ -83,7 +84,7 @@ class EoDbDimension : public EoDbPrimitive {
   void EndPoint(EoGePoint3d pt) { m_ln.end = pt; }
   void SetText(const CString& str) { m_strText = str; }
   void SetTextHorAlign(EoUInt16 w) { m_fd.HorizontalAlignment(w); }
-  void SetTextPenColor(EoInt16 nPenColor) { m_nTextPenColor = nPenColor; }
+  void SetTextPenColor(EoInt16 color) { m_nTextPenColor = color; }
   void SetTextVerAlign(EoUInt16 w) { m_fd.VerticalAlignment(w); }
   const CString& Text() { return m_strText; }
   const EoInt16& TextPenColor() { return m_nTextPenColor; }

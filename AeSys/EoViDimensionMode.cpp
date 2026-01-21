@@ -43,11 +43,11 @@ EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
 
   auto GroupPosition = document->GetFirstWorkLayerGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = document->GetNextWorkLayerGroup(GroupPosition);
+    auto* Group = document->GetNextWorkLayerGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
+      auto* Primitive = Group->GetNext(PrimitivePosition);
 
       if (Primitive->Is(EoDb::kLinePrimitive))
         static_cast<EoDbLine*>(Primitive)->GetLine(ln);
@@ -82,11 +82,11 @@ void AeSysView::OnDimensionModeArrow() {
   EoGeLine TestLine;
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
+    auto* Group = GetNextVisibleGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
+      auto* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kLinePrimitive)) {
         EoDbLine* LinePrimitive = static_cast<EoDbLine*>(Primitive);
         LinePrimitive->GetLine(TestLine);
@@ -97,7 +97,7 @@ void AeSysView::OnDimensionModeArrow() {
         continue;
       }
       EoGePoint3d ptProj;
-      double dRel[2];
+      double dRel[2]{};
 
       if (TestLine.IsSelectedByPointXY(ptCur, DimensionModePickTolerance, ptProj, dRel)) {
         EoGePoint3d pt;
@@ -132,7 +132,7 @@ void AeSysView::OnDimensionModeLine() {
   } else {
     ptCur = SnapPointToAxis(PreviousDimensionCursorPosition, ptCur);
     if (PreviousDimensionCursorPosition != ptCur) {
-      EoDbGroup* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, ptCur));
+      auto* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, ptCur));
       Document->AddWorkLayerGroup(Group);
       Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
@@ -147,7 +147,7 @@ void AeSysView::OnDimensionModeDLine() {
   if (PreviousDimensionCommand == ID_OP3 || PreviousDimensionCommand == ID_OP4) {
     RubberBandingDisable();
     if (PreviousDimensionCursorPosition != ptCur) {
-      EoDbGroup* Group = new EoDbGroup;
+      auto* Group = new EoDbGroup;
 
       if (PreviousDimensionCommand == ID_OP4) {
         GenerateLineEndItem(1, 0.1, ptCur, PreviousDimensionCursorPosition, Group);
@@ -186,7 +186,7 @@ void AeSysView::OnDimensionModeDLine2() {
   } else if (PreviousDimensionCommand == ID_OP3 || PreviousDimensionCommand == ID_OP4) {
     RubberBandingDisable();
     if (PreviousDimensionCursorPosition != ptCur) {
-      EoDbGroup* Group = new EoDbGroup;
+      auto* Group = new EoDbGroup;
       if (PreviousDimensionCommand == ID_OP4)
         GenerateLineEndItem(1, 0.1, ptCur, PreviousDimensionCursorPosition, Group);
       else {
@@ -227,7 +227,7 @@ void AeSysView::OnDimensionModeExten() {
       ptCur = ptCur.ProjectToward(PreviousDimensionCursorPosition, -0.1875);
       PreviousDimensionCursorPosition = PreviousDimensionCursorPosition.ProjectToward(ptCur, 0.0625);
 
-      EoDbGroup* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, ptCur));
+      auto* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, ptCur));
       Document->AddWorkLayerGroup(Group);
       Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
@@ -248,7 +248,7 @@ void AeSysView::OnDimensionModeRadius() {
 
       EoGePoint3d ptBeg = pArc->CenterPoint();
 
-      EoDbGroup* Group = new EoDbGroup;
+      auto* Group = new EoDbGroup;
 
       EoDbDimension* pDim = new EoDbDimension(1, 1, EoGeLine(ptBeg, ptEnd));
       pDim->SetText(L"R" + pDim->Text());
@@ -283,7 +283,7 @@ void AeSysView::OnDimensionModeDiameter() {
 
       EoGePoint3d ptBeg = ptEnd.ProjectToward(pArc->CenterPoint(), 2. * pArc->MajorAxis().Length());
 
-      EoDbGroup* Group = new EoDbGroup;
+      auto* Group = new EoDbGroup;
 
       GenerateLineEndItem(1, 0.1, ptEnd, ptBeg, Group);
 
@@ -360,7 +360,7 @@ void AeSysView::OnDimensionModeAngle() {
         EoGeVector3d vYAx = EoGeVector3d(ptCen, ptRot);
         EoGePoint3d ptArrow = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, Eo::Radian);
 
-        EoDbGroup* Group = new EoDbGroup;
+        auto* Group = new EoDbGroup;
         GenerateLineEndItem(1, 0.1, ptArrow, ln.begin, Group);
         Group->AddTail(new EoDbEllipse(1, 1, ptCen, vXAx, vYAx, dAng));
         ptArrow = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, dAng - Eo::Radian);
@@ -403,7 +403,7 @@ void AeSysView::OnDimensionModeConvert() {
     ModeLineUnhighlightOp(PreviousDimensionCommand);
   }
 
-  EoDbGroup* Group;
+  EoDbGroup* Group{};
   EoDbPrimitive* Primitive;
   EoGePoint3d ptProj;
 
@@ -426,7 +426,7 @@ void AeSysView::OnDimensionModeConvert() {
         if (Primitive->Is(EoDb::kLinePrimitive)) {
           EoDbLine* pPrimLine = static_cast<EoDbLine*>(Primitive);
           pPrimLine->GetLine(ln);
-          EoDbDimension* pPrimDim = new EoDbDimension(pPrimLine->PenColor(), pPrimLine->LineTypeIndex(), ln);
+          EoDbDimension* pPrimDim = new EoDbDimension(pPrimLine->Color(), pPrimLine->LineTypeIndex(), ln);
           pPrimDim->SetTextPenColor(5);
           pPrimDim->SetTextHorAlign(EoDb::kAlignCenter);
           pPrimDim->SetTextVerAlign(EoDb::kAlignMiddle);
@@ -439,9 +439,9 @@ void AeSysView::OnDimensionModeConvert() {
           EoDbDimension* pPrimDim = static_cast<EoDbDimension*>(Primitive);
           EoGeReferenceSystem ReferenceSystem;
           pPrimDim->GetRefSys(ReferenceSystem);
-          EoDbLine* pPrimLine = new EoDbLine(pPrimDim->PenColor(), pPrimDim->LineTypeIndex(), pPrimDim->Line());
+          EoDbLine* pPrimLine = new EoDbLine(pPrimDim->Color(), pPrimDim->LineTypeIndex(), pPrimDim->Line());
           EoDbText* pPrimText = new EoDbText(pPrimDim->FontDef(), ReferenceSystem, pPrimDim->Text());
-          pPrimText->SetPenColor(pPrimDim->TextPenColor());
+          pPrimText->SetColor(pPrimDim->TextPenColor());
           Group->InsertAfter(posPrimCur, pPrimLine);
           Group->InsertAfter(posPrimCur, pPrimText);
           Group->RemoveAt(posPrimCur);

@@ -119,8 +119,8 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
   if (pointsArrayIn.IsEmpty()) return;
 
   EoGePoint4d pt;
-  EoGePoint4d ptEdge[2];
-  bool bEdgeVis[2];
+  EoGePoint4d ptEdge[2]{};
+  bool bEdgeVis[2]{};
 
   bool bVisVer0 = EoGeDotProduct(EoGeVector3d(ptQ, pointsArrayIn[0]), planeNormal) >= -DBL_EPSILON ? true : false;
 

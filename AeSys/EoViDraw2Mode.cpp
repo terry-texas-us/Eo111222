@@ -18,7 +18,7 @@ void AeSysView::OnDraw2ModeJoin() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
   CurrentPnt = SnapPointToAxis(m_PreviousPnt, CurrentPnt);
 
-  EoDbGroup* Group = SelectGroupAndPrimitive(CurrentPnt);
+  auto* Group = SelectGroupAndPrimitive(CurrentPnt);
 
   if (Group != 0) {
     CurrentPnt = DetPt();
@@ -212,7 +212,7 @@ void AeSysView::DoDraw2ModeMouseMove() {
     CurrentPnt = GetCursorPosition();
     CurrentPnt = SnapPointToAxis(m_PreviousPnt, CurrentPnt);
 
-    EoGeLine PreviewLines[2];
+    EoGeLine PreviewLines[2]{};
     EoGeLine ln(m_PreviousPnt, CurrentPnt);
     ln.GetParallels(m_DistanceBetweenLines, m_CenterLineEccentricity, PreviewLines[0], PreviewLines[1]);
 

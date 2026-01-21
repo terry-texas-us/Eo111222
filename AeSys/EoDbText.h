@@ -14,7 +14,7 @@ class EoDbText : public EoDbPrimitive {
 
  public:  // Constructors and destructor
   EoDbText() {}
-  EoDbText(EoByte* buffer, int version);
+  EoDbText(EoUInt8* buffer, int version);
   EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text);
   EoDbText(const EoDbText&);
 
@@ -55,7 +55,7 @@ class EoDbText : public EoDbPrimitive {
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   void Transform(EoGeTransformMatrix&) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoByte* buffer) override;
+  void Write(CFile& file, EoUInt8* buffer) override;
 
  public:  // Methods
   void ConvertFormattingCharacters();

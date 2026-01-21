@@ -35,18 +35,17 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 EoDbLine::EoDbLine(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint) {
-  m_PenColor = pstate.PenColor();
-  m_LineType = pstate.LineType();
+  m_color = pstate.PenColor();
+  m_lineTypeIndex = pstate.LineType();
   m_ln(beginPoint, endPoint);
 }
 EoDbLine::EoDbLine(EoGeLine& line) : m_ln(line) {
-  m_PenColor = pstate.PenColor();
-  m_LineType = pstate.LineType();
+  m_color = pstate.PenColor();
+  m_lineTypeIndex = pstate.LineType();
 }
 EoDbLine::EoDbLine(EoInt16 penColor, EoInt16 lineType, EoGeLine line) : EoDbPrimitive(penColor, lineType), m_ln(line) {}
 EoDbLine::EoDbLine(EoInt16 penColor, EoInt16 lineType, const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint)
     : EoDbPrimitive(penColor, lineType), m_ln(beginPoint, endPoint) {}
-
 
 EoDbLine::EoDbLine(const DRW_Coord& beginPoint, const DRW_Coord& endPoint) {
   m_ln.begin(beginPoint.x, beginPoint.y, beginPoint.z);
@@ -54,13 +53,13 @@ EoDbLine::EoDbLine(const DRW_Coord& beginPoint, const DRW_Coord& endPoint) {
 }
 
 EoDbLine::EoDbLine(const EoDbLine& other) {
-  m_PenColor = other.m_PenColor;
-  m_LineType = other.m_LineType;
+  m_color = other.m_color;
+  m_lineTypeIndex = other.m_lineTypeIndex;
   m_ln = other.m_ln;
 }
 const EoDbLine& EoDbLine::operator=(const EoDbLine& other) {
-  m_PenColor = other.m_PenColor;
-  m_LineType = other.m_LineType;
+  m_color = other.m_color;
+  m_lineTypeIndex = other.m_lineTypeIndex;
   m_ln = other.m_ln;
 
   return (*this);
@@ -74,46 +73,54 @@ EoDbPrimitive*& EoDbLine::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbLine(*this);
   return (primitive);
 }
-void EoDbLine::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupList* newGroups) {
-  EoDbLine* pLine;
-  double dRel[2];
 
-  m_ln.RelOfPtToEndPts(pt[0], dRel[0]);
-  m_ln.RelOfPtToEndPts(pt[1], dRel[1]);
+/** @brief Cuts a line at two points.
+ * @param points Pointer to two points for the line cut.
+ * @param groups Group list to receive the original line segments.
+ * @param newGroups Group list to receive the new line segments.
+ * @note Line segment between two points goes in groups.
+ */
+void EoDbLine::CutAt2Pts(EoGePoint3d* points, EoDbGroupList* groups, EoDbGroupList* newGroups) {
+  EoDbLine* line{};
+  double dRel[2]{};
 
-  if (dRel[0] <= DBL_EPSILON && dRel[1] >= 1. - DBL_EPSILON) {  // Put entire line in trap
-    pLine = this;
+  m_ln.RelOfPtToEndPts(points[0], dRel[0]);
+  m_ln.RelOfPtToEndPts(points[1], dRel[1]);
+
+  if (dRel[0] <= DBL_EPSILON && dRel[1] >= 1.0 - DBL_EPSILON) {
+    // The two points effectively cover the whole line. No cutting. Put entire line in trap.
+    line = this;
   } else {  // Something gets cut
-    pLine = new EoDbLine(*this);
-    if (dRel[0] > DBL_EPSILON && dRel[1] < 1. - DBL_EPSILON) {  // Cut section out of middle
-      pLine->BeginPoint(pt[1]);
-      groups->AddTail(new EoDbGroup(pLine));
-
-      pLine = new EoDbLine(*this);
-      pLine->BeginPoint(pt[0]);
-      pLine->EndPoint(pt[1]);
-      EndPoint(pt[0]);
-    } else if (dRel[1] < 1. - DBL_EPSILON) {  // Cut in two and place begin section in trap
-      pLine->EndPoint(pt[1]);
-      BeginPoint(pt[1]);
+    line = new EoDbLine(*this);
+    if (dRel[0] > DBL_EPSILON && dRel[1] < 1.0 - DBL_EPSILON) {  // Cut section out of middle
+      line->BeginPoint(points[1]);
+      groups->AddTail(new EoDbGroup(line));
+      line = new EoDbLine(*this);
+      line->BeginPoint(points[0]);
+      line->EndPoint(points[1]);
+      EndPoint(points[0]);
+    } else if (dRel[1] < 1.0 - DBL_EPSILON) {  // Cut in two and place begin section in trap
+      line->EndPoint(points[1]);
+      BeginPoint(points[1]);
     } else {  // Cut in two and place end section in trap
-      pLine->BeginPoint(pt[0]);
-      EndPoint(pt[0]);
+      line->BeginPoint(points[0]);
+      EndPoint(points[0]);
     }
     groups->AddTail(new EoDbGroup(this));
   }
-  newGroups->AddTail(new EoDbGroup(pLine));
+  newGroups->AddTail(new EoDbGroup(line));
 }
+
 void EoDbLine::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
   EoGeLine ln;
 
-  if (m_ln.CutAtPt(pt, ln) != 0) group->AddTail(new EoDbLine(m_PenColor, m_LineType, ln));
+  if (m_ln.CutAtPt(pt, ln) != 0) group->AddTail(new EoDbLine(m_color, m_lineTypeIndex, ln));
 }
 void EoDbLine::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 penColor = LogicalPenColor();
+  EoInt16 color = LogicalColor();
   EoInt16 lineType = LogicalLineType();
 
-  pstate.SetPen(view, deviceContext, penColor, lineType);
+  pstate.SetPen(view, deviceContext, color, lineType);
 
   polyline::BeginLineStrip();
   polyline::SetVertex(m_ln.begin);
@@ -165,7 +172,7 @@ void EoDbLine::GetAllPts(EoGePoint3dArray& pts) {
   pts.Add(m_ln.end);
 }
 void EoDbLine::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
-  EoGePoint3d pt[2];
+  EoGePoint3d pt[2]{};
 
   GetPts(pt[0], pt[1]);
 
@@ -220,7 +227,7 @@ bool EoDbLine::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) 
 }
 int EoDbLine::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptInt) {
   int i;
-  int iLoc[2];
+  int iLoc[2]{};
 
   GetPts(ptInt[0], ptInt[1]);
 
@@ -305,8 +312,8 @@ void EoDbLine::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 bool EoDbLine::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kLinePrimitive));
 
-  EoDb::Write(file, m_PenColor);
-  EoDb::Write(file, m_LineType);
+  EoDb::Write(file, m_color);
+  EoDb::Write(file, m_lineTypeIndex);
   m_ln.Write(file);
 
   return true;

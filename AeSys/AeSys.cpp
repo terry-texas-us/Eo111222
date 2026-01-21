@@ -83,8 +83,8 @@ namespace hatch {
 double dXAxRefVecScal;
 double dYAxRefVecScal;
 double dOffAng;
-int iTableOffset[64];
-float fTableValue[1536];
+int tableOffset[64]{};
+float tableValue[1536]{};
 }  // namespace hatch
 
 COLORREF* pColTbl = ColorPalette;
@@ -567,8 +567,8 @@ void AeSys::LoadHatchesFromFile(const CString& strFileName) {
 
   while (fl.ReadString(szLn, sizeof(szLn) / sizeof(wchar_t) - 1) != 0) {
     if (*szLn == '!') {  // New Hatch index
-      if (iHatId != 0) hatch::fTableValue[hatch::iTableOffset[iHatId]] = float(iNmbHatLns);
-      hatch::iTableOffset[++iHatId] = iTblId++;
+      if (iHatId != 0) hatch::tableValue[hatch::tableOffset[iHatId]] = float(iNmbHatLns);
+      hatch::tableOffset[++iHatId] = iTblId++;
       iNmbHatLns = 0;
     } else {
       iNmbStrsId = iTblId;
@@ -579,14 +579,14 @@ void AeSys::LoadHatchesFromFile(const CString& strFileName) {
       LPWSTR pTok = wcstok_s(szLn, szValDel, &NextToken);
       while (pTok != 0) {
         volatile double tempValue = _wtof(pTok);
-        hatch::fTableValue[iTblId] = static_cast<float>(tempValue);
+        hatch::tableValue[iTblId] = static_cast<float>(tempValue);
         iNmbEnts++;
-        if (iNmbEnts >= 6) dTotStrsLen = dTotStrsLen + hatch::fTableValue[iTblId];
+        if (iNmbEnts >= 6) dTotStrsLen = dTotStrsLen + hatch::tableValue[iTblId];
         iTblId++;
         pTok = wcstok_s(0, szValDel, &NextToken);
       }
-      hatch::fTableValue[iNmbStrsId++] = float(iNmbEnts - 5);
-      hatch::fTableValue[iNmbStrsId] = float(dTotStrsLen);
+      hatch::tableValue[iNmbStrsId++] = float(iNmbEnts - 5);
+      hatch::tableValue[iNmbStrsId] = float(dTotStrsLen);
       iNmbHatLns++;
     }
   }

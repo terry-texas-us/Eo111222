@@ -57,9 +57,9 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
   const auto numberOfDashElements = lineType->GetNumberOfDashes();
   if (numberOfDashElements == 0 || pointsArray.GetSize() < 2) { return; }
 
-  EoGePoint3d modelPoints[2];
-  CPoint devicePoints[2];
-  EoGePoint4d viewPoints[2];
+  EoGePoint3d modelPoints[2]{};
+  CPoint devicePoints[2]{};
+  EoGePoint4d viewPoints[2]{};
 
   size_t dashElementIndex{};
   std::vector<double> dashElements(numberOfDashElements);

@@ -24,7 +24,7 @@ bool EoDbTracingFile::ReadLayer(CFile& file, EoDbLayer* layer) {
   EoUInt16 NumberOfGroups = EoDb::ReadUInt16(file);
 
   for (EoUInt16 n = 0; n < NumberOfGroups; n++) {
-    EoDbGroup* Group = ReadGroup(file);
+    auto* Group = ReadGroup(file);
     layer->AddTail(Group);
   }
   if (EoDb::ReadUInt16(file) != EoDb::kEndOfSection)
@@ -35,7 +35,7 @@ bool EoDbTracingFile::ReadLayer(CFile& file, EoDbLayer* layer) {
 EoDbGroup* EoDbTracingFile::ReadGroup(CFile& file) {
   EoUInt16 NumberOfPrimitives = EoDb::ReadUInt16(file);
 
-  EoDbGroup* Group = new EoDbGroup;
+  auto* Group = new EoDbGroup;
   EoDbPrimitive* Primitive;
 
   for (EoUInt16 n = 0; n < NumberOfPrimitives; n++) {
@@ -56,7 +56,7 @@ void EoDbTracingFile::WriteLayer(CFile& file, EoDbLayer* layer) {
 
   auto position = layer->GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = layer->GetNext(position);
+    auto* Group = layer->GetNext(position);
     Group->Write(file);
   }
   EoDb::Write(file, EoUInt16(EoDb::kEndOfSection));

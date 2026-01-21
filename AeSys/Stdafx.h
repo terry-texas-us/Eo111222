@@ -81,10 +81,10 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 UINT AFXAPI HashKey(CString& str);
 
-using EoByte = unsigned char;
-using EoSbyte = char;
-using EoInt16 = short;
-using EoUInt16 = unsigned short;
+using EoUInt8 = std::uint8_t;
+using EoInt8 = std::int8_t;
+using EoInt16 = std::int16_t;
+using EoUInt16 = std::uint16_t;
 
 #if defined(USING_DDE)
 #include <ddeml.h>

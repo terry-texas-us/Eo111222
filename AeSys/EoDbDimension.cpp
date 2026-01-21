@@ -33,24 +33,25 @@
 
 EoUInt16 EoDbDimension::sm_wFlags = 0;
 
-EoDbDimension::EoDbDimension(EoInt16 nPenColor, EoInt16 lineType, EoGeLine line) : m_ln(line) {
-  m_PenColor = nPenColor;
-  m_LineType = lineType;
+EoDbDimension::EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line) : m_ln(line) {
+  m_color = color;
+  m_lineTypeIndex = lineType;
 
   m_nTextPenColor = 5;
   pstate.GetFontDef(m_fd);
   SetDefaultNote();
 }
-EoDbDimension::EoDbDimension(EoInt16 penColor, EoInt16 lineType, EoGeLine line, EoInt16 textPenColor, const EoDbFontDefinition& fontDefinition,
-                             const EoGeReferenceSystem& referenceSystem, const CString& text)
+EoDbDimension::EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line, EoInt16 textPenColor,
+                             const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
+                             const CString& text)
     : m_ln(line), m_fd(fontDefinition), m_ReferenceSystem(referenceSystem), m_strText(text) {
-  m_PenColor = penColor;
-  m_LineType = lineType;
+  m_color = color;
+  m_lineTypeIndex = lineType;
   m_nTextPenColor = textPenColor;
 }
 EoDbDimension::EoDbDimension(const EoDbDimension& src) {
-  m_PenColor = src.m_PenColor;
-  m_LineType = src.m_LineType;
+  m_color = src.m_color;
+  m_lineTypeIndex = src.m_lineTypeIndex;
   m_ln = src.m_ln;
 
   m_nTextPenColor = src.m_nTextPenColor;
@@ -59,8 +60,8 @@ EoDbDimension::EoDbDimension(const EoDbDimension& src) {
   m_strText = src.m_strText;
 }
 const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& src) {
-  m_PenColor = src.m_PenColor;
-  m_LineType = src.m_LineType;
+  m_color = src.m_color;
+  m_lineTypeIndex = src.m_lineTypeIndex;
   m_ln = src.m_ln;
 
   m_nTextPenColor = src.m_nTextPenColor;
@@ -70,7 +71,7 @@ const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& src) {
 
   return (*this);
 }
-void EoDbDimension::AddToTreeViewControl(HWND tree, HTREEITEM parent) { 
+void EoDbDimension::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   CString label{L"<Dim>"};
   tvAddItem(tree, parent, label.GetBuffer(), this);
 }
@@ -128,11 +129,11 @@ void EoDbDimension::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
   SetDefaultNote();
 }
 void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 PenColor = LogicalPenColor();
-  pstate.SetPen(view, deviceContext, PenColor, LogicalLineType());
+  EoInt16 color = LogicalColor();
+  pstate.SetPen(view, deviceContext, color, LogicalLineType());
   m_ln.Display(view, deviceContext);
 
-  pstate.SetPenColor(deviceContext, m_nTextPenColor);
+  pstate.SetColor(deviceContext, m_nTextPenColor);
 
   EoInt16 LineType = pstate.LineType();
   pstate.SetLineType(deviceContext, 1);
@@ -164,7 +165,9 @@ void EoDbDimension::AddReportToMessageList(EoGePoint3d pt) {
   dde::PostAdvise(dde::EngAngZInfo);
 #endif  // USING_DDE
 }
-void EoDbDimension::FormatExtra(CString& str) { str.Format(L"Color;%s\tStyle;%s", FormatPenColor().GetString(), FormatLineType().GetString()); }
+void EoDbDimension::FormatExtra(CString& str) {
+  str.Format(L"Color;%s\tStyle;%s", FormatPenColor().GetString(), FormatLineType().GetString());
+}
 void EoDbDimension::FormatGeometry(CString& str) {
   str += L"Begin Point;" + m_ln.begin.ToString();
   str += L"End Point;" + m_ln.end.ToString();
@@ -257,7 +260,7 @@ EoGePoint3d EoDbDimension::SelectAtControlPoint(AeSysView* view, const EoGePoint
 bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   sm_wFlags &= ~0x0003;
 
-  EoGePoint4d pt[4];
+  EoGePoint4d pt[4]{};
   pt[0] = EoGePoint4d(m_ln.begin);
   pt[1] = EoGePoint4d(m_ln.end);
   view->ModelViewTransformPoints(2, &pt[0]);
@@ -364,8 +367,8 @@ void EoDbDimension::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 bool EoDbDimension::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kDimensionPrimitive));
 
-  EoDb::Write(file, m_PenColor);
-  EoDb::Write(file, m_LineType);
+  EoDb::Write(file, m_color);
+  EoDb::Write(file, m_lineTypeIndex);
   m_ln.Write(file);
 
   EoDb::Write(file, m_nTextPenColor);

@@ -17,7 +17,7 @@ EoDlgTrapModify::EoDlgTrapModify(AeSysDoc* document, CWnd* pParent /*=nullptr*/)
 EoDlgTrapModify::~EoDlgTrapModify() {}
 void EoDlgTrapModify::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoDataExchange(dataExchange); }
 void EoDlgTrapModify::OnOK() {
-  if (IsDlgButtonChecked(IDC_MOD_PEN)) { m_Document->ModifyTrappedGroupsPenColor(pstate.PenColor()); }
+  if (IsDlgButtonChecked(IDC_MOD_PEN)) { m_Document->ModifyTrappedGroupsColor(pstate.PenColor()); }
   if (IsDlgButtonChecked(IDC_MOD_LINE)) { m_Document->ModifyTrappedGroupsLineType(pstate.LineType()); }
   if (IsDlgButtonChecked(IDC_MOD_FILL)) { ModifyPolygons(); }
   EoDbCharacterCellDefinition ccd;
@@ -39,11 +39,11 @@ void EoDlgTrapModify::OnOK() {
 void EoDlgTrapModify::ModifyPolygons() {
   auto Position = m_Document->GetFirstTrappedGroupPosition();
   while (Position != 0) {
-    EoDbGroup* Group = m_Document->GetNextTrappedGroup(Position);
+    auto* Group = m_Document->GetNextTrappedGroup(Position);
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
+      auto* Primitive = Group->GetNext(PrimitivePosition);
 
       if (Primitive->Is(EoDb::kPolygonPrimitive)) {
         EoDbPolygon* pPolygon = static_cast<EoDbPolygon*>(Primitive);

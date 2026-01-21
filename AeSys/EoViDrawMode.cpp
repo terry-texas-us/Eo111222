@@ -28,7 +28,7 @@ void AeSysView::OnDrawModeOptions() { AeSysDoc::GetDoc()->OnSetupOptionsDraw(); 
 void AeSysView::OnDrawModePoint() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
 
-  EoDbGroup* Group = new EoDbGroup(new EoDbPoint(pstate.PenColor(), pstate.PointStyle(), CurrentPnt));
+  auto* Group = new EoDbGroup(new EoDbPoint(pstate.PenColor(), pstate.PointStyle(), CurrentPnt));
   auto* document = GetDocument();
   document->AddWorkLayerGroup(Group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
@@ -44,7 +44,7 @@ void AeSysView::OnDrawModeLine() {
     auto* document = GetDocument();
     CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
 
-    EoDbGroup* Group = new EoDbGroup(new EoDbLine(pts[0], CurrentPnt));
+    auto* Group = new EoDbGroup(new EoDbLine(pts[0], CurrentPnt));
     document->AddWorkLayerGroup(Group);
     pts[0] = CurrentPnt;
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -143,7 +143,7 @@ void AeSysView::OnDrawModeReturn() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
 
   INT_PTR NumberOfPoints = pts.GetSize();
-  EoDbGroup* Group = 0;
+  EoDbGroup* Group{};
 
   switch (PreviousDrawCommand) {
     case ID_OP2:
@@ -251,7 +251,7 @@ void AeSysView::OnDrawModeEscape() {
 
 void AeSysView::OnDrawModeShiftReturn() {
   if (PreviousDrawCommand == ID_OP3) {
-    EoDbGroup* Group = new EoDbGroup(new EoDbPolyline(pts));
+    auto* Group = new EoDbGroup(new EoDbPolyline(pts));
     auto* document = GetDocument();
     document->AddWorkLayerGroup(Group);
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);

@@ -66,7 +66,7 @@ class AeSys : public CWinAppEx {
   double m_EngagedAngle{0.0};
   double m_EngagedLength{0.0};
   bool m_HighColorMode{};
-  EoGePoint3d m_HomePoints[9];
+  EoGePoint3d m_HomePoints[9]{};
   HMENU m_MainFrameMenuHandle{};
   bool m_ModeInformationOverView{};
   int m_ModeResourceIdentifier{};
@@ -177,7 +177,7 @@ class AeSys : public CWinAppEx {
   bool ModeInformationOverView() const { return m_ModeInformationOverView; }
   double ParseLength(wchar_t* lengthAsString);
   double ParseLength(Units units, wchar_t* inputLine);
-  COLORREF PenColorsGetHot(EoInt16 nPenColor) { return (ColorPalette[nPenColor]); }
+  COLORREF PenColorsGetHot(EoInt16 color) { return (ColorPalette[color]); }
   void LoadPenColorsFromFile(const CString& pathName);
 
   double PenWidthsGet(EoInt16 penIndex);

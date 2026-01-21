@@ -69,7 +69,7 @@ void EoDlgBlockInsert::OnOK() {
 
     EoDbBlockReference* BlockReference = new EoDbBlockReference(BlockName, InsertionPoint);
 
-    EoDbGroup* Group = new EoDbGroup(BlockReference);
+    auto* Group = new EoDbGroup(BlockReference);
     m_Document->AddWorkLayerGroup(Group);
     m_Document->UpdateAllViews(nullptr, EoDb::kGroup, Group);
   }

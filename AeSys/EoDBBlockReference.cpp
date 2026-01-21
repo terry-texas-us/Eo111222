@@ -55,11 +55,11 @@ EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) {
   m_columnSpacing = other.m_columnSpacing;
   m_rowSpacing = other.m_rowSpacing;
 }
-EoDbBlockReference::EoDbBlockReference(EoUInt16 penColor, EoUInt16 lineType, const CString& name, const EoGePoint3d& point, const EoGeVector3d& normal,
+EoDbBlockReference::EoDbBlockReference(EoUInt16 color, EoUInt16 lineType, const CString& name, const EoGePoint3d& point, const EoGeVector3d& normal,
                                        const EoGeVector3d scaleFactors, double rotation)
     : m_blockName(name), m_insertionPoint(point), m_normal(normal), m_scaleFactors(scaleFactors) {
-  m_PenColor = static_cast<EoInt16>(penColor);
-  m_LineType = static_cast<EoInt16>(lineType);
+  m_color = static_cast<EoInt16>(color);
+  m_lineTypeIndex = static_cast<EoInt16>(lineType);
 
   m_rotation = rotation;
   m_columnCount = 1;
@@ -266,8 +266,8 @@ void EoDbBlockReference::TranslateUsingMask(EoGeVector3d v, DWORD mask) {
 }
 bool EoDbBlockReference::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kGroupReferencePrimitive));
-  EoDb::Write(file, m_PenColor);
-  EoDb::Write(file, m_LineType);
+  EoDb::Write(file, m_color);
+  EoDb::Write(file, m_lineTypeIndex);
   EoDb::Write(file, m_blockName);
   m_insertionPoint.Write(file);
   m_normal.Write(file);

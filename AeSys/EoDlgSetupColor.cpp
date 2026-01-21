@@ -85,11 +85,11 @@ void EoDlgSetupColor::OnClickedOddColors() {
   CDialog::OnOK();
 }
 void EoDlgSetupColor::OnBnClickedByblockButton() {
-  m_ColorIndex = EoDbPrimitive::PENCOLOR_BYBLOCK;
+  m_ColorIndex = EoDbPrimitive::COLOR_BYBLOCK;
   CDialog::OnOK();
 }
 void EoDlgSetupColor::OnBnClickedBylayerButton() {
-  m_ColorIndex = EoDbPrimitive::PENCOLOR_BYLAYER;
+  m_ColorIndex = EoDbPrimitive::COLOR_BYLAYER;
   CDialog::OnOK();
 }
 void EoDlgSetupColor::OnChangeColorEdit() {

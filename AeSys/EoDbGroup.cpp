@@ -62,16 +62,16 @@ void EoDbGroup::BreakPolylines() {
     auto PrimitivePosition = Position;
     EoDbPrimitive* Primitive = GetNext(Position);
     if (Primitive->Is(EoDb::kPolylinePrimitive)) {
-      EoInt16 nPenColor = Primitive->PenColor();
+      EoInt16 color = Primitive->Color();
       EoInt16 LineType = Primitive->LineTypeIndex();
 
       EoGePoint3dArray pts;
       static_cast<EoDbPolyline*>(Primitive)->GetAllPts(pts);
 
-      for (EoUInt16 w = 0; w < pts.GetSize() - 1; w++) CObList::InsertBefore(PrimitivePosition, new EoDbLine(nPenColor, LineType, pts[w], pts[w + 1]));
+      for (EoUInt16 w = 0; w < pts.GetSize() - 1; w++) CObList::InsertBefore(PrimitivePosition, new EoDbLine(color, LineType, pts[w], pts[w + 1]));
 
       if (static_cast<EoDbPolyline*>(Primitive)->IsLooped())
-        CObList::InsertBefore(PrimitivePosition, new EoDbLine(nPenColor, LineType, pts[pts.GetUpperBound()], pts[0]));
+        CObList::InsertBefore(PrimitivePosition, new EoDbLine(color, LineType, pts[pts.GetUpperBound()], pts[0]));
 
       this->RemoveAt(PrimitivePosition);
       delete Primitive;
@@ -210,11 +210,11 @@ void EoDbGroup::ModifyNotes(EoDbFontDefinition& fd, EoDbCharacterCellDefinition&
     if (Primitive->Is(EoDb::kTextPrimitive)) { static_cast<EoDbText*>(Primitive)->ModifyNotes(fd, ccd, iAtt); }
   }
 }
-void EoDbGroup::ModifyPenColor(EoInt16 nPenColor) {
+void EoDbGroup::ModifyColor(EoInt16 color) {
   auto position = GetHeadPosition();
   while (position != 0) {
     EoDbPrimitive* Primitive = GetNext(position);
-    Primitive->SetPenColor(nPenColor);
+    Primitive->SetColor(color);
   }
 }
 void EoDbGroup::ModifyLineType(EoInt16 lineType) {
@@ -230,8 +230,8 @@ void EoDbGroup::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) 
     EoDbPrimitive* Primitive = GetNext(position);
 
     for (EoUInt16 w = 0; w < wCols; w++) {
-      if (Primitive->PenColor() == pCol[w]) {
-        Primitive->SetPenColor(pColNew[w]);
+      if (Primitive->Color() == pCol[w]) {
+        Primitive->SetColor(pColNew[w]);
         break;
       }
     }
@@ -375,7 +375,7 @@ void EoDbGroup::Write(CFile& file) {
     Primitive->Write(file);
   }
 }
-void EoDbGroup::Write(CFile& file, EoByte* buffer) {
+void EoDbGroup::Write(CFile& file, EoUInt8* buffer) {
   // group flags
   buffer[0] = 0;
   // number of primitives in group

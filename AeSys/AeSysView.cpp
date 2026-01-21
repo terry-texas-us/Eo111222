@@ -629,7 +629,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
 
   if ((hint & EoDb::kSafe) == EoDb::kSafe) { PrimitiveState = pstate.Save(); }
   if ((hint & EoDb::kErase) == EoDb::kErase) { iDrawMode = pstate.SetROP2(DeviceContext, R2_XORPEN); }
-  if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialPenColorIndex(app.TrapHighlightColor()); }
+  if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor()); }
   switch (hint) {
     case EoDb::kPrimitive:
     case EoDb::kPrimitiveSafe:
@@ -660,7 +660,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
     default:
       CView::OnUpdate(sender, hint, hintObject);
   }
-  if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialPenColorIndex(0); }
+  if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(0); }
   if ((hint & EoDb::kErase) == EoDb::kErase) { pstate.SetROP2(DeviceContext, iDrawMode); }
   if ((hint & EoDb::kSafe) == EoDb::kSafe) { pstate.Restore(DeviceContext, PrimitiveState); }
   DeviceContext->SetBkColor(BackgroundColor);
@@ -1788,7 +1788,7 @@ void AeSysView::DeleteLastGroup() {
     app.AddStringToMessageList(IDS_MSG_NO_DET_GROUPS_IN_VIEW);
   } else {
     auto* Document = GetDocument();
-    EoDbGroup* Group = m_VisibleGroupList.RemoveTail();
+    auto* Group = m_VisibleGroupList.RemoveTail();
 
     Document->AnyLayerRemove(Group);
     if (Document->RemoveTrappedGroup(Group) != 0) {  // Display it normal color so the erase xor will work
@@ -1804,7 +1804,7 @@ void AeSysView::DeleteLastGroup() {
 void AeSysView::BreakAllPolylines() {
   auto Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
-    EoDbGroup* Group = GetNextVisibleGroup(Position);
+    auto* Group = GetNextVisibleGroup(Position);
     Group->BreakPolylines();
   }
 }
@@ -1812,7 +1812,7 @@ void AeSysView::BreakAllPolylines() {
 void AeSysView::BreakAllSegRefs() {
   auto Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
-    EoDbGroup* Group = GetNextVisibleGroup(Position);
+    auto* Group = GetNextVisibleGroup(Position);
     Group->BreakSegRefs();
   }
 }
@@ -1833,7 +1833,7 @@ EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
 
   auto Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
-    EoDbGroup* Group = GetNextVisibleGroup(Position);
+    auto* Group = GetNextVisibleGroup(Position);
     Primitive = Group->SelPrimAtCtrlPt(this, pt, &ptEng);
     if (Primitive != 0) {
       m_ptDet = ptEng;
@@ -1862,7 +1862,7 @@ EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& pt) {
 
   auto Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
-    EoDbGroup* Group = GetNextVisibleGroup(Position);
+    auto* Group = GetNextVisibleGroup(Position);
     EoDbPrimitive* Primitive = Group->SelPrimUsingPoint(this, ptView, dPicApert, ptEng);
     if (Primitive != 0) {
       m_ptDet = ptEng;
@@ -1878,7 +1878,7 @@ EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& pt) {
 EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbEllipse*& circle) {
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
+    auto* Group = GetNextVisibleGroup(GroupPosition);
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
@@ -1903,7 +1903,7 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
+    auto* Group = GetNextVisibleGroup(GroupPosition);
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
@@ -1922,14 +1922,14 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
 EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor, EoInt16 pointStyle, EoDbPoint*& primitive) {
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
+    auto* Group = GetNextVisibleGroup(GroupPosition);
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kPointPrimitive)) {
         EoDbPoint* Point = static_cast<EoDbPoint*>(Primitive);
 
-        if (Point->PenColor() == pointColor && Point->PointStyle() == pointStyle) {
+        if (Point->Color() == pointColor && Point->PointStyle() == pointStyle) {
           if (point.DistanceTo(Point->GetPt()) <= tolerance) {
             primitive = Point;
             return Group;
@@ -1956,7 +1956,7 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
+    auto* Group = GetNextVisibleGroup(GroupPosition);
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
@@ -1981,7 +1981,7 @@ EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& pt) {
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
+    auto* Group = GetNextVisibleGroup(GroupPosition);
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);

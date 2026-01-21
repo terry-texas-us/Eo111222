@@ -600,7 +600,7 @@ void EoDlgFileManage::OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESULT* pRe
   NumberOfGroups.Format(L"%-4i", static_cast<int>(Layer->GetCount()));
   m_Groups.SetWindowTextW(NumberOfGroups);
 
-  EoDbPrimitive::SetLayerPenColorIndex(Layer->ColorIndex());
+  EoDbPrimitive::SetLayerColor(Layer->ColorIndex());
   EoDbPrimitive::SetLayerLineTypeIndex(Layer->LineTypeIndex());
 
   WndProcPreviewUpdateLayer(m_PreviewWindowHandle, Layer);

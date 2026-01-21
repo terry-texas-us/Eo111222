@@ -263,7 +263,7 @@ void AeSysDoc::SetCommonTableEntries() {
   //       Need to ensure that line types loaded here match those indexes.
   m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
   m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to AeSys).txt");
-//  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
+  //  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
 }
 
 BOOL AeSysDoc::OnNewDocument() {
@@ -431,7 +431,7 @@ void AeSysDoc::AddTextBlock(LPWSTR pszText) {
   LPWSTR pText = wcstok_s(pszText, L"\r", &NextToken);
   while (pText != 0) {
     if (wcslen(pText) > 0) {
-      EoDbGroup* Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, pText));
+      auto* Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, pText));
       AddWorkLayerGroup(Group);
       UpdateAllViews(nullptr, EoDb::kGroup, Group);
     }
@@ -443,7 +443,7 @@ void AeSysDoc::AddTextBlock(LPWSTR pszText) {
 }
 void AeSysDoc::DeletedGroupsRestore() {
   if (!DeletedGroupsIsEmpty()) {
-    EoDbGroup* Group = DeletedGroupsRemoveTail();
+    auto* Group = DeletedGroupsRemoveTail();
     AddWorkLayerGroup(Group);
     UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
   }
@@ -476,7 +476,8 @@ int AeSysDoc::NumberOfGroupsInActiveLayers() {
   return static_cast<int>(count);
 }
 void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view, deviceContext);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view,
+            deviceContext);
 
   try {
     bool IdentifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
@@ -633,7 +634,7 @@ void AeSysDoc::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) {
 EoDbLayer* AeSysDoc::LayersSelUsingPoint(const EoGePoint3d& pt) {
   auto* activeView = AeSysView::GetActiveView();
 
-  EoDbGroup* Group = activeView->SelectGroupAndPrimitive(pt);
+  auto* Group = activeView->SelectGroupAndPrimitive(pt);
 
   if (Group != 0) {
     for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
@@ -970,47 +971,50 @@ void AeSysDoc::OnClearViewedTracings() {
 void AeSysDoc::OnPrimBreak() {
   auto* activeView = AeSysView::GetActiveView();
 
-  EoDbGroup* Group = activeView->SelectGroupAndPrimitive(activeView->GetCursorPosition());
-  if (Group != 0 && activeView->EngagedPrimitive() != 0) {
-    EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
+  auto* group = activeView->SelectGroupAndPrimitive(activeView->GetCursorPosition());
+  if (group != 0 && activeView->EngagedPrimitive() != 0) {
+    auto* primitive = activeView->EngagedPrimitive();
 
-    EoInt16 nPenColor = Primitive->PenColor();
-    EoInt16 LineType = Primitive->LineTypeIndex();
+    if (primitive->Is(EoDb::kPolylinePrimitive)) {
+      group->FindAndRemovePrim(primitive);
 
-    if (Primitive->Is(EoDb::kPolylinePrimitive)) {
-      Group->FindAndRemovePrim(Primitive);
-
-      EoDbPolyline* pPolyline = static_cast<EoDbPolyline*>(Primitive);
+      auto* polyline = static_cast<EoDbPolyline*>(primitive);
 
       EoGePoint3dArray Points;
-      pPolyline->GetAllPts(Points);
+      polyline->GetAllPts(Points);
 
-      for (EoUInt16 w = 0; w < Points.GetSize() - 1; w++) Group->AddTail(new EoDbLine(nPenColor, LineType, Points[w], Points[w + 1]));
+      EoInt16 color = primitive->Color();
+      EoInt16 lineTypeIndex = primitive->LineTypeIndex();
 
-      if (pPolyline->IsLooped()) Group->AddTail(new EoDbLine(nPenColor, LineType, Points[Points.GetUpperBound()], Points[0]));
-
-      delete Primitive;
+      for (EoUInt16 w = 0; w < Points.GetSize() - 1; w++) {
+        group->AddTail(new EoDbLine(color, lineTypeIndex, Points[w], Points[w + 1]));
+      }
+      if (polyline->IsLooped()) {
+        group->AddTail(new EoDbLine(color, lineTypeIndex, Points[Points.GetUpperBound()], Points[0]));
+      }
+      delete primitive;
       ResetAllViews();
-    } else if (Primitive->Is(EoDb::kGroupReferencePrimitive)) {
-      auto* blockReference = static_cast<EoDbBlockReference*>(Primitive);
+    } else if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
+      auto* blockReference = static_cast<EoDbBlockReference*>(primitive);
 
       EoDbBlock* block;
 
       if (LookupBlock(blockReference->BlockName(), block) != 0) {
-        Group->FindAndRemovePrim(Primitive);
+        group->FindAndRemovePrim(primitive);
 
         auto transformMatrix = blockReference->BuildTransformMatrix(block->BasePoint());
 
         EoDbGroup* pSegT = new EoDbGroup(*block);
         pSegT->Transform(transformMatrix);
-        Group->AddTail(pSegT);
+        group->AddTail(pSegT);
 
-        delete Primitive;
+        delete primitive;
         ResetAllViews();
       }
     }
   }
 }
+
 void AeSysDoc::OnEditSegToWork() {
   EoGePoint3d pt = app.GetCursorPosition();
 
@@ -1018,7 +1022,7 @@ void AeSysDoc::OnEditSegToWork() {
 
   if (Layer != 0) {
     if (Layer->IsInternal()) {
-      EoDbGroup* Group = Layer->SelectGroupUsingPoint(pt);
+      auto* Group = Layer->SelectGroupUsingPoint(pt);
 
       if (Group != 0) {
         Layer->Remove(Group);
@@ -1326,7 +1330,8 @@ void AeSysDoc::OnTrapCommandsExpand() {
   try {
     ExpandTrappedGroups();
   } catch (...) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysDoc::OnTrapCommandsExpand: Failed to expand trapped groups.\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1,
+              L"AeSysDoc::OnTrapCommandsExpand: Failed to expand trapped groups.\n");
   }
 }
 
@@ -1337,7 +1342,7 @@ void AeSysDoc::OnTrapCommandsInvert() {
     if (Layer->IsWork() || Layer->IsActive()) {
       auto LayerPosition = Layer->GetHeadPosition();
       while (LayerPosition != 0) {
-        EoDbGroup* Group = Layer->GetNext(LayerPosition);
+        auto* Group = Layer->GetNext(LayerPosition);
         auto GroupPosition = FindTrappedGroup(Group);
         if (GroupPosition != nullptr) {
           m_TrappedGroupList.RemoveAt(GroupPosition);
@@ -1396,7 +1401,7 @@ void AeSysDoc::OnSetupPenColor() {
   Dialog.m_ColorIndex = static_cast<EoUInt16>(pstate.PenColor());
 
   if (Dialog.DoModal() == IDOK) {
-    pstate.SetPenColor(nullptr, static_cast<EoInt16>(Dialog.m_ColorIndex));
+    pstate.SetColor(nullptr, static_cast<EoInt16>(Dialog.m_ColorIndex));
 
     AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Pen);
   }
@@ -1504,7 +1509,7 @@ void AeSysDoc::OnToolsGroupDelete() {
 
   EoGePoint3d pt = activeView->GetCursorPosition();
 
-  EoDbGroup* Group = activeView->SelectGroupAndPrimitive(pt);
+  auto* Group = activeView->SelectGroupAndPrimitive(pt);
 
   if (Group != 0) {
     AnyLayerRemove(Group);
@@ -1565,7 +1570,7 @@ void AeSysDoc::OnToolsPrimitiveDelete() {
 
   auto* activeView = AeSysView::GetActiveView();
 
-  EoDbGroup* Group = activeView->SelectGroupAndPrimitive(pt);
+  auto* Group = activeView->SelectGroupAndPrimitive(pt);
 
   if (Group != 0) {
     auto Position = FindTrappedGroup(Group);
@@ -1597,7 +1602,7 @@ void AeSysDoc::OnPrimModifyAttributes() {
 
   EoGePoint3d pt = activeView->GetCursorPosition();
 
-  EoDbGroup* Group = activeView->SelectGroupAndPrimitive(pt);
+  auto* Group = activeView->SelectGroupAndPrimitive(pt);
 
   if (Group != 0) {
     activeView->EngagedPrimitive()->ModifyState();
@@ -1656,7 +1661,8 @@ void AeSysDoc::OnMaintenanceRemoveEmptyNotes() {
   int NumberOfEmptyNotes = RemoveEmptyNotesAndDelete();
   int NumberOfEmptyGroups = RemoveEmptyGroups();
   CString str;
-  str.Format(L"%d notes were removed resulting in %d empty groups which were also removed.", NumberOfEmptyNotes, NumberOfEmptyGroups);
+  str.Format(L"%d notes were removed resulting in %d empty groups which were also removed.", NumberOfEmptyNotes,
+             NumberOfEmptyGroups);
   app.AddStringToMessageList(str);
 }
 void AeSysDoc::OnMaintenanceRemoveEmptyGroups() {
@@ -1764,7 +1770,8 @@ void AeSysDoc::OnPrimExtractNum() {
       lex::Parse(number);
       lex::EvalTokenStream(&iTokId, &lDef, &iTyp, value);
 
-      if (iTyp != lex::ArchitecturalUnitsLengthToken && iTyp != lex::EngineeringUnitsLengthToken && iTyp != lex::SimpleUnitsLengthToken) {
+      if (iTyp != lex::ArchitecturalUnitsLengthToken && iTyp != lex::EngineeringUnitsLengthToken &&
+          iTyp != lex::SimpleUnitsLengthToken) {
         lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, value);
       }
       wchar_t Message[64]{};
@@ -2041,7 +2048,7 @@ void AeSysDoc::ConvertGroupsInLayers() {
 
     auto position = Layer->GetHeadPosition();
     while (position != 0) {
-      EoDbGroup* Group = Layer->GetNext(position);
+      auto* Group = Layer->GetNext(position);
       ConvertGroup(Group, ModelSpace);
     }
   }
@@ -2069,12 +2076,18 @@ BOOL AeSysDoc::DoPromptFileName(CString& fileName, UINT titleResourceIdentifier,
   DWORD FilterIndex(1);
 
   if (Extension.CompareNoCase(L"peg") == 0) { FilterIndex = 1; }
-  if ((DrawingVersion == OdDb::vAC24 || DrawingVersion == OdDb::kDHL_1024) && Extension.CompareNoCase(L"dxf") == 0) { FilterIndex = 2; }
-  if ((DrawingVersion == OdDb::vAC21 || DrawingVersion == OdDb::kDHL_1021) && Extension.CompareNoCase(L"dxf") == 0) { FilterIndex = 3; }
-  if ((DrawingVersion == OdDb::kDHL_2400a || DrawingVersion == OdDb::kDHL_1024) && Extension.CompareNoCase(L"dxf") == 0) {
+  if ((DrawingVersion == OdDb::vAC24 || DrawingVersion == OdDb::kDHL_1024) && Extension.CompareNoCase(L"dxf") == 0) {
+    FilterIndex = 2;
+  }
+  if ((DrawingVersion == OdDb::vAC21 || DrawingVersion == OdDb::kDHL_1021) && Extension.CompareNoCase(L"dxf") == 0) {
+    FilterIndex = 3;
+  }
+  if ((DrawingVersion == OdDb::kDHL_2400a || DrawingVersion == OdDb::kDHL_1024) &&
+      Extension.CompareNoCase(L"dxf") == 0) {
     FilterIndex = 4;
   }
-  if ((DrawingVersion == OdDb::kDHL_2100a || DrawingVersion == OdDb::kDHL_1021) && Extension.CompareNoCase(L"dxf") == 0) {
+  if ((DrawingVersion == OdDb::kDHL_2100a || DrawingVersion == OdDb::kDHL_1021) &&
+      Extension.CompareNoCase(L"dxf") == 0) {
     FilterIndex = 5;
   }
   if (DrawingVersion == OdDb::vAC24 && Extension.CompareNoCase(L"dwg") == 0) { FilterIndex = 6; }

@@ -41,7 +41,7 @@ void AeSysView::OnAnnotateModeLine() {
     pts.Add(CurrentPnt);
   } else {
     if (CorrectLeaderEndpoints(m_PreviousOp, ID_OP2, pts[0], CurrentPnt)) {
-      EoDbGroup* Group = new EoDbGroup;
+      auto* Group = new EoDbGroup;
       document->AddWorkLayerGroup(Group);
 
       if (m_PreviousOp == ID_OP3) { GenerateLineEndItem(EndItemType(), EndItemSize(), CurrentPnt, pts[0], Group); }
@@ -61,7 +61,7 @@ void AeSysView::OnAnnotateModeArrow() {
     pts.Add(CurrentPnt);
   } else {
     if (CorrectLeaderEndpoints(m_PreviousOp, ID_OP3, pts[0], CurrentPnt)) {
-      EoDbGroup* Group = new EoDbGroup;
+      auto* Group = new EoDbGroup;
 
       if (m_PreviousOp == ID_OP3) { GenerateLineEndItem(EndItemType(), EndItemSize(), CurrentPnt, pts[0], Group); }
       Group->AddTail(new EoDbLine(1, 1, pts[0], CurrentPnt));
@@ -115,7 +115,7 @@ void AeSysView::OnAnnotateModeBubble() {
     EoGeReferenceSystem ReferenceSystem(CurrentPnt, MajorAxis, MinorAxis);
 
     int PrimitiveState = pstate.Save();
-    pstate.SetPenColor(DeviceContext, 2);
+    pstate.SetColor(DeviceContext, 2);
 
     EoDbFontDefinition fd;
     pstate.GetFontDef(fd);
@@ -143,7 +143,7 @@ void AeSysView::OnAnnotateModeBubble() {
 void AeSysView::OnAnnotateModeHook() {
   auto* document = GetDocument();
   EoGePoint3d CurrentPnt = GetCursorPosition();
-  EoDbGroup* Group = new EoDbGroup;
+  auto* Group = new EoDbGroup;
   if (m_PreviousOp == 0) {
     pts.RemoveAll();
     pts.Add(CurrentPnt);
@@ -181,7 +181,7 @@ void AeSysView::OnAnnotateModeUnderline() {
   if (pText != 0) {
     pText->GetBoundingBox(pts, GapSpaceFactor());
 
-    EoDbGroup* Group = new EoDbGroup;
+    auto* Group = new EoDbGroup;
     Group->AddTail(new EoDbLine(pstate.PenColor(), 1, pts[0], pts[1]));
     document->AddWorkLayerGroup(Group);
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
@@ -237,7 +237,7 @@ void AeSysView::OnAnnotateModeBox() {
       pts[3].x = pts[0].x;
       pts[3].y = pts[2].y;
 
-      EoDbGroup* Group = new EoDbGroup;
+      auto* Group = new EoDbGroup;
 
       for (int i = 0; i < 4; i++) Group->AddTail(new EoDbLine(1, 1, pts[i], pts[(i + 1) % 4]));
 
@@ -256,7 +256,7 @@ void AeSysView::OnAnnotateModeCutIn() {
 
   EoGePoint3d CurrentPnt = GetCursorPosition();
 
-  EoDbGroup* Group = SelectLineUsingPoint(CurrentPnt);
+  auto* Group = SelectLineUsingPoint(CurrentPnt);
   if (Group != 0) {
     auto* document = GetDocument();
     auto* pLine = static_cast<EoDbLine*>(EngagedPrimitive());
@@ -287,8 +287,8 @@ void AeSysView::OnAnnotateModeCutIn() {
       MinorAxis *= 0.1;
       EoGeReferenceSystem ReferenceSystem(CurrentPnt, MajorAxis, MinorAxis);
 
-      EoInt16 nPenColor = pstate.PenColor();
-      pstate.SetPenColor(DeviceContext, 2);
+      EoInt16 color = pstate.PenColor();
+      pstate.SetColor(DeviceContext, 2);
 
       EoDbFontDefinition fd;
       pstate.GetFontDef(fd);
@@ -301,7 +301,7 @@ void AeSysView::OnAnnotateModeCutIn() {
       pstate.SetCharCellDef(ccd);
 
       EoDbText* TextPrimitive = new EoDbText(fd, ReferenceSystem, CurrentText);
-      pstate.SetPenColor(DeviceContext, nPenColor);
+      pstate.SetColor(DeviceContext, color);
 
       Group->AddTail(TextPrimitive);
 
@@ -347,7 +347,7 @@ void AeSysView::OnAnnotateModeConstructionLine() {
     pts.Add(pts[0].ProjectToward(CurrentPnt, 48.0));
     pts.Add(pts[1].ProjectToward(pts[0], 96.0));
 
-    EoDbGroup* Group = new EoDbGroup(new EoDbLine(15, 2, pts[1], pts[2]));
+    auto* Group = new EoDbGroup(new EoDbLine(15, 2, pts[1], pts[2]));
     document->AddWorkLayerGroup(Group);
     ModeLineUnhighlightOp(m_PreviousOp);
     pts.RemoveAll();

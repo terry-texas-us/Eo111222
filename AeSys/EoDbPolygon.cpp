@@ -56,7 +56,7 @@ EoDbPolygon::EoDbPolygon() {
 }
 
 EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
-  m_PenColor = pstate.PenColor();
+  m_color = pstate.PenColor();
   m_InteriorStyle = pstate.PolygonIntStyle();
   m_InteriorStyleIndex = pstate.PolygonIntStyleId();
 
@@ -87,7 +87,7 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
   }
 }
 EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d* pt) {
-  m_PenColor = 0;
+  m_color = 0;
   m_InteriorStyle = EoDb::kSolid;
   m_InteriorStyleIndex = 0;
   m_NumberOfPoints = wPts;
@@ -99,7 +99,7 @@ EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d* pt) {
   for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) m_Pt[w] = pt[w];
 }
 EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d ptOrig, EoGeVector3d vXAx, EoGeVector3d vYAx, const EoGePoint3d* ppt) {
-  m_PenColor = pstate.PenColor();
+  m_color = pstate.PenColor();
   m_InteriorStyle = pstate.PolygonIntStyle();
   m_InteriorStyleIndex = pstate.PolygonIntStyleId();
   m_NumberOfPoints = wPts;
@@ -111,7 +111,7 @@ EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d ptOrig, EoGeVector3d vXAx, E
   for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) m_Pt[w] = ppt[w];
 }
 EoDbPolygon::EoDbPolygon(EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d& yAxis, EoGePoint3dArray& pts) {
-  m_PenColor = pstate.PenColor();
+  m_color = pstate.PenColor();
   m_InteriorStyle = pstate.PolygonIntStyle();
   m_InteriorStyleIndex = pstate.PolygonIntStyleId();
   m_NumberOfPoints = EoUInt16(pts.GetSize());
@@ -125,7 +125,7 @@ EoDbPolygon::EoDbPolygon(EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d&
 EoDbPolygon::EoDbPolygon(EoInt16 penColor, EoInt16 style, EoInt16 styleIndex, EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d& yAxis,
                          EoGePoint3dArray& points)
     : m_HatchOrigin(origin), m_vPosXAx(xAxis), m_vPosYAx(yAxis) {
-  m_PenColor = penColor;
+  m_color = penColor;
   m_InteriorStyle = style;
   m_InteriorStyleIndex = styleIndex;
   m_NumberOfPoints = EoUInt16(points.GetSize());
@@ -134,7 +134,7 @@ EoDbPolygon::EoDbPolygon(EoInt16 penColor, EoInt16 style, EoInt16 styleIndex, Eo
   for (EoUInt16 n = 0; n < m_NumberOfPoints; n++) { m_Pt[n] = points[n]; }
 }
 EoDbPolygon::EoDbPolygon(const EoDbPolygon& src) {
-  m_PenColor = src.m_PenColor;
+  m_color = src.m_color;
   m_InteriorStyle = src.m_InteriorStyle;
   m_InteriorStyleIndex = src.m_InteriorStyleIndex;
   m_HatchOrigin = src.m_HatchOrigin;
@@ -145,7 +145,7 @@ EoDbPolygon::EoDbPolygon(const EoDbPolygon& src) {
   for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) m_Pt[w] = src.m_Pt[w];
 }
 const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& src) {
-  m_PenColor = src.m_PenColor;
+  m_color = src.m_color;
   m_InteriorStyle = src.m_InteriorStyle;
   m_InteriorStyleIndex = src.m_InteriorStyleIndex;
   m_HatchOrigin = src.m_HatchOrigin;
@@ -174,9 +174,9 @@ EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbPolygon::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 nPenColor = LogicalPenColor();
+  EoInt16 color = LogicalColor();
 
-  pstate.SetPenColor(deviceContext, nPenColor);
+  pstate.SetColor(deviceContext, color);
   EoInt16 nPolygonStyle = sm_SpecialPolygonStyle == -1 ? m_InteriorStyle : sm_SpecialPolygonStyle;
   pstate.SetPolygonIntStyle(nPolygonStyle);  // hollow, solid, pattern, hatch
   pstate.SetPolygonIntStyleId(m_InteriorStyleIndex);
@@ -376,7 +376,7 @@ void EoDbPolygon::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& p
 }
 
 bool EoDbPolygon::IsInView(AeSysView* view) {
-  EoGePoint4d pt[2];
+  EoGePoint4d pt[2]{};
 
   pt[0] = m_Pt[0];
   view->ModelViewTransformPoint(pt[0]);
@@ -462,7 +462,7 @@ void EoDbPolygon::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 
 bool EoDbPolygon::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kPolygonPrimitive));
-  EoDb::Write(file, m_PenColor);
+  EoDb::Write(file, m_color);
   EoDb::Write(file, m_InteriorStyle);  // note polygon style stuffed up into unused line type on io
   EoDb::Write(file, m_InteriorStyleIndex);
   EoDb::Write(file, m_NumberOfPoints);
@@ -503,21 +503,21 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
 
   pstate.SetLineType(deviceContext, 1);
 
-  int iTblId = hatch::iTableOffset[pstate.PolygonIntStyleId()];
-  int iHatLns = int(hatch::fTableValue[iTblId++]);
+  int iTblId = hatch::tableOffset[pstate.PolygonIntStyleId()];
+  int iHatLns = int(hatch::tableValue[iTblId++]);
 
   for (int i0 = 0; i0 < iHatLns; i0++) {
-    int iStrs = int(hatch::fTableValue[iTblId++]);     // number of strokes in line definition
-    double dTotStrLen = hatch::fTableValue[iTblId++];  // length of all strokes in line definition
-    double dSinAng = sin(hatch::fTableValue[iTblId]);  // angle at which line will be drawn
-    double dCosAng = cos(hatch::fTableValue[iTblId++]);
-    double dX = hatch::fTableValue[iTblId++];  // displacement to origin of initial line
-    double dY = hatch::fTableValue[iTblId++];
-    double dShift = hatch::fTableValue[iTblId++];  // x-axis origin shift between lines
-    double dSpac = hatch::fTableValue[iTblId++];   // spacing between lines
+    int iStrs = int(hatch::tableValue[iTblId++]);     // number of strokes in line definition
+    double dTotStrLen = hatch::tableValue[iTblId++];  // length of all strokes in line definition
+    double dSinAng = sin(hatch::tableValue[iTblId]);  // sine of angle at which line will be drawn
+    double dCosAng = cos(hatch::tableValue[iTblId++]);  // cosine of angle at which line will be drawn
+    double dX = hatch::tableValue[iTblId++];  // displacement to origin of initial line
+    double dY = hatch::tableValue[iTblId++];
+    double dShift = hatch::tableValue[iTblId++];  // x-axis origin shift between lines
+    double dSpac = hatch::tableValue[iTblId++];   // spacing between lines
 
     for (i = 0; i < iStrs; i++)  // length of each stoke in line definition
-      dStrLen[i] = hatch::fTableValue[iTblId++];
+      dStrLen[i] = hatch::tableValue[iTblId++];
 
     // Rotate origin on z0 plane so hatch x-axis becomes positive x-axis
     double dHatOrigX = dX * dCosAng - dY * (-dSinAng);

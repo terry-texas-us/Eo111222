@@ -50,7 +50,7 @@ void AeSysDoc::CompressTrappedGroups() {
 
   auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
+    auto* Group = m_TrappedGroupList.GetNext(GroupPosition);
 
     AnyLayerRemove(Group);
     RemoveGroupFromAllViews(Group);
@@ -68,8 +68,8 @@ void AeSysDoc::CompressTrappedGroups() {
 void AeSysDoc::CopyTrappedGroups(EoGeVector3d translate) {
   auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
-    EoDbGroup* NewGroup = new EoDbGroup(*Group);
+    auto* Group = m_TrappedGroupList.GetNext(GroupPosition);
+    auto* NewGroup = new EoDbGroup(*Group);
 
     AddWorkLayerGroup(NewGroup);
     UpdateAllViews(nullptr, EoDb::kGroup, Group);
@@ -130,7 +130,7 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
     memoryFile.SetLength(96);
     memoryFile.SeekToEnd();
 
-    auto* primitiveBuffer = new EoByte[EoDbPrimitive::BUFFER_SIZE];
+    auto* primitiveBuffer = new EoUInt8[EoDbPrimitive::BUFFER_SIZE];
 
     m_TrappedGroupList.Write(memoryFile, primitiveBuffer);
     m_TrappedGroupList.GetExtents(view, minPoint, maxPoint, view->ModelViewGetMatrix());
@@ -162,7 +162,7 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
 void AeSysDoc::DeleteAllTrappedGroups() {
   auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
+    auto* Group = m_TrappedGroupList.GetNext(GroupPosition);
     AnyLayerRemove(Group);
     RemoveGroupFromAllViews(Group);
     Group->DeletePrimitivesAndRemoveAll();
@@ -206,7 +206,7 @@ void AeSysDoc::SquareTrappedGroups(AeSysView* view) {
 
   auto GroupPosition = m_TrappedGroupList.GetHeadPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = m_TrappedGroupList.GetNext(GroupPosition);
+    auto* Group = m_TrappedGroupList.GetNext(GroupPosition);
     Group->Square(view);
   }
   UpdateAllViews(nullptr, EoDb::kGroupsSafeTrap, &m_TrappedGroupList);

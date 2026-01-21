@@ -128,18 +128,18 @@ class AeSysView : public CView {
   void DisplayGrid(CDC* deviceContext);
   EoGePoint3d GridOrign() const;
   void GridOrign(const EoGePoint3d& origin);
-  void GetGridLineSpacing(double& x, double& y, double& z);
+  void GetGridLineSpacing(double& x, double& y, double& z) const;
   void SetGridLineSpacing(double x, double y, double z);
-  void GetGridPointSpacing(double& x, double& y, double& z);
+  void GetGridPointSpacing(double& x, double& y, double& z) const;
   void SetGridPointSpacing(double x, double y, double z);
-  void GetGridSnapSpacing(double& x, double& y, double& z);
+  void GetGridSnapSpacing(double& x, double& y, double& z) const;
   void SetGridSnapSpacing(double x, double y, double z);
   /// <summary>Determines the nearest point on system constraining grid.</summary>
-  EoGePoint3d SnapPointToGrid(EoGePoint3d& pt);
+  EoGePoint3d SnapPointToGrid(EoGePoint3d& pt) const;
   /// <summary>Set Axis constraint tolerance angle and offset axis constraint offset angle. Constrains a line to nearest axis pivoting on first endpoint.</summary>
   /// <remarks>Offset angle only support about z-axis</remarks>
   /// <returns>Point after snap</returns>
-  EoGePoint3d SnapPointToAxis(EoGePoint3d& beginPoint, EoGePoint3d& endPoint);
+  EoGePoint3d SnapPointToAxis(EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const;
 
   bool DisplayGridWithLines() const;
   void EnableDisplayGridWithLines(bool display);
@@ -265,10 +265,10 @@ class AeSysView : public CView {
   void BreakAllPolylines();
   void BreakAllSegRefs();
 
-  bool PenWidthsOn() { return m_ViewPenWidths; }
-  double GetWorldScale() { return m_WorldScale; }
+  bool PenWidthsOn() const { return m_ViewPenWidths; }
+  double GetWorldScale() const { return m_WorldScale; }
   void SetWorldScale(const double scale);
-  bool RenderAsWireframe() { return m_ViewWireframe; }
+  bool RenderAsWireframe() const { return m_ViewWireframe; }
   auto AddGroup(EoDbGroup* group) { return m_VisibleGroupList.AddTail(group); }
   void AddGroups(EoDbGroupList* groups) { return m_VisibleGroupList.AddTail(groups); }
   auto RemoveGroup(EoDbGroup* group) { return m_VisibleGroupList.Remove(group); }
@@ -281,8 +281,8 @@ class AeSysView : public CView {
   EoDbGroup* GetNextVisibleGroup(POSITION& position) { return m_VisibleGroupList.GetNext(position); }
   EoDbGroup* GetPreviousGroup(POSITION& position) { return m_VisibleGroupList.GetPrev(position); }
   void BackgroundImageDisplay(CDC* deviceContext);
-  EoGeVector3d GetRelPos() { return m_vRelPos; }
-  bool ViewTrueTypeFonts() { return m_ViewTrueTypeFonts; }
+  EoGeVector3d GetRelPos() const { return m_vRelPos; }
+  bool ViewTrueTypeFonts() const { return m_ViewTrueTypeFonts; }
   void DisplayOdometer();
   /// <summary> Streams a sequence of characters as WM_KEYDOWN or WM_CHAR window messages.</summary>
   /// <remarks> This is a legacy feature.</remarks>
@@ -392,7 +392,7 @@ class AeSysView : public CView {
   void SetDefaultText(const CString& text) { m_DefaultText = text; }
   double EndItemSize() const { return m_EndItemSize; }
   void SetEndItemSize(double size) { m_EndItemSize = size; }
-  int EndItemType() { return m_EndItemType; }
+  int EndItemType() const { return m_EndItemType; }
   void SetEndItemType(int type) { m_EndItemType = type; }
   double GapSpaceFactor() const { return m_GapSpaceFactor; }
   void SetGapSpaceFactor(double factor) { m_GapSpaceFactor = factor; }
@@ -543,19 +543,19 @@ class AeSysView : public CView {
   EoGeVector3d m_EditModeRotationAngles;
   EoGeVector3d m_EditModeScale;
 
-  EoGeVector3d EditModeRotationAngles() { return m_EditModeRotationAngles; }
-  EoGeTransformMatrix EditModeInvertedRotationTMat() {
+  EoGeVector3d EditModeRotationAngles() const { return m_EditModeRotationAngles; }
+  EoGeTransformMatrix EditModeInvertedRotationTMat() const {
     EoGeTransformMatrix Matrix;
     Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
     Matrix.Inverse();
     return Matrix;
   }
-  EoGeTransformMatrix EditModeRotationTMat() {
+  EoGeTransformMatrix EditModeRotationTMat() const {
     EoGeTransformMatrix Matrix;
     Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
     return Matrix;
   }
-  EoGeVector3d EditModeInvertedScaleFactors() {
+  EoGeVector3d EditModeInvertedScaleFactors() const {
     EoGeVector3d InvertedScaleFactors;
 
     InvertedScaleFactors.x = fabs(m_EditModeScale.x) > DBL_EPSILON ? 1. / m_EditModeScale.x : 1.;

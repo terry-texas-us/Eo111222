@@ -161,7 +161,7 @@ bool dde::ExecNote(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 
 	EoGeReferenceSystem ReferenceSystem(ptPvt, ccd);
 
-	EoDbGroup* Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, ppArgs[0]));
+	auto* Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, ppArgs[0]));
 	Document->AddWorkLayerGroup(Group);
 	Document->UpdateAllViews(nullptr, EoDb::kGroup, Group);
 

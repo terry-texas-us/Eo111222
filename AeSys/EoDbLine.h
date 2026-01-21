@@ -68,11 +68,9 @@ class EoDbLine : public EoDbPrimitive {
   void Translate(EoGeVector3d v) override { m_ln += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoByte*) override;
+  void Write(CFile& file, EoUInt8*) override;
 
  public:  // Methods - virtuals
-  /// <summary>Cuts a line at two points.</summary>
-  // Notes:	Line segment between to points goes in groups.
   void CutAt2Pts(EoGePoint3d*, EoDbGroupList*, EoDbGroupList*) override;
   /// <summary>Cuts a line a point.</summary>
   void CutAtPt(EoGePoint3d&, EoDbGroup*) override;

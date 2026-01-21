@@ -33,8 +33,8 @@ class EoDbBlockReference : public EoDbPrimitive {
   EoDbBlockReference();
   EoDbBlockReference(const CString& strName, const EoGePoint3d& pt);
   EoDbBlockReference(const EoDbBlockReference&);
-  EoDbBlockReference(EoUInt16 penColor, EoUInt16 lineType, const CString& name, const EoGePoint3d& point, const EoGeVector3d& normal,
-                     const EoGeVector3d scaleFactors, double rotation);
+  EoDbBlockReference(EoUInt16 color, EoUInt16 lineType, const CString& name, const EoGePoint3d& point,
+                     const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation);
   ~EoDbBlockReference() override {};
 
   const EoDbBlockReference& operator=(const EoDbBlockReference&);
@@ -64,7 +64,7 @@ class EoDbBlockReference : public EoDbPrimitive {
   void Translate(EoGeVector3d v) override { m_insertionPoint += v; }
   void TranslateUsingMask(EoGeVector3d v, const DWORD mask) override;
   bool Write(CFile& file) override;
-  void Write(CFile& /* file */, EoByte* /* buffer */) override {};
+  void Write(CFile& /* file */, EoUInt8* /* buffer */) override {};
 
  public:  // Methods
   EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& insertionPoint);

@@ -182,7 +182,7 @@ void AeSysView::OnFixupModeReference() {
         EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, Eo::HalfPi);
         vMinAx = EoGeVector3d(ptCP, rTmp);
 
-        EoDbGroup* Group = new EoDbGroup(new EoDbEllipse(ptCP, vMajAx, vMinAx, dAng));
+        auto* Group = new EoDbGroup(new EoDbEllipse(ptCP, vMajAx, vMinAx, dAng));
         Document->AddWorkLayerGroup(Group);
         Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }

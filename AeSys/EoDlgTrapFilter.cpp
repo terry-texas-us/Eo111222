@@ -54,8 +54,8 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
 }
 void EoDlgTrapFilter::OnOK() {
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_PEN)) {
-    EoInt16 nPenColor = EoInt16(GetDlgItemInt(IDC_TRAP_FILTER_PEN_ID, 0, FALSE));
-    FilterByColor(nPenColor);
+    EoInt16 color = EoInt16(GetDlgItemInt(IDC_TRAP_FILTER_PEN_ID, 0, FALSE));
+    FilterByColor(color);
   }
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_LINE)) {
     EoInt16 LineTypeIndex = SHRT_MAX;
@@ -97,12 +97,12 @@ void EoDlgTrapFilter::OnOK() {
 void EoDlgTrapFilter::FilterByColor(EoInt16 colorIndex) {
   auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = m_Document->GetNextTrappedGroup(GroupPosition);
+    auto* Group = m_Document->GetNextTrappedGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive->PenColor() == colorIndex) {
+      if (Primitive->Color() == colorIndex) {
         m_Document->RemoveTrappedGroup(Group);
         m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         break;
@@ -114,7 +114,7 @@ void EoDlgTrapFilter::FilterByColor(EoInt16 colorIndex) {
 void EoDlgTrapFilter::FilterByLineType(int lineType) {
   auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = m_Document->GetNextTrappedGroup(GroupPosition);
+    auto* Group = m_Document->GetNextTrappedGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {

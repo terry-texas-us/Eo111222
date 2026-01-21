@@ -31,7 +31,7 @@ class EoDbPolygon : public EoDbPrimitive {
 
  public:  // Constructors and destructor
   EoDbPolygon();
-  EoDbPolygon(EoByte* buffer, int version);
+  EoDbPolygon(EoUInt8* buffer, int version);
 
   /// @brief Constructs an EoDbPolygon object from an array of 3D points.
   /// @param points An array of 3D points that define the vertices of the polygon. Must contain at least 3 points for proper initialization of the plane vectors.
@@ -75,7 +75,7 @@ class EoDbPolygon : public EoDbPrimitive {
   void Translate(EoGeVector3d translate) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoByte* buffer) override;
+  void Write(CFile& file, EoUInt8* buffer) override;
 
   CString FormatIntStyle();
   const EoInt16& IntStyle() { return (m_InteriorStyle); }

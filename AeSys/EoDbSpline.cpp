@@ -20,30 +20,30 @@
 #include "Resource.h"
 
 EoDbSpline::EoDbSpline(EoUInt16 wPts, EoGePoint3d* pt) {
-  m_PenColor = pstate.PenColor();
-  m_LineType = pstate.LineType();
+  m_color = pstate.PenColor();
+  m_lineTypeIndex = pstate.LineType();
 
   for (EoUInt16 w = 0; w < wPts; w++) m_pts.Add(pt[w]);
 }
 EoDbSpline::EoDbSpline(EoGePoint3dArray& points) {
-  m_PenColor = pstate.PenColor();
-  m_LineType = pstate.LineType();
+  m_color = pstate.PenColor();
+  m_lineTypeIndex = pstate.LineType();
   m_pts.Copy(points);
 }
 EoDbSpline::EoDbSpline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& points) {
-  m_PenColor = penColor;
-  m_LineType = lineType;
+  m_color = penColor;
+  m_lineTypeIndex = lineType;
   m_pts.Copy(points);
 }
 EoDbSpline::EoDbSpline(const EoDbSpline& src) {
-  m_PenColor = src.m_PenColor;
-  m_LineType = src.m_LineType;
+  m_color = src.m_color;
+  m_lineTypeIndex = src.m_lineTypeIndex;
   m_pts.Copy(src.m_pts);
 }
 
 const EoDbSpline& EoDbSpline::operator=(const EoDbSpline& src) {
-  m_PenColor = src.m_PenColor;
-  m_LineType = src.m_LineType;
+  m_color = src.m_color;
+  m_lineTypeIndex = src.m_lineTypeIndex;
   m_pts.Copy(src.m_pts);
 
   return (*this);
@@ -60,10 +60,10 @@ EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 penColor = LogicalPenColor();
+  EoInt16 color = LogicalColor();
   EoInt16 lineType = LogicalLineType();
 
-  pstate.SetPen(view, deviceContext, penColor, lineType);
+  pstate.SetPen(view, deviceContext, color, lineType);
 
   polyline::BeginLineStrip();
   GenPts(3, m_pts);
@@ -120,7 +120,7 @@ EoGePoint3d EoDbSpline::GoToNxtCtrlPt() {
   return (pt);
 }
 bool EoDbSpline::IsInView(AeSysView* view) {
-  EoGePoint4d pt[2];
+  EoGePoint4d pt[2]{};
 
   pt[0] = m_pts[0];
 
@@ -166,8 +166,8 @@ void EoDbSpline::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 
 bool EoDbSpline::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kSplinePrimitive));
-  EoDb::Write(file, m_PenColor);
-  EoDb::Write(file, m_LineType);
+  EoDb::Write(file, m_color);
+  EoDb::Write(file, m_lineTypeIndex);
   EoDb::Write(file, EoUInt16(m_pts.GetSize()));
 
   for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w].Write(file);

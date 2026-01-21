@@ -36,11 +36,11 @@ void AeSysView::OnCutModeTorch() {
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
+    auto* Group = GetNextVisibleGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
+      auto* Primitive = Group->GetNext(PrimitivePosition);
 
       if (Primitive->SelectUsingPoint(this, ptView, ptCut)) {  // Pick point is within tolerance of primative
         EoDbGroup* NewGroup = new EoDbGroup;
@@ -82,7 +82,7 @@ void AeSysView::OnCutModeSlice() {
 
     auto GroupPosition = GetFirstVisibleGroupPosition();
     while (GroupPosition != nullptr) {
-      EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
+      auto* Group = GetNextVisibleGroup(GroupPosition);
 
       if (Document->FindTrappedGroup(Group) != 0) continue;
 
@@ -134,11 +134,11 @@ void AeSysView::OnCutModeField() {
     EoDbPrimitive* Primitive;
 
     int iInts;
-    EoGePoint3d ptInt[10];
+    EoGePoint3d ptInt[10]{};
 
     auto* Document = GetDocument();
 
-    EoInt16 nPenColor = pstate.PenColor();
+    EoInt16 color = pstate.PenColor();
     EoInt16 LineType = pstate.LineType();
 
     EoDbGroupList* GroupsOut = new EoDbGroupList;
@@ -182,7 +182,7 @@ void AeSysView::OnCutModeField() {
     delete GroupsIn;
     delete GroupsOut;
 
-    pstate.SetPen(this, DeviceContext, nPenColor, LineType);
+    pstate.SetPen(this, DeviceContext, color, LineType);
     UpdateStateInformation(BothCounts);
 
     RubberBandingDisable();
@@ -201,10 +201,10 @@ void AeSysView::OnCutModeClip() {
 
     if (pt1 == pt2) { return; }
 
-    double dRel[2];
-    EoGePoint3d ptCut[2];
+    double dRel[2]{};
+    EoGePoint3d ptCut[2]{};
 
-    EoInt16 nPenColor = pstate.PenColor();
+    EoInt16 color = pstate.PenColor();
     EoInt16 LineType = pstate.LineType();
 
     auto* Document = GetDocument();
@@ -222,7 +222,7 @@ void AeSysView::OnCutModeClip() {
     POSITION posSegPrv;
 
     for (posSeg = GetFirstVisibleGroupPosition(); (posSegPrv = posSeg) != 0;) {
-      EoDbGroup* Group = GetNextVisibleGroup(posSeg);
+      auto* Group = GetNextVisibleGroup(posSeg);
 
       if (Document->FindTrappedGroup(Group) != 0) continue;
 
@@ -267,7 +267,7 @@ void AeSysView::OnCutModeClip() {
     delete GroupsIn;
     delete GroupsOut;
 
-    pstate.SetPen(this, DeviceContext, nPenColor, LineType);
+    pstate.SetPen(this, DeviceContext, color, LineType);
     UpdateStateInformation(BothCounts);
 
     ModeLineUnhighlightOp(wPrvKeyDwn);

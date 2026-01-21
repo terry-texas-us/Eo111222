@@ -69,7 +69,7 @@ class EoDbPolyline : public EoDbPrimitive {
   void Translate(EoGeVector3d translate) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& /* file */, EoByte* /* buffer */) override {};
+  void Write(CFile& /* file */, EoUInt8* /* buffer */) override {};
 
  private:
   EoUInt16 SwingVertex();

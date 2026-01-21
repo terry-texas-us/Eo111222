@@ -14,16 +14,16 @@
 #include "PrimState.h"
 #include "drw_Entities.h"
 
-EoInt16 EoDbPrimitive::sm_LayerPenColor{PENCOLOR_BYLAYER};
-EoInt16 EoDbPrimitive::sm_LayerLineType{LINETYPE_BYLAYER};
-EoInt16 EoDbPrimitive::sm_SpecialPenColorIndex = 0;
+EoInt16 EoDbPrimitive::sm_layerColor{COLOR_BYLAYER};
+EoInt16 EoDbPrimitive::sm_layerLineTypeIndex{LINETYPE_BYLAYER};
+EoInt16 EoDbPrimitive::sm_specialColor{};
 
 EoUInt16 EoDbPrimitive::sm_ControlPointIndex = USHRT_MAX;
-double EoDbPrimitive::sm_RelationshipOfPoint = 0.;
+double EoDbPrimitive::sm_RelationshipOfPoint = 0.0;
 double EoDbPrimitive::sm_SelectApertureSize = 0.02;
 
-EoDbPrimitive::EoDbPrimitive() : m_PenColor(PENCOLOR_BYLAYER), m_LineType(LINETYPE_BYLAYER) {}
-EoDbPrimitive::EoDbPrimitive(EoInt16 penColor, EoInt16 lineType) : m_PenColor(penColor), m_LineType(lineType) {}
+EoDbPrimitive::EoDbPrimitive() : m_color(COLOR_BYLAYER), m_lineTypeIndex(LINETYPE_BYLAYER) {}
+EoDbPrimitive::EoDbPrimitive(EoInt16 color, EoInt16 lineTypeIndex) : m_color(color), m_lineTypeIndex(lineTypeIndex) {}
 
 EoDbPrimitive::~EoDbPrimitive() {}
 
@@ -33,8 +33,8 @@ int EoDbPrimitive::IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) { return
 bool EoDbPrimitive::PvtOnCtrlPt(AeSysView*, const EoGePoint4d&) { return false; }
 
 void EoDbPrimitive::SetBaseProperties(const DRW_Entity* entity, AeSysDoc* document) {
-  m_PenColor = static_cast<EoInt16>(entity->color);
-  m_linetypeName = Eo::MultiByteToWString(entity->lineType.c_str());
+  m_color = static_cast<EoInt16>(entity->color);
+  m_lineTypeName = Eo::MultiByteToWString(entity->lineType.c_str());
   m_layerName = Eo::MultiByteToWString(entity->layer.c_str());
 
   // Determine actual PenColor and LineType and where to do substitution
@@ -49,50 +49,52 @@ void EoDbPrimitive::SetBaseProperties(const DRW_Entity* entity, AeSysDoc* docume
   // get lineType from parent Block;
 
   auto* linetypeTable = document->LineTypeTable();
-  m_LineType = linetypeTable->LegacyLineTypeIndex(m_linetypeName);
+  m_lineTypeIndex = linetypeTable->LegacyLineTypeIndex(m_lineTypeName);
 }
 
 CString EoDbPrimitive::FormatPenColor() const {
   CString str;
-  if (m_PenColor == PENCOLOR_BYLAYER) {
+  if (m_color == COLOR_BYLAYER) {
     str = L"ByLayer";
-  } else if (m_PenColor == PENCOLOR_BYBLOCK) {
+  } else if (m_color == COLOR_BYBLOCK) {
     str = L"ByBlock";
   } else {
     wchar_t szBuf[16]{};
-    _itow_s(m_PenColor, szBuf, 16, 10);
+    _itow_s(m_color, szBuf, 16, 10);
     str = szBuf;
   }
   return str;
 }
 CString EoDbPrimitive::FormatLineType() const {
   CString str;
-  if (m_LineType == LINETYPE_BYLAYER) {
+  if (m_lineTypeIndex == LINETYPE_BYLAYER) {
     str = L"ByLayer";
-  } else if (m_LineType == LINETYPE_BYBLOCK) {
+  } else if (m_lineTypeIndex == LINETYPE_BYBLOCK) {
     str = L"ByBlock";
   } else {
     wchar_t szBuf[16]{};
-    _itow_s(m_LineType, szBuf, 16, 10);
+    _itow_s(m_lineTypeIndex, szBuf, 16, 10);
     str = szBuf;
   }
   return str;
 }
-EoInt16 EoDbPrimitive::LogicalPenColor() const {
-  EoInt16 nPenColor = sm_SpecialPenColorIndex == 0 ? m_PenColor : sm_SpecialPenColorIndex;
 
-  if (nPenColor == PENCOLOR_BYLAYER)
-    nPenColor = sm_LayerPenColor;
-  else if (nPenColor == PENCOLOR_BYBLOCK)
-    nPenColor = 7;
+EoInt16 EoDbPrimitive::LogicalColor() const {
+  EoInt16 color = sm_specialColor == 0 ? m_color : sm_specialColor;
 
-  return (nPenColor);
+  if (color == COLOR_BYLAYER)
+    color = sm_layerColor;
+  else if (color == COLOR_BYBLOCK)
+    color = 7;
+
+  return (color);
 }
+
 EoInt16 EoDbPrimitive::LogicalLineType() const {
-  EoInt16 lineTypeIndex = m_LineType;
+  EoInt16 lineTypeIndex = m_lineTypeIndex;
 
   if (lineTypeIndex == LINETYPE_BYLAYER)
-    lineTypeIndex = sm_LayerLineType;
+    lineTypeIndex = sm_layerLineTypeIndex;
   else if (lineTypeIndex == LINETYPE_BYBLOCK)
     lineTypeIndex = 1;
 
@@ -100,16 +102,16 @@ EoInt16 EoDbPrimitive::LogicalLineType() const {
 }
 
 void EoDbPrimitive::ModifyState() {
-  m_PenColor = pstate.PenColor();
-  m_LineType = pstate.LineType();
+  m_color = pstate.PenColor();
+  m_lineTypeIndex = pstate.LineType();
 }
 
 EoUInt16 EoDbPrimitive::ControlPointIndex() { return sm_ControlPointIndex; }
-bool EoDbPrimitive::IsSupportedTyp(int iTyp) { return (iTyp <= 7 && iTyp != 4 && iTyp != 5); }
-EoInt16 EoDbPrimitive::LayerPenColorIndex() { return sm_LayerPenColor; }
-void EoDbPrimitive::SetLayerPenColorIndex(EoInt16 colorIndex) { sm_LayerPenColor = colorIndex; }
-EoInt16 EoDbPrimitive::LayerLineTypeIndex() { return sm_LayerLineType; }
-void EoDbPrimitive::SetLayerLineTypeIndex(EoInt16 lineTypeIndex) { sm_LayerLineType = lineTypeIndex; }
+bool EoDbPrimitive::IsSupportedTyp(int type) { return (type <= 7 && type != 4 && type != 5); }
+EoInt16 EoDbPrimitive::LayerColor() { return sm_layerColor; }
+void EoDbPrimitive::SetLayerColor(EoInt16 layerColor) { sm_layerColor = layerColor; }
+EoInt16 EoDbPrimitive::LayerLineTypeIndex() { return sm_layerLineTypeIndex; }
+void EoDbPrimitive::SetLayerLineTypeIndex(EoInt16 lineTypeIndex) { sm_layerLineTypeIndex = lineTypeIndex; }
 double& EoDbPrimitive::Rel() { return sm_RelationshipOfPoint; }
-EoInt16 EoDbPrimitive::SpecialPenColorIndex() { return sm_SpecialPenColorIndex; }
-void EoDbPrimitive::SetSpecialPenColorIndex(EoInt16 colorIndex) { sm_SpecialPenColorIndex = colorIndex; }
+EoInt16 EoDbPrimitive::SpecialColor() { return sm_specialColor; }
+void EoDbPrimitive::SetSpecialColor(EoInt16 specialColor) { sm_specialColor = specialColor; }

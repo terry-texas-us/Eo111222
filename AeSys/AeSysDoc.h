@@ -200,9 +200,9 @@ class AeSysDoc : public CDocument {
   auto FindTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Find(group); }
   auto GetFirstTrappedGroupPosition() const { return m_TrappedGroupList.GetHeadPosition(); }
   EoDbGroup* GetNextTrappedGroup(POSITION& position) { return m_TrappedGroupList.GetNext(position); }
-  EoGePoint3d GetTrapPivotPoint() { return m_TrapPivotPoint; }
+  EoGePoint3d GetTrapPivotPoint() const { return m_TrapPivotPoint; }
   BOOL IsTrapEmpty() const { return m_TrappedGroupList.IsEmpty(); }
-  void ModifyTrappedGroupsPenColor(EoInt16 penColor) { m_TrappedGroupList.ModifyPenColor(penColor); }
+  void ModifyTrappedGroupsColor(EoInt16 color) { m_TrappedGroupList.ModifyColor(color); }
   void ModifyTrappedGroupsLineType(EoInt16 lineType) { m_TrappedGroupList.ModifyLineType(lineType); }
   void ModifyTrappedGroupsNoteAttributes(EoDbFontDefinition& fontDef, EoDbCharacterCellDefinition& cellDef, int attributes);
   void RemoveAllTrappedGroups();

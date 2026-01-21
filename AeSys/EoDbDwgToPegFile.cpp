@@ -136,7 +136,7 @@ void EoDbDwgToPegFile::ConvertEntitiesToPeg(AeSysDoc* document) {
 
     EoDbLayer* Layer = document->GetLayerTableLayer((PCTSTR)Entity->layer());
 
-    EoDbGroup* Group = new EoDbGroup();
+    auto* Group = new EoDbGroup();
     OdSmartPtr<EoDbConvertEntityToPrimitive> EntityConverter = Entity;
     EntityConverter->Convert(Entity, Group);
 
@@ -170,7 +170,7 @@ void EoDbDwgToPegFile::ConvertEntitiesToPeg(AeSysDoc* document) {
 
     /* EoDbLayer* Layer = */ document->GetLayerTableLayer((PCTSTR)Entity->layer());
 
-    EoDbGroup* Group = new EoDbGroup();
+    auto* Group = new EoDbGroup();
     OdSmartPtr<EoDbConvertEntityToPrimitive> EntityConverter = Entity;
     EntityConverter->Convert(Entity, Group);
 

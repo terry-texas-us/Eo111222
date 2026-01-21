@@ -11,7 +11,7 @@ void AeSysView::OnModePrimitiveEdit() {
 
   m_SubModeEditBeginPoint = GetCursorPosition();
 
-  EoDbGroup* Group = SelectGroupAndPrimitive(m_SubModeEditBeginPoint);
+  auto* Group = SelectGroupAndPrimitive(m_SubModeEditBeginPoint);
 
   if (Group != 0) {
     m_SubModeEditGroup = Group;
@@ -84,13 +84,13 @@ void AeSysView::PreviewPrimitiveEdit() {
     tm.Translate(EoGeVector3d(m_SubModeEditBeginPoint, m_SubModeEditEndPoint));
 
     if (app.IsTrapHighlighted() && document->FindTrappedGroup(m_SubModeEditGroup) != 0)
-      EoDbPrimitive::SetSpecialPenColorIndex(app.TrapHighlightColor());
+      EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor());
 
     document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
     m_SubModeEditPrimitive->Transform(tm);
     document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);
 
-    EoDbPrimitive::SetSpecialPenColorIndex(0);
+    EoDbPrimitive::SetSpecialColor(0);
 
     m_tmEditSeg *= tm;
 

@@ -34,7 +34,7 @@ void AeSysView::OnNodalModePoint() {
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
+    auto* Group = GetNextVisibleGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
@@ -55,7 +55,7 @@ void AeSysView::OnNodalModePoint() {
 void AeSysView::OnNodalModeLine() {
   EoGePoint3d CurrentPnt = GetCursorPosition();
 
-  EoDbGroup* Group = SelectGroupAndPrimitive(CurrentPnt);
+  auto* Group = SelectGroupAndPrimitive(CurrentPnt);
   if (Group != 0) {
     EoDbPrimitive* Primitive = EngagedPrimitive();
 
@@ -82,7 +82,7 @@ void AeSysView::OnNodalModeArea() {
 
       auto GroupPosition = GetFirstVisibleGroupPosition();
       while (GroupPosition != nullptr) {
-        EoDbGroup* Group = GetNextVisibleGroup(GroupPosition);
+        auto* Group = GetNextVisibleGroup(GroupPosition);
 
         auto PrimitivePosition = Group->GetHeadPosition();
         while (PrimitivePosition != nullptr) {
@@ -138,7 +138,7 @@ void AeSysView::OnNodalModeToLine() {
       CurrentPnt = SnapPointToAxis(PreviousNodalCursorPosition, CurrentPnt);
       EoGeVector3d Translate(PreviousNodalCursorPosition, CurrentPnt);
 
-      EoDbGroup* Group = new EoDbGroup;
+      auto* Group = new EoDbGroup;
       auto* document = GetDocument();
 
       auto PointPosition = document->GetFirstUniquePointPosition();
@@ -180,7 +180,7 @@ void AeSysView::OnNodalModeToPolygon() {
       auto* document = GetDocument();
       auto GroupPosition = document->GetFirstNodalGroupPosition();
       while (GroupPosition != nullptr) {
-        EoDbGroup* Group = document->GetNextNodalGroup(GroupPosition);
+        auto* Group = document->GetNextNodalGroup(GroupPosition);
 
         auto PrimitivePosition = Group->GetHeadPosition();
         while (PrimitivePosition != nullptr) {
@@ -281,7 +281,7 @@ void AeSysView::OnNodalModeReturn() {
 
         auto GroupPosition = document->GetFirstNodalGroupPosition();
         while (GroupPosition != nullptr) {
-          EoDbGroup* Group = document->GetNextNodalGroup(GroupPosition);
+          auto* Group = document->GetNextNodalGroup(GroupPosition);
           document->AddWorkLayerGroup(new EoDbGroup(*Group));
           document->GetLastWorkLayerGroup()->Translate(Translate);
         }
@@ -390,7 +390,7 @@ void AeSysView::ConstructPreviewGroupForNodalGroups() {
   auto* document = GetDocument();
   auto GroupPosition = document->GetFirstNodalGroupPosition();
   while (GroupPosition != nullptr) {
-    EoDbGroup* Group = document->GetNextNodalGroup(GroupPosition);
+    auto* Group = document->GetNextNodalGroup(GroupPosition);
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {

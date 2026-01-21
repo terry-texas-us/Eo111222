@@ -48,7 +48,7 @@ void EoDlgModeLetter::OnOK() {
     m_TextEditControl.SetWindowTextW(L"");
 
     EoDbText* TextPrimitive = new EoDbText(FontDefinition, ReferenceSystem, Text);
-    EoDbGroup* Group = new EoDbGroup(TextPrimitive);
+    auto* Group = new EoDbGroup(TextPrimitive);
     AeSysDoc::GetDoc()->AddWorkLayerGroup(Group);
     AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
   }

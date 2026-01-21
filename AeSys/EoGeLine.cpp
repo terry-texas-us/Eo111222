@@ -143,15 +143,15 @@ int EoGeLine::DirRelOfPt(EoGePoint3d pt) const {
 }
 
 void EoGeLine::Display(AeSysView* view, CDC* deviceContext) const {
-  EoInt16 lineType = pstate.LineType();
+  EoInt16 lineTypeIndex = pstate.LineType();
 
-  if (EoDbPrimitive::IsSupportedTyp(lineType)) {
+  if (EoDbPrimitive::IsSupportedTyp(lineTypeIndex)) {
     EoGePoint4d pt[] = {EoGePoint4d(begin), EoGePoint4d(end)};
 
     view->ModelViewTransformPoints(2, pt);
 
     if (EoGePoint4d::ClipLine(pt[0], pt[1])) {
-      CPoint pnt[2];
+      CPoint pnt[2]{};
       view->DoProjection(pnt, 2, pt);
       deviceContext->Polyline(pnt, 2);
     }
@@ -159,7 +159,7 @@ void EoGeLine::Display(AeSysView* view, CDC* deviceContext) const {
     polyline::BeginLineStrip();
     polyline::SetVertex(begin);
     polyline::SetVertex(end);
-    polyline::__End(view, deviceContext, lineType);
+    polyline::__End(view, deviceContext, lineTypeIndex);
   }
 }
 
@@ -201,7 +201,7 @@ bool EoGeLine::GetParallels(double distanceBetweenLines, double eccentricity, Eo
 }
 
 bool EoGeLine::IsContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3d& upperRightPoint) const {
-  EoGePoint3d pt[2];
+  EoGePoint3d pt[2]{};
   pt[0] = begin;
   pt[1] = end;
 

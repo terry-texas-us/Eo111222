@@ -228,7 +228,7 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
 
     if (Layer->IsInternal()) {
       for (EoUInt16 GroupIndex = 0; GroupIndex < NumberOfGroups; GroupIndex++) {
-        EoDbGroup* Group = new EoDbGroup;
+        auto* Group = new EoDbGroup;
         EoUInt16 NumberOfPrimitives = EoDb::ReadUInt16(*this);
         for (EoUInt16 PrimitiveIndex = 0; PrimitiveIndex < NumberOfPrimitives; PrimitiveIndex++) {
           EoDb::Read(*this, Primitive);
@@ -405,7 +405,7 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
 
       auto Position = Layer->GetHeadPosition();
       while (Position != 0) {
-        EoDbGroup* Group = Layer->GetNext(Position);
+        auto* Group = Layer->GetNext(Position);
         Group->Write(*this);
       }
     } else

@@ -191,7 +191,7 @@ bool dde::DoCallback(UINT wType, UINT wFmt, HCONV hConv, HSZ hszTopic, HSZ hszIt
         return true;
       }
     } else {
-      char sz[32];
+      char sz[32]{};
       DdeGetData(hData, (LPBYTE)sz, (DWORD)sizeof(sz), (DWORD)0);
       ::PostMessage(app.GetSafeHwnd(), WM_CHAR, (WPARAM)sz[0], (LPARAM)1);
       *phReturnData = (HDDEDATA)(DWORD)DDE_FACK;

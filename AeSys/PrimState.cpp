@@ -16,7 +16,7 @@ CPrimState* psSav[] = {0, 0, 0, 0};
 const CPrimState& CPrimState::operator=(const CPrimState& src) {
   m_fd = src.m_fd;
 
-  m_PenColor = src.m_PenColor;
+  m_color = src.m_color;
   m_LineType = src.m_LineType;
   m_pointStyle = src.m_pointStyle;
   m_PolygonInteriorStyle = src.m_PolygonInteriorStyle;
@@ -57,10 +57,10 @@ int CPrimState::Save() {
   return (iSaveId);
 }
 void CPrimState::SetPen(AeSysView* view, CDC* deviceContext, EoInt16 penColor, EoInt16 lineType) {
-  if (EoDbPrimitive::SpecialPenColorIndex() != 0) { penColor = EoDbPrimitive::SpecialPenColorIndex(); }
-  if (penColor == EoDbPrimitive::PENCOLOR_BYLAYER) { penColor = EoDbPrimitive::LayerPenColorIndex(); }
+  if (EoDbPrimitive::SpecialColor() != 0) { penColor = EoDbPrimitive::SpecialColor(); }
+  if (penColor == EoDbPrimitive::COLOR_BYLAYER) { penColor = EoDbPrimitive::LayerColor(); }
   if (lineType == EoDbPrimitive::LINETYPE_BYLAYER) { lineType = EoDbPrimitive::LayerLineTypeIndex(); }
-  m_PenColor = penColor;
+  m_color = penColor;
   m_LineType = lineType;
 
   double LogicalWidth = 0.;
@@ -128,13 +128,13 @@ void CPrimState::ManagePenResources(CDC* deviceContext, EoInt16 penColor, int pe
     crColRef[iPen] = pColTbl[penColor];
   }
 }
-void CPrimState::SetPenColor(CDC* deviceContext, EoInt16 penColor) {
-  m_PenColor = penColor;
+void CPrimState::SetColor(CDC* deviceContext, EoInt16 penColor) {
+  m_color = penColor;
   if (deviceContext) { ManagePenResources(deviceContext, penColor, 0, m_LineType); }
 }
 void CPrimState::SetLineType(CDC* deviceContext, EoInt16 lineType) {
   m_LineType = lineType;
-  if (deviceContext) { ManagePenResources(deviceContext, m_PenColor, 0, lineType); }
+  if (deviceContext) { ManagePenResources(deviceContext, m_color, 0, lineType); }
 }
 int CPrimState::SetROP2(CDC* deviceContext, int iDrawMode) {
   // Sets the current foreground mix mode. GDI uses the foreground mix mode to combine pens and

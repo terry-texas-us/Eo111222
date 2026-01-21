@@ -59,7 +59,7 @@ void AeSysView::OnLpdModeDuct() {
 
     auto* document = GetDocument();
     if (m_ContinueSection) {
-      EoDbGroup* Group = new EoDbGroup;
+      auto* Group = new EoDbGroup;
       document->AddWorkLayerGroup(Group);
       GenerateRectangularElbow(m_PreviousReferenceLine, m_PreviousSection, m_CurrentReferenceLine, m_CurrentSection,
                                Group);
@@ -79,7 +79,7 @@ void AeSysView::OnLpdModeDuct() {
       if (TransitionLength != 0.0) {
         ReferenceLine.end = ReferenceLine.ProjToEndPt(TransitionLength);
 
-        EoDbGroup* Group = new EoDbGroup;
+        auto* Group = new EoDbGroup;
         document->AddWorkLayerGroup(Group);
         GenerateTransition(ReferenceLine, m_CenterLineEccentricity, m_DuctJustification, m_TransitionSlope,
                            m_PreviousSection, m_CurrentSection, Group);
@@ -104,7 +104,7 @@ void AeSysView::OnLpdModeDuct() {
         m_ContinueSection = true;
       }
       if (TransitionLength != 0.0) {
-        EoDbGroup* Group = new EoDbGroup;
+        auto* Group = new EoDbGroup;
         document->AddWorkLayerGroup(Group);
         GenerateTransition(ReferenceLine, m_CenterLineEccentricity, m_DuctJustification, m_TransitionSlope,
                            m_PreviousSection, m_CurrentSection, Group);
@@ -137,7 +137,7 @@ void AeSysView::OnLpdModeTap() {
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   }
   EoDbLine* LinePrimitive;
-  EoDbGroup* Group = SelectLineUsingPoint(CurrentPnt, LinePrimitive);
+  auto* Group = SelectLineUsingPoint(CurrentPnt, LinePrimitive);
   if (Group != 0) {
     EoGePoint3d TestPoint(CurrentPnt);
     CurrentPnt = SnapPointToAxis(m_PreviousPnt, CurrentPnt);
@@ -213,12 +213,12 @@ void AeSysView::OnLpdModeEll() {
                                (m_PreviousSection.Width() + m_DuctSeamSize + ExistingSection.Width() * 0.5);
         if (SectionLength > FLT_EPSILON) {
           m_CurrentReferenceLine.end = m_CurrentReferenceLine.ProjToEndPt(SectionLength);
-          EoDbGroup* Group = new EoDbGroup;
+          auto* Group = new EoDbGroup;
           document->AddWorkLayerGroup(Group);
           GenerateRectangularSection(m_CurrentReferenceLine, m_CenterLineEccentricity, m_PreviousSection, Group);
           document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         }
-        EoDbGroup* Group = new EoDbGroup;
+        auto* Group = new EoDbGroup;
         document->AddWorkLayerGroup(Group);
         GenerateFullElbowTakeoff(ExistingGroup, ExistingSectionReferenceLine, ExistingSection, Group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
@@ -255,7 +255,7 @@ void AeSysView::OnLpdModeUpDown() {
 
       auto* document = GetDocument();
       if (m_ContinueSection) {
-        EoDbGroup* Group = new EoDbGroup;
+        auto* Group = new EoDbGroup;
         document->AddWorkLayerGroup(Group);
         GenerateRectangularElbow(m_PreviousReferenceLine, m_PreviousSection, m_CurrentReferenceLine, m_CurrentSection,
                                  Group);
@@ -266,13 +266,13 @@ void AeSysView::OnLpdModeUpDown() {
         EoGeLine ReferenceLine(m_CurrentReferenceLine);
         ReferenceLine.end = ReferenceLine.begin.ProjectToward(
             ReferenceLine.end, SectionLength - m_PreviousSection.Depth() * 0.5 - m_DuctSeamSize);
-        EoDbGroup* Group = new EoDbGroup;
+        auto* Group = new EoDbGroup;
         document->AddWorkLayerGroup(Group);
         GenerateRectangularSection(ReferenceLine, m_CenterLineEccentricity, m_PreviousSection, Group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         m_CurrentReferenceLine.begin = ReferenceLine.end;
       }
-      EoDbGroup* Group = new EoDbGroup;
+      auto* Group = new EoDbGroup;
       document->AddWorkLayerGroup(Group);
       GenerateRiseDrop(1, m_PreviousSection, m_CurrentReferenceLine, Group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
@@ -288,7 +288,7 @@ void AeSysView::OnLpdModeSize() {
 
   double dAng = 0.;
   if (m_EndCapPoint != 0) {
-    if (m_EndCapPoint->PenColor() == 15 && m_EndCapPoint->PointStyle() == 8) {
+    if (m_EndCapPoint->Color() == 15 && m_EndCapPoint->PointStyle() == 8) {
       auto Position = m_EndCapGroup->Find(m_EndCapPoint);
       m_EndCapGroup->GetNext(Position);
       EoDbLine* pLine = static_cast<EoDbLine*>(m_EndCapGroup->GetAt(Position));
@@ -455,7 +455,7 @@ void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionRe
       }
     }
     // generate the transition
-    EoGePoint3d Points[2];
+    EoGePoint3d Points[2]{};
     Points[0] = existingSectionReferenceLine.end.ProjectToward(
         CurrentReferenceLine.end, existingSection.Width() * 0.5 + m_PreviousSection.Width());
     Points[1] =
@@ -482,7 +482,7 @@ void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionRe
 		EoGeLine(Points[2], rPar[1][1]).ProjPtFrom_xy(0.0, m_DuctSeamSize, &Points[3]);
 		dDSiz = dDSiz / m_PreviousSection.Width() * m_PreviousSection.Width();
 		EoGeLine(Points[2], rPar[1][1]).ProjPtFrom_xy(0.0, dDSiz + m_DuctSeamSize, &Points[4]);
-		EoDbGroup* Group = new EoDbGroup;
+		auto* Group = new EoDbGroup;
 		document->AddWorkLayerGroup(Group);
 		Group->AddTail(new EoDbLine(1, pstate.LineType(), lnLead[0], Points[2]));
 		Group->AddTail(new EoDbEllipse(1, pstate.LineType(), Points[3], 0.01));
@@ -579,7 +579,7 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
 
   CDC* DeviceContext = GetDC();
   int PrimitiveState = pstate.Save();
-  pstate.SetPenColor(DeviceContext, 2);
+  pstate.SetColor(DeviceContext, 2);
 
   EoDbFontDefinition fd;
   pstate.GetFontDef(fd);
@@ -591,7 +591,7 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   ccd.TextRotAngSet(0.0);
   pstate.SetCharCellDef(ccd);
 
-  EoDbGroup* Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, Note));
+  auto* Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, Note));
   auto* document = GetDocument();
   document->AddWorkLayerGroup(Group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);

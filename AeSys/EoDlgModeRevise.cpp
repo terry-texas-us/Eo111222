@@ -57,7 +57,7 @@ void EoDlgModeRevise::OnOK() {
     AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, sm_TextPrimitive);
   } else {
     EoDbText* TextPrimitive = new EoDbText(sm_FontDefinition, sm_ReferenceSystem, Text);
-    EoDbGroup* Group = new EoDbGroup(TextPrimitive);
+    auto* Group = new EoDbGroup(TextPrimitive);
     AeSysDoc::GetDoc()->AddWorkLayerGroup(Group);
     AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
   }

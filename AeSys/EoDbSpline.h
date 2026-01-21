@@ -8,7 +8,7 @@ class EoDbSpline : public EoDbPrimitive {
 
  public:  // Constructors and destructor
   EoDbSpline() {}
-  EoDbSpline(EoByte* buffer, int version);
+  EoDbSpline(EoUInt8* buffer, int version);
   EoDbSpline(EoUInt16, EoGePoint3d*);
   EoDbSpline(EoGePoint3dArray& points);
   EoDbSpline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& points);
@@ -62,5 +62,5 @@ class EoDbSpline : public EoDbPrimitive {
   void Translate(EoGeVector3d translate) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoByte* buffer) override;
+  void Write(CFile& file, EoUInt8* buffer) override;
 };

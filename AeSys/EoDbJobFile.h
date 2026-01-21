@@ -26,10 +26,10 @@
 ///	Previous Thinking
 ///	{
 ///		Arc primitive (version 1)
-///			Pen color							EoByte		[4](0:4)
-///			Line type							EoByte		[4](5:8)
-///			Type code {0x3d} 0011 1101			EoByte		[5]
-///			Number of 32 byte chunks {1}		EoByte		[6]
+///			Pen color							EoUInt8		[4](0:4)
+///			Line type							EoUInt8		[4](5:8)
+///			Type code {0x3d} 0011 1101			EoUInt8		[5]
+///			Number of 32 byte chunks {1}		EoUInt8		[6]
 ///			Begin point							vaxfloat[2]	[8-11][12-15]
 ///			??												[16-19]
 ///			Center point						vaxfloat[2]	[20-23][24-27]
@@ -38,49 +38,49 @@
 /// Current Thinking
 ///	{
 ///		Arc primitive (version 1 only)
-///			Pen color							EoByte		[4](0:4)
-///			Line type							EoByte		[4](5:8)
-///			Type code {0x3d} 0011 1101			EoByte		[5]
-///			Number of 32 byte chunks {2?}		EoByte		[6]
+///			Pen color							EoUInt8		[4](0:4)
+///			Line type							EoUInt8		[4](5:8)
+///			Type code {0x3d} 0011 1101			EoUInt8		[5]
+///			Number of 32 byte chunks {2?}		EoUInt8		[6]
 ///			Center point						vaxfloat[3]	[8-11][12-15]
 ///			Sweep angle							vaxfloat	[16-19]
 ///			Begin point							vaxfloat[3]	[20-23][24-27][28-31]
 ///
 ///		Conic primitive (version 1 - almost exactly the same as version 3)
-///			Pen color							EoByte		[4](0:4)
-///			Line type							EoByte		[4](5:8)
-///			Type code {0x21} 0010 0001			EoByte		[5]
-///			Number of 32 byte chunks {2}		EoByte		[6]
+///			Pen color							EoUInt8		[4](0:4)
+///			Line type							EoUInt8		[4](5:8)
+///			Type code {0x21} 0010 0001			EoUInt8		[5]
+///			Number of 32 byte chunks {2}		EoUInt8		[6]
 ///			Center point						vaxfloat[3]	[8-11][12-15][16-19]
 ///			Major axis							vaxfloat[3]	[20-23][24-27][28-31]
 ///			Minor axis							vaxfloat[3]	[32-35][36-39][40-43]
 ///			Sweep angle							vaxfloat	[44-47]
 ///	}
 ///		BSpline primitive (version 1)
-///			Pen color							EoByte		[4](0:4)
-///			Line type							EoByte		[4](5:8)
-///			Type code {0x18} 0001 1000			EoByte		[5]
-///			Number of 32 byte chunks			EoByte		[6]
+///			Pen color							EoUInt8		[4](0:4)
+///			Line type							EoUInt8		[4](5:8)
+///			Type code {0x18} 0001 1000			EoUInt8		[5]
+///			Number of 32 byte chunks			EoUInt8		[6]
 ///			Number of control points			vaxfloat	[8-11]
 ///			{0 or more control points}			vaxfloat[3] [12-15][16-19][20-23]...
 ///		Line primitive (version 1)
-///			Pen color							EoByte		[4](0:4)
-///			Line type							EoByte		[4](5:8)
-///			Type code {0x43} 0100 0011			EoByte		[5]
-///			Number of 32 byte chunks {1}		EoByte		[6]
+///			Pen color							EoUInt8		[4](0:4)
+///			Line type							EoUInt8		[4](5:8)
+///			Type code {0x43} 0100 0011			EoUInt8		[5]
+///			Number of 32 byte chunks {1}		EoUInt8		[6]
 ///			Begin point							vaxfloat[3]	[8-11][12-15][16-19]
 ///			End point							vaxfloat[3]	[20-23][24-27][28-31]
 ///		Point primitive (version 1)
-///			Pen color							EoByte		[4](0:4)
-///			Line type							EoByte		[4](5:8)
-///			Type code {0x46} 0100 0110			EoByte		[5]
-///			Number of 32 byte chunks {1}		EoByte		[6]
+///			Pen color							EoUInt8		[4](0:4)
+///			Line type							EoUInt8		[4](5:8)
+///			Type code {0x46} 0100 0110			EoUInt8		[5]
+///			Number of 32 byte chunks {1}		EoUInt8		[6]
 ///			Point								vaxfloat[3]	[8-11][12-15][16-19]
 ///			{3 data values}						vaxfloat[3]	[20-23][24-27][28-31]
 ///		Polygon primitive (version 1)
-///			Pen color							EoByte		[4](0:4)
-///			Type code {0x64} 0110 0100			EoByte		[5]
-///			Number of 32 byte chunks			EoByte		[6]
+///			Pen color							EoUInt8		[4](0:4)
+///			Type code {0x64} 0110 0100			EoUInt8		[5]
+///			Number of 32 byte chunks			EoUInt8		[6]
 ///			Number of verticies					vaxfloat	[8-11]
 ///			style & index ??					vaxfloat	[12-15]
 ///			Hatch
@@ -90,9 +90,9 @@
 ///			??												[28-35]
 ///			{0 or more points}					vaxfloat[3]	[36-39][40-43][44-47]...
 ///		Text primitive (version 1)
-///			Pen color							EoByte		[4](0:4)
-///			Type code {0x11} 0001 0001			EoByte		[5]
-///			Number of 32 byte chunks			EoByte		[6]
+///			Pen color							EoUInt8		[4](0:4)
+///			Type code {0x11} 0001 0001			EoUInt8		[5]
+///			Number of 32 byte chunks			EoUInt8		[6]
 ///			Insertion point						vaxfloat[3]	[8-11][12-15][16-19]
 ///			Character height					vaxfloat	[20-23]
 ///			Character expansion factor			vaxfloat	[24-27]
@@ -100,33 +100,33 @@
 ///			??												[32-35]
 ///			Character spacing					vaxfloat	[36-39]
 ///			path,halign,valign					vaxfloat	[40-43]
-///			Text ('\' terminated)				EoByte[]	[44]...
+///			Text ('\' terminated)				EoUInt8[]	[44]...
 /// Group (version 3)
-///		Offset to next group (not valid now)	EoByte		[0]		Note: [0-2] provide group information only and are used only once per group.
+///		Offset to next group (not valid now)	EoUInt8		[0]		Note: [0-2] provide group information only and are used only once per group.
 ///		Number of primitives					EoUInt16	[1-2]	This means on each primitive after the first [0-2] are unused.
 ///		Ellipse primitive (version 3)
-///			Number of 32 byte chunks {2}		EoByte		[3]
+///			Number of 32 byte chunks {2}		EoUInt8		[3]
 ///			Type code {0x1003}					EoUInt16	[4-5]
-///			Pen color							EoByte		[6]
-///			Line type							EoByte		[7]
+///			Pen color							EoUInt8		[6]
+///			Line type							EoUInt8		[7]
 ///			Center point						vaxfloat[3]	[8-11][12-15][16-19]
 ///			Major axis							vaxfloat[3]	[20-23][24-27][28-31]
 ///			Minor axis							vaxfloat[3]	[32-35][36-39][40-43]
 ///			Sweep angle							vaxfloat	[44-47]
 ///		BSpline primitive (version 3)
-///			Number of 32 byte chunks			EoByte		[3]
+///			Number of 32 byte chunks			EoUInt8		[3]
 ///				{(2 + nPts * 3) / 8 + 1}
 ///			Type code {0x2000}					EoUInt16	[4-5]
-///			Pen color							EoByte		[6]
-///			Line type							EoByte		[7]
+///			Pen color							EoUInt8		[6]
+///			Line type							EoUInt8		[7]
 ///			Number of control points			EoUInt16	[8-9]
 ///			{0 or more control points}			vaxfloat[3] [10-13][14-17][18-21]
 ///		CSpline primitive (version 3 only)							Note: This primitive may still exist in some files and is readable, but is
-///			Number of 32 byte chunks			EoByte		[3]		converted on the read to a BSpline primitive and is never written to file.
+///			Number of 32 byte chunks			EoUInt8		[3]		converted on the read to a BSpline primitive and is never written to file.
 ///				{(69 + nPts * 12) / 32}
 ///			Type code {0x2001}					EoUInt16	[4-5]
-///			Pen color							EoByte		[6]
-///			Line type							EoByte		[7]
+///			Pen color							EoUInt8		[6]
+///			Line type							EoUInt8		[7]
 ///			??									EoUInt16	[8-9]
 ///			Number of control points			EoUInt16	[10-11]
 ///			End condition Type					EoUInt16	[12-13]
@@ -134,45 +134,45 @@
 ///			End point tangent vector			vaxfloat[3]	[26-29][30-33][34-37]
 ///			{0 or more control points}			vaxfloat[3] [38-41][42-45][46-49]
 ///		Dim primitive (version 3 only)
-///			Number of 32 byte chunks			EoByte		[3]
+///			Number of 32 byte chunks			EoUInt8		[3]
 ///				{(118 + nLen) / 32}
 ///			Type code {0x4200}					EoUInt16 	[4-5]
-///			Line pen color						EoByte		[6]
-///			Line line type						EoByte		[7]
+///			Line pen color						EoUInt8		[6]
+///			Line line type						EoUInt8		[7]
 ///			Begin point							vaxfloat[3]	[8-11][12-15][16-19]
 ///			End point							vaxfloat[3]	[20-23][24-27][28-31]
-///			Text pen color						EoByte		[32]
-///			Text precision						EoByte		[33]
+///			Text pen color						EoUInt8		[32]
+///			Text precision						EoUInt8		[33]
 ///			Text font	{always 0 for simplex}	EoUInt16	[34-35]
 ///			Character spacing					vaxfloat	[36-39]
-///			Text path							EoByte		[40]
-///			Horizontal alignment				EoByte		[41]
-///			Vertical alignment					EoByte		[42]
+///			Text path							EoUInt8		[40]
+///			Horizontal alignment				EoUInt8		[41]
+///			Vertical alignment					EoUInt8		[42]
 ///			Insertion point						vaxfloat[3]	[43-46][47-50][51-54]
 ///			Local reference x-axis				vaxfloat[3]	[55-58][59-62][63-66]
 ///			Local reference y-axis				vaxfloat[3]	[67-70][71-74][75-78]
 ///			Number of characters				EoUInt16	[79-80]
-///			Text								EoByte[]	[81..]
+///			Text								EoUInt8[]	[81..]
 ///		Line primitive (version 3)
-///			Number of 32 byte chunks {1}		EoByte		[3]
+///			Number of 32 byte chunks {1}		EoUInt8		[3]
 ///			Type code {0x0200}					EoUInt16	[4-5]
-///			Pen color							EoByte		[6]
-///			Line type							EoByte		[7]
+///			Pen color							EoUInt8		[6]
+///			Line type							EoUInt8		[7]
 ///			Begin point							vaxfloat[3]	[8-11][12-15][16-19]
 ///			End point							vaxfloat[3]	[20-23][24-27][28-31]
 ///		Point primitive (version 3)
-///			Number of 32 byte chunks {1}		EoByte		[3]
+///			Number of 32 byte chunks {1}		EoUInt8		[3]
 ///			Type code {0x0100}					EoUInt16	[4-5]
-///			Pen color							EoByte		[6]
-///			Point style							EoByte		[7]
+///			Pen color							EoUInt8		[6]
+///			Point style							EoUInt8		[7]
 ///			Point								vaxfloat[3]	[8-11][12-15][16-19]
 ///			{3 data values}						vaxfloat[3]	[20-23][24-27][28-31]
 ///		Polygon primitive (version 3)
-///			Number of 32 byte chunks			EoByte		[3]
+///			Number of 32 byte chunks			EoUInt8		[3]
 ///				{(79 + nPts * 12) / 32}
 ///			Type code {0x0400}					EoUInt16	[4-5]
-///			Pen color							EoByte		[6]
-///			Polygon style						EoByte		[7]
+///			Pen color							EoUInt8		[6]
+///			Polygon style						EoUInt8		[7]
 ///			Polygon Style Index					EoUInt16	[8-9]
 ///			Number of verticies					EoUInt16	[10-11]
 ///			Hatch origin						vaxfloat[3]	[12-15][16-19][20-23]
@@ -180,28 +180,28 @@
 ///			Hatch/pattern reference y-axis		vaxfloat[3]	[36-39][40-43][44-47]
 ///			{0 or more points}					vaxfloat[3]	[48-51][52-55][56-59]
 ///		Tag primitive (version 3 only)								Note: This primitive may still exist in some files and is readable, but is
-///			Number of 32 byte chunks {1}		EoByte		[3]		converted on the read to a Point primitive and is never written to file.
+///			Number of 32 byte chunks {1}		EoUInt8		[3]		converted on the read to a Point primitive and is never written to file.
 ///			Type code {0x4100}					EoUInt16	[4-5]
-///			Pen color							EoByte		[6]
-///			Line type							EoByte		[7]
+///			Pen color							EoUInt8		[6]
+///			Line type							EoUInt8		[7]
 ///			Point								Pnt			[8-11][12-15][16-19]
 ///			Unused 								??			[20-31]
 ///		Text primitive (version 3)
-///			Number of 32 byte chunks			EoByte		[3]
+///			Number of 32 byte chunks			EoUInt8		[3]
 ///				{(86 + nLen) / 32}
 ///			Type code {0x4000}					EoUInt16	[4-5]
-///			Pen color							EoByte		[6]
-///			Text precision						EoByte		[7]
+///			Pen color							EoUInt8		[6]
+///			Text precision						EoUInt8		[7]
 ///			Text font	{always 0 for simplex}	EoUInt16	[8-9]
 ///			Character spacing					vaxfloat	[10-13]
-///			Text path							EoByte		[14]
-///			Horizontal alignment				EoByte		[15]
-///			Vertical alignment					EoByte		[16]
+///			Text path							EoUInt8		[14]
+///			Horizontal alignment				EoUInt8		[15]
+///			Vertical alignment					EoUInt8		[16]
 ///			Insertion point						vaxfloat[3]	[17-20][21-24][25-28]
 ///			Local reference x-axis				vaxfloat[3]	[29-32][33-36][37-40]
 ///			Local reference y-axis				vaxfloat[3]	[41-44][45-48][49-52]
 ///			Number of characters				EoUInt16	[53-54]
-///			Text								EoByte[]	[55]...
+///			Text								EoUInt8[]	[55]...
 /// </remarks>
 
 #include "EoDbPrimitive.h"
@@ -209,12 +209,12 @@
 class EoDbJobFile {
  private:
   int m_Version;
-  EoByte* m_PrimBuf;
+  EoUInt8* m_PrimBuf;
 
  public:
   EoDbJobFile() {
     m_Version = 3;
-    m_PrimBuf = new EoByte[EoDbPrimitive::BUFFER_SIZE];
+    m_PrimBuf = new EoUInt8[EoDbPrimitive::BUFFER_SIZE];
   }
   virtual ~EoDbJobFile() { delete[] m_PrimBuf; }
   /// <summary>Reads document data from a memory file and adds all groups to the trap with a translation. This is a data stream retrieved from the clipboard.</summary>
@@ -224,7 +224,7 @@ class EoDbJobFile {
 
   bool GetNextVisibleGroup(CFile& file, EoDbGroup*& group);
   bool GetNextPrimitive(CFile& file, EoDbPrimitive*& primitve);
-  bool ReadNextPrimitive(CFile& file, EoByte* buffer, EoInt16& primitiveType);
+  bool ReadNextPrimitive(CFile& file, EoUInt8* buffer, EoInt16& primitiveType);
 
   int Version();
   static bool IsValidPrimitive(EoInt16 primitiveType);

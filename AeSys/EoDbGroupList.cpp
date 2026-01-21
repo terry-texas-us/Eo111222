@@ -10,7 +10,7 @@ void EoDbGroupList::AddToTreeViewControl(HWND hTree, HTREEITEM htiParent) {
   auto position = GetHeadPosition();
 
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     HTREEITEM htiSeg = Group->AddToTreeViewControl(hTree, htiParent);
     if (Group->GetCount() == 1) { TreeView_Expand(hTree, htiSeg, TVE_EXPAND); }
   }
@@ -19,21 +19,21 @@ void EoDbGroupList::AddToTreeViewControl(HWND hTree, HTREEITEM htiParent) {
 void EoDbGroupList::BreakPolylines() {
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     Group->BreakPolylines();
   }
 }
 void EoDbGroupList::BreakSegRefs() {
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     Group->BreakSegRefs();
   }
 }
 void EoDbGroupList::Display(AeSysView* view, CDC* deviceContext) {
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     Group->Display(view, deviceContext);
   }
 }
@@ -49,7 +49,7 @@ int EoDbGroupList::GetBlockRefCount(const CString& strBlkNam) {
 
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     iCount += Group->GetBlockRefCount(strBlkNam);
   }
   return (iCount);
@@ -58,7 +58,7 @@ int EoDbGroupList::GetBlockRefCount(const CString& strBlkNam) {
 void EoDbGroupList::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     Group->GetExtents(view, ptMin, ptMax, tm);
   }
 }
@@ -67,16 +67,16 @@ int EoDbGroupList::GetLineTypeRefCount(EoInt16 lineType) {
 
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     iCount += Group->GetLineTypeRefCount(lineType);
   }
   return (iCount);
 }
-void EoDbGroupList::ModifyPenColor(EoInt16 nPenColor) {
+void EoDbGroupList::ModifyColor(EoInt16 color) {
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
-    Group->ModifyPenColor(nPenColor);
+    auto* Group = GetNext(position);
+    Group->ModifyColor(color);
   }
 }
 
@@ -88,7 +88,7 @@ void EoDbGroupList::ModifyLineType(EoInt16 nStyle) {
 void EoDbGroupList::ModifyNotes(EoDbFontDefinition& fd, EoDbCharacterCellDefinition& ccd, int iAtt) {
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     Group->ModifyNotes(fd, ccd, iAtt);
   }
 }
@@ -102,7 +102,7 @@ int EoDbGroupList::RemoveEmptyNotesAndDelete() {
 
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     iCount += Group->RemoveEmptyNotesAndDelete();
   }
   return (iCount);
@@ -113,7 +113,7 @@ int EoDbGroupList::RemoveEmptyGroups() {
   auto position = GetHeadPosition();
   while (position != 0) {
     POSITION posPrev = position;
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     if (Group->GetCount() == 0) {
       RemoveAt(posPrev);
       delete Group;
@@ -125,7 +125,7 @@ int EoDbGroupList::RemoveEmptyGroups() {
 void EoDbGroupList::DeleteGroupsAndRemoveAll() {
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     Group->DeletePrimitivesAndRemoveAll();
     delete Group;
   }
@@ -149,7 +149,7 @@ EoDbGroup* EoDbGroupList::SelectGroupUsingPoint(const EoGePoint3d& pt) {
 
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     if (Group->SelPrimUsingPoint(activeView, ptView, dPicApert, ptEng) != 0) { pPicSeg = Group; }
   }
   return (pPicSeg);
@@ -157,7 +157,7 @@ EoDbGroup* EoDbGroupList::SelectGroupUsingPoint(const EoGePoint3d& pt) {
 void EoDbGroupList::Transform(EoGeTransformMatrix& tm) {
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     Group->Transform(tm);
   }
 }
@@ -167,12 +167,12 @@ void EoDbGroupList::Translate(EoGeVector3d v) {
 
   auto position = GetHeadPosition();
   while (position != 0) {
-    EoDbGroup* Group = GetNext(position);
+    auto* Group = GetNext(position);
     Group->Translate(v);
   }
 }
 
-void EoDbGroupList::Write(CFile& file, EoByte* buffer) {
+void EoDbGroupList::Write(CFile& file, EoUInt8* buffer) {
   auto position = GetHeadPosition();
   while (position != 0) GetNext(position)->Write(file, buffer);
 }

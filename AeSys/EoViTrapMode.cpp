@@ -21,7 +21,7 @@ void AeSysView::OnTrapModePoint() {
 
   auto Position = GetFirstVisibleGroupPosition();
   while (Position != 0) {
-    EoDbGroup* Group = GetNextVisibleGroup(Position);
+    auto* Group = GetNextVisibleGroup(Position);
 
     if (Document->FindTrappedGroup(Group) != 0) continue;
 
@@ -48,7 +48,7 @@ void AeSysView::OnTrapModeStitch() {
 
     auto Position = GetFirstVisibleGroupPosition();
     while (Position != 0) {
-      EoDbGroup* Group = GetNextVisibleGroup(Position);
+      auto* Group = GetNextVisibleGroup(Position);
 
       if (Document->FindTrappedGroup(Group) != 0) continue;
 
@@ -80,7 +80,7 @@ void AeSysView::OnTrapModeField() {
 
     auto Position = GetFirstVisibleGroupPosition();
     while (Position != 0) {
-      EoDbGroup* Group = GetNextVisibleGroup(Position);
+      auto* Group = GetNextVisibleGroup(Position);
 
       if (Document->FindTrappedGroup(Group) != 0) continue;
 
@@ -97,7 +97,7 @@ void AeSysView::OnTrapModeLast() {
 
   auto Position = Document->GetLastWorkLayerGroupPosition();
   while (Position != 0) {
-    EoDbGroup* Group = Document->GetPreviousWorkLayerGroup(Position);
+    auto* Group = Document->GetPreviousWorkLayerGroup(Position);
 
     if (!Document->FindTrappedGroup(Group)) {
       Document->AddGroupToTrap(Group);
@@ -113,7 +113,7 @@ void AeSysView::OnTrapModeEngage() {
 
     auto Position = Document->FindWorkLayerGroup(EngagedGroup());
 
-    EoDbGroup* Group = Document->GetNextWorkLayerGroup(Position);
+    auto* Group = Document->GetNextWorkLayerGroup(Position);
 
     if (Document->FindTrappedGroup(Group) == 0) {
       Document->AddGroupToTrap(Group);
@@ -160,7 +160,7 @@ void AeSysView::OnTraprModePoint() {
 
   auto Position = Document->GetFirstTrappedGroupPosition();
   while (Position != 0) {
-    EoDbGroup* Group = Document->GetNextTrappedGroup(Position);
+    auto* Group = Document->GetNextTrappedGroup(Position);
 
     if (Group->SelectUsingPoint_(this, ptView)) {
       Document->RemoveTrappedGroupAt(Document->FindTrappedGroup(Group));
@@ -187,7 +187,7 @@ void AeSysView::OnTraprModeStitch() {
 
     auto Position = Document->GetFirstTrappedGroupPosition();
     while (Position != 0) {
-      EoDbGroup* Group = Document->GetNextTrappedGroup(Position);
+      auto* Group = Document->GetNextTrappedGroup(Position);
 
       if (Group->SelectUsingLine(this, ptView[0], ptView[1])) {
         Document->RemoveTrappedGroupAt(Document->FindTrappedGroup(Group));
@@ -220,7 +220,7 @@ void AeSysView::OnTraprModeField() {
 
     auto Position = Document->GetFirstTrappedGroupPosition();
     while (Position != 0) {
-      EoDbGroup* Group = Document->GetNextTrappedGroup(Position);
+      auto* Group = Document->GetNextTrappedGroup(Position);
 
       if (Group->SelectUsingRectangle(this, ptMin, ptMax)) {
         Document->RemoveTrappedGroupAt(Document->FindTrappedGroup(Group));
@@ -236,7 +236,7 @@ void AeSysView::OnTraprModeLast() {
   auto* Document = GetDocument();
 
   if (!Document->IsTrapEmpty()) {
-    EoDbGroup* Group = Document->RemoveLastTrappedGroup();
+    auto* Group = Document->RemoveLastTrappedGroup();
     Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     UpdateStateInformation(TrapCount);
   }

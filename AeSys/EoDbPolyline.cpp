@@ -61,22 +61,22 @@ EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray&
   m_pts.Copy(pts);
 }
 EoDbPolyline::EoDbPolyline(EoGePoint3dArray& pts) {
-  m_PenColor = pstate.PenColor();
-  m_LineType = pstate.LineType();
+  m_color = pstate.PenColor();
+  m_lineTypeIndex = pstate.LineType();
 
   m_flags = 0;
   m_pts.Copy(pts);
 }
 EoDbPolyline::EoDbPolyline(const EoDbPolyline& other) {
-  m_PenColor = other.m_PenColor;
-  m_LineType = other.m_LineType;
+  m_color = other.m_color;
+  m_lineTypeIndex = other.m_lineTypeIndex;
   m_flags = other.m_flags;
   m_pts.Copy(other.m_pts);
 }
 
 const EoDbPolyline& EoDbPolyline::operator=(const EoDbPolyline& other) {
-  m_PenColor = other.m_PenColor;
-  m_LineType = other.m_LineType;
+  m_color = other.m_color;
+  m_lineTypeIndex = other.m_lineTypeIndex;
   m_flags = other.m_flags;
   m_pts.Copy(other.m_pts);
   return (*this);
@@ -100,10 +100,10 @@ EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
 void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"EoDbPolyline::Display(%p, %p)\n", view, deviceContext);
 
-  EoInt16 penColor = LogicalPenColor();
+  EoInt16 color = LogicalColor();
   EoInt16 lineType = LogicalLineType();
 
-  pstate.SetPen(view, deviceContext, penColor, lineType);
+  pstate.SetPen(view, deviceContext, color, lineType);
 
   if (IsLooped()) {
     polyline::BeginLineLoop();
@@ -210,7 +210,7 @@ EoGePoint3d EoDbPolyline::GoToNxtCtrlPt() {
   return (m_pts[sm_PivotVertex]);
 }
 bool EoDbPolyline::IsInView(AeSysView* view) {
-  EoGePoint4d pt[2];
+  EoGePoint4d pt[2]{};
 
   pt[0] = m_pts[0];
   view->ModelViewTransformPoint(pt[0]);
@@ -324,8 +324,8 @@ void EoDbPolyline::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 }
 bool EoDbPolyline::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kPolylinePrimitive));
-  EoDb::Write(file, m_PenColor);
-  EoDb::Write(file, m_LineType);
+  EoDb::Write(file, m_color);
+  EoDb::Write(file, m_lineTypeIndex);
   EoDb::Write(file, EoUInt16(m_pts.GetSize()));
 
   for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w].Write(file);

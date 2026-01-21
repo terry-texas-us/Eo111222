@@ -20,7 +20,7 @@ EoDbLayer::EoDbLayer(const CString& name, EoUInt16 stateFlags, EoDbLineType* lin
 }
 COLORREF EoDbLayer::Color() const { return ColorPalette[m_ColorIndex]; }
 void EoDbLayer::Display(AeSysView* view, CDC* deviceContext) {
-  EoDbPrimitive::SetLayerPenColorIndex(ColorIndex());
+  EoDbPrimitive::SetLayerColor(ColorIndex());
   EoDbPrimitive::SetLayerLineTypeIndex(LineTypeIndex());
 
   COLORREF* pCurColTbl = pColTbl;
@@ -38,7 +38,7 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
 
   try {
     if (!IsOff()) {
-      EoDbPrimitive::SetLayerPenColorIndex(ColorIndex());
+      EoDbPrimitive::SetLayerColor(ColorIndex());
       EoDbPrimitive::SetLayerLineTypeIndex(LineTypeIndex());
 
       COLORREF* pCurColTbl = pColTbl;
@@ -49,14 +49,14 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
 
       auto position = GetHeadPosition();
       while (position != 0) {
-        EoDbGroup* Group = GetNext(position);
+        auto* Group = GetNext(position);
 
         if (Group->IsInView(view)) {
           if (LayerIsDetectable) { document->AddGroupToAllViews(Group); }
           if (identifyTrap && document->FindTrappedGroup(Group) != 0) {
-            EoDbPrimitive::SetSpecialPenColorIndex(app.TrapHighlightColor());
+            EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor());
             Group->Display(view, deviceContext);
-            EoDbPrimitive::SetSpecialPenColorIndex(0);
+            EoDbPrimitive::SetSpecialColor(0);
           } else {
             Group->Display(view, deviceContext);
           }
