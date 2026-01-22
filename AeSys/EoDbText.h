@@ -54,8 +54,8 @@ class EoDbText : public EoDbPrimitive {
  public:
   void ConvertFormattingCharacters();
   void GetBoundingBox(EoGePoint3dArray&, double);
-  void GetFontDef(EoDbFontDefinition& fd) { fd = m_fd; }
-  void GetRefSys(EoGeReferenceSystem& referenceSystem) { referenceSystem = m_ReferenceSystem; }
+  void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fd; }
+  void GetRefSys(EoGeReferenceSystem& referenceSystem) const { referenceSystem = m_ReferenceSystem; }
   const CString& Text() { return m_strText; }
   EoGeVector3d RefNorm() {
     EoGeVector3d vNorm;
