@@ -1,13 +1,11 @@
 #pragma once
-#pragma once
+
 #include <Windows.h>
 #include <afx.h>
 #include <afxstr.h>
 #include <afxwin.h>
-#include <utility>
 
 #include "AeSysView.h"
-#include "EoDb.h"
 #include "EoDbCircle.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
@@ -17,7 +15,6 @@
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "drw_base.h"
 
 /** * @class EoDbArc
  * @brief Represents a circular arc primitive in a CAD drawing.

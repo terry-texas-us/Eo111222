@@ -1,21 +1,33 @@
 ﻿#pragma once
-#include <afxstr.h>
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+
+#include "AeSysView.h"
+#include "EoDb.h"
 #include "EoDbFontDefinition.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGeReferenceSystem.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 
 class EoDbDimension : public EoDbPrimitive {
   EoGeLine m_ln;
 
   EoInt16 m_nTextPenColor{1};
-  EoDbFontDefinition m_fd;
+  EoDbFontDefinition m_fontDefinition;
   EoGeReferenceSystem m_ReferenceSystem;
   CString m_strText;
 
  public:  // Constructors and destructor
-  EoDbDimension() : EoDbPrimitive(), m_nTextPenColor(COLOR_BYLAYER), m_fd(), m_ReferenceSystem(), m_strText() {}
+  EoDbDimension() : EoDbPrimitive(), m_nTextPenColor(COLOR_BYLAYER), m_fontDefinition(), m_ReferenceSystem(), m_strText() {}
 
   EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line);
   EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line, EoInt16 textPenColor,
@@ -68,7 +80,7 @@ class EoDbDimension : public EoDbPrimitive {
 
  public:  // Methods
   void GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac);
-  const EoDbFontDefinition& FontDef() { return m_fd; }
+  const EoDbFontDefinition& FontDef() { return m_fontDefinition; }
   const EoGeLine& Line() { return m_ln; }
   void GetPts(EoGePoint3d& begin, EoGePoint3d& end) const {
     begin = m_ln.begin;
@@ -81,9 +93,9 @@ class EoDbDimension : public EoDbPrimitive {
   void BeginPoint(EoGePoint3d pt) { m_ln.begin = pt; }
   void EndPoint(EoGePoint3d pt) { m_ln.end = pt; }
   void SetText(const CString& str) { m_strText = str; }
-  void SetTextHorAlign(EoUInt16 w) { m_fd.HorizontalAlignment(w); }
+  void SetTextHorAlign(EoUInt16 w) { m_fontDefinition.HorizontalAlignment(w); }
   void SetTextPenColor(EoInt16 color) { m_nTextPenColor = color; }
-  void SetTextVerAlign(EoUInt16 w) { m_fd.VerticalAlignment(w); }
+  void SetTextVerAlign(EoUInt16 w) { m_fontDefinition.VerticalAlignment(w); }
   const CString& Text() { return m_strText; }
   const EoInt16& TextPenColor() { return m_nTextPenColor; }
 

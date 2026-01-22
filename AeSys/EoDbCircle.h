@@ -1,12 +1,11 @@
 #pragma once
+
 #include <Windows.h>
 #include <afx.h>
 #include <afxstr.h>
 #include <afxwin.h>
-#include <utility>
 
 #include "AeSysView.h"
-#include "EoDb.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
@@ -15,7 +14,6 @@
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "drw_base.h"
 
 // Represents circle primitives using DXF style center, radius and extrusion (OCS)
 class EoDbCircle : public EoDbPrimitive {

@@ -3,7 +3,11 @@
 #include <afx.h>
 #include <afxstr.h>
 #include <afxwin.h>
+#include <algorithm>
+#include <cfloat>
+#include <climits>
 #include <cmath>
+#include <string>
 
 #include "AeSys.h"
 #include "AeSysView.h"
@@ -20,23 +24,16 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "PrimState.h"
-#include "drw_base.h"
 
 EoDbCircle::EoDbCircle(const EoGePoint3d& center, double radius, const EoGeVector3d& extrusion)
-    : EoDbPrimitive(pstate.PenColor(), pstate.LineType()),
-      m_center(center),
-      m_radius(radius),
-      m_extrusion(extrusion) {}
+    : EoDbPrimitive(pstate.PenColor(), pstate.LineType()), m_center(center), m_radius(radius), m_extrusion(extrusion) {}
 
 EoDbCircle::EoDbCircle(EoInt16 color, EoInt16 lineTypeIndex, const EoGePoint3d& center, double radius,
                        const EoGeVector3d& extrusion)
     : EoDbPrimitive(color, lineTypeIndex), m_center(center), m_radius(radius), m_extrusion(extrusion) {}
 
 EoDbCircle::EoDbCircle(const EoDbCircle& other)
-    : EoDbPrimitive(other),
-      m_center(other.m_center),
-      m_radius(other.m_radius),
-      m_extrusion(other.m_extrusion) {}
+    : EoDbPrimitive(other), m_center(other.m_center), m_radius(other.m_radius), m_extrusion(other.m_extrusion) {}
 
 const EoDbCircle& EoDbCircle::operator=(const EoDbCircle& other) {
   if (this != &other) {
@@ -108,14 +105,13 @@ void EoDbCircle::GetExtents(AeSysView* view, EoGePoint3d& minPt, EoGePoint3d& ma
   maxPt = EoGePoint3d::Max(maxPt, pMax);
 }
 
-EoGePoint3d EoDbCircle::GoToNextControlPoint() {
-  return EoGePoint3d(m_center.x + m_radius, m_center.y, m_center.z);
-}
+EoGePoint3d EoDbCircle::GoToNextControlPoint() { return EoGePoint3d(m_center.x + m_radius, m_center.y, m_center.z); }
 
 bool EoDbCircle::Identical(EoDbPrimitive* p) {
   if (!p || !p->Is(EoDb::kCirclePrimitive)) { return false; }
   auto* other = static_cast<EoDbCircle*>(p);
-  return (m_center == other->m_center && fabs(m_radius - other->m_radius) < DBL_EPSILON && m_extrusion == other->m_extrusion);
+  return (m_center == other->m_center && fabs(m_radius - other->m_radius) < DBL_EPSILON &&
+          m_extrusion == other->m_extrusion);
 }
 
 bool EoDbCircle::Is(EoUInt16 type) { return type == EoDb::kEllipsePrimitive; }
@@ -140,10 +136,9 @@ bool EoDbCircle::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point
 EoGePoint3d EoDbCircle::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
   sm_ControlPointIndex = USHRT_MAX;
   double dAPert = sm_SelectApertureSize;
-  EoGePoint3d pts[2]{EoGePoint3d(m_center.x + m_radius * cos(0.0),
-                                 m_center.y + m_radius * sin(0.0), m_center.z),
-                     EoGePoint3d(m_center.x + m_radius * cos(Eo::TwoPi),
-                                 m_center.y + m_radius * sin(Eo::TwoPi), m_center.z)};
+  EoGePoint3d pts[2]{
+      EoGePoint3d(m_center.x + m_radius * cos(0.0), m_center.y + m_radius * sin(0.0), m_center.z),
+      EoGePoint3d(m_center.x + m_radius * cos(Eo::TwoPi), m_center.y + m_radius * sin(Eo::TwoPi), m_center.z)};
   for (EoUInt16 w = 0; w < 2; ++w) {
     EoGePoint4d pt(pts[w]);
     view->ModelViewTransformPoint(pt);
@@ -156,14 +151,15 @@ EoGePoint3d EoDbCircle::SelectAtControlPoint(AeSysView* view, const EoGePoint4d&
   return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : pts[sm_ControlPointIndex];
 }
 
-bool EoDbCircle::SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray& /* intersections */) { return false; }
+bool EoDbCircle::SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray& /* intersections */) {
+  return false;
+}
 
 bool EoDbCircle::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& outPt) {
   // project point to XY and test distance to circle
   EoGePoint4d p = point;
   view->ModelViewTransformPoint(p);
-  double d =
-      sqrt((p.x - m_center.x) * (p.x - m_center.x) + (p.y - m_center.y) * (p.y - m_center.y));
+  double d = sqrt((p.x - m_center.x) * (p.x - m_center.x) + (p.y - m_center.y) * (p.y - m_center.y));
   if (fabs(d - m_radius) < sm_SelectApertureSize) {
     outPt = EoGePoint3d(p.x, p.y, m_center.z);
     return true;

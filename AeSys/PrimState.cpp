@@ -14,7 +14,7 @@
 CPrimState* psSav[] = {0, 0, 0, 0};
 
 const CPrimState& CPrimState::operator=(const CPrimState& src) {
-  m_fd = src.m_fd;
+  m_fontDefinition = src.m_fontDefinition;
 
   m_color = src.m_color;
   m_LineType = src.m_LineType;
@@ -30,9 +30,9 @@ void CPrimState::Restore(CDC* deviceContext, int iSaveId) {
   if (psSav[iSaveId] != 0) {
     SetPen(nullptr, deviceContext, psSav[iSaveId]->PenColor(), psSav[iSaveId]->LineType());
 
-    m_fd = psSav[iSaveId]->m_fd;
+    m_fontDefinition = psSav[iSaveId]->m_fontDefinition;
 
-    SetTxtAlign(deviceContext, m_fd.HorizontalAlignment(), m_fd.VerticalAlignment());
+    SetTxtAlign(deviceContext, m_fontDefinition.HorizontalAlignment(), m_fontDefinition.VerticalAlignment());
 
     SetPolygonIntStyle(psSav[iSaveId]->PolygonIntStyle());
     SetPolygonIntStyleId(psSav[iSaveId]->PolygonIntStyleId());
@@ -159,12 +159,12 @@ void CPrimState::SetTxtAlign(CDC* deviceContext, EoUInt16 horizontalAlignment, E
   //else
   //	nFlgs |= TA_BASELINE;
 
-  m_fd.HorizontalAlignment(horizontalAlignment);
-  m_fd.VerticalAlignment(verticalAlignment);
+  m_fontDefinition.HorizontalAlignment(horizontalAlignment);
+  m_fontDefinition.VerticalAlignment(verticalAlignment);
 
   deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);
 }
 void CPrimState::SetFontDef(CDC* deviceContext, const EoDbFontDefinition& fd) {
-  m_fd = fd;
-  SetTxtAlign(deviceContext, m_fd.HorizontalAlignment(), m_fd.VerticalAlignment());
+  m_fontDefinition = fd;
+  SetTxtAlign(deviceContext, m_fontDefinition.HorizontalAlignment(), m_fontDefinition.VerticalAlignment());
 }

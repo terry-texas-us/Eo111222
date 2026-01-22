@@ -38,13 +38,13 @@ EoDbDimension::EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line) : m
   m_lineTypeIndex = lineType;
 
   m_nTextPenColor = 5;
-  pstate.GetFontDef(m_fd);
+  pstate.GetFontDef(m_fontDefinition);
   SetDefaultNote();
 }
 EoDbDimension::EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line, EoInt16 textPenColor,
                              const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
                              const CString& text)
-    : m_ln(line), m_fd(fontDefinition), m_ReferenceSystem(referenceSystem), m_strText(text) {
+    : m_ln(line), m_fontDefinition(fontDefinition), m_ReferenceSystem(referenceSystem), m_strText(text) {
   m_color = color;
   m_lineTypeIndex = lineType;
   m_nTextPenColor = textPenColor;
@@ -55,7 +55,7 @@ EoDbDimension::EoDbDimension(const EoDbDimension& src) {
   m_ln = src.m_ln;
 
   m_nTextPenColor = src.m_nTextPenColor;
-  m_fd = src.m_fd;
+  m_fontDefinition = src.m_fontDefinition;
   m_ReferenceSystem = src.m_ReferenceSystem;
   m_strText = src.m_strText;
 }
@@ -65,7 +65,7 @@ const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& src) {
   m_ln = src.m_ln;
 
   m_nTextPenColor = src.m_nTextPenColor;
-  m_fd = src.m_fd;
+  m_fontDefinition = src.m_fontDefinition;
   m_ReferenceSystem = src.m_ReferenceSystem;
   m_strText = src.m_strText;
 
@@ -138,7 +138,7 @@ void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
   EoInt16 LineType = pstate.LineType();
   pstate.SetLineType(deviceContext, 1);
 
-  DisplayText(view, deviceContext, m_fd, m_ReferenceSystem, m_strText);
+  DisplayText(view, deviceContext, m_fontDefinition, m_ReferenceSystem, m_strText);
 
   pstate.SetLineType(deviceContext, LineType);
 }
@@ -179,7 +179,7 @@ void EoDbDimension::GetAllPoints(EoGePoint3dArray& points) {
 }
 // Determination of text extent.
 void EoDbDimension::GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac) {
-  text_GetBoundingBox(m_fd, m_ReferenceSystem, m_strText.GetLength(), dSpacFac, ptsBox);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), dSpacFac, ptsBox);
 }
 void EoDbDimension::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
   EoGePoint3d pt[2] = {m_ln.begin, m_ln.end};
@@ -232,7 +232,7 @@ bool EoDbDimension::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& po
 void EoDbDimension::ModifyState() {
   if ((sm_wFlags & 0x0001) != 0) EoDbPrimitive::ModifyState();
 
-  if ((sm_wFlags & 0x0002) != 0) pstate.GetFontDef(m_fd);
+  if ((sm_wFlags & 0x0002) != 0) pstate.GetFontDef(m_fontDefinition);
 }
 double EoDbDimension::RelOfPt(EoGePoint3d pt) {
   double dRel;
@@ -372,7 +372,7 @@ bool EoDbDimension::Write(CFile& file) {
   m_ln.Write(file);
 
   EoDb::Write(file, m_nTextPenColor);
-  m_fd.Write(file);
+  m_fontDefinition.Write(file);
   m_ReferenceSystem.Write(file);
   EoDb::Write(file, m_strText);
 

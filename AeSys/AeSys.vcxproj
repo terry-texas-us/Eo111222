@@ -171,8 +171,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="EoDlgSetText.cpp" />
     <ClCompile Include="EoDlgSetupNote.cpp" />
     <ClCompile Include="EoDlgViewZoom.cpp" />
-    <ClCompile Include="EoDbDwgToPegFile.cpp" />
-    <ClCompile Include="EntityToPrimitiveProtocolExtension.cpp" />
     <ClCompile Include="EoApOptions.cpp" />
     <ClCompile Include="EoGsAbstractView.cpp" />
     <ClCompile Include="EoDbBlock.cpp" />
@@ -193,7 +191,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="EoDbTrappedGroups.cpp" />
     <ClCompile Include="EoGePoint3d.cpp" />
     <ClCompile Include="EoGeVector3d.cpp" />
-    <ClCompile Include="EoDlgLineWeight.cpp" />
     <ClCompile Include="EoMfOutputDockablePane.cpp" />
     <ClCompile Include="EoMfPropertiesDockablePane.cpp" />
     <ClCompile Include="EoViAnnotateMode.cpp" />
@@ -220,7 +217,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="EoDbFontDefinition.cpp" />
     <ClCompile Include="EoViConstraints.cpp" />
     <ClCompile Include="EoDbLayer.cpp" />
-    <ClCompile Include="EoDlgLayerPropertiesManager.cpp" />
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="EoGeLine.cpp" />
     <ClCompile Include="MainFrm.cpp">
@@ -1530,7 +1526,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="EoDlgSetupHatch.h" />
     <ClInclude Include="EoDlgSetupNote.h" />
     <ClInclude Include="EoDlgViewZoom.h" />
-    <ClInclude Include="EoDbDwgToPegFile.h" />
     <ClInclude Include="EoApOptions.h" />
     <ClInclude Include="EoDbBlock.h" />
     <ClInclude Include="EoDbBlockReference.h" />
@@ -1566,7 +1561,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="EoDbFontDefinition.h" />
     <ClInclude Include="Hatch.h" />
     <ClInclude Include="EoDbLayer.h" />
-    <ClInclude Include="EoDlgLayerPropertiesManager.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="EoGeLine.h" />

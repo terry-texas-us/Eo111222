@@ -10,7 +10,7 @@ class CPrimState {
   EoInt16 m_pointStyle{};
   EoInt16 m_color{7};
   EoInt16 m_LineType{};
-  EoDbFontDefinition m_fd;
+  EoDbFontDefinition m_fontDefinition;
   EoDbCharacterCellDefinition m_ccd;
   EoInt16 m_PolygonInteriorStyle{};
   EoInt16 m_PolygonInteriorStyleIndex{};
@@ -22,7 +22,7 @@ class CPrimState {
 
  public:
   void GetCharCellDef(EoDbCharacterCellDefinition& ccd) const { ccd = m_ccd; }
-  void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fd; }
+  void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fontDefinition; }
   const EoInt16& PointStyle() { return m_pointStyle; }
   const EoInt16& PenColor() { return (m_color); }
   const EoInt16& LineType() { return (m_LineType); }

@@ -75,19 +75,19 @@ bool HasFormattingCharacters(const CString& text) {
 }  // namespace
 EoDbText::EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text) {
   m_color = pstate.PenColor();
-  m_fd = fd;
+  m_fontDefinition = fd;
   m_ReferenceSystem = referenceSystem;
   m_strText = text;
 }
 EoDbText::EoDbText(const EoDbText& src) {
   m_color = src.m_color;
-  m_fd = src.m_fd;
+  m_fontDefinition = src.m_fontDefinition;
   m_ReferenceSystem = src.m_ReferenceSystem;
   m_strText = src.m_strText;
 }
 const EoDbText& EoDbText::operator=(const EoDbText& src) {
   m_color = src.m_color;
-  m_fd = src.m_fd;
+  m_fontDefinition = src.m_fontDefinition;
   m_ReferenceSystem = src.m_ReferenceSystem;
   m_strText = src.m_strText;
 
@@ -128,20 +128,20 @@ void EoDbText::Display(AeSysView* view, CDC* deviceContext) {
   EoInt16 LineType = pstate.LineType();
   pstate.SetLineType(deviceContext, 1);
 
-  DisplayText(view, deviceContext, m_fd, m_ReferenceSystem, m_strText);
+  DisplayText(view, deviceContext, m_fontDefinition, m_ReferenceSystem, m_strText);
   pstate.SetLineType(deviceContext, LineType);
 }
 void EoDbText::AddReportToMessageList(EoGePoint3d) {
   CString str;
-  str = L"Color: " + FormatPenColor() + L" Font: " + m_fd.FontName() + L" Precision: " + m_fd.FormatPrecision() + L" Path: " + m_fd.FormatPath() +
-        L" Alignment: (" + m_fd.FormatHorizonatlAlignment() + L"," + m_fd.FormatVerticalAlignment() + L")";
+  str = L"Color: " + FormatPenColor() + L" Font: " + m_fontDefinition.FontName() + L" Precision: " + m_fontDefinition.FormatPrecision() + L" Path: " + m_fontDefinition.FormatPath() +
+        L" Alignment: (" + m_fontDefinition.FormatHorizonatlAlignment() + L"," + m_fontDefinition.FormatVerticalAlignment() + L")";
 
   app.AddStringToMessageList(str);
 }
 void EoDbText::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tFont;%s\tPrecision;%s\tPath;%s\tAlignment;(%s,%s)\tSpacing;%f\tLength;%d\tText;%s", FormatPenColor().GetString(),
-             m_fd.FontName().GetString(), m_fd.FormatPrecision().GetString(), m_fd.FormatPath().GetString(), m_fd.FormatHorizonatlAlignment().GetString(),
-             m_fd.FormatVerticalAlignment().GetString(), m_fd.CharacterSpacing(), m_strText.GetLength(), m_strText.GetString());
+             m_fontDefinition.FontName().GetString(), m_fontDefinition.FormatPrecision().GetString(), m_fontDefinition.FormatPath().GetString(), m_fontDefinition.FormatHorizonatlAlignment().GetString(),
+             m_fontDefinition.FormatVerticalAlignment().GetString(), m_fontDefinition.CharacterSpacing(), m_strText.GetLength(), m_strText.GetString());
 }
 void EoDbText::FormatGeometry(CString& str) {
   EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;
@@ -153,7 +153,7 @@ void EoDbText::FormatGeometry(CString& str) {
 }
 void EoDbText::GetBoundingBox(EoGePoint3dArray& ptsBox, double spaceFactor) {
   int Length = LengthSansFormattingCharacters(m_strText);
-  text_GetBoundingBox(m_fd, m_ReferenceSystem, Length, spaceFactor, ptsBox);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, Length, spaceFactor, ptsBox);
 }
 
 void EoDbText::GetAllPoints(EoGePoint3dArray& points) {
@@ -166,7 +166,7 @@ EoGePoint3d EoDbText::GetControlPoint() { return m_ReferenceSystem.Origin(); }
 void EoDbText::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
   EoGePoint3dArray pts;
 
-  text_GetBoundingBox(m_fd, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
 
   for (EoUInt16 w = 0; w < pts.GetSize(); w++) {
     view->ModelTransformPoint(pts[w]);
@@ -180,7 +180,7 @@ bool EoDbText::IsInView(AeSysView* view) {
 
   EoGePoint3dArray pts;
 
-  text_GetBoundingBox(m_fd, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
 
   for (INT_PTR n = 0; n <= 2;) {
     pt[0] = pts[n++];
@@ -194,7 +194,7 @@ bool EoDbText::IsInView(AeSysView* view) {
 }
 bool EoDbText::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
   EoGePoint3dArray pts;
-  text_GetBoundingBox(m_fd, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
   return polyline::SelectUsingRectangle(view, pt1, pt2, pts);
 }
 bool EoDbText::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
@@ -206,7 +206,7 @@ bool EoDbText::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) 
 void EoDbText::ModifyState() {
   EoDbPrimitive::ModifyState();
 
-  pstate.GetFontDef(m_fd);
+  pstate.GetFontDef(m_fontDefinition);
 
   EoDbCharacterCellDefinition ccd;
   pstate.GetCharCellDef(ccd);
@@ -216,14 +216,14 @@ void EoDbText::ModifyState() {
 void EoDbText::ModifyNotes(EoDbFontDefinition& fd, EoDbCharacterCellDefinition& ccd, int iAtt) {
   if (iAtt == TM_TEXT_ALL) {
     m_color = pstate.PenColor();
-    m_fd = fd;
+    m_fontDefinition = fd;
     m_ReferenceSystem.Rescale(ccd);
   } else if (iAtt == TM_TEXT_FONT) {
-    m_fd.FontName(fd.FontName());
-    m_fd.Precision(fd.Precision());
+    m_fontDefinition.FontName(fd.FontName());
+    m_fontDefinition.Precision(fd.Precision());
   } else if (iAtt == TM_TEXT_HEIGHT) {
-    m_fd.CharacterSpacing(fd.CharacterSpacing());
-    m_fd.Path(fd.Path());
+    m_fontDefinition.CharacterSpacing(fd.CharacterSpacing());
+    m_fontDefinition.Path(fd.Path());
 
     m_ReferenceSystem.Rescale(ccd);
   }
@@ -237,7 +237,7 @@ bool EoDbText::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&
 
   EoGePoint3dArray pts;
 
-  text_GetBoundingBox(m_fd, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
 
   EoGePoint4d pt0[] = {EoGePoint4d(pts[0]), EoGePoint4d(pts[1]), EoGePoint4d(pts[2]), EoGePoint4d(pts[3])};
 
@@ -258,7 +258,7 @@ bool EoDbText::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kTextPrimitive));
   EoDb::Write(file, m_color);
   EoDb::Write(file, m_lineTypeIndex);
-  m_fd.Write(file);
+  m_fontDefinition.Write(file);
   m_ReferenceSystem.Write(file);
   EoDb::Write(file, m_strText);
 

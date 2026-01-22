@@ -3,6 +3,9 @@
 #include <afx.h>
 #include <afxstr.h>
 #include <afxwin.h>
+#include <algorithm>
+#include <cfloat>
+#include <climits>
 #include <cmath>
 
 #include "AeSys.h"
@@ -21,22 +24,19 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "PrimState.h"
-#include "drw_base.h"
 
 EoDbArc::EoDbArc(const EoGePoint3d& center, double radius, double startAngle, double endAngle,
-                       const EoGeVector3d& extrusion)
+                 const EoGeVector3d& extrusion)
     : EoDbCircle(pstate.PenColor(), pstate.LineType(), center, radius, extrusion),
       m_startAngle(startAngle),
-      m_endAngle(endAngle) {
-}
+      m_endAngle(endAngle) {}
 
 EoDbArc::EoDbArc(EoInt16 color, EoInt16 lineTypeIndex, const EoGePoint3d& center, double radius, double startAngle,
-                       double endAngle, const EoGeVector3d& extrusion)
-    : EoDbCircle(color, lineTypeIndex, center, radius, extrusion), m_startAngle(startAngle), m_endAngle(endAngle) {
-}
+                 double endAngle, const EoGeVector3d& extrusion)
+    : EoDbCircle(color, lineTypeIndex, center, radius, extrusion), m_startAngle(startAngle), m_endAngle(endAngle) {}
 
-EoDbArc::EoDbArc(const EoDbArc& other) : EoDbCircle(other), m_startAngle(other.m_startAngle), m_endAngle(other.m_endAngle) {
-}
+EoDbArc::EoDbArc(const EoDbArc& other)
+    : EoDbCircle(other), m_startAngle(other.m_startAngle), m_endAngle(other.m_endAngle) {}
 
 const EoDbArc& EoDbArc::operator=(const EoDbArc& other) {
   if (this != &other) {
@@ -115,9 +115,7 @@ void EoDbArc::GetExtents(AeSysView* view, EoGePoint3d& minPt, EoGePoint3d& maxPt
   maxPt = EoGePoint3d::Max(maxPt, pMax);
 }
 
-EoGePoint3d EoDbArc::GoToNextControlPoint() {
-  return EoGePoint3d(m_center.x + m_radius, m_center.y, m_center.z);
-}
+EoGePoint3d EoDbArc::GoToNextControlPoint() { return EoGePoint3d(m_center.x + m_radius, m_center.y, m_center.z); }
 
 bool EoDbArc::Identical(EoDbPrimitive* p) {
   if (!p || !p->Is(EoDb::kEllipsePrimitive)) return false;
@@ -136,12 +134,11 @@ bool EoDbArc::IsInView(AeSysView* view) {
 }
 
 bool EoDbArc::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
-  EoGePoint4d ptBeg(m_center.x + m_radius * cos(m_startAngle), m_center.y + m_radius * sin(m_startAngle),
-                    m_center.z, 1.0);
+  EoGePoint4d ptBeg(m_center.x + m_radius * cos(m_startAngle), m_center.y + m_radius * sin(m_startAngle), m_center.z,
+                    1.0);
   view->ModelViewTransformPoint(ptBeg);
   if (point.DistanceToPointXY(ptBeg) < sm_SelectApertureSize) return true;
-  EoGePoint4d ptEnd(m_center.x + m_radius * cos(m_endAngle), m_center.y + m_radius * sin(m_endAngle),
-                    m_center.z, 1.0);
+  EoGePoint4d ptEnd(m_center.x + m_radius * cos(m_endAngle), m_center.y + m_radius * sin(m_endAngle), m_center.z, 1.0);
   view->ModelViewTransformPoint(ptEnd);
   if (point.DistanceToPointXY(ptEnd) < sm_SelectApertureSize) return true;
   return false;
@@ -150,10 +147,9 @@ bool EoDbArc::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
 EoGePoint3d EoDbArc::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
   sm_ControlPointIndex = USHRT_MAX;
   double dAPert = sm_SelectApertureSize;
-  EoGePoint3d pts[2]{EoGePoint3d(m_center.x + m_radius * cos(m_startAngle),
-                                 m_center.y + m_radius * sin(m_startAngle), m_center.z),
-                     EoGePoint3d(m_center.x + m_radius * cos(m_endAngle),
-                                 m_center.y + m_radius * sin(m_endAngle), m_center.z)};
+  EoGePoint3d pts[2]{
+      EoGePoint3d(m_center.x + m_radius * cos(m_startAngle), m_center.y + m_radius * sin(m_startAngle), m_center.z),
+      EoGePoint3d(m_center.x + m_radius * cos(m_endAngle), m_center.y + m_radius * sin(m_endAngle), m_center.z)};
   for (EoUInt16 w = 0; w < 2; ++w) {
     EoGePoint4d pt(pts[w]);
     view->ModelViewTransformPoint(pt);
@@ -166,14 +162,15 @@ EoGePoint3d EoDbArc::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& po
   return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : pts[sm_ControlPointIndex];
 }
 
-bool EoDbArc::SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray& /* intersections */) { return false; }
+bool EoDbArc::SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray& /* intersections */) {
+  return false;
+}
 
 bool EoDbArc::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& outPt) {
   // project point to XY and test distance to circle
   EoGePoint4d p = point;
   view->ModelViewTransformPoint(p);
-  double d =
-      sqrt((p.x - m_center.x) * (p.x - m_center.x) + (p.y - m_center.y) * (p.y - m_center.y));
+  double d = sqrt((p.x - m_center.x) * (p.x - m_center.x) + (p.y - m_center.y) * (p.y - m_center.y));
   if (fabs(d - m_radius) < sm_SelectApertureSize) {
     outPt = EoGePoint3d(p.x, p.y, m_center.z);
     return true;
@@ -224,7 +221,7 @@ void EoDbArc::CutAt2Pts(EoGePoint3d* /* points */, EoDbGroupList* /* groups */, 
 }
 
 int EoDbArc::IsWithinArea(EoGePoint3d /* lowerLeftCorner */, EoGePoint3d /* upperRightCorner */,
-                             EoGePoint3d* intersectingPoints) {
+                          EoGePoint3d* intersectingPoints) {
   // Stub: implement proper intersection logic if needed
   intersectingPoints = nullptr;
   return 0;

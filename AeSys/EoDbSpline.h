@@ -1,6 +1,18 @@
 ﻿#pragma once
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+
+#include "AeSysView.h"
+#include "EoDb.h"
 #include "EoDbPrimitive.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 
 class EoDbSpline : public EoDbPrimitive {
  private:

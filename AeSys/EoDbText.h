@@ -1,14 +1,25 @@
 ﻿#pragma once
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxstr.h>
+#include <afxwin.h>
+
+#include "AeSysView.h"
+#include "EoDb.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
 #include "EoGeReferenceSystem.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 
 class EoDbCharacterCellDefinition;
 
 class EoDbText : public EoDbPrimitive {
-  EoDbFontDefinition m_fd;
+  EoDbFontDefinition m_fontDefinition;
   EoGeReferenceSystem m_ReferenceSystem;
   CString m_strText;
 
@@ -54,7 +65,7 @@ class EoDbText : public EoDbPrimitive {
  public:
   void ConvertFormattingCharacters();
   void GetBoundingBox(EoGePoint3dArray&, double);
-  void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fd; }
+  void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fontDefinition; }
   void GetRefSys(EoGeReferenceSystem& referenceSystem) const { referenceSystem = m_ReferenceSystem; }
   const CString& Text() { return m_strText; }
   EoGeVector3d RefNorm() {

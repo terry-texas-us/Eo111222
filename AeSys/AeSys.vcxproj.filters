@@ -131,9 +131,6 @@
     <ClCompile Include="EoApOptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EntityToPrimitiveProtocolExtension.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ChildFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -230,9 +227,6 @@
     <ClCompile Include="EoDlgAnnotateOptions.cpp">
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="EoDlgLineWeight.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="EoDlgSetupNote.cpp">
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
@@ -271,9 +265,6 @@
     </ClCompile>
     <ClCompile Include="EoDlgSelectIsometricView.cpp">
       <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgLayerPropertiesManager.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="OFNHookProcFileTracing.cpp">
       <Filter>Source Files\Callbacks</Filter>
@@ -336,9 +327,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EoDbCharacterCellDefinition.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbDwgToPegFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EoGePolyline.cpp">
@@ -1792,9 +1780,6 @@
     <ClInclude Include="EoDbSpline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbPrimitive.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EoDbPolyline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1948,9 +1933,6 @@
     <ClInclude Include="EoDlgSelectIsometricView.h">
       <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgLayerPropertiesManager.h">
-      <Filter>Header Files\Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="EoDlgActiveViewKeyplan.h">
       <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
@@ -2008,9 +1990,6 @@
     <ClInclude Include="EoDbCharacterCellDefinition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbDwgToPegFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EoGePolyline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -2060,6 +2039,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EoDbArc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EoDbPrimitive.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

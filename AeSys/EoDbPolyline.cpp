@@ -6,7 +6,6 @@
 #include <afxwin.h>
 #include <atltrace.h>
 #include <climits>
-#include <string>
 
 #include "AeSys.h"
 #include "AeSysView.h"
