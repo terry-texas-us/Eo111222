@@ -32,14 +32,25 @@
 
 namespace {
 
-EoGePoint3d pFndPtOnArc(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, const double dAng) {
-  EoGeTransformMatrix tm(centerPoint, majorAxis, minorAxis);
-  tm.Inverse();
+/** @brief Computes a point on an ellipse arc at a specified angle.
+ *
+ * This function calculates the coordinates of a point on an ellipse defined by its center, major axis, and minor axis,
+ * at a given angle in radians. The angle is measured from the major axis.
+ *
+ * @param center The center point of the ellipse.
+ * @param majorAxis The major axis vector of the ellipse.
+ * @param minorAxis The minor axis vector of the ellipse.
+ * @param angle The angle in radians at which to compute the point on the ellipse.
+ * @return The computed point on the ellipse at the specified angle.
+ */
+EoGePoint3d PointOnArcAtAngle(EoGePoint3d center, EoGeVector3d majorAxis, EoGeVector3d minorAxis, const double angle) {
+  EoGeTransformMatrix transformMatrix(center, majorAxis, minorAxis);
+  transformMatrix.Inverse();
 
-  EoGePoint3d pt(cos(dAng), sin(dAng), 0.0);
+  EoGePoint3d point(cos(angle), sin(angle), 0.0);
 
-  pt = tm * pt;
-  return (pt);
+  point = transformMatrix * point;
+  return (point);
 }
 
 }  // namespace
@@ -72,7 +83,7 @@ double EoDbEllipse::NormalizeTo2Pi(double angle) {
  * This constructor initializes an ellipse segment using the specified center point, major axis, minor axis, and sweep angle.
  * The pen color and line type are set based on the current primitive state.
  *
- * @param centerPoint The center point of the ellipse.
+ * @param center The center point of the ellipse.
  * @param majorAxis The major axis vector of the ellipse.
  * @param minorAxis The minor axis vector of the ellipse.
  * @param sweepAngle The sweep angle of the ellipse segment in radians.
@@ -85,11 +96,11 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& center, const EoGeVector3d& majorAxi
       m_sweepAngle(sweepAngle) {}
 
 /**
- * @brief Constructs a circle (as ellipse)primitive defined by a center point and radius in the current view.
+ * @brief Constructs a circle (as ellipse) primitive defined by a center point and radius in the current view.
  *
  * @param color The color.
  * @param lineType The line type index.
- * @param centerPoint The center point of the circle.
+ * @param center The center point of the circle.
  * @param radius The radius of the circle.
  */
 EoDbEllipse::EoDbEllipse(EoInt16 color, EoInt16 lineType, EoGePoint3d& center, double radius)
@@ -104,6 +115,19 @@ EoDbEllipse::EoDbEllipse(EoInt16 color, EoInt16 lineType, EoGePoint3d& center, d
   m_sweepAngle = Eo::TwoPi;
 }
 
+/**
+ * @brief Constructs a circle (as ellipse) primitive defined by a center point, plane normal, and radius.
+ *
+ * This constructor initializes a circle primitive using the specified center point, plane normal, and radius.
+ * The major and minor axes are calculated based on the provided normal vector.
+ * The pen color and line type are set based on the provided parameters.
+ *
+ * @param color The pen color for the ellipse.
+ * @param lineType The line type index for the ellipse.
+ * @param center The center point of the circle.
+ * @param normal The normal vector defining the plane of the circle.
+ * @param radius The radius of the circle.
+ */
 EoDbEllipse::EoDbEllipse(EoInt16 color, EoInt16 lineType, EoGePoint3d& center, EoGeVector3d& normal, double radius)
     : EoDbPrimitive(color, lineType), m_center(center) {
   EoGeVector3d PlaneNormal(normal);
@@ -142,8 +166,17 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
   m_sweepAngle = Eo::TwoPi;
 }
 
+EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGeVector3d& extrusion, double radius)
+    : EoDbPrimitive(), m_center(center) {
+
+  m_minorAxis = ComputeArbitraryAxis(extrusion) * radius;
+  m_majorAxis = m_minorAxis;
+  m_majorAxis.RotAboutArbAx(extrusion, Eo::HalfPi);
+  m_sweepAngle = Eo::TwoPi;
+}
+
 /** 
- * @brief Constructs a radial arc (as ellipse primitive) from three points that define an elliptical arc.
+ * @brief Constructs a radial arc (as ellipse) primitive from three points that define an elliptical arc.
  *
  * This constructor initializes an ellipse segment using three points: a beginning point, an intermediate point, and an end point.
  * It calculates the center point, major axis, minor axis, and sweep angle of the ellipse based on the provided points.
@@ -229,7 +262,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
  * This constructor initializes a radial arc using the specified center point, radius, start angle, and end angle.
  * The angles are normalized to the range [0, 2π) and the sweep angle is calculated accordingly.
  *
- * @param centerPoint The center point of the ellipse.
+ * @param center The center point of the ellipse.
  * @param radius The radius of the ellipse.
  * @param startAngle The starting angle of the arc in radians.
  * @param endAngle The ending angle of the arc in radians.
@@ -256,8 +289,21 @@ EoDbEllipse::EoDbEllipse(const DRW_Coord& center, double radius, double startAng
   m_minorAxis.RotAboutArbAx(EoGeVector3d::kZAxis, Eo::HalfPi);
 }
 
-EoDbEllipse::EoDbEllipse(EoInt16 color, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle)
-    : EoDbPrimitive(color, lineType), m_center(centerPoint), m_majorAxis(majorAxis), m_minorAxis(minorAxis) {
+/** 
+ * @brief Constructs an ellipse segment defined by a center point, major and minor axes, and a sweep angle.
+ *
+ * This constructor initializes an ellipse segment using the specified pen color, line type, center point,
+ * major axis, minor axis, and sweep angle.
+ *
+ * @param color The pen color for the ellipse.
+ * @param lineType The line type index for the ellipse.
+ * @param center The center point of the ellipse.
+ * @param majorAxis The major axis vector of the ellipse.
+ * @param minorAxis The minor axis vector of the ellipse.
+ * @param sweepAngle The sweep angle of the ellipse segment in radians.
+ */
+EoDbEllipse::EoDbEllipse(EoInt16 color, EoInt16 lineType, EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle)
+    : EoDbPrimitive(color, lineType), m_center(center), m_majorAxis(majorAxis), m_minorAxis(minorAxis) {
   m_sweepAngle = sweepAngle;
 }
 
@@ -395,6 +441,11 @@ void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
   polyline::BeginLineStrip();
   GenPts(m_center, m_majorAxis, m_minorAxis, m_sweepAngle);
   polyline::__End(view, deviceContext, lineType);
+}
+
+void EoDbEllipse::GetAllPoints(EoGePoint3dArray& points) {
+  points.SetSize(0);
+  points.Add(m_center);
 }
 
 void EoDbEllipse::AddReportToMessageList(EoGePoint3d) {
@@ -722,9 +773,9 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
   return (iInts);
 }
 
-EoGePoint3d EoDbEllipse::GoToNxtCtrlPt() {
-  double dAng = (sm_RelationshipOfPoint <= DBL_EPSILON) ? m_sweepAngle : 0.;
-  return (pFndPtOnArc(m_center, m_majorAxis, m_minorAxis, dAng));
+EoGePoint3d EoDbEllipse::GoToNextControlPoint() {
+  double angle = (sm_RelationshipOfPoint <= Eo::lengthEpsilon) ? m_sweepAngle : 0.0;
+  return (PointOnArcAtAngle(m_center, m_majorAxis, m_minorAxis, angle));
 }
 
 bool EoDbEllipse::IsInView(AeSysView* view) {
@@ -768,10 +819,10 @@ EoGePoint3d EoDbEllipse::SelectAtControlPoint(AeSysView* view, const EoGePoint4d
   return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : ptCtrl[sm_ControlPointIndex];
 }
 
-bool EoDbEllipse::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt) {
+bool EoDbEllipse::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) {
   polyline::BeginLineStrip();
   GenPts(m_center, m_majorAxis, m_minorAxis, m_sweepAngle);
-  return polyline::SelectUsingLine(view, line, ptsInt);
+  return polyline::SelectUsingLine(view, line, intersections);
 }
 
 bool EoDbEllipse::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
@@ -868,18 +919,18 @@ double EoDbEllipse::SweepAngleToPoint(EoGePoint3d point) {
  * @param arP1 First outside point
  * @param arP2 Inside point
  * @param arP3 Second outside point
- * @param centerPoint Center point about which to measure the sweep angle
+ * @param center Center point about which to measure the sweep angle
  * @param adTheta Sweep angle result
  * @return TRUE if successful, FALSE if not.
 */
-int SweepAngleFromNormalAnd3Points(EoGeVector3d planeNormal, EoGePoint3d arP1, EoGePoint3d arP2, EoGePoint3d arP3, EoGePoint3d& centerPoint, double* adTheta) {
+int SweepAngleFromNormalAnd3Points(EoGeVector3d normal, EoGePoint3d arP1, EoGePoint3d arP2, EoGePoint3d arP3, EoGePoint3d& center, double* adTheta) {
   double dT[3]{};
   EoGePoint3d rR[3]{};
 
-  if (arP1 == centerPoint || arP2 == centerPoint || arP3 == centerPoint) { return (FALSE); }
+  if (arP1 == center || arP2 == center || arP3 == center) { return (FALSE); }
 
   // None of the points coincide with center point
-  EoGeTransformMatrix tm(centerPoint, planeNormal);
+  EoGeTransformMatrix tm(center, normal);
   rR[0] = arP1;
   rR[1] = arP2;
   rR[2] = arP3;

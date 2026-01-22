@@ -250,14 +250,14 @@ CString EoDbPolygon::FormatIntStyle() {
 void EoDbPolygon::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(), m_NumberOfPoints);
 }
-EoGePoint3d EoDbPolygon::GetCtrlPt() {
+EoGePoint3d EoDbPolygon::GetControlPoint() {
   EoUInt16 wBeg = EoUInt16(sm_Edge - 1);
   EoUInt16 wEnd = EoUInt16(sm_Edge % m_NumberOfPoints);
   EoGePoint3d pt = EoGeLine(m_Pt[wBeg], m_Pt[wEnd]).Midpoint();
   return (pt);
 };
 
-EoGePoint3d EoDbPolygon::GoToNxtCtrlPt() {
+EoGePoint3d EoDbPolygon::GoToNextControlPoint() {
   if (sm_PivotVertex >= m_NumberOfPoints) {  // have not yet rocked to a vertex
     EoUInt16 wBeg = EoUInt16(sm_Edge - 1);
     EoUInt16 wEnd = EoUInt16(sm_Edge % m_NumberOfPoints);
@@ -335,7 +335,7 @@ void EoDbPolygon::ModifyState() {
   m_InteriorStyle = pstate.PolygonIntStyle();
   m_InteriorStyleIndex = pstate.PolygonIntStyleId();
 }
-bool EoDbPolygon::PvtOnCtrlPt(AeSysView* view, const EoGePoint4d& ptView) {
+bool EoDbPolygon::PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) {
   if (sm_PivotVertex >= m_NumberOfPoints)
     // Not engaged at a vertex
     return false;
@@ -358,9 +358,9 @@ bool EoDbPolygon::PvtOnCtrlPt(AeSysView* view, const EoGePoint4d& ptView) {
 
   return true;
 }
-void EoDbPolygon::GetAllPts(EoGePoint3dArray& pts) {
-  pts.SetSize(0);
-  for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) pts.Add(m_Pt[w]);
+void EoDbPolygon::GetAllPoints(EoGePoint3dArray& points) {
+  points.SetSize(0);
+  for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) points.Add(m_Pt[w]);
 }
 // Determines the extent.
 void EoDbPolygon::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {

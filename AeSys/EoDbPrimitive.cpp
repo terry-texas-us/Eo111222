@@ -30,7 +30,7 @@ EoDbPrimitive::~EoDbPrimitive() {}
 void EoDbPrimitive::CutAt2Pts(EoGePoint3d*, EoDbGroupList*, EoDbGroupList*) {}
 void EoDbPrimitive::CutAtPt(EoGePoint3d&, EoDbGroup*) {}
 int EoDbPrimitive::IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) { return 0; }
-bool EoDbPrimitive::PvtOnCtrlPt(AeSysView*, const EoGePoint4d&) { return false; }
+bool EoDbPrimitive::PivotOnControlPoint(AeSysView*, const EoGePoint4d&) { return false; }
 
 void EoDbPrimitive::SetBaseProperties(const DRW_Entity* entity, AeSysDoc* document) {
   m_color = static_cast<EoInt16>(entity->color);

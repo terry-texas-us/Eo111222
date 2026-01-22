@@ -52,21 +52,21 @@ class EoDbPolygon : public EoDbPrimitive {
   ~EoDbPolygon() override;
 
  public:  // Methods - absolute virtuals
+  void AddReportToMessageList(EoGePoint3d) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolygon*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
-  void AddReportToMessageList(EoGePoint3d) override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
-  void GetAllPts(EoGePoint3dArray& pts) override;
-  EoGePoint3d GetCtrlPt() override;
+  void GetAllPoints(EoGePoint3dArray& points) override;
+  EoGePoint3d GetControlPoint() override;
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
-  EoGePoint3d GoToNxtCtrlPt() override;
+  EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override { return false; }
   bool Is(EoUInt16 wType) override { return wType == EoDb::kPolygonPrimitive; }
-  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   bool IsInView(AeSysView* view) override;
+  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) override { return false; }
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
@@ -83,7 +83,7 @@ class EoDbPolygon : public EoDbPrimitive {
   EoGePoint3d GetPt(int i) { return (m_Pt[i]); }
   int GetPts() const { return (m_NumberOfPoints); }
   void ModifyState() override;
-  bool PvtOnCtrlPt(AeSysView* view, const EoGePoint4d&) override;
+  bool PivotOnControlPoint(AeSysView* view, const EoGePoint4d&) override;
   void SetIntStyle(const EoInt16 n) { m_InteriorStyle = n; }
   void SetIntStyleId(const EoInt16 n) { m_InteriorStyleIndex = n; }
   void SetHatRefVecs(double, double, double);

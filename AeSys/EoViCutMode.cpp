@@ -17,55 +17,58 @@
 #include "PrimState.h"
 #include "Resource.h"
 
-EoUInt16 wPrvKeyDwn{};
-EoGePoint3d rPrvPos;
+namespace {
+EoUInt16 previousKeyDown{};
+EoGePoint3d previousPosition{};
+}  // namespace
 
 void AeSysView::OnCutModeOptions() {}
+
 void AeSysView::OnCutModeTorch() {
   auto* Document = GetDocument();
 
   EoGePoint3d pt = GetCursorPosition();
-  EoDbGroupList* Groups = new EoDbGroupList;
+  auto* groups = new EoDbGroupList;
 
   EoGePoint3d ptCut;
 
-  EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
+  EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
   EoGePoint4d ptView(pt);
   ModelViewTransformPoint(ptView);
 
-  auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != nullptr) {
-    auto* Group = GetNextVisibleGroup(GroupPosition);
+  auto groupPosition = GetFirstVisibleGroupPosition();
+  while (groupPosition != nullptr) {
+    auto* group = GetNextVisibleGroup(groupPosition);
 
-    auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != nullptr) {
-      auto* Primitive = Group->GetNext(PrimitivePosition);
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = group->GetNext(primitivePosition);
 
-      if (Primitive->SelectUsingPoint(this, ptView, ptCut)) {  // Pick point is within tolerance of primative
-        EoDbGroup* NewGroup = new EoDbGroup;
+      if (primitive->SelectUsingPoint(this, ptView, ptCut)) {  // Pick point is within tolerance of primative
+        auto* newGroup = new EoDbGroup;
 
-        ptCut = tm * ptCut;
-        Document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, Primitive);
-        Primitive->CutAtPt(ptCut, NewGroup);
-        Document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, Primitive);
-        Groups->AddTail(NewGroup);
+        ptCut = transformMatrix * ptCut;
+        Document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, primitive);
+        primitive->CutAtPt(ptCut, newGroup);
+        Document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, primitive);
+        groups->AddTail(newGroup);
         break;
       }
     }
   }
-  Document->AddWorkLayerGroups(Groups);
-  Document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, Groups);
-  delete Groups;
+  Document->AddWorkLayerGroups(groups);
+  Document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, groups);
+  delete groups;
 }
 void AeSysView::OnCutModeSlice() {
   EoGePoint3d ptCur = GetCursorPosition();
-  if (wPrvKeyDwn != ID_OP2) {
-    rPrvPos = ptCur;
+  if (previousKeyDown != ID_OP2) {
+    previousPosition = ptCur;
     RubberBandingStartAtEnable(ptCur, Lines);
-    wPrvKeyDwn = ModeLineHighlightOp(ID_OP2);
+    previousKeyDown = ModeLineHighlightOp(ID_OP2);
   } else {
-    EoGePoint3d pt1 = rPrvPos;
+    EoGePoint3d pt1 = previousPosition;
     EoGePoint3d pt2 = ptCur;
 
     auto* Document = GetDocument();
@@ -73,7 +76,7 @@ void AeSysView::OnCutModeSlice() {
     EoDbGroupList* Groups = new EoDbGroupList;
 
     EoGeLine ln;
-    EoGePoint3dArray ptsInt;
+    EoGePoint3dArray intersections;
 
     EoGePoint4d ptView[] = {EoGePoint4d(pt1), EoGePoint4d(pt2)};
     ModelViewTransformPoints(2, ptView);
@@ -91,14 +94,14 @@ void AeSysView::OnCutModeSlice() {
         EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 
         ln = EoGeLine(ptView[0], ptView[1]);
-        Primitive->SelectUsingLine(this, ln, ptsInt);
-        for (EoUInt16 w = 0; w < ptsInt.GetSize(); w++) {
+        Primitive->SelectUsingLine(this, ln, intersections);
+        for (EoUInt16 w = 0; w < intersections.GetSize(); w++) {
           EoDbGroup* NewGroup = new EoDbGroup;
 
-          ptsInt[w] = tm * ptsInt[w];
+          intersections[w] = tm * intersections[w];
 
           Document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, Primitive);
-          Primitive->CutAtPt(ptsInt[w], NewGroup);
+          Primitive->CutAtPt(intersections[w], NewGroup);
           Document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, Primitive);
           Groups->AddTail(NewGroup);
         }
@@ -109,23 +112,23 @@ void AeSysView::OnCutModeSlice() {
     delete Groups;
 
     RubberBandingDisable();
-    ModeLineUnhighlightOp(wPrvKeyDwn);
+    ModeLineUnhighlightOp(previousKeyDown);
   }
 }
 void AeSysView::OnCutModeField() {
   CDC* DeviceContext = GetDC();
   EoGePoint3d ptCur = GetCursorPosition();
-  if (wPrvKeyDwn != ID_OP4) {
-    rPrvPos = ptCur;
+  if (previousKeyDown != ID_OP4) {
+    previousPosition = ptCur;
     RubberBandingStartAtEnable(ptCur, Rectangles);
-    wPrvKeyDwn = ModeLineHighlightOp(ID_OP4);
+    previousKeyDown = ModeLineHighlightOp(ID_OP4);
   } else {
     EoGePoint3d rLL, rUR;
 
-    rLL.x = std::min(rPrvPos.x, ptCur.x);
-    rLL.y = std::min(rPrvPos.y, ptCur.y);
-    rUR.x = std::max(rPrvPos.x, ptCur.x);
-    rUR.y = std::max(rPrvPos.y, ptCur.y);
+    rLL.x = std::min(previousPosition.x, ptCur.x);
+    rLL.y = std::min(previousPosition.y, ptCur.y);
+    rUR.x = std::max(previousPosition.x, ptCur.x);
+    rUR.y = std::max(previousPosition.y, ptCur.y);
 
     EoGePoint3d ptLL = rLL;
     EoGePoint3d ptUR = rUR;
@@ -186,17 +189,17 @@ void AeSysView::OnCutModeField() {
     UpdateStateInformation(BothCounts);
 
     RubberBandingDisable();
-    ModeLineUnhighlightOp(wPrvKeyDwn);
+    ModeLineUnhighlightOp(previousKeyDown);
   }
 }
 void AeSysView::OnCutModeClip() {
   CDC* DeviceContext = GetDC();
   EoGePoint3d ptCur = GetCursorPosition();
-  if (wPrvKeyDwn != ID_OP7) {
-    rPrvPos = ptCur;
-    wPrvKeyDwn = ModeLineHighlightOp(ID_OP7);
+  if (previousKeyDown != ID_OP7) {
+    previousPosition = ptCur;
+    previousKeyDown = ModeLineHighlightOp(ID_OP7);
   } else {
-    EoGePoint3d pt1 = rPrvPos;
+    EoGePoint3d pt1 = previousPosition;
     EoGePoint3d pt2 = ptCur;
 
     if (pt1 == pt2) { return; }
@@ -270,15 +273,15 @@ void AeSysView::OnCutModeClip() {
     pstate.SetPen(this, DeviceContext, color, LineType);
     UpdateStateInformation(BothCounts);
 
-    ModeLineUnhighlightOp(wPrvKeyDwn);
+    ModeLineUnhighlightOp(previousKeyDown);
   }
 }
 void AeSysView::OnCutModeDivide() {}
 void AeSysView::OnCutModeReturn() {
   RubberBandingDisable();
-  ModeLineUnhighlightOp(wPrvKeyDwn);
+  ModeLineUnhighlightOp(previousKeyDown);
 }
 void AeSysView::OnCutModeEscape() {
   RubberBandingDisable();
-  ModeLineUnhighlightOp(wPrvKeyDwn);
+  ModeLineUnhighlightOp(previousKeyDown);
 }

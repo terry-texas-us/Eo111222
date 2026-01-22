@@ -172,10 +172,10 @@ void EoDbDimension::FormatGeometry(CString& str) {
   str += L"Begin Point;" + m_ln.begin.ToString();
   str += L"End Point;" + m_ln.end.ToString();
 }
-void EoDbDimension::GetAllPts(EoGePoint3dArray& pts) {
-  pts.SetSize(0);
-  pts.Add(m_ln.begin);
-  pts.Add(m_ln.end);
+void EoDbDimension::GetAllPoints(EoGePoint3dArray& points) {
+  points.SetSize(0);
+  points.Add(m_ln.begin);
+  points.Add(m_ln.end);
 }
 // Determination of text extent.
 void EoDbDimension::GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac) {
@@ -191,7 +191,7 @@ void EoDbDimension::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d&
     ptMax = EoGePoint3d::Max(ptMax, pt[w]);
   }
 }
-EoGePoint3d EoDbDimension::GoToNxtCtrlPt() {
+EoGePoint3d EoDbDimension::GoToNextControlPoint() {
   if (sm_ControlPointIndex == 0)
     sm_ControlPointIndex = 1;
   else if (sm_ControlPointIndex == 1)
@@ -289,12 +289,12 @@ bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoi
   sm_wFlags |= 0x0002;
   return true;
 }
-bool EoDbDimension::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt) {
+bool EoDbDimension::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) {
   polyline::BeginLineStrip();
   polyline::SetVertex(m_ln.begin);
   polyline::SetVertex(m_ln.end);
 
-  return polyline::SelectUsingLine(view, line, ptsInt);
+  return polyline::SelectUsingLine(view, line, intersections);
 }
 bool EoDbDimension::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
   polyline::BeginLineStrip();

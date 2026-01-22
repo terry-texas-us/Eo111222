@@ -68,23 +68,23 @@ class EoDbPrimitive : public CObject {
   ~EoDbPrimitive() override;
 
  public:  // Methods - absolute virtuals
+  virtual void AddReportToMessageList(EoGePoint3d) = 0;
   virtual void AddToTreeViewControl(HWND, HTREEITEM) = 0;
   virtual void Assign(EoDbPrimitive* primitive) = 0;
   virtual EoDbPrimitive*& Copy(EoDbPrimitive*&) = 0;
   virtual void Display(AeSysView* view, CDC* deviceContext) = 0;
-  virtual void AddReportToMessageList(EoGePoint3d) = 0;
   virtual void FormatExtra(CString& str) = 0;
   virtual void FormatGeometry(CString& str) = 0;
-  virtual void GetAllPts(EoGePoint3dArray& pts) = 0;
-  virtual EoGePoint3d GetCtrlPt() = 0;
+  virtual void GetAllPoints(EoGePoint3dArray& points) = 0;
+  virtual EoGePoint3d GetControlPoint() = 0;
   virtual void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) = 0;
-  virtual EoGePoint3d GoToNxtCtrlPt() = 0;
+  virtual EoGePoint3d GoToNextControlPoint() = 0;
   virtual bool Identical(EoDbPrimitive*) = 0;
   virtual bool Is(EoUInt16 type) = 0;
   virtual bool IsInView(AeSysView* view) = 0;
   virtual bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) = 0;
   virtual EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) = 0;
-  virtual bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt) = 0;
+  virtual bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) = 0;
   virtual bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) = 0;
   virtual bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) = 0;
   virtual void Transform(EoGeTransformMatrix&) = 0;
@@ -98,7 +98,7 @@ class EoDbPrimitive : public CObject {
   virtual void CutAtPt(EoGePoint3d&, EoDbGroup*);
   virtual int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*);
   virtual void ModifyState();
-  virtual bool PvtOnCtrlPt(AeSysView*, const EoGePoint4d&);
+  virtual bool PivotOnControlPoint(AeSysView*, const EoGePoint4d&);
 
  public:  // Methods
   void SetBaseProperties(const DRW_Entity* entity, AeSysDoc* document);

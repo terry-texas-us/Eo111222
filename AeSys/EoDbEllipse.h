@@ -27,19 +27,17 @@ class EoDbEllipse : public EoDbPrimitive {
  public:
   EoDbEllipse() : m_center{}, m_majorAxis{}, m_minorAxis{}, m_sweepAngle{0.0} {}
 
-  /// <summary>Ellipse segment is constructed using a center point, a major and minor vector and a sweep ang.</summary>
-  EoDbEllipse(const EoGePoint3d& centerPoint, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle);
+  EoDbEllipse(EoGePoint3d& center, EoGeVector3d& extrusion, double radius);
 
-  /// <summary>Ellipse segment is constructed using a center point, a major and minor vector and a sweep ang.</summary>
+  EoDbEllipse(const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle);
+
   EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle);
 
   EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius);
 
-  /// <summary>Ellipse is constructed using a center point, plane normal and a radius</summary>
   EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& planeNormal, double radius);
 
-  /// <summary>Circle is constructed using a center point and a begin point about view plane normal.</summary>
-  EoDbEllipse(EoGePoint3d& centerPoint, EoGePoint3d& beginPoint);
+  EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start);
 
   EoDbEllipse(EoGePoint3d beginPoint, EoGePoint3d intermediatePoint, EoGePoint3d endPoint);
 
@@ -53,29 +51,23 @@ class EoDbEllipse : public EoDbPrimitive {
   const EoDbEllipse& operator=(const EoDbEllipse&);
 
  public: // Methods - absolute virtuals
+  void AddReportToMessageList(EoGePoint3d) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbEllipse*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
-  void AddReportToMessageList(EoGePoint3d) override;
-  void GetAllPts(EoGePoint3dArray& pts) override {
-    pts.SetSize(0);
-    pts.Add(m_center);
-  }
-  EoGePoint3d GetCtrlPt() override { return (m_center); }
+  void GetAllPoints(EoGePoint3dArray& points) override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
-  /// <summary>Determines the extent. Actually the extents of the bounding region of the arc.</summary>
+  EoGePoint3d GetControlPoint() override { return (m_center); }
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
-  EoGePoint3d GoToNxtCtrlPt() override;
+  EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override { return false; }
   bool Is(EoUInt16 wType) override { return wType == EoDb::kEllipsePrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
-  /// <summary>Determines the best control point on arc within specified tolerance. Control points for arcs are the points at start and end of the sweep.</summary>
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
-  /// <summary>Determines if a line crosses arc.</summary>
-  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt) override;
+  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
   void Transform(EoGeTransformMatrix&) override;

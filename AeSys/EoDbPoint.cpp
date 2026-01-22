@@ -159,7 +159,13 @@ void EoDbPoint::AddReportToMessageList(EoGePoint3d) {
 }
 void EoDbPoint::FormatExtra(CString& str) { str.Format(L"Color;%s\tStyle;%d", FormatPenColor().GetString(), m_pointStyle); }
 void EoDbPoint::FormatGeometry(CString& str) { str += L"Point;" + m_Point.ToString(); }
-EoGePoint3d EoDbPoint::GetCtrlPt() { return (m_Point); }
+EoGePoint3d EoDbPoint::GetControlPoint() { return (m_Point); }
+
+void EoDbPoint::GetAllPoints(EoGePoint3dArray& points) {
+  points.SetSize(0);
+  points.Add(m_Point);
+}
+
 void EoDbPoint::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
   EoGePoint3d pt(m_Point);
 

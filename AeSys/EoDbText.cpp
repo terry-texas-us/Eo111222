@@ -155,7 +155,14 @@ void EoDbText::GetBoundingBox(EoGePoint3dArray& ptsBox, double spaceFactor) {
   int Length = LengthSansFormattingCharacters(m_strText);
   text_GetBoundingBox(m_fd, m_ReferenceSystem, Length, spaceFactor, ptsBox);
 }
-EoGePoint3d EoDbText::GetCtrlPt() { return m_ReferenceSystem.Origin(); }
+
+void EoDbText::GetAllPoints(EoGePoint3dArray& points) {
+  points.SetSize(0);
+  auto origin = m_ReferenceSystem.Origin();
+  points.Add(origin);
+}
+
+EoGePoint3d EoDbText::GetControlPoint() { return m_ReferenceSystem.Origin(); }
 void EoDbText::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
   EoGePoint3dArray pts;
 

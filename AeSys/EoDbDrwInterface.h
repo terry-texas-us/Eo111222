@@ -83,14 +83,25 @@ class EoDbDrwInterface : public DRW_Interface {
     if (inBlockDefinition) {
       ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addArc - block <%s>\n", blockName.c_str());
     } else {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addPoint - entities section\n");
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addArc - entities section\n");
     }
     ConvertArcEntity(arc, m_document);
   }
   // ATTDEF not implemented in DRW
   // ATTRIB not implemented in DRW
   // BODY not implemented in DRW
-  void addCircle(const DRW_Circle& /* circle */) override { countOfCircle++; }
+  void addCircle(const DRW_Circle& circle) override { 
+    countOfCircle++; 
+    if (inBlockDefinition) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addCircle - block <%s>\n", blockName.c_str());
+    } else {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addCircle - entities section\n");
+    }
+    ConvertCircleEntity(circle, m_document);
+  
+  }
+  
+  
   // COORDINATION_MODEL not implemented in DRW
 
   // Dimensions
@@ -268,6 +279,8 @@ class EoDbDrwInterface : public DRW_Interface {
   void AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document);
 
   void ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document);
+  void ConvertCircleEntity(const DRW_Circle& circle, AeSysDoc* document);
+  void ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc* document);
   void ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* document);
   void ConvertLineEntity(const DRW_Line& line, AeSysDoc* document);
   void ConvertLWPolylineEntity(const DRW_LWPolyline& lwPolyline, AeSysDoc* document);

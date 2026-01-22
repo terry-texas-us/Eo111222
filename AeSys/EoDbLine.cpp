@@ -166,10 +166,10 @@ void EoDbLine::FormatGeometry(CString& str) {
   str += L"Begin Point;" + m_ln.begin.ToString();
   str += L"End Point;" + m_ln.end.ToString();
 }
-void EoDbLine::GetAllPts(EoGePoint3dArray& pts) {
-  pts.SetSize(0);
-  pts.Add(m_ln.begin);
-  pts.Add(m_ln.end);
+void EoDbLine::GetAllPoints(EoGePoint3dArray& points) {
+  points.SetSize(0);
+  points.Add(m_ln.begin);
+  points.Add(m_ln.end);
 }
 void EoDbLine::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
   EoGePoint3d pt[2]{};
@@ -183,7 +183,7 @@ void EoDbLine::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMa
     ptMax = EoGePoint3d::Max(ptMax, pt[w]);
   }
 }
-EoGePoint3d EoDbLine::GoToNxtCtrlPt() {
+EoGePoint3d EoDbLine::GoToNextControlPoint() {
   if (sm_ControlPointIndex == 0)
     sm_ControlPointIndex = 1;
   else if (sm_ControlPointIndex == 1)
@@ -285,11 +285,17 @@ EoGePoint3d EoDbLine::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& p
   }
   return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : m_ln[sm_ControlPointIndex];
 }
-bool EoDbLine::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt) {
+/** @brief Evaluates whether a line intersects line.
+ * @param view Current view.
+ * @param line Line to test against.
+ * @param intersections Array to receive intersection points.
+ * @return true if intersection occurs, false otherwise.
+ */
+bool EoDbLine::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) {
   polyline::BeginLineStrip();
   polyline::SetVertex(m_ln.begin);
   polyline::SetVertex(m_ln.end);
-  return polyline::SelectUsingLine(view, line, ptsInt);
+  return polyline::SelectUsingLine(view, line, intersections);
 }
 bool EoDbLine::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   polyline::BeginLineStrip();
@@ -313,6 +319,12 @@ void EoDbLine::Square(AeSysView* view) {
   BeginPoint(ptEnd.ProjectToward(pt, dLen));
   EndPoint(ptEnd);
 }
+
+void EoDbLine::Transform(EoGeTransformMatrix& transformMatrix) {
+  BeginPoint(transformMatrix * BeginPoint());
+  EndPoint(transformMatrix * EndPoint());
+}
+
 void EoDbLine::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if ((mask & 1) == 1) BeginPoint(BeginPoint() + v);
 

@@ -284,6 +284,16 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
   AddToDocument(arcPrimitive, document);
 }
 
+void EoDbDrwInterface::ConvertCircleEntity(const DRW_Circle& circle, AeSysDoc* document) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Circle entity conversion\n");
+  EoGePoint3d center(circle.basePoint.x, circle.basePoint.y, circle.basePoint.z);
+  //EoGeVector3d extrusion(circle.extrusion.x, circle.extrusion.y, circle.extrusion.z);
+  EoGeVector3d extrusion(0.0, 0.0, 1.0);
+  auto circlePrimitive = new EoDbEllipse(center, extrusion, circle.radious);
+  circlePrimitive->SetBaseProperties(&circle, document);
+  AddToDocument(circlePrimitive, document);
+}
+
 void EoDbDrwInterface::ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* document) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Insert entity conversion\n");
   auto insertPrimitive = new EoDbBlockReference();
@@ -291,8 +301,10 @@ void EoDbDrwInterface::ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* d
   auto name = Eo::MultiByteToWString(insert.name.c_str());
   insertPrimitive->SetName(CString(name.c_str()));
   insertPrimitive->SetInsertionPoint(insert.basePoint);
+  insertPrimitive->SetNormal(EoGeVector3d(insert.extPoint.x, insert.extPoint.y, insert.extPoint.z));
   insertPrimitive->SetScaleFactors(EoGeVector3d(insert.xscale, insert.yscale, insert.zscale));
   insertPrimitive->SetRotation(insert.angle);
+
   
   AddToDocument(insertPrimitive, document);
 }

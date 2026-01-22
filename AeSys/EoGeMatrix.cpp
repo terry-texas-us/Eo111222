@@ -44,12 +44,6 @@ EoGeMatrixRow EoGeMatrixRow::operator-(const EoGeMatrixRow& row) {
   EoGeMatrixRow Row = *this;
   return Row -= row;
 }
-//bool EoGeMatrixRow::operator==(EoGeMatrixRow& row) {
-//	return (Identical(row, DBL_EPSILON));
-//}
-//bool EoGeMatrixRow::operator!=(EoGeMatrixRow& row) {
-//	return (!Identical(row, DBL_EPSILON));
-//}
 void EoGeMatrixRow::operator()(const double c0, const double c1, const double c2, const double c3) {
   m_d[0] = c0;
   m_d[1] = c1;
@@ -77,9 +71,7 @@ void EoGeMatrixRow::Exchange(EoGeMatrixRow& rowA, EoGeMatrixRow& rowB) {
   rowA = rowB;
   rowB = Row;
 }
-//bool EoGeMatrixRow::Identical(const EoGeMatrixRow& row, double tolerance) {
-//	return (fabs(m_d[0] - row.m_d[0]) > tolerance || fabs(m_d[1] - row.m_d[1]) > tolerance || fabs(m_d[2] - row.m_d[2]) > tolerance || fabs(m_d[3] - row.m_d[3]) > tolerance ? false : true);
-//}
+
 
 EoGeMatrix::EoGeMatrix(const EoGeMatrixRow& v0, const EoGeMatrixRow& v1, const EoGeMatrixRow& v2,
                        const EoGeMatrixRow& v3) {
@@ -113,20 +105,9 @@ EoGeMatrix& EoGeMatrix::operator/=(double scaleFactor) {
   return *this;
 }
 EoGeMatrix EoGeMatrix::operator*(const EoGeMatrix& mB) { return Multiply(mB, *this); }
-//bool EoGeMatrix::operator==(EoGeMatrix& mB) {
-//	return (Identical(mB));
-//}
-//bool EoGeMatrix::operator!=(EoGeMatrix& mB) {
-//	return (!Identical(mB));
-//}
 EoGeMatrixRow& EoGeMatrix::operator[](int i) { return m_row[i]; }
 const EoGeMatrixRow& EoGeMatrix::operator[](int i) const { return m_row[i]; }
 
-// Methods
-
-//bool EoGeMatrix::Identical(EoGeMatrix& mB) {
-//	return ((m_row[0] == mB[0]) && (m_row[1] == mB[1]) && (m_row[2] == mB[2]) && (m_row[3] == mB[3]));
-//}
 EoGeMatrix& EoGeMatrix::Identity() {
   m_row[0](1.0, 0.0, 0.0, 0.0);
   m_row[1](0.0, 1.0, 0.0, 0.0);

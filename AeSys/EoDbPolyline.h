@@ -41,26 +41,22 @@ class EoDbPolyline : public EoDbPrimitive {
   const EoDbPolyline& operator=(const EoDbPolyline& polyline);
 
  public:
+  void AddReportToMessageList(EoGePoint3d) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolyline*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
-  void AddReportToMessageList(EoGePoint3d) override;
-  void GetAllPts(EoGePoint3dArray& pts) override {
-    pts.SetSize(0);
-    pts.Copy(m_pts);
-  }
+  void GetAllPoints(EoGePoint3dArray& points) override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
-  EoGePoint3d GetCtrlPt() override;
-  /// <summary>Determines the extent.</summary>
+  EoGePoint3d GetControlPoint() override;
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
-  EoGePoint3d GoToNxtCtrlPt() override;
+  EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override { return false; }
   bool Is(EoUInt16 type) override { return type == EoDb::kPolylinePrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* /* view */, const EoGePoint4d& /* point */) override { return false; }
-  bool PvtOnCtrlPt(AeSysView* view, const EoGePoint4d& ptView) override;
+  bool PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) override { return false; }
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;

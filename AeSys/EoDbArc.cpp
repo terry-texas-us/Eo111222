@@ -97,12 +97,12 @@ void EoDbArc::FormatExtra(CString& str) {
              m_startAngle, m_endAngle);
 }
 
-void EoDbArc::GetAllPts(EoGePoint3dArray& pts) {
-  pts.SetSize(0);
-  pts.Add(m_center);
+void EoDbArc::GetAllPoints(EoGePoint3dArray& points) {
+  points.SetSize(0);
+  points.Add(m_center);
 }
 
-EoGePoint3d EoDbArc::GetCtrlPt() { return m_center; }
+EoGePoint3d EoDbArc::GetControlPoint() { return m_center; }
 
 void EoDbArc::GetExtents(AeSysView* view, EoGePoint3d& minPt, EoGePoint3d& maxPt, EoGeTransformMatrix& tm) {
   EoGePoint3d pMin(m_center.x - m_radius, m_center.y - m_radius, m_center.z);
@@ -115,7 +115,7 @@ void EoDbArc::GetExtents(AeSysView* view, EoGePoint3d& minPt, EoGePoint3d& maxPt
   maxPt = EoGePoint3d::Max(maxPt, pMax);
 }
 
-EoGePoint3d EoDbArc::GoToNxtCtrlPt() {
+EoGePoint3d EoDbArc::GoToNextControlPoint() {
   return EoGePoint3d(m_center.x + m_radius, m_center.y, m_center.z);
 }
 
@@ -166,7 +166,7 @@ EoGePoint3d EoDbArc::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& po
   return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : pts[sm_ControlPointIndex];
 }
 
-bool EoDbArc::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt) { return false; }
+bool EoDbArc::SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray& /* intersections */) { return false; }
 
 bool EoDbArc::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& outPt) {
   // project point to XY and test distance to circle
@@ -181,7 +181,7 @@ bool EoDbArc::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& 
   return false;
 }
 
-bool EoDbArc::SelectUsingRectangle(AeSysView* view, EoGePoint3d a, EoGePoint3d b) {
+bool EoDbArc::SelectUsingRectangle(AeSysView* /* view */, EoGePoint3d a, EoGePoint3d b) {
   // bounding box test
   double minx = std::min(a.x, b.x);
   double maxx = std::max(a.x, b.x);
@@ -213,17 +213,17 @@ bool EoDbArc::Write(CFile& file) {
   return true;
 }
 
-void EoDbArc::Write(CFile& file, EoUInt8* buffer) {
+void EoDbArc::Write(CFile& /* file */, EoUInt8* /* buffer */) {
   // Stub: provide binary write if required by older code paths
 }
 
-void EoDbArc::CutAtPt(EoGePoint3d& point, EoDbGroup* group) {}
+void EoDbArc::CutAtPt(EoGePoint3d& /* point */, EoDbGroup* /* group */) {}
 
-void EoDbArc::CutAt2Pts(EoGePoint3d* points, EoDbGroupList* groups, EoDbGroupList* newGroups) {
+void EoDbArc::CutAt2Pts(EoGePoint3d* /* points */, EoDbGroupList* /* groups */, EoDbGroupList* /* newGroups */) {
   // Stub
 }
 
-int EoDbArc::IsWithinArea(EoGePoint3d lowerLeftCorner, EoGePoint3d upperRightCorner,
+int EoDbArc::IsWithinArea(EoGePoint3d /* lowerLeftCorner */, EoGePoint3d /* upperRightCorner */,
                              EoGePoint3d* intersectingPoints) {
   // Stub: implement proper intersection logic if needed
   intersectingPoints = nullptr;

@@ -55,9 +55,9 @@ void EoDbTracingFile::WriteLayer(CFile& file, EoDbLayer* layer) {
   EoDb::Write(file, EoUInt16(layer->GetCount()));
 
   auto position = layer->GetHeadPosition();
-  while (position != 0) {
-    auto* Group = layer->GetNext(position);
-    Group->Write(file);
+  while (position != nullptr) {
+    auto* group = layer->GetNext(position);
+    group->Write(file);
   }
   EoDb::Write(file, EoUInt16(EoDb::kEndOfSection));
   app.AddStringToMessageList(IDS_MSG_TRACING_SAVE_SUCCESS, layer->Name());

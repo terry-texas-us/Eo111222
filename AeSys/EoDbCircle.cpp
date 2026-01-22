@@ -90,12 +90,12 @@ void EoDbCircle::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tStyle;%s", FormatPenColor().GetString(), FormatLineType().GetString());
 }
 
-void EoDbCircle::GetAllPts(EoGePoint3dArray& pts) {
-  pts.SetSize(0);
-  pts.Add(m_center);
+void EoDbCircle::GetAllPoints(EoGePoint3dArray& points) {
+  points.SetSize(0);
+  points.Add(m_center);
 }
 
-EoGePoint3d EoDbCircle::GetCtrlPt() { return m_center; }
+EoGePoint3d EoDbCircle::GetControlPoint() { return m_center; }
 
 void EoDbCircle::GetExtents(AeSysView* view, EoGePoint3d& minPt, EoGePoint3d& maxPt, EoGeTransformMatrix& tm) {
   EoGePoint3d pMin(m_center.x - m_radius, m_center.y - m_radius, m_center.z);
@@ -108,7 +108,7 @@ void EoDbCircle::GetExtents(AeSysView* view, EoGePoint3d& minPt, EoGePoint3d& ma
   maxPt = EoGePoint3d::Max(maxPt, pMax);
 }
 
-EoGePoint3d EoDbCircle::GoToNxtCtrlPt() {
+EoGePoint3d EoDbCircle::GoToNextControlPoint() {
   return EoGePoint3d(m_center.x + m_radius, m_center.y, m_center.z);
 }
 
@@ -156,7 +156,7 @@ EoGePoint3d EoDbCircle::SelectAtControlPoint(AeSysView* view, const EoGePoint4d&
   return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : pts[sm_ControlPointIndex];
 }
 
-bool EoDbCircle::SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray& /* ptsInt */) { return false; }
+bool EoDbCircle::SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray& /* intersections */) { return false; }
 
 bool EoDbCircle::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& outPt) {
   // project point to XY and test distance to circle

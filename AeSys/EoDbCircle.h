@@ -40,22 +40,22 @@ class EoDbCircle : public EoDbPrimitive {
 
  public:  // Methods - absolute virtuals
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
+  void AddReportToMessageList(EoGePoint3d) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbCircle*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*& primitive) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
-  void AddReportToMessageList(EoGePoint3d) override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
-  void GetAllPts(EoGePoint3dArray& pts) override;
-  EoGePoint3d GetCtrlPt() override;
+  void GetAllPoints(EoGePoint3dArray& pts) override;
+  EoGePoint3d GetControlPoint() override;
   void GetExtents(AeSysView* view, EoGePoint3d& minPt, EoGePoint3d& maxPt, EoGeTransformMatrix& tm) override;
-  EoGePoint3d GoToNxtCtrlPt() override;
+  EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override;
   bool Is(EoUInt16) override;
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
-  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt) override;
+  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& outPt) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d a, EoGePoint3d b) override;
   void Transform(EoGeTransformMatrix& tm) override;

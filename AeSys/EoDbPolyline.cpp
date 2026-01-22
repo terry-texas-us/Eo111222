@@ -98,7 +98,7 @@ EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
  * @param deviceContext Pointer to the CDC device context for rendering.
  */
 void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"EoDbPolyline::Display(%p, %p)\n", view, deviceContext);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"EoDbPolyline::Display(%p, %p)\n", view, deviceContext);
 
   EoInt16 color = LogicalColor();
   EoInt16 lineType = LogicalLineType();
@@ -158,7 +158,13 @@ void EoDbPolyline::FormatGeometry(CString& str) {
 void EoDbPolyline::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(), static_cast<int>(m_pts.GetSize()));
 }
-EoGePoint3d EoDbPolyline::GetCtrlPt() {
+
+void EoDbPolyline::GetAllPoints(EoGePoint3dArray& points) {
+  points.SetSize(0);
+  points.Copy(m_pts);
+}
+
+EoGePoint3d EoDbPolyline::GetControlPoint() {
   EoUInt16 wPts = EoUInt16(m_pts.GetSize());
   EoUInt16 wBeg = EoUInt16(sm_Edge - 1);
   EoUInt16 wEnd = EoUInt16(sm_Edge % wPts);
@@ -176,7 +182,7 @@ void EoDbPolyline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& 
     ptMax = EoGePoint3d::Max(ptMax, pt);
   }
 }
-EoGePoint3d EoDbPolyline::GoToNxtCtrlPt() {
+EoGePoint3d EoDbPolyline::GoToNextControlPoint() {
   EoUInt16 wPts = EoUInt16(m_pts.GetSize());
 
   if (sm_PivotVertex >= wPts) {  // have not yet rocked to a vertex
@@ -225,7 +231,7 @@ bool EoDbPolyline::IsInView(AeSysView* view) {
   }
   return false;
 }
-bool EoDbPolyline::PvtOnCtrlPt(AeSysView* view, const EoGePoint4d& ptView) {
+bool EoDbPolyline::PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) {
   EoUInt16 wPts = EoUInt16(m_pts.GetSize());
 
   if (sm_PivotVertex >= wPts)

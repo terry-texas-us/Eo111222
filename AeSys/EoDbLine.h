@@ -36,35 +36,26 @@ class EoDbLine : public EoDbPrimitive {
   const EoDbLine& operator=(const EoDbLine& other);
 
  public:
+  void AddReportToMessageList(EoGePoint3d) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbLine*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
-  void AddReportToMessageList(EoGePoint3d) override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
-  void GetAllPts(EoGePoint3dArray& pts) override;
-  EoGePoint3d GetCtrlPt() override { return m_ln.Midpoint(); }
-  /// <summary>Determines the extent.</summary>
+  void GetAllPoints(EoGePoint3dArray& points) override;
+  EoGePoint3d GetControlPoint() override { return m_ln.Midpoint(); }
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
-  EoGePoint3d GoToNxtCtrlPt() override;
+  EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive* primitive) override;
   bool Is(EoUInt16 wType) override { return wType == EoDb::kLinePrimitive; }
-  /// <summary>Tests whether a line is wholly or partially within the current view volume.</summary>
   bool IsInView(AeSysView* view) override;
-  /// <summary>Determines if a line is identified by a point.</summary>
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
-  /// <summary>Evaluates whether a line intersects line.</summary>
-  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt) override;
-  /// <summary>Evaluates whether a point lies within tolerance specified of line.</summary>
+  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
-  /// <summary>Determines whether a line is partially or wholly within the area defined by the two points passed.</summary>
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
-  void Transform(EoGeTransformMatrix& tm) override {
-    BeginPoint(tm * BeginPoint());
-    EndPoint(tm * EndPoint());
-  }
+  void Transform(EoGeTransformMatrix& transformMatrix) override;
   void Translate(EoGeVector3d v) override { m_ln += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;

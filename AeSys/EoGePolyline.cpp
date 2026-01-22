@@ -169,7 +169,19 @@ void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, Eo
   }
   for (int i = 0; i < numberOfPoints; i++) { pts[i] = tm * pts[i]; }
 }
-bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt) {
+
+/** @brief Selects polyline segments intersecting with a given line.
+ *
+ * This function checks each segment of the polyline defined by the points in `pts_`
+ * to see if it intersects with the provided line. If an intersection is found,
+ * the intersection point is calculated and added to the `intersections` array.
+ *
+ * @param view Pointer to the AeSysView object for coordinate transformations.
+ * @param line The line to check for intersections with the polyline segments.
+ * @param intersections Output array that will contain the intersection points.
+ * @return True if any intersection points were found; otherwise, false.
+ */
+bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) {
   EoGePoint4d ptBeg(pts_[0]);
   EoGePoint4d ptEnd;
 
@@ -187,14 +199,15 @@ bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptsInt) {
         EoGeLine(ptBeg, ptEnd).RelOfPtToEndPts(ptInt, dRel);
         if (dRel >= -DBL_EPSILON && dRel <= 1. + DBL_EPSILON) {
           ptInt.z = ptBeg.z + dRel * (ptEnd.z - ptBeg.z);
-          ptsInt.Add(ptInt);
+          intersections.Add(ptInt);
         }
       }
     }
     ptBeg = ptEnd;
   }
-  return (!ptsInt.IsEmpty());
+  return (!intersections.IsEmpty());
 }
+
 bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, double& dRel, EoGePoint3d& ptProj) {
   bool bResult = false;
 

@@ -41,7 +41,7 @@ void AeSysView::OnNodalModePoint() {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 
       DWORD Mask = document->GetPrimitiveMask(Primitive);
-      Primitive->GetAllPts(pts);
+      Primitive->GetAllPoints(pts);
 
       for (int i = 0; i < pts.GetSize(); i++) {
         if (EoGeVector3d(pts[i], CurrentPnt).Length() <= NodalModePickTolerance) {
@@ -61,7 +61,7 @@ void AeSysView::OnNodalModeLine() {
 
     auto* document = GetDocument();
     DWORD Mask = document->GetPrimitiveMask(Primitive);
-    Primitive->GetAllPts(pts);
+    Primitive->GetAllPoints(pts);
 
     for (int i = 0; i < pts.GetSize(); i++) { document->UpdateNodalList(Group, Primitive, Mask, i, pts[i]); }
     pts.RemoveAll();
@@ -88,7 +88,7 @@ void AeSysView::OnNodalModeArea() {
         while (PrimitivePosition != nullptr) {
           EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
           DWORD Mask = document->GetPrimitiveMask(Primitive);
-          Primitive->GetAllPts(pts);
+          Primitive->GetAllPoints(pts);
 
           for (int i = 0; i < pts.GetSize(); i++) {
             if (pts[i].IsContained(MinExtent, MaxExtent)) {
@@ -239,7 +239,7 @@ void AeSysView::OnNodalModeEngage() {
     auto mask = document->GetPrimitiveMask(EngagedPrimitive());
     EoGePoint3dArray points;
 
-    EngagedPrimitive()->GetAllPts(points);
+    EngagedPrimitive()->GetAllPoints(points);
 
     for (int i = 0; i < points.GetSize(); i++) {
       document->UpdateNodalList(EngagedGroup(), EngagedPrimitive(), mask, i, points[i]);

@@ -83,10 +83,15 @@ void EoDbSpline::FormatExtra(CString& str) {
              static_cast<int>(m_pts.GetSize()));
 }
 
-EoGePoint3d EoDbSpline::GetCtrlPt() {
-  EoGePoint3d pt;
-  pt = m_pts[m_pts.GetSize() / 2];
-  return (pt);
+void EoDbSpline::GetAllPoints(EoGePoint3dArray& pts) {
+  pts.SetSize(0);
+  pts.Copy(m_pts);
+}
+
+EoGePoint3d EoDbSpline::GetControlPoint() {
+  EoGePoint3d point;
+  point = m_pts[m_pts.GetSize() / 2];
+  return (point);
 }
 
 void EoDbSpline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
@@ -100,7 +105,7 @@ void EoDbSpline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& pt
     ptMax = EoGePoint3d::Max(ptMax, pt);
   }
 }
-EoGePoint3d EoDbSpline::GoToNxtCtrlPt() {
+EoGePoint3d EoDbSpline::GoToNextControlPoint() {
   EoGePoint3d pt;
 
   INT_PTR i = m_pts.GetSize() - 1;

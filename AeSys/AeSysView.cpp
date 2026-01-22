@@ -1614,7 +1614,7 @@ void AeSysView::OnToolsPrimitiveSnapto() {
     EoDbPolygon::EdgeToEvaluate() = EoDbPolygon::Edge();
 
     if (Primitive->SelectUsingPoint(this, ptView, ptDet)) {
-      ptDet = Primitive->GoToNxtCtrlPt();
+      ptDet = Primitive->GoToNextControlPoint();
       m_ptDet = ptDet;
 
       Primitive->AddReportToMessageList(ptDet);

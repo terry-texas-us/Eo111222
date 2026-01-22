@@ -34,7 +34,8 @@ EoDbBlockReference::EoDbBlockReference() {
   m_rowSpacing = 0.0;
 }
 
-EoDbBlockReference::EoDbBlockReference(const CString& name, const EoGePoint3d& insertionPoint) : m_blockName(name), m_insertionPoint(insertionPoint) {
+EoDbBlockReference::EoDbBlockReference(const CString& name, const EoGePoint3d& insertionPoint)
+    : m_blockName(name), m_insertionPoint(insertionPoint) {
   m_normal = EoGeVector3d::kZAxis;
   m_scaleFactors = EoGeVector3d(1.0, 1.0, 1.0);
   m_rotation = 0.0;
@@ -55,8 +56,8 @@ EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) {
   m_columnSpacing = other.m_columnSpacing;
   m_rowSpacing = other.m_rowSpacing;
 }
-EoDbBlockReference::EoDbBlockReference(EoUInt16 color, EoUInt16 lineType, const CString& name, const EoGePoint3d& point, const EoGeVector3d& normal,
-                                       const EoGeVector3d scaleFactors, double rotation)
+EoDbBlockReference::EoDbBlockReference(EoUInt16 color, EoUInt16 lineType, const CString& name, const EoGePoint3d& point,
+                                       const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation)
     : m_blockName(name), m_insertionPoint(point), m_normal(normal), m_scaleFactors(scaleFactors) {
   m_color = static_cast<EoInt16>(color);
   m_lineTypeIndex = static_cast<EoInt16>(lineType);
@@ -125,25 +126,34 @@ void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
 }
 void EoDbBlockReference::AddReportToMessageList(EoGePoint3d) {
   CString message;
-  message.Format(L"<BlockReference> Color: %s Line Type: %s BlockName %s", FormatPenColor().GetString(), FormatLineType().GetString(), m_blockName.GetString());
+  message.Format(L"<BlockReference> Color: %s Line Type: %s BlockName %s Layer: %s", FormatPenColor().GetString(),
+                 FormatLineType().GetString(), m_blockName.GetString(), m_layerName.c_str());
+  app.AddStringToMessageList(message);
+  message.Format(L"  InsertionPoint: %s", m_insertionPoint.ToString().GetString());
+  app.AddStringToMessageList(message);
+  message.Format(L"  Scale Factors: %s", m_scaleFactors.ToString().GetString());
+  app.AddStringToMessageList(message);
+  message.Format(L"  Normal: %s", m_normal.ToString().GetString());
+  app.AddStringToMessageList(message);
+  message.Format(L"  Rotation Angle: %f", m_rotation);
   app.AddStringToMessageList(message);
 }
 
-void EoDbBlockReference::GetAllPts(EoGePoint3dArray& pts) {
-  pts.SetSize(0);
-  pts.Add(m_insertionPoint);
+void EoDbBlockReference::GetAllPoints(EoGePoint3dArray& points) {
+  points.SetSize(0);
+  points.Add(m_insertionPoint);
 }
 
 void EoDbBlockReference::FormatExtra(CString& extra) {
-  extra.Format(L"Color;%s\tStyle;%s\tSegment Name;%s\tRotation Angle;%f", FormatPenColor().GetString(), FormatLineType().GetString(), m_blockName.GetString(),
-               m_rotation);
+  extra.Format(L"Color;%s\tStyle;%s\tSegment Name;%s\tRotation Angle;%f", FormatPenColor().GetString(),
+               FormatLineType().GetString(), m_blockName.GetString(), m_rotation);
 }
 void EoDbBlockReference::FormatGeometry(CString& geometry) {
   geometry += L"Insertion Point;" + m_insertionPoint.ToString();
   geometry += L"Normal;" + m_normal.ToString();
   geometry += L"Scale;" + m_scaleFactors.ToString();
 }
-EoGePoint3d EoDbBlockReference::GetCtrlPt() {
+EoGePoint3d EoDbBlockReference::GetControlPoint() {
   EoGePoint3d point;
   point = m_insertionPoint;
   return (point);

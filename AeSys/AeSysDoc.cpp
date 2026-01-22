@@ -972,7 +972,7 @@ void AeSysDoc::OnPrimBreak() {
   auto* activeView = AeSysView::GetActiveView();
 
   auto* group = activeView->SelectGroupAndPrimitive(activeView->GetCursorPosition());
-  if (group != 0 && activeView->EngagedPrimitive() != 0) {
+  if (group != nullptr && activeView->EngagedPrimitive() != nullptr) {
     auto* primitive = activeView->EngagedPrimitive();
 
     if (primitive->Is(EoDb::kPolylinePrimitive)) {
@@ -980,17 +980,17 @@ void AeSysDoc::OnPrimBreak() {
 
       auto* polyline = static_cast<EoDbPolyline*>(primitive);
 
-      EoGePoint3dArray Points;
-      polyline->GetAllPts(Points);
+      EoGePoint3dArray points;
+      polyline->GetAllPoints(points);
 
-      EoInt16 color = primitive->Color();
-      EoInt16 lineTypeIndex = primitive->LineTypeIndex();
+      auto color = primitive->Color();
+      auto lineTypeIndex = primitive->LineTypeIndex();
 
-      for (EoUInt16 w = 0; w < Points.GetSize() - 1; w++) {
-        group->AddTail(new EoDbLine(color, lineTypeIndex, Points[w], Points[w + 1]));
+      for (EoUInt16 w = 0; w < points.GetSize() - 1; w++) {
+        group->AddTail(new EoDbLine(color, lineTypeIndex, points[w], points[w + 1]));
       }
       if (polyline->IsLooped()) {
-        group->AddTail(new EoDbLine(color, lineTypeIndex, Points[Points.GetUpperBound()], Points[0]));
+        group->AddTail(new EoDbLine(color, lineTypeIndex, points[points.GetUpperBound()], points[0]));
       }
       delete primitive;
       ResetAllViews();
@@ -1542,7 +1542,7 @@ void AeSysDoc::OnToolsPrimitiveSnaptoendpoint() {
   if (activeView->GroupIsEngaged()) {
     EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
 
-    if (Primitive->PvtOnCtrlPt(activeView, ptView)) {
+    if (Primitive->PivotOnControlPoint(activeView, ptView)) {
       EoGePoint3d ptEng = activeView->DetPt();
       Primitive->AddReportToMessageList(ptEng);
       activeView->SetCursorPosition(ptEng);
@@ -1561,7 +1561,7 @@ void AeSysDoc::OnToolsPrimitiveSnaptoendpoint() {
 void AeSysDoc::OnPrimGotoCenterPoint() {
   auto* activeView = AeSysView::GetActiveView();
   if (activeView->GroupIsEngaged()) {
-    EoGePoint3d pt = activeView->EngagedPrimitive()->GetCtrlPt();
+    EoGePoint3d pt = activeView->EngagedPrimitive()->GetControlPoint();
     activeView->SetCursorPosition(pt);
   }
 }
@@ -2009,7 +2009,7 @@ void AeSysDoc::ConvertBlockTable() {
   EoDbBlock* PegBlock;
 
   auto position = GetFirstBlockPosition();
-  while (position != 0) {
+  while (position != nullptr) {
     GetNextBlock(position, Name, PegBlock);
     if (Blocks->getAt(OdString(Name)).isNull()) {
       OdDbBlockTableRecordPtr Block = OdDbBlockTableRecord::createObject();
@@ -2025,7 +2025,7 @@ void AeSysDoc::ConvertGroupsInBlocks() {
   EoDbBlock* Block;
 
   auto position = GetFirstBlockPosition();
-  while (position != 0) {
+  while (position != nullptr) {
     GetNextBlock(position, Key, Block);
 
     wchar_t szName[64]{};
@@ -2047,7 +2047,7 @@ void AeSysDoc::ConvertGroupsInLayers() {
     m_DatabasePtr->setCLAYER(LayerRecord);
 
     auto position = Layer->GetHeadPosition();
-    while (position != 0) {
+    while (position != nullptr) {
       auto* Group = Layer->GetNext(position);
       ConvertGroup(Group, ModelSpace);
     }
@@ -2056,9 +2056,9 @@ void AeSysDoc::ConvertGroupsInLayers() {
 }
 void AeSysDoc::ConvertGroup(EoDbGroup* group, const OdDbObjectId& modelSpace) {
   auto position = group->GetHeadPosition();
-  while (position != 0) {
-    EoDbPrimitive* Primitive = group->GetNext(position);
-    /* OdDbEntity* Entity = */ Primitive->Convert(modelSpace);
+  while (position != nullptr) {
+    auto* primitive = group->GetNext(position);
+    /* OdDbEntity* Entity = */ primitive->Convert(modelSpace);
   }
 }
 
