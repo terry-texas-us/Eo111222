@@ -1,12 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-
-#include <afx.h>
-#include<afxdd_.h>
-#include<afxmsg_.h>
-#include<afxwin.h>
-
 #include "AeSysView.h"
 #include "EoDlgEditOptions.h"
 #include "Resource.h"

@@ -1,6 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
 #include <cfloat>
 #include <cmath>
 
@@ -172,7 +171,7 @@ void AeSysView::OnPipeModeRise() {
         document->AddWorkLayerGroup(Group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
-      Group = new EoDbGroup(new EoDbEllipse(1, 1, CurrentPnt, m_PipeRiseDropRadius));
+      Group = new EoDbGroup(new EoDbEllipse(CurrentPnt, m_PipeRiseDropRadius, 1, 1));
       document->AddWorkLayerGroup(Group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       m_PreviousOp = ModeLineHighlightOp(ID_OP5);
@@ -232,7 +231,7 @@ void AeSysView::OnPipeModeDrop() {
         document->AddWorkLayerGroup(Group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
-      Group = new EoDbGroup(new EoDbEllipse(1, 1, CurrentPnt, m_PipeRiseDropRadius));
+      Group = new EoDbGroup(new EoDbEllipse(CurrentPnt, m_PipeRiseDropRadius, 1, 1));
       document->AddWorkLayerGroup(Group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
@@ -715,7 +714,7 @@ void AeSysView::DropIntoOrRiseFromHorizontalSection(EoGePoint3d& point, EoDbGrou
 
   group = new EoDbGroup;
   GenerateTicMark(point, BeginPoint, 2. * m_PipeRiseDropRadius, group);
-  group->AddTail(new EoDbEllipse(1, 1, point, m_PipeRiseDropRadius));
+  group->AddTail(new EoDbEllipse(point, m_PipeRiseDropRadius, 1, 1));
   GenerateTicMark(point, EndPoint, 2. * m_PipeRiseDropRadius, group);
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
@@ -730,7 +729,7 @@ void AeSysView::DropFromOrRiseIntoHorizontalSection(EoGePoint3d& point, EoDbGrou
 
   group = new EoDbGroup;
   GenerateTicMark(point, BeginPoint, 2. * m_PipeRiseDropRadius, group);
-  group->AddTail(new EoDbEllipse(1, 1, point, m_PipeRiseDropRadius));
+  group->AddTail(new EoDbEllipse(point, m_PipeRiseDropRadius, 1, 1));
   GenerateTicMark(point, EndPoint, 2. * m_PipeRiseDropRadius, group);
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);

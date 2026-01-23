@@ -1,6 +1,5 @@
 ﻿#pragma once
-#include <afx.h>
-#include <afxstr.h>
+
 #include <vector>
 
 class AeSysDoc;

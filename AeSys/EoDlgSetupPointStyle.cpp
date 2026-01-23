@@ -1,10 +1,4 @@
 #include "Stdafx.h"
-#include <Windows.h>
-
-#include "afxdialogex.h"
-#include <afx.h>
-#include <afxdd_.h>
-#include <afxwin.h>
 
 #include "EoDlgSetupPointStyle.h"
 #include "Resource.h"

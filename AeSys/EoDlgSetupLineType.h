@@ -1,8 +1,4 @@
 ﻿#pragma once
-#include <Windows.h>
-#include <afx.h>
-#include <afxcmn.h>
-#include <afxwin.h>
 
 #include "EoDbLineType.h"
 #include "EoDbLineTypeTable.h"

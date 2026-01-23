@@ -1,22 +1,6 @@
 ﻿#include "Stdafx.h"
-#include <Windows.h>
-#include <afx.h>
-#include <afxdisp.h>
-#include <afxdockablepane.h>
-#include <afxglobals.h>
-#include <afxmsg_.h>
-#include <afxpane.h>
-#include <afxpropertygridctrl.h>
-#include <afxres.h>
-#include <afxstr.h>
-#include <afxtabctrl.h>
-#include <afxver_.h>
-#include <afxwin.h>
+
 #include <algorithm>
-#include <atltrace.h>
-#include <atltypes.h>
-#include <comutil.h>
-#include <wchar.h>
 
 #include "AeSys.h"
 #include "AeSysView.h"

@@ -66,7 +66,7 @@ void EoDbFontDefinition::Set(EoUInt16 precision, const CString& fontName, EoUInt
   m_VerticalAlignment = verticalAlignment;
   m_CharacterSpacing = spacing;
 }
-void EoDbFontDefinition::Write(CFile& file) {
+void EoDbFontDefinition::Write(CFile& file) const {
   EoDb::Write(file, m_Precision);
   EoDb::Write(file, m_FontName);
   EoDb::Write(file, m_Path);

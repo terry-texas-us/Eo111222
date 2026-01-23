@@ -1,6 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <afxstr.h>
 #include <climits>
 #include <cstdlib>
 

@@ -1,23 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-#include <afx.h>
-#include <afxdlgs.h>
-#include <afxext.h>
-#include <afxmdichildwndex.h>
-#include <afxmdiframewndex.h>
-#include <afxmsg_.h>
-#include <afxpropertygridctrl.h>
-#include <afxres.h>
-#include <afxstatusbar.h>
-#include <afxstr.h>
-#include <afxtoolbar.h>
-#include <afxtoolbarcomboboxbutton.h>
-#include <afxwin.h>
-#include <atltrace.h>
-#include <atltypes.h>
-#include <wchar.h>
-
 #include <algorithm>
 #include <cfloat>
 #include <cmath>

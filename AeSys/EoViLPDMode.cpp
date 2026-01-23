@@ -638,7 +638,7 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
     EoGePoint3d BeginPoint = ((justification == Left) ? RightLine : LeftLine).ProjToBegPt(-m_DuctTapSize / 3.0);
     EoGePoint3d EndPoint = m_CurrentReferenceLine.ProjToBegPt(-m_DuctTapSize / 2.0);
 
-    Section->AddTail(new EoDbEllipse(1, pstate.LineType(), BeginPoint, 0.01));
+    Section->AddTail(new EoDbEllipse(BeginPoint, 0.01, 1, pstate.LineType()));
     Section->AddTail(new EoDbLine(1, pstate.LineType(), BeginPoint, EndPoint));
   }
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Section);

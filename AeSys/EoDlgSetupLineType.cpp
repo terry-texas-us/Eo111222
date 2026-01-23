@@ -1,11 +1,4 @@
 ﻿#include "Stdafx.h"
-#include <Windows.h>
-#include <afx.h>
-#include <afxdd_.h>
-#include <afxmsg_.h>
-#include <afxstr.h>
-#include <afxwin.h>
-#include <atltypes.h>
 
 #include "AeSysView.h"
 #include "EoDbLineType.h"

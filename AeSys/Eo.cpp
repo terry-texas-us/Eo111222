@@ -1,6 +1,5 @@
 #include "Stdafx.h"
 
-#include < Windows.h>
 #include <string>
 
 namespace Eo {

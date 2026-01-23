@@ -1,10 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-#include <afx.h>
-#include <afxdd_.h>
-#include <afxstr.h>
-#include <afxwin.h>
 #include <climits>
 
 #include "AeSys.h"

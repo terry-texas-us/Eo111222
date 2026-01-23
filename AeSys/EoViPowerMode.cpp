@@ -1,6 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
 #include <cmath>
 
 #include "AeSysDoc.h"
@@ -227,7 +226,7 @@ void AeSysView::GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d
       Circuit.ProjPtFrom_xy(0.0, 0.075, &Points[1]);
       Circuit.ProjPtFrom_xy(0.0, 0.0875, &Points[2]);
       Group->AddTail(new EoDbLine(1, 1, Points[0], Points[1]));
-      Group->AddTail(new EoDbEllipse(1, 1, Points[2], 0.0125));
+      Group->AddTail(new EoDbEllipse(Points[2], 0.0125, 1, 1));
       break;
 
     case ID_OP5:

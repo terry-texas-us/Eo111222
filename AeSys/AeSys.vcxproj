@@ -241,9 +241,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="EoDlgTrapFilter.cpp" />
     <ClCompile Include="EoDlgViewParameters.cpp" />
     <ClCompile Include="EoGsViewport.cpp" />
-    <ClCompile Include="Tests\TestEllipseGeneration.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="WndProcKeyPlan.cpp" />
     <ClCompile Include="WndProcPreview.cpp" />
   </ItemGroup>
@@ -1586,7 +1583,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="EoGeTransformMatrix.h" />
     <ClInclude Include="EoDlgViewParameters.h" />
     <ClInclude Include="EoGsViewport.h" />
-    <ClInclude Include="Tests\TestEllipseGeneration.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="lex_rules.l" />

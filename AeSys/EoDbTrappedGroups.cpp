@@ -1,11 +1,7 @@
 ﻿#include "Stdafx.h"
-#include <Windows.h>
-#include <afx.h>
-#include <afxstr.h>
-#include <afxwin.h>
+
 #include <cfloat>
 #include <corecrt.h>
-#include <wchar.h>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"

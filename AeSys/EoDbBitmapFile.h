@@ -1,7 +1,4 @@
 ﻿#pragma once
-#include <afx.h>
-#include <afxstr.h>
-#include <afxwin.h>
 
 class EoDbBitmapFile : public CFile {
  public:

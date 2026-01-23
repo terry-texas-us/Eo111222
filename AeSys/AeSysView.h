@@ -1,6 +1,7 @@
 ﻿#pragma once
 
-#include <afxtoolbarcomboboxbutton.h>
+#include <cfloat>
+#include <cmath>
 
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
@@ -16,15 +17,6 @@
 #include "EoGsViewTransform.h"
 #include "EoGsViewport.h"
 #include "Section.h"
-#include <Windows.h>
-#include <afx.h>
-#include <afxext.h>
-#include <afxstatusbar.h>
-#include <afxstr.h>
-#include <afxwin.h>
-#include <atltypes.h>
-#include <cfloat>
-#include <cmath>
 
 class AeSysDoc;
 class EoDbBlock;

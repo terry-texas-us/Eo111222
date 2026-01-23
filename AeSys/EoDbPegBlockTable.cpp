@@ -1,5 +1,8 @@
 ﻿#include "Stdafx.h"
+
 #include "AeSysDoc.h"
+#include "EoDbBlock.h"
+#include "EoDbLayer.h"
 
 int AeSysDoc::GetBlockReferenceCount(const CString& name) {
   int Count = 0;

@@ -1,7 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "EoDlgEditOptions.h"

@@ -1,7 +1,5 @@
 ﻿#pragma once
-#include <afxcoll.h>
-#include <afxstr.h>
-#include <afxtempl.h>
+
 #include <utility>
 
 #include "EoDbGroup.h"

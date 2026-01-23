@@ -1,11 +1,9 @@
 ﻿#include "Stdafx.h"
 
-#include "EoDbBitmapFile.h"
-#include <afx.h>
-#include <afxstr.h>
-#include <atltrace.h>
 #include <memory>
 #include <new>
+
+#include "EoDbBitmapFile.h"
 
 EoDbBitmapFile::EoDbBitmapFile(const CString& fileName) {
   CFileException e;

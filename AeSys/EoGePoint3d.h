@@ -1,9 +1,5 @@
 ﻿#pragma once
 
-#include <afx.h>
-#include <afxstr.h>
-#include <afxtempl.h>
-
 #include "drw_base.h"
 
 class EoGePoint3d;

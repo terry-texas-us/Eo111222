@@ -1,6 +1,5 @@
 ﻿#pragma once
-#include <Windows.h>
-#include <afx.h>
+
 #include <cstdarg>
 
 #include "Resource.h"

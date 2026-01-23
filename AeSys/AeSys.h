@@ -3,15 +3,11 @@
 #error include 'Stdafx.h' before including this file for PCH
 #endif
 
-#include <Windows.h>
-#include <afxstr.h>
-#include <afxwin.h>
-#include <afxwinappex.h>
+#include <string>
 
 #include "EoApOptions.h"
 #include "EoDb.h"
 #include "EoGePoint3d.h"
-#include <string>
 
 extern COLORREF ViewBackgroundColor;
 extern COLORREF RubberbandColor;

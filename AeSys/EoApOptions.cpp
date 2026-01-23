@@ -1,9 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <afx.h>
-#include <afxbasetabctrl.h>
-#include <afxtabctrl.h>
-
 #include "AeSys.h"
 #include "EoApOptions.h"
 

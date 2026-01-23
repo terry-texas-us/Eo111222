@@ -1,9 +1,5 @@
 ﻿#pragma once
 
-#include <Windows.h>
-#include <afx.h>
-#include <afxstr.h>
-#include <afxwin.h>
 #include <utility>
 
 #include "AeSysView.h"
@@ -30,11 +26,14 @@ class EoDbEllipse : public EoDbPrimitive {
 
   EoDbEllipse(EoGePoint3d& center, EoGeVector3d& extrusion, double radius);
 
-  EoDbEllipse(const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle);
+  EoDbEllipse(const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis,
+              double sweepAngle);
 
-  EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle);
+  EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& majorAxis,
+              EoGeVector3d& minorAxis, double sweepAngle);
 
-  EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius);
+  EoDbEllipse(EoGePoint3d& center, double radius, EoInt16 penColor = COLOR_BYLAYER,
+              EoInt16 lineTypeIndex = LINETYPE_BYLAYER);
 
   EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& planeNormal, double radius);
 
@@ -51,7 +50,7 @@ class EoDbEllipse : public EoDbPrimitive {
  public:
   const EoDbEllipse& operator=(const EoDbEllipse&);
 
- public: // Methods - absolute virtuals
+ public:  // Methods - absolute virtuals
   void AddReportToMessageList(EoGePoint3d) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbEllipse*>(primitive); }
@@ -80,7 +79,7 @@ class EoDbEllipse : public EoDbPrimitive {
  public:
   void CutAtPt(EoGePoint3d&, EoDbGroup*) override;
   void CutAt2Pts(EoGePoint3d*, EoDbGroupList*, EoDbGroupList*) override;
-  
+
   /// <summary>Generates a set of points which may be used to represent a arc using a double angle algorithm.</summary>
   void GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) const;
   EoGePoint3d GetBegPt();
@@ -97,7 +96,7 @@ class EoDbEllipse : public EoDbPrimitive {
   void SetMajorAxis(EoGeVector3d majorAxis) { m_majorAxis = std::move(majorAxis); }
   void SetMinorAxis(EoGeVector3d minorAxis) { m_minorAxis = std::move(minorAxis); }
   void SetSweepAngle(double sweepAngle) { m_sweepAngle = sweepAngle; }
-  
+
   double SweepAngleToPoint(EoGePoint3d point);
 
  private:

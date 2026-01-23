@@ -1,13 +1,6 @@
 #include "Stdafx.h"
-#include "afxdialogex.h"
-#include <Windows.h>
-#include <afx.h>
-#include <afxdd_.h>
-#include <afxmsg_.h>
-#include <afxstr.h>
-#include <afxwin.h>
+
 #include <algorithm>
-#include <atltypes.h>
 
 #include "EoDbLineType.h"
 #include "EoDbLineTypeTable.h"

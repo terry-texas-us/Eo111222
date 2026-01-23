@@ -1,5 +1,4 @@
 ﻿#include "Stdafx.h"
-#include <afxstr.h>
 
 #include "EoDbBlock.h"
 #include "EoGePoint3d.h"

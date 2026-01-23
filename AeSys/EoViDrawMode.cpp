@@ -1,8 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-#include <afx.h>
-
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"

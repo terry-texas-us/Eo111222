@@ -1,10 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-#include <afx.h>
-#include <afxstr.h>
-#include <afxwin.h>
-#include <atltrace.h>
 #include <climits>
 
 #include "AeSys.h"
@@ -39,7 +34,9 @@ EoDbPolyline::EoDbPolyline() { m_flags = 0; }
  * @param radius The radius of the circumscribed circle.
  * @param numberOfSides The number of sides for the polygon.
  */
-EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius, int numberOfSides) : EoDbPrimitive(penColor, lineType) {
+EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius,
+                           int numberOfSides)
+    : EoDbPrimitive(penColor, lineType) {
   m_flags = 0x0010;  // polyline is closed
 
   auto* activeView = AeSysView::GetActiveView();
@@ -55,7 +52,8 @@ EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& cent
   polyline::GeneratePointsForNPoly(centerPoint, majorAxis, minorAxis, numberOfSides, m_pts);
 }
 
-EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& pts) : EoDbPrimitive(penColor, lineType) {
+EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& pts)
+    : EoDbPrimitive(penColor, lineType) {
   m_flags = 0;  // not closed
   m_pts.Copy(pts);
 }
@@ -114,48 +112,50 @@ void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
 }
 
 void EoDbPolyline::AddReportToMessageList(EoGePoint3d ptPic) {
-  EoUInt16 NumberOfVertices = EoUInt16(m_pts.GetSize());
+  auto numberOfVertices = EoUInt16(m_pts.GetSize());
+  if (sm_Edge == 0 || sm_Edge > numberOfVertices) { return; }
 
-  if (sm_Edge > 0 && sm_Edge <= NumberOfVertices) {
-    EoGePoint3d ptBeg = m_pts[sm_Edge - 1];
-    EoGePoint3d ptEnd = m_pts[sm_Edge % NumberOfVertices];
+  int beginVertexIndex = static_cast<int>(sm_Edge) - 1;
 
-    if (sm_PivotVertex < NumberOfVertices) {
-      ptBeg = m_pts[sm_PivotVertex];
-      ptEnd = m_pts[SwingVertex()];
-    }
-    double AngleInXYPlane;
-    double EdgeLength = EoGeVector3d(ptBeg, ptEnd).Length();
+  EoGePoint3d begin = m_pts[beginVertexIndex];
+  EoGePoint3d end = m_pts[sm_Edge % numberOfVertices];
 
-    if (EoGeVector3d(ptPic, ptBeg).Length() > EdgeLength * 0.5) {
-      AngleInXYPlane = EoGeLine(ptEnd, ptBeg).AngleFromXAxisXY();
-    } else {
-      AngleInXYPlane = EoGeLine(ptBeg, ptEnd).AngleFromXAxisXY();
-    }
-    CString LengthAsString;
-    CString AngleAsString;
-    app.FormatLength(LengthAsString, app.GetUnits(), EdgeLength);
-    app.FormatAngle(AngleAsString, AngleInXYPlane, 8, 3);
+  if (sm_PivotVertex < numberOfVertices) {
+    begin = m_pts[sm_PivotVertex];
+    end = m_pts[SwingVertex()];
+  }
+  double angleInXYPlane;
+  double edgeLength = EoGeVector3d(begin, end).Length();
 
-    CString Message;
-    Message.Format(L"<Polyline Edge> Color: %s Line Type: %s \u2022 %s @ %s", FormatPenColor().GetString(), FormatLineType().GetString(),
-                   LengthAsString.TrimLeft().GetString(), AngleAsString.GetString());
-    app.AddStringToMessageList(Message);
+  if (EoGeVector3d(ptPic, begin).Length() > edgeLength * 0.5) {
+    angleInXYPlane = EoGeLine(end, begin).AngleFromXAxisXY();
+  } else {
+    angleInXYPlane = EoGeLine(begin, end).AngleFromXAxisXY();
+  }
+  CString lengthAsString;
+  CString angleAsString;
+  app.FormatLength(lengthAsString, app.GetUnits(), edgeLength);
+  app.FormatAngle(angleAsString, angleInXYPlane, 8, 3);
 
-    app.SetEngagedLength(EdgeLength);
-    app.SetEngagedAngle(AngleInXYPlane);
+  CString message;
+  message.Format(L"<Polyline Edge> Color: %s Line Type: %s \u2022 %s @ %s", FormatPenColor().GetString(),
+                 FormatLineType().GetString(), lengthAsString.TrimLeft().GetString(), angleAsString.GetString());
+  app.AddStringToMessageList(message);
+
+  app.SetEngagedLength(edgeLength);
+  app.SetEngagedAngle(angleInXYPlane);
 
 #if defined(USING_DDE)
-    dde::PostAdvise(dde::EngLenInfo);
-    dde::PostAdvise(dde::EngAngZInfo);
+  dde::PostAdvise(dde::EngLenInfo);
+  dde::PostAdvise(dde::EngAngZInfo);
 #endif  // USING_DDE
-  }
 }
 void EoDbPolyline::FormatGeometry(CString& str) {
   for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) { str += L"Point;" + m_pts[w].ToString(); }
 }
 void EoDbPolyline::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(), static_cast<int>(m_pts.GetSize()));
+  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
+             static_cast<int>(m_pts.GetSize()));
 }
 
 void EoDbPolyline::GetAllPoints(EoGePoint3dArray& points) {
@@ -316,7 +316,9 @@ bool EoDbPolyline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoin
   }
   return false;
 }
-bool EoDbPolyline::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) { return polyline::SelectUsingRectangle(view, pt1, pt2, m_pts); }
+bool EoDbPolyline::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
+  return polyline::SelectUsingRectangle(view, pt1, pt2, m_pts);
+}
 void EoDbPolyline::Transform(EoGeTransformMatrix& tm) {
   for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w] = tm * m_pts[w];
 }

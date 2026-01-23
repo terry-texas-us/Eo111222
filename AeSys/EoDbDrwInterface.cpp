@@ -1,7 +1,7 @@
 #include "Stdafx.h"
-#include <afxstr.h>
-#include <atltrace.h>
+
 #include <cstdlib>
+
 #include <string>
 #include <utility>
 #include <variant>

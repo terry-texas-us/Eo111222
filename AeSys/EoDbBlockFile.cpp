@@ -4,6 +4,7 @@
 #include "EoDbBlock.h"
 #include "EoDbBlockFile.h"
 #include "EoDbPrimitive.h"
+#include "EoGePoint3d.h"
 
 // EoDb::kHeaderSection sentinel				EoUInt16 0x0101
 //		{0 or more key-value pairs}

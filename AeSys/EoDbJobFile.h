@@ -2,9 +2,6 @@
 
 // File if detailed on repo Markdowns folder.`Job File Format.md` https://github.com/terry-texas-us/Eo111222/blob/6f68dc865e9cc90c9c42ce9194740f39b7adbc57/AeSys/Markdowns/Job%20File%20Format.md?plain=1in
 
-#include <afx.h>
-#include <string.h>
-
 #include "EoDbGroup.h"
 #include "EoDbLayer.h"
 #include "EoDbPrimitive.h"

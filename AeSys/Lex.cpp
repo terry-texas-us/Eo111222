@@ -1,6 +1,6 @@
 ﻿#include "Stdafx.h"
+
 #include <algorithm>
-#include <atltrace.h>
 #include <cctype>
 #include <cfloat>
 #include <cmath>
@@ -9,7 +9,6 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
-#include <wchar.h>
 
 #include "AeSys.h"
 #include "Eo.h"

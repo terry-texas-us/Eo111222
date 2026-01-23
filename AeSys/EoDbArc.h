@@ -1,10 +1,5 @@
 #pragma once
 
-#include <Windows.h>
-#include <afx.h>
-#include <afxstr.h>
-#include <afxwin.h>
-
 #include "AeSysView.h"
 #include "EoDbCircle.h"
 #include "EoDbGroup.h"

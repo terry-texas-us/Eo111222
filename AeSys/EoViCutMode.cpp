@@ -1,7 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <afx.h>
-#include <afxwin.h>
 #include <algorithm>
 
 #include "AeSysDoc.h"

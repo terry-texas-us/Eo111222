@@ -1,8 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-#include <afxstr.h>
-#include <afxwin.h>
 #include <algorithm>
 #include <cfloat>
 
@@ -164,7 +161,7 @@ void AeSysView::OnAnnotateModeHook() {
     }
   }
   m_PreviousOp = ModeLineHighlightOp(ID_OP5);
-  Group->AddTail(new EoDbEllipse(1, 1, CurrentPnt, CircleRadius()));
+  Group->AddTail(new EoDbEllipse(CurrentPnt, CircleRadius(), 1, 1));
   document->AddWorkLayerGroup(Group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
   pts[0] = CurrentPnt;

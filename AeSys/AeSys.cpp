@@ -1,35 +1,12 @@
 ﻿#include "Stdafx.h"
 
-#include <ShlObj_core.h>
-#include <Windows.h>
-#include <afx.h>
-#include <afxbutton.h>
-#include <afxdialogex.h>
-#include <afxdisp.h>
-#include <afxdlgs.h>
-#include <afxmsg_.h>
-#include <afxres.h>
-#include <afxstr.h>
-#include <afxtooltipctrl.h>
-#include <afxtooltipmanager.h>
-#include <afxusertool.h>
-#include <afxwin.h>
-#include <afxwinappex.h>
-#include <atlsimpstr.h>
-#include <atltrace.h>
-
 #include <algorithm>
 #include <cctype>
 #include <cmath>
-#include <corecrt.h>
 #include <cstdlib>
-#include <direct.h>
 #include <iterator>
 #include <stdexcept>
 #include <string>
-#include <string.h>
-#include <tchar.h>
-#include <wchar.h>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"

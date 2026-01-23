@@ -2,19 +2,6 @@
 
 #include "EoMfOutputDockablePane.h"
 #include "EoMfPropertiesDockablePane.h"
-#include <Windows.h>
-#include <afx.h>
-#include <afxext.h>
-#include <afxmdiframewndex.h>
-#include <afxmenubar.h>
-#include <afxpopupmenu.h>
-#include <afxstatusbar.h>
-#include <afxstr.h>
-#include <afxtoolbar.h>
-#include <afxtoolbarcomboboxbutton.h>
-#include <afxtoolbarimages.h>
-#include <afxwin.h>
-#include <atltypes.h>
 
 class CMainFrame : public CMDIFrameWndEx {
   DECLARE_DYNAMIC(CMainFrame)

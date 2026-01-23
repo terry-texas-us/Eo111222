@@ -1,13 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-
-#include <afx.h>
-#include <afxbutton.h>
-#include <afxmsg_.h>
-#include <afxwin.h>
-#include <atltypes.h>
-
 #include <algorithm>
 #include <cmath>
 #include <cstdint>

@@ -1,12 +1,6 @@
 ﻿#include "Stdafx.h"
-#include <Windows.h>
-#include <afx.h>
-#include <afxdd_.h>
-#include <afxmsg_.h>
-#include <afxstr.h>
-#include <afxwin.h>
+
 #include <algorithm>
-#include <wchar.h>
 
 #include "AeSysDoc.h"
 #include "EoDbGroupList.h"

@@ -1,9 +1,5 @@
 ﻿#pragma once
 
-#include <Windows.h>
-#include <afx.h>
-#include <afxstr.h>
-#include <afxwin.h>
 #include <string>
 #include <utility>
 

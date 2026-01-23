@@ -1,7 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <afx.h>
-
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDbCharacterCellDefinition.h"

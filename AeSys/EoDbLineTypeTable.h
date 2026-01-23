@@ -1,9 +1,5 @@
 ﻿#pragma once
-#include <afx.h>
-#include <afxcmn.h>
-#include <afxcoll.h>
-#include <afxstr.h>
-#include <afxtempl.h>
+
 #include <string>
 
 #include "EoDbLineType.h"

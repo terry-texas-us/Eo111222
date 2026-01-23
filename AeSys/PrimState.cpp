@@ -1,5 +1,5 @@
 ﻿#include "Stdafx.h"
-#include <Windows.h>
+
 #include <algorithm>
 
 #include "AeSys.h"
@@ -13,14 +13,14 @@
 // State list maintenance
 CPrimState* psSav[] = {0, 0, 0, 0};
 
-const CPrimState& CPrimState::operator=(const CPrimState& src) {
-  m_fontDefinition = src.m_fontDefinition;
+const CPrimState& CPrimState::operator=(const CPrimState& other) {
+  m_fontDefinition = other.m_fontDefinition;
 
-  m_color = src.m_color;
-  m_LineType = src.m_LineType;
-  m_pointStyle = src.m_pointStyle;
-  m_PolygonInteriorStyle = src.m_PolygonInteriorStyle;
-  m_PolygonInteriorStyleIndex = src.m_PolygonInteriorStyleIndex;
+  m_color = other.m_color;
+  m_LineTypeIndex = other.m_LineTypeIndex;
+  m_pointStyle = other.m_pointStyle;
+  m_PolygonInteriorStyle = other.m_PolygonInteriorStyle;
+  m_PolygonInteriorStyleIndex = other.m_PolygonInteriorStyleIndex;
 
   return (*this);
 }
@@ -56,23 +56,25 @@ int CPrimState::Save() {
   // return id to use for restore reference
   return (iSaveId);
 }
-void CPrimState::SetPen(AeSysView* view, CDC* deviceContext, EoInt16 penColor, EoInt16 lineType) {
-  if (EoDbPrimitive::SpecialColor() != 0) { penColor = EoDbPrimitive::SpecialColor(); }
-  if (penColor == EoDbPrimitive::COLOR_BYLAYER) { penColor = EoDbPrimitive::LayerColor(); }
-  if (lineType == EoDbPrimitive::LINETYPE_BYLAYER) { lineType = EoDbPrimitive::LayerLineTypeIndex(); }
-  m_color = penColor;
-  m_LineType = lineType;
+
+void CPrimState::SetPen(AeSysView* view, CDC* deviceContext, EoInt16 color, EoInt16 lineTypeIndex) {
+  if (EoDbPrimitive::SpecialColor() != 0) { color = EoDbPrimitive::SpecialColor(); }
+  if (color == EoDbPrimitive::COLOR_BYLAYER) { color = EoDbPrimitive::LayerColor(); }
+  if (lineTypeIndex == EoDbPrimitive::LINETYPE_BYLAYER) { lineTypeIndex = EoDbPrimitive::LayerLineTypeIndex(); }
+  m_color = color;
+  m_LineTypeIndex = lineTypeIndex;
 
   double LogicalWidth = 0.;
 
   if (view && view->PenWidthsOn()) {
     int LogicalPixelsX = deviceContext->GetDeviceCaps(LOGPIXELSX);
-    LogicalWidth = app.PenWidthsGet(penColor) * double(LogicalPixelsX);
+    LogicalWidth = app.PenWidthsGet(color) * double(LogicalPixelsX);
     LogicalWidth *= std::min(1.0, view->WidthInInches() / view->UExtent());
     LogicalWidth = Eo::Round(LogicalWidth);
   }
-  if (deviceContext) { ManagePenResources(deviceContext, penColor, int(LogicalWidth), lineType); }
+  if (deviceContext) { ManagePenResources(deviceContext, color, int(LogicalWidth), lineTypeIndex); }
 }
+
 void CPrimState::ManagePenResources(CDC* deviceContext, EoInt16 penColor, int penWidth, EoInt16 lineType) {
   static const int NumberOfPens = 8;
   static HPEN hPen[NumberOfPens] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -128,13 +130,13 @@ void CPrimState::ManagePenResources(CDC* deviceContext, EoInt16 penColor, int pe
     crColRef[iPen] = pColTbl[penColor];
   }
 }
-void CPrimState::SetColor(CDC* deviceContext, EoInt16 penColor) {
-  m_color = penColor;
-  if (deviceContext) { ManagePenResources(deviceContext, penColor, 0, m_LineType); }
+void CPrimState::SetColor(CDC* deviceContext, EoInt16 color) {
+  m_color = color;
+  if (deviceContext) { ManagePenResources(deviceContext, color, 0, m_LineTypeIndex); }
 }
-void CPrimState::SetLineType(CDC* deviceContext, EoInt16 lineType) {
-  m_LineType = lineType;
-  if (deviceContext) { ManagePenResources(deviceContext, m_color, 0, lineType); }
+void CPrimState::SetLineType(CDC* deviceContext, EoInt16 lineTypeIndex) {
+  m_LineTypeIndex = lineTypeIndex;
+  if (deviceContext) { ManagePenResources(deviceContext, m_color, 0, lineTypeIndex); }
 }
 int CPrimState::SetROP2(CDC* deviceContext, int iDrawMode) {
   // Sets the current foreground mix mode. GDI uses the foreground mix mode to combine pens and

@@ -2,6 +2,10 @@
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
+#include "EoDbGroup.h"
+#include "EoDbGroupList.h"
+#include "EoDbLayer.h"
+#include "EoDbLineType.h"
 #include "EoDbPrimitive.h"
 
 EoDbLayer::EoDbLayer(const CString& name, EoUInt16 stateFlags) {
@@ -31,8 +35,8 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext) {
   pColTbl = pCurColTbl;
 }
 void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"EoDbLayer<%p>::Display(%p, %p, %i) + Name: %ls\n", this, view, deviceContext,
-            identifyTrap, static_cast<LPCWSTR>(this->Name()));
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"EoDbLayer<%p>::Display(%p, %p, %i) + Name: %ls\n", this, view,
+            deviceContext, identifyTrap, static_cast<LPCWSTR>(this->Name()));
 
   auto* document = AeSysDoc::GetDoc();
 

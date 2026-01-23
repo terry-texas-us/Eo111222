@@ -9,14 +9,14 @@ class CPrimState {
  private:
   EoInt16 m_pointStyle{};
   EoInt16 m_color{7};
-  EoInt16 m_LineType{};
+  EoInt16 m_LineTypeIndex{};
   EoDbFontDefinition m_fontDefinition;
   EoDbCharacterCellDefinition m_ccd;
   EoInt16 m_PolygonInteriorStyle{};
   EoInt16 m_PolygonInteriorStyleIndex{};
 
  public:
-  CPrimState() : m_pointStyle(0), m_color(7), m_LineType(0), m_PolygonInteriorStyle(0), m_PolygonInteriorStyleIndex(0) {}
+  CPrimState() : m_pointStyle(0), m_color(7), m_LineTypeIndex(0), m_PolygonInteriorStyle(0), m_PolygonInteriorStyleIndex(0) {}
 
   const CPrimState& operator=(const CPrimState&);
 
@@ -25,7 +25,7 @@ class CPrimState {
   void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fontDefinition; }
   const EoInt16& PointStyle() { return m_pointStyle; }
   const EoInt16& PenColor() { return (m_color); }
-  const EoInt16& LineType() { return (m_LineType); }
+  const EoInt16& LineType() { return (m_LineTypeIndex); }
   const EoInt16& PolygonIntStyle() { return (m_PolygonInteriorStyle); }
   const EoInt16& PolygonIntStyleId() { return (m_PolygonInteriorStyleIndex); }
   void Restore(CDC* deviceContext, int saveIndex);

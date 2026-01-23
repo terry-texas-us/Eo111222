@@ -1,5 +1,5 @@
 #pragma once
-#include <atltrace.h>
+
 #include <string>
 
 #include "AeSysDoc.h"

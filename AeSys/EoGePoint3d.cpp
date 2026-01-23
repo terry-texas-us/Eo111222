@@ -1,7 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <afx.h>
-#include <afxstr.h>
 #include <algorithm>
 #include <cfloat>
 #include <cmath>

@@ -1,8 +1,4 @@
 #pragma once
-#include <Windows.h>
-
-#include "afxdialogex.h"
-#include <afxwin.h>
 
 class CDlgSetPointStyle : public CDialogEx {
  public:

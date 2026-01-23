@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <afx.h>
-#include <afxstr.h>
 #include <algorithm>
 #include <vector>
 

@@ -1,7 +1,4 @@
 ﻿#pragma once
-#include <Windows.h>
-#include <afx.h>
-#include <afxstr.h>
 
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"

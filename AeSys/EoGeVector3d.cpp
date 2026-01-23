@@ -1,8 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <afx.h>
-#include <afxstr.h>
-
 #include <cmath>
 #include <stdexcept>
 

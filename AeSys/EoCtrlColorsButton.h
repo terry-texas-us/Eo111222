@@ -1,12 +1,5 @@
 ﻿#pragma once
 
-#include <Windows.h>
-
-#include <afx.h>
-#include <afxbutton.h>
-#include <afxwin.h>
-#include <atltypes.h>
-
 class EoCtrlColorsButton : public CMFCButton {
   DECLARE_DYNAMIC(EoCtrlColorsButton)
 

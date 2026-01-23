@@ -1,8 +1,5 @@
 ﻿#include "Stdafx.h"
-#include <Windows.h>
-#include <afx.h>
-#include <afxstr.h>
-#include <atltrace.h>
+
 #include <string>
 #include <type_traits>
 #include <variant>

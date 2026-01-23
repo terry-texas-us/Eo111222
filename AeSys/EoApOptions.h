@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include <Windows.h>
-#include <afxmdiclientareawnd.h>
-
 class EoApOptions {
  public:
   EoApOptions();

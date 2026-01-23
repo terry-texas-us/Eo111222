@@ -1,11 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-#include <afx.h>
-#include <afxcmn.h>
-#include <afxstr.h>
-#include <afxwin.h>
-#include <atltrace.h>
 #include <cstdlib>
 #include <string>
 #include <utility>
@@ -18,7 +12,6 @@
 #include "EoDbLineType.h"
 #include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
-
 
 namespace {
 

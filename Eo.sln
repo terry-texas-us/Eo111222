@@ -10,6 +10,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AeSys", "AeSys\AeSys.vcxpro
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E0126F78-1720-481C-94CA-D04F1A04D4E1}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		Eo.vsmdi = Eo.vsmdi
 	EndProjectSection
 EndProject

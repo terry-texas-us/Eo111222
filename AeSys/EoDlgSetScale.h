@@ -1,6 +1,4 @@
 ﻿#pragma once
-#include <afx.h>
-#include <afxwin.h>
 
 #include "Resource.h"
 

@@ -1,34 +1,5 @@
 ﻿
 #include "StdAfx.h"
-#include <Windows.h>
-#include <afx.h>
-#include <afxbasetabctrl.h>
-#include <afxcoll.h>
-#include <afxcontrolbarutil.h>
-#include <afxdockingmanager.h>
-#include <afxext.h>
-#include <afxglobals.h>
-#include <afxmdichildwndex.h>
-#include <afxmdiclientareawnd.h>
-#include <afxmdiframewndex.h>
-#include <afxmsg_.h>
-#include <afxpane.h>
-#include <afxpanedivider.h>
-#include <afxpopupmenu.h>
-#include <afxres.h>
-#include <afxstr.h>
-#include <afxtempl.h>
-#include <afxtoolbar.h>
-#include <afxtoolbarcomboboxbutton.h>
-#include <afxtoolbarscustomizedialog.h>
-#include <afxusertool.h>
-#include <afxusertoolsmanager.h>
-#include <afxvisualmanager.h>
-#include <afxvisualmanageroffice2007.h>
-#include <afxvisualmanagerwindows7.h>
-#include <afxwin.h>
-#include <atltrace.h>
-#include <atltypes.h>
 
 #include "AeSys.h"
 #include "EoApOptions.h"

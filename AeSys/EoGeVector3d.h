@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <afxstr.h>
-
 #include "Eo.h"
 
 class CFile;

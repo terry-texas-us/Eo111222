@@ -1,9 +1,9 @@
 ﻿#include "Stdafx.h"
 
-#include "EoDbLineType.h"
-#include <afxstr.h>
 #include <algorithm>
 #include <cstdlib>
+
+#include "EoDbLineType.h"
 
 EoDbLineType::EoDbLineType() : m_Index(0), m_Name(L""), m_Description(L""), m_DashElements() {}
 

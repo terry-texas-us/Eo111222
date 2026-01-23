@@ -1,0 +1,6 @@
+# Place at repository root
+root = true
+
+[*.{c,cpp,h,hpp}]
+# disable the VCIC001 diagnostic (IntelliSense/linter)
+dotnet_diagnostic.VCIC001.severity = none

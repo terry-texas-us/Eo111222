@@ -189,7 +189,7 @@ class EoGeLine {
   */
   bool RelOfPtToEndPts(EoGePoint3d point, double& pointParametricRelationship) const;
 
-  void Write(CFile& file);
+  void Write(CFile& file) const;
 
   /** @brief Calculates the angle between two lines projected onto the XY plane.
   * @param firstLine The first line to compare.

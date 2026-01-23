@@ -16,16 +16,11 @@
 // turns off MFC's hiding of some common and often safely ignored warning messages
 #define _AFX_ALL_WARNINGS
 
-//#include <afxwin.h>  // MFC core and standard components
-//#include <afxext.h>  // MFC extensions
-
-//#include <afxdisp.h>  // MFC Automation classes
-
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-//#include <afxcmn.h>  // MFC support for Windows Common Controls
-#endif  // _AFX_NO_AFXCMN_SUPPORT
-
 #include <afxcontrolbars.h>  // MFC support for ribbons and control bars
+
+#include <afxwin.h>
+#include <afxext.h>
+#include <afxstr.h>
 
 #ifdef _UNICODE
 #if defined _M_IX86

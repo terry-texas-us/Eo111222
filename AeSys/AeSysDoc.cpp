@@ -1,25 +1,12 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-#include <afx.h>
-#include <afxdlgs.h>
-#include <afxmdichildwndex.h>
-#include <afxmdiframewndex.h>
-#include <afxmsg_.h>
-#include <afxres.h>
-#include <afxstr.h>
-#include <afxver_.h>
-#include <afxwin.h>
 #include <algorithm>
-#include <atltrace.h>
-#include <atltypes.h>
 #include <cfloat>
 #include <cstdio>
 #include <cstdlib>
 #include <new>
 #include <stdexcept>
 #include <string>
-#include <wchar.h>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"

@@ -1,10 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-#include <afx.h>
-#include <afxwin.h>
-#include <atltrace.h>
-#include <atltypes.h>
 #include <cfloat>
 
 #include "AeSysView.h"

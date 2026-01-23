@@ -1,8 +1,6 @@
 ﻿#include "Stdafx.h"
-#include <Windows.h>
-#include <afxwin.h>
+
 #include <algorithm>
-#include <atltypes.h>
 #include <cfloat>
 #include <cmath>
 #include <vector>

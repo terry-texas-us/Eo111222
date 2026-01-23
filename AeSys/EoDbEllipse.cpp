@@ -1,8 +1,5 @@
 ﻿#include "Stdafx.h"
-#include <Windows.h>
-#include <afx.h>
-#include <afxstr.h>
-#include <afxwin.h>
+
 #include <algorithm>
 #include <cfloat>
 #include <climits>
@@ -103,7 +100,7 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& center, const EoGeVector3d& majorAxi
  * @param center The center point of the circle.
  * @param radius The radius of the circle.
  */
-EoDbEllipse::EoDbEllipse(EoInt16 color, EoInt16 lineType, EoGePoint3d& center, double radius)
+EoDbEllipse::EoDbEllipse(EoGePoint3d& center, double radius, EoInt16 color, EoInt16 lineType)
     : EoDbPrimitive(color, lineType), m_center(center) {
   auto* activeView = AeSysView::GetActiveView();
 

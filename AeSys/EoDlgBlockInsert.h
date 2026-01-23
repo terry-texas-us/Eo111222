@@ -1,6 +1,4 @@
 ﻿#pragma once
-#include <Windows.h>
-#include <afx.h>
 
 #include "EoGePoint3d.h"
 #include "Resource.h"

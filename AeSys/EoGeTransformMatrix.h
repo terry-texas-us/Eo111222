@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <afxtempl.h>
-
 #include "EoGeMatrix.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"

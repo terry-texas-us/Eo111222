@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include <Windows.h>
-#include <afxwin.h>
-
 #include "Resource.h"
 
 class EoDlgEditOptions : public CDialog {

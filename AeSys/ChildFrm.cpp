@@ -1,12 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Windows.h>
-#include <afx.h>
-#include <afxmdichildwndex.h>
-#include <afxmsg_.h>
-#include <afxwin.h>
-#include <atltrace.h>
-
 #include "AeSys.h"
 #include "ChildFrm.h"
 #include "EoApOptions.h"

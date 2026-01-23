@@ -1,11 +1,5 @@
 ﻿#pragma once
 
-#include <Windows.h>
-#include <afx.h>
-#include <afxcoll.h>
-#include <afxstr.h>
-#include <afxwin.h>
-
 #include "EoDb.h"
 #include "EoDbBlock.h"
 #include "EoDbFontDefinition.h"

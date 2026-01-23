@@ -1,8 +1,6 @@
 ﻿#include "Stdafx.h"
-#include <afx.h>
-#include <afxwin.h>
+
 #include <algorithm>
-#include <atltypes.h>
 #include <cfloat>
 #include <cmath>
 
@@ -366,7 +364,7 @@ bool EoGeLine::RelOfPtToEndPts(EoGePoint3d point, double& pointParametricRelatio
   return false;
 }
 
-void EoGeLine::Write(CFile& file) {
+void EoGeLine::Write(CFile& file) const {
   begin.Write(file);
   end.Write(file);
 }
