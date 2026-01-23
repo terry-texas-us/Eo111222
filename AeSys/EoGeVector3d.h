@@ -2,6 +2,8 @@
 
 #include <afxstr.h>
 
+#include "Eo.h"
+
 class CFile;
 class EoGePoint3d;
 
@@ -11,28 +13,30 @@ class EoGeVector3d {
   double y;
   double z;
 
-  EoGeVector3d();
-  EoGeVector3d(double initialX, double initialY, double initialZ);
-  EoGeVector3d(const EoGePoint3d& ptP, const EoGePoint3d& ptQ);
+  constexpr EoGeVector3d() noexcept : x(0.0), y(0.0), z(0.0) {}
 
-  bool operator==(const EoGeVector3d& vector) const;
-  bool operator!=(const EoGeVector3d& vector) const;
-  void operator+=(const EoGeVector3d& vector);
-  void operator-=(const EoGeVector3d& vector);
-  void operator*=(double t);
+  EoGeVector3d(double xInitial, double yInitial, double zInitial);
+
+  EoGeVector3d(const EoGePoint3d& pointP, const EoGePoint3d& pointQ);
+
+  bool operator==(const EoGeVector3d& vector) const noexcept;
+  bool operator!=(const EoGeVector3d& vector) const noexcept;
+  void operator+=(const EoGeVector3d& vector) noexcept;
+  void operator-=(const EoGeVector3d& vector) noexcept;
+  void operator*=(double t) noexcept;
   void operator/=(double t);
 
-  void operator()(double xNew, double yNew, double zNew);
-  EoGeVector3d operator-() const;
-  EoGeVector3d operator-(const EoGeVector3d& vector) const;
-  EoGeVector3d operator+(const EoGeVector3d& vector) const;
+  void operator()(double xNew, double yNew, double zNew) noexcept;
+  EoGeVector3d operator-() const noexcept;
+  EoGeVector3d operator-(const EoGeVector3d& vector) const noexcept;
+  EoGeVector3d operator+(const EoGeVector3d& vector) const noexcept;
 
-  EoGeVector3d operator*(double t) const;
+  EoGeVector3d operator*(double t) const noexcept;
 
   /** @brief Checks if the vector is a null vector. */
-  bool IsNearNull() const;
+  constexpr bool IsNearNull() const noexcept { return (SquaredLength() < Eo::lengthEpsilon * Eo::lengthEpsilon); }
 
-  double Length() const;
+  [[nodiscard]] double Length() const;
 
   /** @brief Normalizes the vector to a unit vector.
    * If the vector is a null vector, it remains unchanged.
@@ -48,14 +52,27 @@ class EoGeVector3d {
   /** @brief Returns the square of the length of the vector.
    * @return The squared length.
    */
-  double SquaredLength() const;
+  constexpr double SquaredLength() const noexcept { return (x * x + y * y + z * z); }
+
   CString ToString() const;
   void Read(CFile& file);
   void Write(CFile& file) const;
 
-  static const EoGeVector3d kXAxis;
-  static const EoGeVector3d kYAxis;
-  static const EoGeVector3d kZAxis;
+  void Get(double& xOut, double& yOut, double& zOut) const noexcept {
+    xOut = x;
+    yOut = y;
+    zOut = z;
+  }
+
+  void Set(double xNew, double yNew, double zNew) noexcept {
+    x = xNew;
+    y = yNew;
+    z = zNew;
+  }
+
+  static const EoGeVector3d positiveUnitX;
+  static const EoGeVector3d positiveUnitY;
+  static const EoGeVector3d positiveUnitZ;
 };
 
 /** @brief Compute a not so arbitrary axis for AutoCAD entities
@@ -95,4 +112,6 @@ EoGeVector3d EoGeCrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& v
  */
 double EoGeDotProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2);
 
-bool EoGeNearEqual(const EoGeVector3d& vector1, const EoGeVector3d& vector2, double tolerance);
+constexpr bool EoGeNearEqual(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept {
+  return (vector1 - vector2).IsNearNull();
+}

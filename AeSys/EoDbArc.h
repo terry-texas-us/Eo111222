@@ -32,11 +32,11 @@ class EoDbArc : public EoDbCircle {
   EoDbArc() = default;
 
   EoDbArc(const EoGePoint3d& center, double radius, double startAngle, double endAngle,
-          const EoGeVector3d& extrusion = EoGeVector3d::kZAxis);
+          const EoGeVector3d& extrusion = EoGeVector3d::positiveUnitZ);
 
   // Construct with explicit pen/linetype
   EoDbArc(EoInt16 color, EoInt16 lineType, const EoGePoint3d& center, double radius, double startAngle, double endAngle,
-          const EoGeVector3d& extrusion = EoGeVector3d::kZAxis);
+          const EoGeVector3d& extrusion = EoGeVector3d::positiveUnitZ);
 
   EoDbArc(const EoDbArc& other);
   ~EoDbArc() override = default;

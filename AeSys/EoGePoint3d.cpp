@@ -111,7 +111,7 @@ int EoGePoint3d::RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint, cons
   return (returnValue);
 }
 EoGePoint3d EoGePoint3d::RotateAboutAxis(const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis, const double angle) {
-  if (referenceAxis == EoGeVector3d::kZAxis) {
+  if (referenceAxis == EoGeVector3d::positiveUnitZ) {
     double SinAng = sin(angle);
     double CosAng = cos(angle);
 

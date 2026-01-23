@@ -1,11 +1,17 @@
 ﻿#include "Stdafx.h"
+
+#include <afx.h>
+
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDbCharacterCellDefinition.h"
+#include "EoGePoint3d.h"
 #include "EoGeReferenceSystem.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
 
 EoGeReferenceSystem::EoGeReferenceSystem()
-    : m_Origin(EoGePoint3d::kOrigin), m_XDirection(EoGeVector3d::kXAxis), m_YDirection(EoGeVector3d::kYAxis) {}
+    : m_Origin(EoGePoint3d::kOrigin), m_XDirection(EoGeVector3d::positiveUnitX), m_YDirection(EoGeVector3d::positiveUnitY) {}
 EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin, EoDbCharacterCellDefinition& ccd) {
   auto* activeView = AeSysView::GetActiveView();
 
@@ -36,7 +42,7 @@ EoGeReferenceSystem& EoGeReferenceSystem::operator=(const EoGeReferenceSystem& s
 
   return (*this);
 }
-void EoGeReferenceSystem::GetUnitNormal(EoGeVector3d& normal) {
+void EoGeReferenceSystem::GetUnitNormal(EoGeVector3d& normal) const {
   normal = EoGeCrossProduct(m_XDirection, m_YDirection);
   normal.Normalize();
 }

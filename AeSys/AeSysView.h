@@ -249,7 +249,8 @@ class AeSysView : public CView {
 
   EoDbGroup* SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbEllipse*& circle);
   EoDbGroup* SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line);
-  EoDbGroup* SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor, EoInt16 pointStyle, EoDbPoint*& primitve);
+  EoDbGroup* SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor, EoInt16 pointStyle,
+                                   EoDbPoint*& primitve);
   EoDbGroup* SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt);
   EoDbGroup* SelectLineUsingPoint(const EoGePoint3d& pt);
   EoDbText* SelectTextUsingPoint(const EoGePoint3d& pt);
@@ -420,7 +421,8 @@ class AeSysView : public CView {
   /// <param name="beginPoint">tail of line segment defining arrow head</param>
   /// <param name="endPoint">head of line segment defining arrow head</param>
   /// <param name="group">group where primitives are placed</param>
-  void GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group) const;
+  void GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint,
+                           EoDbGroup* group) const;
   bool CorrectLeaderEndpoints(int beginType, int endType, EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const;
 
   /// Draw Mode Interface ///////////////////////////////////////////////////////
@@ -540,10 +542,10 @@ class AeSysView : public CView {
 
  public:  // Edit mode interface
   EoGeVector3d m_EditModeMirrorScale;
-  EoGeVector3d m_EditModeRotationAngles;
+  EoGeVector3d m_editModeRotationAngles;
   EoGeVector3d m_EditModeScale;
 
-  EoGeVector3d EditModeRotationAngles() const { return m_EditModeRotationAngles; }
+  [[nodiscard]] EoGeVector3d EditModeRotationAngles() const { return m_editModeRotationAngles; }
   EoGeTransformMatrix EditModeInvertedRotationTMat() const {
     EoGeTransformMatrix Matrix;
     Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
@@ -565,22 +567,12 @@ class AeSysView : public CView {
     return InvertedScaleFactors;
   }
   EoGeVector3d EditModeScaleFactors() const { return m_EditModeScale; }
-  void SetEditModeScaleFactors(const double x, const double y, const double z) {
-    m_EditModeScale.x = x;
-    m_EditModeScale.y = y;
-    m_EditModeScale.z = z;
-  }
-  void SetEditModeRotationAngles(double x, double y, double z) {
-    m_EditModeRotationAngles.x = x;
-    m_EditModeRotationAngles.y = y;
-    m_EditModeRotationAngles.z = z;
+  void SetEditModeScaleFactors(const double x, const double y, const double z) { m_EditModeScale.Set(x, y, z); }
+  void SetEditModeRotationAngles(double x, double y, double z) { 
+    m_editModeRotationAngles.Set(x, y, z);
   }
   EoGeVector3d EditModeMirrorScale() const { return m_EditModeMirrorScale; }
-  void SetMirrorScale(double x, double y, double z) {
-    m_EditModeMirrorScale.x = x;
-    m_EditModeMirrorScale.y = y;
-    m_EditModeMirrorScale.z = z;
-  }
+  void SetMirrorScale(double x, double y, double z) { m_EditModeMirrorScale.Set(x, y, z); }
 
   afx_msg void OnEditModeOptions();
   afx_msg void OnEditModePivot();
@@ -671,7 +663,8 @@ class AeSysView : public CView {
   /// <param name="angularTolerance">angle tolerance for qualifying line (radians)</param>
   /// <param name="leftLine">endpoints of left line</param>
   /// <param name="rightLine">endpoints of right line</param>
-  bool Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double angularTolerance, EoGeLine& leftLine, EoGeLine& rightLine);
+  bool Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double angularTolerance, EoGeLine& leftLine,
+                                    EoGeLine& rightLine);
   /// <summary>Generates an end-cap.</summary>
   /// <remarks>
   ///End-caps are groups containing a line and a point.  The line defines the orientation of the end-cap.
@@ -698,8 +691,8 @@ class AeSysView : public CView {
   /// <param name="currentReferenceLine">on exit the begin point is the same as the point on the endcap</param>
   /// <param name="currentSection"></param>
   /// <param name="group"></param>
-  void GenerateRectangularElbow(EoGeLine& previousReferenceLine, Section previousSection, EoGeLine& currentReferenceLine, Section currentSection,
-                                EoDbGroup* group);
+  void GenerateRectangularElbow(EoGeLine& previousReferenceLine, Section previousSection,
+                                EoGeLine& currentReferenceLine, Section currentSection, EoDbGroup* group);
   /// <summary>Generates rectangular tap fitting.</summary>
   /// <param name="justification"></param>
   /// <param name="section"></param>
@@ -716,10 +709,12 @@ class AeSysView : public CView {
  *  identifies the second section, and the direction from the point to the cursor location defines the direction for the two elbow turns.
  *  @note Placeholder until implementation is return of (0.0, 0.0, 0.0)
  */
-  EoGePoint3d GenerateBullheadTee(EoDbGroup* /* existingGroup */, EoGeLine& /* existingSectionReferenceLine */, double /* existingSectionWidth */,
-                                  double /* existingSectionDepth */, EoDbGroup* /* group */) {};
+  EoGePoint3d GenerateBullheadTee(EoDbGroup* /* existingGroup */, EoGeLine& /* existingSectionReferenceLine */,
+                                  double /* existingSectionWidth */, double /* existingSectionDepth */,
+                                  EoDbGroup* /* group */) {};
   /// <summary>Generates a full elbow takeoff fitting.</summary>
-  void GenerateFullElbowTakeoff(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine, Section existingSection, EoDbGroup* group);
+  void GenerateFullElbowTakeoff(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine,
+                                Section existingSection, EoDbGroup* group);
   /// <summary>Generates section which transitions from one rectangle to another</summary>
   /// <param name="referenceLine">line defining the begin point and direction of the transition</param>
   /// <param name="eccentricity"></param>
@@ -728,8 +723,8 @@ class AeSysView : public CView {
   /// <param name="previousSection">width and depth at begin of the transition</param>
   /// <param name="currentSection">width and depth at end of the transition</param>
   /// <param name="group">group receiving the primitives</param>
-  void GenerateTransition(EoGeLine& referenceLine, double eccentricity, EJust justification, double slope, Section previousSection, Section currentSection,
-                          EoDbGroup* group);
+  void GenerateTransition(EoGeLine& referenceLine, double eccentricity, EJust justification, double slope,
+                          Section previousSection, Section currentSection, EoDbGroup* group);
   /// <summary>Sets the width and depth of ductwork.</summary>
   void SetDuctOptions(Section& section);
   /// <summary>Determines the total length required to transition duct from one size to another</summary>
@@ -746,7 +741,8 @@ class AeSysView : public CView {
   double m_PipeRiseDropRadius;
 
   /// <summary>Adds a fitting indication to horizontal pipe section as required by previous fitting type.</summary>
-  void GenerateLineWithFittings(int beginType, EoGePoint3d& beginPoint, int endType, EoGePoint3d& endPoint, EoDbGroup* group);
+  void GenerateLineWithFittings(int beginType, EoGePoint3d& beginPoint, int endType, EoGePoint3d& endPoint,
+                                EoDbGroup* group);
   /// <summary>Draws tic mark at a point distance from begin point on the line defined by begin and end points.</summary>
   bool GenerateTicMark(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, double distance, EoDbGroup* group) const;
   void DropFromOrRiseIntoHorizontalSection(EoGePoint3d& point, EoDbGroup* group, EoDbLine* section);

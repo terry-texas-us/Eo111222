@@ -1,5 +1,11 @@
 ﻿#pragma once
 
+#include <afx.h>
+
+#include "EoGePoint3d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
+
 class EoDbCharacterCellDefinition;
 
 class EoGeReferenceSystem {
@@ -20,7 +26,7 @@ class EoGeReferenceSystem {
   EoGeReferenceSystem& operator=(const EoGeReferenceSystem&);
 
  public:  // Methods
-  void GetUnitNormal(EoGeVector3d& normal);
+  void GetUnitNormal(EoGeVector3d& normal) const;
   EoGePoint3d Origin() const;
   void Read(CFile& file);
   /// <summary>Takes the current reference directions and rescales using passed character cell state.</summary>

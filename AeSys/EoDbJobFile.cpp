@@ -193,7 +193,7 @@ bool EoDbJobFile::GetNextPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   ConstructPrimitive(primitive, PrimitiveType);
   return true;
 }
-bool EoDbJobFile::ReadNextPrimitive(CFile& file, EoUInt8* buffer, EoInt16& primitiveType) {
+bool EoDbJobFile::ReadNextPrimitive(CFile& file, EoUInt8* buffer, EoInt16& primitiveType) const {
   if (file.Read(buffer, 32) < 32) { return false; }
   primitiveType = *((EoInt16*)&buffer[4]);
 
@@ -406,7 +406,7 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
   } else {
     MajorAxis = CenterPoint - BeginPoint;
   }
-  EoGeVector3d MinorAxis = EoGeCrossProduct(EoGeVector3d::kZAxis, MajorAxis);
+  EoGeVector3d MinorAxis = EoGeCrossProduct(EoGeVector3d::positiveUnitZ, MajorAxis);
   SweepAngle = fabs(SweepAngle);
 
   return new EoDbEllipse(PenColor, LineType, CenterPoint, MajorAxis, MinorAxis, SweepAngle);
@@ -519,16 +519,16 @@ EoDbPolygon::EoDbPolygon(EoUInt8* buffer, int version) {
       case EoDb::kHollow:
       case EoDb::kSolid:
       case EoDb::kPattern:
-        m_vPosXAx = EoGeVector3d::kXAxis;
-        m_vPosYAx = EoGeVector3d::kYAxis;
+        m_vPosXAx = EoGeVector3d::positiveUnitX;
+        m_vPosYAx = EoGeVector3d::positiveUnitY;
         break;
 
       default:
         m_NumberOfPoints = 3;
         m_Pt = new EoGePoint3d[m_NumberOfPoints];
         m_Pt[0] = EoGePoint3d::kOrigin;
-        m_Pt[1] = EoGePoint3d::kOrigin + EoGeVector3d::kXAxis;
-        m_Pt[2] = EoGePoint3d::kOrigin + EoGeVector3d::kYAxis;
+        m_Pt[1] = EoGePoint3d::kOrigin + EoGeVector3d::positiveUnitX;
+        m_Pt[2] = EoGePoint3d::kOrigin + EoGeVector3d::positiveUnitY;
         m_HatchOrigin = m_Pt[0];
         return;
     }

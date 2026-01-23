@@ -51,8 +51,8 @@ EoDbPolygon::EoDbPolygon() {
   m_NumberOfPoints = 0;
   m_Pt = 0;
   m_HatchOrigin = EoGePoint3d::kOrigin;
-  m_vPosXAx = EoGeVector3d::kXAxis;
-  m_vPosYAx = EoGeVector3d::kYAxis;
+  m_vPosXAx = EoGeVector3d::positiveUnitX;
+  m_vPosYAx = EoGeVector3d::positiveUnitY;
 }
 
 EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
@@ -92,8 +92,8 @@ EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d* pt) {
   m_InteriorStyleIndex = 0;
   m_NumberOfPoints = wPts;
   m_HatchOrigin = pt[0];
-  m_vPosXAx = EoGeVector3d::kXAxis;
-  m_vPosYAx = EoGeVector3d::kYAxis;
+  m_vPosXAx = EoGeVector3d::positiveUnitX;
+  m_vPosYAx = EoGeVector3d::positiveUnitY;
   m_Pt = new EoGePoint3d[m_NumberOfPoints];
 
   for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) m_Pt[w] = pt[w];

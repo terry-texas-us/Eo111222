@@ -51,7 +51,7 @@ void TestArc(double cx, double cy, double cz, double radius, double startAngle, 
 
   // compute mid using rotation of major axis half sweep
   EoGeVector3d vMaj = arc.MajorAxis();
-  EoGeVector3d planeNormal = EoGeVector3d::kZAxis;
+  EoGeVector3d planeNormal = EoGeVector3d::positiveUnitZ;
   EoGeVector3d vHalf = vMaj;
   vHalf.RotAboutArbAx(planeNormal, sweep * 0.5);
   EoGePoint3d mid = arc.CenterPoint() + vHalf;

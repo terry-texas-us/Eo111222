@@ -141,6 +141,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="EoDlgEditOptions.cpp" />
     <ClCompile Include="EoDlgEditTrapCommandsQuery.cpp" />
     <ClCompile Include="EoDlgFileManage.cpp" />
+    <ClCompile Include="EoGeOcs.cpp" />
     <ClCompile Include="EoGePoint4d.cpp" />
     <ClCompile Include="EoGePolyline.cpp" />
     <ClCompile Include="EoViModelView.cpp" />
@@ -1543,6 +1544,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="EoDbSpline.h" />
     <ClInclude Include="EoDbText.h" />
     <ClInclude Include="EoDlgSetupLineType.h" />
+    <ClInclude Include="EoGeOcs.h" />
     <ClInclude Include="EoGePoint3d.h" />
     <ClInclude Include="EoGePoint4d.h" />
     <ClInclude Include="EoGePolyline.h" />

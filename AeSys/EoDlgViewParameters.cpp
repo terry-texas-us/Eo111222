@@ -1,10 +1,23 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxdd_.h>
+#include <afxmsg_.h>
+#include <afxstr.h>
+#include <afxwin.h>
+
+#include <algorithm>
+#include <cstdarg>
+
 #include "AeSys.h"
 #include "AeSysView.h"
 #include "EoDlgViewParameters.h"
-
-// EoDlgViewParameters dialog
+#include "EoGePoint3d.h"
+#include "EoGeVector3d.h"
+#include "EoGsViewTransform.h"
+#include "EoGsViewport.h"
+#include "Resource.h"
 
 IMPLEMENT_DYNAMIC(EoDlgViewParameters, CDialog)
 
@@ -72,11 +85,11 @@ void EoDlgViewParameters::OnBnClickedApply() {
 
 	ModelView->SetDirection(Direction);
 
-	EoGeVector3d ViewUp = EoGeCrossProduct(Direction, EoGeVector3d::kZAxis);
+	EoGeVector3d ViewUp = EoGeCrossProduct(Direction, EoGeVector3d::positiveUnitZ);
 	ViewUp = EoGeCrossProduct(ViewUp, Direction);
 
 	if (ViewUp.IsNearNull()) {
-		ViewUp = EoGeVector3d::kYAxis;
+		ViewUp = EoGeVector3d::positiveUnitY;
 	}
 	else {
 		ViewUp.Normalize();

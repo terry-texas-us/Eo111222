@@ -315,7 +315,7 @@ void DisplayTextSegment(AeSysView* view, CDC* deviceContext, EoDbFontDefinition&
     EoGeVector3d PlaneNormal = EoGeCrossProduct(XDirection, YDirection);
     PlaneNormal.Normalize();
 
-    if (PlaneNormal == EoGeVector3d::kZAxis) {
+    if (PlaneNormal == EoGeVector3d::positiveUnitZ) {
       if (DisplayTextSegmentUsingTrueTypeFont(view, deviceContext, fd, referenceSystem, startPosition, numberOfCharacters, text)) return;
     }
   }

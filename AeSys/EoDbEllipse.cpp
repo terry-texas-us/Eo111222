@@ -286,7 +286,7 @@ EoDbEllipse::EoDbEllipse(const DRW_Coord& center, double radius, double startAng
 
   // Minor axis is major rotated +90 degrees about Z (plane normal)
   m_minorAxis = m_majorAxis;
-  m_minorAxis.RotAboutArbAx(EoGeVector3d::kZAxis, Eo::HalfPi);
+  m_minorAxis.RotAboutArbAx(EoGeVector3d::positiveUnitZ, Eo::HalfPi);
 }
 
 /** 
@@ -634,7 +634,7 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
   EoGeVector3d vPlnNorm = EoGeCrossProduct(m_majorAxis, m_minorAxis);
   vPlnNorm.Normalize();
 
-  if (!(EoGeCrossProduct(EoGeVector3d::kZAxis, vPlnNorm)).IsNearNull())
+  if (!(EoGeCrossProduct(EoGeVector3d::positiveUnitZ, vPlnNorm)).IsNearNull())
     // not on plane normal to z-axis
     return 0;
 

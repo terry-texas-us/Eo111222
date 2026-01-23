@@ -1,22 +1,22 @@
 ﻿#pragma once
 
+#include <Windows.h>
+#include <afxmdiclientareawnd.h>
+
 class EoApOptions {
- private:
- public:  // Constructors and destructor
+ public:
   EoApOptions();
   ~EoApOptions();
 
   enum TabsStyle { None, Standard, Grouped };
-  TabsStyle m_nTabsStyle;
+  TabsStyle m_tabsStyle;
 
-  CMDITabInfo m_MdiTabInfo;
+  CMDITabInfo m_mdiTabInfo;
 
-  BOOL m_bTabsContextMenu;
-  BOOL m_bDisableSetRedraw;
+  BOOL m_tabsContextMenu;
+  BOOL m_disableSetRedraw;
 
- public:  // Operators
- public:  // Methods - absolute virtuals
- public:  // Methods
+ public:
   void Load();
-  void Save();
+  void Save() const;
 };

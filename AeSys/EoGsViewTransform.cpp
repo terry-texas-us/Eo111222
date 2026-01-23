@@ -1,10 +1,14 @@
 ﻿#include "Stdafx.h"
 
 #include <DirectXMath.h>
+#include <cfloat>
 
 #include "EoGeMatrix.h"
+#include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
+#include "EoGsAbstractView.h"
 #include "EoGsViewTransform.h"
 #include "EoGsViewport.h"
 
@@ -163,10 +167,10 @@ void EoGsViewTransform::Initialize(const EoGsViewport& viewport) {
   SetCenteredWindow(viewport, 44.0, 34.0);
 
   EoGePoint3d Target = EoGePoint3d(UExtent() / 2.0, VExtent() / 2.0, 0.0);
-  EoGePoint3d Position = Target + (EoGeVector3d::kZAxis * m_LensLength);
+  EoGePoint3d Position = Target + (EoGeVector3d::positiveUnitZ * m_LensLength);
 
-  SetView(Position, Target, EoGeVector3d::kYAxis);
-  SetDirection(EoGeVector3d::kZAxis);
+  SetView(Position, Target, EoGeVector3d::positiveUnitY);
+  SetDirection(EoGeVector3d::positiveUnitZ);
 
   SetNearClipDistance(-100.0f);
   SetFarClipDistance(100.0f);

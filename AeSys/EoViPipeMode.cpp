@@ -299,11 +299,11 @@ void AeSysView::OnPipeModeSymbol() {
 
     case 1:  // Generate float and thermostatic trap
       Group->AddTail(new EoDbEllipse(PointOnSection, SymbolBeginPoint));
-      pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, Eo::QuarterPi);
-      pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, Eo::Pi);
+      pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::QuarterPi);
+      pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::Pi);
       Group->AddTail(new EoDbLine(pts[0], pts[1]));
-      pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, Eo::ThreeQuartersPi);
-      pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::kZAxis, Eo::Pi);
+      pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::ThreeQuartersPi);
+      pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::Pi);
       Group->AddTail(new EoDbLine(pts[0], pts[1]));
       break;
 

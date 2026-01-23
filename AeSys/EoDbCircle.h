@@ -20,16 +20,16 @@ class EoDbCircle : public EoDbPrimitive {
  protected:
   EoGePoint3d m_center{};
   double m_radius{0.0};
-  EoGeVector3d m_extrusion{EoGeVector3d::kZAxis};
+  EoGeVector3d m_extrusion{EoGeVector3d::positiveUnitZ};
 
  public:
   EoDbCircle() = default;
 
   // Construct from DRW parameters
-  EoDbCircle(const EoGePoint3d& center, double radius, const EoGeVector3d& extrusion = EoGeVector3d::kZAxis);
+  EoDbCircle(const EoGePoint3d& center, double radius, const EoGeVector3d& extrusion = EoGeVector3d::positiveUnitZ);
 
   EoDbCircle(EoInt16 color, EoInt16 lineType, const EoGePoint3d& center, double radius,
-             const EoGeVector3d& extrusion = EoGeVector3d::kZAxis);
+             const EoGeVector3d& extrusion = EoGeVector3d::positiveUnitZ);
 
   EoDbCircle(const EoDbCircle& other);
   ~EoDbCircle() override = default;

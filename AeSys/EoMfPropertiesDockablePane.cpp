@@ -121,15 +121,15 @@ LRESULT EoMfPropertiesDockablePane::OnPropertyChanged(WPARAM, LPARAM lparam) {
         if (TabStyle == ::TabsStyles[i]) {
           switch (i) {
             case 0:
-              app.m_Options.m_nTabsStyle = EoApOptions::None;
+              app.m_Options.m_tabsStyle = EoApOptions::None;
               break;
 
             case 1:
-              app.m_Options.m_nTabsStyle = EoApOptions::Standard;
+              app.m_Options.m_tabsStyle = EoApOptions::Standard;
               break;
 
             case 2:
-              app.m_Options.m_nTabsStyle = EoApOptions::Grouped;
+              app.m_Options.m_tabsStyle = EoApOptions::Grouped;
               break;
           }
           break;
@@ -140,20 +140,20 @@ LRESULT EoMfPropertiesDockablePane::OnPropertyChanged(WPARAM, LPARAM lparam) {
     }
     case kTabLocation: {
       CString TabLocation = (LPCWSTR)(_bstr_t)Property->GetValue();
-      app.m_Options.m_MdiTabInfo.m_tabLocation = (TabLocation == TabLocations[0] ? CMFCTabCtrl::LOCATION_BOTTOM : CMFCTabCtrl::LOCATION_TOP);
+      app.m_Options.m_mdiTabInfo.m_tabLocation = (TabLocation == TabLocations[0] ? CMFCTabCtrl::LOCATION_BOTTOM : CMFCTabCtrl::LOCATION_TOP);
       break;
     }
     case kTabsAutoColor:
-      app.m_Options.m_MdiTabInfo.m_bAutoColor = Property->GetValue().boolVal == VARIANT_TRUE;
+      app.m_Options.m_mdiTabInfo.m_bAutoColor = Property->GetValue().boolVal == VARIANT_TRUE;
       break;
 
     case kTabIcons:
-      app.m_Options.m_MdiTabInfo.m_bTabIcons = Property->GetValue().boolVal == VARIANT_TRUE;
+      app.m_Options.m_mdiTabInfo.m_bTabIcons = Property->GetValue().boolVal == VARIANT_TRUE;
       break;
 
     case kTabBorderSize: {
       int nBorder = Property->GetValue().iVal;
-      app.m_Options.m_MdiTabInfo.m_nTabBorderSize = std::min(8, std::max(0, nBorder));
+      app.m_Options.m_mdiTabInfo.m_nTabBorderSize = std::min(8, std::max(0, nBorder));
       break;
     }
     case kActiveViewScale: {
@@ -211,7 +211,7 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   TabsStyle->AddOption(::TabsStyles[0], TRUE);
   TabsStyle->AddOption(::TabsStyles[1], TRUE);
   TabsStyle->AddOption(::TabsStyles[2], TRUE);
-  TabsStyle->SetValue(::TabsStyles[app.m_Options.m_nTabsStyle]);
+  TabsStyle->SetValue(::TabsStyles[app.m_Options.m_tabsStyle]);
   TabsStyle->AllowEdit(FALSE);
   WorkspaceTabsGroup->AddSubItem(TabsStyle);
 
@@ -219,17 +219,17 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
       new CMFCPropertyGridProperty(L"Tab Location", L"", L"Set the Tab Location to Top or Bottom", kTabLocation, nullptr, nullptr, nullptr);
   TabLocation->AddOption(::TabLocations[0], TRUE);
   TabLocation->AddOption(::TabLocations[1], TRUE);
-  TabLocation->SetValue(::TabLocations[app.m_Options.m_MdiTabInfo.m_tabLocation]);
+  TabLocation->SetValue(::TabLocations[app.m_Options.m_mdiTabInfo.m_tabLocation]);
   TabLocation->AllowEdit(FALSE);
   WorkspaceTabsGroup->AddSubItem(TabLocation);
 
-  COleVariant TabsAutoColor((short)(app.m_Options.m_MdiTabInfo.m_bAutoColor == TRUE), VT_BOOL);
+  COleVariant TabsAutoColor((short)(app.m_Options.m_mdiTabInfo.m_bAutoColor == TRUE), VT_BOOL);
   WorkspaceTabsGroup->AddSubItem(new CMFCPropertyGridProperty(L"Tabs auto-color", TabsAutoColor, L"Set Workspace Tabs to use automatic color", kTabsAutoColor));
 
-  COleVariant TabIcons((short)(app.m_Options.m_MdiTabInfo.m_bTabIcons == TRUE), VT_BOOL);
+  COleVariant TabIcons((short)(app.m_Options.m_mdiTabInfo.m_bTabIcons == TRUE), VT_BOOL);
   WorkspaceTabsGroup->AddSubItem(new CMFCPropertyGridProperty(L"Tab icons", TabIcons, L"Show document icons on Workspace Tabs", kTabIcons));
 
-  COleVariant TabBorderSize((short)(app.m_Options.m_MdiTabInfo.m_nTabBorderSize), VT_I2);
+  COleVariant TabBorderSize((short)(app.m_Options.m_mdiTabInfo.m_nTabBorderSize), VT_I2);
   CMFCPropertyGridProperty* BorderSize =
       new CMFCPropertyGridProperty(L"Border Size", TabBorderSize, L"Set Workspace border size from 0 to 8 pixels", kTabBorderSize);
   BorderSize->EnableSpinControl(TRUE, 0, 8);
@@ -375,7 +375,7 @@ void EoMfPropertiesDockablePane::SetWorkspaceTabsSubItemsState() {
         CMFCPropertyGridProperty* SubProperty = Property->GetSubItem(SubItemIndex);
 
         ASSERT_VALID(SubProperty);
-        SubProperty->Enable(app.m_Options.m_nTabsStyle != EoApOptions::None);
+        SubProperty->Enable(app.m_Options.m_tabsStyle != EoApOptions::None);
       }
     }
   }

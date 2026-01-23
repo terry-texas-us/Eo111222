@@ -1,7 +1,15 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+#include <afx.h>
+#include <afxmdichildwndex.h>
+#include <afxmsg_.h>
+#include <afxwin.h>
+#include <atltrace.h>
+
 #include "AeSys.h"
 #include "ChildFrm.h"
+#include "EoApOptions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -45,7 +53,7 @@ BOOL CChildFrame::DestroyWindow() {
 BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs) {
   if (!CMDIChildWndEx::PreCreateWindow(cs)) return FALSE;
 
-  if (app.m_Options.m_nTabsStyle != EoApOptions::None) { cs.style &= ~WS_SYSMENU; }
+  if (app.m_Options.m_tabsStyle != EoApOptions::None) { cs.style &= ~WS_SYSMENU; }
   return TRUE;
 }
 

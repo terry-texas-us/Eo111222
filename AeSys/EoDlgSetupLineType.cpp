@@ -113,7 +113,7 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
 
           activeView->SetViewWindow(0.0, 0.0, UExtent, VExtent);
           activeView->SetCameraTarget(EoGePoint3d::kOrigin);
-          activeView->SetCameraPosition(EoGeVector3d::kZAxis);
+          activeView->SetCameraPosition(EoGeVector3d::positiveUnitZ);
           double UMin =
               static_cast<double>(subItemRectangle.left) / static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
           double UMax = static_cast<double>(subItemRectangle.right) /

@@ -20,6 +20,10 @@ You can assume I know the code base well and should have little trouble with mod
 - Prefer RAII and smart pointers (`std::unique_ptr`, `std::shared_ptr` when required). Minimize raw `new`/`delete`.
 - Be conservative in migration from `CString` to `std::wstring` — prefer consistent conversions and avoid unnecessary copies.
 - Step away from MFC `CObject`; minimize dynamic runtime features; avoid file serialization; use `std::containers` and modern C++ idioms for collections.
+- Migrate away from MFC `CTypedPtrMap` to `std::map` and drop `CObject` inheritance for `EoDbLineType`.
+
+## DPI Handling
+- Prefer using `GetDpiForSystem` (or `GetDpiForWindow` when available) for DPI fixes in this codebase.
 
 ## Key Files & Entry Points (Open/Important)
 - Core primitive types and headers:

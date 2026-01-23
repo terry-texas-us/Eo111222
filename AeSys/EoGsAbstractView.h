@@ -2,6 +2,8 @@
 
 #include <DirectXMath.h>
 
+#include "EoGePoint3d.h"
+#include "EoGeVector3d.h"
 /*
 The view target and the direction create a display coordinate system (DCS).
 The z-direction equals the direction from target to camera (points toward viewer)

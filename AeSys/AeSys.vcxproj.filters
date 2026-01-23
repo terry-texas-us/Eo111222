@@ -410,6 +410,9 @@
     <ClCompile Include="EoDbArc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EoGeOcs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\AeSys.rc2">
@@ -2042,6 +2045,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EoDbPrimitive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EoGeOcs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

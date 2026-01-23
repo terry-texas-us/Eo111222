@@ -14,15 +14,17 @@
 #include <afxtoolbar.h>
 #include <afxtoolbarcomboboxbutton.h>
 #include <afxwin.h>
-#include <algorithm>
 #include <atltrace.h>
 #include <atltypes.h>
+#include <wchar.h>
+
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
-#include <wchar.h>
+#include <stdexcept>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -439,7 +441,7 @@ AeSysView::AeSysView()
       m_FixupModeCornerSize(0.25),
       // Edit Mode interface
       m_EditModeMirrorScale(-1.0, 1.0, 1.0),
-      m_EditModeRotationAngles(0.0, 0.0, 45.0),
+      m_editModeRotationAngles(0.0, 0.0, 45.0),
       m_EditModeScale(2.0, 2.0, 2.0),
 
       /// Low Pressure Duct Mode Interface
@@ -493,16 +495,19 @@ AeSysDoc* AeSysView::GetDocument() const {  // non-debug version is inline
 // Base class overides ////////////////////////////////////////////////////////
 
 void AeSysView::OnActivateFrame(UINT state, CFrameWnd* deactivateFrame) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state, deactivateFrame);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state,
+            deactivateFrame);
 
   CView::OnActivateFrame(state, deactivateFrame);
 }
 void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deactiveView) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate, activateView, deactiveView);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate,
+            activateView, deactiveView);
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
   if (activate) {
-    if (CopyAcceleratorTableW(MainFrame->m_hAccelTable, nullptr, 0) == 0) {  // Accelerator table was destroyed when keyboard focus was killed - reload resource
+    if (CopyAcceleratorTableW(MainFrame->m_hAccelTable, nullptr, 0) ==
+        0) {  // Accelerator table was destroyed when keyboard focus was killed - reload resource
       app.BuildModifiedAcceleratorTable();
     }
   }
@@ -552,7 +557,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
   CRect Rect;
   deviceContext->GetClipBox(Rect);
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right, Rect.bottom);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right,
+            Rect.bottom);
 
   if (Rect.IsRectEmpty()) { return; }
 
@@ -571,8 +577,10 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
       m_RenderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE::D2D1_ANTIALIAS_MODE_ALIASED);
 
-      D2D1_RECT_F rectangle1 = D2D1::RectF(rtSize.width / 2 - 50.0f, rtSize.height / 2 - 50.0f, rtSize.width / 2 + 50.0f, rtSize.height / 2 + 50.0f);
-      D2D1_RECT_F rectangle2 = D2D1::RectF(rtSize.width / 2 - 100.0f, rtSize.height / 2 - 100.0f, rtSize.width / 2 + 100.0f, rtSize.height / 2 + 100.0f);
+      D2D1_RECT_F rectangle1 = D2D1::RectF(rtSize.width / 2 - 50.0f, rtSize.height / 2 - 50.0f,
+                                           rtSize.width / 2 + 50.0f, rtSize.height / 2 + 50.0f);
+      D2D1_RECT_F rectangle2 = D2D1::RectF(rtSize.width / 2 - 100.0f, rtSize.height / 2 - 100.0f,
+                                           rtSize.width / 2 + 100.0f, rtSize.height / 2 + 100.0f);
 
       m_RenderTarget->FillRectangle(&rectangle1, m_RedBrush);
       m_RenderTarget->DrawRectangle(&rectangle2, m_LightSlateGrayBrush);
@@ -618,7 +626,8 @@ void AeSysView::OnInitialUpdate() {
 }
 
 void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint, hintObject);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint,
+            hintObject);
 
   CDC* DeviceContext = GetDC();
   COLORREF BackgroundColor = DeviceContext->GetBkColor();
@@ -720,8 +729,10 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
 
   if (deviceContext->IsPrinting()) {
     if (m_Plot) {
-      double HorizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
-      double VerticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
+      double HorizontalSizeInInches =
+          static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
+      double VerticalSizeInInches =
+          static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
 
       m_ViewTransform.Initialize(m_Viewport);
       m_ViewTransform.SetWindow(0.0, 0.0, HorizontalSizeInInches, VerticalSizeInInches);
@@ -735,7 +746,7 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
       double dY = ((pInfo->m_nCurPage - 1) / nHorzPages) * VerticalSizeInInches;
 
       m_ViewTransform.SetTarget(EoGePoint3d(dX, dY, 0.0));
-      m_ViewTransform.SetPosition(EoGeVector3d::kZAxis);
+      m_ViewTransform.SetPosition(EoGeVector3d::positiveUnitZ);
       m_ViewTransform.BuildTransformMatrix();
     } else {
     }
@@ -816,7 +827,7 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
     m_middleButtonPanStartPoint = point;
 
     EoGePoint3d target = m_ViewTransform.Target();
-  
+
     // Convert delta to world coordinates (scale as needed)
     target.x += static_cast<double>(-delta.cx) * m_ViewTransform.UExtent() / m_Viewport.Width();
     target.y += static_cast<double>(delta.cy) * m_ViewTransform.VExtent() / m_Viewport.Height();
@@ -892,10 +903,12 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
     CPen* Pen = DeviceContext->SelectObject(&GreyPen);
     CBrush* Brush = (CBrush*)DeviceContext->SelectStockObject(NULL_BRUSH);
 
-    DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y, m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+    DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
+                             m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
 
     m_RubberbandLogicalEndPoint = point;
-    DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y, m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+    DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
+                             m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
     DeviceContext->SelectObject(Brush);
     DeviceContext->SelectObject(Pen);
     DeviceContext->SetROP2(DrawMode);
@@ -904,7 +917,8 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
 }
 
 BOOL AeSysView::OnMouseWheel(UINT flags, EoInt16 zDelta, CPoint point) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>OnMouseWheel(%i, %i, %08.8lx)\n", this, flags, zDelta, point);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>OnMouseWheel(%i, %i, %08.8lx)\n", this, flags, zDelta,
+            point);
 
   if (zDelta > 0) {
     OnWindowZoomIn();
@@ -970,7 +984,9 @@ void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, 
 
 void AeSysView::InvokeNewModelTransform() { m_ModelTransform.InvokeNew(); }
 
-void AeSysView::SetLocalModelTransform(EoGeTransformMatrix& transformation) { m_ModelTransform.SetLocalTM(transformation); }
+void AeSysView::SetLocalModelTransform(EoGeTransformMatrix& transformation) {
+  m_ModelTransform.SetLocalTM(transformation);
+}
 
 void AeSysView::ReturnModelTransform() { m_ModelTransform.Return(); }
 
@@ -994,15 +1010,20 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
 
     // Determine the region of the bitmap to tranfer to display
     CRect rcWnd;
-    rcWnd.left = Eo::Round((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.top = Eo::Round((1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
-    rcWnd.right = Eo::Round((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.bottom = Eo::Round((1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
+    rcWnd.left =
+        Eo::Round((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
+    rcWnd.top = Eo::Round((1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) *
+                          static_cast<double>(bm.bmHeight));
+    rcWnd.right =
+        Eo::Round((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
+    rcWnd.bottom = Eo::Round((1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) *
+                             static_cast<double>(bm.bmHeight));
 
     int iWidSrc = rcWnd.Width();
     int iHgtSrc = rcWnd.Height();
 
-    deviceContext->StretchBlt(0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
+    deviceContext->StretchBlt(0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc,
+                              SRCCOPY);
 
     dcMem.SelectObject(pBitmap);
     deviceContext->SelectPalette(pPalette, FALSE);
@@ -1066,38 +1087,43 @@ void AeSysView::DisplayPixel(CDC* deviceContext, COLORREF cr, const EoGePoint3d&
 }
 
 void AeSysView::DoCameraRotate(int rotationDirection) {
-  EoGeVector3d vN = m_ViewTransform.Target() - m_ViewTransform.Position();
-  vN.Normalize();
+  try {
+    EoGeVector3d normal = m_ViewTransform.Target() - m_ViewTransform.Position();
+    normal.Normalize();
 
-  EoGeVector3d vU = EoGeCrossProduct(ViewUp(), vN);
-  vU.Normalize();
+    EoGeVector3d u = EoGeCrossProduct(ViewUp(), normal);
+    u.Normalize();
 
-  EoGeVector3d vV = EoGeCrossProduct(vN, vU);
-  vV.Normalize();
+    EoGeVector3d v = EoGeCrossProduct(normal, u);
+    v.Normalize();
 
-  EoGePoint3d position = m_ViewTransform.Position();
-  EoGePoint3d target = m_ViewTransform.Target();
-  switch (rotationDirection) {
-    case ID_CAMERA_ROTATELEFT: {
-      position = position.RotateAboutAxis(target, vV, Eo::DegreeToRadian(-10.0));
-      break;
+    EoGePoint3d position = m_ViewTransform.Position();
+    EoGePoint3d target = m_ViewTransform.Target();
+    switch (rotationDirection) {
+      case ID_CAMERA_ROTATELEFT: {
+        position = position.RotateAboutAxis(target, v, Eo::DegreeToRadian(-10.0));
+        break;
+      }
+      case ID_CAMERA_ROTATERIGHT:
+        position = position.RotateAboutAxis(target, v, Eo::DegreeToRadian(10.0));
+        break;
+
+      case ID_CAMERA_ROTATEUP:
+        position = position.RotateAboutAxis(target, u, Eo::DegreeToRadian(-10.0));
+        break;
+
+      case ID_CAMERA_ROTATEDOWN:
+        position = position.RotateAboutAxis(target, u, Eo::DegreeToRadian(10.0));
+        break;
     }
-    case ID_CAMERA_ROTATERIGHT:
-      position = position.RotateAboutAxis(target, vV, Eo::DegreeToRadian(10.0));
-      break;
-
-    case ID_CAMERA_ROTATEUP:
-      position = position.RotateAboutAxis(target, vU, Eo::DegreeToRadian(-10.0));
-      break;
-
-    case ID_CAMERA_ROTATEDOWN:
-      position = position.RotateAboutAxis(target, vU, Eo::DegreeToRadian(10.0));
-      break;
+    m_ViewTransform.SetPosition(position);
+    m_ViewTransform.SetViewUp(v);
+    m_ViewTransform.BuildTransformMatrix();
+    InvalidateRect(nullptr, TRUE);
+  } catch (const std::domain_error& error) {
+    ::MessageBoxA(nullptr, error.what(), "Camera Rotate Error", MB_ICONWARNING | MB_OK);
+    return;
   }
-  m_ViewTransform.SetPosition(position);
-  m_ViewTransform.SetViewUp(vV);
-  m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(nullptr, TRUE);
 }
 
 void AeSysView::DoWindowPan(double ratio) {
@@ -1130,9 +1156,9 @@ void AeSysView::OnSetupScale() {
 }
 
 void AeSysView::On3dViewsTop() {
-  m_ViewTransform.SetPosition(EoGeVector3d::kZAxis);
-  m_ViewTransform.SetDirection(EoGeVector3d::kZAxis);
-  m_ViewTransform.SetViewUp(EoGeVector3d::kYAxis);
+  m_ViewTransform.SetPosition(EoGeVector3d::positiveUnitZ);
+  m_ViewTransform.SetDirection(EoGeVector3d::positiveUnitZ);
+  m_ViewTransform.SetViewUp(EoGeVector3d::positiveUnitY);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
 
@@ -1140,45 +1166,45 @@ void AeSysView::On3dViewsTop() {
 }
 
 void AeSysView::On3dViewsBottom() {
-  m_ViewTransform.SetPosition(-EoGeVector3d::kZAxis);
-  m_ViewTransform.SetDirection(-EoGeVector3d::kZAxis);
-  m_ViewTransform.SetViewUp(EoGeVector3d::kYAxis);
+  m_ViewTransform.SetPosition(-EoGeVector3d::positiveUnitZ);
+  m_ViewTransform.SetDirection(-EoGeVector3d::positiveUnitZ);
+  m_ViewTransform.SetViewUp(EoGeVector3d::positiveUnitY);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);
 }
 
 void AeSysView::On3dViewsLeft() {
-  m_ViewTransform.SetPosition(-EoGeVector3d::kXAxis);
-  m_ViewTransform.SetDirection(-EoGeVector3d::kXAxis);
-  m_ViewTransform.SetViewUp(EoGeVector3d::kZAxis);
+  m_ViewTransform.SetPosition(-EoGeVector3d::positiveUnitX);
+  m_ViewTransform.SetDirection(-EoGeVector3d::positiveUnitX);
+  m_ViewTransform.SetViewUp(EoGeVector3d::positiveUnitZ);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);
 }
 
 void AeSysView::On3dViewsRight() {
-  m_ViewTransform.SetPosition(EoGeVector3d::kXAxis);
-  m_ViewTransform.SetDirection(EoGeVector3d::kXAxis);
-  m_ViewTransform.SetViewUp(EoGeVector3d::kZAxis);
+  m_ViewTransform.SetPosition(EoGeVector3d::positiveUnitX);
+  m_ViewTransform.SetDirection(EoGeVector3d::positiveUnitX);
+  m_ViewTransform.SetViewUp(EoGeVector3d::positiveUnitZ);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);
 }
 
 void AeSysView::On3dViewsFront() {
-  m_ViewTransform.SetPosition(-EoGeVector3d::kYAxis);
-  m_ViewTransform.SetDirection(-EoGeVector3d::kYAxis);
-  m_ViewTransform.SetViewUp(EoGeVector3d::kZAxis);
+  m_ViewTransform.SetPosition(-EoGeVector3d::positiveUnitY);
+  m_ViewTransform.SetDirection(-EoGeVector3d::positiveUnitY);
+  m_ViewTransform.SetViewUp(EoGeVector3d::positiveUnitZ);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);
 }
 
 void AeSysView::On3dViewsBack() {
-  m_ViewTransform.SetPosition(EoGeVector3d::kYAxis);
-  m_ViewTransform.SetDirection(EoGeVector3d::kYAxis);
-  m_ViewTransform.SetViewUp(EoGeVector3d::kZAxis);
+  m_ViewTransform.SetPosition(EoGeVector3d::positiveUnitY);
+  m_ViewTransform.SetDirection(EoGeVector3d::positiveUnitY);
+  m_ViewTransform.SetViewUp(EoGeVector3d::positiveUnitZ);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
   InvalidateRect(nullptr, TRUE);
@@ -1208,7 +1234,7 @@ void AeSysView::On3dViewsIsometric() {
     m_ViewTransform.SetDirection(-Direction);
     m_ViewTransform.EnablePerspective(false);
 
-    EoGeVector3d ViewUp = EoGeCrossProduct(Direction, EoGeVector3d::kZAxis);
+    EoGeVector3d ViewUp = EoGeCrossProduct(Direction, EoGeVector3d::positiveUnitZ);
     ViewUp = EoGeCrossProduct(ViewUp, Direction);
     ViewUp.Normalize();
 
@@ -1460,7 +1486,7 @@ void AeSysView::OnRelativeMovesEngDown() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.y -= app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle());
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
   SetCursorPosition(pt);
 }
 
@@ -1468,7 +1494,7 @@ void AeSysView::OnRelativeMovesEngDownRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.y -= app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1482,7 +1508,7 @@ void AeSysView::OnRelativeMovesEngLeft() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.x -= app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle());
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
   SetCursorPosition(pt);
 }
 
@@ -1490,7 +1516,7 @@ void AeSysView::OnRelativeMovesEngLeftRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.x -= app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1504,7 +1530,7 @@ void AeSysView::OnRelativeMovesEngRight() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.x += app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle());
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
   SetCursorPosition(pt);
 }
 
@@ -1512,7 +1538,7 @@ void AeSysView::OnRelativeMovesEngRightRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.x += app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1520,7 +1546,7 @@ void AeSysView::OnRelativeMovesEngUp() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.y += app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle());
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
   SetCursorPosition(pt);
 }
 
@@ -1528,7 +1554,7 @@ void AeSysView::OnRelativeMovesEngUpRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.y += app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1572,7 +1598,7 @@ void AeSysView::OnRelativeMovesRightRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.x += app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, Eo::DegreeToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1580,7 +1606,7 @@ void AeSysView::OnRelativeMovesUpRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.y += app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, Eo::DegreeToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1588,7 +1614,7 @@ void AeSysView::OnRelativeMovesLeftRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.x -= app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, Eo::DegreeToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1596,7 +1622,7 @@ void AeSysView::OnRelativeMovesDownRotate() {
   EoGePoint3d pt = GetCursorPosition();
   EoGePoint3d ptSec = pt;
   ptSec.y -= app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::kZAxis, Eo::DegreeToRadian(app.DimensionAngle()));
+  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(pt);
 }
 
@@ -1652,7 +1678,8 @@ AeSysView* AeSysView::GetActiveView() {
   if (MDIChildWnd == nullptr) { return nullptr; }
   CView* View = MDIChildWnd->GetActiveView();
 
-  if (!View->IsKindOf(RUNTIME_CLASS(AeSysView))) {  // View is the wrong kind (this could occur with splitter windows, or additional views in a single document.
+  if (!View->IsKindOf(RUNTIME_CLASS(
+          AeSysView))) {  // View is the wrong kind (this could occur with splitter windows, or additional views in a single document.
     return nullptr;
   }
   return (AeSysView*)View;
@@ -1777,9 +1804,13 @@ void AeSysView::OnUpdateViewBackgroundImage(CCmdUI* pCmdUI) {
   pCmdUI->SetCheck(m_viewBackgroundImage);
 }
 
-void AeSysView::OnUpdateBackgroundimageLoad(CCmdUI* pCmdUI) { pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) == 0); }
+void AeSysView::OnUpdateBackgroundimageLoad(CCmdUI* pCmdUI) {
+  pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) == 0);
+}
 
-void AeSysView::OnUpdateBackgroundimageRemove(CCmdUI* pCmdUI) { pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) != 0); }
+void AeSysView::OnUpdateBackgroundimageRemove(CCmdUI* pCmdUI) {
+  pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) != 0);
+}
 
 void AeSysView::OnUpdateViewPenwidths(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewPenWidths); }
 
@@ -1885,7 +1916,8 @@ EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double toleranc
       if (Primitive->Is(EoDb::kEllipsePrimitive)) {
         EoDbEllipse* Arc = static_cast<EoDbEllipse*>(Primitive);
 
-        if (fabs(Arc->SweepAngle() - Eo::TwoPi) <= DBL_EPSILON && (Arc->MajorAxis().SquaredLength() - Arc->MinorAxis().SquaredLength()) <= DBL_EPSILON) {
+        if (fabs(Arc->SweepAngle() - Eo::TwoPi) <= DBL_EPSILON &&
+            (Arc->MajorAxis().SquaredLength() - Arc->MinorAxis().SquaredLength()) <= DBL_EPSILON) {
           if (point.DistanceTo(Arc->CenterPoint()) <= tolerance) {
             circle = Arc;
             return Group;
@@ -1919,7 +1951,8 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
   return 0;
 }
 
-EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor, EoInt16 pointStyle, EoDbPoint*& primitive) {
+EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor,
+                                            EoInt16 pointStyle, EoDbPoint*& primitive) {
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
     auto* Group = GetNextVisibleGroup(GroupPosition);
@@ -1987,7 +2020,8 @@ EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& pt) {
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
       if (Primitive->Is(EoDb::kTextPrimitive)) {
         EoGePoint3d ptProj;
-        if (static_cast<EoDbText*>(Primitive)->SelectUsingPoint(this, ptView, ptProj)) return static_cast<EoDbText*>(Primitive);
+        if (static_cast<EoDbText*>(Primitive)->SelectUsingPoint(this, ptView, ptProj))
+          return static_cast<EoDbText*>(Primitive);
       }
     }
   }
@@ -2143,7 +2177,8 @@ void AeSysView::OnFind() {
   VerifyFindString(findCombo, findComboText);
 
   if (!findComboText.IsEmpty()) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnFind() ComboText = %ls\n", static_cast<LPCTSTR>(findComboText));
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnFind() ComboText = %ls\n",
+              static_cast<LPCTSTR>(findComboText));
   }
 }
 
@@ -2177,7 +2212,9 @@ void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CStrin
   }
 }
 
-void AeSysView::OnEditFind() { ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnEditFind() - Entering\n"); }
+void AeSysView::OnEditFind() {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnEditFind() - Entering\n");
+}
 
 // Disables rubberbanding.
 void AeSysView::RubberBandingDisable() {
@@ -2192,7 +2229,8 @@ void AeSysView::RubberBandingDisable() {
       DeviceContext->LineTo(m_RubberbandLogicalEndPoint);
     } else if (m_RubberbandType == Rectangles) {
       CBrush* Brush = (CBrush*)DeviceContext->SelectStockObject(NULL_BRUSH);
-      DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y, m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+      DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
+                               m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
       DeviceContext->SelectObject(Brush);
     }
     DeviceContext->SelectObject(Pen);
@@ -2323,7 +2361,8 @@ void AeSysView::SetModeCursor(int mode) {
       SetCursor(static_cast<HCURSOR>(LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE)));
       return;
   }
-  auto cursorHandle = static_cast<HCURSOR>(LoadImageW(app.GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+  auto cursorHandle = static_cast<HCURSOR>(
+      LoadImageW(app.GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
   VERIFY(cursorHandle);
   SetCursor(cursorHandle);
   SetClassLongPtr(this->GetSafeHwnd(), GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursorHandle));
@@ -2408,7 +2447,8 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
       double Ratio = WidthInInches() / UExtent();
       CString RatioAsString;
       RatioAsString.Format(L"=%-8.3f", Ratio);
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, RatioAsString, (UINT)RatioAsString.GetLength(), 0);
+      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, RatioAsString,
+                                 (UINT)RatioAsString.GetLength(), 0);
     }
     if ((item & DimLen) == DimLen || (item & DimAng) == DimAng) {
       rc.SetRect(58 * tm.tmAveCharWidth, ClientRect.top, 90 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
@@ -2419,7 +2459,8 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
       app.FormatAngle(Angle, Eo::DegreeToRadian(app.DimensionAngle()), 8, 3);
       Angle.ReleaseBuffer();
       LengthAndAngle.Append(L" @ " + Angle);
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, LengthAndAngle, (UINT)LengthAndAngle.GetLength(), 0);
+      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, LengthAndAngle,
+                                 (UINT)LengthAndAngle.GetLength(), 0);
     }
     DeviceContext->SetBkColor(crBk);
     DeviceContext->SetTextColor(crText);
@@ -2440,10 +2481,15 @@ HRESULT AeSysView::CreateDeviceResources() {
     D2D1_SIZE_U size = D2D1::SizeU(rc.right - rc.left, rc.bottom - rc.top);
 
     HWND WindowHandle = GetSafeHwnd();
-    hr = app.m_Direct2dFactory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(WindowHandle, size), &m_RenderTarget);
+    hr = app.m_Direct2dFactory->CreateHwndRenderTarget(
+        D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(WindowHandle, size), &m_RenderTarget);
 
-    if (SUCCEEDED(hr)) { hr = m_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::LightSlateGray), &m_LightSlateGrayBrush); }
-    if (SUCCEEDED(hr)) { hr = m_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red, 0.3f), &m_RedBrush); }
+    if (SUCCEEDED(hr)) {
+      hr = m_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::LightSlateGray), &m_LightSlateGrayBrush);
+    }
+    if (SUCCEEDED(hr)) {
+      hr = m_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red, 0.3f), &m_RedBrush);
+    }
   }
   return hr;
 }

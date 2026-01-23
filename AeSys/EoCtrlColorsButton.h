@@ -1,6 +1,11 @@
 ﻿#pragma once
 
-// EoCtrlColorsButton
+#include <Windows.h>
+
+#include <afx.h>
+#include <afxbutton.h>
+#include <afxwin.h>
+#include <atltypes.h>
 
 class EoCtrlColorsButton : public CMFCButton {
   DECLARE_DYNAMIC(EoCtrlColorsButton)
@@ -18,9 +23,9 @@ class EoCtrlColorsButton : public CMFCButton {
   EoUInt16 m_EndIndex;
   EoUInt16 m_SubItem;
 
-  void DrawCell(CDC* deviceContext, EoUInt16 index, COLORREF color);
-  EoUInt16 SubItemByPoint(const CPoint& point);
-  void SubItemRectangleByIndex(EoUInt16 index, CRect& rectangle);
+  void DrawCell(CDC* deviceContext, EoUInt16 index, COLORREF color) const;
+  EoUInt16 SubItemByPoint(const CPoint& point) const;
+  void SubItemRectangleByIndex(EoUInt16 index, CRect& rectangle) const;
 
  public:
   EoCtrlColorsButton();

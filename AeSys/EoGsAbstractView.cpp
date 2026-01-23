@@ -10,16 +10,16 @@ EoGsAbstractView::EoGsAbstractView() {
   m_UcsOrthoViewType = 1;
 
   m_UCSOrigin = EoGePoint3d::kOrigin;
-  m_UCSXAxis = EoGeVector3d::kXAxis;
-  m_UCSYAxis = EoGeVector3d::kYAxis;
+  m_UCSXAxis = EoGeVector3d::positiveUnitX;
+  m_UCSYAxis = EoGeVector3d::positiveUnitY;
   m_Elevation = 0.;
 
   m_LensLength = 50.0;
 
   SetTarget(EoGePoint3d::kOrigin);
-  SetPosition(EoGePoint3d::kOrigin + EoGeVector3d::kZAxis * m_LensLength);
-  SetDirection(EoGeVector3d::kZAxis);
-  SetViewUp(EoGeVector3d::kYAxis);
+  SetPosition(EoGePoint3d::kOrigin + EoGeVector3d::positiveUnitZ * m_LensLength);
+  SetDirection(EoGeVector3d::positiveUnitZ);
+  SetViewUp(EoGeVector3d::positiveUnitY);
   m_TwistAngle = 0.0;
   m_Height = 1.0;
   m_Width = 1.0;

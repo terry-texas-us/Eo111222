@@ -25,7 +25,7 @@
 
 EoDbBlockReference::EoDbBlockReference() {
   m_insertionPoint = EoGePoint3d::kOrigin;
-  m_normal = EoGeVector3d::kZAxis;
+  m_normal = EoGeVector3d::positiveUnitZ;
   m_scaleFactors = EoGeVector3d(1.0, 1.0, 1.0);
   m_rotation = 0.0;
   m_columnCount = 1;
@@ -36,7 +36,7 @@ EoDbBlockReference::EoDbBlockReference() {
 
 EoDbBlockReference::EoDbBlockReference(const CString& name, const EoGePoint3d& insertionPoint)
     : m_blockName(name), m_insertionPoint(insertionPoint) {
-  m_normal = EoGeVector3d::kZAxis;
+  m_normal = EoGeVector3d::positiveUnitZ;
   m_scaleFactors = EoGeVector3d(1.0, 1.0, 1.0);
   m_rotation = 0.0;
   m_columnCount = 1;

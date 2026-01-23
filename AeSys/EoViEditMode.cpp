@@ -11,21 +11,15 @@
 #include "Resource.h"
 
 void AeSysView::OnEditModeOptions() {
-  EoDlgEditOptions Dialog(this);
-  Dialog.m_EditModeScaleX = m_EditModeScale.x;
-  Dialog.m_EditModeScaleY = m_EditModeScale.y;
-  Dialog.m_EditModeScaleZ = m_EditModeScale.z;
-  Dialog.m_EditModeRotationAngleX = m_EditModeRotationAngles.x;
-  Dialog.m_EditModeRotationAngleY = m_EditModeRotationAngles.y;
-  Dialog.m_EditModeRotationAngleZ = m_EditModeRotationAngles.z;
+  EoDlgEditOptions editOptions(this);
+  m_EditModeScale.Get(editOptions.m_EditModeScaleX, editOptions.m_EditModeScaleY, editOptions.m_EditModeScaleZ);
+  m_editModeRotationAngles.Get(editOptions.m_EditModeRotationAngleX, editOptions.m_EditModeRotationAngleY,
+                               editOptions.m_EditModeRotationAngleZ);
 
-  if (Dialog.DoModal() == IDOK) {
-    m_EditModeRotationAngles.x = Dialog.m_EditModeRotationAngleX;
-    m_EditModeRotationAngles.y = Dialog.m_EditModeRotationAngleY;
-    m_EditModeRotationAngles.z = Dialog.m_EditModeRotationAngleZ;
-    m_EditModeScale.x = Dialog.m_EditModeScaleX;
-    m_EditModeScale.y = Dialog.m_EditModeScaleY;
-    m_EditModeScale.z = Dialog.m_EditModeScaleZ;
+  if (editOptions.DoModal() == IDOK) {
+    m_editModeRotationAngles.Set(editOptions.m_EditModeRotationAngleX, editOptions.m_EditModeRotationAngleY,
+                                 editOptions.m_EditModeRotationAngleZ);
+    m_EditModeScale.Set(editOptions.m_EditModeScaleX, editOptions.m_EditModeScaleY, editOptions.m_EditModeScaleZ);
   }
 }
 

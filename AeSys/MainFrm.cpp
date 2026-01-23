@@ -375,7 +375,7 @@ BOOL CMainFrame::OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) {
   return TRUE;
 }
 void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
-  switch (app.m_Options.m_nTabsStyle) {
+  switch (app.m_Options.m_tabsStyle) {
     case EoApOptions::None: {
       int MDITabsType;
 
@@ -399,16 +399,16 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
       m_wndClientArea.PostMessageW(WM_MDIMAXIMIZE, WPARAM(ActiveWnd), 0L);
       ::BringWindowToTop(ActiveWnd);
 
-      EnableMDITabs(TRUE, app.m_Options.m_MdiTabInfo.m_bTabIcons, app.m_Options.m_MdiTabInfo.m_tabLocation,
-                    app.m_Options.m_MdiTabInfo.m_bTabCloseButton, app.m_Options.m_MdiTabInfo.m_style,
-                    app.m_Options.m_MdiTabInfo.m_bTabCustomTooltips,
-                    app.m_Options.m_MdiTabInfo.m_bActiveTabCloseButton);
+      EnableMDITabs(TRUE, app.m_Options.m_mdiTabInfo.m_bTabIcons, app.m_Options.m_mdiTabInfo.m_tabLocation,
+                    app.m_Options.m_mdiTabInfo.m_bTabCloseButton, app.m_Options.m_mdiTabInfo.m_style,
+                    app.m_Options.m_mdiTabInfo.m_bTabCustomTooltips,
+                    app.m_Options.m_mdiTabInfo.m_bActiveTabCloseButton);
 
-      GetMDITabs().EnableAutoColor(app.m_Options.m_MdiTabInfo.m_bAutoColor);
-      GetMDITabs().EnableTabDocumentsMenu(app.m_Options.m_MdiTabInfo.m_bDocumentMenu);
-      GetMDITabs().EnableTabSwap(app.m_Options.m_MdiTabInfo.m_bEnableTabSwap);
-      GetMDITabs().SetTabBorderSize(app.m_Options.m_MdiTabInfo.m_nTabBorderSize);
-      GetMDITabs().SetFlatFrame(app.m_Options.m_MdiTabInfo.m_bFlatFrame);
+      GetMDITabs().EnableAutoColor(app.m_Options.m_mdiTabInfo.m_bAutoColor);
+      GetMDITabs().EnableTabDocumentsMenu(app.m_Options.m_mdiTabInfo.m_bDocumentMenu);
+      GetMDITabs().EnableTabSwap(app.m_Options.m_mdiTabInfo.m_bEnableTabSwap);
+      GetMDITabs().SetTabBorderSize(app.m_Options.m_mdiTabInfo.m_nTabBorderSize);
+      GetMDITabs().SetFlatFrame(app.m_Options.m_mdiTabInfo.m_bFlatFrame);
       break;
     }
     case EoApOptions::Grouped: {
@@ -416,7 +416,7 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
       m_wndClientArea.PostMessage(WM_MDIMAXIMIZE, WPARAM(ActiveWnd), 0L);
       ::BringWindowToTop(ActiveWnd);
 
-      EnableMDITabbedGroups(TRUE, app.m_Options.m_MdiTabInfo);
+      EnableMDITabbedGroups(TRUE, app.m_Options.m_mdiTabInfo);
       break;
     }
   }
@@ -429,7 +429,7 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
   }
   CMFCToolBar::SetNonPermittedCommands(lstCommands);
   if (resetMDIChild) {
-    BOOL bMaximize = app.m_Options.m_nTabsStyle != EoApOptions::None;
+    BOOL bMaximize = app.m_Options.m_tabsStyle != EoApOptions::None;
 
     HWND hwndT = ::GetWindow(m_hWndMDIClient, GW_CHILD);
     while (hwndT != nullptr) {
@@ -460,7 +460,7 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
     CPaneDivider* Divider = m_propertiesPane.GetDefaultPaneDivider();
     if (Divider != nullptr) { Divider->BringWindowToTop(); }
   }
-  CMDIFrameWndEx::m_bDisableSetRedraw = app.m_Options.m_bDisableSetRedraw;
+  CMDIFrameWndEx::m_bDisableSetRedraw = app.m_Options.m_disableSetRedraw;
 
   RecalcLayout();
   RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
@@ -469,7 +469,7 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
 // CMainFrame message handlers
 
 BOOL CMainFrame::OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOOL bDrop) {
-  if (bDrop || !app.m_Options.m_bTabsContextMenu) { return FALSE; }
+  if (bDrop || !app.m_Options.m_tabsContextMenu) { return FALSE; }
   CMenu menu;
   VERIFY(menu.LoadMenu(IDR_POPUP_MDITABS));
 

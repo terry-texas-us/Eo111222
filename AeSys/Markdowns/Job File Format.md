@@ -1,4 +1,3 @@
-/*
 There are two versions of this file type. The origins, and number of these files produced has forced the maintenance of the vax float format. The oldest version did not have a header component, so the first group begins at offset 0. 
 This version was probably the version used when there was linkage to a separate "sheet file" and all names were 4 letters which defined the directory tree.
 The second version (3) had a header which contained a copy of the information displayed in the sheet file, but none of its information is valid now. 
@@ -179,4 +178,3 @@ Segment (version 1)
 			Local reference y-axis				vaxfloat[3]		[41-44][45-48][49-52]
 			Number of characters				WORD			[53-54]
 			Text								char[]			[55-]
-*/

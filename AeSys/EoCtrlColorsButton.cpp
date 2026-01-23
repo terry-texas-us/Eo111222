@@ -1,4 +1,13 @@
 ﻿#include "Stdafx.h"
+
+#include <Windows.h>
+
+#include <afx.h>
+#include <afxbutton.h>
+#include <afxmsg_.h>
+#include <afxwin.h>
+#include <atltypes.h>
+
 #include <algorithm>
 
 #include "EoCtrlColorsButton.h"
@@ -38,7 +47,7 @@ EoCtrlColorsButton::EoCtrlColorsButton() {
   m_SubItem = 0;
 }
 EoCtrlColorsButton::~EoCtrlColorsButton() {}
-void EoCtrlColorsButton::DrawCell(CDC* deviceContext, EoUInt16 index, COLORREF color) {
+void EoCtrlColorsButton::DrawCell(CDC* deviceContext, EoUInt16 index, COLORREF color) const {
   if (index != 0) {
     CRect CellRectangle;
     SubItemRectangleByIndex(index, CellRectangle);
@@ -83,7 +92,7 @@ CSize EoCtrlColorsButton::SizeToContent(BOOL calculateOnly) {
   }
   return Size;
 }
-void EoCtrlColorsButton::SubItemRectangleByIndex(EoUInt16 index, CRect& rectangle) {
+void EoCtrlColorsButton::SubItemRectangleByIndex(EoUInt16 index, CRect& rectangle) const {
   rectangle.top = m_Margins.cx + m_CellSpacing.cy;
   rectangle.left = m_Margins.cy + m_CellSpacing.cx;
 
@@ -102,7 +111,7 @@ void EoCtrlColorsButton::SubItemRectangleByIndex(EoUInt16 index, CRect& rectangl
   rectangle.bottom = rectangle.top + m_CellSize.cy;
   rectangle.right = rectangle.left + m_CellSize.cx;
 }
-EoUInt16 EoCtrlColorsButton::SubItemByPoint(const CPoint& point) {
+EoUInt16 EoCtrlColorsButton::SubItemByPoint(const CPoint& point) const {
   CRect Rectangle;
   Rectangle.SetRectEmpty();
 
@@ -200,10 +209,8 @@ void EoCtrlColorsButton::OnKeyDown(UINT keyCode, UINT repeatCount, UINT flags) {
     DrawCell(DeviceContext, m_SubItem, m_Palette[m_SubItem]);
     ReleaseDC(DeviceContext);
 
-    NMHDR NotifyStructure;
+    NMHDR NotifyStructure{};
     NotifyStructure.hwndFrom = GetSafeHwnd();
-    NotifyStructure.idFrom = 0;
-    NotifyStructure.code = 0;
 
     ::SendMessage(GetParent()->GetSafeHwnd(), WM_NOTIFY, 0, (LPARAM)&NotifyStructure);
   }
@@ -226,10 +233,8 @@ void EoCtrlColorsButton::OnMouseMove(UINT flags, CPoint point) {
 
     DrawCell(DeviceContext, m_SubItem, m_Palette[m_SubItem]);
 
-    NMHDR NotifyStructure;
+    NMHDR NotifyStructure{};
     NotifyStructure.hwndFrom = GetSafeHwnd();
-    NotifyStructure.idFrom = 0;
-    NotifyStructure.code = 0;
 
     ::SendMessage(GetParent()->GetSafeHwnd(), WM_NOTIFY, 0, (LPARAM)&NotifyStructure);
   }
@@ -252,10 +257,8 @@ void EoCtrlColorsButton::OnSetFocus(CWnd* oldWindow) {
   DrawCell(DeviceContext, m_SubItem, m_Palette[m_SubItem]);
   ReleaseDC(DeviceContext);
 
-  NMHDR NotifyStructure;
+  NMHDR NotifyStructure{};
   NotifyStructure.hwndFrom = GetSafeHwnd();
-  NotifyStructure.idFrom = 0;
-  NotifyStructure.code = 0;
 
   ::SendMessage(GetParent()->GetSafeHwnd(), WM_NOTIFY, 0, (LPARAM)&NotifyStructure);
 }
