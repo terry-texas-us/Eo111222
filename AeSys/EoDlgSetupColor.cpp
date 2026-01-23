@@ -1,6 +1,18 @@
 ﻿#include "Stdafx.h"
 
+#include <Windows.h>
+
+#include <afx.h>
+#include <afxdd_.h>
+#include <afxmsg_.h>
+#include <afxstr.h>
+#include <afxwin.h>
+
+#include <algorithm>
+#include <atltypes.h>
+
 #include "AeSys.h"
+#include "EoCtrlColorsButton.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgSetupColor.h"
 #include "Resource.h"
@@ -21,7 +33,8 @@ ON_WM_GETDLGCODE()
 #pragma warning(pop)
 ON_WM_PAINT()
 END_MESSAGE_MAP()
-EoDlgSetupColor::EoDlgSetupColor(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgSetupColor::IDD, pParent), m_ColorIndex(0) {}
+EoDlgSetupColor::EoDlgSetupColor(CWnd* pParent /*=nullptr*/)
+    : CDialog(EoDlgSetupColor::IDD, pParent), m_ColorIndex(0) {}
 EoDlgSetupColor::~EoDlgSetupColor() {}
 void EoDlgSetupColor::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);
@@ -69,19 +82,19 @@ void EoDlgSetupColor::OnOK() {
   CDialog::OnOK();
 }
 void EoDlgSetupColor::OnClickedNamedColors() {
-  m_ColorIndex = m_NamedColorsButton.m_SubItem;
+  m_ColorIndex = m_NamedColorsButton.m_subItem;
   CDialog::OnOK();
 }
 void EoDlgSetupColor::OnClickedGrays() {
-  m_ColorIndex = m_GraysButton.m_SubItem;
+  m_ColorIndex = m_GraysButton.m_subItem;
   CDialog::OnOK();
 }
 void EoDlgSetupColor::OnClickedEvenColors() {
-  m_ColorIndex = m_EvenColorsButton.m_SubItem;
+  m_ColorIndex = m_EvenColorsButton.m_subItem;
   CDialog::OnOK();
 }
 void EoDlgSetupColor::OnClickedOddColors() {
-  m_ColorIndex = m_OddColorsButton.m_SubItem;
+  m_ColorIndex = m_OddColorsButton.m_subItem;
   CDialog::OnOK();
 }
 void EoDlgSetupColor::OnBnClickedByblockButton() {
@@ -99,7 +112,7 @@ void EoDlgSetupColor::OnChangeColorEdit() {
 BOOL EoDlgSetupColor::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult) {
   NMHDR* NotifyStructure = (NMHDR*)lParam;
   CWnd* ColorsButton = CWnd::FromHandle(NotifyStructure->hwndFrom);
-  DrawSelectionInformation(((EoCtrlColorsButton*)ColorsButton)->m_SubItem);
+  DrawSelectionInformation(((EoCtrlColorsButton*)ColorsButton)->m_subItem);
   return CDialog::OnNotify(wParam, lParam, pResult);
 }
 void EoDlgSetupColor::DrawSelectionInformation(EoUInt16 index) {
