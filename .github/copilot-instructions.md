@@ -10,17 +10,18 @@ You can assume I know the code base well and should have little trouble with mod
 
 ## General Guidelines
 - Purpose: Native MFC/C++ CAD/graphics application (AeSys). Keep suggestions compatible with the existing MFC architecture and on-disk file formats.
-- Architecture & patterns: MFC document/view pattern (classes: `AeSysDoc`, `AeSysView`) — suggestions should maintain MFC idioms where applicable.
-- Geometric primitives implement a common base (`EoDbPrimitive`) with virtuals for drawing, selection, transform, serialization — preserve virtual contract and ABI when changing signatures.
+- Architecture & patterns: MFC document/view pattern (classes: `AeSysDoc`, `AeSysView`) – suggestions should maintain MFC idioms where applicable.
+- Geometric primitives implement a common base (`EoDbPrimitive`) with virtuals for drawing, selection, transform, serialization – preserve virtual contract and ABI when changing signatures.
 - Use `Peg & Tra File Formats.md` to help understand the legacy file structure.
 
 ## Code Style, Linters & Formatting
-- Repository contains `.clang-format` and `.clang-tidy` at root — prefer those settings for formatting and static-analysis suggestions.
+- Repository contains `.clang-format` and `.clang-tidy` at root – prefer those settings for formatting and static-analysis suggestions.
 - For Visual Studio-specific formatting preferences, reference __Tools > Options > Text Editor > C/C++ > Formatting__.
 - Prefer RAII and smart pointers (`std::unique_ptr`, `std::shared_ptr` when required). Minimize raw `new`/`delete`.
-- Be conservative in migration from `CString` to `std::wstring` — prefer consistent conversions and avoid unnecessary copies.
+- Be conservative in migration from `CString` to `std::wstring` – prefer consistent conversions and avoid unnecessary copies.
 - Step away from MFC `CObject`; minimize dynamic runtime features; avoid file serialization; use `std::containers` and modern C++ idioms for collections.
 - Migrate away from MFC `CTypedPtrMap` to `std::map` and drop `CObject` inheritance for `EoDbLineType`.
+- Prefer camelCase for local variables; convert PascalCase local variables to camelCase when requested.
 
 ## DPI Handling
 - Prefer using `GetDpiForSystem` (or `GetDpiForWindow` when available) for DPI fixes in this codebase.
