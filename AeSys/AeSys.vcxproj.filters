@@ -401,13 +401,10 @@
     <ClCompile Include="Eo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EoDbCircle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbArc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EoGeOcs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EoDbConic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2032,16 +2029,13 @@
     <ClInclude Include="Eo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbCircle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EoDbArc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EoDbPrimitive.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EoGeOcs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EoDbConic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

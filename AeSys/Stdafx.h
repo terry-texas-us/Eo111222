@@ -76,6 +76,8 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 UINT AFXAPI HashKey(CString& str);
 
+#define AESYS_USE_CONIC_PRIMITIVE
+
 using EoUInt8 = std::uint8_t;
 using EoInt8 = std::int8_t;
 using EoInt16 = std::int16_t;

@@ -14,9 +14,8 @@ enum PrimitiveTypes {
   kGroupReferencePrimitive = 0x0102,
   kLinePrimitive = 0x0200,
   kPolygonPrimitive = 0x0400,
-  kCirclePrimitive = 0x1001,
-  kArcPrimitive = 0x1002,
   kEllipsePrimitive = 0x1003,
+  kConicPrimitive = 0x1004,
   kSplinePrimitive = 0x2000,
   kCSplinePrimitive = 0x2001,
   kPolylinePrimitive = 0x2002,
@@ -64,6 +63,7 @@ enum Precision { kEoTrueType = 1, kStrokeType };
 
 void ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& file, EoDbPrimitive*& primitive);
+void ConstructConicPrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructEllipsePrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructLinePrimitive(CFile& file, EoDbPrimitive*& primitive);

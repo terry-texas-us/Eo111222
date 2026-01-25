@@ -10,6 +10,7 @@
 #include "AeSysDoc.h"
 #include "Eo.h"
 #include "EoDb.h"
+#include "EoDbConic.h"
 #include "EoDbDimension.h"
 #include "EoDbEllipse.h"
 #include "EoDbGroup.h"
@@ -296,6 +297,8 @@ void EoDbJobFile::ConstructPrimitive(EoDbPrimitive*& primitive, EoInt16 Primitiv
     case EoDb::kEllipsePrimitive:
       primitive = ConvertEllipsePrimitive();
       break;
+    case EoDb::kConicPrimitive:
+      break;
     case EoDb::kCSplinePrimitive:
       ConvertCSplineToBSpline();
       [[fallthrough]];  // fall through and construct a EoDbSpline instead
@@ -354,7 +357,7 @@ EoDbPrimitive* EoDbJobFile::ConvertEllipsePrimitive() {
 
   if (SweepAngle > Eo::TwoPi || SweepAngle < -Eo::TwoPi) SweepAngle = Eo::TwoPi;
 
-  return new EoDbEllipse(PenColor, LineType, CenterPoint, MajorAxis, MinorAxis, SweepAngle);
+  return new EoDbEllipse(CenterPoint, MajorAxis, MinorAxis, SweepAngle, PenColor, LineType);
 }
 EoDbPrimitive* EoDbJobFile::ConvertLinePrimitive() {
   EoInt16 PenColor = EoInt16(m_PrimBuf[6]);
@@ -405,7 +408,7 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
   EoGeVector3d MinorAxis = EoGeCrossProduct(EoGeVector3d::positiveUnitZ, MajorAxis);
   SweepAngle = fabs(SweepAngle);
 
-  return new EoDbEllipse(PenColor, LineType, CenterPoint, MajorAxis, MinorAxis, SweepAngle);
+  return new EoDbEllipse(CenterPoint, MajorAxis, MinorAxis, SweepAngle, PenColor, LineType);
 }
 EoDbPrimitive* EoDbJobFile::ConvertVersion1LinePrimitive() {
   EoInt16 PenColor = EoInt16(m_PrimBuf[4] & 0x000f);
@@ -655,6 +658,22 @@ EoDbText::EoDbText(EoUInt8* buffer, int version) {
     m_strText = CString((LPCSTR)&buffer[55]);
   }
 }
+
+void EoDbConic::Write(CFile& file, EoUInt8* buffer) {
+  buffer[3] = 2;
+  *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kConicPrimitive);
+  buffer[6] = static_cast<EoUInt8>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
+  buffer[7] = static_cast<EoUInt8>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
+  if (buffer[7] >= 16) buffer[7] = 2;
+
+  ((CVaxPnt*)&buffer[8])->Convert(m_center);
+  ((CVaxVec*)&buffer[20])->Convert(m_majorAxis);
+  ((CVaxVec*)&buffer[32])->Convert(m_minorAxis);
+  ((CVaxFloat*)&buffer[44])->Convert(m_sweepAngle);
+
+  file.Write(buffer, 64);
+}
+
 void EoDbEllipse::Write(CFile& file, EoUInt8* buffer) {
   buffer[3] = 2;
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kEllipsePrimitive);

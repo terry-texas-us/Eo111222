@@ -91,7 +91,7 @@ EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle);
 * @param vector2 Second vector
 * @return Cross product vector
 */
-EoGeVector3d EoGeCrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2);
+EoGeVector3d EoGeCrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept;
 
 /** @brief Computes the scalar product (= inner product) of the two vectors.
  * @param vector1 First vector
@@ -108,7 +108,7 @@ EoGeVector3d EoGeCrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& v
      θ = arccos(a • b / |a| |b|)
  * @endcode
  */
-double EoGeDotProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2);
+double EoGeDotProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept;
 
 constexpr bool EoGeNearEqual(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept {
   return (vector1 - vector2).IsNearNull();

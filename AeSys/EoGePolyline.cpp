@@ -193,9 +193,9 @@ bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersect
     if (EoGeLine::Intersection_xy(line, EoGeLine(ptBeg, ptEnd), ptInt)) {
       double dRel;
       line.RelOfPtToEndPts(ptInt, dRel);
-      if (dRel >= -DBL_EPSILON && dRel <= 1. + DBL_EPSILON) {
+      if (dRel >= -DBL_EPSILON && dRel <= 1.0 + DBL_EPSILON) {
         EoGeLine(ptBeg, ptEnd).RelOfPtToEndPts(ptInt, dRel);
-        if (dRel >= -DBL_EPSILON && dRel <= 1. + DBL_EPSILON) {
+        if (dRel >= -DBL_EPSILON && dRel <= 1.0 + DBL_EPSILON) {
           ptInt.z = ptBeg.z + dRel * (ptEnd.z - ptBeg.z);
           intersections.Add(ptInt);
         }

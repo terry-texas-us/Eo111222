@@ -98,7 +98,6 @@ class EoDbDrwInterface : public DRW_Interface {
       ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addCircle - entities section\n");
     }
     ConvertCircleEntity(circle, m_document);
-  
   }
   
   

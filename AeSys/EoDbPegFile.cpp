@@ -10,6 +10,7 @@
 #include "EoDb.h"
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
+#include "EoDbConic.h"
 #include "EoDbDimension.h"
 #include "EoDbEllipse.h"
 #include "EoDbFontDefinition.h"
@@ -431,6 +432,9 @@ bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive) {
     case EoDb::kEllipsePrimitive:
       ConstructEllipsePrimitive(file, primitive);
       break;
+    case EoDb::kConicPrimitive:
+      ConstructConicPrimitive(file, primitive);
+      break;
     case EoDb::kSplinePrimitive:
       ConstructSplinePrimitive(file, primitive);
       break;
@@ -572,6 +576,25 @@ void EoDb::ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive) {
 
   primitive = new EoDbDimension(PenColor, LineType, EoGeLine(BeginPoint, EndPoint), TextPenColor, FontDefinition, ReferenceSystem, Text);
 }
+
+void EoDb::ConstructConicPrimitive(CFile& file, EoDbPrimitive*& /* primitive */) {
+  auto color = EoDb::ReadInt16(file);
+  auto lineTypeIndex = EoDb::ReadInt16(file);
+  auto center(ReadPoint3d(file));
+  auto majorAxis(ReadVector3d(file));
+  auto extrusion(ReadVector3d(file));
+  double ratio;
+  EoDb::Read(file, ratio);
+  double startAngle;
+  EoDb::Read(file, startAngle);
+  double endAngle;
+  EoDb::Read(file, endAngle);
+
+  // primitive = new EoDbConic(center, majorAxis, extrusion, ratio, startAngle, endAngle);
+  // primitive->SetColor(color);
+  // primitive->SetLineTypeIndex(lineTypeIndex);
+}
+
 void EoDb::ConstructEllipsePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoInt16 PenColor = EoDb::ReadInt16(file);
   EoInt16 LineType = EoDb::ReadInt16(file);
@@ -580,7 +603,7 @@ void EoDb::ConstructEllipsePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoGeVector3d MinorAxis(ReadVector3d(file));
   double SweepAngle;
   EoDb::Read(file, SweepAngle);
-  primitive = new EoDbEllipse(PenColor, LineType, CenterPoint, MajorAxis, MinorAxis, SweepAngle);
+  primitive = new EoDbEllipse(CenterPoint, MajorAxis, MinorAxis, SweepAngle, PenColor, LineType);
 }
 void EoDb::ConstructLinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoInt16 PenColor = EoDb::ReadInt16(file);

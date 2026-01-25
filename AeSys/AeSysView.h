@@ -552,9 +552,9 @@ class AeSysView : public CView {
   EoGeVector3d EditModeInvertedScaleFactors() const {
     EoGeVector3d InvertedScaleFactors;
 
-    InvertedScaleFactors.x = fabs(m_EditModeScale.x) > DBL_EPSILON ? 1. / m_EditModeScale.x : 1.;
-    InvertedScaleFactors.y = fabs(m_EditModeScale.y) > DBL_EPSILON ? 1. / m_EditModeScale.y : 1.;
-    InvertedScaleFactors.z = fabs(m_EditModeScale.z) > DBL_EPSILON ? 1. / m_EditModeScale.z : 1.;
+    InvertedScaleFactors.x = fabs(m_EditModeScale.x) > DBL_EPSILON ? 1.0 / m_EditModeScale.x : 1.0;
+    InvertedScaleFactors.y = fabs(m_EditModeScale.y) > DBL_EPSILON ? 1.0 / m_EditModeScale.y : 1.0;
+    InvertedScaleFactors.z = fabs(m_EditModeScale.z) > DBL_EPSILON ? 1.0 / m_EditModeScale.z : 1.0;
 
     return InvertedScaleFactors;
   }

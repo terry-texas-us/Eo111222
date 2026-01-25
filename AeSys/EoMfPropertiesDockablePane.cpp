@@ -224,7 +224,7 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
 
   auto* activeView = AeSysView::GetActiveView();
 
-  double Scale = (activeView == nullptr) ? 1. : activeView->GetWorldScale();
+  double Scale = (activeView == nullptr) ? 1.0 : activeView->GetWorldScale();
 
   CMFCPropertyGridProperty* ActiveViewGroup = new CMFCPropertyGridProperty(L"Active View");
   CMFCPropertyGridProperty* WorldScaleProperty =

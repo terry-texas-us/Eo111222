@@ -7,6 +7,7 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDb.h"
+#include "EoDbConic.h"
 #include "EoDbEllipse.h"
 #include "EoDbGroup.h"
 #include "EoDbLine.h"

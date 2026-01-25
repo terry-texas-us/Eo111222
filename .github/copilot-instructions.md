@@ -22,6 +22,7 @@ You can assume I know the code base well and should have little trouble with mod
 - Step away from MFC `CObject`; minimize dynamic runtime features; avoid file serialization; use `std::containers` and modern C++ idioms for collections.
 - Migrate away from MFC `CTypedPtrMap` to `std::map` and drop `CObject` inheritance for `EoDbLineType`.
 - Prefer camelCase for local variables; convert PascalCase local variables to camelCase when requested.
+- Prefer marking simple geometric operations and getters `noexcept` when possible.
 
 ## DPI Handling
 - Prefer using `GetDpiForSystem` (or `GetDpiForWindow` when available) for DPI fixes in this codebase.

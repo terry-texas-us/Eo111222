@@ -552,7 +552,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
 
     case ArcCosine:
       if (fabs(adOp[0]) > 1.0) {
-        throw std::domain_error("acos of a value greater than 1. or less than -1.");
+        throw std::domain_error("acos of a value greater than 1.0 or less than -1.0");
       } else {
         adOp[0] = acos(Eo::RadianToDegree(adOp[0]));
       }
@@ -560,7 +560,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
 
     case ArcSine:
       if (fabs(adOp[0]) > 1.0) {
-        throw std::domain_error("asin of a value greater than 1. or less than -1.");
+        throw std::domain_error("asin of a value greater than 1.0 or less than -1.0");
       } else {
         adOp[0] = asin(Eo::RadianToDegree(adOp[0]));
       }

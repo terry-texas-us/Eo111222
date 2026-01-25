@@ -15,7 +15,6 @@
 #include "drw_base.h"
 
 class EoDbEllipse : public EoDbPrimitive {
- private:
   EoGePoint3d m_center;
   EoGeVector3d m_majorAxis;
   EoGeVector3d m_minorAxis;
@@ -24,24 +23,24 @@ class EoDbEllipse : public EoDbPrimitive {
  public:
   EoDbEllipse() : m_center{}, m_majorAxis{}, m_minorAxis{}, m_sweepAngle{0.0} {}
 
-  EoDbEllipse(EoGePoint3d& center, EoGeVector3d& extrusion, double radius);
+  EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start);
+
+  // EoDbEllipse(EoGePoint3d& center, EoGeVector3d& extrusion, double radius);
+
+  // EoDbEllipse(const EoGePoint3d& center, double radius, double startAngle, double endAngle);
 
   EoDbEllipse(const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis,
               double sweepAngle);
 
-  EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& majorAxis,
-              EoGeVector3d& minorAxis, double sweepAngle);
+  EoDbEllipse(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle, EoInt16 color,
+              EoInt16 lineTypeIndex);
 
-  EoDbEllipse(EoGePoint3d& center, double radius, EoInt16 penColor = COLOR_BYLAYER,
+  EoDbEllipse(EoGePoint3d& center, double radius, EoInt16 color = COLOR_BYLAYER,
               EoInt16 lineTypeIndex = LINETYPE_BYLAYER);
 
-  EoDbEllipse(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, EoGeVector3d& planeNormal, double radius);
+  EoDbEllipse(EoGePoint3d& center, EoGeVector3d& extrusion, double radius, EoInt16 color, EoInt16 lineTypeIndex);
 
-  EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start);
-
-  EoDbEllipse(EoGePoint3d beginPoint, EoGePoint3d intermediatePoint, EoGePoint3d endPoint);
-
-  EoDbEllipse(const DRW_Coord& centerPoint, double radius, double startAngle, double endAngle);
+  EoDbEllipse(EoGePoint3d begin, EoGePoint3d intermediate, EoGePoint3d end);
 
   EoDbEllipse(const EoDbEllipse&);
 

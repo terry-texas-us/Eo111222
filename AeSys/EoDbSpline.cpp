@@ -109,7 +109,7 @@ EoGePoint3d EoDbSpline::GoToNextControlPoint() {
 
   if (sm_RelationshipOfPoint <= DBL_EPSILON)
     pt = m_pts[i];
-  else if (sm_RelationshipOfPoint >= 1. - DBL_EPSILON)
+  else if (sm_RelationshipOfPoint >= 1.0 - DBL_EPSILON)
     pt = m_pts[0];
   else if (m_pts[i].x > m_pts[0].x)
     pt = m_pts[0];

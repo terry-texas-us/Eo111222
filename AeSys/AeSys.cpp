@@ -318,6 +318,13 @@ void AeSys::AddStringToMessageList(const std::wstring& message) {
   mainFrame->GetOutputPane().AddStringToMessageList(message);
   if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message.c_str()); }
 }
+void AeSys::AddStringToMessageList(const wchar_t* message) {
+  auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+
+  mainFrame->GetOutputPane().AddStringToMessageList(std::wstring(message));
+  if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message); }
+}
+
 void AeSys::AddModeInformationToMessageList() {
   CString ResourceString = EoAppLoadStringResource(static_cast<UINT>(m_CurrentMode));
   int NextToken = 0;

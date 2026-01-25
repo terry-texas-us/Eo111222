@@ -11,6 +11,7 @@
 #include "Eo.h"
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
+#include "EoDbConic.h"
 #include "EoDbDrwInterface.h"
 #include "EoDbEllipse.h"
 #include "EoDbGroup.h"
@@ -279,19 +280,30 @@ void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
 
 void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Arc entity conversion\n");
-  auto arcPrimitive = new EoDbEllipse(arc.basePoint, arc.radious, arc.staangle, arc.endangle);
-  arcPrimitive->SetBaseProperties(&arc, document);
-  AddToDocument(arcPrimitive, document);
+  EoGePoint3d center(arc.basePoint.x, arc.basePoint.y, arc.basePoint.z);
+  EoGeVector3d extrusion(arc.extPoint.x, arc.extPoint.y, arc.extPoint.z);
+
+  auto conicPrimitive = new EoDbConic(center, extrusion, arc.radious);
+  conicPrimitive->SetStartAngle(arc.staangle);
+  conicPrimitive->SetEndAngle(arc.endangle);
+
+  conicPrimitive->SetBaseProperties(&arc, document);
+  AddToDocument(conicPrimitive, document);
 }
 
 void EoDbDrwInterface::ConvertCircleEntity(const DRW_Circle& circle, AeSysDoc* document) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Circle entity conversion\n");
   EoGePoint3d center(circle.basePoint.x, circle.basePoint.y, circle.basePoint.z);
-  //EoGeVector3d extrusion(circle.extrusion.x, circle.extrusion.y, circle.extrusion.z);
-  EoGeVector3d extrusion(0.0, 0.0, 1.0);
-  auto circlePrimitive = new EoDbEllipse(center, extrusion, circle.radious);
-  circlePrimitive->SetBaseProperties(&circle, document);
-  AddToDocument(circlePrimitive, document);
+  EoGeVector3d extrusion(circle.extPoint.x, circle.extPoint.y, circle.extPoint.z);
+  
+  auto conicPrimitive = new EoDbConic(center, extrusion, circle.radious);
+
+  conicPrimitive->SetMinorAxis(EoGeCrossProduct(extrusion, conicPrimitive->MajorAxis()));
+  conicPrimitive->SetSweepAngle(Eo::TwoPi);
+
+  conicPrimitive->SetBaseProperties(&circle, document);
+  
+  AddToDocument(conicPrimitive, document);
 }
 
 void EoDbDrwInterface::ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* document) {

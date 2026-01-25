@@ -9,7 +9,6 @@
 #include "Eo.h"
 #include "EoDb.h"
 #include "EoDbCharacterCellDefinition.h"
-#include "EoDbCircle.h"
 #include "EoDbEllipse.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
@@ -130,10 +129,7 @@ void AeSysView::OnAnnotateModeBubble() {
     ReleaseDC(DeviceContext);
   }
   if (NumberOfSides() == 0) {
-/////////////////////////////////////////////////////////////////////////////////////
-    Group->AddTail(new EoDbCircle(1, 1, CurrentPnt, BubbleRadius()));
-/////////////////////////////////////////////////////////////////////////////////////
-    //Group->AddTail(new EoDbEllipse(1, 1, CurrentPnt, BubbleRadius()));
+    Group->AddTail(new EoDbEllipse(CurrentPnt, BubbleRadius(), 1, 1));
   } else {
     Group->AddTail(new EoDbPolyline(1, 1, CurrentPnt, BubbleRadius(), NumberOfSides()));
   }
@@ -319,14 +315,14 @@ void AeSysView::OnAnnotateModeCutIn() {
       dRel[0] = pLine->RelOfPt(ptsBox[0]);
       dRel[1] = pLine->RelOfPt(ptsBox[1]);
 
-      if (dRel[0] > DBL_EPSILON && dRel[1] < 1. - DBL_EPSILON) {
+      if (dRel[0] > DBL_EPSILON && dRel[1] < 1.0 - DBL_EPSILON) {
         EoDbLine* NewLinePrimitive = new EoDbLine(*pLine);
         pLine->EndPoint(ptsBox[0]);
         NewLinePrimitive->BeginPoint(ptsBox[1]);
         Group->AddTail(NewLinePrimitive);
       } else if (dRel[0] <= DBL_EPSILON)
         pLine->BeginPoint(ptsBox[1]);
-      else if (dRel[1] >= 1. - DBL_EPSILON)
+      else if (dRel[1] >= 1.0 - DBL_EPSILON)
         pLine->EndPoint(ptsBox[0]);
     }
     document->UpdateAllViews(nullptr, EoDb::kGroup, Group);

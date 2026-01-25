@@ -82,12 +82,12 @@ void EoDbDimension::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupL
   m_ln.RelOfPtToEndPts(pt[0], dRel[0]);
   m_ln.RelOfPtToEndPts(pt[1], dRel[1]);
 
-  if (dRel[0] <= DBL_EPSILON && dRel[1] >= 1. - DBL_EPSILON)
+  if (dRel[0] <= DBL_EPSILON && dRel[1] >= 1.0 - DBL_EPSILON)
     // Put entire dimension in trap
     pDim = this;
   else {  // Something gets cut
     pDim = new EoDbDimension(*this);
-    if (dRel[0] > DBL_EPSILON && dRel[1] < 1. - DBL_EPSILON) {  // Cut section out of middle
+    if (dRel[0] > DBL_EPSILON && dRel[1] < 1.0 - DBL_EPSILON) {  // Cut section out of middle
       pDim->BeginPoint(pt[1]);
       pDim->SetDefaultNote();
 
@@ -98,7 +98,7 @@ void EoDbDimension::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupL
       pDim->EndPoint(pt[1]);
       pDim->SetDefaultNote();
       m_ln.end = pt[0];
-    } else if (dRel[1] < 1. - DBL_EPSILON) {  // Cut in two and place begin section in trap
+    } else if (dRel[1] < 1.0 - DBL_EPSILON) {  // Cut in two and place begin section in trap
       pDim->EndPoint(pt[1]);
       pDim->SetDefaultNote();
       m_ln.begin = pt[1];

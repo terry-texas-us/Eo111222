@@ -359,7 +359,7 @@ void AeSysView::OnDimensionModeAngle() {
 
         auto* Group = new EoDbGroup;
         GenerateLineEndItem(1, 0.1, ptArrow, ln.begin, Group);
-        Group->AddTail(new EoDbEllipse(1, 1, ptCen, vXAx, vYAx, dAng));
+        Group->AddTail(new EoDbEllipse(ptCen, vXAx, vYAx, dAng, 1, 1));
         ptArrow = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, dAng - Eo::Radian);
         GenerateLineEndItem(1, 0.1, ptArrow, ln.end, Group);
 

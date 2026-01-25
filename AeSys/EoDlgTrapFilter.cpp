@@ -135,39 +135,39 @@ void EoDlgTrapFilter::FilterByPrimitiveType(const EoDb::PrimitiveTypes primitive
       EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
 
       switch (primitiveType) {
-        case EoDb::kLinePrimitive:
-          bFilter = Primitive->Is(EoDb::kLinePrimitive);
-          break;
-        case EoDb::kEllipsePrimitive:
-          bFilter = Primitive->Is(EoDb::kEllipsePrimitive);
-          break;
-        case EoDb::kGroupReferencePrimitive:
-          bFilter = Primitive->Is(EoDb::kGroupReferencePrimitive);
-          break;
-        case EoDb::kTextPrimitive:
-          bFilter = Primitive->Is(EoDb::kTextPrimitive);
-          break;
-        case EoDb::kPolygonPrimitive:
-          bFilter = Primitive->Is(EoDb::kPolygonPrimitive);
-          break;
-        case EoDb::kPolylinePrimitive:
-          bFilter = Primitive->Is(EoDb::kPolylinePrimitive);
-          break;
-        case EoDb::kPointPrimitive:
+        case EoDb::kPointPrimitive:           // 0x0100
           bFilter = Primitive->Is(EoDb::kPointPrimitive);
           break;
-        case EoDb::kArcPrimitive:
-          bFilter = Primitive->Is(EoDb::kArcPrimitive);
+        case EoDb::kInsertPrimitive:          // 0x0101
           break;
-        case EoDb::kCirclePrimitive:
-          bFilter = Primitive->Is(EoDb::kCirclePrimitive);
+        case EoDb::kGroupReferencePrimitive:  // 0x0102
+          bFilter = Primitive->Is(EoDb::kGroupReferencePrimitive);
           break;
-        case EoDb::kInsertPrimitive:
-        case EoDb::kSplinePrimitive:
-        case EoDb::kCSplinePrimitive:
-        case EoDb::kTagPrimitive:
-        case EoDb::kDimensionPrimitive:
-          // These types are not in the filter list UI, so ignore them.
+        case EoDb::kLinePrimitive:            // 0x0200
+          bFilter = Primitive->Is(EoDb::kLinePrimitive);
+          break;
+        case EoDb::kPolygonPrimitive:         // 0x0400
+          bFilter = Primitive->Is(EoDb::kPolygonPrimitive);
+          break;
+        case EoDb::kEllipsePrimitive:         // 0x1003
+          bFilter = Primitive->Is(EoDb::kEllipsePrimitive);
+          break;
+        case EoDb::kConicPrimitive:           // 0x1004
+          bFilter = Primitive->Is(EoDb::kConicPrimitive);
+          break;
+        case EoDb::kSplinePrimitive:          // 0x2000
+          break;
+        case EoDb::kCSplinePrimitive:         // 0x2001
+          break;
+        case EoDb::kPolylinePrimitive:        // 0x2002
+          bFilter = Primitive->Is(EoDb::kPolylinePrimitive);
+          break;
+        case EoDb::kTextPrimitive:            // 0x4000
+          bFilter = Primitive->Is(EoDb::kTextPrimitive);
+          break;
+        case EoDb::kTagPrimitive:             // 0x4100
+          break;
+        case EoDb::kDimensionPrimitive:       // 0x4200
           break;
       }
       if (bFilter) {

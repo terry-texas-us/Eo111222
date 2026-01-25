@@ -444,7 +444,7 @@ void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionRe
             FLT_EPSILON) {  // need to add a section either from the elbow or the existing section
       double SectionLength = existingSectionReferenceLine.Length();
       double DistanceToBeginPoint = Relationship * SectionLength;
-      if (Relationship > FLT_EPSILON && Relationship < 1. - FLT_EPSILON) {  // section from the elbow
+      if (Relationship > FLT_EPSILON && Relationship < 1.0 - FLT_EPSILON) {  // section from the elbow
         CurrentReferenceLine.end =
             CurrentReferenceLine.begin.ProjectToward(CurrentReferenceLine.end, SectionLength - DistanceToBeginPoint);
         GenerateRectangularSection(CurrentReferenceLine, m_CenterLineEccentricity, m_PreviousSection, group);

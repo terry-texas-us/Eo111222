@@ -326,7 +326,7 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDb
   tm.Inverse();
 
   long* plStrokeChrDef = plStrokeFontDef + 96;
-  double dChrSpac = 1. + (0.32 + fd.CharacterSpacing()) / 0.6;
+  double dChrSpac = 1.0 + (0.32 + fd.CharacterSpacing()) / 0.6;
 
   EoGePoint3d ptStroke = EoGePoint3d::kOrigin;
   EoGePoint3d ptChrPos = ptStroke;

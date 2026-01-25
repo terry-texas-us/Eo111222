@@ -95,7 +95,7 @@ EoGeMatrix& EoGeMatrix::operator*=(const EoGeMatrix& mB) {
 }
 EoGeMatrix& EoGeMatrix::operator/=(double scaleFactor) {
   ASSERT(scaleFactor != 0.0);
-  double InverseScaleFactor = 1. / scaleFactor;
+  double InverseScaleFactor = 1.0 / scaleFactor;
 
   m_row[0] *= InverseScaleFactor;
   m_row[1] *= InverseScaleFactor;

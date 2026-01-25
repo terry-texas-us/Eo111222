@@ -5,6 +5,7 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDb.h"
+#include "EoDbConic.h"
 #include "EoDbEllipse.h"
 #include "EoDbGroup.h"
 #include "EoDbLine.h"
@@ -209,7 +210,7 @@ void AeSysView::OnDrawModeReturn() {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
-      Group = new EoDbGroup(new EoDbEllipse(pts[0], CurrentPnt));
+      Group = new EoDbGroup(new EoDbConic(pts[0], CurrentPnt));
       break;
 
     case ID_OP8: {
@@ -330,7 +331,7 @@ void AeSysView::DoDrawModeMouseMove() {
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
 
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-        m_PreviewGroup.AddTail(new EoDbEllipse(pts[0], CurrentPnt));
+        m_PreviewGroup.AddTail(new EoDbConic(pts[0], CurrentPnt));
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;

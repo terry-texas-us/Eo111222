@@ -10,22 +10,20 @@ namespace EoGeOcs {
 
 static void MakeOrthonormalBasis(EoGeVector3d n, EoGeVector3d& u, EoGeVector3d& v) {
   // normalize n, fallback to Z if degenerate
-  if (n.IsNearNull()) {
-    n = EoGeVector3d(0.0, 0.0, 1.0);
-  }
+  if (n.IsNearNull()) { n = EoGeVector3d(0.0, 0.0, 1.0); }
   n.Normalize();
+  
   u = ComputeArbitraryAxis(n);
-  if (u.IsNearNull()) {
-    u = EoGeVector3d(1.0, 0.0, 0.0);
-  }
+  if (u.IsNearNull()) { u = EoGeVector3d(1.0, 0.0, 0.0); }
   u.Normalize();
+  
   v = EoGeCrossProduct(n, u);
   if (v.IsNearNull()) {
     // choose a perpendicular if cross failed
     if (fabs(n.x) < fabs(n.y)) {
-      v = EoGeCrossProduct(n, EoGeVector3d(1,0,0));
+      v = EoGeCrossProduct(n, EoGeVector3d(1, 0, 0));
     } else {
-      v = EoGeCrossProduct(n, EoGeVector3d(0,1,0));
+      v = EoGeCrossProduct(n, EoGeVector3d(0, 1, 0));
     }
   }
   v.Normalize();
@@ -56,4 +54,4 @@ void WcsToOcs(const EoGeVector3d& extrusionNormal, const EoGePoint3d& wcsPt, EoG
   ocsPt.z = EoGeDotProduct(EoGeVector3d(wcsPt.x, wcsPt.y, wcsPt.z), n);
 }
 
-} // namespace EoGeOcs
+}  // namespace EoGeOcs

@@ -191,7 +191,7 @@ bool EoGeLine::GetParallels(double distanceBetweenLines, double eccentricity, Eo
     double Y = (end.x - begin.x) * distanceBetweenLines / LengthOfLines;
 
     leftLine += EoGeVector3d(-X * eccentricity, Y * eccentricity, 0.0);
-    rightLine += EoGeVector3d(X * (1. - eccentricity), -Y * (1. - eccentricity), 0.0);
+    rightLine += EoGeVector3d(X * (1.0 - eccentricity), -Y * (1.0 - eccentricity), 0.0);
 
     return true;
   }

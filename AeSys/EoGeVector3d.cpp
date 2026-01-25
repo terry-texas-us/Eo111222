@@ -132,13 +132,13 @@ EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle) {
                       vector.z);
 }
 
-EoGeVector3d EoGeCrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) {
-  EoGeVector3d CrossProduct(vector1.y * vector2.z - vector1.z * vector2.y,
+EoGeVector3d EoGeCrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept {
+  EoGeVector3d crossProduct(vector1.y * vector2.z - vector1.z * vector2.y,
                             vector1.z * vector2.x - vector1.x * vector2.z,
                             vector1.x * vector2.y - vector1.y * vector2.x);
-  return CrossProduct;
+  return crossProduct;
 }
 
-double EoGeDotProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) {
+double EoGeDotProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept {
   return (vector1.x * vector2.x + vector1.y * vector2.y + vector1.z * vector2.z);
 }
