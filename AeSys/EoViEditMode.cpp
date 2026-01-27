@@ -24,9 +24,8 @@ void AeSysView::OnEditModeOptions() {
 void AeSysView::OnEditModePivot() {
   auto* Document = GetDocument();
 
-  EoGePoint3d pt = GetCursorPosition();
-  Document->SetTrapPivotPoint(pt);
-  // pSetSegPos(pTRAP_PVT_MRK_ID, pt);
+  auto cursorPosition = GetCursorPosition();
+  Document->SetTrapPivotPoint(cursorPosition);
 }
 
 void AeSysView::OnEditModeRotccw() {
@@ -61,36 +60,34 @@ void AeSysView::OnEditModeRotcw() {
 void AeSysView::OnEditModeMove() {
   auto* Document = GetDocument();
 
-  EoGePoint3d pt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   if (m_PreviousOp != ID_OP4) {
     m_PreviousOp = ModeLineHighlightOp(ID_OP4);
-    RubberBandingStartAtEnable(pt, Lines);
+    RubberBandingStartAtEnable(cursorPosition, Lines);
   } else {
     EoGeTransformMatrix tm;
-    tm.Translate(EoGeVector3d(Document->GetTrapPivotPoint(), pt));
+    tm.Translate(EoGeVector3d(Document->GetTrapPivotPoint(), cursorPosition));
 
     ModeLineUnhighlightOp(m_PreviousOp);
     RubberBandingDisable();
     Document->TransformTrappedGroups(tm);
   }
-  Document->SetTrapPivotPoint(pt);
+  Document->SetTrapPivotPoint(cursorPosition);
   // pSetSegPos(pTRAP_PVT_MRK_ID, pt);
 }
 
 void AeSysView::OnEditModeCopy() {
   auto* Document = GetDocument();
-
-  EoGePoint3d pt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   if (m_PreviousOp != ID_OP5) {
     m_PreviousOp = ModeLineHighlightOp(ID_OP5);
-    RubberBandingStartAtEnable(pt, Lines);
+    RubberBandingStartAtEnable(cursorPosition, Lines);
   } else {
     ModeLineUnhighlightOp(m_PreviousOp);
     RubberBandingDisable();
-    Document->CopyTrappedGroups(EoGeVector3d(Document->GetTrapPivotPoint(), pt));
+    Document->CopyTrappedGroups(EoGeVector3d(Document->GetTrapPivotPoint(), cursorPosition));
   }
-  Document->SetTrapPivotPoint(pt);
-  // pSetSegPos(pTRAP_PVT_MRK_ID, pt);
+  Document->SetTrapPivotPoint(cursorPosition);
 }
 
 void AeSysView::OnEditModeFlip() {

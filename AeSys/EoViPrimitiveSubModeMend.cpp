@@ -8,8 +8,8 @@
 #include "Resource.h"
 
 void AeSysView::OnModePrimitiveMend() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
-  EoGePoint4d ptView(CurrentPnt);
+  EoGePoint3d cursorPosition = GetCursorPosition();
+  EoGePoint4d ptView(cursorPosition);
   ModelViewTransformPoint(ptView);
 
   m_PrimitiveToMend = 0;
@@ -31,7 +31,7 @@ void AeSysView::OnModePrimitiveMend() {
       m_PrimitiveToMend = EngagedPrimitive();
     }
   }
-  m_MendPrimitiveBegin = CurrentPnt;
+  m_MendPrimitiveBegin = cursorPosition;
 
   if (m_PrimitiveToMend != 0) {
     m_PrimitiveToMend->Copy(m_PrimitiveToMendCopy);
@@ -43,12 +43,12 @@ void AeSysView::OnModePrimitiveMend() {
 }
 void AeSysView::PreviewMendPrimitive() {
   auto* document = GetDocument();
-  EoGePoint3d CurrentPnt = GetCursorPosition();
-  EoGeVector3d Translate(m_MendPrimitiveBegin, CurrentPnt);
+  EoGePoint3d cursorPosition = GetCursorPosition();
+  EoGeVector3d Translate(m_MendPrimitiveBegin, cursorPosition);
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_PrimitiveToMendCopy);
   m_PrimitiveToMendCopy->TranslateUsingMask(Translate, m_MendPrimitiveVertexIndex);
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, m_PrimitiveToMendCopy);
-  m_MendPrimitiveBegin = CurrentPnt;
+  m_MendPrimitiveBegin = cursorPosition;
 }
 void AeSysView::MendPrimitiveReturn() {
   auto* document = GetDocument();

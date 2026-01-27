@@ -25,14 +25,14 @@ void AeSysView::OnCutModeOptions() {}
 void AeSysView::OnCutModeTorch() {
   auto* Document = GetDocument();
 
-  EoGePoint3d pt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   auto* groups = new EoDbGroupList;
 
   EoGePoint3d ptCut;
 
   EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
-  EoGePoint4d ptView(pt);
+  EoGePoint4d ptView(cursorPosition);
   ModelViewTransformPoint(ptView);
 
   auto groupPosition = GetFirstVisibleGroupPosition();
@@ -60,14 +60,14 @@ void AeSysView::OnCutModeTorch() {
   delete groups;
 }
 void AeSysView::OnCutModeSlice() {
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   if (previousKeyDown != ID_OP2) {
-    previousPosition = ptCur;
-    RubberBandingStartAtEnable(ptCur, Lines);
+    previousPosition = cursorPosition;
+    RubberBandingStartAtEnable(cursorPosition, Lines);
     previousKeyDown = ModeLineHighlightOp(ID_OP2);
   } else {
     EoGePoint3d pt1 = previousPosition;
-    EoGePoint3d pt2 = ptCur;
+    EoGePoint3d pt2 = cursorPosition;
 
     auto* Document = GetDocument();
 
@@ -115,18 +115,18 @@ void AeSysView::OnCutModeSlice() {
 }
 void AeSysView::OnCutModeField() {
   CDC* DeviceContext = GetDC();
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   if (previousKeyDown != ID_OP4) {
-    previousPosition = ptCur;
-    RubberBandingStartAtEnable(ptCur, Rectangles);
+    previousPosition = cursorPosition;
+    RubberBandingStartAtEnable(cursorPosition, Rectangles);
     previousKeyDown = ModeLineHighlightOp(ID_OP4);
   } else {
     EoGePoint3d rLL, rUR;
 
-    rLL.x = std::min(previousPosition.x, ptCur.x);
-    rLL.y = std::min(previousPosition.y, ptCur.y);
-    rUR.x = std::max(previousPosition.x, ptCur.x);
-    rUR.y = std::max(previousPosition.y, ptCur.y);
+    rLL.x = std::min(previousPosition.x, cursorPosition.x);
+    rLL.y = std::min(previousPosition.y, cursorPosition.y);
+    rUR.x = std::max(previousPosition.x, cursorPosition.x);
+    rUR.y = std::max(previousPosition.y, cursorPosition.y);
 
     EoGePoint3d ptLL = rLL;
     EoGePoint3d ptUR = rUR;
@@ -192,13 +192,13 @@ void AeSysView::OnCutModeField() {
 }
 void AeSysView::OnCutModeClip() {
   CDC* DeviceContext = GetDC();
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   if (previousKeyDown != ID_OP7) {
-    previousPosition = ptCur;
+    previousPosition = cursorPosition;
     previousKeyDown = ModeLineHighlightOp(ID_OP7);
   } else {
     EoGePoint3d pt1 = previousPosition;
-    EoGePoint3d pt2 = ptCur;
+    EoGePoint3d pt2 = cursorPosition;
 
     if (pt1 == pt2) { return; }
 

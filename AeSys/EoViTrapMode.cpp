@@ -12,15 +12,15 @@ void AeSysView::OnTrapModeRemoveAdd() { app.OnTrapCommandsAddGroups(); }
 void AeSysView::OnTrapModePoint() {
   auto* Document = GetDocument();
 
-  EoGePoint3d pt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
-  EoGePoint4d ptView(pt);
+  EoGePoint4d ptView(cursorPosition);
   ModelViewTransformPoint(ptView);
 
   EoDbPolygon::EdgeToEvaluate() = 0;
 
   auto Position = GetFirstVisibleGroupPosition();
-  while (Position != 0) {
+  while (Position != nullptr) {
     auto* Group = GetNextVisibleGroup(Position);
 
     if (Document->FindTrappedGroup(Group) != 0) continue;
@@ -66,12 +66,12 @@ void AeSysView::OnTrapModeField() {
     RubberBandingStartAtEnable(m_PreviousPnt, Rectangles);
     m_PreviousOp = ModeLineHighlightOp(ID_OP4);
   } else {
-    EoGePoint3d pt = GetCursorPosition();
-    if (m_PreviousPnt == pt) return;
+    auto cursorPosition = GetCursorPosition();
+    if (m_PreviousPnt == cursorPosition) return;
 
     auto* Document = GetDocument();
 
-    EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(pt)};
+    EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(cursorPosition)};
 
     ModelViewTransformPoints(2, ptView);
 
@@ -151,9 +151,9 @@ void AeSysView::OnTraprModeRemoveAdd() { app.OnTrapCommandsAddGroups(); }
 void AeSysView::OnTraprModePoint() {
   auto* Document = GetDocument();
 
-  EoGePoint3d pt = GetCursorPosition();
+  EoGePoint3d cursorPosition = GetCursorPosition();
 
-  EoGePoint4d ptView(pt);
+  EoGePoint4d ptView(cursorPosition);
   ModelViewTransformPoint(ptView);
 
   EoDbPolygon::EdgeToEvaluate() = 0;
@@ -176,12 +176,12 @@ void AeSysView::OnTraprModeStitch() {
     RubberBandingStartAtEnable(m_PreviousPnt, Lines);
     m_PreviousOp = ModeLineHighlightOp(ID_OP2);
   } else {
-    EoGePoint3d pt = GetCursorPosition();
+    EoGePoint3d cursorPosition = GetCursorPosition();
 
-    if (m_PreviousPnt == pt) return;
+    if (m_PreviousPnt == cursorPosition) return;
     auto* Document = GetDocument();
 
-    EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(pt)};
+    EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(cursorPosition)};
 
     ModelViewTransformPoints(2, ptView);
 
@@ -206,12 +206,12 @@ void AeSysView::OnTraprModeField() {
     RubberBandingStartAtEnable(m_PreviousPnt, Rectangles);
     m_PreviousOp = ModeLineHighlightOp(ID_OP4);
   } else {
-    EoGePoint3d pt = GetCursorPosition();
-    if (m_PreviousPnt == pt) return;
+    auto cursorPosition = GetCursorPosition();
+    if (m_PreviousPnt == cursorPosition) { return; }
 
     auto* Document = GetDocument();
 
-    EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(pt)};
+    EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(cursorPosition)};
 
     ModelViewTransformPoints(2, ptView);
 

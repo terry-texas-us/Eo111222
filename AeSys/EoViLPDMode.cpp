@@ -6,7 +6,7 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDbCharacterCellDefinition.h"
-#include "EoDbEllipse.h"
+#include "EoDbConic.h"
 #include "EoDbLine.h"
 #include "EoDbPoint.h"
 #include "EoDbText.h"
@@ -27,9 +27,9 @@
 void AeSysView::OnLpdModeOptions() { SetDuctOptions(m_CurrentSection); }
 
 void AeSysView::OnLpdModeJoin() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
-  m_EndCapGroup = SelectPointUsingPoint(CurrentPnt, 0.01, 15, 8, m_EndCapPoint);
+  m_EndCapGroup = SelectPointUsingPoint(cursorPosition, 0.01, 15, 8, m_EndCapPoint);
   if (m_EndCapGroup != 0) {
     m_PreviousPnt = m_EndCapPoint->GetPt();
     m_PreviousSection.SetWidth(m_EndCapPoint->GetDat(0));
@@ -50,12 +50,12 @@ void AeSysView::OnLpdModeJoin() {
 }
 
 void AeSysView::OnLpdModeDuct() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   if (m_PreviousOp != 0) { m_PreviewGroup.DeletePrimitivesAndRemoveAll(); }
   if (m_PreviousOp == ID_OP2) {
-    CurrentPnt = SnapPointToAxis(m_PreviousPnt, CurrentPnt);
-    m_CurrentReferenceLine(m_PreviousPnt, CurrentPnt);
+    cursorPosition = SnapPointToAxis(m_PreviousPnt, cursorPosition);
+    m_CurrentReferenceLine(m_PreviousPnt, cursorPosition);
 
     auto* document = GetDocument();
     if (m_ContinueSection) {
@@ -115,7 +115,7 @@ void AeSysView::OnLpdModeDuct() {
     m_PreviousSection = m_CurrentSection;
   }
   m_PreviousOp = ID_OP2;
-  m_PreviousPnt = CurrentPnt;
+  m_PreviousPnt = cursorPosition;
 }
 
 void AeSysView::OnLpdModeTransition() {
@@ -129,7 +129,7 @@ void AeSysView::OnLpdModeTransition() {
 }
 
 void AeSysView::OnLpdModeTap() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   auto* document = GetDocument();
   if (m_PreviousOp != 0) {
@@ -137,12 +137,12 @@ void AeSysView::OnLpdModeTap() {
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   }
   EoDbLine* LinePrimitive;
-  auto* Group = SelectLineUsingPoint(CurrentPnt, LinePrimitive);
+  auto* Group = SelectLineUsingPoint(cursorPosition, LinePrimitive);
   if (Group != 0) {
-    EoGePoint3d TestPoint(CurrentPnt);
-    CurrentPnt = SnapPointToAxis(m_PreviousPnt, CurrentPnt);
-    CurrentPnt = LinePrimitive->ProjPt(CurrentPnt);
-    m_CurrentReferenceLine(m_PreviousPnt, CurrentPnt);
+    EoGePoint3d TestPoint(cursorPosition);
+    cursorPosition = SnapPointToAxis(m_PreviousPnt, cursorPosition);
+    cursorPosition = LinePrimitive->ProjPt(cursorPosition);
+    m_CurrentReferenceLine(m_PreviousPnt, cursorPosition);
 
     EJust Justification;
     int Relationship = m_CurrentReferenceLine.DirRelOfPt(TestPoint);
@@ -176,14 +176,14 @@ void AeSysView::OnLpdModeTap() {
       GenerateRectangularTap(Justification, m_PreviousSection);
       m_PreviousOp = 0;
       m_ContinueSection = false;
-      m_PreviousPnt = CurrentPnt;
+      m_PreviousPnt = cursorPosition;
     }
   } else
     app.AddStringToMessageList(IDS_MSG_LINE_NOT_SELECTED);
 }
 
 void AeSysView::OnLpdModeEll() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   auto* document = GetDocument();
   if (m_PreviousOp != 0) {
@@ -192,17 +192,17 @@ void AeSysView::OnLpdModeEll() {
   }
   if (m_PreviousOp == ID_OP2) {
     EoDbPoint* EndPointPrimitive = 0;
-    EoDbGroup* ExistingGroup = SelectPointUsingPoint(CurrentPnt, 0.01, 15, 8, EndPointPrimitive);
+    EoDbGroup* ExistingGroup = SelectPointUsingPoint(cursorPosition, 0.01, 15, 8, EndPointPrimitive);
     if (ExistingGroup == 0) {
       app.AddStringToMessageList(IDS_MSG_LPD_NO_END_CAP_LOC);
       return;
     }
-    CurrentPnt = EndPointPrimitive->GetPt();
+    cursorPosition = EndPointPrimitive->GetPt();
     Section ExistingSection(EndPointPrimitive->GetDat(0), EndPointPrimitive->GetDat(1), Section::Rectangular);
 
     EoDbPoint* BeginPointPrimitive = ExistingGroup->GetFirstDifferentPoint(EndPointPrimitive);
     if (BeginPointPrimitive != 0) {
-      EoGeLine ExistingSectionReferenceLine(BeginPointPrimitive->GetPt(), CurrentPnt);
+      EoGeLine ExistingSectionReferenceLine(BeginPointPrimitive->GetPt(), cursorPosition);
 
       EoGePoint3d IntersectionPoint(ExistingSectionReferenceLine.ProjPt(m_PreviousPnt));
       double Relationship;
@@ -245,13 +245,13 @@ void AeSysView::OnLpdModeTee() {
 }
 
 void AeSysView::OnLpdModeUpDown() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   int iRet = 0;  // dialog to "Select direction", 'Up.Down.'
   if (iRet >= 0) {
     if (m_PreviousOp == ID_OP2) {
-      CurrentPnt = SnapPointToAxis(m_PreviousPnt, CurrentPnt);
-      m_CurrentReferenceLine(m_PreviousPnt, CurrentPnt);
+      cursorPosition = SnapPointToAxis(m_PreviousPnt, cursorPosition);
+      m_CurrentReferenceLine(m_PreviousPnt, cursorPosition);
 
       auto* document = GetDocument();
       if (m_ContinueSection) {
@@ -279,12 +279,12 @@ void AeSysView::OnLpdModeUpDown() {
     }
     m_ContinueSection = false;
     m_PreviousOp = ID_OP2;
-    m_PreviousPnt = CurrentPnt;
+    m_PreviousPnt = cursorPosition;
   }
 }
 
 void AeSysView::OnLpdModeSize() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   double dAng = 0.;
   if (m_EndCapPoint != 0) {
@@ -299,17 +299,17 @@ void AeSysView::OnLpdModeSize() {
     }
     m_EndCapPoint = 0;
   }
-  GenSizeNote(CurrentPnt, dAng, m_PreviousSection);
+  GenSizeNote(cursorPosition, dAng, m_PreviousSection);
   if (m_PreviousOp != 0) RubberBandingDisable();
   m_PreviousOp = 0;
   m_ContinueSection = false;
 }
 
 void AeSysView::OnLpdModeReturn() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   if (m_PreviousOp != 0) { OnLpdModeEscape(); }
-  m_PreviousPnt = CurrentPnt;
+  m_PreviousPnt = cursorPosition;
 }
 
 void AeSysView::OnLpdModeEscape() {
@@ -635,11 +635,13 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
   Section->AddTail(new EoDbLine(LeftLine.end, LeftLine.begin));
 
   if (m_GenerateTurningVanes) {
-    EoGePoint3d BeginPoint = ((justification == Left) ? RightLine : LeftLine).ProjToBegPt(-m_DuctTapSize / 3.0);
-    EoGePoint3d EndPoint = m_CurrentReferenceLine.ProjToBegPt(-m_DuctTapSize / 2.0);
-
-    Section->AddTail(new EoDbEllipse(BeginPoint, 0.01, 1, pstate.LineType()));
-    Section->AddTail(new EoDbLine(1, pstate.LineType(), BeginPoint, EndPoint));
+    EoGePoint3d beginPoint = ((justification == Left) ? RightLine : LeftLine).ProjToBegPt(-m_DuctTapSize / 3.0);
+    EoGePoint3d endPoint = m_CurrentReferenceLine.ProjToBegPt(-m_DuctTapSize / 2.0);
+    auto* circle = EoDbConic::CreateCircleInView(beginPoint, 0.01);
+    circle->SetColor(1);
+    circle->SetLineTypeIndex(pstate.LineType());
+    Section->AddTail(circle);
+    Section->AddTail(new EoDbLine(1, pstate.LineType(), beginPoint, endPoint));
   }
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Section);
   return true;

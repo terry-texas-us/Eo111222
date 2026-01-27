@@ -15,17 +15,17 @@ void AeSysView::OnDraw2ModeOptions() {
 }
 
 void AeSysView::OnDraw2ModeJoin() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
-  CurrentPnt = SnapPointToAxis(m_PreviousPnt, CurrentPnt);
+  auto cursorPosition = GetCursorPosition();
+  cursorPosition = SnapPointToAxis(m_PreviousPnt, cursorPosition);
 
-  auto* Group = SelectGroupAndPrimitive(CurrentPnt);
+  auto* Group = SelectGroupAndPrimitive(cursorPosition);
 
   if (Group != 0) {
-    CurrentPnt = DetPt();
+    cursorPosition = DetPt();
     if (m_PreviousOp == 0) {  // Starting at existing wall
       m_BeginSectionGroup = Group;
       m_BeginSectionLine = static_cast<EoDbLine*>(EngagedPrimitive());
-      m_PreviousPnt = CurrentPnt;
+      m_PreviousPnt = cursorPosition;
       m_PreviousOp = ID_OP1;
     } else {  // Ending at existing wall
       m_EndSectionGroup = Group;
@@ -33,7 +33,7 @@ void AeSysView::OnDraw2ModeJoin() {
       OnDraw2ModeWall();
       OnDraw2ModeEscape();
     }
-    SetCursorPosition(CurrentPnt);
+    SetCursorPosition(cursorPosition);
   }
 }
 
@@ -42,7 +42,7 @@ void AeSysView::OnDraw2ModeWall() {
   EoGePoint3d ptBeg;
   EoGePoint3d ptInt;
 
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   auto* document = GetDocument();
   if (m_PreviousOp != 0) {
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
@@ -50,9 +50,9 @@ void AeSysView::OnDraw2ModeWall() {
   }
   if (m_EndSectionGroup == 0) {
     if (m_PreviousOp != 0) {
-      CurrentPnt = SnapPointToAxis(m_PreviousPnt, CurrentPnt);
+      cursorPosition = SnapPointToAxis(m_PreviousPnt, cursorPosition);
 
-      m_CurrentReferenceLine(m_PreviousPnt, CurrentPnt);
+      m_CurrentReferenceLine(m_PreviousPnt, cursorPosition);
       m_CurrentReferenceLine.GetParallels(m_DistanceBetweenLines, m_CenterLineEccentricity, m_CurrentLeftLine,
                                           m_CurrentRightLine);
 
@@ -74,10 +74,10 @@ void AeSysView::OnDraw2ModeWall() {
       m_PreviousReferenceLine = m_CurrentReferenceLine;
     }
     m_PreviousOp = ID_OP2;
-    m_PreviousPnt = CurrentPnt;
+    m_PreviousPnt = cursorPosition;
     SetCursorPosition(m_PreviousPnt);
   } else {
-    m_CurrentReferenceLine(m_PreviousPnt, CurrentPnt);
+    m_CurrentReferenceLine(m_PreviousPnt, cursorPosition);
     m_CurrentReferenceLine.GetParallels(m_DistanceBetweenLines, m_CenterLineEccentricity, m_CurrentLeftLine,
                                         m_CurrentRightLine);
 
@@ -99,7 +99,7 @@ void AeSysView::OnDraw2ModeWall() {
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_AssemblyGroup);
 
     EoDbLine* LinePrimitive = new EoDbLine(*m_EndSectionLine);
-    if (EoGeLine(m_PreviousPnt, CurrentPnt).DirRelOfPt(ptBeg) < 0.0) {
+    if (EoGeLine(m_PreviousPnt, cursorPosition).DirRelOfPt(ptBeg) < 0.0) {
       m_EndSectionLine->EndPoint(m_CurrentRightLine.end);
       LinePrimitive->BeginPoint(m_CurrentLeftLine.end);
     } else {
@@ -113,7 +113,7 @@ void AeSysView::OnDraw2ModeWall() {
     ModeLineUnhighlightOp(m_PreviousOp);
     m_ContinueCorner = false;
   }
-  m_PreviousPnt = CurrentPnt;
+  m_PreviousPnt = cursorPosition;
 }
 
 void AeSysView::OnDraw2ModeReturn() {

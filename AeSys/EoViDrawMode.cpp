@@ -22,92 +22,92 @@ EoUInt16 PreviousDrawCommand{};
 void AeSysView::OnDrawModeOptions() { AeSysDoc::GetDoc()->OnSetupOptionsDraw(); }
 
 void AeSysView::OnDrawModePoint() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
-  auto* Group = new EoDbGroup(new EoDbPoint(pstate.PenColor(), pstate.PointStyle(), CurrentPnt));
+  auto* Group = new EoDbGroup(new EoDbPoint(pstate.PenColor(), pstate.PointStyle(), cursorPosition));
   auto* document = GetDocument();
   document->AddWorkLayerGroup(Group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 }
 
 void AeSysView::OnDrawModeLine() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   if (PreviousDrawCommand != ID_OP2) {
     pts.RemoveAll();
-    pts.Add(CurrentPnt);
+    pts.Add(cursorPosition);
     PreviousDrawCommand = ModeLineHighlightOp(ID_OP2);
   } else {
     auto* document = GetDocument();
-    CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
+    cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
 
-    auto* Group = new EoDbGroup(new EoDbLine(pts[0], CurrentPnt));
+    auto* Group = new EoDbGroup(new EoDbLine(pts[0], cursorPosition));
     document->AddWorkLayerGroup(Group);
-    pts[0] = CurrentPnt;
+    pts[0] = cursorPosition;
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   }
 }
 
 void AeSysView::OnDrawModePolygon() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   if (PreviousDrawCommand != ID_OP3) {
     PreviousDrawCommand = ModeLineHighlightOp(ID_OP3);
     pts.RemoveAll();
-    pts.Add(CurrentPnt);
+    pts.Add(cursorPosition);
   } else {
     INT_PTR NumberOfPoints = pts.GetSize();
 
-    if (pts[NumberOfPoints - 1] != CurrentPnt) {
-      CurrentPnt = SnapPointToAxis(pts[NumberOfPoints - 1], CurrentPnt);
-      pts.Add(CurrentPnt);
+    if (pts[NumberOfPoints - 1] != cursorPosition) {
+      cursorPosition = SnapPointToAxis(pts[NumberOfPoints - 1], cursorPosition);
+      pts.Add(cursorPosition);
     }
   }
 }
 
 void AeSysView::OnDrawModeQuad() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   if (PreviousDrawCommand != ID_OP4) {
     PreviousDrawCommand = ModeLineHighlightOp(ID_OP4);
     pts.RemoveAll();
-    pts.Add(CurrentPnt);
+    pts.Add(cursorPosition);
   } else {
     OnDrawModeReturn();
   }
 }
 
 void AeSysView::OnDrawModeArc() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   if (PreviousDrawCommand != ID_OP5) {
     PreviousDrawCommand = ModeLineHighlightOp(ID_OP5);
     pts.RemoveAll();
-    pts.Add(CurrentPnt);
+    pts.Add(cursorPosition);
   } else {
     OnDrawModeReturn();
   }
 }
 
 void AeSysView::OnDrawModeBspline() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   if (PreviousDrawCommand != ID_OP6) {
     PreviousDrawCommand = ModeLineHighlightOp(ID_OP6);
 
     pts.RemoveAll();
-    pts.Add(CurrentPnt);
+    pts.Add(cursorPosition);
   } else {
-    pts.Add(CurrentPnt);
+    pts.Add(cursorPosition);
   }
 }
 
 void AeSysView::OnDrawModeCircle() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   if (PreviousDrawCommand != ID_OP7) {
     PreviousDrawCommand = ModeLineHighlightOp(ID_OP7);
     pts.RemoveAll();
-    pts.Add(CurrentPnt);
+    pts.Add(cursorPosition);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   } else {
     OnDrawModeReturn();
@@ -115,12 +115,12 @@ void AeSysView::OnDrawModeCircle() {
 }
 
 void AeSysView::OnDrawModeEllipse() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   if (PreviousDrawCommand != ID_OP8) {
     PreviousDrawCommand = ModeLineHighlightOp(ID_OP8);
     pts.RemoveAll();
-    pts.Add(CurrentPnt);
+    pts.Add(cursorPosition);
   } else {
     OnDrawModeReturn();
   }
@@ -136,53 +136,53 @@ void AeSysView::OnDrawModeInsert() {
 
 void AeSysView::OnDrawModeReturn() {
   auto* document = GetDocument();
-  auto CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   INT_PTR NumberOfPoints = pts.GetSize();
-  EoDbGroup* Group{};
+  EoDbGroup* group{};
 
   switch (PreviousDrawCommand) {
     case ID_OP2:
-      CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
-      Group = new EoDbGroup(new EoDbLine(pts[0], CurrentPnt));
+      cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
+      group = new EoDbGroup(new EoDbLine(pts[0], cursorPosition));
       break;
 
     case ID_OP3:
       if (NumberOfPoints == 1) return;
 
-      if (pts[NumberOfPoints - 1] == CurrentPnt) {
+      if (pts[NumberOfPoints - 1] == cursorPosition) {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
-      CurrentPnt = SnapPointToAxis(pts[NumberOfPoints - 1], CurrentPnt);
-      pts.Add(CurrentPnt);
-      Group = new EoDbGroup(new EoDbPolygon(pts));
+      cursorPosition = SnapPointToAxis(pts[NumberOfPoints - 1], cursorPosition);
+      pts.Add(cursorPosition);
+      group = new EoDbGroup(new EoDbPolygon(pts));
       break;
 
     case ID_OP4:
-      if (pts[NumberOfPoints - 1] == CurrentPnt) {
+      if (pts[NumberOfPoints - 1] == cursorPosition) {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
-      CurrentPnt = SnapPointToAxis(pts[NumberOfPoints - 1], CurrentPnt);
-      pts.Add(CurrentPnt);
+      cursorPosition = SnapPointToAxis(pts[NumberOfPoints - 1], cursorPosition);
+      pts.Add(cursorPosition);
 
       if (NumberOfPoints == 1) return;
 
       pts.Add(pts[0] + EoGeVector3d(pts[1], pts[2]));
 
-      Group = new EoDbGroup;
+      group = new EoDbGroup;
 
-      for (int i = 0; i < 4; i++) Group->AddTail(new EoDbLine(pts[i], pts[(i + 1) % 4]));
+      for (int i = 0; i < 4; i++) { group->AddTail(new EoDbLine(pts[i], pts[(i + 1) % 4])); }
 
       break;
 
     case ID_OP5: {
-      if (pts[NumberOfPoints - 1] == CurrentPnt) {
+      if (pts[NumberOfPoints - 1] == cursorPosition) {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
-      pts.Add(CurrentPnt);
+      pts.Add(cursorPosition);
 
       if (NumberOfPoints == 1) { return; }
 
@@ -192,31 +192,32 @@ void AeSysView::OnDrawModeReturn() {
         app.AddStringToMessageList(IDS_MSG_PTS_COLINEAR);
         return;
       }
-      Group = new EoDbGroup(conic);
+      group = new EoDbGroup(conic);
       break;
     }
     case ID_OP6:
       if (NumberOfPoints == 1) return;
 
-      pts.Add(CurrentPnt);
+      pts.Add(cursorPosition);
 
-      Group = new EoDbGroup(new EoDbSpline(pts));
+      group = new EoDbGroup(new EoDbSpline(pts));
       break;
 
-    case ID_OP7:
-      if (pts[NumberOfPoints - 1] == CurrentPnt) {
+    case ID_OP7: {
+      double radius = EoGePoint3d::Distance(pts[0], cursorPosition);
+      if (radius < Eo::geometricTolerance) {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
-      Group = new EoDbGroup(new EoDbConic(pts[0], CurrentPnt));
-      break;
+      group = new EoDbGroup(EoDbConic::CreateCircleInView(pts[0], radius));
+    } break;
 
     case ID_OP8: {
-      if (pts[NumberOfPoints - 1] == CurrentPnt) {
+      if (pts[NumberOfPoints - 1] == cursorPosition) {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
-      pts.Add(CurrentPnt);
+      pts.Add(cursorPosition);
       if (NumberOfPoints == 1) {
         SetCursorPosition(pts[0]);
         return;
@@ -232,14 +233,14 @@ void AeSysView::OnDrawModeReturn() {
       conic->SetColor(pstate.PenColor());
       conic->SetLineTypeIndex(pstate.LineType());
 
-      Group = new EoDbGroup(conic);
-      
+      group = new EoDbGroup(conic);
+
       break;
     }
     default:
       return;
   }
-  document->AddWorkLayerGroup(Group);
+  document->AddWorkLayerGroup(group);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   pts.RemoveAll();
   ModeLineUnhighlightOp(PreviousDrawCommand);
@@ -265,7 +266,7 @@ void AeSysView::OnDrawModeShiftReturn() {
   pts.RemoveAll();
 }
 void AeSysView::DoDrawModeMouseMove() {
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  EoGePoint3d cursorPosition = GetCursorPosition();
   INT_PTR NumberOfPoints = pts.GetSize();
 
   auto* document = GetDocument();
@@ -273,9 +274,9 @@ void AeSysView::DoDrawModeMouseMove() {
     case ID_OP2:
       VERIFY(pts.GetSize() > 0);
 
-      if (pts[0] != CurrentPnt) {
-        CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
-        pts.Add(CurrentPnt);
+      if (pts[0] != cursorPosition) {
+        cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
+        pts.Add(cursorPosition);
 
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -285,8 +286,8 @@ void AeSysView::DoDrawModeMouseMove() {
       break;
 
     case ID_OP3:
-      CurrentPnt = SnapPointToAxis(pts[NumberOfPoints - 1], CurrentPnt);
-      pts.Add(CurrentPnt);
+      cursorPosition = SnapPointToAxis(pts[NumberOfPoints - 1], cursorPosition);
+      pts.Add(cursorPosition);
 
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -299,12 +300,12 @@ void AeSysView::DoDrawModeMouseMove() {
       break;
 
     case ID_OP4:
-      CurrentPnt = SnapPointToAxis(pts[NumberOfPoints - 1], CurrentPnt);
-      pts.Add(CurrentPnt);
+      cursorPosition = SnapPointToAxis(pts[NumberOfPoints - 1], cursorPosition);
+      pts.Add(cursorPosition);
 
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       if (NumberOfPoints == 2) {
-        pts.Add(pts[0] + EoGeVector3d(pts[1], CurrentPnt));
+        pts.Add(pts[0] + EoGeVector3d(pts[1], cursorPosition));
         pts.Add(pts[0]);
       }
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -313,18 +314,18 @@ void AeSysView::DoDrawModeMouseMove() {
       break;
 
     case ID_OP5:
-      pts.Add(CurrentPnt);
+      pts.Add(cursorPosition);
 
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
       if (NumberOfPoints == 1) { m_PreviewGroup.AddTail(new EoDbPolyline(pts)); }
-      if (NumberOfPoints == 2) { m_PreviewGroup.AddTail(new EoDbConic(pts[0], pts[1], CurrentPnt)); }
+      if (NumberOfPoints == 2) { m_PreviewGroup.AddTail(new EoDbConic(pts[0], pts[1], cursorPosition)); }
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;
 
     case ID_OP6:
-      pts.Add(CurrentPnt);
+      pts.Add(cursorPosition);
 
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
 
@@ -333,18 +334,19 @@ void AeSysView::DoDrawModeMouseMove() {
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;
 
-    case ID_OP7:
-      if (pts[0] != CurrentPnt) {
+    case ID_OP7: {
+      double radius = EoGePoint3d::Distance(pts[0], cursorPosition);
+      if (radius > Eo::geometricTolerance) {
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
 
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-        m_PreviewGroup.AddTail(new EoDbConic(pts[0], CurrentPnt));
+        m_PreviewGroup.AddTail(EoDbConic::CreateCircleInView(pts[0], radius));
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
-      break;
+    } break;
 
     case ID_OP8:
-      pts.Add(CurrentPnt);
+      pts.Add(cursorPosition);
 
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -352,8 +354,8 @@ void AeSysView::DoDrawModeMouseMove() {
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
       } else {
         EoGeVector3d majorAxis(pts[0], pts[1]);
-        EoGeVector3d minorAxis(pts[0], CurrentPnt);
-        
+        EoGeVector3d minorAxis(pts[0], cursorPosition);
+
         if (minorAxis.Length() < Eo::geometricTolerance) { break; }
         auto extrusion = CrossProduct(majorAxis, minorAxis);
         extrusion.Normalize();

@@ -68,6 +68,7 @@ class EoGePoint3d {
 
  public:
   static const EoGePoint3d kOrigin;
+  static double Distance(const EoGePoint3d& a, const EoGePoint3d& b);
 
   static EoGePoint3d Max(EoGePoint3d& ptA, EoGePoint3d& ptB);
   static EoGePoint3d Mid(EoGePoint3d& ptA, EoGePoint3d& ptB);

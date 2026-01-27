@@ -131,3 +131,10 @@ void EoGePoint3d::Write(CFile& file) const {
   file.Write(&y, sizeof(double));
   file.Write(&z, sizeof(double));
 }
+
+double EoGePoint3d::Distance(const EoGePoint3d& a, const EoGePoint3d& b) {
+  double x = b.x - a.x;
+  double y = b.y - a.y;
+  double z = b.z - a.z;
+  return sqrt(x * x + y * y + z * z);
+}

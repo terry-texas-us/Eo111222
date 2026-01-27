@@ -1493,12 +1493,11 @@ void AeSysDoc::OnToolsGroupBreak() {
 
 void AeSysDoc::OnToolsGroupDelete() {
   auto* activeView = AeSysView::GetActiveView();
+  auto cursorPosition = activeView->GetCursorPosition();
 
-  EoGePoint3d pt = activeView->GetCursorPosition();
+  auto* Group = activeView->SelectGroupAndPrimitive(cursorPosition);
 
-  auto* Group = activeView->SelectGroupAndPrimitive(pt);
-
-  if (Group != 0) {
+  if (Group != nullptr) {
     AnyLayerRemove(Group);
     RemoveGroupFromAllViews(Group);
     if (RemoveTrappedGroup(Group) != nullptr) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
@@ -1587,11 +1586,11 @@ void AeSysDoc::OnToolsPrimitiveDelete() {
 void AeSysDoc::OnPrimModifyAttributes() {
   auto* activeView = AeSysView::GetActiveView();
 
-  EoGePoint3d pt = activeView->GetCursorPosition();
+  auto cursorPosition = activeView->GetCursorPosition();
 
-  auto* Group = activeView->SelectGroupAndPrimitive(pt);
+  auto* Group = activeView->SelectGroupAndPrimitive(cursorPosition);
 
-  if (Group != 0) {
+  if (Group != nullptr) {
     activeView->EngagedPrimitive()->ModifyState();
     UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, activeView->EngagedPrimitive());
   }
@@ -1779,9 +1778,9 @@ void AeSysDoc::OnPrimExtractNum() {
 void AeSysDoc::OnPrimExtractStr() {
   auto* activeView = AeSysView::GetActiveView();
 
-  EoGePoint3d pt = activeView->GetCursorPosition();
+  auto cursorPosition = activeView->GetCursorPosition();
 
-  if (activeView->SelectGroupAndPrimitive(pt)) {
+  if (activeView->SelectGroupAndPrimitive(cursorPosition)) {
     EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
 
     CString String;

@@ -107,8 +107,7 @@ void AeSysView::OnFixupModeOptions() {
 
 void AeSysView::OnFixupModeReference() {
   auto* Document = GetDocument();
-
-  EoGePoint3d ptCurPos = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   EoGePoint3d ptInt;
   EoGePoint3d ptCP;
@@ -118,11 +117,11 @@ void AeSysView::OnFixupModeReference() {
   EoGeVector3d vPlnNorm;
 
   if (referenceBlock != nullptr) { Document->UpdateAllViews(nullptr, EoDb::kPrimitive, referencePrimitive); }
-  referenceBlock = SelectGroupAndPrimitive(ptCurPos);
+  referenceBlock = SelectGroupAndPrimitive(cursorPosition);
   if (referenceBlock == nullptr) { return; }
   referencePrimitive = EngagedPrimitive();
   if (!referencePrimitive->Is(EoDb::kLinePrimitive)) { return; }
-  ptCurPos = DetPt();
+  cursorPosition = DetPt();
   static_cast<EoDbLine*>(referencePrimitive)->GetLine(referenceLine);
 
   if (PreviousFixupCommand == 0)
@@ -192,7 +191,7 @@ void AeSysView::OnFixupModeReference() {
 void AeSysView::OnFixupModeMend() {
   auto* Document = GetDocument();
 
-  EoGePoint3d ptCurPos = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   EoGePoint3d ptInt;
   EoGePoint3d ptCP;
@@ -203,7 +202,7 @@ void AeSysView::OnFixupModeMend() {
 
   EoDbLine* pLine;
 
-  pSegSec = SelectGroupAndPrimitive(ptCurPos);
+  pSegSec = SelectGroupAndPrimitive(cursorPosition);
   if (pSegSec == 0) { return; }
   pPrimSec = EngagedPrimitive();
   pLine = static_cast<EoDbLine*>(pPrimSec);
@@ -294,7 +293,7 @@ void AeSysView::OnFixupModeMend() {
 void AeSysView::OnFixupModeChamfer() {
   auto* Document = GetDocument();
 
-  EoGePoint3d ptCurPos = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   EoGePoint3d ptInt;
   EoGePoint3d ptCP;
@@ -305,7 +304,7 @@ void AeSysView::OnFixupModeChamfer() {
 
   EoDbLine* pLine;
 
-  pSegSec = SelectGroupAndPrimitive(ptCurPos);
+  pSegSec = SelectGroupAndPrimitive(cursorPosition);
   pPrimSec = EngagedPrimitive();
   pLine = static_cast<EoDbLine*>(pPrimSec);
   pLine->GetLine(lnSec);
@@ -364,7 +363,7 @@ void AeSysView::OnFixupModeChamfer() {
 void AeSysView::OnFixupModeFillet() {
   auto* Document = GetDocument();
 
-  EoGePoint3d ptCurPos = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   EoGePoint3d ptInt;
   EoGePoint3d ptCP;
@@ -375,7 +374,7 @@ void AeSysView::OnFixupModeFillet() {
 
   EoDbLine* pLine;
 
-  pSegSec = SelectGroupAndPrimitive(ptCurPos);
+  pSegSec = SelectGroupAndPrimitive(cursorPosition);
   pPrimSec = EngagedPrimitive();
   pLine = static_cast<EoDbLine*>(pPrimSec);
   pLine->GetLine(lnSec);
@@ -443,21 +442,21 @@ void AeSysView::OnFixupModeFillet() {
 void AeSysView::OnFixupModeSquare() {
   auto* Document = GetDocument();
 
-  EoGePoint3d ptCurPos = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   EoDbLine* pLine;
 
-  pSegSec = SelectGroupAndPrimitive(ptCurPos);
+  pSegSec = SelectGroupAndPrimitive(cursorPosition);
   if (pSegSec != 0) {
     pPrimSec = EngagedPrimitive();
-    ptCurPos = DetPt();
+    cursorPosition = DetPt();
     if (pPrimSec->Is(EoDb::kLinePrimitive)) {
       pLine = static_cast<EoDbLine*>(pPrimSec);
       pLine->GetLine(lnSec);
       double dLen = lnSec.Length();
       Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
-      lnSec.begin = SnapPointToAxis(ptCurPos, lnSec.begin);
-      lnSec.end = lnSec.begin.ProjectToward(ptCurPos, dLen);
+      lnSec.begin = SnapPointToAxis(cursorPosition, lnSec.begin);
+      lnSec.end = lnSec.begin.ProjectToward(cursorPosition, dLen);
       pLine->BeginPoint(SnapPointToGrid(lnSec.begin));
       pLine->EndPoint(SnapPointToGrid(lnSec.end));
       Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
@@ -468,11 +467,11 @@ void AeSysView::OnFixupModeSquare() {
 void AeSysView::OnFixupModeParallel() {
   auto* Document = GetDocument();
 
-  EoGePoint3d ptCurPos = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   EoDbLine* pLine;
 
-  pSegSec = SelectGroupAndPrimitive(ptCurPos);
+  pSegSec = SelectGroupAndPrimitive(cursorPosition);
   if (referenceBlock != nullptr && pSegSec != 0) {
     pPrimSec = EngagedPrimitive();
     if (pPrimSec->Is(EoDb::kLinePrimitive)) {

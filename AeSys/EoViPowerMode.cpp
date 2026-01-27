@@ -5,7 +5,7 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "EoDb.h"
-#include "EoDbEllipse.h"
+#include "EoDbConic.h"
 #include "EoDbGroup.h"
 #include "EoDbLine.h"
 #include "EoDbPolyline.h"
@@ -19,44 +19,44 @@ void AeSysView::OnPowerModeOptions() {
 
 void AeSysView::OnPowerModeCircuit() {
   auto* document = GetDocument();
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   m_PowerArrow = false;
   m_PowerConductor = false;
 
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
-  EoDbEllipse* SymbolCircle;
-  auto* Group = SelectCircleUsingPoint(CurrentPnt, 0.02, SymbolCircle);
-  if (Group != 0) {
-    CurrentPnt = SymbolCircle->CenterPoint();
-    double CurrentRadius = SymbolCircle->MajorAxis().Length();
+  EoDbConic* circle{};
+  auto* Group = SelectCircleUsingPoint(cursorPosition, 0.02, circle);
+  if (Group != nullptr) {
+    cursorPosition = circle->Center();
+    double CurrentRadius = circle->Radius();
 
     if (pts.IsEmpty()) {
-      pts.Add(CurrentPnt);
+      pts.Add(cursorPosition);
       m_PreviousOp = ModeLineHighlightOp(ID_OP2);
     } else {
       Group = new EoDbGroup;
       document->AddWorkLayerGroup(Group);
-      EoGePoint3d pt1 = pts[0].ProjectToward(CurrentPnt, m_PreviousRadius);
-      EoGePoint3d pt2 = CurrentPnt.ProjectToward(pts[0], CurrentRadius);
+      EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
+      EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], CurrentRadius);
       Group->AddTail(new EoDbLine(pt1, pt2));
-      pts[0] = CurrentPnt;
+      pts[0] = cursorPosition;
     }
     m_PreviousRadius = CurrentRadius;
   } else {
     if (pts.IsEmpty()) {
-      pts.Add(CurrentPnt);
+      pts.Add(cursorPosition);
     } else {
-      CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
+      cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
 
       Group = new EoDbGroup;
       document->AddWorkLayerGroup(Group);
-      EoGePoint3d pt1 = pts[0].ProjectToward(CurrentPnt, m_PreviousRadius);
-      EoGePoint3d pt2 = CurrentPnt.ProjectToward(pts[0], 0.0);
+      EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
+      EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], 0.0);
       Group->AddTail(new EoDbLine(pt1, pt2));
 
-      pts[0] = CurrentPnt;
+      pts[0] = cursorPosition;
     }
     m_PreviousOp = ModeLineHighlightOp(ID_OP2);
     m_PreviousRadius = 0.;
@@ -75,7 +75,7 @@ void AeSysView::OnPowerModeHome() {
   auto* document = GetDocument();
   static EoGePoint3d PointOnCircuit;
 
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   m_PowerConductor = false;
   m_PreviousOp = 0;
@@ -83,66 +83,67 @@ void AeSysView::OnPowerModeHome() {
   document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
-  if (!m_PowerArrow || (PointOnCircuit != CurrentPnt)) {
+  if (!m_PowerArrow || (PointOnCircuit != cursorPosition)) {
     m_PowerArrow = false;
     EoDbLine* Circuit;
-    auto* Group = SelectLineUsingPoint(CurrentPnt, Circuit);
+    auto* Group = SelectLineUsingPoint(cursorPosition, Circuit);
     if (Group != 0) {
-      CurrentPnt = Circuit->ProjPt(CurrentPnt);
-      if (Circuit->RelOfPt(CurrentPnt) <= 0.5) {
+      cursorPosition = Circuit->ProjPt(cursorPosition);
+      if (Circuit->RelOfPt(cursorPosition) <= 0.5) {
         m_CircuitEndPoint = Circuit->EndPoint();
-        if (CurrentPnt.DistanceTo(Circuit->BeginPoint()) <= 0.1) CurrentPnt = Circuit->BeginPoint();
+        if (cursorPosition.DistanceTo(Circuit->BeginPoint()) <= 0.1) cursorPosition = Circuit->BeginPoint();
       } else {
         m_CircuitEndPoint = Circuit->BeginPoint();
-        if (CurrentPnt.DistanceTo(Circuit->EndPoint()) <= 0.1) CurrentPnt = Circuit->EndPoint();
+        if (cursorPosition.DistanceTo(Circuit->EndPoint()) <= 0.1) cursorPosition = Circuit->EndPoint();
       }
-      m_PowerArrow = CurrentPnt.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
-      GenerateHomeRunArrow(CurrentPnt, m_CircuitEndPoint);
-      CurrentPnt = CurrentPnt.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
-      SetCursorPosition(CurrentPnt);
+      m_PowerArrow = cursorPosition.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
+      GenerateHomeRunArrow(cursorPosition, m_CircuitEndPoint);
+      cursorPosition = cursorPosition.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
+      SetCursorPosition(cursorPosition);
     }
   } else {
-    m_PowerArrow = CurrentPnt.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
-    GenerateHomeRunArrow(CurrentPnt, m_CircuitEndPoint);
-    CurrentPnt = CurrentPnt.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
-    SetCursorPosition(CurrentPnt);
+    m_PowerArrow = cursorPosition.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
+    GenerateHomeRunArrow(cursorPosition, m_CircuitEndPoint);
+    cursorPosition = cursorPosition.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
+    SetCursorPosition(cursorPosition);
   }
-  PointOnCircuit = CurrentPnt;
+  PointOnCircuit = cursorPosition;
 }
 
 void AeSysView::DoPowerModeMouseMove() {
   auto* document = GetDocument();
-  EoGePoint3d CurrentPnt = GetCursorPosition();
-  INT_PTR NumberOfPoints = pts.GetSize();
+  auto cursorPosition = GetCursorPosition();
+  auto numberOfPoints = pts.GetSize();
 
   switch (m_PreviousOp) {
     case ID_OP2:
-      if (pts[0] != CurrentPnt) {
+      if (pts[0] != cursorPosition) {
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
-        EoDbEllipse* SymbolCircle;
-        auto* Group = SelectCircleUsingPoint(CurrentPnt, 0.02, SymbolCircle);
-        if (Group != 0) {
-          double CurrentRadius = SymbolCircle->MajorAxis().Length();
-          CurrentPnt = SymbolCircle->CenterPoint();
-          CurrentPnt = CurrentPnt.ProjectToward(pts[0], CurrentRadius);
+        EoDbConic* circle{};
+        auto* group = SelectCircleUsingPoint(cursorPosition, 0.02, circle);
+        if (group != nullptr) {
+          double radius = circle->Radius();
+          cursorPosition = circle->Center();
+          cursorPosition = cursorPosition.ProjectToward(pts[0], radius);
         } else {
-          CurrentPnt = SnapPointToAxis(pts[0], CurrentPnt);
+          cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
         }
-        EoGePoint3d pt1 = pts[0].ProjectToward(CurrentPnt, m_PreviousRadius);
-        m_PreviewGroup.AddTail(new EoDbLine(pt1, CurrentPnt));
+        auto pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
+        m_PreviewGroup.AddTail(new EoDbLine(pt1, cursorPosition));
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;
   }
-  pts.SetSize(NumberOfPoints);
+  pts.SetSize(numberOfPoints);
 }
+
 void AeSysView::DoPowerModeConductor(EoUInt16 conductorType) {
   auto* document = GetDocument();
   static EoGePoint3d PointOnCircuit;
 
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  EoGePoint3d cursorPosition = GetCursorPosition();
 
   m_PowerArrow = false;
   m_PreviousOp = 0;
@@ -150,12 +151,12 @@ void AeSysView::DoPowerModeConductor(EoUInt16 conductorType) {
   document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
-  if (!m_PowerConductor || PointOnCircuit != CurrentPnt) {
+  if (!m_PowerConductor || PointOnCircuit != cursorPosition) {
     m_PowerConductor = false;
     EoDbLine* Circuit;
-    auto* Group = SelectLineUsingPoint(CurrentPnt, Circuit);
+    auto* Group = SelectLineUsingPoint(cursorPosition, Circuit);
     if (Group != 0) {
-      CurrentPnt = Circuit->ProjPt(CurrentPnt);
+      cursorPosition = Circuit->ProjPt(cursorPosition);
 
       EoGePoint3d BeginPoint = Circuit->BeginPoint();
       m_CircuitEndPoint = Circuit->EndPoint();
@@ -165,18 +166,18 @@ void AeSysView::DoPowerModeConductor(EoUInt16 conductorType) {
       } else if (BeginPoint.y > m_CircuitEndPoint.y)
         m_CircuitEndPoint = BeginPoint;
 
-      GeneratePowerConductorSymbol(conductorType, CurrentPnt, m_CircuitEndPoint);
-      CurrentPnt = CurrentPnt.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
-      SetCursorPosition(CurrentPnt);
-      m_PowerConductor = CurrentPnt.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
+      GeneratePowerConductorSymbol(conductorType, cursorPosition, m_CircuitEndPoint);
+      cursorPosition = cursorPosition.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
+      SetCursorPosition(cursorPosition);
+      m_PowerConductor = cursorPosition.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
     }
   } else {
-    GeneratePowerConductorSymbol(conductorType, CurrentPnt, m_CircuitEndPoint);
-    CurrentPnt = CurrentPnt.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
-    SetCursorPosition(CurrentPnt);
-    m_PowerConductor = CurrentPnt.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
+    GeneratePowerConductorSymbol(conductorType, cursorPosition, m_CircuitEndPoint);
+    cursorPosition = cursorPosition.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
+    SetCursorPosition(cursorPosition);
+    m_PowerConductor = cursorPosition.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
   }
-  PointOnCircuit = CurrentPnt;
+  PointOnCircuit = cursorPosition;
 }
 
 void AeSysView::OnPowerModeReturn() { OnPowerModeEscape(); }
@@ -213,26 +214,32 @@ void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& e
   Group->AddTail(new EoDbPolyline(2, 1, Points));
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 }
+
 void AeSysView::GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const {
   auto* document = GetDocument();
   EoGePoint3d Points[5]{};
 
   EoGeLine Circuit(pointOnCircuit, endPoint);
-  auto* Group = new EoDbGroup;
+  auto* group = new EoDbGroup;
 
   switch (conductorType) {
-    case ID_OP4:
+    case ID_OP4: {
       Circuit.ProjPtFrom_xy(0.0, -0.1, &Points[0]);
       Circuit.ProjPtFrom_xy(0.0, 0.075, &Points[1]);
       Circuit.ProjPtFrom_xy(0.0, 0.0875, &Points[2]);
-      Group->AddTail(new EoDbLine(1, 1, Points[0], Points[1]));
-      Group->AddTail(new EoDbEllipse(Points[2], 0.0125, 1, 1));
-      break;
+      group->AddTail(new EoDbLine(1, 1, Points[0], Points[1]));
+      
+      auto* circle = EoDbConic::CreateCircleInView(Points[2], 0.0125);
+      circle->SetColor(1);
+      circle->SetLineTypeIndex(1);
+
+      group->AddTail(circle);
+    } break;
 
     case ID_OP5:
       Circuit.ProjPtFrom_xy(0.0, -0.1, &Points[0]);
       Circuit.ProjPtFrom_xy(0.0, 0.1, &Points[1]);
-      Group->AddTail(new EoDbLine(1, 1, Points[0], Points[1]));
+      group->AddTail(new EoDbLine(1, 1, Points[0], Points[1]));
       break;
 
     case ID_OP6:
@@ -243,21 +250,21 @@ void AeSysView::GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d
 
       EoGeLine(Points[2], endPoint).ProjPtFrom_xy(0.0, 0.075, &Points[3]);
       EoGeLine(pointOnCircuit, endPoint).ProjPtFrom_xy(0.0, 0.1, &Points[4]);
-      Group->AddTail(new EoDbLine(1, 1, Points[0], Points[1]));
-      Group->AddTail(new EoDbLine(1, 1, Points[1], Points[3]));
-      Group->AddTail(new EoDbLine(1, 1, Points[3], Points[4]));
+      group->AddTail(new EoDbLine(1, 1, Points[0], Points[1]));
+      group->AddTail(new EoDbLine(1, 1, Points[1], Points[3]));
+      group->AddTail(new EoDbLine(1, 1, Points[3], Points[4]));
       break;
 
     case ID_OP7:
       Circuit.ProjPtFrom_xy(0.0, -0.05, &Points[0]);
       Circuit.ProjPtFrom_xy(0.0, 0.05, &Points[1]);
-      Group->AddTail(new EoDbLine(1, 1, Points[0], Points[1]));
+      group->AddTail(new EoDbLine(1, 1, Points[0], Points[1]));
       break;
 
     default:
-      delete Group;
+      delete group;
       return;
   }
-  document->AddWorkLayerGroup(Group);
-  document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+  document->AddWorkLayerGroup(group);
+  document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }

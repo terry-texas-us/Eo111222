@@ -26,6 +26,10 @@ class EoDbConic : public EoDbPrimitive {
   // TODO: Minor axis and sweep angle are to be removed from class data members
   double m_sweepAngle{0.0};
 
+public:
+  static EoDbConic* CreateCircle(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius);
+  static EoDbConic* CreateCircleInView(const EoGePoint3d& center, double radius);
+
  public:
   EoDbConic()
       : m_center{},
@@ -37,9 +41,9 @@ class EoDbConic : public EoDbPrimitive {
         // TODO: Minor axis and sweep angle are to be removed from class data members
         m_sweepAngle{} {}
 
-  EoDbConic(EoGePoint3d& center, EoGePoint3d& start);
+  // EoDbConic(EoGePoint3d& center, EoGePoint3d& start);
 
-  EoDbConic(EoGePoint3d& center, EoGeVector3d& extrusion, double radius, double startAngle = 0.0,
+  EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle = 0.0,
             double endAngle = Eo::TwoPi);
 
   EoDbConic(const EoGePoint3d& center, double radius, double startAngle, double endAngle);
@@ -52,17 +56,6 @@ class EoDbConic : public EoDbPrimitive {
 
   // EoDbConic(EoGePoint3d& center, EoGeVector3d& planeNormal, double radius, EoInt16 penColor, EoInt16 lineTypeIndex);
 
-  /** 
- * @brief Constructs a radial arc (as ellipse) primitive from three points that define an elliptical arc.
- *
- * This constructor initializes an ellipse segment using three points: a beginning point, an intermediate point, and an end point.
- * It calculates the center point, major axis, minor axis, and sweep angle of the ellipse based on the provided points.
- * The pen color and line type are set based on the current primitive state.
- *
- * @param begin The starting point of the elliptical arc.
- * @param intermediate A point on the elliptical arc between the start and end points.
- * @param end The ending point of the elliptical arc.
- */
   EoDbConic(EoGePoint3d begin, EoGePoint3d intermediate, EoGePoint3d end);
 
   EoDbConic(const EoDbConic& other);
@@ -124,7 +117,7 @@ class EoDbConic : public EoDbPrimitive {
   void GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d majorAxis) const;
 
   void ExportToDxf(DRW_Interface* writer) const {
-    switch (GetConicType()) {
+    switch (Subclass()) {
       case ConicType::Circle: {
         DRW_Circle circle;
         circle.basePoint = {m_center.x, m_center.y, m_center.z};
@@ -163,24 +156,31 @@ class EoDbConic : public EoDbPrimitive {
     }
   }
 
-  [[nodiscard]] bool IsCircle() const noexcept { return fabs(1.0 - m_ratio) <= Eo::geometricTolerance && IsFullConic(); }
+  [[nodiscard]] bool IsCircle() const noexcept {
+    return fabs(1.0 - m_ratio) <= Eo::geometricTolerance && IsFullConic();
+  }
 
-  [[nodiscard]] bool IsRadialArc() const noexcept { return fabs(1.0 - m_ratio) <= Eo::geometricTolerance && !IsFullConic(); }
+  [[nodiscard]] bool IsRadialArc() const noexcept {
+    return fabs(1.0 - m_ratio) <= Eo::geometricTolerance && !IsFullConic();
+  }
 
   [[nodiscard]] bool IsEllipse() const noexcept { return m_ratio < 1.0 - Eo::geometricTolerance && IsFullConic(); }
 
-  [[nodiscard]] bool IsEllipticalArc() const noexcept { return m_ratio < 1.0 - Eo::geometricTolerance && !IsFullConic(); }
+  [[nodiscard]] bool IsEllipticalArc() const noexcept {
+    return m_ratio < 1.0 - Eo::geometricTolerance && !IsFullConic();
+  }
 
   [[nodiscard]] bool IsFullConic() const noexcept {
     double sweep = NormalizeTo2Pi(m_endAngle) - NormalizeTo2Pi(m_startAngle);
     if (sweep <= 0.0) sweep += Eo::TwoPi;
-    return fabs(sweep - Eo::TwoPi) <= Eo::geometricTolerance || fabs(m_endAngle - m_startAngle) <= Eo::geometricTolerance;
+    return fabs(sweep - Eo::TwoPi) <= Eo::geometricTolerance ||
+           fabs(m_endAngle - m_startAngle) <= Eo::geometricTolerance;
   }
 
   // Enum for cleaner switch statements
   enum class ConicType { Circle, RadialArc, Ellipse, EllipticalArc };
 
-  [[nodiscard]] ConicType GetConicType() const noexcept {
+  [[nodiscard]] ConicType Subclass() const noexcept {
     bool isCircular = fabs(1.0 - m_ratio) <= Eo::geometricTolerance;
     bool isFull = IsFullConic();
 
@@ -202,7 +202,7 @@ class EoDbConic : public EoDbPrimitive {
 
   /// <summary>Determines the bounding region. This is always a quad, but it may not be xy oriented.</summary>
   void GetBoundingBox(EoGePoint3dArray&);
-  
+
   /**
    * @brief Computes the point on the conic at the end angle.
    *
@@ -216,8 +216,8 @@ class EoDbConic : public EoDbPrimitive {
   void GetXYExtents(EoGePoint3d, EoGePoint3d, EoGePoint3d*, EoGePoint3d*) const;
   int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) override;
 
-  const EoGePoint3d& CenterPoint() const noexcept { return (m_center); }
-  void SetCenter(EoGePoint3d centerPoint) { m_center = std::move(centerPoint); }
+  const EoGePoint3d& Center() const noexcept { return (m_center); }
+  void SetCenter(EoGePoint3d center) { m_center = std::move(center); }
 
   double EndAngle() const noexcept { return (m_endAngle); }
   void SetEndAngle(double endAngle) { m_endAngle = endAngle; }

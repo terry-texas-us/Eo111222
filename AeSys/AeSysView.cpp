@@ -15,7 +15,7 @@
 #include "EoDb.h"
 #include "EoDbBitmapFile.h"
 #include "EoDbCharacterCellDefinition.h"
-#include "EoDbEllipse.h"
+#include "EoDbConic.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbLayer.h"
@@ -1116,18 +1116,18 @@ void AeSysView::DoWindowPan(double ratio) {
 
   m_ViewTransform.SetCenteredWindow(m_Viewport, UExtent, VExtent);
 
-  EoGePoint3d CursorPosition = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
-  EoGeVector3d Direction = m_ViewTransform.Direction();
-  EoGePoint3d Target = m_ViewTransform.Target();
+  auto direction = m_ViewTransform.Direction();
+  auto target = m_ViewTransform.Target();
 
-  EoGeLine::IntersectionWithPln(CursorPosition, Direction, Target, Direction, &CursorPosition);
+  EoGeLine::IntersectionWithPln(cursorPosition, direction, target, direction, &cursorPosition);
 
-  m_ViewTransform.SetTarget(Target);
-  m_ViewTransform.SetPosition(Direction);
+  m_ViewTransform.SetTarget(target);
+  m_ViewTransform.SetPosition(direction);
   m_ViewTransform.BuildTransformMatrix();
 
-  SetCursorPosition(CursorPosition);
+  SetCursorPosition(cursorPosition);
   InvalidateRect(nullptr, TRUE);
 }
 
@@ -1465,158 +1465,166 @@ void AeSysView::OnSetupMouseButtons() {
 }
 
 void AeSysView::OnRelativeMovesEngDown() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.y -= app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
-  SetCursorPosition(pt);
+  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesEngDownRotate() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.y -= app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
-  SetCursorPosition(pt);
+  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ,
+                                         app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesEngIn() {
-  EoGePoint3d pt = GetCursorPosition();
-  pt.z -= app.EngagedLength();
-  SetCursorPosition(pt);
+  auto cursorPosition = GetCursorPosition();
+  cursorPosition.z -= app.EngagedLength();
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesEngLeft() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.x -= app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
-  SetCursorPosition(pt);
+  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesEngLeftRotate() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.x -= app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
-  SetCursorPosition(pt);
+  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ,
+                                         app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesEngOut() {
-  EoGePoint3d pt = GetCursorPosition();
-  pt.z += app.EngagedLength();
-  SetCursorPosition(pt);
+  auto cursorPosition = GetCursorPosition();
+  cursorPosition.z += app.EngagedLength();
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesEngRight() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.x += app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
-  SetCursorPosition(pt);
+  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesEngRightRotate() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.x += app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
-  SetCursorPosition(pt);
+  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ,
+                                         app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesEngUp() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.y += app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
-  SetCursorPosition(pt);
+  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ, app.EngagedAngle());
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesEngUpRotate() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.y += app.EngagedLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
-  SetCursorPosition(pt);
+  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ,
+                                         app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesRight() {
-  EoGePoint3d pt = GetCursorPosition();
-  pt.x += app.DimensionLength();
-  SetCursorPosition(pt);
+  auto cursorPosition = GetCursorPosition();
+  cursorPosition.x += app.DimensionLength();
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesUp() {
-  EoGePoint3d pt = GetCursorPosition();
-  pt.y += app.DimensionLength();
-  SetCursorPosition(pt);
+  auto cursorPosition = GetCursorPosition();
+  cursorPosition.y += app.DimensionLength();
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesLeft() {
-  EoGePoint3d pt = GetCursorPosition();
-  pt.x -= app.DimensionLength();
-  SetCursorPosition(pt);
+  auto cursorPosition = GetCursorPosition();
+  cursorPosition.x -= app.DimensionLength();
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesDown() {
-  EoGePoint3d pt = GetCursorPosition();
-  pt.y -= app.DimensionLength();
-  SetCursorPosition(pt);
+  auto cursorPosition = GetCursorPosition();
+  cursorPosition.y -= app.DimensionLength();
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesIn() {
-  EoGePoint3d pt = GetCursorPosition();
-  pt.z -= app.DimensionLength();
-  SetCursorPosition(pt);
+  auto cursorPosition = GetCursorPosition();
+  cursorPosition.z -= app.DimensionLength();
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesOut() {
-  EoGePoint3d pt = GetCursorPosition();
-  pt.z += app.DimensionLength();
-  SetCursorPosition(pt);
+  auto cursorPosition = GetCursorPosition();
+  cursorPosition.z += app.DimensionLength();
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesRightRotate() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.x += app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
-  SetCursorPosition(pt);
+  cursorPosition =
+      ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesUpRotate() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.y += app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
-  SetCursorPosition(pt);
+  cursorPosition =
+      ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesLeftRotate() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.x -= app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
-  SetCursorPosition(pt);
+  cursorPosition =
+      ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnRelativeMovesDownRotate() {
-  EoGePoint3d pt = GetCursorPosition();
-  EoGePoint3d ptSec = pt;
+  auto cursorPosition = GetCursorPosition();
+  EoGePoint3d ptSec = cursorPosition;
   ptSec.y -= app.DimensionLength();
-  pt = ptSec.RotateAboutAxis(pt, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
-  SetCursorPosition(pt);
+  cursorPosition =
+      ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ, Eo::DegreeToRadian(app.DimensionAngle()));
+  SetCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnToolsPrimitiveSnapto() {
-  EoGePoint3d pt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   EoGePoint3d ptDet;
 
   if (GroupIsEngaged()) {
     EoDbPrimitive* Primitive = m_EngagedPrimitive;
 
-    EoGePoint4d ptView(pt);
+    EoGePoint4d ptView(cursorPosition);
     ModelViewTransformPoint(ptView);
 
     EoDbPolygon::EdgeToEvaluate() = EoDbPolygon::Edge();
@@ -1630,7 +1638,7 @@ void AeSysView::OnToolsPrimitiveSnapto() {
       return;
     }
   }
-  if (SelectGroupAndPrimitive(pt) != 0) {
+  if (SelectGroupAndPrimitive(cursorPosition) != nullptr) {
     ptDet = m_ptDet;
     m_EngagedPrimitive->AddReportToMessageList(ptDet);
     SetCursorPosition(ptDet);
@@ -1638,13 +1646,13 @@ void AeSysView::OnToolsPrimitiveSnapto() {
 }
 
 void AeSysView::OnPrimPerpJump() {
-  EoGePoint3d pt = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
-  if (SelectGroupAndPrimitive(pt) != 0) {
+  if (SelectGroupAndPrimitive(cursorPosition) != nullptr) {
     if (m_EngagedPrimitive->Is(EoDb::kLinePrimitive)) {
       EoDbLine* pPrimLine = static_cast<EoDbLine*>(m_EngagedPrimitive);
-      pt = pPrimLine->ProjPt(m_ptCursorPosWorld);
-      SetCursorPosition(pt);
+      cursorPosition = pPrimLine->ProjPt(m_ptCursorPosWorld);
+      SetCursorPosition(cursorPosition);
     }
   }
 }
@@ -1710,9 +1718,9 @@ static void DrawOdometerInView(AeSysView* view, CDC* context, AeSys::Units Units
 
 /// @brief Displays the odometer information showing the relative position from the grid origin to the current cursor position, and optionally the line length and angle if in rubber band line mode.
 void AeSysView::DisplayOdometer() {
-  EoGePoint3d position = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
-  m_vRelPos = GridOrign() - position;
+  m_vRelPos = GridOrign() - cursorPosition;
 
   if (m_ViewOdometer) {
     AeSys::Units Units = app.GetUnits();
@@ -1727,7 +1735,7 @@ void AeSysView::DisplayOdometer() {
     Position.Append(L", " + lengthText.TrimLeft());
 
     if (m_RubberbandType == Lines) {
-      EoGeLine line(m_RubberbandBeginPoint, position);
+      EoGeLine line(m_RubberbandBeginPoint, cursorPosition);
 
       auto lineLength = line.Length();
       auto angleInXYPlane = line.AngleFromXAxisXY();
@@ -1888,27 +1896,23 @@ EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& pt) {
   return 0;
 }
 
-EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbEllipse*& circle) {
-  auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != nullptr) {
-    auto* Group = GetNextVisibleGroup(GroupPosition);
-    auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive->Is(EoDb::kEllipsePrimitive)) {
-        EoDbEllipse* Arc = static_cast<EoDbEllipse*>(Primitive);
-
-        if (fabs(Arc->SweepAngle() - Eo::TwoPi) <= DBL_EPSILON &&
-            (Arc->MajorAxis().SquaredLength() - Arc->MinorAxis().SquaredLength()) <= DBL_EPSILON) {
-          if (point.DistanceTo(Arc->CenterPoint()) <= tolerance) {
-            circle = Arc;
-            return Group;
-          }
-        }
+EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle) {
+  auto groupPosition = GetFirstVisibleGroupPosition();
+  while (groupPosition != nullptr) {
+    auto* group = GetNextVisibleGroup(groupPosition);
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = group->GetNext(primitivePosition);
+      if (!primitive->Is(EoDb::kConicPrimitive)) { continue; }
+      auto* conic = static_cast<EoDbConic*>(primitive);
+      if (conic->Subclass() != EoDbConic::ConicType::Circle) { continue; }
+      if (point.DistanceTo(conic->Center()) <= tolerance) {
+        circle = conic;
+        return group;
       }
     }
   }
-  return 0;
+  return nullptr;
 }
 
 EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) {

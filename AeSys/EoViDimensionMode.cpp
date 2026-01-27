@@ -70,7 +70,7 @@ void AeSysView::OnDimensionModeOptions() {
 
 void AeSysView::OnDimensionModeArrow() {
   auto* Document = GetDocument();
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   if (PreviousDimensionCommand != 0) {
     RubberBandingDisable();
@@ -96,7 +96,7 @@ void AeSysView::OnDimensionModeArrow() {
       EoGePoint3d ptProj;
       double dRel[2]{};
 
-      if (TestLine.IsSelectedByPointXY(ptCur, DimensionModePickTolerance, ptProj, dRel)) {
+      if (TestLine.IsSelectedByPointXY(cursorPosition, DimensionModePickTolerance, ptProj, dRel)) {
         EoGePoint3d pt;
 
         EoDbGroup* NewGroup = new EoDbGroup;
@@ -116,42 +116,42 @@ void AeSysView::OnDimensionModeArrow() {
       }
     }
   }
-  PreviousDimensionCursorPosition = ptCur;
+  PreviousDimensionCursorPosition = cursorPosition;
 }
 
 void AeSysView::OnDimensionModeLine() {
   auto* Document = GetDocument();
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   RubberBandingDisable();
   if (PreviousDimensionCommand != ID_OP2) {
     PreviousDimensionCommand = ModeLineHighlightOp(ID_OP2);
-    PreviousDimensionCursorPosition = ptCur;
+    PreviousDimensionCursorPosition = cursorPosition;
   } else {
-    ptCur = SnapPointToAxis(PreviousDimensionCursorPosition, ptCur);
-    if (PreviousDimensionCursorPosition != ptCur) {
-      auto* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, ptCur));
+    cursorPosition = SnapPointToAxis(PreviousDimensionCursorPosition, cursorPosition);
+    if (PreviousDimensionCursorPosition != cursorPosition) {
+      auto* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, cursorPosition));
       Document->AddWorkLayerGroup(Group);
       Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
-    PreviousDimensionCursorPosition = ptCur;
+    PreviousDimensionCursorPosition = cursorPosition;
   }
-  RubberBandingStartAtEnable(ptCur, Lines);
+  RubberBandingStartAtEnable(cursorPosition, Lines);
 }
 
 void AeSysView::OnDimensionModeDLine() {
   auto* Document = GetDocument();
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   if (PreviousDimensionCommand == ID_OP3 || PreviousDimensionCommand == ID_OP4) {
     RubberBandingDisable();
-    if (PreviousDimensionCursorPosition != ptCur) {
+    if (PreviousDimensionCursorPosition != cursorPosition) {
       auto* Group = new EoDbGroup;
 
       if (PreviousDimensionCommand == ID_OP4) {
-        GenerateLineEndItem(1, 0.1, ptCur, PreviousDimensionCursorPosition, Group);
+        GenerateLineEndItem(1, 0.1, cursorPosition, PreviousDimensionCursorPosition, Group);
         ModeLineUnhighlightOp(PreviousDimensionCommand);
         PreviousDimensionCommand = ModeLineHighlightOp(ID_OP3);
       }
-      EoDbDimension* pDim = new EoDbDimension(1, 1, EoGeLine(PreviousDimensionCursorPosition, ptCur));
+      EoDbDimension* pDim = new EoDbDimension(1, 1, EoGeLine(PreviousDimensionCursorPosition, cursorPosition));
       pDim->SetTextPenColor(5);
       pDim->SetTextHorAlign(EoDb::kAlignCenter);
       pDim->SetTextVerAlign(EoDb::kAlignMiddle);
@@ -160,7 +160,7 @@ void AeSysView::OnDimensionModeDLine() {
       Document->AddWorkLayerGroup(Group);
       Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
-      PreviousDimensionCursorPosition = ptCur;
+      PreviousDimensionCursorPosition = cursorPosition;
     }
   } else {
     if (PreviousDimensionCommand != 0) {
@@ -168,76 +168,76 @@ void AeSysView::OnDimensionModeDLine() {
       ModeLineUnhighlightOp(PreviousDimensionCommand);
     }
     PreviousDimensionCommand = ModeLineHighlightOp(ID_OP3);
-    PreviousDimensionCursorPosition = ptCur;
+    PreviousDimensionCursorPosition = cursorPosition;
   }
-  SetCursorPosition(ptCur);
-  RubberBandingStartAtEnable(ptCur, Lines);
+  SetCursorPosition(cursorPosition);
+  RubberBandingStartAtEnable(cursorPosition, Lines);
 }
 
 void AeSysView::OnDimensionModeDLine2() {
   auto* Document = GetDocument();
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   if (PreviousDimensionCommand == 0) {
     PreviousDimensionCommand = ModeLineHighlightOp(ID_OP4);
-    PreviousDimensionCursorPosition = ptCur;
+    PreviousDimensionCursorPosition = cursorPosition;
   } else if (PreviousDimensionCommand == ID_OP3 || PreviousDimensionCommand == ID_OP4) {
     RubberBandingDisable();
-    if (PreviousDimensionCursorPosition != ptCur) {
+    if (PreviousDimensionCursorPosition != cursorPosition) {
       auto* Group = new EoDbGroup;
       if (PreviousDimensionCommand == ID_OP4)
-        GenerateLineEndItem(1, 0.1, ptCur, PreviousDimensionCursorPosition, Group);
+        GenerateLineEndItem(1, 0.1, cursorPosition, PreviousDimensionCursorPosition, Group);
       else {
         ModeLineUnhighlightOp(PreviousDimensionCommand);
         PreviousDimensionCommand = ModeLineHighlightOp(ID_OP4);
       }
-      EoDbDimension* pDim = new EoDbDimension(1, 1, EoGeLine(PreviousDimensionCursorPosition, ptCur));
+      EoDbDimension* pDim = new EoDbDimension(1, 1, EoGeLine(PreviousDimensionCursorPosition, cursorPosition));
       pDim->SetTextPenColor(5);
       pDim->SetTextHorAlign(EoDb::kAlignCenter);
       pDim->SetTextVerAlign(EoDb::kAlignMiddle);
 
       Group->AddTail(pDim);
-      GenerateLineEndItem(1, 0.1, PreviousDimensionCursorPosition, ptCur, Group);
+      GenerateLineEndItem(1, 0.1, PreviousDimensionCursorPosition, cursorPosition, Group);
       Document->AddWorkLayerGroup(Group);
       Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
-      PreviousDimensionCursorPosition = ptCur;
+      PreviousDimensionCursorPosition = cursorPosition;
     } else
       app.AddModeInformationToMessageList();
   } else {
     // error finish prior op first
   }
-  SetCursorPosition(ptCur);
-  RubberBandingStartAtEnable(ptCur, Lines);
+  SetCursorPosition(cursorPosition);
+  RubberBandingStartAtEnable(cursorPosition, Lines);
 }
 
 void AeSysView::OnDimensionModeExten() {
   auto* Document = GetDocument();
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   if (PreviousDimensionCommand != ID_OP5) {
     RubberBandingDisable();
-    PreviousDimensionCursorPosition = ProjPtToLn(ptCur);
+    PreviousDimensionCursorPosition = ProjPtToLn(cursorPosition);
     ModeLineUnhighlightOp(PreviousDimensionCommand);
     PreviousDimensionCommand = ModeLineHighlightOp(ID_OP5);
   } else {
-    ptCur = ProjPtToLn(ptCur);
-    if (PreviousDimensionCursorPosition != ptCur) {
-      ptCur = ptCur.ProjectToward(PreviousDimensionCursorPosition, -0.1875);
-      PreviousDimensionCursorPosition = PreviousDimensionCursorPosition.ProjectToward(ptCur, 0.0625);
+    cursorPosition = ProjPtToLn(cursorPosition);
+    if (PreviousDimensionCursorPosition != cursorPosition) {
+      cursorPosition = cursorPosition.ProjectToward(PreviousDimensionCursorPosition, -0.1875);
+      PreviousDimensionCursorPosition = PreviousDimensionCursorPosition.ProjectToward(cursorPosition, 0.0625);
 
-      auto* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, ptCur));
+      auto* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, cursorPosition));
       Document->AddWorkLayerGroup(Group);
       Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
-    PreviousDimensionCursorPosition = ptCur;
+    PreviousDimensionCursorPosition = cursorPosition;
     ModeLineUnhighlightOp(PreviousDimensionCommand);
   }
 }
 
 void AeSysView::OnDimensionModeRadius() {
   auto* Document = GetDocument();
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
-  if (SelectGroupAndPrimitive(ptCur) != 0) {
+  if (SelectGroupAndPrimitive(cursorPosition) != 0) {
     EoGePoint3d ptEnd = DetPt();
 
     if ((EngagedPrimitive())->Is(EoDb::kEllipsePrimitive)) {
@@ -264,7 +264,7 @@ void AeSysView::OnDimensionModeRadius() {
       PreviousDimensionCursorPosition = ptEnd;
     }
   } else {  // error arc not identified
-    PreviousDimensionCursorPosition = ptCur;
+    PreviousDimensionCursorPosition = cursorPosition;
   }
 }
 
@@ -278,7 +278,7 @@ void AeSysView::OnDimensionModeDiameter() {
     if ((EngagedPrimitive())->Is(EoDb::kEllipsePrimitive)) {
       EoDbEllipse* pArc = static_cast<EoDbEllipse*>(EngagedPrimitive());
 
-      EoGePoint3d ptBeg = ptEnd.ProjectToward(pArc->CenterPoint(), 2. * pArc->MajorAxis().Length());
+      EoGePoint3d ptBeg = ptEnd.ProjectToward(pArc->CenterPoint(), 2.0 * pArc->MajorAxis().Length());
 
       auto* Group = new EoDbGroup;
 
@@ -308,7 +308,7 @@ void AeSysView::OnDimensionModeAngle() {
   CDC* DeviceContext = GetDC();
 
   auto* Document = GetDocument();
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
 
   static EoGePoint3d rProjPt[2];
   static EoGePoint3d ptCen;
@@ -319,7 +319,7 @@ void AeSysView::OnDimensionModeAngle() {
     RubberBandingDisable();
     ModeLineUnhighlightOp(PreviousDimensionCommand);
 
-    if (SelectLineUsingPoint(ptCur) != 0) {
+    if (SelectLineUsingPoint(cursorPosition) != 0) {
       EoDbLine* pLine = static_cast<EoDbLine*>(EngagedPrimitive());
 
       rProjPt[0] = DetPt();
@@ -330,7 +330,7 @@ void AeSysView::OnDimensionModeAngle() {
     }
   } else {
     if (iLns == 1) {
-      if (SelectLineUsingPoint(ptCur) != 0) {
+      if (SelectLineUsingPoint(cursorPosition) != 0) {
         EoDbLine* pLine = static_cast<EoDbLine*>(EngagedPrimitive());
 
         rProjPt[1] = DetPt();
@@ -343,11 +343,11 @@ void AeSysView::OnDimensionModeAngle() {
       double dAng;
 
       EoGeVector3d vCenterToProjPt(ptCen, rProjPt[0]);
-      EoGeVector3d vCenterToCur(ptCen, ptCur);
+      EoGeVector3d vCenterToCur(ptCen, cursorPosition);
       auto vPlnNorm = CrossProduct(vCenterToProjPt, vCenterToCur);
       vPlnNorm.Normalize();
-      if (SweepAngleFromNormalAnd3Points(vPlnNorm, rProjPt[0], ptCur, rProjPt[1], ptCen, &dAng)) {
-        double dRad = EoGeVector3d(ptCen, ptCur).Length();
+      if (SweepAngleFromNormalAnd3Points(vPlnNorm, rProjPt[0], cursorPosition, rProjPt[1], ptCen, &dAng)) {
+        double dRad = EoGeVector3d(ptCen, cursorPosition).Length();
 
         ln.begin = ptCen.ProjectToward(rProjPt[0], dRad);
         ln.end = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, dAng);
@@ -377,7 +377,7 @@ void AeSysView::OnDimensionModeAngle() {
         ccd.ChrHgtSet(0.1);
         pstate.SetCharCellDef(ccd);
 
-        EoGePoint3d ptPvt = ptCur.ProjectToward(ptCen, -0.25);
+        EoGePoint3d ptPvt = cursorPosition.ProjectToward(ptCen, -0.25);
         CharCellDef_EncdRefSys(vPlnNorm, ccd, vXAx, vYAx);
         EoGeReferenceSystem ReferenceSystem(ptPvt, vXAx, vYAx);
         CString Note;
@@ -394,7 +394,7 @@ void AeSysView::OnDimensionModeAngle() {
 }
 
 void AeSysView::OnDimensionModeConvert() {
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   if (PreviousDimensionCommand != 0) {
     RubberBandingDisable();
     ModeLineUnhighlightOp(PreviousDimensionCommand);
@@ -406,7 +406,7 @@ void AeSysView::OnDimensionModeConvert() {
 
   POSITION posPrimCur;
 
-  EoGePoint4d ptView(ptCur);
+  EoGePoint4d ptView(cursorPosition);
   ModelViewTransformPoint(ptView);
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
@@ -449,16 +449,16 @@ void AeSysView::OnDimensionModeConvert() {
       }
     }
   }
-  PreviousDimensionCursorPosition = ptCur;
+  PreviousDimensionCursorPosition = cursorPosition;
 }
 
 void AeSysView::OnDimensionModeReturn() {
-  EoGePoint3d ptCur = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   if (PreviousDimensionCommand != 0) {
     RubberBandingDisable();
     ModeLineUnhighlightOp(PreviousDimensionCommand);
   }
-  PreviousDimensionCursorPosition = ptCur;
+  PreviousDimensionCursorPosition = cursorPosition;
 }
 
 void AeSysView::OnDimensionModeEscape() {

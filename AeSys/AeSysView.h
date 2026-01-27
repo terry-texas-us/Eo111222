@@ -20,7 +20,7 @@
 
 class AeSysDoc;
 class EoDbBlock;
-class EoDbEllipse;
+class EoDbConic;  
 class EoDbLine;
 class EoDbPoint;
 class EoDbText;
@@ -239,7 +239,14 @@ class AeSysView : public CView {
   void SetCursorPosition(EoGePoint3d point3d);
   void SetModeCursor(int mode);
 
-  EoDbGroup* SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbEllipse*& circle);
+  /** @brief Selects a circle primitive using a point and tolerance.
+    @param point The point to use for selection.
+    @param tolerance The tolerance distance for selection.
+    @param circle A reference to a pointer that will receive the selected circle primitive.
+    @return A pointer to the group containing the selected circle, or nullptr if no circle was found.
+  */
+  EoDbGroup* SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle);
+  
   EoDbGroup* SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line);
   EoDbGroup* SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor, EoInt16 pointStyle,
                                    EoDbPoint*& primitve);

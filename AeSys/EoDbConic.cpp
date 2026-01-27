@@ -87,15 +87,34 @@ CString EoDbConic::SubClassName(double ratio, double startAngle, double endAngle
   }
 }
 
-EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis,
-                     double ratio)
+
+EoDbConic* EoDbConic::CreateCircle(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius) {
+  auto* circle = new EoDbConic(center, extrusion, radius, 0.0, Eo::TwoPi);
+  circle->SetColor(pstate.PenColor());
+  circle->SetLineTypeIndex(pstate.LineType());
+  return circle;
+}
+
+EoDbConic* EoDbConic::CreateCircleInView(const EoGePoint3d& center, double radius) {
+  auto* activeView = AeSysView::GetActiveView();
+  auto cameraDirection = activeView->CameraDirection();
+  cameraDirection.Normalize();
+
+  return CreateCircle(center, cameraDirection, radius);
+}
+
+EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle,
+                     double endAngle)
     : EoDbPrimitive(),
       m_center(center),
-      m_majorAxis(majorAxis),
+      m_majorAxis(ComputeArbitraryAxis(extrusion) * radius),
       m_extrusion(extrusion),
-      m_ratio(ratio),
-      m_startAngle(0.0),
-      m_endAngle(Eo::TwoPi) {}
+      m_ratio(1.0),
+      m_startAngle(startAngle),
+      m_endAngle(endAngle) {}
+
+///////////
+
 
 /**
  * @brief Constructs a circle (as ellipse) primitive defined by a center point and radius in the current view.
@@ -157,6 +176,7 @@ EoDbConic::EoDbConic(EoGePoint3d& center, EoGeVector3d& normal, double radius, E
  * @param start The start point that defines the radius of the circle.
  */
 
+/*
 EoDbConic::EoDbConic(EoGePoint3d& center, EoGePoint3d& start) {
   auto* activeView = AeSysView::GetActiveView();
 
@@ -169,18 +189,16 @@ EoDbConic::EoDbConic(EoGePoint3d& center, EoGePoint3d& start) {
   m_majorAxis = EoGeVector3d(center, start);
   m_sweepAngle = Eo::TwoPi;
 }
-
-/** Construct radial arc primitive using DXF Arc entity
-*  
 */
-EoDbConic::EoDbConic(EoGePoint3d& center, EoGeVector3d& extrusion, double radius, double startAngle, double endAngle)
+EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis,
+                     double ratio)
     : EoDbPrimitive(),
       m_center(center),
-      m_majorAxis(ComputeArbitraryAxis(extrusion) * radius),
+      m_majorAxis(majorAxis),
       m_extrusion(extrusion),
-      m_ratio(1.0),
-      m_startAngle(startAngle),
-      m_endAngle(endAngle) {}
+      m_ratio(ratio),
+      m_startAngle(0.0),
+      m_endAngle(Eo::TwoPi) {}
 
 EoDbConic::EoDbConic(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end)
     : EoDbPrimitive(pstate.PenColor(), pstate.LineType()) {
@@ -348,7 +366,7 @@ void EoDbConic::AddReportToMessageList(EoGePoint3d) {
 
   double radius = m_majorAxis.Length();
 
-  auto conicType = GetConicType();
+  auto conicType = Subclass();
   switch (conicType) {
     case ConicType::Circle:
       message.Format(L"  Radius: %.4f", radius);
@@ -550,7 +568,7 @@ void EoDbConic::FormatGeometry(CString& geometry) {
 }
 
 void EoDbConic::FormatExtra(CString& extra) {
-  auto conicType = GetConicType();
+  auto conicType = Subclass();
   CString format{L"Color;%s\tLine Type;%s\t"};
 
   switch (conicType) {
