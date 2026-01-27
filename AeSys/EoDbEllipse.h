@@ -12,7 +12,6 @@
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "drw_base.h"
 
 class EoDbEllipse : public EoDbPrimitive {
   EoGePoint3d m_center;
@@ -81,10 +80,10 @@ class EoDbEllipse : public EoDbPrimitive {
 
   /// <summary>Generates a set of points which may be used to represent a arc using a double angle algorithm.</summary>
   void GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) const;
-  EoGePoint3d GetBegPt();
+  EoGePoint3d PointAtStartAngle();
   /// <summary>Determines the bounding region. This is always a quad, but it may not be xy oriented.</summary>
   void GetBoundingBox(EoGePoint3dArray&);
-  EoGePoint3d GetEndPt();
+  EoGePoint3d PointAtEndAngle();
   const EoGeVector3d& MajorAxis() const noexcept { return (m_majorAxis); }
   const EoGeVector3d& MinorAxis() const noexcept { return (m_minorAxis); }
   const EoGePoint3d& CenterPoint() const noexcept { return (m_center); }

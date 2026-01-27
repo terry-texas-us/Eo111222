@@ -3,10 +3,8 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-#include "Eo.h"
 #include "EoDb.h"
 #include "EoDbConic.h"
-#include "EoDbEllipse.h"
 #include "EoDbGroup.h"
 #include "EoDbLine.h"
 #include "EoDbPoint.h"
@@ -138,7 +136,7 @@ void AeSysView::OnDrawModeInsert() {
 
 void AeSysView::OnDrawModeReturn() {
   auto* document = GetDocument();
-  EoGePoint3d CurrentPnt = GetCursorPosition();
+  auto CurrentPnt = GetCursorPosition();
 
   INT_PTR NumberOfPoints = pts.GetSize();
   EoDbGroup* Group{};
@@ -186,15 +184,15 @@ void AeSysView::OnDrawModeReturn() {
       }
       pts.Add(CurrentPnt);
 
-      if (NumberOfPoints == 1) return;
+      if (NumberOfPoints == 1) { return; }
 
-      EoDbEllipse* arc = new EoDbEllipse(pts[0], pts[1], pts[2]);
-      if (arc->SweepAngle() == 0.0) {
-        delete arc;
+      EoDbConic* conic = new EoDbConic(pts[0], pts[1], pts[2]);
+      if (conic->SweepAngle() == 0.0) {
+        delete conic;
         app.AddStringToMessageList(IDS_MSG_PTS_COLINEAR);
         return;
       }
-      Group = new EoDbGroup(arc);
+      Group = new EoDbGroup(conic);
       break;
     }
     case ID_OP6:
@@ -223,10 +221,19 @@ void AeSysView::OnDrawModeReturn() {
         SetCursorPosition(pts[0]);
         return;
       }
-      EoGeVector3d MajorAxis(pts[0], pts[1]);
-      EoGeVector3d MinorAxis(pts[0], pts[2]);
+      EoGeVector3d majorAxis(pts[0], pts[1]);
+      EoGeVector3d minorAxis(pts[0], pts[2]);
 
-      Group = new EoDbGroup(new EoDbEllipse(pts[0], MajorAxis, MinorAxis, Eo::TwoPi));
+      if (minorAxis.Length() < Eo::geometricTolerance) { break; }
+      auto extrusion = CrossProduct(majorAxis, minorAxis);
+      extrusion.Normalize();
+      double ratio = minorAxis.Length() / majorAxis.Length();
+      auto* conic = new EoDbConic(pts[0], extrusion, majorAxis, ratio);
+      conic->SetColor(pstate.PenColor());
+      conic->SetLineTypeIndex(pstate.LineType());
+
+      Group = new EoDbGroup(conic);
+      
       break;
     }
     default:
@@ -312,7 +319,7 @@ void AeSysView::DoDrawModeMouseMove() {
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
       if (NumberOfPoints == 1) { m_PreviewGroup.AddTail(new EoDbPolyline(pts)); }
-      if (NumberOfPoints == 2) { m_PreviewGroup.AddTail(new EoDbEllipse(pts[0], pts[1], CurrentPnt)); }
+      if (NumberOfPoints == 2) { m_PreviewGroup.AddTail(new EoDbConic(pts[0], pts[1], CurrentPnt)); }
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;
 
@@ -344,10 +351,18 @@ void AeSysView::DoDrawModeMouseMove() {
       if (NumberOfPoints == 1) {
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
       } else {
-        EoGeVector3d MajorAxis(pts[0], pts[1]);
-        EoGeVector3d MinorAxis(pts[0], CurrentPnt);
+        EoGeVector3d majorAxis(pts[0], pts[1]);
+        EoGeVector3d minorAxis(pts[0], CurrentPnt);
+        
+        if (minorAxis.Length() < Eo::geometricTolerance) { break; }
+        auto extrusion = CrossProduct(majorAxis, minorAxis);
+        extrusion.Normalize();
+        double ratio = minorAxis.Length() / majorAxis.Length();
+        auto* conic = new EoDbConic(pts[0], extrusion, majorAxis, ratio);
+        conic->SetColor(pstate.PenColor());
+        conic->SetLineTypeIndex(pstate.LineType());
 
-        m_PreviewGroup.AddTail(new EoDbEllipse(pts[0], MajorAxis, MinorAxis, Eo::TwoPi));
+        m_PreviewGroup.AddTail(conic);
       }
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;

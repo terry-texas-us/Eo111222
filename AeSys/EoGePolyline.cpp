@@ -29,11 +29,13 @@ void BeginLineLoop() {
   pts_.SetSize(0);
   LoopLine = true;
 }
+
 void BeginLineStrip() {
   pts_.SetSize(0);
   LoopLine = false;
 }
-bool AnyPointsInView(EoGePoint4dArray& pointsArray) {
+
+static bool AnyPointsInView(EoGePoint4dArray& pointsArray) {
   for (int i = 0; i < pointsArray.GetSize(); i++) {
     if (pointsArray[i].IsInView()) return true;
   }

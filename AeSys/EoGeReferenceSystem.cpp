@@ -41,7 +41,7 @@ EoGeReferenceSystem& EoGeReferenceSystem::operator=(const EoGeReferenceSystem& s
   return (*this);
 }
 void EoGeReferenceSystem::GetUnitNormal(EoGeVector3d& normal) const {
-  normal = EoGeCrossProduct(m_XDirection, m_YDirection);
+  normal = CrossProduct(m_XDirection, m_YDirection);
   normal.Normalize();
 }
 EoGePoint3d EoGeReferenceSystem::Origin() const { return m_Origin; }

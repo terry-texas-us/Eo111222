@@ -78,8 +78,8 @@ void EoDlgViewParameters::OnBnClickedApply() {
 
 	ModelView->SetDirection(Direction);
 
-	EoGeVector3d ViewUp = EoGeCrossProduct(Direction, EoGeVector3d::positiveUnitZ);
-	ViewUp = EoGeCrossProduct(ViewUp, Direction);
+	auto ViewUp =	CrossProduct(Direction, EoGeVector3d::positiveUnitZ);
+	ViewUp = CrossProduct(ViewUp, Direction);
 
 	if (ViewUp.IsNearNull()) {
 		ViewUp = EoGeVector3d::positiveUnitY;

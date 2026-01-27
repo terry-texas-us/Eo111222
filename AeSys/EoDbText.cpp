@@ -306,10 +306,10 @@ void DisplayTextSegment(AeSysView* view, CDC* deviceContext, EoDbFontDefinition&
     view->ModelViewTransformVector(XDirection);
     view->ModelViewTransformVector(YDirection);
 
-    EoGeVector3d PlaneNormal = EoGeCrossProduct(XDirection, YDirection);
-    PlaneNormal.Normalize();
+    auto normal = CrossProduct(XDirection, YDirection);
+    normal.Normalize();
 
-    if (PlaneNormal == EoGeVector3d::positiveUnitZ) {
+    if (normal == EoGeVector3d::positiveUnitZ) {
       if (DisplayTextSegmentUsingTrueTypeFont(view, deviceContext, fd, referenceSystem, startPosition, numberOfCharacters, text)) return;
     }
   }

@@ -1073,10 +1073,10 @@ void AeSysView::DoCameraRotate(int rotationDirection) {
     EoGeVector3d normal = m_ViewTransform.Target() - m_ViewTransform.Position();
     normal.Normalize();
 
-    EoGeVector3d u = EoGeCrossProduct(ViewUp(), normal);
+    auto u = CrossProduct(ViewUp(), normal);
     u.Normalize();
 
-    EoGeVector3d v = EoGeCrossProduct(normal, u);
+    auto v = CrossProduct(normal, u);
     v.Normalize();
 
     EoGePoint3d position = m_ViewTransform.Position();
@@ -1216,11 +1216,11 @@ void AeSysView::On3dViewsIsometric() {
     m_ViewTransform.SetDirection(-Direction);
     m_ViewTransform.EnablePerspective(false);
 
-    EoGeVector3d ViewUp = EoGeCrossProduct(Direction, EoGeVector3d::positiveUnitZ);
-    ViewUp = EoGeCrossProduct(ViewUp, Direction);
-    ViewUp.Normalize();
+    auto viewUp = CrossProduct(Direction, EoGeVector3d::positiveUnitZ);
+    viewUp = CrossProduct(viewUp, Direction);
+    viewUp.Normalize();
 
-    m_ViewTransform.SetViewUp(ViewUp);
+    m_ViewTransform.SetViewUp(viewUp);
     m_ViewTransform.SetCenteredWindow(m_Viewport, 0.0, 0.0);
   }
   InvalidateRect(nullptr, TRUE);

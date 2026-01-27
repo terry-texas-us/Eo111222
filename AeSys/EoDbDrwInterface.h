@@ -99,8 +99,7 @@ class EoDbDrwInterface : public DRW_Interface {
     }
     ConvertCircleEntity(circle, m_document);
   }
-  
-  
+    
   // COORDINATION_MODEL not implemented in DRW
 
   // Dimensions
@@ -117,7 +116,16 @@ class EoDbDrwInterface : public DRW_Interface {
   void addDimRadial(const DRW_DimRadial* /* dimRadial */) override { countOfDimRadial++; }
   void addDimDiametric(const DRW_DimDiametric* /* dimDiametric */) override { countOfDimDiametric++; }
   
-  void addEllipse(const DRW_Ellipse& /* ellipse */) override { countOfEllipse++; }
+  void addEllipse(const DRW_Ellipse& ellipse) override { 
+    countOfEllipse++; 
+    if (inBlockDefinition) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addCircle - block <%s>\n", blockName.c_str());
+    } else {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addCircle - entities section\n");
+    }
+    ConvertEllipseEntity(ellipse, m_document);
+
+  }
   void addHatch(const DRW_Hatch* /* hatch */) override { countOfHatch++; }
   // HELIX not implemented in DRW
   void addImage(const DRW_Image* /* image */) override { countOfImage++; }

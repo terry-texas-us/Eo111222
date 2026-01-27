@@ -21,7 +21,6 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "PrimState.h"
-#include "drw_base.h"
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"
@@ -69,37 +68,35 @@ double EoDbConic::NormalizeTo2Pi(double angle) {
   if (angle < 0.0) angle += Eo::TwoPi;
 
   // Snap values very close to two_pi back to 0.0 to produce canonical result
-  if (angle >= Eo::TwoPi - Eo::angularEpsilon) { angle = 0.0; }
+  if (angle >= Eo::TwoPi - Eo::geometricTolerance) { angle = 0.0; }
 
   return angle;
 }
 
 CString EoDbConic::SubClassName(double ratio, double startAngle, double endAngle) {
-  if (fabs(1.0 - ratio) > Eo::lengthEpsilon) { return L"<Ellipse>"; }
-  if (fabs((endAngle - startAngle) - Eo::TwoPi) <= Eo::angularEpsilon) { return L"<Circle>"; }
-  return L"<Radial Arc>";
+  bool isCircular = fabs(1.0 - ratio) <= Eo::geometricTolerance;
+
+  double sweep = NormalizeTo2Pi(endAngle) - NormalizeTo2Pi(startAngle);
+  if (sweep <= 0.0) sweep += Eo::TwoPi;
+  bool isFull = fabs(sweep - Eo::TwoPi) <= Eo::geometricTolerance;
+
+  if (isCircular) {
+    return isFull ? L"Circle" : L"Radial Arc";
+  } else {
+    return isFull ? L"Ellipse" : L"Elliptical Arc";
+  }
 }
 
-/**
- * @brief Constructs an ellipse segment defined by a center point, major and minor axes, and a sweep angle.
- *
- * This constructor initializes an ellipse segment using the specified center point, major axis, minor axis, and sweep angle.
- * The pen color and line type are set based on the current primitive state.
- *
- * @param center The center point of the ellipse.
- * @param majorAxis The major axis vector of the ellipse.
- * @param minorAxis The minor axis vector of the ellipse.
- * @param sweepAngle The sweep angle of the ellipse segment in radians.
- */
-/*
-EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis,
-                     double sweepAngle)
-    : EoDbPrimitive(pstate.PenColor(), pstate.LineType()),
+EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis,
+                     double ratio)
+    : EoDbPrimitive(),
       m_center(center),
       m_majorAxis(majorAxis),
-      m_minorAxis(minorAxis),
-      m_sweepAngle(sweepAngle) {}
-*/
+      m_extrusion(extrusion),
+      m_ratio(ratio),
+      m_startAngle(0.0),
+      m_endAngle(Eo::TwoPi) {}
+
 /**
  * @brief Constructs a circle (as ellipse) primitive defined by a center point and radius in the current view.
  *
@@ -170,41 +167,42 @@ EoDbConic::EoDbConic(EoGePoint3d& center, EoGePoint3d& start) {
 
   m_center = center;
   m_majorAxis = EoGeVector3d(center, start);
-  m_minorAxis = m_majorAxis;
-  m_minorAxis.RotAboutArbAx(-cameraDirection, Eo::HalfPi);
   m_sweepAngle = Eo::TwoPi;
 }
 
-EoDbConic::EoDbConic(EoGePoint3d& center, EoGeVector3d& extrusion, double radius)
+/** Construct radial arc primitive using DXF Arc entity
+*  
+*/
+EoDbConic::EoDbConic(EoGePoint3d& center, EoGeVector3d& extrusion, double radius, double startAngle, double endAngle)
     : EoDbPrimitive(),
       m_center(center),
       m_majorAxis(ComputeArbitraryAxis(extrusion) * radius),
       m_extrusion(extrusion),
       m_ratio(1.0),
-      m_startAngle(0.0),
-      m_endAngle(Eo::TwoPi) {}
+      m_startAngle(startAngle),
+      m_endAngle(endAngle) {}
 
-EoDbConic::EoDbConic(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end) {
-  m_color = pstate.PenColor();
-  m_lineTypeIndex = pstate.LineType();
-
-  m_sweepAngle = 0.0;
-
+EoDbConic::EoDbConic(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end)
+    : EoDbPrimitive(pstate.PenColor(), pstate.LineType()) {
   EoGeVector3d startToIntermediate(start, intermediate);
   EoGeVector3d startToEnd(start, end);
-  EoGeVector3d normal = EoGeCrossProduct(startToIntermediate, startToEnd);
+  auto normal = CrossProduct(startToIntermediate, startToEnd);
   normal.Normalize();
 
-  // Build transformation matrix which will get int and end points to z=0 plane with beg point as origin
+  // Ensure extrusion points in positive Z direction
+  // If normal.z < 0, the arc is CW when viewed from +Z, so swap start/end to make it CCW
+  if (normal.z < 0.0) {
+    normal = -normal;
+    std::swap(start, end);  // Reverse arc direction to maintain CCW sweep
+  }
 
+  m_extrusion = normal;
+  m_ratio = 1.0;
+
+  // Build transformation matrix which will get int and end points to z=0 plane with beg point as origin
   EoGeTransformMatrix transformMatrix(start, normal);
 
-  EoGePoint3d pt[3]{};
-
-  pt[0] = start;
-  pt[1] = intermediate;
-  pt[2] = end;
-
+  EoGePoint3d pt[3]{start, intermediate, end};
   pt[1] = transformMatrix * pt[1];
   pt[2] = transformMatrix * pt[2];
 
@@ -215,43 +213,49 @@ EoDbConic::EoDbConic(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d en
 
     m_center.x = (pt[1].x - pt[1].y * dT) * 0.5;
     m_center.y = (pt[1].y + pt[1].x * dT) * 0.5;
-    m_center.z = 0.;
-    transformMatrix.Inverse();
-
-    // Transform back to original plane
+    m_center.z = 0.0;
+    transformMatrix = transformMatrix.Inverse();
     m_center = transformMatrix * m_center;
 
-    // None of the points coincide with center point
-
+    // Recalculate in z=0 plane with center point at origin
     transformMatrix = EoGeTransformMatrix(m_center, normal);
 
-    double dAng[3]{};
-
+    pt[0] = start;
     pt[1] = intermediate;
     pt[2] = end;
 
-    for (int i = 0; i < 3; i++) {  // Translate points into z=0 plane with center point at origin
-      pt[i] = transformMatrix * pt[i];
-      dAng[i] = atan2(pt[i].y, pt[i].x);
-      if (dAng[i] < 0.0) dAng[i] += Eo::TwoPi;
-    }
-    double dMin = std::min(dAng[0], dAng[2]);
-    double dMax = std::max(dAng[0], dAng[2]);
+    for (int i = 0; i < 3; i++) { pt[i] = transformMatrix * pt[i]; }
 
-    if (fabs(dAng[1] - dMax) > DBL_EPSILON &&
-        fabs(dAng[1] - dMin) > DBL_EPSILON) {  // Inside line is not colinear with outside lines
-      m_sweepAngle = dMax - dMin;
-      if (dAng[1] > dMin && dAng[1] < dMax) {
-        if (dAng[0] == dMax) m_sweepAngle = -m_sweepAngle;
-      } else {
-        m_sweepAngle = Eo::TwoPi - m_sweepAngle;
-        if (dAng[2] == dMax) m_sweepAngle = -m_sweepAngle;
-      }
-      EoGePoint3d ptRot = start.RotateAboutAxis(m_center, normal, Eo::HalfPi);
+    double radius = EoGeVector3d(EoGePoint3d::kOrigin, pt[0]).Length();
 
-      m_majorAxis = EoGeVector3d(m_center, start);
-      m_minorAxis = EoGeVector3d(m_center, ptRot);
+    // Compute angles
+    double angles[3]{};
+    for (int i = 0; i < 3; i++) {
+      angles[i] = atan2(pt[i].y, pt[i].x);
+      if (angles[i] < 0.0) { angles[i] += Eo::TwoPi; }
     }
+    m_startAngle = angles[0];
+
+    // Calculate CCW sweep from start through intermediate to end
+    double sweepToIntermediate = angles[1] - angles[0];
+    if (sweepToIntermediate < 0.0) { sweepToIntermediate += Eo::TwoPi; }
+
+    double sweepToEnd = angles[2] - angles[0];
+    if (sweepToEnd < 0.0) { sweepToEnd += Eo::TwoPi; }
+
+    // Verify intermediate is between start and end in CCW direction
+    double totalSweep;
+    if (sweepToIntermediate < sweepToEnd) {
+      // Intermediate is correctly between start and end (CCW)
+      totalSweep = sweepToEnd;
+    } else {
+      // Intermediate is on the "long way" around, use the other direction
+      totalSweep = Eo::TwoPi - sweepToEnd;
+      totalSweep = -totalSweep;  // Make negative to indicate CW (which shouldn't happen after our flip)
+    }
+
+    m_endAngle = m_startAngle + totalSweep;
+    m_majorAxis = ComputeArbitraryAxis(m_extrusion) * radius;
   }
 }
 
@@ -278,15 +282,11 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, double radius, double startAngle
   if (sweepAngle < 0.0) sweepAngle += Eo::TwoPi;
   if (fabs(sweepAngle) < DBL_EPSILON) sweepAngle = Eo::TwoPi;  // identical => full circle
   m_sweepAngle = sweepAngle;
-  
+
   // Build major axis vector from center to start point
   EoGePoint3d startPoint(m_center.x + radius * cos(normalizedStartAngle),
                          m_center.y + radius * sin(normalizedStartAngle), m_center.z);
   m_majorAxis = EoGeVector3d(m_center, startPoint);
-
-  // Minor axis is major rotated +90 degrees about Z (plane normal)
-  m_minorAxis = m_majorAxis;
-  m_minorAxis.RotAboutArbAx(EoGeVector3d::positiveUnitZ, Eo::HalfPi);
 }
 
 /** 
@@ -309,22 +309,29 @@ EoDbConic::EoDbConic(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d&
   m_sweepAngle = sweepAngle;
 }
 */
-EoDbConic::EoDbConic(const EoDbConic& other) {
-  m_color = other.m_color;
-  m_lineTypeIndex = other.m_lineTypeIndex;
-  m_center = other.m_center;
-  m_majorAxis = other.m_majorAxis;
-  m_minorAxis = other.m_minorAxis;
+EoDbConic::EoDbConic(const EoDbConic& other)
+    : EoDbPrimitive(other),
+      m_center(other.m_center),
+      m_majorAxis(other.m_majorAxis),
+      m_extrusion(other.m_extrusion),
+      m_ratio(other.m_ratio),
+      m_startAngle(other.m_startAngle),
+      m_endAngle(other.m_endAngle) {
   m_sweepAngle = other.m_sweepAngle;
 }
 
 const EoDbConic& EoDbConic::operator=(const EoDbConic& other) {
-  m_color = other.m_color;
-  m_lineTypeIndex = other.m_lineTypeIndex;
-  m_center = other.m_center;
-  m_majorAxis = other.m_majorAxis;
-  m_minorAxis = other.m_minorAxis;
-  m_sweepAngle = other.m_sweepAngle;
+  if (this != &other) {
+    EoDbPrimitive::operator=(other);
+    m_center = other.m_center;
+    m_majorAxis = other.m_majorAxis;
+    m_extrusion = other.m_extrusion;
+    m_ratio = other.m_ratio;
+    m_startAngle = other.m_startAngle;
+    m_endAngle = other.m_endAngle;
+
+    m_sweepAngle = other.m_sweepAngle;
+  }
   return (*this);
 }
 
@@ -341,16 +348,26 @@ void EoDbConic::AddReportToMessageList(EoGePoint3d) {
 
   double radius = m_majorAxis.Length();
 
-  if (subClassName == L"<Ellipse>") {
-    message.Format(L"  SweepAngle %f MajorAxisLength: %f Ratio: %f", m_endAngle - m_startAngle, radius, m_ratio);
-  } else {
-    if (subClassName == L"<Circle>") {
-      message.Format(L"  Radius: %f", radius);
-    } else {
-      message.Format(L"  Radius: %f Start angle: %f End Angle: %f", radius, m_startAngle, m_endAngle);
-    }
-    app.AddStringToMessageList(message);
+  auto conicType = GetConicType();
+  switch (conicType) {
+    case ConicType::Circle:
+      message.Format(L"  Radius: %.4f", radius);
+      break;
+
+    case ConicType::RadialArc:
+      message.Format(L"  Radius: %.4f Start Angle: %.2f° End Angle: %.2f°", radius, Eo::RadianToDegree(m_startAngle),
+                     Eo::RadianToDegree(m_endAngle));
+      break;
+    case ConicType::Ellipse:
+      message.Format(L"  Major Radius: %.4f Radius Ratio: %.4f", radius, m_ratio);
+      break;
+
+    case ConicType::EllipticalArc:
+      message.Format(L"  Major Radius: %.4f Radius Ratio: %.4f Start Angle: %.2f° End Angle: %.2f°", radius, m_ratio,
+                     Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
+      break;
   }
+  app.AddStringToMessageList(message);
 }
 
 void EoDbConic::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
@@ -374,19 +391,17 @@ void EoDbConic::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupList*
   if (dRel[0] <= DBL_EPSILON && dRel[1] >= 1.0 - DBL_EPSILON) {  // Put entire arc in trap
     pArc = this;
   } else {  // Something gets cut
-    EoGeVector3d vPlnNorm = EoGeCrossProduct(m_majorAxis, m_minorAxis);
-    vPlnNorm.Normalize();
+    auto normal = CrossProduct(m_majorAxis, MinorAxis());
+    normal.Normalize();
 
     if (fabs(m_sweepAngle - Eo::TwoPi) <= DBL_EPSILON) {  // Closed arc
       m_sweepAngle = (dRel[1] - dRel[0]) * Eo::TwoPi;
 
-      m_majorAxis.RotAboutArbAx(vPlnNorm, dRel[0] * Eo::TwoPi);
-      m_minorAxis.RotAboutArbAx(vPlnNorm, dRel[0] * Eo::TwoPi);
+      m_majorAxis.RotAboutArbAx(normal, dRel[0] * Eo::TwoPi);
 
       pArc = new EoDbConic(*this);
 
-      m_majorAxis.RotAboutArbAx(vPlnNorm, m_sweepAngle);
-      m_minorAxis.RotAboutArbAx(vPlnNorm, m_sweepAngle);
+      m_majorAxis.RotAboutArbAx(normal, m_sweepAngle);
 
       m_sweepAngle = Eo::TwoPi - m_sweepAngle;
     } else {  // Arc section with a cut
@@ -400,30 +415,24 @@ void EoDbConic::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupList*
         pArc->SetSweepAngle(dAng1);
         groups->AddTail(new EoDbGroup(pArc));
 
-        m_majorAxis.RotAboutArbAx(vPlnNorm, dAng1);
-        m_minorAxis.RotAboutArbAx(vPlnNorm, dAng1);
+        m_majorAxis.RotAboutArbAx(normal, dAng1);
         m_sweepAngle = dAng2 - dAng1;
 
         pArc = new EoDbConic(*this);
 
-        m_majorAxis.RotAboutArbAx(vPlnNorm, m_sweepAngle);
-        m_minorAxis.RotAboutArbAx(vPlnNorm, m_sweepAngle);
+        m_majorAxis.RotAboutArbAx(normal, m_sweepAngle);
         m_sweepAngle = dSwpAng - dAng2;
       } else if (dRel[1] < 1.0 - DBL_EPSILON) {  // Cut section in two and place begin section in trap
         pArc->SetSweepAngle(dAng2);
 
-        m_majorAxis.RotAboutArbAx(vPlnNorm, dAng2);
-        m_minorAxis.RotAboutArbAx(vPlnNorm, dAng2);
+        m_majorAxis.RotAboutArbAx(normal, dAng2);
         m_sweepAngle = dSwpAng - dAng2;
       } else {  // Cut section in two and place end section in trap
         m_sweepAngle = dAng1;
 
         EoGeVector3d v = m_majorAxis;
-        v.RotAboutArbAx(vPlnNorm, dAng1);
+        v.RotAboutArbAx(normal, dAng1);
         pArc->SetMajorAxis(v);
-        v = m_minorAxis;
-        v.RotAboutArbAx(vPlnNorm, dAng1);
-        pArc->SetMinorAxis(v);
         pArc->SetSweepAngle(dSwpAng - dAng1);
       }
     }
@@ -432,34 +441,37 @@ void EoDbConic::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupList*
   newGroups->AddTail(new EoDbGroup(pArc));
 }
 
-void EoDbConic::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
-  if (fabs(m_sweepAngle - Eo::TwoPi) <= DBL_EPSILON)
-    // Do not fragment a circle
+void EoDbConic::CutAtPt(EoGePoint3d& point, EoDbGroup* group) {
+  if (group == nullptr) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Null group in CutAtPt\n");
     return;
+  }
+  if (IsFullConic()) { return; }  // Do not fragment a circle or full ellipse
 
-  double dRel = SweepAngleToPoint(pt) / m_sweepAngle;
+  double sweepAngle = SweepAngle();
+  if (fabs(sweepAngle) <= Eo::geometricTolerance) { return; }  // Nothing to cut
 
-  if (dRel <= DBL_EPSILON || dRel >= 1.0 - DBL_EPSILON)
-    // Nothing to cut
-    return;
+  double parameterAtPoint = SweepAngleToPoint(point) / sweepAngle;
 
-  double dSwpAng = m_sweepAngle * dRel;
+  if (parameterAtPoint <= Eo::geometricTolerance || parameterAtPoint >= 1.0 - Eo::geometricTolerance) { return; }
+  // Cut point is not on or beyond endpoints
 
-  EoDbConic* pArc = new EoDbConic(*this);
-  pArc->SetSweepAngle(dSwpAng);
-  group->AddTail(pArc);
+  double absoluteAngleAtPoint = m_startAngle + sweepAngle * parameterAtPoint;
 
-  EoGeVector3d vPlnNorm = EoGeCrossProduct(m_majorAxis, m_minorAxis);
-  vPlnNorm.Normalize();
+  EoDbConic* newConic = new EoDbConic(*this);
 
-  m_majorAxis.RotAboutArbAx(vPlnNorm, dSwpAng);
-  m_minorAxis.RotAboutArbAx(vPlnNorm, dSwpAng);
-  m_sweepAngle -= dSwpAng;
+  newConic->SetStartAngle(absoluteAngleAtPoint);
+  newConic->SetSweepAngle(m_endAngle - absoluteAngleAtPoint);  // Deprecated, but kept for temporary continuity
+
+  group->AddTail(newConic);
+
+  m_endAngle = absoluteAngleAtPoint;
+  m_sweepAngle = m_endAngle - m_startAngle;  // Deprecated, but kept for temporary continuity
 }
 
 void EoDbConic::Display(AeSysView* view, CDC* deviceContext) {
   double sweepAngle = m_endAngle - m_startAngle;
-  if (fabs(sweepAngle) <= Eo::angularEpsilon) { return; }
+  if (fabs(sweepAngle) <= Eo::geometricTolerance) { return; }
 
   auto color = LogicalColor();
   auto lineType = LogicalLineType();
@@ -477,25 +489,55 @@ void EoDbConic::GetAllPoints(EoGePoint3dArray& points) {
 }
 
 void EoDbConic::GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d majorAxis) const {
-  auto minorAxis = MinorAxis() * m_ratio;
-  auto sweepAngle = m_endAngle - m_startAngle;
+  auto minorAxis = MinorAxis();
 
+  // Normalize angles to [0, 2π) and ensure CCW sweep
+  double normalizedStartAngle = NormalizeTo2Pi(m_startAngle);
+  double normalizedEndAngle = NormalizeTo2Pi(m_endAngle);
+
+  // Compute CCW sweep angle from start to end
+  double sweepAngle = normalizedEndAngle - normalizedStartAngle;
+  if (sweepAngle <= 0.0) { sweepAngle += Eo::TwoPi; }
+
+  // For a full circle/ellipse (start == end), use full sweep
+  if (fabs(m_endAngle - m_startAngle) <= Eo::geometricTolerance ||
+      fabs(sweepAngle - Eo::TwoPi) <= Eo::geometricTolerance) {
+    sweepAngle = Eo::TwoPi;
+  }
+
+  // Calculate number of vertices based on arc length and curvature
   double maxAxisLength = std::max(majorAxis.Length(), minorAxis.Length());
   int numberOfPoints = std::max(2, abs(Eo::Round(sweepAngle / Eo::TwoPi * 32.0)));
   numberOfPoints = std::min(128, std::max(numberOfPoints, abs(Eo::Round(sweepAngle * maxAxisLength / 0.250))));
 
+  // Build transformation matrix: local ellipse coordinates → world coordinates
+  // majorAxis and minorAxis define the ellipse orientation (NOT rotated by startAngle)
+  // For ellipses, startAngle is a parametric t-parameter, not a geometric angle
   EoGeTransformMatrix transformMatrix(center, majorAxis, minorAxis);
   transformMatrix.Inverse();
 
+  // Calculate segment angle and pre-compute sin/cos for rotation
   double segmentAngle = sweepAngle / (numberOfPoints - 1);
   double angleCosine = cos(segmentAngle);
   double angleSine = sin(segmentAngle);
 
-  EoGePoint3d point(1.0, 0.0, 0.0);
+  // Start at the parametric position defined by normalizedStartAngle
+  // For ellipses: P(t) = center + cos(t)*majorAxis + sin(t)*minorAxis
+  // In local coords: (cos(startAngle), sin(startAngle), 0)
+  EoGePoint3d point(cos(normalizedStartAngle), sin(normalizedStartAngle), 0.0);
 
+  // Generate vertices by incrementally rotating the point
   for (int i = 0; i < numberOfPoints; i++) {
     polyline::SetVertex(transformMatrix * point);
-    point(point.x * angleCosine - point.y * angleSine, point.y * angleCosine + point.x * angleSine, 0.0);
+
+    // Rotate point by segmentAngle in parametric space
+    // This works for both circles (where parametric = geometric)
+    // and ellipses (where we work in parametric space)
+    // [cos(θ) -sin(θ)] [x]   [x*cos(θ) - y*sin(θ)]
+    // [sin(θ)  cos(θ)] [y] = [x*sin(θ) + y*cos(θ)]
+    double newX = point.x * angleCosine - point.y * angleSine;
+    double newY = point.x * angleSine + point.y * angleCosine;
+    point(newX, newY, 0.0);
   }
 }
 
@@ -508,33 +550,56 @@ void EoDbConic::FormatGeometry(CString& geometry) {
 }
 
 void EoDbConic::FormatExtra(CString& extra) {
-  CString subClassName = SubClassName(m_ratio, m_startAngle, m_endAngle);
-
+  auto conicType = GetConicType();
   CString format{L"Color;%s\tLine Type;%s\t"};
 
-  if (subClassName == L"<Ellipse>") {
-    format += L"Sweep Angle;%f\tMajor Axis Length;%f\tRatio;%f\t";
-    extra.Format(format.GetString(), FormatPenColor().GetString(), FormatLineType().GetString(),
-               m_endAngle - m_startAngle, m_majorAxis.Length(), m_ratio);
-  } else if (subClassName == L"<Circle>") {
-    format += L"Radius;%f\t";
-    extra.Format(format.GetString(), FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length());
-  } else if (subClassName == L"<Radial Arc>") {
-    format += L"Radius;%f\tStart Angle;%f\tEnd Angle;%f\t";
-    extra.Format(format.GetString(), FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length(), m_startAngle, m_endAngle);
+  switch (conicType) {
+    case ConicType::Circle:
+      format += L"Radius;%.4f\t";
+      extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length());
+      break;
+
+    case ConicType::RadialArc:
+      format += L"Radius;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°\tSweep;%.2f°\t";
+      extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length(),
+                   Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle),
+                   Eo::RadianToDegree(m_endAngle - m_startAngle));
+      break;
+
+    case ConicType::Ellipse:
+      format += L"Major Radius;%.4f\tMinor Radius;%.4f\tRatio;%.4f\t";
+      extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length(),
+                   m_majorAxis.Length() * m_ratio, m_ratio);
+      break;
+
+    case ConicType::EllipticalArc:
+      format += L"Major Radius;%.4f\tRatio;%.4f\tStart Param;%.2f°\tEnd Param;%.2f°\t";
+      extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length(), m_ratio,
+                   Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
+      break;
   }
 }
 
-EoGePoint3d EoDbConic::GetBegPt() { return (m_center + m_majorAxis); }
+EoGePoint3d EoDbConic::PointAtStartAngle() {
+  EoGeTransformMatrix transformMatrix(m_center, m_majorAxis, MinorAxis());
+  transformMatrix.Inverse();
 
-EoGePoint3d EoDbConic::GetEndPt() {
-  EoGeTransformMatrix tm(m_center, m_majorAxis, m_minorAxis);
-  tm.Inverse();
+  // Use parametric start angle to compute the beginning point
+  EoGePoint3d point(cos(m_startAngle), sin(m_startAngle), 0.0);
 
-  EoGePoint3d pt(cos(m_sweepAngle), sin(m_sweepAngle), 0.0);
+  point = transformMatrix * point;
+  return point;
+}
 
-  pt = tm * pt;
-  return (pt);
+EoGePoint3d EoDbConic::PointAtEndAngle() {
+  EoGeTransformMatrix transformMatrix(m_center, m_majorAxis, MinorAxis());
+  transformMatrix.Inverse();
+
+  // Use parametric end angle to compute the ending point
+  EoGePoint3d point(cos(m_endAngle), sin(m_endAngle), 0.0);
+
+  point = transformMatrix * point;
+  return point;
 }
 
 void EoDbConic::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* arMin, EoGePoint3d* arMax) const {
@@ -656,7 +721,7 @@ void EoDbConic::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptM
 bool EoDbConic::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
   // Determines if a point is on a control point of the arc.
 
-  EoGePoint4d pt[] = {EoGePoint4d(GetBegPt()), EoGePoint4d(GetEndPt())};
+  EoGePoint4d pt[] = {EoGePoint4d(PointAtStartAngle()), EoGePoint4d(PointAtEndAngle())};
 
   for (EoUInt16 w = 0; w < 2; w++) {
     view->ModelViewTransformPoint(pt[w]);
@@ -667,43 +732,36 @@ bool EoDbConic::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point)
 }
 
 int EoDbConic::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptInt) {
-  EoGeVector3d vPlnNorm = EoGeCrossProduct(m_majorAxis, m_minorAxis);
-  vPlnNorm.Normalize();
+  auto normal = CrossProduct(m_majorAxis, MinorAxis());
+  normal.Normalize();
 
-  if (!(EoGeCrossProduct(EoGeVector3d::positiveUnitZ, vPlnNorm)).IsNearNull())
-    // not on plane normal to z-axis
-    return 0;
+  if (!(CrossProduct(EoGeVector3d::positiveUnitZ, normal)).IsNearNull()) { return 0; }
 
-  if (fabs(m_majorAxis.Length() - m_minorAxis.Length()) > FLT_EPSILON)
-    // not radial
-    return 0;
+  if (fabs(m_majorAxis.Length() - MinorAxis().Length()) > FLT_EPSILON) { return 0; }
 
   EoGePoint3d ptMin, ptMax;
 
-  EoGePoint3d ptBeg = GetBegPt();
-  EoGePoint3d ptEnd = GetEndPt();
+  auto ptBeg = PointAtStartAngle();
+  auto ptEnd = PointAtEndAngle();
 
-  if (vPlnNorm.z < 0.0) {
+  if (normal.z < 0.0) {
     EoGePoint3d pt = ptBeg;
     ptBeg = ptEnd;
     ptEnd = pt;
 
-    vPlnNorm = -vPlnNorm;
+    normal = -normal;
     m_majorAxis = EoGeVector3d(m_center, ptBeg);
-    m_minorAxis = EoGeCrossProduct(vPlnNorm, m_majorAxis);
   }
 
   GetXYExtents(ptBeg, ptEnd, &ptMin, &ptMax);
 
-  if (ptMin.x >= ptLL.x && ptMax.x <= ptUR.x && ptMin.y >= ptLL.y &&
-      ptMax.y <= ptUR.y) {  // Totally within window boundaries
+  if (ptMin.x >= ptLL.x && ptMax.x <= ptUR.x && ptMin.y >= ptLL.y && ptMax.y <= ptUR.y) {
+    // Totally within window boundaries
     ptInt[0] = ptBeg;
     ptInt[1] = ptEnd;
     return (2);
   }
-  if (ptMin.x >= ptUR.x || ptMax.x <= ptLL.x || ptMin.y >= ptUR.y || ptMax.y <= ptLL.y)
-    // No extent overlap
-    return 0;
+  if (ptMin.x >= ptUR.x || ptMax.x <= ptLL.x || ptMin.y >= ptUR.y || ptMax.y <= ptLL.y) { return 0; }
 
   EoGePoint3d ptWrk[8]{};
 
@@ -810,9 +868,19 @@ int EoDbConic::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptI
   return (iInts);
 }
 
+/**
+ * @brief Computes the next control point on the conic section.
+ *
+ * This method determines the next control point based on the current relationship of the point
+ * to the conic section. It uses the parametric angle to find the appropriate point on the arc.
+ *
+ * @note If close to start (sm_RelationshipOfPoint near 0), return end point; otherwise return start point
+
+ * @return The next control point on the conic section.
+ */
 EoGePoint3d EoDbConic::GoToNextControlPoint() {
-  double angle = (sm_RelationshipOfPoint <= Eo::lengthEpsilon) ? m_endAngle - m_startAngle : 0.0;
-  return (PointOnArcAtAngle(m_center, m_majorAxis, m_minorAxis, angle));
+  double parametricAngle = (sm_RelationshipOfPoint <= Eo::geometricTolerance) ? m_endAngle : m_startAngle;
+  return PointOnArcAtAngle(m_center, m_majorAxis, MinorAxis(), parametricAngle);
 }
 
 bool EoDbConic::IsInView(AeSysView* view) {
@@ -839,7 +907,7 @@ EoGePoint3d EoDbConic::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& 
 
   double dAPert = sm_SelectApertureSize;
 
-  EoGePoint3d ptCtrl[] = {GetBegPt(), GetEndPt()};
+  EoGePoint3d ptCtrl[] = {PointAtStartAngle(), PointAtEndAngle()};
 
   for (EoUInt16 w = 0; w < 2; w++) {
     EoGePoint4d pt(ptCtrl[w]);
@@ -881,9 +949,7 @@ void EoDbConic::Transform(EoGeTransformMatrix& transformationMatrix) {
   EoGeVector3d minorAxis = MinorAxis();
   m_ratio = minorAxis.Length() / m_majorAxis.Length();
   // if ratio is greater than zero, then major and minor axes need to be reversed. Are the start and end angles still valid?
-  if (m_ratio > 0.0) {
-    m_majorAxis = minorAxis;
-  }
+  if (m_ratio > 0.0) { m_majorAxis = minorAxis; }
   m_extrusion.Normalize();
 }
 
@@ -912,15 +978,24 @@ void EoDbConic::GetBoundingBox(EoGePoint3dArray& ptsBox) {
   ptsBox[2] = EoGePoint3d(1.0, 1.0, 0.0);
   ptsBox[3] = EoGePoint3d(-1.0, 1.0, 0.0);
 
-  if (m_sweepAngle < 3. * Eo::TwoPi / 4.0) {
-    double dEndX = cos(m_sweepAngle);
-    double dEndY = sin(m_sweepAngle);
+  // Compute sweep angle from start/end angles
+  double normalizedStartAngle = NormalizeTo2Pi(m_startAngle);
+  double normalizedEndAngle = NormalizeTo2Pi(m_endAngle);
+  double sweepAngle = normalizedEndAngle - normalizedStartAngle;
+  if (sweepAngle <= 0.0) { sweepAngle += Eo::TwoPi; }
+
+  // For full conics, use standard bounding box
+  if (!IsFullConic() && sweepAngle < 3.0 * Eo::TwoPi / 4.0) {
+    // For arcs less than 270°, optimize the bounding box
+    // Compute end point position in parametric space
+    double dEndX = cos(sweepAngle);
+    double dEndY = sin(sweepAngle);
 
     if (dEndX >= 0.0) {
       if (dEndY >= 0.0) {  // Arc ends in quadrant one
         ptsBox[0].x = dEndX;
-        ptsBox[0].y = 0.;
-        ptsBox[1].y = 0.;
+        ptsBox[0].y = 0.0;
+        ptsBox[1].y = 0.0;
         ptsBox[2].y = dEndY;
         ptsBox[3].x = dEndX;
         ptsBox[3].y = dEndY;
@@ -928,8 +1003,8 @@ void EoDbConic::GetBoundingBox(EoGePoint3dArray& ptsBox) {
     } else {
       if (dEndY >= 0.0) {  // Arc ends in quadrant two
         ptsBox[0].x = dEndX;
-        ptsBox[0].y = 0.;
-        ptsBox[1].y = 0.;
+        ptsBox[0].y = 0.0;
+        ptsBox[1].y = 0.0;
         ptsBox[3].x = dEndX;
       } else {  // Arc ends in quadrant three
         ptsBox[0].y = dEndY;
@@ -937,32 +1012,37 @@ void EoDbConic::GetBoundingBox(EoGePoint3dArray& ptsBox) {
       }
     }
   }
-  EoGeTransformMatrix tm(m_center, m_majorAxis, MinorAxis());
+
+  // Transform from parametric unit circle to actual conic in world space
+  // This works for both circles (ratio=1.0) and ellipses (ratio<1.0)
+  EoGeVector3d minorAxis = MinorAxis();
+
+  // Rotate axes to align with start angle in parametric space
+  EoGeVector3d rotatedMajorAxis = m_majorAxis;
+  EoGeVector3d rotatedMinorAxis = minorAxis;
+  rotatedMajorAxis.RotAboutArbAx(m_extrusion, normalizedStartAngle);
+  rotatedMinorAxis.RotAboutArbAx(m_extrusion, normalizedStartAngle);
+
+  EoGeTransformMatrix tm(m_center, rotatedMajorAxis, rotatedMinorAxis);
   tm.Inverse();
 
   for (EoUInt16 w = 0; w < 4; w++) { ptsBox[w] = tm * ptsBox[w]; }
 }
 
 double EoDbConic::SweepAngleToPoint(EoGePoint3d point) {
-  EoGeVector3d planeNormal = EoGeCrossProduct(m_majorAxis, m_minorAxis);
-  planeNormal.Normalize();
+  auto normal = CrossProduct(m_majorAxis, MinorAxis());
+  normal.Normalize();
 
-  EoGeTransformMatrix transformMatrix(m_center, planeNormal);
+  EoGeTransformMatrix transformMatrix(m_center, normal);
 
-  EoGePoint3d beginPoint = m_center + m_majorAxis;
-  EoGePoint3d endPoint = point;
+  auto startPoint = PointAtStartAngle();
+
+  auto endPoint = point;
 
   // Translate points into z=0 plane
-  beginPoint = transformMatrix * beginPoint;
+  startPoint = transformMatrix * startPoint;
   endPoint = transformMatrix * endPoint;
 
-  return (EoGeLine::AngleBetweenLn_xy(EoGeLine(EoGePoint3d::kOrigin, beginPoint),
+  return (EoGeLine::AngleBetweenLn_xy(EoGeLine(EoGePoint3d::kOrigin, startPoint),
                                       EoGeLine(EoGePoint3d::kOrigin, endPoint)));
 }
-
-// The arc's end point and intermediate point (for a 3-point representation) can be computed as:
-
-//EoGePoint3d endPoint(m_centerPoint.x + radius * cos(normalizedStartAngle + m_sweepAngle), m_centerPoint.y + radius * sin(normalizedStartAngle + m_sweepAngle),
-//                     m_centerPoint.z);
-//EoGePoint3d middlePoint(m_centerPoint.x + radius * cos(normalizedStartAngle + m_sweepAngle * 0.5),
-//                        m_centerPoint.y + radius * sin(normalizedStartAngle + m_sweepAngle * 0.5), m_centerPoint.z);

@@ -64,7 +64,8 @@ EoGeTransformMatrix::EoGeTransformMatrix(const EoGePoint3d& referencePoint, EoGe
  * @note The x and y reference axis vectors do not need to be normalized; appropriate scaling is applied as needed.
  */
 EoGeTransformMatrix::EoGeTransformMatrix(EoGePoint3d referencePoint, EoGeVector3d xAxis, EoGeVector3d yAxis) {
-  EoGeVector3d normal = EoGeCrossProduct(xAxis, yAxis);
+  
+  auto normal = CrossProduct(xAxis, yAxis);
   normal.Normalize();
 
   ConstructUsingReferencePointAndNormal(referencePoint, normal);
@@ -119,7 +120,7 @@ EoGeTransformMatrix EoGeTransformMatrix::BuildRotationTransformMatrix(const EoGe
 }
 
 void EoGeTransformMatrix::AppendXAxisRotation(double xAxisAngle) {
-  if (fabs(xAxisAngle) != 0.0) {
+  if (fabs(xAxisAngle) > Eo::geometricTolerance) {
     double angleInRadians = Eo::DegreeToRadian(xAxisAngle);
     EoGeTransformMatrix matrix;
     *this *= matrix.XAxisRotation(sin(angleInRadians), cos(angleInRadians));
@@ -127,7 +128,7 @@ void EoGeTransformMatrix::AppendXAxisRotation(double xAxisAngle) {
 }
 
 void EoGeTransformMatrix::AppendYAxisRotation(double yAxisAngle) {
-  if (fabs(yAxisAngle) != 0.0) {
+  if (fabs(yAxisAngle) > Eo::geometricTolerance) {
     double angleInRadians = Eo::DegreeToRadian(yAxisAngle);
     EoGeTransformMatrix matrix;
     *this *= matrix.YAxisRotation(sin(angleInRadians), cos(angleInRadians));
@@ -135,7 +136,7 @@ void EoGeTransformMatrix::AppendYAxisRotation(double yAxisAngle) {
 }
 
 void EoGeTransformMatrix::AppendZAxisRotation(double zAxisAngle) {
-  if (fabs(zAxisAngle) != 0.0) {
+  if (fabs(zAxisAngle) > Eo::geometricTolerance) {
     double angleInRadians = Eo::DegreeToRadian(zAxisAngle);
     EoGeTransformMatrix matrix;
     *this *= matrix.ZAxisRotation(sin(angleInRadians), cos(angleInRadians));

@@ -21,7 +21,6 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "PrimState.h"
-#include "drw_base.h"
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"
@@ -69,7 +68,7 @@ double EoDbEllipse::NormalizeTo2Pi(double angle) {
   if (angle < 0.0) angle += Eo::TwoPi;
 
   // Snap values very close to two_pi back to 0.0 to produce canonical result
-  if (angle >= Eo::TwoPi - Eo::angularEpsilon) { angle = 0.0; }
+  if (angle >= Eo::TwoPi - Eo::geometricTolerance) { angle = 0.0; }
 
   return angle;
 }
@@ -192,7 +191,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
 
   EoGeVector3d startToIntermediate(start, intermediate);
   EoGeVector3d startToEnd(start, end);
-  EoGeVector3d normal = EoGeCrossProduct(startToIntermediate, startToEnd);
+  auto normal = CrossProduct(startToIntermediate, startToEnd);
   normal.Normalize();
 
   // Build transformation matrix which will get int and end points to z=0 plane with beg point as origin
@@ -347,7 +346,7 @@ void EoDbEllipse::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupLis
   if (dRel[0] <= DBL_EPSILON && dRel[1] >= 1.0 - DBL_EPSILON) {  // Put entire arc in trap
     pArc = this;
   } else {  // Something gets cut
-    EoGeVector3d vPlnNorm = EoGeCrossProduct(m_majorAxis, m_minorAxis);
+    auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
     vPlnNorm.Normalize();
 
     if (fabs(m_sweepAngle - Eo::TwoPi) <= DBL_EPSILON) {  // Closed arc
@@ -422,7 +421,7 @@ void EoDbEllipse::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
   pArc->SetSweepAngle(dSwpAng);
   group->AddTail(pArc);
 
-  EoGeVector3d vPlnNorm = EoGeCrossProduct(m_majorAxis, m_minorAxis);
+  auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
   vPlnNorm.Normalize();
 
   m_majorAxis.RotAboutArbAx(vPlnNorm, dSwpAng);
@@ -481,7 +480,7 @@ void EoDbEllipse::FormatGeometry(CString& str) {
   str += L"Center Point;" + m_center.ToString();
   str += L"Major Axis;" + m_majorAxis.ToString();
   str += L"Minor Axis;" + m_minorAxis.ToString();
-  str += L"Plane Normal;" + (EoGeCrossProduct(m_majorAxis, m_minorAxis)).ToString();
+  str += L"Plane Normal;" + (CrossProduct(m_majorAxis, m_minorAxis)).ToString();
 }
 
 void EoDbEllipse::FormatExtra(CString& str) {
@@ -489,9 +488,9 @@ void EoDbEllipse::FormatExtra(CString& str) {
              m_majorAxis.Length());
 }
 
-EoGePoint3d EoDbEllipse::GetBegPt() { return (m_center + m_majorAxis); }
+EoGePoint3d EoDbEllipse::PointAtStartAngle() { return (m_center + m_majorAxis); }
 
-EoGePoint3d EoDbEllipse::GetEndPt() {
+EoGePoint3d EoDbEllipse::PointAtEndAngle() {
   EoGeTransformMatrix tm(m_center, m_majorAxis, m_minorAxis);
   tm.Inverse();
 
@@ -620,7 +619,7 @@ void EoDbEllipse::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& p
 bool EoDbEllipse::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
   // Determines if a point is on a control point of the arc.
 
-  EoGePoint4d pt[] = {EoGePoint4d(GetBegPt()), EoGePoint4d(GetEndPt())};
+  EoGePoint4d pt[] = {EoGePoint4d(PointAtStartAngle()), EoGePoint4d(PointAtEndAngle())};
 
   for (EoUInt16 w = 0; w < 2; w++) {
     view->ModelViewTransformPoint(pt[w]);
@@ -631,10 +630,10 @@ bool EoDbEllipse::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& poin
 }
 
 int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptInt) {
-  EoGeVector3d vPlnNorm = EoGeCrossProduct(m_majorAxis, m_minorAxis);
+  auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
   vPlnNorm.Normalize();
 
-  if (!(EoGeCrossProduct(EoGeVector3d::positiveUnitZ, vPlnNorm)).IsNearNull())
+  if (!(CrossProduct(EoGeVector3d::positiveUnitZ, vPlnNorm)).IsNearNull())
     // not on plane normal to z-axis
     return 0;
 
@@ -644,8 +643,8 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
 
   EoGePoint3d ptMin, ptMax;
 
-  EoGePoint3d ptBeg = GetBegPt();
-  EoGePoint3d ptEnd = GetEndPt();
+  EoGePoint3d ptBeg = PointAtStartAngle();
+  EoGePoint3d ptEnd = PointAtEndAngle();
 
   if (vPlnNorm.z < 0.0) {
     EoGePoint3d pt = ptBeg;
@@ -654,7 +653,7 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
 
     vPlnNorm = -vPlnNorm;
     m_majorAxis = EoGeVector3d(m_center, ptBeg);
-    m_minorAxis = EoGeCrossProduct(vPlnNorm, m_majorAxis);
+    m_minorAxis = CrossProduct(vPlnNorm, m_majorAxis);
   }
 
   GetXYExtents(ptBeg, ptEnd, &ptMin, &ptMax);
@@ -774,7 +773,7 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
 }
 
 EoGePoint3d EoDbEllipse::GoToNextControlPoint() {
-  double angle = (sm_RelationshipOfPoint <= Eo::lengthEpsilon) ? m_sweepAngle : 0.0;
+  double angle = (sm_RelationshipOfPoint <= Eo::geometricTolerance) ? m_sweepAngle : 0.0;
   return (PointOnArcAtAngle(m_center, m_majorAxis, m_minorAxis, angle));
 }
 
@@ -802,7 +801,7 @@ EoGePoint3d EoDbEllipse::SelectAtControlPoint(AeSysView* view, const EoGePoint4d
 
   double dAPert = sm_SelectApertureSize;
 
-  EoGePoint3d ptCtrl[] = {GetBegPt(), GetEndPt()};
+  EoGePoint3d ptCtrl[] = {PointAtStartAngle(), PointAtEndAngle()};
 
   for (EoUInt16 w = 0; w < 2; w++) {
     EoGePoint4d pt(ptCtrl[w]);
@@ -899,10 +898,10 @@ void EoDbEllipse::GetBoundingBox(EoGePoint3dArray& ptsBox) {
 }
 
 double EoDbEllipse::SweepAngleToPoint(EoGePoint3d point) {
-  EoGeVector3d planeNormal = EoGeCrossProduct(m_majorAxis, m_minorAxis);
-  planeNormal.Normalize();
+  auto normal = CrossProduct(m_majorAxis, m_minorAxis);
+  normal.Normalize();
 
-  EoGeTransformMatrix transformMatrix(m_center, planeNormal);
+  EoGeTransformMatrix transformMatrix(m_center, normal);
 
   EoGePoint3d beginPoint = m_center + m_majorAxis;
   EoGePoint3d endPoint = point;

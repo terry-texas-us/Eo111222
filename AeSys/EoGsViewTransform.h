@@ -28,8 +28,8 @@ class EoGsViewTransform : public EoGsAbstractView {
  public:  // Methods
   void AdjustWindow(const double aspectRatio);
   void BuildTransformMatrix();
-  EoGeTransformMatrix& GetMatrix();
-  EoGeTransformMatrix& GetMatrixInverse();
+  [[nodiscard]] EoGeTransformMatrix& GetMatrix();
+  [[nodiscard]] EoGeTransformMatrix& GetMatrixInverse();
   void Initialize(const EoGsViewport& viewport);
   void LoadIdentity();
   void ZAxisRotation(double dSinAng, double dCosAng);
@@ -43,12 +43,12 @@ class EoGsViewTransform : public EoGsAbstractView {
   void TransformPoints(int numberOfPoints, EoGePoint4d* points);
   void TransformVector(EoGeVector3d& vector);
   void Translate(EoGeVector3d translate);
-  double UExtent() const;
-  double UMax() const;
-  double UMin() const;
-  double VExtent() const;
-  double VMax() const;
-  double VMin() const;
+  [[nodiscard]] double UExtent() const;
+  [[nodiscard]] double UMax() const;
+  [[nodiscard]] double UMin() const;
+  [[nodiscard]] double VExtent() const;
+  [[nodiscard]] double VMax() const;
+  [[nodiscard]] double VMin() const;
 };
 
 typedef CList<EoGsViewTransform> EoGsViewTransforms;

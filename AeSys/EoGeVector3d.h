@@ -17,22 +17,28 @@ class EoGeVector3d {
 
   EoGeVector3d(const EoGePoint3d& pointP, const EoGePoint3d& pointQ);
 
-  bool operator==(const EoGeVector3d& vector) const noexcept;
-  bool operator!=(const EoGeVector3d& vector) const noexcept;
+  [[nodiscard]] bool operator==(const EoGeVector3d& vector) const noexcept;
+  [[nodiscard]] bool operator!=(const EoGeVector3d& vector) const noexcept;
+
   void operator+=(const EoGeVector3d& vector) noexcept;
   void operator-=(const EoGeVector3d& vector) noexcept;
   void operator*=(double t) noexcept;
   void operator/=(double t);
 
   void operator()(double xNew, double yNew, double zNew) noexcept;
-  EoGeVector3d operator-() const noexcept;
-  EoGeVector3d operator-(const EoGeVector3d& vector) const noexcept;
-  EoGeVector3d operator+(const EoGeVector3d& vector) const noexcept;
 
-  EoGeVector3d operator*(double t) const noexcept;
+  [[nodiscard]] EoGeVector3d operator-() const noexcept { return EoGeVector3d(-x, -y, -z); }
+
+  [[nodiscard]] EoGeVector3d operator-(const EoGeVector3d& vector) const noexcept;
+  [[nodiscard]] EoGeVector3d operator+(const EoGeVector3d& vector) const noexcept;
+  [[nodiscard]] EoGeVector3d operator*(double t) const noexcept { return EoGeVector3d(x * t, y * t, z * t); }
 
   /** @brief Checks if the vector is a null vector. */
-  constexpr bool IsNearNull() const noexcept { return (SquaredLength() < Eo::lengthEpsilon * Eo::lengthEpsilon); }
+  [[nodiscard]] constexpr bool IsNearNull() const noexcept {
+    return (SquaredLength() < Eo::geometricTolerance * Eo::geometricTolerance);
+  }
+
+  [[nodiscard]] bool IsEqualTo(const EoGeVector3d& other, double tolerance = Eo::geometricTolerance) const noexcept;
 
   [[nodiscard]] double Length() const;
 
@@ -50,9 +56,9 @@ class EoGeVector3d {
   /** @brief Returns the square of the length of the vector.
    * @return The squared length.
    */
-  constexpr double SquaredLength() const noexcept { return (x * x + y * y + z * z); }
+  [[nodiscard]] constexpr double SquaredLength() const noexcept { return (x * x + y * y + z * z); }
 
-  CString ToString() const;
+  [[nodiscard]] CString ToString() const;
   void Read(CFile& file);
   void Write(CFile& file) const;
 
@@ -77,21 +83,21 @@ class EoGeVector3d {
 * @param normal Normal vector
 * @return Computed arbitrary axis
 */
-EoGeVector3d ComputeArbitraryAxis(const EoGeVector3d& normal);
+[[nodiscard]] EoGeVector3d ComputeArbitraryAxis(const EoGeVector3d& normal);
 
 /** @brief Rotates a vector about the Z axis by a given angle
 * @param vector Vector to rotate
 * @param angle Angle in radians
 * @return Rotated vector
 */
-EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle);
+[[nodiscard]] EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle);
 
 /** @brief Computes the cross product of the two vectors
 * @param vector1 First vector
 * @param vector2 Second vector
 * @return Cross product vector
 */
-EoGeVector3d EoGeCrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept;
+[[nodiscard]] EoGeVector3d CrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept;
 
 /** @brief Computes the scalar product (= inner product) of the two vectors.
  * @param vector1 First vector
@@ -108,8 +114,13 @@ EoGeVector3d EoGeCrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& v
      θ = arccos(a • b / |a| |b|)
  * @endcode
  */
-double EoGeDotProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept;
+[[nodiscard]] double DotProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept;
 
-constexpr bool EoGeNearEqual(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept {
+/** @brief Checks if two vectors are nearly equal within a geometric tolerance.
+ * @param vector1 First vector
+ * @param vector2 Second vector
+ * @return true if the vectors are nearly equal, false otherwise
+ */
+[[nodiscard]] constexpr bool IsNearEqual(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept {
   return (vector1 - vector2).IsNearNull();
 }

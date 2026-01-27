@@ -1,4 +1,4 @@
-#include "Stdafx.h"
+﻿#include "Stdafx.h"
 
 #include <cstdlib>
 
@@ -13,7 +13,6 @@
 #include "EoDbBlockReference.h"
 #include "EoDbConic.h"
 #include "EoDbDrwInterface.h"
-#include "EoDbEllipse.h"
 #include "EoDbGroup.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbLayer.h"
@@ -279,30 +278,83 @@ void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
 }
 
 void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Arc entity conversion\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Ellipse entity conversion\n");
+
+  if (arc.radious <= 0.0) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Arc entity with non-positive radius (%f) skipped.\n", arc.radious);
+    return;
+  }
   EoGePoint3d center(arc.basePoint.x, arc.basePoint.y, arc.basePoint.z);
   EoGeVector3d extrusion(arc.extPoint.x, arc.extPoint.y, arc.extPoint.z);
 
-  auto conicPrimitive = new EoDbConic(center, extrusion, arc.radious);
-  conicPrimitive->SetStartAngle(arc.staangle);
-  conicPrimitive->SetEndAngle(arc.endangle);
+  if (extrusion.IsNearNull()) {
+    extrusion = EoGeVector3d::positiveUnitZ;
+  } else {
+    extrusion.Normalize();
+  }
+  // Normalize angles to [0, 2π)
+  double startAngle = EoDbConic::NormalizeTo2Pi(arc.staangle);
+  double endAngle = EoDbConic::NormalizeTo2Pi(arc.endangle);
 
+  auto* conicPrimitive = new EoDbConic(center, extrusion, arc.radious, startAngle, endAngle);
   conicPrimitive->SetBaseProperties(&arc, document);
   AddToDocument(conicPrimitive, document);
 }
 
 void EoDbDrwInterface::ConvertCircleEntity(const DRW_Circle& circle, AeSysDoc* document) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Circle entity conversion\n");
-  EoGePoint3d center(circle.basePoint.x, circle.basePoint.y, circle.basePoint.z);
-  EoGeVector3d extrusion(circle.extPoint.x, circle.extPoint.y, circle.extPoint.z);
   
-  auto conicPrimitive = new EoDbConic(center, extrusion, circle.radious);
+  EoGePoint3d center(circle.basePoint.x, circle.basePoint.y, circle.basePoint.z);
 
-  conicPrimitive->SetMinorAxis(EoGeCrossProduct(extrusion, conicPrimitive->MajorAxis()));
+  EoGeVector3d extrusion(circle.extPoint.x, circle.extPoint.y, circle.extPoint.z);
+  if (extrusion.IsNearNull()) {
+    extrusion = EoGeVector3d::positiveUnitZ;
+  } else {
+    extrusion.Normalize();
+  }
+
+  auto* conicPrimitive = new EoDbConic(center, extrusion, circle.radious);
+
+  // TODO: Minor axis and sweep angle are to be removed from class data members
   conicPrimitive->SetSweepAngle(Eo::TwoPi);
 
   conicPrimitive->SetBaseProperties(&circle, document);
+
+  AddToDocument(conicPrimitive, document);
+}
+
+void EoDbDrwInterface::ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc* document) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Ellipse entity conversion\n");
   
+  if (ellipse.ratio <= 0.0 || ellipse.ratio > 1.0) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Ellipse entity with invalid ratio (%f) skipped.\n", ellipse.ratio);
+    return;
+  }
+  EoGeVector3d majorAxis(ellipse.secPoint.x, ellipse.secPoint.y, ellipse.secPoint.z);
+  if (majorAxis.IsNearNull()) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Zero-length major axis\n");
+    return;
+  }
+  EoGeVector3d extrusion(ellipse.extPoint.x, ellipse.extPoint.y, ellipse.extPoint.z);
+  if (extrusion.IsNearNull()) {
+    extrusion = EoGeVector3d::positiveUnitZ;
+  } else {
+    extrusion.Normalize();
+  }
+
+  auto* conicPrimitive = new EoDbConic();
+  conicPrimitive->SetCenter(EoGePoint3d(ellipse.basePoint.x, ellipse.basePoint.y, ellipse.basePoint.z));
+  conicPrimitive->SetMajorAxis(majorAxis);
+  conicPrimitive->SetExtrusion(extrusion);
+  conicPrimitive->SetRatio(ellipse.ratio);
+  conicPrimitive->SetStartAngle(ellipse.staparam);
+  conicPrimitive->SetEndAngle(ellipse.endparam);
+
+  // TODO: Minor axis and sweep angle are to be removed from class data members
+  conicPrimitive->SetSweepAngle(Eo::TwoPi);
+
+  conicPrimitive->SetBaseProperties(&ellipse, document);
+
   AddToDocument(conicPrimitive, document);
 }
 

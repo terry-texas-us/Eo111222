@@ -63,15 +63,15 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
   if (m_NumberOfPoints >= 3) {
     m_vPosXAx = EoGeVector3d(points[0], points[1]);
     m_vPosYAx = EoGeVector3d(points[0], points[2]);
-    auto planeNormal = EoGeCrossProduct(m_vPosXAx, m_vPosYAx);
-    planeNormal.Normalize();
+    auto normal = CrossProduct(m_vPosXAx, m_vPosYAx);
+    normal.Normalize();
 
-    if (planeNormal.z < 0) planeNormal = -planeNormal;
+    if (normal.z < 0) normal = -normal;
 
     m_vPosXAx.Normalize();
-    m_vPosXAx.RotAboutArbAx(planeNormal, hatch::dOffAng);
+    m_vPosXAx.RotAboutArbAx(normal, hatch::dOffAng);
     m_vPosYAx = m_vPosXAx;
-    m_vPosYAx.RotAboutArbAx(planeNormal, Eo::HalfPi);
+    m_vPosYAx.RotAboutArbAx(normal, Eo::HalfPi);
     m_vPosXAx *= hatch::dXAxRefVecScal;
     m_vPosYAx *= hatch::dYAxRefVecScal;
 
@@ -82,6 +82,7 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
     for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) m_Pt[w] = points[w];
   }
 }
+
 EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d* pt) {
   m_color = 0;
   m_InteriorStyle = EoDb::kSolid;
@@ -423,15 +424,15 @@ void EoDbPolygon::SetHatRefVecs(double dOffAng, double dXScal, double dYScal) {
   m_vPosXAx = EoGeVector3d(m_Pt[0], m_Pt[1]);
   m_vPosYAx = EoGeVector3d(m_Pt[0], m_Pt[2]);
 
-  EoGeVector3d vPlnNorm = EoGeCrossProduct(m_vPosXAx, m_vPosYAx);
-  vPlnNorm.Normalize();
+  auto normal = CrossProduct(m_vPosXAx, m_vPosYAx);
+  normal.Normalize();
 
-  if (vPlnNorm.z < 0) vPlnNorm = -vPlnNorm;
+  if (normal.z < 0) normal = -normal;
 
   m_vPosXAx.Normalize();
-  m_vPosXAx.RotAboutArbAx(vPlnNorm, dOffAng);
+  m_vPosXAx.RotAboutArbAx(normal, dOffAng);
   m_vPosYAx = m_vPosXAx;
-  m_vPosYAx.RotAboutArbAx(vPlnNorm, Eo::HalfPi);
+  m_vPosYAx.RotAboutArbAx(normal, Eo::HalfPi);
   m_vPosXAx *= dXScal;
   m_vPosYAx *= dYScal;
 }

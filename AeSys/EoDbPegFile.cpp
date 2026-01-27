@@ -590,9 +590,11 @@ void EoDb::ConstructConicPrimitive(CFile& file, EoDbPrimitive*& /* primitive */)
   double endAngle;
   EoDb::Read(file, endAngle);
 
-  // primitive = new EoDbConic(center, majorAxis, extrusion, ratio, startAngle, endAngle);
-  // primitive->SetColor(color);
-  // primitive->SetLineTypeIndex(lineTypeIndex);
+  auto primitive = new EoDbConic(center, extrusion, ratio, startAngle, endAngle);
+  primitive->SetMajorAxis(majorAxis);
+
+  primitive->SetColor(color);
+  primitive->SetLineTypeIndex(lineTypeIndex);
 }
 
 void EoDb::ConstructEllipsePrimitive(CFile& file, EoDbPrimitive*& primitive) {

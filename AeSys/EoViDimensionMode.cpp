@@ -344,7 +344,7 @@ void AeSysView::OnDimensionModeAngle() {
 
       EoGeVector3d vCenterToProjPt(ptCen, rProjPt[0]);
       EoGeVector3d vCenterToCur(ptCen, ptCur);
-      EoGeVector3d vPlnNorm = EoGeCrossProduct(vCenterToProjPt, vCenterToCur);
+      auto vPlnNorm = CrossProduct(vCenterToProjPt, vCenterToCur);
       vPlnNorm.Normalize();
       if (SweepAngleFromNormalAnd3Points(vPlnNorm, rProjPt[0], ptCur, rProjPt[1], ptCen, &dAng)) {
         double dRad = EoGeVector3d(ptCen, ptCur).Length();
@@ -352,7 +352,7 @@ void AeSysView::OnDimensionModeAngle() {
         ln.begin = ptCen.ProjectToward(rProjPt[0], dRad);
         ln.end = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, dAng);
 
-        EoGeVector3d vXAx = EoGeVector3d(ptCen, ln.begin);
+        auto vXAx = EoGeVector3d(ptCen, ln.begin);
         EoGePoint3d ptRot(ln.begin.RotateAboutAxis(ptCen, vPlnNorm, Eo::HalfPi));
         EoGeVector3d vYAx = EoGeVector3d(ptCen, ptRot);
         EoGePoint3d ptArrow = ln.begin.RotateAboutAxis(ptCen, vPlnNorm, Eo::Radian);

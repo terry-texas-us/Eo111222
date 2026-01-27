@@ -17,18 +17,18 @@ static void MakeOrthonormalBasis(EoGeVector3d n, EoGeVector3d& u, EoGeVector3d& 
   if (u.IsNearNull()) { u = EoGeVector3d(1.0, 0.0, 0.0); }
   u.Normalize();
   
-  v = EoGeCrossProduct(n, u);
+  v = CrossProduct(n, u);
   if (v.IsNearNull()) {
     // choose a perpendicular if cross failed
     if (fabs(n.x) < fabs(n.y)) {
-      v = EoGeCrossProduct(n, EoGeVector3d(1, 0, 0));
+      v = CrossProduct(n, EoGeVector3d(1.0, 0.0, 0.0));
     } else {
-      v = EoGeCrossProduct(n, EoGeVector3d(0, 1, 0));
+      v = CrossProduct(n, EoGeVector3d(0.0, 1.0, 0.0));
     }
   }
   v.Normalize();
   // ensure u is exactly perpendicular again
-  u = EoGeCrossProduct(v, n);
+  u = CrossProduct(v, n);
   u.Normalize();
 }
 
@@ -49,9 +49,9 @@ void WcsToOcs(const EoGeVector3d& extrusionNormal, const EoGePoint3d& wcsPt, EoG
   EoGeVector3d u, v;
   MakeOrthonormalBasis(n, u, v);
 
-  ocsPt.x = EoGeDotProduct(EoGeVector3d(wcsPt.x, wcsPt.y, wcsPt.z), u);
-  ocsPt.y = EoGeDotProduct(EoGeVector3d(wcsPt.x, wcsPt.y, wcsPt.z), v);
-  ocsPt.z = EoGeDotProduct(EoGeVector3d(wcsPt.x, wcsPt.y, wcsPt.z), n);
+  ocsPt.x = DotProduct(EoGeVector3d(wcsPt.x, wcsPt.y, wcsPt.z), u);
+  ocsPt.y = DotProduct(EoGeVector3d(wcsPt.x, wcsPt.y, wcsPt.z), v);
+  ocsPt.z = DotProduct(EoGeVector3d(wcsPt.x, wcsPt.y, wcsPt.z), n);
 }
 
 }  // namespace EoGeOcs

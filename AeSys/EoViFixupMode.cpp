@@ -52,7 +52,6 @@ EoGeLine lnSec{};
  */
 bool pFndCPGivRadAnd4Pts(double radius, EoGePoint3d arLn1Beg, EoGePoint3d arLn1End, EoGePoint3d arLn2Beg, EoGePoint3d arLn2End, EoGePoint3d* centerPoint) {
   double dA1, dA2, dB1, dB2, dC1RAB1, dC2RAB2, dDet, dSgnRad, dV1Mag, dV2Mag;
-  EoGeVector3d vPlnNorm;
 
   EoGeVector3d v1(arLn1Beg, arLn1End);  // Determine vector defined by endpoints of first line
   dV1Mag = v1.Length();
@@ -62,14 +61,14 @@ bool pFndCPGivRadAnd4Pts(double radius, EoGePoint3d arLn1Beg, EoGePoint3d arLn1E
   dV2Mag = v2.Length();
   if (dV2Mag <= DBL_EPSILON) return false;
 
-  vPlnNorm = EoGeCrossProduct(v1, v2);  // Determine vector normal to tangent vectors
-  vPlnNorm.Normalize();
-  if (vPlnNorm.IsNearNull()) return false;
+  auto normal = CrossProduct(v1, v2);  // Determine vector normal to tangent vectors
+  normal.Normalize();
+  if (normal.IsNearNull()) return false;
 
-  if (fabs((EoGeDotProduct(vPlnNorm, EoGeVector3d(arLn1Beg, arLn2Beg)))) > DBL_EPSILON)  // Four points are not coplanar
+  if (fabs((DotProduct(normal, EoGeVector3d(arLn1Beg, arLn2Beg)))) > DBL_EPSILON)  // Four points are not coplanar
     return false;
 
-  EoGeTransformMatrix tm(arLn1Beg, vPlnNorm);
+  EoGeTransformMatrix tm(arLn1Beg, normal);
 
   arLn1End = tm * arLn1End;
   arLn2Beg = tm * arLn2Beg;
@@ -174,7 +173,7 @@ void AeSysView::OnFixupModeReference() {
 
         EoGeVector3d rPrvEndInter(lnPrv.end, ptInt);
         EoGeVector3d rPrvEndRefBeg(lnPrv.end, referenceLine.begin);
-        vPlnNorm = EoGeCrossProduct(rPrvEndInter, rPrvEndRefBeg);
+        vPlnNorm = CrossProduct(rPrvEndInter, rPrvEndRefBeg);
         vPlnNorm.Normalize();
         SweepAngleFromNormalAnd3Points(vPlnNorm, lnPrv.end, ptInt, referenceLine.begin, ptCP, &dAng);
         vMajAx = EoGeVector3d(ptCP, lnPrv.end);
@@ -271,7 +270,7 @@ void AeSysView::OnFixupModeMend() {
         pLine->EndPoint(lnPrv.end);
         EoGeVector3d rPrvEndInter(lnPrv.end, ptInt);
         EoGeVector3d rPrvEndSecBeg(lnPrv.end, lnSec.begin);
-        vPlnNorm = EoGeCrossProduct(rPrvEndInter, rPrvEndSecBeg);
+        vPlnNorm = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
         vPlnNorm.Normalize();
         SweepAngleFromNormalAnd3Points(vPlnNorm, lnPrv.end, ptInt, lnSec.begin, ptCP, &dAng);
         vMajAx = EoGeVector3d(ptCP, lnPrv.end);
@@ -427,7 +426,7 @@ void AeSysView::OnFixupModeFillet() {
       double dAng;
       EoGeVector3d rPrvEndInter(lnPrv.end, ptInt);
       EoGeVector3d rPrvEndSecBeg(lnPrv.end, lnSec.begin);
-      vPlnNorm = EoGeCrossProduct(rPrvEndInter, rPrvEndSecBeg);
+      vPlnNorm = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
       vPlnNorm.Normalize();
       SweepAngleFromNormalAnd3Points(vPlnNorm, lnPrv.end, ptInt, lnSec.begin, ptCP, &dAng);
       vMajAx = EoGeVector3d(ptCP, lnPrv.end);

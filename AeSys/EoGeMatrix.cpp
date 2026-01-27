@@ -3,7 +3,7 @@
 #include "EoGeMatrix.h"
 
 EoGeMatrixRow EoGeMatrixRow::operator-() {
-  EoGeMatrixRow Row;
+  EoGeMatrixRow Row{};
 
   Row[0] = -m_d[0];
   Row[1] = -m_d[1];
@@ -55,7 +55,7 @@ EoGeMatrixRow EoGeMatrixRow::operator+(const EoGeMatrixRow& row) const {
   return Row += row;
 }
 EoGeMatrixRow EoGeMatrixRow::operator*(const double scaleFactor) const {
-  EoGeMatrixRow Row;
+  EoGeMatrixRow Row{};
 
   Row[0] = m_d[0] * scaleFactor;
   Row[1] = m_d[1] * scaleFactor;
@@ -71,7 +71,6 @@ void EoGeMatrixRow::Exchange(EoGeMatrixRow& rowA, EoGeMatrixRow& rowB) {
   rowA = rowB;
   rowB = Row;
 }
-
 
 EoGeMatrix::EoGeMatrix(const EoGeMatrixRow& v0, const EoGeMatrixRow& v1, const EoGeMatrixRow& v2,
                        const EoGeMatrixRow& v3) {
@@ -108,24 +107,51 @@ EoGeMatrix EoGeMatrix::operator*(const EoGeMatrix& mB) { return Multiply(mB, *th
 EoGeMatrixRow& EoGeMatrix::operator[](int i) { return m_row[i]; }
 const EoGeMatrixRow& EoGeMatrix::operator[](int i) const { return m_row[i]; }
 
-EoGeMatrix& EoGeMatrix::Identity() {
-  m_row[0](1.0, 0.0, 0.0, 0.0);
-  m_row[1](0.0, 1.0, 0.0, 0.0);
-  m_row[2](0.0, 0.0, 1.0, 0.0);
-  m_row[3](0.0, 0.0, 0.0, 1.0);
-
-  return (*this);
+[[nodiscard]] double EoGeMatrix::Determinant() const noexcept {
+  return m_4X4[0][0] * (m_4X4[1][1] * m_4X4[2][2] - m_4X4[1][2] * m_4X4[2][1]) -
+         m_4X4[0][1] * (m_4X4[1][0] * m_4X4[2][2] - m_4X4[1][2] * m_4X4[2][0]) +
+         m_4X4[0][2] * (m_4X4[1][0] * m_4X4[2][1] - m_4X4[1][1] * m_4X4[2][0]);
 }
 
-EoGeMatrix& EoGeMatrix::Inverse() {  // Gauss-Jordan elimination with partial pivoting
-  EoGeMatrix mA(*this);              // As a evolves from original mat into identity
-  this->Identity();                  // mB evolves from identity into inverse(a)
+EoGeMatrix& EoGeMatrix::Identity() {
+  std::memset(m_4X4, 0, sizeof(m_4X4));
+  m_4X4[0][0] = 1.0;
+  m_4X4[1][1] = 1.0;
+  m_4X4[2][2] = 1.0;
+  m_4X4[3][3] = 1.0;
+
+  return *this;
+}
+
+bool EoGeMatrix::IsIdentity(double tolerance) const {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      double expected = (i == j) ? 1.0 : 0.0;
+      if (fabs(m_4X4[i][j] - expected) > tolerance) { return false; }
+    }
+  }
+  return true;
+}
+
+/**
+ * Inverts the matrix using Gauss-Jordan elimination with partial pivoting.
+ *
+ * The Gauss-Jordan elimination method inverts an n×n matrix A by augmenting it with the identity matrix I,
+ * forming [A|I]. Apply row operations (swap, scale, add multiples) to transform A into I; the right side becomes A⁻¹.
+ * It combines forward elimination (to upper triangular) and backward substitution (to diagonal), 
+ * ensuring pivot non-zero for stability.
+ *
+ * @return A reference to the inverted matrix (the current instance).
+ * @note  Fails if A is singular (det=0); a warning is logged.
+ */
+EoGeMatrix& EoGeMatrix::Inverse() {
+  EoGeMatrix mA(*this);
+  this->Identity();
 
   int i, i1;
 
-  // Loop over cols of mA from left to right, eliminating above and below diag
-  for (int iCol = 0; iCol < 4; iCol++) {  // Find largest pivot in column iCol among rows iCol..3
-    i1 = iCol;                            // Row with largest pivot candidate
+  for (int iCol = 0; iCol < 4; iCol++) {
+    i1 = iCol;
     for (i = iCol + 1; i < 4; i++) {
       if (fabs(mA.m_4X4[i][iCol]) > fabs(mA.m_4X4[i1][iCol])) { i1 = i; }
     }
@@ -151,7 +177,23 @@ EoGeMatrix& EoGeMatrix::Inverse() {  // Gauss-Jordan elimination with partial pi
   return *this;
 }
 
-EoGeMatrix EoGeMatrix::Transpose() {
+[[nodiscard]] EoGeMatrix EoGeMatrix::Lerp(const EoGeMatrix& other, double t) const noexcept {
+  EoGeMatrix result(*this);
+
+  // Clamp t to [0, 1] range for safety
+  if (t <= 0.0) { return result; }
+  if (t >= 1.0) { return other; }
+
+  // Linear interpolation: result = this * (1 - t) + other * t
+  double oneMinusT = 1.0 - t;
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) { result.m_4X4[i][j] = m_4X4[i][j] * oneMinusT + other.m_4X4[i][j] * t; }
+  }
+  return result;
+}
+
+EoGeMatrix EoGeMatrix::Transpose() const noexcept {
   EoGeMatrix TransposeMatrix;
 
   TransposeMatrix[0][0] = m_4X4[0][0];

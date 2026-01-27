@@ -17,9 +17,13 @@ EoGeVector3d::EoGeVector3d(double initialX, double initialY, double initialZ) : 
 EoGeVector3d::EoGeVector3d(const EoGePoint3d& ptA, const EoGePoint3d& ptB)
     : x(ptB.x - ptA.x), y(ptB.y - ptA.y), z(ptB.z - ptA.z) {}
 
-bool EoGeVector3d::operator==(const EoGeVector3d& vector) const noexcept { return (EoGeNearEqual(*this, vector)); }
+[[nodiscard]] bool EoGeVector3d::operator==(const EoGeVector3d& vector) const noexcept {
+  return (IsNearEqual(*this, vector));
+}
 
-bool EoGeVector3d::operator!=(const EoGeVector3d& vector) const noexcept { return (!EoGeNearEqual(*this, vector)); }
+[[nodiscard]] bool EoGeVector3d::operator!=(const EoGeVector3d& vector) const noexcept {
+  return (!IsNearEqual(*this, vector));
+}
 
 void EoGeVector3d::operator+=(const EoGeVector3d& offset) noexcept {
   x += offset.x;
@@ -51,19 +55,24 @@ void EoGeVector3d::operator()(double xNew, double yNew, double zNew) noexcept {
   z = zNew;
 }
 
-EoGeVector3d EoGeVector3d::operator-() const noexcept { return EoGeVector3d(-x, -y, -z); }
-
-EoGeVector3d EoGeVector3d::operator-(const EoGeVector3d& vector) const noexcept {
+[[nodiscard]] EoGeVector3d EoGeVector3d::operator-(const EoGeVector3d& vector) const noexcept {
   return EoGeVector3d(x - vector.x, y - vector.y, z - vector.z);
 }
 
-EoGeVector3d EoGeVector3d::operator+(const EoGeVector3d& vector) const noexcept {
+[[nodiscard]] EoGeVector3d EoGeVector3d::operator+(const EoGeVector3d& vector) const noexcept {
   return EoGeVector3d(x + vector.x, y + vector.y, z + vector.z);
 }
 
-EoGeVector3d EoGeVector3d::operator*(double t) const noexcept { return EoGeVector3d(x * t, y * t, z * t); }
+/** @brief Determines if this vector is equal to another vector within a specified tolerance.
+ * @param other The other vector to compare with.
+ * @param tolerance The tolerance within which the vectors are considered equal.
+ * @return true if the vectors are equal within the specified tolerance; false otherwise.
+ */
+[[nodiscard]] bool EoGeVector3d::IsEqualTo(const EoGeVector3d& other, double tolerance) const noexcept {
+  return (fabs(x - other.x) > tolerance || fabs(y - other.y) > tolerance || fabs(z - other.z) > tolerance ? false : true);
+}
 
-double EoGeVector3d::Length() const { return (sqrt(SquaredLength())); }
+[[nodiscard]] double EoGeVector3d::Length() const { return (sqrt(SquaredLength())); }
 
 void EoGeVector3d::Normalize() {
   if (IsNearNull()) { throw std::domain_error("Cannot normalize zero-length vector"); }
@@ -98,31 +107,31 @@ void EoGeVector3d::Write(CFile& file) const {
   file.Write(&z, sizeof(double));
 }
 
-EoGeVector3d ComputeArbitraryAxis(const EoGeVector3d& normal) {
+[[nodiscard]] EoGeVector3d ComputeArbitraryAxis(const EoGeVector3d& normal) {
   const double epsilon = 1.0 / 64.0;
 
   EoGeVector3d arbitraryAxis;
   if ((fabs(normal.x) < epsilon) && (fabs(normal.y) < epsilon)) {
-    arbitraryAxis = EoGeCrossProduct(EoGeVector3d::positiveUnitY, normal);
+    arbitraryAxis = CrossProduct(EoGeVector3d::positiveUnitY, normal);
   } else {
-    arbitraryAxis = EoGeCrossProduct(EoGeVector3d::positiveUnitZ, normal);
+    arbitraryAxis = CrossProduct(EoGeVector3d::positiveUnitZ, normal);
   }
   return arbitraryAxis;
 }
 
-EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle) {
+[[nodiscard]] EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle) {
   double SinAngle{0.0};
   double CosineAngle{0.0};
 
-  if (fabs(angle) <= Eo::angularEpsilon || fabs(angle - Eo::TwoPi) <= Eo::angularEpsilon) {
+  if (fabs(angle) <= Eo::geometricTolerance || fabs(angle - Eo::TwoPi) <= Eo::geometricTolerance) {
     CosineAngle = 1.0;
-  } else if (fabs(angle - Eo::HalfPi) <= Eo::angularEpsilon ||
-             fabs(angle + Eo::Pi + Eo::HalfPi) <= Eo::angularEpsilon) {
+  } else if (fabs(angle - Eo::HalfPi) <= Eo::geometricTolerance ||
+             fabs(angle + Eo::Pi + Eo::HalfPi) <= Eo::geometricTolerance) {
     SinAngle = 1.0;
-  } else if (fabs(angle - Eo::Pi) <= Eo::angularEpsilon) {
+  } else if (fabs(angle - Eo::Pi) <= Eo::geometricTolerance) {
     CosineAngle = -1.0;
-  } else if (fabs(angle - Eo::Pi - Eo::HalfPi) <= Eo::angularEpsilon ||
-             fabs(angle + Eo::HalfPi) <= Eo::angularEpsilon) {
+  } else if (fabs(angle - Eo::Pi - Eo::HalfPi) <= Eo::geometricTolerance ||
+             fabs(angle + Eo::HalfPi) <= Eo::geometricTolerance) {
     SinAngle = -1.0;
   } else {
     SinAngle = sin(angle);
@@ -132,13 +141,13 @@ EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle) {
                       vector.z);
 }
 
-EoGeVector3d EoGeCrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept {
+[[nodiscard]] EoGeVector3d CrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept {
   EoGeVector3d crossProduct(vector1.y * vector2.z - vector1.z * vector2.y,
                             vector1.z * vector2.x - vector1.x * vector2.z,
                             vector1.x * vector2.y - vector1.y * vector2.x);
   return crossProduct;
 }
 
-double EoGeDotProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept {
+[[nodiscard]] double DotProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept {
   return (vector1.x * vector2.x + vector1.y * vector2.y + vector1.z * vector2.z);
 }

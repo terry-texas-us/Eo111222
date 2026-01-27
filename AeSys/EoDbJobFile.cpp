@@ -405,7 +405,7 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
   } else {
     MajorAxis = CenterPoint - BeginPoint;
   }
-  EoGeVector3d MinorAxis = EoGeCrossProduct(EoGeVector3d::positiveUnitZ, MajorAxis);
+  auto MinorAxis = CrossProduct(EoGeVector3d::positiveUnitZ, MajorAxis);
   SweepAngle = fabs(SweepAngle);
 
   return new EoDbEllipse(CenterPoint, MajorAxis, MinorAxis, SweepAngle, PenColor, LineType);
@@ -668,8 +668,8 @@ void EoDbConic::Write(CFile& file, EoUInt8* buffer) {
 
   ((CVaxPnt*)&buffer[8])->Convert(m_center);
   ((CVaxVec*)&buffer[20])->Convert(m_majorAxis);
-  ((CVaxVec*)&buffer[32])->Convert(m_minorAxis);
-  ((CVaxFloat*)&buffer[44])->Convert(m_sweepAngle);
+  ((CVaxVec*)&buffer[32])->Convert(MinorAxis());
+  ((CVaxFloat*)&buffer[44])->Convert(SweepAngle());
 
   file.Write(buffer, 64);
 }

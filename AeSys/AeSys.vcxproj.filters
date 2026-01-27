@@ -407,6 +407,9 @@
     <ClCompile Include="EoDbConic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EoGeOcsTransform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\AeSys.rc2">
@@ -2036,6 +2039,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EoDbConic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EoGeOcsTransform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

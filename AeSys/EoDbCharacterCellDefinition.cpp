@@ -33,7 +33,7 @@ void CharCellDef_EncdRefSys(const EoGeVector3d& normal, EoDbCharacterCellDefinit
   xAxis = ComputeArbitraryAxis(normal);
   xAxis.RotAboutArbAx(normal, ccd.TextRotAngGet());
 
-  yAxis = EoGeCrossProduct(normal, xAxis);
+  yAxis = CrossProduct(normal, xAxis);
 
   xAxis *= 0.6 * ccd.ChrHgtGet() * ccd.ChrExpFacGet();
 

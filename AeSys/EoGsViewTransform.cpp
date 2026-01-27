@@ -19,41 +19,41 @@ EoGsViewTransform::EoGsViewTransform() {
   m_VMax = 1.0;
 }
 
-EoGsViewTransform::EoGsViewTransform(EoGsViewTransform& src) : EoGsAbstractView(src) {
-  m_UMin = src.m_UMin;
-  m_VMin = src.m_VMin;
-  m_UMax = src.m_UMax;
-  m_VMax = src.m_VMax;
+EoGsViewTransform::EoGsViewTransform(EoGsViewTransform& other) : EoGsAbstractView(other) {
+  m_UMin = other.m_UMin;
+  m_VMin = other.m_VMin;
+  m_UMax = other.m_UMax;
+  m_VMax = other.m_VMax;
 
-  m_Matrix = src.m_Matrix;
-  m_InverseMatrix = src.m_InverseMatrix;
+  m_Matrix = other.m_Matrix;
+  m_InverseMatrix = other.m_InverseMatrix;
 }
 
-EoGsViewTransform& EoGsViewTransform::operator=(const EoGsViewTransform& src) {
-  EoGsAbstractView::operator=(src);
+EoGsViewTransform& EoGsViewTransform::operator=(const EoGsViewTransform& other) {
+  EoGsAbstractView::operator=(other);
 
-  m_UMin = src.m_UMin;
-  m_VMin = src.m_VMin;
-  m_UMax = src.m_UMax;
-  m_VMax = src.m_VMax;
+  m_UMin = other.m_UMin;
+  m_VMin = other.m_VMin;
+  m_UMax = other.m_UMax;
+  m_VMax = other.m_VMax;
 
-  m_Matrix = src.m_Matrix;
-  m_InverseMatrix = src.m_InverseMatrix;
+  m_Matrix = other.m_Matrix;
+  m_InverseMatrix = other.m_InverseMatrix;
 
   return *this;
 }
 void EoGsViewTransform::AdjustWindow(const double aspectRatio) {
-  double UExtent = m_UMax - m_UMin;
-  double VExtent = m_VMax - m_VMin;
+  double uExtent = m_UMax - m_UMin;
+  double vExtent = m_VMax - m_VMin;
 
-  if (UExtent <= FLT_EPSILON || VExtent / UExtent > aspectRatio) {
-    double Adjustment = (VExtent / aspectRatio - UExtent) * 0.5;
-    m_UMin -= Adjustment;
-    m_UMax += Adjustment;
+  if (uExtent <= Eo::geometricTolerance || vExtent / uExtent > aspectRatio) {
+    double adjustment = (vExtent / aspectRatio - uExtent) * 0.5;
+    m_UMin -= adjustment;
+    m_UMax += adjustment;
   } else {
-    double Adjustment = (UExtent * aspectRatio - VExtent) * 0.5;
-    m_VMin -= Adjustment;
-    m_VMax += Adjustment;
+    double adjustment = (uExtent * aspectRatio - vExtent) * 0.5;
+    m_VMin -= adjustment;
+    m_VMax += adjustment;
   }
   BuildTransformMatrix();
 }
@@ -64,36 +64,36 @@ void EoGsViewTransform::BuildTransformMatrix() {
 
   m_Matrix.Identity();
 
-  EoGeVector3d vN = Target() - Position();
-  vN.Normalize();
+  EoGeVector3d n = Target() - Position();
+  n.Normalize();
 
-  EoGeVector3d vU = EoGeCrossProduct(ViewUp(), vN);
-  vU.Normalize();
+  auto u = CrossProduct(ViewUp(), n);
+  u.Normalize();
 
-  EoGeVector3d vV = EoGeCrossProduct(vN, vU);
-  vV.Normalize();
+  auto v = CrossProduct(n, u);
+  v.Normalize();
 
   EoGeVector3d vector = EoGeVector3d(Position(), EoGePoint3d::kOrigin);
 
-  m_Matrix[0][0] = vU.x;
-  m_Matrix[0][1] = vU.y;
-  m_Matrix[0][2] = vU.z;
-  m_Matrix[0][3] = EoGeDotProduct(vector, vU);
+  m_Matrix[0][0] = u.x;
+  m_Matrix[0][1] = u.y;
+  m_Matrix[0][2] = u.z;
+  m_Matrix[0][3] = DotProduct(vector, u);
 
-  m_Matrix[1][0] = vV.x;
-  m_Matrix[1][1] = vV.y;
-  m_Matrix[1][2] = vV.z;
-  m_Matrix[1][3] = EoGeDotProduct(vector, vV);
+  m_Matrix[1][0] = v.x;
+  m_Matrix[1][1] = v.y;
+  m_Matrix[1][2] = v.z;
+  m_Matrix[1][3] = DotProduct(vector, v);
 
-  m_Matrix[2][0] = vN.x;
-  m_Matrix[2][1] = vN.y;
-  m_Matrix[2][2] = vN.z;
-  m_Matrix[2][3] = EoGeDotProduct(vector, vN);
+  m_Matrix[2][0] = n.x;
+  m_Matrix[2][1] = n.y;
+  m_Matrix[2][2] = n.z;
+  m_Matrix[2][3] = DotProduct(vector, n);
 
-  m_Matrix[3][0] = 0.;
-  m_Matrix[3][1] = 0.;
-  m_Matrix[3][2] = 0.;
-  m_Matrix[3][3] = 1.;
+  m_Matrix[3][0] = 0.0;
+  m_Matrix[3][1] = 0.0;
+  m_Matrix[3][2] = 0.0;
+  m_Matrix[3][3] = 1.0;
 
   DirectX::XMVECTOR XMPosition = DirectX::XMLoadFloat3(&mx_Position);
   DirectX::XMVECTOR XMTarget = DirectX::XMLoadFloat3(&mx_Target);
@@ -152,8 +152,9 @@ void EoGsViewTransform::BuildTransformMatrix() {
     m_ProjectionMatrix[3][2] = 0.0f;
     m_ProjectionMatrix[3][3] = 1.0f;
 
-    DirectX::XMMATRIX XProjectionMatrix = DirectX::XMMatrixOrthographicRH(static_cast<float>(UExtent), static_cast<float>(VExtent),
-                                                                          static_cast<float>(m_NearClipDistance), static_cast<float>(m_FarClipDistance));
+    DirectX::XMMATRIX XProjectionMatrix =
+        DirectX::XMMatrixOrthographicRH(static_cast<float>(UExtent), static_cast<float>(VExtent),
+                                        static_cast<float>(m_NearClipDistance), static_cast<float>(m_FarClipDistance));
     XProjectionMatrix = XMMatrixTranspose(XProjectionMatrix);
   }
   m_Matrix *= m_ProjectionMatrix;
@@ -161,48 +162,57 @@ void EoGsViewTransform::BuildTransformMatrix() {
   m_InverseMatrix = m_Matrix;
   m_InverseMatrix.Inverse();
 }
-EoGeTransformMatrix& EoGsViewTransform::GetMatrix() { return m_Matrix; }
-EoGeTransformMatrix& EoGsViewTransform::GetMatrixInverse() { return m_InverseMatrix; }
+
+[[nodiscard]] EoGeTransformMatrix& EoGsViewTransform::GetMatrix() { return m_Matrix; }
+
+[[nodiscard]] EoGeTransformMatrix& EoGsViewTransform::GetMatrixInverse() { return m_InverseMatrix; }
+
 void EoGsViewTransform::Initialize(const EoGsViewport& viewport) {
   SetCenteredWindow(viewport, 44.0, 34.0);
 
-  EoGePoint3d Target = EoGePoint3d(UExtent() / 2.0, VExtent() / 2.0, 0.0);
-  EoGePoint3d Position = Target + (EoGeVector3d::positiveUnitZ * m_LensLength);
+  auto target = EoGePoint3d(UExtent() / 2.0, VExtent() / 2.0, 0.0);
+  auto position = target + (EoGeVector3d::positiveUnitZ * m_LensLength);
 
-  SetView(Position, Target, EoGeVector3d::positiveUnitY);
+  SetView(position, target, EoGeVector3d::positiveUnitY);
   SetDirection(EoGeVector3d::positiveUnitZ);
 
-  SetNearClipDistance(-100.0f);
-  SetFarClipDistance(100.0f);
+  SetNearClipDistance(-100.0);
+  SetFarClipDistance(100.0);
 
   EnablePerspective(false);
 
   BuildTransformMatrix();
 }
+
 void EoGsViewTransform::LoadIdentity() { m_Matrix.Identity(); }
+
 void EoGsViewTransform::ZAxisRotation(double dSinAng, double dCosAng) {
-  EoGeTransformMatrix tm;
-  tm.ZAxisRotation(dSinAng, dCosAng);
-  m_Matrix *= tm;
+  EoGeTransformMatrix transformMatrix;
+  transformMatrix.ZAxisRotation(dSinAng, dCosAng);
+  m_Matrix *= transformMatrix;
 }
+
 void EoGsViewTransform::Scale(EoGeVector3d v) {
-  EoGeTransformMatrix tm;
-  tm.Scale(v);
-  m_Matrix *= tm;
+  EoGeTransformMatrix transformMatrix;
+  transformMatrix.Scale(v);
+  m_Matrix *= transformMatrix;
 }
+
 void EoGsViewTransform::SetCenteredWindow(const EoGsViewport& viewport, double uExtent, double vExtent) {
   if (uExtent == 0.0) { uExtent = UExtent(); }
   if (vExtent == 0.0) { vExtent = VExtent(); }
-  double AspectRatio = viewport.HeightInInches() / viewport.WidthInInches();
+  double aspectRatio = viewport.HeightInInches() / viewport.WidthInInches();
 
-  if (AspectRatio < vExtent / uExtent) {
-    uExtent = vExtent / AspectRatio;
+  if (aspectRatio < vExtent / uExtent) {
+    uExtent = vExtent / aspectRatio;
   } else {
-    vExtent = uExtent * AspectRatio;
+    vExtent = uExtent * aspectRatio;
   }
   SetWindow(-uExtent * 0.5, -vExtent * 0.5, uExtent * 0.5, vExtent * 0.5);
 }
-void EoGsViewTransform::SetMatrix(EoGeTransformMatrix& tm) { m_Matrix = tm; }
+
+void EoGsViewTransform::SetMatrix(EoGeTransformMatrix& transformMatrix) { m_Matrix = transformMatrix; }
+
 void EoGsViewTransform::SetWindow(const double uMin, const double vMin, const double uMax, const double vMax) {
   m_UMin = uMin;
   m_VMin = vMin;
@@ -211,19 +221,23 @@ void EoGsViewTransform::SetWindow(const double uMin, const double vMin, const do
 
   BuildTransformMatrix();
 }
+
 void EoGsViewTransform::TransformPoint(EoGePoint4d& point) { point = m_Matrix * point; }
-void EoGsViewTransform::TransformPoints(EoGePoint4dArray& pointsArray) {
-  int iPts = (int)pointsArray.GetSize();
-  for (int i = 0; i < iPts; i++) { pointsArray[i] = m_Matrix * pointsArray[i]; }
+
+void EoGsViewTransform::TransformPoints(EoGePoint4dArray& points) {
+  int iPts = (int)points.GetSize();
+  for (int i = 0; i < iPts; i++) { points[i] = m_Matrix * points[i]; }
 }
+
 void EoGsViewTransform::TransformPoints(int numberOfPoints, EoGePoint4d* points) {
   for (int i = 0; i < numberOfPoints; i++) { points[i] = m_Matrix * points[i]; }
 }
+
 void EoGsViewTransform::TransformVector(EoGeVector3d& vector) { vector = m_Matrix * vector; }
 void EoGsViewTransform::Translate(EoGeVector3d v) { m_Matrix.Translate(v); }
-double EoGsViewTransform::UExtent() const { return static_cast<double>(m_UMax - m_UMin); }
-double EoGsViewTransform::UMax() const { return static_cast<double>(m_UMax); }
-double EoGsViewTransform::UMin() const { return static_cast<double>(m_UMin); }
-double EoGsViewTransform::VExtent() const { return static_cast<double>(m_VMax - m_VMin); }
-double EoGsViewTransform::VMax() const { return static_cast<double>(m_VMax); }
-double EoGsViewTransform::VMin() const { return static_cast<double>(m_VMin); }
+[[nodiscard]] double EoGsViewTransform::UExtent() const { return static_cast<double>(m_UMax - m_UMin); }
+[[nodiscard]] double EoGsViewTransform::UMax() const { return static_cast<double>(m_UMax); }
+[[nodiscard]] double EoGsViewTransform::UMin() const { return static_cast<double>(m_UMin); }
+[[nodiscard]] double EoGsViewTransform::VExtent() const { return static_cast<double>(m_VMax - m_VMin); }
+[[nodiscard]] double EoGsViewTransform::VMax() const { return static_cast<double>(m_VMax); }
+[[nodiscard]] double EoGsViewTransform::VMin() const { return static_cast<double>(m_VMin); }

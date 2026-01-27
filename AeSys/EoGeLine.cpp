@@ -283,7 +283,7 @@ EoGePoint3d EoGeLine::ProjPt(const EoGePoint3d& point) const {
   if (squaredLength > DBL_EPSILON) {
     EoGeVector3d vBegPt(begin, point);
 
-    double scale = EoGeDotProduct(vBegPt, vBegEnd) / squaredLength;
+    double scale = DotProduct(vBegPt, vBegEnd) / squaredLength;
 
     vBegEnd *= scale;
   }
@@ -378,7 +378,7 @@ double EoGeLine::AngleBetweenLn_xy(EoGeLine firstLine, EoGeLine secondLine) {
   double dSumProd = firstVector.SquaredLength() * secondVector.SquaredLength();
 
   if (dSumProd > DBL_EPSILON) {
-    double value = EoGeDotProduct(firstVector, secondVector) / sqrt(dSumProd);
+    double value = DotProduct(firstVector, secondVector) / sqrt(dSumProd);
 
     value = std::max(-1.0, std::min(1.0, value));
 
@@ -390,11 +390,11 @@ double EoGeLine::AngleBetweenLn_xy(EoGeLine firstLine, EoGeLine secondLine) {
 EoGePoint4d EoGeLine::IntersectionWithPln4(EoGePoint4d& beginPoint, EoGePoint4d& endPoint,
                                            const EoGePoint4d& pointOnPlane, EoGeVector3d& planeNormal) {
   EoGeVector3d LineVector(beginPoint, endPoint);
-  double DotProduct = EoGeDotProduct(planeNormal, LineVector);
+  double dotProduct = DotProduct(planeNormal, LineVector);
 
-  if (fabs(DotProduct) > DBL_EPSILON) {
+  if (fabs(dotProduct) > DBL_EPSILON) {
     EoGeVector3d vPtPt0(pointOnPlane, beginPoint);
-    LineVector *= (EoGeDotProduct(planeNormal, vPtPt0)) / DotProduct;
+    LineVector *= (DotProduct(planeNormal, vPtPt0)) / dotProduct;
   } else {  // Line and the plane are parallel .. force return to begin point
     LineVector *= 0.0;
   }
@@ -403,7 +403,7 @@ EoGePoint4d EoGeLine::IntersectionWithPln4(EoGePoint4d& beginPoint, EoGePoint4d&
 
 bool EoGeLine::IntersectionWithPln(EoGePoint3d& beginPoint, EoGeVector3d lineVector, EoGePoint3d pointOnPlane,
                                    EoGeVector3d planeNormal, EoGePoint3d* intersection) {
-  double dDotProd = EoGeDotProduct(planeNormal, lineVector);
+  double dDotProd = DotProduct(planeNormal, lineVector);
 
   if (fabs(dDotProd) > DBL_EPSILON) {  // Line and plane are not parallel
     EoGeVector3d v(lineVector);
@@ -411,10 +411,10 @@ bool EoGeLine::IntersectionWithPln(EoGePoint3d& beginPoint, EoGeVector3d lineVec
     EoGeVector3d vEnd(EoGePoint3d::kOrigin, beginPoint);
 
     /// @brief Calculate the constant term of the plane equation.
-    double dD = -EoGeDotProduct(planeNormal, vOnPln);
+    double dD = -DotProduct(planeNormal, vOnPln);
 
     /// @brief Calculate the parameter t at which the line intersects the plane.
-    double dT = -(EoGeDotProduct(planeNormal, vEnd) + dD) / dDotProd;
+    double dT = -(DotProduct(planeNormal, vEnd) + dD) / dDotProd;
 
     v *= dT;
     *intersection = beginPoint + v;
@@ -430,15 +430,15 @@ int EoGeLine::Intersection(EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d&
   EoGeVector3d secondVector(secondLine.begin, secondLine.end);
   if (secondVector.IsNearNull()) { return (FALSE); }
 
-  EoGeVector3d planeNormal = EoGeCrossProduct(firstVector, secondVector);
-  planeNormal.Normalize();
-  if (planeNormal.IsNearNull()) { return (FALSE); }
+  auto normal = CrossProduct(firstVector, secondVector);
+  normal.Normalize();
+  if (normal.IsNearNull()) { return (FALSE); }
 
   EoGeVector3d v3(firstLine.begin, secondLine.begin);
 
-  if (fabs(EoGeDotProduct(planeNormal, v3)) > DBL_EPSILON) { return (FALSE); }
+  if (fabs(DotProduct(normal, v3)) > DBL_EPSILON) { return (FALSE); }
 
-  EoGeTransformMatrix transformMatrix(firstLine.begin, planeNormal);
+  EoGeTransformMatrix transformMatrix(firstLine.begin, normal);
 
   EoGePoint3d rL1P1;
   EoGePoint3d rL1P2(firstLine.end);
