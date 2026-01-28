@@ -1,7 +1,6 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <cmath>
 
 #include "AeSysView.h"
@@ -23,9 +22,9 @@ EoGeLine::EoGeLine(const EoGeLine& other) {
   end = other.end;
 }
 
-bool EoGeLine::operator==(const EoGeLine& line) const { return (Identical(line, FLT_EPSILON)); }
+bool EoGeLine::operator==(const EoGeLine& line) const { return (Identical(line, Eo::geometricTolerance)); }
 
-inline bool EoGeLine::operator!=(const EoGeLine& line) const { return (!Identical(line, FLT_EPSILON)); }
+inline bool EoGeLine::operator!=(const EoGeLine& line) const { return (!Identical(line, Eo::geometricTolerance)); }
 
 inline EoGeLine& EoGeLine::operator=(const EoGeLine& other) {
   begin = other.begin;
@@ -61,7 +60,7 @@ double EoGeLine::AngleFromXAxisXY() const {
 
   double Angle = 0.;
 
-  if (fabs(Vector.x) > DBL_EPSILON || fabs(Vector.y) > DBL_EPSILON) {
+  if (fabs(Vector.x) > Eo::geometricTolerance || fabs(Vector.y) > Eo::geometricTolerance) {
     Angle = atan2(Vector.y, Vector.x);
 
     if (Angle < 0.0) Angle += Eo::TwoPi;
@@ -86,24 +85,24 @@ EoGePoint3d EoGeLine::ConstrainToAxis(double dInfAng, double dAxOffAng) const {
 
   double dLen = sqrt(dX + dY + dZ);
 
-  if (dLen > DBL_EPSILON) {        // Not a zero length line
+  if (dLen > Eo::geometricTolerance) {        // Not a zero length line
     if (dX >= std::max(dY, dZ)) {  // Major component of line is along x-axis
       dLen = sqrt(dY + dZ);
-      if (dLen > DBL_EPSILON)                                        // Not already on the x-axis
+      if (dLen > Eo::geometricTolerance)                                        // Not already on the x-axis
         if (dLen / fabs(pt.x) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to x-axis
           pt.y = 0.;
           pt.z = 0.;
         }
     } else if (dY >= dZ) {  // Major component of line is along y-axis
       dLen = sqrt(dX + dZ);
-      if (dLen > DBL_EPSILON)                                        // Not already on the y-axis
+      if (dLen > Eo::geometricTolerance)                                        // Not already on the y-axis
         if (dLen / fabs(pt.y) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to y-axis
           pt.x = 0.;
           pt.z = 0.;
         }
     } else {
       dLen = sqrt(dX + dY);
-      if (dLen > DBL_EPSILON)                                        // Not already on the z-axis
+      if (dLen > Eo::geometricTolerance)                                        // Not already on the z-axis
         if (dLen / fabs(pt.z) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to z-axis
           pt.x = 0.;
           pt.y = 0.;
@@ -132,9 +131,9 @@ EoUInt16 EoGeLine::CutAtPt(EoGePoint3d& pt, EoGeLine& ln) {
 int EoGeLine::DirRelOfPt(EoGePoint3d pt) const {
   double dDet = begin.x * (end.y - pt.y) - end.x * (begin.y - pt.y) + pt.x * (begin.y - end.y);
 
-  if (dDet > DBL_EPSILON)
+  if (dDet > Eo::geometricTolerance)
     return (1);
-  else if (dDet < -DBL_EPSILON)
+  else if (dDet < -Eo::geometricTolerance)
     return (-1);
   else
     return 0;
@@ -184,11 +183,11 @@ bool EoGeLine::GetParallels(double distanceBetweenLines, double eccentricity, Eo
   leftLine = *this;
   rightLine = *this;
 
-  double LengthOfLines = Length();
+  double lengthOfLines = Length();
 
-  if (LengthOfLines > FLT_EPSILON) {
-    double X = (end.y - begin.y) * distanceBetweenLines / LengthOfLines;
-    double Y = (end.x - begin.x) * distanceBetweenLines / LengthOfLines;
+  if (lengthOfLines > Eo::geometricTolerance) {
+    double X = (end.y - begin.y) * distanceBetweenLines / lengthOfLines;
+    double Y = (end.x - begin.x) * distanceBetweenLines / lengthOfLines;
 
     leftLine += EoGeVector3d(-X * eccentricity, Y * eccentricity, 0.0);
     rightLine += EoGeVector3d(X * (1.0 - eccentricity), -Y * (1.0 - eccentricity), 0.0);
@@ -248,7 +247,7 @@ bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, const double apert, EoGePoint
   double dDivr = dBegEndX * dBegEndX + dBegEndY * dBegEndY;
   double DistanceSquared;
 
-  if (dDivr <= DBL_EPSILON) {
+  if (dDivr <= Eo::geometricTolerance) {
     *rel = 0.;
     DistanceSquared = dPBegX * dPBegX + dPBegY * dPBegY;
   } else {
@@ -272,7 +271,7 @@ bool EoGeLine::ParallelTo(const EoGeLine& line) const {
 
   double Determinant = Line1.x * Line2.y - Line2.x * Line1.y;
 
-  return (fabs(Determinant) > DBL_EPSILON) ? false : true;
+  return (fabs(Determinant) > Eo::geometricTolerance) ? false : true;
 }
 
 EoGePoint3d EoGeLine::ProjPt(const EoGePoint3d& point) const {
@@ -280,7 +279,7 @@ EoGePoint3d EoGeLine::ProjPt(const EoGePoint3d& point) const {
 
   double squaredLength = vBegEnd.SquaredLength();
 
-  if (squaredLength > DBL_EPSILON) {
+  if (squaredLength > Eo::geometricTolerance) {
     EoGeVector3d vBegPt(begin, point);
 
     double scale = DotProduct(vBegPt, vBegEnd) / squaredLength;
@@ -298,11 +297,11 @@ int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistanc
 
   double dLen = sqrt(dX * dX + dY * dY);
 
-  if (dLen <= DBL_EPSILON) return (FALSE);
+  if (dLen <= Eo::geometricTolerance) return (FALSE);
 
   double dRatio;
   *projectedPoint = begin;
-  if (fabs(parallelDistance) > DBL_EPSILON) {
+  if (fabs(parallelDistance) > Eo::geometricTolerance) {
     dRatio = parallelDistance / dLen;
     dLen = parallelDistance;
     dX = dRatio * dX;
@@ -310,7 +309,7 @@ int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistanc
     (*projectedPoint).x = begin.x + dX;
     (*projectedPoint).y = begin.y + dY;
   }
-  if (fabs(perpendicularDistance) > DBL_EPSILON) {
+  if (fabs(perpendicularDistance) > Eo::geometricTolerance) {
     dRatio = perpendicularDistance / dLen;
     (*projectedPoint).x -= dRatio * dY;
     (*projectedPoint).y += dRatio * dX;
@@ -323,7 +322,7 @@ EoGePoint3d EoGeLine::ProjToBegPt(double distance) const {
 
   double length = vEndBeg.Length();
 
-  if (length > DBL_EPSILON) vEndBeg *= distance / length;
+  if (length > Eo::geometricTolerance) vEndBeg *= distance / length;
 
   return (end + vEndBeg);
 }
@@ -333,7 +332,7 @@ EoGePoint3d EoGeLine::ProjToEndPt(double distance) const {
 
   double length = vBegEnd.Length();
 
-  if (length > DBL_EPSILON) vBegEnd *= distance / length;
+  if (length > Eo::geometricTolerance) vBegEnd *= distance / length;
 
   return (begin + vBegEnd);
 }
@@ -346,17 +345,17 @@ void EoGeLine::Read(CFile& file) {
 bool EoGeLine::RelOfPtToEndPts(EoGePoint3d point, double& pointParametricRelationship) const {
   EoGeVector3d Vector(begin, end);
 
-  if (fabs(Vector.x) > DBL_EPSILON) {
+  if (fabs(Vector.x) > Eo::geometricTolerance) {
     pointParametricRelationship = (point.x - begin.x) / Vector.x;
     return true;
   }
 
-  if (fabs(Vector.y) > DBL_EPSILON) {
+  if (fabs(Vector.y) > Eo::geometricTolerance) {
     pointParametricRelationship = (point.y - begin.y) / Vector.y;
     return true;
   }
 
-  if (fabs(Vector.z) > DBL_EPSILON) {
+  if (fabs(Vector.z) > Eo::geometricTolerance) {
     pointParametricRelationship = (point.z - begin.z) / Vector.z;
     return true;
   }
@@ -377,7 +376,7 @@ double EoGeLine::AngleBetweenLn_xy(EoGeLine firstLine, EoGeLine secondLine) {
 
   double dSumProd = firstVector.SquaredLength() * secondVector.SquaredLength();
 
-  if (dSumProd > DBL_EPSILON) {
+  if (dSumProd > Eo::geometricTolerance) {
     double value = DotProduct(firstVector, secondVector) / sqrt(dSumProd);
 
     value = std::max(-1.0, std::min(1.0, value));
@@ -392,7 +391,7 @@ EoGePoint4d EoGeLine::IntersectionWithPln4(EoGePoint4d& beginPoint, EoGePoint4d&
   EoGeVector3d LineVector(beginPoint, endPoint);
   double dotProduct = DotProduct(planeNormal, LineVector);
 
-  if (fabs(dotProduct) > DBL_EPSILON) {
+  if (fabs(dotProduct) > Eo::geometricTolerance) {
     EoGeVector3d vPtPt0(pointOnPlane, beginPoint);
     LineVector *= (DotProduct(planeNormal, vPtPt0)) / dotProduct;
   } else {  // Line and the plane are parallel .. force return to begin point
@@ -405,7 +404,7 @@ bool EoGeLine::IntersectionWithPln(EoGePoint3d& beginPoint, EoGeVector3d lineVec
                                    EoGeVector3d planeNormal, EoGePoint3d* intersection) {
   double dDotProd = DotProduct(planeNormal, lineVector);
 
-  if (fabs(dDotProd) > DBL_EPSILON) {  // Line and plane are not parallel
+  if (fabs(dDotProd) > Eo::geometricTolerance) {  // Line and plane are not parallel
     EoGeVector3d v(lineVector);
     EoGeVector3d vOnPln(EoGePoint3d::kOrigin, pointOnPlane);
     EoGeVector3d vEnd(EoGePoint3d::kOrigin, beginPoint);
@@ -423,40 +422,38 @@ bool EoGeLine::IntersectionWithPln(EoGePoint3d& beginPoint, EoGeVector3d lineVec
   return false;  // Line and plane are parallel
 }
 
-int EoGeLine::Intersection(EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d& intersection) {
+bool EoGeLine::Intersection(const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection) {
   EoGeVector3d firstVector(firstLine.begin, firstLine.end);
-  if (firstVector.IsNearNull()) { return (FALSE); }
+  if (firstVector.IsNearNull()) { return false; }
 
   EoGeVector3d secondVector(secondLine.begin, secondLine.end);
-  if (secondVector.IsNearNull()) { return (FALSE); }
+  if (secondVector.IsNearNull()) { return false; }
 
   auto normal = CrossProduct(firstVector, secondVector);
+  if (normal.IsNearNull()) { return false; }
   normal.Normalize();
-  if (normal.IsNearNull()) { return (FALSE); }
 
   EoGeVector3d v3(firstLine.begin, secondLine.begin);
 
-  if (fabs(DotProduct(normal, v3)) > DBL_EPSILON) { return (FALSE); }
+  if (fabs(DotProduct(normal, v3)) > Eo::geometricTolerance) { return false; }
 
   EoGeTransformMatrix transformMatrix(firstLine.begin, normal);
 
-  EoGePoint3d rL1P1;
-  EoGePoint3d rL1P2(firstLine.end);
-  rL1P2 = transformMatrix * rL1P2;
-  EoGePoint3d rL2P1(secondLine.begin);
-  rL2P1 = transformMatrix * rL2P1;
-  EoGePoint3d rL2P2(secondLine.end);
-  rL2P2 = transformMatrix * rL2P2;
+  EoGePoint3d firstLineEnd(firstLine.end);
+  firstLineEnd = transformMatrix * firstLineEnd;
+  EoGePoint3d secondLineBegin(secondLine.begin);
+  secondLineBegin = transformMatrix * secondLineBegin;
+  EoGePoint3d secondLineEnd(secondLine.end);
+  secondLineEnd = transformMatrix * secondLineEnd;
 
-  EoGeLine Line1 = EoGeLine(rL1P1, rL1P2);
-  if (EoGeLine::Intersection_xy(Line1, EoGeLine(rL2P1, rL2P2), intersection)) {
+  if (EoGeLine::Intersection_xy(EoGeLine(EoGePoint3d::kOrigin, firstLineEnd), EoGeLine(secondLineBegin, secondLineEnd), intersection)) {
     intersection.z = 0.0;
     transformMatrix.Inverse();
     intersection = transformMatrix * intersection;
 
-    return (TRUE);
+    return true;
   }
-  return (FALSE);
+  return false;
 }
 
 bool EoGeLine::Intersection_xy(EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d& intersection) {
@@ -465,7 +462,7 @@ bool EoGeLine::Intersection_xy(EoGeLine firstLine, EoGeLine secondLine, EoGePoin
 
   double determinant = firstVector.x * secondVector.y - secondVector.x * firstVector.y;
 
-  if (fabs(determinant) > DBL_EPSILON) {
+  if (fabs(determinant) > Eo::geometricTolerance) {
     EoGeVector3d vBeg1Beg2(firstLine.begin, secondLine.begin);
 
     double t = (vBeg1Beg2.y * secondVector.x - secondVector.y * vBeg1Beg2.x) / determinant;

@@ -1,7 +1,6 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <climits>
 #include <cmath>
 #include <cstdio>
@@ -540,7 +539,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
         ln.end = tm * ln.end;
         vEdg.x = ln.end.x - ln.begin.x;  // Determine x and y-components of edge
         vEdg.y = ln.end.y - ln.begin.y;
-        if (fabs(vEdg.y) > DBL_EPSILON * sqrt(vEdg.x * vEdg.x + vEdg.y * vEdg.y)) {  // Edge is not horizontal
+        if (fabs(vEdg.y) > Eo::geometricTolerance * sqrt(vEdg.x * vEdg.x + vEdg.y * vEdg.y)) {  // Edge is not horizontal
           dMaxY = std::max(ln.begin.y, ln.end.y);
           iCurEdg = iActEdgs + 1;
           // Find correct insertion point for edge in edge list using ymax as sort key
@@ -572,7 +571,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
     iEndEdg = 1;
     // Determine relative epsilon to be used for extent tests
   l1:
-    dEps1 = DBL_EPSILON + DBL_EPSILON * fabs(dScan);
+    dEps1 = Eo::geometricTolerance + Eo::geometricTolerance * fabs(dScan);
     while (iEndEdg <= iActEdgs && edg[iEndEdg].dMaxY >= dScan - dEps1) {
       // Set x intersection back to last scanline
       edg[iEndEdg].dX += edg[iEndEdg].dInvSlope * (dSpac + dScan - edg[iEndEdg].dMaxY);
@@ -608,7 +607,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
         iStrId = 0;
         dRemDisToEdg = edg[iCurEdg].dX - lnS.begin.x;
         dCurStrLen = dStrLen[iStrId];
-        while (dCurStrLen <= dRemDisToEdg + DBL_EPSILON) {
+        while (dCurStrLen <= dRemDisToEdg + Eo::geometricTolerance) {
           lnS.begin.x += dCurStrLen;
           dRemDisToEdg -= dCurStrLen;
           iStrId = (iStrId + 1) % iStrs;
@@ -617,7 +616,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
         lnS.begin.x = edg[iCurEdg].dX;
         dCurStrLen -= dRemDisToEdg;
         dRemDisToEdg = edg[iCurEdg + 1].dX - edg[iCurEdg].dX;
-        while (dCurStrLen <= dRemDisToEdg + DBL_EPSILON) {
+        while (dCurStrLen <= dRemDisToEdg + Eo::geometricTolerance) {
           lnS.end.x = lnS.begin.x + dCurStrLen;
           if ((iStrId & 1) == 0) {
             ln = tmInv * lnS;
@@ -628,7 +627,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
           dCurStrLen = dStrLen[iStrId];
           lnS.begin.x = lnS.end.x;
         }
-        if (dRemDisToEdg > DBL_EPSILON && (iStrId & 1) == 0) {
+        if (dRemDisToEdg > Eo::geometricTolerance && (iStrId & 1) == 0) {
           // Partial component of dash section must produced
           lnS.end.x = edg[iCurEdg + 1].dX;
           ln = tmInv * lnS;

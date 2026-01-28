@@ -1,6 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <cfloat>
 #include <climits>
 #include <cmath>
 
@@ -672,7 +671,7 @@ void text_GetBoundingBox(EoDbFontDefinition& fd, EoGeReferenceSystem& referenceS
     } else {
       ptsBox[2].y = TextHeight;
     }
-    if (spaceFactor > DBL_EPSILON) {
+    if (spaceFactor > Eo::geometricTolerance) {
       ptsBox[0].x -= spaceFactor / 0.6;
       ptsBox[0].y -= spaceFactor;
       ptsBox[2].x += spaceFactor / 0.6;

@@ -1,6 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <cfloat>
 #include <corecrt.h>
 
 #include "AeSys.h"
@@ -118,8 +117,8 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
     pstate.Restore(CDC::FromHandle(enhancedMetafileContext), PrimitiveState);
   }
   if (app.IsClipboardDataGroups()) {
-    EoGePoint3d minPoint(FLT_MAX, FLT_MAX, FLT_MAX);
-    EoGePoint3d maxPoint(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+    EoGePoint3d minPoint(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
+    EoGePoint3d maxPoint(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
     CMemFile memoryFile;
 

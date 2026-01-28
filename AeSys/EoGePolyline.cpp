@@ -1,7 +1,6 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <cmath>
 #include <vector>
 
@@ -77,7 +76,7 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
     double lineLength = lineAsVector.Length();
     double remainingDistanceToEnd = lineLength;
 
-    while (dashElementSize <= remainingDistanceToEnd + DBL_EPSILON) {
+    while (dashElementSize <= remainingDistanceToEnd + Eo::geometricTolerance) {
       EoGeVector3d dashAsVector(lineAsVector);
       dashAsVector *= dashElementSize / lineLength;
       modelPoints[1] = modelPoints[0] + dashAsVector;
@@ -97,7 +96,7 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
       dashElementIndex = (dashElementIndex + 1) % numberOfDashElements;
       dashElementSize = std::max(pixelSize, fabs(dashElements[dashElementIndex]));
     }
-    if (remainingDistanceToEnd > DBL_EPSILON) {  // Partial component of dash section must produced
+    if (remainingDistanceToEnd > Eo::geometricTolerance) {  // Partial component of dash section must produced
       if (dashElements[dashElementIndex] >= 0.0) {
         modelPoints[1] = pointsArray[i + 1];
 
@@ -195,9 +194,9 @@ bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersect
     if (EoGeLine::Intersection_xy(line, EoGeLine(ptBeg, ptEnd), ptInt)) {
       double dRel;
       line.RelOfPtToEndPts(ptInt, dRel);
-      if (dRel >= -DBL_EPSILON && dRel <= 1.0 + DBL_EPSILON) {
+      if (dRel >= -Eo::geometricTolerance && dRel <= 1.0 + Eo::geometricTolerance) {
         EoGeLine(ptBeg, ptEnd).RelOfPtToEndPts(ptInt, dRel);
-        if (dRel >= -DBL_EPSILON && dRel <= 1.0 + DBL_EPSILON) {
+        if (dRel >= -Eo::geometricTolerance && dRel <= 1.0 + Eo::geometricTolerance) {
           ptInt.z = ptBeg.z + dRel * (ptEnd.z - ptBeg.z);
           intersections.Add(ptInt);
         }

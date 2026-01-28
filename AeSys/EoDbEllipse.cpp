@@ -1,7 +1,6 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <climits>
 #include <cmath>
 #include <cstdlib>
@@ -209,7 +208,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
 
   double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
 
-  if (fabs(determinant) > DBL_EPSILON) {  // Three points are not colinear
+  if (fabs(determinant) > Eo::geometricTolerance) {  // Three points are not colinear
     double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
 
     m_center.x = (pt[1].x - pt[1].y * dT) * 0.5;
@@ -237,7 +236,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
     double dMin = std::min(dAng[0], dAng[2]);
     double dMax = std::max(dAng[0], dAng[2]);
 
-    if (fabs(dAng[1] - dMax) > DBL_EPSILON && fabs(dAng[1] - dMin) > DBL_EPSILON) {  // Inside line is not colinear with outside lines
+    if (fabs(dAng[1] - dMax) > Eo::geometricTolerance && fabs(dAng[1] - dMin) > Eo::geometricTolerance) {  // Inside line is not colinear with outside lines
       m_sweepAngle = dMax - dMin;
       if (dAng[1] > dMin && dAng[1] < dMax) {
         if (dAng[0] == dMax) m_sweepAngle = -m_sweepAngle;
@@ -275,7 +274,7 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& center, double radius, double startA
   // Compute CCW sweep from start to end in range (0, 2*pi] (canonical representation: positive = CCW sweep)
   double sweepAngle = normalizedEndAngle - normalizedStartAngle;
   if (sweepAngle < 0.0) sweepAngle += Eo::TwoPi;
-  if (fabs(sweepAngle) < DBL_EPSILON) sweepAngle = Eo::TwoPi;  // identical => full circle
+  if (fabs(sweepAngle) < Eo::geometricTolerance) sweepAngle = Eo::TwoPi;  // identical => full circle
   m_sweepAngle = sweepAngle;
 
   // Build major axis vector from center to start point
@@ -343,13 +342,13 @@ void EoDbEllipse::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupLis
   dRel[0] = SweepAngleToPoint(pt[0]) / m_sweepAngle;
   dRel[1] = SweepAngleToPoint(pt[1]) / m_sweepAngle;
 
-  if (dRel[0] <= DBL_EPSILON && dRel[1] >= 1.0 - DBL_EPSILON) {  // Put entire arc in trap
+  if (dRel[0] <= Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance) {  // Put entire arc in trap
     pArc = this;
   } else {  // Something gets cut
     auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
     vPlnNorm.Normalize();
 
-    if (fabs(m_sweepAngle - Eo::TwoPi) <= DBL_EPSILON) {  // Closed arc
+    if (fabs(m_sweepAngle - Eo::TwoPi) <= Eo::geometricTolerance) {  // Closed arc
       m_sweepAngle = (dRel[1] - dRel[0]) * Eo::TwoPi;
 
       m_majorAxis.RotAboutArbAx(vPlnNorm, dRel[0] * Eo::TwoPi);
@@ -368,7 +367,7 @@ void EoDbEllipse::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupLis
       double dAng1 = dRel[0] * m_sweepAngle;
       double dAng2 = dRel[1] * m_sweepAngle;
 
-      if (dRel[0] > DBL_EPSILON && dRel[1] < 1.0 - DBL_EPSILON) {  // Cut section out of middle
+      if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
         pArc->SetSweepAngle(dAng1);
         groups->AddTail(new EoDbGroup(pArc));
 
@@ -381,7 +380,7 @@ void EoDbEllipse::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupLis
         m_majorAxis.RotAboutArbAx(vPlnNorm, m_sweepAngle);
         m_minorAxis.RotAboutArbAx(vPlnNorm, m_sweepAngle);
         m_sweepAngle = dSwpAng - dAng2;
-      } else if (dRel[1] < 1.0 - DBL_EPSILON) {  // Cut section in two and place begin section in trap
+      } else if (dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section in two and place begin section in trap
         pArc->SetSweepAngle(dAng2);
 
         m_majorAxis.RotAboutArbAx(vPlnNorm, dAng2);
@@ -405,13 +404,13 @@ void EoDbEllipse::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupLis
 }
 
 void EoDbEllipse::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
-  if (fabs(m_sweepAngle - Eo::TwoPi) <= DBL_EPSILON)
+  if (fabs(m_sweepAngle - Eo::TwoPi) <= Eo::geometricTolerance)
     // Do not fragment a circle
     return;
 
   double dRel = SweepAngleToPoint(pt) / m_sweepAngle;
 
-  if (dRel <= DBL_EPSILON || dRel >= 1.0 - DBL_EPSILON)
+  if (dRel <= Eo::geometricTolerance || dRel >= 1.0 - Eo::geometricTolerance)
     // Nothing to cut
     return;
 
@@ -430,7 +429,7 @@ void EoDbEllipse::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
 }
 
 void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
-  if (fabs(m_sweepAngle) <= DBL_EPSILON) { return; }
+  if (fabs(m_sweepAngle) <= Eo::geometricTolerance) { return; }
 
   auto color = LogicalColor();
   auto lineType = LogicalLineType();
@@ -637,7 +636,7 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
     // not on plane normal to z-axis
     return 0;
 
-  if (fabs(m_majorAxis.Length() - m_minorAxis.Length()) > FLT_EPSILON)
+  if (fabs(m_majorAxis.Length() - m_minorAxis.Length()) > Eo::geometricTolerance)
     // not radial
     return 0;
 
@@ -756,7 +755,7 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
       }
     }
   }
-  if (fabs(m_sweepAngle - Eo::TwoPi) <= DBL_EPSILON) {  // Arc is a circle in disuise
+  if (fabs(m_sweepAngle - Eo::TwoPi) <= Eo::geometricTolerance) {  // Arc is a circle in disuise
 
   } else {
     if (ptBeg.x >= ptLL.x && ptBeg.x <= ptUR.x && ptBeg.y >= ptLL.y && ptBeg.y <= ptUR.y) {  // Add beg point to int set
@@ -940,7 +939,7 @@ int SweepAngleFromNormalAnd3Points(EoGeVector3d normal, EoGePoint3d arP1, EoGePo
   }
   double dTMin = std::min(dT[0], dT[2]);
   double dTMax = std::max(dT[0], dT[2]);
-  if (fabs(dT[1] - dTMax) > DBL_EPSILON && fabs(dT[1] - dTMin) > DBL_EPSILON) {  // Inside line is not colinear with outside lines
+  if (fabs(dT[1] - dTMax) > Eo::geometricTolerance && fabs(dT[1] - dTMin) > Eo::geometricTolerance) {  // Inside line is not colinear with outside lines
     double dTheta = dTMax - dTMin;
     if (dT[1] > dTMin && dT[1] < dTMax) {
       if (dT[0] == dTMax) dTheta = -dTheta;

@@ -72,7 +72,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
   if (DisplayGridWithPoints()) {
     EoGePoint3d pt;
 
-    if (fabs(m_YGridPointSpacing) > DBL_EPSILON && fabs(m_ZGridPointSpacing) > DBL_EPSILON) {
+    if (fabs(m_YGridPointSpacing) > Eo::geometricTolerance && fabs(m_ZGridPointSpacing) > Eo::geometricTolerance) {
       COLORREF Color = app.PenColorsGetHot(1);
 
       pt.x = m_GridOrigin.x;
@@ -86,7 +86,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
         pt.z += m_ZGridPointSpacing;
       }
     }
-    if (fabs(m_XGridPointSpacing) > DBL_EPSILON && fabs(m_ZGridPointSpacing) > DBL_EPSILON) {
+    if (fabs(m_XGridPointSpacing) > Eo::geometricTolerance && fabs(m_ZGridPointSpacing) > Eo::geometricTolerance) {
       COLORREF Color = app.PenColorsGetHot(2);
 
       pt.x = m_GridOrigin.x - dHalfPts * m_XGridPointSpacing;
@@ -100,7 +100,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
         pt.x += m_XGridPointSpacing;
       }
     }
-    if (fabs(m_XGridPointSpacing) > DBL_EPSILON && fabs(m_YGridPointSpacing) > DBL_EPSILON) {
+    if (fabs(m_XGridPointSpacing) > Eo::geometricTolerance && fabs(m_YGridPointSpacing) > Eo::geometricTolerance) {
       COLORREF Color = app.PenColorsGetHot(3);
 
       pt.y = m_GridOrigin.y - dHalfPts * m_YGridPointSpacing;
@@ -116,7 +116,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
     }
   }
   if (DisplayGridWithLines()) {
-    if (fabs(m_XGridLineSpacing) > DBL_EPSILON && fabs(m_YGridLineSpacing) > DBL_EPSILON) {
+    if (fabs(m_XGridLineSpacing) > Eo::geometricTolerance && fabs(m_YGridLineSpacing) > Eo::geometricTolerance) {
       EoGeLine ln;
 
       int i;
@@ -154,17 +154,17 @@ EoGePoint3d AeSysView::SnapPointToGrid(EoGePoint3d& arPt) const {
   EoGePoint3d pt = arPt;
 
   if (GridSnap()) {
-    if (fabs(m_XGridSnapSpacing) > DBL_EPSILON) {
+    if (fabs(m_XGridSnapSpacing) > Eo::geometricTolerance) {
       pt.x -= fmod((arPt.x - m_GridOrigin.x), m_XGridSnapSpacing);
       if (fabs(pt.x - arPt.x) > m_XGridSnapSpacing * 0.5)
         pt.x += Eo::CopySign(m_XGridSnapSpacing, arPt.x - m_GridOrigin.x);
     }
-    if (fabs(m_YGridSnapSpacing) > DBL_EPSILON) {
+    if (fabs(m_YGridSnapSpacing) > Eo::geometricTolerance) {
       pt.y -= fmod((arPt.y - m_GridOrigin.y), m_YGridSnapSpacing);
       if (fabs(pt.y - arPt.y) > m_YGridSnapSpacing * 0.5)
         pt.y += Eo::CopySign(m_YGridSnapSpacing, arPt.y - m_GridOrigin.y);
     }
-    if (fabs(m_ZGridSnapSpacing) > DBL_EPSILON) {
+    if (fabs(m_ZGridSnapSpacing) > Eo::geometricTolerance) {
       pt.z -= fmod((arPt.z - m_GridOrigin.z), m_ZGridSnapSpacing);
       if (fabs(pt.z - arPt.z) > m_ZGridSnapSpacing * 0.5)
         pt.z += Eo::CopySign(m_ZGridSnapSpacing, arPt.z - m_GridOrigin.z);

@@ -87,14 +87,14 @@ void AeSysView::OnLpdModeDuct() {
         ReferenceLine.end = m_CurrentReferenceLine.end;
         m_ContinueSection = false;
       }
-      if (m_CurrentReferenceLine.Length() - TransitionLength > FLT_EPSILON) {
+      if (m_CurrentReferenceLine.Length() - TransitionLength > Eo::geometricTolerance) {
         m_OriginalPreviousGroup = new EoDbGroup;
         document->AddWorkLayerGroup(m_OriginalPreviousGroup);
         GenerateRectangularSection(ReferenceLine, m_CenterLineEccentricity, m_CurrentSection, m_OriginalPreviousGroup);
         m_ContinueSection = true;
       }
     } else {
-      if (ReferenceLine.Length() - TransitionLength > FLT_EPSILON) {
+      if (ReferenceLine.Length() - TransitionLength > Eo::geometricTolerance) {
         ReferenceLine.end = ReferenceLine.ProjToBegPt(TransitionLength);
         m_OriginalPreviousGroup = new EoDbGroup;
         document->AddWorkLayerGroup(m_OriginalPreviousGroup);
@@ -207,11 +207,11 @@ void AeSysView::OnLpdModeEll() {
       EoGePoint3d IntersectionPoint(ExistingSectionReferenceLine.ProjPt(m_PreviousPnt));
       double Relationship;
       ExistingSectionReferenceLine.RelOfPtToEndPts(IntersectionPoint, Relationship);
-      if (Relationship > FLT_EPSILON) {
+      if (Relationship > Eo::geometricTolerance) {
         m_CurrentReferenceLine(m_PreviousPnt, IntersectionPoint);
         double SectionLength = m_CurrentReferenceLine.Length() -
                                (m_PreviousSection.Width() + m_DuctSeamSize + ExistingSection.Width() * 0.5);
-        if (SectionLength > FLT_EPSILON) {
+        if (SectionLength > Eo::geometricTolerance) {
           m_CurrentReferenceLine.end = m_CurrentReferenceLine.ProjToEndPt(SectionLength);
           auto* Group = new EoDbGroup;
           document->AddWorkLayerGroup(Group);
@@ -366,11 +366,11 @@ void AeSysView::DoDuctModeMouseMove() {
         EoGePoint3d IntersectionPoint(ExistingSectionReferenceLine.ProjPt(m_PreviousPnt));
         double Relationship;
         ExistingSectionReferenceLine.RelOfPtToEndPts(IntersectionPoint, Relationship);
-        if (Relationship > FLT_EPSILON) {
+        if (Relationship > Eo::geometricTolerance) {
           m_CurrentReferenceLine(m_PreviousPnt, IntersectionPoint);
           double SectionLength = m_CurrentReferenceLine.Length() -
                                  (m_PreviousSection.Width() + m_DuctSeamSize + ExistingSection.Width() * 0.5);
-          if (SectionLength > FLT_EPSILON) {
+          if (SectionLength > Eo::geometricTolerance) {
             m_CurrentReferenceLine.end = m_CurrentReferenceLine.ProjToEndPt(SectionLength);
             GenerateRectangularSection(m_CurrentReferenceLine, m_CenterLineEccentricity, m_PreviousSection,
                                        &m_PreviewGroup);
@@ -393,11 +393,11 @@ void AeSysView::DoDuctModeMouseMove() {
           ReferenceLine.begin = ReferenceLine.end;
           ReferenceLine.end = m_CurrentReferenceLine.end;
         }
-        if (m_CurrentReferenceLine.Length() - TransitionLength > FLT_EPSILON) {
+        if (m_CurrentReferenceLine.Length() - TransitionLength > Eo::geometricTolerance) {
           GenerateRectangularSection(ReferenceLine, m_CenterLineEccentricity, m_CurrentSection, &m_PreviewGroup);
         }
       } else {
-        if (ReferenceLine.Length() - TransitionLength > FLT_EPSILON) {
+        if (ReferenceLine.Length() - TransitionLength > Eo::geometricTolerance) {
           ReferenceLine.end = ReferenceLine.ProjToBegPt(TransitionLength);
           GenerateRectangularSection(ReferenceLine, m_CenterLineEccentricity, m_PreviousSection, &m_PreviewGroup);
           ReferenceLine.begin = ReferenceLine.end;
@@ -439,12 +439,11 @@ void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionRe
   IntersectionPoint = existingSectionReferenceLine.ProjPt(CurrentReferenceLine.begin);
   double Relationship;
   if (existingSectionReferenceLine.RelOfPtToEndPts(IntersectionPoint, Relationship)) {
-    if (fabs(Relationship) > FLT_EPSILON &&
-        fabs(Relationship - 1.0) >
-            FLT_EPSILON) {  // need to add a section either from the elbow or the existing section
+    if (fabs(Relationship) > Eo::geometricTolerance && fabs(Relationship - 1.0) > Eo::geometricTolerance) {
+      // need to add a section either from the elbow or the existing section
       double SectionLength = existingSectionReferenceLine.Length();
       double DistanceToBeginPoint = Relationship * SectionLength;
-      if (Relationship > FLT_EPSILON && Relationship < 1.0 - FLT_EPSILON) {  // section from the elbow
+      if (Relationship > Eo::geometricTolerance && Relationship < 1.0 - Eo::geometricTolerance) {  // section from the elbow
         CurrentReferenceLine.end =
             CurrentReferenceLine.begin.ProjectToward(CurrentReferenceLine.end, SectionLength - DistanceToBeginPoint);
         GenerateRectangularSection(CurrentReferenceLine, m_CenterLineEccentricity, m_PreviousSection, group);
@@ -635,7 +634,7 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
 void AeSysView::GenerateTransition(EoGeLine& referenceLine, double eccentricity, EJust justification, double slope,
                                    Section previousSection, Section currentSection, EoDbGroup* group) {
   double ReferenceLength = referenceLine.Length();
-  if (ReferenceLength <= FLT_EPSILON) return;
+  if (ReferenceLength <= Eo::geometricTolerance) { return; }
 
   double WidthChange = currentSection.Width() - previousSection.Width();
   double TransitionLength = LengthOfTransition(justification, slope, previousSection, currentSection);

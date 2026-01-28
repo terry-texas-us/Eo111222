@@ -94,7 +94,7 @@ void EoGsAbstractView::EnableFarClipping(bool enabled) {
   }
 }
 void EoGsAbstractView::SetDirection(const EoGeVector3d& direction) {
-  if (direction.Length() > FLT_EPSILON) {
+  if (direction.Length() > Eo::geometricTolerance) {
     EoGeVector3d Direction(direction);
     Direction.Normalize();
     mx_Direction.x = static_cast<float>(Direction.x);
@@ -137,7 +137,7 @@ void EoGsAbstractView::SetView(const EoGePoint3d& position, const EoGePoint3d& t
   SetViewUp(viewUp);
 }
 void EoGsAbstractView::SetViewUp(EoGeVector3d viewUp) {
-  if (viewUp.Length() > DBL_EPSILON) {
+  if (viewUp.Length() > Eo::geometricTolerance) {
     viewUp.Normalize();
     mx_ViewUp.x = static_cast<float>(viewUp.x);
     mx_ViewUp.y = static_cast<float>(viewUp.y);

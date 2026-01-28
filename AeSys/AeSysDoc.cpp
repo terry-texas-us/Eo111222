@@ -1,7 +1,6 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <cstdio>
 #include <cstdlib>
 #include <new>
@@ -436,8 +435,8 @@ void AeSysDoc::DeletedGroupsRestore() {
   }
 }
 void AeSysDoc::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
-  ptMin(FLT_MAX, FLT_MAX, FLT_MAX);
-  ptMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+  ptMin(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
+  ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
     EoDbLayer* Layer = GetLayerTableLayerAt(w);

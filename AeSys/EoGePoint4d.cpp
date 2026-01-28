@@ -122,7 +122,7 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
   EoGePoint4d ptEdge[2]{};
   bool bEdgeVis[2]{};
 
-  bool bVisVer0 = DotProduct(EoGeVector3d(ptQ, pointsArrayIn[0]), planeNormal) >= -DBL_EPSILON ? true : false;
+  bool bVisVer0 = DotProduct(EoGeVector3d(ptQ, pointsArrayIn[0]), planeNormal) >= -Eo::geometricTolerance ? true : false;
 
   ptEdge[0] = pointsArrayIn[0];
   bEdgeVis[0] = bVisVer0;
@@ -131,7 +131,7 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
   int iPtsIn = (int)pointsArrayIn.GetSize();
   for (int i = 1; i < iPtsIn; i++) {
     ptEdge[1] = pointsArrayIn[i];
-    bEdgeVis[1] = DotProduct(EoGeVector3d(ptQ, ptEdge[1]), planeNormal) >= -DBL_EPSILON ? true : false;
+    bEdgeVis[1] = DotProduct(EoGeVector3d(ptQ, ptEdge[1]), planeNormal) >= -Eo::geometricTolerance ? true : false;
 
     if (bEdgeVis[0] != bEdgeVis[1]) {  // Vetices of edge on opposite sides of clip plane
       pt = EoGeLine::IntersectionWithPln4(ptEdge[0], ptEdge[1], ptQ, planeNormal);

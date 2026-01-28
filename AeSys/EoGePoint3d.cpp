@@ -1,23 +1,23 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <cmath>
 
+#include "Eo.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 
-const EoGePoint3d EoGePoint3d::kOrigin(0.0, 0.0, 0.0);
+const EoGePoint3d EoGePoint3d::kOrigin{0.0, 0.0, 0.0};
 
 EoGePoint3d::EoGePoint3d(const EoGePoint4d& initialPoint) {
   x = initialPoint.x / initialPoint.w;
   y = initialPoint.y / initialPoint.w;
   z = initialPoint.z / initialPoint.w;
 }
-bool EoGePoint3d::operator==(const EoGePoint3d& point) const { return (IsEqualTo(point, FLT_EPSILON)); }
-bool EoGePoint3d::operator!=(const EoGePoint3d& point) const { return (!IsEqualTo(point, FLT_EPSILON)); }
+bool EoGePoint3d::operator==(const EoGePoint3d& point) const { return (IsEqualTo(point, Eo::geometricTolerance)); }
+bool EoGePoint3d::operator!=(const EoGePoint3d& point) const { return (!IsEqualTo(point, Eo::geometricTolerance)); }
 void EoGePoint3d::operator+=(const EoGeVector3d& vector) {
   x += vector.x;
   y += vector.y;
@@ -34,7 +34,7 @@ void EoGePoint3d::operator*=(double t) {
   z *= t;
 }
 void EoGePoint3d::operator/=(double t) {
-  if (fabs(t) > FLT_EPSILON) {
+  if (fabs(t) > Eo::geometricTolerance) {
     x /= t;
     y /= t;
     z /= t;
@@ -45,13 +45,21 @@ void EoGePoint3d::operator()(double xNew, double yNew, double zNew) {
   y = yNew;
   z = zNew;
 }
-EoGeVector3d EoGePoint3d::operator-(const EoGePoint3d& ptQ) const { return EoGeVector3d(ptQ.x - x, ptQ.y - y, ptQ.z - z); }
-EoGePoint3d EoGePoint3d::operator-(const EoGeVector3d& vector) const { return EoGePoint3d(x - vector.x, y - vector.y, z - vector.z); }
-EoGePoint3d EoGePoint3d::operator+(const EoGeVector3d& vector) const { return EoGePoint3d(x + vector.x, y + vector.y, z + vector.z); }
-EoGePoint3d EoGePoint3d::operator*(double t) const { return EoGePoint3d(x * t, y * t, z * t); }
 
-EoGePoint3d EoGePoint3d::operator/(double t) const {
-  if (fabs(t) > FLT_EPSILON) { return EoGePoint3d(x / t, y / t, z / t); }
+[[nodiscard]] EoGeVector3d EoGePoint3d::operator-(const EoGePoint3d& q) const {
+  return EoGeVector3d(q.x - x, q.y - y, q.z - z);
+}
+
+[[nodiscard]] EoGePoint3d EoGePoint3d::operator-(const EoGeVector3d& vector) const {
+  return EoGePoint3d(x - vector.x, y - vector.y, z - vector.z);
+}
+[[nodiscard]] EoGePoint3d EoGePoint3d::operator+(const EoGeVector3d& vector) const {
+  return EoGePoint3d(x + vector.x, y + vector.y, z + vector.z);
+}
+[[nodiscard]] EoGePoint3d EoGePoint3d::operator*(double t) const { return EoGePoint3d(x * t, y * t, z * t); }
+
+[[nodiscard]] EoGePoint3d EoGePoint3d::operator/(double t) const {
+  if (fabs(t) > Eo::geometricTolerance) { return EoGePoint3d(x / t, y / t, z / t); }
   return EoGePoint3d(x, y, z);
 }
 
@@ -61,49 +69,58 @@ double EoGePoint3d::DistanceTo(const EoGePoint3d& point) const {
   double Z = point.z - z;
   return sqrt(X * X + Y * Y + Z * Z);
 }
-bool EoGePoint3d::IsEqualTo(const EoGePoint3d& pt, double tolerance) const {
+[[nodiscard]] bool EoGePoint3d::IsEqualTo(const EoGePoint3d& pt, double tolerance) const {
   return (fabs(x - pt.x) > tolerance || fabs(y - pt.y) > tolerance || fabs(z - pt.z) > tolerance ? false : true);
 }
 bool EoGePoint3d::IsContained(const EoGePoint3d& lowerLeftPoint, const EoGePoint3d& upperRightPoint) const {
-  double dReps = DBL_EPSILON + fabs(DBL_EPSILON * x);
+  double dReps = Eo::geometricTolerance + fabs(Eo::geometricTolerance * x);
 
   if (lowerLeftPoint.x > x + dReps || upperRightPoint.x < x - dReps) return false;
 
-  dReps = DBL_EPSILON + fabs(DBL_EPSILON * y);
+  dReps = Eo::geometricTolerance + fabs(Eo::geometricTolerance * y);
   if (lowerLeftPoint.y > y + dReps || upperRightPoint.y < y - dReps) return false;
 
   return true;
 }
-EoGePoint3d EoGePoint3d::Max(EoGePoint3d& ptA, EoGePoint3d& ptB) { return EoGePoint3d(std::max(ptA.x, ptB.x), std::max(ptA.y, ptB.y), std::max(ptA.z, ptB.z)); }
-EoGePoint3d EoGePoint3d::Mid(EoGePoint3d& ptA, EoGePoint3d& ptB) { return ptA + (ptA - ptB) * 0.5; }
-EoGePoint3d EoGePoint3d::Min(EoGePoint3d& ptA, EoGePoint3d& ptB) { return EoGePoint3d(std::min(ptA.x, ptB.x), std::min(ptA.y, ptB.y), std::min(ptA.z, ptB.z)); }
-EoGePoint3d EoGePoint3d::ProjectToward(const EoGePoint3d& ptQ, const double distance) {
-  EoGeVector3d v(*this, ptQ);
+[[nodiscard]] EoGePoint3d EoGePoint3d::Max(const EoGePoint3d& a, const EoGePoint3d& b) {
+  return EoGePoint3d(std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z));
+}
 
-  double Length = v.Length();
-  if (Length > DBL_EPSILON) {
-    v *= distance / Length;
-    return (*this + v);
+EoGePoint3d EoGePoint3d::Mid(const EoGePoint3d& a, const EoGePoint3d& b) { return a + (a - b) * 0.5; }
+
+[[nodiscard]] EoGePoint3d EoGePoint3d::Min(const EoGePoint3d& a, const EoGePoint3d& b) {
+  return EoGePoint3d(std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z));
+}
+
+EoGePoint3d EoGePoint3d::ProjectToward(const EoGePoint3d& b, const double distance) {
+  EoGeVector3d directionVector(*this, b);
+
+  double length = directionVector.Length();
+  if (length > Eo::geometricTolerance) {
+    directionVector *= distance / length;
+    return (*this + directionVector);
   }
   return (*this);
 }
+
 void EoGePoint3d::Read(CFile& file) {
   file.Read(&x, sizeof(double));
   file.Read(&y, sizeof(double));
   file.Read(&z, sizeof(double));
 }
-int EoGePoint3d::RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint, const EoGePoint3d& upperRightPoint) const {
-  int returnValue = 0;
 
-  if (y > upperRightPoint.y + DBL_EPSILON) {
+int EoGePoint3d::RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint, const EoGePoint3d& upperRightPoint) const {
+  int returnValue{};
+
+  if (y > upperRightPoint.y + Eo::geometricTolerance) {
     returnValue = 1;
-  } else if (y < lowerLeftPoint.y - DBL_EPSILON) {
+  } else if (y < lowerLeftPoint.y - Eo::geometricTolerance) {
     returnValue = 2;
   }
 
-  if (x > upperRightPoint.x + DBL_EPSILON) {
+  if (x > upperRightPoint.x + Eo::geometricTolerance) {
     returnValue |= 4;
-  } else if (x < lowerLeftPoint.x - DBL_EPSILON) {
+  } else if (x < lowerLeftPoint.x - Eo::geometricTolerance) {
     returnValue |= 8;
   }
   return (returnValue);

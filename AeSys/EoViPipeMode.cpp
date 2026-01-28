@@ -1,6 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <cfloat>
 #include <cmath>
 
 #include "AeSysDoc.h"
@@ -811,7 +810,7 @@ bool AeSysView::GenerateTicMark(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, 
 
   double DistanceToEndPoint = Projection.Length();
 
-  bool MarkGenerated = DistanceToEndPoint > DBL_EPSILON;
+  bool MarkGenerated = DistanceToEndPoint > Eo::geometricTolerance;
   if (MarkGenerated) {
     Projection *= m_PipeTicSize / DistanceToEndPoint;
 

@@ -19,6 +19,10 @@ constexpr double generalTolerance = 1e-6;    // For general UI
 constexpr double geometricTolerance = 1e-9;  // For geometric calculations
 constexpr double preciseTolerance = 1e-12;   // For precise calculations
 
+// Practical bounds based on geometric tolerance - beyond these values, calculations may become unreliable
+constexpr double boundsMax = 1.0 / geometricTolerance; 
+constexpr double boundsMin = -boundsMax;
+
 /** @brief Returns the sign of a number: -1 if negative, 1 if positive, 0 if zero. */
 constexpr int Signum(const double number) { return (number < 0.0 ? -1 : (number > 0.0 ? 1 : 0)); }
 

@@ -1,7 +1,6 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
-#include <cfloat>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -325,14 +324,14 @@ void AeSysView::OnAnnotateModeCutIn() {
       dRel[0] = pLine->RelOfPt(ptsBox[0]);
       dRel[1] = pLine->RelOfPt(ptsBox[1]);
 
-      if (dRel[0] > DBL_EPSILON && dRel[1] < 1.0 - DBL_EPSILON) {
+      if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {
         EoDbLine* NewLinePrimitive = new EoDbLine(*pLine);
         pLine->EndPoint(ptsBox[0]);
         NewLinePrimitive->BeginPoint(ptsBox[1]);
         Group->AddTail(NewLinePrimitive);
-      } else if (dRel[0] <= DBL_EPSILON)
+      } else if (dRel[0] <= Eo::geometricTolerance)
         pLine->BeginPoint(ptsBox[1]);
-      else if (dRel[1] >= 1.0 - DBL_EPSILON)
+      else if (dRel[1] >= 1.0 - Eo::geometricTolerance)
         pLine->EndPoint(ptsBox[0]);
     }
     document->UpdateAllViews(nullptr, EoDb::kGroup, Group);
@@ -392,7 +391,7 @@ bool AeSysView::CorrectLeaderEndpoints(int beginType, int endType, EoGePoint3d& 
   } else if (endType == ID_OP5)
     EndDistance = CircleRadius();
 
-  if (LineSegmentLength > BeginDistance + EndDistance + DBL_EPSILON) {
+  if (LineSegmentLength > BeginDistance + EndDistance + Eo::geometricTolerance) {
     if (BeginDistance != 0.0) beginPoint = beginPoint.ProjectToward(endPoint, BeginDistance);
     if (EndDistance != 0.0) endPoint = endPoint.ProjectToward(beginPoint, EndDistance);
     return true;

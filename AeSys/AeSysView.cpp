@@ -1,7 +1,6 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <cmath>
 #include <cstdarg>
 #include <cstdio>
@@ -949,11 +948,11 @@ void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, 
 
   double Scale = 1.0 - (m_Viewport.WidthInInches() / UExtent) / ratio;
 
-  if (fabs(Scale) > FLT_EPSILON) {
+  if (fabs(Scale) > Eo::geometricTolerance) {
     XAdjustment = Scale * UExtent;
     YAdjustment = Scale * VExtent;
   }
-  if (UExtent <= FLT_EPSILON || VExtent / UExtent > AspectRatio) {
+  if (UExtent <= Eo::geometricTolerance || VExtent / UExtent > AspectRatio) {
     XAdjustment += (VExtent / AspectRatio - UExtent) * 0.5;
   } else {
     YAdjustment += (UExtent * AspectRatio - VExtent) * 0.5f;
@@ -2355,7 +2354,7 @@ void AeSysView::SetModeCursor(int mode) {
 }
 
 void AeSysView::SetWorldScale(const double scale) {
-  if (scale > FLT_EPSILON) {
+  if (scale > Eo::geometricTolerance) {
     m_WorldScale = scale;
     UpdateStateInformation(Scale);
 

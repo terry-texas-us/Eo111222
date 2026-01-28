@@ -14,9 +14,9 @@ class EoGePoint3d {
   double y;
   double z;
 
- public:  // Constructors and destructor
-  EoGePoint3d() : x(0.0), y(0.0), z(0.0) {}
-  EoGePoint3d(double xInitial, double yInitial, double zInitial) : x(xInitial), y(yInitial), z(zInitial) {}
+ public:
+  constexpr EoGePoint3d() : x(0.0), y(0.0), z(0.0) {}
+  constexpr EoGePoint3d(double xInitial, double yInitial, double zInitial) : x(xInitial), y(yInitial), z(zInitial) {}
   EoGePoint3d(const EoGePoint4d& initialPoint);
   EoGePoint3d(const DRW_Coord& initialPoint) : x(initialPoint.x), y(initialPoint.y), z(initialPoint.z) {}
 
@@ -29,39 +29,61 @@ class EoGePoint3d {
   void operator/=(double t);
 
   void operator()(double xNew, double yNew, double zNew);
-  EoGeVector3d operator-(const EoGePoint3d& ptQ) const;
+  
+  [[nodiscard]] EoGeVector3d operator-(const EoGePoint3d& q) const;
+  
+  [[nodiscard]] EoGePoint3d operator-(const EoGeVector3d& vector) const;
+  [[nodiscard]] EoGePoint3d operator+(const EoGeVector3d& vector) const;
+  [[nodiscard]] EoGePoint3d operator*(double t) const;
+  
+  [[nodiscard]] EoGePoint3d operator/(double t) const;
 
-  EoGePoint3d operator-(const EoGeVector3d& vector) const;
-  EoGePoint3d operator+(const EoGeVector3d& vector) const;
-  EoGePoint3d operator*(double t) const;
-  EoGePoint3d operator/(double t) const;
-
- public:  // Methods
-  /// <summary>Determines the distance to a point without the z component.</summary>
+ public:
+  /**Determines the distance to another point in 3D space.
+   * @param point The target point to measure the distance to.
+   * @return The Euclidean distance between this point and the target point.
+   */ 
   double DistanceTo(const EoGePoint3d& point) const;
-  bool IsEqualTo(const EoGePoint3d& point, double tolerance) const;
-  /// <summary>Determines if a point is contained by a window.</summary>
-  /// <returns>true if point is in window, false otherwise</returns>
+  
+  [[nodiscard]] bool IsEqualTo(const EoGePoint3d& point, double tolerance) const;
+  
+  /** Determines if a point is contained by a window.
+   * @param lowerLeftPoint The lower-left corner point of the window.
+   * @param upperRightPoint The upper-right corner point of the window.
+   * @return true if point is in window, false otherwise
+   */
   bool IsContained(const EoGePoint3d& lowerLeftPoint, const EoGePoint3d& upperRightPoint) const;
-  /// <summary>Determines relationship of a point to a window.</summary>
-  // Returns:
-  //		0 - point is contained in window
-  //		bit 1 set - point above window
-  //		bit 2 set - point below window
-  //		bit 4 set - point to the right of window
-  //		bit 8 set - point to the left of window
-  int RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint, const EoGePoint3d& upperRightPoint) const;
-  /// <summary>Projects a point toward or beyond another point.</summary>
-  /// <param name="ptQ">point defining direction vector</param>
-  /// <param name="distance">magnitude of projection</param>
-  /// <returns> projected point or itself if points coincide</returns>
-  EoGePoint3d ProjectToward(const EoGePoint3d& ptQ, const double distance);
-  /// <summary>Rotates a point about another point and arbitrary axis in space.</summary>
-  /// <param name="referenceOrigin">point about which rotation will occur</param>
-  /// <param name="referenceAxis">unit vector defining rotation axis</param>
-  /// <param name="angle">rotation angle (ccw positive) in radians</param>
-  /// <returns>Point after rotation</returns>
-  EoGePoint3d RotateAboutAxis(const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis, const double angle);
+  
+  /** Determines the relationship of this point to a rectangle defined by two corner points.
+   * @param lowerLeftPoint The lower-left corner point of the rectangle.
+   * @param upperRightPoint The upper-right corner point of the rectangle.
+   * @return An integer code representing the relationship:
+   *         0x0000 - Inside the rectangle
+   *         0x0001 - Above the rectangle
+   *         0x0010 - Below the rectangle
+   *         0x0100 - Right of the rectangle
+   *         0x1000 - Left of the rectangle
+   *         Combinations of these values indicate multiple relationships (e.g., 0x0101above and right).
+   */
+  [[nodiscard]] int RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint,
+                                            const EoGePoint3d& upperRightPoint) const;
+  /**
+   * Projects this point toward or beyond point q by the specified distance.
+   *
+   * @param q The target point defining direction vector to project toward.
+   * @param distance The magnitudde of the projection.
+   * @return The projected point or itself if the points coincide.
+   */
+  EoGePoint3d ProjectToward(const EoGePoint3d& b, const double distance);
+  
+  /** Rotates a point about another point and arbitrary axis in space.
+   * @param referenceOrigin Point about which rotation will occur.
+   * @param referenceAxis Unit vector defining rotation axis.
+   * @param angle Rotation angle (ccw positive) in radians.
+   * @return Point after rotation.
+   */
+  EoGePoint3d RotateAboutAxis(const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis,
+                              const double angle);
   CString ToString() const;
   void Read(CFile& file);
   void Write(CFile& file) const;
@@ -70,7 +92,9 @@ class EoGePoint3d {
   static const EoGePoint3d kOrigin;
   static double Distance(const EoGePoint3d& a, const EoGePoint3d& b);
 
-  static EoGePoint3d Max(EoGePoint3d& ptA, EoGePoint3d& ptB);
-  static EoGePoint3d Mid(EoGePoint3d& ptA, EoGePoint3d& ptB);
-  static EoGePoint3d Min(EoGePoint3d& ptA, EoGePoint3d& ptB);
+  [[nodiscard]] static EoGePoint3d Max(const EoGePoint3d& a, const EoGePoint3d& b);
+
+  static EoGePoint3d Mid(const EoGePoint3d& a, const EoGePoint3d& b);
+
+  [[nodiscard]] static EoGePoint3d Min(const EoGePoint3d& a, const EoGePoint3d& b);
 };

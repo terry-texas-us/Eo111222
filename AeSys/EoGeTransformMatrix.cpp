@@ -1,6 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <cfloat>
 #include <cmath>
 
 #include "Eo.h"
@@ -86,13 +85,13 @@ EoGeTransformMatrix::EoGeTransformMatrix(EoGePoint3d referencePoint, EoGeVector3
   EoGeVector3d yAxisTransformed = yAxis;
   yAxisTransformed = *this * yAxisTransformed;
 
-  if (fabs(yAxisTransformed.y) <= DBL_EPSILON) { return; }
+  if (fabs(yAxisTransformed.y) <= Eo::geometricTolerance) { return; }
 
   scaleVector.y = 1.0 / yAxisTransformed.y;
   scaleVector.z = 1.0;
 
   // Add shear to matrix which gets positive y-axis reference vector as y-axis
-  if (fabs(yAxisTransformed.x) > DBL_EPSILON) {
+  if (fabs(yAxisTransformed.x) > Eo::geometricTolerance) {
     double shearFactor = -yAxisTransformed.x / yAxisTransformed.y;
     for (int i = 0; i < 4; i++) { m_4X4[0][i] += m_4X4[1][i] * shearFactor; }
   }
@@ -156,20 +155,20 @@ void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(EoGePoint3d refe
   double zNormalAbs = fabs(normal.z);
 
   double d = 0.0;
-  if (zNormalAbs <= DBL_EPSILON) {
+  if (zNormalAbs <= Eo::geometricTolerance) {
     d = yNormalAbs;
-  } else if (yNormalAbs <= DBL_EPSILON) {
+  } else if (yNormalAbs <= Eo::geometricTolerance) {
     d = zNormalAbs;
   } else {
     d = sqrt(yNormalAbs * yNormalAbs + zNormalAbs * zNormalAbs);
   }
 
   EoGeTransformMatrix transformMatrix;
-  if (d > DBL_EPSILON) {
+  if (d > Eo::geometricTolerance) {
     transformMatrix.XAxisRotation(normal.y / d, normal.z / d);
     *this *= transformMatrix;
   }
-  if (fabs(normal.x) > DBL_EPSILON) {
+  if (fabs(normal.x) > Eo::geometricTolerance) {
     transformMatrix.YAxisRotation(-normal.x, d);
     *this *= transformMatrix;
   }

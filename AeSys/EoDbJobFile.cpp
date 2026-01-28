@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cfloat>
 #include <cmath>
 #include <string>
 
@@ -490,7 +489,7 @@ EoDbPolygon::EoDbPolygon(EoUInt8* buffer, int version) {
         m_vPosXAx.z = 0.;
         m_vPosYAx.z = 0.;
 
-        if (fabs(dXScal) > FLT_EPSILON && fabs(dYScal) > FLT_EPSILON) {  // Have 2 hatch lines
+        if (fabs(dXScal) > Eo::geometricTolerance && fabs(dYScal) > Eo::geometricTolerance) {  // Have 2 hatch lines
           m_InteriorStyleIndex = 2;
           m_vPosXAx.x = cos(dAng);
           m_vPosXAx.y = sin(dAng);
@@ -498,7 +497,7 @@ EoDbPolygon::EoDbPolygon(EoUInt8* buffer, int version) {
           m_vPosYAx.y = m_vPosXAx.x;
           m_vPosXAx *= dXScal * 1.e-3;
           m_vPosYAx *= dYScal * 1.e-3;
-        } else if (fabs(dXScal) > FLT_EPSILON) {  // Vertical hatch lines
+        } else if (fabs(dXScal) > Eo::geometricTolerance) {  // Vertical hatch lines
           m_InteriorStyleIndex = 1;
           m_vPosXAx.x = cos(dAng + Eo::HalfPi);
           m_vPosXAx.y = sin(dAng + Eo::HalfPi);
@@ -621,7 +620,7 @@ EoDbText::EoDbText(EoUInt8* buffer, int version) {
     double Angle = ((CVaxFloat*)&buffer[28])->Convert();
     Angle = std::min(std::max(Angle, -Eo::TwoPi), Eo::TwoPi);
 
-    if (fabs(Angle) > FLT_EPSILON) {
+    if (fabs(Angle) > Eo::geometricTolerance) {
       EoGeVector3d XDirection(m_ReferenceSystem.XDirection());
       XDirection = RotateVectorAboutZAxis(XDirection, Angle);
       m_ReferenceSystem.SetXDirection(XDirection);

@@ -1,7 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <cfloat>
-
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDbBlock.h"
@@ -60,8 +58,8 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
 
   EoGeTransformMatrix tm;
 
-  EoGePoint3d ptMin(FLT_MAX, FLT_MAX, FLT_MAX);
-  EoGePoint3d ptMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+  EoGePoint3d ptMin(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
+  EoGePoint3d ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
   block->GetExtents(activeView, ptMin, ptMax, tm);
 
@@ -112,8 +110,8 @@ void WndProcPreviewUpdateLayer(HWND previewWindow, EoDbGroupList* groups) {
 
   EoGeTransformMatrix tm;
 
-  EoGePoint3d ptMin(FLT_MAX, FLT_MAX, FLT_MAX);
-  EoGePoint3d ptMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+  EoGePoint3d ptMin(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
+  EoGePoint3d ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
   groups->GetExtents(activeView, ptMin, ptMax, tm);
 

@@ -1,7 +1,6 @@
 ﻿#include "Stdafx.h"
 
 #include <DirectXMath.h>
-#include <cfloat>
 
 #include "EoGeMatrix.h"
 #include "EoGePoint3d.h"

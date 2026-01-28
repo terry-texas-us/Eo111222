@@ -1,7 +1,6 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <climits>
 #include <cmath>
 #include <cstdlib>
@@ -224,7 +223,7 @@ EoDbConic::EoDbConic(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d en
 
   double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
 
-  if (fabs(determinant) > DBL_EPSILON) {  // Three points are not colinear
+  if (fabs(determinant) > Eo::geometricTolerance) {  // Three points are not colinear
     double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
 
     m_center.x = (pt[1].x - pt[1].y * dT) * 0.5;
@@ -296,7 +295,7 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, double radius, double startAngle
   // Compute CCW sweep from start to end in range (0, 2*pi] (canonical representation: positive = CCW sweep)
   double sweepAngle = normalizedEndAngle - normalizedStartAngle;
   if (sweepAngle < 0.0) sweepAngle += Eo::TwoPi;
-  if (fabs(sweepAngle) < DBL_EPSILON) sweepAngle = Eo::TwoPi;  // identical => full circle
+  if (fabs(sweepAngle) < Eo::geometricTolerance) { sweepAngle = Eo::TwoPi; }  // identical => full circle
   m_sweepAngle = sweepAngle;
 
   // Build major axis vector from center to start point
@@ -407,13 +406,13 @@ void EoDbConic::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupList*
   dRel[0] = SweepAngleToPoint(pt[0]) / m_sweepAngle;
   dRel[1] = SweepAngleToPoint(pt[1]) / m_sweepAngle;
 
-  if (dRel[0] <= DBL_EPSILON && dRel[1] >= 1.0 - DBL_EPSILON) {  // Put entire arc in trap
+  if (dRel[0] <= Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance) {  // Put entire arc in trap
     pArc = this;
   } else {  // Something gets cut
     auto normal = CrossProduct(m_majorAxis, MinorAxis());
     normal.Normalize();
 
-    if (fabs(m_sweepAngle - Eo::TwoPi) <= DBL_EPSILON) {  // Closed arc
+    if (fabs(m_sweepAngle - Eo::TwoPi) <= Eo::geometricTolerance) {  // Closed arc
       m_sweepAngle = (dRel[1] - dRel[0]) * Eo::TwoPi;
 
       m_majorAxis.RotAboutArbAx(normal, dRel[0] * Eo::TwoPi);
@@ -430,7 +429,7 @@ void EoDbConic::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupList*
       double dAng1 = dRel[0] * m_sweepAngle;
       double dAng2 = dRel[1] * m_sweepAngle;
 
-      if (dRel[0] > DBL_EPSILON && dRel[1] < 1.0 - DBL_EPSILON) {  // Cut section out of middle
+      if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
         pArc->SetSweepAngle(dAng1);
         groups->AddTail(new EoDbGroup(pArc));
 
@@ -441,7 +440,7 @@ void EoDbConic::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupList*
 
         m_majorAxis.RotAboutArbAx(normal, m_sweepAngle);
         m_sweepAngle = dSwpAng - dAng2;
-      } else if (dRel[1] < 1.0 - DBL_EPSILON) {  // Cut section in two and place begin section in trap
+      } else if (dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section in two and place begin section in trap
         pArc->SetSweepAngle(dAng2);
 
         m_majorAxis.RotAboutArbAx(normal, dAng2);
@@ -756,7 +755,7 @@ int EoDbConic::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptI
 
   if (!(CrossProduct(EoGeVector3d::positiveUnitZ, normal)).IsNearNull()) { return 0; }
 
-  if (fabs(m_majorAxis.Length() - MinorAxis().Length()) > FLT_EPSILON) { return 0; }
+  if (fabs(m_majorAxis.Length() - MinorAxis().Length()) > Eo::geometricTolerance) { return 0; }
 
   EoGePoint3d ptMin, ptMax;
 
@@ -871,7 +870,7 @@ int EoDbConic::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptI
       }
     }
   }
-  if (fabs(m_sweepAngle - Eo::TwoPi) <= DBL_EPSILON) {  // Arc is a circle in disuise
+  if (fabs(m_sweepAngle - Eo::TwoPi) <= Eo::geometricTolerance) {  // Arc is a circle in disuise
 
   } else {
     if (ptBeg.x >= ptLL.x && ptBeg.x <= ptUR.x && ptBeg.y >= ptLL.y && ptBeg.y <= ptUR.y) {  // Add beg point to int set

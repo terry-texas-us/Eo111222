@@ -1,7 +1,6 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <cmath>
 
 #include "AeSys.h"
@@ -56,17 +55,17 @@ bool pFndCPGivRadAnd4Pts(double radius, EoGePoint3d arLn1Beg, EoGePoint3d arLn1E
 
   EoGeVector3d v1(arLn1Beg, arLn1End);  // Determine vector defined by endpoints of first line
   dV1Mag = v1.Length();
-  if (dV1Mag <= DBL_EPSILON) return false;
+  if (dV1Mag <= Eo::geometricTolerance) return false;
 
   EoGeVector3d v2(arLn2Beg, arLn2End);
   dV2Mag = v2.Length();
-  if (dV2Mag <= DBL_EPSILON) return false;
+  if (dV2Mag <= Eo::geometricTolerance) return false;
 
   auto normal = CrossProduct(v1, v2);  // Determine vector normal to tangent vectors
   normal.Normalize();
   if (normal.IsNearNull()) return false;
 
-  if (fabs((DotProduct(normal, EoGeVector3d(arLn1Beg, arLn2Beg)))) > DBL_EPSILON)  // Four points are not coplanar
+  if (fabs((DotProduct(normal, EoGeVector3d(arLn1Beg, arLn2Beg)))) > Eo::geometricTolerance)  // Four points are not coplanar
     return false;
 
   EoGeTransformMatrix tm(arLn1Beg, normal);

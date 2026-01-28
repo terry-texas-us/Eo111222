@@ -1,6 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <cfloat>
 #include <climits>
 #include <cmath>
 
@@ -84,19 +83,19 @@ void EoDbLine::CutAt2Pts(EoGePoint3d* points, EoDbGroupList* groups, EoDbGroupLi
   m_ln.RelOfPtToEndPts(points[0], dRel[0]);
   m_ln.RelOfPtToEndPts(points[1], dRel[1]);
 
-  if (dRel[0] <= DBL_EPSILON && dRel[1] >= 1.0 - DBL_EPSILON) {
+  if (dRel[0] <= Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance) {
     // The two points effectively cover the whole line. No cutting. Put entire line in trap.
     line = this;
   } else {  // Something gets cut
     line = new EoDbLine(*this);
-    if (dRel[0] > DBL_EPSILON && dRel[1] < 1.0 - DBL_EPSILON) {  // Cut section out of middle
+    if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
       line->BeginPoint(points[1]);
       groups->AddTail(new EoDbGroup(line));
       line = new EoDbLine(*this);
       line->BeginPoint(points[0]);
       line->EndPoint(points[1]);
       EndPoint(points[0]);
-    } else if (dRel[1] < 1.0 - DBL_EPSILON) {  // Cut in two and place begin section in trap
+    } else if (dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut in two and place begin section in trap
       line->EndPoint(points[1]);
       BeginPoint(points[1]);
     } else {  // Cut in two and place end section in trap
