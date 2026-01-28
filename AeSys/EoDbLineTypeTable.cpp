@@ -167,9 +167,9 @@ int EoDbLineTypeTable::ReferenceCount(EoInt16 lineType) {
   EoDbBlock* Block;
 
   CBlocks* BlocksTable = document->BlocksTable();
-  auto Position = BlocksTable->GetStartPosition();
-  while (Position != nullptr) {
-    BlocksTable->GetNextAssoc(Position, Key, Block);
+  auto position = BlocksTable->GetStartPosition();
+  while (position != nullptr) {
+    BlocksTable->GetNextAssoc(position, Key, Block);
     Count += Block->GetLineTypeRefCount(lineType);
   }
   return (Count);
@@ -228,9 +228,9 @@ void EoDbLineTypeTable::RemoveAll() {
   CString name;
   EoDbLineType* lineType;
 
-  auto Position = m_MapLineTypes.GetStartPosition();
-  while (Position) {
-    m_MapLineTypes.GetNextAssoc(Position, name, lineType);
+  auto position = m_MapLineTypes.GetStartPosition();
+  while (position) {
+    m_MapLineTypes.GetNextAssoc(position, name, lineType);
     delete lineType;
   }
   m_MapLineTypes.RemoveAll();

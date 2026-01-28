@@ -10,7 +10,7 @@
 void AeSysView::OnTrapModeRemoveAdd() { app.OnTrapCommandsAddGroups(); }
 
 void AeSysView::OnTrapModePoint() {
-  auto* Document = GetDocument();
+  auto* document = GetDocument();
 
   auto cursorPosition = GetCursorPosition();
 
@@ -19,13 +19,13 @@ void AeSysView::OnTrapModePoint() {
 
   EoDbPolygon::EdgeToEvaluate() = 0;
 
-  auto Position = GetFirstVisibleGroupPosition();
-  while (Position != nullptr) {
-    auto* Group = GetNextVisibleGroup(Position);
+  auto position = GetFirstVisibleGroupPosition();
+  while (position != nullptr) {
+    auto* Group = GetNextVisibleGroup(position);
 
-    if (Document->FindTrappedGroup(Group) != 0) continue;
+    if (document->FindTrappedGroup(Group) != 0) continue;
 
-    if (Group->SelectUsingPoint_(this, ptView)) { Document->AddGroupToTrap(Group); }
+    if (Group->SelectUsingPoint_(this, ptView)) { document->AddGroupToTrap(Group); }
   }
   UpdateStateInformation(TrapCount);
 }
@@ -40,19 +40,19 @@ void AeSysView::OnTrapModeStitch() {
 
     if (m_PreviousPnt == pt) return;
 
-    auto* Document = GetDocument();
+    auto* document = GetDocument();
 
     EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(pt)};
 
     ModelViewTransformPoints(2, ptView);
 
-    auto Position = GetFirstVisibleGroupPosition();
-    while (Position != 0) {
-      auto* Group = GetNextVisibleGroup(Position);
+    auto position = GetFirstVisibleGroupPosition();
+    while (position != nullptr) {
+      auto* Group = GetNextVisibleGroup(position);
 
-      if (Document->FindTrappedGroup(Group) != 0) continue;
+      if (document->FindTrappedGroup(Group) != 0) continue;
 
-      if (Group->SelectUsingLine(this, ptView[0], ptView[1])) { Document->AddGroupToTrap(Group); }
+      if (Group->SelectUsingLine(this, ptView[0], ptView[1])) { document->AddGroupToTrap(Group); }
     }
     RubberBandingDisable();
     ModeLineUnhighlightOp(m_PreviousOp);
@@ -69,7 +69,7 @@ void AeSysView::OnTrapModeField() {
     auto cursorPosition = GetCursorPosition();
     if (m_PreviousPnt == cursorPosition) return;
 
-    auto* Document = GetDocument();
+    auto* document = GetDocument();
 
     EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(cursorPosition)};
 
@@ -78,13 +78,13 @@ void AeSysView::OnTrapModeField() {
     EoGePoint3d ptMin = EoGePoint4d::Min(ptView[0], ptView[1]);
     EoGePoint3d ptMax = EoGePoint4d::Max(ptView[0], ptView[1]);
 
-    auto Position = GetFirstVisibleGroupPosition();
-    while (Position != 0) {
-      auto* Group = GetNextVisibleGroup(Position);
+    auto position = GetFirstVisibleGroupPosition();
+    while (position != nullptr) {
+      auto* Group = GetNextVisibleGroup(position);
 
-      if (Document->FindTrappedGroup(Group) != 0) continue;
+      if (document->FindTrappedGroup(Group) != 0) continue;
 
-      if (Group->SelectUsingRectangle(this, ptMin, ptMax)) { Document->AddGroupToTrap(Group); }
+      if (Group->SelectUsingRectangle(this, ptMin, ptMax)) { document->AddGroupToTrap(Group); }
     }
     RubberBandingDisable();
     ModeLineUnhighlightOp(m_PreviousOp);
@@ -93,14 +93,14 @@ void AeSysView::OnTrapModeField() {
 }
 
 void AeSysView::OnTrapModeLast() {
-  auto* Document = GetDocument();
+  auto* document = GetDocument();
 
-  auto Position = Document->GetLastWorkLayerGroupPosition();
-  while (Position != 0) {
-    auto* Group = Document->GetPreviousWorkLayerGroup(Position);
+  auto position = document->GetLastWorkLayerGroupPosition();
+  while (position != nullptr) {
+    auto* Group = document->GetPreviousWorkLayerGroup(position);
 
-    if (!Document->FindTrappedGroup(Group)) {
-      Document->AddGroupToTrap(Group);
+    if (!document->FindTrappedGroup(Group)) {
+      document->AddGroupToTrap(Group);
       UpdateStateInformation(TrapCount);
       break;
     }
@@ -109,14 +109,14 @@ void AeSysView::OnTrapModeLast() {
 
 void AeSysView::OnTrapModeEngage() {
   if (GroupIsEngaged()) {
-    auto* Document = GetDocument();
+    auto* document = GetDocument();
 
-    auto Position = Document->FindWorkLayerGroup(EngagedGroup());
+    auto position = document->FindWorkLayerGroup(EngagedGroup());
 
-    auto* Group = Document->GetNextWorkLayerGroup(Position);
+    auto* Group = document->GetNextWorkLayerGroup(position);
 
-    if (Document->FindTrappedGroup(Group) == 0) {
-      Document->AddGroupToTrap(Group);
+    if (document->FindTrappedGroup(Group) == 0) {
+      document->AddGroupToTrap(Group);
       UpdateStateInformation(TrapCount);
     }
   } else {
@@ -149,7 +149,7 @@ void AeSysView::OnTrapModeEscape() {
 void AeSysView::OnTraprModeRemoveAdd() { app.OnTrapCommandsAddGroups(); }
 
 void AeSysView::OnTraprModePoint() {
-  auto* Document = GetDocument();
+  auto* document = GetDocument();
 
   EoGePoint3d cursorPosition = GetCursorPosition();
 
@@ -158,13 +158,13 @@ void AeSysView::OnTraprModePoint() {
 
   EoDbPolygon::EdgeToEvaluate() = 0;
 
-  auto Position = Document->GetFirstTrappedGroupPosition();
-  while (Position != 0) {
-    auto* Group = Document->GetNextTrappedGroup(Position);
+  auto position = document->GetFirstTrappedGroupPosition();
+  while (position != nullptr) {
+    auto* Group = document->GetNextTrappedGroup(position);
 
     if (Group->SelectUsingPoint_(this, ptView)) {
-      Document->RemoveTrappedGroupAt(Document->FindTrappedGroup(Group));
-      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      document->RemoveTrappedGroupAt(document->FindTrappedGroup(Group));
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
   }
   UpdateStateInformation(TrapCount);
@@ -179,19 +179,19 @@ void AeSysView::OnTraprModeStitch() {
     EoGePoint3d cursorPosition = GetCursorPosition();
 
     if (m_PreviousPnt == cursorPosition) return;
-    auto* Document = GetDocument();
+    auto* document = GetDocument();
 
     EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(cursorPosition)};
 
     ModelViewTransformPoints(2, ptView);
 
-    auto Position = Document->GetFirstTrappedGroupPosition();
-    while (Position != 0) {
-      auto* Group = Document->GetNextTrappedGroup(Position);
+    auto position = document->GetFirstTrappedGroupPosition();
+    while (position != nullptr) {
+      auto* Group = document->GetNextTrappedGroup(position);
 
       if (Group->SelectUsingLine(this, ptView[0], ptView[1])) {
-        Document->RemoveTrappedGroupAt(Document->FindTrappedGroup(Group));
-        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+        document->RemoveTrappedGroupAt(document->FindTrappedGroup(Group));
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
     }
     RubberBandingDisable();
@@ -209,7 +209,7 @@ void AeSysView::OnTraprModeField() {
     auto cursorPosition = GetCursorPosition();
     if (m_PreviousPnt == cursorPosition) { return; }
 
-    auto* Document = GetDocument();
+    auto* document = GetDocument();
 
     EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(cursorPosition)};
 
@@ -218,13 +218,13 @@ void AeSysView::OnTraprModeField() {
     EoGePoint3d ptMin = EoGePoint4d::Min(ptView[0], ptView[1]);
     EoGePoint3d ptMax = EoGePoint4d::Max(ptView[0], ptView[1]);
 
-    auto Position = Document->GetFirstTrappedGroupPosition();
-    while (Position != 0) {
-      auto* Group = Document->GetNextTrappedGroup(Position);
+    auto position = document->GetFirstTrappedGroupPosition();
+    while (position != nullptr) {
+      auto* Group = document->GetNextTrappedGroup(position);
 
       if (Group->SelectUsingRectangle(this, ptMin, ptMax)) {
-        Document->RemoveTrappedGroupAt(Document->FindTrappedGroup(Group));
-        Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+        document->RemoveTrappedGroupAt(document->FindTrappedGroup(Group));
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
     }
     RubberBandingDisable();
@@ -233,11 +233,11 @@ void AeSysView::OnTraprModeField() {
   }
 }
 void AeSysView::OnTraprModeLast() {
-  auto* Document = GetDocument();
+  auto* document = GetDocument();
 
-  if (!Document->IsTrapEmpty()) {
-    auto* Group = Document->RemoveLastTrappedGroup();
-    Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+  if (!document->IsTrapEmpty()) {
+    auto* Group = document->RemoveLastTrappedGroup();
+    document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     UpdateStateInformation(TrapCount);
   }
 }

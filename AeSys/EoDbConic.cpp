@@ -87,7 +87,6 @@ CString EoDbConic::SubClassName(double ratio, double startAngle, double endAngle
   }
 }
 
-
 EoDbConic* EoDbConic::CreateCircle(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius) {
   auto* circle = new EoDbConic(center, extrusion, radius, 0.0, Eo::TwoPi);
   circle->SetColor(pstate.PenColor());
@@ -114,7 +113,6 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, d
       m_endAngle(endAngle) {}
 
 ///////////
-
 
 /**
  * @brief Constructs a circle (as ellipse) primitive defined by a center point and radius in the current view.
@@ -308,25 +306,28 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, double radius, double startAngle
 }
 
 /** 
- * @brief Constructs an ellipse segment defined by a center point, major and minor axes, and a sweep angle.
+ * @brief Constructs an conic primitive defined by a center point, major and minor axes, and a sweep angle.
  *
- * This constructor initializes an ellipse segment using the specified pen color, line type, center point,
- * major axis, minor axis, and sweep angle.
+ * This constructor initializes a conic primitive using the specified pen color, line type, center point,
+ * major axis, minor axis, and sweep angle from legacy peg ellipse primitive.
  *
- * @param color The pen color for the ellipse.
- * @param lineType The line type index for the ellipse.
  * @param center The center point of the ellipse.
  * @param majorAxis The major axis vector of the ellipse.
  * @param minorAxis The minor axis vector of the ellipse.
  * @param sweepAngle The sweep angle of the ellipse segment in radians.
+ * @param color The pen color for the ellipse.
+ * @param lineType The line type index for the ellipse.
  */
-/*
-EoDbConic::EoDbConic(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle,
-                     EoInt16 color, EoInt16 lineType)
-    : EoDbPrimitive(color, lineType), m_center(center), m_majorAxis(majorAxis), m_minorAxis(minorAxis) {
-  m_sweepAngle = sweepAngle;
+EoDbConic::EoDbConic(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle)
+    : m_center(center),
+      m_majorAxis(majorAxis),
+      m_extrusion(CrossProduct(majorAxis, minorAxis)),
+      m_ratio(minorAxis.Length() / majorAxis.Length()),
+      m_startAngle(0.0),
+      m_endAngle(sweepAngle) {
+  m_extrusion.Normalize();
 }
-*/
+
 EoDbConic::EoDbConic(const EoDbConic& other)
     : EoDbPrimitive(other),
       m_center(other.m_center),

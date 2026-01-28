@@ -12,7 +12,6 @@
 #include "EoDbBlockReference.h"
 #include "EoDbConic.h"
 #include "EoDbDimension.h"
-#include "EoDbEllipse.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbHeaderSection.h"
@@ -365,9 +364,9 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
   CString Name;
   EoDbBlock* Block;
 
-  auto Position = document->GetFirstBlockPosition();
-  while (Position != 0) {
-    document->GetNextBlock(Position, Name, Block);
+  auto position = document->GetFirstBlockPosition();
+  while (position != nullptr) {
+    document->GetNextBlock(position, Name, Block);
 
     ULONGLONG SavedFilePosition = CFile::GetPosition();
     EoDb::Write(*this, EoUInt16(0));
@@ -401,9 +400,9 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
     if (Layer->IsInternal()) {
       EoDb::Write(*this, EoUInt16(Layer->GetCount()));
 
-      auto Position = Layer->GetHeadPosition();
-      while (Position != 0) {
-        auto* Group = Layer->GetNext(Position);
+      auto position = Layer->GetHeadPosition();
+      while (position != nullptr) {
+        auto* Group = Layer->GetNext(position);
         Group->Write(*this);
       }
     } else
@@ -597,16 +596,26 @@ void EoDb::ConstructConicPrimitive(CFile& file, EoDbPrimitive*& /* primitive */)
   primitive->SetLineTypeIndex(lineTypeIndex);
 }
 
+/**
+ * Constructs a ellipse (now conic) primitive.
+ *
+ * @param file The `peg` file to read the ellipse data from.
+ * @param primitive A reference to a pointer that will hold the constructed conic primitive.
+ */
 void EoDb::ConstructEllipsePrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 PenColor = EoDb::ReadInt16(file);
-  EoInt16 LineType = EoDb::ReadInt16(file);
-  EoGePoint3d CenterPoint(ReadPoint3d(file));
-  EoGeVector3d MajorAxis(ReadVector3d(file));
-  EoGeVector3d MinorAxis(ReadVector3d(file));
-  double SweepAngle;
-  EoDb::Read(file, SweepAngle);
-  primitive = new EoDbEllipse(CenterPoint, MajorAxis, MinorAxis, SweepAngle, PenColor, LineType);
+  EoInt16 color = EoDb::ReadInt16(file);
+  EoInt16 lineTypeIndex = EoDb::ReadInt16(file);
+  EoGePoint3d center(ReadPoint3d(file));
+  EoGeVector3d majorAxis(ReadVector3d(file));
+  EoGeVector3d minorAxis(ReadVector3d(file));
+  double sweepAngle;
+  EoDb::Read(file, sweepAngle);
+  primitive = new EoDbConic(center, majorAxis, minorAxis, sweepAngle);
+
+  primitive->SetColor(color);
+  primitive->SetLineTypeIndex(lineTypeIndex);
 }
+
 void EoDb::ConstructLinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoInt16 PenColor = EoDb::ReadInt16(file);
   EoInt16 LineType = EoDb::ReadInt16(file);

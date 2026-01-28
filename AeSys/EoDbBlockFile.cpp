@@ -89,9 +89,9 @@ void EoDbBlockFile::WriteBlocks(CBlocks& blocks) {
   CString Key;
   EoDbBlock* Block;
 
-  auto Position = blocks.GetStartPosition();
-  while (Position != nullptr) {
-    blocks.GetNextAssoc(Position, Key, Block);
+  auto position = blocks.GetStartPosition();
+  while (position != nullptr) {
+    blocks.GetNextAssoc(position, Key, Block);
     WriteBlock(Key, Block);
   }
   EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));

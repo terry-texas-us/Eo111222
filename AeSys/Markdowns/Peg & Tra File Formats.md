@@ -101,9 +101,9 @@
       Type code <0x0100>     uint16_t  [0-1]
       Pen color              uint16_t  [2-3]
       Point style            uint16_t  [4-5] (Point style follows PDMODE in AutoCAD, 0 is dot, 1 is not visible, 2 is plus, 3 is cross, and 4 = vertical bar)
-      Point                  point3d   [6-9][10-13][14-17]
-      Number of data values  uint16_t  [18-19]
-      {0 or more data values}double    [20-]
+      Point                  point3d   [6-13][14-21][22-29]
+      Number of data values  uint16_t  [30-31]
+      {0 or more data values}double    []
 
 #### Insert primitive
       Type code <0x0101>     uint16_t  [0-1]
@@ -137,8 +137,8 @@
       Type code <0x0200>     uint16_t  [0-1]
       Pen color              uint16_t  [2-3]
       Line type              uint16_t  [4-5]
-      Line begin             point3d   [6-9][10-13][14-17]
-      Line end               point3d   [18-21][22-25][26-29]
+      Line begin             point3d   
+      Line end               point3d   
 
 #### Polygon primitive
       Type code <0x0400>     uint16_t  [0-1]
@@ -146,21 +146,21 @@
       Polygon style          uint16_t  [4-5]
       Polygon Style Index    uint16_t  [6-7]
       Number of vertices     uint16_t  [8-9]
-      Hatch origin           point3d   [10-13][14-17][18-21]
+      Hatch origin           point3d   
       Hatch/pattern 
-         reference x-axis    vector3d  [22-25][26-29][30-33]
+         reference x-axis    vector3d  
       Hatch/pattern 
-         reference y-axis    vector3d  [34-37][38-41][42-45]
+         reference y-axis    vector3d  
       {0 or more points}     point3d   [46-]
 
 #### Ellipse primitive
       Type code <0x1003>     uint16_t  [0-1]
       Pen color              uint16_t  [2-3]
       Line type              uint16_t  [4-5]
-      Center point           point3d   [6-9][10-13][14-17]
-      Major axis             vector3d  [18-21][22-25][26-29]
-      Minor axis             vector3d  [30-33][34-37][38-41]
-      Sweep angle            double    [42-45]
+      Center point           point3d   
+      Major axis             vector3d  
+      Minor axis             vector3d  
+      Sweep angle            double    
 
 #### Spline primitive
       Type code <0x2000>     uint16_t  [0-1]
@@ -169,7 +169,7 @@
       Number of control 
          points              uint16_t  [6-7]
       {0 or more control
-         points}             point3d   [8-]
+         points}             point3d   
 
 #### CSpline primitive (This primitive may still exist in some files and is readable but is converted on the read to a Polyline primitive and is never written to file.
       Type code <0x2001>     uint16_t  [0-1]
@@ -180,11 +180,11 @@
          points              uint16_t  [8-9]
       End condition Type     uint16_t  [10-11]
       Begin point tangent
-         vector              vector3d  [12-15][16-19][20-23]
+         vector              vector3d  
       End point tangent
-         vector              vector3d  [24-27][28-31][32-35]
+         vector              vector3d  
       {0 or more control 
-      points}                point3d   [36-]
+      points}                point3d   
 
 #### Polyline primitive (never made it release: if already written flags not streamed)
       Type code <0x2002>     uint16_t  [0-1]
@@ -192,7 +192,7 @@
       Line type              uint16_t  [4-5]
       Flags                  uint16_t  [6-7]
       Number of points       uint16_t  [8-9]
-      {0 or more points}     point3d   [10-]
+      {0 or more points}     point3d   
 
 #### Text primitive
       Type code <0x4000>     uint16_t  [0-1]
@@ -214,19 +214,19 @@
       Type code <0x4100>     uint16_t  [0-1]
       Pen color              uint16_t  [2-3]
       Point style            uint16_t  [4-5]
-      Point                  point3d   [6-9][10-13][14-17]
+      Point                  point3d   
 
 #### Dim primitive
       Type code <0x4200>     uint16_t  [0-1]
       Pen color              uint16_t  [2-3]
       Line type              uint16_t  [4-5]
-      Line begin             point3d   [6-9][10-13][14-17]
-      Line end               point3d   [18-21][22-25][26-29]
+      Line begin             point3d   
+      Line end               point3d   
 
       Text pen color         uint16_t  [30-31]
       Font definition
       Text precision         uint16_t  [32-33]
-      Text font name         string    [34
+      Text font name         string    
       Text path              uint16_t
       Horizontal alignment   uint16_t
       Vertical alignment     uint16_t

@@ -649,8 +649,8 @@ int AeSysDoc::RemoveEmptyNotesAndDelete() {
   CString Key;
   EoDbBlock* Block;
 
-  auto Position = m_BlocksTable.GetStartPosition();
-  while (Position != nullptr) { m_BlocksTable.GetNextAssoc(Position, Key, Block); }
+  auto position = m_BlocksTable.GetStartPosition();
+  while (position != nullptr) { m_BlocksTable.GetNextAssoc(position, Key, Block); }
   return (iCount);
 }
 int AeSysDoc::RemoveEmptyGroups() {
@@ -666,8 +666,8 @@ int AeSysDoc::RemoveEmptyGroups() {
   CString Key;
   EoDbBlock* Block;
 
-  auto Position = m_BlocksTable.GetStartPosition();
-  while (Position != nullptr) { m_BlocksTable.GetNextAssoc(Position, Key, Block); }
+  auto position = m_BlocksTable.GetStartPosition();
+  while (position != nullptr) { m_BlocksTable.GetNextAssoc(position, Key, Block); }
   return (iCount);
 }
 // Work Layer interface
@@ -1559,16 +1559,16 @@ void AeSysDoc::OnToolsPrimitiveDelete() {
   auto* Group = activeView->SelectGroupAndPrimitive(pt);
 
   if (Group != 0) {
-    auto Position = FindTrappedGroup(Group);
+    auto position = FindTrappedGroup(Group);
 
-    LPARAM lHint = (Position != 0) ? EoDb::kGroupEraseSafeTrap : EoDb::kGroupEraseSafe;
+    LPARAM lHint = (position != nullptr) ? EoDb::kGroupEraseSafeTrap : EoDb::kGroupEraseSafe;
     // erase entire group even if group has more than one primitive
     UpdateAllViews(nullptr, lHint, Group);
 
     if (Group->GetCount() > 1) {  // remove primitive from group
       EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
       Group->FindAndRemovePrim(Primitive);
-      lHint = (Position != 0) ? EoDb::kGroupSafeTrap : EoDb::kGroupSafe;
+      lHint = (position != nullptr) ? EoDb::kGroupSafeTrap : EoDb::kGroupSafe;
       // display the group with the primitive removed
       UpdateAllViews(nullptr, lHint, Group);
       // new group required to allow primitive to be placed into deleted group list
@@ -1920,13 +1920,13 @@ int AeSysDoc::RemoveUniquePoint(const EoGePoint3d& point) {
 
   auto UniquePointPosition = GetFirstUniquePointPosition();
   while (UniquePointPosition != 0) {
-    auto Position = UniquePointPosition;
+    auto position = UniquePointPosition;
     EoGeUniquePoint* UniquePoint = GetNextUniquePoint(UniquePointPosition);
     if (point == UniquePoint->m_Point) {
       References = --(UniquePoint->m_References);
 
       if (References == 0) {
-        RemoveUniquePointAt(Position);
+        RemoveUniquePointAt(position);
         delete UniquePoint;
       }
       break;

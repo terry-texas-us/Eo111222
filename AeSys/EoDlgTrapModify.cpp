@@ -37,9 +37,9 @@ void EoDlgTrapModify::OnOK() {
   CDialog::OnOK();
 }
 void EoDlgTrapModify::ModifyPolygons() {
-  auto Position = m_Document->GetFirstTrappedGroupPosition();
-  while (Position != 0) {
-    auto* Group = m_Document->GetNextTrappedGroup(Position);
+  auto position = m_Document->GetFirstTrappedGroupPosition();
+  while (position != nullptr) {
+    auto* Group = m_Document->GetNextTrappedGroup(position);
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {

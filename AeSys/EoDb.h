@@ -65,6 +65,7 @@ void ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructConicPrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive);
+
 void ConstructEllipsePrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructLinePrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructPointPrimitive(CFile& file, EoDbPrimitive*& primitive);

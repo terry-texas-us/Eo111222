@@ -289,9 +289,9 @@ void AeSysView::OnLpdModeSize() {
   double dAng = 0.;
   if (m_EndCapPoint != 0) {
     if (m_EndCapPoint->Color() == 15 && m_EndCapPoint->PointStyle() == 8) {
-      auto Position = m_EndCapGroup->Find(m_EndCapPoint);
-      m_EndCapGroup->GetNext(Position);
-      EoDbLine* pLine = static_cast<EoDbLine*>(m_EndCapGroup->GetAt(Position));
+      auto position = m_EndCapGroup->Find(m_EndCapPoint);
+      m_EndCapGroup->GetNext(position);
+      EoDbLine* pLine = static_cast<EoDbLine*>(m_EndCapGroup->GetAt(position));
       EoGeLine Line = pLine->Ln();
       dAng = fmod(Line.AngleFromXAxisXY(), Eo::Pi);
       if (dAng <= Eo::Radian) { dAng += Eo::Pi; }
@@ -473,22 +473,7 @@ void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionRe
                        ContinueGroup, CurrentSection, group);
   }
   if (m_GenerateTurningVanes) {
-    /*
-		EoGePoint3dArray Points;
-		Points.SetSize(5);
-
-		auto* document = GetDocument();
-    Points[2] = rPar[0][1].ProjectToward(rPar[1][1], dEcc2 * m_PreviousSection.Width());
-		EoGeLine(Points[2], rPar[1][1]).ProjPtFrom_xy(0.0, m_DuctSeamSize, &Points[3]);
-		dDSiz = dDSiz / m_PreviousSection.Width() * m_PreviousSection.Width();
-		EoGeLine(Points[2], rPar[1][1]).ProjPtFrom_xy(0.0, dDSiz + m_DuctSeamSize, &Points[4]);
-		auto* Group = new EoDbGroup;
-		document->AddWorkLayerGroup(Group);
-		Group->AddTail(new EoDbLine(1, pstate.LineType(), lnLead[0], Points[2]));
-		Group->AddTail(new EoDbEllipse(1, pstate.LineType(), Points[3], 0.01));
-		Group->AddTail(new EoDbLine(1, pstate.LineType(), Points[3], Points[4]));
-		document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
-*/
+    // TODO: Generate the splitter damper similar the one in `GenerateRectangulasrTap`
   }
 }
 

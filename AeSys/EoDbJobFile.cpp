@@ -265,7 +265,7 @@ void EoDbJobFile::WriteLayer(CFile& file, EoDbLayer* layer) {
   layer->BreakPolylines();
 
   auto Position = layer->GetHeadPosition();
-  while (Position != 0) {
+  while (Position != nullptr) {
     auto* Group = layer->GetNext(Position);
     WriteGroup(file, Group);
   }
@@ -275,7 +275,7 @@ void EoDbJobFile::WriteGroup(CFile& file, EoDbGroup* group) {
   *((EoUInt16*)&m_PrimBuf[1]) = EoUInt16(group->GetCount());
 
   auto Position = group->GetHeadPosition();
-  while (Position != 0) {
+  while (Position != nullptr) {
     EoDbPrimitive* Primitive = group->GetNext(Position);
     Primitive->Write(file, m_PrimBuf);
   }

@@ -14,9 +14,9 @@ int AeSysDoc::GetBlockReferenceCount(const CString& name) {
   CString Key;
   EoDbBlock* Block;
 
-  auto Position = m_BlocksTable.GetStartPosition();
-  while (Position != nullptr) {
-    m_BlocksTable.GetNextAssoc(Position, Key, Block);
+  auto position = m_BlocksTable.GetStartPosition();
+  while (position != nullptr) {
+    m_BlocksTable.GetNextAssoc(position, Key, Block);
     Count += Block->GetBlockRefCount(name);
   }
   return (Count);

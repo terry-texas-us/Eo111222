@@ -49,9 +49,9 @@ BOOL EoDlgSetupLineType::OnInitDialog() {
 }
 
 void EoDlgSetupLineType::OnOK() {
-  auto Position = m_LineTypesListControl.GetFirstSelectedItemPosition();
-  if (Position != nullptr) {
-    int Item = m_LineTypesListControl.GetNextSelectedItem(Position);
+  auto position = m_LineTypesListControl.GetFirstSelectedItemPosition();
+  if (position != nullptr) {
+    int Item = m_LineTypesListControl.GetNextSelectedItem(position);
     m_LineType = (EoDbLineType*)m_LineTypesListControl.GetItemData(Item);
   }
   CDialog::OnOK();

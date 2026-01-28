@@ -19,14 +19,14 @@ void AeSysView::OnModeGroupEdit() {
   }
 }
 void AeSysView::DoEditGroupCopy() {
-  auto* Document = GetDocument();
+  auto* document = GetDocument();
   if (m_SubModeEditGroup != 0) {
     auto* Group = new EoDbGroup(*m_SubModeEditGroup);
 
-    Document->AddWorkLayerGroup(Group);
+    document->AddWorkLayerGroup(Group);
     m_SubModeEditGroup = Group;
 
-    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
     m_tmEditSeg.Identity();
   }
 }
@@ -45,7 +45,7 @@ void AeSysView::DoEditGroupEscape() {
   }
 }
 void AeSysView::DoEditGroupTransform(EoUInt16 operation) {
-  auto* Document = GetDocument();
+  auto* document = GetDocument();
   if (m_SubModeEditGroup != 0) {
     EoGeTransformMatrix tm;
 
@@ -66,26 +66,26 @@ void AeSysView::DoEditGroupTransform(EoUInt16 operation) {
     }
     tm.Translate(-TranslateVector);
 
-    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
     m_SubModeEditGroup->Transform(tm);
-    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
 
     m_tmEditSeg *= tm;
   }
 }
 void AeSysView::PreviewGroupEdit() {
-  auto* Document = GetDocument();
+  auto* document = GetDocument();
   if (m_SubModeEditGroup != 0) {
     EoGeTransformMatrix tm;
     m_SubModeEditEndPoint = GetCursorPosition();
     tm.Translate(EoGeVector3d(m_SubModeEditBeginPoint, m_SubModeEditEndPoint));
 
-    if (app.IsTrapHighlighted() && Document->FindTrappedGroup(m_SubModeEditGroup) != 0) {
+    if (app.IsTrapHighlighted() && document->FindTrappedGroup(m_SubModeEditGroup) != 0) {
       EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor());
     }
-    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
     m_SubModeEditGroup->Transform(tm);
-    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
 
     EoDbPrimitive::SetSpecialColor(0);
 

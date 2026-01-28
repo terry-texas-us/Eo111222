@@ -575,15 +575,15 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     }
 #endif  // USING_Direct2D
 
-    auto* Document = GetDocument();
-    ASSERT_VALID(Document);
+    auto* document = GetDocument();
+    ASSERT_VALID(document);
     if (m_ViewRendered) {
     } else {
       BackgroundImageDisplay(deviceContext);
       DisplayGrid(deviceContext);
 
-      Document->DisplayAllLayers(this, deviceContext);
-      Document->DisplayUniquePoints();
+      document->DisplayAllLayers(this, deviceContext);
+      document->DisplayUniquePoints();
     }
     UpdateStateInformation(All);
     ModeLineDisplay();
@@ -1808,32 +1808,32 @@ void AeSysView::DeleteLastGroup() {
   if (m_VisibleGroupList.IsEmpty()) {
     app.AddStringToMessageList(IDS_MSG_NO_DET_GROUPS_IN_VIEW);
   } else {
-    auto* Document = GetDocument();
+    auto* document = GetDocument();
     auto* Group = m_VisibleGroupList.RemoveTail();
 
-    Document->AnyLayerRemove(Group);
-    if (Document->RemoveTrappedGroup(Group) != 0) {  // Display it normal color so the erase xor will work
-      Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+    document->AnyLayerRemove(Group);
+    if (document->RemoveTrappedGroup(Group) != 0) {  // Display it normal color so the erase xor will work
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       UpdateStateInformation(TrapCount);
     }
-    Document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
-    Document->DeletedGroupsAddHead(Group);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
+    document->DeletedGroupsAddHead(Group);
     app.AddStringToMessageList(IDS_SEG_DEL_TO_RESTORE);
   }
 }
 
 void AeSysView::BreakAllPolylines() {
-  auto Position = GetFirstVisibleGroupPosition();
-  while (Position != 0) {
-    auto* Group = GetNextVisibleGroup(Position);
+  auto position = GetFirstVisibleGroupPosition();
+  while (position != nullptr) {
+    auto* Group = GetNextVisibleGroup(position);
     Group->BreakPolylines();
   }
 }
 
 void AeSysView::BreakAllSegRefs() {
-  auto Position = GetFirstVisibleGroupPosition();
-  while (Position != 0) {
-    auto* Group = GetNextVisibleGroup(Position);
+  auto position = GetFirstVisibleGroupPosition();
+  while (position != nullptr) {
+    auto* Group = GetNextVisibleGroup(position);
     Group->BreakSegRefs();
   }
 }
@@ -1852,9 +1852,9 @@ EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
 
   EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
 
-  auto Position = GetFirstVisibleGroupPosition();
-  while (Position != 0) {
-    auto* Group = GetNextVisibleGroup(Position);
+  auto position = GetFirstVisibleGroupPosition();
+  while (position != nullptr) {
+    auto* Group = GetNextVisibleGroup(position);
     Primitive = Group->SelPrimAtCtrlPt(this, pt, &ptEng);
     if (Primitive != 0) {
       m_ptDet = ptEng;
@@ -1869,8 +1869,8 @@ EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
 EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& pt) {
   EoGePoint3d ptEng;
 
-  m_EngagedGroup = 0;
-  m_EngagedPrimitive = 0;
+  m_EngagedGroup = nullptr;
+  m_EngagedPrimitive = nullptr;
 
   EoGePoint4d ptView(pt);
   ModelViewTransformPoint(ptView);
@@ -1881,11 +1881,11 @@ EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& pt) {
 
   EoDbPolygon::EdgeToEvaluate() = 0;
 
-  auto Position = GetFirstVisibleGroupPosition();
-  while (Position != 0) {
-    auto* Group = GetNextVisibleGroup(Position);
-    EoDbPrimitive* Primitive = Group->SelPrimUsingPoint(this, ptView, dPicApert, ptEng);
-    if (Primitive != 0) {
+  auto position = GetFirstVisibleGroupPosition();
+  while (position != nullptr) {
+    auto* Group = GetNextVisibleGroup(position);
+    auto* Primitive = Group->SelPrimUsingPoint(this, ptView, dPicApert, ptEng);
+    if (Primitive != nullptr) {
       m_ptDet = ptEng;
       m_ptDet = tm * m_ptDet;
       m_EngagedGroup = Group;

@@ -23,7 +23,7 @@ EoGePoint3d previousPosition{};
 void AeSysView::OnCutModeOptions() {}
 
 void AeSysView::OnCutModeTorch() {
-  auto* Document = GetDocument();
+  auto* document = GetDocument();
 
   auto cursorPosition = GetCursorPosition();
   auto* groups = new EoDbGroupList;
@@ -47,16 +47,16 @@ void AeSysView::OnCutModeTorch() {
         auto* newGroup = new EoDbGroup;
 
         ptCut = transformMatrix * ptCut;
-        Document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, primitive);
+        document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, primitive);
         primitive->CutAtPt(ptCut, newGroup);
-        Document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, primitive);
+        document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, primitive);
         groups->AddTail(newGroup);
         break;
       }
     }
   }
-  Document->AddWorkLayerGroups(groups);
-  Document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, groups);
+  document->AddWorkLayerGroups(groups);
+  document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, groups);
   delete groups;
 }
 void AeSysView::OnCutModeSlice() {
@@ -69,7 +69,7 @@ void AeSysView::OnCutModeSlice() {
     EoGePoint3d pt1 = previousPosition;
     EoGePoint3d pt2 = cursorPosition;
 
-    auto* Document = GetDocument();
+    auto* document = GetDocument();
 
     EoDbGroupList* Groups = new EoDbGroupList;
 
@@ -85,7 +85,7 @@ void AeSysView::OnCutModeSlice() {
     while (GroupPosition != nullptr) {
       auto* Group = GetNextVisibleGroup(GroupPosition);
 
-      if (Document->FindTrappedGroup(Group) != 0) continue;
+      if (document->FindTrappedGroup(Group) != nullptr) { continue; }
 
       auto PrimitivePosition = Group->GetHeadPosition();
       while (PrimitivePosition != nullptr) {
@@ -98,15 +98,15 @@ void AeSysView::OnCutModeSlice() {
 
           intersections[w] = tm * intersections[w];
 
-          Document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, Primitive);
+          document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, Primitive);
           Primitive->CutAtPt(intersections[w], NewGroup);
-          Document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, Primitive);
+          document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, Primitive);
           Groups->AddTail(NewGroup);
         }
       }
     }
-    Document->AddWorkLayerGroups(Groups);
-    Document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, Groups);
+    document->AddWorkLayerGroups(Groups);
+    document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, Groups);
     delete Groups;
 
     RubberBandingDisable();
@@ -137,7 +137,7 @@ void AeSysView::OnCutModeField() {
     int iInts;
     EoGePoint3d ptInt[10]{};
 
-    auto* Document = GetDocument();
+    auto* document = GetDocument();
 
     EoInt16 color = pstate.PenColor();
     EoInt16 LineType = pstate.LineType();
@@ -149,7 +149,7 @@ void AeSysView::OnCutModeField() {
     for (posSeg = GetFirstVisibleGroupPosition(); (posSegPrv = posSeg) != 0;) {
       Group = GetNextVisibleGroup(posSeg);
 
-      if (Document->FindTrappedGroup(Group) != 0) continue;
+      if (document->FindTrappedGroup(Group) != nullptr) { continue; }
 
       POSITION PrimitivePosition, posPrimPrv;
       for (PrimitivePosition = Group->GetHeadPosition(); (posPrimPrv = PrimitivePosition) != 0;) {
@@ -165,20 +165,20 @@ void AeSysView::OnCutModeField() {
         }
       }
       if (Group->IsEmpty()) {  // seg was emptied remove from lists
-        Document->AnyLayerRemove(Group);
-        Document->RemoveGroupFromAllViews(Group);
+        document->AnyLayerRemove(Group);
+        document->RemoveGroupFromAllViews(Group);
         Group->DeletePrimitivesAndRemoveAll();
         delete Group;
       }
     }
 
     if (GroupsOut->GetCount() > 0) {
-      Document->AddWorkLayerGroups(GroupsOut);
-      Document->UpdateAllViews(nullptr, EoDb::kGroups, GroupsOut);
+      document->AddWorkLayerGroups(GroupsOut);
+      document->UpdateAllViews(nullptr, EoDb::kGroups, GroupsOut);
     }
     if (GroupsIn->GetCount() > 0) {
-      Document->AddWorkLayerGroups(GroupsIn);
-      Document->AddGroupsToTrap(GroupsIn);
+      document->AddWorkLayerGroups(GroupsIn);
+      document->AddGroupsToTrap(GroupsIn);
     }
     delete GroupsIn;
     delete GroupsOut;
@@ -190,6 +190,7 @@ void AeSysView::OnCutModeField() {
     ModeLineUnhighlightOp(previousKeyDown);
   }
 }
+
 void AeSysView::OnCutModeClip() {
   CDC* DeviceContext = GetDC();
   auto cursorPosition = GetCursorPosition();
@@ -208,7 +209,7 @@ void AeSysView::OnCutModeClip() {
     EoInt16 color = pstate.PenColor();
     EoInt16 LineType = pstate.LineType();
 
-    auto* Document = GetDocument();
+    auto* document = GetDocument();
 
     EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
 
@@ -225,7 +226,7 @@ void AeSysView::OnCutModeClip() {
     for (posSeg = GetFirstVisibleGroupPosition(); (posSegPrv = posSeg) != 0;) {
       auto* Group = GetNextVisibleGroup(posSeg);
 
-      if (Document->FindTrappedGroup(Group) != 0) continue;
+      if (document->FindTrappedGroup(Group) != nullptr) { continue; }
 
       POSITION posPrim1;
       POSITION posPrim2;
@@ -250,20 +251,20 @@ void AeSysView::OnCutModeClip() {
         Primitive->CutAt2Pts(ptCut, GroupsOut, GroupsIn);
       }
       if (Group->IsEmpty()) {  // seg was emptied remove from lists
-        Document->AnyLayerRemove(Group);
-        Document->RemoveGroupFromAllViews(Group);
+        document->AnyLayerRemove(Group);
+        document->RemoveGroupFromAllViews(Group);
         Group->DeletePrimitivesAndRemoveAll();
         delete Group;
       }
     }
     if (GroupsOut->GetCount() > 0) {
-      Document->AddWorkLayerGroups(GroupsOut);
-      Document->UpdateAllViews(nullptr, EoDb::kGroups, GroupsOut);
+      document->AddWorkLayerGroups(GroupsOut);
+      document->UpdateAllViews(nullptr, EoDb::kGroups, GroupsOut);
     }
     if (GroupsIn->GetCount() > 0) {
-      Document->AddWorkLayerGroups(GroupsIn);
-      Document->AddGroupsToTrap(GroupsIn);
-      Document->UpdateAllViews(nullptr, EoDb::kGroupsTrap, GroupsIn);
+      document->AddWorkLayerGroups(GroupsIn);
+      document->AddGroupsToTrap(GroupsIn);
+      document->UpdateAllViews(nullptr, EoDb::kGroupsTrap, GroupsIn);
     }
     delete GroupsIn;
     delete GroupsOut;

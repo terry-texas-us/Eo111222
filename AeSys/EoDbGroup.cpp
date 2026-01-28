@@ -54,10 +54,10 @@ HTREEITEM EoDbGroup::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   return treeItem;
 }
 void EoDbGroup::BreakPolylines() {
-  auto Position = GetHeadPosition();
-  while (Position != 0) {
-    auto PrimitivePosition = Position;
-    EoDbPrimitive* Primitive = GetNext(Position);
+  auto position = GetHeadPosition();
+  while (position != nullptr) {
+    auto PrimitivePosition = position;
+    EoDbPrimitive* Primitive = GetNext(position);
     if (Primitive->Is(EoDb::kPolylinePrimitive)) {
       EoInt16 color = Primitive->Color();
       EoInt16 LineType = Primitive->LineTypeIndex();
@@ -82,10 +82,10 @@ void EoDbGroup::BreakSegRefs() {
   int iSegRefs;
   do {
     iSegRefs = 0;
-    auto Position = GetHeadPosition();
-    while (Position != 0) {
-      auto PrimitivePosition = Position;
-      EoDbPrimitive* Primitive = GetNext(Position);
+    auto position = GetHeadPosition();
+    while (position != nullptr) {
+      auto PrimitivePosition = position;
+      EoDbPrimitive* Primitive = GetNext(position);
       if (Primitive->Is(EoDb::kGroupReferencePrimitive)) {
         iSegRefs++;
         EoDbBlock* block;
@@ -113,24 +113,24 @@ void EoDbGroup::Display(AeSysView* view, CDC* deviceContext) {
   }
 }
 POSITION EoDbGroup::FindAndRemovePrim(EoDbPrimitive* primitive) {
-  auto Position = Find(primitive);
+  auto position = Find(primitive);
 
-  if (Position != 0) RemoveAt(Position);
+  if (position != nullptr) RemoveAt(position);
 
-  return (Position);
+  return (position);
 }
 EoDbPoint* EoDbGroup::GetFirstDifferentPoint(EoDbPoint* pointPrimitive) {
-  auto Position = GetHeadPosition();
-  while (Position != 0) {
-    EoDbPrimitive* Primitive = GetNext(Position);
+  auto position = GetHeadPosition();
+  while (position != nullptr) {
+    EoDbPrimitive* Primitive = GetNext(position);
     if (Primitive != pointPrimitive && Primitive->Is(EoDb::kPointPrimitive)) { return (static_cast<EoDbPoint*>(Primitive)); }
   }
   return 0;
 }
 void EoDbGroup::InsertBefore(POSITION insertPosition, EoDbGroup* group) {
-  auto Position = group->GetHeadPosition();
-  while (Position != 0) {
-    EoDbPrimitive* Primitive = group->GetNext(Position);
+  auto position = group->GetHeadPosition();
+  while (position != nullptr) {
+    EoDbPrimitive* Primitive = group->GetNext(position);
     CObList::InsertBefore(insertPosition, (CObject*)Primitive);
   }
 }

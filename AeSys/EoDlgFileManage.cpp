@@ -127,9 +127,9 @@ BOOL EoDlgFileManage::OnInitDialog() {
   CString BlockName;
   EoDbBlock* Block;
 
-  auto Position = m_Document->GetFirstBlockPosition();
-  while (Position != nullptr) {
-    m_Document->GetNextBlock(Position, BlockName, Block);
+  auto position = m_Document->GetFirstBlockPosition();
+  while (position != nullptr) {
+    m_Document->GetNextBlock(position, BlockName, Block);
     if (!Block->IsAnonymous()) {
       int ItemIndex = m_BlocksList.AddString(BlockName);
       m_BlocksList.SetItemData(ItemIndex, DWORD_PTR(Block));
@@ -145,9 +145,9 @@ BOOL EoDlgFileManage::OnInitDialog() {
   return TRUE;
 }
 void EoDlgFileManage::OnBnClickedLayerRename() {
-  auto Position = m_LayersListControl.GetFirstSelectedItemPosition();
-  if (Position != nullptr) {
-    int Item = m_LayersListControl.GetNextSelectedItem(Position);
+  auto position = m_LayersListControl.GetFirstSelectedItemPosition();
+  if (position != nullptr) {
+    int Item = m_LayersListControl.GetNextSelectedItem(position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
 
     if (!Layer->Name().Compare(L"0")) {
@@ -172,9 +172,9 @@ void EoDlgFileManage::OnBnClickedLayerRename() {
   }
 }
 void EoDlgFileManage::OnBnClickedLayerMelt() {
-  auto Position = m_LayersListControl.GetFirstSelectedItemPosition();
-  if (Position != nullptr) {
-    int Item = m_LayersListControl.GetNextSelectedItem(Position);
+  auto position = m_LayersListControl.GetFirstSelectedItemPosition();
+  if (position != nullptr) {
+    int Item = m_LayersListControl.GetNextSelectedItem(position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
 
     CString LayerName = Layer->Name();
@@ -345,9 +345,9 @@ void EoDlgFileManage::OnLbnSelchangeTracingList() {
   }
 }
 void EoDlgFileManage::OnBnClickedMfcbuttonWork() {
-  auto Position = m_LayersListControl.GetFirstSelectedItemPosition();
-  if (Position != nullptr) {
-    int Item = m_LayersListControl.GetNextSelectedItem(Position);
+  auto position = m_LayersListControl.GetFirstSelectedItemPosition();
+  if (position != nullptr) {
+    int Item = m_LayersListControl.GetNextSelectedItem(position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
     EoDbLayer* PreviousWorkLayer = m_Document->SetWorkLayer(Layer);
 
@@ -377,9 +377,9 @@ void EoDlgFileManage::OnBnClickedMfcbuttonNew() {
   m_LayersListControl.SetItemData(ItemCount, DWORD_PTR(Layer));
 }
 void EoDlgFileManage::OnBnClickedMfcbuttonDel() {
-  auto Position = m_LayersListControl.GetFirstSelectedItemPosition();
-  if (Position != nullptr) {
-    int Item = m_LayersListControl.GetNextSelectedItem(Position);
+  auto position = m_LayersListControl.GetFirstSelectedItemPosition();
+  if (position != nullptr) {
+    int Item = m_LayersListControl.GetNextSelectedItem(position);
     EoDbLayer* Layer = (EoDbLayer*)m_LayersListControl.GetItemData(Item);
 
     if (Layer->Name() == L"0") {

@@ -32,9 +32,9 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
 
   CString Name;
   EoDbLineType* LineType;
-  auto Position = LineTypeTable->GetStartPosition();
-  while (Position) {
-    LineTypeTable->GetNextAssoc(Position, Name, LineType);
+  auto position = LineTypeTable->GetStartPosition();
+  while (position) {
+    LineTypeTable->GetNextAssoc(position, Name, LineType);
     m_FilterLineComboBoxControl.AddString(Name);
   }
   m_FilterLineComboBoxControl.SetCurSel(0);
