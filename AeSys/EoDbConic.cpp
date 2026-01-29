@@ -1064,3 +1064,47 @@ double EoDbConic::SweepAngleToPoint(EoGePoint3d point) {
   return (EoGeLine::AngleBetweenLn_xy(EoGeLine(EoGePoint3d::kOrigin, startPoint),
                                       EoGeLine(EoGePoint3d::kOrigin, endPoint)));
 }
+
+/** @brief Given a plane normal and three points (two outside and one inside), find the sweep angle defined by the three points about the center point.
+ * @param planeNormal Normal vector of the plane containing the points
+ * @param arP1 First outside point
+ * @param arP2 Inside point
+ * @param arP3 Second outside point
+ * @param center Center point about which to measure the sweep angle
+ * @param adTheta Sweep angle result
+ * @return TRUE if successful, FALSE if not.
+*/
+int SweepAngleFromNormalAnd3Points(EoGeVector3d normal, EoGePoint3d arP1, EoGePoint3d arP2, EoGePoint3d arP3,
+                                   EoGePoint3d& center, double* adTheta) {
+  double dT[3]{};
+  EoGePoint3d rR[3]{};
+
+  if (arP1 == center || arP2 == center || arP3 == center) { return (FALSE); }
+
+  // None of the points coincide with center point
+  EoGeTransformMatrix tm(center, normal);
+  rR[0] = arP1;
+  rR[1] = arP2;
+  rR[2] = arP3;
+  for (int i = 0; i < 3; i++) {  // Translate points into z=0 plane with center point at origin
+    rR[i] = tm * rR[i];
+    dT[i] = atan2(rR[i].y, rR[i].x);
+    if (dT[i] < 0.0) dT[i] += Eo::TwoPi;
+  }
+  double dTMin = std::min(dT[0], dT[2]);
+  double dTMax = std::max(dT[0], dT[2]);
+  if (fabs(dT[1] - dTMax) > Eo::geometricTolerance &&
+      fabs(dT[1] - dTMin) > Eo::geometricTolerance) {  // Inside line is not colinear with outside lines
+    double dTheta = dTMax - dTMin;
+    if (dT[1] > dTMin && dT[1] < dTMax) {
+      if (dT[0] == dTMax) dTheta = -dTheta;
+    } else {
+      dTheta = Eo::TwoPi - dTheta;
+      if (dT[2] == dTMax) dTheta = -dTheta;
+    }
+    *adTheta = dTheta;
+
+    return (TRUE);
+  }
+  return (FALSE);
+}

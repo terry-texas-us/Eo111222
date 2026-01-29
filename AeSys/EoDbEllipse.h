@@ -100,5 +100,3 @@ class EoDbEllipse : public EoDbPrimitive {
  private:
   static double NormalizeTo2Pi(double angle);
 };
-
-int SweepAngleFromNormalAnd3Points(EoGeVector3d, EoGePoint3d, EoGePoint3d, EoGePoint3d, EoGePoint3d&, double*);

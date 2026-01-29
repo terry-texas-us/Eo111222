@@ -32,6 +32,8 @@ class EoGeVector3d {
   [[nodiscard]] EoGeVector3d operator-(const EoGeVector3d& vector) const noexcept;
   [[nodiscard]] EoGeVector3d operator+(const EoGeVector3d& vector) const noexcept;
   [[nodiscard]] EoGeVector3d operator*(double t) const noexcept { return EoGeVector3d(x * t, y * t, z * t); }
+  
+  [[nodiscard]] EoGeVector3d operator/(double t) const;
 
   /** @brief Checks if the vector is a null vector. */
   [[nodiscard]] constexpr bool IsNearNull() const noexcept {

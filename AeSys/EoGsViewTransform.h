@@ -5,6 +5,11 @@
 
 class EoGsViewport;
 
+// View space, sometimes called camera space, is similar to world space in that it is typically used for the entire scene.
+// However, in view space, the origin is at the viewer or camera. The view direction (where the viewer is looking) defines the positive Z axis.
+// An "up" direction defined by the application becomes the positive Y axis.
+
+
 class EoGsViewTransform : public EoGsAbstractView {
   double m_UMin;
   double m_VMin;
@@ -34,8 +39,11 @@ class EoGsViewTransform : public EoGsAbstractView {
   void LoadIdentity();
   void ZAxisRotation(double dSinAng, double dCosAng);
   void Scale(EoGeVector3d scale);
-  /// <summary> Sets a window which is centered on the view target after adjusting for viewport aspect ratio</summary>
+
+  /** Sets a window which is centered on the view target after adjusting for viewport aspect ratio
+   */
   void SetCenteredWindow(const EoGsViewport& viewport, double uExtent, double vExtent);
+
   void SetMatrix(EoGeTransformMatrix& tm);
   void SetWindow(const double uMin, const double vMin, const double uMax, const double vMax);
   void TransformPoint(EoGePoint4d& point);

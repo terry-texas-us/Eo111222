@@ -10,7 +10,6 @@
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbConic.h"
 #include "EoDbDimension.h"
-#include "EoDbEllipse.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbLine.h"

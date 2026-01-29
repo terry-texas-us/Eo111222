@@ -9,7 +9,6 @@
 #include "Eo.h"
 #include "EoDb.h"
 #include "EoDbConic.h"
-#include "EoDbEllipse.h"
 #include "EoDbGroup.h"
 #include "EoDbLine.h"
 #include "EoDbPrimitive.h"
@@ -18,6 +17,7 @@
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "PrimState.h"
 #include "Resource.h"
 
 namespace {
@@ -36,7 +36,6 @@ EoDbGroup* pSegSec{};
 EoDbPrimitive* pPrimSec{};
 EoGeLine lnSec{};
 
-
 /** @brief Finds center point of a circle given radius and two tangent vectors.
  * @param radius The radius of the circle.
  * @param arLn1Beg The beginning point of the first line.
@@ -50,7 +49,8 @@ EoGeLine lnSec{};
  *       the tail of the second vector at the head of the first.
  * @return true if center point found, false otherwise.
  */
-bool pFndCPGivRadAnd4Pts(double radius, EoGePoint3d arLn1Beg, EoGePoint3d arLn1End, EoGePoint3d arLn2Beg, EoGePoint3d arLn2End, EoGePoint3d* centerPoint) {
+bool pFndCPGivRadAnd4Pts(double radius, EoGePoint3d arLn1Beg, EoGePoint3d arLn1End, EoGePoint3d arLn2Beg,
+                         EoGePoint3d arLn2End, EoGePoint3d* centerPoint) {
   double dA1, dA2, dB1, dB2, dC1RAB1, dC2RAB2, dDet, dSgnRad, dV1Mag, dV2Mag;
 
   EoGeVector3d v1(arLn1Beg, arLn1End);  // Determine vector defined by endpoints of first line
@@ -65,7 +65,8 @@ bool pFndCPGivRadAnd4Pts(double radius, EoGePoint3d arLn1Beg, EoGePoint3d arLn1E
   normal.Normalize();
   if (normal.IsNearNull()) return false;
 
-  if (fabs((DotProduct(normal, EoGeVector3d(arLn1Beg, arLn2Beg)))) > Eo::geometricTolerance)  // Four points are not coplanar
+  if (fabs((DotProduct(normal, EoGeVector3d(arLn1Beg, arLn2Beg)))) >
+      Eo::geometricTolerance)  // Four points are not coplanar
     return false;
 
   EoGeTransformMatrix tm(arLn1Beg, normal);
@@ -136,7 +137,8 @@ void AeSysView::OnFixupModeReference() {
     }
     if (PreviousFixupCommand == ID_OP2) {
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
-      if (EoGeVector3d(previousLine->EndPoint(), ptInt).Length() < EoGeVector3d(previousLine->EndPoint(), ptInt).Length())
+      if (EoGeVector3d(previousLine->EndPoint(), ptInt).Length() <
+          EoGeVector3d(previousLine->EndPoint(), ptInt).Length())
         previousLine->BeginPoint(ptInt);
       else
         previousLine->EndPoint(ptInt);
@@ -144,9 +146,11 @@ void AeSysView::OnFixupModeReference() {
     } else if (PreviousFixupCommand == ID_OP3) {
       if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
       lnPrv.end = ptInt;
-      if (EoGeVector3d(referenceLine.end, ptInt).Length() < EoGeVector3d(referenceLine.begin, ptInt).Length()) referenceLine.end = referenceLine.begin;
+      if (EoGeVector3d(referenceLine.end, ptInt).Length() < EoGeVector3d(referenceLine.begin, ptInt).Length())
+        referenceLine.end = referenceLine.begin;
       referenceLine.begin = ptInt;
-      if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, referenceLine.begin, referenceLine.end, &ptCP)) {
+      if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, referenceLine.begin, referenceLine.end,
+                              &ptCP)) {
         lnPrv.end = lnPrv.ProjPt(ptCP);
         referenceLine.begin = referenceLine.ProjPt(ptCP);
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
@@ -158,9 +162,11 @@ void AeSysView::OnFixupModeReference() {
     } else if (PreviousFixupCommand == ID_OP4) {
       if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
       lnPrv.end = ptInt;
-      if (EoGeVector3d(referenceLine.end, ptInt).Length() < EoGeVector3d(referenceLine.begin, ptInt).Length()) referenceLine.end = referenceLine.begin;
+      if (EoGeVector3d(referenceLine.end, ptInt).Length() < EoGeVector3d(referenceLine.begin, ptInt).Length())
+        referenceLine.end = referenceLine.begin;
       referenceLine.begin = ptInt;
-      if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, referenceLine.begin, referenceLine.end, &ptCP)) {
+      if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, referenceLine.begin, referenceLine.end,
+                              &ptCP)) {
         double dAng;
         lnPrv.end = lnPrv.ProjPt(ptCP);
         referenceLine.begin = referenceLine.ProjPt(ptCP);
@@ -187,7 +193,7 @@ void AeSysView::OnFixupModeReference() {
         auto* radialArc = new EoDbConic(ptCP, vMajAx, vMinAx, dAng);
         radialArc->SetColor(previousLine->Color());
         radialArc->SetLineTypeIndex(previousLine->LineTypeIndex());
-        
+
         auto* group = new EoDbGroup(radialArc);
         document->AddWorkLayerGroup(group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
@@ -204,18 +210,12 @@ void AeSysView::OnFixupModeMend() {
 
   EoGePoint3d ptInt;
   EoGePoint3d ptCP;
-
-  EoGeVector3d vMinAx;
-  EoGeVector3d vMajAx;
-  EoGeVector3d vPlnNorm;
-
-  EoDbLine* pLine;
-
+    
   pSegSec = SelectGroupAndPrimitive(cursorPosition);
-  if (pSegSec == 0) { return; }
+  if (pSegSec == nullptr) { return; }
   pPrimSec = EngagedPrimitive();
-  pLine = static_cast<EoDbLine*>(pPrimSec);
 
+  auto* pLine = static_cast<EoDbLine*>(pPrimSec);
   pLine->GetLine(lnSec);
 
   if (PreviousFixupCommand == 0) {
@@ -269,7 +269,6 @@ void AeSysView::OnFixupModeMend() {
       if (EoGeVector3d(lnSec.end, ptInt).Length() < EoGeVector3d(lnSec.begin, ptInt).Length()) lnSec.end = lnSec.begin;
       lnSec.begin = ptInt;
       if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, lnSec.begin, lnSec.end, &ptCP)) {
-        double dAng;
         pLine = static_cast<EoDbLine*>(pPrimPrv);
         lnPrv.end = lnPrv.ProjPt(ptCP);
         lnSec.begin = lnSec.ProjPt(ptCP);
@@ -278,15 +277,19 @@ void AeSysView::OnFixupModeMend() {
         pLine->EndPoint(lnPrv.end);
         EoGeVector3d rPrvEndInter(lnPrv.end, ptInt);
         EoGeVector3d rPrvEndSecBeg(lnPrv.end, lnSec.begin);
-        vPlnNorm = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
-        vPlnNorm.Normalize();
-        SweepAngleFromNormalAnd3Points(vPlnNorm, lnPrv.end, ptInt, lnSec.begin, ptCP, &dAng);
-        vMajAx = EoGeVector3d(ptCP, lnPrv.end);
-        EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, Eo::HalfPi);
-        vMinAx = EoGeVector3d(ptCP, rTmp);
+        EoGeVector3d normal = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
+        normal.Normalize();
+        double angle{};
+        SweepAngleFromNormalAnd3Points(normal, lnPrv.end, ptInt, lnSec.begin, ptCP, &angle);
+        auto majorAxis = EoGeVector3d(ptCP, lnPrv.end);
+        EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, normal, Eo::HalfPi);
+        auto minorAxis = EoGeVector3d(ptCP, rTmp);
 
+        auto* radialArc = new EoDbConic(ptCP, majorAxis, minorAxis, angle);
+        radialArc->SetColor(pstate.PenColor());
+        radialArc->SetLineTypeIndex(pstate.LineType());
 
-        pSegPrv->AddTail(new EoDbEllipse(ptCP, vMajAx, vMinAx, dAng));
+        pSegPrv->AddTail(radialArc);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
       }
     }
@@ -307,7 +310,6 @@ void AeSysView::OnFixupModeChamfer() {
   auto cursorPosition = GetCursorPosition();
 
   EoGePoint3d ptInt;
-  EoGePoint3d ptCP;
 
   EoGeVector3d vMinAx;
   EoGeVector3d vMajAx;
@@ -339,8 +341,9 @@ void AeSysView::OnFixupModeChamfer() {
     lnPrv.end = ptInt;
     if (EoGeVector3d(lnSec.end, ptInt).Length() < EoGeVector3d(lnSec.begin, ptInt).Length()) lnSec.end = lnSec.begin;
     lnSec.begin = ptInt;
-    if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, lnSec.begin, lnSec.end,
-                            &ptCP)) {  // Center point is defined .. determine arc endpoints
+    EoGePoint3d ptCP;
+    if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, lnSec.begin, lnSec.end, &ptCP)) {
+      // Center point is defined .. determine arc endpoints
       lnPrv.end = lnPrv.ProjPt(ptCP);
       lnSec.begin = lnSec.ProjPt(ptCP);
       if (PreviousFixupCommand == ID_OP1)
@@ -377,13 +380,8 @@ void AeSysView::OnFixupModeFillet() {
   auto cursorPosition = GetCursorPosition();
 
   EoGePoint3d ptInt;
-  EoGePoint3d ptCP;
 
-  EoGeVector3d vMinAx;
-  EoGeVector3d vMajAx;
-  EoGeVector3d vPlnNorm;
-
-  EoDbLine* pLine;
+  EoDbLine* pLine{};
 
   pSegSec = SelectGroupAndPrimitive(cursorPosition);
   pPrimSec = EngagedPrimitive();
@@ -409,8 +407,10 @@ void AeSysView::OnFixupModeFillet() {
     lnPrv.end = ptInt;
     if (EoGeVector3d(lnSec.end, ptInt).Length() < EoGeVector3d(lnSec.begin, ptInt).Length()) lnSec.end = lnSec.begin;
     lnSec.begin = ptInt;
-    if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, lnSec.begin, lnSec.end,
-                            &ptCP)) {  // Center point is defined .. determine arc endpoints
+
+    EoGePoint3d ptCP;
+    if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, lnSec.begin, lnSec.end, &ptCP)) {
+      // Center point is defined .. determine arc endpoints
       lnPrv.end = lnPrv.ProjPt(ptCP);
       lnSec.begin = lnSec.ProjPt(ptCP);
       if (PreviousFixupCommand == ID_OP1)
@@ -433,16 +433,22 @@ void AeSysView::OnFixupModeFillet() {
       pLine->BeginPoint(lnSec.begin);
       pLine->EndPoint(lnSec.end);
 
-      double dAng;
+      EoGeVector3d normal;
       EoGeVector3d rPrvEndInter(lnPrv.end, ptInt);
       EoGeVector3d rPrvEndSecBeg(lnPrv.end, lnSec.begin);
-      vPlnNorm = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
-      vPlnNorm.Normalize();
-      SweepAngleFromNormalAnd3Points(vPlnNorm, lnPrv.end, ptInt, lnSec.begin, ptCP, &dAng);
-      vMajAx = EoGeVector3d(ptCP, lnPrv.end);
-      EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, Eo::HalfPi);
-      vMinAx = EoGeVector3d(ptCP, rTmp);
-      pSegSec->AddTail(new EoDbEllipse(ptCP, vMajAx, vMinAx, dAng));
+      normal = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
+      normal.Normalize();
+      double angle;
+      SweepAngleFromNormalAnd3Points(normal, lnPrv.end, ptInt, lnSec.begin, ptCP, &angle);
+      auto majorAxis = EoGeVector3d(ptCP, lnPrv.end);
+      auto rTmp = lnPrv.end.RotateAboutAxis(ptCP, normal, Eo::HalfPi);
+      auto minorAxis = EoGeVector3d(ptCP, rTmp);
+
+      auto* radialArc = new EoDbConic(ptCP, majorAxis, minorAxis, angle);
+      radialArc->SetColor(pstate.PenColor());
+      radialArc->SetLineTypeIndex(pstate.LineType());
+
+      pSegSec->AddTail(radialArc);
 
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
     }

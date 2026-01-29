@@ -282,9 +282,14 @@ class AeSysView : public CView {
   void BackgroundImageDisplay(CDC* deviceContext);
   EoGeVector3d GetRelPos() const { return m_vRelPos; }
   bool ViewTrueTypeFonts() const { return m_ViewTrueTypeFonts; }
+
+  /** @brief Displays the odometer information showing the relative position from the grid origin to the current cursor position, 
+   * and optionally the line length and angle if in rubber band line mode.
+   */
   void DisplayOdometer();
-  /// <summary> Streams a sequence of characters as WM_KEYDOWN or WM_CHAR window messages.</summary>
-  /// <remarks> This is a legacy feature.</remarks>
+
+  /** Streams a sequence of characters as WM_KEYDOWN or WM_CHAR window messages.
+  */
   void DoCustomMouseClick(const CString& characters);
   void DoCameraRotate(int iDir);
   void DoWindowPan(double ratio);

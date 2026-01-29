@@ -1069,7 +1069,7 @@ void AeSysView::DisplayPixel(CDC* deviceContext, COLORREF cr, const EoGePoint3d&
 
 void AeSysView::DoCameraRotate(int rotationDirection) {
   try {
-    EoGeVector3d normal = m_ViewTransform.Target() - m_ViewTransform.Position();
+    auto normal = m_ViewTransform.Position() - m_ViewTransform.Target();
     normal.Normalize();
 
     auto u = CrossProduct(ViewUp(), normal);
@@ -1078,13 +1078,12 @@ void AeSysView::DoCameraRotate(int rotationDirection) {
     auto v = CrossProduct(normal, u);
     v.Normalize();
 
-    EoGePoint3d position = m_ViewTransform.Position();
-    EoGePoint3d target = m_ViewTransform.Target();
+    auto position = m_ViewTransform.Position();
+    auto target = m_ViewTransform.Target();
     switch (rotationDirection) {
-      case ID_CAMERA_ROTATELEFT: {
+      case ID_CAMERA_ROTATELEFT:
         position = position.RotateAboutAxis(target, v, Eo::DegreeToRadian(-10.0));
         break;
-      }
       case ID_CAMERA_ROTATERIGHT:
         position = position.RotateAboutAxis(target, v, Eo::DegreeToRadian(10.0));
         break;
@@ -1715,22 +1714,21 @@ static void DrawOdometerInView(AeSysView* view, CDC* context, AeSys::Units Units
 }
 #endif  // defined(LEGACY_ODOMETER)
 
-/// @brief Displays the odometer information showing the relative position from the grid origin to the current cursor position, and optionally the line length and angle if in rubber band line mode.
 void AeSysView::DisplayOdometer() {
   auto cursorPosition = GetCursorPosition();
 
-  m_vRelPos = GridOrign() - cursorPosition;
+  m_vRelPos = cursorPosition - GridOrign();
 
   if (m_ViewOdometer) {
-    AeSys::Units Units = app.GetUnits();
+    auto units = app.GetUnits();
 
     CString lengthText;
 
-    app.FormatLength(lengthText, Units, m_vRelPos.x);
+    app.FormatLength(lengthText, units, m_vRelPos.x);
     CString Position = lengthText.TrimLeft();
-    app.FormatLength(lengthText, Units, m_vRelPos.y);
+    app.FormatLength(lengthText, units, m_vRelPos.y);
     Position.Append(L", " + lengthText.TrimLeft());
-    app.FormatLength(lengthText, Units, m_vRelPos.z);
+    app.FormatLength(lengthText, units, m_vRelPos.z);
     Position.Append(L", " + lengthText.TrimLeft());
 
     if (m_RubberbandType == Lines) {
@@ -1738,7 +1736,7 @@ void AeSysView::DisplayOdometer() {
 
       auto lineLength = line.Length();
       auto angleInXYPlane = line.AngleFromXAxisXY();
-      app.FormatLength(lengthText, Units, lineLength);
+      app.FormatLength(lengthText, units, lineLength);
 
       CString angle;
       app.FormatAngle(angle, angleInXYPlane, 8, 3);
@@ -1748,7 +1746,7 @@ void AeSysView::DisplayOdometer() {
     auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
     mainFrame->SetPaneText(1, Position);
 #if defined(LEGACY_ODOMETER)
-    DrawOdometerInView(this, GetDC(), Units, m_vRelPos);
+    DrawOdometerInView(this, GetDC(), units, m_vRelPos);
 #endif  // defined(LEGACY_ODOMETER)
   }
 #if defined(USING_DDE)

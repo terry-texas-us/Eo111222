@@ -20,7 +20,12 @@ class EoGePoint3d {
   EoGePoint3d(const EoGePoint4d& initialPoint);
   EoGePoint3d(const DRW_Coord& initialPoint) : x(initialPoint.x), y(initialPoint.y), z(initialPoint.z) {}
 
- public:  // Operators
+ public:
+
+  /** Tests equality within geometric tolerance.
+   * @param point The point to compare against.
+   * @return true if points are equal within Eo::geometricTolerance.
+   */
   bool operator==(const EoGePoint3d& point) const;
   bool operator!=(const EoGePoint3d& point) const;
   void operator+=(const EoGeVector3d& vector);
@@ -30,22 +35,26 @@ class EoGePoint3d {
 
   void operator()(double xNew, double yNew, double zNew);
   
-  [[nodiscard]] EoGeVector3d operator-(const EoGePoint3d& q) const;
+  /** Subtracts another point from this point, resulting in a vector.
+   * @param p The point to subtract from this point.
+   * @return The vector resulting from the subtraction.
+   */
+  [[nodiscard]] EoGeVector3d operator-(const EoGePoint3d& p) const;
   
-  [[nodiscard]] EoGePoint3d operator-(const EoGeVector3d& vector) const;
-  [[nodiscard]] EoGePoint3d operator+(const EoGeVector3d& vector) const;
+  [[nodiscard]] EoGePoint3d operator-(const EoGeVector3d& u) const;
+  [[nodiscard]] EoGePoint3d operator+(const EoGeVector3d& u) const;
   [[nodiscard]] EoGePoint3d operator*(double t) const;
   
   [[nodiscard]] EoGePoint3d operator/(double t) const;
 
  public:
   /**Determines the distance to another point in 3D space.
-   * @param point The target point to measure the distance to.
+   * @param p The target point to measure the distance to.
    * @return The Euclidean distance between this point and the target point.
    */ 
-  double DistanceTo(const EoGePoint3d& point) const;
+  double DistanceTo(const EoGePoint3d& p) const;
   
-  [[nodiscard]] bool IsEqualTo(const EoGePoint3d& point, double tolerance) const;
+  [[nodiscard]] bool IsEqualTo(const EoGePoint3d& p, double tolerance) const;
   
   /** Determines if a point is contained by a window.
    * @param lowerLeftPoint The lower-left corner point of the window.
@@ -63,18 +72,18 @@ class EoGePoint3d {
    *         0x0010 - Below the rectangle
    *         0x0100 - Right of the rectangle
    *         0x1000 - Left of the rectangle
-   *         Combinations of these values indicate multiple relationships (e.g., 0x0101above and right).
+   *         Combinations of these values indicate multiple relationships (e.g., 0x0101 - above and right).
    */
   [[nodiscard]] int RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint,
                                             const EoGePoint3d& upperRightPoint) const;
   /**
-   * Projects this point toward or beyond point q by the specified distance.
+   * Projects this point toward or beyond point p by the specified distance.
    *
-   * @param q The target point defining direction vector to project toward.
-   * @param distance The magnitudde of the projection.
+   * @param p The target point defining direction vector to project toward.
+   * @param distance The magnitude of the projection.
    * @return The projected point or itself if the points coincide.
    */
-  EoGePoint3d ProjectToward(const EoGePoint3d& b, const double distance);
+  EoGePoint3d ProjectToward(const EoGePoint3d& p, const double distance);
   
   /** Rotates a point about another point and arbitrary axis in space.
    * @param referenceOrigin Point about which rotation will occur.
@@ -90,11 +99,11 @@ class EoGePoint3d {
 
  public:
   static const EoGePoint3d kOrigin;
-  static double Distance(const EoGePoint3d& a, const EoGePoint3d& b);
+  static double Distance(const EoGePoint3d& p, const EoGePoint3d& q);
 
-  [[nodiscard]] static EoGePoint3d Max(const EoGePoint3d& a, const EoGePoint3d& b);
+  [[nodiscard]] static EoGePoint3d Max(const EoGePoint3d& p, const EoGePoint3d& q);
 
-  static EoGePoint3d Mid(const EoGePoint3d& a, const EoGePoint3d& b);
+  static EoGePoint3d Mid(const EoGePoint3d& p, const EoGePoint3d& q);
 
-  [[nodiscard]] static EoGePoint3d Min(const EoGePoint3d& a, const EoGePoint3d& b);
+  [[nodiscard]] static EoGePoint3d Min(const EoGePoint3d& p, const EoGePoint3d& q);
 };

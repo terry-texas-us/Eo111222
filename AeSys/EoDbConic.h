@@ -264,3 +264,5 @@ public:
  private:
   static CString SubClassName(double ratio, double startAngle, double endAngle);
 };
+
+int SweepAngleFromNormalAnd3Points(EoGeVector3d, EoGePoint3d, EoGePoint3d, EoGePoint3d, EoGePoint3d&, double*);

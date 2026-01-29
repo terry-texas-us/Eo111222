@@ -289,7 +289,7 @@ EoGePoint3d EoGeLine::ProjPt(const EoGePoint3d& point) const {
   return (begin + vBegEnd);
 }
 
-EoGePoint3d EoGeLine::ProjectBeginPointToEndPoint(const double t) const { return begin + (begin - end) * t; }
+EoGePoint3d EoGeLine::ProjectBeginPointToEndPoint(const double t) const { return begin + (end - begin) * t; }
 
 int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistance, EoGePoint3d* projectedPoint) const {
   double dX = end.x - begin.x;

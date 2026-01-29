@@ -344,20 +344,26 @@ void EoDbJobFile::ConstructPrimitiveFromVersion1(EoDbPrimitive*& primitive) {
       throw L"Exception.FileJob: Invalid primitive type.";
   }
 }
+
 EoDbPrimitive* EoDbJobFile::ConvertEllipsePrimitive() {
-  EoInt16 PenColor = EoInt16(m_PrimBuf[6]);
-  EoInt16 LineType = EoInt16(m_PrimBuf[7]);
+  auto color = EoInt16(m_PrimBuf[6]);
+  auto lineTypeIndex = EoInt16(m_PrimBuf[7]);
 
-  EoGePoint3d CenterPoint = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
-  EoGeVector3d MajorAxis = ((CVaxVec*)&m_PrimBuf[20])->Convert();
-  EoGeVector3d MinorAxis = ((CVaxVec*)&m_PrimBuf[32])->Convert();
+  EoGePoint3d center = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
+  EoGeVector3d majorAxis = ((CVaxVec*)&m_PrimBuf[20])->Convert();
+  EoGeVector3d minorAxis = ((CVaxVec*)&m_PrimBuf[32])->Convert();
 
-  double SweepAngle = ((CVaxFloat*)&m_PrimBuf[44])->Convert();
+  double sweepAngle = ((CVaxFloat*)&m_PrimBuf[44])->Convert();
 
-  if (SweepAngle > Eo::TwoPi || SweepAngle < -Eo::TwoPi) SweepAngle = Eo::TwoPi;
+  if (sweepAngle > Eo::TwoPi || sweepAngle < -Eo::TwoPi) { sweepAngle = Eo::TwoPi; }
 
-  return new EoDbEllipse(CenterPoint, MajorAxis, MinorAxis, SweepAngle, PenColor, LineType);
+  auto* conic = new EoDbConic(center, majorAxis, minorAxis, sweepAngle);
+  conic->SetColor(color);
+  conic->SetLineTypeIndex(lineTypeIndex);
+
+  return conic;
 }
+
 EoDbPrimitive* EoDbJobFile::ConvertLinePrimitive() {
   EoInt16 PenColor = EoInt16(m_PrimBuf[6]);
   EoInt16 LineType = EoInt16(m_PrimBuf[7]);
@@ -382,33 +388,38 @@ EoDbPrimitive* EoDbJobFile::ConvertPointPrimitive() {
 
   return new EoDbPoint(PenColor, PointStyle, Point, 3, Data);
 }
+
 EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
-  EoInt16 PenColor = EoInt16(m_PrimBuf[4] & 0x000f);
-  EoInt16 LineType = EoInt16((m_PrimBuf[4] & 0x00ff) >> 4);
+  auto color = EoInt16(m_PrimBuf[4] & 0x000f);
+  auto lineTypeIndex = EoInt16((m_PrimBuf[4] & 0x00ff) >> 4);
 
-  EoGePoint3d BeginPoint(((CVaxFloat*)&m_PrimBuf[8])->Convert(), ((CVaxFloat*)&m_PrimBuf[12])->Convert(), 0.0);
-  BeginPoint *= 1.e-3;
+  EoGePoint3d begin(((CVaxFloat*)&m_PrimBuf[8])->Convert(), ((CVaxFloat*)&m_PrimBuf[12])->Convert(), 0.0);
+  begin *= 1.e-3;
 
-  EoGePoint3d CenterPoint(((CVaxFloat*)&m_PrimBuf[20])->Convert(), ((CVaxFloat*)&m_PrimBuf[24])->Convert(), 0.0);
-  CenterPoint *= 1.e-3;
+  EoGePoint3d center(((CVaxFloat*)&m_PrimBuf[20])->Convert(), ((CVaxFloat*)&m_PrimBuf[24])->Convert(), 0.0);
+  center *= 1.e-3;
 
-  double SweepAngle = ((CVaxFloat*)&m_PrimBuf[28])->Convert();
-  ;
+  double sweepAngle = ((CVaxFloat*)&m_PrimBuf[28])->Convert();
 
-  EoGeVector3d MajorAxis;
-  if (SweepAngle < 0.0) {
-    EoGePoint3d pt;
-    pt.x = (CenterPoint.x + ((BeginPoint.x - CenterPoint.x) * cos(SweepAngle) - (BeginPoint.y - CenterPoint.y) * sin(SweepAngle)));
-    pt.y = (CenterPoint.y + ((BeginPoint.x - CenterPoint.x) * sin(SweepAngle) + (BeginPoint.y - CenterPoint.y) * cos(SweepAngle)));
-    MajorAxis = CenterPoint - pt;
+  EoGeVector3d majorAxis;
+  if (sweepAngle < 0.0) {
+    EoGePoint3d point;
+    point.x = (center.x + ((begin.x - center.x) * cos(sweepAngle) - (begin.y - center.y) * sin(sweepAngle)));
+    point.y = (center.y + ((begin.x - center.x) * sin(sweepAngle) + (begin.y - center.y) * cos(sweepAngle)));
+    majorAxis = point - center;
   } else {
-    MajorAxis = CenterPoint - BeginPoint;
+    majorAxis = begin - center;
   }
-  auto MinorAxis = CrossProduct(EoGeVector3d::positiveUnitZ, MajorAxis);
-  SweepAngle = fabs(SweepAngle);
+  auto minorAxis = CrossProduct(EoGeVector3d::positiveUnitZ, majorAxis);
+  sweepAngle = fabs(sweepAngle);
 
-  return new EoDbEllipse(CenterPoint, MajorAxis, MinorAxis, SweepAngle, PenColor, LineType);
+  auto* conic = new EoDbConic(center, majorAxis, minorAxis, sweepAngle);
+  conic->SetColor(color);
+  conic->SetLineTypeIndex(lineTypeIndex);
+
+  return conic;
 }
+
 EoDbPrimitive* EoDbJobFile::ConvertVersion1LinePrimitive() {
   EoInt16 PenColor = EoInt16(m_PrimBuf[4] & 0x000f);
   EoInt16 LineType = EoInt16((m_PrimBuf[4] & 0x00ff) >> 4);
