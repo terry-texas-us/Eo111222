@@ -186,13 +186,20 @@ void AeSysView::OnDrawModeReturn() {
 
       if (NumberOfPoints == 1) { return; }
 
-      EoDbConic* conic = new EoDbConic(pts[0], pts[1], pts[2]);
-      if (conic->SweepAngle() == 0.0) {
-        delete conic;
+      auto* radialArc = EoDbConic::CreateRadialArcFrom3Points(pts[0], pts[1], pts[2]);
+      if (radialArc == nullptr) {
         app.AddStringToMessageList(IDS_MSG_PTS_COLINEAR);
         return;
       }
-      group = new EoDbGroup(conic);
+      radialArc->SetColor(pstate.PenColor());
+      radialArc->SetLineTypeIndex(pstate.LineType());
+
+      if (fabs(radialArc->SweepAngle()) < Eo::geometricTolerance) {
+        delete radialArc;
+        app.AddStringToMessageList(IDS_MSG_PTS_COLINEAR);
+        return;
+      }
+      group = new EoDbGroup(radialArc);
       break;
     }
     case ID_OP6:
@@ -320,7 +327,14 @@ void AeSysView::DoDrawModeMouseMove() {
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
       if (NumberOfPoints == 1) { m_PreviewGroup.AddTail(new EoDbPolyline(pts)); }
-      if (NumberOfPoints == 2) { m_PreviewGroup.AddTail(new EoDbConic(pts[0], pts[1], cursorPosition)); }
+      if (NumberOfPoints == 2) { 
+        auto radialArc = EoDbConic::CreateRadialArcFrom3Points(pts[0], pts[1], cursorPosition);
+        if (radialArc == nullptr) { break; }
+
+        radialArc->SetColor(pstate.PenColor());
+        radialArc->SetLineTypeIndex(pstate.LineType());
+        m_PreviewGroup.AddTail(radialArc);
+      }
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;
 

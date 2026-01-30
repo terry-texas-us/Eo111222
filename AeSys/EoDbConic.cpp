@@ -86,6 +86,21 @@ CString EoDbConic::SubClassName(double ratio, double startAngle, double endAngle
   }
 }
 
+// Private constructor with full validation
+EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis,
+                     double ratio, double startAngle, double endAngle)
+    : m_center(center),
+      m_majorAxis(majorAxis),
+      m_extrusion(extrusion),
+      m_ratio(ratio),
+      m_startAngle(startAngle),
+      m_endAngle(endAngle) {
+  // Validate inputs
+  ASSERT(m_majorAxis.Length() > Eo::geometricTolerance);
+  ASSERT(m_ratio > 0.0 && m_ratio <= 1.0 + Eo::numericEpsilon);
+  ASSERT(m_extrusion.Length() > Eo::geometricTolerance);
+}
+
 EoDbConic* EoDbConic::CreateCircle(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius) {
   auto* circle = new EoDbConic(center, extrusion, radius, 0.0, Eo::TwoPi);
   circle->SetColor(pstate.PenColor());
@@ -99,6 +114,105 @@ EoDbConic* EoDbConic::CreateCircleInView(const EoGePoint3d& center, double radiu
   cameraDirection.Normalize();
 
   return CreateCircle(center, cameraDirection, radius);
+}
+
+/**
+* @brief Creates a conic primitive from given parameters which are used to define deprecated ellipse primitive.
+* 
+* This function constructs an conic primitive using the specified center point, major axis vector,
+* minor axis vector, and sweep angle. The extrusion vector is computed as the cross product of the major
+* and minor axes, and the ratio of the minor axis length to the major axis length is calculated.
+* @param center The center point of the ellipse.
+* @param majorAxis The major axis vector of the ellipse.
+* @param minorAxis The minor axis vector of the ellipse.
+* @param sweepAngle The sweep angle of the ellipse in radians.
+* @return A pointer to the created EoDbConic primitive.
+*/
+EoDbConic* EoDbConic::CreateConicFromEllipsePrimitive(EoGePoint3d& center, EoGeVector3d& majorAxis,
+                                                      EoGeVector3d& minorAxis, double sweepAngle) {
+  EoGeVector3d extrusion{CrossProduct(majorAxis, minorAxis)};
+  extrusion.Normalize();
+
+  double ratio{minorAxis.Length() / majorAxis.Length()};
+
+  return new EoDbConic(center, extrusion, majorAxis, ratio, 0.0, sweepAngle);
+}
+
+EoDbConic* EoDbConic::CreateRadialArcFrom3Points(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end) {
+  EoGeVector3d startToIntermediate(start, intermediate);
+  EoGeVector3d startToEnd(start, end);
+  auto normal = CrossProduct(startToIntermediate, startToEnd);
+  normal.Normalize();
+
+  // Ensure extrusion points in positive Z direction
+  // If normal.z < 0, the arc is CW when viewed from +Z, so swap start/end to make it CCW
+  if (normal.z < 0.0) {
+    normal = -normal;
+    std::swap(start, end);  // Reverse arc direction to maintain CCW sweep
+  }
+
+  EoGeVector3d extrusion = normal;
+  double ratio{1.0};
+
+  // Build transformation matrix which will get int and end points to z=0 plane with beg point as origin
+  EoGeTransformMatrix transformMatrix(start, normal);
+
+  EoGePoint3d pt[3]{start, intermediate, end};
+  pt[1] = transformMatrix * pt[1];
+  pt[2] = transformMatrix * pt[2];
+
+  double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
+
+  if (fabs(determinant) > Eo::geometricTolerance) {  // Three points are not colinear
+    double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
+
+    EoGePoint3d center{(pt[1].x - pt[1].y * dT) * 0.5, (pt[1].y + pt[1].x * dT) * 0.5, 0.0};
+
+    transformMatrix = transformMatrix.Inverse();
+    center = transformMatrix * center;
+
+    // Recalculate in z=0 plane with center point at origin
+    transformMatrix = EoGeTransformMatrix(center, normal);
+
+    pt[0] = start;
+    pt[1] = intermediate;
+    pt[2] = end;
+
+    for (int i = 0; i < 3; i++) { pt[i] = transformMatrix * pt[i]; }
+
+    double radius = EoGeVector3d(EoGePoint3d::kOrigin, pt[0]).Length();
+
+    // Compute angles
+    double angles[3]{};
+    for (int i = 0; i < 3; i++) {
+      angles[i] = atan2(pt[i].y, pt[i].x);
+      if (angles[i] < 0.0) { angles[i] += Eo::TwoPi; }
+    }
+    double startAngle = angles[0];
+
+    // Calculate CCW sweep from start through intermediate to end
+    double sweepToIntermediate = angles[1] - angles[0];
+    if (sweepToIntermediate < 0.0) { sweepToIntermediate += Eo::TwoPi; }
+
+    double sweepToEnd = angles[2] - angles[0];
+    if (sweepToEnd < 0.0) { sweepToEnd += Eo::TwoPi; }
+
+    // Verify intermediate is between start and end in CCW direction
+    double totalSweep;
+    if (sweepToIntermediate < sweepToEnd) {
+      // Intermediate is correctly between start and end (CCW)
+      totalSweep = sweepToEnd;
+    } else {
+      // Intermediate is on the "long way" around, use the other direction
+      totalSweep = Eo::TwoPi - sweepToEnd;
+      totalSweep = -totalSweep;  // Make negative to indicate CW (which shouldn't happen after our flip)
+    }
+
+    double endAngle = startAngle + totalSweep;
+    EoGeVector3d majorAxis = ComputeArbitraryAxis(extrusion) * radius;
+    return new EoDbConic(center, extrusion, majorAxis, ratio, startAngle, endAngle);
+  }
+  return nullptr;
 }
 
 EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle,
@@ -187,6 +301,8 @@ EoDbConic::EoDbConic(EoGePoint3d& center, EoGePoint3d& start) {
   m_sweepAngle = Eo::TwoPi;
 }
 */
+
+/*
 EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis,
                      double ratio)
     : EoDbPrimitive(),
@@ -196,9 +312,10 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
       m_ratio(ratio),
       m_startAngle(0.0),
       m_endAngle(Eo::TwoPi) {}
+*/
 
-EoDbConic::EoDbConic(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end)
-    : EoDbPrimitive(pstate.PenColor(), pstate.LineType()) {
+/*
+EoDbConic::EoDbConic(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end) {
   EoGeVector3d startToIntermediate(start, intermediate);
   EoGeVector3d startToEnd(start, end);
   auto normal = CrossProduct(startToIntermediate, startToEnd);
@@ -273,7 +390,7 @@ EoDbConic::EoDbConic(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d en
     m_majorAxis = ComputeArbitraryAxis(m_extrusion) * radius;
   }
 }
-
+*/
 /**
  * @brief Constructs a radial arc defined by a center point, radius, start angle, and end angle.
  *
@@ -286,6 +403,7 @@ EoDbConic::EoDbConic(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d en
  * @param endAngle The ending angle of the arc in radians.
  * @note The sweep angle is computed to ensure a counter-clockwise direction.
  */
+/*
 EoDbConic::EoDbConic(const EoGePoint3d& center, double radius, double startAngle, double endAngle) {
   m_center = center;
 
@@ -303,7 +421,7 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, double radius, double startAngle
                          m_center.y + radius * sin(normalizedStartAngle), m_center.z);
   m_majorAxis = EoGeVector3d(m_center, startPoint);
 }
-
+*/
 /** 
  * @brief Constructs an conic primitive defined by a center point, major and minor axes, and a sweep angle.
  *
@@ -967,7 +1085,12 @@ void EoDbConic::Transform(EoGeTransformMatrix& transformationMatrix) {
   EoGeVector3d minorAxis = MinorAxis();
   m_ratio = minorAxis.Length() / m_majorAxis.Length();
   // if ratio is greater than zero, then major and minor axes need to be reversed. Are the start and end angles still valid?
-  if (m_ratio > 0.0) { m_majorAxis = minorAxis; }
+  if (m_ratio > 1.0) {
+    // Minor axis is longer than major axis, swap them
+    std::swap(m_majorAxis, minorAxis);
+    m_ratio = 1.0 / m_ratio;
+    // Angles may need to be adjusted, but this depends on transformation type
+  }
   m_extrusion.Normalize();
 }
 

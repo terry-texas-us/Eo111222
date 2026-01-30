@@ -15,12 +15,15 @@ constexpr double Radian = std::numbers::pi / 180.0;
 constexpr double DegreeToRadian(double angleInDegrees) noexcept { return angleInDegrees * Radian; }
 constexpr double RadianToDegree(double angleInRadians) noexcept { return angleInRadians * (180.0 / std::numbers::pi); }
 
-constexpr double generalTolerance = 1e-6;    // For general UI
-constexpr double geometricTolerance = 1e-9;  // For geometric calculations
-constexpr double preciseTolerance = 1e-12;   // For precise calculations
+// Absolute tolerances for geometric calculations
+constexpr double generalTolerance = 1e-6;    // For general UI, display rounding (device space)
+constexpr double geometricTolerance = 1e-9;  // For geometric calculations, point coincidence etc. (modelspace)
+
+// Machine epsilon for dimensionless comparisons
+constexpr double numericEpsilon = std::numeric_limits<double>::epsilon();
 
 // Practical bounds based on geometric tolerance - beyond these values, calculations may become unreliable
-constexpr double boundsMax = 1.0 / geometricTolerance; 
+constexpr double boundsMax = 1.0 / geometricTolerance;
 constexpr double boundsMin = -boundsMax;
 
 /** @brief Returns the sign of a number: -1 if negative, 1 if positive, 0 if zero. */

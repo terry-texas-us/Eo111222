@@ -20,77 +20,88 @@
 #include "PrimState.h"
 #include "Resource.h"
 
+/** @todo Color and lineType assignment for chamfer/fillet operations
+ *
+ * Determine color and lineTypeIndex for newly created chamfer/fillet primitives:
+ * - Option 1: Use global primitive state (pstate)
+ * - Option 2: Inherit from one of the two source lines
+ * 
+ * @attention If one line is a reference line, the non-reference line should 
+ * define properties.
+ * 
+ * @note When both lines are trimmed and have different properties, should we 
+ * prompt the user? Currently defaults to current line properties.
+ */
+
 namespace {
 
-EoUInt16 PreviousFixupCommand{};
+EoUInt16 previousCommand{};
 
-EoDbGroup* pSegPrv{};
-EoDbPrimitive* pPrimPrv{};
-EoGeLine lnPrv{};
+EoDbGroup* previousGroup{};
+EoDbPrimitive* previousPrimitive{};
+EoGeLine previousLine{};
 
-EoDbGroup* referenceBlock{};
+EoDbGroup* referenceGroup{};
 EoDbPrimitive* referencePrimitive{};
 EoGeLine referenceLine{};
 
-EoDbGroup* pSegSec{};
-EoDbPrimitive* pPrimSec{};
-EoGeLine lnSec{};
+EoDbGroup* currentGroup{};
+EoDbPrimitive* currentPrimitive{};
+EoGeLine currentLine{};
 
 /** @brief Finds center point of a circle given radius and two tangent vectors.
  * @param radius The radius of the circle.
- * @param arLn1Beg The beginning point of the first line.
- * @param arLn1End The ending point of the first line.
- * @param arLn2Beg The beginning point of the second line.
- * @param arLn2End The ending point of the second line.
- * @param centerPoint Output parameter that receives the center point of the circle.
+ * @param firstLine The first line.
+ * @param secondLine The second line.
+ * @param center Output parameter that receives the center point of the circle.
  * @note A radius and two lines define four center points.  The center point
  *       selected is on the concave side of the angle formed by the two vectors
  *       defined by the line endpoints.	These two vectors are oriented with
  *       the tail of the second vector at the head of the first.
  * @return true if center point found, false otherwise.
  */
-bool pFndCPGivRadAnd4Pts(double radius, EoGePoint3d arLn1Beg, EoGePoint3d arLn1End, EoGePoint3d arLn2Beg,
-                         EoGePoint3d arLn2End, EoGePoint3d* centerPoint) {
-  double dA1, dA2, dB1, dB2, dC1RAB1, dC2RAB2, dDet, dSgnRad, dV1Mag, dV2Mag;
+[[nodiscard]] bool FindCenterFromRadiusAnd4Points(double radius, EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d* center) {
+  EoGeVector3d u(firstLine.begin, firstLine.end);  // Determine vector defined by endpoints of first line
+  double firstLineLength = u.Length();
+  if (firstLineLength <= Eo::geometricTolerance) { return false; }
 
-  EoGeVector3d v1(arLn1Beg, arLn1End);  // Determine vector defined by endpoints of first line
-  dV1Mag = v1.Length();
-  if (dV1Mag <= Eo::geometricTolerance) return false;
+  EoGeVector3d v(secondLine.begin, secondLine.end);
+  double secondLineLength = v.Length();
+  if (secondLineLength <= Eo::geometricTolerance) { return false; }
 
-  EoGeVector3d v2(arLn2Beg, arLn2End);
-  dV2Mag = v2.Length();
-  if (dV2Mag <= Eo::geometricTolerance) return false;
-
-  auto normal = CrossProduct(v1, v2);  // Determine vector normal to tangent vectors
+  auto normal = CrossProduct(u, v);  // Determine vector normal to tangent vectors
   normal.Normalize();
-  if (normal.IsNearNull()) return false;
+  if (normal.IsNearNull()) { return false; }
 
-  if (fabs((DotProduct(normal, EoGeVector3d(arLn1Beg, arLn2Beg)))) >
-      Eo::geometricTolerance)  // Four points are not coplanar
+  if (fabs((DotProduct(normal, EoGeVector3d(firstLine.begin, secondLine.begin)))) > Eo::geometricTolerance) {
+    // Four points are not coplanar
     return false;
+  }
 
-  EoGeTransformMatrix tm(arLn1Beg, normal);
+  EoGeTransformMatrix tm(firstLine.begin, normal);
 
-  arLn1End = tm * arLn1End;
-  arLn2Beg = tm * arLn2Beg;
-  arLn2End = tm * arLn2End;
-  dA1 = -arLn1End.y / dV1Mag;
-  dB1 = arLn1End.x / dV1Mag;
-  v2.x = arLn2End.x - arLn2Beg.x;
-  v2.y = arLn2End.y - arLn2Beg.y;
-  dA2 = -v2.y / dV2Mag;
-  dB2 = v2.x / dV2Mag;
-  dDet = dA2 * dB1 - dA1 * dB2;
+  firstLine.end = tm * firstLine.end;
+  secondLine.begin = tm * secondLine.begin;
+  secondLine.end = tm * secondLine.end;
+  double dA1 = -firstLine.end.y / firstLineLength;
+  double dB1 = firstLine.end.x / firstLineLength;
+  v.x = secondLine.end.x - secondLine.begin.x;
+  v.y = secondLine.end.y - secondLine.begin.y;
+  double dA2 = -v.y / secondLineLength;
+  double dB2 = v.x / secondLineLength;
+  double dDet = dA2 * dB1 - dA1 * dB2;
 
-  dSgnRad = (arLn1End.x * arLn2End.y - arLn2End.x * arLn1End.y) >= 0. ? -fabs(radius) : fabs(radius);
+  double dSgnRad =
+      (firstLine.end.x * secondLine.end.y - secondLine.end.x * firstLine.end.y) >= 0. ? -fabs(radius) : fabs(radius);
 
-  dC1RAB1 = dSgnRad;
-  dC2RAB2 = (arLn2Beg.x * arLn2End.y - arLn2End.x * arLn2Beg.y) / dV2Mag + dSgnRad;
-  (*centerPoint).x = (dB2 * dC1RAB1 - dB1 * dC2RAB2) / dDet;
-  (*centerPoint).y = (dA1 * dC2RAB2 - dA2 * dC1RAB1) / dDet;
-  (*centerPoint).z = 0.;
+  double dC1RAB1 = dSgnRad;
+  double dC2RAB2 =
+      (secondLine.begin.x * secondLine.end.y - secondLine.end.x * secondLine.begin.y) / secondLineLength + dSgnRad;
+  (*center).x = (dB2 * dC1RAB1 - dB1 * dC2RAB2) / dDet;
+  (*center).y = (dA1 * dC2RAB2 - dA2 * dC1RAB1) / dDet;
+  (*center).z = 0.;
   tm.Inverse();
-  *centerPoint = tm * (*centerPoint);
+  *center = tm * (*center);
   return true;
 }
 }  // namespace
@@ -110,96 +121,89 @@ void AeSysView::OnFixupModeReference() {
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
 
-  EoGePoint3d ptInt;
-  EoGePoint3d ptCP;
+  EoGePoint3d center;
 
-  EoGeVector3d vMinAx;
-  EoGeVector3d vMajAx;
-  EoGeVector3d vPlnNorm;
-
-  if (referenceBlock != nullptr) { document->UpdateAllViews(nullptr, EoDb::kPrimitive, referencePrimitive); }
-  referenceBlock = SelectGroupAndPrimitive(cursorPosition);
-  if (referenceBlock == nullptr) { return; }
+  if (referenceGroup != nullptr) { document->UpdateAllViews(nullptr, EoDb::kPrimitive, referencePrimitive); }
+  referenceGroup = SelectGroupAndPrimitive(cursorPosition);
+  if (referenceGroup == nullptr) { return; }
   referencePrimitive = EngagedPrimitive();
   if (!referencePrimitive->Is(EoDb::kLinePrimitive)) { return; }
   cursorPosition = DetPt();
   static_cast<EoDbLine*>(referencePrimitive)->GetLine(referenceLine);
 
-  if (PreviousFixupCommand == 0)
-    PreviousFixupCommand = ModeLineHighlightOp(ID_OP1);
-  else if (PreviousFixupCommand == ID_OP1)
+  if (previousCommand == 0)
+    previousCommand = ModeLineHighlightOp(ID_OP1);
+  else if (previousCommand == ID_OP1)
     ;
   else {
-    auto* previousLine = static_cast<EoDbLine*>(pPrimPrv);
-    if (!EoGeLine::Intersection(lnPrv, referenceLine, ptInt)) {
+    auto* line = static_cast<EoDbLine*>(previousPrimitive);
+    EoGePoint3d intersection;
+    if (!EoGeLine::Intersection(previousLine, referenceLine, intersection)) {
       app.AddModeInformationToMessageList();
       return;
     }
-    if (PreviousFixupCommand == ID_OP2) {
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
-      if (EoGeVector3d(previousLine->EndPoint(), ptInt).Length() <
-          EoGeVector3d(previousLine->EndPoint(), ptInt).Length())
-        previousLine->BeginPoint(ptInt);
+    if (previousCommand == ID_OP2) {
+      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
+      if (EoGeVector3d(line->EndPoint(), intersection).Length() < EoGeVector3d(line->EndPoint(), intersection).Length())
+        line->BeginPoint(intersection);
       else
-        previousLine->EndPoint(ptInt);
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
-    } else if (PreviousFixupCommand == ID_OP3) {
-      if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
-      lnPrv.end = ptInt;
-      if (EoGeVector3d(referenceLine.end, ptInt).Length() < EoGeVector3d(referenceLine.begin, ptInt).Length())
+        line->EndPoint(intersection);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
+    } else if (previousCommand == ID_OP3) {
+      if (EoGeVector3d(previousLine.begin, intersection).Length() <
+          EoGeVector3d(previousLine.end, intersection).Length())
+        previousLine.begin = previousLine.end;
+      previousLine.end = intersection;
+      if (EoGeVector3d(referenceLine.end, intersection).Length() <
+          EoGeVector3d(referenceLine.begin, intersection).Length())
         referenceLine.end = referenceLine.begin;
-      referenceLine.begin = ptInt;
-      if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, referenceLine.begin, referenceLine.end,
-                              &ptCP)) {
-        lnPrv.end = lnPrv.ProjPt(ptCP);
-        referenceLine.begin = referenceLine.ProjPt(ptCP);
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
-        previousLine->BeginPoint(lnPrv.begin);
-        previousLine->EndPoint(lnPrv.end);
-        pSegPrv->AddTail(new EoDbLine(lnPrv.end, referenceLine.begin));
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
+      referenceLine.begin = intersection;
+      if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, referenceLine, &center)) {
+        previousLine.end = previousLine.ProjPt(center);
+        referenceLine.begin = referenceLine.ProjPt(center);
+        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
+        line->BeginPoint(previousLine.begin);
+        line->EndPoint(previousLine.end);
+        previousGroup->AddTail(new EoDbLine(previousLine.end, referenceLine.begin));
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
-    } else if (PreviousFixupCommand == ID_OP4) {
-      if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
-      lnPrv.end = ptInt;
-      if (EoGeVector3d(referenceLine.end, ptInt).Length() < EoGeVector3d(referenceLine.begin, ptInt).Length())
+    } else if (previousCommand == ID_OP4) {
+      if (EoGeVector3d(previousLine.begin, intersection).Length() <
+          EoGeVector3d(previousLine.end, intersection).Length())
+        previousLine.begin = previousLine.end;
+      previousLine.end = intersection;
+      if (EoGeVector3d(referenceLine.end, intersection).Length() <
+          EoGeVector3d(referenceLine.begin, intersection).Length())
         referenceLine.end = referenceLine.begin;
-      referenceLine.begin = ptInt;
-      if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, referenceLine.begin, referenceLine.end,
-                              &ptCP)) {
-        double dAng;
-        lnPrv.end = lnPrv.ProjPt(ptCP);
-        referenceLine.begin = referenceLine.ProjPt(ptCP);
+      referenceLine.begin = intersection;
+      if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, referenceLine, &center)) {
+        double angle;
+        previousLine.end = previousLine.ProjPt(center);
+        referenceLine.begin = referenceLine.ProjPt(center);
 
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
-        previousLine->BeginPoint(lnPrv.begin);
-        previousLine->EndPoint(lnPrv.end);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
+        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
+        line->BeginPoint(previousLine.begin);
+        line->EndPoint(previousLine.end);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
 
-        EoGeVector3d rPrvEndInter(lnPrv.end, ptInt);
-        EoGeVector3d rPrvEndRefBeg(lnPrv.end, referenceLine.begin);
-        vPlnNorm = CrossProduct(rPrvEndInter, rPrvEndRefBeg);
-        vPlnNorm.Normalize();
-        SweepAngleFromNormalAnd3Points(vPlnNorm, lnPrv.end, ptInt, referenceLine.begin, ptCP, &dAng);
-        vMajAx = EoGeVector3d(ptCP, lnPrv.end);
-        EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, vPlnNorm, Eo::HalfPi);
-        vMinAx = EoGeVector3d(ptCP, rTmp);
+        EoGeVector3d previousEndToIntersection(previousLine.end, intersection);
+        EoGeVector3d previousEndToReferenceBegin(previousLine.end, referenceLine.begin);
+        auto normal = CrossProduct(previousEndToIntersection, previousEndToReferenceBegin);
+        normal.Normalize();
+        SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, referenceLine.begin, center, &angle);
+        auto majorAxis = EoGeVector3d(center, previousLine.end);
+        auto minorAxis = CrossProduct(normal, majorAxis);
 
-        // TODO: Previous behavior was to use current color and lineTypeIndex from primitive state. Of the two lines, which should be used?
-        // If the reference line is not modified using the previous line makes more sense.
-        // For a full fillet where both lines are modified and color and line type index differ, should the user be given a choice?
-        // For now use previous line.
-
-        auto* radialArc = new EoDbConic(ptCP, vMajAx, vMinAx, dAng);
-        radialArc->SetColor(previousLine->Color());
-        radialArc->SetLineTypeIndex(previousLine->LineTypeIndex());
+        auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
+        radialArc->SetColor(line->Color());
+        radialArc->SetLineTypeIndex(line->LineTypeIndex());
 
         auto* group = new EoDbGroup(radialArc);
         document->AddWorkLayerGroup(group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       }
     }
-    ModeLineUnhighlightOp(PreviousFixupCommand);
+    ModeLineUnhighlightOp(previousCommand);
   }
 }
 
@@ -208,251 +212,250 @@ void AeSysView::OnFixupModeMend() {
 
   auto cursorPosition = GetCursorPosition();
 
-  EoGePoint3d ptInt;
-  EoGePoint3d ptCP;
-    
-  pSegSec = SelectGroupAndPrimitive(cursorPosition);
-  if (pSegSec == nullptr) { return; }
-  pPrimSec = EngagedPrimitive();
+  EoGePoint3d intersection;
+  EoGePoint3d center;
 
-  auto* pLine = static_cast<EoDbLine*>(pPrimSec);
-  pLine->GetLine(lnSec);
+  currentGroup = SelectGroupAndPrimitive(cursorPosition);
+  if (currentGroup == nullptr) { return; }
+  currentPrimitive = EngagedPrimitive();
 
-  if (PreviousFixupCommand == 0) {
-    pSegPrv = pSegSec;
-    pPrimPrv = pPrimSec;
-    lnPrv.begin = lnSec.begin;
-    lnPrv.end = lnSec.end;
-    PreviousFixupCommand = ModeLineHighlightOp(ID_OP2);
-  } else if (PreviousFixupCommand == ID_OP1) {
-    if (!EoGeLine::Intersection(referenceLine, lnSec, ptInt)) {
+  auto* pLine = static_cast<EoDbLine*>(currentPrimitive);
+  pLine->GetLine(currentLine);
+
+  if (previousCommand == 0) {
+    previousGroup = currentGroup;
+    previousPrimitive = currentPrimitive;
+    previousLine.begin = currentLine.begin;
+    previousLine.end = currentLine.end;
+    previousCommand = ModeLineHighlightOp(ID_OP2);
+  } else if (previousCommand == ID_OP1) {
+    if (!EoGeLine::Intersection(referenceLine, currentLine, intersection)) {
       app.AddModeInformationToMessageList();
       return;
     }
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
-    if (EoGeVector3d(pLine->BeginPoint(), ptInt).Length() < EoGeVector3d(pLine->EndPoint(), ptInt).Length())
-      pLine->BeginPoint(ptInt);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
+    if (EoGeVector3d(pLine->BeginPoint(), intersection).Length() <
+        EoGeVector3d(pLine->EndPoint(), intersection).Length())
+      pLine->BeginPoint(intersection);
     else
-      pLine->EndPoint(ptInt);
-    document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
+      pLine->EndPoint(intersection);
+    document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
   } else {
-    if (!EoGeLine::Intersection(lnPrv, lnSec, ptInt)) {
+    if (!EoGeLine::Intersection(previousLine, currentLine, intersection)) {
       app.AddModeInformationToMessageList();
       return;
     }
-    if (PreviousFixupCommand == ID_OP2) {
-      pLine = static_cast<EoDbLine*>(pPrimPrv);
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
-      if (EoGeVector3d(pLine->BeginPoint(), ptInt).Length() < EoGeVector3d(pLine->EndPoint(), ptInt).Length())
-        pLine->BeginPoint(ptInt);
+    if (previousCommand == ID_OP2) {
+      pLine = static_cast<EoDbLine*>(previousPrimitive);
+      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
+      if (EoGeVector3d(pLine->BeginPoint(), intersection).Length() <
+          EoGeVector3d(pLine->EndPoint(), intersection).Length())
+        pLine->BeginPoint(intersection);
       else
-        pLine->EndPoint(ptInt);
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
-    } else if (PreviousFixupCommand == ID_OP3) {
-      if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
-      lnPrv.end = ptInt;
-      if (EoGeVector3d(lnSec.end, ptInt).Length() < EoGeVector3d(lnSec.begin, ptInt).Length()) lnSec.end = lnSec.begin;
-      lnSec.begin = ptInt;
-      if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, lnSec.begin, lnSec.end, &ptCP)) {
-        pLine = static_cast<EoDbLine*>(pPrimPrv);
-        lnPrv.end = lnPrv.ProjPt(ptCP);
-        lnSec.begin = lnSec.ProjPt(ptCP);
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
-        pLine->BeginPoint(lnPrv.begin);
-        pLine->EndPoint(lnPrv.end);
-        pSegPrv->AddTail(new EoDbLine(lnPrv.end, lnSec.begin));
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
+        pLine->EndPoint(intersection);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
+    } else if (previousCommand == ID_OP3) {
+      if (EoGeVector3d(previousLine.begin, intersection).Length() <
+          EoGeVector3d(previousLine.end, intersection).Length())
+        previousLine.begin = previousLine.end;
+      previousLine.end = intersection;
+      if (EoGeVector3d(currentLine.end, intersection).Length() < EoGeVector3d(currentLine.begin, intersection).Length())
+        currentLine.end = currentLine.begin;
+      currentLine.begin = intersection;
+      if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
+        pLine = static_cast<EoDbLine*>(previousPrimitive);
+        previousLine.end = previousLine.ProjPt(center);
+        currentLine.begin = currentLine.ProjPt(center);
+        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
+        pLine->BeginPoint(previousLine.begin);
+        pLine->EndPoint(previousLine.end);
+        previousGroup->AddTail(new EoDbLine(previousLine.end, currentLine.begin));
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
-    } else if (PreviousFixupCommand == ID_OP4) {
-      if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
-      lnPrv.end = ptInt;
-      if (EoGeVector3d(lnSec.end, ptInt).Length() < EoGeVector3d(lnSec.begin, ptInt).Length()) lnSec.end = lnSec.begin;
-      lnSec.begin = ptInt;
-      if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, lnSec.begin, lnSec.end, &ptCP)) {
-        pLine = static_cast<EoDbLine*>(pPrimPrv);
-        lnPrv.end = lnPrv.ProjPt(ptCP);
-        lnSec.begin = lnSec.ProjPt(ptCP);
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
-        pLine->BeginPoint(lnPrv.begin);
-        pLine->EndPoint(lnPrv.end);
-        EoGeVector3d rPrvEndInter(lnPrv.end, ptInt);
-        EoGeVector3d rPrvEndSecBeg(lnPrv.end, lnSec.begin);
+    } else if (previousCommand == ID_OP4) {
+      if (EoGeVector3d(previousLine.begin, intersection).Length() <
+          EoGeVector3d(previousLine.end, intersection).Length())
+        previousLine.begin = previousLine.end;
+      previousLine.end = intersection;
+      if (EoGeVector3d(currentLine.end, intersection).Length() < EoGeVector3d(currentLine.begin, intersection).Length())
+        currentLine.end = currentLine.begin;
+      currentLine.begin = intersection;
+      if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
+        pLine = static_cast<EoDbLine*>(previousPrimitive);
+        previousLine.end = previousLine.ProjPt(center);
+        currentLine.begin = currentLine.ProjPt(center);
+        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
+        pLine->BeginPoint(previousLine.begin);
+        pLine->EndPoint(previousLine.end);
+        EoGeVector3d rPrvEndInter(previousLine.end, intersection);
+        EoGeVector3d rPrvEndSecBeg(previousLine.end, currentLine.begin);
         EoGeVector3d normal = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
         normal.Normalize();
         double angle{};
-        SweepAngleFromNormalAnd3Points(normal, lnPrv.end, ptInt, lnSec.begin, ptCP, &angle);
-        auto majorAxis = EoGeVector3d(ptCP, lnPrv.end);
-        EoGePoint3d rTmp = lnPrv.end.RotateAboutAxis(ptCP, normal, Eo::HalfPi);
-        auto minorAxis = EoGeVector3d(ptCP, rTmp);
+        SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, currentLine.begin, center, &angle);
+        auto majorAxis = EoGeVector3d(center, previousLine.end);
+        auto minorAxis = CrossProduct(normal, majorAxis);
 
-        auto* radialArc = new EoDbConic(ptCP, majorAxis, minorAxis, angle);
+        auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
         radialArc->SetColor(pstate.PenColor());
         radialArc->SetLineTypeIndex(pstate.LineType());
 
-        pSegPrv->AddTail(radialArc);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
+        previousGroup->AddTail(radialArc);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
     }
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
-    pLine = static_cast<EoDbLine*>(pPrimSec);
-    if (EoGeVector3d(pLine->BeginPoint(), ptInt).Length() < EoGeVector3d(pLine->EndPoint(), ptInt).Length())
-      pLine->BeginPoint(ptInt);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
+    pLine = static_cast<EoDbLine*>(currentPrimitive);
+    if (EoGeVector3d(pLine->BeginPoint(), intersection).Length() <
+        EoGeVector3d(pLine->EndPoint(), intersection).Length())
+      pLine->BeginPoint(intersection);
     else
-      pLine->EndPoint(ptInt);
-    document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
-    ModeLineUnhighlightOp(PreviousFixupCommand);
+      pLine->EndPoint(intersection);
+    document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
+    ModeLineUnhighlightOp(previousCommand);
   }
 }
 
 void AeSysView::OnFixupModeChamfer() {
   auto* document = GetDocument();
-
   auto cursorPosition = GetCursorPosition();
 
-  EoGePoint3d ptInt;
+  currentGroup = SelectGroupAndPrimitive(cursorPosition);
+  currentPrimitive = EngagedPrimitive();
+  EoDbLine* line = static_cast<EoDbLine*>(currentPrimitive);
+  line->GetLine(currentLine);
 
-  EoGeVector3d vMinAx;
-  EoGeVector3d vMajAx;
-  EoGeVector3d vPlnNorm;
-
-  EoDbLine* pLine;
-
-  pSegSec = SelectGroupAndPrimitive(cursorPosition);
-  pPrimSec = EngagedPrimitive();
-  pLine = static_cast<EoDbLine*>(pPrimSec);
-  pLine->GetLine(lnSec);
-
-  if (PreviousFixupCommand == 0) {
-    pSegPrv = pSegSec;
-    pPrimPrv = pPrimSec;
-    lnPrv = lnSec;
-    PreviousFixupCommand = ModeLineHighlightOp(ID_OP3);
+  if (previousCommand == 0) {
+    previousGroup = currentGroup;
+    previousPrimitive = currentPrimitive;
+    previousLine = currentLine;
+    previousCommand = ModeLineHighlightOp(ID_OP3);
   } else {
-    if (PreviousFixupCommand == ID_OP1) {
-      pSegPrv = pSegSec;
-      pPrimPrv = pPrimSec;
-      lnPrv = referenceLine;
+    if (previousCommand == ID_OP1) {
+      previousGroup = currentGroup;
+      previousPrimitive = currentPrimitive;
+      previousLine = referenceLine;
     }
-    if (!EoGeLine::Intersection(lnPrv, lnSec, ptInt)) {
+    EoGePoint3d intersection{};
+    if (!EoGeLine::Intersection(previousLine, currentLine, intersection)) {
       app.AddModeInformationToMessageList();
       return;
     }
-    if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
-    lnPrv.end = ptInt;
-    if (EoGeVector3d(lnSec.end, ptInt).Length() < EoGeVector3d(lnSec.begin, ptInt).Length()) lnSec.end = lnSec.begin;
-    lnSec.begin = ptInt;
-    EoGePoint3d ptCP;
-    if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, lnSec.begin, lnSec.end, &ptCP)) {
+    if (EoGeVector3d(previousLine.begin, intersection).Length() < EoGeVector3d(previousLine.end, intersection).Length())
+      previousLine.begin = previousLine.end;
+    previousLine.end = intersection;
+    if (EoGeVector3d(currentLine.end, intersection).Length() < EoGeVector3d(currentLine.begin, intersection).Length())
+      currentLine.end = currentLine.begin;
+    currentLine.begin = intersection;
+    EoGePoint3d center;
+    if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
       // Center point is defined .. determine arc endpoints
-      lnPrv.end = lnPrv.ProjPt(ptCP);
-      lnSec.begin = lnSec.ProjPt(ptCP);
-      if (PreviousFixupCommand == ID_OP1)
+      previousLine.end = previousLine.ProjPt(center);
+      currentLine.begin = currentLine.ProjPt(center);
+      if (previousCommand == ID_OP1)
         ;
-      else if (PreviousFixupCommand == ID_OP2) {
-        pLine = static_cast<EoDbLine*>(pPrimPrv);
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
-        pLine->BeginPoint(lnPrv.begin);
-        pLine->EndPoint(ptInt);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
-      } else if (PreviousFixupCommand == ID_OP3 || PreviousFixupCommand == ID_OP4) {
-        pLine = static_cast<EoDbLine*>(pPrimPrv);
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
-        pLine->BeginPoint(lnPrv.begin);
-        pLine->EndPoint(lnPrv.end);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
+      else if (previousCommand == ID_OP2) {
+        line = static_cast<EoDbLine*>(previousPrimitive);
+        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
+        line->BeginPoint(previousLine.begin);
+        line->EndPoint(intersection);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
+      } else if (previousCommand == ID_OP3 || previousCommand == ID_OP4) {
+        line = static_cast<EoDbLine*>(previousPrimitive);
+        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
+        line->BeginPoint(previousLine.begin);
+        line->EndPoint(previousLine.end);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
-      pLine = static_cast<EoDbLine*>(pPrimSec);
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
-      pLine->BeginPoint(lnSec.begin);
-      pLine->EndPoint(lnSec.end);
+      line = static_cast<EoDbLine*>(currentPrimitive);
+      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
+      line->BeginPoint(currentLine.begin);
+      line->EndPoint(currentLine.end);
 
-      pSegSec->AddTail(new EoDbLine(lnPrv.end, lnSec.begin));
+      currentGroup->AddTail(new EoDbLine(previousLine.end, currentLine.begin));
 
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     }
-    ModeLineUnhighlightOp(PreviousFixupCommand);
+    ModeLineUnhighlightOp(previousCommand);
   }
 }
 
 void AeSysView::OnFixupModeFillet() {
   auto* document = GetDocument();
-
   auto cursorPosition = GetCursorPosition();
 
-  EoGePoint3d ptInt;
+  currentGroup = SelectGroupAndPrimitive(cursorPosition);
+  currentPrimitive = EngagedPrimitive();
+  EoDbLine* line = static_cast<EoDbLine*>(currentPrimitive);
+  line->GetLine(currentLine);
 
-  EoDbLine* pLine{};
-
-  pSegSec = SelectGroupAndPrimitive(cursorPosition);
-  pPrimSec = EngagedPrimitive();
-  pLine = static_cast<EoDbLine*>(pPrimSec);
-  pLine->GetLine(lnSec);
-
-  if (PreviousFixupCommand == 0) {
-    pSegPrv = pSegSec;
-    pPrimPrv = pPrimSec;
-    lnPrv = lnSec;
-    PreviousFixupCommand = ModeLineHighlightOp(ID_OP3);
+  if (previousCommand == 0) {
+    previousGroup = currentGroup;
+    previousPrimitive = currentPrimitive;
+    previousLine = currentLine;
+    previousCommand = ModeLineHighlightOp(ID_OP4);
   } else {
-    if (PreviousFixupCommand == ID_OP1) {
-      pSegPrv = pSegSec;
-      pPrimPrv = pPrimSec;
-      lnPrv = referenceLine;
+    if (previousCommand == ID_OP1) {
+      previousGroup = currentGroup;
+      previousPrimitive = currentPrimitive;
+      previousLine = referenceLine;
     }
-    if (!EoGeLine::Intersection(lnPrv, lnSec, ptInt)) {
+    EoGePoint3d intersection{};
+    if (!EoGeLine::Intersection(previousLine, currentLine, intersection)) {
       app.AddModeInformationToMessageList();
       return;
     }
-    if (EoGeVector3d(lnPrv.begin, ptInt).Length() < EoGeVector3d(lnPrv.end, ptInt).Length()) lnPrv.begin = lnPrv.end;
-    lnPrv.end = ptInt;
-    if (EoGeVector3d(lnSec.end, ptInt).Length() < EoGeVector3d(lnSec.begin, ptInt).Length()) lnSec.end = lnSec.begin;
-    lnSec.begin = ptInt;
+    if (EoGeVector3d(previousLine.begin, intersection).Length() < EoGeVector3d(previousLine.end, intersection).Length())
+      previousLine.begin = previousLine.end;
+    previousLine.end = intersection;
+    if (EoGeVector3d(currentLine.end, intersection).Length() < EoGeVector3d(currentLine.begin, intersection).Length())
+      currentLine.end = currentLine.begin;
+    currentLine.begin = intersection;
 
-    EoGePoint3d ptCP;
-    if (pFndCPGivRadAnd4Pts(m_FixupModeCornerSize, lnPrv.begin, lnPrv.end, lnSec.begin, lnSec.end, &ptCP)) {
+    EoGePoint3d center;
+    if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
       // Center point is defined .. determine arc endpoints
-      lnPrv.end = lnPrv.ProjPt(ptCP);
-      lnSec.begin = lnSec.ProjPt(ptCP);
-      if (PreviousFixupCommand == ID_OP1)
+      previousLine.end = previousLine.ProjPt(center);
+      currentLine.begin = currentLine.ProjPt(center);
+      if (previousCommand == ID_OP1)
         ;
-      else if (PreviousFixupCommand == ID_OP2) {
-        pLine = static_cast<EoDbLine*>(pPrimPrv);
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
-        pLine->BeginPoint(lnPrv.begin);
-        pLine->EndPoint(ptInt);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
-      } else if (PreviousFixupCommand == ID_OP3 || PreviousFixupCommand == ID_OP4) {
-        pLine = static_cast<EoDbLine*>(pPrimPrv);
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegPrv);
-        pLine->BeginPoint(lnPrv.begin);
-        pLine->EndPoint(lnPrv.end);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegPrv);
+      else if (previousCommand == ID_OP2) {
+        line = static_cast<EoDbLine*>(previousPrimitive);
+        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
+        line->BeginPoint(previousLine.begin);
+        line->EndPoint(intersection);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
+      } else if (previousCommand == ID_OP3 || previousCommand == ID_OP4) {
+        line = static_cast<EoDbLine*>(previousPrimitive);
+        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
+        line->BeginPoint(previousLine.begin);
+        line->EndPoint(previousLine.end);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
-      pLine = static_cast<EoDbLine*>(pPrimSec);
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
-      pLine->BeginPoint(lnSec.begin);
-      pLine->EndPoint(lnSec.end);
+      line = static_cast<EoDbLine*>(currentPrimitive);
+      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
+      line->BeginPoint(currentLine.begin);
+      line->EndPoint(currentLine.end);
 
       EoGeVector3d normal;
-      EoGeVector3d rPrvEndInter(lnPrv.end, ptInt);
-      EoGeVector3d rPrvEndSecBeg(lnPrv.end, lnSec.begin);
-      normal = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
+      EoGeVector3d previousEndToIntersection(previousLine.end, intersection);
+      EoGeVector3d previousEndToCurrentBegin(previousLine.end, currentLine.begin);
+      normal = CrossProduct(previousEndToIntersection, previousEndToCurrentBegin);
       normal.Normalize();
       double angle;
-      SweepAngleFromNormalAnd3Points(normal, lnPrv.end, ptInt, lnSec.begin, ptCP, &angle);
-      auto majorAxis = EoGeVector3d(ptCP, lnPrv.end);
-      auto rTmp = lnPrv.end.RotateAboutAxis(ptCP, normal, Eo::HalfPi);
-      auto minorAxis = EoGeVector3d(ptCP, rTmp);
+      SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, currentLine.begin, center, &angle);
+      auto majorAxis = EoGeVector3d(center, previousLine.end);
+      auto minorAxis = CrossProduct(normal, majorAxis);
 
-      auto* radialArc = new EoDbConic(ptCP, majorAxis, minorAxis, angle);
-      radialArc->SetColor(pstate.PenColor());
-      radialArc->SetLineTypeIndex(pstate.LineType());
+      auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
+      radialArc->SetColor(line->Color());
+      radialArc->SetLineTypeIndex(line->LineTypeIndex());
 
-      pSegSec->AddTail(radialArc);
+      currentGroup->AddTail(radialArc);
 
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     }
-    ModeLineUnhighlightOp(PreviousFixupCommand);
+    ModeLineUnhighlightOp(previousCommand);
   }
 }
 
@@ -463,20 +466,20 @@ void AeSysView::OnFixupModeSquare() {
 
   EoDbLine* pLine;
 
-  pSegSec = SelectGroupAndPrimitive(cursorPosition);
-  if (pSegSec != 0) {
-    pPrimSec = EngagedPrimitive();
+  currentGroup = SelectGroupAndPrimitive(cursorPosition);
+  if (currentGroup != nullptr) {
+    currentPrimitive = EngagedPrimitive();
     cursorPosition = DetPt();
-    if (pPrimSec->Is(EoDb::kLinePrimitive)) {
-      pLine = static_cast<EoDbLine*>(pPrimSec);
-      pLine->GetLine(lnSec);
-      double dLen = lnSec.Length();
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
-      lnSec.begin = SnapPointToAxis(cursorPosition, lnSec.begin);
-      lnSec.end = lnSec.begin.ProjectToward(cursorPosition, dLen);
-      pLine->BeginPoint(SnapPointToGrid(lnSec.begin));
-      pLine->EndPoint(SnapPointToGrid(lnSec.end));
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
+    if (currentPrimitive->Is(EoDb::kLinePrimitive)) {
+      pLine = static_cast<EoDbLine*>(currentPrimitive);
+      pLine->GetLine(currentLine);
+      double dLen = currentLine.Length();
+      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
+      currentLine.begin = SnapPointToAxis(cursorPosition, currentLine.begin);
+      currentLine.end = currentLine.begin.ProjectToward(cursorPosition, dLen);
+      pLine->BeginPoint(SnapPointToGrid(currentLine.begin));
+      pLine->EndPoint(SnapPointToGrid(currentLine.end));
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     }
   }
 }
@@ -488,18 +491,18 @@ void AeSysView::OnFixupModeParallel() {
 
   EoDbLine* pLine;
 
-  pSegSec = SelectGroupAndPrimitive(cursorPosition);
-  if (referenceBlock != nullptr && pSegSec != 0) {
-    pPrimSec = EngagedPrimitive();
-    if (pPrimSec->Is(EoDb::kLinePrimitive)) {
-      pLine = static_cast<EoDbLine*>(pPrimSec);
+  currentGroup = SelectGroupAndPrimitive(cursorPosition);
+  if (referenceGroup != nullptr && currentGroup != nullptr) {
+    currentPrimitive = EngagedPrimitive();
+    if (currentPrimitive->Is(EoDb::kLinePrimitive)) {
+      pLine = static_cast<EoDbLine*>(currentPrimitive);
 
-      lnSec.begin = referenceLine.ProjPt(pLine->BeginPoint());
-      lnSec.end = referenceLine.ProjPt(pLine->EndPoint());
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, pSegSec);
-      pLine->BeginPoint(lnSec.begin.ProjectToward(pLine->BeginPoint(), app.DimensionLength()));
-      pLine->EndPoint(lnSec.end.ProjectToward(pLine->EndPoint(), app.DimensionLength()));
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, pSegSec);
+      currentLine.begin = referenceLine.ProjPt(pLine->BeginPoint());
+      currentLine.end = referenceLine.ProjPt(pLine->EndPoint());
+      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
+      pLine->BeginPoint(currentLine.begin.ProjectToward(pLine->BeginPoint(), app.DimensionLength()));
+      pLine->EndPoint(currentLine.end.ProjectToward(pLine->EndPoint(), app.DimensionLength()));
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     }
   }
 }
@@ -507,21 +510,21 @@ void AeSysView::OnFixupModeParallel() {
 void AeSysView::OnFixupModeReturn() {
   auto* document = GetDocument();
 
-  if (referenceBlock != nullptr) {
+  if (referenceGroup != nullptr) {
     document->UpdateAllViews(nullptr, EoDb::kPrimitive, referencePrimitive);
-    referenceBlock = nullptr;
+    referenceGroup = nullptr;
     referencePrimitive = nullptr;
   }
-  ModeLineUnhighlightOp(PreviousFixupCommand);
+  ModeLineUnhighlightOp(previousCommand);
 }
 
 void AeSysView::OnFixupModeEscape() {
   auto* document = GetDocument();
 
-  if (referenceBlock != nullptr) {
+  if (referenceGroup != nullptr) {
     document->UpdateAllViews(nullptr, EoDb::kPrimitive, referencePrimitive);
-    referenceBlock = nullptr;
+    referenceGroup = nullptr;
     referencePrimitive = nullptr;
   }
-  ModeLineUnhighlightOp(PreviousFixupCommand);
+  ModeLineUnhighlightOp(previousCommand);
 }

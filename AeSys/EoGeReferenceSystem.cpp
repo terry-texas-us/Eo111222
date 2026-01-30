@@ -10,22 +10,24 @@
 
 EoGeReferenceSystem::EoGeReferenceSystem()
     : m_Origin(EoGePoint3d::kOrigin), m_XDirection(EoGeVector3d::positiveUnitX), m_YDirection(EoGeVector3d::positiveUnitY) {}
+
 EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin, EoDbCharacterCellDefinition& ccd) {
   auto* activeView = AeSysView::GetActiveView();
 
   m_Origin = origin;
 
-  EoGeVector3d vNorm = activeView->CameraDirection();
+  auto cameraDirection = activeView->CameraDirection();
 
   m_YDirection = activeView->ViewUp();
-  m_YDirection.RotAboutArbAx(vNorm, ccd.TextRotAngGet());
+  m_YDirection.RotAboutArbAx(cameraDirection, ccd.TextRotAngGet());
 
   m_XDirection = m_YDirection;
-  m_XDirection.RotAboutArbAx(vNorm, -Eo::HalfPi);
-  m_YDirection.RotAboutArbAx(vNorm, ccd.ChrSlantAngGet());
+  m_XDirection.RotAboutArbAx(cameraDirection, -Eo::HalfPi);
+  m_YDirection.RotAboutArbAx(cameraDirection, ccd.ChrSlantAngGet());
   m_XDirection *= 0.6 * ccd.ChrHgtGet() * ccd.ChrExpFacGet();
   m_YDirection *= ccd.ChrHgtGet();
 }
+
 EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin, EoGeVector3d xDirection, EoGeVector3d yDirection)
     : m_Origin(origin), m_XDirection(xDirection), m_YDirection(yDirection) {}
 EoGeReferenceSystem::EoGeReferenceSystem(const EoGeReferenceSystem& src) {

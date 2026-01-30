@@ -26,9 +26,32 @@ class EoDbConic : public EoDbPrimitive {
   // TODO: Minor axis and sweep angle are to be removed from class data members
   double m_sweepAngle{0.0};
 
-public:
+  // Private constructor - forces use of factory methods
+  EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis, double ratio,
+            double startAngle, double endAngle);
+
+ public:
   static EoDbConic* CreateCircle(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius);
   static EoDbConic* CreateCircleInView(const EoGePoint3d& center, double radius);
+
+  static EoDbConic* CreateConicFromEllipsePrimitive(EoGePoint3d& center, EoGeVector3d& majorAxis,
+                                                    EoGeVector3d& minorAxis, double sweepAngle);
+
+  EoDbConic(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle);
+
+  /**
+   * @brief Creates a radial arc defined by three points in 3D space.
+   *
+   * This static method constructs a radial arc (a segment of a circle) that passes through three specified points:
+   * the start point, an intermediate point, and the end point. The arc is created in a counter-clockwise direction
+   * when viewed from the positive Z direction of the computed normal vector.
+   *
+   * @param start The starting point of the arc.
+   * @param intermediate A point on the arc between the start and end points.
+   * @param end The ending point of the arc.
+   * @return A pointer to the created EoDbConic representing the radial arc, or nullptr if the points are collinear.
+   */
+  static EoDbConic* CreateRadialArcFrom3Points(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end);
 
  public:
   EoDbConic()
@@ -46,17 +69,15 @@ public:
   EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle = 0.0,
             double endAngle = Eo::TwoPi);
 
-  EoDbConic(const EoGePoint3d& center, double radius, double startAngle, double endAngle);
+  // EoDbConic(const EoGePoint3d& center, double radius, double startAngle, double endAngle);
 
-  EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis, double ratio);
+  // EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis, double ratio);
 
   // EoDbConic(EoGePoint3d& center, double radius, EoInt16 color = COLOR_BYLAYER, EoInt16 lineTypeIndex = LINETYPE_BYLAYER);
 
-  EoDbConic(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle);
-
   // EoDbConic(EoGePoint3d& center, EoGeVector3d& planeNormal, double radius, EoInt16 penColor, EoInt16 lineTypeIndex);
 
-  EoDbConic(EoGePoint3d begin, EoGePoint3d intermediate, EoGePoint3d end);
+  // EoDbConic(EoGePoint3d begin, EoGePoint3d intermediate, EoGePoint3d end);
 
   EoDbConic(const EoDbConic& other);
 
@@ -157,17 +178,17 @@ public:
   }
 
   [[nodiscard]] bool IsCircle() const noexcept {
-    return fabs(1.0 - m_ratio) <= Eo::geometricTolerance && IsFullConic();
+    return fabs(1.0 - m_ratio) <= Eo::numericEpsilon && IsFullConic();
   }
 
   [[nodiscard]] bool IsRadialArc() const noexcept {
-    return fabs(1.0 - m_ratio) <= Eo::geometricTolerance && !IsFullConic();
+    return fabs(1.0 - m_ratio) <= Eo::numericEpsilon && !IsFullConic();
   }
 
-  [[nodiscard]] bool IsEllipse() const noexcept { return m_ratio < 1.0 - Eo::geometricTolerance && IsFullConic(); }
+  [[nodiscard]] bool IsEllipse() const noexcept { return m_ratio < 1.0 - Eo::numericEpsilon && IsFullConic(); }
 
   [[nodiscard]] bool IsEllipticalArc() const noexcept {
-    return m_ratio < 1.0 - Eo::geometricTolerance && !IsFullConic();
+    return m_ratio < 1.0 - Eo::numericEpsilon && !IsFullConic();
   }
 
   [[nodiscard]] bool IsFullConic() const noexcept {
@@ -181,7 +202,7 @@ public:
   enum class ConicType { Circle, RadialArc, Ellipse, EllipticalArc };
 
   [[nodiscard]] ConicType Subclass() const noexcept {
-    bool isCircular = fabs(1.0 - m_ratio) <= Eo::geometricTolerance;
+    bool isCircular = fabs(1.0 - m_ratio) <= Eo::numericEpsilon;
     bool isFull = IsFullConic();
 
     if (isCircular && isFull) return ConicType::Circle;
@@ -235,6 +256,11 @@ public:
 
   double StartAngle() const noexcept { return (m_startAngle); }
   void SetStartAngle(double startAngle) { m_startAngle = startAngle; }
+
+  void SetAngles(double startAngle, double endAngle) {
+    m_startAngle = startAngle;
+    m_endAngle = endAngle;
+  }
 
   void SetSweepAngle(double sweepAngle) { m_sweepAngle = sweepAngle; }
 

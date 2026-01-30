@@ -101,14 +101,13 @@ void AeSysView::OnAnnotateModeBubble() {
   if (!CurrentText.IsEmpty()) {
     CDC* DeviceContext = GetDC();
 
-    auto PlaneNormal = CameraDirection();
-    auto MinorAxis = ViewUp();
-    auto MajorAxis = MinorAxis;
-    MajorAxis.RotAboutArbAx(PlaneNormal, -Eo::HalfPi);
+    auto cameraDirection = CameraDirection();
+    auto minorAxis = ViewUp();
+    auto majorAxis = CrossProduct(minorAxis, cameraDirection);
 
-    MajorAxis *= 0.06;
-    MinorAxis *= 0.1;
-    EoGeReferenceSystem ReferenceSystem(cursorPosition, MajorAxis, MinorAxis);
+    majorAxis *= 0.06;
+    minorAxis *= 0.1;
+    EoGeReferenceSystem referenceSystem(cursorPosition, majorAxis, minorAxis);
 
     int PrimitiveState = pstate.Save();
     pstate.SetColor(DeviceContext, 2);
@@ -123,7 +122,7 @@ void AeSysView::OnAnnotateModeBubble() {
     ccd.TextRotAngSet(0.0);
     pstate.SetCharCellDef(ccd);
 
-    group->AddTail(new EoDbText(fd, ReferenceSystem, CurrentText));
+    group->AddTail(new EoDbText(fd, referenceSystem, CurrentText));
     pstate.Restore(DeviceContext, PrimitiveState);
     ReleaseDC(DeviceContext);
   }
@@ -281,19 +280,18 @@ void AeSysView::OnAnnotateModeCutIn() {
 
     if (!CurrentText.IsEmpty()) {
       EoGeLine Line = pLine->Ln();
-      double dAng = Line.AngleFromXAxisXY();
-      if (dAng > 0.25 * Eo::TwoPi && dAng < 0.75 * Eo::TwoPi) dAng += Eo::Pi;
+      double angle = Line.AngleFromXAxisXY();
+      if (angle > 0.25 * Eo::TwoPi && angle < 0.75 * Eo::TwoPi) angle += Eo::Pi;
 
-      EoGeVector3d PlaneNormal = CameraDirection();
-      EoGeVector3d MinorAxis = ViewUp();
-      MinorAxis.RotAboutArbAx(PlaneNormal, dAng);
-      EoGeVector3d MajorAxis = MinorAxis;
-      MajorAxis.RotAboutArbAx(PlaneNormal, -Eo::HalfPi);
-      MajorAxis *= 0.06;
-      MinorAxis *= 0.1;
-      EoGeReferenceSystem ReferenceSystem(cursorPosition, MajorAxis, MinorAxis);
+      auto cameraDirection = CameraDirection();
+      auto minorAxis = ViewUp();
+      minorAxis.RotAboutArbAx(cameraDirection, angle);
+      auto majorAxis = CrossProduct(minorAxis, cameraDirection);
+      majorAxis *= 0.06;
+      minorAxis *= 0.1;
+      EoGeReferenceSystem referenceSystem(cursorPosition, majorAxis, minorAxis);
 
-      EoInt16 color = pstate.PenColor();
+      auto color = pstate.PenColor();
       pstate.SetColor(DeviceContext, 2);
 
       EoDbFontDefinition fd;
@@ -306,13 +304,13 @@ void AeSysView::OnAnnotateModeCutIn() {
       ccd.TextRotAngSet(0.0);
       pstate.SetCharCellDef(ccd);
 
-      EoDbText* TextPrimitive = new EoDbText(fd, ReferenceSystem, CurrentText);
+      auto* text = new EoDbText(fd, referenceSystem, CurrentText);
       pstate.SetColor(DeviceContext, color);
 
-      Group->AddTail(TextPrimitive);
+      Group->AddTail(text);
 
       EoGePoint3dArray ptsBox;
-      TextPrimitive->GetBoundingBox(ptsBox, GapSpaceFactor());
+      text->GetBoundingBox(ptsBox, GapSpaceFactor());
 
       double dGap = EoGeVector3d(ptsBox[0], ptsBox[1]).Length();
 
