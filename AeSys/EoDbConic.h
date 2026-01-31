@@ -142,22 +142,6 @@ class EoDbConic : public EoDbPrimitive {
         m_startAngle{},
         m_endAngle{} {}
 
-  // EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle = 0.0, double endAngle = Eo::TwoPi);
-
-  // EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis, double ratio);
-
-  // EoDbConic(EoGePoint3d& center, EoGePoint3d& start);
-
-  // EoDbConic(const EoGePoint3d& center, double radius, double startAngle, double endAngle);
-
-  // EoDbConic(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle);
-
-  // EoDbConic(EoGePoint3d& center, double radius, EoInt16 color = COLOR_BYLAYER, EoInt16 lineTypeIndex = LINETYPE_BYLAYER);
-
-  // EoDbConic(EoGePoint3d& center, EoGeVector3d& planeNormal, double radius, EoInt16 penColor, EoInt16 lineTypeIndex);
-
-  // EoDbConic(EoGePoint3d begin, EoGePoint3d intermediate, EoGePoint3d end);
-
   EoDbConic(const EoDbConic& other);
 
   ~EoDbConic() override {}
