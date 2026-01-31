@@ -133,8 +133,8 @@ EoDbConic* EoDbConic::CreateEllipse(const EoGePoint3d& center, const EoGeVector3
   return new EoDbConic(center, extrusion, majorAxis, ratio, 0.0, Eo::TwoPi);
 }
 
-EoDbConic* EoDbConic::CreateRadialArc(const EoGePoint3d& center, const EoGeVector3d& extrusion,
-                                      double radius, double startAngle, double endAngle) {
+EoDbConic* EoDbConic::CreateRadialArc(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius,
+                                      double startAngle, double endAngle) {
   auto majorAxis = EoGeVector3d(radius, 0.0, 0.0);
   return new EoDbConic(center, extrusion, majorAxis, 1.0, startAngle, endAngle);
 }
@@ -451,9 +451,7 @@ EoDbConic::EoDbConic(const EoDbConic& other)
       m_extrusion(other.m_extrusion),
       m_ratio(other.m_ratio),
       m_startAngle(other.m_startAngle),
-      m_endAngle(other.m_endAngle) {
-  m_sweepAngle = other.m_sweepAngle;
-}
+      m_endAngle(other.m_endAngle) {}
 
 const EoDbConic& EoDbConic::operator=(const EoDbConic& other) {
   if (this != &other) {
@@ -464,8 +462,6 @@ const EoDbConic& EoDbConic::operator=(const EoDbConic& other) {
     m_ratio = other.m_ratio;
     m_startAngle = other.m_startAngle;
     m_endAngle = other.m_endAngle;
-
-    m_sweepAngle = other.m_sweepAngle;
   }
   return (*this);
 }
@@ -581,7 +577,7 @@ void EoDbConic::CutAtPt(EoGePoint3d& point, EoDbGroup* group) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Null group in CutAtPt\n");
     return;
   }
-  if (IsFullConic()) { return; }  // Do not fragment a circle or full ellipse
+  if (IsFullConic()) { return; }  // @todo Consider moving start angle to point, but no cutting needed
 
   double sweepAngle = SweepAngle();
   if (fabs(sweepAngle) <= Eo::geometricTolerance) { return; }  // Nothing to cut
@@ -596,12 +592,10 @@ void EoDbConic::CutAtPt(EoGePoint3d& point, EoDbGroup* group) {
   EoDbConic* newConic = new EoDbConic(*this);
 
   newConic->SetStartAngle(absoluteAngleAtPoint);
-  newConic->SetSweepAngle(m_endAngle - absoluteAngleAtPoint);  // Deprecated, but kept for temporary continuity
 
   group->AddTail(newConic);
 
   m_endAngle = absoluteAngleAtPoint;
-  m_sweepAngle = m_endAngle - m_startAngle;  // Deprecated, but kept for temporary continuity
 }
 
 void EoDbConic::Display(AeSysView* view, CDC* deviceContext) {
@@ -963,7 +957,7 @@ int EoDbConic::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptI
     dWrkAng = atan2(ptWrk[i2].y - m_center.y, ptWrk[i2].x - m_center.x);  // Current intersection angle (- pi to
     dIntAng[iInts] = dWrkAng - dBegAng;                                   // Sweep from begin to intersection
     if (dIntAng[iInts] < 0.0) dIntAng[iInts] += Eo::TwoPi;
-    if (fabs(dIntAng[iInts]) - m_sweepAngle < 0.0) {  // Intersection lies on arc
+    if (fabs(dIntAng[iInts]) - SweepAngle() < 0.0) {  // Intersection lies on arc
       int i;
       for (i = 0; i < iInts && ptWrk[i2] != ptInt[i]; i++);
       if (i == iInts)  // Unique intersection
@@ -986,8 +980,8 @@ int EoDbConic::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptI
       }
     }
   }
-  if (fabs(m_sweepAngle - Eo::TwoPi) <= Eo::geometricTolerance) {  // Arc is a circle in disuise
-
+  if (IsFullConic()) {
+    // @todo handle full circle or ellipse
   } else {
     if (ptBeg.x >= ptLL.x && ptBeg.x <= ptUR.x && ptBeg.y >= ptLL.y && ptBeg.y <= ptUR.y) {  // Add beg point to int set
       for (int i = iInts; i > 0; i--) ptInt[i] = ptInt[i - 1];
@@ -1175,13 +1169,16 @@ double EoDbConic::SweepAngleToPoint(EoGePoint3d point) {
   EoGeTransformMatrix transformMatrix(m_center, normal);
 
   auto startPoint = PointAtStartAngle();
-
   auto endPoint = point;
 
   // Translate points into z=0 plane
   startPoint = transformMatrix * startPoint;
   endPoint = transformMatrix * endPoint;
 
+  // Guard against degenerate case where point is at center
+  if (EoGeVector3d(EoGePoint3d::kOrigin, endPoint).Length() < Eo::geometricTolerance) {
+    return 0.0;  // Point at center, return start angle
+  }
   return (EoGeLine::AngleBetweenLn_xy(EoGeLine(EoGePoint3d::kOrigin, startPoint),
                                       EoGeLine(EoGePoint3d::kOrigin, endPoint)));
 }

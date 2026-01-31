@@ -143,9 +143,7 @@ class EoDbConic : public EoDbPrimitive {
         m_extrusion{EoGeVector3d::positiveUnitZ},
         m_ratio{1.0},
         m_startAngle{},
-        m_endAngle{},
-        // @todo sweep angle are to be removed from class data members
-        m_sweepAngle{} {}
+        m_endAngle{} {}
 
   // EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle = 0.0, double endAngle = Eo::TwoPi);
 
@@ -271,6 +269,14 @@ class EoDbConic : public EoDbPrimitive {
 
   [[nodiscard]] bool IsEllipticalArc() const noexcept { return m_ratio < 1.0 - Eo::numericEpsilon && !IsFullConic(); }
 
+  /** @brief Determines if the conic represents a full circle or ellipse.
+   *
+   * This method checks whether the conic is a complete circle or ellipse by evaluating
+   * the sweep angle derived from the start and end angles. It accounts for floating-point
+   * precision using a geometric tolerance.
+   *
+   * @return True if the conic is a full circle or ellipse; otherwise, false.
+   */
   [[nodiscard]] bool IsFullConic() const noexcept {
     double sweep = NormalizeTo2Pi(m_endAngle) - NormalizeTo2Pi(m_startAngle);
     if (sweep <= 0.0) sweep += Eo::TwoPi;
