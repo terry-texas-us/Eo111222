@@ -360,7 +360,7 @@ void AeSysView::OnDimensionModeAngle() {
         auto* Group = new EoDbGroup;
         GenerateLineEndItem(1, 0.1, ptArrow, ln.begin, Group);
 
-        auto* radialArc = new EoDbConic(center, vXAx, vYAx, sweepAngle);
+        auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, vXAx, vYAx, sweepAngle);
         radialArc->SetColor(1);
         radialArc->SetLineTypeIndex(1);
         Group->AddTail(radialArc);

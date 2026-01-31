@@ -236,11 +236,11 @@ void AeSysView::OnDrawModeReturn() {
       auto extrusion = CrossProduct(majorAxis, minorAxis);
       extrusion.Normalize();
       double ratio = minorAxis.Length() / majorAxis.Length();
-      auto* conic = new EoDbConic(pts[0], extrusion, majorAxis, ratio);
-      conic->SetColor(pstate.PenColor());
-      conic->SetLineTypeIndex(pstate.LineType());
+      auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
+      ellipse->SetColor(pstate.PenColor());
+      ellipse->SetLineTypeIndex(pstate.LineType());
 
-      group = new EoDbGroup(conic);
+      group = new EoDbGroup(ellipse);
 
       break;
     }
@@ -374,11 +374,11 @@ void AeSysView::DoDrawModeMouseMove() {
         auto extrusion = CrossProduct(majorAxis, minorAxis);
         extrusion.Normalize();
         double ratio = minorAxis.Length() / majorAxis.Length();
-        auto* conic = new EoDbConic(pts[0], extrusion, majorAxis, ratio);
-        conic->SetColor(pstate.PenColor());
-        conic->SetLineTypeIndex(pstate.LineType());
+        auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
+        ellipse->SetColor(pstate.PenColor());
+        ellipse->SetLineTypeIndex(pstate.LineType());
 
-        m_PreviewGroup.AddTail(conic);
+        m_PreviewGroup.AddTail(ellipse);
       }
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;

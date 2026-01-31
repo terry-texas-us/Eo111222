@@ -357,7 +357,7 @@ EoDbPrimitive* EoDbJobFile::ConvertEllipsePrimitive() {
 
   if (sweepAngle > Eo::TwoPi || sweepAngle < -Eo::TwoPi) { sweepAngle = Eo::TwoPi; }
 
-  auto* conic = new EoDbConic(center, majorAxis, minorAxis, sweepAngle);
+  auto* conic = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
   conic->SetColor(color);
   conic->SetLineTypeIndex(lineTypeIndex);
 
@@ -413,7 +413,7 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
   auto minorAxis = CrossProduct(EoGeVector3d::positiveUnitZ, majorAxis);
   sweepAngle = fabs(sweepAngle);
 
-  auto* conic = new EoDbConic(center, majorAxis, minorAxis, sweepAngle);
+  auto* conic = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
   conic->SetColor(color);
   conic->SetLineTypeIndex(lineTypeIndex);
 

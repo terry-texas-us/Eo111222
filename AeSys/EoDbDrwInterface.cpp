@@ -286,7 +286,6 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
   }
   EoGePoint3d center(arc.basePoint.x, arc.basePoint.y, arc.basePoint.z);
   EoGeVector3d extrusion(arc.extPoint.x, arc.extPoint.y, arc.extPoint.z);
-
   if (extrusion.IsNearNull()) {
     extrusion = EoGeVector3d::positiveUnitZ;
   } else {
@@ -296,31 +295,24 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
   double startAngle = EoDbConic::NormalizeTo2Pi(arc.staangle);
   double endAngle = EoDbConic::NormalizeTo2Pi(arc.endangle);
 
-  auto* conicPrimitive = new EoDbConic(center, extrusion, arc.radious, startAngle, endAngle);
-  conicPrimitive->SetBaseProperties(&arc, document);
-  AddToDocument(conicPrimitive, document);
+  auto* radialArc = EoDbConic::CreateRadialArc(center, extrusion, arc.radious, startAngle, endAngle);
+  radialArc->SetBaseProperties(&arc, document);
+  AddToDocument(radialArc, document);
 }
 
 void EoDbDrwInterface::ConvertCircleEntity(const DRW_Circle& circle, AeSysDoc* document) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Circle entity conversion\n");
-  
-  EoGePoint3d center(circle.basePoint.x, circle.basePoint.y, circle.basePoint.z);
 
+  EoGePoint3d center(circle.basePoint.x, circle.basePoint.y, circle.basePoint.z);
   EoGeVector3d extrusion(circle.extPoint.x, circle.extPoint.y, circle.extPoint.z);
   if (extrusion.IsNearNull()) {
     extrusion = EoGeVector3d::positiveUnitZ;
   } else {
     extrusion.Normalize();
   }
-
-  auto* conicPrimitive = new EoDbConic(center, extrusion, circle.radious);
-
-  // TODO: Minor axis and sweep angle are to be removed from class data members
-  conicPrimitive->SetSweepAngle(Eo::TwoPi);
-
-  conicPrimitive->SetBaseProperties(&circle, document);
-
-  AddToDocument(conicPrimitive, document);
+  auto* conic = EoDbConic::CreateCircle(center, extrusion, circle.radious);
+  conic->SetBaseProperties(&circle, document);
+  AddToDocument(conic, document);
 }
 
 void EoDbDrwInterface::ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc* document) {
@@ -341,21 +333,10 @@ void EoDbDrwInterface::ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc
   } else {
     extrusion.Normalize();
   }
-
-  auto* conicPrimitive = new EoDbConic();
-  conicPrimitive->SetCenter(EoGePoint3d(ellipse.basePoint.x, ellipse.basePoint.y, ellipse.basePoint.z));
-  conicPrimitive->SetMajorAxis(majorAxis);
-  conicPrimitive->SetExtrusion(extrusion);
-  conicPrimitive->SetRatio(ellipse.ratio);
-  conicPrimitive->SetStartAngle(ellipse.staparam);
-  conicPrimitive->SetEndAngle(ellipse.endparam);
-
-  // TODO: Minor axis and sweep angle are to be removed from class data members
-  conicPrimitive->SetSweepAngle(Eo::TwoPi);
-
-  conicPrimitive->SetBaseProperties(&ellipse, document);
-
-  AddToDocument(conicPrimitive, document);
+  auto center = EoGePoint3d(ellipse.basePoint.x, ellipse.basePoint.y, ellipse.basePoint.z);
+  auto* conic = EoDbConic::CreateConic(center, majorAxis, extrusion, ellipse.ratio, ellipse.staparam, ellipse.endparam);
+  conic->SetBaseProperties(&ellipse, document);
+  AddToDocument(conic, document);
 }
 
 void EoDbDrwInterface::ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* document) {

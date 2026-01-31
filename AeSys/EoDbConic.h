@@ -23,35 +23,118 @@ class EoDbConic : public EoDbPrimitive {
   double m_startAngle{};  // Start parameter angle in radians
   double m_endAngle{};    // End parameter angle in radians
 
-  // TODO: Minor axis and sweep angle are to be removed from class data members
+  // @todo sweep angle are to be removed from class data members
   double m_sweepAngle{0.0};
 
-  // Private constructor - forces use of factory methods
+  /** @brief Private constructor for EoDbConic class.
+   *
+   * This constructor initializes an EoDbConic object with the specified parameters.
+   * It is private to enforce the use of factory methods for object creation.
+   * @param center The center point of the conic.
+   * @param extrusion The extrusion direction defining the plane of the conic.
+   * @param majorAxis The major axis vector of the conic.
+   * @param ratio The ratio of the minor axis to the major axis (0.0 < ratio <= 1.0).
+   * @param startAngle The starting angle of the conic in radians.
+   * @param endAngle The ending angle of the conic in radians.
+   */
   EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis, double ratio,
             double startAngle, double endAngle);
 
  public:
-  static EoDbConic* CreateCircle(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius);
-  static EoDbConic* CreateCircleInView(const EoGePoint3d& center, double radius);
-
-  static EoDbConic* CreateConicFromEllipsePrimitive(EoGePoint3d& center, EoGeVector3d& majorAxis,
-                                                    EoGeVector3d& minorAxis, double sweepAngle);
-
-  EoDbConic(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle);
-
+  /** @brief Creates a radial arc conic primitive.
+   *
+   * This static method constructs a radial arc conic primitive using the specified center point,
+   * extrusion vector, radius, start angle, and end angle. The major axis is computed as an arbitrary
+   * axis perpendicular to the extrusion vector.
+   * @param center The center point of the radial arc.
+   * @param extrusion The extrusion direction defining the plane of the radial arc.
+   * @param radius The radius of the radial arc.
+   * @param startAngle The starting angle of the arc in radians.
+   * @param endAngle The ending angle of the arc in radians.
+   * @return A pointer to the created EoDbConic primitive representing the radial arc.
+   * @note This is definition used by autoCAD for arc entity.
+   */
+  static EoDbConic* CreateRadialArc(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius,
+                                    double startAngle, double endAngle);
   /**
    * @brief Creates a radial arc defined by three points in 3D space.
    *
    * This static method constructs a radial arc (a segment of a circle) that passes through three specified points:
    * the start point, an intermediate point, and the end point. The arc is created in a counter-clockwise direction
    * when viewed from the positive Z direction of the computed normal vector.
-   *
    * @param start The starting point of the arc.
    * @param intermediate A point on the arc between the start and end points.
    * @param end The ending point of the arc.
    * @return A pointer to the created EoDbConic representing the radial arc, or nullptr if the points are collinear.
    */
   static EoDbConic* CreateRadialArcFrom3Points(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end);
+
+  /** @brief Creates a circle conic primitive.
+   * This static method constructs a circle conic primitive using the specified center point,
+   * extrusion vector, and radius. The major axis is computed as an arbitrary axis perpendicular
+   * to the extrusion vector.
+   * @param center The center point of the circle.
+   * @param extrusion The extrusion direction defining the plane of the circle.
+   * @param radius The radius of the circle.
+   * @return A pointer to the created EoDbConic primitive representing the circle.
+   * @note This is definition used by autoCAD for circle entity.
+   */
+  static EoDbConic* CreateCircle(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius);
+
+  /** @brief Creates a circle in the active view's plane.
+   *
+   * This static method creates a circle centered at the specified point with the given radius,
+   * oriented according to the active view's camera direction.
+   * @param center The center point of the circle.
+   * @param radius The radius of the circle.
+   * @return A pointer to the newly created EoDbConic representing the circle.
+   */
+  static EoDbConic* CreateCircleInView(const EoGePoint3d& center, double radius);
+
+  /**
+   * @brief Creates a conic primitive defined by center, extrusion, major axis, ratio, start angle, and end angle.
+   *
+   * This static method constructs a conic primitive (circle, ellipse, radial arc, or elliptical arc) using the specified parameters.
+   * @param center The center point of the conic.
+   * @param extrusion The extrusion direction defining the plane of the conic.
+   * @param majorAxis The major axis vector of the conic.
+   * @param ratio The ratio of the minor axis to the major axis (0.0 < ratio <= 1.0).
+   * @param startAngle The starting angle of the conic in radians.
+   * @param endAngle The ending angle of the conic in radians.
+   * @return A pointer to the created EoDbConic primitive representing the conic.
+   * @note This is the general definition used to expose the private constructor.
+   * @note This is definition used by autoCAD for ellipse entity.
+   */
+  static EoDbConic* CreateConic(EoGePoint3d& center, EoGeVector3d& extrusion, EoGeVector3d& majorAxis, double ratio,
+                                double startAngle, double endAngle);
+
+  /**
+   * @brief Creates a conic primitive from given parameters which are used to define deprecated ellipse primitive.
+   * 
+   * This function constructs an conic primitive using the specified center point, major axis vector,
+   * minor axis vector, and sweep angle. The extrusion vector is computed as the cross product of the major
+   * and minor axes, and the ratio of the minor axis length to the major axis length is calculated.
+   * @param center The center point of the ellipse.
+   * @param majorAxis The major axis vector of the ellipse.
+   * @param minorAxis The minor axis vector of the ellipse.
+   * @param sweepAngle The sweep angle of the ellipse in radians.
+   * @return A pointer to the created EoDbConic primitive.
+   */
+  static EoDbConic* CreateConicFromEllipsePrimitive(EoGePoint3d& center, EoGeVector3d& majorAxis,
+                                                    EoGeVector3d& minorAxis, double sweepAngle);
+
+  /** @brief Creates an ellipse conic primitive.
+   *
+   * This static method constructs an ellipse conic primitive using the specified center point,
+   * extrusion vector, major axis, and ratio of minor axis to major axis.
+   * @param center The center point of the ellipse.
+   * @param extrusion The extrusion direction defining the plane of the ellipse.
+   * @param majorAxis The major axis vector of the ellipse.
+   * @param ratio The ratio of the minor axis to the major axis (0.0 < ratio <= 1.0).
+   * @return A pointer to the created EoDbConic primitive representing the ellipse.
+   */
+  static EoDbConic* CreateEllipse(const EoGePoint3d& center, const EoGeVector3d& extrusion,
+                                  const EoGeVector3d& majorAxis, double ratio);
 
  public:
   EoDbConic()
@@ -61,17 +144,18 @@ class EoDbConic : public EoDbPrimitive {
         m_ratio{1.0},
         m_startAngle{},
         m_endAngle{},
-        // TODO: Minor axis and sweep angle are to be removed from class data members
+        // @todo sweep angle are to be removed from class data members
         m_sweepAngle{} {}
+
+  // EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle = 0.0, double endAngle = Eo::TwoPi);
+
+  // EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis, double ratio);
 
   // EoDbConic(EoGePoint3d& center, EoGePoint3d& start);
 
-  EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle = 0.0,
-            double endAngle = Eo::TwoPi);
-
   // EoDbConic(const EoGePoint3d& center, double radius, double startAngle, double endAngle);
 
-  // EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis, double ratio);
+  // EoDbConic(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle);
 
   // EoDbConic(EoGePoint3d& center, double radius, EoInt16 color = COLOR_BYLAYER, EoInt16 lineTypeIndex = LINETYPE_BYLAYER);
 
@@ -177,9 +261,7 @@ class EoDbConic : public EoDbPrimitive {
     }
   }
 
-  [[nodiscard]] bool IsCircle() const noexcept {
-    return fabs(1.0 - m_ratio) <= Eo::numericEpsilon && IsFullConic();
-  }
+  [[nodiscard]] bool IsCircle() const noexcept { return fabs(1.0 - m_ratio) <= Eo::numericEpsilon && IsFullConic(); }
 
   [[nodiscard]] bool IsRadialArc() const noexcept {
     return fabs(1.0 - m_ratio) <= Eo::numericEpsilon && !IsFullConic();
@@ -187,9 +269,7 @@ class EoDbConic : public EoDbPrimitive {
 
   [[nodiscard]] bool IsEllipse() const noexcept { return m_ratio < 1.0 - Eo::numericEpsilon && IsFullConic(); }
 
-  [[nodiscard]] bool IsEllipticalArc() const noexcept {
-    return m_ratio < 1.0 - Eo::numericEpsilon && !IsFullConic();
-  }
+  [[nodiscard]] bool IsEllipticalArc() const noexcept { return m_ratio < 1.0 - Eo::numericEpsilon && !IsFullConic(); }
 
   [[nodiscard]] bool IsFullConic() const noexcept {
     double sweep = NormalizeTo2Pi(m_endAngle) - NormalizeTo2Pi(m_startAngle);

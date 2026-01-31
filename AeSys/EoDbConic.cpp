@@ -86,7 +86,6 @@ CString EoDbConic::SubClassName(double ratio, double startAngle, double endAngle
   }
 }
 
-// Private constructor with full validation
 EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis,
                      double ratio, double startAngle, double endAngle)
     : m_center(center),
@@ -102,10 +101,8 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
 }
 
 EoDbConic* EoDbConic::CreateCircle(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius) {
-  auto* circle = new EoDbConic(center, extrusion, radius, 0.0, Eo::TwoPi);
-  circle->SetColor(pstate.PenColor());
-  circle->SetLineTypeIndex(pstate.LineType());
-  return circle;
+  auto majorAxis = ComputeArbitraryAxis(extrusion) * radius;
+  return new EoDbConic(center, extrusion, majorAxis, 1.0, 0.0, Eo::TwoPi);
 }
 
 EoDbConic* EoDbConic::CreateCircleInView(const EoGePoint3d& center, double radius) {
@@ -116,18 +113,11 @@ EoDbConic* EoDbConic::CreateCircleInView(const EoGePoint3d& center, double radiu
   return CreateCircle(center, cameraDirection, radius);
 }
 
-/**
-* @brief Creates a conic primitive from given parameters which are used to define deprecated ellipse primitive.
-* 
-* This function constructs an conic primitive using the specified center point, major axis vector,
-* minor axis vector, and sweep angle. The extrusion vector is computed as the cross product of the major
-* and minor axes, and the ratio of the minor axis length to the major axis length is calculated.
-* @param center The center point of the ellipse.
-* @param majorAxis The major axis vector of the ellipse.
-* @param minorAxis The minor axis vector of the ellipse.
-* @param sweepAngle The sweep angle of the ellipse in radians.
-* @return A pointer to the created EoDbConic primitive.
-*/
+EoDbConic* EoDbConic::CreateConic(EoGePoint3d& center, EoGeVector3d& extrusion, EoGeVector3d& majorAxis, double ratio,
+                                  double startAngle, double endAngle) {
+  return new EoDbConic(center, extrusion, majorAxis, ratio, startAngle, endAngle);
+}
+
 EoDbConic* EoDbConic::CreateConicFromEllipsePrimitive(EoGePoint3d& center, EoGeVector3d& majorAxis,
                                                       EoGeVector3d& minorAxis, double sweepAngle) {
   EoGeVector3d extrusion{CrossProduct(majorAxis, minorAxis)};
@@ -136,6 +126,17 @@ EoDbConic* EoDbConic::CreateConicFromEllipsePrimitive(EoGePoint3d& center, EoGeV
   double ratio{minorAxis.Length() / majorAxis.Length()};
 
   return new EoDbConic(center, extrusion, majorAxis, ratio, 0.0, sweepAngle);
+}
+
+EoDbConic* EoDbConic::CreateEllipse(const EoGePoint3d& center, const EoGeVector3d& extrusion,
+                                    const EoGeVector3d& majorAxis, double ratio) {
+  return new EoDbConic(center, extrusion, majorAxis, ratio, 0.0, Eo::TwoPi);
+}
+
+EoDbConic* EoDbConic::CreateRadialArc(const EoGePoint3d& center, const EoGeVector3d& extrusion,
+                                      double radius, double startAngle, double endAngle) {
+  auto majorAxis = EoGeVector3d(radius, 0.0, 0.0);
+  return new EoDbConic(center, extrusion, majorAxis, 1.0, startAngle, endAngle);
 }
 
 EoDbConic* EoDbConic::CreateRadialArcFrom3Points(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end) {
@@ -215,6 +216,8 @@ EoDbConic* EoDbConic::CreateRadialArcFrom3Points(EoGePoint3d start, EoGePoint3d 
   return nullptr;
 }
 
+/// @deprecated Constructor retained for reference only
+/*
 EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle,
                      double endAngle)
     : EoDbPrimitive(),
@@ -224,9 +227,18 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, d
       m_ratio(1.0),
       m_startAngle(startAngle),
       m_endAngle(endAngle) {}
-
-///////////
-
+*/
+/*
+EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis,
+                     double ratio)
+    : EoDbPrimitive(),
+      m_center(center),
+      m_majorAxis(majorAxis),
+      m_extrusion(extrusion),
+      m_ratio(ratio),
+      m_startAngle(0.0),
+      m_endAngle(Eo::TwoPi) {}
+*/
 /**
  * @brief Constructs a circle (as ellipse) primitive defined by a center point and radius in the current view.
  *
@@ -261,7 +273,6 @@ EoDbConic::EoDbConic(EoGePoint3d& center, double radius, EoInt16 color, EoInt16 
  * @param normal The normal vector defining the plane of the circle.
  * @param radius The radius of the circle.
  */
-
 /*
 EoDbConic::EoDbConic(EoGePoint3d& center, EoGeVector3d& normal, double radius, EoInt16 color, EoInt16 lineType)
     : EoDbPrimitive(color, lineType), m_center(center) {
@@ -286,7 +297,6 @@ EoDbConic::EoDbConic(EoGePoint3d& center, EoGeVector3d& normal, double radius, E
  * @param center The center point of the circle.
  * @param start The start point that defines the radius of the circle.
  */
-
 /*
 EoDbConic::EoDbConic(EoGePoint3d& center, EoGePoint3d& start) {
   auto* activeView = AeSysView::GetActiveView();
@@ -301,19 +311,6 @@ EoDbConic::EoDbConic(EoGePoint3d& center, EoGePoint3d& start) {
   m_sweepAngle = Eo::TwoPi;
 }
 */
-
-/*
-EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis,
-                     double ratio)
-    : EoDbPrimitive(),
-      m_center(center),
-      m_majorAxis(majorAxis),
-      m_extrusion(extrusion),
-      m_ratio(ratio),
-      m_startAngle(0.0),
-      m_endAngle(Eo::TwoPi) {}
-*/
-
 /*
 EoDbConic::EoDbConic(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end) {
   EoGeVector3d startToIntermediate(start, intermediate);
@@ -435,6 +432,7 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, double radius, double startAngle
  * @param color The pen color for the ellipse.
  * @param lineType The line type index for the ellipse.
  */
+/*
 EoDbConic::EoDbConic(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle)
     : m_center(center),
       m_majorAxis(majorAxis),
@@ -444,6 +442,7 @@ EoDbConic::EoDbConic(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d&
       m_endAngle(sweepAngle) {
   m_extrusion.Normalize();
 }
+*/
 
 EoDbConic::EoDbConic(const EoDbConic& other)
     : EoDbPrimitive(other),
@@ -678,10 +677,9 @@ void EoDbConic::GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d m
 }
 
 void EoDbConic::FormatGeometry(CString& geometry) {
-  CString subClassName = SubClassName(m_ratio, m_startAngle, m_endAngle);
-
-  geometry += L"Center Point;" + m_center.ToString();
-  if (subClassName == L"<Ellipse>") { geometry += L"Major Axis;" + m_majorAxis.ToString(); }
+  auto conicType = Subclass();
+  geometry += L"Center;" + m_center.ToString();
+  if (conicType == ConicType::Ellipse) { geometry += L"Major Axis;" + m_majorAxis.ToString(); }
   geometry += L"Extrusion;" + m_extrusion.ToString();
 }
 

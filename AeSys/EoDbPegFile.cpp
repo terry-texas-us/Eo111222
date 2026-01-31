@@ -576,7 +576,7 @@ void EoDb::ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   primitive = new EoDbDimension(PenColor, LineType, EoGeLine(BeginPoint, EndPoint), TextPenColor, FontDefinition, ReferenceSystem, Text);
 }
 
-void EoDb::ConstructConicPrimitive(CFile& file, EoDbPrimitive*& /* primitive */) {
+void EoDb::ConstructConicPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   auto color = EoDb::ReadInt16(file);
   auto lineTypeIndex = EoDb::ReadInt16(file);
   auto center(ReadPoint3d(file));
@@ -589,9 +589,8 @@ void EoDb::ConstructConicPrimitive(CFile& file, EoDbPrimitive*& /* primitive */)
   double endAngle;
   EoDb::Read(file, endAngle);
 
-  auto primitive = new EoDbConic(center, extrusion, ratio, startAngle, endAngle);
-  primitive->SetMajorAxis(majorAxis);
-
+  primitive = EoDbConic::CreateConic(center, extrusion, majorAxis, ratio, startAngle, endAngle);
+  
   primitive->SetColor(color);
   primitive->SetLineTypeIndex(lineTypeIndex);
 }
@@ -610,7 +609,7 @@ void EoDb::ConstructEllipsePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoGeVector3d minorAxis(ReadVector3d(file));
   double sweepAngle;
   EoDb::Read(file, sweepAngle);
-  primitive = new EoDbConic(center, majorAxis, minorAxis, sweepAngle);
+  primitive = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
 
   primitive->SetColor(color);
   primitive->SetLineTypeIndex(lineTypeIndex);
