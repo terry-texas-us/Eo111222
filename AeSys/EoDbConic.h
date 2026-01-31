@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <utility>
 
@@ -22,9 +22,6 @@ class EoDbConic : public EoDbPrimitive {
   double m_ratio{1.0};    // Ratio of minor axis to major axis [0.0 to 1.0]
   double m_startAngle{};  // Start parameter angle in radians
   double m_endAngle{};    // End parameter angle in radians
-
-  // @todo sweep angle are to be removed from class data members
-  double m_sweepAngle{0.0};
 
   /** @brief Private constructor for EoDbConic class.
    *
@@ -173,6 +170,15 @@ class EoDbConic : public EoDbPrimitive {
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbConic*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
+  
+  /** @brief Displays the conic on the given view and device context.
+   *
+   * This method renders the conic on the specified view and device context. It first checks for null pointers
+   * and skips degenerate arcs or major axes. It sets the pen state and generates approximation vertices for rendering.
+   *
+   * @param view Pointer to the AeSysView where the conic will be displayed.
+   * @param deviceContext Pointer to the CDC device context used for rendering.
+   */
   void Display(AeSysView* view, CDC* deviceContext) override;
   void GetAllPoints(EoGePoint3dArray& points) override;
   void FormatExtra(CString& extra) override;
@@ -323,24 +329,24 @@ class EoDbConic : public EoDbPrimitive {
   void GetXYExtents(EoGePoint3d, EoGePoint3d, EoGePoint3d*, EoGePoint3d*) const;
   int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) override;
 
-  const EoGePoint3d& Center() const noexcept { return (m_center); }
+  [[nodiscard]] const EoGePoint3d& Center() const noexcept { return (m_center); }
   void SetCenter(EoGePoint3d center) { m_center = std::move(center); }
 
-  double EndAngle() const noexcept { return (m_endAngle); }
+  [[nodiscard]] double EndAngle() const noexcept { return (m_endAngle); }
   void SetEndAngle(double endAngle) { m_endAngle = endAngle; }
 
-  const EoGeVector3d& MajorAxis() const noexcept { return (m_majorAxis); }
+  [[nodiscard]] const EoGeVector3d& MajorAxis() const noexcept { return (m_majorAxis); }
   void SetMajorAxis(EoGeVector3d majorAxis) { m_majorAxis = std::move(majorAxis); }
 
-  const EoGeVector3d& Extrusion() const noexcept { return (m_extrusion); }
+  [[nodiscard]] const EoGeVector3d& Extrusion() const noexcept { return (m_extrusion); }
   void SetExtrusion(EoGeVector3d extrusion) { m_extrusion = std::move(extrusion); }
 
   [[nodiscard]] EoGeVector3d MinorAxis() const noexcept { return CrossProduct(m_extrusion, m_majorAxis) * m_ratio; }
 
-  double Ratio() const noexcept { return (m_ratio); }
+  [[nodiscard]] double Ratio() const noexcept { return (m_ratio); }
   void SetRatio(double ratio) { m_ratio = ratio; }
 
-  double StartAngle() const noexcept { return (m_startAngle); }
+  [[nodiscard]] double StartAngle() const noexcept { return (m_startAngle); }
   void SetStartAngle(double startAngle) { m_startAngle = startAngle; }
 
   void SetAngles(double startAngle, double endAngle) {
@@ -348,17 +354,24 @@ class EoDbConic : public EoDbPrimitive {
     m_endAngle = endAngle;
   }
 
-  void SetSweepAngle(double sweepAngle) { m_sweepAngle = sweepAngle; }
-
   [[nodiscard]] double Radius() const noexcept { return m_majorAxis.Length(); }
   [[nodiscard]] double MajorRadius() const noexcept { return m_majorAxis.Length(); }
   [[nodiscard]] double MinorRadius() const noexcept { return Radius() * m_ratio; }
 
+  /** @brief Calculates the sweep angle of the conic.
+   *
+   * This method computes the sweep angle of the conic (arc or ellipse) based on the
+   * start and end angles. It normalizes the angles to the range [0, 2π) and calculates
+   * the difference. If the result is non-positive, it adds 2π to ensure a positive sweep angle.
+   *
+   * @return The sweep angle in radians.
+   */
   [[nodiscard]] double SweepAngle() const noexcept {
     double sweepAngle = NormalizeTo2Pi(m_endAngle) - NormalizeTo2Pi(m_startAngle);
     if (sweepAngle <= 0.0) sweepAngle += Eo::TwoPi;
     return sweepAngle;
   }
+
   [[nodiscard]] double ArcLength() const noexcept {
     if (IsCircle() || IsRadialArc()) { return Radius() * SweepAngle(); }
     // Ramanujan's approximation for ellipse arc length

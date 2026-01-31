@@ -278,24 +278,39 @@ void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
 }
 
 void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Ellipse entity conversion\n");
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Arc entity conversion\n");
 
-  if (arc.radious <= 0.0) {
+  if (arc.radious <= Eo::geometricTolerance) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Arc entity with non-positive radius (%f) skipped.\n", arc.radious);
     return;
   }
   EoGePoint3d center(arc.basePoint.x, arc.basePoint.y, arc.basePoint.z);
+
   EoGeVector3d extrusion(arc.extPoint.x, arc.extPoint.y, arc.extPoint.z);
   if (extrusion.IsNearNull()) {
     extrusion = EoGeVector3d::positiveUnitZ;
   } else {
     extrusion.Normalize();
   }
-  // Normalize angles to [0, 2π)
-  double startAngle = EoDbConic::NormalizeTo2Pi(arc.staangle);
-  double endAngle = EoDbConic::NormalizeTo2Pi(arc.endangle);
+  double startAngle = arc.staangle;
+  double endAngle = arc.endangle;
 
+  // For negative Z extrusion, libdxfrw angles need mirroring to match AutoCAD behavior
+  const bool isNegativeExtrusion = extrusion.z < -Eo::geometricTolerance;
+  if (isNegativeExtrusion) {
+    startAngle = Eo::TwoPi - arc.staangle;
+    endAngle = Eo::TwoPi - arc.endangle;
+    // Swap start and end to maintain CCW sweep direction
+    std::swap(startAngle, endAngle);
+  }
+  startAngle = EoDbConic::NormalizeTo2Pi(startAngle);
+  endAngle = EoDbConic::NormalizeTo2Pi(endAngle);
+  
   auto* radialArc = EoDbConic::CreateRadialArc(center, extrusion, arc.radious, startAngle, endAngle);
+  if (radialArc == nullptr) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Failed to create radial arc.\n");
+    return;
+  }
   radialArc->SetBaseProperties(&arc, document);
   AddToDocument(radialArc, document);
 }
