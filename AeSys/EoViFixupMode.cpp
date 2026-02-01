@@ -63,11 +63,11 @@ EoGeLine currentLine{};
 [[nodiscard]] bool FindCenterFromRadiusAnd4Points(double radius, EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d* center) {
   EoGeVector3d u(firstLine.begin, firstLine.end);  // Determine vector defined by endpoints of first line
   double firstLineLength = u.Length();
-  if (firstLineLength <= Eo::geometricTolerance) { return false; }
+  if (firstLineLength < Eo::geometricTolerance) { return false; }
 
   EoGeVector3d v(secondLine.begin, secondLine.end);
   double secondLineLength = v.Length();
-  if (secondLineLength <= Eo::geometricTolerance) { return false; }
+  if (secondLineLength < Eo::geometricTolerance) { return false; }
 
   auto normal = CrossProduct(u, v);  // Determine vector normal to tangent vectors
   normal.Normalize();
@@ -190,17 +190,19 @@ void AeSysView::OnFixupModeReference() {
         EoGeVector3d previousEndToReferenceBegin(previousLine.end, referenceLine.begin);
         auto normal = CrossProduct(previousEndToIntersection, previousEndToReferenceBegin);
         normal.Normalize();
-        SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, referenceLine.begin, center, &angle);
-        auto majorAxis = EoGeVector3d(center, previousLine.end);
-        auto minorAxis = CrossProduct(normal, majorAxis);
+        if (SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, referenceLine.begin, center,
+                                           angle)) {
+          auto majorAxis = EoGeVector3d(center, previousLine.end);
+          auto minorAxis = CrossProduct(normal, majorAxis);
 
-        auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
-        radialArc->SetColor(line->Color());
-        radialArc->SetLineTypeIndex(line->LineTypeIndex());
+          auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
+          radialArc->SetColor(line->Color());
+          radialArc->SetLineTypeIndex(line->LineTypeIndex());
 
-        auto* group = new EoDbGroup(radialArc);
-        document->AddWorkLayerGroup(group);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
+          auto* group = new EoDbGroup(radialArc);
+          document->AddWorkLayerGroup(group);
+          document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
+        }
       }
     }
     ModeLineUnhighlightOp(previousCommand);
@@ -292,16 +294,17 @@ void AeSysView::OnFixupModeMend() {
         EoGeVector3d normal = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
         normal.Normalize();
         double angle{};
-        SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, currentLine.begin, center, &angle);
-        auto majorAxis = EoGeVector3d(center, previousLine.end);
-        auto minorAxis = CrossProduct(normal, majorAxis);
+        if (SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, currentLine.begin, center, angle)) {
+          auto majorAxis = EoGeVector3d(center, previousLine.end);
+          auto minorAxis = CrossProduct(normal, majorAxis);
 
-        auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
-        radialArc->SetColor(pstate.PenColor());
-        radialArc->SetLineTypeIndex(pstate.LineType());
+          auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
+          radialArc->SetColor(pstate.PenColor());
+          radialArc->SetLineTypeIndex(pstate.LineType());
 
-        previousGroup->AddTail(radialArc);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
+          previousGroup->AddTail(radialArc);
+          document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
+        }
       }
     }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
@@ -443,17 +446,17 @@ void AeSysView::OnFixupModeFillet() {
       normal = CrossProduct(previousEndToIntersection, previousEndToCurrentBegin);
       normal.Normalize();
       double angle;
-      SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, currentLine.begin, center, &angle);
-      auto majorAxis = EoGeVector3d(center, previousLine.end);
-      auto minorAxis = CrossProduct(normal, majorAxis);
+      if (SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, currentLine.begin, center, angle)) {
+        auto majorAxis = EoGeVector3d(center, previousLine.end);
+        auto minorAxis = CrossProduct(normal, majorAxis);
 
-      auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
-      radialArc->SetColor(line->Color());
-      radialArc->SetLineTypeIndex(line->LineTypeIndex());
-
-      currentGroup->AddTail(radialArc);
-
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
+        auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
+        radialArc->SetColor(line->Color());
+        radialArc->SetLineTypeIndex(line->LineTypeIndex());
+        
+        currentGroup->AddTail(radialArc);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
+      }
     }
     ModeLineUnhighlightOp(previousCommand);
   }

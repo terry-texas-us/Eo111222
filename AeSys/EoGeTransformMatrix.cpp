@@ -85,7 +85,7 @@ EoGeTransformMatrix::EoGeTransformMatrix(EoGePoint3d referencePoint, EoGeVector3
   EoGeVector3d yAxisTransformed = yAxis;
   yAxisTransformed = *this * yAxisTransformed;
 
-  if (fabs(yAxisTransformed.y) <= Eo::geometricTolerance) { return; }
+  if (fabs(yAxisTransformed.y) < Eo::geometricTolerance) { return; }
 
   scaleVector.y = 1.0 / yAxisTransformed.y;
   scaleVector.z = 1.0;
@@ -155,9 +155,9 @@ void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(EoGePoint3d refe
   double zNormalAbs = fabs(normal.z);
 
   double d = 0.0;
-  if (zNormalAbs <= Eo::geometricTolerance) {
+  if (zNormalAbs < Eo::geometricTolerance) {
     d = yNormalAbs;
-  } else if (yNormalAbs <= Eo::geometricTolerance) {
+  } else if (yNormalAbs < Eo::geometricTolerance) {
     d = zNormalAbs;
   } else {
     d = sqrt(yNormalAbs * yNormalAbs + zNormalAbs * zNormalAbs);

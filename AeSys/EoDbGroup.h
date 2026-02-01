@@ -12,6 +12,18 @@ class EoDbPoint;
 class EoDbPrimitive;
 class EoGeTransformMatrix;
 
+/**
+ * @brief Container for EoDbPrimitive objects.
+ * 
+ * @par Ownership Model
+ * EoDbGroup **owns** primitives added via AddTail/AddHead when used as a "primary group"
+ * in the document's layer structure. Call DeletePrimitivesAndRemoveAll() before destruction.
+ * 
+ * @par Selection/Trap Usage
+ * When used as a temporary selection set (trap), EoDbGroup stores **non-owning references**
+ * to primitives that are owned by their primary groups. Do NOT call DeletePrimitivesAndRemoveAll()
+ * on trap groups - only RemoveAll().
+ */
 class EoDbGroup : public CObList {
   static EoDbPrimitive* sm_PrimitiveToIgnore;
 

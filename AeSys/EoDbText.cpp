@@ -26,7 +26,7 @@ namespace {
  *  @param xAxis The X axis vector of the text reference system.
  */
 int FontEscapementAngle(const EoGeVector3d& xAxis) {
-  double angle = atan2(xAxis.y, xAxis.x);  // -pi to pi radians
+  double angle = atan2(xAxis.y, xAxis.x);  // -π to π radians
   if (angle < 0.0) { angle += Eo::TwoPi; }
   return Eo::Round(Eo::RadianToDegree(angle) * 10.0);
 }

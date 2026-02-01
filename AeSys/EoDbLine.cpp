@@ -76,42 +76,44 @@ EoDbPrimitive*& EoDbLine::Copy(EoDbPrimitive*& primitive) {
  * @param newGroups Group list to receive the new line segments.
  * @note Line segment between two points goes in groups.
  */
-void EoDbLine::CutAt2Pts(EoGePoint3d* points, EoDbGroupList* groups, EoDbGroupList* newGroups) {
+void EoDbLine::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups,
+                         EoDbGroupList* newGroups) {
   EoDbLine* line{};
   double dRel[2]{};
 
-  m_ln.RelOfPtToEndPts(points[0], dRel[0]);
-  m_ln.RelOfPtToEndPts(points[1], dRel[1]);
+  m_ln.RelOfPtToEndPts(firstPoint, dRel[0]);
+  m_ln.RelOfPtToEndPts(secondPoint, dRel[1]);
 
-  if (dRel[0] <= Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance) {
+  if (dRel[0] < Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance) {
     // The two points effectively cover the whole line. No cutting. Put entire line in trap.
     line = this;
   } else {  // Something gets cut
     line = new EoDbLine(*this);
     if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
-      line->BeginPoint(points[1]);
+      line->BeginPoint(secondPoint);
       groups->AddTail(new EoDbGroup(line));
       line = new EoDbLine(*this);
-      line->BeginPoint(points[0]);
-      line->EndPoint(points[1]);
-      EndPoint(points[0]);
+      line->BeginPoint(firstPoint);
+      line->EndPoint(secondPoint);
+      EndPoint(firstPoint);
     } else if (dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut in two and place begin section in trap
-      line->EndPoint(points[1]);
-      BeginPoint(points[1]);
+      line->EndPoint(secondPoint);
+      BeginPoint(secondPoint);
     } else {  // Cut in two and place end section in trap
-      line->BeginPoint(points[0]);
-      EndPoint(points[0]);
+      line->BeginPoint(firstPoint);
+      EndPoint(firstPoint);
     }
     groups->AddTail(new EoDbGroup(this));
   }
   newGroups->AddTail(new EoDbGroup(line));
 }
 
-void EoDbLine::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
-  EoGeLine ln;
+void EoDbLine::CutAtPoint(EoGePoint3d& point, EoDbGroup* group) {
+  EoGeLine line;
 
-  if (m_ln.CutAtPt(pt, ln) != 0) group->AddTail(new EoDbLine(m_color, m_lineTypeIndex, ln));
+  if (m_ln.CutAtPt(point, line) != 0) { group->AddTail(new EoDbLine(m_color, m_lineTypeIndex, line)); }
 }
+
 void EoDbLine::Display(AeSysView* view, CDC* deviceContext) {
   EoInt16 color = LogicalColor();
   EoInt16 lineType = LogicalLineType();

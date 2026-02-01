@@ -57,10 +57,11 @@ class EoDbLine : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, EoUInt8*) override;
 
- public:  // Methods - virtuals
-  void CutAt2Pts(EoGePoint3d*, EoDbGroupList*, EoDbGroupList*) override;
+ public:
+  void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*,
+                 EoDbGroupList*) override;
   /// <summary>Cuts a line a point.</summary>
-  void CutAtPt(EoGePoint3d&, EoDbGroup*) override;
+  void CutAtPoint(EoGePoint3d& point, EoDbGroup*) override;
   int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) override;
 
  public:  // Methods

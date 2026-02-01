@@ -247,7 +247,7 @@ bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, const double apert, EoGePoint
   double dDivr = dBegEndX * dBegEndX + dBegEndY * dBegEndY;
   double DistanceSquared;
 
-  if (dDivr <= Eo::geometricTolerance) {
+  if (dDivr < Eo::geometricTolerance) {
     *rel = 0.;
     DistanceSquared = dPBegX * dPBegX + dPBegY * dPBegY;
   } else {
@@ -297,7 +297,7 @@ int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistanc
 
   double dLen = sqrt(dX * dX + dY * dY);
 
-  if (dLen <= Eo::geometricTolerance) return (FALSE);
+  if (dLen < Eo::geometricTolerance) return (FALSE);
 
   double dRatio;
   *projectedPoint = begin;

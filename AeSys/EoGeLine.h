@@ -199,8 +199,8 @@ class EoGeLine {
   *	Angle is found using the inner product.
   * @code
     Angle = acos ( [v1 dot v2] /  [len(v1) * len(v2)] )
-    Angle is between 0 and 2 pi. If angle is 0 lines are in same direction and if angle is pi lines are in opposite direction.
-    To get acute angle, all angles greater than half pi must be subtracted from pi.
+    Angle is between 0 and 2π. If angle is 0 lines are in same direction and if angle is π lines are in opposite direction.
+    To get acute angle, all angles greater than half π must be subtracted from π.
     @endcode
   */
   static double AngleBetweenLn_xy(EoGeLine firstLine, EoGeLine secondLine);

@@ -634,7 +634,7 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
 void AeSysView::GenerateTransition(EoGeLine& referenceLine, double eccentricity, EJust justification, double slope,
                                    Section previousSection, Section currentSection, EoDbGroup* group) {
   double ReferenceLength = referenceLine.Length();
-  if (ReferenceLength <= Eo::geometricTolerance) { return; }
+  if (ReferenceLength < Eo::geometricTolerance) { return; }
 
   double WidthChange = currentSection.Width() - previousSection.Width();
   double TransitionLength = LengthOfTransition(justification, slope, previousSection, currentSection);

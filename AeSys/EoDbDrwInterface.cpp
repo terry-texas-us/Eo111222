@@ -280,7 +280,7 @@ void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
 void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Arc entity conversion\n");
 
-  if (arc.radious <= Eo::geometricTolerance) {
+  if (arc.radious < Eo::geometricTolerance) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Arc entity with non-positive radius (%f) skipped.\n", arc.radious);
     return;
   }

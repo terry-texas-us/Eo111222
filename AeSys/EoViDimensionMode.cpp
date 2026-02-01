@@ -344,18 +344,18 @@ void AeSysView::OnDimensionModeAngle() {
 
       EoGeVector3d vCenterToProjPt(center, rProjPt[0]);
       EoGeVector3d vCenterToCur(center, cursorPosition);
-      auto vPlnNorm = CrossProduct(vCenterToProjPt, vCenterToCur);
-      vPlnNorm.Normalize();
-      if (SweepAngleFromNormalAnd3Points(vPlnNorm, rProjPt[0], cursorPosition, rProjPt[1], center, &sweepAngle)) {
+      auto normal = CrossProduct(vCenterToProjPt, vCenterToCur);
+      normal.Normalize();
+      if (SweepAngleFromNormalAnd3Points(normal, rProjPt[0], cursorPosition, rProjPt[1], center, sweepAngle)) {
         double dRad = EoGeVector3d(center, cursorPosition).Length();
 
         ln.begin = center.ProjectToward(rProjPt[0], dRad);
-        ln.end = ln.begin.RotateAboutAxis(center, vPlnNorm, sweepAngle);
+        ln.end = ln.begin.RotateAboutAxis(center, normal, sweepAngle);
 
         auto vXAx = EoGeVector3d(center, ln.begin);
-        EoGePoint3d ptRot(ln.begin.RotateAboutAxis(center, vPlnNorm, Eo::HalfPi));
+        EoGePoint3d ptRot(ln.begin.RotateAboutAxis(center, normal, Eo::HalfPi));
         EoGeVector3d vYAx = EoGeVector3d(center, ptRot);
-        EoGePoint3d ptArrow = ln.begin.RotateAboutAxis(center, vPlnNorm, Eo::Radian);
+        EoGePoint3d ptArrow = ln.begin.RotateAboutAxis(center, normal, Eo::Radian);
 
         auto* Group = new EoDbGroup;
         GenerateLineEndItem(1, 0.1, ptArrow, ln.begin, Group);
@@ -365,7 +365,7 @@ void AeSysView::OnDimensionModeAngle() {
         radialArc->SetLineTypeIndex(1);
         Group->AddTail(radialArc);
 
-        ptArrow = ln.begin.RotateAboutAxis(center, vPlnNorm, sweepAngle - Eo::Radian);
+        ptArrow = ln.begin.RotateAboutAxis(center, normal, sweepAngle - Eo::Radian);
         GenerateLineEndItem(1, 0.1, ptArrow, ln.end, Group);
 
         int PrimitiveState = pstate.Save();
@@ -383,7 +383,7 @@ void AeSysView::OnDimensionModeAngle() {
         pstate.SetCharCellDef(ccd);
 
         EoGePoint3d ptPvt = cursorPosition.ProjectToward(center, -0.25);
-        CharCellDef_EncdRefSys(vPlnNorm, ccd, vXAx, vYAx);
+        CharCellDef_EncdRefSys(normal, ccd, vXAx, vYAx);
         EoGeReferenceSystem ReferenceSystem(ptPvt, vXAx, vYAx);
         CString Note;
         app.FormatAngle(Note, sweepAngle, 8, 3);

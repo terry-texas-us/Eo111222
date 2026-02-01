@@ -70,7 +70,7 @@ class EoDbPrimitive : public CObject {
   virtual void Assign(EoDbPrimitive* primitive) = 0;
   virtual EoDbPrimitive*& Copy(EoDbPrimitive*&) = 0;
   virtual void Display(AeSysView* view, CDC* deviceContext) = 0;
-  virtual void FormatExtra(CString& str) = 0;
+  virtual void FormatExtra(CString& extra) = 0;
   virtual void FormatGeometry(CString& str) = 0;
   virtual void GetAllPoints(EoGePoint3dArray& points) = 0;
   virtual EoGePoint3d GetControlPoint() = 0;
@@ -90,9 +90,9 @@ class EoDbPrimitive : public CObject {
   virtual bool Write(CFile& file) = 0;
   virtual void Write(CFile& file, EoUInt8* buffer) = 0;
 
- public:  // Methods - virtuals
-  virtual void CutAt2Pts(EoGePoint3d*, EoDbGroupList*, EoDbGroupList*);
-  virtual void CutAtPt(EoGePoint3d&, EoDbGroup*);
+ public:
+  virtual void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*);
+  virtual void CutAtPoint(EoGePoint3d& point, EoDbGroup*);
   virtual int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*);
   virtual void ModifyState();
   virtual bool PivotOnControlPoint(AeSysView*, const EoGePoint4d&);

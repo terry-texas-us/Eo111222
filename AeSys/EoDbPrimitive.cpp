@@ -26,8 +26,12 @@ EoDbPrimitive::EoDbPrimitive(EoInt16 color, EoInt16 lineTypeIndex) : m_color(col
 
 EoDbPrimitive::~EoDbPrimitive() {}
 
-void EoDbPrimitive::CutAt2Pts(EoGePoint3d*, EoDbGroupList*, EoDbGroupList*) {}
-void EoDbPrimitive::CutAtPt(EoGePoint3d& point, EoDbGroup* group) {(void) point; (void) group;}
+void EoDbPrimitive::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*,
+                              EoDbGroupList*) {
+  (void)firstPoint;
+  (void)secondPoint;
+}
+void EoDbPrimitive::CutAtPoint(EoGePoint3d& point, EoDbGroup* group) {(void) point; (void) group;}
 int EoDbPrimitive::IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) { return 0; }
 bool EoDbPrimitive::PivotOnControlPoint(AeSysView*, const EoGePoint4d&) { return false; }
 

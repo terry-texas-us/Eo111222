@@ -264,7 +264,7 @@ void EoDbBlockReference::Transform(EoGeTransformMatrix& tm) {
   m_insertionPoint = tm * m_insertionPoint;
   m_normal = tm * m_normal;
 
-  if (fabs(m_normal.x) <= Eo::geometricTolerance && fabs(m_normal.y) <= Eo::geometricTolerance) { m_scaleFactors = tm * m_scaleFactors; }
+  if (fabs(m_normal.x) < Eo::geometricTolerance && fabs(m_normal.y) <= Eo::geometricTolerance) { m_scaleFactors = tm * m_scaleFactors; }
 }
 void EoDbBlockReference::TranslateUsingMask(EoGeVector3d v, DWORD mask) {
   if (mask != 0) { m_insertionPoint += v; }

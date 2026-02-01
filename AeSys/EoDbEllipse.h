@@ -75,8 +75,8 @@ class EoDbEllipse : public EoDbPrimitive {
   void Write(CFile& file, EoUInt8* buffer) override;
 
  public:
-  void CutAtPt(EoGePoint3d&, EoDbGroup*) override;
-  void CutAt2Pts(EoGePoint3d*, EoDbGroupList*, EoDbGroupList*) override;
+  void CutAtPoint(EoGePoint3d& point, EoDbGroup*) override;
+  void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
 
   /// <summary>Generates a set of points which may be used to represent a arc using a double angle algorithm.</summary>
   void GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) const;

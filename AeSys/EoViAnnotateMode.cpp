@@ -327,7 +327,7 @@ void AeSysView::OnAnnotateModeCutIn() {
         pLine->EndPoint(ptsBox[0]);
         NewLinePrimitive->BeginPoint(ptsBox[1]);
         Group->AddTail(NewLinePrimitive);
-      } else if (dRel[0] <= Eo::geometricTolerance)
+      } else if (dRel[0] < Eo::geometricTolerance)
         pLine->BeginPoint(ptsBox[1]);
       else if (dRel[1] >= 1.0 - Eo::geometricTolerance)
         pLine->EndPoint(ptsBox[0]);

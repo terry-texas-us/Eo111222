@@ -74,47 +74,49 @@ EoDbPrimitive*& EoDbDimension::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbDimension(*this);
   return (primitive);
 }
-void EoDbDimension::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupList* newGroups) {
+
+void EoDbDimension::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
   EoDbDimension* pDim;
   double dRel[2]{};
 
-  m_ln.RelOfPtToEndPts(pt[0], dRel[0]);
-  m_ln.RelOfPtToEndPts(pt[1], dRel[1]);
+  m_ln.RelOfPtToEndPts(firstPoint, dRel[0]);
+  m_ln.RelOfPtToEndPts(secondPoint, dRel[1]);
 
-  if (dRel[0] <= Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance)
+  if (dRel[0] < Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance)
     // Put entire dimension in trap
     pDim = this;
   else {  // Something gets cut
     pDim = new EoDbDimension(*this);
     if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
-      pDim->BeginPoint(pt[1]);
+      pDim->BeginPoint(secondPoint);
       pDim->SetDefaultNote();
 
       groups->AddTail(new EoDbGroup(pDim));
 
       pDim = new EoDbDimension(*this);
-      pDim->BeginPoint(pt[0]);
-      pDim->EndPoint(pt[1]);
+      pDim->BeginPoint(firstPoint);
+      pDim->EndPoint(secondPoint);
       pDim->SetDefaultNote();
-      m_ln.end = pt[0];
+      m_ln.end = firstPoint;
     } else if (dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut in two and place begin section in trap
-      pDim->EndPoint(pt[1]);
+      pDim->EndPoint(secondPoint);
       pDim->SetDefaultNote();
-      m_ln.begin = pt[1];
+      m_ln.begin = secondPoint;
     } else {  // Cut in two and place end section in trap
-      pDim->BeginPoint(pt[0]);
+      pDim->BeginPoint(firstPoint);
       pDim->SetDefaultNote();
-      m_ln.end = pt[0];
+      m_ln.end = firstPoint;
     }
     SetDefaultNote();
     groups->AddTail(new EoDbGroup(this));
   }
   newGroups->AddTail(new EoDbGroup(pDim));
 }
-void EoDbDimension::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
+
+void EoDbDimension::CutAtPoint(EoGePoint3d& pointt, EoDbGroup* group) {
   EoGeLine ln;
 
-  if (m_ln.CutAtPt(pt, ln) != 0) {
+  if (m_ln.CutAtPt(pointt, ln) != 0) {
     EoDbDimension* DimensionPrimitive = new EoDbDimension(*this);
 
     DimensionPrimitive->m_ln = ln;

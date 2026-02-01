@@ -185,8 +185,10 @@ void AeSysView::OnDrawModeReturn() {
       pts.Add(cursorPosition);
 
       if (NumberOfPoints == 1) { return; }
-
-      auto* radialArc = EoDbConic::CreateRadialArcFrom3Points(pts[0], pts[1], pts[2]);
+      EoGePoint3d start{pts[0]};
+      EoGePoint3d intermediate{pts[1]};
+      EoGePoint3d end{pts[2]};
+      auto* radialArc = EoDbConic::CreateRadialArcFrom3Points(start, intermediate, end);
       if (radialArc == nullptr) {
         app.AddStringToMessageList(IDS_MSG_PTS_COLINEAR);
         return;
@@ -328,7 +330,9 @@ void AeSysView::DoDrawModeMouseMove() {
 
       if (NumberOfPoints == 1) { m_PreviewGroup.AddTail(new EoDbPolyline(pts)); }
       if (NumberOfPoints == 2) { 
-        auto radialArc = EoDbConic::CreateRadialArcFrom3Points(pts[0], pts[1], cursorPosition);
+        EoGePoint3d start{pts[0]};
+        EoGePoint3d intermediate{pts[1]};
+        auto radialArc = EoDbConic::CreateRadialArcFrom3Points(start, intermediate, cursorPosition);
         if (radialArc == nullptr) { break; }
 
         radialArc->SetColor(pstate.PenColor());

@@ -106,7 +106,7 @@ EoGePoint3d EoDbSpline::GoToNextControlPoint() {
 
   INT_PTR i = m_pts.GetSize() - 1;
 
-  if (sm_RelationshipOfPoint <= Eo::geometricTolerance)
+  if (sm_RelationshipOfPoint < Eo::geometricTolerance)
     pt = m_pts[i];
   else if (sm_RelationshipOfPoint >= 1.0 - Eo::geometricTolerance)
     pt = m_pts[0];

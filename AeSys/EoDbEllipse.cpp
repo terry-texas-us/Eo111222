@@ -334,21 +334,21 @@ EoDbPrimitive*& EoDbEllipse::Copy(EoDbPrimitive*& primitive) {
   return (primitive);
 }
 
-void EoDbEllipse::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupList* newGroups) {
+void EoDbEllipse::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
   EoDbEllipse* pArc;
 
   double dRel[2]{};
 
-  dRel[0] = SweepAngleToPoint(pt[0]) / m_sweepAngle;
-  dRel[1] = SweepAngleToPoint(pt[1]) / m_sweepAngle;
+  dRel[0] = SweepAngleToPoint(firstPoint) / m_sweepAngle;
+  dRel[1] = SweepAngleToPoint(secondPoint) / m_sweepAngle;
 
-  if (dRel[0] <= Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance) {  // Put entire arc in trap
+  if (dRel[0] < Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance) {  // Put entire arc in trap
     pArc = this;
   } else {  // Something gets cut
     auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
     vPlnNorm.Normalize();
 
-    if (fabs(m_sweepAngle - Eo::TwoPi) <= Eo::geometricTolerance) {  // Closed arc
+    if (fabs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) {  // Closed arc
       m_sweepAngle = (dRel[1] - dRel[0]) * Eo::TwoPi;
 
       m_majorAxis.RotAboutArbAx(vPlnNorm, dRel[0] * Eo::TwoPi);
@@ -403,14 +403,14 @@ void EoDbEllipse::CutAt2Pts(EoGePoint3d* pt, EoDbGroupList* groups, EoDbGroupLis
   newGroups->AddTail(new EoDbGroup(pArc));
 }
 
-void EoDbEllipse::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
-  if (fabs(m_sweepAngle - Eo::TwoPi) <= Eo::geometricTolerance)
+void EoDbEllipse::CutAtPoint(EoGePoint3d& point, EoDbGroup* group) {
+  if (fabs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance)
     // Do not fragment a circle
     return;
 
-  double dRel = SweepAngleToPoint(pt) / m_sweepAngle;
+  double dRel = SweepAngleToPoint(point) / m_sweepAngle;
 
-  if (dRel <= Eo::geometricTolerance || dRel >= 1.0 - Eo::geometricTolerance)
+  if (dRel < Eo::geometricTolerance || dRel >= 1.0 - Eo::geometricTolerance)
     // Nothing to cut
     return;
 
@@ -429,7 +429,7 @@ void EoDbEllipse::CutAtPt(EoGePoint3d& pt, EoDbGroup* group) {
 }
 
 void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
-  if (fabs(m_sweepAngle) <= Eo::geometricTolerance) { return; }
+  if (fabs(m_sweepAngle) < Eo::geometricTolerance) { return; }
 
   auto color = LogicalColor();
   auto lineType = LogicalLineType();
@@ -723,13 +723,13 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
   }
   if (iSecs == 0) return 0;
 
-  double dBegAng = atan2(ptBeg.y - m_center.y, ptBeg.x - m_center.x);  // Arc begin angle (- pi to pi)
+  double dBegAng = atan2(ptBeg.y - m_center.y, ptBeg.x - m_center.x);  // Arc begin angle (-π to π)
 
   double dIntAng[8]{};
   double dWrkAng;
   int iInts = 0;
   for (int i2 = 0; i2 < iSecs; i2++) {                                              // Loop thru possible intersections
-    dWrkAng = atan2(ptWrk[i2].y - m_center.y, ptWrk[i2].x - m_center.x);  // Current intersection angle (- pi to
+    dWrkAng = atan2(ptWrk[i2].y - m_center.y, ptWrk[i2].x - m_center.x);  // Current intersection angle (-π to π)
     dIntAng[iInts] = dWrkAng - dBegAng;                                             // Sweep from begin to intersection
     if (dIntAng[iInts] < 0.0) dIntAng[iInts] += Eo::TwoPi;
     if (fabs(dIntAng[iInts]) - m_sweepAngle < 0.0) {  // Intersection lies on arc
@@ -755,7 +755,7 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
       }
     }
   }
-  if (fabs(m_sweepAngle - Eo::TwoPi) <= Eo::geometricTolerance) {  // Arc is a circle in disuise
+  if (fabs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) {  // Arc is a circle in disuise
 
   } else {
     if (ptBeg.x >= ptLL.x && ptBeg.x <= ptUR.x && ptBeg.y >= ptLL.y && ptBeg.y <= ptUR.y) {  // Add beg point to int set
@@ -772,7 +772,7 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
 }
 
 EoGePoint3d EoDbEllipse::GoToNextControlPoint() {
-  double angle = (sm_RelationshipOfPoint <= Eo::geometricTolerance) ? m_sweepAngle : 0.0;
+  double angle = (sm_RelationshipOfPoint < Eo::geometricTolerance) ? m_sweepAngle : 0.0;
   return (PointOnArcAtAngle(m_center, m_majorAxis, m_minorAxis, angle));
 }
 

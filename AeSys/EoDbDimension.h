@@ -63,14 +63,10 @@ class EoDbDimension : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, EoUInt8* buffer) override;
 
- public:  // Methods - virtuals
-  /// <summary>Cuts a dimension line at two points.</summary>
-  // Parameters:	pt
-  //				groups	group to place optional line not defined by the cut
-  //						points
-  //				newGroups group to place line defined by the cut points
-  void CutAt2Pts(EoGePoint3d*, EoDbGroupList*, EoDbGroupList*) override;
-  void CutAtPt(EoGePoint3d&, EoDbGroup*) override;
+ public:
+
+  void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
+  void CutAtPoint(EoGePoint3d& point, EoDbGroup*) override;
   void ModifyState() override;
 
  public:  // Methods

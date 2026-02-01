@@ -140,15 +140,15 @@ void EoGeVector3d::Write(CFile& file) const {
   double sinAngle{};
   double cosAngle{};
 
-  if (fabs(angle) <= Eo::geometricTolerance || fabs(angle - Eo::TwoPi) <= Eo::geometricTolerance) {
+  if (fabs(angle) < Eo::geometricTolerance || fabs(angle - Eo::TwoPi) <= Eo::geometricTolerance) {
     cosAngle = 1.0;
-  } else if (fabs(angle - Eo::HalfPi) <= Eo::geometricTolerance ||
-             fabs(angle + Eo::Pi + Eo::HalfPi) <= Eo::geometricTolerance) {
+  } else if (fabs(angle - Eo::HalfPi) < Eo::geometricTolerance ||
+             fabs(angle + Eo::Pi + Eo::HalfPi) < Eo::geometricTolerance) {
     sinAngle = 1.0;
-  } else if (fabs(angle - Eo::Pi) <= Eo::geometricTolerance) {
+  } else if (fabs(angle - Eo::Pi) < Eo::geometricTolerance) {
     cosAngle = -1.0;
-  } else if (fabs(angle - Eo::Pi - Eo::HalfPi) <= Eo::geometricTolerance ||
-             fabs(angle + Eo::HalfPi) <= Eo::geometricTolerance) {
+  } else if (fabs(angle - Eo::Pi - Eo::HalfPi) < Eo::geometricTolerance ||
+             fabs(angle + Eo::HalfPi) < Eo::geometricTolerance) {
     sinAngle = -1.0;
   } else {
     sinAngle = sin(angle);

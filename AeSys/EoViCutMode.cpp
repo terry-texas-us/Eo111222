@@ -48,7 +48,7 @@ void AeSysView::OnCutModeTorch() {
 
         ptCut = transformMatrix * ptCut;
         document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, primitive);
-        primitive->CutAtPt(ptCut, newGroup);
+        primitive->CutAtPoint(ptCut, newGroup);
         document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, primitive);
         groups->AddTail(newGroup);
         break;
@@ -99,7 +99,7 @@ void AeSysView::OnCutModeSlice() {
           intersections[w] = tm * intersections[w];
 
           document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, Primitive);
-          Primitive->CutAtPt(intersections[w], NewGroup);
+          Primitive->CutAtPoint(intersections[w], NewGroup);
           document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, Primitive);
           Groups->AddTail(NewGroup);
         }
@@ -161,7 +161,7 @@ void AeSysView::OnCutModeField() {
 
         for (int i = 0; i < iInts; i += 2) {
           if (i != 0) GroupsOut->RemoveTail();
-          Primitive->CutAt2Pts(&ptInt[i], GroupsOut, GroupsIn);
+          Primitive->CutAt2Points(ptInt[i], ptInt[i + 1], GroupsOut, GroupsIn);
         }
       }
       if (Group->IsEmpty()) {  // seg was emptied remove from lists
@@ -248,7 +248,7 @@ void AeSysView::OnCutModeClip() {
         }
         Group->RemoveAt(posPrim2);
 
-        Primitive->CutAt2Pts(ptCut, GroupsOut, GroupsIn);
+        Primitive->CutAt2Points(ptCut[0], ptCut[1], GroupsOut, GroupsIn);
       }
       if (Group->IsEmpty()) {  // seg was emptied remove from lists
         document->AnyLayerRemove(Group);

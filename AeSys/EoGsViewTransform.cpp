@@ -45,7 +45,7 @@ void EoGsViewTransform::AdjustWindow(const double aspectRatio) {
   double uExtent = m_UMax - m_UMin;
   double vExtent = m_VMax - m_VMin;
 
-  if (uExtent <= Eo::geometricTolerance || vExtent / uExtent > aspectRatio) {
+  if (uExtent < Eo::geometricTolerance || vExtent / uExtent > aspectRatio) {
     double adjustment = (vExtent / aspectRatio - uExtent) * 0.5;
     m_UMin -= adjustment;
     m_UMax += adjustment;

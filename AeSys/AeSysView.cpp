@@ -952,7 +952,7 @@ void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, 
     XAdjustment = Scale * UExtent;
     YAdjustment = Scale * VExtent;
   }
-  if (UExtent <= Eo::geometricTolerance || VExtent / UExtent > AspectRatio) {
+  if (UExtent < Eo::geometricTolerance || VExtent / UExtent > AspectRatio) {
     XAdjustment += (VExtent / AspectRatio - UExtent) * 0.5;
   } else {
     YAdjustment += (UExtent * AspectRatio - VExtent) * 0.5f;
