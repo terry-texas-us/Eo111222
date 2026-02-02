@@ -8,8 +8,8 @@ Some version 3 files will have a version stamp in bytes [4-5] ([4] is the genera
 Group (version 1)
 Note: [0-3] provide group information only and are used only once per group. This means on each primitive after the first [0-3] are unused.
 
-Offset to next group (not valid now)			WORD	[0-1]
-Number of primitives							WORD	[2-3]
+Offset to next group (not valid now)		WORD			[0-1]
+Number of primitives						WORD			[2-3]
 
 Note: After looking at incomplete source from original Fortran code I now believe the arc primitive was replaced by the conic primitive in version 1. 
 This was as early as summer 89. I do not have enough information to determine if 1 or 2 32-byte chunks were used. 
@@ -20,9 +20,10 @@ Back then this was major. Another oddity is that byte [7] is not used. I think t
 I am just guessing that the sweep angle used the bytes of the z-coordinate of the center point instead of the begin point.
 
 ## Version 1
-### Segment
-	Offset to next group (not valid now)	WORD			[0-1]
-	Number of primitives					WORD			[2-3]
+
+###	Segment
+		Offset to next group (not used now)	WORD			[0-1]
+		Number of primitives				WORD			[2-3]
 
 #### Arc
 		Pen color							char			[4](0:4)
@@ -33,6 +34,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		??													[16-19]
 		Center point						vaxfloat[2]		[20-23][24-27]
 		Sweep angle							vaxfloat		[28-31]
+
 #### BSpline
 		Pen color							char			[4](0:4)
 		Pen style							char			[4](5:8)
@@ -40,6 +42,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		Number of 32 byte chunks (1)		char			[6]
 		Number of control points			vaxfloat		[8-11]
 		{0 or more control points}			vaxfloat[3]     [12-15][16-19][20-23]
+
 #### Line
 		Pen color							char			[4](0:4)
 		Pen style							char			[4](5:8)
@@ -47,6 +50,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		Number of 32 byte chunks (1)		char			[6]
 		Point 1								vaxfloat[3]		[8-11][12-15][16-19]
 		Point 2								vaxfloat[3]		[20-23][24-27][28-31]
+
 #### Mark
 		Pen color							char			[4](0:4)
 		Pen style							char			[4](5:8)
@@ -54,6 +58,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		Number of 32 byte chunks (1)		char			[6]
 		Point								vaxfloat[3]		[8-11][12-15][16-19]
 		{3 data values}						vaxfloat		[20-23][24-27][28-31]
+
 #### Polygon
 		Pen color							char			[4](0:4)
 		type code (100)						char			[5]
@@ -66,6 +71,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 			rotation angle					vaxfloat		[24-27]
 		??													[28-35]
 		{0 or more points}					vaxfloat[3]		[36-39][40-43][44-47]
+
 #### Text
 		Pen color							char			[4](0:4)
 		type code (17)						char			[5]
@@ -80,9 +86,10 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		Text ('\' terminated)				char[]			[44-]
 
 ## Version 3
+
 ### Segment
-	??										char			[0] 
-	Number of primitives					WORD			[1-2]
+		??									char			[0] 
+		Number of primitives				WORD			[1-2]
 
 #### Arc
 		Number of 32 byte chunks (2)		char			[3]
@@ -93,6 +100,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		Major axis							vaxfloat[3]		[20-23][24-27][28-31]
 		Minor axis							vaxfloat[3]		[32-35][36-39][40-43]
 		Sweep angle							vaxfloat		[44-47]
+
 #### BSpline
 		Number of 32 byte chunks			char			[3]
 			(2 + nPts * 3) / 8 + 1
@@ -101,6 +109,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		Pen style							char			[7]
 		Number of control points			WORD			[8-9]
 		{0 or more control points}			vaxfloat[3]     [10-13][14-17][18-21]
+
 #### CSpline (version 3 only)
 		Number of 32 byte chunks			char			[3]
 			(69 + nPts * 12) / 32
@@ -113,6 +122,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		Begin point tangent vector			vaxfloat[3]		[14-17][18-21][22-25]
 		End point tangent vector			vaxfloat[3]		[26-29][30-33][34-37]
 		{0 or more control points}			vaxfloat[3]     [38-41][42-45][46-49]
+
 #### Dim (version 3 only)
 		Number of 32 byte chunks			char			[3]
 			(118 + nLen) / 32
@@ -133,6 +143,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		Local reference y-axis				vaxfloat[3]		[67-70][71-74][75-78]
 		Number of characters				WORD			[79-80]
 		Text								char[]			[81..]
+
 #### Line primitive
 		Number of 32 byte chunks (1)		char			[3]
 		CPrim::Type::Line type code			WORD 0x0200		[4-5]
@@ -140,6 +151,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		Pen style							char			[7]
 		Point 1								vaxfloat[3]		[8-11][12-15][16-19]
 		Point 2								vaxfloat[3]		[20-23][24-27][28-31]
+
 #### Mark primitive
 		Number of 32 byte chunks (1)		char			[3]
 		CPrim::Type::Mark type code			WORD 0x0100		[4-5]
@@ -147,6 +159,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		Mark style							char			[7]
 		Point								vaxfloat[3]		[8-11][12-15][16-19]
 		{3 data values}						vaxfloat		[20-23][24-27][28-31]
+
 #### Polygon primitive
 		Number of 32 byte chunks			char			[3]
 			(79 + nPts * 12) / 32
@@ -159,6 +172,7 @@ I am just guessing that the sweep angle used the bytes of the z-coordinate of th
 		Hatch/pattern reference x-axis		vaxfloat[3]		[24-27][28-31][32-35]
 		Hatch/pattern reference y-axis		vaxfloat[3]		[36-39][40-43][44-47]
 		{0 or more points}					vaxfloat[3]		[48-51][52-55][56-59]
+
 #### Tag primitive
 		Number of 32 byte chunks (1)		char			[3]
 		CPrim::Type::Tag type code			WORD 0x4100		[4-5]
