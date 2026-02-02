@@ -142,7 +142,7 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
   }
   double ratio{minorAxis.Length() / majorAxisLength};
 
-  EoGeVector3d extrusion{CrossProduct(majorAxis, minorAxis)};
+  auto extrusion{CrossProduct(majorAxis, minorAxis)};
   extrusion.Normalize();
 
   return new EoDbConic(center, extrusion, majorAxis, ratio, 0.0, sweepAngle);
@@ -482,10 +482,13 @@ void EoDbConic::GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d m
 }
 
 void EoDbConic::FormatGeometry(CString& geometry) {
-  auto conicType = Subclass();
   geometry += L"Center;" + m_center.ToString();
-  if (conicType == ConicType::Ellipse) { geometry += L"Major Axis;" + m_majorAxis.ToString(); }
   geometry += L"Extrusion;" + m_extrusion.ToString();
+#if defined(DEBUG)
+  geometry += L"Major Axis;" + m_majorAxis.ToString();
+#else
+  if (Subclass() == ConicType::Ellipse) { geometry += L"Major Axis;" + m_majorAxis.ToString(); }
+#endif
 }
 
 void EoDbConic::FormatExtra(CString& extra) {
@@ -499,19 +502,18 @@ void EoDbConic::FormatExtra(CString& extra) {
       break;
 
     case ConicType::RadialArc:
-      format += L"Radius;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°\tSweep;%.2f°\t";
+      format += L"Radius;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°\t";
       extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length(),
-                   Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle), Eo::RadianToDegree(SweepAngle()));
+                   Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
       break;
 
     case ConicType::Ellipse:
-      format += L"Major Radius;%.4f\tMinor Radius;%.4f\tRatio;%.4f\t";
-      extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length(),
-                   m_majorAxis.Length() * m_ratio, m_ratio);
+      format += L"Major Length;%.4f\tRatio;%.4f\t";
+      extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length(), m_ratio);
       break;
 
     case ConicType::EllipticalArc:
-      format += L"Major Radius;%.4f\tRatio;%.4f\tStart Param;%.2f°\tEnd Param;%.2f°\t";
+      format += L"Major Length;%.4f\tRatio;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°\t";
       extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length(), m_ratio,
                    Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
       break;
@@ -908,6 +910,32 @@ bool EoDbConic::Write(CFile& file) {
   EoDb::Write(file, m_ratio);
   EoDb::Write(file, m_startAngle);
   EoDb::Write(file, m_endAngle);
+
+  return true;
+}
+
+bool EoDbConic::WriteLegacyEllipse(CFile& file) {
+  // Convert from EoDbConic storage (majorAxis + ratio) to legacy EoDbEllipse storage (majorAxis + minorAxis)
+  EoGeVector3d minorAxis = MinorAxis();
+
+  // Legacy format uses sweep angle from 0, not absolute start/end angles
+  // For compatibility: if start angle is 0, use sweep directly; otherwise rotate axes
+  EoGeVector3d rotatedMajorAxis = m_majorAxis;
+  EoGeVector3d rotatedMinorAxis = minorAxis;
+
+  if (fabs(m_startAngle) > Eo::geometricTolerance) {
+    // Rotate axes to align with start angle so legacy format sees sweep from major axis
+    rotatedMajorAxis.RotAboutArbAx(m_extrusion, m_startAngle);
+    rotatedMinorAxis.RotAboutArbAx(m_extrusion, m_startAngle);
+  }
+
+  EoDb::Write(file, EoUInt16(EoDb::kEllipsePrimitive));
+  EoDb::Write(file, m_color);
+  EoDb::Write(file, m_lineTypeIndex);
+  m_center.Write(file);
+  rotatedMajorAxis.Write(file);
+  rotatedMinorAxis.Write(file);
+  EoDb::Write(file, SweepAngle());
 
   return true;
 }

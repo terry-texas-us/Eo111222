@@ -3192,7 +3192,7 @@ BEGIN
     IDS_SAVEFILE_FILTER     "Drawing (*.peg)|*.peg|ASCII DXF (2010) (*.dxf)|*.dxf|ASCII DXF (2007) (*.dxf)|*.dxf|Binary DXF (2010) (*.dxf)|*.dxf|Binary DXF (2007) (*.dxf)|*.dxf|DWG 2010 (*.dwg)|*.dwg|DWG 2007 (*.dwg)|*.dwg||"
     IDS_METRIC_UNITS        "Meters\nMillimeters\nCentimeters\nDecimeters\nKilometers"
     IDS_PRIMITIVE_FILTER_LIST 
-                            "Arc\nInsert\nLine\nPoint\nText\nPanel\nPolyline"
+                            "Conic\nInsert\nLine\nPoint\nText\nPanel\nPolyline"
     IDS_MSG_INVALID_NUMBER_EXTRACT 
                             "Malformed numeric literal or expression. Extraction aborted."
     IDS_OPENFILE_LOAD_PENCOLORS_TITLE "Load Pen Colors"

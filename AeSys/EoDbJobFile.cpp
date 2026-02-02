@@ -349,14 +349,15 @@ EoDbPrimitive* EoDbJobFile::ConvertEllipsePrimitive() {
   auto color = EoInt16(m_PrimBuf[6]);
   auto lineTypeIndex = EoInt16(m_PrimBuf[7]);
 
-  EoGePoint3d center = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
-  EoGeVector3d majorAxis = ((CVaxVec*)&m_PrimBuf[20])->Convert();
-  EoGeVector3d minorAxis = ((CVaxVec*)&m_PrimBuf[32])->Convert();
-
-  double sweepAngle = ((CVaxFloat*)&m_PrimBuf[44])->Convert();
+  auto center = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
+  auto majorAxis = ((CVaxVec*)&m_PrimBuf[20])->Convert();
+  auto minorAxis = ((CVaxVec*)&m_PrimBuf[32])->Convert();
+  auto sweepAngle = ((CVaxFloat*)&m_PrimBuf[44])->Convert();
 
   if (sweepAngle > Eo::TwoPi || sweepAngle < -Eo::TwoPi) { sweepAngle = Eo::TwoPi; }
 
+  /// @todo for negative z extrusion the positive sweep is incorrect
+  
   auto* conic = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
   conic->SetColor(color);
   conic->SetLineTypeIndex(lineTypeIndex);

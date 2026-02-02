@@ -301,6 +301,16 @@ class EoDbConic : public EoDbPrimitive {
     return ConicType::EllipticalArc;
   }
 
+  /** @brief Writes the conic as a legacy ellipse primitive for backward compatibility.
+   *
+   * This method writes the conic in the format expected by PEG file version 11 and earlier,
+   * which only understands the EoDbEllipse primitive format.
+   *
+   * @param file The file to write to.
+   * @return true if the write was successful.
+   */
+  bool WriteLegacyEllipse(CFile& file);
+
   /// <summary>Determines the bounding region. This is always a quad, but it may not be xy oriented.</summary>
   void GetBoundingBox(EoGePoint3dArray&);
 

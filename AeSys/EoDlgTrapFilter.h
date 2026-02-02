@@ -28,5 +28,15 @@ class EoDlgTrapFilter : public CDialog {
 
   void FilterByColor(EoInt16 colorIndex);
   void FilterByLineType(int lineType);
+
+  /**
+   * Filters trapped groups by the specified primitive type.
+   *
+   * This function iterates through all trapped groups in the document and checks each primitive within those groups.
+   * If a primitive matches the specified primitive type, the entire group is removed from the trapped list.
+   * After filtering, the view is updated to reflect the changes in the trapped groups.
+   *
+   * @param primitiveType The type of primitive to filter by, as defined in EoDb::PrimitiveTypes.
+   */
   void FilterByPrimitiveType(const EoDb::PrimitiveTypes primitiveType);
 };

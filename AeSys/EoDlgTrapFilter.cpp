@@ -47,6 +47,7 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
 
   return TRUE;
 }
+
 void EoDlgTrapFilter::OnOK() {
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_PEN)) {
     EoInt16 color = EoInt16(GetDlgItemInt(IDC_TRAP_FILTER_PEN_ID, 0, FALSE));
@@ -66,7 +67,7 @@ void EoDlgTrapFilter::OnOK() {
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_ELEMENT)) {
     switch (m_FilterPrimitiveTypeListBoxControl.GetCurSel()) {
       case 0:
-        FilterByPrimitiveType(EoDb::kEllipsePrimitive);
+        FilterByPrimitiveType(EoDb::kConicPrimitive);
         break;
       case 1:
         FilterByPrimitiveType(EoDb::kGroupReferencePrimitive);
@@ -123,56 +124,58 @@ void EoDlgTrapFilter::FilterByLineType(int lineType) {
   }
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::TrapCount);
 }
+
 void EoDlgTrapFilter::FilterByPrimitiveType(const EoDb::PrimitiveTypes primitiveType) {
-  auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
-  while (GroupPosition != nullptr) {
-    bool bFilter{};
+  auto groupPosition = m_Document->GetFirstTrappedGroupPosition();
+  while (groupPosition != nullptr) {
+    bool filter{};
 
-    auto* Group = m_Document->GetNextTrappedGroup(GroupPosition);
+    auto* group = m_Document->GetNextTrappedGroup(groupPosition);
 
-    auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      EoDbPrimitive* primitive = group->GetNext(primitivePosition);
 
       switch (primitiveType) {
         case EoDb::kPointPrimitive:           // 0x0100
-          bFilter = Primitive->Is(EoDb::kPointPrimitive);
+          filter = primitive->Is(EoDb::kPointPrimitive);
           break;
         case EoDb::kInsertPrimitive:          // 0x0101
+          // @deprecated This feature is obsolete as of Version 2011.00 Use kGroupReferencePrimitive instead.
           break;
         case EoDb::kGroupReferencePrimitive:  // 0x0102
-          bFilter = Primitive->Is(EoDb::kGroupReferencePrimitive);
+          filter = primitive->Is(EoDb::kGroupReferencePrimitive);
           break;
         case EoDb::kLinePrimitive:            // 0x0200
-          bFilter = Primitive->Is(EoDb::kLinePrimitive);
+          filter = primitive->Is(EoDb::kLinePrimitive);
           break;
         case EoDb::kPolygonPrimitive:         // 0x0400
-          bFilter = Primitive->Is(EoDb::kPolygonPrimitive);
+          filter = primitive->Is(EoDb::kPolygonPrimitive);
           break;
         case EoDb::kEllipsePrimitive:         // 0x1003
-          bFilter = Primitive->Is(EoDb::kEllipsePrimitive);
+          // @deprecated This feature is obsolete as of Version 2026.00 Use kConicPrimitive instead.
           break;
         case EoDb::kConicPrimitive:           // 0x1004
-          bFilter = Primitive->Is(EoDb::kConicPrimitive);
+          filter = primitive->Is(EoDb::kConicPrimitive);
           break;
         case EoDb::kSplinePrimitive:          // 0x2000
           break;
         case EoDb::kCSplinePrimitive:         // 0x2001
           break;
         case EoDb::kPolylinePrimitive:        // 0x2002
-          bFilter = Primitive->Is(EoDb::kPolylinePrimitive);
+          filter = primitive->Is(EoDb::kPolylinePrimitive);
           break;
         case EoDb::kTextPrimitive:            // 0x4000
-          bFilter = Primitive->Is(EoDb::kTextPrimitive);
+          filter = primitive->Is(EoDb::kTextPrimitive);
           break;
         case EoDb::kTagPrimitive:             // 0x4100
           break;
         case EoDb::kDimensionPrimitive:       // 0x4200
           break;
       }
-      if (bFilter) {
-        m_Document->RemoveTrappedGroup(Group);
-        m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      if (filter) {
+        m_Document->RemoveTrappedGroup(group);
+        m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
         break;
       }
     }
