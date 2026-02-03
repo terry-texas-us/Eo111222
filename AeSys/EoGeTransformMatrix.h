@@ -6,29 +6,35 @@
 #include "EoGeVector3d.h"
 
 class EoGeLine;
+
+/** @class A class representing a 4x4 transformation matrix for 3D geometric transformations.
+ *
+ *  This class extends the EoGeMatrix class to provide specific functionality for 3D transformations,
+ *  including translation, rotation, and scaling of points, vectors, and lines in 3D space.
+ */
 class EoGeTransformMatrix : public EoGeMatrix {
  public:
-  EoGeTransformMatrix() : EoGeMatrix() { EoGeMatrix::Identity(); }
+  EoGeTransformMatrix() = default;
 
   EoGeTransformMatrix(const EoGeMatrix& matrix) : EoGeMatrix(matrix) {}
 
-  EoGeTransformMatrix(EoGeMatrixRow& row0, EoGeMatrixRow& row1, EoGeMatrixRow& row2, EoGeMatrixRow& row3) : EoGeMatrix(row0, row1, row2, row3) {}
+  EoGeTransformMatrix(const EoGeMatrixRow& row0, const EoGeMatrixRow& row1, const EoGeMatrixRow& row2, const EoGeMatrixRow& row3) : EoGeMatrix(row0, row1, row2, row3) {}
 
-  EoGeTransformMatrix(EoGePoint3d point, EoGeVector3d normal);
+  EoGeTransformMatrix(const EoGePoint3d& referencePoint, const EoGeVector3d& normal);
 
-  EoGeTransformMatrix(const EoGePoint3d& referencePoint, EoGeVector3d referenceAxis, const double angle);
+  EoGeTransformMatrix(const EoGePoint3d& referencePoint, const EoGeVector3d& referenceAxis, const double angle);
 
-  EoGeTransformMatrix(EoGePoint3d pt, EoGeVector3d xReference, EoGeVector3d yReference);
+  EoGeTransformMatrix(const EoGePoint3d& referencePoint, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis);
 
-  EoGeLine operator*(const EoGeLine& line);
+  [[nodiscard]] EoGeLine operator*(const EoGeLine& line) const;
 
-  EoGePoint3d operator*(const EoGePoint3d& point);
+  [[nodiscard]] EoGePoint3d operator*(const EoGePoint3d& point) const;
 
-  EoGePoint4d operator*(const EoGePoint4d& point);
+  [[nodiscard]] EoGePoint4d operator*(const EoGePoint4d& point) const;
 
-  EoGeVector3d operator*(const EoGeVector3d& vector);
+  [[nodiscard]] EoGeVector3d operator*(const EoGeVector3d& vector) const;
 
-  EoGeTransformMatrix BuildRotationTransformMatrix(const EoGeVector3d& rotationAngles) const;
+  [[nodiscard]] static EoGeTransformMatrix BuildRotationTransformMatrix(const EoGeVector3d& rotationAngles);
 
   void AppendXAxisRotation(double xAxisAngle);
 
@@ -36,17 +42,17 @@ class EoGeTransformMatrix : public EoGeMatrix {
 
   void AppendZAxisRotation(double zAxisAngle);
 
-  void ConstructUsingReferencePointAndNormal(EoGePoint3d ptP, EoGeVector3d vN);
+  void ConstructUsingReferencePointAndNormal(const EoGePoint3d& referencePoint, const EoGeVector3d& normal);
 
-  EoGeTransformMatrix XAxisRotation(const double dSinAng, const double dCosAng);
+  [[nodiscard]] static EoGeTransformMatrix XAxisRotation(double sinAngle, double cosAngle) noexcept;
 
-  EoGeTransformMatrix YAxisRotation(const double dSinAng, const double dCosAng);
+  [[nodiscard]] static EoGeTransformMatrix YAxisRotation(double sinAngle, double cosAngle) noexcept;
 
-  EoGeTransformMatrix ZAxisRotation(const double dSinAng, const double dCosAng);
+  [[nodiscard]] static EoGeTransformMatrix ZAxisRotation(double sinAngle, double cosAngle) noexcept;
 
-  void Scale(EoGeVector3d scaleFactors);
+  void Scale(const EoGeVector3d& scaleFactors);
 
-  inline void Translate(EoGeVector3d translate) {
+  inline void Translate(const EoGeVector3d& translate) {
     m_4X4[0][3] += translate.x;
     m_4X4[1][3] += translate.y;
     m_4X4[2][3] += translate.z;

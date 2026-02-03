@@ -4,6 +4,7 @@
 #include <climits>
 #include <cmath>
 #include <cstdlib>
+#include <utility>
 
 #include "AeSys.h"
 #include "AeSysView.h"
@@ -142,10 +143,28 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
   }
   double ratio{minorAxis.Length() / majorAxisLength};
 
+  if (std::abs(DotProduct(majorAxis, minorAxis)) > Eo::geometricTolerance) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0,
+              L"CreateConicFromEllipsePrimitive: Major and minor axes are not perpendicular\n");
+    return nullptr;
+  }
   auto extrusion{CrossProduct(majorAxis, minorAxis)};
   extrusion.Normalize();
 
-  return new EoDbConic(center, extrusion, majorAxis, ratio, 0.0, sweepAngle);
+  double startParameter{};
+  double endParameter{sweepAngle};
+
+  if (extrusion.z < 0.0) {
+    extrusion = -extrusion;
+    std::swap(startParameter, endParameter);
+    if (endParameter < startParameter) { endParameter += Eo::TwoPi; }
+  }
+  startParameter = std::fmod(startParameter, Eo::TwoPi);
+  if (startParameter < 0.0) startParameter += Eo::TwoPi;
+  endParameter = std::fmod(endParameter, Eo::TwoPi);
+  if (endParameter < 0.0) endParameter += Eo::TwoPi;
+
+  return new EoDbConic(center, extrusion, majorAxis, ratio, startParameter, endParameter);
 }
 
 [[nodiscard]] EoDbConic* EoDbConic::CreateEllipse(const EoGePoint3d& center, const EoGeVector3d& extrusion,

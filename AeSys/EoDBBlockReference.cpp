@@ -87,20 +87,19 @@ void EoDbBlockReference::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   ((EoDbGroup*)Block)->AddPrimsToTreeViewControl(tree, hti);
 }
 
-EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(const EoGePoint3d& insertionPoint) {
+EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(const EoGePoint3d& insertionPoint) const {
   // TODO: Validate normal vector
 
   EoGeTransformMatrix tm1;
   tm1.Translate(EoGeVector3d(insertionPoint, EoGePoint3d::kOrigin));
   EoGeTransformMatrix tm2;
   tm2.Scale(m_scaleFactors);
-  EoGeTransformMatrix tm3;
-  tm3.ZAxisRotation(sin(m_rotation), cos(m_rotation));
+  auto zAxisRotation = EoGeTransformMatrix::ZAxisRotation(sin(m_rotation), cos(m_rotation));
   EoGeTransformMatrix tm4(EoGePoint3d::kOrigin, m_normal);
   EoGeTransformMatrix tm5;
   tm5.Translate(EoGeVector3d(EoGePoint3d::kOrigin, m_insertionPoint));
 
-  return ((EoGeMatrix)tm1 * (EoGeMatrix)tm2 * (EoGeMatrix)tm3 * (EoGeMatrix)tm4 * (EoGeMatrix)tm5);
+  return ((EoGeMatrix)tm1 * (EoGeMatrix)tm2 * (EoGeMatrix)zAxisRotation * (EoGeMatrix)tm4 * (EoGeMatrix)tm5);
 }
 
 EoDbPrimitive*& EoDbBlockReference::Copy(EoDbPrimitive*& primitive) {

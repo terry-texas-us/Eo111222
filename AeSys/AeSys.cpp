@@ -537,25 +537,27 @@ void AeSys::SetCursorPosition(EoGePoint3d pt) {
   auto* activeView = AeSysView::GetActiveView();
   activeView->SetCursorPosition(pt);
 }
+
 // Loads the hatch table.
-void AeSys::LoadHatchesFromFile(const CString& strFileName) {
+void AeSys::LoadHatchesFromFile(const CString& fileName) {
   CFileException e;
   CStdioFile fl;
 
-  if (!fl.Open(strFileName, CFile::modeRead | CFile::typeText, &e)) return;
+  if (!fl.Open(fileName, CFile::modeRead | CFile::typeText, &e)) { return; }
 
-  wchar_t szLn[128]{};
-  double dTotStrsLen;
-  int iNmbEnts, iNmbStrsId;
+  wchar_t line[128]{};
+  double dTotStrsLen{};
+  int iNmbEnts{};
+  int iNmbStrsId{};
 
   wchar_t szValDel[] = L",\0";
-  int iHatId = 0;
-  int iNmbHatLns = 0;
-  int iTblId = 0;
+  int iHatId{};
+  int iNmbHatLns{};
+  int iTblId{};
 
-  while (fl.ReadString(szLn, sizeof(szLn) / sizeof(wchar_t) - 1) != 0) {
-    if (*szLn == '!') {  // New Hatch index
-      if (iHatId != 0) hatch::tableValue[hatch::tableOffset[iHatId]] = float(iNmbHatLns);
+  while (fl.ReadString(line, sizeof(line) / sizeof(wchar_t) - 1) != 0) {
+    if (*line == '!') { // New Hatch index
+      if (iHatId != 0) { hatch::tableValue[hatch::tableOffset[iHatId]] = float(iNmbHatLns); }
       hatch::tableOffset[++iHatId] = iTblId++;
       iNmbHatLns = 0;
     } else {
@@ -564,12 +566,12 @@ void AeSys::LoadHatchesFromFile(const CString& strFileName) {
       iNmbEnts = 0;
       dTotStrsLen = 0.;
       LPWSTR NextToken = nullptr;
-      LPWSTR pTok = wcstok_s(szLn, szValDel, &NextToken);
+      LPWSTR pTok = wcstok_s(line, szValDel, &NextToken);
       while (pTok != 0) {
         volatile double tempValue = _wtof(pTok);
         hatch::tableValue[iTblId] = static_cast<float>(tempValue);
         iNmbEnts++;
-        if (iNmbEnts >= 6) dTotStrsLen = dTotStrsLen + hatch::tableValue[iTblId];
+        if (iNmbEnts >= 6) { dTotStrsLen = dTotStrsLen + hatch::tableValue[iTblId]; }
         iTblId++;
         pTok = wcstok_s(0, szValDel, &NextToken);
       }
@@ -579,6 +581,7 @@ void AeSys::LoadHatchesFromFile(const CString& strFileName) {
     }
   }
 }
+
 EoGePoint3d AeSys::HomePointGet(int i) const {
   if (i >= 0 && i < 9) return (m_HomePoints[i]);
 

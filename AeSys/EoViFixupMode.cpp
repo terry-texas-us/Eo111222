@@ -53,7 +53,7 @@ EoGeLine currentLine{};
  * @param radius The radius of the circle.
  * @param firstLine The first line.
  * @param secondLine The second line.
- * @param center Output parameter that receives the center point of the circle.
+ * @param[out] center computed center point of the circle.
  * @note A radius and two lines define four center points.  The center point
  *       selected is on the concave side of the angle formed by the two vectors
  *       defined by the line endpoints.	These two vectors are oriented with
@@ -450,6 +450,7 @@ void AeSysView::OnFixupModeFillet() {
         auto majorAxis = EoGeVector3d(center, previousLine.end);
         auto minorAxis = CrossProduct(normal, majorAxis);
 
+        // auto* radialArc = EoDbConic::CreateRadialArc(center, normal, majorAxis.Length(), 0.0, angle);
         auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
         radialArc->SetColor(line->Color());
         radialArc->SetLineTypeIndex(line->LineTypeIndex());

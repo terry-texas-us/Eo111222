@@ -38,12 +38,12 @@ class EoGeLine {
   double AngleFromXAxisXY() const;
 
   /** @brief Constrains a line to the nearest axis pivoting on the first endpoint.
-  * @param influenceAngle The angle to influence the constraint.
-  * @param offsetAngle The angle to offset the constraint.
+  * @param influenceAngle The angle [in degrees] to influence the constraint.
+  * @param axisOffsetAngle The angle [in degrees] to offset the constraint axis.
   * @return The constrained point.
-  * @note Offset angle only supported about z-axis.
+  * @note Axis offset angle only supported about z-axis.
   */
-  EoGePoint3d ConstrainToAxis(double influenceAngle, double offsetAngle) const;
+  EoGePoint3d ConstrainToAxis(double influenceAngle, double axisOffsetAngle) const;
 
   /** @brief Cuts the line at a specified point, modifying the line segment.
   * @param point The point at which to cut the line.

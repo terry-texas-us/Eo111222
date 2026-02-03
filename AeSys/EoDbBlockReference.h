@@ -64,8 +64,8 @@ class EoDbBlockReference : public EoDbPrimitive {
     (void)buffer;
   };
 
- public:  // Methods
-  EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& insertionPoint);
+ public:
+  EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& insertionPoint) const;
 
   EoUInt16 ColumnCount() const noexcept { return m_columnCount; }
   double ColumnSpacing() const noexcept { return m_columnSpacing; }

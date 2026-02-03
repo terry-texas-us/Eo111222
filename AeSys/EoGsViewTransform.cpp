@@ -8,8 +8,8 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "EoGsAbstractView.h"
-#include "EoGsViewport.h"
 #include "EoGsViewTransform.h"
+#include "EoGsViewport.h"
 
 EoGsViewTransform::EoGsViewTransform() {
   m_UMin = -1.0;
@@ -182,10 +182,8 @@ void EoGsViewTransform::Initialize(const EoGsViewport& viewport) {
 
 void EoGsViewTransform::LoadIdentity() { m_Matrix.Identity(); }
 
-void EoGsViewTransform::ZAxisRotation(double dSinAng, double dCosAng) {
-  EoGeTransformMatrix transformMatrix;
-  transformMatrix.ZAxisRotation(dSinAng, dCosAng);
-  m_Matrix *= transformMatrix;
+void EoGsViewTransform::ZAxisRotation(double sinAngle, double cosAngle) {
+  m_Matrix *= EoGeTransformMatrix::ZAxisRotation(sinAngle, cosAngle);
 }
 
 void EoGsViewTransform::Scale(EoGeVector3d v) {

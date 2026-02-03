@@ -71,7 +71,7 @@
 xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
 xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
 xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-</Command>
+xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>

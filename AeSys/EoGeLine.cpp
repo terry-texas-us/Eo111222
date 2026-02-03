@@ -68,16 +68,15 @@ double EoGeLine::AngleFromXAxisXY() const {
   return (Angle);
 }
 
-EoGePoint3d EoGeLine::ConstrainToAxis(double dInfAng, double dAxOffAng) const {
-  EoGeTransformMatrix tm;
-  tm.Translate(EoGeVector3d(begin, EoGePoint3d::kOrigin));
-
-  EoGeTransformMatrix tmZRot;
-  tm *= tmZRot.ZAxisRotation(-sin(Eo::DegreeToRadian(dAxOffAng)), cos(Eo::DegreeToRadian(dAxOffAng)));
+EoGePoint3d EoGeLine::ConstrainToAxis(double influenceAngle, double axisOffsetAngle) const {
+  EoGeTransformMatrix transformMatrix{};
+  transformMatrix.Translate(EoGeVector3d(begin, EoGePoint3d::kOrigin));
+  transformMatrix *= EoGeTransformMatrix::ZAxisRotation(-sin(Eo::DegreeToRadian(axisOffsetAngle)),
+                                                        cos(Eo::DegreeToRadian(axisOffsetAngle)));
 
   EoGePoint3d pt = end;
 
-  pt = tm * pt;
+  pt = transformMatrix * pt;
 
   double dX = pt.x * pt.x;
   double dY = pt.y * pt.y;
@@ -85,32 +84,35 @@ EoGePoint3d EoGeLine::ConstrainToAxis(double dInfAng, double dAxOffAng) const {
 
   double dLen = sqrt(dX + dY + dZ);
 
-  if (dLen > Eo::geometricTolerance) {        // Not a zero length line
-    if (dX >= std::max(dY, dZ)) {  // Major component of line is along x-axis
+  if (dLen > Eo::geometricTolerance) {  // Not a zero length line
+    if (dX >= std::max(dY, dZ)) {       // Major component of line is along x-axis
       dLen = sqrt(dY + dZ);
-      if (dLen > Eo::geometricTolerance)                                        // Not already on the x-axis
-        if (dLen / fabs(pt.x) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to x-axis
+      if (dLen > Eo::geometricTolerance)  // Not already on the x-axis
+        if (dLen / fabs(pt.x) <
+            tan(Eo::DegreeToRadian(influenceAngle))) {  // Within cone of influence .. snap to x-axis
           pt.y = 0.;
           pt.z = 0.;
         }
     } else if (dY >= dZ) {  // Major component of line is along y-axis
       dLen = sqrt(dX + dZ);
-      if (dLen > Eo::geometricTolerance)                                        // Not already on the y-axis
-        if (dLen / fabs(pt.y) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to y-axis
+      if (dLen > Eo::geometricTolerance)  // Not already on the y-axis
+        if (dLen / fabs(pt.y) <
+            tan(Eo::DegreeToRadian(influenceAngle))) {  // Within cone of influence .. snap to y-axis
           pt.x = 0.;
           pt.z = 0.;
         }
     } else {
       dLen = sqrt(dX + dY);
-      if (dLen > Eo::geometricTolerance)                                        // Not already on the z-axis
-        if (dLen / fabs(pt.z) < tan(Eo::DegreeToRadian(dInfAng))) {  // Within cone of influence .. snap to z-axis
+      if (dLen > Eo::geometricTolerance)  // Not already on the z-axis
+        if (dLen / fabs(pt.z) <
+            tan(Eo::DegreeToRadian(influenceAngle))) {  // Within cone of influence .. snap to z-axis
           pt.x = 0.;
           pt.y = 0.;
         }
     }
   }
-  tm.Inverse();
-  pt = tm * pt;
+  transformMatrix.Inverse();
+  pt = transformMatrix * pt;
   return (pt);
 }
 
@@ -446,7 +448,8 @@ bool EoGeLine::Intersection(const EoGeLine& firstLine, const EoGeLine& secondLin
   EoGePoint3d secondLineEnd(secondLine.end);
   secondLineEnd = transformMatrix * secondLineEnd;
 
-  if (EoGeLine::Intersection_xy(EoGeLine(EoGePoint3d::kOrigin, firstLineEnd), EoGeLine(secondLineBegin, secondLineEnd), intersection)) {
+  if (EoGeLine::Intersection_xy(EoGeLine(EoGePoint3d::kOrigin, firstLineEnd), EoGeLine(secondLineBegin, secondLineEnd),
+                                intersection)) {
     intersection.z = 0.0;
     transformMatrix.Inverse();
     intersection = transformMatrix * intersection;

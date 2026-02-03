@@ -530,8 +530,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
     double dHatOrigY = dX * (-dSinAng) + dY * dCosAng;
 
     // Add rotation to matrix which gets current scan lines parallel to x-axis
-    EoGeTransformMatrix tmRotZ;
-    tm *= tmRotZ.ZAxisRotation(-dSinAng, dCosAng);
+    tm *= EoGeTransformMatrix::ZAxisRotation(-dSinAng, dCosAng);
     tmInv = tm;
     tmInv.Inverse();
 
@@ -651,7 +650,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
       dSecBeg -= dShift;
       goto l1;
     }
-    tm *= tmRotZ.ZAxisRotation(dSinAng, dCosAng);
+    tm *= EoGeTransformMatrix::ZAxisRotation(dSinAng, dCosAng);
   }
   pstate.SetPen(view, deviceContext, nPenColor, LineType);
 }
