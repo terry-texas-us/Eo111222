@@ -24,20 +24,20 @@ void EoDbBlockFile::ReadBlocks(EoDbBlocks& blocks) {
 
   EoDbPrimitive* primitive{};
 
-  EoUInt16 BlockTableSize = EoDb::ReadUInt16(*this);
-  for (int BlockTableIndex = 0; BlockTableIndex < BlockTableSize; BlockTableIndex++) {
-    int iPrims = EoDb::ReadUInt16(*this);
+  auto blockTableSize = EoDb::ReadUInt16(*this);
+  for (int BlockTableIndex = 0; BlockTableIndex < blockTableSize; BlockTableIndex++) {
+    auto numberOfPrimitives = EoDb::ReadUInt16(*this);
 
     EoDb::Read(*this, strName);
-    EoUInt16 wBlkTypFlgs = EoDb::ReadUInt16(*this);
+    auto wBlkTypFlgs = EoDb::ReadUInt16(*this);
 
-    auto* Block = new EoDbBlock(wBlkTypFlgs, EoGePoint3d::kOrigin);
+    auto* block = new EoDbBlock(wBlkTypFlgs, EoGePoint3d::kOrigin);
 
-    for (int i = 0; i < iPrims; i++) {
+    for (auto i = 0; i < numberOfPrimitives; i++) {
       EoDb::Read(*this, primitive);
-      Block->AddTail(primitive);
+      block->AddTail(primitive);
     }
-    blocks[strName] = Block;
+    blocks[strName] = block;
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
     throw L"Exception EoDbBlockFile: Expecting sentinel EoDb::kEndOfSection.";

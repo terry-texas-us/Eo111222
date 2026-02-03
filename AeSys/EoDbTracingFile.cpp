@@ -21,15 +21,15 @@ bool EoDbTracingFile::ReadLayer(CFile& file, EoDbLayer* layer) {
   if (EoDb::ReadUInt16(file) != EoDb::kGroupsSection)
     throw L"Exception EoDbTracingFile: Expecting sentinel EoDb::kGroupsSection.";
 
-  EoUInt16 NumberOfGroups = EoDb::ReadUInt16(file);
+  auto numberOfGroups = EoDb::ReadUInt16(file);
 
-  for (EoUInt16 n = 0; n < NumberOfGroups; n++) {
-    auto* Group = ReadGroup(file);
-    layer->AddTail(Group);
+  for (EoUInt16 n = 0; n < numberOfGroups; n++) {
+    auto* group = ReadGroup(file);
+    layer->AddTail(group);
   }
-  if (EoDb::ReadUInt16(file) != EoDb::kEndOfSection)
+  if (EoDb::ReadUInt16(file) != EoDb::kEndOfSection) {
     throw L"Exception EoDbTracingFile: Expecting sentinel EoDb::kEndOfSection.";
-
+  }
   return true;
 }
 

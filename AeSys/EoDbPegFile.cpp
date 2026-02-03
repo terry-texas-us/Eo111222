@@ -146,8 +146,8 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
 
   CString layerName;
   CString lineTypeName;
-  EoUInt16 numberOfLayers = EoDb::ReadUInt16(*this);
-  for (EoUInt16 n = 0; n < numberOfLayers; n++) {
+  auto numberOfLayers = EoDb::ReadUInt16(*this);
+  for (auto n = 0; n < numberOfLayers; n++) {
     EoDb::Read(*this, layerName);
 
     auto tracingFlags = EoDb::ReadUInt16(*this);
@@ -169,7 +169,7 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
       layer->SetTracingFlg(tracingFlags);
       layer->SetColorIndex(colorIndex);
 
-      EoDbLineType* lineType;
+      EoDbLineType* lineType{};
       if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) {
         ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L" Lookup succeeded: `%p`\n", lineType);
         layer->SetLineType(lineType);
@@ -187,24 +187,24 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
 void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kBlocksSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kBlocksSection.";
 
-  EoDbPrimitive* primitive;
+  EoDbPrimitive* primitive{};
   CString Name;
   CString XRefPathName;
 
-  EoUInt16 NumberOfBlocks = EoDb::ReadUInt16(*this);
+  auto numberOfBlocks = EoDb::ReadUInt16(*this);
 
-  for (EoUInt16 n = 0; n < NumberOfBlocks; n++) {
-    EoUInt16 NumberOfPrimitives = EoDb::ReadUInt16(*this);
+  for (EoUInt16 n = 0; n < numberOfBlocks; n++) {
+    auto numberOfPrimitives = EoDb::ReadUInt16(*this);
 
     EoDb::Read(*this, Name);
-    EoUInt16 BlockTypeFlags = EoDb::ReadUInt16(*this);
+    auto blockTypeFlags = EoDb::ReadUInt16(*this);
     EoGePoint3d BasePoint = EoDb::ReadPoint3d(*this);
-    EoDbBlock* Block = new EoDbBlock(BlockTypeFlags, BasePoint, XRefPathName);
-    document->InsertBlock(Name, Block);
+    auto* block = new EoDbBlock(blockTypeFlags, BasePoint, XRefPathName);
+    document->InsertBlock(Name, block);
 
-    for (EoUInt16 PrimitiveIndex = 0; PrimitiveIndex < NumberOfPrimitives; PrimitiveIndex++) {
+    for (EoUInt16 PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
       EoDb::Read(*this, primitive);
-      Block->AddTail(primitive);
+      block->AddTail(primitive);
     }
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
@@ -212,33 +212,34 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
 void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kGroupsSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection.";
 
-  EoDbPrimitive* primitive;
+  EoDbPrimitive* primitive{};
 
-  EoUInt16 NumberOfLayers = EoDb::ReadUInt16(*this);
+  auto numberOfLayers = EoDb::ReadUInt16(*this);
 
-  for (EoUInt16 n = 0; n < NumberOfLayers; n++) {
-    EoDbLayer* Layer = document->GetLayerTableLayerAt(n);
+  for (auto n = 0; n < numberOfLayers; n++) {
+    auto* layer = document->GetLayerTableLayerAt(n);
 
-    if (Layer == 0) return;
+    if (layer == nullptr) { return; }
 
-    EoUInt16 NumberOfGroups = EoDb::ReadUInt16(*this);
+    auto numberOfGroups = EoDb::ReadUInt16(*this);
 
-    if (Layer->IsInternal()) {
-      for (EoUInt16 GroupIndex = 0; GroupIndex < NumberOfGroups; GroupIndex++) {
-        auto* Group = new EoDbGroup;
-        EoUInt16 NumberOfPrimitives = EoDb::ReadUInt16(*this);
-        for (EoUInt16 PrimitiveIndex = 0; PrimitiveIndex < NumberOfPrimitives; PrimitiveIndex++) {
+    if (layer->IsInternal()) {
+      for (auto GroupIndex = 0; GroupIndex < numberOfGroups; GroupIndex++) {
+        auto* group = new EoDbGroup;
+        auto numberOfPrimitives = EoDb::ReadUInt16(*this);
+        for (auto PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
           EoDb::Read(*this, primitive);
-          Group->AddTail(primitive);
+          group->AddTail(primitive);
         }
-        Layer->AddTail(Group);
+        layer->AddTail(group);
       }
     } else {
-      document->TracingLoadLayer(Layer->Name(), Layer);
+      document->TracingLoadLayer(layer->Name(), layer);
     }
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
 }
+
 void EoDbPegFile::Unload(AeSysDoc* document) {
   CFile::SetLength(0);
   CFile::SeekToBegin();
@@ -513,6 +514,7 @@ EoInt16 EoDb::ReadInt16(CFile& file) {
   file.Read(&number, sizeof(EoInt16));
   return number;
 }
+
 EoUInt16 EoDb::ReadUInt16(CFile& file) {
   EoUInt16 number;
   file.Read(&number, sizeof(EoUInt16));
@@ -622,75 +624,82 @@ void EoDb::ConstructLinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoGePoint3d EndPoint(EoDb::ReadPoint3d(file));
   primitive = new EoDbLine(PenColor, LineType, BeginPoint, EndPoint);
 }
+
 void EoDb::ConstructPointPrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 PenColor = EoDb::ReadInt16(file);
-  EoInt16 PointStyle = EoDb::ReadInt16(file);
+  auto PenColor = EoDb::ReadInt16(file);
+  auto PointStyle = EoDb::ReadInt16(file);
 
   EoGePoint3d Point(EoDb::ReadPoint3d(file));
-  EoUInt16 NumberOfDatums = EoDb::ReadUInt16(file);
+  auto numberOfDatums = EoDb::ReadUInt16(file);
 
-  double* Data = (NumberOfDatums == 0) ? 0 : new double[NumberOfDatums];
+  double* Data = (numberOfDatums == 0) ? 0 : new double[numberOfDatums];
 
-  for (EoUInt16 n = 0; n < NumberOfDatums; n++) { EoDb::Read(file, Data[n]); }
-  primitive = new EoDbPoint(PenColor, PointStyle, Point, NumberOfDatums, Data);
+  for (EoUInt16 n = 0; n < numberOfDatums; n++) { EoDb::Read(file, Data[n]); }
+  primitive = new EoDbPoint(PenColor, PointStyle, Point, numberOfDatums, Data);
 }
+
 void EoDb::ConstructPointPrimitiveFromTagPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoInt16 PenColor = EoDb::ReadInt16(file);
   EoInt16 PointStyle = EoDb::ReadInt16(file);
   EoGePoint3d Point(EoDb::ReadPoint3d(file));
   primitive = new EoDbPoint(PenColor, PointStyle, Point);
 }
+
 void EoDb::ConstructPolygonPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoInt16 PenColor = EoDb::ReadInt16(file);
   EoInt16 InteriorStyle = EoDb::ReadInt16(file);
   EoInt16 InteriorStyleIndex = EoDb::ReadInt16(file);
-  EoUInt16 NumberOfPoints = EoDb::ReadUInt16(file);
+  auto numberOfPoints = EoDb::ReadUInt16(file);
   EoGePoint3d HatchOrigin(EoDb::ReadPoint3d(file));
   EoGeVector3d HatchXAxis(EoDb::ReadVector3d(file));
   EoGeVector3d HatchYAxis(EoDb::ReadVector3d(file));
 
   EoGePoint3dArray Points;
-  Points.SetSize(NumberOfPoints);
-  for (EoUInt16 n = 0; n < NumberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
+  Points.SetSize(numberOfPoints);
+  for (EoUInt16 n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
   primitive = new EoDbPolygon(PenColor, InteriorStyle, InteriorStyleIndex, HatchOrigin, HatchXAxis, HatchYAxis, Points);
 }
+
 void EoDb::ConstructPolylinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoInt16 PenColor = EoDb::ReadInt16(file);
   EoInt16 LineType = EoDb::ReadInt16(file);
-  EoUInt16 NumberOfPoints = EoDb::ReadUInt16(file);
+  auto numberOfPoints = EoDb::ReadUInt16(file);
 
   EoGePoint3dArray Points;
-  Points.SetSize(NumberOfPoints);
+  Points.SetSize(numberOfPoints);
 
-  for (EoUInt16 n = 0; n < NumberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
+  for (EoUInt16 n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
   primitive = new EoDbPolyline(PenColor, LineType, Points);
 }
+
 void EoDb::ConstructPolylinePrimitiveFromCSplinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoInt16 PenColor = EoDb::ReadInt16(file);
   EoInt16 LineType = EoDb::ReadInt16(file);
 
   file.Seek(sizeof(EoUInt16), CFile::current);
-  EoUInt16 NumberOfPoints = EoDb::ReadUInt16(file);
+  auto numberOfPoints = EoDb::ReadUInt16(file);
   file.Seek(sizeof(EoUInt16), CFile::current);
   file.Seek(sizeof(EoGeVector3d), CFile::current);
   file.Seek(sizeof(EoGeVector3d), CFile::current);
   EoGePoint3dArray Points;
-  Points.SetSize(NumberOfPoints);
-  for (EoUInt16 n = 0; n < NumberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
+  Points.SetSize(numberOfPoints);
+  for (EoUInt16 n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
   primitive = new EoDbPolyline(PenColor, LineType, Points);
 }
+
 void EoDb::ConstructSplinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoInt16 PenColor = EoDb::ReadInt16(file);
   EoInt16 LineType = EoDb::ReadInt16(file);
 
-  EoUInt16 NumberOfPoints = EoDb::ReadUInt16(file);
+  auto numberOfPoints = EoDb::ReadUInt16(file);
 
   EoGePoint3dArray Points;
-  Points.SetSize(NumberOfPoints);
+  Points.SetSize(numberOfPoints);
 
-  for (EoUInt16 n = 0; n < NumberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
+  for (EoUInt16 n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
   primitive = new EoDbSpline(PenColor, LineType, Points);
 }
+
 void EoDb::ConstructTextPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   /* EoInt16 PenColor = */ EoDb::ReadInt16(file);
   /* EoInt16 LineType = */ EoDb::ReadInt16(file);
