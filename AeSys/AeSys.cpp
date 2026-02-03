@@ -556,7 +556,7 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
   int iTblId{};
 
   while (fl.ReadString(line, sizeof(line) / sizeof(wchar_t) - 1) != 0) {
-    if (*line == '!') { // New Hatch index
+    if (*line == '!') {  // New Hatch index
       if (iHatId != 0) { hatch::tableValue[hatch::tableOffset[iHatId]] = float(iNmbHatLns); }
       hatch::tableOffset[++iHatId] = iTblId++;
       iNmbHatLns = 0;
