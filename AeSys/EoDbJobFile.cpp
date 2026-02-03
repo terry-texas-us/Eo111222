@@ -156,7 +156,7 @@ void EoDbJobFile::ReadLayer(CFile& file, EoDbLayer* layer) {
 }
 
 bool EoDbJobFile::GetNextVisibleGroup(CFile& file, EoDbGroup*& group) {
-  ULONGLONG Position = file.GetPosition();
+  auto Position = file.GetPosition();
 
   group = 0;
   try {

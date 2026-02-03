@@ -78,7 +78,7 @@ const EoDbBlockReference& EoDbBlockReference::operator=(const EoDbBlockReference
   return (*this);
 }
 void EoDbBlockReference::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  EoDbBlock* Block;
+  EoDbBlock* Block{};
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return; }
 
   CString label{L"<BlockReference>"};
@@ -171,7 +171,7 @@ void EoDbBlockReference::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoi
 
 bool EoDbBlockReference::IsInView(AeSysView* view) {
   // Test whether an instance of a block is wholly or partially within the current view volume.
-  EoDbBlock* Block;
+  EoDbBlock* Block{};
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return false; }
 

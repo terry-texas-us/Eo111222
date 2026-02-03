@@ -646,7 +646,7 @@ int AeSysDoc::RemoveEmptyNotesAndDelete() {
   //Note: remove empty notes from blocks
 
   CString Key;
-  EoDbBlock* Block;
+  EoDbBlock* Block{};
 
   auto position = m_BlocksTable.GetStartPosition();
   while (position != nullptr) { m_BlocksTable.GetNextAssoc(position, Key, Block); }
@@ -663,7 +663,7 @@ int AeSysDoc::RemoveEmptyGroups() {
   //Note: remove empty groups from blocks
 
   CString Key;
-  EoDbBlock* Block;
+  EoDbBlock* Block{};
 
   auto position = m_BlocksTable.GetStartPosition();
   while (position != nullptr) { m_BlocksTable.GetNextAssoc(position, Key, Block); }

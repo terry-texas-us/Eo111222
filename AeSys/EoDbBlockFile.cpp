@@ -90,7 +90,7 @@ void EoDbBlockFile::WriteBlocks(EoDbBlocks& blocks) {
   EoDb::Write(*this, EoUInt16(blocks.GetSize()));
 
   CString Key;
-  EoDbBlock* Block;
+  EoDbBlock* Block{};
 
   auto position = blocks.GetStartPosition();
   while (position != nullptr) {

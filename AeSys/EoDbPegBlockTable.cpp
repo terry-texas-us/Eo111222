@@ -12,7 +12,7 @@ int AeSysDoc::GetBlockReferenceCount(const CString& name) {
     Count += Layer->GetBlockRefCount(name);
   }
   CString Key;
-  EoDbBlock* Block;
+  EoDbBlock* Block{};
 
   auto position = m_BlocksTable.GetStartPosition();
   while (position != nullptr) {
@@ -28,7 +28,7 @@ bool AeSysDoc::LookupBlock(CString name, EoDbBlock*& block) {
 }
 void AeSysDoc::RemoveAllBlocks() {
   CString Name;
-  EoDbBlock* Block;
+  EoDbBlock* Block{};
 
   auto BlockPosition = m_BlocksTable.GetStartPosition();
   while (BlockPosition != nullptr) {
@@ -40,7 +40,7 @@ void AeSysDoc::RemoveAllBlocks() {
 }
 void AeSysDoc::RemoveUnusedBlocks() {
   CString Name;
-  EoDbBlock* Block;
+  EoDbBlock* Block{};
 
   auto BlockPosition = m_BlocksTable.GetStartPosition();
   while (BlockPosition != nullptr) {

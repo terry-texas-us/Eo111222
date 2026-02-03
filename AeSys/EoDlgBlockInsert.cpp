@@ -33,7 +33,7 @@ BOOL EoDlgBlockInsert::OnInitDialog() {
   InsertionPoint = app.GetCursorPosition();
 
   CString BlockName;
-  EoDbBlock* Block;
+  EoDbBlock* Block{};
 
   auto BlockPosition = m_Document->GetFirstBlockPosition();
   while (BlockPosition != nullptr) {
@@ -75,7 +75,7 @@ void EoDlgBlockInsert::OnLbnSelchangeBlocksList() {
     CString BlockName;
     m_BlocksListBoxControl.GetText(CurrentSelection, BlockName);
 
-    EoDbBlock* Block;
+    EoDbBlock* Block{};
     m_Document->LookupBlock(BlockName, Block);
     SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(Block->GetCount()), FALSE);
     SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_Document->GetBlockReferenceCount(BlockName)), FALSE);

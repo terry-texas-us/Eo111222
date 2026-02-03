@@ -46,7 +46,9 @@ void EoDbPegFile::Load(AeSysDoc* document) {
  * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection." if the expected end of section sentinel is not found.
  */
 void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
-  if (EoDb::ReadUInt16(*this) != EoDb::kHeaderSection) { throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kHeaderSection."; }
+  if (EoDb::ReadUInt16(*this) != EoDb::kHeaderSection) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kHeaderSection.";
+  }
   EoDbHeaderSection& headerSection = document->HeaderSection();
 
   auto& variables = headerSection.GetVariables();
@@ -58,8 +60,10 @@ void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
     headerSection.SetVariable(L"$PDSIZE", HeaderVariable(1.0));        // default point size 1.0
   }
   // 	With addition of info here will loop key-value pairs till EoDb::kEndOfSection sentinel
-  
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) { throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection."; }
+
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+  }
 }
 
 /**
@@ -69,20 +73,26 @@ void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
  * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection." if the expected end of section sentinel is not found.
  */
 void EoDbPegFile::ReadTablesSection(AeSysDoc* document) {
-  if (EoDb::ReadUInt16(*this) != EoDb::kTablesSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kTablesSection.";
-
+  if (EoDb::ReadUInt16(*this) != EoDb::kTablesSection) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kTablesSection.";
+  }
   ReadViewportTable(document);
   ReadLinetypesTable(document);
   ReadLayerTable(document);
 
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+  }
 }
 void EoDbPegFile::ReadViewportTable(AeSysDoc*) {
-  if (EoDb::ReadUInt16(*this) != EoDb::kViewPortTable) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kViewPortTable.";
-
+  if (EoDb::ReadUInt16(*this) != EoDb::kViewPortTable) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kViewPortTable.";
+  }
   EoDb::ReadUInt16(*this);
 
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.";
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.";
+  }
 }
 
 /**
@@ -94,7 +104,9 @@ void EoDbPegFile::ReadViewportTable(AeSysDoc*) {
 void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
   auto* lineTypeTable = document->LineTypeTable();
 
-  if (EoDb::ReadUInt16(*this) != EoDb::kLinetypeTable) { throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kLinetypeTable."; }
+  if (EoDb::ReadUInt16(*this) != EoDb::kLinetypeTable) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kLinetypeTable.";
+  }
   std::vector<double> dashElements;
 
   const auto numberOfLinetypes = EoDb::ReadUInt16(*this);
@@ -113,7 +125,9 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
     }
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Index: %d - Name: `%s` `%p`\n", n, name.GetString(), lineType);
   }
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) { throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable."; }
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.";
+  }
 }
 
 /**
@@ -123,7 +137,8 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
  * @param description A reference to a CString that will be populated with the description of the linetype.
  * @param definitionLength A reference to an EoUInt16 that will be set to the number of dash elements in the linetype.
  */
-void EoDbPegFile::ReadLinetypeDefinition(std::vector<double>& dashLength, CString& name, CString& description, EoUInt16& definitionLength) {
+void EoDbPegFile::ReadLinetypeDefinition(std::vector<double>& dashLength, CString& name, CString& description,
+                                         EoUInt16& definitionLength) {
   EoDb::Read(*this, name);
   /* EoUInt16 Flags = */ EoDb::ReadUInt16(*this);
   EoDb::Read(*this, description);
@@ -142,7 +157,9 @@ void EoDbPegFile::ReadLinetypeDefinition(std::vector<double>& dashLength, CStrin
  * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable." if the expected end of table sentinel is not found.
  */
 void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
-  if (EoDb::ReadUInt16(*this) != EoDb::kLayerTable) { throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable."; }
+  if (EoDb::ReadUInt16(*this) != EoDb::kLayerTable) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable.";
+  }
 
   CString layerName;
   CString lineTypeName;
@@ -181,12 +198,15 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
       if (layer->IsWork()) { document->SetWorkLayer(layer); }
     }
   }
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) { throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable."; }
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.";
+  }
 }
 
 void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
-  if (EoDb::ReadUInt16(*this) != EoDb::kBlocksSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kBlocksSection.";
-
+  if (EoDb::ReadUInt16(*this) != EoDb::kBlocksSection) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kBlocksSection.";
+  }
   EoDbPrimitive* primitive{};
   CString Name;
   CString XRefPathName;
@@ -207,10 +227,15 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
       block->AddTail(primitive);
     }
   }
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+  }
 }
+
 void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
-  if (EoDb::ReadUInt16(*this) != EoDb::kGroupsSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection.";
+  if (EoDb::ReadUInt16(*this) != EoDb::kGroupsSection) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection.";
+  }
 
   EoDbPrimitive* primitive{};
 
@@ -237,7 +262,9 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
       document->TracingLoadLayer(layer->Name(), layer);
     }
   }
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
+    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+  }
 }
 
 void EoDbPegFile::Unload(AeSysDoc* document) {
@@ -289,11 +316,13 @@ void EoDbPegFile::WriteTablesSection(AeSysDoc* document) {
   WriteLayerTable(document);
   EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
 }
+
 void EoDbPegFile::WriteVPortTable(AeSysDoc*) {
   EoDb::Write(*this, EoUInt16(EoDb::kViewPortTable));
   EoDb::Write(*this, EoUInt16(0));
   EoDb::Write(*this, EoUInt16(EoDb::kEndOfTable));
 }
+
 void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
   auto* lineTypeTable = document->LineTypeTable();
 
@@ -328,12 +357,13 @@ void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
   }
   EoDb::Write(*this, EoUInt16(EoDb::kEndOfTable));
 }
+
 void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
   int NumberOfLayers = document->GetLayerTableSize();
 
   EoDb::Write(*this, EoUInt16(EoDb::kLayerTable));
 
-  ULONGLONG SavedFilePosition = CFile::GetPosition();
+  auto SavedFilePosition = CFile::GetPosition();
   EoDb::Write(*this, EoUInt16(NumberOfLayers));
 
   for (int n = 0; n < document->GetLayerTableSize(); n++) {
@@ -350,12 +380,13 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
   EoDb::Write(*this, EoUInt16(EoDb::kEndOfTable));
 
   if (NumberOfLayers != document->GetLayerTableSize()) {
-    ULONGLONG CurrentFilePosition = CFile::GetPosition();
+    auto CurrentFilePosition = CFile::GetPosition();
     CFile::Seek(static_cast<LONGLONG>(SavedFilePosition), CFile::begin);
     EoDb::Write(*this, EoUInt16(NumberOfLayers));
     CFile::Seek(static_cast<LONGLONG>(CurrentFilePosition), CFile::begin);
   }
 }
+
 void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
   EoDb::Write(*this, EoUInt16(EoDb::kBlocksSection));
 
@@ -363,13 +394,13 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
   EoDb::Write(*this, NumberOfBlocks);
 
   CString Name;
-  EoDbBlock* Block;
+  EoDbBlock* Block{};
 
   auto position = document->GetFirstBlockPosition();
   while (position != nullptr) {
     document->GetNextBlock(position, Name, Block);
 
-    ULONGLONG SavedFilePosition = CFile::GetPosition();
+    auto SavedFilePosition = CFile::GetPosition();
     EoDb::Write(*this, EoUInt16(0));
     EoUInt16 NumberOfPrimitives = 0;
 
@@ -382,7 +413,7 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
       EoDbPrimitive* primitive = Block->GetNext(PrimitivePosition);
       if (primitive->Write(*this)) NumberOfPrimitives++;
     }
-    ULONGLONG CurrentFilePosition = CFile::GetPosition();
+    auto CurrentFilePosition = CFile::GetPosition();
     CFile::Seek(static_cast<LONGLONG>(SavedFilePosition), CFile::begin);
     EoDb::Write(*this, NumberOfPrimitives);
     CFile::Seek(static_cast<LONGLONG>(CurrentFilePosition), CFile::begin);
@@ -390,6 +421,7 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
 
   EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
 }
+
 void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
   EoDb::Write(*this, EoUInt16(EoDb::kGroupsSection));
 
@@ -530,7 +562,8 @@ EoUInt16 EoDb::ReadUInt16(CFile& file) {
 void EoDb::Write(CFile& file, const CString& string, UINT codePage) {
   int wideLength = string.GetLength();
   if (wideLength > 0) {
-    auto bufferSize = static_cast<size_t>(WideCharToMultiByte(codePage, 0, string, wideLength, nullptr, 0, nullptr, nullptr));
+    auto bufferSize =
+        static_cast<size_t>(WideCharToMultiByte(codePage, 0, string, wideLength, nullptr, 0, nullptr, nullptr));
     if (bufferSize > 0) {
       char* buffer = new char[bufferSize];
       WideCharToMultiByte(codePage, 0, string, wideLength, buffer, static_cast<int>(bufferSize), nullptr, nullptr);
@@ -558,8 +591,8 @@ void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primiti
   /* double ColumnSpacing = */ EoDb::ReadDouble(file);
   /* double RowSpacing = */ EoDb::ReadDouble(file);
 
-  primitive =
-      new EoDbBlockReference(static_cast<EoUInt16>(PenColor), static_cast<EoUInt16>(LineType), Name, Point, Normal, ScaleFactors, Rotation);
+  primitive = new EoDbBlockReference(static_cast<EoUInt16>(PenColor), static_cast<EoUInt16>(LineType), Name, Point,
+                                     Normal, ScaleFactors, Rotation);
 }
 void EoDb::ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& /* file */, EoDbPrimitive*& /* primitive */) {}
 void EoDb::ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive) {
@@ -575,7 +608,8 @@ void EoDb::ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   CString Text;
   EoDb::Read(file, Text);
 
-  primitive = new EoDbDimension(PenColor, LineType, EoGeLine(BeginPoint, EndPoint), TextPenColor, FontDefinition, ReferenceSystem, Text);
+  primitive = new EoDbDimension(PenColor, LineType, EoGeLine(BeginPoint, EndPoint), TextPenColor, FontDefinition,
+                                ReferenceSystem, Text);
 }
 
 void EoDb::ConstructConicPrimitive(CFile& file, EoDbPrimitive*& primitive) {
@@ -592,7 +626,7 @@ void EoDb::ConstructConicPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoDb::Read(file, endAngle);
 
   primitive = EoDbConic::CreateConic(center, extrusion, majorAxis, ratio, startAngle, endAngle);
-  
+
   primitive->SetColor(color);
   primitive->SetLineTypeIndex(lineTypeIndex);
 }

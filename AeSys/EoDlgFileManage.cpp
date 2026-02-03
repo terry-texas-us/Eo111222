@@ -125,7 +125,7 @@ BOOL EoDlgFileManage::OnInitDialog() {
   m_BlocksList.SetHorizontalExtent(512);
 
   CString BlockName;
-  EoDbBlock* Block;
+  EoDbBlock* Block{};
 
   auto position = m_Document->GetFirstBlockPosition();
   while (position != nullptr) {
@@ -327,6 +327,7 @@ void EoDlgFileManage::OnLbnSelchangeBlocksList() {
     }
   }
 }
+
 void EoDlgFileManage::OnLbnSelchangeTracingList() {
   int CurrentSelection = m_TracingList.GetCurSel();
   if (CurrentSelection != LB_ERR) {
