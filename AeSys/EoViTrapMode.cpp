@@ -23,7 +23,7 @@ void AeSysView::OnTrapModePoint() {
   while (position != nullptr) {
     auto* Group = GetNextVisibleGroup(position);
 
-    if (document->FindTrappedGroup(Group) != 0) continue;
+    if (document->FindTrappedGroup(Group) != 0) { continue; }
 
     if (Group->SelectUsingPoint_(this, ptView)) { document->AddGroupToTrap(Group); }
   }
@@ -50,7 +50,7 @@ void AeSysView::OnTrapModeStitch() {
     while (position != nullptr) {
       auto* Group = GetNextVisibleGroup(position);
 
-      if (document->FindTrappedGroup(Group) != 0) continue;
+      if (document->FindTrappedGroup(Group) != 0) { continue; }
 
       if (Group->SelectUsingLine(this, ptView[0], ptView[1])) { document->AddGroupToTrap(Group); }
     }
@@ -82,7 +82,7 @@ void AeSysView::OnTrapModeField() {
     while (position != nullptr) {
       auto* Group = GetNextVisibleGroup(position);
 
-      if (document->FindTrappedGroup(Group) != 0) continue;
+      if (document->FindTrappedGroup(Group) != 0) { continue; }
 
       if (Group->SelectUsingRectangle(this, ptMin, ptMax)) { document->AddGroupToTrap(Group); }
     }

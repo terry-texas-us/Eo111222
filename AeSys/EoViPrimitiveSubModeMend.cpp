@@ -17,13 +17,13 @@ void AeSysView::OnModePrimitiveMend() {
   if (GroupIsEngaged()) {  // Group is currently engaged, see if cursor is on a control point
     EoGePoint3d ptDet;
 
-    EoDbPrimitive* Primitive = EngagedPrimitive();
+    auto* primitive = EngagedPrimitive();
 
     EoDbPolygon::EdgeToEvaluate() = EoDbPolygon::Edge();
 
-    if (Primitive->SelectUsingPoint(this, ptView,
+    if (primitive->SelectUsingPoint(this, ptView,
                                     ptDet)) {  // Cursor is close enough to engaged primitive to use it first
-      m_PrimitiveToMend = Primitive;
+      m_PrimitiveToMend = primitive;
     }
   }
   if (m_PrimitiveToMend == 0) {  // No engaged group, or engaged primitive to far from cursor
@@ -41,6 +41,7 @@ void AeSysView::OnModePrimitiveMend() {
     app.LoadModeResources(ID_MODE_PRIMITIVE_MEND);
   }
 }
+
 void AeSysView::PreviewMendPrimitive() {
   auto* document = GetDocument();
   EoGePoint3d cursorPosition = GetCursorPosition();

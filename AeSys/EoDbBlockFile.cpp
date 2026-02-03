@@ -15,14 +15,14 @@
 // EoDb::kEndOfSection sentinel					EoUInt16 0x01ff
 
 EoDbBlockFile::EoDbBlockFile(const CString& pathName) { CFile::Open(pathName, modeReadWrite | shareDenyNone); }
-void EoDbBlockFile::ReadBlocks(CBlocks& blocks) {
+
+void EoDbBlockFile::ReadBlocks(EoDbBlocks& blocks) {
   if (EoDb::ReadUInt16(*this) != EoDb::kBlocksSection) {
     throw L"Exception EoDbBlockFile: Expecting sentinel EoDb::kBlocksSection.";
   }
-
   CString strName;
 
-  EoDbPrimitive* Primitive;
+  EoDbPrimitive* primitive{};
 
   EoUInt16 BlockTableSize = EoDb::ReadUInt16(*this);
   for (int BlockTableIndex = 0; BlockTableIndex < BlockTableSize; BlockTableIndex++) {
@@ -34,8 +34,8 @@ void EoDbBlockFile::ReadBlocks(CBlocks& blocks) {
     auto* Block = new EoDbBlock(wBlkTypFlgs, EoGePoint3d::kOrigin);
 
     for (int i = 0; i < iPrims; i++) {
-      EoDb::Read(*this, Primitive);
-      Block->AddTail(Primitive);
+      EoDb::Read(*this, primitive);
+      Block->AddTail(primitive);
     }
     blocks[strName] = Block;
   }
@@ -43,12 +43,13 @@ void EoDbBlockFile::ReadBlocks(CBlocks& blocks) {
     throw L"Exception EoDbBlockFile: Expecting sentinel EoDb::kEndOfSection.";
   }
 }
-void EoDbBlockFile::ReadFile(const CString& strPathName, CBlocks& blks) {
+
+void EoDbBlockFile::ReadFile(const CString& strPathName, EoDbBlocks& blocks) {
   CFileException e;
 
   if (CFile::Open(strPathName, modeRead | shareDenyNone, &e)) {
     ReadHeader();
-    ReadBlocks(blks);
+    ReadBlocks(blocks);
   }
 }
 
@@ -63,10 +64,11 @@ void EoDbBlockFile::ReadHeader() {
     throw L"Exception EoDbBlockFile: Expecting sentinel EoDb::kEndOfSection.";
   }
 }
-void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
-  EoUInt16 wPrims = 0;
 
-  ULONGLONG dwCountPosition = GetPosition();
+void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
+  EoUInt16 wPrims{};
+
+  auto countPosition = GetPosition();
 
   EoDb::Write(*this, wPrims);
   EoDb::Write(*this, strName);
@@ -74,15 +76,16 @@ void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
 
   auto BlockPosition = block->GetHeadPosition();
   while (BlockPosition != nullptr) {
-    EoDbPrimitive* Primitive = block->GetNext(BlockPosition);
-    if (Primitive->Write(*this)) wPrims++;
+    auto* primitive = block->GetNext(BlockPosition);
+    if (primitive->Write(*this)) wPrims++;
   }
-  ULONGLONG dwPosition = GetPosition();
-  Seek(static_cast<LONGLONG>(dwCountPosition), begin);
+  auto dwPosition = GetPosition();
+  Seek(static_cast<LONGLONG>(countPosition), begin);
   EoDb::Write(*this, wPrims);
   Seek(static_cast<LONGLONG>(dwPosition), begin);
 }
-void EoDbBlockFile::WriteBlocks(CBlocks& blocks) {
+
+void EoDbBlockFile::WriteBlocks(EoDbBlocks& blocks) {
   EoDb::Write(*this, EoUInt16(EoDb::kBlocksSection));
   EoDb::Write(*this, EoUInt16(blocks.GetSize()));
 
@@ -96,13 +99,13 @@ void EoDbBlockFile::WriteBlocks(CBlocks& blocks) {
   }
   EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
 }
-void EoDbBlockFile::WriteFile(const CString& strPathName, CBlocks& blks) {
+void EoDbBlockFile::WriteFile(const CString& strPathName, EoDbBlocks& blocks) {
   CFileException e;
 
   CFile::Open(strPathName, modeCreate | modeWrite, &e);
 
   WriteHeader();
-  WriteBlocks(blks);
+  WriteBlocks(blocks);
 }
 void EoDbBlockFile::WriteHeader() {
   EoDb::Write(*this, EoUInt16(EoDb::kHeaderSection));

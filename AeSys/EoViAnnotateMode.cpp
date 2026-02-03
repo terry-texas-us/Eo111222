@@ -440,38 +440,39 @@ void AeSysView::DoAnnotateModeMouseMove() {
   }
   pts.SetSize(NumberOfPoints);
 }
-void AeSysView::GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group) const {
-  EoGeVector3d PlaneNormal = CameraDirection();
 
-  EoGePoint3dArray ItemPoints;
+void AeSysView::GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group) const {
+  EoGeVector3d cameraDirection = CameraDirection();
+
+  EoGePoint3dArray itemPoints;
 
   if (type == 1 || type == 2) {
-    double dAng = 0.244978663127;
-    double dLen = size / 0.970142500145;
+    double angle{0.244978663127};
+    double length{size / 0.970142500145};
 
-    EoGePoint3d pt(endPoint.ProjectToward(beginPoint, dLen));
-    ItemPoints.Add(pt.RotateAboutAxis(endPoint, PlaneNormal, dAng));
-    ItemPoints.Add(endPoint);
-    ItemPoints.Add(pt.RotateAboutAxis(endPoint, PlaneNormal, -dAng));
-    EoDbPolyline* Primitive = new EoDbPolyline(1, 1, ItemPoints);
-    if (type == 2) Primitive->SetFlag(0x0010);
-    group->AddTail(Primitive);
+    EoGePoint3d pt(endPoint.ProjectToward(beginPoint, length));
+    itemPoints.Add(pt.RotateAboutAxis(endPoint, cameraDirection, angle));
+    itemPoints.Add(endPoint);
+    itemPoints.Add(pt.RotateAboutAxis(endPoint, cameraDirection, -angle));
+    EoDbPolyline* polyline = new EoDbPolyline(1, 1, itemPoints);
+    if (type == 2) polyline->SetFlag(0x0010);
+    group->AddTail(polyline);
   } else if (type == 3) {
-    double dAng = 9.96686524912e-2;
-    double dLen = size / 0.99503719021;
+    double angle{9.96686524912e-2};
+    double length{size / 0.99503719021};
 
-    EoGePoint3d pt(endPoint.ProjectToward(beginPoint, dLen));
-    ItemPoints.Add(pt.RotateAboutAxis(endPoint, PlaneNormal, dAng));
-    ItemPoints.Add(endPoint);
+    EoGePoint3d pt(endPoint.ProjectToward(beginPoint, length));
+    itemPoints.Add(pt.RotateAboutAxis(endPoint, cameraDirection, angle));
+    itemPoints.Add(endPoint);
 
-    group->AddTail(new EoDbPolyline(1, 1, ItemPoints));
+    group->AddTail(new EoDbPolyline(1, 1, itemPoints));
   } else if (type == 4) {
-    double dAng = 0.785398163397;
-    double dLen = 0.5 * size / 0.707106781187;
+    double angle{0.785398163397};
+    double length{0.5 * size / 0.707106781187};
 
-    EoGePoint3d pt(endPoint.ProjectToward(beginPoint, dLen));
-    ItemPoints.Add(pt.RotateAboutAxis(endPoint, PlaneNormal, dAng));
-    ItemPoints.Add(ItemPoints[0].RotateAboutAxis(endPoint, PlaneNormal, Eo::Pi));
-    group->AddTail(new EoDbPolyline(1, 1, ItemPoints));
+    EoGePoint3d pt(endPoint.ProjectToward(beginPoint, length));
+    itemPoints.Add(pt.RotateAboutAxis(endPoint, cameraDirection, angle));
+    itemPoints.Add(itemPoints[0].RotateAboutAxis(endPoint, cameraDirection, Eo::Pi));
+    group->AddTail(new EoDbPolyline(1, 1, itemPoints));
   }
 }

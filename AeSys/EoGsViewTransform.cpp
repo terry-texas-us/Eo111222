@@ -8,8 +8,8 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "EoGsAbstractView.h"
-#include "EoGsViewTransform.h"
 #include "EoGsViewport.h"
+#include "EoGsViewTransform.h"
 
 EoGsViewTransform::EoGsViewTransform() {
   m_UMin = -1.0;
@@ -18,7 +18,7 @@ EoGsViewTransform::EoGsViewTransform() {
   m_VMax = 1.0;
 }
 
-EoGsViewTransform::EoGsViewTransform(EoGsViewTransform& other) : EoGsAbstractView(other) {
+EoGsViewTransform::EoGsViewTransform(const EoGsViewTransform& other) : EoGsAbstractView(other) {
   m_UMin = other.m_UMin;
   m_VMin = other.m_VMin;
   m_UMax = other.m_UMax;

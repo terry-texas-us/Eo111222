@@ -5,11 +5,16 @@
 
 class EoGsViewport;
 
-// View space, sometimes called camera space, is similar to world space in that it is typically used for the entire scene.
-// However, in view space, the origin is at the viewer or camera. The view direction (where the viewer is looking) defines the positive Z axis.
-// An "up" direction defined by the application becomes the positive Y axis.
-
-
+/** @class  Manages view transformations including scaling, rotation, and translation.
+ * 
+ * The EoGsViewTransform class is responsible for handling view transformations in a 3D graphics context.
+ * It provides methods to adjust the view window, build transformation matrices, and apply various transformations
+ * such as scaling, rotation, and translation to points and vectors in 3D space.
+ *
+ * @note View space, sometimes called camera space, is similar to world space in that it is typically used for the entire scene.
+ * However, in view space, the origin is at the viewer or camera. The view direction (where the viewer is looking) defines the positive Z axis.
+ * An "up" direction defined by the application becomes the positive Y axis.
+ */
 class EoGsViewTransform : public EoGsAbstractView {
   double m_UMin;
   double m_VMin;
@@ -21,9 +26,9 @@ class EoGsViewTransform : public EoGsAbstractView {
 
   EoGeTransformMatrix m_InverseMatrix;
 
- public:  // Constructors and destructor
+ public:
   EoGsViewTransform();
-  EoGsViewTransform(EoGsViewTransform& src);
+  EoGsViewTransform(const EoGsViewTransform& other);
 
   ~EoGsViewTransform() override {}
 

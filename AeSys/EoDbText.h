@@ -48,7 +48,7 @@ class EoDbText : public EoDbPrimitive {
   void ModifyState() override;
   void ModifyNotes(EoDbFontDefinition& fd, EoDbCharacterCellDefinition& ccd, int iAtt);
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
-  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) override { return false; }
+  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
   void Translate(EoGeVector3d v) override { m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v); }

@@ -33,4 +33,4 @@ class EoDbBlock : public EoDbGroup {
   void SetBasePoint(EoGePoint3d basePoint) { m_basePoint = std::move(basePoint); }
 };
 
-typedef CTypedPtrMap<CMapStringToOb, CString, EoDbBlock*> CBlocks;
+typedef CTypedPtrMap<CMapStringToOb, CString, EoDbBlock*> EoDbBlocks;

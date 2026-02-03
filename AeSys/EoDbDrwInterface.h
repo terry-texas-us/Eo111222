@@ -103,18 +103,40 @@ class EoDbDrwInterface : public DRW_Interface {
   // COORDINATION_MODEL not implemented in DRW
 
   // Dimensions
-  //   Aligned dimension group
-  void addDimAlign(const DRW_DimAligned* /* dimAlign */) override { countOfDimAlign++; }
-  //   Angular dimension group
-  void addDimAngular(const DRW_DimAngular* /* dimAngular */) override { countOfDimAngular++; }
-  void addDimAngular3P(const DRW_DimAngular3p* /* dimAngular3P */) override { countOfDimAngular3P++; }
-  //   Linear and Rotated dimension group
-  void addDimLinear(const DRW_DimLinear* /* dimLinear */) override { countOfDimLinear++; }
-  //   Ordinate dimension group
-  void addDimOrdinate(const DRW_DimOrdinate* /* dimOrdinate */) override { countOfDimOrdinate++; }
-  //   Radial and Diameter dimension group
-  void addDimRadial(const DRW_DimRadial* /* dimRadial */) override { countOfDimRadial++; }
-  void addDimDiametric(const DRW_DimDiametric* /* dimDiametric */) override { countOfDimDiametric++; }
+
+  void addDimAlign(const DRW_DimAligned* dimAlign) override {
+    (void)dimAlign;
+    countOfDimAlign++;
+  }
+
+  void addDimAngular(const DRW_DimAngular* dimAngular) override {
+    (void)dimAngular;
+    countOfDimAngular++;
+  }
+  void addDimAngular3P(const DRW_DimAngular3p* dimAngular3P) override {
+    (void)dimAngular3P;
+    countOfDimAngular3P++;
+  }
+
+  void addDimLinear(const DRW_DimLinear* dimLinear) override {
+    (void)dimLinear;
+    countOfDimLinear++;
+  }
+
+  void addDimOrdinate(const DRW_DimOrdinate* dimOrdinate) override {
+    (void)dimOrdinate;
+    countOfDimOrdinate++;
+  }
+
+  void addDimRadial(const DRW_DimRadial* dimRadial) override {
+    (void)dimRadial;
+    countOfDimRadial++;
+  }
+
+  void addDimDiametric(const DRW_DimDiametric* dimDiametric) override {
+    (void)dimDiametric;
+    countOfDimDiametric++;
+  }
   
   void addEllipse(const DRW_Ellipse& ellipse) override { 
     countOfEllipse++; 
@@ -126,9 +148,16 @@ class EoDbDrwInterface : public DRW_Interface {
     ConvertEllipseEntity(ellipse, m_document);
 
   }
-  void addHatch(const DRW_Hatch* /* hatch */) override { countOfHatch++; }
+  void addHatch(const DRW_Hatch* hatch) override {
+    (void)hatch;
+    countOfHatch++;
+  }
+
   // HELIX not implemented in DRW
-  void addImage(const DRW_Image* /* image */) override { countOfImage++; }
+  void addImage(const DRW_Image* image) override {
+    (void)image;
+    countOfImage++;
+  }
   
   void addInsert(const DRW_Insert& insert) override { 
     countOfInsert++; 
@@ -140,7 +169,7 @@ class EoDbDrwInterface : public DRW_Interface {
       ConvertInsertEntity(insert, m_document);
     }
   }
-  void addLeader(const DRW_Leader* /* leader */) override {}
+  void addLeader(const DRW_Leader* leader) override { (void)leader; }
   // LIGHT not implemented in DRW  
   
   void addLine(const DRW_Line& line) override {
@@ -192,7 +221,11 @@ class EoDbDrwInterface : public DRW_Interface {
   // SHAPE not implemented in DRW
 
   void addSolid(const DRW_Solid& /* solid */) override { countOfSolid++; }
-  void addSpline(const DRW_Spline* /* spline */) override { countOfSpline++; }
+  void addSpline(const DRW_Spline* spline) override {
+    (void)spline;
+    
+    countOfSpline++;
+  }
   // SUN not implemented in DRW
   // SURFACE not implemented in DRW
   // TABLE not implemented in DRW
@@ -207,7 +240,7 @@ class EoDbDrwInterface : public DRW_Interface {
 
   // Others
   void addComment(const char* comment) override { ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addComment(%s)\n", comment); }
-  void linkImage(const DRW_ImageDef* /* imageDefinition */) override {}
+  void linkImage(const DRW_ImageDef* imageDefinition) override { (void)imageDefinition; }
   void addKnot(const DRW_Entity& /* knot */) override { countOfKnot++; }
 
   // Writing methods

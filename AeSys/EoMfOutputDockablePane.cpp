@@ -77,7 +77,9 @@ END_MESSAGE_MAP()
 
 // EoMfOutputListBox message handlers
 
-void EoMfOutputListBox::OnContextMenu(CWnd* /* window */, CPoint point) {
+void EoMfOutputListBox::OnContextMenu(CWnd* window, CPoint point) {
+  (void)window;
+
   if (AfxGetMainWnd()->IsKindOf(RUNTIME_CLASS(CMDIFrameWndEx))) {
     CMenu Menu;
     Menu.LoadMenu(IDR_OUTPUT_POPUP);

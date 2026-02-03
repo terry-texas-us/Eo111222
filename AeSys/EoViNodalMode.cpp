@@ -28,45 +28,48 @@ void AeSysView::OnNodalModeAddRemove() {
     SetModeCursor(ID_MODE_NODALR);
   }
 }
+
 void AeSysView::OnNodalModePoint() {
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
-    auto* Group = GetNextVisibleGroup(GroupPosition);
+    auto* group = GetNextVisibleGroup(GroupPosition);
 
-    auto PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
+      auto* primitive = group->GetNext(PrimitivePosition);
 
-      DWORD Mask = document->GetPrimitiveMask(Primitive);
-      Primitive->GetAllPoints(pts);
+      DWORD Mask = document->GetPrimitiveMask(primitive);
+      primitive->GetAllPoints(pts);
 
       for (int i = 0; i < pts.GetSize(); i++) {
         if (EoGeVector3d(pts[i], cursorPosition).Length() <= NodalModePickTolerance) {
-          document->UpdateNodalList(Group, Primitive, Mask, i, pts[i]);
+          document->UpdateNodalList(group, primitive, Mask, i, pts[i]);
         }
       }
     }
   }
   pts.RemoveAll();
 }
+
 void AeSysView::OnNodalModeLine() {
   auto cursorPosition = GetCursorPosition();
 
-  auto* Group = SelectGroupAndPrimitive(cursorPosition);
-  if (Group != 0) {
-    EoDbPrimitive* Primitive = EngagedPrimitive();
+  auto* group = SelectGroupAndPrimitive(cursorPosition);
+  if (group != nullptr) {
+    EoDbPrimitive* primitive = EngagedPrimitive();
 
     auto* document = GetDocument();
-    DWORD Mask = document->GetPrimitiveMask(Primitive);
-    Primitive->GetAllPoints(pts);
+    DWORD Mask = document->GetPrimitiveMask(primitive);
+    primitive->GetAllPoints(pts);
 
-    for (int i = 0; i < pts.GetSize(); i++) { document->UpdateNodalList(Group, Primitive, Mask, i, pts[i]); }
+    for (int i = 0; i < pts.GetSize(); i++) { document->UpdateNodalList(group, primitive, Mask, i, pts[i]); }
     pts.RemoveAll();
   }
 }
+
 void AeSysView::OnNodalModeArea() {
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
@@ -82,17 +85,17 @@ void AeSysView::OnNodalModeArea() {
 
       auto GroupPosition = GetFirstVisibleGroupPosition();
       while (GroupPosition != nullptr) {
-        auto* Group = GetNextVisibleGroup(GroupPosition);
+        auto* group = GetNextVisibleGroup(GroupPosition);
 
-        auto PrimitivePosition = Group->GetHeadPosition();
+        auto PrimitivePosition = group->GetHeadPosition();
         while (PrimitivePosition != nullptr) {
-          EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-          DWORD Mask = document->GetPrimitiveMask(Primitive);
-          Primitive->GetAllPoints(pts);
+          auto* primitive = group->GetNext(PrimitivePosition);
+          DWORD Mask = document->GetPrimitiveMask(primitive);
+          primitive->GetAllPoints(pts);
 
           for (int i = 0; i < pts.GetSize(); i++) {
             if (pts[i].IsContained(MinExtent, MaxExtent)) {
-              document->UpdateNodalList(Group, Primitive, Mask, i, pts[i]);
+              document->UpdateNodalList(group, primitive, Mask, i, pts[i]);
             }
           }
         }
@@ -103,6 +106,7 @@ void AeSysView::OnNodalModeArea() {
     ModeLineUnhighlightOp(PreviousNodalCommand);
   }
 }
+
 void AeSysView::OnNodalModeMove() {
   auto cursorPosition = GetCursorPosition();
   if (PreviousNodalCommand != ID_OP4) {
@@ -127,6 +131,7 @@ void AeSysView::OnNodalModeCopy() {
     OnNodalModeReturn();
   }
 }
+
 void AeSysView::OnNodalModeToLine() {
   auto cursorPosition = GetCursorPosition();
   if (PreviousNodalCommand != ID_OP6) {
@@ -138,17 +143,17 @@ void AeSysView::OnNodalModeToLine() {
       cursorPosition = SnapPointToAxis(PreviousNodalCursorPosition, cursorPosition);
       EoGeVector3d Translate(PreviousNodalCursorPosition, cursorPosition);
 
-      auto* Group = new EoDbGroup;
+      auto* group = new EoDbGroup;
       auto* document = GetDocument();
 
       auto PointPosition = document->GetFirstUniquePointPosition();
       while (PointPosition != 0) {
         EoGeUniquePoint* UniquePoint = document->GetNextUniquePoint(PointPosition);
-        EoDbLine* Primitive = new EoDbLine(UniquePoint->m_Point, UniquePoint->m_Point + Translate);
-        Group->AddTail(Primitive);
+        auto* line = new EoDbLine(UniquePoint->m_Point, UniquePoint->m_Point + Translate);
+        group->AddTail(line);
       }
-      document->AddWorkLayerGroup(Group);
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
       SetCursorPosition(cursorPosition);
     }
@@ -156,6 +161,7 @@ void AeSysView::OnNodalModeToLine() {
     ModeLineUnhighlightOp(PreviousNodalCommand);
   }
 }
+
 /// <remarks>
 /// The pen color used for any polygons added to drawing is the current pen color and
 /// not the pen color of the reference primitives.
@@ -180,20 +186,20 @@ void AeSysView::OnNodalModeToPolygon() {
       auto* document = GetDocument();
       auto GroupPosition = document->GetFirstNodalGroupPosition();
       while (GroupPosition != nullptr) {
-        auto* Group = document->GetNextNodalGroup(GroupPosition);
+        auto* group = document->GetNextNodalGroup(GroupPosition);
 
-        auto PrimitivePosition = Group->GetHeadPosition();
+        auto PrimitivePosition = group->GetHeadPosition();
         while (PrimitivePosition != nullptr) {
-          EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
+          auto* primitive = group->GetNext(PrimitivePosition);
 
-          DWORD Mask = document->GetPrimitiveMask(Primitive);
+          DWORD Mask = document->GetPrimitiveMask(primitive);
           if (Mask != 0) {
-            if (Primitive->Is(EoDb::kLinePrimitive)) {
+            if (primitive->Is(EoDb::kLinePrimitive)) {
               if ((Mask & 3) == 3) {
-                EoDbLine* LinePrimitive = static_cast<EoDbLine*>(Primitive);
+                auto* line = static_cast<EoDbLine*>(primitive);
 
-                pts[0] = LinePrimitive->BeginPoint();
-                pts[1] = LinePrimitive->EndPoint();
+                pts[0] = line->BeginPoint();
+                pts[1] = line->EndPoint();
                 pts[2] = pts[1] + Translate;
                 pts[3] = pts[0] + Translate;
 
@@ -201,8 +207,8 @@ void AeSysView::OnNodalModeToPolygon() {
                 document->AddWorkLayerGroup(NewGroup);
                 document->UpdateAllViews(nullptr, EoDb::kGroupSafe, NewGroup);
               }
-            } else if (Primitive->Is(EoDb::kPolygonPrimitive)) {
-              EoDbPolygon* pPolygon = static_cast<EoDbPolygon*>(Primitive);
+            } else if (primitive->Is(EoDb::kPolygonPrimitive)) {
+              EoDbPolygon* pPolygon = static_cast<EoDbPolygon*>(primitive);
               int iPts = pPolygon->GetPts();
 
               for (int i = 0; i < iPts; i++) {
@@ -259,9 +265,9 @@ void AeSysView::OnNodalModeReturn() {
         auto MaskedPrimitivePosition = document->GetFirstMaskedPrimitivePosition();
         while (MaskedPrimitivePosition != 0) {
           EoDbMaskedPrimitive* MaskedPrimitive = document->GetNextMaskedPrimitive(MaskedPrimitivePosition);
-          EoDbPrimitive* Primitive = MaskedPrimitive->GetPrimitive();
+          auto* primitive = MaskedPrimitive->GetPrimitive();
           DWORD Mask = MaskedPrimitive->GetMask();
-          Primitive->TranslateUsingMask(Translate, Mask);
+          primitive->TranslateUsingMask(Translate, Mask);
         }
         EoGeUniquePoint* Point;
 
@@ -336,9 +342,9 @@ void AeSysView::DoNodalModeMouseMove() {
         auto MaskedPrimitivePosition = document->GetFirstMaskedPrimitivePosition();
         while (MaskedPrimitivePosition != 0) {
           EoDbMaskedPrimitive* MaskedPrimitive = document->GetNextMaskedPrimitive(MaskedPrimitivePosition);
-          EoDbPrimitive* Primitive = MaskedPrimitive->GetPrimitive();
+          auto* primitive = MaskedPrimitive->GetPrimitive();
           DWORD Mask = MaskedPrimitive->GetMask();
-          m_PreviewGroup.AddTail(Primitive->Copy(Primitive));
+          m_PreviewGroup.AddTail(primitive->Copy(primitive));
           ((EoDbPrimitive*)m_PreviewGroup.GetTail())->TranslateUsingMask(Translate, Mask);
         }
         auto UniquePointPosition = document->GetFirstUniquePointPosition();
@@ -377,8 +383,8 @@ void AeSysView::ConstructPreviewGroup() {
   auto MaskedPrimitivePosition = document->GetFirstMaskedPrimitivePosition();
   while (MaskedPrimitivePosition != 0) {
     EoDbMaskedPrimitive* MaskedPrimitive = document->GetNextMaskedPrimitive(MaskedPrimitivePosition);
-    EoDbPrimitive* Primitive = MaskedPrimitive->GetPrimitive();
-    m_PreviewGroup.AddTail(Primitive->Copy(Primitive));
+    auto* primitive = MaskedPrimitive->GetPrimitive();
+    m_PreviewGroup.AddTail(primitive->Copy(primitive));
   }
   auto UniquePointPosition = document->GetFirstUniquePointPosition();
   while (UniquePointPosition != 0) {
@@ -390,12 +396,12 @@ void AeSysView::ConstructPreviewGroupForNodalGroups() {
   auto* document = GetDocument();
   auto GroupPosition = document->GetFirstNodalGroupPosition();
   while (GroupPosition != nullptr) {
-    auto* Group = document->GetNextNodalGroup(GroupPosition);
+    auto* group = document->GetNextNodalGroup(GroupPosition);
 
-    auto PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-      m_PreviewGroup.AddTail(Primitive->Copy(Primitive));
+      EoDbPrimitive* primitive = group->GetNext(PrimitivePosition);
+      m_PreviewGroup.AddTail(primitive->Copy(primitive));
     }
   }
   auto UniquePointPosition = document->GetFirstUniquePointPosition();

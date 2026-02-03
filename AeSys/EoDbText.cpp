@@ -225,6 +225,13 @@ EoGePoint3d EoDbText::SelectAtControlPoint(AeSysView*, const EoGePoint4d& point)
   sm_ControlPointIndex = USHRT_MAX;
   return (point);
 }
+
+bool EoDbText::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
+  (void)view;
+  (void)line;
+  return false;
+}
+
 bool EoDbText::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   if (m_strText.GetLength() == 0) return false;
 

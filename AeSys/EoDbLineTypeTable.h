@@ -5,7 +5,7 @@
 #include "EoDbLineType.h"
 
 /**
- * @brief Manages a collection of line types for a CAD application.
+ * @class Manages the collection of line types.
  *
  * This class provides functionality to store, retrieve, and manage line types,
  * including legacy line types and custom-defined types. It supports operations
@@ -55,7 +55,13 @@ class EoDbLineTypeTable {
   bool LookupUsingLegacyIndex(EoUInt16 index, EoDbLineType*& lineType);
   
   void SetAt(const CString& name, EoDbLineType* lineType) { m_MapLineTypes.SetAt(name, lineType); }
+
+  /** @brief Counts the number of references to a specific line type in the document.
+   * @param lineType The line type index to count references for.
+   * @return The number of references to the specified line type.
+   */
   int ReferenceCount(EoInt16 lineType);
+  
   int Size() { return (int)m_MapLineTypes.GetSize(); }
   /// <summary>Loads the Line Type table.</summary>
   void LoadLineTypesFromTxtFile(const CString& pathName);

@@ -6,7 +6,8 @@ class EoMfPropertiesMFCToolBar : public CMFCToolBar {
   EoMfPropertiesMFCToolBar(const EoMfPropertiesMFCToolBar&) = delete;
   EoMfPropertiesMFCToolBar& operator=(const EoMfPropertiesMFCToolBar&) = delete;
 
-  virtual void OnUpdateCmdUI(CFrameWnd* /* target */, BOOL disableIfNoHndler) {
+  virtual void OnUpdateCmdUI(CFrameWnd* target, BOOL disableIfNoHndler) {
+    (void)target;
     CMFCToolBar::OnUpdateCmdUI((CFrameWnd*)GetOwner(), disableIfNoHndler);
   }
 };

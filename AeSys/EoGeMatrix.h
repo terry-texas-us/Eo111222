@@ -40,6 +40,12 @@ class EoGeMatrix {
  public:
   EoGeMatrix& operator*=(const EoGeMatrix& m);
   EoGeMatrix& operator*=(double scaleFactor);
+
+  /** @brief Scales the matrix by the inverse of the given scale factor.
+   *  @param scaleFactor The factor by which to scale the matrix.
+   *  @return A reference to the scaled matrix (the current instance).
+   *  @note If the scale factor is near zero (within numeric epsilon), a warning is logged and no scaling is performed.
+   */
   EoGeMatrix& operator/=(double scaleFactor);
 
   [[nodiscard]] EoGeMatrix operator*(const EoGeMatrix& mB);
@@ -82,7 +88,7 @@ class EoGeMatrix {
    *  @param column Column index (0-3)
    *  @return Matrix element value
    */
-  [[nodiscard]] double GetElement(int row, int column) const { return m_4X4[row][column]; }
+  [[nodiscard]] double GetElement(int row, int column) const noexcept { return m_4X4[row][column]; }
 
   /** @brief Sets a specific matrix element
    *  @param row Row index (0-3)

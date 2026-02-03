@@ -155,10 +155,12 @@ LRESULT EoMfPropertiesDockablePane::OnPropertyChanged(WPARAM, LPARAM lparam) {
 void EoMfPropertiesDockablePane::OnExpandAllProperties() { m_PropertyGrid.ExpandAll(); }
 void EoMfPropertiesDockablePane::OnProperties1() { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoMfPropertiesDockablePane::OnProperties1\n"); }
 void EoMfPropertiesDockablePane::OnSortProperties() { m_PropertyGrid.SetAlphabeticMode(!m_PropertyGrid.IsAlphabeticMode()); }
-void EoMfPropertiesDockablePane::OnUpdateExpandAllProperties(CCmdUI* /* pCmdUI */) {
+void EoMfPropertiesDockablePane::OnUpdateExpandAllProperties(CCmdUI* pCmdUI) {
+  (void)pCmdUI;
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 4, L"EoMfPropertiesDockablePane::OnUpdatExpandAllProperties\n");
 }
-void EoMfPropertiesDockablePane::OnUpdateProperties1(CCmdUI* /* pCmdUI */) {
+void EoMfPropertiesDockablePane::OnUpdateProperties1(CCmdUI* pCmdUI) {
+  (void)pCmdUI;
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 4, L"EoMfPropertiesDockablePane::OnUpdatProperties1\n");
 }
 void EoMfPropertiesDockablePane::OnUpdateSortProperties(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_PropertyGrid.IsAlphabeticMode()); }

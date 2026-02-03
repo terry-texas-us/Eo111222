@@ -8,7 +8,6 @@
 
 #include "AeSysDoc.h"
 #include "EoDbBlock.h"
-#include "EoDbLayer.h"
 #include "EoDbLineType.h"
 #include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
@@ -153,26 +152,31 @@ bool EoDbLineTypeTable::LookupUsingLegacyIndex(EoUInt16 index, EoDbLineType*& li
   return (index < NumberOfLegacyLineTypes) && m_MapLineTypes.Lookup(legacyLineTypes[index].second, lineType);
 }
 
+/**
+ * Counts the number of references to a specific line type in the document.
+ * @param lineType The line type index to count references for.
+ * @return The number of references to the specified line type.
+ */
 int EoDbLineTypeTable::ReferenceCount(EoInt16 lineType) {
   auto* document = AeSysDoc::GetDoc();
 
-  int Count = 0;
+  int count{};
 
-  for (EoUInt16 w = 0; w < document->GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = document->GetLayerTableLayerAt(w);
-    Count += Layer->GetLineTypeRefCount(lineType);
+  for (auto w = 0; w < document->GetLayerTableSize(); w++) {
+    auto* layer = document->GetLayerTableLayerAt(w);
+    count += layer->GetLineTypeRefCount(lineType);
   }
 
-  CString Key;
-  EoDbBlock* Block;
+  CString key;
+  EoDbBlock* block{};
 
-  CBlocks* BlocksTable = document->BlocksTable();
+  EoDbBlocks* BlocksTable = document->BlocksTable();
   auto position = BlocksTable->GetStartPosition();
   while (position != nullptr) {
-    BlocksTable->GetNextAssoc(position, Key, Block);
-    Count += Block->GetLineTypeRefCount(lineType);
+    BlocksTable->GetNextAssoc(position, key, block);
+    count += block->GetLineTypeRefCount(lineType);
   }
-  return (Count);
+  return (count);
 }
 
 void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {

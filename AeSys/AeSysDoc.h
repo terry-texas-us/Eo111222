@@ -32,7 +32,7 @@ class AeSysDoc : public CDocument {
   EoDbHeaderSection m_HeaderSection;
   EoDbLineTypeTable m_LineTypeTable;
   EoDbLineType* m_ContinuousLineType;
-  CBlocks m_BlocksTable;
+  EoDbBlocks m_BlocksTable;
   CLayers m_LayerTable;
   EoDbLayer* m_workLayer;
   EoDbGroupList m_DeletedGroupList;
@@ -81,7 +81,7 @@ class AeSysDoc : public CDocument {
   void AddTextBlock(LPWSTR pszText);
 
   // Block Table interface
-  CBlocks* BlocksTable() { return (&m_BlocksTable); }
+  EoDbBlocks* BlocksTable() { return (&m_BlocksTable); }
   bool BlockTableIsEmpty() { return m_BlocksTable.IsEmpty() == TRUE; }
   EoUInt16 BlockTableSize() { return (EoUInt16(m_BlocksTable.GetSize())); }
   int GetBlockReferenceCount(const CString& name);
@@ -304,6 +304,17 @@ class AeSysDoc : public CDocument {
   afx_msg void OnPrimGotoCenterPoint();
   /// <summary>Picks a primative and modifies its attributes to current settings.</summary>
   afx_msg void OnPrimModifyAttributes();
+
+  /** @brief Snaps the cursor to the nearest endpoint of a primitive in the active view.
+   * 
+   * This function first retrieves the active view and transforms the current cursor position
+   * into model coordinates. If a group is currently engaged, it attempts to pivot on the
+   * control points of the engaged primitive. If successful, it updates the cursor position
+   * to that control point. If not, it checks if the cursor is on any control point of the
+   * engaged primitive and ignores it if so. If no group is engaged, it selects a segment
+   * and primitive at the control point closest to the cursor position and updates the cursor
+   * position accordingly. Finally, it resets any ignored primitive state.
+   */
   afx_msg void OnToolsPrimitiveSnaptoendpoint();
   /// <summary>Reduces complex primitives and group references to a simpler form</summary>
   afx_msg void OnToolsGroupBreak();

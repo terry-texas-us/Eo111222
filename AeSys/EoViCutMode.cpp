@@ -59,6 +59,7 @@ void AeSysView::OnCutModeTorch() {
   document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, groups);
   delete groups;
 }
+
 void AeSysView::OnCutModeSlice() {
   auto cursorPosition = GetCursorPosition();
   if (previousKeyDown != ID_OP2) {
@@ -71,7 +72,7 @@ void AeSysView::OnCutModeSlice() {
 
     auto* document = GetDocument();
 
-    EoDbGroupList* Groups = new EoDbGroupList;
+    EoDbGroupList* groups = new EoDbGroupList;
 
     EoGeLine ln;
     EoGePoint3dArray intersections;
@@ -83,36 +84,37 @@ void AeSysView::OnCutModeSlice() {
 
     auto GroupPosition = GetFirstVisibleGroupPosition();
     while (GroupPosition != nullptr) {
-      auto* Group = GetNextVisibleGroup(GroupPosition);
+      auto* group = GetNextVisibleGroup(GroupPosition);
 
-      if (document->FindTrappedGroup(Group) != nullptr) { continue; }
+      if (document->FindTrappedGroup(group) != nullptr) { continue; }
 
-      auto PrimitivePosition = Group->GetHeadPosition();
+      auto PrimitivePosition = group->GetHeadPosition();
       while (PrimitivePosition != nullptr) {
-        EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
+        auto* primitive = group->GetNext(PrimitivePosition);
 
         ln = EoGeLine(ptView[0], ptView[1]);
-        Primitive->SelectUsingLine(this, ln, intersections);
+        primitive->SelectUsingLine(this, ln, intersections);
         for (EoUInt16 w = 0; w < intersections.GetSize(); w++) {
           EoDbGroup* NewGroup = new EoDbGroup;
 
           intersections[w] = tm * intersections[w];
 
-          document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, Primitive);
-          Primitive->CutAtPoint(intersections[w], NewGroup);
-          document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, Primitive);
-          Groups->AddTail(NewGroup);
+          document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, primitive);
+          primitive->CutAtPoint(intersections[w], NewGroup);
+          document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, primitive);
+          groups->AddTail(NewGroup);
         }
       }
     }
-    document->AddWorkLayerGroups(Groups);
-    document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, Groups);
-    delete Groups;
+    document->AddWorkLayerGroups(groups);
+    document->UpdateAllViews(nullptr, EoDb::kGroupsSafe, groups);
+    delete groups;
 
     RubberBandingDisable();
     ModeLineUnhighlightOp(previousKeyDown);
   }
 }
+
 void AeSysView::OnCutModeField() {
   CDC* DeviceContext = GetDC();
   auto cursorPosition = GetCursorPosition();
@@ -131,8 +133,8 @@ void AeSysView::OnCutModeField() {
     EoGePoint3d ptLL = rLL;
     EoGePoint3d ptUR = rUR;
 
-    EoDbGroup* Group;
-    EoDbPrimitive* Primitive;
+    EoDbGroup* group{};
+    EoDbPrimitive* primitive{};
 
     int iInts;
     EoGePoint3d ptInt[10]{};
@@ -147,28 +149,28 @@ void AeSysView::OnCutModeField() {
 
     POSITION posSeg, posSegPrv;
     for (posSeg = GetFirstVisibleGroupPosition(); (posSegPrv = posSeg) != 0;) {
-      Group = GetNextVisibleGroup(posSeg);
+      group = GetNextVisibleGroup(posSeg);
 
-      if (document->FindTrappedGroup(Group) != nullptr) { continue; }
+      if (document->FindTrappedGroup(group) != nullptr) { continue; }
 
       POSITION PrimitivePosition, posPrimPrv;
-      for (PrimitivePosition = Group->GetHeadPosition(); (posPrimPrv = PrimitivePosition) != 0;) {
-        Primitive = Group->GetNext(PrimitivePosition);
+      for (PrimitivePosition = group->GetHeadPosition(); (posPrimPrv = PrimitivePosition) != 0;) {
+        primitive = group->GetNext(PrimitivePosition);
 
-        if ((iInts = Primitive->IsWithinArea(ptLL, ptUR, ptInt)) == 0) continue;
+        if ((iInts = primitive->IsWithinArea(ptLL, ptUR, ptInt)) == 0) continue;
 
-        Group->RemoveAt(posPrimPrv);
+        group->RemoveAt(posPrimPrv);
 
         for (int i = 0; i < iInts; i += 2) {
           if (i != 0) GroupsOut->RemoveTail();
-          Primitive->CutAt2Points(ptInt[i], ptInt[i + 1], GroupsOut, GroupsIn);
+          primitive->CutAt2Points(ptInt[i], ptInt[i + 1], GroupsOut, GroupsIn);
         }
       }
-      if (Group->IsEmpty()) {  // seg was emptied remove from lists
-        document->AnyLayerRemove(Group);
-        document->RemoveGroupFromAllViews(Group);
-        Group->DeletePrimitivesAndRemoveAll();
-        delete Group;
+      if (group->IsEmpty()) {  // seg was emptied remove from lists
+        document->AnyLayerRemove(group);
+        document->RemoveGroupFromAllViews(group);
+        group->DeletePrimitivesAndRemoveAll();
+        delete group;
       }
     }
 
@@ -224,19 +226,19 @@ void AeSysView::OnCutModeClip() {
     POSITION posSegPrv;
 
     for (posSeg = GetFirstVisibleGroupPosition(); (posSegPrv = posSeg) != 0;) {
-      auto* Group = GetNextVisibleGroup(posSeg);
+      auto* group = GetNextVisibleGroup(posSeg);
 
-      if (document->FindTrappedGroup(Group) != nullptr) { continue; }
+      if (document->FindTrappedGroup(group) != nullptr) { continue; }
 
       POSITION posPrim1;
       POSITION posPrim2;
 
-      for (posPrim1 = Group->GetHeadPosition(); (posPrim2 = posPrim1) != 0;) {
-        EoDbPrimitive* Primitive = Group->GetNext(posPrim1);
+      for (posPrim1 = group->GetHeadPosition(); (posPrim2 = posPrim1) != 0;) {
+        EoDbPrimitive* primitive = group->GetNext(posPrim1);
 
-        if (!Primitive->SelectUsingPoint(this, ptView[0], ptCut[0])) continue;
+        if (!primitive->SelectUsingPoint(this, ptView[0], ptCut[0])) continue;
         dRel[0] = EoDbPrimitive::Rel();
-        if (!Primitive->SelectUsingPoint(this, ptView[1], ptCut[1])) continue;
+        if (!primitive->SelectUsingPoint(this, ptView[1], ptCut[1])) continue;
         dRel[1] = EoDbPrimitive::Rel();
         // Both pick points are within tolerance of primative
         ptCut[0] = tm * ptCut[0];
@@ -246,15 +248,15 @@ void AeSysView::OnCutModeClip() {
           ptCut[0] = ptCut[1];
           ptCut[1] = ptTmp;
         }
-        Group->RemoveAt(posPrim2);
+        group->RemoveAt(posPrim2);
 
-        Primitive->CutAt2Points(ptCut[0], ptCut[1], GroupsOut, GroupsIn);
+        primitive->CutAt2Points(ptCut[0], ptCut[1], GroupsOut, GroupsIn);
       }
-      if (Group->IsEmpty()) {  // seg was emptied remove from lists
-        document->AnyLayerRemove(Group);
-        document->RemoveGroupFromAllViews(Group);
-        Group->DeletePrimitivesAndRemoveAll();
-        delete Group;
+      if (group->IsEmpty()) {  // seg was emptied remove from lists
+        document->AnyLayerRemove(group);
+        document->RemoveGroupFromAllViews(group);
+        group->DeletePrimitivesAndRemoveAll();
+        delete group;
       }
     }
     if (GroupsOut->GetCount() > 0) {
@@ -275,6 +277,7 @@ void AeSysView::OnCutModeClip() {
     ModeLineUnhighlightOp(previousKeyDown);
   }
 }
+
 void AeSysView::OnCutModeDivide() {}
 void AeSysView::OnCutModeReturn() {
   RubberBandingDisable();

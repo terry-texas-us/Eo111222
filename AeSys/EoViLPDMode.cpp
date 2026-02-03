@@ -9,20 +9,27 @@
 #include "EoDbConic.h"
 #include "EoDbLine.h"
 #include "EoDbPoint.h"
+#include "EoDbPrimitive.h"
 #include "EoDbText.h"
 #include "EoDlgLowPressureDuctOptions.h"
 #include "EoGeReferenceSystem.h"
 #include "PrimState.h"
 #include "Section.h"
 
-/// <remarks>
-///Only check for actual end-cap marker is by attributes. No error processing for invalid width or depth values.
-///Group data contains whatever primative follows marker (hopefully this is associated end-cap line).
-///Issues:
-/// xor operations on transition not clean
-/// ending section with 3 key will generate a shortened section if the point is less than transition length from the begin point.
-/// full el only works with center just
-/// </remarks>
+namespace {
+constexpr double endCapTolerance{0.01};
+constexpr EoInt16 endCapColor{15};
+constexpr EoInt16 endCapPointStyle{8};
+
+}  // namespace
+
+/** @attention Only check for actual end-cap marker is by attributes. No error processing for invalid width or depth values.
+ * Group data contains whatever primative follows marker (hopefully this is associated end-cap line).
+ * Issues:
+ * xor operations on transition not clean
+ * ending section with 3 key will generate a shortened section if the point is less than transition length from the begin point.
+ * full el only works with center just
+ */
 
 void AeSysView::OnLpdModeOptions() { SetDuctOptions(m_CurrentSection); }
 
@@ -328,90 +335,90 @@ void AeSysView::OnLpdModeEscape() {
 }
 
 void AeSysView::DoDuctModeMouseMove() {
-  static EoGePoint3d CurrentPnt = EoGePoint3d();
-
   if (m_PreviousOp == 0) {
-    CurrentPnt = GetCursorPosition();
     m_OriginalPreviousGroupDisplayed = true;
-  } else if (m_PreviousOp == ID_OP2) {
-    auto* document = GetDocument();
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
-    m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    return;
+  }
+  if (m_PreviousOp != ID_OP2) { return; }
 
-    CurrentPnt = GetCursorPosition();
-    CurrentPnt = SnapPointToAxis(m_PreviousPnt, CurrentPnt);
-    m_CurrentReferenceLine(m_PreviousPnt, CurrentPnt);
+  auto* document = GetDocument();
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+  m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
-    if (m_ContinueSection &&
-        m_CurrentReferenceLine.Length() > m_PreviousSection.Width() * m_CenterLineEccentricity + m_DuctSeamSize) {
-      EoGeLine PreviousReferenceLine = m_PreviousReferenceLine;
-      if (m_OriginalPreviousGroupDisplayed) {
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_OriginalPreviousGroup);
-        m_OriginalPreviousGroupDisplayed = false;
-      }
-      GenerateRectangularElbow(PreviousReferenceLine, m_PreviousSection, m_CurrentReferenceLine, m_CurrentSection,
-                               &m_PreviewGroup);
-      GenerateRectangularSection(PreviousReferenceLine, m_CenterLineEccentricity, m_PreviousSection, &m_PreviewGroup);
+  auto cursorPosition = GetCursorPosition();
+  cursorPosition = SnapPointToAxis(m_PreviousPnt, cursorPosition);
+  m_CurrentReferenceLine(m_PreviousPnt, cursorPosition);
+
+  if (m_ContinueSection &&
+      m_CurrentReferenceLine.Length() > m_PreviousSection.Width() * m_CenterLineEccentricity + m_DuctSeamSize) {
+    EoGeLine PreviousReferenceLine = m_PreviousReferenceLine;
+    if (m_OriginalPreviousGroupDisplayed) {
+      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_OriginalPreviousGroup);
+      m_OriginalPreviousGroupDisplayed = false;
     }
-    EoDbPoint* EndPointPrimitive = 0;
-    EoDbGroup* ExistingGroup = SelectPointUsingPoint(CurrentPnt, 0.01, 15, 8, EndPointPrimitive);
-    if (ExistingGroup != 0) {
-      CurrentPnt = EndPointPrimitive->GetPt();
-      Section ExistingSection(EndPointPrimitive->GetDat(0), EndPointPrimitive->GetDat(1), Section::Rectangular);
+    GenerateRectangularElbow(PreviousReferenceLine, m_PreviousSection, m_CurrentReferenceLine, m_CurrentSection,
+                             &m_PreviewGroup);
+    GenerateRectangularSection(PreviousReferenceLine, m_CenterLineEccentricity, m_PreviousSection, &m_PreviewGroup);
+  }
+  EoDbPoint* EndPointPrimitive{};
+  auto* ExistingGroup =
+      SelectPointUsingPoint(cursorPosition, endCapTolerance, endCapColor, endCapPointStyle, EndPointPrimitive);
+  if (ExistingGroup != nullptr) {
+    cursorPosition = EndPointPrimitive->GetPt();
+    Section ExistingSection(EndPointPrimitive->GetDat(0), EndPointPrimitive->GetDat(1), Section::Rectangular);
 
-      EoDbPoint* BeginPointPrimitive = ExistingGroup->GetFirstDifferentPoint(EndPointPrimitive);
-      if (BeginPointPrimitive != 0) {
-        EoGeLine ExistingSectionReferenceLine(BeginPointPrimitive->GetPt(), CurrentPnt);
+    auto* BeginPointPrimitive = ExistingGroup->GetFirstDifferentPoint(EndPointPrimitive);
+    if (BeginPointPrimitive != nullptr) {
+      EoGeLine ExistingSectionReferenceLine(BeginPointPrimitive->GetPt(), cursorPosition);
 
-        EoGePoint3d IntersectionPoint(ExistingSectionReferenceLine.ProjPt(m_PreviousPnt));
-        double Relationship;
-        ExistingSectionReferenceLine.RelOfPtToEndPts(IntersectionPoint, Relationship);
-        if (Relationship > Eo::geometricTolerance) {
-          m_CurrentReferenceLine(m_PreviousPnt, IntersectionPoint);
-          double SectionLength = m_CurrentReferenceLine.Length() -
-                                 (m_PreviousSection.Width() + m_DuctSeamSize + ExistingSection.Width() * 0.5);
-          if (SectionLength > Eo::geometricTolerance) {
-            m_CurrentReferenceLine.end = m_CurrentReferenceLine.ProjToEndPt(SectionLength);
-            GenerateRectangularSection(m_CurrentReferenceLine, m_CenterLineEccentricity, m_PreviousSection,
-                                       &m_PreviewGroup);
-          }
-          GenerateFullElbowTakeoff(ExistingGroup, ExistingSectionReferenceLine, ExistingSection, &m_PreviewGroup);
+      EoGePoint3d IntersectionPoint(ExistingSectionReferenceLine.ProjPt(m_PreviousPnt));
+      double Relationship;
+      ExistingSectionReferenceLine.RelOfPtToEndPts(IntersectionPoint, Relationship);
+      if (Relationship > Eo::geometricTolerance) {
+        m_CurrentReferenceLine(m_PreviousPnt, IntersectionPoint);
+        double SectionLength = m_CurrentReferenceLine.Length() -
+                               (m_PreviousSection.Width() + m_DuctSeamSize + ExistingSection.Width() * 0.5);
+        if (SectionLength > Eo::geometricTolerance) {
+          m_CurrentReferenceLine.end = m_CurrentReferenceLine.ProjToEndPt(SectionLength);
+          GenerateRectangularSection(m_CurrentReferenceLine, m_CenterLineEccentricity, m_PreviousSection,
+                                     &m_PreviewGroup);
         }
+        GenerateFullElbowTakeoff(ExistingGroup, ExistingSectionReferenceLine, ExistingSection, &m_PreviewGroup);
+      }
+    }
+  } else {
+    double TransitionLength =
+        (m_PreviousSection == m_CurrentSection)
+            ? 0.0
+            : LengthOfTransition(m_DuctJustification, m_TransitionSlope, m_PreviousSection, m_CurrentSection);
+    EoGeLine ReferenceLine(m_CurrentReferenceLine);
+
+    if (m_BeginWithTransition) {
+      if (TransitionLength != 0.0) {
+        ReferenceLine.end = ReferenceLine.ProjToEndPt(TransitionLength);
+        GenerateTransition(ReferenceLine, m_CenterLineEccentricity, m_DuctJustification, m_TransitionSlope,
+                           m_PreviousSection, m_CurrentSection, &m_PreviewGroup);
+        ReferenceLine.begin = ReferenceLine.end;
+        ReferenceLine.end = m_CurrentReferenceLine.end;
+      }
+      if (m_CurrentReferenceLine.Length() - TransitionLength > Eo::geometricTolerance) {
+        GenerateRectangularSection(ReferenceLine, m_CenterLineEccentricity, m_CurrentSection, &m_PreviewGroup);
       }
     } else {
-      double TransitionLength =
-          (m_PreviousSection == m_CurrentSection)
-              ? 0.0
-              : LengthOfTransition(m_DuctJustification, m_TransitionSlope, m_PreviousSection, m_CurrentSection);
-      EoGeLine ReferenceLine(m_CurrentReferenceLine);
-
-      if (m_BeginWithTransition) {
-        if (TransitionLength != 0.0) {
-          ReferenceLine.end = ReferenceLine.ProjToEndPt(TransitionLength);
-          GenerateTransition(ReferenceLine, m_CenterLineEccentricity, m_DuctJustification, m_TransitionSlope,
-                             m_PreviousSection, m_CurrentSection, &m_PreviewGroup);
-          ReferenceLine.begin = ReferenceLine.end;
-          ReferenceLine.end = m_CurrentReferenceLine.end;
-        }
-        if (m_CurrentReferenceLine.Length() - TransitionLength > Eo::geometricTolerance) {
-          GenerateRectangularSection(ReferenceLine, m_CenterLineEccentricity, m_CurrentSection, &m_PreviewGroup);
-        }
-      } else {
-        if (ReferenceLine.Length() - TransitionLength > Eo::geometricTolerance) {
-          ReferenceLine.end = ReferenceLine.ProjToBegPt(TransitionLength);
-          GenerateRectangularSection(ReferenceLine, m_CenterLineEccentricity, m_PreviousSection, &m_PreviewGroup);
-          ReferenceLine.begin = ReferenceLine.end;
-          ReferenceLine.end = m_CurrentReferenceLine.end;
-        }
-        if (TransitionLength != 0.0) {
-          GenerateTransition(ReferenceLine, m_CenterLineEccentricity, m_DuctJustification, m_TransitionSlope,
-                             m_PreviousSection, m_CurrentSection, &m_PreviewGroup);
-        }
+      if (ReferenceLine.Length() - TransitionLength > Eo::geometricTolerance) {
+        ReferenceLine.end = ReferenceLine.ProjToBegPt(TransitionLength);
+        GenerateRectangularSection(ReferenceLine, m_CenterLineEccentricity, m_PreviousSection, &m_PreviewGroup);
+        ReferenceLine.begin = ReferenceLine.end;
+        ReferenceLine.end = m_CurrentReferenceLine.end;
+      }
+      if (TransitionLength != 0.0) {
+        GenerateTransition(ReferenceLine, m_CenterLineEccentricity, m_DuctJustification, m_TransitionSlope,
+                           m_PreviousSection, m_CurrentSection, &m_PreviewGroup);
       }
     }
-    m_PreviewGroup.RemoveDuplicatePrimitives();
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   }
+  m_PreviewGroup.RemoveDuplicatePrimitives();
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
 }
 
 void AeSysView::GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, Section section, EoDbGroup* group) {
@@ -424,6 +431,16 @@ void AeSysView::GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, S
   group->AddTail(PointPrimitive);
   group->AddTail(new EoDbLine(beginPoint, endPoint));
 }
+
+EoGePoint3d AeSysView::GenerateBullheadTee(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine,
+                                double existingSectionWidth, double existingSectionDepth, EoDbGroup* group) {
+  (void)existingGroup;
+  (void)existingSectionReferenceLine;
+  (void)existingSectionWidth;
+  (void)existingSectionDepth;
+  (void)group;
+  return EoGePoint3d(0.0, 0.0, 0.0);
+};
 
 void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionReferenceLine, Section existingSection,
                                          EoDbGroup* group) {
@@ -443,7 +460,8 @@ void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionRe
       // need to add a section either from the elbow or the existing section
       double SectionLength = existingSectionReferenceLine.Length();
       double DistanceToBeginPoint = Relationship * SectionLength;
-      if (Relationship > Eo::geometricTolerance && Relationship < 1.0 - Eo::geometricTolerance) {  // section from the elbow
+      if (Relationship > Eo::geometricTolerance &&
+          Relationship < 1.0 - Eo::geometricTolerance) {  // section from the elbow
         CurrentReferenceLine.end =
             CurrentReferenceLine.begin.ProjectToward(CurrentReferenceLine.end, SectionLength - DistanceToBeginPoint);
         GenerateRectangularSection(CurrentReferenceLine, m_CenterLineEccentricity, m_PreviousSection, group);
@@ -691,6 +709,29 @@ double AeSysView::LengthOfTransition(EJust justification, double slope, Section 
   return (Length);
 }
 
+EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& cursorPosition, double tolerance, EoInt16 color,
+                                            EoInt16 pointStyle, EoDbPoint*& endCapPoint) {
+  auto groupPosition = GetFirstVisibleGroupPosition();
+  while (groupPosition != nullptr) {
+    auto* group = GetNextVisibleGroup(groupPosition);
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = group->GetNext(primitivePosition);
+      if (primitive->Is(EoDb::kPointPrimitive)) {
+        auto* point = static_cast<EoDbPoint*>(primitive);
+
+        if (point->Color() == color && point->PointStyle() == pointStyle) {
+          if (cursorPosition.DistanceTo(point->GetPt()) <= tolerance) {
+            endCapPoint = point;
+            return group;
+          }
+        }
+      }
+    }
+  }
+  return nullptr;
+}
+
 bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double angularTolerance, EoGeLine& leftLine,
                                              EoGeLine& rightLine) {
   EoGeLine Line;
@@ -710,17 +751,17 @@ bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive == testLinePrimitive || !Primitive->Is(EoDb::kLinePrimitive)) continue;
+      auto* primitive = Group->GetNext(PrimitivePosition);
+      if (primitive == testLinePrimitive || !primitive->Is(EoDb::kLinePrimitive)) { continue; }
 
-      EoDbLine* LinePrimitive = static_cast<EoDbLine*>(Primitive);
+      auto* LinePrimitive = static_cast<EoDbLine*>(primitive);
       LinePrimitive->GetLine(Line);
       if (Line.begin == TestLine.begin || Line.begin == TestLine.end) {  // Exchange points
         EoGePoint3d Point = Line.begin;
         Line.begin = Line.end;
         Line.end = Point;
-      } else if (Line.end != TestLine.begin &&
-                 Line.end != TestLine.end) {  //	No endpoint coincides with one of the test line endpoints
+      } else if (Line.end != TestLine.begin && Line.end != TestLine.end) {
+        // No endpoint coincides with one of the test line endpoints
         continue;
       }
       double LineAngle = fmod(Line.AngleFromXAxisXY(), Eo::Pi);

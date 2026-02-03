@@ -230,6 +230,13 @@ bool EoDbPolyline::IsInView(AeSysView* view) {
   }
   return false;
 }
+
+bool EoDbPolyline::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
+  (void)view;
+  (void)point;
+  return false;
+}
+
 bool EoDbPolyline::PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) {
   EoUInt16 wPts = EoUInt16(m_pts.GetSize());
 
@@ -279,6 +286,13 @@ EoGePoint3d EoDbPolyline::SelectAtControlPoint(AeSysView* view, const EoGePoint4
   }
   return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : m_pts[sm_ControlPointIndex];
 }
+
+bool EoDbPolyline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
+  (void)view;
+  (void)line;
+  return false;
+}
+
 bool EoDbPolyline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   EoUInt16 wPts = EoUInt16(m_pts.GetSize());
   if (sm_EdgeToEvaluate > 0 && sm_EdgeToEvaluate <= wPts) {  // Evaluate specified edge of polyline

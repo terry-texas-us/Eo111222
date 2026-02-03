@@ -19,13 +19,14 @@ void AeSysView::OnModePrimitiveEdit() {
     app.LoadModeResources(ID_MODE_PRIMITIVE_EDIT);
   }
 }
+
 void AeSysView::DoEditPrimitiveCopy() {
   auto* document = GetDocument();
   if (m_SubModeEditPrimitive != 0) {
-    EoDbPrimitive* Primitive;
+    EoDbPrimitive* primitive{};
 
-    m_SubModeEditPrimitive->Copy(Primitive);
-    m_SubModeEditPrimitive = Primitive;
+    m_SubModeEditPrimitive->Copy(primitive);
+    m_SubModeEditPrimitive = primitive;
     m_SubModeEditGroup = new EoDbGroup(m_SubModeEditPrimitive);
     document->AddWorkLayerGroup(m_SubModeEditGroup);
 
@@ -33,6 +34,7 @@ void AeSysView::DoEditPrimitiveCopy() {
     m_tmEditSeg.Identity();
   }
 }
+
 void AeSysView::DoEditPrimitiveEscape() {
   auto* document = GetDocument();
   if (m_SubModeEditPrimitive != 0) {

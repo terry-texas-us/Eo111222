@@ -90,34 +90,36 @@ void EoDlgTrapFilter::OnOK() {
   }
   CDialog::OnOK();
 }
+
 void EoDlgTrapFilter::FilterByColor(EoInt16 colorIndex) {
   auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
   while (GroupPosition != nullptr) {
-    auto* Group = m_Document->GetNextTrappedGroup(GroupPosition);
+    auto* group = m_Document->GetNextTrappedGroup(GroupPosition);
 
-    auto PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive->Color() == colorIndex) {
-        m_Document->RemoveTrappedGroup(Group);
-        m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      auto* primitive = group->GetNext(PrimitivePosition);
+      if (primitive->Color() == colorIndex) {
+        m_Document->RemoveTrappedGroup(group);
+        m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
         break;
       }
     }
   }
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::TrapCount);
 }
+
 void EoDlgTrapFilter::FilterByLineType(int lineType) {
   auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
   while (GroupPosition != nullptr) {
-    auto* Group = m_Document->GetNextTrappedGroup(GroupPosition);
+    auto* group = m_Document->GetNextTrappedGroup(GroupPosition);
 
-    auto PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive->LineTypeIndex() == lineType) {
-        m_Document->RemoveTrappedGroup(Group);
-        m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      auto* primitive = group->GetNext(PrimitivePosition);
+      if (primitive->LineTypeIndex() == lineType) {
+        m_Document->RemoveTrappedGroup(group);
+        m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
         break;
       }
     }

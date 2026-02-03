@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "Eo.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
@@ -19,7 +20,7 @@
 
 class AeSysDoc;
 class EoDbBlock;
-class EoDbConic;  
+class EoDbConic;
 class EoDbLine;
 class EoDbPoint;
 class EoDbText;
@@ -239,20 +240,26 @@ class AeSysView : public CView {
   void SetModeCursor(int mode);
 
   /** @brief Selects a circle primitive using a point and tolerance.
-    @param point The point to use for selection.
-    @param tolerance The tolerance distance for selection.
-    @param circle A reference to a pointer that will receive the selected circle primitive.
-    @return A pointer to the group containing the selected circle, or nullptr if no circle was found.
-  */
+   * @param point The point to use for selection.
+   * @param tolerance The tolerance distance for selection.
+   * @param circle A reference to a pointer that will receive the selected circle primitive.
+   * @return A pointer to the group containing the selected circle, or nullptr if no circle was found.
+   */
   EoDbGroup* SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle);
-  
+
+  /**
+   * Select a line primitive using a point.
+   *
+   * @param point The point to use for selection.
+   * @param line  The line primitive that is selected.
+   * @return The group containing the selected line primitive, or nullptr if no line is selected.
+   */
   EoDbGroup* SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line);
-  EoDbGroup* SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor, EoInt16 pointStyle,
-                                   EoDbPoint*& primitve);
+
   EoDbGroup* SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt);
   EoDbGroup* SelectLineUsingPoint(const EoGePoint3d& pt);
   EoDbText* SelectTextUsingPoint(const EoGePoint3d& pt);
-  EoDbGroup* SelectGroupAndPrimitive(const EoGePoint3d& pt);
+  [[nodiscard]] EoDbGroup* SelectGroupAndPrimitive(const EoGePoint3d& pt);
   EoGePoint3d& DetPt() { return m_ptDet; }
   EoDbPrimitive*& EngagedPrimitive() { return m_EngagedPrimitive; }
   EoDbGroup*& EngagedGroup() { return m_EngagedGroup; }
@@ -571,9 +578,7 @@ class AeSysView : public CView {
   }
   EoGeVector3d EditModeScaleFactors() const { return m_EditModeScale; }
   void SetEditModeScaleFactors(const double x, const double y, const double z) { m_EditModeScale.Set(x, y, z); }
-  void SetEditModeRotationAngles(double x, double y, double z) { 
-    m_editModeRotationAngles.Set(x, y, z);
-  }
+  void SetEditModeRotationAngles(double x, double y, double z) { m_editModeRotationAngles.Set(x, y, z); }
   EoGeVector3d EditModeMirrorScale() const { return m_EditModeMirrorScale; }
   void SetMirrorScale(double x, double y, double z) { m_EditModeMirrorScale.Set(x, y, z); }
 
@@ -652,20 +657,29 @@ class AeSysView : public CView {
   afx_msg void OnLpdModeReturn();
   afx_msg void OnLpdModeEscape();
 
-  /// <summary>
-  ///Locates and returns the first two lines that have an endpoint which coincides with
-  ///the endpoints of the specified line.
-  /// </summary>
-  /// <remarks>
-  ///	The lines are oriented so direction vectors defined by each point to the specified line.
-  ///	No check is made to see if lines are colinear.
-  /// Lines are normal to to test line (and therefore parallel to each other) if acceptance angle is 0.
-  /// </remarks>
-  /// <returns>true if qualifying lines located else false</returns>
-  /// <param name="testLinePrimitive">test line</param>
-  /// <param name="angularTolerance">angle tolerance for qualifying line (radians)</param>
-  /// <param name="leftLine">endpoints of left line</param>
-  /// <param name="rightLine">endpoints of right line</param>
+  /**
+   * Selects a point primitive using a given point, tolerance, color, and style.
+   * @param cursorPosition The position to check for selection.
+   * @param tolerance The maximum distance from the cursor position to consider a point selected.
+   * @param color The color of the point primitive to match.
+   * @param pointStyle The style of the point primitive to match.
+   * @param endCapPoint A reference to store the selected point primitive if found.
+   * @return The group containing the selected point primitive, or nullptr if none is found.
+   */
+  EoDbGroup* SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 color, EoInt16 pointStyle,
+                                   EoDbPoint*& endCapPoint);
+
+  /** Locates and returns the first two lines that have an endpoint which coincides with
+   * the endpoints of the specified line.
+   * @param testLinePrimitive The test line primitive to check against.
+   * @param angularTolerance The angle tolerance for qualifying lines (in radians).
+   * @param leftLine The endpoints of the left line.
+   * @param rightLine The endpoints of the right line.
+   * @return true if qualifying lines located, else false.
+   * @note The lines are oriented so direction vectors defined by each point to the specified line.
+   * No check is made to see if lines are colinear.
+   * Lines are normal to to test line (and therefore parallel to each other) if acceptance angle is 0.
+   */
   bool Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double angularTolerance, EoGeLine& leftLine,
                                     EoGeLine& rightLine);
   /// <summary>Generates an end-cap.</summary>
@@ -702,22 +716,27 @@ class AeSysView : public CView {
   bool GenerateRectangularTap(EJust justification, Section section);
 
   /** @brief Generates a mitered bullhead tee fitting. (placeholder)
- *  @param existingGroup group containing rectangular section to join
- *  @param existingSectionReferenceLine
- *  @param existingSectionWidth
- *  @param existingSectionDepth
- *  @param group
- *  @return Center point of end cap of exit transition.
- *  @note Requires current operation to be a regular rectangular section. The selection based on the current cursor location
- *  identifies the second section, and the direction from the point to the cursor location defines the direction for the two elbow turns.
- *  @note Placeholder until implementation is return of (0.0, 0.0, 0.0)
- */
-  EoGePoint3d GenerateBullheadTee(EoDbGroup* /* existingGroup */, EoGeLine& /* existingSectionReferenceLine */,
-                                  double /* existingSectionWidth */, double /* existingSectionDepth */,
-                                  EoDbGroup* /* group */) {};
-  /// <summary>Generates a full elbow takeoff fitting.</summary>
+   *  @param existingGroup group containing rectangular section to join
+   *  @param existingSectionReferenceLine
+   *  @param existingSectionWidth
+   *  @param existingSectionDepth
+   *  @param group
+   *  @return Center point of end cap of exit transition.
+   *  @note Requires current operation to be a regular rectangular section. The selection based on the current cursor location
+   *  identifies the second section, and the direction from the point to the cursor location defines the direction for the two elbow turns.
+   *  @note Placeholder until implementation is return of (0.0, 0.0, 0.0)
+   */
+  EoGePoint3d GenerateBullheadTee(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine,
+                                  double existingSectionWidth, double existingSectionDepth, EoDbGroup* group);
+
+  /** @brief Generates a full elbow takeoff from an existing section to the current section.
+   * @param existingSectionReferenceLine Reference line of the existing section.
+   * @param existingSection Cross sectional data of the existing section.
+   * @param group Group to add the generated primitives to.
+   */
   void GenerateFullElbowTakeoff(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine,
                                 Section existingSection, EoDbGroup* group);
+
   /// <summary>Generates section which transitions from one rectangle to another</summary>
   /// <param name="referenceLine">line defining the begin point and direction of the transition</param>
   /// <param name="eccentricity"></param>

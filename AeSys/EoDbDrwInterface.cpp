@@ -29,7 +29,8 @@
 #include "drw_header.h"
 #include "drw_objects.h"
 
-void EoDbDrwInterface::SetHeaderSectionVariable(const DRW_Header* header, const std::string& keyToFind, EoDbHeaderSection& headerSection) {
+void EoDbDrwInterface::SetHeaderSectionVariable(const DRW_Header* header, const std::string& keyToFind,
+                                                EoDbHeaderSection& headerSection) {
   HeaderVariable value;
   auto it = header->vars.find(keyToFind);
   if (it != header->vars.end() && it->second != nullptr) {
@@ -66,14 +67,17 @@ void EoDbDrwInterface::ConvertHeaderSection(const DRW_Header* header, AeSysDoc* 
   for (const auto& key : keys) { SetHeaderSectionVariable(header, key, headerSection); }
 }
 
-void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, AeSysDoc* /* document */) {
+void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, AeSysDoc* document) {
+  (void)document;
   std::wstring appIdName = Eo::MultiByteToWString(appId.name.c_str());
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
 }
 
-void EoDbDrwInterface::ConvertDimStyle(const DRW_Dimstyle& dimStyle, AeSysDoc* /* document */) {
+void EoDbDrwInterface::ConvertDimStyle(const DRW_Dimstyle& dimStyle, AeSysDoc* document) {
+  (void)document;
   std::wstring dimStyleName = Eo::MultiByteToWString(dimStyle.name.c_str());
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DimStyle - Name: <%s> (unsupported in AeSys)\n", dimStyleName.c_str());
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DimStyle - Name: <%s> (unsupported in AeSys)\n",
+            dimStyleName.c_str());
 }
 
 void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* document) {
@@ -83,7 +87,8 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
 
   if (document->FindLayerTableLayer(layerName.c_str()) >= 0) { return; }
 
-  EoDbLayer* newLayer = new EoDbLayer(layerName.c_str(), EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
+  EoDbLayer* newLayer =
+      new EoDbLayer(layerName.c_str(), EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
 
   // Color number (if negative the layer is off) group code 62
   newLayer->SetColorIndex(static_cast<EoInt16>(abs(layer.color)));
@@ -133,7 +138,8 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
 
 void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* document) {
   std::wstring lineTypeName = Eo::MultiByteToWString(data.name.c_str());  // Linetype name (group code 2)
-  std::wstring lineTypeDesc = Eo::MultiByteToWString(data.desc.c_str());  // Descriptive text for linetype (group code 3)
+  std::wstring lineTypeDesc =
+      Eo::MultiByteToWString(data.desc.c_str());  // Descriptive text for linetype (group code 3)
 
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"Converting Linetype: %s\n", lineTypeName.c_str());
 
@@ -158,15 +164,18 @@ void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* do
   }
 }
 
-void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeSysDoc* /* document */) {
+void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeSysDoc* document) {
+  (void)document;
   std::wstring textStyleName = Eo::MultiByteToWString(textStyle.name.c_str());
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Text Style - Name: %s (unsupported in AeSys)\n", textStyleName.c_str());
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Text Style - Name: %s (unsupported in AeSys)\n",
+            textStyleName.c_str());
 
   // auto height = textStyle.height;         // Fixed text height; 0 if not fixed (group code 40)
   // auto width = textStyle.width;           // Width factor (group code 41)
   // auto obliqueAngle = textStyle.oblique;  // Oblique angle (group code 50)
   // auto textGenerationFlags =
-  textStyle.flags;  // Text generation flags (group code 71) 0x02 - text is backward, mirrored in X - 0x04 - text is upside down, mirrored in Y
+  textStyle
+      .flags;  // Text generation flags (group code 71) 0x02 - text is backward, mirrored in X - 0x04 - text is upside down, mirrored in Y
   // auto lastHeight = textStyle.lastHeight;  // Last height used (group code 42)
 
   // auto& font = textStyle.font;        // Primary font file name (group code 3)
@@ -174,18 +183,28 @@ void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeS
   //auto fontFamily = textStyle.fontFamily;  // A long value which contains a truetype font's pitch and family, charset, and italic and bold flags (group code 1071)
 }
 
-void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc* /* document */) {
+void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc* document) {
+  (void)document;
   std::wstring viewportName = Eo::MultiByteToWString(viewport.name.c_str());
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Viewport - Name: %s (unsupported in AeSys)\n", viewportName.c_str());
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Viewport - Name: %s (unsupported in AeSys)\n",
+            viewportName.c_str());
 
-  auto lowerLeft = EoGePoint3d(viewport.lowerLeft.x, viewport.lowerLeft.y, viewport.lowerLeft.z);          // group codes 10 and 20 (2D point)
-  auto upperRight = EoGePoint3d(viewport.upperRight.x, viewport.upperRight.y, viewport.upperRight.z);      // group codes 11 and 21 (2D point)
-  auto center = EoGePoint3d(viewport.center.x, viewport.center.y, viewport.center.z);                      // group codes 12 and 22 (2D point in DCS)
-  auto snapBase = EoGePoint3d(viewport.snapBase.x, viewport.snapBase.y, viewport.snapBase.z);              // group codes 13 and 23 (2D point in DCS)
-  auto snapSpacing = EoGePoint3d(viewport.snapSpacing.x, viewport.snapSpacing.y, viewport.snapSpacing.z);  // group codes 14 and 24 (2D point in DCS)
-  auto gridSpacing = EoGePoint3d(viewport.gridSpacing.x, viewport.gridSpacing.y, viewport.gridSpacing.z);  // group codes 15 and 25 (2D point in DCS)
-  auto viewDirection = EoGeVector3d(viewport.viewDir.x, viewport.viewDir.y, viewport.viewDir.z);           // group codes 16, 26 and 36 (3D point in WCS)
-  auto viewTarget = EoGeVector3d(viewport.viewTarget.x, viewport.viewTarget.y, viewport.viewTarget.z);     // group codes 17, 27 and 37 (3D point in WCS)
+  auto lowerLeft = EoGePoint3d(viewport.lowerLeft.x, viewport.lowerLeft.y,
+                               viewport.lowerLeft.z);  // group codes 10 and 20 (2D point)
+  auto upperRight = EoGePoint3d(viewport.upperRight.x, viewport.upperRight.y,
+                                viewport.upperRight.z);  // group codes 11 and 21 (2D point)
+  auto center =
+      EoGePoint3d(viewport.center.x, viewport.center.y, viewport.center.z);  // group codes 12 and 22 (2D point in DCS)
+  auto snapBase = EoGePoint3d(viewport.snapBase.x, viewport.snapBase.y,
+                              viewport.snapBase.z);  // group codes 13 and 23 (2D point in DCS)
+  auto snapSpacing = EoGePoint3d(viewport.snapSpacing.x, viewport.snapSpacing.y,
+                                 viewport.snapSpacing.z);  // group codes 14 and 24 (2D point in DCS)
+  auto gridSpacing = EoGePoint3d(viewport.gridSpacing.x, viewport.gridSpacing.y,
+                                 viewport.gridSpacing.z);  // group codes 15 and 25 (2D point in DCS)
+  auto viewDirection = EoGeVector3d(viewport.viewDir.x, viewport.viewDir.y,
+                                    viewport.viewDir.z);  // group codes 16, 26 and 36 (3D point in WCS)
+  auto viewTarget = EoGeVector3d(viewport.viewTarget.x, viewport.viewTarget.y,
+                                 viewport.viewTarget.z);  // group codes 17, 27 and 37 (3D point in WCS)
 
   // auto height = viewport.height;  // group code 45
   // auto ratio = viewport.ratio;
@@ -222,19 +241,26 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* docu
 
   // Group codes 3, 1 and 4 are for XREF definition. Modern XREF indicated by group 70 with 0x04 bit set and the presence of group code 1
 
-  EoDbBlock* newBlock = new EoDbBlock(static_cast<EoUInt16>(block.flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
-                                      EoGePoint3d(block.basePoint.x, block.basePoint.y, block.basePoint.z),  // group codes 10, 20 and 30
-                                      blockName.c_str());
+  EoDbBlock* newBlock = new EoDbBlock(
+      static_cast<EoUInt16>(block.flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
+      EoGePoint3d(block.basePoint.x, block.basePoint.y, block.basePoint.z),  // group codes 10, 20 and 30
+      blockName.c_str());
 
   document->InsertBlock(blockName.c_str(), newBlock);
   return newBlock;
 }
 
 /** @brief This method is primarily used in DWG files when the parser switches to entities belonging to a different block than the current one. The handle parameter corresponds to the block handle previously provided via addBlock (accessible as DRW_Block::handleBlock). In your implementation, switch the current block context to the one matching this handle. For DXF files, this callback may not be triggered, or it may be used sparingly if blocks are referenced out of sequence. */
-void EoDbDrwInterface::ConvertBlockSet(const int /* handle */, AeSysDoc* /* document */) { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block set\n"); }
+void EoDbDrwInterface::ConvertBlockSet(const int /* handle */, AeSysDoc* document) {
+  (void)document;
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block set\n");
+}
 
 /** @brief This method signals the end of the current block definition. In your implementation, finalize the block (e.g., add it to a document's block table or collection) and reset the context to the default (model space or paper space).*/
-void EoDbDrwInterface::ConvertBlockEnd(AeSysDoc* /* document */) { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block end\n"); }
+void EoDbDrwInterface::ConvertBlockEnd(AeSysDoc* document) {
+  (void)document;
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block end\n");
+}
 
 // Entities
 
@@ -244,7 +270,8 @@ namespace {
 class EoGeVertex2D {
  public:
   EoGeVertex2D() : x(0.0), y(0.0), startWidth(0.0), endWidth(0.0), bulge(0.0) {}
-  EoGeVertex2D(double xInitial, double yInitial, double bulgeInitial) : x(xInitial), y(yInitial), startWidth(0.0), endWidth(0.0), bulge(bulgeInitial) {}
+  EoGeVertex2D(double xInitial, double yInitial, double bulgeInitial)
+      : x(xInitial), y(yInitial), startWidth(0.0), endWidth(0.0), bulge(bulgeInitial) {}
 
  public:
   double x;           // group code 10
@@ -253,7 +280,7 @@ class EoGeVertex2D {
   double endWidth;    // group code 41
   double bulge;       // group code 42
 };
-}
+}  // namespace
 
 /** @brief Adds the given primitive to the appropriate layer in the document.
  *
@@ -281,7 +308,8 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Arc entity conversion\n");
 
   if (arc.radious < Eo::geometricTolerance) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Arc entity with non-positive radius (%f) skipped.\n", arc.radious);
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Arc entity with non-positive radius (%f) skipped.\n",
+              arc.radious);
     return;
   }
   EoGePoint3d center(arc.basePoint.x, arc.basePoint.y, arc.basePoint.z);
@@ -305,7 +333,7 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
   }
   startAngle = EoDbConic::NormalizeTo2Pi(startAngle);
   endAngle = EoDbConic::NormalizeTo2Pi(endAngle);
-  
+
   auto* radialArc = EoDbConic::CreateRadialArc(center, extrusion, arc.radious, startAngle, endAngle);
   if (radialArc == nullptr) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Failed to create radial arc.\n");
@@ -332,9 +360,10 @@ void EoDbDrwInterface::ConvertCircleEntity(const DRW_Circle& circle, AeSysDoc* d
 
 void EoDbDrwInterface::ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc* document) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Ellipse entity conversion\n");
-  
+
   if (ellipse.ratio <= 0.0 || ellipse.ratio > 1.0) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Ellipse entity with invalid ratio (%f) skipped.\n", ellipse.ratio);
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Ellipse entity with invalid ratio (%f) skipped.\n",
+              ellipse.ratio);
     return;
   }
   EoGeVector3d majorAxis(ellipse.secPoint.x, ellipse.secPoint.y, ellipse.secPoint.z);
@@ -365,7 +394,6 @@ void EoDbDrwInterface::ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* d
   insertPrimitive->SetScaleFactors(EoGeVector3d(insert.xscale, insert.yscale, insert.zscale));
   insertPrimitive->SetRotation(insert.angle);
 
-  
   AddToDocument(insertPrimitive, document);
 }
 

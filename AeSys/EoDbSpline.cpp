@@ -138,10 +138,24 @@ bool EoDbSpline::IsInView(AeSysView* view) {
   }
   return false;
 }
+
+bool EoDbSpline::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
+  (void)view;
+  (void)point;
+  return false;
+}
+
 EoGePoint3d EoDbSpline::SelectAtControlPoint(AeSysView*, const EoGePoint4d& point) {
   sm_ControlPointIndex = USHRT_MAX;
   return (point);
 }
+
+bool EoDbSpline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
+  (void)view;
+  (void)line;
+  return false;
+}
+
 bool EoDbSpline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   polyline::BeginLineStrip();
 

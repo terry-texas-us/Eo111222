@@ -19,7 +19,6 @@
 #include "EoDbGroupList.h"
 #include "EoDbLayer.h"
 #include "EoDbLine.h"
-#include "EoDbPoint.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
@@ -681,7 +680,9 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
   }
 }
 
-void AeSysView::OnEndPrinting(CDC* /* deviceContext */, CPrintInfo* /* printInformation */) {
+void AeSysView::OnEndPrinting(CDC* deviceContext, CPrintInfo* printInformation) {
+  (void)deviceContext;
+  (void)printInformation;
   PopViewTransform();
   ViewportPopActive();
 }
@@ -1620,18 +1621,18 @@ void AeSysView::OnToolsPrimitiveSnapto() {
   EoGePoint3d ptDet;
 
   if (GroupIsEngaged()) {
-    EoDbPrimitive* Primitive = m_EngagedPrimitive;
+    auto* primitive = m_EngagedPrimitive;
 
     EoGePoint4d ptView(cursorPosition);
     ModelViewTransformPoint(ptView);
 
     EoDbPolygon::EdgeToEvaluate() = EoDbPolygon::Edge();
 
-    if (Primitive->SelectUsingPoint(this, ptView, ptDet)) {
-      ptDet = Primitive->GoToNextControlPoint();
+    if (primitive->SelectUsingPoint(this, ptView, ptDet)) {
+      ptDet = primitive->GoToNextControlPoint();
       m_ptDet = ptDet;
 
-      Primitive->AddReportToMessageList(ptDet);
+      primitive->AddReportToMessageList(ptDet);
       SetCursorPosition(ptDet);
       return;
     }
@@ -1841,7 +1842,7 @@ void AeSysView::ResetView() {
 }
 
 EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
-  EoDbPrimitive* Primitive;
+  EoDbPrimitive* primitive{};
   EoGePoint3d ptEng;
 
   m_EngagedGroup = 0;
@@ -1851,46 +1852,46 @@ EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
 
   auto position = GetFirstVisibleGroupPosition();
   while (position != nullptr) {
-    auto* Group = GetNextVisibleGroup(position);
-    Primitive = Group->SelPrimAtCtrlPt(this, pt, &ptEng);
-    if (Primitive != 0) {
+    auto* group = GetNextVisibleGroup(position);
+    primitive = group->SelPrimAtCtrlPt(this, pt, &ptEng);
+    if (primitive != nullptr) {
       m_ptDet = ptEng;
       m_ptDet = tm * m_ptDet;
-      m_EngagedGroup = Group;
-      m_EngagedPrimitive = Primitive;
+      m_EngagedGroup = group;
+      m_EngagedPrimitive = primitive;
     }
   }
   return (m_EngagedGroup);
 }
 
-EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& pt) {
+[[nodiscard]] EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& point) {
   EoGePoint3d ptEng;
 
   m_EngagedGroup = nullptr;
   m_EngagedPrimitive = nullptr;
 
-  EoGePoint4d ptView(pt);
+  EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
 
   EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
 
-  double dPicApert = m_SelectApertureSize;
+  double apertureSize = m_SelectApertureSize;
 
   EoDbPolygon::EdgeToEvaluate() = 0;
 
   auto position = GetFirstVisibleGroupPosition();
   while (position != nullptr) {
-    auto* Group = GetNextVisibleGroup(position);
-    auto* Primitive = Group->SelPrimUsingPoint(this, ptView, dPicApert, ptEng);
-    if (Primitive != nullptr) {
+    auto* group = GetNextVisibleGroup(position);
+    auto* primitive = group->SelPrimUsingPoint(this, ptView, apertureSize, ptEng);
+    if (primitive != nullptr) {
       m_ptDet = ptEng;
       m_ptDet = tm * m_ptDet;
-      m_EngagedGroup = Group;
-      m_EngagedPrimitive = Primitive;
-      return (Group);
+      m_EngagedGroup = group;
+      m_EngagedPrimitive = primitive;
+      return (group);
     }
   }
-  return 0;
+  return nullptr;
 }
 
 EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle) {
@@ -1916,45 +1917,22 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
   EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
 
-  auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != nullptr) {
-    auto* Group = GetNextVisibleGroup(GroupPosition);
-    auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive->Is(EoDb::kLinePrimitive)) {
+  auto groupPosition = GetFirstVisibleGroupPosition();
+  while (groupPosition != nullptr) {
+    auto* group = GetNextVisibleGroup(groupPosition);
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = group->GetNext(primitivePosition);
+      if (primitive->Is(EoDb::kLinePrimitive)) {
         EoGePoint3d PointOnLine;
-        if (Primitive->SelectUsingPoint(this, ptView, PointOnLine)) {
-          line = static_cast<EoDbLine*>(Primitive);
-          return Group;
+        if (primitive->SelectUsingPoint(this, ptView, PointOnLine)) {
+          line = static_cast<EoDbLine*>(primitive);
+          return group;
         }
       }
     }
   }
-  return 0;
-}
-
-EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 pointColor,
-                                            EoInt16 pointStyle, EoDbPoint*& primitive) {
-  auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != nullptr) {
-    auto* Group = GetNextVisibleGroup(GroupPosition);
-    auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive->Is(EoDb::kPointPrimitive)) {
-        EoDbPoint* Point = static_cast<EoDbPoint*>(Primitive);
-
-        if (Point->Color() == pointColor && Point->PointStyle() == pointStyle) {
-          if (point.DistanceTo(Point->GetPt()) <= tolerance) {
-            primitive = Point;
-            return Group;
-          }
-        }
-      }
-    }
-  }
-  return 0;
+  return nullptr;
 }
 
 EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
@@ -1972,18 +1950,18 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
-    auto* Group = GetNextVisibleGroup(GroupPosition);
-    auto PrimitivePosition = Group->GetHeadPosition();
+    auto* group = GetNextVisibleGroup(GroupPosition);
+    auto PrimitivePosition = group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive->Is(EoDb::kLinePrimitive)) {
-        if (Primitive->SelectUsingPoint(this, ptView, ptEng)) {
+      EoDbPrimitive* primitive = group->GetNext(PrimitivePosition);
+      if (primitive->Is(EoDb::kLinePrimitive)) {
+        if (primitive->SelectUsingPoint(this, ptView, ptEng)) {
           tol = ptView.DistanceToPointXY(EoGePoint4d(ptEng));
 
           m_ptDet = ptEng;
           m_ptDet = tm * m_ptDet;
-          m_EngagedGroup = Group;
-          m_EngagedPrimitive = Primitive;
+          m_EngagedGroup = group;
+          m_EngagedPrimitive = primitive;
         }
       }
     }
@@ -1991,24 +1969,25 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
   return (m_EngagedGroup);
 }
 
-EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& pt) {
-  EoGePoint4d ptView(pt);
+EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& point) {
+  EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
 
-  auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != nullptr) {
-    auto* Group = GetNextVisibleGroup(GroupPosition);
-    auto PrimitivePosition = Group->GetHeadPosition();
-    while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive->Is(EoDb::kTextPrimitive)) {
+  auto groupPosition = GetFirstVisibleGroupPosition();
+  while (groupPosition != nullptr) {
+    auto* group = GetNextVisibleGroup(groupPosition);
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = group->GetNext(primitivePosition);
+      if (primitive->Is(EoDb::kTextPrimitive)) {
         EoGePoint3d ptProj;
-        if (static_cast<EoDbText*>(Primitive)->SelectUsingPoint(this, ptView, ptProj))
-          return static_cast<EoDbText*>(Primitive);
+        if (static_cast<EoDbText*>(primitive)->SelectUsingPoint(this, ptView, ptProj)) {
+          return static_cast<EoDbText*>(primitive);
+        }
       }
     }
   }
-  return 0;
+  return nullptr;
 }
 
 void AeSysView::OnOp0() {

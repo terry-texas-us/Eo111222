@@ -1,16 +1,18 @@
 ﻿#include "Stdafx.h"
 
+#include <cmath>
+
 #include "EoGeMatrix.h"
 
 EoGeMatrixRow EoGeMatrixRow::operator-() {
-  EoGeMatrixRow Row{};
+  EoGeMatrixRow row{};
 
-  Row[0] = -m_d[0];
-  Row[1] = -m_d[1];
-  Row[2] = -m_d[2];
-  Row[3] = -m_d[3];
+  row[0] = -m_d[0];
+  row[1] = -m_d[1];
+  row[2] = -m_d[2];
+  row[3] = -m_d[3];
 
-  return Row;
+  return row;
 }
 EoGeMatrixRow& EoGeMatrixRow::operator+=(const EoGeMatrixRow& row) {
   m_d[0] += row.m_d[0];
@@ -55,21 +57,21 @@ EoGeMatrixRow EoGeMatrixRow::operator+(const EoGeMatrixRow& row) const {
   return Row += row;
 }
 EoGeMatrixRow EoGeMatrixRow::operator*(const double scaleFactor) const {
-  EoGeMatrixRow Row{};
+  EoGeMatrixRow row{};
 
-  Row[0] = m_d[0] * scaleFactor;
-  Row[1] = m_d[1] * scaleFactor;
-  Row[2] = m_d[2] * scaleFactor;
-  Row[3] = m_d[3] * scaleFactor;
+  row[0] = m_d[0] * scaleFactor;
+  row[1] = m_d[1] * scaleFactor;
+  row[2] = m_d[2] * scaleFactor;
+  row[3] = m_d[3] * scaleFactor;
 
-  return Row;
+  return row;
 }
 double& EoGeMatrixRow::operator[](int i) { return m_d[i]; }
 const double& EoGeMatrixRow::operator[](int i) const { return m_d[i]; }
 void EoGeMatrixRow::Exchange(EoGeMatrixRow& rowA, EoGeMatrixRow& rowB) {
-  EoGeMatrixRow Row(rowA);
+  EoGeMatrixRow row(rowA);
   rowA = rowB;
-  rowB = Row;
+  rowB = row;
 }
 
 EoGeMatrix::EoGeMatrix(const EoGeMatrixRow& v0, const EoGeMatrixRow& v1, const EoGeMatrixRow& v2,
@@ -92,17 +94,22 @@ EoGeMatrix& EoGeMatrix::operator*=(const EoGeMatrix& mB) {
 
   return *this;
 }
-EoGeMatrix& EoGeMatrix::operator/=(double scaleFactor) {
-  ASSERT(scaleFactor != 0.0);
-  double InverseScaleFactor = 1.0 / scaleFactor;
 
-  m_row[0] *= InverseScaleFactor;
-  m_row[1] *= InverseScaleFactor;
-  m_row[2] *= InverseScaleFactor;
-  m_row[3] *= InverseScaleFactor;
+EoGeMatrix& EoGeMatrix::operator/=(double scaleFactor) {
+  if (fabs(scaleFactor) < Eo::numericEpsilon) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoGeMatrix::operator/=: division by near-zero\n");
+    return *this;
+  }
+  double inverseScaleFactor = 1.0 / scaleFactor;
+
+  m_row[0] *= inverseScaleFactor;
+  m_row[1] *= inverseScaleFactor;
+  m_row[2] *= inverseScaleFactor;
+  m_row[3] *= inverseScaleFactor;
 
   return *this;
 }
+
 EoGeMatrix EoGeMatrix::operator*(const EoGeMatrix& mB) { return Multiply(mB, *this); }
 EoGeMatrixRow& EoGeMatrix::operator[](int i) { return m_row[i]; }
 const EoGeMatrixRow& EoGeMatrix::operator[](int i) const { return m_row[i]; }
@@ -160,8 +167,9 @@ EoGeMatrix& EoGeMatrix::Inverse() {
     EoGeMatrixRow::Exchange((*this)[i1], (*this)[iCol]);
 
     // Scale row iCol to have mA unit diagonal
-    if (mA.m_4X4[iCol][iCol] == 0.0) {
+    if (fabs(mA.m_4X4[iCol][iCol]) < Eo::numericEpsilon) {
       ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"EoGeMatrix::Inverse: singular matrix, can't invert\n");
+      return *this;
     }
     (*this)[iCol] /= mA.m_4X4[iCol][iCol];
     mA[iCol] /= mA.m_4X4[iCol][iCol];
@@ -194,73 +202,73 @@ EoGeMatrix& EoGeMatrix::Inverse() {
 }
 
 EoGeMatrix EoGeMatrix::Transpose() const noexcept {
-  EoGeMatrix TransposeMatrix;
+  EoGeMatrix matrix;
 
-  TransposeMatrix[0][0] = m_4X4[0][0];
-  TransposeMatrix[0][1] = m_4X4[1][0];
-  TransposeMatrix[0][2] = m_4X4[2][0];
-  TransposeMatrix[0][3] = m_4X4[3][0];
+  matrix[0][0] = m_4X4[0][0];
+  matrix[0][1] = m_4X4[1][0];
+  matrix[0][2] = m_4X4[2][0];
+  matrix[0][3] = m_4X4[3][0];
 
-  TransposeMatrix[1][0] = m_4X4[0][1];
-  TransposeMatrix[1][1] = m_4X4[1][1];
-  TransposeMatrix[1][2] = m_4X4[2][1];
-  TransposeMatrix[1][3] = m_4X4[3][1];
+  matrix[1][0] = m_4X4[0][1];
+  matrix[1][1] = m_4X4[1][1];
+  matrix[1][2] = m_4X4[2][1];
+  matrix[1][3] = m_4X4[3][1];
 
-  TransposeMatrix[2][0] = m_4X4[0][2];
-  TransposeMatrix[2][1] = m_4X4[1][2];
-  TransposeMatrix[2][2] = m_4X4[2][2];
-  TransposeMatrix[2][3] = m_4X4[3][2];
+  matrix[2][0] = m_4X4[0][2];
+  matrix[2][1] = m_4X4[1][2];
+  matrix[2][2] = m_4X4[2][2];
+  matrix[2][3] = m_4X4[3][2];
 
-  TransposeMatrix[3][0] = m_4X4[0][3];
-  TransposeMatrix[3][1] = m_4X4[1][3];
-  TransposeMatrix[3][2] = m_4X4[2][3];
-  TransposeMatrix[3][3] = m_4X4[3][3];
+  matrix[3][0] = m_4X4[0][3];
+  matrix[3][1] = m_4X4[1][3];
+  matrix[3][2] = m_4X4[2][3];
+  matrix[3][3] = m_4X4[3][3];
 
-  return TransposeMatrix;
+  return matrix;
 }
 
 EoGeMatrix EoGeMatrix::Multiply(const EoGeMatrix& M1, const EoGeMatrix& M2) {
-  EoGeMatrix Result;
+  EoGeMatrix matrix;
 
   double x = M1.m_4X4[0][0];
   double y = M1.m_4X4[0][1];
   double z = M1.m_4X4[0][2];
   double w = M1.m_4X4[0][3];
 
-  Result.m_4X4[0][0] = (M2.m_4X4[0][0] * x) + (M2.m_4X4[1][0] * y) + (M2.m_4X4[2][0] * z) + (M2.m_4X4[3][0] * w);
-  Result.m_4X4[0][1] = (M2.m_4X4[0][1] * x) + (M2.m_4X4[1][1] * y) + (M2.m_4X4[2][1] * z) + (M2.m_4X4[3][1] * w);
-  Result.m_4X4[0][2] = (M2.m_4X4[0][2] * x) + (M2.m_4X4[1][2] * y) + (M2.m_4X4[2][2] * z) + (M2.m_4X4[3][2] * w);
-  Result.m_4X4[0][3] = (M2.m_4X4[0][3] * x) + (M2.m_4X4[1][3] * y) + (M2.m_4X4[2][3] * z) + (M2.m_4X4[3][3] * w);
+  matrix.m_4X4[0][0] = (M2.m_4X4[0][0] * x) + (M2.m_4X4[1][0] * y) + (M2.m_4X4[2][0] * z) + (M2.m_4X4[3][0] * w);
+  matrix.m_4X4[0][1] = (M2.m_4X4[0][1] * x) + (M2.m_4X4[1][1] * y) + (M2.m_4X4[2][1] * z) + (M2.m_4X4[3][1] * w);
+  matrix.m_4X4[0][2] = (M2.m_4X4[0][2] * x) + (M2.m_4X4[1][2] * y) + (M2.m_4X4[2][2] * z) + (M2.m_4X4[3][2] * w);
+  matrix.m_4X4[0][3] = (M2.m_4X4[0][3] * x) + (M2.m_4X4[1][3] * y) + (M2.m_4X4[2][3] * z) + (M2.m_4X4[3][3] * w);
 
   x = M1.m_4X4[1][0];
   y = M1.m_4X4[1][1];
   z = M1.m_4X4[1][2];
   w = M1.m_4X4[1][3];
 
-  Result.m_4X4[1][0] = (M2.m_4X4[0][0] * x) + (M2.m_4X4[1][0] * y) + (M2.m_4X4[2][0] * z) + (M2.m_4X4[3][0] * w);
-  Result.m_4X4[1][1] = (M2.m_4X4[0][1] * x) + (M2.m_4X4[1][1] * y) + (M2.m_4X4[2][1] * z) + (M2.m_4X4[3][1] * w);
-  Result.m_4X4[1][2] = (M2.m_4X4[0][2] * x) + (M2.m_4X4[1][2] * y) + (M2.m_4X4[2][2] * z) + (M2.m_4X4[3][2] * w);
-  Result.m_4X4[1][3] = (M2.m_4X4[0][3] * x) + (M2.m_4X4[1][3] * y) + (M2.m_4X4[2][3] * z) + (M2.m_4X4[3][3] * w);
+  matrix.m_4X4[1][0] = (M2.m_4X4[0][0] * x) + (M2.m_4X4[1][0] * y) + (M2.m_4X4[2][0] * z) + (M2.m_4X4[3][0] * w);
+  matrix.m_4X4[1][1] = (M2.m_4X4[0][1] * x) + (M2.m_4X4[1][1] * y) + (M2.m_4X4[2][1] * z) + (M2.m_4X4[3][1] * w);
+  matrix.m_4X4[1][2] = (M2.m_4X4[0][2] * x) + (M2.m_4X4[1][2] * y) + (M2.m_4X4[2][2] * z) + (M2.m_4X4[3][2] * w);
+  matrix.m_4X4[1][3] = (M2.m_4X4[0][3] * x) + (M2.m_4X4[1][3] * y) + (M2.m_4X4[2][3] * z) + (M2.m_4X4[3][3] * w);
 
   x = M1.m_4X4[2][0];
   y = M1.m_4X4[2][1];
   z = M1.m_4X4[2][2];
   w = M1.m_4X4[2][3];
 
-  Result.m_4X4[2][0] = (M2.m_4X4[0][0] * x) + (M2.m_4X4[1][0] * y) + (M2.m_4X4[2][0] * z) + (M2.m_4X4[3][0] * w);
-  Result.m_4X4[2][1] = (M2.m_4X4[0][1] * x) + (M2.m_4X4[1][1] * y) + (M2.m_4X4[2][1] * z) + (M2.m_4X4[3][1] * w);
-  Result.m_4X4[2][2] = (M2.m_4X4[0][2] * x) + (M2.m_4X4[1][2] * y) + (M2.m_4X4[2][2] * z) + (M2.m_4X4[3][2] * w);
-  Result.m_4X4[2][3] = (M2.m_4X4[0][3] * x) + (M2.m_4X4[1][3] * y) + (M2.m_4X4[2][3] * z) + (M2.m_4X4[3][3] * w);
+  matrix.m_4X4[2][0] = (M2.m_4X4[0][0] * x) + (M2.m_4X4[1][0] * y) + (M2.m_4X4[2][0] * z) + (M2.m_4X4[3][0] * w);
+  matrix.m_4X4[2][1] = (M2.m_4X4[0][1] * x) + (M2.m_4X4[1][1] * y) + (M2.m_4X4[2][1] * z) + (M2.m_4X4[3][1] * w);
+  matrix.m_4X4[2][2] = (M2.m_4X4[0][2] * x) + (M2.m_4X4[1][2] * y) + (M2.m_4X4[2][2] * z) + (M2.m_4X4[3][2] * w);
+  matrix.m_4X4[2][3] = (M2.m_4X4[0][3] * x) + (M2.m_4X4[1][3] * y) + (M2.m_4X4[2][3] * z) + (M2.m_4X4[3][3] * w);
 
   x = M1.m_4X4[3][0];
   y = M1.m_4X4[3][1];
   z = M1.m_4X4[3][2];
   w = M1.m_4X4[3][3];
 
-  Result.m_4X4[3][0] = (M2.m_4X4[0][0] * x) + (M2.m_4X4[1][0] * y) + (M2.m_4X4[2][0] * z) + (M2.m_4X4[3][0] * w);
-  Result.m_4X4[3][1] = (M2.m_4X4[0][1] * x) + (M2.m_4X4[1][1] * y) + (M2.m_4X4[2][1] * z) + (M2.m_4X4[3][1] * w);
-  Result.m_4X4[3][2] = (M2.m_4X4[0][2] * x) + (M2.m_4X4[1][2] * y) + (M2.m_4X4[2][2] * z) + (M2.m_4X4[3][2] * w);
-  Result.m_4X4[3][3] = (M2.m_4X4[0][3] * x) + (M2.m_4X4[1][3] * y) + (M2.m_4X4[2][3] * z) + (M2.m_4X4[3][3] * w);
+  matrix.m_4X4[3][0] = (M2.m_4X4[0][0] * x) + (M2.m_4X4[1][0] * y) + (M2.m_4X4[2][0] * z) + (M2.m_4X4[3][0] * w);
+  matrix.m_4X4[3][1] = (M2.m_4X4[0][1] * x) + (M2.m_4X4[1][1] * y) + (M2.m_4X4[2][1] * z) + (M2.m_4X4[3][1] * w);
+  matrix.m_4X4[3][2] = (M2.m_4X4[0][2] * x) + (M2.m_4X4[1][2] * y) + (M2.m_4X4[2][2] * z) + (M2.m_4X4[3][2] * w);
+  matrix.m_4X4[3][3] = (M2.m_4X4[0][3] * x) + (M2.m_4X4[1][3] * y) + (M2.m_4X4[2][3] * z) + (M2.m_4X4[3][3] * w);
 
-  return Result;
+  return matrix;
 }

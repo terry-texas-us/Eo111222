@@ -154,20 +154,21 @@ void EoDbJobFile::ReadLayer(CFile& file, EoDbLayer* layer) {
     if (Group != 0) { layer->AddTail(Group); }
   }
 }
+
 bool EoDbJobFile::GetNextVisibleGroup(CFile& file, EoDbGroup*& group) {
   ULONGLONG Position = file.GetPosition();
 
   group = 0;
   try {
-    EoDbPrimitive* Primitive;
-    if (!GetNextPrimitive(file, Primitive)) { return false; }
-    group = new EoDbGroup(Primitive);
+    EoDbPrimitive* primitive{};
+    if (!GetNextPrimitive(file, primitive)) { return false; }
+    group = new EoDbGroup(primitive);
     EoUInt16 wPrims = *((EoUInt16*)((m_Version == 1) ? &m_PrimBuf[2] : &m_PrimBuf[1]));
     for (EoUInt16 w = 1; w < wPrims; w++) {
       try {
         Position = file.GetPosition();
-        if (!GetNextPrimitive(file, Primitive)) throw L"Exception.FileJob: Unexpected end of file.";
-        group->AddTail(Primitive);
+        if (!GetNextPrimitive(file, primitive)) throw L"Exception.FileJob: Unexpected end of file.";
+        group->AddTail(primitive);
       } catch (LPWSTR szMessage) {
         app.AddStringToMessageList(std::wstring(szMessage));
         file.Seek(static_cast<LONGLONG>(Position + 32), CFile::begin);
@@ -181,6 +182,7 @@ bool EoDbJobFile::GetNextVisibleGroup(CFile& file, EoDbGroup*& group) {
   }
   return true;
 }
+
 bool EoDbJobFile::GetNextPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoInt16 PrimitiveType = 0;
   do {
@@ -269,16 +271,18 @@ void EoDbJobFile::WriteLayer(CFile& file, EoDbLayer* layer) {
     WriteGroup(file, Group);
   }
 }
+
 void EoDbJobFile::WriteGroup(CFile& file, EoDbGroup* group) {
   m_PrimBuf[0] = 0;
   *((EoUInt16*)&m_PrimBuf[1]) = EoUInt16(group->GetCount());
 
   auto Position = group->GetHeadPosition();
   while (Position != nullptr) {
-    EoDbPrimitive* Primitive = group->GetNext(Position);
-    Primitive->Write(file, m_PrimBuf);
+    auto* primitive = group->GetNext(Position);
+    primitive->Write(file, m_PrimBuf);
   }
 }
+
 void EoDbJobFile::ConstructPrimitive(EoDbPrimitive*& primitive, EoInt16 PrimitiveType) {
   switch (PrimitiveType) {
     case EoDb::kTagPrimitive:

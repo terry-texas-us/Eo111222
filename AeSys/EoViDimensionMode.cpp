@@ -44,19 +44,21 @@ EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      auto* Primitive = Group->GetNext(PrimitivePosition);
+      auto* primitive = Group->GetNext(PrimitivePosition);
 
-      if (Primitive->Is(EoDb::kLinePrimitive))
-        static_cast<EoDbLine*>(Primitive)->GetLine(ln);
-      else if (Primitive->Is(EoDb::kDimensionPrimitive))
-        ln = static_cast<EoDbDimension*>(Primitive)->Line();
-      else
+      if (primitive->Is(EoDb::kLinePrimitive)) {
+        static_cast<EoDbLine*>(primitive)->GetLine(ln);
+      } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
+        ln = static_cast<EoDbDimension*>(primitive)->Line();
+      } else {
         continue;
+      }
 
-      if (ln.IsSelectedByPointXY(pt, DimensionModePickTolerance, ptProj, dRel)) return (*dRel <= 0.5) ? ln.begin : ln.end;
+      if (ln.IsSelectedByPointXY(pt, DimensionModePickTolerance, ptProj, dRel))
+        return (*dRel <= 0.5) ? ln.begin : ln.end;
     }
   }
-  return (pt);
+  return pt;
 }
 }  // namespace
 
@@ -83,12 +85,12 @@ void AeSysView::OnDimensionModeArrow() {
 
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      auto* Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive->Is(EoDb::kLinePrimitive)) {
-        EoDbLine* LinePrimitive = static_cast<EoDbLine*>(Primitive);
+      auto* primitive = Group->GetNext(PrimitivePosition);
+      if (primitive->Is(EoDb::kLinePrimitive)) {
+        EoDbLine* LinePrimitive = static_cast<EoDbLine*>(primitive);
         LinePrimitive->GetLine(TestLine);
-      } else if (Primitive->Is(EoDb::kDimensionPrimitive)) {
-        EoDbDimension* DimensionPrimitive = static_cast<EoDbDimension*>(Primitive);
+      } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
+        EoDbDimension* DimensionPrimitive = static_cast<EoDbDimension*>(primitive);
         TestLine = DimensionPrimitive->Line();
       } else {
         continue;
@@ -406,7 +408,7 @@ void AeSysView::OnDimensionModeConvert() {
   }
 
   EoDbGroup* Group{};
-  EoDbPrimitive* Primitive;
+  EoDbPrimitive* primitive{};
   EoGePoint3d ptProj;
 
   POSITION posPrimCur;
@@ -421,12 +423,12 @@ void AeSysView::OnDimensionModeConvert() {
     auto PrimitivePosition = Group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
       posPrimCur = PrimitivePosition;
-      Primitive = Group->GetNext(PrimitivePosition);
-      if (Primitive->SelectUsingPoint(this, ptView, ptProj)) {
+      primitive = Group->GetNext(PrimitivePosition);
+      if (primitive->SelectUsingPoint(this, ptView, ptProj)) {
         EoGeLine ln;
 
-        if (Primitive->Is(EoDb::kLinePrimitive)) {
-          EoDbLine* pPrimLine = static_cast<EoDbLine*>(Primitive);
+        if (primitive->Is(EoDb::kLinePrimitive)) {
+          EoDbLine* pPrimLine = static_cast<EoDbLine*>(primitive);
           pPrimLine->GetLine(ln);
           EoDbDimension* pPrimDim = new EoDbDimension(pPrimLine->Color(), pPrimLine->LineTypeIndex(), ln);
           pPrimDim->SetTextPenColor(5);
@@ -434,11 +436,11 @@ void AeSysView::OnDimensionModeConvert() {
           pPrimDim->SetTextVerAlign(EoDb::kAlignMiddle);
           Group->InsertAfter(posPrimCur, pPrimDim);
           Group->RemoveAt(posPrimCur);
-          delete Primitive;
+          delete primitive;
           PreviousDimensionCursorPosition = ptProj;
           return;
-        } else if (Primitive->Is(EoDb::kDimensionPrimitive)) {
-          EoDbDimension* pPrimDim = static_cast<EoDbDimension*>(Primitive);
+        } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
+          EoDbDimension* pPrimDim = static_cast<EoDbDimension*>(primitive);
           EoGeReferenceSystem ReferenceSystem;
           pPrimDim->GetRefSys(ReferenceSystem);
           EoDbLine* pPrimLine = new EoDbLine(pPrimDim->Color(), pPrimDim->LineTypeIndex(), pPrimDim->Line());
@@ -447,7 +449,7 @@ void AeSysView::OnDimensionModeConvert() {
           Group->InsertAfter(posPrimCur, pPrimLine);
           Group->InsertAfter(posPrimCur, pPrimText);
           Group->RemoveAt(posPrimCur);
-          delete Primitive;
+          delete primitive;
           PreviousDimensionCursorPosition = ptProj;
           return;
         }

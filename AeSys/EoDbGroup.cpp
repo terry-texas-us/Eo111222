@@ -25,18 +25,21 @@ EoDbPrimitive* EoDbGroup::sm_PrimitiveToIgnore = static_cast<EoDbPrimitive*>(nul
 
 EoDbGroup::EoDbGroup() {}
 EoDbGroup::EoDbGroup(EoDbPrimitive* primitive) { AddTail(primitive); }
+
 EoDbGroup::EoDbGroup(const EoDbGroup& group) {
-  EoDbPrimitive* Primitive;
+  EoDbPrimitive* primitive{};
 
   auto position = group.GetHeadPosition();
-  while (position != nullptr) { AddTail((group.GetNext(position))->Copy(Primitive)); }
+  while (position != nullptr) { AddTail((group.GetNext(position))->Copy(primitive)); }
 }
+
 EoDbPrimitive* EoDbGroup::GetAt(POSITION position) { return (EoDbPrimitive*)CObList::GetAt(position); }
+
 EoDbGroup::EoDbGroup(const EoDbBlock& block) {
-  EoDbPrimitive* Primitive;
+  EoDbPrimitive* primitive{};
 
   auto position = block.GetHeadPosition();
-  while (position != nullptr) { AddTail((block.GetNext(position))->Copy(Primitive)); }
+  while (position != nullptr) { AddTail((block.GetNext(position))->Copy(primitive)); }
 }
 
 void EoDbGroup::AddPrimsToTreeViewControl(HWND tree, HTREEITEM parent) {
@@ -53,31 +56,33 @@ HTREEITEM EoDbGroup::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   AddPrimsToTreeViewControl(tree, treeItem);
   return treeItem;
 }
+
 void EoDbGroup::BreakPolylines() {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto PrimitivePosition = position;
-    EoDbPrimitive* Primitive = GetNext(position);
-    if (Primitive->Is(EoDb::kPolylinePrimitive)) {
-      EoInt16 color = Primitive->Color();
-      EoInt16 LineType = Primitive->LineTypeIndex();
+    auto* primitive = GetNext(position);
+    if (primitive->Is(EoDb::kPolylinePrimitive)) {
+      auto color = primitive->Color();
+      auto LineType = primitive->LineTypeIndex();
 
       EoGePoint3dArray points;
-      static_cast<EoDbPolyline*>(Primitive)->GetAllPoints(points);
+      static_cast<EoDbPolyline*>(primitive)->GetAllPoints(points);
 
       for (EoUInt16 w = 0; w < points.GetSize() - 1; w++) CObList::InsertBefore(PrimitivePosition, new EoDbLine(color, LineType, points[w], points[w + 1]));
 
-      if (static_cast<EoDbPolyline*>(Primitive)->IsLooped())
+      if (static_cast<EoDbPolyline*>(primitive)->IsLooped())
         CObList::InsertBefore(PrimitivePosition, new EoDbLine(color, LineType, points[points.GetUpperBound()], points[0]));
 
       this->RemoveAt(PrimitivePosition);
-      delete Primitive;
-    } else if (Primitive->Is(EoDb::kGroupReferencePrimitive)) {
-      EoDbBlock* Block;
-      if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(Primitive)->BlockName(), Block) != 0) { Block->BreakPolylines(); }
+      delete primitive;
+    } else if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
+      EoDbBlock* block{};
+      if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(primitive)->BlockName(), block) != 0) { block->BreakPolylines(); }
     }
   }
 }
+
 void EoDbGroup::BreakSegRefs() {
   int iSegRefs;
   do {
@@ -85,19 +90,19 @@ void EoDbGroup::BreakSegRefs() {
     auto position = GetHeadPosition();
     while (position != nullptr) {
       auto PrimitivePosition = position;
-      EoDbPrimitive* Primitive = GetNext(position);
-      if (Primitive->Is(EoDb::kGroupReferencePrimitive)) {
+      auto* primitive = GetNext(position);
+      if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
         iSegRefs++;
-        EoDbBlock* block;
-        if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(Primitive)->BlockName(), block) != 0) {
+        EoDbBlock* block{};
+        if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(primitive)->BlockName(), block) != 0) {
           EoDbGroup* pSegT = new EoDbGroup(*block);
           EoGePoint3d basePoint = block->BasePoint();
-          EoGeTransformMatrix tm = static_cast<EoDbBlockReference*>(Primitive)->BuildTransformMatrix(basePoint);
+          EoGeTransformMatrix tm = static_cast<EoDbBlockReference*>(primitive)->BuildTransformMatrix(basePoint);
           pSegT->Transform(tm);
 
           this->InsertBefore(PrimitivePosition, pSegT);
           this->RemoveAt(PrimitivePosition);
-          delete Primitive;
+          delete primitive;
           pSegT->RemoveAll();
           delete pSegT;
         }
@@ -105,6 +110,7 @@ void EoDbGroup::BreakSegRefs() {
     }
   } while (iSegRefs != 0);
 }
+
 void EoDbGroup::Display(AeSysView* view, CDC* deviceContext) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
@@ -119,19 +125,21 @@ POSITION EoDbGroup::FindAndRemovePrim(EoDbPrimitive* primitive) {
 
   return (position);
 }
+
 EoDbPoint* EoDbGroup::GetFirstDifferentPoint(EoDbPoint* pointPrimitive) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
-    EoDbPrimitive* Primitive = GetNext(position);
-    if (Primitive != pointPrimitive && Primitive->Is(EoDb::kPointPrimitive)) { return (static_cast<EoDbPoint*>(Primitive)); }
+    auto* primitive = GetNext(position);
+    if (primitive != pointPrimitive && primitive->Is(EoDb::kPointPrimitive)) { return (static_cast<EoDbPoint*>(primitive)); }
   }
-  return 0;
+  return nullptr;
 }
+
 void EoDbGroup::InsertBefore(POSITION insertPosition, EoDbGroup* group) {
   auto position = group->GetHeadPosition();
   while (position != nullptr) {
-    EoDbPrimitive* Primitive = group->GetNext(position);
-    CObList::InsertBefore(insertPosition, (CObject*)Primitive);
+    auto* primitive = group->GetNext(position);
+    CObList::InsertBefore(insertPosition, (CObject*)primitive);
   }
 }
 

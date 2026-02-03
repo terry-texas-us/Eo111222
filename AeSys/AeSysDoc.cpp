@@ -983,7 +983,7 @@ void AeSysDoc::OnPrimBreak() {
     } else if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
       auto* blockReference = static_cast<EoDbBlockReference*>(primitive);
 
-      EoDbBlock* block;
+      EoDbBlock* block{};
 
       if (LookupBlock(blockReference->BlockName(), block) != 0) {
         group->FindAndRemovePrim(primitive);
@@ -1518,6 +1518,7 @@ void AeSysDoc::OnToolsGroupExchange() {
     DeletedGroupsAddHead(TailGroup);
   }
 }
+
 void AeSysDoc::OnToolsPrimitiveSnaptoendpoint() {
   auto* activeView = AeSysView::GetActiveView();
 
@@ -1525,16 +1526,16 @@ void AeSysDoc::OnToolsPrimitiveSnaptoendpoint() {
   activeView->ModelViewTransformPoint(ptView);
 
   if (activeView->GroupIsEngaged()) {
-    EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
+    auto* primitive = activeView->EngagedPrimitive();
 
-    if (Primitive->PivotOnControlPoint(activeView, ptView)) {
+    if (primitive->PivotOnControlPoint(activeView, ptView)) {
       EoGePoint3d ptEng = activeView->DetPt();
-      Primitive->AddReportToMessageList(ptEng);
+      primitive->AddReportToMessageList(ptEng);
       activeView->SetCursorPosition(ptEng);
       return;
     }
     // Did not pivot on engaged primitive
-    if (Primitive->IsPointOnControlPoint(activeView, ptView)) { EoDbGroup::SetPrimitiveToIgnore(Primitive); }
+    if (primitive->IsPointOnControlPoint(activeView, ptView)) { EoDbGroup::SetPrimitiveToIgnore(primitive); }
   }
   if (activeView->SelSegAndPrimAtCtrlPt(ptView) != 0) {
     EoGePoint3d ptEng = activeView->DetPt();
@@ -1550,38 +1551,40 @@ void AeSysDoc::OnPrimGotoCenterPoint() {
     activeView->SetCursorPosition(pt);
   }
 }
+
 void AeSysDoc::OnToolsPrimitiveDelete() {
   EoGePoint3d pt = app.GetCursorPosition();
 
   auto* activeView = AeSysView::GetActiveView();
 
-  auto* Group = activeView->SelectGroupAndPrimitive(pt);
+  auto* group = activeView->SelectGroupAndPrimitive(pt);
 
-  if (Group != 0) {
-    auto position = FindTrappedGroup(Group);
+  if (group != 0) {
+    auto position = FindTrappedGroup(group);
 
     LPARAM lHint = (position != nullptr) ? EoDb::kGroupEraseSafeTrap : EoDb::kGroupEraseSafe;
     // erase entire group even if group has more than one primitive
-    UpdateAllViews(nullptr, lHint, Group);
+    UpdateAllViews(nullptr, lHint, group);
 
-    if (Group->GetCount() > 1) {  // remove primitive from group
-      EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
-      Group->FindAndRemovePrim(Primitive);
+    if (group->GetCount() > 1) {  // remove primitive from group
+      auto* primitive = activeView->EngagedPrimitive();
+      group->FindAndRemovePrim(primitive);
       lHint = (position != nullptr) ? EoDb::kGroupSafeTrap : EoDb::kGroupSafe;
       // display the group with the primitive removed
-      UpdateAllViews(nullptr, lHint, Group);
+      UpdateAllViews(nullptr, lHint, group);
       // new group required to allow primitive to be placed into deleted group list
-      Group = new EoDbGroup(Primitive);
+      group = new EoDbGroup(primitive);
     } else {  // deleting an entire group
-      AnyLayerRemove(Group);
-      RemoveGroupFromAllViews(Group);
+      AnyLayerRemove(group);
+      RemoveGroupFromAllViews(group);
 
-      if (RemoveTrappedGroup(Group) != 0) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
+      if (RemoveTrappedGroup(group) != 0) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
     }
-    DeletedGroupsAddTail(Group);
+    DeletedGroupsAddTail(group);
     app.AddStringToMessageList(IDS_MSG_PRIM_ADDED_TO_DEL_GROUPS);
   }
 }
+
 void AeSysDoc::OnPrimModifyAttributes() {
   auto* activeView = AeSysView::GetActiveView();
 
@@ -1780,14 +1783,14 @@ void AeSysDoc::OnPrimExtractStr() {
   auto cursorPosition = activeView->GetCursorPosition();
 
   if (activeView->SelectGroupAndPrimitive(cursorPosition)) {
-    EoDbPrimitive* Primitive = activeView->EngagedPrimitive();
+    auto* primitive = activeView->EngagedPrimitive();
 
     CString String;
 
-    if (Primitive->Is(EoDb::kTextPrimitive)) {
-      String = static_cast<EoDbText*>(Primitive)->Text();
-    } else if (Primitive->Is(EoDb::kDimensionPrimitive)) {
-      String = static_cast<EoDbDimension*>(Primitive)->Text();
+    if (primitive->Is(EoDb::kTextPrimitive)) {
+      String = static_cast<EoDbText*>(primitive)->Text();
+    } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
+      String = static_cast<EoDbDimension*>(primitive)->Text();
     } else {
       return;
     }

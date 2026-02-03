@@ -3,11 +3,11 @@
 #include <string>
 #include <utility>
 
+#include "drw_entities.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeVector3d.h"
-#include "drw_entities.h"
 
 HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR pszText, LPCVOID object);
 
@@ -43,7 +43,7 @@ class EoDbPrimitive : public CObject {
  public:  // Constructors and destructor
   EoDbPrimitive();
   EoDbPrimitive(EoInt16 penColor, EoInt16 lineType);
-  
+
  protected:
   EoDbPrimitive(const EoDbPrimitive& other)
       : m_color(other.m_color),
@@ -91,7 +91,8 @@ class EoDbPrimitive : public CObject {
   virtual void Write(CFile& file, EoUInt8* buffer) = 0;
 
  public:
-  virtual void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*);
+  virtual void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*,
+                            EoDbGroupList*);
   virtual void CutAtPoint(EoGePoint3d& point, EoDbGroup*);
   virtual int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*);
   virtual void ModifyState();

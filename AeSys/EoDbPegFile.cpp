@@ -187,7 +187,7 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
 void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kBlocksSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kBlocksSection.";
 
-  EoDbPrimitive* Primitive;
+  EoDbPrimitive* primitive;
   CString Name;
   CString XRefPathName;
 
@@ -203,8 +203,8 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
     document->InsertBlock(Name, Block);
 
     for (EoUInt16 PrimitiveIndex = 0; PrimitiveIndex < NumberOfPrimitives; PrimitiveIndex++) {
-      EoDb::Read(*this, Primitive);
-      Block->AddTail(Primitive);
+      EoDb::Read(*this, primitive);
+      Block->AddTail(primitive);
     }
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
@@ -212,7 +212,7 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
 void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kGroupsSection) throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection.";
 
-  EoDbPrimitive* Primitive;
+  EoDbPrimitive* primitive;
 
   EoUInt16 NumberOfLayers = EoDb::ReadUInt16(*this);
 
@@ -228,8 +228,8 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
         auto* Group = new EoDbGroup;
         EoUInt16 NumberOfPrimitives = EoDb::ReadUInt16(*this);
         for (EoUInt16 PrimitiveIndex = 0; PrimitiveIndex < NumberOfPrimitives; PrimitiveIndex++) {
-          EoDb::Read(*this, Primitive);
-          Group->AddTail(Primitive);
+          EoDb::Read(*this, primitive);
+          Group->AddTail(primitive);
         }
         Layer->AddTail(Group);
       }
@@ -378,8 +378,8 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
 
     auto PrimitivePosition = Block->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* Primitive = Block->GetNext(PrimitivePosition);
-      if (Primitive->Write(*this)) NumberOfPrimitives++;
+      EoDbPrimitive* primitive = Block->GetNext(PrimitivePosition);
+      if (primitive->Write(*this)) NumberOfPrimitives++;
     }
     ULONGLONG CurrentFilePosition = CFile::GetPosition();
     CFile::Seek(static_cast<LONGLONG>(SavedFilePosition), CFile::begin);

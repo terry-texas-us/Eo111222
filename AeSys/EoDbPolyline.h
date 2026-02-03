@@ -51,17 +51,17 @@ class EoDbPolyline : public EoDbPrimitive {
   bool Identical(EoDbPrimitive*) override { return false; }
   bool Is(EoUInt16 type) override { return type == EoDb::kPolylinePrimitive; }
   bool IsInView(AeSysView* view) override;
-  bool IsPointOnControlPoint(AeSysView* /* view */, const EoGePoint4d& /* point */) override { return false; }
+  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   bool PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
-  bool SelectUsingLine(AeSysView* /* view */, EoGeLine /* line */, EoGePoint3dArray&) override { return false; }
+  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
   void Transform(EoGeTransformMatrix&) override;
   void Translate(EoGeVector3d translate) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& /* file */, EoUInt8* /* buffer */) override {};
+  void Write(CFile& file, EoUInt8* buffer) override { (void)file, (void)buffer; };
 
  private:
   EoUInt16 SwingVertex();

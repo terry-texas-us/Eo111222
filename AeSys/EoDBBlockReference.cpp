@@ -11,6 +11,7 @@
 #include "EoDbBlockReference.h"
 #include "EoDbGroup.h"
 #include "EoDbPrimitive.h"
+#include "EoGeLine.h"
 #include "EoGeMatrix.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -107,7 +108,7 @@ EoDbPrimitive*& EoDbBlockReference::Copy(EoDbPrimitive*& primitive) {
   return (primitive);
 }
 void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
-  EoDbBlock* block;
+  EoDbBlock* block{};
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return; }
 
   auto transformMatrix = BuildTransformMatrix(block->BasePoint());
@@ -154,7 +155,7 @@ EoGePoint3d EoDbBlockReference::GetControlPoint() {
   return (point);
 }
 void EoDbBlockReference::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
-  EoDbBlock* block;
+  EoDbBlock* block{};
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return; }
 
@@ -186,11 +187,18 @@ bool EoDbBlockReference::IsInView(AeSysView* view) {
   view->ReturnModelTransform();
   return (bInView);
 }
+
+bool EoDbBlockReference::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
+  (void)view;
+  (void)point;
+  return false;
+}
+
 EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
   sm_ControlPointIndex = USHRT_MAX;
   EoGePoint3d ptCtrl;
 
-  EoDbBlock* block;
+  EoDbBlock* block{};
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return ptCtrl; }
 
@@ -203,8 +211,8 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
 
   auto position = block->GetHeadPosition();
   while (position != nullptr) {
-    EoDbPrimitive* Primitive = block->GetNext(position);
-    ptCtrl = Primitive->SelectAtControlPoint(view, point);
+    auto* primitive = block->GetNext(position);
+    ptCtrl = primitive->SelectAtControlPoint(view, point);
     if (sm_ControlPointIndex != USHRT_MAX) {
       view->ModelTransformPoint(ptCtrl);
       break;
@@ -213,8 +221,15 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
   view->ReturnModelTransform();
   return ptCtrl;
 }
+
+bool EoDbBlockReference::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
+  (void)view;
+  (void)line;
+  return false;
+}
+
 bool EoDbBlockReference::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
-  EoDbBlock* block;
+  EoDbBlock* block{};
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return false; }
 
@@ -233,7 +248,7 @@ bool EoDbBlockReference::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, 
 bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   bool bResult{};
 
-  EoDbBlock* block;
+  EoDbBlock* block{};
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return (bResult); }
   EoGePoint3d basePoint = block->BasePoint();
@@ -264,7 +279,9 @@ void EoDbBlockReference::Transform(EoGeTransformMatrix& tm) {
   m_insertionPoint = tm * m_insertionPoint;
   m_normal = tm * m_normal;
 
-  if (fabs(m_normal.x) < Eo::geometricTolerance && fabs(m_normal.y) <= Eo::geometricTolerance) { m_scaleFactors = tm * m_scaleFactors; }
+  if (fabs(m_normal.x) < Eo::geometricTolerance && fabs(m_normal.y) <= Eo::geometricTolerance) {
+    m_scaleFactors = tm * m_scaleFactors;
+  }
 }
 void EoDbBlockReference::TranslateUsingMask(EoGeVector3d v, DWORD mask) {
   if (mask != 0) { m_insertionPoint += v; }

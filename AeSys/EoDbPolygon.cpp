@@ -94,7 +94,8 @@ EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d* pt) {
 
   for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) m_Pt[w] = pt[w];
 }
-EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d ptOrig, EoGeVector3d vXAx, EoGeVector3d vYAx, const EoGePoint3d* ppt) {
+EoDbPolygon::EoDbPolygon(EoUInt16 wPts, EoGePoint3d ptOrig, EoGeVector3d vXAx, EoGeVector3d vYAx,
+                         const EoGePoint3d* ppt) {
   m_color = pstate.PenColor();
   m_InteriorStyle = pstate.PolygonIntStyle();
   m_InteriorStyleIndex = pstate.PolygonIntStyleId();
@@ -118,8 +119,8 @@ EoDbPolygon::EoDbPolygon(EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d&
 
   for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) m_Pt[w] = pts[w];
 }
-EoDbPolygon::EoDbPolygon(EoInt16 penColor, EoInt16 style, EoInt16 styleIndex, EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d& yAxis,
-                         EoGePoint3dArray& points)
+EoDbPolygon::EoDbPolygon(EoInt16 penColor, EoInt16 style, EoInt16 styleIndex, EoGePoint3d& origin, EoGeVector3d& xAxis,
+                         EoGeVector3d& yAxis, EoGePoint3dArray& points)
     : m_HatchOrigin(origin), m_vPosXAx(xAxis), m_vPosYAx(yAxis) {
   m_color = penColor;
   m_InteriorStyle = style;
@@ -159,7 +160,7 @@ const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& src) {
 }
 EoDbPolygon::~EoDbPolygon() { delete[] m_Pt; }
 
-void EoDbPolygon::AddToTreeViewControl(HWND tree, HTREEITEM parent) { 
+void EoDbPolygon::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   CString label{L"<Polygon>"};
   tvAddItem(tree, parent, label.GetBuffer(), this);
 }
@@ -239,12 +240,14 @@ void EoDbPolygon::FormatGeometry(CString& str) {
 CString EoDbPolygon::FormatIntStyle() {
   CString strStyle[] = {L"Hollow", L"Solid", L"Pattern", L"Hatch"};
 
-  CString str = (m_InteriorStyle >= 0 && m_InteriorStyle <= 3) ? strStyle[m_InteriorStyle] : const_cast<LPWSTR>(L"Invalid!");
+  CString str =
+      (m_InteriorStyle >= 0 && m_InteriorStyle <= 3) ? strStyle[m_InteriorStyle] : const_cast<LPWSTR>(L"Invalid!");
 
   return (str);
 }
 void EoDbPolygon::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(), m_NumberOfPoints);
+  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
+             m_NumberOfPoints);
 }
 EoGePoint3d EoDbPolygon::GetControlPoint() {
   EoUInt16 wBeg = EoUInt16(sm_Edge - 1);
@@ -283,6 +286,12 @@ EoGePoint3d EoDbPolygon::GoToNextControlPoint() {
       sm_PivotVertex++;
   }
   return (m_Pt[sm_PivotVertex]);
+}
+
+bool EoDbPolygon::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
+  (void)view;
+  (void)line;
+  return false;
 }
 
 bool EoDbPolygon::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
@@ -470,7 +479,8 @@ bool EoDbPolygon::Write(CFile& file) {
 
   return true;
 }
-void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& tm, const int iSets, const int* iPtLstsId, EoGePoint3d* pta) {
+void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& tm, const int iSets,
+                         const int* iPtLstsId, EoGePoint3d* pta) {
   double dCurStrLen;
   double dEps1;
   double dMaxY;
@@ -503,11 +513,11 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
   int iHatLns = int(hatch::tableValue[iTblId++]);
 
   for (int i0 = 0; i0 < iHatLns; i0++) {
-    int iStrs = int(hatch::tableValue[iTblId++]);     // number of strokes in line definition
-    double dTotStrLen = hatch::tableValue[iTblId++];  // length of all strokes in line definition
-    double dSinAng = sin(hatch::tableValue[iTblId]);  // sine of angle at which line will be drawn
+    int iStrs = int(hatch::tableValue[iTblId++]);       // number of strokes in line definition
+    double dTotStrLen = hatch::tableValue[iTblId++];    // length of all strokes in line definition
+    double dSinAng = sin(hatch::tableValue[iTblId]);    // sine of angle at which line will be drawn
     double dCosAng = cos(hatch::tableValue[iTblId++]);  // cosine of angle at which line will be drawn
-    double dX = hatch::tableValue[iTblId++];  // displacement to origin of initial line
+    double dX = hatch::tableValue[iTblId++];            // displacement to origin of initial line
     double dY = hatch::tableValue[iTblId++];
     double dShift = hatch::tableValue[iTblId++];  // x-axis origin shift between lines
     double dSpac = hatch::tableValue[iTblId++];   // spacing between lines
@@ -539,7 +549,8 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
         ln.end = tm * ln.end;
         vEdg.x = ln.end.x - ln.begin.x;  // Determine x and y-components of edge
         vEdg.y = ln.end.y - ln.begin.y;
-        if (fabs(vEdg.y) > Eo::geometricTolerance * sqrt(vEdg.x * vEdg.x + vEdg.y * vEdg.y)) {  // Edge is not horizontal
+        if (fabs(vEdg.y) >
+            Eo::geometricTolerance * sqrt(vEdg.x * vEdg.x + vEdg.y * vEdg.y)) {  // Edge is not horizontal
           dMaxY = std::max(ln.begin.y, ln.end.y);
           iCurEdg = iActEdgs + 1;
           // Find correct insertion point for edge in edge list using ymax as sort key

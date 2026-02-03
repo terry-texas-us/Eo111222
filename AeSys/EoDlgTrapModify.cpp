@@ -37,20 +37,21 @@ void EoDlgTrapModify::OnOK() {
 
   CDialog::OnOK();
 }
+
 void EoDlgTrapModify::ModifyPolygons() {
   auto position = m_Document->GetFirstTrappedGroupPosition();
   while (position != nullptr) {
-    auto* Group = m_Document->GetNextTrappedGroup(position);
+    auto* group = m_Document->GetNextTrappedGroup(position);
 
-    auto PrimitivePosition = Group->GetHeadPosition();
+    auto PrimitivePosition = group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
-      auto* Primitive = Group->GetNext(PrimitivePosition);
+      auto* primitive = group->GetNext(PrimitivePosition);
 
-      if (Primitive->Is(EoDb::kPolygonPrimitive)) {
-        EoDbPolygon* pPolygon = static_cast<EoDbPolygon*>(Primitive);
-        pPolygon->SetIntStyle(pstate.PolygonIntStyle());
-        pPolygon->SetIntStyleId(pstate.PolygonIntStyleId());
-        pPolygon->SetHatRefVecs(hatch::dOffAng, hatch::dXAxRefVecScal, hatch::dYAxRefVecScal);
+      if (primitive->Is(EoDb::kPolygonPrimitive)) {
+        auto* polygon = static_cast<EoDbPolygon*>(primitive);
+        polygon->SetIntStyle(pstate.PolygonIntStyle());
+        polygon->SetIntStyleId(pstate.PolygonIntStyleId());
+        polygon->SetHatRefVecs(hatch::dOffAng, hatch::dXAxRefVecScal, hatch::dYAxRefVecScal);
       }
     }
   }

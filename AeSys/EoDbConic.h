@@ -3,6 +3,8 @@
 #include <utility>
 
 #include "AeSysView.h"
+#include "drw_base.h"
+#include "drw_interface.h"
 #include "EoDb.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
@@ -12,8 +14,6 @@
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "drw_base.h"
-#include "drw_interface.h"
 
 class EoDbConic : public EoDbPrimitive {
   EoGePoint3d m_center{};
@@ -284,8 +284,7 @@ class EoDbConic : public EoDbPrimitive {
   [[nodiscard]] bool IsFullConic() const noexcept {
     double sweep = NormalizeTo2Pi(m_endAngle) - NormalizeTo2Pi(m_startAngle);
     if (sweep <= 0.0) sweep += Eo::TwoPi;
-    return fabs(sweep - Eo::TwoPi) < Eo::geometricTolerance ||
-           fabs(m_endAngle - m_startAngle) < Eo::geometricTolerance;
+    return fabs(sweep - Eo::TwoPi) < Eo::geometricTolerance || fabs(m_endAngle - m_startAngle) < Eo::geometricTolerance;
   }
 
   // Enum for cleaner switch statements

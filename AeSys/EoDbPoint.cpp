@@ -10,6 +10,7 @@
 #include "EoDb.h"
 #include "EoDbPoint.h"
 #include "EoDbPrimitive.h"
+#include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
@@ -35,7 +36,9 @@ EoDbPoint::EoDbPoint(EoInt16 penColor, EoInt16 pointStyle, const EoGePoint3d& po
   m_NumberOfDatums = 0;
   m_Data = nullptr;
 }
-EoDbPoint::EoDbPoint(EoInt16 penColor, EoInt16 pointStyle, const EoGePoint3d& point, EoUInt16 numberOfDatums, double* data) : m_Point(point) {
+EoDbPoint::EoDbPoint(EoInt16 penColor, EoInt16 pointStyle, const EoGePoint3d& point, EoUInt16 numberOfDatums,
+                     double* data)
+    : m_Point(point) {
   m_color = penColor;
   m_pointStyle = pointStyle;
   m_NumberOfDatums = numberOfDatums;
@@ -153,7 +156,9 @@ void EoDbPoint::AddReportToMessageList(EoGePoint3d) {
   str.Format(L"<Point> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
   app.AddStringToMessageList(str);
 }
-void EoDbPoint::FormatExtra(CString& str) { str.Format(L"Color;%s\tStyle;%d", FormatPenColor().GetString(), m_pointStyle); }
+void EoDbPoint::FormatExtra(CString& str) {
+  str.Format(L"Color;%s\tStyle;%d", FormatPenColor().GetString(), m_pointStyle);
+}
 void EoDbPoint::FormatGeometry(CString& str) { str += L"Point;" + m_Point.ToString(); }
 EoGePoint3d EoDbPoint::GetControlPoint() { return (m_Point); }
 
@@ -184,6 +189,13 @@ EoGePoint3d EoDbPoint::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& 
   sm_ControlPointIndex = (point.DistanceToPointXY(pt) < sm_SelectApertureSize) ? 0U : USHRT_MAX;
   return (sm_ControlPointIndex == 0) ? m_Point : EoGePoint3d::kOrigin;
 }
+
+bool EoDbPoint::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
+  (void)view;
+  (void)line;
+  return false;
+}
+
 bool EoDbPoint::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   EoGePoint4d pt(m_Point);
 
