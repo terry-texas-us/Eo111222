@@ -1685,7 +1685,7 @@ void AeSysView::OnUpdateViewOdometer(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewOd
 
 #define LEGACY_ODOMETER
 #if defined(LEGACY_ODOMETER)
-static void DrawOdometerInView(AeSysView* view, CDC* context, AeSys::Units Units, EoGeVector3d& position) {
+static void DrawOdometerInView(AeSysView* view, CDC* context, Eo::Units Units, EoGeVector3d& position) {
   auto* oldFont = static_cast<CFont*>(context->SelectStockObject(DEFAULT_GUI_FONT));
   auto oldTextAlign = context->SetTextAlign(TA_LEFT | TA_TOP);
   auto oldTextColor = context->SetTextColor(AppGetTextCol());
@@ -2127,57 +2127,74 @@ void AeSysView::OnEscape() {
   }
 }
 
+/** @brief Handler for the Find command, which retrieves the text from the Find combo box in the main frame and logs it.
+ * @note Currently, this function only verifies the combo box text and logs it, but it is intended to be expanded with the actual Find command implementation in the future.
+ */
 void AeSysView::OnFind() {
-  CString findComboText;
+  constexpr auto mainFrameErrorMsg = L"Main frame should exist when Find command is triggered";
 
-  CWnd* mainWnd = AfxGetMainWnd();
-  CMainFrame* mainFrame = mainWnd ? DYNAMIC_DOWNCAST(CMainFrame, mainWnd) : nullptr;
-  if (!mainFrame) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"AeSysView::OnFind() - main frame is null\n");
+  // Get the main frame window
+  auto* mainFrame = dynamic_cast<CMainFrame*>(AfxGetMainWnd());
+#ifdef _DEBUG
+  assert(mainFrame != nullptr && mainFrameErrorMsg);
+#endif
+  if (mainFrame == nullptr) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"%ls\n", static_cast<const wchar_t*>(mainFrameErrorMsg));
+    return;
+  }
+  // Get the find combo box control
+  constexpr auto findComboErrorMsg = L"Find combo should exist in toolbar";
+
+  auto* findComboBox = mainFrame->GetFindCombo();
+#ifdef _DEBUG
+  assert(findComboBox != nullptr && findComboErrorMsg);
+#endif
+  if (findComboBox == nullptr) {
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"%ls\n", static_cast<const wchar_t*>(findComboErrorMsg));
     return;
   }
 
-  auto* findCombo = mainFrame->GetFindCombo();
-  if (!findCombo) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"AeSysView::OnFind() - find combo is null\n");
-    return;
-  }
+  CString findComboBoxText;
+  VerifyFindString(findComboBox, findComboBoxText);
 
-  VerifyFindString(findCombo, findComboText);
+  if (findComboBoxText.IsEmpty()) { return; }
 
-  if (!findComboText.IsEmpty()) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnFind() ComboText = %ls\n",
-              static_cast<LPCTSTR>(findComboText));
-  }
+  // @todo Find command implementation should go here, currently just verifying the combo box text and logging it
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"Verifying the FindComboBox text and logging: `%ls`\n",
+            static_cast<LPCWSTR>(findComboBoxText));
 }
 
-void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CString& findText) {
+/** @brief Verifies the text in the Find combo box and updates it if necessary.
+ * @param findComboBox The combo box button to verify.
+ * @param findComboBoxText A reference to a CString that will be updated with the current text of the combo box if the last command was from the button.
+ * @note This function checks if the last command was triggered by the provided combo box button. If it was, it retrieves the current text from the combo box. It then checks if this text already exists in the combo box's list of items. If it does, it removes it and re-inserts it at the top of the list to ensure that the most recently used search term is easily accessible. Finally, if the last command was not from the button, it sets the combo box text to the verified text.
+ */
+void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CString& findComboBoxText) {
   if (findComboBox == nullptr) { return; }
-  BOOL IsLastCommandFromButton = CMFCToolBar::IsLastCommandFromButton(findComboBox);
+  BOOL isLastCommandFromButton = CMFCToolBar::IsLastCommandFromButton(findComboBox);
 
-  if (IsLastCommandFromButton) { findText = findComboBox->GetText(); }
-  CComboBox* ComboBox = findComboBox->GetComboBox();
+  if (isLastCommandFromButton) { findComboBoxText = findComboBox->GetText(); }
+  auto* ComboBox = findComboBox->GetComboBox();
 
-  if (!findText.IsEmpty()) {
-    const int Count = ComboBox->GetCount();
-    int Position = 0;
+  if (!findComboBoxText.IsEmpty()) {
+    const int count = ComboBox->GetCount();
+    int Position{};
 
-    while (Position < Count) {
+    while (Position < count) {
       CString LBText;
       ComboBox->GetLBText(Position, LBText);
 
-      if (LBText.GetLength() == findText.GetLength()) {
-        if (LBText == findText) { break; }
+      if (LBText.GetLength() == findComboBoxText.GetLength()) {
+        if (LBText == findComboBoxText) { break; }
       }
       Position++;
     }
-    if (Position < Count) {  // Text need to move to initial position
-      ComboBox->DeleteString(static_cast<UINT>(Position));
-    }
-    ComboBox->InsertString(0, findText);
+    // Text need to move to initial position
+    if (Position < count) { ComboBox->DeleteString(static_cast<UINT>(Position)); }
+    ComboBox->InsertString(0, findComboBoxText);
     ComboBox->SetCurSel(0);
 
-    if (!IsLastCommandFromButton) { findComboBox->SetText(findText); }
+    if (!isLastCommandFromButton) { findComboBox->SetText(findComboBoxText); }
   }
 }
 

@@ -1,6 +1,7 @@
 ﻿#include "Stdafx.h"
 
 #include "AeSys.h"
+#include "Eo.h"
 #include "EoDlgSetUnitsAndPrecision.h"
 #include "Resource.h"
 
@@ -11,7 +12,7 @@ ON_BN_CLICKED(IDC_METRIC, &EoDlgSetUnitsAndPrecision::OnBnClickedMetric)
 END_MESSAGE_MAP()
 
 EoDlgSetUnitsAndPrecision::EoDlgSetUnitsAndPrecision(CWnd* pParent /*=nullptr*/)
-    : CDialog(EoDlgSetUnitsAndPrecision::IDD, pParent), m_Units(AeSys::kInches), m_Precision(8) {}
+    : CDialog(EoDlgSetUnitsAndPrecision::IDD, pParent), m_Units(Eo::Units::Inches), m_Precision(8) {}
 
 EoDlgSetUnitsAndPrecision::~EoDlgSetUnitsAndPrecision() {}
 void EoDlgSetUnitsAndPrecision::DoDataExchange(CDataExchange* dataExchange) {
@@ -22,52 +23,54 @@ void EoDlgSetUnitsAndPrecision::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgSetUnitsAndPrecision::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  int CheckButtonId = std::min(IDC_ARCHITECTURAL + m_Units, IDC_METRIC);
+  int CheckButtonId = std::min(IDC_ARCHITECTURAL + static_cast<int>(m_Units), IDC_METRIC);
   CheckRadioButton(IDC_ARCHITECTURAL, IDC_METRIC, CheckButtonId);
 
-  CString MetricUnits = EoAppLoadStringResource(IDS_METRIC_UNITS);
+  auto MetricUnits = App::LoadStringResource(IDS_METRIC_UNITS);
   int Position = 0;
   while (Position < MetricUnits.GetLength()) {
     CString UnitsItem = MetricUnits.Tokenize(L"\n", Position);
     m_MetricUnitsListBoxControl.AddString(UnitsItem);
   }
-  if (CheckButtonId == IDC_METRIC) { m_MetricUnitsListBoxControl.SetCurSel(m_Units - AeSys::kMeters); }
+  if (CheckButtonId == IDC_METRIC) {
+    m_MetricUnitsListBoxControl.SetCurSel(static_cast<int>(m_Units) - static_cast<int>(Eo::Units::Meters));
+  }
   return TRUE;
 }
 void EoDlgSetUnitsAndPrecision::OnOK() {
   switch (GetCheckedRadioButton(IDC_ARCHITECTURAL, IDC_METRIC)) {
     case IDC_ARCHITECTURAL:
-      m_Units = AeSys::kArchitectural;
+      m_Units = Eo::Units::Architectural;
       break;
     case IDC_ENGINEERING:
-      m_Units = AeSys::kEngineering;
+      m_Units = Eo::Units::Engineering;
       break;
     case IDC_FEET:
-      m_Units = AeSys::kFeet;
+      m_Units = Eo::Units::Feet;
       break;
     case IDC_INCHES:
-      m_Units = AeSys::kInches;
+      m_Units = Eo::Units::Inches;
       break;
     default:
       switch (m_MetricUnitsListBoxControl.GetCurSel()) {
         case 0:
-          m_Units = AeSys::kMeters;
+          m_Units = Eo::Units::Meters;
           break;
         case 1:
-          m_Units = AeSys::kMillimeters;
+          m_Units = Eo::Units::Millimeters;
           break;
         case 2:
-          m_Units = AeSys::kCentimeters;
+          m_Units = Eo::Units::Centimeters;
           break;
         case 3:
-          m_Units = AeSys::kDecimeters;
+          m_Units = Eo::Units::Decimeters;
           break;
         default:
-          m_Units = AeSys::kKilometers;
+          m_Units = Eo::Units::Kilometers;
       }
   }
   CDialog::OnOK();
 }
 void EoDlgSetUnitsAndPrecision::OnBnClickedMetric() {
-  m_MetricUnitsListBoxControl.SetCurSel(AeSys::kCentimeters - AeSys::kMeters);
+  m_MetricUnitsListBoxControl.SetCurSel(static_cast<int>(Eo::Units::Centimeters) - static_cast<int>(Eo::Units::Meters));
 }

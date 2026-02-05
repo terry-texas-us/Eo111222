@@ -337,12 +337,13 @@ void EoDbDimension::SetDefaultNote() {
   m_ReferenceSystem.SetXDirection(vRefXAx);
   m_ReferenceSystem.SetYDirection(vRefYAx);
 
-  AeSys::Units Units = app.GetUnits();
-  if (Units == AeSys::kArchitectural) { Units = AeSys::kArchitecturalS; }
-  app.FormatLength(m_strText, Units, m_ln.Length());
+  Eo::Units units = app.GetUnits();
+  if (units == Eo::Units::Architectural) { units = Eo::Units::ArchitecturalS; }
+  app.FormatLength(m_strText, units, m_ln.Length());
   m_strText.TrimLeft();
   if (cText0 == 'R' || cText0 == 'D') { m_strText = cText0 + m_strText; }
 }
+
 void EoDbDimension::Transform(EoGeTransformMatrix& tm) {
   if ((sm_wFlags & 0x0001) != 0) {
     m_ln.begin = tm * m_ln.begin;

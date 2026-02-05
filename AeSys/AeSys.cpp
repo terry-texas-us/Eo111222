@@ -1,6 +1,7 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
@@ -15,16 +16,8 @@
 #include "Eo.h"
 #include "EoApOptions.h"
 #include "EoDb.h"
-#include "EoDbBlockReference.h"
 #include "EoDbCharacterCellDefinition.h"
-#include "EoDbConic.h"
 #include "EoDbFontDefinition.h"
-#include "EoDbLine.h"
-#include "EoDbPoint.h"
-#include "EoDbPolygon.h"
-#include "EoDbPolyline.h"
-#include "EoDbSpline.h"
-#include "EoDbText.h"
 #include "EoDlgModeLetter.h"
 #include "EoDlgModeRevise.h"
 #include "EoGePoint3d.h"
@@ -163,7 +156,7 @@ AeSys::AeSys() {
   m_EngagedAngle = 0.0;
   m_DimensionLength = 0.125;
   m_DimensionAngle = 45.;
-  m_Units = kInches;
+  m_Units = Eo::Units::Inches;
   m_ArchitecturalUnitsFractionPrecision = 16;
   m_SimplexStrokeFont = 0;
 }
@@ -295,18 +288,20 @@ void AeSys::PreLoadState() {
 
   // TODO: add another context menus here
 }
+
 int AeSys::ConfirmMessageBox(UINT stringResourceIdentifier, const CString& string) {
-  CString FormatSpecification = EoAppLoadStringResource(stringResourceIdentifier);
+  auto formatSpecification = App::LoadStringResource(stringResourceIdentifier);
 
-  CString FormattedResourceString;
-  FormattedResourceString.Format(FormatSpecification, string.GetString());
+  CString formattedResourceString;
+  formattedResourceString.Format(formatSpecification, string.GetString());
 
-  int NextToken = 0;
-  CString Message = FormattedResourceString.Tokenize(L"\t", NextToken);
-  CString Caption = FormattedResourceString.Tokenize(L"\n", NextToken);
+  int nextToken{0};
+  CString message = formattedResourceString.Tokenize(L"\t", nextToken);
+  CString caption = formattedResourceString.Tokenize(L"\n", nextToken);
 
-  return (MessageBoxW(0, Message, Caption, MB_ICONINFORMATION | MB_YESNOCANCEL | MB_DEFBUTTON2));
+  return (MessageBoxW(0, message, caption, MB_ICONINFORMATION | MB_YESNOCANCEL | MB_DEFBUTTON2));
 }
+
 void AeSys::AddStringToMessageList(const CString& message) {
   auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
 
@@ -327,45 +322,50 @@ void AeSys::AddStringToMessageList(const wchar_t* message) {
 }
 
 void AeSys::AddModeInformationToMessageList() {
-  CString ResourceString = EoAppLoadStringResource(static_cast<UINT>(m_CurrentMode));
-  int NextToken = 0;
-  ResourceString = ResourceString.Tokenize(L"\n", NextToken);
-  AddStringToMessageList(ResourceString);
+  auto resourceString = App::LoadStringResource(static_cast<UINT>(m_CurrentMode));
+  int nextToken{0};
+  resourceString = resourceString.Tokenize(L"\n", nextToken);
+  AddStringToMessageList(resourceString);
 }
+
 void AeSys::AddStringToMessageList(UINT stringResourceIdentifier) {
-  CString ResourceString = EoAppLoadStringResource(stringResourceIdentifier);
+  auto resourceString = App::LoadStringResource(stringResourceIdentifier);
 
-  AddStringToMessageList(ResourceString);
+  AddStringToMessageList(resourceString);
 }
+
 void AeSys::AddStringToMessageList(UINT stringResourceIdentifier, const CString& string) {
-  CString FormatSpecification = EoAppLoadStringResource(stringResourceIdentifier);
+  auto formatSpecification = App::LoadStringResource(stringResourceIdentifier);
 
-  CString FormattedResourceString;
-  FormattedResourceString.Format(FormatSpecification, string.GetString());
+  CString formattedResourceString;
+  formattedResourceString.Format(formatSpecification, string.GetString());
 
-  AddStringToMessageList(FormattedResourceString);
+  AddStringToMessageList(formattedResourceString);
 }
+
 void AeSys::WarningMessageBox(UINT stringResourceIdentifier) {
-  CString ResourceString = EoAppLoadStringResource(stringResourceIdentifier);
+  auto resourceString = App::LoadStringResource(stringResourceIdentifier);
 
-  int NextToken = 0;
-  CString Message = ResourceString.Tokenize(L"\t", NextToken);
-  CString Caption = ResourceString.Tokenize(L"\n", NextToken);
+  int nextToken{0};
+  CString message = resourceString.Tokenize(L"\t", nextToken);
+  CString caption = resourceString.Tokenize(L"\n", nextToken);
 
-  MessageBoxW(0, Message, Caption, MB_ICONWARNING | MB_OK);
+  MessageBoxW(0, message, caption, MB_ICONWARNING | MB_OK);
 }
+
 void AeSys::WarningMessageBox(UINT stringResourceIdentifier, const CString& string) {
-  CString FormatSpecification = EoAppLoadStringResource(stringResourceIdentifier);
+  auto formatSpecification = App::LoadStringResource(stringResourceIdentifier);
 
-  CString FormattedResourceString;
-  FormattedResourceString.Format(FormatSpecification, string.GetString());
+  CString formattedResourceString;
+  formattedResourceString.Format(formatSpecification, string.GetString());
 
-  int NextToken = 0;
-  CString Message = FormattedResourceString.Tokenize(L"\t", NextToken);
-  CString Caption = FormattedResourceString.Tokenize(L"\n", NextToken);
+  int nextToken{0};
+  CString message = formattedResourceString.Tokenize(L"\t", nextToken);
+  CString caption = formattedResourceString.Tokenize(L"\n", nextToken);
 
-  MessageBoxW(0, Message, Caption, MB_ICONWARNING | MB_OK);
+  MessageBoxW(0, message, caption, MB_ICONWARNING | MB_OK);
 }
+
 void AeSys::UpdateMDITabs(BOOL resetMDIChild) { ((CMainFrame*)AfxGetMainWnd())->UpdateMDITabs(resetMDIChild); }
 void AeSys::OnTrapCommandsHighlight() {
   m_TrapHighlighted = !m_TrapHighlighted;
@@ -447,10 +447,11 @@ void AeSys::OnTrapCommandsAddGroups() {
 
   OnModeTrap();
 }
-void AeSys::OnFileRun() {
-  CString Filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_APPS);
 
-  CFileDialog dlg(TRUE, L"exe", L"*.exe", OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, Filter);
+void AeSys::OnFileRun() {
+  auto filter = App::LoadStringResource(IDS_OPENFILE_FILTER_APPS);
+
+  CFileDialog dlg(TRUE, L"exe", L"*.exe", OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, filter);
   dlg.m_ofn.lpstrTitle = L"Run Application";
 
   if (dlg.DoModal() == IDOK) {
@@ -459,6 +460,7 @@ void AeSys::OnFileRun() {
     //WinExec(strFile, SW_SHOW);
   }
 }
+
 void AeSys::OnHelpContents() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_CONTENTS, 0L); }
 
 double AeSys::PenWidthsGet(EoInt16 penIndex) { return (penWidths[penIndex]); }
@@ -514,15 +516,17 @@ EoDb::FileTypes AeSys::GetFileTypeFromPath(const CString& pathName) {
   }
   return Type;
 }
-CString AeSys::ResourceFolderPath() {
-  CString ApplicationPath = EoAppGetPathFromCommandLine();
-  return ApplicationPath + L"\\res\\";
-}
-int AeSys::SetShadowFolderPath(const CString& folder) {
-  wchar_t Path[MAX_PATH]{};
 
-  if (SHGetSpecialFolderPathW(m_pMainWnd->GetSafeHwnd(), Path, CSIDL_PERSONAL, TRUE)) {
-    m_ShadowFolderPath = Path;
+CString AeSys::ResourceFolderPath() {
+  auto applicationPath = App::PathFromCommandLine();
+  return applicationPath + L"\\res\\";
+}
+
+int AeSys::SetShadowFolderPath(const CString& folder) {
+  wchar_t path[MAX_PATH]{};
+
+  if (SHGetSpecialFolderPathW(m_pMainWnd->GetSafeHwnd(), path, CSIDL_PERSONAL, TRUE)) {
+    m_ShadowFolderPath = path;
   } else {
     m_ShadowFolderPath.Empty();
   }
@@ -530,6 +534,7 @@ int AeSys::SetShadowFolderPath(const CString& folder) {
 
   return (_wmkdir(m_ShadowFolderPath));
 }
+
 EoGePoint3d AeSys::GetCursorPosition() {
   auto* activeView = AeSysView::GetActiveView();
   return (activeView == nullptr) ? EoGePoint3d::kOrigin : activeView->GetCursorPosition();
@@ -607,7 +612,7 @@ void AeSys::InitGbls(CDC* deviceContext) {
   EoDbFontDefinition fd;
   pstate.SetFontDef(deviceContext, fd);
 
-  SetUnits(kInches);
+  SetUnits(Eo::Units::Inches);
   SetArchitecturalUnitsFractionPrecision(8);
   SetDimensionLength(0.125);
   SetDimensionAngle(45.0);
@@ -749,24 +754,26 @@ void AeSys::BuildModifiedAcceleratorTable() {
 
   delete[] ModifiedAcceleratorTable;
 }
+
 void AeSys::OnFileOpen() {
-  CString Filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER);
+  auto filter = App::LoadStringResource(IDS_OPENFILE_FILTER);
 
-  DWORD Flags(OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
+  constexpr DWORD flags(OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
 
-  CFileDialog FileDialog(TRUE, nullptr, nullptr, Flags, Filter);
+  CFileDialog fileDialog(TRUE, nullptr, nullptr, flags, filter);
 
-  CString FileName;
-  FileDialog.m_ofn.lpstrFile = FileName.GetBuffer(_MAX_PATH);
+  CString fileName;
+  fileDialog.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);
 
-  CString Title = EoAppLoadStringResource(AFX_IDS_OPENFILE);
-  FileDialog.m_ofn.lpstrTitle = Title;
+  auto title = App::LoadStringResource(AFX_IDS_OPENFILE);
+  fileDialog.m_ofn.lpstrTitle = title;
 
-  INT_PTR result = FileDialog.DoModal();
-  FileName.ReleaseBuffer();
+  INT_PTR result = fileDialog.DoModal();
+  fileName.ReleaseBuffer();
 
-  if (result == IDOK) { OpenDocumentFile(FileName); }
+  if (result == IDOK) { OpenDocumentFile(fileName); }
 }
+
 int AeSys::GreatestCommonDivisor(const int number1, const int number2) {
   int ReturnValue = abs(number1);
   int Divisor = abs(number2);
@@ -784,14 +791,14 @@ void AeSys::FormatAngle(CString& angleAsString, const double angle, const int wi
   angleAsString.Format(FormatSpecification, Eo::RadianToDegree(angle));
 }
 
-void AeSys::FormatLength(CString& lengthAsString, Units units, const double length, const int minWidth,
+void AeSys::FormatLength(CString& lengthAsString, Eo::Units units, const double length, const int minWidth,
                          const int precision) {
   const size_t bufSize{32};
   auto lengthAsBuffer = lengthAsString.GetBufferSetLength(bufSize);
 
-  if (units == kArchitectural || units == kArchitecturalS) {
+  if (units == Eo::Units::Architectural || units == Eo::Units::ArchitecturalS) {
     FormatLengthArchitectural(lengthAsBuffer, bufSize, units, length);
-  } else if (units == kEngineering) {
+  } else if (units == Eo::Units::Engineering) {
     FormatLengthEngineering(lengthAsBuffer, bufSize, length, minWidth, precision);
   } else {
     FormatLengthSimple(lengthAsBuffer, bufSize, units, length, minWidth, precision);
@@ -799,7 +806,7 @@ void AeSys::FormatLength(CString& lengthAsString, Units units, const double leng
   lengthAsString.ReleaseBuffer();
 }
 
-void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length) {
+void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, const double length) {
   wchar_t szBuf[16]{};
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
@@ -829,7 +836,7 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   _itow_s(Inches, szBuf, 16, 10);
   wcscat_s(lengthAsBuffer, bufSize, szBuf);
   if (Numerator > 0) {
-    wcscat_s(lengthAsBuffer, static_cast<size_t>(bufSize), (units == kArchitecturalS) ? L"\\S" : L"-");
+    wcscat_s(lengthAsBuffer, static_cast<size_t>(bufSize), (units == Eo::Units::ArchitecturalS) ? L"\\S" : L"-");
     int iGrtComDivisor = GreatestCommonDivisor(Numerator, FractionPrecision);
     Numerator /= iGrtComDivisor;
     int Denominator = FractionPrecision / iGrtComDivisor;
@@ -838,7 +845,7 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
     wcscat_s(lengthAsBuffer, bufSize, L"/");
     _itow_s(Denominator, szBuf, 16, 10);
     wcscat_s(lengthAsBuffer, bufSize, szBuf);
-    if (units == kArchitecturalS) wcscat_s(lengthAsBuffer, bufSize, L";");
+    if (units == Eo::Units::ArchitecturalS) wcscat_s(lengthAsBuffer, bufSize, L";");
   }
   wcscat_s(lengthAsBuffer, bufSize, L"\"");
 }
@@ -875,7 +882,7 @@ void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize,
     }
   }
 }
-void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length,
+void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, const double length,
                                const int width, const int precision) {
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
@@ -884,38 +891,38 @@ void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Unit
   CString formatted{};
 
   switch (units) {
-    case kFeet:
+    case Eo::Units::Feet:
       formatSpecification.Append(L"'");
       formatted.Format(formatSpecification, ScaledLength / 12.0);
       break;
-    case kInches:
+    case Eo::Units::Inches:
       formatSpecification.Append(L"\"");
       formatted.Format(formatSpecification, ScaledLength);
       break;
-    case kMeters:
+    case Eo::Units::Meters:
       formatSpecification.Append(L"m");
       formatted.Format(formatSpecification, ScaledLength * 0.0254);
       break;
-    case kMillimeters:
+    case Eo::Units::Millimeters:
       formatSpecification.Append(L"mm");
       formatted.Format(formatSpecification, ScaledLength * 25.4);
       break;
-    case kCentimeters:
+    case Eo::Units::Centimeters:
       formatSpecification.Append(L"cm");
       formatted.Format(formatSpecification, ScaledLength * 2.54);
       break;
-    case kDecimeters:
+    case Eo::Units::Decimeters:
       formatSpecification.Append(L"dm");
       formatted.Format(formatSpecification, ScaledLength * 0.254);
       break;
-    case kKilometers:
+    case Eo::Units::Kilometers:
       formatSpecification.Append(L"km");
       formatted.Format(formatSpecification, ScaledLength * 0.0000254);
       break;
 
-    case kArchitectural:
-    case kArchitecturalS:
-    case kEngineering:
+    case Eo::Units::Architectural:
+    case Eo::Units::ArchitecturalS:
+    case Eo::Units::Engineering:
       [[fallthrough]];  // Handled by specialized implementations;
     default:
       break;
@@ -1014,7 +1021,7 @@ double AeSys::ParseLength(wchar_t* inputLine) {
     @return The parsed length in internal units (inches).
     @throws wchar_t* If an error occurs during parsing, an error message is thrown.
 */
-double AeSys::ParseLength(Units units, wchar_t* inputLine) {
+double AeSys::ParseLength(Eo::Units units, wchar_t* inputLine) {
   try {
     int iTokId{};
     long lDef{};
@@ -1040,34 +1047,34 @@ double AeSys::ParseLength(Units units, wchar_t* inputLine) {
       lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, length);
 
       switch (units) {
-        case kArchitectural:
-        case kEngineering:
-        case kFeet:
+        case Eo::Units::Architectural:
+        case Eo::Units::Engineering:
+        case Eo::Units::Feet:
           length[0] *= 12.0;
           break;
 
-        case kMeters:
+        case Eo::Units::Meters:
           length[0] *= 39.37007874015748;
           break;
 
-        case kMillimeters:
+        case Eo::Units::Millimeters:
           length[0] *= 0.03937007874015748;
           break;
 
-        case kCentimeters:
+        case Eo::Units::Centimeters:
           length[0] *= 0.3937007874015748;
           break;
 
-        case kDecimeters:
+        case Eo::Units::Decimeters:
           length[0] *= 3.937007874015748;
           break;
 
-        case kKilometers:
+        case Eo::Units::Kilometers:
           length[0] *= 39370.07874015748;
           break;
 
-        case AeSys::kArchitecturalS:
-        case AeSys::kInches:
+        case Eo::Units::ArchitecturalS:
+        case Eo::Units::Inches:
           break;
       }
       length[0] /= AeSysView::GetActiveView()->GetWorldScale();
@@ -1104,15 +1111,24 @@ void AeSys::OnAppAbout() {
   dlg.DoModal();
 }
 
-CString EoAppLoadStringResource(UINT resourceIdentifier) {
-  CString String;
-  VERIFY(String.LoadStringW(resourceIdentifier) == TRUE);
-  return String;
-}
-CString EoAppGetPathFromCommandLine() {
-  CString PathName = ::GetCommandLineW();
-  int LastPathDelimiter = PathName.ReverseFind(L'\\');
-  PathName = PathName.Mid(1, LastPathDelimiter - 1);
+namespace App {
+[[nodiscard]] CString PathFromCommandLine() {
+  CString pathName = ::GetCommandLineW();
+  int lastPathDelimiter = pathName.ReverseFind(L'\\');
+  pathName = pathName.Mid(1, lastPathDelimiter - 1);
 
-  return PathName;
+  return pathName;
 }
+
+[[nodiscard]] CString LoadStringResource(UINT resourceIdentifier) {
+  CString resourceString;
+
+  const BOOL success = resourceString.LoadStringW(resourceIdentifier);
+#ifdef _DEBUG
+  assert(success == TRUE && "Failed to load string resource");
+#else
+  (void)success;  // Suppress unused variable warning in release
+#endif
+  return resourceString;
+}
+}  // namespace App

@@ -268,7 +268,7 @@ void EoDlgFileManage::OnBnClickedTracingExclude() {
 void EoDlgFileManage::OnBnClickedTracingInclude() {
   static DWORD nFilterIndex = 1;
 
-  CString Filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
+  auto Filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
 
   OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);

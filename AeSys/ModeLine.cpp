@@ -92,7 +92,7 @@ void AeSysView::ModeLineDisplay() {
   if (app.CurrentMode() == 0) { return; }
   m_OpHighlighted = 0;
 
-  auto modeInformation = EoAppLoadStringResource(UINT(app.CurrentMode()));
+  auto modeInformation = App::LoadStringResource(UINT(app.CurrentMode()));
 
   CString paneText;
 

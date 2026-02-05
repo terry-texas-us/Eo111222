@@ -26,6 +26,19 @@ constexpr double numericEpsilon = std::numeric_limits<double>::epsilon();
 constexpr double boundsMax = 1.0 / geometricTolerance;
 constexpr double boundsMin = -boundsMax;
 
+enum class Units {
+  ArchitecturalS = -1,  // Embedded S format
+  Architectural,
+  Engineering,
+  Feet,
+  Inches,
+  Meters,
+  Millimeters,
+  Centimeters,
+  Decimeters,
+  Kilometers
+};
+
 /** @brief Returns the sign of a number: -1 if negative, 1 if positive, 0 if zero. */
 constexpr int Signum(const double number) { return (number < 0.0 ? -1 : (number > 0.0 ? 1 : 0)); }
 

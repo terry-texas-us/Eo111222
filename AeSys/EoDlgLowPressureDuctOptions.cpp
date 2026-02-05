@@ -1,10 +1,11 @@
 ﻿#include "Stdafx.h"
 
+#include <algorithm>
+
 #include "AeSys.h"
+#include "Eo.h"
 #include "EoDlgLowPressureDuctOptions.h"
 #include "Resource.h"
-
-// EoDlgLowPressureDuctOptions dialog
 
 IMPLEMENT_DYNAMIC(EoDlgLowPressureDuctOptions, CDialog)
 
@@ -27,12 +28,12 @@ void EoDlgLowPressureDuctOptions::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgLowPressureDuctOptions::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  AeSys::Units Units = std::max(app.GetUnits(), AeSys::kInches);
+  Eo::Units units = std::max(app.GetUnits(), Eo::Units::Inches);
 
   CString Length;
-  app.FormatLength(Length, Units, m_Width, 0, 2);
+  app.FormatLength(Length, units, m_Width, 0, 2);
   SetDlgItemTextW(IDC_WIDTH, Length);
-  app.FormatLength(Length, Units, m_Depth, 0, 2);
+  app.FormatLength(Length, units, m_Depth, 0, 2);
   SetDlgItemTextW(IDC_DEPTH, Length);
   CheckRadioButton(IDC_LEFT, IDC_RIGHT, IDC_CENTER + m_Justification);
   CheckDlgButton(IDC_GEN_VANES, m_GenerateVanes ? 1U : 0U);

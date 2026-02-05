@@ -161,12 +161,12 @@ BOOL CMainFrame::CreateDockablePanes() {
 
   const DWORD sharedStyles(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_FLOAT_MULTI);
 
-  CString Caption = EoAppLoadStringResource(IDS_OUTPUT);
+  auto Caption = App::LoadStringResource(IDS_OUTPUT);
   if (!m_outputPane.Create(Caption, this, defaultSize, TRUE, ID_VIEW_OUTPUTWND, sharedStyles | CBRS_BOTTOM)) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Output pane\n");
     return FALSE;
   }
-  Caption = EoAppLoadStringResource(IDS_PROPERTIES);
+  Caption = App::LoadStringResource(IDS_PROPERTIES);
   if (!m_propertiesPane.Create(Caption, this, defaultSize, TRUE, ID_VIEW_PROPERTIESWND, sharedStyles | CBRS_RIGHT)) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Properties pane\n");
     return FALSE;
@@ -209,7 +209,7 @@ LRESULT CMainFrame::OnToolbarCreateNew(WPARAM wp, LPARAM name) {
   auto* userToolbar = (CMFCToolBar*)result;
   assert(userToolbar != nullptr);
 
-  CString customize = EoAppLoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
+  auto customize = App::LoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
 
   userToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, customize);
   return result;
@@ -293,7 +293,7 @@ BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWind
   }
 
   // Enable customization button for all user toolbars
-  CString Customize = EoAppLoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
+  auto Customize = App::LoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
 
   for (int i = 0; i < maxUserToolbars; i++) {
     CMFCToolBar* UserToolbar = GetUserToolBarByIndex(i);

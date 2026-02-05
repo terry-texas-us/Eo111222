@@ -105,36 +105,37 @@ void EoDlgViewParameters::OnBnClickedApply() {
 BOOL EoDlgViewParameters::OnInitDialog() {
 	CDialog::OnInitDialog();
 
-    EoGsViewTransform* ModelView = reinterpret_cast<EoGsViewTransform*>(static_cast<uintptr_t>(m_ModelView));
+    auto* ModelView = reinterpret_cast<EoGsViewTransform*>(static_cast<uintptr_t>(m_ModelView));
 
 	CString Length;
-	AeSys::Units Units = std::max(app.GetUnits(), AeSys::kEngineering);
-	app.FormatLength(Length, Units, ModelView->Position().x);
+    Eo::Units units = std::max(app.GetUnits(), Eo::Units::Engineering);
+	app.FormatLength(Length, units, ModelView->Position().x);
 	SetDlgItemTextW(IDC_POSITION_X, Length);
-	app.FormatLength(Length, Units, ModelView->Position().y);
+	app.FormatLength(Length, units, ModelView->Position().y);
 	SetDlgItemTextW(IDC_POSITION_Y, Length);
-	app.FormatLength(Length, Units, ModelView->Position().z);
+	app.FormatLength(Length, units, ModelView->Position().z);
 	SetDlgItemTextW(IDC_POSITION_Z, Length);
 
-	app.FormatLength(Length, Units, ModelView->Target().x);
+	app.FormatLength(Length, units, ModelView->Target().x);
 	SetDlgItemTextW(IDC_TARGET_X, Length);
-	app.FormatLength(Length, Units, ModelView->Target().y);
+	app.FormatLength(Length, units, ModelView->Target().y);
 	SetDlgItemTextW(IDC_TARGET_Y, Length);
-	app.FormatLength(Length, Units, ModelView->Target().z);
+	app.FormatLength(Length, units, ModelView->Target().z);
 	SetDlgItemTextW(IDC_TARGET_Z, Length);
 
-	app.FormatLength(Length, Units, ModelView->NearClipDistance());
+	app.FormatLength(Length, units, ModelView->NearClipDistance());
 	SetDlgItemTextW(IDC_FRONT_CLIP_DISTANCE, Length);
-	app.FormatLength(Length, Units, ModelView->FarClipDistance());
+	app.FormatLength(Length, units, ModelView->FarClipDistance());
 	SetDlgItemTextW(IDC_BACK_CLIP_DISTANCE, Length);
 
-	app.FormatLength(Length, Units, ModelView->LensLength());
+	app.FormatLength(Length, units, ModelView->LensLength());
 	SetDlgItemTextW(IDC_LENS_LENGTH, Length);
 
 	GetDlgItem(IDC_APPLY)->EnableWindow(FALSE);
 
 	return TRUE;
 }
+
 void EoDlgViewParameters::OnOK() {
 	OnBnClickedApply();
 

@@ -244,7 +244,7 @@ void AeSysDoc::SetCommonTableEntries() {
   m_ContinuousLineType = lineType;
   AddLayerTableLayer(m_workLayer);
 
-  CString applicationPath = EoAppGetPathFromCommandLine();
+  auto applicationPath = App::PathFromCommandLine();
 
   // TODO: Peg uses index for line types, need to map names to indexes (index 0 to 41 have been hard coded in Peg).
   //       Need to ensure that line types loaded here match those indexes.
@@ -554,7 +554,7 @@ bool AeSysDoc::LayerMelt(CString& strName) {
 
   bool bRetVal = false;
 
-  CString Filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
+  auto Filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
 
   OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);
@@ -1613,7 +1613,7 @@ void AeSysDoc::OnFileManage() {
 void AeSysDoc::OnFileTracing() {
   static DWORD filterIndex = 1;
 
-  CString filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
+  auto filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
 
   wchar_t fileBuffer[MAX_PATH]{};
 
@@ -1655,9 +1655,9 @@ void AeSysDoc::OnMaintenanceRemoveEmptyGroups() {
 void AeSysDoc::OnPensEditColors() { app.EditColorPalette(); }
 
 void AeSysDoc::OnPensLoadColors() {
-  CString filter = EoAppLoadStringResource(IDS_OPENFILE_FILTER_PENCOLORS);
-  CString title = EoAppLoadStringResource(IDS_OPENFILE_LOAD_PENCOLORS_TITLE);
-  CString initialDir = EoAppGetPathFromCommandLine();
+  auto filter = App::LoadStringResource(IDS_OPENFILE_FILTER_PENCOLORS);
+  auto title = App::LoadStringResource(IDS_OPENFILE_LOAD_PENCOLORS_TITLE);
+  auto initialDir = App::PathFromCommandLine();
 
   CString file;
   file.GetBufferSetLength(MAX_PATH);
@@ -1689,7 +1689,7 @@ void AeSysDoc::OnPensLoadColors() {
 void AeSysDoc::OnPensTranslate() {
   CStdioFile fl;
 
-  if (fl.Open(EoAppGetPathFromCommandLine() + L"\\Pens\\xlate.txt", CFile::modeRead | CFile::typeText)) {
+  if (fl.Open(App::PathFromCommandLine() + L"\\Pens\\xlate.txt", CFile::modeRead | CFile::typeText)) {
     wchar_t pBuf[128]{};
     EoUInt16 wCols = 0;
 

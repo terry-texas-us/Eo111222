@@ -39,7 +39,7 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
   }
   m_FilterLineComboBoxControl.SetCurSel(0);
 
-  CString PrimitiveTypes = EoAppLoadStringResource(IDS_PRIMITIVE_FILTER_LIST);
+  auto PrimitiveTypes = App::LoadStringResource(IDS_PRIMITIVE_FILTER_LIST);
 
   int TypesPosition = 0;
   while (TypesPosition < PrimitiveTypes.GetLength()) { m_FilterPrimitiveTypeListBoxControl.AddString(PrimitiveTypes.Tokenize(L"\n", TypesPosition)); }

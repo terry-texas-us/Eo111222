@@ -47,9 +47,9 @@ void AeSysView::OnLpdModeJoin() {
 
     CString Message(L"Cross sectional dimension (Width by Depth) is ");
     CString Length;
-    app.FormatLength(Length, std::max(app.GetUnits(), AeSys::kInches), m_PreviousSection.Width(), 12, 2);
+    app.FormatLength(Length, std::max(app.GetUnits(), Eo::Units::Inches), m_PreviousSection.Width(), 12, 2);
     CString Width;
-    app.FormatLength(Width, std::max(app.GetUnits(), AeSys::kInches), m_PreviousSection.Depth(), 12, 2);
+    app.FormatLength(Width, std::max(app.GetUnits(), Eo::Units::Inches), m_PreviousSection.Depth(), 12, 2);
     Message.Append(Length.TrimLeft() + L" by " + Width.TrimLeft());
     app.AddStringToMessageList(Message);
     SetCursorPosition(m_PreviousPnt);
@@ -574,9 +574,9 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   EoGeReferenceSystem ReferenceSystem(point, XDirection, YDirection);
 
   CString Width;
-  app.FormatLength(Width, std::max(app.GetUnits(), AeSys::kInches), section.Width(), 0, 2);
+  app.FormatLength(Width, std::max(app.GetUnits(), Eo::Units::Inches), section.Width(), 0, 2);
   CString Depth;
-  app.FormatLength(Depth, std::max(app.GetUnits(), AeSys::kInches), section.Depth(), 0, 2);
+  app.FormatLength(Depth, std::max(app.GetUnits(), Eo::Units::Inches), section.Depth(), 0, 2);
   CString Note = Width.TrimLeft() + L"/" + Depth.TrimLeft();
 
   CDC* DeviceContext = GetDC();
@@ -677,8 +677,8 @@ void AeSysView::GenerateTransition(EoGeLine& referenceLine, double eccentricity,
 }
 
 void AeSysView::SetDuctOptions(Section& section) {
-  AeSys::Units Units = app.GetUnits();
-  app.SetUnits(std::max(Units, AeSys::kInches));
+  Eo::Units units = app.GetUnits();
+  app.SetUnits(std::max(units, Eo::Units::Inches));
 
   EoDlgLowPressureDuctOptions dlg(this);
 
@@ -696,7 +696,7 @@ void AeSysView::SetDuctOptions(Section& section) {
     m_GenerateTurningVanes = dlg.m_GenerateVanes;
     m_BeginWithTransition = dlg.m_BeginWithTransition;
   }
-  app.SetUnits(Units);
+  app.SetUnits(units);
 }
 
 double AeSysView::LengthOfTransition(EJust justification, double slope, Section previousSection,

@@ -22,7 +22,7 @@ class EoDlgSetUnitsAndPrecision : public CDialog {
 
  public:
   CListBox m_MetricUnitsListBoxControl;
-  AeSys::Units m_Units;
+  Eo::Units m_Units;
   int m_Precision;
 
   afx_msg void OnBnClickedMetric();

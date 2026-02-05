@@ -17,6 +17,19 @@ extern COLORREF GreyPalette[16];
 
 extern COLORREF* pColTbl;
 
+namespace App {
+/** Retrieves the path of the executable from the command line, excluding the executable name itself.
+   For example, if the command line is "C:\Program Files\MyApp\MyApp.exe", this function will return "C:\Program Files\MyApp".
+*/
+[[nodiscard]] CString PathFromCommandLine();
+
+/** @brief Loads a string resource from the application's resource table.
+ *  @param resourceIdentifier The resource ID of the string to load.
+ *  @return The loaded string resource.
+ */
+[[nodiscard]] CString LoadStringResource(UINT resourceIdentifier);
+}  // namespace App
+
 class AeSys : public CWinAppEx {
  public:
   AeSys();
@@ -29,18 +42,6 @@ class AeSys : public CWinAppEx {
   void PreLoadState() override;
 
  public:
-  enum Units {
-    kArchitecturalS = -1,  // Embedded S format
-    kArchitectural,
-    kEngineering,
-    kFeet,
-    kInches,
-    kMeters,
-    kMillimeters,
-    kCentimeters,
-    kDecimeters,
-    kKilometers
-  };
   static CString CustomLButtonDownCharacters;
   static CString CustomLButtonUpCharacters;
   static CString CustomRButtonDownCharacters;
@@ -74,7 +75,7 @@ class AeSys : public CWinAppEx {
   EoInt16 m_TrapHighlightColor{};
   bool m_TrapHighlighted{};
   bool m_TrapModeAddGroups{};
-  Units m_Units{kEngineering};
+  Eo::Units m_Units{Eo::Units::Engineering};
 
  public:
   bool m_NodalModeAddGroups;
@@ -124,14 +125,15 @@ class AeSys : public CWinAppEx {
   ///	[feet]'[inches].[decimal inches]"
   /// All other units formatted using floating decimal.
   /// @endverbatim
-  void FormatLength(CString& lengthAsString, Units units, const double length, const int minWidth = 0, const int precision = 4);
+  void FormatLength(CString& lengthAsString, Eo::Units units, const double length, const int minWidth = 0,
+                    const int precision = 4);
 
   /// @brief Formats a length value as an architectural measurement string in feet and inches with fractional inches.
   /// @param lengthAsBuffer The output buffer to receive the formatted architectural length string.
   /// @param bufSize The size of the output buffer in wide characters.
-  /// @param units The architectural units style to use for formatting (e.g., kArchitecturalS for stacked fractions).
+  /// @param units The architectural units style to use for formatting (e.g., ArchitecturalS for stacked fractions).
   /// @param length The length value to format, in the internal unit system.
-  void FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Units units, const double length);
+  void FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, const double length);
 
   /// @brief Formats a length value in engineering units (feet and inches) and stores it in a buffer.
   /// @param lengthAsBuffer Output buffer to receive the formatted length string.
@@ -139,7 +141,8 @@ class AeSys : public CWinAppEx {
   /// @param length The length value to format, in internal units.
   /// @param width The minimum field width for formatting the fractional part.
   /// @param precision The number of significant digits to display in the formatted output.
-  void FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width, const int precision);
+  void FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width,
+                               const int precision);
 
   /// @brief Formats a length value as a string with the specified units, width, and precision.
   /// @param lengthAsString Output buffer that receives the formatted length string.
@@ -148,7 +151,8 @@ class AeSys : public CWinAppEx {
   /// @param length The length value to format, in the base measurement system.
   /// @param width The minimum field width for the formatted number.
   /// @param precision The number of decimal places to display in the formatted number.
-  void FormatLengthSimple(LPWSTR lengthAsBuffr, const size_t bufSize, Units units, const double length, const int width, const int precision);
+  void FormatLengthSimple(LPWSTR lengthAsBuffr, const size_t bufSize, Eo::Units units, const double length, const int width,
+                          const int precision);
 
   int GetArchitecturalUnitsFractionPrecision() const { return (m_ArchitecturalUnitsFractionPrecision); }
   EoGePoint3d GetCursorPosition();
@@ -159,7 +163,7 @@ class AeSys : public CWinAppEx {
   HINSTANCE GetInstance() { return (m_hInstance); }
   HWND GetSafeHwnd() { return (AfxGetMainWnd()->GetSafeHwnd()); }
   HMENU GetSubMenu(int position) const { return (::GetSubMenu(m_MainFrameMenuHandle, position)); }
-  Units GetUnits() const { return (m_Units); }
+  Eo::Units GetUnits() const { return (m_Units); }
   /// <summary>Finds the greatest common divisor of arbitrary integers.</summary>
   /// <returns>First number if second number is zero, greatest common divisor otherwise.</returns>
   int GreatestCommonDivisor(const int number1, const int number2);
@@ -173,7 +177,7 @@ class AeSys : public CWinAppEx {
   void LoadSimplexStrokeFont(const CString& pathName);
   bool ModeInformationOverView() const { return m_ModeInformationOverView; }
   double ParseLength(wchar_t* lengthAsString);
-  double ParseLength(Units units, wchar_t* inputLine);
+  double ParseLength(Eo::Units units, wchar_t* inputLine);
   COLORREF PenColorsGetHot(EoInt16 color) { return (ColorPalette[color]); }
   void LoadPenColorsFromFile(const CString& pathName);
 
@@ -200,7 +204,7 @@ class AeSys : public CWinAppEx {
   void SetEngagedLength(double length) { m_EngagedLength = length; }
   CString ResourceFolderPath();
   int SetShadowFolderPath(const CString& folder);
-  void SetUnits(Units units) { m_Units = units; }
+  void SetUnits(Eo::Units units) { m_Units = units; }
   CString ShadowFolderPath() { return m_ShadowFolderPath; }
   char* SimplexStrokeFont() { return m_SimplexStrokeFont; }
   EoInt16 TrapHighlightColor() const { return m_TrapHighlightColor; }
@@ -269,6 +273,4 @@ class AeSys : public CWinAppEx {
 
 extern AeSys app;
 
-CString EoAppGetPathFromCommandLine();
-CString EoAppLoadStringResource(UINT resourceIdentifier);
 COLORREF AppGetTextCol();
