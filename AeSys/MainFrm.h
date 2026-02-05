@@ -19,20 +19,14 @@ class CMainFrame : public CMDIFrameWndEx {
  public:
   void UpdateMDITabs(BOOL resetMDIChild);
 
-  // Overrides
  public:
   BOOL PreCreateWindow(CREATESTRUCT& cs) override;
   BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
                  CWnd* pParentWnd = nullptr, CCreateContext* pContext = nullptr) override;
 
-  // Implementation
  public:
   static CMFCToolBarComboBoxButton* GetFindCombo();
   ~CMainFrame() override;
-#ifdef _DEBUG
-  void AssertValid() const override;
-  void Dump(CDumpContext& dc) const override;
-#endif
 
  protected:  // control bar embedded members
   CMFCMenuBar m_menuBar;
@@ -64,10 +58,9 @@ class CMainFrame : public CMDIFrameWndEx {
   BOOL OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) override;
   BOOL OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOOL bDrop) override;
 
-  /// <summary></summary>
-  /// <remarks>
-  // CBRS_FLOAT_MULTI allows panes to float together in a single window. By default, panes only float individually.
-  /// </remarks>
+/** @brief Creates the dockable panes: Output and Properties.
+ *  @return TRUE if successful, FALSE otherwise.
+ */
   BOOL CreateDockablePanes();
   void SetDockablePanesIcons(bool highColorMode);
 

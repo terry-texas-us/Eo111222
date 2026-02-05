@@ -262,7 +262,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
       </SubType>
     </None>
     <None Include="Markdowns\Peg &amp; Tra File Formats.md" />
-    <None Include="Markdowns\PegFileFormatWithHandles.md" />
     <None Include="res\AeSys.ico" />
     <None Include="res\AeSys.rc2" />
     <None Include="res\AeSys_Gold.ico" />

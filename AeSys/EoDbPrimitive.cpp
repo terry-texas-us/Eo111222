@@ -21,8 +21,13 @@ EoUInt16 EoDbPrimitive::sm_ControlPointIndex = USHRT_MAX;
 double EoDbPrimitive::sm_RelationshipOfPoint = 0.0;
 double EoDbPrimitive::sm_SelectApertureSize = 0.02;
 
-EoDbPrimitive::EoDbPrimitive() : m_color(COLOR_BYLAYER), m_lineTypeIndex(LINETYPE_BYLAYER) {}
-EoDbPrimitive::EoDbPrimitive(EoInt16 color, EoInt16 lineTypeIndex) : m_color(color), m_lineTypeIndex(lineTypeIndex) {}
+EoDbPrimitive::EoDbPrimitive() : m_color(COLOR_BYLAYER), m_lineTypeIndex(LINETYPE_BYLAYER) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbPrimitive() CTOR: this=%p, vtable=%p\n", this, *(void**)this);
+}
+EoDbPrimitive::EoDbPrimitive(EoInt16 color, EoInt16 lineTypeIndex) : m_color(color), m_lineTypeIndex(lineTypeIndex) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbPrimitive(color,lt) CTOR: this=%p, vtable=%p\n", this,
+            *(void**)this);
+}
 
 EoDbPrimitive::~EoDbPrimitive() {}
 

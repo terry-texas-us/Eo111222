@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <vector>
+
 #include "EoGeMatrix.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -59,4 +61,4 @@ class EoGeTransformMatrix : public EoGeMatrix {
   }
 };
 
-typedef CList<EoGeTransformMatrix> EoGeTransformMatrixList;
+using  EoGeTransformMatrixList = std::vector<EoGeTransformMatrix>;

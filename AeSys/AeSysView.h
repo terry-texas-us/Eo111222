@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <cassert>
 #include <cmath>
 
 #include "Eo.h"
@@ -172,11 +173,6 @@ class AeSysView : public CView {
  public:
   virtual ~AeSysView();
 
-#ifdef _DEBUG
-  void AssertValid() const override;
-  void Dump(CDumpContext& dc) const override;
-#endif
-
  protected:  // Windows messages
   afx_msg void OnContextMenu(CWnd*, CPoint point);
   afx_msg void OnTimer(UINT_PTR nIDEvent);
@@ -304,13 +300,13 @@ class AeSysView : public CView {
   void CopyActiveModelViewToPreviousModelView();
   EoGsViewTransform PreviousModelView();
   void ExchangeActiveAndPreviousModelViews();
-  void InvokeNewModelTransform();
+  void PushModelTransform();
   void SetLocalModelTransform(EoGeTransformMatrix& transformation);
-  void ReturnModelTransform();
+  void PopModelTransform();
+
   void ModelTransformPoint(EoGePoint4d& point);
   void ModelTransformPoint(EoGePoint3d& point);
-  void ModelTransformPoints(int numberOfPoints, EoGePoint4d* points);
-  void ModelTransformPoints(EoGePoint4dArray& pointsArray);
+
   void ModelTransformVector(EoGeVector3d vector);
   void ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, double& vMax, double ratio);
   void ModelViewGetViewport(EoGsViewport& viewport);
@@ -923,7 +919,3 @@ class AeSysView : public CView {
  protected:
   DECLARE_MESSAGE_MAP()
 };
-
-#ifndef _DEBUG  // debug version in PegView.cpp
-inline AeSysDoc* AeSysView::GetDocument() const { return reinterpret_cast<AeSysDoc*>(m_pDocument); }
-#endif

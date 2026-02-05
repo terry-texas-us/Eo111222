@@ -42,7 +42,7 @@ void EoGeVector3d::operator*=(double t) noexcept {
  * @param t The scalar value to divide the vector by.
  */
 void EoGeVector3d::operator/=(double t) {
-  ASSERT(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGeVector3d::operator/=");
+  assert(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGeVector3d::operator/=");
 
   if (fabs(t) > Eo::geometricTolerance) {
     x /= t;
@@ -67,7 +67,7 @@ void EoGeVector3d::operator()(double xNew, double yNew, double zNew) noexcept {
 }
 
 [[nodiscard]] EoGeVector3d EoGeVector3d::operator/(double t) const {
-  ASSERT(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGeVector3d::operator/");
+  assert(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGeVector3d::operator/");
 
   if (fabs(t) > Eo::geometricTolerance) { return EoGeVector3d(x / t, y / t, z / t); }
   return *this;  // Return unchanged on near-zero

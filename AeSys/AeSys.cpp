@@ -15,8 +15,16 @@
 #include "Eo.h"
 #include "EoApOptions.h"
 #include "EoDb.h"
+#include "EoDbBlockReference.h"
 #include "EoDbCharacterCellDefinition.h"
+#include "EoDbConic.h"
 #include "EoDbFontDefinition.h"
+#include "EoDbLine.h"
+#include "EoDbPoint.h"
+#include "EoDbPolygon.h"
+#include "EoDbPolyline.h"
+#include "EoDbSpline.h"
+#include "EoDbText.h"
 #include "EoDlgModeLetter.h"
 #include "EoDlgModeRevise.h"
 #include "EoGePoint3d.h"
@@ -78,12 +86,6 @@ CString AeSys::CustomLButtonDownCharacters(L"");
 CString AeSys::CustomLButtonUpCharacters(L"{13}");
 CString AeSys::CustomRButtonDownCharacters(L"");
 CString AeSys::CustomRButtonUpCharacters(L"{27}");
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 BEGIN_MESSAGE_MAP(AeSys, CWinAppEx)
 ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)
@@ -176,7 +178,6 @@ BOOL AeSys::InitInstance() {
   AfxEnableControlContainer();
 
   CTrace::SetLevel(2);
-
   SetRegistryKey(L"Engineers Office");
   LoadStdProfileSettings();
   SetRegistryBase(L"Settings");
@@ -665,7 +666,7 @@ void AeSys::LoadModeResources(int mode) {
   AddModeInformationToMessageList();
 
   auto* activeView = AeSysView::GetActiveView();
-  if (activeView != 0) {
+  if (activeView != nullptr) {
     activeView->SetModeCursor(m_CurrentMode);
     activeView->ModeLineDisplay();
     activeView->RubberBandingDisable();

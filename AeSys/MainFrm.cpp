@@ -1,17 +1,13 @@
 ﻿
 #include "StdAfx.h"
 
+#include <cassert>
+
 #include "AeSys.h"
 #include "EoApOptions.h"
 #include "EoCtrlFindComboBox.h"
 #include "MainFrm.h"
 #include "Resource.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace {
 constexpr int statusIcon = 0;
@@ -159,18 +155,19 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs) {
 
   return TRUE;
 }
-BOOL CMainFrame::CreateDockablePanes() {
-  CSize DefaultSize(200, 200);
 
-  const DWORD SharedStyles(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_FLOAT_MULTI);
+BOOL CMainFrame::CreateDockablePanes() {
+  CSize defaultSize(200, 200);
+
+  const DWORD sharedStyles(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_FLOAT_MULTI);
 
   CString Caption = EoAppLoadStringResource(IDS_OUTPUT);
-  if (!m_outputPane.Create(Caption, this, DefaultSize, TRUE, ID_VIEW_OUTPUTWND, SharedStyles | CBRS_BOTTOM)) {
+  if (!m_outputPane.Create(Caption, this, defaultSize, TRUE, ID_VIEW_OUTPUTWND, sharedStyles | CBRS_BOTTOM)) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Output pane\n");
     return FALSE;
   }
   Caption = EoAppLoadStringResource(IDS_PROPERTIES);
-  if (!m_propertiesPane.Create(Caption, this, DefaultSize, TRUE, ID_VIEW_PROPERTIESWND, SharedStyles | CBRS_RIGHT)) {
+  if (!m_propertiesPane.Create(Caption, this, defaultSize, TRUE, ID_VIEW_PROPERTIESWND, sharedStyles | CBRS_RIGHT)) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Properties pane\n");
     return FALSE;
   }
@@ -182,27 +179,18 @@ void CMainFrame::SetDockablePanesIcons(bool highColorMode) {
   CSize smallIconSize(::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON));
   HINSTANCE resourceHandle(::AfxGetResourceHandle());
 
-  HICON propertiesPaneIcon =
-      static_cast<HICON>(LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_PROPERTIES_WND_HC : IDI_PROPERTIES_WND),
-                          IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
+  HICON propertiesPaneIcon = static_cast<HICON>(
+      LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_PROPERTIES_WND_HC : IDI_PROPERTIES_WND),
+                 IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
   m_propertiesPane.SetIcon(propertiesPaneIcon, FALSE);
 
   HICON outputPaneIcon =
       static_cast<HICON>(LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND),
-                          IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
+                                    IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
   m_outputPane.SetIcon(outputPaneIcon, FALSE);
 
   UpdateMDITabbedBarsIcons();
 }
-
-// CMainFrame diagnostics
-
-#ifdef _DEBUG
-void CMainFrame::AssertValid() const { CMDIFrameWndEx::AssertValid(); }
-
-void CMainFrame::Dump(CDumpContext& dc) const { CMDIFrameWndEx::Dump(dc); }
-
-#endif  //_DEBUG
 
 void CMainFrame::OnWindowManager() { ShowWindowsDialog(); }
 void CMainFrame::OnViewCustomize() {
@@ -214,17 +202,19 @@ void CMainFrame::OnViewCustomize() {
 
   Dialog->Create();
 }
+
 LRESULT CMainFrame::OnToolbarCreateNew(WPARAM wp, LPARAM name) {
-  LRESULT Result = CMDIFrameWndEx::OnToolbarCreateNew(wp, name);
-  if (Result == 0) { return 0; }
-  CMFCToolBar* UserToolbar = (CMFCToolBar*)Result;
-  ASSERT_VALID(UserToolbar);
+  LRESULT result = CMDIFrameWndEx::OnToolbarCreateNew(wp, name);
+  if (result == 0) { return 0; }
+  auto* userToolbar = (CMFCToolBar*)result;
+  assert(userToolbar != nullptr);
 
-  CString Customize = EoAppLoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
+  CString customize = EoAppLoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
 
-  UserToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, Customize);
-  return Result;
+  userToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, customize);
+  return result;
 }
+
 LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CMainFrame::OnToolbarReset(%i, %i)\n", toolbarResourceId, lparam);
 
@@ -267,10 +257,11 @@ void CMainFrame::OnApplicationLook(UINT look) {
       }
       CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOffice2007));
   }
-  CDockingManager* DockingManager = GetDockingManager();
-  ASSERT_VALID(DockingManager);
-  DockingManager->AdjustPaneFrames();
-  DockingManager->SetDockingMode(DT_SMART);
+  auto* dockingManager = GetDockingManager();
+  assert(dockingManager != nullptr);
+
+  dockingManager->AdjustPaneFrames();
+  dockingManager->SetDockingMode(DT_SMART);
 
   RecalcLayout();
   RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_FRAME | RDW_ERASE | RDW_UPDATENOW);
@@ -314,13 +305,13 @@ LRESULT CMainFrame::OnToolbarContextMenu(WPARAM, LPARAM point) {
   CMenu PopupToolbarMenu;
   VERIFY(PopupToolbarMenu.LoadMenu(IDR_POPUP_TOOLBAR));
 
-  CMenu* SubMenu = PopupToolbarMenu.GetSubMenu(0);
-  ASSERT(SubMenu != nullptr);
+  auto* SubMenu = PopupToolbarMenu.GetSubMenu(0);
+  assert(SubMenu != nullptr);
 
   if (SubMenu) {
     CPoint Point(AFX_GET_X_LPARAM(point), AFX_GET_Y_LPARAM(point));
 
-    CMFCPopupMenu* PopupMenu = new CMFCPopupMenu;
+    auto* PopupMenu = new CMFCPopupMenu;
     PopupMenu->Create(this, Point.x, Point.y, SubMenu->Detach());
   }
   return 0;
@@ -338,13 +329,14 @@ BOOL CMainFrame::OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) {
     CMenu menu;
     VERIFY(menu.LoadMenu(IDR_POPUP_TOOLBAR));
 
-    CMenu* PopupSubMenu = menu.GetSubMenu(0);
-    ASSERT(PopupSubMenu != nullptr);
+    auto* PopupSubMenu = menu.GetSubMenu(0);
+    assert(PopupSubMenu != nullptr);
 
     if (PopupSubMenu) { pMenuPopup->GetMenuBar()->ImportFromMenu(*PopupSubMenu, TRUE); }
   }
   return TRUE;
 }
+
 void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
   switch (app.m_Options.m_tabsStyle) {
     case EoApOptions::None: {
@@ -404,21 +396,20 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
 
     HWND hwndT = ::GetWindow(m_hWndMDIClient, GW_CHILD);
     while (hwndT != nullptr) {
-      CMDIChildWndEx* pFrame = DYNAMIC_DOWNCAST(CMDIChildWndEx, CWnd::FromHandle(hwndT));
-      if (pFrame != nullptr) {
-        ASSERT_VALID(pFrame);
+      CMDIChildWndEx* frame = DYNAMIC_DOWNCAST(CMDIChildWndEx, CWnd::FromHandle(hwndT));
+      if (frame != nullptr) {
         if (bMaximize) {
-          pFrame->ModifyStyle(WS_SYSMENU, 0);
+          frame->ModifyStyle(WS_SYSMENU, 0);
         } else {
-          pFrame->ModifyStyle(0, WS_SYSMENU);
-          pFrame->ShowWindow(SW_RESTORE);
+          frame->ModifyStyle(0, WS_SYSMENU);
+          frame->ShowWindow(SW_RESTORE);
 
           // Force a resize to happen on all the "restored" MDI child windows
           CRect rectFrame;
-          pFrame->GetWindowRect(rectFrame);
-          pFrame->SetWindowPos(nullptr, -1, -1, rectFrame.Width() + 1, rectFrame.Height(),
+          frame->GetWindowRect(rectFrame);
+          frame->SetWindowPos(nullptr, -1, -1, rectFrame.Width() + 1, rectFrame.Height(),
                                SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
-          pFrame->SetWindowPos(nullptr, -1, -1, rectFrame.Width(), rectFrame.Height(),
+          frame->SetWindowPos(nullptr, -1, -1, rectFrame.Width(), rectFrame.Height(),
                                SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
         }
       }
@@ -428,8 +419,8 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
   }
   if (m_propertiesPane.IsAutoHideMode()) {
     m_propertiesPane.BringWindowToTop();
-    CPaneDivider* Divider = m_propertiesPane.GetDefaultPaneDivider();
-    if (Divider != nullptr) { Divider->BringWindowToTop(); }
+    auto* divider = m_propertiesPane.GetDefaultPaneDivider();
+    if (divider != nullptr) { divider->BringWindowToTop(); }
   }
   CMDIFrameWndEx::m_bDisableSetRedraw = app.m_Options.m_disableSetRedraw;
 
@@ -444,8 +435,8 @@ BOOL CMainFrame::OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOO
   CMenu menu;
   VERIFY(menu.LoadMenu(IDR_POPUP_MDITABS));
 
-  CMenu* PopupSubMenu = menu.GetSubMenu(0);
-  ASSERT(PopupSubMenu != nullptr);
+  auto* PopupSubMenu = menu.GetSubMenu(0);
+  assert(PopupSubMenu != nullptr);
 
   if (PopupSubMenu) {
     if ((dwAllowedItems & AFX_MDI_CAN_BE_DOCKED) == 0) { PopupSubMenu->DeleteMenu(ID_MDI_TABBED, MF_BYCOMMAND); }
@@ -457,21 +448,23 @@ BOOL CMainFrame::OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOO
   }
   return TRUE;
 }
-LRESULT CMainFrame::OnGetTabToolTip(WPARAM /*wp*/, LPARAM lp) {
-  CMFCTabToolTipInfo* pInfo = (CMFCTabToolTipInfo*)lp;
-  ASSERT(pInfo != nullptr);
 
-  if (pInfo) {
-    ASSERT_VALID(pInfo->m_pTabWnd);
-    if (!pInfo->m_pTabWnd->IsMDITab()) { return 0; }
-    pInfo->m_strText.Format(L"Tab #%d Custom Tooltip", pInfo->m_nTabIndex + 1);
+LRESULT CMainFrame::OnGetTabToolTip(WPARAM /*wp*/, LPARAM lp) {
+  auto* toolTipInfo = (CMFCTabToolTipInfo*)lp;
+  assert(toolTipInfo != nullptr);
+
+  if (toolTipInfo) {
+    assert(toolTipInfo->m_pTabWnd != nullptr);
+    if (!toolTipInfo->m_pTabWnd->IsMDITab()) { return 0; }
+    toolTipInfo->m_strText.Format(L"Tab #%d Custom Tooltip", toolTipInfo->m_nTabIndex + 1);
   }
   return 0;
 }
+
 void CMainFrame::OnMdiTabbed() {
   CMDIChildWndEx* pMDIChild = DYNAMIC_DOWNCAST(CMDIChildWndEx, MDIGetActive());
   if (pMDIChild == nullptr) {
-    ASSERT(FALSE);
+    assert(FALSE);
     return;
   }
   TabbedDocumentToControlBar(pMDIChild);

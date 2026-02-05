@@ -24,35 +24,39 @@
 #include "ddeGItms.h"
 #endif  // USING_DDE
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 EoDbLine::EoDbLine(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbLine(points) CTOR: this=%p\n", this);
   m_color = pstate.PenColor();
   m_lineTypeIndex = pstate.LineType();
   m_ln(beginPoint, endPoint);
 }
 EoDbLine::EoDbLine(EoGeLine& line) : m_ln(line) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbLine(EoGeLine) CTOR: this=%p\n", this);
   m_color = pstate.PenColor();
   m_lineTypeIndex = pstate.LineType();
 }
-EoDbLine::EoDbLine(EoInt16 penColor, EoInt16 lineType, EoGeLine line) : EoDbPrimitive(penColor, lineType), m_ln(line) {}
-EoDbLine::EoDbLine(EoInt16 penColor, EoInt16 lineType, const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint)
-    : EoDbPrimitive(penColor, lineType), m_ln(beginPoint, endPoint) {}
+EoDbLine::EoDbLine(EoInt16 color, EoInt16 lineType, EoGeLine line) : EoDbPrimitive(color, lineType), m_ln(line) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbLine(color,lt,line) CTOR: this=%p\n", this);
+}
+
+EoDbLine::EoDbLine(EoInt16 color, EoInt16 lineType, const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint)
+    : EoDbPrimitive(color, lineType), m_ln(beginPoint, endPoint) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbLine(color,lt,pts) CTOR: this=%p\n", this);
+}
 
 EoDbLine::EoDbLine(const DRW_Coord& beginPoint, const DRW_Coord& endPoint) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbLine(DRW_Coord) CTOR: this=%p\n", this);
   m_ln.begin(beginPoint.x, beginPoint.y, beginPoint.z);
   m_ln.end(endPoint.x, endPoint.y, endPoint.z);
 }
 
 EoDbLine::EoDbLine(const EoDbLine& other) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbLine COPY CTOR: this=%p, from=%p\n", this, &other);
   m_color = other.m_color;
   m_lineTypeIndex = other.m_lineTypeIndex;
   m_ln = other.m_ln;
 }
+
 const EoDbLine& EoDbLine::operator=(const EoDbLine& other) {
   m_color = other.m_color;
   m_lineTypeIndex = other.m_lineTypeIndex;

@@ -2,14 +2,6 @@
 
 #include "EoCtrlFindComboBox.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-// EoCtrlFindComboBox
-
 IMPLEMENT_SERIAL(EoCtrlFindComboBox, CMFCToolBarComboBoxButton, 1)
 
 BOOL EoCtrlFindComboBox::m_HasFocus = FALSE;

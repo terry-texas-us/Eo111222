@@ -59,7 +59,7 @@ void EoDbDrwInterface::SetHeaderSectionVariable(const DRW_Header* header, const 
 }
 
 void EoDbDrwInterface::ConvertHeaderSection(const DRW_Header* header, AeSysDoc* document) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"Converting Header: %i variables\n", header->vars.size());
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"Converting Header: %i variables\n", header->vars.size());
 
   std::vector<std::string> keys{"$ACADVER", "$CLAYER", "$PDMODE", "$PDSIZE"};
 
@@ -70,13 +70,13 @@ void EoDbDrwInterface::ConvertHeaderSection(const DRW_Header* header, AeSysDoc* 
 void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, AeSysDoc* document) {
   (void)document;
   std::wstring appIdName = Eo::MultiByteToWString(appId.name.c_str());
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
 }
 
 void EoDbDrwInterface::ConvertDimStyle(const DRW_Dimstyle& dimStyle, AeSysDoc* document) {
   (void)document;
   std::wstring dimStyleName = Eo::MultiByteToWString(dimStyle.name.c_str());
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DimStyle - Name: <%s> (unsupported in AeSys)\n",
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DimStyle - Name: <%s> (unsupported in AeSys)\n",
             dimStyleName.c_str());
 }
 
@@ -167,7 +167,7 @@ void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* do
 void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeSysDoc* document) {
   (void)document;
   std::wstring textStyleName = Eo::MultiByteToWString(textStyle.name.c_str());
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Text Style - Name: %s (unsupported in AeSys)\n",
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"Text Style - Name: %s (unsupported in AeSys)\n",
             textStyleName.c_str());
 
   // auto height = textStyle.height;         // Fixed text height; 0 if not fixed (group code 40)
@@ -186,7 +186,7 @@ void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeS
 void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc* document) {
   (void)document;
   std::wstring viewportName = Eo::MultiByteToWString(viewport.name.c_str());
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Viewport - Name: %s (unsupported in AeSys)\n",
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"Viewport - Name: %s (unsupported in AeSys)\n",
             viewportName.c_str());
 
   auto lowerLeft = EoGePoint3d(viewport.lowerLeft.x, viewport.lowerLeft.y,
@@ -241,7 +241,9 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* docu
 
   // Group codes 3, 1 and 4 are for XREF definition. Modern XREF indicated by group 70 with 0x04 bit set and the presence of group code 1
 
-  EoDbBlock* newBlock = new EoDbBlock(
+  // @todo Check if block already exists and clean it up first
+
+  auto* newBlock = new EoDbBlock(
       static_cast<EoUInt16>(block.flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
       EoGePoint3d(block.basePoint.x, block.basePoint.y, block.basePoint.z),  // group codes 10, 20 and 30
       blockName.c_str());
@@ -295,12 +297,23 @@ void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
     delete primitive;
     return;
   }
+
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0,
+            L"AddToDocument: primitive=%p, inBlock=%d, currentBlock=%p, layer='%s'\n", primitive,
+            inBlockDefinition ? 1 : 0, currentOpenBlockDefinition, layerName);
+
   if (currentOpenBlockDefinition == nullptr) {
     auto* group = new EoDbGroup();
+
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"  -> Creating MODEL SPACE group %p for primitive %p\n", group,
+              primitive);
+
     group->AddTail(primitive);
     layer->AddTail(group);
     return;
   }
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"  -> Adding to BLOCK at %p\n", currentOpenBlockDefinition);
+
   currentOpenBlockDefinition->AddTail(primitive);
 }
 

@@ -1716,7 +1716,6 @@
       <Filter>Markdowns</Filter>
     </None>
     <None Include="Markdowns\DXF Symbol Tables.md" />
-    <None Include="Markdowns\PegFileFormatWithHandles.md" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">

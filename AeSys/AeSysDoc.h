@@ -60,12 +60,7 @@ class AeSysDoc : public CDocument {
    */
   void DeleteContents() override;
 
- public:
   ~AeSysDoc() override;
-#ifdef _DEBUG
-  void AssertValid() const override;
-  void Dump(CDumpContext& dc) const override;
-#endif
 
  public:
   void InitializeGroupAndPrimitiveEdit();
@@ -86,13 +81,35 @@ class AeSysDoc : public CDocument {
   EoUInt16 BlockTableSize() { return (EoUInt16(m_BlocksTable.GetSize())); }
   int GetBlockReferenceCount(const CString& name);
   auto GetFirstBlockPosition() { return m_BlocksTable.GetStartPosition(); }
-  void GetNextBlock(POSITION& position, CString& name, EoDbBlock*& block) { m_BlocksTable.GetNextAssoc(position, name, block); }
+  void GetNextBlock(POSITION& position, CString& name, EoDbBlock*& block) {
+    m_BlocksTable.GetNextAssoc(position, name, block);
+  }
   bool LookupBlock(CString name, EoDbBlock*& block);
-  /// <summary>Removes all blocks and defining primitives.</summary>
+
+  /** @brief Removes all blocks from the block table. */
   void RemoveAllBlocks();
-  /// <summary>Removes all blocks which have no references.</summary>
+
+  /** @brief Removes all blocks which have no references. */
   void RemoveUnusedBlocks();
-  void InsertBlock(const CString& name, EoDbBlock* block) { m_BlocksTable.SetAt(name, block); }
+
+  /** @brief Inserts a block into the block table.
+   *
+   * If a block with the same name already exists, it is replaced.
+   *
+   * @param name The name of the block.
+   * @param block A pointer to the EoDbBlock object to insert.
+   */
+  void InsertBlock(const CString& name, EoDbBlock* block) {
+    EoDbBlock* existing = nullptr;
+    if (m_BlocksTable.Lookup(name, existing)) {
+      ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"InsertBlock: Replacing existing block '%s'\n",
+                name.GetString());
+      existing->DeletePrimitivesAndRemoveAll();
+      delete existing;
+    }
+    m_BlocksTable.SetAt(name, block);
+  }
+
   void LayerBlank(const CString& strName);
   /// <summary>A layer is converted to a tracing or a job file</summary>
   bool LayerMelt(CString& strName);
@@ -182,7 +199,7 @@ class AeSysDoc : public CDocument {
    * @note This is done with two independent clipboard formats. The standard enhanced metafile and the private EoDbGroupList which is read exclusively by Peg.
    */
   void CopyTrappedGroupsToClipboard(AeSysView* view);
-  
+
   /** @brief Expands each trapped group into separate groups for each primitive.
    *
    * This method iterates through the list of trapped groups and for each group,
@@ -198,7 +215,8 @@ class AeSysDoc : public CDocument {
   BOOL IsTrapEmpty() const { return m_TrappedGroupList.IsEmpty(); }
   void ModifyTrappedGroupsColor(EoInt16 color) { m_TrappedGroupList.ModifyColor(color); }
   void ModifyTrappedGroupsLineType(EoInt16 lineType) { m_TrappedGroupList.ModifyLineType(lineType); }
-  void ModifyTrappedGroupsNoteAttributes(EoDbFontDefinition& fontDef, EoDbCharacterCellDefinition& cellDef, int attributes);
+  void ModifyTrappedGroupsNoteAttributes(EoDbFontDefinition& fontDef, EoDbCharacterCellDefinition& cellDef,
+                                         int attributes);
   void RemoveAllTrappedGroups();
   EoDbGroup* RemoveLastTrappedGroup() { return m_TrappedGroupList.RemoveTail(); }
   auto RemoveTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Remove(group); }
@@ -220,9 +238,13 @@ class AeSysDoc : public CDocument {
   auto GetFirstNodalGroupPosition() const { return m_NodalGroupList.GetHeadPosition(); }
   EoDbGroup* GetNextNodalGroup(POSITION& position) { return m_NodalGroupList.GetNext(position); }
   void RemoveAllNodalGroups() { m_NodalGroupList.RemoveAll(); }
-  POSITION AddMaskedPrimitive(EoDbMaskedPrimitive* maskedPrimitive) { return m_MaskedPrimitives.AddTail((CObject*)maskedPrimitive); }
+  POSITION AddMaskedPrimitive(EoDbMaskedPrimitive* maskedPrimitive) {
+    return m_MaskedPrimitives.AddTail((CObject*)maskedPrimitive);
+  }
   auto GetFirstMaskedPrimitivePosition() const { return m_MaskedPrimitives.GetHeadPosition(); }
-  EoDbMaskedPrimitive* GetNextMaskedPrimitive(POSITION& position) { return (EoDbMaskedPrimitive*)m_MaskedPrimitives.GetNext(position); }
+  EoDbMaskedPrimitive* GetNextMaskedPrimitive(POSITION& position) {
+    return (EoDbMaskedPrimitive*)m_MaskedPrimitives.GetNext(position);
+  }
   void RemoveAllMaskedPrimitives() { m_MaskedPrimitives.RemoveAll(); }
   DWORD GetPrimitiveMask(EoDbPrimitive* primitive);
   void AddPrimitiveBit(EoDbPrimitive* primitive, int bit);

@@ -19,18 +19,18 @@ class EoDbDrwInterface : public DRW_Interface {
   EoDbDrwInterface(AeSysDoc* document) : m_document(document) {}
 
   void addHeader(const DRW_Header* header) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addHeader called\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addHeader called\n");
     ConvertHeaderSection(header, m_document);
   }
 
   // Table objects
 
   void addAppId(const DRW_AppId& appId) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addAppId called\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addAppId called\n");
     ConvertAppIdTable(appId, m_document);
   }
   void addDimStyle(const DRW_Dimstyle& dimStyle) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addDimStyle called\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addDimStyle called\n");
     ConvertDimStyle(dimStyle, m_document);
   }
 
@@ -43,12 +43,12 @@ class EoDbDrwInterface : public DRW_Interface {
     ConvertLinetypesTable(lType, m_document);
   }
   void addTextStyle(const DRW_Textstyle& textStyle) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addTextStyle called\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addTextStyle called\n");
     ConvertTextStyleTable(textStyle, m_document);
   }
 
   void addVport(const DRW_Vport& viewport) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addVport called\n");
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addVport called\n");
     ConvertViewportTable(viewport, m_document);
   }
 

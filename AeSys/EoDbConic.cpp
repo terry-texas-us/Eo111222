@@ -102,9 +102,9 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
       m_startAngle(startAngle),
       m_endAngle(endAngle) {
   // Validate invariants - these should never fail if factory methods are used correctly
-  ASSERT(m_majorAxis.Length() > Eo::geometricTolerance && "Major axis must have non-zero length");
-  ASSERT(m_ratio > 0.0 && m_ratio <= 1.0 + Eo::numericEpsilon && "Ratio must be in (0, 1]");
-  ASSERT(m_extrusion.Length() > Eo::geometricTolerance && "Extrusion must have non-zero length");
+  assert(m_majorAxis.Length() > Eo::geometricTolerance && "Major axis must have non-zero length");
+  assert(m_ratio > 0.0 && m_ratio <= 1.0 + Eo::numericEpsilon && "Ratio must be in (0, 1]");
+  assert(m_extrusion.Length() > Eo::geometricTolerance && "Extrusion must have non-zero length");
 
   m_extrusion.Normalize();
 }

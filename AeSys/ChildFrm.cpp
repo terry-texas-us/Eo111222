@@ -4,12 +4,6 @@
 #include "ChildFrm.h"
 #include "EoApOptions.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWndEx)
 
 BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWndEx)
@@ -19,12 +13,8 @@ ON_WM_TIMER()
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
-// Construction/destruction
-
 CChildFrame::CChildFrame() {}
 CChildFrame::~CChildFrame() {}
-
-// Overrides
 
 void CChildFrame::ActivateFrame(int nCmdShow) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"CChildFrame::ActivateFrame(%i)\n", nCmdShow);
@@ -50,10 +40,6 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs) {
   return TRUE;
 }
 
-#ifdef _DEBUG  // Diagnostic overrides
-void CChildFrame::AssertValid() const { CMDIChildWndEx::AssertValid(); }
-void CChildFrame::Dump(CDumpContext& dc) const { CMDIChildWndEx::Dump(dc); }
-#endif  //_DEBUG
 void CChildFrame::OnTimer(UINT_PTR nIDEvent) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CChildFrame::OnTimer() - Entering\n");
 

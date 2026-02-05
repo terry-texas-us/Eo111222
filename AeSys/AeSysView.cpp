@@ -1,6 +1,7 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <cstdarg>
 #include <cstdio>
@@ -48,12 +49,6 @@
 #include "Dde.h"
 #include "DdeGItms.h"
 #endif  // USING_DDE
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 const double AeSysView::m_MaximumWindowRatio = 999.0;
 const double AeSysView::m_MinimumWindowRatio = 0.001;
@@ -461,18 +456,15 @@ AeSysView::AeSysView()
 
 AeSysView::~AeSysView() {}
 
-// AeSysView diagnostics //////////////////////////////////////////////////////
-
+inline AeSysDoc* AeSysView::GetDocument() const {
 #ifdef _DEBUG
-void AeSysView::AssertValid() const { CView::AssertValid(); }
-void AeSysView::Dump(CDumpContext& dc) const { CView::Dump(dc); }
-AeSysDoc* AeSysView::GetDocument() const {  // non-debug version is inline
-  ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(AeSysDoc)));
-  return (AeSysDoc*)m_pDocument;
+  auto* document = dynamic_cast<AeSysDoc*>(m_pDocument);
+  assert(document != nullptr && "Invalid document type in AeSysView::GetDocument()");
+  return document;
 }
-#endif  //_DEBUG
-
-// Base class overides ////////////////////////////////////////////////////////
+#else _DEBUG  // debug version in PegView.cpp
+  return static_cast<AeSysDoc*>(m_pDocument);
+#endif
 
 void AeSysView::OnActivateFrame(UINT state, CFrameWnd* deactivateFrame) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state,
@@ -574,7 +566,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 #endif  // USING_Direct2D
 
     auto* document = GetDocument();
-    ASSERT_VALID(document);
+    assert(document != nullptr);
     if (m_ViewRendered) {
     } else {
       BackgroundImageDisplay(deviceContext);
@@ -964,13 +956,13 @@ void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, 
   vMax += YAdjustment;
 }
 
-void AeSysView::InvokeNewModelTransform() { m_ModelTransform.InvokeNew(); }
+void AeSysView::PushModelTransform() { m_ModelTransform.Push(); }
 
 void AeSysView::SetLocalModelTransform(EoGeTransformMatrix& transformation) {
   m_ModelTransform.SetLocalTM(transformation);
 }
 
-void AeSysView::ReturnModelTransform() { m_ModelTransform.Return(); }
+void AeSysView::PopModelTransform() { m_ModelTransform.Pop(); }
 
 void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
   if (m_viewBackgroundImage && (static_cast<HBITMAP>(m_backgroundImageBitmap) != 0)) {
@@ -1658,20 +1650,35 @@ void AeSysView::OnPrimPerpJump() {
 
 void AeSysView::OnHelpKey() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"READY")); }
 
+/** @brief Retrieves the active view in the MDI application.
+ * @note This function assumes that the main window is a CMDIFrameWndEx and that the active child window is a CMDIChildWndEx containing an AeSysView.
+ * @return A pointer to the active AeSysView, or nullptr if no active view is found.
+ */
 AeSysView* AeSysView::GetActiveView() {
-  CMDIFrameWndEx* MDIFrameWnd = (CMDIFrameWndEx*)AfxGetMainWnd();
-
-  if (MDIFrameWnd == nullptr) { return nullptr; }
-  CMDIChildWndEx* MDIChildWnd = DYNAMIC_DOWNCAST(CMDIChildWndEx, MDIFrameWnd->MDIGetActive());
-
-  if (MDIChildWnd == nullptr) { return nullptr; }
-  CView* View = MDIChildWnd->GetActiveView();
-
-  if (!View->IsKindOf(RUNTIME_CLASS(
-          AeSysView))) {  // View is the wrong kind (this could occur with splitter windows, or additional views in a single document.
+  auto* frameWindow = dynamic_cast<CMDIFrameWndEx*>(AfxGetMainWnd());
+  if (frameWindow == nullptr) {
+    // Legitimately nullptr during CMainFrame::OnCreate() - not an error
     return nullptr;
   }
-  return (AeSysView*)View;
+  auto* childWindow = dynamic_cast<CMDIChildWndEx*>(frameWindow->MDIGetActive());
+#ifdef _DEBUG
+  assert(childWindow != nullptr &&
+         "No active MDI child window - should always have an active document after initialization");
+#endif
+  if (childWindow == nullptr) { return nullptr; }
+
+  auto* view = childWindow->GetActiveView();
+#ifdef _DEBUG
+  assert(view != nullptr && "Active MDI child has no view - this indicates a framework error");
+#endif
+  if (view == nullptr) { return nullptr; }
+
+  auto* activeView = dynamic_cast<AeSysView*>(view);
+#ifdef _DEBUG
+  assert(activeView != nullptr &&
+         "Active view is not an AeSysView (possible splitter windows or multi-view configuration");
+#endif
+  return activeView;
 }
 
 void AeSysView::OnUpdateViewOdometer(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewOdometer); }

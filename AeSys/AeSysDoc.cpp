@@ -171,7 +171,8 @@ AeSysDoc::AeSysDoc()
 AeSysDoc::~AeSysDoc() {}
 
 void AeSysDoc::DeleteContents() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysDoc<%p>)::DeleteContents()\n", this);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"AeSysDoc<%p>::DeleteContents() - BlockTableSize: %d\n", this,
+            BlockTableSize());
 
   // TODO: Release EoDbDrwInterface resources if any
 
@@ -193,8 +194,8 @@ void AeSysDoc::DeleteContents() {
 BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
   CString PathName = pathName;
   if (PathName.IsEmpty()) {
-    CDocTemplate* Template = GetDocTemplate();
-    ASSERT(Template != nullptr);
+    auto* Template = GetDocTemplate();
+    assert(Template != nullptr);
 
     PathName = m_strPathName;
     if (replace && PathName.IsEmpty()) {
@@ -204,11 +205,11 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
       if (FirstBadCharacterIndex != -1) { PathName.ReleaseBuffer(FirstBadCharacterIndex); }
       CString Extension;
       if (Template->GetDocString(Extension, CDocTemplate::filterExt) && !Extension.IsEmpty()) {
-        ASSERT(Extension[0] == '.');
+        assert(Extension[0] == '.');
         PathName += Extension;
       }
     }
-    // TODO: Implement a EoDbDrwInterface Save As dialog if needed
+    /// @todo Implement a EoDbDrwInterface Save As dialog if needed
   }
   if (!OnSaveDocument(PathName)) {
     if (pathName == nullptr) {
@@ -247,9 +248,9 @@ void AeSysDoc::SetCommonTableEntries() {
 
   // TODO: Peg uses index for line types, need to map names to indexes (index 0 to 41 have been hard coded in Peg).
   //       Need to ensure that line types loaded here match those indexes.
-  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
-  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to AeSys).txt");
-  //  m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
+  // m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
+  // m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to AeSys).txt");
+  // m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
 }
 
 BOOL AeSysDoc::OnNewDocument() {
@@ -266,8 +267,6 @@ BOOL AeSysDoc::OnNewDocument() {
 BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"AeSysDoc<%p>::OnOpenDocument(%s)\n", this, pathName);
 
-  SetCommonTableEntries();
-
   switch (AeSys::GetFileTypeFromPath(pathName)) {
     case EoDb::kDwg:
       break;
@@ -276,6 +275,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       EoDbDrwInterface dxfInterface(this);
       dxfRW dxfReader(Eo::WStringToMultiByte(pathName).data());
       dxfReader.setDebug(static_cast<DRW::DebugTraceLevel>(DRW::none));
+      SetCommonTableEntries();
       bool success = dxfReader.read(&dxfInterface, true);  // true for verbose output, false for silent
       if (success) {
         ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"3dFace: %d.\n", dxfInterface.countOf3dFace);
@@ -394,13 +394,6 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
   }
   return ReturnStatus;
 }
-// AeSysDoc diagnostics
-
-#ifdef _DEBUG
-void AeSysDoc::AssertValid() const { CDocument::AssertValid(); }
-
-void AeSysDoc::Dump(CDumpContext& dc) const { CDocument::Dump(dc); }
-#endif  //_DEBUG
 
 void AeSysDoc::AddTextBlock(LPWSTR pszText) {
   EoGePoint3d ptPvt = app.GetCursorPosition();

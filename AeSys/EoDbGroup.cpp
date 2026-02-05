@@ -27,6 +27,11 @@ EoDbGroup::EoDbGroup() {}
 EoDbGroup::EoDbGroup(EoDbPrimitive* primitive) { AddTail(primitive); }
 
 EoDbGroup::EoDbGroup(const EoDbGroup& group) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbGroup COPY CTOR (from group): this=%p, source=%p, count=%d\n",
+            this, &group, static_cast<int>(group.GetCount()));
+  // Trigger debugger break to see call stack:
+  if (group.GetCount() > 0) { __debugbreak(); }
+
   EoDbPrimitive* primitive{};
 
   auto position = group.GetHeadPosition();
@@ -36,6 +41,11 @@ EoDbGroup::EoDbGroup(const EoDbGroup& group) {
 EoDbPrimitive* EoDbGroup::GetAt(POSITION position) { return (EoDbPrimitive*)CObList::GetAt(position); }
 
 EoDbGroup::EoDbGroup(const EoDbBlock& block) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbGroup COPY CTOR (from block): this=%p, source=%p, count=%d\n",
+            this, &block, static_cast<int>(block.GetCount()));
+  // Trigger debugger break to see call stack:
+  if (block.GetCount() > 0) { __debugbreak(); }
+
   EoDbPrimitive* primitive{};
 
   auto position = block.GetHeadPosition();
@@ -69,16 +79,20 @@ void EoDbGroup::BreakPolylines() {
       EoGePoint3dArray points;
       static_cast<EoDbPolyline*>(primitive)->GetAllPoints(points);
 
-      for (EoUInt16 w = 0; w < points.GetSize() - 1; w++) CObList::InsertBefore(PrimitivePosition, new EoDbLine(color, LineType, points[w], points[w + 1]));
+      for (EoUInt16 w = 0; w < points.GetSize() - 1; w++)
+        CObList::InsertBefore(PrimitivePosition, new EoDbLine(color, LineType, points[w], points[w + 1]));
 
       if (static_cast<EoDbPolyline*>(primitive)->IsLooped())
-        CObList::InsertBefore(PrimitivePosition, new EoDbLine(color, LineType, points[points.GetUpperBound()], points[0]));
+        CObList::InsertBefore(PrimitivePosition,
+                              new EoDbLine(color, LineType, points[points.GetUpperBound()], points[0]));
 
       this->RemoveAt(PrimitivePosition);
       delete primitive;
     } else if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
       EoDbBlock* block{};
-      if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(primitive)->BlockName(), block) != 0) { block->BreakPolylines(); }
+      if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(primitive)->BlockName(), block) != 0) {
+        block->BreakPolylines();
+      }
     }
   }
 }
@@ -130,7 +144,9 @@ EoDbPoint* EoDbGroup::GetFirstDifferentPoint(EoDbPoint* pointPrimitive) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
-    if (primitive != pointPrimitive && primitive->Is(EoDb::kPointPrimitive)) { return (static_cast<EoDbPoint*>(primitive)); }
+    if (primitive != pointPrimitive && primitive->Is(EoDb::kPointPrimitive)) {
+      return (static_cast<EoDbPoint*>(primitive));
+    }
   }
   return nullptr;
 }
@@ -280,7 +296,8 @@ int EoDbGroup::RemoveEmptyNotesAndDelete() {
   }
   return (iCount);
 }
-EoDbPrimitive* EoDbGroup::SelPrimUsingPoint(AeSysView* view, const EoGePoint4d& point, double& dPicApert, EoGePoint3d& pDetPt) {
+EoDbPrimitive* EoDbGroup::SelPrimUsingPoint(AeSysView* view, const EoGePoint4d& point, double& dPicApert,
+                                            EoGePoint3d& pDetPt) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
@@ -313,14 +330,24 @@ EoDbPrimitive* EoDbGroup::SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d& pt
   }
   return (EngagedPrimitive);
 }
+
 void EoDbGroup::DeletePrimitivesAndRemoveAll() {
+  auto count = GetCount();
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"  DeletePrimitivesAndRemoveAll() - List count: %d, HeadPos: %p\n",
+            static_cast<int>(count), GetHeadPosition());
+
+  int deleted{};
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"    [%d] Deleting primitive at %p\n", deleted, primitive);
+    deleted++;
     delete (primitive);
   }
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"  DeletePrimitivesAndRemoveAll() - Total deleted: %d\n", deleted);
   RemoveAll();
 }
+
 void EoDbGroup::SortTextOnY() {
   int iT;
   int iCount = (int)GetCount();

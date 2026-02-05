@@ -1,6 +1,7 @@
 ﻿#include "Stdafx.h"
 
 #include "AeSysView.h"
+#include "EoGePoint4d.h"
 
 EoGeVector3d AeSysView::CameraDirection() const { return m_ViewTransform.Direction(); }
 EoGePoint3d AeSysView::CameraTarget() const { return m_ViewTransform.Target(); }
@@ -48,13 +49,12 @@ double AeSysView::VExtent() const { return m_ViewTransform.VExtent(); }
 double AeSysView::VMax() const { return m_ViewTransform.VMax(); }
 double AeSysView::VMin() const { return m_ViewTransform.VMin(); }
 void AeSysView::ModelViewInitialize() { m_ViewTransform.Initialize(m_Viewport); }
+
 void AeSysView::ModelTransformPoint(EoGePoint3d& point) { m_ModelTransform.TransformPoint(point); }
 void AeSysView::ModelTransformPoint(EoGePoint4d& point) { m_ModelTransform.TransformPoint(point); }
-void AeSysView::ModelTransformPoints(int numberOfPoints, EoGePoint4d* points) {
-  m_ModelTransform.TransformPoints(numberOfPoints, points);
-}
-void AeSysView::ModelTransformPoints(EoGePoint4dArray& pointsArray) { m_ModelTransform.TransformPoints(pointsArray); }
+
 void AeSysView::ModelTransformVector(EoGeVector3d vector) { m_ModelTransform.TransformVector(vector); }
+
 void AeSysView::ModelViewTransformPoint(EoGePoint4d& point) {
   m_ModelTransform.TransformPoint(point);
   m_ViewTransform.TransformPoint(point);

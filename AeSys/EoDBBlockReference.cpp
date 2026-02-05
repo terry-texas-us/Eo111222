@@ -112,12 +112,12 @@ void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
 
   auto transformMatrix = BuildTransformMatrix(block->BasePoint());
 
-  view->InvokeNewModelTransform();
+  view->PushModelTransform();
   view->SetLocalModelTransform(transformMatrix);
 
   block->Display(view, deviceContext);
 
-  view->ReturnModelTransform();
+  view->PopModelTransform();
 }
 void EoDbBlockReference::AddReportToMessageList(EoGePoint3d) {
   CString message;
@@ -160,12 +160,12 @@ void EoDbBlockReference::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoi
 
   auto tmIns = BuildTransformMatrix(block->BasePoint());
 
-  view->InvokeNewModelTransform();
+  view->PushModelTransform();
   view->SetLocalModelTransform(tmIns);
 
   block->GetExtents(view, ptMin, ptMax, tm);
 
-  view->ReturnModelTransform();
+  view->PopModelTransform();
 }
 
 bool EoDbBlockReference::IsInView(AeSysView* view) {
@@ -178,12 +178,12 @@ bool EoDbBlockReference::IsInView(AeSysView* view) {
 
   EoGeTransformMatrix tm = BuildTransformMatrix(basePoint);
 
-  view->InvokeNewModelTransform();
+  view->PushModelTransform();
   view->SetLocalModelTransform(tm);
 
   bool bInView = Block->IsInView(view);
 
-  view->ReturnModelTransform();
+  view->PopModelTransform();
   return (bInView);
 }
 
@@ -205,7 +205,7 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
 
   EoGeTransformMatrix tm = BuildTransformMatrix(basePoint);
 
-  view->InvokeNewModelTransform();
+  view->PushModelTransform();
   view->SetLocalModelTransform(tm);
 
   auto position = block->GetHeadPosition();
@@ -217,7 +217,7 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
       break;
     }
   }
-  view->ReturnModelTransform();
+  view->PopModelTransform();
   return ptCtrl;
 }
 
@@ -236,12 +236,12 @@ bool EoDbBlockReference::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, 
 
   EoGeTransformMatrix tm = BuildTransformMatrix(basePoint);
 
-  view->InvokeNewModelTransform();
+  view->PushModelTransform();
   view->SetLocalModelTransform(tm);
 
   bool bResult = block->SelectUsingRectangle(view, pt1, pt2);
 
-  view->ReturnModelTransform();
+  view->PopModelTransform();
   return (bResult);
 }
 bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
@@ -254,7 +254,7 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
 
   EoGeTransformMatrix tm = BuildTransformMatrix(basePoint);
 
-  view->InvokeNewModelTransform();
+  view->PushModelTransform();
   view->SetLocalModelTransform(tm);
 
   auto position = block->GetHeadPosition();
@@ -264,7 +264,7 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
       break;
     }
   }
-  view->ReturnModelTransform();
+  view->PopModelTransform();
   return (bResult);
 }
 

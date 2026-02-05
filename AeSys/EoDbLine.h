@@ -17,11 +17,11 @@ class EoDbLine : public EoDbPrimitive {
   EoGeLine m_ln;
 
  public:  // Constructors and destructor
-  EoDbLine() {}
+  EoDbLine() { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbLine() DEFAULT CTOR: this=%p\n", this); }
   EoDbLine(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint);
   EoDbLine(EoGeLine& line);
-  EoDbLine(EoInt16 penColor, EoInt16 lineType, EoGeLine line);
-  EoDbLine(EoInt16 penColor, EoInt16 lineType, const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint);
+  EoDbLine(EoInt16 color, EoInt16 lineType, EoGeLine line);
+  EoDbLine(EoInt16 color, EoInt16 lineType, const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint);
   EoDbLine(const DRW_Coord& beginPoint, const DRW_Coord& endPoint);
 
   EoDbLine(const EoDbLine& other);

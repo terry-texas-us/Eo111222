@@ -22,12 +22,12 @@ You can assume I know the code base well and should have little trouble with mod
 ## Code Style, Linters & Formatting
 - Repository contains `.clang-format` and `.clang-tidy` at root – prefer those settings for formatting and static-analysis suggestions.
 - For Visual Studio-specific formatting preferences, reference __Tools > Options > Text Editor > C/C++ > Formatting__.
-- Prefer RAII and smart pointers (`std::unique_ptr`, `std::shared_ptr` when required). Minimize raw `new`/`delete`.
+- Minimize raw `new`/`delete`.
 - Be conservative in migration from `CString` to `std::wstring` – prefer consistent conversions and avoid unnecessary copies.
-- Step away from MFC `CObject`; minimize dynamic runtime features; avoid file serialization; use `std::containers` and modern C++ idioms for collections.
-- Migrate away from MFC `CTypedPtrMap` to `std::map` and drop `CObject` inheritance for `EoDbLineType`.
+- Step away from MFC `CObject`; minimize dynamic runtime features; avoid file serialization.
 - Prefer camelCase for local variables; convert PascalCase local variables to camelCase when requested.
 - Prefer marking simple geometric operations and getters `noexcept` when possible.
+- Prefer `[[nodiscard]]` for getters when possible.
 
 ## DPI Handling
 - Prefer using `GetDpiForSystem` (or `GetDpiForWindow` when available) for DPI fixes in this codebase.
@@ -64,11 +64,3 @@ You can assume I know the code base well and should have little trouble with mod
   - `AeSys\EoDbLine.h`, `AeSys\EoDbConic.h`
   - `AeSys\EoDbPoint.h`, `AeSys\EoDbPolyline.h`, `AeSys\EoDbPolygon.h`, `AeSys\EoDbSpline.h`
   - `AeSys\EoDbText.h`, `AeSys\EoDbBlockReference.h`
-
-## Workspace Preferences and Constraints
-- Use Visual Studio 2026 with C++latest (19.5) and v145 toolset.
-- Prefer RAII and smart pointers.
-- Preserve MFC idioms and ABI stability of `EoDbPrimitive` virtuals.
-- Use `.clang-format` and `.clang-tidy` from the repo root.
-- Use `libdxfrw` for DXF parsing.
-- External library `Tools\reflex_static_lib.lib` is present.

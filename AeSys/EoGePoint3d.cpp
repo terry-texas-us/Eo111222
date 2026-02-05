@@ -40,7 +40,7 @@ void EoGePoint3d::operator*=(double t) {
 }
 
 void EoGePoint3d::operator/=(double t) {
-  ASSERT(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint3d::operator/=");
+  assert(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint3d::operator/=");
 
   if (fabs(t) > Eo::geometricTolerance) {
     x /= t;
@@ -69,7 +69,7 @@ void EoGePoint3d::operator()(double xNew, double yNew, double zNew) {
 [[nodiscard]] EoGePoint3d EoGePoint3d::operator*(double t) const { return EoGePoint3d(x * t, y * t, z * t); }
 
 [[nodiscard]] EoGePoint3d EoGePoint3d::operator/(double t) const {
-  ASSERT(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint3d::operator/");
+  assert(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint3d::operator/");
 
   if (fabs(t) > Eo::geometricTolerance) { return EoGePoint3d(x / t, y / t, z / t); }
   return EoGePoint3d(x, y, z);
