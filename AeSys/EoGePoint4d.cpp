@@ -67,11 +67,11 @@ bool EoGePoint4d::ClipLine(EoGePoint4d& ptA, EoGePoint4d& ptB) {
     if (BoundaryCodeB[iBC] <= 0.0) OutCodeB |= (1 << iBC);
   }
 
-  if ((OutCodeA & OutCodeB) != 0) return false;
-  if ((OutCodeA | OutCodeB) == 0) return true;
+  if ((OutCodeA & OutCodeB) != 0) { return false; }
+  if ((OutCodeA | OutCodeB) == 0) { return true; }
 
-  double dTIn = 0.;
-  double dTOut = 1.;
+  double dTIn{};
+  double dTOut{1.0};
 
   double dTHit;
 
@@ -83,7 +83,7 @@ bool EoGePoint4d::ClipLine(EoGePoint4d& ptA, EoGePoint4d& ptB) {
       dTHit = BoundaryCodeA[i] / (BoundaryCodeA[i] - BoundaryCodeB[i]);
       dTIn = std::max(dTIn, dTHit);
     }
-    if (dTIn > dTOut) return false;
+    if (dTIn > dTOut) { return false; }
   }
   EoGePoint4d pt(ptA);
 
@@ -122,7 +122,8 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
   EoGePoint4d ptEdge[2]{};
   bool bEdgeVis[2]{};
 
-  bool bVisVer0 = DotProduct(EoGeVector3d(ptQ, pointsArrayIn[0]), planeNormal) >= -Eo::geometricTolerance ? true : false;
+  bool bVisVer0 =
+      DotProduct(EoGeVector3d(ptQ, pointsArrayIn[0]), planeNormal) >= -Eo::geometricTolerance ? true : false;
 
   ptEdge[0] = pointsArrayIn[0];
   bEdgeVis[0] = bVisVer0;
@@ -154,9 +155,9 @@ double EoGePoint4d::DistanceToPointXY(const EoGePoint4d& ptQ) const {
   return sqrt(X * X + Y * Y);
 }
 bool EoGePoint4d::IsInView() {
-  if (w + x <= 0. || w - x <= 0.0) return false;
-  if (w + y <= 0. || w - y <= 0.0) return false;
-  if (w + z <= 0. || w - z <= 0.0) return false;
+  if (w + x <= 0. || w - x <= 0.0) { return false; }
+  if (w + y <= 0. || w - y <= 0.0) { return false; }
+  if (w + z <= 0. || w - z <= 0.0) { return false; }
 
   return true;
 }

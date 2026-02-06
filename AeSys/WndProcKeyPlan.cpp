@@ -1,4 +1,5 @@
 ﻿#include "Stdafx.h"
+
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDlgActiveViewKeyplan.h"
@@ -18,7 +19,7 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
   dcMem.CreateCompatibleDC(nullptr);
 
   dcMem.SelectObject(CBitmap::FromHandle(EoDlgActiveViewKeyplan::m_hbmKeyplan));
-  BITMAP bitmap;
+  BITMAP bitmap{};
   ::GetObject(EoDlgActiveViewKeyplan::m_hbmKeyplan, sizeof(BITMAP), (LPTSTR)&bitmap);
 
   dc.BitBlt(0, 0, bitmap.bmWidth, bitmap.bmHeight, &dcMem, 0, 0, SRCCOPY);
@@ -140,7 +141,7 @@ void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
   dcMem.CreateCompatibleDC(nullptr);
 
   dcMem.SelectObject(CBitmap::FromHandle(EoDlgActiveViewKeyplan::m_hbmKeyplan));
-  BITMAP bitmap;
+  BITMAP bitmap{};
   ::GetObject(EoDlgActiveViewKeyplan::m_hbmKeyplan, sizeof(BITMAP), (LPSTR)&bitmap);
 
   double dUMinOverview = Target.x + activeView->OverviewUMin();

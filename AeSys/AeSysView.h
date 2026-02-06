@@ -230,7 +230,7 @@ class AeSysView : public CView {
   EoGePoint3d m_ptCursorPosDev;
   EoGePoint3d m_ptCursorPosWorld;
 
-  EoGePoint3d GetCursorPosition();
+  [[nodiscard]] EoGePoint3d GetCursorPosition();
   /// <summary> Positions cursor at targeted position.</summary>
   void SetCursorPosition(EoGePoint3d point3d);
   void SetModeCursor(int mode);

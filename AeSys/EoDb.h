@@ -6,7 +6,7 @@
 class EoDbPrimitive;
 
 namespace EoDb {
-enum FileTypes { kDwg = 0x00, kDxf = 0x01, kDxb = 0x02, kPeg = 0x20, kJob = 0x21, kTracing = 0x22, kUnknown = -1 };
+enum class FileTypes { Dwg = 0x00, Dxf = 0x01, Dxb = 0x02, Peg = 0x20, Job = 0x21, Tracing = 0x22, Unknown = -1 };
 enum PolygonStyle { kHollow, kSolid, kPattern, kHatch };
 enum PrimitiveTypes {
   kPointPrimitive = 0x0100,

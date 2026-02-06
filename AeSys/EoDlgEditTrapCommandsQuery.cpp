@@ -19,8 +19,6 @@ HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR text, LPCVOID object) {
   return TreeView_InsertItem(tree, &tvIS);
 }
 
-IMPLEMENT_DYNAMIC(EoDlgEditTrapCommandsQuery, CDialog)
-
 BEGIN_MESSAGE_MAP(EoDlgEditTrapCommandsQuery, CDialog)
 #pragma warning(push)
 #pragma warning(disable : 4191)

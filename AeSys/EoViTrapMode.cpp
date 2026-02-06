@@ -123,14 +123,16 @@ void AeSysView::OnTrapModeEngage() {
     app.AddModeInformationToMessageList();
   }
 }
+
 void AeSysView::OnTrapModeMenu() {
-  CPoint CurrentPosition;
-  ::GetCursorPos(&CurrentPosition);
-  HMENU TrapMenu = ::LoadMenu(app.GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
-  CMenu* SubMenu = CMenu::FromHandle(GetSubMenu(TrapMenu, 0));
-  SubMenu->TrackPopupMenuEx(0, CurrentPosition.x, CurrentPosition.y, AfxGetMainWnd(), 0);
-  ::DestroyMenu(TrapMenu);
+  CPoint currentPosition;
+  ::GetCursorPos(&currentPosition);
+  auto trapMenu = ::LoadMenuW(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
+  auto* subMenu = CMenu::FromHandle(GetSubMenu(trapMenu, 0));
+  subMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), 0);
+  ::DestroyMenu(trapMenu);
 }
+
 void AeSysView::OnTrapModeModify() {
   auto* document = GetDocument();
   if (!document->IsTrapEmpty()) {
@@ -245,11 +247,11 @@ void AeSysView::OnTraprModeEngage() {
   // TODO: Add your command handler code here
 }
 void AeSysView::OnTraprModeMenu() {
-  CPoint CurrentPosition;
-  ::GetCursorPos(&CurrentPosition);
-  HMENU TrapMenu = ::LoadMenu(app.GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
+  CPoint currentPosition;
+  ::GetCursorPos(&currentPosition);
+  HMENU TrapMenu = ::LoadMenu(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
   CMenu* SubMenu = CMenu::FromHandle(::GetSubMenu(TrapMenu, 0));
-  SubMenu->TrackPopupMenuEx(0, CurrentPosition.x, CurrentPosition.y, AfxGetMainWnd(), 0);
+  SubMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), 0);
   ::DestroyMenu(TrapMenu);
 }
 void AeSysView::OnTraprModeModify() {

@@ -8,7 +8,7 @@ using namespace dde;
 //<summary>Add a conversation to our list.</summary>
 bool dde::ConversationAdd(HCONV hConv, HSZ hszTopic) {
 	PCONVERSATIONINFO pCI = (PCONVERSATIONINFO) new char[sizeof(CONVERSATIONINFO)];
-	if (!pCI) return false;
+  if (!pCI) { return false; }
 
 	::ZeroMemory(pCI, sizeof(CONVERSATIONINFO));
 	pCI->hConv = hConv;

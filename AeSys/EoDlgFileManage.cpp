@@ -258,15 +258,15 @@ void EoDlgFileManage::OnBnClickedTracingExclude() {
   }
 }
 void EoDlgFileManage::OnBnClickedTracingInclude() {
-  static DWORD nFilterIndex = 1;
+  static DWORD filterIndex{1};
 
-  auto Filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
+  auto filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
 
   OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);
-  of.hInstance = app.GetInstance();
-  of.lpstrFilter = Filter;
-  of.nFilterIndex = nFilterIndex;
+  of.hInstance = AeSys::GetInstance();
+  of.lpstrFilter = filter;
+  of.nFilterIndex = filterIndex;
   of.lpstrFile = new wchar_t[MAX_PATH];
   of.lpstrFile[0] = 0;
   of.nMaxFile = MAX_PATH;
@@ -275,7 +275,7 @@ void EoDlgFileManage::OnBnClickedTracingInclude() {
   of.lpstrDefExt = L"tra";
 
   if (GetOpenFileNameW(&of)) {
-    nFilterIndex = of.nFilterIndex;
+    filterIndex = of.nFilterIndex;
 
     CString strName = of.lpstrFile;
     CString strPath = strName.Left(of.nFileOffset);
@@ -284,8 +284,8 @@ void EoDlgFileManage::OnBnClickedTracingInclude() {
 
     if (m_Document->GetLayerTableLayer(strName) == 0) {
       if (m_Document->TracingMap(strName)) {
-        EoDbLayer* pLayer = m_Document->GetLayerTableLayer(strName);
-        pLayer->MakeResident();
+        auto* layer = m_Document->GetLayerTableLayer(strName);
+        layer->MakeResident();
 
         CString strOpenName = m_Document->GetPathName();
 
@@ -294,10 +294,10 @@ void EoDlgFileManage::OnBnClickedTracingInclude() {
 
           strName = of.lpstrFile;
           strName = strName.Mid(of.nFileOffset, of.nFileExtension - of.nFileOffset - 1);
-          pLayer->SetName(strName);
+          layer->SetName(strName);
         }
         int ItemIndex = m_TracingList.AddString(strName);
-        m_TracingList.SetItemData(ItemIndex, DWORD_PTR(pLayer));
+        m_TracingList.SetItemData(ItemIndex, DWORD_PTR(layer));
       }
     }
   }

@@ -390,7 +390,7 @@ bool EoDbPolygon::IsInView(AeSysView* view) {
     pt[1] = m_Pt[i];
     view->ModelViewTransformPoint(pt[1]);
 
-    if (EoGePoint4d::ClipLine(pt[0], pt[1])) return true;
+    if (EoGePoint4d::ClipLine(pt[0], pt[1])) { return true; }
     pt[0] = pt[1];
   }
   return false;
@@ -401,7 +401,7 @@ bool EoDbPolygon::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& poin
     EoGePoint4d pt(m_Pt[w]);
     view->ModelViewTransformPoint(pt);
 
-    if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) return true;
+    if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) { return true; }
   }
   return false;
 }

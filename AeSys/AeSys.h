@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "Eo.h"
 #include "EoApOptions.h"
 #include "EoDb.h"
 #include "EoGePoint3d.h"
@@ -18,6 +19,12 @@ extern COLORREF GreyPalette[16];
 extern COLORREF* pColTbl;
 
 namespace App {
+/** @brief Determines the file type based on the file extension of the provided path name.
+    @param pathName The path name of the file.
+    @return The determined file type.
+*/
+[[nodiscard]] EoDb::FileTypes FileTypeFromPath(const CString& pathName);
+
 /** Retrieves the path of the executable from the command line, excluding the executable name itself.
    For example, if the command line is "C:\Program Files\MyApp\MyApp.exe", this function will return "C:\Program Files\MyApp".
 */
@@ -28,6 +35,8 @@ namespace App {
  *  @return The loaded string resource.
  */
 [[nodiscard]] CString LoadStringResource(UINT resourceIdentifier);
+
+[[nodiscard]] CString ResourceFolderPath();
 
 inline COLORREF ViewTextColor() { return (~(ViewBackgroundColor | 0xff000000)); }
 }  // namespace App
@@ -44,46 +53,46 @@ class AeSys : public CWinAppEx {
   void PreLoadState() override;
 
  public:
-  // This is a legacy feature. All values are empty strings now for normal MouseButton command processing.
-  // User may still change through user interface, so must not assume empty.
   CString CustomLButtonDownCharacters{};
   CString CustomLButtonUpCharacters{L"{13}"};
   CString CustomRButtonDownCharacters{};
   CString CustomRButtonUpCharacters{L"{27}"};
+  EoApOptions m_Options;
 
  private:
-  int m_ArchitecturalUnitsFractionPrecision{};
-  bool m_ClipboardDataEoGroups{};
-  bool m_ClipboardDataImage{};
-  bool m_ClipboardDataText{};
-  UINT m_ClipboardFormatIdentifierForEoGroups{};
-  int m_CurrentMode{};
-  double m_DeviceHeightInMillimeters{0.0};
-  double m_DeviceHeightInPixels{0.0};
-  double m_DeviceWidthInMillimeters{0.0};
-  double m_DeviceWidthInPixels{0.0};
-  double m_DimensionAngle{0.0};
-  double m_DimensionLength{0.0};
-  double m_EngagedAngle{0.0};
-  double m_EngagedLength{0.0};
-  bool m_HighColorMode{};
-  EoGePoint3d m_HomePoints[9]{};
-  HMENU m_MainFrameMenuHandle{};
-  bool m_ModeInformationOverView{};
-  int m_ModeResourceIdentifier{};
-  CMultiDocTemplate* m_PegDocTemplate{};
-  int m_PrimaryMode{};
+  EoGePoint3d m_HomePoints[9];
+  CMultiDocTemplate* m_PegDocTemplate;
+  CMultiDocTemplate* m_TracingDocTemplate;
+  HMENU m_MainFrameMenuHandle;
+  char* m_SimplexStrokeFont;
+
+  double m_DeviceHeightInMillimeters;
+  double m_DeviceHeightInPixels;
+  double m_DeviceWidthInMillimeters;
+  double m_DeviceWidthInPixels;
+  double m_DimensionAngle;
+  double m_DimensionLength;
+  double m_EngagedAngle;
+  double m_EngagedLength;
   CString m_ShadowFolderPath;
-  char* m_SimplexStrokeFont{};
-  CMultiDocTemplate* m_TracingDocTemplate{};
-  EoInt16 m_TrapHighlightColor{};
-  bool m_TrapHighlighted{};
-  bool m_TrapModeAddGroups{};
-  Eo::Units m_Units{Eo::Units::Engineering};
+  UINT m_ClipboardFormatIdentifierForEoGroups;
+  Eo::Units m_Units;
+  int m_ArchitecturalUnitsFractionPrecision;
+  int m_CurrentMode;
+  int m_ModeResourceIdentifier;
+  int m_PrimaryMode;
+
+  EoInt16 m_TrapHighlightColor;
+  bool m_ClipboardDataEoGroups;
+  bool m_ClipboardDataImage;
+  bool m_ClipboardDataText;
+  bool m_TrapHighlighted;
+  bool m_TrapModeAddGroups;
+  bool m_HighColorMode;
+  bool m_ModeInformationOverView;
 
  public:
   bool m_NodalModeAddGroups;
-  EoApOptions m_Options;
 
 #if defined(USING_Direct2D)
   ID2D1Factory* m_Direct2dFactory;
@@ -101,91 +110,97 @@ class AeSys : public CWinAppEx {
   UINT CheckMenuItem(UINT uId, UINT uCheck) const { return (::CheckMenuItem(m_MainFrameMenuHandle, uId, uCheck)); }
   UINT ClipboardFormatIdentifierForEoGroups() const { return (m_ClipboardFormatIdentifierForEoGroups); }
   int ConfirmMessageBox(UINT stringResourceIdentifier, const CString& string);
-  int CurrentMode() const { return m_CurrentMode; }
-  double DeviceHeightInMillimeters() const { return m_DeviceHeightInMillimeters; }
-  double DeviceHeightInPixels() const { return m_DeviceHeightInPixels; }
-  double DeviceWidthInMillimeters() const { return m_DeviceWidthInMillimeters; }
-  double DeviceWidthInPixels() const { return m_DeviceWidthInPixels; }
-  double DimensionAngle() const { return (m_DimensionAngle); }
-  double DimensionLength() const { return (m_DimensionLength); }
+  [[nodiscard]] int CurrentMode() const { return m_CurrentMode; }
+  [[nodiscard]] double DeviceHeightInMillimeters() const { return m_DeviceHeightInMillimeters; }
+  [[nodiscard]] double DeviceHeightInPixels() const { return m_DeviceHeightInPixels; }
+  [[nodiscard]] double DeviceWidthInMillimeters() const { return m_DeviceWidthInMillimeters; }
+  [[nodiscard]] double DeviceWidthInPixels() const { return m_DeviceWidthInPixels; }
+  [[nodiscard]] double DimensionAngle() const { return (m_DimensionAngle); }
+  [[nodiscard]] double DimensionLength() const { return (m_DimensionLength); }
   void EditColorPalette();
-  double EngagedAngle() const { return (m_EngagedAngle); }
-  double EngagedLength() const { return (m_EngagedLength); }
+  [[nodiscard]] double EngagedAngle() const { return (m_EngagedAngle); }
+  [[nodiscard]] double EngagedLength() const { return (m_EngagedLength); }
   void FormatAngle(CString& angleAsString, const double angle, const int width, const int precision);
 
-  /// @brief Formats a length value as a string with specified units and formatting options.
-  /// @param lengthAsString Output parameter that receives the formatted length string.
-  /// @param units The unit system to use for formatting the length.
-  /// @param length The length value to format.
-  /// @param minWidth The minimum field width for the formatted output.
-  /// @param precision The number of decimal places to display.
-  /// @note Formatting rules follow:
-  /// @verbatim
-  /// ArchitecturalS units formatted as follows:
-  ///	\S[feet]'[inches].[fraction numerator]/[fraction denominator];"
-  /// Architectural units formatted as follows:
-  ///	[feet]'[inches].[fraction numerator] [fraction denominator]"
-  /// Engineering units formatted as follows:
-  ///	[feet]'[inches].[decimal inches]"
-  /// All other units formatted using floating decimal.
-  /// @endverbatim
+  /** @brief Formats a length value as a string with specified units and formatting options.
+   * @param lengthAsString Output parameter that receives the formatted length string.
+   * @param units The unit system to use for formatting the length.
+   * @param length The length value to format.
+   * @param minWidth The minimum field width for the formatted output.
+   * @param precision The number of decimal places to display.
+   * @note Formatting rules follow:
+   * @verbatim
+   * ArchitecturalS units formatted as follows:
+   *	\S[feet]'[inches].[fraction numerator]/[fraction denominator];"
+   * Architectural units formatted as follows:
+   *	[feet]'[inches].[fraction numerator] [fraction denominator]"
+   * Engineering units formatted as follows:
+   *	[feet]'[inches].[decimal inches]"
+   * All other units formatted using floating decimal.
+   * @endverbatim
+   */
   void FormatLength(CString& lengthAsString, Eo::Units units, const double length, const int minWidth = 0,
                     const int precision = 4);
 
-  /// @brief Formats a length value as an architectural measurement string in feet and inches with fractional inches.
-  /// @param lengthAsBuffer The output buffer to receive the formatted architectural length string.
-  /// @param bufSize The size of the output buffer in wide characters.
-  /// @param units The architectural units style to use for formatting (e.g., ArchitecturalS for stacked fractions).
-  /// @param length The length value to format, in the internal unit system.
+  /** @brief Formats a length value as an architectural measurement string in feet and inches with fractional inches.
+   * @param lengthAsBuffer The output buffer to receive the formatted architectural length string.
+   * @param bufSize The size of the output buffer in wide characters.
+   * @param units The architectural units style to use for formatting (e.g., ArchitecturalS for stacked fractions).
+   * @param length The length value to format, in the internal unit system.
+   */
   void FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, const double length);
 
-  /// @brief Formats a length value in engineering units (feet and inches) and stores it in a buffer.
-  /// @param lengthAsBuffer Output buffer to receive the formatted length string.
-  /// @param bufSize The size of the output buffer in characters.
-  /// @param length The length value to format, in internal units.
-  /// @param width The minimum field width for formatting the fractional part.
-  /// @param precision The number of significant digits to display in the formatted output.
+  /** @brief Formats a length value in engineering units (feet and inches) and stores it in a buffer.
+   * @param lengthAsBuffer Output buffer to receive the formatted length string.
+   * @param bufSize The size of the output buffer in characters.
+   * @param length The length value to format, in internal units.
+   * @param width The minimum field width for formatting the fractional part.
+   * @param precision The number of significant digits to display in the formatted output.
+   */
   void FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width,
                                const int precision);
 
-  /// @brief Formats a length value as a string with the specified units, width, and precision.
-  /// @param lengthAsString Output buffer that receives the formatted length string.
-  /// @param bufSize The size of the output buffer in characters.
-  /// @param units The units to use for formatting the length (e.g., feet, inches, meters, millimeters).
-  /// @param length The length value to format, in the base measurement system.
-  /// @param width The minimum field width for the formatted number.
-  /// @param precision The number of decimal places to display in the formatted number.
-  void FormatLengthSimple(LPWSTR lengthAsBuffr, const size_t bufSize, Eo::Units units, const double length, const int width,
-                          const int precision);
+  /** @brief Formats a length value as a string with the specified units, width, and precision.
+   * @param lengthAsString Output buffer that receives the formatted length string.
+   * @param bufSize The size of the output buffer in characters.
+   * @param units The units to use for formatting the length (e.g., feet, inches, meters, millimeters).
+   * @param length The length value to format, in the base measurement system.
+   * @param width The minimum field width for the formatted number.
+   * @param precision The number of decimal places to display in the formatted number.
+   */
+  void FormatLengthSimple(LPWSTR lengthAsBuffr, const size_t bufSize, Eo::Units units, const double length,
+                          const int width, const int precision);
 
-  int GetArchitecturalUnitsFractionPrecision() const { return (m_ArchitecturalUnitsFractionPrecision); }
-  EoGePoint3d GetCursorPosition();
-  bool IsClipboardDataGroups() const { return m_ClipboardDataEoGroups; }
-  bool IsClipboardDataImage() const { return m_ClipboardDataImage; }
-  bool IsClipboardDataText() const { return m_ClipboardDataText; }
-  static EoDb::FileTypes GetFileTypeFromPath(const CString& pathName);
-  HINSTANCE GetInstance() { return (m_hInstance); }
-  HWND GetSafeHwnd() { return (AfxGetMainWnd()->GetSafeHwnd()); }
-  HMENU GetSubMenu(int position) const { return (::GetSubMenu(m_MainFrameMenuHandle, position)); }
-  Eo::Units GetUnits() const { return (m_Units); }
-  /// <summary>Finds the greatest common divisor of arbitrary integers.</summary>
-  /// <returns>First number if second number is zero, greatest common divisor otherwise.</returns>
-  int GreatestCommonDivisor(const int number1, const int number2);
+  [[nodiscard]] int GetArchitecturalUnitsFractionPrecision() const { return (m_ArchitecturalUnitsFractionPrecision); }
+  [[nodiscard]] static EoGePoint3d GetCursorPosition();
+  [[nodiscard]] static HINSTANCE GetInstance();
+  [[nodiscard]] static CWnd* GetMainWindow();
+  [[nodiscard]] static HWND GetSafeHwnd();
+  [[nodiscard]] bool IsClipboardDataGroups() const { return m_ClipboardDataEoGroups; }
+  [[nodiscard]] bool IsClipboardDataImage() const { return m_ClipboardDataImage; }
+  [[nodiscard]] bool IsClipboardDataText() const { return m_ClipboardDataText; }
+  [[nodiscard]] HMENU GetSubMenu(int position) const { return (::GetSubMenu(m_MainFrameMenuHandle, position)); }
+  [[nodiscard]] Eo::Units GetUnits() const { return (m_Units); }
+
+  /** @brief Finds the greatest common divisor of arbitrary integers.
+   * @return First number if second number is zero, greatest common divisor otherwise.
+   */
+  [[nodiscard]] int GreatestCommonDivisor(const int number1, const int number2);
   void LoadHatchesFromFile(const CString& strFileName);
-  bool HighColorMode() const { return m_HighColorMode; }
-  EoGePoint3d HomePointGet(int i) const;
+  [[nodiscard]] bool HighColorMode() const { return m_HighColorMode; }
+  [[nodiscard]] EoGePoint3d HomePointGet(int i) const;
   void HomePointSave(int i, const EoGePoint3d& pt);
   void InitGbls(CDC* deviceContext);
-  bool IsTrapHighlighted() const { return m_TrapHighlighted; }
+  [[nodiscard]] bool IsTrapHighlighted() const { return m_TrapHighlighted; }
   void LoadModeResources(int mode);
   void LoadSimplexStrokeFont(const CString& pathName);
   bool ModeInformationOverView() const { return m_ModeInformationOverView; }
-  double ParseLength(wchar_t* lengthAsString);
-  double ParseLength(Eo::Units units, wchar_t* inputLine);
-  COLORREF PenColorsGetHot(EoInt16 color) { return (ColorPalette[color]); }
+  [[nodiscard]] double ParseLength(wchar_t* lengthAsString);
+  [[nodiscard]] double ParseLength(Eo::Units units, wchar_t* inputLine);
+  [[nodiscard]] COLORREF PenColorsGetHot(EoInt16 color) { return (ColorPalette[color]); }
   void LoadPenColorsFromFile(const CString& pathName);
 
-  double PenWidthsGet(EoInt16 penIndex);
+  [[nodiscard]] double LineWeight(EoInt16 penIndex);
 
   /** Loads the pen widths from a file.
  * The file is expected to have lines in the format:
@@ -195,7 +210,7 @@ class AeSys : public CWinAppEx {
  */
   void LoadPenWidthsFromFile(const CString& pathName);
 
-  int PrimaryMode() const { return m_PrimaryMode; }
+  [[nodiscard]] int PrimaryMode() const { return m_PrimaryMode; }
   void ReleaseSimplexStrokeFont();
   void SetArchitecturalUnitsFractionPrecision(const int precision) {
     if (precision > 0) { m_ArchitecturalUnitsFractionPrecision = precision; }
@@ -206,15 +221,20 @@ class AeSys : public CWinAppEx {
   void SetDimensionLength(double length) { m_DimensionLength = length; }
   void SetEngagedAngle(double angle) { m_EngagedAngle = angle; }
   void SetEngagedLength(double length) { m_EngagedLength = length; }
-  CString ResourceFolderPath();
-  int SetShadowFolderPath(const CString& folder);
+
+  /*** @brief Sets the shadow folder path for the application.
+   * @param folder The name of the folder to be used as the shadow folder.
+   * @return 0 if the folder was successfully created or already exists, or a non-zero error code if there was an error creating the folder.
+   */
+  [[nodiscard]] int SetShadowFolderPath(const CString& folder);
   void SetUnits(Eo::Units units) { m_Units = units; }
-  CString ShadowFolderPath() { return m_ShadowFolderPath; }
+  [[nodiscard]] CString ShadowFolderPath() { return m_ShadowFolderPath; }
   char* SimplexStrokeFont() { return m_SimplexStrokeFont; }
-  EoInt16 TrapHighlightColor() const { return m_TrapHighlightColor; }
+  [[nodiscard]] EoInt16 TrapHighlightColor() const { return m_TrapHighlightColor; }
   void UpdateMDITabs(BOOL resetMDIChild);
   void WarningMessageBox(UINT stringResourceIdentifier);
   void WarningMessageBox(UINT stringResourceIdentifier, const CString& string);
+  [[nodiscard]] const EoApOptions& PropertyOptions() const { return m_Options; }
 
  public:
   afx_msg void OnAppAbout();

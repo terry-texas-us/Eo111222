@@ -972,7 +972,7 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
     int iWidDst = int(m_Viewport.Width());
     int iHgtDst = int(m_Viewport.Height());
 
-    BITMAP bm;
+    BITMAP bm{};
     m_backgroundImageBitmap.GetBitmap(&bm);
     CDC dcMem;
     dcMem.CreateCompatibleDC(nullptr);
@@ -1261,7 +1261,7 @@ void AeSysView::OnViewSolid() {}
 void AeSysView::OnViewWindow() {
   CPoint CurrentPosition;
   ::GetCursorPos(&CurrentPosition);
-  HMENU WindowMenu = ::LoadMenu(app.GetInstance(), MAKEINTRESOURCE(IDR_WINDOW));
+  HMENU WindowMenu = ::LoadMenu(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_WINDOW));
   CMenu* SubMenu = CMenu::FromHandle(::GetSubMenu(WindowMenu, 0));
   SubMenu->TrackPopupMenuEx(TPM_LEFTALIGN, CurrentPosition.x, CurrentPosition.y, AfxGetMainWnd(), 0);
   ::DestroyMenu(WindowMenu);
@@ -2243,7 +2243,7 @@ void AeSysView::RubberBandingStartAtEnable(EoGePoint3d pt, ERubs type) {
   m_RubberbandType = type;
 }
 
-EoGePoint3d AeSysView::GetCursorPosition() {
+[[nodiscard]] EoGePoint3d AeSysView::GetCursorPosition() {
   CPoint CursorPosition;
 
   ::GetCursorPos(&CursorPosition);
@@ -2351,7 +2351,7 @@ void AeSysView::SetModeCursor(int mode) {
       return;
   }
   auto cursorHandle = static_cast<HCURSOR>(
-      LoadImageW(app.GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+      LoadImageW(AeSys::GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
   VERIFY(cursorHandle);
   SetCursor(cursorHandle);
   SetClassLongPtr(this->GetSafeHwnd(), GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursorHandle));

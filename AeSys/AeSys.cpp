@@ -54,6 +54,7 @@ constexpr size_t numberOfPenWidths{16};
 constexpr double defaultPenWidths[numberOfPenWidths] = {0.0,  0.0075, 0.015, 0.02,   0.03, 0.0075, 0.015, 0.0225,
                                                         0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
 }  // namespace
+
 double penWidths[numberOfPenWidths] = {0.0,  0.0075, 0.015, 0.02,   0.03, 0.0075, 0.015, 0.0225,
                                        0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
 static void ResetPenWidthsToDefault() {
@@ -125,32 +126,46 @@ ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnUpdateTrapcommandsHigh
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
-// AeSys construction
-
-AeSys::AeSys() {
-  m_PegDocTemplate = nullptr;
-  m_TracingDocTemplate = nullptr;
-
-  EnableHtmlHelp();
-
+AeSys::AeSys()
+    : CustomLButtonDownCharacters{},
+      CustomLButtonUpCharacters{L"{13}"},
+      CustomRButtonDownCharacters{},
+      CustomRButtonUpCharacters{L"{27}"},
+      m_Options{},
+      // Private members
+      m_HomePoints{},
+      m_PegDocTemplate(nullptr),
+      m_TracingDocTemplate(nullptr),
+      m_MainFrameMenuHandle{},
+      m_SimplexStrokeFont{},
+      m_DeviceHeightInMillimeters{},
+      m_DeviceHeightInPixels{},
+      m_DeviceWidthInMillimeters{},
+      m_DeviceWidthInPixels{},
+      m_DimensionAngle{45.0},
+      m_DimensionLength{0.125},
+      m_EngagedAngle{},
+      m_EngagedLength{},
+      m_ShadowFolderPath{L""},
+      m_ClipboardFormatIdentifierForEoGroups{},
+      m_Units{Eo::Units::Inches},
+      m_ArchitecturalUnitsFractionPrecision{16},
+      m_CurrentMode{},
+      m_ModeResourceIdentifier{},
+      m_PrimaryMode{ID_MODE_DRAW},
+      m_TrapHighlightColor{},
+      m_ClipboardDataEoGroups{true},
+      m_ClipboardDataImage{},
+      m_ClipboardDataText{true},
+      m_TrapHighlighted{},
+      m_TrapModeAddGroups{true},
+      m_HighColorMode{},
+      m_ModeInformationOverView{},
+      m_NodalModeAddGroups{true} {
   // Detect color depth. 256 color toolbars can be used in the high or true color modes only (bits per pixel is > 8):
   CClientDC dc(AfxGetMainWnd());
   m_HighColorMode = dc.GetDeviceCaps(BITSPIXEL) > 8;
-
-  m_ClipboardDataImage = false;
-  m_ClipboardDataEoGroups = true;
-  m_ClipboardDataText = true;
-  m_ModeInformationOverView = false;
-  m_TrapModeAddGroups = true;
-  m_NodalModeAddGroups = true;
-  m_ClipboardFormatIdentifierForEoGroups = 0;
-  m_EngagedLength = 0.0;
-  m_EngagedAngle = 0.0;
-  m_DimensionLength = 0.125;
-  m_DimensionAngle = 45.;
-  m_Units = Eo::Units::Inches;
-  m_ArchitecturalUnitsFractionPrecision = 16;
-  m_SimplexStrokeFont = 0;
+  EnableHtmlHelp();
 }
 
 AeSys app;
@@ -213,7 +228,7 @@ BOOL AeSys::InitInstance() {
     delete mainFrame;
     return FALSE;
   }
-  m_pMainWnd = mainFrame;
+  m_pMainWnd = mainFrame;  // Set CWinApp::m_pMainWnd to the main frame window.
   mainFrame->DragAcceptFiles();
 
   CDC* DeviceContext = mainFrame->GetDC();
@@ -233,20 +248,23 @@ BOOL AeSys::InitInstance() {
   } else {
     if (!ProcessShellCommand(CommandLineInfo)) { return FALSE; }
   }
-  m_MainFrameMenuHandle = LoadMenuW(m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
+  m_MainFrameMenuHandle = LoadMenuW(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME));
 
-  if (!RegisterKeyPlanWindowClass(m_hInstance)) { return FALSE; }
-  if (!RegisterPreviewWindowClass(m_hInstance)) { return FALSE; }
-  SetShadowFolderPath(L"AeSys Shadow Folder");
+  if (!RegisterKeyPlanWindowClass(AeSys::GetInstance())) { return FALSE; }
+  if (!RegisterPreviewWindowClass(AeSys::GetInstance())) { return FALSE; }
 
-  CString ResourceFolder = ResourceFolderPath();
-  LoadSimplexStrokeFont(ResourceFolder + L"Simplex.psf");
-  LoadHatchesFromFile(ResourceFolder + L"Hatches\\DefaultSet.txt");
+  if (SetShadowFolderPath(L"AeSys Shadow Folder") != 0) {
+    AddStringToMessageList(L"Failed to set shadow folder path.");
+  }
+
+  CString resourceFolder = App::ResourceFolderPath();
+  LoadSimplexStrokeFont(resourceFolder + L"Simplex.psf");
+  LoadHatchesFromFile(resourceFolder + L"Hatches\\DefaultSet.txt");
   //LoadPenColorsFromFile(ResourceFolder + L"Pens\\Colors\\Default.txt"));
 
 #if defined(USING_DDE)
   // Initialize for using DDEML
-  dde::Setup(m_hInstance);
+  dde::Setup(AeSys::GetInstance());
 #endif  // USING_DDE
 
   OnModeDraw();
@@ -254,8 +272,8 @@ BOOL AeSys::InitInstance() {
   // This is the private data format used to pass EoGroups from one instance to another
   m_ClipboardFormatIdentifierForEoGroups = RegisterClipboardFormatW(L"EoGroups");
 
-  m_pMainWnd->ShowWindow(m_nCmdShow);
-  m_pMainWnd->UpdateWindow();
+  GetMainWindow()->ShowWindow(m_nCmdShow);
+  GetMainWindow()->UpdateWindow();
 
   // Testing code here
 
@@ -454,7 +472,7 @@ void AeSys::OnFileRun() {
 
 void AeSys::OnHelpContents() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_CONTENTS, 0L); }
 
-double AeSys::PenWidthsGet(EoInt16 penIndex) { return (penWidths[penIndex]); }
+[[nodiscard]] double AeSys::LineWeight(EoInt16 penIndex) { return (penWidths[penIndex]); }
 
 void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
   CStdioFile file;
@@ -486,37 +504,10 @@ void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
   }
 }
 
-EoDb::FileTypes AeSys::GetFileTypeFromPath(const CString& pathName) {
-  EoDb::FileTypes Type(EoDb::kUnknown);
-  CString Extension = pathName.Right(3);
-
-  if (!Extension.IsEmpty()) {
-    if (Extension.CompareNoCase(L"peg") == 0) {
-      Type = EoDb::kPeg;
-    } else if (Extension.CompareNoCase(L"tra") == 0) {
-      Type = EoDb::kTracing;
-    } else if (Extension.CompareNoCase(L"jb1") == 0) {
-      Type = EoDb::kJob;
-    } else if (Extension.CompareNoCase(L"dwg") == 0) {
-      Type = EoDb::kDwg;
-    } else if (Extension.CompareNoCase(L"dxf") == 0) {
-      Type = EoDb::kDxf;
-    } else if (Extension.CompareNoCase(L"dxb") == 0) {
-      Type = EoDb::kDxb;
-    }
-  }
-  return Type;
-}
-
-CString AeSys::ResourceFolderPath() {
-  auto applicationPath = App::PathFromCommandLine();
-  return applicationPath + L"\\res\\";
-}
-
-int AeSys::SetShadowFolderPath(const CString& folder) {
+[[nodiscard]] int AeSys::SetShadowFolderPath(const CString& folder) {
   wchar_t path[MAX_PATH]{};
 
-  if (SHGetSpecialFolderPathW(m_pMainWnd->GetSafeHwnd(), path, CSIDL_PERSONAL, TRUE)) {
+  if (SHGetSpecialFolderPathW(AeSys::GetSafeHwnd(), path, CSIDL_PERSONAL, TRUE)) {
     m_ShadowFolderPath = path;
   } else {
     m_ShadowFolderPath.Empty();
@@ -526,10 +517,17 @@ int AeSys::SetShadowFolderPath(const CString& folder) {
   return (_wmkdir(m_ShadowFolderPath));
 }
 
-EoGePoint3d AeSys::GetCursorPosition() {
+[[nodiscard]] EoGePoint3d AeSys::GetCursorPosition() {
   auto* activeView = AeSysView::GetActiveView();
   return (activeView == nullptr) ? EoGePoint3d::kOrigin : activeView->GetCursorPosition();
 }
+
+[[nodiscard]] HINSTANCE AeSys::GetInstance() { return AfxGetInstanceHandle(); }
+
+[[nodiscard]] CWnd* AeSys::GetMainWindow() { return AfxGetMainWnd(); }
+
+[[nodiscard]] HWND AeSys::GetSafeHwnd() { return (AfxGetMainWnd()->GetSafeHwnd()); }
+
 void AeSys::SetCursorPosition(EoGePoint3d pt) {
   auto* activeView = AeSysView::GetActiveView();
   activeView->SetCursorPosition(pt);
@@ -579,7 +577,7 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
   }
 }
 
-EoGePoint3d AeSys::HomePointGet(int i) const {
+[[nodiscard]] EoGePoint3d AeSys::HomePointGet(int i) const {
   if (i >= 0 && i < 9) return (m_HomePoints[i]);
 
   return (EoGePoint3d::kOrigin);
@@ -726,10 +724,11 @@ void AeSys::BuildModifiedAcceleratorTable() {
   HACCEL AcceleratorTableHandle = MainFrame->m_hAccelTable;
   ::DestroyAcceleratorTable(AcceleratorTableHandle);
 
-  HACCEL ModeAcceleratorTableHandle = ::LoadAccelerators(m_hInstance, MAKEINTRESOURCE(m_ModeResourceIdentifier));
+  HACCEL ModeAcceleratorTableHandle =
+      ::LoadAccelerators(AeSys::GetInstance(), MAKEINTRESOURCE(m_ModeResourceIdentifier));
   int ModeAcceleratorTableEntries = CopyAcceleratorTableW(ModeAcceleratorTableHandle, nullptr, 0);
 
-  AcceleratorTableHandle = ::LoadAccelerators(m_hInstance, MAKEINTRESOURCE(IDR_MAINFRAME));
+  AcceleratorTableHandle = ::LoadAccelerators(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_MAINFRAME));
   int AcceleratorTableEntries = CopyAcceleratorTableW(AcceleratorTableHandle, nullptr, 0);
 
   LPACCEL ModifiedAcceleratorTable =
@@ -796,7 +795,8 @@ void AeSys::FormatLength(CString& lengthAsString, Eo::Units units, const double 
   lengthAsString.ReleaseBuffer();
 }
 
-void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, const double length) {
+void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units,
+                                      const double length) {
   wchar_t szBuf[16]{};
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
@@ -961,7 +961,7 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
   return totalLength;
 }
 
-double AeSys::ParseLength(wchar_t* inputLine) {
+[[nodiscard]] double AeSys::ParseLength(wchar_t* inputLine) {
   wchar_t* end{};
 
   // Parse the leading numeric portion of the string or possible the numerator of a fraction
@@ -1011,7 +1011,7 @@ double AeSys::ParseLength(wchar_t* inputLine) {
     @return The parsed length in internal units (inches).
     @throws wchar_t* If an error occurs during parsing, an error message is thrown.
 */
-double AeSys::ParseLength(Eo::Units units, wchar_t* inputLine) {
+[[nodiscard]] double AeSys::ParseLength(Eo::Units units, wchar_t* inputLine) {
   try {
     int iTokId{};
     long lDef{};
@@ -1102,6 +1102,31 @@ void AeSys::OnAppAbout() {
 }
 
 namespace App {
+[[nodiscard]] EoDb::FileTypes FileTypeFromPath(const CString& pathName) {
+  EoDb::FileTypes type(EoDb::FileTypes::Unknown);
+
+  int dotPosition = pathName.ReverseFind(L'.');
+  if (dotPosition != -1 && dotPosition < pathName.GetLength() - 1) {
+    CString extension = pathName.Mid(dotPosition + 1);
+    extension.MakeLower();
+
+    if (extension == L"peg") {
+      type = EoDb::FileTypes::Peg;
+    } else if (extension == L"tra") {
+      type = EoDb::FileTypes::Tracing;
+    } else if (extension == L"jb1") {
+      type = EoDb::FileTypes::Job;
+    } else if (extension == L"dwg") {
+      type = EoDb::FileTypes::Dwg;
+    } else if (extension == L"dxf") {
+      type = EoDb::FileTypes::Dxf;
+    } else if (extension == L"dxb") {
+      type = EoDb::FileTypes::Dxb;
+    }
+  }
+  return type;
+}
+
 [[nodiscard]] CString PathFromCommandLine() {
   CString pathName = ::GetCommandLineW();
   int lastPathDelimiter = pathName.ReverseFind(L'\\');
@@ -1121,4 +1146,10 @@ namespace App {
 #endif
   return resourceString;
 }
+
+[[nodiscard]] CString ResourceFolderPath() {
+  auto applicationPath = PathFromCommandLine();
+  return applicationPath + L"\\res\\";
+}
+
 }  // namespace App

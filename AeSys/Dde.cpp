@@ -498,11 +498,11 @@ bool dde::ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData) {
   PCONVERSATIONINFO pCI;
   wchar_t szResult[MAXRESULTSIZE];
 
-  if (!hData) return false;
+  if (!hData) { return false; }
 
   LPTSTR pData = (LPTSTR)DdeAccessData(hData, 0);
 
-  if (!pData) return false;
+  if (!pData) { return false; }
 
   // Allocate double required size we might need so we can avoid doing any space tests.
   pArgBuf = (LPTSTR) new wchar_t[2 * wcslen(pData)];

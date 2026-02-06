@@ -623,7 +623,7 @@ bool EoDbEllipse::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& poin
   for (EoUInt16 w = 0; w < 2; w++) {
     view->ModelViewTransformPoint(pt[w]);
 
-    if (point.DistanceToPointXY(pt[w]) < sm_SelectApertureSize) return true;
+    if (point.DistanceToPointXY(pt[w]) < sm_SelectApertureSize) { return true; }
   }
   return false;
 }
@@ -788,7 +788,7 @@ bool EoDbEllipse::IsInView(AeSysView* view) {
     EoGePoint4d ptEnd(pts[w]);
     view->ModelViewTransformPoint(ptEnd);
 
-    if (EoGePoint4d::ClipLine(ptBeg, ptEnd)) return true;
+    if (EoGePoint4d::ClipLine(ptBeg, ptEnd)) { return true; }
 
     ptBeg = ptEnd;
   }

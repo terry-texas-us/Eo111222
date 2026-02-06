@@ -214,8 +214,8 @@ bool EoGeLine::IsContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3
   for (;;) {
     iOut[i] = pt[i].RelationshipToRectangle(lowerLeftPoint, upperRightPoint);
 
-    if (iOut[0] == 0 && iOut[1] == 0) return true;
-    if ((iOut[0] & iOut[1]) != 0) return false;
+    if (iOut[0] == 0 && iOut[1] == 0) { return true; }
+    if ((iOut[0] & iOut[1]) != 0) { return false; }
     i = (iOut[0] == 0) ? 1 : 0;
 
     if ((iOut[i] & 1) == 1) {  // Above window
@@ -235,10 +235,10 @@ bool EoGeLine::IsContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3
 }
 
 bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, const double apert, EoGePoint3d& ptProj, double* rel) const {
-  if (pt.x < std::min(begin.x, end.x) - apert) return false;
-  if (pt.x > std::max(begin.x, end.x) + apert) return false;
-  if (pt.y < std::min(begin.y, end.y) - apert) return false;
-  if (pt.y > std::max(begin.y, end.y) + apert) return false;
+  if (pt.x < std::min(begin.x, end.x) - apert) { return false; }
+  if (pt.x > std::max(begin.x, end.x) + apert) { return false; }
+  if (pt.y < std::min(begin.y, end.y) - apert) { return false; }
+  if (pt.y > std::max(begin.y, end.y) + apert) { return false; }
 
   double dPBegX = begin.x - pt.x;
   double dPBegY = begin.y - pt.y;
@@ -259,7 +259,7 @@ bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, const double apert, EoGePoint
     double dy = dPBegY + *rel * dBegEndY;
     DistanceSquared = dx * dx + dy * dy;
   }
-  if (DistanceSquared > apert * apert) return false;
+  if (DistanceSquared > apert * apert) { return false; }
 
   ptProj.x = begin.x + (*rel * dBegEndX);
   ptProj.y = begin.y + (*rel * dBegEndY);

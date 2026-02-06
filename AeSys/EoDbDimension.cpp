@@ -222,7 +222,7 @@ bool EoDbDimension::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& po
     pt = EoGePoint4d(m_ln[w]);
     view->ModelViewTransformPoint(pt);
 
-    if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) return true;
+    if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) { return true; }
   }
   return false;
 }
@@ -280,7 +280,7 @@ bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoi
   view->ModelViewTransformPoints(4, pt);
 
   for (size_t n = 0; n < 4; n++) {
-    if (EoGeLine(pt[n], pt[(n + 1) % 4]).DirRelOfPt(point) < 0) return false;
+    if (EoGeLine(pt[n], pt[(n + 1) % 4]).DirRelOfPt(point) < 0) { return false; }
   }
   ptProj = point;
   sm_wFlags |= 0x0002;

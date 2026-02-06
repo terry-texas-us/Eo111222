@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgEditTrapCommandsQuery : public CDialog {
-  DECLARE_DYNAMIC(EoDlgEditTrapCommandsQuery)
-
  public:
   EoDlgEditTrapCommandsQuery(CWnd* parent = nullptr);
   EoDlgEditTrapCommandsQuery(const EoDlgEditTrapCommandsQuery&) = delete;

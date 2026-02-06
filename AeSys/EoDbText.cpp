@@ -181,7 +181,7 @@ bool EoDbText::IsInView(AeSysView* view) {
 
     view->ModelViewTransformPoints(2, pt);
 
-    if (EoGePoint4d::ClipLine(pt[0], pt[1])) return true;
+    if (EoGePoint4d::ClipLine(pt[0], pt[1])) { return true; }
   }
   return false;
 }
@@ -233,7 +233,7 @@ bool EoDbText::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&
 }
 
 bool EoDbText::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
-  if (m_strText.GetLength() == 0) return false;
+  if (m_strText.GetLength() == 0) { return false; }
 
   EoGePoint3dArray pts;
 
@@ -244,7 +244,7 @@ bool EoDbText::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&
   view->ModelViewTransformPoints(4, pt0);
 
   for (size_t n = 0; n < 4; n++) {
-    if (EoGeLine(pt0[n], pt0[(n + 1) % 4]).DirRelOfPt(point) < 0) return false;
+    if (EoGeLine(pt0[n], pt0[(n + 1) % 4]).DirRelOfPt(point) < 0) { return false; }
   }
   ptProj = point;
 
@@ -382,7 +382,7 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDb
 
 bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, int startPosition,
                                          int numberOfCharacters, const CString& text) {
-  if (numberOfCharacters <= 0) return true;
+  if (numberOfCharacters <= 0) { return true; }
 
   EoGeTransformMatrix tm(referenceSystem.TransformMatrix());
   tm.Inverse();

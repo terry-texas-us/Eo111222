@@ -9,7 +9,7 @@
 
   #include "Dde.h"						
   
-  dde::Setup(m_hInstance);				
+  dde::Setup(AeSys::GetInstance());				
   
   dde::PostAdvise(dde::ExtNumInfo);		
   dde::PostAdvise(dde::ExtStrInfo);		

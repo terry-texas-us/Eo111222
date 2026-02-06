@@ -218,12 +218,12 @@ bool EoDbLine::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) 
   pt = m_ln.begin;
   view->ModelViewTransformPoint(pt);
 
-  if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) return true;
+  if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) { return true; }
 
   pt = m_ln.end;
   view->ModelViewTransformPoint(pt);
 
-  if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) return true;
+  if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) { return true; }
 
   return false;
 }

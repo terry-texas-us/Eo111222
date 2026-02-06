@@ -36,7 +36,7 @@ void BeginLineStrip() {
 
 static bool AnyPointsInView(EoGePoint4dArray& pointsArray) {
   for (int i = 0; i < pointsArray.GetSize(); i++) {
-    if (pointsArray[i].IsInView()) return true;
+    if (pointsArray[i].IsInView()) { return true; }
   }
   return false;
 }
@@ -235,7 +235,7 @@ bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint
     view->ModelViewTransformPoint(ptEnd);
 
     EoGeLine LineSegment(ptBeg, ptEnd);
-    if (LineSegment.IsContainedXY(lowerLeftPoint, upperRightPoint)) return true;
+    if (LineSegment.IsContainedXY(lowerLeftPoint, upperRightPoint)) { return true; }
 
     ptBeg = ptEnd;
   }
@@ -252,7 +252,7 @@ bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint
     view->ModelViewTransformPoint(ptEnd);
 
     EoGeLine LineSegment(ptBeg, ptEnd);
-    if (LineSegment.IsContainedXY(lowerLeftPoint, upperRightPoint)) return true;
+    if (LineSegment.IsContainedXY(lowerLeftPoint, upperRightPoint)) { return true; }
 
     ptBeg = ptEnd;
   }

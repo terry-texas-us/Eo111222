@@ -28,18 +28,18 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
 
         CFileStatus fs;
         if (CFile::GetStatus(psz, fs)) {
-          EoDbLayer* Layer = document->GetLayerTableLayer(psz);
+          auto* layer = document->GetLayerTableLayer(psz);
 
-          if (Layer != 0) {
-            WndProcPreviewUpdateLayer(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), Layer);
+          if (layer != nullptr) {
+            WndProcPreviewUpdateLayer(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), layer);
           } else {
-            Layer = new EoDbLayer(L"", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
+            layer = new EoDbLayer(L"", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
 
-            document->TracingLoadLayer(psz, Layer);
-            WndProcPreviewUpdateLayer(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), Layer);
+            document->TracingLoadLayer(psz, layer);
+            WndProcPreviewUpdateLayer(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), layer);
 
-            Layer->DeleteGroupsAndRemoveAll();
-            delete Layer;
+            layer->DeleteGroupsAndRemoveAll();
+            delete layer;
           }
         }
       }

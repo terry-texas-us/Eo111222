@@ -172,7 +172,7 @@ bool AeSysView::StartAssemblyFromLine() {
   EoGeLine Line = m_BeginSectionLine->Ln();
 
   bool ParallelLines = Line.ParallelTo(m_CurrentReferenceLine);
-  if (ParallelLines) return false;
+  if (ParallelLines) { return false; }
 
   EoGePoint3d ptInt;
   m_AssemblyGroup = m_BeginSectionGroup;

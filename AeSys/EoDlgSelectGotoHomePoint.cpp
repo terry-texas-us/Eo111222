@@ -76,32 +76,32 @@ void EoDlgSelectGotoHomePoint::OnCbnEditupdateList() {
   }
 }
 void EoDlgSelectGotoHomePoint::OnCbnSelchangeList() {
-  int NamesItemIndex = m_HomePointNames.GetCurSel();
+  int namesItemIndex = m_HomePointNames.GetCurSel();
 
-  if (NamesItemIndex != CB_ERR) {
-    EoGePoint3d Point;
-    switch (NamesItemIndex) {
+  if (namesItemIndex != CB_ERR) {
+    EoGePoint3d point;
+    switch (namesItemIndex) {
       case 9:
-        Point = m_ActiveView->GridOrign();
+        point = m_ActiveView->GridOrign();
         break;
       case 10:
-        Point = AeSysDoc::GetDoc()->GetTrapPivotPoint();
+        point = AeSysDoc::GetDoc()->GetTrapPivotPoint();
         break;
       case 11:
-        Point = m_ActiveView->CameraTarget();
+        point = m_ActiveView->CameraTarget();
         break;
       case 12:
-        Point = EoGePoint3d::kOrigin;
+        point = EoGePoint3d::kOrigin;
         break;
       default:
-        Point = app.HomePointGet(NamesItemIndex);
+        point = app.HomePointGet(namesItemIndex);
     }
-    CString Length;
-    app.FormatLength(Length, std::max(app.GetUnits(), Eo::Units::Engineering), Point.x);
-    SetDlgItemTextW(IDC_X, Length);
-    app.FormatLength(Length, std::max(app.GetUnits(), Eo::Units::Engineering), Point.y);
-    SetDlgItemTextW(IDC_Y, Length);
-    app.FormatLength(Length, std::max(app.GetUnits(), Eo::Units::Engineering), Point.z);
-    SetDlgItemTextW(IDC_Z, Length);
+    CString length;
+    app.FormatLength(length, std::max(app.GetUnits(), Eo::Units::Engineering), point.x);
+    SetDlgItemTextW(IDC_X, length);
+    app.FormatLength(length, std::max(app.GetUnits(), Eo::Units::Engineering), point.y);
+    SetDlgItemTextW(IDC_Y, length);
+    app.FormatLength(length, std::max(app.GetUnits(), Eo::Units::Engineering), point.z);
+    SetDlgItemTextW(IDC_Z, length);
   }
 }

@@ -154,7 +154,7 @@ END_MESSAGE_MAP()
 
 AeSysDoc::AeSysDoc()
     : m_IdentifiedLayerName(),
-      m_SaveAsType(EoDb::kUnknown),
+      m_SaveAsType(EoDb::FileTypes::Unknown),
       m_HeaderSection(),
       m_LineTypeTable(),
       m_ContinuousLineType(nullptr),
@@ -258,7 +258,7 @@ BOOL AeSysDoc::OnNewDocument() {
 
   SetCommonTableEntries();
 
-  m_SaveAsType = EoDb::kPeg;
+  m_SaveAsType = EoDb::FileTypes::Peg;
   SetWorkLayer(GetLayerTableLayerAt(0));
   InitializeGroupAndPrimitiveEdit();
 
@@ -267,11 +267,11 @@ BOOL AeSysDoc::OnNewDocument() {
 BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"AeSysDoc<%p>::OnOpenDocument(%s)\n", this, pathName);
 
-  switch (AeSys::GetFileTypeFromPath(pathName)) {
-    case EoDb::kDwg:
+  switch (App::FileTypeFromPath(pathName)) {
+    case EoDb::FileTypes::Dwg:
       break;
-    case EoDb::kDxf:
-    case EoDb::kDxb: {
+    case EoDb::FileTypes::Dxf:
+    case EoDb::FileTypes::Dxb: {
       EoDbDrwInterface dxfInterface(this);
       dxfRW dxfReader(Eo::WStringToMultiByte(pathName).data());
       dxfReader.setDebug(static_cast<DRW::DebugTraceLevel>(DRW::none));
@@ -313,13 +313,13 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       // create EoDbDrwInterface object and do conversion
       // set work layer to layer `0`
     } break;
-    case EoDb::kPeg:
+    case EoDb::FileTypes::Peg:
       try {
         EoDbPegFile file;
         if (file.Open(pathName, CFile::modeRead | CFile::shareDenyNone)) {
           SetCommonTableEntries();
           file.Load(this);
-          m_SaveAsType = EoDb::kPeg;
+          m_SaveAsType = EoDb::FileTypes::Peg;
         }
       } catch (const wchar_t* e) {
         app.WarningMessageBox(IDS_MSG_PEGFILE_OPEN_FAILURE, pathName);
@@ -331,12 +331,12 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
         break;
       }
       break;
-    case EoDb::kTracing:
-    case EoDb::kJob:
+    case EoDb::FileTypes::Tracing:
+    case EoDb::FileTypes::Job:
       TracingOpen(pathName);
       break;
 
-    case EoDb::kUnknown:
+    case EoDb::FileTypes::Unknown:
       // Let the base class handle it and probably fail
     default:
       return CDocument::OnOpenDocument(pathName);
@@ -347,7 +347,7 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
   BOOL ReturnStatus = FALSE;
 
   switch (m_SaveAsType) {
-    case EoDb::kPeg: {
+    case EoDb::FileTypes::Peg: {
       WriteShadowFile();
       EoDbPegFile File;
       CFileException e;
@@ -357,36 +357,36 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
       }
       break;
     }
-    case EoDb::kTracing:
-    case EoDb::kJob: {
-      EoDbLayer* Layer = GetLayerTableLayer(pathName);
-      if (Layer != 0) {
+    case EoDb::FileTypes::Tracing:
+    case EoDb::FileTypes::Job: {
+      auto* layer = GetLayerTableLayer(pathName);
+      if (layer != nullptr) {
         CFile File(pathName, CFile::modeCreate | CFile::modeWrite);
         if (File == CFile::hFileNull) {
           app.WarningMessageBox(IDS_MSG_TRACING_WRITE_FAILURE, pathName);
           return FALSE;
         }
-        if (m_SaveAsType == EoDb::kJob) {
+        if (m_SaveAsType == EoDb::FileTypes::Job) {
           EoDbJobFile JobFile;
           JobFile.WriteHeader(File);
-          JobFile.WriteLayer(File, Layer);
-        } else if (m_SaveAsType == EoDb::kTracing) {
+          JobFile.WriteLayer(File, layer);
+        } else if (m_SaveAsType == EoDb::FileTypes::Tracing) {
           EoDbTracingFile TracingFile;
           TracingFile.WriteHeader(File);
-          TracingFile.WriteLayer(File, Layer);
+          TracingFile.WriteLayer(File, layer);
         }
         app.AddStringToMessageList(IDS_MSG_TRACING_SAVE_SUCCESS, pathName);
         ReturnStatus = TRUE;
       }
       break;
     }
-    case EoDb::kDwg:
-    case EoDb::kDxf:
-    case EoDb::kDxb:
+    case EoDb::FileTypes::Dwg:
+    case EoDb::FileTypes::Dxf:
+    case EoDb::FileTypes::Dxb:
       // TODO: Implement DXF/DXB saving using EoDbDrwInterface and libdxfrw
       break;
 
-    case EoDb::kUnknown:
+    case EoDb::FileTypes::Unknown:
       break;
 
     default:
@@ -524,13 +524,13 @@ void AeSysDoc::RemoveEmptyLayers() {
 }
 
 void AeSysDoc::LayerBlank(const CString& name) {
-  EoDbLayer* Layer = GetLayerTableLayer(name);
+  auto* layer = GetLayerTableLayer(name);
 
-  if (Layer == 0) {
+  if (layer == nullptr) {
     app.WarningMessageBox(IDS_LAYER_NOT_LOADED);
-  } else if (Layer->IsResident()) {
+  } else if (layer->IsResident()) {
     app.WarningMessageBox(IDS_MSG_LAYER_IS_RESIDENT, name);
-  } else if (Layer->IsOpened()) {
+  } else if (layer->IsOpened()) {
     if (app.ConfirmMessageBox(IDS_MSG_CONFIRM_BLANK, name) == IDYES) {
       RemoveAllTrappedGroups();
       RemoveAllGroupsFromAllViews();
@@ -538,27 +538,28 @@ void AeSysDoc::LayerBlank(const CString& name) {
       m_DeletedGroupList.DeleteGroupsAndRemoveAll();
 
       SetWorkLayer(GetLayerTableLayerAt(0));
-      m_SaveAsType = EoDb::kUnknown;
+      m_SaveAsType = EoDb::FileTypes::Unknown;
 
-      UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
+      UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
       RemoveLayerTableLayer(name);
     }
   } else {
-    UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
+    UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
     RemoveLayerTableLayer(name);
   }
 }
-bool AeSysDoc::LayerMelt(CString& strName) {
-  EoDbLayer* Layer = GetLayerTableLayer(strName);
-  if (Layer == 0) return false;
 
-  bool bRetVal = false;
+bool AeSysDoc::LayerMelt(CString& strName) {
+  auto* layer = GetLayerTableLayer(strName);
+  if (layer == nullptr) { return false; }
+
+  bool bRetVal{};
 
   auto Filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
 
   OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);
-  of.hInstance = app.GetInstance();
+  of.hInstance = AeSys::GetInstance();
   of.lpstrFilter = Filter;
   of.lpstrFile = new wchar_t[MAX_PATH];
   wcscpy_s(of.lpstrFile, MAX_PATH, strName);
@@ -570,26 +571,26 @@ bool AeSysDoc::LayerMelt(CString& strName) {
   if (GetSaveFileNameW(&of)) {
     strName = of.lpstrFile;
 
-    EoDb::FileTypes FileType = AeSys::GetFileTypeFromPath(strName);
-    if (FileType == EoDb::kTracing || FileType == EoDb::kJob) {
+    EoDb::FileTypes FileType = App::FileTypeFromPath(strName);
+    if (FileType == EoDb::FileTypes::Tracing || FileType == EoDb::FileTypes::Job) {
       CFile File(strName, CFile::modeWrite | CFile::modeCreate);
       if (File != CFile::hFileNull) {
-        if (FileType == EoDb::kJob) {
+        if (FileType == EoDb::FileTypes::Job) {
           EoDbJobFile JobFile;
           JobFile.WriteHeader(File);
-          JobFile.WriteLayer(File, Layer);
+          JobFile.WriteLayer(File, layer);
         } else {
           EoDbTracingFile TracingFile;
           TracingFile.WriteHeader(File);
-          TracingFile.WriteLayer(File, Layer);
+          TracingFile.WriteLayer(File, layer);
         }
-        Layer->ClearStateFlag();
-        Layer->MakeResident();
-        Layer->SetStateStatic();
-        Layer->SetTracingFlg(EoDbLayer::kTracingIsMapped);
+        layer->ClearStateFlag();
+        layer->MakeResident();
+        layer->SetStateStatic();
+        layer->SetTracingFlg(EoDbLayer::kTracingIsMapped);
 
         strName = strName.Mid(of.nFileOffset);
-        Layer->SetName(strName);
+        layer->SetName(strName);
         bRetVal = true;
       } else {
         app.WarningMessageBox(IDS_MSG_TRACING_WRITE_FAILURE, strName);
@@ -736,13 +737,13 @@ void AeSysDoc::TracingFuse(CString& nameAndLocation) {
   }
 }
 bool AeSysDoc::TracingLoadLayer(const CString& pathName, EoDbLayer* layer) {
-  EoDb::FileTypes FileType = AeSys::GetFileTypeFromPath(pathName);
-  if (FileType != EoDb::kTracing && FileType != EoDb::kJob) { return false; }
-  if (layer == 0) return false;
+  EoDb::FileTypes FileType = App::FileTypeFromPath(pathName);
+  if (FileType != EoDb::FileTypes::Tracing && FileType != EoDb::FileTypes::Job) { return false; }
+  if (layer == nullptr) { return false; }
 
   bool bFileOpen = false;
 
-  if (FileType == EoDb::kTracing) {
+  if (FileType == EoDb::FileTypes::Tracing) {
     CFileException e;
     CFile File(pathName, CFile::modeRead | CFile::shareDenyNone);
     if (File != CFile::hFileNull) {
@@ -763,34 +764,36 @@ bool AeSysDoc::TracingLoadLayer(const CString& pathName, EoDbLayer* layer) {
   }
   return (bFileOpen);
 }
+
 bool AeSysDoc::TracingMap(const CString& pathName) {
-  EoDb::FileTypes FileType = AeSys::GetFileTypeFromPath(pathName);
-  if (FileType != EoDb::kTracing && FileType != EoDb::kJob) { return false; }
-  bool bFileOpen = false;
+  EoDb::FileTypes FileType = App::FileTypeFromPath(pathName);
+  if (FileType != EoDb::FileTypes::Tracing && FileType != EoDb::FileTypes::Job) { return false; }
+  bool fileOpen{};
 
-  EoDbLayer* Layer = GetLayerTableLayer(pathName);
+  auto* layer = GetLayerTableLayer(pathName);
 
-  if (Layer != 0) {
-    if (Layer->IsOpened())
+  if (layer != nullptr) {
+    if (layer->IsOpened())
       app.WarningMessageBox(IDS_MSG_CLOSE_TRACING_FIRST, pathName);
     else
-      bFileOpen = true;
+      fileOpen = true;
   } else {
-    Layer = new EoDbLayer(pathName, EoDbLayer::kIsStatic);
+    layer = new EoDbLayer(pathName, EoDbLayer::kIsStatic);
 
-    bFileOpen = TracingLoadLayer(pathName, Layer);
+    fileOpen = TracingLoadLayer(pathName, layer);
 
-    if (bFileOpen)
-      AddLayerTableLayer(Layer);
+    if (fileOpen)
+      AddLayerTableLayer(layer);
     else
-      delete Layer;
+      delete layer;
   }
-  if (bFileOpen) {
-    Layer->SetTracingFlg(EoDbLayer::kTracingIsMapped);
-    UpdateAllViews(nullptr, EoDb::kLayerSafe, Layer);
+  if (fileOpen) {
+    layer->SetTracingFlg(EoDbLayer::kTracingIsMapped);
+    UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
   }
-  return (bFileOpen);
+  return (fileOpen);
 }
+
 bool AeSysDoc::TracingOpen(const CString& fileName) {
   // Opens tracing file.
 
@@ -812,60 +815,62 @@ bool AeSysDoc::TracingOpen(const CString& fileName) {
   }
   Layer->SetTracingFlg(EoDbLayer::kTracingIsOpened);
 
-  m_SaveAsType = EoDb::kTracing;
+  m_SaveAsType = EoDb::FileTypes::Tracing;
   SetWorkLayer(Layer);
 
   UpdateAllViews(nullptr, 0L, nullptr);
 
   return true;
 }
+
 bool AeSysDoc::TracingView(const CString& pathName) {
-  EoDb::FileTypes FileType = AeSys::GetFileTypeFromPath(pathName);
-  if (FileType != EoDb::kTracing && FileType != EoDb::kJob) { return false; }
-  bool bFileOpen = false;
+  EoDb::FileTypes fileType = App::FileTypeFromPath(pathName);
+  if (fileType != EoDb::FileTypes::Tracing && fileType != EoDb::FileTypes::Job) { return false; }
+  bool fileOpen{};
 
-  EoDbLayer* Layer = GetLayerTableLayer(pathName);
+  auto* layer = GetLayerTableLayer(pathName);
 
-  if (Layer != 0) {
-    if (Layer->IsOpened())
+  if (layer != nullptr) {
+    if (layer->IsOpened()) {
       app.WarningMessageBox(IDS_MSG_CLOSE_TRACING_FIRST, pathName);
-    else
-      bFileOpen = true;
+    } else {
+      fileOpen = true;
+    }
   } else {
-    Layer = new EoDbLayer(pathName, EoDbLayer::kIsStatic);
-
-    bFileOpen = TracingLoadLayer(pathName, Layer);
-
-    if (bFileOpen)
-      AddLayerTableLayer(Layer);
-    else
-      delete Layer;
+    layer = new EoDbLayer(pathName, EoDbLayer::kIsStatic);
+    fileOpen = TracingLoadLayer(pathName, layer);
+    if (fileOpen) {
+      AddLayerTableLayer(layer);
+    } else {
+      delete layer;
+    }
   }
-  if (bFileOpen) {
-    Layer->SetTracingFlg(EoDbLayer::kTracingIsViewed);
-    UpdateAllViews(nullptr, EoDb::kLayerSafe, Layer);
+  if (fileOpen) {
+    layer->SetTracingFlg(EoDbLayer::kTracingIsViewed);
+    UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
   }
-  return (bFileOpen);
+  return (fileOpen);
 }
+
 void AeSysDoc::WriteShadowFile() {
-  if (m_SaveAsType == EoDb::kPeg) {
-    CString ShadowFilePath(app.ShadowFolderPath());
-    ShadowFilePath += GetTitle();
-    int nExt = ShadowFilePath.Find('.');
+  if (m_SaveAsType == EoDb::FileTypes::Peg) {
+    CString shadowFilePath(app.ShadowFolderPath());
+    shadowFilePath += GetTitle();
+    int nExt = shadowFilePath.Find('.');
     if (nExt > 0) {
       CFileStatus fs;
       CFile::GetStatus(GetPathName(), fs);
 
-      ShadowFilePath.Truncate(nExt);
-      ShadowFilePath += fs.m_mtime.Format(L"_%Y%m%d%H%M");
-      ShadowFilePath += L".peg";
+      shadowFilePath.Truncate(nExt);
+      shadowFilePath += fs.m_mtime.Format(L"_%Y%m%d%H%M");
+      shadowFilePath += L".peg";
 
       CFileException e;
       EoDbPegFile fp;
-      if (!fp.Open(ShadowFilePath, CFile::modeWrite, &e)) {
-        fp.Open(ShadowFilePath, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive, &e);
+      if (!fp.Open(shadowFilePath, CFile::modeWrite, &e)) {
+        fp.Open(shadowFilePath, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive, &e);
         fp.Unload(this);
-        app.WarningMessageBox(IDS_MSG_FILE_SHADOWED_AS, ShadowFilePath);
+        app.WarningMessageBox(IDS_MSG_FILE_SHADOWED_AS, shadowFilePath);
         return;
       }
       app.WarningMessageBox(IDS_MSG_SHADOW_FILE_CREATE_FAILURE);
@@ -995,127 +1000,137 @@ void AeSysDoc::OnPrimBreak() {
 }
 
 void AeSysDoc::OnEditSegToWork() {
-  EoGePoint3d pt = app.GetCursorPosition();
+  EoGePoint3d cursorPosition = app.GetCursorPosition();
 
-  EoDbLayer* Layer = LayersSelUsingPoint(pt);
+  auto* layer = LayersSelUsingPoint(cursorPosition);
 
-  if (Layer != 0) {
-    if (Layer->IsInternal()) {
-      auto* Group = Layer->SelectGroupUsingPoint(pt);
+  if (layer != nullptr) {
+    if (layer->IsInternal()) {
+      auto* group = layer->SelectGroupUsingPoint(cursorPosition);
 
-      if (Group != 0) {
-        Layer->Remove(Group);
-        UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
-        AddWorkLayerGroup(Group);
-        UpdateAllViews(nullptr, EoDb::kGroup, Group);
+      if (group != nullptr) {
+        layer->Remove(group);
+        UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
+        AddWorkLayerGroup(group);
+        UpdateAllViews(nullptr, EoDb::kGroup, group);
       }
     }
   }
 }
+
 void AeSysDoc::OnFileQuery() {
-  EoGePoint3d pt = app.GetCursorPosition();
+  auto cursorPosition = app.GetCursorPosition();
 
-  EoDbLayer* Layer = LayersSelUsingPoint(pt);
+  auto* layer = LayersSelUsingPoint(cursorPosition);
 
-  if (Layer != 0) {
-    CPoint CurrentPosition;
-    ::GetCursorPos(&CurrentPosition);
+  if (layer != nullptr) {
+    CPoint currentPosition;
+    ::GetCursorPos(&currentPosition);
 
-    m_IdentifiedLayerName = Layer->Name();
+    m_IdentifiedLayerName = layer->Name();
 
-    int MenuResource = (Layer->IsInternal()) ? IDR_LAYER : IDR_TRACING;
+    int MenuResource = (layer->IsInternal()) ? IDR_LAYER : IDR_TRACING;
 
-    HMENU LayerTracingMenu = ::LoadMenu(app.GetInstance(), MAKEINTRESOURCE(MenuResource));
-    CMenu* SubMenu = CMenu::FromHandle(::GetSubMenu(LayerTracingMenu, 0));
+    auto layerTracingMenu = ::LoadMenuW(AeSys::GetInstance(), MAKEINTRESOURCE(MenuResource));
+    auto* subMenu = CMenu::FromHandle(::GetSubMenu(layerTracingMenu, 0));
 
-    SubMenu->ModifyMenu(0, MF_BYPOSITION | MF_STRING, 0, m_IdentifiedLayerName);
+    subMenu->ModifyMenu(0, MF_BYPOSITION | MF_STRING, 0, m_IdentifiedLayerName);
 
     if (MenuResource == IDR_LAYER) {
-      SubMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_WORK),
-                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsWork() ? MF_CHECKED : MF_UNCHECKED)));
-      SubMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_ACTIVE),
-                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsActive() ? MF_CHECKED : MF_UNCHECKED)));
-      SubMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_STATIC),
-                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsStatic() ? MF_CHECKED : MF_UNCHECKED)));
-      SubMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_HIDDEN),
-                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsOff() ? MF_CHECKED : MF_UNCHECKED)));
+      subMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_WORK),
+                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsWork() ? MF_CHECKED : MF_UNCHECKED)));
+      subMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_ACTIVE),
+                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsActive() ? MF_CHECKED : MF_UNCHECKED)));
+      subMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_STATIC),
+                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsStatic() ? MF_CHECKED : MF_UNCHECKED)));
+      subMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_HIDDEN),
+                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsOff() ? MF_CHECKED : MF_UNCHECKED)));
     } else {
-      SubMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_OPEN),
-                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsOpened() ? MF_CHECKED : MF_UNCHECKED)));
-      SubMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_MAP),
-                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsMapped() ? MF_CHECKED : MF_UNCHECKED)));
-      SubMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_VIEW),
-                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsViewed() ? MF_CHECKED : MF_UNCHECKED)));
-      SubMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_CLOAK),
-                             static_cast<UINT>(MF_BYCOMMAND | (Layer->IsOff() ? MF_CHECKED : MF_UNCHECKED)));
+      subMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_OPEN),
+                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsOpened() ? MF_CHECKED : MF_UNCHECKED)));
+      subMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_MAP),
+                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsMapped() ? MF_CHECKED : MF_UNCHECKED)));
+      subMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_VIEW),
+                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsViewed() ? MF_CHECKED : MF_UNCHECKED)));
+      subMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_CLOAK),
+                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsOff() ? MF_CHECKED : MF_UNCHECKED)));
     }
-    SubMenu->TrackPopupMenuEx(0, CurrentPosition.x, CurrentPosition.y, AfxGetMainWnd(), 0);
-    ::DestroyMenu(LayerTracingMenu);
+    subMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), 0);
+    ::DestroyMenu(layerTracingMenu);
   }
 }
-void AeSysDoc::OnLayerActive() {
-  EoDbLayer* Layer = GetLayerTableLayer(m_IdentifiedLayerName);
 
-  if (Layer == 0) {
+void AeSysDoc::OnLayerActive() {
+  auto* layer = GetLayerTableLayer(m_IdentifiedLayerName);
+
+  if (layer == nullptr) {
   } else {
-    if (Layer->IsWork()) {
+    if (layer->IsWork()) {
       app.WarningMessageBox(IDS_MSG_LAYER_NO_ACTIVE, m_IdentifiedLayerName);
     } else {
-      Layer->MakeStateActive();
-      UpdateAllViews(nullptr, EoDb::kLayerSafe, Layer);
+      layer->MakeStateActive();
+      UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
     }
   }
 }
-void AeSysDoc::OnLayerStatic() {
-  EoDbLayer* Layer = GetLayerTableLayer(m_IdentifiedLayerName);
 
-  if (Layer != 0) {
-    if (Layer->IsWork()) {
+void AeSysDoc::OnLayerStatic() {
+  auto* layer = GetLayerTableLayer(m_IdentifiedLayerName);
+
+  if (layer != nullptr) {
+    if (layer->IsWork()) {
       app.WarningMessageBox(IDS_MSG_LAYER_NO_STATIC, m_IdentifiedLayerName);
     } else {
-      Layer->SetStateStatic();
-      UpdateAllViews(nullptr, EoDb::kLayerSafe, Layer);
+      layer->SetStateStatic();
+      UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
     }
   }
 }
-void AeSysDoc::OnLayerHidden() {
-  EoDbLayer* Layer = GetLayerTableLayer(m_IdentifiedLayerName);
 
-  if (Layer != 0) {
-    if (Layer->IsWork()) {
+void AeSysDoc::OnLayerHidden() {
+  auto* layer = GetLayerTableLayer(m_IdentifiedLayerName);
+
+  if (layer != nullptr) {
+    if (layer->IsWork()) {
       app.WarningMessageBox(IDS_MSG_LAYER_NO_HIDDEN, m_IdentifiedLayerName);
     } else {
-      UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
-      Layer->SetStateOff();
+      UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+      layer->SetStateOff();
     }
   }
 }
+
 void AeSysDoc::OnLayerMelt() { LayerMelt(m_IdentifiedLayerName); }
+
 void AeSysDoc::OnLayerWork() {
-  EoDbLayer* Layer = GetLayerTableLayer(m_IdentifiedLayerName);
+  auto* layer = GetLayerTableLayer(m_IdentifiedLayerName);
 
-  SetWorkLayer(Layer);
+  SetWorkLayer(layer);
 }
-void AeSysDoc::OnTracingMap() { TracingMap(m_IdentifiedLayerName); }
-void AeSysDoc::OnTracingView() { TracingView(m_IdentifiedLayerName); }
-void AeSysDoc::OnTracingCloak() {
-  EoDbLayer* Layer = GetLayerTableLayer(m_IdentifiedLayerName);
 
-  if (Layer->IsOpened()) {
+void AeSysDoc::OnTracingMap() { TracingMap(m_IdentifiedLayerName); }
+
+void AeSysDoc::OnTracingView() { TracingView(m_IdentifiedLayerName); }
+
+void AeSysDoc::OnTracingCloak() {
+  auto* layer = GetLayerTableLayer(m_IdentifiedLayerName);
+
+  if (layer->IsOpened()) {
     CFile File(m_IdentifiedLayerName, CFile::modeWrite | CFile::modeCreate);
     if (File != CFile::hFileNull) {
       EoDbJobFile JobFile;
       JobFile.WriteHeader(File);
-      JobFile.WriteLayer(File, Layer);
+      JobFile.WriteLayer(File, layer);
       SetWorkLayer(GetLayerTableLayerAt(0));
-      m_SaveAsType = EoDb::kUnknown;
-      UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
-      Layer->SetStateOff();
+      m_SaveAsType = EoDb::FileTypes::Unknown;
+      UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+      layer->SetStateOff();
     } else {
       app.WarningMessageBox(IDS_MSG_TRACING_WRITE_FAILURE, m_IdentifiedLayerName);
     }
   }
 }
+
 void AeSysDoc::OnTracingFuse() { TracingFuse(m_IdentifiedLayerName); }
 void AeSysDoc::OnTracingOpen() { TracingOpen(m_IdentifiedLayerName); }
 void AeSysDoc::OnLayersActiveAll() {
@@ -1620,7 +1635,7 @@ void AeSysDoc::OnFileTracing() {
   OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);
   of.hwndOwner = AfxGetMainWnd() ? AfxGetMainWnd()->GetSafeHwnd() : nullptr;
-  of.hInstance = app.GetInstance();
+  of.hInstance = AeSys::GetInstance();
   of.lpstrFilter = L"Tracing Files (*.tra)\0*.tra\0\0";
   of.lpstrFile = fileBuffer;
   of.nMaxFile = MAX_PATH;
@@ -1664,7 +1679,7 @@ void AeSysDoc::OnPensLoadColors() {
 
   OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);
-  of.hInstance = app.GetInstance();
+  of.hInstance = AeSys::GetInstance();
   of.lpstrFilter = filter;
   of.lpstrFile = file.GetBuffer();
   of.nMaxFile = MAX_PATH;
@@ -1842,16 +1857,16 @@ void AeSysDoc::ResetAllViews() {
 void AeSysDoc::OnHelpKey() {
   switch (app.CurrentMode()) {
     case ID_MODE_DRAW:
-      WinHelpW(app.GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"DRAW"));
+      WinHelpW(AeSys::GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"DRAW"));
       break;
 
     case ID_MODE_EDIT: {
-      WinHelpW(app.GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"EDIT"));
+      WinHelpW(AeSys::GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"EDIT"));
       break;
     }
     case ID_MODE_TRAP:
     case ID_MODE_TRAPR: {
-      WinHelpW(app.GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"TRAP"));
+      WinHelpW(AeSys::GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"TRAP"));
       break;
     }
   }

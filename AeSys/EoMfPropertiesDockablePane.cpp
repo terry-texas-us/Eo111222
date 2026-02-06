@@ -198,7 +198,7 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   m_PropertyGrid.SetGroupNameFullWidth(TRUE, TRUE);
 
   m_PropertyGrid.MarkModifiedProperties(TRUE, TRUE);
-
+  
   auto* workspaceTabsGroup = new CMFCPropertyGridProperty(L"Workspace Tabs");
 
   auto* tabsStyle = new CMFCPropertyGridProperty(

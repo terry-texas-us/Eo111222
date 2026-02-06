@@ -132,7 +132,7 @@ bool EoDbSpline::IsInView(AeSysView* view) {
 
     view->ModelViewTransformPoint(pt[1]);
 
-    if (EoGePoint4d::ClipLine(pt[0], pt[1])) return true;
+    if (EoGePoint4d::ClipLine(pt[0], pt[1])) { return true; }
 
     pt[0] = pt[1];
   }

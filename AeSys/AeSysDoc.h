@@ -396,15 +396,22 @@ class AeSysDoc : public CDocument {
   void TracingFuse(CString& nameAndLocation);
   bool TracingLoadLayer(const CString& pathName, EoDbLayer* layer);
 
-  /// <summary>Selected tracing is mapped.</summary>
-  /// <remarks>
-  /// This is a cold state meaning the tracing is displayed using warm color set, is not detectable,
-  /// and may not have its groups modified or deleted.
-  /// No new groups may be added to the tracing. Any number of tracings may be mapped.
-  /// </remarks>
+  /** @brief Maps a tracing file as a layer in the document.
+   * @param pathName The file path of the tracing file to be mapped.
+   * @return true if the tracing file was successfully mapped; false otherwise.
+   * @note This method checks if the specified tracing file is already loaded as a layer. If it is, it prompts the user to close it first. If not, it attempts to load the tracing file into a new layer and adds it to the layer table. If successful, it sets the appropriate flags on the layer and updates all views to reflect the change.
+   * This is a cold state meaning the tracing is displayed using warm color set, is not detectable,
+   * and may not have its groups modified or deleted.
+   * No new groups may be added to the tracing. Any number of tracings may be mapped.
+   */
   bool TracingMap(const CString& pathName);
   bool TracingOpen(const CString& pathName);
-  bool TracingView(const CString& pathName);
 
- public:
+  /** @brief Displays a tracing file as a layer in the current document.
+   * This method checks if the specified tracing file is already loaded as a layer. 
+   * If it is, it prompts the user to close it first. If not, it creates a new layer and loads the tracing file into it. The layer is then marked as mapped and the views are updated to display it.
+   * @param pathName The path of the tracing file to be displayed.
+   * @return true if the tracing file was successfully loaded and displayed; false otherwise.
+   */
+  bool TracingView(const CString& pathName);
 };

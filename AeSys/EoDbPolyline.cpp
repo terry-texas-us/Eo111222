@@ -224,7 +224,7 @@ bool EoDbPolyline::IsInView(AeSysView* view) {
     pt[1] = m_pts[w];
     view->ModelViewTransformPoint(pt[1]);
 
-    if (EoGePoint4d::ClipLine(pt[0], pt[1])) return true;
+    if (EoGePoint4d::ClipLine(pt[0], pt[1])) { return true; }
 
     pt[0] = pt[1];
   }

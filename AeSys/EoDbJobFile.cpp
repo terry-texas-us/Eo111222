@@ -176,7 +176,7 @@ bool EoDbJobFile::GetNextVisibleGroup(CFile& file, EoDbGroup*& group) {
     }
   } catch (LPWSTR szMessage) {
     if (Position >= 96) {
-      if (::MessageBoxW(0, szMessage, 0, MB_ICONERROR | MB_RETRYCANCEL) == IDCANCEL) return false;
+      if (::MessageBoxW(0, szMessage, 0, MB_ICONERROR | MB_RETRYCANCEL) == IDCANCEL) { return false; }
     }
     file.Seek(static_cast<LONGLONG>(Position + 32), CFile::begin);
   }

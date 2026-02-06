@@ -108,7 +108,7 @@ void EoDlgActiveViewKeyplan::Refresh() {
   }
   dcMem.SelectObject(CBitmap::FromHandle(m_hbmKeyplan));
 
-  BITMAP bitmap;
+  BITMAP bitmap{};
 
   ::GetObject(m_hbmKeyplan, sizeof(BITMAP), (LPTSTR)&bitmap);
   dcMem.PatBlt(0, 0, bitmap.bmWidth, bitmap.bmHeight, BLACKNESS);
