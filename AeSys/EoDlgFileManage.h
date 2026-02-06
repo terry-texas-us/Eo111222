@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgFileManage : public CDialog {
-  DECLARE_DYNAMIC(EoDlgFileManage)
-
  public:
   EoDlgFileManage(CWnd* parent = nullptr);
   EoDlgFileManage(AeSysDoc* document, CWnd* parent = nullptr);
@@ -12,7 +10,6 @@ class EoDlgFileManage : public CDialog {
 
   virtual ~EoDlgFileManage();
 
-  // Dialog Data
   enum { IDD = IDD_FILE_MANAGE };
 
  protected:

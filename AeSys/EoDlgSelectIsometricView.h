@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgSelectIsometricView : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSelectIsometricView)
-
  public:
   EoDlgSelectIsometricView(CWnd* pParent = nullptr);
   EoDlgSelectIsometricView(const EoDlgSelectIsometricView&) = delete;	
@@ -11,7 +9,6 @@ class EoDlgSelectIsometricView : public CDialog {
 
   virtual ~EoDlgSelectIsometricView();
 
-  // Dialog Data
   enum { IDD = IDD_SELECT_ISOMETRIC_VIEW };
 
  protected:

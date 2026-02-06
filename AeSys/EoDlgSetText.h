@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgSetText : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetText)
-
  public:
   EoDlgSetText(CWnd* pParent = nullptr);
   EoDlgSetText(const EoDlgSetText&) = delete;
@@ -11,7 +9,6 @@ class EoDlgSetText : public CDialog {
 
   virtual ~EoDlgSetText();
 
-  // Dialog Data
   enum { IDD = IDD_SET_TEXT };
 
  protected:

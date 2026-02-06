@@ -63,7 +63,7 @@ static void DrawPaneTextInView(CDC* context, AeSysView* view, int paneIndex, con
   auto* oldFont = context->SelectObject(static_cast<CFont*>(context->SelectStockObject(font)));
   auto oldTextAlignment = context->SetTextAlign(TA_LEFT | TA_TOP);
   auto oldTextColor = context->SetTextColor(textColor);
-  auto oldBackgroundColor = context->SetBkColor(~AppGetTextCol() & 0x00ffffff);
+  auto oldBackgroundColor = context->SetBkColor(~App::ViewTextColor() & 0x00ffffff);
 
   TEXTMETRIC metrics;
   context->GetTextMetrics(&metrics);
@@ -108,7 +108,7 @@ void AeSysView::ModeLineDisplay() {
     GetStatusBar().SetTipText(::statusOp0 + i, L"Mode Command Tip Text");
 
     if (app.ModeInformationOverView()) {
-      DrawPaneTextInView(context, GetActiveView(), i, paneText, DEFAULT_GUI_FONT, AppGetTextCol());
+      DrawPaneTextInView(context, GetActiveView(), i, paneText, DEFAULT_GUI_FONT, App::ViewTextColor());
     }
   }
   ReleaseDC(context);
@@ -142,7 +142,7 @@ void AeSysView::ModeLineUnhighlightOp(EoUInt16& command) {
   if (app.ModeInformationOverView()) {
     CString paneText = GetStatusBar().GetPaneText(paneIndex);
     CDC* context = GetDC();
-    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT, AppGetTextCol());
+    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT, App::ViewTextColor());
     ReleaseDC(context);
   }
   command = 0;

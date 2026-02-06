@@ -1,11 +1,10 @@
 ﻿#include "Stdafx.h"
+
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 
 #include "EoDlgDrawOptions.h"
 #include "Resource.h"
-
-IMPLEMENT_DYNAMIC(EoDlgDrawOptions, CDialog)
 
 BEGIN_MESSAGE_MAP(EoDlgDrawOptions, CDialog)
 	ON_BN_CLICKED(IDC_PEN, &EoDlgDrawOptions::OnBnClickedPen)

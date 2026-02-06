@@ -2,10 +2,6 @@
 
 #include "EoDlgFixupOptions.h"
 
-// EoDlgFixupOptions dialog
-
-IMPLEMENT_DYNAMIC(EoDlgFixupOptions, CDialog)
-
 EoDlgFixupOptions::EoDlgFixupOptions(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgFixupOptions::IDD, pParent) {
 }

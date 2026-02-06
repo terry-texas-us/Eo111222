@@ -5,8 +5,6 @@
 #include "EoDlgSetupConstraints.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgSetupConstraints, CDialog)
-
 EoDlgSetupConstraints::EoDlgSetupConstraints(CWnd* pParent /* = nullptr */) :
 	CDialog(EoDlgSetupConstraints::IDD, pParent) {
 }

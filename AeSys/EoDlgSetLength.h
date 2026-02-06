@@ -3,8 +3,6 @@
 #include "Resource.h"
 
 class EoDlgSetLength : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetLength)
-
  public:
   EoDlgSetLength(CWnd* pParent = nullptr);
   EoDlgSetLength(const EoDlgSetLength&) = delete;
@@ -12,7 +10,6 @@ class EoDlgSetLength : public CDialog {
 
   virtual ~EoDlgSetLength();
 
-  // Dialog Data
   enum { IDD = IDD_SET_LENGTH };
 
  protected:

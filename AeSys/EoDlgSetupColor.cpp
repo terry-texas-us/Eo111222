@@ -8,8 +8,6 @@
 #include "EoDlgSetupColor.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgSetupColor, CDialog)
-
 BEGIN_MESSAGE_MAP(EoDlgSetupColor, CDialog)
 ON_BN_CLICKED(IDC_BYBLOCK_BUTTON, &EoDlgSetupColor::OnBnClickedByblockButton)
 ON_BN_CLICKED(IDC_BYLAYER_BUTTON, &EoDlgSetupColor::OnBnClickedBylayerButton)

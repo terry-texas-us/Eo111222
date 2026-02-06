@@ -428,8 +428,6 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
   RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 }
 
-// CMainFrame message handlers
-
 BOOL CMainFrame::OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOOL bDrop) {
   if (bDrop || !app.m_Options.m_tabsContextMenu) { return FALSE; }
   CMenu menu;

@@ -13,10 +13,10 @@
 #include "EoDlgTrapFilter.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgTrapFilter, CDialog)
-
 EoDlgTrapFilter::EoDlgTrapFilter(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgTrapFilter::IDD, pParent) {}
+
 EoDlgTrapFilter::EoDlgTrapFilter(AeSysDoc* document, CWnd* pParent /*=nullptr*/) : CDialog(EoDlgTrapFilter::IDD, pParent), m_Document(document) {}
+
 EoDlgTrapFilter::~EoDlgTrapFilter() {}
 void EoDlgTrapFilter::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);

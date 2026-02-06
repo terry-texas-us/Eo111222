@@ -5,8 +5,6 @@
 #include "Resource.h"
 
 class EoDlgSetupLineType : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetupLineType)
-
  public:
   EoDbLineType* m_LineType{};
   EoDbLineTypeTable* m_LineTypeTable{};

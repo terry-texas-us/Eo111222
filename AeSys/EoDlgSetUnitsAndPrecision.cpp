@@ -5,8 +5,6 @@
 #include "EoDlgSetUnitsAndPrecision.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgSetUnitsAndPrecision, CDialog)
-
 BEGIN_MESSAGE_MAP(EoDlgSetUnitsAndPrecision, CDialog)
 ON_BN_CLICKED(IDC_METRIC, &EoDlgSetUnitsAndPrecision::OnBnClickedMetric)
 END_MESSAGE_MAP()

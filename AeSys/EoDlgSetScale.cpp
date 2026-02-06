@@ -1,8 +1,7 @@
 ﻿#include "Stdafx.h"
+
 #include "EoDlgSetScale.h"
 #include "Resource.h"
-
-IMPLEMENT_DYNAMIC(EoDlgSetScale, CDialog)
 
 EoDlgSetScale::EoDlgSetScale(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSetScale::IDD, pParent), m_Scale(0) {

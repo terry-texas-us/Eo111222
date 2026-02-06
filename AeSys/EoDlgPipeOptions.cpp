@@ -1,8 +1,7 @@
 ﻿#include "Stdafx.h"
+
 #include "EoDlgPipeOptions.h"
 #include "Resource.h"
-
-IMPLEMENT_DYNAMIC(EoDlgPipeOptions, CDialog)
 
 EoDlgPipeOptions::EoDlgPipeOptions(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgPipeOptions::IDD, pParent), m_PipeTicSize(0), m_PipeRiseDropRadius(0) {

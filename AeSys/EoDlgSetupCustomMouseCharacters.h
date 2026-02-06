@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgSetupCustomMouseCharacters : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetupCustomMouseCharacters)
-
  public:
   EoDlgSetupCustomMouseCharacters(CWnd* pParent = nullptr);
   EoDlgSetupCustomMouseCharacters(const EoDlgSetupCustomMouseCharacters&) = delete;

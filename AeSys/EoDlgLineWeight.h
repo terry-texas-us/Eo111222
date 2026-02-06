@@ -1,16 +1,12 @@
 ﻿#pragma once
 
-// EoDlgLineWeight dialog
-
 class EoDlgLineWeight : public CDialog {
-  DECLARE_DYNAMIC(EoDlgLineWeight)
 
  public:
   EoDlgLineWeight(CWnd* parent = nullptr);
   EoDlgLineWeight(int originalLineWeight, CWnd* parent = nullptr);
   virtual ~EoDlgLineWeight();
 
-  // Dialog Data
   enum { IDD = IDD_LINEWEIGHT };
 
  protected:

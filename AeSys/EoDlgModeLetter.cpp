@@ -10,8 +10,6 @@
 #include "PrimState.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgModeLetter, CDialog)
-
 BEGIN_MESSAGE_MAP(EoDlgModeLetter, CDialog)
 #pragma warning(push)
 #pragma warning(disable : 4191)

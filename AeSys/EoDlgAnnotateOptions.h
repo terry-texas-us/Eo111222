@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgAnnotateOptions : public CDialog {
-  DECLARE_DYNAMIC(EoDlgAnnotateOptions)
-
  public:
   EoDlgAnnotateOptions(CWnd* parent = nullptr);
   EoDlgAnnotateOptions(AeSysView* view, CWnd* parent = nullptr);

@@ -9,8 +9,6 @@
 #include "EoDlgSetHomePoint.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgSetHomePoint, CDialog)
-
 BEGIN_MESSAGE_MAP(EoDlgSetHomePoint, CDialog)
 ON_CBN_EDITUPDATE(IDC_LIST, &EoDlgSetHomePoint::OnCbnEditupdateList)
 END_MESSAGE_MAP()

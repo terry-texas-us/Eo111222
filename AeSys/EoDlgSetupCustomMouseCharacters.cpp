@@ -4,8 +4,6 @@
 #include "EoDlgSetupCustomMouseCharacters.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgSetupCustomMouseCharacters, CDialog)
-
 EoDlgSetupCustomMouseCharacters::EoDlgSetupCustomMouseCharacters(CWnd* pParent /* = nullptr */) :
 	CDialog(EoDlgSetupCustomMouseCharacters::IDD, pParent) {
 }

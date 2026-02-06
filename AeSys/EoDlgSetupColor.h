@@ -3,8 +3,6 @@
 #include "Resource.h"
 
 class EoDlgSetupColor : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetupColor)
-
  public:
   EoDlgSetupColor(CWnd* pParent = nullptr);
   EoDlgSetupColor(const EoDlgSetupColor&) = delete;
@@ -12,7 +10,6 @@ class EoDlgSetupColor : public CDialog {
 
   virtual ~EoDlgSetupColor();
 
-  // Dialog Data
   enum { IDD = IDD_SETUP_COLOR };
 
  protected:

@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgSetHomePoint : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetHomePoint)
-
  public:
   EoDlgSetHomePoint(CWnd* pParent = nullptr);
   EoDlgSetHomePoint(AeSysView* activeView, CWnd* pParent = nullptr);
@@ -12,7 +10,6 @@ class EoDlgSetHomePoint : public CDialog {
 
   virtual ~EoDlgSetHomePoint();
 
-  // Dialog Data
   enum { IDD = IDD_HOME_POINT_EDIT };
 
  protected:

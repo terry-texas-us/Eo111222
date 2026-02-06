@@ -8,7 +8,6 @@ class CDlgSetPointStyle : public CDialogEx {
   CDlgSetPointStyle(const CDlgSetPointStyle&) = delete;
   CDlgSetPointStyle& operator=(const CDlgSetPointStyle&) = delete;
 
-  // Dialog Data
 #ifdef AFX_DESIGN_TIME
   enum { IDD = IDD_SET_POINT_STYLE };
 #endif

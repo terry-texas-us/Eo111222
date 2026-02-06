@@ -3,8 +3,6 @@
 #include "AeSys.h"
 #include "EoDlgSetLength.h"
 
-IMPLEMENT_DYNAMIC(EoDlgSetLength, CDialog)
-
 EoDlgSetLength::EoDlgSetLength(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgSetLength::IDD, pParent) {}
 EoDlgSetLength::~EoDlgSetLength() {}
 void EoDlgSetLength::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoDataExchange(dataExchange); }

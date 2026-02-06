@@ -3,8 +3,6 @@
 #include "Resource.h"
 
 class EoDlgSetAngle : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetAngle)
-
  public:
   EoDlgSetAngle(CWnd* pParent = nullptr);
   EoDlgSetAngle(const EoDlgSetAngle&) = delete;
@@ -12,7 +10,6 @@ class EoDlgSetAngle : public CDialog {
 
   virtual ~EoDlgSetAngle();
 
-  // Dialog Data
   enum { IDD = IDD_SET_ANGLE };
 
  protected:

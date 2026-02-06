@@ -1,8 +1,7 @@
 ﻿#include "Stdafx.h"
+
 #include "EoDlgSelectIsometricView.h"
 #include "Resource.h"
-
-IMPLEMENT_DYNAMIC(EoDlgSelectIsometricView, CDialog)
 
 EoDlgSelectIsometricView::EoDlgSelectIsometricView(CWnd* pParent /*=nullptr*/)
 	: CDialog(EoDlgSelectIsometricView::IDD, pParent) {
@@ -18,8 +17,6 @@ void EoDlgSelectIsometricView::DoDataExchange(CDataExchange* dataExchange) {
 	DDX_Radio(dataExchange, IDC_VIEW_ISO_FRONT, m_FrontBack);
 	DDX_Radio(dataExchange, IDC_VIEW_ISO_ABOVE, m_AboveUnder);
 }
-
-// EoDlgSelectIsometricView message handlers
 
 BOOL EoDlgSelectIsometricView::OnInitDialog() {
 	CDialog::OnInitDialog();

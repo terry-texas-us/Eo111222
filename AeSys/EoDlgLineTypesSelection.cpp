@@ -11,8 +11,6 @@ namespace {
 constexpr int lineTypePreviewColumnIndex = 2;
 }
 
-IMPLEMENT_DYNAMIC(EoDlgLineTypesSelection, CDialogEx)
-
 EoDlgLineTypesSelection::EoDlgLineTypesSelection(CWnd* parent /*=nullptr*/)
     : CDialogEx(IDD_LINE_TYPES_DIALOG, parent) {}
 

@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgSetPastePosition : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetPastePosition)
-
  public:
   EoDlgSetPastePosition(CWnd* pParent = nullptr);
   EoDlgSetPastePosition(const EoDlgSetPastePosition&) = delete;
@@ -11,7 +9,6 @@ class EoDlgSetPastePosition : public CDialog {
     
   virtual ~EoDlgSetPastePosition();
 
-  // Dialog Data
   enum { IDD = IDD_PASTE_POSITION };
 
  protected:

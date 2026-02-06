@@ -11,8 +11,6 @@
 /// text primitive if none is found).
 ///
 class EoDlgModeRevise : public CDialog {
-  DECLARE_DYNAMIC(EoDlgModeRevise)
-
  public:
   EoDlgModeRevise(CWnd* parent = nullptr);
   EoDlgModeRevise(const EoDlgModeRevise&) = delete;
@@ -20,7 +18,6 @@ class EoDlgModeRevise : public CDialog {
 
   virtual ~EoDlgModeRevise();
 
-  // Dialog Data
   enum { IDD = IDD_ADD_NOTE };
 
  protected:

@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgSelectGotoHomePoint : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSelectGotoHomePoint)
-
  public:
   EoDlgSelectGotoHomePoint(CWnd* pParent = nullptr);
   EoDlgSelectGotoHomePoint(AeSysView* currentView, CWnd* pParent = nullptr);
@@ -12,7 +10,6 @@ class EoDlgSelectGotoHomePoint : public CDialog {
 
   virtual ~EoDlgSelectGotoHomePoint();
 
-  // Dialog Data
   enum { IDD = IDD_HOME_POINT_GO };
 
  protected:

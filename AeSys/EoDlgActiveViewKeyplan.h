@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgActiveViewKeyplan : public CDialog {
-  DECLARE_DYNAMIC(EoDlgActiveViewKeyplan)
-
  public:
   EoDlgActiveViewKeyplan(CWnd* pParent = nullptr);
   EoDlgActiveViewKeyplan(AeSysView* view, CWnd* pParent = nullptr);

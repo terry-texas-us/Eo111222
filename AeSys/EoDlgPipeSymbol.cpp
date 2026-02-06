@@ -4,8 +4,6 @@
 #include "EoDlgPipeSymbol.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgPipeSymbol, CDialog)
-
 EoDlgPipeSymbol::EoDlgPipeSymbol(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgPipeSymbol::IDD, pParent), m_CurrentPipeSymbolIndex(0) {
 }

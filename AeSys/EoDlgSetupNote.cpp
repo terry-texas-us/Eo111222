@@ -1,10 +1,9 @@
 ﻿#include "Stdafx.h"
+
 #include "EoDb.h"
 #include "EoDbFontDefinition.h"
 #include "EoDlgSetupNote.h"
 #include "Resource.h"
-
-IMPLEMENT_DYNAMIC(EoDlgSetupNote, CDialog)
 
 EoDlgSetupNote::EoDlgSetupNote(CWnd* pParent /*=nullptr*/)
     : CDialog(EoDlgSetupNote::IDD, pParent),

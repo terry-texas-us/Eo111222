@@ -6,8 +6,6 @@
 #include "EoDlgSelectGotoHomePoint.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgSelectGotoHomePoint, CDialog)
-
 BEGIN_MESSAGE_MAP(EoDlgSelectGotoHomePoint, CDialog)
 ON_CBN_EDITUPDATE(IDC_LIST, &EoDlgSelectGotoHomePoint::OnCbnEditupdateList)
 ON_CBN_SELCHANGE(IDC_LIST, &EoDlgSelectGotoHomePoint::OnCbnSelchangeList)

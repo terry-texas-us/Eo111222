@@ -4,8 +4,6 @@
 /// <summary>Modifies attributes of all group primatives in current trap to current settings.</summary>
 /// <remarks>Trap color index is not modified.</remarks>
 class EoDlgTrapModify : public CDialog {
-  DECLARE_DYNAMIC(EoDlgTrapModify)
-
  public:
   EoDlgTrapModify(CWnd* parent = nullptr);
   EoDlgTrapModify(AeSysDoc* document, CWnd* parent = nullptr);
@@ -15,7 +13,6 @@ class EoDlgTrapModify : public CDialog {
 
   virtual ~EoDlgTrapModify();
 
-  // Dialog Data
   enum { IDD = IDD_TRAP_MODIFY };
 
  protected:

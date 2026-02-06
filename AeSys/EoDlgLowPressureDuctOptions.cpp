@@ -7,8 +7,6 @@
 #include "EoDlgLowPressureDuctOptions.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgLowPressureDuctOptions, CDialog)
-
 BEGIN_MESSAGE_MAP(EoDlgLowPressureDuctOptions, CDialog)
 ON_BN_CLICKED(IDOK, &EoDlgLowPressureDuctOptions::OnBnClickedOk)
 ON_BN_CLICKED(IDC_GEN_VANES, &EoDlgLowPressureDuctOptions::OnBnClickedGenVanes)
@@ -40,8 +38,6 @@ BOOL EoDlgLowPressureDuctOptions::OnInitDialog() {
   CheckDlgButton(IDC_BEGINWITHTRANSITION, m_BeginWithTransition ? 1U : 0U);
   return TRUE;
 }
-
-// EoDlgLowPressureDuctOptions message handlers
 
 void EoDlgLowPressureDuctOptions::OnBnClickedOk() {
   wchar_t itemText[32]{};

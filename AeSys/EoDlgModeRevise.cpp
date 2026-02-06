@@ -10,13 +10,9 @@
 #include "EoGeReferenceSystem.h"
 #include "Resource.h"
 
-/// <remarks>
-///Text related attributes for all notes generated will be same as those of the text last picked.
-///Upon exit attributes restored to their entry values.
-/// </remarks>
-
-IMPLEMENT_DYNAMIC(EoDlgModeRevise, CDialog)
-
+/** @class Text related attributes for all notes generated will be same as those of the text last picked.
+ * Upon exit attributes restored to their entry values.
+ */
 BEGIN_MESSAGE_MAP(EoDlgModeRevise, CDialog)
 #pragma warning(push)
 #pragma warning(disable : 4191)

@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgPipeSymbol : public CDialog {
-  DECLARE_DYNAMIC(EoDlgPipeSymbol)
-
  public:
   EoDlgPipeSymbol(CWnd* pParent = nullptr);
   EoDlgPipeSymbol(const EoDlgPipeSymbol&) = delete;
@@ -11,7 +9,6 @@ class EoDlgPipeSymbol : public CDialog {
 
   virtual ~EoDlgPipeSymbol();
 
-  // Dialog Data
   enum { IDD = IDD_PIPE_SYMBOL };
 
  protected:

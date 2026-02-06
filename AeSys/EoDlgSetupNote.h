@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgSetupNote : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetupNote)
-
  public:
   EoDlgSetupNote(CWnd* pParent = nullptr);
   EoDlgSetupNote(EoDbFontDefinition* fontDefinition, CWnd* pParent = nullptr);
@@ -12,7 +10,6 @@ class EoDlgSetupNote : public CDialog {
 
   virtual ~EoDlgSetupNote();
 
-  // Dialog Data
   enum { IDD = IDD_SETUP_NOTE };
 
  protected:

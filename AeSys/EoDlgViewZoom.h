@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgViewZoom : public CDialog {
-  DECLARE_DYNAMIC(EoDlgViewZoom)
-
  public:
   EoDlgViewZoom(CWnd* pParent = nullptr);
   EoDlgViewZoom(const EoDlgViewZoom&) = delete;
@@ -11,7 +9,6 @@ class EoDlgViewZoom : public CDialog {
 
   virtual ~EoDlgViewZoom();
 
-  // Dialog Data
   enum { IDD = IDD_VIEW_ZOOM };
 
   double m_Ratio;

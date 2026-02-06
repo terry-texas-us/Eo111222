@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgSetupHatch : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetupHatch)
-
  public:
   EoDlgSetupHatch(CWnd* pParent = nullptr);
   EoDlgSetupHatch(const EoDlgSetupHatch&) = delete;
@@ -11,7 +9,6 @@ class EoDlgSetupHatch : public CDialog {
   
   virtual ~EoDlgSetupHatch();
 
-  // Dialog Data
   enum { IDD = IDD_SETUP_HATCH };
 
  protected:

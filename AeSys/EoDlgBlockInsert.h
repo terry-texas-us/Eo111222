@@ -4,8 +4,6 @@
 #include "Resource.h"
 
 class EoDlgBlockInsert : public CDialog {
-  DECLARE_DYNAMIC(EoDlgBlockInsert)
-
  public:
   EoDlgBlockInsert(CWnd* parent = nullptr);
   EoDlgBlockInsert(AeSysDoc* document, CWnd* parent = nullptr);

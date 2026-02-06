@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgTrapFilter : public CDialog {
-  DECLARE_DYNAMIC(EoDlgTrapFilter)
-
  public:
   EoDlgTrapFilter(CWnd* pParent = nullptr);
   EoDlgTrapFilter(AeSysDoc* document, CWnd* pParent = nullptr);
@@ -12,7 +10,6 @@ class EoDlgTrapFilter : public CDialog {
 
   virtual ~EoDlgTrapFilter();
 
-  // Dialog Data
   enum { IDD = IDD_TRAP_FILTER };
 
   AeSysDoc* m_Document{};

@@ -14,8 +14,6 @@
 
 /// @brief Dialog class for getting a layer name from the user.
 class EoDlgGetLayerName : public CDialog {
-  DECLARE_DYNAMIC(EoDlgGetLayerName)
-
  public:
   EoDlgGetLayerName(CWnd* parent = nullptr);
   EoDlgGetLayerName(const EoDlgGetLayerName&) = delete;
@@ -32,18 +30,12 @@ class EoDlgGetLayerName : public CDialog {
   CString m_Name;
 };
 
-IMPLEMENT_DYNAMIC(EoDlgGetLayerName, CDialog)
-
 EoDlgGetLayerName::EoDlgGetLayerName(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgGetLayerName::IDD, pParent) {}
 EoDlgGetLayerName::~EoDlgGetLayerName() {}
 void EoDlgGetLayerName::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);
   DDX_Text(dataExchange, IDC_NAME, m_Name);
 }
-
-/// EoDlgFileManage dialog
-
-IMPLEMENT_DYNAMIC(EoDlgFileManage, CDialog)
 
 BEGIN_MESSAGE_MAP(EoDlgFileManage, CDialog)
 #pragma warning(push)

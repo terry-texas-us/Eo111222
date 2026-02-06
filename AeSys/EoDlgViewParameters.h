@@ -5,8 +5,6 @@
 #include "Resource.h"
 
 class EoDlgViewParameters : public CDialog {
-  DECLARE_DYNAMIC(EoDlgViewParameters)
-
  public:
   EoDlgViewParameters(CWnd* parent = nullptr);
   EoDlgViewParameters(const EoDlgViewParameters&) = delete;
@@ -14,7 +12,6 @@ class EoDlgViewParameters : public CDialog {
 
   virtual ~EoDlgViewParameters();
 
-  // Dialog Data
   enum { IDD = IDD_VIEW_PARAMETERS };
 
  protected:

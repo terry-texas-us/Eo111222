@@ -4,18 +4,15 @@
 #include "AeSysDoc.h"
 #include "EoDlgSetPastePosition.h"
 
-IMPLEMENT_DYNAMIC(EoDlgSetPastePosition, CDialog)
+EoDlgSetPastePosition::EoDlgSetPastePosition(CWnd* pParent /*=nullptr*/)
+    : CDialog(EoDlgSetPastePosition::IDD, pParent) {}
 
-EoDlgSetPastePosition::EoDlgSetPastePosition(CWnd* pParent /*=nullptr*/) :
-	CDialog(EoDlgSetPastePosition::IDD, pParent) {
-}
-EoDlgSetPastePosition::~EoDlgSetPastePosition() {
-}
-void EoDlgSetPastePosition::DoDataExchange(CDataExchange* dataExchange) {
-	CDialog::DoDataExchange(dataExchange);
-}
+EoDlgSetPastePosition::~EoDlgSetPastePosition() {}
+
+void EoDlgSetPastePosition::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoDataExchange(dataExchange); }
+
 void EoDlgSetPastePosition::OnOK() {
-	AeSysDoc::GetDoc()->SetTrapPivotPoint(app.GetCursorPosition());
+  AeSysDoc::GetDoc()->SetTrapPivotPoint(app.GetCursorPosition());
 
-	CDialog::OnOK();
+  CDialog::OnOK();
 }

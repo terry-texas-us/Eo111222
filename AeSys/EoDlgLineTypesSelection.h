@@ -7,8 +7,6 @@
 class EoDbLineType;
 
 class EoDlgLineTypesSelection : public CDialogEx {
-  DECLARE_DYNAMIC(EoDlgLineTypesSelection)
-
  public:
   EoDbLineTypeTable m_lineTypes;
   CListCtrl m_lineTypesListControl;

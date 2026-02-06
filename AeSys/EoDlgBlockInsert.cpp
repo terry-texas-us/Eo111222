@@ -11,8 +11,6 @@
 #include "Preview.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgBlockInsert, CDialog)
-
 BEGIN_MESSAGE_MAP(EoDlgBlockInsert, CDialog)
 ON_LBN_SELCHANGE(IDC_BLOCKS_LIST, &EoDlgBlockInsert::OnLbnSelchangeBlocksList)
 ON_BN_CLICKED(IDC_PURGE, &EoDlgBlockInsert::OnBnClickedPurge)

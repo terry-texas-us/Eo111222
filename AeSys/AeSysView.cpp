@@ -751,44 +751,47 @@ void AeSysView::DoCustomMouseClick(const CString& characters) {
 }
 
 void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
-  if (AeSys::CustomLButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
+  if (app.CustomLButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
     CView::OnLButtonDown(flags, point);
   } else {
-    DoCustomMouseClick(AeSys::CustomLButtonDownCharacters);
+    DoCustomMouseClick(app.CustomLButtonDownCharacters);
   }
 }
 
 void AeSysView::OnLButtonUp(UINT flags, CPoint point) {
-  if (AeSys::CustomLButtonUpCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
+  if (app.CustomLButtonUpCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
     CView::OnLButtonUp(flags, point);
   } else {
-    DoCustomMouseClick(AeSys::CustomLButtonUpCharacters);
+    DoCustomMouseClick(app.CustomLButtonUpCharacters);
   }
 }
 
 void AeSysView::OnRButtonDown(UINT flags, CPoint point) {
-  if (AeSys::CustomRButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
+  if (app.CustomRButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
     CView::OnRButtonDown(flags, point);
   } else {
-    DoCustomMouseClick(AeSys::CustomRButtonDownCharacters);
+    DoCustomMouseClick(app.CustomRButtonDownCharacters);
   }
 }
 
 void AeSysView::OnRButtonUp(UINT flags, CPoint point) {
-  if (AeSys::CustomRButtonUpCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
+  if (app.CustomRButtonUpCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
     CView::OnRButtonUp(flags, point);
   } else {
-    DoCustomMouseClick(AeSys::CustomRButtonUpCharacters);
+    DoCustomMouseClick(app.CustomRButtonUpCharacters);
   }
 }
 
-void AeSysView::OnMButtonDown(UINT /* flags */, CPoint point) {
+void AeSysView::OnMButtonDown(UINT flags, CPoint point) {
+  (void)flags;
   m_middleButtonPanStartPoint = point;
   m_middleButtonPanInProgress = true;
   SetCapture();
 }
 
-void AeSysView::OnMButtonUp(UINT /* flags */, CPoint /* point */) {
+void AeSysView::OnMButtonUp(UINT flags, CPoint point) {
+  (void)flags;
+  (void)point;
   if (m_middleButtonPanInProgress) {
     m_middleButtonPanInProgress = false;
     ReleaseCapture();
@@ -1451,8 +1454,8 @@ void AeSysView::OnSetupConstraints() {
 }
 
 void AeSysView::OnSetupMouseButtons() {
-  EoDlgSetupCustomMouseCharacters Dialog;
-  if (Dialog.DoModal() == IDOK) {}
+  EoDlgSetupCustomMouseCharacters dialog;
+  if (dialog.DoModal() == IDOK) {}
 }
 
 void AeSysView::OnRelativeMovesEngDown() {
@@ -1688,8 +1691,8 @@ void AeSysView::OnUpdateViewOdometer(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewOd
 static void DrawOdometerInView(AeSysView* view, CDC* context, Eo::Units Units, EoGeVector3d& position) {
   auto* oldFont = static_cast<CFont*>(context->SelectStockObject(DEFAULT_GUI_FONT));
   auto oldTextAlign = context->SetTextAlign(TA_LEFT | TA_TOP);
-  auto oldTextColor = context->SetTextColor(AppGetTextCol());
-  auto oldBackgroundColor = context->SetBkColor(~AppGetTextCol() & 0x00ffffff);
+  auto oldTextColor = context->SetTextColor(App::ViewTextColor());
+  auto oldBackgroundColor = context->SetBkColor(~App::ViewTextColor() & 0x00ffffff);
 
   CRect clientArea;
   view->GetClientRect(&clientArea);
@@ -2382,8 +2385,8 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
 
     CFont* Font = (CFont*)DeviceContext->SelectStockObject(DEFAULT_GUI_FONT);
     UINT nTextAlign = DeviceContext->SetTextAlign(TA_LEFT | TA_TOP);
-    COLORREF crText = DeviceContext->SetTextColor(AppGetTextCol());
-    COLORREF crBk = DeviceContext->SetBkColor(~AppGetTextCol() & 0x00ffffff);
+    COLORREF crText = DeviceContext->SetTextColor(App::ViewTextColor());
+    COLORREF crBk = DeviceContext->SetBkColor(~App::ViewTextColor() & 0x00ffffff);
 
     TEXTMETRIC tm;
     DeviceContext->GetTextMetrics(&tm);

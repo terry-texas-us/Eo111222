@@ -1,8 +1,7 @@
 ﻿#include "Stdafx.h"
+
 #include "EoDlgSetAngle.h"
 #include "Resource.h"
-
-IMPLEMENT_DYNAMIC(EoDlgSetAngle, CDialog)
 
 EoDlgSetAngle::EoDlgSetAngle(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSetAngle::IDD, pParent), m_dAngle(0) {

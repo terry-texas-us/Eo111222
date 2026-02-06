@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgDrawOptions : public CDialog {
-  DECLARE_DYNAMIC(EoDlgDrawOptions)
-
  public:
   EoDlgDrawOptions(CWnd* parent = nullptr);
   EoDlgDrawOptions(const EoDlgDrawOptions&) = delete;

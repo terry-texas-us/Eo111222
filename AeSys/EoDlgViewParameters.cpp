@@ -12,8 +12,6 @@
 #include "EoGsViewport.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgViewParameters, CDialog)
-
 BEGIN_MESSAGE_MAP(EoDlgViewParameters, CDialog)
 	ON_BN_CLICKED(IDC_APPLY, &EoDlgViewParameters::OnBnClickedApply)
 	ON_EN_CHANGE(IDC_POSITION_X, &EoDlgViewParameters::OnEnChangePositionX)
@@ -37,7 +35,6 @@ void EoDlgViewParameters::DoDataExchange(CDataExchange* dataExchange) {
 	CDialog::DoDataExchange(dataExchange);
 	DDX_Check(dataExchange, IDC_PERSPECTIVE_PROJECTION, m_PerspectiveProjection);
 }
-// EoDlgViewParameters message handlers
 
 void EoDlgViewParameters::OnBnClickedApply() {
 	auto* activeView = AeSysView::GetActiveView();

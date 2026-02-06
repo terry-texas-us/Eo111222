@@ -11,10 +11,6 @@
 HBITMAP EoDlgActiveViewKeyplan::m_hbmKeyplan = nullptr;
 CRect EoDlgActiveViewKeyplan::m_rcWnd;
 
-// EoDlgActiveViewKeyplan dialog
-
-IMPLEMENT_DYNAMIC(EoDlgActiveViewKeyplan, CDialog)
-
 BEGIN_MESSAGE_MAP(EoDlgActiveViewKeyplan, CDialog)
 ON_BN_CLICKED(IDC_RECALL, &EoDlgActiveViewKeyplan::OnBnClickedRecall)
 ON_BN_CLICKED(IDC_SAVE, &EoDlgActiveViewKeyplan::OnBnClickedSave)
@@ -93,7 +89,6 @@ void EoDlgActiveViewKeyplan::OnOK() {
   m_ActiveView->ModelViewAdjustWindow(UMin, VMin, UMax, VMax, Ratio);
   m_ActiveView->SetViewWindow(UMin, VMin, UMax, VMax);
 }
-// EoDlgActiveViewKeyplan message handlers
 
 void EoDlgActiveViewKeyplan::OnBnClickedRecall() {
   // TODO: Add your control notification handler code here

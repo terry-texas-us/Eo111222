@@ -1,9 +1,8 @@
 ﻿#include "Stdafx.h"
+
 #include "Eo.h"
 #include "EoDlgViewZoom.h"
 #include "Resource.h"
-
-IMPLEMENT_DYNAMIC(EoDlgViewZoom, CDialog)
 
 EoDlgViewZoom::EoDlgViewZoom(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgViewZoom::IDD, pParent), m_Ratio(0) {
@@ -22,6 +21,3 @@ BOOL EoDlgViewZoom::OnInitDialog() {
 	CDialog::OnInitDialog();
 	return TRUE;
 }
-// EoDlgViewZoom message handlers
-
-

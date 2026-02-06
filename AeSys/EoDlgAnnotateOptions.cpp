@@ -1,9 +1,8 @@
 ﻿#include "Stdafx.h"
+
 #include "AeSysView.h"
 #include "EoDlgAnnotateOptions.h"
 #include "Resource.h"
-
-IMPLEMENT_DYNAMIC(EoDlgAnnotateOptions, CDialog)
 
 EoDlgAnnotateOptions::EoDlgAnnotateOptions(CWnd* pParent /* = nullptr */) :
 	CDialog(EoDlgAnnotateOptions::IDD, pParent)

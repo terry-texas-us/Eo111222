@@ -2,8 +2,6 @@
 #include "EoDlgSetText.h"
 #include "Resource.h"
 
-IMPLEMENT_DYNAMIC(EoDlgSetText, CDialog)
-
 EoDlgSetText::EoDlgSetText(CWnd* pParent /*=nullptr*/) :
 	CDialog(EoDlgSetText::IDD, pParent) {
 }

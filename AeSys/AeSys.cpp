@@ -72,14 +72,6 @@ COLORREF* pColTbl = ColorPalette;
 
 CPrimState pstate;
 
-// This is a legacy feature. All values are empty strings now for normal MouseButton command processing.
-// User may still change through user interface, so must not assume empty.
-
-CString AeSys::CustomLButtonDownCharacters(L"");
-CString AeSys::CustomLButtonUpCharacters(L"{13}");
-CString AeSys::CustomRButtonDownCharacters(L"");
-CString AeSys::CustomRButtonUpCharacters(L"{27}");
-
 BEGIN_MESSAGE_MAP(AeSys, CWinAppEx)
 ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)
 // Standard file based document commands
@@ -270,7 +262,6 @@ BOOL AeSys::InitInstance() {
   return TRUE;
 }
 
-// AeSys message handlers
 int AeSys::ExitInstance() {
   m_Options.Save();
 
@@ -705,7 +696,6 @@ void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
 void AeSys::ReleaseSimplexStrokeFont() {
   if (m_SimplexStrokeFont != 0) { delete[] m_SimplexStrokeFont; }
 }
-COLORREF AppGetTextCol() { return (~(ViewBackgroundColor | 0xff000000)); }
 void AeSys::OnUpdateModeDraw(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_DRAW); }
 void AeSys::OnUpdateModeAnnotate(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_ANNOTATE); }
 void AeSys::OnUpdateModeTrap(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_TRAP); }

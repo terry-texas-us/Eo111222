@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgSetUnitsAndPrecision : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetUnitsAndPrecision)
-
  public:
   EoDlgSetUnitsAndPrecision(CWnd* pParent = nullptr);
 
@@ -12,7 +10,6 @@ class EoDlgSetUnitsAndPrecision : public CDialog {
 
   virtual ~EoDlgSetUnitsAndPrecision();
 
-  // Dialog Data
   enum { IDD = IDD_UNITS };
 
  protected:

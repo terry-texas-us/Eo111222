@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgLowPressureDuctOptions : public CDialog {
-  DECLARE_DYNAMIC(EoDlgLowPressureDuctOptions)
-
  public:
   EoDlgLowPressureDuctOptions(CWnd* parent = nullptr);
   EoDlgLowPressureDuctOptions(const EoDlgLowPressureDuctOptions&) = delete; 
@@ -11,7 +9,6 @@ class EoDlgLowPressureDuctOptions : public CDialog {
 
   virtual ~EoDlgLowPressureDuctOptions();
 
-  // Dialog Data
   enum { IDD = IDD_DLGPROC_LPD_OPTIONS };
 
  protected:

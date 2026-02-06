@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgSetupConstraints : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetupConstraints)
-
  public:
   EoDlgSetupConstraints(CWnd* parent = nullptr);
   EoDlgSetupConstraints(AeSysView* view, CWnd* parent = nullptr);
@@ -12,7 +10,6 @@ class EoDlgSetupConstraints : public CDialog {
 
   virtual ~EoDlgSetupConstraints();
 
-  // Dialog Data
   enum { IDD = IDD_SETUP_CONSTRAINTS_GRID };
 
  protected:

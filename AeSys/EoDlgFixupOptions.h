@@ -2,8 +2,6 @@
 #include "Resource.h"
 
 class EoDlgFixupOptions : public CDialog {
-  DECLARE_DYNAMIC(EoDlgFixupOptions)
-
  public:
   EoDlgFixupOptions(CWnd* parent = nullptr);
   EoDlgFixupOptions(const EoDlgFixupOptions& other) = delete;
@@ -11,7 +9,6 @@ class EoDlgFixupOptions : public CDialog {
 
   virtual ~EoDlgFixupOptions();
 
-  // Dialog Data
   enum { IDD = IDD_FIXUP_OPTIONS };
 
  protected:

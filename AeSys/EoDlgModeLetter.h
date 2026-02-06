@@ -1,11 +1,7 @@
 ﻿#pragma once
 #include "Resource.h"
 
-// EoDlgModeLetter dialog
-
 class EoDlgModeLetter : public CDialog {
-  DECLARE_DYNAMIC(EoDlgModeLetter)
-
  public:
   EoDlgModeLetter(CWnd* pParent = nullptr);
   EoDlgModeLetter(const EoDlgModeLetter&) = delete;
@@ -13,7 +9,6 @@ class EoDlgModeLetter : public CDialog {
 
   virtual ~EoDlgModeLetter();
 
-  // Dialog Data
   enum { IDD = IDD_ADD_NOTE };
 
  protected:

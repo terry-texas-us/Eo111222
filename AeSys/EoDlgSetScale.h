@@ -3,8 +3,6 @@
 #include "Resource.h"
 
 class EoDlgSetScale : public CDialog {
-  DECLARE_DYNAMIC(EoDlgSetScale)
-
  public:
   EoDlgSetScale(CWnd* parent = nullptr);
   EoDlgSetScale(const EoDlgSetScale&) = delete;
@@ -12,7 +10,6 @@ class EoDlgSetScale : public CDialog {
 
   virtual ~EoDlgSetScale();
 
-  // Dialog Data
   enum { IDD = IDD_SET_SCALE };
 
  protected:

@@ -28,6 +28,8 @@ namespace App {
  *  @return The loaded string resource.
  */
 [[nodiscard]] CString LoadStringResource(UINT resourceIdentifier);
+
+inline COLORREF ViewTextColor() { return (~(ViewBackgroundColor | 0xff000000)); }
 }  // namespace App
 
 class AeSys : public CWinAppEx {
@@ -42,10 +44,12 @@ class AeSys : public CWinAppEx {
   void PreLoadState() override;
 
  public:
-  static CString CustomLButtonDownCharacters;
-  static CString CustomLButtonUpCharacters;
-  static CString CustomRButtonDownCharacters;
-  static CString CustomRButtonUpCharacters;
+  // This is a legacy feature. All values are empty strings now for normal MouseButton command processing.
+  // User may still change through user interface, so must not assume empty.
+  CString CustomLButtonDownCharacters{};
+  CString CustomLButtonUpCharacters{L"{13}"};
+  CString CustomRButtonDownCharacters{};
+  CString CustomRButtonUpCharacters{L"{27}"};
 
  private:
   int m_ArchitecturalUnitsFractionPrecision{};
@@ -272,5 +276,3 @@ class AeSys : public CWinAppEx {
 };
 
 extern AeSys app;
-
-COLORREF AppGetTextCol();

@@ -3,8 +3,6 @@
 
 /// @brief Dialog class for configuring pipe-related options.
 class EoDlgPipeOptions : public CDialog {
-  DECLARE_DYNAMIC(EoDlgPipeOptions)
-
  public:
   EoDlgPipeOptions(CWnd* parent = nullptr);
   EoDlgPipeOptions(const EoDlgPipeOptions&) = delete;
