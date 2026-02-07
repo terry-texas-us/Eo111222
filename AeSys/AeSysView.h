@@ -240,7 +240,7 @@ class AeSysView : public CView {
    * @param circle A reference to a pointer that will receive the selected circle primitive.
    * @return A pointer to the group containing the selected circle, or nullptr if no circle was found.
    */
-  EoDbGroup* SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle);
+  [[nodiscard]] EoDbGroup* SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle);
 
   /**
    * Select a line primitive using a point.
@@ -249,25 +249,32 @@ class AeSysView : public CView {
    * @param line  The line primitive that is selected.
    * @return The group containing the selected line primitive, or nullptr if no line is selected.
    */
-  EoDbGroup* SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line);
+  [[nodiscard]] EoDbGroup* SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line);
 
-  EoDbGroup* SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt);
-  EoDbGroup* SelectLineUsingPoint(const EoGePoint3d& pt);
-  EoDbText* SelectTextUsingPoint(const EoGePoint3d& pt);
+  [[nodiscard]] EoDbGroup* SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt);
+  [[nodiscard]] EoDbGroup* SelectLineUsingPoint(const EoGePoint3d& pt);
+  [[nodiscard]] EoDbText* SelectTextUsingPoint(const EoGePoint3d& pt);
   [[nodiscard]] EoDbGroup* SelectGroupAndPrimitive(const EoGePoint3d& pt);
-  EoGePoint3d& DetPt() { return m_ptDet; }
-  EoDbPrimitive*& EngagedPrimitive() { return m_EngagedPrimitive; }
-  EoDbGroup*& EngagedGroup() { return m_EngagedGroup; }
-  /// <summary>Set a pixel.</summary>
+  [[nodiscard]] EoGePoint3d& DetPt() { return m_ptDet; }
+  [[nodiscard]] EoDbPrimitive*& EngagedPrimitive() { return m_EngagedPrimitive; }
+  [[nodiscard]] EoDbGroup*& EngagedGroup() { return m_EngagedGroup; }
+
+  /** @brief Displays a pixel at the specified 3D point with the given color using the provided device context.
+   * This function is typically used for drawing temporary graphics such as rubber band lines or selection highlights.
+   * The z-coordinate of the point may be ignored depending on the context in which this function is called.
+   * @param deviceContext The device context to use for drawing the pixel.
+   * @param colorReference The color to set the pixel to, specified as a COLORREF value.
+   * @param point The 3D point representing the location of the pixel to set. The z-coordinate may be ignored depending on the context.
+   */
   void DisplayPixel(CDC* deviceContext, COLORREF colorReference, const EoGePoint3d& point);
 
   bool GroupIsEngaged() { return m_EngagedGroup != 0; }
-  double& SelectApertureSize() { return m_SelectApertureSize; }
+  [[nodiscard]] double& SelectApertureSize() { return m_SelectApertureSize; }
   void BreakAllPolylines();
   void BreakAllSegRefs();
 
   bool PenWidthsOn() const { return m_ViewPenWidths; }
-  double GetWorldScale() const { return m_WorldScale; }
+  [[nodiscard]] double GetWorldScale() const { return m_WorldScale; }
   void SetWorldScale(const double scale);
   bool RenderAsWireframe() const { return m_ViewWireframe; }
   auto AddGroup(EoDbGroup* group) { return m_VisibleGroupList.AddTail(group); }
@@ -279,11 +286,11 @@ class AeSysView : public CView {
   void DeleteLastGroup();
   auto GetFirstVisibleGroupPosition() const { return m_VisibleGroupList.GetHeadPosition(); }
   auto GetLastGroupPosition() const { return m_VisibleGroupList.GetTailPosition(); }
-  EoDbGroup* GetNextVisibleGroup(POSITION& position) { return m_VisibleGroupList.GetNext(position); }
-  EoDbGroup* GetPreviousGroup(POSITION& position) { return m_VisibleGroupList.GetPrev(position); }
+  [[nodiscard]] EoDbGroup* GetNextVisibleGroup(POSITION& position) { return m_VisibleGroupList.GetNext(position); }
+  [[nodiscard]] EoDbGroup* GetPreviousGroup(POSITION& position) { return m_VisibleGroupList.GetPrev(position); }
   void BackgroundImageDisplay(CDC* deviceContext);
-  EoGeVector3d GetRelPos() const { return m_vRelPos; }
-  bool ViewTrueTypeFonts() const { return m_ViewTrueTypeFonts; }
+  [[nodiscard]] EoGeVector3d GetRelPos() const { return m_vRelPos; }
+  [[nodiscard]] bool ViewTrueTypeFonts() const { return m_ViewTrueTypeFonts; }
 
   /** @brief Displays the odometer information showing the relative position from the grid origin to the current cursor position, 
    * and optionally the line length and angle if in rubber band line mode.
@@ -309,17 +316,17 @@ class AeSysView : public CView {
   void ModelTransformVector(EoGeVector3d vector);
   void ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, double& vMax, double ratio);
   void ModelViewGetViewport(EoGsViewport& viewport);
-  EoGeVector3d CameraDirection() const;
-  EoGeTransformMatrix& ModelViewGetMatrix();
-  EoGeTransformMatrix& ModelViewGetMatrixInverse();
-  EoGePoint3d CameraTarget() const;
-  double UExtent() const;
-  double UMax() const;
-  double UMin() const;
-  double VExtent() const;
-  double VMax() const;
-  double VMin() const;
-  EoGeVector3d ViewUp() const;
+  [[nodiscard]] EoGeVector3d CameraDirection() const;
+  [[nodiscard]] EoGeTransformMatrix& ModelViewGetMatrix();
+  [[nodiscard]] EoGeTransformMatrix& ModelViewGetMatrixInverse();
+  [[nodiscard]] EoGePoint3d CameraTarget() const;
+  [[nodiscard]] double UExtent() const;
+  [[nodiscard]] double UMax() const;
+  [[nodiscard]] double UMin() const;
+  [[nodiscard]] double VExtent() const;
+  [[nodiscard]] double VMax() const;
+  [[nodiscard]] double VMin() const;
+  [[nodiscard]] EoGeVector3d ViewUp() const;
   void ModelViewInitialize();
 
   void PopViewTransform();
@@ -337,16 +344,16 @@ class AeSysView : public CView {
   /// <summary>Determines the number of pages for 1 to 1 print</summary>
   UINT NumPages(CDC* deviceContext, double dScaleFactor, UINT& nHorzPages, UINT& nVertPages);
 
-  double OverviewUExt() { return m_OverviewViewTransform.UExtent(); }
-  double OverviewUMin() { return m_OverviewViewTransform.UMin(); }
-  double OverviewVExt() { return m_OverviewViewTransform.VExtent(); }
-  double OverviewVMin() { return m_OverviewViewTransform.VMin(); }
-  CPoint DoProjection(const EoGePoint4d& pt) { return m_Viewport.DoProjection(pt); }
+  [[nodiscard]] double OverviewUExt() { return m_OverviewViewTransform.UExtent(); }
+  [[nodiscard]] double OverviewUMin() { return m_OverviewViewTransform.UMin(); }
+  [[nodiscard]] double OverviewVExt() { return m_OverviewViewTransform.VExtent(); }
+  [[nodiscard]] double OverviewVMin() { return m_OverviewViewTransform.VMin(); }
+  [[nodiscard]] CPoint DoProjection(const EoGePoint4d& pt) { return m_Viewport.DoProjection(pt); }
   void DoProjection(CPoint* pnt, int iPts, EoGePoint4d* pt) { m_Viewport.DoProjection(pnt, iPts, pt); }
   void DoProjection(CPoint* pnt, EoGePoint4dArray& pointsArray) { m_Viewport.DoProjection(pnt, pointsArray); }
   void DoProjectionInverse(EoGePoint3d& pt) { m_Viewport.DoProjectionInverse(pt); }
-  double HeightInInches() { return m_Viewport.HeightInInches(); }
-  double WidthInInches() { return m_Viewport.WidthInInches(); }
+  [[nodiscard]] double HeightInInches() { return m_Viewport.HeightInInches(); }
+  [[nodiscard]] double WidthInInches() { return m_Viewport.WidthInInches(); }
   void ViewportPopActive();
   void ViewportPushActive();
   void SetViewportSize(const int width, const int height) { m_Viewport.SetSize(width, height); }
@@ -390,19 +397,19 @@ class AeSysView : public CView {
   CString m_DefaultText;
 
  public:
-  double BubbleRadius() const { return m_BubbleRadius; }
+  [[nodiscard]] double BubbleRadius() const { return m_BubbleRadius; }
   void SetBubbleRadius(double radius) { m_BubbleRadius = radius; }
-  double CircleRadius() const { return m_CircleRadius; }
+  [[nodiscard]] double CircleRadius() const { return m_CircleRadius; }
   void SetCircleRadius(double radius) { m_CircleRadius = radius; }
-  CString DefaultText() const { return m_DefaultText; }
+  [[nodiscard]] CString DefaultText() const { return m_DefaultText; }
   void SetDefaultText(const CString& text) { m_DefaultText = text; }
-  double EndItemSize() const { return m_EndItemSize; }
+  [[nodiscard]] double EndItemSize() const { return m_EndItemSize; }
   void SetEndItemSize(double size) { m_EndItemSize = size; }
-  int EndItemType() const { return m_EndItemType; }
+  [[nodiscard]] int EndItemType() const { return m_EndItemType; }
   void SetEndItemType(int type) { m_EndItemType = type; }
-  double GapSpaceFactor() const { return m_GapSpaceFactor; }
+  [[nodiscard]] double GapSpaceFactor() const { return m_GapSpaceFactor; }
   void SetGapSpaceFactor(double factor) { m_GapSpaceFactor = factor; }
-  int NumberOfSides() const { return m_NumberOfSides; }
+  [[nodiscard]] int NumberOfSides() const { return m_NumberOfSides; }
   void SetNumberOfSides(int number) { m_NumberOfSides = number; }
 
  public:  // Annotate mode interface
@@ -562,7 +569,7 @@ class AeSysView : public CView {
     Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
     return Matrix;
   }
-  EoGeVector3d EditModeInvertedScaleFactors() const {
+  [[nodiscard]] EoGeVector3d EditModeInvertedScaleFactors() const {
     EoGeVector3d InvertedScaleFactors;
 
     InvertedScaleFactors.x = fabs(m_EditModeScale.x) > Eo::geometricTolerance ? 1.0 / m_EditModeScale.x : 1.0;
@@ -571,10 +578,10 @@ class AeSysView : public CView {
 
     return InvertedScaleFactors;
   }
-  EoGeVector3d EditModeScaleFactors() const { return m_EditModeScale; }
+  [[nodiscard]] EoGeVector3d EditModeScaleFactors() const { return m_EditModeScale; }
   void SetEditModeScaleFactors(const double x, const double y, const double z) { m_EditModeScale.Set(x, y, z); }
   void SetEditModeRotationAngles(double x, double y, double z) { m_editModeRotationAngles.Set(x, y, z); }
-  EoGeVector3d EditModeMirrorScale() const { return m_EditModeMirrorScale; }
+  [[nodiscard]] EoGeVector3d EditModeMirrorScale() const { return m_EditModeMirrorScale; }
   void SetMirrorScale(double x, double y, double z) { m_EditModeMirrorScale.Set(x, y, z); }
 
   afx_msg void OnEditModeOptions();
@@ -661,7 +668,7 @@ class AeSysView : public CView {
    * @param endCapPoint A reference to store the selected point primitive if found.
    * @return The group containing the selected point primitive, or nullptr if none is found.
    */
-  EoDbGroup* SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 color, EoInt16 pointStyle,
+  [[nodiscard]] EoDbGroup* SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 color, EoInt16 pointStyle,
                                    EoDbPoint*& endCapPoint);
 
   /** Locates and returns the first two lines that have an endpoint which coincides with
@@ -721,7 +728,7 @@ class AeSysView : public CView {
    *  identifies the second section, and the direction from the point to the cursor location defines the direction for the two elbow turns.
    *  @note Placeholder until implementation is return of (0.0, 0.0, 0.0)
    */
-  EoGePoint3d GenerateBullheadTee(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine,
+  [[nodiscard]] EoGePoint3d GenerateBullheadTee(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine,
                                   double existingSectionWidth, double existingSectionDepth, EoDbGroup* group);
 
   /** @brief Generates a full elbow takeoff from an existing section to the current section.
@@ -750,7 +757,7 @@ class AeSysView : public CView {
   /// <param name="previousSection">width and depth of begin section</param>
   /// <param name="currentSection">width and depth of end section</param>
   /// <returns>length of the transition</returns>
-  double LengthOfTransition(EJust justification, double slope, Section previousSection, Section currentSection);
+  [[nodiscard]] double LengthOfTransition(EJust justification, double slope, Section previousSection, Section currentSection);
 
  private:  // Pipe mode interface
   int m_CurrentPipeSymbolIndex;
@@ -810,7 +817,7 @@ class AeSysView : public CView {
   /// @brief Highlights a mode line operation by setting its text color to red in the status bar and optionally in the active view.
   /// @param command The operation command identifier to highlight. A value of 0 indicates no operation should be highlighted.
   /// @return The command identifier that was highlighted, or 0 if no operation was highlighted.
-  EoUInt16 ModeLineHighlightOp(EoUInt16 command);
+  [[nodiscard]] EoUInt16 ModeLineHighlightOp(EoUInt16 command);
 
   /// @brief Removes highlighting from a mode line operation pane and updates the display.
   /// @param command Reference to the command identifier to unhighlight. Set to 0 after unhighlighting is complete.

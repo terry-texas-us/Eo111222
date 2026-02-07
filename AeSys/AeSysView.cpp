@@ -324,130 +324,130 @@ END_MESSAGE_MAP()
 /// AeSysView construction/destruction ////////////////////////////////////////
 
 AeSysView::AeSysView()
-    : m_ModelTransform(),
-      m_Viewport(),
-      m_ViewTransform(),
-      m_backgroundImageBitmap(),
-      m_backgroundImagePalette(),
-      m_EngagedPrimitive(nullptr),
-      m_EngagedGroup(nullptr),
-      m_OpHighlighted(0),
-      m_OverviewViewTransform(),
-      m_Plot(false),
-      m_PlotScaleFactor(1.0),
-      m_PreviewGroup(),
-      m_PreviousViewTransform(),
-      m_PreviousOp(0),
-      m_PreviousPnt(),
-      m_SelectApertureSize(0.005),
-      m_viewBackgroundImage(false),
-      m_ViewOdometer(true),
-      m_ViewPenWidths(false),
-      m_Viewports(),
-      m_ViewRendered(false),
-      m_ViewTransforms(),
-      m_ViewTrueTypeFonts(true),
-      m_ViewWireframe(false),
-      m_VisibleGroupList(),
-      m_WorldScale(1.0),
-      m_ptDet(),
-      m_vRelPos(),
+    : m_ModelTransform{},
+      m_Viewport{},
+      m_ViewTransform{},
+      m_backgroundImageBitmap{},
+      m_backgroundImagePalette{},
+      m_EngagedPrimitive{},
+      m_EngagedGroup{},
+      m_OpHighlighted{},
+      m_OverviewViewTransform{},
+      m_Plot{},
+      m_PlotScaleFactor{1.0},
+      m_PreviewGroup{},
+      m_PreviousViewTransform{},
+      m_PreviousOp{0},
+      m_PreviousPnt{},
+      m_SelectApertureSize{0.005},
+      m_viewBackgroundImage{},
+      m_ViewOdometer{true},
+      m_ViewPenWidths{},
+      m_Viewports{},
+      m_ViewRendered{},
+      m_ViewTransforms{},
+      m_ViewTrueTypeFonts{true},
+      m_ViewWireframe{},
+      m_VisibleGroupList{},
+      m_WorldScale{1.0},
+      m_ptDet{},
+      m_vRelPos{},
       // Grid constraints
-      m_GridOrigin(),
-      m_MaximumDotsPerLine(64),
-      m_XGridLineSpacing(12.0),
-      m_YGridLineSpacing(12.0),
-      m_ZGridLineSpacing(12.0),
-      m_XGridSnapSpacing(1.0),
-      m_YGridSnapSpacing(1.0),
-      m_ZGridSnapSpacing(1.0),
-      m_XGridPointSpacing(3.0),
-      m_YGridPointSpacing(3.0),
-      m_ZGridPointSpacing(0.0),
-      m_AxisConstraintInfluenceAngle(5.0),
-      m_AxisConstraintOffsetAngle(0.0),
-      m_DisplayGridWithLines(false),
-      m_DisplayGridWithPoints(false),
-      m_GridSnap(false),
+      m_GridOrigin{},
+      m_MaximumDotsPerLine{64},
+      m_XGridLineSpacing{12.0},
+      m_YGridLineSpacing{12.0},
+      m_ZGridLineSpacing{12.0},
+      m_XGridSnapSpacing{1.0},
+      m_YGridSnapSpacing{1.0},
+      m_ZGridSnapSpacing{1.0},
+      m_XGridPointSpacing{3.0},
+      m_YGridPointSpacing{3.0},
+      m_ZGridPointSpacing{},
+      m_AxisConstraintInfluenceAngle{5.0},
+      m_AxisConstraintOffsetAngle{},
+      m_DisplayGridWithLines{},
+      m_DisplayGridWithPoints{},
+      m_GridSnap{},
       // Cursor/Selection
-      m_ViewStateInformation(true),
-      m_middleButtonPanStartPoint(),
+      m_ViewStateInformation{true},
+      m_middleButtonPanStartPoint{},
       m_middleButtonPanInProgress{},
-      m_RubberbandType(None),
-      m_RubberbandBeginPoint(),
-      m_RubberbandLogicalBeginPoint(),
-      m_RubberbandLogicalEndPoint(),
-      m_ptCursorPosDev(),
-      m_ptCursorPosWorld(),
+      m_RubberbandType{None},
+      m_RubberbandBeginPoint{},
+      m_RubberbandLogicalBeginPoint{},
+      m_RubberbandLogicalEndPoint{},
+      m_ptCursorPosDev{},
+      m_ptCursorPosWorld{},
       // Sub-mode edit
-      m_SubModeEditGroup(nullptr),
-      m_SubModeEditPrimitive(nullptr),
-      m_SubModeEditBeginPoint(),
-      m_SubModeEditEndPoint(),
-      m_tmEditSeg(),
+      m_SubModeEditGroup{},
+      m_SubModeEditPrimitive{},
+      m_SubModeEditBeginPoint{},
+      m_SubModeEditEndPoint{},
+      m_tmEditSeg{},
       // Mend
-      m_MendPrimitiveBegin(),
-      m_MendPrimitiveVertexIndex(0),
-      m_PrimitiveToMend(nullptr),
-      m_PrimitiveToMendCopy(nullptr),
+      m_MendPrimitiveBegin{},
+      m_MendPrimitiveVertexIndex{},
+      m_PrimitiveToMend{},
+      m_PrimitiveToMendCopy{},
       // Annotate
-      m_GapSpaceFactor(0.5),
-      m_CircleRadius(0.03125),
-      m_EndItemType(1),
-      m_EndItemSize(0.1),
-      m_BubbleRadius(0.125),
-      m_NumberOfSides(0),
-      m_DefaultText(),
+      m_GapSpaceFactor{0.5},
+      m_CircleRadius{0.03125},
+      m_EndItemType{1},
+      m_EndItemSize{0.1},
+      m_BubbleRadius{0.125},
+      m_NumberOfSides{},
+      m_DefaultText{},
       /// Draw2 Mode Interface
-      m_CenterLineEccentricity(0.5),
-      m_ContinueCorner(false),
-      m_DistanceBetweenLines(0.0625),
-      m_CurrentLeftLine(),
-      m_CurrentRightLine(),
-      m_PreviousReferenceLine(),
-      m_CurrentReferenceLine(),
-      m_AssemblyGroup(nullptr),
-      m_EndSectionGroup(nullptr),
-      m_BeginSectionGroup(nullptr),
-      m_BeginSectionLine(nullptr),
-      m_EndSectionLine(nullptr),
+      m_CenterLineEccentricity{0.5},
+      m_ContinueCorner{},
+      m_DistanceBetweenLines{0.0625},
+      m_CurrentLeftLine{},
+      m_CurrentRightLine{},
+      m_PreviousReferenceLine{},
+      m_CurrentReferenceLine{},
+      m_AssemblyGroup{},
+      m_EndSectionGroup{},
+      m_BeginSectionGroup{},
+      m_BeginSectionLine{},
+      m_EndSectionLine{},
       /// Fixup Mode Interface
-      m_FixupModeAxisTolerance(2.0),
-      m_FixupModeCornerSize(0.25),
+      m_FixupModeAxisTolerance{2.0},
+      m_FixupModeCornerSize{0.25},
       // Edit Mode interface
-      m_EditModeMirrorScale(-1.0, 1.0, 1.0),
-      m_editModeRotationAngles(0.0, 0.0, 45.0),
-      m_EditModeScale(2.0, 2.0, 2.0),
+      m_EditModeMirrorScale{-1.0, 1.0, 1.0},
+      m_editModeRotationAngles{0.0, 0.0, 45.0},
+      m_EditModeScale{2.0, 2.0, 2.0},
 
       /// Low Pressure Duct Mode Interface
-      m_InsideRadiusFactor(1.5),
-      m_DuctSeamSize(0.03125),
-      m_DuctTapSize(0.09375),
-      m_GenerateTurningVanes(true),
-      m_ElbowType(Mittered),
-      m_DuctJustification(Center),
-      m_TransitionSlope(4.0),
-      m_BeginWithTransition(false),
-      m_ContinueSection(false),
-      m_EndCapLocation(0),
-      m_EndCapPoint(nullptr),
-      m_EndCapGroup(nullptr),
-      m_OriginalPreviousGroupDisplayed(true),
-      m_OriginalPreviousGroup(nullptr),
-      m_PreviousSection(0.125, 0.0625, Section::Rectangular),
-      m_CurrentSection(0.125, 0.0625, Section::Rectangular),
+      m_InsideRadiusFactor{1.5},
+      m_DuctSeamSize{0.03125},
+      m_DuctTapSize{0.09375},
+      m_GenerateTurningVanes{true},
+      m_ElbowType{Mittered},
+      m_DuctJustification{Center},
+      m_TransitionSlope{4.0},
+      m_BeginWithTransition{},
+      m_ContinueSection{},
+      m_EndCapLocation{0},
+      m_EndCapPoint{},
+      m_EndCapGroup{},
+      m_OriginalPreviousGroupDisplayed{true},
+      m_OriginalPreviousGroup{},
+      m_PreviousSection{0.125, 0.0625, Section::Rectangular},
+      m_CurrentSection{0.125, 0.0625, Section::Rectangular},
 
       /// Pipe Mode Interface
-      m_CurrentPipeSymbolIndex(0),
-      m_PipeTicSize(0.03125),
-      m_PipeRiseDropRadius(0.03125),
+      m_CurrentPipeSymbolIndex{},
+      m_PipeTicSize{0.03125},
+      m_PipeRiseDropRadius{0.03125},
 
       /// Power Mode Interface (initializers)
-      m_PowerArrow(false),
-      m_PowerConductor(false),
-      m_PowerConductorSpacing(0.04),
-      m_CircuitEndPoint(),
-      m_PreviousRadius(0) {
+      m_PowerArrow{},
+      m_PowerConductor{},
+      m_PowerConductorSpacing{0.04},
+      m_CircuitEndPoint{},
+      m_PreviousRadius{} {
   m_Viewport.SetDeviceWidthInPixels(app.DeviceWidthInPixels());
   m_Viewport.SetDeviceHeightInPixels(app.DeviceHeightInPixels());
   m_Viewport.SetDeviceWidthInInches(app.DeviceWidthInMillimeters() / Eo::MmPerInch);
@@ -472,6 +472,7 @@ void AeSysView::OnActivateFrame(UINT state, CFrameWnd* deactivateFrame) {
 
   CView::OnActivateFrame(state, deactivateFrame);
 }
+
 void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deactiveView) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate,
             activateView, deactiveView);
@@ -489,18 +490,21 @@ void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deacti
 
   CView::OnActivateView(activate, activateView, deactiveView);
 }
+
 BOOL AeSysView::PreCreateWindow(CREATESTRUCT& createStructure) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::PreCreateWindow(%08.8lx) ", this, createStructure);
 
   // TODO: Modify the Window class or styles here by modifying the CREATESTRUCT
   return CView::PreCreateWindow(createStructure);
 }
+
 int AeSysView::OnCreate(LPCREATESTRUCT createStructure) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnCreate(%08.8lx)\n", this, createStructure);
 
   if (CView::OnCreate(createStructure) == -1) { return -1; }
   return 0;
 }
+
 void AeSysView::OnSetFocus(CWnd* oldWindow) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnSetFocus(%08.8lx)\n", this, oldWindow);
 
@@ -511,6 +515,7 @@ void AeSysView::OnSetFocus(CWnd* oldWindow) {
   }
   CView::OnSetFocus(oldWindow);
 }
+
 void AeSysView::OnKillFocus(CWnd* newWindow) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnKillFocus(%08.8lx)\n", this, newWindow);
 
@@ -520,10 +525,12 @@ void AeSysView::OnKillFocus(CWnd* newWindow) {
 
   CView::OnKillFocus(newWindow);
 }
+
 void AeSysView::OnPaint() {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnPaint()\n", this);
   CView::OnPaint();
 }
+
 void AeSysView::OnDraw(CDC* deviceContext) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnDraw(%08.8lx) +", this, deviceContext);
 
@@ -932,7 +939,9 @@ void AeSysView::PopViewTransform() {
   if (!m_ViewTransforms.IsEmpty()) { m_ViewTransform = m_ViewTransforms.RemoveTail(); }
   m_ViewTransform.BuildTransformMatrix();
 }
+
 void AeSysView::PushViewTransform() { m_ViewTransforms.AddTail(m_ViewTransform); }
+
 void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, double& vMax, double ratio) {
   double AspectRatio = static_cast<double>(m_Viewport.Height() / m_Viewport.Width());
 
@@ -1851,7 +1860,7 @@ void AeSysView::ResetView() {
   m_EngagedPrimitive = 0;
 }
 
-EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
+[[nodiscard]] EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
   EoDbPrimitive* primitive{};
   EoGePoint3d ptEng;
 
@@ -1904,7 +1913,7 @@ EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
   return nullptr;
 }
 
-EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle) {
+[[nodiscard]] EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle) {
   auto groupPosition = GetFirstVisibleGroupPosition();
   while (groupPosition != nullptr) {
     auto* group = GetNextVisibleGroup(groupPosition);
@@ -1923,7 +1932,7 @@ EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double toleranc
   return nullptr;
 }
 
-EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) {
+[[nodiscard]] EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) {
   EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
 
@@ -1945,7 +1954,7 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
   return nullptr;
 }
 
-EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
+[[nodiscard]] EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
   m_EngagedGroup = 0;
   m_EngagedPrimitive = 0;
 
@@ -1979,7 +1988,7 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
   return m_EngagedGroup;
 }
 
-EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& point) {
+[[nodiscard]] EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& point) {
   EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
 
