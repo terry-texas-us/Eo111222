@@ -104,7 +104,7 @@ EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(const EoGePoint3d& 
 
 EoDbPrimitive*& EoDbBlockReference::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbBlockReference(*this);
-  return (primitive);
+  return primitive;
 }
 void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
   EoDbBlock* block{};
@@ -151,7 +151,7 @@ void EoDbBlockReference::FormatGeometry(CString& geometry) {
 EoGePoint3d EoDbBlockReference::GetControlPoint() {
   EoGePoint3d point;
   point = m_insertionPoint;
-  return (point);
+  return point;
 }
 void EoDbBlockReference::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
   EoDbBlock* block{};
@@ -184,7 +184,7 @@ bool EoDbBlockReference::IsInView(AeSysView* view) {
   bool bInView = Block->IsInView(view);
 
   view->PopModelTransform();
-  return (bInView);
+  return bInView;
 }
 
 bool EoDbBlockReference::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
@@ -242,14 +242,14 @@ bool EoDbBlockReference::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, 
   bool bResult = block->SelectUsingRectangle(view, pt1, pt2);
 
   view->PopModelTransform();
-  return (bResult);
+  return bResult;
 }
 bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   bool bResult{};
 
   EoDbBlock* block{};
 
-  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return (bResult); }
+  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return bResult; }
   EoGePoint3d basePoint = block->BasePoint();
 
   EoGeTransformMatrix tm = BuildTransformMatrix(basePoint);
@@ -265,7 +265,7 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
     }
   }
   view->PopModelTransform();
-  return (bResult);
+  return bResult;
 }
 
 void EoDbBlockReference::SetInsertionPoint(const DRW_Coord& point) {

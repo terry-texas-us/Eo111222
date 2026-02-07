@@ -167,7 +167,7 @@ void EoDbPolygon::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
 
 EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPolygon(*this);
-  return (primitive);
+  return primitive;
 }
 
 void EoDbPolygon::Display(AeSysView* view, CDC* deviceContext) {
@@ -243,7 +243,7 @@ CString EoDbPolygon::FormatIntStyle() {
   CString str =
       (m_InteriorStyle >= 0 && m_InteriorStyle <= 3) ? strStyle[m_InteriorStyle] : const_cast<LPWSTR>(L"Invalid!");
 
-  return (str);
+  return str;
 }
 void EoDbPolygon::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
@@ -253,7 +253,7 @@ EoGePoint3d EoDbPolygon::GetControlPoint() {
   EoUInt16 wBeg = EoUInt16(sm_Edge - 1);
   EoUInt16 wEnd = EoUInt16(sm_Edge % m_NumberOfPoints);
   EoGePoint3d pt = EoGeLine(m_Pt[wBeg], m_Pt[wEnd]).Midpoint();
-  return (pt);
+  return pt;
 };
 
 EoGePoint3d EoDbPolygon::GoToNextControlPoint() {
@@ -665,7 +665,7 @@ EoUInt16 EoDbPolygon::SwingVertex() const {
   else
     wSwingVertex = EoUInt16(sm_Edge == sm_PivotVertex ? sm_PivotVertex - 1 : sm_PivotVertex + 1);
 
-  return (wSwingVertex);
+  return wSwingVertex;
 }
 void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArray) {
   int iPts = static_cast<int>(pointsArray.GetSize());

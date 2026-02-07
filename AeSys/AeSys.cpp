@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iterator>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 
@@ -31,6 +32,7 @@
 #include "Dde.h"
 #include "ddeGItms.h"
 #endif  // USING_DDE
+
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);
 ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance);
 
@@ -69,7 +71,7 @@ int tableOffset[64]{};
 float tableValue[1536]{};
 }  // namespace hatch
 
-COLORREF* pColTbl = ColorPalette;
+auto* pColTbl = ColorPalette;
 
 CPrimState pstate;
 
@@ -763,17 +765,6 @@ void AeSys::OnFileOpen() {
   if (result == IDOK) { OpenDocumentFile(fileName); }
 }
 
-int AeSys::GreatestCommonDivisor(const int number1, const int number2) {
-  int ReturnValue = abs(number1);
-  int Divisor = abs(number2);
-  while (Divisor != 0) {
-    int Remainder = ReturnValue % Divisor;
-    ReturnValue = Divisor;
-    Divisor = Remainder;
-  }
-  return (ReturnValue);
-}
-
 void AeSys::FormatAngle(CString& angleAsString, const double angle, const int width, const int precision) {
   CString FormatSpecification;
   FormatSpecification.Format(L"%%%i.%if\u00B0", width, precision);
@@ -807,17 +798,17 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   int Feet = int(ScaledLength / 12.0);
   int Inches = abs(int(fmod(ScaledLength, 12.0)));
 
-  int FractionPrecision = GetArchitecturalUnitsFractionPrecision();
-  int Numerator = int(fabs(fmod(ScaledLength, 1.0)) * (double)(FractionPrecision) + 0.5);
+  int fractionPrecision = GetArchitecturalUnitsFractionPrecision();
+  int numerator = int(fabs(fmod(ScaledLength, 1.0)) * (double)(fractionPrecision) + 0.5);
 
-  if (Numerator == FractionPrecision) {
+  if (numerator == fractionPrecision) {
     if (Inches == 11) {
       Feet++;
       Inches = 0;
     } else {
       Inches++;
     }
-    Numerator = 0;
+    numerator = 0;
   }
   _itow_s(Feet, szBuf, 16, 10);
   wcscat_s(lengthAsBuffer, bufSize, szBuf);
@@ -825,12 +816,12 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
 
   _itow_s(Inches, szBuf, 16, 10);
   wcscat_s(lengthAsBuffer, bufSize, szBuf);
-  if (Numerator > 0) {
+  if (numerator > 0) {
     wcscat_s(lengthAsBuffer, static_cast<size_t>(bufSize), (units == Eo::Units::ArchitecturalS) ? L"\\S" : L"-");
-    int iGrtComDivisor = GreatestCommonDivisor(Numerator, FractionPrecision);
-    Numerator /= iGrtComDivisor;
-    int Denominator = FractionPrecision / iGrtComDivisor;
-    _itow_s(Numerator, szBuf, 16, 10);
+    int iGrtComDivisor = std::gcd(numerator, fractionPrecision);
+    numerator /= iGrtComDivisor;
+    int Denominator = fractionPrecision / iGrtComDivisor;
+    _itow_s(numerator, szBuf, 16, 10);
     wcscat_s(lengthAsBuffer, bufSize, szBuf);
     wcscat_s(lengthAsBuffer, bufSize, L"/");
     _itow_s(Denominator, szBuf, 16, 10);
@@ -839,6 +830,7 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   }
   wcscat_s(lengthAsBuffer, bufSize, L"\"");
 }
+
 void AeSys::FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width,
                                     const int precision) {
   wchar_t szBuf[16]{};

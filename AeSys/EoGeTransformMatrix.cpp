@@ -234,7 +234,7 @@ EoGeTransformMatrix EoGeTransformMatrix::ZAxisRotation(double sinAngle, double c
 
   matrix.m_4X4[3][3] = 1.0;
 
-  return (matrix);
+  return matrix;
 }
 
 void EoGeTransformMatrix::Scale(const EoGeVector3d& scaleVector) {

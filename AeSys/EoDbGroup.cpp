@@ -137,7 +137,7 @@ POSITION EoDbGroup::FindAndRemovePrim(EoDbPrimitive* primitive) {
 
   if (position != nullptr) RemoveAt(position);
 
-  return (position);
+  return position;
 }
 
 EoDbPoint* EoDbGroup::GetFirstDifferentPoint(EoDbPoint* pointPrimitive) {
@@ -169,7 +169,7 @@ int EoDbGroup::GetBlockRefCount(const CString& blockName) {
       if (static_cast<EoDbBlockReference*>(primitive)->BlockName() == blockName) { count++; }
     }
   }
-  return (count);
+  return count;
 }
 
 void EoDbGroup::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
@@ -188,7 +188,7 @@ int EoDbGroup::GetLineTypeRefCount(EoInt16 lineType) {
 
     if (primitive->LineTypeIndex() == lineType) { count++; }
   }
-  return (count);
+  return count;
 }
 bool EoDbGroup::IsInView(AeSysView* view) {
   auto position = GetHeadPosition();
@@ -280,7 +280,7 @@ void EoDbGroup::RemoveDuplicatePrimitives() {
   }
 }
 int EoDbGroup::RemoveEmptyNotesAndDelete() {
-  int iCount = 0;
+  int count{};
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
@@ -290,11 +290,11 @@ int EoDbGroup::RemoveEmptyNotesAndDelete() {
       if (static_cast<EoDbText*>(primitive)->Text().GetLength() == 0) {
         RemoveAt(posPrev);
         delete primitive;
-        iCount++;
+        count++;
       }
     }
   }
-  return (iCount);
+  return count;
 }
 EoDbPrimitive* EoDbGroup::SelPrimUsingPoint(AeSysView* view, const EoGePoint4d& point, double& dPicApert,
                                             EoGePoint3d& pDetPt) {
@@ -304,7 +304,7 @@ EoDbPrimitive* EoDbGroup::SelPrimUsingPoint(AeSysView* view, const EoGePoint4d& 
 
     if (primitive->SelectUsingPoint(view, point, pDetPt)) {
       dPicApert = point.DistanceToPointXY(EoGePoint4d(pDetPt));
-      return (primitive);
+      return primitive;
     }
   }
   return nullptr;
@@ -328,7 +328,7 @@ EoDbPrimitive* EoDbGroup::SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d& pt
       *ptCtrl = ptView4;
     }
   }
-  return (EngagedPrimitive);
+  return EngagedPrimitive;
 }
 
 void EoDbGroup::DeletePrimitivesAndRemoveAll() {

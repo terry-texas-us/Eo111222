@@ -41,22 +41,23 @@ void EoDbGroupList::Display(AeSysView* view, CDC* deviceContext) {
     group->Display(view, deviceContext);
   }
 }
+
 POSITION EoDbGroupList::Remove(EoDbGroup* group) {
   auto position = Find(group);
   if (position != nullptr) RemoveAt(position);
 
-  return (position);
+  return position;
 }
 
 int EoDbGroupList::GetBlockRefCount(const CString& strBlkNam) {
-  int iCount = 0;
+  int count{};
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    iCount += group->GetBlockRefCount(strBlkNam);
+    count += group->GetBlockRefCount(strBlkNam);
   }
-  return (iCount);
+  return count;
 }
 
 void EoDbGroupList::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
@@ -67,14 +68,14 @@ void EoDbGroupList::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d&
   }
 }
 int EoDbGroupList::GetLineTypeRefCount(EoInt16 lineType) {
-  int iCount = 0;
+  int count{};
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    iCount += group->GetLineTypeRefCount(lineType);
+    count += group->GetLineTypeRefCount(lineType);
   }
-  return (iCount);
+  return count;
 }
 void EoDbGroupList::ModifyColor(EoInt16 color) {
   auto position = GetHeadPosition();
@@ -101,18 +102,20 @@ void EoDbGroupList::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pC
   auto position = GetHeadPosition();
   while (position != 0) (GetNext(position))->PenTranslation(wCols, pColNew, pCol);
 }
+
 int EoDbGroupList::RemoveEmptyNotesAndDelete() {
-  int iCount = 0;
+  int count{};
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    iCount += group->RemoveEmptyNotesAndDelete();
+    count += group->RemoveEmptyNotesAndDelete();
   }
-  return (iCount);
+  return count;
 }
+
 int EoDbGroupList::RemoveEmptyGroups() {
-  int iCount = 0;
+  int count{};
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
@@ -121,11 +124,12 @@ int EoDbGroupList::RemoveEmptyGroups() {
     if (group->GetCount() == 0) {
       RemoveAt(posPrev);
       delete group;
-      iCount++;
+      count++;
     }
   }
-  return (iCount);
+  return count;
 }
+
 void EoDbGroupList::DeleteGroupsAndRemoveAll() {
   auto position = GetHeadPosition();
   while (position != nullptr) {
@@ -156,7 +160,7 @@ EoDbGroup* EoDbGroupList::SelectGroupUsingPoint(const EoGePoint3d& pt) {
     auto* group = GetNext(position);
     if (group->SelPrimUsingPoint(activeView, ptView, dPicApert, ptEng) != 0) { pPicSeg = group; }
   }
-  return (pPicSeg);
+  return pPicSeg;
 }
 void EoDbGroupList::Transform(EoGeTransformMatrix& tm) {
   auto position = GetHeadPosition();

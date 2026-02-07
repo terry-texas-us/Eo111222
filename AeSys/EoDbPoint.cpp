@@ -80,7 +80,7 @@ void EoDbPoint::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
 
 EoDbPrimitive*& EoDbPoint::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPoint(*this);
-  return (primitive);
+  return primitive;
 }
 
 void EoDbPoint::Display(AeSysView* view, CDC* context) {
@@ -160,7 +160,7 @@ void EoDbPoint::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tStyle;%d", FormatPenColor().GetString(), m_pointStyle);
 }
 void EoDbPoint::FormatGeometry(CString& str) { str += L"Point;" + m_Point.ToString(); }
-EoGePoint3d EoDbPoint::GetControlPoint() { return (m_Point); }
+EoGePoint3d EoDbPoint::GetControlPoint() { return m_Point; }
 
 void EoDbPoint::GetAllPoints(EoGePoint3dArray& points) {
   points.SetSize(0);

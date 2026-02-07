@@ -54,7 +54,7 @@ int CPrimState::Save() {
     *psSav[iSaveId] = pstate;
   }
   // return id to use for restore reference
-  return (iSaveId);
+  return iSaveId;
 }
 
 void CPrimState::SetPen(AeSysView* view, CDC* deviceContext, EoInt16 color, EoInt16 lineTypeIndex) {
@@ -138,15 +138,12 @@ void CPrimState::SetLineType(CDC* deviceContext, EoInt16 lineTypeIndex) {
   m_LineTypeIndex = lineTypeIndex;
   if (deviceContext) { ManagePenResources(deviceContext, m_color, 0, lineTypeIndex); }
 }
-int CPrimState::SetROP2(CDC* deviceContext, int iDrawMode) {
-  // Sets the current foreground mix mode. GDI uses the foreground mix mode to combine pens and
-  // interiors of filled objects with the colors already on the screen. The foreground mix mode
-  // defines how colors from the brush or pen and the colors in the existing image are to be combined.
 
+int CPrimState::SetROP2(CDC* deviceContext, int drawMode) {
   if (ColorPalette[0] == RGB(0xFF, 0xFF, 0xFF)) {
-    if (iDrawMode == R2_XORPEN) iDrawMode = R2_NOTXORPEN;
+    if (drawMode == R2_XORPEN) { drawMode = R2_NOTXORPEN; }
   }
-  return (deviceContext->SetROP2(iDrawMode));
+  return deviceContext->SetROP2(drawMode);
 }
 void CPrimState::SetTxtAlign(CDC* deviceContext, EoUInt16 horizontalAlignment, EoUInt16 verticalAlignment) {
   //if (horizontalAlignment == 1)

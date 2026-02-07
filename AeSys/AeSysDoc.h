@@ -26,26 +26,23 @@ class AeSysDoc : public CDocument {
   DECLARE_DYNCREATE(AeSysDoc)
 
  private:
-  CString m_IdentifiedLayerName;
-  EoDb::FileTypes m_SaveAsType;
-
   EoDbHeaderSection m_HeaderSection;
   EoDbLineTypeTable m_LineTypeTable;
-  EoDbLineType* m_ContinuousLineType;
   EoDbBlocks m_BlocksTable;
-  CLayers m_LayerTable;
-  EoDbLayer* m_workLayer;
   EoDbGroupList m_DeletedGroupList;
   EoDbGroupList m_TrappedGroupList;
-  EoGePoint3d m_TrapPivotPoint;
-
   EoDbGroupList m_NodalGroupList;
   CObList m_MaskedPrimitives;
   CObList m_UniquePoints;
+  CLayers m_LayerTable;
+  EoGePoint3d m_TrapPivotPoint;
+  EoDbLineType* m_ContinuousLineType;
+  EoDbLayer* m_workLayer;
+  CString m_IdentifiedLayerName;
   double m_pointSize{0.0};  // in drawing units when greater than zero; in pixels when less than zero; default otherwise
+  EoDb::FileTypes m_SaveAsType;
 
-  // Overrides
- public:
+public:
   BOOL DoSave(LPCWSTR lpszPathName, BOOL bReplace = TRUE) override;
   void SetCommonTableEntries();
   BOOL OnNewDocument() override;
@@ -76,11 +73,11 @@ class AeSysDoc : public CDocument {
   void AddTextBlock(LPWSTR pszText);
 
   // Block Table interface
-  EoDbBlocks* BlocksTable() { return (&m_BlocksTable); }
-  bool BlockTableIsEmpty() { return m_BlocksTable.IsEmpty() == TRUE; }
-  EoUInt16 BlockTableSize() { return (EoUInt16(m_BlocksTable.GetSize())); }
+  [[nodiscard]] EoDbBlocks* BlocksTable() { return (&m_BlocksTable); }
+  [[nodiscard]] bool BlockTableIsEmpty() const { return m_BlocksTable.IsEmpty() == TRUE; }
+  [[nodiscard]] EoUInt16 BlockTableSize() const { return (EoUInt16(m_BlocksTable.GetSize())); }
   int GetBlockReferenceCount(const CString& name);
-  auto GetFirstBlockPosition() { return m_BlocksTable.GetStartPosition(); }
+  [[nodiscard]] auto GetFirstBlockPosition() const { return m_BlocksTable.GetStartPosition(); }
   void GetNextBlock(POSITION& position, CString& name, EoDbBlock*& block) {
     m_BlocksTable.GetNextAssoc(position, name, block);
   }
@@ -121,10 +118,10 @@ class AeSysDoc : public CDocument {
   void DisplayAllLayers(AeSysView* view, CDC* deviceContext);
 
   // Layer Table interface
-  EoDbLayer* GetLayerTableLayer(const CString& layerName);
-  EoDbLayer* GetLayerTableLayerAt(int layer);
-  int GetLayerTableSize() { return (int)m_LayerTable.GetSize(); }
-  int FindLayerTableLayer(const CString& layerName) const;
+  [[nodiscard]] EoDbLayer* GetLayerTableLayer(const CString& layerName);
+  [[nodiscard]] EoDbLayer* GetLayerTableLayerAt(int layer);
+  [[nodiscard]] int GetLayerTableSize() const { return static_cast<int>(m_LayerTable.GetSize()); }
+  [[nodiscard]] int FindLayerTableLayer(const CString& layerName) const;
   void RemoveLayerTableLayer(const CString& strName);
   void RemoveAllLayerTableLayers();
   void RemoveLayerTableLayerAt(int);
@@ -138,8 +135,8 @@ class AeSysDoc : public CDocument {
   void SetPointSize(double size) noexcept { m_pointSize = size; }
 
   // Line Type Table interface
-  EoDbLineTypeTable* LineTypeTable() { return &m_LineTypeTable; }
-  EoDbLineType* ContinuousLineType() { return m_ContinuousLineType; }
+  [[nodiscard]] auto* LineTypeTable() { return &m_LineTypeTable; }
+  [[nodiscard]] auto* ContinuousLineType() { return m_ContinuousLineType; }
 
   void PenTranslation(EoUInt16, EoInt16*, EoInt16*);
 
@@ -158,12 +155,12 @@ class AeSysDoc : public CDocument {
   void AddWorkLayerGroup(EoDbGroup* group);
   void AddWorkLayerGroups(EoDbGroupList* groups);
   auto FindWorkLayerGroup(EoDbGroup* group) const { return (m_workLayer->Find(group)); }
-  auto GetFirstWorkLayerGroupPosition() const { return m_workLayer->GetHeadPosition(); }
-  EoDbGroup* GetLastWorkLayerGroup() const;
-  auto GetLastWorkLayerGroupPosition() const { return m_workLayer->GetTailPosition(); }
+  [[nodiscard]] auto GetFirstWorkLayerGroupPosition() const { return m_workLayer->GetHeadPosition(); }
+  [[nodiscard]] EoDbGroup* GetLastWorkLayerGroup() const;
+  [[nodiscard]] auto GetLastWorkLayerGroupPosition() const { return m_workLayer->GetTailPosition(); }
   EoDbGroup* GetNextWorkLayerGroup(POSITION& position) const { return m_workLayer->GetNext(position); }
   EoDbGroup* GetPreviousWorkLayerGroup(POSITION& position) const { return m_workLayer->GetPrev(position); }
-  EoDbLayer* GetWorkLayer() const { return m_workLayer; }
+  [[nodiscard]] auto* GetWorkLayer() const { return m_workLayer; }
   void InitializeWorkLayer();
   EoDbLayer* SetWorkLayer(EoDbLayer* layer);
 
@@ -225,8 +222,8 @@ class AeSysDoc : public CDocument {
   void SquareTrappedGroups(AeSysView* view);
   void TransformTrappedGroups(EoGeTransformMatrix& tm);
   void TranslateTrappedGroups(EoGeVector3d translate);
-  INT_PTR TrapGroupCount() { return m_TrappedGroupList.GetCount(); }
-  EoDbGroupList* GroupsInTrap() { return &m_TrappedGroupList; }
+  [[nodiscard]] auto TrapGroupCount() { return m_TrappedGroupList.GetCount(); }
+  [[nodiscard]] auto* GroupsInTrap() { return &m_TrappedGroupList; }
 
   // Nodal list interface (includes list of groups, primitives and unique points)
   void DeleteNodalResources();
@@ -235,13 +232,13 @@ class AeSysDoc : public CDocument {
 
   auto AddNodalGroup(EoDbGroup* group) { return m_NodalGroupList.AddTail(group); }
   auto FindNodalGroup(EoDbGroup* group) { return m_NodalGroupList.Find(group); }
-  auto GetFirstNodalGroupPosition() const { return m_NodalGroupList.GetHeadPosition(); }
+  [[nodiscard]] auto GetFirstNodalGroupPosition() const { return m_NodalGroupList.GetHeadPosition(); }
   EoDbGroup* GetNextNodalGroup(POSITION& position) { return m_NodalGroupList.GetNext(position); }
   void RemoveAllNodalGroups() { m_NodalGroupList.RemoveAll(); }
   POSITION AddMaskedPrimitive(EoDbMaskedPrimitive* maskedPrimitive) {
     return m_MaskedPrimitives.AddTail((CObject*)maskedPrimitive);
   }
-  auto GetFirstMaskedPrimitivePosition() const { return m_MaskedPrimitives.GetHeadPosition(); }
+  [[nodiscard]] auto GetFirstMaskedPrimitivePosition() const { return m_MaskedPrimitives.GetHeadPosition(); }
   EoDbMaskedPrimitive* GetNextMaskedPrimitive(POSITION& position) {
     return (EoDbMaskedPrimitive*)m_MaskedPrimitives.GetNext(position);
   }
@@ -253,7 +250,7 @@ class AeSysDoc : public CDocument {
   int AddUniquePoint(const EoGePoint3d& point);
   auto AddUniquePoint(EoGeUniquePoint* uniquePoint) { return m_UniquePoints.AddTail((CObject*)uniquePoint); }
   void DisplayUniquePoints();
-  auto GetFirstUniquePointPosition() const { return m_UniquePoints.GetHeadPosition(); }
+  [[nodiscard]] auto GetFirstUniquePointPosition() const { return m_UniquePoints.GetHeadPosition(); }
   EoGeUniquePoint* GetNextUniquePoint(POSITION& position) { return (EoGeUniquePoint*)m_UniquePoints.GetNext(position); }
   void RemoveUniquePointAt(POSITION position) { m_UniquePoints.RemoveAt(position); }
   void RemoveAllUniquePoints() { m_UniquePoints.RemoveAll(); }

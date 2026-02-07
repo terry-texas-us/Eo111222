@@ -52,7 +52,7 @@ void EoDbSpline::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
 
 EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbSpline(*this);
-  return (primitive);
+  return primitive;
 }
 
 void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
@@ -87,7 +87,7 @@ void EoDbSpline::GetAllPoints(EoGePoint3dArray& pts) {
 EoGePoint3d EoDbSpline::GetControlPoint() {
   EoGePoint3d point;
   point = m_pts[m_pts.GetSize() / 2];
-  return (point);
+  return point;
 }
 
 void EoDbSpline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
@@ -118,7 +118,7 @@ EoGePoint3d EoDbSpline::GoToNextControlPoint() {
     pt = m_pts[0];
   else
     pt = m_pts[i];
-  return (pt);
+  return pt;
 }
 bool EoDbSpline::IsInView(AeSysView* view) {
   EoGePoint4d pt[2]{};
@@ -147,7 +147,7 @@ bool EoDbSpline::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point
 
 EoGePoint3d EoDbSpline::SelectAtControlPoint(AeSysView*, const EoGePoint4d& point) {
   sm_ControlPointIndex = USHRT_MAX;
-  return (point);
+  return point;
 }
 
 bool EoDbSpline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
@@ -273,5 +273,5 @@ int EoDbSpline::GenPts(const int iOrder, EoGePoint3dArray& pts) {
 
   delete[] dKnot;
 
-  return (iPts);
+  return iPts;
 }

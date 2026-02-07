@@ -130,7 +130,7 @@ EoUInt16 AeSysView::ModeLineHighlightOp(EoUInt16 command) {
     DrawPaneTextInView(context, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT, RGB(255, 0, 0));
     ReleaseDC(context);
   }
-  return (command);
+  return command;
 }
 
 void AeSysView::ModeLineUnhighlightOp(EoUInt16& command) {

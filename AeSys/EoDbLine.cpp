@@ -71,7 +71,7 @@ void EoDbLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
 
 EoDbPrimitive*& EoDbLine::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbLine(*this);
-  return (primitive);
+  return primitive;
 }
 
 /** @brief Cuts a line at two points.

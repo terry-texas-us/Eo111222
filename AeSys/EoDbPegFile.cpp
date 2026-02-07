@@ -429,17 +429,18 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
   EoDb::Write(*this, EoUInt16(NumberOfLayers));
 
   for (int n = 0; n < NumberOfLayers; n++) {
-    EoDbLayer* Layer = document->GetLayerTableLayerAt(n);
-    if (Layer->IsInternal()) {
-      EoDb::Write(*this, EoUInt16(Layer->GetCount()));
+    auto* layer = document->GetLayerTableLayerAt(n);
+    if (layer->IsInternal()) {
+      EoDb::Write(*this, EoUInt16(layer->GetCount()));
 
-      auto position = Layer->GetHeadPosition();
+      auto position = layer->GetHeadPosition();
       while (position != nullptr) {
-        auto* Group = Layer->GetNext(position);
-        Group->Write(*this);
+        auto* group = layer->GetNext(position);
+        group->Write(*this);
       }
-    } else
+    } else {
       EoDb::Write(*this, EoUInt16(0));
+    }
   }
   EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
 }

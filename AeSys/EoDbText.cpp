@@ -93,7 +93,7 @@ void EoDbText::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
 
 EoDbPrimitive*& EoDbText::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbText(*this);
-  return (primitive);
+  return primitive;
 }
 void EoDbText::ConvertFormattingCharacters() {
   for (int i = 0; i < m_strText.GetLength() - 1; i++) {
@@ -223,7 +223,7 @@ void EoDbText::ModifyNotes(EoDbFontDefinition& fd, EoDbCharacterCellDefinition& 
 }
 EoGePoint3d EoDbText::SelectAtControlPoint(AeSysView*, const EoGePoint4d& point) {
   sm_ControlPointIndex = USHRT_MAX;
-  return (point);
+  return point;
 }
 
 bool EoDbText::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {

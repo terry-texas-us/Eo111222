@@ -72,7 +72,7 @@ void EoDbDimension::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
 }
 EoDbPrimitive*& EoDbDimension::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbDimension(*this);
-  return (primitive);
+  return primitive;
 }
 
 void EoDbDimension::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {

@@ -169,7 +169,7 @@ class EoDbConic : public EoDbPrimitive {
   void GetAllPoints(EoGePoint3dArray& points) override;
   void FormatExtra(CString& extra) override;
   void FormatGeometry(CString& geometry) override;
-  EoGePoint3d GetControlPoint() override { return (m_center); }
+  [[nodiscard]] EoGePoint3d GetControlPoint() override { return m_center; }
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override { return false; }
@@ -316,24 +316,24 @@ class EoDbConic : public EoDbPrimitive {
   void GetXYExtents(EoGePoint3d, EoGePoint3d, EoGePoint3d*, EoGePoint3d*) const;
   int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) override;
 
-  [[nodiscard]] const EoGePoint3d& Center() const noexcept { return (m_center); }
+  [[nodiscard]] const EoGePoint3d& Center() const noexcept { return m_center; }
   void SetCenter(EoGePoint3d center) { m_center = std::move(center); }
 
-  [[nodiscard]] double EndAngle() const noexcept { return (m_endAngle); }
+  [[nodiscard]] double EndAngle() const noexcept { return m_endAngle; }
   void SetEndAngle(double endAngle) { m_endAngle = endAngle; }
 
-  [[nodiscard]] const EoGeVector3d& MajorAxis() const noexcept { return (m_majorAxis); }
+  [[nodiscard]] const EoGeVector3d& MajorAxis() const noexcept { return m_majorAxis; }
   void SetMajorAxis(EoGeVector3d majorAxis) { m_majorAxis = std::move(majorAxis); }
 
-  [[nodiscard]] const EoGeVector3d& Extrusion() const noexcept { return (m_extrusion); }
+  [[nodiscard]] const EoGeVector3d& Extrusion() const noexcept { return m_extrusion; }
   void SetExtrusion(EoGeVector3d extrusion) { m_extrusion = std::move(extrusion); }
 
   [[nodiscard]] EoGeVector3d MinorAxis() const noexcept { return CrossProduct(m_extrusion, m_majorAxis) * m_ratio; }
 
-  [[nodiscard]] double Ratio() const noexcept { return (m_ratio); }
+  [[nodiscard]] double Ratio() const noexcept { return m_ratio; }
   void SetRatio(double ratio) { m_ratio = ratio; }
 
-  [[nodiscard]] double StartAngle() const noexcept { return (m_startAngle); }
+  [[nodiscard]] double StartAngle() const noexcept { return m_startAngle; }
   void SetStartAngle(double startAngle) { m_startAngle = startAngle; }
 
   void SetAngles(double startAngle, double endAngle) {

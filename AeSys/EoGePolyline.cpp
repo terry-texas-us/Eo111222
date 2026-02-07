@@ -224,7 +224,7 @@ bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, double& dRel, EoGePoin
     }
     ptBeg = ptEnd;
   }
-  return (bResult);
+  return bResult;
 }
 bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint3d upperRightPoint) {
   EoGePoint4d ptBeg(pts_[0]);

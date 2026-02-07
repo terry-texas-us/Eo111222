@@ -272,7 +272,7 @@ void dde::AddFormatsToList(LPWORD pMain, int iMax, LPWORD pList) {
 
   if (!pMain || !pList) return;
 
-  int iCount = 0;
+  int iCount{};
   LPWORD pLast = pMain;
 
   while (*pLast) {  // Count what we have to start with

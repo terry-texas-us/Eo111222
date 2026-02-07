@@ -15,7 +15,7 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
   switch (uiMsg) {
     case WM_INITDIALOG:
       WndProcPreviewClear(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW));
-      return (TRUE);
+      return TRUE;
 
     case WM_NOTIFY: {
       LPOFNOTIFY lpofn;
@@ -43,7 +43,7 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
           }
         }
       }
-      return (TRUE);
+      return TRUE;
     }
     case WM_COMMAND: {
       wchar_t szFilePath[MAX_PATH]{};
@@ -51,7 +51,7 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
       CFileStatus fs;
       if (!CFile::GetStatus(szFilePath, fs)) {
         app.WarningMessageBox(IDS_MSG_FILE_NOT_FOUND, szFilePath);
-        return (TRUE);
+        return TRUE;
       }
       switch (LOWORD(wParam)) {
         case IDC_APPEND: {
@@ -59,12 +59,12 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
 
           document->TracingLoadLayer(szFilePath, Layer);
           document->UpdateAllViews(nullptr, EoDb::kLayerSafe, Layer);
-          return (TRUE);
+          return TRUE;
         }
 
         case IDC_TRAMAP:
           document->TracingMap(szFilePath);
-          return (TRUE);
+          return TRUE;
 
         case IDC_TRAP: {
           EoDbLayer* pLayer = new EoDbLayer(L"", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
@@ -79,15 +79,15 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
           pLayer->DeleteGroupsAndRemoveAll();
           delete pLayer;
 
-          return (TRUE);
+          return TRUE;
         }
 
         case IDC_TRAVIEW:
           document->TracingView(szFilePath);
 
-          return (TRUE);
+          return TRUE;
       }
     }
   }
-  return (FALSE);  // Message for default dialog handlers
+  return FALSE;  // Message for default dialog handlers
 }

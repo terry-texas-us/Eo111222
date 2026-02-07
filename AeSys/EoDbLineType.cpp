@@ -27,8 +27,8 @@ EoDbLineType& EoDbLineType::operator=(const EoDbLineType& other) {
 }
 
 double EoDbLineType::GetPatternLength() const {
-  double length{0.0};
+  double length{};
 
   for (double dash : m_DashElements) { length += std::abs(dash); }
-  return (length);
+  return length;
 }

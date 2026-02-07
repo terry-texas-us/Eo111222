@@ -45,7 +45,7 @@ EoGePoint3d PointOnArcAtAngle(EoGePoint3d center, EoGeVector3d majorAxis, EoGeVe
   EoGePoint3d point(cos(angle), sin(angle), 0.0);
 
   point = transformMatrix * point;
-  return (point);
+  return point;
 }
 
 }  // namespace
@@ -331,7 +331,7 @@ void EoDbEllipse::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
 
 EoDbPrimitive*& EoDbEllipse::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbEllipse(*this);
-  return (primitive);
+  return primitive;
 }
 
 void EoDbEllipse::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
@@ -496,7 +496,7 @@ EoGePoint3d EoDbEllipse::PointAtEndAngle() {
   EoGePoint3d pt(cos(m_sweepAngle), sin(m_sweepAngle), 0.0);
 
   pt = tm * pt;
-  return (pt);
+  return pt;
 }
 
 void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* arMin, EoGePoint3d* arMax) const {
@@ -768,7 +768,7 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
       iInts++;
     }
   }
-  return (iInts);
+  return iInts;
 }
 
 EoGePoint3d EoDbEllipse::GoToNextControlPoint() {

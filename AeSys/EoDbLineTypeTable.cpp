@@ -176,7 +176,7 @@ int EoDbLineTypeTable::ReferenceCount(EoInt16 lineType) {
     BlocksTable->GetNextAssoc(position, key, block);
     count += block->GetLineTypeRefCount(lineType);
   }
-  return (count);
+  return count;
 }
 
 void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {

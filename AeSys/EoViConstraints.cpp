@@ -170,5 +170,5 @@ EoGePoint3d AeSysView::SnapPointToGrid(EoGePoint3d& arPt) const {
         pt.z += Eo::CopySign(m_ZGridSnapSpacing, arPt.z - m_GridOrigin.z);
     }
   }
-  return (pt);
+  return pt;
 }

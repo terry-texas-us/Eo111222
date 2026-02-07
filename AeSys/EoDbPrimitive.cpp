@@ -95,7 +95,7 @@ EoInt16 EoDbPrimitive::LogicalColor() const {
   else if (color == COLOR_BYBLOCK)
     color = 7;
 
-  return (color);
+  return color;
 }
 
 EoInt16 EoDbPrimitive::LogicalLineType() const {
@@ -106,7 +106,7 @@ EoInt16 EoDbPrimitive::LogicalLineType() const {
   else if (lineTypeIndex == LINETYPE_BYBLOCK)
     lineTypeIndex = 1;
 
-  return (lineTypeIndex);
+  return lineTypeIndex;
 }
 
 void EoDbPrimitive::ModifyState() {

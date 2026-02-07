@@ -133,7 +133,7 @@ int EoGePoint3d::RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint, cons
   } else if (x < lowerLeftPoint.x - Eo::geometricTolerance) {
     returnValue |= 8;
   }
-  return (returnValue);
+  return returnValue;
 }
 
 EoGePoint3d EoGePoint3d::RotateAboutAxis(const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis,
@@ -155,7 +155,7 @@ EoGePoint3d EoGePoint3d::RotateAboutAxis(const EoGePoint3d& referenceOrigin, con
 CString EoGePoint3d::ToString() const {
   CString str;
   str.Format(L"%f;%f;%f\t", x, y, z);
-  return (str);
+  return str;
 }
 
 void EoGePoint3d::Write(CFile& file) const {

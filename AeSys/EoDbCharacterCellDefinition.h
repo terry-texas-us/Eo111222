@@ -17,13 +17,13 @@ class EoDbCharacterCellDefinition {
 
   EoDbCharacterCellDefinition& operator=(const EoDbCharacterCellDefinition& ccd);
 
-  double ChrExpFacGet() { return (m_dChrExpFac); }
+  [[nodiscard]] double ChrExpFacGet() const { return m_dChrExpFac; }
   void ChrExpFacSet(double d) { m_dChrExpFac = d; }
-  double ChrHgtGet() { return (m_dChrHgt); }
+  [[nodiscard]] double ChrHgtGet() const { return m_dChrHgt; }
   void ChrHgtSet(double d) { m_dChrHgt = d; }
-  double ChrSlantAngGet() { return (m_dChrSlantAng); }
+  [[nodiscard]] double ChrSlantAngGet() const { return m_dChrSlantAng; }
   void ChrSlantAngSet(double d) { m_dChrSlantAng = d; }
-  double TextRotAngGet() { return (m_dTextRotAng); }
+  [[nodiscard]] double TextRotAngGet() const { return m_dTextRotAng; }
   void TextRotAngSet(double d) { m_dTextRotAng = d; }
 };
 /// <summary>Produces the reference system vectors for a single charater cell.</summary>

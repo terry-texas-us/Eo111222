@@ -40,7 +40,7 @@ class EoDbPoint : public EoDbPrimitive {
   void GetAllPoints(EoGePoint3dArray& points) override;
   EoGePoint3d GetControlPoint() override;
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
-  EoGePoint3d GoToNextControlPoint() override { return (m_Point); }
+  EoGePoint3d GoToNextControlPoint() override { return m_Point; }
   bool Identical(EoDbPrimitive* primitive) override { return m_Point == static_cast<EoDbPoint*>(primitive)->m_Point; }
   bool Is(EoUInt16 wType) override { return wType == EoDb::kPointPrimitive; }
   bool IsInView(AeSysView* view) override;
@@ -57,7 +57,7 @@ class EoDbPoint : public EoDbPrimitive {
 
  public:  // Methods
   double GetDat(EoUInt16 wDat) { return (m_Data[wDat]); }
-  EoGePoint3d GetPt() const { return (m_Point); }
+  EoGePoint3d GetPt() const { return m_Point; }
   EoInt16& PointStyle() { return m_pointStyle; }
   void ModifyState() override;
   void SetDat(EoUInt16, double*);

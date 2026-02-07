@@ -601,21 +601,21 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint,
             hintObject);
 
-  CDC* DeviceContext = GetDC();
-  COLORREF BackgroundColor = DeviceContext->GetBkColor();
-  DeviceContext->SetBkColor(ViewBackgroundColor);
+  auto* deviceContext = GetDC();
+  auto backgroundColor = deviceContext->GetBkColor();
+  deviceContext->SetBkColor(ViewBackgroundColor);
 
-  int PrimitiveState = 0;
-  int iDrawMode = 0;
+  int primitiveState{};
+  int drawMode{};
 
-  if ((hint & EoDb::kSafe) == EoDb::kSafe) { PrimitiveState = pstate.Save(); }
-  if ((hint & EoDb::kErase) == EoDb::kErase) { iDrawMode = pstate.SetROP2(DeviceContext, R2_XORPEN); }
+  if ((hint & EoDb::kSafe) == EoDb::kSafe) { primitiveState = pstate.Save(); }
+  if ((hint & EoDb::kErase) == EoDb::kErase) { drawMode = pstate.SetROP2(deviceContext, R2_XORPEN); }
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor()); }
   switch (hint) {
     case EoDb::kPrimitive:
     case EoDb::kPrimitiveSafe:
     case EoDb::kPrimitiveEraseSafe:
-      ((EoDbPrimitive*)hintObject)->Display(this, DeviceContext);
+      static_cast<EoDbPrimitive*>(hintObject)->Display(this, deviceContext);
       break;
 
     case EoDb::kGroup:
@@ -623,29 +623,29 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
     case EoDb::kGroupEraseSafe:
     case EoDb::kGroupSafeTrap:
     case EoDb::kGroupEraseSafeTrap:
-      ((EoDbGroup*)hintObject)->Display(this, DeviceContext);
+      static_cast<EoDbGroup*>(hintObject)->Display(this, deviceContext);
       break;
 
     case EoDb::kGroups:
     case EoDb::kGroupsSafe:
     case EoDb::kGroupsSafeTrap:
     case EoDb::kGroupsEraseSafeTrap:
-      ((EoDbGroupList*)hintObject)->Display(this, DeviceContext);
+      static_cast<EoDbGroupList*>(hintObject)->Display(this, deviceContext);
       break;
 
     case EoDb::kLayer:
     case EoDb::kLayerErase:
-      ((EoDbLayer*)hintObject)->Display(this, DeviceContext);
+      static_cast<EoDbLayer*>(hintObject)->Display(this, deviceContext);
       break;
 
     default:
       CView::OnUpdate(sender, hint, hintObject);
   }
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(0); }
-  if ((hint & EoDb::kErase) == EoDb::kErase) { pstate.SetROP2(DeviceContext, iDrawMode); }
-  if ((hint & EoDb::kSafe) == EoDb::kSafe) { pstate.Restore(DeviceContext, PrimitiveState); }
-  DeviceContext->SetBkColor(BackgroundColor);
-  ReleaseDC(DeviceContext);
+  if ((hint & EoDb::kErase) == EoDb::kErase) { pstate.SetROP2(deviceContext, drawMode); }
+  if ((hint & EoDb::kSafe) == EoDb::kSafe) { pstate.Restore(deviceContext, primitiveState); }
+  deviceContext->SetBkColor(backgroundColor);
+  ReleaseDC(deviceContext);
 }
 
 void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
@@ -859,37 +859,37 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
       break;
   }
   if (m_RubberbandType == Lines) {
-    CDC* DeviceContext = GetDC();
-    int DrawMode = DeviceContext->SetROP2(R2_XORPEN);
-    CPen GreyPen(PS_SOLID, 0, RubberbandColor);
-    CPen* Pen = DeviceContext->SelectObject(&GreyPen);
+    auto* deviceContext = GetDC();
+    auto drawMode = deviceContext->SetROP2(R2_XORPEN);
+    CPen grayPen(PS_SOLID, 0, RubberbandColor);
+    auto* pen = deviceContext->SelectObject(&grayPen);
 
-    DeviceContext->MoveTo(m_RubberbandLogicalBeginPoint);
-    DeviceContext->LineTo(m_RubberbandLogicalEndPoint);
+    deviceContext->MoveTo(m_RubberbandLogicalBeginPoint);
+    deviceContext->LineTo(m_RubberbandLogicalEndPoint);
 
     m_RubberbandLogicalEndPoint = point;
-    DeviceContext->MoveTo(m_RubberbandLogicalBeginPoint);
-    DeviceContext->LineTo(m_RubberbandLogicalEndPoint);
-    DeviceContext->SelectObject(Pen);
-    DeviceContext->SetROP2(DrawMode);
-    ReleaseDC(DeviceContext);
+    deviceContext->MoveTo(m_RubberbandLogicalBeginPoint);
+    deviceContext->LineTo(m_RubberbandLogicalEndPoint);
+    deviceContext->SelectObject(pen);
+    deviceContext->SetROP2(drawMode);
+    ReleaseDC(deviceContext);
   } else if (m_RubberbandType == Rectangles) {
-    CDC* DeviceContext = GetDC();
-    int DrawMode = DeviceContext->SetROP2(R2_XORPEN);
-    CPen GreyPen(PS_SOLID, 0, RubberbandColor);
-    CPen* Pen = DeviceContext->SelectObject(&GreyPen);
-    CBrush* Brush = (CBrush*)DeviceContext->SelectStockObject(NULL_BRUSH);
+    auto* deviceContext = GetDC();
+    auto drawMode = deviceContext->SetROP2(R2_XORPEN);
+    CPen grayPen(PS_SOLID, 0, RubberbandColor);
+    auto* pen = deviceContext->SelectObject(&grayPen);
+    auto* brush = deviceContext->SelectStockObject(NULL_BRUSH);
 
-    DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
+    deviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
                              m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
 
     m_RubberbandLogicalEndPoint = point;
-    DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
+    deviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
                              m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
-    DeviceContext->SelectObject(Brush);
-    DeviceContext->SelectObject(Pen);
-    DeviceContext->SetROP2(DrawMode);
-    ReleaseDC(DeviceContext);
+    deviceContext->SelectObject(brush);
+    deviceContext->SelectObject(pen);
+    deviceContext->SetROP2(drawMode);
+    ReleaseDC(deviceContext);
   }
 }
 
@@ -1871,7 +1871,7 @@ EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
       m_EngagedPrimitive = primitive;
     }
   }
-  return (m_EngagedGroup);
+  return m_EngagedGroup;
 }
 
 [[nodiscard]] EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& point) {
@@ -1898,7 +1898,7 @@ EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
       m_ptDet = tm * m_ptDet;
       m_EngagedGroup = group;
       m_EngagedPrimitive = primitive;
-      return (group);
+      return group;
     }
   }
   return nullptr;
@@ -1976,7 +1976,7 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
       }
     }
   }
-  return (m_EngagedGroup);
+  return m_EngagedGroup;
 }
 
 EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& point) {
@@ -2208,23 +2208,23 @@ void AeSysView::OnEditFind() {
 // Disables rubberbanding.
 void AeSysView::RubberBandingDisable() {
   if (m_RubberbandType != None) {
-    CDC* DeviceContext = GetDC();
-    int DrawMode = DeviceContext->SetROP2(R2_XORPEN);
-    CPen GreyPen(PS_SOLID, 0, RubberbandColor);
-    CPen* Pen = DeviceContext->SelectObject(&GreyPen);
+    auto* deviceContext = GetDC();
+    int drawMode = deviceContext->SetROP2(R2_XORPEN);
+    CPen grayPen(PS_SOLID, 0, RubberbandColor);
+    auto* pen = deviceContext->SelectObject(&grayPen);
 
     if (m_RubberbandType == Lines) {
-      DeviceContext->MoveTo(m_RubberbandLogicalBeginPoint);
-      DeviceContext->LineTo(m_RubberbandLogicalEndPoint);
+      deviceContext->MoveTo(m_RubberbandLogicalBeginPoint);
+      deviceContext->LineTo(m_RubberbandLogicalEndPoint);
     } else if (m_RubberbandType == Rectangles) {
-      CBrush* Brush = (CBrush*)DeviceContext->SelectStockObject(NULL_BRUSH);
-      DeviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
+      CBrush* brush = (CBrush*)deviceContext->SelectStockObject(NULL_BRUSH);
+      deviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
                                m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
-      DeviceContext->SelectObject(Brush);
+      deviceContext->SelectObject(brush);
     }
-    DeviceContext->SelectObject(Pen);
-    DeviceContext->SetROP2(DrawMode);
-    ReleaseDC(DeviceContext);
+    deviceContext->SelectObject(pen);
+    deviceContext->SetROP2(drawMode);
+    ReleaseDC(deviceContext);
     m_RubberbandType = None;
   }
 }
@@ -2259,7 +2259,7 @@ void AeSysView::RubberBandingStartAtEnable(EoGePoint3d pt, ERubs type) {
     m_ptCursorPosWorld = ModelViewGetMatrixInverse() * m_ptCursorPosWorld;
     m_ptCursorPosWorld = SnapPointToGrid(m_ptCursorPosWorld);
   }
-  return (m_ptCursorPosWorld);
+  return m_ptCursorPosWorld;
 }
 
 void AeSysView::SetCursorPosition(EoGePoint3d cursorPosition) {

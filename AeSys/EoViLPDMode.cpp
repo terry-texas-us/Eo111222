@@ -701,12 +701,12 @@ void AeSysView::SetDuctOptions(Section& section) {
 
 double AeSysView::LengthOfTransition(EJust justification, double slope, Section previousSection,
                                      Section currentSection) {
-  double WidthChange = currentSection.Width() - previousSection.Width();
-  double DepthChange = currentSection.Depth() - previousSection.Depth();
+  double widthChange = currentSection.Width() - previousSection.Width();
+  double depthChange = currentSection.Depth() - previousSection.Depth();
 
-  double Length = std::max(fabs(WidthChange), fabs(DepthChange)) * slope;
-  if (justification == Center) { Length *= 0.5; }
-  return (Length);
+  double length = std::max(fabs(widthChange), fabs(depthChange)) * slope;
+  if (justification == Center) { length *= 0.5; }
+  return length;
 }
 
 EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& cursorPosition, double tolerance, EoInt16 color,

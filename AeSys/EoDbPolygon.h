@@ -73,10 +73,10 @@ class EoDbPolygon : public EoDbPrimitive {
   void Write(CFile& file, EoUInt8* buffer) override;
 
   CString FormatIntStyle();
-  const EoInt16& IntStyle() { return (m_InteriorStyle); }
-  const EoInt16& IntStyleId() { return (m_InteriorStyleIndex); }
-  EoGePoint3d GetPt(int i) { return (m_Pt[i]); }
-  int GetPts() const { return (m_NumberOfPoints); }
+  [[nodiscard]] const EoInt16& IntStyle() { return m_InteriorStyle; }
+  [[nodiscard]] const EoInt16& IntStyleId() { return m_InteriorStyleIndex; }
+  [[nodiscard]] EoGePoint3d GetPt(int i) { return m_Pt[i]; }
+  [[nodiscard]] int GetPts() const { return m_NumberOfPoints; }
   void ModifyState() override;
   bool PivotOnControlPoint(AeSysView* view, const EoGePoint4d&) override;
   void SetIntStyle(const EoInt16 n) { m_InteriorStyle = n; }

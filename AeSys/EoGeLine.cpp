@@ -58,14 +58,14 @@ EoGeLine EoGeLine::operator+(const EoGeVector3d& offset) const { return (EoGeLin
 double EoGeLine::AngleFromXAxisXY() const {
   EoGeVector3d Vector((*this).begin, (*this).end);
 
-  double Angle = 0.;
+  double angle{};
 
   if (fabs(Vector.x) > Eo::geometricTolerance || fabs(Vector.y) > Eo::geometricTolerance) {
-    Angle = atan2(Vector.y, Vector.x);
+    angle = atan2(Vector.y, Vector.x);
 
-    if (Angle < 0.0) Angle += Eo::TwoPi;
+    if (angle < 0.0) { angle += Eo::TwoPi; }
   }
-  return (Angle);
+  return angle;
 }
 
 EoGePoint3d EoGeLine::ConstrainToAxis(double influenceAngle, double axisOffsetAngle) const {
@@ -113,7 +113,7 @@ EoGePoint3d EoGeLine::ConstrainToAxis(double influenceAngle, double axisOffsetAn
   }
   transformMatrix.Inverse();
   pt = transformMatrix * pt;
-  return (pt);
+  return pt;
 }
 
 EoUInt16 EoGeLine::CutAtPt(EoGePoint3d& pt, EoGeLine& ln) {
@@ -127,7 +127,7 @@ EoUInt16 EoGeLine::CutAtPt(EoGePoint3d& pt, EoGeLine& ln) {
 
     wRet++;
   }
-  return (wRet);
+  return wRet;
 }
 
 int EoGeLine::DirRelOfPt(EoGePoint3d pt) const {
@@ -299,7 +299,7 @@ int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistanc
 
   double dLen = sqrt(dX * dX + dY * dY);
 
-  if (dLen < Eo::geometricTolerance) return (FALSE);
+  if (dLen < Eo::geometricTolerance) return FALSE;
 
   double dRatio;
   *projectedPoint = begin;
@@ -316,7 +316,7 @@ int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistanc
     (*projectedPoint).x -= dRatio * dY;
     (*projectedPoint).y += dRatio * dX;
   }
-  return (TRUE);
+  return TRUE;
 }
 
 EoGePoint3d EoGeLine::ProjToBegPt(double distance) const {

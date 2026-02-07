@@ -154,14 +154,14 @@ LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM l
       previewBitmap = new CBitmap;
       previewBitmap->CreateCompatibleBitmap(deviceContext, int(previewWindowRect.right), int(previewWindowRect.bottom));
     }
-      return (FALSE);
+      return FALSE;
 
     case WM_DESTROY:
       if (previewBitmap != nullptr) {
         delete previewBitmap;
         previewBitmap = nullptr;
       }
-      return (FALSE);
+      return FALSE;
 
     case WM_PAINT: {
       PAINTSTRUCT paintStruct;
@@ -184,12 +184,12 @@ LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM l
       EndPaint(hwnd, &paintStruct);
     }
 
-      return (FALSE);
+      return FALSE;
 
     case WM_LBUTTONDOWN:
       ::SetFocus(hwnd);
       ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Preview WM_LBUTTONDOWN message\n");
-      return (FALSE);
+      return FALSE;
   }
   return DefWindowProc(hwnd, message, nParam, lParam);
 }

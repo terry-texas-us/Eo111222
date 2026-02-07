@@ -24,10 +24,10 @@ class CPrimState {
   void GetCharCellDef(EoDbCharacterCellDefinition& ccd) const { ccd = m_ccd; }
   void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fontDefinition; }
   const EoInt16& PointStyle() { return m_pointStyle; }
-  const EoInt16& PenColor() { return (m_color); }
-  const EoInt16& LineType() { return (m_LineTypeIndex); }
-  const EoInt16& PolygonIntStyle() { return (m_PolygonInteriorStyle); }
-  const EoInt16& PolygonIntStyleId() { return (m_PolygonInteriorStyleIndex); }
+  [[nodiscard]] const EoInt16& PenColor() const { return m_color; }
+  [[nodiscard]] const EoInt16& LineType() const { return m_LineTypeIndex; }
+  [[nodiscard]] const EoInt16& PolygonIntStyle() const { return m_PolygonInteriorStyle; }
+  [[nodiscard]] const EoInt16& PolygonIntStyleId() const { return m_PolygonInteriorStyleIndex; }
   void Restore(CDC* deviceContext, int saveIndex);
   int Save();
   void SetCharCellDef(EoDbCharacterCellDefinition& ccd) { m_ccd = ccd; }
@@ -40,7 +40,17 @@ class CPrimState {
   void ManagePenResources(CDC* deviceContext, EoInt16 penColor, int penWidth, EoInt16 lineType);
   void SetColor(CDC* deviceContext, EoInt16 color);
   void SetLineType(CDC* deviceContext, EoInt16 lineType);
+
+  /** @brief Sets the current foreground mix mode. GDI uses the foreground mix mode to combine pens and
+   * interiors of filled objects with the colors already on the screen. The foreground mix mode
+   * defines how colors from the brush or pen and the colors in the existing image are to be combined.
+   * @param deviceContext The device context to set the mix mode on.
+   * @param drawMode The drawing mode to set.
+   * @return The previous drawing mode.
+   * @note This function is typically used to change the drawing mode for a specific device context.
+   */
   int SetROP2(CDC* deviceContext, int drawMode);
+
   void SetTxtAlign(CDC* deviceContext, EoUInt16 horizontalAlignment, EoUInt16 verticalAlignment);
 };
 extern CPrimState pstate;

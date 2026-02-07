@@ -38,7 +38,7 @@ namespace App {
 
 [[nodiscard]] CString ResourceFolderPath();
 
-inline COLORREF ViewTextColor() { return (~(ViewBackgroundColor | 0xff000000)); }
+[[nodiscard]] inline COLORREF ViewTextColor() { return (~(ViewBackgroundColor | 0xff000000)); }
 }  // namespace App
 
 class AeSys : public CWinAppEx {
@@ -108,18 +108,18 @@ class AeSys : public CWinAppEx {
   // Modifies the base accelerator table by defining the mode specific keys.
   void BuildModifiedAcceleratorTable();
   UINT CheckMenuItem(UINT uId, UINT uCheck) const { return (::CheckMenuItem(m_MainFrameMenuHandle, uId, uCheck)); }
-  UINT ClipboardFormatIdentifierForEoGroups() const { return (m_ClipboardFormatIdentifierForEoGroups); }
+  UINT ClipboardFormatIdentifierForEoGroups() const { return m_ClipboardFormatIdentifierForEoGroups; }
   int ConfirmMessageBox(UINT stringResourceIdentifier, const CString& string);
   [[nodiscard]] int CurrentMode() const { return m_CurrentMode; }
   [[nodiscard]] double DeviceHeightInMillimeters() const { return m_DeviceHeightInMillimeters; }
   [[nodiscard]] double DeviceHeightInPixels() const { return m_DeviceHeightInPixels; }
   [[nodiscard]] double DeviceWidthInMillimeters() const { return m_DeviceWidthInMillimeters; }
   [[nodiscard]] double DeviceWidthInPixels() const { return m_DeviceWidthInPixels; }
-  [[nodiscard]] double DimensionAngle() const { return (m_DimensionAngle); }
-  [[nodiscard]] double DimensionLength() const { return (m_DimensionLength); }
+  [[nodiscard]] double DimensionAngle() const { return m_DimensionAngle; }
+  [[nodiscard]] double DimensionLength() const { return m_DimensionLength; }
   void EditColorPalette();
-  [[nodiscard]] double EngagedAngle() const { return (m_EngagedAngle); }
-  [[nodiscard]] double EngagedLength() const { return (m_EngagedLength); }
+  [[nodiscard]] double EngagedAngle() const { return m_EngagedAngle; }
+  [[nodiscard]] double EngagedLength() const { return m_EngagedLength; }
   void FormatAngle(CString& angleAsString, const double angle, const int width, const int precision);
 
   /** @brief Formats a length value as a string with specified units and formatting options.
@@ -171,7 +171,7 @@ class AeSys : public CWinAppEx {
   void FormatLengthSimple(LPWSTR lengthAsBuffr, const size_t bufSize, Eo::Units units, const double length,
                           const int width, const int precision);
 
-  [[nodiscard]] int GetArchitecturalUnitsFractionPrecision() const { return (m_ArchitecturalUnitsFractionPrecision); }
+  [[nodiscard]] int GetArchitecturalUnitsFractionPrecision() const { return m_ArchitecturalUnitsFractionPrecision; }
   [[nodiscard]] static EoGePoint3d GetCursorPosition();
   [[nodiscard]] static HINSTANCE GetInstance();
   [[nodiscard]] static CWnd* GetMainWindow();
@@ -180,12 +180,8 @@ class AeSys : public CWinAppEx {
   [[nodiscard]] bool IsClipboardDataImage() const { return m_ClipboardDataImage; }
   [[nodiscard]] bool IsClipboardDataText() const { return m_ClipboardDataText; }
   [[nodiscard]] HMENU GetSubMenu(int position) const { return (::GetSubMenu(m_MainFrameMenuHandle, position)); }
-  [[nodiscard]] Eo::Units GetUnits() const { return (m_Units); }
+  [[nodiscard]] Eo::Units GetUnits() const { return m_Units; }
 
-  /** @brief Finds the greatest common divisor of arbitrary integers.
-   * @return First number if second number is zero, greatest common divisor otherwise.
-   */
-  [[nodiscard]] int GreatestCommonDivisor(const int number1, const int number2);
   void LoadHatchesFromFile(const CString& strFileName);
   [[nodiscard]] bool HighColorMode() const { return m_HighColorMode; }
   [[nodiscard]] EoGePoint3d HomePointGet(int i) const;
@@ -197,7 +193,7 @@ class AeSys : public CWinAppEx {
   bool ModeInformationOverView() const { return m_ModeInformationOverView; }
   [[nodiscard]] double ParseLength(wchar_t* lengthAsString);
   [[nodiscard]] double ParseLength(Eo::Units units, wchar_t* inputLine);
-  [[nodiscard]] COLORREF PenColorsGetHot(EoInt16 color) { return (ColorPalette[color]); }
+  [[nodiscard]] auto PenColorsGetHot(EoInt16 color) { return (ColorPalette[color]); }
   void LoadPenColorsFromFile(const CString& pathName);
 
   [[nodiscard]] double LineWeight(EoInt16 penIndex);

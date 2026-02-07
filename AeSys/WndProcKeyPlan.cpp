@@ -1,169 +1,168 @@
 ﻿#include "Stdafx.h"
 
+#include <cassert>
+
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDlgActiveViewKeyplan.h"
 
-CPoint pnt;
-
 namespace {
+CPoint point{};
 bool leftButtonDownInKeyplanRectangle{};
 
 void WndProcKeyPlanOnDraw(HWND hwnd) {
-  PAINTSTRUCT ps;
+  PAINTSTRUCT paint;
 
-  CDC dc;
-  dc.Attach(BeginPaint(hwnd, &ps));
+  CDC deviceContext{};
+  deviceContext.Attach(BeginPaint(hwnd, &paint));
 
-  CDC dcMem;
-  dcMem.CreateCompatibleDC(nullptr);
+  CDC memoryContext;
+  memoryContext.CreateCompatibleDC(nullptr);
 
-  dcMem.SelectObject(CBitmap::FromHandle(EoDlgActiveViewKeyplan::m_hbmKeyplan));
+  memoryContext.SelectObject(CBitmap::FromHandle(EoDlgActiveViewKeyplan::m_hbmKeyplan));
   BITMAP bitmap{};
-  ::GetObject(EoDlgActiveViewKeyplan::m_hbmKeyplan, sizeof(BITMAP), (LPTSTR)&bitmap);
+  ::GetObjectW(EoDlgActiveViewKeyplan::m_hbmKeyplan, sizeof(BITMAP), (LPTSTR)&bitmap);
 
-  dc.BitBlt(0, 0, bitmap.bmWidth, bitmap.bmHeight, &dcMem, 0, 0, SRCCOPY);
+  deviceContext.BitBlt(0, 0, bitmap.bmWidth, bitmap.bmHeight, &memoryContext, 0, 0, SRCCOPY);
 
-  CBrush* pBrush = (CBrush*)dc.SelectStockObject(NULL_BRUSH);
-  dc.Rectangle(0, 0, bitmap.bmWidth, bitmap.bmHeight);
+  auto* brush = deviceContext.SelectStockObject(NULL_BRUSH);
+  deviceContext.Rectangle(0, 0, bitmap.bmWidth, bitmap.bmHeight);
 
-  //Note: Need to use the CWnd associated with Keyplan and not the active app view
+  /// @todo Need to use the CWnd associated with Keyplan and not the active app view
 
   auto* activeView = AeSysView::GetActiveView();
 
-  EoGePoint3d Target = activeView->CameraTarget();
+  auto cameraTarget = activeView->CameraTarget();
 
-  double UMin = Target.x + activeView->UMin();
-  double UMax = Target.x + activeView->UMax();
-  double VMin = Target.y + activeView->VMin();
-  double VMax = Target.y + activeView->VMax();
+  double uMin = cameraTarget.x + activeView->UMin();
+  double uMax = cameraTarget.x + activeView->UMax();
+  double vMin = cameraTarget.y + activeView->VMin();
+  double vMax = cameraTarget.y + activeView->VMax();
 
-  double UMinOverview = Target.x + activeView->OverviewUMin();
-  double VMinOverview = Target.y + activeView->OverviewVMin();
+  double uMinOverview = cameraTarget.x + activeView->OverviewUMin();
+  double vMinOverview = cameraTarget.y + activeView->OverviewVMin();
 
-  CRect rc;
-  rc.left = Eo::Round((UMin - UMinOverview) / activeView->OverviewUExt() * bitmap.bmWidth);
-  rc.right = Eo::Round((UMax - UMinOverview) / activeView->OverviewUExt() * bitmap.bmWidth);
-  rc.top = Eo::Round((1.0 - (VMax - VMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
-  rc.bottom = Eo::Round((1.0 - (VMin - VMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
+  CRect rectangle;
+  rectangle.left = Eo::Round((uMin - uMinOverview) / activeView->OverviewUExt() * bitmap.bmWidth);
+  rectangle.right = Eo::Round((uMax - uMinOverview) / activeView->OverviewUExt() * bitmap.bmWidth);
+  rectangle.top = Eo::Round((1.0 - (vMax - vMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
+  rectangle.bottom = Eo::Round((1.0 - (vMin - vMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
 
-  int DrawMode = dc.SetROP2(R2_XORPEN);
+  auto drawMode = deviceContext.SetROP2(R2_XORPEN);
 
   // Show current window as light gray rectangle with no outline
-  dc.SelectStockObject(LTGRAY_BRUSH);
-  CPen* pPen = (CPen*)dc.SelectStockObject(NULL_PEN);
-  dc.Rectangle(rc.left, rc.top, rc.right, rc.bottom);
+  deviceContext.SelectStockObject(LTGRAY_BRUSH);
+  auto* pen = deviceContext.SelectStockObject(NULL_PEN);
+  deviceContext.Rectangle(rectangle.left, rectangle.top, rectangle.right, rectangle.bottom);
 
   // Show defining window as hollow rectangle with dark gray outline
-  dc.SelectStockObject(NULL_BRUSH);
-  CPen penGray(PS_SOLID, 2, RGB(0x80, 0x80, 0x80));
-  dc.SelectObject(&penGray);
-  dc.Rectangle(EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-               EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+  deviceContext.SelectStockObject(NULL_BRUSH);
+  CPen grayPen(PS_SOLID, 2, RGB(0x80, 0x80, 0x80));
+  deviceContext.SelectObject(&grayPen);
+  deviceContext.Rectangle(EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
+                          EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
   // Restore device context
-  dc.SelectObject(pPen);
-  dc.SelectObject(pBrush);
-  dc.SetROP2(DrawMode);
+  deviceContext.SelectObject(pen);
+  deviceContext.SelectObject(brush);
+  deviceContext.SetROP2(drawMode);
 
-  dc.Detach();
+  deviceContext.Detach();
 
-  EndPaint(hwnd, &ps);
+  EndPaint(hwnd, &paint);
 }
 
 void WndProcKeyPlanOnMouseMove(HWND hwnd, WPARAM nParam, LPARAM lParam) {
-  if (LOWORD(nParam) == MK_LBUTTON) {
-    CPoint pntCur;
+  if (LOWORD(nParam) != MK_LBUTTON) { return; }
+  CPoint currentPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 
-    pntCur.x = LOWORD(lParam);
-    pntCur.y = HIWORD(lParam);
+  auto deviceContextHandle = ::GetDC(hwnd);
+  auto drawMode = ::SetROP2(deviceContextHandle, R2_XORPEN);
 
-    CDC dcKeyPlan;
-    HDC hDCKeyplan = ::GetDC(hwnd);
-    int DrawMode = ::SetROP2(hDCKeyplan, R2_XORPEN);
+  // Show defining window as hollow rectangle with dark gray outline
+  HBRUSH brush = (HBRUSH)::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH));
+  HPEN grayPen = ::CreatePen(PS_SOLID, 2, RGB(0x80, 0x80, 0x80));
+  HPEN pen = (HPEN)::SelectObject(deviceContextHandle, grayPen);
+  ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
+              EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
-    // Show defining window as hollow rectangle with dark gray outline
-    HBRUSH hBrush = (HBRUSH)::SelectObject(hDCKeyplan, ::GetStockObject(NULL_BRUSH));
-    HPEN hPenGray = ::CreatePen(PS_SOLID, 2, RGB(0x80, 0x80, 0x80));
-    HPEN hPen = (HPEN)::SelectObject(hDCKeyplan, hPenGray);
-    ::Rectangle(hDCKeyplan, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-                EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
-
-    if (leftButtonDownInKeyplanRectangle) {
-      OffsetRect(&EoDlgActiveViewKeyplan::m_rcWnd, (pntCur.x - pnt.x), (pntCur.y - pnt.y));
-    } else {
-      if (pntCur.x > EoDlgActiveViewKeyplan::m_rcWnd.right)
-        EoDlgActiveViewKeyplan::m_rcWnd.right += (pntCur.x - pnt.x);
-      else if (pntCur.x < EoDlgActiveViewKeyplan::m_rcWnd.left)
-        EoDlgActiveViewKeyplan::m_rcWnd.left += (pntCur.x - pnt.x);
-      if (pntCur.y > EoDlgActiveViewKeyplan::m_rcWnd.bottom)
-        EoDlgActiveViewKeyplan::m_rcWnd.bottom += (pntCur.y - pnt.y);
-      else if (pntCur.y < EoDlgActiveViewKeyplan::m_rcWnd.top)
-        EoDlgActiveViewKeyplan::m_rcWnd.top += (pntCur.y - pnt.y);
-      ::SendMessage(::GetParent(hwnd), WM_COMMAND, (WPARAM)::GetWindowLong(hwnd, GWL_ID), (LPARAM)hwnd);
+  if (leftButtonDownInKeyplanRectangle) {
+    OffsetRect(&EoDlgActiveViewKeyplan::m_rcWnd, (currentPoint.x - point.x), (currentPoint.y - point.y));
+  } else {
+    if (currentPoint.x > EoDlgActiveViewKeyplan::m_rcWnd.right) {
+      EoDlgActiveViewKeyplan::m_rcWnd.right += (currentPoint.x - point.x);
+    } else if (currentPoint.x < EoDlgActiveViewKeyplan::m_rcWnd.left) {
+      EoDlgActiveViewKeyplan::m_rcWnd.left += (currentPoint.x - point.x);
     }
-    pnt = pntCur;
-    ::Rectangle(hDCKeyplan, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-                EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
-
-    ::SelectObject(hDCKeyplan, hPen);
-    ::SelectObject(hDCKeyplan, hBrush);
-    ::DeleteObject(hPenGray);
-    ::SetROP2(hDCKeyplan, DrawMode);
-    ::ReleaseDC(hwnd, hDCKeyplan);
+    if (currentPoint.y > EoDlgActiveViewKeyplan::m_rcWnd.bottom) {
+      EoDlgActiveViewKeyplan::m_rcWnd.bottom += (currentPoint.y - point.y);
+    } else if (currentPoint.y < EoDlgActiveViewKeyplan::m_rcWnd.top) {
+      EoDlgActiveViewKeyplan::m_rcWnd.top += (currentPoint.y - point.y);
+    }
+    ::SendMessage(::GetParent(hwnd), WM_COMMAND, (WPARAM)::GetWindowLong(hwnd, GWL_ID), (LPARAM)hwnd);
   }
+  point = currentPoint;
+  ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
+              EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+
+  ::SelectObject(deviceContextHandle, pen);
+  ::SelectObject(deviceContextHandle, brush);
+  ::DeleteObject(grayPen);
+  ::SetROP2(deviceContextHandle, drawMode);
+  ::ReleaseDC(hwnd, deviceContextHandle);
 }
 
 void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
-  double Ratio = *(double*)(LPDWORD)lParam;
+  double ratio = *(double*)(LPDWORD)lParam;
 
   auto* activeView = AeSysView::GetActiveView();
+  assert(activeView != nullptr);
 
-  EoGePoint3d Target = activeView->CameraTarget();
+  auto cameraTarget = activeView->CameraTarget();
 
-  double UExtent = activeView->WidthInInches() / Ratio;
-  double UMin = Target.x - (UExtent * 0.5);
-  double UMax = UMin + UExtent;
-  double VExtent = activeView->HeightInInches() / Ratio;
-  double VMin = Target.y - (VExtent * 0.5);
-  double VMax = VMin + VExtent;
+  double uExtent = activeView->WidthInInches() / ratio;
+  double uMin = cameraTarget.x - (uExtent * 0.5);
+  double uMax = uMin + uExtent;
+  double vExtent = activeView->HeightInInches() / ratio;
+  double vMin = cameraTarget.y - (vExtent * 0.5);
+  double vMax = vMin + vExtent;
 
-  HDC hDCKeyplan = ::GetDC(hwnd);
-  int DrawMode = ::SetROP2(hDCKeyplan, R2_XORPEN);
+  HDC deviceContextHandle = ::GetDC(hwnd);
+  int drawMode = ::SetROP2(deviceContextHandle, R2_XORPEN);
 
-  HBRUSH hBrush = (HBRUSH)::SelectObject(hDCKeyplan, ::GetStockObject(NULL_BRUSH));
-  HPEN hPenGray = ::CreatePen(PS_SOLID, 2, RGB(0x80, 0x80, 0x80));
-  HPEN hPen = (HPEN)::SelectObject(hDCKeyplan, hPenGray);
-  ::Rectangle(hDCKeyplan, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
+  HBRUSH brush = (HBRUSH)::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH));
+  HPEN grayPen = ::CreatePen(PS_SOLID, 2, RGB(0x80, 0x80, 0x80));
+  HPEN pen = (HPEN)::SelectObject(deviceContextHandle, grayPen);
+  Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
               EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
-  CDC dcMem;
+  CDC dcMem{};
   dcMem.CreateCompatibleDC(nullptr);
 
   dcMem.SelectObject(CBitmap::FromHandle(EoDlgActiveViewKeyplan::m_hbmKeyplan));
   BITMAP bitmap{};
-  ::GetObject(EoDlgActiveViewKeyplan::m_hbmKeyplan, sizeof(BITMAP), (LPSTR)&bitmap);
+  GetObjectW(EoDlgActiveViewKeyplan::m_hbmKeyplan, sizeof(BITMAP), &bitmap);
 
-  double dUMinOverview = Target.x + activeView->OverviewUMin();
-  double dVMinOverview = Target.y + activeView->OverviewVMin();
+  double dUMinOverview = cameraTarget.x + activeView->OverviewUMin();
+  double dVMinOverview = cameraTarget.y + activeView->OverviewVMin();
 
   EoDlgActiveViewKeyplan::m_rcWnd.left =
-      Eo::Round((UMin - dUMinOverview) / activeView->OverviewUExt() * bitmap.bmWidth);
+      Eo::Round((uMin - dUMinOverview) / activeView->OverviewUExt() * bitmap.bmWidth);
   EoDlgActiveViewKeyplan::m_rcWnd.top =
-      Eo::Round((1.0 - (VMax - dVMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
+      Eo::Round((1.0 - (vMax - dVMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
   EoDlgActiveViewKeyplan::m_rcWnd.right =
-      Eo::Round((UMax - dUMinOverview) / activeView->OverviewUExt() * bitmap.bmWidth);
+      Eo::Round((uMax - dUMinOverview) / activeView->OverviewUExt() * bitmap.bmWidth);
   EoDlgActiveViewKeyplan::m_rcWnd.bottom =
-      Eo::Round((1.0 - (VMin - dVMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
+      Eo::Round((1.0 - (vMin - dVMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
 
-  ::Rectangle(hDCKeyplan, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
+  ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
               EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
-  ::SelectObject(hDCKeyplan, hPen);
-  ::SelectObject(hDCKeyplan, hBrush);
-  ::DeleteObject(hPenGray);
+  ::SelectObject(deviceContextHandle, pen);
+  ::SelectObject(deviceContextHandle, brush);
+  ::DeleteObject(grayPen);
 
-  ::SetROP2(hDCKeyplan, DrawMode);
-  ::ReleaseDC(hwnd, hDCKeyplan);
+  ::SetROP2(deviceContextHandle, drawMode);
+  ::ReleaseDC(hwnd, deviceContextHandle);
 }
 }  // namespace
 
@@ -175,34 +174,30 @@ LRESULT CALLBACK WndProcKeyPlan(HWND hwnd, UINT message, WPARAM nParam, LPARAM l
 
     case WM_PAINT:
       WndProcKeyPlanOnDraw(hwnd);
-      return (FALSE);
+      return FALSE;
 
     case WM_LBUTTONDOWN:
       SetFocus(hwnd);
-      pnt.x = LOWORD(lParam);
-      pnt.y = HIWORD(lParam);
-      leftButtonDownInKeyplanRectangle = ::PtInRect(&EoDlgActiveViewKeyplan::m_rcWnd, pnt) != 0;
-      return (FALSE);
+      point.x = GET_X_LPARAM(lParam);
+      point.y = GET_Y_LPARAM(lParam);
+      leftButtonDownInKeyplanRectangle = ::PtInRect(&EoDlgActiveViewKeyplan::m_rcWnd, point) != 0;
+      return FALSE;
 
     case WM_MOUSEMOVE:
       WndProcKeyPlanOnMouseMove(hwnd, nParam, lParam);
-      return (FALSE);
+      return FALSE;
   }
   return DefWindowProc(hwnd, message, nParam, lParam);
 }
 
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance) {
-  WNDCLASS Class{};
-  Class.style = CS_HREDRAW | CS_VREDRAW;
-  Class.lpfnWndProc = WndProcKeyPlan;
-  Class.cbClsExtra = 0;
-  Class.cbWndExtra = 0;
-  Class.hInstance = instance;
-  Class.hIcon = 0;
-  Class.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
-  Class.hbrBackground = static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
-  Class.lpszMenuName = 0;
-  Class.lpszClassName = L"KeyPlanWindow";
+  WNDCLASS windowClass{};
+  windowClass.style = CS_HREDRAW | CS_VREDRAW;
+  windowClass.lpfnWndProc = WndProcKeyPlan;
+  windowClass.hInstance = instance;
+  windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+  windowClass.hbrBackground = static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
+  windowClass.lpszClassName = L"KeyPlanWindow";
 
-  return ::RegisterClass(&Class);
+  return ::RegisterClass(&windowClass);
 }

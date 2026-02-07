@@ -57,7 +57,7 @@ class EoDbEllipse : public EoDbPrimitive {
   void GetAllPoints(EoGePoint3dArray& points) override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
-  EoGePoint3d GetControlPoint() override { return (m_center); }
+  [[nodiscard]] EoGePoint3d GetControlPoint() override { return m_center; }
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override { return false; }
@@ -84,10 +84,10 @@ class EoDbEllipse : public EoDbPrimitive {
   /// <summary>Determines the bounding region. This is always a quad, but it may not be xy oriented.</summary>
   void GetBoundingBox(EoGePoint3dArray&);
   EoGePoint3d PointAtEndAngle();
-  const EoGeVector3d& MajorAxis() const noexcept { return (m_majorAxis); }
-  const EoGeVector3d& MinorAxis() const noexcept { return (m_minorAxis); }
-  const EoGePoint3d& CenterPoint() const noexcept { return (m_center); }
-  double SweepAngle() const noexcept { return (m_sweepAngle); }
+  [[nodiscard]] const EoGeVector3d& MajorAxis() const noexcept { return m_majorAxis; }
+  [[nodiscard]] const EoGeVector3d& MinorAxis() const noexcept { return m_minorAxis; }
+  [[nodiscard]] const EoGePoint3d& CenterPoint() const noexcept { return m_center; }
+  [[nodiscard]] double SweepAngle() const noexcept { return m_sweepAngle; }
   void GetXYExtents(EoGePoint3d, EoGePoint3d, EoGePoint3d*, EoGePoint3d*) const;
   int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) override;
   void SetCenterPoint(EoGePoint3d centerPoint) { m_center = std::move(centerPoint); }

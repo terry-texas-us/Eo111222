@@ -220,7 +220,7 @@ int EoDbJobFile::Version() {
     default:
       m_Version = 3;
   }
-  return (m_Version);
+  return m_Version;
 }
 bool EoDbJobFile::IsValidPrimitive(EoInt16 primitiveType) {
   switch (primitiveType) {

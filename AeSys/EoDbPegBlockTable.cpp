@@ -2,25 +2,25 @@
 
 #include "AeSysDoc.h"
 #include "EoDbBlock.h"
-#include "EoDbLayer.h"
 
 int AeSysDoc::GetBlockReferenceCount(const CString& name) {
-  int Count = 0;
+  int count = 0;
 
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(w);
-    Count += Layer->GetBlockRefCount(name);
+    auto* layer = GetLayerTableLayerAt(w);
+    count += layer->GetBlockRefCount(name);
   }
-  CString Key;
-  EoDbBlock* Block{};
+  CString key;
+  EoDbBlock* block{};
 
   auto position = m_BlocksTable.GetStartPosition();
   while (position != nullptr) {
-    m_BlocksTable.GetNextAssoc(position, Key, Block);
-    Count += Block->GetBlockRefCount(name);
+    m_BlocksTable.GetNextAssoc(position, key, block);
+    count += block->GetBlockRefCount(name);
   }
-  return (Count);
+  return count;
 }
+
 bool AeSysDoc::LookupBlock(CString name, EoDbBlock*& block) {
   if (m_BlocksTable.Lookup(name, block)) { return true; }
   block = nullptr;

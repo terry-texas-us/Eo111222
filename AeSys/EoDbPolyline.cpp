@@ -86,7 +86,7 @@ void EoDbPolyline::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
 
 EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPolyline(*this);
-  return (primitive);
+  return primitive;
 }
 
 /** Display the polyline on the given device context within the specified view.
@@ -168,7 +168,7 @@ EoGePoint3d EoDbPolyline::GetControlPoint() {
   EoUInt16 wBeg = EoUInt16(sm_Edge - 1);
   EoUInt16 wEnd = EoUInt16(sm_Edge % wPts);
   EoGePoint3d pt = EoGeLine(m_pts[wBeg], m_pts[wEnd]).Midpoint();
-  return (pt);
+  return pt;
 }
 void EoDbPolyline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
   EoGePoint3d pt;
@@ -365,5 +365,5 @@ EoUInt16 EoDbPolyline::SwingVertex() {
   else
     wSwingVertex = EoUInt16(sm_Edge == sm_PivotVertex ? sm_PivotVertex - 1 : sm_PivotVertex + 1);
 
-  return (wSwingVertex);
+  return wSwingVertex;
 }

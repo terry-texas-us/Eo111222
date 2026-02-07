@@ -153,20 +153,20 @@ ON_COMMAND(ID_HELP_KEY, OnHelpKey)
 END_MESSAGE_MAP()
 
 AeSysDoc::AeSysDoc()
-    : m_IdentifiedLayerName(),
-      m_SaveAsType(EoDb::FileTypes::Unknown),
-      m_HeaderSection(),
-      m_LineTypeTable(),
-      m_ContinuousLineType(nullptr),
-      m_BlocksTable(),
-      m_LayerTable(),
-      m_workLayer(nullptr),
-      m_DeletedGroupList(),
-      m_TrappedGroupList(),
-      m_TrapPivotPoint(),
-      m_NodalGroupList(),
-      m_MaskedPrimitives(),
-      m_UniquePoints() {}
+    : m_HeaderSection{},
+      m_LineTypeTable{},
+      m_BlocksTable{},
+      m_DeletedGroupList{},
+      m_TrappedGroupList{},
+      m_NodalGroupList{},
+      m_MaskedPrimitives{},
+      m_UniquePoints{},
+      m_LayerTable{},
+      m_TrapPivotPoint{},
+      m_ContinuousLineType{},
+      m_workLayer{},
+      m_IdentifiedLayerName{},
+      m_SaveAsType{EoDb::FileTypes::Unknown} {}
 
 AeSysDoc::~AeSysDoc() {}
 
@@ -432,93 +432,101 @@ void AeSysDoc::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMa
   ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(w);
-    if (!Layer->IsOff()) { Layer->GetExtents(view, ptMin, ptMax, tm); }
+    auto* layer = GetLayerTableLayerAt(w);
+    if (!layer->IsOff()) { layer->GetExtents(view, ptMin, ptMax, tm); }
   }
 }
+
 int AeSysDoc::NumberOfGroupsInWorkLayer() {
-  INT_PTR iCount = 0;
+  INT_PTR count{};
 
   for (EoUInt16 i = 0; i < GetLayerTableSize(); i++) {
-    EoDbLayer* layer = GetLayerTableLayerAt(i);
-    if (layer->IsWork()) { iCount += layer->GetCount(); }
-  }
-  return static_cast<int>(iCount);
-}
-int AeSysDoc::NumberOfGroupsInActiveLayers() {
-  INT_PTR count = 0;
-
-  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(w);
-    if (Layer->IsActive()) { count += Layer->GetCount(); }
+    auto* layer = GetLayerTableLayerAt(i);
+    if (layer->IsWork()) { count += layer->GetCount(); }
   }
   return static_cast<int>(count);
 }
+
+int AeSysDoc::NumberOfGroupsInActiveLayers() {
+  INT_PTR count{};
+
+  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
+    auto* layer = GetLayerTableLayerAt(w);
+    if (layer->IsActive()) { count += layer->GetCount(); }
+  }
+  return static_cast<int>(count);
+}
+
 void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view,
             deviceContext);
 
   try {
-    bool IdentifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
+    bool identifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
 
     RemoveAllGroupsFromAllViews();
 
-    COLORREF BackgroundColor = deviceContext->GetBkColor();
+    auto backgroundColor = deviceContext->GetBkColor();
     deviceContext->SetBkColor(ViewBackgroundColor);
 
     EoDbPolygon::SetSpecialPolygonStyle((EoInt16)(view->RenderAsWireframe() ? EoDb::kHollow : -1));
-    int PrimitiveState = pstate.Save();
+    int primitiveState = pstate.Save();
 
     for (int i = 0; i < GetLayerTableSize(); i++) {
-      EoDbLayer* Layer = GetLayerTableLayerAt(i);
-      Layer->Display(view, deviceContext, IdentifyTrap);
+      auto* layer = GetLayerTableLayerAt(i);
+      layer->Display(view, deviceContext, identifyTrap);
     }
-    pstate.Restore(deviceContext, PrimitiveState);
+    pstate.Restore(deviceContext, primitiveState);
     EoDbPolygon::SetSpecialPolygonStyle(-1);
 
-    deviceContext->SetBkColor(BackgroundColor);
+    deviceContext->SetBkColor(backgroundColor);
   } catch (CException* e) { e->Delete(); }
 }
-EoDbLayer* AeSysDoc::GetLayerTableLayer(const CString& strName) {
-  int i = FindLayerTableLayer(strName);
-  return (i < 0 ? (EoDbLayer*)0 : m_LayerTable.GetAt(i));
+
+[[nodiscard]] EoDbLayer* AeSysDoc::GetLayerTableLayer(const CString& layerName) {
+  auto i = FindLayerTableLayer(layerName);
+  return (i < 0 ? nullptr : m_LayerTable.GetAt(i));
 }
 EoDbLayer* AeSysDoc::GetLayerTableLayerAt(int index) {
-  return (index >= (int)m_LayerTable.GetSize() ? (EoDbLayer*)nullptr : m_LayerTable.GetAt(index));
+  return (index >= (int)m_LayerTable.GetSize() ? nullptr : m_LayerTable.GetAt(index));
 }
+
 int AeSysDoc::FindLayerTableLayer(const CString& layerName) const {
   for (EoUInt16 w = 0; w < m_LayerTable.GetSize(); w++) {
-    EoDbLayer* Layer = m_LayerTable.GetAt(w);
-    if (layerName.CompareNoCase(Layer->Name()) == 0) { return (w); }
+    auto* layer = m_LayerTable.GetAt(w);
+    if (layerName.CompareNoCase(layer->Name()) == 0) { return w; }
   }
-  return (-1);
+  return -1;
 }
+
 void AeSysDoc::RemoveAllLayerTableLayers() {
-  for (EoUInt16 LayerTableIndex = 0; LayerTableIndex < m_LayerTable.GetSize(); LayerTableIndex++) {
-    EoDbLayer* Layer = m_LayerTable.GetAt(LayerTableIndex);
-    if (Layer) {
-      Layer->DeleteGroupsAndRemoveAll();
-      delete Layer;
+  for (EoUInt16 layerTableIndex = 0; layerTableIndex < m_LayerTable.GetSize(); layerTableIndex++) {
+    auto* layer = m_LayerTable.GetAt(layerTableIndex);
+    if (layer) {
+      layer->DeleteGroupsAndRemoveAll();
+      delete layer;
     }
   }
   m_LayerTable.RemoveAll();
 }
-void AeSysDoc::RemoveLayerTableLayerAt(int i) {
-  EoDbLayer* Layer = GetLayerTableLayerAt(i);
 
-  Layer->DeleteGroupsAndRemoveAll();
-  delete Layer;
+void AeSysDoc::RemoveLayerTableLayerAt(int i) {
+  auto* layer = GetLayerTableLayerAt(i);
+
+  layer->DeleteGroupsAndRemoveAll();
+  delete layer;
 
   m_LayerTable.RemoveAt(i);
 }
-void AeSysDoc::RemoveEmptyLayers() {
-  for (int LayerTableIndex = GetLayerTableSize() - 1; LayerTableIndex > 0; LayerTableIndex--) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(LayerTableIndex);
 
-    if (Layer && Layer->IsEmpty()) {
-      Layer->DeleteGroupsAndRemoveAll();
-      delete Layer;
-      m_LayerTable.RemoveAt(LayerTableIndex);
+void AeSysDoc::RemoveEmptyLayers() {
+  for (int index = GetLayerTableSize() - 1; index > 0; index--) {
+    auto* layer = GetLayerTableLayerAt(index);
+
+    if (layer && layer->IsEmpty()) {
+      layer->DeleteGroupsAndRemoveAll();
+      delete layer;
+      m_LayerTable.RemoveAt(index);
     }
   }
 }
@@ -598,7 +606,7 @@ bool AeSysDoc::LayerMelt(CString& strName) {
     }
   }
   delete[] of.lpstrFile;
-  return (bRetVal);
+  return bRetVal;
 }
 void AeSysDoc::RemoveLayerTableLayer(const CString& strName) {
   int i = FindLayerTableLayer(strName);
@@ -607,10 +615,11 @@ void AeSysDoc::RemoveLayerTableLayer(const CString& strName) {
 }
 void AeSysDoc::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) {
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(w);
-    Layer->PenTranslation(wCols, pColNew, pCol);
+    auto* layer = GetLayerTableLayerAt(w);
+    layer->PenTranslation(wCols, pColNew, pCol);
   }
 }
+
 EoDbLayer* AeSysDoc::LayersSelUsingPoint(const EoGePoint3d& pt) {
   auto* activeView = AeSysView::GetActiveView();
 
@@ -618,23 +627,23 @@ EoDbLayer* AeSysDoc::LayersSelUsingPoint(const EoGePoint3d& pt) {
 
   if (Group != 0) {
     for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-      EoDbLayer* Layer = GetLayerTableLayerAt(w);
-      if (Layer->Find(Group)) { return (Layer); }
+      auto* layer = GetLayerTableLayerAt(w);
+      if (layer->Find(Group)) { return layer; }
     }
   }
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(w);
+    auto* layer = GetLayerTableLayerAt(w);
 
-    if (Layer->SelectGroupUsingPoint(pt) != 0) { return (Layer); }
+    if (layer->SelectGroupUsingPoint(pt) != 0) { return layer; }
   }
-  return 0;
+  return nullptr;
 }
 int AeSysDoc::RemoveEmptyNotesAndDelete() {
-  int iCount = 0;
+  int count{};
 
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(w);
-    iCount += Layer->RemoveEmptyNotesAndDelete();
+    auto* layer = GetLayerTableLayerAt(w);
+    count += layer->RemoveEmptyNotesAndDelete();
   }
 
   //Note: remove empty notes from blocks
@@ -644,14 +653,14 @@ int AeSysDoc::RemoveEmptyNotesAndDelete() {
 
   auto position = m_BlocksTable.GetStartPosition();
   while (position != nullptr) { m_BlocksTable.GetNextAssoc(position, Key, Block); }
-  return (iCount);
+  return count;
 }
 int AeSysDoc::RemoveEmptyGroups() {
-  int iCount = 0;
+  int count{};
 
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(w);
-    iCount += Layer->RemoveEmptyGroups();
+    auto* layer = GetLayerTableLayerAt(w);
+    count += layer->RemoveEmptyGroups();
   }
 
   //Note: remove empty groups from blocks
@@ -661,7 +670,7 @@ int AeSysDoc::RemoveEmptyGroups() {
 
   auto position = m_BlocksTable.GetStartPosition();
   while (position != nullptr) { m_BlocksTable.GetNextAssoc(position, Key, Block); }
-  return (iCount);
+  return count;
 }
 // Work Layer interface
 void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
@@ -679,7 +688,7 @@ void AeSysDoc::AddWorkLayerGroups(EoDbGroupList* groups) {
 /** @brief Retrieves the last group in the work layer.
   @return Pointer to the last EoDbGroup in the work layer, or nullptr if the work layer is not defined or contains no groups.
 */
-EoDbGroup* AeSysDoc::GetLastWorkLayerGroup() const {
+[[nodiscard]] EoDbGroup* AeSysDoc::GetLastWorkLayerGroup() const {
   if (m_workLayer == nullptr) { return nullptr; }
   auto position = m_workLayer->GetTailPosition();
   return (position != nullptr) ? static_cast<EoDbGroup*>(m_workLayer->GetPrev(position)) : nullptr;
@@ -706,17 +715,17 @@ EoDbLayer* AeSysDoc::SetWorkLayer(EoDbLayer* layer) {
 // The group itself is not deleted.
 EoDbLayer* AeSysDoc::AnyLayerRemove(EoDbGroup* group) {
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(w);
-    if (Layer->IsWork() || Layer->IsActive()) {
-      if (Layer->Remove(group) != 0) {
+    auto* layer = GetLayerTableLayerAt(w);
+    if (layer->IsWork() || layer->IsActive()) {
+      if (layer->Remove(group) != 0) {
         AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
         SetModifiedFlag(TRUE);
 
-        return Layer;
+        return layer;
       }
     }
   }
-  return 0;
+  return nullptr;
 }
 
 void AeSysDoc::TracingFuse(CString& nameAndLocation) {
@@ -762,7 +771,7 @@ bool AeSysDoc::TracingLoadLayer(const CString& pathName, EoDbLayer* layer) {
     }
     app.WarningMessageBox(IDS_MSG_TRACING_OPEN_FAILURE, pathName);
   }
-  return (bFileOpen);
+  return bFileOpen;
 }
 
 bool AeSysDoc::TracingMap(const CString& pathName) {
@@ -791,32 +800,32 @@ bool AeSysDoc::TracingMap(const CString& pathName) {
     layer->SetTracingFlg(EoDbLayer::kTracingIsMapped);
     UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
   }
-  return (fileOpen);
+  return fileOpen;
 }
 
 bool AeSysDoc::TracingOpen(const CString& fileName) {
   // Opens tracing file.
 
-  EoDbLayer* Layer = 0;
+  EoDbLayer* layer{};
 
   int iLayId = FindLayerTableLayer(fileName);
 
   if (iLayId > 0) {  // already loaded
-    Layer = GetLayerTableLayerAt(iLayId);
-    Layer->ClearStateFlag(EoDbLayer::kIsResident);
+    layer = GetLayerTableLayerAt(iLayId);
+    layer->ClearStateFlag(EoDbLayer::kIsResident);
   } else {  // create a new layer and append all the groups in the group file.
 
-    Layer = new EoDbLayer(fileName, EoDbLayer::kIsWork | EoDbLayer::kIsActive);
-    AddLayerTableLayer(Layer);
+    layer = new EoDbLayer(fileName, EoDbLayer::kIsWork | EoDbLayer::kIsActive);
+    AddLayerTableLayer(layer);
 
-    TracingLoadLayer(fileName, Layer);
+    TracingLoadLayer(fileName, layer);
 
-    AddGroupsToAllViews(Layer);
+    AddGroupsToAllViews(layer);
   }
-  Layer->SetTracingFlg(EoDbLayer::kTracingIsOpened);
+  layer->SetTracingFlg(EoDbLayer::kTracingIsOpened);
 
   m_SaveAsType = EoDb::FileTypes::Tracing;
-  SetWorkLayer(Layer);
+  SetWorkLayer(layer);
 
   UpdateAllViews(nullptr, 0L, nullptr);
 
@@ -849,7 +858,7 @@ bool AeSysDoc::TracingView(const CString& pathName) {
     layer->SetTracingFlg(EoDbLayer::kTracingIsViewed);
     UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
   }
-  return (fileOpen);
+  return fileOpen;
 }
 
 void AeSysDoc::WriteShadowFile() {
@@ -882,27 +891,29 @@ void AeSysDoc::WriteShadowFile() {
 void AeSysDoc::OnClearActiveLayers() {
   InitializeGroupAndPrimitiveEdit();
   for (int i = GetLayerTableSize() - 1; i > 0; i--) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(i);
+    auto* layer = GetLayerTableLayerAt(i);
 
-    if (Layer->IsActive()) {
-      UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
-      Layer->DeleteGroupsAndRemoveAll();
+    if (layer->IsActive()) {
+      UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+      layer->DeleteGroupsAndRemoveAll();
     }
   }
 }
+
 void AeSysDoc::OnClearAllLayers() {
   InitializeGroupAndPrimitiveEdit();
 
   for (int i = GetLayerTableSize() - 1; i > 0; i--) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(i);
+    auto* layer = GetLayerTableLayerAt(i);
 
-    if (Layer->IsInternal()) {
-      UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
-      Layer->DeleteGroupsAndRemoveAll();
+    if (layer->IsInternal()) {
+      UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+      layer->DeleteGroupsAndRemoveAll();
     }
   }
   UpdateAllViews(nullptr, 0L, nullptr);
 }
+
 void AeSysDoc::OnClearWorkingLayer() {
   InitializeGroupAndPrimitiveEdit();
   InitializeWorkLayer();
@@ -911,47 +922,52 @@ void AeSysDoc::OnClearAllTracings() {
   InitializeGroupAndPrimitiveEdit();
 
   for (int i = GetLayerTableSize() - 1; i > 0; i--) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(i);
+    auto* layer = GetLayerTableLayerAt(i);
 
-    if (!Layer->IsInternal()) {
-      UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
-      Layer->DeleteGroupsAndRemoveAll();
+    if (!layer->IsInternal()) {
+      UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+      layer->DeleteGroupsAndRemoveAll();
     }
   }
   UpdateAllViews(nullptr, 0L, nullptr);
 }
+
 void AeSysDoc::OnClearMappedTracings() {
   InitializeGroupAndPrimitiveEdit();
   for (int i = GetLayerTableSize() - 1; i > 0; i--) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(i);
+    auto* layer = GetLayerTableLayerAt(i);
 
-    if (Layer->IsMapped()) {
-      UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
+    if (layer->IsMapped()) {
+      UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
 
-      if (Layer->IsResident()) {
-        Layer->ClrTracingFlg(EoDbLayer::kTracingIsMapped);
-        Layer->SetStateOff();
-      } else
+      if (layer->IsResident()) {
+        layer->ClrTracingFlg(EoDbLayer::kTracingIsMapped);
+        layer->SetStateOff();
+      } else {
         RemoveLayerTableLayerAt(i);
+      }
     }
   }
 }
+
 void AeSysDoc::OnClearViewedTracings() {
   InitializeGroupAndPrimitiveEdit();
   for (int i = GetLayerTableSize() - 1; i > 0; i--) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(i);
+    auto* layer = GetLayerTableLayerAt(i);
 
-    if (Layer->IsViewed()) {
-      UpdateAllViews(nullptr, EoDb::kLayerErase, Layer);
+    if (layer->IsViewed()) {
+      UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
 
-      if (Layer->IsResident()) {
-        Layer->ClrTracingFlg(EoDbLayer::kTracingIsViewed);
-        Layer->SetStateOff();
-      } else
+      if (layer->IsResident()) {
+        layer->ClrTracingFlg(EoDbLayer::kTracingIsViewed);
+        layer->SetStateOff();
+      } else {
         RemoveLayerTableLayerAt(i);
+      }
     }
   }
 }
+
 void AeSysDoc::OnPrimBreak() {
   auto* activeView = AeSysView::GetActiveView();
 
@@ -1133,20 +1149,23 @@ void AeSysDoc::OnTracingCloak() {
 
 void AeSysDoc::OnTracingFuse() { TracingFuse(m_IdentifiedLayerName); }
 void AeSysDoc::OnTracingOpen() { TracingOpen(m_IdentifiedLayerName); }
+
 void AeSysDoc::OnLayersActiveAll() {
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(w);
-    if (!Layer->IsWork()) { Layer->MakeStateActive(); }
+    auto* layer = GetLayerTableLayerAt(w);
+    if (!layer->IsWork()) { layer->MakeStateActive(); }
   }
   UpdateAllViews(nullptr, 0L, nullptr);
 }
+
 void AeSysDoc::OnLayersStaticAll() {
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(w);
-    if (!Layer->IsWork()) { Layer->SetStateStatic(); }
+    auto* layer = GetLayerTableLayerAt(w);
+    if (!layer->IsWork()) { layer->SetStateStatic(); }
   }
   UpdateAllViews(nullptr, 0L, nullptr);
 }
+
 void AeSysDoc::OnLayersRemoveEmpty() { RemoveEmptyLayers(); }
 void AeSysDoc::OnToolsGroupUndelete() { DeletedGroupsRestore(); }
 void AeSysDoc::OnPensRemoveUnusedStyles() { m_LineTypeTable.RemoveUnused(); }
@@ -1313,11 +1332,12 @@ void AeSysDoc::OnEditTrapWorkAndActive() {
   RemoveAllTrappedGroups();
 
   for (int i = 0; i < GetLayerTableSize(); i++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(i);
-    if (Layer->IsWork() || Layer->IsActive()) { AddGroupsToTrap(Layer); }
+    auto* layer = GetLayerTableLayerAt(i);
+    if (layer->IsWork() || layer->IsActive()) { AddGroupsToTrap(layer); }
   }
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::TrapCount);
 }
+
 void AeSysDoc::OnTrapCommandsCompress() { CompressTrappedGroups(); }
 
 void AeSysDoc::OnTrapCommandsExpand() {
@@ -1330,13 +1350,13 @@ void AeSysDoc::OnTrapCommandsExpand() {
 }
 
 void AeSysDoc::OnTrapCommandsInvert() {
-  int iTblSize = GetLayerTableSize();
-  for (int i = 0; i < iTblSize; i++) {
-    EoDbLayer* Layer = GetLayerTableLayerAt(i);
-    if (Layer->IsWork() || Layer->IsActive()) {
-      auto LayerPosition = Layer->GetHeadPosition();
+  int layerTableSize = GetLayerTableSize();
+  for (int i = 0; i < layerTableSize; i++) {
+    auto* layer = GetLayerTableLayerAt(i);
+    if (layer->IsWork() || layer->IsActive()) {
+      auto LayerPosition = layer->GetHeadPosition();
       while (LayerPosition != 0) {
-        auto* Group = Layer->GetNext(LayerPosition);
+        auto* Group = layer->GetNext(LayerPosition);
         auto GroupPosition = FindTrappedGroup(Group);
         if (GroupPosition != nullptr) {
           m_TrappedGroupList.RemoveAt(GroupPosition);
@@ -1348,6 +1368,7 @@ void AeSysDoc::OnTrapCommandsInvert() {
   }
   UpdateAllViews(nullptr, 0L, nullptr);
 }
+
 void AeSysDoc::OnTrapCommandsSquare() {
   auto* activeView = AeSysView::GetActiveView();
   SquareTrappedGroups(activeView);
