@@ -120,7 +120,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
       EoGeLine ln;
 
       int i;
-      EoInt16 color = pstate.PenColor();
+      EoInt16 color = pstate.Color();
       EoInt16 LineType = pstate.LineType();
       pstate.SetPen(this, deviceContext, 250, 1);
 

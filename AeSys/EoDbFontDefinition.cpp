@@ -3,74 +3,67 @@
 #include "EoDb.h"
 #include "EoDbFontDefinition.h"
 
-EoDbFontDefinition::EoDbFontDefinition() {
-  Set(EoDb::kStrokeType, L"Simplex.psf", EoDb::kPathRight, EoDb::kAlignLeft, EoDb::kAlignBottom, 0.0);
-}
-EoDbFontDefinition::EoDbFontDefinition(EoUInt16 precision, const CString& fontName, EoUInt16 path,
-                                       EoUInt16 horizontalAlignment, EoUInt16 verticalAlignment, double spacing) {
-  Set(precision, fontName, path, horizontalAlignment, verticalAlignment, spacing);
-}
-EoDbFontDefinition::EoDbFontDefinition(const EoDbFontDefinition& fd) {
-  m_Precision = fd.m_Precision;
-  m_FontName = fd.m_FontName;
-  m_Path = fd.m_Path;
-  m_HorizontalAlignment = fd.m_HorizontalAlignment;
-  m_VerticalAlignment = fd.m_VerticalAlignment;
-  m_CharacterSpacing = fd.m_CharacterSpacing;
-}
-EoDbFontDefinition& EoDbFontDefinition::operator=(const EoDbFontDefinition& fd) {
-  m_Precision = fd.m_Precision;
-  m_FontName = fd.m_FontName;
-  m_Path = fd.m_Path;
-  m_HorizontalAlignment = fd.m_HorizontalAlignment;
-  m_VerticalAlignment = fd.m_VerticalAlignment;
-  m_CharacterSpacing = fd.m_CharacterSpacing;
+namespace {
+constexpr const wchar_t* horizontalAlignmentText[] = {L"Left", L"Center", L"Right"};
+constexpr const wchar_t* pathText[] = {L"Right", L"Left", L"Up", L"Down"};
+constexpr const wchar_t* precisionText[] = {L"True Type", L"Stroke"};
+constexpr const wchar_t* verticalAlignmentText[] = {L"Top", L"Middle", L"Bottom"};
+constexpr const wchar_t* invalidText = L"Invalid!";
+}  // namespace
 
-  return (*this);
+EoDbFontDefinition::EoDbFontDefinition()
+    : m_fontName{L"Simplex.psf"},
+      m_characterSpacing{},
+      m_precision{EoDb::StrokeType},
+      m_path{EoDb::PathRight},
+      m_horizontalAlignment{EoDb::AlignLeft},
+      m_verticalAlignment{EoDb::AlignBottom} {}
+
+EoDbFontDefinition::EoDbFontDefinition(EoUInt16 precision, const CString& fontName, EoUInt16 path,
+                                       EoUInt16 horizontalAlignment, EoUInt16 verticalAlignment,
+                                       double characterSpacing)
+    : m_fontName{fontName},
+      m_characterSpacing{characterSpacing},
+      m_precision{precision},
+      m_path{path},
+      m_horizontalAlignment{horizontalAlignment},
+      m_verticalAlignment{verticalAlignment} {}
+
+[[nodiscard]] CString EoDbFontDefinition::FormatHorizontalAlignment() const {
+  return (m_horizontalAlignment >= EoDb::AlignLeft && m_horizontalAlignment <= EoDb::AlignRight)
+             ? CString{horizontalAlignmentText[m_horizontalAlignment - 1]}
+             : CString{invalidText};
 }
-CString EoDbFontDefinition::FormatHorizonatlAlignment() {
-  CString strAlign[] = {L"Left", L"Center", L"Right"};
-  return (m_HorizontalAlignment >= EoDb::kAlignLeft && m_HorizontalAlignment <= EoDb::kAlignRight)
-             ? strAlign[m_HorizontalAlignment - 1]
-             : const_cast<LPWSTR>(L"Invalid!");
+
+[[nodiscard]] CString EoDbFontDefinition::FormatPath() const {
+  return (m_path >= EoDb::PathRight && m_path <= EoDb::PathDown) ? CString{pathText[m_path]} : CString{L"Invalid!"};
 }
-CString EoDbFontDefinition::FormatPath() {
-  CString strPath[] = {L"Right", L"Left", L"Up", L"Down"};
-  return (m_Path >= EoDb::kPathRight && m_Path <= EoDb::kPathDown) ? strPath[m_Path] : const_cast<LPWSTR>(L"Invalid!");
+[[nodiscard]] CString EoDbFontDefinition::FormatPrecision() const {
+  return (m_precision >= EoDb::EoTrueType && m_precision <= EoDb::StrokeType)
+             ? CString{precisionText[m_precision - 1]}
+             : CString{invalidText};
 }
-CString EoDbFontDefinition::FormatPrecision() {
-  CString strPrec[] = {L"True Type", L"Stroke"};
-  return (m_Precision >= EoDb::kEoTrueType && m_Precision <= EoDb::kStrokeType) ? strPrec[m_Precision - 1]
-                                                                                : const_cast<LPWSTR>(L"Invalid!");
+
+[[nodiscard]] CString EoDbFontDefinition::FormatVerticalAlignment() const {
+  return (m_verticalAlignment >= EoDb::AlignTop && m_verticalAlignment <= EoDb::AlignBottom)
+             ? CString{verticalAlignmentText[m_verticalAlignment - 2]}
+             : CString{invalidText};
 }
-CString EoDbFontDefinition::FormatVerticalAlignment() {
-  CString strAlign[] = {L"Top", L"Middle", L"Bottom"};
-  return (m_VerticalAlignment >= EoDb::kAlignTop && m_VerticalAlignment <= EoDb::kAlignBottom)
-             ? strAlign[m_VerticalAlignment - 2]
-             : const_cast<LPWSTR>(L"Invalid!");
-}
+
 void EoDbFontDefinition::Read(CFile& file) {
-  EoDb::Read(file, m_Precision);
-  EoDb::Read(file, m_FontName);
-  EoDb::Read(file, m_Path);
-  EoDb::Read(file, m_HorizontalAlignment);
-  EoDb::Read(file, m_VerticalAlignment);
-  EoDb::Read(file, m_CharacterSpacing);
+  EoDb::Read(file, m_precision);
+  EoDb::Read(file, m_fontName);
+  EoDb::Read(file, m_path);
+  EoDb::Read(file, m_horizontalAlignment);
+  EoDb::Read(file, m_verticalAlignment);
+  EoDb::Read(file, m_characterSpacing);
 }
-void EoDbFontDefinition::Set(EoUInt16 precision, const CString& fontName, EoUInt16 path, EoUInt16 horizontalAlignment,
-                             EoUInt16 verticalAlignment, double spacing) {
-  m_Precision = precision;
-  m_FontName = fontName;
-  m_Path = path;
-  m_HorizontalAlignment = horizontalAlignment;
-  m_VerticalAlignment = verticalAlignment;
-  m_CharacterSpacing = spacing;
-}
+
 void EoDbFontDefinition::Write(CFile& file) const {
-  EoDb::Write(file, m_Precision);
-  EoDb::Write(file, m_FontName);
-  EoDb::Write(file, m_Path);
-  EoDb::Write(file, m_HorizontalAlignment);
-  EoDb::Write(file, m_VerticalAlignment);
-  EoDb::Write(file, m_CharacterSpacing);
+  EoDb::Write(file, m_precision);
+  EoDb::Write(file, m_fontName);
+  EoDb::Write(file, m_path);
+  EoDb::Write(file, m_horizontalAlignment);
+  EoDb::Write(file, m_verticalAlignment);
+  EoDb::Write(file, m_characterSpacing);
 }

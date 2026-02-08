@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdint>
 #include <string>
 
 #include "AeSys.h"
@@ -201,7 +202,9 @@ bool EoDbJobFile::ReadNextPrimitive(CFile& file, EoUInt8* buffer, EoInt16& primi
     UINT BytesRemaining = static_cast<UINT>(LengthInChunks - 1) * 32U;
 
     if (BytesRemaining >= EoDbPrimitive::BUFFER_SIZE - 32) { throw L"Exception.FileJob: Primitive buffer overflow."; }
-    if (file.Read(&buffer[32], BytesRemaining) < BytesRemaining) { throw L"Exception.FileJob: Unexpected end of file."; }
+    if (file.Read(&buffer[32], BytesRemaining) < BytesRemaining) {
+      throw L"Exception.FileJob: Unexpected end of file.";
+    }
   }
   return true;
 }
@@ -361,7 +364,7 @@ EoDbPrimitive* EoDbJobFile::ConvertEllipsePrimitive() {
   if (sweepAngle > Eo::TwoPi || sweepAngle < -Eo::TwoPi) { sweepAngle = Eo::TwoPi; }
 
   /// @todo for negative z extrusion the positive sweep is incorrect
-  
+
   auto* conic = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
   conic->SetColor(color);
   conic->SetLineTypeIndex(lineTypeIndex);
@@ -472,13 +475,11 @@ EoDbDimension::EoDbDimension(EoUInt8* buffer) {
 
   m_color = EoInt16(buffer[32]);
 
-  m_fontDefinition.FontName(L"Simplex.psf");
-  m_fontDefinition.Precision(EoDb::kStrokeType);
-  m_fontDefinition.CharacterSpacing(((CVaxFloat*)&buffer[36])->Convert());
-  m_fontDefinition.Path(EoUInt8(buffer[40]));
-  m_fontDefinition.HorizontalAlignment(EoUInt8(buffer[41]));
-  m_fontDefinition.VerticalAlignment(EoUInt8(buffer[42]));
-
+  m_fontDefinition.SetFontName(L"Simplex.psf");
+  m_fontDefinition.SetPrecision(EoDb::StrokeType);
+  m_fontDefinition.SetCharacterSpacing(((CVaxFloat*)&buffer[36])->Convert());
+  m_fontDefinition.SetPath(EoUInt8(buffer[40]));
+  m_fontDefinition.SetAlignment(EoUInt8(buffer[41]), EoUInt8(buffer[42]));
   m_ReferenceSystem.SetOrigin(((CVaxPnt*)&buffer[43])->Convert());
   m_ReferenceSystem.SetXDirection(((CVaxVec*)&buffer[55])->Convert());
   m_ReferenceSystem.SetYDirection(((CVaxVec*)&buffer[67])->Convert());
@@ -486,91 +487,94 @@ EoDbDimension::EoDbDimension(EoUInt8* buffer) {
   EoInt16 TextLength = *((EoInt16*)&buffer[79]);
 
   buffer[81 + TextLength] = '\0';
-  m_strText = CString((LPCSTR)&buffer[81]);
+  m_text = CString((LPCSTR)&buffer[81]);
 }
+
 EoDbPolygon::EoDbPolygon(EoUInt8* buffer, int version) {
   if (version == 1) {
     m_color = EoInt16(buffer[4] & 0x000f);
-    m_InteriorStyleIndex = 0;
+    m_fillStyleIndex = 0;
 
-    double d = ((CVaxFloat*)&buffer[12])->Convert();
-    m_InteriorStyle = EoInt16(int(d) % 16);
+    double polygonStyle = ((CVaxFloat*)&buffer[12])->Convert();
+    m_polygonStyle = static_cast<EoDb::PolygonStyle>(static_cast<int>(polygonStyle) % 16);
 
-    switch (m_InteriorStyle) {
-      case EoDb::kHatch: {
+    switch (m_polygonStyle) {
+      case EoDb::PolygonStyle::Hatch: {
         double dXScal = ((CVaxFloat*)&buffer[16])->Convert();
         double dYScal = ((CVaxFloat*)&buffer[20])->Convert();
         double dAng = ((CVaxFloat*)&buffer[24])->Convert();
 
-        m_vPosXAx.z = 0.;
-        m_vPosYAx.z = 0.;
+        m_positiveX.z = 0.0;
+        m_positiveY.z = 0.0;
 
         if (fabs(dXScal) > Eo::geometricTolerance && fabs(dYScal) > Eo::geometricTolerance) {  // Have 2 hatch lines
-          m_InteriorStyleIndex = 2;
-          m_vPosXAx.x = cos(dAng);
-          m_vPosXAx.y = sin(dAng);
-          m_vPosYAx.x = -m_vPosXAx.y;
-          m_vPosYAx.y = m_vPosXAx.x;
-          m_vPosXAx *= dXScal * 1.e-3;
-          m_vPosYAx *= dYScal * 1.e-3;
+          m_fillStyleIndex = 2;
+          m_positiveX.x = cos(dAng);
+          m_positiveX.y = sin(dAng);
+          m_positiveY.x = -m_positiveX.y;
+          m_positiveY.y = m_positiveX.x;
+          m_positiveX *= dXScal * 1.e-3;
+          m_positiveY *= dYScal * 1.e-3;
         } else if (fabs(dXScal) > Eo::geometricTolerance) {  // Vertical hatch lines
-          m_InteriorStyleIndex = 1;
-          m_vPosXAx.x = cos(dAng + Eo::HalfPi);
-          m_vPosXAx.y = sin(dAng + Eo::HalfPi);
-          m_vPosYAx.x = -m_vPosXAx.y;
-          m_vPosYAx.y = m_vPosXAx.x;
-          m_vPosYAx *= dXScal * 1.e-3;
+          m_fillStyleIndex = 1;
+          m_positiveX.x = cos(dAng + Eo::HalfPi);
+          m_positiveX.y = sin(dAng + Eo::HalfPi);
+          m_positiveY.x = -m_positiveX.y;
+          m_positiveY.y = m_positiveX.x;
+          m_positiveY *= dXScal * 1.e-3;
         } else {  // Horizontal hatch lines
-          m_InteriorStyleIndex = 1;
-          m_vPosXAx.x = cos(dAng);
-          m_vPosXAx.y = sin(dAng);
-          m_vPosYAx.x = -m_vPosXAx.y;
-          m_vPosYAx.y = m_vPosXAx.x;
-          m_vPosYAx *= dYScal * 1.e-3;
+          m_fillStyleIndex = 1;
+          m_positiveX.x = cos(dAng);
+          m_positiveX.y = sin(dAng);
+          m_positiveY.x = -m_positiveX.y;
+          m_positiveY.y = m_positiveX.x;
+          m_positiveY *= dYScal * 1.e-3;
         }
         break;
       }
-      case EoDb::kHollow:
-      case EoDb::kSolid:
-      case EoDb::kPattern:
-        m_vPosXAx = EoGeVector3d::positiveUnitX;
-        m_vPosYAx = EoGeVector3d::positiveUnitY;
+      case EoDb::PolygonStyle::Hollow:
+      case EoDb::PolygonStyle::Solid:
+      case EoDb::PolygonStyle::Pattern:
+        m_positiveX = EoGeVector3d::positiveUnitX;
+        m_positiveY = EoGeVector3d::positiveUnitY;
         break;
 
+      case EoDb::PolygonStyle::Special:
+        [[fallthrough]];  // fall through and treat as default
       default:
-        m_NumberOfPoints = 3;
-        m_Pt = new EoGePoint3d[m_NumberOfPoints];
-        m_Pt[0] = EoGePoint3d::kOrigin;
-        m_Pt[1] = EoGePoint3d::kOrigin + EoGeVector3d::positiveUnitX;
-        m_Pt[2] = EoGePoint3d::kOrigin + EoGeVector3d::positiveUnitY;
-        m_HatchOrigin = m_Pt[0];
+        m_numberOfVertices = 3;
+        m_vertices = new EoGePoint3d[m_numberOfVertices];
+        m_vertices[0] = EoGePoint3d::kOrigin;
+        m_vertices[1] = EoGePoint3d::kOrigin + EoGeVector3d::positiveUnitX;
+        m_vertices[2] = EoGePoint3d::kOrigin + EoGeVector3d::positiveUnitY;
+        m_hatchOrigin = m_vertices[0];
         return;
     }
-    m_NumberOfPoints = EoUInt16(((CVaxFloat*)&buffer[8])->Convert());
+    m_numberOfVertices = EoUInt16(((CVaxFloat*)&buffer[8])->Convert());
 
-    m_Pt = new EoGePoint3d[m_NumberOfPoints];
+    m_vertices = new EoGePoint3d[m_numberOfVertices];
 
     int i = 36;
 
-    for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) {
-      m_Pt[w] = ((CVaxPnt*)&buffer[i])->Convert() * 1.e-3;
+    for (EoUInt16 w = 0; w < m_numberOfVertices; w++) {
+      m_vertices[w] = ((CVaxPnt*)&buffer[i])->Convert() * 1.e-3;
       i += sizeof(CVaxPnt);
     }
-    m_HatchOrigin = m_Pt[0];
+    m_hatchOrigin = m_vertices[0];
   } else {
     m_color = EoInt16(buffer[6]);
-    m_InteriorStyle = EoInt8(buffer[7]);
-    m_InteriorStyleIndex = *((EoInt16*)&buffer[8]);
-    m_NumberOfPoints = static_cast<EoUInt16>(*((EoInt16*)&buffer[10]));
-    m_HatchOrigin = ((CVaxPnt*)&buffer[12])->Convert();
-    m_vPosXAx = ((CVaxVec*)&buffer[24])->Convert();
-    m_vPosYAx = ((CVaxVec*)&buffer[36])->Convert();
-    m_Pt = new EoGePoint3d[m_NumberOfPoints];
+    m_polygonStyle = static_cast<EoDb::PolygonStyle>(static_cast<int8_t>(buffer[7]));
+    m_fillStyleIndex = *((EoInt16*)&buffer[8]);
+    m_numberOfVertices = static_cast<EoUInt16>(*((EoInt16*)&buffer[10]));
+    m_hatchOrigin = ((CVaxPnt*)&buffer[12])->Convert();
+    m_positiveX = ((CVaxVec*)&buffer[24])->Convert();
+    m_positiveY = ((CVaxVec*)&buffer[36])->Convert();
+    m_vertices = new EoGePoint3d[m_numberOfVertices];
 
     int i = 48;
 
-    for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) {
-      m_Pt[w] = ((CVaxPnt*)&buffer[i])->Convert();
+    for (EoUInt16 w = 0; w < m_numberOfVertices; w++) {
+      m_vertices[w] = ((CVaxPnt*)&buffer[i])->Convert();
       i += sizeof(CVaxPnt);
     }
   }
@@ -605,22 +609,26 @@ EoDbSpline::EoDbSpline(EoUInt8* buffer, int version) {
   }
 }
 EoDbText::EoDbText(EoUInt8* buffer, int version) {
-  m_fontDefinition.Precision(EoDb::kStrokeType);
-  m_fontDefinition.FontName(L"Simplex.psf");
+  m_fontDefinition.SetPrecision(EoDb::StrokeType);
+  m_fontDefinition.SetFontName(L"Simplex.psf");
 
   if (version == 1) {
     m_color = EoInt16(buffer[4] & 0x000f);
-    m_fontDefinition.CharacterSpacing(((CVaxFloat*)&buffer[36])->Convert());
-    m_fontDefinition.CharacterSpacing(std::min(std::max(m_fontDefinition.CharacterSpacing(), 0.0), 4.0));
+    m_fontDefinition.SetCharacterSpacing(((CVaxFloat*)&buffer[36])->Convert());
+    m_fontDefinition.SetCharacterSpacing(std::min(std::max(m_fontDefinition.CharacterSpacing(), 0.0), 4.0));
 
     double d = ((CVaxFloat*)&buffer[40])->Convert();
 
-    m_fontDefinition.Path(EoUInt16(fmod(d, 10.0)));
-    if (m_fontDefinition.Path() < 0 || m_fontDefinition.Path() > 4) m_fontDefinition.Path(EoDb::kPathRight);
-    m_fontDefinition.HorizontalAlignment(EoUInt16(fmod(d / 10.0, 10.0)));
-    if (m_fontDefinition.HorizontalAlignment() < 1 || m_fontDefinition.HorizontalAlignment() > 3) m_fontDefinition.HorizontalAlignment(EoDb::kAlignCenter);
-    m_fontDefinition.VerticalAlignment(EoUInt16((d / 100.0)));
-    if (m_fontDefinition.VerticalAlignment() < 2 || m_fontDefinition.VerticalAlignment() > 4) m_fontDefinition.VerticalAlignment(EoDb::kAlignMiddle);
+    m_fontDefinition.SetPath(EoUInt16(fmod(d, 10.0)));
+    if (m_fontDefinition.Path() < 0 || m_fontDefinition.Path() > 4) { m_fontDefinition.SetPath(EoDb::PathRight); }
+    m_fontDefinition.SetHorizontalAlignment(EoUInt16(fmod(d / 10.0, 10.0)));
+    if (m_fontDefinition.HorizontalAlignment() < 1 || m_fontDefinition.HorizontalAlignment() > 3) {
+      m_fontDefinition.SetHorizontalAlignment(EoDb::AlignCenter);
+    }
+    m_fontDefinition.SetVerticalAlignment(EoUInt16((d / 100.0)));
+    if (m_fontDefinition.VerticalAlignment() < 2 || m_fontDefinition.VerticalAlignment() > 4) {
+      m_fontDefinition.SetVerticalAlignment(EoDb::AlignMiddle);
+    }
 
     m_ReferenceSystem.SetOrigin(((CVaxPnt*)&buffer[8])->Convert() * 1.e-3);
 
@@ -660,10 +668,9 @@ EoDbText::EoDbText(EoUInt8* buffer, int version) {
     }
   } else {
     m_color = EoInt16(buffer[6]);
-    m_fontDefinition.CharacterSpacing(((CVaxFloat*)&buffer[10])->Convert());
-    m_fontDefinition.Path(EoUInt8(buffer[14]));
-    m_fontDefinition.HorizontalAlignment(EoUInt8(buffer[15]));
-    m_fontDefinition.VerticalAlignment(EoUInt8(buffer[16]));
+    m_fontDefinition.SetCharacterSpacing(((CVaxFloat*)&buffer[10])->Convert());
+    m_fontDefinition.SetPath(EoUInt8(buffer[14]));
+    m_fontDefinition.SetAlignment(EoUInt8(buffer[15]), EoUInt8(buffer[16]));
     m_ReferenceSystem.SetOrigin(((CVaxPnt*)&buffer[17])->Convert());
     m_ReferenceSystem.SetXDirection(((CVaxVec*)&buffer[29])->Convert());
     m_ReferenceSystem.SetYDirection(((CVaxVec*)&buffer[41])->Convert());
@@ -704,7 +711,7 @@ void EoDbEllipse::Write(CFile& file, EoUInt8* buffer) {
   file.Write(buffer, 64);
 }
 void EoDbDimension::Write(CFile& file, EoUInt8* buffer) {
-  EoUInt16 TextLength = EoUInt16(m_strText.GetLength());
+  EoUInt16 TextLength = EoUInt16(m_text.GetLength());
 
   buffer[3] = EoUInt8((118 + TextLength) / 32);
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kDimensionPrimitive);
@@ -716,7 +723,7 @@ void EoDbDimension::Write(CFile& file, EoUInt8* buffer) {
   ((CVaxPnt*)&buffer[20])->Convert(m_ln.end);
 
   buffer[32] = static_cast<EoUInt8>(m_color);
-  buffer[33] = EoInt8(EoDb::kStrokeType);
+  buffer[33] = EoInt8(EoDb::StrokeType);
   *((EoInt16*)&buffer[34]) = 0;
   ((CVaxFloat*)&buffer[36])->Convert(m_fontDefinition.CharacterSpacing());
   buffer[40] = static_cast<EoUInt8>(m_fontDefinition.Path());
@@ -730,7 +737,7 @@ void EoDbDimension::Write(CFile& file, EoUInt8* buffer) {
   ((CVaxVec*)&buffer[67])->Convert(ReferenceSystem.YDirection());
 
   *((EoInt16*)&buffer[79]) = static_cast<EoInt16>(TextLength);
-  memcpy(&buffer[81], (LPCWSTR)m_strText, TextLength);
+  memcpy(&buffer[81], (LPCWSTR)m_text, TextLength);
 
   file.Write(buffer, static_cast<UINT>(buffer[3] * 32));
 }
@@ -766,21 +773,21 @@ void EoDbPoint::Write(CFile& file, EoUInt8* buffer) {
   file.Write(buffer, 32);
 }
 void EoDbPolygon::Write(CFile& file, EoUInt8* buffer) {
-  buffer[3] = static_cast<EoUInt8>((79 + m_NumberOfPoints * 12) / 32);
+  buffer[3] = static_cast<EoUInt8>((79 + m_numberOfVertices * 12) / 32);
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kPolygonPrimitive);
   buffer[6] = static_cast<EoUInt8>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<EoUInt8>(m_InteriorStyle);
-  *((EoInt16*)&buffer[8]) = m_InteriorStyleIndex;
-  *((EoInt16*)&buffer[10]) = static_cast<EoInt16>(m_NumberOfPoints);
+  buffer[7] = static_cast<EoUInt8>(m_polygonStyle);
+  *((EoInt16*)&buffer[8]) = m_fillStyleIndex;
+  *((EoInt16*)&buffer[10]) = static_cast<EoInt16>(m_numberOfVertices);
 
-  ((CVaxPnt*)&buffer[12])->Convert(m_HatchOrigin);
-  ((CVaxVec*)&buffer[24])->Convert(m_vPosXAx);
-  ((CVaxVec*)&buffer[36])->Convert(m_vPosYAx);
+  ((CVaxPnt*)&buffer[12])->Convert(m_hatchOrigin);
+  ((CVaxVec*)&buffer[24])->Convert(m_positiveX);
+  ((CVaxVec*)&buffer[36])->Convert(m_positiveY);
 
   int i = 48;
 
-  for (EoUInt16 w = 0; w < m_NumberOfPoints; w++) {
-    ((CVaxPnt*)&buffer[i])->Convert(m_Pt[w]);
+  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) {
+    ((CVaxPnt*)&buffer[i])->Convert(m_vertices[w]);
     i += sizeof(CVaxPnt);
   }
   file.Write(buffer, static_cast<UINT>(buffer[3] * 32));

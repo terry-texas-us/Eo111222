@@ -589,7 +589,7 @@ void AeSys::HomePointSave(int i, const EoGePoint3d& pt) {
 }
 //Initializes all peg global sections to their default (startup) values.
 void AeSys::InitGbls(CDC* deviceContext) {
-  pstate.SetPolygonIntStyle(EoDb::kHollow);
+  pstate.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow);
 
   pstate.SetPolygonIntStyleId(1);
 
@@ -618,11 +618,11 @@ void AeSys::InitGbls(CDC* deviceContext) {
 void AeSys::EditColorPalette() {
   CHOOSECOLOR cc{};
   cc.lStructSize = sizeof(CHOOSECOLOR);
-  cc.rgbResult = ColorPalette[pstate.PenColor()];
+  cc.rgbResult = ColorPalette[pstate.Color()];
   cc.lpCustColors = ColorPalette;
   cc.Flags = CC_FULLOPEN | CC_RGBINIT | CC_SOLIDCOLOR;
   ::ChooseColor(&cc);
-  cc.rgbResult = GreyPalette[pstate.PenColor()];
+  cc.rgbResult = GreyPalette[pstate.Color()];
   cc.lpCustColors = GreyPalette;
   ::ChooseColor(&cc);
 

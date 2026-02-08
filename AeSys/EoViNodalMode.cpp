@@ -167,70 +167,68 @@ void AeSysView::OnNodalModeToPolygon() {
     RubberBandingStartAtEnable(cursorPosition, Lines);
     PreviousNodalCommand = ModeLineHighlightOp(ID_OP7);
   } else {
-    if (PreviousNodalCursorPosition != cursorPosition) {
-      cursorPosition = SnapPointToAxis(PreviousNodalCursorPosition, cursorPosition);
-      EoGeVector3d Translate(PreviousNodalCursorPosition, cursorPosition);
+    if (PreviousNodalCursorPosition == cursorPosition) { return; }
+    cursorPosition = SnapPointToAxis(PreviousNodalCursorPosition, cursorPosition);
+    EoGeVector3d Translate(PreviousNodalCursorPosition, cursorPosition);
 
-      pts.SetSize(4);
+    pts.SetSize(4);
 
-      CDC* DeviceContext = GetDC();
+    auto* deviceContext = GetDC();
+    int primitiveState = pstate.Save();
 
-      int PrimitiveState = pstate.Save();
+    auto* document = GetDocument();
+    auto groupPosition = document->GetFirstNodalGroupPosition();
+    while (groupPosition != nullptr) {
+      auto* group = document->GetNextNodalGroup(groupPosition);
 
-      auto* document = GetDocument();
-      auto GroupPosition = document->GetFirstNodalGroupPosition();
-      while (GroupPosition != nullptr) {
-        auto* group = document->GetNextNodalGroup(GroupPosition);
+      auto primitivePosition = group->GetHeadPosition();
+      while (primitivePosition != nullptr) {
+        auto* primitive = group->GetNext(primitivePosition);
 
-        auto PrimitivePosition = group->GetHeadPosition();
-        while (PrimitivePosition != nullptr) {
-          auto* primitive = group->GetNext(PrimitivePosition);
+        DWORD mask = document->GetPrimitiveMask(primitive);
+        if (mask == 0) { continue; }
+        if (primitive->Is(EoDb::kLinePrimitive)) {
+          if ((mask & 3) == 3) {
+            auto* line = static_cast<EoDbLine*>(primitive);
 
-          DWORD Mask = document->GetPrimitiveMask(primitive);
-          if (Mask != 0) {
-            if (primitive->Is(EoDb::kLinePrimitive)) {
-              if ((Mask & 3) == 3) {
-                auto* line = static_cast<EoDbLine*>(primitive);
+            pts[0] = line->BeginPoint();
+            pts[1] = line->EndPoint();
+            pts[2] = pts[1] + Translate;
+            pts[3] = pts[0] + Translate;
 
-                pts[0] = line->BeginPoint();
-                pts[1] = line->EndPoint();
-                pts[2] = pts[1] + Translate;
-                pts[3] = pts[0] + Translate;
+            EoDbGroup* NewGroup = new EoDbGroup(new EoDbPolygon(pts));
+            document->AddWorkLayerGroup(NewGroup);
+            document->UpdateAllViews(nullptr, EoDb::kGroupSafe, NewGroup);
+          }
+        } else if (primitive->Is(EoDb::kPolygonPrimitive)) {
+          auto* polygon = static_cast<EoDbPolygon*>(primitive);
+          int numberOfVertices = polygon->NumberOfVertices();
 
-                EoDbGroup* NewGroup = new EoDbGroup(new EoDbPolygon(pts));
-                document->AddWorkLayerGroup(NewGroup);
-                document->UpdateAllViews(nullptr, EoDb::kGroupSafe, NewGroup);
-              }
-            } else if (primitive->Is(EoDb::kPolygonPrimitive)) {
-              EoDbPolygon* pPolygon = static_cast<EoDbPolygon*>(primitive);
-              int iPts = pPolygon->GetPts();
+          for (int i = 0; i < numberOfVertices; i++) {
+            if (btest(mask, i) && btest(mask, ((i + 1) % numberOfVertices))) {
+              pts[0] = polygon->Vertex(i);
+              pts[1] = polygon->Vertex((i + 1) % numberOfVertices);
+              pts[2] = pts[1] + Translate;
+              pts[3] = pts[0] + Translate;
 
-              for (int i = 0; i < iPts; i++) {
-                if (btest(Mask, i) && btest(Mask, ((i + 1) % iPts))) {
-                  pts[0] = pPolygon->GetPt(i);
-                  pts[1] = pPolygon->GetPt((i + 1) % iPts);
-                  pts[2] = pts[1] + Translate;
-                  pts[3] = pts[0] + Translate;
-
-                  EoDbGroup* NewGroup = new EoDbGroup(new EoDbPolygon(pts));
-                  document->AddWorkLayerGroup(NewGroup);
-                  document->UpdateAllViews(nullptr, EoDb::kGroupSafe, NewGroup);
-                }
-              }
+              EoDbGroup* NewGroup = new EoDbGroup(new EoDbPolygon(pts));
+              document->AddWorkLayerGroup(NewGroup);
+              document->UpdateAllViews(nullptr, EoDb::kGroupSafe, NewGroup);
             }
           }
         }
       }
-      pstate.Restore(DeviceContext, PrimitiveState);
-
-      pts.SetSize(0);
-
-      SetCursorPosition(cursorPosition);
-      RubberBandingDisable();
-      ModeLineUnhighlightOp(PreviousNodalCommand);
     }
+    pstate.Restore(deviceContext, primitiveState);
+
+    pts.SetSize(0);
+
+    SetCursorPosition(cursorPosition);
+    RubberBandingDisable();
+    ModeLineUnhighlightOp(PreviousNodalCommand);
   }
 }
+
 void AeSysView::OnNodalModeEmpty() { OnNodalModeEscape(); }
 
 void AeSysView::OnNodalModeEngage() {

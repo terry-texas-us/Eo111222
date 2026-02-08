@@ -26,13 +26,13 @@
 
 EoDbLine::EoDbLine(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbLine(points) CTOR: this=%p\n", this);
-  m_color = pstate.PenColor();
+  m_color = pstate.Color();
   m_lineTypeIndex = pstate.LineType();
   m_ln(beginPoint, endPoint);
 }
 EoDbLine::EoDbLine(EoGeLine& line) : m_ln(line) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbLine(EoGeLine) CTOR: this=%p\n", this);
-  m_color = pstate.PenColor();
+  m_color = pstate.Color();
   m_lineTypeIndex = pstate.LineType();
 }
 EoDbLine::EoDbLine(EoInt16 color, EoInt16 lineType, EoGeLine line) : EoDbPrimitive(color, lineType), m_ln(line) {

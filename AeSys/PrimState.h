@@ -1,39 +1,48 @@
 ﻿#pragma once
 
+#include "EoDb.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbFontDefinition.h"
 
 class AeSysView;
 
 class CPrimState {
- private:
+  EoDbFontDefinition m_fontDefinition;
+  EoDbCharacterCellDefinition m_characterCellDefinition;
   EoInt16 m_pointStyle{};
   EoInt16 m_color{7};
   EoInt16 m_LineTypeIndex{};
-  EoDbFontDefinition m_fontDefinition;
-  EoDbCharacterCellDefinition m_ccd;
-  EoInt16 m_PolygonInteriorStyle{};
+  EoDb::PolygonStyle m_PolygonStyle{};
   EoInt16 m_PolygonInteriorStyleIndex{};
 
  public:
-  CPrimState() : m_pointStyle(0), m_color(7), m_LineTypeIndex(0), m_PolygonInteriorStyle(0), m_PolygonInteriorStyleIndex(0) {}
+  CPrimState()
+      : m_fontDefinition{},
+        m_characterCellDefinition{},
+        m_pointStyle{},
+        m_color{7},
+        m_LineTypeIndex{1},
+        m_PolygonStyle{EoDb::PolygonStyle::Hollow},
+        m_PolygonInteriorStyleIndex{} {}
 
   const CPrimState& operator=(const CPrimState&);
 
  public:
-  void GetCharCellDef(EoDbCharacterCellDefinition& ccd) const { ccd = m_ccd; }
-  void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fontDefinition; }
+  [[nodiscard]] EoDbCharacterCellDefinition CharacterCellDefinition() const noexcept { return m_characterCellDefinition; }
+  [[nodiscard]] const EoDbFontDefinition& FontDefinition() const noexcept { return m_fontDefinition; }
   const EoInt16& PointStyle() { return m_pointStyle; }
-  [[nodiscard]] const EoInt16& PenColor() const { return m_color; }
+  [[nodiscard]] const EoInt16& Color() const { return m_color; }
   [[nodiscard]] const EoInt16& LineType() const { return m_LineTypeIndex; }
-  [[nodiscard]] const EoInt16& PolygonIntStyle() const { return m_PolygonInteriorStyle; }
+  [[nodiscard]] const EoDb::PolygonStyle& PolygonIntStyle() const { return m_PolygonStyle; }
   [[nodiscard]] const EoInt16& PolygonIntStyleId() const { return m_PolygonInteriorStyleIndex; }
   void Restore(CDC* deviceContext, int saveIndex);
   int Save();
-  void SetCharCellDef(EoDbCharacterCellDefinition& ccd) { m_ccd = ccd; }
+  void SetCharCellDef(EoDbCharacterCellDefinition& characterCellDefinition) {
+    m_characterCellDefinition = characterCellDefinition;
+  }
   void SetFontDef(CDC* deviceContext, const EoDbFontDefinition& fd);
   void SetPointStyle(EoInt16 pointStyle) { m_pointStyle = pointStyle; }
-  void SetPolygonIntStyle(EoInt16 interiorStyle) { m_PolygonInteriorStyle = interiorStyle; }
+  void SetPolygonIntStyle(EoDb::PolygonStyle interiorStyle) { m_PolygonStyle = interiorStyle; }
   void SetPolygonIntStyleId(EoInt16 styleIndex) { m_PolygonInteriorStyleIndex = styleIndex; }
   void SetPen(AeSysView* view, CDC* deviceContext, EoInt16 penColor, EoInt16 lineType);
   /// <summary>Manages a small set of pen definitions.</summary>

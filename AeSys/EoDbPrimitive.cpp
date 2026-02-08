@@ -110,7 +110,7 @@ EoInt16 EoDbPrimitive::LogicalLineType() const {
 }
 
 void EoDbPrimitive::ModifyState() {
-  m_color = pstate.PenColor();
+  m_color = pstate.Color();
   m_lineTypeIndex = pstate.LineType();
 }
 

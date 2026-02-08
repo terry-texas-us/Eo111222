@@ -2,6 +2,7 @@
 
 #include "EoDb.h"
 #include "EoDbBlock.h"
+#include "EoDbCharacterCellDefinition.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
@@ -42,7 +43,7 @@ class AeSysDoc : public CDocument {
   double m_pointSize{0.0};  // in drawing units when greater than zero; in pixels when less than zero; default otherwise
   EoDb::FileTypes m_SaveAsType;
 
-public:
+ public:
   BOOL DoSave(LPCWSTR lpszPathName, BOOL bReplace = TRUE) override;
   void SetCommonTableEntries();
   BOOL OnNewDocument() override;
@@ -212,8 +213,8 @@ public:
   BOOL IsTrapEmpty() const { return m_TrappedGroupList.IsEmpty(); }
   void ModifyTrappedGroupsColor(EoInt16 color) { m_TrappedGroupList.ModifyColor(color); }
   void ModifyTrappedGroupsLineType(EoInt16 lineType) { m_TrappedGroupList.ModifyLineType(lineType); }
-  void ModifyTrappedGroupsNoteAttributes(EoDbFontDefinition& fontDef, EoDbCharacterCellDefinition& cellDef,
-                                         int attributes);
+  void ModifyTrappedGroupsNoteAttributes(const EoDbFontDefinition& fontDefinition,
+                                         EoDbCharacterCellDefinition& characterCellDefinition, int attributes);
   void RemoveAllTrappedGroups();
   EoDbGroup* RemoveLastTrappedGroup() { return m_TrappedGroupList.RemoveTail(); }
   auto RemoveTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Remove(group); }

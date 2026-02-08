@@ -299,7 +299,7 @@ void AeSysView::OnFixupModeMend() {
           auto minorAxis = CrossProduct(normal, majorAxis);
 
           auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
-          radialArc->SetColor(pstate.PenColor());
+          radialArc->SetColor(pstate.Color());
           radialArc->SetLineTypeIndex(pstate.LineType());
 
           previousGroup->AddTail(radialArc);

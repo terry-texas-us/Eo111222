@@ -396,30 +396,28 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
 }
 
 void AeSysDoc::AddTextBlock(LPWSTR pszText) {
-  EoGePoint3d ptPvt = app.GetCursorPosition();
+  EoGePoint3d cursorPosition = app.GetCursorPosition();
 
-  EoDbFontDefinition fd;
-  pstate.GetFontDef(fd);
+  const auto& fontDefinition = pstate.FontDefinition();
+  auto characterCellDefinition = pstate.CharacterCellDefinition();
 
-  EoDbCharacterCellDefinition ccd;
-  pstate.GetCharCellDef(ccd);
-
-  EoGeReferenceSystem ReferenceSystem(ptPvt, ccd);
+  EoGeReferenceSystem ReferenceSystem(cursorPosition, characterCellDefinition);
 
   LPWSTR NextToken = nullptr;
   LPWSTR pText = wcstok_s(pszText, L"\r", &NextToken);
   while (pText != 0) {
     if (wcslen(pText) > 0) {
-      auto* Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, pText));
+      auto* Group = new EoDbGroup(new EoDbText(fontDefinition, ReferenceSystem, pText));
       AddWorkLayerGroup(Group);
       UpdateAllViews(nullptr, EoDb::kGroup, Group);
     }
-    ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 1.0, 0));
+    ReferenceSystem.SetOrigin(text_GetNewLinePos(fontDefinition, ReferenceSystem, 1.0, 0));
     pText = wcstok_s(0, L"\r", &NextToken);
     if (pText == 0) break;
     pText++;
   }
 }
+
 void AeSysDoc::DeletedGroupsRestore() {
   if (!DeletedGroupsIsEmpty()) {
     auto* Group = DeletedGroupsRemoveTail();
@@ -469,7 +467,7 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
     auto backgroundColor = deviceContext->GetBkColor();
     deviceContext->SetBkColor(ViewBackgroundColor);
 
-    EoDbPolygon::SetSpecialPolygonStyle((EoInt16)(view->RenderAsWireframe() ? EoDb::kHollow : -1));
+    EoDbPolygon::SetSpecialPolygonStyle(view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);
     int primitiveState = pstate.Save();
 
     for (int i = 0; i < GetLayerTableSize(); i++) {
@@ -477,7 +475,7 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
       layer->Display(view, deviceContext, identifyTrap);
     }
     pstate.Restore(deviceContext, primitiveState);
-    EoDbPolygon::SetSpecialPolygonStyle(-1);
+    EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
 
     deviceContext->SetBkColor(backgroundColor);
   } catch (CException* e) { e->Delete(); }
@@ -1413,7 +1411,7 @@ void AeSysDoc::OnTrapCommandsBlock() {
 void AeSysDoc::OnTrapCommandsUnblock() { m_TrappedGroupList.BreakSegRefs(); }
 void AeSysDoc::OnSetupPenColor() {
   EoDlgSetupColor Dialog;
-  Dialog.m_ColorIndex = static_cast<EoUInt16>(pstate.PenColor());
+  Dialog.m_ColorIndex = static_cast<EoUInt16>(pstate.Color());
 
   if (Dialog.DoModal() == IDOK) {
     pstate.SetColor(nullptr, static_cast<EoInt16>(Dialog.m_ColorIndex));
@@ -1452,8 +1450,8 @@ void AeSysDoc::OnSetupLineType() {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
 }
 
-void AeSysDoc::OnSetupFillHollow() { pstate.SetPolygonIntStyle(EoDb::kHollow); }
-void AeSysDoc::OnSetupFillSolid() { pstate.SetPolygonIntStyle(EoDb::kSolid); }
+void AeSysDoc::OnSetupFillHollow() { pstate.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow); }
+void AeSysDoc::OnSetupFillSolid() { pstate.SetPolygonIntStyle(EoDb::PolygonStyle::Solid); }
 void AeSysDoc::OnSetupFillPattern() {}
 void AeSysDoc::OnSetupFillHatch() {
   EoDlgSetupHatch Dialog;
@@ -1462,37 +1460,35 @@ void AeSysDoc::OnSetupFillHatch() {
   Dialog.m_HatchRotationAngle = Eo::RadianToDegree(hatch::dOffAng);
 
   if (Dialog.DoModal() == IDOK) {
-    pstate.SetPolygonIntStyle(EoDb::kHatch);
+    pstate.SetPolygonIntStyle(EoDb::PolygonStyle::Hatch);
     hatch::dXAxRefVecScal = std::max(0.01, Dialog.m_HatchXScaleFactor);
     hatch::dYAxRefVecScal = std::max(0.01, Dialog.m_HatchYScaleFactor);
     hatch::dOffAng = Eo::DegreeToRadian(Dialog.m_HatchRotationAngle);
   }
 }
 void AeSysDoc::OnSetupNote() {
-  EoDbFontDefinition FontDefinition;
-  pstate.GetFontDef(FontDefinition);
+  EoDbFontDefinition fontDefinition = pstate.FontDefinition();
 
-  EoDlgSetupNote Dialog(&FontDefinition);
+  EoDlgSetupNote Dialog(&fontDefinition);
 
-  EoDbCharacterCellDefinition CCD;
-  pstate.GetCharCellDef(CCD);
+  auto characterCellDefinition = pstate.CharacterCellDefinition();
 
-  Dialog.m_TextHeight = CCD.ChrHgtGet();
-  Dialog.m_TextRotationAngle = Eo::RadianToDegree(CCD.TextRotAngGet());
-  Dialog.m_TextExpansionFactor = CCD.ChrExpFacGet();
-  Dialog.m_CharacterSlantAngle = Eo::RadianToDegree(CCD.ChrSlantAngGet());
+  Dialog.m_TextHeight = characterCellDefinition.ChrHgtGet();
+  Dialog.m_TextRotationAngle = Eo::RadianToDegree(characterCellDefinition.TextRotAngGet());
+  Dialog.m_TextExpansionFactor = characterCellDefinition.ChrExpFacGet();
+  Dialog.m_CharacterSlantAngle = Eo::RadianToDegree(characterCellDefinition.ChrSlantAngGet());
 
   if (Dialog.DoModal() == IDOK) {
-    CCD.ChrHgtSet(Dialog.m_TextHeight);
-    CCD.TextRotAngSet(Eo::DegreeToRadian(Dialog.m_TextRotationAngle));
-    CCD.ChrExpFacSet(Dialog.m_TextExpansionFactor);
-    CCD.ChrSlantAngSet(Eo::DegreeToRadian(Dialog.m_CharacterSlantAngle));
-    pstate.SetCharCellDef(CCD);
+    characterCellDefinition.ChrHgtSet(Dialog.m_TextHeight);
+    characterCellDefinition.TextRotAngSet(Eo::DegreeToRadian(Dialog.m_TextRotationAngle));
+    characterCellDefinition.ChrExpFacSet(Dialog.m_TextExpansionFactor);
+    characterCellDefinition.ChrSlantAngSet(Eo::DegreeToRadian(Dialog.m_CharacterSlantAngle));
+    pstate.SetCharCellDef(characterCellDefinition);
 
     auto* activeView = AeSysView::GetActiveView();
     CDC* DeviceContext = (activeView == nullptr) ? nullptr : activeView->GetDC();
 
-    pstate.SetFontDef(DeviceContext, FontDefinition);
+    pstate.SetFontDef(DeviceContext, fontDefinition);
   }
 }
 

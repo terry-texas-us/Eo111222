@@ -141,8 +141,8 @@ void AeSysView::OnCutModeField() {
 
     auto* document = GetDocument();
 
-    EoInt16 color = pstate.PenColor();
-    EoInt16 LineType = pstate.LineType();
+    auto color = pstate.Color();
+    auto lineType = pstate.LineType();
 
     EoDbGroupList* GroupsOut = new EoDbGroupList;
     EoDbGroupList* GroupsIn = new EoDbGroupList;
@@ -185,7 +185,7 @@ void AeSysView::OnCutModeField() {
     delete GroupsIn;
     delete GroupsOut;
 
-    pstate.SetPen(this, DeviceContext, color, LineType);
+    pstate.SetPen(this, DeviceContext, color, lineType);
     UpdateStateInformation(BothCounts);
 
     RubberBandingDisable();
@@ -208,7 +208,7 @@ void AeSysView::OnCutModeClip() {
     double dRel[2]{};
     EoGePoint3d ptCut[2]{};
 
-    EoInt16 color = pstate.PenColor();
+    EoInt16 color = pstate.Color();
     EoInt16 LineType = pstate.LineType();
 
     auto* document = GetDocument();

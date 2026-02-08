@@ -84,7 +84,7 @@ double EoDbEllipse::NormalizeTo2Pi(double angle) {
  * @param sweepAngle The sweep angle of the ellipse segment in radians.
  */
 EoDbEllipse::EoDbEllipse(const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle)
-    : EoDbPrimitive(pstate.PenColor(), pstate.LineType()),
+    : EoDbPrimitive(pstate.Color(), pstate.LineType()),
       m_center(center),
       m_majorAxis(majorAxis),
       m_minorAxis(minorAxis),
@@ -150,7 +150,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGeVector3d& normal, double radiu
 EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
   auto* activeView = AeSysView::GetActiveView();
 
-  m_color = pstate.PenColor();
+  m_color = pstate.Color();
   m_lineTypeIndex = pstate.LineType();
 
   auto cameraDirection = activeView->CameraDirection();
@@ -183,7 +183,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
  * @param endPoint The ending point of the elliptical arc.
  */
 EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end) {
-  m_color = pstate.PenColor();
+  m_color = pstate.Color();
   m_lineTypeIndex = pstate.LineType();
 
   m_sweepAngle = 0.0;

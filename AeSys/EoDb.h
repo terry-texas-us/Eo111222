@@ -7,7 +7,6 @@ class EoDbPrimitive;
 
 namespace EoDb {
 enum class FileTypes { Dwg = 0x00, Dxf = 0x01, Dxb = 0x02, Peg = 0x20, Job = 0x21, Tracing = 0x22, Unknown = -1 };
-enum PolygonStyle { kHollow, kSolid, kPattern, kHatch };
 enum PrimitiveTypes {
   kPointPrimitive = 0x0100,
   kInsertPrimitive = 0x0101,
@@ -44,7 +43,7 @@ enum UpdateViewHints {
   kGroupEraseSafeTrap = kGroup | kErase | kSafe | kTrap,
   kGroupsEraseSafeTrap = kGroups | kErase | kSafe | kTrap
 };
-enum Sentinals {
+enum Sentinels {
   kHeaderSection = 0x0101,
   kTablesSection = 0x0102,
   kBlocksSection = 0x0103,
@@ -56,10 +55,11 @@ enum Sentinals {
   kLayerTable = 0x0203,
   kEndOfTable = 0x02ff
 };
-enum Path { kPathRight, kPathLeft, kPathUp, kPathDown };
-enum HorizontalAlignment { kAlignLeft = 1, kAlignCenter, kAlignRight };
-enum VerticalAlignment { kAlignTop = 2, kAlignMiddle, kAlignBottom };
-enum Precision { kEoTrueType = 1, kStrokeType };
+enum class PolygonStyle { Hollow, Solid, Pattern, Hatch, Special = -1 };
+enum Path { PathRight, PathLeft, PathUp, PathDown };
+enum HorizontalAlignment { AlignLeft = 1, AlignCenter, AlignRight };
+enum VerticalAlignment { AlignTop = 2, AlignMiddle, AlignBottom };
+enum Precision { EoTrueType = 1, StrokeType };
 
 void ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& file, EoDbPrimitive*& primitive);
@@ -81,11 +81,11 @@ void Read(CFile& file, double& number);
 bool Read(CFile& file, EoDbPrimitive*& primitive);
 void Read(CFile& file, EoInt16& number);
 void Read(CFile& file, EoUInt16& number);
-double ReadDouble(CFile& file);
-EoInt16 ReadInt16(CFile& file);
-EoGePoint3d ReadPoint3d(CFile& file);
-EoGeVector3d ReadVector3d(CFile& file);
-EoUInt16 ReadUInt16(CFile& file);
+[[nodiscard]] double ReadDouble(CFile& file);
+[[nodiscard]] EoInt16 ReadInt16(CFile& file);
+[[nodiscard]] EoGePoint3d ReadPoint3d(CFile& file);
+[[nodiscard]] EoGeVector3d ReadVector3d(CFile& file);
+[[nodiscard]] EoUInt16 ReadUInt16(CFile& file);
 
 void Write(CFile& file, const CString& string, UINT codePage = CP_ACP);
 void Write(CFile& file, double number);

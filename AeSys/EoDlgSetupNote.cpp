@@ -48,30 +48,31 @@ BOOL EoDlgSetupNote::OnInitDialog() {
 
   return TRUE;
 }
+
 void EoDlgSetupNote::OnOK() {
   CString Spacing;
   GetDlgItemTextW(IDC_TEXT_SPACING, Spacing);
-  m_FontDefinition->CharacterSpacing(_wtof(Spacing));
+  m_FontDefinition->SetCharacterSpacing(_wtof(Spacing));
 
-  EoUInt16 HorizontalAlignment =
+  auto horizontalAlignment =
       EoUInt16(1 - IDC_TEXT_ALIGN_HOR_LEFT + GetCheckedRadioButton(IDC_TEXT_ALIGN_HOR_LEFT, IDC_TEXT_ALIGN_HOR_RIGHT));
-  m_FontDefinition->HorizontalAlignment(HorizontalAlignment);
+  m_FontDefinition->SetHorizontalAlignment(horizontalAlignment);
 
-  EoUInt16 VerticalAlignment =
+  auto verticalAlignment =
       EoUInt16(4 + IDC_TEXT_ALIGN_VER_BOT - GetCheckedRadioButton(IDC_TEXT_ALIGN_VER_BOT, IDC_TEXT_ALIGN_VER_TOP));
-  m_FontDefinition->VerticalAlignment(VerticalAlignment);
+  m_FontDefinition->SetVerticalAlignment(verticalAlignment);
 
-  EoUInt16 Path = EoUInt16(GetCheckedRadioButton(IDC_PATH_RIGHT, IDC_PATH_DOWN) - IDC_PATH_RIGHT);
-  m_FontDefinition->Path(Path);
+  auto path = EoUInt16(GetCheckedRadioButton(IDC_PATH_RIGHT, IDC_PATH_DOWN) - IDC_PATH_RIGHT);
+  m_FontDefinition->SetPath(path);
 
   int FontsIndex = m_MfcFontComboControl.GetCurSel();
   if (FontsIndex != CB_ERR) {
     CString FontsItemName;
     m_MfcFontComboControl.GetLBText(FontsIndex, FontsItemName);
-    m_FontDefinition->FontName(FontsItemName);
-    EoUInt16 Precision =
-        EoUInt16(FontsItemName.CompareNoCase(L"Simplex.psf") != 0 ? EoDb::kEoTrueType : EoDb::kStrokeType);
-    m_FontDefinition->Precision(Precision);
+    m_FontDefinition->SetFontName(FontsItemName);
+    auto precision =
+        EoUInt16(FontsItemName.CompareNoCase(L"Simplex.psf") != 0 ? EoDb::EoTrueType : EoDb::StrokeType);
+    m_FontDefinition->SetPrecision(precision);
   }
 
   CDialog::OnOK();

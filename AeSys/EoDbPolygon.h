@@ -13,36 +13,38 @@ class EoDbPolygon : public EoDbPrimitive {
   static EoUInt16 sm_EdgeToEvaluate;
   static EoUInt16 sm_Edge;
   static EoUInt16 sm_PivotVertex;
+  static EoDb::PolygonStyle sm_SpecialPolygonStyle;
 
-  static EoInt16 sm_SpecialPolygonStyle;
-
-  EoInt16 m_InteriorStyle;
-  EoInt16 m_InteriorStyleIndex;
-  EoUInt16 m_NumberOfPoints;
-  EoGePoint3d m_HatchOrigin;
-  EoGeVector3d m_vPosXAx;
-  EoGeVector3d m_vPosYAx;
-  EoGePoint3d* m_Pt{};
+  EoGePoint3d m_hatchOrigin;
+  EoGeVector3d m_positiveX;
+  EoGeVector3d m_positiveY;
+  EoGePoint3d* m_vertices{};
+  EoDb::PolygonStyle m_polygonStyle;
+  EoInt16 m_fillStyleIndex;
+  EoUInt16 m_numberOfVertices;
 
  public:  // Constructors and destructor
   EoDbPolygon();
   EoDbPolygon(EoUInt8* buffer, int version);
 
-  /// @brief Constructs an EoDbPolygon object from an array of 3D points.
-  /// @param points An array of 3D points that define the vertices of the polygon. Must contain at least 3 points for proper initialization of the plane vectors.
+  /** @brief Constructs an EoDbPolygon object from an array of 3D points.
+   *  @param points An array of 3D points that define the vertices of the polygon. Must contain at least 3 points for proper initialization of the plane vectors.
+   */
   EoDbPolygon(EoGePoint3dArray& points);
+
   EoDbPolygon(EoUInt16, EoGePoint3d*);
-  EoDbPolygon(EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d& yAxis, EoGePoint3dArray& pts);
-  EoDbPolygon(EoInt16 penColor, EoInt16 style, EoInt16 styleIndex, EoGePoint3d& origin, EoGeVector3d& xAxis, EoGeVector3d& yAxis, EoGePoint3dArray& points);
+  EoDbPolygon(const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts);
+  EoDbPolygon(EoInt16 color, EoDb::PolygonStyle style, EoInt16 styleIndex, const EoGePoint3d& origin,
+              const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& points);
   EoDbPolygon(EoUInt16, EoGePoint3d, EoGeVector3d, EoGeVector3d, const EoGePoint3d*);
 
-  EoDbPolygon(const EoDbPolygon& src);
+  EoDbPolygon(const EoDbPolygon& other);
 
- public:  // Operators
-  const EoDbPolygon& operator=(const EoDbPolygon&);
+ public:
+  const EoDbPolygon& operator=(const EoDbPolygon& other);
 
-  EoGePoint3d& operator[](int i) { return m_Pt[i]; }
-  const EoGePoint3d& operator[](int i) const { return m_Pt[i]; }
+  [[nodiscard]] EoGePoint3d& operator[](int i) { return m_vertices[i]; }
+  [[nodiscard]] const EoGePoint3d& operator[](int i) const { return m_vertices[i]; }
 
   ~EoDbPolygon() override;
 
@@ -73,21 +75,21 @@ class EoDbPolygon : public EoDbPrimitive {
   void Write(CFile& file, EoUInt8* buffer) override;
 
   CString FormatIntStyle();
-  [[nodiscard]] const EoInt16& IntStyle() { return m_InteriorStyle; }
-  [[nodiscard]] const EoInt16& IntStyleId() { return m_InteriorStyleIndex; }
-  [[nodiscard]] EoGePoint3d GetPt(int i) { return m_Pt[i]; }
-  [[nodiscard]] int GetPts() const { return m_NumberOfPoints; }
+  [[nodiscard]] const EoDb::PolygonStyle& PolygonStyle() { return m_polygonStyle; }
+  [[nodiscard]] const EoInt16& FillStyleIndex() { return m_fillStyleIndex; }
+  [[nodiscard]] EoGePoint3d Vertex(int i) { return m_vertices[i]; }
+  [[nodiscard]] int NumberOfVertices() const { return m_numberOfVertices; }
   void ModifyState() override;
   bool PivotOnControlPoint(AeSysView* view, const EoGePoint4d&) override;
-  void SetIntStyle(const EoInt16 n) { m_InteriorStyle = n; }
-  void SetIntStyleId(const EoInt16 n) { m_InteriorStyleIndex = n; }
+  void SetPolygonStyle(const EoDb::PolygonStyle n) { m_polygonStyle = n; }
+  void SetFillStyleIndex(const EoInt16 fillStyleIndex) { m_fillStyleIndex = fillStyleIndex; }
   void SetHatRefVecs(double, double, double);
 
  private:
   EoUInt16 SwingVertex() const;
 
  public:
-  static void SetSpecialPolygonStyle(EoInt16 polygonStyle) { sm_SpecialPolygonStyle = polygonStyle; }
+  static void SetSpecialPolygonStyle(EoDb::PolygonStyle polygonStyle) { sm_SpecialPolygonStyle = polygonStyle; }
   static EoUInt16& EdgeToEvaluate() { return sm_EdgeToEvaluate; }
   static EoUInt16& Edge() { return sm_Edge; }
 };
@@ -95,7 +97,8 @@ class EoDbPolygon : public EoDbPrimitive {
 // Parameters:	deviceContext
 //				iSets		number of point lists
 //				iPtLstsId	starting indicies for point lists
-void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& tm, const int iSets, const int* iPtLstsId, EoGePoint3d*);
+void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& tm, const int iSets,
+                         const int* iPtLstsId, EoGePoint3d*);
 /// <summary>Generates polygon.</summary>
 // The polygon is closed automatically by drawing a line from the last vertex to the first.
 // Arrays of vertices are previously modelview transformed and clipped to view volume.

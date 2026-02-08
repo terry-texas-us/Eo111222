@@ -46,7 +46,8 @@ class EoDbText : public EoDbPrimitive {
   bool Is(EoUInt16 type) override { return type == EoDb::kTextPrimitive; }
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   void ModifyState() override;
-  void ModifyNotes(EoDbFontDefinition& fd, EoDbCharacterCellDefinition& ccd, int iAtt);
+  void ModifyNotes(const EoDbFontDefinition& fontDefinition, EoDbCharacterCellDefinition& characterCellDefinition,
+                   int attributes);
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
@@ -94,5 +95,5 @@ void GetBottomLeftCorner(EoDbFontDefinition& fd, int iChrs, EoGePoint3d& pt);
 /// <summary>Returns the region boundaries of a text string applying and optional inflation factor.</summary>
 void text_GetBoundingBox(EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, int nLen, double dSpacFac,
                          EoGePoint3dArray& ptsBox);
-EoGePoint3d text_GetNewLinePos(EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, double dLineSpaceFac,
-                               double dChrSpaceFac);
+EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontdefinition, EoGeReferenceSystem& referenceSystem,
+                               double dLineSpaceFac, double dChrSpaceFac);

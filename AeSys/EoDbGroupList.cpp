@@ -90,11 +90,11 @@ void EoDbGroupList::ModifyLineType(EoInt16 nStyle) {
   while (position != nullptr) (GetNext(position))->ModifyLineType(nStyle);
 }
 
-void EoDbGroupList::ModifyNotes(EoDbFontDefinition& fd, EoDbCharacterCellDefinition& ccd, int iAtt) {
+void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition, EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    group->ModifyNotes(fd, ccd, iAtt);
+    group->ModifyNotes(fontDefinition, characterCellDefinition, attributes);
   }
 }
 

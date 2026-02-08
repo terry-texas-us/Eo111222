@@ -65,8 +65,8 @@ void AeSysView::OnDraw2ModeWall() {
         document->AddWorkLayerGroup(m_AssemblyGroup);
         m_AssemblyGroup->AddTail(new EoDbLine(m_CurrentLeftLine.begin, m_CurrentRightLine.begin));
       }
-      m_AssemblyGroup->AddTail(new EoDbLine(pstate.PenColor(), pstate.LineType(), m_CurrentLeftLine));
-      m_AssemblyGroup->AddTail(new EoDbLine(pstate.PenColor(), pstate.LineType(), m_CurrentRightLine));
+      m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), m_CurrentLeftLine));
+      m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), m_CurrentRightLine));
 
       m_AssemblyGroup->AddTail(new EoDbLine(m_CurrentRightLine.end, m_CurrentLeftLine.end));
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_AssemblyGroup);
@@ -94,8 +94,8 @@ void AeSysView::OnDraw2ModeWall() {
     ptBeg = m_EndSectionLine->BeginPoint();
     ptEnd = m_EndSectionLine->EndPoint();
 
-    m_AssemblyGroup->AddTail(new EoDbLine(pstate.PenColor(), pstate.LineType(), m_CurrentLeftLine));
-    m_AssemblyGroup->AddTail(new EoDbLine(pstate.PenColor(), pstate.LineType(), m_CurrentRightLine));
+    m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), m_CurrentLeftLine));
+    m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), m_CurrentRightLine));
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_AssemblyGroup);
 
     EoDbLine* LinePrimitive = new EoDbLine(*m_EndSectionLine);
@@ -217,8 +217,8 @@ void AeSysView::DoDraw2ModeMouseMove() {
     ln.GetParallels(m_DistanceBetweenLines, m_CenterLineEccentricity, PreviewLines[0], PreviewLines[1]);
 
     m_PreviewGroup.AddTail(new EoDbLine(PreviewLines[0].begin, PreviewLines[1].begin));
-    m_PreviewGroup.AddTail(new EoDbLine(pstate.PenColor(), pstate.LineType(), PreviewLines[0]));
-    m_PreviewGroup.AddTail(new EoDbLine(pstate.PenColor(), pstate.LineType(), PreviewLines[1]));
+    m_PreviewGroup.AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), PreviewLines[0]));
+    m_PreviewGroup.AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), PreviewLines[1]));
     m_PreviewGroup.AddTail(new EoDbLine(PreviewLines[1].end, PreviewLines[0].end));
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   }

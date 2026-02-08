@@ -58,7 +58,7 @@ EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray&
   m_pts.Copy(pts);
 }
 EoDbPolyline::EoDbPolyline(EoGePoint3dArray& pts) {
-  m_color = pstate.PenColor();
+  m_color = pstate.Color();
   m_lineTypeIndex = pstate.LineType();
 
   m_flags = 0;

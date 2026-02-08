@@ -2420,7 +2420,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     }
     if ((item & Pen) == Pen) {
       rc.SetRect(16 * tm.tmAveCharWidth, ClientRect.top, 22 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      swprintf_s(szBuf, 32, L"P%-4i", pstate.PenColor());
+      swprintf_s(szBuf, 32, L"P%-4i", pstate.Color());
       DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
     }
     if ((item & Line) == Line) {
@@ -2429,10 +2429,9 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
       DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
     }
     if ((item & TextHeight) == TextHeight) {
-      EoDbCharacterCellDefinition ccd;
-      pstate.GetCharCellDef(ccd);
+      auto characterCellDefinition = pstate.CharacterCellDefinition();
       rc.SetRect(28 * tm.tmAveCharWidth, ClientRect.top, 38 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      swprintf_s(szBuf, 32, L"T%-6.2f", ccd.ChrHgtGet());
+      swprintf_s(szBuf, 32, L"T%-6.2f", characterCellDefinition.ChrHgtGet());
       DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
     }
     if ((item & Scale) == Scale) {

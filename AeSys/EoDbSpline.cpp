@@ -16,13 +16,13 @@
 #include "Resource.h"
 
 EoDbSpline::EoDbSpline(EoUInt16 wPts, EoGePoint3d* pt) {
-  m_color = pstate.PenColor();
+  m_color = pstate.Color();
   m_lineTypeIndex = pstate.LineType();
 
   for (EoUInt16 w = 0; w < wPts; w++) m_pts.Add(pt[w]);
 }
 EoDbSpline::EoDbSpline(EoGePoint3dArray& points) {
-  m_color = pstate.PenColor();
+  m_color = pstate.Color();
   m_lineTypeIndex = pstate.LineType();
   m_pts.Copy(points);
 }

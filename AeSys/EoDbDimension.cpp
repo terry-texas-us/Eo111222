@@ -26,46 +26,43 @@
 #include "ddeGItms.h"
 #endif  // USING_DDE
 
-EoUInt16 EoDbDimension::sm_wFlags = 0;
+EoUInt16 EoDbDimension::sm_flags{};
 
-EoDbDimension::EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line) : m_ln(line) {
-  m_color = color;
-  m_lineTypeIndex = lineType;
-
-  m_nTextPenColor = 5;
-  pstate.GetFontDef(m_fontDefinition);
+EoDbDimension::EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line)
+    : EoDbPrimitive(color, lineType), m_ln{line}, m_fontDefinition{pstate.FontDefinition()}, m_textColor{5} {
   SetDefaultNote();
 }
-EoDbDimension::EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line, EoInt16 textPenColor,
+
+EoDbDimension::EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line, EoInt16 textColor,
                              const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
                              const CString& text)
-    : m_ln(line), m_fontDefinition(fontDefinition), m_ReferenceSystem(referenceSystem), m_strText(text) {
-  m_color = color;
-  m_lineTypeIndex = lineType;
-  m_nTextPenColor = textPenColor;
-}
-EoDbDimension::EoDbDimension(const EoDbDimension& src) {
-  m_color = src.m_color;
-  m_lineTypeIndex = src.m_lineTypeIndex;
-  m_ln = src.m_ln;
+    : EoDbPrimitive(color, lineType),
+      m_ln{line},
+      m_fontDefinition{fontDefinition},
+      m_ReferenceSystem{referenceSystem},
+      m_text{text},
+      m_textColor{textColor} {}
 
-  m_nTextPenColor = src.m_nTextPenColor;
-  m_fontDefinition = src.m_fontDefinition;
-  m_ReferenceSystem = src.m_ReferenceSystem;
-  m_strText = src.m_strText;
-}
-const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& src) {
-  m_color = src.m_color;
-  m_lineTypeIndex = src.m_lineTypeIndex;
-  m_ln = src.m_ln;
+EoDbDimension::EoDbDimension(const EoDbDimension& other)
+    : EoDbPrimitive(other),
+      m_ln{other.m_ln},
+      m_fontDefinition{other.m_fontDefinition},
+      m_ReferenceSystem{other.m_ReferenceSystem},
+      m_text{other.m_text},
+      m_textColor{other.m_textColor} {}
 
-  m_nTextPenColor = src.m_nTextPenColor;
-  m_fontDefinition = src.m_fontDefinition;
-  m_ReferenceSystem = src.m_ReferenceSystem;
-  m_strText = src.m_strText;
+const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& other) {
+  if (this == &other) { return (*this); }
+  EoDbPrimitive::operator=(other);
+  m_ln = other.m_ln;
+  m_textColor = other.m_textColor;
+  m_fontDefinition = other.m_fontDefinition;
+  m_ReferenceSystem = other.m_ReferenceSystem;
+  m_text = other.m_text;
 
   return (*this);
 }
+
 void EoDbDimension::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   CString label{L"<Dim>"};
   tvAddItem(tree, parent, label.GetBuffer(), this);
@@ -75,7 +72,8 @@ EoDbPrimitive*& EoDbDimension::Copy(EoDbPrimitive*& primitive) {
   return primitive;
 }
 
-void EoDbDimension::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
+void EoDbDimension::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups,
+                                 EoDbGroupList* newGroups) {
   EoDbDimension* pDim;
   double dRel[2]{};
 
@@ -130,12 +128,12 @@ void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
   pstate.SetPen(view, deviceContext, color, LogicalLineType());
   m_ln.Display(view, deviceContext);
 
-  pstate.SetColor(deviceContext, m_nTextPenColor);
+  pstate.SetColor(deviceContext, m_textColor);
 
   EoInt16 LineType = pstate.LineType();
   pstate.SetLineType(deviceContext, 1);
 
-  DisplayText(view, deviceContext, m_fontDefinition, m_ReferenceSystem, m_strText);
+  DisplayText(view, deviceContext, m_fontDefinition, m_ReferenceSystem, m_text);
 
   pstate.SetLineType(deviceContext, LineType);
 }
@@ -176,7 +174,7 @@ void EoDbDimension::GetAllPoints(EoGePoint3dArray& points) {
 }
 // Determination of text extent.
 void EoDbDimension::GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac) {
-  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), dSpacFac, ptsBox);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_text.GetLength(), dSpacFac, ptsBox);
 }
 void EoDbDimension::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
   EoGePoint3d pt[2] = {m_ln.begin, m_ln.end};
@@ -226,11 +224,13 @@ bool EoDbDimension::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& po
   }
   return false;
 }
-void EoDbDimension::ModifyState() {
-  if ((sm_wFlags & 0x0001) != 0) EoDbPrimitive::ModifyState();
 
-  if ((sm_wFlags & 0x0002) != 0) pstate.GetFontDef(m_fontDefinition);
+void EoDbDimension::ModifyState() {
+  if ((sm_flags & 0x0001) != 0) { EoDbPrimitive::ModifyState(); }
+
+  if ((sm_flags & 0x0002) != 0) { m_fontDefinition = pstate.FontDefinition(); }
 }
+
 double EoDbDimension::RelOfPt(EoGePoint3d pt) {
   double dRel;
   m_ln.RelOfPtToEndPts(pt, dRel);
@@ -255,7 +255,7 @@ EoGePoint3d EoDbDimension::SelectAtControlPoint(AeSysView* view, const EoGePoint
   return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : m_ln[sm_ControlPointIndex];
 }
 bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
-  sm_wFlags &= ~0x0003;
+  sm_flags &= ~0x0003;
 
   EoGePoint4d pt[4]{};
   pt[0] = EoGePoint4d(m_ln.begin);
@@ -267,7 +267,7 @@ bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoi
   ln.end = pt[1];
   if (ln.IsSelectedByPointXY(point, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
     ptProj.z = ln.begin.z + sm_RelationshipOfPoint * (ln.end.z - ln.begin.z);
-    sm_wFlags |= 0x0001;
+    sm_flags |= 0x0001;
     return true;
   }
   EoGePoint3dArray ptsExt;
@@ -283,7 +283,7 @@ bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoi
     if (EoGeLine(pt[n], pt[(n + 1) % 4]).DirRelOfPt(point) < 0) { return false; }
   }
   ptProj = point;
-  sm_wFlags |= 0x0002;
+  sm_flags |= 0x0002;
   return true;
 }
 bool EoDbDimension::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) {
@@ -310,7 +310,7 @@ void EoDbDimension::SetDefaultNote() {
 
   m_ReferenceSystem.SetOrigin(m_ln.Midpoint());
   double dAng = 0.;
-  wchar_t cText0 = m_strText[0];
+  wchar_t cText0 = m_text[0];
   if (cText0 != 'R' && cText0 != 'D') {
     dAng = m_ln.AngleFromXAxisXY();
     double dDis = 0.075;
@@ -339,17 +339,17 @@ void EoDbDimension::SetDefaultNote() {
 
   Eo::Units units = app.GetUnits();
   if (units == Eo::Units::Architectural) { units = Eo::Units::ArchitecturalS; }
-  app.FormatLength(m_strText, units, m_ln.Length());
-  m_strText.TrimLeft();
-  if (cText0 == 'R' || cText0 == 'D') { m_strText = cText0 + m_strText; }
+  app.FormatLength(m_text, units, m_ln.Length());
+  m_text.TrimLeft();
+  if (cText0 == 'R' || cText0 == 'D') { m_text = cText0 + m_text; }
 }
 
 void EoDbDimension::Transform(EoGeTransformMatrix& tm) {
-  if ((sm_wFlags & 0x0001) != 0) {
+  if ((sm_flags & 0x0001) != 0) {
     m_ln.begin = tm * m_ln.begin;
     m_ln.end = tm * m_ln.end;
   }
-  if ((sm_wFlags & 0x0002) != 0) { m_ReferenceSystem.Transform(tm); }
+  if ((sm_flags & 0x0002) != 0) { m_ReferenceSystem.Transform(tm); }
 }
 void EoDbDimension::Translate(EoGeVector3d v) {
   m_ln += v;
@@ -369,10 +369,10 @@ bool EoDbDimension::Write(CFile& file) {
   EoDb::Write(file, m_lineTypeIndex);
   m_ln.Write(file);
 
-  EoDb::Write(file, m_nTextPenColor);
+  EoDb::Write(file, m_textColor);
   m_fontDefinition.Write(file);
   m_ReferenceSystem.Write(file);
-  EoDb::Write(file, m_strText);
+  EoDb::Write(file, m_text);
 
   return true;
 }

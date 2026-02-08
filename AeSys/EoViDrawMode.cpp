@@ -24,7 +24,7 @@ void AeSysView::OnDrawModeOptions() { AeSysDoc::GetDoc()->OnSetupOptionsDraw(); 
 void AeSysView::OnDrawModePoint() {
   auto cursorPosition = GetCursorPosition();
 
-  auto* Group = new EoDbGroup(new EoDbPoint(pstate.PenColor(), pstate.PointStyle(), cursorPosition));
+  auto* Group = new EoDbGroup(new EoDbPoint(pstate.Color(), pstate.PointStyle(), cursorPosition));
   auto* document = GetDocument();
   document->AddWorkLayerGroup(Group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
@@ -193,7 +193,7 @@ void AeSysView::OnDrawModeReturn() {
         app.AddStringToMessageList(IDS_MSG_PTS_COLINEAR);
         return;
       }
-      radialArc->SetColor(pstate.PenColor());
+      radialArc->SetColor(pstate.Color());
       radialArc->SetLineTypeIndex(pstate.LineType());
 
       if (fabs(radialArc->SweepAngle()) < Eo::geometricTolerance) {
@@ -239,7 +239,7 @@ void AeSysView::OnDrawModeReturn() {
       extrusion.Normalize();
       double ratio = minorAxis.Length() / majorAxis.Length();
       auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
-      ellipse->SetColor(pstate.PenColor());
+      ellipse->SetColor(pstate.Color());
       ellipse->SetLineTypeIndex(pstate.LineType());
 
       group = new EoDbGroup(ellipse);
@@ -335,7 +335,7 @@ void AeSysView::DoDrawModeMouseMove() {
         auto radialArc = EoDbConic::CreateRadialArcFrom3Points(start, intermediate, cursorPosition);
         if (radialArc == nullptr) { break; }
 
-        radialArc->SetColor(pstate.PenColor());
+        radialArc->SetColor(pstate.Color());
         radialArc->SetLineTypeIndex(pstate.LineType());
         m_PreviewGroup.AddTail(radialArc);
       }
@@ -379,7 +379,7 @@ void AeSysView::DoDrawModeMouseMove() {
         extrusion.Normalize();
         double ratio = minorAxis.Length() / majorAxis.Length();
         auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
-        ellipse->SetColor(pstate.PenColor());
+        ellipse->SetColor(pstate.Color());
         ellipse->SetLineTypeIndex(pstate.LineType());
 
         m_PreviewGroup.AddTail(ellipse);

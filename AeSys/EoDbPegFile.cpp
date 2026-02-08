@@ -1,5 +1,6 @@
 ﻿#include "Stdafx.h"
 
+#include <cstdint>
 #include <string>
 #include <type_traits>
 #include <variant>
@@ -88,7 +89,8 @@ void EoDbPegFile::ReadViewportTable(AeSysDoc*) {
   if (EoDb::ReadUInt16(*this) != EoDb::kViewPortTable) {
     throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kViewPortTable.";
   }
-  EoDb::ReadUInt16(*this);
+
+  if (EoDb::ReadUInt16(*this) != 0) { throw L"Exception EoDbPegFile: Expecting number of viewports to be 0."; }
 
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
     throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.";
@@ -140,7 +142,8 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
 void EoDbPegFile::ReadLinetypeDefinition(std::vector<double>& dashLength, CString& name, CString& description,
                                          EoUInt16& definitionLength) {
   EoDb::Read(*this, name);
-  /* EoUInt16 Flags = */ EoDb::ReadUInt16(*this);
+  uint16_t flags = EoDb::ReadUInt16(*this);
+  (void)flags;  // currently unused, but may be used in the future to indicate properties of the linetype
   EoDb::Read(*this, description);
   definitionLength = EoDb::ReadUInt16(*this);
   double PatternLength;
@@ -526,29 +529,33 @@ void EoDb::Read(CFile& file, CString& string) {
 
 void EoDb::Read(CFile& file, double& number) { file.Read(&number, sizeof(double)); }
 void EoDb::Read(CFile& file, EoInt16& number) { file.Read(&number, sizeof(EoInt16)); }
-EoGePoint3d EoDb::ReadPoint3d(CFile& file) {
+
+[[nodiscard]] EoGePoint3d EoDb::ReadPoint3d(CFile& file) {
   EoGePoint3d Point;
   Point.Read(file);
   return Point;
 }
-EoGeVector3d EoDb::ReadVector3d(CFile& file) {
+
+[[nodiscard]] EoGeVector3d EoDb::ReadVector3d(CFile& file) {
   EoGeVector3d Vector;
   Vector.Read(file);
   return Vector;
 }
+
 void EoDb::Read(CFile& file, EoUInt16& number) { file.Read(&number, sizeof(EoUInt16)); }
-double EoDb::ReadDouble(CFile& file) {
+
+[[nodiscard]] double EoDb::ReadDouble(CFile& file) {
   double number;
   file.Read(&number, sizeof(double));
   return number;
 }
-EoInt16 EoDb::ReadInt16(CFile& file) {
+[[nodiscard]] EoInt16 EoDb::ReadInt16(CFile& file) {
   EoInt16 number;
   file.Read(&number, sizeof(EoInt16));
   return number;
 }
 
-EoUInt16 EoDb::ReadUInt16(CFile& file) {
+[[nodiscard]] EoUInt16 EoDb::ReadUInt16(CFile& file) {
   EoUInt16 number;
   file.Read(&number, sizeof(EoUInt16));
   return number;
@@ -579,7 +586,7 @@ void EoDb::Write(CFile& file, double number) { file.Write(&number, sizeof(double
 void EoDb::Write(CFile& file, EoInt16 number) { file.Write(&number, sizeof(EoInt16)); }
 void EoDb::Write(CFile& file, EoUInt16 number) { file.Write(&number, sizeof(EoUInt16)); }
 void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 PenColor = EoDb::ReadInt16(file);
+  EoInt16 color = EoDb::ReadInt16(file);
   EoInt16 LineType = EoDb::ReadInt16(file);
   CString Name;
   EoDb::Read(file, Name);
@@ -587,12 +594,16 @@ void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primiti
   EoGeVector3d Normal(EoDb::ReadVector3d(file));
   EoGeVector3d ScaleFactors(EoDb::ReadVector3d(file));
   double Rotation = EoDb::ReadDouble(file);
-  /* EoUInt16 NumberOfColumns = */ EoDb::ReadUInt16(file);
-  /* EoUInt16 NumberOfRows = */ EoDb::ReadUInt16(file);
-  /* double ColumnSpacing = */ EoDb::ReadDouble(file);
-  /* double RowSpacing = */ EoDb::ReadDouble(file);
+  uint16_t numberOfColumns = EoDb::ReadUInt16(file);
+  (void)numberOfColumns;  // currently unused, but may be used in the future to indicate the number of columns
+  EoUInt16 numberOfRows = EoDb::ReadUInt16(file);
+  (void)numberOfRows;  // currently unused, but may be used in the future to indicate the number of rows
+  double columnSpacing = EoDb::ReadDouble(file);
+  (void)columnSpacing;  // currently unused, but may be used in the future to indicate the column spacing
+  double rowSpacing = EoDb::ReadDouble(file);
+  (void)rowSpacing;  // currently unused, but may be used in the future to indicate the row spacing
 
-  primitive = new EoDbBlockReference(static_cast<EoUInt16>(PenColor), static_cast<EoUInt16>(LineType), Name, Point,
+  primitive = new EoDbBlockReference(static_cast<EoUInt16>(color), static_cast<EoUInt16>(LineType), Name, Point,
                                      Normal, ScaleFactors, Rotation);
 }
 void EoDb::ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& /* file */, EoDbPrimitive*& /* primitive */) {}
@@ -682,7 +693,7 @@ void EoDb::ConstructPointPrimitiveFromTagPrimitive(CFile& file, EoDbPrimitive*& 
 
 void EoDb::ConstructPolygonPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoInt16 PenColor = EoDb::ReadInt16(file);
-  EoInt16 InteriorStyle = EoDb::ReadInt16(file);
+  EoDb::PolygonStyle polygonStyle = static_cast<EoDb::PolygonStyle>(EoDb::ReadInt16(file));
   EoInt16 InteriorStyleIndex = EoDb::ReadInt16(file);
   auto numberOfPoints = EoDb::ReadUInt16(file);
   EoGePoint3d HatchOrigin(EoDb::ReadPoint3d(file));
@@ -692,7 +703,7 @@ void EoDb::ConstructPolygonPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoGePoint3dArray Points;
   Points.SetSize(numberOfPoints);
   for (EoUInt16 n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
-  primitive = new EoDbPolygon(PenColor, InteriorStyle, InteriorStyleIndex, HatchOrigin, HatchXAxis, HatchYAxis, Points);
+  primitive = new EoDbPolygon(PenColor, polygonStyle, InteriorStyleIndex, HatchOrigin, HatchXAxis, HatchYAxis, Points);
 }
 
 void EoDb::ConstructPolylinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
@@ -736,15 +747,17 @@ void EoDb::ConstructSplinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
 }
 
 void EoDb::ConstructTextPrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  /* EoInt16 PenColor = */ EoDb::ReadInt16(file);
-  /* EoInt16 LineType = */ EoDb::ReadInt16(file);
-  EoDbFontDefinition FontDefinition;
-  FontDefinition.Read(file);
-  EoGeReferenceSystem ReferenceSystem;
-  ReferenceSystem.Read(file);
-  CString Text;
-  EoDb::Read(file, Text);
+  EoInt16 color = EoDb::ReadInt16(file);
+  (void)color;  // currently unused, but may be used in the future to indicate the text color
+  EoInt16 lineType = EoDb::ReadInt16(file);
+  (void)lineType;  // currently unused, but may be used in the future to indicate the text line type
+  EoDbFontDefinition fontDefinition;
+  fontDefinition.Read(file);
+  EoGeReferenceSystem referenceSystem;
+  referenceSystem.Read(file);
+  CString text;
+  EoDb::Read(file, text);
 
-  primitive = new EoDbText(FontDefinition, ReferenceSystem, Text);
+  primitive = new EoDbText(fontDefinition, referenceSystem, text);
   static_cast<EoDbText*>(primitive)->ConvertFormattingCharacters();
 }

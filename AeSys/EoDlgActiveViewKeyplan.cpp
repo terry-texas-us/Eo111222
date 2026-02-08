@@ -123,9 +123,9 @@ void EoDlgActiveViewKeyplan::Refresh() {
   m_ActiveView->PushViewTransform();
   m_ActiveView->ModelViewInitialize();
 
-  EoDbPolygon::SetSpecialPolygonStyle(EoDb::kHollow);
+  EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Hollow);
   AeSysDoc::GetDoc()->DisplayAllLayers(m_ActiveView, &dcMem);
-  EoDbPolygon::SetSpecialPolygonStyle(-1);
+  EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
 
   GetDlgItem(IDC_KEYPLAN_AREA)->InvalidateRect(0, TRUE);
 

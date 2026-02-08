@@ -296,7 +296,7 @@ void AeSysView::OnPipeModeSymbol() {
     case 0: {  // Generate flow switch
       double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
       auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(pstate.PenColor());
+      circle->SetColor(pstate.Color());
       circle->SetLineTypeIndex(pstate.LineType());
       Group->AddTail(circle);
       EndSection.ProjPtFrom_xy(SymbolSize[0], -SymbolSize[0] * 1.5, &pts[0]);
@@ -313,7 +313,7 @@ void AeSysView::OnPipeModeSymbol() {
     case 1: {  // Generate float and thermostatic trap
       double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
       auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(pstate.PenColor());
+      circle->SetColor(pstate.Color());
       circle->SetLineTypeIndex(pstate.LineType());
       Group->AddTail(circle);
       pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::QuarterPi);
@@ -327,7 +327,7 @@ void AeSysView::OnPipeModeSymbol() {
     case 2: {
       double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
       auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(pstate.PenColor());
+      circle->SetColor(pstate.Color());
       circle->SetLineTypeIndex(pstate.LineType());
       Group->AddTail(circle);
       EndSection.ProjPtFrom_xy(SymbolSize[2], SymbolSize[2] * 1.5, &pts[0]);
@@ -340,7 +340,7 @@ void AeSysView::OnPipeModeSymbol() {
     case 3: {
       double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
       auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(pstate.PenColor());
+      circle->SetColor(pstate.Color());
       circle->SetLineTypeIndex(pstate.LineType());
       Group->AddTail(circle);
       EndSection.ProjPtFrom_xy(SymbolSize[3], SymbolSize[3] * 1.5, &pts[0]);
@@ -361,7 +361,7 @@ void AeSysView::OnPipeModeSymbol() {
       BeginSection.ProjPtFrom_xy(SymbolSize[4], -SymbolSize[4] * 0.3, &pts[0]);
       double radius = EoGePoint3d::Distance(SymbolBeginPoint, pts[0]);
       auto* circle = EoDbConic::CreateCircleInView(SymbolBeginPoint, radius);
-      circle->SetColor(pstate.PenColor());
+      circle->SetColor(pstate.Color());
       circle->SetLineTypeIndex(pstate.LineType());
       Group->AddTail(circle);
     } break;
@@ -377,7 +377,7 @@ void AeSysView::OnPipeModeSymbol() {
       BeginSection.ProjPtFrom_xy(SymbolSize[5], -SymbolSize[5] * 0.3, &pts[0]);
       double radius = EoGePoint3d::Distance(SymbolBeginPoint, pts[0]);
       auto* circle = EoDbConic::CreateCircleInView(SymbolBeginPoint, radius);
-      circle->SetColor(pstate.PenColor());
+      circle->SetColor(pstate.Color());
       circle->SetLineTypeIndex(pstate.LineType());
       Group->AddTail(circle);
       Group->AddTail(new EoDbLine(SymbolEndPoint, PointOnSection));
@@ -406,7 +406,7 @@ void AeSysView::OnPipeModeSymbol() {
       pts[0] = PointOnSection.ProjectToward(EndPoint, SymbolSize[7] * 0.25);
       double radius = EoGePoint3d::Distance(PointOnSection, pts[0]);
       auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(pstate.PenColor());
+      circle->SetColor(pstate.Color());
       circle->SetLineTypeIndex(pstate.LineType());
       Group->AddTail(circle);
     } break;
@@ -424,7 +424,7 @@ void AeSysView::OnPipeModeSymbol() {
 
       double radius = EoGePoint3d::Distance(PointOnSection, pts[0]);
       auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(pstate.PenColor());
+      circle->SetColor(pstate.Color());
       circle->SetLineTypeIndex(pstate.LineType());
       Group->AddTail(circle);
       EndSection.ProjPtFrom_xy(0.0, SymbolSize[8], &pts[0]);
@@ -446,7 +446,7 @@ void AeSysView::OnPipeModeSymbol() {
 
       double radius = EoGePoint3d::Distance(PointOnSection, pts[0]);
       auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(pstate.PenColor());
+      circle->SetColor(pstate.Color());
       circle->SetLineTypeIndex(pstate.LineType());
       Group->AddTail(circle);
       EndSection.ProjPtFrom_xy(0.0, SymbolSize[9], &pts[0]);
@@ -520,7 +520,7 @@ void AeSysView::OnPipeModeSymbol() {
       Group->AddTail(new EoDbLine(pts[1], SymbolBeginPoint));
       // add a half circle here i think
       BeginSection.ProjPtFrom_xy(SymbolSize[12] * 1.25, -SymbolSize[12] * 0.5, &pts[0]);
-      Group->AddTail(new EoDbLine(pstate.PenColor(), 2, SymbolBeginPoint, pts[0]));
+      Group->AddTail(new EoDbLine(pstate.Color(), 2, SymbolBeginPoint, pts[0]));
       BeginSection.ProjPtFrom_xy(SymbolSize[12] * 1.25, -SymbolSize[12] * 0.75, &pts[1]);
       BeginSection.ProjPtFrom_xy(SymbolSize[12] * 2.0, -SymbolSize[12] * 0.75, &SymbolBeginPoint);
       BeginSection.ProjPtFrom_xy(SymbolSize[12] * 2.0, -SymbolSize[12] * 0.5, &SymbolEndPoint);
@@ -572,7 +572,7 @@ void AeSysView::OnPipeModeSymbol() {
       pts[1] = PointOnSection.ProjectToward(pts[0], 0.28125);
       double radius = EoGePoint3d::Distance(pts[1], pts[0]);
       auto* circle = EoDbConic::CreateCircleInView(pts[1], radius);
-      circle->SetColor(pstate.PenColor());
+      circle->SetColor(pstate.Color());
       circle->SetLineTypeIndex(pstate.LineType());
       Group->AddTail(circle);
     } break;

@@ -19,7 +19,7 @@ const CPrimState& CPrimState::operator=(const CPrimState& other) {
   m_color = other.m_color;
   m_LineTypeIndex = other.m_LineTypeIndex;
   m_pointStyle = other.m_pointStyle;
-  m_PolygonInteriorStyle = other.m_PolygonInteriorStyle;
+  m_PolygonStyle = other.m_PolygonStyle;
   m_PolygonInteriorStyleIndex = other.m_PolygonInteriorStyleIndex;
 
   return (*this);
@@ -28,7 +28,7 @@ void CPrimState::Restore(CDC* deviceContext, int iSaveId) {
   if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) return;
 
   if (psSav[iSaveId] != 0) {
-    SetPen(nullptr, deviceContext, psSav[iSaveId]->PenColor(), psSav[iSaveId]->LineType());
+    SetPen(nullptr, deviceContext, psSav[iSaveId]->Color(), psSav[iSaveId]->LineType());
 
     m_fontDefinition = psSav[iSaveId]->m_fontDefinition;
 
@@ -158,8 +158,7 @@ void CPrimState::SetTxtAlign(CDC* deviceContext, EoUInt16 horizontalAlignment, E
   //else
   //	nFlgs |= TA_BASELINE;
 
-  m_fontDefinition.HorizontalAlignment(horizontalAlignment);
-  m_fontDefinition.VerticalAlignment(verticalAlignment);
+  m_fontDefinition.SetAlignment(horizontalAlignment, verticalAlignment);
 
   deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);
 }

@@ -32,7 +32,7 @@ class EoDbGroupList : public CObList {
   /// <summary>Determines the extent of all groups in list.</summary>
   void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, EoGeTransformMatrix& tm);
   int GetLineTypeRefCount(EoInt16 lineType);
-  void ModifyNotes(EoDbFontDefinition& cd, EoDbCharacterCellDefinition& ccd, int iAtt = 0);
+  void ModifyNotes(const EoDbFontDefinition& fontDefinition, EoDbCharacterCellDefinition& ccd, int iAtt = 0);
   void ModifyColor(EoInt16 color);
   void ModifyLineType(EoInt16 lineType);
   void PenTranslation(EoUInt16, EoInt16*, EoInt16*);

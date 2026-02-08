@@ -112,17 +112,14 @@ void AeSysView::OnAnnotateModeBubble() {
     int PrimitiveState = pstate.Save();
     pstate.SetColor(DeviceContext, 2);
 
-    EoDbFontDefinition fd;
-    pstate.GetFontDef(fd);
-    fd.HorizontalAlignment(EoDb::kAlignCenter);
-    fd.VerticalAlignment(EoDb::kAlignMiddle);
+    EoDbFontDefinition fontDefinition = pstate.FontDefinition();
+    fontDefinition.SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
 
-    EoDbCharacterCellDefinition ccd;
-    pstate.GetCharCellDef(ccd);
-    ccd.TextRotAngSet(0.0);
-    pstate.SetCharCellDef(ccd);
+    auto characterCellDefinition = pstate.CharacterCellDefinition();
+    characterCellDefinition.TextRotAngSet(0.0);
+    pstate.SetCharCellDef(characterCellDefinition);
 
-    group->AddTail(new EoDbText(fd, referenceSystem, CurrentText));
+    group->AddTail(new EoDbText(fontDefinition, referenceSystem, CurrentText));
     pstate.Restore(DeviceContext, PrimitiveState);
     ReleaseDC(DeviceContext);
   }
@@ -187,7 +184,7 @@ void AeSysView::OnAnnotateModeUnderline() {
     pText->GetBoundingBox(pts, GapSpaceFactor());
 
     auto* Group = new EoDbGroup;
-    Group->AddTail(new EoDbLine(pstate.PenColor(), 1, pts[0], pts[1]));
+    Group->AddTail(new EoDbLine(pstate.Color(), 1, pts[0], pts[1]));
     document->AddWorkLayerGroup(Group);
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
@@ -291,20 +288,17 @@ void AeSysView::OnAnnotateModeCutIn() {
       minorAxis *= 0.1;
       EoGeReferenceSystem referenceSystem(cursorPosition, majorAxis, minorAxis);
 
-      auto color = pstate.PenColor();
+      auto color = pstate.Color();
       pstate.SetColor(DeviceContext, 2);
 
-      EoDbFontDefinition fd;
-      pstate.GetFontDef(fd);
-      fd.HorizontalAlignment(EoDb::kAlignCenter);
-      fd.VerticalAlignment(EoDb::kAlignMiddle);
+      EoDbFontDefinition fontDefinition = pstate.FontDefinition();
+      fontDefinition.SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
 
-      EoDbCharacterCellDefinition ccd;
-      pstate.GetCharCellDef(ccd);
-      ccd.TextRotAngSet(0.0);
-      pstate.SetCharCellDef(ccd);
+      auto characterCellDefinition = pstate.CharacterCellDefinition();
+      characterCellDefinition.TextRotAngSet(0.0);
+      pstate.SetCharCellDef(characterCellDefinition);
 
-      auto* text = new EoDbText(fd, referenceSystem, CurrentText);
+      auto* text = new EoDbText(fontDefinition, referenceSystem, CurrentText);
       pstate.SetColor(DeviceContext, color);
 
       Group->AddTail(text);

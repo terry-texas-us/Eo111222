@@ -1,7 +1,6 @@
 ﻿#include "Stdafx.h"
 
 #include "AeSysDoc.h"
-#include "EoDbCharacterCellDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
@@ -15,24 +14,21 @@ EoDlgTrapModify::EoDlgTrapModify(AeSysDoc* document, CWnd* pParent /*=nullptr*/)
     : CDialog(EoDlgTrapModify::IDD, pParent), m_Document(document) {}
 EoDlgTrapModify::~EoDlgTrapModify() {}
 void EoDlgTrapModify::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoDataExchange(dataExchange); }
+
 void EoDlgTrapModify::OnOK() {
-  if (IsDlgButtonChecked(IDC_MOD_PEN)) { m_Document->ModifyTrappedGroupsColor(pstate.PenColor()); }
+  if (IsDlgButtonChecked(IDC_MOD_PEN)) { m_Document->ModifyTrappedGroupsColor(pstate.Color()); }
   if (IsDlgButtonChecked(IDC_MOD_LINE)) { m_Document->ModifyTrappedGroupsLineType(pstate.LineType()); }
   if (IsDlgButtonChecked(IDC_MOD_FILL)) { ModifyPolygons(); }
-  EoDbCharacterCellDefinition ccd;
-  pstate.GetCharCellDef(ccd);
-
-  EoDbFontDefinition fd;
-  pstate.GetFontDef(fd);
+  auto characterCellDefinition = pstate.CharacterCellDefinition();
+  const auto& fontDefinition = pstate.FontDefinition();
 
   if (IsDlgButtonChecked(IDC_MOD_NOTE)) {
-    m_Document->ModifyTrappedGroupsNoteAttributes(fd, ccd, TM_TEXT_ALL);
+    m_Document->ModifyTrappedGroupsNoteAttributes(fontDefinition, characterCellDefinition, TM_TEXT_ALL);
   } else if (IsDlgButtonChecked(IDC_FONT)) {
-    m_Document->ModifyTrappedGroupsNoteAttributes(fd, ccd, TM_TEXT_FONT);
+    m_Document->ModifyTrappedGroupsNoteAttributes(fontDefinition, characterCellDefinition, TM_TEXT_FONT);
   } else if (IsDlgButtonChecked(IDC_HEIGHT)) {
-    m_Document->ModifyTrappedGroupsNoteAttributes(fd, ccd, TM_TEXT_HEIGHT);
+    m_Document->ModifyTrappedGroupsNoteAttributes(fontDefinition, characterCellDefinition, TM_TEXT_HEIGHT);
   }
-
   CDialog::OnOK();
 }
 
@@ -47,8 +43,8 @@ void EoDlgTrapModify::ModifyPolygons() {
 
       if (primitive->Is(EoDb::kPolygonPrimitive)) {
         auto* polygon = static_cast<EoDbPolygon*>(primitive);
-        polygon->SetIntStyle(pstate.PolygonIntStyle());
-        polygon->SetIntStyleId(pstate.PolygonIntStyleId());
+        polygon->SetPolygonStyle(pstate.PolygonIntStyle());
+        polygon->SetFillStyleIndex(pstate.PolygonIntStyleId());
         polygon->SetHatRefVecs(hatch::dOffAng, hatch::dXAxRefVecScal, hatch::dYAxRefVecScal);
       }
     }

@@ -154,9 +154,8 @@ void AeSysView::OnDimensionModeDLine() {
         PreviousDimensionCommand = ModeLineHighlightOp(ID_OP3);
       }
       EoDbDimension* pDim = new EoDbDimension(1, 1, EoGeLine(PreviousDimensionCursorPosition, cursorPosition));
-      pDim->SetTextPenColor(5);
-      pDim->SetTextHorAlign(EoDb::kAlignCenter);
-      pDim->SetTextVerAlign(EoDb::kAlignMiddle);
+      pDim->SetTextColor(5);
+      pDim->SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
 
       Group->AddTail(pDim);
       document->AddWorkLayerGroup(Group);
@@ -193,9 +192,8 @@ void AeSysView::OnDimensionModeDLine2() {
         PreviousDimensionCommand = ModeLineHighlightOp(ID_OP4);
       }
       EoDbDimension* pDim = new EoDbDimension(1, 1, EoGeLine(PreviousDimensionCursorPosition, cursorPosition));
-      pDim->SetTextPenColor(5);
-      pDim->SetTextHorAlign(EoDb::kAlignCenter);
-      pDim->SetTextVerAlign(EoDb::kAlignMiddle);
+      pDim->SetTextColor(5);
+      pDim->SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
 
       Group->AddTail(pDim);
       GenerateLineEndItem(1, 0.1, PreviousDimensionCursorPosition, cursorPosition, Group);
@@ -253,9 +251,8 @@ void AeSysView::OnDimensionModeRadius() {
       radialDimension->SetText(L"R" + radialDimension->Text());
       radialDimension->SetDefaultNote();
 
-      radialDimension->SetTextPenColor(5);
-      radialDimension->SetTextHorAlign(EoDb::kAlignCenter);
-      radialDimension->SetTextVerAlign(EoDb::kAlignMiddle);
+      radialDimension->SetTextColor(5);
+      radialDimension->SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
 
       group->AddTail(radialDimension);
 
@@ -290,9 +287,9 @@ void AeSysView::OnDimensionModeDiameter() {
       diametricDimension->SetText(L"D" + diametricDimension->Text());
       diametricDimension->SetDefaultNote();
 
-      diametricDimension->SetTextPenColor(5);
-      diametricDimension->SetTextHorAlign(EoDb::kAlignCenter);
-      diametricDimension->SetTextVerAlign(EoDb::kAlignMiddle);
+      diametricDimension->SetTextColor(5);
+      diametricDimension->SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+
       group->AddTail(diametricDimension);
 
       GenerateLineEndItem(1, 0.1, begin, end, group);
@@ -372,24 +369,21 @@ void AeSysView::OnDimensionModeAngle() {
 
         int PrimitiveState = pstate.Save();
 
-        EoDbFontDefinition fd;
-        pstate.GetFontDef(fd);
-        fd.HorizontalAlignment(EoDb::kAlignCenter);
-        fd.VerticalAlignment(EoDb::kAlignMiddle);
-        pstate.SetFontDef(DeviceContext, fd);
+        EoDbFontDefinition fontDefinition = pstate.FontDefinition();
+        fontDefinition.SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+        pstate.SetFontDef(DeviceContext, fontDefinition);
 
-        EoDbCharacterCellDefinition ccd;
-        pstate.GetCharCellDef(ccd);
-        ccd.TextRotAngSet(0.0);
-        ccd.ChrHgtSet(0.1);
-        pstate.SetCharCellDef(ccd);
+        auto characterCellDefinition = pstate.CharacterCellDefinition();
+        characterCellDefinition.TextRotAngSet(0.0);
+        characterCellDefinition.ChrHgtSet(0.1);
+        pstate.SetCharCellDef(characterCellDefinition);
 
         EoGePoint3d ptPvt = cursorPosition.ProjectToward(center, -0.25);
-        CharCellDef_EncdRefSys(normal, ccd, vXAx, vYAx);
+        CharCellDef_EncdRefSys(normal, characterCellDefinition, vXAx, vYAx);
         EoGeReferenceSystem ReferenceSystem(ptPvt, vXAx, vYAx);
         CString Note;
         app.FormatAngle(Note, sweepAngle, 8, 3);
-        Group->AddTail(new EoDbText(fd, ReferenceSystem, Note));
+        Group->AddTail(new EoDbText(fontDefinition, ReferenceSystem, Note));
         document->AddWorkLayerGroup(Group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
         pstate.Restore(DeviceContext, PrimitiveState);
@@ -431,9 +425,9 @@ void AeSysView::OnDimensionModeConvert() {
           EoDbLine* pPrimLine = static_cast<EoDbLine*>(primitive);
           pPrimLine->GetLine(ln);
           EoDbDimension* pPrimDim = new EoDbDimension(pPrimLine->Color(), pPrimLine->LineTypeIndex(), ln);
-          pPrimDim->SetTextPenColor(5);
-          pPrimDim->SetTextHorAlign(EoDb::kAlignCenter);
-          pPrimDim->SetTextVerAlign(EoDb::kAlignMiddle);
+          pPrimDim->SetTextColor(5);
+          pPrimDim->SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+
           Group->InsertAfter(posPrimCur, pPrimDim);
           Group->RemoveAt(posPrimCur);
           delete primitive;
@@ -444,8 +438,8 @@ void AeSysView::OnDimensionModeConvert() {
           EoGeReferenceSystem ReferenceSystem;
           pPrimDim->GetRefSys(ReferenceSystem);
           EoDbLine* pPrimLine = new EoDbLine(pPrimDim->Color(), pPrimDim->LineTypeIndex(), pPrimDim->Line());
-          EoDbText* pPrimText = new EoDbText(pPrimDim->FontDef(), ReferenceSystem, pPrimDim->Text());
-          pPrimText->SetColor(pPrimDim->TextPenColor());
+          EoDbText* pPrimText = new EoDbText(pPrimDim->FontDefinition(), ReferenceSystem, pPrimDim->Text());
+          pPrimText->SetColor(pPrimDim->TextColor());
           Group->InsertAfter(posPrimCur, pPrimLine);
           Group->InsertAfter(posPrimCur, pPrimText);
           Group->RemoveAt(posPrimCur);

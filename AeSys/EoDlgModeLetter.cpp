@@ -2,7 +2,6 @@
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
-#include "EoDbCharacterCellDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbText.h"
 #include "EoDlgModeLetter.h"
@@ -33,24 +32,22 @@ BOOL EoDlgModeLetter::OnInitDialog() {
   return TRUE;
 }
 void EoDlgModeLetter::OnOK() {
-  EoDbCharacterCellDefinition ccd;
-  pstate.GetCharCellDef(ccd);
-  EoGeReferenceSystem ReferenceSystem(m_Point, ccd);
+  auto characterCellDefinition = pstate.CharacterCellDefinition();
+  EoGeReferenceSystem ReferenceSystem(m_Point, characterCellDefinition);
 
-  EoDbFontDefinition FontDefinition;
-  pstate.GetFontDef(FontDefinition);
+  const auto& fontDefinition = pstate.FontDefinition();
 
   if (m_TextEditControl.GetWindowTextLengthW() != 0) {
     CString Text;
     m_TextEditControl.GetWindowTextW(Text);
     m_TextEditControl.SetWindowTextW(L"");
 
-    EoDbText* TextPrimitive = new EoDbText(FontDefinition, ReferenceSystem, Text);
+    EoDbText* TextPrimitive = new EoDbText(fontDefinition, ReferenceSystem, Text);
     auto* Group = new EoDbGroup(TextPrimitive);
     AeSysDoc::GetDoc()->AddWorkLayerGroup(Group);
     AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
   }
-  m_Point = text_GetNewLinePos(FontDefinition, ReferenceSystem, 1.0, 0);
+  m_Point = text_GetNewLinePos(fontDefinition, ReferenceSystem, 1.0, 0);
   m_TextEditControl.SetFocus();
 
   CDialog::OnOK();

@@ -515,9 +515,9 @@ void AeSysView::GenerateRiseDrop(EoUInt16 riseDropIndicator, Section section, Eo
   // need to allow continuation perpendicular to vertical section ?
 
   group->AddTail(
-      new EoDbLine(pstate.PenColor(), static_cast<EoInt16>(riseDropIndicator), LeftLine.begin, RightLine.end));
+      new EoDbLine(pstate.Color(), static_cast<EoInt16>(riseDropIndicator), LeftLine.begin, RightLine.end));
   group->AddTail(
-      new EoDbLine(pstate.PenColor(), static_cast<EoInt16>(riseDropIndicator), RightLine.begin, LeftLine.end));
+      new EoDbLine(pstate.Color(), static_cast<EoInt16>(riseDropIndicator), RightLine.begin, LeftLine.end));
 }
 
 void AeSysView::GenerateRectangularElbow(EoGeLine& previousReferenceLine, Section previousSection,
@@ -583,17 +583,14 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   int PrimitiveState = pstate.Save();
   pstate.SetColor(DeviceContext, 2);
 
-  EoDbFontDefinition fd;
-  pstate.GetFontDef(fd);
-  fd.HorizontalAlignment(EoDb::kAlignCenter);
-  fd.VerticalAlignment(EoDb::kAlignMiddle);
+  EoDbFontDefinition fontDefinition = pstate.FontDefinition();
+  fontDefinition.SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
 
-  EoDbCharacterCellDefinition ccd;
-  pstate.GetCharCellDef(ccd);
-  ccd.TextRotAngSet(0.0);
-  pstate.SetCharCellDef(ccd);
+  EoDbCharacterCellDefinition characterCellDefinition = pstate.CharacterCellDefinition();
+  characterCellDefinition.TextRotAngSet(0.0);
+  pstate.SetCharCellDef(characterCellDefinition);
 
-  auto* Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, Note));
+  auto* Group = new EoDbGroup(new EoDbText(fontDefinition, ReferenceSystem, Note));
   auto* document = GetDocument();
   document->AddWorkLayerGroup(Group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
