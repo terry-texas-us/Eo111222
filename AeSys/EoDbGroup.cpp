@@ -228,12 +228,12 @@ bool EoDbGroup::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint
   }
   return false;
 }
-void EoDbGroup::ModifyNotes(const EoDbFontDefinition& fontDefinition, EoDbCharacterCellDefinition& ccd, int iAtt) {
+void EoDbGroup::ModifyNotes(const EoDbFontDefinition& fontDefinition, EoDbCharacterCellDefinition& characterCellDefinition, int iAtt) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
     if (primitive->Is(EoDb::kTextPrimitive)) {
-      static_cast<EoDbText*>(primitive)->ModifyNotes(fontDefinition, ccd, iAtt);
+      static_cast<EoDbText*>(primitive)->ModifyNotes(fontDefinition, characterCellDefinition, iAtt);
     }
   }
 }

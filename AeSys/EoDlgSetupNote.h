@@ -22,8 +22,8 @@ class EoDlgSetupNote : public CDialog {
 
   CMFCFontComboBox m_MfcFontComboControl;
 
-  double m_TextHeight;
-  double m_TextExpansionFactor;
-  double m_CharacterSlantAngle;
-  double m_TextRotationAngle;
+  double m_height;
+  double m_expansionFactor;
+  double m_slantAngle;
+  double m_rotationAngle;
 };

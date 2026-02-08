@@ -56,7 +56,7 @@ class EoDbGroup : public CObList {
   int GetLineTypeRefCount(EoInt16 lineType);
   void InsertBefore(POSITION position, EoDbGroup* group);
   bool IsInView(AeSysView* view);
-  void ModifyNotes(const EoDbFontDefinition& fontDefinition, EoDbCharacterCellDefinition& ccd, int iAtt = 0);
+  void ModifyNotes(const EoDbFontDefinition& fontDefinition, EoDbCharacterCellDefinition& characterCellDefinition, int iAtt = 0);
   void ModifyColor(EoInt16 color);
   void ModifyLineType(EoInt16 lineType);
   void PenTranslation(EoUInt16, EoInt16*, EoInt16*);

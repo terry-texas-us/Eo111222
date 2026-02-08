@@ -3,29 +3,27 @@
 class EoGeVector3d;
 
 class EoDbCharacterCellDefinition {
- private:
-  double m_dChrHgt;       // height of character cell
-  double m_dChrExpFac;    // expansion factor applied to character cell width
-  double m_dTextRotAng;   // rotation applied to the character cell
-  double m_dChrSlantAng;  // rotation applied to the vertical component of the character cell
+  double m_height{0.1};           // height of character cell
+  double m_expansionFactor{1.0};  // expansion factor applied to character cell width
+  double m_rotationAngle{};       // rotation applied to the character cell
+  double m_slantAngle{};          // rotation applied to the vertical component of the character cell
 
  public:
-  EoDbCharacterCellDefinition();
-  EoDbCharacterCellDefinition(double dTextRotAng, double dChrSlantAng, double dChrExpFac, double dChrHgt);
+  EoDbCharacterCellDefinition() = default;
+  EoDbCharacterCellDefinition(double rotationAngle, double slantAngle, double expansionFactor, double height);
 
-  EoDbCharacterCellDefinition(const EoDbCharacterCellDefinition& ccd);
+  EoDbCharacterCellDefinition(const EoDbCharacterCellDefinition&) = default;
+  EoDbCharacterCellDefinition(EoDbCharacterCellDefinition&&) noexcept = default;
 
-  EoDbCharacterCellDefinition& operator=(const EoDbCharacterCellDefinition& ccd);
+  EoDbCharacterCellDefinition& operator=(const EoDbCharacterCellDefinition&) = default;
+  EoDbCharacterCellDefinition& operator=(EoDbCharacterCellDefinition&&) noexcept = default;
 
-  [[nodiscard]] double ChrExpFacGet() const { return m_dChrExpFac; }
-  void ChrExpFacSet(double d) { m_dChrExpFac = d; }
-  [[nodiscard]] double ChrHgtGet() const { return m_dChrHgt; }
-  void ChrHgtSet(double d) { m_dChrHgt = d; }
-  [[nodiscard]] double ChrSlantAngGet() const { return m_dChrSlantAng; }
-  void ChrSlantAngSet(double d) { m_dChrSlantAng = d; }
-  [[nodiscard]] double TextRotAngGet() const { return m_dTextRotAng; }
-  void TextRotAngSet(double d) { m_dTextRotAng = d; }
+  [[nodiscard]] double ExpansionFactor() const noexcept { return m_expansionFactor; }
+  void SetExpansionFactor(double expansionFactor) noexcept { m_expansionFactor = expansionFactor; }
+  [[nodiscard]] double Height() const noexcept { return m_height; }
+  void SetHeight(double height) noexcept { m_height = height; }
+  [[nodiscard]] double SlantAngle() const noexcept { return m_slantAngle; }
+  void SetSlantAngle(double slantAngle) noexcept { m_slantAngle = slantAngle; }
+  [[nodiscard]] double RotationAngle() const noexcept { return m_rotationAngle; }
+  void SetRotationAngle(double rotationAngle) noexcept { m_rotationAngle = rotationAngle; }
 };
-/// <summary>Produces the reference system vectors for a single charater cell.</summary>
-void CharCellDef_EncdRefSys(const EoGeVector3d& normal, EoDbCharacterCellDefinition& ccd, EoGeVector3d& xAxisReference,
-                            EoGeVector3d& yAxisReference);

@@ -587,7 +587,7 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   fontDefinition.SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
 
   EoDbCharacterCellDefinition characterCellDefinition = pstate.CharacterCellDefinition();
-  characterCellDefinition.TextRotAngSet(0.0);
+  characterCellDefinition.SetRotationAngle(0.0);
   pstate.SetCharCellDef(characterCellDefinition);
 
   auto* Group = new EoDbGroup(new EoDbText(fontDefinition, ReferenceSystem, Note));

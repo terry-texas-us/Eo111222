@@ -30,6 +30,25 @@ constexpr double DimensionModePickTolerance{0.05};
 EoGePoint3d PreviousDimensionCursorPosition{};
 EoUInt16 PreviousDimensionCommand{};
 
+/** @brief Produces the reference system vectors for a single character cell.
+ *  @param characterCellDefinition The character cell definition containing the rotation and slant angles, expansion factor, and height for the character cell.
+ *  @param normal The normal vector of the text plane.
+ *  @param[out] xAxisReference Receives the reference X axis vector for the character cell.
+ *  @param[out] yAxisReference Receives the reference Y axis vector for the character cell.
+ */
+void GetReferenceAxesForCharacterCell(EoDbCharacterCellDefinition& characterCellDefinition, const EoGeVector3d& normal,
+                                      EoGeVector3d& xAxisReference, EoGeVector3d& yAxisReference) {
+  xAxisReference = ComputeArbitraryAxis(normal);
+  xAxisReference.RotAboutArbAx(normal, characterCellDefinition.RotationAngle());
+
+  yAxisReference = CrossProduct(normal, xAxisReference);
+
+  xAxisReference *= 0.6 * characterCellDefinition.Height() * characterCellDefinition.ExpansionFactor();
+
+  yAxisReference.RotAboutArbAx(normal, characterCellDefinition.SlantAngle());
+  yAxisReference *= characterCellDefinition.Height();
+}
+
 EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
   auto* document = AeSysDoc::GetDoc();
 
@@ -374,12 +393,12 @@ void AeSysView::OnDimensionModeAngle() {
         pstate.SetFontDef(DeviceContext, fontDefinition);
 
         auto characterCellDefinition = pstate.CharacterCellDefinition();
-        characterCellDefinition.TextRotAngSet(0.0);
-        characterCellDefinition.ChrHgtSet(0.1);
+        characterCellDefinition.SetRotationAngle(0.0);
+        characterCellDefinition.SetHeight(0.1);
         pstate.SetCharCellDef(characterCellDefinition);
 
         EoGePoint3d ptPvt = cursorPosition.ProjectToward(center, -0.25);
-        CharCellDef_EncdRefSys(normal, characterCellDefinition, vXAx, vYAx);
+        GetReferenceAxesForCharacterCell(characterCellDefinition, normal, vXAx, vYAx);
         EoGeReferenceSystem ReferenceSystem(ptPvt, vXAx, vYAx);
         CString Note;
         app.FormatAngle(Note, sweepAngle, 8, 3);

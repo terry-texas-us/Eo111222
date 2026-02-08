@@ -587,6 +587,7 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
 void AeSys::HomePointSave(int i, const EoGePoint3d& pt) {
   if (i >= 0 && i < 9) m_HomePoints[i] = pt;
 }
+
 //Initializes all peg global sections to their default (startup) values.
 void AeSys::InitGbls(CDC* deviceContext) {
   pstate.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow);
@@ -597,8 +598,8 @@ void AeSys::InitGbls(CDC* deviceContext) {
   hatch::dYAxRefVecScal = 0.1;
   hatch::dOffAng = 0.;
 
-  EoDbCharacterCellDefinition ccd;
-  pstate.SetCharCellDef(ccd);
+  EoDbCharacterCellDefinition characterCellDefinition{};
+  pstate.SetCharCellDef(characterCellDefinition);
 
   EoDbFontDefinition fd;
   pstate.SetFontDef(deviceContext, fd);

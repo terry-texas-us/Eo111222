@@ -1466,6 +1466,7 @@ void AeSysDoc::OnSetupFillHatch() {
     hatch::dOffAng = Eo::DegreeToRadian(Dialog.m_HatchRotationAngle);
   }
 }
+
 void AeSysDoc::OnSetupNote() {
   EoDbFontDefinition fontDefinition = pstate.FontDefinition();
 
@@ -1473,16 +1474,16 @@ void AeSysDoc::OnSetupNote() {
 
   auto characterCellDefinition = pstate.CharacterCellDefinition();
 
-  Dialog.m_TextHeight = characterCellDefinition.ChrHgtGet();
-  Dialog.m_TextRotationAngle = Eo::RadianToDegree(characterCellDefinition.TextRotAngGet());
-  Dialog.m_TextExpansionFactor = characterCellDefinition.ChrExpFacGet();
-  Dialog.m_CharacterSlantAngle = Eo::RadianToDegree(characterCellDefinition.ChrSlantAngGet());
+  Dialog.m_height = characterCellDefinition.Height();
+  Dialog.m_rotationAngle = Eo::RadianToDegree(characterCellDefinition.RotationAngle());
+  Dialog.m_expansionFactor = characterCellDefinition.ExpansionFactor();
+  Dialog.m_slantAngle = Eo::RadianToDegree(characterCellDefinition.SlantAngle());
 
   if (Dialog.DoModal() == IDOK) {
-    characterCellDefinition.ChrHgtSet(Dialog.m_TextHeight);
-    characterCellDefinition.TextRotAngSet(Eo::DegreeToRadian(Dialog.m_TextRotationAngle));
-    characterCellDefinition.ChrExpFacSet(Dialog.m_TextExpansionFactor);
-    characterCellDefinition.ChrSlantAngSet(Eo::DegreeToRadian(Dialog.m_CharacterSlantAngle));
+    characterCellDefinition.SetHeight(Dialog.m_height);
+    characterCellDefinition.SetRotationAngle(Eo::DegreeToRadian(Dialog.m_rotationAngle));
+    characterCellDefinition.SetExpansionFactor(Dialog.m_expansionFactor);
+    characterCellDefinition.SetSlantAngle(Eo::DegreeToRadian(Dialog.m_slantAngle));
     pstate.SetCharCellDef(characterCellDefinition);
 
     auto* activeView = AeSysView::GetActiveView();

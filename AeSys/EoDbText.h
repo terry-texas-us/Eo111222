@@ -65,9 +65,9 @@ class EoDbText : public EoDbPrimitive {
   void GetRefSys(EoGeReferenceSystem& referenceSystem) const { referenceSystem = m_ReferenceSystem; }
   const CString& Text() { return m_strText; }
   EoGeVector3d RefNorm() {
-    EoGeVector3d vNorm;
-    m_ReferenceSystem.GetUnitNormal(vNorm);
-    return vNorm;
+    EoGeVector3d normal{};
+    m_ReferenceSystem.GetUnitNormal(normal);
+    return normal;
   }
   EoGePoint3d ReferenceOrigin() { return m_ReferenceSystem.Origin(); }
   void SetText(const CString& text) { m_strText = text; }

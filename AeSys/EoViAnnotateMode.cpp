@@ -116,7 +116,7 @@ void AeSysView::OnAnnotateModeBubble() {
     fontDefinition.SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
 
     auto characterCellDefinition = pstate.CharacterCellDefinition();
-    characterCellDefinition.TextRotAngSet(0.0);
+    characterCellDefinition.SetRotationAngle(0.0);
     pstate.SetCharCellDef(characterCellDefinition);
 
     group->AddTail(new EoDbText(fontDefinition, referenceSystem, CurrentText));
@@ -295,7 +295,7 @@ void AeSysView::OnAnnotateModeCutIn() {
       fontDefinition.SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
 
       auto characterCellDefinition = pstate.CharacterCellDefinition();
-      characterCellDefinition.TextRotAngSet(0.0);
+      characterCellDefinition.SetRotationAngle(0.0);
       pstate.SetCharCellDef(characterCellDefinition);
 
       auto* text = new EoDbText(fontDefinition, referenceSystem, CurrentText);

@@ -6,27 +6,23 @@
 #include "Resource.h"
 
 EoDlgSetupNote::EoDlgSetupNote(CWnd* pParent /*=nullptr*/)
-    : CDialog(EoDlgSetupNote::IDD, pParent),
-      m_TextHeight(0),
-      m_TextExpansionFactor(0),
-      m_CharacterSlantAngle(0),
-      m_TextRotationAngle(0) {}
+    : CDialog(EoDlgSetupNote::IDD, pParent), m_height{}, m_expansionFactor{}, m_slantAngle{}, m_rotationAngle{} {}
 
 EoDlgSetupNote::EoDlgSetupNote(EoDbFontDefinition* fontDefinition, CWnd* pParent /*= nullptr*/)
     : CDialog(EoDlgSetupNote::IDD, pParent),
       m_FontDefinition(fontDefinition),
-      m_TextHeight(0),
-      m_TextExpansionFactor(0),
-      m_CharacterSlantAngle(0),
-      m_TextRotationAngle(0) {}
+      m_height{},
+      m_expansionFactor{},
+      m_slantAngle{},
+      m_rotationAngle{} {}
 
 EoDlgSetupNote::~EoDlgSetupNote() {}
 void EoDlgSetupNote::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);
-  DDX_Text(dataExchange, IDC_TEXT_HEIGHT, m_TextHeight);
-  DDX_Text(dataExchange, IDC_TEXT_EXP_FAC, m_TextExpansionFactor);
-  DDX_Text(dataExchange, IDC_TEXT_INCLIN, m_CharacterSlantAngle);
-  DDX_Text(dataExchange, IDC_TEXT_ROTATION, m_TextRotationAngle);
+  DDX_Text(dataExchange, IDC_TEXT_HEIGHT, m_height);
+  DDX_Text(dataExchange, IDC_TEXT_EXP_FAC, m_expansionFactor);
+  DDX_Text(dataExchange, IDC_TEXT_INCLIN, m_slantAngle);
+  DDX_Text(dataExchange, IDC_TEXT_ROTATION, m_rotationAngle);
   DDX_Control(dataExchange, IDC_MFCFONTCOMBO, m_MfcFontComboControl);
 }
 
@@ -70,8 +66,7 @@ void EoDlgSetupNote::OnOK() {
     CString FontsItemName;
     m_MfcFontComboControl.GetLBText(FontsIndex, FontsItemName);
     m_FontDefinition->SetFontName(FontsItemName);
-    auto precision =
-        EoUInt16(FontsItemName.CompareNoCase(L"Simplex.psf") != 0 ? EoDb::EoTrueType : EoDb::StrokeType);
+    auto precision = EoUInt16(FontsItemName.CompareNoCase(L"Simplex.psf") != 0 ? EoDb::EoTrueType : EoDb::StrokeType);
     m_FontDefinition->SetPrecision(precision);
   }
 

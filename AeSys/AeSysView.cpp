@@ -2431,7 +2431,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     if ((item & TextHeight) == TextHeight) {
       auto characterCellDefinition = pstate.CharacterCellDefinition();
       rc.SetRect(28 * tm.tmAveCharWidth, ClientRect.top, 38 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      swprintf_s(szBuf, 32, L"T%-6.2f", characterCellDefinition.ChrHgtGet());
+      swprintf_s(szBuf, 32, L"T%-6.2f", characterCellDefinition.Height());
       DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
     }
     if ((item & Scale) == Scale) {
