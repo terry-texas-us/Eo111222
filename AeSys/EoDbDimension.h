@@ -80,12 +80,12 @@ class EoDbDimension : public EoDbPrimitive {
 
   void SetText(const CString& text) { m_text = text; }
 
-  void SetAlignment(EoUInt16 horizontalAlignment, EoUInt16 verticalAlignment) {
+  void SetAlignment(EoDb::HorizontalAlignment horizontalAlignment, EoUInt16 verticalAlignment) {
     m_fontDefinition.SetHorizontalAlignment(horizontalAlignment);
     m_fontDefinition.SetVerticalAlignment(verticalAlignment);
   }
 
-  void SetHorizontalAlignment(EoUInt16 horizontalAlignment) {
+  void SetHorizontalAlignment(EoDb::HorizontalAlignment horizontalAlignment) {
     m_fontDefinition.SetHorizontalAlignment(horizontalAlignment);
   }
   void SetTextColor(EoInt16 color) { m_textColor = color; }

@@ -4,6 +4,10 @@
 #include <string>
 
 namespace Eo {
+
+// One and only stroke font supported by AeSys, used for all stroke text rendering
+constexpr const wchar_t* defaultStrokeFont = L"Simplex.psf";
+
 constexpr double MmPerInch = 25.4;
 
 constexpr double Pi = std::numbers::pi;

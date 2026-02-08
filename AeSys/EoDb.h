@@ -56,8 +56,8 @@ enum Sentinels {
   kEndOfTable = 0x02ff
 };
 enum class PolygonStyle { Hollow, Solid, Pattern, Hatch, Special = -1 };
-enum Path { PathRight, PathLeft, PathUp, PathDown };
-enum HorizontalAlignment { AlignLeft = 1, AlignCenter, AlignRight };
+enum class Path : EoUInt16 { Right, Left, Up, Down };
+enum class HorizontalAlignment : EoUInt16 { Left = 1, Center, Right };
 enum VerticalAlignment { AlignTop = 2, AlignMiddle, AlignBottom };
 enum Precision { EoTrueType = 1, StrokeType };
 
@@ -81,6 +81,19 @@ void Read(CFile& file, double& number);
 bool Read(CFile& file, EoDbPrimitive*& primitive);
 void Read(CFile& file, EoInt16& number);
 void Read(CFile& file, EoUInt16& number);
+
+inline void Read(CFile& file, EoDb::Path& path) {
+  EoUInt16 number;
+  Read(file, number);
+  path = static_cast<EoDb::Path>(number);
+}
+
+inline void Read(CFile& file, EoDb::HorizontalAlignment& horizontalAlignment) {
+  EoUInt16 number;
+  Read(file, number);
+  horizontalAlignment = static_cast<EoDb::HorizontalAlignment>(number);
+}
+
 [[nodiscard]] double ReadDouble(CFile& file);
 [[nodiscard]] EoInt16 ReadInt16(CFile& file);
 [[nodiscard]] EoGePoint3d ReadPoint3d(CFile& file);
@@ -91,4 +104,10 @@ void Write(CFile& file, const CString& string, UINT codePage = CP_ACP);
 void Write(CFile& file, double number);
 void Write(CFile& file, EoInt16 number);
 void Write(CFile& file, EoUInt16 number);
+
+inline void Write(CFile& file, EoDb::Path path) { Write(file, static_cast<EoUInt16>(path)); }
+inline void Write(CFile& file, EoDb::HorizontalAlignment horizontalAlignment) {
+  Write(file, static_cast<EoUInt16>(horizontalAlignment));
+}
+
 }  // namespace EoDb

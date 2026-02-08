@@ -260,7 +260,7 @@ BOOL AeSys::InitInstance() {
   }
 
   CString resourceFolder = App::ResourceFolderPath();
-  LoadSimplexStrokeFont(resourceFolder + L"Simplex.psf");
+  LoadSimplexStrokeFont(resourceFolder + Eo::defaultStrokeFont);
   LoadHatchesFromFile(resourceFolder + L"Hatches\\DefaultSet.txt");
   //LoadPenColorsFromFile(ResourceFolder + L"Pens\\Colors\\Default.txt"));
 
@@ -601,8 +601,8 @@ void AeSys::InitGbls(CDC* deviceContext) {
   EoDbCharacterCellDefinition characterCellDefinition{};
   pstate.SetCharCellDef(characterCellDefinition);
 
-  EoDbFontDefinition fd;
-  pstate.SetFontDef(deviceContext, fd);
+  EoDbFontDefinition fontDefinition;
+  pstate.SetFontDef(deviceContext, fontDefinition);
 
   SetUnits(Eo::Units::Inches);
   SetArchitecturalUnitsFractionPrecision(8);

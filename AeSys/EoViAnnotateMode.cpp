@@ -113,7 +113,7 @@ void AeSysView::OnAnnotateModeBubble() {
     pstate.SetColor(DeviceContext, 2);
 
     EoDbFontDefinition fontDefinition = pstate.FontDefinition();
-    fontDefinition.SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+    fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
 
     auto characterCellDefinition = pstate.CharacterCellDefinition();
     characterCellDefinition.SetRotationAngle(0.0);
@@ -292,7 +292,7 @@ void AeSysView::OnAnnotateModeCutIn() {
       pstate.SetColor(DeviceContext, 2);
 
       EoDbFontDefinition fontDefinition = pstate.FontDefinition();
-      fontDefinition.SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+      fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
 
       auto characterCellDefinition = pstate.CharacterCellDefinition();
       characterCellDefinition.SetRotationAngle(0.0);

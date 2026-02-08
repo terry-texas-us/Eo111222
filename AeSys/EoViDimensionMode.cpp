@@ -174,7 +174,7 @@ void AeSysView::OnDimensionModeDLine() {
       }
       EoDbDimension* pDim = new EoDbDimension(1, 1, EoGeLine(PreviousDimensionCursorPosition, cursorPosition));
       pDim->SetTextColor(5);
-      pDim->SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+      pDim->SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
 
       Group->AddTail(pDim);
       document->AddWorkLayerGroup(Group);
@@ -212,7 +212,7 @@ void AeSysView::OnDimensionModeDLine2() {
       }
       EoDbDimension* pDim = new EoDbDimension(1, 1, EoGeLine(PreviousDimensionCursorPosition, cursorPosition));
       pDim->SetTextColor(5);
-      pDim->SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+      pDim->SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
 
       Group->AddTail(pDim);
       GenerateLineEndItem(1, 0.1, PreviousDimensionCursorPosition, cursorPosition, Group);
@@ -271,7 +271,7 @@ void AeSysView::OnDimensionModeRadius() {
       radialDimension->SetDefaultNote();
 
       radialDimension->SetTextColor(5);
-      radialDimension->SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+      radialDimension->SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
 
       group->AddTail(radialDimension);
 
@@ -307,7 +307,7 @@ void AeSysView::OnDimensionModeDiameter() {
       diametricDimension->SetDefaultNote();
 
       diametricDimension->SetTextColor(5);
-      diametricDimension->SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+      diametricDimension->SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
 
       group->AddTail(diametricDimension);
 
@@ -389,7 +389,7 @@ void AeSysView::OnDimensionModeAngle() {
         int PrimitiveState = pstate.Save();
 
         EoDbFontDefinition fontDefinition = pstate.FontDefinition();
-        fontDefinition.SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+        fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
         pstate.SetFontDef(DeviceContext, fontDefinition);
 
         auto characterCellDefinition = pstate.CharacterCellDefinition();
@@ -445,7 +445,7 @@ void AeSysView::OnDimensionModeConvert() {
           pPrimLine->GetLine(ln);
           EoDbDimension* pPrimDim = new EoDbDimension(pPrimLine->Color(), pPrimLine->LineTypeIndex(), ln);
           pPrimDim->SetTextColor(5);
-          pPrimDim->SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+          pPrimDim->SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
 
           Group->InsertAfter(posPrimCur, pPrimDim);
           Group->RemoveAt(posPrimCur);

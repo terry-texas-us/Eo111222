@@ -584,7 +584,7 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   pstate.SetColor(DeviceContext, 2);
 
   EoDbFontDefinition fontDefinition = pstate.FontDefinition();
-  fontDefinition.SetAlignment(EoDb::AlignCenter, EoDb::AlignMiddle);
+  fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
 
   EoDbCharacterCellDefinition characterCellDefinition = pstate.CharacterCellDefinition();
   characterCellDefinition.SetRotationAngle(0.0);

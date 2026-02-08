@@ -475,11 +475,11 @@ EoDbDimension::EoDbDimension(EoUInt8* buffer) {
 
   m_color = EoInt16(buffer[32]);
 
-  m_fontDefinition.SetFontName(L"Simplex.psf");
+  m_fontDefinition.SetFontName(Eo::defaultStrokeFont);
   m_fontDefinition.SetPrecision(EoDb::StrokeType);
   m_fontDefinition.SetCharacterSpacing(((CVaxFloat*)&buffer[36])->Convert());
-  m_fontDefinition.SetPath(EoUInt8(buffer[40]));
-  m_fontDefinition.SetAlignment(EoUInt8(buffer[41]), EoUInt8(buffer[42]));
+  m_fontDefinition.SetPath(static_cast<EoDb::Path>(buffer[40]));
+  m_fontDefinition.SetAlignment(static_cast<EoDb::HorizontalAlignment>(buffer[41]), EoUInt8(buffer[42]));
   m_ReferenceSystem.SetOrigin(((CVaxPnt*)&buffer[43])->Convert());
   m_ReferenceSystem.SetXDirection(((CVaxVec*)&buffer[55])->Convert());
   m_ReferenceSystem.SetYDirection(((CVaxVec*)&buffer[67])->Convert());
@@ -610,7 +610,7 @@ EoDbSpline::EoDbSpline(EoUInt8* buffer, int version) {
 }
 EoDbText::EoDbText(EoUInt8* buffer, int version) {
   m_fontDefinition.SetPrecision(EoDb::StrokeType);
-  m_fontDefinition.SetFontName(L"Simplex.psf");
+  m_fontDefinition.SetFontName(Eo::defaultStrokeFont);
 
   if (version == 1) {
     m_color = EoInt16(buffer[4] & 0x000f);
@@ -619,11 +619,14 @@ EoDbText::EoDbText(EoUInt8* buffer, int version) {
 
     double d = ((CVaxFloat*)&buffer[40])->Convert();
 
-    m_fontDefinition.SetPath(EoUInt16(fmod(d, 10.0)));
-    if (m_fontDefinition.Path() < 0 || m_fontDefinition.Path() > 4) { m_fontDefinition.SetPath(EoDb::PathRight); }
-    m_fontDefinition.SetHorizontalAlignment(EoUInt16(fmod(d / 10.0, 10.0)));
-    if (m_fontDefinition.HorizontalAlignment() < 1 || m_fontDefinition.HorizontalAlignment() > 3) {
-      m_fontDefinition.SetHorizontalAlignment(EoDb::AlignCenter);
+    m_fontDefinition.SetPath(static_cast<EoDb::Path>(fmod(d, 10.0)));
+    if (m_fontDefinition.Path() < EoDb::Path::Right || m_fontDefinition.Path() > EoDb::Path::Down) {
+      m_fontDefinition.SetPath(EoDb::Path::Right);
+    }
+    m_fontDefinition.SetHorizontalAlignment(static_cast<EoDb::HorizontalAlignment>(fmod(d / 10.0, 10.0)));
+    if (m_fontDefinition.HorizontalAlignment() < EoDb::HorizontalAlignment::Left ||
+        m_fontDefinition.HorizontalAlignment() > EoDb::HorizontalAlignment::Right) {
+      m_fontDefinition.SetHorizontalAlignment(EoDb::HorizontalAlignment::Center);
     }
     m_fontDefinition.SetVerticalAlignment(EoUInt16((d / 100.0)));
     if (m_fontDefinition.VerticalAlignment() < 2 || m_fontDefinition.VerticalAlignment() > 4) {
@@ -669,8 +672,8 @@ EoDbText::EoDbText(EoUInt8* buffer, int version) {
   } else {
     m_color = EoInt16(buffer[6]);
     m_fontDefinition.SetCharacterSpacing(((CVaxFloat*)&buffer[10])->Convert());
-    m_fontDefinition.SetPath(EoUInt8(buffer[14]));
-    m_fontDefinition.SetAlignment(EoUInt8(buffer[15]), EoUInt8(buffer[16]));
+    m_fontDefinition.SetPath(static_cast<EoDb::Path>(buffer[14]));
+    m_fontDefinition.SetAlignment(static_cast<EoDb::HorizontalAlignment>(buffer[15]), EoUInt8(buffer[16]));
     m_ReferenceSystem.SetOrigin(((CVaxPnt*)&buffer[17])->Convert());
     m_ReferenceSystem.SetXDirection(((CVaxVec*)&buffer[29])->Convert());
     m_ReferenceSystem.SetYDirection(((CVaxVec*)&buffer[41])->Convert());

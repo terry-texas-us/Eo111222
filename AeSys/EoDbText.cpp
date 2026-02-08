@@ -328,19 +328,19 @@ void DisplayTextSegment(AeSysView* view, CDC* deviceContext, EoDbFontDefinition&
   }
   DisplayTextSegmentUsingStrokeFont(view, deviceContext, fd, referenceSystem, startPosition, numberOfCharacters, text);
 }
-void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd,
+void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fontDefinition,
                                        EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters,
                                        const CString& text) {
-  if (numberOfCharacters == 0) return;
+  if (numberOfCharacters == 0) { return; }
 
   long* plStrokeFontDef = (long*)app.SimplexStrokeFont();
-  if (plStrokeFontDef == 0) return;
+  if (plStrokeFontDef == 0) { return; }
 
   EoGeTransformMatrix tm(referenceSystem.TransformMatrix());
   tm.Inverse();
 
   long* plStrokeChrDef = plStrokeFontDef + 96;
-  double dChrSpac = 1.0 + (0.32 + fd.CharacterSpacing()) / 0.6;
+  double dChrSpac = 1.0 + (0.32 + fontDefinition.CharacterSpacing()) / 0.6;
 
   EoGePoint3d ptStroke = EoGePoint3d::kOrigin;
   EoGePoint3d ptChrPos = ptStroke;
@@ -370,16 +370,18 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDb
     }
     polyline::__End(view, deviceContext, 1);
 
-    switch (fd.Path()) {
-      case EoDb::PathLeft:
+    switch (fontDefinition.Path()) {
+      case EoDb::Path::Left:
         ptChrPos.x -= dChrSpac;
         break;
-      case EoDb::PathUp:
+      case EoDb::Path::Up:
         ptChrPos.y += dChrSpac;
         break;
-      case EoDb::PathDown:
+      case EoDb::Path::Down:
         ptChrPos.y -= dChrSpac;
         break;
+      case EoDb::Path::Right:
+        [[fallthrough]];  // default is left to right
       default:
         ptChrPos.x += dChrSpac;
     }
@@ -604,20 +606,20 @@ void GetBottomLeftCorner(EoDbFontDefinition& fd, int iChrs, EoGePoint3d& pt) {
   if (iChrs > 0) {
     double dTxtExt = iChrs + (iChrs - 1) * (0.32 + fd.CharacterSpacing()) / 0.6;
 
-    if (fd.Path() == EoDb::PathRight || fd.Path() == EoDb::PathLeft) {
-      if (fd.Path() == EoDb::PathRight) {
-        if (fd.HorizontalAlignment() == EoDb::AlignLeft)
+    if (fd.Path() == EoDb::Path::Right || fd.Path() == EoDb::Path::Left) {
+      if (fd.Path() == EoDb::Path::Right) {
+        if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Left)
           pt.x = 0.;
-        else if (fd.HorizontalAlignment() == EoDb::AlignCenter)
+        else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Center)
           pt.x = -dTxtExt * 0.5;
-        else if (fd.HorizontalAlignment() == EoDb::AlignRight)
+        else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Right)
           pt.x = -dTxtExt;
       } else {
-        if (fd.HorizontalAlignment() == EoDb::AlignLeft)
+        if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Left)
           pt.x = dTxtExt;
-        else if (fd.HorizontalAlignment() == EoDb::AlignCenter)
+        else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Center)
           pt.x = dTxtExt * 0.5;
-        else if (fd.HorizontalAlignment() == EoDb::AlignRight)
+        else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Right)
           pt.x = 0.;
         pt.x = pt.x - 1.;
       }
@@ -627,14 +629,14 @@ void GetBottomLeftCorner(EoDbFontDefinition& fd, int iChrs, EoGePoint3d& pt) {
         pt.y = -0.5;
       else if (fd.VerticalAlignment() == EoDb::AlignTop)
         pt.y = -1.;
-    } else if (fd.Path() == EoDb::PathDown || fd.Path() == EoDb::PathUp) {
-      if (fd.HorizontalAlignment() == EoDb::AlignLeft)
+    } else if (fd.Path() == EoDb::Path::Down || fd.Path() == EoDb::Path::Up) {
+      if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Left)
         pt.x = 0.;
-      else if (fd.HorizontalAlignment() == EoDb::AlignCenter)
+      else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Center)
         pt.x = -0.5;
-      else if (fd.HorizontalAlignment() == EoDb::AlignRight)
+      else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Right)
         pt.x = -1.;
-      if (fd.Path() == EoDb::PathUp) {
+      if (fd.Path() == EoDb::Path::Up) {
         if (fd.VerticalAlignment() == EoDb::AlignBottom)
           pt.y = 0.;
         else if (fd.VerticalAlignment() == EoDb::AlignMiddle)
@@ -671,7 +673,7 @@ void text_GetBoundingBox(EoDbFontDefinition& fd, EoGeReferenceSystem& referenceS
     double CharacterSpacing = (0.32 + fd.CharacterSpacing()) / 0.6;
     double d = (double)numberOfCharacters + CharacterSpacing * (double)(numberOfCharacters - 1);
 
-    if (fd.Path() == EoDb::PathRight || fd.Path() == EoDb::PathLeft) {
+    if (fd.Path() == EoDb::Path::Right || fd.Path() == EoDb::Path::Left) {
       TextWidth = d;
     } else {
       TextHeight = d;
@@ -681,9 +683,9 @@ void text_GetBoundingBox(EoDbFontDefinition& fd, EoGeReferenceSystem& referenceS
     ptsBox[2] = ptsBox[0];
     ptsBox[3] = ptsBox[0];
 
-    if (fd.HorizontalAlignment() == EoDb::AlignLeft) {
+    if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Left) {
       ptsBox[2].x = TextWidth;
-    } else if (fd.HorizontalAlignment() == EoDb::AlignCenter) {
+    } else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Center) {
       ptsBox[0].x = -TextWidth * 0.5;
       ptsBox[2].x = ptsBox[0].x + TextWidth;
     } else {
@@ -719,7 +721,7 @@ EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontDefinition, EoGeRef
   auto vPath = referenceSystem.XDirection();
   auto YDirection = referenceSystem.YDirection();
 
-  if (fontDefinition.Path() == EoDb::PathRight || fontDefinition.Path() == EoDb::PathLeft) {
+  if (fontDefinition.Path() == EoDb::Path::Right || fontDefinition.Path() == EoDb::Path::Left) {
     pt += vPath * characterSpaceFactor;
     EoGeVector3d normal;
     referenceSystem.GetUnitNormal(normal);

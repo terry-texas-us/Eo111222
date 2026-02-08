@@ -11,14 +11,6 @@ constexpr const wchar_t* verticalAlignmentText[] = {L"Top", L"Middle", L"Bottom"
 constexpr const wchar_t* invalidText = L"Invalid!";
 }  // namespace
 
-EoDbFontDefinition::EoDbFontDefinition()
-    : m_fontName{L"Simplex.psf"},
-      m_characterSpacing{},
-      m_precision{EoDb::StrokeType},
-      m_path{EoDb::PathRight},
-      m_horizontalAlignment{EoDb::AlignLeft},
-      m_verticalAlignment{EoDb::AlignBottom} {}
-
 EoDbFontDefinition::EoDbFontDefinition(EoUInt16 precision, const CString& fontName, EoUInt16 path,
                                        EoUInt16 horizontalAlignment, EoUInt16 verticalAlignment,
                                        double characterSpacing)
@@ -30,18 +22,20 @@ EoDbFontDefinition::EoDbFontDefinition(EoUInt16 precision, const CString& fontNa
       m_verticalAlignment{verticalAlignment} {}
 
 [[nodiscard]] CString EoDbFontDefinition::FormatHorizontalAlignment() const {
-  return (m_horizontalAlignment >= EoDb::AlignLeft && m_horizontalAlignment <= EoDb::AlignRight)
-             ? CString{horizontalAlignmentText[m_horizontalAlignment - 1]}
+  return (m_horizontalAlignment >= EoDb::HorizontalAlignment::Left &&
+          m_horizontalAlignment <= EoDb::HorizontalAlignment::Right)
+             ? CString{horizontalAlignmentText[static_cast<int>(m_horizontalAlignment) - 1]}
              : CString{invalidText};
 }
 
 [[nodiscard]] CString EoDbFontDefinition::FormatPath() const {
-  return (m_path >= EoDb::PathRight && m_path <= EoDb::PathDown) ? CString{pathText[m_path]} : CString{L"Invalid!"};
+  return (m_path >= EoDb::Path::Right && m_path <= EoDb::Path::Down)
+             ? CString{pathText[static_cast<int>(m_path)]}
+             : CString{L"Invalid!"};
 }
 [[nodiscard]] CString EoDbFontDefinition::FormatPrecision() const {
-  return (m_precision >= EoDb::EoTrueType && m_precision <= EoDb::StrokeType)
-             ? CString{precisionText[m_precision - 1]}
-             : CString{invalidText};
+  return (m_precision >= EoDb::EoTrueType && m_precision <= EoDb::StrokeType) ? CString{precisionText[m_precision - 1]}
+                                                                              : CString{invalidText};
 }
 
 [[nodiscard]] CString EoDbFontDefinition::FormatVerticalAlignment() const {
@@ -53,8 +47,10 @@ EoDbFontDefinition::EoDbFontDefinition(EoUInt16 precision, const CString& fontNa
 void EoDbFontDefinition::Read(CFile& file) {
   EoDb::Read(file, m_precision);
   EoDb::Read(file, m_fontName);
+
   EoDb::Read(file, m_path);
   EoDb::Read(file, m_horizontalAlignment);
+  
   EoDb::Read(file, m_verticalAlignment);
   EoDb::Read(file, m_characterSpacing);
 }
@@ -62,7 +58,7 @@ void EoDbFontDefinition::Read(CFile& file) {
 void EoDbFontDefinition::Write(CFile& file) const {
   EoDb::Write(file, m_precision);
   EoDb::Write(file, m_fontName);
-  EoDb::Write(file, m_path);
+  EoDb::Write(file, static_cast<EoUInt16>(m_path));
   EoDb::Write(file, m_horizontalAlignment);
   EoDb::Write(file, m_verticalAlignment);
   EoDb::Write(file, m_characterSpacing);

@@ -60,6 +60,6 @@ class CPrimState {
    */
   int SetROP2(CDC* deviceContext, int drawMode);
 
-  void SetTxtAlign(CDC* deviceContext, EoUInt16 horizontalAlignment, EoUInt16 verticalAlignment);
+  void SetAlignment(CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoUInt16 verticalAlignment);
 };
 extern CPrimState pstate;
