@@ -58,7 +58,7 @@ class EoDbPolygon : public EoDbPrimitive {
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;
   EoGePoint3d GetControlPoint() override;
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override { return false; }
   bool Is(EoUInt16 wType) override { return wType == EoDb::kPolygonPrimitive; }
@@ -68,8 +68,8 @@ class EoDbPolygon : public EoDbPrimitive {
   bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
-  void Transform(EoGeTransformMatrix&) override;
-  void Translate(EoGeVector3d translate) override;
+  void Transform(const EoGeTransformMatrix&) override;
+  void Translate(const EoGeVector3d& v) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
   void Write(CFile& file, EoUInt8* buffer) override;
@@ -97,7 +97,7 @@ class EoDbPolygon : public EoDbPrimitive {
 // Parameters:	deviceContext
 //				iSets		number of point lists
 //				iPtLstsId	starting indicies for point lists
-void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& tm, const int iSets,
+void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& transformMatrix, const int iSets,
                          const int* iPtLstsId, EoGePoint3d*);
 /// <summary>Generates polygon.</summary>
 // The polygon is closed automatically by drawing a line from the last vertex to the first.

@@ -35,11 +35,11 @@ void AeSysView::OnEditModeRotccw() {
   Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
   EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
-  EoGeTransformMatrix tm;
-  tm.Translate(TranslateVector);
-  tm *= Matrix;
-  tm.Translate(-TranslateVector);
-  document->TransformTrappedGroups(tm);
+  EoGeTransformMatrix transformMatrix;
+  transformMatrix.Translate(TranslateVector);
+  transformMatrix *= Matrix;
+  transformMatrix.Translate(-TranslateVector);
+  document->TransformTrappedGroups(transformMatrix);
 }
 
 void AeSysView::OnEditModeRotcw() {
@@ -50,11 +50,11 @@ void AeSysView::OnEditModeRotcw() {
   Matrix.Inverse();
   EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
-  EoGeTransformMatrix tm;
-  tm.Translate(TranslateVector);
-  tm *= Matrix;
-  tm.Translate(-TranslateVector);
-  document->TransformTrappedGroups(tm);
+  EoGeTransformMatrix transformMatrix;
+  transformMatrix.Translate(TranslateVector);
+  transformMatrix *= Matrix;
+  transformMatrix.Translate(-TranslateVector);
+  document->TransformTrappedGroups(transformMatrix);
 }
 
 void AeSysView::OnEditModeMove() {
@@ -65,12 +65,12 @@ void AeSysView::OnEditModeMove() {
     m_PreviousOp = ModeLineHighlightOp(ID_OP4);
     RubberBandingStartAtEnable(cursorPosition, Lines);
   } else {
-    EoGeTransformMatrix tm;
-    tm.Translate(EoGeVector3d(document->GetTrapPivotPoint(), cursorPosition));
+    EoGeTransformMatrix transformMatrix;
+    transformMatrix.Translate(EoGeVector3d(document->GetTrapPivotPoint(), cursorPosition));
 
     ModeLineUnhighlightOp(m_PreviousOp);
     RubberBandingDisable();
-    document->TransformTrappedGroups(tm);
+    document->TransformTrappedGroups(transformMatrix);
   }
   document->SetTrapPivotPoint(cursorPosition);
   // pSetSegPos(pTRAP_PVT_MRK_ID, pt);
@@ -93,37 +93,37 @@ void AeSysView::OnEditModeCopy() {
 void AeSysView::OnEditModeFlip() {
   auto* document = GetDocument();
 
-  EoGeTransformMatrix tm;
+  EoGeTransformMatrix transformMatrix;
   EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
-  tm.Translate(TranslateVector);
-  tm.Scale(EditModeMirrorScale());
-  tm.Translate(-TranslateVector);
-  document->TransformTrappedGroups(tm);
+  transformMatrix.Translate(TranslateVector);
+  transformMatrix.Scale(EditModeMirrorScale());
+  transformMatrix.Translate(-TranslateVector);
+  document->TransformTrappedGroups(transformMatrix);
 }
 
 void AeSysView::OnEditModeReduce() {
   auto* document = GetDocument();
 
-  EoGeTransformMatrix tm;
+  EoGeTransformMatrix transformMatrix;
   EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
-  tm.Translate(TranslateVector);
-  tm.Scale(EditModeInvertedScaleFactors());
-  tm.Translate(-TranslateVector);
-  document->TransformTrappedGroups(tm);
+  transformMatrix.Translate(TranslateVector);
+  transformMatrix.Scale(EditModeInvertedScaleFactors());
+  transformMatrix.Translate(-TranslateVector);
+  document->TransformTrappedGroups(transformMatrix);
 }
 
 void AeSysView::OnEditModeEnlarge() {
   auto* document = GetDocument();
 
-  EoGeTransformMatrix tm;
+  EoGeTransformMatrix transformMatrix;
   EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
-  tm.Translate(TranslateVector);
-  tm.Scale(EditModeScaleFactors());
-  tm.Translate(-TranslateVector);
-  document->TransformTrappedGroups(tm);
+  transformMatrix.Translate(TranslateVector);
+  transformMatrix.Scale(EditModeScaleFactors());
+  transformMatrix.Translate(-TranslateVector);
+  document->TransformTrappedGroups(transformMatrix);
 }
 
 void AeSysView::OnEditModeReturn() {

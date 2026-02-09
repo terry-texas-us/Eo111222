@@ -167,11 +167,11 @@ void EoDbPoint::GetAllPoints(EoGePoint3dArray& points) {
   points.Add(m_Point);
 }
 
-void EoDbPoint::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
+void EoDbPoint::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt(m_Point);
 
   view->ModelTransformPoint(pt);
-  pt = tm * pt;
+  pt = transformMatrix * pt;
   ptMin = EoGePoint3d::Min(ptMin, pt);
   ptMax = EoGePoint3d::Max(ptMax, pt);
 }
@@ -236,7 +236,7 @@ void EoDbPoint::SetPoint(double x, double y, double z) {
   m_Point.z = z;
 }
 
-void EoDbPoint::Transform(EoGeTransformMatrix& tm) { m_Point = tm * m_Point; }
+void EoDbPoint::Transform(const EoGeTransformMatrix& transformMatrix) { m_Point = transformMatrix * m_Point; }
 void EoDbPoint::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if (mask != 0) m_Point += v;
 }

@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 COLORREF ViewBackgroundColor = RGB(33, 0x28, 47);
-COLORREF RubberbandColor = RGB(0x66, 0x66, 0x66);
 
 COLORREF ColorPalette[256] = {RGB(0, 0, 0),       RGB(255, 0, 0),
                               RGB(255, 255, 0),   RGB(0, 255, 0),

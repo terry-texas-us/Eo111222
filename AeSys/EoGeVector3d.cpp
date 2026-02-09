@@ -12,8 +12,6 @@ const EoGeVector3d EoGeVector3d::positiveUnitX(1.0, 0.0, 0.0);
 const EoGeVector3d EoGeVector3d::positiveUnitY(0.0, 1.0, 0.0);
 const EoGeVector3d EoGeVector3d::positiveUnitZ(0.0, 0.0, 1.0);
 
-EoGeVector3d::EoGeVector3d(double initialX, double initialY, double initialZ) : x(initialX), y(initialY), z(initialZ) {}
-
 EoGeVector3d::EoGeVector3d(const EoGePoint3d& p, const EoGePoint3d& q) : x(q.x - p.x), y(q.y - p.y), z(q.z - p.z) {}
 
 [[nodiscard]] bool EoGeVector3d::operator==(const EoGeVector3d& v) const noexcept { return IsNearEqual(*this, v); }
@@ -99,9 +97,9 @@ void EoGeVector3d::RotAboutArbAx(const EoGeVector3d& referenceAxis, double angle
   if (referenceAxis == positiveUnitZ) {
     *this = RotateVectorAboutZAxis(*this, angle);
   } else {
-    EoGeTransformMatrix tm(EoGePoint3d::kOrigin, referenceAxis, angle);
+    EoGeTransformMatrix transformMatrix(EoGePoint3d::kOrigin, referenceAxis, angle);
 
-    *this = tm * (*this);
+    *this = transformMatrix * (*this);
   }
 }
 

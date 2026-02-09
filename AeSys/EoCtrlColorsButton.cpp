@@ -197,11 +197,11 @@ UINT EoCtrlColorsButton::OnGetDlgCode() { return DLGC_WANTARROWS; }
 
 void EoCtrlColorsButton::OnKeyDown(UINT keyCode, UINT repeatCount, UINT flags) {
   if (keyCode >= VK_LEFT && keyCode <= VK_DOWN) {
-    CDC* DeviceContext = GetDC();
-    if (DeviceContext) {
+    auto* deviceContext = GetDC();
+    if (deviceContext) {
       m_selectedIndex = 0;
       if (m_palette && m_subItem >= m_beginIndex && m_subItem <= m_endIndex) {
-        DrawCell(DeviceContext, m_subItem, m_palette[m_subItem]);
+        DrawCell(deviceContext, m_subItem, m_palette[m_subItem]);
       }
 
       if (m_layout == SimpleSingleRow) {
@@ -251,9 +251,9 @@ void EoCtrlColorsButton::OnKeyDown(UINT keyCode, UINT repeatCount, UINT flags) {
 
       m_selectedIndex = m_subItem;
       if (m_palette && m_subItem >= m_beginIndex && m_subItem <= m_endIndex) {
-        DrawCell(DeviceContext, m_subItem, m_palette[m_subItem]);
+        DrawCell(deviceContext, m_subItem, m_palette[m_subItem]);
       }
-      ReleaseDC(DeviceContext);
+      ReleaseDC(deviceContext);
 
       NMHDR NotifyStructure{};
       NotifyStructure.hwndFrom = GetSafeHwnd();
@@ -271,11 +271,11 @@ void EoCtrlColorsButton::OnLButtonUp(UINT flags, CPoint point) {
 }
 
 void EoCtrlColorsButton::OnMouseMove(UINT flags, CPoint point) {
-  CDC* DeviceContext = GetDC();
-  if (DeviceContext) {
+  auto* deviceContext = GetDC();
+  if (deviceContext) {
     m_selectedIndex = 0;
     if (m_palette && m_subItem >= m_beginIndex && m_subItem <= m_endIndex) {
-      DrawCell(DeviceContext, m_subItem, m_palette[m_subItem]);
+      DrawCell(deviceContext, m_subItem, m_palette[m_subItem]);
     }
 
     m_subItem = SubItemByPoint(point);
@@ -284,7 +284,7 @@ void EoCtrlColorsButton::OnMouseMove(UINT flags, CPoint point) {
       m_selectedIndex = m_subItem;
 
       if (m_palette && m_subItem >= m_beginIndex && m_subItem <= m_endIndex) {
-        DrawCell(DeviceContext, m_subItem, m_palette[m_subItem]);
+        DrawCell(deviceContext, m_subItem, m_palette[m_subItem]);
       }
 
       NMHDR NotifyStructure{};
@@ -293,9 +293,8 @@ void EoCtrlColorsButton::OnMouseMove(UINT flags, CPoint point) {
 
       ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, (WPARAM)NotifyStructure.idFrom, (LPARAM)&NotifyStructure);
     }
-    ReleaseDC(DeviceContext);
+    ReleaseDC(deviceContext);
   }
-
   CMFCButton::OnMouseMove(flags, point);
 }
 
@@ -304,26 +303,25 @@ void EoCtrlColorsButton::OnPaint() { CMFCButton::OnPaint(); }
 void EoCtrlColorsButton::OnSetFocus(CWnd* oldWindow) {
   CMFCButton::OnSetFocus(oldWindow);
 
-  CDC* DeviceContext = GetDC();
-  if (DeviceContext) {
-    if (m_palette && m_subItem >= m_beginIndex && m_subItem <= m_endIndex) {
-      DrawCell(DeviceContext, m_subItem, m_palette[m_subItem]);
-    }
+  auto* deviceContext = GetDC();
+  if (!deviceContext) { return; }
 
-    m_subItem = m_beginIndex;
-    CRect CurrentSubItemRectangle;
-    SubItemRectangleByIndex(m_subItem, CurrentSubItemRectangle);
-
-    m_selectedIndex = m_subItem;
-    if (m_palette && m_subItem >= m_beginIndex && m_subItem <= m_endIndex) {
-      DrawCell(DeviceContext, m_subItem, m_palette[m_subItem]);
-    }
-    ReleaseDC(DeviceContext);
-
-    NMHDR NotifyStructure{};
-    NotifyStructure.hwndFrom = GetSafeHwnd();
-    NotifyStructure.idFrom = static_cast<std::uint64_t>(GetDlgCtrlID());
-
-    ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, (WPARAM)NotifyStructure.idFrom, (LPARAM)&NotifyStructure);
+  if (m_palette && m_subItem >= m_beginIndex && m_subItem <= m_endIndex) {
+    DrawCell(deviceContext, m_subItem, m_palette[m_subItem]);
   }
+  m_subItem = m_beginIndex;
+  CRect CurrentSubItemRectangle;
+  SubItemRectangleByIndex(m_subItem, CurrentSubItemRectangle);
+
+  m_selectedIndex = m_subItem;
+  if (m_palette && m_subItem >= m_beginIndex && m_subItem <= m_endIndex) {
+    DrawCell(deviceContext, m_subItem, m_palette[m_subItem]);
+  }
+  ReleaseDC(deviceContext);
+
+  NMHDR NotifyStructure{};
+  NotifyStructure.hwndFrom = GetSafeHwnd();
+  NotifyStructure.idFrom = static_cast<std::uint64_t>(GetDlgCtrlID());
+
+  ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, (WPARAM)NotifyStructure.idFrom, (LPARAM)&NotifyStructure);
 }

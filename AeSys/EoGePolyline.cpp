@@ -150,9 +150,9 @@ void __End(AeSysView* view, CDC* deviceContext, EoInt16 lineTypeIndex) {
 }
 void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis,
                             int numberOfPoints, EoGePoint3dArray& pts) {
-  EoGeTransformMatrix tm(centerPoint, majorAxis, minorAxis);
+  EoGeTransformMatrix transformMatrix(centerPoint, majorAxis, minorAxis);
 
-  tm.Inverse();
+  transformMatrix.Inverse();
 
   // Determine the parameter (angular increment)
   double AngleIncrement = Eo::TwoPi / double(numberOfPoints);
@@ -166,7 +166,7 @@ void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, Eo
     pts[i + 1](pts[i].x * CosIncrement - pts[i].y * SinIncrement, pts[i].y * CosIncrement + pts[i].x * SinIncrement,
                0.0);
   }
-  for (int i = 0; i < numberOfPoints; i++) { pts[i] = tm * pts[i]; }
+  for (int i = 0; i < numberOfPoints; i++) { pts[i] = transformMatrix * pts[i]; }
 }
 
 /** @brief Selects polyline segments intersecting with a given line.

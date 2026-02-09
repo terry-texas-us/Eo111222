@@ -13,7 +13,8 @@ class EoGeVector3d {
 
   constexpr EoGeVector3d() noexcept : x(0.0), y(0.0), z(0.0) {}
 
-  EoGeVector3d(double xInitial, double yInitial, double zInitial);
+  constexpr EoGeVector3d(double initialX, double initialY, double initialZ) noexcept
+      : x(initialX), y(initialY), z(initialZ) {}
 
   EoGeVector3d(const EoGePoint3d& pointP, const EoGePoint3d& pointQ);
 

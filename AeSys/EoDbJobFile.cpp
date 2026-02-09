@@ -470,16 +470,17 @@ EoDbDimension::EoDbDimension(EoUInt8* buffer) {
   m_color = EoInt16(buffer[6]);
   m_lineTypeIndex = EoInt16(buffer[7]);
 
-  m_ln.begin = ((CVaxPnt*)&buffer[8])->Convert();
-  m_ln.end = ((CVaxPnt*)&buffer[20])->Convert();
+  m_line.begin = ((CVaxPnt*)&buffer[8])->Convert();
+  m_line.end = ((CVaxPnt*)&buffer[20])->Convert();
 
   m_color = EoInt16(buffer[32]);
 
   m_fontDefinition.SetFontName(Eo::defaultStrokeFont);
-  m_fontDefinition.SetPrecision(EoDb::StrokeType);
+  m_fontDefinition.SetPrecision(EoDb::Precision::StrokeType);
   m_fontDefinition.SetCharacterSpacing(((CVaxFloat*)&buffer[36])->Convert());
   m_fontDefinition.SetPath(static_cast<EoDb::Path>(buffer[40]));
-  m_fontDefinition.SetAlignment(static_cast<EoDb::HorizontalAlignment>(buffer[41]), EoUInt8(buffer[42]));
+  m_fontDefinition.SetAlignment(
+      static_cast<EoDb::HorizontalAlignment>(buffer[41]), static_cast<EoDb::VerticalAlignment>(buffer[42]));
   m_ReferenceSystem.SetOrigin(((CVaxPnt*)&buffer[43])->Convert());
   m_ReferenceSystem.SetXDirection(((CVaxVec*)&buffer[55])->Convert());
   m_ReferenceSystem.SetYDirection(((CVaxVec*)&buffer[67])->Convert());
@@ -609,7 +610,7 @@ EoDbSpline::EoDbSpline(EoUInt8* buffer, int version) {
   }
 }
 EoDbText::EoDbText(EoUInt8* buffer, int version) {
-  m_fontDefinition.SetPrecision(EoDb::StrokeType);
+  m_fontDefinition.SetPrecision(EoDb::Precision::StrokeType);
   m_fontDefinition.SetFontName(Eo::defaultStrokeFont);
 
   if (version == 1) {
@@ -628,32 +629,34 @@ EoDbText::EoDbText(EoUInt8* buffer, int version) {
         m_fontDefinition.HorizontalAlignment() > EoDb::HorizontalAlignment::Right) {
       m_fontDefinition.SetHorizontalAlignment(EoDb::HorizontalAlignment::Center);
     }
-    m_fontDefinition.SetVerticalAlignment(EoUInt16((d / 100.0)));
-    if (m_fontDefinition.VerticalAlignment() < 2 || m_fontDefinition.VerticalAlignment() > 4) {
-      m_fontDefinition.SetVerticalAlignment(EoDb::AlignMiddle);
+    m_fontDefinition.SetVerticalAlignment(EoDb::VerticalAlignment(static_cast<EoUInt16>((d / 100.0))));
+    if (m_fontDefinition.VerticalAlignment() < EoDb::VerticalAlignment::Top ||
+        m_fontDefinition.VerticalAlignment() > EoDb::VerticalAlignment::Bottom) {
+      m_fontDefinition.SetVerticalAlignment(EoDb::VerticalAlignment::Middle);
     }
 
     m_ReferenceSystem.SetOrigin(((CVaxPnt*)&buffer[8])->Convert() * 1.e-3);
 
-    double dChrHgt = ((CVaxFloat*)&buffer[20])->Convert();
-    dChrHgt = std::min(std::max(dChrHgt, 0.01e3), 100.e3);
+    double height = ((CVaxFloat*)&buffer[20])->Convert();
+    height = std::min(std::max(height, 0.01e3), 100.e3);
 
-    double dChrExpFac = ((CVaxFloat*)&buffer[24])->Convert();
-    dChrExpFac = std::min(std::max(dChrExpFac, 0.0), 10.0);
+    double expansionFactor = ((CVaxFloat*)&buffer[24])->Convert();
+    expansionFactor = std::min(std::max(expansionFactor, 0.0), 10.0);
 
-    m_ReferenceSystem.SetXDirection(EoGeVector3d(0.6 * dChrHgt * dChrExpFac, 0.0, 0.0) * 1.e-3);
-    m_ReferenceSystem.SetYDirection(EoGeVector3d(0.0, dChrHgt, 0.0) * 1.e-3);
+    m_ReferenceSystem.SetXDirection(
+        EoGeVector3d(Eo::defaultCharacterCellAspectRatio * height * expansionFactor, 0.0, 0.0) * 1.e-3);
+    m_ReferenceSystem.SetYDirection(EoGeVector3d(0.0, height, 0.0) * 1.e-3);
 
-    double Angle = ((CVaxFloat*)&buffer[28])->Convert();
-    Angle = std::min(std::max(Angle, -Eo::TwoPi), Eo::TwoPi);
+    double rotationAngle = ((CVaxFloat*)&buffer[28])->Convert();
+    rotationAngle = std::min(std::max(rotationAngle, -Eo::TwoPi), Eo::TwoPi);
 
-    if (fabs(Angle) > Eo::geometricTolerance) {
-      EoGeVector3d XDirection(m_ReferenceSystem.XDirection());
-      XDirection = RotateVectorAboutZAxis(XDirection, Angle);
-      m_ReferenceSystem.SetXDirection(XDirection);
-      EoGeVector3d YDirection(m_ReferenceSystem.YDirection());
-      YDirection = RotateVectorAboutZAxis(YDirection, Angle);
-      m_ReferenceSystem.SetYDirection(YDirection);
+    if (fabs(rotationAngle) > Eo::geometricTolerance) {
+      EoGeVector3d xDirection(m_ReferenceSystem.XDirection());
+      xDirection = RotateVectorAboutZAxis(xDirection, rotationAngle);
+      m_ReferenceSystem.SetXDirection(xDirection);
+      EoGeVector3d yDirection(m_ReferenceSystem.YDirection());
+      yDirection = RotateVectorAboutZAxis(yDirection, rotationAngle);
+      m_ReferenceSystem.SetYDirection(yDirection);
     }
     char* NextToken = nullptr;
     char* pChr = strtok_s((char*)&buffer[44], "\\", &NextToken);
@@ -673,7 +676,8 @@ EoDbText::EoDbText(EoUInt8* buffer, int version) {
     m_color = EoInt16(buffer[6]);
     m_fontDefinition.SetCharacterSpacing(((CVaxFloat*)&buffer[10])->Convert());
     m_fontDefinition.SetPath(static_cast<EoDb::Path>(buffer[14]));
-    m_fontDefinition.SetAlignment(static_cast<EoDb::HorizontalAlignment>(buffer[15]), EoUInt8(buffer[16]));
+    m_fontDefinition.SetAlignment(
+        static_cast<EoDb::HorizontalAlignment>(buffer[15]), static_cast<EoDb::VerticalAlignment>(buffer[16]));
     m_ReferenceSystem.SetOrigin(((CVaxPnt*)&buffer[17])->Convert());
     m_ReferenceSystem.SetXDirection(((CVaxVec*)&buffer[29])->Convert());
     m_ReferenceSystem.SetYDirection(((CVaxVec*)&buffer[41])->Convert());
@@ -722,11 +726,11 @@ void EoDbDimension::Write(CFile& file, EoUInt8* buffer) {
   buffer[7] = static_cast<EoUInt8>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
   if (buffer[7] >= 16) buffer[7] = 2;
 
-  ((CVaxPnt*)&buffer[8])->Convert(m_ln.begin);
-  ((CVaxPnt*)&buffer[20])->Convert(m_ln.end);
+  ((CVaxPnt*)&buffer[8])->Convert(m_line.begin);
+  ((CVaxPnt*)&buffer[20])->Convert(m_line.end);
 
   buffer[32] = static_cast<EoUInt8>(m_color);
-  buffer[33] = EoInt8(EoDb::StrokeType);
+  buffer[33] = EoInt8(EoDb::Precision::StrokeType);
   *((EoInt16*)&buffer[34]) = 0;
   ((CVaxFloat*)&buffer[36])->Convert(m_fontDefinition.CharacterSpacing());
   buffer[40] = static_cast<EoUInt8>(m_fontDefinition.Path());

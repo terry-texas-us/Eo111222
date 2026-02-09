@@ -49,7 +49,7 @@ class EoGsViewTransform : public EoGsAbstractView {
    */
   void SetCenteredWindow(const EoGsViewport& viewport, double uExtent, double vExtent);
 
-  void SetMatrix(EoGeTransformMatrix& tm);
+  void SetMatrix(EoGeTransformMatrix& transformMatrix);
   void SetWindow(const double uMin, const double vMin, const double uMax, const double vMax);
   void TransformPoint(EoGePoint4d& point);
   void TransformPoints(EoGePoint4dArray& pointsArray);

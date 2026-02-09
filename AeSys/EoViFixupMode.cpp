@@ -78,11 +78,11 @@ EoGeLine currentLine{};
     return false;
   }
 
-  EoGeTransformMatrix tm(firstLine.begin, normal);
+  EoGeTransformMatrix transformMatrix(firstLine.begin, normal);
 
-  firstLine.end = tm * firstLine.end;
-  secondLine.begin = tm * secondLine.begin;
-  secondLine.end = tm * secondLine.end;
+  firstLine.end = transformMatrix * firstLine.end;
+  secondLine.begin = transformMatrix * secondLine.begin;
+  secondLine.end = transformMatrix * secondLine.end;
   double dA1 = -firstLine.end.y / firstLineLength;
   double dB1 = firstLine.end.x / firstLineLength;
   v.x = secondLine.end.x - secondLine.begin.x;
@@ -100,8 +100,8 @@ EoGeLine currentLine{};
   (*center).x = (dB2 * dC1RAB1 - dB1 * dC2RAB2) / dDet;
   (*center).y = (dA1 * dC2RAB2 - dA2 * dC1RAB1) / dDet;
   (*center).z = 0.;
-  tm.Inverse();
-  *center = tm * (*center);
+  transformMatrix.Inverse();
+  *center = transformMatrix * (*center);
   return true;
 }
 }  // namespace

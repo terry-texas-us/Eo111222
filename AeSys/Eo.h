@@ -7,6 +7,19 @@ namespace Eo {
 
 // One and only stroke font supported by AeSys, used for all stroke text rendering
 constexpr const wchar_t* defaultStrokeFont = L"Simplex.psf";
+constexpr double defaultStrokeFontHeight = 0.125;
+constexpr double defaultCharacterCellAspectRatio = 0.6;  // Width to height ratio of the character cell
+
+constexpr EoInt16 continuousLineTypeIndex{1};
+
+constexpr COLORREF colorBlack = RGB(0, 0, 0);
+constexpr COLORREF colorRed = RGB(255, 0, 0);        // ACI 1
+constexpr COLORREF colorWhite = RGB(255, 255, 255);  // ACI 7
+constexpr COLORREF colorGray = RGB(128, 128, 128);   // ACI 8
+constexpr COLORREF colorNavy = RGB(0, 0, 128);
+
+constexpr COLORREF colorRubberband = RGB(102, 102, 102);
+constexpr COLORREF colorViewBackground = RGB(33, 40, 47);
 
 constexpr double MmPerInch = 25.4;
 

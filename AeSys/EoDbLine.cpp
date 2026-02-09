@@ -173,14 +173,14 @@ void EoDbLine::GetAllPoints(EoGePoint3dArray& points) {
   points.Add(m_ln.begin);
   points.Add(m_ln.end);
 }
-void EoDbLine::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
+void EoDbLine::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt[2]{};
 
   GetPts(pt[0], pt[1]);
 
   for (EoUInt16 w = 0; w < 2; w++) {
     view->ModelTransformPoint(pt[w]);
-    pt[w] = tm * pt[w];
+    pt[w] = transformMatrix * pt[w];
     ptMin = EoGePoint3d::Min(ptMin, pt[w]);
     ptMax = EoGePoint3d::Max(ptMax, pt[w]);
   }
@@ -322,7 +322,7 @@ void EoDbLine::Square(AeSysView* view) {
   EndPoint(ptEnd);
 }
 
-void EoDbLine::Transform(EoGeTransformMatrix& transformMatrix) {
+void EoDbLine::Transform(const EoGeTransformMatrix& transformMatrix) {
   BeginPoint(transformMatrix * BeginPoint());
   EndPoint(transformMatrix * EndPoint());
 }

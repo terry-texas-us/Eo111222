@@ -26,7 +26,7 @@ void AeSysDoc::AddGroupsToTrap(EoDbGroupList* groups) {
   m_TrappedGroupList.AddTail(groups);
 }
 void AeSysDoc::ModifyTrappedGroupsNoteAttributes(const EoDbFontDefinition& fontDefinition,
-                                                 EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
+                                                 const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
   m_TrappedGroupList.ModifyNotes(fontDefinition, characterCellDefinition, attributes);
 }
 void AeSysDoc::RemoveAllTrappedGroups() {
@@ -207,9 +207,9 @@ void AeSysDoc::SquareTrappedGroups(AeSysView* view) {
   }
   UpdateAllViews(nullptr, EoDb::kGroupsSafeTrap, &m_TrappedGroupList);
 }
-void AeSysDoc::TransformTrappedGroups(EoGeTransformMatrix& tm) {
+void AeSysDoc::TransformTrappedGroups(EoGeTransformMatrix& transformMatrix) {
   if (app.IsTrapHighlighted()) { UpdateAllViews(nullptr, EoDb::kGroupsEraseSafeTrap, &m_TrappedGroupList); }
-  m_TrappedGroupList.Transform(tm);
+  m_TrappedGroupList.Transform(transformMatrix);
 
   if (app.IsTrapHighlighted()) { UpdateAllViews(nullptr, EoDb::kGroupsSafeTrap, &m_TrappedGroupList); }
 }

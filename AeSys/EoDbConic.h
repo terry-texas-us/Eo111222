@@ -170,7 +170,7 @@ class EoDbConic : public EoDbPrimitive {
   void FormatExtra(CString& extra) override;
   void FormatGeometry(CString& geometry) override;
   [[nodiscard]] EoGePoint3d GetControlPoint() override { return m_center; }
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override { return false; }
   bool Is(EoUInt16 type) override { return type == EoDb::kConicPrimitive; }
@@ -180,8 +180,8 @@ class EoDbConic : public EoDbPrimitive {
   bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
-  void Transform(EoGeTransformMatrix& transformMatrix) override;
-  void Translate(EoGeVector3d v) override { m_center += v; }
+  void Transform(const EoGeTransformMatrix& transformMatrix) override;
+  void Translate(const EoGeVector3d& v) override { m_center += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
   void Write(CFile& file, EoUInt8* buffer) override;

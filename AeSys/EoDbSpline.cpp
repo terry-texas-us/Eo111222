@@ -90,13 +90,13 @@ EoGePoint3d EoDbSpline::GetControlPoint() {
   return point;
 }
 
-void EoDbSpline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
+void EoDbSpline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt;
 
   for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) {
     pt = m_pts[w];
     view->ModelTransformPoint(pt);
-    pt = tm * pt;
+    pt = transformMatrix * pt;
     ptMin = EoGePoint3d::Min(ptMin, pt);
     ptMax = EoGePoint3d::Max(ptMax, pt);
   }
@@ -166,11 +166,11 @@ bool EoDbSpline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3
 bool EoDbSpline::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
   return polyline::SelectUsingRectangle(view, pt1, pt2, m_pts);
 }
-void EoDbSpline::Transform(EoGeTransformMatrix& tm) {
-  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w] = tm * m_pts[w];
+void EoDbSpline::Transform(const EoGeTransformMatrix& transformMatrix) {
+  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w] = transformMatrix * m_pts[w];
 }
 
-void EoDbSpline::Translate(EoGeVector3d v) {
+void EoDbSpline::Translate(const EoGeVector3d& v) {
   for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w] += v;
 }
 

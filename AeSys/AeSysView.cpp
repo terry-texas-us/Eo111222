@@ -49,6 +49,7 @@
 #include "Dde.h"
 #include "DdeGItms.h"
 #endif  // USING_DDE
+#include <wchar.h>
 
 const double AeSysView::m_MaximumWindowRatio = 999.0;
 const double AeSysView::m_MinimumWindowRatio = 0.001;
@@ -868,7 +869,7 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
   if (m_RubberbandType == Lines) {
     auto* deviceContext = GetDC();
     auto drawMode = deviceContext->SetROP2(R2_XORPEN);
-    CPen grayPen(PS_SOLID, 0, RubberbandColor);
+    CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
     auto* pen = deviceContext->SelectObject(&grayPen);
 
     deviceContext->MoveTo(m_RubberbandLogicalBeginPoint);
@@ -883,7 +884,7 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
   } else if (m_RubberbandType == Rectangles) {
     auto* deviceContext = GetDC();
     auto drawMode = deviceContext->SetROP2(R2_XORPEN);
-    CPen grayPen(PS_SOLID, 0, RubberbandColor);
+    CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
     auto* pen = deviceContext->SelectObject(&grayPen);
     auto* brush = deviceContext->SelectStockObject(NULL_BRUSH);
 
@@ -1050,10 +1051,10 @@ void AeSysView::OnFilePrint() {
 UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizontalPages, UINT& verticalPages) {
   EoGePoint3d ptMin;
   EoGePoint3d ptMax;
-  EoGeTransformMatrix tm;
+  EoGeTransformMatrix transformMatrix;
   auto* document = GetDocument();
 
-  document->GetExtents(this, ptMin, ptMax, tm);
+  document->GetExtents(this, ptMin, ptMax, transformMatrix);
 
   double HorizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch;
   double VerticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch;
@@ -1321,8 +1322,8 @@ void AeSysView::OnWindowBest() {
 
     m_ViewTransform.SetCenteredWindow(m_Viewport, UExtent, VExtent);
 
-    EoGeTransformMatrix tm;
-    document->GetExtents(this, ptMin, ptMax, tm);
+    EoGeTransformMatrix transformMatrix;
+    document->GetExtents(this, ptMin, ptMax, transformMatrix);
 
     EoGePoint3d Target = EoGePoint3d((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, (ptMin.z + ptMax.z) / 2.0);
 
@@ -1867,7 +1868,7 @@ void AeSysView::ResetView() {
   m_EngagedGroup = 0;
   m_EngagedPrimitive = 0;
 
-  EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
+  EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
   auto position = GetFirstVisibleGroupPosition();
   while (position != nullptr) {
@@ -1875,7 +1876,7 @@ void AeSysView::ResetView() {
     primitive = group->SelPrimAtCtrlPt(this, pt, &ptEng);
     if (primitive != nullptr) {
       m_ptDet = ptEng;
-      m_ptDet = tm * m_ptDet;
+      m_ptDet = transformMatrix * m_ptDet;
       m_EngagedGroup = group;
       m_EngagedPrimitive = primitive;
     }
@@ -1892,7 +1893,7 @@ void AeSysView::ResetView() {
   EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
 
-  EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
+  EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
   double apertureSize = m_SelectApertureSize;
 
@@ -1904,7 +1905,7 @@ void AeSysView::ResetView() {
     auto* primitive = group->SelPrimUsingPoint(this, ptView, apertureSize, ptEng);
     if (primitive != nullptr) {
       m_ptDet = ptEng;
-      m_ptDet = tm * m_ptDet;
+      m_ptDet = transformMatrix * m_ptDet;
       m_EngagedGroup = group;
       m_EngagedPrimitive = primitive;
       return group;
@@ -1965,7 +1966,7 @@ void AeSysView::ResetView() {
 
   double tol = m_SelectApertureSize;
 
-  EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
+  EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
@@ -1978,7 +1979,7 @@ void AeSysView::ResetView() {
           tol = ptView.DistanceToPointXY(EoGePoint4d(ptEng));
 
           m_ptDet = ptEng;
-          m_ptDet = tm * m_ptDet;
+          m_ptDet = transformMatrix * m_ptDet;
           m_EngagedGroup = group;
           m_EngagedPrimitive = primitive;
         }
@@ -2219,7 +2220,7 @@ void AeSysView::RubberBandingDisable() {
   if (m_RubberbandType != None) {
     auto* deviceContext = GetDC();
     int drawMode = deviceContext->SetROP2(R2_XORPEN);
-    CPen grayPen(PS_SOLID, 0, RubberbandColor);
+    CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
     auto* pen = deviceContext->SelectObject(&grayPen);
 
     if (m_RubberbandType == Lines) {
@@ -2388,83 +2389,92 @@ void AeSysView::OnViewStateInformation() {
 void AeSysView::OnUpdateViewStateinformation(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewStateInformation); }
 
 void AeSysView::UpdateStateInformation(EStateInformationItem item) {
-  if (m_ViewStateInformation) {
-    auto* document = AeSysDoc::GetDoc();
-    CDC* DeviceContext = GetDC();
+  if (!m_ViewStateInformation) { return; }
 
-    CFont* Font = (CFont*)DeviceContext->SelectStockObject(DEFAULT_GUI_FONT);
-    UINT nTextAlign = DeviceContext->SetTextAlign(TA_LEFT | TA_TOP);
-    COLORREF crText = DeviceContext->SetTextColor(App::ViewTextColor());
-    COLORREF crBk = DeviceContext->SetBkColor(~App::ViewTextColor() & 0x00ffffff);
+  auto* document = AeSysDoc::GetDoc();
+  auto* deviceContext = GetDC();
 
-    TEXTMETRIC tm;
-    DeviceContext->GetTextMetrics(&tm);
+  auto oldFont = deviceContext->SelectStockObject(DEFAULT_GUI_FONT);
+  auto oldTextAlign = deviceContext->SetTextAlign(TA_LEFT | TA_TOP);
+  auto oldTextColor = deviceContext->SetTextColor(App::ViewTextColor());
+  auto oldBkColor = deviceContext->SetBkColor(~App::ViewTextColor() & 0x00ffffff);
 
-    CRect ClientRect;
-    GetClientRect(&ClientRect);
+  TEXTMETRIC textMetric{};
+  deviceContext->GetTextMetrics(&textMetric);
+  auto averageCharacterWidth = textMetric.tmAveCharWidth;
+  auto height = textMetric.tmHeight;
 
-    CRect rc;
+  CRect clientRect{};
+  GetClientRect(&clientRect);
+  auto top = clientRect.top;
 
-    wchar_t szBuf[32]{};
+  CRect rectangle{};
+  constexpr UINT options = ETO_CLIPPED | ETO_OPAQUE;
+  wchar_t szBuf[32]{};
 
-    if ((item & WorkCount) == WorkCount) {
-      rc.SetRect(0, ClientRect.top, 8 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      swprintf_s(szBuf, 32, L"%-4i", document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers());
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
-    }
-    if ((item & TrapCount) == TrapCount) {
-      rc.SetRect(8 * tm.tmAveCharWidth, ClientRect.top, 16 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      long trapCount = static_cast<long>(document->TrapGroupCount());
-      swprintf_s(szBuf, 32, L"%-4ld", trapCount);
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
-    }
-    if ((item & Pen) == Pen) {
-      rc.SetRect(16 * tm.tmAveCharWidth, ClientRect.top, 22 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      swprintf_s(szBuf, 32, L"P%-4i", pstate.Color());
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
-    }
-    if ((item & Line) == Line) {
-      rc.SetRect(22 * tm.tmAveCharWidth, ClientRect.top, 28 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      swprintf_s(szBuf, 32, L"L%-4i", pstate.LineType());
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
-    }
-    if ((item & TextHeight) == TextHeight) {
-      auto characterCellDefinition = pstate.CharacterCellDefinition();
-      rc.SetRect(28 * tm.tmAveCharWidth, ClientRect.top, 38 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      swprintf_s(szBuf, 32, L"T%-6.2f", characterCellDefinition.Height());
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
-    }
-    if ((item & Scale) == Scale) {
-      rc.SetRect(38 * tm.tmAveCharWidth, ClientRect.top, 48 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      swprintf_s(szBuf, 32, L"1:%-6.2f", GetWorldScale());
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, szBuf, (UINT)wcslen(szBuf), 0);
-    }
-    if ((item & WndRatio) == WndRatio) {
-      rc.SetRect(48 * tm.tmAveCharWidth, ClientRect.top, 58 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      double Ratio = WidthInInches() / UExtent();
-      CString RatioAsString;
-      RatioAsString.Format(L"=%-8.3f", Ratio);
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, RatioAsString,
-                                 (UINT)RatioAsString.GetLength(), 0);
-    }
-    if ((item & DimLen) == DimLen || (item & DimAng) == DimAng) {
-      rc.SetRect(58 * tm.tmAveCharWidth, ClientRect.top, 90 * tm.tmAveCharWidth, ClientRect.top + tm.tmHeight);
-      CString LengthAndAngle;
-      app.FormatLength(LengthAndAngle, app.GetUnits(), app.DimensionLength());
-      LengthAndAngle.TrimLeft();
-      CString Angle;
-      app.FormatAngle(Angle, Eo::DegreeToRadian(app.DimensionAngle()), 8, 3);
-      Angle.ReleaseBuffer();
-      LengthAndAngle.Append(L" @ " + Angle);
-      DeviceContext->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, LengthAndAngle,
-                                 (UINT)LengthAndAngle.GetLength(), 0);
-    }
-    DeviceContext->SetBkColor(crBk);
-    DeviceContext->SetTextColor(crText);
-    DeviceContext->SetTextAlign(nTextAlign);
-    DeviceContext->SelectObject(Font);
-    ReleaseDC(DeviceContext);
+  if ((item & WorkCount) == WorkCount) {
+    rectangle.SetRect(0, top, 8 * averageCharacterWidth, top + height);
+    swprintf_s(szBuf, 32, L"%-4i", document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers());
+    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
+                               static_cast<UINT>(wcslen(szBuf)), 0);
   }
+  if ((item & TrapCount) == TrapCount) {
+    rectangle.SetRect(8 * averageCharacterWidth, top, 16 * averageCharacterWidth, top + height);
+    long trapCount = static_cast<long>(document->TrapGroupCount());
+    swprintf_s(szBuf, 32, L"%-4ld", trapCount);
+    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
+                               static_cast<UINT>(wcslen(szBuf)), 0);
+  }
+  if ((item & Pen) == Pen) {
+    rectangle.SetRect(16 * averageCharacterWidth, top, 22 * averageCharacterWidth, top + height);
+    swprintf_s(szBuf, 32, L"P%-4i", pstate.Color());
+    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
+                               static_cast<UINT>(wcslen(szBuf)), 0);
+  }
+  if ((item & Line) == Line) {
+    rectangle.SetRect(22 * averageCharacterWidth, top, 28 * averageCharacterWidth, top + height);
+    swprintf_s(szBuf, 32, L"L%-4i", pstate.LineType());
+    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
+                               static_cast<UINT>(wcslen(szBuf)), 0);
+  }
+  if ((item & TextHeight) == TextHeight) {
+    auto characterCellDefinition = pstate.CharacterCellDefinition();
+    rectangle.SetRect(28 * averageCharacterWidth, top, 38 * averageCharacterWidth, top + height);
+    swprintf_s(szBuf, 32, L"T%-6.2f", characterCellDefinition.Height());
+    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
+                               static_cast<UINT>(wcslen(szBuf)), 0);
+  }
+  if ((item & Scale) == Scale) {
+    rectangle.SetRect(38 * averageCharacterWidth, top, 48 * averageCharacterWidth, top + height);
+    swprintf_s(szBuf, 32, L"1:%-6.2f", GetWorldScale());
+    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
+                               static_cast<UINT>(wcslen(szBuf)), 0);
+  }
+  if ((item & WndRatio) == WndRatio) {
+    rectangle.SetRect(48 * averageCharacterWidth, top, 58 * averageCharacterWidth, top + height);
+    double Ratio = WidthInInches() / UExtent();
+    CString RatioAsString;
+    RatioAsString.Format(L"=%-8.3f", Ratio);
+    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, RatioAsString,
+                               static_cast<UINT>(RatioAsString.GetLength()), 0);
+  }
+  if ((item & DimLen) == DimLen || (item & DimAng) == DimAng) {
+    rectangle.SetRect(58 * averageCharacterWidth, top, 90 * averageCharacterWidth, top + height);
+    CString LengthAndAngle;
+    app.FormatLength(LengthAndAngle, app.GetUnits(), app.DimensionLength());
+    LengthAndAngle.TrimLeft();
+    CString Angle;
+    app.FormatAngle(Angle, Eo::DegreeToRadian(app.DimensionAngle()), 8, 3);
+    Angle.ReleaseBuffer();
+    LengthAndAngle.Append(L" @ " + Angle);
+    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, LengthAndAngle,
+                               static_cast<UINT>(LengthAndAngle.GetLength()), 0);
+  }
+  deviceContext->SetBkColor(oldBkColor);
+  deviceContext->SetTextColor(oldTextColor);
+  deviceContext->SetTextAlign(oldTextAlign);
+  deviceContext->SelectObject(oldFont);
+  ReleaseDC(deviceContext);
 }
 
 #if defined(USING_Direct2D)

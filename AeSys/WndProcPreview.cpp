@@ -56,12 +56,12 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   activeView->SetDeviceWidthInInches(static_cast<double>(memoryContext.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
   activeView->SetDeviceHeightInInches(static_cast<double>(memoryContext.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
-  EoGeTransformMatrix tm;
+  EoGeTransformMatrix transformMatrix;
 
   EoGePoint3d ptMin(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
   EoGePoint3d ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
-  block->GetExtents(activeView, ptMin, ptMax, tm);
+  block->GetExtents(activeView, ptMin, ptMax, transformMatrix);
 
   double UExtent = ptMax.x - ptMin.x;
   double VExtent = ptMax.y - ptMin.y;
@@ -108,12 +108,12 @@ void WndProcPreviewUpdateLayer(HWND previewWindow, EoDbGroupList* groups) {
   activeView->SetDeviceWidthInInches(static_cast<double>(memoryContext.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
   activeView->SetDeviceHeightInInches(static_cast<double>(memoryContext.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
-  EoGeTransformMatrix tm;
+  EoGeTransformMatrix transformMatrix;
 
   EoGePoint3d ptMin(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
   EoGePoint3d ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
-  groups->GetExtents(activeView, ptMin, ptMax, tm);
+  groups->GetExtents(activeView, ptMin, ptMax, transformMatrix);
 
   double UExtent = ptMax.x - ptMin.x;
   double VExtent = ptMax.y - ptMin.y;

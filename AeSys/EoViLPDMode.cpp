@@ -7,6 +7,7 @@
 #include "Eo.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbConic.h"
+#include "EoDbFontDefinition.h"
 #include "EoDbLine.h"
 #include "EoDbPoint.h"
 #include "EoDbPrimitive.h"
@@ -433,7 +434,7 @@ void AeSysView::GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, S
 }
 
 EoGePoint3d AeSysView::GenerateBullheadTee(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine,
-                                double existingSectionWidth, double existingSectionDepth, EoDbGroup* group) {
+                                           double existingSectionWidth, double existingSectionDepth, EoDbGroup* group) {
   (void)existingGroup;
   (void)existingSectionReferenceLine;
   (void)existingSectionWidth;
@@ -514,10 +515,8 @@ void AeSysView::GenerateRiseDrop(EoUInt16 riseDropIndicator, Section section, Eo
   GenerateRectangularSection(referenceLine, m_CenterLineEccentricity, section, group);
   // need to allow continuation perpendicular to vertical section ?
 
-  group->AddTail(
-      new EoDbLine(pstate.Color(), static_cast<EoInt16>(riseDropIndicator), LeftLine.begin, RightLine.end));
-  group->AddTail(
-      new EoDbLine(pstate.Color(), static_cast<EoInt16>(riseDropIndicator), RightLine.begin, LeftLine.end));
+  group->AddTail(new EoDbLine(pstate.Color(), static_cast<EoInt16>(riseDropIndicator), LeftLine.begin, RightLine.end));
+  group->AddTail(new EoDbLine(pstate.Color(), static_cast<EoInt16>(riseDropIndicator), RightLine.begin, LeftLine.end));
 }
 
 void AeSysView::GenerateRectangularElbow(EoGeLine& previousReferenceLine, Section previousSection,
@@ -579,23 +578,23 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   app.FormatLength(Depth, std::max(app.GetUnits(), Eo::Units::Inches), section.Depth(), 0, 2);
   CString Note = Width.TrimLeft() + L"/" + Depth.TrimLeft();
 
-  CDC* DeviceContext = GetDC();
+  auto* deviceContext = GetDC();
   int PrimitiveState = pstate.Save();
-  pstate.SetColor(DeviceContext, 2);
+  pstate.SetColor(deviceContext, 2);
 
   EoDbFontDefinition fontDefinition = pstate.FontDefinition();
-  fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
+  fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::VerticalAlignment::Middle);
 
   EoDbCharacterCellDefinition characterCellDefinition = pstate.CharacterCellDefinition();
   characterCellDefinition.SetRotationAngle(0.0);
-  pstate.SetCharCellDef(characterCellDefinition);
+  pstate.SetCharacterCellDefinition(characterCellDefinition);
 
   auto* Group = new EoDbGroup(new EoDbText(fontDefinition, ReferenceSystem, Note));
   auto* document = GetDocument();
   document->AddWorkLayerGroup(Group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
-  pstate.Restore(DeviceContext, PrimitiveState);
-  ReleaseDC(DeviceContext);
+  pstate.Restore(deviceContext, PrimitiveState);
+  ReleaseDC(deviceContext);
 }
 
 bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {

@@ -57,7 +57,7 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
 
   // Show defining window as hollow rectangle with dark gray outline
   deviceContext.SelectStockObject(NULL_BRUSH);
-  CPen grayPen(PS_SOLID, 2, RGB(0x80, 0x80, 0x80));
+  CPen grayPen(PS_SOLID, 2, Eo::colorGray);
   deviceContext.SelectObject(&grayPen);
   deviceContext.Rectangle(EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
                           EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
@@ -81,7 +81,7 @@ void WndProcKeyPlanOnMouseMove(HWND hwnd, WPARAM nParam, LPARAM lParam) {
 
   // Show defining window as hollow rectangle with dark gray outline
   HBRUSH brush = (HBRUSH)::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH));
-  HPEN grayPen = ::CreatePen(PS_SOLID, 2, RGB(0x80, 0x80, 0x80));
+  HPEN grayPen = ::CreatePen(PS_SOLID, 2, Eo::colorGray);
   HPEN pen = (HPEN)::SelectObject(deviceContextHandle, grayPen);
   ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
               EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
@@ -131,7 +131,7 @@ void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
   int drawMode = ::SetROP2(deviceContextHandle, R2_XORPEN);
 
   HBRUSH brush = (HBRUSH)::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH));
-  HPEN grayPen = ::CreatePen(PS_SOLID, 2, RGB(0x80, 0x80, 0x80));
+  HPEN grayPen = ::CreatePen(PS_SOLID, 2, Eo::colorGray);
   HPEN pen = (HPEN)::SelectObject(deviceContextHandle, grayPen);
   Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
               EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);

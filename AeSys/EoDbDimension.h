@@ -14,28 +14,25 @@
 #include "EoGeVector3d.h"
 
 class EoDbDimension : public EoDbPrimitive {
-  EoGeLine m_ln;
+  EoGeLine m_line;
   EoDbFontDefinition m_fontDefinition;
   EoGeReferenceSystem m_ReferenceSystem;
   CString m_text;
   EoInt16 m_textColor{5};
 
  public:
-  EoDbDimension() : EoDbPrimitive(), m_fontDefinition{}, m_ReferenceSystem{}, m_text{}, m_textColor{5} {}
-
-  EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line);
-
-  EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line, EoInt16 textPenColor,
-                const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
-                const CString& text);
-
-  EoDbDimension(EoUInt8* buffer);
+  EoDbDimension() = default;
 
   EoDbDimension(const EoDbDimension& other);
 
-  ~EoDbDimension() override {}
-
   const EoDbDimension& operator=(const EoDbDimension& other);
+
+  ~EoDbDimension() override = default;
+
+  EoDbDimension(EoGeLine line, const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
+                const CString& text, EoInt16 textColor);
+
+  EoDbDimension(EoUInt8* buffer);
 
   void AddReportToMessageList(EoGePoint3d) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
@@ -45,8 +42,8 @@ class EoDbDimension : public EoDbPrimitive {
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;
-  [[nodiscard]] EoGePoint3d GetControlPoint() override { return m_ln.Midpoint(); }
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
+  [[nodiscard]] EoGePoint3d GetControlPoint() override { return m_line.Midpoint(); }
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   [[nodiscard]] EoGePoint3d GoToNextControlPoint() override;
   [[nodiscard]] bool Identical(EoDbPrimitive*) override { return false; }
   [[nodiscard]] bool Is(EoUInt16 type) override { return type == EoDb::kDimensionPrimitive; }
@@ -56,8 +53,8 @@ class EoDbDimension : public EoDbPrimitive {
   bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptInt) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
-  void Transform(EoGeTransformMatrix&) override;
-  void Translate(EoGeVector3d translate) override;
+  void Transform(const EoGeTransformMatrix&) override;
+  void Translate(const EoGeVector3d& v) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
   void Write(CFile& file, EoUInt8* buffer) override;
@@ -68,32 +65,30 @@ class EoDbDimension : public EoDbPrimitive {
   void ModifyState() override;
 
   void GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac);
-  [[nodiscard]] const EoDbFontDefinition& FontDefinition() const { return m_fontDefinition; }
-  [[nodiscard]] const EoGeLine& Line() const noexcept { return m_ln; }
-  
-  void GetRefSys(EoGeReferenceSystem& referenceSystem) const { referenceSystem = m_ReferenceSystem; }
-  [[nodiscard]] double Length() const { return m_ln.Length(); }
-  [[nodiscard]] double RelOfPt(EoGePoint3d pt);
+
+  [[nodiscard]] double RelOfPt(EoGePoint3d point);
+
+  [[nodiscard]] const EoDbFontDefinition& FontDefinition() const noexcept { return m_fontDefinition; }
+  [[nodiscard]] const EoGeLine& Line() const noexcept { return m_line; }
+  [[nodiscard]] double Length() const { return m_line.Length(); }
+  [[nodiscard]] const EoGeReferenceSystem& ReferenceSystem() const noexcept { return m_ReferenceSystem; }
+  [[nodiscard]] const CString& Text() const noexcept { return m_text; }
+  [[nodiscard]] EoInt16 TextColor() const noexcept { return m_textColor; }
+
   void SetDefaultNote();
-  void BeginPoint(EoGePoint3d pt) { m_ln.begin = pt; }
-  void EndPoint(EoGePoint3d pt) { m_ln.end = pt; }
+
+  void SetBeginPoint(const EoGePoint3d& begin);
+  void SetEndPoint(const EoGePoint3d& end);
+  void SetPoints(const EoGePoint3d& begin, const EoGePoint3d& end);
 
   void SetText(const CString& text) { m_text = text; }
 
-  void SetAlignment(EoDb::HorizontalAlignment horizontalAlignment, EoUInt16 verticalAlignment) {
+  void SetAlignment(EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
     m_fontDefinition.SetHorizontalAlignment(horizontalAlignment);
     m_fontDefinition.SetVerticalAlignment(verticalAlignment);
   }
 
-  void SetHorizontalAlignment(EoDb::HorizontalAlignment horizontalAlignment) {
-    m_fontDefinition.SetHorizontalAlignment(horizontalAlignment);
-  }
   void SetTextColor(EoInt16 color) { m_textColor = color; }
-
-  void SetVerticalAlignment(EoUInt16 verticalAlignment) { m_fontDefinition.SetVerticalAlignment(verticalAlignment); }
-
-  [[nodiscard]] const CString& Text() const noexcept { return m_text; }
-  [[nodiscard]] EoInt16 TextColor() const noexcept { return m_textColor; }
 
  private:
   static EoUInt16 sm_flags;  // bit 1	clear if dimension selected at note

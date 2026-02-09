@@ -24,12 +24,12 @@ void CChildFrame::ActivateFrame(int nCmdShow) {
 BOOL CChildFrame::DestroyWindow() {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"CChildFrame::DestroyWindow() - Entering\n");
 
-  CDC* DeviceContext = GetDC();
+  auto* deviceContext = GetDC();
 
   // Stock objects are never left "current" so it is safe to delete whatever the old object is
 
-  DeviceContext->SelectStockObject(BLACK_PEN)->DeleteObject();
-  DeviceContext->SelectStockObject(WHITE_BRUSH)->DeleteObject();
+  deviceContext->SelectStockObject(BLACK_PEN)->DeleteObject();
+  deviceContext->SelectStockObject(WHITE_BRUSH)->DeleteObject();
 
   return CMDIChildWndEx::DestroyWindow();
 }

@@ -80,7 +80,7 @@ void AeSysView::OnCutModeSlice() {
     EoGePoint4d ptView[] = {EoGePoint4d(pt1), EoGePoint4d(pt2)};
     ModelViewTransformPoints(2, ptView);
 
-    EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
+    EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
     auto GroupPosition = GetFirstVisibleGroupPosition();
     while (GroupPosition != nullptr) {
@@ -97,7 +97,7 @@ void AeSysView::OnCutModeSlice() {
         for (EoUInt16 w = 0; w < intersections.GetSize(); w++) {
           EoDbGroup* NewGroup = new EoDbGroup;
 
-          intersections[w] = tm * intersections[w];
+          intersections[w] = transformMatrix * intersections[w];
 
           document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, primitive);
           primitive->CutAtPoint(intersections[w], NewGroup);
@@ -116,7 +116,6 @@ void AeSysView::OnCutModeSlice() {
 }
 
 void AeSysView::OnCutModeField() {
-  CDC* DeviceContext = GetDC();
   auto cursorPosition = GetCursorPosition();
   if (previousKeyDown != ID_OP4) {
     previousPosition = cursorPosition;
@@ -136,7 +135,7 @@ void AeSysView::OnCutModeField() {
     EoDbGroup* group{};
     EoDbPrimitive* primitive{};
 
-    int iInts;
+    int iInts{};
     EoGePoint3d ptInt[10]{};
 
     auto* document = GetDocument();
@@ -185,16 +184,18 @@ void AeSysView::OnCutModeField() {
     delete GroupsIn;
     delete GroupsOut;
 
-    pstate.SetPen(this, DeviceContext, color, lineType);
-    UpdateStateInformation(BothCounts);
+    auto* deviceContext = GetDC();
+    if (!deviceContext) { return; }
+    pstate.SetPen(this, deviceContext, color, lineType);
+    ReleaseDC(deviceContext);
 
+    UpdateStateInformation(BothCounts);
     RubberBandingDisable();
     ModeLineUnhighlightOp(previousKeyDown);
   }
 }
 
 void AeSysView::OnCutModeClip() {
-  CDC* DeviceContext = GetDC();
   auto cursorPosition = GetCursorPosition();
   if (previousKeyDown != ID_OP7) {
     previousPosition = cursorPosition;
@@ -213,7 +214,7 @@ void AeSysView::OnCutModeClip() {
 
     auto* document = GetDocument();
 
-    EoGeTransformMatrix tm = ModelViewGetMatrixInverse();
+    EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
     EoGePoint4d ptView[] = {EoGePoint4d(pt1), EoGePoint4d(pt2)};
 
@@ -241,8 +242,8 @@ void AeSysView::OnCutModeClip() {
         if (!primitive->SelectUsingPoint(this, ptView[1], ptCut[1])) continue;
         dRel[1] = EoDbPrimitive::Rel();
         // Both pick points are within tolerance of primative
-        ptCut[0] = tm * ptCut[0];
-        ptCut[1] = tm * ptCut[1];
+        ptCut[0] = transformMatrix * ptCut[0];
+        ptCut[1] = transformMatrix * ptCut[1];
         if (dRel[0] > dRel[1]) {
           EoGePoint3d ptTmp = ptCut[0];
           ptCut[0] = ptCut[1];
@@ -271,9 +272,12 @@ void AeSysView::OnCutModeClip() {
     delete GroupsIn;
     delete GroupsOut;
 
-    pstate.SetPen(this, DeviceContext, color, LineType);
-    UpdateStateInformation(BothCounts);
+    auto* deviceContext = GetDC();
+    if (!deviceContext) { return; }
+    pstate.SetPen(this, deviceContext, color, LineType);
+    ReleaseDC(deviceContext);
 
+    UpdateStateInformation(BothCounts);
     ModeLineUnhighlightOp(previousKeyDown);
   }
 }

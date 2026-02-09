@@ -2,6 +2,7 @@
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "Resource.h"
 
 namespace {
@@ -122,13 +123,14 @@ EoUInt16 AeSysView::ModeLineHighlightOp(EoUInt16 command) {
   if (command == 0) { return 0; }
   int paneIndex = ::statusOp0 + m_OpHighlighted - ID_OP0;
 
-  GetStatusBar().SetPaneTextColor(paneIndex, RGB(255, 0, 0));
+  GetStatusBar().SetPaneTextColor(paneIndex, Eo::colorRed);
 
   if (app.ModeInformationOverView()) {
     CString paneText = GetStatusBar().GetPaneText(paneIndex);
-    CDC* context = GetDC();
-    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT, RGB(255, 0, 0));
-    ReleaseDC(context);
+    auto* deviceContext = GetDC();
+    DrawPaneTextInView(deviceContext, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT,
+                       Eo::colorRed);
+    ReleaseDC(deviceContext);
   }
   return command;
 }
@@ -142,7 +144,8 @@ void AeSysView::ModeLineUnhighlightOp(EoUInt16& command) {
   if (app.ModeInformationOverView()) {
     CString paneText = GetStatusBar().GetPaneText(paneIndex);
     CDC* context = GetDC();
-    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT, App::ViewTextColor());
+    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT,
+                       App::ViewTextColor());
     ReleaseDC(context);
   }
   command = 0;

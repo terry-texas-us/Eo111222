@@ -460,8 +460,8 @@ void EoDbEllipse::GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVe
   int numberOfPoints = std::max(2, abs(Eo::Round(sweepAngle / Eo::TwoPi * 32.0)));
   numberOfPoints = std::min(128, std::max(numberOfPoints, abs(Eo::Round(sweepAngle * maxAxisLength / 0.250))));
 
-  EoGeTransformMatrix tm(centerPoint, majorAxis, minorAxis);
-  tm.Inverse();
+  EoGeTransformMatrix transformMatrix(centerPoint, majorAxis, minorAxis);
+  transformMatrix.Inverse();
 
   double segmentAngle = sweepAngle / (numberOfPoints - 1);
   double angleCosine = cos(segmentAngle);
@@ -470,7 +470,7 @@ void EoDbEllipse::GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVe
   EoGePoint3d point(1.0, 0.0, 0.0);
 
   for (int i = 0; i < numberOfPoints; i++) {
-    polyline::SetVertex(tm * point);
+    polyline::SetVertex(transformMatrix * point);
     point(point.x * angleCosine - point.y * angleSine, point.y * angleCosine + point.x * angleSine, 0.0);
   }
 }
@@ -490,12 +490,12 @@ void EoDbEllipse::FormatExtra(CString& str) {
 EoGePoint3d EoDbEllipse::PointAtStartAngle() { return (m_center + m_majorAxis); }
 
 EoGePoint3d EoDbEllipse::PointAtEndAngle() {
-  EoGeTransformMatrix tm(m_center, m_majorAxis, m_minorAxis);
-  tm.Inverse();
+  EoGeTransformMatrix transformMatrix(m_center, m_majorAxis, m_minorAxis);
+  transformMatrix.Inverse();
 
   EoGePoint3d pt(cos(m_sweepAngle), sin(m_sweepAngle), 0.0);
 
-  pt = tm * pt;
+  pt = transformMatrix * pt;
   return pt;
 }
 
@@ -600,7 +600,7 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
   }
 }
 
-void EoDbEllipse::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
+void EoDbEllipse::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3dArray ptsRegion;
   GetBoundingBox(ptsRegion);
 
@@ -609,7 +609,7 @@ void EoDbEllipse::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& p
   for (EoUInt16 w = 0; w < 4; w++) {
     pt = ptsRegion[w];
     view->ModelTransformPoint(pt);
-    pt = tm * pt;
+    pt = transformMatrix * pt;
     ptMin = EoGePoint3d::Min(ptMin, pt);
     ptMax = EoGePoint3d::Max(ptMax, pt);
   }
@@ -835,10 +835,10 @@ bool EoDbEllipse::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoi
   return polyline::SelectUsingRectangle(view, pt1, pt2);
 }
 
-void EoDbEllipse::Transform(EoGeTransformMatrix& tm) {
-  m_center = tm * m_center;
-  m_majorAxis = tm * m_majorAxis;
-  m_minorAxis = tm * m_minorAxis;
+void EoDbEllipse::Transform(const EoGeTransformMatrix& transformMatrix) {
+  m_center = transformMatrix * m_center;
+  m_majorAxis = transformMatrix * m_majorAxis;
+  m_minorAxis = transformMatrix * m_minorAxis;
 }
 
 void EoDbEllipse::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
@@ -890,10 +890,10 @@ void EoDbEllipse::GetBoundingBox(EoGePoint3dArray& ptsBox) {
       }
     }
   }
-  EoGeTransformMatrix tm(m_center, m_majorAxis, m_minorAxis);
-  tm.Inverse();
+  EoGeTransformMatrix transformMatrix(m_center, m_majorAxis, m_minorAxis);
+  transformMatrix.Inverse();
 
-  for (EoUInt16 w = 0; w < 4; w++) { ptsBox[w] = tm * ptsBox[w]; }
+  for (EoUInt16 w = 0; w < 4; w++) { ptsBox[w] = transformMatrix * ptsBox[w]; }
 }
 
 double EoDbEllipse::SweepAngleToPoint(EoGePoint3d point) {

@@ -3,11 +3,11 @@
 #include <string>
 #include <utility>
 
-#include "drw_entities.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeVector3d.h"
+#include "drw_entities.h"
 
 HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR pszText, LPCVOID object);
 
@@ -74,7 +74,7 @@ class EoDbPrimitive : public CObject {
   virtual void FormatGeometry(CString& str) = 0;
   virtual void GetAllPoints(EoGePoint3dArray& points) = 0;
   virtual EoGePoint3d GetControlPoint() = 0;
-  virtual void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) = 0;
+  virtual void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) = 0;
   virtual EoGePoint3d GoToNextControlPoint() = 0;
   virtual bool Identical(EoDbPrimitive*) = 0;
   virtual bool Is(EoUInt16 type) = 0;
@@ -84,8 +84,8 @@ class EoDbPrimitive : public CObject {
   virtual bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) = 0;
   virtual bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) = 0;
   virtual bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) = 0;
-  virtual void Transform(EoGeTransformMatrix&) = 0;
-  virtual void Translate(EoGeVector3d translate) = 0;
+  virtual void Transform(const EoGeTransformMatrix&) = 0;
+  virtual void Translate(const EoGeVector3d&) = 0;
   virtual void TranslateUsingMask(EoGeVector3d, const DWORD) = 0;
   virtual bool Write(CFile& file) = 0;
   virtual void Write(CFile& file, EoUInt8* buffer) = 0;

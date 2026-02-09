@@ -147,8 +147,8 @@ EoGePoint3d EoGePoint3d::RotateAboutAxis(const EoGePoint3d& referenceOrigin, con
     return (EoGePoint3d(referenceOrigin.x + (v.x * cosAngle - v.y * sinAngle),
                         referenceOrigin.y + (v.x * sinAngle + v.y * cosAngle), z));
   } else {
-    EoGeTransformMatrix tm(referenceOrigin, referenceAxis, angle);
-    return (tm * (*this));
+    EoGeTransformMatrix transformMatrix(referenceOrigin, referenceAxis, angle);
+    return (transformMatrix * (*this));
   }
 }
 

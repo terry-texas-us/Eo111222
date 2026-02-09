@@ -28,24 +28,9 @@
 
 EoUInt16 EoDbDimension::sm_flags{};
 
-EoDbDimension::EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line)
-    : EoDbPrimitive(color, lineType), m_ln{line}, m_fontDefinition{pstate.FontDefinition()}, m_textColor{5} {
-  SetDefaultNote();
-}
-
-EoDbDimension::EoDbDimension(EoInt16 color, EoInt16 lineType, EoGeLine line, EoInt16 textColor,
-                             const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
-                             const CString& text)
-    : EoDbPrimitive(color, lineType),
-      m_ln{line},
-      m_fontDefinition{fontDefinition},
-      m_ReferenceSystem{referenceSystem},
-      m_text{text},
-      m_textColor{textColor} {}
-
 EoDbDimension::EoDbDimension(const EoDbDimension& other)
     : EoDbPrimitive(other),
-      m_ln{other.m_ln},
+      m_line{other.m_line},
       m_fontDefinition{other.m_fontDefinition},
       m_ReferenceSystem{other.m_ReferenceSystem},
       m_text{other.m_text},
@@ -54,7 +39,7 @@ EoDbDimension::EoDbDimension(const EoDbDimension& other)
 const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& other) {
   if (this == &other) { return (*this); }
   EoDbPrimitive::operator=(other);
-  m_ln = other.m_ln;
+  m_line = other.m_line;
   m_textColor = other.m_textColor;
   m_fontDefinition = other.m_fontDefinition;
   m_ReferenceSystem = other.m_ReferenceSystem;
@@ -62,6 +47,14 @@ const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& other) {
 
   return (*this);
 }
+
+EoDbDimension::EoDbDimension(EoGeLine line, const EoDbFontDefinition& fontDefinition,
+    const EoGeReferenceSystem& referenceSystem, const CString& text, EoInt16 textColor)
+    : m_line{line},
+      m_fontDefinition{fontDefinition},
+      m_ReferenceSystem{referenceSystem},
+      m_text{text},
+      m_textColor{textColor} {}
 
 void EoDbDimension::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   CString label{L"<Dim>"};
@@ -72,52 +65,52 @@ EoDbPrimitive*& EoDbDimension::Copy(EoDbPrimitive*& primitive) {
   return primitive;
 }
 
-void EoDbDimension::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups,
-                                 EoDbGroupList* newGroups) {
-  EoDbDimension* pDim;
+void EoDbDimension::CutAt2Points(
+    const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
   double dRel[2]{};
+  m_line.RelOfPtToEndPts(firstPoint, dRel[0]);
+  m_line.RelOfPtToEndPts(secondPoint, dRel[1]);
 
-  m_ln.RelOfPtToEndPts(firstPoint, dRel[0]);
-  m_ln.RelOfPtToEndPts(secondPoint, dRel[1]);
-
+  EoDbDimension* dimension{};
   if (dRel[0] < Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance)
     // Put entire dimension in trap
-    pDim = this;
+    dimension = this;
   else {  // Something gets cut
-    pDim = new EoDbDimension(*this);
+    dimension = new EoDbDimension(*this);
     if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
-      pDim->BeginPoint(secondPoint);
-      pDim->SetDefaultNote();
+      dimension->SetBeginPoint(secondPoint);
+      dimension->SetDefaultNote();
 
-      groups->AddTail(new EoDbGroup(pDim));
+      groups->AddTail(new EoDbGroup(dimension));
 
-      pDim = new EoDbDimension(*this);
-      pDim->BeginPoint(firstPoint);
-      pDim->EndPoint(secondPoint);
-      pDim->SetDefaultNote();
-      m_ln.end = firstPoint;
+      dimension = new EoDbDimension(*this);
+
+      dimension->SetPoints(firstPoint, secondPoint);
+
+      dimension->SetDefaultNote();
+      m_line.end = firstPoint;
     } else if (dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut in two and place begin section in trap
-      pDim->EndPoint(secondPoint);
-      pDim->SetDefaultNote();
-      m_ln.begin = secondPoint;
+      dimension->SetEndPoint(secondPoint);
+      dimension->SetDefaultNote();
+      m_line.begin = secondPoint;
     } else {  // Cut in two and place end section in trap
-      pDim->BeginPoint(firstPoint);
-      pDim->SetDefaultNote();
-      m_ln.end = firstPoint;
+      dimension->SetBeginPoint(firstPoint);
+      dimension->SetDefaultNote();
+      m_line.end = firstPoint;
     }
     SetDefaultNote();
     groups->AddTail(new EoDbGroup(this));
   }
-  newGroups->AddTail(new EoDbGroup(pDim));
+  newGroups->AddTail(new EoDbGroup(dimension));
 }
 
 void EoDbDimension::CutAtPoint(EoGePoint3d& pointt, EoDbGroup* group) {
   EoGeLine ln;
 
-  if (m_ln.CutAtPt(pointt, ln) != 0) {
+  if (m_line.CutAtPt(pointt, ln) != 0) {
     EoDbDimension* DimensionPrimitive = new EoDbDimension(*this);
 
-    DimensionPrimitive->m_ln = ln;
+    DimensionPrimitive->m_line = ln;
     DimensionPrimitive->SetDefaultNote();
     group->AddTail(DimensionPrimitive);
   }
@@ -126,7 +119,7 @@ void EoDbDimension::CutAtPoint(EoGePoint3d& pointt, EoDbGroup* group) {
 void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
   EoInt16 color = LogicalColor();
   pstate.SetPen(view, deviceContext, color, LogicalLineType());
-  m_ln.Display(view, deviceContext);
+  m_line.Display(view, deviceContext);
 
   pstate.SetColor(deviceContext, m_textColor);
 
@@ -137,16 +130,17 @@ void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
 
   pstate.SetLineType(deviceContext, LineType);
 }
+
 void EoDbDimension::AddReportToMessageList(EoGePoint3d pt) {
   CString str;
   str.Format(L"<Dim> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
   app.AddStringToMessageList(str);
 
   double dLen = Length();
-  double dAng = m_ln.AngleFromXAxisXY();
+  double dAng = m_line.AngleFromXAxisXY();
 
   double dRel;
-  m_ln.RelOfPtToEndPts(pt, dRel);
+  m_line.RelOfPtToEndPts(pt, dRel);
 
   if (dRel > 0.5)
     // Normalize line prior to angle determination
@@ -160,40 +154,42 @@ void EoDbDimension::AddReportToMessageList(EoGePoint3d pt) {
   dde::PostAdvise(dde::EngAngZInfo);
 #endif  // USING_DDE
 }
+
 void EoDbDimension::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tStyle;%s", FormatPenColor().GetString(), FormatLineType().GetString());
 }
 void EoDbDimension::FormatGeometry(CString& str) {
-  str += L"Begin Point;" + m_ln.begin.ToString();
-  str += L"End Point;" + m_ln.end.ToString();
+  str += L"Begin Point;" + m_line.begin.ToString();
+  str += L"End Point;" + m_line.end.ToString();
 }
 void EoDbDimension::GetAllPoints(EoGePoint3dArray& points) {
   points.SetSize(0);
-  points.Add(m_ln.begin);
-  points.Add(m_ln.end);
+  points.Add(m_line.begin);
+  points.Add(m_line.end);
 }
 // Determination of text extent.
 void EoDbDimension::GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac) {
   text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_text.GetLength(), dSpacFac, ptsBox);
 }
-void EoDbDimension::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
-  EoGePoint3d pt[2] = {m_ln.begin, m_ln.end};
+void EoDbDimension::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+  EoGePoint3d pt[2] = {m_line.begin, m_line.end};
 
   for (EoUInt16 w = 0; w < 2; w++) {
     view->ModelTransformPoint(pt[w]);
-    pt[w] = tm * pt[w];
+    pt[w] = transformMatrix * pt[w];
     ptMin = EoGePoint3d::Min(ptMin, pt[w]);
     ptMax = EoGePoint3d::Max(ptMax, pt[w]);
   }
 }
+
 EoGePoint3d EoDbDimension::GoToNextControlPoint() {
   if (sm_ControlPointIndex == 0)
     sm_ControlPointIndex = 1;
   else if (sm_ControlPointIndex == 1)
     sm_ControlPointIndex = 0;
   else {  // Initial rock .. jump to point at lower left or down if vertical
-    EoGePoint3d ptBeg = m_ln.begin;
-    EoGePoint3d ptEnd = m_ln.end;
+    EoGePoint3d ptBeg = m_line.begin;
+    EoGePoint3d ptEnd = m_line.end;
 
     if (ptEnd.x > ptBeg.x)
       sm_ControlPointIndex = 0;
@@ -204,10 +200,10 @@ EoGePoint3d EoDbDimension::GoToNextControlPoint() {
     else
       sm_ControlPointIndex = 1;
   }
-  return (sm_ControlPointIndex == 0 ? m_ln.begin : m_ln.end);
+  return (sm_ControlPointIndex == 0 ? m_line.begin : m_line.end);
 }
 bool EoDbDimension::IsInView(AeSysView* view) {
-  EoGePoint4d pt[] = {EoGePoint4d(m_ln.begin), EoGePoint4d(m_ln.end)};
+  EoGePoint4d pt[] = {EoGePoint4d(m_line.begin), EoGePoint4d(m_line.end)};
 
   view->ModelViewTransformPoints(2, &pt[0]);
 
@@ -217,7 +213,7 @@ bool EoDbDimension::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& po
   EoGePoint4d pt;
 
   for (EoUInt16 w = 0; w < 2; w++) {
-    pt = EoGePoint4d(m_ln[w]);
+    pt = EoGePoint4d(m_line[w]);
     view->ModelViewTransformPoint(pt);
 
     if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) { return true; }
@@ -233,7 +229,7 @@ void EoDbDimension::ModifyState() {
 
 double EoDbDimension::RelOfPt(EoGePoint3d pt) {
   double dRel;
-  m_ln.RelOfPtToEndPts(pt, dRel);
+  m_line.RelOfPtToEndPts(pt, dRel);
   return dRel;
 }
 EoGePoint3d EoDbDimension::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
@@ -242,7 +238,7 @@ EoGePoint3d EoDbDimension::SelectAtControlPoint(AeSysView* view, const EoGePoint
   double dAPert = sm_SelectApertureSize;
 
   for (EoUInt16 w = 0; w < 2; w++) {
-    EoGePoint4d pt(m_ln[w]);
+    EoGePoint4d pt(m_line[w]);
     view->ModelViewTransformPoint(pt);
 
     double dDis = point.DistanceToPointXY(pt);
@@ -252,14 +248,14 @@ EoGePoint3d EoDbDimension::SelectAtControlPoint(AeSysView* view, const EoGePoint
       dAPert = dDis;
     }
   }
-  return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : m_ln[sm_ControlPointIndex];
+  return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : m_line[sm_ControlPointIndex];
 }
 bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   sm_flags &= ~0x0003;
 
   EoGePoint4d pt[4]{};
-  pt[0] = EoGePoint4d(m_ln.begin);
-  pt[1] = EoGePoint4d(m_ln.end);
+  pt[0] = EoGePoint4d(m_line.begin);
+  pt[1] = EoGePoint4d(m_line.end);
   view->ModelViewTransformPoints(2, &pt[0]);
 
   EoGeLine ln;
@@ -288,15 +284,15 @@ bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoi
 }
 bool EoDbDimension::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) {
   polyline::BeginLineStrip();
-  polyline::SetVertex(m_ln.begin);
-  polyline::SetVertex(m_ln.end);
+  polyline::SetVertex(m_line.begin);
+  polyline::SetVertex(m_line.end);
 
   return polyline::SelectUsingLine(view, line, intersections);
 }
 bool EoDbDimension::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
   polyline::BeginLineStrip();
-  polyline::SetVertex(m_ln.begin);
-  polyline::SetVertex(m_ln.end);
+  polyline::SetVertex(m_line.begin);
+  polyline::SetVertex(m_line.end);
 
   if (!polyline::SelectUsingRectangle(view, pt1, pt2)) {
     EoGePoint3dArray pts;
@@ -305,60 +301,67 @@ bool EoDbDimension::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGeP
   }
   return true;
 }
+
 void EoDbDimension::SetDefaultNote() {
   auto* activeView = AeSysView::GetActiveView();
 
-  m_ReferenceSystem.SetOrigin(m_ln.Midpoint());
-  double dAng = 0.;
+  m_ReferenceSystem.SetOrigin(m_line.Midpoint());
+  double angle{};
   wchar_t cText0 = m_text[0];
   if (cText0 != 'R' && cText0 != 'D') {
-    dAng = m_ln.AngleFromXAxisXY();
+    angle = m_line.AngleFromXAxisXY();
     double dDis = 0.075;
-    if (dAng > Eo::HalfPi + Eo::Radian && dAng < Eo::TwoPi - Eo::HalfPi + Eo::Radian) {
-      dAng -= Eo::Pi;
+    if (angle > Eo::HalfPi + Eo::Radian && angle < Eo::TwoPi - Eo::HalfPi + Eo::Radian) {
+      angle -= Eo::Pi;
       dDis = -dDis;
     }
-    EoGePoint3d ptOrigin;
-    EoGeLine(m_ReferenceSystem.Origin(), m_ln.end).ProjPtFrom_xy(0.0, dDis, &ptOrigin);
+    EoGePoint3d ptOrigin{};
+    EoGeLine(m_ReferenceSystem.Origin(), m_line.end).ProjPtFrom_xy(0.0, dDis, &ptOrigin);
     m_ReferenceSystem.SetOrigin(ptOrigin);
   }
-  EoGeVector3d vPlnNorm = activeView->CameraDirection();
+  auto cameraDirection = activeView->CameraDirection();
 
-  EoGeVector3d vRefXAx;
-  EoGeVector3d vRefYAx;
+  EoGeVector3d yDirection = activeView->ViewUp();
+  yDirection.RotAboutArbAx(cameraDirection, angle);
+  yDirection *= 0.1;
 
-  vRefYAx = activeView->ViewUp();
-  vRefYAx.RotAboutArbAx(vPlnNorm, dAng);
-  vRefYAx *= 0.1;
-  vRefXAx = vRefYAx;
-  vRefXAx.RotAboutArbAx(vPlnNorm, -Eo::HalfPi);
-  vRefXAx *= 0.6;
+  EoGeVector3d xDirection = yDirection;
+  xDirection.RotAboutArbAx(cameraDirection, -Eo::HalfPi);
+  xDirection *= Eo::defaultCharacterCellAspectRatio;
 
-  m_ReferenceSystem.SetXDirection(vRefXAx);
-  m_ReferenceSystem.SetYDirection(vRefYAx);
+  m_ReferenceSystem.SetXDirection(xDirection);
+  m_ReferenceSystem.SetYDirection(yDirection);
 
   Eo::Units units = app.GetUnits();
   if (units == Eo::Units::Architectural) { units = Eo::Units::ArchitecturalS; }
-  app.FormatLength(m_text, units, m_ln.Length());
+  app.FormatLength(m_text, units, m_line.Length());
   m_text.TrimLeft();
   if (cText0 == 'R' || cText0 == 'D') { m_text = cText0 + m_text; }
 }
 
-void EoDbDimension::Transform(EoGeTransformMatrix& tm) {
-  if ((sm_flags & 0x0001) != 0) {
-    m_ln.begin = tm * m_ln.begin;
-    m_ln.end = tm * m_ln.end;
-  }
-  if ((sm_flags & 0x0002) != 0) { m_ReferenceSystem.Transform(tm); }
+void EoDbDimension::SetBeginPoint(const EoGePoint3d& begin) { m_line.begin = begin; }
+void EoDbDimension::SetEndPoint(const EoGePoint3d& end) { m_line.end = end; }
+void EoDbDimension::SetPoints(const EoGePoint3d& begin, const EoGePoint3d& end) {
+  m_line.begin = begin;
+  m_line.end = end;
 }
-void EoDbDimension::Translate(EoGeVector3d v) {
-  m_ln += v;
+
+void EoDbDimension::Transform(const EoGeTransformMatrix& transformMatrix) {
+  if ((sm_flags & 0x0001) != 0) {
+    m_line.begin = transformMatrix * m_line.begin;
+    m_line.end = transformMatrix * m_line.end;
+  }
+  if ((sm_flags & 0x0002) != 0) { m_ReferenceSystem.Transform(transformMatrix); }
+}
+
+void EoDbDimension::Translate(const EoGeVector3d& v) {
+  m_line += v;
   m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v);
 }
 void EoDbDimension::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
-  if ((mask & 1) == 1) m_ln.begin += v;
+  if ((mask & 1) == 1) m_line.begin += v;
 
-  if ((mask & 2) == 2) m_ln.end += v;
+  if ((mask & 2) == 2) m_line.end += v;
 
   SetDefaultNote();
 }
@@ -367,7 +370,7 @@ bool EoDbDimension::Write(CFile& file) {
 
   EoDb::Write(file, m_color);
   EoDb::Write(file, m_lineTypeIndex);
-  m_ln.Write(file);
+  m_line.Write(file);
 
   EoDb::Write(file, m_textColor);
   m_fontDefinition.Write(file);

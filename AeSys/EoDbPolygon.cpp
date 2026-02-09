@@ -186,8 +186,8 @@ void EoDbPolygon::Display(AeSysView* view, CDC* deviceContext) {
   int iPtLstsId = m_numberOfVertices;
 
   if (m_polygonStyle == EoDb::PolygonStyle::Hatch) {
-    EoGeTransformMatrix tm(m_hatchOrigin, m_positiveX, m_positiveY);
-    DisplayFilAreaHatch(view, deviceContext, tm, 1, &iPtLstsId, m_vertices);
+    EoGeTransformMatrix transformMatrix(m_hatchOrigin, m_positiveX, m_positiveY);
+    DisplayFilAreaHatch(view, deviceContext, transformMatrix, 1, &iPtLstsId, m_vertices);
   } else {  // Fill area interior style is hollow, solid or pattern
     EoGePoint4dArray PointsArray;
 
@@ -376,13 +376,13 @@ void EoDbPolygon::GetAllPoints(EoGePoint3dArray& points) {
   for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { points.Add(m_vertices[w]); }
 }
 // Determines the extent.
-void EoDbPolygon::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
+void EoDbPolygon::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt;
 
   for (EoUInt16 w = 0; w < m_numberOfVertices; w++) {
     pt = m_vertices[w];
     view->ModelTransformPoint(pt);
-    pt = tm * pt;
+    pt = transformMatrix * pt;
     ptMin = EoGePoint3d::Min(ptMin, pt);
     ptMax = EoGePoint3d::Max(ptMax, pt);
   }
@@ -453,14 +453,14 @@ void EoDbPolygon::SetHatRefVecs(double dOffAng, double dXScal, double dYScal) {
   m_positiveY *= dYScal;
 }
 
-void EoDbPolygon::Transform(EoGeTransformMatrix& tm) {
-  m_hatchOrigin = tm * m_hatchOrigin;
-  m_positiveX = tm * m_positiveX;
-  m_positiveY = tm * m_positiveY;
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w] = tm * m_vertices[w]; }
+void EoDbPolygon::Transform(const EoGeTransformMatrix& transformMatrix) {
+  m_hatchOrigin = transformMatrix * m_hatchOrigin;
+  m_positiveX = transformMatrix * m_positiveX;
+  m_positiveY = transformMatrix * m_positiveY;
+  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w] = transformMatrix * m_vertices[w]; }
 }
 
-void EoDbPolygon::Translate(EoGeVector3d v) {
+void EoDbPolygon::Translate(const EoGeVector3d& v) {
   m_hatchOrigin += v;
   for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w] += v; }
 }
@@ -488,7 +488,7 @@ bool EoDbPolygon::Write(CFile& file) {
 
   return true;
 }
-void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& tm, const int iSets,
+void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& transformMatrix, const int iSets,
                          const int* iPtLstsId, EoGePoint3d* pta) {
   double dCurStrLen{};
   double dEps1{};
@@ -539,8 +539,8 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
     double dHatOrigY = dX * (-dSinAng) + dY * dCosAng;
 
     // Add rotation to matrix which gets current scan lines parallel to x-axis
-    tm *= EoGeTransformMatrix::ZAxisRotation(-dSinAng, dCosAng);
-    tmInv = tm;
+    transformMatrix *= EoGeTransformMatrix::ZAxisRotation(-dSinAng, dCosAng);
+    tmInv = transformMatrix;
     tmInv.Inverse();
 
     int iActEdgs = 0;
@@ -549,12 +549,12 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
     for (i = 0; i < iSets; i++) {
       if (i != 0) iBegPt = iPtLstsId[i - 1];
       ln.begin = pta[iBegPt];
-      ln.begin = tm * ln.begin;  // Apply transform to get areas first point in z0 plane
+      ln.begin = transformMatrix * ln.begin;  // Apply transform to get areas first point in z0 plane
 
       iPts = iPtLstsId[i] - iBegPt;  // Determine number of points in current area
       for (i2 = iBegPt; i2 < (int)iPtLstsId[i]; i2++) {
         ln.end = pta[((i2 - iBegPt + 1) % iPts) + iBegPt];
-        ln.end = tm * ln.end;
+        ln.end = transformMatrix * ln.end;
         vEdg.x = ln.end.x - ln.begin.x;  // Determine x and y-components of edge
         vEdg.y = ln.end.y - ln.begin.y;
         if (fabs(vEdg.y) >
@@ -659,7 +659,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
       dSecBeg -= dShift;
       goto l1;
     }
-    tm *= EoGeTransformMatrix::ZAxisRotation(dSinAng, dCosAng);
+    transformMatrix *= EoGeTransformMatrix::ZAxisRotation(dSinAng, dCosAng);
   }
   pstate.SetPen(view, deviceContext, color, lineType);
 }

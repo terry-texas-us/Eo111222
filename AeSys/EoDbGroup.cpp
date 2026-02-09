@@ -111,8 +111,8 @@ void EoDbGroup::BreakSegRefs() {
         if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(primitive)->BlockName(), block) != 0) {
           EoDbGroup* pSegT = new EoDbGroup(*block);
           EoGePoint3d basePoint = block->BasePoint();
-          EoGeTransformMatrix tm = static_cast<EoDbBlockReference*>(primitive)->BuildTransformMatrix(basePoint);
-          pSegT->Transform(tm);
+          EoGeTransformMatrix transformMatrix = static_cast<EoDbBlockReference*>(primitive)->BuildTransformMatrix(basePoint);
+          pSegT->Transform(transformMatrix);
 
           this->InsertBefore(PrimitivePosition, pSegT);
           this->RemoveAt(PrimitivePosition);
@@ -172,13 +172,14 @@ int EoDbGroup::GetBlockRefCount(const CString& blockName) {
   return count;
 }
 
-void EoDbGroup::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
+void EoDbGroup::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
-    primitive->GetExtents(view, ptMin, ptMax, tm);
+    primitive->GetExtents(view, ptMin, ptMax, transformMatrix);
   }
 }
+
 int EoDbGroup::GetLineTypeRefCount(EoInt16 lineType) {
   int count{};
 
@@ -228,12 +229,12 @@ bool EoDbGroup::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint
   }
   return false;
 }
-void EoDbGroup::ModifyNotes(const EoDbFontDefinition& fontDefinition, EoDbCharacterCellDefinition& characterCellDefinition, int iAtt) {
+void EoDbGroup::ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
     if (primitive->Is(EoDb::kTextPrimitive)) {
-      static_cast<EoDbText*>(primitive)->ModifyNotes(fontDefinition, characterCellDefinition, iAtt);
+      static_cast<EoDbText*>(primitive)->ModifyNotes(fontDefinition, characterCellDefinition, attributes);
     }
   }
 }
@@ -391,11 +392,11 @@ void EoDbGroup::Square(AeSysView* view) {
     if (primitive->Is(EoDb::kLinePrimitive)) { static_cast<EoDbLine*>(primitive)->Square(view); }
   }
 }
-void EoDbGroup::Transform(EoGeTransformMatrix& tm) {
+void EoDbGroup::Transform(const EoGeTransformMatrix& transformMatrix) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
-    primitive->Transform(tm);
+    primitive->Transform(transformMatrix);
   }
 }
 void EoDbGroup::Translate(EoGeVector3d v) {

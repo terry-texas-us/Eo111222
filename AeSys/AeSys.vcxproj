@@ -117,7 +117,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="EoDlgSetupPointStyle.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="EoDbCharacterCellDefinition.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="Dde.cpp" />
     <ClCompile Include="DdeCmds.cpp" />

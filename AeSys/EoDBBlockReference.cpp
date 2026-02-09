@@ -53,7 +53,7 @@ EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) {
   m_rowSpacing = other.m_rowSpacing;
 }
 EoDbBlockReference::EoDbBlockReference(EoUInt16 color, EoUInt16 lineType, const CString& name, const EoGePoint3d& point,
-                                       const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation)
+    const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation)
     : m_blockName(name), m_insertionPoint(point), m_normal(normal), m_scaleFactors(scaleFactors) {
   m_color = static_cast<EoInt16>(color);
   m_lineTypeIndex = static_cast<EoInt16>(lineType);
@@ -122,7 +122,7 @@ void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
 void EoDbBlockReference::AddReportToMessageList(EoGePoint3d) {
   CString message;
   message.Format(L"<BlockReference> Color: %s Line Type: %s BlockName %s Layer: %s", FormatPenColor().GetString(),
-                 FormatLineType().GetString(), m_blockName.GetString(), m_layerName.c_str());
+      FormatLineType().GetString(), m_blockName.GetString(), m_layerName.c_str());
   app.AddStringToMessageList(message);
   message.Format(L"  InsertionPoint: %s", m_insertionPoint.ToString().GetString());
   app.AddStringToMessageList(message);
@@ -141,7 +141,7 @@ void EoDbBlockReference::GetAllPoints(EoGePoint3dArray& points) {
 
 void EoDbBlockReference::FormatExtra(CString& extra) {
   extra.Format(L"Color;%s\tStyle;%s\tSegment Name;%s\tRotation Angle;%f", FormatPenColor().GetString(),
-               FormatLineType().GetString(), m_blockName.GetString(), m_rotation);
+      FormatLineType().GetString(), m_blockName.GetString(), m_rotation);
 }
 void EoDbBlockReference::FormatGeometry(CString& geometry) {
   geometry += L"Insertion Point;" + m_insertionPoint.ToString();
@@ -153,7 +153,8 @@ EoGePoint3d EoDbBlockReference::GetControlPoint() {
   point = m_insertionPoint;
   return point;
 }
-void EoDbBlockReference::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
+void EoDbBlockReference::GetExtents(
+    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoDbBlock* block{};
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return; }
@@ -163,7 +164,7 @@ void EoDbBlockReference::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoi
   view->PushModelTransform();
   view->SetLocalModelTransform(tmIns);
 
-  block->GetExtents(view, ptMin, ptMax, tm);
+  block->GetExtents(view, ptMin, ptMax, transformMatrix);
 
   view->PopModelTransform();
 }
@@ -176,10 +177,10 @@ bool EoDbBlockReference::IsInView(AeSysView* view) {
 
   EoGePoint3d basePoint = Block->BasePoint();
 
-  EoGeTransformMatrix tm = BuildTransformMatrix(basePoint);
+  EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
   view->PushModelTransform();
-  view->SetLocalModelTransform(tm);
+  view->SetLocalModelTransform(transformMatrix);
 
   bool bInView = Block->IsInView(view);
 
@@ -203,10 +204,10 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
 
   EoGePoint3d basePoint = block->BasePoint();
 
-  EoGeTransformMatrix tm = BuildTransformMatrix(basePoint);
+  EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
   view->PushModelTransform();
-  view->SetLocalModelTransform(tm);
+  view->SetLocalModelTransform(transformMatrix);
 
   auto position = block->GetHeadPosition();
   while (position != nullptr) {
@@ -234,10 +235,10 @@ bool EoDbBlockReference::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, 
 
   EoGePoint3d basePoint = block->BasePoint();
 
-  EoGeTransformMatrix tm = BuildTransformMatrix(basePoint);
+  EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
   view->PushModelTransform();
-  view->SetLocalModelTransform(tm);
+  view->SetLocalModelTransform(transformMatrix);
 
   bool bResult = block->SelectUsingRectangle(view, pt1, pt2);
 
@@ -252,10 +253,10 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return bResult; }
   EoGePoint3d basePoint = block->BasePoint();
 
-  EoGeTransformMatrix tm = BuildTransformMatrix(basePoint);
+  EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
   view->PushModelTransform();
-  view->SetLocalModelTransform(tm);
+  view->SetLocalModelTransform(transformMatrix);
 
   auto position = block->GetHeadPosition();
   while (position != nullptr) {
@@ -274,12 +275,12 @@ void EoDbBlockReference::SetInsertionPoint(const DRW_Coord& point) {
   m_insertionPoint.z = point.z;
 }
 
-void EoDbBlockReference::Transform(EoGeTransformMatrix& tm) {
-  m_insertionPoint = tm * m_insertionPoint;
-  m_normal = tm * m_normal;
+void EoDbBlockReference::Transform(const EoGeTransformMatrix& transformMatrix) {
+  m_insertionPoint = transformMatrix * m_insertionPoint;
+  m_normal = transformMatrix * m_normal;
 
   if (fabs(m_normal.x) < Eo::geometricTolerance && fabs(m_normal.y) <= Eo::geometricTolerance) {
-    m_scaleFactors = tm * m_scaleFactors;
+    m_scaleFactors = transformMatrix * m_scaleFactors;
   }
 }
 void EoDbBlockReference::TranslateUsingMask(EoGeVector3d v, DWORD mask) {

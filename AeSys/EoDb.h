@@ -6,6 +6,7 @@
 class EoDbPrimitive;
 
 namespace EoDb {
+
 enum class FileTypes { Dwg = 0x00, Dxf = 0x01, Dxb = 0x02, Peg = 0x20, Job = 0x21, Tracing = 0x22, Unknown = -1 };
 enum PrimitiveTypes {
   kPointPrimitive = 0x0100,
@@ -58,8 +59,8 @@ enum Sentinels {
 enum class PolygonStyle { Hollow, Solid, Pattern, Hatch, Special = -1 };
 enum class Path : EoUInt16 { Right, Left, Up, Down };
 enum class HorizontalAlignment : EoUInt16 { Left = 1, Center, Right };
-enum VerticalAlignment { AlignTop = 2, AlignMiddle, AlignBottom };
-enum Precision { EoTrueType = 1, StrokeType };
+enum class VerticalAlignment : EoUInt16 { Top = 2, Middle, Bottom };
+enum class Precision : EoUInt16 { TrueType = 1, StrokeType };
 
 void ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& file, EoDbPrimitive*& primitive);
@@ -88,10 +89,22 @@ inline void Read(CFile& file, EoDb::Path& path) {
   path = static_cast<EoDb::Path>(number);
 }
 
+inline void Read(CFile& file, EoDb::Precision& precision) {
+  EoUInt16 number;
+  Read(file, number);
+  precision = static_cast<EoDb::Precision>(number);
+}
+
 inline void Read(CFile& file, EoDb::HorizontalAlignment& horizontalAlignment) {
   EoUInt16 number;
   Read(file, number);
   horizontalAlignment = static_cast<EoDb::HorizontalAlignment>(number);
+}
+
+inline void Read(CFile& file, EoDb::VerticalAlignment& verticalAlignment) {
+  EoUInt16 number;
+  Read(file, number);
+  verticalAlignment = static_cast<EoDb::VerticalAlignment>(number);
 }
 
 [[nodiscard]] double ReadDouble(CFile& file);
@@ -106,8 +119,15 @@ void Write(CFile& file, EoInt16 number);
 void Write(CFile& file, EoUInt16 number);
 
 inline void Write(CFile& file, EoDb::Path path) { Write(file, static_cast<EoUInt16>(path)); }
+
+inline void Write(CFile& file, EoDb::Precision precision) { Write(file, static_cast<EoUInt16>(precision)); }
+
 inline void Write(CFile& file, EoDb::HorizontalAlignment horizontalAlignment) {
   Write(file, static_cast<EoUInt16>(horizontalAlignment));
+}
+
+inline void Write(CFile& file, EoDb::VerticalAlignment verticalAlignment) {
+  Write(file, static_cast<EoUInt16>(verticalAlignment));
 }
 
 }  // namespace EoDb

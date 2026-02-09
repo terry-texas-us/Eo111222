@@ -15,10 +15,10 @@ using namespace dde;
 bool dde::ExecNoteHT(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
   wchar_t szBuf[32]{};
 	_tcsncpy_s(szBuf, 32, ppArgs[0], sizeof(szBuf) - 1);
-	EoDbCharacterCellDefinition ccd;
-	pstate.GetCharCellDef(ccd);
-	ccd.ChrHgtSet(_wtof(szBuf));
-	pstate.SetCharCellDef(ccd);
+  EoDbCharacterCellDefinition characterCellDefinition;
+	pstate.GetCharCellDef(characterCellDefinition);
+	characterCellDefinition.ChrHgtSet(_wtof(szBuf));
+	pstate.SetCharCellDef(characterCellDefinition);
 	return true;
 }
 /// <summary>Sets the Fill.</summary>
@@ -156,10 +156,10 @@ bool dde::ExecNote(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 
 	EoDbFontDefinition fd;
 	pstate.GetFontDef(fd);
-	EoDbCharacterCellDefinition ccd;
-	pstate.GetCharCellDef(ccd);
+	EoDbCharacterCellDefinition characterCellDefinition;
+	pstate.GetCharCellDef(characterCellDefinition);
 
-	EoGeReferenceSystem ReferenceSystem(ptPvt, ccd);
+	EoGeReferenceSystem ReferenceSystem(ptPvt, characterCellDefinition);
 
 	auto* Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, ppArgs[0]));
 	Document->AddWorkLayerGroup(Group);

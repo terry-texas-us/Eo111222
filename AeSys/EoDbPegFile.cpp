@@ -603,25 +603,27 @@ void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primiti
   double rowSpacing = EoDb::ReadDouble(file);
   (void)rowSpacing;  // currently unused, but may be used in the future to indicate the row spacing
 
-  primitive = new EoDbBlockReference(static_cast<EoUInt16>(color), static_cast<EoUInt16>(LineType), Name, Point,
-                                     Normal, ScaleFactors, Rotation);
+  primitive = new EoDbBlockReference(static_cast<EoUInt16>(color), static_cast<EoUInt16>(LineType), Name, Point, Normal,
+                                     ScaleFactors, Rotation);
 }
 void EoDb::ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& /* file */, EoDbPrimitive*& /* primitive */) {}
-void EoDb::ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 PenColor = EoDb::ReadInt16(file);
-  EoInt16 LineType = EoDb::ReadInt16(file);
-  EoGePoint3d BeginPoint = EoDb::ReadPoint3d(file);
-  EoGePoint3d EndPoint = EoDb::ReadPoint3d(file);
-  EoInt16 TextPenColor = EoDb::ReadInt16(file);
-  EoDbFontDefinition FontDefinition;
-  FontDefinition.Read(file);
-  EoGeReferenceSystem ReferenceSystem;
-  ReferenceSystem.Read(file);
-  CString Text;
-  EoDb::Read(file, Text);
 
-  primitive = new EoDbDimension(PenColor, LineType, EoGeLine(BeginPoint, EndPoint), TextPenColor, FontDefinition,
-                                ReferenceSystem, Text);
+void EoDb::ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive) {
+  EoInt16 color = EoDb::ReadInt16(file);
+  EoInt16 lineType = EoDb::ReadInt16(file);
+  EoGePoint3d beginPoint = EoDb::ReadPoint3d(file);
+  EoGePoint3d endPoint = EoDb::ReadPoint3d(file);
+  EoInt16 textColor = EoDb::ReadInt16(file);
+  EoDbFontDefinition fontDefinition;
+  fontDefinition.Read(file);
+  EoGeReferenceSystem referenceSystem;
+  referenceSystem.Read(file);
+  CString text;
+  EoDb::Read(file, text);
+
+  primitive = new EoDbDimension(EoGeLine(beginPoint, endPoint), fontDefinition, referenceSystem, text, textColor);
+  primitive->SetColor(color);
+  primitive->SetLineTypeIndex(lineType);
 }
 
 void EoDb::ConstructConicPrimitive(CFile& file, EoDbPrimitive*& primitive) {

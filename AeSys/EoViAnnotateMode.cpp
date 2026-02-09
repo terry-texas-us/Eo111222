@@ -99,7 +99,7 @@ void AeSysView::OnAnnotateModeBubble() {
   m_PreviousOp = ModeLineHighlightOp(ID_OP4);
 
   if (!CurrentText.IsEmpty()) {
-    CDC* DeviceContext = GetDC();
+    auto* deviceContext = GetDC();
 
     auto cameraDirection = CameraDirection();
     auto minorAxis = ViewUp();
@@ -110,18 +110,18 @@ void AeSysView::OnAnnotateModeBubble() {
     EoGeReferenceSystem referenceSystem(cursorPosition, majorAxis, minorAxis);
 
     int PrimitiveState = pstate.Save();
-    pstate.SetColor(DeviceContext, 2);
+    pstate.SetColor(deviceContext, 2);
 
     EoDbFontDefinition fontDefinition = pstate.FontDefinition();
-    fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
+    fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::VerticalAlignment::Middle);
 
     auto characterCellDefinition = pstate.CharacterCellDefinition();
     characterCellDefinition.SetRotationAngle(0.0);
-    pstate.SetCharCellDef(characterCellDefinition);
+    pstate.SetCharacterCellDefinition(characterCellDefinition);
 
     group->AddTail(new EoDbText(fontDefinition, referenceSystem, CurrentText));
-    pstate.Restore(DeviceContext, PrimitiveState);
-    ReleaseDC(DeviceContext);
+    pstate.Restore(deviceContext, PrimitiveState);
+    ReleaseDC(deviceContext);
   }
   if (NumberOfSides() == 0) {
     auto circle = EoDbConic::CreateCircleInView(cursorPosition, BubbleRadius());
@@ -254,7 +254,7 @@ void AeSysView::OnAnnotateModeBox() {
 }
 
 void AeSysView::OnAnnotateModeCutIn() {
-  CDC* DeviceContext = GetDC();
+  auto* deviceContext = GetDC();
 
   auto cursorPosition = GetCursorPosition();
 
@@ -289,17 +289,17 @@ void AeSysView::OnAnnotateModeCutIn() {
       EoGeReferenceSystem referenceSystem(cursorPosition, majorAxis, minorAxis);
 
       auto color = pstate.Color();
-      pstate.SetColor(DeviceContext, 2);
+      pstate.SetColor(deviceContext, 2);
 
       EoDbFontDefinition fontDefinition = pstate.FontDefinition();
-      fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::AlignMiddle);
+      fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::VerticalAlignment::Middle);
 
       auto characterCellDefinition = pstate.CharacterCellDefinition();
       characterCellDefinition.SetRotationAngle(0.0);
-      pstate.SetCharCellDef(characterCellDefinition);
+      pstate.SetCharacterCellDefinition(characterCellDefinition);
 
       auto* text = new EoDbText(fontDefinition, referenceSystem, CurrentText);
-      pstate.SetColor(DeviceContext, color);
+      pstate.SetColor(deviceContext, color);
 
       Group->AddTail(text);
 
@@ -327,9 +327,9 @@ void AeSysView::OnAnnotateModeCutIn() {
         pLine->EndPoint(ptsBox[0]);
     }
     document->UpdateAllViews(nullptr, EoDb::kGroup, Group);
-    pstate.Restore(DeviceContext, PrimitiveState);
+    pstate.Restore(deviceContext, PrimitiveState);
   }
-  ReleaseDC(DeviceContext);
+  ReleaseDC(deviceContext);
 }
 
 void AeSysView::OnAnnotateModeConstructionLine() {

@@ -41,7 +41,7 @@ class EoDbLine : public EoDbPrimitive {
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;
   EoGePoint3d GetControlPoint() override { return m_ln.Midpoint(); }
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&) override;
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive* primitive) override;
   bool Is(EoUInt16 wType) override { return wType == EoDb::kLinePrimitive; }
@@ -51,8 +51,8 @@ class EoDbLine : public EoDbPrimitive {
   bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
-  void Transform(EoGeTransformMatrix& transformMatrix) override;
-  void Translate(EoGeVector3d v) override { m_ln += v; }
+  void Transform(const EoGeTransformMatrix& transformMatrix) override;
+  void Translate(const EoGeVector3d& v) override { m_ln += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
   void Write(CFile& file, EoUInt8*) override;

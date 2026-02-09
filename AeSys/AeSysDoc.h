@@ -214,14 +214,14 @@ class AeSysDoc : public CDocument {
   void ModifyTrappedGroupsColor(EoInt16 color) { m_TrappedGroupList.ModifyColor(color); }
   void ModifyTrappedGroupsLineType(EoInt16 lineType) { m_TrappedGroupList.ModifyLineType(lineType); }
   void ModifyTrappedGroupsNoteAttributes(const EoDbFontDefinition& fontDefinition,
-                                         EoDbCharacterCellDefinition& characterCellDefinition, int attributes);
+                                         const EoDbCharacterCellDefinition& characterCellDefinition, int attributes);
   void RemoveAllTrappedGroups();
   EoDbGroup* RemoveLastTrappedGroup() { return m_TrappedGroupList.RemoveTail(); }
   auto RemoveTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Remove(group); }
   void RemoveTrappedGroupAt(POSITION position) { m_TrappedGroupList.RemoveAt(position); }
   void SetTrapPivotPoint(const EoGePoint3d& pt) { m_TrapPivotPoint = pt; }
   void SquareTrappedGroups(AeSysView* view);
-  void TransformTrappedGroups(EoGeTransformMatrix& tm);
+  void TransformTrappedGroups(EoGeTransformMatrix& transformMatrix);
   void TranslateTrappedGroups(EoGeVector3d translate);
   [[nodiscard]] auto TrapGroupCount() { return m_TrappedGroupList.GetCount(); }
   [[nodiscard]] auto* GroupsInTrap() { return &m_TrappedGroupList; }

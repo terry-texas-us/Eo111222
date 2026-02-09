@@ -20,80 +20,80 @@ void AeSysView::OnModeGroupEdit() {
 }
 void AeSysView::DoEditGroupCopy() {
   auto* document = GetDocument();
-  if (m_SubModeEditGroup != 0) {
-    auto* Group = new EoDbGroup(*m_SubModeEditGroup);
+  if (m_SubModeEditGroup == nullptr) { return; }
+  auto* group = new EoDbGroup(*m_SubModeEditGroup);
 
-    document->AddWorkLayerGroup(Group);
-    m_SubModeEditGroup = Group;
+  document->AddWorkLayerGroup(group);
+  m_SubModeEditGroup = group;
 
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
-    m_tmEditSeg.Identity();
-  }
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+  m_tmEditSeg.Identity();
 }
+
 void AeSysView::DoEditGroupEscape() {
-  if (m_SubModeEditGroup != 0) {
-    auto* document = GetDocument();
-    m_tmEditSeg.Inverse();
+  if (m_SubModeEditGroup == nullptr) { return; }
+  auto* document = GetDocument();
+  m_tmEditSeg.Inverse();
 
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
-    m_SubModeEditGroup->Transform(m_tmEditSeg);
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+  m_SubModeEditGroup->Transform(m_tmEditSeg);
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
 
-    InitializeGroupAndPrimitiveEdit();
+  InitializeGroupAndPrimitiveEdit();
 
-    app.LoadModeResources(app.PrimaryMode());
-  }
+  app.LoadModeResources(app.PrimaryMode());
 }
+
 void AeSysView::DoEditGroupTransform(EoUInt16 operation) {
   auto* document = GetDocument();
-  if (m_SubModeEditGroup != 0) {
-    EoGeTransformMatrix tm;
+  if (m_SubModeEditGroup == nullptr) { return; }
+  EoGeTransformMatrix transformMatrix;
 
-    EoGeVector3d TranslateVector(m_SubModeEditBeginPoint, EoGePoint3d::kOrigin);
+  EoGeVector3d TranslateVector(m_SubModeEditBeginPoint, EoGePoint3d::kOrigin);
 
-    tm.Translate(TranslateVector);
+  transformMatrix.Translate(TranslateVector);
 
-    if (operation == ID_OP2) {
-      tm *= EditModeRotationTMat();
-    } else if (operation == ID_OP3) {
-      tm *= EditModeInvertedRotationTMat();
-    } else if (operation == ID_OP6) {
-      tm.Scale(EditModeMirrorScale());
-    } else if (operation == ID_OP7) {
-      tm.Scale(EditModeInvertedScaleFactors());
-    } else if (operation == ID_OP8) {
-      tm.Scale(EditModeScaleFactors());
-    }
-    tm.Translate(-TranslateVector);
-
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
-    m_SubModeEditGroup->Transform(tm);
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
-
-    m_tmEditSeg *= tm;
+  if (operation == ID_OP2) {
+    transformMatrix *= EditModeRotationTMat();
+  } else if (operation == ID_OP3) {
+    transformMatrix *= EditModeInvertedRotationTMat();
+  } else if (operation == ID_OP6) {
+    transformMatrix.Scale(EditModeMirrorScale());
+  } else if (operation == ID_OP7) {
+    transformMatrix.Scale(EditModeInvertedScaleFactors());
+  } else if (operation == ID_OP8) {
+    transformMatrix.Scale(EditModeScaleFactors());
   }
+  transformMatrix.Translate(-TranslateVector);
+
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+  m_SubModeEditGroup->Transform(transformMatrix);
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+
+  m_tmEditSeg *= transformMatrix;
 }
+
 void AeSysView::PreviewGroupEdit() {
   auto* document = GetDocument();
-  if (m_SubModeEditGroup != 0) {
-    EoGeTransformMatrix tm;
-    m_SubModeEditEndPoint = GetCursorPosition();
-    tm.Translate(EoGeVector3d(m_SubModeEditBeginPoint, m_SubModeEditEndPoint));
+  if (m_SubModeEditGroup == nullptr) { return; }
+  EoGeTransformMatrix transformMatrix;
+  m_SubModeEditEndPoint = GetCursorPosition();
+  transformMatrix.Translate(EoGeVector3d(m_SubModeEditBeginPoint, m_SubModeEditEndPoint));
 
-    if (app.IsTrapHighlighted() && document->FindTrappedGroup(m_SubModeEditGroup) != 0) {
-      EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor());
-    }
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
-    m_SubModeEditGroup->Transform(tm);
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
-
-    EoDbPrimitive::SetSpecialColor(0);
-
-    m_tmEditSeg *= tm;
-
-    m_SubModeEditBeginPoint = m_SubModeEditEndPoint;
+  if (app.IsTrapHighlighted() && document->FindTrappedGroup(m_SubModeEditGroup) != 0) {
+    EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor());
   }
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+  m_SubModeEditGroup->Transform(transformMatrix);
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+
+  EoDbPrimitive::SetSpecialColor(0);
+
+  m_tmEditSeg *= transformMatrix;
+
+  m_SubModeEditBeginPoint = m_SubModeEditEndPoint;
 }
+
 void AeSysDoc::InitializeGroupAndPrimitiveEdit() {
   auto position = GetFirstViewPosition();
   while (position != nullptr) {
@@ -105,8 +105,8 @@ void AeSysView::InitializeGroupAndPrimitiveEdit() {
   m_SubModeEditBeginPoint = EoGePoint3d::kOrigin;
   m_SubModeEditEndPoint = m_SubModeEditBeginPoint;
 
-  m_SubModeEditGroup = 0;
-  m_SubModeEditPrimitive = 0;
+  m_SubModeEditGroup = nullptr;
+  m_SubModeEditPrimitive = nullptr;
 
   m_tmEditSeg.Identity();
 }

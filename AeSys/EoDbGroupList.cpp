@@ -60,11 +60,11 @@ int EoDbGroupList::GetBlockRefCount(const CString& strBlkNam) {
   return count;
 }
 
-void EoDbGroupList::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
+void EoDbGroupList::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& transformMatrix) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    group->GetExtents(view, ptMin, ptMax, tm);
+    group->GetExtents(view, ptMin, ptMax, transformMatrix);
   }
 }
 int EoDbGroupList::GetLineTypeRefCount(EoInt16 lineType) {
@@ -90,7 +90,8 @@ void EoDbGroupList::ModifyLineType(EoInt16 nStyle) {
   while (position != nullptr) (GetNext(position))->ModifyLineType(nStyle);
 }
 
-void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition, EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
+void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition,
+                                const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
@@ -149,7 +150,7 @@ EoDbGroup* EoDbGroupList::SelectGroupUsingPoint(const EoGePoint3d& pt) {
   EoGePoint4d ptView(pt);
   activeView->ModelViewTransformPoint(ptView);
 
-  EoGeTransformMatrix tm = activeView->ModelViewGetMatrixInverse();
+  EoGeTransformMatrix transformMatrix = activeView->ModelViewGetMatrixInverse();
 
   double dPicApert = activeView->SelectApertureSize();
 
@@ -162,11 +163,11 @@ EoDbGroup* EoDbGroupList::SelectGroupUsingPoint(const EoGePoint3d& pt) {
   }
   return pPicSeg;
 }
-void EoDbGroupList::Transform(EoGeTransformMatrix& tm) {
+void EoDbGroupList::Transform(const EoGeTransformMatrix& transformMatrix) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    group->Transform(tm);
+    group->Transform(transformMatrix);
   }
 }
 

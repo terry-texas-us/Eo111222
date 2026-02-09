@@ -30,9 +30,15 @@ class EoDbGroupList : public CObList {
   void Display(AeSysView* view, CDC* deviceContext);
   int GetBlockRefCount(const CString& name);
   /// <summary>Determines the extent of all groups in list.</summary>
-  void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, EoGeTransformMatrix& tm);
+  void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, EoGeTransformMatrix& transformMatrix);
   int GetLineTypeRefCount(EoInt16 lineType);
-  void ModifyNotes(const EoDbFontDefinition& fontDefinition, EoDbCharacterCellDefinition& characterCellDefinition, int iAtt = 0);
+
+  /** Modifies the notes of all groups in the list using the specified font definition, character cell definition and attributes.
+   * @param fontDefinition The font definition to apply to the notes.
+   * @param characterCellDefinition The character cell definition to apply to the notes.
+   * @param attributes The attributes that specify which properties of the notes to modify. This can be a combination of TM_TEXT_ALL, TM_TEXT_FONT, and TM_TEXT_HEIGHT.
+   */
+  void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition, int attributes = 0);
   void ModifyColor(EoInt16 color);
   void ModifyLineType(EoInt16 lineType);
   void PenTranslation(EoUInt16, EoInt16*, EoInt16*);
@@ -40,7 +46,7 @@ class EoDbGroupList : public CObList {
   int RemoveEmptyGroups();
   POSITION Remove(EoDbGroup* group);
   EoDbGroup* SelectGroupUsingPoint(const EoGePoint3d& pt);
-  void Transform(EoGeTransformMatrix& tm);
+  void Transform(const EoGeTransformMatrix& transformMatrix);
   void Translate(EoGeVector3d translate);
   void Write(CFile& file, EoUInt8* buffer);
 };

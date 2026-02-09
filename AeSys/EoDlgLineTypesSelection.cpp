@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "Eo.h"
 #include "EoDbLineType.h"
 #include "EoDbLineTypeTable.h"
 #include "EoDlgLineTypesSelection.h"
@@ -181,7 +182,7 @@ void EoDlgLineTypesSelection::OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result)
             double x = controlRect.left + 4.0;  // Padding
             double xEnd = controlRect.right - 4.0;
 
-            CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
+            CPen pen(PS_SOLID, 1, Eo::colorBlack);
             CPen* oldPen = controlContext.SelectObject(&pen);
 
             while (x < xEnd) {
@@ -193,7 +194,7 @@ void EoDlgLineTypesSelection::OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result)
                 } else if (len < 0.0) {
                   x -= std::min(xEnd, len * dpi);
                 } else {
-                  controlContext.SetPixel(static_cast<int>(x), yCenter, RGB(0, 0, 0));
+                  controlContext.SetPixel(static_cast<int>(x), yCenter, Eo::colorBlack);
                   x += 1.0;  // Small advance
                 }
                 if (x >= xEnd) break;

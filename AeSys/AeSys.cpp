@@ -596,13 +596,13 @@ void AeSys::InitGbls(CDC* deviceContext) {
 
   hatch::dXAxRefVecScal = 0.1;
   hatch::dYAxRefVecScal = 0.1;
-  hatch::dOffAng = 0.;
+  hatch::dOffAng = 0.0;
 
   EoDbCharacterCellDefinition characterCellDefinition{};
-  pstate.SetCharCellDef(characterCellDefinition);
+  pstate.SetCharacterCellDefinition(characterCellDefinition);
 
   EoDbFontDefinition fontDefinition;
-  pstate.SetFontDef(deviceContext, fontDefinition);
+  pstate.SetFontDefinition(deviceContext, fontDefinition);
 
   SetUnits(Eo::Units::Inches);
   SetArchitecturalUnitsFractionPrecision(8);

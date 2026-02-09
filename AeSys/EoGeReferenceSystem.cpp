@@ -8,82 +8,60 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 
-EoGeReferenceSystem::EoGeReferenceSystem()
-    : m_Origin(EoGePoint3d::kOrigin), m_XDirection(EoGeVector3d::positiveUnitX), m_YDirection(EoGeVector3d::positiveUnitY) {}
-
-EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin, EoDbCharacterCellDefinition& characterCellDefinition) {
+EoGeReferenceSystem::EoGeReferenceSystem(
+    const EoGePoint3d& origin, const EoDbCharacterCellDefinition& characterCellDefinition)
+    : m_origin{origin} {
   auto* activeView = AeSysView::GetActiveView();
-
-  m_Origin = origin;
-
   auto cameraDirection = activeView->CameraDirection();
 
-  m_YDirection = activeView->ViewUp();
-  m_YDirection.RotAboutArbAx(cameraDirection, characterCellDefinition.RotationAngle());
+  m_yDirection = activeView->ViewUp();
+  m_yDirection.RotAboutArbAx(cameraDirection, characterCellDefinition.RotationAngle());
 
-  m_XDirection = m_YDirection;
-  m_XDirection.RotAboutArbAx(cameraDirection, -Eo::HalfPi);
-  m_YDirection.RotAboutArbAx(cameraDirection, characterCellDefinition.SlantAngle());
-  m_XDirection *= 0.6 * characterCellDefinition.Height() * characterCellDefinition.ExpansionFactor();
-  m_YDirection *= characterCellDefinition.Height();
+  m_xDirection = m_yDirection;
+  m_xDirection.RotAboutArbAx(cameraDirection, -Eo::HalfPi);
+  m_yDirection.RotAboutArbAx(cameraDirection, characterCellDefinition.SlantAngle());
+  m_xDirection *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height() *
+                  characterCellDefinition.ExpansionFactor();
+  m_yDirection *= characterCellDefinition.Height();
 }
 
 EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin, EoGeVector3d xDirection, EoGeVector3d yDirection)
-    : m_Origin(origin), m_XDirection(xDirection), m_YDirection(yDirection) {}
-EoGeReferenceSystem::EoGeReferenceSystem(const EoGeReferenceSystem& src) {
-  m_Origin = src.m_Origin;
-  m_XDirection = src.m_XDirection;
-  m_YDirection = src.m_YDirection;
-}
-EoGeReferenceSystem& EoGeReferenceSystem::operator=(const EoGeReferenceSystem& src) {
-  m_Origin = src.m_Origin;
-  m_XDirection = src.m_XDirection;
-  m_YDirection = src.m_YDirection;
+    : m_origin{origin}, m_xDirection{xDirection}, m_yDirection{yDirection} {}
 
-  return (*this);
-}
-void EoGeReferenceSystem::GetUnitNormal(EoGeVector3d& normal) const {
-  normal = CrossProduct(m_XDirection, m_YDirection);
+[[nodiscard]] EoGeVector3d EoGeReferenceSystem::UnitNormal() const {
+  EoGeVector3d normal = CrossProduct(m_xDirection, m_yDirection);
   normal.Normalize();
+  return normal;
 }
-EoGePoint3d EoGeReferenceSystem::Origin() const { return m_Origin; }
-EoGeTransformMatrix EoGeReferenceSystem::TransformMatrix() const {
-  return EoGeTransformMatrix(m_Origin, m_XDirection, m_YDirection);
+
+[[nodiscard]] EoGeTransformMatrix EoGeReferenceSystem::TransformMatrix() const {
+  return EoGeTransformMatrix(m_origin, m_xDirection, m_yDirection);
+}
+
+void EoGeReferenceSystem::Rescale(const EoDbCharacterCellDefinition& characterCellDefinition) {
+  EoGeVector3d normal = UnitNormal();
+  m_xDirection.Normalize();
+  m_yDirection = m_xDirection;
+  m_yDirection.RotAboutArbAx(normal, Eo::HalfPi + characterCellDefinition.SlantAngle());
+  m_xDirection *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height() *
+                  characterCellDefinition.ExpansionFactor();
+  m_yDirection *= characterCellDefinition.Height();
+}
+
+void EoGeReferenceSystem::Transform(const EoGeTransformMatrix& transformMatrix) {
+  m_origin = transformMatrix * m_origin;
+  m_xDirection = transformMatrix * m_xDirection;
+  m_yDirection = transformMatrix * m_yDirection;
 }
 
 void EoGeReferenceSystem::Read(CFile& file) {
-  m_Origin.Read(file);
-  m_XDirection.Read(file);
-  m_YDirection.Read(file);
+  m_origin.Read(file);
+  m_xDirection.Read(file);
+  m_yDirection.Read(file);
 }
 
-void EoGeReferenceSystem::Rescale(EoDbCharacterCellDefinition& characterCellDefinition) {
-  EoGeVector3d normal;
-  GetUnitNormal(normal);
-  m_XDirection.Normalize();
-  m_YDirection = m_XDirection;
-  m_YDirection.RotAboutArbAx(normal, Eo::HalfPi + characterCellDefinition.SlantAngle());
-  m_XDirection *= 0.6 * characterCellDefinition.Height() * characterCellDefinition.ExpansionFactor();
-  m_YDirection *= characterCellDefinition.Height();
-}
-
-void EoGeReferenceSystem::Set(const EoGePoint3d& origin, const EoGeVector3d xDirection, const EoGeVector3d yDirection) {
-  m_Origin = origin;
-  m_XDirection = xDirection;
-  m_YDirection = yDirection;
-}
-void EoGeReferenceSystem::SetOrigin(const EoGePoint3d& origin) { m_Origin = origin; }
-void EoGeReferenceSystem::SetXDirection(const EoGeVector3d& xDirection) { m_XDirection = xDirection; }
-void EoGeReferenceSystem::SetYDirection(const EoGeVector3d& yDirection) { m_YDirection = yDirection; }
-void EoGeReferenceSystem::Transform(EoGeTransformMatrix& tm) {
-  m_Origin = tm * m_Origin;
-  m_XDirection = tm * m_XDirection;
-  m_YDirection = tm * m_YDirection;
-}
 void EoGeReferenceSystem::Write(CFile& file) {
-  m_Origin.Write(file);
-  m_XDirection.Write(file);
-  m_YDirection.Write(file);
+  m_origin.Write(file);
+  m_xDirection.Write(file);
+  m_yDirection.Write(file);
 }
-EoGeVector3d EoGeReferenceSystem::XDirection() const { return m_XDirection; }
-EoGeVector3d EoGeReferenceSystem::YDirection() const { return m_YDirection; }

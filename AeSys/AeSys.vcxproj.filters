@@ -326,9 +326,6 @@
     <ClCompile Include="EoDbFontDefinition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EoDbCharacterCellDefinition.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EoGePolyline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

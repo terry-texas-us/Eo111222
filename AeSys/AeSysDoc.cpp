@@ -425,13 +425,13 @@ void AeSysDoc::DeletedGroupsRestore() {
     UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
   }
 }
-void AeSysDoc::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& tm) {
+void AeSysDoc::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& transformMatrix) {
   ptMin(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
   ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
     auto* layer = GetLayerTableLayerAt(w);
-    if (!layer->IsOff()) { layer->GetExtents(view, ptMin, ptMax, tm); }
+    if (!layer->IsOff()) { layer->GetExtents(view, ptMin, ptMax, transformMatrix); }
   }
 }
 
@@ -1484,12 +1484,12 @@ void AeSysDoc::OnSetupNote() {
     characterCellDefinition.SetRotationAngle(Eo::DegreeToRadian(Dialog.m_rotationAngle));
     characterCellDefinition.SetExpansionFactor(Dialog.m_expansionFactor);
     characterCellDefinition.SetSlantAngle(Eo::DegreeToRadian(Dialog.m_slantAngle));
-    pstate.SetCharCellDef(characterCellDefinition);
+    pstate.SetCharacterCellDefinition(characterCellDefinition);
 
     auto* activeView = AeSysView::GetActiveView();
     CDC* DeviceContext = (activeView == nullptr) ? nullptr : activeView->GetDC();
 
-    pstate.SetFontDef(DeviceContext, fontDefinition);
+    pstate.SetFontDefinition(DeviceContext, fontDefinition);
   }
 }
 
