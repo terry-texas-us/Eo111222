@@ -4,7 +4,7 @@
 #include "AeSysView.h"
 #include "EoDbLine.h"
 #include "EoDlgSetLength.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 
 void AeSysView::OnDraw2ModeOptions() {
   EoDlgSetLength dlg;

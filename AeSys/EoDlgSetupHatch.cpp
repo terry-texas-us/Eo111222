@@ -1,7 +1,7 @@
 ﻿#include "Stdafx.h"
 
 #include "EoDlgSetupHatch.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 #include "Resource.h"
 
 EoDlgSetupHatch::EoDlgSetupHatch(CWnd* pParent /*=nullptr*/)

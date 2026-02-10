@@ -12,7 +12,7 @@
 #include "EoGePolyline.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 
 inline EoGeLine::EoGeLine(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint)
     : begin(beginPoint), end(endPoint) {}

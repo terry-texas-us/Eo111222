@@ -19,7 +19,7 @@
 #include "EoGeReferenceSystem.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 
 namespace {
 /** @brief Calculate the font escapement angle in tenths of degrees from the X axis vector.

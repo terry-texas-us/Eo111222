@@ -15,7 +15,7 @@
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 
 POSITION AeSysDoc::AddGroupToTrap(EoDbGroup* group) {
   if (app.IsTrapHighlighted()) { UpdateAllViews(nullptr, EoDb::kGroupSafeTrap, group); }

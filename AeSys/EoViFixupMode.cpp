@@ -17,7 +17,7 @@
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 #include "Resource.h"
 
 /** @todo Color and lineType assignment for chamfer/fillet operations

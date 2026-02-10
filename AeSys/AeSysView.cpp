@@ -39,9 +39,9 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "EoGsModelTransform.h"
+#include "EoGsRenderState.h"
 #include "EoGsViewTransform.h"
 #include "MainFrm.h"
-#include "PrimState.h"
 #include "Resource.h"
 #include "Section.h"
 

@@ -7,7 +7,7 @@
 #include "EoDbPoint.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 #include "Resource.h"
 
 double NodalModePickTolerance{0.05};

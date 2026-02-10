@@ -14,7 +14,7 @@
 #include "EoDbText.h"
 #include "EoDlgLowPressureDuctOptions.h"
 #include "EoGeReferenceSystem.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 #include "Section.h"
 
 namespace {

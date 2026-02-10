@@ -7,7 +7,7 @@
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 #include "Resource.h"
 
 BEGIN_MESSAGE_MAP(EoDlgSetupLineType, CDialog)

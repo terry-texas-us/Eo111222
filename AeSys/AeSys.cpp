@@ -22,10 +22,10 @@
 #include "EoDlgModeLetter.h"
 #include "EoDlgModeRevise.h"
 #include "EoGePoint3d.h"
+#include "EoGsRenderState.h"
 #include "Lex.h"
 #include "MainFrm.h"
 #include "PegColors.h"
-#include "PrimState.h"
 #include "Resource.h"
 
 #if defined(USING_DDE)
@@ -73,7 +73,7 @@ float tableValue[1536]{};
 
 auto* pColTbl = ColorPalette;
 
-CPrimState pstate;
+EoGsRenderState pstate;
 
 BEGIN_MESSAGE_MAP(AeSys, CWinAppEx)
 ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)

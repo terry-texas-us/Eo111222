@@ -6,7 +6,7 @@
 #include "EoDbGroupList.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 
 namespace {
 CBitmap* previewBitmap{};

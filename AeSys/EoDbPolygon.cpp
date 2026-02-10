@@ -17,8 +17,8 @@
 #include "EoGePolyline.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderState.h"
 #include "Hatch.h"
-#include "PrimState.h"
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"

@@ -12,7 +12,7 @@
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 #include "Resource.h"
 
 namespace {

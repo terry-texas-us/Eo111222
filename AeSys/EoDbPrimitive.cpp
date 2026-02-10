@@ -10,7 +10,7 @@
 #include "EoDbPrimitive.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 #include "drw_Entities.h"
 
 EoInt16 EoDbPrimitive::sm_layerColor{COLOR_BYLAYER};

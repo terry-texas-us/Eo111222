@@ -6,7 +6,7 @@
 #include "EoDbText.h"
 #include "EoDlgModeLetter.h"
 #include "EoGeReferenceSystem.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 #include "Resource.h"
 
 BEGIN_MESSAGE_MAP(EoDlgModeLetter, CDialog)

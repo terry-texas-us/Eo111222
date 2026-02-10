@@ -7,13 +7,13 @@
 #include "Eo.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbPrimitive.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 #include "Resource.h"
 
 // State list maintenance
-CPrimState* psSav[] = {0, 0, 0, 0};
+EoGsRenderState* psSav[] = {0, 0, 0, 0};
 
-void CPrimState::Restore(CDC* deviceContext, int iSaveId) {
+void EoGsRenderState::Restore(CDC* deviceContext, int iSaveId) {
   if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) return;
 
   if (psSav[iSaveId] != 0) {
@@ -30,7 +30,8 @@ void CPrimState::Restore(CDC* deviceContext, int iSaveId) {
     psSav[iSaveId] = 0;
   }
 }
-int CPrimState::Save() {
+
+int EoGsRenderState::Save() {
   int iSaveId = sizeof(psSav) / sizeof(psSav[0]) - 1;
 
   while (iSaveId >= 0 && psSav[iSaveId] != 0) iSaveId--;
@@ -39,14 +40,14 @@ int CPrimState::Save() {
     app.WarningMessageBox(IDS_MSG_SAVE_STATE_LIST_ERROR);
   } else {
     SetPolygonIntStyle(pstate.PolygonIntStyle());
-    psSav[iSaveId] = new CPrimState;
+    psSav[iSaveId] = new EoGsRenderState;
     *psSav[iSaveId] = pstate;
   }
   // return id to use for restore reference
   return iSaveId;
 }
 
-void CPrimState::SetPen(AeSysView* view, CDC* deviceContext, EoInt16 color, EoInt16 lineTypeIndex) {
+void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, EoInt16 color, EoInt16 lineTypeIndex) {
   if (EoDbPrimitive::SpecialColor() != 0) { color = EoDbPrimitive::SpecialColor(); }
   if (color == EoDbPrimitive::COLOR_BYLAYER) { color = EoDbPrimitive::LayerColor(); }
   if (lineTypeIndex == EoDbPrimitive::LINETYPE_BYLAYER) { lineTypeIndex = EoDbPrimitive::LayerLineTypeIndex(); }
@@ -64,7 +65,7 @@ void CPrimState::SetPen(AeSysView* view, CDC* deviceContext, EoInt16 color, EoIn
   if (deviceContext) { ManagePenResources(deviceContext, color, int(LogicalWidth), lineTypeIndex); }
 }
 
-void CPrimState::ManagePenResources(CDC* deviceContext, EoInt16 penColor, int penWidth, EoInt16 lineType) {
+void EoGsRenderState::ManagePenResources(CDC* deviceContext, EoInt16 penColor, int penWidth, EoInt16 lineType) {
   static const int NumberOfPens = 8;
   static HPEN hPen[NumberOfPens] = {0, 0, 0, 0, 0, 0, 0, 0};
   static COLORREF crColRef[NumberOfPens];
@@ -119,28 +120,32 @@ void CPrimState::ManagePenResources(CDC* deviceContext, EoInt16 penColor, int pe
     crColRef[iPen] = pColTbl[penColor];
   }
 }
-void CPrimState::SetColor(CDC* deviceContext, EoInt16 color) {
+
+void EoGsRenderState::SetColor(CDC* deviceContext, EoInt16 color) {
   m_color = color;
   if (deviceContext) { ManagePenResources(deviceContext, color, 0, m_LineTypeIndex); }
 }
-void CPrimState::SetLineType(CDC* deviceContext, EoInt16 lineTypeIndex) {
+
+void EoGsRenderState::SetLineType(CDC* deviceContext, EoInt16 lineTypeIndex) {
   m_LineTypeIndex = lineTypeIndex;
   if (deviceContext) { ManagePenResources(deviceContext, m_color, 0, lineTypeIndex); }
 }
 
-int CPrimState::SetROP2(CDC* deviceContext, int drawMode) {
+int EoGsRenderState::SetROP2(CDC* deviceContext, int drawMode) {
   if (ColorPalette[0] == Eo::colorWhite) {
     if (drawMode == R2_XORPEN) { drawMode = R2_NOTXORPEN; }
   }
   return deviceContext->SetROP2(drawMode);
 }
-void CPrimState::SetAlignment(CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment,
+
+void EoGsRenderState::SetAlignment(CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment,
                               EoDb::VerticalAlignment verticalAlignment) {
   m_fontDefinition.SetAlignment(horizontalAlignment, verticalAlignment);
 
   deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);
 }
-void CPrimState::SetFontDefinition(CDC* deviceContext, const EoDbFontDefinition& fd) {
+
+void EoGsRenderState::SetFontDefinition(CDC* deviceContext, const EoDbFontDefinition& fd) {
   m_fontDefinition = fd;
   SetAlignment(deviceContext, m_fontDefinition.HorizontalAlignment(), m_fontDefinition.VerticalAlignment());
 }

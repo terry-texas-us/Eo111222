@@ -5,8 +5,8 @@
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
 #include "EoDlgTrapModify.h"
+#include "EoGsRenderState.h"
 #include "Hatch.h"
-#include "PrimState.h"
 #include "Resource.h"
 
 EoDlgTrapModify::EoDlgTrapModify(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgTrapModify::IDD, pParent) {}

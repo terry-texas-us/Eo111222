@@ -20,7 +20,7 @@
 #include "EoGePoint4d.h"
 #include "EoGeReferenceSystem.h"
 #include "EoGeVector3d.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 #include "Resource.h"
 
 namespace {

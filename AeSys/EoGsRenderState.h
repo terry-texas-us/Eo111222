@@ -7,7 +7,7 @@
 
 class AeSysView;
 
-class CPrimState {
+class EoGsRenderState {
   EoDbFontDefinition m_fontDefinition{};
   EoDbCharacterCellDefinition m_characterCellDefinition{};
   EoInt16 m_pointStyle{};
@@ -17,14 +17,14 @@ class CPrimState {
   EoInt16 m_PolygonInteriorStyleIndex{};
 
  public:
-  CPrimState() = default;
-  CPrimState(const CPrimState&) = default;
-  CPrimState(CPrimState&&) noexcept = default;
+  EoGsRenderState() = default;
+  EoGsRenderState(const EoGsRenderState&) = default;
+  EoGsRenderState(EoGsRenderState&&) noexcept = default;
 
-  CPrimState& operator=(const CPrimState&) = default;
-  CPrimState& operator=(CPrimState&&) noexcept = default;
+  EoGsRenderState& operator=(const EoGsRenderState&) = default;
+  EoGsRenderState& operator=(EoGsRenderState&&) noexcept = default;
 
-  ~CPrimState() = default;
+  ~EoGsRenderState() = default;
 
  public:
   void Restore(CDC* deviceContext, int saveIndex);
@@ -78,4 +78,4 @@ class CPrimState {
 
   void SetAlignment(CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment);
 };
-extern CPrimState pstate;
+extern EoGsRenderState pstate;

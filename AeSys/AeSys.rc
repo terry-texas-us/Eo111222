@@ -8,7 +8,7 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #ifndef APSTUDIO_INVOKED
-#include "targetver.h"
+#include "SDKDDKVer.h"
 #endif
 #include "afxres.h"
 
@@ -36,7 +36,7 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#ifndef APSTUDIO_INVOKED\r\n"
-    "#include ""targetver.h""\r\n"
+    "#include ""SDKDDKVer.h""\r\n"
     "#endif\r\n"
     "#include ""afxres.h""\r\n"
     "\0"
@@ -1297,10 +1297,10 @@ IDD_ABOUTBOX DIALOGEX 0, 0, 155, 60
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP
 FONT 10, "Segoe UI Light", 300, 0, 0x0
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,73,5,20,20
-    LTEXT           "AeSys, Version 11.11",IDC_STATIC,49,19,58,8,SS_NOPREFIX
-    LTEXT           "© 2011 - Fanning, Fanning & Assoc.",IDC_STATIC,26,30,102,8
-    CONTROL         "OK",IDOK,"MfcButton",WS_TABSTOP,53,41,50,14
+    ICON            IDR_MAINFRAME,IDC_STATIC,71,5,12,9
+    LTEXT           "AeSys, Version 11.0",IDC_STATIC,49,18,57,8,SS_NOPREFIX
+    CTEXT           "© Fanning, Fanning & Assoc.",IDC_STATIC,35,30,84,8
+    CONTROL         "OK",IDOK,"MfcButton",WS_TABSTOP,53,44,50,14
 END
 
 IDD_TRAP_FILTER DIALOGEX 8, 8, 119, 95

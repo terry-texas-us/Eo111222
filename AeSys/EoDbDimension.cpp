@@ -20,7 +20,7 @@
 #include "EoGeReferenceSystem.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"

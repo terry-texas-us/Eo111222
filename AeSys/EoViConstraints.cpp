@@ -3,7 +3,7 @@
 #include "AeSys.h"
 #include "AeSysView.h"
 #include "Eo.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 
 void AeSysView::InitializeConstraints() {
   m_AxisConstraintInfluenceAngle = 5.0;

@@ -59,7 +59,7 @@
     <ClCompile Include="Section.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PrimState.cpp">
+    <ClCompile Include="EoGsRenderState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ModeLine.cpp">
@@ -1725,9 +1725,6 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TargetVer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1737,10 +1734,10 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PrimState.h">
+    <ClInclude Include="EoGsRenderState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Preview.h">
+    <ClInclude Include="WndProcPreview.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PegColors.h">

@@ -5,8 +5,8 @@
 #include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbLayer.h"
-#include "Preview.h"
 #include "Resource.h"
+#include "WndProcPreview.h"
 
 UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, LPARAM lParam) {
   auto* document = AeSysDoc::GetDoc();

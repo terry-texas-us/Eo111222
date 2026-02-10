@@ -12,7 +12,7 @@
 #include "EoGePolyline.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 #include "Resource.h"
 
 EoDbSpline::EoDbSpline(EoUInt16 wPts, EoGePoint3d* pt) {

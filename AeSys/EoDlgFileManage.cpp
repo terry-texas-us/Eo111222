@@ -10,8 +10,8 @@
 #include "EoDlgFileManage.h"
 #include "EoDlgLineTypesSelection.h"
 #include "EoDlgSetupColor.h"
-#include "Preview.h"
 #include "Resource.h"
+#include "WndProcPreview.h"
 
 /// @brief Dialog class for getting a layer name from the user.
 class EoDlgGetLayerName : public CDialog {

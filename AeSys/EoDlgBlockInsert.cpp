@@ -8,8 +8,8 @@
 #include "EoDbGroup.h"
 #include "EoDlgBlockInsert.h"
 #include "EoGePoint3d.h"
-#include "Preview.h"
 #include "Resource.h"
+#include "WndProcPreview.h"
 
 BEGIN_MESSAGE_MAP(EoDlgBlockInsert, CDialog)
 ON_LBN_SELCHANGE(IDC_BLOCKS_LIST, &EoDlgBlockInsert::OnLbnSelchangeBlocksList)

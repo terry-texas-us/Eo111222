@@ -15,7 +15,7 @@
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "PrimState.h"
+#include "EoGsRenderState.h"
 
 EoDbPoint::EoDbPoint() {
   m_color = 1;

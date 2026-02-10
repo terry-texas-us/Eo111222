@@ -227,7 +227,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="EoGsModelTransform.cpp" />
     <ClCompile Include="EoGsViewTransform.cpp" />
     <ClCompile Include="EoDbLineType.cpp" />
-    <ClCompile Include="PrimState.cpp" />
+    <ClCompile Include="EoGsRenderState.cpp" />
     <ClCompile Include="EoGeReferenceSystem.cpp" />
     <ClCompile Include="Section.cpp" />
     <ClCompile Include="EoDlgSelectIsometricView.cpp" />
@@ -1570,14 +1570,13 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="EoDbDrwInterface.h" />
     <ClInclude Include="PegColors.h" />
     <ClInclude Include="EoDbLineType.h" />
-    <ClInclude Include="Preview.h" />
-    <ClInclude Include="PrimState.h" />
+    <ClInclude Include="WndProcPreview.h" />
+    <ClInclude Include="EoGsRenderState.h" />
     <ClInclude Include="EoGeReferenceSystem.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Section.h" />
     <ClInclude Include="EoDlgSelectIsometricView.h" />
     <ClInclude Include="Stdafx.h" />
-    <ClInclude Include="TargetVer.h" />
     <ClInclude Include="EoGeTransformMatrix.h" />
     <ClInclude Include="EoDlgViewParameters.h" />
     <ClInclude Include="EoGsViewport.h" />
