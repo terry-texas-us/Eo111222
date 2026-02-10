@@ -73,7 +73,7 @@ float tableValue[1536]{};
 
 auto* pColTbl = ColorPalette;
 
-EoGsRenderState pstate;
+EoGsRenderState renderState;
 
 BEGIN_MESSAGE_MAP(AeSys, CWinAppEx)
 ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)
@@ -590,19 +590,19 @@ void AeSys::HomePointSave(int i, const EoGePoint3d& pt) {
 
 //Initializes all peg global sections to their default (startup) values.
 void AeSys::InitGbls(CDC* deviceContext) {
-  pstate.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow);
+  renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow);
 
-  pstate.SetPolygonIntStyleId(1);
+  renderState.SetPolygonIntStyleId(1);
 
   hatch::dXAxRefVecScal = 0.1;
   hatch::dYAxRefVecScal = 0.1;
   hatch::dOffAng = 0.0;
 
   EoDbCharacterCellDefinition characterCellDefinition{};
-  pstate.SetCharacterCellDefinition(characterCellDefinition);
+  renderState.SetCharacterCellDefinition(characterCellDefinition);
 
   EoDbFontDefinition fontDefinition;
-  pstate.SetFontDefinition(deviceContext, fontDefinition);
+  renderState.SetFontDefinition(deviceContext, fontDefinition);
 
   SetUnits(Eo::Units::Inches);
   SetArchitecturalUnitsFractionPrecision(8);
@@ -613,17 +613,17 @@ void AeSys::InitGbls(CDC* deviceContext) {
   m_TrapHighlightColor = 15;
 
   //Document->InitializeGroupAndPrimitiveEdit();
-  pstate.SetPen(nullptr, deviceContext, 1, 1);
-  pstate.SetPointStyle(0);
+  renderState.SetPen(nullptr, deviceContext, 1, 1);
+  renderState.SetPointStyle(0);
 }
 void AeSys::EditColorPalette() {
   CHOOSECOLOR cc{};
   cc.lStructSize = sizeof(CHOOSECOLOR);
-  cc.rgbResult = ColorPalette[pstate.Color()];
+  cc.rgbResult = ColorPalette[renderState.Color()];
   cc.lpCustColors = ColorPalette;
   cc.Flags = CC_FULLOPEN | CC_RGBINIT | CC_SOLIDCOLOR;
   ::ChooseColor(&cc);
-  cc.rgbResult = GreyPalette[pstate.Color()];
+  cc.rgbResult = GreyPalette[renderState.Color()];
   cc.lpCustColors = GreyPalette;
   ::ChooseColor(&cc);
 

@@ -143,9 +143,9 @@ void __End(AeSysView* view, CDC* deviceContext, std::int16_t lineTypeIndex) {
 
     EoDbLineType* LineType;
     if (!LineTypeTable->LookupUsingLegacyIndex(static_cast<std::uint16_t>(lineTypeIndex), LineType)) { return; }
-    pstate.SetLineType(deviceContext, 1);
+    renderState.SetLineType(deviceContext, 1);
     __Display(view, deviceContext, pts_, LineType);
-    pstate.SetLineType(deviceContext, lineTypeIndex);
+    renderState.SetLineType(deviceContext, lineTypeIndex);
   }
 }
 void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis,

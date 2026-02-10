@@ -16,14 +16,14 @@
 #include "Resource.h"
 
 EoDbSpline::EoDbSpline(std::uint16_t wPts, EoGePoint3d* pt) {
-  m_color = pstate.Color();
-  m_lineTypeIndex = pstate.LineTypeIndex();
+  m_color = renderState.Color();
+  m_lineTypeIndex = renderState.LineTypeIndex();
 
   for (auto i = 0; i < wPts; i++) { m_pts.Add(pt[i]); }
 }
 EoDbSpline::EoDbSpline(EoGePoint3dArray& points) {
-  m_color = pstate.Color();
-  m_lineTypeIndex = pstate.LineTypeIndex();
+  m_color = renderState.Color();
+  m_lineTypeIndex = renderState.LineTypeIndex();
   m_pts.Copy(points);
 }
 EoDbSpline::EoDbSpline(std::int16_t penColor, std::int16_t lineType, EoGePoint3dArray& points) {
@@ -59,7 +59,7 @@ void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();
 
-  pstate.SetPen(view, deviceContext, color, lineType);
+  renderState.SetPen(view, deviceContext, color, lineType);
 
   polyline::BeginLineStrip();
   GenPts(3, m_pts);

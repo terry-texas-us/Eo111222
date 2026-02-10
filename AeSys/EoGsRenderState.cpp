@@ -40,9 +40,9 @@ int EoGsRenderState::Save() {
   if (iSaveId < 0) {
     app.WarningMessageBox(IDS_MSG_SAVE_STATE_LIST_ERROR);
   } else {
-    SetPolygonIntStyle(pstate.PolygonIntStyle());
+    SetPolygonIntStyle(renderState.PolygonIntStyle());
     psSav[iSaveId] = new EoGsRenderState;
-    *psSav[iSaveId] = pstate;
+    *psSav[iSaveId] = renderState;
   }
   // return id to use for restore reference
   return iSaveId;

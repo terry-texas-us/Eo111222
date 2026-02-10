@@ -16,16 +16,16 @@ bool dde::ExecNoteHT(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
   wchar_t szBuf[32]{};
 	_tcsncpy_s(szBuf, 32, ppArgs[0], sizeof(szBuf) - 1);
   EoDbCharacterCellDefinition characterCellDefinition;
-	pstate.GetCharCellDef(characterCellDefinition);
+	renderState.GetCharCellDef(characterCellDefinition);
 	characterCellDefinition.ChrHgtSet(_wtof(szBuf));
-	pstate.SetCharCellDef(characterCellDefinition);
+	renderState.SetCharCellDef(characterCellDefinition);
 	return true;
 }
 /// <summary>Sets the Fill.</summary>
 bool dde::ExecFill(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
   wchar_t szBuf[8]{};
 	_tcsncpy_s(szBuf, 8, ppArgs[0], sizeof(szBuf) - 1);
-	pstate.SetPolygonIntStyleId(std::uint16_t(_wtoi(szBuf)));
+	renderState.SetPolygonIntStyleId(std::uint16_t(_wtoi(szBuf)));
 	return true;
 }
 /// <summary>Sets the Scale.</summary>
@@ -131,7 +131,7 @@ bool dde::ExecPen(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 	_tcsncpy_s(szBuf, 8, ppArgs[0], sizeof(szBuf) - 1);
 
 	// TODO: left broken while moving device context get out of SetPenColor
-	//pstate.SetPenColor(DeviceContext, std::int16_t(_wtoi(szBuf)));
+	//renderState.SetPenColor(DeviceContext, std::int16_t(_wtoi(szBuf)));
 	AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Pen);
 
 	return true;
@@ -143,7 +143,7 @@ bool dde::ExecLine(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 	_tcsncpy_s(szBuf, 8, ppArgs[0], sizeof(szBuf) - 1);
 
 	// TODO: left broken while moving device context get out of SetLineType
-	//pstate.SetLineType(DeviceContext, std::int16_t(_wtoi(szBuf)));
+	//renderState.SetLineType(DeviceContext, std::int16_t(_wtoi(szBuf)));
 	AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
 
 	return true;
@@ -155,9 +155,9 @@ bool dde::ExecNote(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 	EoGePoint3d ptPvt = app.GetCursorPosition();
 
 	EoDbFontDefinition fd;
-	pstate.GetFontDef(fd);
+	renderState.GetFontDef(fd);
 	EoDbCharacterCellDefinition characterCellDefinition;
-	pstate.GetCharCellDef(characterCellDefinition);
+	renderState.GetCharCellDef(characterCellDefinition);
 
 	EoGeReferenceSystem ReferenceSystem(ptPvt, characterCellDefinition);
 

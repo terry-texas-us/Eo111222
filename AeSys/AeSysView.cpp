@@ -616,8 +616,8 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   int primitiveState{};
   int drawMode{};
 
-  if ((hint & EoDb::kSafe) == EoDb::kSafe) { primitiveState = pstate.Save(); }
-  if ((hint & EoDb::kErase) == EoDb::kErase) { drawMode = pstate.SetROP2(deviceContext, R2_XORPEN); }
+  if ((hint & EoDb::kSafe) == EoDb::kSafe) { primitiveState = renderState.Save(); }
+  if ((hint & EoDb::kErase) == EoDb::kErase) { drawMode = renderState.SetROP2(deviceContext, R2_XORPEN); }
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor()); }
   switch (hint) {
     case EoDb::kPrimitive:
@@ -650,8 +650,8 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
       CView::OnUpdate(sender, hint, hintObject);
   }
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(0); }
-  if ((hint & EoDb::kErase) == EoDb::kErase) { pstate.SetROP2(deviceContext, drawMode); }
-  if ((hint & EoDb::kSafe) == EoDb::kSafe) { pstate.Restore(deviceContext, primitiveState); }
+  if ((hint & EoDb::kErase) == EoDb::kErase) { renderState.SetROP2(deviceContext, drawMode); }
+  if ((hint & EoDb::kSafe) == EoDb::kSafe) { renderState.Restore(deviceContext, primitiveState); }
   deviceContext->SetBkColor(backgroundColor);
   ReleaseDC(deviceContext);
 }
@@ -2427,18 +2427,18 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
   }
   if ((item & Pen) == Pen) {
     rectangle.SetRect(16 * averageCharacterWidth, top, 22 * averageCharacterWidth, top + height);
-    swprintf_s(szBuf, 32, L"P%-4i", pstate.Color());
+    swprintf_s(szBuf, 32, L"P%-4i", renderState.Color());
     deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
                                static_cast<UINT>(wcslen(szBuf)), 0);
   }
   if ((item & Line) == Line) {
     rectangle.SetRect(22 * averageCharacterWidth, top, 28 * averageCharacterWidth, top + height);
-    swprintf_s(szBuf, 32, L"L%-4i", pstate.LineTypeIndex());
+    swprintf_s(szBuf, 32, L"L%-4i", renderState.LineTypeIndex());
     deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
                                static_cast<UINT>(wcslen(szBuf)), 0);
   }
   if ((item & TextHeight) == TextHeight) {
-    auto characterCellDefinition = pstate.CharacterCellDefinition();
+    auto characterCellDefinition = renderState.CharacterCellDefinition();
     rectangle.SetRect(28 * averageCharacterWidth, top, 38 * averageCharacterWidth, top + height);
     swprintf_s(szBuf, 32, L"T%-6.2f", characterCellDefinition.Height());
     deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,

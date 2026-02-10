@@ -431,7 +431,7 @@ void AeSysView::GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, S
   EoDbPoint* PointPrimitive = new EoDbPoint(15, 8, Midpoint);
   PointPrimitive->SetDat(2, Data);
   group->AddTail(PointPrimitive);
-  group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), beginPoint, endPoint));
+  group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), beginPoint, endPoint));
 }
 
 EoGePoint3d AeSysView::GenerateBullheadTee(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine,
@@ -508,16 +508,16 @@ void AeSysView::GenerateRiseDrop(
     EoGeLine ReferenceLine(referenceLine);
     ReferenceLine.end = ReferenceLine.begin.ProjectToward(ReferenceLine.end, m_DuctSeamSize);
     ReferenceLine.GetParallels(section.Width(), m_CenterLineEccentricity, LeftLine, RightLine);
-    group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), LeftLine.begin, LeftLine.end));
-    group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), RightLine.begin, RightLine.end));
+    group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), LeftLine.begin, LeftLine.end));
+    group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), RightLine.begin, RightLine.end));
     referenceLine.begin = ReferenceLine.end;
   }
   referenceLine.GetParallels(section.Width(), m_CenterLineEccentricity, LeftLine, RightLine);
   GenerateRectangularSection(referenceLine, m_CenterLineEccentricity, section, group);
   // need to allow continuation perpendicular to vertical section ?
 
-  group->AddTail(new EoDbLine(pstate.Color(), static_cast<std::int16_t>(riseDropIndicator), LeftLine.begin, RightLine.end));
-  group->AddTail(new EoDbLine(pstate.Color(), static_cast<std::int16_t>(riseDropIndicator), RightLine.begin, LeftLine.end));
+  group->AddTail(new EoDbLine(renderState.Color(), static_cast<std::int16_t>(riseDropIndicator), LeftLine.begin, RightLine.end));
+  group->AddTail(new EoDbLine(renderState.Color(), static_cast<std::int16_t>(riseDropIndicator), RightLine.begin, LeftLine.end));
 }
 
 void AeSysView::GenerateRectangularElbow(EoGeLine& previousReferenceLine, Section previousSection,
@@ -546,10 +546,10 @@ void AeSysView::GenerateRectangularElbow(EoGeLine& previousReferenceLine, Sectio
   EoGeLine::Intersection_xy(PreviousRightLine, CurrentRightLine, OutsideCorner);
 
   GenerateEndCap(PreviousLeftLine.end, PreviousRightLine.end, previousSection, group);
-  group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), PreviousLeftLine.end, InsideCorner));
-  group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), InsideCorner, CurrentLeftLine.begin));
-  group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), PreviousRightLine.end, OutsideCorner));
-  group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), OutsideCorner, CurrentRightLine.begin));
+  group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PreviousLeftLine.end, InsideCorner));
+  group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), InsideCorner, CurrentLeftLine.begin));
+  group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PreviousRightLine.end, OutsideCorner));
+  group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), OutsideCorner, CurrentRightLine.begin));
   if (m_GenerateTurningVanes) { group->AddTail(new EoDbLine(2, 2, InsideCorner, OutsideCorner)); }
   GenerateEndCap(CurrentLeftLine.begin, CurrentRightLine.begin, currentSection, group);
 }
@@ -562,9 +562,9 @@ void AeSysView::GenerateRectangularSection(
   if (referenceLine.GetParallels(section.Width(), eccentricity, LeftLine, RightLine)) {
     GenerateEndCap(LeftLine.begin, RightLine.begin, section, group);
 
-    group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), LeftLine.begin, LeftLine.end));
+    group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), LeftLine.begin, LeftLine.end));
     GenerateEndCap(LeftLine.end, RightLine.end, section, group);
-    group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), RightLine.begin, RightLine.end));
+    group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), RightLine.begin, RightLine.end));
   }
 }
 
@@ -580,21 +580,21 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   CString Note = Width.TrimLeft() + L"/" + Depth.TrimLeft();
 
   auto* deviceContext = GetDC();
-  int PrimitiveState = pstate.Save();
-  pstate.SetColor(deviceContext, 2);
+  int PrimitiveState = renderState.Save();
+  renderState.SetColor(deviceContext, 2);
 
-  EoDbFontDefinition fontDefinition = pstate.FontDefinition();
+  EoDbFontDefinition fontDefinition = renderState.FontDefinition();
   fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::VerticalAlignment::Middle);
 
-  EoDbCharacterCellDefinition characterCellDefinition = pstate.CharacterCellDefinition();
+  EoDbCharacterCellDefinition characterCellDefinition = renderState.CharacterCellDefinition();
   characterCellDefinition.SetRotationAngle(0.0);
-  pstate.SetCharacterCellDefinition(characterCellDefinition);
+  renderState.SetCharacterCellDefinition(characterCellDefinition);
 
   auto* Group = new EoDbGroup(new EoDbText(fontDefinition, ReferenceSystem, Note));
   auto* document = GetDocument();
   document->AddWorkLayerGroup(Group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
-  pstate.Restore(deviceContext, PrimitiveState);
+  renderState.Restore(deviceContext, PrimitiveState);
   ReleaseDC(deviceContext);
 }
 
@@ -618,9 +618,9 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
 
   GenerateEndCap(LeftLine.begin, RightLine.begin, section, Section);
 
-  Section->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), RightLine.begin, RightLine.end));
-  Section->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), RightLine.end, LeftLine.end));
-  Section->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), LeftLine.begin, LeftLine.end));
+  Section->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), RightLine.begin, RightLine.end));
+  Section->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), RightLine.end, LeftLine.end));
+  Section->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), LeftLine.begin, LeftLine.end));
 
   m_CurrentReferenceLine.begin = ReferenceLine.end;
   m_CurrentReferenceLine.GetParallels(section.Width(), m_CenterLineEccentricity, LeftLine, RightLine);
@@ -630,17 +630,17 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
   } else {
     LeftLine.ProjPtFrom_xy(m_DuctTapSize, m_DuctTapSize, &LeftLine.end);
   }
-  Section->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), RightLine.begin, RightLine.end));
-  Section->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), LeftLine.end, LeftLine.begin));
+  Section->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), RightLine.begin, RightLine.end));
+  Section->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), LeftLine.end, LeftLine.begin));
 
   if (m_GenerateTurningVanes) {
     EoGePoint3d beginPoint = ((justification == Left) ? RightLine : LeftLine).ProjToBegPt(-m_DuctTapSize / 3.0);
     EoGePoint3d endPoint = m_CurrentReferenceLine.ProjToBegPt(-m_DuctTapSize / 2.0);
     auto* circle = EoDbConic::CreateCircleInView(beginPoint, 0.01);
     circle->SetColor(1);
-    circle->SetLineTypeIndex(pstate.LineTypeIndex());
+    circle->SetLineTypeIndex(renderState.LineTypeIndex());
     Section->AddTail(circle);
-    Section->AddTail(new EoDbLine(1, pstate.LineTypeIndex(), beginPoint, endPoint));
+    Section->AddTail(new EoDbLine(1, renderState.LineTypeIndex(), beginPoint, endPoint));
   }
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Section);
   return true;
@@ -668,9 +668,9 @@ void AeSysView::GenerateTransition(EoGeLine& referenceLine, double eccentricity,
     LeftLine.ProjPtFrom_xy(TransitionLength, WidthChange, &LeftLine.end);
   }
   GenerateEndCap(LeftLine.begin, RightLine.begin, previousSection, group);
-  group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), RightLine.begin, RightLine.end));
+  group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), RightLine.begin, RightLine.end));
   GenerateEndCap(RightLine.end, LeftLine.end, currentSection, group);
-  group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), LeftLine.end, LeftLine.begin));
+  group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), LeftLine.end, LeftLine.begin));
 }
 
 void AeSysView::SetDuctOptions(Section& section) {

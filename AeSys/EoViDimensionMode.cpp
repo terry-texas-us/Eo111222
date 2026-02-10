@@ -415,16 +415,16 @@ void AeSysView::OnDimensionModeAngle() {
         GenerateLineEndItem(1, 0.1, ptArrow, line.end, Group);
 
         auto* deviceContext = GetDC();
-        int PrimitiveState = pstate.Save();
+        int PrimitiveState = renderState.Save();
 
-        EoDbFontDefinition fontDefinition = pstate.FontDefinition();
+        EoDbFontDefinition fontDefinition = renderState.FontDefinition();
         fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::VerticalAlignment::Middle);
-        pstate.SetFontDefinition(deviceContext, fontDefinition);
+        renderState.SetFontDefinition(deviceContext, fontDefinition);
 
-        auto characterCellDefinition = pstate.CharacterCellDefinition();
+        auto characterCellDefinition = renderState.CharacterCellDefinition();
         characterCellDefinition.SetRotationAngle(0.0);
         characterCellDefinition.SetHeight(0.1);
-        pstate.SetCharacterCellDefinition(characterCellDefinition);
+        renderState.SetCharacterCellDefinition(characterCellDefinition);
 
         EoGePoint3d origin = cursorPosition.ProjectToward(center, -0.25);
         GetReferenceAxesForCharacterCell(characterCellDefinition, normal, vXAx, vYAx);
@@ -434,7 +434,7 @@ void AeSysView::OnDimensionModeAngle() {
         Group->AddTail(new EoDbText(fontDefinition, ReferenceSystem, Note));
         document->AddWorkLayerGroup(Group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
-        pstate.Restore(deviceContext, PrimitiveState);
+        renderState.Restore(deviceContext, PrimitiveState);
         ReleaseDC(deviceContext);
       }
       ModeLineUnhighlightOp(PreviousDimensionCommand);

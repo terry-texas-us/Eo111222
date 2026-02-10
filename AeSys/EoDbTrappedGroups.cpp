@@ -109,14 +109,14 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
     }
   }
   if (app.IsClipboardDataImage()) {
-    int PrimitiveState = pstate.Save();
+    int PrimitiveState = renderState.Save();
 
     auto enhancedMetafileContext = ::CreateEnhMetaFileW(0, 0, 0, 0);
     m_TrappedGroupList.Display(view, CDC::FromHandle(enhancedMetafileContext));
     auto enhancedMetafileHandle = ::CloseEnhMetaFile(enhancedMetafileContext);
     ::SetClipboardData(CF_ENHMETAFILE, enhancedMetafileHandle);
 
-    pstate.Restore(CDC::FromHandle(enhancedMetafileContext), PrimitiveState);
+    renderState.Restore(CDC::FromHandle(enhancedMetafileContext), PrimitiveState);
   }
   if (app.IsClipboardDataGroups()) {
     EoGePoint3d minPoint(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);

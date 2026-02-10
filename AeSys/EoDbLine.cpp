@@ -100,7 +100,7 @@ void EoDbLine::Display(AeSysView* view, CDC* deviceContext) {
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();
 
-  pstate.SetPen(view, deviceContext, color, lineType);
+  renderState.SetPen(view, deviceContext, color, lineType);
 
   polyline::BeginLineStrip();
   polyline::SetVertex(m_line.begin);

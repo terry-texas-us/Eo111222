@@ -50,9 +50,9 @@ EoDbPolygon::EoDbPolygon()
       m_numberOfVertices{} {}
 
 EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
-  m_color = pstate.Color();
-  m_polygonStyle = pstate.PolygonIntStyle();
-  m_fillStyleIndex = pstate.PolygonIntStyleId();
+  m_color = renderState.Color();
+  m_polygonStyle = renderState.PolygonIntStyle();
+  m_fillStyleIndex = renderState.PolygonIntStyleId();
 
   m_hatchOrigin = points[0];
 
@@ -95,9 +95,9 @@ EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices, EoGePoint3d* pt) {
 }
 EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices, EoGePoint3d origin, EoGeVector3d vXAx, EoGeVector3d vYAx,
                          const EoGePoint3d* ppt) {
-  m_color = pstate.Color();
-  m_polygonStyle = pstate.PolygonIntStyle();
-  m_fillStyleIndex = pstate.PolygonIntStyleId();
+  m_color = renderState.Color();
+  m_polygonStyle = renderState.PolygonIntStyle();
+  m_fillStyleIndex = renderState.PolygonIntStyleId();
   m_numberOfVertices = numberOfVertices;
   m_hatchOrigin = origin;
   m_positiveX = vXAx;
@@ -108,9 +108,9 @@ EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices, EoGePoint3d origin, EoG
 }
 
 EoDbPolygon::EoDbPolygon(const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts) {
-  m_color = pstate.Color();
-  m_polygonStyle = pstate.PolygonIntStyle();
-  m_fillStyleIndex = pstate.PolygonIntStyleId();
+  m_color = renderState.Color();
+  m_polygonStyle = renderState.PolygonIntStyle();
+  m_fillStyleIndex = renderState.PolygonIntStyleId();
   m_numberOfVertices = std::uint16_t(pts.GetSize());
   m_hatchOrigin = origin;
   m_positiveX = xAxis;
@@ -177,11 +177,11 @@ EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
 void EoDbPolygon::Display(AeSysView* view, CDC* deviceContext) {
   std::int16_t color = LogicalColor();
 
-  pstate.SetColor(deviceContext, color);
+  renderState.SetColor(deviceContext, color);
   EoDb::PolygonStyle polygonStyle =
       sm_SpecialPolygonStyle == EoDb::PolygonStyle::Special ? m_polygonStyle : sm_SpecialPolygonStyle;
-  pstate.SetPolygonIntStyle(polygonStyle);  // hollow, solid, pattern, hatch
-  pstate.SetPolygonIntStyleId(m_fillStyleIndex);
+  renderState.SetPolygonIntStyle(polygonStyle);  // hollow, solid, pattern, hatch
+  renderState.SetPolygonIntStyleId(m_fillStyleIndex);
 
   int iPtLstsId = m_numberOfVertices;
 
@@ -349,8 +349,8 @@ bool EoDbPolygon::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoi
 void EoDbPolygon::ModifyState() {
   EoDbPrimitive::ModifyState();
 
-  m_polygonStyle = pstate.PolygonIntStyle();
-  m_fillStyleIndex = pstate.PolygonIntStyleId();
+  m_polygonStyle = renderState.PolygonIntStyle();
+  m_fillStyleIndex = renderState.PolygonIntStyleId();
 }
 bool EoDbPolygon::PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) {
   if (sm_pivotVertex >= m_numberOfVertices) { return false; }
@@ -514,12 +514,12 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
   EoGeLine lnS;
   EoGeVector3d vEdg;
 
-  std::int16_t color = pstate.Color();
-  std::int16_t lineType = pstate.LineTypeIndex();
+  std::int16_t color = renderState.Color();
+  std::int16_t lineType = renderState.LineTypeIndex();
 
-  pstate.SetLineType(deviceContext, 1);
+  renderState.SetLineType(deviceContext, 1);
 
-  int iTblId = hatch::tableOffset[pstate.PolygonIntStyleId()];
+  int iTblId = hatch::tableOffset[renderState.PolygonIntStyleId()];
   int iHatLns = int(hatch::tableValue[iTblId++]);
 
   for (int i0 = 0; i0 < iHatLns; i0++) {
@@ -662,7 +662,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
     }
     transformMatrix *= EoGeTransformMatrix::ZAxisRotation(dSinAng, dCosAng);
   }
-  pstate.SetPen(view, deviceContext, color, lineType);
+  renderState.SetPen(view, deviceContext, color, lineType);
 }
 
 std::uint16_t EoDbPolygon::SwingVertex() const {
@@ -686,12 +686,12 @@ void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& poin
 
   view->DoProjection(pnt, pointsArray);
 
-  if (pstate.PolygonIntStyle() == EoDb::PolygonStyle::Solid) {
-    CBrush brush(pColTbl[pstate.Color()]);
+  if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Solid) {
+    CBrush brush(pColTbl[renderState.Color()]);
     auto* oldBrush = deviceContext->SelectObject(&brush);
     deviceContext->Polygon(pnt, iPts);
     deviceContext->SelectObject(oldBrush);
-  } else if (pstate.PolygonIntStyle() == EoDb::PolygonStyle::Hollow) {
+  } else if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Hollow) {
     auto* oldBrush = (CBrush*)deviceContext->SelectStockObject(NULL_BRUSH);
     deviceContext->Polygon(pnt, iPts);
     deviceContext->SelectObject(oldBrush);

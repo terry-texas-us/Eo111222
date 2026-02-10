@@ -398,8 +398,8 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
 void AeSysDoc::AddTextBlock(LPWSTR pszText) {
   EoGePoint3d cursorPosition = app.GetCursorPosition();
 
-  const auto& fontDefinition = pstate.FontDefinition();
-  auto characterCellDefinition = pstate.CharacterCellDefinition();
+  const auto& fontDefinition = renderState.FontDefinition();
+  auto characterCellDefinition = renderState.CharacterCellDefinition();
 
   EoGeReferenceSystem ReferenceSystem(cursorPosition, characterCellDefinition);
 
@@ -468,13 +468,13 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
     deviceContext->SetBkColor(ViewBackgroundColor);
 
     EoDbPolygon::SetSpecialPolygonStyle(view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);
-    int primitiveState = pstate.Save();
+    int primitiveState = renderState.Save();
 
     for (int i = 0; i < GetLayerTableSize(); i++) {
       auto* layer = GetLayerTableLayerAt(i);
       layer->Display(view, deviceContext, identifyTrap);
     }
-    pstate.Restore(deviceContext, primitiveState);
+    renderState.Restore(deviceContext, primitiveState);
     EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
 
     deviceContext->SetBkColor(backgroundColor);
@@ -1412,10 +1412,10 @@ void AeSysDoc::OnTrapCommandsBlock() {
 void AeSysDoc::OnTrapCommandsUnblock() { m_TrappedGroupList.BreakSegRefs(); }
 void AeSysDoc::OnSetupPenColor() {
   EoDlgSetupColor Dialog;
-  Dialog.m_ColorIndex = static_cast<std::uint16_t>(pstate.Color());
+  Dialog.m_ColorIndex = static_cast<std::uint16_t>(renderState.Color());
 
   if (Dialog.DoModal() == IDOK) {
-    pstate.SetColor(nullptr, static_cast<std::int16_t>(Dialog.m_ColorIndex));
+    renderState.SetColor(nullptr, static_cast<std::int16_t>(Dialog.m_ColorIndex));
 
     AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Pen);
   }
@@ -1437,7 +1437,7 @@ void AeSysDoc::OnSetupLineType() {
 
   EoDbLineType* currentLineType{};
 
-  m_LineTypeTable.LookupUsingLegacyIndex(static_cast<std::uint16_t>(pstate.LineTypeIndex()), currentLineType);
+  m_LineTypeTable.LookupUsingLegacyIndex(static_cast<std::uint16_t>(renderState.LineTypeIndex()), currentLineType);
   dialog.SetSelectedLineType(currentLineType);
 
   if (dialog.DoModal() != IDOK) { return; }
@@ -1447,12 +1447,12 @@ void AeSysDoc::OnSetupLineType() {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysDoc::OnSetupLineType: No line type selected.\n");
     return;
   }
-  pstate.SetLineType(nullptr, static_cast<std::int16_t>(selectedLineType->Index()));
+  renderState.SetLineType(nullptr, static_cast<std::int16_t>(selectedLineType->Index()));
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
 }
 
-void AeSysDoc::OnSetupFillHollow() { pstate.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow); }
-void AeSysDoc::OnSetupFillSolid() { pstate.SetPolygonIntStyle(EoDb::PolygonStyle::Solid); }
+void AeSysDoc::OnSetupFillHollow() { renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow); }
+void AeSysDoc::OnSetupFillSolid() { renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Solid); }
 void AeSysDoc::OnSetupFillPattern() {}
 void AeSysDoc::OnSetupFillHatch() {
   EoDlgSetupHatch Dialog;
@@ -1461,7 +1461,7 @@ void AeSysDoc::OnSetupFillHatch() {
   Dialog.m_HatchRotationAngle = Eo::RadianToDegree(hatch::dOffAng);
 
   if (Dialog.DoModal() == IDOK) {
-    pstate.SetPolygonIntStyle(EoDb::PolygonStyle::Hatch);
+    renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hatch);
     hatch::dXAxRefVecScal = std::max(0.01, Dialog.m_HatchXScaleFactor);
     hatch::dYAxRefVecScal = std::max(0.01, Dialog.m_HatchYScaleFactor);
     hatch::dOffAng = Eo::DegreeToRadian(Dialog.m_HatchRotationAngle);
@@ -1469,11 +1469,11 @@ void AeSysDoc::OnSetupFillHatch() {
 }
 
 void AeSysDoc::OnSetupNote() {
-  EoDbFontDefinition fontDefinition = pstate.FontDefinition();
+  EoDbFontDefinition fontDefinition = renderState.FontDefinition();
 
   EoDlgSetupNote Dialog(&fontDefinition);
 
-  auto characterCellDefinition = pstate.CharacterCellDefinition();
+  auto characterCellDefinition = renderState.CharacterCellDefinition();
 
   Dialog.m_height = characterCellDefinition.Height();
   Dialog.m_rotationAngle = Eo::RadianToDegree(characterCellDefinition.RotationAngle());
@@ -1485,24 +1485,24 @@ void AeSysDoc::OnSetupNote() {
     characterCellDefinition.SetRotationAngle(Eo::DegreeToRadian(Dialog.m_rotationAngle));
     characterCellDefinition.SetExpansionFactor(Dialog.m_expansionFactor);
     characterCellDefinition.SetSlantAngle(Eo::DegreeToRadian(Dialog.m_slantAngle));
-    pstate.SetCharacterCellDefinition(characterCellDefinition);
+    renderState.SetCharacterCellDefinition(characterCellDefinition);
 
     auto* activeView = AeSysView::GetActiveView();
     CDC* DeviceContext = (activeView == nullptr) ? nullptr : activeView->GetDC();
 
-    pstate.SetFontDefinition(DeviceContext, fontDefinition);
+    renderState.SetFontDefinition(DeviceContext, fontDefinition);
   }
 }
 
 void AeSysDoc::OnSetupPointStyle() {
   CDlgSetPointStyle dlg;
   // Preload dialog from global state and document
-  dlg.m_pointStyle = pstate.PointStyle();
+  dlg.m_pointStyle = renderState.PointStyle();
   dlg.m_pointSize = GetPointSize();
 
   if (dlg.DoModal() == IDOK) {
     // Apply to global primitive state
-    pstate.SetPointStyle(static_cast<short>(dlg.m_pointStyle));
+    renderState.SetPointStyle(static_cast<short>(dlg.m_pointStyle));
     // Store into document
     SetPointSize(dlg.m_pointSize);
 

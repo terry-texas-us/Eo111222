@@ -23,7 +23,7 @@
 /** @todo Color and lineType assignment for chamfer/fillet operations
  *
  * Determine color and lineTypeIndex for newly created chamfer/fillet primitives:
- * - Option 1: Use global primitive state (pstate)
+ * - Option 1: Use global primitive state (renderState)
  * - Option 2: Inherit from one of the two source lines
  * 
  * @attention If one line is a reference line, the non-reference line should 
@@ -164,7 +164,7 @@ void AeSysView::OnFixupModeReference() {
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
         line->SetBeginPoint(previousLine.begin);
         line->SetEndPoint(previousLine.end);
-        previousGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), previousLine.end, referenceLine.begin));
+        previousGroup->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), previousLine.end, referenceLine.begin));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
     } else if (previousCommand == ID_OP4) {
@@ -271,7 +271,7 @@ void AeSysView::OnFixupModeMend() {
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
         pLine->SetBeginPoint(previousLine.begin);
         pLine->SetEndPoint(previousLine.end);
-        previousGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), previousLine.end, currentLine.begin));
+        previousGroup->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), previousLine.end, currentLine.begin));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
     } else if (previousCommand == ID_OP4) {
@@ -299,8 +299,8 @@ void AeSysView::OnFixupModeMend() {
           auto minorAxis = CrossProduct(normal, majorAxis);
 
           auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
-          radialArc->SetColor(pstate.Color());
-          radialArc->SetLineTypeIndex(pstate.LineTypeIndex());
+          radialArc->SetColor(renderState.Color());
+          radialArc->SetLineTypeIndex(renderState.LineTypeIndex());
 
           previousGroup->AddTail(radialArc);
           document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
@@ -375,7 +375,7 @@ void AeSysView::OnFixupModeChamfer() {
       linePrimitive->SetBeginPoint(currentLine.begin);
       linePrimitive->SetEndPoint(currentLine.end);
 
-      currentGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), previousLine.end, currentLine.begin));
+      currentGroup->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), previousLine.end, currentLine.begin));
 
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     }

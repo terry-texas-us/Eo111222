@@ -78,4 +78,4 @@ class EoGsRenderState {
 
   void SetAlignment(CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment);
 };
-extern EoGsRenderState pstate;
+extern EoGsRenderState renderState;

@@ -32,10 +32,10 @@ BOOL EoDlgModeLetter::OnInitDialog() {
   return TRUE;
 }
 void EoDlgModeLetter::OnOK() {
-  auto characterCellDefinition = pstate.CharacterCellDefinition();
+  auto characterCellDefinition = renderState.CharacterCellDefinition();
   EoGeReferenceSystem ReferenceSystem(m_Point, characterCellDefinition);
 
-  const auto& fontDefinition = pstate.FontDefinition();
+  const auto& fontDefinition = renderState.FontDefinition();
 
   if (m_TextEditControl.GetWindowTextLengthW() != 0) {
     CString Text;

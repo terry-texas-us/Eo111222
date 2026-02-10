@@ -67,7 +67,7 @@ bool HasFormattingCharacters(const CString& text) {
 
 }  // namespace
 EoDbText::EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text) {
-  m_color = pstate.Color();
+  m_color = renderState.Color();
   m_fontDefinition = fd;
   m_ReferenceSystem = referenceSystem;
   m_strText = text;
@@ -116,13 +116,13 @@ void EoDbText::ConvertFormattingCharacters() {
 
 void EoDbText::Display(AeSysView* view, CDC* deviceContext) {
   std::int16_t color = LogicalColor();
-  pstate.SetColor(deviceContext, color);
+  renderState.SetColor(deviceContext, color);
 
-  std::int16_t lineTypeIndex = pstate.LineTypeIndex();
-  pstate.SetLineType(deviceContext, 1);
+  std::int16_t lineTypeIndex = renderState.LineTypeIndex();
+  renderState.SetLineType(deviceContext, 1);
 
   DisplayText(view, deviceContext, m_fontDefinition, m_ReferenceSystem, m_strText);
-  pstate.SetLineType(deviceContext, lineTypeIndex);
+  renderState.SetLineType(deviceContext, lineTypeIndex);
 }
 
 void EoDbText::AddReportToMessageList(const EoGePoint3d&) {
@@ -205,15 +205,15 @@ bool EoDbText::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) 
 void EoDbText::ModifyState() {
   EoDbPrimitive::ModifyState();
 
-  m_fontDefinition = pstate.FontDefinition();
-  auto characterCellDefinition = pstate.CharacterCellDefinition();
+  m_fontDefinition = renderState.FontDefinition();
+  auto characterCellDefinition = renderState.CharacterCellDefinition();
   m_ReferenceSystem.Rescale(characterCellDefinition);
 }
 
 void EoDbText::ModifyNotes(const EoDbFontDefinition& fontDefinition,
     const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
   if (attributes == TM_TEXT_ALL) {
-    m_color = pstate.Color();
+    m_color = renderState.Color();
     m_fontDefinition = fontDefinition;
     m_ReferenceSystem.Rescale(characterCellDefinition);
   } else if (attributes == TM_TEXT_FONT) {

@@ -219,7 +219,7 @@ bool EoDbPoint::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point)
 }
 void EoDbPoint::ModifyState() {
   EoDbPrimitive::ModifyState();
-  m_pointStyle = pstate.PointStyle();
+  m_pointStyle = renderState.PointStyle();
 }
 void EoDbPoint::SetDat(std::uint16_t wDats, double* dDat) {
   if (m_NumberOfDatums != wDats) {

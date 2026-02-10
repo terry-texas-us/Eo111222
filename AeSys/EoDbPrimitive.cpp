@@ -107,8 +107,8 @@ std::int16_t EoDbPrimitive::LogicalLineType() const {
 }
 
 void EoDbPrimitive::ModifyState() {
-  m_color = pstate.Color();
-  m_lineTypeIndex = pstate.LineTypeIndex();
+  m_color = renderState.Color();
+  m_lineTypeIndex = renderState.LineTypeIndex();
 }
 
 int EoDbPrimitive::ControlPointIndex() { return sm_controlPointIndex; }

@@ -86,7 +86,7 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
 
           m_LineTypesListControl.GetSubItemRect(Item, Appearance, LVIR_LABEL, subItemRectangle);
 
-          pstate.SetPen(nullptr, &deviceContext, 0, static_cast<std::int16_t>(lineType->Index()));
+          renderState.SetPen(nullptr, &deviceContext, 0, static_cast<std::int16_t>(lineType->Index()));
 
           auto* activeView = AeSysView::GetActiveView();
 

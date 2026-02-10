@@ -58,8 +58,8 @@ EoDbPolyline::EoDbPolyline(std::int16_t penColor, std::int16_t lineType, EoGePoi
   m_pts.Copy(pts);
 }
 EoDbPolyline::EoDbPolyline(EoGePoint3dArray& pts) {
-  m_color = pstate.Color();
-  m_lineTypeIndex = pstate.LineTypeIndex();
+  m_color = renderState.Color();
+  m_lineTypeIndex = renderState.LineTypeIndex();
 
   m_flags = 0;
   m_pts.Copy(pts);
@@ -100,7 +100,7 @@ void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();
 
-  pstate.SetPen(view, deviceContext, color, lineType);
+  renderState.SetPen(view, deviceContext, color, lineType);
 
   if (IsLooped()) {
     polyline::BeginLineLoop();

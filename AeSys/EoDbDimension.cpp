@@ -119,17 +119,17 @@ void EoDbDimension::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 
 void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
   std::int16_t color = LogicalColor();
-  pstate.SetPen(view, deviceContext, color, LogicalLineType());
+  renderState.SetPen(view, deviceContext, color, LogicalLineType());
   m_line.Display(view, deviceContext);
 
-  pstate.SetColor(deviceContext, m_textColor);
+  renderState.SetColor(deviceContext, m_textColor);
 
-  std::int16_t LineType = pstate.LineTypeIndex();
-  pstate.SetLineType(deviceContext, 1);
+  std::int16_t LineType = renderState.LineTypeIndex();
+  renderState.SetLineType(deviceContext, 1);
 
   DisplayText(view, deviceContext, m_fontDefinition, m_ReferenceSystem, m_text);
 
-  pstate.SetLineType(deviceContext, LineType);
+  renderState.SetLineType(deviceContext, LineType);
 }
 
 void EoDbDimension::AddReportToMessageList(const EoGePoint3d& point) {
@@ -227,7 +227,7 @@ bool EoDbDimension::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& po
 void EoDbDimension::ModifyState() {
   if ((sm_flags & 0x0001) != 0) { EoDbPrimitive::ModifyState(); }
 
-  if ((sm_flags & 0x0002) != 0) { m_fontDefinition = pstate.FontDefinition(); }
+  if ((sm_flags & 0x0002) != 0) { m_fontDefinition = renderState.FontDefinition(); }
 }
 
 double EoDbDimension::RelOfPt(const EoGePoint3d& point) {

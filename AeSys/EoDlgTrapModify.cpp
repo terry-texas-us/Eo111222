@@ -16,11 +16,11 @@ EoDlgTrapModify::~EoDlgTrapModify() {}
 void EoDlgTrapModify::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoDataExchange(dataExchange); }
 
 void EoDlgTrapModify::OnOK() {
-  if (IsDlgButtonChecked(IDC_MOD_PEN)) { m_Document->ModifyTrappedGroupsColor(pstate.Color()); }
-  if (IsDlgButtonChecked(IDC_MOD_LINE)) { m_Document->ModifyTrappedGroupsLineType(pstate.LineTypeIndex()); }
+  if (IsDlgButtonChecked(IDC_MOD_PEN)) { m_Document->ModifyTrappedGroupsColor(renderState.Color()); }
+  if (IsDlgButtonChecked(IDC_MOD_LINE)) { m_Document->ModifyTrappedGroupsLineType(renderState.LineTypeIndex()); }
   if (IsDlgButtonChecked(IDC_MOD_FILL)) { ModifyPolygons(); }
-  auto characterCellDefinition = pstate.CharacterCellDefinition();
-  const auto& fontDefinition = pstate.FontDefinition();
+  auto characterCellDefinition = renderState.CharacterCellDefinition();
+  const auto& fontDefinition = renderState.FontDefinition();
 
   if (IsDlgButtonChecked(IDC_MOD_NOTE)) {
     m_Document->ModifyTrappedGroupsNoteAttributes(fontDefinition, characterCellDefinition, TM_TEXT_ALL);
@@ -43,8 +43,8 @@ void EoDlgTrapModify::ModifyPolygons() {
 
       if (primitive->Is(EoDb::kPolygonPrimitive)) {
         auto* polygon = static_cast<EoDbPolygon*>(primitive);
-        polygon->SetPolygonStyle(pstate.PolygonIntStyle());
-        polygon->SetFillStyleIndex(pstate.PolygonIntStyleId());
+        polygon->SetPolygonStyle(renderState.PolygonIntStyle());
+        polygon->SetFillStyleIndex(renderState.PolygonIntStyleId());
         polygon->SetHatRefVecs(hatch::dOffAng, hatch::dXAxRefVecScal, hatch::dYAxRefVecScal);
       }
     }

@@ -16,12 +16,12 @@ void EoDlgSetupHatch::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgSetupHatch::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  SetDlgItemInt(IDC_FIL_AREA_HAT_ID, static_cast<UINT>(pstate.PolygonIntStyleId()), FALSE);
+  SetDlgItemInt(IDC_FIL_AREA_HAT_ID, static_cast<UINT>(renderState.PolygonIntStyleId()), FALSE);
 
   return TRUE;
 }
 void EoDlgSetupHatch::OnOK() {
-  pstate.SetPolygonIntStyleId(std::int16_t(GetDlgItemInt(IDC_FIL_AREA_HAT_ID, 0, FALSE)));
+  renderState.SetPolygonIntStyleId(std::int16_t(GetDlgItemInt(IDC_FIL_AREA_HAT_ID, 0, FALSE)));
 
   CDialog::OnOK();
 }
