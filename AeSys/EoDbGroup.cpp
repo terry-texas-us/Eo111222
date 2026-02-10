@@ -336,18 +336,18 @@ EoDbPrimitive* EoDbGroup::SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d& pt
 
 void EoDbGroup::DeletePrimitivesAndRemoveAll() {
   auto count = GetCount();
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"  DeletePrimitivesAndRemoveAll() - List count: %d, HeadPos: %p\n",
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 4, L"  DeletePrimitivesAndRemoveAll() - List count: %d, HeadPos: %p\n",
             static_cast<int>(count), GetHeadPosition());
 
   int deleted{};
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"    [%d] Deleting primitive at %p\n", deleted, primitive);
+    ATLTRACE2(static_cast<int>(atlTraceGeneral), 4, L"    [%d] Deleting primitive at %p\n", deleted, primitive);
     deleted++;
     delete (primitive);
   }
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"  DeletePrimitivesAndRemoveAll() - Total deleted: %d\n", deleted);
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 4, L"  DeletePrimitivesAndRemoveAll() - Total deleted: %d\n", deleted);
   RemoveAll();
 }
 

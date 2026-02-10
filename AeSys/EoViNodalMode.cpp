@@ -143,7 +143,8 @@ void AeSysView::OnNodalModeToLine() {
       auto PointPosition = document->GetFirstUniquePointPosition();
       while (PointPosition != 0) {
         EoGeUniquePoint* UniquePoint = document->GetNextUniquePoint(PointPosition);
-        auto* line = new EoDbLine(UniquePoint->m_Point, UniquePoint->m_Point + Translate);
+        auto* line =
+            new EoDbLine(pstate.Color(), pstate.LineType(), UniquePoint->m_Point, UniquePoint->m_Point + Translate);
         group->AddTail(line);
       }
       document->AddWorkLayerGroup(group);
@@ -191,8 +192,8 @@ void AeSysView::OnNodalModeToPolygon() {
           if ((mask & 3) == 3) {
             auto* line = static_cast<EoDbLine*>(primitive);
 
-            pts[0] = line->BeginPoint();
-            pts[1] = line->EndPoint();
+            pts[0] = line->Begin();
+            pts[1] = line->End();
             pts[2] = pts[1] + Translate;
             pts[3] = pts[0] + Translate;
 

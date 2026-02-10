@@ -403,7 +403,7 @@ void EoDbEllipse::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d&
   newGroups->AddTail(new EoDbGroup(pArc));
 }
 
-void EoDbEllipse::CutAtPoint(EoGePoint3d& point, EoDbGroup* group) {
+void EoDbEllipse::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   if (fabs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance)
     // Do not fragment a circle
     return;
@@ -446,7 +446,7 @@ void EoDbEllipse::GetAllPoints(EoGePoint3dArray& points) {
   points.Add(m_center);
 }
 
-void EoDbEllipse::AddReportToMessageList(EoGePoint3d) {
+void EoDbEllipse::AddReportToMessageList(const EoGePoint3d&) {
   CString str;
   str.Format(L"<Ellipse> Color: %s Line Type: %s SweepAngle %f MajorAxisLength: %f", FormatPenColor().GetString(), FormatLineType().GetString(), m_sweepAngle,
              m_majorAxis.Length());
@@ -628,7 +628,7 @@ bool EoDbEllipse::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& poin
   return false;
 }
 
-int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptInt) {
+int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d* ptInt) {
   auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
   vPlnNorm.Normalize();
 
@@ -657,12 +657,12 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
 
   GetXYExtents(ptBeg, ptEnd, &ptMin, &ptMax);
 
-  if (ptMin.x >= ptLL.x && ptMax.x <= ptUR.x && ptMin.y >= ptLL.y && ptMax.y <= ptUR.y) {  // Totally within window boundaries
+  if (ptMin.x >= lowerLeft.x && ptMax.x <= upperRight.x && ptMin.y >= lowerLeft.y && ptMax.y <= upperRight.y) {  // Totally within window boundaries
     ptInt[0] = ptBeg;
     ptInt[1] = ptEnd;
     return (2);
   }
-  if (ptMin.x >= ptUR.x || ptMax.x <= ptLL.x || ptMin.y >= ptUR.y || ptMax.y <= ptLL.y)
+  if (ptMin.x >= upperRight.x || ptMax.x <= lowerLeft.x || ptMin.y >= upperRight.y || ptMax.y <= lowerLeft.y)
     // No extent overlap
     return 0;
 
@@ -673,52 +673,52 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
   int iSecs = 0;
 
   double dRad = EoGeVector3d(m_center, ptBeg).Length();
-  if (ptMax.x > ptUR.x) {  // Arc may intersect with right window boundary
-    dDis = ptUR.x - m_center.x;
+  if (ptMax.x > upperRight.x) {  // Arc may intersect with right window boundary
+    dDis = upperRight.x - m_center.x;
     dOff = sqrt(dRad * dRad - dDis * dDis);
-    if (m_center.y - dOff >= ptLL.y && m_center.y - dOff <= ptUR.y) {
-      ptWrk[iSecs].x = ptUR.x;
+    if (m_center.y - dOff >= lowerLeft.y && m_center.y - dOff <= upperRight.y) {
+      ptWrk[iSecs].x = upperRight.x;
       ptWrk[iSecs++].y = m_center.y - dOff;
     }
-    if (m_center.y + dOff <= ptUR.y && m_center.y + dOff >= ptLL.y) {
-      ptWrk[iSecs].x = ptUR.x;
+    if (m_center.y + dOff <= upperRight.y && m_center.y + dOff >= lowerLeft.y) {
+      ptWrk[iSecs].x = upperRight.x;
       ptWrk[iSecs++].y = m_center.y + dOff;
     }
   }
-  if (ptMax.y > ptUR.y) {  // Arc may intersect with top window boundary
-    dDis = ptUR.y - m_center.y;
+  if (ptMax.y > upperRight.y) {  // Arc may intersect with top window boundary
+    dDis = upperRight.y - m_center.y;
     dOff = sqrt(dRad * dRad - dDis * dDis);
-    if (m_center.x + dOff <= ptUR.x && m_center.x + dOff >= ptLL.x) {
+    if (m_center.x + dOff <= upperRight.x && m_center.x + dOff >= lowerLeft.x) {
       ptWrk[iSecs].x = m_center.x + dOff;
-      ptWrk[iSecs++].y = ptUR.y;
+      ptWrk[iSecs++].y = upperRight.y;
     }
-    if (m_center.x - dOff >= ptLL.x && m_center.x - dOff <= ptUR.x) {
+    if (m_center.x - dOff >= lowerLeft.x && m_center.x - dOff <= upperRight.x) {
       ptWrk[iSecs].x = m_center.x - dOff;
-      ptWrk[iSecs++].y = ptUR.y;
+      ptWrk[iSecs++].y = upperRight.y;
     }
   }
-  if (ptMin.x < ptLL.x) {  // Arc may intersect with left window boundary
-    dDis = m_center.x - ptLL.x;
+  if (ptMin.x < lowerLeft.x) {  // Arc may intersect with left window boundary
+    dDis = m_center.x - lowerLeft.x;
     dOff = sqrt(dRad * dRad - dDis * dDis);
-    if (m_center.y + dOff <= ptUR.y && m_center.y + dOff >= ptLL.y) {
-      ptWrk[iSecs].x = ptLL.x;
+    if (m_center.y + dOff <= upperRight.y && m_center.y + dOff >= lowerLeft.y) {
+      ptWrk[iSecs].x = lowerLeft.x;
       ptWrk[iSecs++].y = m_center.y + dOff;
     }
-    if (m_center.y - dOff >= ptLL.y && m_center.y - dOff <= ptUR.y) {
-      ptWrk[iSecs].x = ptLL.x;
+    if (m_center.y - dOff >= lowerLeft.y && m_center.y - dOff <= upperRight.y) {
+      ptWrk[iSecs].x = lowerLeft.x;
       ptWrk[iSecs++].y = m_center.y - dOff;
     }
   }
-  if (ptMin.y < ptLL.y) {  // Arc may intersect with bottom window boundary
-    dDis = m_center.y - ptLL.y;
+  if (ptMin.y < lowerLeft.y) {  // Arc may intersect with bottom window boundary
+    dDis = m_center.y - lowerLeft.y;
     dOff = sqrt(dRad * dRad - dDis * dDis);
-    if (m_center.x - dOff >= ptLL.x && m_center.x - dOff <= ptUR.x) {
+    if (m_center.x - dOff >= lowerLeft.x && m_center.x - dOff <= upperRight.x) {
       ptWrk[iSecs].x = m_center.x - dOff;
-      ptWrk[iSecs++].y = ptLL.y;
+      ptWrk[iSecs++].y = lowerLeft.y;
     }
-    if (m_center.x + dOff <= ptUR.x && m_center.x + dOff >= ptLL.x) {
+    if (m_center.x + dOff <= upperRight.x && m_center.x + dOff >= lowerLeft.x) {
       ptWrk[iSecs].x = m_center.x + dOff;
-      ptWrk[iSecs++].y = ptLL.y;
+      ptWrk[iSecs++].y = lowerLeft.y;
     }
   }
   if (iSecs == 0) return 0;
@@ -758,12 +758,12 @@ int EoDbEllipse::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* p
   if (fabs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) {  // Arc is a circle in disuise
 
   } else {
-    if (ptBeg.x >= ptLL.x && ptBeg.x <= ptUR.x && ptBeg.y >= ptLL.y && ptBeg.y <= ptUR.y) {  // Add beg point to int set
+    if (ptBeg.x >= lowerLeft.x && ptBeg.x <= upperRight.x && ptBeg.y >= lowerLeft.y && ptBeg.y <= upperRight.y) {  // Add beg point to int set
       for (int i = iInts; i > 0; i--) ptInt[i] = ptInt[i - 1];
       ptInt[0] = ptBeg;
       iInts++;
     }
-    if (ptEnd.x >= ptLL.x && ptEnd.x <= ptUR.x && ptEnd.y >= ptLL.y && ptEnd.y <= ptUR.y) {  // Add end point to int set
+    if (ptEnd.x >= lowerLeft.x && ptEnd.x <= upperRight.x && ptEnd.y >= lowerLeft.y && ptEnd.y <= upperRight.y) {  // Add end point to int set
       ptInt[iInts] = ptEnd;
       iInts++;
     }

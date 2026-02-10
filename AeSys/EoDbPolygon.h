@@ -49,7 +49,7 @@ class EoDbPolygon : public EoDbPrimitive {
   ~EoDbPolygon() override;
 
  public:  // Methods - absolute virtuals
-  void AddReportToMessageList(EoGePoint3d) override;
+  void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolygon*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;

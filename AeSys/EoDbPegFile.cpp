@@ -666,11 +666,14 @@ void EoDb::ConstructEllipsePrimitive(CFile& file, EoDbPrimitive*& primitive) {
 }
 
 void EoDb::ConstructLinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 PenColor = EoDb::ReadInt16(file);
-  EoInt16 LineType = EoDb::ReadInt16(file);
-  EoGePoint3d BeginPoint(EoDb::ReadPoint3d(file));
-  EoGePoint3d EndPoint(EoDb::ReadPoint3d(file));
-  primitive = new EoDbLine(PenColor, LineType, BeginPoint, EndPoint);
+  EoInt16 color = EoDb::ReadInt16(file);
+  EoInt16 lineTypeIndex = EoDb::ReadInt16(file);
+  EoGePoint3d begin(EoDb::ReadPoint3d(file));
+  EoGePoint3d end(EoDb::ReadPoint3d(file));
+  primitive = new EoDbLine(begin, end);
+
+  primitive->SetColor(color);
+  primitive->SetLineTypeIndex(lineTypeIndex);
 }
 
 void EoDb::ConstructPointPrimitive(CFile& file, EoDbPrimitive*& primitive) {

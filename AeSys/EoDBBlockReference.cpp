@@ -119,7 +119,7 @@ void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
 
   view->PopModelTransform();
 }
-void EoDbBlockReference::AddReportToMessageList(EoGePoint3d) {
+void EoDbBlockReference::AddReportToMessageList(const EoGePoint3d&) {
   CString message;
   message.Format(L"<BlockReference> Color: %s Line Type: %s BlockName %s Layer: %s", FormatPenColor().GetString(),
       FormatLineType().GetString(), m_blockName.GetString(), m_layerName.c_str());

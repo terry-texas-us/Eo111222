@@ -288,7 +288,7 @@ const EoDbConic& EoDbConic::operator=(const EoDbConic& other) {
   return *this;
 }
 
-void EoDbConic::AddReportToMessageList(EoGePoint3d) {
+void EoDbConic::AddReportToMessageList(const EoGePoint3d&) {
   CString color = FormatPenColor();
   CString lineType = FormatLineType();
 
@@ -407,7 +407,7 @@ void EoDbConic::CutAt2Points(
   newGroups->AddTail(new EoDbGroup(trappedArc));
 }
 
-void EoDbConic::CutAtPoint(EoGePoint3d& point, EoDbGroup* group) {
+void EoDbConic::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   if (group == nullptr) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Null group in CutAtPt\n");
     return;
@@ -666,7 +666,7 @@ bool EoDbConic::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point)
   return false;
 }
 
-int EoDbConic::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptInt) {
+int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d* ptInt) {
   auto normal = CrossProduct(m_majorAxis, MinorAxis());
   normal.Normalize();
 
@@ -687,13 +687,13 @@ int EoDbConic::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptI
 
   GetXYExtents(ptBeg, ptEnd, &ptMin, &ptMax);
 
-  if (ptMin.x >= ptLL.x && ptMax.x <= ptUR.x && ptMin.y >= ptLL.y && ptMax.y <= ptUR.y) {
+  if (ptMin.x >= lowerLeft.x && ptMax.x <= upperRight.x && ptMin.y >= lowerLeft.y && ptMax.y <= upperRight.y) {
     // Totally within window boundaries
     ptInt[0] = ptBeg;
     ptInt[1] = ptEnd;
     return 2;
   }
-  if (ptMin.x >= ptUR.x || ptMax.x <= ptLL.x || ptMin.y >= ptUR.y || ptMax.y <= ptLL.y) { return 0; }
+  if (ptMin.x >= upperRight.x || ptMax.x <= lowerLeft.x || ptMin.y >= upperRight.y || ptMax.y <= lowerLeft.y) { return 0; }
 
   EoGePoint3d ptWrk[8]{};
 
@@ -702,59 +702,59 @@ int EoDbConic::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptI
   int iSecs{};  // Number of possible intersections found will never exceed 8
 
   double radius = EoGeVector3d(m_center, ptBeg).Length();
-  if (ptMax.x > ptUR.x) {  // Arc may intersect with right window boundary
-    distance = ptUR.x - m_center.x;
+  if (ptMax.x > upperRight.x) {  // Arc may intersect with right window boundary
+    distance = upperRight.x - m_center.x;
     if (fabs(distance) <= radius + Eo::geometricTolerance) {
       offset = sqrt(radius * radius - distance * distance);
-      if (m_center.y - offset >= ptLL.y && m_center.y - offset <= ptUR.y) {
-        ptWrk[iSecs].x = ptUR.x;
+      if (m_center.y - offset >= lowerLeft.y && m_center.y - offset <= upperRight.y) {
+        ptWrk[iSecs].x = upperRight.x;
         ptWrk[iSecs++].y = m_center.y - offset;
       }
-      if (m_center.y + offset <= ptUR.y && m_center.y + offset >= ptLL.y) {
-        ptWrk[iSecs].x = ptUR.x;
+      if (m_center.y + offset <= upperRight.y && m_center.y + offset >= lowerLeft.y) {
+        ptWrk[iSecs].x = upperRight.x;
         ptWrk[iSecs++].y = m_center.y + offset;
       }
     }
   }
-  if (ptMax.y > ptUR.y) {  // Arc may intersect with top window boundary
-    distance = ptUR.y - m_center.y;
+  if (ptMax.y > upperRight.y) {  // Arc may intersect with top window boundary
+    distance = upperRight.y - m_center.y;
     if (fabs(distance) <= radius + Eo::geometricTolerance) {
       offset = sqrt(radius * radius - distance * distance);
-      if (m_center.x + offset <= ptUR.x && m_center.x + offset >= ptLL.x) {
+      if (m_center.x + offset <= upperRight.x && m_center.x + offset >= lowerLeft.x) {
         ptWrk[iSecs].x = m_center.x + offset;
-        ptWrk[iSecs++].y = ptUR.y;
+        ptWrk[iSecs++].y = upperRight.y;
       }
-      if (m_center.x - offset >= ptLL.x && m_center.x - offset <= ptUR.x) {
+      if (m_center.x - offset >= lowerLeft.x && m_center.x - offset <= upperRight.x) {
         ptWrk[iSecs].x = m_center.x - offset;
-        ptWrk[iSecs++].y = ptUR.y;
+        ptWrk[iSecs++].y = upperRight.y;
       }
     }
   }
-  if (ptMin.x < ptLL.x) {  // Arc may intersect with left window boundary
-    distance = m_center.x - ptLL.x;
+  if (ptMin.x < lowerLeft.x) {  // Arc may intersect with left window boundary
+    distance = m_center.x - lowerLeft.x;
     if (fabs(distance) <= radius + Eo::geometricTolerance) {
       offset = sqrt(radius * radius - distance * distance);
-      if (m_center.y + offset <= ptUR.y && m_center.y + offset >= ptLL.y) {
-        ptWrk[iSecs].x = ptLL.x;
+      if (m_center.y + offset <= upperRight.y && m_center.y + offset >= lowerLeft.y) {
+        ptWrk[iSecs].x = lowerLeft.x;
         ptWrk[iSecs++].y = m_center.y + offset;
       }
-      if (m_center.y - offset >= ptLL.y && m_center.y - offset <= ptUR.y) {
-        ptWrk[iSecs].x = ptLL.x;
+      if (m_center.y - offset >= lowerLeft.y && m_center.y - offset <= upperRight.y) {
+        ptWrk[iSecs].x = lowerLeft.x;
         ptWrk[iSecs++].y = m_center.y - offset;
       }
     }
   }
-  if (ptMin.y < ptLL.y) {  // Arc may intersect with bottom window boundary
-    distance = m_center.y - ptLL.y;
+  if (ptMin.y < lowerLeft.y) {  // Arc may intersect with bottom window boundary
+    distance = m_center.y - lowerLeft.y;
     if (fabs(distance) <= radius + Eo::geometricTolerance) {
       offset = sqrt(radius * radius - distance * distance);
-      if (m_center.x - offset >= ptLL.x && m_center.x - offset <= ptUR.x) {
+      if (m_center.x - offset >= lowerLeft.x && m_center.x - offset <= upperRight.x) {
         ptWrk[iSecs].x = m_center.x - offset;
-        ptWrk[iSecs++].y = ptLL.y;
+        ptWrk[iSecs++].y = lowerLeft.y;
       }
-      if (m_center.x + offset <= ptUR.x && m_center.x + offset >= ptLL.x) {
+      if (m_center.x + offset <= upperRight.x && m_center.x + offset >= lowerLeft.x) {
         ptWrk[iSecs].x = m_center.x + offset;
-        ptWrk[iSecs++].y = ptLL.y;
+        ptWrk[iSecs++].y = lowerLeft.y;
       }
     }
   }
@@ -795,12 +795,12 @@ int EoDbConic::IsWithinArea(EoGePoint3d ptLL, EoGePoint3d ptUR, EoGePoint3d* ptI
   if (IsFullConic()) {
     // @todo handle full circle or ellipse
   } else {
-    if (ptBeg.x >= ptLL.x && ptBeg.x <= ptUR.x && ptBeg.y >= ptLL.y && ptBeg.y <= ptUR.y) {  // Add beg point to int set
+    if (ptBeg.x >= lowerLeft.x && ptBeg.x <= upperRight.x && ptBeg.y >= lowerLeft.y && ptBeg.y <= upperRight.y) {  // Add beg point to int set
       for (int i = iInts; i > 0; i--) ptInt[i] = ptInt[i - 1];
       ptInt[0] = ptBeg;
       iInts++;
     }
-    if (ptEnd.x >= ptLL.x && ptEnd.x <= ptUR.x && ptEnd.y >= ptLL.y && ptEnd.y <= ptUR.y) {  // Add end point to int set
+    if (ptEnd.x >= lowerLeft.x && ptEnd.x <= upperRight.x && ptEnd.y >= lowerLeft.y && ptEnd.y <= upperRight.y) {  // Add end point to int set
       ptInt[iInts] = ptEnd;
       iInts++;
     }

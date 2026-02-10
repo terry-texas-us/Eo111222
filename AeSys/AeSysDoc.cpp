@@ -621,12 +621,12 @@ void AeSysDoc::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) {
 EoDbLayer* AeSysDoc::LayersSelUsingPoint(const EoGePoint3d& pt) {
   auto* activeView = AeSysView::GetActiveView();
 
-  auto* Group = activeView->SelectGroupAndPrimitive(pt);
+  auto* group = activeView->SelectGroupAndPrimitive(pt);
 
-  if (Group != 0) {
+  if (group != nullptr) {
     for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
       auto* layer = GetLayerTableLayerAt(w);
-      if (layer->Find(Group)) { return layer; }
+      if (layer->Find(group)) { return layer; }
     }
   }
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
@@ -636,6 +636,7 @@ EoDbLayer* AeSysDoc::LayersSelUsingPoint(const EoGePoint3d& pt) {
   }
   return nullptr;
 }
+
 int AeSysDoc::RemoveEmptyNotesAndDelete() {
   int count{};
 

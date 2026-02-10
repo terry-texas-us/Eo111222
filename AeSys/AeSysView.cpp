@@ -1654,8 +1654,8 @@ void AeSysView::OnPrimPerpJump() {
 
   if (SelectGroupAndPrimitive(cursorPosition) != nullptr) {
     if (m_EngagedPrimitive->Is(EoDb::kLinePrimitive)) {
-      EoDbLine* pPrimLine = static_cast<EoDbLine*>(m_EngagedPrimitive);
-      cursorPosition = pPrimLine->ProjPt(m_ptCursorPosWorld);
+      auto* engagedLine = static_cast<EoDbLine*>(m_EngagedPrimitive);
+      cursorPosition = engagedLine->ProjectPointToLine(m_ptCursorPosWorld);
       SetCursorPosition(cursorPosition);
     }
   }

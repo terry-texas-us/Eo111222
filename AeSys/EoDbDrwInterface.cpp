@@ -22,6 +22,7 @@
 #include "EoDbPoint.h"
 #include "EoDbPolyline.h"
 #include "EoDbPrimitive.h"
+#include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
 #include "drw_base.h"
@@ -29,8 +30,8 @@
 #include "drw_header.h"
 #include "drw_objects.h"
 
-void EoDbDrwInterface::SetHeaderSectionVariable(const DRW_Header* header, const std::string& keyToFind,
-                                                EoDbHeaderSection& headerSection) {
+void EoDbDrwInterface::SetHeaderSectionVariable(
+    const DRW_Header* header, const std::string& keyToFind, EoDbHeaderSection& headerSection) {
   HeaderVariable value;
   auto it = header->vars.find(keyToFind);
   if (it != header->vars.end() && it->second != nullptr) {
@@ -76,8 +77,8 @@ void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, AeSysDoc* docum
 void EoDbDrwInterface::ConvertDimStyle(const DRW_Dimstyle& dimStyle, AeSysDoc* document) {
   (void)document;
   std::wstring dimStyleName = Eo::MultiByteToWString(dimStyle.name.c_str());
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DimStyle - Name: <%s> (unsupported in AeSys)\n",
-            dimStyleName.c_str());
+  ATLTRACE2(
+      static_cast<int>(atlTraceGeneral), 3, L"DimStyle - Name: <%s> (unsupported in AeSys)\n", dimStyleName.c_str());
 }
 
 void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* document) {
@@ -167,8 +168,8 @@ void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* do
 void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeSysDoc* document) {
   (void)document;
   std::wstring textStyleName = Eo::MultiByteToWString(textStyle.name.c_str());
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"Text Style - Name: %s (unsupported in AeSys)\n",
-            textStyleName.c_str());
+  ATLTRACE2(
+      static_cast<int>(atlTraceGeneral), 3, L"Text Style - Name: %s (unsupported in AeSys)\n", textStyleName.c_str());
 
   // auto height = textStyle.height;         // Fixed text height; 0 if not fixed (group code 40)
   // auto width = textStyle.width;           // Width factor (group code 41)
@@ -186,25 +187,25 @@ void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeS
 void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc* document) {
   (void)document;
   std::wstring viewportName = Eo::MultiByteToWString(viewport.name.c_str());
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"Viewport - Name: %s (unsupported in AeSys)\n",
-            viewportName.c_str());
+  ATLTRACE2(
+      static_cast<int>(atlTraceGeneral), 3, L"Viewport - Name: %s (unsupported in AeSys)\n", viewportName.c_str());
 
   auto lowerLeft = EoGePoint3d(viewport.lowerLeft.x, viewport.lowerLeft.y,
-                               viewport.lowerLeft.z);  // group codes 10 and 20 (2D point)
+      viewport.lowerLeft.z);  // group codes 10 and 20 (2D point)
   auto upperRight = EoGePoint3d(viewport.upperRight.x, viewport.upperRight.y,
-                                viewport.upperRight.z);  // group codes 11 and 21 (2D point)
+      viewport.upperRight.z);  // group codes 11 and 21 (2D point)
   auto center =
       EoGePoint3d(viewport.center.x, viewport.center.y, viewport.center.z);  // group codes 12 and 22 (2D point in DCS)
   auto snapBase = EoGePoint3d(viewport.snapBase.x, viewport.snapBase.y,
-                              viewport.snapBase.z);  // group codes 13 and 23 (2D point in DCS)
+      viewport.snapBase.z);  // group codes 13 and 23 (2D point in DCS)
   auto snapSpacing = EoGePoint3d(viewport.snapSpacing.x, viewport.snapSpacing.y,
-                                 viewport.snapSpacing.z);  // group codes 14 and 24 (2D point in DCS)
+      viewport.snapSpacing.z);  // group codes 14 and 24 (2D point in DCS)
   auto gridSpacing = EoGePoint3d(viewport.gridSpacing.x, viewport.gridSpacing.y,
-                                 viewport.gridSpacing.z);  // group codes 15 and 25 (2D point in DCS)
+      viewport.gridSpacing.z);  // group codes 15 and 25 (2D point in DCS)
   auto viewDirection = EoGeVector3d(viewport.viewDir.x, viewport.viewDir.y,
-                                    viewport.viewDir.z);  // group codes 16, 26 and 36 (3D point in WCS)
+      viewport.viewDir.z);  // group codes 16, 26 and 36 (3D point in WCS)
   auto viewTarget = EoGeVector3d(viewport.viewTarget.x, viewport.viewTarget.y,
-                                 viewport.viewTarget.z);  // group codes 17, 27 and 37 (3D point in WCS)
+      viewport.viewTarget.z);  // group codes 17, 27 and 37 (3D point in WCS)
 
   // auto height = viewport.height;  // group code 45
   // auto ratio = viewport.ratio;
@@ -299,14 +300,14 @@ void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
   }
 
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0,
-            L"AddToDocument: primitive=%p, inBlock=%d, currentBlock=%p, layer='%s'\n", primitive,
-            inBlockDefinition ? 1 : 0, currentOpenBlockDefinition, layerName);
+      L"AddToDocument: primitive=%p, inBlock=%d, currentBlock=%p, layer='%s'\n", primitive, inBlockDefinition ? 1 : 0,
+      currentOpenBlockDefinition, layerName);
 
   if (currentOpenBlockDefinition == nullptr) {
     auto* group = new EoDbGroup();
 
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"  -> Creating MODEL SPACE group %p for primitive %p\n", group,
-              primitive);
+        primitive);
 
     group->AddTail(primitive);
     layer->AddTail(group);
@@ -322,7 +323,7 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
 
   if (arc.radious < Eo::geometricTolerance) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Arc entity with non-positive radius (%f) skipped.\n",
-              arc.radious);
+        arc.radious);
     return;
   }
   EoGePoint3d center(arc.basePoint.x, arc.basePoint.y, arc.basePoint.z);
@@ -376,7 +377,7 @@ void EoDbDrwInterface::ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc
 
   if (ellipse.ratio <= 0.0 || ellipse.ratio > 1.0) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Warning: Ellipse entity with invalid ratio (%f) skipped.\n",
-              ellipse.ratio);
+        ellipse.ratio);
     return;
   }
   EoGeVector3d majorAxis(ellipse.secPoint.x, ellipse.secPoint.y, ellipse.secPoint.z);
@@ -415,8 +416,8 @@ void EoDbDrwInterface::ConvertLineEntity(const DRW_Line& line, AeSysDoc* documen
 
   auto linePrimitive = new EoDbLine();
   linePrimitive->SetBaseProperties(&line, document);
-  linePrimitive->SetBeginPoint(line.basePoint.x, line.basePoint.y, line.basePoint.z);
-  linePrimitive->SetEndPoint(line.secPoint.x, line.secPoint.y, line.secPoint.z);
+
+  linePrimitive->SetLine(EoGeLine(line.basePoint, line.secPoint));
   AddToDocument(linePrimitive, document);
 }
 

@@ -49,7 +49,7 @@ class EoDbEllipse : public EoDbPrimitive {
   const EoDbEllipse& operator=(const EoDbEllipse&);
 
  public:  // Methods - absolute virtuals
-  void AddReportToMessageList(EoGePoint3d) override;
+  void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbEllipse*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
@@ -75,7 +75,7 @@ class EoDbEllipse : public EoDbPrimitive {
   void Write(CFile& file, EoUInt8* buffer) override;
 
  public:
-  void CutAtPoint(EoGePoint3d& point, EoDbGroup*) override;
+  void CutAtPoint(const EoGePoint3d& point, EoDbGroup*) override;
   void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
 
   /// <summary>Generates a set of points which may be used to represent a arc using a double angle algorithm.</summary>
@@ -89,7 +89,7 @@ class EoDbEllipse : public EoDbPrimitive {
   [[nodiscard]] const EoGePoint3d& CenterPoint() const noexcept { return m_center; }
   [[nodiscard]] double SweepAngle() const noexcept { return m_sweepAngle; }
   void GetXYExtents(EoGePoint3d, EoGePoint3d, EoGePoint3d*, EoGePoint3d*) const;
-  int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) override;
+  int IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d*) override;
   void SetCenterPoint(EoGePoint3d centerPoint) { m_center = std::move(centerPoint); }
   void SetMajorAxis(EoGeVector3d majorAxis) { m_majorAxis = std::move(majorAxis); }
   void SetMinorAxis(EoGeVector3d minorAxis) { m_minorAxis = std::move(minorAxis); }

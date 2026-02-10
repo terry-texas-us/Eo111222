@@ -11,6 +11,7 @@
 #include "EoDbPolyline.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
+#include "PrimState.h"
 #include "Resource.h"
 
 void AeSysView::OnPowerModeOptions() {
@@ -40,7 +41,7 @@ void AeSysView::OnPowerModeCircuit() {
       document->AddWorkLayerGroup(Group);
       EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
       EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], CurrentRadius);
-      Group->AddTail(new EoDbLine(pt1, pt2));
+      Group->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), pt1, pt2));
       pts[0] = cursorPosition;
     }
     m_PreviousRadius = CurrentRadius;
@@ -54,7 +55,7 @@ void AeSysView::OnPowerModeCircuit() {
       document->AddWorkLayerGroup(Group);
       EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
       EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], 0.0);
-      Group->AddTail(new EoDbLine(pt1, pt2));
+      Group->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), pt1, pt2));
 
       pts[0] = cursorPosition;
     }
@@ -86,15 +87,15 @@ void AeSysView::OnPowerModeHome() {
   if (!m_PowerArrow || (PointOnCircuit != cursorPosition)) {
     m_PowerArrow = false;
     EoDbLine* Circuit;
-    auto* Group = SelectLineUsingPoint(cursorPosition, Circuit);
-    if (Group != 0) {
-      cursorPosition = Circuit->ProjPt(cursorPosition);
+    auto* group = SelectLineUsingPoint(cursorPosition, Circuit);
+    if (group != nullptr) {
+      cursorPosition = Circuit->ProjectPointToLine(cursorPosition);
       if (Circuit->RelOfPt(cursorPosition) <= 0.5) {
-        m_CircuitEndPoint = Circuit->EndPoint();
-        if (cursorPosition.DistanceTo(Circuit->BeginPoint()) <= 0.1) cursorPosition = Circuit->BeginPoint();
+        m_CircuitEndPoint = Circuit->End();
+        if (cursorPosition.DistanceTo(Circuit->Begin()) <= 0.1) cursorPosition = Circuit->Begin();
       } else {
-        m_CircuitEndPoint = Circuit->BeginPoint();
-        if (cursorPosition.DistanceTo(Circuit->EndPoint()) <= 0.1) cursorPosition = Circuit->EndPoint();
+        m_CircuitEndPoint = Circuit->Begin();
+        if (cursorPosition.DistanceTo(Circuit->End()) <= 0.1) cursorPosition = Circuit->End();
       }
       m_PowerArrow = cursorPosition.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
       GenerateHomeRunArrow(cursorPosition, m_CircuitEndPoint);
@@ -131,7 +132,7 @@ void AeSysView::DoPowerModeMouseMove() {
           cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
         }
         auto pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
-        m_PreviewGroup.AddTail(new EoDbLine(pt1, cursorPosition));
+        m_PreviewGroup.AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), pt1, cursorPosition));
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;
@@ -156,10 +157,10 @@ void AeSysView::DoPowerModeConductor(EoUInt16 conductorType) {
     EoDbLine* Circuit;
     auto* Group = SelectLineUsingPoint(cursorPosition, Circuit);
     if (Group != 0) {
-      cursorPosition = Circuit->ProjPt(cursorPosition);
+      cursorPosition = Circuit->ProjectPointToLine(cursorPosition);
 
-      EoGePoint3d BeginPoint = Circuit->BeginPoint();
-      m_CircuitEndPoint = Circuit->EndPoint();
+      EoGePoint3d BeginPoint = Circuit->Begin();
+      m_CircuitEndPoint = Circuit->End();
 
       if (fabs(m_CircuitEndPoint.x - BeginPoint.x) > 0.025) {
         if (BeginPoint.x > m_CircuitEndPoint.x) m_CircuitEndPoint = BeginPoint;

@@ -65,7 +65,7 @@ void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
   GenPts(3, m_pts);
   polyline::__End(view, deviceContext, lineType);
 }
-void EoDbSpline::AddReportToMessageList(EoGePoint3d) {
+void EoDbSpline::AddReportToMessageList(const EoGePoint3d&) {
   CString str;
   str.Format(L"<BSpline> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
   app.AddStringToMessageList(str);

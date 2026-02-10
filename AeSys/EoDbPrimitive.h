@@ -41,7 +41,7 @@ class EoDbPrimitive : public CObject {
   static double sm_SelectApertureSize;
 
  public:  // Constructors and destructor
-  EoDbPrimitive();
+  EoDbPrimitive() = default;
   EoDbPrimitive(EoInt16 penColor, EoInt16 lineType);
 
  protected:
@@ -65,7 +65,7 @@ class EoDbPrimitive : public CObject {
   ~EoDbPrimitive() override;
 
  public:  // Methods - absolute virtuals
-  virtual void AddReportToMessageList(EoGePoint3d) = 0;
+  virtual void AddReportToMessageList(const EoGePoint3d&) = 0;
   virtual void AddToTreeViewControl(HWND, HTREEITEM) = 0;
   virtual void Assign(EoDbPrimitive* primitive) = 0;
   virtual EoDbPrimitive*& Copy(EoDbPrimitive*&) = 0;
@@ -93,8 +93,8 @@ class EoDbPrimitive : public CObject {
  public:
   virtual void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*,
                             EoDbGroupList*);
-  virtual void CutAtPoint(EoGePoint3d& point, EoDbGroup*);
-  virtual int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*);
+  virtual void CutAtPoint(const EoGePoint3d& point, EoDbGroup*);
+  virtual int IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d*);
   virtual void ModifyState();
   virtual bool PivotOnControlPoint(AeSysView*, const EoGePoint4d&);
 

@@ -129,8 +129,8 @@ void AeSysView::OnCutModeField() {
     rUR.x = std::max(previousPosition.x, cursorPosition.x);
     rUR.y = std::max(previousPosition.y, cursorPosition.y);
 
-    EoGePoint3d ptLL = rLL;
-    EoGePoint3d ptUR = rUR;
+    EoGePoint3d lowerLeft = rLL;
+    EoGePoint3d upperRight = rUR;
 
     EoDbGroup* group{};
     EoDbPrimitive* primitive{};
@@ -156,7 +156,7 @@ void AeSysView::OnCutModeField() {
       for (PrimitivePosition = group->GetHeadPosition(); (posPrimPrv = PrimitivePosition) != 0;) {
         primitive = group->GetNext(PrimitivePosition);
 
-        if ((iInts = primitive->IsWithinArea(ptLL, ptUR, ptInt)) == 0) continue;
+        if ((iInts = primitive->IsWithinArea(lowerLeft, upperRight, ptInt)) == 0) { continue; }
 
         group->RemoveAt(posPrimPrv);
 

@@ -151,7 +151,7 @@ void EoDbPoint::Display(AeSysView* view, CDC* context) {
   }
 }
 
-void EoDbPoint::AddReportToMessageList(EoGePoint3d) {
+void EoDbPoint::AddReportToMessageList(const EoGePoint3d&) {
   CString str;
   str.Format(L"<Point> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
   app.AddStringToMessageList(str);

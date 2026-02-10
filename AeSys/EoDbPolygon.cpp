@@ -200,7 +200,7 @@ void EoDbPolygon::Display(AeSysView* view, CDC* deviceContext) {
   }
 }
 
-void EoDbPolygon::AddReportToMessageList(EoGePoint3d ptPic) {
+void EoDbPolygon::AddReportToMessageList(const EoGePoint3d& point) {
   CString Message(L"<Polygon Edge> ");
 
   if (sm_Edge > 0 && sm_Edge <= m_numberOfVertices) {
@@ -214,7 +214,7 @@ void EoDbPolygon::AddReportToMessageList(EoGePoint3d ptPic) {
     double dAng;
     double dLen = EoGeVector3d(*pBegPt, *pEndPt).Length();  // Length of edge
 
-    if (EoGeVector3d(ptPic, *pBegPt).Length() > dLen * 0.5)
+    if (EoGeVector3d(point, *pBegPt).Length() > dLen * 0.5)
       dAng = EoGeLine(*pEndPt, *pBegPt).AngleFromXAxisXY();
     else
       dAng = EoGeLine(*pBegPt, *pEndPt).AngleFromXAxisXY();
@@ -235,6 +235,7 @@ void EoDbPolygon::AddReportToMessageList(EoGePoint3d ptPic) {
 #endif  // USING_DDE
   }
 }
+
 void EoDbPolygon::FormatGeometry(CString& str) {
   str += L"Hatch Origin;" + m_hatchOrigin.ToString();
   str += L"X Axis;" + m_positiveX.ToString();

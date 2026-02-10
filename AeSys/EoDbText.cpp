@@ -124,7 +124,7 @@ void EoDbText::Display(AeSysView* view, CDC* deviceContext) {
   DisplayText(view, deviceContext, m_fontDefinition, m_ReferenceSystem, m_strText);
   pstate.SetLineType(deviceContext, LineType);
 }
-void EoDbText::AddReportToMessageList(EoGePoint3d) {
+void EoDbText::AddReportToMessageList(const EoGePoint3d&) {
   CString str;
   str = L"Color: " + FormatPenColor() + L" Font: " + m_fontDefinition.FontName() + L" Precision: " +
         m_fontDefinition.FormatPrecision() + L" Path: " + m_fontDefinition.FormatPath() + L" Alignment: (" +

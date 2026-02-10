@@ -71,8 +71,8 @@ double EoGeLine::AngleFromXAxisXY() const {
 EoGePoint3d EoGeLine::ConstrainToAxis(double influenceAngle, double axisOffsetAngle) const {
   EoGeTransformMatrix transformMatrix{};
   transformMatrix.Translate(EoGeVector3d(begin, EoGePoint3d::kOrigin));
-  transformMatrix *= EoGeTransformMatrix::ZAxisRotation(-sin(Eo::DegreeToRadian(axisOffsetAngle)),
-                                                        cos(Eo::DegreeToRadian(axisOffsetAngle)));
+  transformMatrix *= EoGeTransformMatrix::ZAxisRotation(
+      -sin(Eo::DegreeToRadian(axisOffsetAngle)), cos(Eo::DegreeToRadian(axisOffsetAngle)));
 
   EoGePoint3d pt = end;
 
@@ -116,18 +116,18 @@ EoGePoint3d EoGeLine::ConstrainToAxis(double influenceAngle, double axisOffsetAn
   return pt;
 }
 
-EoUInt16 EoGeLine::CutAtPt(EoGePoint3d& pt, EoGeLine& ln) {
-  EoUInt16 wRet = 0;
+EoUInt16 EoGeLine::CutAtPoint(const EoGePoint3d& point, EoGeLine& line) {
+  EoUInt16 result{};
 
-  ln = *this;
+  line = *this;
 
-  if (pt != begin && pt != end) {
-    ln.end = pt;
-    begin = pt;
+  if (point != begin && point != end) {
+    line.end = point;
+    begin = point;
 
-    wRet++;
+    result++;
   }
-  return wRet;
+  return result;
 }
 
 int EoGeLine::DirRelOfPt(EoGePoint3d pt) const {
@@ -180,8 +180,8 @@ double EoGeLine::Length() const {
 
 EoGePoint3d EoGeLine::Midpoint() const { return ProjectBeginPointToEndPoint(0.5); }
 
-bool EoGeLine::GetParallels(double distanceBetweenLines, double eccentricity, EoGeLine& leftLine,
-                            EoGeLine& rightLine) const {
+bool EoGeLine::GetParallels(
+    double distanceBetweenLines, double eccentricity, EoGeLine& leftLine, EoGeLine& rightLine) const {
   leftLine = *this;
   rightLine = *this;
 
@@ -276,7 +276,7 @@ bool EoGeLine::ParallelTo(const EoGeLine& line) const {
   return (fabs(Determinant) > Eo::geometricTolerance) ? false : true;
 }
 
-EoGePoint3d EoGeLine::ProjPt(const EoGePoint3d& point) const {
+[[nodiscard]] EoGePoint3d EoGeLine::ProjectPointToLine(const EoGePoint3d& point) const {
   EoGeVector3d vBegEnd(begin, end);
 
   double squaredLength = vBegEnd.SquaredLength();
@@ -291,7 +291,9 @@ EoGePoint3d EoGeLine::ProjPt(const EoGePoint3d& point) const {
   return (begin + vBegEnd);
 }
 
-EoGePoint3d EoGeLine::ProjectBeginPointToEndPoint(const double t) const { return begin + (end - begin) * t; }
+[[nodiscard]] EoGePoint3d EoGeLine::ProjectBeginPointToEndPoint(const double t) const {
+  return begin + (end - begin) * t;
+}
 
 int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistance, EoGePoint3d* projectedPoint) const {
   double dX = end.x - begin.x;
@@ -388,8 +390,8 @@ double EoGeLine::AngleBetweenLn_xy(EoGeLine firstLine, EoGeLine secondLine) {
   return (0.0);
 }
 
-EoGePoint4d EoGeLine::IntersectionWithPln4(EoGePoint4d& beginPoint, EoGePoint4d& endPoint,
-                                           const EoGePoint4d& pointOnPlane, EoGeVector3d& planeNormal) {
+EoGePoint4d EoGeLine::IntersectionWithPln4(
+    EoGePoint4d& beginPoint, EoGePoint4d& endPoint, const EoGePoint4d& pointOnPlane, EoGeVector3d& planeNormal) {
   EoGeVector3d LineVector(beginPoint, endPoint);
   double dotProduct = DotProduct(planeNormal, LineVector);
 
@@ -403,7 +405,7 @@ EoGePoint4d EoGeLine::IntersectionWithPln4(EoGePoint4d& beginPoint, EoGePoint4d&
 }
 
 bool EoGeLine::IntersectionWithPln(EoGePoint3d& beginPoint, EoGeVector3d lineVector, EoGePoint3d pointOnPlane,
-                                   EoGeVector3d planeNormal, EoGePoint3d* intersection) {
+    EoGeVector3d planeNormal, EoGePoint3d* intersection) {
   double dDotProd = DotProduct(planeNormal, lineVector);
 
   if (fabs(dDotProd) > Eo::geometricTolerance) {  // Line and plane are not parallel
@@ -448,8 +450,8 @@ bool EoGeLine::Intersection(const EoGeLine& firstLine, const EoGeLine& secondLin
   EoGePoint3d secondLineEnd(secondLine.end);
   secondLineEnd = transformMatrix * secondLineEnd;
 
-  if (EoGeLine::Intersection_xy(EoGeLine(EoGePoint3d::kOrigin, firstLineEnd), EoGeLine(secondLineBegin, secondLineEnd),
-                                intersection)) {
+  if (EoGeLine::Intersection_xy(
+          EoGeLine(EoGePoint3d::kOrigin, firstLineEnd), EoGeLine(secondLineBegin, secondLineEnd), intersection)) {
     intersection.z = 0.0;
     transformMatrix.Inverse();
     intersection = transformMatrix * intersection;

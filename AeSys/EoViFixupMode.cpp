@@ -129,7 +129,7 @@ void AeSysView::OnFixupModeReference() {
   referencePrimitive = EngagedPrimitive();
   if (!referencePrimitive->Is(EoDb::kLinePrimitive)) { return; }
   cursorPosition = DetPt();
-  static_cast<EoDbLine*>(referencePrimitive)->GetLine(referenceLine);
+  referenceLine = static_cast<EoDbLine*>(referencePrimitive)->Line();
 
   if (previousCommand == 0)
     previousCommand = ModeLineHighlightOp(ID_OP1);
@@ -144,10 +144,10 @@ void AeSysView::OnFixupModeReference() {
     }
     if (previousCommand == ID_OP2) {
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-      if (EoGeVector3d(line->EndPoint(), intersection).Length() < EoGeVector3d(line->EndPoint(), intersection).Length())
-        line->BeginPoint(intersection);
+      if (EoGeVector3d(line->End(), intersection).Length() < EoGeVector3d(line->End(), intersection).Length())
+        line->SetBeginPoint(intersection);
       else
-        line->EndPoint(intersection);
+        line->SetEndPoint(intersection);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
     } else if (previousCommand == ID_OP3) {
       if (EoGeVector3d(previousLine.begin, intersection).Length() <
@@ -159,12 +159,12 @@ void AeSysView::OnFixupModeReference() {
         referenceLine.end = referenceLine.begin;
       referenceLine.begin = intersection;
       if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, referenceLine, &center)) {
-        previousLine.end = previousLine.ProjPt(center);
-        referenceLine.begin = referenceLine.ProjPt(center);
+        previousLine.end = previousLine.ProjectPointToLine(center);
+        referenceLine.begin = referenceLine.ProjectPointToLine(center);
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-        line->BeginPoint(previousLine.begin);
-        line->EndPoint(previousLine.end);
-        previousGroup->AddTail(new EoDbLine(previousLine.end, referenceLine.begin));
+        line->SetBeginPoint(previousLine.begin);
+        line->SetEndPoint(previousLine.end);
+        previousGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), previousLine.end, referenceLine.begin));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
     } else if (previousCommand == ID_OP4) {
@@ -178,12 +178,12 @@ void AeSysView::OnFixupModeReference() {
       referenceLine.begin = intersection;
       if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, referenceLine, &center)) {
         double angle;
-        previousLine.end = previousLine.ProjPt(center);
-        referenceLine.begin = referenceLine.ProjPt(center);
+        previousLine.end = previousLine.ProjectPointToLine(center);
+        referenceLine.begin = referenceLine.ProjectPointToLine(center);
 
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-        line->BeginPoint(previousLine.begin);
-        line->EndPoint(previousLine.end);
+        line->SetBeginPoint(previousLine.begin);
+        line->SetEndPoint(previousLine.end);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
 
         EoGeVector3d previousEndToIntersection(previousLine.end, intersection);
@@ -222,7 +222,7 @@ void AeSysView::OnFixupModeMend() {
   currentPrimitive = EngagedPrimitive();
 
   auto* pLine = static_cast<EoDbLine*>(currentPrimitive);
-  pLine->GetLine(currentLine);
+  currentLine = pLine->Line();
 
   if (previousCommand == 0) {
     previousGroup = currentGroup;
@@ -236,11 +236,11 @@ void AeSysView::OnFixupModeMend() {
       return;
     }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
-    if (EoGeVector3d(pLine->BeginPoint(), intersection).Length() <
-        EoGeVector3d(pLine->EndPoint(), intersection).Length())
-      pLine->BeginPoint(intersection);
+    if (EoGeVector3d(pLine->Begin(), intersection).Length() <
+        EoGeVector3d(pLine->End(), intersection).Length())
+      pLine->SetBeginPoint(intersection);
     else
-      pLine->EndPoint(intersection);
+      pLine->SetEndPoint(intersection);
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
   } else {
     if (!EoGeLine::Intersection(previousLine, currentLine, intersection)) {
@@ -250,11 +250,11 @@ void AeSysView::OnFixupModeMend() {
     if (previousCommand == ID_OP2) {
       pLine = static_cast<EoDbLine*>(previousPrimitive);
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-      if (EoGeVector3d(pLine->BeginPoint(), intersection).Length() <
-          EoGeVector3d(pLine->EndPoint(), intersection).Length())
-        pLine->BeginPoint(intersection);
+      if (EoGeVector3d(pLine->Begin(), intersection).Length() <
+          EoGeVector3d(pLine->End(), intersection).Length())
+        pLine->SetBeginPoint(intersection);
       else
-        pLine->EndPoint(intersection);
+        pLine->SetEndPoint(intersection);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
     } else if (previousCommand == ID_OP3) {
       if (EoGeVector3d(previousLine.begin, intersection).Length() <
@@ -266,12 +266,12 @@ void AeSysView::OnFixupModeMend() {
       currentLine.begin = intersection;
       if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
         pLine = static_cast<EoDbLine*>(previousPrimitive);
-        previousLine.end = previousLine.ProjPt(center);
-        currentLine.begin = currentLine.ProjPt(center);
+        previousLine.end = previousLine.ProjectPointToLine(center);
+        currentLine.begin = currentLine.ProjectPointToLine(center);
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-        pLine->BeginPoint(previousLine.begin);
-        pLine->EndPoint(previousLine.end);
-        previousGroup->AddTail(new EoDbLine(previousLine.end, currentLine.begin));
+        pLine->SetBeginPoint(previousLine.begin);
+        pLine->SetEndPoint(previousLine.end);
+        previousGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), previousLine.end, currentLine.begin));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
     } else if (previousCommand == ID_OP4) {
@@ -284,11 +284,11 @@ void AeSysView::OnFixupModeMend() {
       currentLine.begin = intersection;
       if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
         pLine = static_cast<EoDbLine*>(previousPrimitive);
-        previousLine.end = previousLine.ProjPt(center);
-        currentLine.begin = currentLine.ProjPt(center);
+        previousLine.end = previousLine.ProjectPointToLine(center);
+        currentLine.begin = currentLine.ProjectPointToLine(center);
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-        pLine->BeginPoint(previousLine.begin);
-        pLine->EndPoint(previousLine.end);
+        pLine->SetBeginPoint(previousLine.begin);
+        pLine->SetEndPoint(previousLine.end);
         EoGeVector3d rPrvEndInter(previousLine.end, intersection);
         EoGeVector3d rPrvEndSecBeg(previousLine.end, currentLine.begin);
         EoGeVector3d normal = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
@@ -309,11 +309,11 @@ void AeSysView::OnFixupModeMend() {
     }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
     pLine = static_cast<EoDbLine*>(currentPrimitive);
-    if (EoGeVector3d(pLine->BeginPoint(), intersection).Length() <
-        EoGeVector3d(pLine->EndPoint(), intersection).Length())
-      pLine->BeginPoint(intersection);
+    if (EoGeVector3d(pLine->Begin(), intersection).Length() <
+        EoGeVector3d(pLine->End(), intersection).Length())
+      pLine->SetBeginPoint(intersection);
     else
-      pLine->EndPoint(intersection);
+      pLine->SetEndPoint(intersection);
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     ModeLineUnhighlightOp(previousCommand);
   }
@@ -325,8 +325,8 @@ void AeSysView::OnFixupModeChamfer() {
 
   currentGroup = SelectGroupAndPrimitive(cursorPosition);
   currentPrimitive = EngagedPrimitive();
-  EoDbLine* line = static_cast<EoDbLine*>(currentPrimitive);
-  line->GetLine(currentLine);
+  EoDbLine* linePrimitive = static_cast<EoDbLine*>(currentPrimitive);
+  currentLine = linePrimitive->Line();
 
   if (previousCommand == 0) {
     previousGroup = currentGroup;
@@ -353,29 +353,29 @@ void AeSysView::OnFixupModeChamfer() {
     EoGePoint3d center;
     if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
       // Center point is defined .. determine arc endpoints
-      previousLine.end = previousLine.ProjPt(center);
-      currentLine.begin = currentLine.ProjPt(center);
+      previousLine.end = previousLine.ProjectPointToLine(center);
+      currentLine.begin = currentLine.ProjectPointToLine(center);
       if (previousCommand == ID_OP1)
         ;
       else if (previousCommand == ID_OP2) {
-        line = static_cast<EoDbLine*>(previousPrimitive);
+        linePrimitive = static_cast<EoDbLine*>(previousPrimitive);
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-        line->BeginPoint(previousLine.begin);
-        line->EndPoint(intersection);
+        linePrimitive->SetBeginPoint(previousLine.begin);
+        linePrimitive->SetEndPoint(intersection);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       } else if (previousCommand == ID_OP3 || previousCommand == ID_OP4) {
-        line = static_cast<EoDbLine*>(previousPrimitive);
+        linePrimitive = static_cast<EoDbLine*>(previousPrimitive);
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-        line->BeginPoint(previousLine.begin);
-        line->EndPoint(previousLine.end);
+        linePrimitive->SetBeginPoint(previousLine.begin);
+        linePrimitive->SetEndPoint(previousLine.end);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
-      line = static_cast<EoDbLine*>(currentPrimitive);
+      linePrimitive = static_cast<EoDbLine*>(currentPrimitive);
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
-      line->BeginPoint(currentLine.begin);
-      line->EndPoint(currentLine.end);
+      linePrimitive->SetBeginPoint(currentLine.begin);
+      linePrimitive->SetEndPoint(currentLine.end);
 
-      currentGroup->AddTail(new EoDbLine(previousLine.end, currentLine.begin));
+      currentGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), previousLine.end, currentLine.begin));
 
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     }
@@ -389,8 +389,8 @@ void AeSysView::OnFixupModeFillet() {
 
   currentGroup = SelectGroupAndPrimitive(cursorPosition);
   currentPrimitive = EngagedPrimitive();
-  EoDbLine* line = static_cast<EoDbLine*>(currentPrimitive);
-  line->GetLine(currentLine);
+  EoDbLine* linePrimitive = static_cast<EoDbLine*>(currentPrimitive);
+  currentLine = linePrimitive->Line();
 
   if (previousCommand == 0) {
     previousGroup = currentGroup;
@@ -418,27 +418,27 @@ void AeSysView::OnFixupModeFillet() {
     EoGePoint3d center;
     if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
       // Center point is defined .. determine arc endpoints
-      previousLine.end = previousLine.ProjPt(center);
-      currentLine.begin = currentLine.ProjPt(center);
+      previousLine.end = previousLine.ProjectPointToLine(center);
+      currentLine.begin = currentLine.ProjectPointToLine(center);
       if (previousCommand == ID_OP1)
         ;
       else if (previousCommand == ID_OP2) {
-        line = static_cast<EoDbLine*>(previousPrimitive);
+        linePrimitive = static_cast<EoDbLine*>(previousPrimitive);
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-        line->BeginPoint(previousLine.begin);
-        line->EndPoint(intersection);
+        linePrimitive->SetBeginPoint(previousLine.begin);
+        linePrimitive->SetEndPoint(intersection);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       } else if (previousCommand == ID_OP3 || previousCommand == ID_OP4) {
-        line = static_cast<EoDbLine*>(previousPrimitive);
+        linePrimitive = static_cast<EoDbLine*>(previousPrimitive);
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-        line->BeginPoint(previousLine.begin);
-        line->EndPoint(previousLine.end);
+        linePrimitive->SetBeginPoint(previousLine.begin);
+        linePrimitive->SetEndPoint(previousLine.end);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
-      line = static_cast<EoDbLine*>(currentPrimitive);
+      linePrimitive = static_cast<EoDbLine*>(currentPrimitive);
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
-      line->BeginPoint(currentLine.begin);
-      line->EndPoint(currentLine.end);
+      linePrimitive->SetBeginPoint(currentLine.begin);
+      linePrimitive->SetEndPoint(currentLine.end);
 
       EoGeVector3d normal;
       EoGeVector3d previousEndToIntersection(previousLine.end, intersection);
@@ -452,8 +452,8 @@ void AeSysView::OnFixupModeFillet() {
 
         // auto* radialArc = EoDbConic::CreateRadialArc(center, normal, majorAxis.Length(), 0.0, angle);
         auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
-        radialArc->SetColor(line->Color());
-        radialArc->SetLineTypeIndex(line->LineTypeIndex());
+        radialArc->SetColor(linePrimitive->Color());
+        radialArc->SetLineTypeIndex(linePrimitive->LineTypeIndex());
         
         currentGroup->AddTail(radialArc);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
@@ -465,32 +465,29 @@ void AeSysView::OnFixupModeFillet() {
 
 void AeSysView::OnFixupModeSquare() {
   auto* document = GetDocument();
-
   auto cursorPosition = GetCursorPosition();
 
-  EoDbLine* pLine;
+  EoDbLine* linePrimitive{};
 
   currentGroup = SelectGroupAndPrimitive(cursorPosition);
-  if (currentGroup != nullptr) {
-    currentPrimitive = EngagedPrimitive();
-    cursorPosition = DetPt();
-    if (currentPrimitive->Is(EoDb::kLinePrimitive)) {
-      pLine = static_cast<EoDbLine*>(currentPrimitive);
-      pLine->GetLine(currentLine);
-      double dLen = currentLine.Length();
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
-      currentLine.begin = SnapPointToAxis(cursorPosition, currentLine.begin);
-      currentLine.end = currentLine.begin.ProjectToward(cursorPosition, dLen);
-      pLine->BeginPoint(SnapPointToGrid(currentLine.begin));
-      pLine->EndPoint(SnapPointToGrid(currentLine.end));
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
-    }
-  }
+  if (currentGroup == nullptr) { return; }
+  currentPrimitive = EngagedPrimitive();
+  cursorPosition = DetPt();
+  if (!currentPrimitive->Is(EoDb::kLinePrimitive)) { return; }
+
+  linePrimitive = static_cast<EoDbLine*>(currentPrimitive);
+  currentLine = linePrimitive->Line();
+  double dLen = currentLine.Length();
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
+  currentLine.begin = SnapPointToAxis(cursorPosition, currentLine.begin);
+  currentLine.end = currentLine.begin.ProjectToward(cursorPosition, dLen);
+  linePrimitive->SetBeginPoint(SnapPointToGrid(currentLine.begin));
+  linePrimitive->SetEndPoint(SnapPointToGrid(currentLine.end));
+  document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
 }
 
 void AeSysView::OnFixupModeParallel() {
   auto* document = GetDocument();
-
   auto cursorPosition = GetCursorPosition();
 
   EoDbLine* pLine;
@@ -501,11 +498,11 @@ void AeSysView::OnFixupModeParallel() {
     if (currentPrimitive->Is(EoDb::kLinePrimitive)) {
       pLine = static_cast<EoDbLine*>(currentPrimitive);
 
-      currentLine.begin = referenceLine.ProjPt(pLine->BeginPoint());
-      currentLine.end = referenceLine.ProjPt(pLine->EndPoint());
+      currentLine.begin = referenceLine.ProjectPointToLine(pLine->Begin());
+      currentLine.end = referenceLine.ProjectPointToLine(pLine->End());
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
-      pLine->BeginPoint(currentLine.begin.ProjectToward(pLine->BeginPoint(), app.DimensionLength()));
-      pLine->EndPoint(currentLine.end.ProjectToward(pLine->EndPoint(), app.DimensionLength()));
+      pLine->SetBeginPoint(currentLine.begin.ProjectToward(pLine->Begin(), app.DimensionLength()));
+      pLine->SetEndPoint(currentLine.end.ProjectToward(pLine->End(), app.DimensionLength()));
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     }
   }

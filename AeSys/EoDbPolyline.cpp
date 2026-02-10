@@ -111,7 +111,7 @@ void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
   polyline::__End(view, deviceContext, lineType);
 }
 
-void EoDbPolyline::AddReportToMessageList(EoGePoint3d ptPic) {
+void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
   auto numberOfVertices = EoUInt16(m_pts.GetSize());
   if (sm_Edge == 0 || sm_Edge > numberOfVertices) { return; }
 
@@ -127,7 +127,7 @@ void EoDbPolyline::AddReportToMessageList(EoGePoint3d ptPic) {
   double angleInXYPlane;
   double edgeLength = EoGeVector3d(begin, end).Length();
 
-  if (EoGeVector3d(ptPic, begin).Length() > edgeLength * 0.5) {
+  if (EoGeVector3d(point, begin).Length() > edgeLength * 0.5) {
     angleInXYPlane = EoGeLine(end, begin).AngleFromXAxisXY();
   } else {
     angleInXYPlane = EoGeLine(begin, end).AngleFromXAxisXY();

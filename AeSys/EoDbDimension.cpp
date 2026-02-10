@@ -104,18 +104,19 @@ void EoDbDimension::CutAt2Points(
   newGroups->AddTail(new EoDbGroup(dimension));
 }
 
-void EoDbDimension::CutAtPoint(EoGePoint3d& pointt, EoDbGroup* group) {
-  EoGeLine ln;
+void EoDbDimension::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
+  EoGeLine line;
 
-  if (m_line.CutAtPt(pointt, ln) != 0) {
+  if (m_line.CutAtPoint(point, line) != 0) {
     EoDbDimension* DimensionPrimitive = new EoDbDimension(*this);
 
-    DimensionPrimitive->m_line = ln;
+    DimensionPrimitive->m_line = line;
     DimensionPrimitive->SetDefaultNote();
     group->AddTail(DimensionPrimitive);
   }
   SetDefaultNote();
 }
+
 void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
   EoInt16 color = LogicalColor();
   pstate.SetPen(view, deviceContext, color, LogicalLineType());
@@ -131,7 +132,7 @@ void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
   pstate.SetLineType(deviceContext, LineType);
 }
 
-void EoDbDimension::AddReportToMessageList(EoGePoint3d pt) {
+void EoDbDimension::AddReportToMessageList(const EoGePoint3d& point) {
   CString str;
   str.Format(L"<Dim> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
   app.AddStringToMessageList(str);
@@ -140,7 +141,7 @@ void EoDbDimension::AddReportToMessageList(EoGePoint3d pt) {
   double dAng = m_line.AngleFromXAxisXY();
 
   double dRel;
-  m_line.RelOfPtToEndPts(pt, dRel);
+  m_line.RelOfPtToEndPts(point, dRel);
 
   if (dRel > 0.5)
     // Normalize line prior to angle determination
@@ -227,9 +228,9 @@ void EoDbDimension::ModifyState() {
   if ((sm_flags & 0x0002) != 0) { m_fontDefinition = pstate.FontDefinition(); }
 }
 
-double EoDbDimension::RelOfPt(EoGePoint3d pt) {
+double EoDbDimension::RelOfPt(const EoGePoint3d& point) {
   double dRel;
-  m_line.RelOfPtToEndPts(pt, dRel);
+  m_line.RelOfPtToEndPts(point, dRel);
   return dRel;
 }
 EoGePoint3d EoDbDimension::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {

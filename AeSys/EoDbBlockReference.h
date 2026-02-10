@@ -36,7 +36,7 @@ class EoDbBlockReference : public EoDbPrimitive {
   const EoDbBlockReference& operator=(const EoDbBlockReference&);
 
  public:
-  void AddReportToMessageList(EoGePoint3d) override;
+  void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbBlockReference*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;

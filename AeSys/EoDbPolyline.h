@@ -37,7 +37,7 @@ class EoDbPolyline : public EoDbPrimitive {
   const EoDbPolyline& operator=(const EoDbPolyline& polyline);
 
  public:
-  void AddReportToMessageList(EoGePoint3d) override;
+  void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolyline*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;

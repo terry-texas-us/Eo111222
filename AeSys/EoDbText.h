@@ -30,7 +30,7 @@ class EoDbText : public EoDbPrimitive {
   const EoDbText& operator=(const EoDbText&);
 
  public:  // Methods - absolute virtuals
-  void AddReportToMessageList(EoGePoint3d) override;
+  void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbText*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;

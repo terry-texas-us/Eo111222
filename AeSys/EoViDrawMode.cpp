@@ -40,7 +40,7 @@ void AeSysView::OnDrawModeLine() {
     auto* document = GetDocument();
     cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
 
-    auto* Group = new EoDbGroup(new EoDbLine(pts[0], cursorPosition));
+    auto* Group = new EoDbGroup(new EoDbLine(pstate.Color(), pstate.LineType(), pts[0], cursorPosition));
     document->AddWorkLayerGroup(Group);
     pts[0] = cursorPosition;
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -144,7 +144,7 @@ void AeSysView::OnDrawModeReturn() {
   switch (PreviousDrawCommand) {
     case ID_OP2:
       cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
-      group = new EoDbGroup(new EoDbLine(pts[0], cursorPosition));
+      group = new EoDbGroup(new EoDbLine(pstate.Color(), pstate.LineType(), pts[0], cursorPosition));
       break;
 
     case ID_OP3:
@@ -173,7 +173,9 @@ void AeSysView::OnDrawModeReturn() {
 
       group = new EoDbGroup;
 
-      for (int i = 0; i < 4; i++) { group->AddTail(new EoDbLine(pts[i], pts[(i + 1) % 4])); }
+      for (int i = 0; i < 4; i++) {
+        group->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), pts[i], pts[(i + 1) % 4]));
+      }
 
       break;
 

@@ -21,9 +21,6 @@ EoUInt16 EoDbPrimitive::sm_ControlPointIndex = USHRT_MAX;
 double EoDbPrimitive::sm_RelationshipOfPoint = 0.0;
 double EoDbPrimitive::sm_SelectApertureSize = 0.02;
 
-EoDbPrimitive::EoDbPrimitive() : m_color(COLOR_BYLAYER), m_lineTypeIndex(LINETYPE_BYLAYER) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbPrimitive() CTOR: this=%p, vtable=%p\n", this, *(void**)this);
-}
 EoDbPrimitive::EoDbPrimitive(EoInt16 color, EoInt16 lineTypeIndex) : m_color(color), m_lineTypeIndex(lineTypeIndex) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbPrimitive(color,lt) CTOR: this=%p, vtable=%p\n", this,
             *(void**)this);
@@ -36,8 +33,8 @@ void EoDbPrimitive::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3
   (void)firstPoint;
   (void)secondPoint;
 }
-void EoDbPrimitive::CutAtPoint(EoGePoint3d& point, EoDbGroup* group) {(void) point; (void) group;}
-int EoDbPrimitive::IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) { return 0; }
+void EoDbPrimitive::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {(void) point; (void) group;}
+int EoDbPrimitive::IsWithinArea(const EoGePoint3d&, const EoGePoint3d&, EoGePoint3d*) { return 0; }
 bool EoDbPrimitive::PivotOnControlPoint(AeSysView*, const EoGePoint4d&) { return false; }
 
 void EoDbPrimitive::SetBaseProperties(const DRW_Entity* entity, AeSysDoc* document) {

@@ -53,7 +53,7 @@ void GetReferenceAxesForCharacterCell(EoDbCharacterCellDefinition& characterCell
 EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
   auto* document = AeSysDoc::GetDoc();
 
-  EoGeLine ln{};
+  EoGeLine line{};
   EoGePoint3d ptProj{};
 
   double dRel[2]{};
@@ -67,15 +67,16 @@ EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
       auto* primitive = Group->GetNext(PrimitivePosition);
 
       if (primitive->Is(EoDb::kLinePrimitive)) {
-        static_cast<EoDbLine*>(primitive)->GetLine(ln);
+        line = static_cast<EoDbLine*>(primitive)->Line();
       } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
-        ln = static_cast<EoDbDimension*>(primitive)->Line();
+        line = static_cast<EoDbDimension*>(primitive)->Line();
       } else {
         continue;
       }
 
-      if (ln.IsSelectedByPointXY(pt, DimensionModePickTolerance, ptProj, dRel))
-        return (*dRel <= 0.5) ? ln.begin : ln.end;
+      if (line.IsSelectedByPointXY(pt, DimensionModePickTolerance, ptProj, dRel)) {
+        return (*dRel <= 0.5) ? line.begin : line.end;
+      }
     }
   }
   return pt;
@@ -98,7 +99,7 @@ void AeSysView::OnDimensionModeArrow() {
     RubberBandingDisable();
     ModeLineUnhighlightOp(PreviousDimensionCommand);
   }
-  EoGeLine TestLine;
+  EoGeLine testLine;
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
     auto* Group = GetNextVisibleGroup(GroupPosition);
@@ -107,30 +108,30 @@ void AeSysView::OnDimensionModeArrow() {
     while (PrimitivePosition != nullptr) {
       auto* primitive = Group->GetNext(PrimitivePosition);
       if (primitive->Is(EoDb::kLinePrimitive)) {
-        EoDbLine* LinePrimitive = static_cast<EoDbLine*>(primitive);
-        LinePrimitive->GetLine(TestLine);
+        auto* LinePrimitive = static_cast<EoDbLine*>(primitive);
+        testLine = LinePrimitive->Line();
       } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
-        EoDbDimension* DimensionPrimitive = static_cast<EoDbDimension*>(primitive);
-        TestLine = DimensionPrimitive->Line();
+        auto* DimensionPrimitive = static_cast<EoDbDimension*>(primitive);
+        testLine = DimensionPrimitive->Line();
       } else {
         continue;
       }
       EoGePoint3d ptProj;
       double dRel[2]{};
 
-      if (TestLine.IsSelectedByPointXY(cursorPosition, DimensionModePickTolerance, ptProj, dRel)) {
+      if (testLine.IsSelectedByPointXY(cursorPosition, DimensionModePickTolerance, ptProj, dRel)) {
         EoGePoint3d pt;
 
-        EoDbGroup* NewGroup = new EoDbGroup;
+        auto* newGroup = new EoDbGroup;
         if (*dRel <= 0.5) {
-          GenerateLineEndItem(1, 0.1, TestLine.end, TestLine.begin, NewGroup);
-          pt = TestLine.begin;
+          GenerateLineEndItem(1, 0.1, testLine.end, testLine.begin, newGroup);
+          pt = testLine.begin;
         } else {
-          GenerateLineEndItem(1, 0.1, TestLine.begin, TestLine.end, NewGroup);
-          pt = TestLine.end;
+          GenerateLineEndItem(1, 0.1, testLine.begin, testLine.end, newGroup);
+          pt = testLine.end;
         }
-        document->AddWorkLayerGroup(NewGroup);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, NewGroup);
+        document->AddWorkLayerGroup(newGroup);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, newGroup);
 
         SetCursorPosition(pt);
         PreviousDimensionCursorPosition = pt;
@@ -358,17 +359,17 @@ void AeSysView::OnDimensionModeAngle() {
   static EoGePoint3d rProjPt[2];
   static EoGePoint3d center;
   static int iLns;
-  static EoGeLine ln;
+  static EoGeLine line;
 
   if (PreviousDimensionCommand != ID_OP8) {
     RubberBandingDisable();
     ModeLineUnhighlightOp(PreviousDimensionCommand);
 
     if (SelectLineUsingPoint(cursorPosition) != 0) {
-      EoDbLine* pLine = static_cast<EoDbLine*>(EngagedPrimitive());
+      auto* engagedPrimitive = static_cast<EoDbLine*>(EngagedPrimitive());
 
       rProjPt[0] = DetPt();
-      pLine->GetLine(ln);
+      line = engagedPrimitive->Line();
       PreviousDimensionCommand = ModeLineHighlightOp(ID_OP8);
       app.AddStringToMessageList(std::wstring(L"Select the second line."));
       iLns = 1;
@@ -376,10 +377,10 @@ void AeSysView::OnDimensionModeAngle() {
   } else {
     if (iLns == 1) {
       if (SelectLineUsingPoint(cursorPosition) != 0) {
-        EoDbLine* pLine = static_cast<EoDbLine*>(EngagedPrimitive());
+        auto* engagedPrimitive = static_cast<EoDbLine*>(EngagedPrimitive());
 
         rProjPt[1] = DetPt();
-        if (EoGeLine::Intersection(ln, pLine->Ln(), center)) {
+        if (EoGeLine::Intersection(line, engagedPrimitive->Line(), center)) {
           iLns++;
           app.AddStringToMessageList(std::wstring(L"Specify the location for the dimension arc."));
         }
@@ -394,24 +395,24 @@ void AeSysView::OnDimensionModeAngle() {
       if (SweepAngleFromNormalAnd3Points(normal, rProjPt[0], cursorPosition, rProjPt[1], center, sweepAngle)) {
         double dRad = EoGeVector3d(center, cursorPosition).Length();
 
-        ln.begin = center.ProjectToward(rProjPt[0], dRad);
-        ln.end = ln.begin.RotateAboutAxis(center, normal, sweepAngle);
+        line.begin = center.ProjectToward(rProjPt[0], dRad);
+        line.end = line.begin.RotateAboutAxis(center, normal, sweepAngle);
 
-        auto vXAx = EoGeVector3d(center, ln.begin);
-        EoGePoint3d ptRot(ln.begin.RotateAboutAxis(center, normal, Eo::HalfPi));
+        auto vXAx = EoGeVector3d(center, line.begin);
+        EoGePoint3d ptRot(line.begin.RotateAboutAxis(center, normal, Eo::HalfPi));
         EoGeVector3d vYAx = EoGeVector3d(center, ptRot);
-        EoGePoint3d ptArrow = ln.begin.RotateAboutAxis(center, normal, Eo::Radian);
+        EoGePoint3d ptArrow = line.begin.RotateAboutAxis(center, normal, Eo::Radian);
 
         auto* Group = new EoDbGroup;
-        GenerateLineEndItem(1, 0.1, ptArrow, ln.begin, Group);
+        GenerateLineEndItem(1, 0.1, ptArrow, line.begin, Group);
 
         auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, vXAx, vYAx, sweepAngle);
         radialArc->SetColor(1);
         radialArc->SetLineTypeIndex(1);
         Group->AddTail(radialArc);
 
-        ptArrow = ln.begin.RotateAboutAxis(center, normal, sweepAngle - Eo::Radian);
-        GenerateLineEndItem(1, 0.1, ptArrow, ln.end, Group);
+        ptArrow = line.begin.RotateAboutAxis(center, normal, sweepAngle - Eo::Radian);
+        GenerateLineEndItem(1, 0.1, ptArrow, line.end, Group);
 
         auto* deviceContext = GetDC();
         int PrimitiveState = pstate.Save();
@@ -475,8 +476,8 @@ void AeSysView::OnDimensionModeConvert() {
           dimension->SetColor(line->Color());
           dimension->SetLineTypeIndex(line->LineTypeIndex());
 
-          dimension->SetBeginPoint(line->BeginPoint());
-          dimension->SetEndPoint(line->EndPoint());
+          dimension->SetBeginPoint(line->Begin());
+          dimension->SetEndPoint(line->End());
 
           dimension->SetDefaultNote();
           dimension->SetTextColor(5);

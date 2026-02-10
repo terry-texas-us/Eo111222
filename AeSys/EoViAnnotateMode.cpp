@@ -258,8 +258,8 @@ void AeSysView::OnAnnotateModeCutIn() {
 
   auto cursorPosition = GetCursorPosition();
 
-  auto* Group = SelectLineUsingPoint(cursorPosition);
-  if (Group != 0) {
+  auto* group = SelectLineUsingPoint(cursorPosition);
+  if (group != nullptr) {
     auto* document = GetDocument();
     auto* pLine = static_cast<EoDbLine*>(EngagedPrimitive());
 
@@ -271,12 +271,12 @@ void AeSysView::OnAnnotateModeCutIn() {
     dlg.m_strTitle = L"Set Cut-in Text";
     dlg.m_sText = CurrentText;
     if (dlg.DoModal() == IDOK) { CurrentText = dlg.m_sText; }
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
 
     int PrimitiveState = pstate.Save();
 
     if (!CurrentText.IsEmpty()) {
-      EoGeLine Line = pLine->Ln();
+      EoGeLine Line = pLine->Line();
       double angle = Line.AngleFromXAxisXY();
       if (angle > 0.25 * Eo::TwoPi && angle < 0.75 * Eo::TwoPi) angle += Eo::Pi;
 
@@ -301,15 +301,15 @@ void AeSysView::OnAnnotateModeCutIn() {
       auto* text = new EoDbText(fontDefinition, referenceSystem, CurrentText);
       pstate.SetColor(deviceContext, color);
 
-      Group->AddTail(text);
+      group->AddTail(text);
 
       EoGePoint3dArray ptsBox;
       text->GetBoundingBox(ptsBox, GapSpaceFactor());
 
       double dGap = EoGeVector3d(ptsBox[0], ptsBox[1]).Length();
 
-      ptsBox[0] = cursorPosition.ProjectToward(pLine->BeginPoint(), dGap / 2.0);
-      ptsBox[1] = cursorPosition.ProjectToward(pLine->EndPoint(), dGap / 2.0);
+      ptsBox[0] = cursorPosition.ProjectToward(pLine->Begin(), dGap / 2.0);
+      ptsBox[1] = cursorPosition.ProjectToward(pLine->End(), dGap / 2.0);
 
       double dRel[2]{};
 
@@ -318,15 +318,15 @@ void AeSysView::OnAnnotateModeCutIn() {
 
       if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {
         EoDbLine* NewLinePrimitive = new EoDbLine(*pLine);
-        pLine->EndPoint(ptsBox[0]);
-        NewLinePrimitive->BeginPoint(ptsBox[1]);
-        Group->AddTail(NewLinePrimitive);
+        pLine->SetEndPoint(ptsBox[0]);
+        NewLinePrimitive->SetBeginPoint(ptsBox[1]);
+        group->AddTail(NewLinePrimitive);
       } else if (dRel[0] < Eo::geometricTolerance)
-        pLine->BeginPoint(ptsBox[1]);
+        pLine->SetBeginPoint(ptsBox[1]);
       else if (dRel[1] >= 1.0 - Eo::geometricTolerance)
-        pLine->EndPoint(ptsBox[0]);
+        pLine->SetEndPoint(ptsBox[0]);
     }
-    document->UpdateAllViews(nullptr, EoDb::kGroup, Group);
+    document->UpdateAllViews(nullptr, EoDb::kGroup, group);
     pstate.Restore(deviceContext, PrimitiveState);
   }
   ReleaseDC(deviceContext);

@@ -34,7 +34,7 @@ class EoDbDimension : public EoDbPrimitive {
 
   EoDbDimension(EoUInt8* buffer);
 
-  void AddReportToMessageList(EoGePoint3d) override;
+  void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbDimension*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
@@ -61,12 +61,12 @@ class EoDbDimension : public EoDbPrimitive {
 
   void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*,
                     EoDbGroupList*) override;
-  void CutAtPoint(EoGePoint3d& point, EoDbGroup*) override;
+  void CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) override;
   void ModifyState() override;
 
   void GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac);
 
-  [[nodiscard]] double RelOfPt(EoGePoint3d point);
+  [[nodiscard]] double RelOfPt(const EoGePoint3d& point);
 
   [[nodiscard]] const EoDbFontDefinition& FontDefinition() const noexcept { return m_fontDefinition; }
   [[nodiscard]] const EoGeLine& Line() const noexcept { return m_line; }

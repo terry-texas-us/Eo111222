@@ -54,7 +54,7 @@ class EoGeLine {
     1 Cut made (line modified)
   @endcode
   */
-  EoUInt16 CutAtPt(EoGePoint3d& point, EoGeLine& line);
+  EoUInt16 CutAtPoint(const EoGePoint3d& point, EoGeLine& line);
 
   /** @brief Determines the relative position (which side) of a point to the directed line segment.
   * @param point The point to evaluate.
@@ -137,18 +137,18 @@ class EoGeLine {
   */
   bool ParallelTo(const EoGeLine& line) const;
 
-  /** @brief Projects a point onto the line defined by the begin and end points.
+  /** @brief Projects a point onto the line.
   * @param point The point to project onto the line.
   * @return The projected point on the line.
   */
-  EoGePoint3d ProjPt(const EoGePoint3d& point) const;
+  [[nodiscard]] EoGePoint3d ProjectPointToLine(const EoGePoint3d& point) const;
 
   /** @brief Projects a point from the begin point toward (for positive) the end point based on a parametric value t.
   * @param t The parametric value indicating the position along the line.
   * @return The projected point along the line.
   * @note A t value of 0 corresponds to the begin point, and a t value of 1 corresponds to the end point. Values of t outside this range will project points beyond the endpoints.
   */
-  EoGePoint3d ProjectBeginPointToEndPoint(const double t) const;
+  [[nodiscard]] EoGePoint3d ProjectBeginPointToEndPoint(const double t) const;
 
   /** @brief Projects a point from the begin point toward the end point by a specified parallel distance and then perpendicular to the line by a specified perpendicular distance. 
   * @param parallelDistance The distance to project the point parallel to the line.

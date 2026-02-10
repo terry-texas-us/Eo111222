@@ -27,7 +27,7 @@ class EoDbSpline : public EoDbPrimitive {
   const EoDbSpline& operator=(const EoDbSpline&);
 
  public:  // Methods - absolute virtuals
-  void AddReportToMessageList(EoGePoint3d) override;
+  void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbSpline*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;

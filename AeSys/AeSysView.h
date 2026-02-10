@@ -127,7 +127,7 @@ class AeSysView : public CView {
   void GetGridSnapSpacing(double& x, double& y, double& z) const;
   void SetGridSnapSpacing(double x, double y, double z);
   /// <summary>Determines the nearest point on system constraining grid.</summary>
-  EoGePoint3d SnapPointToGrid(EoGePoint3d& pt) const;
+  EoGePoint3d SnapPointToGrid(const EoGePoint3d& pt) const;
   /// <summary>Set Axis constraint tolerance angle and offset axis constraint offset angle. Constrains a line to nearest axis pivoting on first endpoint.</summary>
   /// <remarks>Offset angle only support about z-axis</remarks>
   /// <returns>Point after snap</returns>

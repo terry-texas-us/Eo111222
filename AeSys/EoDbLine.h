@@ -10,29 +10,28 @@
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "drw_Base.h"
 
 class EoDbLine : public EoDbPrimitive {
- private:
-  EoGeLine m_ln;
+  EoGeLine m_line;
 
- public:  // Constructors and destructor
-  EoDbLine() { ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbLine() DEFAULT CTOR: this=%p\n", this); }
-  EoDbLine(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint);
-  EoDbLine(EoGeLine& line);
+ public:
+  EoDbLine() = default;
+
+  EoDbLine(const EoGeLine& line);
+
   EoDbLine(EoInt16 color, EoInt16 lineType, EoGeLine line);
-  EoDbLine(EoInt16 color, EoInt16 lineType, const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint);
-  EoDbLine(const DRW_Coord& beginPoint, const DRW_Coord& endPoint);
+
+  EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end);
+
+  EoDbLine(EoInt16 color, EoInt16 lineType, const EoGePoint3d& begin, const EoGePoint3d& end);
 
   EoDbLine(const EoDbLine& other);
 
   ~EoDbLine() override {};
 
- public:
   const EoDbLine& operator=(const EoDbLine& other);
 
- public:
-  void AddReportToMessageList(EoGePoint3d) override;
+  void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbLine*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
@@ -40,8 +39,14 @@ class EoDbLine : public EoDbPrimitive {
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;
-  EoGePoint3d GetControlPoint() override { return m_ln.Midpoint(); }
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
+  EoGePoint3d GetControlPoint() override { return m_line.Midpoint(); }
+  /** @brief Gets the extents of the line in the current view.
+   * @param view The view for which to get the extents.
+   * @param[in/out] minPoint Receives the minimum point of the extents. 
+   * @param[in/out] maxPoint Receives the maximum point of the extents.
+   * @param transformMatrix The transformation matrix to apply to the points before calculating the extents.
+   */
+  void GetExtents(AeSysView* view, EoGePoint3d& minPoint, EoGePoint3d& maxPoint, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive* primitive) override;
   bool Is(EoUInt16 wType) override { return wType == EoDb::kLinePrimitive; }
@@ -52,44 +57,38 @@ class EoDbLine : public EoDbPrimitive {
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
   void Transform(const EoGeTransformMatrix& transformMatrix) override;
-  void Translate(const EoGeVector3d& v) override { m_ln += v; }
+  void Translate(const EoGeVector3d& v) override { m_line += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
   void Write(CFile& file, EoUInt8*) override;
 
- public:
-  void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*,
-                 EoDbGroupList*) override;
-  /// <summary>Cuts a line a point.</summary>
-  void CutAtPoint(EoGePoint3d& point, EoDbGroup*) override;
-  int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) override;
+  void CutAt2Points(
+      const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
+  
+  /** @brief Cuts a line at a point.
+   * @param point Point for the line cut.
+   * @param group Group to receive the new line segment if the cut is successful.
+   * @note Line segment from the point to the end of the line goes in group.
+   */
+  void CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) override;
 
- public:  // Methods
-  void GetLine(EoGeLine& line) const { line = m_ln; }
-  void GetPts(EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const {
-    beginPoint = m_ln.begin;
-    endPoint = m_ln.end;
-  }
+  int IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d* clippedPoints) override;
 
-  void SetBeginPoint(double x, double y, double z) {
-    m_ln.begin.x = x;
-    m_ln.begin.y = y;
-    m_ln.begin.z = z;
-  }
+  [[nodiscard]] const EoGePoint3d& Begin() const noexcept { return m_line.begin; }
+  [[nodiscard]] const EoGePoint3d& End() const noexcept { return m_line.end; }
+  [[nodiscard]] const EoGeLine& Line() const noexcept { return m_line; }
+  [[nodiscard]] double Length() const noexcept { return (m_line.Length()); }
 
-  void SetEndPoint(double x, double y, double z) {
-    m_ln.end.x = x;
-    m_ln.end.y = y;
-    m_ln.end.z = z;
-  }
+  /** @brief Projects a point onto the line.
+   * @param point The point to project onto the line.
+   * @return The projected point on the line.
+   */
+  [[nodiscard]] EoGePoint3d ProjectPointToLine(const EoGePoint3d& point) { return (m_line.ProjectPointToLine(point)); }
+  double RelOfPt(const EoGePoint3d& point);
 
-  EoGePoint3d& BeginPoint() { return m_ln.begin; }
-  EoGePoint3d& EndPoint() { return m_ln.end; }
-  EoGeLine& Ln() { return m_ln; }
-  double Length() { return (m_ln.Length()); }
-  EoGePoint3d ProjPt(const EoGePoint3d& pt) { return (m_ln.ProjPt(pt)); }
-  double RelOfPt(EoGePoint3d pt);
-  void BeginPoint(EoGePoint3d pt) { m_ln.begin = pt; }
-  void EndPoint(EoGePoint3d pt) { m_ln.end = pt; }
+  void SetLine(const EoGeLine& line) { m_line = line; }
+  void SetBeginPoint(const EoGePoint3d& point) { m_line.begin = point; }
+  void SetEndPoint(const EoGePoint3d& point) { m_line.end = point; }
+
   void Square(AeSysView* view);
 };

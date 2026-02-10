@@ -148,11 +148,12 @@ void EoDbJobFile::ReadHeader(CFile& file) {
     }
   }
 }
-void EoDbJobFile::ReadLayer(CFile& file, EoDbLayer* layer) {
-  EoDbGroup* Group;
 
-  while (GetNextVisibleGroup(file, Group)) {
-    if (Group != 0) { layer->AddTail(Group); }
+void EoDbJobFile::ReadLayer(CFile& file, EoDbLayer* layer) {
+  EoDbGroup* group{};
+
+  while (GetNextVisibleGroup(file, group)) {
+    if (group != nullptr) { layer->AddTail(group); }
   }
 }
 
@@ -755,8 +756,8 @@ void EoDbLine::Write(CFile& file, EoUInt8* buffer) {
   buffer[7] = static_cast<EoUInt8>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
   if (buffer[7] >= 16) buffer[7] = 2;
 
-  ((CVaxPnt*)&buffer[8])->Convert(m_ln.begin);
-  ((CVaxPnt*)&buffer[20])->Convert(m_ln.end);
+  ((CVaxPnt*)&buffer[8])->Convert(m_line.begin);
+  ((CVaxPnt*)&buffer[20])->Convert(m_line.end);
 
   file.Write(buffer, 32);
 }

@@ -152,7 +152,7 @@ class EoDbConic : public EoDbPrimitive {
   const EoDbConic& operator=(const EoDbConic&);
 
  public:  // Methods - absolute virtuals
-  void AddReportToMessageList(EoGePoint3d) override;
+  void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbConic*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
@@ -196,7 +196,7 @@ class EoDbConic : public EoDbPrimitive {
    * @param point The point at which to cut the conic.
    * @param group The group to which the new conic segment will be added.
    */
-  void CutAtPoint(EoGePoint3d& point, EoDbGroup* group) override;
+  void CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) override;
 
   /**
    * @brief Cuts the conic at two specified points, creating new groups for the cut sections.
@@ -314,7 +314,7 @@ class EoDbConic : public EoDbPrimitive {
   void GetBoundingBox(EoGePoint3dArray&);
 
   void GetXYExtents(EoGePoint3d, EoGePoint3d, EoGePoint3d*, EoGePoint3d*) const;
-  int IsWithinArea(EoGePoint3d, EoGePoint3d, EoGePoint3d*) override;
+  int IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d*) override;
 
   [[nodiscard]] const EoGePoint3d& Center() const noexcept { return m_center; }
   void SetCenter(EoGePoint3d center) { m_center = std::move(center); }
