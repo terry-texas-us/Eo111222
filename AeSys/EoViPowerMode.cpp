@@ -140,7 +140,7 @@ void AeSysView::DoPowerModeMouseMove() {
   pts.SetSize(numberOfPoints);
 }
 
-void AeSysView::DoPowerModeConductor(EoUInt16 conductorType) {
+void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
   auto* document = GetDocument();
   static EoGePoint3d PointOnCircuit;
 
@@ -216,7 +216,7 @@ void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& e
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 }
 
-void AeSysView::GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const {
+void AeSysView::GeneratePowerConductorSymbol(std::uint16_t conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const {
   auto* document = GetDocument();
   EoGePoint3d Points[5]{};
 

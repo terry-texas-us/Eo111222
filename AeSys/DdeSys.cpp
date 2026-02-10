@@ -46,7 +46,7 @@ HDDEDATA dde::SysReqItems(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
 // formats supported for all topics of the service.
 HDDEDATA dde::SysReqFormats(UINT wFmt, HSZ , HSZ hszItem) {
 	PITEMINFO pItem;
-	EoUInt16 wFormats[MAXFORMATS];
+	std::uint16_t wFormats[MAXFORMATS];
 
 	wFormats[0] = 0; 										// Start with an empty list
 
@@ -62,7 +62,7 @@ HDDEDATA dde::SysReqFormats(UINT wFmt, HSZ , HSZ hszItem) {
 		pTopic = pTopic->pNext;
 	}
 	// Return a DDE data handle to the data object containing the return data.
-	return MakeDataFromFormatList((LPWORD) wFormats, EoUInt16(wFmt), hszItem);
+	return MakeDataFromFormatList((LPWORD) wFormats, std::uint16_t(wFmt), hszItem);
 }
 // Process a request for the list of protocols supported by the server.  The default is to return the
 // 'Execute Control 1' protocol.

@@ -6,13 +6,13 @@
 #include "EoDbPrimitive.h"
 #include "EoGePoint3d.h"
 
-// EoDb::kHeaderSection sentinel				EoUInt16 0x0101
+// EoDb::kHeaderSection sentinel				std::uint16_t 0x0101
 //		{0 or more key-value pairs}
-// EoDb::kEndOfSection sentinel					EoUInt16 0x01ff
-// EoDb::kBlocksSection sentinel				EoUInt16 0x0103
-//		Number of blocks						EoUInt16
+// EoDb::kEndOfSection sentinel					std::uint16_t 0x01ff
+// EoDb::kBlocksSection sentinel				std::uint16_t 0x0103
+//		Number of blocks						std::uint16_t
 //		{0 or more block definitions}
-// EoDb::kEndOfSection sentinel					EoUInt16 0x01ff
+// EoDb::kEndOfSection sentinel					std::uint16_t 0x01ff
 
 EoDbBlockFile::EoDbBlockFile(const CString& pathName) { CFile::Open(pathName, modeReadWrite | shareDenyNone); }
 
@@ -66,7 +66,7 @@ void EoDbBlockFile::ReadHeader() {
 }
 
 void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
-  EoUInt16 wPrims{};
+  std::uint16_t wPrims{};
 
   auto countPosition = GetPosition();
 
@@ -86,8 +86,8 @@ void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
 }
 
 void EoDbBlockFile::WriteBlocks(EoDbBlocks& blocks) {
-  EoDb::Write(*this, EoUInt16(EoDb::kBlocksSection));
-  EoDb::Write(*this, EoUInt16(blocks.GetSize()));
+  EoDb::Write(*this, std::uint16_t(EoDb::kBlocksSection));
+  EoDb::Write(*this, std::uint16_t(blocks.GetSize()));
 
   CString Key;
   EoDbBlock* Block{};
@@ -97,7 +97,7 @@ void EoDbBlockFile::WriteBlocks(EoDbBlocks& blocks) {
     blocks.GetNextAssoc(position, Key, Block);
     WriteBlock(Key, Block);
   }
-  EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
+  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 void EoDbBlockFile::WriteFile(const CString& strPathName, EoDbBlocks& blocks) {
   CFileException e;
@@ -108,7 +108,7 @@ void EoDbBlockFile::WriteFile(const CString& strPathName, EoDbBlocks& blocks) {
   WriteBlocks(blocks);
 }
 void EoDbBlockFile::WriteHeader() {
-  EoDb::Write(*this, EoUInt16(EoDb::kHeaderSection));
+  EoDb::Write(*this, std::uint16_t(EoDb::kHeaderSection));
 
-  EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
+  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
 }

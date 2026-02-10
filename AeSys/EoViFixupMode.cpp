@@ -35,7 +35,7 @@
 
 namespace {
 
-EoUInt16 previousCommand{};
+std::uint16_t previousCommand{};
 
 EoDbGroup* previousGroup{};
 EoDbPrimitive* previousPrimitive{};

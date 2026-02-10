@@ -2297,7 +2297,7 @@ void AeSysView::SetCursorPosition(EoGePoint3d cursorPosition) {
 }
 
 void AeSysView::SetModeCursor(int mode) {
-  EoUInt16 ResourceIdentifier;
+  std::uint16_t ResourceIdentifier;
 
   switch (mode) {
     case ID_MODE_ANNOTATE:

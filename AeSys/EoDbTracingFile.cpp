@@ -25,7 +25,7 @@ bool EoDbTracingFile::ReadLayer(CFile& file, EoDbLayer* layer) {
 
   auto numberOfGroups = EoDb::ReadUInt16(file);
 
-  for (EoUInt16 n = 0; n < numberOfGroups; n++) {
+  for (std::uint16_t n = 0; n < numberOfGroups; n++) {
     auto* group = ReadGroup(file);
     layer->AddTail(group);
   }
@@ -41,7 +41,7 @@ EoDbGroup* EoDbTracingFile::ReadGroup(CFile& file) {
   auto* group = new EoDbGroup;
   EoDbPrimitive* primitive{};
 
-  for (EoUInt16 n = 0; n < numberOfPrimitives; n++) {
+  for (std::uint16_t n = 0; n < numberOfPrimitives; n++) {
     EoDb::Read(file, primitive);
     group->AddTail(primitive);
   }
@@ -49,20 +49,20 @@ EoDbGroup* EoDbTracingFile::ReadGroup(CFile& file) {
 }
 
 void EoDbTracingFile::WriteHeader(CFile& file) {
-  EoDb::Write(file, EoUInt16(EoDb::kHeaderSection));
+  EoDb::Write(file, std::uint16_t(EoDb::kHeaderSection));
 
-  EoDb::Write(file, EoUInt16(EoDb::kEndOfSection));
+  EoDb::Write(file, std::uint16_t(EoDb::kEndOfSection));
 }
 void EoDbTracingFile::WriteLayer(CFile& file, EoDbLayer* layer) {
-  EoDb::Write(file, EoUInt16(EoDb::kGroupsSection));
+  EoDb::Write(file, std::uint16_t(EoDb::kGroupsSection));
 
-  EoDb::Write(file, EoUInt16(layer->GetCount()));
+  EoDb::Write(file, std::uint16_t(layer->GetCount()));
 
   auto position = layer->GetHeadPosition();
   while (position != nullptr) {
     auto* group = layer->GetNext(position);
     group->Write(file);
   }
-  EoDb::Write(file, EoUInt16(EoDb::kEndOfSection));
+  EoDb::Write(file, std::uint16_t(EoDb::kEndOfSection));
   app.AddStringToMessageList(IDS_MSG_TRACING_SAVE_SUCCESS, layer->Name());
 }

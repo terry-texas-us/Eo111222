@@ -17,7 +17,7 @@ std::int16_t EoDbPrimitive::sm_layerColor{COLOR_BYLAYER};
 std::int16_t EoDbPrimitive::sm_layerLineTypeIndex{LINETYPE_BYLAYER};
 std::int16_t EoDbPrimitive::sm_specialColor{};
 
-EoUInt16 EoDbPrimitive::sm_ControlPointIndex = USHRT_MAX;
+int EoDbPrimitive::sm_controlPointIndex = SHRT_MAX;
 double EoDbPrimitive::sm_RelationshipOfPoint = 0.0;
 double EoDbPrimitive::sm_SelectApertureSize = 0.02;
 
@@ -111,7 +111,7 @@ void EoDbPrimitive::ModifyState() {
   m_lineTypeIndex = pstate.LineTypeIndex();
 }
 
-EoUInt16 EoDbPrimitive::ControlPointIndex() { return sm_ControlPointIndex; }
+int EoDbPrimitive::ControlPointIndex() { return sm_controlPointIndex; }
 bool EoDbPrimitive::IsSupportedTyp(int type) { return (type <= 7 && type != 4 && type != 5); }
 std::int16_t EoDbPrimitive::LayerColor() { return sm_layerColor; }
 void EoDbPrimitive::SetLayerColor(std::int16_t layerColor) { sm_layerColor = layerColor; }

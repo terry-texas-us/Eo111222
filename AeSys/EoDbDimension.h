@@ -48,7 +48,7 @@ class EoDbDimension : public EoDbPrimitive {
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   [[nodiscard]] EoGePoint3d GoToNextControlPoint() override;
   [[nodiscard]] bool Identical(EoDbPrimitive*) override { return false; }
-  [[nodiscard]] bool Is(EoUInt16 type) override { return type == EoDb::kDimensionPrimitive; }
+  [[nodiscard]] bool Is(std::uint16_t type) override { return type == EoDb::kDimensionPrimitive; }
   [[nodiscard]] bool IsInView(AeSysView* view) override;
   [[nodiscard]] bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   [[nodiscard]] EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
@@ -93,6 +93,6 @@ class EoDbDimension : public EoDbPrimitive {
   void SetTextColor(std::int16_t color) { m_textColor = color; }
 
  private:
-  static EoUInt16 sm_flags;  // bit 1	clear if dimension selected at note
+  static std::uint16_t sm_flags;  // bit 1	clear if dimension selected at note
                              //			  set if dimension selected at line
 };

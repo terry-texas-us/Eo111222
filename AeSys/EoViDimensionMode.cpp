@@ -28,7 +28,7 @@ namespace {
 constexpr double DimensionModePickTolerance{0.05};
 
 EoGePoint3d PreviousDimensionCursorPosition{};
-EoUInt16 PreviousDimensionCommand{};
+std::uint16_t PreviousDimensionCommand{};
 
 /** @brief Produces the reference system vectors for a single character cell.
  *  @param characterCellDefinition The character cell definition containing the rotation and slant angles, expansion factor, and height for the character cell.

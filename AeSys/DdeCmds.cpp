@@ -25,7 +25,7 @@ bool dde::ExecNoteHT(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 bool dde::ExecFill(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
   wchar_t szBuf[8]{};
 	_tcsncpy_s(szBuf, 8, ppArgs[0], sizeof(szBuf) - 1);
-	pstate.SetPolygonIntStyleId(EoUInt16(_wtoi(szBuf)));
+	pstate.SetPolygonIntStyleId(std::uint16_t(_wtoi(szBuf)));
 	return true;
 }
 /// <summary>Sets the Scale.</summary>

@@ -26,10 +26,10 @@ class EoDlgSetupColor : public CDialog {
 
   CEdit m_ColorEditControl;
 
-  void DrawSelectionInformation(EoUInt16 index);
+  void DrawSelectionInformation(std::uint16_t index);
 
  public:
-  EoUInt16 m_ColorIndex;
+  std::uint16_t m_ColorIndex;
 
   afx_msg void OnBnClickedByblockButton();
   afx_msg void OnBnClickedBylayerButton();

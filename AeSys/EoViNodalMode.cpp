@@ -11,7 +11,7 @@
 #include "Resource.h"
 
 double NodalModePickTolerance{0.05};
-EoUInt16 PreviousNodalCommand{};
+std::uint16_t PreviousNodalCommand{};
 EoGePoint3d PreviousNodalCursorPosition;
 
 void AeSysView::OnNodalModeAddRemove() {

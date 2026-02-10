@@ -102,7 +102,7 @@ void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition,
   }
 }
 
-void EoDbGroupList::PenTranslation(EoUInt16 wCols, std::int16_t* pColNew, std::int16_t* pCol) {
+void EoDbGroupList::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
   auto position = GetHeadPosition();
   while (position != 0) (GetNext(position))->PenTranslation(wCols, pColNew, pCol);
 }

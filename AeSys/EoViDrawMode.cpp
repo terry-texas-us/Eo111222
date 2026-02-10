@@ -17,7 +17,7 @@
 #include "EoGsRenderState.h"
 #include "Resource.h"
 
-EoUInt16 PreviousDrawCommand{};
+std::uint16_t PreviousDrawCommand{};
 
 void AeSysView::OnDrawModeOptions() { AeSysDoc::GetDoc()->OnSetupOptionsDraw(); }
 

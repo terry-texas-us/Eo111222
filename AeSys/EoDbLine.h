@@ -51,7 +51,7 @@ class EoDbLine : public EoDbPrimitive {
   void GetExtents(AeSysView* view, EoGePoint3d& minPoint, EoGePoint3d& maxPoint, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive* primitive) override;
-  bool Is(EoUInt16 wType) override { return wType == EoDb::kLinePrimitive; }
+  bool Is(std::uint16_t wType) override { return wType == EoDb::kLinePrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;

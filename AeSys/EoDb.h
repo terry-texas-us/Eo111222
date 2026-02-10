@@ -57,10 +57,10 @@ enum Sentinels {
   kEndOfTable = 0x02ff
 };
 enum class PolygonStyle { Hollow, Solid, Pattern, Hatch, Special = -1 };
-enum class Path : EoUInt16 { Right, Left, Up, Down };
-enum class HorizontalAlignment : EoUInt16 { Left = 1, Center, Right };
-enum class VerticalAlignment : EoUInt16 { Top = 2, Middle, Bottom };
-enum class Precision : EoUInt16 { TrueType = 1, StrokeType };
+enum class Path : std::uint16_t { Right, Left, Up, Down };
+enum class HorizontalAlignment : std::uint16_t { Left = 1, Center, Right };
+enum class VerticalAlignment : std::uint16_t { Top = 2, Middle, Bottom };
+enum class Precision : std::uint16_t { TrueType = 1, StrokeType };
 
 void ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primitive);
 void ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& file, EoDbPrimitive*& primitive);
@@ -81,28 +81,28 @@ void Read(CFile& file, CString& string);
 void Read(CFile& file, double& number);
 bool Read(CFile& file, EoDbPrimitive*& primitive);
 void Read(CFile& file, std::int16_t& number);
-void Read(CFile& file, EoUInt16& number);
+void Read(CFile& file, std::uint16_t& number);
 
 inline void Read(CFile& file, EoDb::Path& path) {
-  EoUInt16 number;
+  std::uint16_t number;
   Read(file, number);
   path = static_cast<EoDb::Path>(number);
 }
 
 inline void Read(CFile& file, EoDb::Precision& precision) {
-  EoUInt16 number;
+  std::uint16_t number;
   Read(file, number);
   precision = static_cast<EoDb::Precision>(number);
 }
 
 inline void Read(CFile& file, EoDb::HorizontalAlignment& horizontalAlignment) {
-  EoUInt16 number;
+  std::uint16_t number;
   Read(file, number);
   horizontalAlignment = static_cast<EoDb::HorizontalAlignment>(number);
 }
 
 inline void Read(CFile& file, EoDb::VerticalAlignment& verticalAlignment) {
-  EoUInt16 number;
+  std::uint16_t number;
   Read(file, number);
   verticalAlignment = static_cast<EoDb::VerticalAlignment>(number);
 }
@@ -111,23 +111,23 @@ inline void Read(CFile& file, EoDb::VerticalAlignment& verticalAlignment) {
 [[nodiscard]] std::int16_t ReadInt16(CFile& file);
 [[nodiscard]] EoGePoint3d ReadPoint3d(CFile& file);
 [[nodiscard]] EoGeVector3d ReadVector3d(CFile& file);
-[[nodiscard]] EoUInt16 ReadUInt16(CFile& file);
+[[nodiscard]] std::uint16_t ReadUInt16(CFile& file);
 
 void Write(CFile& file, const CString& string, UINT codePage = CP_ACP);
 void Write(CFile& file, double number);
 void Write(CFile& file, std::int16_t number);
-void Write(CFile& file, EoUInt16 number);
+void Write(CFile& file, std::uint16_t number);
 
-inline void Write(CFile& file, EoDb::Path path) { Write(file, static_cast<EoUInt16>(path)); }
+inline void Write(CFile& file, EoDb::Path path) { Write(file, static_cast<std::uint16_t>(path)); }
 
-inline void Write(CFile& file, EoDb::Precision precision) { Write(file, static_cast<EoUInt16>(precision)); }
+inline void Write(CFile& file, EoDb::Precision precision) { Write(file, static_cast<std::uint16_t>(precision)); }
 
 inline void Write(CFile& file, EoDb::HorizontalAlignment horizontalAlignment) {
-  Write(file, static_cast<EoUInt16>(horizontalAlignment));
+  Write(file, static_cast<std::uint16_t>(horizontalAlignment));
 }
 
 inline void Write(CFile& file, EoDb::VerticalAlignment verticalAlignment) {
-  Write(file, static_cast<EoUInt16>(verticalAlignment));
+  Write(file, static_cast<std::uint16_t>(verticalAlignment));
 }
 
 }  // namespace EoDb

@@ -48,7 +48,7 @@ void AeSysView::DoEditPrimitiveEscape() {
   app.LoadModeResources(app.PrimaryMode());
 }
 
-void AeSysView::DoEditPrimitiveTransform(EoUInt16 operation) {
+void AeSysView::DoEditPrimitiveTransform(std::uint16_t operation) {
   if (m_SubModeEditPrimitive == nullptr) { return; }
   auto* document = GetDocument();
   EoGeTransformMatrix transformMatrix;

@@ -43,7 +43,7 @@ class EoDbText : public EoDbPrimitive {
   EoGePoint3d GoToNextControlPoint() override { return (m_ReferenceSystem.Origin()); }
   bool Identical(EoDbPrimitive*) override { return false; }
   bool IsInView(AeSysView* view) override;
-  bool Is(EoUInt16 type) override { return type == EoDb::kTextPrimitive; }
+  bool Is(std::uint16_t type) override { return type == EoDb::kTextPrimitive; }
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   void ModifyState() override;
   void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,

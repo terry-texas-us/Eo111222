@@ -20,7 +20,7 @@ class EoGeTransformMatrix;
 
 class EoDbPrimitive : public CObject {
  public:
-  static constexpr EoUInt16 BUFFER_SIZE{2048};
+  static constexpr std::uint16_t BUFFER_SIZE{2048};
 
   static constexpr std::int16_t COLOR_BYBLOCK{0};
   static constexpr std::int16_t COLOR_BYLAYER{256};
@@ -37,7 +37,7 @@ class EoDbPrimitive : public CObject {
   static std::int16_t sm_layerLineTypeIndex;
 
   static std::int16_t sm_specialColor;
-  static EoUInt16 sm_ControlPointIndex;
+  static int sm_controlPointIndex;
   static double sm_RelationshipOfPoint;
   static double sm_SelectApertureSize;
 
@@ -78,7 +78,7 @@ class EoDbPrimitive : public CObject {
   virtual void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) = 0;
   virtual EoGePoint3d GoToNextControlPoint() = 0;
   virtual bool Identical(EoDbPrimitive*) = 0;
-  virtual bool Is(EoUInt16 type) = 0;
+  virtual bool Is(std::uint16_t type) = 0;
   virtual bool IsInView(AeSysView* view) = 0;
   virtual bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) = 0;
   virtual EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) = 0;
@@ -119,7 +119,7 @@ class EoDbPrimitive : public CObject {
   void SetLayerName(std::wstring name) { m_layerName = std::move(name); }
 
  public:  // Methods - static
-  static EoUInt16 ControlPointIndex();
+  static int ControlPointIndex();
   static bool IsSupportedTyp(int type);
   static std::int16_t LayerColor();
   static void SetLayerColor(std::int16_t layerColor);

@@ -14,14 +14,14 @@
 class EoDbPoint : public EoDbPrimitive {
   std::int16_t m_pointStyle;
   EoGePoint3d m_Point;
-  EoUInt16 m_NumberOfDatums;
+  std::uint16_t m_NumberOfDatums;
   double* m_Data;
 
  public:  // Constructors and destructor
   EoDbPoint();
   EoDbPoint(const EoGePoint3d& point);
   EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point);
-  EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point, EoUInt16 numberOfDatums, double* data);
+  EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point, std::uint16_t numberOfDatums, double* data);
 
   EoDbPoint(const EoDbPoint& src);
 
@@ -41,7 +41,7 @@ class EoDbPoint : public EoDbPrimitive {
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override { return m_Point; }
   bool Identical(EoDbPrimitive* primitive) override { return m_Point == static_cast<EoDbPoint*>(primitive)->m_Point; }
-  bool Is(EoUInt16 wType) override { return wType == EoDb::kPointPrimitive; }
+  bool Is(std::uint16_t wType) override { return wType == EoDb::kPointPrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
@@ -54,11 +54,11 @@ class EoDbPoint : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t* buffer) override;
 
-  double GetDat(EoUInt16 wDat) { return (m_Data[wDat]); }
+  double GetDat(std::uint16_t wDat) { return (m_Data[wDat]); }
   EoGePoint3d GetPt() const { return m_Point; }
   std::int16_t& PointStyle() { return m_pointStyle; }
   void ModifyState() override;
-  void SetDat(EoUInt16, double*);
+  void SetDat(std::uint16_t, double*);
   void SetPt(EoGePoint3d pt) { m_Point = pt; }
   void SetPoint(double x, double y, double z);
 };

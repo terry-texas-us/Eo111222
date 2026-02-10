@@ -45,7 +45,7 @@ void AeSysView::DoEditGroupEscape() {
   app.LoadModeResources(app.PrimaryMode());
 }
 
-void AeSysView::DoEditGroupTransform(EoUInt16 operation) {
+void AeSysView::DoEditGroupTransform(std::uint16_t operation) {
   auto* document = GetDocument();
   if (m_SubModeEditGroup == nullptr) { return; }
   EoGeTransformMatrix transformMatrix;

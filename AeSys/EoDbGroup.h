@@ -62,7 +62,7 @@ class EoDbGroup : public CObList {
       int attributes = 0);
   void ModifyColor(std::int16_t color);
   void ModifyLineType(std::int16_t lineType);
-  void PenTranslation(EoUInt16, std::int16_t*, std::int16_t*);
+  void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
   void RemoveDuplicatePrimitives();
   int RemoveEmptyNotesAndDelete();
   EoDbPrimitive* SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d&, EoGePoint3d*);

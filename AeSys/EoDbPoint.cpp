@@ -36,7 +36,7 @@ EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGeP
   m_NumberOfDatums = 0;
   m_Data = nullptr;
 }
-EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point, EoUInt16 numberOfDatums,
+EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point, std::uint16_t numberOfDatums,
                      double* data)
     : m_Point(point) {
   m_color = penColor;
@@ -44,7 +44,7 @@ EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGeP
   m_NumberOfDatums = numberOfDatums;
   m_Data = (numberOfDatums == 0) ? nullptr : new double[numberOfDatums];
 
-  for (EoUInt16 n = 0; n < numberOfDatums; n++) { m_Data[n] = data[n]; }
+  for (std::uint16_t n = 0; n < numberOfDatums; n++) { m_Data[n] = data[n]; }
 }
 EoDbPoint::EoDbPoint(const EoDbPoint& src) {
   m_color = src.m_color;
@@ -53,7 +53,7 @@ EoDbPoint::EoDbPoint(const EoDbPoint& src) {
   m_NumberOfDatums = src.m_NumberOfDatums;
   m_Data = (m_NumberOfDatums == 0) ? nullptr : new double[m_NumberOfDatums];
 
-  for (EoUInt16 n = 0; n < m_NumberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
+  for (std::uint16_t n = 0; n < m_NumberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
 }
 EoDbPoint::~EoDbPoint() {
   if (m_NumberOfDatums != 0) delete[] m_Data;
@@ -70,7 +70,7 @@ const EoDbPoint& EoDbPoint::operator=(const EoDbPoint& src) {
 
     m_Data = (m_NumberOfDatums == 0) ? 0 : new double[m_NumberOfDatums];
   }
-  for (EoUInt16 n = 0; n < m_NumberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
+  for (std::uint16_t n = 0; n < m_NumberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
   return (*this);
 }
 void EoDbPoint::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
@@ -186,8 +186,8 @@ EoGePoint3d EoDbPoint::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& 
   EoGePoint4d pt(m_Point);
   view->ModelViewTransformPoint(pt);
 
-  sm_ControlPointIndex = (point.DistanceToPointXY(pt) < sm_SelectApertureSize) ? 0U : USHRT_MAX;
-  return (sm_ControlPointIndex == 0) ? m_Point : EoGePoint3d::kOrigin;
+  sm_controlPointIndex = (point.DistanceToPointXY(pt) < sm_SelectApertureSize) ? 0 : SHRT_MAX;
+  return (sm_controlPointIndex == 0) ? m_Point : EoGePoint3d::kOrigin;
 }
 
 bool EoDbPoint::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
@@ -221,13 +221,13 @@ void EoDbPoint::ModifyState() {
   EoDbPrimitive::ModifyState();
   m_pointStyle = pstate.PointStyle();
 }
-void EoDbPoint::SetDat(EoUInt16 wDats, double* dDat) {
+void EoDbPoint::SetDat(std::uint16_t wDats, double* dDat) {
   if (m_NumberOfDatums != wDats) {
     if (m_NumberOfDatums != 0) { delete[] m_Data; }
     m_NumberOfDatums = wDats;
     m_Data = (m_NumberOfDatums == 0) ? 0 : new double[m_NumberOfDatums];
   }
-  for (EoUInt16 w = 0; w < m_NumberOfDatums; w++) { m_Data[w] = dDat[w]; }
+  for (auto i = 0; i < m_NumberOfDatums; i++) { m_Data[i] = dDat[i]; }
 }
 
 void EoDbPoint::SetPoint(double x, double y, double z) {
@@ -241,12 +241,12 @@ void EoDbPoint::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if (mask != 0) m_Point += v;
 }
 bool EoDbPoint::Write(CFile& file) {
-  EoDb::Write(file, EoUInt16(EoDb::kPointPrimitive));
+  EoDb::Write(file, std::uint16_t(EoDb::kPointPrimitive));
   EoDb::Write(file, m_color);
   EoDb::Write(file, m_pointStyle);
   m_Point.Write(file);
   EoDb::Write(file, m_NumberOfDatums);
-  for (EoUInt16 w = 0; w < m_NumberOfDatums; w++) EoDb::Write(file, m_Data[w]);
+  for (auto i = 0; i < m_NumberOfDatums; i++) { EoDb::Write(file, m_Data[i]); }
 
   return true;
 }

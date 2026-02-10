@@ -6,7 +6,7 @@
 class EoDbLineType : public CObject {
  public:
   EoDbLineType();
-  EoDbLineType(std::int16_t index, const CString& name, const CString& comment, EoUInt16 numberOfDashLengths, double* dashLengths);
+  EoDbLineType(std::int16_t index, const CString& name, const CString& comment, std::uint16_t numberOfDashLengths, double* dashLengths);
 
   EoDbLineType(const EoDbLineType& other);
   EoDbLineType& operator=(const EoDbLineType& other);
@@ -25,9 +25,9 @@ class EoDbLineType : public CObject {
 
   /** @brief Retrieves the number of dash elements in the line type.
    *
-   * @return The number of dash elements as an EoUInt16.
+   * @return The number of dash elements as an std::uint16_t.
    */
-  EoUInt16 GetNumberOfDashes() const { return static_cast<EoUInt16>(m_DashElements.size()); }
+  std::uint16_t GetNumberOfDashes() const { return static_cast<std::uint16_t>(m_DashElements.size()); }
 
   /** @brief Copies the dash elements of the line type into the provided array.
    *

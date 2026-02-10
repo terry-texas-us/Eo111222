@@ -31,7 +31,7 @@ class EoGsModelTransform {
    */
   [[nodiscard]] EoGeTransformMatrix GetInverseCompositeMatrix() const;
 
-  [[nodiscard]] EoUInt16 Depth() const noexcept { return m_depth; }
+  [[nodiscard]] std::uint16_t Depth() const noexcept { return m_depth; }
 
   /** Transforms a point from world space to current model space (inverse transform).
    *  Used for hit-testing in nested blocks.
@@ -70,7 +70,7 @@ class EoGsModelTransform {
   void TransformVector(EoGeVector3d& vector) const noexcept;
 
  private:
-  EoUInt16 m_depth;                                // Transformation stack depth (0 means inactive)
+  std::uint16_t m_depth;                                // Transformation stack depth (0 means inactive)
   EoGeTransformMatrix m_compositeTransformMatrix;  // Current composite transformation matrix
   EoGeTransformMatrixList m_transformMatrixList;   // Stack of transformation matrices
 };

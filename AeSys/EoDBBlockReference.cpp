@@ -52,7 +52,7 @@ EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) {
   m_columnSpacing = other.m_columnSpacing;
   m_rowSpacing = other.m_rowSpacing;
 }
-EoDbBlockReference::EoDbBlockReference(EoUInt16 color, EoUInt16 lineType, const CString& name, const EoGePoint3d& point,
+EoDbBlockReference::EoDbBlockReference(std::uint16_t color, std::uint16_t lineType, const CString& name, const EoGePoint3d& point,
     const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation)
     : m_blockName(name), m_insertionPoint(point), m_normal(normal), m_scaleFactors(scaleFactors) {
   m_color = static_cast<std::int16_t>(color);
@@ -195,7 +195,7 @@ bool EoDbBlockReference::IsPointOnControlPoint(AeSysView* view, const EoGePoint4
 }
 
 EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
-  sm_ControlPointIndex = USHRT_MAX;
+  sm_controlPointIndex = SHRT_MAX;
   EoGePoint3d ptCtrl;
 
   EoDbBlock* block{};
@@ -213,7 +213,7 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
   while (position != nullptr) {
     auto* primitive = block->GetNext(position);
     ptCtrl = primitive->SelectAtControlPoint(view, point);
-    if (sm_ControlPointIndex != USHRT_MAX) {
+    if (sm_controlPointIndex != SHRT_MAX) {
       view->ModelTransformPoint(ptCtrl);
       break;
     }
@@ -287,7 +287,7 @@ void EoDbBlockReference::TranslateUsingMask(EoGeVector3d v, DWORD mask) {
   if (mask != 0) { m_insertionPoint += v; }
 }
 bool EoDbBlockReference::Write(CFile& file) {
-  EoDb::Write(file, EoUInt16(EoDb::kGroupReferencePrimitive));
+  EoDb::Write(file, std::uint16_t(EoDb::kGroupReferencePrimitive));
   EoDb::Write(file, m_color);
   EoDb::Write(file, m_lineTypeIndex);
   EoDb::Write(file, m_blockName);

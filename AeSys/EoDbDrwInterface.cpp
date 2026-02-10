@@ -148,12 +148,12 @@ void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* do
   EoDbLineType* LineType{};
 
   if (!lineTypeTable->Lookup(lineTypeName.c_str(), LineType)) {
-    auto numberOfElements = static_cast<EoUInt16>(data.size);  // Number of linetype elements (group code 73)
+    auto numberOfElements = static_cast<std::uint16_t>(data.size);  // Number of linetype elements (group code 73)
     // double patternLength = data.length;                        // group code 40
 
     std::vector<double> dashLengths(numberOfElements);
 
-    for (EoUInt16 index = 0; index < numberOfElements; index++) {
+    for (std::uint16_t index = 0; index < numberOfElements; index++) {
       dashLengths[index] = data.path[index];  // group code 49
     }
     CString name(lineTypeName.c_str());
@@ -245,7 +245,7 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* docu
   // @todo Check if block already exists and clean it up first
 
   auto* newBlock = new EoDbBlock(
-      static_cast<EoUInt16>(block.flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
+      static_cast<std::uint16_t>(block.flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
       EoGePoint3d(block.basePoint.x, block.basePoint.y, block.basePoint.z),  // group codes 10, 20 and 30
       blockName.c_str());
 

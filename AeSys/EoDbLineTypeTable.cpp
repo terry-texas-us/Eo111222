@@ -30,7 +30,7 @@ struct EoDbLineTypeSymbol {
   int upright;           // 0 for no upright orientation (No), 1 for upright (keeps text readable)
 };
 
-constexpr EoUInt16 maxNumberOfDashElementsDefault{8};
+constexpr std::uint16_t maxNumberOfDashElementsDefault{8};
 
 const std::pair<const wchar_t*, const wchar_t*> legacyLineTypes[] = {{L"Null", L"0"},
                                                                      {L"Continuous", L"Continuous"},
@@ -75,7 +75,7 @@ const std::pair<const wchar_t*, const wchar_t*> legacyLineTypes[] = {{L"Null", L
                                                                      {L"PHANTOM2", L"PHANTOM2"},
                                                                      {L"PHANTOMX2", L"PHANTOMX2"}};
 
-constexpr EoUInt16 NumberOfLegacyLineTypes{42};
+constexpr std::uint16_t NumberOfLegacyLineTypes{42};
 }  // namespace
 
 /**
@@ -147,7 +147,7 @@ bool EoDbLineTypeTable::Lookup(const CString& name, EoDbLineType*& lineType) {
   return (lineType != nullptr);
 }
 
-bool EoDbLineTypeTable::LookupUsingLegacyIndex(EoUInt16 index, EoDbLineType*& lineType) {
+bool EoDbLineTypeTable::LookupUsingLegacyIndex(std::uint16_t index, EoDbLineType*& lineType) {
   lineType = nullptr;
   return (index < NumberOfLegacyLineTypes) && m_MapLineTypes.Lookup(legacyLineTypes[index].second, lineType);
 }
@@ -162,8 +162,8 @@ int EoDbLineTypeTable::ReferenceCount(std::int16_t lineType) {
 
   int count{};
 
-  for (auto w = 0; w < document->GetLayerTableSize(); w++) {
-    auto* layer = document->GetLayerTableLayerAt(w);
+  for (auto i = 0; i < document->GetLayerTableSize(); i++) {
+    auto* layer = document->GetLayerTableLayerAt(i);
     count += layer->GetLineTypeRefCount(lineType);
   }
 
@@ -180,7 +180,7 @@ int EoDbLineTypeTable::ReferenceCount(std::int16_t lineType) {
 }
 
 void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
-  EoUInt16 maxNumberOfDashElements{maxNumberOfDashElementsDefault};
+  std::uint16_t maxNumberOfDashElements{maxNumberOfDashElementsDefault};
   std::vector<double> dashLengths;
   dashLengths.resize(maxNumberOfDashElements);
 
@@ -202,7 +202,7 @@ void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
       // Second line definines dash lengths
       file.ReadString(inputLine);
       // Determine number of dash elements by counting commas
-      EoUInt16 numberOfDashElements = 0;
+      std::uint16_t numberOfDashElements = 0;
       for (int i = 0; i < inputLine.GetLength(); i++) {
         if (inputLine[i] == L',') { numberOfDashElements++; }
       }
@@ -213,7 +213,7 @@ void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
         maxNumberOfDashElements = numberOfDashElements;
       }
       nextToken = 0;
-      for (EoUInt16 i = 0; i < numberOfDashElements; i++) { dashLengths[i] = _wtof(inputLine.Tokenize(L",\n", nextToken)); }
+      for (std::uint16_t i = 0; i < numberOfDashElements; i++) { dashLengths[i] = _wtof(inputLine.Tokenize(L",\n", nextToken)); }
       EoDbLineType* lineType;
       if (!Lookup(name, lineType)) {
         m_MapLineTypes.SetAt(name, new EoDbLineType(label, name, comment, numberOfDashElements, dashLengths.data()));

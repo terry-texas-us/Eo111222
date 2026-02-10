@@ -606,8 +606,8 @@ void EoDbEllipse::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& p
 
   EoGePoint3d pt;
 
-  for (EoUInt16 w = 0; w < 4; w++) {
-    pt = ptsRegion[w];
+  for (auto i = 0; i < 4; i++) {
+    pt = ptsRegion[i];
     view->ModelTransformPoint(pt);
     pt = transformMatrix * pt;
     ptMin = EoGePoint3d::Min(ptMin, pt);
@@ -620,10 +620,10 @@ bool EoDbEllipse::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& poin
 
   EoGePoint4d pt[] = {EoGePoint4d(PointAtStartAngle()), EoGePoint4d(PointAtEndAngle())};
 
-  for (EoUInt16 w = 0; w < 2; w++) {
-    view->ModelViewTransformPoint(pt[w]);
+  for (auto i = 0; i < 2; i++) {
+    view->ModelViewTransformPoint(pt[i]);
 
-    if (point.DistanceToPointXY(pt[w]) < sm_SelectApertureSize) { return true; }
+    if (point.DistanceToPointXY(pt[i]) < sm_SelectApertureSize) { return true; }
   }
   return false;
 }
@@ -784,7 +784,7 @@ bool EoDbEllipse::IsInView(AeSysView* view) {
   EoGePoint4d ptBeg(pts[0]);
   view->ModelViewTransformPoint(ptBeg);
 
-  for (EoUInt16 w = 1; w < 4; w++) {
+  for (std::uint16_t w = 1; w < 4; w++) {
     EoGePoint4d ptEnd(pts[w]);
     view->ModelViewTransformPoint(ptEnd);
 
@@ -796,25 +796,25 @@ bool EoDbEllipse::IsInView(AeSysView* view) {
 }
 
 EoGePoint3d EoDbEllipse::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
-  sm_ControlPointIndex = USHRT_MAX;
+  sm_controlPointIndex = SHRT_MAX;
 
   double dAPert = sm_SelectApertureSize;
 
   EoGePoint3d ptCtrl[] = {PointAtStartAngle(), PointAtEndAngle()};
 
-  for (EoUInt16 w = 0; w < 2; w++) {
-    EoGePoint4d pt(ptCtrl[w]);
+  for (auto i = 0; i < 2; i++) {
+    EoGePoint4d pt(ptCtrl[i]);
 
     view->ModelViewTransformPoint(pt);
 
     double dDis = point.DistanceToPointXY(pt);
 
     if (dDis < dAPert) {
-      sm_ControlPointIndex = w;
+      sm_controlPointIndex = i;
       dAPert = dDis;
     }
   }
-  return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : ptCtrl[sm_ControlPointIndex];
+  return (sm_controlPointIndex == SHRT_MAX) ? EoGePoint3d::kOrigin : ptCtrl[sm_controlPointIndex];
 }
 
 bool EoDbEllipse::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) {
@@ -846,7 +846,7 @@ void EoDbEllipse::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 }
 
 bool EoDbEllipse::Write(CFile& file) {
-  EoDb::Write(file, EoUInt16(EoDb::kEllipsePrimitive));
+  EoDb::Write(file, std::uint16_t(EoDb::kEllipsePrimitive));
   EoDb::Write(file, m_color);
   EoDb::Write(file, m_lineTypeIndex);
   m_center.Write(file);
@@ -893,7 +893,7 @@ void EoDbEllipse::GetBoundingBox(EoGePoint3dArray& ptsBox) {
   EoGeTransformMatrix transformMatrix(m_center, m_majorAxis, m_minorAxis);
   transformMatrix.Inverse();
 
-  for (EoUInt16 w = 0; w < 4; w++) { ptsBox[w] = transformMatrix * ptsBox[w]; }
+  for (auto i = 0; i < 4; i++) { ptsBox[i] = transformMatrix * ptsBox[i]; }
 }
 
 double EoDbEllipse::SweepAngleToPoint(EoGePoint3d point) {

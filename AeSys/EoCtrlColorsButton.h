@@ -4,17 +4,17 @@ class EoCtrlColorsButton : public CMFCButton {
   DECLARE_DYNAMIC(EoCtrlColorsButton)
 
   static COLORREF* m_palette;
-  static EoUInt16 m_currentIndex;
-  static EoUInt16 m_selectedIndex;
+  static std::uint16_t m_currentIndex;
+  static std::uint16_t m_selectedIndex;
 
   enum Layouts { SimpleSingleRow, GridDown5RowsOddOnly, GridUp5RowsEvenOnly };
   Layouts m_layout;
   CSize m_cellSize;
   CSize m_cellSpacing;
   CSize m_margins;
-  EoUInt16 m_beginIndex;
-  EoUInt16 m_endIndex;
-  EoUInt16 m_subItem;
+  std::uint16_t m_beginIndex;
+  std::uint16_t m_endIndex;
+  std::uint16_t m_subItem;
 
   /**
    * Draws a single color cell at the specified index.
@@ -23,21 +23,21 @@ class EoCtrlColorsButton : public CMFCButton {
    * @param index The index of the color cell to draw.
    * @param color The color to fill the cell with.
    */
-  void DrawCell(CDC* deviceContext, EoUInt16 index, COLORREF color) const;
+  void DrawCell(CDC* deviceContext, std::uint16_t index, COLORREF color) const;
   
   /** @brief Determines the sub-item index at a given point.
    *
    * @param point The point to check.
    * @return The index of the sub-item at the specified point, or 0 if none.
    */
-  EoUInt16 SubItemByPoint(const CPoint& point) const;
+  std::uint16_t SubItemByPoint(const CPoint& point) const;
 
   /** @brief Calculates the rectangle of a sub-item (color cell) by its index.
    *
    * @param index The index of the sub-item.
    * @param rectangle The rectangle to be filled with the sub-item's dimensions.
    */
-  void SubItemRectangleByIndex(EoUInt16 index, CRect& rectangle) const;
+  void SubItemRectangleByIndex(std::uint16_t index, CRect& rectangle) const;
 
  public:
   EoCtrlColorsButton();
@@ -46,13 +46,13 @@ class EoCtrlColorsButton : public CMFCButton {
 
   virtual ~EoCtrlColorsButton();
 
-  static void SetCurrentIndex(const EoUInt16 index) { m_currentIndex = index; }
+  static void SetCurrentIndex(const std::uint16_t index) { m_currentIndex = index; }
   static void SetPalette(COLORREF* palette) { m_palette = palette; }
   void SetLayout(Layouts layout, const CSize& cellSize) {
     m_layout = layout;
     m_cellSize = cellSize;
   }
-  void SetSequenceRange(const EoUInt16 beginIndex, const EoUInt16 endIndex) {
+  void SetSequenceRange(const std::uint16_t beginIndex, const std::uint16_t endIndex) {
     m_beginIndex = beginIndex;
     m_endIndex = endIndex;
   }

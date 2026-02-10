@@ -165,13 +165,14 @@ void EoDbText::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMa
 
   text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
 
-  for (EoUInt16 w = 0; w < pts.GetSize(); w++) {
-    view->ModelTransformPoint(pts[w]);
-    pts[w] = transformMatrix * pts[w];
-    ptMin = EoGePoint3d::Min(ptMin, pts[w]);
-    ptMax = EoGePoint3d::Max(ptMax, pts[w]);
+  for (auto i = 0; i < pts.GetSize(); i++) {
+    view->ModelTransformPoint(pts[i]);
+    pts[i] = transformMatrix * pts[i];
+    ptMin = EoGePoint3d::Min(ptMin, pts[i]);
+    ptMax = EoGePoint3d::Max(ptMax, pts[i]);
   }
 }
+
 bool EoDbText::IsInView(AeSysView* view) {
   EoGePoint4d pt[2]{};
 
@@ -226,7 +227,7 @@ void EoDbText::ModifyNotes(const EoDbFontDefinition& fontDefinition,
   }
 }
 EoGePoint3d EoDbText::SelectAtControlPoint(AeSysView*, const EoGePoint4d& point) {
-  sm_ControlPointIndex = USHRT_MAX;
+  sm_controlPointIndex = SHRT_MAX;
   return point;
 }
 
@@ -260,7 +261,7 @@ void EoDbText::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if (mask != 0) m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v);
 }
 bool EoDbText::Write(CFile& file) {
-  EoDb::Write(file, EoUInt16(EoDb::kTextPrimitive));
+  EoDb::Write(file, std::uint16_t(EoDb::kTextPrimitive));
   EoDb::Write(file, m_color);
   EoDb::Write(file, m_lineTypeIndex);
   m_fontDefinition.Write(file);

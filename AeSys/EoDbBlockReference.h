@@ -20,8 +20,8 @@ class EoDbBlockReference : public EoDbPrimitive {
   EoGeVector3d m_scaleFactors;
   double m_rotation;
 
-  EoUInt16 m_columnCount;
-  EoUInt16 m_rowCount;
+  std::uint16_t m_columnCount;
+  std::uint16_t m_rowCount;
   double m_columnSpacing;
   double m_rowSpacing;
 
@@ -29,7 +29,7 @@ class EoDbBlockReference : public EoDbPrimitive {
   EoDbBlockReference();
   EoDbBlockReference(const CString& strName, const EoGePoint3d& pt);
   EoDbBlockReference(const EoDbBlockReference&);
-  EoDbBlockReference(EoUInt16 color, EoUInt16 lineType, const CString& name, const EoGePoint3d& point,
+  EoDbBlockReference(std::uint16_t color, std::uint16_t lineType, const CString& name, const EoGePoint3d& point,
       const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation);
   ~EoDbBlockReference() override = default;
 
@@ -48,7 +48,7 @@ class EoDbBlockReference : public EoDbPrimitive {
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override { return m_insertionPoint; }
   bool Identical(EoDbPrimitive*) override { return false; }
-  bool Is(EoUInt16 type) override { return type == EoDb::kGroupReferencePrimitive; }
+  bool Is(std::uint16_t type) override { return type == EoDb::kGroupReferencePrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
@@ -67,24 +67,24 @@ class EoDbBlockReference : public EoDbPrimitive {
  public:
   EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& insertionPoint) const;
 
-  EoUInt16 ColumnCount() const noexcept { return m_columnCount; }
+  std::uint16_t ColumnCount() const noexcept { return m_columnCount; }
   double ColumnSpacing() const noexcept { return m_columnSpacing; }
   const CString& BlockName() const noexcept { return m_blockName; }
   double Rotation() const noexcept { return m_rotation; }
   const EoGeVector3d& ScaleFactors() const noexcept { return m_scaleFactors; }
   const EoGePoint3d& InsertionPoint() const noexcept { return m_insertionPoint; }
   const EoGeVector3d& Normal() const noexcept { return m_normal; }
-  EoUInt16 RowCount() const noexcept { return m_rowCount; }
+  std::uint16_t RowCount() const noexcept { return m_rowCount; }
   double RowSpacing() const noexcept { return m_rowSpacing; }
 
-  void SetColumns(EoUInt16 columns) { m_columnCount = columns; }
+  void SetColumns(std::uint16_t columns) { m_columnCount = columns; }
   void SetColumnSpacing(double columnSpacing) { m_columnSpacing = columnSpacing; }
   void SetName(CString name) { m_blockName = std::move(name); }
   void SetNormal(EoGeVector3d normal) { m_normal = std::move(normal); }
   void SetInsertionPoint(const DRW_Coord& point);
   void SetInsertionPoint(const EoGePoint3d& point) { m_insertionPoint = point; }
   void SetRotation(double rotation) { m_rotation = rotation; }
-  void SetRows(EoUInt16 rows) { m_rowCount = rows; }
+  void SetRows(std::uint16_t rows) { m_rowCount = rows; }
   void SetRowSpacing(double rowSpacing) { m_rowSpacing = rowSpacing; }
   void SetScaleFactors(const EoGeVector3d& scaleFactors) { m_scaleFactors = scaleFactors; }
 };

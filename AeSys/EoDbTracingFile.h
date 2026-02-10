@@ -16,10 +16,10 @@ class EoDbTracingFile : public CFile {
   void WriteHeader(CFile& file);
   void WriteLayer(CFile& file, EoDbLayer* layer);
 };
-// EoDb::kHeaderSection sentinel				EoUInt16 0x0101
+// EoDb::kHeaderSection sentinel				std::uint16_t 0x0101
 //		{0 or more key-value pairs}
-// EoDb::kEndOfSection sentinel					EoUInt16 0x01ff
-// EoDb::kGroupsSection sentinel				EoUInt16 0x0104
-//		Number of group definitions				EoUInt16
+// EoDb::kEndOfSection sentinel					std::uint16_t 0x01ff
+// EoDb::kGroupsSection sentinel				std::uint16_t 0x0104
+//		Number of group definitions				std::uint16_t
 //		{0 or more group definitions}
-// EoDb::kEndOfSection sentinel					EoUInt16 0x01ff
+// EoDb::kEndOfSection sentinel					std::uint16_t 0x01ff

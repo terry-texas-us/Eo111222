@@ -80,8 +80,8 @@ void EoDbGroup::BreakPolylines() {
       EoGePoint3dArray points;
       static_cast<EoDbPolyline*>(primitive)->GetAllPoints(points);
 
-      for (EoUInt16 w = 0; w < points.GetSize() - 1; w++)
-        CObList::InsertBefore(PrimitivePosition, new EoDbLine(color, LineType, points[w], points[w + 1]));
+      for (auto i = 0; i < points.GetSize() - 1; i++)
+        CObList::InsertBefore(PrimitivePosition, new EoDbLine(color, LineType, points[i], points[i + 1]));
 
       if (static_cast<EoDbPolyline*>(primitive)->IsLooped())
         CObList::InsertBefore(
@@ -256,14 +256,14 @@ void EoDbGroup::ModifyLineType(std::int16_t lineType) {
     primitive->SetLineTypeIndex(lineType);
   }
 }
-void EoDbGroup::PenTranslation(EoUInt16 wCols, std::int16_t* pColNew, std::int16_t* pCol) {
+void EoDbGroup::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
 
-    for (EoUInt16 w = 0; w < wCols; w++) {
-      if (primitive->Color() == pCol[w]) {
-        primitive->SetColor(pColNew[w]);
+    for (auto i = 0; i < wCols; i++) {
+      if (primitive->Color() == pCol[i]) {
+        primitive->SetColor(pColNew[i]);
         break;
       }
     }
@@ -327,7 +327,7 @@ EoDbPrimitive* EoDbGroup::SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d& pt
 
     EoGePoint3d pt = primitive->SelectAtControlPoint(view, ptView);
 
-    if (EoDbPrimitive::ControlPointIndex() != USHRT_MAX) {
+    if (EoDbPrimitive::ControlPointIndex() != SHRT_MAX) {
       EngagedPrimitive = primitive;
 
       EoGePoint4d ptView4(pt);
@@ -411,7 +411,7 @@ void EoDbGroup::Translate(EoGeVector3d v) {
   }
 }
 void EoDbGroup::Write(CFile& file) {
-  EoDb::Write(file, EoUInt16(GetCount()));
+  EoDb::Write(file, std::uint16_t(GetCount()));
 
   for (auto position = GetHeadPosition(); position != nullptr;) {
     auto* primitive = GetNext(position);

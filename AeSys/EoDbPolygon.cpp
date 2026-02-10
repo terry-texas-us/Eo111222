@@ -26,9 +26,9 @@
 
 EoDb::PolygonStyle EoDbPolygon::sm_SpecialPolygonStyle = EoDb::PolygonStyle::Special;
 
-EoUInt16 EoDbPolygon::sm_EdgeToEvaluate{};
-EoUInt16 EoDbPolygon::sm_Edge{};
-EoUInt16 EoDbPolygon::sm_PivotVertex{};
+std::uint16_t EoDbPolygon::sm_EdgeToEvaluate{};
+std::uint16_t EoDbPolygon::sm_Edge{};
+int EoDbPolygon::sm_pivotVertex{};
 
 typedef struct tagFilAreaEdgLis {
   double yMinExtent;     // minimum y extent of edge
@@ -56,7 +56,7 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
 
   m_hatchOrigin = points[0];
 
-  m_numberOfVertices = EoUInt16(points.GetSize());
+  m_numberOfVertices = std::uint16_t(points.GetSize());
 
   if (m_numberOfVertices >= 3) {
     m_positiveX = EoGeVector3d(points[0], points[1]);
@@ -77,11 +77,11 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
 
     m_vertices = new EoGePoint3d[m_numberOfVertices];
 
-    for (EoUInt16 w = 0; w < m_numberOfVertices; w++) m_vertices[w] = points[w];
+    for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = points[i]; }
   }
 }
 
-EoDbPolygon::EoDbPolygon(EoUInt16 numberOfVertices, EoGePoint3d* pt) {
+EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices, EoGePoint3d* pt) {
   m_color = 0;
   m_polygonStyle = EoDb::PolygonStyle::Solid;
   m_fillStyleIndex = 0;
@@ -91,9 +91,9 @@ EoDbPolygon::EoDbPolygon(EoUInt16 numberOfVertices, EoGePoint3d* pt) {
   m_positiveY = EoGeVector3d::positiveUnitY;
   m_vertices = new EoGePoint3d[m_numberOfVertices];
 
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w] = pt[w]; }
+  for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = pt[i]; }
 }
-EoDbPolygon::EoDbPolygon(EoUInt16 numberOfVertices, EoGePoint3d origin, EoGeVector3d vXAx, EoGeVector3d vYAx,
+EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices, EoGePoint3d origin, EoGeVector3d vXAx, EoGeVector3d vYAx,
                          const EoGePoint3d* ppt) {
   m_color = pstate.Color();
   m_polygonStyle = pstate.PolygonIntStyle();
@@ -104,20 +104,20 @@ EoDbPolygon::EoDbPolygon(EoUInt16 numberOfVertices, EoGePoint3d origin, EoGeVect
   m_positiveY = vYAx;
   m_vertices = new EoGePoint3d[m_numberOfVertices];
 
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w] = ppt[w]; }
+  for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = ppt[i]; }
 }
 
 EoDbPolygon::EoDbPolygon(const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts) {
   m_color = pstate.Color();
   m_polygonStyle = pstate.PolygonIntStyle();
   m_fillStyleIndex = pstate.PolygonIntStyleId();
-  m_numberOfVertices = EoUInt16(pts.GetSize());
+  m_numberOfVertices = std::uint16_t(pts.GetSize());
   m_hatchOrigin = origin;
   m_positiveX = xAxis;
   m_positiveY = yAxis;
   m_vertices = new EoGePoint3d[m_numberOfVertices];
 
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w] = pts[w]; }
+  for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = pts[i]; }
 }
 
 EoDbPolygon::EoDbPolygon(std::int16_t color, EoDb::PolygonStyle style, std::int16_t styleIndex, const EoGePoint3d& origin,
@@ -126,10 +126,10 @@ EoDbPolygon::EoDbPolygon(std::int16_t color, EoDb::PolygonStyle style, std::int1
   m_color = color;
   m_polygonStyle = style;
   m_fillStyleIndex = styleIndex;
-  m_numberOfVertices = EoUInt16(points.GetSize());
+  m_numberOfVertices = std::uint16_t(points.GetSize());
   m_vertices = new EoGePoint3d[m_numberOfVertices];
 
-  for (EoUInt16 n = 0; n < m_numberOfVertices; n++) { m_vertices[n] = points[n]; }
+  for (std::uint16_t n = 0; n < m_numberOfVertices; n++) { m_vertices[n] = points[n]; }
 }
 
 EoDbPolygon::EoDbPolygon(const EoDbPolygon& other) {
@@ -141,7 +141,7 @@ EoDbPolygon::EoDbPolygon(const EoDbPolygon& other) {
   m_positiveY = other.m_positiveY;
   m_numberOfVertices = other.m_numberOfVertices;
   m_vertices = new EoGePoint3d[m_numberOfVertices];
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w] = other.m_vertices[w]; }
+  for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = other.m_vertices[i]; }
 }
 
 const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& other) {
@@ -157,7 +157,7 @@ const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& other) {
     delete[] m_vertices;
     m_vertices = new EoGePoint3d[m_numberOfVertices];
   }
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w] = other.m_vertices[w]; }
+  for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = other.m_vertices[i]; }
 
   return (*this);
 }
@@ -193,7 +193,7 @@ void EoDbPolygon::Display(AeSysView* view, CDC* deviceContext) {
 
     PointsArray.SetSize(m_numberOfVertices);
 
-    for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { PointsArray[w] = EoGePoint4d(m_vertices[w]); }
+    for (auto i = 0; i < m_numberOfVertices; i++) { PointsArray[i] = EoGePoint4d(m_vertices[i]); }
     view->ModelViewTransformPoints(PointsArray);
     EoGePoint4d::ClipPolygon(PointsArray);
     Polygon_Display(view, deviceContext, PointsArray);
@@ -207,8 +207,8 @@ void EoDbPolygon::AddReportToMessageList(const EoGePoint3d& point) {
     EoGePoint3d* pBegPt = &m_vertices[sm_Edge - 1];
     EoGePoint3d* pEndPt = &m_vertices[sm_Edge % m_numberOfVertices];
 
-    if (sm_PivotVertex < m_numberOfVertices) {
-      pBegPt = &m_vertices[sm_PivotVertex];
+    if (sm_pivotVertex < m_numberOfVertices) {
+      pBegPt = &m_vertices[sm_pivotVertex];
       pEndPt = &m_vertices[SwingVertex()];
     }
     double dAng;
@@ -241,7 +241,7 @@ void EoDbPolygon::FormatGeometry(CString& str) {
   str += L"X Axis;" + m_positiveX.ToString();
   str += L"Y Axis;" + m_positiveY.ToString();
 
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { str += L"Vertex Point;" + m_vertices[w].ToString(); }
+  for (auto i = 0; i < m_numberOfVertices; i++) { str += L"Vertex Point;" + m_vertices[i].ToString(); }
 }
 
 CString EoDbPolygon::FormatIntStyle() {
@@ -258,46 +258,46 @@ void EoDbPolygon::FormatExtra(CString& str) {
              m_numberOfVertices);
 }
 EoGePoint3d EoDbPolygon::GetControlPoint() {
-  EoUInt16 wBeg = EoUInt16(sm_Edge - 1);
-  EoUInt16 wEnd = EoUInt16(sm_Edge % m_numberOfVertices);
+  std::uint16_t wBeg = std::uint16_t(sm_Edge - 1);
+  std::uint16_t wEnd = std::uint16_t(sm_Edge % m_numberOfVertices);
   EoGePoint3d pt = EoGeLine(m_vertices[wBeg], m_vertices[wEnd]).Midpoint();
   return pt;
 };
 
 EoGePoint3d EoDbPolygon::GoToNextControlPoint() {
-  if (sm_PivotVertex >= m_numberOfVertices) {  // have not yet rocked to a vertex
-    EoUInt16 wBeg = EoUInt16(sm_Edge - 1);
-    EoUInt16 wEnd = EoUInt16(sm_Edge % m_numberOfVertices);
+  if (sm_pivotVertex >= m_numberOfVertices) {  // have not yet rocked to a vertex
+    std::uint16_t wBeg = std::uint16_t(sm_Edge - 1);
+    std::uint16_t wEnd = std::uint16_t(sm_Edge % m_numberOfVertices);
 
     if (m_vertices[wEnd].x > m_vertices[wBeg].x) {
-      sm_PivotVertex = wBeg;
+      sm_pivotVertex = wBeg;
     } else if (m_vertices[wEnd].x < m_vertices[wBeg].x) {
-      sm_PivotVertex = wEnd;
+      sm_pivotVertex = wEnd;
     } else if (m_vertices[wEnd].y > m_vertices[wBeg].y) {
-      sm_PivotVertex = wBeg;
+      sm_pivotVertex = wBeg;
     } else {
-      sm_PivotVertex = wEnd;
+      sm_pivotVertex = wEnd;
     }
-  } else if (sm_PivotVertex == 0) {
+  } else if (sm_pivotVertex == 0) {
     if (sm_Edge == 1) {
-      sm_PivotVertex = 1;
+      sm_pivotVertex = 1;
     } else {
-      sm_PivotVertex = EoUInt16(m_numberOfVertices - 1);
+      sm_pivotVertex = std::uint16_t(m_numberOfVertices - 1);
     }
-  } else if (sm_PivotVertex == EoUInt16(m_numberOfVertices - 1)) {
+  } else if (sm_pivotVertex == std::uint16_t(m_numberOfVertices - 1)) {
     if (sm_Edge == m_numberOfVertices) {
-      sm_PivotVertex = 0;
+      sm_pivotVertex = 0;
     } else {
-      sm_PivotVertex--;
+      sm_pivotVertex--;
     }
   } else {
-    if (sm_Edge == sm_PivotVertex) {
-      sm_PivotVertex--;
+    if (sm_Edge == sm_pivotVertex) {
+      sm_pivotVertex--;
     } else {
-      sm_PivotVertex++;
+      sm_pivotVertex++;
     }
   }
-  return (m_vertices[sm_PivotVertex]);
+  return (m_vertices[sm_pivotVertex]);
 }
 
 bool EoDbPolygon::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
@@ -323,7 +323,7 @@ bool EoDbPolygon::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint
     EoGePoint4d ptBeg(m_vertices[0]);
     view->ModelViewTransformPoint(ptBeg);
 
-    for (EoUInt16 w = 1; w <= m_numberOfVertices; w++) {
+    for (std::uint16_t w = 1; w <= m_numberOfVertices; w++) {
       EoGePoint4d ptEnd(m_vertices[w % m_numberOfVertices]);
       view->ModelViewTransformPoint(ptEnd);
 
@@ -331,7 +331,7 @@ bool EoDbPolygon::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint
       if (Edge.IsSelectedByPointXY(point, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
         ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
         sm_Edge = w;
-        sm_PivotVertex = m_numberOfVertices;
+        sm_pivotVertex = m_numberOfVertices;
         return true;
       }
       ptBeg = ptEnd;
@@ -342,7 +342,7 @@ bool EoDbPolygon::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint
 
 bool EoDbPolygon::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
   EoGePoint3dArray pts;
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { pts.Add(m_vertices[w]); }
+  for (auto i = 0; i < m_numberOfVertices; i++) { pts.Add(m_vertices[i]); }
 
   return polyline::SelectUsingRectangle(view, pt1, pt2, pts);
 }
@@ -353,19 +353,19 @@ void EoDbPolygon::ModifyState() {
   m_fillStyleIndex = pstate.PolygonIntStyleId();
 }
 bool EoDbPolygon::PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) {
-  if (sm_PivotVertex >= m_numberOfVertices) { return false; }
+  if (sm_pivotVertex >= m_numberOfVertices) { return false; }
 
   // Engaged at a vertex
-  EoGePoint4d ptCtrl(m_vertices[sm_PivotVertex]);
+  EoGePoint4d ptCtrl(m_vertices[sm_pivotVertex]);
   view->ModelViewTransformPoint(ptCtrl);
 
   if (ptCtrl.DistanceToPointXY(ptView) >= sm_SelectApertureSize) { return false; }
 
-  if (sm_PivotVertex == 0) {
-    sm_Edge = EoUInt16(sm_Edge == 1 ? m_numberOfVertices : 1);
-  } else if (sm_PivotVertex == m_numberOfVertices - 1) {
-    sm_Edge = EoUInt16(sm_Edge == m_numberOfVertices ? sm_Edge - 1 : m_numberOfVertices);
-  } else if (sm_PivotVertex == sm_Edge) {
+  if (sm_pivotVertex == 0) {
+    sm_Edge = std::uint16_t(sm_Edge == 1 ? m_numberOfVertices : 1);
+  } else if (sm_pivotVertex == m_numberOfVertices - 1) {
+    sm_Edge = std::uint16_t(sm_Edge == m_numberOfVertices ? sm_Edge - 1 : m_numberOfVertices);
+  } else if (sm_pivotVertex == sm_Edge) {
     sm_Edge++;
   } else {
     sm_Edge--;
@@ -374,14 +374,14 @@ bool EoDbPolygon::PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView
 }
 void EoDbPolygon::GetAllPoints(EoGePoint3dArray& points) {
   points.SetSize(0);
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { points.Add(m_vertices[w]); }
+  for (auto i = 0; i < m_numberOfVertices; i++) { points.Add(m_vertices[i]); }
 }
 // Determines the extent.
 void EoDbPolygon::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt;
 
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) {
-    pt = m_vertices[w];
+  for (auto i = 0; i < m_numberOfVertices; i++) {
+    pt = m_vertices[i];
     view->ModelTransformPoint(pt);
     pt = transformMatrix * pt;
     ptMin = EoGePoint3d::Min(ptMin, pt);
@@ -406,8 +406,8 @@ bool EoDbPolygon::IsInView(AeSysView* view) {
 }
 
 bool EoDbPolygon::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) {
-    EoGePoint4d pt(m_vertices[w]);
+  for (auto i = 0; i < m_numberOfVertices; i++) {
+    EoGePoint4d pt(m_vertices[i]);
     view->ModelViewTransformPoint(pt);
 
     if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) { return true; }
@@ -416,26 +416,26 @@ bool EoDbPolygon::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& poin
 }
 
 EoGePoint3d EoDbPolygon::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
-  sm_ControlPointIndex = USHRT_MAX;
+  sm_controlPointIndex = SHRT_MAX;
   double dApert = sm_SelectApertureSize;
 
-  sm_PivotVertex = m_numberOfVertices;
+  sm_pivotVertex = m_numberOfVertices;
 
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) {
-    EoGePoint4d pt(m_vertices[w]);
+  for (auto i = 0; i < m_numberOfVertices; i++) {
+    EoGePoint4d pt(m_vertices[i]);
     view->ModelViewTransformPoint(pt);
 
     double dDis = point.DistanceToPointXY(pt);
 
     if (dDis < dApert) {
-      sm_ControlPointIndex = w;
+      sm_controlPointIndex = i;
       dApert = dDis;
 
-      sm_Edge = EoUInt16(w + 1);
-      sm_PivotVertex = w;
+      sm_Edge = std::uint16_t(i + 1);
+      sm_pivotVertex = i;
     }
   }
-  return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : m_vertices[sm_ControlPointIndex];
+  return (sm_controlPointIndex == SHRT_MAX) ? EoGePoint3d::kOrigin : m_vertices[sm_controlPointIndex];
 }
 void EoDbPolygon::SetHatRefVecs(double dOffAng, double dXScal, double dYScal) {
   m_positiveX = EoGeVector3d(m_vertices[0], m_vertices[1]);
@@ -458,24 +458,24 @@ void EoDbPolygon::Transform(const EoGeTransformMatrix& transformMatrix) {
   m_hatchOrigin = transformMatrix * m_hatchOrigin;
   m_positiveX = transformMatrix * m_positiveX;
   m_positiveY = transformMatrix * m_positiveY;
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w] = transformMatrix * m_vertices[w]; }
+  for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = transformMatrix * m_vertices[i]; }
 }
 
 void EoDbPolygon::Translate(const EoGeVector3d& v) {
   m_hatchOrigin += v;
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w] += v; }
+  for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] += v; }
 }
 
 void EoDbPolygon::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   // nothing done to hatch coordinate origin
 
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) {
-    if (((mask >> w) & 1UL) == 1) { m_vertices[w] += v; }
+  for (auto i = 0; i < m_numberOfVertices; i++) {
+    if (((mask >> i) & 1UL) == 1) { m_vertices[i] += v; }
   }
 }
 
 bool EoDbPolygon::Write(CFile& file) {
-  EoDb::Write(file, EoUInt16(EoDb::kPolygonPrimitive));
+  EoDb::Write(file, std::uint16_t(EoDb::kPolygonPrimitive));
   EoDb::Write(file, m_color);
   // note polygon style stuffed up into unused line type on io
   EoDb::Write(file, static_cast<std::int16_t>(m_polygonStyle));
@@ -485,7 +485,7 @@ bool EoDbPolygon::Write(CFile& file) {
   m_positiveX.Write(file);
   m_positiveY.Write(file);
 
-  for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w].Write(file); }
+  for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i].Write(file); }
 
   return true;
 }
@@ -665,15 +665,15 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
   pstate.SetPen(view, deviceContext, color, lineType);
 }
 
-EoUInt16 EoDbPolygon::SwingVertex() const {
-  EoUInt16 swingVertex;
+std::uint16_t EoDbPolygon::SwingVertex() const {
+  std::uint16_t swingVertex;
 
-  if (sm_PivotVertex == 0) {
-    swingVertex = EoUInt16(sm_Edge == 1 ? 1 : m_numberOfVertices - 1);
-  } else if (sm_PivotVertex == EoUInt16(m_numberOfVertices - 1)) {
-    swingVertex = EoUInt16(sm_Edge == m_numberOfVertices ? 0 : sm_PivotVertex - 1);
+  if (sm_pivotVertex == 0) {
+    swingVertex = std::uint16_t(sm_Edge == 1 ? 1 : m_numberOfVertices - 1);
+  } else if (sm_pivotVertex == std::uint16_t(m_numberOfVertices - 1)) {
+    swingVertex = std::uint16_t(sm_Edge == m_numberOfVertices ? 0 : sm_pivotVertex - 1);
   } else {
-    swingVertex = EoUInt16(sm_Edge == sm_PivotVertex ? sm_PivotVertex - 1 : sm_PivotVertex + 1);
+    swingVertex = std::uint16_t(sm_Edge == sm_pivotVertex ? sm_pivotVertex - 1 : sm_pivotVertex + 1);
   }
   return swingVertex;
 }

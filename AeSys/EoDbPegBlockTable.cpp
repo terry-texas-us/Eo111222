@@ -6,8 +6,8 @@
 int AeSysDoc::GetBlockReferenceCount(const CString& name) {
   int count = 0;
 
-  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    auto* layer = GetLayerTableLayerAt(w);
+  for (auto i = 0; i < GetLayerTableSize(); i++) {
+    auto* layer = GetLayerTableLayerAt(i);
     count += layer->GetBlockRefCount(name);
   }
   CString key;

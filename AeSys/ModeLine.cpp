@@ -115,7 +115,7 @@ void AeSysView::ModeLineDisplay() {
   ReleaseDC(context);
 }
 
-EoUInt16 AeSysView::ModeLineHighlightOp(EoUInt16 command) {
+std::uint16_t AeSysView::ModeLineHighlightOp(std::uint16_t command) {
   ModeLineUnhighlightOp(m_OpHighlighted);
 
   m_OpHighlighted = command;
@@ -135,7 +135,7 @@ EoUInt16 AeSysView::ModeLineHighlightOp(EoUInt16 command) {
   return command;
 }
 
-void AeSysView::ModeLineUnhighlightOp(EoUInt16& command) {
+void AeSysView::ModeLineUnhighlightOp(std::uint16_t& command) {
   if (command == 0 || m_OpHighlighted == 0) { return; }
   int paneIndex = ::statusOp0 + m_OpHighlighted - ID_OP0;
 

@@ -70,10 +70,6 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #endif  // USING_Direct2D
 
 #include <atltrace.h>
-// Custom categories (start high to avoid ATL builtins)
-const DWORD TraceEoGeneral = 0x1000;  // General traces
-const DWORD TraceEoDb = 0x1001;       // General database traces
-const DWORD TraceEoDbDrw = 0x1002;    // General libdxfrw interface traces
 
 #ifdef TRACE
 #undef TRACE  // Suppress the default TRACE macro to avoid conflicts with ATL's tracing system
@@ -82,8 +78,6 @@ const DWORD TraceEoDbDrw = 0x1002;    // General libdxfrw interface traces
 UINT AFXAPI HashKey(CString& str);
 
 #define AESYS_USE_CONIC_PRIMITIVE
-
-using EoUInt16 = std::uint16_t;
 
 #if defined(USING_DDE)
 #include <ddeml.h>

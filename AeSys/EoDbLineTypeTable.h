@@ -52,7 +52,7 @@ class EoDbLineTypeTable {
    * @param lineType A reference to a pointer that will be set to the found line type, if any.
    * @return true if the line type was found; false otherwise.
    */
-  bool LookupUsingLegacyIndex(EoUInt16 index, EoDbLineType*& lineType);
+  bool LookupUsingLegacyIndex(std::uint16_t index, EoDbLineType*& lineType);
   
   void SetAt(const CString& name, EoDbLineType* lineType) { m_MapLineTypes.SetAt(name, lineType); }
 

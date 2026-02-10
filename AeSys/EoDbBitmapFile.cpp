@@ -80,7 +80,7 @@ bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalet
     }
     LOGPALETTE* logicalPalette = reinterpret_cast<LOGPALETTE*>(paletteBuffer.get());
     logicalPalette->palVersion = 0x300;
-    logicalPalette->palNumEntries = EoUInt16(colors);
+    logicalPalette->palNumEntries = std::uint16_t(colors);
 
     for (size_t i = 0; i < colors; i++) {
       logicalPalette->palPalEntry[i].peRed = rgbQuad[i].rgbRed;

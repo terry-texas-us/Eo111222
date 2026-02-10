@@ -12,9 +12,9 @@
 #include "EoGeVector3d.h"
 
 class EoDbPolygon : public EoDbPrimitive {
-  static EoUInt16 sm_EdgeToEvaluate;
-  static EoUInt16 sm_Edge;
-  static EoUInt16 sm_PivotVertex;
+  static std::uint16_t sm_EdgeToEvaluate;
+  static std::uint16_t sm_Edge;
+  static int sm_pivotVertex;
   static EoDb::PolygonStyle sm_SpecialPolygonStyle;
 
   EoGePoint3d m_hatchOrigin;
@@ -23,7 +23,7 @@ class EoDbPolygon : public EoDbPrimitive {
   EoGePoint3d* m_vertices{};
   EoDb::PolygonStyle m_polygonStyle;
   std::int16_t m_fillStyleIndex;
-  EoUInt16 m_numberOfVertices;
+  std::uint16_t m_numberOfVertices;
 
  public:
   EoDbPolygon();
@@ -34,11 +34,11 @@ class EoDbPolygon : public EoDbPrimitive {
    */
   EoDbPolygon(EoGePoint3dArray& points);
 
-  EoDbPolygon(EoUInt16, EoGePoint3d*);
+  EoDbPolygon(std::uint16_t, EoGePoint3d*);
   EoDbPolygon(const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts);
   EoDbPolygon(std::int16_t color, EoDb::PolygonStyle style, std::int16_t styleIndex, const EoGePoint3d& origin,
       const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& points);
-  EoDbPolygon(EoUInt16, EoGePoint3d, EoGeVector3d, EoGeVector3d, const EoGePoint3d*);
+  EoDbPolygon(std::uint16_t, EoGePoint3d, EoGeVector3d, EoGeVector3d, const EoGePoint3d*);
 
   EoDbPolygon(const EoDbPolygon& other);
 
@@ -61,7 +61,7 @@ class EoDbPolygon : public EoDbPrimitive {
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override { return false; }
-  bool Is(EoUInt16 wType) override { return wType == EoDb::kPolygonPrimitive; }
+  bool Is(std::uint16_t wType) override { return wType == EoDb::kPolygonPrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
@@ -86,12 +86,12 @@ class EoDbPolygon : public EoDbPrimitive {
   void SetHatRefVecs(double, double, double);
 
  private:
-  EoUInt16 SwingVertex() const;
+  std::uint16_t SwingVertex() const;
 
  public:
   static void SetSpecialPolygonStyle(EoDb::PolygonStyle polygonStyle) { sm_SpecialPolygonStyle = polygonStyle; }
-  static EoUInt16& EdgeToEvaluate() { return sm_EdgeToEvaluate; }
-  static EoUInt16& Edge() { return sm_Edge; }
+  static std::uint16_t& EdgeToEvaluate() { return sm_EdgeToEvaluate; }
+  static std::uint16_t& Edge() { return sm_Edge; }
 };
 /// <summary>A fill area set primative with interior style hatch is generated using ines.</summary>
 // Parameters:	deviceContext

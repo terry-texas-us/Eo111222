@@ -7,8 +7,8 @@
 #include "EoCtrlColorsButton.h"
 
 COLORREF* EoCtrlColorsButton::m_palette;
-EoUInt16 EoCtrlColorsButton::m_currentIndex;
-EoUInt16 EoCtrlColorsButton::m_selectedIndex;
+std::uint16_t EoCtrlColorsButton::m_currentIndex;
+std::uint16_t EoCtrlColorsButton::m_selectedIndex;
 
 IMPLEMENT_DYNAMIC(EoCtrlColorsButton, CMFCButton)
 
@@ -44,7 +44,7 @@ EoCtrlColorsButton::EoCtrlColorsButton() {
 }
 EoCtrlColorsButton::~EoCtrlColorsButton() {}
 
-void EoCtrlColorsButton::DrawCell(CDC* deviceContext, EoUInt16 index, COLORREF color) const {
+void EoCtrlColorsButton::DrawCell(CDC* deviceContext, std::uint16_t index, COLORREF color) const {
   if (index == 0 || deviceContext == nullptr || m_palette == nullptr) { return; }
 
   CRect CellRectangle;
@@ -114,7 +114,7 @@ CSize EoCtrlColorsButton::SizeToContent(BOOL calculateOnly) {
   return Size;
 }
 
-void EoCtrlColorsButton::SubItemRectangleByIndex(EoUInt16 index, CRect& rectangle) const {
+void EoCtrlColorsButton::SubItemRectangleByIndex(std::uint16_t index, CRect& rectangle) const {
   double scale{1.0};
   if (GetSafeHwnd()) {
     auto dpi = static_cast<double>(GetDpiForSystem());
@@ -147,19 +147,19 @@ void EoCtrlColorsButton::SubItemRectangleByIndex(EoUInt16 index, CRect& rectangl
   rectangle.right = rectangle.left + xCellSize;
 }
 
-EoUInt16 EoCtrlColorsButton::SubItemByPoint(const CPoint& point) const {
+std::uint16_t EoCtrlColorsButton::SubItemByPoint(const CPoint& point) const {
   CRect Rectangle;
   Rectangle.SetRectEmpty();
 
   switch (m_layout) {
     case SimpleSingleRow:
-      for (EoUInt16 Index = m_beginIndex; Index <= m_endIndex; Index++) {
+      for (std::uint16_t Index = m_beginIndex; Index <= m_endIndex; Index++) {
         SubItemRectangleByIndex(Index, Rectangle);
         if (Rectangle.PtInRect(point) == TRUE) { return Index; }
       }
       break;
     case GridDown5RowsOddOnly:
-      for (EoUInt16 Index = m_beginIndex; Index <= m_endIndex; Index++) {
+      for (std::uint16_t Index = m_beginIndex; Index <= m_endIndex; Index++) {
         if ((Index % 2) != 0) {
           SubItemRectangleByIndex(Index, Rectangle);
           if (Rectangle.PtInRect(point) == TRUE) { return Index; }
@@ -167,7 +167,7 @@ EoUInt16 EoCtrlColorsButton::SubItemByPoint(const CPoint& point) const {
       }
       break;
     case GridUp5RowsEvenOnly:
-      for (EoUInt16 Index = m_beginIndex; Index <= m_endIndex; Index++) {
+      for (std::uint16_t Index = m_beginIndex; Index <= m_endIndex; Index++) {
         if ((Index % 2) == 0) {
           SubItemRectangleByIndex(Index, Rectangle);
           if (Rectangle.PtInRect(point) == TRUE) { return Index; }
@@ -182,7 +182,7 @@ void EoCtrlColorsButton::OnDraw(CDC* deviceContext, const CRect& /*rectangle */,
 
   if (m_palette == nullptr || deviceContext == nullptr) { return; }
 
-  for (EoUInt16 Index = m_beginIndex; Index <= m_endIndex; Index++) {
+  for (std::uint16_t Index = m_beginIndex; Index <= m_endIndex; Index++) {
     if (m_layout == SimpleSingleRow) {
       DrawCell(deviceContext, Index, m_palette[Index]);
     } else if (m_layout == GridDown5RowsOddOnly && ((Index % 2) != 0)) {
@@ -265,7 +265,7 @@ void EoCtrlColorsButton::OnKeyDown(UINT keyCode, UINT repeatCount, UINT flags) {
 }
 
 void EoCtrlColorsButton::OnLButtonUp(UINT flags, CPoint point) {
-  EoUInt16 CurrentSubItem = SubItemByPoint(point);
+  std::uint16_t CurrentSubItem = SubItemByPoint(point);
   if (CurrentSubItem != 0) { m_subItem = CurrentSubItem; }
   CMFCButton::OnLButtonUp(flags, point);
 }

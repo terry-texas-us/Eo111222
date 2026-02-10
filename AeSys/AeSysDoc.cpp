@@ -429,8 +429,8 @@ void AeSysDoc::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMa
   ptMin(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
   ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
-  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    auto* layer = GetLayerTableLayerAt(w);
+  for (auto i = 0; i < GetLayerTableSize(); i++) {
+    auto* layer = GetLayerTableLayerAt(i);
     if (!layer->IsOff()) { layer->GetExtents(view, ptMin, ptMax, transformMatrix); }
   }
 }
@@ -438,7 +438,7 @@ void AeSysDoc::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMa
 int AeSysDoc::NumberOfGroupsInWorkLayer() {
   INT_PTR count{};
 
-  for (EoUInt16 i = 0; i < GetLayerTableSize(); i++) {
+  for (auto i = 0; i < GetLayerTableSize(); i++) {
     auto* layer = GetLayerTableLayerAt(i);
     if (layer->IsWork()) { count += layer->GetCount(); }
   }
@@ -448,8 +448,8 @@ int AeSysDoc::NumberOfGroupsInWorkLayer() {
 int AeSysDoc::NumberOfGroupsInActiveLayers() {
   INT_PTR count{};
 
-  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    auto* layer = GetLayerTableLayerAt(w);
+  for (auto i = 0; i < GetLayerTableSize(); i++) {
+    auto* layer = GetLayerTableLayerAt(i);
     if (layer->IsActive()) { count += layer->GetCount(); }
   }
   return static_cast<int>(count);
@@ -490,15 +490,15 @@ EoDbLayer* AeSysDoc::GetLayerTableLayerAt(int index) {
 }
 
 int AeSysDoc::FindLayerTableLayer(const CString& layerName) const {
-  for (EoUInt16 w = 0; w < m_LayerTable.GetSize(); w++) {
-    auto* layer = m_LayerTable.GetAt(w);
-    if (layerName.CompareNoCase(layer->Name()) == 0) { return w; }
+  for (auto i = 0; i < m_LayerTable.GetSize(); i++) {
+    auto* layer = m_LayerTable.GetAt(i);
+    if (layerName.CompareNoCase(layer->Name()) == 0) { return i; }
   }
   return -1;
 }
 
 void AeSysDoc::RemoveAllLayerTableLayers() {
-  for (EoUInt16 layerTableIndex = 0; layerTableIndex < m_LayerTable.GetSize(); layerTableIndex++) {
+  for (std::uint16_t layerTableIndex = 0; layerTableIndex < m_LayerTable.GetSize(); layerTableIndex++) {
     auto* layer = m_LayerTable.GetAt(layerTableIndex);
     if (layer) {
       layer->DeleteGroupsAndRemoveAll();
@@ -611,9 +611,9 @@ void AeSysDoc::RemoveLayerTableLayer(const CString& strName) {
 
   if (i >= 0) RemoveLayerTableLayerAt(i);
 }
-void AeSysDoc::PenTranslation(EoUInt16 wCols, std::int16_t* pColNew, std::int16_t* pCol) {
-  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    auto* layer = GetLayerTableLayerAt(w);
+void AeSysDoc::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
+  for (auto i = 0; i < GetLayerTableSize(); i++) {
+    auto* layer = GetLayerTableLayerAt(i);
     layer->PenTranslation(wCols, pColNew, pCol);
   }
 }
@@ -624,13 +624,13 @@ EoDbLayer* AeSysDoc::LayersSelUsingPoint(const EoGePoint3d& pt) {
   auto* group = activeView->SelectGroupAndPrimitive(pt);
 
   if (group != nullptr) {
-    for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-      auto* layer = GetLayerTableLayerAt(w);
+    for (auto i = 0; i < GetLayerTableSize(); i++) {
+      auto* layer = GetLayerTableLayerAt(i);
       if (layer->Find(group)) { return layer; }
     }
   }
-  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    auto* layer = GetLayerTableLayerAt(w);
+  for (auto i = 0; i < GetLayerTableSize(); i++) {
+    auto* layer = GetLayerTableLayerAt(i);
 
     if (layer->SelectGroupUsingPoint(pt) != 0) { return layer; }
   }
@@ -640,8 +640,8 @@ EoDbLayer* AeSysDoc::LayersSelUsingPoint(const EoGePoint3d& pt) {
 int AeSysDoc::RemoveEmptyNotesAndDelete() {
   int count{};
 
-  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    auto* layer = GetLayerTableLayerAt(w);
+  for (auto i = 0; i < GetLayerTableSize(); i++) {
+    auto* layer = GetLayerTableLayerAt(i);
     count += layer->RemoveEmptyNotesAndDelete();
   }
 
@@ -657,8 +657,8 @@ int AeSysDoc::RemoveEmptyNotesAndDelete() {
 int AeSysDoc::RemoveEmptyGroups() {
   int count{};
 
-  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    auto* layer = GetLayerTableLayerAt(w);
+  for (auto i = 0; i < GetLayerTableSize(); i++) {
+    auto* layer = GetLayerTableLayerAt(i);
     count += layer->RemoveEmptyGroups();
   }
 
@@ -713,8 +713,8 @@ EoDbLayer* AeSysDoc::SetWorkLayer(EoDbLayer* layer) {
 // Locates the layer containing a group and removes it.
 // The group itself is not deleted.
 EoDbLayer* AeSysDoc::AnyLayerRemove(EoDbGroup* group) {
-  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    auto* layer = GetLayerTableLayerAt(w);
+  for (auto i = 0; i < GetLayerTableSize(); i++) {
+    auto* layer = GetLayerTableLayerAt(i);
     if (layer->IsWork() || layer->IsActive()) {
       if (layer->Remove(group) != 0) {
         AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
@@ -985,8 +985,8 @@ void AeSysDoc::OnPrimBreak() {
       auto color = primitive->Color();
       auto lineTypeIndex = primitive->LineTypeIndex();
 
-      for (EoUInt16 w = 0; w < points.GetSize() - 1; w++) {
-        group->AddTail(new EoDbLine(color, lineTypeIndex, points[w], points[w + 1]));
+      for (auto i = 0; i < points.GetSize() - 1; i++) {
+        group->AddTail(new EoDbLine(color, lineTypeIndex, points[i], points[i + 1]));
       }
       if (polyline->IsLooped()) {
         group->AddTail(new EoDbLine(color, lineTypeIndex, points[points.GetUpperBound()], points[0]));
@@ -1150,16 +1150,16 @@ void AeSysDoc::OnTracingFuse() { TracingFuse(m_IdentifiedLayerName); }
 void AeSysDoc::OnTracingOpen() { TracingOpen(m_IdentifiedLayerName); }
 
 void AeSysDoc::OnLayersActiveAll() {
-  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    auto* layer = GetLayerTableLayerAt(w);
+  for (auto i = 0; i < GetLayerTableSize(); i++) {
+    auto* layer = GetLayerTableLayerAt(i);
     if (!layer->IsWork()) { layer->MakeStateActive(); }
   }
   UpdateAllViews(nullptr, 0L, nullptr);
 }
 
 void AeSysDoc::OnLayersStaticAll() {
-  for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
-    auto* layer = GetLayerTableLayerAt(w);
+  for (auto i = 0; i < GetLayerTableSize(); i++) {
+    auto* layer = GetLayerTableLayerAt(i);
     if (!layer->IsWork()) { layer->SetStateStatic(); }
   }
   UpdateAllViews(nullptr, 0L, nullptr);
@@ -1412,7 +1412,7 @@ void AeSysDoc::OnTrapCommandsBlock() {
 void AeSysDoc::OnTrapCommandsUnblock() { m_TrappedGroupList.BreakSegRefs(); }
 void AeSysDoc::OnSetupPenColor() {
   EoDlgSetupColor Dialog;
-  Dialog.m_ColorIndex = static_cast<EoUInt16>(pstate.Color());
+  Dialog.m_ColorIndex = static_cast<std::uint16_t>(pstate.Color());
 
   if (Dialog.DoModal() == IDOK) {
     pstate.SetColor(nullptr, static_cast<std::int16_t>(Dialog.m_ColorIndex));
@@ -1437,7 +1437,7 @@ void AeSysDoc::OnSetupLineType() {
 
   EoDbLineType* currentLineType{};
 
-  m_LineTypeTable.LookupUsingLegacyIndex(static_cast<EoUInt16>(pstate.LineTypeIndex()), currentLineType);
+  m_LineTypeTable.LookupUsingLegacyIndex(static_cast<std::uint16_t>(pstate.LineTypeIndex()), currentLineType);
   dialog.SetSelectedLineType(currentLineType);
 
   if (dialog.DoModal() != IDOK) { return; }
@@ -1725,15 +1725,15 @@ void AeSysDoc::OnPensTranslate() {
 
   if (fl.Open(App::PathFromCommandLine() + L"\\Pens\\xlate.txt", CFile::modeRead | CFile::typeText)) {
     wchar_t pBuf[128]{};
-    EoUInt16 wCols = 0;
+    std::uint16_t wCols{};
 
-    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0) wCols++;
+    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0) { wCols++; }
 
     if (wCols > 0) {
-      std::int16_t* pColNew = new std::int16_t[wCols];
-      std::int16_t* pCol = new std::int16_t[wCols];
+      auto* pColNew = new std::int16_t[wCols];
+      auto* pCol = new std::int16_t[wCols];
 
-      EoUInt16 w = 0;
+      std::uint16_t w{};
 
       fl.SeekToBegin();
 
@@ -1751,6 +1751,7 @@ void AeSysDoc::OnPensTranslate() {
   }
   UpdateAllViews(nullptr, 0L, nullptr);
 }
+
 void AeSysDoc::OnFile() {
   CPoint Position(8, 8);
 

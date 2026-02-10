@@ -5,9 +5,9 @@
 
 namespace dde {
 // Some constants
-	const EoUInt16 MAXFORMATS = 128;		 	// max no of CF formats we will list
-	const EoUInt16 MAXOPS = 128;				// max no of opcodes we can execute
-	const EoUInt16 MAXRESULTSIZE = 256;			// largest result string returned
+	const std::uint16_t MAXFORMATS = 128;		 	// max no of CF formats we will list
+	const std::uint16_t MAXOPS = 128;				// max no of opcodes we can execute
+	const std::uint16_t MAXRESULTSIZE = 256;			// largest result string returned
 
 	// Definition for a DDE Request processing function
 	typedef HDDEDATA (REQUESTFN)(UINT wFmt, HSZ hszTopic, HSZ hszItem);
@@ -23,7 +23,7 @@ namespace dde {
 
 	// Structure used to hold a clipboard id and its text name
 	typedef struct _CFTAGNAME {
-		EoUInt16	wFmt;
+		std::uint16_t	wFmt;
 		LPTSTR	pszName;
 	} CFTAGNAME, *PCFTAGNAME;
 	CFTAGNAME CFNames[];
@@ -91,8 +91,8 @@ namespace dde {
 	} SERVERINFO,  *PSERVERINFO;
 
 	extern SERVERINFO ServerInfo;
-	extern EoUInt16 SysFormatList[];
-	extern EoUInt16 MyFormats[];
+	extern std::uint16_t SysFormatList[];
+	extern std::uint16_t MyFormats[];
 	extern DWORD dwInstance; 				// DDE Instance value
 
 	void				AddCommands(LPTSTR);
@@ -120,9 +120,9 @@ namespace dde {
 	PTOPICINFO			TopicFind(LPTSTR lpszName);
 	bool 				TopicRemove(LPTSTR lpszTopic);
 
-	LPTSTR				GetCFNameFromId(EoUInt16 wFmt, LPTSTR lpBuf, int iSize);
+	LPTSTR				GetCFNameFromId(std::uint16_t wFmt, LPTSTR lpBuf, int iSize);
 	HDDEDATA 			MakeCFText(UINT, LPTSTR, HSZ);
-	HDDEDATA			MakeDataFromFormatList(LPWORD pFmt, EoUInt16 wFmt, HSZ hszItem);
+	HDDEDATA			MakeDataFromFormatList(LPWORD pFmt, std::uint16_t wFmt, HSZ hszItem);
 	bool				ParseCmd(LPTSTR *ppszCmdLine, PTOPICINFO pTopic, LPTSTR pszError, UINT uiErrorSize, PPOP pOpTable, UINT uiNops, LPTSTR pArgBuf);
 	void 				PostAdvise(PITEMINFO pItemInfo);
 	bool				ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData);

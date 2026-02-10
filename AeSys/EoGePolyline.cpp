@@ -142,7 +142,7 @@ void __End(AeSysView* view, CDC* deviceContext, std::int16_t lineTypeIndex) {
     EoDbLineTypeTable* LineTypeTable = AeSysDoc::GetDoc()->LineTypeTable();
 
     EoDbLineType* LineType;
-    if (!LineTypeTable->LookupUsingLegacyIndex(static_cast<EoUInt16>(lineTypeIndex), LineType)) { return; }
+    if (!LineTypeTable->LookupUsingLegacyIndex(static_cast<std::uint16_t>(lineTypeIndex), LineType)) { return; }
     pstate.SetLineType(deviceContext, 1);
     __Display(view, deviceContext, pts_, LineType);
     pstate.SetLineType(deviceContext, lineTypeIndex);
@@ -186,7 +186,7 @@ bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersect
 
   view->ModelViewTransformPoint(ptBeg);
 
-  for (EoUInt16 w = 1; w < pts_.GetSize(); w++) {
+  for (std::uint16_t w = 1; w < pts_.GetSize(); w++) {
     ptEnd = EoGePoint4d(pts_[w]);
     view->ModelViewTransformPoint(ptEnd);
 
@@ -230,7 +230,7 @@ bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint
   EoGePoint4d ptBeg(pts_[0]);
   view->ModelViewTransformPoint(ptBeg);
 
-  for (EoUInt16 w = 1; w < pts_.GetSize(); w++) {
+  for (std::uint16_t w = 1; w < pts_.GetSize(); w++) {
     EoGePoint4d ptEnd(pts_[w]);
     view->ModelViewTransformPoint(ptEnd);
 
@@ -247,7 +247,7 @@ bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint
   EoGePoint4d ptBeg(pts[0]);
   view->ModelViewTransformPoint(ptBeg);
 
-  for (EoUInt16 w = 1; w < pts.GetSize(); w++) {
+  for (std::uint16_t w = 1; w < pts.GetSize(); w++) {
     EoGePoint4d ptEnd(pts[w]);
     view->ModelViewTransformPoint(ptEnd);
 

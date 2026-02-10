@@ -26,7 +26,7 @@
 #include "ddeGItms.h"
 #endif  // USING_DDE
 
-EoUInt16 EoDbDimension::sm_flags{};
+std::uint16_t EoDbDimension::sm_flags{};
 
 EoDbDimension::EoDbDimension(const EoDbDimension& other)
     : EoDbPrimitive(other),
@@ -175,33 +175,35 @@ void EoDbDimension::GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac) {
 void EoDbDimension::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt[2] = {m_line.begin, m_line.end};
 
-  for (EoUInt16 w = 0; w < 2; w++) {
-    view->ModelTransformPoint(pt[w]);
-    pt[w] = transformMatrix * pt[w];
-    ptMin = EoGePoint3d::Min(ptMin, pt[w]);
-    ptMax = EoGePoint3d::Max(ptMax, pt[w]);
+  for (auto i = 0; i < 2; i++) {
+    view->ModelTransformPoint(pt[i]);
+    pt[i] = transformMatrix * pt[i];
+    ptMin = EoGePoint3d::Min(ptMin, pt[i]);
+    ptMax = EoGePoint3d::Max(ptMax, pt[i]);
   }
 }
 
 EoGePoint3d EoDbDimension::GoToNextControlPoint() {
-  if (sm_ControlPointIndex == 0)
-    sm_ControlPointIndex = 1;
-  else if (sm_ControlPointIndex == 1)
-    sm_ControlPointIndex = 0;
+  if (sm_controlPointIndex == 0) {
+    sm_controlPointIndex = 1;
+  } else if (sm_controlPointIndex == 1) {
+    sm_controlPointIndex = 0;
+  }
   else {  // Initial rock .. jump to point at lower left or down if vertical
     EoGePoint3d ptBeg = m_line.begin;
     EoGePoint3d ptEnd = m_line.end;
 
-    if (ptEnd.x > ptBeg.x)
-      sm_ControlPointIndex = 0;
-    else if (ptEnd.x < ptBeg.x)
-      sm_ControlPointIndex = 1;
-    else if (ptEnd.y > ptBeg.y)
-      sm_ControlPointIndex = 0;
-    else
-      sm_ControlPointIndex = 1;
+    if (ptEnd.x > ptBeg.x) {
+      sm_controlPointIndex = 0;
+    } else if (ptEnd.x < ptBeg.x) {
+      sm_controlPointIndex = 1;
+    } else if (ptEnd.y > ptBeg.y) {
+      sm_controlPointIndex = 0;
+    } else {
+      sm_controlPointIndex = 1;
+    }
   }
-  return (sm_ControlPointIndex == 0 ? m_line.begin : m_line.end);
+  return (sm_controlPointIndex == 0 ? m_line.begin : m_line.end);
 }
 bool EoDbDimension::IsInView(AeSysView* view) {
   EoGePoint4d pt[] = {EoGePoint4d(m_line.begin), EoGePoint4d(m_line.end)};
@@ -213,8 +215,8 @@ bool EoDbDimension::IsInView(AeSysView* view) {
 bool EoDbDimension::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
   EoGePoint4d pt;
 
-  for (EoUInt16 w = 0; w < 2; w++) {
-    pt = EoGePoint4d(m_line[w]);
+  for (auto i = 0; i < 2; i++) {
+    pt = EoGePoint4d(m_line[i]);
     view->ModelViewTransformPoint(pt);
 
     if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) { return true; }
@@ -234,22 +236,22 @@ double EoDbDimension::RelOfPt(const EoGePoint3d& point) {
   return dRel;
 }
 EoGePoint3d EoDbDimension::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
-  sm_ControlPointIndex = USHRT_MAX;
+  sm_controlPointIndex = SHRT_MAX;
 
   double dAPert = sm_SelectApertureSize;
 
-  for (EoUInt16 w = 0; w < 2; w++) {
-    EoGePoint4d pt(m_line[w]);
+  for (auto i = 0; i < 2; i++) {
+    EoGePoint4d pt(m_line[i]);
     view->ModelViewTransformPoint(pt);
 
     double dDis = point.DistanceToPointXY(pt);
 
     if (dDis < dAPert) {
-      sm_ControlPointIndex = w;
+      sm_controlPointIndex = i;
       dAPert = dDis;
     }
   }
-  return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : m_line[sm_ControlPointIndex];
+  return (sm_controlPointIndex == SHRT_MAX) ? EoGePoint3d::kOrigin : m_line[sm_controlPointIndex];
 }
 bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   sm_flags &= ~0x0003;
@@ -367,7 +369,7 @@ void EoDbDimension::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   SetDefaultNote();
 }
 bool EoDbDimension::Write(CFile& file) {
-  EoDb::Write(file, EoUInt16(EoDb::kDimensionPrimitive));
+  EoDb::Write(file, std::uint16_t(EoDb::kDimensionPrimitive));
 
   EoDb::Write(file, m_color);
   EoDb::Write(file, m_lineTypeIndex);

@@ -17,7 +17,7 @@ class EoDbPegFile : public CFile {
   void ReadHeaderSection(AeSysDoc* document);
   void ReadLayerTable(AeSysDoc* document);
   void ReadLinetypesTable(AeSysDoc* document);
-  void ReadLinetypeDefinition(std::vector<double>& dashLength, CString& name, CString& description, EoUInt16& definitionLength);
+  void ReadLinetypeDefinition(std::vector<double>& dashLength, CString& name, CString& description, std::uint16_t& definitionLength);
   void ReadTablesSection(AeSysDoc* document);
   void ReadViewportTable(AeSysDoc* document);
   void Unload(AeSysDoc* document);

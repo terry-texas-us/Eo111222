@@ -20,8 +20,8 @@ CFTAGNAME dde::CFNames[] = {
 // Local data
 SERVERINFO dde::ServerInfo;
 // Format lists
-EoUInt16 dde::SysFormatList[] = {CF_TEXT, 0};
-EoUInt16 dde::MyFormats[] = {CF_TEXT, 0};
+std::uint16_t dde::SysFormatList[] = {CF_TEXT, 0};
+std::uint16_t dde::MyFormats[] = {CF_TEXT, 0};
 // DDE Instance value
 DWORD dde::dwInstance = 0;
 
@@ -431,7 +431,7 @@ bool dde::ExecCmdRemove(LPTSTR pszTopic, LPTSTR pszCmdName) {
   return false;  // We don't have that one
 }
 /// <summary>Get the text name of a Clipboard format from its id</summary>
-LPTSTR dde::GetCFNameFromId(EoUInt16 wFmt, LPTSTR lpBuf, int iSize) {
+LPTSTR dde::GetCFNameFromId(std::uint16_t wFmt, LPTSTR lpBuf, int iSize) {
   PCFTAGNAME pCTN = CFNames;
 
   // Try for a standard one first
@@ -456,7 +456,7 @@ HDDEDATA dde::MakeCFText(UINT wFmt, LPTSTR lpszStr, HSZ hszItem) {
 }
 /// <summary>Create a data item containing the names of all the formats supplied in a list.</summary>
 // Returns: A DDE data handle to a list of the format names.
-HDDEDATA dde::MakeDataFromFormatList(LPWORD pFmt, EoUInt16 wFmt, HSZ hszItem) {
+HDDEDATA dde::MakeDataFromFormatList(LPWORD pFmt, std::uint16_t wFmt, HSZ hszItem) {
   int cb;
   wchar_t Buffer[256]{};
 

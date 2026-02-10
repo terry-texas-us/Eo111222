@@ -7,7 +7,7 @@
 
 class EoDbBlock : public EoDbGroup {
  private:
-  EoUInt16 m_blockTypeFlags;  // block type flag values
+  std::uint16_t m_blockTypeFlags;  // block type flag values
                               //		b0 set - anonymous block
                               //		b1 set - block has attribute definitions
                               //		b2 set - block is an external reference
@@ -20,16 +20,16 @@ class EoDbBlock : public EoDbGroup {
 
  public:
   EoDbBlock() { m_blockTypeFlags = 0; }
-  EoDbBlock(EoUInt16 flags, EoGePoint3d basePoint);
-  EoDbBlock(EoUInt16 flags, EoGePoint3d basePoint, const CString& name);
+  EoDbBlock(std::uint16_t flags, EoGePoint3d basePoint);
+  EoDbBlock(std::uint16_t flags, EoGePoint3d basePoint, const CString& name);
   EoDbBlock& operator=(const EoDbBlock&) = delete;
 
   const EoGePoint3d& BasePoint() const noexcept { return m_basePoint; }
-  EoUInt16 BlockTypeFlags() const noexcept { return m_blockTypeFlags; }
+  std::uint16_t BlockTypeFlags() const noexcept { return m_blockTypeFlags; }
   bool HasAttributes() const { return (m_blockTypeFlags & 2) == 2; }
   bool IsAnonymous() const { return (m_blockTypeFlags & 1) == 1; }
   bool IsFromExternalReference() const { return (m_blockTypeFlags & 4) == 4; }
-  void SetBlockTypeFlags(EoUInt16 flags) { m_blockTypeFlags = flags; }
+  void SetBlockTypeFlags(std::uint16_t flags) { m_blockTypeFlags = flags; }
   void SetBasePoint(EoGePoint3d basePoint) { m_basePoint = std::move(basePoint); }
 };
 

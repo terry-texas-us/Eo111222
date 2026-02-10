@@ -8,14 +8,14 @@
 #include "EoDbLineType.h"
 #include "EoDbPrimitive.h"
 
-EoDbLayer::EoDbLayer(const CString& name, EoUInt16 stateFlags) {
+EoDbLayer::EoDbLayer(const CString& name, std::uint16_t stateFlags) {
   m_Name = name;
   m_TracingFlgs = 0;
   m_StateFlags = stateFlags;
   m_ColorIndex = 1;
   m_LineType = nullptr;
 }
-EoDbLayer::EoDbLayer(const CString& name, EoUInt16 stateFlags, EoDbLineType* lineType) {
+EoDbLayer::EoDbLayer(const CString& name, std::uint16_t stateFlags, EoDbLineType* lineType) {
   m_Name = name;
   m_TracingFlgs = 0;
   m_StateFlags = stateFlags;
@@ -75,7 +75,7 @@ std::int16_t EoDbLayer::LineTypeIndex() {
   std::int16_t index = (m_LineType == nullptr ? 0 : m_LineType->Index());
   return index;
 }
-void EoDbLayer::PenTranslation(EoUInt16 wCols, std::int16_t* pColNew, std::int16_t* pCol) {
+void EoDbLayer::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
   for (int i = 0; i < wCols; i++) {
     if (m_ColorIndex == pCol[i]) {
       m_ColorIndex = pColNew[i];

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <cmath>
+#include <cstdint>
 
 #include "Eo.h"
 #include "EoDbGroup.h"
@@ -62,13 +63,13 @@ class AeSysView : public CView {
   CPalette m_backgroundImagePalette;
   EoDbPrimitive* m_EngagedPrimitive;
   EoDbGroup* m_EngagedGroup;
-  EoUInt16 m_OpHighlighted;
+  std::uint16_t m_OpHighlighted;
   EoGsViewTransform m_OverviewViewTransform;
   bool m_Plot;
   double m_PlotScaleFactor;
   EoDbGroup m_PreviewGroup;
   EoGsViewTransform m_PreviousViewTransform;
-  EoUInt16 m_PreviousOp;
+  std::uint16_t m_PreviousOp;
   EoGePoint3d m_PreviousPnt;
   double m_SelectApertureSize;
   bool m_viewBackgroundImage;
@@ -370,8 +371,8 @@ class AeSysView : public CView {
   void InitializeGroupAndPrimitiveEdit();
   void DoEditGroupCopy();
   void DoEditGroupEscape();
-  void DoEditGroupTransform(EoUInt16 operation);
-  void DoEditPrimitiveTransform(EoUInt16 operation);
+  void DoEditGroupTransform(std::uint16_t operation);
+  void DoEditPrimitiveTransform(std::uint16_t operation);
   void DoEditPrimitiveCopy();
   void DoEditPrimitiveEscape();
   void PreviewPrimitiveEdit();
@@ -698,7 +699,7 @@ class AeSysView : public CView {
   /// <summary>Generates rise or drop fitting.</summary>
   /// <param name="riseDropIndicator">	rise or drop indicator; 1 rise, 2 drop</param>
   /// <param name="section">horizontal section width and depth</param>
-  void GenerateRiseDrop(EoUInt16 riseDropIndicator, Section section, EoGeLine& referenceLine, EoDbGroup* group);
+  void GenerateRiseDrop(std::uint16_t riseDropIndicator, Section section, EoGeLine& referenceLine, EoDbGroup* group);
   /// <summary>Generates rectangular section using a set of parallel lines.</summary>
   /// <param name="section">width and depth of section</param>
   /// <param name="group"></param>
@@ -806,9 +807,9 @@ class AeSysView : public CView {
   afx_msg void OnPowerModeReturn();
   afx_msg void OnPowerModeEscape();
 
-  void GeneratePowerConductorSymbol(EoUInt16 conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const;
+  void GeneratePowerConductorSymbol(std::uint16_t conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const;
   void GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const;
-  void DoPowerModeConductor(EoUInt16 conductorType);
+  void DoPowerModeConductor(std::uint16_t conductorType);
 
  public:
   /// @brief Updates the status bar mode line display with mode-specific operation information and optionally draws the pane text in the active view.
@@ -817,11 +818,11 @@ class AeSysView : public CView {
   /// @brief Highlights a mode line operation by setting its text color to red in the status bar and optionally in the active view.
   /// @param command The operation command identifier to highlight. A value of 0 indicates no operation should be highlighted.
   /// @return The command identifier that was highlighted, or 0 if no operation was highlighted.
-  [[nodiscard]] EoUInt16 ModeLineHighlightOp(EoUInt16 command);
+  [[nodiscard]] std::uint16_t ModeLineHighlightOp(std::uint16_t command);
 
   /// @brief Removes highlighting from a mode line operation pane and updates the display.
   /// @param command Reference to the command identifier to unhighlight. Set to 0 after unhighlighting is complete.
-  void ModeLineUnhighlightOp(EoUInt16& command);
+  void ModeLineUnhighlightOp(std::uint16_t& command);
 
   /// @brief Gets a reference to the application's status bar.
   /// @return A reference to the CMFCStatusBar object from the main frame window.

@@ -15,11 +15,11 @@
 #include "EoGsRenderState.h"
 #include "Resource.h"
 
-EoDbSpline::EoDbSpline(EoUInt16 wPts, EoGePoint3d* pt) {
+EoDbSpline::EoDbSpline(std::uint16_t wPts, EoGePoint3d* pt) {
   m_color = pstate.Color();
   m_lineTypeIndex = pstate.LineTypeIndex();
 
-  for (EoUInt16 w = 0; w < wPts; w++) m_pts.Add(pt[w]);
+  for (auto i = 0; i < wPts; i++) { m_pts.Add(pt[i]); }
 }
 EoDbSpline::EoDbSpline(EoGePoint3dArray& points) {
   m_color = pstate.Color();
@@ -71,7 +71,7 @@ void EoDbSpline::AddReportToMessageList(const EoGePoint3d&) {
   app.AddStringToMessageList(str);
 }
 void EoDbSpline::FormatGeometry(CString& str) {
-  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) { str += L"Control Point;" + m_pts[w].ToString(); }
+  for (auto i = 0; i < m_pts.GetSize(); i++) { str += L"Control Point;" + m_pts[i].ToString(); }
 }
 
 void EoDbSpline::FormatExtra(CString& str) {
@@ -93,8 +93,8 @@ EoGePoint3d EoDbSpline::GetControlPoint() {
 void EoDbSpline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt;
 
-  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) {
-    pt = m_pts[w];
+  for (auto i = 0; i < m_pts.GetSize(); i++) {
+    pt = m_pts[i];
     view->ModelTransformPoint(pt);
     pt = transformMatrix * pt;
     ptMin = EoGePoint3d::Min(ptMin, pt);
@@ -127,7 +127,7 @@ bool EoDbSpline::IsInView(AeSysView* view) {
 
   view->ModelViewTransformPoint(pt[0]);
 
-  for (EoUInt16 w = 1; w < m_pts.GetSize(); w++) {
+  for (std::uint16_t w = 1; w < m_pts.GetSize(); w++) {
     pt[1] = m_pts[w];
 
     view->ModelViewTransformPoint(pt[1]);
@@ -146,7 +146,7 @@ bool EoDbSpline::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point
 }
 
 EoGePoint3d EoDbSpline::SelectAtControlPoint(AeSysView*, const EoGePoint4d& point) {
-  sm_ControlPointIndex = USHRT_MAX;
+  sm_controlPointIndex = SHRT_MAX;
   return point;
 }
 
@@ -167,25 +167,25 @@ bool EoDbSpline::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoin
   return polyline::SelectUsingRectangle(view, pt1, pt2, m_pts);
 }
 void EoDbSpline::Transform(const EoGeTransformMatrix& transformMatrix) {
-  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w] = transformMatrix * m_pts[w];
+  for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i] = transformMatrix * m_pts[i]; }
 }
 
 void EoDbSpline::Translate(const EoGeVector3d& v) {
-  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w] += v;
+  for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i] += v; }
 }
 
 void EoDbSpline::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
-  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++)
-    if (((mask >> w) & 1UL) == 1) m_pts[w] += v;
+  for (auto i = 0; i < m_pts.GetSize(); i++)
+    if (((mask >> i) & 1UL) == 1) m_pts[i] += v;
 }
 
 bool EoDbSpline::Write(CFile& file) {
-  EoDb::Write(file, EoUInt16(EoDb::kSplinePrimitive));
+  EoDb::Write(file, std::uint16_t(EoDb::kSplinePrimitive));
   EoDb::Write(file, m_color);
   EoDb::Write(file, m_lineTypeIndex);
-  EoDb::Write(file, EoUInt16(m_pts.GetSize()));
+  EoDb::Write(file, std::uint16_t(m_pts.GetSize()));
 
-  for (EoUInt16 w = 0; w < m_pts.GetSize(); w++) m_pts[w].Write(file);
+  for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i].Write(file); }
 
   return true;
 }

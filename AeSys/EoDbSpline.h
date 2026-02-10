@@ -17,7 +17,7 @@ class EoDbSpline : public EoDbPrimitive {
  public:  // Constructors and destructor
   EoDbSpline() {}
   EoDbSpline(std::uint8_t* buffer, int version);
-  EoDbSpline(EoUInt16, EoGePoint3d*);
+  EoDbSpline(std::uint16_t, EoGePoint3d*);
   EoDbSpline(EoGePoint3dArray& points);
   EoDbSpline(std::int16_t penColor, std::int16_t lineType, EoGePoint3dArray& points);
   EoDbSpline(const EoDbSpline&);
@@ -38,7 +38,7 @@ class EoDbSpline : public EoDbPrimitive {
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override { return false; }
-  bool Is(EoUInt16 type) override { return type == EoDb::kSplinePrimitive; }
+  bool Is(std::uint16_t type) override { return type == EoDb::kSplinePrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
@@ -52,5 +52,5 @@ class EoDbSpline : public EoDbPrimitive {
   void Write(CFile& file, std::uint8_t* buffer) override;
 
   int GenPts(const int iOrder, EoGePoint3dArray& pts);
-  void SetPt(EoUInt16 w, EoGePoint3d pt) { m_pts[w] = pt; }
+  void SetPt(std::uint16_t w, EoGePoint3d pt) { m_pts[w] = pt; }
 };

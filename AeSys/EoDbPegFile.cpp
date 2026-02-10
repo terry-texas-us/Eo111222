@@ -116,10 +116,10 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
 
   const auto numberOfLinetypes = EoDb::ReadUInt16(*this);
 
-  for (EoUInt16 n = 0; n < numberOfLinetypes; n++) {
+  for (std::uint16_t n = 0; n < numberOfLinetypes; n++) {
     CString name;
     CString description;
-    EoUInt16 definitionLength{};
+    std::uint16_t definitionLength{};
     ReadLinetypeDefinition(dashElements, name, description, definitionLength);
 
     EoDbLineType* lineType{};
@@ -140,10 +140,10 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
  * @param dashLength A reference to a vector that will be populated with the dash lengths of the linetype.
  * @param name A reference to a CString that will be populated with the name of the linetype.
  * @param description A reference to a CString that will be populated with the description of the linetype.
- * @param definitionLength A reference to an EoUInt16 that will be set to the number of dash elements in the linetype.
+ * @param definitionLength A reference to an std::uint16_t that will be set to the number of dash elements in the linetype.
  */
 void EoDbPegFile::ReadLinetypeDefinition(
-    std::vector<double>& dashLength, CString& name, CString& description, EoUInt16& definitionLength) {
+    std::vector<double>& dashLength, CString& name, CString& description, std::uint16_t& definitionLength) {
   EoDb::Read(*this, name);
   uint16_t flags = EoDb::ReadUInt16(*this);
   (void)flags;  // currently unused, but may be used in the future to indicate properties of the linetype
@@ -153,7 +153,7 @@ void EoDbPegFile::ReadLinetypeDefinition(
   EoDb::Read(*this, PatternLength);
 
   dashLength.resize(definitionLength);
-  for (EoUInt16 n = 0; n < definitionLength; n++) { EoDb::Read(*this, dashLength[n]); }
+  for (std::uint16_t n = 0; n < definitionLength; n++) { EoDb::Read(*this, dashLength[n]); }
 }
 
 /**
@@ -219,7 +219,7 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
 
   auto numberOfBlocks = EoDb::ReadUInt16(*this);
 
-  for (EoUInt16 n = 0; n < numberOfBlocks; n++) {
+  for (std::uint16_t n = 0; n < numberOfBlocks; n++) {
     auto numberOfPrimitives = EoDb::ReadUInt16(*this);
 
     EoDb::Read(*this, Name);
@@ -228,7 +228,7 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
     auto* block = new EoDbBlock(blockTypeFlags, BasePoint, XRefPathName);
     document->InsertBlock(Name, block);
 
-    for (EoUInt16 PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
+    for (std::uint16_t PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
       EoDb::Read(*this, primitive);
       block->AddTail(primitive);
     }
@@ -286,7 +286,7 @@ void EoDbPegFile::Unload(AeSysDoc* document) {
   CFile::Flush();
 }
 void EoDbPegFile::WriteHeaderSection(AeSysDoc* document) {
-  EoDb::Write(*this, EoUInt16(EoDb::kHeaderSection));
+  EoDb::Write(*this, std::uint16_t(EoDb::kHeaderSection));
 
   EoDbHeaderSection& headerSection = document->HeaderSection();
   auto& variables = headerSection.GetVariables();
@@ -312,29 +312,29 @@ void EoDbPegFile::WriteHeaderSection(AeSysDoc* document) {
         value);
   }
 
-  EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
+  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 void EoDbPegFile::WriteTablesSection(AeSysDoc* document) {
-  EoDb::Write(*this, EoUInt16(EoDb::kTablesSection));
+  EoDb::Write(*this, std::uint16_t(EoDb::kTablesSection));
 
   WriteVPortTable(document);
   WriteLinetypeTable(document);
   WriteLayerTable(document);
-  EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
+  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
 void EoDbPegFile::WriteVPortTable(AeSysDoc*) {
-  EoDb::Write(*this, EoUInt16(EoDb::kViewPortTable));
-  EoDb::Write(*this, EoUInt16(0));
-  EoDb::Write(*this, EoUInt16(EoDb::kEndOfTable));
+  EoDb::Write(*this, std::uint16_t(EoDb::kViewPortTable));
+  EoDb::Write(*this, std::uint16_t(0));
+  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfTable));
 }
 
 void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
   auto* lineTypeTable = document->LineTypeTable();
 
-  EoUInt16 numberOfLinetypes = EoUInt16(lineTypeTable->Size());
+  std::uint16_t numberOfLinetypes = std::uint16_t(lineTypeTable->Size());
 
-  EoDb::Write(*this, EoUInt16(EoDb::kLinetypeTable));
+  EoDb::Write(*this, std::uint16_t(EoDb::kLinetypeTable));
   EoDb::Write(*this, numberOfLinetypes);
 
   CString name;
@@ -345,10 +345,10 @@ void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
     lineTypeTable->GetNextAssoc(position, name, linetype);
 
     EoDb::Write(*this, (LPCWSTR)name);
-    EoDb::Write(*this, EoUInt16(0));
+    EoDb::Write(*this, std::uint16_t(0));
     EoDb::Write(*this, (LPCWSTR)linetype->Description());
 
-    EoUInt16 DefinitionLength = linetype->GetNumberOfDashes();
+    std::uint16_t DefinitionLength = linetype->GetNumberOfDashes();
     EoDb::Write(*this, DefinitionLength);
     double PatternLength = linetype->GetPatternLength();
     EoDb::Write(*this, PatternLength);
@@ -356,21 +356,21 @@ void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
     if (DefinitionLength > 0) {
       double* dashElements = new double[DefinitionLength];
       linetype->GetDashElements(dashElements);
-      for (EoUInt16 w = 0; w < DefinitionLength; w++) EoDb::Write(*this, dashElements[w]);
+      for (auto i = 0; i < DefinitionLength; i++) { EoDb::Write(*this, dashElements[i]); }
 
       delete[] dashElements;
     }
   }
-  EoDb::Write(*this, EoUInt16(EoDb::kEndOfTable));
+  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfTable));
 }
 
 void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
   int NumberOfLayers = document->GetLayerTableSize();
 
-  EoDb::Write(*this, EoUInt16(EoDb::kLayerTable));
+  EoDb::Write(*this, std::uint16_t(EoDb::kLayerTable));
 
   auto SavedFilePosition = CFile::GetPosition();
-  EoDb::Write(*this, EoUInt16(NumberOfLayers));
+  EoDb::Write(*this, std::uint16_t(NumberOfLayers));
 
   for (int n = 0; n < document->GetLayerTableSize(); n++) {
     EoDbLayer* Layer = document->GetLayerTableLayerAt(n);
@@ -383,20 +383,20 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
     } else
       NumberOfLayers--;
   }
-  EoDb::Write(*this, EoUInt16(EoDb::kEndOfTable));
+  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfTable));
 
   if (NumberOfLayers != document->GetLayerTableSize()) {
     auto CurrentFilePosition = CFile::GetPosition();
     CFile::Seek(static_cast<LONGLONG>(SavedFilePosition), CFile::begin);
-    EoDb::Write(*this, EoUInt16(NumberOfLayers));
+    EoDb::Write(*this, std::uint16_t(NumberOfLayers));
     CFile::Seek(static_cast<LONGLONG>(CurrentFilePosition), CFile::begin);
   }
 }
 
 void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
-  EoDb::Write(*this, EoUInt16(EoDb::kBlocksSection));
+  EoDb::Write(*this, std::uint16_t(EoDb::kBlocksSection));
 
-  EoUInt16 NumberOfBlocks = document->BlockTableSize();
+  std::uint16_t NumberOfBlocks = document->BlockTableSize();
   EoDb::Write(*this, NumberOfBlocks);
 
   CString Name;
@@ -407,8 +407,8 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
     document->GetNextBlock(position, Name, Block);
 
     auto SavedFilePosition = CFile::GetPosition();
-    EoDb::Write(*this, EoUInt16(0));
-    EoUInt16 NumberOfPrimitives = 0;
+    EoDb::Write(*this, std::uint16_t(0));
+    std::uint16_t NumberOfPrimitives = 0;
 
     EoDb::Write(*this, Name);
     EoDb::Write(*this, Block->BlockTypeFlags());
@@ -425,19 +425,19 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
     CFile::Seek(static_cast<LONGLONG>(CurrentFilePosition), CFile::begin);
   }
 
-  EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
+  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
 void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
-  EoDb::Write(*this, EoUInt16(EoDb::kGroupsSection));
+  EoDb::Write(*this, std::uint16_t(EoDb::kGroupsSection));
 
   int NumberOfLayers = document->GetLayerTableSize();
-  EoDb::Write(*this, EoUInt16(NumberOfLayers));
+  EoDb::Write(*this, std::uint16_t(NumberOfLayers));
 
   for (int n = 0; n < NumberOfLayers; n++) {
     auto* layer = document->GetLayerTableLayerAt(n);
     if (layer->IsInternal()) {
-      EoDb::Write(*this, EoUInt16(layer->GetCount()));
+      EoDb::Write(*this, std::uint16_t(layer->GetCount()));
 
       auto position = layer->GetHeadPosition();
       while (position != nullptr) {
@@ -445,10 +445,10 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
         group->Write(*this);
       }
     } else {
-      EoDb::Write(*this, EoUInt16(0));
+      EoDb::Write(*this, std::uint16_t(0));
     }
   }
-  EoDb::Write(*this, EoUInt16(EoDb::kEndOfSection));
+  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
 bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive) {
@@ -545,7 +545,7 @@ void EoDb::Read(CFile& file, std::int16_t& number) { file.Read(&number, sizeof(s
   return Vector;
 }
 
-void EoDb::Read(CFile& file, EoUInt16& number) { file.Read(&number, sizeof(EoUInt16)); }
+void EoDb::Read(CFile& file, std::uint16_t& number) { file.Read(&number, sizeof(std::uint16_t)); }
 
 [[nodiscard]] double EoDb::ReadDouble(CFile& file) {
   double number;
@@ -558,9 +558,9 @@ void EoDb::Read(CFile& file, EoUInt16& number) { file.Read(&number, sizeof(EoUIn
   return number;
 }
 
-[[nodiscard]] EoUInt16 EoDb::ReadUInt16(CFile& file) {
-  EoUInt16 number;
-  file.Read(&number, sizeof(EoUInt16));
+[[nodiscard]] std::uint16_t EoDb::ReadUInt16(CFile& file) {
+  std::uint16_t number;
+  file.Read(&number, sizeof(std::uint16_t));
   return number;
 }
 /**
@@ -587,7 +587,7 @@ void EoDb::Write(CFile& file, const CString& string, UINT codePage) {
 
 void EoDb::Write(CFile& file, double number) { file.Write(&number, sizeof(double)); }
 void EoDb::Write(CFile& file, std::int16_t number) { file.Write(&number, sizeof(std::int16_t)); }
-void EoDb::Write(CFile& file, EoUInt16 number) { file.Write(&number, sizeof(EoUInt16)); }
+void EoDb::Write(CFile& file, std::uint16_t number) { file.Write(&number, sizeof(std::uint16_t)); }
 void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   std::int16_t color = EoDb::ReadInt16(file);
   std::int16_t LineType = EoDb::ReadInt16(file);
@@ -599,7 +599,7 @@ void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primiti
   double Rotation = EoDb::ReadDouble(file);
   uint16_t numberOfColumns = EoDb::ReadUInt16(file);
   (void)numberOfColumns;  // currently unused, but may be used in the future to indicate the number of columns
-  EoUInt16 numberOfRows = EoDb::ReadUInt16(file);
+  std::uint16_t numberOfRows = EoDb::ReadUInt16(file);
   (void)numberOfRows;  // currently unused, but may be used in the future to indicate the number of rows
   double columnSpacing = EoDb::ReadDouble(file);
   (void)columnSpacing;  // currently unused, but may be used in the future to indicate the column spacing
@@ -607,7 +607,7 @@ void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primiti
   (void)rowSpacing;  // currently unused, but may be used in the future to indicate the row spacing
 
   primitive = new EoDbBlockReference(
-      static_cast<EoUInt16>(color), static_cast<EoUInt16>(LineType), Name, Point, Normal, ScaleFactors, Rotation);
+      static_cast<std::uint16_t>(color), static_cast<std::uint16_t>(LineType), Name, Point, Normal, ScaleFactors, Rotation);
 }
 void EoDb::ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& /* file */, EoDbPrimitive*& /* primitive */) {}
 
@@ -688,7 +688,7 @@ void EoDb::ConstructPointPrimitive(CFile& file, EoDbPrimitive*& primitive) {
 
   double* Data = (numberOfDatums == 0) ? 0 : new double[numberOfDatums];
 
-  for (EoUInt16 n = 0; n < numberOfDatums; n++) { EoDb::Read(file, Data[n]); }
+  for (std::uint16_t n = 0; n < numberOfDatums; n++) { EoDb::Read(file, Data[n]); }
   primitive = new EoDbPoint(PenColor, PointStyle, Point, numberOfDatums, Data);
 }
 
@@ -710,7 +710,7 @@ void EoDb::ConstructPolygonPrimitive(CFile& file, EoDbPrimitive*& primitive) {
 
   EoGePoint3dArray Points;
   Points.SetSize(numberOfPoints);
-  for (EoUInt16 n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
+  for (std::uint16_t n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
   primitive = new EoDbPolygon(PenColor, polygonStyle, InteriorStyleIndex, HatchOrigin, HatchXAxis, HatchYAxis, Points);
 }
 
@@ -722,7 +722,7 @@ void EoDb::ConstructPolylinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoGePoint3dArray Points;
   Points.SetSize(numberOfPoints);
 
-  for (EoUInt16 n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
+  for (std::uint16_t n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
   primitive = new EoDbPolyline(PenColor, LineType, Points);
 }
 
@@ -730,14 +730,14 @@ void EoDb::ConstructPolylinePrimitiveFromCSplinePrimitive(CFile& file, EoDbPrimi
   std::int16_t PenColor = EoDb::ReadInt16(file);
   std::int16_t LineType = EoDb::ReadInt16(file);
 
-  file.Seek(sizeof(EoUInt16), CFile::current);
+  file.Seek(sizeof(std::uint16_t), CFile::current);
   auto numberOfPoints = EoDb::ReadUInt16(file);
-  file.Seek(sizeof(EoUInt16), CFile::current);
+  file.Seek(sizeof(std::uint16_t), CFile::current);
   file.Seek(sizeof(EoGeVector3d), CFile::current);
   file.Seek(sizeof(EoGeVector3d), CFile::current);
   EoGePoint3dArray Points;
   Points.SetSize(numberOfPoints);
-  for (EoUInt16 n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
+  for (std::uint16_t n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
   primitive = new EoDbPolyline(PenColor, LineType, Points);
 }
 
@@ -750,7 +750,7 @@ void EoDb::ConstructSplinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   EoGePoint3dArray Points;
   Points.SetSize(numberOfPoints);
 
-  for (EoUInt16 n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
+  for (std::uint16_t n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
   primitive = new EoDbSpline(PenColor, LineType, Points);
 }
 

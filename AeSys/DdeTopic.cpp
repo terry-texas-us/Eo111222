@@ -120,7 +120,7 @@ bool dde::TopicRemove(LPTSTR lpszTopic) {
 //			formats supported for all topics of the service.
 // Returns: A DDE data handle to the data object containing the return data.
 HDDEDATA dde::TopicReqFormats(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
-	EoUInt16 wFormats[MAXFORMATS];
+	std::uint16_t wFormats[MAXFORMATS];
 
 	PTOPICINFO pTopic = TopicFind(hszTopic);
 
@@ -136,6 +136,6 @@ HDDEDATA dde::TopicReqFormats(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
 		AddFormatsToList(wFormats, MAXFORMATS, pItem->pFormatList); // Add unique formats to the main list
 		pItem = pItem->pNext;
 	}
-	return MakeDataFromFormatList((LPWORD) wFormats, EoUInt16(wFmt), hszItem);
+	return MakeDataFromFormatList((LPWORD) wFormats, std::uint16_t(wFmt), hszItem);
 }
 #endif // USING_DDE

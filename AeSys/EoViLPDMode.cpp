@@ -497,7 +497,7 @@ void AeSysView::GenerateFullElbowTakeoff(
 }
 
 void AeSysView::GenerateRiseDrop(
-    EoUInt16 riseDropIndicator, Section section, EoGeLine& referenceLine, EoDbGroup* group) {
+    std::uint16_t riseDropIndicator, Section section, EoGeLine& referenceLine, EoDbGroup* group) {
   double SectionLength = referenceLine.Length();
 
   EoGeLine LeftLine;

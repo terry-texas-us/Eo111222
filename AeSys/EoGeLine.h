@@ -54,7 +54,7 @@ class EoGeLine {
     1 Cut made (line modified)
   @endcode
   */
-  EoUInt16 CutAtPoint(const EoGePoint3d& point, EoGeLine& line);
+  std::uint16_t CutAtPoint(const EoGePoint3d& point, EoGeLine& line);
 
   /** @brief Determines the relative position (which side) of a point to the directed line segment.
   * @param point The point to evaluate.

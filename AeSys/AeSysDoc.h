@@ -76,7 +76,7 @@ class AeSysDoc : public CDocument {
   // Block Table interface
   [[nodiscard]] EoDbBlocks* BlocksTable() { return (&m_BlocksTable); }
   [[nodiscard]] bool BlockTableIsEmpty() const { return m_BlocksTable.IsEmpty() == TRUE; }
-  [[nodiscard]] EoUInt16 BlockTableSize() const { return (EoUInt16(m_BlocksTable.GetSize())); }
+  [[nodiscard]] std::uint16_t BlockTableSize() const { return (std::uint16_t(m_BlocksTable.GetSize())); }
   int GetBlockReferenceCount(const CString& name);
   [[nodiscard]] auto GetFirstBlockPosition() const { return m_BlocksTable.GetStartPosition(); }
   void GetNextBlock(POSITION& position, CString& name, EoDbBlock*& block) {
@@ -139,7 +139,7 @@ class AeSysDoc : public CDocument {
   [[nodiscard]] auto* LineTypeTable() { return &m_LineTypeTable; }
   [[nodiscard]] auto* ContinuousLineType() { return m_ContinuousLineType; }
 
-  void PenTranslation(EoUInt16, std::int16_t*, std::int16_t*);
+  void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
 
   int RemoveEmptyNotesAndDelete();
   int RemoveEmptyGroups();

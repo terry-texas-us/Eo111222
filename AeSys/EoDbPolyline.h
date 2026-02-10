@@ -13,15 +13,15 @@
 #include "drw_base.h"
 
 class EoDbPolyline : public EoDbPrimitive {
-  static EoUInt16 sm_EdgeToEvaluate;
-  static EoUInt16 sm_Edge;
-  static EoUInt16 sm_PivotVertex;
+  static std::uint16_t sm_EdgeToEvaluate;
+  static std::uint16_t sm_Edge;
+  static int sm_pivotVertex;
 
  public:
-  static const EoUInt16 sm_Closed = 0x0010;
+  static const std::uint16_t sm_Closed = 0x0010;
 
  private:
-  EoUInt16 m_flags;
+  std::uint16_t m_flags;
   EoGePoint3dArray m_pts;
 
  public:
@@ -47,7 +47,7 @@ class EoDbPolyline : public EoDbPrimitive {
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override { return false; }
-  bool Is(EoUInt16 type) override { return type == EoDb::kPolylinePrimitive; }
+  bool Is(std::uint16_t type) override { return type == EoDb::kPolylinePrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   bool PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) override;
@@ -62,13 +62,13 @@ class EoDbPolyline : public EoDbPrimitive {
   void Write(CFile& file, std::uint8_t* buffer) override { (void)file, (void)buffer; };
 
  private:
-  EoUInt16 SwingVertex();
+  std::uint16_t SwingVertex();
 
  public:
-  static EoUInt16& EdgeToEvaluate() { return sm_EdgeToEvaluate; }
-  static EoUInt16& Edge() { return sm_Edge; }
+  static std::uint16_t& EdgeToEvaluate() { return sm_EdgeToEvaluate; }
+  static std::uint16_t& Edge() { return sm_Edge; }
   bool IsLooped() const { return (m_flags != 0); }
-  void SetFlag(const EoUInt16 flags) { m_flags = flags; }
+  void SetFlag(const std::uint16_t flags) { m_flags = flags; }
 
   void SetNumberOfVertices(const size_t numberOfVertices) { m_pts.SetSize(static_cast<int64_t>(numberOfVertices)); }
 

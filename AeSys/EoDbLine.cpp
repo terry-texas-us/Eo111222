@@ -156,33 +156,34 @@ void EoDbLine::GetExtents(
     AeSysView* view, EoGePoint3d& minPoint, EoGePoint3d& maxPoint, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d points[2]{m_line.begin, m_line.end};
 
-  for (EoUInt16 w = 0; w < 2; w++) {
-    view->ModelTransformPoint(points[w]);
-    points[w] = transformMatrix * points[w];
-    minPoint = EoGePoint3d::Min(minPoint, points[w]);
-    maxPoint = EoGePoint3d::Max(maxPoint, points[w]);
+  for (auto i = 0; i < 2; i++) {
+    view->ModelTransformPoint(points[i]);
+    points[i] = transformMatrix * points[i];
+    minPoint = EoGePoint3d::Min(minPoint, points[i]);
+    maxPoint = EoGePoint3d::Max(maxPoint, points[i]);
   }
 }
 
 EoGePoint3d EoDbLine::GoToNextControlPoint() {
-  if (sm_ControlPointIndex == 0) {
-    sm_ControlPointIndex = 1;
-  } else if (sm_ControlPointIndex == 1) {
-    sm_ControlPointIndex = 0;
+  if (sm_controlPointIndex == 0) {
+    sm_controlPointIndex = 1;
+  } else if (sm_controlPointIndex == 1) {
+    sm_controlPointIndex = 0;
   } else {  // Initial rock .. jump to point at lower left or down if vertical
     EoGePoint3d ptBeg = m_line.begin;
     EoGePoint3d ptEnd = m_line.end;
 
-    if (ptEnd.x > ptBeg.x)
-      sm_ControlPointIndex = 0;
-    else if (ptEnd.x < ptBeg.x)
-      sm_ControlPointIndex = 1;
-    else if (ptEnd.y > ptBeg.y)
-      sm_ControlPointIndex = 0;
-    else
-      sm_ControlPointIndex = 1;
+    if (ptEnd.x > ptBeg.x) {
+      sm_controlPointIndex = 0;
+    } else if (ptEnd.x < ptBeg.x) {
+      sm_controlPointIndex = 1;
+    } else if (ptEnd.y > ptBeg.y) {
+      sm_controlPointIndex = 0;
+    } else {
+      sm_controlPointIndex = 1;
+    }
   }
-  return (sm_ControlPointIndex == 0 ? m_line.begin : m_line.end);
+  return (sm_controlPointIndex == 0 ? m_line.begin : m_line.end);
 }
 
 bool EoDbLine::Identical(EoDbPrimitive* primitive) { return m_line == static_cast<EoDbLine*>(primitive)->Line(); }
@@ -253,22 +254,22 @@ double EoDbLine::RelOfPt(const EoGePoint3d& point) {
 }
 
 EoGePoint3d EoDbLine::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
-  sm_ControlPointIndex = USHRT_MAX;
+  sm_controlPointIndex = SHRT_MAX;
 
   double dApert = sm_SelectApertureSize;
 
-  for (EoUInt16 w = 0; w < 2; w++) {
-    EoGePoint4d pt(m_line[w]);
+  for (auto i = 0; i < 2; i++) {
+    EoGePoint4d pt(m_line[i]);
     view->ModelViewTransformPoint(pt);
 
     double dDis = point.DistanceToPointXY(pt);
 
     if (dDis < dApert) {
-      sm_ControlPointIndex = w;
+      sm_controlPointIndex = i;
       dApert = dDis;
     }
   }
-  return (sm_ControlPointIndex == USHRT_MAX) ? EoGePoint3d::kOrigin : m_line[sm_ControlPointIndex];
+  return (sm_controlPointIndex == SHRT_MAX) ? EoGePoint3d::kOrigin : m_line[sm_controlPointIndex];
 }
 /** @brief Evaluates whether a line intersects line.
  * @param view Current view.
@@ -316,7 +317,7 @@ void EoDbLine::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if ((mask & 2) == 2) { SetEndPoint(m_line.end + v); }
 }
 bool EoDbLine::Write(CFile& file) {
-  EoDb::Write(file, EoUInt16(EoDb::kLinePrimitive));
+  EoDb::Write(file, std::uint16_t(EoDb::kLinePrimitive));
 
   EoDb::Write(file, m_color);
   EoDb::Write(file, m_lineTypeIndex);

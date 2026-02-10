@@ -16,7 +16,7 @@
 #include "Resource.h"
 
 namespace {
-EoUInt16 previousKeyDown{};
+std::uint16_t previousKeyDown{};
 EoGePoint3d previousPosition{};
 }  // namespace
 
@@ -94,13 +94,13 @@ void AeSysView::OnCutModeSlice() {
 
         ln = EoGeLine(ptView[0], ptView[1]);
         primitive->SelectUsingLine(this, ln, intersections);
-        for (EoUInt16 w = 0; w < intersections.GetSize(); w++) {
+        for (auto i = 0; i < intersections.GetSize(); i++) {
           EoDbGroup* NewGroup = new EoDbGroup;
 
-          intersections[w] = transformMatrix * intersections[w];
+          intersections[i] = transformMatrix * intersections[i];
 
           document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, primitive);
-          primitive->CutAtPoint(intersections[w], NewGroup);
+          primitive->CutAtPoint(intersections[i], NewGroup);
           document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, primitive);
           groups->AddTail(NewGroup);
         }

@@ -116,8 +116,8 @@ EoGePoint3d EoGeLine::ConstrainToAxis(double influenceAngle, double axisOffsetAn
   return pt;
 }
 
-EoUInt16 EoGeLine::CutAtPoint(const EoGePoint3d& point, EoGeLine& line) {
-  EoUInt16 result{};
+std::uint16_t EoGeLine::CutAtPoint(const EoGePoint3d& point, EoGeLine& line) {
+  std::uint16_t result{};
 
   line = *this;
 

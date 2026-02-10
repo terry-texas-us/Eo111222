@@ -1,16 +1,18 @@
 ﻿#pragma once
 
+#include <cstdint>
+
 #include "EoDbLineType.h"
 
 class EoDbLayer : public EoDbGroupList {
  private:
   CString m_Name;  // layer name. If layer is externally referenced this is the full specification of the file name.
-  EoUInt16 m_StateFlags;   // layer state flag values
-                           // b0 set - layer is displayed using bitmap when possible
-                           // b1 set - layer is externally referenced. This means it is not necessary to write disk.
-                           // b2 set - layer is off
-  EoUInt16 m_TracingFlgs;  // Tracing flag values
-                           // b2 set - tracing is mapped
+  std::uint16_t m_StateFlags;  // layer state flag values
+                               // b0 set - layer is displayed using bitmap when possible
+                               // b1 set - layer is externally referenced. This means it is not necessary to write disk.
+                               // b2 set - layer is off
+  std::uint16_t m_TracingFlgs;  // Tracing flag values
+                                // b2 set - tracing is mapped
   std::int16_t m_ColorIndex;    // color index, negative if layer is off)
   EoDbLineType* m_LineType;
 
@@ -30,8 +32,8 @@ class EoDbLayer : public EoDbGroupList {
     kTracingIsViewed = 0x0010,
     kTracingIsCloaked = 0x0020
   };
-  EoDbLayer(const CString& name, EoUInt16 flags);
-  EoDbLayer(const CString& name, EoUInt16 flags, EoDbLineType* lineType);
+  EoDbLayer(const CString& name, std::uint16_t flags);
+  EoDbLayer(const CString& name, std::uint16_t flags, EoDbLineType* lineType);
   EoDbLayer(const EoDbLayer& layer) = delete;
   EoDbLayer& operator=(const EoDbLayer&) = delete;
 
@@ -47,19 +49,19 @@ class EoDbLayer : public EoDbGroupList {
   std::int16_t LineTypeIndex();
   CString LineTypeName() { return m_LineType->Name(); }
   void SetLineType(EoDbLineType* lineType);
-  void PenTranslation(EoUInt16, std::int16_t*, std::int16_t*);
+  void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
   CString Name() const { return m_Name; }
   void SetName(const CString& name) { m_Name = name; }
 
-  void ClrTracingFlg(EoUInt16 w = 0xffff) { m_TracingFlgs &= ~w; }
+  void ClrTracingFlg(std::uint16_t w = 0xffff) { m_TracingFlgs &= ~w; }
   bool IsOpened() { return ((m_TracingFlgs & kTracingIsOpened) == kTracingIsOpened); }
   bool IsMapped() { return ((m_TracingFlgs & kTracingIsMapped) == kTracingIsMapped); }
   bool IsViewed() { return ((m_TracingFlgs & kTracingIsViewed) == kTracingIsViewed); }
-  EoUInt16 GetTracingFlgs() { return m_TracingFlgs; }
-  void SetTracingFlg(EoUInt16 w) { m_TracingFlgs = w; }
+  std::uint16_t GetTracingFlgs() { return m_TracingFlgs; }
+  void SetTracingFlg(std::uint16_t w) { m_TracingFlgs = w; }
 
-  void ClearStateFlag(EoUInt16 w = 0xffff) { m_StateFlags &= ~w; }
-  EoUInt16 LayerStateFlags() const { return m_StateFlags; }
+  void ClearStateFlag(std::uint16_t w = 0xffff) { m_StateFlags &= ~w; }
+  std::uint16_t LayerStateFlags() const { return m_StateFlags; }
   bool IsActive() { return ((m_StateFlags & kIsActive) == kIsActive); }
   bool IsInternal() { return ((m_StateFlags & kIsInternal) == kIsInternal); }
   bool IsOff() { return ((m_StateFlags & kIsOff) == kIsOff); }
