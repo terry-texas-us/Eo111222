@@ -21,11 +21,11 @@ class EoDbLine : public EoDbPrimitive {
 
   EoDbLine(const EoGeLine& line);
 
-  EoDbLine(EoInt16 color, EoInt16 lineType, EoGeLine line);
+  EoDbLine(std::int16_t color, std::int16_t lineType, EoGeLine line);
 
   EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end);
 
-  EoDbLine(EoInt16 color, EoInt16 lineType, const EoGePoint3d& begin, const EoGePoint3d& end);
+  EoDbLine(std::int16_t color, std::int16_t lineType, const EoGePoint3d& begin, const EoGePoint3d& end);
 
   EoDbLine(const EoDbLine& other);
 

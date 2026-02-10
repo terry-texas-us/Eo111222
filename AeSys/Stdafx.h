@@ -83,7 +83,6 @@ UINT AFXAPI HashKey(CString& str);
 
 #define AESYS_USE_CONIC_PRIMITIVE
 
-using EoInt16 = std::int16_t;
 using EoUInt16 = std::uint16_t;
 
 #if defined(USING_DDE)

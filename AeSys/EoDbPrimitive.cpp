@@ -13,15 +13,15 @@
 #include "EoGsRenderState.h"
 #include "drw_Entities.h"
 
-EoInt16 EoDbPrimitive::sm_layerColor{COLOR_BYLAYER};
-EoInt16 EoDbPrimitive::sm_layerLineTypeIndex{LINETYPE_BYLAYER};
-EoInt16 EoDbPrimitive::sm_specialColor{};
+std::int16_t EoDbPrimitive::sm_layerColor{COLOR_BYLAYER};
+std::int16_t EoDbPrimitive::sm_layerLineTypeIndex{LINETYPE_BYLAYER};
+std::int16_t EoDbPrimitive::sm_specialColor{};
 
 EoUInt16 EoDbPrimitive::sm_ControlPointIndex = USHRT_MAX;
 double EoDbPrimitive::sm_RelationshipOfPoint = 0.0;
 double EoDbPrimitive::sm_SelectApertureSize = 0.02;
 
-EoDbPrimitive::EoDbPrimitive(EoInt16 color, EoInt16 lineTypeIndex) : m_color(color), m_lineTypeIndex(lineTypeIndex) {
+EoDbPrimitive::EoDbPrimitive(std::int16_t color, std::int16_t lineTypeIndex) : m_color(color), m_lineTypeIndex(lineTypeIndex) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbPrimitive(color,lt) CTOR: this=%p, vtable=%p\n", this,
             *(void**)this);
 }
@@ -38,7 +38,7 @@ int EoDbPrimitive::IsWithinArea(const EoGePoint3d&, const EoGePoint3d&, EoGePoin
 bool EoDbPrimitive::PivotOnControlPoint(AeSysView*, const EoGePoint4d&) { return false; }
 
 void EoDbPrimitive::SetBaseProperties(const DRW_Entity* entity, AeSysDoc* document) {
-  m_color = static_cast<EoInt16>(entity->color);
+  m_color = static_cast<std::int16_t>(entity->color);
   m_lineTypeName = Eo::MultiByteToWString(entity->lineType.c_str());
   m_layerName = Eo::MultiByteToWString(entity->layer.c_str());
 
@@ -84,8 +84,8 @@ CString EoDbPrimitive::FormatLineType() const {
   return str;
 }
 
-EoInt16 EoDbPrimitive::LogicalColor() const {
-  EoInt16 color = sm_specialColor == 0 ? m_color : sm_specialColor;
+std::int16_t EoDbPrimitive::LogicalColor() const {
+  std::int16_t color = sm_specialColor == 0 ? m_color : sm_specialColor;
 
   if (color == COLOR_BYLAYER)
     color = sm_layerColor;
@@ -95,8 +95,8 @@ EoInt16 EoDbPrimitive::LogicalColor() const {
   return color;
 }
 
-EoInt16 EoDbPrimitive::LogicalLineType() const {
-  EoInt16 lineTypeIndex = m_lineTypeIndex;
+std::int16_t EoDbPrimitive::LogicalLineType() const {
+  std::int16_t lineTypeIndex = m_lineTypeIndex;
 
   if (lineTypeIndex == LINETYPE_BYLAYER)
     lineTypeIndex = sm_layerLineTypeIndex;
@@ -108,15 +108,15 @@ EoInt16 EoDbPrimitive::LogicalLineType() const {
 
 void EoDbPrimitive::ModifyState() {
   m_color = pstate.Color();
-  m_lineTypeIndex = pstate.LineType();
+  m_lineTypeIndex = pstate.LineTypeIndex();
 }
 
 EoUInt16 EoDbPrimitive::ControlPointIndex() { return sm_ControlPointIndex; }
 bool EoDbPrimitive::IsSupportedTyp(int type) { return (type <= 7 && type != 4 && type != 5); }
-EoInt16 EoDbPrimitive::LayerColor() { return sm_layerColor; }
-void EoDbPrimitive::SetLayerColor(EoInt16 layerColor) { sm_layerColor = layerColor; }
-EoInt16 EoDbPrimitive::LayerLineTypeIndex() { return sm_layerLineTypeIndex; }
-void EoDbPrimitive::SetLayerLineTypeIndex(EoInt16 lineTypeIndex) { sm_layerLineTypeIndex = lineTypeIndex; }
+std::int16_t EoDbPrimitive::LayerColor() { return sm_layerColor; }
+void EoDbPrimitive::SetLayerColor(std::int16_t layerColor) { sm_layerColor = layerColor; }
+std::int16_t EoDbPrimitive::LayerLineTypeIndex() { return sm_layerLineTypeIndex; }
+void EoDbPrimitive::SetLayerLineTypeIndex(std::int16_t lineTypeIndex) { sm_layerLineTypeIndex = lineTypeIndex; }
 double& EoDbPrimitive::Rel() { return sm_RelationshipOfPoint; }
-EoInt16 EoDbPrimitive::SpecialColor() { return sm_specialColor; }
-void EoDbPrimitive::SetSpecialColor(EoInt16 specialColor) { sm_specialColor = specialColor; }
+std::int16_t EoDbPrimitive::SpecialColor() { return sm_specialColor; }
+void EoDbPrimitive::SetSpecialColor(std::int16_t specialColor) { sm_specialColor = specialColor; }

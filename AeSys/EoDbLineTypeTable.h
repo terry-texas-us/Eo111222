@@ -31,8 +31,8 @@ class EoDbLineTypeTable {
   }
   bool IsEmpty() { return m_MapLineTypes.IsEmpty(); }
   
-  EoInt16 LegacyLineTypeIndex(CString& name);
-  EoInt16 LegacyLineTypeIndex(std::wstring& name);
+  std::int16_t LegacyLineTypeIndex(CString& name);
+  std::int16_t LegacyLineTypeIndex(std::wstring& name);
   
   /** @brief Looks up a line type by its name.
    *
@@ -60,7 +60,7 @@ class EoDbLineTypeTable {
    * @param lineType The line type index to count references for.
    * @return The number of references to the specified line type.
    */
-  int ReferenceCount(EoInt16 lineType);
+  int ReferenceCount(std::int16_t lineType);
   
   int Size() { return (int)m_MapLineTypes.GetSize(); }
   /// <summary>Loads the Line Type table.</summary>

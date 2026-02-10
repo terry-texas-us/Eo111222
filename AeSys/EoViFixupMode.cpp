@@ -164,7 +164,7 @@ void AeSysView::OnFixupModeReference() {
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
         line->SetBeginPoint(previousLine.begin);
         line->SetEndPoint(previousLine.end);
-        previousGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), previousLine.end, referenceLine.begin));
+        previousGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), previousLine.end, referenceLine.begin));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
     } else if (previousCommand == ID_OP4) {
@@ -271,7 +271,7 @@ void AeSysView::OnFixupModeMend() {
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
         pLine->SetBeginPoint(previousLine.begin);
         pLine->SetEndPoint(previousLine.end);
-        previousGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), previousLine.end, currentLine.begin));
+        previousGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), previousLine.end, currentLine.begin));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
     } else if (previousCommand == ID_OP4) {
@@ -300,7 +300,7 @@ void AeSysView::OnFixupModeMend() {
 
           auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
           radialArc->SetColor(pstate.Color());
-          radialArc->SetLineTypeIndex(pstate.LineType());
+          radialArc->SetLineTypeIndex(pstate.LineTypeIndex());
 
           previousGroup->AddTail(radialArc);
           document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
@@ -375,7 +375,7 @@ void AeSysView::OnFixupModeChamfer() {
       linePrimitive->SetBeginPoint(currentLine.begin);
       linePrimitive->SetEndPoint(currentLine.end);
 
-      currentGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), previousLine.end, currentLine.begin));
+      currentGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), previousLine.end, currentLine.begin));
 
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     }

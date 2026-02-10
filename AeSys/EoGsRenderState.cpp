@@ -1,6 +1,7 @@
 ﻿#include "Stdafx.h"
 
 #include <algorithm>
+#include <cstdint>
 
 #include "AeSys.h"
 #include "AeSysView.h"
@@ -17,7 +18,7 @@ void EoGsRenderState::Restore(CDC* deviceContext, int iSaveId) {
   if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) return;
 
   if (psSav[iSaveId] != 0) {
-    SetPen(nullptr, deviceContext, psSav[iSaveId]->Color(), psSav[iSaveId]->LineType());
+    SetPen(nullptr, deviceContext, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex());
 
     m_fontDefinition = psSav[iSaveId]->m_fontDefinition;
 
@@ -47,7 +48,7 @@ int EoGsRenderState::Save() {
   return iSaveId;
 }
 
-void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, EoInt16 color, EoInt16 lineTypeIndex) {
+void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t color, std::int16_t lineTypeIndex) {
   if (EoDbPrimitive::SpecialColor() != 0) { color = EoDbPrimitive::SpecialColor(); }
   if (color == EoDbPrimitive::COLOR_BYLAYER) { color = EoDbPrimitive::LayerColor(); }
   if (lineTypeIndex == EoDbPrimitive::LINETYPE_BYLAYER) { lineTypeIndex = EoDbPrimitive::LayerLineTypeIndex(); }
@@ -65,11 +66,12 @@ void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, EoInt16 color,
   if (deviceContext) { ManagePenResources(deviceContext, color, int(LogicalWidth), lineTypeIndex); }
 }
 
-void EoGsRenderState::ManagePenResources(CDC* deviceContext, EoInt16 penColor, int penWidth, EoInt16 lineType) {
+void EoGsRenderState::ManagePenResources(
+    CDC* deviceContext, std::int16_t penColor, int penWidth, std::int16_t lineType) {
   static const int NumberOfPens = 8;
   static HPEN hPen[NumberOfPens] = {0, 0, 0, 0, 0, 0, 0, 0};
   static COLORREF crColRef[NumberOfPens];
-  static EoInt16 LineTypes[NumberOfPens];
+  static std::int16_t LineTypes[NumberOfPens];
   static int PenWidths[NumberOfPens];
   static HPEN hPenCur;
 
@@ -121,12 +123,12 @@ void EoGsRenderState::ManagePenResources(CDC* deviceContext, EoInt16 penColor, i
   }
 }
 
-void EoGsRenderState::SetColor(CDC* deviceContext, EoInt16 color) {
+void EoGsRenderState::SetColor(CDC* deviceContext, std::int16_t color) {
   m_color = color;
   if (deviceContext) { ManagePenResources(deviceContext, color, 0, m_LineTypeIndex); }
 }
 
-void EoGsRenderState::SetLineType(CDC* deviceContext, EoInt16 lineTypeIndex) {
+void EoGsRenderState::SetLineType(CDC* deviceContext, std::int16_t lineTypeIndex) {
   m_LineTypeIndex = lineTypeIndex;
   if (deviceContext) { ManagePenResources(deviceContext, m_color, 0, lineTypeIndex); }
 }
@@ -138,8 +140,8 @@ int EoGsRenderState::SetROP2(CDC* deviceContext, int drawMode) {
   return deviceContext->SetROP2(drawMode);
 }
 
-void EoGsRenderState::SetAlignment(CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment,
-                              EoDb::VerticalAlignment verticalAlignment) {
+void EoGsRenderState::SetAlignment(
+    CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
   m_fontDefinition.SetAlignment(horizontalAlignment, verticalAlignment);
 
   deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);

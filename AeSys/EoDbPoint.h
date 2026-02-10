@@ -12,7 +12,7 @@
 #include "EoGeVector3d.h"
 
 class EoDbPoint : public EoDbPrimitive {
-  EoInt16 m_pointStyle;
+  std::int16_t m_pointStyle;
   EoGePoint3d m_Point;
   EoUInt16 m_NumberOfDatums;
   double* m_Data;
@@ -20,8 +20,8 @@ class EoDbPoint : public EoDbPrimitive {
  public:  // Constructors and destructor
   EoDbPoint();
   EoDbPoint(const EoGePoint3d& point);
-  EoDbPoint(EoInt16 penColor, EoInt16 pointStyle, const EoGePoint3d& point);
-  EoDbPoint(EoInt16 penColor, EoInt16 pointStyle, const EoGePoint3d& point, EoUInt16 numberOfDatums, double* data);
+  EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point);
+  EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point, EoUInt16 numberOfDatums, double* data);
 
   EoDbPoint(const EoDbPoint& src);
 
@@ -56,7 +56,7 @@ class EoDbPoint : public EoDbPrimitive {
 
   double GetDat(EoUInt16 wDat) { return (m_Data[wDat]); }
   EoGePoint3d GetPt() const { return m_Point; }
-  EoInt16& PointStyle() { return m_pointStyle; }
+  std::int16_t& PointStyle() { return m_pointStyle; }
   void ModifyState() override;
   void SetDat(EoUInt16, double*);
   void SetPt(EoGePoint3d pt) { m_Point = pt; }

@@ -611,7 +611,7 @@ void AeSysDoc::RemoveLayerTableLayer(const CString& strName) {
 
   if (i >= 0) RemoveLayerTableLayerAt(i);
 }
-void AeSysDoc::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) {
+void AeSysDoc::PenTranslation(EoUInt16 wCols, std::int16_t* pColNew, std::int16_t* pCol) {
   for (EoUInt16 w = 0; w < GetLayerTableSize(); w++) {
     auto* layer = GetLayerTableLayerAt(w);
     layer->PenTranslation(wCols, pColNew, pCol);
@@ -1415,7 +1415,7 @@ void AeSysDoc::OnSetupPenColor() {
   Dialog.m_ColorIndex = static_cast<EoUInt16>(pstate.Color());
 
   if (Dialog.DoModal() == IDOK) {
-    pstate.SetColor(nullptr, static_cast<EoInt16>(Dialog.m_ColorIndex));
+    pstate.SetColor(nullptr, static_cast<std::int16_t>(Dialog.m_ColorIndex));
 
     AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Pen);
   }
@@ -1437,7 +1437,7 @@ void AeSysDoc::OnSetupLineType() {
 
   EoDbLineType* currentLineType{};
 
-  m_LineTypeTable.LookupUsingLegacyIndex(static_cast<EoUInt16>(pstate.LineType()), currentLineType);
+  m_LineTypeTable.LookupUsingLegacyIndex(static_cast<EoUInt16>(pstate.LineTypeIndex()), currentLineType);
   dialog.SetSelectedLineType(currentLineType);
 
   if (dialog.DoModal() != IDOK) { return; }
@@ -1447,7 +1447,7 @@ void AeSysDoc::OnSetupLineType() {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysDoc::OnSetupLineType: No line type selected.\n");
     return;
   }
-  pstate.SetLineType(nullptr, static_cast<EoInt16>(selectedLineType->Index()));
+  pstate.SetLineType(nullptr, static_cast<std::int16_t>(selectedLineType->Index()));
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
 }
 
@@ -1730,8 +1730,8 @@ void AeSysDoc::OnPensTranslate() {
     while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0) wCols++;
 
     if (wCols > 0) {
-      EoInt16* pColNew = new EoInt16[wCols];
-      EoInt16* pCol = new EoInt16[wCols];
+      std::int16_t* pColNew = new std::int16_t[wCols];
+      std::int16_t* pCol = new std::int16_t[wCols];
 
       EoUInt16 w = 0;
 
@@ -1740,8 +1740,8 @@ void AeSysDoc::OnPensTranslate() {
       LPWSTR NextToken;
       while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0) {
         NextToken = nullptr;
-        pCol[w] = EoInt16(_wtoi(wcstok_s(pBuf, L",", &NextToken)));
-        pColNew[w++] = EoInt16(_wtoi(wcstok_s(0, L"\n", &NextToken)));
+        pCol[w] = std::int16_t(_wtoi(wcstok_s(pBuf, L",", &NextToken)));
+        pColNew[w++] = std::int16_t(_wtoi(wcstok_s(0, L"\n", &NextToken)));
       }
       PenTranslation(wCols, pColNew, pCol);
 

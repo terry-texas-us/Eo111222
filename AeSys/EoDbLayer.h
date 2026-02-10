@@ -11,7 +11,7 @@ class EoDbLayer : public EoDbGroupList {
                            // b2 set - layer is off
   EoUInt16 m_TracingFlgs;  // Tracing flag values
                            // b2 set - tracing is mapped
-  EoInt16 m_ColorIndex;    // color index, negative if layer is off)
+  std::int16_t m_ColorIndex;    // color index, negative if layer is off)
   EoDbLineType* m_LineType;
 
  public:  // Constructors and destructor
@@ -40,14 +40,14 @@ class EoDbLayer : public EoDbGroupList {
   void Display(AeSysView* view, CDC* deviceContext, bool identifyTrap);
 
   COLORREF Color() const;
-  EoInt16 ColorIndex() const { return m_ColorIndex; }
-  void SetColorIndex(EoInt16 colorIndex) { m_ColorIndex = colorIndex; }
+  std::int16_t ColorIndex() const { return m_ColorIndex; }
+  void SetColorIndex(std::int16_t colorIndex) { m_ColorIndex = colorIndex; }
 
   EoDbLineType* LineType() const;
-  EoInt16 LineTypeIndex();
+  std::int16_t LineTypeIndex();
   CString LineTypeName() { return m_LineType->Name(); }
   void SetLineType(EoDbLineType* lineType);
-  void PenTranslation(EoUInt16, EoInt16*, EoInt16*);
+  void PenTranslation(EoUInt16, std::int16_t*, std::int16_t*);
   CString Name() const { return m_Name; }
   void SetName(const CString& name) { m_Name = name; }
 

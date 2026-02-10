@@ -41,7 +41,7 @@ void AeSysView::OnPowerModeCircuit() {
       document->AddWorkLayerGroup(Group);
       EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
       EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], CurrentRadius);
-      Group->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), pt1, pt2));
+      Group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), pt1, pt2));
       pts[0] = cursorPosition;
     }
     m_PreviousRadius = CurrentRadius;
@@ -55,7 +55,7 @@ void AeSysView::OnPowerModeCircuit() {
       document->AddWorkLayerGroup(Group);
       EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
       EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], 0.0);
-      Group->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), pt1, pt2));
+      Group->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), pt1, pt2));
 
       pts[0] = cursorPosition;
     }
@@ -132,7 +132,7 @@ void AeSysView::DoPowerModeMouseMove() {
           cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
         }
         auto pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
-        m_PreviewGroup.AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), pt1, cursorPosition));
+        m_PreviewGroup.AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), pt1, cursorPosition));
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;

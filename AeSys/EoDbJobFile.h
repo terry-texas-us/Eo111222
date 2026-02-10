@@ -28,16 +28,16 @@ class EoDbJobFile {
 
   bool GetNextVisibleGroup(CFile& file, EoDbGroup*& group);
   bool GetNextPrimitive(CFile& file, EoDbPrimitive*& primitve);
-  bool ReadNextPrimitive(CFile& file, std::uint8_t* buffer, EoInt16& primitiveType) const;
+  bool ReadNextPrimitive(CFile& file, std::uint8_t* buffer, std::int16_t& primitiveType) const;
 
   int Version();
-  static bool IsValidPrimitive(EoInt16 primitiveType);
-  static bool IsValidVersion1Primitive(EoInt16 primitiveType);
+  static bool IsValidPrimitive(std::int16_t primitiveType);
+  static bool IsValidVersion1Primitive(std::int16_t primitiveType);
 
   void WriteHeader(CFile& file);
   void WriteLayer(CFile& file, EoDbLayer* layer);
   void WriteGroup(CFile& file, EoDbGroup* group);
-  void ConstructPrimitive(EoDbPrimitive*& primitive, EoInt16 PrimitiveType);
+  void ConstructPrimitive(EoDbPrimitive*& primitive, std::int16_t PrimitiveType);
   void ConstructPrimitiveFromVersion1(EoDbPrimitive*& primitive);
 
   EoDbPrimitive* ConvertEllipsePrimitive();

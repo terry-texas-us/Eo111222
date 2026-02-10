@@ -139,7 +139,7 @@ class AeSysDoc : public CDocument {
   [[nodiscard]] auto* LineTypeTable() { return &m_LineTypeTable; }
   [[nodiscard]] auto* ContinuousLineType() { return m_ContinuousLineType; }
 
-  void PenTranslation(EoUInt16, EoInt16*, EoInt16*);
+  void PenTranslation(EoUInt16, std::int16_t*, std::int16_t*);
 
   int RemoveEmptyNotesAndDelete();
   int RemoveEmptyGroups();
@@ -211,8 +211,8 @@ class AeSysDoc : public CDocument {
   EoDbGroup* GetNextTrappedGroup(POSITION& position) { return m_TrappedGroupList.GetNext(position); }
   EoGePoint3d GetTrapPivotPoint() const { return m_TrapPivotPoint; }
   BOOL IsTrapEmpty() const { return m_TrappedGroupList.IsEmpty(); }
-  void ModifyTrappedGroupsColor(EoInt16 color) { m_TrappedGroupList.ModifyColor(color); }
-  void ModifyTrappedGroupsLineType(EoInt16 lineType) { m_TrappedGroupList.ModifyLineType(lineType); }
+  void ModifyTrappedGroupsColor(std::int16_t color) { m_TrappedGroupList.ModifyColor(color); }
+  void ModifyTrappedGroupsLineType(std::int16_t lineType) { m_TrappedGroupList.ModifyLineType(lineType); }
   void ModifyTrappedGroupsNoteAttributes(const EoDbFontDefinition& fontDefinition,
                                          const EoDbCharacterCellDefinition& characterCellDefinition, int attributes);
   void RemoveAllTrappedGroups();

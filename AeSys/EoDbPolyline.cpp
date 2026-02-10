@@ -34,7 +34,7 @@ EoDbPolyline::EoDbPolyline() { m_flags = 0; }
  * @param radius The radius of the circumscribed circle.
  * @param numberOfSides The number of sides for the polygon.
  */
-EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& centerPoint, double radius,
+EoDbPolyline::EoDbPolyline(std::int16_t penColor, std::int16_t lineType, EoGePoint3d& centerPoint, double radius,
                            int numberOfSides)
     : EoDbPrimitive(penColor, lineType) {
   m_flags = 0x0010;  // polyline is closed
@@ -52,14 +52,14 @@ EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3d& cent
   polyline::GeneratePointsForNPoly(centerPoint, majorAxis, minorAxis, numberOfSides, m_pts);
 }
 
-EoDbPolyline::EoDbPolyline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& pts)
+EoDbPolyline::EoDbPolyline(std::int16_t penColor, std::int16_t lineType, EoGePoint3dArray& pts)
     : EoDbPrimitive(penColor, lineType) {
   m_flags = 0;  // not closed
   m_pts.Copy(pts);
 }
 EoDbPolyline::EoDbPolyline(EoGePoint3dArray& pts) {
   m_color = pstate.Color();
-  m_lineTypeIndex = pstate.LineType();
+  m_lineTypeIndex = pstate.LineTypeIndex();
 
   m_flags = 0;
   m_pts.Copy(pts);
@@ -97,8 +97,8 @@ EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
 void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"EoDbPolyline::Display(%p, %p)\n", view, deviceContext);
 
-  EoInt16 color = LogicalColor();
-  EoInt16 lineType = LogicalLineType();
+  std::int16_t color = LogicalColor();
+  std::int16_t lineType = LogicalLineType();
 
   pstate.SetPen(view, deviceContext, color, lineType);
 

@@ -55,14 +55,14 @@ class EoDbGroup : public CObList {
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&);
   EoDbPrimitive* GetNext(POSITION& position) const { return ((EoDbPrimitive*)CObList::GetNext(position)); }
   EoDbPoint* GetFirstDifferentPoint(EoDbPoint* pointPrimitive);
-  int GetLineTypeRefCount(EoInt16 lineType);
+  int GetLineTypeRefCount(std::int16_t lineType);
   void InsertBefore(POSITION position, EoDbGroup* group);
   bool IsInView(AeSysView* view);
   void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,
       int attributes = 0);
-  void ModifyColor(EoInt16 color);
-  void ModifyLineType(EoInt16 lineType);
-  void PenTranslation(EoUInt16, EoInt16*, EoInt16*);
+  void ModifyColor(std::int16_t color);
+  void ModifyLineType(std::int16_t lineType);
+  void PenTranslation(EoUInt16, std::int16_t*, std::int16_t*);
   void RemoveDuplicatePrimitives();
   int RemoveEmptyNotesAndDelete();
   EoDbPrimitive* SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d&, EoGePoint3d*);

@@ -901,7 +901,7 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
   }
 }
 
-BOOL AeSysView::OnMouseWheel(UINT flags, EoInt16 zDelta, CPoint point) {
+BOOL AeSysView::OnMouseWheel(UINT flags, std::int16_t zDelta, CPoint point) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>OnMouseWheel(%i, %i, %08.8lx)\n", this, flags, zDelta,
             point);
 
@@ -2433,7 +2433,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
   }
   if ((item & Line) == Line) {
     rectangle.SetRect(22 * averageCharacterWidth, top, 28 * averageCharacterWidth, top + height);
-    swprintf_s(szBuf, 32, L"L%-4i", pstate.LineType());
+    swprintf_s(szBuf, 32, L"L%-4i", pstate.LineTypeIndex());
     deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
                                static_cast<UINT>(wcslen(szBuf)), 0);
   }

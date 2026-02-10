@@ -95,35 +95,36 @@ EoDbPrimitive*& EoDbText::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbText(*this);
   return primitive;
 }
+
 void EoDbText::ConvertFormattingCharacters() {
   for (int i = 0; i < m_strText.GetLength() - 1; i++) {
-    if (m_strText[i] == '^') {
-      if (m_strText[i + 1] == '/') {  // Fractions
-        int EndCaret = m_strText.Find('^', i + 1);
+    if (m_strText[i] != '^') { continue; }
+    if (m_strText[i + 1] != '/') { continue; }
 
-        if (EndCaret != -1) {
-          int FractionBar = m_strText.Find('/', i + 2);
-          if (FractionBar != -1 && FractionBar < EndCaret) {
-            m_strText.SetAt(i++, '\\');
-            m_strText.SetAt(i, 'S');
-            m_strText.SetAt(EndCaret, ';');
-            i = EndCaret;
-          }
-        }
-      }
-    }
+    int endCaret = m_strText.Find('^', i + 1);
+    if (endCaret == -1) { continue; }
+
+    int fractionBar = m_strText.Find('/', i + 2);
+    if (fractionBar == -1 || fractionBar >= endCaret) { continue; }
+
+    m_strText.SetAt(i++, '\\');
+    m_strText.SetAt(i, 'S');
+    m_strText.SetAt(endCaret, ';');
+    i = endCaret;
   }
 }
+
 void EoDbText::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 color = LogicalColor();
+  std::int16_t color = LogicalColor();
   pstate.SetColor(deviceContext, color);
 
-  EoInt16 LineType = pstate.LineType();
+  std::int16_t lineTypeIndex = pstate.LineTypeIndex();
   pstate.SetLineType(deviceContext, 1);
 
   DisplayText(view, deviceContext, m_fontDefinition, m_ReferenceSystem, m_strText);
-  pstate.SetLineType(deviceContext, LineType);
+  pstate.SetLineType(deviceContext, lineTypeIndex);
 }
+
 void EoDbText::AddReportToMessageList(const EoGePoint3d&) {
   CString str;
   str = L"Color: " + FormatPenColor() + L" Font: " + m_fontDefinition.FontName() + L" Precision: " +

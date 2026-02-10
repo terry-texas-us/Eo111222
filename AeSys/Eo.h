@@ -11,7 +11,7 @@ constexpr const wchar_t* defaultStrokeFont = L"Simplex.psf";
 constexpr double defaultStrokeFontHeight = 0.125;
 constexpr double defaultCharacterCellAspectRatio = 0.6;  // Width to height ratio of the character cell
 
-constexpr EoInt16 continuousLineTypeIndex{1};
+constexpr std::int16_t continuousLineTypeIndex{1};
 
 constexpr COLORREF colorBlack = RGB(0, 0, 0);
 constexpr COLORREF colorRed = RGB(255, 0, 0);        // ACI 1

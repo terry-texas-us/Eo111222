@@ -92,7 +92,7 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
       new EoDbLayer(layerName.c_str(), EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
 
   // Color number (if negative the layer is off) group code 62
-  newLayer->SetColorIndex(static_cast<EoInt16>(abs(layer.color)));
+  newLayer->SetColorIndex(static_cast<std::int16_t>(abs(layer.color)));
   if (layer.color < 0) { newLayer->SetStateOff(); }
 
   // Linetype name group code 6

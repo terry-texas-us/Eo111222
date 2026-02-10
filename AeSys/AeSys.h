@@ -81,7 +81,7 @@ class AeSys : public CWinAppEx {
   int m_ModeResourceIdentifier;
   int m_PrimaryMode;
 
-  EoInt16 m_TrapHighlightColor;
+  std::int16_t m_TrapHighlightColor;
   bool m_ClipboardDataEoGroups;
   bool m_ClipboardDataImage;
   bool m_ClipboardDataText;
@@ -192,10 +192,10 @@ class AeSys : public CWinAppEx {
   bool ModeInformationOverView() const { return m_ModeInformationOverView; }
   [[nodiscard]] double ParseLength(wchar_t* lengthAsString);
   [[nodiscard]] double ParseLength(Eo::Units units, wchar_t* inputLine);
-  [[nodiscard]] auto PenColorsGetHot(EoInt16 color) { return (ColorPalette[color]); }
+  [[nodiscard]] auto PenColorsGetHot(std::int16_t color) { return (ColorPalette[color]); }
   void LoadPenColorsFromFile(const CString& pathName);
 
-  [[nodiscard]] double LineWeight(EoInt16 penIndex);
+  [[nodiscard]] double LineWeight(std::int16_t penIndex);
 
   /** Loads the pen widths from a file.
  * The file is expected to have lines in the format:
@@ -225,7 +225,7 @@ class AeSys : public CWinAppEx {
   void SetUnits(Eo::Units units) { m_Units = units; }
   [[nodiscard]] CString ShadowFolderPath() { return m_ShadowFolderPath; }
   char* SimplexStrokeFont() { return m_SimplexStrokeFont; }
-  [[nodiscard]] EoInt16 TrapHighlightColor() const { return m_TrapHighlightColor; }
+  [[nodiscard]] std::int16_t TrapHighlightColor() const { return m_TrapHighlightColor; }
   void UpdateMDITabs(BOOL resetMDIChild);
   void WarningMessageBox(UINT stringResourceIdentifier);
   void WarningMessageBox(UINT stringResourceIdentifier, const CString& string);

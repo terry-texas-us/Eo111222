@@ -17,16 +17,16 @@
 
 EoDbSpline::EoDbSpline(EoUInt16 wPts, EoGePoint3d* pt) {
   m_color = pstate.Color();
-  m_lineTypeIndex = pstate.LineType();
+  m_lineTypeIndex = pstate.LineTypeIndex();
 
   for (EoUInt16 w = 0; w < wPts; w++) m_pts.Add(pt[w]);
 }
 EoDbSpline::EoDbSpline(EoGePoint3dArray& points) {
   m_color = pstate.Color();
-  m_lineTypeIndex = pstate.LineType();
+  m_lineTypeIndex = pstate.LineTypeIndex();
   m_pts.Copy(points);
 }
-EoDbSpline::EoDbSpline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& points) {
+EoDbSpline::EoDbSpline(std::int16_t penColor, std::int16_t lineType, EoGePoint3dArray& points) {
   m_color = penColor;
   m_lineTypeIndex = lineType;
   m_pts.Copy(points);
@@ -56,8 +56,8 @@ EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 color = LogicalColor();
-  EoInt16 lineType = LogicalLineType();
+  std::int16_t color = LogicalColor();
+  std::int16_t lineType = LogicalLineType();
 
   pstate.SetPen(view, deviceContext, color, lineType);
 

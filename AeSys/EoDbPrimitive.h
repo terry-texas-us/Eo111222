@@ -22,28 +22,28 @@ class EoDbPrimitive : public CObject {
  public:
   static constexpr EoUInt16 BUFFER_SIZE{2048};
 
-  static constexpr EoInt16 COLOR_BYBLOCK{0};
-  static constexpr EoInt16 COLOR_BYLAYER{256};
-  static constexpr EoInt16 LINETYPE_BYBLOCK{32766};
-  static constexpr EoInt16 LINETYPE_BYLAYER{32767};
+  static constexpr std::int16_t COLOR_BYBLOCK{0};
+  static constexpr std::int16_t COLOR_BYLAYER{256};
+  static constexpr std::int16_t LINETYPE_BYBLOCK{32766};
+  static constexpr std::int16_t LINETYPE_BYLAYER{32767};
 
  protected:
-  EoInt16 m_color{COLOR_BYLAYER};
-  EoInt16 m_lineTypeIndex{LINETYPE_BYLAYER};
+  std::int16_t m_color{COLOR_BYLAYER};
+  std::int16_t m_lineTypeIndex{LINETYPE_BYLAYER};
   std::wstring m_lineTypeName{};
   std::wstring m_layerName{};
 
-  static EoInt16 sm_layerColor;
-  static EoInt16 sm_layerLineTypeIndex;
+  static std::int16_t sm_layerColor;
+  static std::int16_t sm_layerLineTypeIndex;
 
-  static EoInt16 sm_specialColor;
+  static std::int16_t sm_specialColor;
   static EoUInt16 sm_ControlPointIndex;
   static double sm_RelationshipOfPoint;
   static double sm_SelectApertureSize;
 
  public:  // Constructors and destructor
   EoDbPrimitive() = default;
-  EoDbPrimitive(EoInt16 penColor, EoInt16 lineType);
+  EoDbPrimitive(std::int16_t penColor, std::int16_t lineType);
 
  protected:
   EoDbPrimitive(const EoDbPrimitive& other)
@@ -104,13 +104,13 @@ class EoDbPrimitive : public CObject {
 
   CString FormatPenColor() const;
   CString FormatLineType() const;
-  EoInt16 LogicalColor() const;
-  EoInt16 LogicalLineType() const;
+  std::int16_t LogicalColor() const;
+  std::int16_t LogicalLineType() const;
 
-  EoInt16 Color() const noexcept { return m_color; }
-  void SetColor(EoInt16 color) { m_color = color; }
-  EoInt16 LineTypeIndex() const noexcept { return m_lineTypeIndex; }
-  void SetLineTypeIndex(EoInt16 lineTypeIndex) { m_lineTypeIndex = lineTypeIndex; }
+  std::int16_t Color() const noexcept { return m_color; }
+  void SetColor(std::int16_t color) { m_color = color; }
+  std::int16_t LineTypeIndex() const noexcept { return m_lineTypeIndex; }
+  void SetLineTypeIndex(std::int16_t lineTypeIndex) { m_lineTypeIndex = lineTypeIndex; }
 
   const std::wstring& LineTypeName() const noexcept { return m_lineTypeName; }
   void SetLineTypeName(std::wstring name) { m_lineTypeName = std::move(name); }
@@ -121,11 +121,11 @@ class EoDbPrimitive : public CObject {
  public:  // Methods - static
   static EoUInt16 ControlPointIndex();
   static bool IsSupportedTyp(int type);
-  static EoInt16 LayerColor();
-  static void SetLayerColor(EoInt16 layerColor);
-  static EoInt16 LayerLineTypeIndex();
-  static void SetLayerLineTypeIndex(EoInt16 lineTypeIndex);
+  static std::int16_t LayerColor();
+  static void SetLayerColor(std::int16_t layerColor);
+  static std::int16_t LayerLineTypeIndex();
+  static void SetLayerLineTypeIndex(std::int16_t lineTypeIndex);
   static double& Rel();
-  static EoInt16 SpecialColor();
-  static void SetSpecialColor(EoInt16 specialColor);
+  static std::int16_t SpecialColor();
+  static void SetSpecialColor(std::int16_t specialColor);
 };

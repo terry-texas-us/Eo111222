@@ -6,16 +6,16 @@
 class EoDbLineType : public CObject {
  public:
   EoDbLineType();
-  EoDbLineType(EoInt16 index, const CString& name, const CString& comment, EoUInt16 numberOfDashLengths, double* dashLengths);
+  EoDbLineType(std::int16_t index, const CString& name, const CString& comment, EoUInt16 numberOfDashLengths, double* dashLengths);
 
   EoDbLineType(const EoDbLineType& other);
   EoDbLineType& operator=(const EoDbLineType& other);
 
   /** @brief Retrieves the index of the line type.
    *
-   * @return The index of the line type as an EoInt16.
+   * @return The index of the line type as an std::int16_t.
    */
-  EoInt16 Index() const { return m_Index; }
+  std::int16_t Index() const { return m_Index; }
 
   CString IndexToString() const {
     CString indexAsString;
@@ -64,7 +64,7 @@ class EoDbLineType : public CObject {
   double GetPatternLength() const;
 
  private:
-  EoInt16 m_Index;
+  std::int16_t m_Index;
   CString m_Name;
   CString m_Description;
   std::vector<double> m_DashElements;

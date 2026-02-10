@@ -17,7 +17,7 @@ void EoDlgTrapModify::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoD
 
 void EoDlgTrapModify::OnOK() {
   if (IsDlgButtonChecked(IDC_MOD_PEN)) { m_Document->ModifyTrappedGroupsColor(pstate.Color()); }
-  if (IsDlgButtonChecked(IDC_MOD_LINE)) { m_Document->ModifyTrappedGroupsLineType(pstate.LineType()); }
+  if (IsDlgButtonChecked(IDC_MOD_LINE)) { m_Document->ModifyTrappedGroupsLineType(pstate.LineTypeIndex()); }
   if (IsDlgButtonChecked(IDC_MOD_FILL)) { ModifyPolygons(); }
   auto characterCellDefinition = pstate.CharacterCellDefinition();
   const auto& fontDefinition = pstate.FontDefinition();

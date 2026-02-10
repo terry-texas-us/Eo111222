@@ -84,7 +84,7 @@ double EoDbEllipse::NormalizeTo2Pi(double angle) {
  * @param sweepAngle The sweep angle of the ellipse segment in radians.
  */
 EoDbEllipse::EoDbEllipse(const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle)
-    : EoDbPrimitive(pstate.Color(), pstate.LineType()),
+    : EoDbPrimitive(pstate.Color(), pstate.LineTypeIndex()),
       m_center(center),
       m_majorAxis(majorAxis),
       m_minorAxis(minorAxis),
@@ -98,7 +98,7 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& center, const EoGeVector3d& majorAxi
  * @param center The center point of the circle.
  * @param radius The radius of the circle.
  */
-EoDbEllipse::EoDbEllipse(EoGePoint3d& center, double radius, EoInt16 color, EoInt16 lineType)
+EoDbEllipse::EoDbEllipse(EoGePoint3d& center, double radius, std::int16_t color, std::int16_t lineType)
     : EoDbPrimitive(color, lineType), m_center(center) {
   auto* activeView = AeSysView::GetActiveView();
 
@@ -123,7 +123,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, double radius, EoInt16 color, EoIn
  * @param normal The normal vector defining the plane of the circle.
  * @param radius The radius of the circle.
  */
-EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGeVector3d& normal, double radius, EoInt16 color, EoInt16 lineType)
+EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGeVector3d& normal, double radius, std::int16_t color, std::int16_t lineType)
     : EoDbPrimitive(color, lineType), m_center(center) {
   EoGeVector3d PlaneNormal(normal);
   PlaneNormal.Normalize();
@@ -151,7 +151,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
   auto* activeView = AeSysView::GetActiveView();
 
   m_color = pstate.Color();
-  m_lineTypeIndex = pstate.LineType();
+  m_lineTypeIndex = pstate.LineTypeIndex();
 
   auto cameraDirection = activeView->CameraDirection();
 
@@ -184,7 +184,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
  */
 EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end) {
   m_color = pstate.Color();
-  m_lineTypeIndex = pstate.LineType();
+  m_lineTypeIndex = pstate.LineTypeIndex();
 
   m_sweepAngle = 0.0;
 
@@ -300,7 +300,7 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& center, double radius, double startA
  * @param sweepAngle The sweep angle of the ellipse segment in radians.
  */
 EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle,
-                         EoInt16 color, EoInt16 lineType)
+                         std::int16_t color, std::int16_t lineType)
     : EoDbPrimitive(color, lineType), m_center(center), m_majorAxis(majorAxis), m_minorAxis(minorAxis) {
   m_sweepAngle = sweepAngle;
 }

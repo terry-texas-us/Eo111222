@@ -141,7 +141,7 @@ void AeSysView::OnCutModeField() {
     auto* document = GetDocument();
 
     auto color = pstate.Color();
-    auto lineType = pstate.LineType();
+    auto lineType = pstate.LineTypeIndex();
 
     EoDbGroupList* GroupsOut = new EoDbGroupList;
     EoDbGroupList* GroupsIn = new EoDbGroupList;
@@ -209,8 +209,8 @@ void AeSysView::OnCutModeClip() {
     double dRel[2]{};
     EoGePoint3d ptCut[2]{};
 
-    EoInt16 color = pstate.Color();
-    EoInt16 LineType = pstate.LineType();
+    std::int16_t color = pstate.Color();
+    std::int16_t LineType = pstate.LineTypeIndex();
 
     auto* document = GetDocument();
 

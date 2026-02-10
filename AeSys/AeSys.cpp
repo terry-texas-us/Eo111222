@@ -474,7 +474,7 @@ void AeSys::OnFileRun() {
 
 void AeSys::OnHelpContents() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_CONTENTS, 0L); }
 
-[[nodiscard]] double AeSys::LineWeight(EoInt16 penIndex) { return (penWidths[penIndex]); }
+[[nodiscard]] double AeSys::LineWeight(std::int16_t penIndex) { return (penWidths[penIndex]); }
 
 void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
   CStdioFile file;

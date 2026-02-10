@@ -55,8 +55,8 @@ EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) {
 EoDbBlockReference::EoDbBlockReference(EoUInt16 color, EoUInt16 lineType, const CString& name, const EoGePoint3d& point,
     const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation)
     : m_blockName(name), m_insertionPoint(point), m_normal(normal), m_scaleFactors(scaleFactors) {
-  m_color = static_cast<EoInt16>(color);
-  m_lineTypeIndex = static_cast<EoInt16>(lineType);
+  m_color = static_cast<std::int16_t>(color);
+  m_lineTypeIndex = static_cast<std::int16_t>(lineType);
 
   m_rotation = rotation;
   m_columnCount = 1;

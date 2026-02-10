@@ -183,7 +183,7 @@ void EoDbGroup::GetExtents(
   }
 }
 
-int EoDbGroup::GetLineTypeRefCount(EoInt16 lineType) {
+int EoDbGroup::GetLineTypeRefCount(std::int16_t lineType) {
   int count{};
 
   auto position = GetHeadPosition();
@@ -242,21 +242,21 @@ void EoDbGroup::ModifyNotes(const EoDbFontDefinition& fontDefinition,
     }
   }
 }
-void EoDbGroup::ModifyColor(EoInt16 color) {
+void EoDbGroup::ModifyColor(std::int16_t color) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
     primitive->SetColor(color);
   }
 }
-void EoDbGroup::ModifyLineType(EoInt16 lineType) {
+void EoDbGroup::ModifyLineType(std::int16_t lineType) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
     primitive->SetLineTypeIndex(lineType);
   }
 }
-void EoDbGroup::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) {
+void EoDbGroup::PenTranslation(EoUInt16 wCols, std::int16_t* pColNew, std::int16_t* pCol) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
@@ -422,7 +422,7 @@ void EoDbGroup::Write(CFile& file, std::uint8_t* buffer) {
   // group flags
   buffer[0] = 0;
   // number of primitives in group
-  *((EoInt16*)&buffer[1]) = EoInt16(GetCount());
+  *((std::int16_t*)&buffer[1]) = std::int16_t(GetCount());
 
   auto position = GetHeadPosition();
   while (position != nullptr) {

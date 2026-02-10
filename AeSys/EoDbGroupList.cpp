@@ -70,7 +70,7 @@ void EoDbGroupList::GetExtents(
     group->GetExtents(view, ptMin, ptMax, transformMatrix);
   }
 }
-int EoDbGroupList::GetLineTypeRefCount(EoInt16 lineType) {
+int EoDbGroupList::GetLineTypeRefCount(std::int16_t lineType) {
   int count{};
 
   auto position = GetHeadPosition();
@@ -80,7 +80,7 @@ int EoDbGroupList::GetLineTypeRefCount(EoInt16 lineType) {
   }
   return count;
 }
-void EoDbGroupList::ModifyColor(EoInt16 color) {
+void EoDbGroupList::ModifyColor(std::int16_t color) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
@@ -88,7 +88,7 @@ void EoDbGroupList::ModifyColor(EoInt16 color) {
   }
 }
 
-void EoDbGroupList::ModifyLineType(EoInt16 nStyle) {
+void EoDbGroupList::ModifyLineType(std::int16_t nStyle) {
   auto position = GetHeadPosition();
   while (position != nullptr) (GetNext(position))->ModifyLineType(nStyle);
 }
@@ -102,7 +102,7 @@ void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition,
   }
 }
 
-void EoDbGroupList::PenTranslation(EoUInt16 wCols, EoInt16* pColNew, EoInt16* pCol) {
+void EoDbGroupList::PenTranslation(EoUInt16 wCols, std::int16_t* pColNew, std::int16_t* pCol) {
   auto position = GetHeadPosition();
   while (position != 0) (GetNext(position))->PenTranslation(wCols, pColNew, pCol);
 }

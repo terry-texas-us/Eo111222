@@ -536,7 +536,7 @@ void EoDlgFileManage::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult
     case Color: {
       EoDlgSetupColor dialog;
       dialog.m_ColorIndex = static_cast<EoUInt16>(layer->ColorIndex());
-      if (dialog.DoModal() == IDOK) { layer->SetColorIndex(static_cast<EoInt16>(dialog.m_ColorIndex)); }
+      if (dialog.DoModal() == IDOK) { layer->SetColorIndex(static_cast<std::int16_t>(dialog.m_ColorIndex)); }
       break;
     }
     case LineType: {

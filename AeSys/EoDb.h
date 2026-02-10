@@ -80,7 +80,7 @@ void ConstructTextPrimitive(CFile& file, EoDbPrimitive*& primitive);
 void Read(CFile& file, CString& string);
 void Read(CFile& file, double& number);
 bool Read(CFile& file, EoDbPrimitive*& primitive);
-void Read(CFile& file, EoInt16& number);
+void Read(CFile& file, std::int16_t& number);
 void Read(CFile& file, EoUInt16& number);
 
 inline void Read(CFile& file, EoDb::Path& path) {
@@ -108,14 +108,14 @@ inline void Read(CFile& file, EoDb::VerticalAlignment& verticalAlignment) {
 }
 
 [[nodiscard]] double ReadDouble(CFile& file);
-[[nodiscard]] EoInt16 ReadInt16(CFile& file);
+[[nodiscard]] std::int16_t ReadInt16(CFile& file);
 [[nodiscard]] EoGePoint3d ReadPoint3d(CFile& file);
 [[nodiscard]] EoGeVector3d ReadVector3d(CFile& file);
 [[nodiscard]] EoUInt16 ReadUInt16(CFile& file);
 
 void Write(CFile& file, const CString& string, UINT codePage = CP_ACP);
 void Write(CFile& file, double number);
-void Write(CFile& file, EoInt16 number);
+void Write(CFile& file, std::int16_t number);
 void Write(CFile& file, EoUInt16 number);
 
 inline void Write(CFile& file, EoDb::Path path) { Write(file, static_cast<EoUInt16>(path)); }

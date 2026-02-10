@@ -131,7 +131,7 @@ bool dde::ExecPen(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 	_tcsncpy_s(szBuf, 8, ppArgs[0], sizeof(szBuf) - 1);
 
 	// TODO: left broken while moving device context get out of SetPenColor
-	//pstate.SetPenColor(DeviceContext, EoInt16(_wtoi(szBuf)));
+	//pstate.SetPenColor(DeviceContext, std::int16_t(_wtoi(szBuf)));
 	AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Pen);
 
 	return true;
@@ -143,7 +143,7 @@ bool dde::ExecLine(PTOPICINFO , LPTSTR , UINT , UINT , LPTSTR *ppArgs) {
 	_tcsncpy_s(szBuf, 8, ppArgs[0], sizeof(szBuf) - 1);
 
 	// TODO: left broken while moving device context get out of SetLineType
-	//pstate.SetLineType(DeviceContext, EoInt16(_wtoi(szBuf)));
+	//pstate.SetLineType(DeviceContext, std::int16_t(_wtoi(szBuf)));
 	AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
 
 	return true;

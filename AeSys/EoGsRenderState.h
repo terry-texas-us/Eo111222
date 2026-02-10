@@ -10,11 +10,11 @@ class AeSysView;
 class EoGsRenderState {
   EoDbFontDefinition m_fontDefinition{};
   EoDbCharacterCellDefinition m_characterCellDefinition{};
-  EoInt16 m_pointStyle{};
-  EoInt16 m_color{7};
-  EoInt16 m_LineTypeIndex{Eo::continuousLineTypeIndex};
+  std::int16_t m_pointStyle{};
+  std::int16_t m_color{7};
+  std::int16_t m_LineTypeIndex{Eo::continuousLineTypeIndex};
   EoDb::PolygonStyle m_PolygonStyle{EoDb::PolygonStyle::Hollow};
-  EoInt16 m_PolygonInteriorStyleIndex{};
+  std::int16_t m_PolygonInteriorStyleIndex{};
 
  public:
   EoGsRenderState() = default;
@@ -38,15 +38,15 @@ class EoGsRenderState {
    * @param width The width of the pen to create or manage.
    * @param lineType The line type of the pen to create or manage.
    */
-  void ManagePenResources(CDC* deviceContext, EoInt16 color, int width, EoInt16 lineType);
+  void ManagePenResources(CDC* deviceContext, std::int16_t color, int width, std::int16_t lineType);
   
-  void SetPen(AeSysView* view, CDC* deviceContext, EoInt16 penColor, EoInt16 lineType);
+  void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType);
   
-  void SetColor(CDC* deviceContext, EoInt16 color);
-  [[nodiscard]] const EoInt16& Color() const { return m_color; }
+  void SetColor(CDC* deviceContext, std::int16_t color);
+  [[nodiscard]] std::int16_t Color() const { return m_color; }
   
-  void SetLineType(CDC* deviceContext, EoInt16 lineType);
-  [[nodiscard]] const EoInt16& LineType() const { return m_LineTypeIndex; }
+  void SetLineType(CDC* deviceContext, std::int16_t lineType);
+  [[nodiscard]] std::int16_t LineTypeIndex() const { return m_LineTypeIndex; }
 
   void SetCharacterCellDefinition(EoDbCharacterCellDefinition& characterCellDefinition) {
     m_characterCellDefinition = characterCellDefinition;
@@ -58,13 +58,13 @@ class EoGsRenderState {
   [[nodiscard]] const EoDbFontDefinition& FontDefinition() const noexcept { return m_fontDefinition; }
   
   
-  void SetPointStyle(EoInt16 pointStyle) { m_pointStyle = pointStyle; }
-  const EoInt16& PointStyle() { return m_pointStyle; }
+  void SetPointStyle(std::int16_t pointStyle) { m_pointStyle = pointStyle; }
+  const std::int16_t& PointStyle() { return m_pointStyle; }
   
   void SetPolygonIntStyle(EoDb::PolygonStyle interiorStyle) { m_PolygonStyle = interiorStyle; }
-  void SetPolygonIntStyleId(EoInt16 styleIndex) { m_PolygonInteriorStyleIndex = styleIndex; }
+  void SetPolygonIntStyleId(std::int16_t styleIndex) { m_PolygonInteriorStyleIndex = styleIndex; }
   [[nodiscard]] const EoDb::PolygonStyle& PolygonIntStyle() const { return m_PolygonStyle; }
-  [[nodiscard]] const EoInt16& PolygonIntStyleId() const { return m_PolygonInteriorStyleIndex; }
+  [[nodiscard]] std::int16_t PolygonIntStyleId() const { return m_PolygonInteriorStyleIndex; }
   
   /** @brief Sets the current foreground mix mode. GDI uses the foreground mix mode to combine pens and
    * interiors of filled objects with the colors already on the screen. The foreground mix mode

@@ -63,13 +63,13 @@ void AeSysView::OnDraw2ModeWall() {
         m_AssemblyGroup = new EoDbGroup;
         document->AddWorkLayerGroup(m_AssemblyGroup);
         m_AssemblyGroup->AddTail(
-            new EoDbLine(pstate.Color(), pstate.LineType(), m_CurrentLeftLine.begin, m_CurrentRightLine.begin));
+            new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), m_CurrentLeftLine.begin, m_CurrentRightLine.begin));
       }
-      m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), m_CurrentLeftLine));
-      m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), m_CurrentRightLine));
+      m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), m_CurrentLeftLine));
+      m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), m_CurrentRightLine));
 
       m_AssemblyGroup->AddTail(
-          new EoDbLine(pstate.Color(), pstate.LineType(), m_CurrentRightLine.end, m_CurrentLeftLine.end));
+          new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), m_CurrentRightLine.end, m_CurrentLeftLine.end));
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_AssemblyGroup);
       m_ContinueCorner = true;
       m_PreviousReferenceLine = m_CurrentReferenceLine;
@@ -90,14 +90,14 @@ void AeSysView::OnDraw2ModeWall() {
       m_AssemblyGroup = new EoDbGroup;
       document->AddWorkLayerGroup(m_AssemblyGroup);
       m_AssemblyGroup->AddTail(
-          new EoDbLine(pstate.Color(), pstate.LineType(), m_CurrentLeftLine.begin, m_CurrentRightLine.begin));
+          new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), m_CurrentLeftLine.begin, m_CurrentRightLine.begin));
     }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_EndSectionGroup);
     ptBeg = m_EndSectionLine->Begin();
     ptEnd = m_EndSectionLine->End();
 
-    m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), m_CurrentLeftLine));
-    m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), m_CurrentRightLine));
+    m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), m_CurrentLeftLine));
+    m_AssemblyGroup->AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), m_CurrentRightLine));
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_AssemblyGroup);
 
     EoDbLine* LinePrimitive = new EoDbLine(*m_EndSectionLine);
@@ -221,10 +221,10 @@ void AeSysView::DoDraw2ModeMouseMove() {
     ln.GetParallels(m_DistanceBetweenLines, m_CenterLineEccentricity, PreviewLines[0], PreviewLines[1]);
 
     m_PreviewGroup.AddTail(
-        new EoDbLine(pstate.Color(), pstate.LineType(), PreviewLines[0].begin, PreviewLines[1].begin));
-    m_PreviewGroup.AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), PreviewLines[0]));
-    m_PreviewGroup.AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), PreviewLines[1]));
-    m_PreviewGroup.AddTail(new EoDbLine(pstate.Color(), pstate.LineType(), PreviewLines[1].end, PreviewLines[0].end));
+        new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), PreviewLines[0].begin, PreviewLines[1].begin));
+    m_PreviewGroup.AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), PreviewLines[0]));
+    m_PreviewGroup.AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), PreviewLines[1]));
+    m_PreviewGroup.AddTail(new EoDbLine(pstate.Color(), pstate.LineTypeIndex(), PreviewLines[1].end, PreviewLines[0].end));
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   }
 }

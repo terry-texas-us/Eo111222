@@ -22,7 +22,7 @@ class EoDbPolygon : public EoDbPrimitive {
   EoGeVector3d m_positiveY;
   EoGePoint3d* m_vertices{};
   EoDb::PolygonStyle m_polygonStyle;
-  EoInt16 m_fillStyleIndex;
+  std::int16_t m_fillStyleIndex;
   EoUInt16 m_numberOfVertices;
 
  public:
@@ -36,7 +36,7 @@ class EoDbPolygon : public EoDbPrimitive {
 
   EoDbPolygon(EoUInt16, EoGePoint3d*);
   EoDbPolygon(const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts);
-  EoDbPolygon(EoInt16 color, EoDb::PolygonStyle style, EoInt16 styleIndex, const EoGePoint3d& origin,
+  EoDbPolygon(std::int16_t color, EoDb::PolygonStyle style, std::int16_t styleIndex, const EoGePoint3d& origin,
       const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& points);
   EoDbPolygon(EoUInt16, EoGePoint3d, EoGeVector3d, EoGeVector3d, const EoGePoint3d*);
 
@@ -76,13 +76,13 @@ class EoDbPolygon : public EoDbPrimitive {
 
   CString FormatIntStyle();
   [[nodiscard]] const EoDb::PolygonStyle& PolygonStyle() { return m_polygonStyle; }
-  [[nodiscard]] const EoInt16& FillStyleIndex() { return m_fillStyleIndex; }
+  [[nodiscard]] std::int16_t FillStyleIndex() { return m_fillStyleIndex; }
   [[nodiscard]] EoGePoint3d Vertex(int i) { return m_vertices[i]; }
   [[nodiscard]] int NumberOfVertices() const { return m_numberOfVertices; }
   void ModifyState() override;
   bool PivotOnControlPoint(AeSysView* view, const EoGePoint4d&) override;
   void SetPolygonStyle(const EoDb::PolygonStyle n) { m_polygonStyle = n; }
-  void SetFillStyleIndex(const EoInt16 fillStyleIndex) { m_fillStyleIndex = fillStyleIndex; }
+  void SetFillStyleIndex(const std::int16_t fillStyleIndex) { m_fillStyleIndex = fillStyleIndex; }
   void SetHatRefVecs(double, double, double);
 
  private:

@@ -19,7 +19,7 @@ class EoDbSpline : public EoDbPrimitive {
   EoDbSpline(std::uint8_t* buffer, int version);
   EoDbSpline(EoUInt16, EoGePoint3d*);
   EoDbSpline(EoGePoint3dArray& points);
-  EoDbSpline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& points);
+  EoDbSpline(std::int16_t penColor, std::int16_t lineType, EoGePoint3dArray& points);
   EoDbSpline(const EoDbSpline&);
 
   ~EoDbSpline() override = default;

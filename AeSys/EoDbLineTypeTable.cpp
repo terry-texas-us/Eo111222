@@ -123,8 +123,8 @@ int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
   return (static_cast<int>(m_MapLineTypes.GetSize()));
 }
 
-EoInt16 EoDbLineTypeTable::LegacyLineTypeIndex(CString& name) {
-  EoInt16 index{};
+std::int16_t EoDbLineTypeTable::LegacyLineTypeIndex(CString& name) {
+  std::int16_t index{};
   if (name.CompareNoCase(L"ByBlock") == 0) {
     index = EoDbPrimitive::LINETYPE_BYBLOCK;
   } else if (name.CompareNoCase(L"ByLayer") == 0) {
@@ -136,7 +136,7 @@ EoInt16 EoDbLineTypeTable::LegacyLineTypeIndex(CString& name) {
   return 1;
 }
 
-EoInt16 EoDbLineTypeTable::LegacyLineTypeIndex(std::wstring& name) {
+std::int16_t EoDbLineTypeTable::LegacyLineTypeIndex(std::wstring& name) {
   CString cstrName(name.c_str());
   return LegacyLineTypeIndex(cstrName);
 }
@@ -157,7 +157,7 @@ bool EoDbLineTypeTable::LookupUsingLegacyIndex(EoUInt16 index, EoDbLineType*& li
  * @param lineType The line type index to count references for.
  * @return The number of references to the specified line type.
  */
-int EoDbLineTypeTable::ReferenceCount(EoInt16 lineType) {
+int EoDbLineTypeTable::ReferenceCount(std::int16_t lineType) {
   auto* document = AeSysDoc::GetDoc();
 
   int count{};
@@ -193,7 +193,7 @@ void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
       if (inputLine.IsEmpty() || inputLine[0] == L';') { continue; }
 
       int nextToken{};
-      auto label = EoInt16(_wtoi(inputLine.Tokenize(L"=", nextToken)));
+      auto label = std::int16_t(_wtoi(inputLine.Tokenize(L"=", nextToken)));
 
       auto name = inputLine.Tokenize(L",", nextToken);
       auto comment = inputLine.Tokenize(L"\n", nextToken);
@@ -245,7 +245,7 @@ void EoDbLineTypeTable::RemoveUnused() {
   //int i = m_LineTypes.GetSize();
   //while (--i != 0) {
   //	EoDbLineType* LineType = m_LineTypes[i];
-  //	EoInt16 LineTypeIndex = LookupName((LPCWSTR) LineType->Name());
+  //	std::int16_t LineTypeIndex = LookupName((LPCWSTR) LineType->Name());
   //	if (ReferenceCount(LineTypeIndex) != 0 || i < 10) {
   //		m_LineTypes.SetSize(i + 1);
   //		break;

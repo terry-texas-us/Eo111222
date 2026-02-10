@@ -120,7 +120,7 @@ EoDbPolygon::EoDbPolygon(const EoGePoint3d& origin, const EoGeVector3d& xAxis, c
   for (EoUInt16 w = 0; w < m_numberOfVertices; w++) { m_vertices[w] = pts[w]; }
 }
 
-EoDbPolygon::EoDbPolygon(EoInt16 color, EoDb::PolygonStyle style, EoInt16 styleIndex, const EoGePoint3d& origin,
+EoDbPolygon::EoDbPolygon(std::int16_t color, EoDb::PolygonStyle style, std::int16_t styleIndex, const EoGePoint3d& origin,
                          const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& points)
     : m_hatchOrigin(origin), m_positiveX(xAxis), m_positiveY(yAxis) {
   m_color = color;
@@ -175,7 +175,7 @@ EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbPolygon::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 color = LogicalColor();
+  std::int16_t color = LogicalColor();
 
   pstate.SetColor(deviceContext, color);
   EoDb::PolygonStyle polygonStyle =
@@ -478,7 +478,7 @@ bool EoDbPolygon::Write(CFile& file) {
   EoDb::Write(file, EoUInt16(EoDb::kPolygonPrimitive));
   EoDb::Write(file, m_color);
   // note polygon style stuffed up into unused line type on io
-  EoDb::Write(file, static_cast<EoInt16>(m_polygonStyle));
+  EoDb::Write(file, static_cast<std::int16_t>(m_polygonStyle));
   EoDb::Write(file, m_fillStyleIndex);
   EoDb::Write(file, m_numberOfVertices);
   m_hatchOrigin.Write(file);
@@ -514,8 +514,8 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
   EoGeLine lnS;
   EoGeVector3d vEdg;
 
-  EoInt16 color = pstate.Color();
-  EoInt16 lineType = pstate.LineType();
+  std::int16_t color = pstate.Color();
+  std::int16_t lineType = pstate.LineTypeIndex();
 
   pstate.SetLineType(deviceContext, 1);
 

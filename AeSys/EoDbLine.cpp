@@ -25,11 +25,11 @@
 
 EoDbLine::EoDbLine(const EoGeLine& line) : EoDbPrimitive(), m_line{line} {}
 
-EoDbLine::EoDbLine(EoInt16 color, EoInt16 lineType, EoGeLine line) : EoDbPrimitive(color, lineType), m_line{line} {}
+EoDbLine::EoDbLine(std::int16_t color, std::int16_t lineType, EoGeLine line) : EoDbPrimitive(color, lineType), m_line{line} {}
 
 EoDbLine::EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end) : EoDbPrimitive(), m_line{begin, end} {}
 
-EoDbLine::EoDbLine(EoInt16 color, EoInt16 lineType, const EoGePoint3d& begin, const EoGePoint3d& end)
+EoDbLine::EoDbLine(std::int16_t color, std::int16_t lineType, const EoGePoint3d& begin, const EoGePoint3d& end)
     : EoDbPrimitive(color, lineType), m_line{begin, end} {}
 
 EoDbLine::EoDbLine(const EoDbLine& other) : EoDbPrimitive(other), m_line{other.m_line} {}
@@ -97,8 +97,8 @@ void EoDbLine::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 }
 
 void EoDbLine::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 color = LogicalColor();
-  EoInt16 lineType = LogicalLineType();
+  std::int16_t color = LogicalColor();
+  std::int16_t lineType = LogicalLineType();
 
   pstate.SetPen(view, deviceContext, color, lineType);
 

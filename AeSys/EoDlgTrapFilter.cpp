@@ -50,11 +50,11 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
 
 void EoDlgTrapFilter::OnOK() {
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_PEN)) {
-    EoInt16 color = EoInt16(GetDlgItemInt(IDC_TRAP_FILTER_PEN_ID, 0, FALSE));
+    std::int16_t color = std::int16_t(GetDlgItemInt(IDC_TRAP_FILTER_PEN_ID, 0, FALSE));
     FilterByColor(color);
   }
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_LINE)) {
-    EoInt16 LineTypeIndex = SHRT_MAX;
+    std::int16_t LineTypeIndex = SHRT_MAX;
     wchar_t szBuf[32]{};
 
     if (GetDlgItemTextW(IDC_TRAP_FILTER_LINE_LIST, (LPTSTR)szBuf, sizeof(szBuf) / sizeof(wchar_t))) {
@@ -91,7 +91,7 @@ void EoDlgTrapFilter::OnOK() {
   CDialog::OnOK();
 }
 
-void EoDlgTrapFilter::FilterByColor(EoInt16 colorIndex) {
+void EoDlgTrapFilter::FilterByColor(std::int16_t colorIndex) {
   auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
   while (GroupPosition != nullptr) {
     auto* group = m_Document->GetNextTrappedGroup(GroupPosition);

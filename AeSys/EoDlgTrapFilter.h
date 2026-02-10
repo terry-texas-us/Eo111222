@@ -23,7 +23,7 @@ class EoDlgTrapFilter : public CDialog {
   CComboBox m_FilterLineComboBoxControl;
   CListBox m_FilterPrimitiveTypeListBoxControl;
 
-  void FilterByColor(EoInt16 colorIndex);
+  void FilterByColor(std::int16_t colorIndex);
   void FilterByLineType(int lineType);
 
   /**

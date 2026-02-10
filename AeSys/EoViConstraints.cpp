@@ -127,8 +127,8 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
       EoGeLine ln;
 
       int i;
-      EoInt16 color = pstate.Color();
-      EoInt16 LineType = pstate.LineType();
+      std::int16_t color = pstate.Color();
+      std::int16_t LineType = pstate.LineTypeIndex();
       pstate.SetPen(this, deviceContext, 250, 1);
 
       ln.begin.x = m_GridOrigin.x - dHalfPts * m_XGridLineSpacing;

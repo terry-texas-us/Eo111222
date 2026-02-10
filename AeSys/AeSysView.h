@@ -197,7 +197,7 @@ class AeSysView : public CView {
  * @param point The current position of the cursor, in screen coordinates.
  * @return TRUE if the message was processed; otherwise, FALSE.
  */
-  afx_msg BOOL OnMouseWheel(UINT flags, EoInt16 zDelta, CPoint point);
+  afx_msg BOOL OnMouseWheel(UINT flags, std::int16_t zDelta, CPoint point);
   afx_msg void OnPaint();
   afx_msg void OnRButtonDown(UINT nFlags, CPoint pnt);
   afx_msg void OnRButtonUp(UINT nFlags, CPoint pnt);
@@ -668,7 +668,7 @@ class AeSysView : public CView {
    * @param endCapPoint A reference to store the selected point primitive if found.
    * @return The group containing the selected point primitive, or nullptr if none is found.
    */
-  [[nodiscard]] EoDbGroup* SelectPointUsingPoint(EoGePoint3d& point, double tolerance, EoInt16 color, EoInt16 pointStyle,
+  [[nodiscard]] EoDbGroup* SelectPointUsingPoint(EoGePoint3d& point, double tolerance, std::int16_t color, std::int16_t pointStyle,
                                    EoDbPoint*& endCapPoint);
 
   /** Locates and returns the first two lines that have an endpoint which coincides with

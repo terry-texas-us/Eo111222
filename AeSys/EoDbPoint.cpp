@@ -30,13 +30,13 @@ EoDbPoint::EoDbPoint(const EoGePoint3d& point) : m_Point(point) {
   m_NumberOfDatums = 0;
   m_Data = nullptr;
 }
-EoDbPoint::EoDbPoint(EoInt16 penColor, EoInt16 pointStyle, const EoGePoint3d& point) : m_Point(point) {
+EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point) : m_Point(point) {
   m_color = penColor;
   m_pointStyle = pointStyle;
   m_NumberOfDatums = 0;
   m_Data = nullptr;
 }
-EoDbPoint::EoDbPoint(EoInt16 penColor, EoInt16 pointStyle, const EoGePoint3d& point, EoUInt16 numberOfDatums,
+EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point, EoUInt16 numberOfDatums,
                      double* data)
     : m_Point(point) {
   m_color = penColor;
@@ -84,7 +84,7 @@ EoDbPrimitive*& EoDbPoint::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbPoint::Display(AeSysView* view, CDC* context) {
-  EoInt16 color = LogicalColor();
+  std::int16_t color = LogicalColor();
 
   COLORREF hotPenColor = app.PenColorsGetHot(color);
 

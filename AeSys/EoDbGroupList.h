@@ -33,7 +33,7 @@ class EoDbGroupList : public CObList {
   int GetBlockRefCount(const CString& name);
   /// <summary>Determines the extent of all groups in list.</summary>
   void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, EoGeTransformMatrix& transformMatrix);
-  int GetLineTypeRefCount(EoInt16 lineType);
+  int GetLineTypeRefCount(std::int16_t lineType);
 
   /** Modifies the notes of all groups in the list using the specified font definition, character cell definition and attributes.
    * @param fontDefinition The font definition to apply to the notes.
@@ -42,9 +42,9 @@ class EoDbGroupList : public CObList {
    */
   void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,
       int attributes = 0);
-  void ModifyColor(EoInt16 color);
-  void ModifyLineType(EoInt16 lineType);
-  void PenTranslation(EoUInt16, EoInt16*, EoInt16*);
+  void ModifyColor(std::int16_t color);
+  void ModifyLineType(std::int16_t lineType);
+  void PenTranslation(EoUInt16, std::int16_t*, std::int16_t*);
   int RemoveEmptyNotesAndDelete();
   int RemoveEmptyGroups();
   POSITION Remove(EoDbGroup* group);

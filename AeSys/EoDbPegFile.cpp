@@ -531,7 +531,7 @@ void EoDb::Read(CFile& file, CString& string) {
 }
 
 void EoDb::Read(CFile& file, double& number) { file.Read(&number, sizeof(double)); }
-void EoDb::Read(CFile& file, EoInt16& number) { file.Read(&number, sizeof(EoInt16)); }
+void EoDb::Read(CFile& file, std::int16_t& number) { file.Read(&number, sizeof(std::int16_t)); }
 
 [[nodiscard]] EoGePoint3d EoDb::ReadPoint3d(CFile& file) {
   EoGePoint3d Point;
@@ -552,9 +552,9 @@ void EoDb::Read(CFile& file, EoUInt16& number) { file.Read(&number, sizeof(EoUIn
   file.Read(&number, sizeof(double));
   return number;
 }
-[[nodiscard]] EoInt16 EoDb::ReadInt16(CFile& file) {
-  EoInt16 number;
-  file.Read(&number, sizeof(EoInt16));
+[[nodiscard]] std::int16_t EoDb::ReadInt16(CFile& file) {
+  std::int16_t number;
+  file.Read(&number, sizeof(std::int16_t));
   return number;
 }
 
@@ -586,11 +586,11 @@ void EoDb::Write(CFile& file, const CString& string, UINT codePage) {
 }
 
 void EoDb::Write(CFile& file, double number) { file.Write(&number, sizeof(double)); }
-void EoDb::Write(CFile& file, EoInt16 number) { file.Write(&number, sizeof(EoInt16)); }
+void EoDb::Write(CFile& file, std::int16_t number) { file.Write(&number, sizeof(std::int16_t)); }
 void EoDb::Write(CFile& file, EoUInt16 number) { file.Write(&number, sizeof(EoUInt16)); }
 void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 color = EoDb::ReadInt16(file);
-  EoInt16 LineType = EoDb::ReadInt16(file);
+  std::int16_t color = EoDb::ReadInt16(file);
+  std::int16_t LineType = EoDb::ReadInt16(file);
   CString Name;
   EoDb::Read(file, Name);
   EoGePoint3d Point(EoDb::ReadPoint3d(file));
@@ -612,11 +612,11 @@ void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primiti
 void EoDb::ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& /* file */, EoDbPrimitive*& /* primitive */) {}
 
 void EoDb::ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 color = EoDb::ReadInt16(file);
-  EoInt16 lineType = EoDb::ReadInt16(file);
+  std::int16_t color = EoDb::ReadInt16(file);
+  std::int16_t lineType = EoDb::ReadInt16(file);
   EoGePoint3d beginPoint = EoDb::ReadPoint3d(file);
   EoGePoint3d endPoint = EoDb::ReadPoint3d(file);
-  EoInt16 textColor = EoDb::ReadInt16(file);
+  std::int16_t textColor = EoDb::ReadInt16(file);
   EoDbFontDefinition fontDefinition;
   fontDefinition.Read(file);
   EoGeReferenceSystem referenceSystem;
@@ -655,8 +655,8 @@ void EoDb::ConstructConicPrimitive(CFile& file, EoDbPrimitive*& primitive) {
  * @param primitive A reference to a pointer that will hold the constructed conic primitive.
  */
 void EoDb::ConstructEllipsePrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 color = EoDb::ReadInt16(file);
-  EoInt16 lineTypeIndex = EoDb::ReadInt16(file);
+  std::int16_t color = EoDb::ReadInt16(file);
+  std::int16_t lineTypeIndex = EoDb::ReadInt16(file);
   EoGePoint3d center(ReadPoint3d(file));
   EoGeVector3d majorAxis(ReadVector3d(file));
   EoGeVector3d minorAxis(ReadVector3d(file));
@@ -669,8 +669,8 @@ void EoDb::ConstructEllipsePrimitive(CFile& file, EoDbPrimitive*& primitive) {
 }
 
 void EoDb::ConstructLinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 color = EoDb::ReadInt16(file);
-  EoInt16 lineTypeIndex = EoDb::ReadInt16(file);
+  std::int16_t color = EoDb::ReadInt16(file);
+  std::int16_t lineTypeIndex = EoDb::ReadInt16(file);
   EoGePoint3d begin(EoDb::ReadPoint3d(file));
   EoGePoint3d end(EoDb::ReadPoint3d(file));
   primitive = new EoDbLine(begin, end);
@@ -693,16 +693,16 @@ void EoDb::ConstructPointPrimitive(CFile& file, EoDbPrimitive*& primitive) {
 }
 
 void EoDb::ConstructPointPrimitiveFromTagPrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 PenColor = EoDb::ReadInt16(file);
-  EoInt16 PointStyle = EoDb::ReadInt16(file);
+  std::int16_t PenColor = EoDb::ReadInt16(file);
+  std::int16_t PointStyle = EoDb::ReadInt16(file);
   EoGePoint3d Point(EoDb::ReadPoint3d(file));
   primitive = new EoDbPoint(PenColor, PointStyle, Point);
 }
 
 void EoDb::ConstructPolygonPrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 PenColor = EoDb::ReadInt16(file);
+  std::int16_t PenColor = EoDb::ReadInt16(file);
   EoDb::PolygonStyle polygonStyle = static_cast<EoDb::PolygonStyle>(EoDb::ReadInt16(file));
-  EoInt16 InteriorStyleIndex = EoDb::ReadInt16(file);
+  std::int16_t InteriorStyleIndex = EoDb::ReadInt16(file);
   auto numberOfPoints = EoDb::ReadUInt16(file);
   EoGePoint3d HatchOrigin(EoDb::ReadPoint3d(file));
   EoGeVector3d HatchXAxis(EoDb::ReadVector3d(file));
@@ -715,8 +715,8 @@ void EoDb::ConstructPolygonPrimitive(CFile& file, EoDbPrimitive*& primitive) {
 }
 
 void EoDb::ConstructPolylinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 PenColor = EoDb::ReadInt16(file);
-  EoInt16 LineType = EoDb::ReadInt16(file);
+  std::int16_t PenColor = EoDb::ReadInt16(file);
+  std::int16_t LineType = EoDb::ReadInt16(file);
   auto numberOfPoints = EoDb::ReadUInt16(file);
 
   EoGePoint3dArray Points;
@@ -727,8 +727,8 @@ void EoDb::ConstructPolylinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
 }
 
 void EoDb::ConstructPolylinePrimitiveFromCSplinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 PenColor = EoDb::ReadInt16(file);
-  EoInt16 LineType = EoDb::ReadInt16(file);
+  std::int16_t PenColor = EoDb::ReadInt16(file);
+  std::int16_t LineType = EoDb::ReadInt16(file);
 
   file.Seek(sizeof(EoUInt16), CFile::current);
   auto numberOfPoints = EoDb::ReadUInt16(file);
@@ -742,8 +742,8 @@ void EoDb::ConstructPolylinePrimitiveFromCSplinePrimitive(CFile& file, EoDbPrimi
 }
 
 void EoDb::ConstructSplinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 PenColor = EoDb::ReadInt16(file);
-  EoInt16 LineType = EoDb::ReadInt16(file);
+  std::int16_t PenColor = EoDb::ReadInt16(file);
+  std::int16_t LineType = EoDb::ReadInt16(file);
 
   auto numberOfPoints = EoDb::ReadUInt16(file);
 
@@ -755,9 +755,9 @@ void EoDb::ConstructSplinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
 }
 
 void EoDb::ConstructTextPrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  EoInt16 color = EoDb::ReadInt16(file);
+  std::int16_t color = EoDb::ReadInt16(file);
   (void)color;  // currently unused, but may be used in the future to indicate the text color
-  EoInt16 lineType = EoDb::ReadInt16(file);
+  std::int16_t lineType = EoDb::ReadInt16(file);
   (void)lineType;  // currently unused, but may be used in the future to indicate the text line type
   EoDbFontDefinition fontDefinition;
   fontDefinition.Read(file);

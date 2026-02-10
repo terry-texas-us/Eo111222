@@ -49,7 +49,7 @@ const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& other) {
 }
 
 EoDbDimension::EoDbDimension(EoGeLine line, const EoDbFontDefinition& fontDefinition,
-    const EoGeReferenceSystem& referenceSystem, const CString& text, EoInt16 textColor)
+    const EoGeReferenceSystem& referenceSystem, const CString& text, std::int16_t textColor)
     : m_line{line},
       m_fontDefinition{fontDefinition},
       m_ReferenceSystem{referenceSystem},
@@ -118,13 +118,13 @@ void EoDbDimension::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 }
 
 void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
-  EoInt16 color = LogicalColor();
+  std::int16_t color = LogicalColor();
   pstate.SetPen(view, deviceContext, color, LogicalLineType());
   m_line.Display(view, deviceContext);
 
   pstate.SetColor(deviceContext, m_textColor);
 
-  EoInt16 LineType = pstate.LineType();
+  std::int16_t LineType = pstate.LineTypeIndex();
   pstate.SetLineType(deviceContext, 1);
 
   DisplayText(view, deviceContext, m_fontDefinition, m_ReferenceSystem, m_text);

@@ -20,7 +20,7 @@ class EoDbDimension : public EoDbPrimitive {
   EoDbFontDefinition m_fontDefinition;
   EoGeReferenceSystem m_ReferenceSystem;
   CString m_text;
-  EoInt16 m_textColor{5};
+  std::int16_t m_textColor{5};
 
  public:
   EoDbDimension() = default;
@@ -32,7 +32,7 @@ class EoDbDimension : public EoDbPrimitive {
   ~EoDbDimension() override = default;
 
   EoDbDimension(EoGeLine line, const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
-      const CString& text, EoInt16 textColor);
+      const CString& text, std::int16_t textColor);
 
   EoDbDimension(std::uint8_t* buffer);
 
@@ -75,7 +75,7 @@ class EoDbDimension : public EoDbPrimitive {
   [[nodiscard]] double Length() const { return m_line.Length(); }
   [[nodiscard]] const EoGeReferenceSystem& ReferenceSystem() const noexcept { return m_ReferenceSystem; }
   [[nodiscard]] const CString& Text() const noexcept { return m_text; }
-  [[nodiscard]] EoInt16 TextColor() const noexcept { return m_textColor; }
+  [[nodiscard]] std::int16_t TextColor() const noexcept { return m_textColor; }
 
   void SetDefaultNote();
 
@@ -90,7 +90,7 @@ class EoDbDimension : public EoDbPrimitive {
     m_fontDefinition.SetVerticalAlignment(verticalAlignment);
   }
 
-  void SetTextColor(EoInt16 color) { m_textColor = color; }
+  void SetTextColor(std::int16_t color) { m_textColor = color; }
 
  private:
   static EoUInt16 sm_flags;  // bit 1	clear if dimension selected at note

@@ -27,15 +27,15 @@ Perspective projections:
 
 class EoGsAbstractView {
  public:
-  static const EoInt16 AV_PERSPECTIVE = 0x01;        // bit 1 Perspective mode flag for this view
-  static const EoInt16 AV_NEARCLIPPING = 0x02;       // bit 2 Near (Front) clipping plane status for this view
-  static const EoInt16 AV_FARCLIPPING = 0x04;        // bit 3 Far (Back) clipping plane status for this view
-  static const EoInt16 AV_NEARCLIPPINGATEYE = 0x10;  // bit 16 Front clipping plane is located at the camera
+  static const std::int16_t AV_PERSPECTIVE = 0x01;        // bit 1 Perspective mode flag for this view
+  static const std::int16_t AV_NEARCLIPPING = 0x02;       // bit 2 Near (Front) clipping plane status for this view
+  static const std::int16_t AV_FARCLIPPING = 0x04;        // bit 3 Far (Back) clipping plane status for this view
+  static const std::int16_t AV_NEARCLIPPINGATEYE = 0x10;  // bit 16 Front clipping plane is located at the camera
 
  protected:
-  EoInt16 m_ViewMode;
-  EoInt16 m_RenderMode;        // (not used)
-  EoInt16 m_UcsOrthoViewType;  // Orthographic type of UCS; top 1, bottom 2, front 3, back 4, left 5, right 6 (not used)
+  std::int16_t m_ViewMode;
+  std::int16_t m_RenderMode;        // (not used)
+  std::int16_t m_UcsOrthoViewType;  // Orthographic type of UCS; top 1, bottom 2, front 3, back 4, left 5, right 6 (not used)
 
   EoGePoint3d m_UCSOrigin;
   EoGeVector3d m_UCSXAxis;

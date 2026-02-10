@@ -21,7 +21,7 @@ BOOL EoDlgSetupHatch::OnInitDialog() {
   return TRUE;
 }
 void EoDlgSetupHatch::OnOK() {
-  pstate.SetPolygonIntStyleId(EoInt16(GetDlgItemInt(IDC_FIL_AREA_HAT_ID, 0, FALSE)));
+  pstate.SetPolygonIntStyleId(std::int16_t(GetDlgItemInt(IDC_FIL_AREA_HAT_ID, 0, FALSE)));
 
   CDialog::OnOK();
 }
