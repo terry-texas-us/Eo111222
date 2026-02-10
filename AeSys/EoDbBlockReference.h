@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <cstdint>
 #include <utility>
 
 #include "AeSysView.h"
@@ -13,7 +14,6 @@
 #include "drw_base.h"
 
 class EoDbBlockReference : public EoDbPrimitive {
- private:
   CString m_blockName;
   EoGePoint3d m_insertionPoint;
   EoGeVector3d m_normal;
@@ -30,8 +30,8 @@ class EoDbBlockReference : public EoDbPrimitive {
   EoDbBlockReference(const CString& strName, const EoGePoint3d& pt);
   EoDbBlockReference(const EoDbBlockReference&);
   EoDbBlockReference(EoUInt16 color, EoUInt16 lineType, const CString& name, const EoGePoint3d& point,
-                     const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation);
-  ~EoDbBlockReference() override {};
+      const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation);
+  ~EoDbBlockReference() override = default;
 
   const EoDbBlockReference& operator=(const EoDbBlockReference&);
 
@@ -59,7 +59,7 @@ class EoDbBlockReference : public EoDbPrimitive {
   void Translate(const EoGeVector3d& v) override { m_insertionPoint += v; }
   void TranslateUsingMask(EoGeVector3d v, const DWORD mask) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoUInt8* buffer) override {
+  void Write(CFile& file, std::uint8_t* buffer) override {
     (void)file;
     (void)buffer;
   };

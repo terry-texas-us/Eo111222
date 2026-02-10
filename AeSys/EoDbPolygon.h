@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <cstdint>
+
 #include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbPrimitive.h"
@@ -23,9 +25,9 @@ class EoDbPolygon : public EoDbPrimitive {
   EoInt16 m_fillStyleIndex;
   EoUInt16 m_numberOfVertices;
 
- public:  // Constructors and destructor
+ public:
   EoDbPolygon();
-  EoDbPolygon(EoUInt8* buffer, int version);
+  EoDbPolygon(std::uint8_t* buffer, int version);
 
   /** @brief Constructs an EoDbPolygon object from an array of 3D points.
    *  @param points An array of 3D points that define the vertices of the polygon. Must contain at least 3 points for proper initialization of the plane vectors.
@@ -35,12 +37,11 @@ class EoDbPolygon : public EoDbPrimitive {
   EoDbPolygon(EoUInt16, EoGePoint3d*);
   EoDbPolygon(const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts);
   EoDbPolygon(EoInt16 color, EoDb::PolygonStyle style, EoInt16 styleIndex, const EoGePoint3d& origin,
-              const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& points);
+      const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& points);
   EoDbPolygon(EoUInt16, EoGePoint3d, EoGeVector3d, EoGeVector3d, const EoGePoint3d*);
 
   EoDbPolygon(const EoDbPolygon& other);
 
- public:
   const EoDbPolygon& operator=(const EoDbPolygon& other);
 
   [[nodiscard]] EoGePoint3d& operator[](int i) { return m_vertices[i]; }
@@ -48,7 +49,6 @@ class EoDbPolygon : public EoDbPrimitive {
 
   ~EoDbPolygon() override;
 
- public:  // Methods - absolute virtuals
   void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolygon*>(primitive); }
@@ -72,7 +72,7 @@ class EoDbPolygon : public EoDbPrimitive {
   void Translate(const EoGeVector3d& v) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoUInt8* buffer) override;
+  void Write(CFile& file, std::uint8_t* buffer) override;
 
   CString FormatIntStyle();
   [[nodiscard]] const EoDb::PolygonStyle& PolygonStyle() { return m_polygonStyle; }
@@ -98,7 +98,7 @@ class EoDbPolygon : public EoDbPrimitive {
 //				iSets		number of point lists
 //				iPtLstsId	starting indicies for point lists
 void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& transformMatrix, const int iSets,
-                         const int* iPtLstsId, EoGePoint3d*);
+    const int* iPtLstsId, EoGePoint3d*);
 /// <summary>Generates polygon.</summary>
 // The polygon is closed automatically by drawing a line from the last vertex to the first.
 // Arrays of vertices are previously modelview transformed and clipped to view volume.

@@ -1,5 +1,7 @@
 ﻿#include "Stdafx.h"
 
+#include <stdexcept>
+
 #include "AeSys.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
@@ -10,16 +12,16 @@
 
 void EoDbTracingFile::ReadHeader(CFile& file) {
   if (EoDb::ReadUInt16(file) != EoDb::kHeaderSection)
-    throw L"Exception EoDbTracingFile: Expecting sentinel EoDb::kHeaderSection.";
+    throw std::runtime_error("Exception EoDbTracingFile: Expecting sentinel EoDb::kHeaderSection.");
 
   // 	with addition of info here will loop key-value pairs till EoDb::kEndOfSection sentinel
 
   if (EoDb::ReadUInt16(file) != EoDb::kEndOfSection)
-    throw L"Exception EoDbTracingFile: Expecting sentinel EoDb::kEndOfSection.";
+    throw std::runtime_error("Exception EoDbTracingFile: Expecting sentinel EoDb::kEndOfSection.");
 }
 bool EoDbTracingFile::ReadLayer(CFile& file, EoDbLayer* layer) {
   if (EoDb::ReadUInt16(file) != EoDb::kGroupsSection)
-    throw L"Exception EoDbTracingFile: Expecting sentinel EoDb::kGroupsSection.";
+    throw std::runtime_error("Exception EoDbTracingFile: Expecting sentinel EoDb::kGroupsSection.");
 
   auto numberOfGroups = EoDb::ReadUInt16(file);
 
@@ -28,7 +30,7 @@ bool EoDbTracingFile::ReadLayer(CFile& file, EoDbLayer* layer) {
     layer->AddTail(group);
   }
   if (EoDb::ReadUInt16(file) != EoDb::kEndOfSection) {
-    throw L"Exception EoDbTracingFile: Expecting sentinel EoDb::kEndOfSection.";
+    throw std::runtime_error("Exception EoDbTracingFile: Expecting sentinel EoDb::kEndOfSection.");
   }
   return true;
 }

@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <cstdint>
+
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeVector3d.h"
@@ -56,7 +58,8 @@ class EoDbGroup : public CObList {
   int GetLineTypeRefCount(EoInt16 lineType);
   void InsertBefore(POSITION position, EoDbGroup* group);
   bool IsInView(AeSysView* view);
-  void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition, int attributes = 0);
+  void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,
+      int attributes = 0);
   void ModifyColor(EoInt16 color);
   void ModifyLineType(EoInt16 lineType);
   void PenTranslation(EoUInt16, EoInt16*, EoInt16*);
@@ -73,5 +76,5 @@ class EoDbGroup : public CObList {
   void Transform(const EoGeTransformMatrix& transformMatrix);
   void Translate(EoGeVector3d translate);
   void Write(CFile& file);
-  void Write(CFile& file, EoUInt8* buffer);
+  void Write(CFile& file, std::uint8_t* buffer);
 };

@@ -4,7 +4,9 @@
 #include <cctype>
 #include <cmath>
 #include <cstdint>
+#include <stdexcept>
 #include <string>
+#include <string.h>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -50,7 +52,7 @@ double CVaxFloat::Convert() {
   bExp |= pvax[0] >> 7;
 
   if (bExp == 0) {
-    if (bSign != 0) { throw L"CVaxFloat: Conversion to MS - Reserve operand fault"; }
+    if (bSign != 0) { throw std::runtime_error("CVaxFloat: Conversion to MS - Reserve operand fault"); }
   } else if (bExp == 1) {  // this is a valid vax exponent but because the vax places the hidden
                            // leading 1 to the right of the binary point we have a problem ..
                            // the possible values are 2.94e-39 to 5.88e-39 .. just call it 0.
@@ -165,20 +167,23 @@ bool EoDbJobFile::GetNextVisibleGroup(CFile& file, EoDbGroup*& group) {
     EoDbPrimitive* primitive{};
     if (!GetNextPrimitive(file, primitive)) { return false; }
     group = new EoDbGroup(primitive);
-    EoUInt16 wPrims = *((EoUInt16*)((m_Version == 1) ? &m_PrimBuf[2] : &m_PrimBuf[1]));
-    for (EoUInt16 w = 1; w < wPrims; w++) {
+    EoUInt16 numberOfPrimitives = *((EoUInt16*)((m_Version == 1) ? &m_PrimBuf[2] : &m_PrimBuf[1]));
+    for (EoUInt16 w = 1; w < numberOfPrimitives; w++) {
       try {
         Position = file.GetPosition();
-        if (!GetNextPrimitive(file, primitive)) throw L"Exception.FileJob: Unexpected end of file.";
+        if (!GetNextPrimitive(file, primitive)) {
+          throw std::runtime_error("Exception.FileJob: Unexpected end of file.");
+        }
         group->AddTail(primitive);
-      } catch (LPWSTR szMessage) {
-        app.AddStringToMessageList(std::wstring(szMessage));
+      } catch (const std::runtime_error& ex) {
+        app.AddStringToMessageList(std::wstring(ex.what(), ex.what() + strlen(ex.what())));
         file.Seek(static_cast<LONGLONG>(Position + 32), CFile::begin);
       }
     }
-  } catch (LPWSTR szMessage) {
+  } catch (const std::runtime_error& ex) {
     if (Position >= 96) {
-      if (::MessageBoxW(0, szMessage, 0, MB_ICONERROR | MB_RETRYCANCEL) == IDCANCEL) { return false; }
+      std::wstring errorMessage(ex.what(), ex.what() + strlen(ex.what()));
+      if (::MessageBoxW(0, errorMessage.c_str(), 0, MB_ICONERROR | MB_RETRYCANCEL) == IDCANCEL) { return false; }
     }
     file.Seek(static_cast<LONGLONG>(Position + 32), CFile::begin);
   }
@@ -193,18 +198,20 @@ bool EoDbJobFile::GetNextPrimitive(CFile& file, EoDbPrimitive*& primitive) {
   ConstructPrimitive(primitive, PrimitiveType);
   return true;
 }
-bool EoDbJobFile::ReadNextPrimitive(CFile& file, EoUInt8* buffer, EoInt16& primitiveType) const {
+bool EoDbJobFile::ReadNextPrimitive(CFile& file, std::uint8_t* buffer, EoInt16& primitiveType) const {
   if (file.Read(buffer, 32) < 32) { return false; }
   primitiveType = *((EoInt16*)&buffer[4]);
 
-  if (!IsValidPrimitive(primitiveType)) { throw L"Exception.FileJob: Invalid primitive type."; }
+  if (!IsValidPrimitive(primitiveType)) { throw std::runtime_error("Exception.FileJob: Invalid primitive type."); }
   int LengthInChunks = (m_Version == 1) ? buffer[6] : buffer[3];
   if (LengthInChunks > 1) {
     UINT BytesRemaining = static_cast<UINT>(LengthInChunks - 1) * 32U;
 
-    if (BytesRemaining >= EoDbPrimitive::BUFFER_SIZE - 32) { throw L"Exception.FileJob: Primitive buffer overflow."; }
+    if (BytesRemaining >= EoDbPrimitive::BUFFER_SIZE - 32) {
+      throw std::runtime_error("Exception.FileJob: Primitive buffer overflow.");
+    }
     if (file.Read(&buffer[32], BytesRemaining) < BytesRemaining) {
-      throw L"Exception.FileJob: Unexpected end of file.";
+      throw std::runtime_error("Exception.FileJob: Unexpected end of file.");
     }
   }
   return true;
@@ -244,7 +251,7 @@ bool EoDbJobFile::IsValidPrimitive(EoInt16 primitiveType) {
   }
 }
 bool EoDbJobFile::IsValidVersion1Primitive(EoInt16 primitiveType) {
-  EoUInt8* PrimitiveType = (EoUInt8*)&primitiveType;
+  std::uint8_t* PrimitiveType = (std::uint8_t*)&primitiveType;
   switch (PrimitiveType[1]) {
     case 17:   // 0x11 text
     case 24:   // 0x18 bspline
@@ -349,7 +356,7 @@ void EoDbJobFile::ConstructPrimitiveFromVersion1(EoDbPrimitive*& primitive) {
       break;
 
     default:
-      throw L"Exception.FileJob: Invalid primitive type.";
+      throw std::runtime_error("Exception.FileJob: Invalid primitive type.");
   }
 }
 
@@ -367,6 +374,7 @@ EoDbPrimitive* EoDbJobFile::ConvertEllipsePrimitive() {
   /// @todo for negative z extrusion the positive sweep is incorrect
 
   auto* conic = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
+  if (conic == nullptr) { throw std::runtime_error("Error creating Conic."); }
   conic->SetColor(color);
   conic->SetLineTypeIndex(lineTypeIndex);
 
@@ -423,9 +431,10 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
   sweepAngle = fabs(sweepAngle);
 
   auto* conic = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
-  conic->SetColor(color);
-  conic->SetLineTypeIndex(lineTypeIndex);
-
+  if (conic != nullptr) {
+    conic->SetColor(color);
+    conic->SetLineTypeIndex(lineTypeIndex);
+  }
   return conic;
 }
 
@@ -457,7 +466,7 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1PointPrimitive() {
 void EoDbJobFile::ConvertCSplineToBSpline() {
   EoUInt16 NumberOfControlPoints = *((EoUInt16*)&m_PrimBuf[10]);
 
-  m_PrimBuf[3] = static_cast<EoUInt8>((2 + NumberOfControlPoints * 3) / 8 + 1);
+  m_PrimBuf[3] = static_cast<std::uint8_t>((2 + NumberOfControlPoints * 3) / 8 + 1);
   *((EoUInt16*)&m_PrimBuf[4]) = EoUInt16(EoDb::kSplinePrimitive);
   m_PrimBuf[8] = m_PrimBuf[10];
   m_PrimBuf[9] = m_PrimBuf[11];
@@ -467,7 +476,7 @@ void EoDbJobFile::ConvertTagToPoint() {
   *((EoUInt16*)&m_PrimBuf[4]) = EoDb::kPointPrimitive;
   ::ZeroMemory(&m_PrimBuf[20], 12);
 }
-EoDbDimension::EoDbDimension(EoUInt8* buffer) {
+EoDbDimension::EoDbDimension(std::uint8_t* buffer) {
   m_color = EoInt16(buffer[6]);
   m_lineTypeIndex = EoInt16(buffer[7]);
 
@@ -492,7 +501,7 @@ EoDbDimension::EoDbDimension(EoUInt8* buffer) {
   m_text = CString((LPCSTR)&buffer[81]);
 }
 
-EoDbPolygon::EoDbPolygon(EoUInt8* buffer, int version) {
+EoDbPolygon::EoDbPolygon(std::uint8_t* buffer, int version) {
   if (version == 1) {
     m_color = EoInt16(buffer[4] & 0x000f);
     m_fillStyleIndex = 0;
@@ -581,7 +590,7 @@ EoDbPolygon::EoDbPolygon(EoUInt8* buffer, int version) {
     }
   }
 }
-EoDbSpline::EoDbSpline(EoUInt8* buffer, int version) {
+EoDbSpline::EoDbSpline(std::uint8_t* buffer, int version) {
   if (version == 1) {
     m_color = EoInt16(buffer[4] & 0x000f);
     m_lineTypeIndex = EoInt16((buffer[4] & 0x00ff) >> 4);
@@ -610,7 +619,7 @@ EoDbSpline::EoDbSpline(EoUInt8* buffer, int version) {
     }
   }
 }
-EoDbText::EoDbText(EoUInt8* buffer, int version) {
+EoDbText::EoDbText(std::uint8_t* buffer, int version) {
   m_fontDefinition.SetPrecision(EoDb::Precision::StrokeType);
   m_fontDefinition.SetFontName(Eo::defaultStrokeFont);
 
@@ -689,11 +698,11 @@ EoDbText::EoDbText(EoUInt8* buffer, int version) {
   }
 }
 
-void EoDbConic::Write(CFile& file, EoUInt8* buffer) {
+void EoDbConic::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = 2;
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kConicPrimitive);
-  buffer[6] = static_cast<EoUInt8>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<EoUInt8>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
+  buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
+  buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
   if (buffer[7] >= 16) buffer[7] = 2;
 
   ((CVaxPnt*)&buffer[8])->Convert(m_center);
@@ -704,11 +713,11 @@ void EoDbConic::Write(CFile& file, EoUInt8* buffer) {
   file.Write(buffer, 64);
 }
 
-void EoDbEllipse::Write(CFile& file, EoUInt8* buffer) {
+void EoDbEllipse::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = 2;
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kEllipsePrimitive);
-  buffer[6] = static_cast<EoUInt8>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<EoUInt8>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
+  buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
+  buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
   if (buffer[7] >= 16) buffer[7] = 2;
 
   ((CVaxPnt*)&buffer[8])->Convert(m_center);
@@ -718,25 +727,25 @@ void EoDbEllipse::Write(CFile& file, EoUInt8* buffer) {
 
   file.Write(buffer, 64);
 }
-void EoDbDimension::Write(CFile& file, EoUInt8* buffer) {
+void EoDbDimension::Write(CFile& file, std::uint8_t* buffer) {
   EoUInt16 TextLength = EoUInt16(m_text.GetLength());
 
-  buffer[3] = EoUInt8((118 + TextLength) / 32);
+  buffer[3] = std::uint8_t((118 + TextLength) / 32);
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kDimensionPrimitive);
-  buffer[6] = static_cast<EoUInt8>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<EoUInt8>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
+  buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
+  buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
   if (buffer[7] >= 16) buffer[7] = 2;
 
   ((CVaxPnt*)&buffer[8])->Convert(m_line.begin);
   ((CVaxPnt*)&buffer[20])->Convert(m_line.end);
 
-  buffer[32] = static_cast<EoUInt8>(m_color);
-  buffer[33] = EoInt8(EoDb::Precision::StrokeType);
+  buffer[32] = static_cast<std::uint8_t>(m_color);
+  buffer[33] = std::int8_t(EoDb::Precision::StrokeType);
   *((EoInt16*)&buffer[34]) = 0;
   ((CVaxFloat*)&buffer[36])->Convert(m_fontDefinition.CharacterSpacing());
-  buffer[40] = static_cast<EoUInt8>(m_fontDefinition.Path());
-  buffer[41] = static_cast<EoUInt8>(m_fontDefinition.HorizontalAlignment());
-  buffer[42] = static_cast<EoUInt8>(m_fontDefinition.VerticalAlignment());
+  buffer[40] = static_cast<std::uint8_t>(m_fontDefinition.Path());
+  buffer[41] = static_cast<std::uint8_t>(m_fontDefinition.HorizontalAlignment());
+  buffer[42] = static_cast<std::uint8_t>(m_fontDefinition.VerticalAlignment());
 
   EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;
 
@@ -749,11 +758,11 @@ void EoDbDimension::Write(CFile& file, EoUInt8* buffer) {
 
   file.Write(buffer, static_cast<UINT>(buffer[3] * 32));
 }
-void EoDbLine::Write(CFile& file, EoUInt8* buffer) {
+void EoDbLine::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = 1;
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kLinePrimitive);
-  buffer[6] = static_cast<EoUInt8>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<EoUInt8>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
+  buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
+  buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
   if (buffer[7] >= 16) buffer[7] = 2;
 
   ((CVaxPnt*)&buffer[8])->Convert(m_line.begin);
@@ -761,11 +770,11 @@ void EoDbLine::Write(CFile& file, EoUInt8* buffer) {
 
   file.Write(buffer, 32);
 }
-void EoDbPoint::Write(CFile& file, EoUInt8* buffer) {
+void EoDbPoint::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = 1;
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kPointPrimitive);
-  buffer[6] = static_cast<EoUInt8>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<EoUInt8>(m_pointStyle);
+  buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
+  buffer[7] = static_cast<std::uint8_t>(m_pointStyle);
 
   ((CVaxPnt*)&buffer[8])->Convert(m_Point);
 
@@ -780,11 +789,11 @@ void EoDbPoint::Write(CFile& file, EoUInt8* buffer) {
 
   file.Write(buffer, 32);
 }
-void EoDbPolygon::Write(CFile& file, EoUInt8* buffer) {
-  buffer[3] = static_cast<EoUInt8>((79 + m_numberOfVertices * 12) / 32);
+void EoDbPolygon::Write(CFile& file, std::uint8_t* buffer) {
+  buffer[3] = static_cast<std::uint8_t>((79 + m_numberOfVertices * 12) / 32);
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kPolygonPrimitive);
-  buffer[6] = static_cast<EoUInt8>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<EoUInt8>(m_polygonStyle);
+  buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
+  buffer[7] = static_cast<std::uint8_t>(m_polygonStyle);
   *((EoInt16*)&buffer[8]) = m_fillStyleIndex;
   *((EoInt16*)&buffer[10]) = static_cast<EoInt16>(m_numberOfVertices);
 
@@ -800,11 +809,11 @@ void EoDbPolygon::Write(CFile& file, EoUInt8* buffer) {
   }
   file.Write(buffer, static_cast<UINT>(buffer[3] * 32));
 }
-void EoDbSpline::Write(CFile& file, EoUInt8* buffer) {
-  buffer[3] = static_cast<EoUInt8>((2 + m_pts.GetSize() * 3) / 8 + 1);
+void EoDbSpline::Write(CFile& file, std::uint8_t* buffer) {
+  buffer[3] = static_cast<std::uint8_t>((2 + m_pts.GetSize() * 3) / 8 + 1);
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kSplinePrimitive);
-  buffer[6] = static_cast<EoUInt8>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<EoUInt8>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
+  buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
+  buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
 
   *((EoInt16*)&buffer[8]) = (EoInt16)m_pts.GetSize();
 
@@ -816,18 +825,18 @@ void EoDbSpline::Write(CFile& file, EoUInt8* buffer) {
   }
   file.Write(buffer, static_cast<UINT>(buffer[3] * 32));
 }
-void EoDbText::Write(CFile& file, EoUInt8* buffer) {
+void EoDbText::Write(CFile& file, std::uint8_t* buffer) {
   EoUInt16 TextLength = EoUInt16(m_strText.GetLength());
 
-  buffer[3] = static_cast<EoUInt8>((86 + TextLength) / 32);
+  buffer[3] = static_cast<std::uint8_t>((86 + TextLength) / 32);
   *((EoUInt16*)&buffer[4]) = EoUInt16(EoDb::kTextPrimitive);
-  buffer[6] = static_cast<EoUInt8>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<EoUInt8>(m_fontDefinition.Precision());
+  buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
+  buffer[7] = static_cast<std::uint8_t>(m_fontDefinition.Precision());
   *((EoInt16*)&buffer[8]) = 0;
   ((CVaxFloat*)&buffer[10])->Convert(m_fontDefinition.CharacterSpacing());
-  buffer[14] = static_cast<EoUInt8>(m_fontDefinition.Path());
-  buffer[15] = static_cast<EoUInt8>(m_fontDefinition.HorizontalAlignment());
-  buffer[16] = static_cast<EoUInt8>(m_fontDefinition.VerticalAlignment());
+  buffer[14] = static_cast<std::uint8_t>(m_fontDefinition.Path());
+  buffer[15] = static_cast<std::uint8_t>(m_fontDefinition.HorizontalAlignment());
+  buffer[16] = static_cast<std::uint8_t>(m_fontDefinition.VerticalAlignment());
 
   EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;
   ((CVaxPnt*)&buffer[17])->Convert(ReferenceSystem.Origin());

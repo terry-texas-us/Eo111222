@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <cstdint>
 #include <string>
 #include <utility>
 
@@ -88,11 +89,11 @@ class EoDbPrimitive : public CObject {
   virtual void Translate(const EoGeVector3d&) = 0;
   virtual void TranslateUsingMask(EoGeVector3d, const DWORD) = 0;
   virtual bool Write(CFile& file) = 0;
-  virtual void Write(CFile& file, EoUInt8* buffer) = 0;
+  virtual void Write(CFile& file, std::uint8_t* buffer) = 0;
 
  public:
-  virtual void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*,
-                            EoDbGroupList*);
+  virtual void CutAt2Points(
+      const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*);
   virtual void CutAtPoint(const EoGePoint3d& point, EoDbGroup*);
   virtual int IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d*);
   virtual void ModifyState();

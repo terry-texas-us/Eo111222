@@ -4,6 +4,7 @@
 #include <climits>
 #include <cmath>
 #include <cstdlib>
+#include <stdexcept>
 #include <utility>
 
 #include "AeSys.h"
@@ -135,16 +136,11 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
 [[nodiscard]] EoDbConic* EoDbConic::CreateConicFromEllipsePrimitive(
     const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle) {
   double majorAxisLength = majorAxis.Length();
-  if (majorAxisLength < Eo::geometricTolerance) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"CreateConicFromEllipsePrimitive: Invalid major axis length\n");
-    return nullptr;
-  }
+  if (majorAxisLength < Eo::geometricTolerance) { throw std::runtime_error("Conic: Near-zero major axis length."); }
   double ratio{minorAxis.Length() / majorAxisLength};
 
   if (std::abs(DotProduct(majorAxis, minorAxis)) > Eo::geometricTolerance) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0,
-        L"CreateConicFromEllipsePrimitive: Major and minor axes are not perpendicular\n");
-    return nullptr;
+    throw std::runtime_error("Conic: Major and minor axes are not perpendicular.");
   }
   auto extrusion{CrossProduct(majorAxis, minorAxis)};
   extrusion.Normalize();
@@ -638,7 +634,8 @@ void EoDbConic::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* 
   }
 }
 
-void EoDbConic::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbConic::GetExtents(
+    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3dArray ptsRegion;
   GetBoundingBox(ptsRegion);
 
@@ -693,7 +690,9 @@ int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upp
     ptInt[1] = ptEnd;
     return 2;
   }
-  if (ptMin.x >= upperRight.x || ptMax.x <= lowerLeft.x || ptMin.y >= upperRight.y || ptMax.y <= lowerLeft.y) { return 0; }
+  if (ptMin.x >= upperRight.x || ptMax.x <= lowerLeft.x || ptMin.y >= upperRight.y || ptMax.y <= lowerLeft.y) {
+    return 0;
+  }
 
   EoGePoint3d ptWrk[8]{};
 
@@ -795,12 +794,14 @@ int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upp
   if (IsFullConic()) {
     // @todo handle full circle or ellipse
   } else {
-    if (ptBeg.x >= lowerLeft.x && ptBeg.x <= upperRight.x && ptBeg.y >= lowerLeft.y && ptBeg.y <= upperRight.y) {  // Add beg point to int set
+    if (ptBeg.x >= lowerLeft.x && ptBeg.x <= upperRight.x && ptBeg.y >= lowerLeft.y &&
+        ptBeg.y <= upperRight.y) {  // Add beg point to int set
       for (int i = iInts; i > 0; i--) ptInt[i] = ptInt[i - 1];
       ptInt[0] = ptBeg;
       iInts++;
     }
-    if (ptEnd.x >= lowerLeft.x && ptEnd.x <= upperRight.x && ptEnd.y >= lowerLeft.y && ptEnd.y <= upperRight.y) {  // Add end point to int set
+    if (ptEnd.x >= lowerLeft.x && ptEnd.x <= upperRight.x && ptEnd.y >= lowerLeft.y &&
+        ptEnd.y <= upperRight.y) {  // Add end point to int set
       ptInt[iInts] = ptEnd;
       iInts++;
     }

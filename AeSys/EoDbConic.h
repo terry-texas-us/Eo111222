@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <cstdint>
 #include <utility>
 
 #include "AeSysView.h"
@@ -35,7 +36,7 @@ class EoDbConic : public EoDbPrimitive {
    * @param endAngle The ending angle of the conic in radians.
    */
   EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis, double ratio,
-            double startAngle, double endAngle);
+      double startAngle, double endAngle);
 
  public:
   /** @brief Creates a circle conic primitive.
@@ -75,8 +76,7 @@ class EoDbConic : public EoDbPrimitive {
    * @note This is definition used by autoCAD for ellipse entity.
    */
   [[nodiscard]] static EoDbConic* CreateConic(const EoGePoint3d& center, const EoGeVector3d& extrusion,
-                                              const EoGeVector3d& majorAxis, double ratio, double startAngle,
-                                              double endAngle);
+      const EoGeVector3d& majorAxis, double ratio, double startAngle, double endAngle);
 
   /**
    * @brief Creates a conic primitive from given parameters which are used to define deprecated ellipse primitive.
@@ -84,15 +84,18 @@ class EoDbConic : public EoDbPrimitive {
    * This function constructs an conic primitive using the specified center point, major axis vector,
    * minor axis vector, and sweep angle. The extrusion vector is computed as the cross product of the major
    * and minor axes, and the ratio of the minor axis length to the major axis length is calculated.
+   * This factory method creates an EoDbConic object representing an ellipse or elliptical arc based on the provided parameters.
+   * It validates the input parameters to ensure they define a valid ellipse and calculates the necessary properties for the conic.
+
    * @param center The center point of the ellipse.
-   * @param majorAxis The major axis vector of the ellipse.
-   * @param minorAxis The minor axis vector of the ellipse.
-   * @param sweepAngle The sweep angle of the ellipse in radians.
-   * @return A pointer to the created EoDbConic primitive.
+   * @param majorAxis The major axis vector of the ellipse (must have non-zero length).
+   * @param minorAxis The minor axis vector of the ellipse (must be perpendicular to major axis).
+   * @param sweepAngle The angle in radians defining the sweep of the arc (0 to 2π for full ellipse).
+   * @throws std::runtime_error if the major axis has zero length, if the minor axis is not perpendicular to the major axis,
+   * @return A pointer to the created EoDbConic object.
    */
-  [[nodiscard]] static EoDbConic* CreateConicFromEllipsePrimitive(const EoGePoint3d& center,
-                                                                  const EoGeVector3d& majorAxis,
-                                                                  const EoGeVector3d& minorAxis, double sweepAngle);
+  [[nodiscard]] static EoDbConic* CreateConicFromEllipsePrimitive(
+      const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle);
 
   /** @brief Creates an ellipse conic primitive.
    *
@@ -104,8 +107,8 @@ class EoDbConic : public EoDbPrimitive {
    * @param ratio The ratio of the minor axis to the major axis (0.0 < ratio <= 1.0).
    * @return A pointer to the created EoDbConic primitive representing the ellipse.
    */
-  [[nodiscard]] static EoDbConic* CreateEllipse(const EoGePoint3d& center, const EoGeVector3d& extrusion,
-                                                const EoGeVector3d& majorAxis, double ratio);
+  [[nodiscard]] static EoDbConic* CreateEllipse(
+      const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis, double ratio);
   /** @brief Creates a radial arc conic primitive.
    *
    * This static method constructs a radial arc conic primitive using the specified center point,
@@ -119,8 +122,8 @@ class EoDbConic : public EoDbPrimitive {
    * @return A pointer to the created EoDbConic primitive representing the radial arc.
    * @note This is definition used by autoCAD for arc entity.
    */
-  [[nodiscard]] static EoDbConic* CreateRadialArc(const EoGePoint3d& center, const EoGeVector3d& extrusion,
-                                                  double radius, double startAngle, double endAngle);
+  [[nodiscard]] static EoDbConic* CreateRadialArc(
+      const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle, double endAngle);
   /**
    * @brief Creates a radial arc defined by three points in 3D space.
    *
@@ -132,8 +135,8 @@ class EoDbConic : public EoDbPrimitive {
    * @param end The ending point of the arc.
    * @return A pointer to the created EoDbConic representing the radial arc, or nullptr if the points are collinear.
    */
-  [[nodiscard]] static EoDbConic* CreateRadialArcFrom3Points(EoGePoint3d& start, const EoGePoint3d& intermediate,
-                                                             EoGePoint3d& end);
+  [[nodiscard]] static EoDbConic* CreateRadialArcFrom3Points(
+      EoGePoint3d& start, const EoGePoint3d& intermediate, EoGePoint3d& end);
 
  public:
   EoDbConic()
@@ -146,7 +149,7 @@ class EoDbConic : public EoDbPrimitive {
 
   EoDbConic(const EoDbConic& other);
 
-  ~EoDbConic() override {}
+  ~EoDbConic() override = default;
 
  public:
   const EoDbConic& operator=(const EoDbConic&);
@@ -184,7 +187,7 @@ class EoDbConic : public EoDbPrimitive {
   void Translate(const EoGeVector3d& v) override { m_center += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoUInt8* buffer) override;
+  void Write(CFile& file, std::uint8_t* buffer) override;
 
  public:
   /** @brief Cuts the conic at a specified point, creating a new conic segment.
@@ -209,8 +212,8 @@ class EoDbConic : public EoDbPrimitive {
    * @param groups A pointer to a list of groups where the remaining sections of the conic will be added.
    * @param newGroups A pointer to a list of groups where the cut-out sections of the conic will be added.
    */
-  void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*,
-                    EoDbGroupList*) override;
+  void CutAt2Points(
+      const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
 
   /** @brief Generates approximation vertices for the ellipse segment.
    *
@@ -418,5 +421,4 @@ class EoDbConic : public EoDbPrimitive {
  * @return true if successful, false if not.
 */
 [[nodiscard]] bool SweepAngleFromNormalAnd3Points(const EoGeVector3d& normal, const EoGePoint3d& firstOutside,
-                                                  const EoGePoint3d& inside, const EoGePoint3d& secondOutside,
-                                                  const EoGePoint3d& center, double& sweepAngle);
+    const EoGePoint3d& inside, const EoGePoint3d& secondOutside, const EoGePoint3d& center, double& sweepAngle);

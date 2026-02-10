@@ -1,6 +1,7 @@
 ﻿#include "Stdafx.h"
 
 #include <corecrt.h>
+#include <cstdint>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -26,7 +27,7 @@ void AeSysDoc::AddGroupsToTrap(EoDbGroupList* groups) {
   m_TrappedGroupList.AddTail(groups);
 }
 void AeSysDoc::ModifyTrappedGroupsNoteAttributes(const EoDbFontDefinition& fontDefinition,
-                                                 const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
+    const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
   m_TrappedGroupList.ModifyNotes(fontDefinition, characterCellDefinition, attributes);
 }
 void AeSysDoc::RemoveAllTrappedGroups() {
@@ -126,7 +127,7 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
     memoryFile.SetLength(96);
     memoryFile.SeekToEnd();
 
-    auto* primitiveBuffer = new EoUInt8[EoDbPrimitive::BUFFER_SIZE];
+    auto* primitiveBuffer = new std::uint8_t[EoDbPrimitive::BUFFER_SIZE];
 
     m_TrappedGroupList.Write(memoryFile, primitiveBuffer);
     m_TrappedGroupList.GetExtents(view, minPoint, maxPoint, view->ModelViewGetMatrix());

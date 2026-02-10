@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <cstdint>
+
 class EoDbCharacterCellDefinition;
 class EoDbGroup;
 class EoDbFontDefinition;
@@ -38,7 +40,8 @@ class EoDbGroupList : public CObList {
    * @param characterCellDefinition The character cell definition to apply to the notes.
    * @param attributes The attributes that specify which properties of the notes to modify. This can be a combination of TM_TEXT_ALL, TM_TEXT_FONT, and TM_TEXT_HEIGHT.
    */
-  void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition, int attributes = 0);
+  void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,
+      int attributes = 0);
   void ModifyColor(EoInt16 color);
   void ModifyLineType(EoInt16 lineType);
   void PenTranslation(EoUInt16, EoInt16*, EoInt16*);
@@ -48,5 +51,5 @@ class EoDbGroupList : public CObList {
   EoDbGroup* SelectGroupUsingPoint(const EoGePoint3d& pt);
   void Transform(const EoGeTransformMatrix& transformMatrix);
   void Translate(EoGeVector3d translate);
-  void Write(CFile& file, EoUInt8* buffer);
+  void Write(CFile& file, std::uint8_t* buffer);
 };

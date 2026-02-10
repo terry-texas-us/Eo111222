@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <cstdint>
+
 #include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbPrimitive.h"
@@ -10,7 +12,6 @@
 #include "EoGeVector3d.h"
 
 class EoDbPoint : public EoDbPrimitive {
- private:
   EoInt16 m_pointStyle;
   EoGePoint3d m_Point;
   EoUInt16 m_NumberOfDatums;
@@ -26,10 +27,8 @@ class EoDbPoint : public EoDbPrimitive {
 
   ~EoDbPoint() override;
 
- public:  // Operators
   const EoDbPoint& operator=(const EoDbPoint& src);
 
- public:  // Methods - absolute virtuals
   void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPoint*>(primitive); }
@@ -53,9 +52,8 @@ class EoDbPoint : public EoDbPrimitive {
   void Translate(const EoGeVector3d& v) override { m_Point += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoUInt8* buffer) override;
+  void Write(CFile& file, std::uint8_t* buffer) override;
 
- public:  // Methods
   double GetDat(EoUInt16 wDat) { return (m_Data[wDat]); }
   EoGePoint3d GetPt() const { return m_Point; }
   EoInt16& PointStyle() { return m_pointStyle; }

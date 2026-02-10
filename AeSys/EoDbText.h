@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <cstdint>
+
 #include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbFontDefinition.h"
@@ -20,16 +22,14 @@ class EoDbText : public EoDbPrimitive {
 
  public:  // Constructors and destructor
   EoDbText() {}
-  EoDbText(EoUInt8* buffer, int version);
+  EoDbText(std::uint8_t* buffer, int version);
   EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text);
   EoDbText(const EoDbText&);
 
-  ~EoDbText() override {};
+  ~EoDbText() override = default;
 
- public:  // Operators
   const EoDbText& operator=(const EoDbText&);
 
- public:  // Methods - absolute virtuals
   void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbText*>(primitive); }
@@ -56,9 +56,8 @@ class EoDbText : public EoDbPrimitive {
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   void Transform(const EoGeTransformMatrix&) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoUInt8* buffer) override;
+  void Write(CFile& file, std::uint8_t* buffer) override;
 
- public:
   void ConvertFormattingCharacters();
   void GetBoundingBox(EoGePoint3dArray&, double);
   void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fontDefinition; }

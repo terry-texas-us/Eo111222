@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <cstdint>
+
 #include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbPrimitive.h"
@@ -10,23 +12,20 @@
 #include "EoGeVector3d.h"
 
 class EoDbSpline : public EoDbPrimitive {
- private:
   EoGePoint3dArray m_pts;
 
  public:  // Constructors and destructor
   EoDbSpline() {}
-  EoDbSpline(EoUInt8* buffer, int version);
+  EoDbSpline(std::uint8_t* buffer, int version);
   EoDbSpline(EoUInt16, EoGePoint3d*);
   EoDbSpline(EoGePoint3dArray& points);
   EoDbSpline(EoInt16 penColor, EoInt16 lineType, EoGePoint3dArray& points);
   EoDbSpline(const EoDbSpline&);
 
-  ~EoDbSpline() override {}
+  ~EoDbSpline() override = default;
 
- public:  // Operators
   const EoDbSpline& operator=(const EoDbSpline&);
 
- public:  // Methods - absolute virtuals
   void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbSpline*>(primitive); }
@@ -50,7 +49,7 @@ class EoDbSpline : public EoDbPrimitive {
   void Translate(const EoGeVector3d& v) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoUInt8* buffer) override;
+  void Write(CFile& file, std::uint8_t* buffer) override;
 
   int GenPts(const int iOrder, EoGePoint3dArray& pts);
   void SetPt(EoUInt16 w, EoGePoint3d pt) { m_pts[w] = pt; }

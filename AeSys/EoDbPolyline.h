@@ -31,12 +31,10 @@ class EoDbPolyline : public EoDbPrimitive {
   EoDbPolyline(EoGePoint3dArray& pts);
   EoDbPolyline(const EoDbPolyline& polyline);
 
-  ~EoDbPolyline() override {}
+  ~EoDbPolyline() override = default;
 
- public:
   const EoDbPolyline& operator=(const EoDbPolyline& polyline);
 
- public:
   void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolyline*>(primitive); }
@@ -61,7 +59,7 @@ class EoDbPolyline : public EoDbPrimitive {
   void Translate(const EoGeVector3d& v) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoUInt8* buffer) override { (void)file, (void)buffer; };
+  void Write(CFile& file, std::uint8_t* buffer) override { (void)file, (void)buffer; };
 
  private:
   EoUInt16 SwingVertex();

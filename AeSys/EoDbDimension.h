@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <cstdint>
+
 #include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbFontDefinition.h"
@@ -30,9 +32,9 @@ class EoDbDimension : public EoDbPrimitive {
   ~EoDbDimension() override = default;
 
   EoDbDimension(EoGeLine line, const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
-                const CString& text, EoInt16 textColor);
+      const CString& text, EoInt16 textColor);
 
-  EoDbDimension(EoUInt8* buffer);
+  EoDbDimension(std::uint8_t* buffer);
 
   void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
@@ -57,10 +59,10 @@ class EoDbDimension : public EoDbPrimitive {
   void Translate(const EoGeVector3d& v) override;
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoUInt8* buffer) override;
+  void Write(CFile& file, std::uint8_t* buffer) override;
 
-  void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*,
-                    EoDbGroupList*) override;
+  void CutAt2Points(
+      const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
   void CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) override;
   void ModifyState() override;
 

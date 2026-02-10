@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <cstdint>
 #include <utility>
 
 #include "AeSysView.h"
@@ -28,14 +29,14 @@ class EoDbEllipse : public EoDbPrimitive {
 
   // EoDbEllipse(const EoGePoint3d& center, double radius, double startAngle, double endAngle);
 
-  EoDbEllipse(const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis,
-              double sweepAngle);
+  EoDbEllipse(
+      const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle);
 
   EoDbEllipse(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle, EoInt16 color,
-              EoInt16 lineTypeIndex);
+      EoInt16 lineTypeIndex);
 
-  EoDbEllipse(EoGePoint3d& center, double radius, EoInt16 color = COLOR_BYLAYER,
-              EoInt16 lineTypeIndex = LINETYPE_BYLAYER);
+  EoDbEllipse(
+      EoGePoint3d& center, double radius, EoInt16 color = COLOR_BYLAYER, EoInt16 lineTypeIndex = LINETYPE_BYLAYER);
 
   EoDbEllipse(EoGePoint3d& center, EoGeVector3d& extrusion, double radius, EoInt16 color, EoInt16 lineTypeIndex);
 
@@ -43,7 +44,7 @@ class EoDbEllipse : public EoDbPrimitive {
 
   EoDbEllipse(const EoDbEllipse&);
 
-  ~EoDbEllipse() override {}
+  ~EoDbEllipse() override = default;
 
  public:
   const EoDbEllipse& operator=(const EoDbEllipse&);
@@ -72,11 +73,12 @@ class EoDbEllipse : public EoDbPrimitive {
   void Translate(const EoGeVector3d& v) override { m_center += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoUInt8* buffer) override;
+  void Write(CFile& file, std::uint8_t* buffer) override;
 
  public:
   void CutAtPoint(const EoGePoint3d& point, EoDbGroup*) override;
-  void CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
+  void CutAt2Points(
+      const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
 
   /// <summary>Generates a set of points which may be used to represent a arc using a double angle algorithm.</summary>
   void GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) const;

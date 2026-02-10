@@ -1,6 +1,7 @@
 ﻿#include "Stdafx.h"
 
 #include <cstdint>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <variant>
@@ -48,7 +49,7 @@ void EoDbPegFile::Load(AeSysDoc* document) {
  */
 void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kHeaderSection) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kHeaderSection.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kHeaderSection.");
   }
   EoDbHeaderSection& headerSection = document->HeaderSection();
 
@@ -63,7 +64,7 @@ void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
   // 	With addition of info here will loop key-value pairs till EoDb::kEndOfSection sentinel
 
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.");
   }
 }
 
@@ -75,25 +76,27 @@ void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
  */
 void EoDbPegFile::ReadTablesSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kTablesSection) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kTablesSection.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kTablesSection.");
   }
   ReadViewportTable(document);
   ReadLinetypesTable(document);
   ReadLayerTable(document);
 
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.");
   }
 }
 void EoDbPegFile::ReadViewportTable(AeSysDoc*) {
   if (EoDb::ReadUInt16(*this) != EoDb::kViewPortTable) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kViewPortTable.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kViewPortTable.");
   }
 
-  if (EoDb::ReadUInt16(*this) != 0) { throw L"Exception EoDbPegFile: Expecting number of viewports to be 0."; }
+  if (EoDb::ReadUInt16(*this) != 0) {
+    throw std::runtime_error("Exception EoDbPegFile: Expecting number of viewports to be 0.");
+  }
 
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.");
   }
 }
 
@@ -107,7 +110,7 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
   auto* lineTypeTable = document->LineTypeTable();
 
   if (EoDb::ReadUInt16(*this) != EoDb::kLinetypeTable) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kLinetypeTable.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kLinetypeTable.");
   }
   std::vector<double> dashElements;
 
@@ -128,7 +131,7 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
     ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Index: %d - Name: `%s` `%p`\n", n, name.GetString(), lineType);
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.");
   }
 }
 
@@ -139,8 +142,8 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
  * @param description A reference to a CString that will be populated with the description of the linetype.
  * @param definitionLength A reference to an EoUInt16 that will be set to the number of dash elements in the linetype.
  */
-void EoDbPegFile::ReadLinetypeDefinition(std::vector<double>& dashLength, CString& name, CString& description,
-                                         EoUInt16& definitionLength) {
+void EoDbPegFile::ReadLinetypeDefinition(
+    std::vector<double>& dashLength, CString& name, CString& description, EoUInt16& definitionLength) {
   EoDb::Read(*this, name);
   uint16_t flags = EoDb::ReadUInt16(*this);
   (void)flags;  // currently unused, but may be used in the future to indicate properties of the linetype
@@ -161,7 +164,7 @@ void EoDbPegFile::ReadLinetypeDefinition(std::vector<double>& dashLength, CStrin
  */
 void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kLayerTable) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable.");
   }
 
   CString layerName;
@@ -202,13 +205,13 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
     }
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.");
   }
 }
 
 void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kBlocksSection) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kBlocksSection.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kBlocksSection.");
   }
   EoDbPrimitive* primitive{};
   CString Name;
@@ -231,13 +234,13 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
     }
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.");
   }
 }
 
 void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kGroupsSection) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection.");
   }
 
   EoDbPrimitive* primitive{};
@@ -266,7 +269,7 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
     }
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
-    throw L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.";
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.");
   }
 }
 
@@ -603,8 +606,8 @@ void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primiti
   double rowSpacing = EoDb::ReadDouble(file);
   (void)rowSpacing;  // currently unused, but may be used in the future to indicate the row spacing
 
-  primitive = new EoDbBlockReference(static_cast<EoUInt16>(color), static_cast<EoUInt16>(LineType), Name, Point, Normal,
-                                     ScaleFactors, Rotation);
+  primitive = new EoDbBlockReference(
+      static_cast<EoUInt16>(color), static_cast<EoUInt16>(LineType), Name, Point, Normal, ScaleFactors, Rotation);
 }
 void EoDb::ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& /* file */, EoDbPrimitive*& /* primitive */) {}
 

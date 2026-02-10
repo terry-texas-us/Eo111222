@@ -1,5 +1,7 @@
 ﻿#include "Stdafx.h"
 
+#include <cstdint>
+
 #include "AeSysView.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbGroup.h"
@@ -60,7 +62,8 @@ int EoDbGroupList::GetBlockRefCount(const CString& strBlkNam) {
   return count;
 }
 
-void EoDbGroupList::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& transformMatrix) {
+void EoDbGroupList::GetExtents(
+    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& transformMatrix) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
@@ -91,7 +94,7 @@ void EoDbGroupList::ModifyLineType(EoInt16 nStyle) {
 }
 
 void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition,
-                                const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
+    const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
@@ -181,7 +184,7 @@ void EoDbGroupList::Translate(EoGeVector3d v) {
   }
 }
 
-void EoDbGroupList::Write(CFile& file, EoUInt8* buffer) {
+void EoDbGroupList::Write(CFile& file, std::uint8_t* buffer) {
   auto position = GetHeadPosition();
   while (position != nullptr) GetNext(position)->Write(file, buffer);
 }

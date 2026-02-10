@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <cstdint>
+
 #include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbGroup.h"
@@ -27,7 +29,7 @@ class EoDbLine : public EoDbPrimitive {
 
   EoDbLine(const EoDbLine& other);
 
-  ~EoDbLine() override {};
+  ~EoDbLine() override = default;
 
   const EoDbLine& operator=(const EoDbLine& other);
 
@@ -60,11 +62,11 @@ class EoDbLine : public EoDbPrimitive {
   void Translate(const EoGeVector3d& v) override { m_line += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, EoUInt8*) override;
+  void Write(CFile& file, std::uint8_t*) override;
 
   void CutAt2Points(
       const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
-  
+
   /** @brief Cuts a line at a point.
    * @param point Point for the line cut.
    * @param group Group to receive the new line segment if the cut is successful.
