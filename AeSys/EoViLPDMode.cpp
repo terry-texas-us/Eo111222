@@ -144,7 +144,7 @@ void AeSysView::OnLpdModeTap() {
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   }
-  EoDbLine* LinePrimitive;
+  EoDbLine* LinePrimitive{};
   auto* group = SelectLineUsingPoint(cursorPosition, LinePrimitive);
   if (group != nullptr) {
     EoGePoint3d TestPoint(cursorPosition);

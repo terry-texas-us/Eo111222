@@ -102,7 +102,7 @@ EoGePoint3d EoGePoint3d::Mid(const EoGePoint3d& p, const EoGePoint3d& q) { retur
   return EoGePoint3d(std::min(p.x, q.x), std::min(p.y, q.y), std::min(p.z, q.z));
 }
 
-EoGePoint3d EoGePoint3d::ProjectToward(const EoGePoint3d& p, const double distance) {
+EoGePoint3d EoGePoint3d::ProjectToward(const EoGePoint3d& p, const double distance) const {
   EoGeVector3d directionVector(*this, p);
 
   double length = directionVector.Length();

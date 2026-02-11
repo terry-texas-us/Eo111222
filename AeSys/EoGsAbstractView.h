@@ -66,7 +66,7 @@ class EoGsAbstractView {
   EoGsAbstractView& operator=(const EoGsAbstractView& av);
 
  public:  // Methods
-  EoGeVector3d Direction() const;
+  [[nodiscard]] EoGeVector3d Direction() const;
   void EnableFarClipping(bool enabled);
   void EnableNearClipping(bool enabled);
   void EnablePerspective(bool enabled);

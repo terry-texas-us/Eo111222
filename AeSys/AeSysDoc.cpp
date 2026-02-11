@@ -396,7 +396,7 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
 }
 
 void AeSysDoc::AddTextBlock(LPWSTR pszText) {
-  EoGePoint3d cursorPosition = app.GetCursorPosition();
+  auto cursorPosition = app.GetCursorPosition();
 
   const auto& fontDefinition = renderState.FontDefinition();
   auto characterCellDefinition = renderState.CharacterCellDefinition();
@@ -1015,21 +1015,19 @@ void AeSysDoc::OnPrimBreak() {
 }
 
 void AeSysDoc::OnEditSegToWork() {
-  EoGePoint3d cursorPosition = app.GetCursorPosition();
+  auto cursorPosition = app.GetCursorPosition();
 
   auto* layer = LayersSelUsingPoint(cursorPosition);
+  if (layer == nullptr) { return; }
 
-  if (layer != nullptr) {
-    if (layer->IsInternal()) {
-      auto* group = layer->SelectGroupUsingPoint(cursorPosition);
+  if (layer->IsInternal()) {
+    auto* group = layer->SelectGroupUsingPoint(cursorPosition);
 
-      if (group != nullptr) {
-        layer->Remove(group);
-        UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
-        AddWorkLayerGroup(group);
-        UpdateAllViews(nullptr, EoDb::kGroup, group);
-      }
-    }
+    if (group == nullptr) { return; }
+    layer->Remove(group);
+    UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
+    AddWorkLayerGroup(group);
+    UpdateAllViews(nullptr, EoDb::kGroup, group);
   }
 }
 

@@ -118,6 +118,12 @@ class EoDbPrimitive : public CObject {
   const std::wstring& LayerName() const noexcept { return m_layerName; }
   void SetLayerName(std::wstring name) { m_layerName = std::move(name); }
 
+  [[nodiscard]] EoDbPrimitive* WithProperties(std::int16_t color, std::int16_t lineTypeIndex) noexcept {
+    m_color = color;
+    m_lineTypeIndex = lineTypeIndex;
+    return this;
+  }
+
  public:  // Methods - static
   static int ControlPointIndex();
   static bool IsSupportedTyp(int type);

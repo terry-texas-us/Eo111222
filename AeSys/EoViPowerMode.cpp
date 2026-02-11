@@ -86,16 +86,16 @@ void AeSysView::OnPowerModeHome() {
 
   if (!m_PowerArrow || (PointOnCircuit != cursorPosition)) {
     m_PowerArrow = false;
-    EoDbLine* Circuit;
-    auto* group = SelectLineUsingPoint(cursorPosition, Circuit);
+    EoDbLine* circuit{};
+    auto* group = SelectLineUsingPoint(cursorPosition, circuit);
     if (group != nullptr) {
-      cursorPosition = Circuit->ProjectPointToLine(cursorPosition);
-      if (Circuit->RelOfPt(cursorPosition) <= 0.5) {
-        m_CircuitEndPoint = Circuit->End();
-        if (cursorPosition.DistanceTo(Circuit->Begin()) <= 0.1) cursorPosition = Circuit->Begin();
+      cursorPosition = circuit->ProjectPointToLine(cursorPosition);
+      if (circuit->RelOfPt(cursorPosition) <= 0.5) {
+        m_CircuitEndPoint = circuit->End();
+        if (cursorPosition.DistanceTo(circuit->Begin()) <= 0.1) cursorPosition = circuit->Begin();
       } else {
-        m_CircuitEndPoint = Circuit->Begin();
-        if (cursorPosition.DistanceTo(Circuit->End()) <= 0.1) cursorPosition = Circuit->End();
+        m_CircuitEndPoint = circuit->Begin();
+        if (cursorPosition.DistanceTo(circuit->End()) <= 0.1) cursorPosition = circuit->End();
       }
       m_PowerArrow = cursorPosition.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
       GenerateHomeRunArrow(cursorPosition, m_CircuitEndPoint);
@@ -154,13 +154,13 @@ void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
 
   if (!m_PowerConductor || PointOnCircuit != cursorPosition) {
     m_PowerConductor = false;
-    EoDbLine* Circuit;
-    auto* Group = SelectLineUsingPoint(cursorPosition, Circuit);
-    if (Group != 0) {
-      cursorPosition = Circuit->ProjectPointToLine(cursorPosition);
+    EoDbLine* circuit{};
+    auto* group = SelectLineUsingPoint(cursorPosition, circuit);
+    if (group != 0) {
+      cursorPosition = circuit->ProjectPointToLine(cursorPosition);
 
-      EoGePoint3d BeginPoint = Circuit->Begin();
-      m_CircuitEndPoint = Circuit->End();
+      EoGePoint3d BeginPoint = circuit->Begin();
+      m_CircuitEndPoint = circuit->End();
 
       if (fabs(m_CircuitEndPoint.x - BeginPoint.x) > 0.025) {
         if (BeginPoint.x > m_CircuitEndPoint.x) m_CircuitEndPoint = BeginPoint;

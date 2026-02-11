@@ -2,6 +2,7 @@
 
 #include <climits>
 #include <cmath>
+#include <cstdint>
 
 #include "AeSys.h"
 #include "AeSysView.h"
@@ -23,11 +24,20 @@
 #include "ddeGItms.h"
 #endif  // USING_DDE
 
+/** @brief Private constructor a line primitive with specified begin and end points.
+ * @param begin The starting point of the line.
+ * @param end The ending point of the line.
+ */
+EoDbLine::EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end) : EoDbPrimitive(), m_line{begin, end} {}
+
+EoDbLine* EoDbLine::CreateLine(const EoGePoint3d& begin, const EoGePoint3d& end) { return new EoDbLine(begin, end); }
+
+
 EoDbLine::EoDbLine(const EoGeLine& line) : EoDbPrimitive(), m_line{line} {}
 
-EoDbLine::EoDbLine(std::int16_t color, std::int16_t lineType, EoGeLine line) : EoDbPrimitive(color, lineType), m_line{line} {}
+EoDbLine::EoDbLine(std::int16_t color, std::int16_t lineType, EoGeLine line)
+    : EoDbPrimitive(color, lineType), m_line{line} {}
 
-EoDbLine::EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end) : EoDbPrimitive(), m_line{begin, end} {}
 
 EoDbLine::EoDbLine(std::int16_t color, std::int16_t lineType, const EoGePoint3d& begin, const EoGePoint3d& end)
     : EoDbPrimitive(color, lineType), m_line{begin, end} {}

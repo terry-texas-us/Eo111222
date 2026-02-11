@@ -16,14 +16,16 @@
 class EoDbLine : public EoDbPrimitive {
   EoGeLine m_line;
 
+  EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end);
+
  public:
   EoDbLine() = default;
+
+  static EoDbLine* CreateLine(const EoGePoint3d& begin, const EoGePoint3d& end);
 
   EoDbLine(const EoGeLine& line);
 
   EoDbLine(std::int16_t color, std::int16_t lineType, EoGeLine line);
-
-  EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end);
 
   EoDbLine(std::int16_t color, std::int16_t lineType, const EoGePoint3d& begin, const EoGePoint3d& end);
 

@@ -766,12 +766,19 @@ class AeSysView : public CView {
   double m_PipeRiseDropRadius;
 
   /// <summary>Adds a fitting indication to horizontal pipe section as required by previous fitting type.</summary>
-  void GenerateLineWithFittings(int beginType, EoGePoint3d& beginPoint, int endType, EoGePoint3d& endPoint,
+  void GenerateLineWithFittings(int beginType, const EoGePoint3d& beginPoint, int endType, const EoGePoint3d& endPoint,
                                 EoDbGroup* group);
-  /// <summary>Draws tic mark at a point distance from begin point on the line defined by begin and end points.</summary>
-  bool GenerateTicMark(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, double distance, EoDbGroup* group) const;
-  void DropFromOrRiseIntoHorizontalSection(EoGePoint3d& point, EoDbGroup* group, EoDbLine* section);
-  void DropIntoOrRiseFromHorizontalSection(EoGePoint3d& point, EoDbGroup* group, EoDbLine* section);
+  
+  /** @brief Generates a tick mark at a specified distance along a line defined by two points, and adds it to the given group.
+   * @param begin The starting point of the line segment.
+   * @param end The ending point of the line segment.
+   * @param distance The distance from the beginPoint along the line segment where the tick mark should be placed.
+   * @param group The group to which the generated tick mark will be added.
+   * @return true if the tick mark was successfully generated and added to the group; false otherwise (e.g., if the distance is greater than the length of the line segment).
+   */
+  bool GenerateTickMark(const EoGePoint3d& begin, const EoGePoint3d& end, double distance, EoDbGroup* group) const;
+  void DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section);
+  void DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section);
 
  public:
   void DoPipeModeMouseMove();

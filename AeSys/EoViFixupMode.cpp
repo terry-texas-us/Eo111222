@@ -490,22 +490,19 @@ void AeSysView::OnFixupModeParallel() {
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
 
-  EoDbLine* pLine;
-
   currentGroup = SelectGroupAndPrimitive(cursorPosition);
-  if (referenceGroup != nullptr && currentGroup != nullptr) {
-    currentPrimitive = EngagedPrimitive();
-    if (currentPrimitive->Is(EoDb::kLinePrimitive)) {
-      pLine = static_cast<EoDbLine*>(currentPrimitive);
+  if (referenceGroup == nullptr || currentGroup == nullptr) { return; }
 
-      currentLine.begin = referenceLine.ProjectPointToLine(pLine->Begin());
-      currentLine.end = referenceLine.ProjectPointToLine(pLine->End());
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
-      pLine->SetBeginPoint(currentLine.begin.ProjectToward(pLine->Begin(), app.DimensionLength()));
-      pLine->SetEndPoint(currentLine.end.ProjectToward(pLine->End(), app.DimensionLength()));
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
-    }
-  }
+  currentPrimitive = EngagedPrimitive();
+  if (!currentPrimitive->Is(EoDb::kLinePrimitive)) { return; }
+
+  auto* linePrimitive = static_cast<EoDbLine*>(currentPrimitive);
+  currentLine.begin = referenceLine.ProjectPointToLine(linePrimitive->Begin());
+  currentLine.end = referenceLine.ProjectPointToLine(linePrimitive->End());
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
+  linePrimitive->SetBeginPoint(currentLine.begin.ProjectToward(linePrimitive->Begin(), app.DimensionLength()));
+  linePrimitive->SetEndPoint(currentLine.end.ProjectToward(linePrimitive->End(), app.DimensionLength()));
+  document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
 }
 
 void AeSysView::OnFixupModeReturn() {

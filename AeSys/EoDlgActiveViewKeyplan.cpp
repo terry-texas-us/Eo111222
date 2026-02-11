@@ -6,6 +6,7 @@
 #include "Eo.h"
 #include "EoDbPolygon.h"
 #include "EoDlgActiveViewKeyplan.h"
+#include "EoGeLine.h"
 #include "Resource.h"
 
 HBITMAP EoDlgActiveViewKeyplan::m_hbmKeyplan = nullptr;
@@ -17,7 +18,8 @@ ON_BN_CLICKED(IDC_SAVE, &EoDlgActiveViewKeyplan::OnBnClickedSave)
 ON_EN_KILLFOCUS(IDC_RATIO, &EoDlgActiveViewKeyplan::OnEnKillfocusRatio)
 END_MESSAGE_MAP()
 
-EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgActiveViewKeyplan::IDD, pParent), m_dRatio(0) {}
+EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(CWnd* pParent /*=nullptr*/)
+    : CDialog(EoDlgActiveViewKeyplan::IDD, pParent), m_dRatio(0) {}
 EoDlgActiveViewKeyplan::EoDlgActiveViewKeyplan(AeSysView* view, CWnd* pParent /*=nullptr*/)
     : CDialog(EoDlgActiveViewKeyplan::IDD, pParent), m_dRatio(0), m_ActiveView(view) {}
 EoDlgActiveViewKeyplan::~EoDlgActiveViewKeyplan() {}
@@ -26,6 +28,7 @@ void EoDlgActiveViewKeyplan::DoDataExchange(CDataExchange* dataExchange) {
   DDX_Text(dataExchange, IDC_RATIO, m_dRatio);
   DDV_MinMaxDouble(dataExchange, m_dRatio, 0.0001, 10000.0);
 }
+
 BOOL EoDlgActiveViewKeyplan::OnInitDialog() {
   CDialog::OnInitDialog();
 
@@ -43,21 +46,21 @@ BOOL EoDlgActiveViewKeyplan::OnInitDialog() {
   auto UExtent = fabs(UMax - UMin);
   auto VExtent = fabs(VMax - VMin);
 
-  EoGePoint3d CursorPosition = app.GetCursorPosition();
-  EoGeVector3d Direction = m_ActiveView->CameraDirection();
-  EoGePoint3d Target = m_ActiveView->CameraTarget();
-  EoGeLine::IntersectionWithPln(CursorPosition, Direction, Target, Direction, &CursorPosition);
+  auto cursorPosition = app.GetCursorPosition();
+  auto cameraDirection = m_ActiveView->CameraDirection();
+  auto target = m_ActiveView->CameraTarget();
+  EoGeLine::IntersectionWithPln(cursorPosition, cameraDirection, target, cameraDirection, &cursorPosition);
 
-  UMin = CursorPosition.x - (UExtent * 0.5);
+  UMin = cursorPosition.x - (UExtent * 0.5);
   UMax = UMin + UExtent;
-  VMin = CursorPosition.y - (VExtent * 0.5);
+  VMin = cursorPosition.y - (VExtent * 0.5);
   VMax = VMin + VExtent;
 
   CRect KeyplanArea;
   GetDlgItem(IDC_KEYPLAN_AREA)->GetClientRect(&KeyplanArea);
 
-  double UMinOverview = Target.x + m_ActiveView->OverviewUMin();
-  double VMinOverview = Target.y + m_ActiveView->OverviewVMin();
+  double UMinOverview = target.x + m_ActiveView->OverviewUMin();
+  double VMinOverview = target.y + m_ActiveView->OverviewVMin();
 
   m_rcWnd.left = Eo::Round((UMin - UMinOverview) / m_ActiveView->OverviewUExt() * KeyplanArea.right);
   m_rcWnd.right = Eo::Round((UMax - UMinOverview) / m_ActiveView->OverviewUExt() * KeyplanArea.right);
@@ -67,6 +70,7 @@ BOOL EoDlgActiveViewKeyplan::OnInitDialog() {
   Refresh();
   return TRUE;
 }
+
 void EoDlgActiveViewKeyplan::OnOK() {
   CDialog::OnOK();
 

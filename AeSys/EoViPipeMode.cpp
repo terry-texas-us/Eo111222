@@ -1,6 +1,7 @@
 ﻿#include "Stdafx.h"
 
 #include <cmath>
+#include <iterator>
 
 #include "AeSysDoc.h"
 #include "AeSysView.h"
@@ -17,6 +18,40 @@
 #include "EoGeVector3d.h"
 #include "EoGsRenderState.h"
 #include "Resource.h"
+
+namespace {
+constexpr double symbolSize[] = {0.09375, 0.09375, 0.09375, 0.09375, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125,
+    0.125, 0.125, 0.125, 0.125, 0.0, 0.0, 0.09375};
+constexpr double tickDistance[] = {0.125, 0.125, 0.125, 0.125, 0.15625, 0.15625, 0.15625, 0.15625, 0.15625, 0.15625,
+    0.15625, 0.15625, 0.15625, 0.15625, 0.15625, 0.03125, 0.03125, 0.125};
+
+void AddLineToGroup(EoDbGroup* group, const EoGePoint3d& begin, const EoGePoint3d& end) {
+  group->AddTail(EoDbLine::CreateLine(begin, end)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+}
+
+void AddCircleToGroup(EoDbGroup* group, const EoGePoint3d& center, double radius) {
+  group->AddTail(
+      EoDbConic::CreateCircleInView(center, radius)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+}
+
+void CreateGateValve(EoDbGroup* group, const EoGeLine& beginSection, const EoGeLine& endSection, double size) {
+  EoGePoint3d topEnd{};
+  EoGePoint3d bottomEnd{};
+  EoGePoint3d bottomBegin{};
+  EoGePoint3d topBegin{};
+
+  endSection.ProjPtFrom_xy(size, size * 0.5, &topEnd);
+  endSection.ProjPtFrom_xy(size, -size * 0.5, &bottomEnd);
+  beginSection.ProjPtFrom_xy(size, -size * 0.5, &bottomBegin);
+  beginSection.ProjPtFrom_xy(size, size * 0.5, &topBegin);
+
+  AddLineToGroup(group, topEnd, bottomEnd);
+  AddLineToGroup(group, bottomEnd, bottomBegin);
+  AddLineToGroup(group, bottomBegin, topBegin);
+  AddLineToGroup(group, topBegin, topEnd);
+}
+
+}  // namespace
 
 void AeSysView::OnPipeModeOptions() {
   EoDlgPipeOptions Dialog;
@@ -40,10 +75,10 @@ void AeSysView::OnPipeModeLine() {
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
-    auto* Group = new EoDbGroup;
-    document->AddWorkLayerGroup(Group);
-    GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP2, cursorPosition, Group);
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
+    auto* group = new EoDbGroup;
+    document->AddWorkLayerGroup(group);
+    GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP2, cursorPosition, group);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
 
     pts[0] = cursorPosition;
   }
@@ -54,21 +89,19 @@ void AeSysView::OnPipeModeFitting() {
   auto cursorPosition = GetCursorPosition();
   auto* document = GetDocument();
 
-  EoDbLine* HorizontalSection;
-  auto* group = SelectLineUsingPoint(cursorPosition, HorizontalSection);
+  EoDbLine* horizontalSection{};
+  auto* group = SelectLineUsingPoint(cursorPosition, horizontalSection);
   if (group != nullptr) {
-    EoGePoint3d BeginPoint = HorizontalSection->Begin();
-    EoGePoint3d EndPoint = HorizontalSection->End();
-
+    EoGePoint3d begin = horizontalSection->Begin();
+    EoGePoint3d end = horizontalSection->End();
     if (!pts.IsEmpty()) { cursorPosition = SnapPointToAxis(pts[0], cursorPosition); }
-    cursorPosition = HorizontalSection->ProjectPointToLine(cursorPosition);
-    HorizontalSection->SetEndPoint(cursorPosition);
-    group->AddTail(
-        new EoDbLine(HorizontalSection->Color(), HorizontalSection->LineTypeIndex(), cursorPosition, EndPoint));
+    cursorPosition = horizontalSection->ProjectPointToLine(cursorPosition);
+    horizontalSection->SetEndPoint(cursorPosition);
+    group->AddTail(new EoDbLine(horizontalSection->Color(), horizontalSection->LineTypeIndex(), cursorPosition, end));
 
     group = new EoDbGroup;
-    GenerateTicMark(cursorPosition, BeginPoint, m_PipeRiseDropRadius, group);
-    GenerateTicMark(cursorPosition, EndPoint, m_PipeRiseDropRadius, group);
+    GenerateTickMark(cursorPosition, begin, m_PipeRiseDropRadius, group);
+    GenerateTickMark(cursorPosition, end, m_PipeRiseDropRadius, group);
     document->AddWorkLayerGroup(group);
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
@@ -76,7 +109,7 @@ void AeSysView::OnPipeModeFitting() {
       pts.Add(cursorPosition);
       m_PreviousOp = ModeLineHighlightOp(ID_OP3);
     } else {
-      GenerateTicMark(cursorPosition, pts[0], m_PipeRiseDropRadius, group);
+      GenerateTickMark(cursorPosition, pts[0], m_PipeRiseDropRadius, group);
 
       group = new EoDbGroup;
       GenerateLineWithFittings(m_PreviousOp, pts[0], 0, cursorPosition, group);
@@ -122,29 +155,29 @@ void AeSysView::OnPipeModeFitting() {
 }
 
 void AeSysView::OnPipeModeRise() {
-  EoGePoint3d cursorPosition = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   auto* document = GetDocument();
 
-  EoDbLine* HorizontalSection;
-  auto* Group = SelectLineUsingPoint(cursorPosition, HorizontalSection);
-  if (Group != 0) {  // On an existing horizontal pipe section
-    cursorPosition = HorizontalSection->ProjectPointToLine(cursorPosition);
+  EoDbLine* horizontalSection{};
+  auto* group = SelectLineUsingPoint(cursorPosition, horizontalSection);
+  if (group != nullptr) {  // On an existing horizontal pipe section
+    cursorPosition = horizontalSection->ProjectPointToLine(cursorPosition);
 
     if (pts.IsEmpty()) {  // Rising from an existing horizontal pipe section
       pts.Add(cursorPosition);
-      DropIntoOrRiseFromHorizontalSection(cursorPosition, Group, HorizontalSection);
+      DropIntoOrRiseFromHorizontalSection(cursorPosition, group, horizontalSection);
     } else {  // Rising into an existing horizontal pipe section
-      DropFromOrRiseIntoHorizontalSection(cursorPosition, Group, HorizontalSection);
-      Group = new EoDbGroup;
-      GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP5, cursorPosition, Group);
-      document->AddWorkLayerGroup(Group);
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      DropFromOrRiseIntoHorizontalSection(cursorPosition, group, horizontalSection);
+      group = new EoDbGroup;
+      GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP5, cursorPosition, group);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
     }
     m_PreviousOp = ModeLineHighlightOp(ID_OP5);
   } else {
     EoDbConic* VerticalSection{};
-    Group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, VerticalSection);
-    if (Group != nullptr) {  // On an existing vertical pipe section
+    group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, VerticalSection);
+    if (group != nullptr) {  // On an existing vertical pipe section
       cursorPosition = VerticalSection->Center();
       if (pts.IsEmpty()) {
         pts.Add(cursorPosition);
@@ -152,10 +185,10 @@ void AeSysView::OnPipeModeRise() {
       } else {  // Rising into an existing vertical pipe section
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-        Group = new EoDbGroup;
-        GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP5, cursorPosition, Group);
-        document->AddWorkLayerGroup(Group);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+        group = new EoDbGroup;
+        GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP5, cursorPosition, group);
+        document->AddWorkLayerGroup(group);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
         OnPipeModeEscape();
       }
     } else {
@@ -166,18 +199,16 @@ void AeSysView::OnPipeModeRise() {
         pts.Add(cursorPosition);
       } else {
         cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
-        Group = new EoDbGroup;
-        GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP5, cursorPosition, Group);
-        document->AddWorkLayerGroup(Group);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+        group = new EoDbGroup;
+        GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP5, cursorPosition, group);
+        document->AddWorkLayerGroup(group);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       }
-      auto* circle = EoDbConic::CreateCircleInView(cursorPosition, m_PipeRiseDropRadius);
-      circle->SetColor(1);
-      circle->SetLineTypeIndex(1);
-      Group = new EoDbGroup(circle);
+      auto* circle = EoDbConic::CreateCircleInView(cursorPosition, m_PipeRiseDropRadius)->WithProperties(1, 1);
+      group = new EoDbGroup(circle);
 
-      document->AddWorkLayerGroup(Group);
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       m_PreviousOp = ModeLineHighlightOp(ID_OP5);
       pts[0] = cursorPosition;
     }
@@ -185,29 +216,29 @@ void AeSysView::OnPipeModeRise() {
 }
 
 void AeSysView::OnPipeModeDrop() {
-  EoGePoint3d cursorPosition = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   auto* document = GetDocument();
 
-  EoDbLine* HorizontalSection;
-  auto* Group = SelectLineUsingPoint(cursorPosition, HorizontalSection);
-  if (Group != 0) {  // On an existing horizontal pipe section
-    cursorPosition = HorizontalSection->ProjectPointToLine(cursorPosition);
+  EoDbLine* horizontalSection{};
+  auto* group = SelectLineUsingPoint(cursorPosition, horizontalSection);
+  if (group != nullptr) {  // On an existing horizontal pipe section
+    cursorPosition = horizontalSection->ProjectPointToLine(cursorPosition);
 
     if (pts.IsEmpty()) {  // Dropping from an existing horizontal pipe section
       pts.Add(cursorPosition);
-      DropFromOrRiseIntoHorizontalSection(cursorPosition, Group, HorizontalSection);
+      DropFromOrRiseIntoHorizontalSection(cursorPosition, group, horizontalSection);
     } else {  // Dropping into an existing horizontal pipe section
-      DropIntoOrRiseFromHorizontalSection(cursorPosition, Group, HorizontalSection);
-      Group = new EoDbGroup;
-      GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP4, cursorPosition, Group);
-      document->AddWorkLayerGroup(Group);
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      DropIntoOrRiseFromHorizontalSection(cursorPosition, group, horizontalSection);
+      group = new EoDbGroup;
+      GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP4, cursorPosition, group);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
     }
     m_PreviousOp = ModeLineHighlightOp(ID_OP4);
   } else {
     EoDbConic* VerticalSection{};
-    Group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, VerticalSection);
-    if (Group != nullptr) {  // On an existing vertical pipe section
+    group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, VerticalSection);
+    if (group != nullptr) {  // On an existing vertical pipe section
       cursorPosition = VerticalSection->Center();
       if (pts.IsEmpty()) {
         pts.Add(cursorPosition);
@@ -215,10 +246,10 @@ void AeSysView::OnPipeModeDrop() {
       } else {  // Dropping into an existing vertical pipe section
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-        Group = new EoDbGroup;
-        GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP4, cursorPosition, Group);
-        document->AddWorkLayerGroup(Group);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+        group = new EoDbGroup;
+        GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP4, cursorPosition, group);
+        document->AddWorkLayerGroup(group);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
         OnPipeModeEscape();
       }
     } else {
@@ -230,18 +261,16 @@ void AeSysView::OnPipeModeDrop() {
       } else {
         cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
 
-        Group = new EoDbGroup;
-        GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP4, cursorPosition, Group);
-        document->AddWorkLayerGroup(Group);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+        group = new EoDbGroup;
+        GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP4, cursorPosition, group);
+        document->AddWorkLayerGroup(group);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       }
-      auto* circle = EoDbConic::CreateCircleInView(cursorPosition, m_PipeRiseDropRadius);
-      circle->SetColor(1);
-      circle->SetLineTypeIndex(1);
+      auto* circle = EoDbConic::CreateCircleInView(cursorPosition, m_PipeRiseDropRadius)->WithProperties(1, 1);
 
-      Group = new EoDbGroup(circle);
-      document->AddWorkLayerGroup(Group);
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      group = new EoDbGroup(circle);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
       m_PreviousOp = ModeLineHighlightOp(ID_OP4);
       pts[0] = cursorPosition;
@@ -250,348 +279,267 @@ void AeSysView::OnPipeModeDrop() {
 }
 
 void AeSysView::OnPipeModeSymbol() {
-  double SymbolSize[] = {0.09375, 0.09375, 0.09375, 0.09375, 0.125, 0.125, 0.125, 0.125, 0.125,
-                         0.125,   0.125,   0.125,   0.125,   0.125, 0.125, 0.0,   0.0,   0.09375};
-  double TicDistance[] = {0.125,   0.125,   0.125,   0.125,   0.15625, 0.15625, 0.15625, 0.15625, 0.15625,
-                          0.15625, 0.15625, 0.15625, 0.15625, 0.15625, 0.15625, 0.03125, 0.03125, 0.125};
+  if (m_CurrentPipeSymbolIndex < 0 || m_CurrentPipeSymbolIndex >= static_cast<int>(std::size(symbolSize))) { return; }
 
-  EoGePoint3d cursorPosition = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   auto* document = GetDocument();
 
   OnPipeModeEscape();
   pts.SetSize(2);
 
-  EoDbLine* HorizontalSection;
-  auto* Group = SelectLineUsingPoint(cursorPosition, HorizontalSection);
-  if (Group == 0) return;
+  EoDbLine* horizontalSection{};
+  auto* group = SelectLineUsingPoint(cursorPosition, horizontalSection);
+  if (group == nullptr) { return; }
 
   EoDlgPipeSymbol Dialog;
   Dialog.m_CurrentPipeSymbolIndex = m_CurrentPipeSymbolIndex;
   if (Dialog.DoModal() == IDOK) { m_CurrentPipeSymbolIndex = Dialog.m_CurrentPipeSymbolIndex; }
-  EoGePoint3d BeginPoint = HorizontalSection->Begin();
-  EoGePoint3d EndPoint = HorizontalSection->End();
-  EoGePoint3d PointOnSection = HorizontalSection->ProjectPointToLine(cursorPosition);
+  EoGePoint3d begin = horizontalSection->Begin();
+  EoGePoint3d end = horizontalSection->End();
+  EoGePoint3d PointOnSection = horizontalSection->ProjectPointToLine(cursorPosition);
 
-  EoGeLine BeginSection(PointOnSection, BeginPoint);
-  EoGeLine EndSection(PointOnSection, EndPoint);
+  EoGeLine BeginSection(PointOnSection, begin);
+  EoGeLine EndSection(PointOnSection, end);
 
-  document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, HorizontalSection);
+  document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, horizontalSection);
 
-  EoGePoint3d SymbolBeginPoint = PointOnSection.ProjectToward(BeginPoint, SymbolSize[m_CurrentPipeSymbolIndex]);
-  EoGePoint3d SymbolEndPoint = PointOnSection.ProjectToward(EndPoint, SymbolSize[m_CurrentPipeSymbolIndex]);
+  EoGePoint3d SymbolBeginPoint = PointOnSection.ProjectToward(begin, symbolSize[m_CurrentPipeSymbolIndex]);
+  EoGePoint3d SymbolEndPoint = PointOnSection.ProjectToward(end, symbolSize[m_CurrentPipeSymbolIndex]);
   double TicSize = m_PipeTicSize;
 
-  HorizontalSection->SetEndPoint(SymbolBeginPoint);
-  document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, HorizontalSection);
-  Group = new EoDbGroup(
-      new EoDbLine(HorizontalSection->Color(), HorizontalSection->LineTypeIndex(), SymbolEndPoint, EndPoint));
-  document->AddWorkLayerGroup(Group);
-  document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+  horizontalSection->SetEndPoint(SymbolBeginPoint);
+  document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, horizontalSection);
+  group =
+      new EoDbGroup(new EoDbLine(horizontalSection->Color(), horizontalSection->LineTypeIndex(), SymbolEndPoint, end));
+  document->AddWorkLayerGroup(group);
+  document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
-  Group = new EoDbGroup;
-  GenerateTicMark(PointOnSection, BeginPoint, TicDistance[m_CurrentPipeSymbolIndex], Group);
-  GenerateTicMark(PointOnSection, EndPoint, TicDistance[m_CurrentPipeSymbolIndex], Group);
+  group = new EoDbGroup;
+  GenerateTickMark(PointOnSection, begin, tickDistance[m_CurrentPipeSymbolIndex], group);
+  GenerateTickMark(PointOnSection, end, tickDistance[m_CurrentPipeSymbolIndex], group);
 
   switch (m_CurrentPipeSymbolIndex) {
-    case 0: {  // Generate flow switch
+    case 0: {  // flow switch
       double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
-      auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(renderState.Color());
-      circle->SetLineTypeIndex(renderState.LineTypeIndex());
-      Group->AddTail(circle);
-      EndSection.ProjPtFrom_xy(SymbolSize[0], -SymbolSize[0] * 1.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[0], -SymbolSize[0] * 2.0, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[0], SymbolSize[0] * 1.5, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[0], SymbolSize[0] * 2.0, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, pts[0]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
+      AddCircleToGroup(group, PointOnSection, radius);
+      EndSection.ProjPtFrom_xy(symbolSize[0], -symbolSize[0] * 1.5, &pts[0]);
+      EndSection.ProjPtFrom_xy(symbolSize[0], -symbolSize[0] * 2.0, &pts[1]);
+      BeginSection.ProjPtFrom_xy(symbolSize[0], symbolSize[0] * 1.5, &SymbolBeginPoint);
+      BeginSection.ProjPtFrom_xy(symbolSize[0], symbolSize[0] * 2.0, &SymbolEndPoint);
+      AddLineToGroup(group, pts[1], SymbolEndPoint);
+      AddLineToGroup(group, SymbolEndPoint, SymbolBeginPoint);
+      AddLineToGroup(group, SymbolBeginPoint, pts[0]);
+      AddLineToGroup(group, pts[0], pts[1]);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
     } break;
 
-    case 1: {  // Generate float and thermostatic trap
+    case 1: {  // float and thermostatic trap
       double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
-      auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(renderState.Color());
-      circle->SetLineTypeIndex(renderState.LineTypeIndex());
-      Group->AddTail(circle);
+      AddCircleToGroup(group, PointOnSection, radius);
       pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::QuarterPi);
       pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::Pi);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
+      AddLineToGroup(group, pts[0], pts[1]);
       pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::ThreeQuartersPi);
       pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::Pi);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
+      AddLineToGroup(group, pts[0], pts[1]);
     } break;
 
-    case 2: {
+    case 2: {  // ball valve
       double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
-      auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(renderState.Color());
-      circle->SetLineTypeIndex(renderState.LineTypeIndex());
-      Group->AddTail(circle);
-      EndSection.ProjPtFrom_xy(SymbolSize[2], SymbolSize[2] * 1.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(0.0, SymbolSize[2] * 1.5, &pts[1]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      EndSection.ProjPtFrom_xy(0.0, SymbolSize[2], &SymbolBeginPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
+      AddCircleToGroup(group, PointOnSection, radius);
+      EndSection.ProjPtFrom_xy(symbolSize[2], symbolSize[2] * 1.5, &pts[0]);
+      EndSection.ProjPtFrom_xy(0.0, symbolSize[2] * 1.5, &pts[1]);
+      AddLineToGroup(group, pts[0], pts[1]);
+      EndSection.ProjPtFrom_xy(0.0, symbolSize[2], &SymbolBeginPoint);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
     } break;
 
-    case 3: {
+    case 3: {  // butterfly
       double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
-      auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(renderState.Color());
-      circle->SetLineTypeIndex(renderState.LineTypeIndex());
-      Group->AddTail(circle);
-      EndSection.ProjPtFrom_xy(SymbolSize[3], SymbolSize[3] * 1.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(0.0, SymbolSize[3] * 1.5, &pts[1]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      BeginSection.ProjPtFrom_xy(0.0, SymbolSize[3], &SymbolBeginPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
+      AddCircleToGroup(group, PointOnSection, radius);
+      EndSection.ProjPtFrom_xy(symbolSize[3], symbolSize[3] * 1.5, &pts[0]);
+      EndSection.ProjPtFrom_xy(0.0, symbolSize[3] * 1.5, &pts[1]);
+      AddLineToGroup(group, pts[0], pts[1]);
+      BeginSection.ProjPtFrom_xy(0.0, symbolSize[3], &SymbolBeginPoint);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
     } break;
 
-    case 4: {
-      EndSection.ProjPtFrom_xy(SymbolSize[4], SymbolSize[4] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[4], -SymbolSize[4] * 0.5, &pts[1]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      BeginSection.ProjPtFrom_xy(SymbolSize[4], -SymbolSize[4] * 0.5, &SymbolBeginPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      BeginSection.ProjPtFrom_xy(SymbolSize[4], SymbolSize[4] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      BeginSection.ProjPtFrom_xy(SymbolSize[4], -SymbolSize[4] * 0.3, &pts[0]);
+    case 4: {  // check valve
+      EndSection.ProjPtFrom_xy(symbolSize[4], symbolSize[4] * 0.5, &pts[0]);
+      EndSection.ProjPtFrom_xy(symbolSize[4], -symbolSize[4] * 0.5, &pts[1]);
+      AddLineToGroup(group, pts[0], pts[1]);
+      BeginSection.ProjPtFrom_xy(symbolSize[4], -symbolSize[4] * 0.5, &SymbolBeginPoint);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      BeginSection.ProjPtFrom_xy(symbolSize[4], symbolSize[4] * 0.5, &SymbolEndPoint);
+      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
+      BeginSection.ProjPtFrom_xy(symbolSize[4], -symbolSize[4] * 0.3, &pts[0]);
       double radius = EoGePoint3d::Distance(SymbolBeginPoint, pts[0]);
-      auto* circle = EoDbConic::CreateCircleInView(SymbolBeginPoint, radius);
-      circle->SetColor(renderState.Color());
-      circle->SetLineTypeIndex(renderState.LineTypeIndex());
-      Group->AddTail(circle);
+      AddCircleToGroup(group, SymbolBeginPoint, radius);
     } break;
 
-    case 5: {
-      EndSection.ProjPtFrom_xy(SymbolSize[5], SymbolSize[5] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[5], -SymbolSize[5] * 0.5, &pts[1]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      BeginSection.ProjPtFrom_xy(SymbolSize[5], -SymbolSize[5] * 0.5, &SymbolBeginPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      BeginSection.ProjPtFrom_xy(SymbolSize[5], SymbolSize[5] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      BeginSection.ProjPtFrom_xy(SymbolSize[5], -SymbolSize[5] * 0.3, &pts[0]);
+    case 5: {  // non-slam check valve
+      EndSection.ProjPtFrom_xy(symbolSize[5], symbolSize[5] * 0.5, &pts[0]);
+      EndSection.ProjPtFrom_xy(symbolSize[5], -symbolSize[5] * 0.5, &pts[1]);
+      AddLineToGroup(group, pts[0], pts[1]);
+      BeginSection.ProjPtFrom_xy(symbolSize[5], -symbolSize[5] * 0.5, &SymbolBeginPoint);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      BeginSection.ProjPtFrom_xy(symbolSize[5], symbolSize[5] * 0.5, &SymbolEndPoint);
+      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
+      BeginSection.ProjPtFrom_xy(symbolSize[5], -symbolSize[5] * 0.3, &pts[0]);
       double radius = EoGePoint3d::Distance(SymbolBeginPoint, pts[0]);
-      auto* circle = EoDbConic::CreateCircleInView(SymbolBeginPoint, radius);
-      circle->SetColor(renderState.Color());
-      circle->SetLineTypeIndex(renderState.LineTypeIndex());
-      Group->AddTail(circle);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, PointOnSection));
+      AddCircleToGroup(group, SymbolBeginPoint, radius);
+      AddLineToGroup(group, SymbolEndPoint, PointOnSection);
     } break;
 
-    case 6:  // Generate gate valve
-      EndSection.ProjPtFrom_xy(SymbolSize[6], SymbolSize[6] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[6], -SymbolSize[6] * 0.5, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[6], -SymbolSize[6] * 0.5, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[6], SymbolSize[6] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[0]));
+    case 6:  // gate valve
+      CreateGateValve(group, BeginSection, EndSection, symbolSize[6]);
       break;
 
-    case 7: {  // Generate globe valve
-      EndSection.ProjPtFrom_xy(SymbolSize[7], SymbolSize[7] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[7], -SymbolSize[7] * 0.5, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[7], -SymbolSize[7] * 0.5, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[7], SymbolSize[7] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[0]));
-      pts[0] = PointOnSection.ProjectToward(EndPoint, SymbolSize[7] * 0.25);
+    case 7: {  // globe valve
+      CreateGateValve(group, BeginSection, EndSection, symbolSize[7]);
+      pts[0] = PointOnSection.ProjectToward(end, symbolSize[7] * 0.25);
       double radius = EoGePoint3d::Distance(PointOnSection, pts[0]);
-      auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(renderState.Color());
-      circle->SetLineTypeIndex(renderState.LineTypeIndex());
-      Group->AddTail(circle);
+      AddCircleToGroup(group, PointOnSection, radius);
     } break;
 
-    case 8: {  // Generate stop check valve
-      EndSection.ProjPtFrom_xy(SymbolSize[8], SymbolSize[8] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[8], -SymbolSize[8] * 0.5, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[8], -SymbolSize[8] * 0.5, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[8], SymbolSize[8] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[0]));
-      pts[0] = PointOnSection.ProjectToward(EndPoint, SymbolSize[8] * 0.25);
-
+    case 8: {  // OS&Y gate valve
+      CreateGateValve(group, BeginSection, EndSection, symbolSize[8]);
+      pts[0] = PointOnSection.ProjectToward(end, symbolSize[8] * 0.25);
       double radius = EoGePoint3d::Distance(PointOnSection, pts[0]);
-      auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(renderState.Color());
-      circle->SetLineTypeIndex(renderState.LineTypeIndex());
-      Group->AddTail(circle);
-      EndSection.ProjPtFrom_xy(0.0, SymbolSize[8], &pts[0]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PointOnSection, pts[0]));
-      m_PipeTicSize = SymbolSize[8] * 0.25;
-      GenerateTicMark(PointOnSection, pts[0], SymbolSize[8] * 0.75, Group);
+      AddCircleToGroup(group, PointOnSection, radius);
+      EndSection.ProjPtFrom_xy(0.0, symbolSize[8], &pts[0]);
+      AddLineToGroup(group, PointOnSection, pts[0]);
+      m_PipeTicSize = symbolSize[8] * 0.25;
+      GenerateTickMark(PointOnSection, pts[0], symbolSize[8] * 0.75, group);
     } break;
 
-    case 9: {  // Generate pressure reducing valve
-      EndSection.ProjPtFrom_xy(SymbolSize[9], SymbolSize[9] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[9], -SymbolSize[9] * 0.5, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[9], -SymbolSize[9] * 0.5, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[9], SymbolSize[9] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[0]));
-      pts[0] = PointOnSection.ProjectToward(EndPoint, SymbolSize[9] * 0.25);
-
+    case 9: {  // pressure reducing valve
+      CreateGateValve(group, BeginSection, EndSection, symbolSize[9]);
+      pts[0] = PointOnSection.ProjectToward(end, symbolSize[9] * 0.25);
       double radius = EoGePoint3d::Distance(PointOnSection, pts[0]);
-      auto* circle = EoDbConic::CreateCircleInView(PointOnSection, radius);
-      circle->SetColor(renderState.Color());
-      circle->SetLineTypeIndex(renderState.LineTypeIndex());
-      Group->AddTail(circle);
-      EndSection.ProjPtFrom_xy(0.0, SymbolSize[9], &pts[0]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PointOnSection, pts[0]));
-      EndSection.ProjPtFrom_xy(SymbolSize[9] * 0.5, SymbolSize[9] * 0.75, &pts[1]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      EndSection.ProjPtFrom_xy(0.0, SymbolSize[9] * 0.5, &SymbolBeginPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
+      AddCircleToGroup(group, PointOnSection, radius);
+      EndSection.ProjPtFrom_xy(0.0, symbolSize[9], &pts[0]);
+      AddLineToGroup(group, PointOnSection, pts[0]);
+      EndSection.ProjPtFrom_xy(symbolSize[9] * 0.5, symbolSize[9] * 0.75, &pts[1]);
+      AddLineToGroup(group, pts[0], pts[1]);
+      EndSection.ProjPtFrom_xy(0.0, symbolSize[9] * 0.5, &SymbolBeginPoint);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
     } break;
 
-    case 10:
-      EndSection.ProjPtFrom_xy(SymbolSize[10], SymbolSize[10] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[10], -SymbolSize[10] * 0.5, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[10], -SymbolSize[10] * 0.5, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[10], SymbolSize[10] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[0]));
-      EndSection.ProjPtFrom_xy(0.0, SymbolSize[10] * 0.5, &pts[0]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PointOnSection, pts[0]));
-      EndSection.ProjPtFrom_xy(SymbolSize[10] * 0.25, SymbolSize[10] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[10] * 0.25, SymbolSize[10] * 0.75, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[10] * 0.25, -SymbolSize[10] * 0.75, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[10] * 0.25, -SymbolSize[10] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[0]));
+    case 10:  // auto 2-way valve
+      CreateGateValve(group, BeginSection, EndSection, symbolSize[10]);
+      EndSection.ProjPtFrom_xy(0.0, symbolSize[10] * 0.5, &pts[0]);
+      AddLineToGroup(group, PointOnSection, pts[0]);
+
+      EndSection.ProjPtFrom_xy(symbolSize[10] * 0.25, symbolSize[10] * 0.5, &pts[0]);
+      EndSection.ProjPtFrom_xy(symbolSize[10] * 0.25, symbolSize[10] * 0.75, &pts[1]);
+      BeginSection.ProjPtFrom_xy(symbolSize[10] * 0.25, -symbolSize[10] * 0.75, &SymbolBeginPoint);
+      BeginSection.ProjPtFrom_xy(symbolSize[10] * 0.25, -symbolSize[10] * 0.5, &SymbolEndPoint);
+      AddLineToGroup(group, pts[0], pts[1]);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
+      AddLineToGroup(group, SymbolEndPoint, pts[0]);
       break;
 
-    case 11:  // Generate automatic 3-way valve
-      EndSection.ProjPtFrom_xy(SymbolSize[11], SymbolSize[11] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[11], -SymbolSize[11] * 0.5, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[11], -SymbolSize[11] * 0.5, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[11], SymbolSize[11] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[0]));
-      EndSection.ProjPtFrom_xy(0.0, SymbolSize[11] * 0.5, &pts[0]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PointOnSection, pts[0]));
-      EndSection.ProjPtFrom_xy(SymbolSize[11] * 0.25, SymbolSize[11] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[11] * 0.25, SymbolSize[11] * 0.75, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[11] * 0.25, -SymbolSize[11] * 0.75, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[11] * 0.25, -SymbolSize[11] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[0]));
-      EndSection.ProjPtFrom_xy(SymbolSize[11] * 0.5, -SymbolSize[11], &pts[0]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[11] * 0.5, SymbolSize[11], &pts[1]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PointOnSection, pts[0]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], PointOnSection));
+    case 11:  // auto 3-way valve
+      CreateGateValve(group, BeginSection, EndSection, symbolSize[11]);
+
+      EndSection.ProjPtFrom_xy(0.0, symbolSize[11] * 0.5, &pts[0]);
+      AddLineToGroup(group, PointOnSection, pts[0]);
+      EndSection.ProjPtFrom_xy(symbolSize[11] * 0.25, symbolSize[11] * 0.5, &pts[0]);
+      EndSection.ProjPtFrom_xy(symbolSize[11] * 0.25, symbolSize[11] * 0.75, &pts[1]);
+      BeginSection.ProjPtFrom_xy(symbolSize[11] * 0.25, -symbolSize[11] * 0.75, &SymbolBeginPoint);
+      BeginSection.ProjPtFrom_xy(symbolSize[11] * 0.25, -symbolSize[11] * 0.5, &SymbolEndPoint);
+      AddLineToGroup(group, pts[0], pts[1]);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
+      AddLineToGroup(group, SymbolEndPoint, pts[0]);
+      EndSection.ProjPtFrom_xy(symbolSize[11] * 0.5, -symbolSize[11], &pts[0]);
+      BeginSection.ProjPtFrom_xy(symbolSize[11] * 0.5, symbolSize[11], &pts[1]);
+      AddLineToGroup(group, PointOnSection, pts[0]);
+      AddLineToGroup(group, pts[0], pts[1]);
+      AddLineToGroup(group, pts[1], PointOnSection);
       break;
 
-    case 12:  // Generate self operated valve
-      EndSection.ProjPtFrom_xy(SymbolSize[12], SymbolSize[12] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(SymbolSize[12], -SymbolSize[12] * 0.5, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[12], -SymbolSize[12] * 0.5, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[12], SymbolSize[12] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[0]));
-      EndSection.ProjPtFrom_xy(0.0, SymbolSize[12] * 0.5, &pts[0]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PointOnSection, pts[0]));
-      EndSection.ProjPtFrom_xy(SymbolSize[12] * 0.25, SymbolSize[12] * 0.5, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[12] * 0.25, -SymbolSize[12] * 0.5, &SymbolBeginPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
+    case 12:  // self operated valve
+      CreateGateValve(group, BeginSection, EndSection, symbolSize[12]);
+
+      EndSection.ProjPtFrom_xy(0.0, symbolSize[12] * 0.5, &pts[0]);
+      AddLineToGroup(group, PointOnSection, pts[0]);
+      EndSection.ProjPtFrom_xy(symbolSize[12] * 0.25, symbolSize[12] * 0.5, &pts[1]);
+      BeginSection.ProjPtFrom_xy(symbolSize[12] * 0.25, -symbolSize[12] * 0.5, &SymbolBeginPoint);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
       // add a half circle here i think
-      BeginSection.ProjPtFrom_xy(SymbolSize[12] * 1.25, -SymbolSize[12] * 0.5, &pts[0]);
-      Group->AddTail(new EoDbLine(renderState.Color(), 2, SymbolBeginPoint, pts[0]));
-      BeginSection.ProjPtFrom_xy(SymbolSize[12] * 1.25, -SymbolSize[12] * 0.75, &pts[1]);
-      BeginSection.ProjPtFrom_xy(SymbolSize[12] * 2.0, -SymbolSize[12] * 0.75, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(SymbolSize[12] * 2.0, -SymbolSize[12] * 0.5, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[0]));
+      BeginSection.ProjPtFrom_xy(symbolSize[12] * 1.25, -symbolSize[12] * 0.5, &pts[0]);
+      AddLineToGroup(group, SymbolBeginPoint, pts[0]);
+      BeginSection.ProjPtFrom_xy(symbolSize[12] * 1.25, -symbolSize[12] * 0.75, &pts[1]);
+      BeginSection.ProjPtFrom_xy(symbolSize[12] * 2.0, -symbolSize[12] * 0.75, &SymbolBeginPoint);
+      BeginSection.ProjPtFrom_xy(symbolSize[12] * 2.0, -symbolSize[12] * 0.5, &SymbolEndPoint);
+      AddLineToGroup(group, pts[0], pts[1]);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
+      AddLineToGroup(group, SymbolEndPoint, pts[0]);
       break;
 
-    case 13:
-      EndSection.ProjPtFrom_xy(0.0, -SymbolSize[13], &pts[0]);
-      EndSection.ProjPtFrom_xy(0.0, SymbolSize[13], &pts[1]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, pts[0]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], SymbolEndPoint));
+    case 13:  // plug valve
+      EndSection.ProjPtFrom_xy(0.0, -symbolSize[13], &pts[0]);
+      EndSection.ProjPtFrom_xy(0.0, symbolSize[13], &pts[1]);
+      AddLineToGroup(group, SymbolEndPoint, pts[1]);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      AddLineToGroup(group, SymbolBeginPoint, pts[0]);
+      AddLineToGroup(group, pts[0], SymbolEndPoint);
       break;
 
-    case 14:
-      EndSection.ProjPtFrom_xy(0.0, -SymbolSize[14], &pts[0]);
-      EndSection.ProjPtFrom_xy(0.0, SymbolSize[14], &pts[1]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolEndPoint, pts[1]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, pts[0]));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], SymbolEndPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], pts[1]));
+    case 14:  // balancing cock
+      EndSection.ProjPtFrom_xy(0.0, -symbolSize[14], &pts[0]);
+      EndSection.ProjPtFrom_xy(0.0, symbolSize[14], &pts[1]);
+      AddLineToGroup(group, SymbolEndPoint, pts[1]);
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      AddLineToGroup(group, SymbolBeginPoint, pts[0]);
+      AddLineToGroup(group, pts[0], SymbolEndPoint);
+      AddLineToGroup(group, pts[0], pts[1]);
       break;
 
-    case 15:
+    case 15:  // gauge cock
       EndSection.ProjPtFrom_xy(0.0, -0.250, &pts[0]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PointOnSection, pts[0]));
-      GenerateTicMark(PointOnSection, pts[0], TicDistance[15], Group);
+      AddLineToGroup(group, PointOnSection, pts[0]);
+      GenerateTickMark(PointOnSection, pts[0], tickDistance[15], group);
       BeginSection.ProjPtFrom_xy(0.0625, 0.1875, &pts[1]);
       EndSection.ProjPtFrom_xy(0.0625, -0.1875, &SymbolBeginPoint);
       EndSection.ProjPtFrom_xy(0.0625, -0.125, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
       break;
 
-    case 16: {
+    case 16: {  // gauge cock with gauge
       EndSection.ProjPtFrom_xy(0.0, -0.250, &pts[0]);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PointOnSection, pts[0]));
-      GenerateTicMark(PointOnSection, pts[0], TicDistance[16], Group);
+      AddLineToGroup(group, PointOnSection, pts[0]);
+      GenerateTickMark(PointOnSection, pts[0], tickDistance[16], group);
       BeginSection.ProjPtFrom_xy(0.0625, 0.1875, &pts[1]);
       EndSection.ProjPtFrom_xy(0.0625, -0.1875, &SymbolBeginPoint);
       EndSection.ProjPtFrom_xy(0.0625, -0.125, &SymbolEndPoint);
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[1], SymbolBeginPoint));
-      Group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), SymbolBeginPoint, SymbolEndPoint));
+      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
       pts[1] = PointOnSection.ProjectToward(pts[0], 0.28125);
       double radius = EoGePoint3d::Distance(pts[1], pts[0]);
-      auto* circle = EoDbConic::CreateCircleInView(pts[1], radius);
-      circle->SetColor(renderState.Color());
-      circle->SetLineTypeIndex(renderState.LineTypeIndex());
-      Group->AddTail(circle);
+      AddCircleToGroup(group, pts[1], radius);
     } break;
 
-    case 17:  // Generate union
-      m_PipeTicSize = SymbolSize[17];
-      GenerateTicMark(PointOnSection, BeginPoint, SymbolSize[17], Group);
-      GenerateTicMark(PointOnSection, EndPoint, SymbolSize[17], Group);
+    case 17:  // union
+      m_PipeTicSize = symbolSize[17];
+      GenerateTickMark(PointOnSection, begin, symbolSize[17], group);
+      GenerateTickMark(PointOnSection, end, symbolSize[17], group);
       m_PipeTicSize = m_PipeTicSize * 2.0;
-      GenerateTicMark(PointOnSection, BeginPoint, 0.0, Group);
+      GenerateTickMark(PointOnSection, begin, 0.0, group);
       break;
   }
   m_PipeTicSize = TicSize;
-  document->AddWorkLayerGroup(Group);
-  document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+  document->AddWorkLayerGroup(group);
+  document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
 
 void AeSysView::OnPipeModeWye() {
-  EoGePoint3d cursorPosition = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   auto* document = GetDocument();
 
   if (pts.IsEmpty()) {
@@ -599,74 +547,72 @@ void AeSysView::OnPipeModeWye() {
     m_PreviousOp = ModeLineHighlightOp(ID_OP9);
     return;
   }
-  EoDbLine* HorizontalSection;
-  auto* Group = SelectLineUsingPoint(cursorPosition, HorizontalSection);
-  if (Group != 0) {
-    EoGePoint3d PointOnSection = HorizontalSection->ProjectPointToLine(cursorPosition);
-    EoGePoint3d BeginPointProjectedToSection = HorizontalSection->ProjectPointToLine(pts[0]);
-    double DistanceToSection = EoGeVector3d(pts[0], BeginPointProjectedToSection).Length();
+  EoDbLine* horizontalSection{};
+  auto* group = SelectLineUsingPoint(cursorPosition, horizontalSection);
+  if (group == nullptr) { return; }
+  EoGePoint3d PointOnSection = horizontalSection->ProjectPointToLine(cursorPosition);
+  EoGePoint3d BeginPointProjectedToSection = horizontalSection->ProjectPointToLine(pts[0]);
+  double DistanceToSection = EoGeVector3d(pts[0], BeginPointProjectedToSection).Length();
 
-    if (DistanceToSection >= 0.25) {
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
-      m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-      EoGePoint3d BeginPoint = HorizontalSection->Begin();
-      EoGePoint3d EndPoint = HorizontalSection->End();
+  if (DistanceToSection >= 0.25) {
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    EoGePoint3d begin = horizontalSection->Begin();
+    EoGePoint3d EndPoint = horizontalSection->End();
 
-      double DistanceBetweenSectionPoints = EoGeVector3d(BeginPointProjectedToSection, PointOnSection).Length();
+    double DistanceBetweenSectionPoints = EoGeVector3d(BeginPointProjectedToSection, PointOnSection).Length();
 
-      if (fabs(DistanceBetweenSectionPoints - DistanceToSection) <=
-          0.25) {  // Just need to shift point on section and do a single 45 degree line
-        PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, DistanceToSection);
-        HorizontalSection->SetEndPoint(PointOnSection);
-        Group = new EoDbGroup(
-            new EoDbLine(HorizontalSection->Color(), HorizontalSection->LineTypeIndex(), PointOnSection, EndPoint));
-        document->AddWorkLayerGroup(Group);
+    if (fabs(DistanceBetweenSectionPoints - DistanceToSection) <= 0.25) {
+      // Just need to shift point on section and do a single 45 degree line
+      PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, DistanceToSection);
+      horizontalSection->SetEndPoint(PointOnSection);
+      group = new EoDbGroup(
+          new EoDbLine(horizontalSection->Color(), horizontalSection->LineTypeIndex(), PointOnSection, EndPoint));
+      document->AddWorkLayerGroup(group);
 
-        Group = new EoDbGroup;
-        GenerateTicMark(PointOnSection, BeginPoint, m_PipeRiseDropRadius, Group);
-        GenerateTicMark(PointOnSection, EndPoint, m_PipeRiseDropRadius, Group);
-        document->AddWorkLayerGroup(Group);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      group = new EoDbGroup;
+      GenerateTickMark(PointOnSection, begin, m_PipeRiseDropRadius, group);
+      GenerateTickMark(PointOnSection, EndPoint, m_PipeRiseDropRadius, group);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
-        Group = new EoDbGroup;
-        GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, PointOnSection, Group);
-        document->AddWorkLayerGroup(Group);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      group = new EoDbGroup;
+      GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, PointOnSection, group);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
+    } else {
+      EoGePoint3d PointAtBend;
+
+      if (DistanceBetweenSectionPoints - 0.25 <= DistanceToSection) {
+        double d3 = (DistanceBetweenSectionPoints > 0.25) ? DistanceBetweenSectionPoints : 0.125;
+        PointAtBend = BeginPointProjectedToSection.ProjectToward(pts[0], d3);
+        PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, d3);
       } else {
-        EoGePoint3d PointAtBend;
-
-        if (DistanceBetweenSectionPoints - 0.25 <= DistanceToSection) {
-          double d3 = (DistanceBetweenSectionPoints > 0.25) ? DistanceBetweenSectionPoints : 0.125;
-          PointAtBend = BeginPointProjectedToSection.ProjectToward(pts[0], d3);
-          PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, d3);
-        } else {
-          PointAtBend = BeginPointProjectedToSection.ProjectToward(PointOnSection,
-                                                                   DistanceBetweenSectionPoints - DistanceToSection);
-          PointAtBend = pts[0] + EoGeVector3d(BeginPointProjectedToSection, PointAtBend);
-        }
-        HorizontalSection->SetEndPoint(PointOnSection);
-
-        Group = new EoDbGroup;
-        GenerateTicMark(PointOnSection, BeginPoint, m_PipeRiseDropRadius, Group);
-        GenerateTicMark(PointOnSection, EndPoint, m_PipeRiseDropRadius, Group);
-        document->AddWorkLayerGroup(Group);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
-
-        Group = new EoDbGroup(
-            new EoDbLine(HorizontalSection->Color(), HorizontalSection->LineTypeIndex(), PointOnSection, EndPoint));
-        document->AddWorkLayerGroup(Group);
-        Group = new EoDbGroup;
-        GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, PointAtBend, Group);
-        document->AddWorkLayerGroup(Group);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
-        Group = new EoDbGroup;
-        GenerateLineWithFittings(ID_OP3, PointAtBend, ID_OP3, PointOnSection, Group);
-        document->AddWorkLayerGroup(Group);
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+        PointAtBend = BeginPointProjectedToSection.ProjectToward(
+            PointOnSection, DistanceBetweenSectionPoints - DistanceToSection);
+        PointAtBend = pts[0] + EoGeVector3d(BeginPointProjectedToSection, PointAtBend);
       }
+      horizontalSection->SetEndPoint(PointOnSection);
+
+      group = new EoDbGroup;
+      GenerateTickMark(PointOnSection, begin, m_PipeRiseDropRadius, group);
+      GenerateTickMark(PointOnSection, EndPoint, m_PipeRiseDropRadius, group);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
+      group = new EoDbGroup(
+          new EoDbLine(horizontalSection->Color(), horizontalSection->LineTypeIndex(), PointOnSection, EndPoint));
+      document->AddWorkLayerGroup(group);
+      group = new EoDbGroup;
+      GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, PointAtBend, group);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
+      group = new EoDbGroup;
+      GenerateLineWithFittings(ID_OP3, PointAtBend, ID_OP3, PointOnSection, group);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
     }
-    OnPipeModeEscape();
   }
+  OnPipeModeEscape();
 }
 
 void AeSysView::OnPipeModeReturn() { OnPipeModeEscape(); }
@@ -685,6 +631,7 @@ void AeSysView::DoPipeModeMouseMove() {
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
   INT_PTR NumberOfPoints = pts.GetSize();
+  if (NumberOfPoints == 0) { return; }
 
   switch (m_PreviousOp) {
     case ID_OP2:
@@ -729,97 +676,96 @@ void AeSysView::DoPipeModeMouseMove() {
   }
   pts.SetSize(NumberOfPoints);
 }
-void AeSysView::GenerateLineWithFittings(int beginType, EoGePoint3d& beginPoint, int endType, EoGePoint3d& endPoint,
-                                         EoDbGroup* group) {
-  EoGePoint3d pt1 = beginPoint;
-  EoGePoint3d pt2 = endPoint;
+
+void AeSysView::GenerateLineWithFittings(
+    int beginType, const EoGePoint3d& begin, int endType, const EoGePoint3d& end, EoDbGroup* group) {
+  EoGePoint3d pt1 = begin;
+  EoGePoint3d pt2 = end;
 
   if (beginType == ID_OP3)
     // Previous fitting is an elbow or side tee
-    GenerateTicMark(beginPoint, endPoint, m_PipeRiseDropRadius, group);
+    GenerateTickMark(begin, end, m_PipeRiseDropRadius, group);
   else if (beginType == ID_OP4) {  // Previous fitting is an elbow down, riser down or bottom tee
-    pt1 = beginPoint.ProjectToward(endPoint, m_PipeRiseDropRadius);
-    GenerateTicMark(pt1, endPoint, m_PipeRiseDropRadius, group);
+    pt1 = begin.ProjectToward(end, m_PipeRiseDropRadius);
+    GenerateTickMark(pt1, end, m_PipeRiseDropRadius, group);
   } else if (beginType == ID_OP5)
     // Previous fitting is an elbow up, riser up or top tee
-    GenerateTicMark(beginPoint, endPoint, 2.0 * m_PipeRiseDropRadius, group);
+    GenerateTickMark(begin, end, 2.0 * m_PipeRiseDropRadius, group);
 
   if (endType == ID_OP3)
     // Current fitting is an elbow or side tee
-    GenerateTicMark(endPoint, beginPoint, m_PipeRiseDropRadius, group);
+    GenerateTickMark(end, begin, m_PipeRiseDropRadius, group);
   else if (endType == ID_OP4)
     // Current fitting is an elbow down, riser down or bottom tee
-    GenerateTicMark(endPoint, beginPoint, 2.0 * m_PipeRiseDropRadius, group);
+    GenerateTickMark(end, begin, 2.0 * m_PipeRiseDropRadius, group);
   else if (endType == ID_OP5) {  // Current fitting is an elbow up, riser up or top tee
-    pt2 = endPoint.ProjectToward(beginPoint, m_PipeRiseDropRadius);
-    GenerateTicMark(endPoint, beginPoint, 2.0 * m_PipeRiseDropRadius, group);
+    pt2 = end.ProjectToward(begin, m_PipeRiseDropRadius);
+    GenerateTickMark(end, begin, 2.0 * m_PipeRiseDropRadius, group);
   }
   group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pt1, pt2));
 }
-void AeSysView::DropIntoOrRiseFromHorizontalSection(EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) {
+
+void AeSysView::DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) {
   auto* document = GetDocument();
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, section);
 
-  EoGePoint3d BeginPoint = section->Begin();
-  EoGePoint3d EndPoint = section->End();
+  EoGePoint3d begin = section->Begin();
+  EoGePoint3d end = section->End();
 
-  EoGePoint3d CutPoint = point.ProjectToward(BeginPoint, m_PipeRiseDropRadius);
-  section->SetEndPoint(CutPoint);
-  CutPoint = point.ProjectToward(EndPoint, m_PipeRiseDropRadius);
-  group->AddTail(new EoDbLine(section->Color(), section->LineTypeIndex(), CutPoint, EndPoint));
+  auto cutPoint = point.ProjectToward(begin, m_PipeRiseDropRadius);
+  section->SetEndPoint(cutPoint);
+  cutPoint = point.ProjectToward(end, m_PipeRiseDropRadius);
+  group->AddTail(new EoDbLine(section->Color(), section->LineTypeIndex(), cutPoint, end));
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
   group = new EoDbGroup;
-  GenerateTicMark(point, BeginPoint, 2.0 * m_PipeRiseDropRadius, group);
+  GenerateTickMark(point, begin, 2.0 * m_PipeRiseDropRadius, group);
 
-  auto* circle = EoDbConic::CreateCircleInView(point, m_PipeRiseDropRadius);
-  circle->SetColor(1);
-  circle->SetLineTypeIndex(1);
+  auto* circle = EoDbConic::CreateCircleInView(point, m_PipeRiseDropRadius)->WithProperties(1, 1);
 
   group->AddTail(circle);
-  GenerateTicMark(point, EndPoint, 2.0 * m_PipeRiseDropRadius, group);
+  GenerateTickMark(point, end, 2.0 * m_PipeRiseDropRadius, group);
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
-void AeSysView::DropFromOrRiseIntoHorizontalSection(EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) {
+
+void AeSysView::DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) {
   auto* document = GetDocument();
-  EoGePoint3d beginPoint = section->Begin();
-  EoGePoint3d endPoint = section->End();
+  EoGePoint3d begin = section->Begin();
+  EoGePoint3d end = section->End();
 
   section->SetEndPoint(point);
-  group->AddTail(new EoDbLine(section->Color(), section->LineTypeIndex(), point, endPoint));
+  group->AddTail(new EoDbLine(section->Color(), section->LineTypeIndex(), point, end));
 
   group = new EoDbGroup{};
-  GenerateTicMark(point, beginPoint, 2.0 * m_PipeRiseDropRadius, group);
+  GenerateTickMark(point, begin, 2.0 * m_PipeRiseDropRadius, group);
 
-  auto* circle = EoDbConic::CreateCircleInView(point, m_PipeRiseDropRadius);
-  circle->SetColor(1);
-  circle->SetLineTypeIndex(1);
-
+  auto* circle = EoDbConic::CreateCircleInView(point, m_PipeRiseDropRadius)->WithProperties(1, 1);
   group->AddTail(circle);
 
-  GenerateTicMark(point, endPoint, 2.0 * m_PipeRiseDropRadius, group);
+  GenerateTickMark(point, end, 2.0 * m_PipeRiseDropRadius, group);
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
-bool AeSysView::GenerateTicMark(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, double distance,
-                                EoDbGroup* group) const {
-  EoGePoint3d PointOnLine = beginPoint.ProjectToward(endPoint, distance);
 
-  EoGeVector3d Projection(PointOnLine, endPoint);
+bool AeSysView::GenerateTickMark(
+    const EoGePoint3d& begin, const EoGePoint3d& end, double distance, EoDbGroup* group) const {
+  auto pointOnLine = begin.ProjectToward(end, distance);
+
+  EoGeVector3d Projection(pointOnLine, end);
 
   double DistanceToEndPoint = Projection.Length();
 
-  bool MarkGenerated = DistanceToEndPoint > Eo::geometricTolerance;
-  if (MarkGenerated) {
+  bool markGenerated = DistanceToEndPoint > Eo::geometricTolerance;
+  if (markGenerated) {
     Projection *= m_PipeTicSize / DistanceToEndPoint;
 
-    EoGePoint3d pt1(PointOnLine);
+    EoGePoint3d pt1(pointOnLine);
     pt1 += EoGeVector3d(Projection.y, -Projection.x, 0.0);
 
-    EoGePoint3d pt2(PointOnLine);
+    EoGePoint3d pt2(pointOnLine);
     pt2 += EoGeVector3d(-Projection.y, Projection.x, 0.0);
     group->AddTail(new EoDbLine(1, 1, pt1, pt2));
   }
-  return MarkGenerated;
+  return markGenerated;
 }

@@ -83,7 +83,7 @@ class EoGePoint3d {
    * @param distance The magnitude of the projection.
    * @return The projected point or itself if the points coincide.
    */
-  EoGePoint3d ProjectToward(const EoGePoint3d& p, const double distance);
+  EoGePoint3d ProjectToward(const EoGePoint3d& p, const double distance) const;
   
   /** Rotates a point about another point and arbitrary axis in space.
    * @param referenceOrigin Point about which rotation will occur.

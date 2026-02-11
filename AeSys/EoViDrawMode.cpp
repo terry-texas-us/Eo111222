@@ -277,7 +277,7 @@ void AeSysView::OnDrawModeShiftReturn() {
   pts.RemoveAll();
 }
 void AeSysView::DoDrawModeMouseMove() {
-  EoGePoint3d cursorPosition = GetCursorPosition();
+  auto cursorPosition = GetCursorPosition();
   INT_PTR NumberOfPoints = pts.GetSize();
 
   auto* document = GetDocument();

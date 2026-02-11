@@ -673,10 +673,7 @@ void EoDb::ConstructLinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
   std::int16_t lineTypeIndex = EoDb::ReadInt16(file);
   EoGePoint3d begin(EoDb::ReadPoint3d(file));
   EoGePoint3d end(EoDb::ReadPoint3d(file));
-  primitive = new EoDbLine(begin, end);
-
-  primitive->SetColor(color);
-  primitive->SetLineTypeIndex(lineTypeIndex);
+  primitive = EoDbLine::CreateLine(begin, end)->WithProperties(color, lineTypeIndex);
 }
 
 void EoDb::ConstructPointPrimitive(CFile& file, EoDbPrimitive*& primitive) {
