@@ -164,7 +164,8 @@ void AeSysView::OnFixupModeReference() {
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
         line->SetBeginPoint(previousLine.begin);
         line->SetEndPoint(previousLine.end);
-        previousGroup->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), previousLine.end, referenceLine.begin));
+        previousGroup->AddTail(EoDbLine::CreateLine(previousLine.end, referenceLine.begin)
+                ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
     } else if (previousCommand == ID_OP4) {
@@ -271,7 +272,8 @@ void AeSysView::OnFixupModeMend() {
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
         pLine->SetBeginPoint(previousLine.begin);
         pLine->SetEndPoint(previousLine.end);
-        previousGroup->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), previousLine.end, currentLine.begin));
+        previousGroup->AddTail(EoDbLine::CreateLine(previousLine.end, currentLine.begin)
+                ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
     } else if (previousCommand == ID_OP4) {
@@ -375,7 +377,8 @@ void AeSysView::OnFixupModeChamfer() {
       linePrimitive->SetBeginPoint(currentLine.begin);
       linePrimitive->SetEndPoint(currentLine.end);
 
-      currentGroup->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), previousLine.end, currentLine.begin));
+      currentGroup->AddTail(EoDbLine::CreateLine(previousLine.end, currentLine.begin)
+              ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
 
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     }

@@ -7,6 +7,7 @@
 #include "EoDbPoint.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
+#include "EoGeUniquePoint.h"
 #include "EoGsRenderState.h"
 #include "Resource.h"
 
@@ -143,8 +144,8 @@ void AeSysView::OnNodalModeToLine() {
       auto PointPosition = document->GetFirstUniquePointPosition();
       while (PointPosition != 0) {
         EoGeUniquePoint* UniquePoint = document->GetNextUniquePoint(PointPosition);
-        auto* line =
-            new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), UniquePoint->m_Point, UniquePoint->m_Point + Translate);
+        auto* line = EoDbLine::CreateLine(UniquePoint->m_Point, UniquePoint->m_Point + Translate)
+                         ->WithProperties(renderState.Color(), renderState.LineTypeIndex());
         group->AddTail(line);
       }
       document->AddWorkLayerGroup(group);

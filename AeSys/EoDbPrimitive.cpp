@@ -17,23 +17,27 @@ std::int16_t EoDbPrimitive::sm_layerColor{COLOR_BYLAYER};
 std::int16_t EoDbPrimitive::sm_layerLineTypeIndex{LINETYPE_BYLAYER};
 std::int16_t EoDbPrimitive::sm_specialColor{};
 
-int EoDbPrimitive::sm_controlPointIndex = SHRT_MAX;
-double EoDbPrimitive::sm_RelationshipOfPoint = 0.0;
-double EoDbPrimitive::sm_SelectApertureSize = 0.02;
+int EoDbPrimitive::sm_controlPointIndex{SHRT_MAX};
+double EoDbPrimitive::sm_RelationshipOfPoint{};
+double EoDbPrimitive::sm_SelectApertureSize{0.02};
 
-EoDbPrimitive::EoDbPrimitive(std::int16_t color, std::int16_t lineTypeIndex) : m_color(color), m_lineTypeIndex(lineTypeIndex) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbPrimitive(color,lt) CTOR: this=%p, vtable=%p\n", this,
-            *(void**)this);
+EoDbPrimitive::EoDbPrimitive(std::int16_t color, std::int16_t lineTypeIndex)
+    : m_color(color), m_lineTypeIndex(lineTypeIndex) {
+  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbPrimitive(color, lineTypeIndex) CTOR: this=%p, vtable=%p\n",
+      this, *(void**)this);
 }
 
 EoDbPrimitive::~EoDbPrimitive() {}
 
-void EoDbPrimitive::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*,
-                              EoDbGroupList*) {
+void EoDbPrimitive::CutAt2Points(
+    const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) {
   (void)firstPoint;
   (void)secondPoint;
 }
-void EoDbPrimitive::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {(void) point; (void) group;}
+void EoDbPrimitive::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
+  (void)point;
+  (void)group;
+}
 int EoDbPrimitive::IsWithinArea(const EoGePoint3d&, const EoGePoint3d&, EoGePoint3d*) { return 0; }
 bool EoDbPrimitive::PivotOnControlPoint(AeSysView*, const EoGePoint4d&) { return false; }
 

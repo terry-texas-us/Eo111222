@@ -40,7 +40,8 @@ void AeSysView::OnDrawModeLine() {
     auto* document = GetDocument();
     cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
 
-    auto* Group = new EoDbGroup(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], cursorPosition));
+    auto* Group = new EoDbGroup(
+        EoDbLine::CreateLine(pts[0], cursorPosition)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
     document->AddWorkLayerGroup(Group);
     pts[0] = cursorPosition;
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -144,7 +145,8 @@ void AeSysView::OnDrawModeReturn() {
   switch (PreviousDrawCommand) {
     case ID_OP2:
       cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
-      group = new EoDbGroup(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[0], cursorPosition));
+      group = new EoDbGroup(EoDbLine::CreateLine(pts[0], cursorPosition)
+              ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
       break;
 
     case ID_OP3:
@@ -174,7 +176,8 @@ void AeSysView::OnDrawModeReturn() {
       group = new EoDbGroup;
 
       for (int i = 0; i < 4; i++) {
-        group->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), pts[i], pts[(i + 1) % 4]));
+        group->AddTail(EoDbLine::CreateLine(pts[i], pts[(i + 1) % 4])
+                ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
       }
 
       break;
@@ -331,7 +334,7 @@ void AeSysView::DoDrawModeMouseMove() {
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
       if (NumberOfPoints == 1) { m_PreviewGroup.AddTail(new EoDbPolyline(pts)); }
-      if (NumberOfPoints == 2) { 
+      if (NumberOfPoints == 2) {
         EoGePoint3d start{pts[0]};
         EoGePoint3d intermediate{pts[1]};
         auto radialArc = EoDbConic::CreateRadialArcFrom3Points(start, intermediate, cursorPosition);

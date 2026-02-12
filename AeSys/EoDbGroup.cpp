@@ -81,12 +81,11 @@ void EoDbGroup::BreakPolylines() {
       static_cast<EoDbPolyline*>(primitive)->GetAllPoints(points);
 
       for (auto i = 0; i < points.GetSize() - 1; i++)
-        CObList::InsertBefore(PrimitivePosition, new EoDbLine(color, LineType, points[i], points[i + 1]));
+        CObList::InsertBefore(PrimitivePosition, EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, LineType));
 
       if (static_cast<EoDbPolyline*>(primitive)->IsLooped())
         CObList::InsertBefore(
-            PrimitivePosition, new EoDbLine(color, LineType, points[points.GetUpperBound()], points[0]));
-
+            PrimitivePosition, EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, LineType));
       this->RemoveAt(PrimitivePosition);
       delete primitive;
     } else if (primitive->Is(EoDb::kGroupReferencePrimitive)) {

@@ -138,7 +138,6 @@ class EoDbConic : public EoDbPrimitive {
   [[nodiscard]] static EoDbConic* CreateRadialArcFrom3Points(
       EoGePoint3d& start, const EoGePoint3d& intermediate, EoGePoint3d& end);
 
- public:
   EoDbConic()
       : m_center{},
         m_majorAxis{},
@@ -151,10 +150,8 @@ class EoDbConic : public EoDbPrimitive {
 
   ~EoDbConic() override = default;
 
- public:
   const EoDbConic& operator=(const EoDbConic&);
 
- public:  // Methods - absolute virtuals
   void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbConic*>(primitive); }

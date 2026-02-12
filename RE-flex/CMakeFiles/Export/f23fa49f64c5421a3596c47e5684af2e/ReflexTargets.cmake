@@ -66,14 +66,14 @@ set_target_properties(Reflex::Reflex PROPERTIES
 add_library(Reflex::ReflexLib SHARED IMPORTED)
 
 set_target_properties(Reflex::ReflexLib PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include"
 )
 
 # Create imported target Reflex::ReflexLibStatic
 add_library(Reflex::ReflexLibStatic STATIC IMPORTED)
 
 set_target_properties(Reflex::ReflexLibStatic PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include"
 )
 
 # Load information for each installed configuration.

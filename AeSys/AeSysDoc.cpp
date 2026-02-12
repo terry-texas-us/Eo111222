@@ -172,7 +172,7 @@ AeSysDoc::~AeSysDoc() {}
 
 void AeSysDoc::DeleteContents() {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"AeSysDoc<%p>::DeleteContents() - BlockTableSize: %d\n", this,
-            BlockTableSize());
+      BlockTableSize());
 
   // TODO: Release EoDbDrwInterface resources if any
 
@@ -425,7 +425,8 @@ void AeSysDoc::DeletedGroupsRestore() {
     UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
   }
 }
-void AeSysDoc::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& transformMatrix) {
+void AeSysDoc::GetExtents(
+    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& transformMatrix) {
   ptMin(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
   ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
@@ -456,8 +457,8 @@ int AeSysDoc::NumberOfGroupsInActiveLayers() {
 }
 
 void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view,
-            deviceContext);
+  ATLTRACE2(
+      static_cast<int>(atlTraceGeneral), 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view, deviceContext);
 
   try {
     bool identifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
@@ -467,7 +468,8 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
     auto backgroundColor = deviceContext->GetBkColor();
     deviceContext->SetBkColor(ViewBackgroundColor);
 
-    EoDbPolygon::SetSpecialPolygonStyle(view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);
+    EoDbPolygon::SetSpecialPolygonStyle(
+        view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);
     int primitiveState = renderState.Save();
 
     for (int i = 0; i < GetLayerTableSize(); i++) {
@@ -986,10 +988,11 @@ void AeSysDoc::OnPrimBreak() {
       auto lineTypeIndex = primitive->LineTypeIndex();
 
       for (auto i = 0; i < points.GetSize() - 1; i++) {
-        group->AddTail(new EoDbLine(color, lineTypeIndex, points[i], points[i + 1]));
+        group->AddTail(EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeIndex));
       }
       if (polyline->IsLooped()) {
-        group->AddTail(new EoDbLine(color, lineTypeIndex, points[points.GetUpperBound()], points[0]));
+        group->AddTail(
+            EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeIndex));
       }
       delete primitive;
       ResetAllViews();
@@ -1051,22 +1054,22 @@ void AeSysDoc::OnFileQuery() {
 
     if (MenuResource == IDR_LAYER) {
       subMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_WORK),
-                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsWork() ? MF_CHECKED : MF_UNCHECKED)));
+          static_cast<UINT>(MF_BYCOMMAND | (layer->IsWork() ? MF_CHECKED : MF_UNCHECKED)));
       subMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_ACTIVE),
-                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsActive() ? MF_CHECKED : MF_UNCHECKED)));
+          static_cast<UINT>(MF_BYCOMMAND | (layer->IsActive() ? MF_CHECKED : MF_UNCHECKED)));
       subMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_STATIC),
-                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsStatic() ? MF_CHECKED : MF_UNCHECKED)));
+          static_cast<UINT>(MF_BYCOMMAND | (layer->IsStatic() ? MF_CHECKED : MF_UNCHECKED)));
       subMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_HIDDEN),
-                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsOff() ? MF_CHECKED : MF_UNCHECKED)));
+          static_cast<UINT>(MF_BYCOMMAND | (layer->IsOff() ? MF_CHECKED : MF_UNCHECKED)));
     } else {
       subMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_OPEN),
-                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsOpened() ? MF_CHECKED : MF_UNCHECKED)));
+          static_cast<UINT>(MF_BYCOMMAND | (layer->IsOpened() ? MF_CHECKED : MF_UNCHECKED)));
       subMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_MAP),
-                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsMapped() ? MF_CHECKED : MF_UNCHECKED)));
+          static_cast<UINT>(MF_BYCOMMAND | (layer->IsMapped() ? MF_CHECKED : MF_UNCHECKED)));
       subMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_VIEW),
-                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsViewed() ? MF_CHECKED : MF_UNCHECKED)));
+          static_cast<UINT>(MF_BYCOMMAND | (layer->IsViewed() ? MF_CHECKED : MF_UNCHECKED)));
       subMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_CLOAK),
-                             static_cast<UINT>(MF_BYCOMMAND | (layer->IsOff() ? MF_CHECKED : MF_UNCHECKED)));
+          static_cast<UINT>(MF_BYCOMMAND | (layer->IsOff() ? MF_CHECKED : MF_UNCHECKED)));
     }
     subMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), 0);
     ::DestroyMenu(layerTracingMenu);
@@ -1341,8 +1344,8 @@ void AeSysDoc::OnTrapCommandsExpand() {
   try {
     ExpandTrappedGroups();
   } catch (...) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1,
-              L"AeSysDoc::OnTrapCommandsExpand: Failed to expand trapped groups.\n");
+    ATLTRACE2(
+        static_cast<int>(atlTraceGeneral), 1, L"AeSysDoc::OnTrapCommandsExpand: Failed to expand trapped groups.\n");
   }
 }
 
@@ -1675,7 +1678,7 @@ void AeSysDoc::OnMaintenanceRemoveEmptyNotes() {
   int NumberOfEmptyGroups = RemoveEmptyGroups();
   CString str;
   str.Format(L"%d notes were removed resulting in %d empty groups which were also removed.", NumberOfEmptyNotes,
-             NumberOfEmptyGroups);
+      NumberOfEmptyGroups);
   app.AddStringToMessageList(str);
 }
 void AeSysDoc::OnMaintenanceRemoveEmptyGroups() {

@@ -382,15 +382,16 @@ EoDbPrimitive* EoDbJobFile::ConvertEllipsePrimitive() {
 }
 
 EoDbPrimitive* EoDbJobFile::ConvertLinePrimitive() {
-  std::int16_t PenColor = std::int16_t(m_PrimBuf[6]);
-  std::int16_t LineType = std::int16_t(m_PrimBuf[7]);
+  std::int16_t color = std::int16_t(m_PrimBuf[6]);
+  std::int16_t lineTypeIndex = std::int16_t(m_PrimBuf[7]);
 
-  EoGeLine Line;
-  Line.begin = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
-  Line.end = ((CVaxPnt*)&m_PrimBuf[20])->Convert();
+  EoGeLine line;
+  line.begin = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
+  line.end = ((CVaxPnt*)&m_PrimBuf[20])->Convert();
 
-  return new EoDbLine(PenColor, LineType, Line);
+  return EoDbLine::CreateLine(line)->WithProperties(color, lineTypeIndex);
 }
+
 EoDbPrimitive* EoDbJobFile::ConvertPointPrimitive() {
   std::int16_t PenColor = std::int16_t(m_PrimBuf[6]);
   std::int16_t PointStyle = std::int16_t(m_PrimBuf[7]);
@@ -439,15 +440,16 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
 }
 
 EoDbPrimitive* EoDbJobFile::ConvertVersion1LinePrimitive() {
-  std::int16_t PenColor = std::int16_t(m_PrimBuf[4] & 0x000f);
-  std::int16_t LineType = std::int16_t((m_PrimBuf[4] & 0x00ff) >> 4);
+  std::int16_t color = std::int16_t(m_PrimBuf[4] & 0x000f);
+  std::int16_t lineTypeIndex = std::int16_t((m_PrimBuf[4] & 0x00ff) >> 4);
 
-  EoGeLine Line;
-  Line.begin = ((CVaxPnt*)&m_PrimBuf[8])->Convert() * 1.e-3;
-  Line.end = ((CVaxPnt*)&m_PrimBuf[20])->Convert() * 1.e-3;
+  EoGeLine line;
+  line.begin = ((CVaxPnt*)&m_PrimBuf[8])->Convert() * 1.e-3;
+  line.end = ((CVaxPnt*)&m_PrimBuf[20])->Convert() * 1.e-3;
 
-  return new EoDbLine(PenColor, LineType, Line);
+  return EoDbLine::CreateLine(line)->WithProperties(color, lineTypeIndex);
 }
+
 EoDbPrimitive* EoDbJobFile::ConvertVersion1PointPrimitive() {
   std::int16_t PenColor = std::int16_t(m_PrimBuf[4] & 0x000f);
   std::int16_t PointStyle = std::int16_t((m_PrimBuf[4] & 0x00ff) >> 4);

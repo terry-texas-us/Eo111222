@@ -4,6 +4,8 @@
 #include "AeSysView.h"
 #include "EoDbLine.h"
 #include "EoDlgSetLength.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
 #include "EoGsRenderState.h"
 
 void AeSysView::OnDraw2ModeOptions() {
@@ -47,13 +49,13 @@ void AeSysView::OnDraw2ModeWall() {
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   }
-  if (m_EndSectionGroup == 0) {
+  if (m_EndSectionGroup == nullptr) {
     if (m_PreviousOp != 0) {
       cursorPosition = SnapPointToAxis(m_PreviousPnt, cursorPosition);
 
       m_CurrentReferenceLine(m_PreviousPnt, cursorPosition);
-      m_CurrentReferenceLine.GetParallels(m_DistanceBetweenLines, m_CenterLineEccentricity, m_CurrentLeftLine,
-                                          m_CurrentRightLine);
+      m_CurrentReferenceLine.GetParallels(
+          m_DistanceBetweenLines, m_CenterLineEccentricity, m_CurrentLeft, m_CurrentRight);
 
       if (m_ContinueCorner) {
         CleanPreviousLines();
@@ -62,14 +64,16 @@ void AeSysView::OnDraw2ModeWall() {
       } else if (m_PreviousOp == ID_OP2) {
         m_AssemblyGroup = new EoDbGroup;
         document->AddWorkLayerGroup(m_AssemblyGroup);
-        m_AssemblyGroup->AddTail(
-            new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), m_CurrentLeftLine.begin, m_CurrentRightLine.begin));
-      }
-      m_AssemblyGroup->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), m_CurrentLeftLine));
-      m_AssemblyGroup->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), m_CurrentRightLine));
 
+        m_AssemblyGroup->AddTail(EoDbLine::CreateLine(m_CurrentLeft.begin, m_CurrentRight.begin)
+                ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+      }
       m_AssemblyGroup->AddTail(
-          new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), m_CurrentRightLine.end, m_CurrentLeftLine.end));
+          EoDbLine::CreateLine(m_CurrentLeft)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+      m_AssemblyGroup->AddTail(
+          EoDbLine::CreateLine(m_CurrentRight)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+      m_AssemblyGroup->AddTail(EoDbLine::CreateLine(m_CurrentRight.end, m_CurrentLeft.end)
+              ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_AssemblyGroup);
       m_ContinueCorner = true;
       m_PreviousReferenceLine = m_CurrentReferenceLine;
@@ -79,8 +83,8 @@ void AeSysView::OnDraw2ModeWall() {
     SetCursorPosition(m_PreviousPnt);
   } else {
     m_CurrentReferenceLine(m_PreviousPnt, cursorPosition);
-    m_CurrentReferenceLine.GetParallels(m_DistanceBetweenLines, m_CenterLineEccentricity, m_CurrentLeftLine,
-                                        m_CurrentRightLine);
+    m_CurrentReferenceLine.GetParallels(
+        m_DistanceBetweenLines, m_CenterLineEccentricity, m_CurrentLeft, m_CurrentRight);
 
     if (m_ContinueCorner) {
       CleanPreviousLines();
@@ -89,24 +93,27 @@ void AeSysView::OnDraw2ModeWall() {
     } else if (m_PreviousOp == ID_OP2) {
       m_AssemblyGroup = new EoDbGroup;
       document->AddWorkLayerGroup(m_AssemblyGroup);
+      EoGeLine beginCap{m_CurrentLeft.begin, m_CurrentRight.begin};
       m_AssemblyGroup->AddTail(
-          new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), m_CurrentLeftLine.begin, m_CurrentRightLine.begin));
+          EoDbLine::CreateLine(beginCap)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
     }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_EndSectionGroup);
     ptBeg = m_EndSectionLine->Begin();
     ptEnd = m_EndSectionLine->End();
 
-    m_AssemblyGroup->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), m_CurrentLeftLine));
-    m_AssemblyGroup->AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), m_CurrentRightLine));
+    m_AssemblyGroup->AddTail(
+        EoDbLine::CreateLine(m_CurrentLeft)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+    m_AssemblyGroup->AddTail(
+        EoDbLine::CreateLine(m_CurrentRight)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_AssemblyGroup);
 
     EoDbLine* LinePrimitive = new EoDbLine(*m_EndSectionLine);
     if (EoGeLine(m_PreviousPnt, cursorPosition).DirRelOfPt(ptBeg) < 0.0) {
-      m_EndSectionLine->SetEndPoint(m_CurrentRightLine.end);
-      LinePrimitive->SetBeginPoint(m_CurrentLeftLine.end);
+      m_EndSectionLine->SetEndPoint(m_CurrentRight.end);
+      LinePrimitive->SetBeginPoint(m_CurrentLeft.end);
     } else {
-      m_EndSectionLine->SetEndPoint(m_CurrentLeftLine.end);
-      LinePrimitive->SetBeginPoint(m_CurrentRightLine.end);
+      m_EndSectionLine->SetEndPoint(m_CurrentLeft.end);
+      LinePrimitive->SetBeginPoint(m_CurrentRight.end);
     }
     m_EndSectionGroup->AddTail(LinePrimitive);
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_EndSectionGroup);
@@ -148,15 +155,14 @@ bool AeSysView::CleanPreviousLines() {
   EoGeLine PreviousLeftLine;
   EoGeLine PreviousRightLine;
 
-  m_PreviousReferenceLine.GetParallels(m_DistanceBetweenLines, m_CenterLineEccentricity, PreviousLeftLine,
-                                       PreviousRightLine);
+  m_PreviousReferenceLine.GetParallels(
+      m_DistanceBetweenLines, m_CenterLineEccentricity, PreviousLeftLine, PreviousRightLine);
 
-  EoGeLine::Intersection_xy(PreviousLeftLine, m_CurrentLeftLine, ptInt);
-  PreviousLeftLine.end = m_CurrentLeftLine.begin = ptInt;
+  EoGeLine::Intersection_xy(PreviousLeftLine, m_CurrentLeft, ptInt);
+  PreviousLeftLine.end = m_CurrentLeft.begin = ptInt;
 
-  EoGeLine::Intersection_xy(PreviousRightLine, m_CurrentRightLine, ptInt);
-  PreviousRightLine.end = m_CurrentRightLine.begin = ptInt;
-
+  EoGeLine::Intersection_xy(PreviousRightLine, m_CurrentRight, ptInt);
+  PreviousRightLine.end = m_CurrentRight.begin = ptInt;
   document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_AssemblyGroup);
 
   delete m_AssemblyGroup->RemoveTail();
@@ -172,7 +178,7 @@ bool AeSysView::CleanPreviousLines() {
 
 bool AeSysView::StartAssemblyFromLine() {
   auto* document = GetDocument();
-  auto line = m_BeginSectionLine->Line();
+  EoGeLine line = m_BeginSectionLine->Line();
 
   bool isParallelTo = line.ParallelTo(m_CurrentReferenceLine);
   if (isParallelTo) { return false; }
@@ -182,20 +188,20 @@ bool AeSysView::StartAssemblyFromLine() {
 
   document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_AssemblyGroup);
 
-  EoGeLine::Intersection_xy(line, m_CurrentLeftLine, ptInt);
-  m_CurrentLeftLine.begin = ptInt;
-  EoGeLine::Intersection_xy(line, m_CurrentRightLine, ptInt);
-  m_CurrentRightLine.begin = ptInt;
+  EoGeLine::Intersection_xy(line, m_CurrentLeft, ptInt);
+  m_CurrentLeft.begin = ptInt;
+  EoGeLine::Intersection_xy(line, m_CurrentRight, ptInt);
+  m_CurrentRight.begin = ptInt;
 
   EoDbLine* LinePrimitive = new EoDbLine(*m_BeginSectionLine);
 
-  if (EoGeVector3d(line.begin, m_CurrentLeftLine.begin).Length() >
-      EoGeVector3d(line.begin, m_CurrentRightLine.begin).Length()) {
-    m_BeginSectionLine->SetEndPoint(m_CurrentRightLine.begin);
-    LinePrimitive->SetBeginPoint(m_CurrentLeftLine.begin);
+  if (EoGeVector3d(line.begin, m_CurrentLeft.begin).Length() >
+      EoGeVector3d(line.begin, m_CurrentRight.begin).Length()) {
+    m_BeginSectionLine->SetEndPoint(m_CurrentRight.begin);
+    LinePrimitive->SetBeginPoint(m_CurrentLeft.begin);
   } else {
-    m_BeginSectionLine->SetEndPoint(m_CurrentLeftLine.begin);
-    LinePrimitive->SetBeginPoint(m_CurrentRightLine.begin);
+    m_BeginSectionLine->SetEndPoint(m_CurrentLeft.begin);
+    LinePrimitive->SetBeginPoint(m_CurrentRight.begin);
   }
   m_AssemblyGroup->AddTail(LinePrimitive);
   m_BeginSectionLine = nullptr;
@@ -220,11 +226,16 @@ void AeSysView::DoDraw2ModeMouseMove() {
     EoGeLine ln(m_PreviousPnt, CurrentPnt);
     ln.GetParallels(m_DistanceBetweenLines, m_CenterLineEccentricity, PreviewLines[0], PreviewLines[1]);
 
+    EoGeLine beginCap{PreviewLines[0].begin, PreviewLines[1].begin};
     m_PreviewGroup.AddTail(
-        new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PreviewLines[0].begin, PreviewLines[1].begin));
-    m_PreviewGroup.AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PreviewLines[0]));
-    m_PreviewGroup.AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PreviewLines[1]));
-    m_PreviewGroup.AddTail(new EoDbLine(renderState.Color(), renderState.LineTypeIndex(), PreviewLines[1].end, PreviewLines[0].end));
+        EoDbLine::CreateLine(beginCap)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+    m_PreviewGroup.AddTail(
+        EoDbLine::CreateLine(PreviewLines[0])->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+    m_PreviewGroup.AddTail(
+        EoDbLine::CreateLine(PreviewLines[1])->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+    EoGeLine endCap{PreviewLines[1].end, PreviewLines[0].end};
+    m_PreviewGroup.AddTail(
+        EoDbLine::CreateLine(endCap)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   }
 }

@@ -41,7 +41,7 @@ class EoDbPrimitive : public CObject {
   static double sm_RelationshipOfPoint;
   static double sm_SelectApertureSize;
 
- public:  // Constructors and destructor
+ public:
   EoDbPrimitive() = default;
   EoDbPrimitive(std::int16_t penColor, std::int16_t lineType);
 
@@ -65,7 +65,6 @@ class EoDbPrimitive : public CObject {
  public:
   ~EoDbPrimitive() override;
 
- public:  // Methods - absolute virtuals
   virtual void AddReportToMessageList(const EoGePoint3d&) = 0;
   virtual void AddToTreeViewControl(HWND, HTREEITEM) = 0;
   virtual void Assign(EoDbPrimitive* primitive) = 0;
@@ -91,7 +90,6 @@ class EoDbPrimitive : public CObject {
   virtual bool Write(CFile& file) = 0;
   virtual void Write(CFile& file, std::uint8_t* buffer) = 0;
 
- public:
   virtual void CutAt2Points(
       const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*);
   virtual void CutAtPoint(const EoGePoint3d& point, EoDbGroup*);
@@ -99,7 +97,6 @@ class EoDbPrimitive : public CObject {
   virtual void ModifyState();
   virtual bool PivotOnControlPoint(AeSysView*, const EoGePoint4d&);
 
- public:  // Methods
   void SetBaseProperties(const DRW_Entity* entity, AeSysDoc* document);
 
   CString FormatPenColor() const;
@@ -107,16 +104,19 @@ class EoDbPrimitive : public CObject {
   std::int16_t LogicalColor() const;
   std::int16_t LogicalLineType() const;
 
-  std::int16_t Color() const noexcept { return m_color; }
-  void SetColor(std::int16_t color) { m_color = color; }
-  std::int16_t LineTypeIndex() const noexcept { return m_lineTypeIndex; }
-  void SetLineTypeIndex(std::int16_t lineTypeIndex) { m_lineTypeIndex = lineTypeIndex; }
+  [[nodiscard]] std::int16_t Color() const noexcept { return m_color; }
+  [[nodiscard]] std::int16_t LineTypeIndex() const noexcept { return m_lineTypeIndex; }
+  [[nodiscard]] const std::wstring& LineTypeName() const noexcept { return m_lineTypeName; }
+  [[nodiscard]] const std::wstring& LayerName() const noexcept { return m_layerName; }
 
-  const std::wstring& LineTypeName() const noexcept { return m_lineTypeName; }
-  void SetLineTypeName(std::wstring name) { m_lineTypeName = std::move(name); }
-
-  const std::wstring& LayerName() const noexcept { return m_layerName; }
-  void SetLayerName(std::wstring name) { m_layerName = std::move(name); }
+  void SetColor(std::int16_t color) noexcept { m_color = color; }
+  void SetLineTypeIndex(std::int16_t lineTypeIndex) noexcept { m_lineTypeIndex = lineTypeIndex; }
+  void SetLineTypeName(std::wstring name) noexcept { m_lineTypeName = std::move(name); }
+  void SetLayerName(std::wstring name) noexcept { m_layerName = std::move(name); }
+  void SetProperties(std::int16_t color, std::int16_t lineTypeIndex) noexcept {
+    m_color = color;
+    m_lineTypeIndex = lineTypeIndex;
+  }
 
   [[nodiscard]] EoDbPrimitive* WithProperties(std::int16_t color, std::int16_t lineTypeIndex) noexcept {
     m_color = color;
@@ -124,7 +124,6 @@ class EoDbPrimitive : public CObject {
     return this;
   }
 
- public:  // Methods - static
   static int ControlPointIndex();
   static bool IsSupportedTyp(int type);
   static std::int16_t LayerColor();

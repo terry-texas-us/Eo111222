@@ -24,23 +24,11 @@
 #include "ddeGItms.h"
 #endif  // USING_DDE
 
-/** @brief Private constructor a line primitive with specified begin and end points.
- * @param begin The starting point of the line.
- * @param end The ending point of the line.
- */
 EoDbLine::EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end) : EoDbPrimitive(), m_line{begin, end} {}
 
 EoDbLine* EoDbLine::CreateLine(const EoGePoint3d& begin, const EoGePoint3d& end) { return new EoDbLine(begin, end); }
 
-
-EoDbLine::EoDbLine(const EoGeLine& line) : EoDbPrimitive(), m_line{line} {}
-
-EoDbLine::EoDbLine(std::int16_t color, std::int16_t lineType, EoGeLine line)
-    : EoDbPrimitive(color, lineType), m_line{line} {}
-
-
-EoDbLine::EoDbLine(std::int16_t color, std::int16_t lineType, const EoGePoint3d& begin, const EoGePoint3d& end)
-    : EoDbPrimitive(color, lineType), m_line{begin, end} {}
+EoDbLine* EoDbLine::CreateLine(const EoGeLine& line) { return new EoDbLine(line.begin, line.end); }
 
 EoDbLine::EoDbLine(const EoDbLine& other) : EoDbPrimitive(other), m_line{other.m_line} {}
 
@@ -101,9 +89,10 @@ void EoDbLine::CutAt2Points(
 }
 
 void EoDbLine::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
-  EoGeLine line;
-
-  if (m_line.CutAtPoint(point, line) != 0) { group->AddTail(new EoDbLine(m_color, m_lineTypeIndex, line)); }
+  EoGeLine line{};
+  if (m_line.CutAtPoint(point, line) != 0) {
+    group->AddTail(EoDbLine::CreateLine(line)->WithProperties(m_color, m_lineTypeIndex));
+  }
 }
 
 void EoDbLine::Display(AeSysView* view, CDC* deviceContext) {

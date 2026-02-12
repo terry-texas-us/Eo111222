@@ -462,8 +462,8 @@ class AeSysView : public CView {
   double m_CenterLineEccentricity;  // Center line eccentricity for parallel lines
   bool m_ContinueCorner;
   double m_DistanceBetweenLines;
-  EoGeLine m_CurrentLeftLine;
-  EoGeLine m_CurrentRightLine;
+  EoGeLine m_CurrentLeft;
+  EoGeLine m_CurrentRight;
   EoGeLine m_PreviousReferenceLine;
   EoGeLine m_CurrentReferenceLine;
   EoDbGroup* m_AssemblyGroup;

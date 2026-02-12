@@ -37,7 +37,7 @@ std::uint16_t PreviousDimensionCommand{};
  *  @param[out] yAxisReference Receives the reference Y axis vector for the character cell.
  */
 void GetReferenceAxesForCharacterCell(EoDbCharacterCellDefinition& characterCellDefinition, const EoGeVector3d& normal,
-                                      EoGeVector3d& xAxisReference, EoGeVector3d& yAxisReference) {
+    EoGeVector3d& xAxisReference, EoGeVector3d& yAxisReference) {
   xAxisReference = ComputeArbitraryAxis(normal);
   xAxisReference.RotAboutArbAx(normal, characterCellDefinition.RotationAngle());
 
@@ -152,7 +152,8 @@ void AeSysView::OnDimensionModeLine() {
   } else {
     cursorPosition = SnapPointToAxis(PreviousDimensionCursorPosition, cursorPosition);
     if (PreviousDimensionCursorPosition != cursorPosition) {
-      auto* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, cursorPosition));
+      auto* Group =
+          new EoDbGroup(EoDbLine::CreateLine(PreviousDimensionCursorPosition, cursorPosition)->WithProperties(1, 1));
       document->AddWorkLayerGroup(Group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
@@ -261,7 +262,8 @@ void AeSysView::OnDimensionModeExten() {
       cursorPosition = cursorPosition.ProjectToward(PreviousDimensionCursorPosition, -0.1875);
       PreviousDimensionCursorPosition = PreviousDimensionCursorPosition.ProjectToward(cursorPosition, 0.0625);
 
-      auto* Group = new EoDbGroup(new EoDbLine(1, 1, PreviousDimensionCursorPosition, cursorPosition));
+      auto* Group =
+          new EoDbGroup(EoDbLine::CreateLine(PreviousDimensionCursorPosition, cursorPosition)->WithProperties(1, 1));
       document->AddWorkLayerGroup(Group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
@@ -285,7 +287,7 @@ void AeSysView::OnDimensionModeRadius() {
       auto* group = new EoDbGroup;
 
       auto* radialDimension = new EoDbDimension();
-      
+
       radialDimension->SetColor(1);
       radialDimension->SetLineTypeIndex(1);
 
@@ -327,13 +329,13 @@ void AeSysView::OnDimensionModeDiameter() {
       GenerateLineEndItem(1, 0.1, end, begin, group);
 
       auto* diametricDimension = new EoDbDimension();
-      
+
       diametricDimension->SetColor(1);
       diametricDimension->SetLineTypeIndex(1);
-      
+
       diametricDimension->SetBeginPoint(begin);
       diametricDimension->SetEndPoint(end);
-      
+
       diametricDimension->SetText(L"D" + diametricDimension->Text());
       diametricDimension->SetDefaultNote();
       diametricDimension->SetTextColor(5);
@@ -468,7 +470,6 @@ void AeSysView::OnDimensionModeConvert() {
       posPrimCur = PrimitivePosition;
       primitive = Group->GetNext(PrimitivePosition);
       if (primitive->SelectUsingPoint(this, ptView, ptProj)) {
-
         if (primitive->Is(EoDb::kLinePrimitive)) {
           EoDbLine* line = static_cast<EoDbLine*>(primitive);
           auto* dimension = new EoDbDimension();
@@ -491,10 +492,13 @@ void AeSysView::OnDimensionModeConvert() {
         } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
           EoDbDimension* pPrimDim = static_cast<EoDbDimension*>(primitive);
           EoGeReferenceSystem ReferenceSystem = pPrimDim->ReferenceSystem();
-          EoDbLine* pPrimLine = new EoDbLine(pPrimDim->Color(), pPrimDim->LineTypeIndex(), pPrimDim->Line());
+
+          auto* linePrimitive =
+              EoDbLine::CreateLine(pPrimDim->Line())->WithProperties(primitive->Color(), primitive->LineTypeIndex());
+
           EoDbText* pPrimText = new EoDbText(pPrimDim->FontDefinition(), ReferenceSystem, pPrimDim->Text());
           pPrimText->SetColor(pPrimDim->TextColor());
-          Group->InsertAfter(posPrimCur, pPrimLine);
+          Group->InsertAfter(posPrimCur, linePrimitive);
           Group->InsertAfter(posPrimCur, pPrimText);
           Group->RemoveAt(posPrimCur);
           delete primitive;
