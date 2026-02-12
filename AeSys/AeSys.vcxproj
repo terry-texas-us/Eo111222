@@ -64,7 +64,7 @@
     <Link>
       <AdditionalDependencies>$(ProjectDir)Tools\reflex_static_lib.lib;$(SolutionDir)libdxfrw\vs2013\x64\Debug\libdxfrw.lib;$(SolutionDir)libiconv\Debug_x64\libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)libiconv\Debug_x64\;$(ProjectDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)RE-flex\Debug\;$(SolutionDir)libiconv\Debug_x64\;$(ProjectDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
@@ -78,7 +78,8 @@ xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"
       </Command>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>xcopy /Y /I /E "$(SolutionDir)libiconv\Debug_x64\libiconv.dll" "$(SolutionDir)x64\Debug\"</Command>
+      <Command>xcopy /Y /I /E "$(SolutionDir)libiconv\Debug_x64\libiconv.dll" "$(SolutionDir)x64\Debug\"
+xcopy /Y /I /E "$(SolutionDir)RE-flex\Debug\reflex_static_lib.lib" "$(ProjectDir)Tools\"</Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

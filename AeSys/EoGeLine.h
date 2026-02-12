@@ -234,7 +234,7 @@ class EoGeLine {
   * @param[out] intersection parameter that receives the intersection point if the line segments intersect.
   * @return TRUE if the line segments intersect, FALSE otherwise. Returns FALSE if either line segment is degenerate (endpoints coincide), if the lines are parallel, or if the line segments are skew (not coplanar).
   */
-  static bool Intersection(const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection);
+  [[nodiscard]] static bool Intersection(const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection);
 
   /** @brief Computes the intersection point of two lines in the XY plane.
   * @param ln1 The first line.
@@ -242,5 +242,5 @@ class EoGeLine {
   * @param intersection Output parameter that receives the intersection point if one exists.
   * @return True if the lines intersect (are not parallel), false otherwise.
   */
-  static bool Intersection_xy(EoGeLine ln1, EoGeLine ln2, EoGePoint3d& intersection);
+  [[nodiscard]] static bool Intersection_xy(EoGeLine ln1, EoGeLine ln2, EoGePoint3d& intersection);
 };

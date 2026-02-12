@@ -66,8 +66,7 @@ void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t c
   if (deviceContext) { ManagePenResources(deviceContext, color, int(LogicalWidth), lineTypeIndex); }
 }
 
-void EoGsRenderState::ManagePenResources(
-    CDC* deviceContext, std::int16_t penColor, int penWidth, std::int16_t lineType) {
+void EoGsRenderState::ManagePenResources(CDC* deviceContext, std::int16_t penColor, int penWidth, std::int16_t lineType) {
   static const int NumberOfPens = 8;
   static HPEN hPen[NumberOfPens] = {0, 0, 0, 0, 0, 0, 0, 0};
   static COLORREF crColRef[NumberOfPens];
@@ -133,15 +132,30 @@ void EoGsRenderState::SetLineType(CDC* deviceContext, std::int16_t lineTypeIndex
   if (deviceContext) { ManagePenResources(deviceContext, m_color, 0, lineTypeIndex); }
 }
 
+/** @brief Sets the current foreground mix mode. GDI uses the foreground mix mode to combine pens and
+ * interiors of filled objects with the colors already on the screen. The foreground mix mode
+ * defines how colors from the brush or pen and the colors in the existing image are to be combined.
+ *
+ * @param deviceContext The device context to set the ROP2 mode for.
+ * @param drawMode The drawing mode to set, such as R2_COPYPEN, R2_XORPEN, etc.
+ * @return The previous ROP2 mode before setting the new one.
+ * @note The behavior of ROP2 modes can be affected by the background color. 
+ * For example, XOR modes may not work properly with non black or white background colors, and this function includes logic to handle such cases accordingly.
+ */
 int EoGsRenderState::SetROP2(CDC* deviceContext, int drawMode) {
-  if (ColorPalette[0] == Eo::colorWhite) {
+  if (ColorPalette[0] == Eo::colorBlack) {
+    return deviceContext->SetROP2(drawMode);
+  } else if (ColorPalette[0] == Eo::colorWhite) {
     if (drawMode == R2_XORPEN) { drawMode = R2_NOTXORPEN; }
+  } else {
+    // Gray or other background - XOR modes don't work properly
+    // Fallback to normal drawing (caller should use invalidation instead)
+    if (drawMode == R2_XORPEN || drawMode == R2_NOTXORPEN) { drawMode = R2_COPYPEN; }
   }
   return deviceContext->SetROP2(drawMode);
 }
 
-void EoGsRenderState::SetAlignment(
-    CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
+void EoGsRenderState::SetAlignment(CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
   m_fontDefinition.SetAlignment(horizontalAlignment, verticalAlignment);
 
   deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);

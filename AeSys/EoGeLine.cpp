@@ -426,7 +426,7 @@ bool EoGeLine::IntersectionWithPln(EoGePoint3d& beginPoint, EoGeVector3d lineVec
   return false;  // Line and plane are parallel
 }
 
-bool EoGeLine::Intersection(const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection) {
+[[nodiscard]] bool EoGeLine::Intersection(const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection) {
   EoGeVector3d firstVector(firstLine.begin, firstLine.end);
   if (firstVector.IsNearNull()) { return false; }
 
@@ -461,7 +461,7 @@ bool EoGeLine::Intersection(const EoGeLine& firstLine, const EoGeLine& secondLin
   return false;
 }
 
-bool EoGeLine::Intersection_xy(EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d& intersection) {
+[[nodiscard]] bool EoGeLine::Intersection_xy(EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d& intersection) {
   EoGeVector3d firstVector(firstLine.begin, firstLine.end);
   EoGeVector3d secondVector(secondLine.begin, secondLine.end);
 
