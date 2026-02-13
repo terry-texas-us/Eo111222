@@ -10,8 +10,8 @@ class AeSysView;
 
 class DrawModeState : public AeSysState {
  private:
-  std::uint16_t m_PreviousDrawCommand = 0;  // Migrated from legacy
-  EoGePoint3dArray m_pts;                   // For multi-point primitives (line, poly, etc.)
+  std::uint16_t m_previousDrawCommand{};
+  EoGePoint3dArray m_pts;  // For multi-point primitives (line, poly, etc.)
 
  public:
   // declare/define ctors as default to allow copying/moving if needed

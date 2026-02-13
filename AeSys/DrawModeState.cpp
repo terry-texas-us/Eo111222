@@ -19,7 +19,7 @@ void DrawModeState::OnEnter(AeSysView* context) {
   context->SetModeCursor(IDR_DRAW_MODE);  // Draw cursor
   // ModeLineHighlightOp(ID_DRAW_MODE);  // Adapt your UI
   m_pts.RemoveAll();
-  m_PreviousDrawCommand = 0;
+  m_previousDrawCommand = 0;
 }
 
 void DrawModeState::OnExit(AeSysView* context) {
@@ -30,32 +30,34 @@ void DrawModeState::OnExit(AeSysView* context) {
   // ModeLineUnhighlightOp(m_PreviousDrawCommand);
 }
 
-void DrawModeState::HandleCommand(AeSysView* context, UINT nID) {
-  auto* doc = context->GetDocument();
-  EoGePoint3d cursorPos = context->GetCursorPosition();
+void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
+  auto* document = context->GetDocument();
+  auto cursorPosition = context->GetCursorPosition();
 
-  switch (nID) {
+  switch (command) {
+    case ID_DRAW_MODE_OPTIONS:
+      document->OnSetupOptionsDraw();
+      break;
     case ID_DRAW_MODE_POINT: {
-      // Migrated from OnDrawModePoint
-      auto* prim = new EoDbPoint(renderState.Color(), renderState.PointStyle(), cursorPos);  // Adapt renderState
-      auto* group = new EoDbGroup(prim);
-      doc->AddWorkLayerGroup(group);
-      doc->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
+      auto* pointPrimitive = new EoDbPoint(renderState.Color(), renderState.PointStyle(), cursorPosition);
+      auto* group = new EoDbGroup(pointPrimitive);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
     } break;
     case ID_DRAW_MODE_LINE:
-      // Migrated logic: Handle pts accumulation
-      if (m_PreviousDrawCommand != ID_OP2) {  // Start new line
+      if (m_previousDrawCommand != ID_OP2) {  // Start new line
         m_pts.RemoveAll();
-        m_pts.Add(cursorPos);
-        m_PreviousDrawCommand = ID_OP2;  // Update UI
+        m_pts.Add(cursorPosition);
+        m_previousDrawCommand = ID_OP2;  // Update UI
       } else {                           // Complete line
-        cursorPos = context->SnapPointToAxis(m_pts[0], cursorPos);
+        cursorPosition = context->SnapPointToAxis(m_pts[0], cursorPosition);
         auto* line =
-            EoDbLine::CreateLine(m_pts[0], cursorPos)->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+            EoDbLine::CreateLine(m_pts[0], cursorPosition)->WithProperties(renderState.Color(), renderState.LineTypeIndex());
         auto* group = new EoDbGroup(line);
-        doc->AddWorkLayerGroup(group);
-        doc->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
-        m_pts[0] = cursorPos;  // Chain for next segment
+        document->AddWorkLayerGroup(group);
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
+        m_pts[0] = cursorPosition;  // Chain for next segment
+        context->m_PreviewGroup.DeletePrimitivesAndRemoveAll();
       }
       break;
     // Migrate others: Polygon, Arc, etc. For DXF: Map to libdxfrw entities with handles
@@ -72,7 +74,7 @@ void DrawModeState::OnMouseMove([[maybe_unused]] AeSysView* context, [[maybe_unu
   EoGePoint3d cursorPos = context->GetCursorPosition();
   auto* doc = context->GetDocument();
 
-  if (m_PreviousDrawCommand == ID_OP2 && m_pts.GetSize() > 0) {  // Line preview
+  if (m_previousDrawCommand == ID_OP2 && m_pts.GetSize() > 0) {  // Line preview
     cursorPos = context->SnapPointToAxis(m_pts[0], cursorPos);
     doc->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &context->m_PreviewGroup);
     context->m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -87,9 +89,9 @@ void DrawModeState::OnMouseMove([[maybe_unused]] AeSysView* context, [[maybe_unu
 
 void DrawModeState::OnLButtonDown([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
   // If draw mode uses clicks for points
-  EoGePoint3d cursorPos = context->GetCursorPosition();
+  auto cursorPosition = context->GetCursorPosition();
   // e.g., Add to m_pts and trigger command logic
-  HandleCommand(context, m_PreviousDrawCommand);  // Or specific
+  HandleCommand(context, m_previousDrawCommand);  // Or specific
 }
 
 void DrawModeState::OnUpdate([[maybe_unused]] AeSysView* context, [[maybe_unused]] CView* sender, [[maybe_unused]] LPARAM hint, [[maybe_unused]] CObject* hintObject) {

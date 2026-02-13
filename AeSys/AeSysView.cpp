@@ -641,7 +641,8 @@ void AeSysView::OnInitialUpdate() {
 
   CView::OnInitialUpdate();
 #if defined(USING_STATE_PATTERN)
-  PushState(std::make_unique<DrawModeState>());
+  PushState(std::make_unique<IdleState>());
+  PushState(std::make_unique<DrawModeState>());  // For testing until mode switch implemented
 #endif
 }
 
@@ -660,6 +661,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   if ((hint & EoDb::kSafe) == EoDb::kSafe) { savedRenderState = renderState.Save(); }
   if ((hint & EoDb::kErase) == EoDb::kErase) { drawMode = renderState.SetROP2(deviceContext, R2_XORPEN); }
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor()); }
+
 #if defined(USING_STATE_PATTERN)
   // Core delegation: Give the current state first crack at handling the update
   auto* state = GetCurrentState();
@@ -668,7 +670,6 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
     state->OnUpdate(this, sender, hint, hintObject);
     handledByState = true;  // Assume handled unless you add a return value to OnUpdate
   }
-
   if (!handledByState) {
     // Fallback: If no state or state didn't handle, use legacy switch for general updates
 #endif

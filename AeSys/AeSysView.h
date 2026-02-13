@@ -157,12 +157,25 @@ class AeSysView : public CView {
   void SetGridPointSpacing(double x, double y, double z);
   void GetGridSnapSpacing(double& x, double& y, double& z) const;
   void SetGridSnapSpacing(double x, double y, double z);
-  /// <summary>Determines the nearest point on system constraining grid.</summary>
-  EoGePoint3d SnapPointToGrid(const EoGePoint3d& pt) const;
-  /// <summary>Set Axis constraint tolerance angle and offset axis constraint offset angle. Constrains a line to nearest axis pivoting on first endpoint.</summary>
-  /// <remarks>Offset angle only support about z-axis</remarks>
-  /// <returns>Point after snap</returns>
-  EoGePoint3d SnapPointToAxis(EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const;
+
+  /** @brief Snaps a point to the nearest grid point based on the current grid snap spacing.
+   * This function calculates the nearest grid point to the input point by rounding the coordinates of the input point to the nearest multiple of the grid snap spacing.
+   * The resulting snapped point is returned.
+   * @param point The point to be snapped to the grid.
+   * @return The snapped point that is aligned with the nearest grid intersection.
+   */
+  [[nodiscard]] EoGePoint3d SnapPointToGrid(const EoGePoint3d& point) const;
+
+  /** @brief Snaps a point to the nearest axis if it is within the influence angle of that axis.
+   * This function checks the angle between the line from the begin point to the end point and each of the three orthogonal axes.
+   * If the angle is less than the sum of the influence angle and offset angle, the end point is snapped to that axis.
+   * If multiple axes are within the influence angle, the one with the smallest angle is chosen.
+   * @param begin The starting point from which to measure angles.
+   * @param end The point to be potentially snapped.
+   * @return The new snapped point if snapping occurred, or the original end point if no snapping was applied.
+   * @note Offset angle only support about z-axis
+   */
+  [[nodiscard]] EoGePoint3d SnapPointToAxis(const EoGePoint3d& begin, const EoGePoint3d& end) const;
 
   bool DisplayGridWithLines() const;
   void EnableDisplayGridWithLines(bool display);
