@@ -400,18 +400,18 @@ AeSysView::AeSysView()
       m_NumberOfSides{},
       m_DefaultText{},
       /// Draw2 Mode Interface
-      m_CenterLineEccentricity{0.5},
-      m_ContinueCorner{},
-      m_DistanceBetweenLines{0.0625},
-      m_CurrentLeft{},
-      m_CurrentRight{},
-      m_PreviousReferenceLine{},
-      m_CurrentReferenceLine{},
-      m_AssemblyGroup{},
-      m_EndSectionGroup{},
-      m_BeginSectionGroup{},
-      m_BeginSectionLine{},
-      m_EndSectionLine{},
+      m_centerLineEccentricity{0.5},
+      m_continuingCorner{},
+      m_distanceBetweenLines{0.0625},
+      m_currentLeftLine{},
+      m_currentRightLine{},
+      m_previousReferenceLine{},
+      m_currentReferenceLine{},
+      m_assemblyGroup{},
+      m_endSectionGroup{},
+      m_beginSectionGroup{},
+      m_beginSectionLinePrimitive{},
+      m_endSectionLinePrimitive{},
       /// Fixup Mode Interface
       m_FixupModeAxisTolerance{2.0},
       m_FixupModeCornerSize{0.25},
@@ -469,14 +469,14 @@ inline AeSysDoc* AeSysView::GetDocument() const {
 
 void AeSysView::OnActivateFrame(UINT state, CFrameWnd* deactivateFrame) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state,
-            deactivateFrame);
+      deactivateFrame);
 
   CView::OnActivateFrame(state, deactivateFrame);
 }
 
 void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deactiveView) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate,
-            activateView, deactiveView);
+      activateView, deactiveView);
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
   if (activate) {
@@ -538,7 +538,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
   CRect Rect;
   deviceContext->GetClipBox(Rect);
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right,
-            Rect.bottom);
+      Rect.bottom);
 
   if (Rect.IsRectEmpty()) { return; }
 
@@ -557,10 +557,10 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
       m_RenderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE::D2D1_ANTIALIAS_MODE_ALIASED);
 
-      D2D1_RECT_F rectangle1 = D2D1::RectF(rtSize.width / 2 - 50.0f, rtSize.height / 2 - 50.0f,
-                                           rtSize.width / 2 + 50.0f, rtSize.height / 2 + 50.0f);
-      D2D1_RECT_F rectangle2 = D2D1::RectF(rtSize.width / 2 - 100.0f, rtSize.height / 2 - 100.0f,
-                                           rtSize.width / 2 + 100.0f, rtSize.height / 2 + 100.0f);
+      D2D1_RECT_F rectangle1 = D2D1::RectF(
+          rtSize.width / 2 - 50.0f, rtSize.height / 2 - 50.0f, rtSize.width / 2 + 50.0f, rtSize.height / 2 + 50.0f);
+      D2D1_RECT_F rectangle2 = D2D1::RectF(
+          rtSize.width / 2 - 100.0f, rtSize.height / 2 - 100.0f, rtSize.width / 2 + 100.0f, rtSize.height / 2 + 100.0f);
 
       m_RenderTarget->FillRectangle(&rectangle1, m_RedBrush);
       m_RenderTarget->DrawRectangle(&rectangle2, m_LightSlateGrayBrush);
@@ -606,8 +606,8 @@ void AeSysView::OnInitialUpdate() {
 }
 
 void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint,
-            hintObject);
+  ATLTRACE2(
+      static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint, hintObject);
 
   auto* deviceContext = GetDC();
   auto backgroundColor = deviceContext->GetBkColor();
@@ -889,11 +889,11 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
     auto* brush = deviceContext->SelectStockObject(NULL_BRUSH);
 
     deviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
-                             m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+        m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
 
     m_RubberbandLogicalEndPoint = point;
     deviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
-                             m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+        m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
     deviceContext->SelectObject(brush);
     deviceContext->SelectObject(pen);
     deviceContext->SetROP2(drawMode);
@@ -903,7 +903,7 @@ void AeSysView::OnMouseMove(UINT, CPoint point) {
 
 BOOL AeSysView::OnMouseWheel(UINT flags, std::int16_t zDelta, CPoint point) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>OnMouseWheel(%i, %i, %08.8lx)\n", this, flags, zDelta,
-            point);
+      point);
 
   if (zDelta > 0) {
     OnWindowZoomIn();
@@ -999,18 +999,18 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
     CRect rcWnd;
     rcWnd.left =
         Eo::Round((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.top = Eo::Round((1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) *
-                          static_cast<double>(bm.bmHeight));
+    rcWnd.top = Eo::Round(
+        (1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
     rcWnd.right =
         Eo::Round((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.bottom = Eo::Round((1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) *
-                             static_cast<double>(bm.bmHeight));
+    rcWnd.bottom = Eo::Round(
+        (1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
 
     int iWidSrc = rcWnd.Width();
     int iHgtSrc = rcWnd.Height();
 
-    deviceContext->StretchBlt(0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc,
-                              SRCCOPY);
+    deviceContext->StretchBlt(
+        0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
 
     dcMem.SelectObject(pBitmap);
     deviceContext->SelectPalette(pPalette, FALSE);
@@ -1419,16 +1419,16 @@ void AeSysView::OnWindowZoomSpecial() {
 }
 
 void AeSysView::OnSetupDimLength() {
-  EoDlgSetLength dlg;
+  EoDlgSetLength dialog;
 
-  dlg.m_strTitle = L"Set Dimension Length";
-  dlg.m_dLength = app.DimensionLength();
-  if (dlg.DoModal() == IDOK) {
-    app.SetDimensionLength(dlg.m_dLength);
+  dialog.SetTitle(L"Set Dimension Length");
+  dialog.SetLength(app.DimensionLength());
+  if (dialog.DoModal() == IDOK) {
+    app.SetDimensionLength(dialog.Length());
     UpdateStateInformation(DimLen);
 #if defined(USING_DDE)
     dde::PostAdvise(dde::DimLenInfo);
-#endif  // USING_DDE
+#endif
   }
 }
 
@@ -1480,8 +1480,8 @@ void AeSysView::OnRelativeMovesEngDownRotate() {
   auto cursorPosition = GetCursorPosition();
   EoGePoint3d ptSec = cursorPosition;
   ptSec.y -= app.EngagedLength();
-  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ,
-                                         app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  cursorPosition = ptSec.RotateAboutAxis(
+      cursorPosition, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(cursorPosition);
 }
 
@@ -1503,8 +1503,8 @@ void AeSysView::OnRelativeMovesEngLeftRotate() {
   auto cursorPosition = GetCursorPosition();
   EoGePoint3d ptSec = cursorPosition;
   ptSec.x -= app.EngagedLength();
-  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ,
-                                         app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  cursorPosition = ptSec.RotateAboutAxis(
+      cursorPosition, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(cursorPosition);
 }
 
@@ -1526,8 +1526,8 @@ void AeSysView::OnRelativeMovesEngRightRotate() {
   auto cursorPosition = GetCursorPosition();
   EoGePoint3d ptSec = cursorPosition;
   ptSec.x += app.EngagedLength();
-  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ,
-                                         app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  cursorPosition = ptSec.RotateAboutAxis(
+      cursorPosition, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(cursorPosition);
 }
 
@@ -1543,8 +1543,8 @@ void AeSysView::OnRelativeMovesEngUpRotate() {
   auto cursorPosition = GetCursorPosition();
   EoGePoint3d ptSec = cursorPosition;
   ptSec.y += app.EngagedLength();
-  cursorPosition = ptSec.RotateAboutAxis(cursorPosition, EoGeVector3d::positiveUnitZ,
-                                         app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
+  cursorPosition = ptSec.RotateAboutAxis(
+      cursorPosition, EoGeVector3d::positiveUnitZ, app.EngagedAngle() + Eo::DegreeToRadian(app.DimensionAngle()));
   SetCursorPosition(cursorPosition);
 }
 
@@ -2174,7 +2174,7 @@ void AeSysView::OnFind() {
 
   // @todo Find command implementation should go here, currently just verifying the combo box text and logging it
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"Verifying the FindComboBox text and logging: `%ls`\n",
-            static_cast<LPCWSTR>(findComboBoxText));
+      static_cast<LPCWSTR>(findComboBoxText));
 }
 
 /** @brief Verifies the text in the Find combo box and updates it if necessary.
@@ -2229,7 +2229,7 @@ void AeSysView::RubberBandingDisable() {
     } else if (m_RubberbandType == Rectangles) {
       CBrush* brush = (CBrush*)deviceContext->SelectStockObject(NULL_BRUSH);
       deviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
-                               m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+          m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
       deviceContext->SelectObject(brush);
     }
     deviceContext->SelectObject(pen);
@@ -2415,40 +2415,40 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
   if ((item & WorkCount) == WorkCount) {
     rectangle.SetRect(0, top, 8 * averageCharacterWidth, top + height);
     swprintf_s(szBuf, 32, L"%-4i", document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers());
-    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
-                               static_cast<UINT>(wcslen(szBuf)), 0);
+    deviceContext->ExtTextOutW(
+        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
   }
   if ((item & TrapCount) == TrapCount) {
     rectangle.SetRect(8 * averageCharacterWidth, top, 16 * averageCharacterWidth, top + height);
     long trapCount = static_cast<long>(document->TrapGroupCount());
     swprintf_s(szBuf, 32, L"%-4ld", trapCount);
-    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
-                               static_cast<UINT>(wcslen(szBuf)), 0);
+    deviceContext->ExtTextOutW(
+        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
   }
   if ((item & Pen) == Pen) {
     rectangle.SetRect(16 * averageCharacterWidth, top, 22 * averageCharacterWidth, top + height);
     swprintf_s(szBuf, 32, L"P%-4i", renderState.Color());
-    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
-                               static_cast<UINT>(wcslen(szBuf)), 0);
+    deviceContext->ExtTextOutW(
+        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
   }
   if ((item & Line) == Line) {
     rectangle.SetRect(22 * averageCharacterWidth, top, 28 * averageCharacterWidth, top + height);
     swprintf_s(szBuf, 32, L"L%-4i", renderState.LineTypeIndex());
-    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
-                               static_cast<UINT>(wcslen(szBuf)), 0);
+    deviceContext->ExtTextOutW(
+        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
   }
   if ((item & TextHeight) == TextHeight) {
     auto characterCellDefinition = renderState.CharacterCellDefinition();
     rectangle.SetRect(28 * averageCharacterWidth, top, 38 * averageCharacterWidth, top + height);
     swprintf_s(szBuf, 32, L"T%-6.2f", characterCellDefinition.Height());
-    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
-                               static_cast<UINT>(wcslen(szBuf)), 0);
+    deviceContext->ExtTextOutW(
+        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
   }
   if ((item & Scale) == Scale) {
     rectangle.SetRect(38 * averageCharacterWidth, top, 48 * averageCharacterWidth, top + height);
     swprintf_s(szBuf, 32, L"1:%-6.2f", GetWorldScale());
-    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, szBuf,
-                               static_cast<UINT>(wcslen(szBuf)), 0);
+    deviceContext->ExtTextOutW(
+        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
   }
   if ((item & WndRatio) == WndRatio) {
     rectangle.SetRect(48 * averageCharacterWidth, top, 58 * averageCharacterWidth, top + height);
@@ -2456,7 +2456,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     CString RatioAsString;
     RatioAsString.Format(L"=%-8.3f", Ratio);
     deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, RatioAsString,
-                               static_cast<UINT>(RatioAsString.GetLength()), 0);
+        static_cast<UINT>(RatioAsString.GetLength()), 0);
   }
   if ((item & DimLen) == DimLen || (item & DimAng) == DimAng) {
     rectangle.SetRect(58 * averageCharacterWidth, top, 90 * averageCharacterWidth, top + height);
@@ -2468,7 +2468,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     Angle.ReleaseBuffer();
     LengthAndAngle.Append(L" @ " + Angle);
     deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, LengthAndAngle,
-                               static_cast<UINT>(LengthAndAngle.GetLength()), 0);
+        static_cast<UINT>(LengthAndAngle.GetLength()), 0);
   }
   deviceContext->SetBkColor(oldBkColor);
   deviceContext->SetTextColor(oldTextColor);
