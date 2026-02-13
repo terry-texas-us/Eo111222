@@ -59,24 +59,25 @@ EoDbPrimitive*& EoDbLine::Copy(EoDbPrimitive*& primitive) {
 void EoDbLine::CutAt2Points(
     const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
   EoDbLine* line{};
-  double dRel[2]{};
+  double relation[2]{};
 
-  m_line.RelOfPtToEndPts(firstPoint, dRel[0]);
-  m_line.RelOfPtToEndPts(secondPoint, dRel[1]);
+  if (!m_line.ComputeParametricRelation(firstPoint, relation[0])) { return; }
+  if (!m_line.ComputeParametricRelation(secondPoint, relation[1])) { return; }
 
-  if (dRel[0] < Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance) {
+  if (relation[0] < Eo::geometricTolerance && relation[1] >= 1.0 - Eo::geometricTolerance) {
     // The two points effectively cover the whole line. No cutting. Put entire line in trap.
     line = this;
   } else {  // Something gets cut
     line = new EoDbLine(*this);
-    if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
+    if (relation[0] > Eo::geometricTolerance &&
+        relation[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
       line->SetBeginPoint(secondPoint);
       groups->AddTail(new EoDbGroup(line));
       line = new EoDbLine(*this);
       line->SetBeginPoint(firstPoint);
       line->SetEndPoint(secondPoint);
       SetEndPoint(firstPoint);
-    } else if (dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut in two and place begin section in trap
+    } else if (relation[1] < 1.0 - Eo::geometricTolerance) {  // Cut in two and place begin section in trap
       line->SetEndPoint(secondPoint);
       SetBeginPoint(secondPoint);
     } else {  // Cut in two and place end section in trap
@@ -106,34 +107,36 @@ void EoDbLine::Display(AeSysView* view, CDC* deviceContext) {
   polyline::SetVertex(m_line.end);
   polyline::__End(view, deviceContext, lineType);
 }
+
 void EoDbLine::AddReportToMessageList(const EoGePoint3d& point) {
-  double dLen = Length();
-  double AngleInXYPlane = m_line.AngleFromXAxisXY();
+  double length = Length();
+  double angle = m_line.AngleFromXAxisXY();
 
-  double dRel;
-  m_line.RelOfPtToEndPts(point, dRel);
+  double relation{};
+  if (!m_line.ComputeParametricRelation(point, relation)) { return; }
 
-  if (dRel > 0.5) { AngleInXYPlane += Eo::Pi; }
-  AngleInXYPlane = fmod(AngleInXYPlane, Eo::TwoPi);
+  if (relation > 0.5) { angle += Eo::Pi; }
+  angle = fmod(angle, Eo::TwoPi);
 
   CString LengthAsString;
   CString AngleAsString;
-  app.FormatLength(LengthAsString, app.GetUnits(), dLen);
-  app.FormatAngle(AngleAsString, AngleInXYPlane, 8, 3);
+  app.FormatLength(LengthAsString, app.GetUnits(), length);
+  app.FormatAngle(AngleAsString, angle, 8, 3);
 
   CString Message;
   Message.Format(L"<Line> Color: %s Line Type: %s \u2022 %s @ %s", FormatPenColor().GetString(),
       FormatLineType().GetString(), LengthAsString.TrimLeft().GetString(), AngleAsString.GetString());
   app.AddStringToMessageList(Message);
 
-  app.SetEngagedLength(dLen);
-  app.SetEngagedAngle(AngleInXYPlane);
+  app.SetEngagedLength(length);
+  app.SetEngagedAngle(angle);
 
 #if defined(USING_DDE)
   dde::PostAdvise(dde::EngLenInfo);
   dde::PostAdvise(dde::EngAngZInfo);
 #endif  // USING_DDE
 }
+
 void EoDbLine::FormatExtra(CString& str) {
   CString FormattedLength;
   app.FormatLength(FormattedLength, app.GetUnits(), Length());
@@ -247,9 +250,9 @@ int EoDbLine::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& uppe
 }
 
 double EoDbLine::RelOfPt(const EoGePoint3d& point) {
-  double dRel;
-  m_line.RelOfPtToEndPts(point, dRel);
-  return dRel;
+  double relation{};
+  (void)m_line.ComputeParametricRelation(point, relation);
+  return relation;
 }
 
 EoGePoint3d EoDbLine::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {

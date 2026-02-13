@@ -68,8 +68,8 @@ EoDbPrimitive*& EoDbDimension::Copy(EoDbPrimitive*& primitive) {
 void EoDbDimension::CutAt2Points(
     const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
   double dRel[2]{};
-  m_line.RelOfPtToEndPts(firstPoint, dRel[0]);
-  m_line.RelOfPtToEndPts(secondPoint, dRel[1]);
+  if (!m_line.ComputeParametricRelation(firstPoint, dRel[0])) { return; }
+  if (!m_line.ComputeParametricRelation(secondPoint, dRel[1])) { return; }
 
   EoDbDimension* dimension{};
   if (dRel[0] < Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance)
@@ -137,19 +137,18 @@ void EoDbDimension::AddReportToMessageList(const EoGePoint3d& point) {
   str.Format(L"<Dim> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
   app.AddStringToMessageList(str);
 
-  double dLen = Length();
-  double dAng = m_line.AngleFromXAxisXY();
+  double length = Length();
+  double angle = m_line.AngleFromXAxisXY();
 
-  double dRel;
-  m_line.RelOfPtToEndPts(point, dRel);
+  double dRel{};
+  if (!m_line.ComputeParametricRelation(point, dRel)) { return; }
 
-  if (dRel > 0.5)
-    // Normalize line prior to angle determination
-    dAng += Eo::Pi;
+  // Normalize line prior to angle determination
+  if (dRel > 0.5) { angle += Eo::Pi; }
+  angle = fmod(angle, Eo::TwoPi);
 
-  dAng = fmod(dAng, Eo::TwoPi);
-  app.SetEngagedLength(dLen);
-  app.SetEngagedAngle(dAng);
+  app.SetEngagedLength(length);
+  app.SetEngagedAngle(angle);
 #if defined(USING_DDE)
   dde::PostAdvise(dde::EngLenInfo);
   dde::PostAdvise(dde::EngAngZInfo);
@@ -172,7 +171,8 @@ void EoDbDimension::GetAllPoints(EoGePoint3dArray& points) {
 void EoDbDimension::GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac) {
   text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_text.GetLength(), dSpacFac, ptsBox);
 }
-void EoDbDimension::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbDimension::GetExtents(
+    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt[2] = {m_line.begin, m_line.end};
 
   for (auto i = 0; i < 2; i++) {
@@ -188,8 +188,7 @@ EoGePoint3d EoDbDimension::GoToNextControlPoint() {
     sm_controlPointIndex = 1;
   } else if (sm_controlPointIndex == 1) {
     sm_controlPointIndex = 0;
-  }
-  else {  // Initial rock .. jump to point at lower left or down if vertical
+  } else {  // Initial rock .. jump to point at lower left or down if vertical
     EoGePoint3d ptBeg = m_line.begin;
     EoGePoint3d ptEnd = m_line.end;
 
@@ -231,10 +230,11 @@ void EoDbDimension::ModifyState() {
 }
 
 double EoDbDimension::RelOfPt(const EoGePoint3d& point) {
-  double dRel;
-  m_line.RelOfPtToEndPts(point, dRel);
-  return dRel;
+  double relation{};
+  (void)m_line.ComputeParametricRelation(point, relation);
+  return relation;
 }
+
 EoGePoint3d EoDbDimension::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
   sm_controlPointIndex = SHRT_MAX;
 

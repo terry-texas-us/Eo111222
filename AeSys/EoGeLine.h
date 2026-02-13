@@ -94,9 +94,9 @@ class EoGeLine {
   * @return true if the parallel lines were successfully generated; otherwise, false.
   * @note The first of the two parallel lines lies to the left of line, and the second to the right.
   */
-  bool GetParallels(double distance, double eccentricity, EoGeLine& leftLine, EoGeLine& rightLine) const;
+  [[nodiscard]] bool GetParallels(double distance, double eccentricity, EoGeLine& leftLine, EoGeLine& rightLine) const;
 
-  bool Identical(const EoGeLine& line, double tolerance) const;
+  [[nodiscard]] bool Identical(const EoGeLine& line, double tolerance) const;
 
   /** @brief Determines if the line segment is wholly or partially contained within a specified rectangular window in the XY plane.
   * @param lowerLeftPoint The lower-left corner of the rectangular window.
@@ -124,18 +124,18 @@ class EoGeLine {
   rel = -[(Begx - Px)(Endx - Begx) + (Begy - Py)(Endy - Begy)] / [(Endx - Begx)² + (Endy - Begy)²]
     @endcode
   */
-  bool IsSelectedByPointXY(EoGePoint3d point, const double aperture, EoGePoint3d& projectedPoint,
-                           double* relationship) const;
+  bool IsSelectedByPointXY(
+      EoGePoint3d point, const double aperture, EoGePoint3d& projectedPoint, double* relationship) const;
 
-  double Length() const;
+  [[nodiscard]] double Length() const;
 
-  EoGePoint3d Midpoint() const;
+  [[nodiscard]] EoGePoint3d Midpoint() const;
 
   /** @brief Determines if this line is parallel to another line.
   * @param line The line to compare against.
   * @return true if the lines are parallel; otherwise, false.
   */
-  bool ParallelTo(const EoGeLine& line) const;
+  [[nodiscard]] bool ParallelTo(const EoGeLine& line) const;
 
   /** @brief Projects a point onto the line.
   * @param point The point to project onto the line.
@@ -163,13 +163,13 @@ class EoGeLine {
   * @param distance The distance from the end point to project along the line.
   * @return A 3D point located at the specified distance from the end point along the direction toward the beginning point.
   */
-  EoGePoint3d ProjToBegPt(double distance) const;
+  [[nodiscard]] EoGePoint3d ProjectToBeginPoint(double distance) const;
 
   /** @brief Projects a point along the line from the beginning point toward the end point at a specified distance.
   * @param distance The distance from the beginning point to project along the line.
   * @return A 3D point located at the specified distance from the beginning point along the direction toward the end point.
   */
-  EoGePoint3d ProjToEndPt(double distance) const;
+  [[nodiscard]] EoGePoint3d ProjectToEndPoint(double distance) const;
 
   void Read(CFile&);
 
@@ -187,7 +187,7 @@ class EoGeLine {
    @return True if the parametric relationship was successfully computed; otherwise, false.
    @note Results are unpredictable if the point does not lie on the line.
   */
-  bool RelOfPtToEndPts(EoGePoint3d point, double& pointParametricRelationship) const;
+  [[nodiscard]] bool ComputeParametricRelation(const EoGePoint3d& point, double& pointParametricRelationship) const;
 
   void Write(CFile& file) const;
 
@@ -206,15 +206,15 @@ class EoGeLine {
   static double AngleBetweenLn_xy(EoGeLine firstLine, EoGeLine secondLine);
 
   /** @brief Computes the intersection point of a line segment with a plane in 4D space.
-  * @param beginPoint The starting point of the line segment.
-  * @param endPoint The ending point of the line segment.
-  * @param pointOnPlane A point that lies on the plane.
-  * @param planeNormal The normal vector of the plane.
+  * @param begin The starting point of the line segment.
+  * @param end The ending point of the line segment.
+  * @param point A point that lies on the plane.
+  * @param normal The normal vector of the plane.
   * @return The intersection point of the line with the plane. If the line is parallel to the plane, returns the begin point.
   * @note Should only be used if the endpoints of the line segment are known to be on opposite sides of the plane.
   */
-  static EoGePoint4d IntersectionWithPln4(EoGePoint4d& beginPoint, EoGePoint4d& endPoint,
-                                          const EoGePoint4d& pointOnPlane, EoGeVector3d& planeNormal);
+  [[nodiscard]] static EoGePoint4d IntersectionWithPlane(
+      const EoGePoint4d& begin, const EoGePoint4d& end, const EoGePoint4d& point, const EoGeVector3d& normal);
 
   /** @brief Computes the intersection point between a line and a plane.
   * @param beginPoint The starting point of the line.
@@ -226,7 +226,7 @@ class EoGeLine {
   * @note Line is defined using parametric representation. Plane is defined by its normal vector and any point on plane.
   */
   static bool IntersectionWithPln(EoGePoint3d& beginPoint, EoGeVector3d lineVector, EoGePoint3d pointOnPlane,
-                                  EoGeVector3d planeNormal, EoGePoint3d* intersection);
+      EoGeVector3d planeNormal, EoGePoint3d* intersection);
 
   /** @brief Computes the intersection point of two 3D line segments, if it exists.
   * @param firstLine The first line segment.
@@ -234,7 +234,8 @@ class EoGeLine {
   * @param[out] intersection parameter that receives the intersection point if the line segments intersect.
   * @return TRUE if the line segments intersect, FALSE otherwise. Returns FALSE if either line segment is degenerate (endpoints coincide), if the lines are parallel, or if the line segments are skew (not coplanar).
   */
-  [[nodiscard]] static bool Intersection(const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection);
+  [[nodiscard]] static bool Intersection(
+      const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection);
 
   /** @brief Computes the intersection point of two lines in the XY plane.
   * @param ln1 The first line.

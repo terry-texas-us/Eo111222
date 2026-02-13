@@ -20,19 +20,19 @@ class EoGePoint4d {
   EoGePoint4d(const EoGePoint3d& initialPoint);
 
  public:  // Operators
-  void operator+=(EoGeVector3d& v);
-  void operator-=(EoGeVector3d& v);
+  void operator+=(const EoGeVector3d& v);
+  void operator-=(const EoGeVector3d& v);
   void operator*=(const double t);
   void operator/=(const double t);
 
-  EoGePoint4d operator+(EoGeVector3d vector);
-  EoGePoint4d operator-(EoGeVector3d vector);
-  EoGePoint4d operator*(const double t);
-  EoGePoint4d operator/(const double t);
+  [[nodiscard]] EoGePoint4d operator+(const EoGeVector3d& vector) const;
+  [[nodiscard]] EoGePoint4d operator-(const EoGeVector3d& vector) const;
+  [[nodiscard]] EoGePoint4d operator*(const double t) const;
+  [[nodiscard]] EoGePoint4d operator/(const double t) const;
 
   void operator()(const double x, const double y, const double z, const double w);
 
-  EoGeVector3d operator-(const EoGePoint4d& ptQ);
+  [[nodiscard]] EoGeVector3d operator-(const EoGePoint4d& ptQ) const;
 
  public:  // Methods
   /// <summary>Determines the xy distance between two points.</summary>

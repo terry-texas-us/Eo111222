@@ -178,31 +178,34 @@ void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, Eo
  * @param view Pointer to the AeSysView object for coordinate transformations.
  * @param line The line to check for intersections with the polyline segments.
  * @param intersections Output array that will contain the intersection points.
- * @return True if any intersection points were found; otherwise, false.
+ * @return true if any intersection points were found; otherwise, false.
  */
 bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) {
-  EoGePoint4d ptBeg(pts_[0]);
-  EoGePoint4d ptEnd;
+  EoGePoint4d begin(pts_[0]);
+  EoGePoint4d end;
 
-  view->ModelViewTransformPoint(ptBeg);
+  view->ModelViewTransformPoint(begin);
 
   for (std::uint16_t w = 1; w < pts_.GetSize(); w++) {
-    ptEnd = EoGePoint4d(pts_[w]);
-    view->ModelViewTransformPoint(ptEnd);
+    end = EoGePoint4d(pts_[w]);
+    view->ModelViewTransformPoint(end);
 
-    EoGePoint3d ptInt;
-    if (EoGeLine::Intersection_xy(line, EoGeLine(ptBeg, ptEnd), ptInt)) {
-      double dRel;
-      line.RelOfPtToEndPts(ptInt, dRel);
-      if (dRel >= -Eo::geometricTolerance && dRel <= 1.0 + Eo::geometricTolerance) {
-        EoGeLine(ptBeg, ptEnd).RelOfPtToEndPts(ptInt, dRel);
-        if (dRel >= -Eo::geometricTolerance && dRel <= 1.0 + Eo::geometricTolerance) {
-          ptInt.z = ptBeg.z + dRel * (ptEnd.z - ptBeg.z);
-          intersections.Add(ptInt);
+    EoGePoint3d intersection;
+    if (EoGeLine::Intersection_xy(line, EoGeLine(begin, end), intersection)) {
+      double relation{};
+      
+      if (!line.ComputeParametricRelation(intersection, relation)) { continue; }
+      
+      if (relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+        if (!EoGeLine(begin, end).ComputeParametricRelation(intersection, relation)) { continue; }
+        
+        if (relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+          intersection.z = begin.z + relation * (end.z - begin.z);
+          intersections.Add(intersection);
         }
       }
     }
-    ptBeg = ptEnd;
+    begin = end;
   }
   return (!intersections.IsEmpty());
 }
