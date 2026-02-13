@@ -115,6 +115,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="AeSys.cpp" />
     <ClCompile Include="AeSysDoc.cpp" />
     <ClCompile Include="AeSysView.cpp" />
+    <ClCompile Include="DrawModeState.cpp" />
     <ClCompile Include="EoDlgSetupPointStyle.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
@@ -144,6 +145,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClCompile Include="EoGePoint4d.cpp" />
     <ClCompile Include="EoGePolyline.cpp" />
     <ClCompile Include="EoViModelView.cpp" />
+    <ClCompile Include="IdleState.cpp" />
     <ClCompile Include="lex.yy.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -1479,7 +1481,9 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
     <ClInclude Include="AeSysDoc.h" />
+    <ClInclude Include="AeSysState.h" />
     <ClInclude Include="AeSysView.h" />
+    <ClInclude Include="DrawModeState.h" />
     <ClInclude Include="Eo.h" />
     <ClInclude Include="EoDbConic.h" />
     <ClInclude Include="EoDlgSetupPointStyle.h" />
@@ -1560,6 +1564,7 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="Hatch.h" />
     <ClInclude Include="EoDbLayer.h" />
     <ClInclude Include="Header.h" />
+    <ClInclude Include="IdleState.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="EoGeLine.h" />
     <ClInclude Include="lex.yy.h" />

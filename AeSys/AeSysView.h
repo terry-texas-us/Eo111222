@@ -2,6 +2,8 @@
 
 #include <cmath>
 #include <cstdint>
+#include <memory>
+#include <stack>
 
 #include "Eo.h"
 #include "EoDbGroup.h"
@@ -19,6 +21,9 @@
 #include "EoGsViewport.h"
 #include "Section.h"
 
+#if defined(USING_STATE_PATTERN)
+#include "AeSysState.h"
+#endif
 class AeSysDoc;
 class EoDbBlock;
 class EoDbConic;
@@ -55,6 +60,31 @@ class AeSysView : public CView {
   static const double m_MaximumWindowRatio;
   static const double m_MinimumWindowRatio;
 
+#if defined(USING_STATE_PATTERN)
+  std::stack<std::unique_ptr<AeSysState>> m_stateStack;
+
+ public:
+  /**
+   * @brief Pushes a new state onto the state stack.
+   * This function exits the current state (if any), enters the new state, and pushes it onto the stack.
+   * It also triggers a redraw of the view.
+   * @param newState A unique pointer to the new state to be pushed.
+   */
+  void PushState(std::unique_ptr<AeSysState> newState);
+  
+  /**
+   * @brief Pops the current state from the state stack.
+   * This function exits the current state, pops it from the stack, and enters the new top state (if any).
+   * It also triggers a redraw of the view.
+   */
+  void PopState();
+  
+  /**
+   * @brief Gets a pointer to the current state.
+   * @return A pointer to the current state, or nullptr if the stack is empty.
+   */
+  AeSysState* GetCurrentState() const;
+#endif
   EoGsModelTransform m_ModelTransform;
   EoGsViewport m_Viewport;
   EoGsViewTransform m_ViewTransform;
@@ -160,7 +190,15 @@ class AeSysView : public CView {
 
  public:
   void OnDraw(CDC* deviceContext) override;  // overridden to draw this view
+
+  /** @brief Initialize view-specific resources and settings when the view is first created.
+   * This includes setting the background color and preparing any necessary rendering resources.
+   * @note This method is called by the MFC framework after the view window has been created but before it is displayed.
+   * The default implementation of this function calls the OnUpdate member function with no hint information
+   * Override this function to perform any one-time initialization that requires information about the document.
+   */
   void OnInitialUpdate() override;
+  
   BOOL PreCreateWindow(CREATESTRUCT& createStructure) override;
 
  protected:
@@ -168,6 +206,15 @@ class AeSysView : public CView {
   void OnBeginPrinting(CDC* deviceContext, CPrintInfo* printInformation) override;
   void OnPrepareDC(CDC* deviceContext, CPrintInfo* printInformation) override;
   void OnEndPrinting(CDC* deviceContext, CPrintInfo* printInformation) override;
+  
+  /** @brief Respond to updates from the document or other views.
+   * This method is called by the MFC framework when the document or other views call UpdateAllViews.
+   * The hint parameter can be used to determine what type of update occurred and respond accordingly.
+   * @param sender The view that sent the update notification, or nullptr if the document sent the notification.
+   * @param hint An application-defined value that indicates the type of update. This can be used to optimize the response.
+   * @param hintObject An optional pointer to an object that provides additional information about the update. The interpretation of this pointer depends on the value of hint.
+   * @note Override this function to handle specific update notifications and refresh the view as needed. If you do not handle a particular hint, call the base class implementation to ensure default processing occurs.
+   */
   void OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) override;
 
  public:
@@ -181,6 +228,9 @@ class AeSysView : public CView {
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg BOOL OnEraseBkgnd(CDC* deviceContext);
   afx_msg void OnKillFocus(CWnd* newWindow);
+#if defined(USING_STATE_PATTERN)
+  afx_msg BOOL PreTranslateMessage(MSG* pMsg);
+#endif
   afx_msg void OnLButtonDown(UINT nFlags, CPoint pnt);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint pnt);
   afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
@@ -188,17 +238,16 @@ class AeSysView : public CView {
   afx_msg void OnMouseMove(UINT nFlags, CPoint pnt);
 
   /**
- * @brief Handle mouse wheel events for zooming in and out.
- * 
- * This function is called when the mouse wheel is scrolled. It checks the zDelta value to determine the direction of the scroll
- * and calls the appropriate zoom function (zoom in or zoom out).
- * 
- * @param flags Indicates whether various virtual keys are down.
- * @param zDelta The distance the wheel is rotated, expressed in multiples of WHEEL_DELTA.
- * @param point The current position of the cursor, in screen coordinates.
- * @return TRUE if the message was processed; otherwise, FALSE.
- */
+   * @brief Handle mouse wheel events for zooming in and out.
+   * This function is called when the mouse wheel is scrolled. It checks the zDelta value to determine the direction of the scroll
+   * and calls the appropriate zoom function (zoom in or zoom out).
+   * @param flags Indicates whether various virtual keys are down.
+   * @param zDelta The distance the wheel is rotated, expressed in multiples of WHEEL_DELTA.
+   * @param point The current position of the cursor, in screen coordinates.
+   * @return TRUE if the message was processed; otherwise, FALSE.
+   */
   afx_msg BOOL OnMouseWheel(UINT flags, std::int16_t zDelta, CPoint point);
+  
   afx_msg void OnPaint();
   afx_msg void OnRButtonDown(UINT nFlags, CPoint pnt);
   afx_msg void OnRButtonUp(UINT nFlags, CPoint pnt);
@@ -442,6 +491,9 @@ class AeSysView : public CView {
  public:
   void DoDrawModeMouseMove();
 
+#if defined(USING_STATE_PATTERN)
+  afx_msg void OnDrawCommand(UINT nID);
+#endif
   afx_msg void OnDrawModeOptions();
   afx_msg void OnDrawModePoint();
   afx_msg void OnDrawModeLine();

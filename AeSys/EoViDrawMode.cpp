@@ -279,6 +279,16 @@ void AeSysView::OnDrawModeShiftReturn() {
   ModeLineUnhighlightOp(PreviousDrawCommand);
   pts.RemoveAll();
 }
+#if defined(USING_STATE_PATTERN)
+void AeSysView::OnDrawCommand(UINT nID) {
+  auto* state = GetCurrentState();
+  if (state) {
+    state->HandleCommand(this, nID);
+  } else {
+    // Fallback or error
+  }
+}
+#endif
 void AeSysView::DoDrawModeMouseMove() {
   auto cursorPosition = GetCursorPosition();
   INT_PTR NumberOfPoints = pts.GetSize();

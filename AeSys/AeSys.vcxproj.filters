@@ -407,6 +407,12 @@
     <ClCompile Include="EoGeOcsTransform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="IdleState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawModeState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\AeSys.rc2">
@@ -2035,6 +2041,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EoGeOcsTransform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AeSysState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IdleState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawModeState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

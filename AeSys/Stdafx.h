@@ -78,7 +78,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 UINT AFXAPI HashKey(CString& str);
 
 #define AESYS_USE_CONIC_PRIMITIVE
-
+//#define USING_STATE_PATTERN
 #if defined(USING_DDE)
 #include <ddeml.h>
 #endif  // USING_DDE

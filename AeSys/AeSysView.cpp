@@ -6,7 +6,10 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
+#include <memory>
 #include <stdexcept>
+#include <utility>
+#include <wchar.h>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -45,11 +48,16 @@
 #include "Resource.h"
 #include "Section.h"
 
+#if defined(USING_STATE_PATTERN)
+#include "AeSysState.h"
+#include "DrawModeState.h"
+#include "IdleState.h"
+#endif
+
 #if defined(USING_DDE)
 #include "Dde.h"
 #include "DdeGItms.h"
 #endif  // USING_DDE
-#include <wchar.h>
 
 const double AeSysView::m_MaximumWindowRatio = 999.0;
 const double AeSysView::m_MinimumWindowRatio = 0.001;
@@ -179,6 +187,9 @@ ON_UPDATE_COMMAND_UI(ID_VIEW_RENDERED, OnUpdateViewRendered)
 ON_UPDATE_COMMAND_UI(ID_VIEW_STATEINFORMATION, OnUpdateViewStateinformation)
 ON_UPDATE_COMMAND_UI(ID_VIEW_TRUETYPEFONTS, OnUpdateViewTrueTypeFonts)
 ON_UPDATE_COMMAND_UI(ID_VIEW_WIREFRAME, OnUpdateViewWireframe)
+#if defined(USING_STATE_PATTERN)
+ON_COMMAND_RANGE(ID_DRAW_MODE_OPTIONS, ID_DRAW_MODE_SHIFT_RETURN, &AeSysView::OnDrawCommand)
+#endif
 #pragma warning(pop)
 ON_COMMAND(ID_DRAW_MODE_OPTIONS, &AeSysView::OnDrawModeOptions)
 ON_COMMAND(ID_DRAW_MODE_POINT, &AeSysView::OnDrawModePoint)
@@ -456,7 +467,25 @@ AeSysView::AeSysView()
 }
 
 AeSysView::~AeSysView() {}
+#if defined(USING_STATE_PATTERN)
+void AeSysView::PushState(std::unique_ptr<AeSysState> newState) {
+  if (!m_stateStack.empty()) { m_stateStack.top()->OnExit(this); }
+  newState->OnEnter(this);
+  m_stateStack.push(std::move(newState));
+  Invalidate();  // Trigger redraw
+}
 
+void AeSysView::PopState() {
+  if (!m_stateStack.empty()) {
+    m_stateStack.top()->OnExit(this);
+    m_stateStack.pop();
+    if (!m_stateStack.empty()) { m_stateStack.top()->OnEnter(this); }
+    Invalidate();
+  }
+}
+
+AeSysState* AeSysView::GetCurrentState() const { return m_stateStack.empty() ? nullptr : m_stateStack.top().get(); }
+#endif
 inline AeSysDoc* AeSysView::GetDocument() const {
 #ifdef _DEBUG
   auto* document = dynamic_cast<AeSysDoc*>(m_pDocument);
@@ -579,19 +608,27 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     } else {
       BackgroundImageDisplay(deviceContext);
       DisplayGrid(deviceContext);
-
+#if defined(USING_STATE_PATTERN)
+      // Delegate core drawing to the current state (e.g., for mode-specific overlays or primitives)
+      auto* state = GetCurrentState();
+      if (state) {
+        state->OnDraw(this, deviceContext);
+      } else {
+        // Fallback to existing drawing if no state (e.g., during init)
+        document->DisplayAllLayers(this, deviceContext);
+        document->DisplayUniquePoints();
+      }
+#else
       document->DisplayAllLayers(this, deviceContext);
       document->DisplayUniquePoints();
+#endif
     }
     UpdateStateInformation(All);
     ModeLineDisplay();
     ValidateRect(nullptr);
   } catch (CException* e) { e->Delete(); }
 }
-/// <remarks>
-///The default implementation of this function calls the OnUpdate member function with no hint information
-///Override this function to perform any one-time initialization that requires information about the document.
-/// </remarks>
+
 void AeSysView::OnInitialUpdate() {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnInitialUpdate()\n", this);
 
@@ -603,55 +640,84 @@ void AeSysView::OnInitialUpdate() {
 #endif  // USING_Direct2D
 
   CView::OnInitialUpdate();
+#if defined(USING_STATE_PATTERN)
+  PushState(std::make_unique<DrawModeState>());
+#endif
 }
 
 void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   ATLTRACE2(
       static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint, hintObject);
 
+  // Pre-delegation setup: Acquire DC and apply hint-based modifications (safe for all modes)
   auto* deviceContext = GetDC();
   auto backgroundColor = deviceContext->GetBkColor();
   deviceContext->SetBkColor(ViewBackgroundColor);
 
-  int primitiveState{};
+  int savedRenderState{};
   int drawMode{};
 
-  if ((hint & EoDb::kSafe) == EoDb::kSafe) { primitiveState = renderState.Save(); }
+  if ((hint & EoDb::kSafe) == EoDb::kSafe) { savedRenderState = renderState.Save(); }
   if ((hint & EoDb::kErase) == EoDb::kErase) { drawMode = renderState.SetROP2(deviceContext, R2_XORPEN); }
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor()); }
-  switch (hint) {
-    case EoDb::kPrimitive:
-    case EoDb::kPrimitiveSafe:
-    case EoDb::kPrimitiveEraseSafe:
-      static_cast<EoDbPrimitive*>(hintObject)->Display(this, deviceContext);
-      break;
-
-    case EoDb::kGroup:
-    case EoDb::kGroupSafe:
-    case EoDb::kGroupEraseSafe:
-    case EoDb::kGroupSafeTrap:
-    case EoDb::kGroupEraseSafeTrap:
-      static_cast<EoDbGroup*>(hintObject)->Display(this, deviceContext);
-      break;
-
-    case EoDb::kGroups:
-    case EoDb::kGroupsSafe:
-    case EoDb::kGroupsSafeTrap:
-    case EoDb::kGroupsEraseSafeTrap:
-      static_cast<EoDbGroupList*>(hintObject)->Display(this, deviceContext);
-      break;
-
-    case EoDb::kLayer:
-    case EoDb::kLayerErase:
-      static_cast<EoDbLayer*>(hintObject)->Display(this, deviceContext);
-      break;
-
-    default:
-      CView::OnUpdate(sender, hint, hintObject);
+#if defined(USING_STATE_PATTERN)
+  // Core delegation: Give the current state first crack at handling the update
+  auto* state = GetCurrentState();
+  bool handledByState = false;
+  if (state) {
+    state->OnUpdate(this, sender, hint, hintObject);
+    handledByState = true;  // Assume handled unless you add a return value to OnUpdate
   }
+
+  if (!handledByState) {
+    // Fallback: If no state or state didn't handle, use legacy switch for general updates
+#endif
+    switch (hint) {
+      case EoDb::kPrimitive:
+      case EoDb::kPrimitiveSafe:
+      case EoDb::kPrimitiveEraseSafe:
+        static_cast<EoDbPrimitive*>(hintObject)->Display(this, deviceContext);
+        break;
+
+      case EoDb::kGroup:
+      case EoDb::kGroupSafe:
+      case EoDb::kGroupEraseSafe:
+      case EoDb::kGroupSafeTrap:
+      case EoDb::kGroupEraseSafeTrap:
+        static_cast<EoDbGroup*>(hintObject)->Display(this, deviceContext);
+        break;
+
+      case EoDb::kGroups:
+      case EoDb::kGroupsSafe:
+      case EoDb::kGroupsSafeTrap:
+      case EoDb::kGroupsEraseSafeTrap:
+        static_cast<EoDbGroupList*>(hintObject)->Display(this, deviceContext);
+        break;
+
+      case EoDb::kLayer:
+      case EoDb::kLayerErase:
+        static_cast<EoDbLayer*>(hintObject)->Display(this, deviceContext);
+        break;
+
+      default:
+        CView::OnUpdate(sender, hint, hintObject);
+#if defined(USING_STATE_PATTERN)
+        // Early cleanup and return for defaults to avoid duplicate restores
+        if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(0); }
+        if ((hint & EoDb::kErase) == EoDb::kErase) { renderState.SetROP2(deviceContext, drawMode); }
+        if ((hint & EoDb::kSafe) == EoDb::kSafe) { renderState.Restore(deviceContext, savedRenderState); }
+        // Use saved drawMode here
+        deviceContext->SetBkColor(backgroundColor);
+        ReleaseDC(deviceContext);
+        return;  // Early return to skip post-state cleanup
+#endif
+    }
+#if defined(USING_STATE_PATTERN)
+  }
+#endif
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(0); }
   if ((hint & EoDb::kErase) == EoDb::kErase) { renderState.SetROP2(deviceContext, drawMode); }
-  if ((hint & EoDb::kSafe) == EoDb::kSafe) { renderState.Restore(deviceContext, primitiveState); }
+  if ((hint & EoDb::kSafe) == EoDb::kSafe) { renderState.Restore(deviceContext, savedRenderState); }
   deviceContext->SetBkColor(backgroundColor);
   ReleaseDC(deviceContext);
 }
@@ -757,8 +823,27 @@ void AeSysView::DoCustomMouseClick(const CString& characters) {
     }
   }
 }
+#if defined(USING_STATE_PATTERN)
+BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
+  if (pMsg->message == WM_KEYDOWN) {
+    auto* state = GetCurrentState();
+    if (state && state->HandleKeypad(this, static_cast<UINT>(pMsg->wParam), 1, static_cast<UINT>(pMsg->lParam))) {
+      return TRUE;  // Handled by state
+    }
+  }
+  return CView::PreTranslateMessage(pMsg);
+}
+#endif
 
 void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
+#if defined(USING_STATE_PATTERN)
+  auto* state = GetCurrentState();
+  if (state) {
+    state->OnLButtonDown(this, flags, point);
+    /*if ( handled )*/ { return; }
+  }
+  // Fallback to existing logic
+#endif
   if (app.CustomLButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
     CView::OnLButtonDown(flags, point);
   } else {
@@ -790,28 +875,29 @@ void AeSysView::OnRButtonUp(UINT flags, CPoint point) {
   }
 }
 
-void AeSysView::OnMButtonDown(UINT flags, CPoint point) {
-  (void)flags;
+void AeSysView::OnMButtonDown([[maybe_unused]] UINT flags, CPoint point) {
   m_middleButtonPanStartPoint = point;
   m_middleButtonPanInProgress = true;
   SetCapture();
 }
 
-void AeSysView::OnMButtonUp(UINT flags, CPoint point) {
-  (void)flags;
-  (void)point;
+void AeSysView::OnMButtonUp([[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
   if (m_middleButtonPanInProgress) {
     m_middleButtonPanInProgress = false;
     ReleaseCapture();
   }
 }
 
-void AeSysView::OnMouseMove(UINT, CPoint point) {
+void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
+#if defined(USING_STATE_PATTERN)
+  auto* state = GetCurrentState();
+  if (state) { state->OnMouseMove(this, flags, point); }
+#endif
   if (m_middleButtonPanInProgress) {
     auto delta = point - m_middleButtonPanStartPoint;
     m_middleButtonPanStartPoint = point;
 
-    EoGePoint3d target = m_ViewTransform.Target();
+    auto target = m_ViewTransform.Target();
 
     // Convert delta to world coordinates (scale as needed)
     target.x += static_cast<double>(-delta.cx) * m_ViewTransform.UExtent() / m_Viewport.Width();
@@ -990,8 +1076,8 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
     CPalette* pPalette = deviceContext->SelectPalette(&m_backgroundImagePalette, FALSE);
     deviceContext->RealizePalette();
 
-    EoGePoint3d Target = m_ViewTransform.Target();
-    EoGePoint3d ptTargetOver = m_OverviewViewTransform.Target();
+    auto Target = m_ViewTransform.Target();
+    auto ptTargetOver = m_OverviewViewTransform.Target();
     double dU = Target.x - ptTargetOver.x;
     double dV = Target.y - ptTargetOver.y;
 
@@ -1359,7 +1445,7 @@ void AeSysView::OnWindowPan() {
 }
 
 void AeSysView::OnWindowPanLeft() {
-  EoGePoint3d Target = m_ViewTransform.Target();
+  auto Target = m_ViewTransform.Target();
 
   Target.x -= 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
@@ -1371,7 +1457,7 @@ void AeSysView::OnWindowPanLeft() {
 }
 
 void AeSysView::OnWindowPanRight() {
-  EoGePoint3d Target = m_ViewTransform.Target();
+  auto Target = m_ViewTransform.Target();
 
   Target.x += 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
@@ -1383,7 +1469,7 @@ void AeSysView::OnWindowPanRight() {
 }
 
 void AeSysView::OnWindowPanUp() {
-  EoGePoint3d Target = m_ViewTransform.Target();
+  auto Target = m_ViewTransform.Target();
 
   Target.y += 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
@@ -1395,7 +1481,7 @@ void AeSysView::OnWindowPanUp() {
 }
 
 void AeSysView::OnWindowPanDown() {
-  EoGePoint3d Target = m_ViewTransform.Target();
+  auto Target = m_ViewTransform.Target();
 
   Target.y -= 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
