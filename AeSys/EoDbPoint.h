@@ -39,9 +39,9 @@ class EoDbPoint : public EoDbPrimitive {
   void GetAllPoints(EoGePoint3dArray& points) override;
   EoGePoint3d GetControlPoint() override;
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
-  EoGePoint3d GoToNextControlPoint() override { return m_Point; }
-  bool Identical(EoDbPrimitive* primitive) override { return m_Point == static_cast<EoDbPoint*>(primitive)->m_Point; }
-  bool Is(std::uint16_t wType) override { return wType == EoDb::kPointPrimitive; }
+  EoGePoint3d GoToNextControlPoint() noexcept override { return m_Point; }
+  bool Identical(EoDbPrimitive* primitive) noexcept override { return m_Point == static_cast<EoDbPoint*>(primitive)->m_Point; }
+  bool Is(std::uint16_t wType) noexcept override { return wType == EoDb::kPointPrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
@@ -49,16 +49,16 @@ class EoDbPoint : public EoDbPrimitive {
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
   void Transform(const EoGeTransformMatrix&) override;
-  void Translate(const EoGeVector3d& v) override { m_Point += v; }
+  void Translate(const EoGeVector3d& v) noexcept override { m_Point += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t* buffer) override;
 
-  double GetDat(std::uint16_t wDat) { return (m_Data[wDat]); }
-  EoGePoint3d GetPt() const { return m_Point; }
-  std::int16_t& PointStyle() { return m_pointStyle; }
+  double GetDat(std::uint16_t wDat) const noexcept { return (m_Data[wDat]); }
+  EoGePoint3d GetPt() const noexcept { return m_Point; }
+  std::int16_t& PointStyle() noexcept { return m_pointStyle; }
   void ModifyState() override;
   void SetDat(std::uint16_t, double*);
-  void SetPt(EoGePoint3d pt) { m_Point = pt; }
-  void SetPoint(double x, double y, double z);
+  void SetPt(EoGePoint3d pt) noexcept { m_Point = pt; }
+  void SetPoint(double x, double y, double z) noexcept;
 };

@@ -230,7 +230,7 @@ void EoDbPoint::SetDat(std::uint16_t wDats, double* dDat) {
   for (auto i = 0; i < m_NumberOfDatums; i++) { m_Data[i] = dDat[i]; }
 }
 
-void EoDbPoint::SetPoint(double x, double y, double z) {
+void EoDbPoint::SetPoint(double x, double y, double z) noexcept {
   m_Point.x = x;
   m_Point.y = y;
   m_Point.z = z;

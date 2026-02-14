@@ -173,7 +173,7 @@ class EoDbConic : public EoDbPrimitive {
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive*) override { return false; }
-  bool Is(std::uint16_t type) override { return type == EoDb::kConicPrimitive; }
+  bool Is(std::uint16_t type) noexcept override { return type == EoDb::kConicPrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;

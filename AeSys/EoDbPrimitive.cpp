@@ -83,7 +83,7 @@ CString EoDbPrimitive::FormatLineType() const {
   return str;
 }
 
-std::int16_t EoDbPrimitive::LogicalColor() const {
+std::int16_t EoDbPrimitive::LogicalColor() const noexcept {
   std::int16_t color = sm_specialColor == 0 ? m_color : sm_specialColor;
 
   if (color == COLOR_BYLAYER)
@@ -94,7 +94,7 @@ std::int16_t EoDbPrimitive::LogicalColor() const {
   return color;
 }
 
-std::int16_t EoDbPrimitive::LogicalLineType() const {
+std::int16_t EoDbPrimitive::LogicalLineType() const noexcept {
   std::int16_t lineTypeIndex = m_lineTypeIndex;
 
   if (lineTypeIndex == LINETYPE_BYLAYER)
@@ -110,12 +110,12 @@ void EoDbPrimitive::ModifyState() {
   m_lineTypeIndex = renderState.LineTypeIndex();
 }
 
-int EoDbPrimitive::ControlPointIndex() { return sm_controlPointIndex; }
-bool EoDbPrimitive::IsSupportedTyp(int type) { return (type <= 7 && type != 4 && type != 5); }
-std::int16_t EoDbPrimitive::LayerColor() { return sm_layerColor; }
-void EoDbPrimitive::SetLayerColor(std::int16_t layerColor) { sm_layerColor = layerColor; }
-std::int16_t EoDbPrimitive::LayerLineTypeIndex() { return sm_layerLineTypeIndex; }
-void EoDbPrimitive::SetLayerLineTypeIndex(std::int16_t lineTypeIndex) { sm_layerLineTypeIndex = lineTypeIndex; }
-double& EoDbPrimitive::Rel() { return sm_RelationshipOfPoint; }
-std::int16_t EoDbPrimitive::SpecialColor() { return sm_specialColor; }
-void EoDbPrimitive::SetSpecialColor(std::int16_t specialColor) { sm_specialColor = specialColor; }
+int EoDbPrimitive::ControlPointIndex() noexcept { return sm_controlPointIndex; }
+bool EoDbPrimitive::IsSupportedTyp(int type) noexcept { return (type <= 7 && type != 4 && type != 5); }
+std::int16_t EoDbPrimitive::LayerColor() noexcept { return sm_layerColor; }
+void EoDbPrimitive::SetLayerColor(std::int16_t layerColor) noexcept { sm_layerColor = layerColor; }
+std::int16_t EoDbPrimitive::LayerLineTypeIndex() noexcept { return sm_layerLineTypeIndex; }
+void EoDbPrimitive::SetLayerLineTypeIndex(std::int16_t lineTypeIndex) noexcept { sm_layerLineTypeIndex = lineTypeIndex; }
+double& EoDbPrimitive::Rel() noexcept { return sm_RelationshipOfPoint; }
+std::int16_t EoDbPrimitive::SpecialColor() noexcept { return sm_specialColor; }
+void EoDbPrimitive::SetSpecialColor(std::int16_t specialColor) noexcept { sm_specialColor = specialColor; }

@@ -45,7 +45,7 @@ class EoDbLine : public EoDbPrimitive {
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;
-  EoGePoint3d GetControlPoint() override { return m_line.Midpoint(); }
+  EoGePoint3d GetControlPoint() noexcept override { return m_line.Midpoint(); }
   
   /** @brief Gets the extents of the line in the current view.
    * @param view The view for which to get the extents.
@@ -57,7 +57,7 @@ class EoDbLine : public EoDbPrimitive {
   
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive* primitive) override;
-  bool Is(std::uint16_t wType) override { return wType == EoDb::kLinePrimitive; }
+  bool Is(std::uint16_t wType) noexcept override { return wType == EoDb::kLinePrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
@@ -65,7 +65,7 @@ class EoDbLine : public EoDbPrimitive {
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
   void Transform(const EoGeTransformMatrix& transformMatrix) override;
-  void Translate(const EoGeVector3d& v) override { m_line += v; }
+  void Translate(const EoGeVector3d& v) noexcept override { m_line += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t*) override;
@@ -94,9 +94,9 @@ class EoDbLine : public EoDbPrimitive {
   [[nodiscard]] EoGePoint3d ProjectPointToLine(const EoGePoint3d& point) { return (m_line.ProjectPointToLine(point)); }
   double RelOfPt(const EoGePoint3d& point);
 
-  void SetLine(const EoGeLine& line) { m_line = line; }
-  void SetBeginPoint(const EoGePoint3d& point) { m_line.begin = point; }
-  void SetEndPoint(const EoGePoint3d& point) { m_line.end = point; }
+  void SetLine(const EoGeLine& line) noexcept { m_line = line; }
+  void SetBeginPoint(const EoGePoint3d& point) noexcept { m_line.begin = point; }
+  void SetEndPoint(const EoGePoint3d& point) noexcept { m_line.end = point; }
 
   void Square(AeSysView* view);
 };

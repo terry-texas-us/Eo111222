@@ -77,7 +77,7 @@ class EoDbPrimitive : public CObject {
   virtual void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) = 0;
   virtual EoGePoint3d GoToNextControlPoint() = 0;
   virtual bool Identical(EoDbPrimitive*) = 0;
-  virtual bool Is(std::uint16_t type) = 0;
+  virtual bool Is(std::uint16_t type) noexcept = 0;
   virtual bool IsInView(AeSysView* view) = 0;
   virtual bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) = 0;
   virtual EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) = 0;
@@ -101,8 +101,8 @@ class EoDbPrimitive : public CObject {
 
   CString FormatPenColor() const;
   CString FormatLineType() const;
-  std::int16_t LogicalColor() const;
-  std::int16_t LogicalLineType() const;
+  std::int16_t LogicalColor() const noexcept;
+  std::int16_t LogicalLineType() const noexcept;
 
   [[nodiscard]] std::int16_t Color() const noexcept { return m_color; }
   [[nodiscard]] std::int16_t LineTypeIndex() const noexcept { return m_lineTypeIndex; }
@@ -124,13 +124,13 @@ class EoDbPrimitive : public CObject {
     return this;
   }
 
-  static int ControlPointIndex();
-  static bool IsSupportedTyp(int type);
-  static std::int16_t LayerColor();
-  static void SetLayerColor(std::int16_t layerColor);
-  static std::int16_t LayerLineTypeIndex();
-  static void SetLayerLineTypeIndex(std::int16_t lineTypeIndex);
-  static double& Rel();
-  static std::int16_t SpecialColor();
-  static void SetSpecialColor(std::int16_t specialColor);
+  static int ControlPointIndex() noexcept;
+  static bool IsSupportedTyp(int type) noexcept;
+  static std::int16_t LayerColor() noexcept;
+  static void SetLayerColor(std::int16_t layerColor) noexcept;
+  static std::int16_t LayerLineTypeIndex() noexcept;
+  static void SetLayerLineTypeIndex(std::int16_t lineTypeIndex) noexcept;
+  static double& Rel() noexcept;
+  static std::int16_t SpecialColor() noexcept;
+  static void SetSpecialColor(std::int16_t specialColor) noexcept;
 };

@@ -48,7 +48,7 @@ class EoDbDimension : public EoDbPrimitive {
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   [[nodiscard]] EoGePoint3d GoToNextControlPoint() override;
   [[nodiscard]] bool Identical(EoDbPrimitive*) override { return false; }
-  [[nodiscard]] bool Is(std::uint16_t type) override { return type == EoDb::kDimensionPrimitive; }
+  [[nodiscard]] bool Is(std::uint16_t type) noexcept override { return type == EoDb::kDimensionPrimitive; }
   [[nodiscard]] bool IsInView(AeSysView* view) override;
   [[nodiscard]] bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   [[nodiscard]] EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;

@@ -46,8 +46,8 @@ class EoDbPolyline : public EoDbPrimitive {
   EoGePoint3d GetControlPoint() override;
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;
-  bool Identical(EoDbPrimitive*) override { return false; }
-  bool Is(std::uint16_t type) override { return type == EoDb::kPolylinePrimitive; }
+  bool Identical(EoDbPrimitive*) noexcept override { return false; }
+  bool Is(std::uint16_t type) noexcept override { return type == EoDb::kPolylinePrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   bool PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) override;
@@ -65,10 +65,10 @@ class EoDbPolyline : public EoDbPrimitive {
   std::uint16_t SwingVertex();
 
  public:
-  static std::uint16_t& EdgeToEvaluate() { return sm_EdgeToEvaluate; }
-  static std::uint16_t& Edge() { return sm_Edge; }
-  bool IsLooped() const { return (m_flags != 0); }
-  void SetFlag(const std::uint16_t flags) { m_flags = flags; }
+  static std::uint16_t& EdgeToEvaluate() noexcept { return sm_EdgeToEvaluate; }
+  static std::uint16_t& Edge() noexcept { return sm_Edge; }
+  bool IsLooped() const noexcept { return (m_flags != 0); }
+  void SetFlag(const std::uint16_t flags) noexcept { m_flags = flags; }
 
   void SetNumberOfVertices(const size_t numberOfVertices) { m_pts.SetSize(static_cast<int64_t>(numberOfVertices)); }
 

@@ -40,10 +40,10 @@ class EoDbText : public EoDbPrimitive {
   void GetAllPoints(EoGePoint3dArray& points) override;
   EoGePoint3d GetControlPoint() override;
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
-  EoGePoint3d GoToNextControlPoint() override { return (m_ReferenceSystem.Origin()); }
-  bool Identical(EoDbPrimitive*) override { return false; }
+  EoGePoint3d GoToNextControlPoint() noexcept override { return (m_ReferenceSystem.Origin()); }
+  bool Identical(EoDbPrimitive*) noexcept override { return false; }
   bool IsInView(AeSysView* view) override;
-  bool Is(std::uint16_t type) override { return type == EoDb::kTextPrimitive; }
+  bool Is(std::uint16_t type) noexcept override { return type == EoDb::kTextPrimitive; }
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   void ModifyState() override;
   void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,
@@ -52,7 +52,7 @@ class EoDbText : public EoDbPrimitive {
   bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
-  void Translate(const EoGeVector3d& v) override { m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v); }
+  void Translate(const EoGeVector3d& v) noexcept override { m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v); }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   void Transform(const EoGeTransformMatrix&) override;
   bool Write(CFile& file) override;
