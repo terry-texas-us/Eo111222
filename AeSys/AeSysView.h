@@ -71,14 +71,14 @@ class AeSysView : public CView {
    * @param newState A unique pointer to the new state to be pushed.
    */
   void PushState(std::unique_ptr<AeSysState> newState);
-  
+
   /**
    * @brief Pops the current state from the state stack.
    * This function exits the current state, pops it from the stack, and enters the new top state (if any).
    * It also triggers a redraw of the view.
    */
   void PopState();
-  
+
   /**
    * @brief Gets a pointer to the current state.
    * @return A pointer to the current state, or nullptr if the stack is empty.
@@ -211,7 +211,7 @@ class AeSysView : public CView {
    * Override this function to perform any one-time initialization that requires information about the document.
    */
   void OnInitialUpdate() override;
-  
+
   BOOL PreCreateWindow(CREATESTRUCT& createStructure) override;
 
  protected:
@@ -219,7 +219,7 @@ class AeSysView : public CView {
   void OnBeginPrinting(CDC* deviceContext, CPrintInfo* printInformation) override;
   void OnPrepareDC(CDC* deviceContext, CPrintInfo* printInformation) override;
   void OnEndPrinting(CDC* deviceContext, CPrintInfo* printInformation) override;
-  
+
   /** @brief Respond to updates from the document or other views.
    * This method is called by the MFC framework when the document or other views call UpdateAllViews.
    * The hint parameter can be used to determine what type of update occurred and respond accordingly.
@@ -236,6 +236,38 @@ class AeSysView : public CView {
  protected:  // Windows messages
   afx_msg void OnContextMenu(CWnd*, CPoint point);
   afx_msg void OnTimer(UINT_PTR nIDEvent);
+
+  // Mode command handlers
+
+  afx_msg void OnModeAnnotate();
+  afx_msg void OnModeCut();
+  afx_msg void OnModeDimension();
+  afx_msg void OnModeDraw();
+  afx_msg void OnModeDraw2();
+  afx_msg void OnModeEdit();
+  afx_msg void OnModeFixup();
+  afx_msg void OnModeLPD();
+  afx_msg void OnModeNodal();
+  afx_msg void OnModePipe();
+  afx_msg void OnModePower();
+  afx_msg void OnModeTrap();
+
+  afx_msg void OnTrapCommandsAddGroups();
+
+  // Update UI handlers
+
+  afx_msg void OnUpdateModeAnnotate(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateModeCut(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateModeDimension(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateModeDraw(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateModeDraw2(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateModeEdit(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateModeFixup(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateModeLpd(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateModeNodal(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateModePipe(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateModePower(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateModeTrap(CCmdUI* pCmdUI);
 
  public:
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -260,7 +292,7 @@ class AeSysView : public CView {
    * @return TRUE if the message was processed; otherwise, FALSE.
    */
   afx_msg BOOL OnMouseWheel(UINT flags, std::int16_t zDelta, CPoint point);
-  
+
   afx_msg void OnPaint();
   afx_msg void OnRButtonDown(UINT nFlags, CPoint pnt);
   afx_msg void OnRButtonUp(UINT nFlags, CPoint pnt);

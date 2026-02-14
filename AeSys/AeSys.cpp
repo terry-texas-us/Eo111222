@@ -88,21 +88,10 @@ ON_COMMAND(ID_EDIT_CF_IMAGE, &AeSys::OnEditCfImage)
 ON_COMMAND(ID_EDIT_CF_TEXT, &AeSys::OnEditCfText)
 ON_COMMAND(ID_FILE_RUN, &AeSys::OnFileRun)
 ON_COMMAND(ID_HELP_CONTENTS, &AeSys::OnHelpContents)
-ON_COMMAND(ID_MODE_ANNOTATE, &AeSys::OnModeAnnotate)
-ON_COMMAND(ID_MODE_CUT, &AeSys::OnModeCut)
-ON_COMMAND(ID_MODE_DIMENSION, &AeSys::OnModeDimension)
-ON_COMMAND(ID_MODE_DRAW, &AeSys::OnModeDraw)
-ON_COMMAND(ID_MODE_DRAW2, &AeSys::OnModeDraw2)
-ON_COMMAND(ID_MODE_EDIT, &AeSys::OnModeEdit)
-ON_COMMAND(ID_MODE_FIXUP, &AeSys::OnModeFixup)
+
 ON_COMMAND(ID_MODE_LETTER, &AeSys::OnModeLetter)
-ON_COMMAND(ID_MODE_LPD, &AeSys::OnModeLPD)
-ON_COMMAND(ID_MODE_NODAL, &AeSys::OnModeNodal)
-ON_COMMAND(ID_MODE_PIPE, &AeSys::OnModePipe)
-ON_COMMAND(ID_MODE_POWER, &AeSys::OnModePower)
 ON_COMMAND(ID_MODE_REVISE, &AeSys::OnModeRevise)
-ON_COMMAND(ID_MODE_TRAP, &AeSys::OnModeTrap)
-ON_COMMAND(ID_TRAPCOMMANDS_ADDGROUPS, &AeSys::OnTrapCommandsAddGroups)
+
 ON_COMMAND(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnTrapCommandsHighlight)
 ON_COMMAND(ID_VIEW_MODEINFORMATION, &AeSys::OnViewModeInformation)
 #pragma warning(push)
@@ -110,18 +99,6 @@ ON_COMMAND(ID_VIEW_MODEINFORMATION, &AeSys::OnViewModeInformation)
 ON_UPDATE_COMMAND_UI(ID_EDIT_CF_GROUPS, &AeSys::OnUpdateEditCfGroups)
 ON_UPDATE_COMMAND_UI(ID_EDIT_CF_IMAGE, &AeSys::OnUpdateEditCfImage)
 ON_UPDATE_COMMAND_UI(ID_EDIT_CF_TEXT, &AeSys::OnUpdateEditCfText)
-ON_UPDATE_COMMAND_UI(ID_MODE_ANNOTATE, &AeSys::OnUpdateModeAnnotate)
-ON_UPDATE_COMMAND_UI(ID_MODE_CUT, &AeSys::OnUpdateModeCut)
-ON_UPDATE_COMMAND_UI(ID_MODE_DIMENSION, &AeSys::OnUpdateModeDimension)
-ON_UPDATE_COMMAND_UI(ID_MODE_DRAW, &AeSys::OnUpdateModeDraw)
-ON_UPDATE_COMMAND_UI(ID_MODE_DRAW2, &AeSys::OnUpdateModeDraw2)
-ON_UPDATE_COMMAND_UI(ID_MODE_EDIT, &AeSys::OnUpdateModeEdit)
-ON_UPDATE_COMMAND_UI(ID_MODE_FIXUP, &AeSys::OnUpdateModeFixup)
-ON_UPDATE_COMMAND_UI(ID_MODE_LPD, &AeSys::OnUpdateModeLpd)
-ON_UPDATE_COMMAND_UI(ID_MODE_NODAL, &AeSys::OnUpdateModeNodal)
-ON_UPDATE_COMMAND_UI(ID_MODE_PIPE, &AeSys::OnUpdateModePipe)
-ON_UPDATE_COMMAND_UI(ID_MODE_POWER, &AeSys::OnUpdateModePower)
-ON_UPDATE_COMMAND_UI(ID_MODE_TRAP, &AeSys::OnUpdateModeTrap)
 ON_UPDATE_COMMAND_UI(ID_VIEW_MODEINFORMATION, &AeSys::OnUpdateViewModeinformation)
 ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_ADDGROUPS, &AeSys::OnUpdateTrapcommandsAddgroups)
 ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnUpdateTrapcommandsHighlight)
@@ -269,7 +246,7 @@ BOOL AeSys::InitInstance() {
   dde::Setup(AeSys::GetInstance());
 #endif  // USING_DDE
 
-  OnModeDraw();
+  // OnModeDraw(); // Set initial mode to draw mode. This will also load the resources for draw mode.
 
   // This is the private data format used to pass EoGroups from one instance to another
   m_ClipboardFormatIdentifierForEoGroups = RegisterClipboardFormatW(L"EoGroups");
@@ -386,77 +363,15 @@ void AeSys::OnTrapCommandsHighlight() {
 void AeSys::OnEditCfGroups() { m_ClipboardDataEoGroups = !m_ClipboardDataEoGroups; }
 void AeSys::OnEditCfImage() { m_ClipboardDataImage = !m_ClipboardDataImage; }
 void AeSys::OnEditCfText() { m_ClipboardDataText = !m_ClipboardDataText; }
-void AeSys::OnModeAnnotate() {
-  m_ModeResourceIdentifier = IDR_ANNOTATE_MODE;
-  m_PrimaryMode = ID_MODE_ANNOTATE;
-  LoadModeResources(ID_MODE_ANNOTATE);
-}
-void AeSys::OnModeCut() {
-  m_ModeResourceIdentifier = IDR_CUT_MODE;
-  m_PrimaryMode = ID_MODE_CUT;
-  LoadModeResources(ID_MODE_CUT);
-}
-void AeSys::OnModeDimension() {
-  m_ModeResourceIdentifier = IDR_DIMENSION_MODE;
-  m_PrimaryMode = ID_MODE_DIMENSION;
-  LoadModeResources(ID_MODE_DIMENSION);
-}
-void AeSys::OnModeDraw() {
-  m_ModeResourceIdentifier = IDR_DRAW_MODE;
-  m_PrimaryMode = ID_MODE_DRAW;
-  LoadModeResources(ID_MODE_DRAW);
-}
-void AeSys::OnModeDraw2() {
-  m_ModeResourceIdentifier = IDR_DRAW2_MODE;
-  m_PrimaryMode = ID_MODE_DRAW2;
-  LoadModeResources(ID_MODE_DRAW2);
-}
-void AeSys::OnModeEdit() {
-  m_ModeResourceIdentifier = IDR_EDIT_MODE;
-  LoadModeResources(ID_MODE_EDIT);
-}
-void AeSys::OnModeFixup() {
-  m_ModeResourceIdentifier = IDR_FIXUP_MODE;
-  LoadModeResources(ID_MODE_FIXUP);
-}
+
 void AeSys::OnModeLetter() {
   EoDlgModeLetter Dialog;
   Dialog.DoModal();
 }
-void AeSys::OnModeLPD() {
-  m_ModeResourceIdentifier = IDR_LPD_MODE;
-  LoadModeResources(ID_MODE_LPD);
-}
-void AeSys::OnModeNodal() {
-  m_ModeResourceIdentifier = IDR_NODAL_MODE;
-  LoadModeResources(ID_MODE_NODAL);
-}
-void AeSys::OnModePipe() {
-  m_ModeResourceIdentifier = IDR_PIPE_MODE;
-  LoadModeResources(ID_MODE_PIPE);
-}
-void AeSys::OnModePower() {
-  m_ModeResourceIdentifier = IDR_POWER_MODE;
-  LoadModeResources(ID_MODE_POWER);
-}
+
 void AeSys::OnModeRevise() {
   EoDlgModeRevise Dialog;
   Dialog.DoModal();
-}
-void AeSys::OnModeTrap() {
-  if (m_TrapModeAddGroups) {
-    m_ModeResourceIdentifier = IDR_TRAP_MODE;
-    LoadModeResources(ID_MODE_TRAP);
-  } else {
-    m_ModeResourceIdentifier = IDR_TRAPR_MODE;
-    LoadModeResources(ID_MODE_TRAPR);
-  }
-}
-void AeSys::OnTrapCommandsAddGroups() {
-  m_TrapModeAddGroups = !m_TrapModeAddGroups;
-  m_CurrentMode = m_TrapModeAddGroups ? ID_MODE_TRAP : ID_MODE_TRAPR;
-
-  OnModeTrap();
 }
 
 void AeSys::OnFileRun() {
@@ -697,18 +612,6 @@ void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
 void AeSys::ReleaseSimplexStrokeFont() {
   if (m_SimplexStrokeFont != 0) { delete[] m_SimplexStrokeFont; }
 }
-void AeSys::OnUpdateModeDraw(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_DRAW); }
-void AeSys::OnUpdateModeAnnotate(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_ANNOTATE); }
-void AeSys::OnUpdateModeTrap(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_TRAP); }
-void AeSys::OnUpdateModeEdit(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_EDIT); }
-void AeSys::OnUpdateModeDraw2(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_DRAW2); }
-void AeSys::OnUpdateModeDimension(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_DIMENSION); }
-void AeSys::OnUpdateModeCut(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_CUT); }
-void AeSys::OnUpdateModeNodal(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_NODAL); }
-void AeSys::OnUpdateModeFixup(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_FIXUP); }
-void AeSys::OnUpdateModeLpd(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_LPD); }
-void AeSys::OnUpdateModePower(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_POWER); }
-void AeSys::OnUpdateModePipe(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_CurrentMode == ID_MODE_PIPE); }
 void AeSys::OnViewModeInformation() {
   m_ModeInformationOverView = !m_ModeInformationOverView;
   AeSysDoc::GetDoc()->UpdateAllViews(nullptr, 0L, nullptr);

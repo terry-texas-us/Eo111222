@@ -106,6 +106,13 @@ class AeSys : public CWinAppEx {
   void AddStringToMessageList(UINT stringResourceIdentifier, const CString& string);
   // Modifies the base accelerator table by defining the mode specific keys.
   void BuildModifiedAcceleratorTable();
+  
+  // Accessors for mode management (needed by AeSysView)
+  void SetModeResourceIdentifier(int resourceId) { m_ModeResourceIdentifier = resourceId; }
+  void SetPrimaryMode(int mode) { m_PrimaryMode = mode; }
+  void SetModeAddGroups(bool addGroups) { m_TrapModeAddGroups = addGroups; }
+  [[nodiscard]] bool TrapModeAddGroups() const { return m_TrapModeAddGroups; }
+    
   UINT CheckMenuItem(UINT uId, UINT uCheck) const { return (::CheckMenuItem(m_MainFrameMenuHandle, uId, uCheck)); }
   UINT ClipboardFormatIdentifierForEoGroups() const { return m_ClipboardFormatIdentifierForEoGroups; }
   int ConfirmMessageBox(UINT stringResourceIdentifier, const CString& string);
@@ -236,34 +243,9 @@ class AeSys : public CWinAppEx {
   afx_msg void OnFileOpen();
   afx_msg void OnFileRun();
   afx_msg void OnHelpContents();
-  afx_msg void OnModeAnnotate();
-  afx_msg void OnModeCut();
-  afx_msg void OnModeDimension();
-  afx_msg void OnModeDraw();
-  afx_msg void OnModeDraw2();
-  afx_msg void OnModeEdit();
-  afx_msg void OnModeFixup();
   afx_msg void OnModeLetter();
-  afx_msg void OnModeLPD();
-  afx_msg void OnModeNodal();
-  afx_msg void OnModePipe();
-  afx_msg void OnModePower();
   afx_msg void OnModeRevise();
-  afx_msg void OnModeTrap();
-  afx_msg void OnTrapCommandsAddGroups();
   afx_msg void OnTrapCommandsHighlight();
-  afx_msg void OnUpdateModeAnnotate(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateModeCut(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateModeDimension(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateModeDraw(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateModeDraw2(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateModeEdit(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateModeFixup(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateModeLpd(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateModeNodal(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateModePipe(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateModePower(CCmdUI* pCmdUI);
-  afx_msg void OnUpdateModeTrap(CCmdUI* pCmdUI);
   afx_msg void OnUpdateViewModeinformation(CCmdUI* pCmdUI);
   afx_msg void OnViewModeInformation();
 #if defined(USING_DDE)

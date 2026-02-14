@@ -85,6 +85,39 @@ ON_WM_TIMER()
 ON_WM_PAINT()
 #pragma warning(pop)
 
+// Mode switching commands
+ON_COMMAND(ID_MODE_ANNOTATE, &AeSysView::OnModeAnnotate)
+ON_COMMAND(ID_MODE_CUT, &AeSysView::OnModeCut)
+ON_COMMAND(ID_MODE_DIMENSION, &AeSysView::OnModeDimension)
+ON_COMMAND(ID_MODE_DRAW, &AeSysView::OnModeDraw)
+ON_COMMAND(ID_MODE_DRAW2, &AeSysView::OnModeDraw2)
+ON_COMMAND(ID_MODE_EDIT, &AeSysView::OnModeEdit)
+ON_COMMAND(ID_MODE_FIXUP, &AeSysView::OnModeFixup)
+ON_COMMAND(ID_MODE_LPD, &AeSysView::OnModeLPD)
+ON_COMMAND(ID_MODE_NODAL, &AeSysView::OnModeNodal)
+ON_COMMAND(ID_MODE_PIPE, &AeSysView::OnModePipe)
+ON_COMMAND(ID_MODE_POWER, &AeSysView::OnModePower)
+ON_COMMAND(ID_MODE_TRAP, &AeSysView::OnModeTrap)
+
+ON_COMMAND(ID_TRAPCOMMANDS_ADDGROUPS, &AeSysView::OnTrapCommandsAddGroups)
+
+// Update UI handlers
+#pragma warning(push)
+#pragma warning(disable : 4191)
+ON_UPDATE_COMMAND_UI(ID_MODE_ANNOTATE, &AeSysView::OnUpdateModeAnnotate)
+ON_UPDATE_COMMAND_UI(ID_MODE_CUT, &AeSysView::OnUpdateModeCut)
+ON_UPDATE_COMMAND_UI(ID_MODE_DIMENSION, &AeSysView::OnUpdateModeDimension)
+ON_UPDATE_COMMAND_UI(ID_MODE_DRAW, &AeSysView::OnUpdateModeDraw)
+ON_UPDATE_COMMAND_UI(ID_MODE_DRAW2, &AeSysView::OnUpdateModeDraw2)
+ON_UPDATE_COMMAND_UI(ID_MODE_EDIT, &AeSysView::OnUpdateModeEdit)
+ON_UPDATE_COMMAND_UI(ID_MODE_FIXUP, &AeSysView::OnUpdateModeFixup)
+ON_UPDATE_COMMAND_UI(ID_MODE_LPD, &AeSysView::OnUpdateModeLpd)
+ON_UPDATE_COMMAND_UI(ID_MODE_NODAL, &AeSysView::OnUpdateModeNodal)
+ON_UPDATE_COMMAND_UI(ID_MODE_PIPE, &AeSysView::OnUpdateModePipe)
+ON_UPDATE_COMMAND_UI(ID_MODE_POWER, &AeSysView::OnUpdateModePower)
+ON_UPDATE_COMMAND_UI(ID_MODE_TRAP, &AeSysView::OnUpdateModeTrap)
+#pragma warning(pop)
+
 ON_COMMAND(ID_OP0, OnOp0)
 ON_COMMAND(ID_OP2, OnOp2)
 ON_COMMAND(ID_OP3, OnOp3)
@@ -2560,6 +2593,109 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
   deviceContext->SelectObject(oldFont);
   ReleaseDC(deviceContext);
 }
+
+// Mode switching commands (moved from AeSys.cpp for proper command routing)
+
+void AeSysView::OnModeAnnotate() {
+  app.SetModeResourceIdentifier(IDR_ANNOTATE_MODE);
+  app.SetPrimaryMode(ID_MODE_ANNOTATE);
+  app.LoadModeResources(ID_MODE_ANNOTATE);
+}
+
+void AeSysView::OnModeCut() {
+  app.SetModeResourceIdentifier(IDR_CUT_MODE);
+  app.SetPrimaryMode(ID_MODE_CUT);
+  app.LoadModeResources(ID_MODE_CUT);
+}
+
+void AeSysView::OnModeDimension() {
+  app.SetModeResourceIdentifier(IDR_DIMENSION_MODE);
+  app.SetPrimaryMode(ID_MODE_DIMENSION);
+  app.LoadModeResources(ID_MODE_DIMENSION);
+}
+
+void AeSysView::OnModeDraw() {
+  app.SetModeResourceIdentifier(IDR_DRAW_MODE);
+  app.SetPrimaryMode(ID_MODE_DRAW);
+  app.LoadModeResources(ID_MODE_DRAW);
+}
+
+void AeSysView::OnModeDraw2() {
+  app.SetModeResourceIdentifier(IDR_DRAW2_MODE);
+  app.SetPrimaryMode(ID_MODE_DRAW2);
+  app.LoadModeResources(ID_MODE_DRAW2);
+}
+
+void AeSysView::OnModeEdit() {
+  app.SetModeResourceIdentifier(IDR_EDIT_MODE);
+  app.LoadModeResources(ID_MODE_EDIT);
+}
+
+void AeSysView::OnModeFixup() {
+  app.SetModeResourceIdentifier(IDR_FIXUP_MODE);
+  app.LoadModeResources(ID_MODE_FIXUP);
+}
+
+void AeSysView::OnModeLPD() {
+  app.SetModeResourceIdentifier(IDR_LPD_MODE);
+  app.LoadModeResources(ID_MODE_LPD);
+}
+
+void AeSysView::OnModeNodal() {
+  app.SetModeResourceIdentifier(IDR_NODAL_MODE);
+  app.LoadModeResources(ID_MODE_NODAL);
+}
+
+void AeSysView::OnModePipe() {
+  app.SetModeResourceIdentifier(IDR_PIPE_MODE);
+  app.LoadModeResources(ID_MODE_PIPE);
+}
+
+void AeSysView::OnModePower() {
+  app.SetModeResourceIdentifier(IDR_POWER_MODE);
+  app.LoadModeResources(ID_MODE_POWER);
+}
+
+void AeSysView::OnModeTrap() {
+  if (app.TrapModeAddGroups()) {
+    app.SetModeResourceIdentifier(IDR_TRAP_MODE);
+    app.LoadModeResources(ID_MODE_TRAP);
+  } else {
+    app.SetModeResourceIdentifier(IDR_TRAPR_MODE);
+    app.LoadModeResources(ID_MODE_TRAPR);
+  }
+}
+
+void AeSysView::OnTrapCommandsAddGroups() {
+  app.SetModeAddGroups(!app.TrapModeAddGroups());
+  app.LoadModeResources(app.TrapModeAddGroups() ? ID_MODE_TRAP : ID_MODE_TRAPR);
+  OnModeTrap();
+}
+
+// Update UI handlers
+void AeSysView::OnUpdateModeAnnotate(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_ANNOTATE); }
+
+void AeSysView::OnUpdateModeCut(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_CUT); }
+
+void AeSysView::OnUpdateModeDimension(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_DIMENSION); }
+
+void AeSysView::OnUpdateModeDraw(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_DRAW); }
+
+void AeSysView::OnUpdateModeDraw2(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_DRAW2); }
+
+void AeSysView::OnUpdateModeEdit(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_EDIT); }
+
+void AeSysView::OnUpdateModeFixup(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_FIXUP); }
+
+void AeSysView::OnUpdateModeLpd(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_LPD); }
+
+void AeSysView::OnUpdateModeNodal(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_NODAL); }
+
+void AeSysView::OnUpdateModePipe(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_PIPE); }
+
+void AeSysView::OnUpdateModePower(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_POWER); }
+
+void AeSysView::OnUpdateModeTrap(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_TRAP); }
 
 #if defined(USING_Direct2D)
 HRESULT AeSysView::CreateDeviceResources() {
