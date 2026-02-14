@@ -109,7 +109,7 @@ void AeSysView::OnAnnotateModeBubble() {
     minorAxis *= 0.1;
     EoGeReferenceSystem referenceSystem(cursorPosition, majorAxis, minorAxis);
 
-    int PrimitiveState = renderState.Save();
+    int savedRenderState = renderState.Save();
     renderState.SetColor(deviceContext, 2);
 
     EoDbFontDefinition fontDefinition = renderState.FontDefinition();
@@ -120,7 +120,7 @@ void AeSysView::OnAnnotateModeBubble() {
     renderState.SetCharacterCellDefinition(characterCellDefinition);
 
     group->AddTail(new EoDbText(fontDefinition, referenceSystem, CurrentText));
-    renderState.Restore(deviceContext, PrimitiveState);
+    renderState.Restore(deviceContext, savedRenderState);
     ReleaseDC(deviceContext);
   }
   if (NumberOfSides() == 0) {
@@ -273,7 +273,7 @@ void AeSysView::OnAnnotateModeCutIn() {
     if (dlg.DoModal() == IDOK) { CurrentText = dlg.m_sText; }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
 
-    int PrimitiveState = renderState.Save();
+    int savedRenderState = renderState.Save();
 
     if (!CurrentText.IsEmpty()) {
       EoGeLine Line = pLine->Line();
@@ -327,7 +327,7 @@ void AeSysView::OnAnnotateModeCutIn() {
         pLine->SetEndPoint(ptsBox[0]);
     }
     document->UpdateAllViews(nullptr, EoDb::kGroup, group);
-    renderState.Restore(deviceContext, PrimitiveState);
+    renderState.Restore(deviceContext, savedRenderState);
   }
   ReleaseDC(deviceContext);
 }

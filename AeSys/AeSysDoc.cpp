@@ -157,12 +157,12 @@ AeSysDoc::AeSysDoc()
       m_LineTypeTable{},
       m_BlocksTable{},
       m_DeletedGroupList{},
-      m_TrappedGroupList{},
+      m_trappedGroups{},
       m_NodalGroupList{},
       m_MaskedPrimitives{},
       m_UniquePoints{},
       m_LayerTable{},
-      m_TrapPivotPoint{},
+      m_trapPivotPoint{},
       m_ContinuousLineType{},
       m_workLayer{},
       m_IdentifiedLayerName{},
@@ -468,13 +468,13 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
 
     EoDbPolygon::SetSpecialPolygonStyle(
         view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);
-    int primitiveState = renderState.Save();
+    int savedRenderState = renderState.Save();
 
     for (int i = 0; i < GetLayerTableSize(); i++) {
       auto* layer = GetLayerTableLayerAt(i);
       layer->Display(view, deviceContext, identifyTrap);
     }
-    renderState.Restore(deviceContext, primitiveState);
+    renderState.Restore(deviceContext, savedRenderState);
     EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
 
     deviceContext->SetBkColor(backgroundColor);
@@ -1354,7 +1354,7 @@ void AeSysDoc::OnTrapCommandsInvert() {
         auto* Group = layer->GetNext(LayerPosition);
         auto GroupPosition = FindTrappedGroup(Group);
         if (GroupPosition != nullptr) {
-          m_TrappedGroupList.RemoveAt(GroupPosition);
+          m_trappedGroups.RemoveAt(GroupPosition);
         } else {
           AddGroupToTrap(Group);
         }
@@ -1379,7 +1379,7 @@ void AeSysDoc::OnTrapCommandsFilter() {
 }
 
 void AeSysDoc::OnTrapCommandsBlock() {
-  if (m_TrappedGroupList.GetCount() == 0) { return; }
+  if (m_trappedGroups.GetCount() == 0) { return; }
 
   EoDbBlock* block{};
   auto blockTableSize = BlockTableSize();
@@ -1401,11 +1401,11 @@ void AeSysDoc::OnTrapCommandsBlock() {
 
     delete newGroup;
   }
-  block->SetBasePoint(m_TrapPivotPoint);
+  block->SetBasePoint(m_trapPivotPoint);
   InsertBlock(CString(name), block);
 }
 
-void AeSysDoc::OnTrapCommandsUnblock() { m_TrappedGroupList.BreakSegRefs(); }
+void AeSysDoc::OnTrapCommandsUnblock() { m_trappedGroups.BreakSegRefs(); }
 void AeSysDoc::OnSetupPenColor() {
   EoDlgSetupColor Dialog;
   Dialog.m_ColorIndex = static_cast<std::uint16_t>(renderState.Color());

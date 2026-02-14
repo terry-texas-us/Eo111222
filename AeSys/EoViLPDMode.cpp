@@ -555,7 +555,7 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   CString Note = Width.TrimLeft() + L"/" + Depth.TrimLeft();
 
   auto* deviceContext = GetDC();
-  int PrimitiveState = renderState.Save();
+  int savedRenderState = renderState.Save();
   renderState.SetColor(deviceContext, 2);
 
   EoDbFontDefinition fontDefinition = renderState.FontDefinition();
@@ -569,7 +569,7 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   auto* document = GetDocument();
   document->AddWorkLayerGroup(Group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
-  renderState.Restore(deviceContext, PrimitiveState);
+  renderState.Restore(deviceContext, savedRenderState);
   ReleaseDC(deviceContext);
 }
 

@@ -176,7 +176,7 @@ void AeSysView::OnNodalModeToPolygon() {
     pts.SetSize(4);
 
     auto* deviceContext = GetDC();
-    int primitiveState = renderState.Save();
+    int savedRenderState = renderState.Save();
 
     auto* document = GetDocument();
     auto groupPosition = document->GetFirstNodalGroupPosition();
@@ -221,7 +221,7 @@ void AeSysView::OnNodalModeToPolygon() {
         }
       }
     }
-    renderState.Restore(deviceContext, primitiveState);
+    renderState.Restore(deviceContext, savedRenderState);
 
     pts.SetSize(0);
 

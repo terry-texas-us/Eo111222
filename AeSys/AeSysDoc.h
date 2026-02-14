@@ -31,12 +31,12 @@ class AeSysDoc : public CDocument {
   EoDbLineTypeTable m_LineTypeTable;
   EoDbBlocks m_BlocksTable;
   EoDbGroupList m_DeletedGroupList;
-  EoDbGroupList m_TrappedGroupList;
+  EoDbGroupList m_trappedGroups;
   EoDbGroupList m_NodalGroupList;
   CObList m_MaskedPrimitives;
   CObList m_UniquePoints;
   CLayers m_LayerTable;
-  EoGePoint3d m_TrapPivotPoint;
+  EoGePoint3d m_trapPivotPoint;
   EoDbLineType* m_ContinuousLineType;
   EoDbLayer* m_workLayer;
   CString m_IdentifiedLayerName;
@@ -180,10 +180,16 @@ class AeSysDoc : public CDocument {
  public:  // trap interface
   void AddGroupsToTrap(EoDbGroupList* groups);
   POSITION AddGroupToTrap(EoDbGroup* group);
-  /// <summary>Builds a single group from two or more groups in trap.</summary>
-  /// <remarks>The new group is added to the hot layer even if the trap contained groups from one or more warm layers.</remarks>
+
+  /** @brief Combines multiple groups in the trap into a single group.
+   *
+   * This method creates a new group and adds all primitives from the existing trapped groups to it.
+   * The original groups are removed from the document and deleted, while the new combined group is added to the work layer and the trapped group list.
+   * The new group is added to the hot layer even if the trap contained groups from one or more warm layers.
+   * @note Text primitives in the new group are sorted by their Y coordinate for proper display.
+   */
   void CompressTrappedGroups();
-  void CopyTrappedGroups(EoGeVector3d translate);
+  void CopyTrappedGroups(const EoGeVector3d& translate);
   void DeleteAllTrappedGroups();
 
   /** @brief Copies the trapped groups to the clipboard in various formats.
@@ -205,25 +211,26 @@ class AeSysDoc : public CDocument {
    * The new groups are added to the work layer and the trapped group list.
    */
   void ExpandTrappedGroups();
-  auto FindTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Find(group); }
-  auto GetFirstTrappedGroupPosition() const { return m_TrappedGroupList.GetHeadPosition(); }
-  EoDbGroup* GetNextTrappedGroup(POSITION& position) { return m_TrappedGroupList.GetNext(position); }
-  EoGePoint3d GetTrapPivotPoint() const { return m_TrapPivotPoint; }
-  BOOL IsTrapEmpty() const { return m_TrappedGroupList.IsEmpty(); }
-  void ModifyTrappedGroupsColor(std::int16_t color) { m_TrappedGroupList.ModifyColor(color); }
-  void ModifyTrappedGroupsLineType(std::int16_t lineType) { m_TrappedGroupList.ModifyLineType(lineType); }
+  
+  auto FindTrappedGroup(EoDbGroup* group) { return m_trappedGroups.Find(group); }
+  auto GetFirstTrappedGroupPosition() const { return m_trappedGroups.GetHeadPosition(); }
+  EoDbGroup* GetNextTrappedGroup(POSITION& position) { return m_trappedGroups.GetNext(position); }
+  EoGePoint3d GetTrapPivotPoint() const { return m_trapPivotPoint; }
+  BOOL IsTrapEmpty() const { return m_trappedGroups.IsEmpty(); }
+  void ModifyTrappedGroupsColor(std::int16_t color) { m_trappedGroups.ModifyColor(color); }
+  void ModifyTrappedGroupsLineType(std::int16_t lineType) { m_trappedGroups.ModifyLineType(lineType); }
   void ModifyTrappedGroupsNoteAttributes(const EoDbFontDefinition& fontDefinition,
       const EoDbCharacterCellDefinition& characterCellDefinition, int attributes);
   void RemoveAllTrappedGroups();
-  EoDbGroup* RemoveLastTrappedGroup() { return m_TrappedGroupList.RemoveTail(); }
-  auto RemoveTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Remove(group); }
-  void RemoveTrappedGroupAt(POSITION position) { m_TrappedGroupList.RemoveAt(position); }
-  void SetTrapPivotPoint(const EoGePoint3d& pt) { m_TrapPivotPoint = pt; }
+  EoDbGroup* RemoveLastTrappedGroup() { return m_trappedGroups.RemoveTail(); }
+  auto RemoveTrappedGroup(EoDbGroup* group) { return m_trappedGroups.Remove(group); }
+  void RemoveTrappedGroupAt(POSITION position) { m_trappedGroups.RemoveAt(position); }
+  void SetTrapPivotPoint(const EoGePoint3d& pt) { m_trapPivotPoint = pt; }
   void SquareTrappedGroups(AeSysView* view);
   void TransformTrappedGroups(EoGeTransformMatrix& transformMatrix);
-  void TranslateTrappedGroups(EoGeVector3d translate);
-  [[nodiscard]] auto TrapGroupCount() { return m_TrappedGroupList.GetCount(); }
-  [[nodiscard]] auto* GroupsInTrap() { return &m_TrappedGroupList; }
+  void TranslateTrappedGroups(const EoGeVector3d& translate);
+  [[nodiscard]] auto TrapGroupCount() { return m_trappedGroups.GetCount(); }
+  [[nodiscard]] auto* GroupsInTrap() { return &m_trappedGroups; }
 
   // Nodal list interface (includes list of groups, primitives and unique points)
   void DeleteNodalResources();

@@ -75,13 +75,13 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   activeView->SetCameraTarget(ptTarget);
   activeView->SetCameraPosition(activeView->CameraDirection());
 
-  int PrimitiveState = renderState.Save();
+  int savedRenderState = renderState.Save();
   block->Display(activeView, &memoryContext);
 
   activeView->PopViewTransform();
   activeView->ViewportPopActive();
 
-  renderState.Restore(&memoryContext, PrimitiveState);
+  renderState.Restore(&memoryContext, savedRenderState);
   memoryContext.SelectObject(Bitmap);
   InvalidateRect(previewWindow, 0, TRUE);
 }
@@ -124,9 +124,9 @@ void WndProcPreviewUpdateLayer(HWND previewWindow, EoDbGroupList* groups) {
   activeView->SetCameraTarget(ptTarget);
   activeView->SetCameraPosition(activeView->CameraDirection());
 
-  int PrimitiveState = renderState.Save();
+  int savedRenderState = renderState.Save();
   groups->Display(activeView, &memoryContext);
-  renderState.Restore(&memoryContext, PrimitiveState);
+  renderState.Restore(&memoryContext, savedRenderState);
 
   activeView->PopViewTransform();
   activeView->ViewportPopActive();

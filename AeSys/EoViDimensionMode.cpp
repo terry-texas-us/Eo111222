@@ -417,7 +417,7 @@ void AeSysView::OnDimensionModeAngle() {
         GenerateLineEndItem(1, 0.1, ptArrow, line.end, Group);
 
         auto* deviceContext = GetDC();
-        int PrimitiveState = renderState.Save();
+        int savedRenderState = renderState.Save();
 
         EoDbFontDefinition fontDefinition = renderState.FontDefinition();
         fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::VerticalAlignment::Middle);
@@ -436,7 +436,7 @@ void AeSysView::OnDimensionModeAngle() {
         Group->AddTail(new EoDbText(fontDefinition, ReferenceSystem, Note));
         document->AddWorkLayerGroup(Group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
-        renderState.Restore(deviceContext, PrimitiveState);
+        renderState.Restore(deviceContext, savedRenderState);
         ReleaseDC(deviceContext);
       }
       ModeLineUnhighlightOp(PreviousDimensionCommand);
