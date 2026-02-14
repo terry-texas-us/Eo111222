@@ -7,6 +7,7 @@
 #include "EoDb.h"
 #include "EoDbPrimitive.h"
 #include "EoDbSpline.h"
+#include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGePolyline.h"
@@ -76,7 +77,7 @@ void EoDbSpline::FormatGeometry(CString& str) {
 
 void EoDbSpline::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tStyle;%s\tControl Points;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
-             static_cast<int>(m_pts.GetSize()));
+      static_cast<int>(m_pts.GetSize()));
 }
 
 void EoDbSpline::GetAllPoints(EoGePoint3dArray& pts) {
@@ -90,7 +91,8 @@ EoGePoint3d EoDbSpline::GetControlPoint() {
   return point;
 }
 
-void EoDbSpline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbSpline::GetExtents(
+    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt;
 
   for (auto i = 0; i < m_pts.GetSize(); i++) {
@@ -150,9 +152,8 @@ EoGePoint3d EoDbSpline::SelectAtControlPoint(AeSysView*, const EoGePoint4d& poin
   return point;
 }
 
-bool EoDbSpline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
-  (void)view;
-  (void)line;
+bool EoDbSpline::SelectUsingLine(
+    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
   return false;
 }
 

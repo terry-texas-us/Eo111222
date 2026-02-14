@@ -619,8 +619,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         document->DisplayUniquePoints();
       }
 #else
-      document->DisplayAllLayers(this, deviceContext);
-      document->DisplayUniquePoints();
+        document->DisplayAllLayers(this, deviceContext);
+        document->DisplayUniquePoints();
 #endif
     }
     UpdateStateInformation(All);
@@ -667,8 +667,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   auto* state = GetCurrentState();
   bool handledByState = false;
   if (state) {
-    state->OnUpdate(this, sender, hint, hintObject);
-    handledByState = true;  // Assume handled unless you add a return value to OnUpdate
+    handledByState = state->OnUpdate(this, sender, hint, hintObject);  // Now returns bool
   }
   if (!handledByState) {
     // Fallback: If no state or state didn't handle, use legacy switch for general updates
@@ -747,9 +746,7 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
   }
 }
 
-void AeSysView::OnEndPrinting(CDC* deviceContext, CPrintInfo* printInformation) {
-  (void)deviceContext;
-  (void)printInformation;
+void AeSysView::OnEndPrinting([[maybe_unused]] CDC* deviceContext, [[maybe_unused]] CPrintInfo* printInformation) {
   PopViewTransform();
   ViewportPopActive();
 }

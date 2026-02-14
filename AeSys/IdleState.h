@@ -17,6 +17,10 @@ class IdleState : public AeSysState {
   void OnExit(AeSysView* context) override;
   // Override others only if idle has specific behavior (e.g., basic selection)
   void OnMouseMove(AeSysView* context, UINT nFlags, CPoint point) override;
-  // ... add more as needed
+
+  void OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]] CDC* deviceContext) override;
+
+  bool OnUpdate(AeSysView* context, CView* pSender, LPARAM lHint, CObject* pHint) override;
+
 };
 #endif

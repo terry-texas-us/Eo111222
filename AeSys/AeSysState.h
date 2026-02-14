@@ -32,10 +32,13 @@ class AeSysState {
   // Add more: OnRButtonDown, etc., as needed from AeSysView.cpp
 
   // Command handling (delegate MFC ON_COMMAND)
-  virtual void HandleCommand([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT nID) {}
+  virtual void HandleCommand([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT command) {}
 
   // Drawing/Updates
-  virtual void OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]] CDC* pDC) {}
-  virtual void OnUpdate([[maybe_unused]] AeSysView* context, [[maybe_unused]] CView* pSender,
-      [[maybe_unused]] LPARAM lHint, [[maybe_unused]] CObject* pHint) {}
+  virtual void OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]] CDC* deviceContext) {}
+
+  virtual bool OnUpdate([[maybe_unused]] AeSysView* context, [[maybe_unused]] CView* sender,
+      [[maybe_unused]] LPARAM hint, [[maybe_unused]] CObject* objectHint) {
+    return false;
+  }
 };

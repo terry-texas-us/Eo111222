@@ -52,8 +52,8 @@ EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) {
   m_columnSpacing = other.m_columnSpacing;
   m_rowSpacing = other.m_rowSpacing;
 }
-EoDbBlockReference::EoDbBlockReference(std::uint16_t color, std::uint16_t lineType, const CString& name, const EoGePoint3d& point,
-    const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation)
+EoDbBlockReference::EoDbBlockReference(std::uint16_t color, std::uint16_t lineType, const CString& name,
+    const EoGePoint3d& point, const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation)
     : m_blockName(name), m_insertionPoint(point), m_normal(normal), m_scaleFactors(scaleFactors) {
   m_color = static_cast<std::int16_t>(color);
   m_lineTypeIndex = static_cast<std::int16_t>(lineType);
@@ -188,9 +188,8 @@ bool EoDbBlockReference::IsInView(AeSysView* view) {
   return bInView;
 }
 
-bool EoDbBlockReference::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
-  (void)view;
-  (void)point;
+bool EoDbBlockReference::IsPointOnControlPoint(
+    [[maybe_unused]] AeSysView* view, [[maybe_unused]] const EoGePoint4d& point) {
   return false;
 }
 
@@ -222,9 +221,8 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
   return ptCtrl;
 }
 
-bool EoDbBlockReference::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
-  (void)view;
-  (void)line;
+bool EoDbBlockReference::SelectUsingLine(
+    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
   return false;
 }
 

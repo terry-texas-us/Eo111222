@@ -36,8 +36,8 @@ EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGeP
   m_NumberOfDatums = 0;
   m_Data = nullptr;
 }
-EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point, std::uint16_t numberOfDatums,
-                     double* data)
+EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point,
+    std::uint16_t numberOfDatums, double* data)
     : m_Point(point) {
   m_color = penColor;
   m_pointStyle = pointStyle;
@@ -167,7 +167,8 @@ void EoDbPoint::GetAllPoints(EoGePoint3dArray& points) {
   points.Add(m_Point);
 }
 
-void EoDbPoint::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbPoint::GetExtents(
+    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt(m_Point);
 
   view->ModelTransformPoint(pt);
@@ -190,9 +191,8 @@ EoGePoint3d EoDbPoint::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& 
   return (sm_controlPointIndex == 0) ? m_Point : EoGePoint3d::kOrigin;
 }
 
-bool EoDbPoint::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
-  (void)view;
-  (void)line;
+bool EoDbPoint::SelectUsingLine(
+    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
   return false;
 }
 

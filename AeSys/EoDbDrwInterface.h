@@ -104,37 +104,30 @@ class EoDbDrwInterface : public DRW_Interface {
 
   // Dimensions
 
-  void addDimAlign(const DRW_DimAligned* dimAlign) override {
-    (void)dimAlign;
+  void addDimAlign([[maybe_unused]] const DRW_DimAligned* dimAlign) override {
     countOfDimAlign++;
   }
 
-  void addDimAngular(const DRW_DimAngular* dimAngular) override {
-    (void)dimAngular;
+  void addDimAngular([[maybe_unused]] const DRW_DimAngular* dimAngular) override {
     countOfDimAngular++;
   }
-  void addDimAngular3P(const DRW_DimAngular3p* dimAngular3P) override {
-    (void)dimAngular3P;
+  void addDimAngular3P([[maybe_unused]] const DRW_DimAngular3p* dimAngular3P) override {
     countOfDimAngular3P++;
   }
 
-  void addDimLinear(const DRW_DimLinear* dimLinear) override {
-    (void)dimLinear;
+  void addDimLinear([[maybe_unused]] const DRW_DimLinear* dimLinear) override {
     countOfDimLinear++;
   }
 
-  void addDimOrdinate(const DRW_DimOrdinate* dimOrdinate) override {
-    (void)dimOrdinate;
+  void addDimOrdinate([[maybe_unused]] const DRW_DimOrdinate* dimOrdinate) override {
     countOfDimOrdinate++;
   }
 
-  void addDimRadial(const DRW_DimRadial* dimRadial) override {
-    (void)dimRadial;
+  void addDimRadial([[maybe_unused]] const DRW_DimRadial* dimRadial) override {
     countOfDimRadial++;
   }
 
-  void addDimDiametric(const DRW_DimDiametric* dimDiametric) override {
-    (void)dimDiametric;
+  void addDimDiametric([[maybe_unused]] const DRW_DimDiametric* dimDiametric) override {
     countOfDimDiametric++;
   }
   
@@ -148,14 +141,12 @@ class EoDbDrwInterface : public DRW_Interface {
     ConvertEllipseEntity(ellipse, m_document);
 
   }
-  void addHatch(const DRW_Hatch* hatch) override {
-    (void)hatch;
+  void addHatch([[maybe_unused]] const DRW_Hatch* hatch) override {
     countOfHatch++;
   }
 
   // HELIX not implemented in DRW
-  void addImage(const DRW_Image* image) override {
-    (void)image;
+  void addImage([[maybe_unused]] const DRW_Image* image) override {
     countOfImage++;
   }
   

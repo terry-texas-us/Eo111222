@@ -93,8 +93,8 @@ EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices, EoGePoint3d* pt) {
 
   for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = pt[i]; }
 }
-EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices, EoGePoint3d origin, EoGeVector3d vXAx, EoGeVector3d vYAx,
-                         const EoGePoint3d* ppt) {
+EoDbPolygon::EoDbPolygon(
+    std::uint16_t numberOfVertices, EoGePoint3d origin, EoGeVector3d vXAx, EoGeVector3d vYAx, const EoGePoint3d* ppt) {
   m_color = renderState.Color();
   m_polygonStyle = renderState.PolygonIntStyle();
   m_fillStyleIndex = renderState.PolygonIntStyleId();
@@ -107,7 +107,8 @@ EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices, EoGePoint3d origin, EoG
   for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = ppt[i]; }
 }
 
-EoDbPolygon::EoDbPolygon(const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts) {
+EoDbPolygon::EoDbPolygon(
+    const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts) {
   m_color = renderState.Color();
   m_polygonStyle = renderState.PolygonIntStyle();
   m_fillStyleIndex = renderState.PolygonIntStyleId();
@@ -120,8 +121,8 @@ EoDbPolygon::EoDbPolygon(const EoGePoint3d& origin, const EoGeVector3d& xAxis, c
   for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = pts[i]; }
 }
 
-EoDbPolygon::EoDbPolygon(std::int16_t color, EoDb::PolygonStyle style, std::int16_t styleIndex, const EoGePoint3d& origin,
-                         const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& points)
+EoDbPolygon::EoDbPolygon(std::int16_t color, EoDb::PolygonStyle style, std::int16_t styleIndex,
+    const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& points)
     : m_hatchOrigin(origin), m_positiveX(xAxis), m_positiveY(yAxis) {
   m_color = color;
   m_polygonStyle = style;
@@ -254,8 +255,8 @@ CString EoDbPolygon::FormatIntStyle() {
   return str;
 }
 void EoDbPolygon::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
-             m_numberOfVertices);
+  str.Format(
+      L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(), m_numberOfVertices);
 }
 EoGePoint3d EoDbPolygon::GetControlPoint() {
   std::uint16_t wBeg = std::uint16_t(sm_Edge - 1);
@@ -300,9 +301,8 @@ EoGePoint3d EoDbPolygon::GoToNextControlPoint() {
   return (m_vertices[sm_pivotVertex]);
 }
 
-bool EoDbPolygon::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
-  (void)view;
-  (void)line;
+bool EoDbPolygon::SelectUsingLine(
+    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
   return false;
 }
 
@@ -377,7 +377,8 @@ void EoDbPolygon::GetAllPoints(EoGePoint3dArray& points) {
   for (auto i = 0; i < m_numberOfVertices; i++) { points.Add(m_vertices[i]); }
 }
 // Determines the extent.
-void EoDbPolygon::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbPolygon::GetExtents(
+    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt;
 
   for (auto i = 0; i < m_numberOfVertices; i++) {
@@ -490,7 +491,7 @@ bool EoDbPolygon::Write(CFile& file) {
   return true;
 }
 void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& transformMatrix, const int iSets,
-                         const int* iPtLstsId, EoGePoint3d* pta) {
+    const int* iPtLstsId, EoGePoint3d* pta) {
   double dCurStrLen{};
   double dEps1{};
   double dMaxY{};

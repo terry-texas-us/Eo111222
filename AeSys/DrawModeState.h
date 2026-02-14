@@ -23,10 +23,14 @@ class DrawModeState : public AeSysState {
 
   void OnEnter(AeSysView* context) override;
   void OnExit(AeSysView* context) override;
-  void HandleCommand(AeSysView* context, UINT nID) override;
+  void HandleCommand(AeSysView* context, UINT command) override;
   void OnMouseMove(AeSysView* context, UINT nFlags, CPoint point) override;
-  void OnLButtonDown(AeSysView* context, UINT nFlags, CPoint point) override;                // For point input
-  void OnUpdate(AeSysView* context, CView* pSender, LPARAM lHint, CObject* pHint) override;  // For preview updates
-  // Add OnDraw if draw mode needs custom overlays
+  void OnLButtonDown(AeSysView* context, UINT nFlags, CPoint point) override;  // For point input
+
+  // Drawing/Updates
+
+  void OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]] CDC* deviceContext) override;
+
+  bool OnUpdate(AeSysView* context, CView* sender, LPARAM hint, CObject* objectHint);
 };
 #endif

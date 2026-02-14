@@ -160,7 +160,8 @@ void EoDbText::GetAllPoints(EoGePoint3dArray& points) {
 }
 
 EoGePoint3d EoDbText::GetControlPoint() { return m_ReferenceSystem.Origin(); }
-void EoDbText::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbText::GetExtents(
+    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3dArray pts;
 
   text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
@@ -231,9 +232,8 @@ EoGePoint3d EoDbText::SelectAtControlPoint(AeSysView*, const EoGePoint4d& point)
   return point;
 }
 
-bool EoDbText::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
-  (void)view;
-  (void)line;
+bool EoDbText::SelectUsingLine(
+    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
   return false;
 }
 
@@ -660,8 +660,8 @@ void GetBottomLeftCorner(EoDbFontDefinition& fd, int iChrs, EoGePoint3d& pt) {
   pt.z = 0.;
 }
 
-void text_GetBoundingBox(EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem, int numberOfCharacters,
-    double spaceFactor, EoGePoint3dArray& ptsBox) {
+void text_GetBoundingBox(EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem,
+    int numberOfCharacters, double spaceFactor, EoGePoint3dArray& ptsBox) {
   ptsBox.SetSize(4);
 
   if (numberOfCharacters > 0) {

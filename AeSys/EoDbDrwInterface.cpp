@@ -68,14 +68,12 @@ void EoDbDrwInterface::ConvertHeaderSection(const DRW_Header* header, AeSysDoc* 
   for (const auto& key : keys) { SetHeaderSectionVariable(header, key, headerSection); }
 }
 
-void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, AeSysDoc* document) {
-  (void)document;
+void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, [[maybe_unused]] AeSysDoc* document) {
   std::wstring appIdName = Eo::MultiByteToWString(appId.name.c_str());
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
 }
 
-void EoDbDrwInterface::ConvertDimStyle(const DRW_Dimstyle& dimStyle, AeSysDoc* document) {
-  (void)document;
+void EoDbDrwInterface::ConvertDimStyle(const DRW_Dimstyle& dimStyle, [[maybe_unused]] AeSysDoc* document) {
   std::wstring dimStyleName = Eo::MultiByteToWString(dimStyle.name.c_str());
   ATLTRACE2(
       static_cast<int>(atlTraceGeneral), 3, L"DimStyle - Name: <%s> (unsupported in AeSys)\n", dimStyleName.c_str());
@@ -165,8 +163,7 @@ void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* do
   }
 }
 
-void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeSysDoc* document) {
-  (void)document;
+void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, [[maybe_unused]] AeSysDoc* document) {
   std::wstring textStyleName = Eo::MultiByteToWString(textStyle.name.c_str());
   ATLTRACE2(
       static_cast<int>(atlTraceGeneral), 3, L"Text Style - Name: %s (unsupported in AeSys)\n", textStyleName.c_str());
@@ -184,8 +181,7 @@ void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeS
   //auto fontFamily = textStyle.fontFamily;  // A long value which contains a truetype font's pitch and family, charset, and italic and bold flags (group code 1071)
 }
 
-void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc* document) {
-  (void)document;
+void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, [[maybe_unused]] AeSysDoc* document) {
   std::wstring viewportName = Eo::MultiByteToWString(viewport.name.c_str());
   ATLTRACE2(
       static_cast<int>(atlTraceGeneral), 3, L"Viewport - Name: %s (unsupported in AeSys)\n", viewportName.c_str());
@@ -244,24 +240,23 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* docu
 
   // @todo Check if block already exists and clean it up first
 
-  auto* newBlock = new EoDbBlock(
-      static_cast<std::uint16_t>(block.flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
-      EoGePoint3d(block.basePoint.x, block.basePoint.y, block.basePoint.z),  // group codes 10, 20 and 30
-      blockName.c_str());
+  auto* newBlock =
+      new EoDbBlock(static_cast<std::uint16_t>(
+                        block.flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
+          EoGePoint3d(block.basePoint.x, block.basePoint.y, block.basePoint.z),  // group codes 10, 20 and 30
+          blockName.c_str());
 
   document->InsertBlock(blockName.c_str(), newBlock);
   return newBlock;
 }
 
 /** @brief This method is primarily used in DWG files when the parser switches to entities belonging to a different block than the current one. The handle parameter corresponds to the block handle previously provided via addBlock (accessible as DRW_Block::handleBlock). In your implementation, switch the current block context to the one matching this handle. For DXF files, this callback may not be triggered, or it may be used sparingly if blocks are referenced out of sequence. */
-void EoDbDrwInterface::ConvertBlockSet(const int /* handle */, AeSysDoc* document) {
-  (void)document;
+void EoDbDrwInterface::ConvertBlockSet([[maybe_unused]] const int handle, [[maybe_unused]] AeSysDoc* document) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block set\n");
 }
 
 /** @brief This method signals the end of the current block definition. In your implementation, finalize the block (e.g., add it to a document's block table or collection) and reset the context to the default (model space or paper space).*/
-void EoDbDrwInterface::ConvertBlockEnd(AeSysDoc* document) {
-  (void)document;
+void EoDbDrwInterface::ConvertBlockEnd([[maybe_unused]] AeSysDoc* document) {
   ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Block end\n");
 }
 

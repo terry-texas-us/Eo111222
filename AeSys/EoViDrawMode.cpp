@@ -280,10 +280,10 @@ void AeSysView::OnDrawModeShiftReturn() {
   pts.RemoveAll();
 }
 #if defined(USING_STATE_PATTERN)
-void AeSysView::OnDrawCommand(UINT nID) {
+void AeSysView::OnDrawCommand(UINT command) {
   auto* state = GetCurrentState();
   if (state) {
-    state->HandleCommand(this, nID);
+    state->HandleCommand(this, command);
   } else {
     // Fallback or error
   }

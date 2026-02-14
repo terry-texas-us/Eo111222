@@ -34,8 +34,8 @@ EoDbPolyline::EoDbPolyline() { m_flags = 0; }
  * @param radius The radius of the circumscribed circle.
  * @param numberOfSides The number of sides for the polygon.
  */
-EoDbPolyline::EoDbPolyline(std::int16_t penColor, std::int16_t lineType, EoGePoint3d& centerPoint, double radius,
-                           int numberOfSides)
+EoDbPolyline::EoDbPolyline(
+    std::int16_t penColor, std::int16_t lineType, EoGePoint3d& centerPoint, double radius, int numberOfSides)
     : EoDbPrimitive(penColor, lineType) {
   m_flags = 0x0010;  // polyline is closed
 
@@ -139,7 +139,7 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
 
   CString message;
   message.Format(L"<Polyline Edge> Color: %s Line Type: %s \u2022 %s @ %s", FormatPenColor().GetString(),
-                 FormatLineType().GetString(), lengthAsString.TrimLeft().GetString(), angleAsString.GetString());
+      FormatLineType().GetString(), lengthAsString.TrimLeft().GetString(), angleAsString.GetString());
   app.AddStringToMessageList(message);
 
   app.SetEngagedLength(edgeLength);
@@ -156,7 +156,7 @@ void EoDbPolyline::FormatGeometry(CString& str) {
 
 void EoDbPolyline::FormatExtra(CString& str) {
   str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
-             static_cast<int>(m_pts.GetSize()));
+      static_cast<int>(m_pts.GetSize()));
 }
 
 void EoDbPolyline::GetAllPoints(EoGePoint3dArray& points) {
@@ -171,7 +171,8 @@ EoGePoint3d EoDbPolyline::GetControlPoint() {
   EoGePoint3d pt = EoGeLine(m_pts[wBeg], m_pts[wEnd]).Midpoint();
   return pt;
 }
-void EoDbPolyline::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbPolyline::GetExtents(
+    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt;
 
   for (auto i = 0; i < m_pts.GetSize(); i++) {
@@ -234,9 +235,7 @@ bool EoDbPolyline::IsInView(AeSysView* view) {
   return false;
 }
 
-bool EoDbPolyline::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
-  (void)view;
-  (void)point;
+bool EoDbPolyline::IsPointOnControlPoint([[maybe_unused]] AeSysView* view, [[maybe_unused]] const EoGePoint4d& point) {
   return false;
 }
 
@@ -290,9 +289,8 @@ EoGePoint3d EoDbPolyline::SelectAtControlPoint(AeSysView* view, const EoGePoint4
   return (sm_controlPointIndex == SHRT_MAX) ? EoGePoint3d::kOrigin : m_pts[sm_controlPointIndex];
 }
 
-bool EoDbPolyline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) {
-  (void)view;
-  (void)line;
+bool EoDbPolyline::SelectUsingLine(
+    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
   return false;
 }
 

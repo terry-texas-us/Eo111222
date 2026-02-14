@@ -51,8 +51,8 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
         m_previousDrawCommand = ID_OP2;  // Update UI
       } else {                           // Complete line
         cursorPosition = context->SnapPointToAxis(m_pts[0], cursorPosition);
-        auto* line =
-            EoDbLine::CreateLine(m_pts[0], cursorPosition)->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+        auto* line = EoDbLine::CreateLine(m_pts[0], cursorPosition)
+                         ->WithProperties(renderState.Color(), renderState.LineTypeIndex());
         auto* group = new EoDbGroup(line);
         document->AddWorkLayerGroup(group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
@@ -69,7 +69,8 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
   }
 }
 
-void DrawModeState::OnMouseMove([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
+void DrawModeState::OnMouseMove(
+    [[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
   // Migrated from DoDrawModeMouseMove: Preview rubberbanding
   EoGePoint3d cursorPos = context->GetCursorPosition();
   auto* doc = context->GetDocument();
@@ -87,18 +88,28 @@ void DrawModeState::OnMouseMove([[maybe_unused]] AeSysView* context, [[maybe_unu
   // Add cases for other primitives (e.g., arc preview with handles for future DXF)
 }
 
-void DrawModeState::OnLButtonDown([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
+void DrawModeState::OnLButtonDown(
+    [[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
   // If draw mode uses clicks for points
   auto cursorPosition = context->GetCursorPosition();
   // e.g., Add to m_pts and trigger command logic
   HandleCommand(context, m_previousDrawCommand);  // Or specific
 }
 
-void DrawModeState::OnUpdate([[maybe_unused]] AeSysView* context, [[maybe_unused]] CView* sender, [[maybe_unused]] LPARAM hint, [[maybe_unused]] CObject* hintObject) {
-  // Mode-specific update: e.g., redraw previews on hint
-  if ((hint & EoDb::kGroupEraseSafe) == EoDb::kGroupEraseSafe) {
-    // Custom erase/redraw for draw previews
+void DrawModeState::OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]] CDC* deviceContext) {
+  auto* document = context->GetDocument();
+  document->DisplayAllLayers(context, deviceContext);
+  document->DisplayUniquePoints();
+
+  // @todo add mode-specific overlays (e.g., rubber-band preview)
+  // The preview group is already being managed in OnMouseMove
+}
+
+bool DrawModeState::OnUpdate(AeSysView* context, [[maybe_unused]] CView* sender, LPARAM hint, CObject* objectHint) {
+  if ((hint & EoDb::kGroupEraseSafe) == EoDb::kGroupEraseSafe && objectHint == &context->m_PreviewGroup) {
+    return true;
   }
-  // For DXF: Handle entity updates with handle resolution (e.g., layer ref)
+  // Add other draw-specific hints (e.g., for new points/lines)
+  return false;  // Not handled, fallback to base switch for full Display
 }
 #endif
