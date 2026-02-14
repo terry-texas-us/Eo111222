@@ -95,7 +95,7 @@ EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
  * @param deviceContext Pointer to the CDC device context for rendering.
  */
 void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"EoDbPolyline::Display(%p, %p)\n", view, deviceContext);
+  ATLTRACE2(traceGeneral, 3, L"EoDbPolyline::Display(%p, %p)\n", view, deviceContext);
 
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();

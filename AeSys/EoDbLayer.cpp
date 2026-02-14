@@ -35,8 +35,8 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext) {
   pColTbl = pCurColTbl;
 }
 void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"EoDbLayer<%p>::Display(%p, %p, %i) + Name: %ls\n", this, view,
-            deviceContext, identifyTrap, static_cast<LPCWSTR>(this->Name()));
+  ATLTRACE2(traceGeneral, 3, L"EoDbLayer<%p>::Display(%p, %p, %i) + Name: %ls\n", this, view, deviceContext,
+      identifyTrap, static_cast<LPCWSTR>(this->Name()));
 
   auto* document = AeSysDoc::GetDoc();
 

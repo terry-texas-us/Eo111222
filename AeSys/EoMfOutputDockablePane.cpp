@@ -26,7 +26,7 @@ int EoMfOutputDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   const CRect emptyRect{};
 
   if (!m_wndTabs.Create(CMFCTabCtrl::STYLE_FLAT, emptyRect, this, 1, CMFCTabCtrl::LOCATION_BOTTOM)) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create output tab window\n");
+    ATLTRACE2(traceGeneral, 0, L"Failed to create output tab window\n");
     return -1;
   }
   constexpr DWORD sharedStyles =
@@ -34,7 +34,7 @@ int EoMfOutputDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
 
   if (!m_OutputMessagesList.Create(sharedStyles, emptyRect, &m_wndTabs, 2) ||
       !m_OutputReportsList.Create(sharedStyles, emptyRect, &m_wndTabs, 4)) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create output windows\n");
+    ATLTRACE2(traceGeneral, 0, L"Failed to create output windows\n");
     return -1;
   }
   m_OutputMessagesList.SetFont(&m_Font);

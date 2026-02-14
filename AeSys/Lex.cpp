@@ -529,7 +529,7 @@ int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
     token[length] = L'\0';
     linePosition += static_cast<int>(length);
   }
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Token `%s` TokenID = %d\n", token, tokenId);
+  ATLTRACE2(traceGeneral, 0, L"Token `%s` TokenID = %d\n", token, tokenId);
   return tokenId;
 }
 

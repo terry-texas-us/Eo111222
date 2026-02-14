@@ -19,36 +19,36 @@ class EoDbDrwInterface : public DRW_Interface {
   EoDbDrwInterface(AeSysDoc* document) : m_document(document) {}
 
   void addHeader(const DRW_Header* header) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addHeader called\n");
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addHeader called\n");
     ConvertHeaderSection(header, m_document);
   }
 
   // Table objects
 
   void addAppId(const DRW_AppId& appId) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addAppId called\n");
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addAppId called\n");
     ConvertAppIdTable(appId, m_document);
   }
   void addDimStyle(const DRW_Dimstyle& dimStyle) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addDimStyle called\n");
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addDimStyle called\n");
     ConvertDimStyle(dimStyle, m_document);
   }
 
   void addLayer(const DRW_Layer& layer) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addLayer called\n");
+    ATLTRACE2(traceGeneral, 1, L"DRW_Interface::addLayer called\n");
     ConvertLayerTable(layer, m_document);
   }
   void addLType(const DRW_LType& lType) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addLType called\n");
+    ATLTRACE2(traceGeneral, 1, L"DRW_Interface::addLType called\n");
     ConvertLinetypesTable(lType, m_document);
   }
   void addTextStyle(const DRW_Textstyle& textStyle) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addTextStyle called\n");
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addTextStyle called\n");
     ConvertTextStyleTable(textStyle, m_document);
   }
 
   void addVport(const DRW_Vport& viewport) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addVport called\n");
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addVport called\n");
     ConvertViewportTable(viewport, m_document);
   }
 
@@ -56,15 +56,15 @@ class EoDbDrwInterface : public DRW_Interface {
   void addBlock(const DRW_Block& block) override {
     inBlockDefinition = true;
     blockName = Eo::MultiByteToWString(block.name.c_str());
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::addBlock <%s>\n", blockName.c_str());
+    ATLTRACE2(traceGeneral, 1, L"DRW_Interface::addBlock <%s>\n", blockName.c_str());
     currentOpenBlockDefinition = ConvertBlock(block, m_document);
   }
   void setBlock(const int handle) override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::setBlock\n");
+    ATLTRACE2(traceGeneral, 1, L"DRW_Interface::setBlock\n");
     ConvertBlockSet(handle, m_document);
   }
   void endBlock() override {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"DRW_Interface::endBlock\n");
+    ATLTRACE2(traceGeneral, 1, L"DRW_Interface::endBlock\n");
     inBlockDefinition = false;
     currentOpenBlockDefinition = nullptr;
     blockName.clear();
@@ -81,9 +81,9 @@ class EoDbDrwInterface : public DRW_Interface {
   void addArc(const DRW_Arc& arc) override { 
     countOfArc++; 
     if (inBlockDefinition) {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addArc - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addArc - block <%s>\n", blockName.c_str());
     } else {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addArc - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addArc - entities section\n");
     }
     ConvertArcEntity(arc, m_document);
   }
@@ -93,9 +93,9 @@ class EoDbDrwInterface : public DRW_Interface {
   void addCircle(const DRW_Circle& circle) override { 
     countOfCircle++; 
     if (inBlockDefinition) {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addCircle - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addCircle - block <%s>\n", blockName.c_str());
     } else {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addCircle - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addCircle - entities section\n");
     }
     ConvertCircleEntity(circle, m_document);
   }
@@ -134,9 +134,9 @@ class EoDbDrwInterface : public DRW_Interface {
   void addEllipse(const DRW_Ellipse& ellipse) override { 
     countOfEllipse++; 
     if (inBlockDefinition) {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addCircle - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addCircle - block <%s>\n", blockName.c_str());
     } else {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addCircle - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addCircle - entities section\n");
     }
     ConvertEllipseEntity(ellipse, m_document);
 
@@ -153,10 +153,10 @@ class EoDbDrwInterface : public DRW_Interface {
   void addInsert(const DRW_Insert& insert) override { 
     countOfInsert++; 
     if (inBlockDefinition) {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
       ConvertInsertEntity(insert, m_document);
     } else {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addLine - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLine - entities section\n");
       ConvertInsertEntity(insert, m_document);
     }
   }
@@ -166,10 +166,10 @@ class EoDbDrwInterface : public DRW_Interface {
   void addLine(const DRW_Line& line) override {
     countOfLine++;
     if (inBlockDefinition) {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
       ConvertLineEntity(line, m_document);
     } else {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addLine - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLine - entities section\n");
       ConvertLineEntity(line, m_document);
     }
   }
@@ -177,10 +177,10 @@ class EoDbDrwInterface : public DRW_Interface {
   void addLWPolyline(const DRW_LWPolyline& lwPolyline) override {
     countOfLWPolyline++;
     if (inBlockDefinition) {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
       ConvertLWPolylineEntity(lwPolyline, m_document);
     } else {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addLine - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLine - entities section\n");
       ConvertLWPolylineEntity(lwPolyline, m_document);
     }
   }
@@ -196,10 +196,10 @@ class EoDbDrwInterface : public DRW_Interface {
   void addPoint(const DRW_Point& point) override {
     countOfPoint++;
     if (inBlockDefinition) {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addPoint - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addPoint - block <%s>\n", blockName.c_str());
       ConvertPointEntity(point, m_document);
     } else {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"DRW_Interface::addPoint - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addPoint - entities section\n");
       ConvertPointEntity(point, m_document);
     }
   }
@@ -230,7 +230,7 @@ class EoDbDrwInterface : public DRW_Interface {
   void addXline(const DRW_Xline& /* Xline */) override { countOfXline++; }
 
   // Others
-  void addComment(const char* comment) override { ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"DRW_Interface::addComment(%s)\n", comment); }
+  void addComment(const char* comment) override { ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addComment(%s)\n", comment); }
   void linkImage(const DRW_ImageDef* imageDefinition) override { (void)imageDefinition; }
   void addKnot(const DRW_Entity& /* knot */) override { countOfKnot++; }
 

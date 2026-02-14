@@ -128,7 +128,7 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
       lineType = new EoDbLineType(index, name, description, definitionLength, dashElements.data());
       lineTypeTable->SetAt(name, lineType);
     }
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Index: %d - Name: `%s` `%p`\n", n, name.GetString(), lineType);
+    ATLTRACE2(traceGeneral, 2, L"Index: %d - Name: `%s` `%p`\n", n, name.GetString(), lineType);
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.");
@@ -185,8 +185,8 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
     EoDb::Read(*this, lineTypeName);
 
     if (document->FindLayerTableLayer(layerName) < 0) {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"Added Layer: `%s` to Layer Table\n", layerName.GetString());
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"  Linetype: `%s`\n", lineTypeName.GetString());
+      ATLTRACE2(traceGeneral, 2, L"Added Layer: `%s` to Layer Table\n", layerName.GetString());
+      ATLTRACE2(traceGeneral, 2, L"  Linetype: `%s`\n", lineTypeName.GetString());
       auto* layer = new EoDbLayer(layerName, stateFlags);
 
       layer->SetTracingFlg(tracingFlags);
@@ -194,10 +194,10 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
 
       EoDbLineType* lineType{};
       if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) {
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L" Lookup succeeded: `%p`\n", lineType);
+        ATLTRACE2(traceGeneral, 2, L" Lookup succeeded: `%p`\n", lineType);
         layer->SetLineType(lineType);
       } else {
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L" Lookup failed\n");
+        ATLTRACE2(traceGeneral, 2, L" Lookup failed\n");
       }
       document->AddLayerTableLayer(layer);
 

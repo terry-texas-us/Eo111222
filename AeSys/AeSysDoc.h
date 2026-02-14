@@ -100,8 +100,7 @@ class AeSysDoc : public CDocument {
   void InsertBlock(const CString& name, EoDbBlock* block) {
     EoDbBlock* existing = nullptr;
     if (m_BlocksTable.Lookup(name, existing)) {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"InsertBlock: Replacing existing block '%s'\n",
-                name.GetString());
+      ATLTRACE2(traceGeneral, 0, L"InsertBlock: Replacing existing block '%s'\n", name.GetString());
       existing->DeletePrimitivesAndRemoveAll();
       delete existing;
     }
@@ -214,7 +213,7 @@ class AeSysDoc : public CDocument {
   void ModifyTrappedGroupsColor(std::int16_t color) { m_TrappedGroupList.ModifyColor(color); }
   void ModifyTrappedGroupsLineType(std::int16_t lineType) { m_TrappedGroupList.ModifyLineType(lineType); }
   void ModifyTrappedGroupsNoteAttributes(const EoDbFontDefinition& fontDefinition,
-                                         const EoDbCharacterCellDefinition& characterCellDefinition, int attributes);
+      const EoDbCharacterCellDefinition& characterCellDefinition, int attributes);
   void RemoveAllTrappedGroups();
   EoDbGroup* RemoveLastTrappedGroup() { return m_TrappedGroupList.RemoveTail(); }
   auto RemoveTrappedGroup(EoDbGroup* group) { return m_TrappedGroupList.Remove(group); }

@@ -83,7 +83,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   UpdateMDITabs(FALSE);
 
   if (!m_menuBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE)) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create menubar\n");
+    ATLTRACE2(traceGeneral, 0, L"Failed to create menubar\n");
     return -1;
   }
   m_menuBar.SetPaneStyle(m_menuBar.GetPaneStyle() | CBRS_SIZE_DYNAMIC | CBRS_TOOLTIPS | CBRS_FLYBY);
@@ -93,7 +93,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   DWORD Style(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
   if (!m_standardToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
       !m_standardToolBar.LoadToolBar(static_cast<UINT>(app.HighColorMode() ? IDR_MAINFRAME_256 : IDR_MAINFRAME))) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create toolbar\n");
+    ATLTRACE2(traceGeneral, 0, L"Failed to create toolbar\n");
     return -1;
   }
   m_standardToolBar.SetWindowTextW(L"Standard");
@@ -102,7 +102,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   InitUserToolbars(nullptr, firstUserToolBarId, lastUserToolBarId);
 
   if (!m_statusBar.Create(this)) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create status bar\n");
+    ATLTRACE2(traceGeneral, 0, L"Failed to create status bar\n");
     return -1;
   }
   m_statusBar.SetIndicators(indicators, sizeof(indicators) / sizeof(unsigned int));
@@ -112,7 +112,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_statusBar.SetPaneWidth(statusProgress, 80);
 
   if (!CreateDockablePanes()) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create dockable panes\n");
+    ATLTRACE2(traceGeneral, 0, L"Failed to create dockable panes\n");
     return -1;
   }
   m_menuBar.EnableDocking(CBRS_ALIGN_ANY);
@@ -163,12 +163,12 @@ BOOL CMainFrame::CreateDockablePanes() {
 
   auto Caption = App::LoadStringResource(IDS_OUTPUT);
   if (!m_outputPane.Create(Caption, this, defaultSize, TRUE, ID_VIEW_OUTPUTWND, sharedStyles | CBRS_BOTTOM)) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Output pane\n");
+    ATLTRACE2(traceGeneral, 0, L"Failed to create Output pane\n");
     return FALSE;
   }
   Caption = App::LoadStringResource(IDS_PROPERTIES);
   if (!m_propertiesPane.Create(Caption, this, defaultSize, TRUE, ID_VIEW_PROPERTIESWND, sharedStyles | CBRS_RIGHT)) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Properties pane\n");
+    ATLTRACE2(traceGeneral, 0, L"Failed to create Properties pane\n");
     return FALSE;
   }
   SetDockablePanesIcons(app.HighColorMode());
@@ -216,7 +216,7 @@ LRESULT CMainFrame::OnToolbarCreateNew(WPARAM wp, LPARAM name) {
 }
 
 LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"CMainFrame::OnToolbarReset(%i, %i)\n", toolbarResourceId, lparam);
+  ATLTRACE2(traceGeneral, 1, L"CMainFrame::OnToolbarReset(%i, %i)\n", toolbarResourceId, lparam);
 
   switch (toolbarResourceId) {
     case IDR_MAINFRAME:
@@ -469,7 +469,7 @@ void CMainFrame::OnMdiTabbed() {
 }
 void CMainFrame::OnUpdateMdiTabbed(CCmdUI* pCmdUI) { pCmdUI->SetCheck(); }
 void CMainFrame::OnDestroy() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"CMainFrame::OnDestroy() - Entering\n");
+  ATLTRACE2(traceGeneral, 3, L"CMainFrame::OnDestroy() - Entering\n");
   PostQuitMessage(0);  // Force WM_QUIT message to terminate message loop
 }
 CString CMainFrame::GetPaneText(int index) { return m_statusBar.GetPaneText(index); }
@@ -498,7 +498,7 @@ void CMainFrame::OnStartProgress() {
   TimerId = SetTimer(2, 1, nullptr);
 }
 void CMainFrame::OnTimer(UINT_PTR nIDEvent) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"CMainFrame::OnTimer(%i)\n", nIDEvent);
+  ATLTRACE2(traceGeneral, 0, L"CMainFrame::OnTimer(%i)\n", nIDEvent);
 
   if (nIDEvent == TimerId) {
     m_currentProgress += 10;

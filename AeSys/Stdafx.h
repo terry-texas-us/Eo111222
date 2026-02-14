@@ -70,6 +70,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #endif  // USING_Direct2D
 
 #include <atltrace.h>
+const int traceGeneral = static_cast<int>(atlTraceGeneral);
 
 #ifdef TRACE
 #undef TRACE  // Suppress the default TRACE macro to avoid conflicts with ATL's tracing system

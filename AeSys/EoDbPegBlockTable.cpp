@@ -28,16 +28,15 @@ bool AeSysDoc::LookupBlock(CString name, EoDbBlock*& block) {
 }
 
 void AeSysDoc::RemoveAllBlocks() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"RemoveAllBlocks() - Count: %d\n",
-            static_cast<int>(m_BlocksTable.GetCount()));
+  ATLTRACE2(traceGeneral, 0, L"RemoveAllBlocks() - Count: %d\n", static_cast<int>(m_BlocksTable.GetCount()));
   CString name;
   EoDbBlock* block{};
 
   auto blockPosition = m_BlocksTable.GetStartPosition();
   while (blockPosition != nullptr) {
     m_BlocksTable.GetNextAssoc(blockPosition, name, block);
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"  Deleting block: %s with %d primitives\n", name.GetString(),
-              static_cast<int>(block->GetCount()));
+    ATLTRACE2(traceGeneral, 0, L"  Deleting block: %s with %d primitives\n", name.GetString(),
+        static_cast<int>(block->GetCount()));
     block->DeletePrimitivesAndRemoveAll();
     delete block;
   }

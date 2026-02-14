@@ -97,7 +97,7 @@ EoGeMatrix& EoGeMatrix::operator*=(const EoGeMatrix& mB) {
 
 EoGeMatrix& EoGeMatrix::operator/=(double scaleFactor) {
   if (fabs(scaleFactor) < Eo::numericEpsilon) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoGeMatrix::operator/=: division by near-zero\n");
+    ATLTRACE2(traceGeneral, 0, L"EoGeMatrix::operator/=: division by near-zero\n");
     return *this;
   }
   double inverseScaleFactor = 1.0 / scaleFactor;
@@ -168,7 +168,7 @@ EoGeMatrix& EoGeMatrix::Inverse() {
 
     // Scale row iCol to have mA unit diagonal
     if (fabs(mA.m_4X4[iCol][iCol]) < Eo::numericEpsilon) {
-      ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"EoGeMatrix::Inverse: singular matrix, can't invert\n");
+      ATLTRACE2(traceGeneral, 1, L"EoGeMatrix::Inverse: singular matrix, can't invert\n");
       return *this;
     }
     (*this)[iCol] /= mA.m_4X4[iCol][iCol];

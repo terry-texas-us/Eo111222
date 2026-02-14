@@ -23,8 +23,7 @@ double EoDbPrimitive::sm_SelectApertureSize{0.02};
 
 EoDbPrimitive::EoDbPrimitive(std::int16_t color, std::int16_t lineTypeIndex)
     : m_color(color), m_lineTypeIndex(lineTypeIndex) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoDbPrimitive(color, lineTypeIndex) CTOR: this=%p, vtable=%p\n",
-      this, *(void**)this);
+  ATLTRACE2(traceGeneral, 0, L"EoDbPrimitive(color, lineTypeIndex) CTOR: this=%p, vtable=%p\n", this, *(void**)this);
 }
 
 EoDbPrimitive::~EoDbPrimitive() {}
@@ -115,7 +114,9 @@ bool EoDbPrimitive::IsSupportedTyp(int type) noexcept { return (type <= 7 && typ
 std::int16_t EoDbPrimitive::LayerColor() noexcept { return sm_layerColor; }
 void EoDbPrimitive::SetLayerColor(std::int16_t layerColor) noexcept { sm_layerColor = layerColor; }
 std::int16_t EoDbPrimitive::LayerLineTypeIndex() noexcept { return sm_layerLineTypeIndex; }
-void EoDbPrimitive::SetLayerLineTypeIndex(std::int16_t lineTypeIndex) noexcept { sm_layerLineTypeIndex = lineTypeIndex; }
+void EoDbPrimitive::SetLayerLineTypeIndex(std::int16_t lineTypeIndex) noexcept {
+  sm_layerLineTypeIndex = lineTypeIndex;
+}
 double& EoDbPrimitive::Rel() noexcept { return sm_RelationshipOfPoint; }
 std::int16_t EoDbPrimitive::SpecialColor() noexcept { return sm_specialColor; }
 void EoDbPrimitive::SetSpecialColor(std::int16_t specialColor) noexcept { sm_specialColor = specialColor; }

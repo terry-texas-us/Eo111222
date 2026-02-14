@@ -45,7 +45,7 @@ int EoMfPropertiesDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   if (!m_wndObjectCombo.Create(
           WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_BORDER | CBS_SORT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
           EmptyRect, this, 1)) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Properties Combo\n");
+    ATLTRACE2(traceGeneral, 0, L"Failed to create Properties Combo\n");
     return -1;
   }
   m_wndObjectCombo.AddString(L"Application");
@@ -54,7 +54,7 @@ int EoMfPropertiesDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   m_wndObjectCombo.SetCurSel(0);
 
   if (!m_PropertyGrid.Create(WS_VISIBLE | WS_CHILD, EmptyRect, this, 2)) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"Failed to create Properties Grid \n");
+    ATLTRACE2(traceGeneral, 0, L"Failed to create Properties Grid \n");
     return -1;
   }
   InitializePropertyGrid();
@@ -154,18 +154,18 @@ LRESULT EoMfPropertiesDockablePane::OnPropertyChanged(WPARAM, LPARAM lparam) {
 
 void EoMfPropertiesDockablePane::OnExpandAllProperties() { m_PropertyGrid.ExpandAll(); }
 void EoMfPropertiesDockablePane::OnProperties1() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"EoMfPropertiesDockablePane::OnProperties1\n");
+  ATLTRACE2(traceGeneral, 0, L"EoMfPropertiesDockablePane::OnProperties1\n");
 }
 void EoMfPropertiesDockablePane::OnSortProperties() {
   m_PropertyGrid.SetAlphabeticMode(!m_PropertyGrid.IsAlphabeticMode());
 }
 void EoMfPropertiesDockablePane::OnUpdateExpandAllProperties(CCmdUI* pCmdUI) {
   (void)pCmdUI;
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 4, L"EoMfPropertiesDockablePane::OnUpdatExpandAllProperties\n");
+  ATLTRACE2(traceGeneral, 4, L"EoMfPropertiesDockablePane::OnUpdatExpandAllProperties\n");
 }
 void EoMfPropertiesDockablePane::OnUpdateProperties1(CCmdUI* pCmdUI) {
   (void)pCmdUI;
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 4, L"EoMfPropertiesDockablePane::OnUpdatProperties1\n");
+  ATLTRACE2(traceGeneral, 4, L"EoMfPropertiesDockablePane::OnUpdatProperties1\n");
 }
 void EoMfPropertiesDockablePane::OnUpdateSortProperties(CCmdUI* pCmdUI) {
   pCmdUI->SetCheck(m_PropertyGrid.IsAlphabeticMode());

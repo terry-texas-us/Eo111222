@@ -217,9 +217,9 @@ void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
       EoDbLineType* lineType;
       if (!Lookup(name, lineType)) {
         m_MapLineTypes.SetAt(name, new EoDbLineType(label, name, comment, numberOfDashElements, dashLengths.data()));
-        ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"%d - Name: %s `%s`\n", label, name.GetString(), comment.GetString());
+        ATLTRACE2(traceGeneral, 2, L"%d - Name: %s `%s`\n", label, name.GetString(), comment.GetString());
         for (size_t i = 0; i < numberOfDashElements; ++i) {
-          ATLTRACE2(static_cast<int>(atlTraceGeneral), 2, L"  Dash[%d] = %f\n", i, dashLengths[i]);
+          ATLTRACE2(traceGeneral, 2, L"  Dash[%d] = %f\n", i, dashLengths[i]);
         }
       }
     }

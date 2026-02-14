@@ -530,15 +530,14 @@ inline AeSysDoc* AeSysView::GetDocument() const {
 #endif
 
 void AeSysView::OnActivateFrame(UINT state, CFrameWnd* deactivateFrame) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state,
-      deactivateFrame);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state, deactivateFrame);
 
   CView::OnActivateFrame(state, deactivateFrame);
 }
 
 void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deactiveView) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate,
-      activateView, deactiveView);
+  ATLTRACE2(
+      traceGeneral, 3, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate, activateView, deactiveView);
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
   if (activate) {
@@ -555,21 +554,21 @@ void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deacti
 }
 
 BOOL AeSysView::PreCreateWindow(CREATESTRUCT& createStructure) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::PreCreateWindow(%08.8lx) ", this, createStructure);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::PreCreateWindow(%08.8lx) ", this, createStructure);
 
   // TODO: Modify the Window class or styles here by modifying the CREATESTRUCT
   return CView::PreCreateWindow(createStructure);
 }
 
 int AeSysView::OnCreate(LPCREATESTRUCT createStructure) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnCreate(%08.8lx)\n", this, createStructure);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnCreate(%08.8lx)\n", this, createStructure);
 
   if (CView::OnCreate(createStructure) == -1) { return -1; }
   return 0;
 }
 
 void AeSysView::OnSetFocus(CWnd* oldWindow) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnSetFocus(%08.8lx)\n", this, oldWindow);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnSetFocus(%08.8lx)\n", this, oldWindow);
 
   CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
   if (CopyAcceleratorTableW(MainFrame->m_hAccelTable, nullptr, 0) == 0) {
@@ -580,7 +579,7 @@ void AeSysView::OnSetFocus(CWnd* oldWindow) {
 }
 
 void AeSysView::OnKillFocus(CWnd* newWindow) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnKillFocus(%08.8lx)\n", this, newWindow);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnKillFocus(%08.8lx)\n", this, newWindow);
 
   HACCEL AcceleratorTableHandle = ((CMainFrame*)AfxGetMainWnd())->m_hAccelTable;
 
@@ -590,17 +589,16 @@ void AeSysView::OnKillFocus(CWnd* newWindow) {
 }
 
 void AeSysView::OnPaint() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnPaint()\n", this);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnPaint()\n", this);
   CView::OnPaint();
 }
 
 void AeSysView::OnDraw(CDC* deviceContext) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnDraw(%08.8lx) +", this, deviceContext);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnDraw(%08.8lx) +", this, deviceContext);
 
   CRect Rect;
   deviceContext->GetClipBox(Rect);
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right,
-      Rect.bottom);
+  ATLTRACE2(traceGeneral, 3, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right, Rect.bottom);
 
   if (Rect.IsRectEmpty()) { return; }
 
@@ -663,7 +661,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 }
 
 void AeSysView::OnInitialUpdate() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnInitialUpdate()\n", this);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnInitialUpdate()\n", this);
 
   SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(ViewBackgroundColor));
 
@@ -675,13 +673,11 @@ void AeSysView::OnInitialUpdate() {
   CView::OnInitialUpdate();
 #if defined(USING_STATE_PATTERN)
   PushState(std::make_unique<IdleState>());
-  PushState(std::make_unique<DrawModeState>());  // For testing until mode switch implemented
 #endif
 }
 
 void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
-  ATLTRACE2(
-      static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint, hintObject);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint, hintObject);
 
   // Pre-delegation setup: Acquire DC and apply hint-based modifications (safe for all modes)
   auto* deviceContext = GetDC();
@@ -1019,8 +1015,7 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
 }
 
 BOOL AeSysView::OnMouseWheel(UINT flags, std::int16_t zDelta, CPoint point) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>OnMouseWheel(%i, %i, %08.8lx)\n", this, flags, zDelta,
-      point);
+  ATLTRACE2(traceGeneral, 1, L"AeSysView<%p>OnMouseWheel(%i, %i, %08.8lx)\n", this, flags, zDelta, point);
 
   if (zDelta > 0) {
     OnWindowZoomIn();
@@ -1031,7 +1026,7 @@ BOOL AeSysView::OnMouseWheel(UINT flags, std::int16_t zDelta, CPoint point) {
 }
 
 void AeSysView::OnSize(UINT type, int cx, int cy) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 3, L"AeSysView<%p>OnSize(%i, %i, %i)\n", this, type, cx, cy);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>OnSize(%i, %i, %i)\n", this, type, cx, cy);
 
   if (cx && cy) {
     SetViewportSize(cx, cy);
@@ -1044,7 +1039,7 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
 }
 
 void AeSysView::OnTimer(UINT_PTR nIDEvent) {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView<%p>::OnTimer(%i)\n", this, nIDEvent);
+  ATLTRACE2(traceGeneral, 1, L"AeSysView<%p>::OnTimer(%i)\n", this, nIDEvent);
 
   CView::OnTimer(nIDEvent);
 }
@@ -2269,7 +2264,7 @@ void AeSysView::OnFind() {
   assert(mainFrame != nullptr && mainFrameErrorMsg);
 #endif
   if (mainFrame == nullptr) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"%ls\n", static_cast<const wchar_t*>(mainFrameErrorMsg));
+    ATLTRACE2(traceGeneral, 0, L"%ls\n", static_cast<const wchar_t*>(mainFrameErrorMsg));
     return;
   }
   // Get the find combo box control
@@ -2280,7 +2275,7 @@ void AeSysView::OnFind() {
   assert(findComboBox != nullptr && findComboErrorMsg);
 #endif
   if (findComboBox == nullptr) {
-    ATLTRACE2(static_cast<int>(atlTraceGeneral), 0, L"%ls\n", static_cast<const wchar_t*>(findComboErrorMsg));
+    ATLTRACE2(traceGeneral, 0, L"%ls\n", static_cast<const wchar_t*>(findComboErrorMsg));
     return;
   }
 
@@ -2290,8 +2285,8 @@ void AeSysView::OnFind() {
   if (findComboBoxText.IsEmpty()) { return; }
 
   // @todo Find command implementation should go here, currently just verifying the combo box text and logging it
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"Verifying the FindComboBox text and logging: `%ls`\n",
-      static_cast<LPCWSTR>(findComboBoxText));
+  ATLTRACE2(
+      traceGeneral, 1, L"Verifying the FindComboBox text and logging: `%ls`\n", static_cast<LPCWSTR>(findComboBoxText));
 }
 
 /** @brief Verifies the text in the Find combo box and updates it if necessary.
@@ -2328,9 +2323,7 @@ void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CStrin
   }
 }
 
-void AeSysView::OnEditFind() {
-  ATLTRACE2(static_cast<int>(atlTraceGeneral), 1, L"AeSysView::OnEditFind() - Entering\n");
-}
+void AeSysView::OnEditFind() { ATLTRACE2(traceGeneral, 1, L"AeSysView::OnEditFind() - Entering\n"); }
 
 // Disables rubberbanding.
 void AeSysView::RubberBandingDisable() {
