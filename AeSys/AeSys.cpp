@@ -113,8 +113,8 @@ AeSys::AeSys()
       m_Options{},
       // Private members
       m_HomePoints{},
-      m_PegDocTemplate(nullptr),
-      m_TracingDocTemplate(nullptr),
+      m_pegDocumentTemplate{},
+      m_traDocumentTemplate{},
       m_MainFrameMenuHandle{},
       m_SimplexStrokeFont{},
       m_DeviceHeightInMillimeters{},
@@ -195,11 +195,11 @@ BOOL AeSys::InitInstance() {
   auto* frameClass = RUNTIME_CLASS(CChildFrame);
   auto* viewClass = RUNTIME_CLASS(AeSysView);
 
-  m_PegDocTemplate = new CMultiDocTemplate(IDR_AESYSTYPE, documentClass, frameClass, viewClass);
-  AddDocTemplate(m_PegDocTemplate);
+  m_pegDocumentTemplate = new CMultiDocTemplate(IDR_PEGTYPE, documentClass, frameClass, viewClass);
+  AddDocTemplate(m_pegDocumentTemplate);
 
-  m_TracingDocTemplate = new CMultiDocTemplate(IDR_TRACINGTYPE, documentClass, frameClass, viewClass);
-  AddDocTemplate(m_TracingDocTemplate);
+  m_traDocumentTemplate = new CMultiDocTemplate(IDR_TRATYPE, documentClass, frameClass, viewClass);
+  AddDocTemplate(m_traDocumentTemplate);
 
   // Create main MDI Frame window
   CMainFrame* mainFrame = new CMainFrame;
@@ -219,13 +219,13 @@ BOOL AeSys::InitInstance() {
   mainFrame->ReleaseDC(DeviceContext);
 
   // Parse command line and process shell commands
-  CCommandLineInfo CommandLineInfo;
-  ParseCommandLine(CommandLineInfo);
+  CCommandLineInfo commandLineInfo;
+  ParseCommandLine(commandLineInfo);
 
-  if (CommandLineInfo.m_nShellCommand == CCommandLineInfo::FileNew) {
-    if (!mainFrame->LoadMDIState(GetRegSectionPath())) { m_PegDocTemplate->OpenDocumentFile(nullptr); }
+  if (commandLineInfo.m_nShellCommand == CCommandLineInfo::FileNew) {
+    if (!mainFrame->LoadMDIState(GetRegSectionPath())) { m_pegDocumentTemplate->OpenDocumentFile(nullptr); }
   } else {
-    if (!ProcessShellCommand(CommandLineInfo)) { return FALSE; }
+    if (!ProcessShellCommand(commandLineInfo)) { return FALSE; }
   }
   m_MainFrameMenuHandle = LoadMenuW(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME));
 

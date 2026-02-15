@@ -73,9 +73,9 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\AeSys.ico"
 
-IDR_AESYSTYPE           ICON                    "res\\AeSys.ico"
+IDR_PEGTYPE             ICON                    "res\\AeSys.ico"
 
-IDR_TRACINGTYPE         ICON                    "res\\AeSys_Gold.ico"
+IDR_TRATYPE             ICON                    "res\\AeSys_Gold.ico"
 
 IDI_OUTPUT_WND          ICON                    "res\\output_wnd.ico"
 
@@ -201,7 +201,7 @@ BEGIN
     END
 END
 
-IDR_AESYSTYPE MENU
+IDR_PEGTYPE MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -523,7 +523,7 @@ BEGIN
     END
 END
 
-IDR_TRACINGTYPE MENU
+IDR_TRATYPE MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -2977,8 +2977,8 @@ STRINGTABLE
 BEGIN
     IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
     IDR_MAINFRAME           "AeSys"
-    IDR_AESYSTYPE           "\nDrawing\nDrawing\nDrawing Files(*.peg)\n.peg\nDrawing.Document\nDrawing Document"
-    IDR_TRACINGTYPE         "\nTracing\nTracing\nTracing Files(*.tra)\n.tra\nTracing.Document\nTracing Document"
+    IDR_PEGTYPE             "\nDrawing\nDrawing\nDrawing Files(*.peg)\n.peg\nDrawing.Document\nDrawing Document"
+    IDR_TRATYPE             "\nTracing\nTracing\nTracing Files(*.tra)\n.tra\nTracing.Document\nTracing Document"
 END
 
 STRINGTABLE

@@ -62,6 +62,49 @@
 const double AeSysView::m_MaximumWindowRatio = 999.0;
 const double AeSysView::m_MinimumWindowRatio = 0.001;
 
+namespace {
+/** @deprecated This code is only used for the legacy odometer display, which draws the odometer values directly in the view.
+ The current implementation displays the odometer values in the status bar, so this code is no longer needed.*/
+#if defined(LEGACY_ODOMETER)
+void DrawOdometerInView(AeSysView* view, CDC* context, Eo::Units Units, EoGeVector3d& position) {
+  auto* oldFont = static_cast<CFont*>(context->SelectStockObject(DEFAULT_GUI_FONT));
+  auto oldTextAlign = context->SetTextAlign(TA_LEFT | TA_TOP);
+  auto oldTextColor = context->SetTextColor(App::ViewTextColor());
+  auto oldBackgroundColor = context->SetBkColor(~App::ViewTextColor() & 0x00ffffff);
+
+  CRect clientArea;
+  view->GetClientRect(&clientArea);
+  TEXTMETRIC metrics;
+  context->GetTextMetrics(&metrics);
+
+  CString length;
+
+  int left = clientArea.right - 16 * metrics.tmAveCharWidth;
+
+  CRect rc(left, clientArea.top, clientArea.right, clientArea.top + metrics.tmHeight);
+  app.FormatLength(length, Units, position.x);
+  length.TrimLeft();
+  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
+
+  rc.SetRect(left, clientArea.top + 1 * metrics.tmHeight, clientArea.right, clientArea.top + 2 * metrics.tmHeight);
+  app.FormatLength(length, Units, position.y);
+  length.TrimLeft();
+  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
+
+  rc.SetRect(left, clientArea.top + 2 * metrics.tmHeight, clientArea.right, clientArea.top + 3 * metrics.tmHeight);
+  app.FormatLength(length, Units, position.z);
+  length.TrimLeft();
+  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
+
+  context->SetBkColor(oldBackgroundColor);
+  context->SetTextColor(oldTextColor);
+  context->SetTextAlign(oldTextAlign);
+  context->SelectObject(oldFont);
+}
+#endif
+
+}
+
 IMPLEMENT_DYNCREATE(AeSysView, CView)
 
 BEGIN_MESSAGE_MAP(AeSysView, CView)
@@ -418,10 +461,10 @@ AeSysView::AeSysView()
       m_ViewStateInformation{true},
       m_middleButtonPanStartPoint{},
       m_middleButtonPanInProgress{},
-      m_RubberbandType{None},
-      m_RubberbandBeginPoint{},
-      m_RubberbandLogicalBeginPoint{},
-      m_RubberbandLogicalEndPoint{},
+      m_rubberbandType{None},
+      m_rubberbandBegin{},
+      m_rubberbandLogicalBegin{},
+      m_rubberbandLogicalEnd{},
       m_ptCursorPosDev{},
       m_ptCursorPosWorld{},
       // Sub-mode edit
@@ -676,74 +719,70 @@ void AeSysView::OnInitialUpdate() {
 #endif
 }
 
+/** @brief Helper function to display content based on the provided hint, used by OnUpdate for delegation
+* This centralizes the logic for interpreting hints and displaying the appropriate content, allowing OnUpdate to focus on setup/delegation/cleanup
+* @param sender The view that sent the update notification
+* @param hint A bitmask hint indicating what type of content needs to be updated (e.g., primitive, group, layer)
+* @param hintObject The specific object related to the hint (e.g., the primitive or group that changed)
+* @param deviceContext The device context to use for drawing
+*/
+void AeSysView::DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject, CDC* deviceContext) {
+  switch (hint) {
+    case EoDb::kPrimitive:
+    case EoDb::kPrimitiveSafe:
+    case EoDb::kPrimitiveEraseSafe:
+      static_cast<EoDbPrimitive*>(hintObject)->Display(this, deviceContext);
+      break;
+
+    case EoDb::kGroup:
+    case EoDb::kGroupSafe:
+    case EoDb::kGroupEraseSafe:
+    case EoDb::kGroupSafeTrap:
+    case EoDb::kGroupEraseSafeTrap:
+      static_cast<EoDbGroup*>(hintObject)->Display(this, deviceContext);
+      break;
+
+    case EoDb::kGroups:
+    case EoDb::kGroupsSafe:
+    case EoDb::kGroupsSafeTrap:
+    case EoDb::kGroupsEraseSafeTrap:
+      static_cast<EoDbGroupList*>(hintObject)->Display(this, deviceContext);
+      break;
+
+    case EoDb::kLayer:
+    case EoDb::kLayerErase:
+      static_cast<EoDbLayer*>(hintObject)->Display(this, deviceContext);
+      break;
+
+    default:
+      CView::OnUpdate(sender, hint, hintObject);
+  }
+}
+
 void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint, hintObject);
 
-  // Pre-delegation setup: Acquire DC and apply hint-based modifications (safe for all modes)
+  // Pre-delegation setup: Configure device context based on hint (e.g., for safe/erase/trap rendering)
   auto* deviceContext = GetDC();
   auto backgroundColor = deviceContext->GetBkColor();
   deviceContext->SetBkColor(ViewBackgroundColor);
-
   int savedRenderState{};
   int drawMode{};
-
   if ((hint & EoDb::kSafe) == EoDb::kSafe) { savedRenderState = renderState.Save(); }
   if ((hint & EoDb::kErase) == EoDb::kErase) { drawMode = renderState.SetROP2(deviceContext, R2_XORPEN); }
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor()); }
 
+  bool isHandledByState{};
 #if defined(USING_STATE_PATTERN)
   // Core delegation: Give the current state first crack at handling the update
   auto* state = GetCurrentState();
-  bool handledByState = false;
   if (state) {
-    handledByState = state->OnUpdate(this, sender, hint, hintObject);  // Now returns bool
-  }
-  if (!handledByState) {
-    // Fallback: If no state or state didn't handle, use legacy switch for general updates
-#endif
-    switch (hint) {
-      case EoDb::kPrimitive:
-      case EoDb::kPrimitiveSafe:
-      case EoDb::kPrimitiveEraseSafe:
-        static_cast<EoDbPrimitive*>(hintObject)->Display(this, deviceContext);
-        break;
-
-      case EoDb::kGroup:
-      case EoDb::kGroupSafe:
-      case EoDb::kGroupEraseSafe:
-      case EoDb::kGroupSafeTrap:
-      case EoDb::kGroupEraseSafeTrap:
-        static_cast<EoDbGroup*>(hintObject)->Display(this, deviceContext);
-        break;
-
-      case EoDb::kGroups:
-      case EoDb::kGroupsSafe:
-      case EoDb::kGroupsSafeTrap:
-      case EoDb::kGroupsEraseSafeTrap:
-        static_cast<EoDbGroupList*>(hintObject)->Display(this, deviceContext);
-        break;
-
-      case EoDb::kLayer:
-      case EoDb::kLayerErase:
-        static_cast<EoDbLayer*>(hintObject)->Display(this, deviceContext);
-        break;
-
-      default:
-        CView::OnUpdate(sender, hint, hintObject);
-#if defined(USING_STATE_PATTERN)
-        // Early cleanup and return for defaults to avoid duplicate restores
-        if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(0); }
-        if ((hint & EoDb::kErase) == EoDb::kErase) { renderState.SetROP2(deviceContext, drawMode); }
-        if ((hint & EoDb::kSafe) == EoDb::kSafe) { renderState.Restore(deviceContext, savedRenderState); }
-        // Use saved drawMode here
-        deviceContext->SetBkColor(backgroundColor);
-        ReleaseDC(deviceContext);
-        return;  // Early return to skip post-state cleanup
-#endif
-    }
-#if defined(USING_STATE_PATTERN)
+    isHandledByState = state->OnUpdate(this, sender, hint, hintObject);
   }
 #endif
+  if (!isHandledByState) { DisplayUsingHint(sender, hint, hintObject, deviceContext); }
+
+  // Post-delegation cleanup: Restore any modified device context settings
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(0); }
   if ((hint & EoDb::kErase) == EoDb::kErase) { renderState.SetROP2(deviceContext, drawMode); }
   if ((hint & EoDb::kSafe) == EoDb::kSafe) { renderState.Restore(deviceContext, savedRenderState); }
@@ -979,34 +1018,34 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
       PreviewGroupEdit();
       break;
   }
-  if (m_RubberbandType == Lines) {
+  if (m_rubberbandType == Lines) {
     auto* deviceContext = GetDC();
     auto drawMode = deviceContext->SetROP2(R2_XORPEN);
     CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
     auto* pen = deviceContext->SelectObject(&grayPen);
 
-    deviceContext->MoveTo(m_RubberbandLogicalBeginPoint);
-    deviceContext->LineTo(m_RubberbandLogicalEndPoint);
+    deviceContext->MoveTo(m_rubberbandLogicalBegin);
+    deviceContext->LineTo(m_rubberbandLogicalEnd);
 
-    m_RubberbandLogicalEndPoint = point;
-    deviceContext->MoveTo(m_RubberbandLogicalBeginPoint);
-    deviceContext->LineTo(m_RubberbandLogicalEndPoint);
+    m_rubberbandLogicalEnd = point;
+    deviceContext->MoveTo(m_rubberbandLogicalBegin);
+    deviceContext->LineTo(m_rubberbandLogicalEnd);
     deviceContext->SelectObject(pen);
     deviceContext->SetROP2(drawMode);
     ReleaseDC(deviceContext);
-  } else if (m_RubberbandType == Rectangles) {
+  } else if (m_rubberbandType == Rectangles) {
     auto* deviceContext = GetDC();
     auto drawMode = deviceContext->SetROP2(R2_XORPEN);
     CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
     auto* pen = deviceContext->SelectObject(&grayPen);
     auto* brush = deviceContext->SelectStockObject(NULL_BRUSH);
 
-    deviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
-        m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+    deviceContext->Rectangle(m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y,
+        m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
 
-    m_RubberbandLogicalEndPoint = point;
-    deviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
-        m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+    m_rubberbandLogicalEnd = point;
+    deviceContext->Rectangle(m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y,
+        m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
     deviceContext->SelectObject(brush);
     deviceContext->SelectObject(pen);
     deviceContext->SetROP2(drawMode);
@@ -1808,45 +1847,6 @@ AeSysView* AeSysView::GetActiveView() {
 
 void AeSysView::OnUpdateViewOdometer(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewOdometer); }
 
-#define LEGACY_ODOMETER
-#if defined(LEGACY_ODOMETER)
-static void DrawOdometerInView(AeSysView* view, CDC* context, Eo::Units Units, EoGeVector3d& position) {
-  auto* oldFont = static_cast<CFont*>(context->SelectStockObject(DEFAULT_GUI_FONT));
-  auto oldTextAlign = context->SetTextAlign(TA_LEFT | TA_TOP);
-  auto oldTextColor = context->SetTextColor(App::ViewTextColor());
-  auto oldBackgroundColor = context->SetBkColor(~App::ViewTextColor() & 0x00ffffff);
-
-  CRect clientArea;
-  view->GetClientRect(&clientArea);
-  TEXTMETRIC metrics;
-  context->GetTextMetrics(&metrics);
-
-  CString length;
-
-  int left = clientArea.right - 16 * metrics.tmAveCharWidth;
-
-  CRect rc(left, clientArea.top, clientArea.right, clientArea.top + metrics.tmHeight);
-  app.FormatLength(length, Units, position.x);
-  length.TrimLeft();
-  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
-
-  rc.SetRect(left, clientArea.top + 1 * metrics.tmHeight, clientArea.right, clientArea.top + 2 * metrics.tmHeight);
-  app.FormatLength(length, Units, position.y);
-  length.TrimLeft();
-  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
-
-  rc.SetRect(left, clientArea.top + 2 * metrics.tmHeight, clientArea.right, clientArea.top + 3 * metrics.tmHeight);
-  app.FormatLength(length, Units, position.z);
-  length.TrimLeft();
-  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
-
-  context->SetBkColor(oldBackgroundColor);
-  context->SetTextColor(oldTextColor);
-  context->SetTextAlign(oldTextAlign);
-  context->SelectObject(oldFont);
-}
-#endif  // defined(LEGACY_ODOMETER)
-
 void AeSysView::DisplayOdometer() {
   auto cursorPosition = GetCursorPosition();
 
@@ -1864,8 +1864,8 @@ void AeSysView::DisplayOdometer() {
     app.FormatLength(lengthText, units, m_vRelPos.z);
     Position.Append(L", " + lengthText.TrimLeft());
 
-    if (m_RubberbandType == Lines) {
-      EoGeLine line(m_RubberbandBeginPoint, cursorPosition);
+    if (m_rubberbandType == Lines) {
+      EoGeLine line(m_rubberbandBegin, cursorPosition);
 
       auto lineLength = line.Length();
       auto angleInXYPlane = line.AngleFromXAxisXY();
@@ -1880,7 +1880,7 @@ void AeSysView::DisplayOdometer() {
     mainFrame->SetPaneText(1, Position);
 #if defined(LEGACY_ODOMETER)
     DrawOdometerInView(this, GetDC(), units, m_vRelPos);
-#endif  // defined(LEGACY_ODOMETER)
+#endif
   }
 #if defined(USING_DDE)
   dde::PostAdvise(dde::RelPosXInfo);
@@ -2325,42 +2325,40 @@ void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CStrin
 
 void AeSysView::OnEditFind() { ATLTRACE2(traceGeneral, 1, L"AeSysView::OnEditFind() - Entering\n"); }
 
-// Disables rubberbanding.
 void AeSysView::RubberBandingDisable() {
-  if (m_RubberbandType != None) {
+  if (m_rubberbandType != None) {
     auto* deviceContext = GetDC();
     int drawMode = deviceContext->SetROP2(R2_XORPEN);
     CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
     auto* pen = deviceContext->SelectObject(&grayPen);
 
-    if (m_RubberbandType == Lines) {
-      deviceContext->MoveTo(m_RubberbandLogicalBeginPoint);
-      deviceContext->LineTo(m_RubberbandLogicalEndPoint);
-    } else if (m_RubberbandType == Rectangles) {
-      CBrush* brush = (CBrush*)deviceContext->SelectStockObject(NULL_BRUSH);
-      deviceContext->Rectangle(m_RubberbandLogicalBeginPoint.x, m_RubberbandLogicalBeginPoint.y,
-          m_RubberbandLogicalEndPoint.x, m_RubberbandLogicalEndPoint.y);
+    if (m_rubberbandType == Lines) {
+      deviceContext->MoveTo(m_rubberbandLogicalBegin);
+      deviceContext->LineTo(m_rubberbandLogicalEnd);
+    } else if (m_rubberbandType == Rectangles) {
+      auto* brush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
+      deviceContext->Rectangle(m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y,
+          m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
       deviceContext->SelectObject(brush);
     }
     deviceContext->SelectObject(pen);
     deviceContext->SetROP2(drawMode);
     ReleaseDC(deviceContext);
-    m_RubberbandType = None;
+    m_rubberbandType = None;
   }
 }
 
-void AeSysView::RubberBandingStartAtEnable(EoGePoint3d pt, ERubs type) {
-  EoGePoint4d ptView(pt);
+void AeSysView::RubberBandingStartAtEnable(EoGePoint3d point, ERubs type) {
+  EoGePoint4d pointInView(point);
 
-  ModelViewTransformPoint(ptView);
+  ModelViewTransformPoint(pointInView);
 
-  if (ptView.IsInView()) {
-    m_RubberbandBeginPoint = pt;
-
-    m_RubberbandLogicalBeginPoint = DoProjection(ptView);
-    m_RubberbandLogicalEndPoint = m_RubberbandLogicalBeginPoint;
+  if (pointInView.IsInView()) {
+    m_rubberbandBegin = point;
+    m_rubberbandLogicalBegin = DoProjection(pointInView);
+    m_rubberbandLogicalEnd = m_rubberbandLogicalBegin;
   }
-  m_RubberbandType = type;
+  m_rubberbandType = type;
 }
 
 [[nodiscard]] EoGePoint3d AeSysView::GetCursorPosition() {
@@ -2608,6 +2606,9 @@ void AeSysView::OnModeDimension() {
 }
 
 void AeSysView::OnModeDraw() {
+#if defined(USING_STATE_PATTERN)
+  PushState(std::make_unique<DrawModeState>());
+#endif
   app.SetModeResourceIdentifier(IDR_DRAW_MODE);
   app.SetPrimaryMode(ID_MODE_DRAW);
   app.LoadModeResources(ID_MODE_DRAW);

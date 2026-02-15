@@ -15,7 +15,7 @@
 #include "Resource.h"         // For command IDs
 
 void DrawModeState::OnEnter(AeSysView* context) {
-  // Migrated setup: Highlight draw menu, set cursor
+  ATLTRACE2(traceGeneral, 2, L"DrawModeState::OnEnter\n");
   context->SetModeCursor(IDR_DRAW_MODE);  // Draw cursor
   // ModeLineHighlightOp(ID_DRAW_MODE);  // Adapt your UI
   m_pts.RemoveAll();
@@ -23,7 +23,7 @@ void DrawModeState::OnEnter(AeSysView* context) {
 }
 
 void DrawModeState::OnExit(AeSysView* context) {
-  // Cleanup: Clear previews, unhighlight
+  ATLTRACE2(traceGeneral, 2, L"DrawModeState::OnExit\n");
   context->m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   context->GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &context->m_PreviewGroup);
   m_pts.RemoveAll();
@@ -31,6 +31,7 @@ void DrawModeState::OnExit(AeSysView* context) {
 }
 
 void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
+  ATLTRACE2(traceGeneral, 2, L"DrawModeState::HandleCommand - command: %u\n", command);
   auto* document = context->GetDocument();
   auto cursorPosition = context->GetCursorPosition();
 
@@ -69,8 +70,8 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
   }
 }
 
-void DrawModeState::OnMouseMove(
-    [[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
+void DrawModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
+  ATLTRACE2(traceGeneral, 3, L"DrawModeState::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
   // Migrated from DoDrawModeMouseMove: Preview rubberbanding
   EoGePoint3d cursorPos = context->GetCursorPosition();
   auto* doc = context->GetDocument();
@@ -97,6 +98,7 @@ void DrawModeState::OnLButtonDown(
 }
 
 void DrawModeState::OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]] CDC* deviceContext) {
+  ATLTRACE2(traceGeneral, 2, L"DrawModeState::OnDraw\n");
   auto* document = context->GetDocument();
   document->DisplayAllLayers(context, deviceContext);
   document->DisplayUniquePoints();
@@ -106,6 +108,7 @@ void DrawModeState::OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]]
 }
 
 bool DrawModeState::OnUpdate(AeSysView* context, [[maybe_unused]] CView* sender, LPARAM hint, CObject* objectHint) {
+  ATLTRACE2(traceGeneral, 2, L"DrawModeState::OnUpdate\n");
   if ((hint & EoDb::kGroupEraseSafe) == EoDb::kGroupEraseSafe && objectHint == &context->m_PreviewGroup) {
     return true;
   }

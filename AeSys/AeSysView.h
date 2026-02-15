@@ -220,6 +220,8 @@ class AeSysView : public CView {
   void OnPrepareDC(CDC* deviceContext, CPrintInfo* printInformation) override;
   void OnEndPrinting(CDC* deviceContext, CPrintInfo* printInformation) override;
 
+  void DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject, CDC* deviceContext);
+
   /** @brief Respond to updates from the document or other views.
    * This method is called by the MFC framework when the document or other views call UpdateAllViews.
    * The hint parameter can be used to determine what type of update occurred and respond accordingly.
@@ -313,13 +315,28 @@ class AeSysView : public CView {
   CPoint m_middleButtonPanStartPoint;
   bool m_middleButtonPanInProgress;
 
-  ERubs m_RubberbandType;
-  EoGePoint3d m_RubberbandBeginPoint;
-  CPoint m_RubberbandLogicalBeginPoint;
-  CPoint m_RubberbandLogicalEndPoint;
+  ERubs m_rubberbandType;
+  EoGePoint3d m_rubberbandBegin;
+  CPoint m_rubberbandLogicalBegin;
+  CPoint m_rubberbandLogicalEnd;
 
+  /** @brief Disables rubber banding by erasing the current rubber band from the view.
+   * @note This function checks if rubber banding is currently active (i.e., m_rubberbandType is not None).
+   * If it is active, it retrieves the device context for the view and sets the drawing mode to R2_XORPEN,
+   * which allows for erasing the rubber band by drawing it again. Depending on the type of rubber band (Lines or Rectangles),
+   * it either draws a line or a rectangle using the logical begin and end points of the rubber band.
+   * After erasing the rubber band, it restores the original drawing mode and releases the device context.
+   * Finally, it sets m_rubberbandType to None to indicate that rubber banding is no longer active.
+   */
   void RubberBandingDisable();
-  void RubberBandingStartAtEnable(EoGePoint3d point3d, ERubs type);
+  /** @brief Initializes rubber banding for a given point and type.
+   * @param point The starting point for rubber banding in world coordinates.
+   * @param type The type of rubber banding (Lines or Rectangles).
+   * @note This function transforms the given point from world coordinates to view coordinates.
+   * If the transformed point is within the view, it sets the starting point for rubber banding and initializes
+   * the logical begin and end points to the projected view coordinates. The rubber banding type is also set to the specified type.
+   */
+  void RubberBandingStartAtEnable(EoGePoint3d point, ERubs type);
 
   EoGePoint3d m_ptCursorPosDev;
   EoGePoint3d m_ptCursorPosWorld;

@@ -60,8 +60,8 @@ class AeSys : public CWinAppEx {
 
  private:
   EoGePoint3d m_HomePoints[9];
-  CMultiDocTemplate* m_PegDocTemplate;
-  CMultiDocTemplate* m_TracingDocTemplate;
+  CMultiDocTemplate* m_pegDocumentTemplate;
+  CMultiDocTemplate* m_traDocumentTemplate;
   HMENU m_MainFrameMenuHandle;
   char* m_SimplexStrokeFont;
 

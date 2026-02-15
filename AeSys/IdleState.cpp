@@ -19,7 +19,7 @@ void IdleState::OnExit([[maybe_unused]] AeSysView* context) {
 }
 
 void IdleState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
-  ATLTRACE2(traceGeneral, 2, L"IdleState::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
+  ATLTRACE2(traceGeneral, 3, L"IdleState::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
   // Basic handling: e.g., update odometer/position without drawing
   // Existing logic from AeSysView::OnMouseMove (non-mode parts)
   EoGePoint3d cursorPosition = context->GetCursorPosition();
