@@ -631,7 +631,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       hr = S_OK;
       DiscardDeviceResources();
     }
-#endif  // USING_Direct2D
+#endif
 
     auto* document = GetDocument();
     assert(document != nullptr);
@@ -668,7 +668,7 @@ void AeSysView::OnInitialUpdate() {
 #if defined(USING_Direct2D)
   m_RenderTarget = nullptr;
   CreateDeviceResources();
-#endif  // USING_Direct2D
+#endif
 
   CView::OnInitialUpdate();
 #if defined(USING_STATE_PATTERN)
@@ -1033,13 +1033,13 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
     m_ViewTransform.Initialize(m_Viewport);
 #if defined(USING_Direct2D)
     if (m_RenderTarget) { m_RenderTarget->Resize(D2D1::SizeU(cx, cy)); }
-#endif  // USING_Direct2D
+#endif
     m_OverviewViewTransform = m_ViewTransform;
   }
 }
 
 void AeSysView::OnTimer(UINT_PTR nIDEvent) {
-  ATLTRACE2(traceGeneral, 1, L"AeSysView<%p>::OnTimer(%i)\n", this, nIDEvent);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnTimer(%i)\n", this, nIDEvent);
 
   CView::OnTimer(nIDEvent);
 }
@@ -1090,43 +1090,43 @@ void AeSysView::SetLocalModelTransform(EoGeTransformMatrix& transformation) {
 void AeSysView::PopModelTransform() { m_ModelTransform.Pop(); }
 
 void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
-  if (m_viewBackgroundImage && (static_cast<HBITMAP>(m_backgroundImageBitmap) != 0)) {
-    int iWidDst = int(m_Viewport.Width());
-    int iHgtDst = int(m_Viewport.Height());
+  if (!m_viewBackgroundImage || (static_cast<HBITMAP>(m_backgroundImageBitmap) == 0)) { return; }
 
-    BITMAP bm{};
-    m_backgroundImageBitmap.GetBitmap(&bm);
-    CDC dcMem;
-    dcMem.CreateCompatibleDC(nullptr);
-    CBitmap* pBitmap = dcMem.SelectObject(&m_backgroundImageBitmap);
-    CPalette* pPalette = deviceContext->SelectPalette(&m_backgroundImagePalette, FALSE);
-    deviceContext->RealizePalette();
+  int iWidDst = int(m_Viewport.Width());
+  int iHgtDst = int(m_Viewport.Height());
 
-    auto Target = m_ViewTransform.Target();
-    auto ptTargetOver = m_OverviewViewTransform.Target();
-    double dU = Target.x - ptTargetOver.x;
-    double dV = Target.y - ptTargetOver.y;
+  BITMAP bm{};
+  m_backgroundImageBitmap.GetBitmap(&bm);
+  CDC dcMem;
+  dcMem.CreateCompatibleDC(nullptr);
+  CBitmap* pBitmap = dcMem.SelectObject(&m_backgroundImageBitmap);
+  CPalette* pPalette = deviceContext->SelectPalette(&m_backgroundImagePalette, FALSE);
+  deviceContext->RealizePalette();
 
-    // Determine the region of the bitmap to tranfer to display
-    CRect rcWnd;
-    rcWnd.left =
-        Eo::Round((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.top = Eo::Round(
-        (1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
-    rcWnd.right =
-        Eo::Round((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
-    rcWnd.bottom = Eo::Round(
-        (1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
+  auto Target = m_ViewTransform.Target();
+  auto ptTargetOver = m_OverviewViewTransform.Target();
+  double dU = Target.x - ptTargetOver.x;
+  double dV = Target.y - ptTargetOver.y;
 
-    int iWidSrc = rcWnd.Width();
-    int iHgtSrc = rcWnd.Height();
+  // Determine the region of the bitmap to tranfer to display
+  CRect rcWnd;
+  rcWnd.left =
+      Eo::Round((m_ViewTransform.UMin() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
+  rcWnd.top = Eo::Round(
+      (1.0 - (m_ViewTransform.VMax() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
+  rcWnd.right =
+      Eo::Round((m_ViewTransform.UMax() - OverviewUMin() + dU) / OverviewUExt() * static_cast<double>(bm.bmWidth));
+  rcWnd.bottom = Eo::Round(
+      (1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
 
-    deviceContext->StretchBlt(
-        0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
+  int iWidSrc = rcWnd.Width();
+  int iHgtSrc = rcWnd.Height();
 
-    dcMem.SelectObject(pBitmap);
-    deviceContext->SelectPalette(pPalette, FALSE);
-  }
+  deviceContext->StretchBlt(
+      0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
+
+  dcMem.SelectObject(pBitmap);
+  deviceContext->SelectPalette(pPalette, FALSE);
 }
 
 void AeSysView::ViewportPopActive() {
@@ -2264,7 +2264,7 @@ void AeSysView::OnFind() {
   assert(mainFrame != nullptr && mainFrameErrorMsg);
 #endif
   if (mainFrame == nullptr) {
-    ATLTRACE2(traceGeneral, 0, L"%ls\n", static_cast<const wchar_t*>(mainFrameErrorMsg));
+    ATLTRACE2(traceGeneral, 3, L"%ls\n", static_cast<const wchar_t*>(mainFrameErrorMsg));
     return;
   }
   // Get the find combo box control
@@ -2275,7 +2275,7 @@ void AeSysView::OnFind() {
   assert(findComboBox != nullptr && findComboErrorMsg);
 #endif
   if (findComboBox == nullptr) {
-    ATLTRACE2(traceGeneral, 0, L"%ls\n", static_cast<const wchar_t*>(findComboErrorMsg));
+    ATLTRACE2(traceGeneral, 3, L"%ls\n", static_cast<const wchar_t*>(findComboErrorMsg));
     return;
   }
 
@@ -2719,4 +2719,4 @@ void AeSysView::DiscardDeviceResources() {
   SafeRelease(&m_LightSlateGrayBrush);
   SafeRelease(&m_RedBrush);
 }
-#endif  // USING_Direct2D
+#endif

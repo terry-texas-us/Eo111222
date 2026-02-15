@@ -95,7 +95,7 @@ class AeSys : public CWinAppEx {
 
 #if defined(USING_Direct2D)
   ID2D1Factory* m_Direct2dFactory;
-#endif  // USING_Direct2D
+#endif
 
  public:
   void AddModeInformationToMessageList();

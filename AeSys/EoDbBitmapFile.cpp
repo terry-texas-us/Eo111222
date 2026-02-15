@@ -30,7 +30,7 @@ bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalet
   }
   DIBSECTION deviceIndependentBitmapStruct{};
   if (loadedBitmap.GetObject(sizeof(DIBSECTION), &deviceIndependentBitmapStruct) == 0) {
-    ATLTRACE2(traceGeneral, 0, L"Failed to get DIBSECTION");
+    ATLTRACE2(traceGeneral, 3, L"Failed to get DIBSECTION");
     Close();
     return false;
   }
@@ -42,7 +42,7 @@ bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalet
   }
   if (colors > 256) {
     if (!loadedPalette.CreateHalftonePalette(&clientContext)) {
-      ATLTRACE2(traceGeneral, 0, L"Failed to create halftone palette");
+      ATLTRACE2(traceGeneral, 3, L"Failed to create halftone palette");
       Close();
       return false;
     }
@@ -54,18 +54,18 @@ bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalet
     }
     CDC memoryContext;
     if (!memoryContext.CreateCompatibleDC(&clientContext)) {
-      ATLTRACE2(traceGeneral, 0, L"Failed to create compatible DC");
+      ATLTRACE2(traceGeneral, 3, L"Failed to create compatible DC");
       Close();
       return false;
     }
     CBitmap* customBitmap = memoryContext.SelectObject(&loadedBitmap);
     if (!customBitmap) {
-      ATLTRACE2(traceGeneral, 0, L"Failed to select bitmap into DC");
+      ATLTRACE2(traceGeneral, 3, L"Failed to select bitmap into DC");
       Close();
       return false;
     }
     if (GetDIBColorTable((HDC)memoryContext, 0U, static_cast<UINT>(colors), rgbQuad.get()) == 0) {
-      ATLTRACE2(traceGeneral, 0, L"Failed to get DIB color table");
+      ATLTRACE2(traceGeneral, 3, L"Failed to get DIB color table");
       memoryContext.SelectObject(customBitmap);
       Close();
       return false;
@@ -89,7 +89,7 @@ bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalet
       logicalPalette->palPalEntry[i].peFlags = 0;
     }
     if (!loadedPalette.CreatePalette(logicalPalette)) {
-      ATLTRACE2(traceGeneral, 0, L"Failed to create palette");
+      ATLTRACE2(traceGeneral, 3, L"Failed to create palette");
       Close();
       return false;
     }

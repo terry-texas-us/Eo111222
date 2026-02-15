@@ -100,7 +100,7 @@ class AeSysDoc : public CDocument {
   void InsertBlock(const CString& name, EoDbBlock* block) {
     EoDbBlock* existing = nullptr;
     if (m_BlocksTable.Lookup(name, existing)) {
-      ATLTRACE2(traceGeneral, 0, L"InsertBlock: Replacing existing block '%s'\n", name.GetString());
+      ATLTRACE2(traceGeneral, 3, L"InsertBlock: Replacing existing block '%s'\n", name.GetString());
       existing->DeletePrimitivesAndRemoveAll();
       delete existing;
     }

@@ -23,7 +23,7 @@ double EoDbPrimitive::sm_SelectApertureSize{0.02};
 
 EoDbPrimitive::EoDbPrimitive(std::int16_t color, std::int16_t lineTypeIndex)
     : m_color(color), m_lineTypeIndex(lineTypeIndex) {
-  ATLTRACE2(traceGeneral, 0, L"EoDbPrimitive(color, lineTypeIndex) CTOR: this=%p, vtable=%p\n", this, *(void**)this);
+  ATLTRACE2(traceGeneral, 3, L"EoDbPrimitive(color, lineTypeIndex) CTOR: this=%p, vtable=%p\n", this, *(void**)this);
 }
 
 EoDbPrimitive::~EoDbPrimitive() {}

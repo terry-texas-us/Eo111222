@@ -28,7 +28,7 @@ EoDbGroup::EoDbGroup() {}
 EoDbGroup::EoDbGroup(EoDbPrimitive* primitive) { AddTail(primitive); }
 
 EoDbGroup::EoDbGroup(const EoDbGroup& group) {
-  ATLTRACE2(traceGeneral, 0, L"EoDbGroup(copy from group): this=%p, source=%p, count=%d\n", this, &group,
+  ATLTRACE2(traceGeneral, 3, L"EoDbGroup(copy from group): this=%p, source=%p, count=%d\n", this, &group,
       static_cast<int>(group.GetCount()));
   // Trigger debugger break to see call stack:
   if (group.GetCount() > 0) { __debugbreak(); }
@@ -42,7 +42,7 @@ EoDbGroup::EoDbGroup(const EoDbGroup& group) {
 EoDbPrimitive* EoDbGroup::GetAt(POSITION position) { return (EoDbPrimitive*)CObList::GetAt(position); }
 
 EoDbGroup::EoDbGroup(const EoDbBlock& block) {
-  ATLTRACE2(traceGeneral, 0, L"EoDbGroup(copy from block): this=%p, source=%p, count=%d\n", this, &block,
+  ATLTRACE2(traceGeneral, 3, L"EoDbGroup(copy from block): this=%p, source=%p, count=%d\n", this, &block,
       static_cast<int>(block.GetCount()));
   // Trigger debugger break to see call stack:
   if (block.GetCount() > 0) { __debugbreak(); }

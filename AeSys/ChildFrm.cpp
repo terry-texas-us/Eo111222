@@ -41,7 +41,7 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs) {
 }
 
 void CChildFrame::OnTimer(UINT_PTR nIDEvent) {
-  ATLTRACE2(traceGeneral, 1, L"CChildFrame::OnTimer() - Entering\n");
+  ATLTRACE2(traceGeneral, 3, L"CChildFrame::OnTimer() - Entering\n");
 
   CMDIChildWndEx::OnTimer(nIDEvent);
 }

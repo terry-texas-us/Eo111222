@@ -67,7 +67,7 @@ inline void SafeRelease(Interface** ppInterfaceToRelease) {
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE) & __ImageBase)
 #endif
-#endif  // USING_Direct2D
+#endif
 
 #include <atltrace.h>
 const int traceGeneral = static_cast<int>(atlTraceGeneral);

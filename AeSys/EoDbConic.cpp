@@ -119,7 +119,7 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
 [[nodiscard]] EoDbConic* EoDbConic::CreateCircleInView(const EoGePoint3d& center, double radius) {
   auto* activeView = AeSysView::GetActiveView();
   if (!activeView) {
-    ATLTRACE2(traceGeneral, 0, L"CreateCircleInView: No active view\n");
+    ATLTRACE2(traceGeneral, 3, L"CreateCircleInView: No active view\n");
     return nullptr;
   }
   auto cameraDirection = activeView->CameraDirection();
@@ -169,11 +169,11 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
 [[nodiscard]] EoDbConic* EoDbConic::CreateRadialArc(
     const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle, double endAngle) {
   if (radius < Eo::geometricTolerance) {
-    ATLTRACE2(traceGeneral, 0, L"CreateRadialArc: Invalid radius (%.6f)\n", radius);
+    ATLTRACE2(traceGeneral, 3, L"CreateRadialArc: Invalid radius (%.6f)\n", radius);
     return nullptr;
   }
   if (extrusion.IsNearNull()) {
-    ATLTRACE2(traceGeneral, 0, L"CreateRadialArc: Null extrusion vector\n");
+    ATLTRACE2(traceGeneral, 3, L"CreateRadialArc: Null extrusion vector\n");
     return nullptr;
   }
   // Compute OCS X-axis (major axis direction) using arbitrary axis algorithm
@@ -405,7 +405,7 @@ void EoDbConic::CutAt2Points(
 
 void EoDbConic::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   if (group == nullptr) {
-    ATLTRACE2(traceGeneral, 0, L"Warning: Null group in CutAtPt\n");
+    ATLTRACE2(traceGeneral, 3, L"Warning: Null group in CutAtPt\n");
     return;
   }
   if (IsFullConic()) { return; }  // @todo Consider moving start angle to point, but no cutting needed
@@ -1041,11 +1041,11 @@ void EoDbConic::GetBoundingBox(EoGePoint3dArray& ptsBox) {
 [[nodiscard]] bool SweepAngleFromNormalAnd3Points(const EoGeVector3d& normal, const EoGePoint3d& firstOutside,
     const EoGePoint3d& inside, const EoGePoint3d& secondOutside, const EoGePoint3d& center, double& sweepAngle) {
   if (normal.Length() < Eo::geometricTolerance) {
-    ATLTRACE2(traceGeneral, 0, L"SweepAngleFromNormalAnd3Points: Invalid normal vector\n");
+    ATLTRACE2(traceGeneral, 3, L"SweepAngleFromNormalAnd3Points: Invalid normal vector\n");
     return false;
   }
   if (firstOutside == center || inside == center || secondOutside == center) {
-    ATLTRACE2(traceGeneral, 0, L"SweepAngleFromNormalAnd3Points: Point coincides with center\n");
+    ATLTRACE2(traceGeneral, 3, L"SweepAngleFromNormalAnd3Points: Point coincides with center\n");
     return false;
   }
 
@@ -1074,7 +1074,7 @@ void EoDbConic::GetBoundingBox(EoGePoint3dArray& ptsBox) {
 
     return true;
   }
-  ATLTRACE2(traceGeneral, 0,
+  ATLTRACE2(traceGeneral, 3,
       L"SweepAngleFromNormalAnd3Points: Points are collinear (angles: %.6f, %.6f, %.6f)\n", t[0], t[1], t[2]);
 
   return false;

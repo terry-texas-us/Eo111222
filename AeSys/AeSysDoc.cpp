@@ -171,7 +171,7 @@ AeSysDoc::AeSysDoc()
 AeSysDoc::~AeSysDoc() {}
 
 void AeSysDoc::DeleteContents() {
-  ATLTRACE2(traceGeneral, 0, L"AeSysDoc<%p>::DeleteContents() - BlockTableSize: %d\n", this, BlockTableSize());
+  ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::DeleteContents() - BlockTableSize: %d\n", this, BlockTableSize());
 
   // TODO: Release EoDbDrwInterface resources if any
 
@@ -214,7 +214,7 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
     if (pathName == nullptr) {
       TRY { CFile::Remove(PathName); }
       CATCH_ALL(e) {
-        ATLTRACE2(traceGeneral, 0, L"Warning: failed to delete file after failed SaveAs.\n");
+        ATLTRACE2(traceGeneral, 3, L"Warning: failed to delete file after failed SaveAs.\n");
         do { e->Delete(); } while (0);
       }
       END_CATCH_ALL
@@ -264,7 +264,7 @@ BOOL AeSysDoc::OnNewDocument() {
   return TRUE;
 }
 BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
-  ATLTRACE2(traceGeneral, 0, L"AeSysDoc<%p>::OnOpenDocument(%s)\n", this, pathName);
+  ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::OnOpenDocument(%s)\n", this, pathName);
 
   switch (App::FileTypeFromPath(pathName)) {
     case EoDb::FileTypes::Dwg:
@@ -277,35 +277,35 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       SetCommonTableEntries();
       bool success = dxfReader.read(&dxfInterface, true);  // true for verbose output, false for silent
       if (success) {
-        ATLTRACE2(traceGeneral, 0, L"3dFace: %d.\n", dxfInterface.countOf3dFace);
-        ATLTRACE2(traceGeneral, 0, L"Arc: %d.\n", dxfInterface.countOfArc);
-        ATLTRACE2(traceGeneral, 0, L"Circle: %d.\n", dxfInterface.countOfCircle);
-        ATLTRACE2(traceGeneral, 0, L"DimAlign: %d.\n", dxfInterface.countOfDimAlign);
-        ATLTRACE2(traceGeneral, 0, L"DimLinear: %d.\n", dxfInterface.countOfDimLinear);
-        ATLTRACE2(traceGeneral, 0, L"DimAngular: %d.\n", dxfInterface.countOfDimAngular);
-        ATLTRACE2(traceGeneral, 0, L"DimAngular3P: %d.\n", dxfInterface.countOfDimAngular3P);
-        ATLTRACE2(traceGeneral, 0, L"DimDiametric: %d.\n", dxfInterface.countOfDimDiametric);
-        ATLTRACE2(traceGeneral, 0, L"DimLinear: %d.\n", dxfInterface.countOfDimLinear);
-        ATLTRACE2(traceGeneral, 0, L"DimOrdinate: %d.\n", dxfInterface.countOfDimOrdinate);
-        ATLTRACE2(traceGeneral, 0, L"DimRadial: %d.\n", dxfInterface.countOfDimRadial);
-        ATLTRACE2(traceGeneral, 0, L"Ellipse: %d.\n", dxfInterface.countOfEllipse);
-        ATLTRACE2(traceGeneral, 0, L"Hatch: %d.\n", dxfInterface.countOfHatch);
-        ATLTRACE2(traceGeneral, 0, L"Image: %d.\n", dxfInterface.countOfImage);
-        ATLTRACE2(traceGeneral, 0, L"Insert: %d.\n", dxfInterface.countOfInsert);
-        ATLTRACE2(traceGeneral, 0, L"Knot: %d.\n", dxfInterface.countOfKnot);
-        ATLTRACE2(traceGeneral, 0, L"Line: %d.\n", dxfInterface.countOfLine);
-        ATLTRACE2(traceGeneral, 0, L"LWPolyline: %d.\n", dxfInterface.countOfLWPolyline);
-        ATLTRACE2(traceGeneral, 0, L"MText: %d.\n", dxfInterface.countOfMText);
-        ATLTRACE2(traceGeneral, 0, L"Point: %d.\n", dxfInterface.countOfPoint);
-        ATLTRACE2(traceGeneral, 0, L"Polyline: %d.\n", dxfInterface.countOfPolyline);
-        ATLTRACE2(traceGeneral, 0, L"Ray: %d.\n", dxfInterface.countOfRay);
-        ATLTRACE2(traceGeneral, 0, L"Solid: %d.\n", dxfInterface.countOfSolid);
-        ATLTRACE2(traceGeneral, 0, L"Spline: %d.\n", dxfInterface.countOfSpline);
-        ATLTRACE2(traceGeneral, 0, L"Text: %d.\n", dxfInterface.countOfText);
-        ATLTRACE2(traceGeneral, 0, L"Trace: %d.\n", dxfInterface.countOfTrace);
-        ATLTRACE2(traceGeneral, 0, L"Viewport: %d.\n", dxfInterface.countOfViewport);
+        ATLTRACE2(traceGeneral, 3, L"3dFace: %d.\n", dxfInterface.countOf3dFace);
+        ATLTRACE2(traceGeneral, 3, L"Arc: %d.\n", dxfInterface.countOfArc);
+        ATLTRACE2(traceGeneral, 3, L"Circle: %d.\n", dxfInterface.countOfCircle);
+        ATLTRACE2(traceGeneral, 3, L"DimAlign: %d.\n", dxfInterface.countOfDimAlign);
+        ATLTRACE2(traceGeneral, 3, L"DimLinear: %d.\n", dxfInterface.countOfDimLinear);
+        ATLTRACE2(traceGeneral, 3, L"DimAngular: %d.\n", dxfInterface.countOfDimAngular);
+        ATLTRACE2(traceGeneral, 3, L"DimAngular3P: %d.\n", dxfInterface.countOfDimAngular3P);
+        ATLTRACE2(traceGeneral, 3, L"DimDiametric: %d.\n", dxfInterface.countOfDimDiametric);
+        ATLTRACE2(traceGeneral, 3, L"DimLinear: %d.\n", dxfInterface.countOfDimLinear);
+        ATLTRACE2(traceGeneral, 3, L"DimOrdinate: %d.\n", dxfInterface.countOfDimOrdinate);
+        ATLTRACE2(traceGeneral, 3, L"DimRadial: %d.\n", dxfInterface.countOfDimRadial);
+        ATLTRACE2(traceGeneral, 3, L"Ellipse: %d.\n", dxfInterface.countOfEllipse);
+        ATLTRACE2(traceGeneral, 3, L"Hatch: %d.\n", dxfInterface.countOfHatch);
+        ATLTRACE2(traceGeneral, 3, L"Image: %d.\n", dxfInterface.countOfImage);
+        ATLTRACE2(traceGeneral, 3, L"Insert: %d.\n", dxfInterface.countOfInsert);
+        ATLTRACE2(traceGeneral, 3, L"Knot: %d.\n", dxfInterface.countOfKnot);
+        ATLTRACE2(traceGeneral, 3, L"Line: %d.\n", dxfInterface.countOfLine);
+        ATLTRACE2(traceGeneral, 3, L"LWPolyline: %d.\n", dxfInterface.countOfLWPolyline);
+        ATLTRACE2(traceGeneral, 3, L"MText: %d.\n", dxfInterface.countOfMText);
+        ATLTRACE2(traceGeneral, 3, L"Point: %d.\n", dxfInterface.countOfPoint);
+        ATLTRACE2(traceGeneral, 3, L"Polyline: %d.\n", dxfInterface.countOfPolyline);
+        ATLTRACE2(traceGeneral, 3, L"Ray: %d.\n", dxfInterface.countOfRay);
+        ATLTRACE2(traceGeneral, 3, L"Solid: %d.\n", dxfInterface.countOfSolid);
+        ATLTRACE2(traceGeneral, 3, L"Spline: %d.\n", dxfInterface.countOfSpline);
+        ATLTRACE2(traceGeneral, 3, L"Text: %d.\n", dxfInterface.countOfText);
+        ATLTRACE2(traceGeneral, 3, L"Trace: %d.\n", dxfInterface.countOfTrace);
+        ATLTRACE2(traceGeneral, 3, L"Viewport: %d.\n", dxfInterface.countOfViewport);
       } else {
-        ATLTRACE2(traceGeneral, 0, L"Error loading DXF file.\n");
+        ATLTRACE2(traceGeneral, 3, L"Error loading DXF file.\n");
       }
       // read dxf/dxb file and save pointer to the database
       // determine the version of the file (from header section) and set m_SaveAsType to EoDb::kDxf or EoDb::kDxb
@@ -1341,7 +1341,7 @@ void AeSysDoc::OnTrapCommandsCompress() { CompressTrappedGroups(); }
 void AeSysDoc::OnTrapCommandsExpand() {
   try {
     ExpandTrappedGroups();
-  } catch (...) { ATLTRACE2(traceGeneral, 1, L"AeSysDoc::OnTrapCommandsExpand: Failed to expand trapped groups.\n"); }
+  } catch (...) { ATLTRACE2(traceGeneral, 3, L"AeSysDoc::OnTrapCommandsExpand: Failed to expand trapped groups.\n"); }
 }
 
 void AeSysDoc::OnTrapCommandsInvert() {
@@ -1440,7 +1440,7 @@ void AeSysDoc::OnSetupLineType() {
 
   EoDbLineType* selectedLineType = dialog.GetSelectedLineType();
   if (selectedLineType == nullptr) {
-    ATLTRACE2(traceGeneral, 1, L"AeSysDoc::OnSetupLineType: No line type selected.\n");
+    ATLTRACE2(traceGeneral, 3, L"AeSysDoc::OnSetupLineType: No line type selected.\n");
     return;
   }
   renderState.SetLineType(nullptr, static_cast<std::int16_t>(selectedLineType->Index()));

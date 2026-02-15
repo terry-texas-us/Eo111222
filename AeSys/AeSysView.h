@@ -192,7 +192,7 @@ class AeSysView : public CView {
 
   HRESULT CreateDeviceResources();
   void DiscardDeviceResources();
-#endif  // USING_Direct2D
+#endif
 
  public:
   AeSysDoc* GetDocument() const;
@@ -383,7 +383,17 @@ class AeSysView : public CView {
   auto GetLastGroupPosition() const { return m_VisibleGroupList.GetTailPosition(); }
   [[nodiscard]] EoDbGroup* GetNextVisibleGroup(POSITION& position) { return m_VisibleGroupList.GetNext(position); }
   [[nodiscard]] EoDbGroup* GetPreviousGroup(POSITION& position) { return m_VisibleGroupList.GetPrev(position); }
+  
+  /** @brief This method handles the rendering of the background image in the view.
+   *
+   * It calculates the appropriate portion of the
+   * background image to display based on the current view and overview transforms, and then stretches that portion to fit
+   * the viewport. It uses GDI functions to perform the drawing, ensuring that the palette is correctly selected and
+   * realized for accurate color representation.
+   * @param deviceContext The device context to draw on, typically obtained from the view's OnDraw method.
+   */
   void BackgroundImageDisplay(CDC* deviceContext);
+
   [[nodiscard]] EoGeVector3d GetRelPos() const { return m_vRelPos; }
   [[nodiscard]] bool ViewTrueTypeFonts() const { return m_ViewTrueTypeFonts; }
 

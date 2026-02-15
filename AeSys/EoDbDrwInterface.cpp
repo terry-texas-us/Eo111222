@@ -81,7 +81,7 @@ void EoDbDrwInterface::ConvertDimStyle(const DRW_Dimstyle& dimStyle, [[maybe_unu
 void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* document) {
   std::wstring layerName = Eo::MultiByteToWString(layer.name.c_str());
 
-  ATLTRACE2(traceGeneral, 1, L"%s   Loading layer definition\n", layerName.c_str());
+  ATLTRACE2(traceGeneral, 3, L"%s   Loading layer definition\n", layerName.c_str());
 
   if (document->FindLayerTableLayer(layerName.c_str()) >= 0) { return; }
 
@@ -139,7 +139,7 @@ void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* do
   std::wstring lineTypeDesc =
       Eo::MultiByteToWString(data.desc.c_str());  // Descriptive text for linetype (group code 3)
 
-  ATLTRACE2(traceGeneral, 1, L"Converting Linetype: %s\n", lineTypeName.c_str());
+  ATLTRACE2(traceGeneral, 3, L"Converting Linetype: %s\n", lineTypeName.c_str());
 
   EoDbLineTypeTable* lineTypeTable = document->LineTypeTable();
   EoDbLineType* LineType{};
@@ -249,12 +249,12 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* docu
 
 /** @brief This method is primarily used in DWG files when the parser switches to entities belonging to a different block than the current one. The handle parameter corresponds to the block handle previously provided via addBlock (accessible as DRW_Block::handleBlock). In your implementation, switch the current block context to the one matching this handle. For DXF files, this callback may not be triggered, or it may be used sparingly if blocks are referenced out of sequence. */
 void EoDbDrwInterface::ConvertBlockSet([[maybe_unused]] const int handle, [[maybe_unused]] AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 0, L"Block set\n");
+  ATLTRACE2(traceGeneral, 3, L"Block set\n");
 }
 
 /** @brief This method signals the end of the current block definition. In your implementation, finalize the block (e.g., add it to a document's block table or collection) and reset the context to the default (model space or paper space).*/
 void EoDbDrwInterface::ConvertBlockEnd([[maybe_unused]] AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 0, L"Block end\n");
+  ATLTRACE2(traceGeneral, 3, L"Block end\n");
 }
 
 // Entities
@@ -286,24 +286,24 @@ void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
   auto layerName = primitive->LayerName().c_str();
   auto* layer = document->GetLayerTableLayer(layerName);
   if (layer == nullptr) {
-    ATLTRACE2(traceGeneral, 0, L"Warning: Layer '%s' not found.\n", layerName);
+    ATLTRACE2(traceGeneral, 3, L"Warning: Layer '%s' not found.\n", layerName);
     delete primitive;
     return;
   }
 
-  ATLTRACE2(traceGeneral, 0, L"AddToDocument: primitive=%p, inBlock=%d, currentBlock=%p, layer='%s'\n", primitive,
+  ATLTRACE2(traceGeneral, 3, L"AddToDocument: primitive=%p, inBlock=%d, currentBlock=%p, layer='%s'\n", primitive,
       inBlockDefinition ? 1 : 0, currentOpenBlockDefinition, layerName);
 
   if (currentOpenBlockDefinition == nullptr) {
     auto* group = new EoDbGroup();
 
-    ATLTRACE2(traceGeneral, 0, L"  -> Creating MODEL SPACE group %p for primitive %p\n", group, primitive);
+    ATLTRACE2(traceGeneral, 3, L"  -> Creating MODEL SPACE group %p for primitive %p\n", group, primitive);
 
     group->AddTail(primitive);
     layer->AddTail(group);
     return;
   }
-  ATLTRACE2(traceGeneral, 0, L"  -> Adding to BLOCK at %p\n", currentOpenBlockDefinition);
+  ATLTRACE2(traceGeneral, 3, L"  -> Adding to BLOCK at %p\n", currentOpenBlockDefinition);
 
   currentOpenBlockDefinition->AddTail(primitive);
 }
@@ -312,7 +312,7 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
   ATLTRACE2(traceGeneral, 2, L"Arc entity conversion\n");
 
   if (arc.radious < Eo::geometricTolerance) {
-    ATLTRACE2(traceGeneral, 0, L"Warning: Arc entity with non-positive radius (%f) skipped.\n", arc.radious);
+    ATLTRACE2(traceGeneral, 3, L"Warning: Arc entity with non-positive radius (%f) skipped.\n", arc.radious);
     return;
   }
   EoGePoint3d center(arc.basePoint.x, arc.basePoint.y, arc.basePoint.z);
@@ -339,7 +339,7 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
 
   auto* radialArc = EoDbConic::CreateRadialArc(center, extrusion, arc.radious, startAngle, endAngle);
   if (radialArc == nullptr) {
-    ATLTRACE2(traceGeneral, 0, L"Warning: Failed to create radial arc.\n");
+    ATLTRACE2(traceGeneral, 3, L"Warning: Failed to create radial arc.\n");
     return;
   }
   radialArc->SetBaseProperties(&arc, document);
@@ -365,12 +365,12 @@ void EoDbDrwInterface::ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc
   ATLTRACE2(traceGeneral, 2, L"Ellipse entity conversion\n");
 
   if (ellipse.ratio <= 0.0 || ellipse.ratio > 1.0) {
-    ATLTRACE2(traceGeneral, 0, L"Warning: Ellipse entity with invalid ratio (%f) skipped.\n", ellipse.ratio);
+    ATLTRACE2(traceGeneral, 3, L"Warning: Ellipse entity with invalid ratio (%f) skipped.\n", ellipse.ratio);
     return;
   }
   EoGeVector3d majorAxis(ellipse.secPoint.x, ellipse.secPoint.y, ellipse.secPoint.z);
   if (majorAxis.IsNearNull()) {
-    ATLTRACE2(traceGeneral, 0, L"Warning: Zero-length major axis\n");
+    ATLTRACE2(traceGeneral, 3, L"Warning: Zero-length major axis\n");
     return;
   }
   EoGeVector3d extrusion(ellipse.extPoint.x, ellipse.extPoint.y, ellipse.extPoint.z);
@@ -386,7 +386,7 @@ void EoDbDrwInterface::ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc
 }
 
 void EoDbDrwInterface::ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 0, L"Insert entity conversion\n");
+  ATLTRACE2(traceGeneral, 3, L"Insert entity conversion\n");
   auto insertPrimitive = new EoDbBlockReference();
   insertPrimitive->SetBaseProperties(&insert, document);
   auto name = Eo::MultiByteToWString(insert.name.c_str());
@@ -410,7 +410,7 @@ void EoDbDrwInterface::ConvertLineEntity(const DRW_Line& line, AeSysDoc* documen
 }
 
 void EoDbDrwInterface::ConvertLWPolylineEntity(const DRW_LWPolyline& lwPolyline, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 0, L"LWPolyline entity conversion\n");
+  ATLTRACE2(traceGeneral, 3, L"LWPolyline entity conversion\n");
   auto polylinePrimitive = new EoDbPolyline();
   polylinePrimitive->SetBaseProperties(&lwPolyline, document);
 

@@ -35,11 +35,11 @@ class EoDbDrwInterface : public DRW_Interface {
   }
 
   void addLayer(const DRW_Layer& layer) override {
-    ATLTRACE2(traceGeneral, 1, L"DRW_Interface::addLayer called\n");
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLayer called\n");
     ConvertLayerTable(layer, m_document);
   }
   void addLType(const DRW_LType& lType) override {
-    ATLTRACE2(traceGeneral, 1, L"DRW_Interface::addLType called\n");
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLType called\n");
     ConvertLinetypesTable(lType, m_document);
   }
   void addTextStyle(const DRW_Textstyle& textStyle) override {
@@ -56,15 +56,15 @@ class EoDbDrwInterface : public DRW_Interface {
   void addBlock(const DRW_Block& block) override {
     inBlockDefinition = true;
     blockName = Eo::MultiByteToWString(block.name.c_str());
-    ATLTRACE2(traceGeneral, 1, L"DRW_Interface::addBlock <%s>\n", blockName.c_str());
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addBlock <%s>\n", blockName.c_str());
     currentOpenBlockDefinition = ConvertBlock(block, m_document);
   }
   void setBlock(const int handle) override {
-    ATLTRACE2(traceGeneral, 1, L"DRW_Interface::setBlock\n");
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::setBlock\n");
     ConvertBlockSet(handle, m_document);
   }
   void endBlock() override {
-    ATLTRACE2(traceGeneral, 1, L"DRW_Interface::endBlock\n");
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::endBlock\n");
     inBlockDefinition = false;
     currentOpenBlockDefinition = nullptr;
     blockName.clear();
