@@ -10,6 +10,8 @@
 #include "EoDb.h"
 #include "EoGePoint3d.h"
 
+class AeSysView;
+
 extern COLORREF ViewBackgroundColor;
 
 extern COLORREF ColorPalette[256];
@@ -194,7 +196,7 @@ class AeSys : public CWinAppEx {
   void HomePointSave(int i, const EoGePoint3d& pt);
   void InitGbls(CDC* deviceContext);
   [[nodiscard]] bool IsTrapHighlighted() const { return m_TrapHighlighted; }
-  void LoadModeResources(int mode);
+  void LoadModeResources(int mode, AeSysView* targetView = nullptr);
   void LoadSimplexStrokeFont(const CString& pathName);
   bool ModeInformationOverView() const { return m_ModeInformationOverView; }
   [[nodiscard]] double ParseLength(wchar_t* lengthAsString);

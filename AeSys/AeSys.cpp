@@ -246,8 +246,6 @@ BOOL AeSys::InitInstance() {
   dde::Setup(AeSys::GetInstance());
 #endif  // USING_DDE
 
-  // OnModeDraw(); // Set initial mode to draw mode. This will also load the resources for draw mode.
-
   // This is the private data format used to pass EoGroups from one instance to another
   m_ClipboardFormatIdentifierForEoGroups = RegisterClipboardFormatW(L"EoGroups");
 
@@ -571,13 +569,13 @@ void AeSys::LoadPenColorsFromFile(const CString& strFileName) {
     }
   }
 }
-void AeSys::LoadModeResources(int mode) {
+void AeSys::LoadModeResources(int mode, AeSysView* targetView) {
   BuildModifiedAcceleratorTable();
 
   m_CurrentMode = mode;
   AddModeInformationToMessageList();
 
-  auto* activeView = AeSysView::GetActiveView();
+  auto* activeView = targetView ? targetView : AeSysView::GetActiveView();
   if (activeView != nullptr) {
     activeView->SetModeCursor(m_CurrentMode);
     activeView->ModeLineDisplay();

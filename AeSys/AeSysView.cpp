@@ -717,6 +717,7 @@ void AeSysView::OnInitialUpdate() {
 #if defined(USING_STATE_PATTERN)
   PushState(std::make_unique<IdleState>());
 #endif
+  OnModeDraw();
 }
 
 /** @brief Helper function to display content based on the provided hint, used by OnUpdate for delegation
@@ -2606,12 +2607,12 @@ void AeSysView::OnModeDimension() {
 }
 
 void AeSysView::OnModeDraw() {
+  app.SetModeResourceIdentifier(IDR_DRAW_MODE);
+  app.SetPrimaryMode(ID_MODE_DRAW);
+  app.LoadModeResources(ID_MODE_DRAW, this);
 #if defined(USING_STATE_PATTERN)
   PushState(std::make_unique<DrawModeState>());
 #endif
-  app.SetModeResourceIdentifier(IDR_DRAW_MODE);
-  app.SetPrimaryMode(ID_MODE_DRAW);
-  app.LoadModeResources(ID_MODE_DRAW);
 }
 
 void AeSysView::OnModeDraw2() {
