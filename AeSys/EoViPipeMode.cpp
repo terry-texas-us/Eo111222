@@ -631,8 +631,8 @@ void AeSysView::OnPipeModeEscape() {
 void AeSysView::DoPipeModeMouseMove() {
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
-  INT_PTR NumberOfPoints = pts.GetSize();
-  if (NumberOfPoints == 0) { return; }
+  auto numberOfPoints = pts.GetSize();
+  if (numberOfPoints == 0) { return; }
 
   switch (m_PreviousOp) {
     case ID_OP2:
@@ -675,7 +675,7 @@ void AeSysView::DoPipeModeMouseMove() {
       break;
     }
   }
-  pts.SetSize(NumberOfPoints);
+  pts.SetSize(numberOfPoints);
 }
 
 void AeSysView::GenerateLineWithFittings(

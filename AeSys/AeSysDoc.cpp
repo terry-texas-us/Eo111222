@@ -239,7 +239,7 @@ void AeSysDoc::SetCommonTableEntries() {
   lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
   m_LineTypeTable.SetAt(L"Continuous", lineType);
 
-  m_workLayer = new EoDbLayer(L"0", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive, lineType);
+  m_workLayer = new EoDbLayer(L"0", EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive, lineType);
   m_ContinuousLineType = lineType;
   AddLayerTableLayer(m_workLayer);
 
@@ -436,21 +436,21 @@ void AeSysDoc::GetExtents(
 }
 
 int AeSysDoc::NumberOfGroupsInWorkLayer() {
-  INT_PTR count{};
+  int count{};
 
   for (auto i = 0; i < GetLayerTableSize(); i++) {
     auto* layer = GetLayerTableLayerAt(i);
-    if (layer->IsWork()) { count += layer->GetCount(); }
+    if (layer->IsWork()) { count += static_cast<int>(layer->GetCount()); }
   }
   return static_cast<int>(count);
 }
 
 int AeSysDoc::NumberOfGroupsInActiveLayers() {
-  INT_PTR count{};
+  int count{};
 
   for (auto i = 0; i < GetLayerTableSize(); i++) {
     auto* layer = GetLayerTableLayerAt(i);
-    if (layer->IsActive()) { count += layer->GetCount(); }
+    if (layer->IsActive()) { count += static_cast<int>(layer->GetCount()); }
   }
   return static_cast<int>(count);
 }
@@ -593,7 +593,7 @@ bool AeSysDoc::LayerMelt(CString& strName) {
         layer->ClearStateFlag();
         layer->MakeResident();
         layer->SetStateStatic();
-        layer->SetTracingFlg(EoDbLayer::kTracingIsMapped);
+        layer->SetTracingState(EoDbLayer::TracingState::isMapped);
 
         strName = strName.Mid(of.nFileOffset);
         layer->SetName(strName);
@@ -735,7 +735,7 @@ void AeSysDoc::TracingFuse(CString& nameAndLocation) {
     wchar_t* context{};
     wchar_t* baseName = wcstok_s(title, L".", &context);
     nameAndLocation = baseName;
-    layer->ClrTracingFlg();
+    layer->ClearTracingStateBit();
     layer->ClearStateFlag();
     layer->MakeResident();
     layer->MakeInternal();
@@ -786,7 +786,7 @@ bool AeSysDoc::TracingMap(const CString& pathName) {
     else
       fileOpen = true;
   } else {
-    layer = new EoDbLayer(pathName, EoDbLayer::kIsStatic);
+    layer = new EoDbLayer(pathName, EoDbLayer::State::isStatic);
 
     fileOpen = TracingLoadLayer(pathName, layer);
 
@@ -796,7 +796,7 @@ bool AeSysDoc::TracingMap(const CString& pathName) {
       delete layer;
   }
   if (fileOpen) {
-    layer->SetTracingFlg(EoDbLayer::kTracingIsMapped);
+    layer->SetTracingState(EoDbLayer::TracingState::isMapped);
     UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
   }
   return fileOpen;
@@ -811,17 +811,17 @@ bool AeSysDoc::TracingOpen(const CString& fileName) {
 
   if (iLayId > 0) {  // already loaded
     layer = GetLayerTableLayerAt(iLayId);
-    layer->ClearStateFlag(EoDbLayer::kIsResident);
+    layer->ClearStateFlag(EoDbLayer::State::isResident);
   } else {  // create a new layer and append all the groups in the group file.
 
-    layer = new EoDbLayer(fileName, EoDbLayer::kIsWork | EoDbLayer::kIsActive);
+    layer = new EoDbLayer(fileName, EoDbLayer::State::isWork | EoDbLayer::State::isActive);
     AddLayerTableLayer(layer);
 
     TracingLoadLayer(fileName, layer);
 
     AddGroupsToAllViews(layer);
   }
-  layer->SetTracingFlg(EoDbLayer::kTracingIsOpened);
+  layer->SetTracingState(EoDbLayer::TracingState::isOpened);
 
   m_SaveAsType = EoDb::FileTypes::Tracing;
   SetWorkLayer(layer);
@@ -845,7 +845,7 @@ bool AeSysDoc::TracingView(const CString& pathName) {
       fileOpen = true;
     }
   } else {
-    layer = new EoDbLayer(pathName, EoDbLayer::kIsStatic);
+    layer = new EoDbLayer(pathName, EoDbLayer::State::isStatic);
     fileOpen = TracingLoadLayer(pathName, layer);
     if (fileOpen) {
       AddLayerTableLayer(layer);
@@ -854,7 +854,7 @@ bool AeSysDoc::TracingView(const CString& pathName) {
     }
   }
   if (fileOpen) {
-    layer->SetTracingFlg(EoDbLayer::kTracingIsViewed);
+    layer->SetTracingState(EoDbLayer::TracingState::isViewed);
     UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
   }
   return fileOpen;
@@ -940,7 +940,7 @@ void AeSysDoc::OnClearMappedTracings() {
       UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
 
       if (layer->IsResident()) {
-        layer->ClrTracingFlg(EoDbLayer::kTracingIsMapped);
+        layer->ClearTracingStateBit(EoDbLayer::TracingState::isMapped);
         layer->SetStateOff();
       } else {
         RemoveLayerTableLayerAt(i);
@@ -958,7 +958,7 @@ void AeSysDoc::OnClearViewedTracings() {
       UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
 
       if (layer->IsResident()) {
-        layer->ClrTracingFlg(EoDbLayer::kTracingIsViewed);
+        layer->ClearTracingStateBit(EoDbLayer::TracingState::isViewed);
         layer->SetStateOff();
       } else {
         RemoveLayerTableLayerAt(i);
@@ -1082,7 +1082,7 @@ void AeSysDoc::OnLayerActive() {
     if (layer->IsWork()) {
       app.WarningMessageBox(IDS_MSG_LAYER_NO_ACTIVE, m_IdentifiedLayerName);
     } else {
-      layer->MakeStateActive();
+      layer->SetStateActive();
       UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
     }
   }
@@ -1151,7 +1151,7 @@ void AeSysDoc::OnTracingOpen() { TracingOpen(m_IdentifiedLayerName); }
 void AeSysDoc::OnLayersActiveAll() {
   for (auto i = 0; i < GetLayerTableSize(); i++) {
     auto* layer = GetLayerTableLayerAt(i);
-    if (!layer->IsWork()) { layer->MakeStateActive(); }
+    if (!layer->IsWork()) { layer->SetStateActive(); }
   }
   UpdateAllViews(nullptr, 0L, nullptr);
 }

@@ -173,12 +173,12 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
   for (auto n = 0; n < numberOfLayers; n++) {
     EoDb::Read(*this, layerName);
 
-    auto tracingFlags = EoDb::ReadUInt16(*this);
-    auto stateFlags = EoDb::ReadUInt16(*this);
+    auto tracingState = EoDb::ReadUInt16(*this);
+    auto state = EoDb::ReadUInt16(*this);
 
-    stateFlags |= EoDbLayer::kIsResident;
+    state |= EoDbLayer::State::isResident;
 
-    if ((stateFlags & EoDbLayer::kIsInternal) != EoDbLayer::kIsInternal) {
+    if ((state & EoDbLayer::State::isInternal) != EoDbLayer::State::isInternal) {
       if (layerName.Find('.') == -1) layerName += L".jb1";
     }
     auto colorIndex = EoDb::ReadInt16(*this);
@@ -187,9 +187,9 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
     if (document->FindLayerTableLayer(layerName) < 0) {
       ATLTRACE2(traceGeneral, 2, L"Added Layer: `%s` to Layer Table\n", layerName.GetString());
       ATLTRACE2(traceGeneral, 2, L"  Linetype: `%s`\n", lineTypeName.GetString());
-      auto* layer = new EoDbLayer(layerName, stateFlags);
+      auto* layer = new EoDbLayer(layerName, state);
 
-      layer->SetTracingFlg(tracingFlags);
+      layer->SetTracingState(tracingState);
       layer->SetColorIndex(colorIndex);
 
       EoDbLineType* lineType{};
@@ -376,8 +376,8 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
     EoDbLayer* Layer = document->GetLayerTableLayerAt(n);
     if (Layer->IsResident()) {
       EoDb::Write(*this, Layer->Name());
-      EoDb::Write(*this, Layer->GetTracingFlgs());
-      EoDb::Write(*this, Layer->LayerStateFlags());
+      EoDb::Write(*this, Layer->TracingState());
+      EoDb::Write(*this, Layer->State());
       EoDb::Write(*this, Layer->ColorIndex());
       EoDb::Write(*this, Layer->LineTypeName());
     } else

@@ -86,7 +86,7 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
   if (document->FindLayerTableLayer(layerName.c_str()) >= 0) { return; }
 
   EoDbLayer* newLayer =
-      new EoDbLayer(layerName.c_str(), EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
+      new EoDbLayer(layerName.c_str(), EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive);
 
   // Color number (if negative the layer is off) group code 62
   newLayer->SetColorIndex(static_cast<std::int16_t>(abs(layer.color)));

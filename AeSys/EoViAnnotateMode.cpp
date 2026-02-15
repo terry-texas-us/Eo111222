@@ -394,7 +394,7 @@ bool AeSysView::CorrectLeaderEndpoints(int beginType, int endType, EoGePoint3d& 
 }
 void AeSysView::DoAnnotateModeMouseMove() {
   auto cursorPosition = GetCursorPosition();
-  INT_PTR NumberOfPoints = pts.GetSize();
+  auto numberOfPoints = pts.GetSize();
   pts.Add(cursorPosition);
   auto* document = GetDocument();
   document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
@@ -432,7 +432,7 @@ void AeSysView::DoAnnotateModeMouseMove() {
       }
       break;
   }
-  pts.SetSize(NumberOfPoints);
+  pts.SetSize(numberOfPoints);
 }
 
 void AeSysView::GenerateLineEndItem(int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group) const {

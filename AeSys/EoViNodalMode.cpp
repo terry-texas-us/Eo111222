@@ -317,7 +317,7 @@ void AeSysView::OnNodalModeEscape() {
 }
 void AeSysView::DoNodalModeMouseMove() {
   auto cursorPosition = GetCursorPosition();
-  INT_PTR NumberOfPoints = pts.GetSize();
+  auto numberOfPoints = pts.GetSize();
   auto* document = GetDocument();
 
   switch (PreviousNodalCommand) {
@@ -367,7 +367,7 @@ void AeSysView::DoNodalModeMouseMove() {
       }
       break;
   }
-  pts.SetSize(NumberOfPoints);
+  pts.SetSize(numberOfPoints);
 }
 
 void AeSysView::ConstructPreviewGroup() {

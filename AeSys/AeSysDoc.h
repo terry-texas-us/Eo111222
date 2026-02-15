@@ -394,7 +394,7 @@ class AeSysDoc : public CDocument {
    * making it resident and internal, and setting its state to static. It also updates
    * the layer's name based on the provided file name.
    *
-   * @param nameAndLocation A reference to a CString containing the name and location of the tracing layer file.
+   * @param nameAndLocation The name and location of the tracing layer file.
    * @note This is a cold state meaning the layer is displayed using warm color set, is not detectable, and may not have its groups modified or deleted. No new groups may be added to the layer.
    */
   void TracingFuse(CString& nameAndLocation);

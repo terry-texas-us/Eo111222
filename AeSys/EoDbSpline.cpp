@@ -104,24 +104,26 @@ void EoDbSpline::GetExtents(
   }
 }
 EoGePoint3d EoDbSpline::GoToNextControlPoint() {
-  EoGePoint3d pt;
+  EoGePoint3d point;
 
-  INT_PTR i = m_pts.GetSize() - 1;
+  auto i = m_pts.GetSize() - 1;
 
-  if (sm_RelationshipOfPoint < Eo::geometricTolerance)
-    pt = m_pts[i];
-  else if (sm_RelationshipOfPoint >= 1.0 - Eo::geometricTolerance)
-    pt = m_pts[0];
-  else if (m_pts[i].x > m_pts[0].x)
-    pt = m_pts[0];
-  else if (m_pts[i].x < m_pts[0].x)
-    pt = m_pts[i];
-  else if (m_pts[i].y > m_pts[0].y)
-    pt = m_pts[0];
-  else
-    pt = m_pts[i];
-  return pt;
+  if (sm_RelationshipOfPoint < Eo::geometricTolerance) {
+    point = m_pts[i];
+  } else if (sm_RelationshipOfPoint >= 1.0 - Eo::geometricTolerance) {
+    point = m_pts[0];
+  } else if (m_pts[i].x > m_pts[0].x) {
+    point = m_pts[0];
+  } else if (m_pts[i].x < m_pts[0].x) {
+    point = m_pts[i];
+  } else if (m_pts[i].y > m_pts[0].y) {
+    point = m_pts[0];
+  } else {
+    point = m_pts[i];
+  }
+  return point;
 }
+
 bool EoDbSpline::IsInView(AeSysView* view) {
   EoGePoint4d pt[2]{};
 

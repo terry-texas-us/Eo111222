@@ -1,5 +1,7 @@
 ﻿#include "Stdafx.h"
 
+#include <cstdint>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "EoDbGroup.h"
@@ -9,20 +11,21 @@
 #include "EoDbPrimitive.h"
 
 EoDbLayer::EoDbLayer(const CString& name, std::uint16_t stateFlags) {
-  m_Name = name;
-  m_TracingFlgs = 0;
-  m_StateFlags = stateFlags;
-  m_ColorIndex = 1;
-  m_LineType = nullptr;
+  m_name = name;
+  m_tracingState = 0;
+  m_state = stateFlags;
+  m_color = 1;
+  m_lineType = nullptr;
 }
 EoDbLayer::EoDbLayer(const CString& name, std::uint16_t stateFlags, EoDbLineType* lineType) {
-  m_Name = name;
-  m_TracingFlgs = 0;
-  m_StateFlags = stateFlags;
-  m_ColorIndex = 1;
-  m_LineType = lineType;
+  m_name = name;
+  m_tracingState = 0;
+  m_state = stateFlags;
+  m_color = 1;
+  m_lineType = lineType;
 }
-COLORREF EoDbLayer::Color() const { return ColorPalette[m_ColorIndex]; }
+[[nodiscard]] COLORREF EoDbLayer::ColorValue() const { return ColorPalette[m_color]; }
+
 void EoDbLayer::Display(AeSysView* view, CDC* deviceContext) {
   EoDbPrimitive::SetLayerColor(ColorIndex());
   EoDbPrimitive::SetLayerLineTypeIndex(LineTypeIndex());
@@ -70,18 +73,20 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
     }
   } catch (CException* e) { e->Delete(); }
 }
-EoDbLineType* EoDbLayer::LineType() const { return m_LineType; }
-std::int16_t EoDbLayer::LineTypeIndex() {
-  std::int16_t index = (m_LineType == nullptr ? 0 : m_LineType->Index());
+[[nodiscard]] EoDbLineType* EoDbLayer::LineType() const { return m_lineType; }
+
+[[nodiscard]] std::int16_t EoDbLayer::LineTypeIndex() {
+  std::int16_t index = (m_lineType == nullptr ? 0 : m_lineType->Index());
   return index;
 }
+
 void EoDbLayer::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
   for (int i = 0; i < wCols; i++) {
-    if (m_ColorIndex == pCol[i]) {
-      m_ColorIndex = pColNew[i];
+    if (m_color == pCol[i]) {
+      m_color = pColNew[i];
       break;
     }
   }
   EoDbGroupList::PenTranslation(wCols, pColNew, pCol);
 }
-void EoDbLayer::SetLineType(EoDbLineType* lineType) { m_LineType = lineType; }
+void EoDbLayer::SetLineType(EoDbLineType* lineType) { m_lineType = lineType; }

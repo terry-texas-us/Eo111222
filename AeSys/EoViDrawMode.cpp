@@ -1,5 +1,8 @@
 ﻿#include "Stdafx.h"
 
+#include <cmath>
+#include <cstdint>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
@@ -17,32 +20,33 @@
 #include "EoGsRenderState.h"
 #include "Resource.h"
 
-std::uint16_t PreviousDrawCommand{};
-
+namespace {
+std::uint16_t previousDrawCommand{};
+}
 void AeSysView::OnDrawModeOptions() { AeSysDoc::GetDoc()->OnSetupOptionsDraw(); }
 
 void AeSysView::OnDrawModePoint() {
   auto cursorPosition = GetCursorPosition();
 
-  auto* Group = new EoDbGroup(new EoDbPoint(renderState.Color(), renderState.PointStyle(), cursorPosition));
+  auto* group = new EoDbGroup(new EoDbPoint(renderState.Color(), renderState.PointStyle(), cursorPosition));
   auto* document = GetDocument();
-  document->AddWorkLayerGroup(Group);
-  document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+  document->AddWorkLayerGroup(group);
+  document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
 
 void AeSysView::OnDrawModeLine() {
   auto cursorPosition = GetCursorPosition();
-  if (PreviousDrawCommand != ID_OP2) {
+  if (previousDrawCommand != ID_OP2) {
     pts.RemoveAll();
     pts.Add(cursorPosition);
-    PreviousDrawCommand = ModeLineHighlightOp(ID_OP2);
+    previousDrawCommand = ModeLineHighlightOp(ID_OP2);
   } else {
     auto* document = GetDocument();
     cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
 
-    auto* Group = new EoDbGroup(
+    auto* group = new EoDbGroup(
         EoDbLine::CreateLine(pts[0], cursorPosition)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
-    document->AddWorkLayerGroup(Group);
+    document->AddWorkLayerGroup(group);
     pts[0] = cursorPosition;
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   }
@@ -51,15 +55,15 @@ void AeSysView::OnDrawModeLine() {
 void AeSysView::OnDrawModePolygon() {
   auto cursorPosition = GetCursorPosition();
 
-  if (PreviousDrawCommand != ID_OP3) {
-    PreviousDrawCommand = ModeLineHighlightOp(ID_OP3);
+  if (previousDrawCommand != ID_OP3) {
+    previousDrawCommand = ModeLineHighlightOp(ID_OP3);
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
-    INT_PTR NumberOfPoints = pts.GetSize();
+    auto numberOfPoints = pts.GetSize();
 
-    if (pts[NumberOfPoints - 1] != cursorPosition) {
-      cursorPosition = SnapPointToAxis(pts[NumberOfPoints - 1], cursorPosition);
+    if (pts[numberOfPoints - 1] != cursorPosition) {
+      cursorPosition = SnapPointToAxis(pts[numberOfPoints - 1], cursorPosition);
       pts.Add(cursorPosition);
     }
   }
@@ -68,8 +72,8 @@ void AeSysView::OnDrawModePolygon() {
 void AeSysView::OnDrawModeQuad() {
   auto cursorPosition = GetCursorPosition();
 
-  if (PreviousDrawCommand != ID_OP4) {
-    PreviousDrawCommand = ModeLineHighlightOp(ID_OP4);
+  if (previousDrawCommand != ID_OP4) {
+    previousDrawCommand = ModeLineHighlightOp(ID_OP4);
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
@@ -80,8 +84,8 @@ void AeSysView::OnDrawModeQuad() {
 void AeSysView::OnDrawModeArc() {
   auto cursorPosition = GetCursorPosition();
 
-  if (PreviousDrawCommand != ID_OP5) {
-    PreviousDrawCommand = ModeLineHighlightOp(ID_OP5);
+  if (previousDrawCommand != ID_OP5) {
+    previousDrawCommand = ModeLineHighlightOp(ID_OP5);
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
@@ -92,8 +96,8 @@ void AeSysView::OnDrawModeArc() {
 void AeSysView::OnDrawModeBspline() {
   auto cursorPosition = GetCursorPosition();
 
-  if (PreviousDrawCommand != ID_OP6) {
-    PreviousDrawCommand = ModeLineHighlightOp(ID_OP6);
+  if (previousDrawCommand != ID_OP6) {
+    previousDrawCommand = ModeLineHighlightOp(ID_OP6);
 
     pts.RemoveAll();
     pts.Add(cursorPosition);
@@ -105,8 +109,8 @@ void AeSysView::OnDrawModeBspline() {
 void AeSysView::OnDrawModeCircle() {
   auto cursorPosition = GetCursorPosition();
 
-  if (PreviousDrawCommand != ID_OP7) {
-    PreviousDrawCommand = ModeLineHighlightOp(ID_OP7);
+  if (previousDrawCommand != ID_OP7) {
+    previousDrawCommand = ModeLineHighlightOp(ID_OP7);
     pts.RemoveAll();
     pts.Add(cursorPosition);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -118,8 +122,8 @@ void AeSysView::OnDrawModeCircle() {
 void AeSysView::OnDrawModeEllipse() {
   auto cursorPosition = GetCursorPosition();
 
-  if (PreviousDrawCommand != ID_OP8) {
-    PreviousDrawCommand = ModeLineHighlightOp(ID_OP8);
+  if (previousDrawCommand != ID_OP8) {
+    previousDrawCommand = ModeLineHighlightOp(ID_OP8);
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
@@ -130,8 +134,8 @@ void AeSysView::OnDrawModeEllipse() {
 void AeSysView::OnDrawModeInsert() {
   auto* document = GetDocument();
   if (document->BlockTableSize() > 0) {
-    EoDlgBlockInsert Dialog(document);
-    Dialog.DoModal();
+    EoDlgBlockInsert dialog(document);
+    dialog.DoModal();
   }
 }
 
@@ -139,10 +143,10 @@ void AeSysView::OnDrawModeReturn() {
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
 
-  INT_PTR NumberOfPoints = pts.GetSize();
+  auto numberOfPoints = pts.GetSize();
   EoDbGroup* group{};
 
-  switch (PreviousDrawCommand) {
+  switch (previousDrawCommand) {
     case ID_OP2:
       cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
       group = new EoDbGroup(EoDbLine::CreateLine(pts[0], cursorPosition)
@@ -150,26 +154,26 @@ void AeSysView::OnDrawModeReturn() {
       break;
 
     case ID_OP3:
-      if (NumberOfPoints == 1) return;
+      if (numberOfPoints == 1) { return; }
 
-      if (pts[NumberOfPoints - 1] == cursorPosition) {
+      if (pts[numberOfPoints - 1] == cursorPosition) {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
-      cursorPosition = SnapPointToAxis(pts[NumberOfPoints - 1], cursorPosition);
+      cursorPosition = SnapPointToAxis(pts[numberOfPoints - 1], cursorPosition);
       pts.Add(cursorPosition);
       group = new EoDbGroup(new EoDbPolygon(pts));
       break;
 
     case ID_OP4:
-      if (pts[NumberOfPoints - 1] == cursorPosition) {
+      if (pts[numberOfPoints - 1] == cursorPosition) {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
-      cursorPosition = SnapPointToAxis(pts[NumberOfPoints - 1], cursorPosition);
+      cursorPosition = SnapPointToAxis(pts[numberOfPoints - 1], cursorPosition);
       pts.Add(cursorPosition);
 
-      if (NumberOfPoints == 1) return;
+      if (numberOfPoints == 1) { return; }
 
       pts.Add(pts[0] + EoGeVector3d(pts[1], pts[2]));
 
@@ -183,13 +187,13 @@ void AeSysView::OnDrawModeReturn() {
       break;
 
     case ID_OP5: {
-      if (pts[NumberOfPoints - 1] == cursorPosition) {
+      if (pts[numberOfPoints - 1] == cursorPosition) {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
       pts.Add(cursorPosition);
 
-      if (NumberOfPoints == 1) { return; }
+      if (numberOfPoints == 1) { return; }
       EoGePoint3d start{pts[0]};
       EoGePoint3d intermediate{pts[1]};
       EoGePoint3d end{pts[2]};
@@ -210,7 +214,7 @@ void AeSysView::OnDrawModeReturn() {
       break;
     }
     case ID_OP6:
-      if (NumberOfPoints == 1) return;
+      if (numberOfPoints == 1) { return; }
 
       pts.Add(cursorPosition);
 
@@ -227,12 +231,12 @@ void AeSysView::OnDrawModeReturn() {
     } break;
 
     case ID_OP8: {
-      if (pts[NumberOfPoints - 1] == cursorPosition) {
+      if (pts[numberOfPoints - 1] == cursorPosition) {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
       pts.Add(cursorPosition);
-      if (NumberOfPoints == 1) {
+      if (numberOfPoints == 1) {
         SetCursorPosition(pts[0]);
         return;
       }
@@ -257,7 +261,7 @@ void AeSysView::OnDrawModeReturn() {
   document->AddWorkLayerGroup(group);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   pts.RemoveAll();
-  ModeLineUnhighlightOp(PreviousDrawCommand);
+  ModeLineUnhighlightOp(previousDrawCommand);
 }
 
 void AeSysView::OnDrawModeEscape() {
@@ -266,17 +270,17 @@ void AeSysView::OnDrawModeEscape() {
 
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   pts.RemoveAll();
-  ModeLineUnhighlightOp(PreviousDrawCommand);
+  ModeLineUnhighlightOp(previousDrawCommand);
 }
 
 void AeSysView::OnDrawModeShiftReturn() {
-  if (PreviousDrawCommand == ID_OP3) {
-    auto* Group = new EoDbGroup(new EoDbPolyline(pts));
+  if (previousDrawCommand == ID_OP3) {
+    auto* group = new EoDbGroup(new EoDbPolyline(pts));
     auto* document = GetDocument();
-    document->AddWorkLayerGroup(Group);
-    document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+    document->AddWorkLayerGroup(group);
+    document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
   }
-  ModeLineUnhighlightOp(PreviousDrawCommand);
+  ModeLineUnhighlightOp(previousDrawCommand);
   pts.RemoveAll();
 }
 #if defined(USING_STATE_PATTERN)
@@ -291,10 +295,10 @@ void AeSysView::OnDrawCommand(UINT command) {
 #endif
 void AeSysView::DoDrawModeMouseMove() {
   auto cursorPosition = GetCursorPosition();
-  INT_PTR NumberOfPoints = pts.GetSize();
+  auto numberOfPoints = pts.GetSize();
 
   auto* document = GetDocument();
-  switch (PreviousDrawCommand) {
+  switch (previousDrawCommand) {
     case ID_OP2:
       VERIFY(pts.GetSize() > 0);
 
@@ -310,12 +314,12 @@ void AeSysView::DoDrawModeMouseMove() {
       break;
 
     case ID_OP3:
-      cursorPosition = SnapPointToAxis(pts[NumberOfPoints - 1], cursorPosition);
+      cursorPosition = SnapPointToAxis(pts[numberOfPoints - 1], cursorPosition);
       pts.Add(cursorPosition);
 
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-      if (NumberOfPoints == 1) {
+      if (numberOfPoints == 1) {
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
       } else {
         m_PreviewGroup.AddTail(new EoDbPolygon(pts));
@@ -324,11 +328,11 @@ void AeSysView::DoDrawModeMouseMove() {
       break;
 
     case ID_OP4:
-      cursorPosition = SnapPointToAxis(pts[NumberOfPoints - 1], cursorPosition);
+      cursorPosition = SnapPointToAxis(pts[numberOfPoints - 1], cursorPosition);
       pts.Add(cursorPosition);
 
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
-      if (NumberOfPoints == 2) {
+      if (numberOfPoints == 2) {
         pts.Add(pts[0] + EoGeVector3d(pts[1], cursorPosition));
         pts.Add(pts[0]);
       }
@@ -343,8 +347,8 @@ void AeSysView::DoDrawModeMouseMove() {
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
-      if (NumberOfPoints == 1) { m_PreviewGroup.AddTail(new EoDbPolyline(pts)); }
-      if (NumberOfPoints == 2) {
+      if (numberOfPoints == 1) { m_PreviewGroup.AddTail(new EoDbPolyline(pts)); }
+      if (numberOfPoints == 2) {
         EoGePoint3d start{pts[0]};
         EoGePoint3d intermediate{pts[1]};
         auto radialArc = EoDbConic::CreateRadialArcFrom3Points(start, intermediate, cursorPosition);
@@ -383,7 +387,7 @@ void AeSysView::DoDrawModeMouseMove() {
 
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-      if (NumberOfPoints == 1) {
+      if (numberOfPoints == 1) {
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
       } else {
         EoGeVector3d majorAxis(pts[0], pts[1]);
@@ -402,5 +406,5 @@ void AeSysView::DoDrawModeMouseMove() {
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       break;
   }
-  pts.SetSize(NumberOfPoints);
+  pts.SetSize(numberOfPoints);
 }

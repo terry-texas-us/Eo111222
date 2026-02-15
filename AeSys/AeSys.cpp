@@ -661,7 +661,7 @@ void AeSys::OnFileOpen() {
   auto title = App::LoadStringResource(AFX_IDS_OPENFILE);
   fileDialog.m_ofn.lpstrTitle = title;
 
-  INT_PTR result = fileDialog.DoModal();
+  auto result = fileDialog.DoModal();
   fileName.ReleaseBuffer();
 
   if (result == IDOK) { OpenDocumentFile(fileName); }

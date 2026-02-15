@@ -226,7 +226,7 @@ void EoDlgFileManage::OnBnClickedTracingCloak() {
   } else {
     m_Document->UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
     layer->SetStateOff();
-    layer->SetTracingFlg(EoDbLayer::kTracingIsCloaked);
+    layer->SetTracingState(EoDbLayer::TracingState::isCloaked);
   }
 }
 
@@ -352,7 +352,7 @@ void EoDlgFileManage::OnBnClickedMfcbuttonWork() {
   workLayer.Format(L"Current Layer: %s", layer->Name().GetString());
   GetDlgItem(IDC_STATIC_WORK_LAYER)->SetWindowTextW(workLayer);
 
-  previousWorkLayer->MakeStateActive();
+  previousWorkLayer->SetStateActive();
 
   m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, previousWorkLayer);
   m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
@@ -366,7 +366,7 @@ void EoDlgFileManage::OnBnClickedMfcbuttonNew() {
   int Suffix = 1;
   do { Name.Format(L"Layer%d", Suffix++); } while (m_Document->FindLayerTableLayer(Name) != -1);
 
-  EoDbLayer* Layer = new EoDbLayer(Name, EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive,
+  EoDbLayer* Layer = new EoDbLayer(Name, EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive,
                                    m_Document->ContinuousLineType());
   m_Document->AddLayerTableLayer(Layer);
 
@@ -428,7 +428,7 @@ void EoDlgFileManage::DrawItem(CDC& deviceContext, int itemID, int labelIndex, c
       ItemRectangle.DeflateRect(1, 1);
       ItemRectangle.right = ItemRectangle.left + ItemRectangle.Height();
 
-      CBrush Brush(layer->Color());
+      CBrush Brush(layer->ColorValue());
       deviceContext.FillRect(&ItemRectangle, &Brush);
 
       CBrush FrameBrush;
@@ -511,7 +511,7 @@ void EoDlgFileManage::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult
         app.WarningMessageBox(IDS_MSG_LAYER_NO_HIDDEN, layer->Name());
       } else {
         if (layer->IsOff()) {
-          layer->ClearStateFlag(EoDbLayer::kIsOff);
+          layer->ClearStateFlag(EoDbLayer::State::isOff);
           m_Document->UpdateAllViews(nullptr, EoDb::kLayer, layer);
         } else {
           m_Document->UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
@@ -527,7 +527,7 @@ void EoDlgFileManage::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult
         app.WarningMessageBox(IDS_MSG_LAYER_NO_STATIC, layer->Name());
       } else {
         if (layer->IsStatic()) {
-          layer->ClearStateFlag(EoDbLayer::kIsStatic);
+          layer->ClearStateFlag(EoDbLayer::State::isStatic);
         } else {
           layer->SetStateStatic();
         }
@@ -575,7 +575,7 @@ void EoDlgFileManage::OnNMDblclkLayersListControl(NMHDR* pNMHDR, LRESULT* result
       workLayer.Format(L"Current Layer: %s", layer->Name().GetString());
       GetDlgItem(IDC_STATIC_WORK_LAYER)->SetWindowTextW(workLayer);
 
-      previousWorkLayer->MakeStateActive();
+      previousWorkLayer->SetStateActive();
 
       m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, previousWorkLayer);
       m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);

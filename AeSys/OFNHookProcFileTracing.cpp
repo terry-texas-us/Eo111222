@@ -33,7 +33,7 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
           if (layer != nullptr) {
             WndProcPreviewUpdateLayer(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), layer);
           } else {
-            layer = new EoDbLayer(L"", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
+            layer = new EoDbLayer(L"", EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive);
 
             document->TracingLoadLayer(psz, layer);
             WndProcPreviewUpdateLayer(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), layer);
@@ -67,7 +67,7 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
           return TRUE;
 
         case IDC_TRAP: {
-          EoDbLayer* pLayer = new EoDbLayer(L"", EoDbLayer::kIsResident | EoDbLayer::kIsInternal | EoDbLayer::kIsActive);
+          EoDbLayer* pLayer = new EoDbLayer(L"", EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive);
 
           document->TracingLoadLayer(szFilePath, pLayer);
 

@@ -118,7 +118,7 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
 
 void __End(AeSysView* view, CDC* deviceContext, std::int16_t lineTypeIndex) {
   if (EoDbPrimitive::IsSupportedTyp(lineTypeIndex)) {
-    INT_PTR size = pts_.GetSize();
+    auto size = pts_.GetSize();
     if (size > 1) {
       view->ModelViewTransformPoints(pts_);
 
