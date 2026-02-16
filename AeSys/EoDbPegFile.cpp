@@ -173,12 +173,13 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
   for (auto n = 0; n < numberOfLayers; n++) {
     EoDb::Read(*this, layerName);
 
-    auto tracingState = EoDb::ReadUInt16(*this);
-    auto state = EoDb::ReadUInt16(*this);
+    auto tracingState = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
+    auto state = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
 
-    state |= EoDbLayer::State::isResident;
+    state |= std::to_underlying(EoDbLayer::State::isResident);
 
-    if ((state & EoDbLayer::State::isInternal) != EoDbLayer::State::isInternal) {
+    if ((state & std::to_underlying(EoDbLayer::State::isInternal)) !=
+        std::to_underlying(EoDbLayer::State::isInternal)) {
       if (layerName.Find('.') == -1) layerName += L".jb1";
     }
     auto colorIndex = EoDb::ReadInt16(*this);
@@ -376,8 +377,8 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
     EoDbLayer* Layer = document->GetLayerTableLayerAt(n);
     if (Layer->IsResident()) {
       EoDb::Write(*this, Layer->Name());
-      EoDb::Write(*this, Layer->TracingState());
-      EoDb::Write(*this, Layer->State());
+      EoDb::Write(*this, Layer->GetTracingState());
+      EoDb::Write(*this, Layer->GetState());
       EoDb::Write(*this, Layer->ColorIndex());
       EoDb::Write(*this, Layer->LineTypeName());
     } else
@@ -606,8 +607,8 @@ void EoDb::ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primiti
   double rowSpacing = EoDb::ReadDouble(file);
   (void)rowSpacing;  // currently unused, but may be used in the future to indicate the row spacing
 
-  primitive = new EoDbBlockReference(
-      static_cast<std::uint16_t>(color), static_cast<std::uint16_t>(LineType), Name, Point, Normal, ScaleFactors, Rotation);
+  primitive = new EoDbBlockReference(static_cast<std::uint16_t>(color), static_cast<std::uint16_t>(LineType), Name,
+      Point, Normal, ScaleFactors, Rotation);
 }
 void EoDb::ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& /* file */, EoDbPrimitive*& /* primitive */) {}
 

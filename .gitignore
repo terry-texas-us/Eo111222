@@ -383,3 +383,9 @@ FodyWeavers.xsd
 /AeSys/Tools/reflex_static_lib.lib.lastcodeanalysissucceeded
 /.github/copilot-instructions.md
 /AeSys/Drawing1.peg
+/RE-flex/ZERO_CHECK.vcxproj
+/RE-flex/ReflexLib.vcxproj
+/RE-flex/Reflex.vcxproj
+/RE-flex/CMakeFiles/generate.stamp.depend
+/RE-flex/ALL_BUILD.vcxproj
+/RE-flex/ReflexLibStatic.vcxproj

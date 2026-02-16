@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <cstdint>
+#include <utility>
 
 #include "EoDbGroupList.h"
 #include "EoDbLineType.h"
@@ -28,7 +29,7 @@ class EoDbLayer : public EoDbGroupList {
   EoDbLineType* m_lineType;
 
  public:
-  enum State {
+  enum class State : std::uint16_t {
     isResident = 0x0001,
     isInternal = 0x0002,
     isWork = 0x0004,
@@ -36,78 +37,117 @@ class EoDbLayer : public EoDbGroupList {
     isStatic = 0x0010,
     isOff = 0x0020
   };
-  enum TracingState { isOpened = 0x0004, isMapped = 0x0008, isViewed = 0x0010, isCloaked = 0x0020 };
-  
-  EoDbLayer(const CString& name, std::uint16_t flags);
-  EoDbLayer(const CString& name, std::uint16_t flags, EoDbLineType* lineType);
+  enum class TracingState : std::uint16_t {
+    isOpened = 0x0004,
+    isMapped = 0x0008,
+    isViewed = 0x0010,
+    isCloaked = 0x0020
+  };
+
+  static constexpr std::uint16_t AllStateBits = 0xFFFF;
+
+  EoDbLayer(const CString& name, State state);
+  EoDbLayer(const CString& name, std::uint16_t state);
+
   EoDbLayer(const EoDbLayer& layer) = delete;
   EoDbLayer& operator=(const EoDbLayer&) = delete;
 
   ~EoDbLayer() override {}
+
   void Display(AeSysView* view, CDC* deviceContext);
   void Display(AeSysView* view, CDC* deviceContext, bool identifyTrap);
 
-  COLORREF ColorValue() const;
-  [[nodiscard]] std::int16_t ColorIndex() const { return m_color; }
-  void SetColorIndex(std::int16_t color) { m_color = color; }
+  [[nodiscard]] COLORREF ColorValue() const;
+  [[nodiscard]] std::int16_t ColorIndex() const noexcept { return m_color; }
+  void SetColorIndex(std::int16_t color) noexcept { m_color = color; }
 
-  EoDbLineType* LineType() const;
-  std::int16_t LineTypeIndex();
-  
-  [[nodiscard]] CString LineTypeName() { return m_lineType->Name(); }
-  
-  void SetLineType(EoDbLineType* lineType);
+  [[nodiscard]] EoDbLineType* LineType() const noexcept { return m_lineType; }
+
+  [[nodiscard]] std::int16_t LineTypeIndex() const;
+
+  [[nodiscard]] CString LineTypeName() const { return (m_lineType != nullptr) ? m_lineType->Name() : CString{}; }
+
+  void SetLineType(EoDbLineType* lineType) noexcept { m_lineType = lineType; }
   void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
-  
+
   [[nodiscard]] CString Name() const { return m_name; }
+
   void SetName(const CString& name) { m_name = name; }
 
-    void ClearTracingStateBit(std::uint16_t w = 0xffff) { m_tracingState &= ~w; }
-  [[nodiscard]] bool IsOpened() const {
-    return ((m_tracingState & EoDbLayer::TracingState::isOpened) == EoDbLayer::TracingState::isOpened);
-  }
-  [[nodiscard]] bool IsMapped() const {
-    return ((m_tracingState & EoDbLayer::TracingState::isMapped) == EoDbLayer::TracingState::isMapped);
-  }
-  [[nodiscard]] bool IsViewed() const {
-    return ((m_tracingState & EoDbLayer::TracingState::isViewed) == EoDbLayer::TracingState::isViewed);
-  }
-  [[nodiscard]] std::uint16_t TracingState() const { return m_tracingState; }
-  
-  void SetTracingState(std::uint16_t state) { m_tracingState = state; }
+  void ClearTracingStateBit(std::uint16_t w = AllStateBits) noexcept { m_tracingState &= ~w; }
 
-  void ClearStateFlag(std::uint16_t w = 0xffff) { m_state &= ~w; }
-  
-  [[nodiscard]] std::uint16_t State() const { return m_state; }
-  [[nodiscard]] bool IsActive() const { return ((m_state & State::isActive) == State::isActive); }
-  [[nodiscard]] bool IsInternal() const { return ((m_state & State::isInternal) == State::isInternal); }
-  [[nodiscard]] bool IsOff() const { return ((m_state & State::isOff) == State::isOff); }
-  [[nodiscard]] bool IsResident() const { return ((m_state & State::isResident) == State::isResident); }
-  [[nodiscard]] bool IsStatic() const { return ((m_state & State::isStatic) == State::isStatic); }
-  [[nodiscard]] bool IsWork() const { return ((m_state & State::isWork) == State::isWork); }
-
-  void MakeInternal() { m_state |= State::isInternal; }
-  void MakeResident() { m_state |= State::isResident; }
-  
-  void SetStateActive() {
-    m_state &= ~(State::isWork | State::isStatic | State::isOff);
-    m_state |= State::isActive;
+  [[nodiscard]] bool IsOpened() const noexcept {
+    return (
+        (m_tracingState & std::to_underlying(TracingState::isOpened)) == std::to_underlying(TracingState::isOpened));
   }
-
-  void SetStateOff() {
-    m_state &= ~(State::isWork | State::isActive | State::isStatic);
-    m_state |= State::isOff;
+  [[nodiscard]] bool IsMapped() const noexcept {
+    return (
+        (m_tracingState & std::to_underlying(TracingState::isMapped)) == std::to_underlying(TracingState::isMapped));
   }
+  [[nodiscard]] bool IsViewed() const noexcept {
+    return (
+        (m_tracingState & std::to_underlying(TracingState::isViewed)) == std::to_underlying(TracingState::isViewed));
+  }
+  [[nodiscard]] std::uint16_t GetTracingState() const noexcept { return m_tracingState; }
 
-  void SetStateStatic() {
-    m_state &= ~(State::isWork | State::isActive | State::isOff);
-    m_state |= State::isStatic;
+  void SetTracingState(std::uint16_t state) noexcept { m_tracingState = state; }
+
+  void ClearStateFlag(std::uint16_t w = AllStateBits) noexcept { m_state &= ~w; }
+
+  [[nodiscard]] std::uint16_t GetState() const noexcept { return m_state; }
+  [[nodiscard]] bool IsActive() const noexcept {
+    return ((m_state & std::to_underlying(State::isActive)) == std::to_underlying(State::isActive));
+  }
+  [[nodiscard]] bool IsInternal() const noexcept {
+    return ((m_state & std::to_underlying(State::isInternal)) == std::to_underlying(State::isInternal));
+  }
+  [[nodiscard]] bool IsOff() const noexcept {
+    return ((m_state & std::to_underlying(State::isOff)) == std::to_underlying(State::isOff));
+  }
+  [[nodiscard]] bool IsResident() const noexcept {
+    return ((m_state & std::to_underlying(State::isResident)) == std::to_underlying(State::isResident));
+  }
+  [[nodiscard]] bool IsStatic() const noexcept {
+    return ((m_state & std::to_underlying(State::isStatic)) == std::to_underlying(State::isStatic));
+  }
+  [[nodiscard]] bool IsWork() const noexcept {
+    return ((m_state & std::to_underlying(State::isWork)) == std::to_underlying(State::isWork));
   }
 
-  void SetStateWork() {
-    m_state &= ~(State::isActive | State::isStatic | State::isOff);
-    m_state |= State::isWork;
+  void MakeInternal() noexcept { m_state |= std::to_underlying(State::isInternal); }
+  void MakeResident() noexcept { m_state |= std::to_underlying(State::isResident); }
+
+  void SetStateActive() noexcept {
+    constexpr auto toClear =
+        std::to_underlying(State::isWork) | std::to_underlying(State::isStatic) | std::to_underlying(State::isOff);
+    m_state &= ~toClear;
+    m_state |= std::to_underlying(State::isActive);
+  }
+
+  void SetStateOff() noexcept {
+    constexpr auto toClear =
+        std::to_underlying(State::isWork) | std::to_underlying(State::isActive) | std::to_underlying(State::isStatic);
+    m_state &= ~toClear;
+    m_state |= std::to_underlying(State::isOff);
+  }
+
+  void SetStateStatic() noexcept {
+    constexpr auto toClear =
+        std::to_underlying(State::isWork) | std::to_underlying(State::isActive) | std::to_underlying(State::isOff);
+    m_state &= ~toClear;
+    m_state |= std::to_underlying(State::isStatic);
+  }
+
+  void SetStateWork() noexcept {
+    constexpr auto toClear =
+        std::to_underlying(State::isActive) | std::to_underlying(State::isStatic) | std::to_underlying(State::isOff);
+    m_state &= ~toClear;
+    m_state |= std::to_underlying(State::isWork);
   }
 };
+
+inline constexpr EoDbLayer::State operator|(EoDbLayer::State lhs, EoDbLayer::State rhs) noexcept {
+  return static_cast<EoDbLayer::State>(std::to_underlying(lhs) | std::to_underlying(rhs));
+}
 
 typedef CTypedPtrArray<CObArray, EoDbLayer*> CLayers;

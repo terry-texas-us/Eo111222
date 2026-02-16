@@ -6,6 +6,7 @@
 #include <new>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -61,6 +62,7 @@
 #if defined(USING_DDE)
 #include "ddeGItms.h"
 #endif  // USING_DDE
+#include <cstdint>
 UINT_PTR CALLBACK OFNHookProcFileTracing(HWND, UINT, WPARAM, LPARAM);
 
 UINT AFXAPI HashKey(CString& str) {
@@ -163,7 +165,7 @@ AeSysDoc::AeSysDoc()
       m_UniquePoints{},
       m_LayerTable{},
       m_trapPivotPoint{},
-      m_ContinuousLineType{},
+      m_continuousLineType{},
       m_workLayer{},
       m_IdentifiedLayerName{},
       m_SaveAsType{EoDb::FileTypes::Unknown} {}
@@ -238,9 +240,13 @@ void AeSysDoc::SetCommonTableEntries() {
   m_LineTypeTable.SetAt(L"ByLayer", lineType);
   lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
   m_LineTypeTable.SetAt(L"Continuous", lineType);
+  m_continuousLineType = lineType;
 
-  m_workLayer = new EoDbLayer(L"0", EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive, lineType);
-  m_ContinuousLineType = lineType;
+  constexpr EoDbLayer::State commonState =
+      EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive;
+
+  m_workLayer = new EoDbLayer(L"0", commonState);
+  m_workLayer->SetLineType(lineType);
   AddLayerTableLayer(m_workLayer);
 
   auto applicationPath = App::PathFromCommandLine();
@@ -481,18 +487,18 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
   } catch (CException* e) { e->Delete(); }
 }
 
-[[nodiscard]] EoDbLayer* AeSysDoc::GetLayerTableLayer(const CString& layerName) {
-  auto i = FindLayerTableLayer(layerName);
+[[nodiscard]] EoDbLayer* AeSysDoc::GetLayerTableLayer(const CString& name) {
+  auto i = FindLayerTableLayer(name);
   return (i < 0 ? nullptr : m_LayerTable.GetAt(i));
 }
 EoDbLayer* AeSysDoc::GetLayerTableLayerAt(int index) {
   return (index >= (int)m_LayerTable.GetSize() ? nullptr : m_LayerTable.GetAt(index));
 }
 
-int AeSysDoc::FindLayerTableLayer(const CString& layerName) const {
+int AeSysDoc::FindLayerTableLayer(const CString& name) const {
   for (auto i = 0; i < m_LayerTable.GetSize(); i++) {
     auto* layer = m_LayerTable.GetAt(i);
-    if (layerName.CompareNoCase(layer->Name()) == 0) { return i; }
+    if (name.CompareNoCase(layer->Name()) == 0) { return i; }
   }
   return -1;
 }
@@ -593,7 +599,7 @@ bool AeSysDoc::LayerMelt(CString& strName) {
         layer->ClearStateFlag();
         layer->MakeResident();
         layer->SetStateStatic();
-        layer->SetTracingState(EoDbLayer::TracingState::isMapped);
+        layer->SetTracingState(static_cast<std::uint16_t>(EoDbLayer::TracingState::isMapped));
 
         strName = strName.Mid(of.nFileOffset);
         layer->SetName(strName);
@@ -606,10 +612,10 @@ bool AeSysDoc::LayerMelt(CString& strName) {
   delete[] of.lpstrFile;
   return bRetVal;
 }
-void AeSysDoc::RemoveLayerTableLayer(const CString& strName) {
-  int i = FindLayerTableLayer(strName);
+void AeSysDoc::RemoveLayerTableLayer(const CString& name) {
+  auto i = FindLayerTableLayer(name);
 
-  if (i >= 0) RemoveLayerTableLayerAt(i);
+  if (i >= 0) { RemoveLayerTableLayerAt(i); }
 }
 void AeSysDoc::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
   for (auto i = 0; i < GetLayerTableSize(); i++) {
@@ -774,8 +780,8 @@ bool AeSysDoc::TracingLoadLayer(const CString& pathName, EoDbLayer* layer) {
 }
 
 bool AeSysDoc::TracingMap(const CString& pathName) {
-  EoDb::FileTypes FileType = App::FileTypeFromPath(pathName);
-  if (FileType != EoDb::FileTypes::Tracing && FileType != EoDb::FileTypes::Job) { return false; }
+  auto fileType = App::FileTypeFromPath(pathName);
+  if (fileType != EoDb::FileTypes::Tracing && fileType != EoDb::FileTypes::Job) { return false; }
   bool fileOpen{};
 
   auto* layer = GetLayerTableLayer(pathName);
@@ -796,32 +802,30 @@ bool AeSysDoc::TracingMap(const CString& pathName) {
       delete layer;
   }
   if (fileOpen) {
-    layer->SetTracingState(EoDbLayer::TracingState::isMapped);
+    layer->SetTracingState(static_cast<std::uint16_t>(EoDbLayer::TracingState::isMapped));
     UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
   }
   return fileOpen;
 }
 
-bool AeSysDoc::TracingOpen(const CString& fileName) {
-  // Opens tracing file.
-
+bool AeSysDoc::TracingOpen(const CString& pathName) {
   EoDbLayer* layer{};
 
-  int iLayId = FindLayerTableLayer(fileName);
+  auto index = FindLayerTableLayer(pathName);
 
-  if (iLayId > 0) {  // already loaded
-    layer = GetLayerTableLayerAt(iLayId);
-    layer->ClearStateFlag(EoDbLayer::State::isResident);
-  } else {  // create a new layer and append all the groups in the group file.
+  if (index > 0) {  // already loaded
+    layer = GetLayerTableLayerAt(index);
+    layer->ClearStateFlag(std::to_underlying(EoDbLayer::State::isResident));
+  } else {
+    // create a new layer and append all the groups in the group file.
 
-    layer = new EoDbLayer(fileName, EoDbLayer::State::isWork | EoDbLayer::State::isActive);
+    layer = new EoDbLayer(pathName, EoDbLayer::State::isWork | EoDbLayer::State::isActive);
     AddLayerTableLayer(layer);
 
-    TracingLoadLayer(fileName, layer);
-
+    TracingLoadLayer(pathName, layer);
     AddGroupsToAllViews(layer);
   }
-  layer->SetTracingState(EoDbLayer::TracingState::isOpened);
+  layer->SetTracingState(static_cast<std::uint16_t>(EoDbLayer::TracingState::isOpened));
 
   m_SaveAsType = EoDb::FileTypes::Tracing;
   SetWorkLayer(layer);
@@ -854,7 +858,7 @@ bool AeSysDoc::TracingView(const CString& pathName) {
     }
   }
   if (fileOpen) {
-    layer->SetTracingState(EoDbLayer::TracingState::isViewed);
+    layer->SetTracingState(static_cast<std::uint16_t>(EoDbLayer::TracingState::isViewed));
     UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
   }
   return fileOpen;
@@ -940,7 +944,7 @@ void AeSysDoc::OnClearMappedTracings() {
       UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
 
       if (layer->IsResident()) {
-        layer->ClearTracingStateBit(EoDbLayer::TracingState::isMapped);
+        layer->ClearTracingStateBit(static_cast<std::uint16_t>(EoDbLayer::TracingState::isMapped));
         layer->SetStateOff();
       } else {
         RemoveLayerTableLayerAt(i);
@@ -958,7 +962,7 @@ void AeSysDoc::OnClearViewedTracings() {
       UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
 
       if (layer->IsResident()) {
-        layer->ClearTracingStateBit(EoDbLayer::TracingState::isViewed);
+        layer->ClearTracingStateBit(static_cast<std::uint16_t>(EoDbLayer::TracingState::isViewed));
         layer->SetStateOff();
       } else {
         RemoveLayerTableLayerAt(i);

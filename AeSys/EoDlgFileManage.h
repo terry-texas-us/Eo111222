@@ -73,7 +73,11 @@ class EoDlgFileManage : public CDialog {
   afx_msg void OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult);
   afx_msg void OnNMDblclkLayersListControl(NMHDR* pNMHDR, LRESULT* pResult);
   afx_msg void OnBnClickedMfcbuttonWork();
+
+  /** @brief Creates a new layer with a unique name and adds it to the document and the list control.
+   */
   afx_msg void OnBnClickedMfcbuttonNew();
+
   /// <summary>Selected layer is deleted.</summary>
   /// <remarks>Hot layer must be warm'ed before it may be deleted. Layer "0" may never be deleted.</remarks>
   afx_msg void OnBnClickedMfcbuttonDel();

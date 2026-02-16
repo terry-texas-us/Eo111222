@@ -37,7 +37,7 @@ class AeSysDoc : public CDocument {
   CObList m_UniquePoints;
   CLayers m_LayerTable;
   EoGePoint3d m_trapPivotPoint;
-  EoDbLineType* m_ContinuousLineType;
+  EoDbLineType* m_continuousLineType;
   EoDbLayer* m_workLayer;
   CString m_IdentifiedLayerName;
   double m_pointSize{0.0};  // in drawing units when greater than zero; in pixels when less than zero; default otherwise
@@ -118,10 +118,23 @@ class AeSysDoc : public CDocument {
   void DisplayAllLayers(AeSysView* view, CDC* deviceContext);
 
   // Layer Table interface
-  [[nodiscard]] EoDbLayer* GetLayerTableLayer(const CString& layerName);
+
+  /** @brief Retrieves a layer from the layer table by name.
+   * This method searches the layer table for a layer with the specified name and returns a pointer to it.
+   * If no such layer exists, it returns nullptr.
+   * @param name The name of the layer to retrieve.
+   * @return A pointer to the EoDbLayer with the specified name, or nullptr if not found.
+   */
+  [[nodiscard]] EoDbLayer* GetLayerTableLayer(const CString& name);
   [[nodiscard]] EoDbLayer* GetLayerTableLayerAt(int layer);
   [[nodiscard]] int GetLayerTableSize() const { return static_cast<int>(m_LayerTable.GetSize()); }
-  [[nodiscard]] int FindLayerTableLayer(const CString& layerName) const;
+  
+  /** @brief Finds the index of a layer in the layer table by its name.
+   * This method performs a case-insensitive search for a layer with the specified name in the layer table.
+   * @param name The name of the layer to find.
+   * @return The index of the layer if found; otherwise, -1.
+   */
+  [[nodiscard]] int FindLayerTableLayer(const CString& name) const;
   void RemoveLayerTableLayer(const CString& strName);
   void RemoveAllLayerTableLayers();
   void RemoveLayerTableLayerAt(int);
@@ -136,7 +149,7 @@ class AeSysDoc : public CDocument {
 
   // Line Type Table interface
   [[nodiscard]] auto* LineTypeTable() { return &m_LineTypeTable; }
-  [[nodiscard]] auto* ContinuousLineType() { return m_ContinuousLineType; }
+  [[nodiscard]] auto* ContinuousLineType() { return m_continuousLineType; }
 
   void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
 
@@ -409,6 +422,13 @@ class AeSysDoc : public CDocument {
    * No new groups may be added to the tracing. Any number of tracings may be mapped.
    */
   bool TracingMap(const CString& pathName);
+
+  /** @brief Opens a tracing file as a layer. If the file is already loaded, it will be re-opened if it is not currently opened.
+   * If the file is not already loaded, a new layer will be created and the tracing file will be loaded into it.
+   * The layer will be set to the opened state and made active. All views will be updated to reflect the changes.
+   * @param pathName The name of the tracing file to open.
+   * @return true if the tracing file was successfully opened; otherwise, false.
+   */
   bool TracingOpen(const CString& pathName);
 
   /** @brief Displays a tracing file as a layer in the current document.

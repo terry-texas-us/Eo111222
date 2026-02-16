@@ -1,5 +1,7 @@
 ﻿#include "Stdafx.h"
 
+#include <cstdint>
+
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
@@ -33,7 +35,9 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
           if (layer != nullptr) {
             WndProcPreviewUpdateLayer(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), layer);
           } else {
-            layer = new EoDbLayer(L"", EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive);
+            constexpr EoDbLayer::State commonState =
+                EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive;
+            layer = new EoDbLayer(L"", commonState);
 
             document->TracingLoadLayer(psz, layer);
             WndProcPreviewUpdateLayer(::GetDlgItem(hDlg, IDC_LAYER_PREVIEW), layer);
@@ -46,44 +50,46 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
       return TRUE;
     }
     case WM_COMMAND: {
-      wchar_t szFilePath[MAX_PATH]{};
-      ::SendMessage(GetParent(hDlg), CDM_GETFILEPATH, MAX_PATH, (LPARAM)(LPTSTR)szFilePath);
+      wchar_t filePath[MAX_PATH]{};
+      ::SendMessage(GetParent(hDlg), CDM_GETFILEPATH, MAX_PATH, (LPARAM)(LPTSTR)filePath);
       CFileStatus fs;
-      if (!CFile::GetStatus(szFilePath, fs)) {
-        app.WarningMessageBox(IDS_MSG_FILE_NOT_FOUND, szFilePath);
+      if (!CFile::GetStatus(filePath, fs)) {
+        app.WarningMessageBox(IDS_MSG_FILE_NOT_FOUND, filePath);
         return TRUE;
       }
       switch (LOWORD(wParam)) {
         case IDC_APPEND: {
-          EoDbLayer* Layer = document->GetWorkLayer();
+          auto* Layer = document->GetWorkLayer();
 
-          document->TracingLoadLayer(szFilePath, Layer);
+          document->TracingLoadLayer(filePath, Layer);
           document->UpdateAllViews(nullptr, EoDb::kLayerSafe, Layer);
           return TRUE;
         }
 
         case IDC_TRAMAP:
-          document->TracingMap(szFilePath);
+          document->TracingMap(filePath);
           return TRUE;
 
         case IDC_TRAP: {
-          EoDbLayer* pLayer = new EoDbLayer(L"", EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive);
+          constexpr EoDbLayer::State commonState =
+              EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive;
+          auto* layer = new EoDbLayer(L"", commonState);
 
-          document->TracingLoadLayer(szFilePath, pLayer);
+          document->TracingLoadLayer(filePath, layer);
 
           document->RemoveAllTrappedGroups();
-          document->AddGroupsToTrap(pLayer);
+          document->AddGroupsToTrap(layer);
           document->CopyTrappedGroupsToClipboard(activeView);
           document->RemoveAllTrappedGroups();
 
-          pLayer->DeleteGroupsAndRemoveAll();
-          delete pLayer;
+          layer->DeleteGroupsAndRemoveAll();
+          delete layer;
 
           return TRUE;
         }
 
         case IDC_TRAVIEW:
-          document->TracingView(szFilePath);
+          document->TracingView(filePath);
 
           return TRUE;
       }
