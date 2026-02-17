@@ -225,8 +225,7 @@ class AeSys : public CWinAppEx {
   void SetArchitecturalUnitsFractionPrecision(const int precision) {
     if (precision > 0) { m_ArchitecturalUnitsFractionPrecision = precision; }
   }
-  /// <summary> Positions cursor at targeted position.</summary>
-  void SetCursorPosition(EoGePoint3d position);
+
   void SetDimensionAngle(double angle) { m_DimensionAngle = angle; }
   void SetDimensionLength(double length) { m_DimensionLength = length; }
   void SetEngagedAngle(double angle) { m_EngagedAngle = angle; }

@@ -71,8 +71,7 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
 }
 
 void DrawModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
-  ATLTRACE2(traceGeneral, 3, L"DrawModeState::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
-  // Migrated from DoDrawModeMouseMove: Preview rubberbanding
+  ATLTRACE2(traceGeneral, 2, L"DrawModeState::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
   EoGePoint3d cursorPos = context->GetCursorPosition();
   auto* doc = context->GetDocument();
 

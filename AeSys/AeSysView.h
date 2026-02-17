@@ -343,11 +343,11 @@ class AeSysView : public CView {
 
   [[nodiscard]] EoGePoint3d GetCursorPosition();
   
-    /** @brief Sets the cursor position to the specified world-coordinate point.
-   * @param point3d The point in world coordinates to use for the cursor position.
-
+  /** @brief Sets the cursor position to the specified world-coordinate point.
+   * @param position The point in world coordinates to use for the cursor position.
    */
-  void SetCursorPosition(EoGePoint3d point3d);
+  void SetCursorPosition(const EoGePoint3d& position);
+
   void SetModeCursor(int mode);
 
   /** @brief Selects a circle primitive using a point and tolerance.

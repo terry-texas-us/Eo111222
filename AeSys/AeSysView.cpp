@@ -956,6 +956,7 @@ void AeSysView::OnMButtonUp([[maybe_unused]] UINT flags, [[maybe_unused]] CPoint
 }
 
 void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
+  ATLTRACE2(traceGeneral, 2, L"AeSysView::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
 #if defined(USING_STATE_PATTERN)
   auto* state = GetCurrentState();
   if (state) { state->OnMouseMove(this, flags, point); }
@@ -2381,25 +2382,25 @@ EoGePoint3d AeSysView::GetCursorPosition() {
   return m_ptCursorPosWorld;
 }
 
-void AeSysView::SetCursorPosition(EoGePoint3d cursorPosition) {
-  EoGePoint4d ptView(cursorPosition);
+void AeSysView::SetCursorPosition(const EoGePoint3d& position) {
+  EoGePoint4d ptView(position);
 
   ModelViewTransformPoint(ptView);
 
   if (!ptView.IsInView()) {  // Redefine the view so targeted position becomes center
-    m_ViewTransform.SetTarget(cursorPosition);
+    m_ViewTransform.SetTarget(position);
     m_ViewTransform.SetPosition(m_ViewTransform.Direction());
     m_ViewTransform.BuildTransformMatrix();
 
     InvalidateRect(nullptr, TRUE);
 
-    ptView = cursorPosition;
+    ptView = position;
     ModelViewTransformPoint(ptView);
   }
   // Move the cursor to specified position.
   CPoint pntCurPos = DoProjection(ptView);
   m_ptCursorPosDev(pntCurPos.x, pntCurPos.y, ptView.z / ptView.w);
-  m_ptCursorPosWorld = cursorPosition;
+  m_ptCursorPosWorld = position;
 
   ClientToScreen(&pntCurPos);
   ::SetCursorPos(pntCurPos.x, pntCurPos.y);

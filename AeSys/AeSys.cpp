@@ -434,11 +434,6 @@ EoGePoint3d AeSys::GetCursorPosition() {
   return (activeView == nullptr) ? EoGePoint3d::kOrigin : activeView->GetCursorPosition();
 }
 
-void AeSys::SetCursorPosition(EoGePoint3d position) {
-  auto* activeView = AeSysView::GetActiveView();
-  activeView->SetCursorPosition(position);
-}
-
 // Loads the hatch table.
 void AeSys::LoadHatchesFromFile(const CString& fileName) {
   CFileException e;
@@ -541,20 +536,20 @@ void AeSys::LoadPenColorsFromFile(const CString& fileName) {
 
   if (fl.Open(fileName, CFile::modeRead | CFile::typeText)) {
     wchar_t pBuf[128]{};
-    
+
     while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0 && _tcsnicmp(pBuf, L"<Colors>", 8) != 0);
 
     while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0 && *pBuf != '<') {
       wchar_t* nextToken = nullptr;
       wchar_t* index = wcstok_s(pBuf, L"=", &nextToken);
       auto colorIndex = _wtoi(index);
-    
+
       if (colorIndex < 0 || colorIndex >= static_cast<int>(std::size(Eo::ColorPalette))) { continue; }
       wchar_t* redColorPalette = wcstok_s(0, L",", &nextToken);
       wchar_t* greenColorPalette = wcstok_s(0, L",", &nextToken);
       wchar_t* blueColorPalette = wcstok_s(0, L",", &nextToken);
       Eo::ColorPalette[colorIndex] = RGB(_wtoi(redColorPalette), _wtoi(greenColorPalette), _wtoi(blueColorPalette));
-      
+
       if (colorIndex >= static_cast<int>(std::size(Eo::GrayPalette))) { continue; }
       wchar_t* redGrayPalette = wcstok_s(0, L",", &nextToken);
       wchar_t* greenGrayPalette = wcstok_s(0, L",", &nextToken);
