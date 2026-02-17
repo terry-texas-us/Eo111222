@@ -341,8 +341,12 @@ class AeSysView : public CView {
   EoGePoint3d m_ptCursorPosDev;
   EoGePoint3d m_ptCursorPosWorld;
 
+  /** @brief Retrieves the current cursor position in world coordinates.
+   * @return The current cursor position world coordinates.
+   * @note This function gets the current cursor position in device coordinates, converts it to world coordinates using the inverse of the model-view   matrix, and snaps it to the grid if necessary. It also updates the member variables that store the cursor position in both device and world   coordinates.
+   */
   [[nodiscard]] EoGePoint3d GetCursorPosition();
-  
+
   /** @brief Sets the cursor position to the specified world-coordinate point.
    * @param position The point in world coordinates to use for the cursor position.
    */
@@ -403,7 +407,7 @@ class AeSysView : public CView {
   auto GetLastGroupPosition() const { return m_VisibleGroupList.GetTailPosition(); }
   [[nodiscard]] EoDbGroup* GetNextVisibleGroup(POSITION& position) { return m_VisibleGroupList.GetNext(position); }
   [[nodiscard]] EoDbGroup* GetPreviousGroup(POSITION& position) { return m_VisibleGroupList.GetPrev(position); }
-  
+
   /** @brief This method handles the rendering of the background image in the view.
    *
    * It calculates the appropriate portion of the
@@ -456,7 +460,7 @@ class AeSysView : public CView {
 
   void PopViewTransform();
   void PushViewTransform();
-  void ModelViewTransformPoint(EoGePoint4d& point);
+  void ModelViewTransformPoint(EoGePoint4d& ndcPoint);
   void ModelViewTransformPoints(EoGePoint4dArray& pointsArray);
   void ModelViewTransformPoints(int numberOfPoints, EoGePoint4d* points);
   void ModelViewTransformVector(EoGeVector3d& vector);
@@ -473,10 +477,18 @@ class AeSysView : public CView {
   [[nodiscard]] double OverviewUMin() { return m_OverviewViewTransform.UMin(); }
   [[nodiscard]] double OverviewVExt() { return m_OverviewViewTransform.VExtent(); }
   [[nodiscard]] double OverviewVMin() { return m_OverviewViewTransform.VMin(); }
-  [[nodiscard]] CPoint DoProjection(const EoGePoint4d& pt) { return m_Viewport.DoProjection(pt); }
-  void DoProjection(CPoint* pnt, int iPts, EoGePoint4d* pt) { m_Viewport.DoProjection(pnt, iPts, pt); }
-  void DoProjection(CPoint* pnt, EoGePoint4dArray& pointsArray) { m_Viewport.DoProjection(pnt, pointsArray); }
+  [[nodiscard]] CPoint ProjectToClient(const EoGePoint4d& ndcPoint) { return m_Viewport.ProjectToClient(ndcPoint); }
+  
+  void ProjectToClient(CPoint* clientPoints, int numberOfPoints, EoGePoint4d* ndcPoints) {
+    m_Viewport.ProjectToClient(clientPoints, numberOfPoints, ndcPoints);
+  }
+  
+  void ProjectToClient(CPoint* clientPoints, EoGePoint4dArray& ndcPoints) {
+    m_Viewport.ProjectToClient(clientPoints, ndcPoints);
+  }
+  
   void DoProjectionInverse(EoGePoint3d& pt) { m_Viewport.DoProjectionInverse(pt); }
+  
   [[nodiscard]] double HeightInInches() { return m_Viewport.HeightInInches(); }
   [[nodiscard]] double WidthInInches() { return m_Viewport.WidthInInches(); }
   void ViewportPopActive();

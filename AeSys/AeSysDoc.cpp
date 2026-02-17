@@ -1548,28 +1548,29 @@ void AeSysDoc::OnToolsGroupExchange() {
 void AeSysDoc::OnToolsPrimitiveSnaptoendpoint() {
   auto* activeView = AeSysView::GetActiveView();
 
-  EoGePoint4d ptView(activeView->GetCursorPosition());
-  activeView->ModelViewTransformPoint(ptView);
+  EoGePoint4d ndcPoint(activeView->GetCursorPosition());
+  activeView->ModelViewTransformPoint(ndcPoint);
 
   if (activeView->GroupIsEngaged()) {
     auto* primitive = activeView->EngagedPrimitive();
 
-    if (primitive->PivotOnControlPoint(activeView, ptView)) {
+    if (primitive->PivotOnControlPoint(activeView, ndcPoint)) {
       EoGePoint3d ptEng = activeView->DetPt();
       primitive->AddReportToMessageList(ptEng);
       activeView->SetCursorPosition(ptEng);
       return;
     }
     // Did not pivot on engaged primitive
-    if (primitive->IsPointOnControlPoint(activeView, ptView)) { EoDbGroup::SetPrimitiveToIgnore(primitive); }
+    if (primitive->IsPointOnControlPoint(activeView, ndcPoint)) { EoDbGroup::SetPrimitiveToIgnore(primitive); }
   }
-  if (activeView->SelSegAndPrimAtCtrlPt(ptView) != 0) {
+  if (activeView->SelSegAndPrimAtCtrlPt(ndcPoint) != 0) {
     EoGePoint3d ptEng = activeView->DetPt();
     activeView->EngagedPrimitive()->AddReportToMessageList(ptEng);
     activeView->SetCursorPosition(ptEng);
   }
   EoDbGroup::SetPrimitiveToIgnore(static_cast<EoDbPrimitive*>(nullptr));
 }
+
 void AeSysDoc::OnPrimGotoCenterPoint() {
   auto* activeView = AeSysView::GetActiveView();
   if (activeView->GroupIsEngaged()) {

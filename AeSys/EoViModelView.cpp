@@ -55,9 +55,9 @@ void AeSysView::ModelTransformPoint(EoGePoint4d& point) { m_ModelTransform.Trans
 
 void AeSysView::ModelTransformVector(EoGeVector3d vector) { m_ModelTransform.TransformVector(vector); }
 
-void AeSysView::ModelViewTransformPoint(EoGePoint4d& point) {
-  m_ModelTransform.TransformPoint(point);
-  m_ViewTransform.TransformPoint(point);
+void AeSysView::ModelViewTransformPoint(EoGePoint4d& ndcPoint) {
+  m_ModelTransform.TransformPoint(ndcPoint);
+  m_ViewTransform.TransformPoint(ndcPoint);
 }
 void AeSysView::ModelViewTransformPoints(EoGePoint4dArray& pointsArray) {
   m_ModelTransform.TransformPoints(pointsArray);

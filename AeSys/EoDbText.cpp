@@ -398,25 +398,25 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, CDC* deviceContext, Eo
   EoGeTransformMatrix transformMatrix(referenceSystem.TransformMatrix());
   transformMatrix.Inverse();
 
-  EoGePoint4d StartPoint = transformMatrix * EoGePoint3d::kOrigin;
-  view->ModelViewTransformPoint(StartPoint);
-  CPoint ProjectedStartPoint = view->DoProjection(StartPoint);
+  EoGePoint4d ndcPoint = transformMatrix * EoGePoint3d::kOrigin;
+  view->ModelViewTransformPoint(ndcPoint);
+  CPoint clientPoint = view->ProjectToClient(ndcPoint);
 
-  EoGePoint4d ptsBox[3]{};
+  EoGePoint4d ndcPoints[3]{};
 
-  ptsBox[1] = transformMatrix * EoGePoint3d(0.0, 1.0, 0.0);
-  ptsBox[2] = transformMatrix * EoGePoint3d(1.0, 0.0, 0.0);
+  ndcPoints[1] = transformMatrix * EoGePoint3d(0.0, 1.0, 0.0);
+  ndcPoints[2] = transformMatrix * EoGePoint3d(1.0, 0.0, 0.0);
 
-  view->ModelViewTransformPoint(ptsBox[1]);
-  view->ModelViewTransformPoint(ptsBox[2]);
+  view->ModelViewTransformPoint(ndcPoints[1]);
+  view->ModelViewTransformPoint(ndcPoints[2]);
 
-  CPoint pnt[4]{};
+  CPoint clientPoints[4]{};
 
-  pnt[1] = view->DoProjection(ptsBox[1]);
-  pnt[2] = view->DoProjection(ptsBox[2]);
+  clientPoints[1] = view->ProjectToClient(ndcPoints[1]);
+  clientPoints[2] = view->ProjectToClient(ndcPoints[2]);
 
-  EoGeVector3d vX(double(pnt[2].x - ProjectedStartPoint.x), double(pnt[2].y - ProjectedStartPoint.y), 0.0);
-  EoGeVector3d vY(double(pnt[1].x - ProjectedStartPoint.x), double(pnt[1].y - ProjectedStartPoint.y), 0.0);
+  EoGeVector3d vX(double(clientPoints[2].x - clientPoint.x), double(clientPoints[2].y - clientPoint.y), 0.0);
+  EoGeVector3d vY(double(clientPoints[1].x - clientPoint.x), double(clientPoints[1].y - clientPoint.y), 0.0);
 
   double dHeight = vY.Length();
   if (dHeight == 0.0) { return true; }
@@ -438,8 +438,7 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, CDC* deviceContext, Eo
   UINT uTextAlign = deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);
   int iBkMode = deviceContext->SetBkMode(TRANSPARENT);
 
-  deviceContext->TextOutW(
-      ProjectedStartPoint.x, ProjectedStartPoint.y, (LPCWSTR)text.Mid(startPosition), numberOfCharacters);
+  deviceContext->TextOutW(clientPoint.x, clientPoint.y, (LPCWSTR)text.Mid(startPosition), numberOfCharacters);
   deviceContext->SetBkMode(iBkMode);
   deviceContext->SetTextAlign(uTextAlign);
   deviceContext->SelectObject(pfntold);

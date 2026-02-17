@@ -88,12 +88,12 @@ void EoDbPoint::Display(AeSysView* view, CDC* context) {
 
   COLORREF hotPenColor = app.PenColorsGetHot(color);
 
-  EoGePoint4d pt(m_Point);
-  view->ModelViewTransformPoint(pt);
+  EoGePoint4d ndcPoint(m_Point);
+  view->ModelViewTransformPoint(ndcPoint);
 
-  if (!pt.IsInView()) { return; }
+  if (!ndcPoint.IsInView()) { return; }
 
-  auto point = view->DoProjection(pt);
+  auto clientPoint = view->ProjectToClient(ndcPoint);
 
   // Compute pixel size for point
   double pointSize = AeSysDoc::GetDoc()->GetPointSize();
@@ -110,7 +110,7 @@ void EoDbPoint::Display(AeSysView* view, CDC* context) {
   switch (m_pointStyle & 0x0F) {  // Low nibble defines basic shape
 
     case 0:  // single pixel
-      context->SetPixel(point, hotPenColor);
+      context->SetPixel(clientPoint, hotPenColor);
       break;
 
     case 1:  // no visible mark
@@ -118,35 +118,35 @@ void EoDbPoint::Display(AeSysView* view, CDC* context) {
 
     case 2:  // small +
       for (i = -pixelSize; i <= pixelSize; i++) {
-        context->SetPixel(point.x + i, point.y, hotPenColor);
-        context->SetPixel(point.x, point.y + i, hotPenColor);
+        context->SetPixel(clientPoint.x + i, clientPoint.y, hotPenColor);
+        context->SetPixel(clientPoint.x, clientPoint.y + i, hotPenColor);
       }
       break;
 
     case 4:  // small |
-      for (i = -pixelSize; i <= pixelSize; i++) { context->SetPixel(point.x, point.y + i, hotPenColor); }
+      for (i = -pixelSize; i <= pixelSize; i++) { context->SetPixel(clientPoint.x, clientPoint.y + i, hotPenColor); }
       break;
 
     default:  // small X
       for (i = -pixelSize; i <= pixelSize; i++) {
-        context->SetPixel(point.x + i, point.y - i, hotPenColor);
-        context->SetPixel(point.x + i, point.y + i, hotPenColor);
+        context->SetPixel(clientPoint.x + i, clientPoint.y - i, hotPenColor);
+        context->SetPixel(clientPoint.x + i, clientPoint.y + i, hotPenColor);
       }
   }
   if (m_pointStyle & 0x20) {  // bit 5 set, draw a circle around the basic shape
     CPen pen(PS_SOLID, 1, hotPenColor);
     CPen* oldPen = context->SelectObject(&pen);
     auto* oldBrush = static_cast<CBrush*>(context->SelectStockObject(NULL_BRUSH));
-    context->Ellipse(point.x - pixelSize, point.y - pixelSize, point.x + pixelSize, point.y + pixelSize);
+    context->Ellipse(clientPoint.x - pixelSize, clientPoint.y - pixelSize, clientPoint.x + pixelSize, clientPoint.y + pixelSize);
     context->SelectObject(oldPen);
     context->SelectObject(oldBrush);
   }
   if (m_pointStyle & 0x40) {  // bit 6 set, draw a square around the basic shape
     for (i = -pixelSize; i <= pixelSize; i++) {
-      context->SetPixel(point.x + i, point.y - pixelSize, hotPenColor);
-      context->SetPixel(point.x + i, point.y + pixelSize, hotPenColor);
-      context->SetPixel(point.x - pixelSize, point.y + i, hotPenColor);
-      context->SetPixel(point.x + pixelSize, point.y + i, hotPenColor);
+      context->SetPixel(clientPoint.x + i, clientPoint.y - pixelSize, hotPenColor);
+      context->SetPixel(clientPoint.x + i, clientPoint.y + pixelSize, hotPenColor);
+      context->SetPixel(clientPoint.x - pixelSize, clientPoint.y + i, hotPenColor);
+      context->SetPixel(clientPoint.x + pixelSize, clientPoint.y + i, hotPenColor);
     }
   }
 }

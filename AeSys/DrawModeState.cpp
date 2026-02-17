@@ -49,7 +49,7 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
       if (m_previousDrawCommand != ID_OP2) {  // Start new line
         m_pts.RemoveAll();
         m_pts.Add(cursorPosition);
-        m_previousDrawCommand = ID_OP2;  // Update UI
+        m_previousDrawCommand = context->ModeLineHighlightOp(ID_OP2);
       } else {                           // Complete line
         cursorPosition = context->SnapPointToAxis(m_pts[0], cursorPosition);
         auto* line = EoDbLine::CreateLine(m_pts[0], cursorPosition)

@@ -103,7 +103,7 @@ void DrawOdometerInView(AeSysView* view, CDC* context, Eo::Units Units, EoGeVect
 }
 #endif
 
-}
+}  // namespace
 
 IMPLEMENT_DYNCREATE(AeSysView, CView)
 
@@ -777,9 +777,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
 #if defined(USING_STATE_PATTERN)
   // Core delegation: Give the current state first crack at handling the update
   auto* state = GetCurrentState();
-  if (state) {
-    isHandledByState = state->OnUpdate(this, sender, hint, hintObject);
-  }
+  if (state) { isHandledByState = state->OnUpdate(this, sender, hint, hintObject); }
 #endif
   if (!isHandledByState) { DisplayUsingHint(sender, hint, hintObject, deviceContext); }
 
@@ -1042,12 +1040,12 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
     auto* pen = deviceContext->SelectObject(&grayPen);
     auto* brush = deviceContext->SelectStockObject(NULL_BRUSH);
 
-    deviceContext->Rectangle(m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y,
-        m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
+    deviceContext->Rectangle(
+        m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y, m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
 
     m_rubberbandLogicalEnd = point;
-    deviceContext->Rectangle(m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y,
-        m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
+    deviceContext->Rectangle(
+        m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y, m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
     deviceContext->SelectObject(brush);
     deviceContext->SelectObject(pen);
     deviceContext->SetROP2(drawMode);
@@ -1163,8 +1161,7 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
   int iWidSrc = rcWnd.Width();
   int iHgtSrc = rcWnd.Height();
 
-  deviceContext->StretchBlt(
-      0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
+  deviceContext->StretchBlt(0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
 
   dcMem.SelectObject(pBitmap);
   deviceContext->SelectPalette(pPalette, FALSE);
@@ -1219,11 +1216,11 @@ UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizonta
 }
 
 void AeSysView::DisplayPixel(CDC* deviceContext, COLORREF cr, const EoGePoint3d& point) {
-  EoGePoint4d ptView(point);
+  EoGePoint4d ndcPoint(point);
 
-  ModelViewTransformPoint(ptView);
+  ModelViewTransformPoint(ndcPoint);
 
-  if (ptView.IsInView()) { deviceContext->SetPixel(DoProjection(ptView), cr); }
+  if (ndcPoint.IsInView()) { deviceContext->SetPixel(ProjectToClient(ndcPoint), cr); }
 }
 
 void AeSysView::DoCameraRotate(int rotationDirection) {
@@ -2339,8 +2336,8 @@ void AeSysView::RubberBandingDisable() {
       deviceContext->LineTo(m_rubberbandLogicalEnd);
     } else if (m_rubberbandType == Rectangles) {
       auto* brush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
-      deviceContext->Rectangle(m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y,
-          m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
+      deviceContext->Rectangle(
+          m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y, m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
       deviceContext->SelectObject(brush);
     }
     deviceContext->SelectObject(pen);
@@ -2351,25 +2348,25 @@ void AeSysView::RubberBandingDisable() {
 }
 
 void AeSysView::RubberBandingStartAtEnable(EoGePoint3d point, ERubs type) {
-  EoGePoint4d pointInView(point);
+  EoGePoint4d ndcPoint(point);
 
-  ModelViewTransformPoint(pointInView);
+  ModelViewTransformPoint(ndcPoint);
 
-  if (pointInView.IsInView()) {
+  if (ndcPoint.IsInView()) {
     m_rubberbandBegin = point;
-    m_rubberbandLogicalBegin = DoProjection(pointInView);
+    m_rubberbandLogicalBegin = ProjectToClient(ndcPoint);
     m_rubberbandLogicalEnd = m_rubberbandLogicalBegin;
   }
   m_rubberbandType = type;
 }
 
 EoGePoint3d AeSysView::GetCursorPosition() {
-  CPoint CursorPosition;
+  CPoint cursorPosition;
 
-  ::GetCursorPos(&CursorPosition);
-  ScreenToClient(&CursorPosition);
+  ::GetCursorPos(&cursorPosition);
+  ScreenToClient(&cursorPosition);
 
-  EoGePoint3d pt(double(CursorPosition.x), double(CursorPosition.y), m_ptCursorPosDev.z);
+  EoGePoint3d pt(double(cursorPosition.x), double(cursorPosition.y), m_ptCursorPosDev.z);
   if (pt != m_ptCursorPosDev) {
     m_ptCursorPosDev = pt;
     m_ptCursorPosWorld = m_ptCursorPosDev;
@@ -2383,27 +2380,30 @@ EoGePoint3d AeSysView::GetCursorPosition() {
 }
 
 void AeSysView::SetCursorPosition(const EoGePoint3d& position) {
-  EoGePoint4d ptView(position);
+  EoGePoint4d ndcPoint(position);
+  ModelViewTransformPoint(ndcPoint);
 
-  ModelViewTransformPoint(ptView);
-
-  if (!ptView.IsInView()) {  // Redefine the view so targeted position becomes center
+  if (!ndcPoint.IsInView()) {
+    // Redefine the view so targeted position becomes center
     m_ViewTransform.SetTarget(position);
     m_ViewTransform.SetPosition(m_ViewTransform.Direction());
     m_ViewTransform.BuildTransformMatrix();
 
     InvalidateRect(nullptr, TRUE);
 
-    ptView = position;
-    ModelViewTransformPoint(ptView);
+    ndcPoint = EoGePoint4d(position);
+    ModelViewTransformPoint(ndcPoint);
   }
   // Move the cursor to specified position.
-  CPoint pntCurPos = DoProjection(ptView);
-  m_ptCursorPosDev(pntCurPos.x, pntCurPos.y, ptView.z / ptView.w);
+  CPoint clientPoint = ProjectToClient(ndcPoint);
+
+  m_ptCursorPosDev =
+      EoGePoint3d(static_cast<double>(clientPoint.x), static_cast<double>(clientPoint.y), ndcPoint.z / ndcPoint.w);
+
   m_ptCursorPosWorld = position;
 
-  ClientToScreen(&pntCurPos);
-  ::SetCursorPos(pntCurPos.x, pntCurPos.y);
+  ClientToScreen(&clientPoint);
+  ::SetCursorPos(clientPoint.x, clientPoint.y);
 }
 
 void AeSysView::SetModeCursor(int mode) {

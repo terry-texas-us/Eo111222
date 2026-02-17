@@ -145,14 +145,14 @@ void EoGeLine::Display(AeSysView* view, CDC* deviceContext) const {
   std::int16_t lineTypeIndex = renderState.LineTypeIndex();
 
   if (EoDbPrimitive::IsSupportedTyp(lineTypeIndex)) {
-    EoGePoint4d pt[] = {EoGePoint4d(begin), EoGePoint4d(end)};
+    EoGePoint4d ndcPoints[] = {EoGePoint4d(begin), EoGePoint4d(end)};
 
-    view->ModelViewTransformPoints(2, pt);
+    view->ModelViewTransformPoints(2, ndcPoints);
 
-    if (EoGePoint4d::ClipLine(pt[0], pt[1])) {
-      CPoint pnt[2]{};
-      view->DoProjection(pnt, 2, pt);
-      deviceContext->Polyline(pnt, 2);
+    if (EoGePoint4d::ClipLine(ndcPoints[0], ndcPoints[1])) {
+      CPoint clientPoints[2]{};
+      view->ProjectToClient(clientPoints, 2, ndcPoints);
+      deviceContext->Polyline(clientPoints, 2);
     }
   } else {
     polyline::BeginLineStrip();

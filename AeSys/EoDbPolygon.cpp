@@ -679,25 +679,25 @@ std::uint16_t EoDbPolygon::SwingVertex() const {
   return swingVertex;
 }
 
-void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArray) {
-  int iPts = static_cast<int>(pointsArray.GetSize());
-  if (iPts < 2) { return; }
+void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& ndcPoints) {
+  int numberOfPoints = static_cast<int>(ndcPoints.GetSize());
+  if (numberOfPoints < 2) { return; }
 
-  auto* pnt = new CPoint[static_cast<size_t>(iPts)];
+  auto* clientPoints = new CPoint[static_cast<size_t>(numberOfPoints)];
 
-  view->DoProjection(pnt, pointsArray);
+  view->ProjectToClient(clientPoints, ndcPoints);
 
   if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Solid) {
     CBrush brush(pColTbl[renderState.Color()]);
     auto* oldBrush = deviceContext->SelectObject(&brush);
-    deviceContext->Polygon(pnt, iPts);
+    deviceContext->Polygon(clientPoints, numberOfPoints);
     deviceContext->SelectObject(oldBrush);
   } else if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Hollow) {
     auto* oldBrush = (CBrush*)deviceContext->SelectStockObject(NULL_BRUSH);
-    deviceContext->Polygon(pnt, iPts);
+    deviceContext->Polygon(clientPoints, numberOfPoints);
     deviceContext->SelectObject(oldBrush);
   } else {
-    deviceContext->Polygon(pnt, iPts);
+    deviceContext->Polygon(clientPoints, numberOfPoints);
   }
-  delete[] pnt;
+  delete[] clientPoints;
 }

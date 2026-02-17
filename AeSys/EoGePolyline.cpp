@@ -57,8 +57,8 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
   if (numberOfDashElements == 0 || pointsArray.GetSize() < 2) { return; }
 
   EoGePoint3d modelPoints[2]{};
-  CPoint devicePoints[2]{};
-  EoGePoint4d viewPoints[2]{};
+  CPoint clientPoints[2]{};
+  EoGePoint4d ndcPoints[2]{};
 
   size_t dashElementIndex{};
   std::vector<double> dashElements(numberOfDashElements);
@@ -82,14 +82,14 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
       modelPoints[1] = modelPoints[0] + dashAsVector;
       remainingDistanceToEnd -= dashElementSize;
       if (dashElements[dashElementIndex] >= 0.0) {
-        viewPoints[0] = modelPoints[0];
-        viewPoints[1] = modelPoints[1];
+        ndcPoints[0] = modelPoints[0];
+        ndcPoints[1] = modelPoints[1];
 
-        view->ModelViewTransformPoints(2, viewPoints);
+        view->ModelViewTransformPoints(2, ndcPoints);
 
-        if (EoGePoint4d::ClipLine(viewPoints[0], viewPoints[1])) {
-          view->DoProjection(devicePoints, 2, &viewPoints[0]);
-          deviceContext->Polyline(devicePoints, 2);
+        if (EoGePoint4d::ClipLine(ndcPoints[0], ndcPoints[1])) {
+          view->ProjectToClient(clientPoints, 2, &ndcPoints[0]);
+          deviceContext->Polyline(clientPoints, 2);
         }
       }
       modelPoints[0] = modelPoints[1];
@@ -100,14 +100,14 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
       if (dashElements[dashElementIndex] >= 0.0) {
         modelPoints[1] = pointsArray[i + 1];
 
-        viewPoints[0] = modelPoints[0];
-        viewPoints[1] = modelPoints[1];
+        ndcPoints[0] = modelPoints[0];
+        ndcPoints[1] = modelPoints[1];
 
-        view->ModelViewTransformPoints(2, viewPoints);
+        view->ModelViewTransformPoints(2, ndcPoints);
 
-        if (EoGePoint4d::ClipLine(viewPoints[0], viewPoints[1])) {
-          view->DoProjection(devicePoints, 2, &viewPoints[0]);
-          deviceContext->Polyline(devicePoints, 2);
+        if (EoGePoint4d::ClipLine(ndcPoints[0], ndcPoints[1])) {
+          view->ProjectToClient(clientPoints, 2, &ndcPoints[0]);
+          deviceContext->Polyline(clientPoints, 2);
         }
       }
     }
@@ -123,31 +123,32 @@ void __End(AeSysView* view, CDC* deviceContext, std::int16_t lineTypeIndex) {
       view->ModelViewTransformPoints(pts_);
 
       if (AnyPointsInView(pts_)) {
-        CPoint point;
-        point = view->DoProjection(pts_[0]);
-        deviceContext->MoveTo(point);
+        CPoint clientPoint;
+        clientPoint = view->ProjectToClient(pts_[0]);
+        deviceContext->MoveTo(clientPoint);
 
         for (INT_PTR i = 1; i < size; i++) {
-          point = view->DoProjection(pts_[i]);
-          deviceContext->LineTo(point);
+          clientPoint = view->ProjectToClient(pts_[i]);
+          deviceContext->LineTo(clientPoint);
         }
         if (LoopLine) {
-          point = view->DoProjection(pts_[0]);
-          deviceContext->LineTo(point);
+          clientPoint = view->ProjectToClient(pts_[0]);
+          deviceContext->LineTo(clientPoint);
         }
         return;
       }
     }
   } else {
-    EoDbLineTypeTable* LineTypeTable = AeSysDoc::GetDoc()->LineTypeTable();
+    auto* lineTypeTable = AeSysDoc::GetDoc()->LineTypeTable();
 
-    EoDbLineType* LineType;
-    if (!LineTypeTable->LookupUsingLegacyIndex(static_cast<std::uint16_t>(lineTypeIndex), LineType)) { return; }
+    EoDbLineType* lineType;
+    if (!lineTypeTable->LookupUsingLegacyIndex(static_cast<std::uint16_t>(lineTypeIndex), lineType)) { return; }
     renderState.SetLineType(deviceContext, 1);
-    __Display(view, deviceContext, pts_, LineType);
+    __Display(view, deviceContext, pts_, lineType);
     renderState.SetLineType(deviceContext, lineTypeIndex);
   }
 }
+
 void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis,
                             int numberOfPoints, EoGePoint3dArray& pts) {
   EoGeTransformMatrix transformMatrix(centerPoint, majorAxis, minorAxis);
