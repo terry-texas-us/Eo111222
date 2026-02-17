@@ -169,6 +169,10 @@ class AeSysDoc : public CDocument {
   void AddWorkLayerGroups(EoDbGroupList* groups);
   auto FindWorkLayerGroup(EoDbGroup* group) const { return (m_workLayer->Find(group)); }
   [[nodiscard]] auto GetFirstWorkLayerGroupPosition() const { return m_workLayer->GetHeadPosition(); }
+  
+  /** @brief Retrieves the last group in the work layer.
+   * @return Pointer to the last EoDbGroup in the work layer, or nullptr if the work layer is not defined or contains no groups.
+   */
   [[nodiscard]] EoDbGroup* GetLastWorkLayerGroup() const;
   [[nodiscard]] auto GetLastWorkLayerGroupPosition() const { return m_workLayer->GetTailPosition(); }
   EoDbGroup* GetNextWorkLayerGroup(POSITION& position) const { return m_workLayer->GetNext(position); }

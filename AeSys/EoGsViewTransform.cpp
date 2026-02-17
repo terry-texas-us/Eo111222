@@ -159,10 +159,6 @@ void EoGsViewTransform::BuildTransformMatrix() {
   m_InverseMatrix.Inverse();
 }
 
-[[nodiscard]] EoGeTransformMatrix& EoGsViewTransform::GetMatrix() { return m_Matrix; }
-
-[[nodiscard]] EoGeTransformMatrix& EoGsViewTransform::GetMatrixInverse() { return m_InverseMatrix; }
-
 void EoGsViewTransform::Initialize(const EoGsViewport& viewport) {
   SetCenteredWindow(viewport, 44.0, 34.0);
 
@@ -216,8 +212,6 @@ void EoGsViewTransform::SetWindow(const double uMin, const double vMin, const do
   BuildTransformMatrix();
 }
 
-void EoGsViewTransform::TransformPoint(EoGePoint4d& point) { point = m_Matrix * point; }
-
 void EoGsViewTransform::TransformPoints(EoGePoint4dArray& points) {
   int iPts = (int)points.GetSize();
   for (int i = 0; i < iPts; i++) { points[i] = m_Matrix * points[i]; }
@@ -226,12 +220,3 @@ void EoGsViewTransform::TransformPoints(EoGePoint4dArray& points) {
 void EoGsViewTransform::TransformPoints(int numberOfPoints, EoGePoint4d* points) {
   for (int i = 0; i < numberOfPoints; i++) { points[i] = m_Matrix * points[i]; }
 }
-
-void EoGsViewTransform::TransformVector(EoGeVector3d& vector) { vector = m_Matrix * vector; }
-void EoGsViewTransform::Translate(EoGeVector3d v) { m_Matrix.Translate(v); }
-[[nodiscard]] double EoGsViewTransform::UExtent() const { return static_cast<double>(m_UMax - m_UMin); }
-[[nodiscard]] double EoGsViewTransform::UMax() const { return static_cast<double>(m_UMax); }
-[[nodiscard]] double EoGsViewTransform::UMin() const { return static_cast<double>(m_UMin); }
-[[nodiscard]] double EoGsViewTransform::VExtent() const { return static_cast<double>(m_VMax - m_VMin); }
-[[nodiscard]] double EoGsViewTransform::VMax() const { return static_cast<double>(m_VMax); }
-[[nodiscard]] double EoGsViewTransform::VMin() const { return static_cast<double>(m_VMin); }

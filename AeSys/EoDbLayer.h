@@ -57,7 +57,8 @@ class EoDbLayer : public EoDbGroupList {
   void Display(AeSysView* view, CDC* deviceContext);
   void Display(AeSysView* view, CDC* deviceContext, bool identifyTrap);
 
-  [[nodiscard]] COLORREF ColorValue() const;
+  [[nodiscard]] COLORREF ColorValue() const { return Eo::ColorPalette[m_color]; }
+
   [[nodiscard]] std::int16_t ColorIndex() const noexcept { return m_color; }
   void SetColorIndex(std::int16_t color) noexcept { m_color = color; }
 

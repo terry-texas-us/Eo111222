@@ -152,7 +152,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
     }
   }
 }
-[[nodiscard]] EoGePoint3d AeSysView::SnapPointToAxis(const EoGePoint3d& begin, const EoGePoint3d& end) const {
+EoGePoint3d AeSysView::SnapPointToAxis(const EoGePoint3d& begin, const EoGePoint3d& end) const {
   EoGeLine line(begin, end);
 
   return (line.ConstrainToAxis(m_AxisConstraintInfluenceAngle, m_AxisConstraintOffsetAngle));

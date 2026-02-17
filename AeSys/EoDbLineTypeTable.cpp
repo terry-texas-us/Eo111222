@@ -75,7 +75,7 @@ const std::pair<const wchar_t*, const wchar_t*> legacyLineTypes[] = {{L"Null", L
                                                                      {L"PHANTOM2", L"PHANTOM2"},
                                                                      {L"PHANTOMX2", L"PHANTOMX2"}};
 
-constexpr std::uint16_t NumberOfLegacyLineTypes{42};
+constexpr std::uint16_t numberOfLegacyLineTypes{size(legacyLineTypes)};
 }  // namespace
 
 /**
@@ -130,8 +130,8 @@ std::int16_t EoDbLineTypeTable::LegacyLineTypeIndex(CString& name) {
   } else if (name.CompareNoCase(L"ByLayer") == 0) {
     index = EoDbPrimitive::LINETYPE_BYLAYER;
   } else {
-    while (index < NumberOfLegacyLineTypes && name.CompareNoCase(legacyLineTypes[index].second) != 0) { index++; }
-    if (index < NumberOfLegacyLineTypes) { return index; }
+    while (index < numberOfLegacyLineTypes && name.CompareNoCase(legacyLineTypes[index].second) != 0) { index++; }
+    if (index < numberOfLegacyLineTypes) { return index; }
   }
   return 1;
 }
@@ -149,7 +149,7 @@ bool EoDbLineTypeTable::Lookup(const CString& name, EoDbLineType*& lineType) {
 
 bool EoDbLineTypeTable::LookupUsingLegacyIndex(std::uint16_t index, EoDbLineType*& lineType) {
   lineType = nullptr;
-  return (index < NumberOfLegacyLineTypes) && m_MapLineTypes.Lookup(legacyLineTypes[index].second, lineType);
+  return (index < numberOfLegacyLineTypes) && m_MapLineTypes.Lookup(legacyLineTypes[index].second, lineType);
 }
 
 /**

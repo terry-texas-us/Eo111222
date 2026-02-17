@@ -11,34 +11,34 @@ constexpr const wchar_t* verticalAlignmentText[] = {L"Top", L"Middle", L"Bottom"
 constexpr const wchar_t* invalidText = L"Invalid!";
 }  // namespace
 
-[[nodiscard]] CString EoDbFontDefinition::FormatPrecision() const {
+CString EoDbFontDefinition::FormatPrecision() const {
   return (m_precision >= EoDb::Precision::TrueType && m_precision <= EoDb::Precision::StrokeType)
              ? CString{precisionText[static_cast<int>(m_precision) - static_cast<int>(EoDb::Precision::TrueType)]}
              : CString{invalidText};
 }
 
-[[nodiscard]] CString EoDbFontDefinition::FormatPath() const {
+CString EoDbFontDefinition::FormatPath() const {
   return (m_path >= EoDb::Path::Right && m_path <= EoDb::Path::Down) ? CString{pathText[static_cast<int>(m_path)]}
                                                                      : CString{L"Invalid!"};
 }
 
-[[nodiscard]] CString EoDbFontDefinition::FormatHorizontalAlignment() const {
+CString EoDbFontDefinition::FormatHorizontalAlignment() const {
   return (m_horizontalAlignment >= EoDb::HorizontalAlignment::Left &&
-          m_horizontalAlignment <= EoDb::HorizontalAlignment::Right)
+             m_horizontalAlignment <= EoDb::HorizontalAlignment::Right)
              ? CString{horizontalAlignmentText[static_cast<int>(m_horizontalAlignment) -
                                                static_cast<int>(EoDb::HorizontalAlignment::Left)]}
              : CString{invalidText};
 }
 
-[[nodiscard]] CString EoDbFontDefinition::FormatVerticalAlignment() const {
+CString EoDbFontDefinition::FormatVerticalAlignment() const {
   return (m_verticalAlignment >= EoDb::VerticalAlignment::Top && m_verticalAlignment <= EoDb::VerticalAlignment::Bottom)
              ? CString{verticalAlignmentText[static_cast<int>(m_verticalAlignment) -
                                              static_cast<int>(EoDb::VerticalAlignment::Top)]}
              : CString{invalidText};
 }
 
-void EoDbFontDefinition::SetAlignment(EoDb::HorizontalAlignment horizontalAlignment,
-                                      EoDb::VerticalAlignment verticalAlignment) {
+void EoDbFontDefinition::SetAlignment(
+    EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
   m_horizontalAlignment = horizontalAlignment;
   m_verticalAlignment = verticalAlignment;
 }
@@ -49,8 +49,9 @@ void EoDbFontDefinition::SetHorizontalAlignment(EoDb::HorizontalAlignment horizo
 }
 void EoDbFontDefinition::SetPath(EoDb::Path path) { m_path = path; }
 void EoDbFontDefinition::SetPrecision(EoDb::Precision precision) { m_precision = precision; }
-void EoDbFontDefinition::SetVerticalAlignment(EoDb::VerticalAlignment verticalAlignment) { m_verticalAlignment = verticalAlignment; }
-
+void EoDbFontDefinition::SetVerticalAlignment(EoDb::VerticalAlignment verticalAlignment) {
+  m_verticalAlignment = verticalAlignment;
+}
 
 void EoDbFontDefinition::Read(CFile& file) {
   EoDb::Read(file, m_precision);

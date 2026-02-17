@@ -56,19 +56,19 @@ void EoGePoint3d::operator()(double xNew, double yNew, double zNew) {
   z = zNew;
 }
 
-[[nodiscard]] EoGeVector3d EoGePoint3d::operator-(const EoGePoint3d& p) const {
+EoGeVector3d EoGePoint3d::operator-(const EoGePoint3d& p) const {
   return EoGeVector3d(x - p.x, y - p.y, z - p.z);
 }
 
-[[nodiscard]] EoGePoint3d EoGePoint3d::operator-(const EoGeVector3d& u) const {
+EoGePoint3d EoGePoint3d::operator-(const EoGeVector3d& u) const {
   return EoGePoint3d(x - u.x, y - u.y, z - u.z);
 }
-[[nodiscard]] EoGePoint3d EoGePoint3d::operator+(const EoGeVector3d& u) const {
+EoGePoint3d EoGePoint3d::operator+(const EoGeVector3d& u) const {
   return EoGePoint3d(x + u.x, y + u.y, z + u.z);
 }
-[[nodiscard]] EoGePoint3d EoGePoint3d::operator*(double t) const { return EoGePoint3d(x * t, y * t, z * t); }
+EoGePoint3d EoGePoint3d::operator*(double t) const { return EoGePoint3d(x * t, y * t, z * t); }
 
-[[nodiscard]] EoGePoint3d EoGePoint3d::operator/(double t) const {
+EoGePoint3d EoGePoint3d::operator/(double t) const {
   assert(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint3d::operator/");
 
   if (fabs(t) > Eo::geometricTolerance) { return EoGePoint3d(x / t, y / t, z / t); }
@@ -82,7 +82,7 @@ double EoGePoint3d::DistanceTo(const EoGePoint3d& p) const {
   return sqrt(xDelta * xDelta + yDelta * yDelta + zDelta * zDelta);
 }
 
-[[nodiscard]] bool EoGePoint3d::IsEqualTo(const EoGePoint3d& p, double tolerance) const {
+bool EoGePoint3d::IsEqualTo(const EoGePoint3d& p, double tolerance) const {
   return fabs(x - p.x) <= tolerance && fabs(y - p.y) <= tolerance && fabs(z - p.z) <= tolerance;
 }
 
@@ -92,13 +92,13 @@ bool EoGePoint3d::IsContained(const EoGePoint3d& lowerLeftPoint, const EoGePoint
   return true;
 }
 
-[[nodiscard]] EoGePoint3d EoGePoint3d::Max(const EoGePoint3d& p, const EoGePoint3d& q) {
+EoGePoint3d EoGePoint3d::Max(const EoGePoint3d& p, const EoGePoint3d& q) {
   return EoGePoint3d(std::max(p.x, q.x), std::max(p.y, q.y), std::max(p.z, q.z));
 }
 
 EoGePoint3d EoGePoint3d::Mid(const EoGePoint3d& p, const EoGePoint3d& q) { return p + (q - p) * 0.5; }
 
-[[nodiscard]] EoGePoint3d EoGePoint3d::Min(const EoGePoint3d& p, const EoGePoint3d& q) {
+EoGePoint3d EoGePoint3d::Min(const EoGePoint3d& p, const EoGePoint3d& q) {
   return EoGePoint3d(std::min(p.x, q.x), std::min(p.y, q.y), std::min(p.z, q.z));
 }
 

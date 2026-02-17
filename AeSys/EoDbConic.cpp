@@ -110,13 +110,13 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
   m_extrusion.Normalize();
 }
 
-[[nodiscard]] EoDbConic* EoDbConic::CreateCircle(
+EoDbConic* EoDbConic::CreateCircle(
     const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius) {
   auto majorAxis = ComputeArbitraryAxis(extrusion) * radius;
   return new EoDbConic(center, extrusion, majorAxis, 1.0, 0.0, Eo::TwoPi);
 }
 
-[[nodiscard]] EoDbConic* EoDbConic::CreateCircleInView(const EoGePoint3d& center, double radius) {
+EoDbConic* EoDbConic::CreateCircleInView(const EoGePoint3d& center, double radius) {
   auto* activeView = AeSysView::GetActiveView();
   if (!activeView) {
     ATLTRACE2(traceGeneral, 3, L"CreateCircleInView: No active view\n");
@@ -128,12 +128,12 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
   return CreateCircle(center, cameraDirection, radius);
 }
 
-[[nodiscard]] EoDbConic* EoDbConic::CreateConic(const EoGePoint3d& center, const EoGeVector3d& extrusion,
+EoDbConic* EoDbConic::CreateConic(const EoGePoint3d& center, const EoGeVector3d& extrusion,
     const EoGeVector3d& majorAxis, double ratio, double startAngle, double endAngle) {
   return new EoDbConic(center, extrusion, majorAxis, ratio, startAngle, endAngle);
 }
 
-[[nodiscard]] EoDbConic* EoDbConic::CreateConicFromEllipsePrimitive(
+EoDbConic* EoDbConic::CreateConicFromEllipsePrimitive(
     const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle) {
   double majorAxisLength = majorAxis.Length();
   if (majorAxisLength < Eo::geometricTolerance) { throw std::runtime_error("Conic: Near-zero major axis length."); }
@@ -161,12 +161,12 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
   return new EoDbConic(center, extrusion, majorAxis, ratio, startParameter, endParameter);
 }
 
-[[nodiscard]] EoDbConic* EoDbConic::CreateEllipse(
+EoDbConic* EoDbConic::CreateEllipse(
     const EoGePoint3d& center, const EoGeVector3d& extrusion, const EoGeVector3d& majorAxis, double ratio) {
   return new EoDbConic(center, extrusion, majorAxis, ratio, 0.0, Eo::TwoPi);
 }
 
-[[nodiscard]] EoDbConic* EoDbConic::CreateRadialArc(
+EoDbConic* EoDbConic::CreateRadialArc(
     const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius, double startAngle, double endAngle) {
   if (radius < Eo::geometricTolerance) {
     ATLTRACE2(traceGeneral, 3, L"CreateRadialArc: Invalid radius (%.6f)\n", radius);
@@ -184,7 +184,7 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
   return new EoDbConic(center, normalizedExtrusion, majorAxis, 1.0, startAngle, endAngle);
 }
 
-[[nodiscard]] EoDbConic* EoDbConic::CreateRadialArcFrom3Points(
+EoDbConic* EoDbConic::CreateRadialArcFrom3Points(
     EoGePoint3d& start, const EoGePoint3d& intermediate, EoGePoint3d& end) {
   EoGeVector3d startToIntermediate(start, intermediate);
   EoGeVector3d startToEnd(start, end);
@@ -1016,7 +1016,7 @@ void EoDbConic::GetBoundingBox(EoGePoint3dArray& ptsBox) {
   for (auto i = 0; i < 4; i++) { ptsBox[i] = transformMatrix * ptsBox[i]; }
 }
 
-[[nodiscard]] double EoDbConic::SweepAngleToPoint(const EoGePoint3d& point) {
+double EoDbConic::SweepAngleToPoint(const EoGePoint3d& point) {
   if (m_majorAxis.Length() < Eo::geometricTolerance) { return 0.0; }
 
   auto normal = CrossProduct(m_majorAxis, MinorAxis());
@@ -1038,7 +1038,7 @@ void EoDbConic::GetBoundingBox(EoGePoint3dArray& ptsBox) {
       EoGeLine(EoGePoint3d::kOrigin, startPoint), EoGeLine(EoGePoint3d::kOrigin, endPoint)));
 }
 
-[[nodiscard]] bool SweepAngleFromNormalAnd3Points(const EoGeVector3d& normal, const EoGePoint3d& firstOutside,
+bool SweepAngleFromNormalAnd3Points(const EoGeVector3d& normal, const EoGePoint3d& firstOutside,
     const EoGePoint3d& inside, const EoGePoint3d& secondOutside, const EoGePoint3d& center, double& sweepAngle) {
   if (normal.Length() < Eo::geometricTolerance) {
     ATLTRACE2(traceGeneral, 3, L"SweepAngleFromNormalAnd3Points: Invalid normal vector\n");

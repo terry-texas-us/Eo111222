@@ -706,7 +706,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 void AeSysView::OnInitialUpdate() {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnInitialUpdate()\n", this);
 
-  SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(ViewBackgroundColor));
+  SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(Eo::ViewBackgroundColor));
 
 #if defined(USING_Direct2D)
   m_RenderTarget = nullptr;
@@ -766,7 +766,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   // Pre-delegation setup: Configure device context based on hint (e.g., for safe/erase/trap rendering)
   auto* deviceContext = GetDC();
   auto backgroundColor = deviceContext->GetBkColor();
-  deviceContext->SetBkColor(ViewBackgroundColor);
+  deviceContext->SetBkColor(Eo::ViewBackgroundColor);
   int savedRenderState{};
   int drawMode{};
   if ((hint & EoDb::kSafe) == EoDb::kSafe) { savedRenderState = renderState.Save(); }
@@ -1970,25 +1970,25 @@ void AeSysView::BreakAllSegRefs() {
 }
 
 void AeSysView::ResetView() {
-  m_EngagedGroup = 0;
-  m_EngagedPrimitive = 0;
+  m_EngagedGroup = nullptr;
+  m_EngagedPrimitive = nullptr;
 }
 
-[[nodiscard]] EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
+EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
   EoDbPrimitive* primitive{};
-  EoGePoint3d ptEng;
+  EoGePoint3d engagedPoint;
 
-  m_EngagedGroup = 0;
-  m_EngagedPrimitive = 0;
+  m_EngagedGroup = nullptr;
+  m_EngagedPrimitive = nullptr;
 
   EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
   auto position = GetFirstVisibleGroupPosition();
   while (position != nullptr) {
     auto* group = GetNextVisibleGroup(position);
-    primitive = group->SelPrimAtCtrlPt(this, pt, &ptEng);
+    primitive = group->SelPrimAtCtrlPt(this, pt, &engagedPoint);
     if (primitive != nullptr) {
-      m_ptDet = ptEng;
+      m_ptDet = engagedPoint;
       m_ptDet = transformMatrix * m_ptDet;
       m_EngagedGroup = group;
       m_EngagedPrimitive = primitive;
@@ -1997,8 +1997,8 @@ void AeSysView::ResetView() {
   return m_EngagedGroup;
 }
 
-[[nodiscard]] EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& point) {
-  EoGePoint3d ptEng;
+EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& point) {
+  EoGePoint3d engagedPoint;
 
   m_EngagedGroup = nullptr;
   m_EngagedPrimitive = nullptr;
@@ -2015,9 +2015,9 @@ void AeSysView::ResetView() {
   auto position = GetFirstVisibleGroupPosition();
   while (position != nullptr) {
     auto* group = GetNextVisibleGroup(position);
-    auto* primitive = group->SelPrimUsingPoint(this, ptView, apertureSize, ptEng);
+    auto* primitive = group->SelPrimUsingPoint(this, ptView, apertureSize, engagedPoint);
     if (primitive != nullptr) {
-      m_ptDet = ptEng;
+      m_ptDet = engagedPoint;
       m_ptDet = transformMatrix * m_ptDet;
       m_EngagedGroup = group;
       m_EngagedPrimitive = primitive;
@@ -2027,7 +2027,7 @@ void AeSysView::ResetView() {
   return nullptr;
 }
 
-[[nodiscard]] EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle) {
+EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle) {
   auto groupPosition = GetFirstVisibleGroupPosition();
   while (groupPosition != nullptr) {
     auto* group = GetNextVisibleGroup(groupPosition);
@@ -2046,7 +2046,7 @@ void AeSysView::ResetView() {
   return nullptr;
 }
 
-[[nodiscard]] EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) {
+EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) {
   EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
 
@@ -2068,11 +2068,11 @@ void AeSysView::ResetView() {
   return nullptr;
 }
 
-[[nodiscard]] EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
-  m_EngagedGroup = 0;
-  m_EngagedPrimitive = 0;
+EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
+  m_EngagedGroup = nullptr;
+  m_EngagedPrimitive = nullptr;
 
-  EoGePoint3d ptEng;
+  EoGePoint3d engagedPoint;
 
   EoGePoint4d ptView(pt);
   ModelViewTransformPoint(ptView);
@@ -2088,10 +2088,10 @@ void AeSysView::ResetView() {
     while (PrimitivePosition != nullptr) {
       EoDbPrimitive* primitive = group->GetNext(PrimitivePosition);
       if (primitive->Is(EoDb::kLinePrimitive)) {
-        if (primitive->SelectUsingPoint(this, ptView, ptEng)) {
-          tol = ptView.DistanceToPointXY(EoGePoint4d(ptEng));
+        if (primitive->SelectUsingPoint(this, ptView, engagedPoint)) {
+          tol = ptView.DistanceToPointXY(EoGePoint4d(engagedPoint));
 
-          m_ptDet = ptEng;
+          m_ptDet = engagedPoint;
           m_ptDet = transformMatrix * m_ptDet;
           m_EngagedGroup = group;
           m_EngagedPrimitive = primitive;
@@ -2102,7 +2102,7 @@ void AeSysView::ResetView() {
   return m_EngagedGroup;
 }
 
-[[nodiscard]] EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& point) {
+EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& point) {
   EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
 
@@ -2362,7 +2362,7 @@ void AeSysView::RubberBandingStartAtEnable(EoGePoint3d point, ERubs type) {
   m_rubberbandType = type;
 }
 
-[[nodiscard]] EoGePoint3d AeSysView::GetCursorPosition() {
+EoGePoint3d AeSysView::GetCursorPosition() {
   CPoint CursorPosition;
 
   ::GetCursorPos(&CursorPosition);

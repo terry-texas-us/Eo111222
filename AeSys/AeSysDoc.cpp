@@ -470,7 +470,7 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
     RemoveAllGroupsFromAllViews();
 
     auto backgroundColor = deviceContext->GetBkColor();
-    deviceContext->SetBkColor(ViewBackgroundColor);
+    deviceContext->SetBkColor(Eo::ViewBackgroundColor);
 
     EoDbPolygon::SetSpecialPolygonStyle(
         view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);
@@ -487,7 +487,7 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
   } catch (CException* e) { e->Delete(); }
 }
 
-[[nodiscard]] EoDbLayer* AeSysDoc::GetLayerTableLayer(const CString& name) {
+EoDbLayer* AeSysDoc::GetLayerTableLayer(const CString& name) {
   auto i = FindLayerTableLayer(name);
   return (i < 0 ? nullptr : m_LayerTable.GetAt(i));
 }
@@ -690,14 +690,13 @@ void AeSysDoc::AddWorkLayerGroups(EoDbGroupList* groups) {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
   SetModifiedFlag(TRUE);
 }
-/** @brief Retrieves the last group in the work layer.
-  @return Pointer to the last EoDbGroup in the work layer, or nullptr if the work layer is not defined or contains no groups.
-*/
-[[nodiscard]] EoDbGroup* AeSysDoc::GetLastWorkLayerGroup() const {
+
+EoDbGroup* AeSysDoc::GetLastWorkLayerGroup() const {
   if (m_workLayer == nullptr) { return nullptr; }
   auto position = m_workLayer->GetTailPosition();
   return (position != nullptr) ? static_cast<EoDbGroup*>(m_workLayer->GetPrev(position)) : nullptr;
 }
+
 void AeSysDoc::InitializeWorkLayer() {
   m_workLayer->DeleteGroupsAndRemoveAll();
 

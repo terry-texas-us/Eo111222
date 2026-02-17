@@ -38,8 +38,9 @@ class EoGsViewTransform : public EoGsAbstractView {
  public:  // Methods
   void AdjustWindow(const double aspectRatio);
   void BuildTransformMatrix();
-  [[nodiscard]] EoGeTransformMatrix& GetMatrix();
-  [[nodiscard]] EoGeTransformMatrix& GetMatrixInverse();
+  [[nodiscard]] EoGeTransformMatrix& GetMatrix() { return m_Matrix; }
+  [[nodiscard]] EoGeTransformMatrix& GetMatrixInverse() { return m_InverseMatrix; }
+
   void Initialize(const EoGsViewport& viewport);
   void LoadIdentity();
   void ZAxisRotation(double dSinAng, double dCosAng);
@@ -51,17 +52,18 @@ class EoGsViewTransform : public EoGsAbstractView {
 
   void SetMatrix(EoGeTransformMatrix& transformMatrix);
   void SetWindow(const double uMin, const double vMin, const double uMax, const double vMax);
-  void TransformPoint(EoGePoint4d& point);
+  void TransformPoint(EoGePoint4d& point) { point = m_Matrix * point; }
+
   void TransformPoints(EoGePoint4dArray& pointsArray);
   void TransformPoints(int numberOfPoints, EoGePoint4d* points);
-  void TransformVector(EoGeVector3d& vector);
-  void Translate(EoGeVector3d translate);
-  [[nodiscard]] double UExtent() const;
-  [[nodiscard]] double UMax() const;
-  [[nodiscard]] double UMin() const;
-  [[nodiscard]] double VExtent() const;
-  [[nodiscard]] double VMax() const;
-  [[nodiscard]] double VMin() const;
+  void TransformVector(EoGeVector3d& vector) { vector = m_Matrix * vector; }
+
+  [[nodiscard]] double UExtent() const { return static_cast<double>(m_UMax - m_UMin); }
+  [[nodiscard]] double UMax() const { return static_cast<double>(m_UMax); }
+  [[nodiscard]] double UMin() const { return static_cast<double>(m_UMin); }
+  [[nodiscard]] double VExtent() const { return static_cast<double>(m_VMax - m_VMin); }
+  [[nodiscard]] double VMax() const { return static_cast<double>(m_VMax); }
+  [[nodiscard]] double VMin() const { return static_cast<double>(m_VMin); }
 };
 
 typedef CList<EoGsViewTransform> EoGsViewTransforms;

@@ -12,12 +12,10 @@
 
 class AeSysView;
 
-extern COLORREF ViewBackgroundColor;
-
-extern COLORREF ColorPalette[256];
-extern COLORREF GreyPalette[16];
-
 extern COLORREF* pColTbl;
+
+inline constexpr size_t numberOfPenWidths{16};
+extern double penWidths[numberOfPenWidths];
 
 namespace App {
 /** @brief Determines the file type based on the file extension of the provided path name.
@@ -39,7 +37,7 @@ namespace App {
 
 [[nodiscard]] CString ResourceFolderPath();
 
-[[nodiscard]] inline COLORREF ViewTextColor() { return (~(ViewBackgroundColor | 0xff000000)); }
+[[nodiscard]] inline COLORREF ViewTextColor() { return (~(Eo::ViewBackgroundColor | 0xff000000)); }
 }  // namespace App
 
 class AeSys : public CWinAppEx {
@@ -181,9 +179,10 @@ class AeSys : public CWinAppEx {
 
   [[nodiscard]] int GetArchitecturalUnitsFractionPrecision() const { return m_ArchitecturalUnitsFractionPrecision; }
   [[nodiscard]] static EoGePoint3d GetCursorPosition();
-  [[nodiscard]] static HINSTANCE GetInstance();
-  [[nodiscard]] static CWnd* GetMainWindow();
-  [[nodiscard]] static HWND GetSafeHwnd();
+  [[nodiscard]] static HINSTANCE GetInstance() { return AfxGetInstanceHandle(); }
+  [[nodiscard]] static CWnd* GetMainWindow() { return AfxGetMainWnd(); }
+  [[nodiscard]] static HWND GetSafeHwnd() { return (AfxGetMainWnd()->GetSafeHwnd()); }
+
   [[nodiscard]] bool IsClipboardDataGroups() const { return m_ClipboardDataEoGroups; }
   [[nodiscard]] bool IsClipboardDataImage() const { return m_ClipboardDataImage; }
   [[nodiscard]] bool IsClipboardDataText() const { return m_ClipboardDataText; }
@@ -201,10 +200,17 @@ class AeSys : public CWinAppEx {
   bool ModeInformationOverView() const { return m_ModeInformationOverView; }
   [[nodiscard]] double ParseLength(wchar_t* lengthAsString);
   [[nodiscard]] double ParseLength(Eo::Units units, wchar_t* inputLine);
-  [[nodiscard]] auto PenColorsGetHot(std::int16_t color) { return (ColorPalette[color]); }
+  [[nodiscard]] auto PenColorsGetHot(std::int16_t color) { return (Eo::ColorPalette[color]); }
+
+  /** @brief Loads pen colors from a specified file and updates the color palettes accordingly.
+   * The file is expected to have lines in the format: "index=red,green,blue,red,green,blue" for both color and gray palettes.
+   * @param fileName The path to the file containing pen color definitions.
+   * @note The color palette and the gray palette are not the same size.
+   * No checks are performed to ensure that the color values are within the valid range (0-255) for RGB components.
+   */
   void LoadPenColorsFromFile(const CString& pathName);
 
-  [[nodiscard]] double LineWeight(std::int16_t penIndex);
+  [[nodiscard]] double LineWeight(std::int16_t penIndex) { return (penWidths[penIndex]); }
 
   /** Loads the pen widths from a file.
  * The file is expected to have lines in the format:
@@ -220,7 +226,7 @@ class AeSys : public CWinAppEx {
     if (precision > 0) { m_ArchitecturalUnitsFractionPrecision = precision; }
   }
   /// <summary> Positions cursor at targeted position.</summary>
-  void SetCursorPosition(EoGePoint3d pt);
+  void SetCursorPosition(EoGePoint3d position);
   void SetDimensionAngle(double angle) { m_DimensionAngle = angle; }
   void SetDimensionLength(double length) { m_DimensionLength = length; }
   void SetEngagedAngle(double angle) { m_EngagedAngle = angle; }

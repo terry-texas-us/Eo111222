@@ -342,7 +342,11 @@ class AeSysView : public CView {
   EoGePoint3d m_ptCursorPosWorld;
 
   [[nodiscard]] EoGePoint3d GetCursorPosition();
-  /// <summary> Positions cursor at targeted position.</summary>
+  
+    /** @brief Sets the cursor position to the specified world-coordinate point.
+   * @param point3d The point in world coordinates to use for the cursor position.
+
+   */
   void SetCursorPosition(EoGePoint3d point3d);
   void SetModeCursor(int mode);
 
@@ -356,7 +360,6 @@ class AeSysView : public CView {
 
   /**
    * Select a line primitive using a point.
-   *
    * @param point The point to use for selection.
    * @param line  The line primitive that is selected.
    * @return The group containing the selected line primitive, or nullptr if no line is selected.

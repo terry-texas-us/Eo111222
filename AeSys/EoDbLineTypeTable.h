@@ -42,7 +42,7 @@ class EoDbLineTypeTable {
    * @param lineType A reference to a pointer that will be set to the found line type, if any.
    * @return true if the line type was found; false otherwise.
    */
-  bool Lookup(const CString& name, EoDbLineType*& lineType);
+  [[nodiscard]] bool Lookup(const CString& name, EoDbLineType*& lineType);
 
   /** @brief Looks up a line type using its legacy index.
    *

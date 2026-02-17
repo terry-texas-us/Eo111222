@@ -28,13 +28,13 @@ EoGeReferenceSystem::EoGeReferenceSystem(
 EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin, EoGeVector3d xDirection, EoGeVector3d yDirection)
     : m_origin{origin}, m_xDirection{xDirection}, m_yDirection{yDirection} {}
 
-[[nodiscard]] EoGeVector3d EoGeReferenceSystem::UnitNormal() const {
+EoGeVector3d EoGeReferenceSystem::UnitNormal() const {
   EoGeVector3d normal = CrossProduct(m_xDirection, m_yDirection);
   normal.Normalize();
   return normal;
 }
 
-[[nodiscard]] EoGeTransformMatrix EoGeReferenceSystem::TransformMatrix() const {
+EoGeTransformMatrix EoGeReferenceSystem::TransformMatrix() const {
   return EoGeTransformMatrix(m_origin, m_xDirection, m_yDirection);
 }
 

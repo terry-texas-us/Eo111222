@@ -14,9 +14,9 @@ const EoGeVector3d EoGeVector3d::positiveUnitZ(0.0, 0.0, 1.0);
 
 EoGeVector3d::EoGeVector3d(const EoGePoint3d& p, const EoGePoint3d& q) : x(q.x - p.x), y(q.y - p.y), z(q.z - p.z) {}
 
-[[nodiscard]] bool EoGeVector3d::operator==(const EoGeVector3d& v) const noexcept { return IsNearEqual(*this, v); }
+bool EoGeVector3d::operator==(const EoGeVector3d& v) const noexcept { return IsNearEqual(*this, v); }
 
-[[nodiscard]] bool EoGeVector3d::operator!=(const EoGeVector3d& v) const noexcept { return !IsNearEqual(*this, v); }
+bool EoGeVector3d::operator!=(const EoGeVector3d& v) const noexcept { return !IsNearEqual(*this, v); }
 
 void EoGeVector3d::operator+=(const EoGeVector3d& v) noexcept {
   x += v.x;
@@ -56,15 +56,15 @@ void EoGeVector3d::operator()(double xNew, double yNew, double zNew) noexcept {
   z = zNew;
 }
 
-[[nodiscard]] EoGeVector3d EoGeVector3d::operator-(const EoGeVector3d& v) const noexcept {
+EoGeVector3d EoGeVector3d::operator-(const EoGeVector3d& v) const noexcept {
   return EoGeVector3d(x - v.x, y - v.y, z - v.z);
 }
 
-[[nodiscard]] EoGeVector3d EoGeVector3d::operator+(const EoGeVector3d& v) const noexcept {
+EoGeVector3d EoGeVector3d::operator+(const EoGeVector3d& v) const noexcept {
   return EoGeVector3d(x + v.x, y + v.y, z + v.z);
 }
 
-[[nodiscard]] EoGeVector3d EoGeVector3d::operator/(double t) const {
+EoGeVector3d EoGeVector3d::operator/(double t) const {
   assert(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGeVector3d::operator/");
 
   if (fabs(t) > Eo::geometricTolerance) { return EoGeVector3d(x / t, y / t, z / t); }
@@ -76,11 +76,11 @@ void EoGeVector3d::operator()(double xNew, double yNew, double zNew) noexcept {
  * @param tolerance The tolerance within which the vectors are considered equal.
  * @return true if the vectors are equal within the specified tolerance; false otherwise.
  */
-[[nodiscard]] bool EoGeVector3d::IsEqualTo(const EoGeVector3d& other, double tolerance) const noexcept {
+bool EoGeVector3d::IsEqualTo(const EoGeVector3d& other, double tolerance) const noexcept {
   return fabs(x - other.x) <= tolerance && fabs(y - other.y) <= tolerance && fabs(z - other.z) <= tolerance;
 }
 
-[[nodiscard]] double EoGeVector3d::Length() const { return sqrt(SquaredLength()); }
+double EoGeVector3d::Length() const { return sqrt(SquaredLength()); }
 
 void EoGeVector3d::Normalize() {
   if (IsNearNull()) { throw std::domain_error("Cannot normalize zero-length vector"); }
@@ -121,7 +121,7 @@ void EoGeVector3d::Write(CFile& file) const {
  * @note The arbitrary axis algorithm is used by AutoCAD internally to implement the arbitrary but consistent generation 
  * of object coordinate systems for all entities that use object coordinates.
  */
-[[nodiscard]] EoGeVector3d ComputeArbitraryAxis(const EoGeVector3d& normal) {
+EoGeVector3d ComputeArbitraryAxis(const EoGeVector3d& normal) {
   // AutoCAD's arbitrary axis algorithm uses 1/64 as the threshold (See: AutoCAD DXF Reference - Arbitrary Axis Algorithm)
   constexpr double epsilon{1.0 / 64.0};  // AutoCAD compatibility - do not change
 
@@ -134,7 +134,7 @@ void EoGeVector3d::Write(CFile& file) const {
   return arbitraryAxis;
 }
 
-[[nodiscard]] EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle) {
+EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle) {
   double sinAngle{};
   double cosAngle{};
 
@@ -155,11 +155,11 @@ void EoGeVector3d::Write(CFile& file) const {
   return EoGeVector3d(vector.x * cosAngle - vector.y * sinAngle, vector.x * sinAngle + vector.y * cosAngle, vector.z);
 }
 
-[[nodiscard]] EoGeVector3d CrossProduct(const EoGeVector3d& u, const EoGeVector3d& v) noexcept {
+EoGeVector3d CrossProduct(const EoGeVector3d& u, const EoGeVector3d& v) noexcept {
   EoGeVector3d crossProduct(u.y * v.z - u.z * v.y, u.z * v.x - u.x * v.z, u.x * v.y - u.y * v.x);
   return crossProduct;
 }
 
-[[nodiscard]] double DotProduct(const EoGeVector3d& u, const EoGeVector3d& v) noexcept {
+double DotProduct(const EoGeVector3d& u, const EoGeVector3d& v) noexcept {
   return (u.x * v.x + u.y * v.y + u.z * v.z);
 }

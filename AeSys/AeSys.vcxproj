@@ -1574,7 +1574,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     <ClInclude Include="EoGsModelTransform.h" />
     <ClInclude Include="EoGsViewTransform.h" />
     <ClInclude Include="EoDbDrwInterface.h" />
-    <ClInclude Include="PegColors.h" />
     <ClInclude Include="EoDbLineType.h" />
     <ClInclude Include="WndProcPreview.h" />
     <ClInclude Include="EoGsRenderState.h" />

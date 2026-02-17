@@ -16,15 +16,13 @@ EoDbLayer::EoDbLayer(const CString& name, State state)
 EoDbLayer::EoDbLayer(const CString& name, std::uint16_t state)
     : m_name{name}, m_state{state}, m_tracingState{}, m_color{1}, m_lineType{} {}
 
-[[nodiscard]] COLORREF EoDbLayer::ColorValue() const { return ColorPalette[m_color]; }
-
 void EoDbLayer::Display(AeSysView* view, CDC* deviceContext) {
   EoDbPrimitive::SetLayerColor(ColorIndex());
   EoDbPrimitive::SetLayerLineTypeIndex(LineTypeIndex());
 
   COLORREF* pCurColTbl = pColTbl;
 
-  pColTbl = (IsOpened() || IsWork() || IsActive()) ? ColorPalette : GreyPalette;
+  pColTbl = (IsOpened() || IsWork() || IsActive()) ? Eo::ColorPalette : Eo::GrayPalette;
 
   EoDbGroupList::Display(view, deviceContext);
   pColTbl = pCurColTbl;
@@ -44,7 +42,7 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
 
       bool LayerIsDetectable = IsOpened() || IsWork() || IsActive();
 
-      pColTbl = LayerIsDetectable ? ColorPalette : GreyPalette;
+      pColTbl = LayerIsDetectable ? Eo::ColorPalette : Eo::GrayPalette;
 
       auto position = GetHeadPosition();
       while (position != nullptr) {
@@ -66,7 +64,7 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
   } catch (CException* e) { e->Delete(); }
 }
 
-[[nodiscard]] std::int16_t EoDbLayer::LineTypeIndex() const {
+std::int16_t EoDbLayer::LineTypeIndex() const {
   std::int16_t index = (m_lineType == nullptr ? 0 : m_lineType->Index());
   return index;
 }

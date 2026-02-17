@@ -37,7 +37,7 @@ void EoDlgSetupColor::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgSetupColor::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  EoCtrlColorsButton::SetPalette(ColorPalette);
+  EoCtrlColorsButton::SetPalette(Eo::ColorPalette);
   EoCtrlColorsButton::SetCurrentIndex(m_ColorIndex);
 
   m_EvenColorsButton.SetLayout(EoCtrlColorsButton::GridUp5RowsEvenOnly, CSize(13, 13));
@@ -111,7 +111,7 @@ void EoDlgSetupColor::DrawSelectionInformation(std::uint16_t index) {
   m_SelectionButton.Invalidate();
 
   CString ColorRGBDescription;
-  ColorRGBDescription.Format(L"(%i,%i,%i)", GetRValue(ColorPalette[index]), GetGValue(ColorPalette[index]),
-                             GetBValue(ColorPalette[index]));
+  ColorRGBDescription.Format(L"(%i,%i,%i)", GetRValue(Eo::ColorPalette[index]), GetGValue(Eo::ColorPalette[index]),
+                             GetBValue(Eo::ColorPalette[index]));
   SetDlgItemTextW(IDC_RGBNUMBERS, ColorRGBDescription);
 }

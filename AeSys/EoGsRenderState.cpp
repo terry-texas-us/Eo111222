@@ -143,9 +143,9 @@ void EoGsRenderState::SetLineType(CDC* deviceContext, std::int16_t lineTypeIndex
  * For example, XOR modes may not work properly with non black or white background colors, and this function includes logic to handle such cases accordingly.
  */
 int EoGsRenderState::SetROP2(CDC* deviceContext, int drawMode) {
-  if (ColorPalette[0] == Eo::colorBlack) {
+  if (Eo::ColorPalette[0] == Eo::colorBlack) {
     return deviceContext->SetROP2(drawMode);
-  } else if (ColorPalette[0] == Eo::colorWhite) {
+  } else if (Eo::ColorPalette[0] == Eo::colorWhite) {
     if (drawMode == R2_XORPEN) { drawMode = R2_NOTXORPEN; }
   } else {
     // Gray or other background - XOR modes don't work properly

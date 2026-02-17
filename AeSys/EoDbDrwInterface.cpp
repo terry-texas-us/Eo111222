@@ -98,8 +98,7 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
   // Linetype name group code 6
   std::wstring lineTypeName = Eo::MultiByteToWString(layer.lineType.c_str());
   EoDbLineType* lineType;
-  document->LineTypeTable()->Lookup(lineTypeName.c_str(), lineType);
-  newLayer->SetLineType(lineType);
+  if (document->LineTypeTable()->Lookup(lineTypeName.c_str(), lineType)) { newLayer->SetLineType(lineType); }
 
   /**
   Standard flags (bit-coded values) group code 70:

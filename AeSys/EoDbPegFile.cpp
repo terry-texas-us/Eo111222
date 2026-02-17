@@ -534,32 +534,33 @@ void EoDb::Read(CFile& file, CString& string) {
 void EoDb::Read(CFile& file, double& number) { file.Read(&number, sizeof(double)); }
 void EoDb::Read(CFile& file, std::int16_t& number) { file.Read(&number, sizeof(std::int16_t)); }
 
-[[nodiscard]] EoGePoint3d EoDb::ReadPoint3d(CFile& file) {
-  EoGePoint3d Point;
-  Point.Read(file);
-  return Point;
+EoGePoint3d EoDb::ReadPoint3d(CFile& file) {
+  EoGePoint3d point;
+  point.Read(file);
+  return point;
 }
 
-[[nodiscard]] EoGeVector3d EoDb::ReadVector3d(CFile& file) {
-  EoGeVector3d Vector;
-  Vector.Read(file);
-  return Vector;
+EoGeVector3d EoDb::ReadVector3d(CFile& file) {
+  EoGeVector3d vector;
+  vector.Read(file);
+  return vector;
 }
 
 void EoDb::Read(CFile& file, std::uint16_t& number) { file.Read(&number, sizeof(std::uint16_t)); }
 
-[[nodiscard]] double EoDb::ReadDouble(CFile& file) {
+double EoDb::ReadDouble(CFile& file) {
   double number;
   file.Read(&number, sizeof(double));
   return number;
 }
-[[nodiscard]] std::int16_t EoDb::ReadInt16(CFile& file) {
+
+std::int16_t EoDb::ReadInt16(CFile& file) {
   std::int16_t number;
   file.Read(&number, sizeof(std::int16_t));
   return number;
 }
 
-[[nodiscard]] std::uint16_t EoDb::ReadUInt16(CFile& file) {
+std::uint16_t EoDb::ReadUInt16(CFile& file) {
   std::uint16_t number;
   file.Read(&number, sizeof(std::uint16_t));
   return number;
