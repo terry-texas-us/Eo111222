@@ -11,11 +11,8 @@
 
 const EoGePoint3d EoGePoint3d::kOrigin{0.0, 0.0, 0.0};
 
-EoGePoint3d::EoGePoint3d(const EoGePoint4d& initialPoint) {
-  x = initialPoint.x / initialPoint.w;
-  y = initialPoint.y / initialPoint.w;
-  z = initialPoint.z / initialPoint.w;
-}
+EoGePoint3d::EoGePoint3d(const EoGePoint4d& point) noexcept
+    : x{point.x / point.w}, y{point.y / point.w}, z{point.z / point.w} {}
 
 bool EoGePoint3d::operator==(const EoGePoint3d& point) const { return (IsEqualTo(point, Eo::geometricTolerance)); }
 
@@ -56,16 +53,10 @@ void EoGePoint3d::operator()(double xNew, double yNew, double zNew) {
   z = zNew;
 }
 
-EoGeVector3d EoGePoint3d::operator-(const EoGePoint3d& p) const {
-  return EoGeVector3d(x - p.x, y - p.y, z - p.z);
-}
+EoGeVector3d EoGePoint3d::operator-(const EoGePoint3d& p) const { return EoGeVector3d(x - p.x, y - p.y, z - p.z); }
 
-EoGePoint3d EoGePoint3d::operator-(const EoGeVector3d& u) const {
-  return EoGePoint3d(x - u.x, y - u.y, z - u.z);
-}
-EoGePoint3d EoGePoint3d::operator+(const EoGeVector3d& u) const {
-  return EoGePoint3d(x + u.x, y + u.y, z + u.z);
-}
+EoGePoint3d EoGePoint3d::operator-(const EoGeVector3d& u) const { return EoGePoint3d(x - u.x, y - u.y, z - u.z); }
+EoGePoint3d EoGePoint3d::operator+(const EoGeVector3d& u) const { return EoGePoint3d(x + u.x, y + u.y, z + u.z); }
 EoGePoint3d EoGePoint3d::operator*(double t) const { return EoGePoint3d(x * t, y * t, z * t); }
 
 EoGePoint3d EoGePoint3d::operator/(double t) const {
@@ -102,7 +93,7 @@ EoGePoint3d EoGePoint3d::Min(const EoGePoint3d& p, const EoGePoint3d& q) {
   return EoGePoint3d(std::min(p.x, q.x), std::min(p.y, q.y), std::min(p.z, q.z));
 }
 
-EoGePoint3d EoGePoint3d::ProjectToward(const EoGePoint3d& p, const double distance) const {
+EoGePoint3d EoGePoint3d::ProjectToward(const EoGePoint3d& p, double distance) const {
   EoGeVector3d directionVector(*this, p);
 
   double length = directionVector.Length();
@@ -136,8 +127,8 @@ int EoGePoint3d::RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint, cons
   return returnValue;
 }
 
-EoGePoint3d EoGePoint3d::RotateAboutAxis(const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis,
-                                         const double angle) {
+EoGePoint3d EoGePoint3d::RotateAboutAxis(
+    const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis, double angle) {
   if (referenceAxis == EoGeVector3d::positiveUnitZ) {
     double sinAngle = sin(angle);
     double cosAngle = cos(angle);
@@ -145,7 +136,7 @@ EoGePoint3d EoGePoint3d::RotateAboutAxis(const EoGePoint3d& referenceOrigin, con
     EoGeVector3d v(referenceOrigin, *this);
 
     return (EoGePoint3d(referenceOrigin.x + (v.x * cosAngle - v.y * sinAngle),
-                        referenceOrigin.y + (v.x * sinAngle + v.y * cosAngle), z));
+        referenceOrigin.y + (v.x * sinAngle + v.y * cosAngle), z));
   } else {
     EoGeTransformMatrix transformMatrix(referenceOrigin, referenceAxis, angle);
     return (transformMatrix * (*this));

@@ -54,11 +54,11 @@ void EoGsViewport::DoProjectionInverse(EoGePoint3d& pt) {
 
 double EoGsViewport::HeightInInches() const { return m_height / (m_DeviceHeightInPixels / m_DeviceHeightInInches); }
 double EoGsViewport::WidthInInches() const { return (m_width / (m_DeviceWidthInPixels / m_DeviceWidthInInches)); }
-void EoGsViewport::SetDeviceHeightInInches(const double height) { m_DeviceHeightInInches = height; }
-void EoGsViewport::SetDeviceWidthInInches(const double width) { m_DeviceWidthInInches = width; }
+void EoGsViewport::SetDeviceHeightInInches(double height) { m_DeviceHeightInInches = height; }
+void EoGsViewport::SetDeviceWidthInInches(double width) { m_DeviceWidthInInches = width; }
 void EoGsViewport::SetSize(int width, int height) {
   m_width = static_cast<double>(width);
   m_height = static_cast<double>(height);
 }
-void EoGsViewport::SetDeviceHeightInPixels(const double height) { m_DeviceHeightInPixels = height; }
-void EoGsViewport::SetDeviceWidthInPixels(const double width) { m_DeviceWidthInPixels = width; }
+void EoGsViewport::SetDeviceHeightInPixels(double height) { m_DeviceHeightInPixels = height; }
+void EoGsViewport::SetDeviceWidthInPixels(double width) { m_DeviceWidthInPixels = width; }

@@ -125,20 +125,18 @@ EoGePoint3d EoDbSpline::GoToNextControlPoint() {
 }
 
 bool EoDbSpline::IsInView(AeSysView* view) {
-  EoGePoint4d pt[2]{};
+  EoGePoint4d ndcPoints[2]{};
 
-  pt[0] = m_pts[0];
+  ndcPoints[0] = EoGePoint4d{m_pts[0]};
 
-  view->ModelViewTransformPoint(pt[0]);
-
+  view->ModelViewTransformPoint(ndcPoints[0]);
   for (std::uint16_t w = 1; w < m_pts.GetSize(); w++) {
-    pt[1] = m_pts[w];
+    ndcPoints[1] = EoGePoint4d{m_pts[w]};
 
-    view->ModelViewTransformPoint(pt[1]);
+    view->ModelViewTransformPoint(ndcPoints[1]);
+    if (EoGePoint4d::ClipLine(ndcPoints[0], ndcPoints[1])) { return true; }
 
-    if (EoGePoint4d::ClipLine(pt[0], pt[1])) { return true; }
-
-    pt[0] = pt[1];
+    ndcPoints[0] = ndcPoints[1];
   }
   return false;
 }
@@ -151,7 +149,7 @@ bool EoDbSpline::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point
 
 EoGePoint3d EoDbSpline::SelectAtControlPoint(AeSysView*, const EoGePoint4d& point) {
   sm_controlPointIndex = SHRT_MAX;
-  return point;
+  return EoGePoint3d{point};
 }
 
 bool EoDbSpline::SelectUsingLine(

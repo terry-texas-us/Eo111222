@@ -221,11 +221,11 @@ EoGePoint3d EoDbPolyline::GoToNextControlPoint() {
 bool EoDbPolyline::IsInView(AeSysView* view) {
   EoGePoint4d pt[2]{};
 
-  pt[0] = m_pts[0];
+  pt[0] = EoGePoint4d{m_pts[0]};
   view->ModelViewTransformPoint(pt[0]);
 
   for (std::uint16_t w = 1; w < m_pts.GetSize(); w++) {
-    pt[1] = m_pts[w];
+    pt[1] = EoGePoint4d{m_pts[w]};
     view->ModelViewTransformPoint(pt[1]);
 
     if (EoGePoint4d::ClipLine(pt[0], pt[1])) { return true; }
@@ -303,8 +303,8 @@ bool EoDbPolyline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoin
     view->ModelViewTransformPoint(ptBeg);
     view->ModelViewTransformPoint(ptEnd);
 
-    EoGeLine LineSegment(ptBeg, ptEnd);
-    if (LineSegment.IsSelectedByPointXY(point, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+    EoGeLine LineSegment(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
+    if (LineSegment.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
       ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
       return true;
     }
@@ -319,8 +319,8 @@ bool EoDbPolyline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoin
       EoGePoint4d ptEnd(m_pts[w % wPts]);
       view->ModelViewTransformPoint(ptEnd);
 
-      EoGeLine LineSegment(ptBeg, ptEnd);
-      if (LineSegment.IsSelectedByPointXY(point, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+      EoGeLine LineSegment(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
+      if (LineSegment.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
         ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
         sm_Edge = w;
         sm_pivotVertex = wPts;

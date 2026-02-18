@@ -56,11 +56,8 @@ class AeSysView : public CView {
   };
   enum ERubs { None, Lines, Rectangles };
 
- private:
-  static const double m_MaximumWindowRatio;
-  static const double m_MinimumWindowRatio;
-
 #if defined(USING_STATE_PATTERN)
+ private:
   std::stack<std::unique_ptr<AeSysState>> m_stateStack;
 
  public:
@@ -85,6 +82,7 @@ class AeSysView : public CView {
    */
   AeSysState* GetCurrentState() const;
 #endif
+ private:
   EoGsModelTransform m_ModelTransform;
   EoGsViewport m_Viewport;
   EoGsViewTransform m_ViewTransform;
@@ -143,9 +141,9 @@ class AeSysView : public CView {
 
  public:
   double AxisConstraintInfluenceAngle() const;
-  void SetAxisConstraintInfluenceAngle(const double angle);
+  void SetAxisConstraintInfluenceAngle(double angle);
   double AxisConstraintOffsetAngle() const;
-  void SetAxisConstraintOffsetAngle(const double angle);
+  void SetAxisConstraintOffsetAngle(double angle);
   void InitializeConstraints();
   /// <summary>Generates a point display centered about the user origin in one or more of the three orthogonal planes for the current user grid.</summary>
   void DisplayGrid(CDC* deviceContext);
@@ -394,7 +392,7 @@ class AeSysView : public CView {
 
   bool PenWidthsOn() const { return m_ViewPenWidths; }
   [[nodiscard]] double GetWorldScale() const { return m_WorldScale; }
-  void SetWorldScale(const double scale);
+  void SetWorldScale(double scale);
   bool RenderAsWireframe() const { return m_ViewWireframe; }
   auto AddGroup(EoDbGroup* group) { return m_VisibleGroupList.AddTail(group); }
   void AddGroups(EoDbGroupList* groups) { return m_VisibleGroupList.AddTail(groups); }
@@ -465,10 +463,10 @@ class AeSysView : public CView {
   void ModelViewTransformPoints(int numberOfPoints, EoGePoint4d* points);
   void ModelViewTransformVector(EoGeVector3d& vector);
   void SetViewTransform(EoGsViewTransform& viewTransform);
-  void SetCenteredWindow(const double uExtent, const double vExtent);
+  void SetCenteredWindow(double uExtent, double vExtent);
   void SetCameraPosition(const EoGeVector3d& direction);
   void SetCameraTarget(const EoGePoint3d& target);
-  void SetViewWindow(const double uMin, const double vMin, const double uMax, const double vMax);
+  void SetViewWindow(double uMin, double vMin, double uMax, double vMax);
 
   /// <summary>Determines the number of pages for 1 to 1 print</summary>
   UINT NumPages(CDC* deviceContext, double dScaleFactor, UINT& nHorzPages, UINT& nVertPages);
@@ -719,7 +717,7 @@ class AeSysView : public CView {
     return InvertedScaleFactors;
   }
   [[nodiscard]] EoGeVector3d EditModeScaleFactors() const { return m_EditModeScale; }
-  void SetEditModeScaleFactors(const double x, const double y, const double z) { m_EditModeScale.Set(x, y, z); }
+  void SetEditModeScaleFactors(double x, double y, double z) { m_EditModeScale.Set(x, y, z); }
   void SetEditModeRotationAngles(double x, double y, double z) { m_editModeRotationAngles.Set(x, y, z); }
   [[nodiscard]] EoGeVector3d EditModeMirrorScale() const { return m_EditModeMirrorScale; }
   void SetMirrorScale(double x, double y, double z) { m_EditModeMirrorScale.Set(x, y, z); }

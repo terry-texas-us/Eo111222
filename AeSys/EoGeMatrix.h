@@ -8,16 +8,16 @@ class EoGeMatrixRow {
  public:
   EoGeMatrixRow& operator+=(const EoGeMatrixRow& v);
   EoGeMatrixRow& operator-=(const EoGeMatrixRow& row);
-  EoGeMatrixRow& operator*=(const double d);
-  EoGeMatrixRow& operator/=(const double d);
+  EoGeMatrixRow& operator*=(double d);
+  EoGeMatrixRow& operator/=(double d);
 
   EoGeMatrixRow operator+(const EoGeMatrixRow& row) const;
   EoGeMatrixRow operator-(const EoGeMatrixRow& row);
-  EoGeMatrixRow operator*(const double d) const;
+  EoGeMatrixRow operator*(double d) const;
 
   double& operator[](int i);
   const double& operator[](int i) const;
-  void operator()(const double c0, const double c1, const double c2, const double c3);
+  void operator()(double c0, double c1, double c2, double c3);
 
   EoGeMatrixRow operator-();
 

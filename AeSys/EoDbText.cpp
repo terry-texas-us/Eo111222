@@ -182,8 +182,8 @@ bool EoDbText::IsInView(AeSysView* view) {
   text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
 
   for (INT_PTR n = 0; n <= 2;) {
-    pt[0] = pts[n++];
-    pt[1] = pts[n++];
+    pt[0] = EoGePoint4d{pts[n++]};
+    pt[1] = EoGePoint4d{pts[n++]};
 
     view->ModelViewTransformPoints(2, pt);
 
@@ -229,7 +229,7 @@ void EoDbText::ModifyNotes(const EoDbFontDefinition& fontDefinition,
 }
 EoGePoint3d EoDbText::SelectAtControlPoint(AeSysView*, const EoGePoint4d& point) {
   sm_controlPointIndex = SHRT_MAX;
-  return point;
+  return EoGePoint3d{point};
 }
 
 bool EoDbText::SelectUsingLine(
@@ -249,9 +249,9 @@ bool EoDbText::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&
   view->ModelViewTransformPoints(4, pt0);
 
   for (size_t n = 0; n < 4; n++) {
-    if (EoGeLine(pt0[n], pt0[(n + 1) % 4]).DirRelOfPt(point) < 0) { return false; }
+    if (EoGeLine(EoGePoint3d{pt0[n]}, EoGePoint3d{pt0[(n + 1) % 4]}).DirRelOfPt(EoGePoint3d{point}) < 0) { return false; }
   }
-  ptProj = point;
+  ptProj = EoGePoint3d{point};
 
   return true;
 }
@@ -398,14 +398,14 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, CDC* deviceContext, Eo
   EoGeTransformMatrix transformMatrix(referenceSystem.TransformMatrix());
   transformMatrix.Inverse();
 
-  EoGePoint4d ndcPoint = transformMatrix * EoGePoint3d::kOrigin;
+  EoGePoint4d ndcPoint = EoGePoint4d{transformMatrix * EoGePoint3d::kOrigin};
   view->ModelViewTransformPoint(ndcPoint);
   CPoint clientPoint = view->ProjectToClient(ndcPoint);
 
   EoGePoint4d ndcPoints[3]{};
 
-  ndcPoints[1] = transformMatrix * EoGePoint3d(0.0, 1.0, 0.0);
-  ndcPoints[2] = transformMatrix * EoGePoint3d(1.0, 0.0, 0.0);
+  ndcPoints[1] = EoGePoint4d{transformMatrix * EoGePoint3d(0.0, 1.0, 0.0)};
+  ndcPoints[2] = EoGePoint4d{transformMatrix * EoGePoint3d(1.0, 0.0, 0.0)};
 
   view->ModelViewTransformPoint(ndcPoints[1]);
   view->ModelViewTransformPoint(ndcPoints[2]);

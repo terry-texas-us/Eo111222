@@ -28,14 +28,14 @@ void AeSysView::SetCameraTarget(const EoGePoint3d& target) {
  * @param uExtent The extent of the view window in the U direction.
  * @param vExtent The extent of the view window in the V direction.
  */
-void AeSysView::SetCenteredWindow(const double uExtent, const double vExtent) {
+void AeSysView::SetCenteredWindow(double uExtent, double vExtent) {
   m_ViewTransform.SetCenteredWindow(m_Viewport, uExtent, vExtent);
 }
 void AeSysView::SetViewTransform(EoGsViewTransform& viewTransform) {
   m_ViewTransform = viewTransform;
   m_ViewTransform.BuildTransformMatrix();
 }
-void AeSysView::SetViewWindow(const double uMin, const double vMin, const double uMax, const double vMax) {
+void AeSysView::SetViewWindow(double uMin, double vMin, double uMax, double vMax) {
   m_ViewTransform.SetWindow(uMin, vMin, uMax, vMax);
 }
 void AeSysView::ModelViewGetViewport(EoGsViewport& viewport) { viewport = m_Viewport; }

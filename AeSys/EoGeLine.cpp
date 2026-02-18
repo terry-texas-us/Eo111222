@@ -234,7 +234,7 @@ bool EoGeLine::IsContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3
   }
 }
 
-bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, const double apert, EoGePoint3d& ptProj, double* rel) const {
+bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, double apert, EoGePoint3d& ptProj, double* rel) const {
   if (pt.x < std::min(begin.x, end.x) - apert) { return false; }
   if (pt.x > std::max(begin.x, end.x) + apert) { return false; }
   if (pt.y < std::min(begin.y, end.y) - apert) { return false; }
@@ -291,7 +291,7 @@ EoGePoint3d EoGeLine::ProjectPointToLine(const EoGePoint3d& point) const {
   return (begin + vBegEnd);
 }
 
-EoGePoint3d EoGeLine::ProjectBeginPointToEndPoint(const double t) const { return begin + (end - begin) * t; }
+EoGePoint3d EoGeLine::ProjectBeginPointToEndPoint(double t) const { return begin + (end - begin) * t; }
 
 int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistance, EoGePoint3d* projectedPoint) const {
   double dX = end.x - begin.x;
@@ -387,11 +387,11 @@ double EoGeLine::AngleBetweenLn_xy(EoGeLine firstLine, EoGeLine secondLine) {
 
 EoGePoint4d EoGeLine::IntersectionWithPlane(
     const EoGePoint4d& begin, const EoGePoint4d& end, const EoGePoint4d& point, const EoGeVector3d& normal) {
-  EoGeVector3d beginEndVector(begin, end);
+  EoGeVector3d beginEndVector(EoGePoint3d{begin}, EoGePoint3d{end});
   double dotProduct = DotProduct(normal, beginEndVector);
 
   if (fabs(dotProduct) > Eo::geometricTolerance) {
-    EoGeVector3d pointBeginVector(point, begin);
+    EoGeVector3d pointBeginVector(EoGePoint3d{point}, EoGePoint3d{begin});
     beginEndVector *= (DotProduct(normal, pointBeginVector)) / dotProduct;
   } else {
     // Line and the plane are parallel .. force return to begin point

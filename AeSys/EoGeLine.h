@@ -125,7 +125,7 @@ class EoGeLine {
     @endcode
   */
   bool IsSelectedByPointXY(
-      EoGePoint3d point, const double aperture, EoGePoint3d& projectedPoint, double* relationship) const;
+      EoGePoint3d point, double aperture, EoGePoint3d& projectedPoint, double* relationship) const;
 
   [[nodiscard]] double Length() const;
 
@@ -148,7 +148,7 @@ class EoGeLine {
   * @return The projected point along the line.
   * @note A t value of 0 corresponds to the begin point, and a t value of 1 corresponds to the end point. Values of t outside this range will project points beyond the endpoints.
   */
-  [[nodiscard]] EoGePoint3d ProjectBeginPointToEndPoint(const double t) const;
+  [[nodiscard]] EoGePoint3d ProjectBeginPointToEndPoint(double t) const;
 
   /** @brief Projects a point from the begin point toward the end point by a specified parallel distance and then perpendicular to the line by a specified perpendicular distance. 
   * @param parallelDistance The distance to project the point parallel to the line.

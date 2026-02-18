@@ -82,10 +82,10 @@ class EoGsAbstractView {
   double NearClipDistance() const;
   /// <summary> Returns the WCS camera (eye) location for this Viewport object.</summary>
   EoGePoint3d Position() const;
-  void SetFarClipDistance(const double distance);
+  void SetFarClipDistance(double distance);
   void SetDirection(const EoGeVector3d& direction);
-  void SetLensLength(const double length);
-  void SetNearClipDistance(const double distance);
+  void SetLensLength(double length);
+  void SetNearClipDistance(double distance);
   void SetPosition(const EoGePoint3d& position);
   void SetPosition(const EoGeVector3d& direction);
   void SetTarget(const EoGePoint3d& target);

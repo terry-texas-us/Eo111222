@@ -657,14 +657,14 @@ void AeSys::OnFileOpen() {
   if (result == IDOK) { OpenDocumentFile(fileName); }
 }
 
-void AeSys::FormatAngle(CString& angleAsString, const double angle, const int width, const int precision) {
+void AeSys::FormatAngle(CString& angleAsString, double angle, const int width, const int precision) {
   CString FormatSpecification;
   FormatSpecification.Format(L"%%%i.%if\u00B0", width, precision);
   angleAsString.Format(FormatSpecification, Eo::RadianToDegree(angle));
 }
 
 void AeSys::FormatLength(
-    CString& lengthAsString, Eo::Units units, const double length, const int minWidth, const int precision) {
+    CString& lengthAsString, Eo::Units units, double length, const int minWidth, const int precision) {
   const size_t bufSize{32};
   auto lengthAsBuffer = lengthAsString.GetBufferSetLength(bufSize);
 
@@ -679,7 +679,7 @@ void AeSys::FormatLength(
 }
 
 void AeSys::FormatLengthArchitectural(
-    LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, const double length) {
+    LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length) {
   wchar_t szBuf[16]{};
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
@@ -724,7 +724,7 @@ void AeSys::FormatLengthArchitectural(
 }
 
 void AeSys::FormatLengthEngineering(
-    LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width, const int precision) {
+    LPWSTR lengthAsBuffer, const size_t bufSize, double length, const int width, const int precision) {
   wchar_t szBuf[16]{};
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
@@ -756,7 +756,7 @@ void AeSys::FormatLengthEngineering(
     }
   }
 }
-void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, const double length,
+void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length,
     const int width, const int precision) {
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 

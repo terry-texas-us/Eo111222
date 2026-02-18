@@ -47,10 +47,10 @@ class EoGsViewport {
    */
   [[nodiscard]] double WidthInInches() const;
   
-  void SetDeviceHeightInInches(const double height);
-  void SetDeviceWidthInInches(const double width);
+  void SetDeviceHeightInInches(double height);
+  void SetDeviceWidthInInches(double width);
   void SetSize(int width, int height);
-  void SetDeviceHeightInPixels(const double height);
-  void SetDeviceWidthInPixels(const double width);
+  void SetDeviceHeightInPixels(double height);
+  void SetDeviceWidthInPixels(double width);
 };
 typedef CList<EoGsViewport> CViewports;

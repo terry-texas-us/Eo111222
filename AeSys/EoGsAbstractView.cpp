@@ -85,7 +85,7 @@ bool EoGsAbstractView::IsFarClipOn() const { return ((m_ViewMode & AV_FARCLIPPIN
 bool EoGsAbstractView::IsPerspectiveOn() const { return ((m_ViewMode & AV_PERSPECTIVE) == AV_PERSPECTIVE); }
 double EoGsAbstractView::LensLength() const { return m_LensLength; }
 EoGePoint3d EoGsAbstractView::Position() const { return EoGePoint3d(mx_Position.x, mx_Position.y, mx_Position.z); }
-void EoGsAbstractView::SetFarClipDistance(const double distance) { m_FarClipDistance = distance; }
+void EoGsAbstractView::SetFarClipDistance(double distance) { m_FarClipDistance = distance; }
 void EoGsAbstractView::EnableFarClipping(bool enabled) {
   if (enabled) {
     m_ViewMode |= AV_FARCLIPPING;
@@ -102,7 +102,7 @@ void EoGsAbstractView::SetDirection(const EoGeVector3d& direction) {
     mx_Direction.z = static_cast<float>(Direction.z);
   }
 }
-void EoGsAbstractView::SetNearClipDistance(const double distance) { m_NearClipDistance = distance; }
+void EoGsAbstractView::SetNearClipDistance(double distance) { m_NearClipDistance = distance; }
 void EoGsAbstractView::EnableNearClipping(bool enabled) {
   if (enabled) {
     m_ViewMode |= AV_NEARCLIPPING;
@@ -110,7 +110,7 @@ void EoGsAbstractView::EnableNearClipping(bool enabled) {
     m_ViewMode &= ~AV_NEARCLIPPING;
   }
 }
-void EoGsAbstractView::SetLensLength(const double length) { m_LensLength = length; }
+void EoGsAbstractView::SetLensLength(double length) { m_LensLength = length; }
 void EoGsAbstractView::EnablePerspective(bool enabled) {
   if (enabled) {
     m_ViewMode |= AV_PERSPECTIVE;

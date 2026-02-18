@@ -201,7 +201,7 @@ bool EoDbPoint::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d
 
   view->ModelViewTransformPoint(pt);
 
-  ptProj = pt;
+  ptProj = EoGePoint3d{pt};
 
   return (point.DistanceToPointXY(pt) <= view->SelectApertureSize()) ? true : false;
 }

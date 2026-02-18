@@ -110,17 +110,17 @@ enum class Units {
 };
 
 /** @brief Returns the sign of a number: -1 if negative, 1 if positive, 0 if zero. */
-constexpr int Signum(const double number) { return (number < 0.0 ? -1 : (number > 0.0 ? 1 : 0)); }
+constexpr int Signum(double number) { return (number < 0.0 ? -1 : (number > 0.0 ? 1 : 0)); }
 
 /** @brief Returns a value with the magnitude of 'a' and the sign of 'b'. */
-constexpr double CopySign(const double a, const double b) { return (b >= 0.0 ? fabs(a) : -fabs(a)); }
+constexpr double CopySign(double a, double b) { return (b >= 0.0 ? fabs(a) : -fabs(a)); }
 
 /** @brief Rounds a double to the nearest integer using std::round, which rounds half away from zero.
 * @param number The double value to round.
 * @return The rounded integer value.
 * @note This function uses std::round for rounding, which follows the "round half away from zero" rule. Legacy implementation had a different "round half toward infinity" rule.
 */
-inline int Round(const double number) { return static_cast<int>(std::round(number)); }
+inline int Round(double number) { return static_cast<int>(std::round(number)); }
 
 std::wstring MultiByteToWString(const char* multiByte);
 std::string WStringToMultiByte(const std::wstring& wideString);

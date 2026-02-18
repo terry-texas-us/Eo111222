@@ -106,13 +106,13 @@ class AeSys : public CWinAppEx {
   void AddStringToMessageList(UINT stringResourceIdentifier, const CString& string);
   // Modifies the base accelerator table by defining the mode specific keys.
   void BuildModifiedAcceleratorTable();
-  
+
   // Accessors for mode management (needed by AeSysView)
   void SetModeResourceIdentifier(int resourceId) { m_ModeResourceIdentifier = resourceId; }
   void SetPrimaryMode(int mode) { m_PrimaryMode = mode; }
   void SetModeAddGroups(bool addGroups) { m_TrapModeAddGroups = addGroups; }
   [[nodiscard]] bool TrapModeAddGroups() const { return m_TrapModeAddGroups; }
-    
+
   UINT CheckMenuItem(UINT uId, UINT uCheck) const { return (::CheckMenuItem(m_MainFrameMenuHandle, uId, uCheck)); }
   UINT ClipboardFormatIdentifierForEoGroups() const { return m_ClipboardFormatIdentifierForEoGroups; }
   int ConfirmMessageBox(UINT stringResourceIdentifier, const CString& string);
@@ -126,7 +126,7 @@ class AeSys : public CWinAppEx {
   void EditColorPalette();
   [[nodiscard]] double EngagedAngle() const { return m_EngagedAngle; }
   [[nodiscard]] double EngagedLength() const { return m_EngagedLength; }
-  void FormatAngle(CString& angleAsString, const double angle, const int width, const int precision);
+  void FormatAngle(CString& angleAsString, double angle, const int width, const int precision);
 
   /** @brief Formats a length value as a string with specified units and formatting options.
    * @param lengthAsString Output parameter that receives the formatted length string.
@@ -145,8 +145,8 @@ class AeSys : public CWinAppEx {
    * All other units formatted using floating decimal.
    * @endverbatim
    */
-  void FormatLength(CString& lengthAsString, Eo::Units units, const double length, const int minWidth = 0,
-                    const int precision = 4);
+  void FormatLength(
+      CString& lengthAsString, Eo::Units units, double length, const int minWidth = 0, const int precision = 4);
 
   /** @brief Formats a length value as an architectural measurement string in feet and inches with fractional inches.
    * @param lengthAsBuffer The output buffer to receive the formatted architectural length string.
@@ -154,7 +154,7 @@ class AeSys : public CWinAppEx {
    * @param units The architectural units style to use for formatting (e.g., ArchitecturalS for stacked fractions).
    * @param length The length value to format, in the internal unit system.
    */
-  void FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, const double length);
+  void FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length);
 
   /** @brief Formats a length value in engineering units (feet and inches) and stores it in a buffer.
    * @param lengthAsBuffer Output buffer to receive the formatted length string.
@@ -163,8 +163,8 @@ class AeSys : public CWinAppEx {
    * @param width The minimum field width for formatting the fractional part.
    * @param precision The number of significant digits to display in the formatted output.
    */
-  void FormatLengthEngineering(LPWSTR lengthAsBuffer, const size_t bufSize, const double length, const int width,
-                               const int precision);
+  void FormatLengthEngineering(
+      LPWSTR lengthAsBuffer, const size_t bufSize, double length, const int width, const int precision);
 
   /** @brief Formats a length value as a string with the specified units, width, and precision.
    * @param lengthAsString Output buffer that receives the formatted length string.
@@ -174,8 +174,8 @@ class AeSys : public CWinAppEx {
    * @param width The minimum field width for the formatted number.
    * @param precision The number of decimal places to display in the formatted number.
    */
-  void FormatLengthSimple(LPWSTR lengthAsBuffr, const size_t bufSize, Eo::Units units, const double length,
-                          const int width, const int precision);
+  void FormatLengthSimple(LPWSTR lengthAsBuffr, const size_t bufSize, Eo::Units units, double length,
+      const int width, const int precision);
 
   [[nodiscard]] int GetArchitecturalUnitsFractionPrecision() const { return m_ArchitecturalUnitsFractionPrecision; }
   [[nodiscard]] static EoGePoint3d GetCursorPosition();
@@ -262,7 +262,7 @@ class AeSys : public CWinAppEx {
 
  public:
   double ExtractedNumber() { return m_ExtractedNumber; }
-  void SetExtractedNumber(const double number) { m_ExtractedNumber = number; }
+  void SetExtractedNumber(double number) { m_ExtractedNumber = number; }
   CString ExtractedString() { return m_ExtractedString; }
   void SetExtractedString(const CString& string) { m_ExtractedString = string; }
 #endif  // USING_DDE

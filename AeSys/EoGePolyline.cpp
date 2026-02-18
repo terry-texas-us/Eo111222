@@ -70,8 +70,8 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
   double dashElementSize = std::max(pixelSize, fabs(dashElements[dashElementIndex]));
 
   for (int i = 0; i < pointsArray.GetSize() - 1; i++) {
-    EoGeVector3d lineAsVector(pointsArray[i], pointsArray[i + 1]);
-    modelPoints[0] = pointsArray[i];
+    EoGeVector3d lineAsVector(EoGePoint3d{pointsArray[i]}, EoGePoint3d{pointsArray[i + 1]});
+    modelPoints[0] = EoGePoint3d{pointsArray[i]};
 
     double lineLength = lineAsVector.Length();
     double remainingDistanceToEnd = lineLength;
@@ -82,8 +82,8 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
       modelPoints[1] = modelPoints[0] + dashAsVector;
       remainingDistanceToEnd -= dashElementSize;
       if (dashElements[dashElementIndex] >= 0.0) {
-        ndcPoints[0] = modelPoints[0];
-        ndcPoints[1] = modelPoints[1];
+        ndcPoints[0] = EoGePoint4d{modelPoints[0]};
+        ndcPoints[1] = EoGePoint4d{modelPoints[1]};
 
         view->ModelViewTransformPoints(2, ndcPoints);
 
@@ -98,10 +98,10 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
     }
     if (remainingDistanceToEnd > Eo::geometricTolerance) {  // Partial component of dash section must produced
       if (dashElements[dashElementIndex] >= 0.0) {
-        modelPoints[1] = pointsArray[i + 1];
+        modelPoints[1] = EoGePoint3d{pointsArray[i + 1]};
 
-        ndcPoints[0] = modelPoints[0];
-        ndcPoints[1] = modelPoints[1];
+        ndcPoints[0] = EoGePoint4d{modelPoints[0]};
+        ndcPoints[1] = EoGePoint4d{modelPoints[1]};
 
         view->ModelViewTransformPoints(2, ndcPoints);
 
@@ -192,13 +192,13 @@ bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersect
     view->ModelViewTransformPoint(end);
 
     EoGePoint3d intersection;
-    if (EoGeLine::Intersection_xy(line, EoGeLine(begin, end), intersection)) {
+    if (EoGeLine::Intersection_xy(line, EoGeLine(EoGePoint3d{begin}, EoGePoint3d{end}), intersection)) {
       double relation{};
       
       if (!line.ComputeParametricRelation(intersection, relation)) { continue; }
       
       if (relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
-        if (!EoGeLine(begin, end).ComputeParametricRelation(intersection, relation)) { continue; }
+        if (!EoGeLine(EoGePoint3d{begin}, EoGePoint3d{end}).ComputeParametricRelation(intersection, relation)) { continue; }
         
         if (relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
           intersection.z = begin.z + relation * (end.z - begin.z);
@@ -212,56 +212,59 @@ bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersect
 }
 
 bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, double& dRel, EoGePoint3d& ptProj) {
-  bool bResult = false;
+  bool result{};
 
-  EoGePoint4d ptBeg(pts_[0]);
-  view->ModelViewTransformPoint(ptBeg);
+  EoGePoint4d begin(pts_[0]);
+  view->ModelViewTransformPoint(begin);
 
   for (int i = 1; i < (int)pts_.GetSize(); i++) {
-    EoGePoint4d ptEnd = EoGePoint4d(pts_[i]);
-    view->ModelViewTransformPoint(ptEnd);
-    EoGeLine LineSegment(ptBeg, ptEnd);
-    if (LineSegment.IsSelectedByPointXY(point, view->SelectApertureSize(), ptProj, &dRel)) {
-      ptProj.z = ptBeg.z + dRel * (ptEnd.z - ptBeg.z);
-      bResult = true;
+    EoGePoint4d end = EoGePoint4d(pts_[i]);
+    view->ModelViewTransformPoint(end);
+    EoGeLine LineSegment(EoGePoint3d{begin}, EoGePoint3d{end});
+    if (LineSegment.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &dRel)) {
+      ptProj.z = begin.z + dRel * (end.z - begin.z);
+      result = true;
       break;
     }
-    ptBeg = ptEnd;
+    begin = end;
   }
-  return bResult;
+  return result;
 }
+
 bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint3d upperRightPoint) {
-  EoGePoint4d ptBeg(pts_[0]);
-  view->ModelViewTransformPoint(ptBeg);
+  EoGePoint4d begin(pts_[0]);
+  view->ModelViewTransformPoint(begin);
 
   for (std::uint16_t w = 1; w < pts_.GetSize(); w++) {
-    EoGePoint4d ptEnd(pts_[w]);
-    view->ModelViewTransformPoint(ptEnd);
+    EoGePoint4d end(pts_[w]);
+    view->ModelViewTransformPoint(end);
 
-    EoGeLine LineSegment(ptBeg, ptEnd);
+    EoGeLine LineSegment(EoGePoint3d{begin}, EoGePoint3d{end});
     if (LineSegment.IsContainedXY(lowerLeftPoint, upperRightPoint)) { return true; }
 
-    ptBeg = ptEnd;
+    begin = end;
   }
   return false;
 }
+
 // Not considering possible closure
 bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint3d upperRightPoint,
                           const EoGePoint3dArray& pts) {
-  EoGePoint4d ptBeg(pts[0]);
-  view->ModelViewTransformPoint(ptBeg);
+  EoGePoint4d begin(pts[0]);
+  view->ModelViewTransformPoint(begin);
 
   for (std::uint16_t w = 1; w < pts.GetSize(); w++) {
-    EoGePoint4d ptEnd(pts[w]);
-    view->ModelViewTransformPoint(ptEnd);
+    EoGePoint4d end(pts[w]);
+    view->ModelViewTransformPoint(end);
 
-    EoGeLine LineSegment(ptBeg, ptEnd);
+    EoGeLine LineSegment(EoGePoint3d{begin}, EoGePoint3d{end});
     if (LineSegment.IsContainedXY(lowerLeftPoint, upperRightPoint)) { return true; }
 
-    ptBeg = ptEnd;
+    begin = end;
   }
   return false;
 }
+
 void SetVertex(const EoGePoint3d& point) {
   EoGePoint4d Point4(point);
   pts_.Add(Point4);

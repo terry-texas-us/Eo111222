@@ -22,8 +22,8 @@
  *  | ax*az*(1-ca)+ay*sa | ay*az*(1-ca)-ax*sa | az*az+(1-az*az)*ca | and
  *  [t] translation of reference point back to initial position
  */
-EoGeTransformMatrix::EoGeTransformMatrix(const EoGePoint3d& referencePoint, const EoGeVector3d& referenceAxis,
-                                         const double angle) {
+EoGeTransformMatrix::EoGeTransformMatrix(
+    const EoGePoint3d& referencePoint, const EoGeVector3d& referenceAxis, double angle) {
   const double axisLength = referenceAxis.Length();
   if (axisLength < Eo::geometricTolerance) {
     Identity();
@@ -73,8 +73,8 @@ EoGeTransformMatrix::EoGeTransformMatrix(const EoGePoint3d& referencePoint, cons
  * 
  * @note The x and y reference axis vectors do not need to be normalized; appropriate scaling is applied as needed.
  */
-EoGeTransformMatrix::EoGeTransformMatrix(const EoGePoint3d& referencePoint, const EoGeVector3d& xAxis,
-                                         const EoGeVector3d& yAxis) {
+EoGeTransformMatrix::EoGeTransformMatrix(
+    const EoGePoint3d& referencePoint, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis) {
   auto normal = CrossProduct(xAxis, yAxis);
   if (normal.Length() < Eo::geometricTolerance) {
     // Degenerate cross product - axes are parallel
@@ -158,8 +158,8 @@ void EoGeTransformMatrix::AppendZAxisRotation(double angle) {
  *  @param normal unit vector defining plane normal
  *  @note Assumes plane normal is a unit vector. Uses right handed convention. See Rodgers, 3-9 Rotation about an arbitrary axis in space.
 */
-void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(const EoGePoint3d& referencePoint,
-                                                                const EoGeVector3d& normal) {
+void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(
+    const EoGePoint3d& referencePoint, const EoGeVector3d& normal) {
   Identity();
   Translate(EoGeVector3d(referencePoint, EoGePoint3d::kOrigin));
 

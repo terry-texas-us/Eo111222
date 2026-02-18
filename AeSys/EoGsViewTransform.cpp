@@ -41,7 +41,7 @@ EoGsViewTransform& EoGsViewTransform::operator=(const EoGsViewTransform& other) 
 
   return *this;
 }
-void EoGsViewTransform::AdjustWindow(const double aspectRatio) {
+void EoGsViewTransform::AdjustWindow(double aspectRatio) {
   double uExtent = m_UMax - m_UMin;
   double vExtent = m_VMax - m_VMin;
 
@@ -203,7 +203,7 @@ void EoGsViewTransform::SetCenteredWindow(const EoGsViewport& viewport, double u
 
 void EoGsViewTransform::SetMatrix(EoGeTransformMatrix& transformMatrix) { m_Matrix = transformMatrix; }
 
-void EoGsViewTransform::SetWindow(const double uMin, const double vMin, const double uMax, const double vMax) {
+void EoGsViewTransform::SetWindow(double uMin, double vMin, double uMax, double vMax) {
   m_UMin = uMin;
   m_VMin = vMin;
   m_UMax = uMax;

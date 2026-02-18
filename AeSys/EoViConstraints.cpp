@@ -25,9 +25,9 @@ void AeSysView::InitializeConstraints() {
   m_GridSnap = false;
 }
 double AeSysView::AxisConstraintInfluenceAngle() const { return m_AxisConstraintInfluenceAngle; }
-void AeSysView::SetAxisConstraintInfluenceAngle(const double angle) { m_AxisConstraintInfluenceAngle = angle; }
+void AeSysView::SetAxisConstraintInfluenceAngle(double angle) { m_AxisConstraintInfluenceAngle = angle; }
 double AeSysView::AxisConstraintOffsetAngle() const { return m_AxisConstraintOffsetAngle; }
-void AeSysView::SetAxisConstraintOffsetAngle(const double angle) { m_AxisConstraintOffsetAngle = angle; }
+void AeSysView::SetAxisConstraintOffsetAngle(double angle) { m_AxisConstraintOffsetAngle = angle; }
 EoGePoint3d AeSysView::GridOrign() const { return m_GridOrigin; }
 void AeSysView::GridOrign(const EoGePoint3d& origin) { m_GridOrigin = origin; }
 bool AeSysView::DisplayGridWithLines() const { return m_DisplayGridWithLines; }

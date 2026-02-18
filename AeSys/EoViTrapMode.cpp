@@ -52,7 +52,9 @@ void AeSysView::OnTrapModeStitch() {
 
       if (document->FindTrappedGroup(Group) != 0) { continue; }
 
-      if (Group->SelectUsingLine(this, ptView[0], ptView[1])) { document->AddGroupToTrap(Group); }
+      if (Group->SelectUsingLine(this, EoGePoint3d{ptView[0]}, EoGePoint3d{ptView[1]})) {
+        document->AddGroupToTrap(Group);
+      }
     }
     RubberBandingDisable();
     ModeLineUnhighlightOp(m_PreviousOp);
@@ -75,8 +77,8 @@ void AeSysView::OnTrapModeField() {
 
     ModelViewTransformPoints(2, ptView);
 
-    EoGePoint3d ptMin = EoGePoint4d::Min(ptView[0], ptView[1]);
-    EoGePoint3d ptMax = EoGePoint4d::Max(ptView[0], ptView[1]);
+    EoGePoint3d ptMin = EoGePoint3d{EoGePoint4d::Min(ptView[0], ptView[1])};
+    EoGePoint3d ptMax = EoGePoint3d{EoGePoint4d::Max(ptView[0], ptView[1])};
 
     auto position = GetFirstVisibleGroupPosition();
     while (position != nullptr) {
@@ -191,7 +193,7 @@ void AeSysView::OnTraprModeStitch() {
     while (position != nullptr) {
       auto* Group = document->GetNextTrappedGroup(position);
 
-      if (Group->SelectUsingLine(this, ptView[0], ptView[1])) {
+      if (Group->SelectUsingLine(this, EoGePoint3d{ptView[0]}, EoGePoint3d{ptView[1]})) {
         document->RemoveTrappedGroupAt(document->FindTrappedGroup(Group));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       }
@@ -217,8 +219,8 @@ void AeSysView::OnTraprModeField() {
 
     ModelViewTransformPoints(2, ptView);
 
-    EoGePoint3d ptMin = EoGePoint4d::Min(ptView[0], ptView[1]);
-    EoGePoint3d ptMax = EoGePoint4d::Max(ptView[0], ptView[1]);
+    EoGePoint3d ptMin = EoGePoint3d{EoGePoint4d::Min(ptView[0], ptView[1])};
+    EoGePoint3d ptMax = EoGePoint3d{EoGePoint4d::Max(ptView[0], ptView[1])};
 
     auto position = document->GetFirstTrappedGroupPosition();
     while (position != nullptr) {

@@ -38,7 +38,7 @@ namespace {
  * @param angle The angle in radians at which to compute the point on the ellipse.
  * @return The computed point on the ellipse at the specified angle.
  */
-EoGePoint3d PointOnArcAtAngle(EoGePoint3d center, EoGeVector3d majorAxis, EoGeVector3d minorAxis, const double angle) {
+EoGePoint3d PointOnArcAtAngle(EoGePoint3d center, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double angle) {
   EoGeTransformMatrix transformMatrix(center, majorAxis, minorAxis);
   transformMatrix.Inverse();
 

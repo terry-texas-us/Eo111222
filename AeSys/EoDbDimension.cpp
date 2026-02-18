@@ -262,9 +262,9 @@ bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoi
   view->ModelViewTransformPoints(2, &pt[0]);
 
   EoGeLine ln;
-  ln.begin = pt[0];
-  ln.end = pt[1];
-  if (ln.IsSelectedByPointXY(point, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+  ln.begin = EoGePoint3d{pt[0]};
+  ln.end = EoGePoint3d{pt[1]};
+  if (ln.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
     ptProj.z = ln.begin.z + sm_RelationshipOfPoint * (ln.end.z - ln.begin.z);
     sm_flags |= 0x0001;
     return true;
@@ -279,9 +279,9 @@ bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoi
   view->ModelViewTransformPoints(4, pt);
 
   for (size_t n = 0; n < 4; n++) {
-    if (EoGeLine(pt[n], pt[(n + 1) % 4]).DirRelOfPt(point) < 0) { return false; }
+    if (EoGeLine(EoGePoint3d{pt[n]}, EoGePoint3d{pt[(n + 1) % 4]}).DirRelOfPt(EoGePoint3d{point}) < 0) { return false; }
   }
-  ptProj = point;
+  ptProj = EoGePoint3d{point};
   sm_flags |= 0x0002;
   return true;
 }

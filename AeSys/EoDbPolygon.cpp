@@ -314,8 +314,8 @@ bool EoDbPolygon::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint
     view->ModelViewTransformPoint(ptBeg);
     view->ModelViewTransformPoint(ptEnd);
 
-    EoGeLine Edge(ptBeg, ptEnd);
-    if (Edge.IsSelectedByPointXY(point, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+    EoGeLine Edge(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
+    if (Edge.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
       ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
       return true;
     }
@@ -327,8 +327,8 @@ bool EoDbPolygon::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint
       EoGePoint4d ptEnd(m_vertices[w % m_numberOfVertices]);
       view->ModelViewTransformPoint(ptEnd);
 
-      EoGeLine Edge(ptBeg, ptEnd);
-      if (Edge.IsSelectedByPointXY(point, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+      EoGeLine Edge(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
+      if (Edge.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
         ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
         sm_Edge = w;
         sm_pivotVertex = m_numberOfVertices;
@@ -391,17 +391,16 @@ void EoDbPolygon::GetExtents(
 }
 
 bool EoDbPolygon::IsInView(AeSysView* view) {
-  EoGePoint4d pt[2]{};
+  EoGePoint4d ndcPoints[2]{};
 
-  pt[0] = m_vertices[0];
-  view->ModelViewTransformPoint(pt[0]);
+  ndcPoints[0] = EoGePoint4d{m_vertices[0]};
+  view->ModelViewTransformPoint(ndcPoints[0]);
 
   for (int i = m_numberOfVertices - 1; i >= 0; i--) {
-    pt[1] = m_vertices[i];
-    view->ModelViewTransformPoint(pt[1]);
-
-    if (EoGePoint4d::ClipLine(pt[0], pt[1])) { return true; }
-    pt[0] = pt[1];
+    ndcPoints[1] = EoGePoint4d{m_vertices[i]};
+    view->ModelViewTransformPoint(ndcPoints[1]);
+    if (EoGePoint4d::ClipLine(ndcPoints[0], ndcPoints[1])) { return true; }
+    ndcPoints[0] = ndcPoints[1];
   }
   return false;
 }

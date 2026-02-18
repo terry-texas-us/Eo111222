@@ -24,7 +24,7 @@ class EoGeTransformMatrix : public EoGeMatrix {
 
   EoGeTransformMatrix(const EoGePoint3d& referencePoint, const EoGeVector3d& normal);
 
-  EoGeTransformMatrix(const EoGePoint3d& referencePoint, const EoGeVector3d& referenceAxis, const double angle);
+  EoGeTransformMatrix(const EoGePoint3d& referencePoint, const EoGeVector3d& referenceAxis, double angle);
 
   EoGeTransformMatrix(const EoGePoint3d& referencePoint, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis);
 

@@ -195,18 +195,19 @@ bool EoDbLine::IsInView(AeSysView* view) {
 
   return (EoGePoint4d::ClipLine(pt[0], pt[1]));
 }
+
 bool EoDbLine::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
-  EoGePoint4d pt;
+  EoGePoint4d ndcPoint;
 
-  pt = m_line.begin;
-  view->ModelViewTransformPoint(pt);
+  ndcPoint = EoGePoint4d{m_line.begin};
+  view->ModelViewTransformPoint(ndcPoint);
 
-  if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) { return true; }
+  if (point.DistanceToPointXY(ndcPoint) < sm_SelectApertureSize) { return true; }
 
-  pt = m_line.end;
-  view->ModelViewTransformPoint(pt);
+  ndcPoint = EoGePoint4d{m_line.end};
+  view->ModelViewTransformPoint(ndcPoint);
 
-  if (point.DistanceToPointXY(pt) < sm_SelectApertureSize) { return true; }
+  if (point.DistanceToPointXY(ndcPoint) < sm_SelectApertureSize) { return true; }
 
   return false;
 }

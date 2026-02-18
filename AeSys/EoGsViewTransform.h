@@ -36,7 +36,7 @@ class EoGsViewTransform : public EoGsAbstractView {
   EoGsViewTransform& operator=(const EoGsViewTransform& src);
 
  public:  // Methods
-  void AdjustWindow(const double aspectRatio);
+  void AdjustWindow(double aspectRatio);
   void BuildTransformMatrix();
   [[nodiscard]] EoGeTransformMatrix& GetMatrix() { return m_Matrix; }
   [[nodiscard]] EoGeTransformMatrix& GetMatrixInverse() { return m_InverseMatrix; }
@@ -51,7 +51,7 @@ class EoGsViewTransform : public EoGsAbstractView {
   void SetCenteredWindow(const EoGsViewport& viewport, double uExtent, double vExtent);
 
   void SetMatrix(EoGeTransformMatrix& transformMatrix);
-  void SetWindow(const double uMin, const double vMin, const double uMax, const double vMax);
+  void SetWindow(double uMin, double vMin, double uMax, double vMax);
   void TransformPoint(EoGePoint4d& point) { point = m_Matrix * point; }
 
   void TransformPoints(EoGePoint4dArray& pointsArray);

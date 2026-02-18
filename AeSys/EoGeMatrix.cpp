@@ -28,14 +28,14 @@ EoGeMatrixRow& EoGeMatrixRow::operator-=(const EoGeMatrixRow& row) {
   m_d[3] -= row.m_d[3];
   return *this;
 }
-EoGeMatrixRow& EoGeMatrixRow::operator*=(const double d) {
+EoGeMatrixRow& EoGeMatrixRow::operator*=(double d) {
   m_d[0] *= d;
   m_d[1] *= d;
   m_d[2] *= d;
   m_d[3] *= d;
   return *this;
 }
-EoGeMatrixRow& EoGeMatrixRow::operator/=(const double d) {
+EoGeMatrixRow& EoGeMatrixRow::operator/=(double d) {
   m_d[0] /= d;
   m_d[1] /= d;
   m_d[2] /= d;
@@ -46,7 +46,7 @@ EoGeMatrixRow EoGeMatrixRow::operator-(const EoGeMatrixRow& row) {
   EoGeMatrixRow Row = *this;
   return Row -= row;
 }
-void EoGeMatrixRow::operator()(const double c0, const double c1, const double c2, const double c3) {
+void EoGeMatrixRow::operator()(double c0, double c1, double c2, double c3) {
   m_d[0] = c0;
   m_d[1] = c1;
   m_d[2] = c2;
@@ -56,7 +56,7 @@ EoGeMatrixRow EoGeMatrixRow::operator+(const EoGeMatrixRow& row) const {
   EoGeMatrixRow Row = *this;
   return Row += row;
 }
-EoGeMatrixRow EoGeMatrixRow::operator*(const double scaleFactor) const {
+EoGeMatrixRow EoGeMatrixRow::operator*(double scaleFactor) const {
   EoGeMatrixRow row{};
 
   row[0] = m_d[0] * scaleFactor;

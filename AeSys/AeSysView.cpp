@@ -59,13 +59,14 @@
 #include "DdeGItms.h"
 #endif  // USING_DDE
 
-const double AeSysView::m_MaximumWindowRatio = 999.0;
-const double AeSysView::m_MinimumWindowRatio = 0.001;
-
 namespace {
+
+constexpr double maximumWindowRatio{999.0};
+constexpr double minimumWindowRatio{0.001};
+
+#if defined(LEGACY_ODOMETER)
 /** @deprecated This code is only used for the legacy odometer display, which draws the odometer values directly in the view.
  The current implementation displays the odometer values in the status bar, so this code is no longer needed.*/
-#if defined(LEGACY_ODOMETER)
 void DrawOdometerInView(AeSysView* view, CDC* context, Eo::Units Units, EoGeVector3d& position) {
   auto* oldFont = static_cast<CFont*>(context->SelectStockObject(DEFAULT_GUI_FONT));
   auto oldTextAlign = context->SetTextAlign(TA_LEFT | TA_TOP);
@@ -1263,7 +1264,7 @@ void AeSysView::DoCameraRotate(int rotationDirection) {
 }
 
 void AeSysView::DoWindowPan(double ratio) {
-  ratio = std::min(std::max(ratio, m_MinimumWindowRatio), m_MaximumWindowRatio);
+  ratio = std::min(std::max(ratio, minimumWindowRatio), maximumWindowRatio);
 
   double UExtent = m_Viewport.WidthInInches() / ratio;
   double VExtent = m_Viewport.HeightInInches() / ratio;
@@ -2477,7 +2478,7 @@ void AeSysView::SetModeCursor(int mode) {
   SetClassLongPtr(this->GetSafeHwnd(), GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursorHandle));
 }
 
-void AeSysView::SetWorldScale(const double scale) {
+void AeSysView::SetWorldScale(double scale) {
   if (scale > Eo::geometricTolerance) {
     m_WorldScale = scale;
     UpdateStateInformation(Scale);

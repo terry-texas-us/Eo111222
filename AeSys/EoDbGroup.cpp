@@ -330,9 +330,9 @@ EoDbPrimitive* EoDbGroup::SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d& pt
     if (EoDbPrimitive::ControlPointIndex() != SHRT_MAX) {
       EngagedPrimitive = primitive;
 
-      EoGePoint4d ptView4(pt);
-      view->ModelViewTransformPoint(ptView4);
-      *ptCtrl = ptView4;
+      EoGePoint4d ndcPoint(pt);
+      view->ModelViewTransformPoint(ndcPoint);
+      *ptCtrl = EoGePoint3d{ndcPoint};
     }
   }
   return EngagedPrimitive;
