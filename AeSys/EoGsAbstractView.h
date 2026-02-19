@@ -34,8 +34,9 @@ class EoGsAbstractView {
 
  protected:
   std::int16_t m_ViewMode;
-  std::int16_t m_RenderMode;        // (not used)
-  std::int16_t m_UcsOrthoViewType;  // Orthographic type of UCS; top 1, bottom 2, front 3, back 4, left 5, right 6 (not used)
+  std::int16_t m_RenderMode;  // (not used)
+  std::int16_t
+      m_UcsOrthoViewType;  // Orthographic type of UCS; top 1, bottom 2, front 3, back 4, left 5, right 6 (not used)
 
   EoGePoint3d m_UCSOrigin;
   EoGeVector3d m_UCSXAxis;
@@ -54,7 +55,8 @@ class EoGsAbstractView {
   double m_TwistAngle;  // in radians
 
   double m_LensLength;  // lens length used for perspective mode in this view
-  double m_NearClipDistance;   // distance from the target to the near (front) clipping plane along the target-camera line.
+  double
+      m_NearClipDistance;  // distance from the target to the near (front) clipping plane along the target-camera line.
   double m_FarClipDistance;  // distance from the target to the far (back) clipping plane along the target-camera line
 
  public:  // Constructors and destructor
@@ -78,10 +80,18 @@ class EoGsAbstractView {
   bool IsNearClipOn() const;
   bool IsPerspectiveOn() const;
   double LensLength() const;
-  /// <summary> Returns the near (front) clip distance from the target of this Viewport object. </summary>
+
+  /** @brief Retrieves the distance from the target to the near (front) clipping plane along the target-camera line for this view.
+   * This value is used in perspective mode to determine the position of the near clipping plane relative to the camera and target.
+   */
   double NearClipDistance() const;
-  /// <summary> Returns the WCS camera (eye) location for this Viewport object.</summary>
-  EoGePoint3d Position() const;
+  
+  /** @brief Retrieves the position of the camera in 3D space for this view.
+   */
+  [[nodiscard]] constexpr EoGePoint3d Position() const noexcept {
+    return {mx_Position.x, mx_Position.y, mx_Position.z};
+  }
+
   void SetFarClipDistance(double distance);
   void SetDirection(const EoGeVector3d& direction);
   void SetLensLength(double length);
@@ -92,8 +102,9 @@ class EoGsAbstractView {
   void SetView(const EoGePoint3d& position, const EoGePoint3d& target, const EoGeVector3d& viewUp);
   void SetViewUp(EoGeVector3d viewUp);
 
-  /// <summary> Returns the WCS camera target for this Viewport object.</summary>
-  EoGePoint3d Target() const;
-  /// <summary> Returns the WCS camera �up� vector for this Viewport object.</summary>
-  EoGeVector3d ViewUp() const;
+  /** @brief Retrieves the target point of this view, which is the point in 3D space that the camera is looking at. */
+  [[nodiscard]] constexpr EoGePoint3d Target() const noexcept { return {mx_Target.x, mx_Target.y, mx_Target.z}; }
+
+  /** @brief Retrieves the up direction vector of this view, which defines the vertical orientation of the camera. */
+  [[nodiscard]] constexpr EoGeVector3d ViewUp() const noexcept { return {mx_ViewUp.x, mx_ViewUp.y, mx_ViewUp.z}; }
 };

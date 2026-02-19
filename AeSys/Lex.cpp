@@ -547,11 +547,11 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       break;
 
     case AbsoluteValue:
-      adOp[0] = fabs(adOp[0]);
+      adOp[0] = std::abs(adOp[0]);
       break;
 
     case ArcCosine:
-      if (fabs(adOp[0]) > 1.0) {
+      if (std::abs(adOp[0]) > 1.0) {
         throw std::domain_error("acos of a value greater than 1.0 or less than -1.0");
       } else {
         adOp[0] = acos(Eo::RadianToDegree(adOp[0]));
@@ -559,7 +559,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       break;
 
     case ArcSine:
-      if (fabs(adOp[0]) > 1.0) {
+      if (std::abs(adOp[0]) > 1.0) {
         throw std::domain_error("asin of a value greater than 1.0 or less than -1.0");
       } else {
         adOp[0] = asin(Eo::RadianToDegree(adOp[0]));
@@ -571,7 +571,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       break;
 
     case Cosine:
-      adOp[0] = cos(Eo::DegreeToRadian(adOp[0]));
+      adOp[0] = std::cos(Eo::DegreeToRadian(adOp[0]));
       break;
 
     case Real:
@@ -603,14 +603,14 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       break;
 
     case Sine:
-      adOp[0] = sin(Eo::DegreeToRadian(adOp[0]));
+      adOp[0] = std::sin(Eo::DegreeToRadian(adOp[0]));
       break;
 
     case SquareRoot:
       if (adOp[0] < 0.0) {
         throw std::domain_error("sqrt of a negative number");
       } else {
-        adOp[0] = sqrt(adOp[0]);
+        adOp[0] = std::sqrt(adOp[0]);
       }
       break;
 

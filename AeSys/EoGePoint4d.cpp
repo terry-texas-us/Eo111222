@@ -146,7 +146,7 @@ double EoGePoint4d::DistanceToPointXY(const EoGePoint4d& q) const {
   double xDelta = q.x / q.w - x / w;
   double yDelta = q.y / q.w - y / w;
 
-  return sqrt(xDelta * xDelta + yDelta * yDelta);
+  return std::sqrt(xDelta * xDelta + yDelta * yDelta);
 }
 
 bool EoGePoint4d::IsInView() {

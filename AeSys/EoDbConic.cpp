@@ -50,7 +50,7 @@ EoGePoint3d PointOnArcAtAngle(
   EoGeTransformMatrix transformMatrix(center, majorAxis, minorAxis);
   transformMatrix.Inverse();
 
-  EoGePoint3d point(cos(angle), sin(angle), 0.0);
+  EoGePoint3d point(std::cos(angle), std::sin(angle), 0.0);
 
   point = transformMatrix * point;
   return point;
@@ -81,12 +81,11 @@ double EoDbConic::NormalizeTo2Pi(double angle) {
 }
 
 CString EoDbConic::SubClassName(double ratio, double startAngle, double endAngle) {
-  bool isCircular = fabs(1.0 - ratio) < Eo::geometricTolerance;
+  bool isCircular = std::abs(1.0 - ratio) < Eo::geometricTolerance;
 
   double sweep = NormalizeTo2Pi(endAngle) - NormalizeTo2Pi(startAngle);
   if (sweep <= 0.0) sweep += Eo::TwoPi;
-  bool isFull = fabs(sweep - Eo::TwoPi) < Eo::geometricTolerance;
-
+  bool isFull = std::abs(sweep - Eo::TwoPi) < Eo::geometricTolerance;
   if (isCircular) {
     return isFull ? L"Circle" : L"Radial Arc";
   } else {
@@ -210,7 +209,7 @@ EoDbConic* EoDbConic::CreateRadialArcFrom3Points(
 
   double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
 
-  if (fabs(determinant) > Eo::geometricTolerance) {  // Three points are not colinear
+  if (std::abs(determinant) > Eo::geometricTolerance) {  // Three points are not colinear
     double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
 
     EoGePoint3d center{(pt[1].x - pt[1].y * dT) * 0.5, (pt[1].y + pt[1].x * dT) * 0.5, 0.0};
@@ -411,7 +410,7 @@ void EoDbConic::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   if (IsFullConic()) { return; }  // @todo Consider moving start angle to point, but no cutting needed
 
   double sweepAngle = SweepAngle();
-  if (fabs(sweepAngle) < Eo::geometricTolerance) { return; }  // Nothing to cut
+  if (std::abs(sweepAngle) < Eo::geometricTolerance) { return; }  // Nothing to cut
 
   double parameterAtPoint = SweepAngleToPoint(point) / sweepAngle;
 
@@ -459,7 +458,7 @@ void EoDbConic::GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d m
 
   double sweepAngle = m_endAngle - m_startAngle;
   if (sweepAngle <= 0.0) { sweepAngle += Eo::TwoPi; }
-  if (fabs(sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) { sweepAngle = Eo::TwoPi; }
+  if (std::abs(sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) { sweepAngle = Eo::TwoPi; }
 
   // For negative Z extrusion, OCS CCW appears as WCS CW when viewed from +Z.
   bool isFlippedOcs = m_extrusion.z < -Eo::geometricTolerance;
@@ -478,11 +477,11 @@ void EoDbConic::GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d m
 
   // Pre-compute incremental rotation
   double segmentAngle = effectiveSweep / (numberOfPoints - 1);
-  double angleCosine = cos(segmentAngle);
-  double angleSine = sin(segmentAngle);
+  double angleCosine = std::cos(segmentAngle);
+  double angleSine = std::sin(segmentAngle);
 
   // Generate vertices starting at parametric start angle
-  EoGePoint3d point(cos(m_startAngle), sin(m_startAngle), 0.0);
+  EoGePoint3d point(std::cos(m_startAngle), std::sin(m_startAngle), 0.0);
 
   for (int i = 0; i < numberOfPoints; ++i) {
     polyline::SetVertex(transformMatrix * point);
@@ -490,7 +489,7 @@ void EoDbConic::GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d m
     // Incremental rotation: [cos -sin; sin cos] * point
     double newX = point.x * angleCosine - point.y * angleSine;
     double newY = point.x * angleSine + point.y * angleCosine;
-    point(newX, newY, 0.0);
+    point.Set(newX, newY, 0.0);
   }
 }
 
@@ -537,7 +536,7 @@ void EoDbConic::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* 
   double dx = double(m_center.x - arBeg.x);
   double dy = double(m_center.y - arBeg.y);
 
-  double dRad = sqrt(dx * dx + dy * dy);
+  double dRad = std::sqrt(dx * dx + dy * dy);
 
   (*arMin).x = m_center.x - dRad;
   (*arMin).y = m_center.y - dRad;
@@ -669,7 +668,7 @@ int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upp
 
   if (!(CrossProduct(EoGeVector3d::positiveUnitZ, normal)).IsNearNull()) { return 0; }
 
-  if (fabs(m_majorAxis.Length() - MinorAxis().Length()) > Eo::geometricTolerance) { return 0; }
+  if (std::abs(m_majorAxis.Length() - MinorAxis().Length()) > Eo::geometricTolerance) { return 0; }
 
   EoGePoint3d ptMin, ptMax;
 
@@ -703,8 +702,8 @@ int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upp
   double radius = EoGeVector3d(m_center, ptBeg).Length();
   if (ptMax.x > upperRight.x) {  // Arc may intersect with right window boundary
     distance = upperRight.x - m_center.x;
-    if (fabs(distance) <= radius + Eo::geometricTolerance) {
-      offset = sqrt(radius * radius - distance * distance);
+    if (std::abs(distance) <= radius + Eo::geometricTolerance) {
+      offset = std::sqrt(radius * radius - distance * distance);
       if (m_center.y - offset >= lowerLeft.y && m_center.y - offset <= upperRight.y) {
         ptWrk[iSecs].x = upperRight.x;
         ptWrk[iSecs++].y = m_center.y - offset;
@@ -717,8 +716,8 @@ int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upp
   }
   if (ptMax.y > upperRight.y) {  // Arc may intersect with top window boundary
     distance = upperRight.y - m_center.y;
-    if (fabs(distance) <= radius + Eo::geometricTolerance) {
-      offset = sqrt(radius * radius - distance * distance);
+    if (std::abs(distance) <= radius + Eo::geometricTolerance) {
+      offset = std::sqrt(radius * radius - distance * distance);
       if (m_center.x + offset <= upperRight.x && m_center.x + offset >= lowerLeft.x) {
         ptWrk[iSecs].x = m_center.x + offset;
         ptWrk[iSecs++].y = upperRight.y;
@@ -731,8 +730,8 @@ int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upp
   }
   if (ptMin.x < lowerLeft.x) {  // Arc may intersect with left window boundary
     distance = m_center.x - lowerLeft.x;
-    if (fabs(distance) <= radius + Eo::geometricTolerance) {
-      offset = sqrt(radius * radius - distance * distance);
+    if (std::abs(distance) <= radius + Eo::geometricTolerance) {
+      offset = std::sqrt(radius * radius - distance * distance);
       if (m_center.y + offset <= upperRight.y && m_center.y + offset >= lowerLeft.y) {
         ptWrk[iSecs].x = lowerLeft.x;
         ptWrk[iSecs++].y = m_center.y + offset;
@@ -745,8 +744,8 @@ int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upp
   }
   if (ptMin.y < lowerLeft.y) {  // Arc may intersect with bottom window boundary
     distance = m_center.y - lowerLeft.y;
-    if (fabs(distance) <= radius + Eo::geometricTolerance) {
-      offset = sqrt(radius * radius - distance * distance);
+    if (std::abs(distance) <= radius + Eo::geometricTolerance) {
+      offset = std::sqrt(radius * radius - distance * distance);
       if (m_center.x - offset >= lowerLeft.x && m_center.x - offset <= upperRight.x) {
         ptWrk[iSecs].x = m_center.x - offset;
         ptWrk[iSecs++].y = lowerLeft.y;
@@ -768,7 +767,7 @@ int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upp
     dWrkAng = atan2(ptWrk[i2].y - m_center.y, ptWrk[i2].x - m_center.x);  // Current intersection angle (-π to π)
     dIntAng[iInts] = dWrkAng - dBegAng;                                   // Sweep from begin to intersection
     if (dIntAng[iInts] < 0.0) dIntAng[iInts] += Eo::TwoPi;
-    if (fabs(dIntAng[iInts]) - SweepAngle() < 0.0) {  // Intersection lies on arc
+    if (std::abs(dIntAng[iInts]) - SweepAngle() < 0.0) {  // Intersection lies on arc
       int i;
       for (i = 0; i < iInts && ptWrk[i2] != ptInt[i]; i++);
       if (i == iInts)  // Unique intersection
@@ -781,7 +780,7 @@ int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upp
 
   for (int i1 = 0; i1 < iInts; i1++) {  // Sort intersections from begin to end of sweep
     for (int i2 = 1; i2 < iInts - i1; i2++) {
-      if (fabs(dIntAng[i2]) < fabs(dIntAng[i2 - 1])) {
+      if (std::abs(dIntAng[i2]) < std::abs(dIntAng[i2 - 1])) {
         double dAng = dIntAng[i2 - 1];
         dIntAng[i2 - 1] = dIntAng[i2];
         dIntAng[i2] = dAng;
@@ -941,10 +940,10 @@ bool EoDbConic::WriteLegacyEllipse(CFile& file) {
   EoGeVector3d rotatedMajorAxis = m_majorAxis;
   EoGeVector3d rotatedMinorAxis = minorAxis;
 
-  if (fabs(m_startAngle) > Eo::geometricTolerance) {
+  if (std::abs(m_startAngle) > Eo::geometricTolerance) {
     // Rotate axes to align with start angle so legacy format sees sweep from major axis
-    rotatedMajorAxis.RotAboutArbAx(m_extrusion, m_startAngle);
-    rotatedMinorAxis.RotAboutArbAx(m_extrusion, m_startAngle);
+    rotatedMajorAxis.RotateAboutArbitraryAxis(m_extrusion, m_startAngle);
+    rotatedMinorAxis.RotateAboutArbitraryAxis(m_extrusion, m_startAngle);
   }
 
   EoDb::Write(file, std::uint16_t(EoDb::kEllipsePrimitive));
@@ -975,8 +974,8 @@ void EoDbConic::GetBoundingBox(EoGePoint3dArray& ptsBox) {
   if (!IsFullConic() && sweepAngle < 3.0 * Eo::TwoPi / 4.0) {
     // For arcs less than 270°, optimize the bounding box
     // Compute end point position in parametric space
-    double dEndX = cos(sweepAngle);
-    double dEndY = sin(sweepAngle);
+    double dEndX = std::cos(sweepAngle);
+    double dEndY = std::sin(sweepAngle);
 
     if (dEndX >= 0.0) {
       if (dEndY >= 0.0) {  // Arc ends in quadrant one
@@ -1007,8 +1006,8 @@ void EoDbConic::GetBoundingBox(EoGePoint3dArray& ptsBox) {
   // Rotate axes to align with start angle in parametric space
   EoGeVector3d rotatedMajorAxis = m_majorAxis;
   EoGeVector3d rotatedMinorAxis = minorAxis;
-  rotatedMajorAxis.RotAboutArbAx(m_extrusion, normalizedStartAngle);
-  rotatedMinorAxis.RotAboutArbAx(m_extrusion, normalizedStartAngle);
+  rotatedMajorAxis.RotateAboutArbitraryAxis(m_extrusion, normalizedStartAngle);
+  rotatedMinorAxis.RotateAboutArbitraryAxis(m_extrusion, normalizedStartAngle);
 
   EoGeTransformMatrix transformMatrix(m_center, rotatedMajorAxis, rotatedMinorAxis);
   transformMatrix.Inverse();
@@ -1061,7 +1060,7 @@ bool SweepAngleFromNormalAnd3Points(const EoGeVector3d& normal, const EoGePoint3
   }
   double tMin = std::min(t[0], t[2]);
   double tMax = std::max(t[0], t[2]);
-  if (fabs(t[1] - tMax) > Eo::geometricTolerance && fabs(t[1] - tMin) > Eo::geometricTolerance) {
+  if (std::abs(t[1] - tMax) > Eo::geometricTolerance && std::abs(t[1] - tMin) > Eo::geometricTolerance) {
     // Inside line is not colinear with outside lines
     double theta = tMax - tMin;
     if (t[1] > tMin && t[1] < tMax) {

@@ -422,14 +422,14 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
   EoGeVector3d majorAxis;
   if (sweepAngle < 0.0) {
     EoGePoint3d point;
-    point.x = (center.x + ((begin.x - center.x) * cos(sweepAngle) - (begin.y - center.y) * sin(sweepAngle)));
-    point.y = (center.y + ((begin.x - center.x) * sin(sweepAngle) + (begin.y - center.y) * cos(sweepAngle)));
+    point.x = (center.x + ((begin.x - center.x) * std::cos(sweepAngle) - (begin.y - center.y) * std::sin(sweepAngle)));
+    point.y = (center.y + ((begin.x - center.x) * std::sin(sweepAngle) + (begin.y - center.y) * std::cos(sweepAngle)));
     majorAxis = point - center;
   } else {
     majorAxis = begin - center;
   }
   auto minorAxis = CrossProduct(EoGeVector3d::positiveUnitZ, majorAxis);
-  sweepAngle = fabs(sweepAngle);
+  sweepAngle = std::abs(sweepAngle);
 
   auto* conic = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
   if (conic != nullptr) {
@@ -520,25 +520,25 @@ EoDbPolygon::EoDbPolygon(std::uint8_t* buffer, int version) {
         m_positiveX.z = 0.0;
         m_positiveY.z = 0.0;
 
-        if (fabs(dXScal) > Eo::geometricTolerance && fabs(dYScal) > Eo::geometricTolerance) {  // Have 2 hatch lines
+        if (std::abs(dXScal) > Eo::geometricTolerance && std::abs(dYScal) > Eo::geometricTolerance) {  // Have 2 hatch lines
           m_fillStyleIndex = 2;
-          m_positiveX.x = cos(dAng);
-          m_positiveX.y = sin(dAng);
+          m_positiveX.x = std::cos(dAng);
+          m_positiveX.y = std::sin(dAng);
           m_positiveY.x = -m_positiveX.y;
           m_positiveY.y = m_positiveX.x;
           m_positiveX *= dXScal * 1.e-3;
           m_positiveY *= dYScal * 1.e-3;
-        } else if (fabs(dXScal) > Eo::geometricTolerance) {  // Vertical hatch lines
+        } else if (std::abs(dXScal) > Eo::geometricTolerance) {  // Vertical hatch lines
           m_fillStyleIndex = 1;
-          m_positiveX.x = cos(dAng + Eo::HalfPi);
-          m_positiveX.y = sin(dAng + Eo::HalfPi);
+          m_positiveX.x = std::cos(dAng + Eo::HalfPi);
+          m_positiveX.y = std::sin(dAng + Eo::HalfPi);
           m_positiveY.x = -m_positiveX.y;
           m_positiveY.y = m_positiveX.x;
           m_positiveY *= dXScal * 1.e-3;
         } else {  // Horizontal hatch lines
           m_fillStyleIndex = 1;
-          m_positiveX.x = cos(dAng);
-          m_positiveX.y = sin(dAng);
+          m_positiveX.x = std::cos(dAng);
+          m_positiveX.y = std::sin(dAng);
           m_positiveY.x = -m_positiveX.y;
           m_positiveY.y = m_positiveX.x;
           m_positiveY *= dYScal * 1.e-3;
@@ -664,7 +664,7 @@ EoDbText::EoDbText(std::uint8_t* buffer, int version) {
     double rotationAngle = ((CVaxFloat*)&buffer[28])->Convert();
     rotationAngle = std::min(std::max(rotationAngle, -Eo::TwoPi), Eo::TwoPi);
 
-    if (fabs(rotationAngle) > Eo::geometricTolerance) {
+    if (std::abs(rotationAngle) > Eo::geometricTolerance) {
       EoGeVector3d xDirection(m_ReferenceSystem.XDirection());
       xDirection = RotateVectorAboutZAxis(xDirection, rotationAngle);
       m_ReferenceSystem.SetXDirection(xDirection);

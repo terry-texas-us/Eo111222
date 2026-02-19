@@ -96,7 +96,7 @@ EoGeMatrix& EoGeMatrix::operator*=(const EoGeMatrix& mB) {
 }
 
 EoGeMatrix& EoGeMatrix::operator/=(double scaleFactor) {
-  if (fabs(scaleFactor) < Eo::numericEpsilon) {
+  if (std::abs(scaleFactor) < Eo::numericEpsilon) {
     ATLTRACE2(traceGeneral, 3, L"EoGeMatrix::operator/=: division by near-zero\n");
     return *this;
   }
@@ -134,7 +134,7 @@ bool EoGeMatrix::IsIdentity(double tolerance) const {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       double expected = (i == j) ? 1.0 : 0.0;
-      if (fabs(m_4X4[i][j] - expected) > tolerance) { return false; }
+      if (std::abs(m_4X4[i][j] - expected) > tolerance) { return false; }
     }
   }
   return true;
@@ -160,14 +160,14 @@ EoGeMatrix& EoGeMatrix::Inverse() {
   for (int iCol = 0; iCol < 4; iCol++) {
     i1 = iCol;
     for (i = iCol + 1; i < 4; i++) {
-      if (fabs(mA.m_4X4[i][iCol]) > fabs(mA.m_4X4[i1][iCol])) { i1 = i; }
+      if (std::abs(mA.m_4X4[i][iCol]) > std::abs(mA.m_4X4[i1][iCol])) { i1 = i; }
     }
     // Swap rows i1 and iCol in mA and mB to put pivot on diagonal
     EoGeMatrixRow::Exchange(mA[i1], mA[iCol]);
     EoGeMatrixRow::Exchange((*this)[i1], (*this)[iCol]);
 
     // Scale row iCol to have mA unit diagonal
-    if (fabs(mA.m_4X4[iCol][iCol]) < Eo::numericEpsilon) {
+    if (std::abs(mA.m_4X4[iCol][iCol]) < Eo::numericEpsilon) {
       ATLTRACE2(traceGeneral, 3, L"EoGeMatrix::Inverse: singular matrix, can't invert\n");
       return *this;
     }

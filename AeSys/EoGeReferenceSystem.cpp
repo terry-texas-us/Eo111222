@@ -15,11 +15,11 @@ EoGeReferenceSystem::EoGeReferenceSystem(
   auto cameraDirection = activeView->CameraDirection();
 
   m_yDirection = activeView->ViewUp();
-  m_yDirection.RotAboutArbAx(cameraDirection, characterCellDefinition.RotationAngle());
+  m_yDirection.RotateAboutArbitraryAxis(cameraDirection, characterCellDefinition.RotationAngle());
 
   m_xDirection = m_yDirection;
-  m_xDirection.RotAboutArbAx(cameraDirection, -Eo::HalfPi);
-  m_yDirection.RotAboutArbAx(cameraDirection, characterCellDefinition.SlantAngle());
+  m_xDirection.RotateAboutArbitraryAxis(cameraDirection, -Eo::HalfPi);
+  m_yDirection.RotateAboutArbitraryAxis(cameraDirection, characterCellDefinition.SlantAngle());
   m_xDirection *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height() *
                   characterCellDefinition.ExpansionFactor();
   m_yDirection *= characterCellDefinition.Height();
@@ -42,7 +42,7 @@ void EoGeReferenceSystem::Rescale(const EoDbCharacterCellDefinition& characterCe
   EoGeVector3d normal = UnitNormal();
   m_xDirection.Normalize();
   m_yDirection = m_xDirection;
-  m_yDirection.RotAboutArbAx(normal, Eo::HalfPi + characterCellDefinition.SlantAngle());
+  m_yDirection.RotateAboutArbitraryAxis(normal, Eo::HalfPi + characterCellDefinition.SlantAngle());
   m_xDirection *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height() *
                   characterCellDefinition.ExpansionFactor();
   m_yDirection *= characterCellDefinition.Height();

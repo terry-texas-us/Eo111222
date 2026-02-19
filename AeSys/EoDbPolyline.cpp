@@ -44,7 +44,7 @@ EoDbPolyline::EoDbPolyline(
   auto planeNormal = activeView->CameraDirection();
   auto minorAxis = activeView->ViewUp();
   auto majorAxis = minorAxis;
-  majorAxis.RotAboutArbAx(planeNormal, -Eo::HalfPi);
+  majorAxis.RotateAboutArbitraryAxis(planeNormal, -Eo::HalfPi);
 
   majorAxis *= radius;
   minorAxis *= radius;

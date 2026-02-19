@@ -282,7 +282,7 @@ void AeSysView::OnAnnotateModeCutIn() {
 
       auto cameraDirection = CameraDirection();
       auto minorAxis = ViewUp();
-      minorAxis.RotAboutArbAx(cameraDirection, angle);
+      minorAxis.RotateAboutArbitraryAxis(cameraDirection, angle);
       auto majorAxis = CrossProduct(minorAxis, cameraDirection);
       majorAxis *= 0.06;
       minorAxis *= 0.1;

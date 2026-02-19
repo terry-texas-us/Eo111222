@@ -205,7 +205,7 @@ void AeSysView::OnDrawModeReturn() {
       radialArc->SetColor(renderState.Color());
       radialArc->SetLineTypeIndex(renderState.LineTypeIndex());
 
-      if (fabs(radialArc->SweepAngle()) < Eo::geometricTolerance) {
+      if (std::abs(radialArc->SweepAngle()) < Eo::geometricTolerance) {
         delete radialArc;
         app.AddStringToMessageList(IDS_MSG_PTS_COLINEAR);
         return;

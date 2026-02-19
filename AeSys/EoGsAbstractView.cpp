@@ -84,7 +84,6 @@ bool EoGsAbstractView::IsNearClipAtEyeOn() const {
 bool EoGsAbstractView::IsFarClipOn() const { return ((m_ViewMode & AV_FARCLIPPING) == AV_FARCLIPPING); }
 bool EoGsAbstractView::IsPerspectiveOn() const { return ((m_ViewMode & AV_PERSPECTIVE) == AV_PERSPECTIVE); }
 double EoGsAbstractView::LensLength() const { return m_LensLength; }
-EoGePoint3d EoGsAbstractView::Position() const { return EoGePoint3d(mx_Position.x, mx_Position.y, mx_Position.z); }
 void EoGsAbstractView::SetFarClipDistance(double distance) { m_FarClipDistance = distance; }
 void EoGsAbstractView::EnableFarClipping(bool enabled) {
   if (enabled) {
@@ -144,5 +143,3 @@ void EoGsAbstractView::SetViewUp(EoGeVector3d viewUp) {
     mx_ViewUp.z = static_cast<float>(viewUp.z);
   }
 }
-EoGePoint3d EoGsAbstractView::Target() const { return EoGePoint3d(mx_Target.x, mx_Target.y, mx_Target.z); }
-EoGeVector3d EoGsAbstractView::ViewUp() const { return EoGeVector3d(mx_ViewUp.x, mx_ViewUp.y, mx_ViewUp.z); }

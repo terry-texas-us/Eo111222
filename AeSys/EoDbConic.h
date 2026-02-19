@@ -263,10 +263,10 @@ class EoDbConic : public EoDbPrimitive {
     }
   }
 
-  [[nodiscard]] bool IsCircle() const noexcept { return fabs(1.0 - m_ratio) <= Eo::numericEpsilon && IsFullConic(); }
+  [[nodiscard]] bool IsCircle() const noexcept { return std::abs(1.0 - m_ratio) <= Eo::numericEpsilon && IsFullConic(); }
 
   [[nodiscard]] bool IsRadialArc() const noexcept {
-    return fabs(1.0 - m_ratio) <= Eo::numericEpsilon && !IsFullConic();
+    return std::abs(1.0 - m_ratio) <= Eo::numericEpsilon && !IsFullConic();
   }
 
   [[nodiscard]] bool IsEllipse() const noexcept { return m_ratio < 1.0 - Eo::numericEpsilon && IsFullConic(); }
@@ -284,14 +284,14 @@ class EoDbConic : public EoDbPrimitive {
   [[nodiscard]] bool IsFullConic() const noexcept {
     double sweep = NormalizeTo2Pi(m_endAngle) - NormalizeTo2Pi(m_startAngle);
     if (sweep <= 0.0) sweep += Eo::TwoPi;
-    return fabs(sweep - Eo::TwoPi) < Eo::geometricTolerance || fabs(m_endAngle - m_startAngle) < Eo::geometricTolerance;
+    return std::abs(sweep - Eo::TwoPi) < Eo::geometricTolerance || std::abs(m_endAngle - m_startAngle) < Eo::geometricTolerance;
   }
 
   // Enum for cleaner switch statements
   enum class ConicType { Circle, RadialArc, Ellipse, EllipticalArc };
 
   [[nodiscard]] ConicType Subclass() const noexcept {
-    bool isCircular = fabs(1.0 - m_ratio) <= Eo::numericEpsilon;
+    bool isCircular = std::abs(1.0 - m_ratio) <= Eo::numericEpsilon;
     bool isFull = IsFullConic();
 
     if (isCircular && isFull) return ConicType::Circle;
@@ -365,7 +365,7 @@ class EoDbConic : public EoDbPrimitive {
     double a = MajorRadius();
     double b = MinorRadius();
     double h = pow((a - b) / (a + b), 2);
-    double circumference = Eo::Pi * (a + b) * (1 + (3 * h) / (10 + sqrt(4 - 3 * h)));
+    double circumference = Eo::Pi * (a + b) * (1 + (3 * h) / (10 + std::sqrt(4 - 3 * h)));
     return circumference * (SweepAngle() / Eo::TwoPi);
   }
 
@@ -401,7 +401,7 @@ class EoDbConic : public EoDbPrimitive {
     EoGeTransformMatrix transformMatrix(m_center, m_majorAxis, minorAxis);
     transformMatrix.Inverse();
 
-    const EoGePoint3d point(cos(angle), sin(angle), 0.0);
+    const EoGePoint3d point(std::cos(angle), std::sin(angle), 0.0);
     return transformMatrix * point;
   }
 

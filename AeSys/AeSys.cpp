@@ -685,13 +685,13 @@ void AeSys::FormatLengthArchitectural(
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   wcscpy_s(lengthAsBuffer, bufSize, (length >= 0.0) ? L" " : L"-");
-  ScaledLength = fabs(ScaledLength);
+  ScaledLength = std::abs(ScaledLength);
 
   int Feet = int(ScaledLength / 12.0);
   int Inches = abs(int(fmod(ScaledLength, 12.0)));
 
   int fractionPrecision = GetArchitecturalUnitsFractionPrecision();
-  int numerator = int(fabs(fmod(ScaledLength, 1.0)) * (double)(fractionPrecision) + 0.5);
+  int numerator = int(std::abs(fmod(ScaledLength, 1.0)) * (double)(fractionPrecision) + 0.5);
 
   if (numerator == fractionPrecision) {
     if (Inches == 11) {
@@ -730,7 +730,7 @@ void AeSys::FormatLengthEngineering(
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   wcscpy_s(lengthAsBuffer, bufSize, (length >= 0.0) ? L" " : L"-");
-  ScaledLength = fabs(ScaledLength);
+  ScaledLength = std::abs(ScaledLength);
 
   int Precision = (ScaledLength >= 1.0) ? precision - int(log10(ScaledLength)) - 1 : precision;
 

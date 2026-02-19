@@ -20,7 +20,7 @@ static void MakeOrthonormalBasis(EoGeVector3d n, EoGeVector3d& u, EoGeVector3d& 
   v = CrossProduct(n, u);
   if (v.IsNearNull()) {
     // choose a perpendicular if cross failed
-    if (fabs(n.x) < fabs(n.y)) {
+    if (std::abs(n.x) < std::abs(n.y)) {
       v = CrossProduct(n, EoGeVector3d(1.0, 0.0, 0.0));
     } else {
       v = CrossProduct(n, EoGeVector3d(0.0, 1.0, 0.0));

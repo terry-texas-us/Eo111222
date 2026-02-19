@@ -17,8 +17,9 @@
 #include "EoGeVector3d.h"
 #include "EoGsRenderState.h"
 
-
-namespace { constexpr unsigned int defaultDpi = 96; }
+namespace {
+constexpr unsigned int defaultDpi = 96;
+}
 
 namespace polyline {
 EoGePoint4dArray pts_;
@@ -65,9 +66,9 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
   lineType->GetDashElements(dashElements.data());
 
   const double dpi = static_cast<double>(std::max(defaultDpi, GetDpiForSystem()));
-  const double pixelSize = 1.0 / dpi; // Will only be used for dots where dash element length is 0.0
+  const double pixelSize = 1.0 / dpi;  // Will only be used for dots where dash element length is 0.0
 
-  double dashElementSize = std::max(pixelSize, fabs(dashElements[dashElementIndex]));
+  double dashElementSize = std::max(pixelSize, std::abs(dashElements[dashElementIndex]));
 
   for (int i = 0; i < pointsArray.GetSize() - 1; i++) {
     EoGeVector3d lineAsVector(EoGePoint3d{pointsArray[i]}, EoGePoint3d{pointsArray[i + 1]});
@@ -94,7 +95,7 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
       }
       modelPoints[0] = modelPoints[1];
       dashElementIndex = (dashElementIndex + 1) % numberOfDashElements;
-      dashElementSize = std::max(pixelSize, fabs(dashElements[dashElementIndex]));
+      dashElementSize = std::max(pixelSize, std::abs(dashElements[dashElementIndex]));
     }
     if (remainingDistanceToEnd > Eo::geometricTolerance) {  // Partial component of dash section must produced
       if (dashElements[dashElementIndex] >= 0.0) {
@@ -150,22 +151,22 @@ void __End(AeSysView* view, CDC* deviceContext, std::int16_t lineTypeIndex) {
 }
 
 void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis,
-                            int numberOfPoints, EoGePoint3dArray& pts) {
+    int numberOfPoints, EoGePoint3dArray& pts) {
   EoGeTransformMatrix transformMatrix(centerPoint, majorAxis, minorAxis);
 
   transformMatrix.Inverse();
 
   // Determine the parameter (angular increment)
   double AngleIncrement = Eo::TwoPi / double(numberOfPoints);
-  double CosIncrement = cos(AngleIncrement);
-  double SinIncrement = sin(AngleIncrement);
+  double CosIncrement = std::cos(AngleIncrement);
+  double SinIncrement = std::sin(AngleIncrement);
   pts.SetSize(numberOfPoints);
 
-  pts[0](1.0, 0.0, 0.0);
+  pts[0].Set(1.0, 0.0, 0.0);
 
   for (int i = 0; i < numberOfPoints - 1; i++) {
-    pts[i + 1](pts[i].x * CosIncrement - pts[i].y * SinIncrement, pts[i].y * CosIncrement + pts[i].x * SinIncrement,
-               0.0);
+    pts[i + 1].Set(
+        pts[i].x * CosIncrement - pts[i].y * SinIncrement, pts[i].y * CosIncrement + pts[i].x * SinIncrement, 0.0);
   }
   for (int i = 0; i < numberOfPoints; i++) { pts[i] = transformMatrix * pts[i]; }
 }
@@ -194,12 +195,14 @@ bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersect
     EoGePoint3d intersection;
     if (EoGeLine::Intersection_xy(line, EoGeLine(EoGePoint3d{begin}, EoGePoint3d{end}), intersection)) {
       double relation{};
-      
+
       if (!line.ComputeParametricRelation(intersection, relation)) { continue; }
-      
+
       if (relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
-        if (!EoGeLine(EoGePoint3d{begin}, EoGePoint3d{end}).ComputeParametricRelation(intersection, relation)) { continue; }
-        
+        if (!EoGeLine(EoGePoint3d{begin}, EoGePoint3d{end}).ComputeParametricRelation(intersection, relation)) {
+          continue;
+        }
+
         if (relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
           intersection.z = begin.z + relation * (end.z - begin.z);
           intersections.Add(intersection);
@@ -248,8 +251,8 @@ bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint
 }
 
 // Not considering possible closure
-bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint3d upperRightPoint,
-                          const EoGePoint3dArray& pts) {
+bool SelectUsingRectangle(
+    AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint3d upperRightPoint, const EoGePoint3dArray& pts) {
   EoGePoint4d begin(pts[0]);
   view->ModelViewTransformPoint(begin);
 

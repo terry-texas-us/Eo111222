@@ -710,9 +710,9 @@ class AeSysView : public CView {
   [[nodiscard]] EoGeVector3d EditModeInvertedScaleFactors() const {
     EoGeVector3d InvertedScaleFactors;
 
-    InvertedScaleFactors.x = fabs(m_EditModeScale.x) > Eo::geometricTolerance ? 1.0 / m_EditModeScale.x : 1.0;
-    InvertedScaleFactors.y = fabs(m_EditModeScale.y) > Eo::geometricTolerance ? 1.0 / m_EditModeScale.y : 1.0;
-    InvertedScaleFactors.z = fabs(m_EditModeScale.z) > Eo::geometricTolerance ? 1.0 / m_EditModeScale.z : 1.0;
+    InvertedScaleFactors.x = std::abs(m_EditModeScale.x) > Eo::geometricTolerance ? 1.0 / m_EditModeScale.x : 1.0;
+    InvertedScaleFactors.y = std::abs(m_EditModeScale.y) > Eo::geometricTolerance ? 1.0 / m_EditModeScale.y : 1.0;
+    InvertedScaleFactors.z = std::abs(m_EditModeScale.z) > Eo::geometricTolerance ? 1.0 / m_EditModeScale.z : 1.0;
 
     return InvertedScaleFactors;
   }

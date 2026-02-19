@@ -1,6 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <algorithm>
 #include <cmath>
 
 #include "Eo.h"
@@ -14,32 +13,18 @@ const EoGePoint3d EoGePoint3d::kOrigin{0.0, 0.0, 0.0};
 EoGePoint3d::EoGePoint3d(const EoGePoint4d& point) noexcept
     : x{point.x / point.w}, y{point.y / point.w}, z{point.z / point.w} {}
 
-bool EoGePoint3d::operator==(const EoGePoint3d& point) const { return (IsEqualTo(point, Eo::geometricTolerance)); }
-
-bool EoGePoint3d::operator!=(const EoGePoint3d& point) const { return (!IsEqualTo(point, Eo::geometricTolerance)); }
-
-void EoGePoint3d::operator+=(const EoGeVector3d& vector) {
-  x += vector.x;
-  y += vector.y;
-  z += vector.z;
+bool EoGePoint3d::operator==(const EoGePoint3d& point) const noexcept {
+  return (IsEqualTo(point, Eo::geometricTolerance));
 }
 
-void EoGePoint3d::operator-=(const EoGeVector3d& vector) {
-  x -= vector.x;
-  y -= vector.y;
-  z -= vector.z;
-}
-
-void EoGePoint3d::operator*=(double t) {
-  x *= t;
-  y *= t;
-  z *= t;
+bool EoGePoint3d::operator!=(const EoGePoint3d& point) const noexcept {
+  return (!IsEqualTo(point, Eo::geometricTolerance));
 }
 
 void EoGePoint3d::operator/=(double t) {
-  assert(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint3d::operator/=");
+  assert(std::abs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint3d::operator/=");
 
-  if (fabs(t) > Eo::geometricTolerance) {
+  if (std::abs(t) > Eo::geometricTolerance) {
     x /= t;
     y /= t;
     z /= t;
@@ -47,50 +32,28 @@ void EoGePoint3d::operator/=(double t) {
   // Silently unchanged in release if t ≈ 0
 }
 
-void EoGePoint3d::operator()(double xNew, double yNew, double zNew) {
-  x = xNew;
-  y = yNew;
-  z = zNew;
-}
-
-EoGeVector3d EoGePoint3d::operator-(const EoGePoint3d& p) const { return EoGeVector3d(x - p.x, y - p.y, z - p.z); }
-
-EoGePoint3d EoGePoint3d::operator-(const EoGeVector3d& u) const { return EoGePoint3d(x - u.x, y - u.y, z - u.z); }
-EoGePoint3d EoGePoint3d::operator+(const EoGeVector3d& u) const { return EoGePoint3d(x + u.x, y + u.y, z + u.z); }
-EoGePoint3d EoGePoint3d::operator*(double t) const { return EoGePoint3d(x * t, y * t, z * t); }
-
 EoGePoint3d EoGePoint3d::operator/(double t) const {
-  assert(fabs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint3d::operator/");
+  assert(std::abs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint3d::operator/");
 
-  if (fabs(t) > Eo::geometricTolerance) { return EoGePoint3d(x / t, y / t, z / t); }
+  if (std::abs(t) > Eo::geometricTolerance) { return EoGePoint3d(x / t, y / t, z / t); }
   return EoGePoint3d(x, y, z);
 }
 
-double EoGePoint3d::DistanceTo(const EoGePoint3d& p) const {
+double EoGePoint3d::DistanceTo(const EoGePoint3d& p) const noexcept {
   double xDelta = p.x - x;
   double yDelta = p.y - y;
   double zDelta = p.z - z;
-  return sqrt(xDelta * xDelta + yDelta * yDelta + zDelta * zDelta);
+  return std::sqrt(xDelta * xDelta + yDelta * yDelta + zDelta * zDelta);
 }
 
-bool EoGePoint3d::IsEqualTo(const EoGePoint3d& p, double tolerance) const {
-  return fabs(x - p.x) <= tolerance && fabs(y - p.y) <= tolerance && fabs(z - p.z) <= tolerance;
+bool EoGePoint3d::IsEqualTo(const EoGePoint3d& p, double tolerance) const noexcept {
+  return std::abs(x - p.x) <= tolerance && std::abs(y - p.y) <= tolerance && std::abs(z - p.z) <= tolerance;
 }
 
 bool EoGePoint3d::IsContained(const EoGePoint3d& lowerLeftPoint, const EoGePoint3d& upperRightPoint) const {
   if (lowerLeftPoint.x > x + Eo::geometricTolerance || upperRightPoint.x < x - Eo::geometricTolerance) { return false; }
   if (lowerLeftPoint.y > y + Eo::geometricTolerance || upperRightPoint.y < y - Eo::geometricTolerance) { return false; }
   return true;
-}
-
-EoGePoint3d EoGePoint3d::Max(const EoGePoint3d& p, const EoGePoint3d& q) {
-  return EoGePoint3d(std::max(p.x, q.x), std::max(p.y, q.y), std::max(p.z, q.z));
-}
-
-EoGePoint3d EoGePoint3d::Mid(const EoGePoint3d& p, const EoGePoint3d& q) { return p + (q - p) * 0.5; }
-
-EoGePoint3d EoGePoint3d::Min(const EoGePoint3d& p, const EoGePoint3d& q) {
-  return EoGePoint3d(std::min(p.x, q.x), std::min(p.y, q.y), std::min(p.z, q.z));
 }
 
 EoGePoint3d EoGePoint3d::ProjectToward(const EoGePoint3d& p, double distance) const {
@@ -130,8 +93,8 @@ int EoGePoint3d::RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint, cons
 EoGePoint3d EoGePoint3d::RotateAboutAxis(
     const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis, double angle) {
   if (referenceAxis == EoGeVector3d::positiveUnitZ) {
-    double sinAngle = sin(angle);
-    double cosAngle = cos(angle);
+    double sinAngle = std::sin(angle);
+    double cosAngle = std::cos(angle);
 
     EoGeVector3d v(referenceOrigin, *this);
 
@@ -143,7 +106,7 @@ EoGePoint3d EoGePoint3d::RotateAboutAxis(
   }
 }
 
-CString EoGePoint3d::ToString() const {
+[[nodiscard]] CString EoGePoint3d::ToString() const {
   CString str;
   str.Format(L"%f;%f;%f\t", x, y, z);
   return str;
@@ -155,9 +118,9 @@ void EoGePoint3d::Write(CFile& file) const {
   file.Write(&z, sizeof(double));
 }
 
-double EoGePoint3d::Distance(const EoGePoint3d& p, const EoGePoint3d& q) {
+double EoGePoint3d::Distance(const EoGePoint3d& p, const EoGePoint3d& q) noexcept {
   double x = q.x - p.x;
   double y = q.y - p.y;
   double z = q.z - p.z;
-  return sqrt(x * x + y * y + z * z);
+  return std::sqrt(x * x + y * y + z * z);
 }

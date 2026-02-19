@@ -407,7 +407,7 @@ void EoDbDrwInterface::ConvertLineEntity(const DRW_Line& line, AeSysDoc* documen
   auto linePrimitive = new EoDbLine();
   linePrimitive->SetBaseProperties(&line, document);
 
-  linePrimitive->SetLine(EoGeLine(line.basePoint, line.secPoint));
+  linePrimitive->SetLine(EoGeLine(EoGePoint3d{line.basePoint}, EoGePoint3d{line.secPoint}));
   AddToDocument(linePrimitive, document);
 }
 

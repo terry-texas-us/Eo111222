@@ -31,8 +31,8 @@ EoGeTransformMatrix::EoGeTransformMatrix(
   }
   const EoGeVector3d normalizedAxis = referenceAxis / axisLength;
 
-  double sinAngle = sin(angle);
-  double cosAngle = cos(angle);
+  double sinAngle = std::sin(angle);
+  double cosAngle = std::cos(angle);
 
   double xSquared = normalizedAxis.x * normalizedAxis.x;
   double ySquared = normalizedAxis.y * normalizedAxis.y;
@@ -89,7 +89,7 @@ EoGeTransformMatrix::EoGeTransformMatrix(
   EoGeVector3d xAxisTransformed = xAxis;
   xAxisTransformed = *this * xAxisTransformed;
 
-  double xyMagnitude = sqrt(xAxisTransformed.x * xAxisTransformed.x + xAxisTransformed.y * xAxisTransformed.y);
+  double xyMagnitude = std::sqrt(xAxisTransformed.x * xAxisTransformed.x + xAxisTransformed.y * xAxisTransformed.y);
   if (xyMagnitude < Eo::geometricTolerance) { return; }
   EoGeVector3d scaleVector(1.0 / xyMagnitude, 1.0, 1.0);
 
@@ -102,13 +102,13 @@ EoGeTransformMatrix::EoGeTransformMatrix(
   EoGeVector3d yAxisTransformed = yAxis;
   yAxisTransformed = *this * yAxisTransformed;
 
-  if (fabs(yAxisTransformed.y) < Eo::geometricTolerance) { return; }
+  if (std::abs(yAxisTransformed.y) < Eo::geometricTolerance) { return; }
 
   scaleVector.y = 1.0 / yAxisTransformed.y;
   scaleVector.z = 1.0;
 
   // Add shear to matrix which gets positive y-axis reference vector as y-axis
-  if (fabs(yAxisTransformed.x) > Eo::geometricTolerance) {
+  if (std::abs(yAxisTransformed.x) > Eo::geometricTolerance) {
     double shearFactor = -yAxisTransformed.x / yAxisTransformed.y;
     for (int i = 0; i < 4; i++) { m_4X4[0][i] += m_4X4[1][i] * shearFactor; }
   }
@@ -136,20 +136,20 @@ EoGeTransformMatrix EoGeTransformMatrix::BuildRotationTransformMatrix(const EoGe
 }
 
 void EoGeTransformMatrix::AppendXAxisRotation(double angle) {
-  if (fabs(angle) > Eo::geometricTolerance) {
-    *this *= XAxisRotation(sin(Eo::DegreeToRadian(angle)), cos(Eo::DegreeToRadian(angle)));
+  if (std::abs(angle) > Eo::geometricTolerance) {
+    *this *= XAxisRotation(std::sin(Eo::DegreeToRadian(angle)), std::cos(Eo::DegreeToRadian(angle)));
   }
 }
 
 void EoGeTransformMatrix::AppendYAxisRotation(double angle) {
-  if (fabs(angle) > Eo::geometricTolerance) {
-    *this *= YAxisRotation(sin(Eo::DegreeToRadian(angle)), cos(Eo::DegreeToRadian(angle)));
+  if (std::abs(angle) > Eo::geometricTolerance) {
+    *this *= YAxisRotation(std::sin(Eo::DegreeToRadian(angle)), std::cos(Eo::DegreeToRadian(angle)));
   }
 }
 
 void EoGeTransformMatrix::AppendZAxisRotation(double angle) {
-  if (fabs(angle) > Eo::geometricTolerance) {
-    *this *= ZAxisRotation(sin(Eo::DegreeToRadian(angle)), cos(Eo::DegreeToRadian(angle)));
+  if (std::abs(angle) > Eo::geometricTolerance) {
+    *this *= ZAxisRotation(std::sin(Eo::DegreeToRadian(angle)), std::cos(Eo::DegreeToRadian(angle)));
   }
 }
 
@@ -163,8 +163,8 @@ void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(
   Identity();
   Translate(EoGeVector3d(referencePoint, EoGePoint3d::kOrigin));
 
-  double yNormalAbs = fabs(normal.y);
-  double zNormalAbs = fabs(normal.z);
+  double yNormalAbs = std::abs(normal.y);
+  double zNormalAbs = std::abs(normal.z);
 
   double d{};
   if (zNormalAbs < Eo::geometricTolerance) {
@@ -172,11 +172,11 @@ void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(
   } else if (yNormalAbs < Eo::geometricTolerance) {
     d = zNormalAbs;
   } else {
-    d = sqrt(yNormalAbs * yNormalAbs + zNormalAbs * zNormalAbs);
+    d = std::sqrt(yNormalAbs * yNormalAbs + zNormalAbs * zNormalAbs);
   }
 
   if (d > Eo::geometricTolerance) { *this *= XAxisRotation(normal.y / d, normal.z / d); }
-  if (fabs(normal.x) > Eo::geometricTolerance) { *this *= YAxisRotation(-normal.x, d); }
+  if (std::abs(normal.x) > Eo::geometricTolerance) { *this *= YAxisRotation(-normal.x, d); }
 }
 
 /** @brief Initializes a matrix for rotation about the x-axis, the y-axis rotates to the z-axis

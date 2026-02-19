@@ -104,7 +104,7 @@ void EoDbPoint::Display(AeSysView* view, CDC* context) {
     pixelSize = static_cast<int>(std::max(2.0, (pointSize * dpi)) / 2.0);
   } else if (pointSize < 0.0) {
     // treat absolute pixels (common convention)
-    pixelSize = static_cast<int>(std::max(2.0, fabs(pointSize)) / 2.0);
+    pixelSize = static_cast<int>(std::max(2.0, std::abs(pointSize)) / 2.0);
   }
   int i;
   switch (m_pointStyle & 0x0F) {  // Low nibble defines basic shape

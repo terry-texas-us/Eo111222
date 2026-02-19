@@ -1098,15 +1098,15 @@ void AeSysView::PushViewTransform() { m_ViewTransforms.AddTail(m_ViewTransform);
 void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, double& vMax, double ratio) {
   double AspectRatio = static_cast<double>(m_Viewport.Height() / m_Viewport.Width());
 
-  double UExtent = fabs(static_cast<double>(uMax - uMin));
-  double VExtent = fabs(static_cast<double>(vMax - vMin));
+  double UExtent = std::abs(static_cast<double>(uMax - uMin));
+  double VExtent = std::abs(static_cast<double>(vMax - vMin));
 
   double XAdjustment = 0.0;
   double YAdjustment = 0.0;
 
   double Scale = 1.0 - (m_Viewport.WidthInInches() / UExtent) / ratio;
 
-  if (fabs(Scale) > Eo::geometricTolerance) {
+  if (std::abs(Scale) > Eo::geometricTolerance) {
     XAdjustment = Scale * UExtent;
     YAdjustment = Scale * VExtent;
   }

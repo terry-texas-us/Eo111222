@@ -41,7 +41,7 @@ void EoGeOcsTransform::BuildOcsTransformation(const EoGeVector3d& extrusionNorma
   auto v = CrossProduct(n, u);
   if (v.IsNearNull()) {
     // Fallback if cross product failed
-    if (fabs(n.x) < fabs(n.y)) {
+    if (std::abs(n.x) < std::abs(n.y)) {
       v = CrossProduct(n, EoGeVector3d::positiveUnitX);
     } else {
       v = CrossProduct(n, EoGeVector3d::positiveUnitY);

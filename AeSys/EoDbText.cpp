@@ -728,7 +728,7 @@ EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontDefinition, EoGeRef
 
     path.Normalize();
     path *= -(yDirection.Length() * lineSpaceFactor);
-    path.RotAboutArbAx(unitNormal, Eo::HalfPi);
+    path.RotateAboutArbitraryAxis(unitNormal, Eo::HalfPi);
   }
   return (position + (path * 1.5));
 }

@@ -443,7 +443,7 @@ void AeSysView::GenerateFullElbowTakeoff(EoDbGroup*, EoGeLine& existingSectionRe
   IntersectionPoint = existingSectionReferenceLine.ProjectPointToLine(CurrentReferenceLine.begin);
   double Relationship;
   if (existingSectionReferenceLine.ComputeParametricRelation(IntersectionPoint, Relationship)) {
-    if (fabs(Relationship) > Eo::geometricTolerance && fabs(Relationship - 1.0) > Eo::geometricTolerance) {
+    if (std::abs(Relationship) > Eo::geometricTolerance && std::abs(Relationship - 1.0) > Eo::geometricTolerance) {
       // need to add a section either from the elbow or the existing section
       double SectionLength = existingSectionReferenceLine.Length();
       double DistanceToBeginPoint = Relationship * SectionLength;
@@ -675,7 +675,7 @@ double AeSysView::LengthOfTransition(EJust justification, double slope, Section 
   double widthChange = currentSection.Width() - previousSection.Width();
   double depthChange = currentSection.Depth() - previousSection.Depth();
 
-  double length = std::max(fabs(widthChange), fabs(depthChange)) * slope;
+  double length = std::max(std::abs(widthChange), std::abs(depthChange)) * slope;
   if (justification == Center) { length *= 0.5; }
   return length;
 }
@@ -734,7 +734,7 @@ bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive, double
         continue;
       }
       double LineAngle = fmod(Line.AngleFromXAxisXY(), Eo::Pi);
-      if (fabs(fabs(TestLineAngle - LineAngle) - Eo::HalfPi) <= angularTolerance) {
+      if (std::abs(std::abs(TestLineAngle - LineAngle) - Eo::HalfPi) <= angularTolerance) {
         if (LeftLinePrimitive == 0) {  // No qualifiers yet
           DirectedRelationship = testLine.DirRelOfPt(Line.begin);
           LeftLinePrimitive = LinePrimitive;

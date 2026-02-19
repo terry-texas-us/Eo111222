@@ -113,7 +113,7 @@ enum class Units {
 constexpr int Signum(double number) { return (number < 0.0 ? -1 : (number > 0.0 ? 1 : 0)); }
 
 /** @brief Returns a value with the magnitude of 'a' and the sign of 'b'. */
-constexpr double CopySign(double a, double b) { return (b >= 0.0 ? fabs(a) : -fabs(a)); }
+constexpr double CopySign(double a, double b) { return (b >= 0.0 ? std::abs(a) : -std::abs(a)); }
 
 /** @brief Rounds a double to the nearest integer using std::round, which rounds half away from zero.
 * @param number The double value to round.

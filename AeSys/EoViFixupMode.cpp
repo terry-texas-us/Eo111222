@@ -73,7 +73,7 @@ EoGeLine currentLine{};
   normal.Normalize();
   if (normal.IsNearNull()) { return false; }
 
-  if (fabs((DotProduct(normal, EoGeVector3d(firstLine.begin, secondLine.begin)))) > Eo::geometricTolerance) {
+  if (std::abs(DotProduct(normal, EoGeVector3d(firstLine.begin, secondLine.begin))) > Eo::geometricTolerance) {
     // Four points are not coplanar
     return false;
   }
@@ -92,7 +92,7 @@ EoGeLine currentLine{};
   double dDet = dA2 * dB1 - dA1 * dB2;
 
   double dSgnRad =
-      (firstLine.end.x * secondLine.end.y - secondLine.end.x * firstLine.end.y) >= 0. ? -fabs(radius) : fabs(radius);
+      (firstLine.end.x * secondLine.end.y - secondLine.end.x * firstLine.end.y) >= 0. ? -std::abs(radius) : std::abs(radius);
 
   double dC1RAB1 = dSgnRad;
   double dC2RAB2 =

@@ -39,14 +39,14 @@ std::uint16_t PreviousDimensionCommand{};
 void GetReferenceAxesForCharacterCell(EoDbCharacterCellDefinition& characterCellDefinition, const EoGeVector3d& normal,
     EoGeVector3d& xAxisReference, EoGeVector3d& yAxisReference) {
   xAxisReference = ComputeArbitraryAxis(normal);
-  xAxisReference.RotAboutArbAx(normal, characterCellDefinition.RotationAngle());
+  xAxisReference.RotateAboutArbitraryAxis(normal, characterCellDefinition.RotationAngle());
 
   yAxisReference = CrossProduct(normal, xAxisReference);
 
   xAxisReference *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height() *
                     characterCellDefinition.ExpansionFactor();
 
-  yAxisReference.RotAboutArbAx(normal, characterCellDefinition.SlantAngle());
+  yAxisReference.RotateAboutArbitraryAxis(normal, characterCellDefinition.SlantAngle());
   yAxisReference *= characterCellDefinition.Height();
 }
 

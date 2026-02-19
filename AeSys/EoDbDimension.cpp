@@ -325,11 +325,11 @@ void EoDbDimension::SetDefaultNote() {
   auto cameraDirection = activeView->CameraDirection();
 
   EoGeVector3d yDirection = activeView->ViewUp();
-  yDirection.RotAboutArbAx(cameraDirection, angle);
+  yDirection.RotateAboutArbitraryAxis(cameraDirection, angle);
   yDirection *= 0.1;
 
   EoGeVector3d xDirection = yDirection;
-  xDirection.RotAboutArbAx(cameraDirection, -Eo::HalfPi);
+  xDirection.RotateAboutArbitraryAxis(cameraDirection, -Eo::HalfPi);
   xDirection *= Eo::defaultCharacterCellAspectRatio;
 
   m_ReferenceSystem.SetXDirection(xDirection);

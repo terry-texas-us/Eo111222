@@ -432,8 +432,8 @@ void AeSysDoc::DeletedGroupsRestore() {
 }
 void AeSysDoc::GetExtents(
     AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& transformMatrix) {
-  ptMin(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
-  ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
+  ptMin.Set(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
+  ptMax.Set(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
   for (auto i = 0; i < GetLayerTableSize(); i++) {
     auto* layer = GetLayerTableLayerAt(i);

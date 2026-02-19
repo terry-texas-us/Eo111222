@@ -94,7 +94,7 @@ EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(const EoGePoint3d& 
   tm1.Translate(EoGeVector3d(insertionPoint, EoGePoint3d::kOrigin));
   EoGeTransformMatrix tm2;
   tm2.Scale(m_scaleFactors);
-  auto zAxisRotation = EoGeTransformMatrix::ZAxisRotation(sin(m_rotation), cos(m_rotation));
+  auto zAxisRotation = EoGeTransformMatrix::ZAxisRotation(std::sin(m_rotation), std::cos(m_rotation));
   EoGeTransformMatrix tm4(EoGePoint3d::kOrigin, m_normal);
   EoGeTransformMatrix tm5;
   tm5.Translate(EoGeVector3d(EoGePoint3d::kOrigin, m_insertionPoint));
@@ -277,7 +277,7 @@ void EoDbBlockReference::Transform(const EoGeTransformMatrix& transformMatrix) {
   m_insertionPoint = transformMatrix * m_insertionPoint;
   m_normal = transformMatrix * m_normal;
 
-  if (fabs(m_normal.x) < Eo::geometricTolerance && fabs(m_normal.y) <= Eo::geometricTolerance) {
+  if (std::abs(m_normal.x) < Eo::geometricTolerance && std::abs(m_normal.y) <= Eo::geometricTolerance) {
     m_scaleFactors = transformMatrix * m_scaleFactors;
   }
 }

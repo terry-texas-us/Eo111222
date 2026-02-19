@@ -67,9 +67,9 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
     if (normal.z < 0) normal = -normal;
 
     m_positiveX.Normalize();
-    m_positiveX.RotAboutArbAx(normal, hatch::dOffAng);
+    m_positiveX.RotateAboutArbitraryAxis(normal, hatch::dOffAng);
     m_positiveY = m_positiveX;
-    m_positiveY.RotAboutArbAx(normal, Eo::HalfPi);
+    m_positiveY.RotateAboutArbitraryAxis(normal, Eo::HalfPi);
     m_positiveX *= hatch::dXAxRefVecScal;
     m_positiveY *= hatch::dYAxRefVecScal;
 
@@ -447,9 +447,9 @@ void EoDbPolygon::SetHatRefVecs(double dOffAng, double dXScal, double dYScal) {
   if (normal.z < 0) normal = -normal;
 
   m_positiveX.Normalize();
-  m_positiveX.RotAboutArbAx(normal, dOffAng);
+  m_positiveX.RotateAboutArbitraryAxis(normal, dOffAng);
   m_positiveY = m_positiveX;
-  m_positiveY.RotAboutArbAx(normal, Eo::HalfPi);
+  m_positiveY.RotateAboutArbitraryAxis(normal, Eo::HalfPi);
   m_positiveX *= dXScal;
   m_positiveY *= dYScal;
 }
@@ -525,8 +525,8 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
   for (int i0 = 0; i0 < iHatLns; i0++) {
     int iStrs = int(hatch::tableValue[iTblId++]);       // number of strokes in line definition
     double dTotStrLen = hatch::tableValue[iTblId++];    // length of all strokes in line definition
-    double dSinAng = sin(hatch::tableValue[iTblId]);    // sine of angle at which line will be drawn
-    double dCosAng = cos(hatch::tableValue[iTblId++]);  // cosine of angle at which line will be drawn
+    double dSinAng = std::sin(hatch::tableValue[iTblId]);    // sine of angle at which line will be drawn
+    double dCosAng = std::cos(hatch::tableValue[iTblId++]);  // cosine of angle at which line will be drawn
     double dX = hatch::tableValue[iTblId++];            // displacement to origin of initial line
     double dY = hatch::tableValue[iTblId++];
     double dShift = hatch::tableValue[iTblId++];  // x-axis origin shift between lines
@@ -558,8 +558,8 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
         ln.end = transformMatrix * ln.end;
         vEdg.x = ln.end.x - ln.begin.x;  // Determine x and y-components of edge
         vEdg.y = ln.end.y - ln.begin.y;
-        if (fabs(vEdg.y) >
-            Eo::geometricTolerance * sqrt(vEdg.x * vEdg.x + vEdg.y * vEdg.y)) {  // Edge is not horizontal
+        if (std::abs(vEdg.y) >
+            Eo::geometricTolerance * std::sqrt(vEdg.x * vEdg.x + vEdg.y * vEdg.y)) {  // Edge is not horizontal
           dMaxY = std::max(ln.begin.y, ln.end.y);
           iCurEdg = iActEdgs + 1;
           // Find correct insertion point for edge in edge list using ymax as sort key
@@ -591,7 +591,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
     iEndEdg = 1;
     // Determine relative epsilon to be used for extent tests
   l1:
-    dEps1 = Eo::geometricTolerance + Eo::geometricTolerance * fabs(dScan);
+    dEps1 = Eo::geometricTolerance + Eo::geometricTolerance * std::abs(dScan);
     while (iEndEdg <= iActEdgs && edg[iEndEdg].yMaxExtent >= dScan - dEps1) {
       // Set x intersection back to last scanline
       edg[iEndEdg].xIntersection += edg[iEndEdg].inverseSlope * (dSpac + dScan - edg[iEndEdg].yMaxExtent);

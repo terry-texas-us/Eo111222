@@ -162,7 +162,7 @@ void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
       EoGePoint3d BeginPoint = circuit->Begin();
       m_CircuitEndPoint = circuit->End();
 
-      if (fabs(m_CircuitEndPoint.x - BeginPoint.x) > 0.025) {
+      if (std::abs(m_CircuitEndPoint.x - BeginPoint.x) > 0.025) {
         if (BeginPoint.x > m_CircuitEndPoint.x) m_CircuitEndPoint = BeginPoint;
       } else if (BeginPoint.y > m_CircuitEndPoint.y)
         m_CircuitEndPoint = BeginPoint;

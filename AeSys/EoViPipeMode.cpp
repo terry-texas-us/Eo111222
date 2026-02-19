@@ -563,7 +563,7 @@ void AeSysView::OnPipeModeWye() {
 
     double DistanceBetweenSectionPoints = EoGeVector3d(BeginPointProjectedToSection, PointOnSection).Length();
 
-    if (fabs(DistanceBetweenSectionPoints - DistanceToSection) <= 0.25) {
+    if (std::abs(DistanceBetweenSectionPoints - DistanceToSection) <= 0.25) {
       // Just need to shift point on section and do a single 45 degree line
       PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, DistanceToSection);
       horizontalSection->SetEndPoint(PointOnSection);
