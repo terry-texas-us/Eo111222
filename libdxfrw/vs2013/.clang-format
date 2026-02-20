@@ -1,0 +1,8 @@
+BasedOnStyle: Google
+ReflowComments: Never
+PointerAlignment: Left
+SortIncludes: false
+AllowShortIfStatementsOnASingleLine: true
+AllowShortBlocksOnASingleLine: true
+AllowShortFunctionsOnASingleLine: true
+AlignArrayOfStructures: None

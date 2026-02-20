@@ -37,21 +37,21 @@
 #ifndef REFLEX_H
 #define REFLEX_H
 
-#include <reflex/convert.h>
-#include <reflex/error.h>
+//#include <reflex/convert.h>
+//#include <reflex/error.h>
 #include <reflex/input.h>
-#include <reflex/pattern.h>
+//#include <reflex/pattern.h>
 #include <reflex/matcher.h>
-#include <reflex/utf8.h>
-#include <cctype>
-#include <cstdlib>
-#include <cerrno>
+//#include <reflex/utf8.h>
+//#include <cctype>
+//#include <cstdlib>
+//#include <cerrno>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <map>
 #include <set>
-#include <stack>
+//#include <stack>
 #include <vector>
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__MINGW64__) || defined(__BORLANDC__)
@@ -211,7 +211,7 @@ class Reflex
  protected:
   StringMap             options;       ///< maps option name (from the options_table) to its option value
   LibraryMap            libraries;     ///< maps regex library name ("reflex", "boost", etc) to library info
-  Library              *library;       ///< the regex library selected
+  Library              *library{};     ///< the regex library selected
   Strings               conditions;    ///< "INITIAL" start condition etc. defined with %x name
   Strings               patterns;      ///< regex patterns for each start condition
   Starts                inclusive;     ///< inclusive start conditions
@@ -226,11 +226,11 @@ class Reflex
   Codes                 section_3;     ///< main user code in section 3 container
   std::string           infile;        ///< input file name
   reflex::BufferedInput in;            ///< input lex spec
-  std::ostream         *out;           ///< output stream
+  std::ostream         *out{};         ///< output stream
   std::string           line;          ///< current line read from input
-  size_t                lineno;        ///< current line number at input
-  size_t                linelen;       ///< current line length
-  bool                  color_term;    ///< terminal supports colors
+  size_t                lineno{};      ///< current line number at input
+  size_t                linelen{};     ///< current line length
+  bool                  color_term{};  ///< terminal supports colors
 };
 
 #endif

@@ -62,12 +62,12 @@
       <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;$(SolutionDir)libdxfrw\src\;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\ReflexLib.lib;$(SolutionDir)libdxfrw\vs2013\x64\Debug\libdxfrw.lib;$(SolutionDir)libdxfrw\vs2013\packages\libiconv.1.14.0.11\build\native\lib\v110\x64\Debug\dynamic\cdecl\libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\ReflexLib.lib;$(SolutionDir)$(Platform)\$(Configuration)\libdxfrw.lib;$(SolutionDir)$(Platform)\$(Configuration)\libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
+      <Command>$(SolutionDir)$(Platform)\$(Configuration)\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
 xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
 xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
 xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
@@ -1606,6 +1606,3 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     </VisualStudio>
   </ProjectExtensions>
 </Project>
-
-
-
