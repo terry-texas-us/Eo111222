@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -62,9 +62,9 @@
       <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;$(SolutionDir)libdxfrw\src\;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(ProjectDir)Tools\reflex_static_lib.lib;$(SolutionDir)libdxfrw\vs2013\x64\Debug\libdxfrw.lib;$(SolutionDir)libiconv\Debug_x64\libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\ReflexLib.lib;$(SolutionDir)libdxfrw\vs2013\x64\Debug\libdxfrw.lib;$(SolutionDir)libdxfrw\vs2013\packages\libiconv.1.14.0.11\build\native\lib\v110\x64\Debug\dynamic\cdecl\libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)RE-flex\Debug\;$(SolutionDir)libiconv\Debug_x64\;$(ProjectDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
@@ -78,8 +78,8 @@ xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"
       </Command>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>xcopy /Y /I /E "$(SolutionDir)libiconv\Debug_x64\libiconv.dll" "$(SolutionDir)x64\Debug\"
-xcopy /Y /I /E "$(SolutionDir)RE-flex\Debug\reflex_static_lib.lib" "$(ProjectDir)Tools\"</Command>
+      <Command>
+      </Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -99,7 +99,7 @@ xcopy /Y /I /E "$(SolutionDir)RE-flex\Debug\reflex_static_lib.lib" "$(ProjectDir
       <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;$(SolutionDir)libdxfrw\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(ProjectDir)Tools\reflex_static_lib.lib;$(SolutionDir)libdxfrw\vs2013\Debug\libdxfrw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)Tools\reflex_static_lib.lib;$(SolutionDir)libdxfrw\vs2013\Debug\libdxfrw.lib;$(SolutionDir)libdxfrw\vs2013\packages\libiconv.1.14.0.11\build\native\lib\v110\Win32\Debug\dynamic\cdecl\libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
@@ -1606,3 +1606,6 @@ xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt
     </VisualStudio>
   </ProjectExtensions>
 </Project>
+
+
+

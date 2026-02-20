@@ -61,7 +61,7 @@ class EoGePoint4d {
   [[nodiscard]] constexpr EoGePoint4d operator*(double t) const noexcept { return {x * t, y * t, z * t, w * t}; }
 
 
-  [[nodiscard]] constexpr EoGePoint4d& Set(double newX, double newY, double newZ, double newW) noexcept {
+  [[nodiscard]] constexpr EoGePoint4d Set(double newX, double newY, double newZ, double newW) noexcept {
     x = newX;
     y = newY;
     z = newZ;
@@ -75,7 +75,7 @@ class EoGePoint4d {
    *   It assumes the w components are equal (Δw cancels to 0). All model-space points satisfy this (w = 1.0).
    *   Use Dehomogenize() first if you need the true Cartesian difference after perspective. 
    */
-  [[nodiscard]] constexpr EoGeVector3d operator-(const EoGePoint4d& q) const { return {x - q.x, y - q.y, z - q.z}; }
+  [[nodiscard]] constexpr EoGeVector3d operator-(const EoGePoint4d& q) const noexcept { return {x - q.x, y - q.y, z - q.z}; }
 
   /** @brief Converts a point from homogeneous coordinates to Cartesian coordinates by dividing the x, y, and z components by the w component.
    * @param homogenizedPoint The point in homogeneous coordinates to be dehomogenized.
