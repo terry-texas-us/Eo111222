@@ -54,6 +54,10 @@
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)'=='Debug'">true</LinkIncremental>
   </PropertyGroup>
+  <!-- Suppress "wildcards not supported in VC projects" IDE warning -->
+  <PropertyGroup>
+	<EnableWildcardsInProjectItems>true</EnableWildcardsInProjectItems>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -61,384 +65,200 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <!-- CLEAN MODERN ItemDefinitionGroups for ALL 4 configurations -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <SupportJustMyCode>true</SupportJustMyCode>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <ConformanceMode>true</ConformanceMode>
-      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <DisableSpecificWarnings>5045</DisableSpecificWarnings>
-      <BrowseInformationFile>$(ProjectDir)vshints.hm</BrowseInformationFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include\;$(SolutionDir)Third Party\libdxfrw\src\;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\ReflexLib.lib;$(SolutionDir)$(Platform)\$(Configuration)\libdxfrw.lib;$(SolutionDir)$(Platform)\$(Configuration)\libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
-    <PreBuildEvent>
-      <Command>$(SolutionDir)$(Platform)\$(Configuration)\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"</Command>
-    </PreBuildEvent>
-    <PostBuildEvent>
-      <Command>
-      </Command>
-    </PostBuildEvent>
-    <PreLinkEvent>
-      <Command>
-      </Command>
-    </PreLinkEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
-      <DisableSpecificWarnings>5045</DisableSpecificWarnings>
-      <WarningVersion>
-      </WarningVersion>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <SupportJustMyCode>true</SupportJustMyCode>
-      <DiagnosticsFormat>Caret</DiagnosticsFormat>
-      <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <BrowseInformationFile>$(ProjectDir)vshints.hm</BrowseInformationFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)RE-flex\include\;$(SolutionDir)libdxfrw\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <Zc__cplusplus>true</Zc__cplusplus>
+      <Zc__preprocessor>true</Zc__preprocessor>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>5045;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Third Party\libdxfrw\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(ProjectDir)Tools\reflex_static_lib.lib;$(SolutionDir)libdxfrw\vs2013\Debug\libdxfrw.lib;$(SolutionDir)libdxfrw\vs2013\packages\libiconv.1.14.0.11\build\native\lib\v110\Win32\Debug\dynamic\cdecl\libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(ProjectDir)Tools\Reflex --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-</Command>
+      <Command>
+			$(SolutionDir)Core Libraries\Reflex\$(Platform)\$(Configuration)\Reflex.exe --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"
+		</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <Zc__cplusplus>true</Zc__cplusplus>
+      <Zc__preprocessor>true</Zc__preprocessor>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>5045;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Third Party\libdxfrw\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PreBuildEvent>
+      <Command>
+			$(SolutionDir)Core Libraries\Reflex\$(Platform)\$(Configuration)\Reflex.exe --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"
+		</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <Zc__cplusplus>true</Zc__cplusplus>
+      <Zc__preprocessor>true</Zc__preprocessor>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>5045;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Third Party\libdxfrw\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PreBuildEvent>
+      <Command>
+			$(SolutionDir)Core Libraries\Reflex\$(Platform)\$(Configuration)\Reflex.exe --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"
+		</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <Zc__cplusplus>true</Zc__cplusplus>
+      <Zc__preprocessor>true</Zc__preprocessor>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>5045;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Third Party\libdxfrw\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PreBuildEvent>
+      <Command>
+			$(SolutionDir)Core Libraries\Reflex\$(Platform)\$(Configuration)\Reflex.exe --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
+			xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"
+		</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AeSys.cpp" />
-    <ClCompile Include="AeSysDoc.cpp" />
-    <ClCompile Include="AeSysView.cpp" />
-    <ClCompile Include="DrawModeState.cpp" />
-    <ClCompile Include="EoDlgSetupPointStyle.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="ChildFrm.cpp" />
-    <ClCompile Include="Dde.cpp" />
-    <ClCompile Include="DdeCmds.cpp" />
-    <ClCompile Include="DdeConversation.cpp" />
-    <ClCompile Include="DdeGItms.cpp" />
-    <ClCompile Include="DdeItem.cpp" />
-    <ClCompile Include="DdeSys.cpp" />
-    <ClCompile Include="DdeTopic.cpp" />
-    <ClCompile Include="EoDbDrwInterface.cpp" />
-    <ClCompile Include="EoDlgActiveViewKeyplan.cpp" />
-    <ClCompile Include="EoDlgLineTypesSelection.cpp" />
-    <ClCompile Include="EoDlgLowPressureDuctOptions.cpp" />
-    <ClCompile Include="EoDlgSelectGotoHomePoint.cpp" />
-    <ClCompile Include="EoDlgSetupCustomMouseCharacters.cpp" />
-    <ClCompile Include="EoCtrlColorsButton.cpp" />
-    <ClCompile Include="EoDlgAnnotateOptions.cpp" />
-    <ClCompile Include="EoDlgBlockInsert.cpp" />
-    <ClCompile Include="EoDlgDrawOptions.cpp" />
-    <ClCompile Include="EoDlgEditOptions.cpp" />
-    <ClCompile Include="EoDlgEditTrapCommandsQuery.cpp" />
-    <ClCompile Include="EoDlgFileManage.cpp" />
-    <ClCompile Include="EoGeOcs.cpp" />
-    <ClCompile Include="EoGeOcsTransform.cpp" />
-    <ClCompile Include="EoGePoint4d.cpp" />
-    <ClCompile Include="EoGePolyline.cpp" />
-    <ClCompile Include="EoViModelView.cpp" />
-    <ClCompile Include="IdleState.cpp" />
-    <ClCompile Include="lex.yy.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level3</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="Eo.cpp" />
-    <ClCompile Include="OFNHookProcFileTracing.cpp" />
-    <ClCompile Include="EoDlgFixupOptions.cpp" />
-    <ClCompile Include="EoDlgSetupHomePoint.cpp" />
-    <ClCompile Include="EoDlgModeLetter.cpp" />
-    <ClCompile Include="EoDlgModeRevise.cpp" />
-    <ClCompile Include="EoDlgPipeOptions.cpp" />
-    <ClCompile Include="EoDlgPipeSymbol.cpp" />
-    <ClCompile Include="EoDlgSetPastePosition.cpp" />
-    <ClCompile Include="EoDlgSetupHatch.cpp" />
-    <ClCompile Include="EoDlgSetupConstraints.cpp" />
-    <ClCompile Include="EoDlgSetupLineType.cpp" />
-    <ClCompile Include="EoDlgSetupColor.cpp" />
-    <ClCompile Include="EoDlgSetUnitsAndPrecision.cpp" />
-    <ClCompile Include="EoDlgTrapModify.cpp" />
-    <ClCompile Include="EoDlgSetAngle.cpp" />
-    <ClCompile Include="EoDlgSetLength.cpp" />
-    <ClCompile Include="EoDlgSetScale.cpp" />
-    <ClCompile Include="EoDlgSetText.cpp" />
-    <ClCompile Include="EoDlgSetupNote.cpp" />
-    <ClCompile Include="EoDlgViewZoom.cpp" />
-    <ClCompile Include="EoApOptions.cpp" />
-    <ClCompile Include="EoGsAbstractView.cpp" />
-    <ClCompile Include="EoDbBlock.cpp" />
-    <ClCompile Include="EoDBBlockReference.cpp" />
-    <ClCompile Include="EoDbDimension.cpp" />
-    <ClCompile Include="EoDbEllipse.cpp" />
-    <ClCompile Include="EoDbGroup.cpp" />
-    <ClCompile Include="EoDbGroupList.cpp" />
-    <ClCompile Include="EoDbLine.cpp" />
-    <ClCompile Include="EoDbLineTypeTable.cpp" />
-    <ClCompile Include="EoDbPegBlockTable.cpp" />
-    <ClCompile Include="EoDbPoint.cpp" />
-    <ClCompile Include="EoDbPolygon.cpp" />
-    <ClCompile Include="EoDbPolyline.cpp" />
-    <ClCompile Include="EoDbPrimitive.cpp" />
-    <ClCompile Include="EoDbSpline.cpp" />
-    <ClCompile Include="EoDbText.cpp" />
-    <ClCompile Include="EoDbTrappedGroups.cpp" />
-    <ClCompile Include="EoGePoint3d.cpp" />
-    <ClCompile Include="EoGeVector3d.cpp" />
-    <ClCompile Include="EoMfOutputDockablePane.cpp" />
-    <ClCompile Include="EoMfPropertiesDockablePane.cpp" />
-    <ClCompile Include="EoViAnnotateMode.cpp" />
-    <ClCompile Include="EoViCutMode.cpp" />
-    <ClCompile Include="EoViDimensionMode.cpp" />
-    <ClCompile Include="EoViDraw2Mode.cpp" />
-    <ClCompile Include="EoViDrawMode.cpp" />
-    <ClCompile Include="EoViEditMode.cpp" />
-    <ClCompile Include="EoViFixupMode.cpp" />
-    <ClCompile Include="EoViGroupSubModeEdit.cpp" />
-    <ClCompile Include="EoViLPDMode.cpp" />
-    <ClCompile Include="EoViNodalMode.cpp" />
-    <ClCompile Include="EoViPipeMode.cpp" />
-    <ClCompile Include="EoViPowerMode.cpp" />
-    <ClCompile Include="EoViPrimitiveSubModeEdit.cpp" />
-    <ClCompile Include="EoViPrimitiveSubModeMend.cpp" />
-    <ClCompile Include="EoViTrapMode.cpp" />
-    <ClCompile Include="EoDbBitmapFile.cpp" />
-    <ClCompile Include="EoDbBlockFile.cpp" />
-    <ClCompile Include="EoDbJobFile.cpp" />
-    <ClCompile Include="EoDbPegFile.cpp" />
-    <ClCompile Include="EoDbTracingFile.cpp" />
-    <ClCompile Include="EoCtrlFindComboBox.cpp" />
-    <ClCompile Include="EoDbFontDefinition.cpp" />
-    <ClCompile Include="EoViConstraints.cpp" />
-    <ClCompile Include="EoDbLayer.cpp" />
-    <ClCompile Include="Lex.cpp" />
-    <ClCompile Include="EoGeLine.cpp" />
-    <ClCompile Include="MainFrm.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="EoGeMatrix.cpp" />
-    <ClCompile Include="ModeLine.cpp" />
-    <ClCompile Include="EoGsModelTransform.cpp" />
-    <ClCompile Include="EoGsViewTransform.cpp" />
-    <ClCompile Include="EoDbLineType.cpp" />
-    <ClCompile Include="EoGsRenderState.cpp" />
-    <ClCompile Include="EoGeReferenceSystem.cpp" />
-    <ClCompile Include="Section.cpp" />
-    <ClCompile Include="EoDlgSelectIsometricView.cpp" />
-    <ClCompile Include="EoDbConic.cpp" />
-    <ClCompile Include="Stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="EoGeTransformMatrix.cpp" />
-    <ClCompile Include="EoDlgTrapFilter.cpp" />
-    <ClCompile Include="EoDlgViewParameters.cpp" />
-    <ClCompile Include="EoGsViewport.cpp" />
-    <ClCompile Include="WndProcKeyPlan.cpp" />
-    <ClCompile Include="WndProcPreview.cpp" />
+	<!-- Creates the PCH -->
+	<ClCompile Include="Stdafx.cpp">
+		<PrecompiledHeader>Create</PrecompiledHeader>
+	</ClCompile>
+
+	<!-- Generated lexer - never uses PCH + lower warnings -->
+	<ClCompile Include="lex.yy.cpp">
+		<PrecompiledHeader>NotUsing</PrecompiledHeader>
+		<WarningLevel>Level3</WarningLevel>
+	</ClCompile>
+
+	<!-- MFC frame - requires explicit PCH because of resource.h ordering -->
+	<ClCompile Include="MainFrm.cpp">
+		<PrecompiledHeader>Use</PrecompiledHeader>
+	</ClCompile>
+
+	<!-- Everything else in the folder (99% of your files) -->
+	<ClCompile Include="*.cpp" Exclude="Stdafx.cpp;lex.yy.cpp;MainFrm.cpp" />
   </ItemGroup>
   <ItemGroup>
+	<ResourceCompile Include="AeSys.rc" />
+  </ItemGroup>
+  <ItemGroup>
+	<ClInclude Include="*.h" />
+  </ItemGroup>
+  <ItemGroup>
+	  <!-- These files are not compiled, but we want them in the project for easy access. -->
     <None Include=".clang-format" />
     <None Include=".clang-tidy" />
-    <None Include="C:\Users\tsmit\Desktop\Help Peg.pdf" />
-    <None Include="lex_regexp.dat" />
-    <None Include="Markdowns\Dde Description and Few Uses.md" />
-    <None Include="Markdowns\Analysis of lex.cpp and Modernization Suggestions.md" />
-    <None Include="Markdowns\dxf header.md">
-      <SubType>
-      </SubType>
-    </None>
-    <None Include="Markdowns\DXF Symbol Tables.md" />
-    <None Include="Markdowns\Job File Format.md" />
-    <None Include="Markdowns\libdxfrw - Technical Specifications.md">
-      <SubType>
-      </SubType>
-    </None>
-    <None Include="Markdowns\Peg &amp; Tra File Formats.md" />
-    <None Include="res\AeSys.ico" />
-    <None Include="res\AeSys.rc2" />
-    <None Include="res\AeSys_Gold.ico" />
-    <None Include="res\AnnotateMode.cur" />
-    <None Include="res\CutMode.cur" />
-    <None Include="res\DimensionMode.cur" />
-    <None Include="res\Draw2Mode.cur" />
-    <None Include="res\DrawMode.cur" />
-    <None Include="res\EditMode.cur" />
-    <None Include="res\FixupMode.cur" />
-    <None Include="res\layer_filters.bmp" />
-    <None Include="res\LayerStates.bmp" />
-    <None Include="res\LayerStates_hc.bmp" />
-    <None Include="res\LowPressureDuct.cur" />
-    <None Include="res\NodalMode.cur" />
-    <None Include="res\NodalRMode.cur" />
-    <None Include="res\output_wnd.ico" />
-    <None Include="res\output_wnd_hc.ico" />
-    <None Include="res\PipeMode.cur" />
-    <None Include="res\PowerMode.cur" />
-    <None Include="res\properties.bmp" />
-    <None Include="res\properties_hc.bmp" />
-    <None Include="res\properties_wnd.ico" />
-    <None Include="res\properties_wnd_hc.ico" />
+
+    <!-- Documentation -->
+	<None Include="Markdowns\*.md" />
+
+	<!-- All resources (icons, cursors, bitmaps, psf, rc2, etc.) -->
+    <None Include="res\*.bmp" />
+	<None Include="res\*.cur" />
+	<None Include="res\*.ico" />
     <None Include="res\Simplex.psf" />
-    <None Include="res\Toolbar.bmp" />
-    <None Include="res\Toolbar256.bmp" />
-    <None Include="res\TrapMode.cur" />
-    <None Include="res\TrapRMode.cur" />
-    <None Include="hlp\global_keys.htm" />
-    <None Include="Tools\reflex_static_lib.pdb" />
+    <None Include="res\AeSys.rc2" />
+    <Text Include="res\LineTypes\*.txt" />
+
     <None Include="vshints.hm" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="AeSys.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="AeSys.h" />
-    <ClInclude Include="AeSysDoc.h" />
-    <ClInclude Include="AeSysState.h" />
-    <ClInclude Include="AeSysView.h" />
-    <ClInclude Include="DrawModeState.h" />
-    <ClInclude Include="Eo.h" />
-    <ClInclude Include="EoDbConic.h" />
-    <ClInclude Include="EoDlgSetupPointStyle.h" />
-    <ClInclude Include="EoDb.h" />
-    <ClInclude Include="EoDbCharacterCellDefinition.h" />
-    <ClInclude Include="ChildFrm.h" />
-    <ClInclude Include="Dde.h" />
-    <ClInclude Include="DdeCmds.h" />
-    <ClInclude Include="DdeGItms.h" />
-    <ClInclude Include="DdeSys.h" />
-    <ClInclude Include="EoDbHeaderSection.h" />
-    <ClInclude Include="EoDlgActiveViewKeyplan.h" />
-    <ClInclude Include="EoDlgBlockInsert.h" />
-    <ClInclude Include="EoDlgDrawOptions.h" />
-    <ClInclude Include="EoDlgFixupOptions.h" />
-    <ClInclude Include="EoDlgLineTypesSelection.h" />
-    <ClInclude Include="EoDlgModeLetter.h" />
-    <ClInclude Include="EoDlgModeRevise.h" />
-    <ClInclude Include="EoDlgSetHomePoint.h" />
-    <ClInclude Include="EoDlgLowPressureDuctOptions.h" />
-    <ClInclude Include="EoDlgEditOptions.h" />
-    <ClInclude Include="EoDlgEditTrapCommandsQuery.h" />
-    <ClInclude Include="EoCtrlColorsButton.h" />
-    <ClInclude Include="EoDlgAnnotateOptions.h" />
-    <ClInclude Include="EoDlgFileManage.h" />
-    <ClInclude Include="EoDlgTrapFilter.h" />
-    <ClInclude Include="EoDlgTrapModify.h" />
-    <ClInclude Include="EoDlgPipeOptions.h" />
-    <ClInclude Include="EoDlgPipeSymbol.h" />
-    <ClInclude Include="EoDlgSelectGotoHomePoint.h" />
-    <ClInclude Include="EoDlgSetAngle.h" />
-    <ClInclude Include="EoDlgSetPastePosition.h" />
-    <ClInclude Include="EoDlgSetUnitsAndPrecision.h" />
-    <ClInclude Include="EoDlgSetupConstraints.h" />
-    <ClInclude Include="EoDlgSetLength.h" />
-    <ClInclude Include="EoDlgSetScale.h" />
-    <ClInclude Include="EoDlgSetText.h" />
-    <ClInclude Include="EoDlgSetupColor.h" />
-    <ClInclude Include="EoDlgSetupCustomMouseCharacters.h" />
-    <ClInclude Include="EoDlgSetupHatch.h" />
-    <ClInclude Include="EoDlgSetupNote.h" />
-    <ClInclude Include="EoDlgViewZoom.h" />
-    <ClInclude Include="EoApOptions.h" />
-    <ClInclude Include="EoDbBlock.h" />
-    <ClInclude Include="EoDbBlockReference.h" />
-    <ClInclude Include="EoDbDimension.h" />
-    <ClInclude Include="EoDbEllipse.h" />
-    <ClInclude Include="EoDbGroup.h" />
-    <ClInclude Include="EoDbGroupList.h" />
-    <ClInclude Include="EoDbLine.h" />
-    <ClInclude Include="EoDbLineTypeTable.h" />
-    <ClInclude Include="EoDbMaskedPrimitive.h" />
-    <ClInclude Include="EoDbPoint.h" />
-    <ClInclude Include="EoDbPolygon.h" />
-    <ClInclude Include="EoDbPolyline.h" />
-    <ClInclude Include="EoDbPrimitive.h" />
-    <ClInclude Include="EoDbSpline.h" />
-    <ClInclude Include="EoDbText.h" />
-    <ClInclude Include="EoDlgSetupLineType.h" />
-    <ClInclude Include="EoGeOcs.h" />
-    <ClInclude Include="EoGeOcsTransform.h" />
-    <ClInclude Include="EoGePoint3d.h" />
-    <ClInclude Include="EoGePoint4d.h" />
-    <ClInclude Include="EoGePolyline.h" />
-    <ClInclude Include="EoGeUniquePoint.h" />
-    <ClInclude Include="EoGeVector3d.h" />
-    <ClInclude Include="EoDlgLineWeight.h" />
-    <ClInclude Include="EoGsAbstractView.h" />
-    <ClInclude Include="EoMfOutputDockablePane.h" />
-    <ClInclude Include="EoMfPropertiesDockablePane.h" />
-    <ClInclude Include="EoDbBitmapFile.h" />
-    <ClInclude Include="EoDbBlockFile.h" />
-    <ClInclude Include="EoDbJobFile.h" />
-    <ClInclude Include="EoDbPegFile.h" />
-    <ClInclude Include="EoDbTracingFile.h" />
-    <ClInclude Include="EoCtrlFindComboBox.h" />
-    <ClInclude Include="EoDbFontDefinition.h" />
-    <ClInclude Include="Hatch.h" />
-    <ClInclude Include="EoDbLayer.h" />
-    <ClInclude Include="Header.h" />
-    <ClInclude Include="IdleState.h" />
-    <ClInclude Include="Lex.h" />
-    <ClInclude Include="EoGeLine.h" />
-    <ClInclude Include="lex.yy.h" />
-    <ClInclude Include="LexTable.h" />
-    <ClInclude Include="MainFrm.h" />
-    <ClInclude Include="EoGeMatrix.h" />
-    <ClInclude Include="EoGsModelTransform.h" />
-    <ClInclude Include="EoGsViewTransform.h" />
-    <ClInclude Include="EoDbDrwInterface.h" />
-    <ClInclude Include="EoDbLineType.h" />
-    <ClInclude Include="WndProcPreview.h" />
-    <ClInclude Include="EoGsRenderState.h" />
-    <ClInclude Include="EoGeReferenceSystem.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="Section.h" />
-    <ClInclude Include="EoDlgSelectIsometricView.h" />
-    <ClInclude Include="Stdafx.h" />
-    <ClInclude Include="EoGeTransformMatrix.h" />
-    <ClInclude Include="EoDlgViewParameters.h" />
-    <ClInclude Include="EoGsViewport.h" />
+    <None Include="C:\Users\tsmit\Desktop\Help Peg.pdf" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="lex_rules.l" />
-    <Text Include="res\LineTypes\LineTypes(X5).txt" />
-    <Text Include="res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" />
-    <Text Include="res\LineTypes\LineTypes-ACAD.txt" />
-    <Text Include="res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" />
-    <Text Include="res\LineTypes\LineTypes-ISO128.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="Tools\reflex_static_lib.lib" />
+    <ProjectReference Include="..\..\Core Libraries\ReflexLib\ReflexLib.vcxproj">
+      <Project>{79c9dbd9-e32a-4b2b-bef5-0271973883ec}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core Libraries\Reflex\Reflex.vcxproj">
+      <Project>{ad220b98-ad6d-4826-b211-96dc6ebbf69b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Third Party\libdxfrw\libdxfrw.vcxproj">
+      <Project>{357a8016-9ad4-47ef-b23c-2071c264793b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Third Party\libiconv\libiconv.vcxproj">
+      <Project>{1704ea01-6b21-4362-9f1f-44d25cf2e0d7}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

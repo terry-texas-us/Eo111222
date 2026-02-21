@@ -868,7 +868,4 @@
     <Text Include="res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" />
     <Text Include="res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Library Include="Tools\reflex_static_lib.lib" />
-  </ItemGroup>
 </Project>
