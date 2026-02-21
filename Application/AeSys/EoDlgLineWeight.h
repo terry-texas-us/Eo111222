@@ -1,0 +1,28 @@
+﻿#pragma once
+
+class EoDlgLineWeight : public CDialog {
+
+ public:
+  EoDlgLineWeight(CWnd* parent = nullptr);
+  EoDlgLineWeight(int originalLineWeight, CWnd* parent = nullptr);
+  virtual ~EoDlgLineWeight();
+
+  enum { IDD = IDD_LINEWEIGHT };
+
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+  virtual BOOL OnInitDialog();
+
+ private:
+  int m_OriginalLineWeight;
+
+ public:
+  CListBox m_LineWeightList;
+  OdDb::LineWeight m_LineWeight;
+
+  afx_msg void OnBnClickedOk();
+  afx_msg void OnLbnDblclkListLineweight();
+
+ protected:
+  DECLARE_MESSAGE_MAP()
+};

@@ -1,0 +1,48 @@
+
+;;  ISO 128 (ISO/DIS 12011) linetypes(scaled for AeSys standard)
+
+;; modified to a standard line width of ~0.42mm (between 0 and 1 pens)
+;; and then converted to inches 
+
+;; Only six of these linetypes do not have equivalents in AeSys standard
+;; 42, 48, 49, 51, 53, 55
+
+;; same as 04
+42=Long dash,____ ____ ____ ____ 
+.2,-.05
+43=Long dash-long space,____      ____      ____  
+.2,-.3
+
+;; same as 11
+44=Dash dot,________ . ________ 
+.4,-.05,0,-.05
+;; same as .2
+45=Divide,________ . . _______ 
+.4,-.05,0,-.05,0,-.05
+;; same as 13
+46=Dash-triple-dot,________ . . . _____
+.4,-.05,0,-.05,0,-.05,0,-.05
+
+;; same as 09
+47=Dot line,. . . . . . . . . . 
+0,-.05
+
+48=Long dash-short dash,________ __ ____ __ 
+.4,-.05,.1,-.05
+49=Long dash double-short-dash,________ __ __ _____
+.4,-.05,.1,-.05,.1,-.05
+;; same as 06
+50=Short dash-dot,____ . ____ . ____ . ____ 
+.2,-.05,0,-.05
+51=Double-dash-dot,____ ____ . ____ ____ . ____ __
+.2,-.05,.2,-.05,0,-.05
+;; same as 07
+52=Short divide,____ . . ____ . . 
+.2,-.05,0,-.05,0,-.05
+53=Double-dash-double-dot,____ ____ . . ____ ____  
+.2,-.05,.2,-.05,0,-.05,0,-.05
+;; same as 08
+54=Short dash-triple-dot,____ . . . ____ . .
+.2,-.05,0,-.05,0,-.05,0,-.05
+55=Double short dash-triple-dot,____ ____ . . . ____ ____ 
+.2,-.05,.2,-.05,0,-.05,0,-.05,0,-.05

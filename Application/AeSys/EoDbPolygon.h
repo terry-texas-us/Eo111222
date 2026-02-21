@@ -1,0 +1,105 @@
+﻿#pragma once
+
+#include <cstdint>
+
+#include "AeSysView.h"
+#include "EoDb.h"
+#include "EoDbPrimitive.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGePoint4d.h"
+#include "EoGeTransformMatrix.h"
+#include "EoGeVector3d.h"
+
+class EoDbPolygon : public EoDbPrimitive {
+  static std::uint16_t sm_EdgeToEvaluate;
+  static std::uint16_t sm_Edge;
+  static int sm_pivotVertex;
+  static EoDb::PolygonStyle sm_SpecialPolygonStyle;
+
+  EoGePoint3d m_hatchOrigin;
+  EoGeVector3d m_positiveX;
+  EoGeVector3d m_positiveY;
+  EoGePoint3d* m_vertices{};
+  EoDb::PolygonStyle m_polygonStyle;
+  std::int16_t m_fillStyleIndex;
+  std::uint16_t m_numberOfVertices;
+
+ public:
+  EoDbPolygon();
+  EoDbPolygon(std::uint8_t* buffer, int version);
+
+  /** @brief Constructs an EoDbPolygon object from an array of 3D points.
+   *  @param points An array of 3D points that define the vertices of the polygon. Must contain at least 3 points for proper initialization of the plane vectors.
+   */
+  EoDbPolygon(EoGePoint3dArray& points);
+
+  EoDbPolygon(std::uint16_t, EoGePoint3d*);
+  EoDbPolygon(const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts);
+  EoDbPolygon(std::int16_t color, EoDb::PolygonStyle style, std::int16_t styleIndex, const EoGePoint3d& origin,
+      const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& points);
+  EoDbPolygon(std::uint16_t, EoGePoint3d, EoGeVector3d, EoGeVector3d, const EoGePoint3d*);
+
+  EoDbPolygon(const EoDbPolygon& other);
+
+  const EoDbPolygon& operator=(const EoDbPolygon& other);
+
+  [[nodiscard]] EoGePoint3d& operator[](int i) { return m_vertices[i]; }
+  [[nodiscard]] const EoGePoint3d& operator[](int i) const { return m_vertices[i]; }
+
+  ~EoDbPolygon() override;
+
+  void AddReportToMessageList(const EoGePoint3d&) override;
+  void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
+  void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolygon*>(primitive); }
+  EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
+  void Display(AeSysView* view, CDC* deviceContext) override;
+  void FormatExtra(CString& str) override;
+  void FormatGeometry(CString& str) override;
+  void GetAllPoints(EoGePoint3dArray& points) override;
+  EoGePoint3d GetControlPoint() override;
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
+  EoGePoint3d GoToNextControlPoint() override;
+  bool Identical(EoDbPrimitive*) override { return false; }
+  bool Is(std::uint16_t type) noexcept override { return type == EoDb::kPolygonPrimitive; }
+  bool IsInView(AeSysView* view) override;
+  bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
+  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) override;
+  bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
+  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
+  void Transform(const EoGeTransformMatrix&) override;
+  void Translate(const EoGeVector3d& v) override;
+  void TranslateUsingMask(EoGeVector3d, const DWORD) override;
+  bool Write(CFile& file) override;
+  void Write(CFile& file, std::uint8_t* buffer) override;
+
+  CString FormatIntStyle();
+  [[nodiscard]] const EoDb::PolygonStyle& PolygonStyle() { return m_polygonStyle; }
+  [[nodiscard]] std::int16_t FillStyleIndex() { return m_fillStyleIndex; }
+  [[nodiscard]] EoGePoint3d Vertex(int i) { return m_vertices[i]; }
+  [[nodiscard]] int NumberOfVertices() const { return m_numberOfVertices; }
+  void ModifyState() override;
+  bool PivotOnControlPoint(AeSysView* view, const EoGePoint4d&) override;
+  void SetPolygonStyle(const EoDb::PolygonStyle n) { m_polygonStyle = n; }
+  void SetFillStyleIndex(const std::int16_t fillStyleIndex) { m_fillStyleIndex = fillStyleIndex; }
+  void SetHatRefVecs(double, double, double);
+
+ private:
+  std::uint16_t SwingVertex() const;
+
+ public:
+  static void SetSpecialPolygonStyle(EoDb::PolygonStyle polygonStyle) { sm_SpecialPolygonStyle = polygonStyle; }
+  static std::uint16_t& EdgeToEvaluate() { return sm_EdgeToEvaluate; }
+  static std::uint16_t& Edge() { return sm_Edge; }
+};
+/// <summary>A fill area set primative with interior style hatch is generated using ines.</summary>
+// Parameters:	deviceContext
+//				iSets		number of point lists
+//				iPtLstsId	starting indicies for point lists
+void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& transformMatrix, const int iSets,
+    const int* iPtLstsId, EoGePoint3d*);
+/// <summary>Generates polygon.</summary>
+// The polygon is closed automatically by drawing a line from the last vertex to the first.
+// Arrays of vertices are previously modelview transformed and clipped to view volume.
+void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArray);

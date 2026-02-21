@@ -1,0 +1,611 @@
+﻿#include "Stdafx.h"
+
+#include "AeSys.h"
+#include "AeSysDoc.h"
+#include "Eo.h"
+#include "EoDb.h"
+#include "EoDbBlock.h"
+#include "EoDbLayer.h"
+#include "EoDbPrimitive.h"
+#include "EoDlgFileManage.h"
+#include "EoDlgLineTypesSelection.h"
+#include "EoDlgSetupColor.h"
+#include "Resource.h"
+#include "WndProcPreview.h"
+
+/// @brief Dialog class for getting a layer name from the user.
+class EoDlgGetLayerName : public CDialog {
+ public:
+  EoDlgGetLayerName(CWnd* parent = nullptr);
+  EoDlgGetLayerName(const EoDlgGetLayerName&) = delete;
+  EoDlgGetLayerName& operator=(const EoDlgGetLayerName&) = delete;
+
+  virtual ~EoDlgGetLayerName();
+
+  enum { IDD = IDD_GET_LAYER_NAME };
+
+ protected:
+  virtual void DoDataExchange(CDataExchange* dataExchange);
+
+ public:
+  CString m_Name;
+};
+
+EoDlgGetLayerName::EoDlgGetLayerName(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgGetLayerName::IDD, pParent) {}
+EoDlgGetLayerName::~EoDlgGetLayerName() {}
+void EoDlgGetLayerName::DoDataExchange(CDataExchange* dataExchange) {
+  CDialog::DoDataExchange(dataExchange);
+  DDX_Text(dataExchange, IDC_NAME, m_Name);
+}
+
+BEGIN_MESSAGE_MAP(EoDlgFileManage, CDialog)
+#pragma warning(push)
+#pragma warning(disable : 4191)
+ON_WM_DRAWITEM()
+#pragma warning(pop)
+ON_BN_CLICKED(IDC_LAYRENAME, &EoDlgFileManage::OnBnClickedLayerRename)
+ON_BN_CLICKED(IDC_LAYMELT, &EoDlgFileManage::OnBnClickedLayerMelt)
+ON_BN_CLICKED(IDC_MFCBUTTON_DEL, &EoDlgFileManage::OnBnClickedMfcbuttonDel)
+ON_BN_CLICKED(IDC_MFCBUTTON_NEW, &EoDlgFileManage::OnBnClickedMfcbuttonNew)
+ON_BN_CLICKED(IDC_MFCBUTTON_WORK, &EoDlgFileManage::OnBnClickedMfcbuttonWork)
+ON_BN_CLICKED(IDC_TRAOPEN, &EoDlgFileManage::OnBnClickedTracingOpen)
+ON_BN_CLICKED(IDC_TRAMAP, &EoDlgFileManage::OnBnClickedTracingMap)
+ON_BN_CLICKED(IDC_TRAVIEW, &EoDlgFileManage::OnBnClickedTracingView)
+ON_BN_CLICKED(IDC_TRACLOAK, &EoDlgFileManage::OnBnClickedTracingCloak)
+ON_BN_CLICKED(IDC_TRAFUSE, &EoDlgFileManage::OnBnClickedTracingFuse)
+ON_BN_CLICKED(IDC_TRAEXCLUDE, &EoDlgFileManage::OnBnClickedTracingExclude)
+ON_BN_CLICKED(IDC_TRAINCLUDE, &EoDlgFileManage::OnBnClickedTracingInclude)
+ON_LBN_SELCHANGE(IDC_BLOCKS_LIST, &EoDlgFileManage::OnLbnSelchangeBlocksList)
+ON_LBN_SELCHANGE(IDC_TRA, &EoDlgFileManage::OnLbnSelchangeTracingList)
+#pragma warning(push)
+#pragma warning(disable : 4191)
+ON_NOTIFY(NM_CLICK, IDC_LAYERS_LIST_CONTROL, &EoDlgFileManage::OnNMClickLayersListControl)
+ON_NOTIFY(NM_DBLCLK, IDC_LAYERS_LIST_CONTROL, &EoDlgFileManage::OnNMDblclkLayersListControl)
+ON_NOTIFY(LVN_ITEMCHANGED, IDC_LAYERS_LIST_CONTROL, &EoDlgFileManage::OnItemchangedLayersListControl)
+#pragma warning(pop)
+END_MESSAGE_MAP()
+
+EoDlgFileManage::EoDlgFileManage(CWnd* parent /*=nullptr*/) : CDialog(EoDlgFileManage::IDD, parent) {}
+EoDlgFileManage::EoDlgFileManage(AeSysDoc* document, CWnd* parent /*=nullptr*/)
+    : CDialog(EoDlgFileManage::IDD, parent), m_Document(document) {}
+EoDlgFileManage::~EoDlgFileManage() {}
+void EoDlgFileManage::DoDataExchange(CDataExchange* dataExchange) {
+  CDialog::DoDataExchange(dataExchange);
+  DDX_Control(dataExchange, IDC_TRA, m_TracingList);
+  DDX_Control(dataExchange, IDC_LAYERS_LIST_CONTROL, m_LayersListControl);
+  DDX_Control(dataExchange, IDC_BLOCKS_LIST, m_BlocksList);
+  DDX_Control(dataExchange, IDC_REFERENCES, m_References);
+  DDX_Control(dataExchange, IDC_GROUPS, m_Groups);
+  DDX_Control(dataExchange, IDC_TRACLOAK, m_TracingCloakRadioButton);
+  DDX_Control(dataExchange, IDC_TRAOPEN, m_TracingOpenRadioButton);
+  DDX_Control(dataExchange, IDC_TRAMAP, m_TracingMapRadioButton);
+  DDX_Control(dataExchange, IDC_TRAVIEW, m_TracingViewRadioButton);
+}
+BOOL EoDlgFileManage::OnInitDialog() {
+  CDialog::OnInitDialog();
+
+  CString CaptionText;
+  GetWindowTextW(CaptionText);
+  CaptionText += L" - ";
+  CaptionText += m_Document->GetPathName();
+  SetWindowTextW(CaptionText);
+
+  m_PreviewWindowHandle = GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd();
+
+  m_LayersListControl.DeleteAllItems();
+  m_LayersListControl.InsertColumn(Status, L"Status", LVCFMT_LEFT, 32);
+  m_LayersListControl.InsertColumn(Name, L"Layer", LVCFMT_LEFT, 96);
+  m_LayersListControl.InsertColumn(On, L"On", LVCFMT_LEFT, 32);
+  m_LayersListControl.InsertColumn(Freeze, L"Freeze in all VP", LVCFMT_LEFT, 32);
+  m_LayersListControl.InsertColumn(Lock, L"Lock", LVCFMT_LEFT, 32);
+  m_LayersListControl.InsertColumn(Color, L"Color", LVCFMT_LEFT, 48);
+  m_LayersListControl.InsertColumn(LineType, L"LineType", LVCFMT_LEFT, 64);
+  NumberOfColumns = m_LayersListControl.InsertColumn(LineWeight, L"LineWeight", LVCFMT_LEFT, 48);
+  NumberOfColumns++;
+
+  m_TracingList.SetHorizontalExtent(512);
+
+  for (int i = 0; i < m_Document->GetLayerTableSize(); i++) {
+    EoDbLayer* Layer = m_Document->GetLayerTableLayerAt(i);
+
+    if (Layer->IsInternal()) {
+      m_LayersListControl.InsertItem(i, L"");
+      m_LayersListControl.SetItemData(i, DWORD_PTR(Layer));
+    } else {
+      int ItemIndex = m_TracingList.AddString(Layer->Name());
+      m_TracingList.SetItemData(ItemIndex, DWORD_PTR(Layer));
+    }
+  }
+  m_BlocksList.SetHorizontalExtent(512);
+
+  CString BlockName;
+  EoDbBlock* Block{};
+
+  auto position = m_Document->GetFirstBlockPosition();
+  while (position != nullptr) {
+    m_Document->GetNextBlock(position, BlockName, Block);
+    if (!Block->IsAnonymous()) {
+      int ItemIndex = m_BlocksList.AddString(BlockName);
+      m_BlocksList.SetItemData(ItemIndex, DWORD_PTR(Block));
+    }
+  }
+  CBitmap Bitmap;
+  Bitmap.LoadBitmap(IDB_LAYER_STATES_HC);
+  m_StateImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 1);
+  m_StateImages.Add(&Bitmap, Eo::colorNavy);
+
+  WndProcPreviewClear(m_PreviewWindowHandle);
+
+  return TRUE;
+}
+void EoDlgFileManage::OnBnClickedLayerRename() {
+  auto position = m_LayersListControl.GetFirstSelectedItemPosition();
+  if (position == nullptr) { return; }
+
+  int item = m_LayersListControl.GetNextSelectedItem(position);
+  auto* layer = reinterpret_cast<EoDbLayer*>(m_LayersListControl.GetItemData(item));
+
+  if (!layer->Name().Compare(L"0")) {
+    app.WarningMessageBox(IDS_MSG_LAYER_NO_RENAME_0);
+    return;
+  }
+  EoDlgGetLayerName Dialog;
+  Dialog.m_Name = layer->Name();
+
+  if (Dialog.DoModal() != IDOK) { return; }
+
+  LVFINDINFO ListViewFindInfo{};
+  ListViewFindInfo.flags = LVFI_STRING;
+  ListViewFindInfo.psz = Dialog.m_Name;
+
+  if (!Dialog.m_Name.IsEmpty() && m_LayersListControl.FindItem(&ListViewFindInfo) == -1) {
+    layer->SetName(Dialog.m_Name);
+
+    if (layer->IsWork()) { m_Document->SetWorkLayer(layer); }
+    m_LayersListControl.SetItemText(item, Name, Dialog.m_Name);
+  }
+}
+
+void EoDlgFileManage::OnBnClickedLayerMelt() {
+  auto position = m_LayersListControl.GetFirstSelectedItemPosition();
+  if (position != nullptr) {
+    int item = m_LayersListControl.GetNextSelectedItem(position);
+    auto* layer = reinterpret_cast<EoDbLayer*>(m_LayersListControl.GetItemData(item));
+
+    CString layerName = layer->Name();
+    if (m_Document->LayerMelt(layerName)) {
+      m_LayersListControl.DeleteItem(item);
+
+      int itemIndex = m_TracingList.AddString(layerName);
+      m_TracingList.SetItemData(itemIndex, DWORD_PTR(layer));
+    }
+  }
+}
+
+void EoDlgFileManage::OnBnClickedTracingOpen() {
+  int CurrentSelection = m_TracingList.GetCurSel();
+  if (CurrentSelection != LB_ERR) {
+    if (m_TracingList.GetTextLen(CurrentSelection) != LB_ERR) {
+      CString LayerName;
+      m_TracingList.GetText(CurrentSelection, LayerName);
+      m_Document->TracingOpen(LayerName);
+    }
+  }
+}
+void EoDlgFileManage::OnBnClickedTracingMap() {
+  int CurrentSelection = m_TracingList.GetCurSel();
+  if (CurrentSelection != LB_ERR) {
+    if (m_TracingList.GetTextLen(CurrentSelection) != LB_ERR) {
+      CString LayerName;
+      m_TracingList.GetText(CurrentSelection, LayerName);
+      m_Document->TracingMap(LayerName);
+    }
+  }
+}
+void EoDlgFileManage::OnBnClickedTracingView() {
+  int CurrentSelection = m_TracingList.GetCurSel();
+  if (CurrentSelection != LB_ERR) {
+    if (m_TracingList.GetTextLen(CurrentSelection) != LB_ERR) {
+      CString LayerName;
+      m_TracingList.GetText(CurrentSelection, LayerName);
+      m_Document->TracingView(LayerName);
+    }
+  }
+}
+void EoDlgFileManage::OnBnClickedTracingCloak() {
+  int currentSelection = m_TracingList.GetCurSel();
+  if (currentSelection == LB_ERR) { return; }
+  if (m_TracingList.GetTextLen(currentSelection) == LB_ERR) { return; }
+
+  CString layerName;
+  m_TracingList.GetText(currentSelection, layerName);
+  auto* layer = reinterpret_cast<EoDbLayer*>(m_TracingList.GetItemData(currentSelection));
+  if (layer->IsOpened()) {
+    app.WarningMessageBox(IDS_MSG_OPEN_TRACING_NO_CLOAK);
+    m_TracingCloakRadioButton.SetCheck(0);
+    m_TracingOpenRadioButton.SetCheck(1);
+  } else {
+    m_Document->UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+    layer->SetStateOff();
+    layer->SetTracingState(static_cast<std::uint16_t>(EoDbLayer::TracingState::isCloaked));
+  }
+}
+
+void EoDlgFileManage::OnBnClickedTracingFuse() {
+  int CurrentSelection = m_TracingList.GetCurSel();
+  if (CurrentSelection == LB_ERR) { return; }
+  if (m_TracingList.GetTextLen(CurrentSelection) == LB_ERR) { return; }
+
+  CString layerName;
+  m_TracingList.GetText(CurrentSelection, layerName);
+  auto* layer = reinterpret_cast<EoDbLayer*>(m_TracingList.GetItemData(CurrentSelection));
+
+  m_Document->TracingFuse(layerName);
+  m_TracingList.DeleteString(static_cast<UINT>(CurrentSelection));
+
+  int itemCount = m_LayersListControl.GetItemCount();
+  m_LayersListControl.InsertItem(itemCount, L"");
+  m_LayersListControl.SetItemData(itemCount, DWORD_PTR(layer));
+}
+
+void EoDlgFileManage::OnBnClickedTracingExclude() {
+  int currentSelection = m_TracingList.GetCurSel();
+  if (currentSelection == LB_ERR) { return; }
+
+  if (m_TracingList.GetTextLen(currentSelection) == LB_ERR) { return; }
+  CString layerName;
+  m_TracingList.GetText(currentSelection, layerName);
+  auto* layer = reinterpret_cast<EoDbLayer*>(m_TracingList.GetItemData(currentSelection));
+  m_Document->UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+  m_Document->RemoveLayerTableLayer(layerName);
+  m_TracingList.DeleteString(static_cast<UINT>(currentSelection));
+}
+
+void EoDlgFileManage::OnBnClickedTracingInclude() {
+  static DWORD filterIndex{1};
+
+  auto filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
+
+  OPENFILENAME of{};
+  of.lStructSize = sizeof(OPENFILENAME);
+  of.hInstance = AeSys::GetInstance();
+  of.lpstrFilter = filter;
+  of.nFilterIndex = filterIndex;
+  of.lpstrFile = new wchar_t[MAX_PATH];
+  of.lpstrFile[0] = 0;
+  of.nMaxFile = MAX_PATH;
+  of.lpstrTitle = L"Include Tracing";
+  of.Flags = OFN_HIDEREADONLY;
+  of.lpstrDefExt = L"tra";
+
+  if (GetOpenFileNameW(&of)) {
+    filterIndex = of.nFilterIndex;
+
+    CString strName = of.lpstrFile;
+    CString strPath = strName.Left(of.nFileOffset);
+
+    strName = strName.Mid(of.nFileOffset);
+
+    if (m_Document->GetLayerTableLayer(strName) == 0) {
+      if (m_Document->TracingMap(strName)) {
+        auto* layer = m_Document->GetLayerTableLayer(strName);
+        layer->MakeResident();
+
+        CString strOpenName = m_Document->GetPathName();
+
+        if (strOpenName.Find(strPath) == -1) {
+          m_Document->TracingFuse(strName);
+
+          strName = of.lpstrFile;
+          strName = strName.Mid(of.nFileOffset, of.nFileExtension - of.nFileOffset - 1);
+          layer->SetName(strName);
+        }
+        int ItemIndex = m_TracingList.AddString(strName);
+        m_TracingList.SetItemData(ItemIndex, DWORD_PTR(layer));
+      }
+    }
+  }
+  delete[] of.lpstrFile;
+}
+
+void EoDlgFileManage::OnLbnSelchangeBlocksList() {
+  int CurrentSelection = m_BlocksList.GetCurSel();
+  if (CurrentSelection != LB_ERR) {
+    if (m_BlocksList.GetTextLen(CurrentSelection) != LB_ERR) {
+      CString BlockName;
+      m_BlocksList.GetText(CurrentSelection, BlockName);
+
+      EoDbBlock* Block = (EoDbBlock*)m_BlocksList.GetItemData(CurrentSelection);
+
+      m_Groups.SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(Block->GetCount()), FALSE);
+      m_References.SetDlgItemInt(
+          IDC_REFERENCES, static_cast<UINT>(m_Document->GetBlockReferenceCount(BlockName)), FALSE);
+      WndProcPreviewUpdateBlock(m_PreviewWindowHandle, Block);
+    }
+  }
+}
+
+void EoDlgFileManage::OnLbnSelchangeTracingList() {
+  int currentSelection = m_TracingList.GetCurSel();
+  if (currentSelection != LB_ERR) { return; }
+  auto* layer = reinterpret_cast<EoDbLayer*>(m_TracingList.GetItemData(currentSelection));
+
+  m_TracingOpenRadioButton.SetCheck(layer->IsOpened());
+  m_TracingMapRadioButton.SetCheck(layer->IsMapped());
+  m_TracingViewRadioButton.SetCheck(layer->IsViewed());
+  m_TracingCloakRadioButton.SetCheck(layer->IsOff());
+
+  CString numberOfGroups;
+  numberOfGroups.Format(L"%-4i", static_cast<int>(layer->GetCount()));
+  m_Groups.SetWindowTextW(numberOfGroups);
+
+  WndProcPreviewUpdateLayer(m_PreviewWindowHandle, layer);
+}
+
+void EoDlgFileManage::OnBnClickedMfcbuttonWork() {
+  auto position = m_LayersListControl.GetFirstSelectedItemPosition();
+  if (position == nullptr) { return; }
+
+  int item = m_LayersListControl.GetNextSelectedItem(position);
+  auto* layer = reinterpret_cast<EoDbLayer*>(m_LayersListControl.GetItemData(item));
+  auto* previousWorkLayer = m_Document->SetWorkLayer(layer);
+
+  CString workLayer;
+  workLayer.Format(L"Current Layer: %s", layer->Name().GetString());
+  GetDlgItem(IDC_STATIC_WORK_LAYER)->SetWindowTextW(workLayer);
+
+  previousWorkLayer->SetStateActive();
+
+  m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, previousWorkLayer);
+  m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
+
+  GetDlgItem(IDC_LAYERS_LIST_CONTROL)->RedrawWindow();
+}
+
+void EoDlgFileManage::OnBnClickedMfcbuttonNew() {
+  CString name;
+
+  int suffix{1};
+  do { name.Format(L"Layer%d", suffix++); } while (m_Document->FindLayerTableLayer(name) != -1);
+
+  constexpr EoDbLayer::State commonState =
+      EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive;
+
+  auto* layer = new EoDbLayer(name, commonState);
+  layer->SetLineType(m_Document->ContinuousLineType());
+  m_Document->AddLayerTableLayer(layer);
+
+  int itemCount = m_LayersListControl.GetItemCount();
+  m_LayersListControl.InsertItem(itemCount, L"");
+  m_LayersListControl.SetItemData(itemCount, DWORD_PTR(layer));
+}
+
+void EoDlgFileManage::OnBnClickedMfcbuttonDel() {
+  auto position = m_LayersListControl.GetFirstSelectedItemPosition();
+  if (position == nullptr) { return; }
+  int item = m_LayersListControl.GetNextSelectedItem(position);
+  auto* layer = reinterpret_cast<EoDbLayer*>(m_LayersListControl.GetItemData(item));
+
+  if (layer->Name() == L"0") {
+    app.WarningMessageBox(IDS_MSG_LAYER_NO_DELETE_0);
+  } else if (layer->IsWork()) {
+    app.WarningMessageBox(IDS_MSG_LAYER_NO_DELETE_WORK, layer->Name());
+  } else {
+    m_Document->UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+
+    auto layerTableIndex = m_Document->FindLayerTableLayer(layer->Name());
+    m_Document->RemoveLayerTableLayerAt(layerTableIndex);
+
+    m_LayersListControl.DeleteItem(item);
+  }
+}
+
+void EoDlgFileManage::DrawItem(CDC& deviceContext, int itemID, int labelIndex, const RECT& itemRectangle) {
+  auto* layer = reinterpret_cast<EoDbLayer*>(m_LayersListControl.GetItemData(itemID));
+
+  switch (labelIndex) {
+    case Status:
+      if (layer->IsWork()) {
+        m_StateImages.Draw(&deviceContext, 8, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
+      } else if (layer->IsActive()) {
+        m_StateImages.Draw(&deviceContext, 9, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
+      } else if (layer->IsStatic()) {
+        m_StateImages.Draw(&deviceContext, 10, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
+      }
+      break;
+    case Name: {
+      CString layerName = layer->Name();
+      deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, layerName,
+          static_cast<UINT>(layerName.GetLength()), nullptr);
+    } break;
+    case On:
+      m_StateImages.Draw(&deviceContext, layer->IsOff() ? 3 : 2, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
+      break;
+    case Freeze:
+      m_StateImages.Draw(
+          &deviceContext, /*layer->isFrozen() ? 4 :*/ 5, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
+      break;
+    case Lock:
+      m_StateImages.Draw(&deviceContext, layer->IsStatic() ? 0 : 1, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
+      break;
+    case Color: {
+      CRect ItemRectangle(itemRectangle);
+      ItemRectangle.DeflateRect(1, 1);
+      ItemRectangle.right = ItemRectangle.left + ItemRectangle.Height();
+
+      CBrush Brush(layer->ColorValue());
+      deviceContext.FillRect(&ItemRectangle, &Brush);
+
+      CBrush FrameBrush;
+      FrameBrush.CreateSysColorBrush(COLOR_WINDOWFRAME);
+      deviceContext.FrameRect(&ItemRectangle, &FrameBrush);
+
+      if (ItemRectangle.right + 4 < itemRectangle.right) {
+        CString ColorName;
+        ColorName.Format(L"%i", layer->ColorIndex());
+        deviceContext.ExtTextOutW(ItemRectangle.right + 4, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle,
+            ColorName, static_cast<UINT>(ColorName.GetLength()), nullptr);
+      }
+    } break;
+    case LineType: {
+      CString LineTypeName = layer->LineTypeName();
+      deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle,
+          LineTypeName, static_cast<UINT>(LineTypeName.GetLength()), nullptr);
+    } break;
+    case LineWeight:
+      //::DrawLineWeight(deviceContext, itemRectangle, layer->lineWeight());
+      break;
+  }
+}
+
+void EoDlgFileManage::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT lpDrawItemStruct) {
+  if (controlIdentifier == IDC_LAYERS_LIST_CONTROL) {
+    switch (lpDrawItemStruct->itemAction) {
+      case ODA_DRAWENTIRE: {
+        //clear item
+        CRect rcItem(lpDrawItemStruct->rcItem);
+        CDC DeviceContext;
+        COLORREF rgbBkgnd =
+            ::GetSysColor((lpDrawItemStruct->itemState & ODS_SELECTED) ? COLOR_HIGHLIGHT : COLOR_WINDOW);
+        DeviceContext.Attach(lpDrawItemStruct->hDC);
+        CBrush br(rgbBkgnd);
+        DeviceContext.FillRect(rcItem, &br);
+        if (lpDrawItemStruct->itemState & ODS_FOCUS) { DeviceContext.DrawFocusRect(rcItem); }
+        int itemID = static_cast<int>(lpDrawItemStruct->itemID);
+        if (itemID != -1) {
+          // The text color is stored as the item data.
+          COLORREF rgbText = (lpDrawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
+                                                                          : ::GetSysColor(COLOR_WINDOWTEXT);
+          DeviceContext.SetBkColor(rgbBkgnd);
+          DeviceContext.SetTextColor(rgbText);
+          for (int labelIndex = 0; labelIndex < NumberOfColumns; ++labelIndex) {
+            m_LayersListControl.GetSubItemRect(itemID, labelIndex, LVIR_LABEL, rcItem);
+            DrawItem(DeviceContext, itemID, labelIndex, rcItem);
+          }
+        }
+        DeviceContext.Detach();
+      } break;
+
+      case ODA_SELECT:
+        ::InvertRect(lpDrawItemStruct->hDC, &(lpDrawItemStruct->rcItem));
+        break;
+
+      case ODA_FOCUS:
+        //::DrawFocusRect(lpDrawItemStruct->hDC, &(lpDrawItemStruct->rcItem));
+        break;
+    }
+    return;
+  }
+  CDialog::OnDrawItem(controlIdentifier, lpDrawItemStruct);
+}
+void EoDlgFileManage::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult) {
+  LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+
+  int item = pNMItemActivate->iItem;
+  int subItem = pNMItemActivate->iSubItem;
+
+  auto* layer = reinterpret_cast<EoDbLayer*>(m_LayersListControl.GetItemData(item));
+
+  m_ClickToColumnName = false;
+  switch (subItem) {
+    case Name:
+      m_ClickToColumnName = true;
+      return;
+    case On:
+      if (layer->IsWork()) {
+        app.WarningMessageBox(IDS_MSG_LAYER_NO_HIDDEN, layer->Name());
+      } else {
+        if (layer->IsOff()) {
+          layer->ClearStateFlag(static_cast<std::uint16_t>(EoDbLayer::State::isOff));
+          m_Document->UpdateAllViews(nullptr, EoDb::kLayer, layer);
+        } else {
+          m_Document->UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+          layer->SetStateOff();
+        }
+      }
+      break;
+    case Freeze:
+      //Layer->setIsFrozen(!Layer->isFrozen());
+      break;
+    case Lock:
+      if (layer->IsWork()) {
+        app.WarningMessageBox(IDS_MSG_LAYER_NO_STATIC, layer->Name());
+      } else {
+        if (layer->IsStatic()) {
+          layer->ClearStateFlag(static_cast<std::uint16_t>(EoDbLayer::State::isStatic));
+        } else {
+          layer->SetStateStatic();
+        }
+      }
+      break;
+    case Color: {
+      EoDlgSetupColor dialog;
+      dialog.m_ColorIndex = static_cast<std::uint16_t>(layer->ColorIndex());
+      if (dialog.DoModal() == IDOK) { layer->SetColorIndex(static_cast<std::int16_t>(dialog.m_ColorIndex)); }
+      break;
+    }
+    case LineType: {
+      auto lineTypes = m_Document->LineTypeTable();
+      EoDlgLineTypesSelection dialog(*lineTypes);
+      if (dialog.DoModal() == IDOK) { layer->SetLineType(dialog.GetSelectedLineType()); }
+      break;
+    }
+    case LineWeight: {
+      //EoDlgLineWeight dlg(Layer->lineWeight());
+      //if (IDOK == dlg.DoModal()) {
+      //	Layer->setLineWeight(dlg.m_LineWeight);
+      //}
+      break;
+    }
+  }
+  m_LayersListControl.Invalidate();
+
+  *pResult = 0;
+}
+
+void EoDlgFileManage::OnNMDblclkLayersListControl(NMHDR* pNMHDR, LRESULT* result) {
+  LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+
+  int item = pNMItemActivate->iItem;
+  int subItem = pNMItemActivate->iSubItem;
+
+  auto* layer = reinterpret_cast<EoDbLayer*>(m_LayersListControl.GetItemData(item));
+
+  m_ClickToColumnName = false;
+  switch (subItem) {
+    case Status: {
+      auto* previousWorkLayer = m_Document->SetWorkLayer(layer);
+
+      CString workLayer;
+      workLayer.Format(L"Current Layer: %s", layer->Name().GetString());
+      GetDlgItem(IDC_STATIC_WORK_LAYER)->SetWindowTextW(workLayer);
+
+      previousWorkLayer->SetStateActive();
+
+      m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, previousWorkLayer);
+      m_Document->UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
+
+      GetDlgItem(IDC_LAYERS_LIST_CONTROL)->RedrawWindow();
+    }
+  }
+  *result = 0;
+}
+
+void EoDlgFileManage::OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESULT* result) {
+  LPNMLISTVIEW ListViewNotificationMessage = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+
+  int item = ListViewNotificationMessage->iItem;
+
+  auto* layer = reinterpret_cast<EoDbLayer*>(m_LayersListControl.GetItemData(item));
+
+  CString numberOfGroups;
+  numberOfGroups.Format(L"%-4i", static_cast<int>(layer->GetCount()));
+  m_Groups.SetWindowTextW(numberOfGroups);
+
+  EoDbPrimitive::SetLayerColor(layer->ColorIndex());
+  EoDbPrimitive::SetLayerLineTypeIndex(layer->LineTypeIndex());
+
+  WndProcPreviewUpdateLayer(m_PreviewWindowHandle, layer);
+
+  *result = 0;
+}
