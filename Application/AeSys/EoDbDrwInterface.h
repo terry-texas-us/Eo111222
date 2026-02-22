@@ -77,9 +77,9 @@ class EoDbDrwInterface : public DRW_Interface {
   void add3dFace(const DRW_3Dface& /* 3dFace */) override { countOf3dFace++; }
   // 3DSOLID not implemented in DRW
   // ACAD_PROXY_ENTITY not implemented in DRW
-  
-  void addArc(const DRW_Arc& arc) override { 
-    countOfArc++; 
+
+  void addArc(const DRW_Arc& arc) override {
+    countOfArc++;
     if (inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addArc - block <%s>\n", blockName.c_str());
     } else {
@@ -90,8 +90,8 @@ class EoDbDrwInterface : public DRW_Interface {
   // ATTDEF not implemented in DRW
   // ATTRIB not implemented in DRW
   // BODY not implemented in DRW
-  void addCircle(const DRW_Circle& circle) override { 
-    countOfCircle++; 
+  void addCircle(const DRW_Circle& circle) override {
+    countOfCircle++;
     if (inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addCircle - block <%s>\n", blockName.c_str());
     } else {
@@ -99,59 +99,40 @@ class EoDbDrwInterface : public DRW_Interface {
     }
     ConvertCircleEntity(circle, m_document);
   }
-    
+
   // COORDINATION_MODEL not implemented in DRW
 
   // Dimensions
 
-  void addDimAlign([[maybe_unused]] const DRW_DimAligned* dimAlign) override {
-    countOfDimAlign++;
-  }
+  void addDimAlign([[maybe_unused]] const DRW_DimAligned* dimAlign) override { countOfDimAlign++; }
 
-  void addDimAngular([[maybe_unused]] const DRW_DimAngular* dimAngular) override {
-    countOfDimAngular++;
-  }
-  void addDimAngular3P([[maybe_unused]] const DRW_DimAngular3p* dimAngular3P) override {
-    countOfDimAngular3P++;
-  }
+  void addDimAngular([[maybe_unused]] const DRW_DimAngular* dimAngular) override { countOfDimAngular++; }
+  void addDimAngular3P([[maybe_unused]] const DRW_DimAngular3p* dimAngular3P) override { countOfDimAngular3P++; }
 
-  void addDimLinear([[maybe_unused]] const DRW_DimLinear* dimLinear) override {
-    countOfDimLinear++;
-  }
+  void addDimLinear([[maybe_unused]] const DRW_DimLinear* dimLinear) override { countOfDimLinear++; }
 
-  void addDimOrdinate([[maybe_unused]] const DRW_DimOrdinate* dimOrdinate) override {
-    countOfDimOrdinate++;
-  }
+  void addDimOrdinate([[maybe_unused]] const DRW_DimOrdinate* dimOrdinate) override { countOfDimOrdinate++; }
 
-  void addDimRadial([[maybe_unused]] const DRW_DimRadial* dimRadial) override {
-    countOfDimRadial++;
-  }
+  void addDimRadial([[maybe_unused]] const DRW_DimRadial* dimRadial) override { countOfDimRadial++; }
 
-  void addDimDiametric([[maybe_unused]] const DRW_DimDiametric* dimDiametric) override {
-    countOfDimDiametric++;
-  }
-  
-  void addEllipse(const DRW_Ellipse& ellipse) override { 
-    countOfEllipse++; 
+  void addDimDiametric([[maybe_unused]] const DRW_DimDiametric* dimDiametric) override { countOfDimDiametric++; }
+
+  void addEllipse(const DRW_Ellipse& ellipse) override {
+    countOfEllipse++;
     if (inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addCircle - block <%s>\n", blockName.c_str());
     } else {
       ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addCircle - entities section\n");
     }
     ConvertEllipseEntity(ellipse, m_document);
-
   }
-  void addHatch([[maybe_unused]] const DRW_Hatch* hatch) override {
-    countOfHatch++;
-  }
+  void addHatch([[maybe_unused]] const DRW_Hatch* hatch) override { countOfHatch++; }
 
   // HELIX not implemented in DRW
-  void addImage([[maybe_unused]] const DRW_Image* image) override {
-    countOfImage++;
-  }
-  
-  void addInsert(const DRW_Insert& insert) override { 
-    countOfInsert++; 
+  void addImage([[maybe_unused]] const DRW_Image* image) override { countOfImage++; }
+
+  void addInsert(const DRW_Insert& insert) override {
+    countOfInsert++;
     if (inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
       ConvertInsertEntity(insert, m_document);
@@ -161,8 +142,8 @@ class EoDbDrwInterface : public DRW_Interface {
     }
   }
   void addLeader(const DRW_Leader* leader) override { (void)leader; }
-  // LIGHT not implemented in DRW  
-  
+  // LIGHT not implemented in DRW
+
   void addLine(const DRW_Line& line) override {
     countOfLine++;
     if (inBlockDefinition) {
@@ -188,7 +169,15 @@ class EoDbDrwInterface : public DRW_Interface {
   // MLeader not implemented in DRW
   // MLINE not implemented in DRW
 
-  void addMText(const DRW_MText& /* mText */) override { countOfMText++; }
+  void addMText(const DRW_MText& mText) override {
+    (void)mText;
+    countOfMText++;
+    if (inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addMText - block <%s>\n", blockName.c_str());
+    } else {
+      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addMText - entities section\n");
+    }
+  }
 
   // OLEFRAME not implemented in DRW
   // OLE2FRAME not implemented in DRW
@@ -214,13 +203,23 @@ class EoDbDrwInterface : public DRW_Interface {
   void addSolid(const DRW_Solid& /* solid */) override { countOfSolid++; }
   void addSpline(const DRW_Spline* spline) override {
     (void)spline;
-    
+
     countOfSpline++;
   }
   // SUN not implemented in DRW
   // SURFACE not implemented in DRW
   // TABLE not implemented in DRW
-  void addText(const DRW_Text& /* text */) override { countOfText++; }
+
+  void addText(const DRW_Text& text) override {
+    (void)text;
+    countOfText++;
+    if (inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addText - block <%s>\n", blockName.c_str());
+    } else {
+      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addText - entities section\n");
+    }
+  }
+
   // TOLERANCE not implemented in DRW
   void addTrace(const DRW_Trace& /* trace */) override { countOfTrace++; }
   // UNDERLAY not implemented in DRW
@@ -230,7 +229,9 @@ class EoDbDrwInterface : public DRW_Interface {
   void addXline(const DRW_Xline& /* Xline */) override { countOfXline++; }
 
   // Others
-  void addComment(const char* comment) override { ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addComment(%s)\n", comment); }
+  void addComment(const char* comment) override {
+    ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addComment(%s)\n", comment);
+  }
   void linkImage(const DRW_ImageDef* imageDefinition) override { (void)imageDefinition; }
   void addKnot(const DRW_Entity& /* knot */) override { countOfKnot++; }
 
@@ -246,7 +247,8 @@ class EoDbDrwInterface : public DRW_Interface {
   void writeTextstyles() override {};
   void writeVports() override {};
 
-  void SetHeaderSectionVariable(const DRW_Header* header, const std::string& keyToFind, EoDbHeaderSection& headerSection);
+  void SetHeaderSectionVariable(
+      const DRW_Header* header, const std::string& keyToFind, EoDbHeaderSection& headerSection);
 
   void ConvertHeaderSection(const DRW_Header* header, AeSysDoc* document);
 

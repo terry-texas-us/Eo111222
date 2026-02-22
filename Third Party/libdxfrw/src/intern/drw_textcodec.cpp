@@ -12,6 +12,8 @@
 #include "drw_textcodec.h"
 
 namespace {
+constexpr auto CPOFFSET{0x80}; //first entry in table 0x80
+constexpr auto CPLENGHTCOMMON{128};
 constexpr auto DBCS_REPLACEMENT_CHAR{0x003F};
 }
 
@@ -55,47 +57,18 @@ void DRW_TextCodec::setVersion(std::string* v, bool dxfFormat) {
 }
 
 void DRW_TextCodec::setCodePage(std::string* c, bool dxfFormat) {
-  static int min_ver = 10;
-  min_ver = std::min(min_ver, version);
+  cp = correctCodePage(*c);  // always canonical now
 
-  cp = correctCodePage(*c);
   delete conv;
+
   if (version == DRW::AC1009 || version == DRW::AC1015) {
-    if (cp == "ANSI_874")
-      conv = new DRW_ConvTable(DRW_Table874, CPLENGHTCOMMON);
-    else if (cp == "ANSI_1250")
-      conv = new DRW_ConvTable(DRW_Table1250, CPLENGHTCOMMON);
-    else if (cp == "ANSI_1251")
-      conv = new DRW_ConvTable(DRW_Table1251, CPLENGHTCOMMON);
-    else if (cp == "ANSI_1253")
-      conv = new DRW_ConvTable(DRW_Table1253, CPLENGHTCOMMON);
-    else if (cp == "ANSI_1254")
-      conv = new DRW_ConvTable(DRW_Table1254, CPLENGHTCOMMON);
-    else if (cp == "ANSI_1255")
-      conv = new DRW_ConvTable(DRW_Table1255, CPLENGHTCOMMON);
-    else if (cp == "ANSI_1256")
-      conv = new DRW_ConvTable(DRW_Table1256, CPLENGHTCOMMON);
-    else if (cp == "ANSI_1257")
-      conv = new DRW_ConvTable(DRW_Table1257, CPLENGHTCOMMON);
-    else if (cp == "ANSI_1258")
-      conv = new DRW_ConvTable(DRW_Table1258, CPLENGHTCOMMON);
-    else if (cp == "UTF-8") {
-      cp = "ANSI_1252";  // force safe Western encoding for DXF
-      conv = new DRW_ConvTable(DRW_Table1252, CPLENGHTCOMMON);
-    } else {  // default
-      conv = new DRW_ConvTable(DRW_Table1252, CPLENGHTCOMMON);
-    }
+    // Only one legacy table left
+    conv = new DRW_ConvTable(DRW_Table1252, CPLENGHTCOMMON);
   } else {
-    if (min_ver <= DRW::AC1018) {
-      conv = new DRW_ConvTable(DRW_Table1252, CPLENGHTCOMMON);
-    } else {
-      if (dxfFormat) {
-        conv = new DRW_Converter(nullptr, 0);  //utf16 → utf8
-      }
-      else {
-        conv = new DRW_ConvUTF16();
-      }
-    }
+    if (dxfFormat)
+      conv = new DRW_Converter(nullptr, 0);  // UTF-16 → UTF-8
+    else
+      conv = new DRW_ConvUTF16();
   }
 }
 
@@ -386,47 +359,24 @@ std::string DRW_ExtConverter::fromUtf8(std::string* s) { return convertByiconv("
 std::string DRW_ExtConverter::toUtf8(std::string* s) { return convertByiconv(this->encoding, "UTF8", s); }
 
 std::string DRW_TextCodec::correctCodePage(const std::string& s) {
-  //stringstream cause crash in OS/X, bug#3597944
   std::string cp = s;
-  transform(cp.begin(), cp.end(), cp.begin(), toupper);
-  //Latin/Thai
-  if (cp == "ANSI_874" || cp == "CP874" || cp == "ISO8859-11" || cp == "TIS-620") {
-    return "ANSI_874";
-    //Central Europe and Eastern Europe
-  } else if (cp == "ANSI_1250" || cp == "CP1250" || cp == "ISO8859-2") {
-    return "ANSI_1250";
-    //Cyrillic script
-  } else if (cp == "ANSI_1251" || cp == "CP1251" || cp == "ISO8859-5" || cp == "KOI8-R" || cp == "KOI8-U" ||
-             cp == "IBM 866") {
-    return "ANSI_1251";
-    //Western Europe
-  } else if (cp == "ANSI_1252" || cp == "CP1252" || cp == "LATIN1" || cp == "ISO-8859-1" || cp == "CP819" ||
-             cp == "CSISO" || cp == "IBM819" || cp == "ISO_8859-1" || cp == "APPLE ROMAN" || cp == "ISO8859-1" ||
-             cp == "ISO8859-15" || cp == "ISO-IR-100" || cp == "L1" || cp == "IBM 850") {
+  std::transform(cp.begin(), cp.end(), cp.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+
+  // Western European (our only supported legacy codepage)
+  if (cp == "ANSI_1252" || cp == "CP1252" || cp == "LATIN1" || cp == "ISO-8859-1" || cp == "CP819" ||
+      cp == "ISO8859-1" || cp == "ISO8859-15" || cp == "ISO-IR-100" || cp == "L1" || cp == "IBM 850" ||
+      cp == "APPLE ROMAN" || cp == "ISO_8859-1") {
     return "ANSI_1252";
-    //Greek
-  } else if (cp == "ANSI_1253" || cp == "CP1253" || cp == "iso8859-7") {
-    return "ANSI_1253";
-    //Turkish
-  } else if (cp == "ANSI_1254" || cp == "CP1254" || cp == "iso8859-9" || cp == "iso8859-3") {
-    return "ANSI_1254";
-    //Hebrew
-  } else if (cp == "ANSI_1255" || cp == "CP1255" || cp == "iso8859-8") {
-    return "ANSI_1255";
-    //Arabic
-  } else if (cp == "ANSI_1256" || cp == "CP1256" || cp == "ISO8859-6") {
-    return "ANSI_1256";
-    //Baltic
-  } else if (cp == "ANSI_1257" || cp == "CP1257" || cp == "ISO8859-4" || cp == "ISO8859-10" || cp == "ISO8859-13") {
-    return "ANSI_1257";
-    //Vietnamese
-  } else if (cp == "ANSI_1258" || cp == "CP1258") {
-    return "ANSI_1258";
-  } else if (cp == "UTF-8" || cp == "UTF8" || cp == "UTF8-BIT") {
+  }
+
+  // UTF paths (modern DXF)
+  else if (cp == "UTF-8" || cp == "UTF8" || cp == "UTF8-BIT") {
     return "UTF-8";
   } else if (cp == "UTF-16" || cp == "UTF16" || cp == "UTF16-BIT") {
     return "UTF-16";
   }
 
+  // Everything else (including all remaining European, Thai, Arabic, etc.)
+  // maps to our safe Western default. This matches the Eastern pruning you already did.
   return "ANSI_1252";
 }
