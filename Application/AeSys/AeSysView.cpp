@@ -568,10 +568,10 @@ inline AeSysDoc* AeSysView::GetDocument() const {
   auto* document = dynamic_cast<AeSysDoc*>(m_pDocument);
   assert(document != nullptr && "Invalid document type in AeSysView::GetDocument()");
   return document;
-}
 #else _DEBUG  // debug version in PegView.cpp
   return static_cast<AeSysDoc*>(m_pDocument);
 #endif
+}
 
 void AeSysView::OnActivateFrame(UINT state, CFrameWnd* deactivateFrame) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnActivateFrame(%i, %08.8lx)\n", this, state, deactivateFrame);

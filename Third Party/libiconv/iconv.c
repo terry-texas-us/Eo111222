@@ -429,8 +429,11 @@ void iconvlist (int (*do_one) (unsigned int namescount,
       do
         namesbuf[i++] = aliasbuf[j++].name;
       while (j < num_aliases && aliasbuf[j].encoding_index == ei);
+#pragma warning(push)
+#pragma warning(disable : 4090) /* "different 'const' qualifiers" */
       if (i > 1)
         qsort(namesbuf, i, sizeof(const char *), compare_by_name);
+#pragma warning(pop)
       /* Call the callback. */
       if (do_one(i,namesbuf,data))
         break;

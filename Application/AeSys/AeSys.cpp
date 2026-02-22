@@ -39,7 +39,6 @@ double penWidths[numberOfPenWidths] = {
     0.0, 0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
 
 namespace {
-
 /** @brief Converts a multi-byte (UTF-8) string to a wide-character string.
 * @param multiByte The multi-byte (UTF-8) string to convert.
 * @return The converted wide-character string.
@@ -155,7 +154,9 @@ BOOL AeSys::InitInstance() {
   }
   AfxEnableControlContainer();
 
+#ifdef _DEBUG
   CTrace::SetLevel(2);
+#endif
   SetRegistryKey(L"Engineers Office");
   LoadStdProfileSettings();
   SetRegistryBase(L"Settings");

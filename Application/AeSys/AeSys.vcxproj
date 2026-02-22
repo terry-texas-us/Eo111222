@@ -9,6 +9,14 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{99616C98-7844-41E8-BC1F-B16C4044EB44}</ProjectGuid>
@@ -56,7 +64,7 @@
   </PropertyGroup>
   <!-- Suppress "wildcards not supported in VC projects" IDE warning -->
   <PropertyGroup>
-	<EnableWildcardsInProjectItems>true</EnableWildcardsInProjectItems>
+    <EnableWildcardsInProjectItems>true</EnableWildcardsInProjectItems>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -90,7 +98,7 @@
     </Link>
     <PreBuildEvent>
       <Command>
-			$(SolutionDir)Core Libraries\Reflex\$(Platform)\$(Configuration)\Reflex.exe --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
+			"$(SolutionDir)$(Platform)\$(Configuration)\Reflex.exe" --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
@@ -122,7 +130,7 @@
     </Link>
     <PreBuildEvent>
       <Command>
-			$(SolutionDir)Core Libraries\Reflex\$(Platform)\$(Configuration)\Reflex.exe --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
+			"$(SolutionDir)$(Platform)\$(Configuration)\Reflex.exe" --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
@@ -156,7 +164,7 @@
     </Link>
     <PreBuildEvent>
       <Command>
-			$(SolutionDir)Core Libraries\Reflex\$(Platform)\$(Configuration)\Reflex.exe --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
+			"$(SolutionDir)$(Platform)\$(Configuration)\Reflex.exe" --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
@@ -190,7 +198,7 @@
     </Link>
     <PreBuildEvent>
       <Command>
-			$(SolutionDir)Core Libraries\Reflex\$(Platform)\$(Configuration)\Reflex.exe --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
+			"$(SolutionDir)$(Platform)\$(Configuration)\Reflex.exe" --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
 			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
@@ -199,47 +207,41 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-	<!-- Creates the PCH -->
-	<ClCompile Include="Stdafx.cpp">
-		<PrecompiledHeader>Create</PrecompiledHeader>
-	</ClCompile>
-
-	<!-- Generated lexer - never uses PCH + lower warnings -->
-	<ClCompile Include="lex.yy.cpp">
-		<PrecompiledHeader>NotUsing</PrecompiledHeader>
-		<WarningLevel>Level3</WarningLevel>
-	</ClCompile>
-
-	<!-- MFC frame - requires explicit PCH because of resource.h ordering -->
-	<ClCompile Include="MainFrm.cpp">
-		<PrecompiledHeader>Use</PrecompiledHeader>
-	</ClCompile>
-
-	<!-- Everything else in the folder (99% of your files) -->
-	<ClCompile Include="*.cpp" Exclude="Stdafx.cpp;lex.yy.cpp;MainFrm.cpp" />
+    <!-- Creates the PCH -->
+    <ClCompile Include="Stdafx.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <!-- Generated lexer - never uses PCH + lower warnings -->
+    <ClCompile Include="lex.yy.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <!-- MFC frame - requires explicit PCH because of resource.h ordering -->
+    <ClCompile Include="MainFrm.cpp">
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+    <!-- Everything else in the folder (99% of your files) -->
+    <ClCompile Include="*.cpp" Exclude="Stdafx.cpp;lex.yy.cpp;MainFrm.cpp" />
   </ItemGroup>
   <ItemGroup>
-	<ResourceCompile Include="AeSys.rc" />
+    <ResourceCompile Include="AeSys.rc" />
   </ItemGroup>
   <ItemGroup>
-	<ClInclude Include="*.h" />
+    <ClInclude Include="*.h" />
   </ItemGroup>
   <ItemGroup>
-	  <!-- These files are not compiled, but we want them in the project for easy access. -->
+    <!-- These files are not compiled, but we want them in the project for easy access. -->
     <None Include=".clang-format" />
     <None Include=".clang-tidy" />
-
     <!-- Documentation -->
-	<None Include="Markdowns\*.md" />
-
-	<!-- All resources (icons, cursors, bitmaps, psf, rc2, etc.) -->
+    <None Include="Markdowns\*.md" />
+    <!-- All resources (icons, cursors, bitmaps, psf, rc2, etc.) -->
     <None Include="res\*.bmp" />
-	<None Include="res\*.cur" />
-	<None Include="res\*.ico" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.ico" />
     <None Include="res\Simplex.psf" />
     <None Include="res\AeSys.rc2" />
     <Text Include="res\LineTypes\*.txt" />
-
     <None Include="vshints.hm" />
     <None Include="C:\Users\tsmit\Desktop\Help Peg.pdf" />
   </ItemGroup>
