@@ -13,7 +13,6 @@
 #include "drw_base.h"
 #include "drw_classes.h"
 #include "intern/drw_dbg.h"
-#include "intern/dwgbuffer.h"
 #include "intern/dxfreader.h"
 #include "intern/dxfwriter.h"
 
@@ -44,44 +43,6 @@ void DRW_Class::parseCode(int code, dxfReader* reader) {
     break;
   }
 }
-
-#if defined(USING_DWG0)
-bool DRW_Class::parseDwg(DRW::Version version, dwgBuffer* buf, dwgBuffer* strBuf) {
-  DRW_DBG("\n***************************** parsing Class *********************************************\n");
-
-  classNum = buf->getBitShort();
-  DRW_DBG("Class number: "); DRW_DBG(classNum);
-  proxyFlag = buf->getBitShort(); //in dwg specs says "version"
-
-  appName = strBuf->getVariableText(version, false);
-  className = strBuf->getVariableText(version, false);
-  recName = strBuf->getVariableText(version, false);
-
-  DRW_DBG("\napp name: "); DRW_DBG(appName.c_str());
-  DRW_DBG("\nclass name: "); DRW_DBG(className.c_str());
-  DRW_DBG("\ndxf rec name: "); DRW_DBG(recName.c_str());
-  wasaProxyFlag = buf->getBit(); //in dwg says wasazombie
-  entityFlag = buf->getBitShort();
-  entityFlag = entityFlag == 0x1F2 ? 1 : 0;
-
-  DRW_DBG("\nProxy capabilities flag: "); DRW_DBG(proxyFlag);
-  DRW_DBG(", proxy flag (280): "); DRW_DBG(wasaProxyFlag);
-  DRW_DBG(", entity flag: "); DRW_DBGH(entityFlag);
-
-  if (version > DRW::AC1015) {//2004+
-    instanceCount = buf->getBitLong();
-    DRW_DBG("\nInstance Count: "); DRW_DBG(instanceCount);
-    duint32 dwgVersion = buf->getBitLong();
-    DRW_DBG("\nDWG version: "); DRW_DBG(dwgVersion);
-    DRW_DBG("\nmaintenance version: "); DRW_DBG(buf->getBitLong());
-    DRW_DBG("\nunknown 1: "); DRW_DBG(buf->getBitLong());
-    DRW_DBG("\nunknown 2: "); DRW_DBG(buf->getBitLong());
-  }
-  DRW_DBG("\n");
-  toDwgType();
-  return buf->isGood();
-}
-#endif
 
 void DRW_Class::write(dxfWriter* writer, DRW::Version ver) const {
   if (ver > DRW::AC1009) {

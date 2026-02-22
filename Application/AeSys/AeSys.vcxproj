@@ -231,8 +231,6 @@
   </ItemGroup>
   <ItemGroup>
     <!-- These files are not compiled, but we want them in the project for easy access. -->
-    <None Include=".clang-format" />
-    <None Include=".clang-tidy" />
     <!-- Documentation -->
     <None Include="Markdowns\*.md" />
     <!-- All resources (icons, cursors, bitmaps, psf, rc2, etc.) -->

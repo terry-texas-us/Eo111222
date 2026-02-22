@@ -27,6 +27,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libdxfrw", "Third Party\lib
 		{1704EA01-6B21-4362-9F1F-44D25CF2E0D7} = {1704EA01-6B21-4362-9F1F-44D25CF2E0D7}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solution Items", "{7FCDF878-F1AE-4461-8BEE-CEA429D91BCF}"
+	ProjectSection(SolutionItems) = preProject
+		.clang-format = .clang-format
+		.clang-tidy = .clang-tidy
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32

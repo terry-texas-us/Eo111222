@@ -103,10 +103,7 @@ libdxfrw/
 │       ├── dwgbuffer.h/cpp     # DWG buffer
 │       ├── drw_textcodec.h/cpp # Character encoding
 │       └── Other utilities
-├── dwg2dxf/                  # DWG to DXF converter tool
-├── dwg2text/                 # DWG to text extractor tool
 ├── bin/                      # Executable scripts
-└── vs2013/                   # Visual Studio 2013 project
 ```
 
 ---
@@ -329,32 +326,6 @@ docker run -t --rm -v `pwd`:/work codelibs/libdxfrw:latest /work/build.sh
 ---
 
 ## Utility Tools
-
-### 1. dwg2dxf
-
-Command-line tool to convert DWG files to DXF format.
-
-```bash
-dwg2dxf [options] input.dwg [output.dxf]
-```
-
-**Files**:
-- `dwg2dxf/main.cpp`: Entry point
-- `dwg2dxf/dx_iface.h/cpp`: Interface implementation
-- `dwg2dxf/dwg2dxf.1`: Man page
-
-### 2. dwg2text
-
-Tool to extract text information from DWG files.
-
-```bash
-dwg2text input.dwg
-```
-
-**Files**:
-- `dwg2text/main.cpp`: Entry point
-- `dwg2text/dx_iface.h/cpp`: Interface implementation
-- `dwg2text/dwg2text.1`: Man page
 
 ### 3. dxf2txt.py
 

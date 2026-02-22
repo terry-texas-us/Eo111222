@@ -25,7 +25,6 @@
 #include "../drw_interface.h"
 #include "../drw_objects.h"
 #include "drw_textcodec.h"
-#include "dwgbuffer.h"
 #include "dwgutil.h"
 
 class objHandle {
@@ -120,9 +119,6 @@ public:
 
   void reset() {
   }
-#if defined(USING_DWG0)
-  bool parseDwg(DRW::Version version, dwgBuffer* buf, duint32 bs = 0);
-#endif
   std::list<duint32>hadlesList;
 };
 

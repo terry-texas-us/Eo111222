@@ -72,9 +72,6 @@ public:
 
 protected:
   void parseCode(int code, dxfReader* reader);
-#if defined(USING_DWG0)
-  bool parseDwg(DRW::Version version, dwgBuffer* buf, dwgBuffer* hBbuf, duint8 mv = 0);
-#endif
 private:
   bool getDouble(std::string key, double* varDouble);
   bool getInt(std::string key, int* varInt);

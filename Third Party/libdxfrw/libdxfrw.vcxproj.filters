@@ -54,25 +54,7 @@
     <ClInclude Include="src\intern\drw_textcodec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\intern\dwgbuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\intern\dwgreader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\intern\dwgreader15.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\intern\dwgreader18.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\intern\dwgreader21.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\intern\dwgreader24.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\intern\dwgreader27.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\intern\dwgutil.h">
@@ -116,30 +98,6 @@
     <ClCompile Include="src\intern\drw_textcodec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\intern\dwgbuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\intern\dwgreader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\intern\dwgreader15.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\intern\dwgreader18.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\intern\dwgreader21.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\intern\dwgreader24.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\intern\dwgreader27.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\intern\dwgutil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\intern\dxfreader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -147,9 +105,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\intern\rscodec.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libdwgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\libdxfrw.cpp">

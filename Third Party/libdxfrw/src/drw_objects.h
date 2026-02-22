@@ -86,10 +86,6 @@ public:
 
 protected:
   void parseCode(int code, dxfReader* reader);
-#if defined(USING_DWG0)
-  virtual bool parseDwg(DRW::Version version, dwgBuffer* buf, duint32 bs = 0) { return false; } /* = 0 */; // TAS 2026.01.21 paused abs vitual so i can removed DWG use
-  bool parseDwg(DRW::Version version, dwgBuffer* buf, dwgBuffer* strBuf, duint32 bs = 0);
-#endif
   void reset() {
     flags = 0;
     for (std::vector<DRW_Variant*>::iterator it = extData.begin(); it != extData.end(); ++it)
@@ -154,9 +150,6 @@ public:
 
 protected:
   void parseCode(int code, dxfReader* reader);
-#if defined(USING_DWG0)
-  bool parseDwg(DRW::Version version, dwgBuffer* buf, duint32 bs = 0);
-#endif
   void update();
 public:
   //V12
@@ -254,9 +247,6 @@ public:
 
 protected:
   void parseCode(int code, dxfReader* reader);
-#if defined(USING_DWG0)
-  bool parseDwg(DRW::Version version, dwgBuffer* buf, duint32 bs = 0);
-#endif
   void update();
 
 public:
@@ -293,9 +283,6 @@ public:
 
 protected:
   void parseCode(int code, dxfReader* reader);
-#if defined(USING_DWG0)
-  bool parseDwg(DRW::Version version, dwgBuffer* buf, duint32 bs = 0);
-#endif
 public:
   UTF8STRING lineType;            /*!< line type, code 6 */
   int color;                      /*!< layer color, code 62 */
@@ -326,9 +313,6 @@ public:
 
 protected:
   //    void parseCode(int code, dxfReader *reader);
-#if defined(USING_DWG0)
-  bool parseDwg(DRW::Version version, dwgBuffer* buf, duint32 bs = 0);
-#endif
 public:
   //Note:    int DRW_TableEntry::flags; contains code 70 of block
   int insUnits;             /*!< block insertion units, code 70 of block_record*/
@@ -365,9 +349,6 @@ public:
 
 protected:
   void parseCode(int code, dxfReader* reader);
-#if defined(USING_DWG0)
-  bool parseDwg(DRW::Version version, dwgBuffer* buf, duint32 bs = 0);
-#endif
 public:
   double height;          /*!< Fixed text height (0 not set), code 40 */
   double width;           /*!< Width factor, code 41 */
@@ -411,9 +392,6 @@ public:
 
 protected:
   void parseCode(int code, dxfReader* reader);
-#if defined(USING_DWG0)
-  bool parseDwg(DRW::Version version, dwgBuffer* buf, duint32 bs = 0);
-#endif
 public:
   DRW_Coord lowerLeft;     /*!< Lower left corner, code 10 & 20 */
   DRW_Coord upperRight;    /*!< Upper right corner, code 11 & 21 */
@@ -468,9 +446,6 @@ public:
 
 protected:
   void parseCode(int code, dxfReader* reader);
-#if defined(USING_DWG0)
-  bool parseDwg(DRW::Version version, dwgBuffer* buf, duint32 bs = 0);
-#endif
 public:
   //    std::string handle;       /*!< entity identifier, code 5 */
   UTF8STRING name;          /*!< File name of image, code 1 */
@@ -503,9 +478,6 @@ public:
 
 protected:
   void parseCode(int code, dxfReader* reader) { DRW_TableEntry::parseCode(code, reader); }
-#if defined(USING_DWG0)
-  bool parseDwg(DRW::Version version, dwgBuffer* buf, duint32 bs = 0);
-#endif
 };
 
 namespace DRW {

@@ -56,361 +56,361 @@
     <ClCompile Include="Stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Section.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGsRenderState.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ModeLine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MainFrm.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Lex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoMfPropertiesDockablePane.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoMfOutputDockablePane.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGeVector3d.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGePoint3d.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbTrappedGroups.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbText.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbSpline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbPrimitive.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbPolyline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbPolygon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbPoint.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbPegBlockTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbLine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbGroupList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbGroup.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbEllipse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbDimension.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDBBlockReference.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbBlock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoApOptions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ChildFrm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AeSysDoc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AeSys.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Dde.cpp">
-      <Filter>Source Files\DDE</Filter>
-    </ClCompile>
-    <ClCompile Include="DdeCmds.cpp">
-      <Filter>Source Files\DDE</Filter>
-    </ClCompile>
-    <ClCompile Include="DdeConversation.cpp">
-      <Filter>Source Files\DDE</Filter>
-    </ClCompile>
-    <ClCompile Include="DdeGItms.cpp">
-      <Filter>Source Files\DDE</Filter>
-    </ClCompile>
-    <ClCompile Include="DdeItem.cpp">
-      <Filter>Source Files\DDE</Filter>
-    </ClCompile>
-    <ClCompile Include="DdeSys.cpp">
-      <Filter>Source Files\DDE</Filter>
-    </ClCompile>
-    <ClCompile Include="DdeTopic.cpp">
-      <Filter>Source Files\DDE</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbLineTypeTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbLineType.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbLayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoCtrlColorsButton.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgEditOptions.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgFileManage.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgLowPressureDuctOptions.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetAngle.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetLength.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetScale.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetText.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetUnitsAndPrecision.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetupColor.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetupConstraints.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetupCustomMouseCharacters.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetupLineType.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgViewZoom.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgPipeSymbol.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgPipeOptions.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSelectGotoHomePoint.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetupHomePoint.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgAnnotateOptions.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetupNote.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetupHatch.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgDrawOptions.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgModeLetter.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgModeRevise.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgFixupOptions.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSetPastePosition.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgTrapModify.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgBlockInsert.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgTrapFilter.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgEditTrapCommandsQuery.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgViewParameters.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgSelectIsometricView.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="OFNHookProcFileTracing.cpp">
-      <Filter>Source Files\Callbacks</Filter>
-    </ClCompile>
-    <ClCompile Include="WndProcKeyPlan.cpp">
-      <Filter>Source Files\Callbacks</Filter>
-    </ClCompile>
-    <ClCompile Include="WndProcPreview.cpp">
-      <Filter>Source Files\Callbacks</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDlgActiveViewKeyplan.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGsAbstractView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGsModelTransform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGsViewTransform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGsViewport.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGeMatrix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGePoint4d.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGeTransformMatrix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbBitmapFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoCtrlFindComboBox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbBlockFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbJobFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbTracingFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbPegFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGeReferenceSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGeLine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoDbFontDefinition.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EoGePolyline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AeSysView.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViTrapMode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViPrimitiveSubModeMend.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViPrimitiveSubModeEdit.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViPowerMode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViPipeMode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViNodalMode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViModelView.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViLPDMode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViGroupSubModeEdit.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViFixupMode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViEditMode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViDrawMode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViDraw2Mode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViDimensionMode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViCutMode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViConstraints.cpp">
-      <Filter>Source Files\AeSysView</Filter>
-    </ClCompile>
-    <ClCompile Include="EoViAnnotateMode.cpp">
-      <Filter>Source Files\AeSysView</Filter>
     </ClCompile>
     <ClCompile Include="lex.yy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EoDlgLineTypesSelection.cpp">
+    <ClCompile Include="*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EoDbDrwInterface.cpp">
+    <ClCompile Include="*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EoDlgSetupPointStyle.cpp">
+    <ClCompile Include="*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Eo.cpp">
+    <ClCompile Include="*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EoGeOcs.cpp">
+    <ClCompile Include="*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EoDbConic.cpp">
+    <ClCompile Include="*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EoGeOcsTransform.cpp">
+    <ClCompile Include="*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IdleState.cpp">
+    <ClCompile Include="*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DrawModeState.cpp">
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -421,119 +421,121 @@
     <None Include="res\Simplex.psf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="hlp\global_keys.htm">
-      <Filter>HTML Help Topics</Filter>
-    </None>
-    <None Include="res\layer_filters.bmp">
-      <Filter>Resource Files\Bitmaps</Filter>
-    </None>
-    <None Include="res\LayerStates.bmp">
-      <Filter>Resource Files\Bitmaps</Filter>
-    </None>
-    <None Include="res\LayerStates_hc.bmp">
-      <Filter>Resource Files\Bitmaps</Filter>
-    </None>
-    <None Include="res\properties.bmp">
-      <Filter>Resource Files\Bitmaps</Filter>
-    </None>
-    <None Include="res\properties_hc.bmp">
-      <Filter>Resource Files\Bitmaps</Filter>
-    </None>
-    <None Include="res\Toolbar.bmp">
-      <Filter>Resource Files\Bitmaps</Filter>
-    </None>
-    <None Include="res\Toolbar256.bmp">
-      <Filter>Resource Files\Bitmaps</Filter>
-    </None>
-    <None Include="res\TrapRMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\AnnotateMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\CutMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\Draw2Mode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\DrawMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\EditMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\FixupMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\NodalMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\DimensionMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\LowPressureDuct.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\NodalRMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\PipeMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\PowerMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\TrapMode.cur">
-      <Filter>Resource Files\Cursors</Filter>
-    </None>
-    <None Include="res\AeSys.ico">
-      <Filter>Resource Files\Icons</Filter>
-    </None>
-    <None Include="res\AeSys_Gold.ico">
-      <Filter>Resource Files\Icons</Filter>
-    </None>
-    <None Include="res\output_wnd.ico">
-      <Filter>Resource Files\Icons</Filter>
-    </None>
-    <None Include="res\output_wnd_hc.ico">
-      <Filter>Resource Files\Icons</Filter>
-    </None>
-    <None Include="res\properties_wnd.ico">
-      <Filter>Resource Files\Icons</Filter>
-    </None>
-    <None Include="res\properties_wnd_hc.ico">
-      <Filter>Resource Files\Icons</Filter>
-    </None>
-    <None Include=".clang-format" />
-    <None Include=".clang-tidy" />
-    <None Include="lex_regexp.dat">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Markdowns\Dde Description and Few Uses.md">
-      <Filter>Markdowns</Filter>
-    </None>
-    <None Include="Markdowns\Job File Format.md">
-      <Filter>Markdowns</Filter>
-    </None>
-    <None Include="Markdowns\Peg &amp; Tra File Formats.md">
-      <Filter>Markdowns</Filter>
-    </None>
-    <None Include="Markdowns\Analysis of lex.cpp and Modernization Suggestions.md">
-      <Filter>Markdowns</Filter>
-    </None>
     <None Include="vshints.hm">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="Tools\reflex_static_lib.pdb" />
     <None Include="C:\Users\tsmit\Desktop\Help Peg.pdf" />
-    <None Include="Markdowns\dxf header.md">
-      <Filter>Markdowns</Filter>
+    <None Include="Markdowns\*.md" />
+    <None Include="Markdowns\*.md" />
+    <None Include="Markdowns\*.md" />
+    <None Include="Markdowns\*.md" />
+    <None Include="Markdowns\*.md" />
+    <None Include="Markdowns\*.md" />
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
     </None>
-    <None Include="Markdowns\libdxfrw - Technical Specifications.md">
-      <Filter>Markdowns</Filter>
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
     </None>
-    <None Include="Markdowns\DXF Symbol Tables.md" />
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\*.ico">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc">
@@ -541,331 +543,331 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Stdafx.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Section.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resource.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGsRenderState.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WndProcPreview.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MainFrm.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Lex.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Hatch.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoMfPropertiesDockablePane.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoMfOutputDockablePane.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGeVector3d.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGeUniquePoint.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGePoint3d.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbText.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbSpline.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbPolyline.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbPolygon.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbPoint.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbMaskedPrimitive.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbLine.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbGroupList.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbGroup.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbEllipse.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbDimension.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbBlockReference.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbBlock.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoApOptions.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ChildFrm.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AeSysView.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AeSysDoc.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbLineTypeTable.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbLineType.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbLayer.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoCtrlColorsButton.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgAnnotateOptions.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgEditOptions.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgFileManage.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgLowPressureDuctOptions.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetAngle.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetLength.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetScale.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetText.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetUnitsAndPrecision.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetupColor.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetupConstraints.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetupCustomMouseCharacters.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetupLineType.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgViewZoom.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgPipeSymbol.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgPipeOptions.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSelectGotoHomePoint.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetHomePoint.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgLineWeight.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetupNote.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetupHatch.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgDrawOptions.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgModeLetter.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgModeRevise.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgFixupOptions.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetPastePosition.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgTrapModify.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgBlockInsert.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgTrapFilter.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgEditTrapCommandsQuery.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgViewParameters.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSelectIsometricView.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgActiveViewKeyplan.h">
-      <Filter>Header Files\Dialogs</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGsAbstractView.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGsModelTransform.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGsViewTransform.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGsViewport.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGeMatrix.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGePoint4d.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AeSys.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGeTransformMatrix.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbBitmapFile.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoCtrlFindComboBox.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbBlockFile.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbJobFile.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbTracingFile.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbPegFile.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGeReferenceSystem.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGeLine.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbFontDefinition.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbCharacterCellDefinition.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGePolyline.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDb.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Dde.h">
-      <Filter>Header Files\DDE</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DdeCmds.h">
-      <Filter>Header Files\DDE</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DdeGItms.h">
-      <Filter>Header Files\DDE</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DdeSys.h">
-      <Filter>Header Files\DDE</Filter>
+    <ClInclude Include="*.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LexTable.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="lex.yy.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgLineTypesSelection.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbHeaderSection.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbDrwInterface.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDlgSetupPointStyle.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Header.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Eo.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbPrimitive.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGeOcs.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoDbConic.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EoGeOcsTransform.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AeSysState.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IdleState.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DrawModeState.h">
+    <ClInclude Include="*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="lex_rules.l" />
-    <Text Include="res\LineTypes\LineTypes-ISO128.txt" />
-    <Text Include="res\LineTypes\LineTypes-ACAD.txt" />
-    <Text Include="res\LineTypes\LineTypes(X5).txt" />
-    <Text Include="res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" />
-    <Text Include="res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
   </ItemGroup>
 </Project>
