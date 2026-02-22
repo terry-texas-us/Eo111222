@@ -399,3 +399,10 @@ FodyWeavers.xsd
 /LexicalAnalysis/LexGen.cs
 /LexicalAnalysis/AssemblyInfo.cs
 /LexicalAnalysis/app.config
+/Third Party/libiconv/Debug_x64/libiconv.dll
+/Third Party/libiconv/Debug_x64/libiconv.exp
+/Third Party/libiconv/Debug_x64/libiconv.lib
+/Third Party/libiconv/Debug_x64/libiconv.exp
+/Third Party/libiconv/Debug_x64/libiconv.lib
+/Third Party/libiconv/Debug_x64/libiconv.exp
+/Third Party/libiconv/Debug_x64/libiconv.dll
