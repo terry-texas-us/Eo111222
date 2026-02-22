@@ -398,18 +398,9 @@ public:
 
 libdxfrw supports multiple character code pages:
 
-- **CP932**: Japanese (Shift-JIS)
-- **CP936**: Simplified Chinese (GB2312)
-- **CP949**: Korean
-- **CP950**: Traditional Chinese (Big5)
-
 ### Implementation Files
 
 - `src/intern/drw_textcodec.h/cpp`: Character encoding conversion engine
-- `src/intern/drw_cptable932.h`: Japanese code page
-- `src/intern/drw_cptable936.h`: Simplified Chinese
-- `src/intern/drw_cptable949.h`: Korean
-- `src/intern/drw_cptable950.h`: Traditional Chinese
 - `src/intern/drw_cptables.h`: Code page table integration
 
 ---

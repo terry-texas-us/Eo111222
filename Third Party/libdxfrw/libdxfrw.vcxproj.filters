@@ -33,18 +33,6 @@
     <ClInclude Include="src\drw_objects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\intern\drw_cptable932.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\intern\drw_cptable936.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\intern\drw_cptable949.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\intern\drw_cptable950.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\intern\drw_cptables.h">
       <Filter>Header Files</Filter>
     </ClInclude>

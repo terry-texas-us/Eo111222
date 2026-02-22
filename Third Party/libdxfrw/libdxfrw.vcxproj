@@ -159,10 +159,6 @@
     <ClInclude Include="src\drw_header.h" />
     <ClInclude Include="src\drw_interface.h" />
     <ClInclude Include="src\drw_objects.h" />
-    <ClInclude Include="src\intern\drw_cptable932.h" />
-    <ClInclude Include="src\intern\drw_cptable936.h" />
-    <ClInclude Include="src\intern\drw_cptable949.h" />
-    <ClInclude Include="src\intern\drw_cptable950.h" />
     <ClInclude Include="src\intern\drw_cptables.h" />
     <ClInclude Include="src\intern\drw_dbg.h" />
     <ClInclude Include="src\intern\drw_textcodec.h" />

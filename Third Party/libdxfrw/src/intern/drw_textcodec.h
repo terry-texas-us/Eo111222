@@ -1,13 +1,10 @@
-#ifndef DRW_TEXTCODEC_H
-#define DRW_TEXTCODEC_H
-
+#pragma once
 #include <string>
 
 class DRW_Converter;
 
-class DRW_TextCodec
-{
-public:
+class DRW_TextCodec {
+ public:
   DRW_TextCodec();
   ~DRW_TextCodec();
   std::string fromUtf8(std::string s);
@@ -19,18 +16,20 @@ public:
   void setCodePage(std::string c, bool dxfFormat) { setCodePage(&c, dxfFormat); }
   std::string getCodePage() { return cp; }
 
-private:
+ private:
   std::string correctCodePage(const std::string& s);
 
-private:
+ private:
   int version;
   std::string cp;
   DRW_Converter* conv;
 };
 
-class DRW_Converter
-{
-public:
+/** @brief Base class for text conversion. It can handle character encoding and decoding,
+ *  providing methods to convert between UTF-8 strings and other formats using a specified character table.
+ */
+class DRW_Converter {
+ public:
   DRW_Converter(const int* t, int l) {
     table = t;
     cpLenght = l;
@@ -47,61 +46,41 @@ public:
 };
 
 class DRW_ConvUTF16 : public DRW_Converter {
-public:
-  DRW_ConvUTF16() :DRW_Converter(nullptr, 0) {}
+ public:
+  DRW_ConvUTF16() : DRW_Converter(nullptr, 0) {}
   virtual std::string fromUtf8(std::string* s);
   virtual std::string toUtf8(std::string* s);
 };
 
 class DRW_ConvTable : public DRW_Converter {
-public:
-  DRW_ConvTable(const int* t, int l) :DRW_Converter(t, l) {}
+ public:
+  DRW_ConvTable(const int* t, int l) : DRW_Converter(t, l) {}
   virtual std::string fromUtf8(std::string* s);
   virtual std::string toUtf8(std::string* s);
 };
 
 class DRW_ConvDBCSTable : public DRW_Converter {
-public:
-  DRW_ConvDBCSTable(const int* t, const int* lt, const int dt[][2], int l) :DRW_Converter(t, l) {
+ public:
+  DRW_ConvDBCSTable(const int* t, const int* lt, const int dt[][2], int l) : DRW_Converter(t, l) {
     leadTable = lt;
     doubleTable = dt;
   }
 
   virtual std::string fromUtf8(std::string* s);
   virtual std::string toUtf8(std::string* s);
-private:
+
+ private:
   const int* leadTable;
   const int (*doubleTable)[2];
-
-};
-
-class DRW_Conv932Table : public DRW_Converter {
-public:
-  DRW_Conv932Table(const int* t, const int* lt, const int dt[][2], int l) :DRW_Converter(t, l) {
-    leadTable = lt;
-    doubleTable = dt;
-  }
-
-  virtual std::string fromUtf8(std::string* s);
-  virtual std::string toUtf8(std::string* s);
-private:
-  const int* leadTable;
-  const int (*doubleTable)[2];
-
 };
 
 class DRW_ExtConverter : public DRW_Converter {
-public:
-  DRW_ExtConverter(const char* enc) :DRW_Converter(nullptr, 0) {
-    encoding = enc;
-  }
+ public:
+  DRW_ExtConverter(const char* enc) : DRW_Converter(nullptr, 0) { encoding = enc; }
   virtual std::string fromUtf8(std::string* s);
   virtual std::string toUtf8(std::string* s);
-private:
-  const char* encoding;
-  std::string convertByiconv(const char* in_encode,
-    const char* out_encode,
-    const std::string* s);
-};
 
-#endif // DRW_TEXTCODEC_H
+ private:
+  const char* encoding;
+  std::string convertByiconv(const char* in_encode, const char* out_encode, const std::string* s);
+};
