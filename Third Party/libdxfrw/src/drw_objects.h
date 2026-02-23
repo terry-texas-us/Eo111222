@@ -63,7 +63,7 @@ class DRW_TableEntry {
 
  public:
   enum DRW::TTYPE tType;             /*!< enum: entity type, code 0 */
-  duint32 handle{};                 /*!< entity identifier, code 5 */
+  std::uint32_t handle{};            /*!< entity identifier, code 5 */
   int parentHandle;                  /*!< Soft-pointer ID/handle to owner object, code 330 */
   UTF8STRING name;                   /*!< entry name, code 2 */
   int flags;                         /*!< Flags relevant to entry, code 70 */

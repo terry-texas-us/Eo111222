@@ -1,7 +1,5 @@
 #include "libdxfrw.h"
 
-#include <string.h>
-
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -20,7 +18,9 @@
 #include "intern/dxfreader.h"
 #include "intern/dxfwriter.h"
 
-constexpr auto FIRSTHANDLE = 48;
+namespace {
+constexpr auto FIRSTHANDLE{48};
+}  // namespace
 
 dxfRW::dxfRW(const char* name) {
   DRW_DBGSL(DRW_dbg::none);
@@ -544,8 +544,8 @@ bool dxfRW::writeArc(DRW_Arc* ent) {
   if (ent->basePoint.z != 0.0) { writer->writeDouble(30, ent->basePoint.z); }
   writer->writeDouble(40, ent->radious);
   if (version > DRW::AC1009) { writer->writeString(100, "AcDbArc"); }
-  writer->writeDouble(50, ent->staangle * ARAD);
-  writer->writeDouble(51, ent->endangle * ARAD);
+  writer->writeDouble(50, ent->staangle * DRW::ARAD);
+  writer->writeDouble(51, ent->endangle * DRW::ARAD);
   return true;
 }
 
@@ -793,8 +793,8 @@ bool dxfRW::writeHatch(DRW_Hatch* ent) {
               writer->writeDouble(10, a->basePoint.x);
               writer->writeDouble(20, a->basePoint.y);
               writer->writeDouble(40, a->radious);
-              writer->writeDouble(50, a->staangle * ARAD);
-              writer->writeDouble(51, a->endangle * ARAD);
+              writer->writeDouble(50, a->staangle * DRW::ARAD);
+              writer->writeDouble(51, a->endangle * DRW::ARAD);
               writer->writeInt16(73, a->isccw);
               break;
             }
@@ -807,8 +807,8 @@ bool dxfRW::writeHatch(DRW_Hatch* ent) {
               writer->writeDouble(11, a->secPoint.x);
               writer->writeDouble(21, a->secPoint.y);
               writer->writeDouble(40, a->ratio);
-              writer->writeDouble(50, a->staparam * ARAD);
-              writer->writeDouble(51, a->endparam * ARAD);
+              writer->writeDouble(50, a->staparam * DRW::ARAD);
+              writer->writeDouble(51, a->endparam * DRW::ARAD);
               writer->writeInt16(73, a->isccw);
               break;
             }
@@ -998,7 +998,7 @@ bool dxfRW::writeInsert(DRW_Insert* ent) {
   writer->writeDouble(41, ent->xscale);
   writer->writeDouble(42, ent->yscale);
   writer->writeDouble(43, ent->zscale);
-  writer->writeDouble(50, (ent->angle) * ARAD);  // in dxf angle is writed in degrees
+  writer->writeDouble(50, (ent->angle) * DRW::ARAD);  // in dxf angle is written in degrees
   writer->writeInt16(70, ent->colcount);
   writer->writeInt16(71, ent->rowcount);
   writer->writeDouble(44, ent->colspace);

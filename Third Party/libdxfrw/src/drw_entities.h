@@ -169,13 +169,13 @@ class DRW_Entity {
 
  public:
   enum DRW::ETYPE eType;                      /*!< enum: entity type, code 0 */
-  duint32 handle;                             /*!< entity identifier, code 5 */
-  duint32 parentHandle;                       /*!< Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330 */
+  std::uint32_t handle;                       /*!< entity identifier, code 5 */
+  std::uint32_t parentHandle;                 /*!< Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330 */
   std::list<std::list<DRW_Variant> > appData; /*!< list of application data, code 102 */
   DRW::Space space;                           /*!< space indicator, code 67*/
   UTF8STRING layer;                           /*!< layer name, code 8 */
   UTF8STRING lineType;                        /*!< line type, code 6 */
-  duint32 material;                           /*!< hard pointer id to material object, code 347 */
+  std::uint32_t material;                     /*!< hard pointer id to material object, code 347 */
   int color;                                  /*!< entity color, code 62 */
   enum DRW_LW_Conv::lineWidth lWeight;        /*!< entity lineweight, code 370 */
   double ltypeScale;                          /*!< linetype scale, code 48 */
@@ -770,9 +770,6 @@ class DRW_Polyline : public DRW_Point {
   int curvetype;      /*!< curves & smooth surface type, code 75, default 0 */
 
   std::vector<DRW_Vertex*> vertlist; /*!< vertex list */
-
- private:
-  std::list<duint32> hadlesList;  //list of handles, only in 2004+
 };
 
 //! Class to handle spline entity
@@ -993,7 +990,7 @@ class DRW_Image : public DRW_Line {
   void parseCode(int code, dxfReader* reader);
 
  public:
-  duint32 ref{};    /*!< Hard reference to imagedef object, code 340 */
+  std::uint32_t ref{};    /*!< Hard reference to imagedef object, code 340 */
   DRW_Coord vVector; /*!< V-vector of single pixel, x coordinate, code 12, 22 & 32 */
   //    double vx;                 /*!< V-vector of single pixel, x coordinate, code 12 */
   //    double vy;                 /*!< V-vector of single pixel, y coordinate, code 22 */
@@ -1302,13 +1299,13 @@ class DRW_Leader : public DRW_Entity {
   int arrow;                /*!< Arrowhead flag, code 71, 0=Disabled; 1=Enabled */
   int leadertype;           /*!< Leader path type, code 72, 0=Straight line segments; 1=Spline */
   int flag;                 /*!< Leader creation flag, code 73, default 3 */
-  int hookline{};          /*!< Hook line direction flag, code 74, default 1 */
+  int hookline{};           /*!< Hook line direction flag, code 74, default 1 */
   int hookflag;             /*!< Hook line flag, code 75 */
-  double textheight{};   /*!< Text annotation height, code 40 */
+  double textheight{};     /*!< Text annotation height, code 40 */
   double textwidth{};    /*!< Text annotation width, code 41 */
   int vertnum;              /*!< Number of vertices, code 76 */
   int coloruse{};          /*!< Color to use if leader's DIMCLRD = BYBLOCK, code 77 */
-  duint32 annotHandle{};   /*!< Hard reference to associated annotation, code 340 */
+  std::uint32_t annotHandle{};   /*!< Hard reference to associated annotation, code 340 */
   DRW_Coord extrusionPoint; /*!< Normal vector, code 210, 220 & 230 */
   DRW_Coord horizdir;       /*!< "Horizontal" direction for leader, code 211, 221 & 231 */
   DRW_Coord offsetblock;    /*!< Offset of last leader vertex from block, code 212, 222 & 232 */
@@ -1364,7 +1361,7 @@ class DRW_Viewport : public DRW_Point {
   double twistAngle{}; /*!< view twist angle, code 51 */
 
  private:
-  duint32 frozenLyCount{};
+  std::uint32_t frozenLyCount{};
 };  //RLZ: missing 15,25, 72, 331, 90, 340, 1, 281, 71, 74, 110, 120, 130, 111, 121,131, 112,122, 132, 345,346, and more...
 
 //used  //DRW_Coord basePoint;      /*!<  base point, code 10, 20 & 30 */
@@ -1372,13 +1369,13 @@ class DRW_Viewport : public DRW_Point {
 //double thickness;         /*!< thickness, code 39 */
 //DRW_Coord extPoint;       /*!<  Dir extrusion normal vector, code 210, 220 & 230 */
 //enum DRW::ETYPE eType;     /*!< enum: entity type, code 0 */
-//duint32 handle;            /*!< entity identifier, code 5 */
+//std::uint32_t handle;      /*!< entity identifier, code 5 */
 //std::list<std::list<DRW_Variant> > appData; /*!< list of application data, code 102 */
-//duint32 parentHandle;      /*!< Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330 */
+//std::uint32_t parentHandle;  /*!< Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330 */
 //DRW::Space space;          /*!< space indicator, code 67*/
 //UTF8STRING layer;          /*!< layer name, code 8 */
 //UTF8STRING lineType;       /*!< line type, code 6 */
-//duint32 material;          /*!< hard pointer id to material object, code 347 */
+//std::uint32_t material;    /*!< hard pointer id to material object, code 347 */
 //int color;                 /*!< entity color, code 62 */
 //enum DRW_LW_Conv::lineWidth lWeight; /*!< entity lineweight, code 370 */
 //double ltypeScale;         /*!< linetype scale, code 48 */

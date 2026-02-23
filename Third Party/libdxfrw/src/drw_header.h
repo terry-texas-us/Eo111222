@@ -77,14 +77,14 @@ class DRW_Header {
   DRW_Variant* curr{};
   int version;  //to use on read
 
-  duint32 linetypeCtrl{};
-  duint32 layerCtrl{};
-  duint32 styleCtrl{};
-  duint32 dimstyleCtrl{};
-  duint32 appidCtrl{};
-  duint32 blockCtrl{};
-  duint32 viewCtrl{};
-  duint32 ucsCtrl{};
-  duint32 vportCtrl;
-  duint32 vpEntHeaderCtrl{};
+  std::uint32_t linetypeCtrl{};
+  std::uint32_t layerCtrl{};
+  std::uint32_t styleCtrl{};
+  std::uint32_t dimstyleCtrl{};
+  std::uint32_t appidCtrl{};
+  std::uint32_t blockCtrl{};
+  std::uint32_t viewCtrl{};
+  std::uint32_t ucsCtrl{};
+  std::uint32_t vportCtrl;
+  std::uint32_t vpEntHeaderCtrl{};
 };

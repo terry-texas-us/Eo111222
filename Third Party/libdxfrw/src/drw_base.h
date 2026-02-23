@@ -6,6 +6,7 @@ constexpr auto DRW_VERSION = "0.6.3";
 
 #include <cmath>
 #include <cstdint>
+#include <numbers>
 #include <string>
 
 #ifdef DRW_ASSERTS
@@ -27,21 +28,13 @@ constexpr auto DRW_VERSION = "0.6.3";
 #define DRW_POSIX
 #endif
 
-constexpr auto M_PI = 3.141592653589793238462643;
-constexpr auto M_PI_2 = 1.57079632679489661923;
-constexpr auto M_PIx2 = 6.283185307179586;
-constexpr auto ARAD = 57.29577951308232;
-
-typedef unsigned char duint8;           /* 8 bit unsigned */
-typedef unsigned short duint16;         /* 16 bit unsigned */
-typedef unsigned int duint32;           /* 32 bit unsigned */
-typedef unsigned long long int duint64; /* 64 bit unsigned */
-
-typedef float dfloat32;        /* 32 bit floating point */
-typedef double ddouble64;      /* 64 bit floating point */
-typedef long double ddouble80; /* 80 bit floating point */
-
 namespace DRW {
+constexpr double geometricTolerance{1e-9};  // TAS: Added for geometric calculations, point coincidence etc.
+
+constexpr auto Pi{std::numbers::pi};
+constexpr auto TwoPi{2.0 * std::numbers::pi};
+constexpr auto HalfPi{std::numbers::pi / 2.0};
+constexpr auto ARAD{180.0 / std::numbers::pi};
 
 //! Version numbers for the DXF Format.
 enum Version {
@@ -105,31 +98,33 @@ enum TransparencyCodes { Opaque = 0, Transparent = -1 };
 */
 class DRW_Coord {
  public:
-  DRW_Coord() : x(0), y(0), z(0) {}
-  DRW_Coord(double ix, double iy, double iz) : x(ix), y(iy), z(iz) {}
-  DRW_Coord(const DRW_Coord& other) : x(other.x), y(other.y), z(other.z) {}
+  double x{};
+  double y{};
+  double z{};
 
-  DRW_Coord& operator=(const DRW_Coord& data) {
-    x = data.x;
-    y = data.y;
-    z = data.z;
-    return *this;
-  }
-  /*!< convert to unitary vector */
-  void unitize() {
+  DRW_Coord() noexcept = default;
+
+  DRW_Coord(double x, double y, double z) : x{x}, y{y}, z{z} {}
+
+  DRW_Coord(const DRW_Coord& other) noexcept = default;
+  DRW_Coord& operator=(const DRW_Coord& data) noexcept = default;
+
+  DRW_Coord(DRW_Coord&& other) noexcept = default;
+  DRW_Coord& operator=(DRW_Coord&& other) noexcept = default;
+
+  /** @brief Convert `this` coordinate to a unit-length vector (in-place).
+   */
+  void unitize() noexcept {
     double dist;
     dist = sqrt(x * x + y * y + z * z);
-    if (dist > 0.0) {
+    if (dist > DRW::geometricTolerance) {
       x = x / dist;
       y = y / dist;
       z = z / dist;
     }
   }
 
- public:
-  double x;
-  double y;
-  double z;
+  /// @todo Non-modifying version of unitize() that returns a new DRW_Coord instead of modifying `this` in-place.
 };
 
 //! Class to handle vertex
@@ -162,7 +157,7 @@ class DRW_Variant {
 
   DRW_Variant(int c, std::int32_t i) : sdata(std::string()), vdata(), content(i), vType(INTEGER), vCode(c) {}
 
-  DRW_Variant(int c, duint32 i)
+  DRW_Variant(int c, std::uint32_t i)
       : sdata(std::string()), vdata(), content(static_cast<std::int32_t>(i)), vType(INTEGER), vCode(c) {}
 
   DRW_Variant(int c, double d) : sdata(std::string()), vdata(), content(d), vType(DOUBLE), vCode(c) {}

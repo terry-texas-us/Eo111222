@@ -1553,12 +1553,12 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     if (getDouble("$LOFTANG1", &varDouble))
       writer->writeDouble(40, varDouble);
     else
-      writer->writeDouble(40, M_PI_2);
+      writer->writeDouble(40, DRW::HalfPi);
     writer->writeString(9, "$LOFTANG2");
     if (getDouble("$LOFTANG2", &varDouble))
       writer->writeDouble(40, varDouble);
     else
-      writer->writeDouble(40, M_PI_2);
+      writer->writeDouble(40, DRW::HalfPi);
     writer->writeString(9, "$LOFTMAG1");
     if (getDouble("$LOFTMAG1", &varDouble))
       writer->writeDouble(40, varDouble);

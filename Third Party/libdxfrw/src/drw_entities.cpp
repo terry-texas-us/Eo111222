@@ -253,8 +253,8 @@ void DRW_Arc::applyExtrusion() {
     // drawing with the z axis heading into the paper (or rather screen). An arbitrary
     // extrusion axis (with x and y values greater than 1/64) may still have issues.
     if (fabs(extPoint.x) < 0.015625 && fabs(extPoint.y) < 0.015625 && extPoint.z < 0.0) {
-      staangle = M_PI - staangle;
-      endangle = M_PI - endangle;
+      staangle = DRW::Pi - staangle;
+      endangle = DRW::Pi - endangle;
 
       double temp = staangle;
       staangle = endangle;
@@ -266,10 +266,10 @@ void DRW_Arc::applyExtrusion() {
 void DRW_Arc::parseCode(int code, dxfReader* reader) {
   switch (code) {
     case 50:
-      staangle = reader->getDouble() / ARAD;
+      staangle = reader->getDouble() / DRW::ARAD;
       break;
     case 51:
-      endangle = reader->getDouble() / ARAD;
+      endangle = reader->getDouble() / DRW::ARAD;
       break;
     default:
       DRW_Circle::parseCode(code, reader);
@@ -300,8 +300,8 @@ void DRW_Ellipse::applyExtrusion() {
     extrudePoint(extPoint, &secPoint);
     double intialparam = staparam;
     if (extPoint.z < 0.) {
-      staparam = M_PIx2 - endparam;
-      endparam = M_PIx2 - intialparam;
+      staparam = DRW::TwoPi - endparam;
+      endparam = DRW::TwoPi - intialparam;
     }
   }
 }
@@ -311,20 +311,20 @@ void DRW_Ellipse::correctAxis() {
   bool complete = false;
   if (staparam == endparam) {
     staparam = 0.0;
-    endparam = M_PIx2;  //2*M_PI;
+    endparam = DRW::TwoPi;
     complete = true;
   }
   if (ratio > 1) {
-    if (fabs(endparam - staparam - M_PIx2) < 1.0e-10) complete = true;
+    if (fabs(endparam - staparam - DRW::TwoPi) < 1.0e-10) complete = true;
     double incX = secPoint.x;
     secPoint.x = -(secPoint.y * ratio);
     secPoint.y = incX * ratio;
     ratio = 1 / ratio;
     if (!complete) {
-      if (staparam < M_PI_2) staparam += M_PI * 2;
-      if (endparam < M_PI_2) endparam += M_PI * 2;
-      endparam -= M_PI_2;
-      staparam -= M_PI_2;
+      if (staparam < DRW::HalfPi) staparam += DRW::TwoPi;
+      if (endparam < DRW::HalfPi) endparam += DRW::TwoPi;
+      endparam -= DRW::HalfPi;
+      staparam -= DRW::HalfPi;
     }
   }
 }
@@ -339,7 +339,7 @@ void DRW_Ellipse::toPolyline(DRW_Polyline* pol, int parts) {
   incAngle = atan2(secPoint.y, secPoint.x);
   cosRot = cos(incAngle);
   sinRot = sin(incAngle);
-  incAngle = M_PIx2 / parts;
+  incAngle = DRW::TwoPi / parts;
   curAngle = staparam;
   int i = static_cast<int>(curAngle / incAngle);
   do {
@@ -354,7 +354,7 @@ void DRW_Ellipse::toPolyline(DRW_Polyline* pol, int parts) {
     pol->addVertex(DRW_Vertex(x, y, 0.0, 0.0));
     curAngle = (++i) * incAngle;
   } while (i < parts);
-  if (fabs(endparam - staparam - M_PIx2) < 1.0e-10) { pol->flags = 1; }
+  if (fabs(endparam - staparam - DRW::TwoPi) < 1.0e-10) { pol->flags = 1; }
   pol->layer = this->layer;
   pol->lineType = this->lineType;
   pol->color = this->color;
@@ -441,7 +441,7 @@ void DRW_Insert::parseCode(int code, dxfReader* reader) {
       break;
     case 50:
       angle = reader->getDouble();
-      angle = angle / ARAD;  //convert to radian
+      angle = angle / DRW::ARAD;  //convert to radian
       break;
     case 70:
       colcount = reader->getInt32();
@@ -584,7 +584,7 @@ void DRW_MText::parseCode(int code, dxfReader* reader) {
 }
 
 void DRW_MText::updateAngle() {
-  if (haveXAxis) { angle = atan2(secPoint.y, secPoint.x) * 180 / M_PI; }
+  if (haveXAxis) { angle = atan2(secPoint.y, secPoint.x) * 180 / DRW::Pi; }
 }
 
 void DRW_Polyline::parseCode(int code, dxfReader* reader) {
@@ -721,15 +721,15 @@ void DRW_Hatch::parseCode(int code, dxfReader* reader) {
       break;
     case 50:
       if (arc)
-        arc->staangle = reader->getDouble() / ARAD;
+        arc->staangle = reader->getDouble() / DRW::ARAD;
       else if (ellipse)
-        ellipse->staparam = reader->getDouble() / ARAD;
+        ellipse->staparam = reader->getDouble() / DRW::ARAD;
       break;
     case 51:
       if (arc)
-        arc->endangle = reader->getDouble() / ARAD;
+        arc->endangle = reader->getDouble() / DRW::ARAD;
       else if (ellipse)
-        ellipse->endparam = reader->getDouble() / ARAD;
+        ellipse->endparam = reader->getDouble() / DRW::ARAD;
       break;
     case 52:
       angle = reader->getDouble();
