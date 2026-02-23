@@ -14,7 +14,7 @@ class dxfReader;
 class dxfWriter;
 
 class dxfRW {
-public:
+ public:
   dxfRW(const char* name);
   ~dxfRW();
   void setDebug(DRW::DebugTraceLevel lvl);
@@ -61,7 +61,7 @@ public:
   bool writeDimension(DRW_Dimension* ent);
   void setEllipseParts(int parts) { elParts = parts; } /*!< set parts munber when convert ellipse to polyline */
 
-private:
+ private:
   /// used by read() to parse the content of the file
   bool processDxf();
   bool processHeader();
@@ -109,28 +109,27 @@ private:
   bool writeObjects();
   bool writeExtData(const std::vector<DRW_Variant*>& ed);
 
-  std::string toHexStr(int n);//RLZ removeme
+  std::string toHexStr(int n);  //RLZ removeme
 
-private:
+ private:
   DRW::Version version{};
   std::string fileName;
   std::string codePage;
-  bool binFile{ false };
+  bool binFile{};
   dxfReader* reader;
   dxfWriter* writer;
-  DRW_Interface* iface{ nullptr };
+  DRW_Interface* iface{};
   DRW_Header header;
   //    int section;
   std::string nextentity;
-  int entCount{ 0 };
-  bool wlayer0{ false };
-  bool dimstyleStd{ false };
+  int entCount{};
+  bool wlayer0{};
+  bool dimstyleStd{};
   bool applyExt;
-  bool writingBlock{ false };
-  int elParts;  /*!< parts munber when convert ellipse to polyline */
+  bool writingBlock{};
+  int elParts; /*!< parts munber when convert ellipse to polyline */
   std::map<std::string, int> blockMap;
-  std::vector<DRW_ImageDef*> imageDef;  /*!< imageDef list */
+  std::vector<DRW_ImageDef*> imageDef; /*!< imageDef list */
 
-  int currHandle{ 0 };
-
+  int currHandle{};
 };

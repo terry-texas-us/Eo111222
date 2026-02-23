@@ -12,10 +12,10 @@
 #include "drw_textcodec.h"
 
 namespace {
-constexpr auto CPOFFSET{0x80}; //first entry in table 0x80
+constexpr auto CPOFFSET{0x80};  //first entry in table 0x80
 constexpr auto CPLENGHTCOMMON{128};
 constexpr auto DBCS_REPLACEMENT_CHAR{0x003F};
-}
+}  // namespace
 
 DRW_TextCodec::DRW_TextCodec() {
   version = DRW::AC1021;
@@ -186,7 +186,7 @@ std::string DRW_Converter::decodeText(int c) {
 }
 
 std::string DRW_Converter::encodeNum(int c) {
-  unsigned char ret[5]{0};
+  unsigned char ret[5]{};
   if (c < 128) {  // 0-7F US-ASCII 7 bits
     ret[0] = static_cast<unsigned char>(c);
     ret[1] = 0;
@@ -254,7 +254,7 @@ std::string DRW_ConvDBCSTable::fromUtf8(std::string* s) {
       for (int k = 0; k < cpLenght; k++) {
         if (doubleTable[k][1] == code) {
           int data = doubleTable[k][0];
-          char d[3]{0};
+          char d[3]{};
           d[0] = static_cast<char>(data >> 8);
           d[1] = data & 0xFF;
           d[2] = '\0';

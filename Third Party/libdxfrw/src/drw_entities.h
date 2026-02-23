@@ -75,7 +75,6 @@ enum ETYPE {
 //! Base class for entities
 /*!
 *  Base class for entities
-*  @author Rallaz
 */
 class DRW_Entity {
   friend class dxfRW;
@@ -199,10 +198,10 @@ class DRW_Entity {
 //! Class to handle point entity
 /*!
 *  Class to handle point entity
-*  @author Rallaz
 */
 class DRW_Point : public DRW_Entity {
   friend class dxfRW;
+
  public:
   DRW_Point() {
     eType = DRW::POINT;
@@ -227,10 +226,10 @@ class DRW_Point : public DRW_Entity {
 //! Class to handle line entity
 /*!
 *  Class to handle line entity
-*  @author Rallaz
 */
 class DRW_Line : public DRW_Point {
   friend class dxfRW;
+
  public:
   DRW_Line() {
     eType = DRW::LINE;
@@ -249,17 +248,16 @@ class DRW_Line : public DRW_Point {
 //! Class to handle ray entity
 /*!
 *  Class to handle ray entity
-*  @author Rallaz
 */
 class DRW_Ray : public DRW_Line {
   friend class dxfRW;
+
  public:
   DRW_Ray() { eType = DRW::RAY; }
 };
 //! Class to handle xline entity
 /*!
 *  Class to handle xline entity
-*  @author Rallaz
 */
 class DRW_Xline : public DRW_Ray {
  public:
@@ -269,10 +267,10 @@ class DRW_Xline : public DRW_Ray {
 //! Class to handle circle entity
 /*!
 *  Class to handle circle entity
-*  @author Rallaz
 */
 class DRW_Circle : public DRW_Point {
   friend class dxfRW;
+
  public:
   DRW_Circle() { eType = DRW::CIRCLE; }
 
@@ -282,16 +280,16 @@ class DRW_Circle : public DRW_Point {
   void parseCode(int code, dxfReader* reader);
 
  public:
-  double radious{0.0}; /*!< radius, code 40 */
+  double radious{}; /*!< radius, code 40 */
 };
 
 //! Class to handle arc entity
 /*!
 *  Class to handle arc entity
-*  @author Rallaz
 */
 class DRW_Arc : public DRW_Circle {
   friend class dxfRW;
+
  public:
   DRW_Arc() {
     eType = DRW::ARC;
@@ -318,8 +316,8 @@ class DRW_Arc : public DRW_Circle {
   void parseCode(int code, dxfReader* reader);
 
  public:
-  double staangle{0.0}; /*!< start angle, code 50 in radians*/
-  double endangle{0.0}; /*!< end angle, code 51 in radians */
+  double staangle{}; /*!< start angle, code 50 in radians*/
+  double endangle{}; /*!< end angle, code 51 in radians */
   int isccw;            /*!< is counter clockwise arc?, only used in hatch, code 73 */
 };
 
@@ -328,10 +326,10 @@ class DRW_Arc : public DRW_Circle {
 *  Class to handle ellipse and elliptic arc entity
 *  Note: start/end parameter are in radians for ellipse entity but
 *  for hatch boundary are in degrees
-*  @author Rallaz
 */
 class DRW_Ellipse : public DRW_Line {
   friend class dxfRW;
+
  public:
   DRW_Ellipse() {
     eType = DRW::ELLIPSE;
@@ -349,19 +347,19 @@ class DRW_Ellipse : public DRW_Line {
   void correctAxis();
 
  public:
-  double ratio{0.0};    /*!< ratio, code 40 */
-  double staparam{0.0}; /*!< start parameter, code 41, 0.0 for full ellipse*/
-  double endparam{0.0}; /*!< end parameter, code 42, 2*PI for full ellipse */
+  double ratio{};    /*!< ratio, code 40 */
+  double staparam{}; /*!< start parameter, code 41, 0.0 for full ellipse*/
+  double endparam{}; /*!< end parameter, code 42, 2*PI for full ellipse */
   int isccw;            /*!< is counter clockwise arc?, only used in hatch, code 73 */
 };
 
 //! Class to handle trace entity
 /*!
 *  Class to handle trace entity
-*  @author Rallaz
 */
 class DRW_Trace : public DRW_Line {
   friend class dxfRW;
+
  public:
   DRW_Trace() {
     eType = DRW::TRACE;
@@ -382,10 +380,10 @@ class DRW_Trace : public DRW_Line {
 //! Class to handle solid entity
 /*!
 *  Class to handle solid entity
-*  @author Rallaz
 */
 class DRW_Solid : public DRW_Trace {
   friend class dxfRW;
+
  public:
   DRW_Solid() { eType = DRW::SOLID; }
 
@@ -413,10 +411,10 @@ class DRW_Solid : public DRW_Trace {
 //! Class to handle 3dface entity
 /*!
 *  Class to handle 3dface entity
-*  @author Rallaz
 */
 class DRW_3Dface : public DRW_Trace {
   friend class dxfRW;
+
  public:
   enum InvisibleEdgeFlags {
     NoEdge = 0x00,
@@ -456,10 +454,10 @@ class DRW_3Dface : public DRW_Trace {
 //! Class to handle block entries
 /*!
 *  Class to handle block entries
-*  @author Rallaz
 */
 class DRW_Block : public DRW_Point {
   friend class dxfRW;
+
  public:
   DRW_Block() {
     eType = DRW::BLOCK;
@@ -481,10 +479,10 @@ class DRW_Block : public DRW_Point {
 //! Class to handle insert entries
 /*!
 *  Class to handle insert entries
-*  @author Rallaz
 */
 class DRW_Insert : public DRW_Point {
   friend class dxfRW;
+
  public:
   DRW_Insert() {
     eType = DRW::INSERT;
@@ -518,10 +516,10 @@ class DRW_Insert : public DRW_Point {
 //! Class to handle lwpolyline entity
 /*!
 *  Class to handle lwpolyline entity
-*  @author Rallaz
 */
 class DRW_LWPolyline : public DRW_Entity {
   friend class dxfRW;
+
  public:
   DRW_LWPolyline() {
     eType = DRW::LWPOLYLINE;
@@ -578,7 +576,7 @@ class DRW_LWPolyline : public DRW_Entity {
   void parseCode(int code, dxfReader* reader);
 
  public:
-  int vertexnum{0};                    /*!< number of vertex, code 90 */
+  int vertexnum{};                    /*!< number of vertex, code 90 */
   int flags;                           /*!< polyline flag, code 70, default 0 */
   double width;                        /*!< constant width, code 43 */
   double elevation;                    /*!< elevation, code 38 */
@@ -591,10 +589,10 @@ class DRW_LWPolyline : public DRW_Entity {
 //! Class to handle insert entries
 /*!
 *  Class to handle insert entries
-*  @author Rallaz
 */
 class DRW_Text : public DRW_Line {
   friend class dxfRW;
+
  public:
   //! Vertical alignments.
   enum VAlign {
@@ -631,7 +629,7 @@ class DRW_Text : public DRW_Line {
   void parseCode(int code, dxfReader* reader);
 
  public:
-  double height{0.0}; /*!< height text, code 40 */
+  double height{}; /*!< height text, code 40 */
   UTF8STRING text;    /*!< text string, code 1 */
   double angle;       /*!< rotation angle in degrees (360), code 50 */
   double widthscale;  /*!< width factor, code 41 */
@@ -645,10 +643,10 @@ class DRW_Text : public DRW_Line {
 //! Class to handle insert entries
 /*!
 *  Class to handle insert entries
-*  @author Rallaz
 */
 class DRW_MText : public DRW_Text {
   friend class dxfRW;
+
  public:
   //! Attachments.
   enum Attach {
@@ -683,10 +681,10 @@ class DRW_MText : public DRW_Text {
 //! Class to handle vertex
 /*!
 *  Class to handle vertex  for polyline entity
-*  @author Rallaz
 */
 class DRW_Vertex : public DRW_Point {
   friend class dxfRW;
+
  public:
   DRW_Vertex() {
     eType = DRW::VERTEX;
@@ -713,7 +711,7 @@ class DRW_Vertex : public DRW_Point {
   double bulge;    /*!< bulge, code 42 */
 
   int flags;         /*!< vertex flag, code 70, default 0 */
-  double tgdir{0.0}; /*!< curve fit tangent direction, code 50 */
+  double tgdir{}; /*!< curve fit tangent direction, code 50 */
   int vindex1;       /*!< polyface mesh vertex index, code 71, default 0 */
   int vindex2;       /*!< polyface mesh vertex index, code 72, default 0 */
   int vindex3;       /*!< polyface mesh vertex index, code 73, default 0 */
@@ -724,10 +722,10 @@ class DRW_Vertex : public DRW_Point {
 //! Class to handle polyline entity
 /*!
 *  Class to handle polyline entity
-*  @author Rallaz
 */
 class DRW_Polyline : public DRW_Point {
   friend class dxfRW;
+
  public:
   DRW_Polyline() {
     eType = DRW::POLYLINE;
@@ -779,10 +777,10 @@ class DRW_Polyline : public DRW_Point {
 //! Class to handle spline entity
 /*!
 *  Class to handle spline entity
-*  @author Rallaz
 */
 class DRW_Spline : public DRW_Entity {
   friend class dxfRW;
+
  public:
   DRW_Spline() {
     eType = DRW::SPLINE;
@@ -823,7 +821,7 @@ class DRW_Spline : public DRW_Entity {
   //    double tgey;              /*!< end tangent y coordinate, code 23 */
   //    double tgez;              /*!< end tangent z coordinate, code 33 */
   int flags;         /*!< spline flag, code 70 */
-  int degree{0};     /*!< degree of the spline, code 71 */
+  int degree{};     /*!< degree of the spline, code 71 */
   dint32 nknots;     /*!< number of knots, code 72, default 0 */
   dint32 ncontrol;   /*!< number of control points, code 73, default 0 */
   dint32 nfit;       /*!< number of fit points, code 74, default 0 */
@@ -836,14 +834,13 @@ class DRW_Spline : public DRW_Entity {
   std::vector<DRW_Coord*> fitlist;     /*!< fit points list, code 11, 21 & 31 */
 
  private:
-  DRW_Coord* controlpoint{nullptr}; /*!< current control point to add data */
-  DRW_Coord* fitpoint{nullptr};     /*!< current fit point to add data */
+  DRW_Coord* controlpoint{}; /*!< current control point to add data */
+  DRW_Coord* fitpoint{};     /*!< current fit point to add data */
 };
 
 //! Class to handle hatch loop
 /*!
 *  Class to handle hatch loop
-*  @author Rallaz
 */
 class DRW_HatchLoop {
  public:
@@ -875,11 +872,11 @@ class DRW_HatchLoop {
 //! Class to handle hatch entity
 /*!
 *  Class to handle hatch entity
-*  @author Rallaz
 */
 //TODO: handle lwpolylines, splines and ellipses
 class DRW_Hatch : public DRW_Point {
   friend class dxfRW;
+
  public:
   DRW_Hatch() {
     eType = DRW::HATCH;
@@ -980,10 +977,10 @@ class DRW_Hatch : public DRW_Point {
 //! Class to handle image entity
 /*!
 *  Class to handle image entity
-*  @author Rallaz
 */
 class DRW_Image : public DRW_Line {
   friend class dxfRW;
+
  public:
   DRW_Image() {
     eType = DRW::IMAGE;
@@ -995,14 +992,14 @@ class DRW_Image : public DRW_Line {
   void parseCode(int code, dxfReader* reader);
 
  public:
-  duint32 ref{0};    /*!< Hard reference to imagedef object, code 340 */
+  duint32 ref{};    /*!< Hard reference to imagedef object, code 340 */
   DRW_Coord vVector; /*!< V-vector of single pixel, x coordinate, code 12, 22 & 32 */
   //    double vx;                 /*!< V-vector of single pixel, x coordinate, code 12 */
   //    double vy;                 /*!< V-vector of single pixel, y coordinate, code 22 */
   //    double vz;                 /*!< V-vector of single pixel, z coordinate, code 32 */
-  double sizeu{0.0}; /*!< image size in pixels, U value, code 13 */
-  double sizev{0.0}; /*!< image size in pixels, V value, code 23 */
-  double dz{0.0};    /*!< z coordinate, code 33 */
+  double sizeu{}; /*!< image size in pixels, U value, code 13 */
+  double sizev{}; /*!< image size in pixels, V value, code 23 */
+  double dz{};    /*!< z coordinate, code 33 */
   int clip;          /*!< Clipping state, code 280, 0=off 1=on */
   int brightness;    /*!< Brightness value, code 281, (0-100) default 50 */
   int contrast;      /*!< Brightness value, code 282, (0-100) default 50 */
@@ -1012,10 +1009,10 @@ class DRW_Image : public DRW_Line {
 //! Base class for dimension entity
 /*!
 *  Base class for dimension entity
-*  @author Rallaz
 */
 class DRW_Dimension : public DRW_Entity {
   friend class dxfRW;
+
  public:
   DRW_Dimension() {
     eType = DRW::DIMENSION;
@@ -1118,7 +1115,7 @@ class DRW_Dimension : public DRW_Entity {
   double rot;          /*!< rotation angle of the dimension text, code 53 */
   DRW_Coord extPoint;  /*!<  extrusion normal vector, code 210, 220 & 230 */
 
-  double hdir{0.0};     /*!< horizontal direction for the dimension, code 51, default ? */
+  double hdir{};     /*!< horizontal direction for the dimension, code 51, default ? */
   DRW_Coord clonePoint; /*!< Insertion point for clones (Baseline & Continue), code 12, 22 & 32 (OCS) */
   DRW_Coord def1;       /*!< Definition point 1for linear & angular, code 13, 23 & 33 (WCS) */
   DRW_Coord def2;       /*!< Definition point 2, code 14, 24 & 34 (WCS) */
@@ -1127,16 +1124,16 @@ class DRW_Dimension : public DRW_Entity {
 
   DRW_Coord circlePoint; /*!< Definition point for diameter, radius & angular dims code 15, 25 & 35 (WCS) */
   DRW_Coord arcPoint;    /*!< Point defining dimension arc, x coordinate, code 16, 26 & 36 (OCS) */
-  double length{0.0};    /*!< Leader length, code 40 */
+  double length{};    /*!< Leader length, code 40 */
 };
 
 //! Class to handle  aligned dimension entity
 /*!
 *  Class to handle aligned dimension entity
-*  @author Rallaz
 */
 class DRW_DimAligned : public DRW_Dimension {
   friend class dxfRW;
+
  public:
   DRW_DimAligned() { eType = DRW::DIMALIGNED; }
   DRW_DimAligned(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMALIGNED; }
@@ -1155,7 +1152,6 @@ class DRW_DimAligned : public DRW_Dimension {
 //! Class to handle  linear or rotated dimension entity
 /*!
 *  Class to handle linear or rotated dimension entity
-*  @author Rallaz
 */
 class DRW_DimLinear : public DRW_DimAligned {
  public:
@@ -1171,10 +1167,10 @@ class DRW_DimLinear : public DRW_DimAligned {
 //! Class to handle radial dimension entity
 /*!
 *  Class to handle aligned, linear or rotated dimension entity
-*  @author Rallaz
 */
 class DRW_DimRadial : public DRW_Dimension {
   friend class dxfRW;
+
  public:
   DRW_DimRadial() { eType = DRW::DIMRADIAL; }
   DRW_DimRadial(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMRADIAL; }
@@ -1190,10 +1186,10 @@ class DRW_DimRadial : public DRW_Dimension {
 //! Class to handle radial dimension entity
 /*!
 *  Class to handle aligned, linear or rotated dimension entity
-*  @author Rallaz
 */
 class DRW_DimDiametric : public DRW_Dimension {
   friend class dxfRW;
+
  public:
   DRW_DimDiametric() { eType = DRW::DIMDIAMETRIC; }
   DRW_DimDiametric(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMDIAMETRIC; }
@@ -1209,10 +1205,10 @@ class DRW_DimDiametric : public DRW_Dimension {
 //! Class to handle angular dimension entity
 /*!
 *  Class to handle angular dimension entity
-*  @author Rallaz
 */
 class DRW_DimAngular : public DRW_Dimension {
   friend class dxfRW;
+
  public:
   DRW_DimAngular() { eType = DRW::DIMANGULAR; }
   DRW_DimAngular(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMANGULAR; }
@@ -1232,10 +1228,10 @@ class DRW_DimAngular : public DRW_Dimension {
 //! Class to handle angular 3p dimension entity
 /*!
 *  Class to handle angular 3p dimension entity
-*  @author Rallaz
 */
 class DRW_DimAngular3p : public DRW_Dimension {
   friend class dxfRW;
+
  public:
   DRW_DimAngular3p() { eType = DRW::DIMANGULAR3P; }
   DRW_DimAngular3p(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMANGULAR3P; }
@@ -1253,10 +1249,10 @@ class DRW_DimAngular3p : public DRW_Dimension {
 //! Class to handle ordinate dimension entity
 /*!
 *  Class to handle ordinate dimension entity
-*  @author Rallaz
 */
 class DRW_DimOrdinate : public DRW_Dimension {
   friend class dxfRW;
+
  public:
   DRW_DimOrdinate() { eType = DRW::DIMORDINATE; }
   DRW_DimOrdinate(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMORDINATE; }
@@ -1272,10 +1268,10 @@ class DRW_DimOrdinate : public DRW_Dimension {
 //! Class to handle leader entity
 /*!
 *  Class to handle leader entity
-*  @author Rallaz
 */
 class DRW_Leader : public DRW_Entity {
   friend class dxfRW;
+
  public:
   DRW_Leader() {
     eType = DRW::LEADER;
@@ -1305,13 +1301,13 @@ class DRW_Leader : public DRW_Entity {
   int arrow;                /*!< Arrowhead flag, code 71, 0=Disabled; 1=Enabled */
   int leadertype;           /*!< Leader path type, code 72, 0=Straight line segments; 1=Spline */
   int flag;                 /*!< Leader creation flag, code 73, default 3 */
-  int hookline{0};          /*!< Hook line direction flag, code 74, default 1 */
+  int hookline{};          /*!< Hook line direction flag, code 74, default 1 */
   int hookflag;             /*!< Hook line flag, code 75 */
-  double textheight{0.0};   /*!< Text annotation height, code 40 */
-  double textwidth{0.0};    /*!< Text annotation width, code 41 */
+  double textheight{};   /*!< Text annotation height, code 40 */
+  double textwidth{};    /*!< Text annotation width, code 41 */
   int vertnum;              /*!< Number of vertices, code 76 */
-  int coloruse{0};          /*!< Color to use if leader's DIMCLRD = BYBLOCK, code 77 */
-  duint32 annotHandle{0};   /*!< Hard reference to associated annotation, code 340 */
+  int coloruse{};          /*!< Color to use if leader's DIMCLRD = BYBLOCK, code 77 */
+  duint32 annotHandle{};   /*!< Hard reference to associated annotation, code 340 */
   DRW_Coord extrusionPoint; /*!< Normal vector, code 210, 220 & 230 */
   DRW_Coord horizdir;       /*!< "Horizontal" direction for leader, code 211, 221 & 231 */
   DRW_Coord offsetblock;    /*!< Offset of last leader vertex from block, code 212, 222 & 232 */
@@ -1320,16 +1316,16 @@ class DRW_Leader : public DRW_Entity {
   std::vector<DRW_Coord*> vertexlist; /*!< vertex points list, code 10, 20 & 30 */
 
  private:
-  DRW_Coord* vertexpoint{nullptr}; /*!< current control point to add data */
+  DRW_Coord* vertexpoint{}; /*!< current control point to add data */
 };
 
 //! Class to handle viewport entity
 /*!
 *  Class to handle viewport entity
-*  @author Rallaz
 */
 class DRW_Viewport : public DRW_Point {
   friend class dxfRW;
+
  public:
   DRW_Viewport() {
     eType = DRW::VIEWPORT;
@@ -1349,25 +1345,25 @@ class DRW_Viewport : public DRW_Point {
   double pswidth;       /*!< Width in paper space units, code 40 */
   double psheight;      /*!< Height in paper space units, code 41 */
   int vpstatus;         /*!< Viewport status, code 68 */
-  int vpID{0};          /*!< Viewport ID, code 69 */
+  int vpID{};          /*!< Viewport ID, code 69 */
   double centerPX;      /*!< view center point X, code 12 */
   double centerPY;      /*!< view center point Y, code 22 */
-  double snapPX{0.0};   /*!< Snap base point X, code 13 */
-  double snapPY{0.0};   /*!< Snap base point Y, code 23 */
-  double snapSpPX{0.0}; /*!< Snap spacing X, code 14 */
-  double snapSpPY{0.0}; /*!< Snap spacing Y, code 24 */
+  double snapPX{};   /*!< Snap base point X, code 13 */
+  double snapPY{};   /*!< Snap base point Y, code 23 */
+  double snapSpPX{}; /*!< Snap spacing X, code 14 */
+  double snapSpPY{}; /*!< Snap spacing Y, code 24 */
   //TODO: complete in dxf
   DRW_Coord viewDir;      /*!< View direction vector, code 16, 26 & 36 */
   DRW_Coord viewTarget;   /*!< View target point, code 17, 27, 37 */
-  double viewLength{0.0}; /*!< Perspective lens length, code 42 */
-  double frontClip{0.0};  /*!< Front clip plane Z value, code 43 */
-  double backClip{0.0};   /*!< Back clip plane Z value, code 44 */
-  double viewHeight{0.0}; /*!< View height in model space units, code 45 */
-  double snapAngle{0.0};  /*!< Snap angle, code 50 */
-  double twistAngle{0.0}; /*!< view twist angle, code 51 */
+  double viewLength{}; /*!< Perspective lens length, code 42 */
+  double frontClip{};  /*!< Front clip plane Z value, code 43 */
+  double backClip{};   /*!< Back clip plane Z value, code 44 */
+  double viewHeight{}; /*!< View height in model space units, code 45 */
+  double snapAngle{};  /*!< Snap angle, code 50 */
+  double twistAngle{}; /*!< view twist angle, code 51 */
 
  private:
-  duint32 frozenLyCount{0};
+  duint32 frozenLyCount{};
 };  //RLZ: missing 15,25, 72, 331, 90, 340, 1, 281, 71, 74, 110, 120, 130, 111, 121,131, 112,122, 132, 345,346, and more...
 
 //used  //DRW_Coord basePoint;      /*!<  base point, code 10, 20 & 30 */

@@ -6,7 +6,7 @@
 #include <string>
 
 class dxfWriter {
-public:
+ public:
   dxfWriter(std::ofstream* stream) { filestr = stream; /*count =0;*/ }
   virtual ~dxfWriter() {}
   virtual bool writeString(int code, std::string text) = 0;
@@ -21,15 +21,17 @@ public:
   void setVersion(std::string* v, bool dxfFormat) { encoder.setVersion(v, dxfFormat); }
   void setCodePage(std::string* c) { encoder.setCodePage(c, true); }
   std::string getCodePage() { return encoder.getCodePage(); }
-protected:
+
+ protected:
   std::ofstream* filestr;
-private:
+
+ private:
   DRW_TextCodec encoder;
 };
 
 class dxfWriterBinary : public dxfWriter {
-public:
-  dxfWriterBinary(std::ofstream* stream) :dxfWriter(stream) {}
+ public:
+  dxfWriterBinary(std::ofstream* stream) : dxfWriter(stream) {}
   virtual ~dxfWriterBinary() {}
   virtual bool writeString(int code, std::string text);
   virtual bool writeInt16(int code, int data);
@@ -40,7 +42,7 @@ public:
 };
 
 class dxfWriterAscii : public dxfWriter {
-public:
+ public:
   dxfWriterAscii(std::ofstream* stream);
   virtual ~dxfWriterAscii() {}
   virtual bool writeString(int code, std::string text);

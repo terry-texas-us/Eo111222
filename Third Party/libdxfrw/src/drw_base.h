@@ -106,7 +106,6 @@ enum TransparencyCodes { Opaque = 0, Transparent = -1 };
 //! Class to handle 3D coordinate point
 /*!
 *  Class to handle 3D coordinate point
-*  @author Rallaz
 */
 class DRW_Coord {
  public:
@@ -140,7 +139,6 @@ class DRW_Coord {
 //! Class to handle vertex
 /*!
 *  Class to handle vertex for lwpolyline entity
-*  @author Rallaz
 */
 class DRW_Vertex2D {
  public:
@@ -159,7 +157,6 @@ class DRW_Vertex2D {
 //! Class to handle header vars
 /*!
 *  Class to handle header vars
-*  @author Rallaz
 */
 class DRW_Variant {
  public:
@@ -250,7 +247,6 @@ class DRW_Variant {
 *  Class to convert between line width and integer
 *  verifing valid values, if value is not valid
 *  returns widthDefault.
-*  @author Rallaz
 */
 class DRW_LW_Conv {
  public:

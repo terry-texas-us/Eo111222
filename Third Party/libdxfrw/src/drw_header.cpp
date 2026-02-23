@@ -14,8 +14,7 @@ DRW_Header::DRW_Header() {
 }
 
 void DRW_Header::addComment(std::string c) {
-  if (!comments.empty())
-    comments += '\n';
+  if (!comments.empty()) comments += '\n';
   comments += c;
 }
 
@@ -27,77 +26,76 @@ void DRW_Header::addComment(std::string c) {
  */
 void DRW_Header::parseCode(int code, dxfReader* reader) {
   switch (code) {
-  case 9:
-    curr = new DRW_Variant();
-    name = reader->getString();
-    if (version < DRW::AC1015 && name == "$DIMUNIT")
-      name = "$DIMLUNIT";
-    vars[name] = curr;
-    break;
-  case 1:
-    curr->addString(code, reader->getUtf8String());
-    if (name == "$ACADVER") {
-      reader->setVersion(curr->content.s, true);
-      version = reader->getVersion();
-    }
-    break;
-  case 2:
-    curr->addString(code, reader->getUtf8String());
-    break;
-  case 3:
-    curr->addString(code, reader->getUtf8String());
-    if (name == "$DWGCODEPAGE") {
-      reader->setCodePage(curr->content.s);
-      curr->addString(code, reader->getCodePage());
-    }
-    break;
-  case 6:
-    curr->addString(code, reader->getUtf8String());
-    break;
-  case 7:
-    curr->addString(code, reader->getUtf8String());
-    break;
-  case 8:
-    curr->addString(code, reader->getUtf8String());
-    break;
-  case 10:
-    curr->addCoord(code, DRW_Coord(reader->getDouble(), 0.0, 0.0));
-    break;
-  case 20:
-    curr->setCoordY(reader->getDouble());
-    break;
-  case 30:
-    curr->setCoordZ(reader->getDouble());
-    break;
-  case 40:
-    curr->addDouble(code, reader->getDouble());
-    break;
-  case 50:
-    curr->addDouble(code, reader->getDouble());
-    break;
-  case 62:
-    curr->addInt(code, reader->getInt32());
-    break;
-  case 70:
-    curr->addInt(code, reader->getInt32());
-    break;
-  case 280:
-    curr->addInt(code, reader->getInt32());
-    break;
-  case 290:
-    curr->addInt(code, reader->getInt32());
-    break;
-  case 370:
-    curr->addInt(code, reader->getInt32());
-    break;
-  case 380:
-    curr->addInt(code, reader->getInt32());
-    break;
-  case 390:
-    curr->addString(code, reader->getUtf8String());
-    break;
-  default:
-    break;
+    case 9:
+      curr = new DRW_Variant();
+      name = reader->getString();
+      if (version < DRW::AC1015 && name == "$DIMUNIT") name = "$DIMLUNIT";
+      vars[name] = curr;
+      break;
+    case 1:
+      curr->addString(code, reader->getUtf8String());
+      if (name == "$ACADVER") {
+        reader->setVersion(curr->content.s, true);
+        version = reader->getVersion();
+      }
+      break;
+    case 2:
+      curr->addString(code, reader->getUtf8String());
+      break;
+    case 3:
+      curr->addString(code, reader->getUtf8String());
+      if (name == "$DWGCODEPAGE") {
+        reader->setCodePage(curr->content.s);
+        curr->addString(code, reader->getCodePage());
+      }
+      break;
+    case 6:
+      curr->addString(code, reader->getUtf8String());
+      break;
+    case 7:
+      curr->addString(code, reader->getUtf8String());
+      break;
+    case 8:
+      curr->addString(code, reader->getUtf8String());
+      break;
+    case 10:
+      curr->addCoord(code, DRW_Coord(reader->getDouble(), 0.0, 0.0));
+      break;
+    case 20:
+      curr->setCoordY(reader->getDouble());
+      break;
+    case 30:
+      curr->setCoordZ(reader->getDouble());
+      break;
+    case 40:
+      curr->addDouble(code, reader->getDouble());
+      break;
+    case 50:
+      curr->addDouble(code, reader->getDouble());
+      break;
+    case 62:
+      curr->addInt(code, reader->getInt32());
+      break;
+    case 70:
+      curr->addInt(code, reader->getInt32());
+      break;
+    case 280:
+      curr->addInt(code, reader->getInt32());
+      break;
+    case 290:
+      curr->addInt(code, reader->getInt32());
+      break;
+    case 370:
+      curr->addInt(code, reader->getInt32());
+      break;
+    case 380:
+      curr->addInt(code, reader->getInt32());
+      break;
+    case 390:
+      curr->addString(code, reader->getUtf8String());
+      break;
+    default:
+      break;
   }
 }
 
@@ -110,35 +108,35 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
   writer->writeString(2, "HEADER");
   writer->writeString(9, "$ACADVER");
   switch (ver) {
-  case DRW::AC1006: //unsupported version acad 10
-  case DRW::AC1009: //acad 11 & 12
-    varStr = "AC1009";
-    break;
-  case DRW::AC1012: //unsupported version acad 13
-  case DRW::AC1014: //acad 14
-    varStr = "AC1014";
-    break;
-  case DRW::AC1015: //acad 2000
-    varStr = "AC1015";
-    break;
-  case DRW::AC1018: //acad 2004
-    varStr = "AC1018";
-    break;
-    /*    case DRW::AC1021: //acad 2007
+    case DRW::AC1006:  //unsupported version acad 10
+    case DRW::AC1009:  //acad 11 & 12
+      varStr = "AC1009";
+      break;
+    case DRW::AC1012:  //unsupported version acad 13
+    case DRW::AC1014:  //acad 14
+      varStr = "AC1014";
+      break;
+    case DRW::AC1015:  //acad 2000
+      varStr = "AC1015";
+      break;
+    case DRW::AC1018:  //acad 2004
+      varStr = "AC1018";
+      break;
+      /*    case DRW::AC1021: //acad 2007
             varStr = "AC1021";
             break;*/
-  case DRW::AC1024: //acad 2010
-    varStr = "AC1024";
-    break;
-  case DRW::AC1027: //acad 2013
-    varStr = "AC1027";
-    break;
-  case DRW::AC1032: //acad 2018
-    varStr = "AC1032";
-    break;
-  default: //acad 2007 default version
-    varStr = "AC1021";
-    break;
+    case DRW::AC1024:  //acad 2010
+      varStr = "AC1024";
+      break;
+    case DRW::AC1027:  //acad 2013
+      varStr = "AC1027";
+      break;
+    case DRW::AC1032:  //acad 2018
+      varStr = "AC1032";
+      break;
+    default:  //acad 2007 default version
+      varStr = "AC1021";
+      break;
   }
   writer->writeString(1, varStr);
   writer->setVersion(&varStr, true);
@@ -146,9 +144,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
   getStr("$ACADVER", &varStr);
   getStr("$ACADMAINTVER", &varStr);
 
-  if (!getStr("$DWGCODEPAGE", &varStr)) {
-    varStr = "ANSI_1252";
-  }
+  if (!getStr("$DWGCODEPAGE", &varStr)) { varStr = "ANSI_1252"; }
   writer->writeString(9, "$DWGCODEPAGE");
   writer->setCodePage(&varStr);
   writer->writeString(3, writer->getCodePage());
@@ -157,8 +153,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
     writer->writeDouble(30, varCoord.z);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 0.0);
     writer->writeDouble(20, 0.0);
     writer->writeDouble(30, 0.0);
@@ -168,8 +163,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
     writer->writeDouble(30, varCoord.z);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 1.0000000000000000E+020);
     writer->writeDouble(20, 1.0000000000000000E+020);
     writer->writeDouble(30, 1.0000000000000000E+020);
@@ -179,8 +173,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
     writer->writeDouble(30, varCoord.z);
-  }
-  else {
+  } else {
     writer->writeDouble(10, -1.0000000000000000E+020);
     writer->writeDouble(20, -1.0000000000000000E+020);
     writer->writeDouble(30, -1.0000000000000000E+020);
@@ -189,8 +182,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
   if (getCoord("$LIMMIN", &varCoord)) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 0.0);
     writer->writeDouble(20, 0.0);
   }
@@ -198,8 +190,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
   if (getCoord("$LIMMAX", &varCoord)) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 420.0);
     writer->writeDouble(20, 297.0);
   }
@@ -647,17 +638,14 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeString(1, "STANDARD");
     //verify if exist "$DIMLUNIT" or obsolete "$DIMUNIT" (pre v2000)
     if (!getInt("$DIMLUNIT", &varInt)) {
-      if (!getInt("$DIMUNIT", &varInt))
-        varInt = 2;
+      if (!getInt("$DIMUNIT", &varInt)) varInt = 2;
     }
     //verify valid values from 1 to 6
-    if (varInt < 1 || varInt>6)
-      varInt = 2;
+    if (varInt < 1 || varInt > 6) varInt = 2;
     if (ver > DRW::AC1014) {
       writer->writeString(9, "$DIMLUNIT");
       writer->writeInt16(70, varInt);
-    }
-    else {
+    } else {
       writer->writeString(9, "$DIMUNIT");
       writer->writeInt16(70, varInt);
     }
@@ -677,7 +665,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     else
       writer->writeInt16(70, 0);
 
-    if (ver > DRW::AC1018) {// and post v2004 dim vars
+    if (ver > DRW::AC1018) {  // and post v2004 dim vars
       writer->writeString(9, "$DIMFXL");
       if (getDouble("$DIMFXL", &varDouble))
         writer->writeDouble(40, varDouble);
@@ -732,15 +720,15 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
           writer->writeUtf8String(6, varStr);
       else
         writer->writeString(6, "");
-      if (ver > DRW::AC1021) {// and post v2007 dim vars
+      if (ver > DRW::AC1021) {  // and post v2007 dim vars
         writer->writeString(9, "$DIMTXTDIRECTION");
         if (getInt("$DIMTXTDIRECTION", &varInt))
           writer->writeInt16(70, varInt);
         else
           writer->writeInt16(70, 0);
       }
-    }// end post v2004 dim vars
-  }//end post r12 dim vars
+    }  // end post v2004 dim vars
+  }  //end post r12 dim vars
 
   writer->writeString(9, "$LUNITS");
   if (getInt("$LUNITS", &varInt))
@@ -832,15 +820,13 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
   writer->writeString(9, "$SKPOLY");
   if (getInt("$SKPOLY", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 0);
   //rlz: todo, times
   writer->writeString(9, "$USRTIMER");
   if (getInt("$USRTIMER", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 1);
   writer->writeString(9, "$ANGBASE");
   if (getDouble("$ANGBASE", &varDouble))
@@ -850,14 +836,12 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
   writer->writeString(9, "$ANGDIR");
   if (getInt("$ANGDIR", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 0);
   writer->writeString(9, "$PDMODE");
   if (getInt("$PDMODE", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 34);
   writer->writeString(9, "$PDSIZE");
   if (getDouble("$PDSIZE", &varDouble))
@@ -873,46 +857,39 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeString(9, "$COORDS");
     if (getInt("$COORDS", &varInt)) {
       writer->writeInt16(70, varInt);
-    }
-    else
+    } else
       writer->writeInt16(70, 2);
   }
   writer->writeString(9, "$SPLFRAME");
   if (getInt("$SPLFRAME", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 0);
   writer->writeString(9, "$SPLINETYPE");
   if (getInt("$SPLINETYPE", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 2);
   writer->writeString(9, "$SPLINESEGS");
   if (getInt("$SPLINESEGS", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 8);
   if (ver < DRW::AC1012) {
     writer->writeString(9, "$ATTDIA");
     if (getInt("$ATTDIA", &varInt)) {
       writer->writeInt16(70, varInt);
-    }
-    else
+    } else
       writer->writeInt16(70, 1);
     writer->writeString(9, "$ATTREQ");
     if (getInt("$ATTREQ", &varInt)) {
       writer->writeInt16(70, varInt);
-    }
-    else
+    } else
       writer->writeInt16(70, 1);
     writer->writeString(9, "$HANDLING");
     if (getInt("$HANDLING", &varInt)) {
       writer->writeInt16(70, varInt);
-    }
-    else
+    } else
       writer->writeInt16(70, 1);
   }
   writer->writeString(9, "$HANDSEED");
@@ -921,32 +898,27 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
   writer->writeString(9, "$SURFTAB1");
   if (getInt("$SURFTAB1", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 6);
   writer->writeString(9, "$SURFTAB2");
   if (getInt("$SURFTAB2", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 6);
   writer->writeString(9, "$SURFTYPE");
   if (getInt("$SURFTYPE", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 6);
   writer->writeString(9, "$SURFU");
   if (getInt("$SURFU", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 6);
   writer->writeString(9, "$SURFV");
   if (getInt("$SURFV", &varInt)) {
     writer->writeInt16(70, varInt);
-  }
-  else
+  } else
     writer->writeInt16(70, 6);
   if (ver > DRW::AC1009) {
     writer->writeString(9, "$UCSBASE");
@@ -971,8 +943,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
     writer->writeDouble(30, varCoord.z);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 0.0);
     writer->writeDouble(20, 0.0);
     writer->writeDouble(30, 0.0);
@@ -982,8 +953,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
     writer->writeDouble(30, varCoord.z);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 1.0);
     writer->writeDouble(20, 0.0);
     writer->writeDouble(30, 0.0);
@@ -993,13 +963,12 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
     writer->writeDouble(30, varCoord.z);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 0.0);
     writer->writeDouble(20, 1.0);
     writer->writeDouble(30, 0.0);
   }
-  if (ver > DRW::AC1009) { //begin post r12 UCS vars
+  if (ver > DRW::AC1009) {  //begin post r12 UCS vars
     writer->writeString(9, "$UCSORTHOREF");
     if (getStr("$UCSORTHOREF", &varStr))
       if (ver == DRW::AC1009)
@@ -1018,8 +987,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1029,8 +997,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1040,8 +1007,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1051,8 +1017,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1062,8 +1027,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1073,8 +1037,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1087,7 +1050,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
         writer->writeUtf8String(2, varStr);
     else
       writer->writeString(2, "");
-  } //end post r12 UCS vars
+  }  //end post r12 UCS vars
   writer->writeString(9, "$PUCSNAME");
   if (getStr("$PUCSNAME", &varStr))
     if (ver == DRW::AC1009)
@@ -1101,8 +1064,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
     writer->writeDouble(30, varCoord.z);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 0.0);
     writer->writeDouble(20, 0.0);
     writer->writeDouble(30, 0.0);
@@ -1112,8 +1074,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
     writer->writeDouble(30, varCoord.z);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 1.0);
     writer->writeDouble(20, 0.0);
     writer->writeDouble(30, 0.0);
@@ -1123,13 +1084,12 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
     writer->writeDouble(30, varCoord.z);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 0.0);
     writer->writeDouble(20, 1.0);
     writer->writeDouble(30, 0.0);
   }
-  if (ver > DRW::AC1009) { //begin post r12 PUCS vars
+  if (ver > DRW::AC1009) {  //begin post r12 PUCS vars
     writer->writeString(9, "$PUCSORTHOREF");
     if (getStr("$PUCSORTHOREF", &varStr))
       if (ver == DRW::AC1009)
@@ -1148,8 +1108,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1159,8 +1118,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1170,8 +1128,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1181,8 +1138,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1192,8 +1148,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1203,13 +1158,12 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
     }
-  } //end post r12 PUCS vars
+  }  //end post r12 PUCS vars
 
   writer->writeString(9, "$USERI1");
   if (getInt("$USERI1", &varInt))
@@ -1286,14 +1240,13 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeInt16(70, varInt);
   else
     writer->writeInt16(70, 64);
-  if (ver > DRW::AC1009) { //begin post r12 PUCS vars
+  if (ver > DRW::AC1009) {  //begin post r12 PUCS vars
     writer->writeString(9, "$PINSBASE");
     if (getCoord("$PINSBASE", &varCoord)) {
       writer->writeDouble(10, varCoord.x);
       writer->writeDouble(20, varCoord.y);
       writer->writeDouble(30, varCoord.z);
-    }
-    else {
+    } else {
       writer->writeDouble(10, 0.0);
       writer->writeDouble(20, 0.0);
       writer->writeDouble(30, 0.0);
@@ -1309,8 +1262,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
     writer->writeDouble(30, varCoord.z);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 0.0);
     writer->writeDouble(20, 0.0);
     writer->writeDouble(30, 0.0);
@@ -1320,8 +1272,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
     writer->writeDouble(30, varCoord.z);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 0.0);
     writer->writeDouble(20, 0.0);
     writer->writeDouble(30, 0.0);
@@ -1352,8 +1303,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
   if (getCoord("$PLIMMIN", &varCoord)) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 0.0);
     writer->writeDouble(20, 0.0);
   }
@@ -1361,8 +1311,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
   if (getCoord("$PLIMMAX", &varCoord)) {
     writer->writeDouble(10, varCoord.x);
     writer->writeDouble(20, varCoord.y);
-  }
-  else {
+  } else {
     writer->writeDouble(10, 297.0);
     writer->writeDouble(20, 210.0);
   }
@@ -1386,7 +1335,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     writer->writeInt16(70, varInt);
   else
     writer->writeInt16(70, 1);
-  if (ver > DRW::AC1009) {//start port r12 vars
+  if (ver > DRW::AC1009) {  //start port r12 vars
     writer->writeString(9, "$TREEDEPTH");
     if (getInt("$TREEDEPTH", &varInt))
       writer->writeInt16(70, varInt);
@@ -1435,7 +1384,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeInt16(280, varInt);
     else
       writer->writeInt16(280, 0);
-    writer->writeString(9, "$LWDISPLAY"); //RLZ bool flag, verify in bin version
+    writer->writeString(9, "$LWDISPLAY");  //RLZ bool flag, verify in bin version
     if (getInt("$LWDISPLAY", &varInt))
       writer->writeInt16(290, varInt);
     else
@@ -1463,7 +1412,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
         writer->writeUtf8String(1, varStr);
     else
       writer->writeString(1, "");
-    writer->writeString(9, "$XEDIT"); //RLZ bool flag, verify in bin version
+    writer->writeString(9, "$XEDIT");  //RLZ bool flag, verify in bin version
     if (getInt("$XEDIT", &varInt))
       writer->writeInt16(290, varInt);
     else
@@ -1473,13 +1422,13 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeInt16(380, varInt);
     else
       writer->writeInt16(380, 0);
-    writer->writeString(9, "$PSTYLEMODE"); //RLZ bool flag, verify in bin version
+    writer->writeString(9, "$PSTYLEMODE");  //RLZ bool flag, verify in bin version
     if (getInt("$PSTYLEMODE", &varInt))
       writer->writeInt16(290, varInt);
     else
       writer->writeInt16(290, 1);
     //RLZ: here $FINGERPRINTGUID and $VERSIONGUID, do not add?
-    writer->writeString(9, "$EXTNAMES"); //RLZ bool flag, verify in bin version
+    writer->writeString(9, "$EXTNAMES");  //RLZ bool flag, verify in bin version
     if (getInt("$EXTNAMES", &varInt))
       writer->writeInt16(290, varInt);
     else
@@ -1489,13 +1438,13 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeDouble(40, varDouble);
     else
       writer->writeDouble(40, 0.0);
-    writer->writeString(9, "$OLESTARTUP"); //RLZ bool flag, verify in bin version
+    writer->writeString(9, "$OLESTARTUP");  //RLZ bool flag, verify in bin version
     if (getInt("$OLESTARTUP", &varInt))
       writer->writeInt16(290, varInt);
     else
       writer->writeInt16(290, 0);
   }
-  if (ver > DRW::AC1015) {// and post v2004 vars
+  if (ver > DRW::AC1015) {  // and post v2004 vars
     writer->writeString(9, "$SORTENTS");
     if (getInt("$SORTENTS", &varInt))
       writer->writeInt16(280, varInt);
@@ -1511,14 +1460,13 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeInt16(280, varInt);
     else
       writer->writeInt16(280, 1);
-    writer->writeString(9, "$XCLIPFRAME"); //RLZ bool flag, verify in bin version
+    writer->writeString(9, "$XCLIPFRAME");  //RLZ bool flag, verify in bin version
     if (ver > DRW::AC1021) {
       if (getInt("$XCLIPFRAME", &varInt))
         writer->writeInt16(280, varInt);
       else
         writer->writeInt16(280, 0);
-    }
-    else {
+    } else {
       if (getInt("$XCLIPFRAME", &varInt))
         writer->writeInt16(290, varInt);
       else
@@ -1560,8 +1508,8 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
     else
       writer->writeString(1, "");
   }
-  if (ver > DRW::AC1018) {// and post v2007 vars
-    writer->writeString(9, "$CAMERADISPLAY"); //RLZ bool flag, verify in bin version
+  if (ver > DRW::AC1018) {                     // and post v2007 vars
+    writer->writeString(9, "$CAMERADISPLAY");  //RLZ bool flag, verify in bin version
     if (getInt("$CAMERADISPLAY", &varInt))
       writer->writeInt16(290, varInt);
     else
@@ -1682,7 +1630,7 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
       writer->writeInt16(280, varInt);
     else
       writer->writeInt16(280, 0);
-    writer->writeString(9, "$REALWORLDSCALE"); //RLZ bool flag, verify in bin version
+    writer->writeString(9, "$REALWORLDSCALE");  //RLZ bool flag, verify in bin version
     if (getInt("$REALWORLDSCALE", &varInt))
       writer->writeInt16(290, varInt);
     else
@@ -1709,7 +1657,8 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version ver) {
 #ifdef DRW_DBG
   std::map<std::string, DRW_Variant*>::const_iterator it;
   for (it = vars.begin(); it != vars.end(); ++it) {
-    DRW_DBG((*it).first); DRW_DBG("\n");
+    DRW_DBG((*it).first);
+    DRW_DBG("\n");
   }
 #endif
 }

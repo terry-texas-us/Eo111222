@@ -9,14 +9,11 @@
  * Inherit your class which takes care of the entities in the
  * processed DXF file from this interface.
  *
- * @author Rallaz
  */
 class DRW_Interface {
-public:
-  DRW_Interface() {
-  }
-  virtual ~DRW_Interface() {
-  }
+ public:
+  DRW_Interface() {}
+  virtual ~DRW_Interface() {}
 
   /** Called when header is parsed.  */
   virtual void addHeader(const DRW_Header* data) = 0;
@@ -98,7 +95,6 @@ public:
 
   /** Called for every solid start */
   virtual void addSolid(const DRW_Solid& data) = 0;
-
 
   /** Called for every Multi Text entity. */
   virtual void addMText(const DRW_MText& data) = 0;

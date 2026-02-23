@@ -5,29 +5,29 @@
 
 void DRW_Class::parseCode(int code, dxfReader* reader) {
   switch (code) {
-  case 1:
-    recName = reader->getUtf8String();
-    break;
-  case 2:
-    className = reader->getUtf8String();
-    break;
-  case 3:
-    appName = reader->getUtf8String();
-    break;
-  case 90:
-    proxyFlag = reader->getInt32();
-    break;
-  case 91:
-    instanceCount = reader->getInt32();
-    break;
-  case 280:
-    wasaProxyFlag = reader->getInt32();
-    break;
-  case 281:
-    entityFlag = reader->getInt32();
-    break;
-  default:
-    break;
+    case 1:
+      recName = reader->getUtf8String();
+      break;
+    case 2:
+      className = reader->getUtf8String();
+      break;
+    case 3:
+      appName = reader->getUtf8String();
+      break;
+    case 90:
+      proxyFlag = reader->getInt32();
+      break;
+    case 91:
+      instanceCount = reader->getInt32();
+      break;
+    case 280:
+      wasaProxyFlag = reader->getInt32();
+      break;
+    case 281:
+      entityFlag = reader->getInt32();
+      break;
+    default:
+      break;
   }
 }
 
@@ -38,7 +38,7 @@ void DRW_Class::write(dxfWriter* writer, DRW::Version ver) const {
     writer->writeString(2, className);
     writer->writeString(3, appName);
     writer->writeInt32(90, proxyFlag);
-    if (ver > DRW::AC1015) { //2004+
+    if (ver > DRW::AC1015) {  //2004+
       writer->writeInt32(91, instanceCount);
     }
     writer->writeInt16(280, wasaProxyFlag);
