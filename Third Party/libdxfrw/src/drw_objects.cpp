@@ -16,8 +16,6 @@
 
 #include "drw_base.h"
 #include "drw_objects.h"
-#include "intern/drw_dbg.h"
-#include "intern/dwgutil.h"
 #include "intern/dxfreader.h"
 
 //! Base class for tables entries

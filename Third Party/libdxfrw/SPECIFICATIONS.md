@@ -49,18 +49,18 @@ dxfRW (Main API Class)
 ├── dxfReader/dxfWriter (DXF I/O Handlers)
 ├── DRW_Header (Header Variables)
 ├── DRW_Entity (Geometric Entities)
-│   ├── DRW_Point
-│   ├── DRW_Line
 │   ├── DRW_Arc
 │   ├── DRW_Circle
+│   ├── DRW_Dimension (various dimension types)
 │   ├── DRW_Ellipse
+│   ├── DRW_Hatch
+│   ├── DRW_Line
 │   ├── DRW_LWPolyline
+│   ├── DRW_MText
+│   ├── DRW_Point
 │   ├── DRW_Polyline
 │   ├── DRW_Spline
 │   ├── DRW_Text
-│   ├── DRW_MText
-│   ├── DRW_Hatch
-│   ├── DRW_Dimension (various dimension types)
 │   └── Other entities
 └── DRW_Object (Non-geometric Objects)
     ├── DRW_Layer
@@ -75,22 +75,18 @@ dxfRW (Main API Class)
 ```
 libdxfrw/
 ├── src/                      # Library source code
-│   ├── libdxfrw.h/cpp       # Main API class
-│   ├── drw_interface.h      # Abstract interface
-│   ├── drw_entities.h/cpp   # Entity definitions
-│   ├── drw_objects.h/cpp    # Object definitions
-│   ├── drw_header.h/cpp     # Header variables
 │   ├── drw_base.h           # Basic data structures
+│   ├── drw_entities.h/cpp   # Entity definitions
+│   ├── drw_header.h/cpp     # Header variables
+│   ├── drw_interface.h      # Abstract interface
+│   ├── drw_objects.h/cpp    # Object definitions
+│   ├── libdxfrw.h/cpp       # Main API class
 │   └── intern/              # Internal implementation
+│       ├── drw_textcodec.h/cpp # Character encoding
 │       ├── dxfreader.h/cpp     # DXF reader
 │       ├── dxfwriter.h/cpp     # DXF writer
-│       ├── drw_textcodec.h/cpp # Character encoding
 │       └── Other utilities
-├── dwg2text/                 # DWG to text extractor tool
-├── bin/                      # Executable scripts
-└── vs2013/                   # Visual Studio 2013 project
-```
-
+└── bin/                      # Executable scripts
 ---
 
 ## API Specifications

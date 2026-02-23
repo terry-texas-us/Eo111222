@@ -121,7 +121,7 @@ private:
   bool writeBlocks();
   bool writeObjects();
   bool writeExtData(const std::vector<DRW_Variant*>& ed);
-  /*use version from dwgutil.h*/
+
   std::string toHexStr(int n);//RLZ removeme
 
 private:

@@ -19,16 +19,7 @@ libdxfrw is a free C++ library for reading and writing DXF (Drawing eXchange For
    - Read and write DXF files in binary format
    - Support for multiple DXF versions: R12, 2000, 2004, 2007, 2010
 
-2. **DWG File Reading**
-   - Supported versions: R14 to V2015
-   - Version-specific reader implementations:
-     - dwgReader15: R14 version
-     - dwgReader18: R2004 version
-     - dwgReader21: R2007 version
-     - dwgReader24: R2010 version
-     - dwgReader27: R2013/R2015 versions
-
-3. **Supported CAD Drawing Entities**
+2. **Supported CAD Drawing Entities**
    - Basic shapes: Points, Lines, Rays, XLines
    - Curves: Circles, Arcs, Ellipses, Splines
    - Polylines: 2D/3D Lightweight Polylines
@@ -37,7 +28,7 @@ libdxfrw is a free C++ library for reading and writing DXF (Drawing eXchange For
    - Annotations: Hatches, Dimensions, Leaders
    - Others: Block references, Images, Viewports
 
-4. **Supported CAD Objects**
+3. **Supported CAD Objects**
    - Layers
    - Line Types
    - Text Styles
@@ -56,12 +47,6 @@ libdxfrw is a free C++ library for reading and writing DXF (Drawing eXchange For
 dxfRW (Main API Class)
 ├── DRW_Interface (Abstract Interface)
 ├── dxfReader/dxfWriter (DXF I/O Handlers)
-├── dwgReader (DWG Reader Base)
-│   ├── dwgReader15 (R14)
-│   ├── dwgReader18 (R2004)
-│   ├── dwgReader21 (R2007)
-│   ├── dwgReader24 (R2010)
-│   └── dwgReader27 (R2013-2015)
 ├── DRW_Header (Header Variables)
 ├── DRW_Entity (Geometric Entities)
 │   ├── DRW_Point
@@ -99,7 +84,6 @@ libdxfrw/
 │   └── intern/              # Internal implementation
 │       ├── dxfreader.h/cpp     # DXF reader
 │       ├── dxfwriter.h/cpp     # DXF writer
-│       ├── dwgreader*.h/cpp    # DWG readers
 │       ├── dwgbuffer.h/cpp     # DWG buffer
 │       ├── drw_textcodec.h/cpp # Character encoding
 │       └── Other utilities

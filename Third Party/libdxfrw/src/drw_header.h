@@ -1,18 +1,4 @@
-/******************************************************************************
-**  libDXFrw - Library to read/write DXF files (ascii & binary)              **
-**                                                                           **
-**  Copyright (C) 2011-2015 José F. Soriano, rallazz@gmail.com               **
-**                                                                           **
-**  This library is free software, licensed under the terms of the GNU       **
-**  General Public License as published by the Free Software Foundation,     **
-**  either version 2 of the License, or (at your option) any later version.  **
-**  You should have received a copy of the GNU General Public License        **
-**  along with this program.  If not, see <http://www.gnu.org/licenses/>.    **
-******************************************************************************/
-
-#ifndef DRW_HEADER_H
-#define DRW_HEADER_H
-
+#pragma once
 
 #include <map>
 #include <string>
@@ -23,9 +9,6 @@ class dxfReader;
 class dxfWriter;
 class dwgBuffer;
 
-#define SETHDRFRIENDS  friend class dxfRW; \
-                       friend class dwgReader;
-
 //! Class to handle header entries
 /*!
 *  Class to handle header vars, to read iterate over "std::map vars"
@@ -34,8 +17,8 @@ class dwgBuffer;
 *  @author Rallaz
 */
 class DRW_Header {
-  SETHDRFRIENDS
-public:
+  friend class dxfRW;
+ public:
   DRW_Header();
   ~DRW_Header() {
     clearVars();
@@ -103,8 +86,4 @@ private:
   duint32 vportCtrl;
   duint32 vpEntHeaderCtrl{ 0 };
 };
-
-#endif
-
-// EOF
 

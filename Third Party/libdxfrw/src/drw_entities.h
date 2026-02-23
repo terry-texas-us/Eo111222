@@ -89,7 +89,6 @@ enum ETYPE {
 
 #define SETENTFRIENDS \
   friend class dxfRW; \
-  friend class dwgReader;
 
 //! Base class for entities
 /*!

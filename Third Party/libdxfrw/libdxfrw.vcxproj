@@ -162,14 +162,10 @@
     <ClInclude Include="src\intern\drw_cptables.h" />
     <ClInclude Include="src\intern\drw_dbg.h" />
     <ClInclude Include="src\intern\drw_textcodec.h" />
-    <ClInclude Include="src\intern\dwgreader.h" />
-    <ClInclude Include="src\intern\dwgutil.h" />
     <ClInclude Include="src\intern\dxfreader.h" />
     <ClInclude Include="src\intern\dxfwriter.h" />
     <ClInclude Include="src\intern\rscodec.h" />
-    <ClInclude Include="src\libdwgr.h" />
     <ClInclude Include="src\libdxfrw.h" />
-    <ClInclude Include="src\main_doc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\drw_classes.cpp" />
@@ -193,5 +189,8 @@
   </Target>
   <ItemGroup>
     <ProjectReference Include="..\libiconv\libiconv.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SPECIFICATIONS.md" />
   </ItemGroup>
 </Project>

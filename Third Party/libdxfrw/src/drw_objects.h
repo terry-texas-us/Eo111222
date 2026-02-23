@@ -44,9 +44,6 @@ namespace DRW {
   //SPATIAL_INDEX, SPATIAL_FILTER, TABLEGEOMETRY, TABLESTYLES,VISUALSTYLE,
 }
 
-#define SETOBJFRIENDS  friend class dxfRW; \
-                       friend class dwgReader;
-
 //! Base class for tables entries
 /*!
 *  Base class for tables entries
@@ -119,8 +116,8 @@ protected:
 *  @author Rallaz
 */
 class DRW_Dimstyle : public DRW_TableEntry {
-  SETOBJFRIENDS
-public:
+  friend class dxfRW;
+ public:
   DRW_Dimstyle() { reset(); }
 
   void reset() {
@@ -232,7 +229,7 @@ public:
 */
 /*TODO: handle complex lineType*/
 class DRW_LType : public DRW_TableEntry {
-  SETOBJFRIENDS
+  friend class dxfRW;
 public:
   DRW_LType() { reset(); }
 
@@ -267,7 +264,7 @@ private:
 *  @author Rallaz
 */
 class DRW_Layer : public DRW_TableEntry {
-  SETOBJFRIENDS
+  friend class dxfRW;
 public:
   DRW_Layer() { reset(); }
 
@@ -301,7 +298,7 @@ public:
 *  @author Rallaz
 */
 class DRW_Block_Record : public DRW_TableEntry {
-  SETOBJFRIENDS
+  friend class dxfRW;
 public:
   DRW_Block_Record() { reset(); }
   void reset() {
@@ -333,7 +330,7 @@ private:
 *  @author Rallaz
 */
 class DRW_Textstyle : public DRW_TableEntry {
-  SETOBJFRIENDS
+  friend class dxfRW;
 public:
   DRW_Textstyle() { reset(); }
 
@@ -366,7 +363,7 @@ public:
 *  @author Rallaz
 */
 class DRW_Vport : public DRW_TableEntry {
-  SETOBJFRIENDS
+  friend class dxfRW;
 public:
   DRW_Vport() { reset(); }
 
@@ -432,7 +429,7 @@ public:
 *  @author Rallaz
 */
 class DRW_ImageDef : public DRW_TableEntry {//
-  SETOBJFRIENDS
+  friend class dxfRW;
 public:
   DRW_ImageDef() {
     reset();
@@ -466,7 +463,7 @@ public:
 *  @author Rallaz
 */
 class DRW_AppId : public DRW_TableEntry {
-  SETOBJFRIENDS
+  friend class dxfRW;
 public:
   DRW_AppId() { reset(); }
 
