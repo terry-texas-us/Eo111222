@@ -43,7 +43,7 @@ public:
   virtual void addBlock(const DRW_Block& data) = 0;
 
   /**
-   * In DWG called when the following entities corresponding to a
+   * Called when the following entities corresponding to a
    * block different from the current. Note: all entities added after this
    * command go into this block until setBlock() is called already.
    *

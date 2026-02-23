@@ -52,7 +52,7 @@ enum ETYPE {
   RAY,
   //        REGION, //encripted propietry data
   //        SECTION,
-  //        SEQEND,//not needed?? used in polyline and insert/attrib and dwg
+  //        SEQEND,//not needed?? used in polyline and insert/attrib
   //        SHAPE,
   SOLID,
   SPLINE,
@@ -71,10 +71,6 @@ enum ETYPE {
 };
 
 }  // namespace DRW
-//only in DWG: MINSERT, 5 types of vertex, 4 types of polylines: 2d, 3d, pface & mesh
-//shape, dictionary, MLEADER, MLEADERSTYLE
-
-#define SETENTFRIENDS friend class dxfRW;
 
 //! Base class for entities
 /*!
@@ -82,11 +78,12 @@ enum ETYPE {
 *  @author Rallaz
 */
 class DRW_Entity {
-  SETENTFRIENDS
+  friend class dxfRW;
+
  public:
   //initializes default values
   //handles: default no handle (0), color: default BYLAYER (256), 24 bits color: default -1 (not set)
-  //line weight: default BYLAYER  (dxf -1, dwg 29), space: default ModelSpace (0)
+  //line weight: default BYLAYER  (dxf -1), space: default ModelSpace (0)
   DRW_Entity()
       : eType(DRW::UNKNOWN),
         handle(DRW::NoHandle),
@@ -109,19 +106,6 @@ class DRW_Entity {
         shadow(DRW::CastAndReceieveShadows),
         haveExtrusion(false),
         extData(),
-        plotFlags(0),
-        ltFlags(0),
-        materialFlag(0),
-        shadowFlag(0),
-        lTypeH(dwgHandle()),
-        layerH(dwgHandle()),
-        nextEntLink(0),
-        prevEntLink(0),
-        ownerHandle(false),
-        xDictFlag(0),
-        numReactors(0),
-        objSize(0),
-        oType(0),
         extAxisX(DRW_Coord()),
         extAxisY(DRW_Coord()),
         curr(nullptr) {}
@@ -144,13 +128,7 @@ class DRW_Entity {
     material = e.material;
     plotStyle = e.plotStyle;
     transparency = e.transparency;
-    nextEntLink = e.nextEntLink;
-    prevEntLink = e.prevEntLink;
-    numReactors = e.numReactors;
-    xDictFlag = e.xDictFlag;
     curr = nullptr;
-    ownerHandle = false;
-    objSize = e.objSize;
     for (std::vector<DRW_Variant*>::const_iterator it = e.extData.begin(); it != e.extData.end(); ++it) {
       extData.push_back(new DRW_Variant(*(*it)));
     }
@@ -212,22 +190,6 @@ class DRW_Entity {
   bool haveExtrusion;                         /*!< set to true if the entity have extrusion*/
   std::vector<DRW_Variant*> extData;          /*!< FIFO list of extended data, codes 1000 to 1071*/
 
- protected:                 //only for read dwg
-  duint8 plotFlags{0};      //presence of plot style //BB
-  duint8 ltFlags{0};        //presence of linetype handle //BB
-  duint8 materialFlag{0};   //presence of material handle //BB
-  duint8 shadowFlag{0};     //presence of shadow handle ?? (in dwg may be plotflag)//RC
-  dwgHandle lTypeH;
-  dwgHandle layerH;
-  duint32 nextEntLink;
-  duint32 prevEntLink;
-  bool ownerHandle;
-
-  duint8 xDictFlag;
-  dint32 numReactors;  //
-  duint32 objSize;     //RL 32bits object data size in bits
-  dint16 oType{0};
-
  private:
   DRW_Coord extAxisX;
   DRW_Coord extAxisY;
@@ -240,7 +202,7 @@ class DRW_Entity {
 *  @author Rallaz
 */
 class DRW_Point : public DRW_Entity {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Point() {
     eType = DRW::POINT;
@@ -268,7 +230,7 @@ class DRW_Point : public DRW_Entity {
 *  @author Rallaz
 */
 class DRW_Line : public DRW_Point {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Line() {
     eType = DRW::LINE;
@@ -290,7 +252,7 @@ class DRW_Line : public DRW_Point {
 *  @author Rallaz
 */
 class DRW_Ray : public DRW_Line {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Ray() { eType = DRW::RAY; }
 };
@@ -310,7 +272,7 @@ class DRW_Xline : public DRW_Ray {
 *  @author Rallaz
 */
 class DRW_Circle : public DRW_Point {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Circle() { eType = DRW::CIRCLE; }
 
@@ -329,7 +291,7 @@ class DRW_Circle : public DRW_Point {
 *  @author Rallaz
 */
 class DRW_Arc : public DRW_Circle {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Arc() {
     eType = DRW::ARC;
@@ -369,7 +331,7 @@ class DRW_Arc : public DRW_Circle {
 *  @author Rallaz
 */
 class DRW_Ellipse : public DRW_Line {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Ellipse() {
     eType = DRW::ELLIPSE;
@@ -399,7 +361,7 @@ class DRW_Ellipse : public DRW_Line {
 *  @author Rallaz
 */
 class DRW_Trace : public DRW_Line {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Trace() {
     eType = DRW::TRACE;
@@ -423,7 +385,7 @@ class DRW_Trace : public DRW_Line {
 *  @author Rallaz
 */
 class DRW_Solid : public DRW_Trace {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Solid() { eType = DRW::SOLID; }
 
@@ -454,7 +416,7 @@ class DRW_Solid : public DRW_Trace {
 *  @author Rallaz
 */
 class DRW_3Dface : public DRW_Trace {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   enum InvisibleEdgeFlags {
     NoEdge = 0x00,
@@ -497,14 +459,13 @@ class DRW_3Dface : public DRW_Trace {
 *  @author Rallaz
 */
 class DRW_Block : public DRW_Point {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Block() {
     eType = DRW::BLOCK;
     layer = "0";
     flags = 0;
     name = "*U0";
-    isEnd = false;
   }
 
   virtual void applyExtrusion() {}
@@ -515,8 +476,6 @@ class DRW_Block : public DRW_Point {
  public:
   UTF8STRING name; /*!< block name, code 2 */
   int flags;       /*!< block type, code 70 */
- private:
-  bool isEnd;  //for dwg parsing
 };
 
 //! Class to handle insert entries
@@ -525,7 +484,7 @@ class DRW_Block : public DRW_Point {
 *  @author Rallaz
 */
 class DRW_Insert : public DRW_Point {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Insert() {
     eType = DRW::INSERT;
@@ -554,9 +513,6 @@ class DRW_Insert : public DRW_Point {
   int rowcount;    /*!< row count, code 71 */
   double colspace; /*!< column space, code 44 */
   double rowspace; /*!< row space, code 45 */
- public:           //only for read dwg
-  dwgHandle blockRecH;
-  dwgHandle seqendH;  //RLZ: on implement attrib remove this handle from obj list (see pline/vertex code)
 };
 
 //! Class to handle lwpolyline entity
@@ -565,7 +521,7 @@ class DRW_Insert : public DRW_Point {
 *  @author Rallaz
 */
 class DRW_LWPolyline : public DRW_Entity {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_LWPolyline() {
     eType = DRW::LWPOLYLINE;
@@ -638,7 +594,7 @@ class DRW_LWPolyline : public DRW_Entity {
 *  @author Rallaz
 */
 class DRW_Text : public DRW_Line {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   //! Vertical alignments.
   enum VAlign {
@@ -684,7 +640,6 @@ class DRW_Text : public DRW_Line {
   int textgen;        /*!< text generation, code 71 */
   enum HAlign alignH; /*!< horizontal align, code 72 */
   enum VAlign alignV; /*!< vertical align, code 73 */
-  dwgHandle styleH;   /*!< handle for text style */
 };
 
 //! Class to handle insert entries
@@ -693,7 +648,7 @@ class DRW_Text : public DRW_Line {
 *  @author Rallaz
 */
 class DRW_MText : public DRW_Text {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   //! Attachments.
   enum Attach {
@@ -731,7 +686,7 @@ class DRW_MText : public DRW_Text {
 *  @author Rallaz
 */
 class DRW_Vertex : public DRW_Point {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Vertex() {
     eType = DRW::VERTEX;
@@ -772,7 +727,7 @@ class DRW_Vertex : public DRW_Point {
 *  @author Rallaz
 */
 class DRW_Polyline : public DRW_Point {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Polyline() {
     eType = DRW::POLYLINE;
@@ -819,9 +774,6 @@ class DRW_Polyline : public DRW_Point {
 
  private:
   std::list<duint32> hadlesList;  //list of handles, only in 2004+
-  duint32 firstEH{0};             //handle of first entity, only in pre-2004
-  duint32 lastEH{0};              //handle of last entity, only in pre-2004
-  dwgHandle seqEndH;              //handle of SEQEND entity
 };
 
 //! Class to handle spline entity
@@ -830,7 +782,7 @@ class DRW_Polyline : public DRW_Point {
 *  @author Rallaz
 */
 class DRW_Spline : public DRW_Entity {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Spline() {
     eType = DRW::SPLINE;
@@ -927,7 +879,7 @@ class DRW_HatchLoop {
 */
 //TODO: handle lwpolylines, splines and ellipses
 class DRW_Hatch : public DRW_Point {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Hatch() {
     eType = DRW::HATCH;
@@ -1031,7 +983,7 @@ class DRW_Hatch : public DRW_Point {
 *  @author Rallaz
 */
 class DRW_Image : public DRW_Line {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Image() {
     eType = DRW::IMAGE;
@@ -1063,7 +1015,7 @@ class DRW_Image : public DRW_Line {
 *  @author Rallaz
 */
 class DRW_Dimension : public DRW_Entity {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Dimension() {
     eType = DRW::DIMENSION;
@@ -1176,10 +1128,6 @@ class DRW_Dimension : public DRW_Entity {
   DRW_Coord circlePoint; /*!< Definition point for diameter, radius & angular dims code 15, 25 & 35 (WCS) */
   DRW_Coord arcPoint;    /*!< Point defining dimension arc, x coordinate, code 16, 26 & 36 (OCS) */
   double length{0.0};    /*!< Leader length, code 40 */
-
- protected:
-  dwgHandle dimStyleH;
-  dwgHandle blockH;
 };
 
 //! Class to handle  aligned dimension entity
@@ -1188,7 +1136,7 @@ class DRW_Dimension : public DRW_Entity {
 *  @author Rallaz
 */
 class DRW_DimAligned : public DRW_Dimension {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_DimAligned() { eType = DRW::DIMALIGNED; }
   DRW_DimAligned(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMALIGNED; }
@@ -1226,7 +1174,7 @@ class DRW_DimLinear : public DRW_DimAligned {
 *  @author Rallaz
 */
 class DRW_DimRadial : public DRW_Dimension {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_DimRadial() { eType = DRW::DIMRADIAL; }
   DRW_DimRadial(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMRADIAL; }
@@ -1245,7 +1193,7 @@ class DRW_DimRadial : public DRW_Dimension {
 *  @author Rallaz
 */
 class DRW_DimDiametric : public DRW_Dimension {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_DimDiametric() { eType = DRW::DIMDIAMETRIC; }
   DRW_DimDiametric(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMDIAMETRIC; }
@@ -1264,7 +1212,7 @@ class DRW_DimDiametric : public DRW_Dimension {
 *  @author Rallaz
 */
 class DRW_DimAngular : public DRW_Dimension {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_DimAngular() { eType = DRW::DIMANGULAR; }
   DRW_DimAngular(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMANGULAR; }
@@ -1287,7 +1235,7 @@ class DRW_DimAngular : public DRW_Dimension {
 *  @author Rallaz
 */
 class DRW_DimAngular3p : public DRW_Dimension {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_DimAngular3p() { eType = DRW::DIMANGULAR3P; }
   DRW_DimAngular3p(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMANGULAR3P; }
@@ -1308,7 +1256,7 @@ class DRW_DimAngular3p : public DRW_Dimension {
 *  @author Rallaz
 */
 class DRW_DimOrdinate : public DRW_Dimension {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_DimOrdinate() { eType = DRW::DIMORDINATE; }
   DRW_DimOrdinate(const DRW_Dimension& d) : DRW_Dimension(d) { eType = DRW::DIMORDINATE; }
@@ -1327,7 +1275,7 @@ class DRW_DimOrdinate : public DRW_Dimension {
 *  @author Rallaz
 */
 class DRW_Leader : public DRW_Entity {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Leader() {
     eType = DRW::LEADER;
@@ -1373,8 +1321,6 @@ class DRW_Leader : public DRW_Entity {
 
  private:
   DRW_Coord* vertexpoint{nullptr}; /*!< current control point to add data */
-  dwgHandle dimStyleH;
-  dwgHandle AnnotH;
 };
 
 //! Class to handle viewport entity
@@ -1383,7 +1329,7 @@ class DRW_Leader : public DRW_Entity {
 *  @author Rallaz
 */
 class DRW_Viewport : public DRW_Point {
-  SETENTFRIENDS
+  friend class dxfRW;
  public:
   DRW_Viewport() {
     eType = DRW::VIEWPORT;

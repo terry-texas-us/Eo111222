@@ -42,7 +42,6 @@ public:
   DRW_TableEntry() {
     tType = DRW::UNKNOWNT;
     flags = 0;
-    numReactors = xDictFlag = 0;
     parentHandle = 0;
     curr = nullptr;
   }
@@ -60,8 +59,6 @@ public:
     parentHandle = e.parentHandle;
     name = e.name;
     flags = e.flags;
-    numReactors = e.numReactors;
-    xDictFlag = e.xDictFlag;
     curr = e.curr;
     for (std::vector<DRW_Variant*>::const_iterator it = e.extData.begin(); it != e.extData.end(); ++it) {
       extData.push_back(new DRW_Variant(*(*it)));
@@ -87,15 +84,7 @@ public:
 
 private:
   DRW_Variant* curr;
-
-  //***** dwg parse ********/
-protected:
-  dint16 oType{ 0 };
-  duint8 xDictFlag;
-  dint32 numReactors; //
-  duint32 objSize{ 0 };  //RL 32bits object data size in bits
 };
-
 
 //! Class to handle dimstyle entries
 /*!
@@ -260,7 +249,7 @@ public:
     lineType = "CONTINUOUS";
     color = 7; // default BYLAYER (256)
     plotF = true; // default TRUE (plot yes)
-    lWeight = DRW_LW_Conv::widthDefault; // default BYDEFAULT (dxf -3, dwg 31)
+    lWeight = DRW_LW_Conv::widthDefault; // default BYDEFAULT (dxf -3)
     color24 = -1; //default -1 not set
     DRW_TableEntry::reset();
   }
@@ -275,8 +264,6 @@ public:
   enum DRW_LW_Conv::lineWidth lWeight; /*!< layer lineweight, code 370 */
   std::string handlePlotS;        /*!< Hard-pointer ID/handle of plotstyle, code 390 */
   std::string handleMaterialS;        /*!< Hard-pointer ID/handle of materialstyle, code 347 */
-  /*only used for read dwg*/
-  dwgHandle lTypeH;
 };
 
 //! Class to handle block record entries
@@ -291,7 +278,6 @@ public:
   void reset() {
     tType = DRW::BLOCK_RECORD;
     flags = 0;
-    firstEH = lastEH = DRW::NoHandle;
     DRW_TableEntry::reset();
   }
 
@@ -301,14 +287,6 @@ public:
   //Note:    int DRW_TableEntry::flags; contains code 70 of block
   int insUnits;             /*!< block insertion units, code 70 of block_record*/
   DRW_Coord basePoint;      /*!<  block insertion base point dwg only */
-protected:
-  //dwg parser
-private:
-  duint32 block;   //handle for block entity
-  duint32 endBlock;//handle for end block entity
-  duint32 firstEH; //handle of first entity, only in pre-2004
-  duint32 lastEH;  //handle of last entity, only in pre-2004
-  std::vector<duint32>entMap;
 };
 
 //! Class to handle text style entries
