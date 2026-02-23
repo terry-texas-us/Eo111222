@@ -164,7 +164,6 @@
     <ClInclude Include="src\intern\drw_textcodec.h" />
     <ClInclude Include="src\intern\dxfreader.h" />
     <ClInclude Include="src\intern\dxfwriter.h" />
-    <ClInclude Include="src\intern\rscodec.h" />
     <ClInclude Include="src\libdxfrw.h" />
   </ItemGroup>
   <ItemGroup>
@@ -176,7 +175,6 @@
     <ClCompile Include="src\intern\drw_textcodec.cpp" />
     <ClCompile Include="src\intern\dxfreader.cpp" />
     <ClCompile Include="src\intern\dxfwriter.cpp" />
-    <ClCompile Include="src\intern\rscodec.cpp" />
     <ClCompile Include="src\libdxfrw.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

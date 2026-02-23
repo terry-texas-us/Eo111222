@@ -1,15 +1,3 @@
-/******************************************************************************
-**  libDXFrw - Library to read/write DXF files (ascii & binary)              **
-**                                                                           **
-**  Copyright (C) 2011-2015 José F. Soriano, rallazz@gmail.com               **
-**                                                                           **
-**  This library is free software, licensed under the terms of the GNU       **
-**  General Public License as published by the Free Software Foundation,     **
-**  either version 2 of the License, or (at your option) any later version.  **
-**  You should have received a copy of the GNU General Public License        **
-**  along with this program.  If not, see <http://www.gnu.org/licenses/>.    **
-******************************************************************************/
-
 #include <cmath>
 #include <list>
 #include <string>
@@ -17,7 +5,6 @@
 
 #include "drw_base.h"
 #include "drw_entities.h"
-#include "intern/drw_dbg.h"
 #include "intern/dxfreader.h"
 
 //! Calculate arbitary axis
@@ -153,7 +140,6 @@ bool DRW_Entity::parseCode(int code, dxfReader* reader) {
   return true;
 }
 
-//parses dxf 102 groups to read entity
 bool DRW_Entity::parseDxfGroups(int code, dxfReader* reader) {
   std::list<DRW_Variant> ls;
   DRW_Variant curr;

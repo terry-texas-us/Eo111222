@@ -1,17 +1,4 @@
-/******************************************************************************
-**  libDXFrw - Library to read/write DXF files (ascii & binary)              **
-**                                                                           **
-**  Copyright (C) 2011-2015 José F. Soriano, rallazz@gmail.com               **
-**                                                                           **
-**  This library is free software, licensed under the terms of the GNU       **
-**  General Public License as published by the Free Software Foundation,     **
-**  either version 2 of the License, or (at your option) any later version.  **
-**  You should have received a copy of the GNU General Public License        **
-**  along with this program.  If not, see <http://www.gnu.org/licenses/>.    **
-******************************************************************************/
-
-#ifndef DRW_ENTITIES_H
-#define DRW_ENTITIES_H
+#pragma once
 
 #include <list>
 #include <string>
@@ -87,8 +74,7 @@ enum ETYPE {
 //only in DWG: MINSERT, 5 types of vertex, 4 types of polylines: 2d, 3d, pface & mesh
 //shape, dictionary, MLEADER, MLEADERSTYLE
 
-#define SETENTFRIENDS \
-  friend class dxfRW; \
+#define SETENTFRIENDS friend class dxfRW;
 
 //! Base class for entities
 /*!
@@ -123,7 +109,6 @@ class DRW_Entity {
         shadow(DRW::CastAndReceieveShadows),
         haveExtrusion(false),
         extData(),
-        haveNextLinks(0),
         plotFlags(0),
         ltFlags(0),
         materialFlag(0),
@@ -185,13 +170,23 @@ class DRW_Entity {
   virtual void applyExtrusion() = 0;
 
  protected:
-  //parses dxf pair to read entity
+  /** @brief Parses dxf code and value to read entity data
+   *  @param code dxf code
+   *  @param reader pointer to dxfReader to read value
+   *  @return true if code is processed, false if code is not recognized
+   */
   bool parseCode(int code, dxfReader* reader);
   //calculates extrusion axis (normal vector)
   void calculateAxis(DRW_Coord extPoint);
   //apply extrusion to @extPoint and return data in @point
   void extrudePoint(DRW_Coord extPoint, DRW_Coord* point) const;
   // parses dxf 102 groups to read entity
+
+  /** @brief Parses tart of application-defined group, for example: 102, {ACAD_REACTORS} or 102, {ACAD_XDICTIONARY}
+   *  @param code dxf code (should be 102)
+   *  @param reader pointer to dxfReader to read value
+   *  @return true if code is processed, false if code is not recognized
+   */
   bool parseDxfGroups(int code, dxfReader* reader);
 
  public:
@@ -218,7 +213,6 @@ class DRW_Entity {
   std::vector<DRW_Variant*> extData;          /*!< FIFO list of extended data, codes 1000 to 1071*/
 
  protected:                 //only for read dwg
-  duint8 haveNextLinks{0};  //aka nolinks //B
   duint8 plotFlags{0};      //presence of plot style //BB
   duint8 ltFlags{0};        //presence of linetype handle //BB
   duint8 materialFlag{0};   //presence of material handle //BB
@@ -810,6 +804,7 @@ class DRW_Polyline : public DRW_Point {
 
  protected:
   void parseCode(int code, dxfReader* reader);
+
  public:
   int flags;          /*!< polyline flag, code 70, default 0 */
   double defstawidth; /*!< Start width, code 40, default 0 */
@@ -861,6 +856,7 @@ class DRW_Spline : public DRW_Entity {
 
  protected:
   void parseCode(int code, dxfReader* reader);
+
  public:
   //    double ex;                /*!< normal vector x coordinate, code 210 */
   //    double ey;                /*!< normal vector y coordinate, code 220 */
@@ -960,6 +956,7 @@ class DRW_Hatch : public DRW_Point {
 
  protected:
   void parseCode(int code, dxfReader* reader);
+
  public:
   UTF8STRING name; /*!< hatch pattern name, code 2 */
   int solid;       /*!< solid fill flag, code 70, solid=1, pattern=0 */
@@ -1044,6 +1041,7 @@ class DRW_Image : public DRW_Line {
 
  protected:
   void parseCode(int code, dxfReader* reader);
+
  public:
   duint32 ref{0};    /*!< Hard reference to imagedef object, code 340 */
   DRW_Coord vVector; /*!< V-vector of single pixel, x coordinate, code 12, 22 & 32 */
@@ -1109,6 +1107,7 @@ class DRW_Dimension : public DRW_Entity {
 
  protected:
   void parseCode(int code, dxfReader* reader);
+
  public:
   DRW_Coord getDefPoint() const { return defPoint; } /*!< Definition point, code 10, 20 & 30 */
   void setDefPoint(const DRW_Coord p) { defPoint = p; }
@@ -1352,6 +1351,7 @@ class DRW_Leader : public DRW_Entity {
 
  protected:
   void parseCode(int code, dxfReader* reader);
+
  public:
   UTF8STRING style;         /*!< Dimension style name, code 3 */
   int arrow;                /*!< Arrowhead flag, code 71, 0=Disabled; 1=Enabled */
@@ -1398,6 +1398,7 @@ class DRW_Viewport : public DRW_Point {
 
  protected:
   void parseCode(int code, dxfReader* reader);
+
  public:
   double pswidth;       /*!< Width in paper space units, code 40 */
   double psheight;      /*!< Height in paper space units, code 41 */
@@ -1447,7 +1448,3 @@ class DRW_Viewport : public DRW_Point {
 //int plotStyle;             /*!< hard pointer id to plot style object, code 390 */
 //DRW::ShadowMode shadow;    /*!< shadow mode, code 284 */
 //bool haveExtrusion;        /*!< set to true if the entity have extrusion*/
-
-#endif
-
-// EOF
