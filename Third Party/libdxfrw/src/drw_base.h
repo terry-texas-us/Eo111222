@@ -5,6 +5,7 @@
 constexpr auto DRW_VERSION = "0.6.3";
 
 #include <cmath>
+#include <cstdint>
 #include <string>
 
 #ifdef DRW_ASSERTS
@@ -30,11 +31,6 @@ constexpr auto M_PI = 3.141592653589793238462643;
 constexpr auto M_PI_2 = 1.57079632679489661923;
 constexpr auto M_PIx2 = 6.283185307179586;
 constexpr auto ARAD = 57.29577951308232;
-
-typedef signed char dint8;    /* 8 bit signed */
-typedef signed short dint16;  /* 16 bit signed */
-typedef signed int dint32;    /* 32 bit signed */
-typedef long long int dint64; /* 64 bit signed */
 
 typedef unsigned char duint8;           /* 8 bit unsigned */
 typedef unsigned short duint16;         /* 16 bit unsigned */
@@ -164,10 +160,10 @@ class DRW_Variant {
   //TODO: add INT64 support
   DRW_Variant() : sdata(std::string()), vdata(), content(0), vType(INVALID), vCode(0) {}
 
-  DRW_Variant(int c, dint32 i) : sdata(std::string()), vdata(), content(i), vType(INTEGER), vCode(c) {}
+  DRW_Variant(int c, std::int32_t i) : sdata(std::string()), vdata(), content(i), vType(INTEGER), vCode(c) {}
 
   DRW_Variant(int c, duint32 i)
-      : sdata(std::string()), vdata(), content(static_cast<dint32>(i)), vType(INTEGER), vCode(c) {}
+      : sdata(std::string()), vdata(), content(static_cast<std::int32_t>(i)), vType(INTEGER), vCode(c) {}
 
   DRW_Variant(int c, double d) : sdata(std::string()), vdata(), content(d), vType(DOUBLE), vCode(c) {}
 
@@ -224,12 +220,12 @@ class DRW_Variant {
  private:
   union DRW_VarContent {
     UTF8STRING* s;
-    dint32 i;
+    std::int32_t i;
     double d;
     DRW_Coord* v;
 
     DRW_VarContent(UTF8STRING* sd) : s(sd) {}
-    DRW_VarContent(dint32 id) : i(id) {}
+    DRW_VarContent(std::int32_t id) : i(id) {}
     DRW_VarContent(double dd) : d(dd) {}
     DRW_VarContent(DRW_Coord* vd) : v(vd) {}
   };
