@@ -1,133 +1,132 @@
 #pragma once
-
-// Table 1252
+// Windows - 1252 code page(also known as CP1252 or "Western European (Windows)")
 static const int DRW_Table1252[] = {
-    0x20AC,  //1 #EURO SIGN
-    0x00,    //2 #UNDEFINED
-    0x201A,  //3 #SINGLE LOW-9 QUOTATION MARK
-    0x0192,  //4 #LATIN SMALL LETTER F WITH HOOK
-    0x201E,  //5 #DOUBLE LOW-9 QUOTATION MARK
-    0x2026,  //6 #HORIZONTAL ELLIPSIS
-    0x2020,  //7 #DAGGER
-    0x2021,  //8 #DOUBLE DAGGER
-    0x02C6,  //9 #MODIFIER LETTER CIRCUMFLEX ACCENT
-    0x2030,  //10 #PER MILLE SIGN
-    0x0160,  //11 #LATIN CAPITAL LETTER S WITH CARON
-    0x2039,  //12 #SINGLE LEFT-POINTING ANGLE QUOTATION MARK
-    0x0152,  //13 #LATIN CAPITAL LIGATURE OE
-    0x00,    //14 #UNDEFINED
-    0x017D,  //15 #LATIN CAPITAL LETTER Z WITH CARON
-    0x00,    //16 #UNDEFINED
-    0x00,    //17 #UNDEFINED
-    0x2018,  //18 #LEFT SINGLE QUOTATION MARK
-    0x2019,  //19 #RIGHT SINGLE QUOTATION MARK
-    0x201C,  //20 #LEFT DOUBLE QUOTATION MARK
-    0x201D,  //21 #RIGHT DOUBLE QUOTATION MARK
-    0x2022,  //22 #BULLET
-    0x2013,  //23 #EN DASH
-    0x2014,  //24 #EM DASH
-    0x02DC,  //25 #SMALL TILDE
-    0x2122,  //26 #TRADE MARK SIGN
-    0x0161,  //27 #LATIN SMALL LETTER S WITH CARON
-    0x203A,  //28 #SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
-    0x0153,  //29 #LATIN SMALL LIGATURE OE
-    0x00,    //30 #UNDEFINED
-    0x017E,  //31 #LATIN SMALL LETTER Z WITH CARON
-    0x0178,  //32 #LATIN CAPITAL LETTER Y WITH DIAERESIS
-    0x00A0,  //33 #NO-BREAK SPACE
-    0x00A1,  //34 #INVERTED EXCLAMATION MARK
-    0x00A2,  //35 #CENT SIGN
-    0x00A3,  //36 #POUND SIGN
-    0x00A4,  //37 #CURRENCY SIGN
-    0x00A5,  //38 #YEN SIGN
-    0x00A6,  //39 #BROKEN BAR
-    0x00A7,  //40 #SECTION SIGN
-    0x00A8,  //41 #DIAERESIS
-    0x00A9,  //42 #COPYRIGHT SIGN
-    0x00AA,  //43 #FEMININE ORDINAL INDICATOR
-    0x00AB,  //44 #LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-    0x00AC,  //45 #NOT SIGN
-    0x00AD,  //46 #SOFT HYPHEN
-    0x00AE,  //47 #REGISTERED SIGN
-    0x00AF,  //48 #MACRON
-    0x00B0,  //49 #DEGREE SIGN
-    0x00B1,  //50 #PLUS-MINUS SIGN
-    0x00B2,  //51 #SUPERSCRIPT TWO
-    0x00B3,  //52 #SUPERSCRIPT THREE
-    0x00B4,  //53 #ACUTE ACCENT
-    0x00B5,  //54 #MICRO SIGN
-    0x00B6,  //55 #PILCROW SIGN
-    0x00B7,  //56 #MIDDLE DOT
-    0x00B8,  //57 #CEDILLA
-    0x00B9,  //58 #SUPERSCRIPT ONE
-    0x00BA,  //59 #MASCULINE ORDINAL INDICATOR
-    0x00BB,  //60 #RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
-    0x00BC,  //61 #VULGAR FRACTION ONE QUARTER
-    0x00BD,  //62 #VULGAR FRACTION ONE HALF
-    0x00BE,  //63 #VULGAR FRACTION THREE QUARTERS
-    0x00BF,  //64 #INVERTED QUESTION MARK
-    0x00C0,  //65 #LATIN CAPITAL LETTER A WITH GRAVE
-    0x00C1,  //66 #LATIN CAPITAL LETTER A WITH ACUTE
-    0x00C2,  //67 #LATIN CAPITAL LETTER A WITH CIRCUMFLEX
-    0x00C3,  //68 #LATIN CAPITAL LETTER A WITH TILDE
-    0x00C4,  //69 #LATIN CAPITAL LETTER A WITH DIAERESIS
-    0x00C5,  //70 #LATIN CAPITAL LETTER A WITH RING ABOVE
-    0x00C6,  //71 #LATIN CAPITAL LETTER AE
-    0x00C7,  //72 #LATIN CAPITAL LETTER C WITH CEDILLA
-    0x00C8,  //73 #LATIN CAPITAL LETTER E WITH GRAVE
-    0x00C9,  //74 #LATIN CAPITAL LETTER E WITH ACUTE
-    0x00CA,  //75 #LATIN CAPITAL LETTER E WITH CIRCUMFLEX
-    0x00CB,  //76 #LATIN CAPITAL LETTER E WITH DIAERESIS
-    0x00CC,  //77 #LATIN CAPITAL LETTER I WITH GRAVE
-    0x00CD,  //78 #LATIN CAPITAL LETTER I WITH ACUTE
-    0x00CE,  //79 #LATIN CAPITAL LETTER I WITH CIRCUMFLEX
-    0x00CF,  //80 #LATIN CAPITAL LETTER I WITH DIAERESIS
-    0x00D0,  //81 #LATIN CAPITAL LETTER ETH
-    0x00D1,  //82 #LATIN CAPITAL LETTER N WITH TILDE
-    0x00D2,  //83 #LATIN CAPITAL LETTER O WITH GRAVE
-    0x00D3,  //84 #LATIN CAPITAL LETTER O WITH ACUTE
-    0x00D4,  //85 #LATIN CAPITAL LETTER O WITH CIRCUMFLEX
-    0x00D5,  //86 #LATIN CAPITAL LETTER O WITH TILDE
-    0x00D6,  //87 #LATIN CAPITAL LETTER O WITH DIAERESIS
-    0x00D7,  //88 #MULTIPLICATION SIGN
-    0x00D8,  //89 #LATIN CAPITAL LETTER O WITH STROKE
-    0x00D9,  //90 #LATIN CAPITAL LETTER U WITH GRAVE
-    0x00DA,  //91 #LATIN CAPITAL LETTER U WITH ACUTE
-    0x00DB,  //92 #LATIN CAPITAL LETTER U WITH CIRCUMFLEX
-    0x00DC,  //93 #LATIN CAPITAL LETTER U WITH DIAERESIS
-    0x00DD,  //94 #LATIN CAPITAL LETTER Y WITH ACUTE
-    0x00DE,  //95 #LATIN CAPITAL LETTER THORN
-    0x00DF,  //96 #LATIN SMALL LETTER SHARP S
-    0x00E0,  //97 #LATIN SMALL LETTER A WITH GRAVE
-    0x00E1,  //98 #LATIN SMALL LETTER A WITH ACUTE
-    0x00E2,  //99 #LATIN SMALL LETTER A WITH CIRCUMFLEX
-    0x00E3,  //100 #LATIN SMALL LETTER A WITH TILDE
-    0x00E4,  //101 #LATIN SMALL LETTER A WITH DIAERESIS
-    0x00E5,  //102 #LATIN SMALL LETTER A WITH RING ABOVE
-    0x00E6,  //103 #LATIN SMALL LETTER AE
-    0x00E7,  //104 #LATIN SMALL LETTER C WITH CEDILLA
-    0x00E8,  //105 #LATIN SMALL LETTER E WITH GRAVE
-    0x00E9,  //106 #LATIN SMALL LETTER E WITH ACUTE
-    0x00EA,  //107 #LATIN SMALL LETTER E WITH CIRCUMFLEX
-    0x00EB,  //108 #LATIN SMALL LETTER E WITH DIAERESIS
-    0x00EC,  //109 #LATIN SMALL LETTER I WITH GRAVE
-    0x00ED,  //110 #LATIN SMALL LETTER I WITH ACUTE
-    0x00EE,  //111 #LATIN SMALL LETTER I WITH CIRCUMFLEX
-    0x00EF,  //112 #LATIN SMALL LETTER I WITH DIAERESIS
-    0x00F0,  //113 #LATIN SMALL LETTER ETH
-    0x00F1,  //114 #LATIN SMALL LETTER N WITH TILDE
-    0x00F2,  //115 #LATIN SMALL LETTER O WITH GRAVE
-    0x00F3,  //116 #LATIN SMALL LETTER O WITH ACUTE
-    0x00F4,  //117 #LATIN SMALL LETTER O WITH CIRCUMFLEX
-    0x00F5,  //118 #LATIN SMALL LETTER O WITH TILDE
-    0x00F6,  //119 #LATIN SMALL LETTER O WITH DIAERESIS
-    0x00F7,  //120 #DIVISION SIGN
-    0x00F8,  //121 #LATIN SMALL LETTER O WITH STROKE
-    0x00F9,  //122 #LATIN SMALL LETTER U WITH GRAVE
-    0x00FA,  //123 #LATIN SMALL LETTER U WITH ACUTE
-    0x00FB,  //124 #LATIN SMALL LETTER U WITH CIRCUMFLEX
-    0x00FC,  //125 #LATIN SMALL LETTER U WITH DIAERESIS
-    0x00FD,  //126 #LATIN SMALL LETTER Y WITH ACUTE
-    0x00FE,  //127 #LATIN SMALL LETTER THORN
-    0x00FF   //128 #LATIN SMALL LETTER Y WITH DIAERESIS
+    0x20AC,  // Unicode code point for '€'
+    0x00,    // Undefined
+    0x201A,  // Unicode code point for '‚'
+    0x0192,  // Unicode code point for 'ƒ'
+    0x201E,  // Unicode code point for '„'
+    0x2026,  // Unicode code point for '…'
+    0x2020,  // Unicode code point for '†'
+    0x2021,  // Unicode code point for '‡'
+    0x02C6,  // Unicode code point for 'ˆ'
+    0x2030,  // Unicode code point for '‰'
+    0x0160,  // Unicode code point for 'Š'
+    0x2039,  // Unicode code point for '‹'
+    0x0152,  // Unicode code point for 'Œ'
+    0x00,    // Undefined
+    0x017D,  // Unicode code point for 'Ž'
+    0x00,    // Undefined
+    0x00,    // Undefined
+    0x2018,  // Unicode code point for '‘'
+    0x2019,  // Unicode code point for '’'
+    0x201C,  // Unicode code point for '“'
+    0x201D,  // Unicode code point for '”'
+    0x2022,  // Unicode code point for '•'
+    0x2013,  // Unicode code point for '–'
+    0x2014,  // Unicode code point for '—'
+    0x02DC,  // Unicode code point for '˜'
+    0x2122,  // Unicode code point for '™'
+    0x0161,  // Unicode code point for 'š'
+    0x203A,  // Unicode code point for '›'
+    0x0153,  // Unicode code point for 'œ'
+    0x00,    // Undefined
+    0x017E,  // Unicode code point for 'ž'
+    0x0178,  // Unicode code point for 'Ÿ'
+    0x00A0,  // Unicode code point for ' '
+    0x00A1,  // Unicode code point for '¡'
+    0x00A2,  // Unicode code point for '¢'
+    0x00A3,  // Unicode code point for '£'
+    0x00A4,  // Unicode code point for '¤'
+    0x00A5,  // Unicode code point for '¥'
+    0x00A6,  // Unicode code point for '¦'
+    0x00A7,  // Unicode code point for '§'
+    0x00A8,  // Unicode code point for '¨'
+    0x00A9,  // Unicode code point for '©'
+    0x00AA,  // Unicode code point for 'ª'
+    0x00AB,  // Unicode code point for '«'
+    0x00AC,  // Unicode code point for '¬'
+    0x00AD,  // Unicode code point for '­'
+    0x00AE,  // Unicode code point for '®'
+    0x00AF,  // Unicode code point for '¯'
+    0x00B0,  // Unicode code point for '°'
+    0x00B1,  // Unicode code point for '±'
+    0x00B2,  // Unicode code point for '²'
+    0x00B3,  // Unicode code point for '³'
+    0x00B4,  // Unicode code point for '´'
+    0x00B5,  // Unicode code point for 'µ'
+    0x00B6,  // Unicode code point for '¶'
+    0x00B7,  // Unicode code point for '·'
+    0x00B8,  // Unicode code point for '¸'
+    0x00B9,  // Unicode code point for '¹'
+    0x00BA,  // Unicode code point for 'º'
+    0x00BB,  // Unicode code point for '»'
+    0x00BC,  // Unicode code point for '¼'
+    0x00BD,  // Unicode code point for '½'
+    0x00BE,  // Unicode code point for '¾'
+    0x00BF,  // Unicode code point for '¿'
+    0x00C0,  // Unicode code point for 'À'
+    0x00C1,  // Unicode code point for 'Á'
+    0x00C2,  // Unicode code point for 'Â'
+    0x00C3,  // Unicode code point for 'Ã'
+    0x00C4,  // Unicode code point for 'Ä'
+    0x00C5,  // Unicode code point for 'Å'
+    0x00C6,  // Unicode code point for 'Æ'
+    0x00C7,  // Unicode code point for 'Ç'
+    0x00C8,  // Unicode code point for 'È'
+    0x00C9,  // Unicode code point for 'É'
+    0x00CA,  // Unicode code point for 'Ê'
+    0x00CB,  // Unicode code point for 'Ë'
+    0x00CC,  // Unicode code point for 'Ì'
+    0x00CD,  // Unicode code point for 'Í'
+    0x00CE,  // Unicode code point for 'Î'
+    0x00CF,  // Unicode code point for 'Ï'
+    0x00D0,  // Unicode code point for 'Ð'
+    0x00D1,  // Unicode code point for 'Ñ'
+    0x00D2,  // Unicode code point for 'Ò'
+    0x00D3,  // Unicode code point for 'Ó'
+    0x00D4,  // Unicode code point for 'Ô'
+    0x00D5,  // Unicode code point for 'Õ'
+    0x00D6,  // Unicode code point for 'Ö'
+    0x00D7,  // Unicode code point for '×'
+    0x00D8,  // Unicode code point for 'Ø'
+    0x00D9,  // Unicode code point for 'Ù'
+    0x00DA,  // Unicode code point for 'Ú'
+    0x00DB,  // Unicode code point for 'Û'
+    0x00DC,  // Unicode code point for 'Ü'
+    0x00DD,  // Unicode code point for 'Ý'
+    0x00DE,  // Unicode code point for 'Þ'
+    0x00DF,  // Unicode code point for 'ß'
+    0x00E0,  // Unicode code point for 'à'
+    0x00E1,  // Unicode code point for 'á'
+    0x00E2,  // Unicode code point for 'â'
+    0x00E3,  // Unicode code point for 'ã'
+    0x00E4,  // Unicode code point for 'ä'
+    0x00E5,  // Unicode code point for 'å'
+    0x00E6,  // Unicode code point for 'æ'
+    0x00E7,  // Unicode code point for 'ç'
+    0x00E8,  // Unicode code point for 'è'
+    0x00E9,  // Unicode code point for 'é'
+    0x00EA,  // Unicode code point for 'ê'
+    0x00EB,  // Unicode code point for 'ë'
+    0x00EC,  // Unicode code point for 'ì'
+    0x00ED,  // Unicode code point for 'í'
+    0x00EE,  // Unicode code point for 'î'
+    0x00EF,  // Unicode code point for 'ï'
+    0x00F0,  // Unicode code point for 'ð'
+    0x00F1,  // Unicode code point for 'ñ'
+    0x00F2,  // Unicode code point for 'ò'
+    0x00F3,  // Unicode code point for 'ó'
+    0x00F4,  // Unicode code point for 'ô'
+    0x00F5,  // Unicode code point for 'õ'
+    0x00F6,  // Unicode code point for 'ö'
+    0x00F7,  // Unicode code point for '÷'
+    0x00F8,  // Unicode code point for 'ø'
+    0x00F9,  // Unicode code point for 'ù'
+    0x00FA,  // Unicode code point for 'ú'
+    0x00FB,  // Unicode code point for 'û'
+    0x00FC,  // Unicode code point for 'ü'
+    0x00FD,  // Unicode code point for 'ý'
+    0x00FE,  // Unicode code point for 'þ'
+    0x00FF   // Unicode code point for 'ÿ'
 };

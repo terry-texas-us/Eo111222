@@ -40,7 +40,7 @@ dxfRW::~dxfRW() {
 
 void dxfRW::setDebug(DRW::DebugTraceLevel lvl) {
   switch (lvl) {
-    case DRW::debug:
+    case DRW::DebugTraceLevel::Debug:
       DRW_DBGSL(DRW_dbg::debug);
       break;
     default:
@@ -644,7 +644,7 @@ bool dxfRW::writeLWPolyline(DRW_LWPolyline* ent) {
     if (ent->elevation != 0) writer->writeDouble(38, ent->elevation);
     if (ent->thickness != 0) writer->writeDouble(39, ent->thickness);
     for (int i = 0; i < ent->vertexnum; i++) {
-      DRW_Vertex2D* v = ent->vertlist.at(i);
+      auto* v = ent->vertlist.at(i);
       writer->writeDouble(10, v->x);
       writer->writeDouble(20, v->y);
       if (v->stawidth != 0) writer->writeDouble(40, v->stawidth);

@@ -36,38 +36,22 @@ constexpr auto TwoPi{2.0 * std::numbers::pi};
 constexpr auto HalfPi{std::numbers::pi / 2.0};
 constexpr auto ARAD{180.0 / std::numbers::pi};
 
-//! Version numbers for the DXF Format.
+/// Version numbers for the DXF Format.
 enum Version {
-  UNKNOWNV, /*!< UNKNOWN VERSION. */
-  AC1006,   /*!< R10. */
-  AC1009,   /*!< R11 & R12. */
-  AC1012,   /*!< R13. */
-  AC1014,   /*!< R14. */
-  AC1015,   /*!< ACAD 2000. */
-  AC1018,   /*!< ACAD 2004. */
-  AC1021,   /*!< ACAD 2007. */
-  AC1024,   /*!< ACAD 2010. */
-  AC1027,   /*!< ACAD 2013. */
-  AC1032    /*!< ACAD 2018. */
+  UNKNOWNV,  // UNKNOWN VERSION (default / unreadable header)
+  AC1006,    // R10
+  AC1009,    // R11 & R12
+  AC1012,    // R13
+  AC1014,    // R14
+  AC1015,    // AutoCAD 2000 / 2000i / 2002
+  AC1018,    // AutoCAD 2004 / 2005 / 2006
+  AC1021,    // AutoCAD 2007 / 2008 / 2009
+  AC1024,    // AutoCAD 2010 / 2011 / 2012
+  AC1027,    // AutoCAD 2013 / 2014 / 2015 / 2016 / 2017
+  AC1032  // AutoCAD 2018 / 2019 / 2020 / 2021 / 2022 / 2023 / 2024 / 2025 / 2026 (current format – no new code since 2018)
 };
 
-enum error {
-  BAD_NONE,             /*!< No error. */
-  BAD_UNKNOWN,          /*!< UNKNOWN. */
-  BAD_OPEN,             /*!< error opening file. */
-  BAD_VERSION,          /*!< unsupported version. */
-  BAD_READ_METADATA,    /*!< error reading matadata. */
-  BAD_READ_FILE_HEADER, /*!< error in file header read process. */
-  BAD_READ_HEADER,      /*!< error in header vars read process. */
-  BAD_READ_HANDLES,     /*!< error in object map read process. */
-  BAD_READ_CLASSES,     /*!< error in classes read process. */
-  BAD_READ_TABLES,      /*!< error in tables read process. */
-  BAD_READ_BLOCKS,      /*!< error in block read process. */
-  BAD_READ_ENTITIES,    /*!< error in entities read process. */
-  BAD_READ_OBJECTS      /*!< error in objects read process. */
-};
-
-enum DebugTraceLevel { none, debug };
+enum DebugTraceLevel { None, Debug };
 
 //! Special codes for colors
 enum ColorCodes { ColorByLayer = 256, ColorByBlock = 0 };
@@ -79,7 +63,7 @@ enum Space { ModelSpace = 0, PaperSpace = 1 };
 enum HandleCodes { NoHandle = 0 };
 
 //! Shadow mode
-enum ShadowMode { CastAndReceieveShadows = 0, CastShadows = 1, ReceiveShadows = 2, IgnoreShadows = 3 };
+enum ShadowMode { CastAndReceiveShadows = 0, CastShadows = 1, ReceiveShadows = 2, IgnoreShadows = 3 };
 
 //! Special kinds of materials
 enum MaterialCodes { MaterialByLayer = 0 };
@@ -92,10 +76,9 @@ enum TransparencyCodes { Opaque = 0, Transparent = -1 };
 
 }  // namespace DRW
 
-//! Class to handle 3D coordinate point
-/*!
-*  Class to handle 3D coordinate point
-*/
+/** @brief Class representing a generalized 3D coordinate (using for point and vector) with x, y, and z components.
+ *  Provides constructors for initialization and a method to unitize the vector.
+ */
 class DRW_Coord {
  public:
   double x{};
@@ -115,8 +98,7 @@ class DRW_Coord {
   /** @brief Convert `this` coordinate to a unit-length vector (in-place).
    */
   void unitize() noexcept {
-    double dist;
-    dist = sqrt(x * x + y * y + z * z);
+    const double dist = sqrt(x * x + y * y + z * z);
     if (dist > DRW::geometricTolerance) {
       x = x / dist;
       y = y / dist;
@@ -127,22 +109,26 @@ class DRW_Coord {
   /// @todo Non-modifying version of unitize() that returns a new DRW_Coord instead of modifying `this` in-place.
 };
 
-//! Class to handle vertex
-/*!
-*  Class to handle vertex for lwpolyline entity
-*/
-class DRW_Vertex2D {
- public:
-  DRW_Vertex2D() : x(0), y(0), stawidth(0), endwidth(0), bulge(0) {}
+/**
+ * @brief 2D vertex for DXF LWPOLYLINE/POLYLINE entities (group codes 10/20/40/41/42).
+ *
+ * All values are in the entity's OCS.
+ */
+struct DRW_Vertex2D {
+  double x{};         // x coordinate, code 10
+  double y{};         // y coordinate, code 20
+  double stawidth{};  // Start width, code 40
+  double endwidth{};  // End width, code 41
+  double bulge{};     // bulge, code 42
 
-  DRW_Vertex2D(double sx, double sy, double b) : x(sx), y(sy), stawidth(0), endwidth(0), bulge(b) {}
+  /** @brief Default-constructed vertex (all zero). */
+  DRW_Vertex2D() noexcept = default;
 
- public:
-  double x;        /*!< x coordinate, code 10 */
-  double y;        /*!< y coordinate, code 20 */
-  double stawidth; /*!< Start width, code 40 */
-  double endwidth; /*!< End width, code 41 */
-  double bulge;    /*!< bulge, code 42 */
+  /** @brief Position + bulge constructor (widths stay zero).
+   * Matches the most common usage in DXF parsers.
+   */
+  constexpr DRW_Vertex2D(double x, double y, double bulge = {}) noexcept
+      : x{x}, y{y}, stawidth{}, endwidth{}, bulge{bulge} {}
 };
 
 //! Class to handle header vars

@@ -279,7 +279,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
     case EoDb::FileTypes::Dxb: {
       EoDbDrwInterface dxfInterface(this);
       dxfRW dxfReader(Eo::WStringToMultiByte(pathName).data());
-      dxfReader.setDebug(static_cast<DRW::DebugTraceLevel>(DRW::none));
+      dxfReader.setDebug(DRW::DebugTraceLevel::None);
       SetCommonTableEntries();
       bool success = dxfReader.read(&dxfInterface, true);  // true for verbose output, false for silent
       if (success) {

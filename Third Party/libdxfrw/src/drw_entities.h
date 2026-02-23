@@ -86,14 +86,14 @@ class DRW_Entity {
   //line weight: default BYLAYER  (dxf -1), space: default ModelSpace (0)
   DRW_Entity()
       : eType(DRW::UNKNOWN),
-        handle(DRW::NoHandle),
-        parentHandle(DRW::NoHandle),
+        handle(DRW::HandleCodes::NoHandle),
+        parentHandle(DRW::HandleCodes::NoHandle),
         appData(0),
-        space(DRW::ModelSpace),
+        space(DRW::Space::ModelSpace),
         layer("0"),
         lineType("BYLAYER"),
-        material(DRW::MaterialByLayer),
-        color(DRW::ColorByLayer),
+        material(DRW::MaterialCodes::MaterialByLayer),
+        color(DRW::ColorCodes::ColorByLayer),
         lWeight(DRW_LW_Conv::widthByLayer),
         ltypeScale(1.0),
         visible(true),
@@ -101,9 +101,9 @@ class DRW_Entity {
         proxyGraphics(std::string()),
         color24(-1),
         colorName(std::string()),
-        transparency(DRW::Opaque),
-        plotStyle(DRW::DefaultPlotStyle),
-        shadow(DRW::CastAndReceieveShadows),
+        transparency(DRW::TransparencyCodes::Opaque),
+        plotStyle(DRW::PlotStyleCodes::DefaultPlotStyle),
+        shadow(DRW::ShadowMode::CastAndReceiveShadows),
         haveExtrusion(false),
         extData(),
         extAxisX(DRW_Coord()),
@@ -546,7 +546,7 @@ class DRW_LWPolyline : public DRW_Entity {
   }
 
   ~DRW_LWPolyline() {
-    for (DRW_Vertex2D* vert : vertlist) { delete vert; }
+    for (auto* vert : vertlist) { delete vert; }
     vertlist.clear();
     /* @bugfix TAS 2026-02-03: memory leak fix - pop_back does not delete the pointers
     while (!vertlist.empty()) {
@@ -555,8 +555,9 @@ class DRW_LWPolyline : public DRW_Entity {
     */
   }
   virtual void applyExtrusion();
+  
   void addVertex(DRW_Vertex2D v) {
-    DRW_Vertex2D* vert = new DRW_Vertex2D();
+    auto* vert = new DRW_Vertex2D();
     vert->x = v.x;
     vert->y = v.y;
     vert->stawidth = v.stawidth;
@@ -564,11 +565,9 @@ class DRW_LWPolyline : public DRW_Entity {
     vert->bulge = v.bulge;
     vertlist.push_back(vert);
   }
+
   DRW_Vertex2D* addVertex() {
-    DRW_Vertex2D* vert = new DRW_Vertex2D();
-    vert->stawidth = 0;
-    vert->endwidth = 0;
-    vert->bulge = 0;
+    auto* vert = new DRW_Vertex2D();
     vertlist.push_back(vert);
     return vert;
   }

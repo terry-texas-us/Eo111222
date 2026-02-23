@@ -465,7 +465,7 @@ void DRW_LWPolyline::applyExtrusion() {
   if (haveExtrusion) {
     calculateAxis(extPoint);
     for (unsigned int i = 0; i < vertlist.size(); i++) {
-      DRW_Vertex2D* vert = vertlist.at(i);
+      auto* vert = vertlist.at(i);
       DRW_Coord v(vert->x, vert->y, elevation);
       extrudePoint(extPoint, &v);
       vert->x = v.x;
