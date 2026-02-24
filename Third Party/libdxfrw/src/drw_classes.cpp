@@ -32,13 +32,13 @@ void DRW_Class::parseCode(int code, dxfReader* reader) {
 }
 
 void DRW_Class::write(dxfWriter* writer, DRW::Version ver) const {
-  if (ver > DRW::AC1009) {
+  if (ver > DRW::Version::AC1009) {
     writer->writeString(0, "CLASS");
     writer->writeString(1, recName);
     writer->writeString(2, className);
     writer->writeString(3, appName);
     writer->writeInt32(90, proxyFlag);
-    if (ver > DRW::AC1015) {  //2004+
+    if (ver > DRW::Version::AC1015) {
       writer->writeInt32(91, instanceCount);
     }
     writer->writeInt16(280, wasaProxyFlag);

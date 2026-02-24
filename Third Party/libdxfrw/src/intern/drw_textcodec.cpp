@@ -18,25 +18,26 @@ constexpr auto DBCS_REPLACEMENT_CHAR{0x003F};
 }  // namespace
 
 DRW_TextCodec::DRW_TextCodec() {
-  version = DRW::AC1021;
+  version = DRW::Version::AC1021;
   conv = new DRW_Converter(nullptr, 0);
 }
 
 DRW_TextCodec::~DRW_TextCodec() { delete conv; }
 
 void DRW_TextCodec::setVersion(int v, bool dxfFormat) {
-  if (v == DRW::AC1009 || v == DRW::AC1006) {
-    version = DRW::AC1009;
+  if (v == DRW::Version::AC1009 || v == DRW::Version::AC1006) {
+    version = DRW::Version::AC1009;
     cp = "ANSI_1252";
     setCodePage(&cp, dxfFormat);
-  } else if (v == DRW::AC1012 || v == DRW::AC1014 || v == DRW::AC1015 || v == DRW::AC1018) {
-    version = DRW::AC1015;
+  } else if (v == DRW::Version::AC1012 || v == DRW::Version::AC1014 || v == DRW::Version::AC1015 ||
+             v == DRW::Version::AC1018) {
+    version = DRW::Version::AC1015;
     //        if (cp.empty()) { //codepage not set, initialize
     cp = "ANSI_1252";
     setCodePage(&cp, dxfFormat);
     //        }
   } else {
-    version = DRW::AC1021;
+    version = DRW::Version::AC1021;
     if (dxfFormat)
       cp = "UTF-8";  //RLZ: can be UCS2 or UTF-16 16bits per char
     else
@@ -46,20 +47,21 @@ void DRW_TextCodec::setVersion(int v, bool dxfFormat) {
 }
 /** @brief Sets the version for the text codec based on the provided string and format.
  *  The function checks the version string against known versions and sets the internal version accordingly.
- *  If the version string does not match any known versions, it defaults to AC1021.
+ *  If the version string does not match any known versions, it defaults to DRW::Version::AC1021.
  *  @param v Pointer to a string representing the version to set
  *  @param dxfFormat Boolean indicating whether the format is DXF or not
  */
 void DRW_TextCodec::setVersion(std::string* v, bool dxfFormat) {
   std::string versionStr = *v;
   if (versionStr == "AC1009" || versionStr == "AC1006") {
-    setVersion(DRW::AC1009, dxfFormat);
+    setVersion(DRW::Version::AC1009, dxfFormat);
   } else if (versionStr == "AC1012" || versionStr == "AC1014" || versionStr == "AC1015" || versionStr == "AC1018") {
-    setVersion(DRW::AC1015, dxfFormat);
+    setVersion(DRW::Version::AC1015, dxfFormat);
   } else {
-    setVersion(DRW::AC1021, dxfFormat);
+    setVersion(DRW::Version::AC1021, dxfFormat);
   }
 }
+
 /** @brief Sets the code page for the text codec based on the provided string and format.
  *  The function first corrects the code page string, then deletes any existing converter.
  *  Depending on the version and format, it initializes a new converter with the appropriate table or encoding.
@@ -71,7 +73,7 @@ void DRW_TextCodec::setCodePage(std::string* c, bool dxfFormat) {
 
   delete conv;
 
-  if (version == DRW::AC1009 || version == DRW::AC1015) {
+  if (version == DRW::Version::AC1009 || version == DRW::Version::AC1015) {
     // TAS: Only one legacy table left
     conv = new DRW_ConvTable(DRW_Table1252, CPLENGHTCOMMON);
   } else {

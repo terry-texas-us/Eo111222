@@ -49,9 +49,9 @@ class DRW_Header {
 
   /** @brief Writes the header variables to the given dxfWriter object in the specified DXF version format.
    *  @param writer Pointer to dxfWriter object
-   *  @param ver DXF version to write
+   *  @param version DXF version to write
    */
-  void write(dxfWriter* writer, DRW::Version ver);
+  void write(dxfWriter* writer, DRW::Version version);
   void addComment(std::string c);
 
  protected:
