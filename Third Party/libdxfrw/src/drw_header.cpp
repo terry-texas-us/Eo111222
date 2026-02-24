@@ -7,15 +7,11 @@
 #include "intern/dxfreader.h"
 #include "intern/dxfwriter.h"
 
-DRW_Header::DRW_Header() {
-  linetypeCtrl = layerCtrl = styleCtrl = dimstyleCtrl = appidCtrl = 0;
-  blockCtrl = viewCtrl = ucsCtrl = vportCtrl = vpEntHeaderCtrl = 0;
-  version = DRW::Version::AC1021;
-}
+DRW_Header::DRW_Header() { m_version = DRW::Version::AC1021; }
 
 void DRW_Header::addComment(std::string c) {
-  if (!comments.empty()) comments += '\n';
-  comments += c;
+  if (!m_comments.empty()) { m_comments += '\n'; }
+  m_comments += c;
 }
 
 /** @brief DRW_Header::parseCode
@@ -28,15 +24,15 @@ void DRW_Header::parseCode(int code, dxfReader* reader) {
   switch (code) {
     case 9:
       curr = new DRW_Variant();
-      name = reader->getString();
-      if (version < DRW::Version::AC1015 && name == "$DIMUNIT") name = "$DIMLUNIT";
-      vars[name] = curr;
+      m_name = reader->getString();
+      if (m_version < DRW::Version::AC1015 && m_name == "$DIMUNIT") { m_name = "$DIMLUNIT"; }
+      vars[m_name] = curr;
       break;
     case 1:
       curr->addString(code, reader->getUtf8String());
-      if (name == "$ACADVER") {
+      if (m_name == "$ACADVER") {
         reader->setVersion(curr->content.s, true);
-        version = reader->getVersion();
+        m_version = reader->getVersion();
       }
       break;
     case 2:
@@ -44,7 +40,7 @@ void DRW_Header::parseCode(int code, dxfReader* reader) {
       break;
     case 3:
       curr->addString(code, reader->getUtf8String());
-      if (name == "$DWGCODEPAGE") {
+      if (m_name == "$DWGCODEPAGE") {
         reader->setCodePage(curr->content.s);
         curr->addString(code, reader->getCodePage());
       }
@@ -128,11 +124,12 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version version) {
     case DRW::Version::AC1027:  // AutoCAD 2013 / 2014 / 2015 / 2016 / 2017
       varStr = "AC1027";
       break;
-    case DRW::Version::AC1032:  // AutoCAD 2018 / 2019 / 2020 / 2021 / 2022 / 2023 / 2024 / 2025 / 2026 (current format – no new code since 2018)
+    case DRW::Version::
+        AC1032:  // AutoCAD 2018 / 2019 / 2020 / 2021 / 2022 / 2023 / 2024 / 2025 / 2026 (current format – no new code since 2018)
       varStr = "AC1032";
       break;
     case DRW::Version::AC1021:  // AutoCAD 2007 / 2008 / 2009
-      [[fallthrough]];          // intentional fallthrough to default case  
+      [[fallthrough]];          // intentional fallthrough to default case
     default:
       varStr = "AC1021";
       break;
@@ -140,8 +137,8 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version version) {
   writer->writeString(1, varStr);
   writer->setVersion(&varStr, true);
 
-  getStr("$ACADVER", &varStr);
-  getStr("$ACADMAINTVER", &varStr);
+  (void)getStr("$ACADVER", &varStr);
+  (void)getStr("$ACADMAINTVER", &varStr);
 
   if (!getStr("$DWGCODEPAGE", &varStr)) { varStr = "ANSI_1252"; }
   writer->writeString(9, "$DWGCODEPAGE");

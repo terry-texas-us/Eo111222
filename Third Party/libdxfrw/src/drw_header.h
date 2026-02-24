@@ -21,19 +21,18 @@ class DRW_Header {
   ~DRW_Header() { clearVars(); }
 
   DRW_Header(const DRW_Header& h) {
-    this->version = h.version;
-    this->comments = h.comments;
+    this->m_version = h.m_version;
+    this->m_comments = h.m_comments;
     for (std::map<std::string, DRW_Variant*>::const_iterator it = h.vars.begin(); it != h.vars.end(); ++it) {
       this->vars[it->first] = new DRW_Variant(*(it->second));
     }
     this->curr = nullptr;
-    this->vportCtrl = h.vportCtrl;
   }
   DRW_Header& operator=(const DRW_Header& h) {
     if (this != &h) {
       clearVars();
-      this->version = h.version;
-      this->comments = h.comments;
+      this->m_version = h.m_version;
+      this->m_comments = h.m_comments;
       for (std::map<std::string, DRW_Variant*>::const_iterator it = h.vars.begin(); it != h.vars.end(); ++it) {
         this->vars[it->first] = new DRW_Variant(*(it->second));
       }
@@ -45,7 +44,7 @@ class DRW_Header {
   void addInt(std::string key, int value, int code);
   void addStr(std::string key, std::string value, int code);
   void addCoord(std::string key, DRW_Coord value, int code);
-  std::string getComments() const { return comments; }
+  std::string getComments() const { return m_comments; }
 
   /** @brief Writes the header variables to the given dxfWriter object in the specified DXF version format.
    *  @param writer Pointer to dxfWriter object
@@ -58,10 +57,10 @@ class DRW_Header {
   void parseCode(int code, dxfReader* reader);
 
  private:
-  bool getDouble(std::string key, double* varDouble);
-  bool getInt(std::string key, int* varInt);
-  bool getStr(std::string key, std::string* varStr);
-  bool getCoord(std::string key, DRW_Coord* varStr);
+  [[nodiscard]] bool getDouble(std::string key, double* varDouble);
+  [[nodiscard]] bool getInt(std::string key, int* varInt);
+  [[nodiscard]] bool getStr(std::string key, std::string* varStr);
+  [[nodiscard]] bool getCoord(std::string key, DRW_Coord* varStr);
   void clearVars() {
     for (std::map<std::string, DRW_Variant*>::iterator it = vars.begin(); it != vars.end(); ++it) delete it->second;
 
@@ -72,19 +71,8 @@ class DRW_Header {
   std::map<std::string, DRW_Variant*> vars;
 
  private:
-  std::string comments;
-  std::string name;
+  std::string m_comments;
+  std::string m_name;
   DRW_Variant* curr{};
-  int version;  //to use on read
-
-  std::uint32_t linetypeCtrl{};
-  std::uint32_t layerCtrl{};
-  std::uint32_t styleCtrl{};
-  std::uint32_t dimstyleCtrl{};
-  std::uint32_t appidCtrl{};
-  std::uint32_t blockCtrl{};
-  std::uint32_t viewCtrl{};
-  std::uint32_t ucsCtrl{};
-  std::uint32_t vportCtrl;
-  std::uint32_t vpEntHeaderCtrl{};
+  int m_version;  //to use on read
 };
