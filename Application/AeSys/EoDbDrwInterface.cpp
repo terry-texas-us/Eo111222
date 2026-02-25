@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <cstdlib>
-
 #include <string>
 #include <utility>
 #include <variant>
@@ -39,19 +38,19 @@ void EoDbDrwInterface::SetHeaderSectionVariable(
     std::wstring key = Eo::MultiByteToWString(it->first.c_str());
     auto& second = *(it->second);
     switch (second.type()) {
-      case DRW_Variant::STRING:
+      case DRW_Variant::Type::String:
         value = Eo::MultiByteToWString(second.content.s->c_str());
         break;
-      case DRW_Variant::INTEGER:
+      case DRW_Variant::Type::Integer:
         value = second.content.i;
         break;
-      case DRW_Variant::DOUBLE:
+      case DRW_Variant::Type::Double:
         value = second.content.d;
         break;
-      case DRW_Variant::COORD:
+      case DRW_Variant::Type::Coord:
         value = EoGePoint3d(*second.content.v);
         break;
-      case DRW_Variant::INVALID:
+      case DRW_Variant::Type::Invalid:
       default:
         value = L"";
         break;
@@ -67,6 +66,11 @@ void EoDbDrwInterface::ConvertHeaderSection(const DRW_Header* header, AeSysDoc* 
 
   EoDbHeaderSection& headerSection = document->HeaderSection();
   for (const auto& key : keys) { SetHeaderSectionVariable(header, key, headerSection); }
+}
+
+void EoDbDrwInterface::ConvertClassesSection(const DRW_Class& class_, [[maybe_unused]] AeSysDoc* document) {
+  std::wstring recordName = Eo::MultiByteToWString(class_.recName.c_str());
+  ATLTRACE2(traceGeneral, 2, L"Class - Name: %s (unsupported in AeSys)\n", recordName.c_str());
 }
 
 void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, [[maybe_unused]] AeSysDoc* document) {
@@ -107,7 +111,9 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
     4 = Layer is locked
     16 = If set, table entry is externally dependent on an xref
     32 = If both this bit and bit 16 are set, the externally dependent xref has been successfully resolved
-    64 = If set, the table entry was referenced by at least one entity in the drawing the last time the drawing was edited. (This flag is for the benefit of AutoCAD commands. It can be ignored by most programs that read DXF files and need not be set by programs that write DXF files)
+    64 = If set, the table entry was referenced by at least one entity in the drawing the last time the drawing was
+  edited. (This flag is for the benefit of AutoCAD commands. It can be ignored by most programs that read DXF files and
+  need not be set by programs that write DXF files)
    */
   auto isFrozen = (layer.flags & 0x01) == 0x01;
   auto isLocked = (layer.flags & 0x04) == 0x04;
@@ -115,11 +121,11 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
   if (isFrozen) { newLayer->SetStateOff(); }
   document->AddLayerTableLayer(newLayer);
 
-  /** 
+  /**
   Lineweight enum value (not supported directly in AeSys)  group code 370
-    This enumerated type provides the line weight (thickness between 0 and 211) values used to specify how lines will be displayed and plotted.
-    The lineweights are in 100ths of a millimeter, except for the negative values.
-    The negative values denote the default indicated by their constant's name.
+    This enumerated type provides the line weight (thickness between 0 and 211) values used to specify how lines will be
+  displayed and plotted. The lineweights are in 100ths of a millimeter, except for the negative values. The negative
+  values denote the default indicated by their constant's name.
   */
   ATLTRACE2(traceGeneral, 2, L"Line weight: %i\n", layer.lWeight);
   ATLTRACE2(traceGeneral, 2, L"Layer is locked: %i\n", isLocked);
@@ -133,7 +139,8 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
 
   // It is possible to have an Extension Dictionary associated with layer. (not supported in AeSys) group code 102
   // Not used very often. The most common application is for per-viewport overrides of layer properties.
-  // Each override type is stored under a distinct key in the dictionary, referencing an XRECORD that contains subdata for affected viewports.
+  // Each override type is stored under a distinct key in the dictionary, referencing an XRECORD that contains subdata
+  // for affected viewports.
 }
 
 void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* document) {
@@ -172,13 +179,14 @@ void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, [[m
   // auto width = textStyle.width;           // Width factor (group code 41)
   // auto obliqueAngle = textStyle.oblique;  // Oblique angle (group code 50)
   // auto textGenerationFlags =
-  textStyle
-      .flags;  // Text generation flags (group code 71) 0x02 - text is backward, mirrored in X - 0x04 - text is upside down, mirrored in Y
+  textStyle.flags;  // Text generation flags (group code 71) 0x02 - text is backward, mirrored in X - 0x04 - text is
+                    // upside down, mirrored in Y
   // auto lastHeight = textStyle.lastHeight;  // Last height used (group code 42)
 
   // auto& font = textStyle.font;        // Primary font file name (group code 3)
   // auto& bigFont = textStyle.bigFont;  // Bigfont file name; blank if none (group code 4)
-  //auto fontFamily = textStyle.fontFamily;  // A long value which contains a truetype font's pitch and family, charset, and italic and bold flags (group code 1071)
+  // auto fontFamily = textStyle.fontFamily;  // A long value which contains a truetype font's pitch and family,
+  // charset, and italic and bold flags (group code 1071)
 }
 
 void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, [[maybe_unused]] AeSysDoc* document) {
@@ -214,20 +222,24 @@ void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, [[maybe_u
   // auto ucsIcon = viewport.ucsIcon;    // group code 74
 }
 
-/** @brief This method is invoked when a new block definition is encountered in the file. 
- * 
- *  The DRW_Block parameter provides header information such as the block name, flags, base point, and handle. In your implementation, use this to initialize a new block object in your application's data model. All subsequent entity callbacks (e.g., for lines, arcs) will apply to this block until endBlock is called.
- * @note 
- * 0x01 = This is an anonymous block generated by hatching, associative dimensioning, other internal operations, or an application
- * 0x02 = This block has non-constant attribute definitions (this bit is not set if the block has any attribute definitions that are constant, or has no attribute definitions at all)
- * 0x04 = This block is an external reference (xref)
- * 0x08 = This block is an xref overlay
- * 0x10 = This block is externally dependent
- * 0x20 = This is a resolved external reference, or dependent of an external reference (ignored on input)
- * 0x40 = This definition is a referenced external reference (ignored on input)
+/** @brief This method is invoked when a new block definition is encountered in the file.
  *
- * @note Three empty definitions always appear in the BLOCKS section. They are titled *Model_Space, *Paper_Space and *Paper_Space0. These definitions manifest the representations of model space and paper space as block definitions internally. The internal name of the first paper space layout is *Paper_Space, the second is *Paper_Space0, the third is *Paper_Space1, and so on.
- * The interleaving between model space and paper space no longer occurs. Instead, all paper space entities are output, followed by model space entities. The flag distinguishing them is the group code 67.
+ *  The DRW_Block parameter provides header information such as the block name, flags, base point, and handle. In your
+ * implementation, use this to initialize a new block object in your application's data model. All subsequent entity
+ * callbacks (e.g., for lines, arcs) will apply to this block until endBlock is called.
+ * @note
+ * 0x01 = This is an anonymous block generated by hatching, associative dimensioning, other internal operations, or an
+ * application 0x02 = This block has non-constant attribute definitions (this bit is not set if the block has any
+ * attribute definitions that are constant, or has no attribute definitions at all) 0x04 = This block is an external
+ * reference (xref) 0x08 = This block is an xref overlay 0x10 = This block is externally dependent 0x20 = This is a
+ * resolved external reference, or dependent of an external reference (ignored on input) 0x40 = This definition is a
+ * referenced external reference (ignored on input)
+ *
+ * @note Three empty definitions always appear in the BLOCKS section. They are titled *Model_Space, *Paper_Space and
+ * *Paper_Space0. These definitions manifest the representations of model space and paper space as block definitions
+ * internally. The internal name of the first paper space layout is *Paper_Space, the second is *Paper_Space0, the third
+ * is *Paper_Space1, and so on. The interleaving between model space and paper space no longer occurs. Instead, all
+ * paper space entities are output, followed by model space entities. The flag distinguishing them is the group code 67.
  */
 EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* document) {
   blockName = Eo::MultiByteToWString(block.name.c_str());  // Block Name (group code 2)
@@ -235,7 +247,8 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* docu
   // auto handle = block.handle;              // group code 5
   // auto parentHandle = block.parentHandle;  // Soft-pointer ID/handle to owner object (group code 330)
 
-  // Group codes 3, 1 and 4 are for XREF definition. Modern XREF indicated by group 70 with 0x04 bit set and the presence of group code 1
+  // Group codes 3, 1 and 4 are for XREF definition. Modern XREF indicated by group 70 with 0x04 bit set and the
+  // presence of group code 1
 
   // @todo Check if block already exists and clean it up first
 
@@ -249,12 +262,18 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* docu
   return newBlock;
 }
 
-/** @brief This method is primarily used in DWG files when the parser switches to entities belonging to a different block than the current one. The handle parameter corresponds to the block handle previously provided via addBlock (accessible as DRW_Block::handleBlock). In your implementation, switch the current block context to the one matching this handle. For DXF files, this callback may not be triggered, or it may be used sparingly if blocks are referenced out of sequence. */
+/** @brief This method is primarily used in DWG files when the parser switches to entities belonging to a different
+ * block than the current one. The handle parameter corresponds to the block handle previously provided via addBlock
+ * (accessible as DRW_Block::handleBlock). In your implementation, switch the current block context to the one matching
+ * this handle. For DXF files, this callback may not be triggered, or it may be used sparingly if blocks are referenced
+ * out of sequence. */
 void EoDbDrwInterface::ConvertBlockSet([[maybe_unused]] const int handle, [[maybe_unused]] AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Block set\n");
 }
 
-/** @brief This method signals the end of the current block definition. In your implementation, finalize the block (e.g., add it to a document's block table or collection) and reset the context to the default (model space or paper space).*/
+/** @brief This method signals the end of the current block definition. In your implementation, finalize the block
+ * (e.g., add it to a document's block table or collection) and reset the context to the default (model space or paper
+ * space).*/
 void EoDbDrwInterface::ConvertBlockEnd([[maybe_unused]] AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Block end\n");
 }
@@ -434,107 +453,3 @@ void EoDbDrwInterface::ConvertPointEntity(const DRW_Point& point, AeSysDoc* docu
   pointPrimitive->SetPoint(point.basePoint.x, point.basePoint.y, point.basePoint.z);
   AddToDocument(pointPrimitive, document);
 }
-
-/*// Converters
-class EoDb2dPolyline_Converter : public EoDbConvertEntityToPrimitive {
- public:
-  void Convert(OdDbEntity* entity, EoDbGroup* group) {
-    OdDb2dPolylinePtr PolylineEntity = entity;
-
-    ATLTRACE2(traceOdDb, 0, L"Converting %s to EoDbPolyline ...\n", (PCTSTR)PolylineEntity->desc()->name());
-
-    ATLTRACE2(traceOdDb, 2, L"Elevation: %f\n", PolylineEntity->elevation());
-    ATLTRACE2(traceOdDb, 2, L"Normal: %f, %f, %f\n", PolylineEntity->normal());
-    ATLTRACE2(traceOdDb, 2, L"Thickness: %f\n", PolylineEntity->thickness());
-
-    EoGePoint3dArray pts;
-
-    OdDbObjectIteratorPtr Iterator = PolylineEntity->vertexIterator();
-    for (int i = 0; !Iterator->done(); i++, Iterator->step()) {
-      OdDb2dVertexPtr Vertex = Iterator->entity();
-      if (Vertex.get()) {
-        OdGePoint3d Point(Vertex->position());
-        Point.z = PolylineEntity->elevation();
-        pts.Add(Point);
-      }
-    }
-    EoDbPolyline* PolylinePrimitive = new EoDbPolyline(pts);
-    if (PolylineEntity->isClosed()) PolylinePrimitive->SetFlag(EoDbPolyline::sm_Closed);
-
-    ConvertCurveData(PolylineEntity, PolylinePrimitive);
-
-    if (PolylineEntity->polyType() == OdDb::k2dCubicSplinePoly) {
-      ATLTRACE2(traceOdDb, 2, L"Cubic spline polyline converted to simple polyline\n");
-    } else if (PolylineEntity->polyType() == OdDb::k2dQuadSplinePoly) {
-      ATLTRACE2(traceOdDb, 2, L"Quad spline polyline converted to simple polyline\n");
-    }
-    group->AddTail(PolylinePrimitive);
-  }
-};
-/// <summary>3D Polyline Converter</summary>
-class EoDb3dPolyline_Converter : public EoDbConvertEntityToPrimitive {
- public:
-  void Convert(OdDbEntity* entity, EoDbGroup* group) {
-    OdDb3dPolylinePtr PolylineEntity = entity;
-    ATLTRACE2(traceOdDb, 0, L"Converting %s to EoDbPolyline ...\n", (PCTSTR)PolylineEntity->desc()->name());
-
-    EoGePoint3dArray pts;
-
-    OdDbObjectIteratorPtr Iterator = PolylineEntity->vertexIterator();
-    for (int i = 0; !Iterator->done(); i++, Iterator->step()) {
-      OdDb3dPolylineVertexPtr Vertex = Iterator->entity();
-      if (Vertex.get()) { pts.Add(Vertex->position()); }
-    }
-    EoDbPolyline* PolylinePrimitive = new EoDbPolyline(pts);
-    if (PolylineEntity->isClosed()) PolylinePrimitive->SetFlag(EoDbPolyline::sm_Closed);
-
-    if (PolylineEntity->polyType() == OdDb::k3dCubicSplinePoly) {
-      ATLTRACE2(traceOdDb, 2, L"Cubic spline polyline converted to simple polyline\n");
-    } else if (PolylineEntity->polyType() == OdDb::k3dQuadSplinePoly) {
-      ATLTRACE2(traceOdDb, 2, L"Quad spline polyline converted to simple polyline\n");
-    }
-    ConvertCurveData(PolylineEntity, PolylinePrimitive);
-
-    group->AddTail(PolylinePrimitive);
-  }
-};
-/// <summary>Polyline Converter</summary>
-/// <remarks>
-///The polyline verticies are not properly transformed from ECS to WCS. Arcs and wide polylines are
-/// note realized at all.
-/// </remarks>
-class EoDbPolyline_Converter : public EoDbConvertEntityToPrimitive {
- public:
-  void Convert(OdDbEntity* entity, EoDbGroup* group) {
-    OdDbPolylinePtr PolylineEntity = entity;
-
-    ATLTRACE2(traceOdDb, 0, L"Converting %s to EoDbPolyline ...\n", (PCTSTR)PolylineEntity->desc()->name());
-
-    EoGeVector3d Normal(PolylineEntity->normal());
-    //double Elevation = PolylineEntity->elevation();
-    int NumberOfVerticies = PolylineEntity->numVerts();
-
-    EoGePoint3dArray pts;
-    pts.SetSize(NumberOfVerticies);
-
-    for (int n = 0; n < NumberOfVerticies; n++) {
-      OdGePoint3d Point;
-      PolylineEntity->getPointAt(n, Point);
-      pts[n] = Point;
-    }
-    EoDbPolyline* PolylinePrimitive = new EoDbPolyline(pts);
-    if (PolylineEntity->isClosed()) { PolylinePrimitive->SetFlag(EoDbPolyline::sm_Closed); }
-    if (PolylineEntity->hasBulges()) { ATLTRACE2(traceOdDb, 2, L"Polyline: At least one of the groups has a non zero bulge\n"); }
-    if (PolylineEntity->hasWidth()) {
-      if (PolylineEntity->getConstantWidth()) {
-        ATLTRACE2(traceOdDb, 2, L"Polyline: At least one of the groups has a constant start and end width\n");
-      } else {
-        ATLTRACE2(traceOdDb, 2, L"Polyline: At least one of the groups has a different start and end width\n");
-      }
-    }
-
-    ConvertEntityData(PolylineEntity, PolylinePrimitive);
-    group->AddTail(PolylinePrimitive);
-  }
-};
-*/

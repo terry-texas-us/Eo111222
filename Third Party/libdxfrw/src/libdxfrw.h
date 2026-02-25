@@ -62,14 +62,24 @@ class dxfRW {
   void setEllipseParts(int parts) { elParts = parts; } /*!< set parts munber when convert ellipse to polyline */
 
  private:
-  /// used by read() to parse the content of the file
-  bool processDxf();
-  bool processHeader();
-  bool processTables();
-  bool processBlocks();
-  bool processBlock();
-  bool processEntities(bool isblock);
-  bool processObjects();
+  /** @brief Used by read() to parse the file.  */
+  [[nodiscard]] bool processDxf();
+
+  /** @brief Used by read() to parse the HEADER section of the file.  */
+  [[nodiscard]] bool processHeader();
+  
+  /** @brief Used by read() to parse the CLASSES section of the file.  */
+  [[nodiscard]] bool processClasses();
+
+  /** @brief Used by read() to parse the TABLES section of the file.  */
+  [[nodiscard]] bool processTables();
+
+  /** @brief Used by read() to parse the BLOCKS section of the file.  */
+  [[nodiscard]] bool processBlocks();
+
+  [[nodiscard]] bool processBlock();
+  [[nodiscard]] bool processEntities(bool isblock);
+  [[nodiscard]] bool processObjects();
 
   bool processLType();
   bool processLayer();

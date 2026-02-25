@@ -7,6 +7,7 @@
 #include "EoDbBlock.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbPrimitive.h"
+#include "drw_classes.h"
 #include "drw_entities.h"
 #include "drw_header.h"
 #include "drw_interface.h"
@@ -21,6 +22,11 @@ class EoDbDrwInterface : public DRW_Interface {
   void addHeader(const DRW_Header* header) override {
     ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addHeader called\n");
     ConvertHeaderSection(header, m_document);
+  }
+
+  void addClass(const DRW_Class& class_) override {
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addClass called\n");
+    ConvertClassesSection(class_, m_document);
   }
 
   // Table objects
@@ -251,13 +257,15 @@ class EoDbDrwInterface : public DRW_Interface {
       const DRW_Header* header, const std::string& keyToFind, EoDbHeaderSection& headerSection);
 
   void ConvertHeaderSection(const DRW_Header* header, AeSysDoc* document);
+  void ConvertClassesSection(const DRW_Class& class_, AeSysDoc* document);
 
   void ConvertAppIdTable(const DRW_AppId& appId, AeSysDoc* document);
   void ConvertDimStyle(const DRW_Dimstyle& dimStyle, AeSysDoc* document);
 
   /** @brief Converts a DRW_Layer object to the corresponding AeSys document representation.
    *
-   * This method takes a DRW_Layer object, which represents layer information from a DXF/DWG file, and converts it into the appropriate format for storage in the provided AeSysDoc document.
+   * This method takes a DRW_Layer object, which represents layer information from a DXF/DWG file, and converts it into
+   * the appropriate format for storage in the provided AeSysDoc document.
    *
    * @param layer The DRW_Layer object containing layer data to be converted.
    * @param document A pointer to the AeSysDoc where the converted layer will be stored.
@@ -266,39 +274,43 @@ class EoDbDrwInterface : public DRW_Interface {
 
   /** @brief Converts a DRW_LType object to the corresponding AeSys document representation.
    *
-   * This method takes a DRW_LType object, which represents line type information from a DXF/DWG file, and converts it into the appropriate format for storage in the provided AeSysDoc document.
+   * This method takes a DRW_LType object, which represents line type information from a DXF/DWG file, and converts it
+   * into the appropriate format for storage in the provided AeSysDoc document.
    *
    * @param lineType The DRW_LType object containing line type data to be converted.
    * @param document A pointer to the AeSysDoc where the converted line type will be stored.
    * @note unimplemented complex linetype elements (group code 74)
-   *  Complex linetype element type (one per element). Default is 0 (no embedded shape/text). The following codes are bit values:
-   *    0x01 = If set, code 50 specifies an absolute rotation; else code 50 specifies a relative rotation
-   *    0x02 = Embedded element is a text string
-   *    0x04 = Embedded element is a shape
+   *  Complex linetype element type (one per element). Default is 0 (no embedded shape/text). The following codes are
+   * bit values: 0x01 = If set, code 50 specifies an absolute rotation; else code 50 specifies a relative rotation 0x02
+   * = Embedded element is a text string 0x04 = Embedded element is a shape
    *
-   *   group code 75 - Shape number (one per element) if code 74 specifies an embedded shape. If code 74 specifies an embedded text string, this value is set to 0 else if code 74 is set to 0, code 75 is omitted.
-   *   group code 340 - Pointer to STYLE object (one per element if code 74 > 0)
-   *   group code 46 - S = Scale value (optional); multiple entries can exist
-   *   group code 50 - R = (relative) or A = (absolute) rotation value in radians of embedded shape or text; one per element if code 74 specifies an embedded shape or text string
-   *   group code 44 - X = X offset value (optional); multiple entries can exist
-   *   group code 45 - Y = Y offset value (optional); multiple entries can exist
+   *   group code 75 - Shape number (one per element) if code 74 specifies an embedded shape. If code 74 specifies an
+   * embedded text string, this value is set to 0 else if code 74 is set to 0, code 75 is omitted. group code 340 -
+   * Pointer to STYLE object (one per element if code 74 > 0) group code 46 - S = Scale value (optional); multiple
+   * entries can exist group code 50 - R = (relative) or A = (absolute) rotation value in radians of embedded shape or
+   * text; one per element if code 74 specifies an embedded shape or text string group code 44 - X = X offset value
+   * (optional); multiple entries can exist group code 45 - Y = Y offset value (optional); multiple entries can exist
    *   group code 9 - Text string (one per element if code 74 = 2)
    */
   void ConvertLinetypesTable(const DRW_LType& lineType, AeSysDoc* document);
 
   /** @brief Converts a DRW_Textstyle object to the corresponding AeSys document representation.
    *
-   * This method takes a DRW_Textstyle object, which represents text style information from a DXF/DWG file, and converts it into the appropriate format for storage in the provided AeSysDoc document.
+   * This method takes a DRW_Textstyle object, which represents text style information from a DXF/DWG file, and converts
+   * it into the appropriate format for storage in the provided AeSysDoc document.
    *
    * @param textStyle The DRW_Textstyle object containing text style data to be converted.
    * @param document A pointer to the AeSysDoc where the converted text style will be stored.
-   * @note A style table item is also used to record shape file LOAD command requests. In this case the first bit (0x01) is set in the 70 group flags and only the 3 group (shape file name) is meaningful (all the other groups are output, however).
+   * @note A style table item is also used to record shape file LOAD command requests. In this case the first bit (0x01)
+   * is set in the 70 group flags and only the 3 group (shape file name) is meaningful (all the other groups are output,
+   * however).
    */
   void ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeSysDoc* document);
 
   /** @brief Converts a DRW_Vport object to the corresponding AeSys document representation.
    *
-   * This method takes a DRW_Vport object, which represents viewport information from a DXF/DWG file, and converts it into the appropriate format for storage in the provided AeSysDoc document.
+   * This method takes a DRW_Vport object, which represents viewport information from a DXF/DWG file, and converts it
+   * into the appropriate format for storage in the provided AeSysDoc document.
    *
    * @param viewport The DRW_Vport object containing viewport data to be converted.
    * @param document A pointer to the AeSysDoc where the converted viewport will be stored.

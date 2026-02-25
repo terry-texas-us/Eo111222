@@ -8,7 +8,6 @@
 #include "drw_base.h"
 
 class dxfReader;
-class dwgBuffer;
 class DRW_Polyline;
 
 namespace DRW {
@@ -71,7 +70,7 @@ enum ETYPE {
   UNKNOWN
 };
 
-}  // namespace DRW
+}
 
 //! Base class for entities
 /*!

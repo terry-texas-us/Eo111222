@@ -1685,7 +1685,7 @@ bool DRW_Header::getDouble(std::string key, double* varDouble) {
   it = vars.find(key);
   if (it != vars.end()) {
     DRW_Variant* var = (*it).second;
-    if (var->type() == DRW_Variant::DOUBLE) {
+    if (var->type() == DRW_Variant::Type::Double) {
       *varDouble = var->content.d;
       result = true;
     }
@@ -1701,7 +1701,7 @@ bool DRW_Header::getInt(std::string key, int* varInt) {
   it = vars.find(key);
   if (it != vars.end()) {
     DRW_Variant* var = (*it).second;
-    if (var->type() == DRW_Variant::INTEGER) {
+    if (var->type() == DRW_Variant::Type::Integer) {
       *varInt = var->content.i;
       result = true;
     }
@@ -1717,7 +1717,7 @@ bool DRW_Header::getStr(std::string key, std::string* varStr) {
   it = vars.find(key);
   if (it != vars.end()) {
     DRW_Variant* var = (*it).second;
-    if (var->type() == DRW_Variant::STRING) {
+    if (var->type() == DRW_Variant::Type::String) {
       *varStr = *var->content.s;
       result = true;
     }
@@ -1733,7 +1733,7 @@ bool DRW_Header::getCoord(std::string key, DRW_Coord* varCoord) {
   it = vars.find(key);
   if (it != vars.end()) {
     DRW_Variant* var = (*it).second;
-    if (var->type() == DRW_Variant::COORD) {
+    if (var->type() == DRW_Variant::Type::Coord) {
       *varCoord = *var->content.v;
       result = true;
     }

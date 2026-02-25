@@ -7,10 +7,9 @@
 
 class dxfReader;
 class dxfWriter;
-class dwgBuffer;
 
 /** Class to handle header vars, to read iterate over "std::map vars"
- *  to write add a DRW_Variant* into "std::map vars" (do not delete it, are cleared in dtor)
+ *  to write add a DRW_Variant* into "std::map vars" (do not delete it, they are cleared in dtor)
  *  or use add* helper functions.
  */
 class DRW_Header {
@@ -74,5 +73,5 @@ class DRW_Header {
   std::string m_comments;
   std::string m_name;
   DRW_Variant* curr{};
-  int m_version;  //to use on read
+  int m_version;
 };

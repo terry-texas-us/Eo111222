@@ -1,6 +1,6 @@
 #pragma once
 
-#pragma warning(disable : 4996)  //Ignore C4996, unsafe strncpy. TODO use safe alternative
+#pragma warning(disable : 4996)  // Ignore C4996, unsafe strncpy. TODO use safe alternative
 
 constexpr auto DRW_VERSION = "0.6.3";
 
@@ -48,7 +48,8 @@ enum Version {
   AC1021,    // AutoCAD 2007 / 2008 / 2009
   AC1024,    // AutoCAD 2010 / 2011 / 2012
   AC1027,    // AutoCAD 2013 / 2014 / 2015 / 2016 / 2017
-  AC1032  // AutoCAD 2018 / 2019 / 2020 / 2021 / 2022 / 2023 / 2024 / 2025 / 2026 (current format – no new code since 2018)
+  AC1032  // AutoCAD 2018 / 2019 / 2020 / 2021 / 2022 / 2023 / 2024 / 2025 / 2026 (current format – no new code since
+          // 2018)
 };
 
 enum DebugTraceLevel { None, Debug };
@@ -133,66 +134,64 @@ struct DRW_Vertex2D {
 
 //! Class to handle header vars
 /*!
-*  Class to handle header vars
-*/
+ *  Class to handle header vars
+ */
 class DRW_Variant {
  public:
-  enum TYPE { STRING, INTEGER, DOUBLE, COORD, INVALID };
-  //TODO: add INT64 support
-  DRW_Variant() : sdata(std::string()), vdata(), content(0), vType(INVALID), vCode(0) {}
+  enum Type { String, Integer, Double, Coord, Invalid };
+  // TODO: add INT64 support
+  DRW_Variant() : sdata(std::string()), vdata(), content(0), vType(Type::Invalid), vCode(0) {}
 
-  DRW_Variant(int c, std::int32_t i) : sdata(std::string()), vdata(), content(i), vType(INTEGER), vCode(c) {}
-
+  DRW_Variant(int c, std::int32_t i) : sdata(std::string()), vdata(), content(i), vType(Type::Integer), vCode(c) {}
   DRW_Variant(int c, std::uint32_t i)
-      : sdata(std::string()), vdata(), content(static_cast<std::int32_t>(i)), vType(INTEGER), vCode(c) {}
+      : sdata(std::string()), vdata(), content(static_cast<std::int32_t>(i)), vType(Type::Integer), vCode(c) {}
 
-  DRW_Variant(int c, double d) : sdata(std::string()), vdata(), content(d), vType(DOUBLE), vCode(c) {}
+  DRW_Variant(int c, double d) : sdata(std::string()), vdata(), content(d), vType(Type::Double), vCode(c) {}
+  DRW_Variant(int c, UTF8STRING s) : sdata(s), vdata(), content(&sdata), vType(Type::String), vCode(c) {}
 
-  DRW_Variant(int c, UTF8STRING s) : sdata(s), vdata(), content(&sdata), vType(STRING), vCode(c) {}
-
-  DRW_Variant(int c, DRW_Coord crd) : sdata(std::string()), vdata(crd), content(&vdata), vType(COORD), vCode(c) {}
+  DRW_Variant(int c, DRW_Coord crd) : sdata(std::string()), vdata(crd), content(&vdata), vType(Type::Coord), vCode(c) {}
 
   DRW_Variant(const DRW_Variant& d)
       : sdata(d.sdata), vdata(d.vdata), content(d.content), vType(d.vType), vCode(d.vCode) {
-    if (d.vType == COORD) content.v = &vdata;
-    if (d.vType == STRING) content.s = &sdata;
+    if (d.vType == Type::Coord) { content.v = &vdata; }
+    if (d.vType == Type::String) { content.s = &sdata; }
   }
 
   ~DRW_Variant() {}
 
   void addString(int c, UTF8STRING s) {
-    vType = STRING;
+    vType = Type::String;
     sdata = s;
     content.s = &sdata;
     vCode = c;
   }
   void addInt(int c, int i) {
-    vType = INTEGER;
+    vType = Type::Integer;
     content.i = i;
     vCode = c;
   }
   void addDouble(int c, double d) {
-    vType = DOUBLE;
+    vType = Type::Double;
     content.d = d;
     vCode = c;
   }
   void addCoord(int c, DRW_Coord v) {
-    vType = COORD;
+    vType = Type::Coord;
     vdata = v;
     content.v = &vdata;
     vCode = c;
   }
   void setCoordX(double d) {
-    if (vType == COORD) vdata.x = d;
+    if (vType == DRW_Variant::Type::Coord) { vdata.x = d; }
   }
   void setCoordY(double d) {
-    if (vType == COORD) vdata.y = d;
+    if (vType == DRW_Variant::Type::Coord) { vdata.y = d; }
   }
   void setCoordZ(double d) {
-    if (vType == COORD) vdata.z = d;
+    if (vType == DRW_Variant::Type::Coord) { vdata.z = d; }
   }
-  enum TYPE type() const { return vType; }
-  int code() const { return vCode; } /*!< returns dxf code of this value*/
+  enum DRW_Variant::Type type() const { return vType; }
+  int code() const { return vCode; }
 
  private:
   std::string sdata;
@@ -215,16 +214,16 @@ class DRW_Variant {
   DRW_VarContent content;
 
  private:
-  enum TYPE vType;
-  int vCode; /*!< dxf code of this value*/
+  enum DRW_Variant::Type vType;
+  int vCode;
 };
 
 //! Class to convert between line width and integer
 /*!
-*  Class to convert between line width and integer
-*  verifing valid values, if value is not valid
-*  returns widthDefault.
-*/
+ *  Class to convert between line width and integer
+ *  verifing valid values, if value is not valid
+ *  returns widthDefault.
+ */
 class DRW_LW_Conv {
  public:
   enum lineWidth {
@@ -378,13 +377,13 @@ class DRW_LW_Conv {
     } else {
       return width23;
     }
-    //default by default
+    // default by default
     return widthDefault;
   }
 
   static enum lineWidth dwgInt2lineWidth(int i) {
     if ((i > -1 && i < 24) || (i > 28 && i < 32)) { return static_cast<lineWidth>(i); }
-    //default by default
+    // default by default
     return widthDefault;
   }
 };

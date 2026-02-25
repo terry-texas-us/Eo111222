@@ -7,7 +7,6 @@
 
 class dxfReader;
 class dxfWriter;
-class dwgBuffer;
 
 namespace DRW {
 

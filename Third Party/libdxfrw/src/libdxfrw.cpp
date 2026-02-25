@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "drw_base.h"
+#include "drw_classes.h"
 #include "drw_entities.h"
 #include "drw_header.h"
 #include "drw_interface.h"
@@ -1563,7 +1564,7 @@ bool dxfRW::writeExtData(const std::vector<DRW_Variant*>& ed) {
       case 1004:
       case 1005: {
         int cc = (*it)->code();
-        if ((*it)->type() == DRW_Variant::STRING) writer->writeUtf8String(cc, *(*it)->content.s);
+        if ((*it)->type() == DRW_Variant::Type::String) { writer->writeUtf8String(cc, *(*it)->content.s); }
         //            writer->writeUtf8String((*it)->code, (*it)->content.s);
         break;
       }
@@ -1571,7 +1572,7 @@ bool dxfRW::writeExtData(const std::vector<DRW_Variant*>& ed) {
       case 1011:
       case 1012:
       case 1013:
-        if ((*it)->type() == DRW_Variant::COORD) {
+        if ((*it)->type() == DRW_Variant::Type::Coord) {
           writer->writeDouble((*it)->code(), (*it)->content.v->x);
           writer->writeDouble((*it)->code() + 10, (*it)->content.v->y);
           writer->writeDouble((*it)->code() + 20, (*it)->content.v->z);
@@ -1580,13 +1581,13 @@ bool dxfRW::writeExtData(const std::vector<DRW_Variant*>& ed) {
       case 1040:
       case 1041:
       case 1042:
-        if ((*it)->type() == DRW_Variant::DOUBLE) writer->writeDouble((*it)->code(), (*it)->content.d);
+        if ((*it)->type() == DRW_Variant::Type::Double) { writer->writeDouble((*it)->code(), (*it)->content.d); }
         break;
       case 1070:
-        if ((*it)->type() == DRW_Variant::INTEGER) writer->writeInt16((*it)->code(), (*it)->content.i);
+        if ((*it)->type() == DRW_Variant::Type::Integer) { writer->writeInt16((*it)->code(), (*it)->content.i); }
         break;
       case 1071:
-        if ((*it)->type() == DRW_Variant::INTEGER) writer->writeInt32((*it)->code(), (*it)->content.i);
+        if ((*it)->type() == DRW_Variant::Type::Integer) { writer->writeInt32((*it)->code(), (*it)->content.i); }
         break;
       default:
         break;
@@ -1604,29 +1605,25 @@ bool dxfRW::processDxf() {
   std::string sectionstr;
   //    section = secUnknown;
   while (reader->readRec(&code)) {
-    // DRW_DBG(code); DRW_DBG(" <group code>\n");
     if (code == 999) {
       header.addComment(reader->getString());
     } else if (code == 0) {
       sectionstr = reader->getString();
-      // DRW_DBG(sectionstr); DRW_DBG(" <group value>\n");
       if (sectionstr == "EOF") {
         return true;  // found EOF terminate
       }
       if (sectionstr == "SECTION") {
         more = reader->readRec(&code);
-        // DRW_DBG(code); DRW_DBG(" <group code>\n");
         if (!more) {
           return false;  // wrong dxf file
         }
         if (code == 2) {
           sectionstr = reader->getString();
-          // DRW_DBG(sectionstr); DRW_DBG(" <group value>\n");
           // found section, process it
           if (sectionstr == "HEADER") {
             processHeader();
           } else if (sectionstr == "CLASSES") {
-            // processClasses();
+            processClasses();
           } else if (sectionstr == "TABLES") {
             processTables();
           } else if (sectionstr == "BLOCKS") {
@@ -1649,22 +1646,56 @@ bool dxfRW::processDxf() {
 
 bool dxfRW::processHeader() {
   DRW_DBG("<entered dxfRW::processHeader>\n");
-  int code;
-  std::string sectionstr;
+  std::string zeroGroupTag;
+  int code{};
   while (reader->readRec(&code)) {
-    // DRW_DBG(code); DRW_DBG(" <group code>\n");
     if (code == 0) {
-      sectionstr = reader->getString();
-      // DRW_DBG(sectionstr); DRW_DBG(" <group value>\n\n");
-      if (sectionstr == "ENDSEC") {
+      zeroGroupTag = reader->getString();
+      if (zeroGroupTag == "ENDSEC") {
         iface->addHeader(&header);
-        return true;  // found ENDSEC terminate
+        return true;
       }
     } else
       header.parseCode(code, reader);
   }
   DRW_DBG("<leaving dxfRW::processHeader>\n");
   return true;
+}
+
+/********* Classes Section *********/
+
+bool dxfRW::processClasses() {
+  DRW_DBG("<entered dxfRW::processClasses>\n");
+  std::string zeroGroupTag;
+  int code{};
+  while (reader->readRec(&code)) {
+    DRW_DBG(code);
+    DRW_DBG("\n");
+    if (code == 0) {
+      zeroGroupTag = reader->getString();
+      if (zeroGroupTag == "CLASS") {
+        DRW_Class class_;
+        while (reader->readRec(&code)) {
+          if (code == 0) {
+            zeroGroupTag = reader->getString();
+            if (zeroGroupTag == "CLASS") {
+              iface->addClass(class_);
+              class_.clear();
+            } else if (zeroGroupTag == "ENDSEC") {
+              iface->addClass(class_);
+              DRW_DBG("<leaving dxfRW::processClasses>\n");
+              return true;
+            }
+          } else
+            class_.parseCode(code, reader);
+        }
+      } else if (zeroGroupTag == "ENDSEC") {
+        DRW_DBG("<leaving dxfRW::processClasses>\n");
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /********* Tables Section *********/
@@ -1679,16 +1710,13 @@ bool dxfRW::processTables() {
     DRW_DBG("\n");
     if (code == 0) {
       sectionstr = reader->getString();
-      // DRW_DBG(sectionstr); DRW_DBG("\n\n");
       if (sectionstr == "TABLE") {
         more = reader->readRec(&code);
-        // DRW_DBG(code); DRW_DBG("\n");
         if (!more) {
           return false;  // wrong dxf file
         }
         if (code == 2) {
           sectionstr = reader->getString();
-          // DRW_DBG(sectionstr); DRW_DBG("\n\n");
 
           if (sectionstr == "LTYPE") {
             processLType();
@@ -1726,14 +1754,12 @@ bool dxfRW::processLType() {
   bool reading = false;
   DRW_LType ltype;
   while (reader->readRec(&code)) {
-    // DRW_DBG(code); DRW_DBG("\n");
     if (code == 0) {
       if (reading) {
         ltype.update();
         iface->addLType(ltype);
       }
       sectionstr = reader->getString();
-      // DRW_DBG(sectionstr); DRW_DBG("\n");
       if (sectionstr == "LTYPE") {
         reading = true;
         ltype.reset();
@@ -1754,11 +1780,9 @@ bool dxfRW::processLayer() {
   bool reading = false;
   DRW_Layer layer;
   while (reader->readRec(&code)) {
-    // DRW_DBG(code); DRW_DBG("\n");
     if (code == 0) {
       if (reading) iface->addLayer(layer);
       sectionstr = reader->getString();
-      // DRW_DBG(sectionstr); DRW_DBG("\n");
       if (sectionstr == "LAYER") {
         reading = true;
         layer.reset();
@@ -1779,11 +1803,9 @@ bool dxfRW::processDimStyle() {
   bool reading = false;
   DRW_Dimstyle dimSty;
   while (reader->readRec(&code)) {
-    // DRW_DBG(code); DRW_DBG("\n");
     if (code == 0) {
       if (reading) iface->addDimStyle(dimSty);
       sectionstr = reader->getString();
-      // DRW_DBG(sectionstr); DRW_DBG("\n");
       if (sectionstr == "DIMSTYLE") {
         reading = true;
         dimSty.reset();
@@ -1804,11 +1826,9 @@ bool dxfRW::processTextStyle() {
   bool reading = false;
   DRW_Textstyle TxtSty;
   while (reader->readRec(&code)) {
-    // DRW_DBG(code); DRW_DBG("\n");
     if (code == 0) {
       if (reading) iface->addTextStyle(TxtSty);
       sectionstr = reader->getString();
-      // DRW_DBG(sectionstr); DRW_DBG("\n");
       if (sectionstr == "STYLE") {
         reading = true;
         TxtSty.reset();
@@ -1829,11 +1849,9 @@ bool dxfRW::processVports() {
   bool reading = false;
   DRW_Vport vp;
   while (reader->readRec(&code)) {
-    // DRW_DBG(code); DRW_DBG("\n");
     if (code == 0) {
       if (reading) iface->addVport(vp);
       sectionstr = reader->getString();
-      // DRW_DBG(sectionstr); DRW_DBG("\n");
       if (sectionstr == "VPORT") {
         reading = true;
         vp.reset();
@@ -1854,11 +1872,9 @@ bool dxfRW::processAppId() {
   bool reading = false;
   DRW_AppId vp;
   while (reader->readRec(&code)) {
-    // DRW_DBG(code); DRW_DBG("\n");
     if (code == 0) {
       if (reading) iface->addAppId(vp);
       sectionstr = reader->getString();
-      // DRW_DBG(sectionstr); DRW_DBG("\n");
       if (sectionstr == "APPID") {
         reading = true;
         vp.reset();
@@ -2118,11 +2134,9 @@ bool dxfRW::processPoint() {
   int code;
   DRW_Point point;
   while (reader->readRec(&code)) {
-    // DRW_DBG(code); DRW_DBG("\n");
     switch (code) {
       case 0: {
         nextentity = reader->getString();
-        // DRW_DBG(nextentity); DRW_DBG("\n");
         iface->addPoint(point);
         DRW_DBG("leaving dxfRW::processPoint\n");
         return true;
@@ -2140,11 +2154,9 @@ bool dxfRW::processLine() {
   int code;
   DRW_Line line;
   while (reader->readRec(&code)) {
-    // DRW_DBG(code); DRW_DBG("\n");
     switch (code) {
       case 0: {
         nextentity = reader->getString();
-        // DRW_DBG(nextentity); DRW_DBG("\n");
         iface->addLine(line);
         DRW_DBG("leaving dxfRW::processLine\n");
         return true;
@@ -2607,13 +2619,7 @@ bool dxfRW::processImageDef() {
  * convert a int to string in hex
  **/
 std::string dxfRW::toHexStr(int n) {
-#if defined(__APPLE__)
-  char buffer[9] = {'\0'};
-  snprintf(buffer, 9, "%X", n);
-  return std::string(buffer);
-#else
   std::ostringstream Convert;
   Convert << std::uppercase << std::hex << n;
   return Convert.str();
-#endif
 }

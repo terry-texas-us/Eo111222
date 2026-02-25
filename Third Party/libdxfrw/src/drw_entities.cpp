@@ -148,21 +148,21 @@ bool DRW_Entity::parseDxfGroups(int code, dxfReader* reader) {
       //            curr.code = code;
       //RLZ code == 330 || code == 360 OR nc == 330 || nc == 360 ?
       if (code == 330 || code == 360)
-        curr.addInt(code, reader->getHandleString());  //RLZ code or nc
+        curr.addInt(code, reader->getHandleString());
       else {
-        switch (reader->type) {
-          case dxfReader::STRING:
-            curr.addString(code, reader->getString());  //RLZ code or nc
+        switch (reader->GetType()) {
+          case dxfReader::Type::String:
+            curr.addString(code, reader->getString());
             break;
-          case dxfReader::INT32:
-          case dxfReader::INT64:
-            curr.addInt(code, reader->getInt32());  //RLZ code or nc
+          case dxfReader::Type::Int32:
+          case dxfReader::Type::Int64:
+            curr.addInt(code, reader->getInt32());
             break;
-          case dxfReader::DOUBLE:
-            curr.addDouble(code, reader->getDouble());  //RLZ code or nc
+          case dxfReader::Type::Double:
+            curr.addDouble(code, reader->getDouble());
             break;
-          case dxfReader::BOOL:
-            curr.addInt(code, reader->getInt32());  //RLZ code or nc
+          case dxfReader::Type::Bool:
+            curr.addInt(code, reader->getInt32());
             break;
           default:
             break;

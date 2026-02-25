@@ -955,7 +955,7 @@ void AeSysView::OnMButtonUp([[maybe_unused]] UINT flags, [[maybe_unused]] CPoint
 }
 
 void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
-  ATLTRACE2(traceGeneral, 2, L"AeSysView::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
 #if defined(USING_STATE_PATTERN)
   auto* state = GetCurrentState();
   if (state) { state->OnMouseMove(this, flags, point); }

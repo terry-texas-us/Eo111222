@@ -409,11 +409,6 @@ void setDebug(DRW::DebugTraceLevel lvl);
 
 ## Performance Considerations
 
-### Buffering
-
-- `dwgBuffer`: Efficient binary data processing when reading DWG files
-- Supports bit-level read operations
-
 ### Memory Management
 
 - Entities and objects are passed by pointer or reference

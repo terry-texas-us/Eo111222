@@ -171,28 +171,17 @@ std::string DRW_ConvTable::toUtf8(std::string* s) {
 
 std::string DRW_Converter::encodeText(std::string stmp) {
   int code;
-#if defined(__APPLE__)
-  int Succeeded = sscanf(&(stmp.substr(3, 4)[0]), "%x", &code);
-  if (!Succeeded || Succeeded == EOF) code = 0;
-#else
   std::istringstream sd(stmp.substr(3, 4));
   sd >> std::hex >> code;
-#endif
   return encodeNum(code);
 }
 
 std::string DRW_Converter::decodeText(int c) {
   std::string res = "\\U+";
   std::string num;
-#if defined(__APPLE__)
-  std::string str(16, '\0');
-  snprintf(&(str[0]), 16, "%04X", c);
-  num = str;
-#else
   std::stringstream ss;
   ss << std::uppercase << std::setfill('0') << std::setw(4) << std::hex << c;
   ss >> num;
-#endif
   res += num;
   return res;
 }

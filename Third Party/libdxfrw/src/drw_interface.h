@@ -1,5 +1,6 @@
 #pragma once
 
+#include "drw_classes.h"
 #include "drw_entities.h"
 #include "drw_header.h"
 #include "drw_objects.h"
@@ -17,6 +18,9 @@ class DRW_Interface {
 
   /** Called when header is parsed.  */
   virtual void addHeader(const DRW_Header* data) = 0;
+
+  /** Called for every class.  */
+  virtual void addClass(const DRW_Class& data) = 0;
 
   /** Called for every line Type.  */
   virtual void addLType(const DRW_LType& data) = 0;

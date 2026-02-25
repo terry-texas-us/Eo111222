@@ -1,3 +1,5 @@
+#include "dxfreader.h"
+
 #include <cstdlib>
 #include <ios>
 #include <istream>
@@ -5,7 +7,6 @@
 #include <string>
 
 #include "drw_dbg.h"
-#include "dxfreader.h"
 
 bool dxfReader::readRec(int* codeData) {
   int code;
@@ -19,21 +20,21 @@ bool dxfReader::readRec(int* codeData) {
     readDouble();
   else if (code < 80)
     readInt16();
-  else if (code > 89 && code < 100)  //TODO this is an int 32b
+  else if (code > 89 && code < 100)  // TODO this is an int 32b
     readInt32();
   else if (code == 100 || code == 102 || code == 105)
     readString();
-  else if (code > 109 && code < 150)  //skip not used at the v2012
+  else if (code > 109 && code < 150)  // skip not used at the v2012
     readDouble();
-  else if (code > 159 && code < 170)  //skip not used at the v2012
+  else if (code > 159 && code < 170)  // skip not used at the v2012
     readInt64();
   else if (code < 180)
     readInt16();
-  else if (code > 209 && code < 240)  //skip not used at the v2012
+  else if (code > 209 && code < 240)  // skip not used at the v2012
     readDouble();
-  else if (code > 269 && code < 290)  //skip not used at the v2012
+  else if (code > 269 && code < 290)  // skip not used at the v2012
     readInt16();
-  else if (code < 300)  //TODO this is a boolean indicator, int in Binary?
+  else if (code < 300)  // TODO this is a boolean indicator, int in Binary?
     readBool();
   else if (code < 370)
     readString();
@@ -45,15 +46,15 @@ bool dxfReader::readRec(int* codeData) {
     readInt16();
   else if (code < 420)
     readString();
-  else if (code < 430)  //TODO this is an int 32b
+  else if (code < 430)  // TODO this is an int 32b
     readInt32();
   else if (code < 440)
     readString();
-  else if (code < 450)  //TODO this is an int 32b
+  else if (code < 450)  // TODO this is an int 32b
     readInt32();
-  else if (code < 460)  //TODO this is long??
+  else if (code < 460)  // TODO this is long??
     readInt32();
-  else if (code < 470)  //TODO this is a floating point double precision??
+  else if (code < 470)  // TODO this is a floating point double precision??
     readDouble();
   else if (code < 481)
     readString();
@@ -61,30 +62,25 @@ bool dxfReader::readRec(int* codeData) {
     // 1000-1005 are for extended data since ~R11/R12 and
     // 1006-1008 are reserved but not used
     readString();
-  else if (code < 1060)  //TODO this is a floating point double precision??
+  else if (code < 1060)  // TODO this is a floating point double precision??
     readDouble();
   else if (code < 1071)
     readInt16();
-  else if (code == 1071)  //TODO this is an int 32b
+  else if (code == 1071)  // TODO this is an int 32b
     readInt32();
   else if (skip)
-    //skip safely this dxf entry ( ok for ascii dxf)
+    // skip safely this dxf entry ( ok for ascii dxf)
     readString();
   else
-    //break in binary files because the conduct is unpredictable
+    // break in binary files because the conduct is unpredictable
     return false;
 
   return (filestr->good());
 }
 int dxfReader::getHandleString() const {
   int res;
-#if defined(__APPLE__)
-  int Succeeded = sscanf(strData.c_str(), "%x", &res);
-  if (!Succeeded || Succeeded == EOF) res = 0;
-#else
   std::istringstream Convert(strData);
   if (!(Convert >> std::hex >> res)) res = 0;
-#endif
   return res;
 }
 
@@ -93,7 +89,7 @@ bool dxfReaderBinary::readCode(int* code) {
   char buffer[2]{};
   filestr->read(buffer, 2);
   int16p = (unsigned short*)buffer;
-  //exist a 32bits int (code 90) with 2 bytes???
+  // exist a 32bits int (code 90) with 2 bytes???
   if ((*code == 90) && (*int16p > 2000)) {
     DRW_DBG(*code);
     DRW_DBG(" de 16bits\n");
@@ -109,7 +105,7 @@ bool dxfReaderBinary::readCode(int* code) {
 }
 
 bool dxfReaderBinary::readString() {
-  type = STRING;
+  type = Type::String;
   std::getline(*filestr, strData, '\0');
   DRW_DBG(strData);
   DRW_DBG(" `group value (string)`\n");
@@ -117,7 +113,7 @@ bool dxfReaderBinary::readString() {
 }
 
 bool dxfReaderBinary::readString(std::string* text) {
-  type = STRING;
+  type = Type::String;
   std::getline(*filestr, *text, '\0');
   DRW_DBG(*text);
   DRW_DBG(" `group value (string)`\n");
@@ -125,7 +121,7 @@ bool dxfReaderBinary::readString(std::string* text) {
 }
 
 bool dxfReaderBinary::readInt16() {
-  type = INT32;
+  type = Type::Int32;
   char buffer[2]{};
   filestr->read(buffer, 2);
   intData = (int)((buffer[1] << 8) | buffer[0]);
@@ -135,7 +131,7 @@ bool dxfReaderBinary::readInt16() {
 }
 
 bool dxfReaderBinary::readInt32() {
-  type = INT32;
+  type = Type::Int32;
   unsigned int* int32p;
   char buffer[4];
   filestr->read(buffer, 4);
@@ -147,8 +143,8 @@ bool dxfReaderBinary::readInt32() {
 }
 
 bool dxfReaderBinary::readInt64() {
-  type = INT64;
-  unsigned long long int* int64p;  //64 bits integer pointer
+  type = Type::Int64;
+  unsigned long long int* int64p;  // 64 bits integer pointer
   char buffer[8];
   filestr->read(buffer, 8);
   int64p = (unsigned long long int*)buffer;
@@ -159,7 +155,7 @@ bool dxfReaderBinary::readInt64() {
 }
 
 bool dxfReaderBinary::readDouble() {
-  type = DOUBLE;
+  type = Type::Double;
   double* result;
   char buffer[8];
   filestr->read(buffer, 8);
@@ -170,7 +166,7 @@ bool dxfReaderBinary::readDouble() {
   return (filestr->good());
 }
 
-//saved as int or add a bool member??
+// saved as int or add a bool member??
 bool dxfReaderBinary::readBool() {
   char buffer[1];
   filestr->read(buffer, 1);
@@ -189,14 +185,14 @@ bool dxfReaderAscii::readCode(int* code) {
   return (filestr->good());
 }
 bool dxfReaderAscii::readString(std::string* text) {
-  type = STRING;
+  type = Type::String;
   std::getline(*filestr, *text);
   if (!text->empty() && text->at(text->size() - 1) == '\r') text->erase(text->size() - 1);
   return (filestr->good());
 }
 
 bool dxfReaderAscii::readString() {
-  type = STRING;
+  type = Type::String;
   std::getline(*filestr, strData);
   if (!strData.empty() && strData.at(strData.size() - 1) == '\r') strData.erase(strData.size() - 1);
   DRW_DBG(strData);
@@ -205,7 +201,7 @@ bool dxfReaderAscii::readString() {
 }
 
 bool dxfReaderAscii::readInt16() {
-  type = INT32;
+  type = Type::Int32;
   std::string text;
   if (readString(&text)) {
     intData = atoi(text.c_str());
@@ -217,40 +213,29 @@ bool dxfReaderAscii::readInt16() {
 }
 
 bool dxfReaderAscii::readInt32() {
-  type = INT32;
+  type = Type::Int32;
   return readInt16();
 }
 
 bool dxfReaderAscii::readInt64() {
-  type = INT64;
+  type = Type::Int64;
   return readInt16();
 }
 
 bool dxfReaderAscii::readDouble() {
-  type = DOUBLE;
+  type = Type::Double;
   std::string text;
-  if (readString(&text)) {
-#if defined(__APPLE__)
-    int succeeded = sscanf(&(text[0]), "%lg", &doubleData);
-    if (succeeded != 1) {
-      DRW_DBG("dxfReaderAscii::readDouble(): reading double error: ");
-      DRW_DBG(text);
-      DRW_DBG('\n');
-    }
-#else
-    std::istringstream sd(text);
-    sd >> doubleData;
-    DRW_DBG(doubleData);
-    DRW_DBG(" `group value (double)`\n");
-#endif
-    return true;
-  } else
-    return false;
+  if (!readString(&text)) { return false; }
+  std::istringstream sd(text);
+  sd >> doubleData;
+  DRW_DBG(doubleData);
+  DRW_DBG(" `group value (double)`\n");
+  return true;
 }
 
-//saved as int or add a bool member??
+// saved as int or add a bool member??
 bool dxfReaderAscii::readBool() {
-  type = BOOL;
+  type = Type::Bool;
   std::string text;
   if (readString(&text)) {
     intData = atoi(text.c_str());

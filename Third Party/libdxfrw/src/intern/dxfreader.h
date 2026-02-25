@@ -7,13 +7,11 @@
 
 class dxfReader {
  public:
-  enum TYPE { STRING, INT32, INT64, DOUBLE, BOOL, INVALID };
-  enum TYPE type;
+  enum class Type : std::uint8_t { String, Int16, Int32, Int64, Double, Bool, Invalid };
 
- public:
   dxfReader(std::ifstream* stream) {
     filestr = stream;
-    type = INVALID;
+    type = Type::Invalid;
   }
   virtual ~dxfReader() {}
   bool readRec(int* code);
@@ -30,6 +28,7 @@ class dxfReader {
   void setVersion(std::string* v, bool dxfFormat) { decoder.setVersion(v, dxfFormat); }
   void setCodePage(std::string* c) { decoder.setCodePage(c, true); }
   std::string getCodePage() { return decoder.getCodePage(); }
+  [[nodiscard]] constexpr Type GetType() const noexcept { return type; }
 
  protected:
   virtual bool readCode(int* code) = 0;  //return true if sucesful (not EOF)
@@ -41,15 +40,15 @@ class dxfReader {
   virtual bool readDouble() = 0;
   virtual bool readBool() = 0;
 
- protected:
-  std::ifstream* filestr;
   std::string strData;
+  DRW_TextCodec decoder;  // moved here for alignment (was private)
+  std::ifstream* filestr;
   double doubleData{};
-  signed int intData{};            //32 bits integer
   unsigned long long int int64{};  //64 bits integer
-  bool skip{};                 //set to true for ascii dxf, false for binary
- private:
-  DRW_TextCodec decoder;
+  signed int intData{};            //32 bits integer
+  std::int16_t int16Data{};        //16 bits integer
+  Type type{Type::Invalid};
+  bool skip{};  //set to true for ascii dxf, false for binary
 };
 
 class dxfReaderBinary : public dxfReader {
