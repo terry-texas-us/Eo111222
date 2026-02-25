@@ -14,7 +14,7 @@
 class DRW_Interface {
  public:
   DRW_Interface() {}
-  virtual ~DRW_Interface() {}
+  virtual ~DRW_Interface() = default;
 
   /** Called when header is parsed.  */
   virtual void addHeader(const DRW_Header* data) = 0;

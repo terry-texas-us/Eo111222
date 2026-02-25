@@ -41,7 +41,7 @@ class print_none {
     (void)z;
   }
   print_none() {}
-  virtual ~print_none() {}
+  virtual ~print_none() = default;
 };
 
 class print_debug : public print_none {
@@ -55,7 +55,7 @@ class print_debug : public print_none {
   virtual void printHL(int c, int s, int h);
   virtual void printPT(double x, double y, double z);
   print_debug();
-  virtual ~print_debug() {}
+  virtual ~print_debug() = default;
 
  private:
   std::ios_base::fmtflags flags;

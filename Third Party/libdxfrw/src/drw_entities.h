@@ -70,7 +70,7 @@ enum ETYPE {
   UNKNOWN
 };
 
-}
+}  // namespace DRW
 
 //! Base class for entities
 /*!
@@ -318,7 +318,7 @@ class DRW_Arc : public DRW_Circle {
  public:
   double staangle{}; /*!< start angle, code 50 in radians*/
   double endangle{}; /*!< end angle, code 51 in radians */
-  int isccw;            /*!< is counter clockwise arc?, only used in hatch, code 73 */
+  int isccw;         /*!< is counter clockwise arc?, only used in hatch, code 73 */
 };
 
 //! Class to handle ellipse entity
@@ -350,7 +350,7 @@ class DRW_Ellipse : public DRW_Line {
   double ratio{};    /*!< ratio, code 40 */
   double staparam{}; /*!< start parameter, code 41, 0.0 for full ellipse*/
   double endparam{}; /*!< end parameter, code 42, 2*PI for full ellipse */
-  int isccw;            /*!< is counter clockwise arc?, only used in hatch, code 73 */
+  int isccw;         /*!< is counter clockwise arc?, only used in hatch, code 73 */
 };
 
 //! Class to handle trace entity
@@ -538,9 +538,9 @@ class DRW_LWPolyline : public DRW_Entity {
     this->flags = p.flags;
     this->extPoint = p.extPoint;
     this->vertex = nullptr;
-    for (unsigned i = 0; i < p.vertlist.size(); i++)  // RLZ ok or new
+    for (unsigned i = 0; i < p.vertlist.size(); i++) {
       this->vertlist.push_back(new DRW_Vertex2D(*(p.vertlist.at(i))));
-
+    }
     this->vertex = nullptr;
   }
 
@@ -554,7 +554,7 @@ class DRW_LWPolyline : public DRW_Entity {
     */
   }
   virtual void applyExtrusion();
-  
+
   void addVertex(DRW_Vertex2D v) {
     auto* vert = new DRW_Vertex2D();
     vert->x = v.x;
@@ -575,7 +575,7 @@ class DRW_LWPolyline : public DRW_Entity {
   void parseCode(int code, dxfReader* reader);
 
  public:
-  int vertexnum{};                    /*!< number of vertex, code 90 */
+  int vertexnum{};                     /*!< number of vertex, code 90 */
   int flags;                           /*!< polyline flag, code 70, default 0 */
   double width;                        /*!< constant width, code 43 */
   double elevation;                    /*!< elevation, code 38 */
@@ -622,13 +622,13 @@ class DRW_Text : public DRW_Line {
     alignV = VBaseLine;
   }
 
-  virtual void applyExtrusion() {}  //RLZ TODO
+  virtual void applyExtrusion() {}
 
  protected:
   void parseCode(int code, dxfReader* reader);
 
  public:
-  double height{}; /*!< height text, code 40 */
+  double height{};    /*!< height text, code 40 */
   UTF8STRING text;    /*!< text string, code 1 */
   double angle;       /*!< rotation angle in degrees (360), code 50 */
   double widthscale;  /*!< width factor, code 41 */
@@ -709,13 +709,13 @@ class DRW_Vertex : public DRW_Point {
   double endwidth; /*!< End width, code 41 */
   double bulge;    /*!< bulge, code 42 */
 
-  int flags;         /*!< vertex flag, code 70, default 0 */
+  int flags;      /*!< vertex flag, code 70, default 0 */
   double tgdir{}; /*!< curve fit tangent direction, code 50 */
-  int vindex1;       /*!< polyface mesh vertex index, code 71, default 0 */
-  int vindex2;       /*!< polyface mesh vertex index, code 72, default 0 */
-  int vindex3;       /*!< polyface mesh vertex index, code 73, default 0 */
-  int vindex4;       /*!< polyface mesh vertex index, code 74, default 0 */
-  int identifier;    /*!< vertex identifier, code 91, default 0 */
+  int vindex1;    /*!< polyface mesh vertex index, code 71, default 0 */
+  int vindex2;    /*!< polyface mesh vertex index, code 72, default 0 */
+  int vindex3;    /*!< polyface mesh vertex index, code 73, default 0 */
+  int vindex4;    /*!< polyface mesh vertex index, code 74, default 0 */
+  int identifier; /*!< vertex identifier, code 91, default 0 */
 };
 
 //! Class to handle polyline entity
@@ -816,14 +816,14 @@ class DRW_Spline : public DRW_Entity {
   //    double tgex;              /*!< end tangent x coordinate, code 13 */
   //    double tgey;              /*!< end tangent y coordinate, code 23 */
   //    double tgez;              /*!< end tangent z coordinate, code 33 */
-  int flags;         /*!< spline flag, code 70 */
-  int degree{};     /*!< degree of the spline, code 71 */
-  std::int32_t nknots;     /*!< number of knots, code 72, default 0 */
-  std::int32_t ncontrol;   /*!< number of control points, code 73, default 0 */
-  std::int32_t nfit;       /*!< number of fit points, code 74, default 0 */
-  double tolknot;    /*!< knot tolerance, code 42, default 0.0000001 */
-  double tolcontrol; /*!< control point tolerance, code 43, default 0.0000001 */
-  double tolfit;     /*!< fit point tolerance, code 44, default 0.0000001 */
+  int flags;             /*!< spline flag, code 70 */
+  int degree{};          /*!< degree of the spline, code 71 */
+  std::int32_t nknots;   /*!< number of knots, code 72, default 0 */
+  std::int32_t ncontrol; /*!< number of control points, code 73, default 0 */
+  std::int32_t nfit;     /*!< number of fit points, code 74, default 0 */
+  double tolknot;        /*!< knot tolerance, code 42, default 0.0000001 */
+  double tolcontrol;     /*!< control point tolerance, code 43, default 0.0000001 */
+  double tolfit;         /*!< fit point tolerance, code 44, default 0.0000001 */
 
   std::vector<double> knotslist;       /*!< knots list, code 40 */
   std::vector<DRW_Coord*> controllist; /*!< control points list, code 10, 20 & 30 */
@@ -988,18 +988,18 @@ class DRW_Image : public DRW_Line {
   void parseCode(int code, dxfReader* reader);
 
  public:
-  std::uint32_t ref{};    /*!< Hard reference to imagedef object, code 340 */
-  DRW_Coord vVector; /*!< V-vector of single pixel, x coordinate, code 12, 22 & 32 */
+  std::uint32_t ref{}; /*!< Hard reference to imagedef object, code 340 */
+  DRW_Coord vVector;   /*!< V-vector of single pixel, x coordinate, code 12, 22 & 32 */
   //    double vx;                 /*!< V-vector of single pixel, x coordinate, code 12 */
   //    double vy;                 /*!< V-vector of single pixel, y coordinate, code 22 */
   //    double vz;                 /*!< V-vector of single pixel, z coordinate, code 32 */
   double sizeu{}; /*!< image size in pixels, U value, code 13 */
   double sizev{}; /*!< image size in pixels, V value, code 23 */
   double dz{};    /*!< z coordinate, code 33 */
-  int clip;          /*!< Clipping state, code 280, 0=off 1=on */
-  int brightness;    /*!< Brightness value, code 281, (0-100) default 50 */
-  int contrast;      /*!< Brightness value, code 282, (0-100) default 50 */
-  int fade;          /*!< Brightness value, code 283, (0-100) default 0 */
+  int clip;       /*!< Clipping state, code 280, 0=off 1=on */
+  int brightness; /*!< Brightness value, code 281, (0-100) default 50 */
+  int contrast;   /*!< Brightness value, code 282, (0-100) default 50 */
+  int fade;       /*!< Brightness value, code 283, (0-100) default 0 */
 };
 
 //! Base class for dimension entity
@@ -1044,9 +1044,8 @@ class DRW_Dimension : public DRW_Entity {
     arcPoint = d.arcPoint;
     circlePoint = d.circlePoint;
     length = d.length;
-    //RLZ needed a def value for this: hdir = ???
   }
-  virtual ~DRW_Dimension() {}
+  virtual ~DRW_Dimension() = default;
 
   virtual void applyExtrusion() {}
 
@@ -1111,7 +1110,7 @@ class DRW_Dimension : public DRW_Entity {
   double rot;          /*!< rotation angle of the dimension text, code 53 */
   DRW_Coord extPoint;  /*!<  extrusion normal vector, code 210, 220 & 230 */
 
-  double hdir{};     /*!< horizontal direction for the dimension, code 51, default ? */
+  double hdir{};        /*!< horizontal direction for the dimension, code 51, default ? */
   DRW_Coord clonePoint; /*!< Insertion point for clones (Baseline & Continue), code 12, 22 & 32 (OCS) */
   DRW_Coord def1;       /*!< Definition point 1for linear & angular, code 13, 23 & 33 (WCS) */
   DRW_Coord def2;       /*!< Definition point 2, code 14, 24 & 34 (WCS) */
@@ -1120,7 +1119,7 @@ class DRW_Dimension : public DRW_Entity {
 
   DRW_Coord circlePoint; /*!< Definition point for diameter, radius & angular dims code 15, 25 & 35 (WCS) */
   DRW_Coord arcPoint;    /*!< Point defining dimension arc, x coordinate, code 16, 26 & 36 (OCS) */
-  double length{};    /*!< Leader length, code 40 */
+  double length{};       /*!< Leader length, code 40 */
 };
 
 //! Class to handle  aligned dimension entity
@@ -1293,21 +1292,21 @@ class DRW_Leader : public DRW_Entity {
   void parseCode(int code, dxfReader* reader);
 
  public:
-  UTF8STRING style;         /*!< Dimension style name, code 3 */
-  int arrow;                /*!< Arrowhead flag, code 71, 0=Disabled; 1=Enabled */
-  int leadertype;           /*!< Leader path type, code 72, 0=Straight line segments; 1=Spline */
-  int flag;                 /*!< Leader creation flag, code 73, default 3 */
-  int hookline{};           /*!< Hook line direction flag, code 74, default 1 */
-  int hookflag;             /*!< Hook line flag, code 75 */
-  double textheight{};     /*!< Text annotation height, code 40 */
-  double textwidth{};    /*!< Text annotation width, code 41 */
-  int vertnum;              /*!< Number of vertices, code 76 */
-  int coloruse{};          /*!< Color to use if leader's DIMCLRD = BYBLOCK, code 77 */
-  std::uint32_t annotHandle{};   /*!< Hard reference to associated annotation, code 340 */
-  DRW_Coord extrusionPoint; /*!< Normal vector, code 210, 220 & 230 */
-  DRW_Coord horizdir;       /*!< "Horizontal" direction for leader, code 211, 221 & 231 */
-  DRW_Coord offsetblock;    /*!< Offset of last leader vertex from block, code 212, 222 & 232 */
-  DRW_Coord offsettext;     /*!< Offset of last leader vertex from annotation, code 213, 223 & 233 */
+  UTF8STRING style;            /*!< Dimension style name, code 3 */
+  int arrow;                   /*!< Arrowhead flag, code 71, 0=Disabled; 1=Enabled */
+  int leadertype;              /*!< Leader path type, code 72, 0=Straight line segments; 1=Spline */
+  int flag;                    /*!< Leader creation flag, code 73, default 3 */
+  int hookline{};              /*!< Hook line direction flag, code 74, default 1 */
+  int hookflag;                /*!< Hook line flag, code 75 */
+  double textheight{};         /*!< Text annotation height, code 40 */
+  double textwidth{};          /*!< Text annotation width, code 41 */
+  int vertnum;                 /*!< Number of vertices, code 76 */
+  int coloruse{};              /*!< Color to use if leader's DIMCLRD = BYBLOCK, code 77 */
+  std::uint32_t annotHandle{}; /*!< Hard reference to associated annotation, code 340 */
+  DRW_Coord extrusionPoint;    /*!< Normal vector, code 210, 220 & 230 */
+  DRW_Coord horizdir;          /*!< "Horizontal" direction for leader, code 211, 221 & 231 */
+  DRW_Coord offsetblock;       /*!< Offset of last leader vertex from block, code 212, 222 & 232 */
+  DRW_Coord offsettext;        /*!< Offset of last leader vertex from annotation, code 213, 223 & 233 */
 
   std::vector<DRW_Coord*> vertexlist; /*!< vertex points list, code 10, 20 & 30 */
 
@@ -1338,51 +1337,26 @@ class DRW_Viewport : public DRW_Point {
   void parseCode(int code, dxfReader* reader);
 
  public:
-  double pswidth;       /*!< Width in paper space units, code 40 */
-  double psheight;      /*!< Height in paper space units, code 41 */
-  int vpstatus;         /*!< Viewport status, code 68 */
-  int vpID{};          /*!< Viewport ID, code 69 */
-  double centerPX;      /*!< view center point X, code 12 */
-  double centerPY;      /*!< view center point Y, code 22 */
+  double pswidth;    /*!< Width in paper space units, code 40 */
+  double psheight;   /*!< Height in paper space units, code 41 */
+  int vpstatus;      /*!< Viewport status, code 68 */
+  int vpID{};        /*!< Viewport ID, code 69 */
+  double centerPX;   /*!< view center point X, code 12 */
+  double centerPY;   /*!< view center point Y, code 22 */
   double snapPX{};   /*!< Snap base point X, code 13 */
   double snapPY{};   /*!< Snap base point Y, code 23 */
   double snapSpPX{}; /*!< Snap spacing X, code 14 */
   double snapSpPY{}; /*!< Snap spacing Y, code 24 */
   //TODO: complete in dxf
-  DRW_Coord viewDir;      /*!< View direction vector, code 16, 26 & 36 */
-  DRW_Coord viewTarget;   /*!< View target point, code 17, 27, 37 */
-  double viewLength{}; /*!< Perspective lens length, code 42 */
-  double frontClip{};  /*!< Front clip plane Z value, code 43 */
-  double backClip{};   /*!< Back clip plane Z value, code 44 */
-  double viewHeight{}; /*!< View height in model space units, code 45 */
-  double snapAngle{};  /*!< Snap angle, code 50 */
-  double twistAngle{}; /*!< view twist angle, code 51 */
+  DRW_Coord viewDir;    /*!< View direction vector, code 16, 26 & 36 */
+  DRW_Coord viewTarget; /*!< View target point, code 17, 27, 37 */
+  double viewLength{};  /*!< Perspective lens length, code 42 */
+  double frontClip{};   /*!< Front clip plane Z value, code 43 */
+  double backClip{};    /*!< Back clip plane Z value, code 44 */
+  double viewHeight{};  /*!< View height in model space units, code 45 */
+  double snapAngle{};   /*!< Snap angle, code 50 */
+  double twistAngle{};  /*!< view twist angle, code 51 */
 
  private:
   std::uint32_t frozenLyCount{};
-};  //RLZ: missing 15,25, 72, 331, 90, 340, 1, 281, 71, 74, 110, 120, 130, 111, 121,131, 112,122, 132, 345,346, and more...
-
-//used  //DRW_Coord basePoint;      /*!<  base point, code 10, 20 & 30 */
-
-//double thickness;         /*!< thickness, code 39 */
-//DRW_Coord extPoint;       /*!<  Dir extrusion normal vector, code 210, 220 & 230 */
-//enum DRW::ETYPE eType;     /*!< enum: entity type, code 0 */
-//std::uint32_t handle;      /*!< entity identifier, code 5 */
-//std::list<std::list<DRW_Variant> > appData; /*!< list of application data, code 102 */
-//std::uint32_t parentHandle;  /*!< Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330 */
-//DRW::Space space;          /*!< space indicator, code 67*/
-//UTF8STRING layer;          /*!< layer name, code 8 */
-//UTF8STRING lineType;       /*!< line type, code 6 */
-//std::uint32_t material;    /*!< hard pointer id to material object, code 347 */
-//int color;                 /*!< entity color, code 62 */
-//enum DRW_LW_Conv::lineWidth lWeight; /*!< entity lineweight, code 370 */
-//double ltypeScale;         /*!< linetype scale, code 48 */
-//bool visible;              /*!< entity visibility, code 60 */
-//int numProxyGraph;         /*!< Number of bytes in proxy graphics, code 92 */
-//std::string proxyGraphics; /*!< proxy graphics bytes, code 310 */
-//int color24;               /*!< 24-bit color, code 420 */
-//std::string colorName;     /*!< color name, code 430 */
-//int transparency;          /*!< transparency, code 440 */
-//int plotStyle;             /*!< hard pointer id to plot style object, code 390 */
-//DRW::ShadowMode shadow;    /*!< shadow mode, code 284 */
-//bool haveExtrusion;        /*!< set to true if the entity have extrusion*/
+};

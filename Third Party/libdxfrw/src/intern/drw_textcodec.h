@@ -8,14 +8,14 @@ class DRW_TextCodec {
  public:
   DRW_TextCodec();
   ~DRW_TextCodec();
-  std::string fromUtf8(std::string s);
-  std::string toUtf8(std::string s);
-  int getVersion() const { return version; }
-  void setVersion(std::string* v, bool dxfFormat);
-  void setVersion(int v, bool dxfFormat);
-  void setCodePage(std::string* c, bool dxfFormat);
-  void setCodePage(std::string c, bool dxfFormat) { setCodePage(&c, dxfFormat); }
-  std::string getCodePage() { return cp; }
+  std::string FromUtf8(std::string s);
+  std::string ToUtf8(std::string s) const;
+  [[nodiscard]] constexpr int GetVersion() const noexcept { return version; }
+  void SetVersion(std::string* v, bool dxfFormat);
+  void SetVersion(int v, bool dxfFormat);
+  void SetCodePage(std::string* c, bool dxfFormat);
+  void SetCodePage(std::string c, bool dxfFormat) { SetCodePage(&c, dxfFormat); }
+  [[nodiscard]] const std::string& GetCodePage() const noexcept { return cp; }
 
  private:
   std::string correctCodePage(const std::string& s);
@@ -35,9 +35,9 @@ class DRW_Converter {
     table = t;
     cpLenght = l;
   }
-  virtual ~DRW_Converter() {}
-  virtual std::string fromUtf8(std::string* s) { return *s; }
-  virtual std::string toUtf8(std::string* s);
+  virtual ~DRW_Converter() = default;
+  virtual std::string FromUtf8(std::string* s) { return *s; }
+  virtual std::string ToUtf8(std::string* s);
   std::string encodeText(std::string stmp);
   std::string decodeText(int c);
   std::string encodeNum(int c);
@@ -49,15 +49,15 @@ class DRW_Converter {
 class DRW_ConvUTF16 : public DRW_Converter {
  public:
   DRW_ConvUTF16() : DRW_Converter(nullptr, 0) {}
-  virtual std::string fromUtf8(std::string* s);
-  virtual std::string toUtf8(std::string* s);
+  virtual std::string FromUtf8(std::string* s);
+  virtual std::string ToUtf8(std::string* s);
 };
 
 class DRW_ConvTable : public DRW_Converter {
  public:
   DRW_ConvTable(const int* t, int l) : DRW_Converter(t, l) {}
-  virtual std::string fromUtf8(std::string* s);
-  virtual std::string toUtf8(std::string* s);
+  virtual std::string FromUtf8(std::string* s);
+  virtual std::string ToUtf8(std::string* s);
 };
 
 class DRW_ConvDBCSTable : public DRW_Converter {
@@ -67,8 +67,8 @@ class DRW_ConvDBCSTable : public DRW_Converter {
     doubleTable = dt;
   }
 
-  virtual std::string fromUtf8(std::string* s);
-  virtual std::string toUtf8(std::string* s);
+  virtual std::string FromUtf8(std::string* s);
+  virtual std::string ToUtf8(std::string* s);
 
  private:
   const int* leadTable;
@@ -78,8 +78,8 @@ class DRW_ConvDBCSTable : public DRW_Converter {
 class DRW_ExtConverter : public DRW_Converter {
  public:
   DRW_ExtConverter(const char* enc) : DRW_Converter(nullptr, 0) { encoding = enc; }
-  virtual std::string fromUtf8(std::string* s);
-  virtual std::string toUtf8(std::string* s);
+  virtual std::string FromUtf8(std::string* s);
+  virtual std::string ToUtf8(std::string* s);
 
  private:
   const char* encoding;

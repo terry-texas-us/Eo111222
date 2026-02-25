@@ -25,22 +25,22 @@ constexpr auto FIRSTHANDLE{48};
 
 dxfRW::dxfRW(const char* name) {
   DRW_DBGSL(DRW_dbg::none);
-  fileName = name;
-  reader = nullptr;
-  writer = nullptr;
-  applyExt = false;
-  elParts = 128;  // parts munber when convert ellipse to polyline
+  m_fileName = name;
+  m_reader = nullptr;
+  m_writer = nullptr;
+  m_applyExtrusion = false;
+  m_ellipseParts = 128;  // parts munber when convert ellipse to polyline
 }
 dxfRW::~dxfRW() {
-  if (reader != nullptr) { delete reader; }
-  if (writer != nullptr) { delete writer; }
-  for (std::vector<DRW_ImageDef*>::iterator it = imageDef.begin(); it != imageDef.end(); ++it) delete *it;
+  if (m_reader != nullptr) { delete m_reader; }
+  if (m_writer != nullptr) { delete m_writer; }
+  for (std::vector<DRW_ImageDef*>::iterator it = m_imageDef.begin(); it != m_imageDef.end(); ++it) { delete *it; }
 
-  imageDef.clear();
+  m_imageDef.clear();
 }
 
-void dxfRW::setDebug(DRW::DebugTraceLevel lvl) {
-  switch (lvl) {
+void dxfRW::SetDebug(DRW::DebugTraceLevel traceLevel) {
+  switch (traceLevel) {
     case DRW::DebugTraceLevel::Debug:
       DRW_DBGSL(DRW_dbg::debug);
       break;
@@ -49,13 +49,13 @@ void dxfRW::setDebug(DRW::DebugTraceLevel lvl) {
   }
 }
 
-bool dxfRW::read(DRW_Interface* interface_, bool ext) {
+bool dxfRW::Read(DRW_Interface* interface_, bool ext) {
   drw_assert(fileName.empty() == false);
   bool isOk = false;
-  applyExt = ext;
+  m_applyExtrusion = ext;
   std::ifstream filestr;
   if (interface_ == nullptr) { return isOk; }
-  filestr.open(fileName.c_str(), std::ios_base::in | std::ios::binary);
+  filestr.open(m_fileName.c_str(), std::ios_base::in | std::ios::binary);
   if (!filestr.is_open()) { return isOk; }
   if (!filestr.good()) { return isOk; }
 
@@ -73,1488 +73,1481 @@ bool dxfRW::read(DRW_Interface* interface_, bool ext) {
   line2[20] = static_cast<char>(26);
   line2[21] = '\0';
 
-  iface = interface_;
+  m_interface = interface_;
   if (strcmp(line, line2) == 0) {
-    filestr.open(fileName.c_str(), std::ios_base::in | std::ios::binary);
-    binFile = true;
+    filestr.open(m_fileName.c_str(), std::ios_base::in | std::ios::binary);
+    m_binaryFile = true;
     // skip sentinel
     filestr.seekg(22, std::ios::beg);
-    reader = new dxfReaderBinary(&filestr);
+    m_reader = new dxfReaderBinary(&filestr);
     DRW_DBG("dxfRW::read sentinel match: binary file\n");
   } else {
-    binFile = false;
-    filestr.open(fileName.c_str(), std::ios_base::in);
-    reader = new dxfReaderAscii(&filestr);
+    m_binaryFile = false;
+    filestr.open(m_fileName.c_str(), std::ios_base::in);
+    m_reader = new dxfReaderAscii(&filestr);
     DRW_DBG("dxfRW::read confirm ascii file\n");
   }
-  isOk = processDxf();
+  isOk = ProcessDxf();
   filestr.close();
-  delete reader;
-  reader = nullptr;
+  delete m_reader;
+  m_reader = nullptr;
   return isOk;
 }
 
-bool dxfRW::write(DRW_Interface* interface_, DRW::Version ver, bool bin) {
+bool dxfRW::Write(DRW_Interface* interface_, DRW::Version version, bool binaryFile) {
   bool isOk = false;
   std::ofstream filestr;
-  version = ver;
-  binFile = bin;
-  iface = interface_;
-  if (binFile) {
-    filestr.open(fileName.c_str(), std::ios_base::out | std::ios::binary | std::ios::trunc);
+  m_version = version;
+  m_binaryFile = binaryFile;
+  m_interface = interface_;
+  if (m_binaryFile) {
+    filestr.open(m_fileName.c_str(), std::ios_base::out | std::ios::binary | std::ios::trunc);
     // write sentinel
     filestr << "AutoCAD Binary DXF\r\n" << (char)26 << '\0';
-    writer = new dxfWriterBinary(&filestr);
+    m_writer = new dxfWriterBinary(&filestr);
     DRW_DBG("dxfRW::read binary file\n");
   } else {
-    filestr.open(fileName.c_str(), std::ios_base::out | std::ios::trunc);
-    writer = new dxfWriterAscii(&filestr);
+    filestr.open(m_fileName.c_str(), std::ios_base::out | std::ios::trunc);
+    m_writer = new dxfWriterAscii(&filestr);
     std::string comm = std::string("dxfrw ") + std::string(DRW_VERSION);
-    writer->writeString(999, comm);
+    m_writer->writeString(999, comm);
   }
   DRW_Header header;
-  iface->writeHeader(header);
-  writer->writeString(0, "SECTION");
-  entCount = FIRSTHANDLE;
-  header.write(writer, version);
-  writer->writeString(0, "ENDSEC");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(0, "SECTION");
-    writer->writeString(2, "CLASSES");
-    writer->writeString(0, "ENDSEC");
+  m_interface->writeHeader(header);
+  m_writer->writeString(0, "SECTION");
+  m_entityCount = FIRSTHANDLE;
+  header.write(m_writer, m_version);
+  m_writer->writeString(0, "ENDSEC");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(0, "SECTION");
+    m_writer->writeString(2, "CLASSES");
+    m_writer->writeString(0, "ENDSEC");
   }
-  writer->writeString(0, "SECTION");
-  writer->writeString(2, "TABLES");
-  writeTables();
-  writer->writeString(0, "ENDSEC");
-  writer->writeString(0, "SECTION");
-  writer->writeString(2, "BLOCKS");
-  writeBlocks();
-  writer->writeString(0, "ENDSEC");
+  m_writer->writeString(0, "SECTION");
+  m_writer->writeString(2, "TABLES");
+  WriteTables();
+  m_writer->writeString(0, "ENDSEC");
+  m_writer->writeString(0, "SECTION");
+  m_writer->writeString(2, "BLOCKS");
+  WriteBlocks();
+  m_writer->writeString(0, "ENDSEC");
 
-  writer->writeString(0, "SECTION");
-  writer->writeString(2, "ENTITIES");
-  iface->writeEntities();
-  writer->writeString(0, "ENDSEC");
+  m_writer->writeString(0, "SECTION");
+  m_writer->writeString(2, "ENTITIES");
+  m_interface->writeEntities();
+  m_writer->writeString(0, "ENDSEC");
 
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(0, "SECTION");
-    writer->writeString(2, "OBJECTS");
-    writeObjects();
-    writer->writeString(0, "ENDSEC");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(0, "SECTION");
+    m_writer->writeString(2, "OBJECTS");
+    WriteObjects();
+    m_writer->writeString(0, "ENDSEC");
   }
-  writer->writeString(0, "EOF");
+  m_writer->writeString(0, "EOF");
   filestr.flush();
   filestr.close();
   isOk = true;
-  delete writer;
-  writer = nullptr;
+  delete m_writer;
+  m_writer = nullptr;
   return isOk;
 }
 
-bool dxfRW::writeEntity(DRW_Entity* ent) {
-  ent->handle = ++entCount;
-  writer->writeString(5, toHexStr(ent->handle));
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbEntity"); }
-  if (ent->space == 1) writer->writeInt16(67, 1);
-  if (version > DRW::Version::AC1009) {
-    writer->writeUtf8String(8, ent->layer);
-    writer->writeUtf8String(6, ent->lineType);
+bool dxfRW::WriteEntity(DRW_Entity* ent) {
+  ent->handle = ++m_entityCount;
+  m_writer->writeString(5, ToHexString(ent->handle));
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbEntity"); }
+  if (ent->space == 1) m_writer->writeInt16(67, 1);
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeUtf8String(8, ent->layer);
+    m_writer->writeUtf8String(6, ent->lineType);
   } else {
-    writer->writeUtf8Caps(8, ent->layer);
-    writer->writeUtf8Caps(6, ent->lineType);
+    m_writer->writeUtf8Caps(8, ent->layer);
+    m_writer->writeUtf8Caps(6, ent->lineType);
   }
-  writer->writeInt16(62, ent->color);
-  if (version > DRW::Version::AC1015 && ent->color24 >= 0) { writer->writeInt32(420, ent->color24); }
-  if (version > DRW::Version::AC1014) { writer->writeInt16(370, DRW_LW_Conv::lineWidth2dxfInt(ent->lWeight)); }
+  m_writer->writeInt16(62, ent->color);
+  if (m_version > DRW::Version::AC1015 && ent->color24 >= 0) { m_writer->writeInt32(420, ent->color24); }
+  if (m_version > DRW::Version::AC1014) { m_writer->writeInt16(370, DRW_LW_Conv::lineWidth2dxfInt(ent->lWeight)); }
   return true;
 }
 
-bool dxfRW::writeLineType(DRW_LType* ent) {
+bool dxfRW::WriteLineType(DRW_LType* ent) {
   std::string strname = ent->name;
 
   transform(strname.begin(), strname.end(), strname.begin(), ::toupper);
   // do not write linetypes handled by library
   if (strname == "BYLAYER" || strname == "BYBLOCK" || strname == "CONTINUOUS") { return true; }
-  writer->writeString(0, "LTYPE");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, toHexStr(++entCount));
-    if (version > DRW::Version::AC1012) { writer->writeString(330, "5"); }
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbLinetypeTableRecord");
-    writer->writeUtf8String(2, ent->name);
+  m_writer->writeString(0, "LTYPE");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, ToHexString(++m_entityCount));
+    if (m_version > DRW::Version::AC1012) { m_writer->writeString(330, "5"); }
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbLinetypeTableRecord");
+    m_writer->writeUtf8String(2, ent->name);
   } else
-    writer->writeUtf8Caps(2, ent->name);
-  writer->writeInt16(70, ent->flags);
-  writer->writeUtf8String(3, ent->desc);
+    m_writer->writeUtf8Caps(2, ent->name);
+  m_writer->writeInt16(70, ent->flags);
+  m_writer->writeUtf8String(3, ent->desc);
   ent->update();
-  writer->writeInt16(72, 65);
-  writer->writeInt16(73, ent->size);
-  writer->writeDouble(40, ent->length);
+  m_writer->writeInt16(72, 65);
+  m_writer->writeInt16(73, ent->size);
+  m_writer->writeDouble(40, ent->length);
 
   for (unsigned int i = 0; i < ent->path.size(); i++) {
-    writer->writeDouble(49, ent->path.at(i));
-    if (version > DRW::Version::AC1009) { writer->writeInt16(74, 0); }
+    m_writer->writeDouble(49, ent->path.at(i));
+    if (m_version > DRW::Version::AC1009) { m_writer->writeInt16(74, 0); }
   }
   return true;
 }
 
-bool dxfRW::writeLayer(DRW_Layer* ent) {
-  writer->writeString(0, "LAYER");
+bool dxfRW::WriteLayer(DRW_Layer* ent) {
+  m_writer->writeString(0, "LAYER");
   if (!wlayer0 && ent->name == "0") {
     wlayer0 = true;
-    if (version > DRW::Version::AC1009) { writer->writeString(5, "10"); }
+    if (m_version > DRW::Version::AC1009) { m_writer->writeString(5, "10"); }
   } else {
-    if (version > DRW::Version::AC1009) { writer->writeString(5, toHexStr(++entCount)); }
+    if (m_version > DRW::Version::AC1009) { m_writer->writeString(5, ToHexString(++m_entityCount)); }
   }
-  if (version > DRW::Version::AC1012) { writer->writeString(330, "2"); }
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbLayerTableRecord");
-    writer->writeUtf8String(2, ent->name);
+  if (m_version > DRW::Version::AC1012) { m_writer->writeString(330, "2"); }
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbLayerTableRecord");
+    m_writer->writeUtf8String(2, ent->name);
   } else {
-    writer->writeUtf8Caps(2, ent->name);
+    m_writer->writeUtf8Caps(2, ent->name);
   }
-  writer->writeInt16(70, ent->flags);
-  writer->writeInt16(62, ent->color);
-  if (version > DRW::Version::AC1015 && ent->color24 >= 0) { writer->writeInt32(420, ent->color24); }
-  if (version > DRW::Version::AC1009) {
-    writer->writeUtf8String(6, ent->lineType);
-    if (!ent->plotF) writer->writeBool(290, ent->plotF);
-    writer->writeInt16(370, DRW_LW_Conv::lineWidth2dxfInt(ent->lWeight));
-    writer->writeString(390, "F");
+  m_writer->writeInt16(70, ent->flags);
+  m_writer->writeInt16(62, ent->color);
+  if (m_version > DRW::Version::AC1015 && ent->color24 >= 0) { m_writer->writeInt32(420, ent->color24); }
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeUtf8String(6, ent->lineType);
+    if (!ent->plotF) m_writer->writeBool(290, ent->plotF);
+    m_writer->writeInt16(370, DRW_LW_Conv::lineWidth2dxfInt(ent->lWeight));
+    m_writer->writeString(390, "F");
   } else
-    writer->writeUtf8Caps(6, ent->lineType);
-  if (!ent->extData.empty()) { writeExtData(ent->extData); }
-  //    writer->writeString(347, "10012");
+    m_writer->writeUtf8Caps(6, ent->lineType);
+  if (!ent->extData.empty()) { WriteExtData(ent->extData); }
+  //    m_writer->writeString(347, "10012");
   return true;
 }
 
-bool dxfRW::writeTextstyle(DRW_Textstyle* ent) {
-  writer->writeString(0, "STYLE");
-  if (!dimstyleStd) {
-    // stringstream cause crash in OS/X, bug#3597944
+bool dxfRW::WriteTextstyle(DRW_Textstyle* ent) {
+  m_writer->writeString(0, "STYLE");
+  if (!m_standardDimensionStyle) {
     std::string name = ent->name;
     transform(name.begin(), name.end(), name.begin(), toupper);
-    if (name == "STANDARD") dimstyleStd = true;
+    if (name == "STANDARD") { m_standardDimensionStyle = true; }
   }
-  if (version > DRW::Version::AC1009) { writer->writeString(5, toHexStr(++entCount)); }
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(5, ToHexString(++m_entityCount)); }
 
-  if (version > DRW::Version::AC1012) { writer->writeString(330, "2"); }
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbTextStyleTableRecord");
-    writer->writeUtf8String(2, ent->name);
+  if (m_version > DRW::Version::AC1012) { m_writer->writeString(330, "2"); }
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbTextStyleTableRecord");
+    m_writer->writeUtf8String(2, ent->name);
   } else {
-    writer->writeUtf8Caps(2, ent->name);
+    m_writer->writeUtf8Caps(2, ent->name);
   }
-  writer->writeInt16(70, ent->flags);
-  writer->writeDouble(40, ent->height);
-  writer->writeDouble(41, ent->width);
-  writer->writeDouble(50, ent->oblique);
-  writer->writeInt16(71, ent->genFlag);
-  writer->writeDouble(42, ent->lastHeight);
-  if (version > DRW::Version::AC1009) {
-    writer->writeUtf8String(3, ent->font);
-    writer->writeUtf8String(4, ent->bigFont);
-    if (ent->fontFamily != 0) writer->writeInt32(1071, ent->fontFamily);
+  m_writer->writeInt16(70, ent->flags);
+  m_writer->writeDouble(40, ent->height);
+  m_writer->writeDouble(41, ent->width);
+  m_writer->writeDouble(50, ent->oblique);
+  m_writer->writeInt16(71, ent->genFlag);
+  m_writer->writeDouble(42, ent->lastHeight);
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeUtf8String(3, ent->font);
+    m_writer->writeUtf8String(4, ent->bigFont);
+    if (ent->fontFamily != 0) m_writer->writeInt32(1071, ent->fontFamily);
   } else {
-    writer->writeUtf8Caps(3, ent->font);
-    writer->writeUtf8Caps(4, ent->bigFont);
+    m_writer->writeUtf8Caps(3, ent->font);
+    m_writer->writeUtf8Caps(4, ent->bigFont);
   }
   return true;
 }
 
-bool dxfRW::writeVport(DRW_Vport* ent) {
-  if (!dimstyleStd) {
+bool dxfRW::WriteVport(DRW_Vport* ent) {
+  if (!m_standardDimensionStyle) {
     ent->name = "*ACTIVE";
-    dimstyleStd = true;
+    m_standardDimensionStyle = true;
   }
-  writer->writeString(0, "VPORT");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, toHexStr(++entCount));
-    if (version > DRW::Version::AC1012) { writer->writeString(330, "2"); }
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbViewportTableRecord");
-    writer->writeUtf8String(2, ent->name);
+  m_writer->writeString(0, "VPORT");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, ToHexString(++m_entityCount));
+    if (m_version > DRW::Version::AC1012) { m_writer->writeString(330, "2"); }
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbViewportTableRecord");
+    m_writer->writeUtf8String(2, ent->name);
   } else
-    writer->writeUtf8Caps(2, ent->name);
-  writer->writeInt16(70, ent->flags);
-  writer->writeDouble(10, ent->lowerLeft.x);
-  writer->writeDouble(20, ent->lowerLeft.y);
-  writer->writeDouble(11, ent->upperRight.x);
-  writer->writeDouble(21, ent->upperRight.y);
-  writer->writeDouble(12, ent->center.x);
-  writer->writeDouble(22, ent->center.y);
-  writer->writeDouble(13, ent->snapBase.x);
-  writer->writeDouble(23, ent->snapBase.y);
-  writer->writeDouble(14, ent->snapSpacing.x);
-  writer->writeDouble(24, ent->snapSpacing.y);
-  writer->writeDouble(15, ent->gridSpacing.x);
-  writer->writeDouble(25, ent->gridSpacing.y);
-  writer->writeDouble(16, ent->viewDir.x);
-  writer->writeDouble(26, ent->viewDir.y);
-  writer->writeDouble(36, ent->viewDir.z);
-  writer->writeDouble(17, ent->viewTarget.x);
-  writer->writeDouble(27, ent->viewTarget.y);
-  writer->writeDouble(37, ent->viewTarget.z);
-  writer->writeDouble(40, ent->height);
-  writer->writeDouble(41, ent->ratio);
-  writer->writeDouble(42, ent->lensHeight);
-  writer->writeDouble(43, ent->frontClip);
-  writer->writeDouble(44, ent->backClip);
-  writer->writeDouble(50, ent->snapAngle);
-  writer->writeDouble(51, ent->twistAngle);
-  writer->writeInt16(71, ent->viewMode);
-  writer->writeInt16(72, ent->circleZoom);
-  writer->writeInt16(73, ent->fastZoom);
-  writer->writeInt16(74, ent->ucsIcon);
-  writer->writeInt16(75, ent->snap);
-  writer->writeInt16(76, ent->grid);
-  writer->writeInt16(77, ent->snapStyle);
-  writer->writeInt16(78, ent->snapIsopair);
-  if (version > DRW::Version::AC1014) {
-    writer->writeInt16(281, 0);
-    writer->writeInt16(65, 1);
-    writer->writeDouble(110, 0.0);
-    writer->writeDouble(120, 0.0);
-    writer->writeDouble(130, 0.0);
-    writer->writeDouble(111, 1.0);
-    writer->writeDouble(121, 0.0);
-    writer->writeDouble(131, 0.0);
-    writer->writeDouble(112, 0.0);
-    writer->writeDouble(122, 1.0);
-    writer->writeDouble(132, 0.0);
-    writer->writeInt16(79, 0);
-    writer->writeDouble(146, 0.0);
-    if (version > DRW::Version::AC1018) {
-      writer->writeString(348, "10020");
-      writer->writeInt16(60, ent->gridBehavior);  // v2007 undocummented see DRW_Vport class
-      writer->writeInt16(61, 5);
-      writer->writeBool(292, 1);
-      writer->writeInt16(282, 1);
-      writer->writeDouble(141, 0.0);
-      writer->writeDouble(142, 0.0);
-      writer->writeInt16(63, 250);
-      writer->writeInt32(421, 3358443);
+    m_writer->writeUtf8Caps(2, ent->name);
+  m_writer->writeInt16(70, ent->flags);
+  m_writer->writeDouble(10, ent->lowerLeft.x);
+  m_writer->writeDouble(20, ent->lowerLeft.y);
+  m_writer->writeDouble(11, ent->upperRight.x);
+  m_writer->writeDouble(21, ent->upperRight.y);
+  m_writer->writeDouble(12, ent->center.x);
+  m_writer->writeDouble(22, ent->center.y);
+  m_writer->writeDouble(13, ent->snapBase.x);
+  m_writer->writeDouble(23, ent->snapBase.y);
+  m_writer->writeDouble(14, ent->snapSpacing.x);
+  m_writer->writeDouble(24, ent->snapSpacing.y);
+  m_writer->writeDouble(15, ent->gridSpacing.x);
+  m_writer->writeDouble(25, ent->gridSpacing.y);
+  m_writer->writeDouble(16, ent->viewDir.x);
+  m_writer->writeDouble(26, ent->viewDir.y);
+  m_writer->writeDouble(36, ent->viewDir.z);
+  m_writer->writeDouble(17, ent->viewTarget.x);
+  m_writer->writeDouble(27, ent->viewTarget.y);
+  m_writer->writeDouble(37, ent->viewTarget.z);
+  m_writer->writeDouble(40, ent->height);
+  m_writer->writeDouble(41, ent->ratio);
+  m_writer->writeDouble(42, ent->lensHeight);
+  m_writer->writeDouble(43, ent->frontClip);
+  m_writer->writeDouble(44, ent->backClip);
+  m_writer->writeDouble(50, ent->snapAngle);
+  m_writer->writeDouble(51, ent->twistAngle);
+  m_writer->writeInt16(71, ent->viewMode);
+  m_writer->writeInt16(72, ent->circleZoom);
+  m_writer->writeInt16(73, ent->fastZoom);
+  m_writer->writeInt16(74, ent->ucsIcon);
+  m_writer->writeInt16(75, ent->snap);
+  m_writer->writeInt16(76, ent->grid);
+  m_writer->writeInt16(77, ent->snapStyle);
+  m_writer->writeInt16(78, ent->snapIsopair);
+  if (m_version > DRW::Version::AC1014) {
+    m_writer->writeInt16(281, 0);
+    m_writer->writeInt16(65, 1);
+    m_writer->writeDouble(110, 0.0);
+    m_writer->writeDouble(120, 0.0);
+    m_writer->writeDouble(130, 0.0);
+    m_writer->writeDouble(111, 1.0);
+    m_writer->writeDouble(121, 0.0);
+    m_writer->writeDouble(131, 0.0);
+    m_writer->writeDouble(112, 0.0);
+    m_writer->writeDouble(122, 1.0);
+    m_writer->writeDouble(132, 0.0);
+    m_writer->writeInt16(79, 0);
+    m_writer->writeDouble(146, 0.0);
+    if (m_version > DRW::Version::AC1018) {
+      m_writer->writeString(348, "10020");
+      m_writer->writeInt16(60, ent->gridBehavior);  // v2007 undocummented see DRW_Vport class
+      m_writer->writeInt16(61, 5);
+      m_writer->writeBool(292, 1);
+      m_writer->writeInt16(282, 1);
+      m_writer->writeDouble(141, 0.0);
+      m_writer->writeDouble(142, 0.0);
+      m_writer->writeInt16(63, 250);
+      m_writer->writeInt32(421, 3358443);
     }
   }
   return true;
 }
 
-bool dxfRW::writeDimstyle(DRW_Dimstyle* ent) {
-  writer->writeString(0, "DIMSTYLE");
-  if (!dimstyleStd) {
+bool dxfRW::WriteDimstyle(DRW_Dimstyle* ent) {
+  m_writer->writeString(0, "DIMSTYLE");
+  if (!m_standardDimensionStyle) {
     std::string name = ent->name;
     std::transform(name.begin(), name.end(), name.begin(), ::toupper);
-    if (name == "STANDARD") dimstyleStd = true;
+    if (name == "STANDARD") {m_standardDimensionStyle = true;}
   }
-  if (version > DRW::Version::AC1009) { writer->writeString(105, toHexStr(++entCount)); }
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(105, ToHexString(++m_entityCount)); }
 
-  if (version > DRW::Version::AC1012) { writer->writeString(330, "A"); }
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbDimStyleTableRecord");
-    writer->writeUtf8String(2, ent->name);
+  if (m_version > DRW::Version::AC1012) { m_writer->writeString(330, "A"); }
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbDimStyleTableRecord");
+    m_writer->writeUtf8String(2, ent->name);
   } else
-    writer->writeUtf8Caps(2, ent->name);
-  writer->writeInt16(70, ent->flags);
-  if (version == DRW::Version::AC1009 || !(ent->dimpost.empty())) { writer->writeUtf8String(3, ent->dimpost); }
-  if (version == DRW::Version::AC1009 || !(ent->dimapost.empty())) { writer->writeUtf8String(4, ent->dimapost); }
-  if (version == DRW::Version::AC1009 || !(ent->dimblk.empty())) { writer->writeUtf8String(5, ent->dimblk); }
-  if (version == DRW::Version::AC1009 || !(ent->dimblk1.empty())) { writer->writeUtf8String(6, ent->dimblk1); }
-  if (version == DRW::Version::AC1009 || !(ent->dimblk2.empty())) { writer->writeUtf8String(7, ent->dimblk2); }
-  writer->writeDouble(40, ent->dimscale);
-  writer->writeDouble(41, ent->dimasz);
-  writer->writeDouble(42, ent->dimexo);
-  writer->writeDouble(43, ent->dimdli);
-  writer->writeDouble(44, ent->dimexe);
-  writer->writeDouble(45, ent->dimrnd);
-  writer->writeDouble(46, ent->dimdle);
-  writer->writeDouble(47, ent->dimtp);
-  writer->writeDouble(48, ent->dimtm);
-  if (version > DRW::Version::AC1018 || ent->dimfxl != 0) { writer->writeDouble(49, ent->dimfxl); }
-  writer->writeDouble(140, ent->dimtxt);
-  writer->writeDouble(141, ent->dimcen);
-  writer->writeDouble(142, ent->dimtsz);
-  writer->writeDouble(143, ent->dimaltf);
-  writer->writeDouble(144, ent->dimlfac);
-  writer->writeDouble(145, ent->dimtvp);
-  writer->writeDouble(146, ent->dimtfac);
-  writer->writeDouble(147, ent->dimgap);
-  if (version > DRW::Version::AC1014) { writer->writeDouble(148, ent->dimaltrnd); }
-  writer->writeInt16(71, ent->dimtol);
-  writer->writeInt16(72, ent->dimlim);
-  writer->writeInt16(73, ent->dimtih);
-  writer->writeInt16(74, ent->dimtoh);
-  writer->writeInt16(75, ent->dimse1);
-  writer->writeInt16(76, ent->dimse2);
-  writer->writeInt16(77, ent->dimtad);
-  writer->writeInt16(78, ent->dimzin);
-  if (version > DRW::Version::AC1014) { writer->writeInt16(79, ent->dimazin); }
-  writer->writeInt16(170, ent->dimalt);
-  writer->writeInt16(171, ent->dimaltd);
-  writer->writeInt16(172, ent->dimtofl);
-  writer->writeInt16(173, ent->dimsah);
-  writer->writeInt16(174, ent->dimtix);
-  writer->writeInt16(175, ent->dimsoxd);
-  writer->writeInt16(176, ent->dimclrd);
-  writer->writeInt16(177, ent->dimclre);
-  writer->writeInt16(178, ent->dimclrt);
-  if (version > DRW::Version::AC1014) { writer->writeInt16(179, ent->dimadec); }
-  if (version > DRW::Version::AC1009) {
-    if (version < DRW::Version::AC1015) { writer->writeInt16(270, ent->dimunit); }
-    writer->writeInt16(271, ent->dimdec);
-    writer->writeInt16(272, ent->dimtdec);
-    writer->writeInt16(273, ent->dimaltu);
-    writer->writeInt16(274, ent->dimalttd);
-    writer->writeInt16(275, ent->dimaunit);
+    m_writer->writeUtf8Caps(2, ent->name);
+  m_writer->writeInt16(70, ent->flags);
+  if (m_version == DRW::Version::AC1009 || !(ent->dimpost.empty())) { m_writer->writeUtf8String(3, ent->dimpost); }
+  if (m_version == DRW::Version::AC1009 || !(ent->dimapost.empty())) { m_writer->writeUtf8String(4, ent->dimapost); }
+  if (m_version == DRW::Version::AC1009 || !(ent->dimblk.empty())) { m_writer->writeUtf8String(5, ent->dimblk); }
+  if (m_version == DRW::Version::AC1009 || !(ent->dimblk1.empty())) { m_writer->writeUtf8String(6, ent->dimblk1); }
+  if (m_version == DRW::Version::AC1009 || !(ent->dimblk2.empty())) { m_writer->writeUtf8String(7, ent->dimblk2); }
+  m_writer->writeDouble(40, ent->dimscale);
+  m_writer->writeDouble(41, ent->dimasz);
+  m_writer->writeDouble(42, ent->dimexo);
+  m_writer->writeDouble(43, ent->dimdli);
+  m_writer->writeDouble(44, ent->dimexe);
+  m_writer->writeDouble(45, ent->dimrnd);
+  m_writer->writeDouble(46, ent->dimdle);
+  m_writer->writeDouble(47, ent->dimtp);
+  m_writer->writeDouble(48, ent->dimtm);
+  if (m_version > DRW::Version::AC1018 || ent->dimfxl != 0) { m_writer->writeDouble(49, ent->dimfxl); }
+  m_writer->writeDouble(140, ent->dimtxt);
+  m_writer->writeDouble(141, ent->dimcen);
+  m_writer->writeDouble(142, ent->dimtsz);
+  m_writer->writeDouble(143, ent->dimaltf);
+  m_writer->writeDouble(144, ent->dimlfac);
+  m_writer->writeDouble(145, ent->dimtvp);
+  m_writer->writeDouble(146, ent->dimtfac);
+  m_writer->writeDouble(147, ent->dimgap);
+  if (m_version > DRW::Version::AC1014) { m_writer->writeDouble(148, ent->dimaltrnd); }
+  m_writer->writeInt16(71, ent->dimtol);
+  m_writer->writeInt16(72, ent->dimlim);
+  m_writer->writeInt16(73, ent->dimtih);
+  m_writer->writeInt16(74, ent->dimtoh);
+  m_writer->writeInt16(75, ent->dimse1);
+  m_writer->writeInt16(76, ent->dimse2);
+  m_writer->writeInt16(77, ent->dimtad);
+  m_writer->writeInt16(78, ent->dimzin);
+  if (m_version > DRW::Version::AC1014) { m_writer->writeInt16(79, ent->dimazin); }
+  m_writer->writeInt16(170, ent->dimalt);
+  m_writer->writeInt16(171, ent->dimaltd);
+  m_writer->writeInt16(172, ent->dimtofl);
+  m_writer->writeInt16(173, ent->dimsah);
+  m_writer->writeInt16(174, ent->dimtix);
+  m_writer->writeInt16(175, ent->dimsoxd);
+  m_writer->writeInt16(176, ent->dimclrd);
+  m_writer->writeInt16(177, ent->dimclre);
+  m_writer->writeInt16(178, ent->dimclrt);
+  if (m_version > DRW::Version::AC1014) { m_writer->writeInt16(179, ent->dimadec); }
+  if (m_version > DRW::Version::AC1009) {
+    if (m_version < DRW::Version::AC1015) { m_writer->writeInt16(270, ent->dimunit); }
+    m_writer->writeInt16(271, ent->dimdec);
+    m_writer->writeInt16(272, ent->dimtdec);
+    m_writer->writeInt16(273, ent->dimaltu);
+    m_writer->writeInt16(274, ent->dimalttd);
+    m_writer->writeInt16(275, ent->dimaunit);
   }
-  if (version > DRW::Version::AC1014) {
-    writer->writeInt16(276, ent->dimfrac);
-    writer->writeInt16(277, ent->dimlunit);
-    writer->writeInt16(278, ent->dimdsep);
-    writer->writeInt16(279, ent->dimtmove);
+  if (m_version > DRW::Version::AC1014) {
+    m_writer->writeInt16(276, ent->dimfrac);
+    m_writer->writeInt16(277, ent->dimlunit);
+    m_writer->writeInt16(278, ent->dimdsep);
+    m_writer->writeInt16(279, ent->dimtmove);
   }
-  if (version > DRW::Version::AC1009) {
-    writer->writeInt16(280, ent->dimjust);
-    writer->writeInt16(281, ent->dimsd1);
-    writer->writeInt16(282, ent->dimsd2);
-    writer->writeInt16(283, ent->dimtolj);
-    writer->writeInt16(284, ent->dimtzin);
-    writer->writeInt16(285, ent->dimaltz);
-    writer->writeInt16(286, ent->dimaltttz);
-    if (version < DRW::Version::AC1015) { writer->writeInt16(287, ent->dimfit); }
-    writer->writeInt16(288, ent->dimupt);
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeInt16(280, ent->dimjust);
+    m_writer->writeInt16(281, ent->dimsd1);
+    m_writer->writeInt16(282, ent->dimsd2);
+    m_writer->writeInt16(283, ent->dimtolj);
+    m_writer->writeInt16(284, ent->dimtzin);
+    m_writer->writeInt16(285, ent->dimaltz);
+    m_writer->writeInt16(286, ent->dimaltttz);
+    if (m_version < DRW::Version::AC1015) { m_writer->writeInt16(287, ent->dimfit); }
+    m_writer->writeInt16(288, ent->dimupt);
   }
-  if (version > DRW::Version::AC1014) { writer->writeInt16(289, ent->dimatfit); }
-  if (version > DRW::Version::AC1018 && ent->dimfxlon != 0) { writer->writeInt16(290, ent->dimfxlon); }
-  if (version > DRW::Version::AC1009) { writer->writeUtf8String(340, ent->dimtxsty); }
-  if (version > DRW::Version::AC1014) {
-    writer->writeUtf8String(341, ent->dimldrblk);
-    writer->writeInt16(371, ent->dimlwd);
-    writer->writeInt16(372, ent->dimlwe);
+  if (m_version > DRW::Version::AC1014) { m_writer->writeInt16(289, ent->dimatfit); }
+  if (m_version > DRW::Version::AC1018 && ent->dimfxlon != 0) { m_writer->writeInt16(290, ent->dimfxlon); }
+  if (m_version > DRW::Version::AC1009) { m_writer->writeUtf8String(340, ent->dimtxsty); }
+  if (m_version > DRW::Version::AC1014) {
+    m_writer->writeUtf8String(341, ent->dimldrblk);
+    m_writer->writeInt16(371, ent->dimlwd);
+    m_writer->writeInt16(372, ent->dimlwe);
   }
   return true;
 }
 
-bool dxfRW::writeAppId(DRW_AppId* ent) {
+bool dxfRW::WriteAppId(DRW_AppId* ent) {
   std::string strname = ent->name;
   transform(strname.begin(), strname.end(), strname.begin(), ::toupper);
   // do not write mandatory ACAD appId, handled by library
   if (strname == "ACAD") return true;
-  writer->writeString(0, "APPID");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, toHexStr(++entCount));
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "9"); }
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbRegAppTableRecord");
-    writer->writeUtf8String(2, ent->name);
+  m_writer->writeString(0, "APPID");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, ToHexString(++m_entityCount));
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "9"); }
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbRegAppTableRecord");
+    m_writer->writeUtf8String(2, ent->name);
   } else {
-    writer->writeUtf8Caps(2, ent->name);
+    m_writer->writeUtf8Caps(2, ent->name);
   }
-  writer->writeInt16(70, ent->flags);
+  m_writer->writeInt16(70, ent->flags);
   return true;
 }
 
-bool dxfRW::writePoint(DRW_Point* ent) {
-  writer->writeString(0, "POINT");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbPoint"); }
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
-  if (ent->basePoint.z != 0.0) { writer->writeDouble(30, ent->basePoint.z); }
+bool dxfRW::WritePoint(DRW_Point* ent) {
+  m_writer->writeString(0, "POINT");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbPoint"); }
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
+  if (ent->basePoint.z != 0.0) { m_writer->writeDouble(30, ent->basePoint.z); }
   return true;
 }
 
-bool dxfRW::writeLine(DRW_Line* ent) {
-  writer->writeString(0, "LINE");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbLine"); }
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
+bool dxfRW::WriteLine(DRW_Line* ent) {
+  m_writer->writeString(0, "LINE");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbLine"); }
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
   if (ent->basePoint.z != 0.0 || ent->secPoint.z != 0.0) {
-    writer->writeDouble(30, ent->basePoint.z);
-    writer->writeDouble(11, ent->secPoint.x);
-    writer->writeDouble(21, ent->secPoint.y);
-    writer->writeDouble(31, ent->secPoint.z);
+    m_writer->writeDouble(30, ent->basePoint.z);
+    m_writer->writeDouble(11, ent->secPoint.x);
+    m_writer->writeDouble(21, ent->secPoint.y);
+    m_writer->writeDouble(31, ent->secPoint.z);
   } else {
-    writer->writeDouble(11, ent->secPoint.x);
-    writer->writeDouble(21, ent->secPoint.y);
+    m_writer->writeDouble(11, ent->secPoint.x);
+    m_writer->writeDouble(21, ent->secPoint.y);
   }
   return true;
 }
 
-bool dxfRW::writeRay(DRW_Ray* ent) {
-  writer->writeString(0, "RAY");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbRay"); }
+bool dxfRW::WriteRay(DRW_Ray* ent) {
+  m_writer->writeString(0, "RAY");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbRay"); }
   DRW_Coord crd = ent->secPoint;
   crd.unitize();
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
   if (ent->basePoint.z != 0.0 || ent->secPoint.z != 0.0) {
-    writer->writeDouble(30, ent->basePoint.z);
-    writer->writeDouble(11, crd.x);
-    writer->writeDouble(21, crd.y);
-    writer->writeDouble(31, crd.z);
+    m_writer->writeDouble(30, ent->basePoint.z);
+    m_writer->writeDouble(11, crd.x);
+    m_writer->writeDouble(21, crd.y);
+    m_writer->writeDouble(31, crd.z);
   } else {
-    writer->writeDouble(11, crd.x);
-    writer->writeDouble(21, crd.y);
+    m_writer->writeDouble(11, crd.x);
+    m_writer->writeDouble(21, crd.y);
   }
   return true;
 }
 
-bool dxfRW::writeXline(DRW_Xline* ent) {
-  writer->writeString(0, "XLINE");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbXline"); }
+bool dxfRW::WriteXline(DRW_Xline* ent) {
+  m_writer->writeString(0, "XLINE");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbXline"); }
   DRW_Coord crd = ent->secPoint;
   crd.unitize();
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
   if (ent->basePoint.z != 0.0 || ent->secPoint.z != 0.0) {
-    writer->writeDouble(30, ent->basePoint.z);
-    writer->writeDouble(11, crd.x);
-    writer->writeDouble(21, crd.y);
-    writer->writeDouble(31, crd.z);
+    m_writer->writeDouble(30, ent->basePoint.z);
+    m_writer->writeDouble(11, crd.x);
+    m_writer->writeDouble(21, crd.y);
+    m_writer->writeDouble(31, crd.z);
   } else {
-    writer->writeDouble(11, crd.x);
-    writer->writeDouble(21, crd.y);
+    m_writer->writeDouble(11, crd.x);
+    m_writer->writeDouble(21, crd.y);
   }
   return true;
 }
 
-bool dxfRW::writeCircle(DRW_Circle* ent) {
-  writer->writeString(0, "CIRCLE");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbCircle"); }
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
-  if (ent->basePoint.z != 0.0) { writer->writeDouble(30, ent->basePoint.z); }
-  writer->writeDouble(40, ent->radious);
+bool dxfRW::WriteCircle(DRW_Circle* ent) {
+  m_writer->writeString(0, "CIRCLE");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbCircle"); }
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
+  if (ent->basePoint.z != 0.0) { m_writer->writeDouble(30, ent->basePoint.z); }
+  m_writer->writeDouble(40, ent->radious);
   return true;
 }
 
-bool dxfRW::writeArc(DRW_Arc* ent) {
-  writer->writeString(0, "ARC");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbCircle"); }
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
-  if (ent->basePoint.z != 0.0) { writer->writeDouble(30, ent->basePoint.z); }
-  writer->writeDouble(40, ent->radious);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbArc"); }
-  writer->writeDouble(50, ent->staangle * DRW::ARAD);
-  writer->writeDouble(51, ent->endangle * DRW::ARAD);
+bool dxfRW::WriteArc(DRW_Arc* ent) {
+  m_writer->writeString(0, "ARC");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbCircle"); }
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
+  if (ent->basePoint.z != 0.0) { m_writer->writeDouble(30, ent->basePoint.z); }
+  m_writer->writeDouble(40, ent->radious);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbArc"); }
+  m_writer->writeDouble(50, ent->staangle * DRW::ARAD);
+  m_writer->writeDouble(51, ent->endangle * DRW::ARAD);
   return true;
 }
 
-bool dxfRW::writeEllipse(DRW_Ellipse* ent) {
+bool dxfRW::WriteEllipse(DRW_Ellipse* ent) {
   // verify axis/ratio and params for full ellipse
   ent->correctAxis();
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(0, "ELLIPSE");
-    writeEntity(ent);
-    if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbEllipse"); }
-    writer->writeDouble(10, ent->basePoint.x);
-    writer->writeDouble(20, ent->basePoint.y);
-    writer->writeDouble(30, ent->basePoint.z);
-    writer->writeDouble(11, ent->secPoint.x);
-    writer->writeDouble(21, ent->secPoint.y);
-    writer->writeDouble(31, ent->secPoint.z);
-    writer->writeDouble(40, ent->ratio);
-    writer->writeDouble(41, ent->staparam);
-    writer->writeDouble(42, ent->endparam);
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(0, "ELLIPSE");
+    WriteEntity(ent);
+    if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbEllipse"); }
+    m_writer->writeDouble(10, ent->basePoint.x);
+    m_writer->writeDouble(20, ent->basePoint.y);
+    m_writer->writeDouble(30, ent->basePoint.z);
+    m_writer->writeDouble(11, ent->secPoint.x);
+    m_writer->writeDouble(21, ent->secPoint.y);
+    m_writer->writeDouble(31, ent->secPoint.z);
+    m_writer->writeDouble(40, ent->ratio);
+    m_writer->writeDouble(41, ent->staparam);
+    m_writer->writeDouble(42, ent->endparam);
   } else {
     DRW_Polyline pol;
-    // RLZ: copy properties
-    ent->toPolyline(&pol, elParts);
-    writePolyline(&pol);
+
+    ent->toPolyline(&pol, m_ellipseParts);
+    WritePolyline(&pol);
   }
   return true;
 }
 
-bool dxfRW::writeTrace(DRW_Trace* ent) {
-  writer->writeString(0, "TRACE");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbTrace"); }
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
-  writer->writeDouble(30, ent->basePoint.z);
-  writer->writeDouble(11, ent->secPoint.x);
-  writer->writeDouble(21, ent->secPoint.y);
-  writer->writeDouble(31, ent->secPoint.z);
-  writer->writeDouble(12, ent->thirdPoint.x);
-  writer->writeDouble(22, ent->thirdPoint.y);
-  writer->writeDouble(32, ent->thirdPoint.z);
-  writer->writeDouble(13, ent->fourPoint.x);
-  writer->writeDouble(23, ent->fourPoint.y);
-  writer->writeDouble(33, ent->fourPoint.z);
+bool dxfRW::WriteTrace(DRW_Trace* ent) {
+  m_writer->writeString(0, "TRACE");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbTrace"); }
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
+  m_writer->writeDouble(30, ent->basePoint.z);
+  m_writer->writeDouble(11, ent->secPoint.x);
+  m_writer->writeDouble(21, ent->secPoint.y);
+  m_writer->writeDouble(31, ent->secPoint.z);
+  m_writer->writeDouble(12, ent->thirdPoint.x);
+  m_writer->writeDouble(22, ent->thirdPoint.y);
+  m_writer->writeDouble(32, ent->thirdPoint.z);
+  m_writer->writeDouble(13, ent->fourPoint.x);
+  m_writer->writeDouble(23, ent->fourPoint.y);
+  m_writer->writeDouble(33, ent->fourPoint.z);
   return true;
 }
 
-bool dxfRW::writeSolid(DRW_Solid* ent) {
-  writer->writeString(0, "SOLID");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbTrace"); }
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
-  writer->writeDouble(30, ent->basePoint.z);
-  writer->writeDouble(11, ent->secPoint.x);
-  writer->writeDouble(21, ent->secPoint.y);
-  writer->writeDouble(31, ent->secPoint.z);
-  writer->writeDouble(12, ent->thirdPoint.x);
-  writer->writeDouble(22, ent->thirdPoint.y);
-  writer->writeDouble(32, ent->thirdPoint.z);
-  writer->writeDouble(13, ent->fourPoint.x);
-  writer->writeDouble(23, ent->fourPoint.y);
-  writer->writeDouble(33, ent->fourPoint.z);
+bool dxfRW::WriteSolid(DRW_Solid* ent) {
+  m_writer->writeString(0, "SOLID");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbTrace"); }
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
+  m_writer->writeDouble(30, ent->basePoint.z);
+  m_writer->writeDouble(11, ent->secPoint.x);
+  m_writer->writeDouble(21, ent->secPoint.y);
+  m_writer->writeDouble(31, ent->secPoint.z);
+  m_writer->writeDouble(12, ent->thirdPoint.x);
+  m_writer->writeDouble(22, ent->thirdPoint.y);
+  m_writer->writeDouble(32, ent->thirdPoint.z);
+  m_writer->writeDouble(13, ent->fourPoint.x);
+  m_writer->writeDouble(23, ent->fourPoint.y);
+  m_writer->writeDouble(33, ent->fourPoint.z);
   return true;
 }
 
-bool dxfRW::write3dface(DRW_3Dface* ent) {
-  writer->writeString(0, "3DFACE");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbFace"); }
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
-  writer->writeDouble(30, ent->basePoint.z);
-  writer->writeDouble(11, ent->secPoint.x);
-  writer->writeDouble(21, ent->secPoint.y);
-  writer->writeDouble(31, ent->secPoint.z);
-  writer->writeDouble(12, ent->thirdPoint.x);
-  writer->writeDouble(22, ent->thirdPoint.y);
-  writer->writeDouble(32, ent->thirdPoint.z);
-  writer->writeDouble(13, ent->fourPoint.x);
-  writer->writeDouble(23, ent->fourPoint.y);
-  writer->writeDouble(33, ent->fourPoint.z);
-  writer->writeInt16(70, ent->invisibleflag);
+bool dxfRW::Write3dface(DRW_3Dface* ent) {
+  m_writer->writeString(0, "3DFACE");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbFace"); }
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
+  m_writer->writeDouble(30, ent->basePoint.z);
+  m_writer->writeDouble(11, ent->secPoint.x);
+  m_writer->writeDouble(21, ent->secPoint.y);
+  m_writer->writeDouble(31, ent->secPoint.z);
+  m_writer->writeDouble(12, ent->thirdPoint.x);
+  m_writer->writeDouble(22, ent->thirdPoint.y);
+  m_writer->writeDouble(32, ent->thirdPoint.z);
+  m_writer->writeDouble(13, ent->fourPoint.x);
+  m_writer->writeDouble(23, ent->fourPoint.y);
+  m_writer->writeDouble(33, ent->fourPoint.z);
+  m_writer->writeInt16(70, ent->invisibleflag);
   return true;
 }
 
-bool dxfRW::writeLWPolyline(DRW_LWPolyline* ent) {
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(0, "LWPOLYLINE");
-    writeEntity(ent);
-    if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbPolyline"); }
+bool dxfRW::WriteLWPolyline(DRW_LWPolyline* ent) {
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(0, "LWPOLYLINE");
+    WriteEntity(ent);
+    if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbPolyline"); }
     ent->vertexnum = static_cast<int>(ent->vertlist.size());
-    writer->writeInt32(90, ent->vertexnum);
-    writer->writeInt16(70, ent->flags);
-    writer->writeDouble(43, ent->width);
-    if (ent->elevation != 0) writer->writeDouble(38, ent->elevation);
-    if (ent->thickness != 0) writer->writeDouble(39, ent->thickness);
+    m_writer->writeInt32(90, ent->vertexnum);
+    m_writer->writeInt16(70, ent->flags);
+    m_writer->writeDouble(43, ent->width);
+    if (ent->elevation != 0) m_writer->writeDouble(38, ent->elevation);
+    if (ent->thickness != 0) m_writer->writeDouble(39, ent->thickness);
     for (int i = 0; i < ent->vertexnum; i++) {
       auto* v = ent->vertlist.at(i);
-      writer->writeDouble(10, v->x);
-      writer->writeDouble(20, v->y);
-      if (v->stawidth != 0) writer->writeDouble(40, v->stawidth);
-      if (v->endwidth != 0) writer->writeDouble(41, v->endwidth);
-      if (v->bulge != 0) writer->writeDouble(42, v->bulge);
+      m_writer->writeDouble(10, v->x);
+      m_writer->writeDouble(20, v->y);
+      if (v->stawidth != 0) m_writer->writeDouble(40, v->stawidth);
+      if (v->endwidth != 0) m_writer->writeDouble(41, v->endwidth);
+      if (v->bulge != 0) m_writer->writeDouble(42, v->bulge);
     }
   } else {
-    // RLZ: TODO convert lwpolyline in polyline (not exist in acad 12)
+    // @todo convert lwpolyline in polyline (not exist in acad 12)
   }
   return true;
 }
 
-bool dxfRW::writePolyline(DRW_Polyline* ent) {
-  writer->writeString(0, "POLYLINE");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) {
+bool dxfRW::WritePolyline(DRW_Polyline* ent) {
+  m_writer->writeString(0, "POLYLINE");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) {
     if (ent->flags & 8 || ent->flags & 16)
-      writer->writeString(100, "AcDb2dPolyline");
+      m_writer->writeString(100, "AcDb2dPolyline");
     else
-      writer->writeString(100, "AcDb3dPolyline");
+      m_writer->writeString(100, "AcDb3dPolyline");
   } else
-    writer->writeInt16(66, 1);
-  writer->writeDouble(10, 0.0);
-  writer->writeDouble(20, 0.0);
-  writer->writeDouble(30, ent->basePoint.z);
-  if (ent->thickness != 0) { writer->writeDouble(39, ent->thickness); }
-  writer->writeInt16(70, ent->flags);
-  if (ent->defstawidth != 0) { writer->writeDouble(40, ent->defstawidth); }
-  if (ent->defendwidth != 0) { writer->writeDouble(41, ent->defendwidth); }
+    m_writer->writeInt16(66, 1);
+  m_writer->writeDouble(10, 0.0);
+  m_writer->writeDouble(20, 0.0);
+  m_writer->writeDouble(30, ent->basePoint.z);
+  if (ent->thickness != 0) { m_writer->writeDouble(39, ent->thickness); }
+  m_writer->writeInt16(70, ent->flags);
+  if (ent->defstawidth != 0) { m_writer->writeDouble(40, ent->defstawidth); }
+  if (ent->defendwidth != 0) { m_writer->writeDouble(41, ent->defendwidth); }
   if (ent->flags & 16 || ent->flags & 32) {
-    writer->writeInt16(71, ent->vertexcount);
-    writer->writeInt16(72, ent->facecount);
+    m_writer->writeInt16(71, ent->vertexcount);
+    m_writer->writeInt16(72, ent->facecount);
   }
-  if (ent->smoothM != 0) { writer->writeInt16(73, ent->smoothM); }
-  if (ent->smoothN != 0) { writer->writeInt16(74, ent->smoothN); }
-  if (ent->curvetype != 0) { writer->writeInt16(75, ent->curvetype); }
+  if (ent->smoothM != 0) { m_writer->writeInt16(73, ent->smoothM); }
+  if (ent->smoothN != 0) { m_writer->writeInt16(74, ent->smoothN); }
+  if (ent->curvetype != 0) { m_writer->writeInt16(75, ent->curvetype); }
   DRW_Coord crd = ent->extPoint;
   if (crd.x != 0 || crd.y != 0 || crd.z != 1) {
-    writer->writeDouble(210, crd.x);
-    writer->writeDouble(220, crd.y);
-    writer->writeDouble(230, crd.z);
+    m_writer->writeDouble(210, crd.x);
+    m_writer->writeDouble(220, crd.y);
+    m_writer->writeDouble(230, crd.z);
   }
 
   int vertexnum = static_cast<int>(ent->vertlist.size());
   for (int i = 0; i < vertexnum; i++) {
     DRW_Vertex* v = ent->vertlist.at(i);
-    writer->writeString(0, "VERTEX");
-    writeEntity(ent);
-    if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbVertex"); }
+    m_writer->writeString(0, "VERTEX");
+    WriteEntity(ent);
+    if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbVertex"); }
     if ((v->flags & 128) && !(v->flags & 64)) {
-      writer->writeDouble(10, 0);
-      writer->writeDouble(20, 0);
-      writer->writeDouble(30, 0);
+      m_writer->writeDouble(10, 0);
+      m_writer->writeDouble(20, 0);
+      m_writer->writeDouble(30, 0);
     } else {
-      writer->writeDouble(10, v->basePoint.x);
-      writer->writeDouble(20, v->basePoint.y);
-      writer->writeDouble(30, v->basePoint.z);
+      m_writer->writeDouble(10, v->basePoint.x);
+      m_writer->writeDouble(20, v->basePoint.y);
+      m_writer->writeDouble(30, v->basePoint.z);
     }
-    if (v->stawidth != 0) writer->writeDouble(40, v->stawidth);
-    if (v->endwidth != 0) writer->writeDouble(41, v->endwidth);
-    if (v->bulge != 0) writer->writeDouble(42, v->bulge);
-    if (v->flags != 0) { writer->writeInt16(70, ent->flags); }
-    if (v->flags & 2) { writer->writeDouble(50, v->tgdir); }
+    if (v->stawidth != 0) m_writer->writeDouble(40, v->stawidth);
+    if (v->endwidth != 0) m_writer->writeDouble(41, v->endwidth);
+    if (v->bulge != 0) m_writer->writeDouble(42, v->bulge);
+    if (v->flags != 0) { m_writer->writeInt16(70, ent->flags); }
+    if (v->flags & 2) { m_writer->writeDouble(50, v->tgdir); }
     if (v->flags & 128) {
-      if (v->vindex1 != 0) { writer->writeInt16(71, v->vindex1); }
-      if (v->vindex2 != 0) { writer->writeInt16(72, v->vindex2); }
-      if (v->vindex3 != 0) { writer->writeInt16(73, v->vindex3); }
-      if (v->vindex4 != 0) { writer->writeInt16(74, v->vindex4); }
-      if (!(v->flags & 64)) { writer->writeInt32(91, v->identifier); }
+      if (v->vindex1 != 0) { m_writer->writeInt16(71, v->vindex1); }
+      if (v->vindex2 != 0) { m_writer->writeInt16(72, v->vindex2); }
+      if (v->vindex3 != 0) { m_writer->writeInt16(73, v->vindex3); }
+      if (v->vindex4 != 0) { m_writer->writeInt16(74, v->vindex4); }
+      if (!(v->flags & 64)) { m_writer->writeInt32(91, v->identifier); }
     }
   }
-  writer->writeString(0, "SEQEND");
-  writeEntity(ent);
+  m_writer->writeString(0, "SEQEND");
+  WriteEntity(ent);
   return true;
 }
 
-bool dxfRW::writeSpline(DRW_Spline* ent) {
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(0, "SPLINE");
-    writeEntity(ent);
-    if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbSpline"); }
-    writer->writeDouble(210, ent->normalVec.x);
-    writer->writeDouble(220, ent->normalVec.y);
-    writer->writeDouble(230, ent->normalVec.z);
-    writer->writeInt16(70, ent->flags);
-    writer->writeInt16(71, ent->degree);
-    writer->writeInt16(72, ent->nknots);
-    writer->writeInt16(73, ent->ncontrol);
-    writer->writeInt16(74, ent->nfit);
-    writer->writeDouble(42, ent->tolknot);
-    writer->writeDouble(43, ent->tolcontrol);
-    // RLZ: warning check if nknots are correct and ncontrol
-    for (int i = 0; i < ent->nknots; i++) { writer->writeDouble(40, ent->knotslist.at(i)); }
+bool dxfRW::WriteSpline(DRW_Spline* ent) {
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(0, "SPLINE");
+    WriteEntity(ent);
+    if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbSpline"); }
+    m_writer->writeDouble(210, ent->normalVec.x);
+    m_writer->writeDouble(220, ent->normalVec.y);
+    m_writer->writeDouble(230, ent->normalVec.z);
+    m_writer->writeInt16(70, ent->flags);
+    m_writer->writeInt16(71, ent->degree);
+    m_writer->writeInt16(72, ent->nknots);
+    m_writer->writeInt16(73, ent->ncontrol);
+    m_writer->writeInt16(74, ent->nfit);
+    m_writer->writeDouble(42, ent->tolknot);
+    m_writer->writeDouble(43, ent->tolcontrol);
+    // @bug warning check if nknots are correct and ncontrol
+    for (int i = 0; i < ent->nknots; i++) { m_writer->writeDouble(40, ent->knotslist.at(i)); }
     for (int i = 0; i < ent->ncontrol; i++) {
       DRW_Coord* crd = ent->controllist.at(i);
-      writer->writeDouble(10, crd->x);
-      writer->writeDouble(20, crd->y);
-      writer->writeDouble(30, crd->z);
+      m_writer->writeDouble(10, crd->x);
+      m_writer->writeDouble(20, crd->y);
+      m_writer->writeDouble(30, crd->z);
     }
   } else {
-    // RLZ: TODO convert spline in polyline (not exist in acad 12)
+    // @todo convert spline in polyline (not exist in acad 12)
   }
   return true;
 }
 
-bool dxfRW::writeHatch(DRW_Hatch* ent) {
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(0, "HATCH");
-    writeEntity(ent);
-    writer->writeString(100, "AcDbHatch");
-    writer->writeDouble(10, 0.0);
-    writer->writeDouble(20, 0.0);
-    writer->writeDouble(30, ent->basePoint.z);
-    writer->writeDouble(210, ent->extPoint.x);
-    writer->writeDouble(220, ent->extPoint.y);
-    writer->writeDouble(230, ent->extPoint.z);
-    writer->writeString(2, ent->name);
-    writer->writeInt16(70, ent->solid);
-    writer->writeInt16(71, ent->associative);
+bool dxfRW::WriteHatch(DRW_Hatch* ent) {
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(0, "HATCH");
+    WriteEntity(ent);
+    m_writer->writeString(100, "AcDbHatch");
+    m_writer->writeDouble(10, 0.0);
+    m_writer->writeDouble(20, 0.0);
+    m_writer->writeDouble(30, ent->basePoint.z);
+    m_writer->writeDouble(210, ent->extPoint.x);
+    m_writer->writeDouble(220, ent->extPoint.y);
+    m_writer->writeDouble(230, ent->extPoint.z);
+    m_writer->writeString(2, ent->name);
+    m_writer->writeInt16(70, ent->solid);
+    m_writer->writeInt16(71, ent->associative);
     ent->loopsnum = static_cast<int>(ent->looplist.size());
-    writer->writeInt16(91, ent->loopsnum);
+    m_writer->writeInt16(91, ent->loopsnum);
     // write paths data
     for (int i = 0; i < ent->loopsnum; i++) {
       DRW_HatchLoop* loop = ent->looplist.at(i);
-      writer->writeInt16(92, loop->type);
+      m_writer->writeInt16(92, loop->type);
       if ((loop->type & 2) == 2) {
-        // RLZ: polyline boundary writeme
       } else {
         // boundary path
         loop->update();
-        writer->writeInt16(93, loop->numedges);
+        m_writer->writeInt16(93, loop->numedges);
         for (int j = 0; j < loop->numedges; ++j) {
           switch ((loop->objlist.at(j))->eType) {
             case DRW::LINE: {
-              writer->writeInt16(72, 1);
+              m_writer->writeInt16(72, 1);
               DRW_Line* l = (DRW_Line*)loop->objlist.at(j);
-              writer->writeDouble(10, l->basePoint.x);
-              writer->writeDouble(20, l->basePoint.y);
-              writer->writeDouble(11, l->secPoint.x);
-              writer->writeDouble(21, l->secPoint.y);
+              m_writer->writeDouble(10, l->basePoint.x);
+              m_writer->writeDouble(20, l->basePoint.y);
+              m_writer->writeDouble(11, l->secPoint.x);
+              m_writer->writeDouble(21, l->secPoint.y);
               break;
             }
             case DRW::ARC: {
-              writer->writeInt16(72, 2);
+              m_writer->writeInt16(72, 2);
               DRW_Arc* a = (DRW_Arc*)loop->objlist.at(j);
-              writer->writeDouble(10, a->basePoint.x);
-              writer->writeDouble(20, a->basePoint.y);
-              writer->writeDouble(40, a->radious);
-              writer->writeDouble(50, a->staangle * DRW::ARAD);
-              writer->writeDouble(51, a->endangle * DRW::ARAD);
-              writer->writeInt16(73, a->isccw);
+              m_writer->writeDouble(10, a->basePoint.x);
+              m_writer->writeDouble(20, a->basePoint.y);
+              m_writer->writeDouble(40, a->radious);
+              m_writer->writeDouble(50, a->staangle * DRW::ARAD);
+              m_writer->writeDouble(51, a->endangle * DRW::ARAD);
+              m_writer->writeInt16(73, a->isccw);
               break;
             }
             case DRW::ELLIPSE: {
-              writer->writeInt16(72, 3);
+              m_writer->writeInt16(72, 3);
               DRW_Ellipse* a = (DRW_Ellipse*)loop->objlist.at(j);
               a->correctAxis();
-              writer->writeDouble(10, a->basePoint.x);
-              writer->writeDouble(20, a->basePoint.y);
-              writer->writeDouble(11, a->secPoint.x);
-              writer->writeDouble(21, a->secPoint.y);
-              writer->writeDouble(40, a->ratio);
-              writer->writeDouble(50, a->staparam * DRW::ARAD);
-              writer->writeDouble(51, a->endparam * DRW::ARAD);
-              writer->writeInt16(73, a->isccw);
+              m_writer->writeDouble(10, a->basePoint.x);
+              m_writer->writeDouble(20, a->basePoint.y);
+              m_writer->writeDouble(11, a->secPoint.x);
+              m_writer->writeDouble(21, a->secPoint.y);
+              m_writer->writeDouble(40, a->ratio);
+              m_writer->writeDouble(50, a->staparam * DRW::ARAD);
+              m_writer->writeDouble(51, a->endparam * DRW::ARAD);
+              m_writer->writeInt16(73, a->isccw);
               break;
             }
             case DRW::SPLINE:
-              // RLZ: spline boundary writeme
-              //                        writer->writeInt16(72, 4);
               break;
             default:
               break;
           }
         }
-        writer->writeInt16(97, 0);
+        m_writer->writeInt16(97, 0);
       }
     }
-    writer->writeInt16(75, ent->hstyle);
-    writer->writeInt16(76, ent->hpattern);
+    m_writer->writeInt16(75, ent->hstyle);
+    m_writer->writeInt16(76, ent->hpattern);
     if (!ent->solid) {
-      writer->writeDouble(52, ent->angle);
-      writer->writeDouble(41, ent->scale);
-      writer->writeInt16(77, ent->doubleflag);
-      writer->writeInt16(78, ent->deflines);
+      m_writer->writeDouble(52, ent->angle);
+      m_writer->writeDouble(41, ent->scale);
+      m_writer->writeInt16(77, ent->doubleflag);
+      m_writer->writeInt16(78, ent->deflines);
     }
     /*        if (ent->deflines > 0){
-                writer->writeInt16(78, ent->deflines);
+                m_writer->writeInt16(78, ent->deflines);
             }*/
-    writer->writeInt32(98, 0);
+    m_writer->writeInt32(98, 0);
   } else {
-    // RLZ: TODO verify in acad12
   }
   return true;
 }
 
-bool dxfRW::writeLeader(DRW_Leader* ent) {
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(0, "LEADER");
-    writeEntity(ent);
-    writer->writeString(100, "AcDbLeader");
-    writer->writeUtf8String(3, ent->style);
-    writer->writeInt16(71, ent->arrow);
-    writer->writeInt16(72, ent->leadertype);
-    writer->writeInt16(73, ent->flag);
-    writer->writeInt16(74, ent->hookline);
-    writer->writeInt16(75, ent->hookflag);
-    writer->writeDouble(40, ent->textheight);
-    writer->writeDouble(41, ent->textwidth);
-    writer->writeDouble(76, ent->vertnum);
-    writer->writeDouble(76, static_cast<double>(ent->vertexlist.size()));
+bool dxfRW::WriteLeader(DRW_Leader* ent) {
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(0, "LEADER");
+    WriteEntity(ent);
+    m_writer->writeString(100, "AcDbLeader");
+    m_writer->writeUtf8String(3, ent->style);
+    m_writer->writeInt16(71, ent->arrow);
+    m_writer->writeInt16(72, ent->leadertype);
+    m_writer->writeInt16(73, ent->flag);
+    m_writer->writeInt16(74, ent->hookline);
+    m_writer->writeInt16(75, ent->hookflag);
+    m_writer->writeDouble(40, ent->textheight);
+    m_writer->writeDouble(41, ent->textwidth);
+    m_writer->writeDouble(76, ent->vertnum);
+    m_writer->writeDouble(76, static_cast<double>(ent->vertexlist.size()));
     for (unsigned int i = 0; i < ent->vertexlist.size(); i++) {
       DRW_Coord* vert = ent->vertexlist.at(i);
-      writer->writeDouble(10, vert->x);
-      writer->writeDouble(20, vert->y);
-      writer->writeDouble(30, vert->z);
+      m_writer->writeDouble(10, vert->x);
+      m_writer->writeDouble(20, vert->y);
+      m_writer->writeDouble(30, vert->z);
     }
   } else {
-    // RLZ: todo not supported by acad 12 saved as unnamed block
+    // @todo not supported by acad 12 saved as unnamed block
   }
   return true;
 }
-bool dxfRW::writeDimension(DRW_Dimension* ent) {
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(0, "DIMENSION");
-    writeEntity(ent);
-    writer->writeString(100, "AcDbDimension");
-    if (!ent->getName().empty()) { writer->writeString(2, ent->getName()); }
-    writer->writeDouble(10, ent->getDefPoint().x);
-    writer->writeDouble(20, ent->getDefPoint().y);
-    writer->writeDouble(30, ent->getDefPoint().z);
-    writer->writeDouble(11, ent->getTextPoint().x);
-    writer->writeDouble(21, ent->getTextPoint().y);
-    writer->writeDouble(31, ent->getTextPoint().z);
+bool dxfRW::WriteDimension(DRW_Dimension* ent) {
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(0, "DIMENSION");
+    WriteEntity(ent);
+    m_writer->writeString(100, "AcDbDimension");
+    if (!ent->getName().empty()) { m_writer->writeString(2, ent->getName()); }
+    m_writer->writeDouble(10, ent->getDefPoint().x);
+    m_writer->writeDouble(20, ent->getDefPoint().y);
+    m_writer->writeDouble(30, ent->getDefPoint().z);
+    m_writer->writeDouble(11, ent->getTextPoint().x);
+    m_writer->writeDouble(21, ent->getTextPoint().y);
+    m_writer->writeDouble(31, ent->getTextPoint().z);
     if (!(ent->type & 32)) ent->type = ent->type + 32;
-    writer->writeInt16(70, ent->type);
-    if (!(ent->getText().empty())) writer->writeUtf8String(1, ent->getText());
-    writer->writeInt16(71, ent->getAlign());
-    if (ent->getTextLineStyle() != 1) writer->writeInt16(72, ent->getTextLineStyle());
-    if (ent->getTextLineFactor() != 1) writer->writeDouble(41, ent->getTextLineFactor());
-    writer->writeUtf8String(3, ent->getStyle());
-    if (ent->getTextLineFactor() != 0) writer->writeDouble(53, ent->getDir());
-    writer->writeDouble(210, ent->getExtrusion().x);
-    writer->writeDouble(220, ent->getExtrusion().y);
-    writer->writeDouble(230, ent->getExtrusion().z);
+    m_writer->writeInt16(70, ent->type);
+    if (!(ent->getText().empty())) m_writer->writeUtf8String(1, ent->getText());
+    m_writer->writeInt16(71, ent->getAlign());
+    if (ent->getTextLineStyle() != 1) m_writer->writeInt16(72, ent->getTextLineStyle());
+    if (ent->getTextLineFactor() != 1) m_writer->writeDouble(41, ent->getTextLineFactor());
+    m_writer->writeUtf8String(3, ent->getStyle());
+    if (ent->getTextLineFactor() != 0) m_writer->writeDouble(53, ent->getDir());
+    m_writer->writeDouble(210, ent->getExtrusion().x);
+    m_writer->writeDouble(220, ent->getExtrusion().y);
+    m_writer->writeDouble(230, ent->getExtrusion().z);
 
     switch (ent->eType) {
       case DRW::DIMALIGNED:
       case DRW::DIMLINEAR: {
         DRW_DimAligned* dd = (DRW_DimAligned*)ent;
-        writer->writeString(100, "AcDbAlignedDimension");
+        m_writer->writeString(100, "AcDbAlignedDimension");
         DRW_Coord crd = dd->getClonepoint();
         if (crd.x != 0 || crd.y != 0 || crd.z != 0) {
-          writer->writeDouble(12, crd.x);
-          writer->writeDouble(22, crd.y);
-          writer->writeDouble(32, crd.z);
+          m_writer->writeDouble(12, crd.x);
+          m_writer->writeDouble(22, crd.y);
+          m_writer->writeDouble(32, crd.z);
         }
-        writer->writeDouble(13, dd->getDef1Point().x);
-        writer->writeDouble(23, dd->getDef1Point().y);
-        writer->writeDouble(33, dd->getDef1Point().z);
-        writer->writeDouble(14, dd->getDef2Point().x);
-        writer->writeDouble(24, dd->getDef2Point().y);
-        writer->writeDouble(34, dd->getDef2Point().z);
+        m_writer->writeDouble(13, dd->getDef1Point().x);
+        m_writer->writeDouble(23, dd->getDef1Point().y);
+        m_writer->writeDouble(33, dd->getDef1Point().z);
+        m_writer->writeDouble(14, dd->getDef2Point().x);
+        m_writer->writeDouble(24, dd->getDef2Point().y);
+        m_writer->writeDouble(34, dd->getDef2Point().z);
         if (ent->eType == DRW::DIMLINEAR) {
           DRW_DimLinear* dl = (DRW_DimLinear*)ent;
-          if (dl->getAngle() != 0) writer->writeDouble(50, dl->getAngle());
-          if (dl->getOblique() != 0) writer->writeDouble(52, dl->getOblique());
-          writer->writeString(100, "AcDbRotatedDimension");
+          if (dl->getAngle() != 0) m_writer->writeDouble(50, dl->getAngle());
+          if (dl->getOblique() != 0) m_writer->writeDouble(52, dl->getOblique());
+          m_writer->writeString(100, "AcDbRotatedDimension");
         }
         break;
       }
       case DRW::DIMRADIAL: {
         DRW_DimRadial* dd = (DRW_DimRadial*)ent;
-        writer->writeString(100, "AcDbRadialDimension");
-        writer->writeDouble(15, dd->getDiameterPoint().x);
-        writer->writeDouble(25, dd->getDiameterPoint().y);
-        writer->writeDouble(35, dd->getDiameterPoint().z);
-        writer->writeDouble(40, dd->getLeaderLength());
+        m_writer->writeString(100, "AcDbRadialDimension");
+        m_writer->writeDouble(15, dd->getDiameterPoint().x);
+        m_writer->writeDouble(25, dd->getDiameterPoint().y);
+        m_writer->writeDouble(35, dd->getDiameterPoint().z);
+        m_writer->writeDouble(40, dd->getLeaderLength());
         break;
       }
       case DRW::DIMDIAMETRIC: {
         DRW_DimDiametric* dd = (DRW_DimDiametric*)ent;
-        writer->writeString(100, "AcDbDiametricDimension");
-        writer->writeDouble(15, dd->getDiameter1Point().x);
-        writer->writeDouble(25, dd->getDiameter1Point().y);
-        writer->writeDouble(35, dd->getDiameter1Point().z);
-        writer->writeDouble(40, dd->getLeaderLength());
+        m_writer->writeString(100, "AcDbDiametricDimension");
+        m_writer->writeDouble(15, dd->getDiameter1Point().x);
+        m_writer->writeDouble(25, dd->getDiameter1Point().y);
+        m_writer->writeDouble(35, dd->getDiameter1Point().z);
+        m_writer->writeDouble(40, dd->getLeaderLength());
         break;
       }
       case DRW::DIMANGULAR: {
         DRW_DimAngular* dd = (DRW_DimAngular*)ent;
-        writer->writeString(100, "AcDb2LineAngularDimension");
-        writer->writeDouble(13, dd->getFirstLine1().x);
-        writer->writeDouble(23, dd->getFirstLine1().y);
-        writer->writeDouble(33, dd->getFirstLine1().z);
-        writer->writeDouble(14, dd->getFirstLine2().x);
-        writer->writeDouble(24, dd->getFirstLine2().y);
-        writer->writeDouble(34, dd->getFirstLine2().z);
-        writer->writeDouble(15, dd->getSecondLine1().x);
-        writer->writeDouble(25, dd->getSecondLine1().y);
-        writer->writeDouble(35, dd->getSecondLine1().z);
-        writer->writeDouble(16, dd->getDimPoint().x);
-        writer->writeDouble(26, dd->getDimPoint().y);
-        writer->writeDouble(36, dd->getDimPoint().z);
+        m_writer->writeString(100, "AcDb2LineAngularDimension");
+        m_writer->writeDouble(13, dd->getFirstLine1().x);
+        m_writer->writeDouble(23, dd->getFirstLine1().y);
+        m_writer->writeDouble(33, dd->getFirstLine1().z);
+        m_writer->writeDouble(14, dd->getFirstLine2().x);
+        m_writer->writeDouble(24, dd->getFirstLine2().y);
+        m_writer->writeDouble(34, dd->getFirstLine2().z);
+        m_writer->writeDouble(15, dd->getSecondLine1().x);
+        m_writer->writeDouble(25, dd->getSecondLine1().y);
+        m_writer->writeDouble(35, dd->getSecondLine1().z);
+        m_writer->writeDouble(16, dd->getDimPoint().x);
+        m_writer->writeDouble(26, dd->getDimPoint().y);
+        m_writer->writeDouble(36, dd->getDimPoint().z);
         break;
       }
       case DRW::DIMANGULAR3P: {
         DRW_DimAngular3p* dd = (DRW_DimAngular3p*)ent;
-        writer->writeDouble(13, dd->getFirstLine().x);
-        writer->writeDouble(23, dd->getFirstLine().y);
-        writer->writeDouble(33, dd->getFirstLine().z);
-        writer->writeDouble(14, dd->getSecondLine().x);
-        writer->writeDouble(24, dd->getSecondLine().y);
-        writer->writeDouble(34, dd->getSecondLine().z);
-        writer->writeDouble(15, dd->getVertexPoint().x);
-        writer->writeDouble(25, dd->getVertexPoint().y);
-        writer->writeDouble(35, dd->getVertexPoint().z);
+        m_writer->writeDouble(13, dd->getFirstLine().x);
+        m_writer->writeDouble(23, dd->getFirstLine().y);
+        m_writer->writeDouble(33, dd->getFirstLine().z);
+        m_writer->writeDouble(14, dd->getSecondLine().x);
+        m_writer->writeDouble(24, dd->getSecondLine().y);
+        m_writer->writeDouble(34, dd->getSecondLine().z);
+        m_writer->writeDouble(15, dd->getVertexPoint().x);
+        m_writer->writeDouble(25, dd->getVertexPoint().y);
+        m_writer->writeDouble(35, dd->getVertexPoint().z);
         break;
       }
       case DRW::DIMORDINATE: {
         DRW_DimOrdinate* dd = (DRW_DimOrdinate*)ent;
-        writer->writeString(100, "AcDbOrdinateDimension");
-        writer->writeDouble(13, dd->getFirstLine().x);
-        writer->writeDouble(23, dd->getFirstLine().y);
-        writer->writeDouble(33, dd->getFirstLine().z);
-        writer->writeDouble(14, dd->getSecondLine().x);
-        writer->writeDouble(24, dd->getSecondLine().y);
-        writer->writeDouble(34, dd->getSecondLine().z);
+        m_writer->writeString(100, "AcDbOrdinateDimension");
+        m_writer->writeDouble(13, dd->getFirstLine().x);
+        m_writer->writeDouble(23, dd->getFirstLine().y);
+        m_writer->writeDouble(33, dd->getFirstLine().z);
+        m_writer->writeDouble(14, dd->getSecondLine().x);
+        m_writer->writeDouble(24, dd->getSecondLine().y);
+        m_writer->writeDouble(34, dd->getSecondLine().z);
         break;
       }
       default:
         break;
     }
   } else {
-    // RLZ: todo not supported by acad 12 saved as unnamed block
+    // @todo not supported by acad 12 saved as unnamed block
   }
   return true;
 }
 
-bool dxfRW::writeInsert(DRW_Insert* ent) {
-  writer->writeString(0, "INSERT");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(100, "AcDbBlockReference");
-    writer->writeUtf8String(2, ent->name);
+bool dxfRW::WriteInsert(DRW_Insert* ent) {
+  m_writer->writeString(0, "INSERT");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(100, "AcDbBlockReference");
+    m_writer->writeUtf8String(2, ent->name);
   } else
-    writer->writeUtf8Caps(2, ent->name);
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
-  writer->writeDouble(30, ent->basePoint.z);
-  writer->writeDouble(41, ent->xscale);
-  writer->writeDouble(42, ent->yscale);
-  writer->writeDouble(43, ent->zscale);
-  writer->writeDouble(50, (ent->angle) * DRW::ARAD);  // in dxf angle is written in degrees
-  writer->writeInt16(70, ent->colcount);
-  writer->writeInt16(71, ent->rowcount);
-  writer->writeDouble(44, ent->colspace);
-  writer->writeDouble(45, ent->rowspace);
+    m_writer->writeUtf8Caps(2, ent->name);
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
+  m_writer->writeDouble(30, ent->basePoint.z);
+  m_writer->writeDouble(41, ent->xscale);
+  m_writer->writeDouble(42, ent->yscale);
+  m_writer->writeDouble(43, ent->zscale);
+  m_writer->writeDouble(50, (ent->angle) * DRW::ARAD);  // in dxf angle is written in degrees
+  m_writer->writeInt16(70, ent->colcount);
+  m_writer->writeInt16(71, ent->rowcount);
+  m_writer->writeDouble(44, ent->colspace);
+  m_writer->writeDouble(45, ent->rowspace);
   return true;
 }
 
-bool dxfRW::writeText(DRW_Text* ent) {
-  writer->writeString(0, "TEXT");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbText"); }
-  //    writer->writeDouble(39, ent->thickness);
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
-  writer->writeDouble(30, ent->basePoint.z);
-  writer->writeDouble(40, ent->height);
-  writer->writeUtf8String(1, ent->text);
-  writer->writeDouble(50, ent->angle);
-  writer->writeDouble(41, ent->widthscale);
-  writer->writeDouble(51, ent->oblique);
-  if (version > DRW::Version::AC1009)
-    writer->writeUtf8String(7, ent->style);
+bool dxfRW::WriteText(DRW_Text* ent) {
+  m_writer->writeString(0, "TEXT");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbText"); }
+  //    m_writer->writeDouble(39, ent->thickness);
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
+  m_writer->writeDouble(30, ent->basePoint.z);
+  m_writer->writeDouble(40, ent->height);
+  m_writer->writeUtf8String(1, ent->text);
+  m_writer->writeDouble(50, ent->angle);
+  m_writer->writeDouble(41, ent->widthscale);
+  m_writer->writeDouble(51, ent->oblique);
+  if (m_version > DRW::Version::AC1009)
+    m_writer->writeUtf8String(7, ent->style);
   else
-    writer->writeUtf8Caps(7, ent->style);
-  writer->writeInt16(71, ent->textgen);
-  if (ent->alignH != DRW_Text::HLeft) { writer->writeInt16(72, ent->alignH); }
+    m_writer->writeUtf8Caps(7, ent->style);
+  m_writer->writeInt16(71, ent->textgen);
+  if (ent->alignH != DRW_Text::HLeft) { m_writer->writeInt16(72, ent->alignH); }
   if (ent->alignH != DRW_Text::HLeft || ent->alignV != DRW_Text::VBaseLine) {
-    writer->writeDouble(11, ent->secPoint.x);
-    writer->writeDouble(21, ent->secPoint.y);
-    writer->writeDouble(31, ent->secPoint.z);
+    m_writer->writeDouble(11, ent->secPoint.x);
+    m_writer->writeDouble(21, ent->secPoint.y);
+    m_writer->writeDouble(31, ent->secPoint.z);
   }
-  writer->writeDouble(210, ent->extPoint.x);
-  writer->writeDouble(220, ent->extPoint.y);
-  writer->writeDouble(230, ent->extPoint.z);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbText"); }
-  if (ent->alignV != DRW_Text::VBaseLine) { writer->writeInt16(73, ent->alignV); }
+  m_writer->writeDouble(210, ent->extPoint.x);
+  m_writer->writeDouble(220, ent->extPoint.y);
+  m_writer->writeDouble(230, ent->extPoint.z);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbText"); }
+  if (ent->alignV != DRW_Text::VBaseLine) { m_writer->writeInt16(73, ent->alignV); }
   return true;
 }
 
-bool dxfRW::writeMText(DRW_MText* ent) {
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(0, "MTEXT");
-    writeEntity(ent);
-    writer->writeString(100, "AcDbMText");
-    writer->writeDouble(10, ent->basePoint.x);
-    writer->writeDouble(20, ent->basePoint.y);
-    writer->writeDouble(30, ent->basePoint.z);
-    writer->writeDouble(40, ent->height);
-    writer->writeDouble(41, ent->widthscale);
-    writer->writeInt16(71, ent->textgen);
-    writer->writeInt16(72, ent->alignH);
-    std::string text = writer->fromUtf8String(ent->text);
+bool dxfRW::WriteMText(DRW_MText* ent) {
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(0, "MTEXT");
+    WriteEntity(ent);
+    m_writer->writeString(100, "AcDbMText");
+    m_writer->writeDouble(10, ent->basePoint.x);
+    m_writer->writeDouble(20, ent->basePoint.y);
+    m_writer->writeDouble(30, ent->basePoint.z);
+    m_writer->writeDouble(40, ent->height);
+    m_writer->writeDouble(41, ent->widthscale);
+    m_writer->writeInt16(71, ent->textgen);
+    m_writer->writeInt16(72, ent->alignH);
+    std::string text = m_writer->fromUtf8String(ent->text);
 
     int i;
     for (i = 0; (text.size() - i) > 250;) {
-      writer->writeString(3, text.substr(i, 250));
+      m_writer->writeString(3, text.substr(i, 250));
       i += 250;
     }
-    writer->writeString(1, text.substr(i));
-    writer->writeString(7, ent->style);
-    writer->writeDouble(210, ent->extPoint.x);
-    writer->writeDouble(220, ent->extPoint.y);
-    writer->writeDouble(230, ent->extPoint.z);
-    writer->writeDouble(50, ent->angle);
-    writer->writeInt16(73, ent->alignV);
-    writer->writeDouble(44, ent->interlin);
-    // RLZ ... 11, 21, 31 needed?
+    m_writer->writeString(1, text.substr(i));
+    m_writer->writeString(7, ent->style);
+    m_writer->writeDouble(210, ent->extPoint.x);
+    m_writer->writeDouble(220, ent->extPoint.y);
+    m_writer->writeDouble(230, ent->extPoint.z);
+    m_writer->writeDouble(50, ent->angle);
+    m_writer->writeInt16(73, ent->alignV);
+    m_writer->writeDouble(44, ent->interlin);
   } else {
-    // RLZ: TODO convert mtext in text lines (not exist in acad 12)
+    // @todo convert mtext in text lines (not exist in acad 12)
   }
   return true;
 }
 
-bool dxfRW::writeViewport(DRW_Viewport* ent) {
-  writer->writeString(0, "VIEWPORT");
-  writeEntity(ent);
-  if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbViewport"); }
-  writer->writeDouble(10, ent->basePoint.x);
-  writer->writeDouble(20, ent->basePoint.y);
-  if (ent->basePoint.z != 0.0) writer->writeDouble(30, ent->basePoint.z);
-  writer->writeDouble(40, ent->pswidth);
-  writer->writeDouble(41, ent->psheight);
-  writer->writeInt16(68, ent->vpstatus);
-  writer->writeInt16(69, ent->vpID);
-  writer->writeDouble(12, ent->centerPX);  // RLZ: verify if exist in V12
-  writer->writeDouble(22, ent->centerPY);  // RLZ: verify if exist in V12
+bool dxfRW::WriteViewport(DRW_Viewport* ent) {
+  m_writer->writeString(0, "VIEWPORT");
+  WriteEntity(ent);
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbViewport"); }
+  m_writer->writeDouble(10, ent->basePoint.x);
+  m_writer->writeDouble(20, ent->basePoint.y);
+  if (ent->basePoint.z != 0.0) m_writer->writeDouble(30, ent->basePoint.z);
+  m_writer->writeDouble(40, ent->pswidth);
+  m_writer->writeDouble(41, ent->psheight);
+  m_writer->writeInt16(68, ent->vpstatus);
+  m_writer->writeInt16(69, ent->vpID);
+  m_writer->writeDouble(12, ent->centerPX);
+  m_writer->writeDouble(22, ent->centerPY);
   return true;
 }
 
-DRW_ImageDef* dxfRW::writeImage(DRW_Image* ent, std::string name) {
-  if (version > DRW::Version::AC1009) {
+DRW_ImageDef* dxfRW::WriteImage(DRW_Image* ent, std::string name) {
+  if (m_version > DRW::Version::AC1009) {
     // search if exist imagedef with this mane (image inserted more than 1 time)
-    // RLZ: imagedef_reactor seem needed to read in acad
     DRW_ImageDef* id = nullptr;
-    for (unsigned int i = 0; i < imageDef.size(); i++) {
-      if (imageDef.at(i)->name == name) {
-        id = imageDef.at(i);
+    for (unsigned int i = 0; i < m_imageDef.size(); i++) {
+      if (m_imageDef.at(i)->name == name) {
+        id = m_imageDef.at(i);
         continue;
       }
     }
     if (id == nullptr) {
       id = new DRW_ImageDef();
-      imageDef.push_back(id);
-      id->handle = ++entCount;
+      m_imageDef.push_back(id);
+      id->handle = ++m_entityCount;
     }
     id->name = name;
-    std::string idReactor = toHexStr(++entCount);
+    std::string idReactor = ToHexString(++m_entityCount);
 
-    writer->writeString(0, "IMAGE");
-    writeEntity(ent);
-    writer->writeString(100, "AcDbRasterImage");
-    writer->writeDouble(10, ent->basePoint.x);
-    writer->writeDouble(20, ent->basePoint.y);
-    writer->writeDouble(30, ent->basePoint.z);
-    writer->writeDouble(11, ent->secPoint.x);
-    writer->writeDouble(21, ent->secPoint.y);
-    writer->writeDouble(31, ent->secPoint.z);
-    writer->writeDouble(12, ent->vVector.x);
-    writer->writeDouble(22, ent->vVector.y);
-    writer->writeDouble(32, ent->vVector.z);
-    writer->writeDouble(13, ent->sizeu);
-    writer->writeDouble(23, ent->sizev);
-    writer->writeString(340, toHexStr(id->handle));
-    writer->writeInt16(70, 1);
-    writer->writeInt16(280, ent->clip);
-    writer->writeInt16(281, ent->brightness);
-    writer->writeInt16(282, ent->contrast);
-    writer->writeInt16(283, ent->fade);
-    writer->writeString(360, idReactor);
-    id->reactors[idReactor] = toHexStr(ent->handle);
+    m_writer->writeString(0, "IMAGE");
+    WriteEntity(ent);
+    m_writer->writeString(100, "AcDbRasterImage");
+    m_writer->writeDouble(10, ent->basePoint.x);
+    m_writer->writeDouble(20, ent->basePoint.y);
+    m_writer->writeDouble(30, ent->basePoint.z);
+    m_writer->writeDouble(11, ent->secPoint.x);
+    m_writer->writeDouble(21, ent->secPoint.y);
+    m_writer->writeDouble(31, ent->secPoint.z);
+    m_writer->writeDouble(12, ent->vVector.x);
+    m_writer->writeDouble(22, ent->vVector.y);
+    m_writer->writeDouble(32, ent->vVector.z);
+    m_writer->writeDouble(13, ent->sizeu);
+    m_writer->writeDouble(23, ent->sizev);
+    m_writer->writeString(340, ToHexString(id->handle));
+    m_writer->writeInt16(70, 1);
+    m_writer->writeInt16(280, ent->clip);
+    m_writer->writeInt16(281, ent->brightness);
+    m_writer->writeInt16(282, ent->contrast);
+    m_writer->writeInt16(283, ent->fade);
+    m_writer->writeString(360, idReactor);
+    id->reactors[idReactor] = ToHexString(ent->handle);
     return id;
   }
   return nullptr;  // not exist in acad 12
 }
 
-bool dxfRW::writeBlockRecord(std::string name) {
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(0, "BLOCK_RECORD");
-    writer->writeString(5, toHexStr(++entCount));
+bool dxfRW::WriteBlockRecord(std::string name) {
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(0, "BLOCK_RECORD");
+    m_writer->writeString(5, ToHexString(++m_entityCount));
 
-    blockMap[name] = entCount;
-    entCount = 2 + entCount;  // reserve 2 for BLOCK & ENDBLOCK
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "1"); }
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbBlockTableRecord");
-    writer->writeUtf8String(2, name);
-    if (version > DRW::Version::AC1018) {
-      //    writer->writeInt16(340, 22);
-      writer->writeInt16(70, 0);
-      writer->writeInt16(280, 1);
-      writer->writeInt16(281, 0);
+    m_blockMap[name] = m_entityCount;
+    m_entityCount = 2 + m_entityCount;  // reserve 2 for BLOCK & ENDBLOCK
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "1"); }
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbBlockTableRecord");
+    m_writer->writeUtf8String(2, name);
+    if (m_version > DRW::Version::AC1018) {
+      //    m_writer->writeInt16(340, 22);
+      m_writer->writeInt16(70, 0);
+      m_writer->writeInt16(280, 1);
+      m_writer->writeInt16(281, 0);
     }
   }
   return true;
 }
 
-bool dxfRW::writeBlock(DRW_Block* bk) {
-  if (writingBlock) {
-    writer->writeString(0, "ENDBLK");
-    if (version > DRW::Version::AC1009) {
-      writer->writeString(5, toHexStr(currHandle + 2));
-      if (version > DRW::Version::AC1014) { writer->writeString(330, toHexStr(currHandle)); }
-      writer->writeString(100, "AcDbEntity");
+bool dxfRW::WriteBlock(DRW_Block* bk) {
+  if (m_writingBlock) {
+    m_writer->writeString(0, "ENDBLK");
+    if (m_version > DRW::Version::AC1009) {
+      m_writer->writeString(5, ToHexString(m_currentHandle + 2));
+      if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, ToHexString(m_currentHandle)); }
+      m_writer->writeString(100, "AcDbEntity");
     }
-    writer->writeString(8, "0");
-    if (version > DRW::Version::AC1009) { writer->writeString(100, "AcDbBlockEnd"); }
+    m_writer->writeString(8, "0");
+    if (m_version > DRW::Version::AC1009) { m_writer->writeString(100, "AcDbBlockEnd"); }
   }
-  writingBlock = true;
-  writer->writeString(0, "BLOCK");
-  if (version > DRW::Version::AC1009) {
-    currHandle = (*(blockMap.find(bk->name))).second;
-    writer->writeString(5, toHexStr(currHandle + 1));
-    if (version > DRW::Version::AC1014) { writer->writeString(330, toHexStr(currHandle)); }
-    writer->writeString(100, "AcDbEntity");
+  m_writingBlock = true;
+  m_writer->writeString(0, "BLOCK");
+  if (m_version > DRW::Version::AC1009) {
+    m_currentHandle = (*(m_blockMap.find(bk->name))).second;
+    m_writer->writeString(5, ToHexString(m_currentHandle + 1));
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, ToHexString(m_currentHandle)); }
+    m_writer->writeString(100, "AcDbEntity");
   }
-  writer->writeString(8, "0");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(100, "AcDbBlockBegin");
-    writer->writeUtf8String(2, bk->name);
+  m_writer->writeString(8, "0");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(100, "AcDbBlockBegin");
+    m_writer->writeUtf8String(2, bk->name);
   } else
-    writer->writeUtf8Caps(2, bk->name);
-  writer->writeInt16(70, bk->flags);
-  writer->writeDouble(10, bk->basePoint.x);
-  writer->writeDouble(20, bk->basePoint.y);
-  if (bk->basePoint.z != 0.0) { writer->writeDouble(30, bk->basePoint.z); }
-  if (version > DRW::Version::AC1009)
-    writer->writeUtf8String(3, bk->name);
+    m_writer->writeUtf8Caps(2, bk->name);
+  m_writer->writeInt16(70, bk->flags);
+  m_writer->writeDouble(10, bk->basePoint.x);
+  m_writer->writeDouble(20, bk->basePoint.y);
+  if (bk->basePoint.z != 0.0) { m_writer->writeDouble(30, bk->basePoint.z); }
+  if (m_version > DRW::Version::AC1009)
+    m_writer->writeUtf8String(3, bk->name);
   else
-    writer->writeUtf8Caps(3, bk->name);
-  writer->writeString(1, "");
+    m_writer->writeUtf8Caps(3, bk->name);
+  m_writer->writeString(1, "");
 
   return true;
 }
 
-bool dxfRW::writeTables() {
-  writer->writeString(0, "TABLE");
-  writer->writeString(2, "VPORT");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "8");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "0"); }
-    writer->writeString(100, "AcDbSymbolTable");
+bool dxfRW::WriteTables() {
+  m_writer->writeString(0, "TABLE");
+  m_writer->writeString(2, "VPORT");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "8");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "0"); }
+    m_writer->writeString(100, "AcDbSymbolTable");
   }
-  writer->writeInt16(70, 1);  // end table def
+  m_writer->writeInt16(70, 1);  // end table def
   /*** VPORT ***/
-  dimstyleStd = false;
-  iface->writeVports();
-  if (!dimstyleStd) {
+  m_standardDimensionStyle = false;
+  m_interface->writeVports();
+  if (!m_standardDimensionStyle) {
     DRW_Vport portact;
     portact.name = "*ACTIVE";
-    writeVport(&portact);
+    WriteVport(&portact);
   }
-  writer->writeString(0, "ENDTAB");
+  m_writer->writeString(0, "ENDTAB");
   /*** LTYPE ***/
-  writer->writeString(0, "TABLE");
-  writer->writeString(2, "LTYPE");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "5");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "0"); }
-    writer->writeString(100, "AcDbSymbolTable");
+  m_writer->writeString(0, "TABLE");
+  m_writer->writeString(2, "LTYPE");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "5");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "0"); }
+    m_writer->writeString(100, "AcDbSymbolTable");
   }
-  writer->writeInt16(70, 4);  // end table def
+  m_writer->writeInt16(70, 4);  // end table def
   // Mandatory linetypes
-  writer->writeString(0, "LTYPE");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "14");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "5"); }
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbLinetypeTableRecord");
-    writer->writeString(2, "ByBlock");
+  m_writer->writeString(0, "LTYPE");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "14");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "5"); }
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbLinetypeTableRecord");
+    m_writer->writeString(2, "ByBlock");
   } else
-    writer->writeString(2, "BYBLOCK");
-  writer->writeInt16(70, 0);
-  writer->writeString(3, "");
-  writer->writeInt16(72, 65);
-  writer->writeInt16(73, 0);
-  writer->writeDouble(40, 0.0);
+    m_writer->writeString(2, "BYBLOCK");
+  m_writer->writeInt16(70, 0);
+  m_writer->writeString(3, "");
+  m_writer->writeInt16(72, 65);
+  m_writer->writeInt16(73, 0);
+  m_writer->writeDouble(40, 0.0);
 
-  writer->writeString(0, "LTYPE");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "15");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "5"); }
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbLinetypeTableRecord");
-    writer->writeString(2, "ByLayer");
+  m_writer->writeString(0, "LTYPE");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "15");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "5"); }
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbLinetypeTableRecord");
+    m_writer->writeString(2, "ByLayer");
   } else
-    writer->writeString(2, "BYLAYER");
-  writer->writeInt16(70, 0);
-  writer->writeString(3, "");
-  writer->writeInt16(72, 65);
-  writer->writeInt16(73, 0);
-  writer->writeDouble(40, 0.0);
+    m_writer->writeString(2, "BYLAYER");
+  m_writer->writeInt16(70, 0);
+  m_writer->writeString(3, "");
+  m_writer->writeInt16(72, 65);
+  m_writer->writeInt16(73, 0);
+  m_writer->writeDouble(40, 0.0);
 
-  writer->writeString(0, "LTYPE");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "16");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "5"); }
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbLinetypeTableRecord");
-    writer->writeString(2, "Continuous");
+  m_writer->writeString(0, "LTYPE");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "16");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "5"); }
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbLinetypeTableRecord");
+    m_writer->writeString(2, "Continuous");
   } else {
-    writer->writeString(2, "CONTINUOUS");
+    m_writer->writeString(2, "CONTINUOUS");
   }
-  writer->writeInt16(70, 0);
-  writer->writeString(3, "Solid line");
-  writer->writeInt16(72, 65);
-  writer->writeInt16(73, 0);
-  writer->writeDouble(40, 0.0);
+  m_writer->writeInt16(70, 0);
+  m_writer->writeString(3, "Solid line");
+  m_writer->writeInt16(72, 65);
+  m_writer->writeInt16(73, 0);
+  m_writer->writeDouble(40, 0.0);
   // Aplication linetypes
-  iface->writeLTypes();
-  writer->writeString(0, "ENDTAB");
+  m_interface->writeLTypes();
+  m_writer->writeString(0, "ENDTAB");
   /*** LAYER ***/
-  writer->writeString(0, "TABLE");
-  writer->writeString(2, "LAYER");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "2");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "0"); }
-    writer->writeString(100, "AcDbSymbolTable");
+  m_writer->writeString(0, "TABLE");
+  m_writer->writeString(2, "LAYER");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "2");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "0"); }
+    m_writer->writeString(100, "AcDbSymbolTable");
   }
-  writer->writeInt16(70, 1);  // end table def
+  m_writer->writeInt16(70, 1);  // end table def
   wlayer0 = false;
-  iface->writeLayers();
+  m_interface->writeLayers();
   if (!wlayer0) {
     DRW_Layer lay0;
     lay0.name = "0";
-    writeLayer(&lay0);
+    WriteLayer(&lay0);
   }
-  writer->writeString(0, "ENDTAB");
+  m_writer->writeString(0, "ENDTAB");
   /*** STYLE ***/
-  writer->writeString(0, "TABLE");
-  writer->writeString(2, "STYLE");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "3");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "0"); }
-    writer->writeString(100, "AcDbSymbolTable");
+  m_writer->writeString(0, "TABLE");
+  m_writer->writeString(2, "STYLE");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "3");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "0"); }
+    m_writer->writeString(100, "AcDbSymbolTable");
   }
-  writer->writeInt16(70, 3);  // end table def
-  dimstyleStd = false;
-  iface->writeTextstyles();
-  if (!dimstyleStd) {
+  m_writer->writeInt16(70, 3);  // end table def
+  m_standardDimensionStyle = false;
+  m_interface->writeTextstyles();
+  if (!m_standardDimensionStyle) {
     DRW_Textstyle tsty;
     tsty.name = "Standard";
-    writeTextstyle(&tsty);
+    WriteTextstyle(&tsty);
   }
-  writer->writeString(0, "ENDTAB");
+  m_writer->writeString(0, "ENDTAB");
 
-  writer->writeString(0, "TABLE");
-  writer->writeString(2, "VIEW");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "6");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "0"); }
-    writer->writeString(100, "AcDbSymbolTable");
+  m_writer->writeString(0, "TABLE");
+  m_writer->writeString(2, "VIEW");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "6");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "0"); }
+    m_writer->writeString(100, "AcDbSymbolTable");
   }
-  writer->writeInt16(70, 0);  // end table def
-  writer->writeString(0, "ENDTAB");
+  m_writer->writeInt16(70, 0);  // end table def
+  m_writer->writeString(0, "ENDTAB");
 
-  writer->writeString(0, "TABLE");
-  writer->writeString(2, "UCS");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "7");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "0"); }
-    writer->writeString(100, "AcDbSymbolTable");
+  m_writer->writeString(0, "TABLE");
+  m_writer->writeString(2, "UCS");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "7");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "0"); }
+    m_writer->writeString(100, "AcDbSymbolTable");
   }
-  writer->writeInt16(70, 0);  // end table def
-  writer->writeString(0, "ENDTAB");
+  m_writer->writeInt16(70, 0);  // end table def
+  m_writer->writeString(0, "ENDTAB");
 
-  writer->writeString(0, "TABLE");
-  writer->writeString(2, "APPID");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "9");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "0"); }
-    writer->writeString(100, "AcDbSymbolTable");
+  m_writer->writeString(0, "TABLE");
+  m_writer->writeString(2, "APPID");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "9");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "0"); }
+    m_writer->writeString(100, "AcDbSymbolTable");
   }
-  writer->writeInt16(70, 1);  // end table def
-  writer->writeString(0, "APPID");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "12");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "9"); }
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbRegAppTableRecord");
+  m_writer->writeInt16(70, 1);  // end table def
+  m_writer->writeString(0, "APPID");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "12");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "9"); }
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbRegAppTableRecord");
   }
-  writer->writeString(2, "ACAD");
-  writer->writeInt16(70, 0);
-  iface->writeAppId();
-  writer->writeString(0, "ENDTAB");
+  m_writer->writeString(2, "ACAD");
+  m_writer->writeInt16(70, 0);
+  m_interface->writeAppId();
+  m_writer->writeString(0, "ENDTAB");
 
-  writer->writeString(0, "TABLE");
-  writer->writeString(2, "DIMSTYLE");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "A");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "0"); }
-    writer->writeString(100, "AcDbSymbolTable");
+  m_writer->writeString(0, "TABLE");
+  m_writer->writeString(2, "DIMSTYLE");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "A");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "0"); }
+    m_writer->writeString(100, "AcDbSymbolTable");
   }
-  writer->writeInt16(70, 1);  // end table def
-  if (version > DRW::Version::AC1014) {
-    writer->writeString(100, "AcDbDimStyleTable");
-    writer->writeInt16(71, 1);  // end table def
+  m_writer->writeInt16(70, 1);  // end table def
+  if (m_version > DRW::Version::AC1014) {
+    m_writer->writeString(100, "AcDbDimStyleTable");
+    m_writer->writeInt16(71, 1);  // end table def
   }
-  dimstyleStd = false;
-  iface->writeDimstyles();
-  if (!dimstyleStd) {
+  m_standardDimensionStyle = false;
+  m_interface->writeDimstyles();
+  if (!m_standardDimensionStyle) {
     DRW_Dimstyle dsty;
     dsty.name = "Standard";
-    writeDimstyle(&dsty);
+    WriteDimstyle(&dsty);
   }
-  writer->writeString(0, "ENDTAB");
+  m_writer->writeString(0, "ENDTAB");
 
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(0, "TABLE");
-    writer->writeString(2, "BLOCK_RECORD");
-    writer->writeString(5, "1");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "0"); }
-    writer->writeString(100, "AcDbSymbolTable");
-    writer->writeInt16(70, 2);  // end table def
-    writer->writeString(0, "BLOCK_RECORD");
-    writer->writeString(5, "1F");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "1"); }
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbBlockTableRecord");
-    writer->writeString(2, "*Model_Space");
-    if (version > DRW::Version::AC1018) {
-      //    writer->writeInt16(340, 22);
-      writer->writeInt16(70, 0);
-      writer->writeInt16(280, 1);
-      writer->writeInt16(281, 0);
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(0, "TABLE");
+    m_writer->writeString(2, "BLOCK_RECORD");
+    m_writer->writeString(5, "1");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "0"); }
+    m_writer->writeString(100, "AcDbSymbolTable");
+    m_writer->writeInt16(70, 2);  // end table def
+    m_writer->writeString(0, "BLOCK_RECORD");
+    m_writer->writeString(5, "1F");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "1"); }
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbBlockTableRecord");
+    m_writer->writeString(2, "*Model_Space");
+    if (m_version > DRW::Version::AC1018) {
+      //    m_writer->writeInt16(340, 22);
+      m_writer->writeInt16(70, 0);
+      m_writer->writeInt16(280, 1);
+      m_writer->writeInt16(281, 0);
     }
-    writer->writeString(0, "BLOCK_RECORD");
-    writer->writeString(5, "1E");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "1"); }
-    writer->writeString(100, "AcDbSymbolTableRecord");
-    writer->writeString(100, "AcDbBlockTableRecord");
-    writer->writeString(2, "*Paper_Space");
-    if (version > DRW::Version::AC1018) {
-      //    writer->writeInt16(340, 22);
-      writer->writeInt16(70, 0);
-      writer->writeInt16(280, 1);
-      writer->writeInt16(281, 0);
+    m_writer->writeString(0, "BLOCK_RECORD");
+    m_writer->writeString(5, "1E");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "1"); }
+    m_writer->writeString(100, "AcDbSymbolTableRecord");
+    m_writer->writeString(100, "AcDbBlockTableRecord");
+    m_writer->writeString(2, "*Paper_Space");
+    if (m_version > DRW::Version::AC1018) {
+      //    m_writer->writeInt16(340, 22);
+      m_writer->writeInt16(70, 0);
+      m_writer->writeInt16(280, 1);
+      m_writer->writeInt16(281, 0);
     }
   }
-  /* allways call writeBlockRecords to iface for prepare unnamed blocks */
-  iface->writeBlockRecords();
-  if (version > DRW::Version::AC1009) { writer->writeString(0, "ENDTAB"); }
+  /* allways call writeBlockRecords to interface for prepare unnamed blocks */
+  m_interface->writeBlockRecords();
+  if (m_version > DRW::Version::AC1009) { m_writer->writeString(0, "ENDTAB"); }
   return true;
 }
 
-bool dxfRW::writeBlocks() {
-  writer->writeString(0, "BLOCK");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "20");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "1F"); }
-    writer->writeString(100, "AcDbEntity");
+bool dxfRW::WriteBlocks() {
+  m_writer->writeString(0, "BLOCK");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "20");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "1F"); }
+    m_writer->writeString(100, "AcDbEntity");
   }
-  writer->writeString(8, "0");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(100, "AcDbBlockBegin");
-    writer->writeString(2, "*Model_Space");
+  m_writer->writeString(8, "0");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(100, "AcDbBlockBegin");
+    m_writer->writeString(2, "*Model_Space");
   } else
-    writer->writeString(2, "$MODEL_SPACE");
-  writer->writeInt16(70, 0);
-  writer->writeDouble(10, 0.0);
-  writer->writeDouble(20, 0.0);
-  writer->writeDouble(30, 0.0);
-  if (version > DRW::Version::AC1009)
-    writer->writeString(3, "*Model_Space");
+    m_writer->writeString(2, "$MODEL_SPACE");
+  m_writer->writeInt16(70, 0);
+  m_writer->writeDouble(10, 0.0);
+  m_writer->writeDouble(20, 0.0);
+  m_writer->writeDouble(30, 0.0);
+  if (m_version > DRW::Version::AC1009)
+    m_writer->writeString(3, "*Model_Space");
   else
-    writer->writeString(3, "$MODEL_SPACE");
-  writer->writeString(1, "");
-  writer->writeString(0, "ENDBLK");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "21");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "1F"); }
-    writer->writeString(100, "AcDbEntity");
+    m_writer->writeString(3, "$MODEL_SPACE");
+  m_writer->writeString(1, "");
+  m_writer->writeString(0, "ENDBLK");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "21");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "1F"); }
+    m_writer->writeString(100, "AcDbEntity");
   }
-  writer->writeString(8, "0");
-  if (version > DRW::Version::AC1009) writer->writeString(100, "AcDbBlockEnd");
-  writer->writeString(0, "BLOCK");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "1C");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "1B"); }
-    writer->writeString(100, "AcDbEntity");
+  m_writer->writeString(8, "0");
+  if (m_version > DRW::Version::AC1009) m_writer->writeString(100, "AcDbBlockEnd");
+  m_writer->writeString(0, "BLOCK");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "1C");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "1B"); }
+    m_writer->writeString(100, "AcDbEntity");
   }
-  writer->writeString(8, "0");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(100, "AcDbBlockBegin");
-    writer->writeString(2, "*Paper_Space");
+  m_writer->writeString(8, "0");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(100, "AcDbBlockBegin");
+    m_writer->writeString(2, "*Paper_Space");
   } else
-    writer->writeString(2, "$PAPER_SPACE");
-  writer->writeInt16(70, 0);
-  writer->writeDouble(10, 0.0);
-  writer->writeDouble(20, 0.0);
-  writer->writeDouble(30, 0.0);
-  if (version > DRW::Version::AC1009)
-    writer->writeString(3, "*Paper_Space");
+    m_writer->writeString(2, "$PAPER_SPACE");
+  m_writer->writeInt16(70, 0);
+  m_writer->writeDouble(10, 0.0);
+  m_writer->writeDouble(20, 0.0);
+  m_writer->writeDouble(30, 0.0);
+  if (m_version > DRW::Version::AC1009)
+    m_writer->writeString(3, "*Paper_Space");
   else
-    writer->writeString(3, "$PAPER_SPACE");
-  writer->writeString(1, "");
-  writer->writeString(0, "ENDBLK");
-  if (version > DRW::Version::AC1009) {
-    writer->writeString(5, "1D");
-    if (version > DRW::Version::AC1014) { writer->writeString(330, "1F"); }
-    writer->writeString(100, "AcDbEntity");
+    m_writer->writeString(3, "$PAPER_SPACE");
+  m_writer->writeString(1, "");
+  m_writer->writeString(0, "ENDBLK");
+  if (m_version > DRW::Version::AC1009) {
+    m_writer->writeString(5, "1D");
+    if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "1F"); }
+    m_writer->writeString(100, "AcDbEntity");
   }
-  writer->writeString(8, "0");
-  if (version > DRW::Version::AC1009) writer->writeString(100, "AcDbBlockEnd");
-  writingBlock = false;
-  iface->writeBlocks();
-  if (writingBlock) {
-    writingBlock = false;
-    writer->writeString(0, "ENDBLK");
-    if (version > DRW::Version::AC1009) {
-      writer->writeString(5, toHexStr(currHandle + 2));
-      //            writer->writeString(5, "1D");
-      if (version > DRW::Version::AC1014) { writer->writeString(330, toHexStr(currHandle)); }
-      writer->writeString(100, "AcDbEntity");
+  m_writer->writeString(8, "0");
+  if (m_version > DRW::Version::AC1009) m_writer->writeString(100, "AcDbBlockEnd");
+  m_writingBlock = false;
+  m_interface->writeBlocks();
+  if (m_writingBlock) {
+    m_writingBlock = false;
+    m_writer->writeString(0, "ENDBLK");
+    if (m_version > DRW::Version::AC1009) {
+      m_writer->writeString(5, ToHexString(m_currentHandle + 2));
+      //            m_writer->writeString(5, "1D");
+      if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, ToHexString(m_currentHandle)); }
+      m_writer->writeString(100, "AcDbEntity");
     }
-    writer->writeString(8, "0");
-    if (version > DRW::Version::AC1009) writer->writeString(100, "AcDbBlockEnd");
+    m_writer->writeString(8, "0");
+    if (m_version > DRW::Version::AC1009) m_writer->writeString(100, "AcDbBlockEnd");
   }
   return true;
 }
 
-bool dxfRW::writeObjects() {
-  writer->writeString(0, "DICTIONARY");
+bool dxfRW::WriteObjects() {
+  m_writer->writeString(0, "DICTIONARY");
   std::string imgDictH;
-  writer->writeString(5, "C");
-  if (version > DRW::Version::AC1014) { writer->writeString(330, "0"); }
-  writer->writeString(100, "AcDbDictionary");
-  writer->writeInt16(281, 1);
-  writer->writeString(3, "ACAD_GROUP");
-  writer->writeString(350, "D");
-  if (imageDef.size() != 0) {
-    writer->writeString(3, "ACAD_IMAGE_DICT");
-    imgDictH = toHexStr(++entCount);
-    writer->writeString(350, imgDictH);
+  m_writer->writeString(5, "C");
+  if (m_version > DRW::Version::AC1014) { m_writer->writeString(330, "0"); }
+  m_writer->writeString(100, "AcDbDictionary");
+  m_writer->writeInt16(281, 1);
+  m_writer->writeString(3, "ACAD_GROUP");
+  m_writer->writeString(350, "D");
+  if (m_imageDef.size() != 0) {
+    m_writer->writeString(3, "ACAD_IMAGE_DICT");
+    imgDictH = ToHexString(++m_entityCount);
+    m_writer->writeString(350, imgDictH);
   }
-  writer->writeString(0, "DICTIONARY");
-  writer->writeString(5, "D");
-  writer->writeString(330, "C");
-  writer->writeString(100, "AcDbDictionary");
-  writer->writeInt16(281, 1);
+  m_writer->writeString(0, "DICTIONARY");
+  m_writer->writeString(5, "D");
+  m_writer->writeString(330, "C");
+  m_writer->writeString(100, "AcDbDictionary");
+  m_writer->writeInt16(281, 1);
   // write IMAGEDEF_REACTOR
-  for (unsigned int i = 0; i < imageDef.size(); i++) {
-    DRW_ImageDef* id = imageDef.at(i);
+  for (unsigned int i = 0; i < m_imageDef.size(); i++) {
+    DRW_ImageDef* id = m_imageDef.at(i);
     std::map<std::string, std::string>::iterator it;
     for (it = id->reactors.begin(); it != id->reactors.end(); ++it) {
-      writer->writeString(0, "IMAGEDEF_REACTOR");
-      writer->writeString(5, (*it).first);
-      writer->writeString(330, (*it).second);
-      writer->writeString(100, "AcDbRasterImageDefReactor");
-      writer->writeInt16(90, 2);  // version 2=R14 to v2010
-      writer->writeString(330, (*it).second);
+      m_writer->writeString(0, "IMAGEDEF_REACTOR");
+      m_writer->writeString(5, (*it).first);
+      m_writer->writeString(330, (*it).second);
+      m_writer->writeString(100, "AcDbRasterImageDefReactor");
+      m_writer->writeInt16(90, 2);  // version 2=R14 to v2010
+      m_writer->writeString(330, (*it).second);
     }
   }
-  if (imageDef.size() != 0) {
-    writer->writeString(0, "DICTIONARY");
-    writer->writeString(5, imgDictH);
-    writer->writeString(330, "C");
-    writer->writeString(100, "AcDbDictionary");
-    writer->writeInt16(281, 1);
-    for (unsigned int i = 0; i < imageDef.size(); i++) {
+  if (m_imageDef.size() != 0) {
+    m_writer->writeString(0, "DICTIONARY");
+    m_writer->writeString(5, imgDictH);
+    m_writer->writeString(330, "C");
+    m_writer->writeString(100, "AcDbDictionary");
+    m_writer->writeInt16(281, 1);
+    for (unsigned int i = 0; i < m_imageDef.size(); i++) {
       size_t f1, f2;
-      f1 = imageDef.at(i)->name.find_last_of("/\\");
-      f2 = imageDef.at(i)->name.find_last_of('.');
+      f1 = m_imageDef.at(i)->name.find_last_of("/\\");
+      f2 = m_imageDef.at(i)->name.find_last_of('.');
       ++f1;
-      writer->writeString(3, imageDef.at(i)->name.substr(f1, f2 - f1));
-      writer->writeString(350, toHexStr(imageDef.at(i)->handle));
+      m_writer->writeString(3, m_imageDef.at(i)->name.substr(f1, f2 - f1));
+      m_writer->writeString(350, ToHexString(m_imageDef.at(i)->handle));
     }
   }
-  for (unsigned int i = 0; i < imageDef.size(); i++) {
-    DRW_ImageDef* id = imageDef.at(i);
-    writer->writeString(0, "IMAGEDEF");
-    writer->writeString(5, toHexStr(id->handle));
-    if (version > DRW::Version::AC1014) {
-      //            writer->writeString(330, "0"); handle to DICTIONARY
+  for (unsigned int i = 0; i < m_imageDef.size(); i++) {
+    DRW_ImageDef* id = m_imageDef.at(i);
+    m_writer->writeString(0, "IMAGEDEF");
+    m_writer->writeString(5, ToHexString(id->handle));
+    if (m_version > DRW::Version::AC1014) {
+      //            m_writer->writeString(330, "0"); handle to DICTIONARY
     }
-    writer->writeString(102, "{ACAD_REACTORS");
+    m_writer->writeString(102, "{ACAD_REACTORS");
     std::map<std::string, std::string>::iterator it;
-    for (it = id->reactors.begin(); it != id->reactors.end(); ++it) { writer->writeString(330, (*it).first); }
-    writer->writeString(102, "}");
-    writer->writeString(100, "AcDbRasterImageDef");
-    writer->writeInt16(90, 0);  // version 0=R14 to v2010
-    writer->writeUtf8String(1, id->name);
-    writer->writeDouble(10, id->u);
-    writer->writeDouble(20, id->v);
-    writer->writeDouble(11, id->up);
-    writer->writeDouble(21, id->vp);
-    writer->writeInt16(280, id->loaded);
-    writer->writeInt16(281, id->resolution);
+    for (it = id->reactors.begin(); it != id->reactors.end(); ++it) { m_writer->writeString(330, (*it).first); }
+    m_writer->writeString(102, "}");
+    m_writer->writeString(100, "AcDbRasterImageDef");
+    m_writer->writeInt16(90, 0);  // version 0=R14 to v2010
+    m_writer->writeUtf8String(1, id->name);
+    m_writer->writeDouble(10, id->u);
+    m_writer->writeDouble(20, id->v);
+    m_writer->writeDouble(11, id->up);
+    m_writer->writeDouble(21, id->vp);
+    m_writer->writeInt16(280, id->loaded);
+    m_writer->writeInt16(281, id->resolution);
   }
   // no more needed imageDef, delete it
-  while (!imageDef.empty()) { imageDef.pop_back(); }
+  while (!m_imageDef.empty()) { m_imageDef.pop_back(); }
 
   return true;
 }
 
-bool dxfRW::writeExtData(const std::vector<DRW_Variant*>& ed) {
+bool dxfRW::WriteExtData(const std::vector<DRW_Variant*>& ed) {
   for (std::vector<DRW_Variant*>::const_iterator it = ed.begin(); it != ed.end(); ++it) {
     switch ((*it)->code()) {
       case 1000:
@@ -1564,8 +1557,8 @@ bool dxfRW::writeExtData(const std::vector<DRW_Variant*>& ed) {
       case 1004:
       case 1005: {
         int cc = (*it)->code();
-        if ((*it)->type() == DRW_Variant::Type::String) { writer->writeUtf8String(cc, *(*it)->content.s); }
-        //            writer->writeUtf8String((*it)->code, (*it)->content.s);
+        if ((*it)->type() == DRW_Variant::Type::String) { m_writer->writeUtf8String(cc, *(*it)->content.s); }
+        //            m_writer->writeUtf8String((*it)->code, (*it)->content.s);
         break;
       }
       case 1010:
@@ -1573,21 +1566,21 @@ bool dxfRW::writeExtData(const std::vector<DRW_Variant*>& ed) {
       case 1012:
       case 1013:
         if ((*it)->type() == DRW_Variant::Type::Coord) {
-          writer->writeDouble((*it)->code(), (*it)->content.v->x);
-          writer->writeDouble((*it)->code() + 10, (*it)->content.v->y);
-          writer->writeDouble((*it)->code() + 20, (*it)->content.v->z);
+          m_writer->writeDouble((*it)->code(), (*it)->content.v->x);
+          m_writer->writeDouble((*it)->code() + 10, (*it)->content.v->y);
+          m_writer->writeDouble((*it)->code() + 20, (*it)->content.v->z);
         }
         break;
       case 1040:
       case 1041:
       case 1042:
-        if ((*it)->type() == DRW_Variant::Type::Double) { writer->writeDouble((*it)->code(), (*it)->content.d); }
+        if ((*it)->type() == DRW_Variant::Type::Double) { m_writer->writeDouble((*it)->code(), (*it)->content.d); }
         break;
       case 1070:
-        if ((*it)->type() == DRW_Variant::Type::Integer) { writer->writeInt16((*it)->code(), (*it)->content.i); }
+        if ((*it)->type() == DRW_Variant::Type::Integer) { m_writer->writeInt16((*it)->code(), (*it)->content.i); }
         break;
       case 1071:
-        if ((*it)->type() == DRW_Variant::Type::Integer) { writer->writeInt32((*it)->code(), (*it)->content.i); }
+        if ((*it)->type() == DRW_Variant::Type::Integer) { m_writer->writeInt32((*it)->code(), (*it)->content.i); }
         break;
       default:
         break;
@@ -1598,40 +1591,40 @@ bool dxfRW::writeExtData(const std::vector<DRW_Variant*>& ed) {
 
 /********* Reader Process *********/
 
-bool dxfRW::processDxf() {
-  DRW_DBG("<entered dxfRW::processDxf()>\n");
+bool dxfRW::ProcessDxf() {
+  DRW_DBG("<entered dxfRW::ProcessDxf()>\n");
   int code;
   bool more = true;
   std::string sectionstr;
   //    section = secUnknown;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     if (code == 999) {
-      header.addComment(reader->getString());
+      m_header.addComment(m_reader->GetString());
     } else if (code == 0) {
-      sectionstr = reader->getString();
+      sectionstr = m_reader->GetString();
       if (sectionstr == "EOF") {
         return true;  // found EOF terminate
       }
       if (sectionstr == "SECTION") {
-        more = reader->readRec(&code);
+        more = m_reader->ReadRec(&code);
         if (!more) {
           return false;  // wrong dxf file
         }
         if (code == 2) {
-          sectionstr = reader->getString();
+          sectionstr = m_reader->GetString();
           // found section, process it
           if (sectionstr == "HEADER") {
-            processHeader();
+            ProcessHeader();
           } else if (sectionstr == "CLASSES") {
-            processClasses();
+            ProcessClasses();
           } else if (sectionstr == "TABLES") {
-            processTables();
+            ProcessTables();
           } else if (sectionstr == "BLOCKS") {
-            processBlocks();
+            ProcessBlocks();
           } else if (sectionstr == "ENTITIES") {
-            processEntities(false);
+            ProcessEntities(false);
           } else if (sectionstr == "OBJECTS") {
-            processObjects();
+            ProcessObjects();
           }
         }
       }
@@ -1644,53 +1637,53 @@ bool dxfRW::processDxf() {
 
 /********* Header Section *********/
 
-bool dxfRW::processHeader() {
-  DRW_DBG("<entered dxfRW::processHeader>\n");
+bool dxfRW::ProcessHeader() {
+  DRW_DBG("<entered dxfRW::ProcessHeader>\n");
   std::string zeroGroupTag;
   int code{};
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      zeroGroupTag = reader->getString();
+      zeroGroupTag = m_reader->GetString();
       if (zeroGroupTag == "ENDSEC") {
-        iface->addHeader(&header);
+        m_interface->addHeader(&m_header);
         return true;
       }
     } else
-      header.parseCode(code, reader);
+      m_header.parseCode(code, m_reader);
   }
-  DRW_DBG("<leaving dxfRW::processHeader>\n");
+  DRW_DBG("<leaving dxfRW::ProcessHeader>\n");
   return true;
 }
 
 /********* Classes Section *********/
 
-bool dxfRW::processClasses() {
-  DRW_DBG("<entered dxfRW::processClasses>\n");
+bool dxfRW::ProcessClasses() {
+  DRW_DBG("<entered dxfRW::ProcessClasses>\n");
   std::string zeroGroupTag;
   int code{};
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     if (code == 0) {
-      zeroGroupTag = reader->getString();
+      zeroGroupTag = m_reader->GetString();
       if (zeroGroupTag == "CLASS") {
         DRW_Class class_;
-        while (reader->readRec(&code)) {
+        while (m_reader->ReadRec(&code)) {
           if (code == 0) {
-            zeroGroupTag = reader->getString();
+            zeroGroupTag = m_reader->GetString();
             if (zeroGroupTag == "CLASS") {
-              iface->addClass(class_);
+              m_interface->addClass(class_);
               class_.clear();
             } else if (zeroGroupTag == "ENDSEC") {
-              iface->addClass(class_);
-              DRW_DBG("<leaving dxfRW::processClasses>\n");
+              m_interface->addClass(class_);
+              DRW_DBG("<leaving dxfRW::ProcessClasses>\n");
               return true;
             }
           } else
-            class_.parseCode(code, reader);
+            class_.parseCode(code, m_reader);
         }
       } else if (zeroGroupTag == "ENDSEC") {
-        DRW_DBG("<leaving dxfRW::processClasses>\n");
+        DRW_DBG("<leaving dxfRW::ProcessClasses>\n");
         return true;
       }
     }
@@ -1700,46 +1693,46 @@ bool dxfRW::processClasses() {
 
 /********* Tables Section *********/
 
-bool dxfRW::processTables() {
-  DRW_DBG("<entered dxfRW::processTables>\n");
+bool dxfRW::ProcessTables() {
+  DRW_DBG("<entered dxfRW::ProcessTables>\n");
   int code;
   std::string sectionstr;
   bool more = true;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     if (code == 0) {
-      sectionstr = reader->getString();
+      sectionstr = m_reader->GetString();
       if (sectionstr == "TABLE") {
-        more = reader->readRec(&code);
+        more = m_reader->ReadRec(&code);
         if (!more) {
           return false;  // wrong dxf file
         }
         if (code == 2) {
-          sectionstr = reader->getString();
+          sectionstr = m_reader->GetString();
 
           if (sectionstr == "LTYPE") {
-            processLType();
+            ProcessLType();
           } else if (sectionstr == "LAYER") {
-            processLayer();
+            ProcessLayer();
           } else if (sectionstr == "STYLE") {
-            processTextStyle();
+            ProcessTextStyle();
           } else if (sectionstr == "VPORT") {
-            processVports();
+            ProcessVports();
           } else if (sectionstr == "VIEW") {
             // processView();
           } else if (sectionstr == "UCS") {
             // processUCS();
           } else if (sectionstr == "APPID") {
-            processAppId();
+            ProcessAppId();
           } else if (sectionstr == "DIMSTYLE") {
-            processDimStyle();
+            ProcessDimStyle();
           } else if (sectionstr == "BLOCK_RECORD") {
             // processBlockRecord();
           }
         }
       } else if (sectionstr == "ENDSEC") {
-        DRW_DBG("<leaving dxfRW::processTables>\n");
+        DRW_DBG("<leaving dxfRW::ProcessTables>\n");
         return true;
       }
     }
@@ -1747,164 +1740,164 @@ bool dxfRW::processTables() {
   return true;
 }
 
-bool dxfRW::processLType() {
-  DRW_DBG("<entering dxfRW::processLType>\n");
+bool dxfRW::ProcessLType() {
+  DRW_DBG("<entering dxfRW::ProcessLType>\n");
   int code;
   std::string sectionstr;
   bool reading = false;
   DRW_LType ltype;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       if (reading) {
         ltype.update();
-        iface->addLType(ltype);
+        m_interface->addLType(ltype);
       }
-      sectionstr = reader->getString();
+      sectionstr = m_reader->GetString();
       if (sectionstr == "LTYPE") {
         reading = true;
         ltype.reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::processLType>\n");
+        DRW_DBG("<leaving dxfRW::ProcessLType>\n");
         return true;
       }
     } else if (reading)
-      ltype.parseCode(code, reader);
+      ltype.parseCode(code, m_reader);
   }
   return true;
 }
 
-bool dxfRW::processLayer() {
-  DRW_DBG("<entering dxfRW::processLayer>\n");
+bool dxfRW::ProcessLayer() {
+  DRW_DBG("<entering dxfRW::ProcessLayer>\n");
   int code;
   std::string sectionstr;
   bool reading = false;
   DRW_Layer layer;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) iface->addLayer(layer);
-      sectionstr = reader->getString();
+      if (reading) m_interface->addLayer(layer);
+      sectionstr = m_reader->GetString();
       if (sectionstr == "LAYER") {
         reading = true;
         layer.reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::processLayer>\n");
+        DRW_DBG("<leaving dxfRW::ProcessLayer>\n");
         return true;
       }
     } else if (reading)
-      layer.parseCode(code, reader);
+      layer.parseCode(code, m_reader);
   }
   return true;
 }
 
-bool dxfRW::processDimStyle() {
-  DRW_DBG("<entering dxfRW::processDimStyle>");
+bool dxfRW::ProcessDimStyle() {
+  DRW_DBG("<entering dxfRW::ProcessDimStyle>");
   int code;
   std::string sectionstr;
   bool reading = false;
   DRW_Dimstyle dimSty;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) iface->addDimStyle(dimSty);
-      sectionstr = reader->getString();
+      if (reading) m_interface->addDimStyle(dimSty);
+      sectionstr = m_reader->GetString();
       if (sectionstr == "DIMSTYLE") {
         reading = true;
         dimSty.reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::processDimStyle>\n");
+        DRW_DBG("<leaving dxfRW::ProcessDimStyle>\n");
         return true;
       }
     } else if (reading)
-      dimSty.parseCode(code, reader);
+      dimSty.parseCode(code, m_reader);
   }
   return true;
 }
 
-bool dxfRW::processTextStyle() {
-  DRW_DBG("entering dxfRW::processTextStyle");
+bool dxfRW::ProcessTextStyle() {
+  DRW_DBG("entering dxfRW::ProcessTextStyle");
   int code;
   std::string sectionstr;
   bool reading = false;
   DRW_Textstyle TxtSty;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) iface->addTextStyle(TxtSty);
-      sectionstr = reader->getString();
+      if (reading) m_interface->addTextStyle(TxtSty);
+      sectionstr = m_reader->GetString();
       if (sectionstr == "STYLE") {
         reading = true;
         TxtSty.reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::processTextStyle>\n");
+        DRW_DBG("<leaving dxfRW::ProcessTextStyle>\n");
         return true;
       }
     } else if (reading)
-      TxtSty.parseCode(code, reader);
+      TxtSty.parseCode(code, m_reader);
   }
   return true;
 }
 
-bool dxfRW::processVports() {
-  DRW_DBG("entering dxfRW::processVports");
+bool dxfRW::ProcessVports() {
+  DRW_DBG("entering dxfRW::ProcessVports");
   int code;
   std::string sectionstr;
   bool reading = false;
   DRW_Vport vp;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) iface->addVport(vp);
-      sectionstr = reader->getString();
+      if (reading) m_interface->addVport(vp);
+      sectionstr = m_reader->GetString();
       if (sectionstr == "VPORT") {
         reading = true;
         vp.reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::processVports>\n");
+        DRW_DBG("<leaving dxfRW::ProcessVports>\n");
         return true;
       }
     } else if (reading)
-      vp.parseCode(code, reader);
+      vp.parseCode(code, m_reader);
   }
   return true;
 }
 
-bool dxfRW::processAppId() {
-  DRW_DBG("<entering dxfRW::processAppId>");
+bool dxfRW::ProcessAppId() {
+  DRW_DBG("<entering dxfRW::ProcessAppId>");
   int code;
   std::string sectionstr;
   bool reading = false;
   DRW_AppId vp;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) iface->addAppId(vp);
-      sectionstr = reader->getString();
+      if (reading) m_interface->addAppId(vp);
+      sectionstr = m_reader->GetString();
       if (sectionstr == "APPID") {
         reading = true;
         vp.reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::processAppId>\n");
+        DRW_DBG("<leaving dxfRW::ProcessAppId>\n");
         return true;
       }
     } else if (reading)
-      vp.parseCode(code, reader);
+      vp.parseCode(code, m_reader);
   }
   return true;
 }
 
 /********* Block Section *********/
 
-bool dxfRW::processBlocks() {
-  DRW_DBG("entering dxfRW::processBlocks\n");
+bool dxfRW::ProcessBlocks() {
+  DRW_DBG("entering dxfRW::ProcessBlocks\n");
   int code;
   std::string sectionstr;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     if (code == 0) {
-      sectionstr = reader->getString();
+      sectionstr = m_reader->GetString();
       DRW_DBG(sectionstr);
       DRW_DBG("\n");
       if (sectionstr == "BLOCK") {
-        processBlock();
+        ProcessBlock();
       } else if (sectionstr == "ENDSEC") {
-        DRW_DBG("<leaving dxfRW::processBlocks>\n");
+        DRW_DBG("<leaving dxfRW::ProcessBlocks>\n");
         return true;
       }
     }
@@ -1912,30 +1905,30 @@ bool dxfRW::processBlocks() {
   return true;
 }
 
-bool dxfRW::processBlock() {
-  DRW_DBG("entering dxfRW::processBlock");
+bool dxfRW::ProcessBlock() {
+  DRW_DBG("entering dxfRW::ProcessBlock");
   int code;
   DRW_Block block;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->addBlock(block);
-        if (nextentity == "ENDBLK") {
-          iface->endBlock();
+        m_interface->addBlock(block);
+        if (m_nextEntity == "ENDBLK") {
+          m_interface->endBlock();
           return true;  // found ENDBLK, terminate
         } else {
-          processEntities(true);
-          iface->endBlock();
+          ProcessEntities(true);
+          m_interface->endBlock();
           return true;  // found ENDBLK, terminate
         }
       }
       default:
-        block.parseCode(code, reader);
+        block.parseCode(code, m_reader);
         break;
     }
   }
@@ -1944,65 +1937,65 @@ bool dxfRW::processBlock() {
 
 /********* Entities Section *********/
 
-bool dxfRW::processEntities(bool isblock) {
-  DRW_DBG("entering dxfRW::processEntities\n");
+bool dxfRW::ProcessEntities(bool isblock) {
+  DRW_DBG("entering dxfRW::ProcessEntities\n");
   int code;
-  if (!reader->readRec(&code)) { return false; }
+  if (!m_reader->ReadRec(&code)) { return false; }
   bool next = true;
   if (code == 0) {
-    nextentity = reader->getString();
+    m_nextEntity = m_reader->GetString();
   } else if (!isblock) {
     return false;  // first record in entities is 0
   }
   do {
-    if (nextentity == "ENDSEC" || nextentity == "ENDBLK") {
-      DRW_DBG("<leaving dxfRW::processEntities>\n");
+    if (m_nextEntity == "ENDSEC" || m_nextEntity == "ENDBLK") {
+      DRW_DBG("<leaving dxfRW::ProcessEntities>\n");
       return true;
-    } else if (nextentity == "POINT") {
-      processPoint();
-    } else if (nextentity == "LINE") {
-      processLine();
-    } else if (nextentity == "CIRCLE") {
-      processCircle();
-    } else if (nextentity == "ARC") {
-      processArc();
-    } else if (nextentity == "ELLIPSE") {
-      processEllipse();
-    } else if (nextentity == "TRACE") {
-      processTrace();
-    } else if (nextentity == "SOLID") {
-      processSolid();
-    } else if (nextentity == "INSERT") {
-      processInsert();
-    } else if (nextentity == "LWPOLYLINE") {
-      processLWPolyline();
-    } else if (nextentity == "POLYLINE") {
-      processPolyline();
-    } else if (nextentity == "TEXT") {
-      processText();
-    } else if (nextentity == "MTEXT") {
-      processMText();
-    } else if (nextentity == "HATCH") {
-      processHatch();
-    } else if (nextentity == "SPLINE") {
-      processSpline();
-    } else if (nextentity == "3DFACE") {
-      process3dface();
-    } else if (nextentity == "VIEWPORT") {
-      processViewport();
-    } else if (nextentity == "IMAGE") {
-      processImage();
-    } else if (nextentity == "DIMENSION") {
-      processDimension();
-    } else if (nextentity == "LEADER") {
-      processLeader();
-    } else if (nextentity == "RAY") {
-      processRay();
-    } else if (nextentity == "XLINE") {
-      processXline();
+    } else if (m_nextEntity == "POINT") {
+      ProcessPoint();
+    } else if (m_nextEntity == "LINE") {
+      ProcessLine();
+    } else if (m_nextEntity == "CIRCLE") {
+      ProcessCircle();
+    } else if (m_nextEntity == "ARC") {
+      ProcessArc();
+    } else if (m_nextEntity == "ELLIPSE") {
+      ProcessEllipse();
+    } else if (m_nextEntity == "TRACE") {
+      ProcessTrace();
+    } else if (m_nextEntity == "SOLID") {
+      ProcessSolid();
+    } else if (m_nextEntity == "INSERT") {
+      ProcessInsert();
+    } else if (m_nextEntity == "LWPOLYLINE") {
+      ProcessLWPolyline();
+    } else if (m_nextEntity == "POLYLINE") {
+      ProcessPolyline();
+    } else if (m_nextEntity == "TEXT") {
+      ProcessText();
+    } else if (m_nextEntity == "MTEXT") {
+      ProcessMText();
+    } else if (m_nextEntity == "HATCH") {
+      ProcessHatch();
+    } else if (m_nextEntity == "SPLINE") {
+      ProcessSpline();
+    } else if (m_nextEntity == "3DFACE") {
+      Process3dface();
+    } else if (m_nextEntity == "VIEWPORT") {
+      ProcessViewport();
+    } else if (m_nextEntity == "IMAGE") {
+      ProcessImage();
+    } else if (m_nextEntity == "DIMENSION") {
+      ProcessDimension();
+    } else if (m_nextEntity == "LEADER") {
+      ProcessLeader();
+    } else if (m_nextEntity == "RAY") {
+      ProcessRay();
+    } else if (m_nextEntity == "XLINE") {
+      ProcessXline();
     } else {
-      if (reader->readRec(&code)) {
-        if (code == 0) nextentity = reader->getString();
+      if (m_reader->ReadRec(&code)) {
+        if (code == 0) m_nextEntity = m_reader->GetString();
       } else
         return false;  // end of file without ENDSEC
     }
@@ -2011,553 +2004,553 @@ bool dxfRW::processEntities(bool isblock) {
   return true;
 }
 
-bool dxfRW::processEllipse() {
-  DRW_DBG("dxfRW::processEllipse");
+bool dxfRW::ProcessEllipse() {
+  DRW_DBG("dxfRW::ProcessEllipse\n");
   int code;
   DRW_Ellipse ellipse;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (applyExt) ellipse.applyExtrusion();
-        iface->addEllipse(ellipse);
+        if (m_applyExtrusion) { ellipse.applyExtrusion(); }
+        m_interface->addEllipse(ellipse);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        ellipse.parseCode(code, reader);
+        ellipse.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processTrace() {
-  DRW_DBG("dxfRW::processTrace");
+bool dxfRW::ProcessTrace() {
+  DRW_DBG("dxfRW::ProcessTrace\n");
   int code;
   DRW_Trace trace;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (applyExt) trace.applyExtrusion();
-        iface->addTrace(trace);
+        if (m_applyExtrusion) { trace.applyExtrusion(); }
+        m_interface->addTrace(trace);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        trace.parseCode(code, reader);
+        trace.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processSolid() {
-  DRW_DBG("dxfRW::processSolid");
+bool dxfRW::ProcessSolid() {
+  DRW_DBG("dxfRW::ProcessSolid\n");
   int code;
   DRW_Solid solid;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (applyExt) solid.applyExtrusion();
-        iface->addSolid(solid);
+        if (m_applyExtrusion) { solid.applyExtrusion(); }
+        m_interface->addSolid(solid);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        solid.parseCode(code, reader);
+        solid.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::process3dface() {
-  DRW_DBG("dxfRW::process3dface");
+bool dxfRW::Process3dface() {
+  DRW_DBG("dxfRW::Process3dface\n");
   int code;
   DRW_3Dface face;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->add3dFace(face);
+        m_interface->add3dFace(face);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        face.parseCode(code, reader);
+        face.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processViewport() {
-  DRW_DBG("dxfRW::processViewport");
+bool dxfRW::ProcessViewport() {
+  DRW_DBG("dxfRW::ProcessViewport\n");
   int code;
   DRW_Viewport vp;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->addViewport(vp);
+        m_interface->addViewport(vp);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        vp.parseCode(code, reader);
+        vp.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processPoint() {
-  DRW_DBG("entering dxfRW::processPoint\n");
+bool dxfRW::ProcessPoint() {
+  DRW_DBG("entering dxfRW::ProcessPoint\n");
   int code;
   DRW_Point point;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        iface->addPoint(point);
-        DRW_DBG("leaving dxfRW::processPoint\n");
+        m_nextEntity = m_reader->GetString();
+        m_interface->addPoint(point);
+        DRW_DBG("leaving dxfRW::ProcessPoint\n");
         return true;
       }
       default:
-        point.parseCode(code, reader);
+        point.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processLine() {
-  DRW_DBG("entering dxfRW::processLine\n");
+bool dxfRW::ProcessLine() {
+  DRW_DBG("entering dxfRW::ProcessLine\n");
   int code;
   DRW_Line line;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        iface->addLine(line);
-        DRW_DBG("leaving dxfRW::processLine\n");
+        m_nextEntity = m_reader->GetString();
+        m_interface->addLine(line);
+        DRW_DBG("leaving dxfRW::ProcessLine\n");
         return true;
       }
       default:
-        line.parseCode(code, reader);
+        line.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processRay() {
-  DRW_DBG("dxfRW::processRay\n");
+bool dxfRW::ProcessRay() {
+  DRW_DBG("dxfRW::ProcessRay\n");
   int code;
   DRW_Ray line;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->addRay(line);
+        m_interface->addRay(line);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        line.parseCode(code, reader);
+        line.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processXline() {
-  DRW_DBG("dxfRW::processXline\n");
+bool dxfRW::ProcessXline() {
+  DRW_DBG("dxfRW::ProcessXline\n");
   int code;
   DRW_Xline line;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->addXline(line);
+        m_interface->addXline(line);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        line.parseCode(code, reader);
+        line.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processCircle() {
-  DRW_DBG("dxfRW::processPoint\n");
+bool dxfRW::ProcessCircle() {
+  DRW_DBG("dxfRW::ProcessPoint\n");
   int code;
   DRW_Circle circle;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (applyExt) circle.applyExtrusion();
-        iface->addCircle(circle);
+        if (m_applyExtrusion) { circle.applyExtrusion(); }
+        m_interface->addCircle(circle);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        circle.parseCode(code, reader);
+        circle.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processArc() {
-  DRW_DBG("dxfRW::processPoint\n");
+bool dxfRW::ProcessArc() {
+  DRW_DBG("dxfRW::ProcessArc\n");
   int code;
   DRW_Arc arc;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (applyExt) arc.applyExtrusion();
-        iface->addArc(arc);
+        if (m_applyExtrusion) { arc.applyExtrusion(); }
+        m_interface->addArc(arc);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        arc.parseCode(code, reader);
+        arc.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processInsert() {
-  DRW_DBG("dxfRW::processInsert");
+bool dxfRW::ProcessInsert() {
+  DRW_DBG("dxfRW::ProcessInsert\n");
   int code;
   DRW_Insert insert;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->addInsert(insert);
+        m_interface->addInsert(insert);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        insert.parseCode(code, reader);
+        insert.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processLWPolyline() {
-  DRW_DBG("dxfRW::processLWPolyline");
+bool dxfRW::ProcessLWPolyline() {
+  DRW_DBG("dxfRW::ProcessLWPolyline\n");
   int code;
   DRW_LWPolyline pl;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (applyExt) pl.applyExtrusion();
-        iface->addLWPolyline(pl);
+        if (m_applyExtrusion) { pl.applyExtrusion(); }
+        m_interface->addLWPolyline(pl);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        pl.parseCode(code, reader);
+        pl.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processPolyline() {
-  DRW_DBG("dxfRW::processPolyline");
+bool dxfRW::ProcessPolyline() {
+  DRW_DBG("dxfRW::ProcessPolyline\n");
   int code;
   DRW_Polyline pl;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (nextentity != "VERTEX") {
-          iface->addPolyline(pl);
+        if (m_nextEntity != "VERTEX") {
+          m_interface->addPolyline(pl);
           return true;  // found new entity or ENDSEC, terminate
         } else {
-          processVertex(&pl);
+          ProcessVertex(&pl);
         }
       }
         [[fallthrough]];  // in case there is no vertex
       default:
-        pl.parseCode(code, reader);
+        pl.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processVertex(DRW_Polyline* pl) {
-  DRW_DBG("dxfRW::processVertex");
+bool dxfRW::ProcessVertex(DRW_Polyline* pl) {
+  DRW_DBG("dxfRW::ProcessVertex\n");
   int code;
   DRW_Vertex* v = new DRW_Vertex();
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
         pl->appendVertex(v);
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (nextentity == "SEQEND") {
+        if (m_nextEntity == "SEQEND") {
           return true;  // found SEQEND no more vertex, terminate
-        } else if (nextentity == "VERTEX") {
+        } else if (m_nextEntity == "VERTEX") {
           v = new DRW_Vertex();  // another vertex
         }
       }
       default:
-        v->parseCode(code, reader);
+        v->parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processText() {
-  DRW_DBG("dxfRW::processText");
+bool dxfRW::ProcessText() {
+  DRW_DBG("dxfRW::ProcessText\n");
   int code;
   DRW_Text txt;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->addText(txt);
+        m_interface->addText(txt);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        txt.parseCode(code, reader);
+        txt.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processMText() {
-  DRW_DBG("dxfRW::processMText");
+bool dxfRW::ProcessMText() {
+  DRW_DBG("dxfRW::ProcessMText\n");
   int code;
   DRW_MText txt;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
         txt.updateAngle();
-        iface->addMText(txt);
+        m_interface->addMText(txt);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        txt.parseCode(code, reader);
+        txt.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processHatch() {
-  DRW_DBG("dxfRW::processHatch");
+bool dxfRW::ProcessHatch() {
+  DRW_DBG("dxfRW::ProcessHatch\n");
   int code;
   DRW_Hatch hatch;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->addHatch(&hatch);
+        m_interface->addHatch(&hatch);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        hatch.parseCode(code, reader);
+        hatch.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processSpline() {
-  DRW_DBG("dxfRW::processSpline");
+bool dxfRW::ProcessSpline() {
+  DRW_DBG("dxfRW::ProcessSpline\n");
   int code;
   DRW_Spline sp;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->addSpline(&sp);
+        m_interface->addSpline(&sp);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        sp.parseCode(code, reader);
+        sp.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processImage() {
-  DRW_DBG("dxfRW::processImage");
+bool dxfRW::ProcessImage() {
+  DRW_DBG("dxfRW::ProcessImage\n");
   int code;
   DRW_Image img;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->addImage(&img);
+        m_interface->addImage(&img);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        img.parseCode(code, reader);
+        img.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processDimension() {
-  DRW_DBG("dxfRW::processDimension");
+bool dxfRW::ProcessDimension() {
+  DRW_DBG("dxfRW::ProcessDimension\n");
   int code;
   DRW_Dimension dim;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
         int type = dim.type & 0x0F;
         switch (type) {
           case 0: {
             DRW_DimLinear d(dim);
-            iface->addDimLinear(&d);
+            m_interface->addDimLinear(&d);
             break;
           }
           case 1: {
             DRW_DimAligned d(dim);
-            iface->addDimAlign(&d);
+            m_interface->addDimAlign(&d);
             break;
           }
           case 2: {
             DRW_DimAngular d(dim);
-            iface->addDimAngular(&d);
+            m_interface->addDimAngular(&d);
             break;
           }
           case 3: {
             DRW_DimDiametric d(dim);
-            iface->addDimDiametric(&d);
+            m_interface->addDimDiametric(&d);
             break;
           }
           case 4: {
             DRW_DimRadial d(dim);
-            iface->addDimRadial(&d);
+            m_interface->addDimRadial(&d);
             break;
           }
           case 5: {
             DRW_DimAngular3p d(dim);
-            iface->addDimAngular3P(&d);
+            m_interface->addDimAngular3P(&d);
             break;
           }
           case 6: {
             DRW_DimOrdinate d(dim);
-            iface->addDimOrdinate(&d);
+            m_interface->addDimOrdinate(&d);
             break;
           }
         }
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        dim.parseCode(code, reader);
+        dim.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::processLeader() {
-  DRW_DBG("dxfRW::processLeader");
+bool dxfRW::ProcessLeader() {
+  DRW_DBG("dxfRW::ProcessLeader\n");
   int code;
   DRW_Leader leader;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->addLeader(&leader);
+        m_interface->addLeader(&leader);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        leader.parseCode(code, reader);
+        leader.parseCode(code, m_reader);
         break;
     }
   }
@@ -2566,24 +2559,24 @@ bool dxfRW::processLeader() {
 
 /********* Objects Section *********/
 
-bool dxfRW::processObjects() {
-  DRW_DBG("dxfRW::processObjects\n");
+bool dxfRW::ProcessObjects() {
+  DRW_DBG("dxfRW::ProcessObjects\n");
   int code;
-  if (!reader->readRec(&code)) { return false; }
+  if (!m_reader->ReadRec(&code)) { return false; }
   bool next = true;
   if (code == 0) {
-    nextentity = reader->getString();
+    m_nextEntity = m_reader->GetString();
   } else {
     return false;  // first record in objects is 0
   }
   do {
-    if (nextentity == "ENDSEC") {
+    if (m_nextEntity == "ENDSEC") {
       return true;  // found ENDSEC terminate
-    } else if (nextentity == "IMAGEDEF") {
-      processImageDef();
+    } else if (m_nextEntity == "IMAGEDEF") {
+      ProcessImageDef();
     } else {
-      if (reader->readRec(&code)) {
-        if (code == 0) nextentity = reader->getString();
+      if (m_reader->ReadRec(&code)) {
+        if (code == 0) m_nextEntity = m_reader->GetString();
       } else
         return false;  // end of file without ENDSEC
     }
@@ -2592,34 +2585,31 @@ bool dxfRW::processObjects() {
   return true;
 }
 
-bool dxfRW::processImageDef() {
-  DRW_DBG("dxfRW::processImageDef");
+bool dxfRW::ProcessImageDef() {
+  DRW_DBG("dxfRW::ProcessImageDef\n");
   int code;
   DRW_ImageDef img;
-  while (reader->readRec(&code)) {
+  while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        nextentity = reader->getString();
-        DRW_DBG(nextentity);
+        m_nextEntity = m_reader->GetString();
+        DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        iface->linkImage(&img);
+        m_interface->linkImage(&img);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        img.parseCode(code, reader);
+        img.parseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-/** utility function
- * convert a int to string in hex
- **/
-std::string dxfRW::toHexStr(int n) {
-  std::ostringstream Convert;
-  Convert << std::uppercase << std::hex << n;
-  return Convert.str();
+std::string dxfRW::ToHexString(int n) {
+  std::ostringstream convert;
+  convert << std::uppercase << std::hex << n;
+  return convert.str();
 }

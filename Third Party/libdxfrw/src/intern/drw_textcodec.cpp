@@ -24,25 +24,25 @@ DRW_TextCodec::DRW_TextCodec() {
 
 DRW_TextCodec::~DRW_TextCodec() { delete conv; }
 
-void DRW_TextCodec::setVersion(int v, bool dxfFormat) {
+void DRW_TextCodec::SetVersion(int v, bool dxfFormat) {
   if (v == DRW::Version::AC1009 || v == DRW::Version::AC1006) {
     version = DRW::Version::AC1009;
     cp = "ANSI_1252";
-    setCodePage(&cp, dxfFormat);
+    SetCodePage(&cp, dxfFormat);
   } else if (v == DRW::Version::AC1012 || v == DRW::Version::AC1014 || v == DRW::Version::AC1015 ||
              v == DRW::Version::AC1018) {
     version = DRW::Version::AC1015;
     //        if (cp.empty()) { //codepage not set, initialize
     cp = "ANSI_1252";
-    setCodePage(&cp, dxfFormat);
+    SetCodePage(&cp, dxfFormat);
     //        }
   } else {
     version = DRW::Version::AC1021;
     if (dxfFormat)
-      cp = "UTF-8";  //RLZ: can be UCS2 or UTF-16 16bits per char
+      cp = "UTF-8";
     else
-      cp = "UTF-16";  //RLZ: can be UCS2 or UTF-16 16bits per char
-    setCodePage(&cp, dxfFormat);
+      cp = "UTF-16";
+    SetCodePage(&cp, dxfFormat);
   }
 }
 /** @brief Sets the version for the text codec based on the provided string and format.
@@ -51,14 +51,14 @@ void DRW_TextCodec::setVersion(int v, bool dxfFormat) {
  *  @param v Pointer to a string representing the version to set
  *  @param dxfFormat Boolean indicating whether the format is DXF or not
  */
-void DRW_TextCodec::setVersion(std::string* v, bool dxfFormat) {
+void DRW_TextCodec::SetVersion(std::string* v, bool dxfFormat) {
   std::string versionStr = *v;
   if (versionStr == "AC1009" || versionStr == "AC1006") {
-    setVersion(DRW::Version::AC1009, dxfFormat);
+    SetVersion(DRW::Version::AC1009, dxfFormat);
   } else if (versionStr == "AC1012" || versionStr == "AC1014" || versionStr == "AC1015" || versionStr == "AC1018") {
-    setVersion(DRW::Version::AC1015, dxfFormat);
+    SetVersion(DRW::Version::AC1015, dxfFormat);
   } else {
-    setVersion(DRW::Version::AC1021, dxfFormat);
+    SetVersion(DRW::Version::AC1021, dxfFormat);
   }
 }
 
@@ -68,7 +68,7 @@ void DRW_TextCodec::setVersion(std::string* v, bool dxfFormat) {
  *  @param c Pointer to a string representing the code page to set
  *  @param dxfFormat Boolean indicating whether the format is DXF or not
  */
-void DRW_TextCodec::setCodePage(std::string* c, bool dxfFormat) {
+void DRW_TextCodec::SetCodePage(std::string* c, bool dxfFormat) {
   cp = correctCodePage(*c);  // always canonical now
 
   delete conv;
@@ -84,11 +84,11 @@ void DRW_TextCodec::setCodePage(std::string* c, bool dxfFormat) {
   }
 }
 
-std::string DRW_TextCodec::toUtf8(std::string s) { return conv->toUtf8(&s); }
+std::string DRW_TextCodec::ToUtf8(std::string s) const { return conv->ToUtf8(&s); }
 
-std::string DRW_TextCodec::fromUtf8(std::string s) { return conv->fromUtf8(&s); }
+std::string DRW_TextCodec::FromUtf8(std::string s) { return conv->FromUtf8(&s); }
 
-std::string DRW_Converter::toUtf8(std::string* s) {
+std::string DRW_Converter::ToUtf8(std::string* s) {
   std::string result;
   int j = 0;
   unsigned int i = 0;
@@ -114,7 +114,7 @@ std::string DRW_Converter::toUtf8(std::string* s) {
   return result;
 }
 
-std::string DRW_ConvTable::fromUtf8(std::string* s) {
+std::string DRW_ConvTable::FromUtf8(std::string* s) {
   std::string result;
   bool notFound;
   int code;
@@ -145,7 +145,7 @@ std::string DRW_ConvTable::fromUtf8(std::string* s) {
   return result;
 }
 
-std::string DRW_ConvTable::toUtf8(std::string* s) {
+std::string DRW_ConvTable::ToUtf8(std::string* s) {
   std::string res;
   std::string::iterator it;
   for (it = s->begin(); it < s->end(); ++it) {
@@ -236,7 +236,7 @@ int DRW_Converter::decodeNum(std::string s, int* b) {
   return code;
 }
 
-std::string DRW_ConvDBCSTable::fromUtf8(std::string* s) {
+std::string DRW_ConvDBCSTable::FromUtf8(std::string* s) {
   std::string result;
   bool notFound;
   int code;
@@ -272,7 +272,7 @@ std::string DRW_ConvDBCSTable::fromUtf8(std::string* s) {
   return result;
 }
 
-std::string DRW_ConvDBCSTable::toUtf8(std::string* s) {
+std::string DRW_ConvDBCSTable::ToUtf8(std::string* s) {
   std::string res;
   std::string::iterator it;
   for (it = s->begin(); it < s->end(); ++it) {
@@ -312,12 +312,12 @@ std::string DRW_ConvDBCSTable::toUtf8(std::string* s) {
   return res;
 }
 
-std::string DRW_ConvUTF16::fromUtf8(std::string* s) {
+std::string DRW_ConvUTF16::FromUtf8(std::string* s) {
   DRW_UNUSED(s);
   return std::string();
 }
 
-std::string DRW_ConvUTF16::toUtf8(std::string* s) {  //RLZ: pending to write
+std::string DRW_ConvUTF16::ToUtf8(std::string* s) {
   std::string res;
   std::string::iterator it;
   for (it = s->begin(); it < s->end(); ++it) {
@@ -354,9 +354,9 @@ std::string DRW_ExtConverter::convertByiconv(const char* in_encode, const char* 
   return std::string(out_buf);
 }
 
-std::string DRW_ExtConverter::fromUtf8(std::string* s) { return convertByiconv("UTF8", this->encoding, s); }
+std::string DRW_ExtConverter::FromUtf8(std::string* s) { return convertByiconv("UTF8", this->encoding, s); }
 
-std::string DRW_ExtConverter::toUtf8(std::string* s) { return convertByiconv(this->encoding, "UTF8", s); }
+std::string DRW_ExtConverter::ToUtf8(std::string* s) { return convertByiconv(this->encoding, "UTF8", s); }
 
 std::string DRW_TextCodec::correctCodePage(const std::string& s) {
   std::string cp = s;

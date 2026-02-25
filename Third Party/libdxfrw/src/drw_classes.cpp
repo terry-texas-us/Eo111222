@@ -7,25 +7,25 @@
 void DRW_Class::parseCode(int code, dxfReader* reader) noexcept {
   switch (code) {
     case 1:
-      recName = reader->getUtf8String();
+      recName = reader->GetUtf8String();
       break;
     case 2:
-      className = reader->getUtf8String();
+      className = reader->GetUtf8String();
       break;
     case 3:
-      appName = reader->getUtf8String();
+      appName = reader->GetUtf8String();
       break;
     case 90:
-      proxyCapabilities = reader->getInt32();
+      proxyCapabilities = reader->GetInt32();
       break;
     case 91:
-      instanceCount = reader->getInt32();
+      instanceCount = reader->GetInt32();
       break;
     case 280:
-      wasAProxyFlag = reader->getInt32();
+      wasAProxyFlag = reader->GetInt32();
       break;
     case 281:
-      isAnEntityFlag = reader->getInt32();
+      isAnEntityFlag = reader->GetInt32();
       break;
     default:
       break;

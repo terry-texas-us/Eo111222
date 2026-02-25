@@ -279,9 +279,9 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
     case EoDb::FileTypes::Dxb: {
       EoDbDrwInterface dxfInterface(this);
       dxfRW dxfReader(Eo::WStringToMultiByte(pathName).data());
-      dxfReader.setDebug(DRW::DebugTraceLevel::None);
+      dxfReader.SetDebug(DRW::DebugTraceLevel::None);
       SetCommonTableEntries();
-      bool success = dxfReader.read(&dxfInterface, true);  // true for verbose output, false for silent
+      bool success = dxfReader.Read(&dxfInterface, true);  // true for verbose output, false for silent
       if (success) {
         ATLTRACE2(traceGeneral, 3, L"3dFace: %d.\n", dxfInterface.countOf3dFace);
         ATLTRACE2(traceGeneral, 3, L"Arc: %d.\n", dxfInterface.countOfArc);

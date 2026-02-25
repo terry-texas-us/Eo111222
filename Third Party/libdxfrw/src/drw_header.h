@@ -56,7 +56,7 @@ class DRW_Header {
   void parseCode(int code, dxfReader* reader);
 
  private:
-  [[nodiscard]] bool getDouble(std::string key, double* varDouble);
+  [[nodiscard]] bool GetDouble(std::string key, double* varDouble);
   [[nodiscard]] bool getInt(std::string key, int* varInt);
   [[nodiscard]] bool getStr(std::string key, std::string* varStr);
   [[nodiscard]] bool getCoord(std::string key, DRW_Coord* varStr);

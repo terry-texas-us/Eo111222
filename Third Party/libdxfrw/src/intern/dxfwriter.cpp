@@ -7,14 +7,14 @@
 #include "dxfwriter.h"
 
 bool dxfWriter::writeUtf8String(int code, std::string text) {
-  std::string t = encoder.fromUtf8(text);
+  std::string t = encoder.FromUtf8(text);
   return writeString(code, t);
 }
 
 bool dxfWriter::writeUtf8Caps(int code, std::string text) {
   std::string strname = text;
   std::transform(strname.begin(), strname.end(), strname.begin(), ::toupper);
-  std::string t = encoder.fromUtf8(strname);
+  std::string t = encoder.FromUtf8(strname);
   return writeString(code, t);
 }
 
