@@ -162,6 +162,7 @@
     <ClInclude Include="src\intern\drw_cptables.h" />
     <ClInclude Include="src\intern\drw_dbg.h" />
     <ClInclude Include="src\intern\drw_textcodec.h" />
+    <ClInclude Include="src\intern\dxfLiteralStrings.h" />
     <ClInclude Include="src\intern\dxfreader.h" />
     <ClInclude Include="src\intern\dxfwriter.h" />
     <ClInclude Include="src\libdxfrw.h" />

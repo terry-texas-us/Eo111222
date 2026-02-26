@@ -51,6 +51,9 @@
     <ClInclude Include="src\libdxfrw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\intern\dxfLiteralStrings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\drw_classes.cpp">
