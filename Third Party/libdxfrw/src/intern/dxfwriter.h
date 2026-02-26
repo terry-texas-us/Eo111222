@@ -7,48 +7,54 @@
 
 class dxfWriter {
  public:
-  dxfWriter(std::ofstream* stream) { filestr = stream; /*count =0;*/ }
+  explicit dxfWriter(std::ofstream* stream) noexcept : m_fileStream{stream} {}
   virtual ~dxfWriter() = default;
-  virtual bool writeString(int code, std::string text) = 0;
-  bool writeUtf8String(int code, std::string text);
-  bool writeUtf8Caps(int code, std::string text);
-  std::string fromUtf8String(std::string t) { return encoder.FromUtf8(t); }
-  virtual bool writeInt16(int code, int data) = 0;
-  virtual bool writeInt32(int code, int data) = 0;
-  virtual bool writeInt64(int code, unsigned long long int data) = 0;
-  virtual bool writeDouble(int code, double data) = 0;
-  virtual bool writeBool(int code, bool data) = 0;
-  void SetVersion(std::string* v, bool dxfFormat) { encoder.SetVersion(v, dxfFormat); }
-  void SetCodePage(std::string* c) { encoder.SetCodePage(c, true); }
-  [[nodiscard]] const std::string& GetCodePage() const { return encoder.GetCodePage(); }
+  
+  virtual bool WriteString(int code, std::string_view text) = 0;
+  virtual bool WriteInt16(int code, int data) = 0;
+  virtual bool WriteInt32(int code, int data) = 0;
+  virtual bool WriteInt64(int code, unsigned long long int data) = 0;
+  virtual bool WriteDouble(int code, double data) = 0;
+  virtual bool WriteBool(int code, bool data) = 0;
+  
+  void SetVersion(std::string* version, bool dxfFormat) { m_encoder.SetVersion(version, dxfFormat); }
+  void SetCodePage(std::string* codePage) { m_encoder.SetCodePage(codePage, true); }
+  [[nodiscard]] const std::string& GetCodePage() const { return m_encoder.GetCodePage(); }
+  
+  std::string FromUtf8String(std::string t) { return m_encoder.FromUtf8(t); }
 
+  bool WriteUtf8String(int code, std::string text);
+  bool WriteUtf8Caps(int code, std::string text);
+  
  protected:
-  std::ofstream* filestr;
+  std::ofstream* m_fileStream;
 
  private:
-  DRW_TextCodec encoder;
+  DRW_TextCodec m_encoder;
 };
 
 class dxfWriterBinary : public dxfWriter {
  public:
   dxfWriterBinary(std::ofstream* stream) : dxfWriter(stream) {}
-  virtual ~dxfWriterBinary() = default;
-  virtual bool writeString(int code, std::string text);
-  virtual bool writeInt16(int code, int data);
-  virtual bool writeInt32(int code, int data);
-  virtual bool writeInt64(int code, unsigned long long int data);
-  virtual bool writeDouble(int code, double data);
-  virtual bool writeBool(int code, bool data);
+  ~dxfWriterBinary() = default;
+  
+  bool WriteString(int code, std::string_view text) override;
+  bool WriteInt16(int code, int data) override;
+  bool WriteInt32(int code, int data) override;
+  bool WriteInt64(int code, unsigned long long int data) override;
+  bool WriteDouble(int code, double data) override;
+  bool WriteBool(int code, bool data) override;
 };
 
 class dxfWriterAscii : public dxfWriter {
  public:
-  dxfWriterAscii(std::ofstream* stream);
-  virtual ~dxfWriterAscii() = default;
-  virtual bool writeString(int code, std::string text);
-  virtual bool writeInt16(int code, int data);
-  virtual bool writeInt32(int code, int data);
-  virtual bool writeInt64(int code, unsigned long long int data);
-  virtual bool writeDouble(int code, double data);
-  virtual bool writeBool(int code, bool data);
+  dxfWriterAscii(std::ofstream* stream) : dxfWriter(stream) { m_fileStream->precision(16); }
+  ~dxfWriterAscii() = default;
+  
+  bool WriteString(int code, std::string_view text) override;
+  bool WriteInt16(int code, int data) override;
+  bool WriteInt32(int code, int data) override;
+  bool WriteInt64(int code, unsigned long long int data) override;
+  bool WriteDouble(int code, double data) override;
+  bool WriteBool(int code, bool data) override;
 };

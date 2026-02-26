@@ -44,12 +44,12 @@ void DRW_Class::clear() noexcept {
 
 void DRW_Class::write(dxfWriter* writer, DRW::Version version) const noexcept {
   if (version < DRW::Version::AC1012) { return; }
-  writer->writeString(0, "CLASS");
-  writer->writeString(1, recName);
-  writer->writeString(2, className);
-  writer->writeString(3, appName);
-  writer->writeInt32(90, proxyCapabilities);
-  if (version >= DRW::Version::AC1018) { writer->writeInt32(91, instanceCount); }
-  writer->writeInt16(280, wasAProxyFlag);
-  writer->writeInt16(281, isAnEntityFlag);
+  writer->WriteString(0, "CLASS");
+  writer->WriteString(1, recName);
+  writer->WriteString(2, className);
+  writer->WriteString(3, appName);
+  writer->WriteInt32(90, proxyCapabilities);
+  if (version >= DRW::Version::AC1018) { writer->WriteInt32(91, instanceCount); }
+  writer->WriteInt16(280, wasAProxyFlag);
+  writer->WriteInt16(281, isAnEntityFlag);
 }

@@ -100,11 +100,11 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version version) {
   int varInt;
   std::string varStr;
   DRW_Coord varCoord;
-  writer->writeString(2, "HEADER");
-  writer->writeString(9, "$ACADVER");
+  writer->WriteString(2, "HEADER");
+  writer->WriteString(9, "$ACADVER");
   switch (version) {
-    case DRW::Version::AC1006:  // R10 (not supported)
-    case DRW::Version::AC1009:  // R11 & R12
+    case DRW::Version::AC1006:  // R10 (not supported) [1988]
+    case DRW::Version::AC1009:  // R11 [1990] & R12 [1992]
       varStr = "AC1009";
       break;
     case DRW::Version::AC1012:  // R13 (not supported)
@@ -133,504 +133,504 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version version) {
       varStr = "AC1021";
       break;
   }
-  writer->writeString(1, varStr);
+  writer->WriteString(1, varStr);
   writer->SetVersion(&varStr, true);
 
   (void)getStr("$ACADVER", &varStr);
   (void)getStr("$ACADMAINTVER", &varStr);
 
   if (!getStr("$DWGCODEPAGE", &varStr)) { varStr = "ANSI_1252"; }
-  writer->writeString(9, "$DWGCODEPAGE");
+  writer->WriteString(9, "$DWGCODEPAGE");
   writer->SetCodePage(&varStr);
-  writer->writeString(3, writer->GetCodePage());
-  writer->writeString(9, "$INSBASE");
+  writer->WriteString(3, writer->GetCodePage());
+  writer->WriteString(9, "$INSBASE");
   if (getCoord("$INSBASE", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
-    writer->writeDouble(30, varCoord.z);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
+    writer->WriteDouble(30, varCoord.z);
   } else {
-    writer->writeDouble(10, 0.0);
-    writer->writeDouble(20, 0.0);
-    writer->writeDouble(30, 0.0);
+    writer->WriteDouble(10, 0.0);
+    writer->WriteDouble(20, 0.0);
+    writer->WriteDouble(30, 0.0);
   }
-  writer->writeString(9, "$EXTMIN");
+  writer->WriteString(9, "$EXTMIN");
   if (getCoord("$EXTMIN", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
-    writer->writeDouble(30, varCoord.z);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
+    writer->WriteDouble(30, varCoord.z);
   } else {
-    writer->writeDouble(10, 1.0000000000000000E+020);
-    writer->writeDouble(20, 1.0000000000000000E+020);
-    writer->writeDouble(30, 1.0000000000000000E+020);
+    writer->WriteDouble(10, 1.0000000000000000E+020);
+    writer->WriteDouble(20, 1.0000000000000000E+020);
+    writer->WriteDouble(30, 1.0000000000000000E+020);
   }
-  writer->writeString(9, "$EXTMAX");
+  writer->WriteString(9, "$EXTMAX");
   if (getCoord("$EXTMAX", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
-    writer->writeDouble(30, varCoord.z);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
+    writer->WriteDouble(30, varCoord.z);
   } else {
-    writer->writeDouble(10, -1.0000000000000000E+020);
-    writer->writeDouble(20, -1.0000000000000000E+020);
-    writer->writeDouble(30, -1.0000000000000000E+020);
+    writer->WriteDouble(10, -1.0000000000000000E+020);
+    writer->WriteDouble(20, -1.0000000000000000E+020);
+    writer->WriteDouble(30, -1.0000000000000000E+020);
   }
-  writer->writeString(9, "$LIMMIN");
+  writer->WriteString(9, "$LIMMIN");
   if (getCoord("$LIMMIN", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
   } else {
-    writer->writeDouble(10, 0.0);
-    writer->writeDouble(20, 0.0);
+    writer->WriteDouble(10, 0.0);
+    writer->WriteDouble(20, 0.0);
   }
-  writer->writeString(9, "$LIMMAX");
+  writer->WriteString(9, "$LIMMAX");
   if (getCoord("$LIMMAX", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
   } else {
-    writer->writeDouble(10, 420.0);
-    writer->writeDouble(20, 297.0);
+    writer->WriteDouble(10, 420.0);
+    writer->WriteDouble(20, 297.0);
   }
-  writer->writeString(9, "$ORTHOMODE");
+  writer->WriteString(9, "$ORTHOMODE");
   if (getInt("$ORTHOMODE", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$REGENMODE");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$REGENMODE");
   if (getInt("$REGENMODE", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 1);
-  writer->writeString(9, "$FILLMODE");
+    writer->WriteInt16(70, 1);
+  writer->WriteString(9, "$FILLMODE");
   if (getInt("$FILLMODE", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 1);
-  writer->writeString(9, "$QTEXTMODE");
+    writer->WriteInt16(70, 1);
+  writer->WriteString(9, "$QTEXTMODE");
   if (getInt("$QTEXTMODE", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$MIRRTEXT");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$MIRRTEXT");
   if (getInt("$MIRRTEXT", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
+    writer->WriteInt16(70, 0);
   if (version == DRW::Version::AC1009) {
-    writer->writeString(9, "$DRAGMODE");
+    writer->WriteString(9, "$DRAGMODE");
     if (getInt("$DRAGMODE", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 2);
+      writer->WriteInt16(70, 2);
   }
-  writer->writeString(9, "$LTSCALE");
+  writer->WriteString(9, "$LTSCALE");
   if (GetDouble("$LTSCALE", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 1.0);
+    writer->WriteDouble(40, 1.0);
   if (version == DRW::Version::AC1009) {
-    writer->writeString(9, "$OSMODE");
+    writer->WriteString(9, "$OSMODE");
     if (getInt("$OSMODE", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
+      writer->WriteInt16(70, 0);
   }
-  writer->writeString(9, "$ATTMODE");
+  writer->WriteString(9, "$ATTMODE");
   if (getInt("$ATTMODE", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$TEXTSIZE");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$TEXTSIZE");
   if (GetDouble("$TEXTSIZE", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 2.5);
-  writer->writeString(9, "$TRACEWID");
+    writer->WriteDouble(40, 2.5);
+  writer->WriteString(9, "$TRACEWID");
   if (GetDouble("$TRACEWID", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 15.68);
-  writer->writeString(9, "$TEXTSTYLE");
+    writer->WriteDouble(40, 15.68);
+  writer->WriteString(9, "$TEXTSTYLE");
   if (getStr("$TEXTSTYLE", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(7, varStr);
+      writer->WriteUtf8Caps(7, varStr);
     else
-      writer->writeUtf8String(7, varStr);
+      writer->WriteUtf8String(7, varStr);
   else
-    writer->writeString(7, "STANDARD");
-  writer->writeString(9, "$CLAYER");
+    writer->WriteString(7, "STANDARD");
+  writer->WriteString(9, "$CLAYER");
   if (getStr("$CLAYER", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(8, varStr);
+      writer->WriteUtf8Caps(8, varStr);
     else
-      writer->writeUtf8String(8, varStr);
+      writer->WriteUtf8String(8, varStr);
   else
-    writer->writeString(8, "0");
-  writer->writeString(9, "$CELTYPE");
+    writer->WriteString(8, "0");
+  writer->WriteString(9, "$CELTYPE");
   if (getStr("$CELTYPE", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(6, varStr);
+      writer->WriteUtf8Caps(6, varStr);
     else
-      writer->writeUtf8String(6, varStr);
+      writer->WriteUtf8String(6, varStr);
   else
-    writer->writeString(6, "BYLAYER");
-  writer->writeString(9, "$CECOLOR");
+    writer->WriteString(6, "BYLAYER");
+  writer->WriteString(9, "$CECOLOR");
   if (getInt("$CECOLOR", &varInt))
-    writer->writeInt16(62, varInt);
+    writer->WriteInt16(62, varInt);
   else
-    writer->writeInt16(62, 256);
+    writer->WriteInt16(62, 256);
   if (version > DRW::Version::AC1009) {
-    writer->writeString(9, "$CELTSCALE");
+    writer->WriteString(9, "$CELTSCALE");
     if (GetDouble("$CELTSCALE", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 1.0);
-    writer->writeString(9, "$DISPSILH");
+      writer->WriteDouble(40, 1.0);
+    writer->WriteString(9, "$DISPSILH");
     if (getInt("$DISPSILH", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
+      writer->WriteInt16(70, 0);
   }
 
-  writer->writeString(9, "$DIMSCALE");
+  writer->WriteString(9, "$DIMSCALE");
   if (GetDouble("$DIMSCALE", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 2.5);
-  writer->writeString(9, "$DIMASZ");
+    writer->WriteDouble(40, 2.5);
+  writer->WriteString(9, "$DIMASZ");
   if (GetDouble("$DIMASZ", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 2.5);
-  writer->writeString(9, "$DIMEXO");
+    writer->WriteDouble(40, 2.5);
+  writer->WriteString(9, "$DIMEXO");
   if (GetDouble("$DIMEXO", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.625);
-  writer->writeString(9, "$DIMDLI");
+    writer->WriteDouble(40, 0.625);
+  writer->WriteString(9, "$DIMDLI");
   if (GetDouble("$DIMDLI", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 3.75);
-  writer->writeString(9, "$DIMRND");
+    writer->WriteDouble(40, 3.75);
+  writer->WriteString(9, "$DIMRND");
   if (GetDouble("$DIMRND", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$DIMDLE");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$DIMDLE");
   if (GetDouble("$DIMDLE", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$DIMEXE");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$DIMEXE");
   if (GetDouble("$DIMEXE", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 1.25);
-  writer->writeString(9, "$DIMTP");
+    writer->WriteDouble(40, 1.25);
+  writer->WriteString(9, "$DIMTP");
   if (GetDouble("$DIMTP", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$DIMTM");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$DIMTM");
   if (GetDouble("$DIMTM", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$DIMTXT");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$DIMTXT");
   if (GetDouble("$DIMTXT", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 2.5);
-  writer->writeString(9, "$DIMCEN");
+    writer->WriteDouble(40, 2.5);
+  writer->WriteString(9, "$DIMCEN");
   if (GetDouble("$DIMCEN", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 2.5);
-  writer->writeString(9, "$DIMTSZ");
+    writer->WriteDouble(40, 2.5);
+  writer->WriteString(9, "$DIMTSZ");
   if (GetDouble("$DIMTSZ", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$DIMTOL");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$DIMTOL");
   if (getInt("$DIMTOL", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMLIM");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMLIM");
   if (getInt("$DIMLIM", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMTIH");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMTIH");
   if (getInt("$DIMTIH", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMTOH");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMTOH");
   if (getInt("$DIMTOH", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMSE1");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMSE1");
   if (getInt("$DIMSE1", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMSE2");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMSE2");
   if (getInt("$DIMSE2", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMTAD");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMTAD");
   if (getInt("$DIMTAD", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 1);
-  writer->writeString(9, "$DIMZIN");
+    writer->WriteInt16(70, 1);
+  writer->WriteString(9, "$DIMZIN");
   if (getInt("$DIMZIN", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 8);
-  writer->writeString(9, "$DIMBLK");
+    writer->WriteInt16(70, 8);
+  writer->WriteString(9, "$DIMBLK");
   if (getStr("$DIMBLK", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(1, varStr);
+      writer->WriteUtf8Caps(1, varStr);
     else
-      writer->writeUtf8String(1, varStr);
+      writer->WriteUtf8String(1, varStr);
   else
-    writer->writeString(1, "");
-  writer->writeString(9, "$DIMASO");
+    writer->WriteString(1, "");
+  writer->WriteString(9, "$DIMASO");
   if (getInt("$DIMASO", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 1);
-  writer->writeString(9, "$DIMSHO");
+    writer->WriteInt16(70, 1);
+  writer->WriteString(9, "$DIMSHO");
   if (getInt("$DIMSHO", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 1);
-  writer->writeString(9, "$DIMPOST");
+    writer->WriteInt16(70, 1);
+  writer->WriteString(9, "$DIMPOST");
   if (getStr("$DIMPOST", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(1, varStr);
+      writer->WriteUtf8Caps(1, varStr);
     else
-      writer->writeUtf8String(1, varStr);
+      writer->WriteUtf8String(1, varStr);
   else
-    writer->writeString(1, "");
-  writer->writeString(9, "$DIMAPOST");
+    writer->WriteString(1, "");
+  writer->WriteString(9, "$DIMAPOST");
   if (getStr("$DIMAPOST", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(1, varStr);
+      writer->WriteUtf8Caps(1, varStr);
     else
-      writer->writeUtf8String(1, varStr);
+      writer->WriteUtf8String(1, varStr);
   else
-    writer->writeString(1, "");
-  writer->writeString(9, "$DIMALT");
+    writer->WriteString(1, "");
+  writer->WriteString(9, "$DIMALT");
   if (getInt("$DIMALT", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMALTD");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMALTD");
   if (getInt("$DIMALTD", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 3);
-  writer->writeString(9, "$DIMALTF");
+    writer->WriteInt16(70, 3);
+  writer->WriteString(9, "$DIMALTF");
   if (GetDouble("$DIMALTF", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.03937);
-  writer->writeString(9, "$DIMLFAC");
+    writer->WriteDouble(40, 0.03937);
+  writer->WriteString(9, "$DIMLFAC");
   if (GetDouble("$DIMLFAC", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 1.0);
-  writer->writeString(9, "$DIMTOFL");
+    writer->WriteDouble(40, 1.0);
+  writer->WriteString(9, "$DIMTOFL");
   if (getInt("$DIMTOFL", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 1);
-  writer->writeString(9, "$DIMTVP");
+    writer->WriteInt16(70, 1);
+  writer->WriteString(9, "$DIMTVP");
   if (GetDouble("$DIMTVP", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$DIMTIX");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$DIMTIX");
   if (getInt("$DIMTIX", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMSOXD");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMSOXD");
   if (getInt("$DIMSOXD", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMSAH");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMSAH");
   if (getInt("$DIMSAH", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMBLK1");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMBLK1");
   if (getStr("$DIMBLK1", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(1, varStr);
+      writer->WriteUtf8Caps(1, varStr);
     else
-      writer->writeUtf8String(1, varStr);
+      writer->WriteUtf8String(1, varStr);
   else
-    writer->writeString(1, "");
-  writer->writeString(9, "$DIMBLK2");
+    writer->WriteString(1, "");
+  writer->WriteString(9, "$DIMBLK2");
   if (getStr("$DIMBLK2", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(1, varStr);
+      writer->WriteUtf8Caps(1, varStr);
     else
-      writer->writeUtf8String(1, varStr);
+      writer->WriteUtf8String(1, varStr);
   else
-    writer->writeString(1, "");
-  writer->writeString(9, "$DIMSTYLE");
+    writer->WriteString(1, "");
+  writer->WriteString(9, "$DIMSTYLE");
   if (getStr("$DIMSTYLE", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(2, varStr);
+      writer->WriteUtf8Caps(2, varStr);
     else
-      writer->writeUtf8String(2, varStr);
+      writer->WriteUtf8String(2, varStr);
   else
-    writer->writeString(2, "STANDARD");
-  writer->writeString(9, "$DIMCLRD");
+    writer->WriteString(2, "STANDARD");
+  writer->WriteString(9, "$DIMCLRD");
   if (getInt("$DIMCLRD", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMCLRE");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMCLRE");
   if (getInt("$DIMCLRE", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMCLRT");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMCLRT");
   if (getInt("$DIMCLRT", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$DIMTFAC");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$DIMTFAC");
   if (GetDouble("$DIMTFAC", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 1.0);
-  writer->writeString(9, "$DIMGAP");
+    writer->WriteDouble(40, 1.0);
+  writer->WriteString(9, "$DIMGAP");
   if (GetDouble("$DIMGAP", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.625);
+    writer->WriteDouble(40, 0.625);
   //post r12 dim vars
   if (version > DRW::Version::AC1009) {
-    writer->writeString(9, "$DIMJUST");
+    writer->WriteString(9, "$DIMJUST");
     if (getInt("$DIMJUST", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$DIMSD1");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$DIMSD1");
     if (getInt("$DIMSD1", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$DIMSD2");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$DIMSD2");
     if (getInt("$DIMSD2", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$DIMTOLJ");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$DIMTOLJ");
     if (getInt("$DIMTOLJ", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$DIMTZIN");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$DIMTZIN");
     if (getInt("$DIMTZIN", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 8);
-    writer->writeString(9, "$DIMALTZ");
+      writer->WriteInt16(70, 8);
+    writer->WriteString(9, "$DIMALTZ");
     if (getInt("$DIMALTZ", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$DIMALTTZ");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$DIMALTTZ");
     if (getInt("$DIMALTTZ", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$DIMUPT");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$DIMUPT");
     if (getInt("$DIMUPT", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$DIMDEC");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$DIMDEC");
     if (getInt("$DIMDEC", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 2);
-    writer->writeString(9, "$DIMTDEC");
+      writer->WriteInt16(70, 2);
+    writer->WriteString(9, "$DIMTDEC");
     if (getInt("$DIMTDEC", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 2);
-    writer->writeString(9, "$DIMALTU");
+      writer->WriteInt16(70, 2);
+    writer->WriteString(9, "$DIMALTU");
     if (getInt("$DIMALTU", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 2);
-    writer->writeString(9, "$DIMALTTD");
+      writer->WriteInt16(70, 2);
+    writer->WriteString(9, "$DIMALTTD");
     if (getInt("$DIMALTTD", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 3);
-    writer->writeString(9, "$DIMTXSTY");
+      writer->WriteInt16(70, 3);
+    writer->WriteString(9, "$DIMTXSTY");
     if (getStr("$DIMTXSTY", &varStr))
       if (version == DRW::Version::AC1009)
-        writer->writeUtf8Caps(7, varStr);
+        writer->WriteUtf8Caps(7, varStr);
       else
-        writer->writeUtf8String(7, varStr);
+        writer->WriteUtf8String(7, varStr);
     else
-      writer->writeString(7, "STANDARD");
-    writer->writeString(9, "$DIMAUNIT");
+      writer->WriteString(7, "STANDARD");
+    writer->WriteString(9, "$DIMAUNIT");
     if (getInt("$DIMAUNIT", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$DIMADEC");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$DIMADEC");
     if (getInt("$DIMADEC", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$DIMALTRND");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$DIMALTRND");
     if (GetDouble("$DIMALTRND", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 0.0);
-    writer->writeString(9, "$DIMAZIN");
+      writer->WriteDouble(40, 0.0);
+    writer->WriteString(9, "$DIMAZIN");
     if (getInt("$DIMAZIN", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$DIMDSEP");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$DIMDSEP");
     if (getInt("$DIMDSEP", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 44);
-    writer->writeString(9, "$DIMATFIT");
+      writer->WriteInt16(70, 44);
+    writer->WriteString(9, "$DIMATFIT");
     if (getInt("$DIMATFIT", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 3);
-    writer->writeString(9, "$DIMFRAC");
+      writer->WriteInt16(70, 3);
+    writer->WriteString(9, "$DIMFRAC");
     if (getInt("$DIMFRAC", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$DIMLDRBLK");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$DIMLDRBLK");
     if (getStr("$DIMLDRBLK", &varStr))
       if (version == DRW::Version::AC1009)
-        writer->writeUtf8Caps(1, varStr);
+        writer->WriteUtf8Caps(1, varStr);
       else
-        writer->writeUtf8String(1, varStr);
+        writer->WriteUtf8String(1, varStr);
     else
-      writer->writeString(1, "STANDARD");
+      writer->WriteString(1, "STANDARD");
     //verify if exist "$DIMLUNIT" or obsolete "$DIMUNIT" (pre v2000)
     if (!getInt("$DIMLUNIT", &varInt)) {
       if (!getInt("$DIMUNIT", &varInt)) varInt = 2;
@@ -638,1013 +638,1013 @@ void DRW_Header::write(dxfWriter* writer, DRW::Version version) {
     //verify valid values from 1 to 6
     if (varInt < 1 || varInt > 6) varInt = 2;
     if (version > DRW::Version::AC1014) {
-      writer->writeString(9, "$DIMLUNIT");
-      writer->writeInt16(70, varInt);
+      writer->WriteString(9, "$DIMLUNIT");
+      writer->WriteInt16(70, varInt);
     } else {
-      writer->writeString(9, "$DIMUNIT");
-      writer->writeInt16(70, varInt);
+      writer->WriteString(9, "$DIMUNIT");
+      writer->WriteInt16(70, varInt);
     }
-    writer->writeString(9, "$DIMLWD");
+    writer->WriteString(9, "$DIMLWD");
     if (getInt("$DIMLWD", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, -2);
-    writer->writeString(9, "$DIMLWE");
+      writer->WriteInt16(70, -2);
+    writer->WriteString(9, "$DIMLWE");
     if (getInt("$DIMLWE", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, -2);
-    writer->writeString(9, "$DIMTMOVE");
+      writer->WriteInt16(70, -2);
+    writer->WriteString(9, "$DIMTMOVE");
     if (getInt("$DIMTMOVE", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
+      writer->WriteInt16(70, 0);
 
     if (version > DRW::Version::AC1018) {
-      writer->writeString(9, "$DIMFXL");
+      writer->WriteString(9, "$DIMFXL");
       if (GetDouble("$DIMFXL", &varDouble))
-        writer->writeDouble(40, varDouble);
+        writer->WriteDouble(40, varDouble);
       else
-        writer->writeDouble(40, 1.0);
-      writer->writeString(9, "$DIMFXLON");
+        writer->WriteDouble(40, 1.0);
+      writer->WriteString(9, "$DIMFXLON");
       if (getInt("$DIMFXLON", &varInt))
-        writer->writeInt16(70, varInt);
+        writer->WriteInt16(70, varInt);
       else
-        writer->writeInt16(70, 0);
-      writer->writeString(9, "$DIMJOGANG");
+        writer->WriteInt16(70, 0);
+      writer->WriteString(9, "$DIMJOGANG");
       if (GetDouble("$DIMJOGANG", &varDouble))
-        writer->writeDouble(40, varDouble);
+        writer->WriteDouble(40, varDouble);
       else
-        writer->writeDouble(40, 0.7854);
-      writer->writeString(9, "$DIMTFILL");
+        writer->WriteDouble(40, 0.7854);
+      writer->WriteString(9, "$DIMTFILL");
       if (getInt("$DIMTFILL", &varInt))
-        writer->writeInt16(70, varInt);
+        writer->WriteInt16(70, varInt);
       else
-        writer->writeInt16(70, 0);
-      writer->writeString(9, "$DIMTFILLCLR");
+        writer->WriteInt16(70, 0);
+      writer->WriteString(9, "$DIMTFILLCLR");
       if (getInt("$DIMTFILLCLR", &varInt))
-        writer->writeInt16(70, varInt);
+        writer->WriteInt16(70, varInt);
       else
-        writer->writeInt16(70, 0);
-      writer->writeString(9, "$DIMARCSYM");
+        writer->WriteInt16(70, 0);
+      writer->WriteString(9, "$DIMARCSYM");
       if (getInt("$DIMARCSYM", &varInt))
-        writer->writeInt16(70, varInt);
+        writer->WriteInt16(70, varInt);
       else
-        writer->writeInt16(70, 0);
-      writer->writeString(9, "$DIMLTYPE");
+        writer->WriteInt16(70, 0);
+      writer->WriteString(9, "$DIMLTYPE");
       if (getStr("$DIMLTYPE", &varStr))
         if (version == DRW::Version::AC1009)
-          writer->writeUtf8Caps(6, varStr);
+          writer->WriteUtf8Caps(6, varStr);
         else
-          writer->writeUtf8String(6, varStr);
+          writer->WriteUtf8String(6, varStr);
       else
-        writer->writeString(6, "");
-      writer->writeString(9, "$DIMLTEX1");
+        writer->WriteString(6, "");
+      writer->WriteString(9, "$DIMLTEX1");
       if (getStr("$DIMLTEX1", &varStr))
         if (version == DRW::Version::AC1009)
-          writer->writeUtf8Caps(6, varStr);
+          writer->WriteUtf8Caps(6, varStr);
         else
-          writer->writeUtf8String(6, varStr);
+          writer->WriteUtf8String(6, varStr);
       else
-        writer->writeString(6, "");
-      writer->writeString(9, "$DIMLTEX2");
+        writer->WriteString(6, "");
+      writer->WriteString(9, "$DIMLTEX2");
       if (getStr("$DIMLTEX2", &varStr))
         if (version == DRW::Version::AC1009)
-          writer->writeUtf8Caps(6, varStr);
+          writer->WriteUtf8Caps(6, varStr);
         else
-          writer->writeUtf8String(6, varStr);
+          writer->WriteUtf8String(6, varStr);
       else
-        writer->writeString(6, "");
+        writer->WriteString(6, "");
       if (version > DRW::Version::AC1021) {
-        writer->writeString(9, "$DIMTXTDIRECTION");
+        writer->WriteString(9, "$DIMTXTDIRECTION");
         if (getInt("$DIMTXTDIRECTION", &varInt))
-          writer->writeInt16(70, varInt);
+          writer->WriteInt16(70, varInt);
         else
-          writer->writeInt16(70, 0);
+          writer->WriteInt16(70, 0);
       }
     }  // end post v2004 dim vars
   }  //end post r12 dim vars
 
-  writer->writeString(9, "$LUNITS");
+  writer->WriteString(9, "$LUNITS");
   if (getInt("$LUNITS", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 2);
-  writer->writeString(9, "$LUPREC");
+    writer->WriteInt16(70, 2);
+  writer->WriteString(9, "$LUPREC");
   if (getInt("$LUPREC", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 4);
-  writer->writeString(9, "$SKETCHINC");
+    writer->WriteInt16(70, 4);
+  writer->WriteString(9, "$SKETCHINC");
   if (GetDouble("$SKETCHINC", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 1.0);
-  writer->writeString(9, "$FILLETRAD");
+    writer->WriteDouble(40, 1.0);
+  writer->WriteString(9, "$FILLETRAD");
   if (GetDouble("$FILLETRAD", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$AUNITS");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$AUNITS");
   if (getInt("$AUNITS", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$AUPREC");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$AUPREC");
   if (getInt("$AUPREC", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 2);
-  writer->writeString(9, "$MENU");
+    writer->WriteInt16(70, 2);
+  writer->WriteString(9, "$MENU");
   if (getStr("$MENU", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(1, varStr);
+      writer->WriteUtf8Caps(1, varStr);
     else
-      writer->writeUtf8String(1, varStr);
+      writer->WriteUtf8String(1, varStr);
   else
-    writer->writeString(1, ".");
-  writer->writeString(9, "$ELEVATION");
+    writer->WriteString(1, ".");
+  writer->WriteString(9, "$ELEVATION");
   if (GetDouble("$ELEVATION", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$PELEVATION");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$PELEVATION");
   if (GetDouble("$PELEVATION", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$THICKNESS");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$THICKNESS");
   if (GetDouble("$THICKNESS", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$LIMCHECK");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$LIMCHECK");
   if (getInt("$LIMCHECK", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
+    writer->WriteInt16(70, 0);
   if (version < DRW::Version::AC1015) {
-    writer->writeString(9, "$BLIPMODE");
+    writer->WriteString(9, "$BLIPMODE");
     if (getInt("$BLIPMODE", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
+      writer->WriteInt16(70, 0);
   }
-  writer->writeString(9, "$CHAMFERA");
+  writer->WriteString(9, "$CHAMFERA");
   if (GetDouble("$CHAMFERA", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$CHAMFERB");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$CHAMFERB");
   if (GetDouble("$CHAMFERB", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
+    writer->WriteDouble(40, 0.0);
   if (version > DRW::Version::AC1009) {
-    writer->writeString(9, "$CHAMFERC");
+    writer->WriteString(9, "$CHAMFERC");
     if (GetDouble("$CHAMFERC", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 0.0);
-    writer->writeString(9, "$CHAMFERD");
+      writer->WriteDouble(40, 0.0);
+    writer->WriteString(9, "$CHAMFERD");
     if (GetDouble("$CHAMFERD", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 0.0);
+      writer->WriteDouble(40, 0.0);
   }
-  writer->writeString(9, "$SKPOLY");
+  writer->WriteString(9, "$SKPOLY");
   if (getInt("$SKPOLY", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 0);
+    writer->WriteInt16(70, 0);
   //rlz: todo, times
-  writer->writeString(9, "$USRTIMER");
+  writer->WriteString(9, "$USRTIMER");
   if (getInt("$USRTIMER", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 1);
-  writer->writeString(9, "$ANGBASE");
+    writer->WriteInt16(70, 1);
+  writer->WriteString(9, "$ANGBASE");
   if (GetDouble("$ANGBASE", &varDouble))
-    writer->writeDouble(50, varDouble);
+    writer->WriteDouble(50, varDouble);
   else
-    writer->writeDouble(50, 0.0);
-  writer->writeString(9, "$ANGDIR");
+    writer->WriteDouble(50, 0.0);
+  writer->WriteString(9, "$ANGDIR");
   if (getInt("$ANGDIR", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$PDMODE");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$PDMODE");
   if (getInt("$PDMODE", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 34);
-  writer->writeString(9, "$PDSIZE");
+    writer->WriteInt16(70, 34);
+  writer->WriteString(9, "$PDSIZE");
   if (GetDouble("$PDSIZE", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$PLINEWID");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$PLINEWID");
   if (GetDouble("$PLINEWID", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
+    writer->WriteDouble(40, 0.0);
   if (version < DRW::Version::AC1012) {
-    writer->writeString(9, "$COORDS");
+    writer->WriteString(9, "$COORDS");
     if (getInt("$COORDS", &varInt)) {
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     } else
-      writer->writeInt16(70, 2);
+      writer->WriteInt16(70, 2);
   }
-  writer->writeString(9, "$SPLFRAME");
+  writer->WriteString(9, "$SPLFRAME");
   if (getInt("$SPLFRAME", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$SPLINETYPE");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$SPLINETYPE");
   if (getInt("$SPLINETYPE", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 2);
-  writer->writeString(9, "$SPLINESEGS");
+    writer->WriteInt16(70, 2);
+  writer->WriteString(9, "$SPLINESEGS");
   if (getInt("$SPLINESEGS", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 8);
+    writer->WriteInt16(70, 8);
   if (version < DRW::Version::AC1012) {
-    writer->writeString(9, "$ATTDIA");
+    writer->WriteString(9, "$ATTDIA");
     if (getInt("$ATTDIA", &varInt)) {
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     } else
-      writer->writeInt16(70, 1);
-    writer->writeString(9, "$ATTREQ");
+      writer->WriteInt16(70, 1);
+    writer->WriteString(9, "$ATTREQ");
     if (getInt("$ATTREQ", &varInt)) {
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     } else
-      writer->writeInt16(70, 1);
-    writer->writeString(9, "$HANDLING");
+      writer->WriteInt16(70, 1);
+    writer->WriteString(9, "$HANDLING");
     if (getInt("$HANDLING", &varInt)) {
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     } else
-      writer->writeInt16(70, 1);
+      writer->WriteInt16(70, 1);
   }
-  writer->writeString(9, "$HANDSEED");
-  writer->writeString(5, "20000");
-  writer->writeString(9, "$SURFTAB1");
+  writer->WriteString(9, "$HANDSEED");
+  writer->WriteString(5, "20000");
+  writer->WriteString(9, "$SURFTAB1");
   if (getInt("$SURFTAB1", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 6);
-  writer->writeString(9, "$SURFTAB2");
+    writer->WriteInt16(70, 6);
+  writer->WriteString(9, "$SURFTAB2");
   if (getInt("$SURFTAB2", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 6);
-  writer->writeString(9, "$SURFTYPE");
+    writer->WriteInt16(70, 6);
+  writer->WriteString(9, "$SURFTYPE");
   if (getInt("$SURFTYPE", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 6);
-  writer->writeString(9, "$SURFU");
+    writer->WriteInt16(70, 6);
+  writer->WriteString(9, "$SURFU");
   if (getInt("$SURFU", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 6);
-  writer->writeString(9, "$SURFV");
+    writer->WriteInt16(70, 6);
+  writer->WriteString(9, "$SURFV");
   if (getInt("$SURFV", &varInt)) {
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   } else
-    writer->writeInt16(70, 6);
+    writer->WriteInt16(70, 6);
   if (version > DRW::Version::AC1009) {
-    writer->writeString(9, "$UCSBASE");
+    writer->WriteString(9, "$UCSBASE");
     if (getStr("$UCSBASE", &varStr))
       if (version == DRW::Version::AC1009)
-        writer->writeUtf8Caps(2, varStr);
+        writer->WriteUtf8Caps(2, varStr);
       else
-        writer->writeUtf8String(2, varStr);
+        writer->WriteUtf8String(2, varStr);
     else
-      writer->writeString(2, "");
+      writer->WriteString(2, "");
   }
-  writer->writeString(9, "$UCSNAME");
+  writer->WriteString(9, "$UCSNAME");
   if (getStr("$UCSNAME", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(2, varStr);
+      writer->WriteUtf8Caps(2, varStr);
     else
-      writer->writeUtf8String(2, varStr);
+      writer->WriteUtf8String(2, varStr);
   else
-    writer->writeString(2, "");
-  writer->writeString(9, "$UCSORG");
+    writer->WriteString(2, "");
+  writer->WriteString(9, "$UCSORG");
   if (getCoord("$UCSORG", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
-    writer->writeDouble(30, varCoord.z);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
+    writer->WriteDouble(30, varCoord.z);
   } else {
-    writer->writeDouble(10, 0.0);
-    writer->writeDouble(20, 0.0);
-    writer->writeDouble(30, 0.0);
+    writer->WriteDouble(10, 0.0);
+    writer->WriteDouble(20, 0.0);
+    writer->WriteDouble(30, 0.0);
   }
-  writer->writeString(9, "$UCSXDIR");
+  writer->WriteString(9, "$UCSXDIR");
   if (getCoord("$UCSXDIR", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
-    writer->writeDouble(30, varCoord.z);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
+    writer->WriteDouble(30, varCoord.z);
   } else {
-    writer->writeDouble(10, 1.0);
-    writer->writeDouble(20, 0.0);
-    writer->writeDouble(30, 0.0);
+    writer->WriteDouble(10, 1.0);
+    writer->WriteDouble(20, 0.0);
+    writer->WriteDouble(30, 0.0);
   }
-  writer->writeString(9, "$UCSYDIR");
+  writer->WriteString(9, "$UCSYDIR");
   if (getCoord("$UCSYDIR", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
-    writer->writeDouble(30, varCoord.z);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
+    writer->WriteDouble(30, varCoord.z);
   } else {
-    writer->writeDouble(10, 0.0);
-    writer->writeDouble(20, 1.0);
-    writer->writeDouble(30, 0.0);
+    writer->WriteDouble(10, 0.0);
+    writer->WriteDouble(20, 1.0);
+    writer->WriteDouble(30, 0.0);
   }
   if (version > DRW::Version::AC1009) {
-    writer->writeString(9, "$UCSORTHOREF");
+    writer->WriteString(9, "$UCSORTHOREF");
     if (getStr("$UCSORTHOREF", &varStr))
       if (version == DRW::Version::AC1009)
-        writer->writeUtf8Caps(2, varStr);
+        writer->WriteUtf8Caps(2, varStr);
       else
-        writer->writeUtf8String(2, varStr);
+        writer->WriteUtf8String(2, varStr);
     else
-      writer->writeString(2, "");
-    writer->writeString(9, "$UCSORTHOVIEW");
+      writer->WriteString(2, "");
+    writer->WriteString(9, "$UCSORTHOVIEW");
     if (getInt("$UCSORTHOVIEW", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$UCSORGTOP");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$UCSORGTOP");
     if (getCoord("$UCSORGTOP", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
-    writer->writeString(9, "$UCSORGBOTTOM");
+    writer->WriteString(9, "$UCSORGBOTTOM");
     if (getCoord("$UCSORGBOTTOM", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
-    writer->writeString(9, "$UCSORGLEFT");
+    writer->WriteString(9, "$UCSORGLEFT");
     if (getCoord("$UCSORGLEFT", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
-    writer->writeString(9, "$UCSORGRIGHT");
+    writer->WriteString(9, "$UCSORGRIGHT");
     if (getCoord("$UCSORGRIGHT", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
-    writer->writeString(9, "$UCSORGFRONT");
+    writer->WriteString(9, "$UCSORGFRONT");
     if (getCoord("$UCSORGFRONT", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
-    writer->writeString(9, "$UCSORGBACK");
+    writer->WriteString(9, "$UCSORGBACK");
     if (getCoord("$UCSORGBACK", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
-    writer->writeString(9, "$PUCSBASE");
+    writer->WriteString(9, "$PUCSBASE");
     if (getStr("$PUCSBASE", &varStr))
       if (version == DRW::Version::AC1009)
-        writer->writeUtf8Caps(2, varStr);
+        writer->WriteUtf8Caps(2, varStr);
       else
-        writer->writeUtf8String(2, varStr);
+        writer->WriteUtf8String(2, varStr);
     else
-      writer->writeString(2, "");
+      writer->WriteString(2, "");
   }  //end post r12 UCS vars
-  writer->writeString(9, "$PUCSNAME");
+  writer->WriteString(9, "$PUCSNAME");
   if (getStr("$PUCSNAME", &varStr))
     if (version == DRW::Version::AC1009)
-      writer->writeUtf8Caps(2, varStr);
+      writer->WriteUtf8Caps(2, varStr);
     else
-      writer->writeUtf8String(2, varStr);
+      writer->WriteUtf8String(2, varStr);
   else
-    writer->writeString(2, "");
-  writer->writeString(9, "$PUCSORG");
+    writer->WriteString(2, "");
+  writer->WriteString(9, "$PUCSORG");
   if (getCoord("$PUCSORG", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
-    writer->writeDouble(30, varCoord.z);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
+    writer->WriteDouble(30, varCoord.z);
   } else {
-    writer->writeDouble(10, 0.0);
-    writer->writeDouble(20, 0.0);
-    writer->writeDouble(30, 0.0);
+    writer->WriteDouble(10, 0.0);
+    writer->WriteDouble(20, 0.0);
+    writer->WriteDouble(30, 0.0);
   }
-  writer->writeString(9, "$PUCSXDIR");
+  writer->WriteString(9, "$PUCSXDIR");
   if (getCoord("$PUCSXDIR", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
-    writer->writeDouble(30, varCoord.z);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
+    writer->WriteDouble(30, varCoord.z);
   } else {
-    writer->writeDouble(10, 1.0);
-    writer->writeDouble(20, 0.0);
-    writer->writeDouble(30, 0.0);
+    writer->WriteDouble(10, 1.0);
+    writer->WriteDouble(20, 0.0);
+    writer->WriteDouble(30, 0.0);
   }
-  writer->writeString(9, "$PUCSYDIR");
+  writer->WriteString(9, "$PUCSYDIR");
   if (getCoord("$PUCSYDIR", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
-    writer->writeDouble(30, varCoord.z);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
+    writer->WriteDouble(30, varCoord.z);
   } else {
-    writer->writeDouble(10, 0.0);
-    writer->writeDouble(20, 1.0);
-    writer->writeDouble(30, 0.0);
+    writer->WriteDouble(10, 0.0);
+    writer->WriteDouble(20, 1.0);
+    writer->WriteDouble(30, 0.0);
   }
   if (version > DRW::Version::AC1009) {
-    writer->writeString(9, "$PUCSORTHOREF");
+    writer->WriteString(9, "$PUCSORTHOREF");
     if (getStr("$PUCSORTHOREF", &varStr))
       if (version == DRW::Version::AC1009)
-        writer->writeUtf8Caps(2, varStr);
+        writer->WriteUtf8Caps(2, varStr);
       else
-        writer->writeUtf8String(2, varStr);
+        writer->WriteUtf8String(2, varStr);
     else
-      writer->writeString(2, "");
-    writer->writeString(9, "$PUCSORTHOVIEW");
+      writer->WriteString(2, "");
+    writer->WriteString(9, "$PUCSORTHOVIEW");
     if (getInt("$PUCSORTHOVIEW", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$PUCSORGTOP");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$PUCSORGTOP");
     if (getCoord("$PUCSORGTOP", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
-    writer->writeString(9, "$PUCSORGBOTTOM");
+    writer->WriteString(9, "$PUCSORGBOTTOM");
     if (getCoord("$PUCSORGBOTTOM", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
-    writer->writeString(9, "$PUCSORGLEFT");
+    writer->WriteString(9, "$PUCSORGLEFT");
     if (getCoord("$PUCSORGLEFT", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
-    writer->writeString(9, "$PUCSORGRIGHT");
+    writer->WriteString(9, "$PUCSORGRIGHT");
     if (getCoord("$PUCSORGRIGHT", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
-    writer->writeString(9, "$PUCSORGFRONT");
+    writer->WriteString(9, "$PUCSORGFRONT");
     if (getCoord("$PUCSORGFRONT", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
-    writer->writeString(9, "$PUCSORGBACK");
+    writer->WriteString(9, "$PUCSORGBACK");
     if (getCoord("$PUCSORGBACK", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
   }  //end post r12 PUCS vars
 
-  writer->writeString(9, "$USERI1");
+  writer->WriteString(9, "$USERI1");
   if (getInt("$USERI1", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$USERI2");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$USERI2");
   if (getInt("$USERI2", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$USERI3");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$USERI3");
   if (getInt("$USERI3", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$USERI4");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$USERI4");
   if (getInt("$USERI4", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$USERI5");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$USERI5");
   if (getInt("$USERI5", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$USERR1");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$USERR1");
   if (GetDouble("$USERR1", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$USERR2");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$USERR2");
   if (GetDouble("$USERR2", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$USERR3");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$USERR3");
   if (GetDouble("$USERR3", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$USERR4");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$USERR4");
   if (GetDouble("$USERR4", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$USERR5");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$USERR5");
   if (GetDouble("$USERR5", &varDouble))
-    writer->writeDouble(40, varDouble);
+    writer->WriteDouble(40, varDouble);
   else
-    writer->writeDouble(40, 0.0);
-  writer->writeString(9, "$WORLDVIEW");
+    writer->WriteDouble(40, 0.0);
+  writer->WriteString(9, "$WORLDVIEW");
   if (getInt("$WORLDVIEW", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 1);
-  writer->writeString(9, "$SHADEDGE");
+    writer->WriteInt16(70, 1);
+  writer->WriteString(9, "$SHADEDGE");
   if (getInt("$SHADEDGE", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 3);
-  writer->writeString(9, "$SHADEDIF");
+    writer->WriteInt16(70, 3);
+  writer->WriteString(9, "$SHADEDIF");
   if (getInt("$SHADEDIF", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 70);
-  writer->writeString(9, "$TILEMODE");
+    writer->WriteInt16(70, 70);
+  writer->WriteString(9, "$TILEMODE");
   if (getInt("$TILEMODE", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 1);
-  writer->writeString(9, "$MAXACTVP");
+    writer->WriteInt16(70, 1);
+  writer->WriteString(9, "$MAXACTVP");
   if (getInt("$MAXACTVP", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 64);
+    writer->WriteInt16(70, 64);
   if (version > DRW::Version::AC1009) {
-    writer->writeString(9, "$PINSBASE");
+    writer->WriteString(9, "$PINSBASE");
     if (getCoord("$PINSBASE", &varCoord)) {
-      writer->writeDouble(10, varCoord.x);
-      writer->writeDouble(20, varCoord.y);
-      writer->writeDouble(30, varCoord.z);
+      writer->WriteDouble(10, varCoord.x);
+      writer->WriteDouble(20, varCoord.y);
+      writer->WriteDouble(30, varCoord.z);
     } else {
-      writer->writeDouble(10, 0.0);
-      writer->writeDouble(20, 0.0);
-      writer->writeDouble(30, 0.0);
+      writer->WriteDouble(10, 0.0);
+      writer->WriteDouble(20, 0.0);
+      writer->WriteDouble(30, 0.0);
     }
   }
-  writer->writeString(9, "$PLIMCHECK");
+  writer->WriteString(9, "$PLIMCHECK");
   if (getInt("$PLIMCHECK", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$PEXTMIN");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$PEXTMIN");
   if (getCoord("$PEXTMIN", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
-    writer->writeDouble(30, varCoord.z);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
+    writer->WriteDouble(30, varCoord.z);
   } else {
-    writer->writeDouble(10, 0.0);
-    writer->writeDouble(20, 0.0);
-    writer->writeDouble(30, 0.0);
+    writer->WriteDouble(10, 0.0);
+    writer->WriteDouble(20, 0.0);
+    writer->WriteDouble(30, 0.0);
   }
-  writer->writeString(9, "$PEXTMAX");
+  writer->WriteString(9, "$PEXTMAX");
   if (getCoord("$PEXTMAX", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
-    writer->writeDouble(30, varCoord.z);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
+    writer->WriteDouble(30, varCoord.z);
   } else {
-    writer->writeDouble(10, 0.0);
-    writer->writeDouble(20, 0.0);
-    writer->writeDouble(30, 0.0);
+    writer->WriteDouble(10, 0.0);
+    writer->WriteDouble(20, 0.0);
+    writer->WriteDouble(30, 0.0);
   }
 
   if (getInt("$GRIDMODE", &varInt)) {
-    writer->writeString(9, "$GRIDMODE");
-    writer->writeInt16(70, varInt);
+    writer->WriteString(9, "$GRIDMODE");
+    writer->WriteInt16(70, varInt);
   }
   if (getInt("$SNAPSTYLE", &varInt)) {
-    writer->writeString(9, "$SNAPSTYLE");
-    writer->writeInt16(70, varInt);
+    writer->WriteString(9, "$SNAPSTYLE");
+    writer->WriteInt16(70, varInt);
   }
   if (getCoord("$GRIDUNIT", &varCoord)) {
-    writer->writeString(9, "$GRIDUNIT");
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
+    writer->WriteString(9, "$GRIDUNIT");
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
   }
   if (getCoord("$VIEWCTR", &varCoord)) {
-    writer->writeString(9, "$VIEWCTR");
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
+    writer->WriteString(9, "$VIEWCTR");
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
   }
 
-  writer->writeString(9, "$PLIMMIN");
+  writer->WriteString(9, "$PLIMMIN");
   if (getCoord("$PLIMMIN", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
   } else {
-    writer->writeDouble(10, 0.0);
-    writer->writeDouble(20, 0.0);
+    writer->WriteDouble(10, 0.0);
+    writer->WriteDouble(20, 0.0);
   }
-  writer->writeString(9, "$PLIMMAX");
+  writer->WriteString(9, "$PLIMMAX");
   if (getCoord("$PLIMMAX", &varCoord)) {
-    writer->writeDouble(10, varCoord.x);
-    writer->writeDouble(20, varCoord.y);
+    writer->WriteDouble(10, varCoord.x);
+    writer->WriteDouble(20, varCoord.y);
   } else {
-    writer->writeDouble(10, 297.0);
-    writer->writeDouble(20, 210.0);
+    writer->WriteDouble(10, 297.0);
+    writer->WriteDouble(20, 210.0);
   }
-  writer->writeString(9, "$UNITMODE");
+  writer->WriteString(9, "$UNITMODE");
   if (getInt("$UNITMODE", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$VISRETAIN");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$VISRETAIN");
   if (getInt("$VISRETAIN", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 1);
-  writer->writeString(9, "$PLINEGEN");
+    writer->WriteInt16(70, 1);
+  writer->WriteString(9, "$PLINEGEN");
   if (getInt("$PLINEGEN", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 0);
-  writer->writeString(9, "$PSLTSCALE");
+    writer->WriteInt16(70, 0);
+  writer->WriteString(9, "$PSLTSCALE");
   if (getInt("$PSLTSCALE", &varInt))
-    writer->writeInt16(70, varInt);
+    writer->WriteInt16(70, varInt);
   else
-    writer->writeInt16(70, 1);
+    writer->WriteInt16(70, 1);
   if (version > DRW::Version::AC1009) {
-    writer->writeString(9, "$TREEDEPTH");
+    writer->WriteString(9, "$TREEDEPTH");
     if (getInt("$TREEDEPTH", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 3020);
-    writer->writeString(9, "$CMLSTYLE");
+      writer->WriteInt16(70, 3020);
+    writer->WriteString(9, "$CMLSTYLE");
     if (getStr("$CMLSTYLE", &varStr))
       if (version == DRW::Version::AC1009)
-        writer->writeUtf8Caps(2, varStr);
+        writer->WriteUtf8Caps(2, varStr);
       else
-        writer->writeUtf8String(2, varStr);
+        writer->WriteUtf8String(2, varStr);
     else
-      writer->writeString(2, "Standard");
-    writer->writeString(9, "$CMLJUST");
+      writer->WriteString(2, "Standard");
+    writer->WriteString(9, "$CMLJUST");
     if (getInt("$CMLJUST", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 0);
-    writer->writeString(9, "$CMLSCALE");
+      writer->WriteInt16(70, 0);
+    writer->WriteString(9, "$CMLSCALE");
     if (GetDouble("$CMLSCALE", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 20.0);
-    writer->writeString(9, "$PROXYGRAPHICS");
+      writer->WriteDouble(40, 20.0);
+    writer->WriteString(9, "$PROXYGRAPHICS");
     if (getInt("$PROXYGRAPHICS", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 1);
-    writer->writeString(9, "$MEASUREMENT");
+      writer->WriteInt16(70, 1);
+    writer->WriteString(9, "$MEASUREMENT");
     if (getInt("$MEASUREMENT", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 1);
-    writer->writeString(9, "$CELWEIGHT");
+      writer->WriteInt16(70, 1);
+    writer->WriteString(9, "$CELWEIGHT");
     if (getInt("$CELWEIGHT", &varInt))
-      writer->writeInt16(370, varInt);
+      writer->WriteInt16(370, varInt);
     else
-      writer->writeInt16(370, -1);
-    writer->writeString(9, "$ENDCAPS");
+      writer->WriteInt16(370, -1);
+    writer->WriteString(9, "$ENDCAPS");
     if (getInt("$ENDCAPS", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 0);
-    writer->writeString(9, "$JOINSTYLE");
+      writer->WriteInt16(280, 0);
+    writer->WriteString(9, "$JOINSTYLE");
     if (getInt("$JOINSTYLE", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 0);
-    writer->writeString(9, "$LWDISPLAY");
+      writer->WriteInt16(280, 0);
+    writer->WriteString(9, "$LWDISPLAY");
     if (getInt("$LWDISPLAY", &varInt))
-      writer->writeInt16(290, varInt);
+      writer->WriteInt16(290, varInt);
     else
-      writer->writeInt16(290, 0);
+      writer->WriteInt16(290, 0);
     if (version > DRW::Version::AC1014) {
-      writer->writeString(9, "$INSUNITS");
+      writer->WriteString(9, "$INSUNITS");
       if (getInt("$INSUNITS", &varInt))
-        writer->writeInt16(70, varInt);
+        writer->WriteInt16(70, varInt);
       else
-        writer->writeInt16(70, 0);
+        writer->WriteInt16(70, 0);
     }
-    writer->writeString(9, "$HYPERLINKBASE");
+    writer->WriteString(9, "$HYPERLINKBASE");
     if (getStr("$HYPERLINKBASE", &varStr))
       if (version == DRW::Version::AC1009)
-        writer->writeUtf8Caps(1, varStr);
+        writer->WriteUtf8Caps(1, varStr);
       else
-        writer->writeUtf8String(1, varStr);
+        writer->WriteUtf8String(1, varStr);
     else
-      writer->writeString(1, "");
-    writer->writeString(9, "$STYLESHEET");
+      writer->WriteString(1, "");
+    writer->WriteString(9, "$STYLESHEET");
     if (getStr("$STYLESHEET", &varStr))
       if (version == DRW::Version::AC1009)
-        writer->writeUtf8Caps(1, varStr);
+        writer->WriteUtf8Caps(1, varStr);
       else
-        writer->writeUtf8String(1, varStr);
+        writer->WriteUtf8String(1, varStr);
     else
-      writer->writeString(1, "");
-    writer->writeString(9, "$XEDIT");
+      writer->WriteString(1, "");
+    writer->WriteString(9, "$XEDIT");
     if (getInt("$XEDIT", &varInt))
-      writer->writeInt16(290, varInt);
+      writer->WriteInt16(290, varInt);
     else
-      writer->writeInt16(290, 1);
-    writer->writeString(9, "$CEPSNTYPE");
+      writer->WriteInt16(290, 1);
+    writer->WriteString(9, "$CEPSNTYPE");
     if (getInt("$CEPSNTYPE", &varInt))
-      writer->writeInt16(380, varInt);
+      writer->WriteInt16(380, varInt);
     else
-      writer->writeInt16(380, 0);
-    writer->writeString(9, "$PSTYLEMODE");
+      writer->WriteInt16(380, 0);
+    writer->WriteString(9, "$PSTYLEMODE");
     if (getInt("$PSTYLEMODE", &varInt)) {
-      writer->writeInt16(290, varInt);
+      writer->WriteInt16(290, varInt);
     } else {
-      writer->writeInt16(290, 1);
+      writer->WriteInt16(290, 1);
     }
 
-    writer->writeString(9, "$EXTNAMES");
+    writer->WriteString(9, "$EXTNAMES");
     if (getInt("$EXTNAMES", &varInt))
-      writer->writeInt16(290, varInt);
+      writer->WriteInt16(290, varInt);
     else
-      writer->writeInt16(290, 1);
-    writer->writeString(9, "$PSVPSCALE");
+      writer->WriteInt16(290, 1);
+    writer->WriteString(9, "$PSVPSCALE");
     if (GetDouble("$PSVPSCALE", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 0.0);
-    writer->writeString(9, "$OLESTARTUP");
+      writer->WriteDouble(40, 0.0);
+    writer->WriteString(9, "$OLESTARTUP");
     if (getInt("$OLESTARTUP", &varInt))
-      writer->writeInt16(290, varInt);
+      writer->WriteInt16(290, varInt);
     else
-      writer->writeInt16(290, 0);
+      writer->WriteInt16(290, 0);
   }
   if (version > DRW::Version::AC1015) {
-    writer->writeString(9, "$SORTENTS");
+    writer->WriteString(9, "$SORTENTS");
     if (getInt("$SORTENTS", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 127);
-    writer->writeString(9, "$INDEXCTL");
+      writer->WriteInt16(280, 127);
+    writer->WriteString(9, "$INDEXCTL");
     if (getInt("$INDEXCTL", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 0);
-    writer->writeString(9, "$HIDETEXT");
+      writer->WriteInt16(280, 0);
+    writer->WriteString(9, "$HIDETEXT");
     if (getInt("$HIDETEXT", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 1);
-    writer->writeString(9, "$XCLIPFRAME");
+      writer->WriteInt16(280, 1);
+    writer->WriteString(9, "$XCLIPFRAME");
     if (version > DRW::Version::AC1021) {
       if (getInt("$XCLIPFRAME", &varInt))
-        writer->writeInt16(280, varInt);
+        writer->WriteInt16(280, varInt);
       else
-        writer->writeInt16(280, 0);
+        writer->WriteInt16(280, 0);
     } else {
       if (getInt("$XCLIPFRAME", &varInt))
-        writer->writeInt16(290, varInt);
+        writer->WriteInt16(290, varInt);
       else
-        writer->writeInt16(290, 0);
+        writer->WriteInt16(290, 0);
     }
-    writer->writeString(9, "$HALOGAP");
+    writer->WriteString(9, "$HALOGAP");
     if (getInt("$HALOGAP", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 0);
-    writer->writeString(9, "$OBSCOLOR");
+      writer->WriteInt16(280, 0);
+    writer->WriteString(9, "$OBSCOLOR");
     if (getInt("$OBSCOLOR", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 257);
-    writer->writeString(9, "$OBSLTYPE");
+      writer->WriteInt16(70, 257);
+    writer->WriteString(9, "$OBSLTYPE");
     if (getInt("$OBSLTYPE", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 0);
-    writer->writeString(9, "$INTERSECTIONDISPLAY");
+      writer->WriteInt16(280, 0);
+    writer->WriteString(9, "$INTERSECTIONDISPLAY");
     if (getInt("$INTERSECTIONDISPLAY", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 0);
-    writer->writeString(9, "$INTERSECTIONCOLOR");
+      writer->WriteInt16(280, 0);
+    writer->WriteString(9, "$INTERSECTIONCOLOR");
     if (getInt("$INTERSECTIONCOLOR", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 257);
-    writer->writeString(9, "$DIMASSOC");
+      writer->WriteInt16(70, 257);
+    writer->WriteString(9, "$DIMASSOC");
     if (getInt("$DIMASSOC", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 1);
-    writer->writeString(9, "$PROJECTNAME");
+      writer->WriteInt16(280, 1);
+    writer->WriteString(9, "$PROJECTNAME");
     if (getStr("$PROJECTNAME", &varStr))
-      writer->writeUtf8String(1, varStr);
+      writer->WriteUtf8String(1, varStr);
     else
-      writer->writeString(1, "");
+      writer->WriteString(1, "");
   }
   if (version > DRW::Version::AC1018) {
-    writer->writeString(9, "$CAMERADISPLAY");
+    writer->WriteString(9, "$CAMERADISPLAY");
     if (getInt("$CAMERADISPLAY", &varInt))
-      writer->writeInt16(290, varInt);
+      writer->WriteInt16(290, varInt);
     else
-      writer->writeInt16(290, 0);
-    writer->writeString(9, "$LENSLENGTH");
+      writer->WriteInt16(290, 0);
+    writer->WriteString(9, "$LENSLENGTH");
     if (GetDouble("$LENSLENGTH", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 50.0);
-    writer->writeString(9, "$CAMERAHEIGHT");
+      writer->WriteDouble(40, 50.0);
+    writer->WriteString(9, "$CAMERAHEIGHT");
     if (GetDouble("$CAMERAHEIGTH", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 0.0);
-    writer->writeString(9, "$STEPSPERSEC");
+      writer->WriteDouble(40, 0.0);
+    writer->WriteString(9, "$STEPSPERSEC");
     if (GetDouble("$STEPSPERSEC", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 2.0);
-    writer->writeString(9, "$STEPSIZE");
+      writer->WriteDouble(40, 2.0);
+    writer->WriteString(9, "$STEPSIZE");
     if (GetDouble("$STEPSIZE", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 50.0);
-    writer->writeString(9, "$3DDWFPREC");
+      writer->WriteDouble(40, 50.0);
+    writer->WriteString(9, "$3DDWFPREC");
     if (GetDouble("$3DDWFPREC", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 2.0);
-    writer->writeString(9, "$PSOLWIDTH");
+      writer->WriteDouble(40, 2.0);
+    writer->WriteString(9, "$PSOLWIDTH");
     if (GetDouble("$PSOLWIDTH", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 5.0);
-    writer->writeString(9, "$PSOLHEIGHT");
+      writer->WriteDouble(40, 5.0);
+    writer->WriteString(9, "$PSOLHEIGHT");
     if (GetDouble("$PSOLHEIGHT", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 80.0);
-    writer->writeString(9, "$LOFTANG1");
+      writer->WriteDouble(40, 80.0);
+    writer->WriteString(9, "$LOFTANG1");
     if (GetDouble("$LOFTANG1", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, DRW::HalfPi);
-    writer->writeString(9, "$LOFTANG2");
+      writer->WriteDouble(40, DRW::HalfPi);
+    writer->WriteString(9, "$LOFTANG2");
     if (GetDouble("$LOFTANG2", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, DRW::HalfPi);
-    writer->writeString(9, "$LOFTMAG1");
+      writer->WriteDouble(40, DRW::HalfPi);
+    writer->WriteString(9, "$LOFTMAG1");
     if (GetDouble("$LOFTMAG1", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 0.0);
-    writer->writeString(9, "$LOFTMAG2");
+      writer->WriteDouble(40, 0.0);
+    writer->WriteString(9, "$LOFTMAG2");
     if (GetDouble("$LOFTMAG2", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 0.0);
-    writer->writeString(9, "$LOFTPARAM");
+      writer->WriteDouble(40, 0.0);
+    writer->WriteString(9, "$LOFTPARAM");
     if (getInt("$LOFTPARAM", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, 7);
-    writer->writeString(9, "$LOFTNORMALS");
+      writer->WriteInt16(70, 7);
+    writer->WriteString(9, "$LOFTNORMALS");
     if (getInt("$LOFTNORMALS", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 1);
-    writer->writeString(9, "$LATITUDE");
+      writer->WriteInt16(280, 1);
+    writer->WriteString(9, "$LATITUDE");
     if (GetDouble("$LATITUDE", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 1.0);
-    writer->writeString(9, "$LONGITUDE");
+      writer->WriteDouble(40, 1.0);
+    writer->WriteString(9, "$LONGITUDE");
     if (GetDouble("$LONGITUDE", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 1.0);
-    writer->writeString(9, "$NORTHDIRECTION");
+      writer->WriteDouble(40, 1.0);
+    writer->WriteString(9, "$NORTHDIRECTION");
     if (GetDouble("$LONGITUDE", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 0.0);
-    writer->writeString(9, "$TIMEZONE");
+      writer->WriteDouble(40, 0.0);
+    writer->WriteString(9, "$TIMEZONE");
     if (getInt("$TIMEZONE", &varInt))
-      writer->writeInt16(70, varInt);
+      writer->WriteInt16(70, varInt);
     else
-      writer->writeInt16(70, -8000);
-    writer->writeString(9, "$LIGHTGLYPHDISPLAY");
+      writer->WriteInt16(70, -8000);
+    writer->WriteString(9, "$LIGHTGLYPHDISPLAY");
     if (getInt("$LIGHTGLYPHDISPLAY", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 1);
-    writer->writeString(9, "$TILEMODELIGHTSYNCH");
+      writer->WriteInt16(280, 1);
+    writer->WriteString(9, "$TILEMODELIGHTSYNCH");
     if (getInt("$TILEMODELIGHTSYNCH", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 1);
+      writer->WriteInt16(280, 1);
     //$CMATERIAL is a handle
-    writer->writeString(9, "$SOLIDHIST");
+    writer->WriteString(9, "$SOLIDHIST");
     if (getInt("$SOLIDHIST", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 1);
-    writer->writeString(9, "$SHOWHIST");
+      writer->WriteInt16(280, 1);
+    writer->WriteString(9, "$SHOWHIST");
     if (getInt("$SHOWHIST", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 1);
-    writer->writeString(9, "$DWFFRAME");
+      writer->WriteInt16(280, 1);
+    writer->WriteString(9, "$DWFFRAME");
     if (getInt("$DWFFRAME", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 2);
-    writer->writeString(9, "$DGNFRAME");
+      writer->WriteInt16(280, 2);
+    writer->WriteString(9, "$DGNFRAME");
     if (getInt("$DGNFRAME", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 0);
-    writer->writeString(9, "$REALWORLDSCALE");
+      writer->WriteInt16(280, 0);
+    writer->WriteString(9, "$REALWORLDSCALE");
     if (getInt("$REALWORLDSCALE", &varInt))
-      writer->writeInt16(290, varInt);
+      writer->WriteInt16(290, varInt);
     else
-      writer->writeInt16(290, 1);
-    writer->writeString(9, "$INTERFERECOLOR");
+      writer->WriteInt16(290, 1);
+    writer->WriteString(9, "$INTERFERECOLOR");
     if (getInt("$INTERFERECOLOR", &varInt))
-      writer->writeInt16(62, varInt);
+      writer->WriteInt16(62, varInt);
     else
-      writer->writeInt16(62, 1);
+      writer->WriteInt16(62, 1);
     //$INTERFEREOBJVS is a handle
     //$INTERFEREVPVS is a handle
-    writer->writeString(9, "$CSHADOW");
+    writer->WriteString(9, "$CSHADOW");
     if (getInt("$CSHADOW", &varInt))
-      writer->writeInt16(280, varInt);
+      writer->WriteInt16(280, varInt);
     else
-      writer->writeInt16(280, 0);
-    writer->writeString(9, "$SHADOWPLANELOCATION");
+      writer->WriteInt16(280, 0);
+    writer->WriteString(9, "$SHADOWPLANELOCATION");
     if (GetDouble("$SHADOWPLANELOCATION", &varDouble))
-      writer->writeDouble(40, varDouble);
+      writer->WriteDouble(40, varDouble);
     else
-      writer->writeDouble(40, 0.0);
+      writer->WriteDouble(40, 0.0);
   }
 
 #ifdef DRW_DBG

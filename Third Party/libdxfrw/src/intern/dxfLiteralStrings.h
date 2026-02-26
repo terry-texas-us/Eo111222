@@ -2,6 +2,15 @@
 
 #include <string_view>
 
+namespace DRW {
+//---- Header variable names (for group code 9) ----
+namespace header {
+constexpr std::string_view ACADMAINVERSION = "$ACADMAJOR";
+constexpr std::string_view ACADVER = "$ACADVER";
+constexpr std::string_view ANGBASE = "$ANGBASE";
+}  // namespace header
+}  // namespace DRW
+
 namespace dxfrw {
 namespace dxf {
 
