@@ -109,8 +109,7 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
   m_extrusion.Normalize();
 }
 
-EoDbConic* EoDbConic::CreateCircle(
-    const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius) {
+EoDbConic* EoDbConic::CreateCircle(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius) {
   auto majorAxis = ComputeArbitraryAxis(extrusion) * radius;
   return new EoDbConic(center, extrusion, majorAxis, 1.0, 0.0, Eo::TwoPi);
 }
@@ -538,94 +537,96 @@ void EoDbConic::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* 
 
   double dRad = std::sqrt(dx * dx + dy * dy);
 
-  (*arMin).x = m_center.x - dRad;
-  (*arMin).y = m_center.y - dRad;
-  (*arMax).x = m_center.x + dRad;
-  (*arMax).y = m_center.y + dRad;
+  arMin->x = m_center.x - dRad;
+  arMin->y = m_center.y - dRad;
+  arMax->x = m_center.x + dRad;
+  arMax->y = m_center.y + dRad;
 
   if (arBeg.x >= m_center.x) {
     if (arBeg.y >= m_center.y) {  // Arc begins in quadrant one
       if (arEnd.x >= m_center.x) {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant one
           if (arBeg.x > arEnd.x) {    // Arc in quadrant one only
-            (*arMin).x = arEnd.x;
-            (*arMin).y = arBeg.y;
-            (*arMax).x = arBeg.x;
-            (*arMax).y = arEnd.y;
+            arMin->x = arEnd.x;
+            arMin->y = arBeg.y;
+            arMax->x = arBeg.x;
+            arMax->y = arEnd.y;
           }
         } else  // Arc ends in quadrant four
-          (*arMax).x = std::max(arBeg.x, arEnd.x);
+          arMax->x = std::max(arBeg.x, arEnd.x);
       } else {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
-          (*arMin).x = arEnd.x;
-          (*arMin).y = std::min(arBeg.y, arEnd.y);
-        } else  // Arc ends in quadrant three
-          (*arMin).y = arEnd.y;
-        (*arMax).x = arBeg.x;
+          arMin->x = arEnd.x;
+          arMin->y = std::min(arBeg.y, arEnd.y);
+        } else {  // Arc ends in quadrant three
+          arMin->y = arEnd.y;
+        }
+        arMax->x = arBeg.x;
       }
     } else {  // Arc begins in quadrant four
       if (arEnd.x >= m_center.x) {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant one
-          (*arMin).x = std::min(arBeg.x, arEnd.x);
-          (*arMin).y = arBeg.y;
-          (*arMax).y = arEnd.y;
+          arMin->x = std::min(arBeg.x, arEnd.x);
+          arMin->y = arBeg.y;
+          arMax->y = arEnd.y;
         } else {                    // Arc ends in quadrant four
           if (arBeg.x < arEnd.x) {  // Arc in quadrant one only
-            (*arMin).x = arBeg.x;
-            (*arMin).y = arBeg.y;
-            (*arMax).x = arEnd.x;
-            (*arMax).y = arEnd.y;
+            arMin->x = arBeg.x;
+            arMin->y = arBeg.y;
+            arMax->x = arEnd.x;
+            arMax->y = arEnd.y;
           }
         }
       } else {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
-          (*arMin).x = arEnd.x;
-          (*arMin).y = arBeg.y;
-        } else  // Arc ends in quadrant three
-          (*arMin).y = std::min(arBeg.y, arEnd.y);
+          arMin->x = arEnd.x;
+          arMin->y = arBeg.y;
+        } else {  // Arc ends in quadrant three
+          arMin->y = std::min(arBeg.y, arEnd.y);
+        }
       }
     }
   } else {
     if (arBeg.y >= m_center.y) {  // Arc begins in quadrant two
       if (arEnd.x >= m_center.x) {
         if (arEnd.y >= m_center.y)  // Arc ends in quadrant one
-          (*arMax).y = std::max(arBeg.y, arEnd.y);
+          arMax->y = std::max(arBeg.y, arEnd.y);
         else {  // Arc ends in quadrant four
-          (*arMax).x = arEnd.x;
-          (*arMax).y = arBeg.y;
+          arMax->x = arEnd.x;
+          arMax->y = arBeg.y;
         }
       } else {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
           if (arBeg.x > arEnd.x) {    // Arc in quadrant two only
-            (*arMin).x = arEnd.x;
-            (*arMin).y = arEnd.y;
-            (*arMax).x = arBeg.x;
-            (*arMax).y = arBeg.y;
+            arMin->x = arEnd.x;
+            arMin->y = arEnd.y;
+            arMax->x = arBeg.x;
+            arMax->y = arBeg.y;
           }
         } else {  // Arc ends in quadrant three
-          (*arMin).y = arEnd.y;
-          (*arMax).x = std::max(arBeg.x, arEnd.x);
-          (*arMax).y = arBeg.y;
+          arMin->y = arEnd.y;
+          arMax->x = std::max(arBeg.x, arEnd.x);
+          arMax->y = arBeg.y;
         }
       }
     } else {  // Arc begins in quadrant three
       if (arEnd.x >= m_center.x) {
-        if (arEnd.y >= m_center.y)  // Arc ends in quadrant one
-          (*arMax).y = arEnd.y;
-        else {  // Arc ends in quadrant four
-          (*arMax).x = arEnd.x;
-          (*arMax).y = std::max(arBeg.y, arEnd.y);
+        if (arEnd.y >= m_center.y) {  // Arc ends in quadrant one
+          arMax->y = arEnd.y;
+        } else {  // Arc ends in quadrant four
+          arMax->x = arEnd.x;
+          arMax->y = std::max(arBeg.y, arEnd.y);
         }
-        (*arMin).x = arBeg.x;
+        arMin->x = arBeg.x;
       } else {
-        if (arEnd.y >= m_center.y)  // Arc ends in quadrant two
-          (*arMin).x = std::min(arBeg.x, arEnd.x);
-        else {                      // Arc ends in quadrant three
+        if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
+          arMin->x = std::min(arBeg.x, arEnd.x);
+        } else {                    // Arc ends in quadrant three
           if (arBeg.x < arEnd.x) {  // Arc in quadrant three only
-            (*arMin).x = arBeg.x;
-            (*arMin).y = arEnd.y;
-            (*arMax).x = arEnd.x;
-            (*arMax).y = arBeg.y;
+            arMin->x = arBeg.x;
+            arMin->y = arEnd.y;
+            arMax->x = arEnd.x;
+            arMax->y = arBeg.y;
           }
         }
       }
@@ -1073,8 +1074,8 @@ bool SweepAngleFromNormalAnd3Points(const EoGeVector3d& normal, const EoGePoint3
 
     return true;
   }
-  ATLTRACE2(traceGeneral, 3,
-      L"SweepAngleFromNormalAnd3Points: Points are collinear (angles: %.6f, %.6f, %.6f)\n", t[0], t[1], t[2]);
+  ATLTRACE2(traceGeneral, 3, L"SweepAngleFromNormalAnd3Points: Points are collinear (angles: %.6f, %.6f, %.6f)\n", t[0],
+      t[1], t[2]);
 
   return false;
 }

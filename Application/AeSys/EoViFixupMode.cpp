@@ -60,7 +60,8 @@ EoGeLine currentLine{};
  *       the tail of the second vector at the head of the first.
  * @return true if center point found, false otherwise.
  */
-[[nodiscard]] bool FindCenterFromRadiusAnd4Points(double radius, EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d* center) {
+[[nodiscard]] bool FindCenterFromRadiusAnd4Points(
+    double radius, EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d* center) {
   EoGeVector3d u(firstLine.begin, firstLine.end);  // Determine vector defined by endpoints of first line
   double firstLineLength = u.Length();
   if (firstLineLength < Eo::geometricTolerance) { return false; }
@@ -91,15 +92,15 @@ EoGeLine currentLine{};
   double dB2 = v.x / secondLineLength;
   double dDet = dA2 * dB1 - dA1 * dB2;
 
-  double dSgnRad =
-      (firstLine.end.x * secondLine.end.y - secondLine.end.x * firstLine.end.y) >= 0. ? -std::abs(radius) : std::abs(radius);
+  double dSgnRad = (firstLine.end.x * secondLine.end.y - secondLine.end.x * firstLine.end.y) >= 0. ? -std::abs(radius)
+                                                                                                   : std::abs(radius);
 
   double dC1RAB1 = dSgnRad;
   double dC2RAB2 =
       (secondLine.begin.x * secondLine.end.y - secondLine.end.x * secondLine.begin.y) / secondLineLength + dSgnRad;
-  (*center).x = (dB2 * dC1RAB1 - dB1 * dC2RAB2) / dDet;
-  (*center).y = (dA1 * dC2RAB2 - dA2 * dC1RAB1) / dDet;
-  (*center).z = 0.;
+  center->x = (dB2 * dC1RAB1 - dB1 * dC2RAB2) / dDet;
+  center->y = (dA1 * dC2RAB2 - dA2 * dC1RAB1) / dDet;
+  center->z = 0.0;
   transformMatrix.Inverse();
   *center = transformMatrix * (*center);
   return true;
@@ -191,8 +192,8 @@ void AeSysView::OnFixupModeReference() {
         EoGeVector3d previousEndToReferenceBegin(previousLine.end, referenceLine.begin);
         auto normal = CrossProduct(previousEndToIntersection, previousEndToReferenceBegin);
         normal.Normalize();
-        if (SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, referenceLine.begin, center,
-                                           angle)) {
+        if (SweepAngleFromNormalAnd3Points(
+                normal, previousLine.end, intersection, referenceLine.begin, center, angle)) {
           auto majorAxis = EoGeVector3d(center, previousLine.end);
           auto minorAxis = CrossProduct(normal, majorAxis);
 
@@ -237,8 +238,7 @@ void AeSysView::OnFixupModeMend() {
       return;
     }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
-    if (EoGeVector3d(pLine->Begin(), intersection).Length() <
-        EoGeVector3d(pLine->End(), intersection).Length())
+    if (EoGeVector3d(pLine->Begin(), intersection).Length() < EoGeVector3d(pLine->End(), intersection).Length())
       pLine->SetBeginPoint(intersection);
     else
       pLine->SetEndPoint(intersection);
@@ -251,8 +251,7 @@ void AeSysView::OnFixupModeMend() {
     if (previousCommand == ID_OP2) {
       pLine = static_cast<EoDbLine*>(previousPrimitive);
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-      if (EoGeVector3d(pLine->Begin(), intersection).Length() <
-          EoGeVector3d(pLine->End(), intersection).Length())
+      if (EoGeVector3d(pLine->Begin(), intersection).Length() < EoGeVector3d(pLine->End(), intersection).Length())
         pLine->SetBeginPoint(intersection);
       else
         pLine->SetEndPoint(intersection);
@@ -311,8 +310,7 @@ void AeSysView::OnFixupModeMend() {
     }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
     pLine = static_cast<EoDbLine*>(currentPrimitive);
-    if (EoGeVector3d(pLine->Begin(), intersection).Length() <
-        EoGeVector3d(pLine->End(), intersection).Length())
+    if (EoGeVector3d(pLine->Begin(), intersection).Length() < EoGeVector3d(pLine->End(), intersection).Length())
       pLine->SetBeginPoint(intersection);
     else
       pLine->SetEndPoint(intersection);
@@ -457,7 +455,7 @@ void AeSysView::OnFixupModeFillet() {
         auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
         radialArc->SetColor(linePrimitive->Color());
         radialArc->SetLineTypeIndex(linePrimitive->LineTypeIndex());
-        
+
         currentGroup->AddTail(radialArc);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
       }

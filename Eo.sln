@@ -34,6 +34,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solutio
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DC37B473-B533-4702-B6C8-FE02708EB7DB}"
+	ProjectSection(SolutionItems) = preProject
+		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1004 - R9\AC1004 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1004 - R9\AC1004 - Empty-1layout.dxf
+		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1006 - R10\AC1006 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1006 - R10\AC1006 - Empty-1layout.dxf
+		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1009 - R12\AC1009 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1009 - R12\AC1009 - Empty-1layout.dxf
+		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1012 - R13\AC1012 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1012 - R13\AC1012 - Empty-1layout.dxf
+		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1014 - R14\AC1014 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1014 - R14\AC1014 - Empty-1layout.dxf
+		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1015 - 2000\AC1015 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1015 - 2000\AC1015 - Empty-1layout.dxf
+		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1018 - 2004\AC1018 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1018 - 2004\AC1018 - Empty-1layout.dxf
+		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1021 - 2007\AC1021 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1021 - 2007\AC1021 - Empty-1layout.dxf
+		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1024 - 2010\AC1024 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1024 - 2010\AC1024 - Empty-1layout.dxf
+		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1027 - 2013\AC1027 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1027 - 2013\AC1027 - Empty-1layout.dxf
+		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1032 - 2018\AC1032 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1032 - 2018\AC1032 - Empty-1layout.dxf
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32

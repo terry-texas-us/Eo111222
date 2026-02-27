@@ -83,7 +83,8 @@ double EoDbEllipse::NormalizeTo2Pi(double angle) {
  * @param minorAxis The minor axis vector of the ellipse.
  * @param sweepAngle The sweep angle of the ellipse segment in radians.
  */
-EoDbEllipse::EoDbEllipse(const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle)
+EoDbEllipse::EoDbEllipse(
+    const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle)
     : EoDbPrimitive(renderState.Color(), renderState.LineTypeIndex()),
       m_center(center),
       m_majorAxis(majorAxis),
@@ -123,7 +124,8 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, double radius, std::int16_t color,
  * @param normal The normal vector defining the plane of the circle.
  * @param radius The radius of the circle.
  */
-EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGeVector3d& normal, double radius, std::int16_t color, std::int16_t lineType)
+EoDbEllipse::EoDbEllipse(
+    EoGePoint3d& center, EoGeVector3d& normal, double radius, std::int16_t color, std::int16_t lineType)
     : EoDbPrimitive(color, lineType), m_center(center) {
   EoGeVector3d PlaneNormal(normal);
   PlaneNormal.Normalize();
@@ -236,7 +238,8 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
     double dMin = std::min(dAng[0], dAng[2]);
     double dMax = std::max(dAng[0], dAng[2]);
 
-    if (std::abs(dAng[1] - dMax) > Eo::geometricTolerance && std::abs(dAng[1] - dMin) > Eo::geometricTolerance) {  // Inside line is not colinear with outside lines
+    if (std::abs(dAng[1] - dMax) > Eo::geometricTolerance &&
+        std::abs(dAng[1] - dMin) > Eo::geometricTolerance) {  // Inside line is not colinear with outside lines
       m_sweepAngle = dMax - dMin;
       if (dAng[1] > dMin && dAng[1] < dMax) {
         if (dAng[0] == dMax) m_sweepAngle = -m_sweepAngle;
@@ -300,7 +303,7 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& center, double radius, double startA
  * @param sweepAngle The sweep angle of the ellipse segment in radians.
  */
 EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle,
-                         std::int16_t color, std::int16_t lineType)
+    std::int16_t color, std::int16_t lineType)
     : EoDbPrimitive(color, lineType), m_center(center), m_majorAxis(majorAxis), m_minorAxis(minorAxis) {
   m_sweepAngle = sweepAngle;
 }
@@ -334,7 +337,8 @@ EoDbPrimitive*& EoDbEllipse::Copy(EoDbPrimitive*& primitive) {
   return primitive;
 }
 
-void EoDbEllipse::CutAt2Points(const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
+void EoDbEllipse::CutAt2Points(
+    const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
   EoDbEllipse* pArc;
 
   double dRel[2]{};
@@ -448,12 +452,13 @@ void EoDbEllipse::GetAllPoints(EoGePoint3dArray& points) {
 
 void EoDbEllipse::AddReportToMessageList(const EoGePoint3d&) {
   CString str;
-  str.Format(L"<Ellipse> Color: %s Line Type: %s SweepAngle %f MajorAxisLength: %f", FormatPenColor().GetString(), FormatLineType().GetString(), m_sweepAngle,
-             m_majorAxis.Length());
+  str.Format(L"<Ellipse> Color: %s Line Type: %s SweepAngle %f MajorAxisLength: %f", FormatPenColor().GetString(),
+      FormatLineType().GetString(), m_sweepAngle, m_majorAxis.Length());
   app.AddStringToMessageList(str);
 }
 
-void EoDbEllipse::GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) const {
+void EoDbEllipse::GenPts(
+    EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) const {
   // Number of points based on angle and a smothness coefficient
 
   double maxAxisLength = std::max(majorAxis.Length(), minorAxis.Length());
@@ -483,8 +488,8 @@ void EoDbEllipse::FormatGeometry(CString& str) {
 }
 
 void EoDbEllipse::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tSweep Angle;%f\tMajor Axis Length;%f", FormatPenColor().GetString(), FormatLineType().GetString(), m_sweepAngle,
-             m_majorAxis.Length());
+  str.Format(L"Color;%s\tStyle;%s\tSweep Angle;%f\tMajor Axis Length;%f", FormatPenColor().GetString(),
+      FormatLineType().GetString(), m_sweepAngle, m_majorAxis.Length());
 }
 
 EoGePoint3d EoDbEllipse::PointAtStartAngle() { return (m_center + m_majorAxis); }
@@ -505,94 +510,97 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
 
   double dRad = std::sqrt(dx * dx + dy * dy);
 
-  (*arMin).x = m_center.x - dRad;
-  (*arMin).y = m_center.y - dRad;
-  (*arMax).x = m_center.x + dRad;
-  (*arMax).y = m_center.y + dRad;
+  arMin->x = m_center.x - dRad;
+  arMin->y = m_center.y - dRad;
+  arMax->x = m_center.x + dRad;
+  arMax->y = m_center.y + dRad;
 
   if (arBeg.x >= m_center.x) {
     if (arBeg.y >= m_center.y) {  // Arc begins in quadrant one
       if (arEnd.x >= m_center.x) {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant one
-          if (arBeg.x > arEnd.x) {         // Arc in qraudrant one only
-            (*arMin).x = arEnd.x;
-            (*arMin).y = arBeg.y;
-            (*arMax).x = arBeg.x;
-            (*arMax).y = arEnd.y;
+          if (arBeg.x > arEnd.x) {    // Arc in qraudrant one only
+            arMin->x = arEnd.x;
+            arMin->y = arBeg.y;
+            arMax->x = arBeg.x;
+            arMax->y = arEnd.y;
           }
-        } else  // Arc ends in quadrant four
-          (*arMax).x = std::max(arBeg.x, arEnd.x);
+        } else {  // Arc ends in quadrant four
+          arMax->x = std::max(arBeg.x, arEnd.x);
+        }
       } else {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
-          (*arMin).x = arEnd.x;
-          (*arMin).y = std::min(arBeg.y, arEnd.y);
-        } else  // Arc ends in quadrant three
-          (*arMin).y = arEnd.y;
-        (*arMax).x = arBeg.x;
+          arMin->x = arEnd.x;
+          arMin->y = std::min(arBeg.y, arEnd.y);
+        } else {  // Arc ends in quadrant three
+          arMin->y = arEnd.y;
+        }
+        arMax->x = arBeg.x;
       }
     } else {  // Arc begins in quadrant four
       if (arEnd.x >= m_center.x) {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant one
-          (*arMin).x = std::min(arBeg.x, arEnd.x);
-          (*arMin).y = arBeg.y;
-          (*arMax).y = arEnd.y;
+          arMin->x = std::min(arBeg.x, arEnd.x);
+          arMin->y = arBeg.y;
+          arMax->y = arEnd.y;
         } else {                    // Arc ends in quadrant four
           if (arBeg.x < arEnd.x) {  // Arc in qraudrant one only
-            (*arMin).x = arBeg.x;
-            (*arMin).y = arBeg.y;
-            (*arMax).x = arEnd.x;
-            (*arMax).y = arEnd.y;
+            arMin->x = arBeg.x;
+            arMin->y = arBeg.y;
+            arMax->x = arEnd.x;
+            arMax->y = arEnd.y;
           }
         }
       } else {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
-          (*arMin).x = arEnd.x;
-          (*arMin).y = arBeg.y;
-        } else  // Arc ends in quadrant three
-          (*arMin).y = std::min(arBeg.y, arEnd.y);
+          arMin->x = arEnd.x;
+          arMin->y = arBeg.y;
+        } else {  // Arc ends in quadrant three
+          arMin->y = std::min(arBeg.y, arEnd.y);
+        }
       }
     }
   } else {
     if (arBeg.y >= m_center.y) {  // Arc begins in quadrant two
       if (arEnd.x >= m_center.x) {
-        if (arEnd.y >= m_center.y)  // Arc ends in quadrant one
-          (*arMax).y = std::max(arBeg.y, arEnd.y);
-        else {  // Arc ends in quadrant four
-          (*arMax).x = arEnd.x;
-          (*arMax).y = arBeg.y;
+        if (arEnd.y >= m_center.y) {  // Arc ends in quadrant one
+          arMax->y = std::max(arBeg.y, arEnd.y);
+        } else {  // Arc ends in quadrant four
+          arMax->x = arEnd.x;
+          arMax->y = arBeg.y;
         }
       } else {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
-          if (arBeg.x > arEnd.x) {         // Arc in qraudrant two only
-            (*arMin).x = arEnd.x;
-            (*arMin).y = arEnd.y;
-            (*arMax).x = arBeg.x;
-            (*arMax).y = arBeg.y;
+          if (arBeg.x > arEnd.x) {    // Arc in qraudrant two only
+            arMin->x = arEnd.x;
+            arMin->y = arEnd.y;
+            arMax->x = arBeg.x;
+            arMax->y = arBeg.y;
           }
         } else {  // Arc ends in quadrant three
-          (*arMin).y = arEnd.y;
-          (*arMax).x = std::max(arBeg.x, arEnd.x);
-          (*arMax).y = arBeg.y;
+          arMin->y = arEnd.y;
+          arMax->x = std::max(arBeg.x, arEnd.x);
+          arMax->y = arBeg.y;
         }
       }
     } else {  // Arc begins in quadrant three
       if (arEnd.x >= m_center.x) {
         if (arEnd.y >= m_center.y)  // Arc ends in quadrant one
-          (*arMax).y = arEnd.y;
+          arMax->y = arEnd.y;
         else {  // Arc ends in quadrant four
-          (*arMax).x = arEnd.x;
-          (*arMax).y = std::max(arBeg.y, arEnd.y);
+          arMax->x = arEnd.x;
+          arMax->y = std::max(arBeg.y, arEnd.y);
         }
-        (*arMin).x = arBeg.x;
+        arMin->x = arBeg.x;
       } else {
         if (arEnd.y >= m_center.y)  // Arc ends in quadrant two
-          (*arMin).x = std::min(arBeg.x, arEnd.x);
+          arMin->x = std::min(arBeg.x, arEnd.x);
         else {                      // Arc ends in quadrant three
           if (arBeg.x < arEnd.x) {  // Arc in qraudrant three only
-            (*arMin).x = arBeg.x;
-            (*arMin).y = arEnd.y;
-            (*arMax).x = arEnd.x;
-            (*arMax).y = arBeg.y;
+            arMin->x = arBeg.x;
+            arMin->y = arEnd.y;
+            arMax->x = arEnd.x;
+            arMax->y = arBeg.y;
           }
         }
       }
@@ -600,7 +608,8 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
   }
 }
 
-void EoDbEllipse::GetExtents(AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbEllipse::GetExtents(
+    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3dArray ptsRegion;
   GetBoundingBox(ptsRegion);
 
@@ -657,7 +666,8 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
 
   GetXYExtents(ptBeg, ptEnd, &ptMin, &ptMax);
 
-  if (ptMin.x >= lowerLeft.x && ptMax.x <= upperRight.x && ptMin.y >= lowerLeft.y && ptMax.y <= upperRight.y) {  // Totally within window boundaries
+  if (ptMin.x >= lowerLeft.x && ptMax.x <= upperRight.x && ptMin.y >= lowerLeft.y &&
+      ptMax.y <= upperRight.y) {  // Totally within window boundaries
     ptInt[0] = ptBeg;
     ptInt[1] = ptEnd;
     return (2);
@@ -728,9 +738,9 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
   double dIntAng[8]{};
   double dWrkAng;
   int iInts = 0;
-  for (int i2 = 0; i2 < iSecs; i2++) {                                              // Loop thru possible intersections
+  for (int i2 = 0; i2 < iSecs; i2++) {                                    // Loop thru possible intersections
     dWrkAng = atan2(ptWrk[i2].y - m_center.y, ptWrk[i2].x - m_center.x);  // Current intersection angle (-π to π)
-    dIntAng[iInts] = dWrkAng - dBegAng;                                             // Sweep from begin to intersection
+    dIntAng[iInts] = dWrkAng - dBegAng;                                   // Sweep from begin to intersection
     if (dIntAng[iInts] < 0.0) dIntAng[iInts] += Eo::TwoPi;
     if (std::abs(dIntAng[iInts]) - m_sweepAngle < 0.0) {  // Intersection lies on arc
       int i;
@@ -758,12 +768,14 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
   if (std::abs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) {  // Arc is a circle in disuise
 
   } else {
-    if (ptBeg.x >= lowerLeft.x && ptBeg.x <= upperRight.x && ptBeg.y >= lowerLeft.y && ptBeg.y <= upperRight.y) {  // Add beg point to int set
+    if (ptBeg.x >= lowerLeft.x && ptBeg.x <= upperRight.x && ptBeg.y >= lowerLeft.y &&
+        ptBeg.y <= upperRight.y) {  // Add beg point to int set
       for (int i = iInts; i > 0; i--) ptInt[i] = ptInt[i - 1];
       ptInt[0] = ptBeg;
       iInts++;
     }
-    if (ptEnd.x >= lowerLeft.x && ptEnd.x <= upperRight.x && ptEnd.y >= lowerLeft.y && ptEnd.y <= upperRight.y) {  // Add end point to int set
+    if (ptEnd.x >= lowerLeft.x && ptEnd.x <= upperRight.x && ptEnd.y >= lowerLeft.y &&
+        ptEnd.y <= upperRight.y) {  // Add end point to int set
       ptInt[iInts] = ptEnd;
       iInts++;
     }
@@ -857,7 +869,6 @@ bool EoDbEllipse::Write(CFile& file) {
   return true;
 }
 
-
 void EoDbEllipse::GetBoundingBox(EoGePoint3dArray& ptsBox) {
   ptsBox.SetSize(4);
   ptsBox[0] = EoGePoint3d(-1.0, -1.0, 0.0);
@@ -909,9 +920,9 @@ double EoDbEllipse::SweepAngleToPoint(EoGePoint3d point) {
   beginPoint = transformMatrix * beginPoint;
   endPoint = transformMatrix * endPoint;
 
-  return (EoGeLine::AngleBetweenLn_xy(EoGeLine(EoGePoint3d::kOrigin, beginPoint), EoGeLine(EoGePoint3d::kOrigin, endPoint)));
+  return (EoGeLine::AngleBetweenLn_xy(
+      EoGeLine(EoGePoint3d::kOrigin, beginPoint), EoGeLine(EoGePoint3d::kOrigin, endPoint)));
 }
-
 
 // The arc's end point and intermediate point (for a 3-point representation) can be computed as:
 

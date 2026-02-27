@@ -33,8 +33,8 @@
 void EoDbDrwInterface::SetHeaderSectionVariable(
     const DRW_Header* header, const std::string& keyToFind, EoDbHeaderSection& headerSection) {
   HeaderVariable value;
-  auto it = header->vars.find(keyToFind);
-  if (it != header->vars.end() && it->second != nullptr) {
+  auto it = header->m_variants.find(keyToFind);
+  if (it != header->m_variants.end() && it->second != nullptr) {
     std::wstring key = Eo::MultiByteToWString(it->first.c_str());
     auto& second = *(it->second);
     switch (second.type()) {
@@ -60,7 +60,7 @@ void EoDbDrwInterface::SetHeaderSectionVariable(
 }
 
 void EoDbDrwInterface::ConvertHeaderSection(const DRW_Header* header, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 3, L"Converting Header: %i variables\n", header->vars.size());
+  ATLTRACE2(traceGeneral, 3, L"Converting Header: %i variables\n", header->m_variants.size());
 
   std::vector<std::string> keys{"$ACADVER", "$CLAYER", "$PDMODE", "$PDSIZE"};
 

@@ -116,7 +116,7 @@ bool dxfRW::Write(DRW_Interface* interface_, DRW::Version version, bool binaryFi
   m_interface->writeHeader(header);
   m_writer->WriteString(0, "SECTION");
   m_entityCount = FIRSTHANDLE;
-  header.write(m_writer, m_version);
+  header.Write(m_writer, m_version);
   m_writer->WriteString(0, "ENDSEC");
   if (m_version > DRW::Version::AC1009) {
     m_writer->WriteString(0, "SECTION");
@@ -1498,11 +1498,11 @@ bool dxfRW::WriteObjects() {
     std::map<std::string, std::string>::iterator it;
     for (it = id->reactors.begin(); it != id->reactors.end(); ++it) {
       m_writer->WriteString(0, "IMAGEDEF_REACTOR");
-      m_writer->WriteString(5, (*it).first);
-      m_writer->WriteString(330, (*it).second);
+      m_writer->WriteString(5, it->first);
+      m_writer->WriteString(330, it->second);
       m_writer->WriteString(100, "AcDbRasterImageDefReactor");
       m_writer->WriteInt16(90, 2);  // version 2=R14 to v2010
-      m_writer->WriteString(330, (*it).second);
+      m_writer->WriteString(330, it->second);
     }
   }
   if (m_imageDef.size() != 0) {
@@ -1529,7 +1529,7 @@ bool dxfRW::WriteObjects() {
     }
     m_writer->WriteString(102, "{ACAD_REACTORS");
     std::map<std::string, std::string>::iterator it;
-    for (it = id->reactors.begin(); it != id->reactors.end(); ++it) { m_writer->WriteString(330, (*it).first); }
+    for (it = id->reactors.begin(); it != id->reactors.end(); ++it) { m_writer->WriteString(330, it->first); }
     m_writer->WriteString(102, "}");
     m_writer->WriteString(100, "AcDbRasterImageDef");
     m_writer->WriteInt16(90, 0);  // version 0=R14 to v2010
@@ -1599,7 +1599,7 @@ bool dxfRW::ProcessDxf() {
   //    section = secUnknown;
   while (m_reader->ReadRec(&code)) {
     if (code == 999) {
-      m_header.addComment(m_reader->GetString());
+      m_header.AddComment(m_reader->GetString());
     } else if (code == 0) {
       sectionstr = m_reader->GetString();
       if (sectionstr == "EOF") {
@@ -1649,7 +1649,7 @@ bool dxfRW::ProcessHeader() {
         return true;
       }
     } else
-      m_header.parseCode(code, m_reader);
+      m_header.ParseCode(code, m_reader);
   }
   DRW_DBG("<leaving dxfRW::ProcessHeader>\n");
   return true;

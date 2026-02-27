@@ -308,13 +308,13 @@ int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistanc
     dLen = parallelDistance;
     dX = dRatio * dX;
     dY = dRatio * dY;
-    (*projectedPoint).x = begin.x + dX;
-    (*projectedPoint).y = begin.y + dY;
+    projectedPoint->x = begin.x + dX;
+    projectedPoint->y = begin.y + dY;
   }
   if (std::abs(perpendicularDistance) > Eo::geometricTolerance) {
     dRatio = perpendicularDistance / dLen;
-    (*projectedPoint).x -= dRatio * dY;
-    (*projectedPoint).y += dRatio * dX;
+    projectedPoint->x -= dRatio * dY;
+    projectedPoint->y += dRatio * dX;
   }
   return TRUE;
 }
