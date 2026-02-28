@@ -62,6 +62,7 @@ EoGeLine currentLine{};
  */
 [[nodiscard]] bool FindCenterFromRadiusAnd4Points(
     double radius, EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d* center) {
+  if (center == nullptr) { return false; }
   EoGeVector3d u(firstLine.begin, firstLine.end);  // Determine vector defined by endpoints of first line
   double firstLineLength = u.Length();
   if (firstLineLength < Eo::geometricTolerance) { return false; }

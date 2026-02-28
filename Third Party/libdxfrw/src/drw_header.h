@@ -78,22 +78,22 @@ class DRW_Header {
    * @param writer The dxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1015Additions(dxfWriter* writer, DRW::Version version) noexcept;
+  void WriteAC1015Additions(dxfWriter* writer, DRW::Version version);
 
   /** @brief Writes header variables that were added in AC1018 (2004)
    * Handle/security improvements; still the most common corporate baseline
    * @param writer The dxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1018Additions(dxfWriter* writer, DRW::Version version) noexcept;
-  void WriteAC1021Additions(dxfWriter* writer, DRW::Version version) noexcept;
+  void WriteAC1018Additions(dxfWriter* writer, DRW::Version version);
+  void WriteAC1021Additions(dxfWriter* writer, DRW::Version version);
 
   /** @brief Writes header variables that were added in AC1018 (2004)
    * Current long-term format (no data loss, smallest modern files)
    * @param writer The dxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1024Additions(dxfWriter* writer, DRW::Version version) noexcept;
+  void WriteAC1024Additions(dxfWriter* writer, DRW::Version version);
 
   [[nodiscard]] bool GetDouble(const std::string& key, double* varDouble);
   [[nodiscard]] bool GetInteger(const std::string& key, int* varInt);
