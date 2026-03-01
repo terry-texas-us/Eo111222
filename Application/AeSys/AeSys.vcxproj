@@ -260,9 +260,6 @@
     <ProjectReference Include="..\..\Third Party\libdxfrw\libdxfrw.vcxproj">
       <Project>{357a8016-9ad4-47ef-b23c-2071c264793b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Third Party\libiconv\libiconv.vcxproj">
-      <Project>{1704ea01-6b21-4362-9f1f-44d25cf2e0d7}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
