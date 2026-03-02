@@ -227,9 +227,9 @@ class EoDbConic : public EoDbPrimitive {
     switch (Subclass()) {
       case ConicType::Circle: {
         DRW_Circle circle;
-        circle.basePoint = {m_center.x, m_center.y, m_center.z};
-        circle.extPoint = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
-        circle.radious = Radius();
+        circle.m_basePoint = {m_center.x, m_center.y, m_center.z};
+        circle.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
+        circle.m_radius = Radius();
         /// @todoSetDxfBaseProperties(&circle);
         writer->addCircle(circle);
         break;
@@ -237,9 +237,9 @@ class EoDbConic : public EoDbPrimitive {
 
       case ConicType::RadialArc: {
         DRW_Arc arc;
-        arc.basePoint = {m_center.x, m_center.y, m_center.z};
-        arc.extPoint = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
-        arc.radious = Radius();
+        arc.m_basePoint = {m_center.x, m_center.y, m_center.z};
+        arc.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
+        arc.m_radius = Radius();
         arc.staangle = m_startAngle;
         arc.endangle = m_endAngle;
         /// @todo SetDxfBaseProperties(&arc);
@@ -250,9 +250,9 @@ class EoDbConic : public EoDbPrimitive {
       case ConicType::Ellipse:
       case ConicType::EllipticalArc: {
         DRW_Ellipse ellipse;
-        ellipse.basePoint = {m_center.x, m_center.y, m_center.z};
+        ellipse.m_basePoint = {m_center.x, m_center.y, m_center.z};
         ellipse.secPoint = {m_majorAxis.x, m_majorAxis.y, m_majorAxis.z};
-        ellipse.extPoint = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
+        ellipse.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
         ellipse.ratio = m_ratio;
         ellipse.staparam = m_startAngle;
         ellipse.endparam = m_endAngle;

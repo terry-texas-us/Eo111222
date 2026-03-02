@@ -90,7 +90,7 @@ bool DRW_Entity::parseCode(int code, dxfReader* reader) {
       space = static_cast<DRW::Space>(reader->GetInt32());
       break;
     case 102:
-      parseDxfGroups(code, reader);
+      parseAppDataGroup(reader);
       break;
     case 1000:
     case 1001:
@@ -135,68 +135,83 @@ bool DRW_Entity::parseCode(int code, dxfReader* reader) {
   return true;
 }
 
-bool DRW_Entity::parseDxfGroups(int code, dxfReader* reader) {
-  std::list<DRW_Variant> ls;
-  DRW_Variant curr;
-  int nc;
+bool DRW_Entity::parseAppDataGroup(dxfReader* reader) {
+  std::list<DRW_Variant> groupList;
+
+  DRW_Variant currentVariant;
+
   std::string appName = reader->GetString();
-  if (!appName.empty() && appName.at(0) == '{') {
-    curr.addString(code, appName.substr(1, (int)appName.size() - 1));
-    ls.push_back(curr);
-    while (code != 102 && appName.at(0) == '}') {
-      reader->ReadRec(&nc);
-      if (code == 330 || code == 360) {
-        curr.addInt(code, reader->GetHandleString());
+  if (appName.empty() || appName[0] != '{') { return false; }
+
+  // opening line: store without the leading '{'
+  currentVariant.addString(102, appName.substr(1));
+  groupList.push_back(currentVariant);
+
+  while (true) {
+    int nextCode{};
+    if (!reader->ReadRec(&nextCode)) { break; }  // EOF or read error
+
+    if (nextCode == 102) {
+      std::string val = reader->GetString();
+      if (!val.empty() && val[0] == '}') { break; } // closing 102 } — do not store the closing tag
+
+      // rare nested control string
+      currentVariant = DRW_Variant{};
+      currentVariant.addString(102, val);
+    } else {
+      currentVariant = DRW_Variant{};
+      if (nextCode == 330 || nextCode == 360) {
+        currentVariant.addInt(nextCode, reader->GetHandleString());
       } else {
         switch (reader->GetType()) {
           case dxfReader::Type::String:
-            curr.addString(code, reader->GetString());
+            currentVariant.addString(nextCode, reader->GetString());
             break;
           case dxfReader::Type::Int32:
           case dxfReader::Type::Int64:
-            curr.addInt(code, reader->GetInt32());
+            currentVariant.addInt(nextCode, reader->GetInt32());
             break;
           case dxfReader::Type::Double:
-            curr.addDouble(code, reader->GetDouble());
+            currentVariant.addDouble(nextCode, reader->GetDouble());
             break;
           case dxfReader::Type::Bool:
-            curr.addInt(code, reader->GetInt32());
+            currentVariant.addInt(nextCode, reader->GetInt32());
             break;
           default:
             break;
         }
       }
-      ls.push_back(curr);
     }
+    groupList.push_back(currentVariant);
   }
 
-  appData.push_back(ls);
+  appData.push_back(std::move(groupList));  // avoid copy
   return true;
 }
 
 void DRW_Point::parseCode(int code, dxfReader* reader) {
   switch (code) {
     case 10:
-      basePoint.x = reader->GetDouble();
+      m_basePoint.x = reader->GetDouble();
       break;
     case 20:
-      basePoint.y = reader->GetDouble();
+      m_basePoint.y = reader->GetDouble();
       break;
     case 30:
-      basePoint.z = reader->GetDouble();
+      m_basePoint.z = reader->GetDouble();
       break;
     case 39:
-      thickness = reader->GetDouble();
+      m_thickness = reader->GetDouble();
       break;
     case 210:
       haveExtrusion = true;
-      extPoint.x = reader->GetDouble();
+      m_extrusionDirection.x = reader->GetDouble();
       break;
     case 220:
-      extPoint.y = reader->GetDouble();
+      m_extrusionDirection.y = reader->GetDouble();
       break;
     case 230:
-      extPoint.z = reader->GetDouble();
+      m_extrusionDirection.z = reader->GetDouble();
       break;
     default:
       DRW_Entity::parseCode(code, reader);
@@ -225,15 +240,15 @@ void DRW_Circle::applyExtrusion() {
   if (haveExtrusion) {
     //NOTE: Commenting these out causes the the arcs being tested to be located
     //on the other side of the y axis (all x dimensions are negated).
-    calculateAxis(extPoint);
-    extrudePoint(extPoint, &basePoint);
+    calculateAxis(m_extrusionDirection);
+    extrudePoint(m_extrusionDirection, &m_basePoint);
   }
 }
 
 void DRW_Circle::parseCode(int code, dxfReader* reader) {
   switch (code) {
     case 40:
-      radious = reader->GetDouble();
+      m_radius = reader->GetDouble();
       break;
     default:
       DRW_Point::parseCode(code, reader);
@@ -250,7 +265,8 @@ void DRW_Arc::applyExtrusion() {
     // Note that the following code only handles the special case where there is a 2D
     // drawing with the z axis heading into the paper (or rather screen). An arbitrary
     // extrusion axis (with x and y values greater than 1/64) may still have issues.
-    if (fabs(extPoint.x) < 0.015625 && fabs(extPoint.y) < 0.015625 && extPoint.z < 0.0) {
+    if (fabs(m_extrusionDirection.x) < 0.015625 && fabs(m_extrusionDirection.y) < 0.015625 &&
+        m_extrusionDirection.z < 0.0) {
       staangle = DRW::Pi - staangle;
       endangle = DRW::Pi - endangle;
 
@@ -294,10 +310,10 @@ void DRW_Ellipse::parseCode(int code, dxfReader* reader) {
 
 void DRW_Ellipse::applyExtrusion() {
   if (haveExtrusion) {
-    calculateAxis(extPoint);
-    extrudePoint(extPoint, &secPoint);
+    calculateAxis(m_extrusionDirection);
+    extrudePoint(m_extrusionDirection, &secPoint);
     double intialparam = staparam;
-    if (extPoint.z < 0.) {
+    if (m_extrusionDirection.z < 0.) {
       staparam = DRW::TwoPi - endparam;
       endparam = DRW::TwoPi - intialparam;
     }
@@ -347,8 +363,8 @@ void DRW_Ellipse::toPolyline(DRW_Polyline* pol, int parts) {
     }
     cosCurr = cos(curAngle);
     sinCurr = sin(curAngle);
-    double x = basePoint.x + (cosCurr * cosRot * radMajor) - (sinCurr * sinRot * radMinor);
-    double y = basePoint.y + (cosCurr * sinRot * radMajor) + (sinCurr * cosRot * radMinor);
+    double x = m_basePoint.x + (cosCurr * cosRot * radMajor) - (sinCurr * sinRot * radMinor);
+    double y = m_basePoint.y + (cosCurr * sinRot * radMajor) + (sinCurr * cosRot * radMinor);
     pol->addVertex(DRW_Vertex(x, y, 0.0, 0.0));
     curAngle = (++i) * incAngle;
   } while (i < parts);
@@ -357,16 +373,16 @@ void DRW_Ellipse::toPolyline(DRW_Polyline* pol, int parts) {
   pol->lineType = this->lineType;
   pol->color = this->color;
   pol->lWeight = this->lWeight;
-  pol->extPoint = this->extPoint;
+  pol->m_extrusionDirection = this->m_extrusionDirection;
 }
 
 void DRW_Trace::applyExtrusion() {
   if (haveExtrusion) {
-    calculateAxis(extPoint);
-    extrudePoint(extPoint, &basePoint);
-    extrudePoint(extPoint, &secPoint);
-    extrudePoint(extPoint, &thirdPoint);
-    extrudePoint(extPoint, &fourPoint);
+    calculateAxis(m_extrusionDirection);
+    extrudePoint(m_extrusionDirection, &m_basePoint);
+    extrudePoint(m_extrusionDirection, &secPoint);
+    extrudePoint(m_extrusionDirection, &thirdPoint);
+    extrudePoint(m_extrusionDirection, &fourPoint);
   }
 }
 
@@ -666,8 +682,8 @@ void DRW_Hatch::parseCode(int code, dxfReader* reader) {
     case 71:
       associative = reader->GetInt32();
       break;
-    case 72:        /*edge type*/
-      if (ispol) {  //if is polyline is a as_bulge flag
+    case 72:               /*edge type*/
+      if (m_isPolyline) {  // if is polyline is a as_bulge flag
         break;
       } else if (reader->GetInt32() == 1) {  //line
         addLine();
@@ -681,15 +697,15 @@ void DRW_Hatch::parseCode(int code, dxfReader* reader) {
       break;
     case 10:
       if (pt)
-        pt->basePoint.x = reader->GetDouble();
-      else if (pline) {
-        plvert = pline->addVertex();
+        pt->m_basePoint.x = reader->GetDouble();
+      else if (m_polyline) {
+        plvert = m_polyline->addVertex();
         plvert->x = reader->GetDouble();
       }
       break;
     case 20:
       if (pt)
-        pt->basePoint.y = reader->GetDouble();
+        pt->m_basePoint.y = reader->GetDouble();
       else if (plvert)
         plvert->y = reader->GetDouble();
       break;
@@ -707,7 +723,7 @@ void DRW_Hatch::parseCode(int code, dxfReader* reader) {
       break;
     case 40:
       if (arc)
-        arc->radious = reader->GetDouble();
+        arc->m_radius = reader->GetDouble();
       else if (ellipse)
         ellipse->ratio = reader->GetDouble();
       break;
@@ -735,8 +751,8 @@ void DRW_Hatch::parseCode(int code, dxfReader* reader) {
     case 73:
       if (arc)
         arc->isccw = reader->GetInt32();
-      else if (pline)
-        pline->flags = reader->GetInt32();
+      else if (m_polyline)
+        m_polyline->flags = reader->GetInt32();
       break;
     case 75:
       hstyle = reader->GetInt32();
@@ -754,22 +770,26 @@ void DRW_Hatch::parseCode(int code, dxfReader* reader) {
       loopsnum = reader->GetInt32();
       looplist.reserve(loopsnum);
       break;
-    case 92:
-      loop = new DRW_HatchLoop(reader->GetInt32());
+    case 92: {
+      int32_t boundaryPathType = reader->GetInt32();
+      loop = new DRW_HatchLoop(boundaryPathType);
       looplist.push_back(loop);
-      if (reader->GetInt32() & 2) {
-        ispol = true;
+      if (boundaryPathType & 2) {  // Boundary-path type (2 = polyline)
+        m_isPolyline = true;
         clearEntities();
-        pline = new DRW_LWPolyline;
-        loop->objlist.push_back(pline);
-      } else
-        ispol = false;
+        m_polyline = new DRW_LWPolyline;
+        loop->objlist.push_back(m_polyline);
+      } else {
+        m_isPolyline = false;
+      }
       break;
+    }
     case 93:
-      if (pline)
-        pline->vertexnum = reader->GetInt32();
-      else
-        loop->numedges = reader->GetInt32();  //aqui reserve
+      if (m_polyline) {
+        m_polyline->vertexnum = reader->GetInt32();
+      } else {
+        loop->numedges = reader->GetInt32();
+      }
       break;
     case 98:  //seed points ??
       clearEntities();

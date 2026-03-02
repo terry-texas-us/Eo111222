@@ -272,7 +272,7 @@ class DRW_Block_Record : public DRW_TableEntry {
  public:
   //Note:    int DRW_TableEntry::flags; contains code 70 of block
   int insUnits;        /*!< block insertion units, code 70 of block_record*/
-  DRW_Coord basePoint; /*!<  block insertion base point dwg only */
+  DRW_Coord m_basePoint; /*!<  block insertion base point dwg only */
 };
 
 //! Class to handle text style entries
