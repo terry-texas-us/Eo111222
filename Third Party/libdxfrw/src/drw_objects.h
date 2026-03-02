@@ -31,7 +31,7 @@ class DRW_TableEntry {
     tType = DRW::UNKNOWNT;
     flags = 0;
     parentHandle = 0;
-    curr = nullptr;
+    m_currentVariant = nullptr;
   }
 
   virtual ~DRW_TableEntry() {
@@ -46,7 +46,7 @@ class DRW_TableEntry {
     parentHandle = e.parentHandle;
     name = e.name;
     flags = e.flags;
-    curr = e.curr;
+    m_currentVariant = e.m_currentVariant;
     for (std::vector<DRW_Variant*>::const_iterator it = e.extData.begin(); it != e.extData.end(); ++it) {
       extData.push_back(new DRW_Variant(*(*it)));
     }
@@ -69,7 +69,7 @@ class DRW_TableEntry {
   std::vector<DRW_Variant*> extData; /*!< FIFO list of extended data, codes 1000 to 1071*/
 
  private:
-  DRW_Variant* curr;
+  DRW_Variant* m_currentVariant;
 };
 
 //! Class to handle dimstyle entries

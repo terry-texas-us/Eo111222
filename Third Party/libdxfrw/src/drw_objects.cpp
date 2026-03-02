@@ -36,21 +36,21 @@ void DRW_TableEntry::parseCode(int code, dxfReader* reader) {
     case 1011:
     case 1012:
     case 1013:
-      curr = new DRW_Variant(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
-      extData.push_back(curr);
+      m_currentVariant = new DRW_Variant(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
+      extData.push_back(m_currentVariant);
       break;
     case 1020:
     case 1021:
     case 1022:
     case 1023:
-      if (curr) curr->setCoordY(reader->GetDouble());
+      if (m_currentVariant) { m_currentVariant->setCoordY(reader->GetDouble()); }
       break;
     case 1030:
     case 1031:
     case 1032:
     case 1033:
-      if (curr) curr->setCoordZ(reader->GetDouble());
-      curr = nullptr;
+      if (m_currentVariant) { m_currentVariant->setCoordZ(reader->GetDouble()); }
+      m_currentVariant = nullptr;
       break;
     case 1040:
     case 1041:

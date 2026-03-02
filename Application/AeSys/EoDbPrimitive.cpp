@@ -36,9 +36,9 @@ int EoDbPrimitive::IsWithinArea(const EoGePoint3d&, const EoGePoint3d&, EoGePoin
 bool EoDbPrimitive::PivotOnControlPoint(AeSysView*, const EoGePoint4d&) { return false; }
 
 void EoDbPrimitive::SetBaseProperties(const DRW_Entity* entity, AeSysDoc* document) {
-  m_color = static_cast<std::int16_t>(entity->color);
-  m_lineTypeName = Eo::MultiByteToWString(entity->lineType.c_str());
-  m_layerName = Eo::MultiByteToWString(entity->layer.c_str());
+  m_color = static_cast<std::int16_t>(entity->m_color);
+  m_lineTypeName = Eo::MultiByteToWString(entity->m_lineType.c_str());
+  m_layerName = Eo::MultiByteToWString(entity->m_layer.c_str());
 
   // Determine actual PenColor and LineType and where to do substitution
   // for PenColor ByLayer
