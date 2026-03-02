@@ -32,7 +32,7 @@ void DRW_TextCodec::SetVersion(int version, bool dxfFormat) { m_version = versio
  * @param codePage Input code page identifier (from DXF $DWGCODEPAGE or similar).
  * @return Standardized code page string.
  */
-std::string DRW_TextCodec::NormalizeCodePage(const std::string_view& codePage) noexcept {
+std::string DRW_TextCodec::NormalizeCodePage(const std::string_view codePage) noexcept {
   if (codePage.empty()) { return "ANSI_1252"; }
 
   if (codePage == "UTF-8" || codePage == "UTF8") { return "UTF-8"; }
@@ -41,17 +41,16 @@ std::string DRW_TextCodec::NormalizeCodePage(const std::string_view& codePage) n
   return "ANSI_1252";
 }
 
-void DRW_TextCodec::SetCodePage(std::string* c, bool dxfFormat) {
+void DRW_TextCodec::SetCodePage(std::string* codePage, bool dxfFormat) {
   delete m_converter;
   m_converter = nullptr;
 
-  std::string cp = NormalizeCodePage(*c);
+  std::string normalizedCodePage = NormalizeCodePage(*codePage);
+  m_codePage = normalizedCodePage;
 
-  m_codePage = cp;
-
-  if (cp == "UTF-16") {
+  if (normalizedCodePage == "UTF-16") {
     m_converter = new DRW_ConvUTF16();
-  } else if (cp == "UTF-8") {
+  } else if (normalizedCodePage == "UTF-8") {
     m_converter = new DRW_ConvTable(nullptr, 0);
   } else {
     m_converter = new DRW_ConvTable(DRW_Table1252, 256);

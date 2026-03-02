@@ -8,9 +8,9 @@ class DRW_TextCodec {
   DRW_TextCodec();
   ~DRW_TextCodec();
 
-  std::string FromUtf8(std::string s);
+  [[nodiscard]] std::string FromUtf8(std::string s);
   
-  std::string ToUtf8(std::string s) const;
+  [[nodiscard]] std::string ToUtf8(std::string s) const;
   
   [[nodiscard]] constexpr int GetVersion() const noexcept { return m_version; }
   
@@ -24,20 +24,19 @@ class DRW_TextCodec {
   
   void SetVersion(int version, bool dxfFormat);
   
+  [[nodiscard]] const std::string& GetCodePage() const noexcept { return m_codePage; }
+
   /** @brief Sets the code page for the text codec based on the provided string and format.
    * The function first corrects the code page string, then deletes any existing converter.
    * Depending on the version and format, it initializes a new converter with the appropriate table or encoding.
    * @param c Pointer to a string representing the code page to set
    * @param dxfFormat Boolean indicating whether the format is DXF or not
    */
-  void SetCodePage(std::string* c, bool dxfFormat);
-  
   void SetCodePage(std::string c, bool dxfFormat) { SetCodePage(&c, dxfFormat); }
-  
-  [[nodiscard]] const std::string& GetCodePage() const noexcept { return m_codePage; }
+  void SetCodePage(std::string* c, bool dxfFormat);
 
  private:
-  [[nodiscard]] std::string NormalizeCodePage(const std::string_view& codePage) noexcept;
+  [[nodiscard]] std::string NormalizeCodePage(const std::string_view codePage) noexcept;
 
   std::string m_codePage;
   DRW_Converter* m_converter;
@@ -49,14 +48,15 @@ class DRW_TextCodec {
  */
 class DRW_Converter {
  public:
-  DRW_Converter(const int* table, int length) : m_table{table}, m_cpLength{length} {}
+  DRW_Converter(const int* table, int length) : m_table{table}, m_codePageLength{length} {}
   virtual ~DRW_Converter() = default;
   
-  virtual std::string FromUtf8(std::string* s) { return *s; }
-  virtual std::string ToUtf8(std::string* s) { return *s; }
-
+  virtual [[nodiscard]] std::string FromUtf8(std::string* s) { return *s; }
+  virtual [[nodiscard]] std::string ToUtf8(std::string* s) { return *s; }
+ 
+ protected:
   const int* m_table;
-  int m_cpLength;
+  int m_codePageLength;
 };
 
 /** @brief Converter class for UTF-16 encoding. This class provides methods to convert between UTF-8 strings and UTF-16 encoded strings.
@@ -65,8 +65,8 @@ class DRW_Converter {
 class DRW_ConvUTF16 : public DRW_Converter {
  public:
   DRW_ConvUTF16() : DRW_Converter(nullptr, 0) {}
-  std::string FromUtf8(std::string* s) { return *s; }
-  std::string ToUtf8(std::string* s) { return *s; }
+  [[nodiscard]] std::string FromUtf8(std::string* s) override { return *s; }
+  [[nodiscard]] std::string ToUtf8(std::string* s) override { return *s; }
 };
 
 /** @brief Converter class for character tables. This class provides methods to convert between UTF-8 strings and strings encoded using a specified character table.
@@ -75,8 +75,8 @@ class DRW_ConvUTF16 : public DRW_Converter {
 class DRW_ConvTable : public DRW_Converter {
  public:
   DRW_ConvTable(const int* table, int length) : DRW_Converter(table, length) {}
-  std::string FromUtf8(std::string* s) { return *s; }
-  std::string ToUtf8(std::string* s) { return *s; }
+  [[nodiscard]] std::string FromUtf8(std::string* s) override { return *s; }
+  [[nodiscard]] std::string ToUtf8(std::string* s) override { return *s; }
 };
 
 /** @brief Converter class for DBCS (Double-Byte Character Set) tables.
@@ -91,8 +91,8 @@ class DRW_ConvDBCSTable : public DRW_Converter {
     m_leadTable = leadTable;
     m_doubleTable = doubleTable;
   }
-  std::string FromUtf8(std::string* s) { return *s; }
-  std::string ToUtf8(std::string* s) { return *s; }
+  [[nodiscard]] std::string FromUtf8(std::string* s) override { return *s; }
+  [[nodiscard]] std::string ToUtf8(std::string* s) override { return *s; }
 
  private:
   const int* m_leadTable;
