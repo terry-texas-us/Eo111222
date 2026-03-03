@@ -2,7 +2,7 @@
 // Windows - 1252 code page(also known as CP1252 or "Western European (Windows)")
 static const int DRW_Table1252[] = {
     0x20AC,  // Unicode code point for '€'
-    0x00,    // Undefined
+    0x00,  // Undefined
     0x201A,  // Unicode code point for '‚'
     0x0192,  // Unicode code point for 'ƒ'
     0x201E,  // Unicode code point for '„'
@@ -14,10 +14,10 @@ static const int DRW_Table1252[] = {
     0x0160,  // Unicode code point for 'Š'
     0x2039,  // Unicode code point for '‹'
     0x0152,  // Unicode code point for 'Œ'
-    0x00,    // Undefined
+    0x00,  // Undefined
     0x017D,  // Unicode code point for 'Ž'
-    0x00,    // Undefined
-    0x00,    // Undefined
+    0x00,  // Undefined
+    0x00,  // Undefined
     0x2018,  // Unicode code point for '‘'
     0x2019,  // Unicode code point for '’'
     0x201C,  // Unicode code point for '“'
@@ -30,7 +30,7 @@ static const int DRW_Table1252[] = {
     0x0161,  // Unicode code point for 'š'
     0x203A,  // Unicode code point for '›'
     0x0153,  // Unicode code point for 'œ'
-    0x00,    // Undefined
+    0x00,  // Undefined
     0x017E,  // Unicode code point for 'ž'
     0x0178,  // Unicode code point for 'Ÿ'
     0x00A0,  // Unicode code point for ' '
@@ -128,5 +128,5 @@ static const int DRW_Table1252[] = {
     0x00FC,  // Unicode code point for 'ü'
     0x00FD,  // Unicode code point for 'ý'
     0x00FE,  // Unicode code point for 'þ'
-    0x00FF   // Unicode code point for 'ÿ'
+    0x00FF  // Unicode code point for 'ÿ'
 };

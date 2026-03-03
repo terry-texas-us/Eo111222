@@ -31,7 +31,7 @@ class dxfReader {
   [[nodiscard]] constexpr Type GetType() const noexcept { return m_type; }
 
  protected:
-  virtual bool ReadCode(int* code) = 0;  //return true if successful (not EOF)
+  virtual bool ReadCode(int* code) = 0;  // return true if successful (not EOF)
   virtual bool ReadString(std::string* text) = 0;
   virtual bool ReadString() = 0;
   virtual bool ReadInt16() = 0;
@@ -44,11 +44,11 @@ class dxfReader {
   DRW_TextCodec m_decoder;
   std::ifstream* m_fileStream;
   double m_double{};
-  unsigned long long int m_int64{};  //64 bits integer
-  signed int m_intData{};            //32 bits integer
-  std::int16_t m_int16Data{};        //16 bits integer
+  unsigned long long int m_int64{};  // 64 bits integer
+  signed int m_intData{};  // 32 bits integer
+  std::int16_t m_int16Data{};  // 16 bits integer
   Type m_type{Type::Invalid};
-  bool m_isAsciiFile{};  //set to true for ascii reader, false for binary reader
+  bool m_isAsciiFile{};  // set to true for ascii reader, false for binary reader
 };
 
 class dxfReaderBinary : public dxfReader {
@@ -75,13 +75,13 @@ class dxfReaderBinary : public dxfReader {
   template <typename T>
   T readLE(std::istream& is) {
     static_assert(std::is_trivially_copyable_v<T>, "T must be trivially copyable (int, double, uint64_t, etc.)");
-    
+
     alignas(T) std::byte buf[sizeof(T)]{};
-    
-    if (!is.read(reinterpret_cast<char*>(buf), sizeof(T))) return T{};
-    
+
+    if (!is.read(reinterpret_cast<char*>(buf), sizeof(T))) { return T{}; }
+
     if constexpr (std::endian::native == std::endian::big) { std::reverse(buf, buf + sizeof(T)); }
-    
+
     T value{};
     std::memcpy(&value, buf, sizeof(T));
     return value;

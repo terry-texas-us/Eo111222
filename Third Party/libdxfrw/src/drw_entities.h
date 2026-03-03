@@ -109,21 +109,22 @@ class DRW_Entity {
    */
   bool ParseAppDataGroup(dxfReader* reader);
 
-  /** @brief Calculates the arbitrary extrusion axis (extAxisX and extAxisY) based on the given extrusion direction (extPoint).
-   *  This follows the DXF specification for handling extrusion directions and their corresponding axes.
-   *  The calculated axes are unitized for use in extrusion transformations.
-   *  @param extrusionDirection The extrusion direction vector from the DXF entity, used to calculate the arbitrary axes.
+  /** @brief Calculates the arbitrary extrusion axis (extAxisX and extAxisY) based on the given extrusion direction
+   * (extPoint). This follows the DXF specification for handling extrusion directions and their corresponding axes. The
+   * calculated axes are unitized for use in extrusion transformations.
+   *  @param extrusionDirection The extrusion direction vector from the DXF entity, used to calculate the arbitrary
+   * axes.
    */
   void CalculateArbitraryAxis(const DRW_Coord& extrusionDirection);
 
-  /** @brief Applies an extrusion transformation to the given point using the pre-calculated arbitrary axes and the extrusion direction.
-   * The transformation is defined as: 
-   *  P' = (Ax * point.x) + (Ay * point.y) + (N * point.z), where Ax and Ay are the arbitrary axes,
-   *  N is the extrusion direction, and point is the original coordinate.
-   *  The result is stored back in the provided point reference.
+  /** @brief Applies an extrusion transformation to the given point using the pre-calculated arbitrary axes and the
+   * extrusion direction. The transformation is defined as: P' = (Ax * point.x) + (Ay * point.y) + (N * point.z), where
+   * Ax and Ay are the arbitrary axes, N is the extrusion direction, and point is the original coordinate. The result is
+   * stored back in the provided point reference.
    *
    * @param extrusionDirection The extrusion direction vector (N) used in the transformation.
-   * @param[out] point A DRW_Coord representing the original point to be transformed. The transformed coordinates will be stored back in this variable.
+   * @param[out] point A DRW_Coord representing the original point to be transformed. The transformed coordinates will
+   * be stored back in this variable.
    */
   void ExtrudePointInPlace(const DRW_Coord& extrusionDirection, DRW_Coord& point) const noexcept;
 
@@ -162,8 +163,8 @@ class DRW_Entity {
   DRW_Variant* m_currentVariant{};
 };
 
-/** @brief Class to handle point entity 
-*/
+/** @brief Class to handle point entity
+ */
 class DRW_Point : public DRW_Entity {
   friend class dxfRW;
 
@@ -202,9 +203,9 @@ class DRW_Line : public DRW_Point {
 };
 
 /** @brief Class to handle ray entity
- * 
+ *
  *  A ray is a line that starts at a specific point and extends infinitely in one direction.
- *  It differs from a line entity in that a line has two endpoints, 
+ *  It differs from a line entity in that a line has two endpoints,
  *  while a ray has only one starting point and extends infinitely in the direction defined by its second point.
  */
 class DRW_Ray : public DRW_Line {
@@ -215,9 +216,9 @@ class DRW_Ray : public DRW_Line {
 };
 
 /** @brief Class to handle xline entity
- * 
- *  An xline is an infinite line that extends infinitely in both directions. 
- *  It differs from a line entity in that a line has two endpoints, 
+ *
+ *  An xline is an infinite line that extends infinitely in both directions.
+ *  It differs from a line entity in that a line has two endpoints,
  *  while an xline extends infinitely in both directions defined by its two points.
  */
 class DRW_Xline : public DRW_Ray {
@@ -226,10 +227,10 @@ class DRW_Xline : public DRW_Ray {
 };
 
 /** @brief Class to handle circle entity
- * 
- *  A circle is a closed curve where all points are equidistant from a fixed center point. 
- *  It is defined by its center point and radius. 
- *  The circle entity in DXF can also include additional properties such as thickness and extrusion direction, 
+ *
+ *  A circle is a closed curve where all points are equidistant from a fixed center point.
+ *  It is defined by its center point and radius.
+ *  The circle entity in DXF can also include additional properties such as thickness and extrusion direction,
  *  which can affect how the circle is rendered in 3D space.
  */
 class DRW_Circle : public DRW_Point {
@@ -279,10 +280,10 @@ class DRW_Arc : public DRW_Circle {
 };
 
 /** @brief Class to handle ellipse entity
- * 
- *  An ellipse is a closed curve that resembles a flattened circle. 
- *  It is defined by its center point, major axis, and ratio of minor axis to major axis. 
- *  The ellipse entity in DXF can also include additional properties such as thickness and extrusion direction, 
+ *
+ *  An ellipse is a closed curve that resembles a flattened circle.
+ *  It is defined by its center point, major axis, and ratio of minor axis to major axis.
+ *  The ellipse entity in DXF can also include additional properties such as thickness and extrusion direction,
  *  which can affect how the ellipse is rendered in 3D space.
  */
 class DRW_Ellipse : public DRW_Line {
@@ -312,11 +313,12 @@ class DRW_Ellipse : public DRW_Line {
 };
 
 /** @@brief Class to handle trace entity
- * 
- *  A trace is a four-sided polyline that is always planar. 
- *  It is defined by its four corner points, which are specified in the DXF file using group codes 10, 20, 30 for the first point; 
- *  11, 21, 31 for the second point; 12, 22, 32 for the third point; and 13, 23, 33 for the fourth point. 
- *  The trace entity can also include properties such as thickness and extrusion direction, which can affect how it is rendered in 3D space.
+ *
+ *  A trace is a four-sided polyline that is always planar.
+ *  It is defined by its four corner points, which are specified in the DXF file using group codes 10, 20, 30 for the
+ * first point; 11, 21, 31 for the second point; 12, 22, 32 for the third point; and 13, 23, 33 for the fourth point.
+ *  The trace entity can also include properties such as thickness and extrusion direction, which can affect how it is
+ * rendered in 3D space.
  */
 class DRW_Trace : public DRW_Line {
   friend class dxfRW;
@@ -335,11 +337,12 @@ class DRW_Trace : public DRW_Line {
 };
 
 /** @brief Class to handle solid entity
- * 
- *  A solid is a four-sided polyline that is always planar and filled. 
- *  It is defined by its four corner points, which are specified in the DXF file using group codes 10, 20, 30 for the first point; 
- *  11, 21, 31 for the second point; 12, 22, 32 for the third point; and 13, 23, 33 for the fourth point. 
- *  The solid entity can also include properties such as thickness and extrusion direction, which can affect how it is rendered in 3D space.
+ *
+ *  A solid is a four-sided polyline that is always planar and filled.
+ *  It is defined by its four corner points, which are specified in the DXF file using group codes 10, 20, 30 for the
+ * first point; 11, 21, 31 for the second point; 12, 22, 32 for the third point; and 13, 23, 33 for the fourth point.
+ *  The solid entity can also include properties such as thickness and extrusion direction, which can affect how it is
+ * rendered in 3D space.
  */
 class DRW_Solid : public DRW_Trace {
   friend class dxfRW;
@@ -362,12 +365,13 @@ class DRW_Solid : public DRW_Trace {
 };
 
 /** @brief Class to handle 3dface entity
- * 
- *  A 3D face is a three- or four-sided planar surface defined by its corner points. 
- *  It is specified in the DXF file using group codes 10, 20, 30 for the first point; 
- *  11, 21, 31 for the second point; 12, 22, 32 for the third point; and optionally 13, 23, 33 for the fourth point. 
- *  The fourth point is optional because a 3D face can be a triangle (three-sided) or a quadrilateral (four-sided). 
- *  The entity can also include properties such as thickness and extrusion direction, which can affect how it is rendered in 3D space.
+ *
+ *  A 3D face is a three- or four-sided planar surface defined by its corner points.
+ *  It is specified in the DXF file using group codes 10, 20, 30 for the first point;
+ *  11, 21, 31 for the second point; 12, 22, 32 for the third point; and optionally 13, 23, 33 for the fourth point.
+ *  The fourth point is optional because a 3D face can be a triangle (three-sided) or a quadrilateral (four-sided).
+ *  The entity can also include properties such as thickness and extrusion direction, which can affect how it is
+ * rendered in 3D space.
  */
 class DRW_3Dface : public DRW_Trace {
   friend class dxfRW;
@@ -403,10 +407,11 @@ class DRW_3Dface : public DRW_Trace {
 };
 
 /** @brief Class to handle block entries
- * 
- *  A block is a collection of entities that are grouped together and can be inserted into a drawing as a single unit. 
- *  It is defined by its name, which is specified in the DXF file using group code 2, and its type, which is specified using group code 70. 
- *  The block entity can also include properties such as layer, line type, and extrusion direction, which can affect how it is rendered in the drawing.
+ *
+ *  A block is a collection of entities that are grouped together and can be inserted into a drawing as a single unit.
+ *  It is defined by its name, which is specified in the DXF file using group code 2, and its type, which is specified
+ * using group code 70. The block entity can also include properties such as layer, line type, and extrusion direction,
+ * which can affect how it is rendered in the drawing.
  */
 class DRW_Block : public DRW_Point {
   friend class dxfRW;
@@ -425,10 +430,12 @@ class DRW_Block : public DRW_Point {
 };
 
 /** @brief Class to handle insert entries
- * 
- *  An insert is an instance of a block that is placed in a drawing. 
- *  It is defined by the name of the block it references, which is specified in the DXF file using group code 2, and its insertion point, which is specified using group codes 10, 20, and 30. 
- *  The insert entity can also include properties such as scale factors (code 41, 42, 43), rotation angle (code 50), and number of columns and rows for array inserts (code 70 and 71), which can affect how it is rendered in the drawing.
+ *
+ *  An insert is an instance of a block that is placed in a drawing.
+ *  It is defined by the name of the block it references, which is specified in the DXF file using group code 2, and its
+ * insertion point, which is specified using group codes 10, 20, and 30. The insert entity can also include properties
+ * such as scale factors (code 41, 42, 43), rotation angle (code 50), and number of columns and rows for array inserts
+ * (code 70 and 71), which can affect how it is rendered in the drawing.
  */
 class DRW_Insert : public DRW_Point {
   friend class dxfRW;
@@ -455,8 +462,8 @@ class DRW_Insert : public DRW_Point {
 
 //! Class to handle lwpolyline entity
 /*!
-*  Class to handle lwpolyline entity
-*/
+ *  Class to handle lwpolyline entity
+ */
 class DRW_LWPolyline : public DRW_Entity {
   friend class dxfRW;
 
@@ -526,30 +533,25 @@ class DRW_LWPolyline : public DRW_Entity {
 };
 
 /** @brief Class to handle text entity
- * 
- *  A text entity represents a single line of text in a drawing. 
- *  It is defined by its insertion point (code 10, 20, 30), height (code 40), and the text string itself (code 1). 
- *  The text entity can also include properties such as rotation angle (code 50), width scale factor (code 41), oblique angle (code 51), and text style name (code 7), which can affect how the text is rendered in the drawing.
+ *
+ *  A text entity represents a single line of text in a drawing.
+ *  It is defined by its insertion point (code 10, 20, 30), height (code 40), and the text string itself (code 1).
+ *  The text entity can also include properties such as rotation angle (code 50), width scale factor (code 41), oblique
+ * angle (code 51), and text style name (code 7), which can affect how the text is rendered in the drawing.
  */
 class DRW_Text : public DRW_Line {
   friend class dxfRW;
 
  public:
-  
-  enum VAlign {
-    VBaseLine = 0,
-    VBottom,
-    VMiddle,
-    VTop
-  };
+  enum VAlign { VBaseLine = 0, VBottom, VMiddle, VTop };
 
   enum HAlign {
     HLeft = 0,
     HCenter,
     HRight,
-    HAligned, // = 3 (if VAlign is 0)
-    HMiddle, // = 4 (if VAlign is 0) */
-    HFit // fit into point = 5 (if VAlign is 0)
+    HAligned,  // = 3 (if VAlign is 0)
+    HMiddle,  // = 4 (if VAlign is 0) */
+    HFit  // fit into point = 5 (if VAlign is 0)
   };
 
   explicit DRW_Text(DRW::ETYPE entityType = DRW::TEXT) noexcept : DRW_Line{entityType} {}
@@ -572,11 +574,13 @@ class DRW_Text : public DRW_Line {
 };
 
 /** @brief Class to handle mtext entity
- * 
- *  An mtext entity represents multiline text in a drawing. 
- *  It is defined by its insertion point (code 10, 20, 30), height (code 40), and the text string itself (code 1). 
- *  The mtext entity can also include properties such as rotation angle (code 50), width scale factor (code 41), oblique angle (code 51), and text style name (code 7), which can affect how the text is rendered in the drawing. 
- *  Additionally, mtext supports more complex formatting options such as multiple lines of text, different alignments, and special characters.
+ *
+ *  An mtext entity represents multiline text in a drawing.
+ *  It is defined by its insertion point (code 10, 20, 30), height (code 40), and the text string itself (code 1).
+ *  The mtext entity can also include properties such as rotation angle (code 50), width scale factor (code 41), oblique
+ * angle (code 51), and text style name (code 7), which can affect how the text is rendered in the drawing.
+ *  Additionally, mtext supports more complex formatting options such as multiple lines of text, different alignments,
+ * and special characters.
  */
 class DRW_MText : public DRW_Text {
   friend class dxfRW;
@@ -601,7 +605,7 @@ class DRW_MText : public DRW_Text {
 
  protected:
   void ParseCode(int code, dxfReader* reader);
-  void UpdateAngle();  //recalculate angle if 'm_haveXAxisDirection' is true
+  void UpdateAngle();  // recalculate angle if 'm_haveXAxisDirection' is true
 
  public:
   double m_lineSpacingFactor{1.0};  // code 44 (optional)
@@ -696,8 +700,8 @@ class DRW_Polyline : public DRW_Point {
 
 //! Class to handle spline entity
 /*!
-*  Class to handle spline entity
-*/
+ *  Class to handle spline entity
+ */
 class DRW_Spline : public DRW_Entity {
   friend class dxfRW;
 
@@ -760,8 +764,8 @@ class DRW_Spline : public DRW_Entity {
 
 //! Class to handle hatch loop
 /*!
-*  Class to handle hatch loop
-*/
+ *  Class to handle hatch loop
+ */
 class DRW_HatchLoop {
  public:
   DRW_HatchLoop(int t) {
@@ -784,16 +788,16 @@ class DRW_HatchLoop {
  public:
   int type; /*!< boundary path type, code 92, polyline=2, default=0 */
   int numedges; /*!< number of edges (if not a polyline), code 93 */
-  //TODO: store lwpolylines as entities
-  //    std::vector<DRW_LWPolyline *> pollist;  /*!< polyline list */
+  // TODO: store lwpolylines as entities
+  //     std::vector<DRW_LWPolyline *> pollist;  /*!< polyline list */
   std::vector<DRW_Entity*> objlist; /*!< entities list */
 };
 
 //! Class to handle hatch entity
 /*!
-*  Class to handle hatch entity
-*/
-//TODO: handle lwpolylines, splines and ellipses
+ *  Class to handle hatch entity
+ */
+// TODO: handle lwpolylines, splines and ellipses
 class DRW_Hatch : public DRW_Point {
   friend class dxfRW;
 
@@ -896,8 +900,8 @@ class DRW_Hatch : public DRW_Point {
 
 //! Class to handle image entity
 /*!
-*  Class to handle image entity
-*/
+ *  Class to handle image entity
+ */
 class DRW_Image : public DRW_Line {
   friend class dxfRW;
 
@@ -928,8 +932,8 @@ class DRW_Image : public DRW_Line {
 
 //! Base class for dimension entity
 /*!
-*  Base class for dimension entity
-*/
+ *  Base class for dimension entity
+ */
 class DRW_Dimension : public DRW_Entity {
   friend class dxfRW;
 
@@ -1048,8 +1052,8 @@ class DRW_Dimension : public DRW_Entity {
 
 //! Class to handle  aligned dimension entity
 /*!
-*  Class to handle aligned dimension entity
-*/
+ *  Class to handle aligned dimension entity
+ */
 class DRW_DimAligned : public DRW_Dimension {
   friend class dxfRW;
 
@@ -1070,8 +1074,8 @@ class DRW_DimAligned : public DRW_Dimension {
 
 //! Class to handle  linear or rotated dimension entity
 /*!
-*  Class to handle linear or rotated dimension entity
-*/
+ *  Class to handle linear or rotated dimension entity
+ */
 class DRW_DimLinear : public DRW_DimAligned {
  public:
   DRW_DimLinear() { m_entityType = DRW::DIMLINEAR; }
@@ -1085,8 +1089,8 @@ class DRW_DimLinear : public DRW_DimAligned {
 
 //! Class to handle radial dimension entity
 /*!
-*  Class to handle aligned, linear or rotated dimension entity
-*/
+ *  Class to handle aligned, linear or rotated dimension entity
+ */
 class DRW_DimRadial : public DRW_Dimension {
   friend class dxfRW;
 
@@ -1104,8 +1108,8 @@ class DRW_DimRadial : public DRW_Dimension {
 
 //! Class to handle radial dimension entity
 /*!
-*  Class to handle aligned, linear or rotated dimension entity
-*/
+ *  Class to handle aligned, linear or rotated dimension entity
+ */
 class DRW_DimDiametric : public DRW_Dimension {
   friend class dxfRW;
 
@@ -1123,8 +1127,8 @@ class DRW_DimDiametric : public DRW_Dimension {
 
 //! Class to handle angular dimension entity
 /*!
-*  Class to handle angular dimension entity
-*/
+ *  Class to handle angular dimension entity
+ */
 class DRW_DimAngular : public DRW_Dimension {
   friend class dxfRW;
 
@@ -1146,8 +1150,8 @@ class DRW_DimAngular : public DRW_Dimension {
 
 //! Class to handle angular 3p dimension entity
 /*!
-*  Class to handle angular 3p dimension entity
-*/
+ *  Class to handle angular 3p dimension entity
+ */
 class DRW_DimAngular3p : public DRW_Dimension {
   friend class dxfRW;
 
@@ -1167,8 +1171,8 @@ class DRW_DimAngular3p : public DRW_Dimension {
 
 //! Class to handle ordinate dimension entity
 /*!
-*  Class to handle ordinate dimension entity
-*/
+ *  Class to handle ordinate dimension entity
+ */
 class DRW_DimOrdinate : public DRW_Dimension {
   friend class dxfRW;
 
@@ -1186,8 +1190,8 @@ class DRW_DimOrdinate : public DRW_Dimension {
 
 //! Class to handle leader entity
 /*!
-*  Class to handle leader entity
-*/
+ *  Class to handle leader entity
+ */
 class DRW_Leader : public DRW_Entity {
   friend class dxfRW;
 
@@ -1240,8 +1244,8 @@ class DRW_Leader : public DRW_Entity {
 
 //! Class to handle viewport entity
 /*!
-*  Class to handle viewport entity
-*/
+ *  Class to handle viewport entity
+ */
 class DRW_Viewport : public DRW_Point {
   friend class dxfRW;
 
@@ -1271,7 +1275,7 @@ class DRW_Viewport : public DRW_Point {
   double snapPY{}; /*!< Snap base point Y, code 23 */
   double snapSpPX{}; /*!< Snap spacing X, code 14 */
   double snapSpPY{}; /*!< Snap spacing Y, code 24 */
-  //TODO: complete in dxf
+  // TODO: complete in dxf
   DRW_Coord viewDir; /*!< View direction vector, code 16, 26 & 36 */
   DRW_Coord viewTarget; /*!< View target point, code 17, 27, 37 */
   double viewLength{}; /*!< Perspective lens length, code 42 */

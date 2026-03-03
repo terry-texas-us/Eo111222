@@ -9,8 +9,9 @@
 #include <algorithm>
 
 namespace {
-/** Helper function to write a UTF-8 string to the dxfWriter, handling differences in how strings are written based on the DXF version.
- * For AC1009 (R11/R12), strings are written in uppercase, while for later versions, they are written as-is.
+/** Helper function to write a UTF-8 string to the dxfWriter, handling differences in how strings are written based on
+ * the DXF version. For AC1009 (R11/R12), strings are written in uppercase, while for later versions, they are written
+ * as-is.
  *
  * @param writer Pointer to the dxfWriter object used to write the string.
  * @param code The group code associated with the string being written.
@@ -642,10 +643,11 @@ void DRW_Header::WriteAC1009Additions(dxfWriter* writer, DRW::Version version) {
   }
 
   writer->WriteString(9, "$UNITMODE");
-  if (GetInteger("$UNITMODE", &variantInteger))
+  if (GetInteger("$UNITMODE", &variantInteger)) {
     writer->WriteInt16(70, variantInteger);
-  else
+  } else {
     writer->WriteInt16(70, 0);
+  }
 
   writer->WriteString(9, "$VISRETAIN");
   writer->WriteInt16(70, GetInteger("$VISRETAIN", &variantInteger) ? variantInteger : 1);
@@ -1250,7 +1252,7 @@ void DRW_Header::Write(dxfWriter* writer, DRW::Version version) {
       variantString = "AC1032";
       break;
     case DRW::Version::AC1021:  // AutoCAD 2007 / 2008 / 2009
-      [[fallthrough]];          // intentional fallthrough to default case
+      [[fallthrough]];  // intentional fallthrough to default case
     default:
       variantString = "AC1021";
       break;
@@ -1414,8 +1416,9 @@ bool DRW_Header::GetCoord(const std::string& key, DRW_Coord* variantCoord) {
 }
 
 void DRW_Header::ClearVariants() {
-  for (std::map<std::string, DRW_Variant*>::iterator it = m_variants.begin(); it != m_variants.end(); ++it)
+  for (std::map<std::string, DRW_Variant*>::iterator it = m_variants.begin(); it != m_variants.end(); ++it) {
     delete it->second;
+  }
 
   m_variants.clear();
 }

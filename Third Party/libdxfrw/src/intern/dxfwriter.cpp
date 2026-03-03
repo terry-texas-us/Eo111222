@@ -88,7 +88,7 @@ bool dxfWriterBinary::WriteDouble(int code, double data) {
   return (m_fileStream->good());
 }
 
-//saved as int or add a bool member??
+// saved as int or add a bool member??
 bool dxfWriterBinary::WriteBool(int code, bool data) {
   char buffer[1]{};
   char bufcode[2]{};
@@ -133,7 +133,7 @@ bool dxfWriterAscii::WriteDouble(int code, double data) {
   return (m_fileStream->good());
 }
 
-//saved as int or add a bool member??
+// saved as int or add a bool member??
 bool dxfWriterAscii::WriteBool(int code, bool data) {
   *m_fileStream << code << std::endl << data << std::endl;
   return (m_fileStream->good());

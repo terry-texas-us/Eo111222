@@ -116,23 +116,23 @@ class DRW_Interface {
   virtual void addDimLinear(const DRW_DimLinear* data) = 0;
 
   /**
-     * Called for every radial dimension entity.
-     */
+   * Called for every radial dimension entity.
+   */
   virtual void addDimRadial(const DRW_DimRadial* data) = 0;
 
   /**
-     * Called for every diametric dimension entity.
-     */
+   * Called for every diametric dimension entity.
+   */
   virtual void addDimDiametric(const DRW_DimDiametric* data) = 0;
 
   /**
-     * Called for every angular dimension (2 lines version) entity.
-     */
+   * Called for every angular dimension (2 lines version) entity.
+   */
   virtual void addDimAngular(const DRW_DimAngular* data) = 0;
 
   /**
-     * Called for every angular dimension (3 points version) entity.
-     */
+   * Called for every angular dimension (3 points version) entity.
+   */
   virtual void addDimAngular3P(const DRW_DimAngular3p* data) = 0;
 
   /**
@@ -141,8 +141,8 @@ class DRW_Interface {
   virtual void addDimOrdinate(const DRW_DimOrdinate* data) = 0;
 
   /**
- * Called for every leader start.
- */
+   * Called for every leader start.
+   */
   virtual void addLeader(const DRW_Leader* data) = 0;
 
   /**
@@ -156,8 +156,8 @@ class DRW_Interface {
   virtual void addViewport(const DRW_Viewport& data) = 0;
 
   /**
- * Called for every image entity.
- */
+   * Called for every image entity.
+   */
   virtual void addImage(const DRW_Image* data) = 0;
 
   /**

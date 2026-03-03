@@ -26,21 +26,26 @@ class dxfRW {
    * on the provided DRW_Interface for each entity, table entry, and header variable encountered. The `ext` parameter
    * controls whether extrusion should be applied when converting 3D entities to 2D representations.
    *
-   * @param interface_ Pointer to a DRW_Interface implementation that will receive callbacks for parsed entities and data.
-   * @param ext Boolean flag indicating whether to apply extrusion when converting 3D entities to 2D (true) or not (false).
+   * @param interface_ Pointer to a DRW_Interface implementation that will receive callbacks for parsed entities and
+   * data.
+   * @param ext Boolean flag indicating whether to apply extrusion when converting 3D entities to 2D (true) or not
+   * (false).
    * @return true if the file was successfully read and processed; false if an error occurred during reading or parsing.
    */
   bool Read(DRW_Interface* interface_, bool ext);
   void SetBinary(bool binaryFile) { m_binaryFile = binaryFile; }
 
-  /** @brief Writes the current state of the DRW_Interface to a DXF file in the specified version and format (binary or ASCII).
+  /** @brief Writes the current state of the DRW_Interface to a DXF file in the specified version and format (binary or
+   * ASCII).
    *
-   * This method generates a DXF file based on the data provided through the DRW_Interface. It writes the necessary sections
-   * (HEADER, CLASSES, TABLES, BLOCKS, ENTITIES, OBJECTS) according to the specified DXF version. The `binaryFile` parameter
-   * determines whether the output should be in binary format (DXB) or ASCII format (DXF). The method handles writing of entities,
-   * tables, and other components as required by the DXF specification for the given version.
+   * This method generates a DXF file based on the data provided through the DRW_Interface. It writes the necessary
+   * sections (HEADER, CLASSES, TABLES, BLOCKS, ENTITIES, OBJECTS) according to the specified DXF version. The
+   * `binaryFile` parameter determines whether the output should be in binary format (DXB) or ASCII format (DXF). The
+   * method handles writing of entities, tables, and other components as required by the DXF specification for the given
+   * version.
    *
-   * @param interface_ Pointer to a DRW_Interface implementation that provides access to the data to be written to the DXF file.
+   * @param interface_ Pointer to a DRW_Interface implementation that provides access to the data to be written to the
+   * DXF file.
    * @param version The version of the DXF format to use for writing (e.g., AC1009, AC1015, etc.).
    * @param binaryFile Boolean flag indicating whether to write in binary format (true) or ASCII format (false).
    * @return true if the file was successfully written; false if an error occurred during writing.
@@ -76,10 +81,12 @@ class dxfRW {
   bool WriteLeader(DRW_Leader* ent);
   bool WriteDimension(DRW_Dimension* ent);
   /** @brief Sets the number of parts to use when rendering an ellipse as a polyline.
-   * This method allows you to specify how many segments (parts) should be used to approximate an ellipse when it is rendered as a polyline. The value is clamped between 1 and 1024 to ensure a reasonable level of detail without excessive computational overhead.
+   * This method allows you to specify how many segments (parts) should be used to approximate an ellipse when it is
+   * rendered as a polyline. The value is clamped between 1 and 1024 to ensure a reasonable level of detail without
+   * excessive computational overhead.
    * @param parts The number of parts (segments) to use for rendering the ellipse. Must be between 1 and 1024.
    */
-  void SetEllipseParts(int parts) { m_ellipseParts = std::clamp(parts, 1, 1024); }  
+  void SetEllipseParts(int parts) { m_ellipseParts = std::clamp(parts, 1, 1024); }
 
  private:
   /** @brief Used by read() to parse the file.  */

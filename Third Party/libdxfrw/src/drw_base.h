@@ -40,15 +40,15 @@ constexpr auto DegreesToRadians{std::numbers::pi / 180.0};
 /// Version numbers for the DXF Format.
 enum Version {
   UNKNOWNV,  // UNKNOWN VERSION (default / unreadable header)
-  AC1006,    // R10
-  AC1009,    // R11 & R12
-  AC1012,    // R13
-  AC1014,    // R14
-  AC1015,    // AutoCAD 2000 / 2000i / 2002
-  AC1018,    // AutoCAD 2004 / 2005 / 2006
-  AC1021,    // AutoCAD 2007 / 2008 / 2009
-  AC1024,    // AutoCAD 2010 / 2011 / 2012
-  AC1027,    // AutoCAD 2013 / 2014 / 2015 / 2016 / 2017
+  AC1006,  // R10
+  AC1009,  // R11 & R12
+  AC1012,  // R13
+  AC1014,  // R14
+  AC1015,  // AutoCAD 2000 / 2000i / 2002
+  AC1018,  // AutoCAD 2004 / 2005 / 2006
+  AC1021,  // AutoCAD 2007 / 2008 / 2009
+  AC1024,  // AutoCAD 2010 / 2011 / 2012
+  AC1027,  // AutoCAD 2013 / 2014 / 2015 / 2016 / 2017
   AC1032  // AutoCAD 2018 / 2019 / 2020 / 2021 / 2022 / 2023 / 2024 / 2025 / 2026 (current format – no new code since
           // 2018)
 };
@@ -117,11 +117,11 @@ class DRW_Coord {
  * All values are in the entity's OCS.
  */
 struct DRW_Vertex2D {
-  double x{};         // x coordinate, code 10
-  double y{};         // y coordinate, code 20
+  double x{};  // x coordinate, code 10
+  double y{};  // y coordinate, code 20
   double stawidth{};  // Start width, code 40
   double endwidth{};  // End width, code 41
-  double bulge{};     // bulge, code 42
+  double bulge{};  // bulge, code 42
 
   /** @brief Default-constructed vertex (all zero). */
   DRW_Vertex2D() noexcept = default;
@@ -228,33 +228,33 @@ class DRW_Variant {
 class DRW_LW_Conv {
  public:
   enum lineWidth {
-    width00 = 0,       /*!< 0.00mm (dxf 0)*/
-    width01 = 1,       /*!< 0.05mm (dxf 5)*/
-    width02 = 2,       /*!< 0.09mm (dxf 9)*/
-    width03 = 3,       /*!< 0.13mm (dxf 13)*/
-    width04 = 4,       /*!< 0.15mm (dxf 15)*/
-    width05 = 5,       /*!< 0.18mm (dxf 18)*/
-    width06 = 6,       /*!< 0.20mm (dxf 20)*/
-    width07 = 7,       /*!< 0.25mm (dxf 25)*/
-    width08 = 8,       /*!< 0.30mm (dxf 30)*/
-    width09 = 9,       /*!< 0.35mm (dxf 35)*/
-    width10 = 10,      /*!< 0.40mm (dxf 40)*/
-    width11 = 11,      /*!< 0.50mm (dxf 50)*/
-    width12 = 12,      /*!< 0.53mm (dxf 53)*/
-    width13 = 13,      /*!< 0.60mm (dxf 60)*/
-    width14 = 14,      /*!< 0.70mm (dxf 70)*/
-    width15 = 15,      /*!< 0.80mm (dxf 80)*/
-    width16 = 16,      /*!< 0.90mm (dxf 90)*/
-    width17 = 17,      /*!< 1.00mm (dxf 100)*/
-    width18 = 18,      /*!< 1.06mm (dxf 106)*/
-    width19 = 19,      /*!< 1.20mm (dxf 120)*/
-    width20 = 20,      /*!< 1.40mm (dxf 140)*/
-    width21 = 21,      /*!< 1.58mm (dxf 158)*/
-    width22 = 22,      /*!< 2.00mm (dxf 200)*/
-    width23 = 23,      /*!< 2.11mm (dxf 211)*/
+    width00 = 0, /*!< 0.00mm (dxf 0)*/
+    width01 = 1, /*!< 0.05mm (dxf 5)*/
+    width02 = 2, /*!< 0.09mm (dxf 9)*/
+    width03 = 3, /*!< 0.13mm (dxf 13)*/
+    width04 = 4, /*!< 0.15mm (dxf 15)*/
+    width05 = 5, /*!< 0.18mm (dxf 18)*/
+    width06 = 6, /*!< 0.20mm (dxf 20)*/
+    width07 = 7, /*!< 0.25mm (dxf 25)*/
+    width08 = 8, /*!< 0.30mm (dxf 30)*/
+    width09 = 9, /*!< 0.35mm (dxf 35)*/
+    width10 = 10, /*!< 0.40mm (dxf 40)*/
+    width11 = 11, /*!< 0.50mm (dxf 50)*/
+    width12 = 12, /*!< 0.53mm (dxf 53)*/
+    width13 = 13, /*!< 0.60mm (dxf 60)*/
+    width14 = 14, /*!< 0.70mm (dxf 70)*/
+    width15 = 15, /*!< 0.80mm (dxf 80)*/
+    width16 = 16, /*!< 0.90mm (dxf 90)*/
+    width17 = 17, /*!< 1.00mm (dxf 100)*/
+    width18 = 18, /*!< 1.06mm (dxf 106)*/
+    width19 = 19, /*!< 1.20mm (dxf 120)*/
+    width20 = 20, /*!< 1.40mm (dxf 140)*/
+    width21 = 21, /*!< 1.58mm (dxf 158)*/
+    width22 = 22, /*!< 2.00mm (dxf 200)*/
+    width23 = 23, /*!< 2.11mm (dxf 211)*/
     widthByLayer = 29, /*!< by layer (dxf -1) */
     widthByBlock = 30, /*!< by block (dxf -2) */
-    widthDefault = 31  /*!< by default (dxf -3) */
+    widthDefault = 31 /*!< by default (dxf -3) */
   };
 
   static int lineWidth2dxfInt(enum lineWidth lw) {
@@ -323,12 +323,13 @@ class DRW_LW_Conv {
 
   static enum lineWidth dxfInt2lineWidth(int i) {
     if (i < 0) {
-      if (i == -1)
+      if (i == -1) {
         return widthByLayer;
-      else if (i == -2)
+      } else if (i == -2) {
         return widthByBlock;
-      else if (i == -3)
+      } else if (i == -3) {
         return widthDefault;
+      }
     } else if (i < 3) {
       return width00;
     } else if (i < 7) {

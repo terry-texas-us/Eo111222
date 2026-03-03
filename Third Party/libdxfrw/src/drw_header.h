@@ -29,8 +29,11 @@ class DRW_Header {
 
   [[nodiscard]] std::string GetComments() const { return m_comments; }
 
-  /** @brief Writes the header variables stored in this DRW_Header instance to the provided dxfWriter object in the format specified by the given DXF version.
-   * This method iterates over the header variables stored in the m_variants map and writes them to the dxfWriter using the appropriate group codes and value types based on the DXF version. It handles writing of standard header variables such as $ACADVER, $DWGCODEPAGE, and others, ensuring that the output conforms to the specifications of the target DXF version.
+  /** @brief Writes the header variables stored in this DRW_Header instance to the provided dxfWriter object in the
+   * format specified by the given DXF version. This method iterates over the header variables stored in the m_variants
+   * map and writes them to the dxfWriter using the appropriate group codes and value types based on the DXF version. It
+   * handles writing of standard header variables such as $ACADVER, $DWGCODEPAGE, and others, ensuring that the output
+   * conforms to the specifications of the target DXF version.
    *
    * @param writer Pointer to a dxfWriter object used to write the header variables to the output DXF file.
    * @param version The version of the DXF format to use for writing (e.g., AC1009, AC1015, etc.).
@@ -98,7 +101,8 @@ class DRW_Header {
   [[nodiscard]] bool GetDouble(const std::string& key, double* varDouble);
   [[nodiscard]] bool GetInteger(const std::string& key, int* varInt);
 
-  /** @brief Retrieves a String variant from the map and removes it if found. If the variant's string pointer is null, the output string is set to empty.
+  /** @brief Retrieves a String variant from the map and removes it if found. If the variant's string pointer is null,
+   * the output string is set to empty.
    * @param key The key to look up in the map.
    * @param variantString Pointer to the output string.
    * @return True if the variant was found and removed, false otherwise.
@@ -106,8 +110,9 @@ class DRW_Header {
   [[nodiscard]] bool GetString(const std::string& key, std::string* variantString);
   [[nodiscard]] bool GetCoord(const std::string& key, DRW_Coord* varStr);
 
-  /** @brief Clears all header variables stored in the m_variants map, deleting the associated DRW_Variant objects and emptying the map.
-   *  This method is used to free memory allocated for header variables and reset the state of the DRW_Header instance.
+  /** @brief Clears all header variables stored in the m_variants map, deleting the associated DRW_Variant objects and
+   * emptying the map. This method is used to free memory allocated for header variables and reset the state of the
+   * DRW_Header instance.
    */
   void ClearVariants();
 

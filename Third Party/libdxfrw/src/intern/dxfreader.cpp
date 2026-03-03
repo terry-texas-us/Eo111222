@@ -20,7 +20,8 @@ bool dxfReader::ReadRec(int* codeData) {
 
   if (code <= 9) {
     // String (with the introduction of extended symbol names in AutoCAD 2000,
-    // the 255-character limit has been increased to 2049 single-byte characters not including the newline at the end of the line.)
+    // the 255-character limit has been increased to 2049 single-byte characters not including the newline at the end of
+    // the line.)
     ReadString();
   } else if (code < 60) {  // Double precision 3D point value (10-39); Double-precision floating-point value (40-59)
     ReadDouble();
@@ -87,7 +88,7 @@ bool dxfReader::ReadRec(int* codeData) {
 int dxfReader::GetHandleString() const {
   int res;
   std::istringstream Convert(m_string);
-  if (!(Convert >> std::hex >> res)) res = 0;
+  if (!(Convert >> std::hex >> res)) { res = 0; }
   return res;
 }
 
@@ -131,7 +132,7 @@ bool dxfReaderBinary::ReadString(std::string* text) {
 bool dxfReaderBinary::ReadInt16() {
   m_type = Type::Int32;
   m_int16Data = readLE<std::int16_t>(*m_fileStream);  // or uint16_t depending on semantics
-  m_intData = m_int16Data;                            // keep your existing storage
+  m_intData = m_int16Data;  // keep your existing storage
   DRW_DBG(m_intData);
   DRW_DBG(" `group value (int16)`\n");
   return m_fileStream->good();

@@ -8,8 +8,8 @@
 
 //! Base class for tables entries
 /*!
-*  Base class for tables entries
-*/
+ *  Base class for tables entries
+ */
 void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 5:
@@ -68,8 +68,8 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
 
 //! Class to handle dimstyle entries
 /*!
-*  Class to handle ldim style symbol table entries
-*/
+ *  Class to handle ldim style symbol table entries
+ */
 void DRW_Dimstyle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 105:
@@ -290,8 +290,8 @@ void DRW_Dimstyle::ParseCode(int code, dxfReader* reader) {
 
 //! Class to handle line type entries
 /*!
-*  Class to handle line type symbol table entries
-*/
+ *  Class to handle line type symbol table entries
+ */
 void DRW_LType::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 3:
@@ -319,8 +319,8 @@ void DRW_LType::ParseCode(int code, dxfReader* reader) {
 
 //! Update line type
 /*!
-*  Update the size and length of line type acording to the path
-*/
+ *  Update the size and length of line type acording to the path
+ */
 /*TODO: control max length permited */
 void DRW_LType::update() {
   double d = 0;
@@ -331,8 +331,8 @@ void DRW_LType::update() {
 
 //! Class to handle layer entries
 /*!
-*  Class to handle layer symbol table entries
-*/
+ *  Class to handle layer symbol table entries
+ */
 void DRW_Layer::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 6:
@@ -364,8 +364,8 @@ void DRW_Layer::ParseCode(int code, dxfReader* reader) {
 
 //! Class to handle text style entries
 /*!
-*  Class to handle text style symbol table entries
-*/
+ *  Class to handle text style symbol table entries
+ */
 void DRW_Textstyle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 3:
@@ -400,8 +400,8 @@ void DRW_Textstyle::ParseCode(int code, dxfReader* reader) {
 
 //! Class to handle vport entries
 /*!
-*  Class to handle vport symbol table entries
-*/
+ *  Class to handle vport symbol table entries
+ */
 void DRW_Vport::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 10:

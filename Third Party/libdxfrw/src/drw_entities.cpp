@@ -78,18 +78,18 @@ void DRW_Entity::clearExtendedData() noexcept {
 }
 
 void DRW_Entity::CalculateArbitraryAxis(const DRW_Coord& extrusionDirection) {
-  //Follow the arbitrary DXF definitions for extrusion axes.
+  // Follow the arbitrary DXF definitions for extrusion axes.
   if (fabs(extrusionDirection.x) < 0.015625 && fabs(extrusionDirection.y) < 0.015625) {
-    //If we get here, implement Ax = Wy x N where Wy is [0,1,0] per the DXF spec.
-    //The cross product works out to Wy.y*N.z-Wy.z*N.y, Wy.z*N.x-Wy.x*N.z, Wy.x*N.y-Wy.y*N.x
-    //Factoring in the fixed values for Wy gives N.z,0,-N.x
+    // If we get here, implement Ax = Wy x N where Wy is [0,1,0] per the DXF spec.
+    // The cross product works out to Wy.y*N.z-Wy.z*N.y, Wy.z*N.x-Wy.x*N.z, Wy.x*N.y-Wy.y*N.x
+    // Factoring in the fixed values for Wy gives N.z,0,-N.x
     extAxisX.x = extrusionDirection.z;
     extAxisX.y = 0;
     extAxisX.z = -extrusionDirection.x;
   } else {
-    //Otherwise, implement Ax = Wz x N where Wz is [0,0,1] per the DXF spec.
-    //The cross product works out to Wz.y*N.z-Wz.z*N.y, Wz.z*N.x-Wz.x*N.z, Wz.x*N.y-Wz.y*N.x
-    //Factoring in the fixed values for Wz gives -N.y,N.x,0.
+    // Otherwise, implement Ax = Wz x N where Wz is [0,0,1] per the DXF spec.
+    // The cross product works out to Wz.y*N.z-Wz.z*N.y, Wz.z*N.x-Wz.x*N.z, Wz.x*N.y-Wz.y*N.x
+    // Factoring in the fixed values for Wz gives -N.y,N.x,0.
     extAxisX.x = -extrusionDirection.y;
     extAxisX.y = extrusionDirection.x;
     extAxisX.z = 0;
@@ -97,7 +97,7 @@ void DRW_Entity::CalculateArbitraryAxis(const DRW_Coord& extrusionDirection) {
 
   extAxisX.unitize();
 
-  //Ay = N x Ax
+  // Ay = N x Ax
   extAxisY.x = (extrusionDirection.y * extAxisX.z) - (extAxisX.y * extrusionDirection.z);
   extAxisY.y = (extrusionDirection.z * extAxisX.x) - (extAxisX.z * extrusionDirection.x);
   extAxisY.z = (extrusionDirection.x * extAxisX.y) - (extAxisX.x * extrusionDirection.y);
@@ -308,8 +308,8 @@ void DRW_Line::ParseCode(int code, dxfReader* reader) {
 
 void DRW_Circle::ApplyExtrusion() {
   if (m_haveExtrusion) {
-    //NOTE: Commenting these out causes the the arcs being tested to be located
-    //on the other side of the y axis (all x dimensions are negated).
+    // NOTE: Commenting these out causes the the arcs being tested to be located
+    // on the other side of the y axis (all x dimensions are negated).
     CalculateArbitraryAxis(m_extrusionDirection);
     ExtrudePointInPlace(m_extrusionDirection, m_firstPoint);
   }
@@ -390,7 +390,7 @@ void DRW_Ellipse::ApplyExtrusion() {
   }
 }
 
-//if ratio > 1 minor axis are greather than major axis, correct it
+// if ratio > 1 minor axis are greather than major axis, correct it
 void DRW_Ellipse::CorrectAxis() {
   bool complete = false;
   if (m_startParam == m_endParam) {
@@ -413,13 +413,13 @@ void DRW_Ellipse::CorrectAxis() {
   }
 }
 
-//parts are the number of vertex to split polyline, default 128
+// parts are the number of vertex to split polyline, default 128
 void DRW_Ellipse::ToPolyline(DRW_Polyline* pol, int parts) {
   double radMajor, radMinor, cosRot, sinRot, incAngle, curAngle;
   double cosCurr, sinCurr;
   radMajor = sqrt(m_secondPoint.x * m_secondPoint.x + m_secondPoint.y * m_secondPoint.y);
   radMinor = radMajor * m_ratio;
-  //calculate sin & cos of included angle
+  // calculate sin & cos of included angle
   incAngle = atan2(m_secondPoint.y, m_secondPoint.x);
   cosRot = cos(incAngle);
   sinRot = sin(incAngle);
@@ -755,13 +755,13 @@ void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
     case 72: /*edge type*/
       if (m_isPolyline) {  // if is polyline is a as_bulge flag
         break;
-      } else if (reader->GetInt32() == 1) {  //line
+      } else if (reader->GetInt32() == 1) {  // line
         addLine();
-      } else if (reader->GetInt32() == 2) {  //arc
+      } else if (reader->GetInt32() == 2) {  // arc
         addArc();
-      } else if (reader->GetInt32() == 3) {  //elliptic arc
+      } else if (reader->GetInt32() == 3) {  // elliptic arc
         addEllipse();
-      } else if (reader->GetInt32() == 4) {  //spline
+      } else if (reader->GetInt32() == 4) {  // spline
         addSpline();
       }
       break;
@@ -868,7 +868,7 @@ void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
         loop->numedges = reader->GetInt32();
       }
       break;
-    case 98:  //seed points ??
+    case 98:  // seed points ??
       clearEntities();
       break;
     default:
