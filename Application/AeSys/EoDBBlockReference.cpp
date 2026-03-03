@@ -175,7 +175,7 @@ bool EoDbBlockReference::IsInView(AeSysView* view) {
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return false; }
 
-  EoGePoint3d basePoint = Block->BasePoint();
+  auto basePoint = Block->BasePoint();
 
   EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
@@ -201,7 +201,7 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return ptCtrl; }
 
-  EoGePoint3d basePoint = block->BasePoint();
+  auto basePoint = block->BasePoint();
 
   EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
@@ -231,7 +231,7 @@ bool EoDbBlockReference::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, 
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return false; }
 
-  EoGePoint3d basePoint = block->BasePoint();
+  auto basePoint = block->BasePoint();
 
   EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
@@ -249,7 +249,7 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
   EoDbBlock* block{};
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return bResult; }
-  EoGePoint3d basePoint = block->BasePoint();
+  auto basePoint = block->BasePoint();
 
   EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 

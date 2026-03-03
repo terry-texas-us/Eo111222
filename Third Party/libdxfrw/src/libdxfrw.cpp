@@ -464,9 +464,9 @@ bool dxfRW::WritePoint(DRW_Point* ent) {
   m_writer->WriteString(0, "POINT");
   WriteEntity(ent);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbPoint"); }
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  if (ent->m_basePoint.z != 0.0) { m_writer->WriteDouble(30, ent->m_basePoint.z); }
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  if (ent->m_firstPoint.z != 0.0) { m_writer->WriteDouble(30, ent->m_firstPoint.z); }
   return true;
 }
 
@@ -474,16 +474,16 @@ bool dxfRW::WriteLine(DRW_Line* ent) {
   m_writer->WriteString(0, "LINE");
   WriteEntity(ent);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbLine"); }
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  if (ent->m_basePoint.z != 0.0 || ent->secPoint.z != 0.0) {
-    m_writer->WriteDouble(30, ent->m_basePoint.z);
-    m_writer->WriteDouble(11, ent->secPoint.x);
-    m_writer->WriteDouble(21, ent->secPoint.y);
-    m_writer->WriteDouble(31, ent->secPoint.z);
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  if (ent->m_firstPoint.z != 0.0 || ent->m_secondPoint.z != 0.0) {
+    m_writer->WriteDouble(30, ent->m_firstPoint.z);
+    m_writer->WriteDouble(11, ent->m_secondPoint.x);
+    m_writer->WriteDouble(21, ent->m_secondPoint.y);
+    m_writer->WriteDouble(31, ent->m_secondPoint.z);
   } else {
-    m_writer->WriteDouble(11, ent->secPoint.x);
-    m_writer->WriteDouble(21, ent->secPoint.y);
+    m_writer->WriteDouble(11, ent->m_secondPoint.x);
+    m_writer->WriteDouble(21, ent->m_secondPoint.y);
   }
   return true;
 }
@@ -492,12 +492,12 @@ bool dxfRW::WriteRay(DRW_Ray* ent) {
   m_writer->WriteString(0, "RAY");
   WriteEntity(ent);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbRay"); }
-  DRW_Coord crd = ent->secPoint;
+  DRW_Coord crd = ent->m_secondPoint;
   crd.unitize();
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  if (ent->m_basePoint.z != 0.0 || ent->secPoint.z != 0.0) {
-    m_writer->WriteDouble(30, ent->m_basePoint.z);
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  if (ent->m_firstPoint.z != 0.0 || ent->m_secondPoint.z != 0.0) {
+    m_writer->WriteDouble(30, ent->m_firstPoint.z);
     m_writer->WriteDouble(11, crd.x);
     m_writer->WriteDouble(21, crd.y);
     m_writer->WriteDouble(31, crd.z);
@@ -512,12 +512,12 @@ bool dxfRW::WriteXline(DRW_Xline* ent) {
   m_writer->WriteString(0, "XLINE");
   WriteEntity(ent);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbXline"); }
-  DRW_Coord crd = ent->secPoint;
+  DRW_Coord crd = ent->m_secondPoint;
   crd.unitize();
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  if (ent->m_basePoint.z != 0.0 || ent->secPoint.z != 0.0) {
-    m_writer->WriteDouble(30, ent->m_basePoint.z);
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  if (ent->m_firstPoint.z != 0.0 || ent->m_secondPoint.z != 0.0) {
+    m_writer->WriteDouble(30, ent->m_firstPoint.z);
     m_writer->WriteDouble(11, crd.x);
     m_writer->WriteDouble(21, crd.y);
     m_writer->WriteDouble(31, crd.z);
@@ -532,9 +532,9 @@ bool dxfRW::WriteCircle(DRW_Circle* ent) {
   m_writer->WriteString(0, "CIRCLE");
   WriteEntity(ent);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbCircle"); }
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  if (ent->m_basePoint.z != 0.0) { m_writer->WriteDouble(30, ent->m_basePoint.z); }
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  if (ent->m_firstPoint.z != 0.0) { m_writer->WriteDouble(30, ent->m_firstPoint.z); }
   m_writer->WriteDouble(40, ent->m_radius);
   return true;
 }
@@ -543,37 +543,37 @@ bool dxfRW::WriteArc(DRW_Arc* ent) {
   m_writer->WriteString(0, "ARC");
   WriteEntity(ent);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbCircle"); }
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  if (ent->m_basePoint.z != 0.0) { m_writer->WriteDouble(30, ent->m_basePoint.z); }
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  if (ent->m_firstPoint.z != 0.0) { m_writer->WriteDouble(30, ent->m_firstPoint.z); }
   m_writer->WriteDouble(40, ent->m_radius);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbArc"); }
-  m_writer->WriteDouble(50, ent->staangle * DRW::ARAD);
-  m_writer->WriteDouble(51, ent->endangle * DRW::ARAD);
+  m_writer->WriteDouble(50, ent->m_startAngle * DRW::RadiansToDegrees);
+  m_writer->WriteDouble(51, ent->m_endAngle * DRW::RadiansToDegrees);
   return true;
 }
 
 bool dxfRW::WriteEllipse(DRW_Ellipse* ent) {
   // verify axis/ratio and params for full ellipse
-  ent->correctAxis();
+  ent->CorrectAxis();
   if (m_version > DRW::Version::AC1009) {
     m_writer->WriteString(0, "ELLIPSE");
     WriteEntity(ent);
     if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbEllipse"); }
-    m_writer->WriteDouble(10, ent->m_basePoint.x);
-    m_writer->WriteDouble(20, ent->m_basePoint.y);
-    m_writer->WriteDouble(30, ent->m_basePoint.z);
-    m_writer->WriteDouble(11, ent->secPoint.x);
-    m_writer->WriteDouble(21, ent->secPoint.y);
-    m_writer->WriteDouble(31, ent->secPoint.z);
-    m_writer->WriteDouble(40, ent->ratio);
-    m_writer->WriteDouble(41, ent->staparam);
-    m_writer->WriteDouble(42, ent->endparam);
+    m_writer->WriteDouble(10, ent->m_firstPoint.x);
+    m_writer->WriteDouble(20, ent->m_firstPoint.y);
+    m_writer->WriteDouble(30, ent->m_firstPoint.z);
+    m_writer->WriteDouble(11, ent->m_secondPoint.x);
+    m_writer->WriteDouble(21, ent->m_secondPoint.y);
+    m_writer->WriteDouble(31, ent->m_secondPoint.z);
+    m_writer->WriteDouble(40, ent->m_ratio);
+    m_writer->WriteDouble(41, ent->m_startParam);
+    m_writer->WriteDouble(42, ent->m_endParam);
   } else {
-    DRW_Polyline pol;
+    DRW_Polyline polyline;
 
-    ent->toPolyline(&pol, m_ellipseParts);
-    WritePolyline(&pol);
+    ent->ToPolyline(&polyline, m_ellipseParts);
+    WritePolyline(&polyline);
   }
   return true;
 }
@@ -582,18 +582,18 @@ bool dxfRW::WriteTrace(DRW_Trace* ent) {
   m_writer->WriteString(0, "TRACE");
   WriteEntity(ent);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbTrace"); }
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  m_writer->WriteDouble(30, ent->m_basePoint.z);
-  m_writer->WriteDouble(11, ent->secPoint.x);
-  m_writer->WriteDouble(21, ent->secPoint.y);
-  m_writer->WriteDouble(31, ent->secPoint.z);
-  m_writer->WriteDouble(12, ent->thirdPoint.x);
-  m_writer->WriteDouble(22, ent->thirdPoint.y);
-  m_writer->WriteDouble(32, ent->thirdPoint.z);
-  m_writer->WriteDouble(13, ent->fourPoint.x);
-  m_writer->WriteDouble(23, ent->fourPoint.y);
-  m_writer->WriteDouble(33, ent->fourPoint.z);
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  m_writer->WriteDouble(30, ent->m_firstPoint.z);
+  m_writer->WriteDouble(11, ent->m_secondPoint.x);
+  m_writer->WriteDouble(21, ent->m_secondPoint.y);
+  m_writer->WriteDouble(31, ent->m_secondPoint.z);
+  m_writer->WriteDouble(12, ent->m_thirdPoint.x);
+  m_writer->WriteDouble(22, ent->m_thirdPoint.y);
+  m_writer->WriteDouble(32, ent->m_thirdPoint.z);
+  m_writer->WriteDouble(13, ent->m_fourthPoint.x);
+  m_writer->WriteDouble(23, ent->m_fourthPoint.y);
+  m_writer->WriteDouble(33, ent->m_fourthPoint.z);
   return true;
 }
 
@@ -601,18 +601,18 @@ bool dxfRW::WriteSolid(DRW_Solid* ent) {
   m_writer->WriteString(0, "SOLID");
   WriteEntity(ent);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbTrace"); }
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  m_writer->WriteDouble(30, ent->m_basePoint.z);
-  m_writer->WriteDouble(11, ent->secPoint.x);
-  m_writer->WriteDouble(21, ent->secPoint.y);
-  m_writer->WriteDouble(31, ent->secPoint.z);
-  m_writer->WriteDouble(12, ent->thirdPoint.x);
-  m_writer->WriteDouble(22, ent->thirdPoint.y);
-  m_writer->WriteDouble(32, ent->thirdPoint.z);
-  m_writer->WriteDouble(13, ent->fourPoint.x);
-  m_writer->WriteDouble(23, ent->fourPoint.y);
-  m_writer->WriteDouble(33, ent->fourPoint.z);
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  m_writer->WriteDouble(30, ent->m_firstPoint.z);
+  m_writer->WriteDouble(11, ent->m_secondPoint.x);
+  m_writer->WriteDouble(21, ent->m_secondPoint.y);
+  m_writer->WriteDouble(31, ent->m_secondPoint.z);
+  m_writer->WriteDouble(12, ent->m_thirdPoint.x);
+  m_writer->WriteDouble(22, ent->m_thirdPoint.y);
+  m_writer->WriteDouble(32, ent->m_thirdPoint.z);
+  m_writer->WriteDouble(13, ent->m_fourthPoint.x);
+  m_writer->WriteDouble(23, ent->m_fourthPoint.y);
+  m_writer->WriteDouble(33, ent->m_fourthPoint.z);
   return true;
 }
 
@@ -620,19 +620,19 @@ bool dxfRW::Write3dface(DRW_3Dface* ent) {
   m_writer->WriteString(0, "3DFACE");
   WriteEntity(ent);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbFace"); }
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  m_writer->WriteDouble(30, ent->m_basePoint.z);
-  m_writer->WriteDouble(11, ent->secPoint.x);
-  m_writer->WriteDouble(21, ent->secPoint.y);
-  m_writer->WriteDouble(31, ent->secPoint.z);
-  m_writer->WriteDouble(12, ent->thirdPoint.x);
-  m_writer->WriteDouble(22, ent->thirdPoint.y);
-  m_writer->WriteDouble(32, ent->thirdPoint.z);
-  m_writer->WriteDouble(13, ent->fourPoint.x);
-  m_writer->WriteDouble(23, ent->fourPoint.y);
-  m_writer->WriteDouble(33, ent->fourPoint.z);
-  m_writer->WriteInt16(70, ent->invisibleflag);
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  m_writer->WriteDouble(30, ent->m_firstPoint.z);
+  m_writer->WriteDouble(11, ent->m_secondPoint.x);
+  m_writer->WriteDouble(21, ent->m_secondPoint.y);
+  m_writer->WriteDouble(31, ent->m_secondPoint.z);
+  m_writer->WriteDouble(12, ent->m_thirdPoint.x);
+  m_writer->WriteDouble(22, ent->m_thirdPoint.y);
+  m_writer->WriteDouble(32, ent->m_thirdPoint.z);
+  m_writer->WriteDouble(13, ent->m_fourthPoint.x);
+  m_writer->WriteDouble(23, ent->m_fourthPoint.y);
+  m_writer->WriteDouble(33, ent->m_fourthPoint.z);
+  m_writer->WriteInt16(70, ent->m_invisibleFlag);
   return true;
 }
 
@@ -675,7 +675,7 @@ bool dxfRW::WritePolyline(DRW_Polyline* ent) {
   }
   m_writer->WriteDouble(10, 0.0);
   m_writer->WriteDouble(20, 0.0);
-  m_writer->WriteDouble(30, ent->m_basePoint.z);
+  m_writer->WriteDouble(30, ent->m_firstPoint.z);
   if (ent->m_thickness != 0) { m_writer->WriteDouble(39, ent->m_thickness); }
   m_writer->WriteInt16(70, ent->flags);
   if (ent->defstawidth != 0) { m_writer->WriteDouble(40, ent->defstawidth); }
@@ -705,9 +705,9 @@ bool dxfRW::WritePolyline(DRW_Polyline* ent) {
       m_writer->WriteDouble(20, 0);
       m_writer->WriteDouble(30, 0);
     } else {
-      m_writer->WriteDouble(10, v->m_basePoint.x);
-      m_writer->WriteDouble(20, v->m_basePoint.y);
-      m_writer->WriteDouble(30, v->m_basePoint.z);
+      m_writer->WriteDouble(10, v->m_firstPoint.x);
+      m_writer->WriteDouble(20, v->m_firstPoint.y);
+      m_writer->WriteDouble(30, v->m_firstPoint.z);
     }
     if (v->stawidth != 0) { m_writer->WriteDouble(40, v->stawidth); }
     if (v->endwidth != 0) { m_writer->WriteDouble(41, v->endwidth); }
@@ -763,7 +763,7 @@ bool dxfRW::WriteHatch(DRW_Hatch* ent) {
     m_writer->WriteString(100, "AcDbHatch");
     m_writer->WriteDouble(10, 0.0);
     m_writer->WriteDouble(20, 0.0);
-    m_writer->WriteDouble(30, ent->m_basePoint.z);
+    m_writer->WriteDouble(30, ent->m_firstPoint.z);
     m_writer->WriteDouble(210, ent->m_extrusionDirection.x);
     m_writer->WriteDouble(220, ent->m_extrusionDirection.y);
     m_writer->WriteDouble(230, ent->m_extrusionDirection.z);
@@ -786,35 +786,35 @@ bool dxfRW::WriteHatch(DRW_Hatch* ent) {
             case DRW::LINE: {
               m_writer->WriteInt16(72, 1);
               DRW_Line* l = (DRW_Line*)loop->objlist.at(j);
-              m_writer->WriteDouble(10, l->m_basePoint.x);
-              m_writer->WriteDouble(20, l->m_basePoint.y);
-              m_writer->WriteDouble(11, l->secPoint.x);
-              m_writer->WriteDouble(21, l->secPoint.y);
+              m_writer->WriteDouble(10, l->m_firstPoint.x);
+              m_writer->WriteDouble(20, l->m_firstPoint.y);
+              m_writer->WriteDouble(11, l->m_secondPoint.x);
+              m_writer->WriteDouble(21, l->m_secondPoint.y);
               break;
             }
             case DRW::ARC: {
               m_writer->WriteInt16(72, 2);
               DRW_Arc* a = (DRW_Arc*)loop->objlist.at(j);
-              m_writer->WriteDouble(10, a->m_basePoint.x);
-              m_writer->WriteDouble(20, a->m_basePoint.y);
+              m_writer->WriteDouble(10, a->m_firstPoint.x);
+              m_writer->WriteDouble(20, a->m_firstPoint.y);
               m_writer->WriteDouble(40, a->m_radius);
-              m_writer->WriteDouble(50, a->staangle * DRW::ARAD);
-              m_writer->WriteDouble(51, a->endangle * DRW::ARAD);
-              m_writer->WriteInt16(73, a->isccw);
+              m_writer->WriteDouble(50, a->m_startAngle * DRW::RadiansToDegrees);
+              m_writer->WriteDouble(51, a->m_endAngle * DRW::RadiansToDegrees);
+              m_writer->WriteInt16(73, a->m_isCounterClockwise);
               break;
             }
             case DRW::ELLIPSE: {
               m_writer->WriteInt16(72, 3);
               DRW_Ellipse* a = (DRW_Ellipse*)loop->objlist.at(j);
-              a->correctAxis();
-              m_writer->WriteDouble(10, a->m_basePoint.x);
-              m_writer->WriteDouble(20, a->m_basePoint.y);
-              m_writer->WriteDouble(11, a->secPoint.x);
-              m_writer->WriteDouble(21, a->secPoint.y);
-              m_writer->WriteDouble(40, a->ratio);
-              m_writer->WriteDouble(50, a->staparam * DRW::ARAD);
-              m_writer->WriteDouble(51, a->endparam * DRW::ARAD);
-              m_writer->WriteInt16(73, a->isccw);
+              a->CorrectAxis();
+              m_writer->WriteDouble(10, a->m_firstPoint.x);
+              m_writer->WriteDouble(20, a->m_firstPoint.y);
+              m_writer->WriteDouble(11, a->m_secondPoint.x);
+              m_writer->WriteDouble(21, a->m_secondPoint.y);
+              m_writer->WriteDouble(40, a->m_ratio);
+              m_writer->WriteDouble(50, a->m_startParam * DRW::RadiansToDegrees);
+              m_writer->WriteDouble(51, a->m_endParam * DRW::RadiansToDegrees);
+              m_writer->WriteInt16(73, a->m_isCounterClockwise);
               break;
             }
             case DRW::SPLINE:
@@ -995,13 +995,13 @@ bool dxfRW::WriteInsert(DRW_Insert* ent) {
   } else {
     m_writer->WriteUtf8Caps(2, ent->name);
   }
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  m_writer->WriteDouble(30, ent->m_basePoint.z);
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  m_writer->WriteDouble(30, ent->m_firstPoint.z);
   m_writer->WriteDouble(41, ent->xscale);
   m_writer->WriteDouble(42, ent->yscale);
   m_writer->WriteDouble(43, ent->zscale);
-  m_writer->WriteDouble(50, (ent->angle) * DRW::ARAD);  // in dxf angle is written in degrees
+  m_writer->WriteDouble(50, (ent->angle) * DRW::RadiansToDegrees);  // in dxf angle is written in degrees
   m_writer->WriteInt16(70, ent->colcount);
   m_writer->WriteInt16(71, ent->rowcount);
   m_writer->WriteDouble(44, ent->colspace);
@@ -1014,31 +1014,31 @@ bool dxfRW::WriteText(DRW_Text* ent) {
   WriteEntity(ent);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbText"); }
   //    m_writer->WriteDouble(39, ent->thickness);
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  m_writer->WriteDouble(30, ent->m_basePoint.z);
-  m_writer->WriteDouble(40, ent->height);
-  m_writer->WriteUtf8String(1, ent->text);
-  m_writer->WriteDouble(50, ent->angle);
-  m_writer->WriteDouble(41, ent->widthscale);
-  m_writer->WriteDouble(51, ent->oblique);
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  m_writer->WriteDouble(30, ent->m_firstPoint.z);
+  m_writer->WriteDouble(40, ent->m_textHeight);
+  m_writer->WriteUtf8String(1, ent->m_string);
+  m_writer->WriteDouble(50, ent->m_textRotation);
+  m_writer->WriteDouble(41, ent->m_scaleFactorWidth);
+  m_writer->WriteDouble(51, ent->m_obliqueAngle);
   if (m_version > DRW::Version::AC1009) {
-    m_writer->WriteUtf8String(7, ent->style);
+    m_writer->WriteUtf8String(7, ent->m_textStyleName);
   } else {
-    m_writer->WriteUtf8Caps(7, ent->style);
+    m_writer->WriteUtf8Caps(7, ent->m_textStyleName);
   }
-  m_writer->WriteInt16(71, ent->textgen);
-  if (ent->alignH != DRW_Text::HLeft) { m_writer->WriteInt16(72, ent->alignH); }
-  if (ent->alignH != DRW_Text::HLeft || ent->alignV != DRW_Text::VBaseLine) {
-    m_writer->WriteDouble(11, ent->secPoint.x);
-    m_writer->WriteDouble(21, ent->secPoint.y);
-    m_writer->WriteDouble(31, ent->secPoint.z);
+  m_writer->WriteInt16(71, ent->m_textGenerationFlags);
+  if (ent->m_horizontalAlignment != DRW_Text::HLeft) { m_writer->WriteInt16(72, ent->m_horizontalAlignment); }
+  if (ent->m_horizontalAlignment != DRW_Text::HLeft || ent->m_verticalAlignment != DRW_Text::VBaseLine) {
+    m_writer->WriteDouble(11, ent->m_secondPoint.x);
+    m_writer->WriteDouble(21, ent->m_secondPoint.y);
+    m_writer->WriteDouble(31, ent->m_secondPoint.z);
   }
   m_writer->WriteDouble(210, ent->m_extrusionDirection.x);
   m_writer->WriteDouble(220, ent->m_extrusionDirection.y);
   m_writer->WriteDouble(230, ent->m_extrusionDirection.z);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbText"); }
-  if (ent->alignV != DRW_Text::VBaseLine) { m_writer->WriteInt16(73, ent->alignV); }
+  if (ent->m_verticalAlignment != DRW_Text::VBaseLine) { m_writer->WriteInt16(73, ent->m_verticalAlignment); }
   return true;
 }
 
@@ -1047,14 +1047,14 @@ bool dxfRW::WriteMText(DRW_MText* ent) {
     m_writer->WriteString(0, "MTEXT");
     WriteEntity(ent);
     m_writer->WriteString(100, "AcDbMText");
-    m_writer->WriteDouble(10, ent->m_basePoint.x);
-    m_writer->WriteDouble(20, ent->m_basePoint.y);
-    m_writer->WriteDouble(30, ent->m_basePoint.z);
-    m_writer->WriteDouble(40, ent->height);
-    m_writer->WriteDouble(41, ent->widthscale);
-    m_writer->WriteInt16(71, ent->textgen);
-    m_writer->WriteInt16(72, ent->alignH);
-    std::string text = m_writer->FromUtf8String(ent->text);
+    m_writer->WriteDouble(10, ent->m_firstPoint.x);
+    m_writer->WriteDouble(20, ent->m_firstPoint.y);
+    m_writer->WriteDouble(30, ent->m_firstPoint.z);
+    m_writer->WriteDouble(40, ent->m_textHeight);
+    m_writer->WriteDouble(41, ent->m_scaleFactorWidth);
+    m_writer->WriteInt16(71, ent->m_textGenerationFlags);
+    m_writer->WriteInt16(72, ent->m_horizontalAlignment);
+    std::string text = m_writer->FromUtf8String(ent->m_string);
 
     int i;
     for (i = 0; (text.size() - i) > 250;) {
@@ -1062,13 +1062,13 @@ bool dxfRW::WriteMText(DRW_MText* ent) {
       i += 250;
     }
     m_writer->WriteString(1, text.substr(i));
-    m_writer->WriteString(7, ent->style);
+    m_writer->WriteString(7, ent->m_textStyleName);
     m_writer->WriteDouble(210, ent->m_extrusionDirection.x);
     m_writer->WriteDouble(220, ent->m_extrusionDirection.y);
     m_writer->WriteDouble(230, ent->m_extrusionDirection.z);
-    m_writer->WriteDouble(50, ent->angle);
-    m_writer->WriteInt16(73, ent->alignV);
-    m_writer->WriteDouble(44, ent->interlin);
+    m_writer->WriteDouble(50, ent->m_textRotation);
+    m_writer->WriteInt16(73, ent->m_verticalAlignment);
+    m_writer->WriteDouble(44, ent->m_lineSpacingFactor);
   } else {
     // @todo convert mtext in text lines (not exist in acad 12)
   }
@@ -1079,9 +1079,9 @@ bool dxfRW::WriteViewport(DRW_Viewport* ent) {
   m_writer->WriteString(0, "VIEWPORT");
   WriteEntity(ent);
   if (m_version > DRW::Version::AC1009) { m_writer->WriteString(100, "AcDbViewport"); }
-  m_writer->WriteDouble(10, ent->m_basePoint.x);
-  m_writer->WriteDouble(20, ent->m_basePoint.y);
-  if (ent->m_basePoint.z != 0.0) { m_writer->WriteDouble(30, ent->m_basePoint.z); }
+  m_writer->WriteDouble(10, ent->m_firstPoint.x);
+  m_writer->WriteDouble(20, ent->m_firstPoint.y);
+  if (ent->m_firstPoint.z != 0.0) { m_writer->WriteDouble(30, ent->m_firstPoint.z); }
   m_writer->WriteDouble(40, ent->pswidth);
   m_writer->WriteDouble(41, ent->psheight);
   m_writer->WriteInt16(68, ent->vpstatus);
@@ -1112,12 +1112,12 @@ DRW_ImageDef* dxfRW::WriteImage(DRW_Image* ent, std::string name) {
     m_writer->WriteString(0, "IMAGE");
     WriteEntity(ent);
     m_writer->WriteString(100, "AcDbRasterImage");
-    m_writer->WriteDouble(10, ent->m_basePoint.x);
-    m_writer->WriteDouble(20, ent->m_basePoint.y);
-    m_writer->WriteDouble(30, ent->m_basePoint.z);
-    m_writer->WriteDouble(11, ent->secPoint.x);
-    m_writer->WriteDouble(21, ent->secPoint.y);
-    m_writer->WriteDouble(31, ent->secPoint.z);
+    m_writer->WriteDouble(10, ent->m_firstPoint.x);
+    m_writer->WriteDouble(20, ent->m_firstPoint.y);
+    m_writer->WriteDouble(30, ent->m_firstPoint.z);
+    m_writer->WriteDouble(11, ent->m_secondPoint.x);
+    m_writer->WriteDouble(21, ent->m_secondPoint.y);
+    m_writer->WriteDouble(31, ent->m_secondPoint.z);
     m_writer->WriteDouble(12, ent->vVector.x);
     m_writer->WriteDouble(22, ent->vVector.y);
     m_writer->WriteDouble(32, ent->vVector.z);
@@ -1184,9 +1184,9 @@ bool dxfRW::WriteBlock(DRW_Block* bk) {
     m_writer->WriteUtf8Caps(2, bk->name);
   }
   m_writer->WriteInt16(70, bk->flags);
-  m_writer->WriteDouble(10, bk->m_basePoint.x);
-  m_writer->WriteDouble(20, bk->m_basePoint.y);
-  if (bk->m_basePoint.z != 0.0) { m_writer->WriteDouble(30, bk->m_basePoint.z); }
+  m_writer->WriteDouble(10, bk->m_firstPoint.x);
+  m_writer->WriteDouble(20, bk->m_firstPoint.y);
+  if (bk->m_firstPoint.z != 0.0) { m_writer->WriteDouble(30, bk->m_firstPoint.z); }
   if (m_version > DRW::Version::AC1009) {
     m_writer->WriteUtf8String(3, bk->name);
   } else {
@@ -1697,7 +1697,7 @@ bool dxfRW::ProcessClasses() {
               return true;
             }
           } else {
-            class_.parseCode(code, m_reader);
+            class_.ParseCode(code, m_reader);
           }
         }
       } else if (zeroGroupTag == "ENDSEC") {
@@ -1779,7 +1779,7 @@ bool dxfRW::ProcessLType() {
         return true;
       }
     } else if (reading) {
-      ltype.parseCode(code, m_reader);
+      ltype.ParseCode(code, m_reader);
     }
   }
   return true;
@@ -1803,7 +1803,7 @@ bool dxfRW::ProcessLayer() {
         return true;
       }
     } else if (reading) {
-      layer.parseCode(code, m_reader);
+      layer.ParseCode(code, m_reader);
     }
   }
   return true;
@@ -1827,7 +1827,7 @@ bool dxfRW::ProcessDimStyle() {
         return true;
       }
     } else if (reading) {
-      dimSty.parseCode(code, m_reader);
+      dimSty.ParseCode(code, m_reader);
     }
   }
   return true;
@@ -1851,7 +1851,7 @@ bool dxfRW::ProcessTextStyle() {
         return true;
       }
     } else if (reading) {
-      TxtSty.parseCode(code, m_reader);
+      TxtSty.ParseCode(code, m_reader);
     }
   }
   return true;
@@ -1875,7 +1875,7 @@ bool dxfRW::ProcessVports() {
         return true;
       }
     } else if (reading) {
-      vp.parseCode(code, m_reader);
+      vp.ParseCode(code, m_reader);
     }
   }
   return true;
@@ -1899,7 +1899,7 @@ bool dxfRW::ProcessAppId() {
         return true;
       }
     } else if (reading) {
-      vp.parseCode(code, m_reader);
+      vp.ParseCode(code, m_reader);
     }
   }
   return true;
@@ -1952,7 +1952,7 @@ bool dxfRW::ProcessBlock() {
         }
       }
       default:
-        block.parseCode(code, m_reader);
+        block.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2041,12 +2041,12 @@ bool dxfRW::ProcessEllipse() {
         m_nextEntity = m_reader->GetString();
         DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (m_applyExtrusion) { ellipse.applyExtrusion(); }
+        if (m_applyExtrusion) { ellipse.ApplyExtrusion(); }
         m_interface->addEllipse(ellipse);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        ellipse.parseCode(code, m_reader);
+        ellipse.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2065,12 +2065,12 @@ bool dxfRW::ProcessTrace() {
         m_nextEntity = m_reader->GetString();
         DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (m_applyExtrusion) { trace.applyExtrusion(); }
+        if (m_applyExtrusion) { trace.ApplyExtrusion(); }
         m_interface->addTrace(trace);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        trace.parseCode(code, m_reader);
+        trace.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2089,12 +2089,12 @@ bool dxfRW::ProcessSolid() {
         m_nextEntity = m_reader->GetString();
         DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (m_applyExtrusion) { solid.applyExtrusion(); }
+        if (m_applyExtrusion) { solid.ApplyExtrusion(); }
         m_interface->addSolid(solid);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        solid.parseCode(code, m_reader);
+        solid.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2117,7 +2117,7 @@ bool dxfRW::Process3dface() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        face.parseCode(code, m_reader);
+        face.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2140,7 +2140,7 @@ bool dxfRW::ProcessViewport() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        vp.parseCode(code, m_reader);
+        vp.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2160,7 +2160,7 @@ bool dxfRW::ProcessPoint() {
         return true;
       }
       default:
-        point.parseCode(code, m_reader);
+        point.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2180,7 +2180,7 @@ bool dxfRW::ProcessLine() {
         return true;
       }
       default:
-        line.parseCode(code, m_reader);
+        line.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2203,7 +2203,7 @@ bool dxfRW::ProcessRay() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        line.parseCode(code, m_reader);
+        line.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2226,7 +2226,7 @@ bool dxfRW::ProcessXline() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        line.parseCode(code, m_reader);
+        line.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2245,12 +2245,12 @@ bool dxfRW::ProcessCircle() {
         m_nextEntity = m_reader->GetString();
         DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (m_applyExtrusion) { circle.applyExtrusion(); }
+        if (m_applyExtrusion) { circle.ApplyExtrusion(); }
         m_interface->addCircle(circle);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        circle.parseCode(code, m_reader);
+        circle.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2269,12 +2269,12 @@ bool dxfRW::ProcessArc() {
         m_nextEntity = m_reader->GetString();
         DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (m_applyExtrusion) { arc.applyExtrusion(); }
+        if (m_applyExtrusion) { arc.ApplyExtrusion(); }
         m_interface->addArc(arc);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        arc.parseCode(code, m_reader);
+        arc.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2297,7 +2297,7 @@ bool dxfRW::ProcessInsert() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        insert.parseCode(code, m_reader);
+        insert.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2316,12 +2316,12 @@ bool dxfRW::ProcessLWPolyline() {
         m_nextEntity = m_reader->GetString();
         DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (m_applyExtrusion) { pl.applyExtrusion(); }
+        if (m_applyExtrusion) { pl.ApplyExtrusion(); }
         m_interface->addLWPolyline(pl);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        pl.parseCode(code, m_reader);
+        pl.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2349,7 +2349,7 @@ bool dxfRW::ProcessPolyline() {
       }
         [[fallthrough]];  // in case there is no vertex
       default:
-        pl.parseCode(code, m_reader);
+        pl.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2376,7 +2376,7 @@ bool dxfRW::ProcessVertex(DRW_Polyline* pl) {
         }
       }
       default:
-        v->parseCode(code, m_reader);
+        v->ParseCode(code, m_reader);
         break;
     }
   }
@@ -2399,7 +2399,7 @@ bool dxfRW::ProcessText() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        txt.parseCode(code, m_reader);
+        txt.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2418,12 +2418,12 @@ bool dxfRW::ProcessMText() {
         m_nextEntity = m_reader->GetString();
         DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        txt.updateAngle();
+        txt.UpdateAngle();
         m_interface->addMText(txt);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        txt.parseCode(code, m_reader);
+        txt.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2446,7 +2446,7 @@ bool dxfRW::ProcessHatch() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        hatch.parseCode(code, m_reader);
+        hatch.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2469,7 +2469,7 @@ bool dxfRW::ProcessSpline() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        sp.parseCode(code, m_reader);
+        sp.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2492,7 +2492,7 @@ bool dxfRW::ProcessImage() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        img.parseCode(code, m_reader);
+        img.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2552,7 +2552,7 @@ bool dxfRW::ProcessDimension() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        dim.parseCode(code, m_reader);
+        dim.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2575,7 +2575,7 @@ bool dxfRW::ProcessLeader() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        leader.parseCode(code, m_reader);
+        leader.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2627,7 +2627,7 @@ bool dxfRW::ProcessImageDef() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        img.parseCode(code, m_reader);
+        img.ParseCode(code, m_reader);
         break;
     }
   }

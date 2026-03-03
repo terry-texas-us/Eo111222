@@ -10,7 +10,7 @@
 /*!
 *  Base class for tables entries
 */
-void DRW_TableEntry::parseCode(int code, dxfReader* reader) {
+void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 5:
       handle = reader->GetHandleString();
@@ -70,7 +70,7 @@ void DRW_TableEntry::parseCode(int code, dxfReader* reader) {
 /*!
 *  Class to handle ldim style symbol table entries
 */
-void DRW_Dimstyle::parseCode(int code, dxfReader* reader) {
+void DRW_Dimstyle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 105:
       handle = reader->GetHandleString();
@@ -283,7 +283,7 @@ void DRW_Dimstyle::parseCode(int code, dxfReader* reader) {
       dimblk2 = reader->GetUtf8String();
       break;
     default:
-      DRW_TableEntry::parseCode(code, reader);
+      DRW_TableEntry::ParseCode(code, reader);
       break;
   }
 }
@@ -292,7 +292,7 @@ void DRW_Dimstyle::parseCode(int code, dxfReader* reader) {
 /*!
 *  Class to handle line type symbol table entries
 */
-void DRW_LType::parseCode(int code, dxfReader* reader) {
+void DRW_LType::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 3:
       desc = reader->GetUtf8String();
@@ -312,7 +312,7 @@ void DRW_LType::parseCode(int code, dxfReader* reader) {
             haveShape = reader->GetInt32();
             break;*/
     default:
-      DRW_TableEntry::parseCode(code, reader);
+      DRW_TableEntry::ParseCode(code, reader);
       break;
   }
 }
@@ -333,7 +333,7 @@ void DRW_LType::update() {
 /*!
 *  Class to handle layer symbol table entries
 */
-void DRW_Layer::parseCode(int code, dxfReader* reader) {
+void DRW_Layer::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 6:
       lineType = reader->GetUtf8String();
@@ -357,7 +357,7 @@ void DRW_Layer::parseCode(int code, dxfReader* reader) {
       color24 = reader->GetInt32();
       break;
     default:
-      DRW_TableEntry::parseCode(code, reader);
+      DRW_TableEntry::ParseCode(code, reader);
       break;
   }
 }
@@ -366,7 +366,7 @@ void DRW_Layer::parseCode(int code, dxfReader* reader) {
 /*!
 *  Class to handle text style symbol table entries
 */
-void DRW_Textstyle::parseCode(int code, dxfReader* reader) {
+void DRW_Textstyle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 3:
       font = reader->GetUtf8String();
@@ -393,7 +393,7 @@ void DRW_Textstyle::parseCode(int code, dxfReader* reader) {
       fontFamily = reader->GetInt32();
       break;
     default:
-      DRW_TableEntry::parseCode(code, reader);
+      DRW_TableEntry::ParseCode(code, reader);
       break;
   }
 }
@@ -402,7 +402,7 @@ void DRW_Textstyle::parseCode(int code, dxfReader* reader) {
 /*!
 *  Class to handle vport symbol table entries
 */
-void DRW_Vport::parseCode(int code, dxfReader* reader) {
+void DRW_Vport::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 10:
       lowerLeft.x = reader->GetDouble();
@@ -504,12 +504,12 @@ void DRW_Vport::parseCode(int code, dxfReader* reader) {
       snapIsopair = reader->GetInt32();
       break;
     default:
-      DRW_TableEntry::parseCode(code, reader);
+      DRW_TableEntry::ParseCode(code, reader);
       break;
   }
 }
 
-void DRW_ImageDef::parseCode(int code, dxfReader* reader) {
+void DRW_ImageDef::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 1:
       name = reader->GetUtf8String();

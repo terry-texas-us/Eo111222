@@ -16,7 +16,7 @@ class DRW_Class {
   DRW_Class() = default;
   ~DRW_Class() = default;
 
-  void parseCode(int code, dxfReader* reader) noexcept;
+  void ParseCode(int code, dxfReader* reader) noexcept;
   void clear() noexcept;
   void write(dxfWriter* writer, DRW::Version version) const noexcept;
 

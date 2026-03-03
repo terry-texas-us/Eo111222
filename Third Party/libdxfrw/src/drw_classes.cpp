@@ -4,7 +4,7 @@
 #include "intern/dxfreader.h"
 #include "intern/dxfwriter.h"
 
-void DRW_Class::parseCode(int code, dxfReader* reader) noexcept {
+void DRW_Class::ParseCode(int code, dxfReader* reader) noexcept {
   switch (code) {
     case 1:
       recName = reader->GetUtf8String();

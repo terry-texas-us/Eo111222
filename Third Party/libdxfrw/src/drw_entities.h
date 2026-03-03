@@ -92,32 +92,47 @@ class DRW_Entity {
 
   virtual ~DRW_Entity();
 
-  void reset();
+  void Clear();
 
-  virtual void applyExtrusion() = 0;
+  virtual void ApplyExtrusion() = 0;
 
  protected:
   /** @brief Parses dxf code and value to read entity data
    *  @param code dxf code
    *  @param reader pointer to dxfReader to read value
    */
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
-  //calculates extrusion axis (normal vector)
   /** @brief Parses application-defined group (code 102) and its associated data until the closing tag is reached.
    *  @param reader pointer to dxfReader to read value
    *  @return true if group is successfully parsed, false if group is not recognized or an error occurs
    */
-  bool parseAppDataGroup(dxfReader* reader);
+  bool ParseAppDataGroup(dxfReader* reader);
 
-  void calculateAxis(DRW_Coord extPoint);
+  /** @brief Calculates the arbitrary extrusion axis (extAxisX and extAxisY) based on the given extrusion direction (extPoint).
+   *  This follows the DXF specification for handling extrusion directions and their corresponding axes.
+   *  The calculated axes are unitized for use in extrusion transformations.
+   *  @param extrusionDirection The extrusion direction vector from the DXF entity, used to calculate the arbitrary axes.
+   */
+  void CalculateArbitraryAxis(const DRW_Coord& extrusionDirection);
 
-  //apply extrusion to @extPoint and return data in @point
-  void extrudePoint(DRW_Coord extPoint, DRW_Coord* point) const;
+  /** @brief Applies an extrusion transformation to the given point using the pre-calculated arbitrary axes and the extrusion direction.
+   * The transformation is defined as: 
+   *  P' = (Ax * point.x) + (Ay * point.y) + (N * point.z), where Ax and Ay are the arbitrary axes,
+   *  N is the extrusion direction, and point is the original coordinate.
+   *  The result is stored back in the provided point reference.
+   *
+   * @param extrusionDirection The extrusion direction vector (N) used in the transformation.
+   * @param[out] point A DRW_Coord representing the original point to be transformed. The transformed coordinates will be stored back in this variable.
+   */
+  void ExtrudePoint(const DRW_Coord& extrusionDirection, DRW_Coord& point) const noexcept;
 
  private:
+  // Transient cache for ApplyExtrusion() — deliberately NOT copied or cleared.
+  // Always recomputed from m_extrusionDirection when needed.
   DRW_Coord extAxisX{};
   DRW_Coord extAxisY{};
+
  public:
   std::list<std::list<DRW_Variant>> m_appData{};  // list of application data, code 102
   std::vector<DRW_Variant*> m_extendedData{};  // codes 1000 to 1071
@@ -153,16 +168,15 @@ class DRW_Point : public DRW_Entity {
   friend class dxfRW;
 
  public:
-  DRW_Point() : DRW_Entity(DRW::POINT) {}
+  explicit DRW_Point(DRW::ETYPE entityType = DRW::POINT) noexcept : DRW_Entity{entityType} {}
 
-  void applyExtrusion() override {}
+  void ApplyExtrusion() override {}
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
-  //  base point, code 10, 20 & 30
-  DRW_Coord m_basePoint{};
+  DRW_Coord m_firstPoint{};  //  base point, code 10, 20 & 30
   double m_thickness{};  // Thickness, code 39
   //  Extrusion direction, code 210, 220 & 230 (optional, default 0,0,1)
   DRW_Coord m_extrusionDirection{0.0, 0.0, 1.0};
@@ -170,164 +184,163 @@ class DRW_Point : public DRW_Entity {
   double m_angleX{};
 };
 
-//! Class to handle line entity
-/*!
-*  Class to handle line entity
-*/
+/** @brief Class to handle line entity
+ */
 class DRW_Line : public DRW_Point {
   friend class dxfRW;
 
  public:
-  DRW_Line() {
-    m_entityType = DRW::LINE;
-    secPoint.z = 0;
-  }
+  explicit DRW_Line(DRW::ETYPE entityType = DRW::LINE) noexcept : DRW_Point{entityType} {}
 
-  virtual void applyExtrusion() {}
+  void ApplyExtrusion() override {}
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord secPoint; /*!< second point, code 11, 21 & 31 */
+  DRW_Coord m_secondPoint;  // code 11, 21 & 31
 };
 
-//! Class to handle ray entity
-/*!
-*  Class to handle ray entity
-*/
+/** @brief Class to handle ray entity
+ * 
+ *  A ray is a line that starts at a specific point and extends infinitely in one direction.
+ *  It differs from a line entity in that a line has two endpoints, 
+ *  while a ray has only one starting point and extends infinitely in the direction defined by its second point.
+ */
 class DRW_Ray : public DRW_Line {
   friend class dxfRW;
 
  public:
-  DRW_Ray() { m_entityType = DRW::RAY; }
-};
-//! Class to handle xline entity
-/*!
-*  Class to handle xline entity
-*/
-class DRW_Xline : public DRW_Ray {
- public:
-  DRW_Xline() { m_entityType = DRW::XLINE; }
+  explicit DRW_Ray(DRW::ETYPE entityType = DRW::RAY) noexcept : DRW_Line{entityType} {}
 };
 
-//! Class to handle circle entity
-/*!
-*  Class to handle circle entity
-*/
+/** @brief Class to handle xline entity
+ * 
+ *  An xline is an infinite line that extends infinitely in both directions. 
+ *  It differs from a line entity in that a line has two endpoints, 
+ *  while an xline extends infinitely in both directions defined by its two points.
+ */
+class DRW_Xline : public DRW_Ray {
+ public:
+  explicit DRW_Xline(DRW::ETYPE entityType = DRW::XLINE) noexcept : DRW_Ray{entityType} {}
+};
+
+/** @brief Class to handle circle entity
+ * 
+ *  A circle is a closed curve where all points are equidistant from a fixed center point. 
+ *  It is defined by its center point and radius. 
+ *  The circle entity in DXF can also include additional properties such as thickness and extrusion direction, 
+ *  which can affect how the circle is rendered in 3D space.
+ */
 class DRW_Circle : public DRW_Point {
   friend class dxfRW;
 
  public:
-  DRW_Circle() { m_entityType = DRW::CIRCLE; }
+  explicit DRW_Circle(DRW::ETYPE entityType = DRW::CIRCLE) noexcept : DRW_Point{entityType} {}
 
-  virtual void applyExtrusion();
+  void ApplyExtrusion() override;
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   double m_radius{};  // Radius, code 40
 };
 
-//! Class to handle arc entity
-/*!
-*  Class to handle arc entity
-*/
 class DRW_Arc : public DRW_Circle {
   friend class dxfRW;
 
  public:
-  DRW_Arc() {
-    m_entityType = DRW::ARC;
-    isccw = 1;
-  }
+  explicit DRW_Arc(DRW::ETYPE entityType = DRW::ARC) noexcept : DRW_Circle{entityType} {}
 
-  virtual void applyExtrusion();
+  void ApplyExtrusion() override;
 
-  //! center point in OCS
-  const DRW_Coord& center() const { return m_basePoint; }
-  //! the radius of the circle
-  double radius() const { return m_radius; }
-  //! start angle in radians
-  double startAngle() const { return staangle; }
-  //! end angle in radians
-  double endAngle() const { return endangle; }
-  //! thickness
-  double thick() const { return m_thickness; }
-  //! extrusion
-  const DRW_Coord& extrusion() const { return m_extrusionDirection; }
+  // center point in OCS
+  const DRW_Coord& Center() const { return m_firstPoint; }
+  // the radius of the circle
+  [[nodiscard]] double Radius() const { return m_radius; }
+  // start angle in radians
+  [[nodiscard]] double StartAngle() const { return m_startAngle; }
+  // end angle in radians
+  [[nodiscard]] double EndAngle() const { return m_endAngle; }
+  // thickness
+  [[nodiscard]] double Thickness() const { return m_thickness; }
+  // extrusion
+  [[nodiscard]] const DRW_Coord& ExtrusionDirection() const { return m_extrusionDirection; }
 
  protected:
-  //! interpret code in dxf reading process or dispatch to inherited class
-  void parseCode(int code, dxfReader* reader);
+  // interpret code in dxf reading process or dispatch to inherited class
+  void ParseCode(int code, dxfReader* reader);
 
  public:
-  double staangle{}; /*!< start angle, code 50 in radians*/
-  double endangle{}; /*!< end angle, code 51 in radians */
-  int isccw; /*!< is counter clockwise arc?, only used in hatch, code 73 */
+  double m_startAngle{};  // group code 50 (in radians)
+  double m_endAngle{};  // group code 51 (in radians)
+  int m_isCounterClockwise{1};  // group code 73
 };
 
-//! Class to handle ellipse entity
-/*!
-*  Class to handle ellipse and elliptic arc entity
-*  Note: start/end parameter are in radians for ellipse entity but
-*  for hatch boundary are in degrees
-*/
+/** @brief Class to handle ellipse entity
+ * 
+ *  An ellipse is a closed curve that resembles a flattened circle. 
+ *  It is defined by its center point, major axis, and ratio of minor axis to major axis. 
+ *  The ellipse entity in DXF can also include additional properties such as thickness and extrusion direction, 
+ *  which can affect how the ellipse is rendered in 3D space.
+ */
 class DRW_Ellipse : public DRW_Line {
   friend class dxfRW;
 
  public:
-  DRW_Ellipse() {
-    m_entityType = DRW::ELLIPSE;
-    isccw = 1;
-  }
+  explicit DRW_Ellipse(DRW::ETYPE entityType = DRW::ELLIPSE) noexcept : DRW_Line{entityType} {}
 
-  void toPolyline(DRW_Polyline* pol, int parts = 128);
-  virtual void applyExtrusion();
+  void ToPolyline(DRW_Polyline* polyline, int parts = 128);
+  void ApplyExtrusion() override;
 
  protected:
-  //! interpret code in dxf reading process or dispatch to inherited class
-  void parseCode(int code, dxfReader* reader);
+  /** @brief Parses dxf code and value to read ellipse entity data
+   *  @param code dxf code
+   *  @param reader pointer to dxfReader to read value
+   */
+  void ParseCode(int code, dxfReader* reader);
 
  private:
-  void correctAxis();
+  void CorrectAxis();
 
  public:
-  double ratio{}; /*!< ratio, code 40 */
-  double staparam{}; /*!< start parameter, code 41, 0.0 for full ellipse*/
-  double endparam{}; /*!< end parameter, code 42, 2*PI for full ellipse */
-  int isccw; /*!< is counter clockwise arc?, only used in hatch, code 73 */
+  double m_ratio{};  // code 40
+  double m_startParam{};  // code 41, 0.0 for full ellipse
+  double m_endParam{};  // code 42, 2*PI for full ellipse
+  int m_isCounterClockwise{1};  // code 73 (only used in hatch)
 };
 
-//! Class to handle trace entity
-/*!
-*  Class to handle trace entity
-*/
+/** @@brief Class to handle trace entity
+ * 
+ *  A trace is a four-sided polyline that is always planar. 
+ *  It is defined by its four corner points, which are specified in the DXF file using group codes 10, 20, 30 for the first point; 
+ *  11, 21, 31 for the second point; 12, 22, 32 for the third point; and 13, 23, 33 for the fourth point. 
+ *  The trace entity can also include properties such as thickness and extrusion direction, which can affect how it is rendered in 3D space.
+ */
 class DRW_Trace : public DRW_Line {
   friend class dxfRW;
 
  public:
-  DRW_Trace() {
-    m_entityType = DRW::TRACE;
-    thirdPoint.z = 0;
-    fourPoint.z = 0;
-  }
+  explicit DRW_Trace(DRW::ETYPE entityType = DRW::TRACE) noexcept : DRW_Line{entityType} {}
 
-  virtual void applyExtrusion();
+  void ApplyExtrusion() override;
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord thirdPoint; /*!< third point, code 12, 22 & 32 */
-  DRW_Coord fourPoint; /*!< four point, code 13, 23 & 33 */
+  DRW_Coord m_thirdPoint{};  // code 12, 22 & 32
+  DRW_Coord m_fourthPoint{};  // code 13, 23 & 33
 };
 
-//! Class to handle solid entity
-/*!
-*  Class to handle solid entity
-*/
+/** @brief Class to handle solid entity
+ * 
+ *  A solid is a four-sided polyline that is always planar and filled. 
+ *  It is defined by its four corner points, which are specified in the DXF file using group codes 10, 20, 30 for the first point; 
+ *  11, 21, 31 for the second point; 12, 22, 32 for the third point; and 13, 23, 33 for the fourth point. 
+ *  The solid entity can also include properties such as thickness and extrusion direction, which can affect how it is rendered in 3D space.
+ */
 class DRW_Solid : public DRW_Trace {
   friend class dxfRW;
 
@@ -336,29 +349,26 @@ class DRW_Solid : public DRW_Trace {
 
  protected:
   //! interpret code in dxf reading process or dispatch to inherited class
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
-  //! first corner (2D)
-  const DRW_Coord& firstCorner() const { return m_basePoint; }
-  //! second corner (2D)
-  const DRW_Coord& secondCorner() const { return secPoint; }
-  //! third corner (2D)
-  const DRW_Coord& thirdCorner() const { return thirdPoint; }
-  //! fourth corner (2D)
-  const DRW_Coord& fourthCorner() const { return fourPoint; }
-  //! thickness
-  double thick() const { return m_thickness; }
-  //! elevation
-  double elevation() const { return m_basePoint.z; }
-  //! extrusion
-  const DRW_Coord& extrusion() const { return m_extrusionDirection; }
+  [[nodiscard]] const DRW_Coord& FirstCorner() const noexcept { return m_firstPoint; }
+  [[nodiscard]] const DRW_Coord& SecondCorner() const noexcept { return m_secondPoint; }
+  [[nodiscard]] const DRW_Coord& ThirdCorner() const noexcept { return m_thirdPoint; }
+  [[nodiscard]] const DRW_Coord& FourthCorner() const noexcept { return m_fourthPoint; }
+  [[nodiscard]] double thick() const noexcept { return m_thickness; }
+  [[nodiscard]] double elevation() const noexcept { return m_firstPoint.z; }
+  [[nodiscard]] const DRW_Coord& extrusion() const noexcept { return m_extrusionDirection; }
 };
 
-//! Class to handle 3dface entity
-/*!
-*  Class to handle 3dface entity
-*/
+/** @brief Class to handle 3dface entity
+ * 
+ *  A 3D face is a three- or four-sided planar surface defined by its corner points. 
+ *  It is specified in the DXF file using group codes 10, 20, 30 for the first point; 
+ *  11, 21, 31 for the second point; 12, 22, 32 for the third point; and optionally 13, 23, 33 for the fourth point. 
+ *  The fourth point is optional because a 3D face can be a triangle (three-sided) or a quadrilateral (four-sided). 
+ *  The entity can also include properties such as thickness and extrusion direction, which can affect how it is rendered in 3D space.
+ */
 class DRW_3Dface : public DRW_Trace {
   friend class dxfRW;
 
@@ -372,92 +382,75 @@ class DRW_3Dface : public DRW_Trace {
     AllEdges = 0x0F
   };
 
-  DRW_3Dface() {
-    m_entityType = DRW::E3DFACE;
-    invisibleflag = 0;
+  explicit DRW_3Dface(DRW::ETYPE entityType = DRW::E3DFACE) noexcept : DRW_Trace{entityType} {}
+
+  void ApplyExtrusion() override {}
+
+  [[nodiscard]] const DRW_Coord& FirstCorner() const noexcept { return m_firstPoint; }
+  [[nodiscard]] const DRW_Coord& SecondCorner() const noexcept { return m_secondPoint; }
+  [[nodiscard]] const DRW_Coord& ThirdCorner() const noexcept { return m_thirdPoint; }
+  [[nodiscard]] const DRW_Coord& FourthCorner() const noexcept { return m_fourthPoint; }
+  [[nodiscard]] InvisibleEdgeFlags edgeFlags() const noexcept {
+    return static_cast<InvisibleEdgeFlags>(m_invisibleFlag);
   }
-
-  virtual void applyExtrusion() {}
-
-  //! first corner in WCS
-  const DRW_Coord& firstCorner() const { return m_basePoint; }
-  //! second corner in WCS
-  const DRW_Coord& secondCorner() const { return secPoint; }
-  //! third corner in WCS
-  const DRW_Coord& thirdCorner() const { return thirdPoint; }
-  //! fourth corner in WCS
-  const DRW_Coord& fourthCorner() const { return fourPoint; }
-  //! edge visibility flags
-  InvisibleEdgeFlags edgeFlags() const { return (InvisibleEdgeFlags)invisibleflag; }
 
  protected:
   //! interpret code in dxf reading process or dispatch to inherited class
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
-  int invisibleflag; /*!< invisible edge flag, code 70 */
+  int m_invisibleFlag{};  // code 70
 };
 
-//! Class to handle block entries
-/*!
-*  Class to handle block entries
-*/
+/** @brief Class to handle block entries
+ * 
+ *  A block is a collection of entities that are grouped together and can be inserted into a drawing as a single unit. 
+ *  It is defined by its name, which is specified in the DXF file using group code 2, and its type, which is specified using group code 70. 
+ *  The block entity can also include properties such as layer, line type, and extrusion direction, which can affect how it is rendered in the drawing.
+ */
 class DRW_Block : public DRW_Point {
   friend class dxfRW;
 
  public:
-  DRW_Block() {
-    m_entityType = DRW::BLOCK;
-    m_layer = "0";
-    flags = 0;
-    name = "*U0";
-  }
+  explicit DRW_Block(DRW::ETYPE entityType = DRW::BLOCK) noexcept : DRW_Point{entityType} {}
 
-  virtual void applyExtrusion() {}
+  void ApplyExtrusion() override {}
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
-  UTF8STRING name; /*!< block name, code 2 */
-  int flags; /*!< block type, code 70 */
+  UTF8STRING name{"*U0"};  // code 2
+  int flags{};  // code 70
 };
 
-//! Class to handle insert entries
-/*!
-*  Class to handle insert entries
-*/
+/** @brief Class to handle insert entries
+ * 
+ *  An insert is an instance of a block that is placed in a drawing. 
+ *  It is defined by the name of the block it references, which is specified in the DXF file using group code 2, and its insertion point, which is specified using group codes 10, 20, and 30. 
+ *  The insert entity can also include properties such as scale factors (code 41, 42, 43), rotation angle (code 50), and number of columns and rows for array inserts (code 70 and 71), which can affect how it is rendered in the drawing.
+ */
 class DRW_Insert : public DRW_Point {
   friend class dxfRW;
 
  public:
-  DRW_Insert() {
-    m_entityType = DRW::INSERT;
-    xscale = 1;
-    yscale = 1;
-    zscale = 1;
-    angle = 0;
-    colcount = 1;
-    rowcount = 1;
-    colspace = 0;
-    rowspace = 0;
-  }
+  explicit DRW_Insert(DRW::ETYPE entityType = DRW::INSERT) noexcept : DRW_Point{entityType} {}
 
-  virtual void applyExtrusion() { DRW_Point::applyExtrusion(); }
+  void ApplyExtrusion() override { DRW_Point::ApplyExtrusion(); }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
-  UTF8STRING name; /*!< block name, code 2 */
-  double xscale; /*!< x scale factor, code 41 */
-  double yscale; /*!< y scale factor, code 42 */
-  double zscale; /*!< z scale factor, code 43 */
-  double angle; /*!< rotation angle in radians, code 50 */
-  int colcount; /*!< column count, code 70 */
-  int rowcount; /*!< row count, code 71 */
-  double colspace; /*!< column space, code 44 */
-  double rowspace; /*!< row space, code 45 */
+  UTF8STRING name;  // code 2
+  double xscale{1.0};  // code 41
+  double yscale{1.0};  // code 42
+  double zscale{1.0};  // code 43
+  double angle{};  // code 50 (in radians)
+  int colcount{1};  // code 70
+  int rowcount{1};  // code 71
+  double colspace{};  // code 44
+  double rowspace{};  // code 45
 };
 
 //! Class to handle lwpolyline entity
@@ -500,7 +493,7 @@ class DRW_LWPolyline : public DRW_Entity {
     }
     */
   }
-  virtual void applyExtrusion();
+  void ApplyExtrusion() override;
 
   void addVertex(DRW_Vertex2D v) {
     auto* vert = new DRW_Vertex2D();
@@ -519,7 +512,7 @@ class DRW_LWPolyline : public DRW_Entity {
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   int vertexnum{}; /*!< number of vertex, code 90 */
@@ -532,69 +525,63 @@ class DRW_LWPolyline : public DRW_Entity {
   std::vector<DRW_Vertex2D*> vertlist; /*!< vertex list */
 };
 
-//! Class to handle insert entries
-/*!
-*  Class to handle insert entries
-*/
+/** @brief Class to handle text entity
+ * 
+ *  A text entity represents a single line of text in a drawing. 
+ *  It is defined by its insertion point (code 10, 20, 30), height (code 40), and the text string itself (code 1). 
+ *  The text entity can also include properties such as rotation angle (code 50), width scale factor (code 41), oblique angle (code 51), and text style name (code 7), which can affect how the text is rendered in the drawing.
+ */
 class DRW_Text : public DRW_Line {
   friend class dxfRW;
 
  public:
-  //! Vertical alignments.
+  
   enum VAlign {
-    VBaseLine = 0, /*!< Top = 0 */
-    VBottom, /*!< Bottom = 1 */
-    VMiddle, /*!< Middle = 2 */
-    VTop /*!< Top = 3 */
+    VBaseLine = 0,
+    VBottom,
+    VMiddle,
+    VTop
   };
 
-  //! Horizontal alignments.
   enum HAlign {
-    HLeft = 0, /*!< Left = 0 */
-    HCenter, /*!< Centered = 1 */
-    HRight, /*!< Right = 2 */
-    HAligned, /*!< Aligned = 3 (if VAlign==0) */
-    HMiddle, /*!< middle = 4 (if VAlign==0) */
-    HFit /*!< fit into point = 5 (if VAlign==0) */
+    HLeft = 0,
+    HCenter,
+    HRight,
+    HAligned, // = 3 (if VAlign is 0)
+    HMiddle, // = 4 (if VAlign is 0) */
+    HFit // fit into point = 5 (if VAlign is 0)
   };
 
-  DRW_Text() {
-    m_entityType = DRW::TEXT;
-    angle = 0;
-    widthscale = 1;
-    oblique = 0;
-    style = "STANDARD";
-    textgen = 0;
-    alignH = HLeft;
-    alignV = VBaseLine;
-  }
+  explicit DRW_Text(DRW::ETYPE entityType = DRW::TEXT) noexcept : DRW_Line{entityType} {}
 
-  virtual void applyExtrusion() {}
+  void ApplyExtrusion() override {}
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
-  double height{}; /*!< height text, code 40 */
-  UTF8STRING text; /*!< text string, code 1 */
-  double angle; /*!< rotation angle in degrees (360), code 50 */
-  double widthscale; /*!< width factor, code 41 */
-  double oblique; /*!< oblique angle, code 51 */
-  UTF8STRING style; /*!< style name, code 7 */
-  int textgen; /*!< text generation, code 71 */
-  enum HAlign alignH; /*!< horizontal align, code 72 */
-  enum VAlign alignV; /*!< vertical align, code 73 */
+  double m_textHeight{};  // code 40
+  UTF8STRING m_string;  // code 1
+  double m_textRotation{};  // code 50
+  double m_scaleFactorWidth{1.0};  // code 41
+  double m_obliqueAngle{};  // code 51
+  UTF8STRING m_textStyleName{"STANDARD"};  // code 7
+  int m_textGenerationFlags{};  // code 71
+  enum HAlign m_horizontalAlignment { HLeft };  // code 72
+  enum VAlign m_verticalAlignment { VBaseLine };  // code 73
 };
 
-//! Class to handle insert entries
-/*!
-*  Class to handle insert entries
-*/
+/** @brief Class to handle mtext entity
+ * 
+ *  An mtext entity represents multiline text in a drawing. 
+ *  It is defined by its insertion point (code 10, 20, 30), height (code 40), and the text string itself (code 1). 
+ *  The mtext entity can also include properties such as rotation angle (code 50), width scale factor (code 41), oblique angle (code 51), and text style name (code 7), which can affect how the text is rendered in the drawing. 
+ *  Additionally, mtext supports more complex formatting options such as multiple lines of text, different alignments, and special characters.
+ */
 class DRW_MText : public DRW_Text {
   friend class dxfRW;
 
  public:
-  //! Attachments.
   enum Attach {
     TopLeft = 1,
     TopCenter,
@@ -607,27 +594,21 @@ class DRW_MText : public DRW_Text {
     BottomRight
   };
 
-  DRW_MText() {
-    m_entityType = DRW::MTEXT;
-    interlin = 1;
-    alignV = (VAlign)TopLeft;
-    textgen = 1;
-    haveXAxis = false;  //if true needed to recalculate angle
+  explicit DRW_MText(DRW::ETYPE entityType = DRW::MTEXT) noexcept : DRW_Text{entityType} {
+    m_verticalAlignment = (VAlign)TopLeft;
+    m_textGenerationFlags = 1;
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
-  void updateAngle();  //recalculate angle if 'haveXAxis' is true
+  void ParseCode(int code, dxfReader* reader);
+  void UpdateAngle();  //recalculate angle if 'm_haveXAxisDirection' is true
+
  public:
-  double interlin; /*!< width factor, code 44 */
+  double m_lineSpacingFactor{1.0};  // code 44 (optional)
  private:
-  bool haveXAxis;
+  bool m_haveXAxisDirection{};
 };
 
-//! Class to handle vertex
-/*!
-*  Class to handle vertex  for polyline entity
-*/
 class DRW_Vertex : public DRW_Point {
   friend class dxfRW;
 
@@ -642,14 +623,14 @@ class DRW_Vertex : public DRW_Point {
     stawidth = endwidth = 0;
     vindex1 = vindex2 = vindex3 = vindex4 = 0;
     flags = identifier = 0;
-    m_basePoint.x = sx;
-    m_basePoint.y = sy;
-    m_basePoint.z = sz;
+    m_firstPoint.x = sx;
+    m_firstPoint.y = sy;
+    m_firstPoint.z = sz;
     bulge = b;
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   double stawidth; /*!< Start width, code 40 */
@@ -665,10 +646,6 @@ class DRW_Vertex : public DRW_Point {
   int identifier; /*!< vertex identifier, code 91, default 0 */
 };
 
-//! Class to handle polyline entity
-/*!
-*  Class to handle polyline entity
-*/
 class DRW_Polyline : public DRW_Point {
   friend class dxfRW;
 
@@ -676,7 +653,7 @@ class DRW_Polyline : public DRW_Point {
   DRW_Polyline() {
     m_entityType = DRW::POLYLINE;
     defstawidth = defendwidth = 0.0;
-    m_basePoint.x = m_basePoint.y = 0.0;
+    m_firstPoint.x = m_firstPoint.y = 0.0;
     flags = vertexcount = facecount = 0;
     smoothM = smoothN = curvetype = 0;
   }
@@ -691,9 +668,9 @@ class DRW_Polyline : public DRW_Point {
   }
   void addVertex(DRW_Vertex v) {
     DRW_Vertex* vert = new DRW_Vertex();
-    vert->m_basePoint.x = v.m_basePoint.x;
-    vert->m_basePoint.y = v.m_basePoint.y;
-    vert->m_basePoint.z = v.m_basePoint.z;
+    vert->m_firstPoint.x = v.m_firstPoint.x;
+    vert->m_firstPoint.y = v.m_firstPoint.y;
+    vert->m_firstPoint.z = v.m_firstPoint.z;
     vert->stawidth = v.stawidth;
     vert->endwidth = v.endwidth;
     vert->bulge = v.bulge;
@@ -702,7 +679,7 @@ class DRW_Polyline : public DRW_Point {
   void appendVertex(DRW_Vertex* v) { vertlist.push_back(v); }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   int flags; /*!< polyline flag, code 70, default 0 */
@@ -745,10 +722,10 @@ class DRW_Spline : public DRW_Entity {
     }
     */
   }
-  virtual void applyExtrusion() {}
+  void ApplyExtrusion() override {}
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   //    double ex;                /*!< normal vector x coordinate, code 210 */
@@ -824,7 +801,7 @@ class DRW_Hatch : public DRW_Point {
   DRW_Hatch() {
     m_entityType = DRW::HATCH;
     angle = scale = 0.0;
-    m_basePoint.x = m_basePoint.y = m_basePoint.z = 0.0;
+    m_firstPoint.x = m_firstPoint.y = m_firstPoint.z = 0.0;
     loopsnum = hstyle = associative = 0;
     solid = hpattern = 1;
     deflines = doubleflag = 0;
@@ -844,10 +821,10 @@ class DRW_Hatch : public DRW_Point {
 
   void appendLoop(DRW_HatchLoop* v) { looplist.push_back(v); }
 
-  virtual void applyExtrusion() {}
+  void ApplyExtrusion() override {}
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   UTF8STRING name; /*!< hatch pattern name, code 2 */
@@ -932,7 +909,7 @@ class DRW_Image : public DRW_Line {
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   std::uint32_t ref{}; /*!< Hard reference to imagedef object, code 340 */
@@ -994,10 +971,10 @@ class DRW_Dimension : public DRW_Entity {
   }
   virtual ~DRW_Dimension() = default;
 
-  virtual void applyExtrusion() {}
+  virtual void ApplyExtrusion() {}
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   DRW_Coord getDefPoint() const { return defPoint; } /*!< Definition point, code 10, 20 & 30 */
@@ -1233,10 +1210,10 @@ class DRW_Leader : public DRW_Entity {
     */
   }
 
-  virtual void applyExtrusion() {}
+  virtual void ApplyExtrusion() {}
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   UTF8STRING style; /*!< Dimension style name, code 3 */
@@ -1278,10 +1255,10 @@ class DRW_Viewport : public DRW_Point {
     centerPY = 97.5;
   }
 
-  virtual void applyExtrusion() {}
+  void ApplyExtrusion() override {}
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   double pswidth; /*!< Width in paper space units, code 40 */

@@ -15,7 +15,7 @@ class EoDbBlock : public EoDbGroup {
                               //		b4 set - block is externally dependent
                               //		b5 set - block is a resolved external reference
                               //		b6 set - definition is referenced
-  EoGePoint3d m_basePoint;    // block base point
+  EoGePoint3d m_firstPoint;    // block base point
   CString m_xRefPathName;     // external reference (XRef) path name
 
  public:
@@ -24,13 +24,13 @@ class EoDbBlock : public EoDbGroup {
   EoDbBlock(std::uint16_t flags, EoGePoint3d basePoint, const CString& name);
   EoDbBlock& operator=(const EoDbBlock&) = delete;
 
-  const EoGePoint3d& BasePoint() const noexcept { return m_basePoint; }
-  std::uint16_t BlockTypeFlags() const noexcept { return m_blockTypeFlags; }
-  bool HasAttributes() const { return (m_blockTypeFlags & 2) == 2; }
-  bool IsAnonymous() const { return (m_blockTypeFlags & 1) == 1; }
-  bool IsFromExternalReference() const { return (m_blockTypeFlags & 4) == 4; }
+  [[nodiscard]] EoGePoint3d BasePoint() const noexcept { return m_firstPoint; }
+  [[nodiscard]] std::uint16_t BlockTypeFlags() const noexcept { return m_blockTypeFlags; }
+  [[nodiscard]] bool HasAttributes() const noexcept { return (m_blockTypeFlags & 2) == 2; }
+  [[nodiscard]] bool IsAnonymous() const noexcept { return (m_blockTypeFlags & 1) == 1; }
+  [[nodiscard]] bool IsFromExternalReference() const noexcept { return (m_blockTypeFlags & 4) == 4; }
   void SetBlockTypeFlags(std::uint16_t flags) { m_blockTypeFlags = flags; }
-  void SetBasePoint(EoGePoint3d basePoint) { m_basePoint = std::move(basePoint); }
+  void SetBasePoint(EoGePoint3d basePoint) { m_firstPoint = std::move(basePoint); }
 };
 
 typedef CTypedPtrMap<CMapStringToOb, CString, EoDbBlock*> EoDbBlocks;

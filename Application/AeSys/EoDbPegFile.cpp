@@ -225,8 +225,8 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
 
     EoDb::Read(*this, Name);
     auto blockTypeFlags = EoDb::ReadUInt16(*this);
-    EoGePoint3d BasePoint = EoDb::ReadPoint3d(*this);
-    auto* block = new EoDbBlock(blockTypeFlags, BasePoint, XRefPathName);
+    auto basePoint = EoDb::ReadPoint3d(*this);
+    auto* block = new EoDbBlock(blockTypeFlags, basePoint, XRefPathName);
     document->InsertBlock(Name, block);
 
     for (std::uint16_t PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
@@ -397,33 +397,32 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
 void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
   EoDb::Write(*this, std::uint16_t(EoDb::kBlocksSection));
 
-  std::uint16_t NumberOfBlocks = document->BlockTableSize();
-  EoDb::Write(*this, NumberOfBlocks);
+  std::uint16_t numberOfBlocks = document->BlockTableSize();
+  EoDb::Write(*this, numberOfBlocks);
 
-  CString Name;
-  EoDbBlock* Block{};
+  CString name;
+  EoDbBlock* block{};
 
   auto position = document->GetFirstBlockPosition();
   while (position != nullptr) {
-    document->GetNextBlock(position, Name, Block);
-
-    auto SavedFilePosition = CFile::GetPosition();
+    document->GetNextBlock(position, name, block);
+    auto savedFilePosition = CFile::GetPosition();
     EoDb::Write(*this, std::uint16_t(0));
-    std::uint16_t NumberOfPrimitives = 0;
+    std::uint16_t numberOfPrimitives{};
 
-    EoDb::Write(*this, Name);
-    EoDb::Write(*this, Block->BlockTypeFlags());
-    Block->BasePoint().Write(*this);
+    EoDb::Write(*this, name);
+    EoDb::Write(*this, block->BlockTypeFlags());
+    block->BasePoint().Write(*this);
 
-    auto PrimitivePosition = Block->GetHeadPosition();
-    while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* primitive = Block->GetNext(PrimitivePosition);
-      if (primitive->Write(*this)) NumberOfPrimitives++;
+    auto primitivePosition = block->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = block->GetNext(primitivePosition);
+      if (primitive->Write(*this)) numberOfPrimitives++;
     }
-    auto CurrentFilePosition = CFile::GetPosition();
-    CFile::Seek(static_cast<LONGLONG>(SavedFilePosition), CFile::begin);
-    EoDb::Write(*this, NumberOfPrimitives);
-    CFile::Seek(static_cast<LONGLONG>(CurrentFilePosition), CFile::begin);
+    auto currentFilePosition = CFile::GetPosition();
+    CFile::Seek(static_cast<LONGLONG>(savedFilePosition), CFile::begin);
+    EoDb::Write(*this, numberOfPrimitives);
+    CFile::Seek(static_cast<LONGLONG>(currentFilePosition), CFile::begin);
   }
 
   EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));

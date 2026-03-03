@@ -53,7 +53,7 @@ class DRW_TableEntry {
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
   void reset() {
     flags = 0;
     for (std::vector<DRW_Variant*>::iterator it = extData.begin(); it != extData.end(); ++it) delete *it;
@@ -108,7 +108,7 @@ class DRW_Dimstyle : public DRW_TableEntry {
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
   void update();
 
  public:
@@ -205,7 +205,7 @@ class DRW_LType : public DRW_TableEntry {
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
   void update();
 
  public:
@@ -240,7 +240,7 @@ class DRW_Layer : public DRW_TableEntry {
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   UTF8STRING lineType;                 /*!< line type, code 6 */
@@ -268,11 +268,11 @@ class DRW_Block_Record : public DRW_TableEntry {
   }
 
  protected:
-  //    void parseCode(int code, dxfReader *reader);
+  //    void ParseCode(int code, dxfReader *reader);
  public:
   //Note:    int DRW_TableEntry::flags; contains code 70 of block
   int insUnits;        /*!< block insertion units, code 70 of block_record*/
-  DRW_Coord m_basePoint; /*!<  block insertion base point dwg only */
+  DRW_Coord m_firstPoint; /*!<  block insertion base point dwg only */
 };
 
 //! Class to handle text style entries
@@ -296,7 +296,7 @@ class DRW_Textstyle : public DRW_TableEntry {
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   double height;      /*!< Fixed text height (0 not set), code 40 */
@@ -340,7 +340,7 @@ class DRW_Vport : public DRW_TableEntry {
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   DRW_Coord lowerLeft;   /*!< Lower left corner, code 10 & 20 */
@@ -392,7 +392,7 @@ class DRW_ImageDef : public DRW_TableEntry {  //
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader);
+  void ParseCode(int code, dxfReader* reader);
 
  public:
   //    std::string handle;       /*!< entity identifier, code 5 */
@@ -425,7 +425,7 @@ class DRW_AppId : public DRW_TableEntry {
   }
 
  protected:
-  void parseCode(int code, dxfReader* reader) { DRW_TableEntry::parseCode(code, reader); }
+  void ParseCode(int code, dxfReader* reader) { DRW_TableEntry::ParseCode(code, reader); }
 };
 
 namespace DRW {

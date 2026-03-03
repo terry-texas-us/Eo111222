@@ -180,7 +180,7 @@ void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, [[m
   // auto obliqueAngle = textStyle.oblique;  // Oblique angle (group code 50)
   // auto textGenerationFlags =
   textStyle.flags;  // Text generation flags (group code 71) 0x02 - text is backward, mirrored in X - 0x04 - text is
-                    // upside down, mirrored in Y
+  // upside down, mirrored in Y
   // auto lastHeight = textStyle.lastHeight;  // Last height used (group code 42)
 
   // auto& font = textStyle.font;        // Primary font file name (group code 3)
@@ -255,7 +255,7 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* docu
   auto* newBlock =
       new EoDbBlock(static_cast<std::uint16_t>(
                         block.flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
-          EoGePoint3d(block.m_basePoint.x, block.m_basePoint.y, block.m_basePoint.z),  // group codes 10, 20 and 30
+          EoGePoint3d(block.m_firstPoint.x, block.m_firstPoint.y, block.m_firstPoint.z),  // group codes 10, 20 and 30
           blockName.c_str());
 
   document->InsertBlock(blockName.c_str(), newBlock);
@@ -290,11 +290,11 @@ class EoGeVertex2D {
       : x(xInitial), y(yInitial), startWidth(0.0), endWidth(0.0), bulge(bulgeInitial) {}
 
  public:
-  double x;           // group code 10
-  double y;           // group code 20
+  double x;  // group code 10
+  double y;  // group code 20
   double startWidth;  // group code 40
-  double endWidth;    // group code 41
-  double bulge;       // group code 42
+  double endWidth;  // group code 41
+  double bulge;  // group code 42
 };
 }  // namespace
 
@@ -336,7 +336,7 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
     ATLTRACE2(traceGeneral, 3, L"Warning: Arc entity with non-positive radius (%f) skipped.\n", arc.m_radius);
     return;
   }
-  EoGePoint3d center(arc.m_basePoint.x, arc.m_basePoint.y, arc.m_basePoint.z);
+  EoGePoint3d center(arc.m_firstPoint.x, arc.m_firstPoint.y, arc.m_firstPoint.z);
 
   EoGeVector3d extrusion(arc.m_extrusionDirection.x, arc.m_extrusionDirection.y, arc.m_extrusionDirection.z);
   if (extrusion.IsNearNull()) {
@@ -344,14 +344,14 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
   } else {
     extrusion.Normalize();
   }
-  double startAngle = arc.staangle;
-  double endAngle = arc.endangle;
+  double startAngle = arc.m_startAngle;
+  double endAngle = arc.m_endAngle;
 
   // For negative Z extrusion, libdxfrw angles need mirroring to match AutoCAD behavior
   const bool isNegativeExtrusion = extrusion.z < -Eo::geometricTolerance;
   if (isNegativeExtrusion) {
-    startAngle = Eo::TwoPi - arc.staangle;
-    endAngle = Eo::TwoPi - arc.endangle;
+    startAngle = Eo::TwoPi - arc.m_startAngle;
+    endAngle = Eo::TwoPi - arc.m_endAngle;
     // Swap start and end to maintain CCW sweep direction
     std::swap(startAngle, endAngle);
   }
@@ -370,7 +370,7 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
 void EoDbDrwInterface::ConvertCircleEntity(const DRW_Circle& circle, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Circle entity conversion\n");
 
-  EoGePoint3d center(circle.m_basePoint.x, circle.m_basePoint.y, circle.m_basePoint.z);
+  EoGePoint3d center(circle.m_firstPoint.x, circle.m_firstPoint.y, circle.m_firstPoint.z);
   EoGeVector3d extrusion(circle.m_extrusionDirection.x, circle.m_extrusionDirection.y, circle.m_extrusionDirection.z);
   if (extrusion.IsNearNull()) {
     extrusion = EoGeVector3d::positiveUnitZ;
@@ -385,11 +385,11 @@ void EoDbDrwInterface::ConvertCircleEntity(const DRW_Circle& circle, AeSysDoc* d
 void EoDbDrwInterface::ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Ellipse entity conversion\n");
 
-  if (ellipse.ratio <= 0.0 || ellipse.ratio > 1.0) {
-    ATLTRACE2(traceGeneral, 3, L"Warning: Ellipse entity with invalid ratio (%f) skipped.\n", ellipse.ratio);
+  if (ellipse.m_ratio <= 0.0 || ellipse.m_ratio > 1.0) {
+    ATLTRACE2(traceGeneral, 3, L"Warning: Ellipse entity with invalid ratio (%f) skipped.\n", ellipse.m_ratio);
     return;
   }
-  EoGeVector3d majorAxis(ellipse.secPoint.x, ellipse.secPoint.y, ellipse.secPoint.z);
+  EoGeVector3d majorAxis(ellipse.m_secondPoint.x, ellipse.m_secondPoint.y, ellipse.m_secondPoint.z);
   if (majorAxis.IsNearNull()) {
     ATLTRACE2(traceGeneral, 3, L"Warning: Zero-length major axis\n");
     return;
@@ -401,8 +401,9 @@ void EoDbDrwInterface::ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc
   } else {
     extrusion.Normalize();
   }
-  auto center = EoGePoint3d(ellipse.m_basePoint.x, ellipse.m_basePoint.y, ellipse.m_basePoint.z);
-  auto* conic = EoDbConic::CreateConic(center, majorAxis, extrusion, ellipse.ratio, ellipse.staparam, ellipse.endparam);
+  auto center = EoGePoint3d(ellipse.m_firstPoint.x, ellipse.m_firstPoint.y, ellipse.m_firstPoint.z);
+  auto* conic =
+      EoDbConic::CreateConic(center, majorAxis, extrusion, ellipse.m_ratio, ellipse.m_startParam, ellipse.m_endParam);
   conic->SetBaseProperties(&ellipse, document);
   AddToDocument(conic, document);
 }
@@ -413,7 +414,7 @@ void EoDbDrwInterface::ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* d
   insertPrimitive->SetBaseProperties(&insert, document);
   auto name = Eo::MultiByteToWString(insert.name.c_str());
   insertPrimitive->SetName(CString(name.c_str()));
-  insertPrimitive->SetInsertionPoint(insert.m_basePoint);
+  insertPrimitive->SetInsertionPoint(insert.m_firstPoint);
   insertPrimitive->SetNormal(
       EoGeVector3d(insert.m_extrusionDirection.x, insert.m_extrusionDirection.y, insert.m_extrusionDirection.z));
   insertPrimitive->SetScaleFactors(EoGeVector3d(insert.xscale, insert.yscale, insert.zscale));
@@ -428,7 +429,7 @@ void EoDbDrwInterface::ConvertLineEntity(const DRW_Line& line, AeSysDoc* documen
   auto linePrimitive = new EoDbLine();
   linePrimitive->SetBaseProperties(&line, document);
 
-  linePrimitive->SetLine(EoGeLine(EoGePoint3d{line.m_basePoint}, EoGePoint3d{line.secPoint}));
+  linePrimitive->SetLine(EoGeLine(EoGePoint3d{line.m_firstPoint}, EoGePoint3d{line.m_secondPoint}));
   AddToDocument(linePrimitive, document);
 }
 
@@ -452,6 +453,6 @@ void EoDbDrwInterface::ConvertPointEntity(const DRW_Point& point, AeSysDoc* docu
 
   auto pointPrimitive = new EoDbPoint();
   pointPrimitive->SetBaseProperties(&point, document);
-  pointPrimitive->SetPoint(point.m_basePoint.x, point.m_basePoint.y, point.m_basePoint.z);
+  pointPrimitive->SetPoint(point.m_firstPoint.x, point.m_firstPoint.y, point.m_firstPoint.z);
   AddToDocument(pointPrimitive, document);
 }

@@ -34,7 +34,8 @@ constexpr double geometricTolerance{1e-9};  // TAS: Added for geometric calculat
 constexpr auto Pi{std::numbers::pi};
 constexpr auto TwoPi{2.0 * std::numbers::pi};
 constexpr auto HalfPi{std::numbers::pi / 2.0};
-constexpr auto ARAD{180.0 / std::numbers::pi};
+constexpr auto RadiansToDegrees{180.0 / std::numbers::pi};
+constexpr auto DegreesToRadians{std::numbers::pi / 180.0};
 
 /// Version numbers for the DXF Format.
 enum Version {

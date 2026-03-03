@@ -111,7 +111,7 @@ void EoDbGroup::BreakSegRefs() {
         EoDbBlock* block{};
         if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(primitive)->BlockName(), block) != 0) {
           EoDbGroup* pSegT = new EoDbGroup(*block);
-          EoGePoint3d basePoint = block->BasePoint();
+          auto basePoint = block->BasePoint();
           EoGeTransformMatrix transformMatrix =
               static_cast<EoDbBlockReference*>(primitive)->BuildTransformMatrix(basePoint);
           pSegT->Transform(transformMatrix);
