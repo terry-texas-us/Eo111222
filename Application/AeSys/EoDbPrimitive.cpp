@@ -85,10 +85,11 @@ CString EoDbPrimitive::FormatLineType() const {
 std::int16_t EoDbPrimitive::LogicalColor() const noexcept {
   std::int16_t color = sm_specialColor == 0 ? m_color : sm_specialColor;
 
-  if (color == COLOR_BYLAYER)
+  if (color == COLOR_BYLAYER) {
     color = sm_layerColor;
-  else if (color == COLOR_BYBLOCK)
+  } else if (color == COLOR_BYBLOCK) {
     color = 7;
+  }
 
   return color;
 }
@@ -96,10 +97,11 @@ std::int16_t EoDbPrimitive::LogicalColor() const noexcept {
 std::int16_t EoDbPrimitive::LogicalLineType() const noexcept {
   std::int16_t lineTypeIndex = m_lineTypeIndex;
 
-  if (lineTypeIndex == LINETYPE_BYLAYER)
+  if (lineTypeIndex == LINETYPE_BYLAYER) {
     lineTypeIndex = sm_layerLineTypeIndex;
-  else if (lineTypeIndex == LINETYPE_BYBLOCK)
+  } else if (lineTypeIndex == LINETYPE_BYBLOCK) {
     lineTypeIndex = 1;
+  }
 
   return lineTypeIndex;
 }

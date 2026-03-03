@@ -30,10 +30,10 @@ int numberOfTokensInStream = 0;
 /**
  * @brief Zero-initialized buffer for operand value storage, sized for MaxValues long.
  *
- * This base long buffer supports type punning for mixed-use in expression parsing (e.g.,  long's, double's or wchar_t's per grammar).
- * Each operand entry used first a packed long containing dimension and length, followed by the actual value(s).
- * Use with reinterpret_cast to view as double or wchar_t arrays.
- * Alignment ensures no undefined behavior on access; size calculation adapts to platform-specific wchar_t sizes.
+ * This base long buffer supports type punning for mixed-use in expression parsing (e.g.,  long's, double's or wchar_t's
+ * per grammar). Each operand entry used first a packed long containing dimension and length, followed by the actual
+ * value(s). Use with reinterpret_cast to view as double or wchar_t arrays. Alignment ensures no undefined behavior on
+ * access; size calculation adapts to platform-specific wchar_t sizes.
  *
  * @note For modernization, explore std::variant or unions for operands and this buffer.
  */
@@ -72,7 +72,7 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
         while (OperatorStack[TopOfOperatorStack] != OpenParenthesesToken) {  // Move operator to token stack
           typeOfTokens[numberOfTokens++] = OperatorStack[TopOfOperatorStack--];
         }
-        TopOfOperatorStack--;       // Discard open parentheses
+        TopOfOperatorStack--;  // Discard open parentheses
         NumberOfOpenParentheses--;  // One less open parentheses
         break;
 
@@ -85,8 +85,8 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
           }
         }
         // Pop higher priority operators from stack
-        while (TopOfOperatorStack > 0 &&
-               TokenPropertiesTable[OperatorStack[TopOfOperatorStack]].inStackPriority >= TokenPropertiesTable[CurrentTokenType].inComingPriority) {
+        while (TopOfOperatorStack > 0 && TokenPropertiesTable[OperatorStack[TopOfOperatorStack]].inStackPriority >=
+                                             TokenPropertiesTable[CurrentTokenType].inComingPriority) {
           typeOfTokens[numberOfTokens++] = OperatorStack[TopOfOperatorStack--];
         }
         // Push new operator onto stack
@@ -111,7 +111,8 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
   if (numberOfTokens == 0) { throw L"Syntax error"; }
 }
 
-void lex::ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaInformation, wchar_t* stringBuffer, int* stringLength) {
+void lex::ConvertValToString(
+    void* valueBuffer, ValueMetaInformation* valueMetaInformation, wchar_t* stringBuffer, int* stringLength) {
   int iDim = valueMetaInformation->GetDimension();
 
   if (valueMetaInformation->type == StringToken) {
@@ -203,7 +204,8 @@ void lex::ConvertValTyp(int currentType, int requiredType, long* valueDefinition
   }
 }
 
-void lex::ConvertStringToVal(int desiredType, long tokenDefinition, const wchar_t* inputLine, long* resultDefinition, void* resultValue) {
+void lex::ConvertStringToVal(
+    int desiredType, long tokenDefinition, const wchar_t* inputLine, long* resultDefinition, void* resultValue) {
   if (LOWORD(tokenDefinition) <= 0) { throw std::invalid_argument("Empty string"); }
 
   wchar_t token[TokenBufferSize]{};
@@ -268,21 +270,22 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
   long* lOp1 = reinterpret_cast<long*>(operandBuffer);
 
   /**
- * @brief Zero-initialized buffer for operand storage, sized for 256 wchar_t but aligned for numeric reinterpretation.
- *
- * This buffer supports type punning for mixed-use in expression parsing (e.g., strings, reals, or ints per grammar).
- * It uses a byte array for flexibility, with reinterpret_cast to view as double or long arrays.
- * Alignment ensures no undefined behavior on access; size calculation adapts to platform-specific wchar_t sizes.
- *
- * @note if not needing char-specific operations. For even safer modernization, explore std::variant or unions for operands.
- */
+   * @brief Zero-initialized buffer for operand storage, sized for 256 wchar_t but aligned for numeric reinterpretation.
+   *
+   * This buffer supports type punning for mixed-use in expression parsing (e.g., strings, reals, or ints per grammar).
+   * It uses a byte array for flexibility, with reinterpret_cast to view as double or long arrays.
+   * Alignment ensures no undefined behavior on access; size calculation adapts to platform-specific wchar_t sizes.
+   *
+   * @note if not needing char-specific operations. For even safer modernization, explore std::variant or unions for
+   * operands.
+   */
   alignas(double) std::byte secondOperandBuffer[256 * sizeof(wchar_t)]{};
   wchar_t* cOp2 = reinterpret_cast<wchar_t*>(secondOperandBuffer);
   double* dOp2 = reinterpret_cast<double*>(secondOperandBuffer);
   long* lOp2 = reinterpret_cast<long*>(secondOperandBuffer);
 
   int operandStackTop{};  // Empty operand stack
-  int iTokStkId{};        // Start with first token
+  int iTokStkId{};  // Start with first token
 
   while (iTokStkId < numberOfTokens) {
     int tokenType = iExprTokTyp[iTokStkId];
@@ -405,13 +408,17 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
           }
         } else if (tokenType == ExponentiateToken) {
           if (iTyp1 == IntegerToken) {
-            if ((lOp1[0] >= 0 && lOp1[0] > DBL_MAX_10_EXP) || (lOp1[0] < 0 && lOp1[0] < DBL_MIN_10_EXP)) { throw L"Exponentiation error"; }
+            if ((lOp1[0] >= 0 && lOp1[0] > DBL_MAX_10_EXP) || (lOp1[0] < 0 && lOp1[0] < DBL_MIN_10_EXP)) {
+              throw L"Exponentiation error";
+            }
 
             lOp1[0] = (int)pow((double)lOp2[0], lOp1[0]);
           } else if (iTyp1 == RealToken) {
             int iExp = (int)dOp1[0];
 
-            if ((iExp >= 0 && iExp > DBL_MAX_10_EXP) || (iExp < 0 && iExp < DBL_MIN_10_EXP)) { throw L"Exponentiation error"; }
+            if ((iExp >= 0 && iExp > DBL_MAX_10_EXP) || (iExp < 0 && iExp < DBL_MIN_10_EXP)) {
+              throw L"Exponentiation error";
+            }
             dOp1[0] = pow(dOp2[0], dOp1[0]);
           }
         }
@@ -420,7 +427,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
         //       Support for UnaryLogicOperator (!) should go here
       }
     }
-    operandStackTop++;                      // Increment opernad stack pointer
+    operandStackTop++;  // Increment opernad stack pointer
     operandStack[operandStackTop] = iTyp1;  // Push operand onto operand stack
     lOpStkDef[operandStackTop] = lDef1;
     memcpy(&lOpStk[operandStackTop][0], operandBuffer, static_cast<size_t>(HIWORD(lDef1) * 4));
@@ -521,8 +528,8 @@ int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
     token[0] = inputLine[linePosition];
     token[1] = L'\0';
     linePosition++;  // Advance one char
-    tokenId = -1;    // Signal error
-  } else {           // Copy matched text
+    tokenId = -1;  // Signal error
+  } else {  // Copy matched text
     std::wstring matched = lexer.wstr();
     size_t length = lexer.wsize();
     wcsncpy_s(token, length + 1, matched.c_str(), length);
@@ -533,7 +540,9 @@ int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
   return tokenId;
 }
 
-int lex::TokType(int tokenType) { return (tokenType >= 0 && tokenType < numberOfTokensInStream) ? tokenTypeIdentifiers[tokenType] : -1; }
+int lex::TokType(int tokenType) {
+  return (tokenType >= 0 && tokenType < numberOfTokensInStream) ? tokenTypeIdentifiers[tokenType] : -1;
+}
 
 void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
   ValueMetaInformation valueMetaInformation{};

@@ -12,7 +12,7 @@
 #include "EoDbPolyline.h"
 #include "EoGePoint3d.h"
 #include "EoGsRenderState.h"  // state if global; consider migrating to member
-#include "Resource.h"         // For command IDs
+#include "Resource.h"  // For command IDs
 
 void DrawModeState::OnEnter(AeSysView* context) {
   ATLTRACE2(traceGeneral, 2, L"DrawModeState::OnEnter\n");
@@ -50,7 +50,7 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
         m_pts.RemoveAll();
         m_pts.Add(cursorPosition);
         m_previousDrawCommand = context->ModeLineHighlightOp(ID_OP2);
-      } else {                           // Complete line
+      } else {  // Complete line
         cursorPosition = context->SnapPointToAxis(m_pts[0], cursorPosition);
         auto* line = EoDbLine::CreateLine(m_pts[0], cursorPosition)
                          ->WithProperties(renderState.Color(), renderState.LineTypeIndex());
@@ -63,7 +63,7 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
       break;
     // Migrate others: Polygon, Arc, etc. For DXF: Map to libdxfrw entities with handles
     case ID_DRAW_MODE_ESCAPE:  // Or return
-      context->PopState();     // Exit to idle/previous
+      context->PopState();  // Exit to idle/previous
       break;
     default:
       break;

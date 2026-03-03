@@ -40,13 +40,13 @@ double penWidths[numberOfPenWidths] = {
 
 namespace {
 /** @brief Converts a multi-byte (UTF-8) string to a wide-character string.
-* @param multiByte The multi-byte (UTF-8) string to convert.
-* @return The converted wide-character string.
-*/
+ * @param multiByte The multi-byte (UTF-8) string to convert.
+ * @return The converted wide-character string.
+ */
 std::wstring MultiByteToWString(const char* multiByte) {
-  if (!multiByte) return {L""};
+  if (!multiByte) { return {L""}; }
   int size = ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, nullptr, 0);
-  if (size == 0) return {L""};
+  if (size == 0) { return {L""}; }
   std::wstring string;
   string.resize(static_cast<size_t>(size) - 1);
   ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, &string[0], size - 1);
@@ -239,7 +239,7 @@ BOOL AeSys::InitInstance() {
   CString resourceFolder = App::ResourceFolderPath();
   LoadSimplexStrokeFont(resourceFolder + Eo::defaultStrokeFont);
   LoadHatchesFromFile(resourceFolder + L"Hatches\\DefaultSet.txt");
-  //LoadPenColorsFromFile(ResourceFolder + L"Pens\\Colors\\Default.txt"));
+  // LoadPenColorsFromFile(ResourceFolder + L"Pens\\Colors\\Default.txt"));
 
 #if defined(USING_DDE)
   // Initialize for using DDEML
@@ -268,7 +268,8 @@ int AeSys::ExitInstance() {
 
   return CWinAppEx::ExitInstance();
 }
-/// <remarks> Processing occurs immediately before the framework loads the application state from the registry. </remarks>
+/// <remarks> Processing occurs immediately before the framework loads the application state from the registry.
+/// </remarks>
 void AeSys::PreLoadState() {
   GetContextMenuManager()->AddMenu(L"My menu", IDR_CONTEXT_MENU);
 
@@ -355,8 +356,8 @@ void AeSys::WarningMessageBox(UINT stringResourceIdentifier, const CString& stri
 void AeSys::UpdateMDITabs(BOOL resetMDIChild) { ((CMainFrame*)AfxGetMainWnd())->UpdateMDITabs(resetMDIChild); }
 void AeSys::OnTrapCommandsHighlight() {
   m_TrapHighlighted = !m_TrapHighlighted;
-  //LPARAM lHint = m_TrapHighlighted ? EoDb::kGroupsSafeTrap : EoDb::kGroupsSafe;
-  //UpdateAllViews(nullptr, lHint, &m_TrappedGroupList);
+  // LPARAM lHint = m_TrapHighlighted ? EoDb::kGroupsSafeTrap : EoDb::kGroupsSafe;
+  // UpdateAllViews(nullptr, lHint, &m_TrappedGroupList);
 }
 void AeSys::OnEditCfGroups() { m_ClipboardDataEoGroups = !m_ClipboardDataEoGroups; }
 void AeSys::OnEditCfImage() { m_ClipboardDataImage = !m_ClipboardDataImage; }
@@ -380,8 +381,8 @@ void AeSys::OnFileRun() {
 
   if (dlg.DoModal() == IDOK) {
     CString strFile = dlg.GetFileName();
-    //Note: use of winexec should be replaced with createprocess
-    //WinExec(strFile, SW_SHOW);
+    // Note: use of winexec should be replaced with createprocess
+    // WinExec(strFile, SW_SHOW);
   }
 }
 
@@ -484,10 +485,10 @@ EoGePoint3d AeSys::HomePointGet(int i) const {
   return (EoGePoint3d::kOrigin);
 }
 void AeSys::HomePointSave(int i, const EoGePoint3d& pt) {
-  if (i >= 0 && i < 9) m_HomePoints[i] = pt;
+  if (i >= 0 && i < 9) { m_HomePoints[i] = pt; }
 }
 
-//Initializes all peg global sections to their default (startup) values.
+// Initializes all peg global sections to their default (startup) values.
 void AeSys::InitGbls(CDC* deviceContext) {
   renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow);
 
@@ -511,7 +512,7 @@ void AeSys::InitGbls(CDC* deviceContext) {
   m_TrapHighlighted = true;
   m_TrapHighlightColor = 15;
 
-  //Document->InitializeGroupAndPrimitiveEdit();
+  // Document->InitializeGroupAndPrimitiveEdit();
   renderState.SetPen(nullptr, deviceContext, 1, 1);
   renderState.SetPointStyle(0);
 }
@@ -679,8 +680,7 @@ void AeSys::FormatLength(
   lengthAsString.ReleaseBuffer();
 }
 
-void AeSys::FormatLengthArchitectural(
-    LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length) {
+void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length) {
   wchar_t szBuf[16]{};
 
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
@@ -719,7 +719,7 @@ void AeSys::FormatLengthArchitectural(
     wcscat_s(lengthAsBuffer, bufSize, L"/");
     _itow_s(Denominator, szBuf, 16, 10);
     wcscat_s(lengthAsBuffer, bufSize, szBuf);
-    if (units == Eo::Units::ArchitecturalS) wcscat_s(lengthAsBuffer, bufSize, L";");
+    if (units == Eo::Units::ArchitecturalS) { wcscat_s(lengthAsBuffer, bufSize, L";"); }
   }
   wcscat_s(lengthAsBuffer, bufSize, L"\"");
 }
@@ -757,8 +757,8 @@ void AeSys::FormatLengthEngineering(
     }
   }
 }
-void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length,
-    const int width, const int precision) {
+void AeSys::FormatLengthSimple(
+    LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length, const int width, const int precision) {
   double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   CString formatSpecification;
@@ -808,7 +808,8 @@ void AeSys::FormatLengthSimple(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::
 /** @brief Adds optional inches and fraction to a length given in feet.
     @param inputLine The original input line containing the length string.
     @param feetLength The length in feet.
-    @param[in, out] end Pointer to the character in inputLine immediately following the feet portion, updated to point to the character after the optional inches and fraction portion.
+    @param[in, out] end Pointer to the character in inputLine immediately following the feet portion, updated to point
+   to the character after the optional inches and fraction portion.
     @return The total length in inches after adding optional inches and fraction.
     @note Fraction is validated by lex::Scan typing token as AcrchitecturalUnitsLengthToken.
     @throws wchar_t* If an error occurs during parsing, an error message is thrown.
@@ -827,7 +828,8 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
     // Add/subtract inches to totallength
     totalLength += std::copysign(inches, totalLength);
     if (tokenType == lex::ArchitecturalUnitsLengthToken) {
-      // the inches component possibly looks like 1'2-3/4". end should be `-` character.If so, parse and add/subtract that also
+      // the inches component possibly looks like 1'2-3/4". end should be `-` character.If so, parse and add/subtract
+      // that also
       if (*end == L'-') {
         wchar_t* fractionEnd{};
         double numerator = wcstod(&end[1], &fractionEnd);
@@ -842,7 +844,9 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
       }
     }
   }
-  if (*end == L'\"') end++;  // the inches component had the optional `"` character, skip it
+  if (*end == L'\"') {
+    end++;  // the inches component had the optional `"` character, skip it
+  }
   return totalLength;
 }
 
@@ -853,7 +857,8 @@ double AeSys::ParseLength(wchar_t* inputLine) {
   double length = wcstod(inputLine, &end);
 
   if (end == inputLine) { throw L"Invalid length format."; }
-  // The only valid case for a leading fraction is a variation of SimpleUnitsLengthToken `{sign}{fraction}(\'|\"|{metric_units})`
+  // The only valid case for a leading fraction is a variation of SimpleUnitsLengthToken
+  // `{sign}{fraction}(\'|\"|{metric_units})`
   if (*end == L'/') {
     wchar_t* fractionEnd{};
     double denominator = wcstod(&end[1], &fractionEnd);

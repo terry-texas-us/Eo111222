@@ -51,7 +51,7 @@ void AeSysDoc::RemoveUnusedBlocks() {
   while (BlockPosition != nullptr) {
     m_BlocksTable.GetNextAssoc(BlockPosition, Name, Block);
     if (GetBlockReferenceCount(Name) == 0) {
-      //Note: Deletion by key may cause loop problems
+      // Note: Deletion by key may cause loop problems
       m_BlocksTable.RemoveKey(Name);
       Block->DeletePrimitivesAndRemoveAll();
       delete Block;

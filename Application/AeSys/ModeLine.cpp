@@ -9,9 +9,13 @@ namespace {
 constexpr int statusOp0{3};
 }
 
-/// @brief Retrieves the DPI (dots per inch) for a window. The function tries to call GetDpiForWindow from user32.dll if available; if not available or the window handle is invalid, it falls back to the screen DPI obtained from the device context, defaulting to 96 if detection fails.
-/// @param hwnd Handle to the window whose DPI should be retrieved. If nullptr or not a valid window, the function falls back to the primary screen DPI.
-/// @return The DPI value (horizontal dots per inch) as a UINT for the specified window or screen. Returns 96 if the DPI cannot be determined.
+/// @brief Retrieves the DPI (dots per inch) for a window. The function tries to call GetDpiForWindow from user32.dll if
+/// available; if not available or the window handle is invalid, it falls back to the screen DPI obtained from the
+/// device context, defaulting to 96 if detection fails.
+/// @param hwnd Handle to the window whose DPI should be retrieved. If nullptr or not a valid window, the function falls
+/// back to the primary screen DPI.
+/// @return The DPI value (horizontal dots per inch) as a UINT for the specified window or screen. Returns 96 if the DPI
+/// cannot be determined.
 static UINT GetWindowDpi(HWND hwnd) {
   UINT dpi = 96;
   HMODULE user32Module = ::GetModuleHandleW(L"user32.dll");
@@ -42,7 +46,8 @@ static int ScaleHeightForDpi(HWND hwnd, int baseHeight) {
 /// @brief Scales a base width value according to the DPI of a given window.
 /// @param hwnd Handle to the window whose DPI is used for scaling.
 /// @param baseWidth The base width in pixels at the standard 96 DPI. If <= 0, the function returns 0.
-/// @return The width scaled to the window's DPI (using 96 DPI as the baseline), or 0 if baseWidth <= 0 or the computed scaled value is not positive.
+/// @return The width scaled to the window's DPI (using 96 DPI as the baseline), or 0 if baseWidth <= 0 or the computed
+/// scaled value is not positive.
 static int ScaleWidthForDpi(HWND hwnd, int baseWidth) {
   if (baseWidth <= 0) { return 0; }
   UINT dpi = GetWindowDpi(hwnd);
@@ -52,13 +57,15 @@ static int ScaleWidthForDpi(HWND hwnd, int baseWidth) {
 
 /// @brief Draws a line of text into a pane area of the given view using the provided device context and font.
 /// @param context Pointer to the device context (CDC) used for drawing. If nullptr, the function returns immediately.
-/// @param view Pointer to the view (CPegView) whose client rectangle is used to compute the pane area. If nullptr, the function returns immediately.
-/// @param paneIndex Zero-based index of the pane in which to draw the text; used to compute the left and right boundaries for the pane.
+/// @param view Pointer to the view (CPegView) whose client rectangle is used to compute the pane area. If nullptr, the
+/// function returns immediately.
+/// @param paneIndex Zero-based index of the pane in which to draw the text; used to compute the left and right
+/// boundaries for the pane.
 /// @param paneText The text to draw (CString).
 /// @param font Font (CFont) to select into the device context for drawing the text.
 /// @param textColor COLORREF specifying the text color to use while drawing.
-static void DrawPaneTextInView(CDC* context, AeSysView* view, int paneIndex, const CString& paneText, int font,
-                               COLORREF textColor) {
+static void DrawPaneTextInView(
+    CDC* context, AeSysView* view, int paneIndex, const CString& paneText, int font, COLORREF textColor) {
   if (context == nullptr || view == nullptr) { return; }
 
   auto* oldFont = context->SelectObject(static_cast<CFont*>(context->SelectStockObject(font)));
@@ -128,8 +135,8 @@ std::uint16_t AeSysView::ModeLineHighlightOp(std::uint16_t command) {
   if (app.ModeInformationOverView()) {
     CString paneText = GetStatusBar().GetPaneText(paneIndex);
     auto* deviceContext = GetDC();
-    DrawPaneTextInView(deviceContext, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT,
-                       Eo::colorRed);
+    DrawPaneTextInView(
+        deviceContext, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT, Eo::colorRed);
     ReleaseDC(deviceContext);
   }
   return command;
@@ -144,8 +151,8 @@ void AeSysView::ModeLineUnhighlightOp(std::uint16_t& command) {
   if (app.ModeInformationOverView()) {
     CString paneText = GetStatusBar().GetPaneText(paneIndex);
     CDC* context = GetDC();
-    DrawPaneTextInView(context, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT,
-                       App::ViewTextColor());
+    DrawPaneTextInView(
+        context, GetActiveView(), paneIndex - ::statusOp0, paneText, DEFAULT_GUI_FONT, App::ViewTextColor());
     ReleaseDC(context);
   }
   command = 0;

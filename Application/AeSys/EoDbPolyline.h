@@ -26,7 +26,8 @@ class EoDbPolyline : public EoDbPrimitive {
 
  public:
   EoDbPolyline();
-  EoDbPolyline(std::int16_t penColor, std::int16_t lineType, EoGePoint3d& centerPoint, double radius, int numberOfSides);
+  EoDbPolyline(
+      std::int16_t penColor, std::int16_t lineType, EoGePoint3d& centerPoint, double radius, int numberOfSides);
   EoDbPolyline(std::int16_t penColor, std::int16_t lineType, EoGePoint3dArray& pts);
   EoDbPolyline(EoGePoint3dArray& pts);
   EoDbPolyline(const EoDbPolyline& polyline);

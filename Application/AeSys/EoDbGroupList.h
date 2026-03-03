@@ -35,10 +35,12 @@ class EoDbGroupList : public CObList {
   void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, EoGeTransformMatrix& transformMatrix);
   int GetLineTypeRefCount(std::int16_t lineType);
 
-  /** Modifies the notes of all groups in the list using the specified font definition, character cell definition and attributes.
+  /** Modifies the notes of all groups in the list using the specified font definition, character cell definition and
+   * attributes.
    * @param fontDefinition The font definition to apply to the notes.
    * @param characterCellDefinition The character cell definition to apply to the notes.
-   * @param attributes The attributes that specify which properties of the notes to modify. This can be a combination of TM_TEXT_ALL, TM_TEXT_FONT, and TM_TEXT_HEIGHT.
+   * @param attributes The attributes that specify which properties of the notes to modify. This can be a combination of
+   * TM_TEXT_ALL, TM_TEXT_FONT, and TM_TEXT_HEIGHT.
    */
   void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,
       int attributes = 0);

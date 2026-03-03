@@ -57,7 +57,6 @@ void EoGsViewTransform::AdjustWindow(double aspectRatio) {
   BuildTransformMatrix();
 }
 void EoGsViewTransform::BuildTransformMatrix() {
-
   m_Matrix.Identity();
 
   EoGeVector3d n = Position() - Target();
@@ -148,9 +147,8 @@ void EoGsViewTransform::BuildTransformMatrix() {
     m_ProjectionMatrix[3][2] = 0.0f;
     m_ProjectionMatrix[3][3] = 1.0f;
 
-    DirectX::XMMATRIX XProjectionMatrix =
-        DirectX::XMMatrixOrthographicRH(static_cast<float>(UExtent), static_cast<float>(VExtent),
-                                        static_cast<float>(m_NearClipDistance), static_cast<float>(m_FarClipDistance));
+    DirectX::XMMATRIX XProjectionMatrix = DirectX::XMMatrixOrthographicRH(static_cast<float>(UExtent),
+        static_cast<float>(VExtent), static_cast<float>(m_NearClipDistance), static_cast<float>(m_FarClipDistance));
     XProjectionMatrix = XMMatrixTranspose(XProjectionMatrix);
   }
   m_Matrix *= m_ProjectionMatrix;

@@ -60,7 +60,7 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
   CPen grayPen(PS_SOLID, 2, Eo::colorGray);
   deviceContext.SelectObject(&grayPen);
   deviceContext.Rectangle(EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-                          EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+      EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
   // Restore device context
   deviceContext.SelectObject(pen);
@@ -84,7 +84,7 @@ void WndProcKeyPlanOnMouseMove(HWND hwnd, WPARAM nParam, LPARAM lParam) {
   HPEN grayPen = ::CreatePen(PS_SOLID, 2, Eo::colorGray);
   HPEN pen = (HPEN)::SelectObject(deviceContextHandle, grayPen);
   ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-              EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+      EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
   if (leftButtonDownInKeyplanRectangle) {
     OffsetRect(&EoDlgActiveViewKeyplan::m_rcWnd, (currentPoint.x - point.x), (currentPoint.y - point.y));
@@ -103,7 +103,7 @@ void WndProcKeyPlanOnMouseMove(HWND hwnd, WPARAM nParam, LPARAM lParam) {
   }
   point = currentPoint;
   ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-              EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+      EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
   ::SelectObject(deviceContextHandle, pen);
   ::SelectObject(deviceContextHandle, brush);
@@ -134,7 +134,7 @@ void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
   HPEN grayPen = ::CreatePen(PS_SOLID, 2, Eo::colorGray);
   HPEN pen = (HPEN)::SelectObject(deviceContextHandle, grayPen);
   Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-              EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+      EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
   CDC dcMem{};
   dcMem.CreateCompatibleDC(nullptr);
@@ -156,7 +156,7 @@ void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
       Eo::Round((1.0 - (vMin - dVMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
 
   ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-              EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+      EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
   ::SelectObject(deviceContextHandle, pen);
   ::SelectObject(deviceContextHandle, brush);
   ::DeleteObject(grayPen);

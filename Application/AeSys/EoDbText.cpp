@@ -39,25 +39,26 @@ bool HasFormattingCharacters(const CString& text) {
   for (int i = 0; i < text.GetLength() - 1; i++) {
     if (text[i] == '\\') {
       switch (text[i + 1]) {  // Parameter Meaning
-        case 'P':             //                Hard line break
-                              //case '~':	//    Nonbreaking space
-                              //case '/':	//    Single backslash; otherwise used as an escape character
-                              //case '{':	//    Single opening curly bracket; otherwise used as block begin
-                              //case '}':	//    Single closing curly bracket; otherwise used as block end
-        case 'A':             // 0, 1, or 2     Change alignment to bottom, center, or top
-                              //case 'C':	//    ACI color number  Change character color
-                              //case 'F':	//    Font information  Change to a different font
-                              //                  acad:	\FArial.shx
-                              //                  windows	\FArial|b1|i0|c0|p34
-                              //case 'H':	//    New height or relative  Change text height - height followed by an x
-                              //case 'L':	//    Start underlining
-                              //case 'l':	//    End underlining
-                              //case 'O':	//    Start overlining
-                              //case 'o':	//    End overlining
-                              //case 'T':	//    Change kerning, i.e. character spacing
-                              //case 'W':	//    Change character width, i.e X scaling
-        case 'S':             //                Stacked text or fractions
-          //                  the S is follwed by two text segments separated by a / (fraction bar) or ^ (no fraction bar)
+        case 'P':  //                Hard line break
+                   // case '~':	//    Nonbreaking space
+                   // case '/':	//    Single backslash; otherwise used as an escape character
+                   // case '{':	//    Single opening curly bracket; otherwise used as block begin
+                   // case '}':	//    Single closing curly bracket; otherwise used as block end
+        case 'A':  // 0, 1, or 2     Change alignment to bottom, center, or top
+                   // case 'C':	//    ACI color number  Change character color
+                   // case 'F':	//    Font information  Change to a different font
+                   //                  acad:	\FArial.shx
+                   //                  windows	\FArial|b1|i0|c0|p34
+                   // case 'H':	//    New height or relative  Change text height - height followed by an x
+                   // case 'L':	//    Start underlining
+                   // case 'l':	//    End underlining
+                   // case 'O':	//    Start overlining
+                   // case 'o':	//    End overlining
+                   // case 'T':	//    Change kerning, i.e. character spacing
+                   // case 'W':	//    Change character width, i.e X scaling
+        case 'S':  //                Stacked text or fractions
+          //                  the S is follwed by two text segments separated by a / (fraction bar) or ^ (no fraction
+          //                  bar)
           return true;
       }
     }
@@ -249,7 +250,9 @@ bool EoDbText::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&
   view->ModelViewTransformPoints(4, pt0);
 
   for (size_t n = 0; n < 4; n++) {
-    if (EoGeLine(EoGePoint3d{pt0[n]}, EoGePoint3d{pt0[(n + 1) % 4]}).DirRelOfPt(EoGePoint3d{point}) < 0) { return false; }
+    if (EoGeLine(EoGePoint3d{pt0[n]}, EoGePoint3d{pt0[(n + 1) % 4]}).DirRelOfPt(EoGePoint3d{point}) < 0) {
+      return false;
+    }
   }
   ptProj = EoGePoint3d{point};
 
@@ -258,7 +261,7 @@ bool EoDbText::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&
 void EoDbText::Transform(const EoGeTransformMatrix& transformMatrix) { m_ReferenceSystem.Transform(transformMatrix); }
 
 void EoDbText::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
-  if (mask != 0) m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v);
+  if (mask != 0) { m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v); }
 }
 bool EoDbText::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kTextPrimitive));
@@ -273,7 +276,7 @@ bool EoDbText::Write(CFile& file) {
 
 void DisplayText(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem,
     const CString& text) {
-  if (text.IsEmpty()) return;
+  if (text.IsEmpty()) { return; }
 
   if (HasFormattingCharacters(text)) {
     DisplayTextWithFormattingCharacters(view, deviceContext, fd, referenceSystem, text);
@@ -324,8 +327,9 @@ void DisplayTextSegment(AeSysView* view, CDC* deviceContext, EoDbFontDefinition&
 
     if (normal == EoGeVector3d::positiveUnitZ) {
       if (DisplayTextSegmentUsingTrueTypeFont(
-              view, deviceContext, fd, referenceSystem, startPosition, numberOfCharacters, text))
+              view, deviceContext, fd, referenceSystem, startPosition, numberOfCharacters, text)) {
         return;
+      }
     }
   }
   DisplayTextSegmentUsingStrokeFont(view, deviceContext, fd, referenceSystem, startPosition, numberOfCharacters, text);
@@ -353,13 +357,13 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDb
     polyline::BeginLineStrip();
 
     int Character = text.GetAt(n);
-    if (Character < 32 || Character > 126) Character = '.';
+    if (Character < 32 || Character > 126) { Character = '.'; }
 
     for (int i = (int)plStrokeFontDef[Character - 32]; i <= plStrokeFontDef[Character - 32 + 1] - 1; i++) {
       int iY = (int)(plStrokeChrDef[i - 1] % 4096L);
-      if ((iY & 2048) != 0) iY = -(iY - 2048);
+      if ((iY & 2048) != 0) { iY = -(iY - 2048); }
       int iX = (int)((plStrokeChrDef[i - 1] / 4096L) % 4096L);
-      if ((iX & 2048) != 0) iX = -(iX - 2048);
+      if ((iX & 2048) != 0) { iX = -(iX - 2048); }
 
       ptStroke += EoGeVector3d(0.01 / Eo::defaultCharacterCellAspectRatio * iX, 0.01 * iY, 0.0);
 
@@ -516,7 +520,7 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
         int EndSemicolon = text.Find(';', CurrentPosition);
         if (EndSemicolon != -1) {
           int TextSegmentDelimiter = text.Find('/', CurrentPosition);
-          if (TextSegmentDelimiter == -1) TextSegmentDelimiter = text.Find('^', CurrentPosition);
+          if (TextSegmentDelimiter == -1) { TextSegmentDelimiter = text.Find('^', CurrentPosition); }
 
           if (TextSegmentDelimiter != -1 && TextSegmentDelimiter < EndSemicolon) {
             if (NumberOfCharactersToDisplay > 0) {  // display text segment preceding the formatting
@@ -545,7 +549,7 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
             }
             StartPosition = TextSegmentDelimiter + 1;
             NumberOfCharactersToDisplay = EndSemicolon - StartPosition;
-            //Offset the line position down
+            // Offset the line position down
             ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 0.35, 0.72));
             BottomLeftCorner = ReferenceSystem.Origin();
 
@@ -589,7 +593,7 @@ int LengthSansFormattingCharacters(const CString& text) {
         int EndSemicolon = text.Find(';', CurrentPosition);
         if (EndSemicolon != -1) {
           int TextSegmentDelimiter = text.Find('/', CurrentPosition);
-          if (TextSegmentDelimiter == -1) TextSegmentDelimiter = text.Find('^', CurrentPosition);
+          if (TextSegmentDelimiter == -1) { TextSegmentDelimiter = text.Find('^', CurrentPosition); }
 
           if (TextSegmentDelimiter != -1 && TextSegmentDelimiter < EndSemicolon) {
             Length -= 4;
@@ -607,48 +611,54 @@ void GetBottomLeftCorner(EoDbFontDefinition& fd, int iChrs, EoGePoint3d& pt) {
 
     if (fd.Path() == EoDb::Path::Right || fd.Path() == EoDb::Path::Left) {
       if (fd.Path() == EoDb::Path::Right) {
-        if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Left)
+        if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Left) {
           pt.x = 0.;
-        else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Center)
+        } else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Center) {
           pt.x = -dTxtExt * 0.5;
-        else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Right)
+        } else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Right) {
           pt.x = -dTxtExt;
+        }
       } else {
-        if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Left)
+        if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Left) {
           pt.x = dTxtExt;
-        else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Center)
+        } else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Center) {
           pt.x = dTxtExt * 0.5;
-        else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Right)
+        } else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Right) {
           pt.x = 0.;
+        }
         pt.x = pt.x - 1.;
       }
-      if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Bottom)
+      if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Bottom) {
         pt.y = 0.;
-      else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Middle)
+      } else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Middle) {
         pt.y = -0.5;
-      else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Top)
+      } else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Top) {
         pt.y = -1.;
+      }
     } else if (fd.Path() == EoDb::Path::Down || fd.Path() == EoDb::Path::Up) {
-      if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Left)
+      if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Left) {
         pt.x = 0.;
-      else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Center)
+      } else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Center) {
         pt.x = -0.5;
-      else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Right)
+      } else if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Right) {
         pt.x = -1.;
+      }
       if (fd.Path() == EoDb::Path::Up) {
-        if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Bottom)
+        if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Bottom) {
           pt.y = 0.;
-        else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Middle)
+        } else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Middle) {
           pt.y = -dTxtExt * 0.5;
-        else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Top)
+        } else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Top) {
           pt.y = -dTxtExt;
+        }
       } else {
-        if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Bottom)
+        if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Bottom) {
           pt.y = dTxtExt;
-        else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Middle)
+        } else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Middle) {
           pt.y = dTxtExt * 0.5;
-        else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Top)
+        } else if (fd.VerticalAlignment() == EoDb::VerticalAlignment::Top) {
           pt.y = 0.;
+        }
         pt.y = pt.y - 1.;
       }
     }

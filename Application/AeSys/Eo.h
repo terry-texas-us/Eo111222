@@ -66,9 +66,9 @@ constexpr double defaultCharacterCellAspectRatio = 0.6;  // Width to height rati
 constexpr std::int16_t continuousLineTypeIndex{1};
 
 constexpr COLORREF colorBlack = RGB(0, 0, 0);
-constexpr COLORREF colorRed = RGB(255, 0, 0);        // ACI 1
+constexpr COLORREF colorRed = RGB(255, 0, 0);  // ACI 1
 constexpr COLORREF colorWhite = RGB(255, 255, 255);  // ACI 7
-constexpr COLORREF colorGray = RGB(128, 128, 128);   // ACI 8
+constexpr COLORREF colorGray = RGB(128, 128, 128);  // ACI 8
 constexpr COLORREF colorNavy = RGB(0, 0, 128);
 
 constexpr COLORREF colorRubberband = RGB(102, 102, 102);
@@ -86,7 +86,7 @@ constexpr double DegreeToRadian(double angleInDegrees) noexcept { return angleIn
 constexpr double RadianToDegree(double angleInRadians) noexcept { return angleInRadians * (180.0 / std::numbers::pi); }
 
 // Absolute tolerances for geometric calculations
-constexpr double generalTolerance = 1e-6;    // For general UI, display rounding (device space)
+constexpr double generalTolerance = 1e-6;  // For general UI, display rounding (device space)
 constexpr double geometricTolerance = 1e-9;  // For geometric calculations, point coincidence etc. (modelspace)
 
 // Machine epsilon for dimensionless comparisons
@@ -116,10 +116,11 @@ constexpr int Signum(double number) { return (number < 0.0 ? -1 : (number > 0.0 
 constexpr double CopySign(double a, double b) { return (b >= 0.0 ? std::abs(a) : -std::abs(a)); }
 
 /** @brief Rounds a double to the nearest integer using std::round, which rounds half away from zero.
-* @param number The double value to round.
-* @return The rounded integer value.
-* @note This function uses std::round for rounding, which follows the "round half away from zero" rule. Legacy implementation had a different "round half toward infinity" rule.
-*/
+ * @param number The double value to round.
+ * @return The rounded integer value.
+ * @note This function uses std::round for rounding, which follows the "round half away from zero" rule. Legacy
+ * implementation had a different "round half toward infinity" rule.
+ */
 inline int Round(double number) { return static_cast<int>(std::round(number)); }
 
 std::wstring MultiByteToWString(const char* multiByte);

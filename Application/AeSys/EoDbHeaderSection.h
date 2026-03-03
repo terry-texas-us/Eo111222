@@ -50,16 +50,16 @@ class EoDbHeaderSection {
    */
   auto Begin() { return m_variables.begin(); }
   auto End() { return m_variables.end(); }
-  
+
   /** @brief Provides constant iterators to traverse the header variables.
    *
    * @return Constant iterators for the beginning and end of the header variables map.
    */
   auto Begin() const { return m_variables.begin(); }
   auto End() const { return m_variables.end(); }
-  
-  //void Read(AeSysDoc* document, EoDbPegFile& pegFile);
-  //void Write(AeSysDoc* document, EoDbPegFile& pegFile);
+
+  // void Read(AeSysDoc* document, EoDbPegFile& pegFile);
+  // void Write(AeSysDoc* document, EoDbPegFile& pegFile);
 
  private:
   std::unordered_map<std::wstring, HeaderVariable> m_variables;

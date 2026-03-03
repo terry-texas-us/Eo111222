@@ -62,15 +62,18 @@ EoGeTransformMatrix::EoGeTransformMatrix(
   m_4X4[3][3] = 1.0;
 }
 
-/** @brief Constructs a transformation matrix to align an arbitrary coordinate system defined by a point and two reference vectors.
- * 
- * This constructor initializes a transformation matrix that aligns an arbitrary coordinate system defined by a reference point and two reference vectors (x and y axes).
- * The z-axis is derived from the cross product of the x and y reference vectors. The resulting transformation matrix maps the specified coordinate system to the standard Cartesian coordinate system.
- * 
+/** @brief Constructs a transformation matrix to align an arbitrary coordinate system defined by a point and two
+ * reference vectors.
+ *
+ * This constructor initializes a transformation matrix that aligns an arbitrary coordinate system defined by a
+ * reference point and two reference vectors (x and y axes). The z-axis is derived from the cross product of the x and y
+ * reference vectors. The resulting transformation matrix maps the specified coordinate system to the standard Cartesian
+ * coordinate system.
+ *
  * @param referencePoint The origin point of the reference coordinate system.
  * @param xAxis The reference vector defining the x-axis of the coordinate system.
  * @param yAxis The reference vector defining the y-axis of the coordinate system.
- * 
+ *
  * @note The x and y reference axis vectors do not need to be normalized; appropriate scaling is applied as needed.
  */
 EoGeTransformMatrix::EoGeTransformMatrix(
@@ -156,8 +159,9 @@ void EoGeTransformMatrix::AppendZAxisRotation(double angle) {
 /** @brief Constructs transformation matrix required to transform points about a reference point and normal.
  *  @param referencePoint reference point on plane which defines origin
  *  @param normal unit vector defining plane normal
- *  @note Assumes plane normal is a unit vector. Uses right handed convention. See Rodgers, 3-9 Rotation about an arbitrary axis in space.
-*/
+ *  @note Assumes plane normal is a unit vector. Uses right handed convention. See Rodgers, 3-9 Rotation about an
+ * arbitrary axis in space.
+ */
 void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(
     const EoGePoint3d& referencePoint, const EoGeVector3d& normal) {
   Identity();

@@ -1,5 +1,4 @@
 BasedOnStyle: Google
-ReflowComments: Never
 AlignTrailingComments: Never
 PointerAlignment: Left
 ColumnLimit: 120

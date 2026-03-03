@@ -25,7 +25,8 @@ namespace App {
 [[nodiscard]] EoDb::FileTypes FileTypeFromPath(const CString& pathName);
 
 /** Retrieves the path of the executable from the command line, excluding the executable name itself.
-   For example, if the command line is "C:\Program Files\MyApp\MyApp.exe", this function will return "C:\Program Files\MyApp".
+   For example, if the command line is "C:\Program Files\MyApp\MyApp.exe", this function will return "C:\Program
+   Files\MyApp".
 */
 [[nodiscard]] CString PathFromCommandLine();
 
@@ -174,8 +175,8 @@ class AeSys : public CWinAppEx {
    * @param width The minimum field width for the formatted number.
    * @param precision The number of decimal places to display in the formatted number.
    */
-  void FormatLengthSimple(LPWSTR lengthAsBuffr, const size_t bufSize, Eo::Units units, double length,
-      const int width, const int precision);
+  void FormatLengthSimple(
+      LPWSTR lengthAsBuffr, const size_t bufSize, Eo::Units units, double length, const int width, const int precision);
 
   [[nodiscard]] int GetArchitecturalUnitsFractionPrecision() const { return m_ArchitecturalUnitsFractionPrecision; }
   [[nodiscard]] static EoGePoint3d GetCursorPosition();
@@ -203,7 +204,8 @@ class AeSys : public CWinAppEx {
   [[nodiscard]] auto PenColorsGetHot(std::int16_t color) { return (Eo::ColorPalette[color]); }
 
   /** @brief Loads pen colors from a specified file and updates the color palettes accordingly.
-   * The file is expected to have lines in the format: "index=red,green,blue,red,green,blue" for both color and gray palettes.
+   * The file is expected to have lines in the format: "index=red,green,blue,red,green,blue" for both color and gray
+   * palettes.
    * @param fileName The path to the file containing pen color definitions.
    * @note The color palette and the gray palette are not the same size.
    * No checks are performed to ensure that the color values are within the valid range (0-255) for RGB components.
@@ -213,11 +215,11 @@ class AeSys : public CWinAppEx {
   [[nodiscard]] double LineWeight(std::int16_t penIndex) { return (penWidths[penIndex]); }
 
   /** Loads the pen widths from a file.
- * The file is expected to have lines in the format:
- *   penIndex=penWidth
- * Lines starting with '#' or ';' are treated as comments and ignored.
- * If the penIndex is out of range, that line is ignored.
- */
+   * The file is expected to have lines in the format:
+   *   penIndex=penWidth
+   * Lines starting with '#' or ';' are treated as comments and ignored.
+   * If the penIndex is out of range, that line is ignored.
+   */
   void LoadPenWidthsFromFile(const CString& pathName);
 
   [[nodiscard]] int PrimaryMode() const { return m_PrimaryMode; }
@@ -233,7 +235,8 @@ class AeSys : public CWinAppEx {
 
   /*** @brief Sets the shadow folder path for the application.
    * @param folder The name of the folder to be used as the shadow folder.
-   * @return 0 if the folder was successfully created or already exists, or a non-zero error code if there was an error creating the folder.
+   * @return 0 if the folder was successfully created or already exists, or a non-zero error code if there was an error
+   * creating the folder.
    */
   [[nodiscard]] int SetShadowFolderPath(const CString& folder);
   void SetUnits(Eo::Units units) { m_Units = units; }

@@ -74,8 +74,8 @@ void EoGeMatrixRow::Exchange(EoGeMatrixRow& rowA, EoGeMatrixRow& rowB) {
   rowB = row;
 }
 
-EoGeMatrix::EoGeMatrix(const EoGeMatrixRow& v0, const EoGeMatrixRow& v1, const EoGeMatrixRow& v2,
-                       const EoGeMatrixRow& v3) {
+EoGeMatrix::EoGeMatrix(
+    const EoGeMatrixRow& v0, const EoGeMatrixRow& v1, const EoGeMatrixRow& v2, const EoGeMatrixRow& v3) {
   m_row[0] = v0;
   m_row[1] = v1;
   m_row[2] = v2;
@@ -145,7 +145,7 @@ bool EoGeMatrix::IsIdentity(double tolerance) const {
  *
  * The Gauss-Jordan elimination method inverts an n×n matrix A by augmenting it with the identity matrix I,
  * forming [A|I]. Apply row operations (swap, scale, add multiples) to transform A into I; the right side becomes A⁻¹.
- * It combines forward elimination (to upper triangular) and backward substitution (to diagonal), 
+ * It combines forward elimination (to upper triangular) and backward substitution (to diagonal),
  * ensuring pivot non-zero for stability.
  *
  * @return A reference to the inverted matrix (the current instance).

@@ -82,7 +82,7 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           m_LineTypesListControl.GetSubItemRect(Item, Name, LVIR_LABEL, subItemRectangle);
           CString name = lineType->Name();
           deviceContext.ExtTextOutW(subItemRectangle.left + 6, subItemRectangle.top + 1, ETO_CLIPPED, &subItemRectangle,
-                                    name, static_cast<UINT>(name.GetLength()), nullptr);
+              name, static_cast<UINT>(name.GetLength()), nullptr);
 
           m_LineTypesListControl.GetSubItemRect(Item, Appearance, LVIR_LABEL, subItemRectangle);
 
@@ -93,8 +93,8 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           activeView->ViewportPushActive();
           activeView->PushViewTransform();
 
-          activeView->SetViewportSize(subItemRectangle.right + subItemRectangle.left,
-                                      subItemRectangle.bottom + subItemRectangle.top);
+          activeView->SetViewportSize(
+              subItemRectangle.right + subItemRectangle.left, subItemRectangle.bottom + subItemRectangle.top);
 
           double UExtent = static_cast<double>(subItemRectangle.right + subItemRectangle.left) /
                            static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
@@ -119,7 +119,7 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           m_LineTypesListControl.GetSubItemRect(Item, Description, LVIR_LABEL, subItemRectangle);
           CString Description = lineType->Description();
           deviceContext.ExtTextOutW(subItemRectangle.left + 6, subItemRectangle.top + 1, ETO_CLIPPED, &subItemRectangle,
-                                    Description, static_cast<UINT>(Description.GetLength()), nullptr);
+              Description, static_cast<UINT>(Description.GetLength()), nullptr);
         }
         deviceContext.Detach();
       } break;

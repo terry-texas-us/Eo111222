@@ -52,7 +52,9 @@ class EoDbText : public EoDbPrimitive {
   bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
-  void Translate(const EoGeVector3d& v) noexcept override { m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v); }
+  void Translate(const EoGeVector3d& v) noexcept override {
+    m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v);
+  }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   void Transform(const EoGeTransformMatrix&) override;
   bool Write(CFile& file) override;
@@ -85,7 +87,8 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
     EoGeReferenceSystem& referenceSystem, const CString& text);
 /// <summary> Determines the count of characters in string excluding formatting characters.</summary>
 int LengthSansFormattingCharacters(const CString& text);
-/// <summary> Determines the offset to the bottom left alignment position of a string of the specified number of characters and text attributes in the z=0 plane.</summary>
+/// <summary> Determines the offset to the bottom left alignment position of a string of the specified number of
+/// characters and text attributes in the z=0 plane.</summary>
 void GetBottomLeftCorner(EoDbFontDefinition& fd, int iChrs, EoGePoint3d& pt);
 /// <summary>Returns the region boundaries of a text string applying and optional inflation factor.</summary>
 void text_GetBoundingBox(

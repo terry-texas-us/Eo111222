@@ -20,7 +20,9 @@ class EoGeTransformMatrix : public EoGeMatrix {
 
   EoGeTransformMatrix(const EoGeMatrix& matrix) : EoGeMatrix(matrix) {}
 
-  EoGeTransformMatrix(const EoGeMatrixRow& row0, const EoGeMatrixRow& row1, const EoGeMatrixRow& row2, const EoGeMatrixRow& row3) : EoGeMatrix(row0, row1, row2, row3) {}
+  EoGeTransformMatrix(
+      const EoGeMatrixRow& row0, const EoGeMatrixRow& row1, const EoGeMatrixRow& row2, const EoGeMatrixRow& row3)
+      : EoGeMatrix(row0, row1, row2, row3) {}
 
   EoGeTransformMatrix(const EoGePoint3d& referencePoint, const EoGeVector3d& normal);
 
@@ -61,4 +63,4 @@ class EoGeTransformMatrix : public EoGeMatrix {
   }
 };
 
-using  EoGeTransformMatrixList = std::vector<EoGeTransformMatrix>;
+using EoGeTransformMatrixList = std::vector<EoGeTransformMatrix>;

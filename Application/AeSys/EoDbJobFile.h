@@ -1,7 +1,8 @@
 ﻿#pragma once
 
 // File is detailed on repo Markdowns folder.
-// AeSys/Markdowns/Job File Format.md (https://github.com/terry-texas-us/Eo111222/blob/6f68dc865e9cc90c9c42ce9194740f39b7adbc57/AeSys/Markdowns/Job%20File%20Format.md)
+// AeSys/Markdowns/Job File Format.md
+// (https://github.com/terry-texas-us/Eo111222/blob/6f68dc865e9cc90c9c42ce9194740f39b7adbc57/AeSys/Markdowns/Job%20File%20Format.md)
 
 #include <cstdint>
 
@@ -21,7 +22,8 @@ class EoDbJobFile {
     m_PrimBuf = new std::uint8_t[EoDbPrimitive::BUFFER_SIZE];
   }
   virtual ~EoDbJobFile() { delete[] m_PrimBuf; }
-  /// <summary>Reads document data from a memory file and adds all groups to the trap with a translation. This is a data stream retrieved from the clipboard.</summary>
+  /// <summary>Reads document data from a memory file and adds all groups to the trap with a translation. This is a data
+  /// stream retrieved from the clipboard.</summary>
   void ReadMemFile(CFile& file, EoGeVector3d translateVector);
   void ReadHeader(CFile& file);
   void ReadLayer(CFile& file, EoDbLayer* layer);

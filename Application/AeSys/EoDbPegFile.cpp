@@ -45,7 +45,8 @@ void EoDbPegFile::Load(AeSysDoc* document) {
  * Reads the header section from the PEG file into the document's header section.
  * @param document Pointer to the AeSysDoc object where the header section will be populated.
  * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kHeaderSection." if the expected sentinel is not found.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection." if the expected end of section sentinel is not found.
+ * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection." if the expected end of section sentinel is
+ * not found.
  */
 void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kHeaderSection) {
@@ -57,9 +58,9 @@ void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
   if (variables.empty()) {
     // Legacy AeSys file
     headerSection.SetVariable(L"$AESVER", HeaderVariable(L"AE2011"));  // AeSys version AE2011
-    headerSection.SetVariable(L"$CLAYER", HeaderVariable(L"0"));       // Current Layer default to `0`
-    headerSection.SetVariable(L"$PDMODE", HeaderVariable(2));          // Point display mode is `+`
-    headerSection.SetVariable(L"$PDSIZE", HeaderVariable(1.0));        // default point size 1.0
+    headerSection.SetVariable(L"$CLAYER", HeaderVariable(L"0"));  // Current Layer default to `0`
+    headerSection.SetVariable(L"$PDMODE", HeaderVariable(2));  // Point display mode is `+`
+    headerSection.SetVariable(L"$PDSIZE", HeaderVariable(1.0));  // default point size 1.0
   }
   // 	With addition of info here will loop key-value pairs till EoDb::kEndOfSection sentinel
 
@@ -72,7 +73,8 @@ void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
  * Reads the tables section from the PEG file into the document's tables.
  * @param document Pointer to the AeSysDoc object where the tables will be populated.
  * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kTablesSection." if the expected sentinel is not found.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection." if the expected end of section sentinel is not found.
+ * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection." if the expected end of section sentinel is
+ * not found.
  */
 void EoDbPegFile::ReadTablesSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kTablesSection) {
@@ -104,7 +106,8 @@ void EoDbPegFile::ReadViewportTable(AeSysDoc*) {
  * Reads the linetype table from the PEG file into the document's linetype table.
  * @param document Pointer to the AeSysDoc object where the linetype table will be populated.
  * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kLinetypeTable." if the expected sentinel is not found.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable." if the expected end of table sentinel is not found.
+ * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable." if the expected end of table sentinel is not
+ * found.
  */
 void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
   auto* lineTypeTable = document->LineTypeTable();
@@ -140,7 +143,8 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
  * @param dashLength A reference to a vector that will be populated with the dash lengths of the linetype.
  * @param name A reference to a CString that will be populated with the name of the linetype.
  * @param description A reference to a CString that will be populated with the description of the linetype.
- * @param definitionLength A reference to an std::uint16_t that will be set to the number of dash elements in the linetype.
+ * @param definitionLength A reference to an std::uint16_t that will be set to the number of dash elements in the
+ * linetype.
  */
 void EoDbPegFile::ReadLinetypeDefinition(
     std::vector<double>& dashLength, CString& name, CString& description, std::uint16_t& definitionLength) {
@@ -160,7 +164,8 @@ void EoDbPegFile::ReadLinetypeDefinition(
  * Reads the layer table from the PEG file into the document's layer table.
  * @param document Pointer to the AeSysDoc object where the layer table will be populated.
  * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable." if the expected sentinel is not found.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable." if the expected end of table sentinel is not found.
+ * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable." if the expected end of table sentinel is not
+ * found.
  */
 void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kLayerTable) {
@@ -180,7 +185,7 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
 
     if ((state & std::to_underlying(EoDbLayer::State::isInternal)) !=
         std::to_underlying(EoDbLayer::State::isInternal)) {
-      if (layerName.Find('.') == -1) layerName += L".jb1";
+      if (layerName.Find('.') == -1) { layerName += L".jb1"; }
     }
     auto colorIndex = EoDb::ReadInt16(*this);
     EoDb::Read(*this, lineTypeName);
@@ -381,8 +386,9 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
       EoDb::Write(*this, Layer->GetState());
       EoDb::Write(*this, Layer->ColorIndex());
       EoDb::Write(*this, Layer->LineTypeName());
-    } else
+    } else {
       NumberOfLayers--;
+    }
   }
   EoDb::Write(*this, std::uint16_t(EoDb::kEndOfTable));
 
@@ -417,7 +423,7 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
     auto primitivePosition = block->GetHeadPosition();
     while (primitivePosition != nullptr) {
       auto* primitive = block->GetNext(primitivePosition);
-      if (primitive->Write(*this)) numberOfPrimitives++;
+      if (primitive->Write(*this)) { numberOfPrimitives++; }
     }
     auto currentFilePosition = CFile::GetPosition();
     CFile::Seek(static_cast<LONGLONG>(savedFilePosition), CFile::begin);
@@ -505,7 +511,8 @@ bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive) {
  *
  * @param file The file to read from.
  * @param string The string to store the read value.
- * @note Use the code page CP_ACP gives you the same pre-Unicode behavior, but now correctly represented in Unicode CString. Will require adding a file format version number at the beginning of the file to read strings as CP_UTF8.
+ * @note Use the code page CP_ACP gives you the same pre-Unicode behavior, but now correctly represented in Unicode
+ * CString. Will require adding a file format version number at the beginning of the file to read strings as CP_UTF8.
  */
 void EoDb::Read(CFile& file, CString& string) {
   string.Empty();
@@ -514,10 +521,10 @@ void EoDb::Read(CFile& file, CString& string) {
   char character;
 
   while (file.Read(&character, 1) == 1) {
-    if (character == '\t') break;
+    if (character == '\t') { break; }
     buffer.push_back(character);
   }
-  if (buffer.empty()) return;
+  if (buffer.empty()) { return; }
 
   int wideLength = MultiByteToWideChar(CP_ACP, 0, buffer.data(), static_cast<int>(buffer.size()), nullptr, 0);
 

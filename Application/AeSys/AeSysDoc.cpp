@@ -254,8 +254,9 @@ void AeSysDoc::SetCommonTableEntries() {
   // TODO: Peg uses index for line types, need to map names to indexes (index 0 to 41 have been hard coded in Peg).
   //       Need to ensure that line types loaded here match those indexes.
   // m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
-  // m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to AeSys).txt");
-  // m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
+  // m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to
+  // AeSys).txt"); m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath +
+  // L"\\res\\LineTypes\\LineTypes-ISO128(scaled to AeSys).txt");
 }
 
 BOOL AeSysDoc::OnNewDocument() {
@@ -418,7 +419,7 @@ void AeSysDoc::AddTextBlock(LPWSTR pszText) {
     }
     ReferenceSystem.SetOrigin(text_GetNewLinePos(fontDefinition, ReferenceSystem, 1.0, 0));
     pText = wcstok_s(0, L"\r", &NextToken);
-    if (pText == 0) break;
+    if (pText == 0) { break; }
     pText++;
   }
 }
@@ -651,7 +652,7 @@ int AeSysDoc::RemoveEmptyNotesAndDelete() {
     count += layer->RemoveEmptyNotesAndDelete();
   }
 
-  //Note: remove empty notes from blocks
+  // Note: remove empty notes from blocks
 
   CString Key;
   EoDbBlock* Block{};
@@ -668,7 +669,7 @@ int AeSysDoc::RemoveEmptyGroups() {
     count += layer->RemoveEmptyGroups();
   }
 
-  //Note: remove empty groups from blocks
+  // Note: remove empty groups from blocks
 
   CString Key;
   EoDbBlock* Block{};
@@ -786,19 +787,21 @@ bool AeSysDoc::TracingMap(const CString& pathName) {
   auto* layer = GetLayerTableLayer(pathName);
 
   if (layer != nullptr) {
-    if (layer->IsOpened())
+    if (layer->IsOpened()) {
       app.WarningMessageBox(IDS_MSG_CLOSE_TRACING_FIRST, pathName);
-    else
+    } else {
       fileOpen = true;
+    }
   } else {
     layer = new EoDbLayer(pathName, EoDbLayer::State::isStatic);
 
     fileOpen = TracingLoadLayer(pathName, layer);
 
-    if (fileOpen)
+    if (fileOpen) {
       AddLayerTableLayer(layer);
-    else
+    } else {
       delete layer;
+    }
   }
   if (fileOpen) {
     layer->SetTracingState(static_cast<std::uint16_t>(EoDbLayer::TracingState::isMapped));
@@ -1178,8 +1181,9 @@ void AeSysDoc::OnBlocksLoad() {
     if ((dlg.m_ofn.Flags & OFN_EXTENSIONDIFFERENT) == 0) {
       EoDbBlockFile fb;
       fb.ReadFile(dlg.GetPathName(), m_BlocksTable);
-    } else
+    } else {
       app.WarningMessageBox(IDS_MSG_FILE_TYPE_ERROR);
+    }
   }
 }
 void AeSysDoc::OnBlocksRemoveUnused() { RemoveUnusedBlocks(); }
@@ -1320,8 +1324,9 @@ void AeSysDoc::OnEditTrapPaste() {
       delete[] clipboardText;
     }
     CloseClipboard();
-  } else
+  } else {
     app.WarningMessageBox(IDS_MSG_CLIPBOARD_LOCKED);
+  }
 }
 
 void AeSysDoc::OnEditTrapWork() {

@@ -22,7 +22,7 @@ void AeSysView::OnModePrimitiveMend() {
     EoDbPolygon::EdgeToEvaluate() = EoDbPolygon::Edge();
 
     if (primitive->SelectUsingPoint(this, ptView,
-                                    ptDet)) {  // Cursor is close enough to engaged primitive to use it first
+            ptDet)) {  // Cursor is close enough to engaged primitive to use it first
       m_PrimitiveToMend = primitive;
     }
   }

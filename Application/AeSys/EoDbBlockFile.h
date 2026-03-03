@@ -14,7 +14,7 @@ class EoDbBlockFile : public CFile {
   void ReadFile(const CString&, EoDbBlocks& blocks);
   /**
    * @brief Reads block definitions from the file into the provided EoDbBlocks map.
-   * 
+   *
    * This function expects the file to contain a blocks section, starting with the
    * EoDb::kBlocksSection sentinel and ending with the EoDb::kEndOfSection sentinel.
    * Each block definition includes its name, type flags, and associated primitives.

@@ -19,7 +19,8 @@ END_MESSAGE_MAP()
 EoGePoint3d EoDlgBlockInsert::InsertionPoint;
 
 EoDlgBlockInsert::EoDlgBlockInsert(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgBlockInsert::IDD, pParent) {}
-EoDlgBlockInsert::EoDlgBlockInsert(AeSysDoc* document, CWnd* pParent /*=nullptr*/) : CDialog(EoDlgBlockInsert::IDD, pParent), m_Document(document) {}
+EoDlgBlockInsert::EoDlgBlockInsert(AeSysDoc* document, CWnd* pParent /*=nullptr*/)
+    : CDialog(EoDlgBlockInsert::IDD, pParent), m_Document(document) {}
 EoDlgBlockInsert::~EoDlgBlockInsert() {}
 void EoDlgBlockInsert::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);

@@ -8,8 +8,8 @@
 /** @class A class that manages a stack of 3D transformation matrices for model transformations.
  *  Used when rendering nested geometry (like a block reference containing other block references).
  *
- *  This class allows pushing and popping transformation matrices onto a stack, applying transformations 
- *  to points and vectors, and maintaining a composite transformation matrix that represents the 
+ *  This class allows pushing and popping transformation matrices onto a stack, applying transformations
+ *  to points and vectors, and maintaining a composite transformation matrix that represents the
  *  cumulative effect of all transformations in the stack.
  */
 class EoGsModelTransform {
@@ -57,7 +57,8 @@ class EoGsModelTransform {
    */
   void Reset() noexcept;
 
-  /** The specified transformation is concatenated to the current model transformation (which is initially the identity transform).
+  /** The specified transformation is concatenated to the current model transformation (which is initially the identity
+   * transform).
    */
   void SetLocalTM(const EoGeTransformMatrix& transformation);
 
@@ -70,7 +71,7 @@ class EoGsModelTransform {
   void TransformVector(EoGeVector3d& vector) const noexcept;
 
  private:
-  std::uint16_t m_depth;                                // Transformation stack depth (0 means inactive)
+  std::uint16_t m_depth;  // Transformation stack depth (0 means inactive)
   EoGeTransformMatrix m_compositeTransformMatrix;  // Current composite transformation matrix
-  EoGeTransformMatrixList m_transformMatrixList;   // Stack of transformation matrices
+  EoGeTransformMatrixList m_transformMatrixList;  // Stack of transformation matrices
 };

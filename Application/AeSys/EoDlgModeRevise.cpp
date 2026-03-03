@@ -64,8 +64,9 @@ void EoDlgModeRevise::OnOK() {
     sm_TextPrimitive->GetFontDef(sm_FontDefinition);
     sm_TextPrimitive->GetRefSys(sm_ReferenceSystem);
     m_TextEditControl.SetWindowTextW(sm_TextPrimitive->Text());
-  } else
+  } else {
     m_TextEditControl.SetWindowTextW(L"");
+  }
 
   m_TextEditControl.SetFocus();
 

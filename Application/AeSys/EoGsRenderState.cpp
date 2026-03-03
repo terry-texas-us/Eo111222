@@ -15,7 +15,7 @@
 EoGsRenderState* psSav[] = {0, 0, 0, 0};
 
 void EoGsRenderState::Restore(CDC* deviceContext, int iSaveId) {
-  if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) return;
+  if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
 
   if (psSav[iSaveId] != 0) {
     SetPen(nullptr, deviceContext, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex());
@@ -35,7 +35,7 @@ void EoGsRenderState::Restore(CDC* deviceContext, int iSaveId) {
 int EoGsRenderState::Save() {
   int iSaveId = sizeof(psSav) / sizeof(psSav[0]) - 1;
 
-  while (iSaveId >= 0 && psSav[iSaveId] != 0) iSaveId--;
+  while (iSaveId >= 0 && psSav[iSaveId] != 0) { iSaveId--; }
 
   if (iSaveId < 0) {
     app.WarningMessageBox(IDS_MSG_SAVE_STATE_LIST_ERROR);
@@ -66,7 +66,8 @@ void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t c
   if (deviceContext) { ManagePenResources(deviceContext, color, int(LogicalWidth), lineTypeIndex); }
 }
 
-void EoGsRenderState::ManagePenResources(CDC* deviceContext, std::int16_t penColor, int penWidth, std::int16_t lineType) {
+void EoGsRenderState::ManagePenResources(
+    CDC* deviceContext, std::int16_t penColor, int penWidth, std::int16_t lineType) {
   static const int NumberOfPens = 8;
   static HPEN hPen[NumberOfPens] = {0, 0, 0, 0, 0, 0, 0, 0};
   static COLORREF crColRef[NumberOfPens];
@@ -139,8 +140,9 @@ void EoGsRenderState::SetLineType(CDC* deviceContext, std::int16_t lineTypeIndex
  * @param deviceContext The device context to set the ROP2 mode for.
  * @param drawMode The drawing mode to set, such as R2_COPYPEN, R2_XORPEN, etc.
  * @return The previous ROP2 mode before setting the new one.
- * @note The behavior of ROP2 modes can be affected by the background color. 
- * For example, XOR modes may not work properly with non black or white background colors, and this function includes logic to handle such cases accordingly.
+ * @note The behavior of ROP2 modes can be affected by the background color.
+ * For example, XOR modes may not work properly with non black or white background colors, and this function includes
+ * logic to handle such cases accordingly.
  */
 int EoGsRenderState::SetROP2(CDC* deviceContext, int drawMode) {
   if (Eo::ColorPalette[0] == Eo::colorBlack) {
@@ -155,7 +157,8 @@ int EoGsRenderState::SetROP2(CDC* deviceContext, int drawMode) {
   return deviceContext->SetROP2(drawMode);
 }
 
-void EoGsRenderState::SetAlignment(CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
+void EoGsRenderState::SetAlignment(
+    CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
   m_fontDefinition.SetAlignment(horizontalAlignment, verticalAlignment);
 
   deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);

@@ -3,7 +3,8 @@
 #include "Eo.h"
 #include "EoDb.h"
 
-/** @class EoDbFontDefinition represents the font definition of a text primitive, including the font name, character spacing, precision, path, and horizontal and vertical alignment. */
+/** @class EoDbFontDefinition represents the font definition of a text primitive, including the font name, character
+ * spacing, precision, path, and horizontal and vertical alignment. */
 class EoDbFontDefinition {
   CString m_fontName{Eo::defaultStrokeFont};
   double m_characterSpacing{};

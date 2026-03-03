@@ -87,11 +87,12 @@ void EoGeVector3d::Write(CFile& file) const {
 /** @brief Computes an arbitrary axis vector that is perpendicular to the given normal vector.
  * @param normal The normal vector to which the arbitrary axis will be perpendicular.
  * @return An arbitrary axis vector perpendicular to the normal vector.
- * @note The arbitrary axis algorithm is used by AutoCAD internally to implement the arbitrary but consistent generation 
+ * @note The arbitrary axis algorithm is used by AutoCAD internally to implement the arbitrary but consistent generation
  * of object coordinate systems for all entities that use object coordinates.
  */
 EoGeVector3d ComputeArbitraryAxis(const EoGeVector3d& normal) {
-  // AutoCAD's arbitrary axis algorithm uses 1/64 as the threshold (See: AutoCAD DXF Reference - Arbitrary Axis Algorithm)
+  // AutoCAD's arbitrary axis algorithm uses 1/64 as the threshold (See: AutoCAD DXF Reference - Arbitrary Axis
+  // Algorithm)
   constexpr double epsilon{1.0 / 64.0};  // AutoCAD compatibility - do not change
 
   EoGeVector3d arbitraryAxis;

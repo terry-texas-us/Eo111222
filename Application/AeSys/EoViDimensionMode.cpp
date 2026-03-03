@@ -31,7 +31,8 @@ EoGePoint3d PreviousDimensionCursorPosition{};
 std::uint16_t PreviousDimensionCommand{};
 
 /** @brief Produces the reference system vectors for a single character cell.
- *  @param characterCellDefinition The character cell definition containing the rotation and slant angles, expansion factor, and height for the character cell.
+ *  @param characterCellDefinition The character cell definition containing the rotation and slant angles, expansion
+ * factor, and height for the character cell.
  *  @param normal The normal vector of the text plane.
  *  @param[out] xAxisReference Receives the reference X axis vector for the character cell.
  *  @param[out] yAxisReference Receives the reference Y axis vector for the character cell.
@@ -215,9 +216,9 @@ void AeSysView::OnDimensionModeDLine2() {
     RubberBandingDisable();
     if (PreviousDimensionCursorPosition != cursorPosition) {
       auto* Group = new EoDbGroup;
-      if (PreviousDimensionCommand == ID_OP4)
+      if (PreviousDimensionCommand == ID_OP4) {
         GenerateLineEndItem(1, 0.1, cursorPosition, PreviousDimensionCursorPosition, Group);
-      else {
+      } else {
         ModeLineUnhighlightOp(PreviousDimensionCommand);
         PreviousDimensionCommand = ModeLineHighlightOp(ID_OP4);
       }
@@ -239,8 +240,9 @@ void AeSysView::OnDimensionModeDLine2() {
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
       PreviousDimensionCursorPosition = cursorPosition;
-    } else
+    } else {
       app.AddModeInformationToMessageList();
+    }
   } else {
     // error finish prior op first
   }

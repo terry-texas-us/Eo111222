@@ -24,7 +24,7 @@ class EoCtrlColorsButton : public CMFCButton {
    * @param color The color to fill the cell with.
    */
   void DrawCell(CDC* deviceContext, std::uint16_t index, COLORREF color) const;
-  
+
   /** @brief Determines the sub-item index at a given point.
    *
    * @param point The point to check.
@@ -67,7 +67,7 @@ class EoCtrlColorsButton : public CMFCButton {
    * @param state The state of the button (not used in this implementation).
    */
   void OnDraw(CDC* deviceContext, const CRect& rectangle, UINT state) override;
-  
+
   /**
    * Sizes the control to fit its content.
    * @param calculateOnly If TRUE, only calculates the size without resizing the control.
@@ -76,7 +76,7 @@ class EoCtrlColorsButton : public CMFCButton {
   CSize SizeToContent(BOOL calculateOnly = FALSE) override;
 
   afx_msg UINT OnGetDlgCode();
-  
+
   /** @brief Handles key down events for navigation within the color button control.
    *
    * This method processes arrow key inputs to navigate through the color cells

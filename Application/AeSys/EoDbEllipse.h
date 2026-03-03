@@ -32,13 +32,14 @@ class EoDbEllipse : public EoDbPrimitive {
   EoDbEllipse(
       const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle);
 
-  EoDbEllipse(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle, std::int16_t color,
-      std::int16_t lineTypeIndex);
+  EoDbEllipse(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle,
+      std::int16_t color, std::int16_t lineTypeIndex);
+
+  EoDbEllipse(EoGePoint3d& center, double radius, std::int16_t color = COLOR_BYLAYER,
+      std::int16_t lineTypeIndex = LINETYPE_BYLAYER);
 
   EoDbEllipse(
-      EoGePoint3d& center, double radius, std::int16_t color = COLOR_BYLAYER, std::int16_t lineTypeIndex = LINETYPE_BYLAYER);
-
-  EoDbEllipse(EoGePoint3d& center, EoGeVector3d& extrusion, double radius, std::int16_t color, std::int16_t lineTypeIndex);
+      EoGePoint3d& center, EoGeVector3d& extrusion, double radius, std::int16_t color, std::int16_t lineTypeIndex);
 
   EoDbEllipse(EoGePoint3d begin, EoGePoint3d intermediate, EoGePoint3d end);
 

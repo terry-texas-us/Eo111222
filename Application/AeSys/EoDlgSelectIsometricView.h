@@ -4,7 +4,7 @@
 class EoDlgSelectIsometricView : public CDialog {
  public:
   EoDlgSelectIsometricView(CWnd* pParent = nullptr);
-  EoDlgSelectIsometricView(const EoDlgSelectIsometricView&) = delete;	
+  EoDlgSelectIsometricView(const EoDlgSelectIsometricView&) = delete;
   EoDlgSelectIsometricView& operator=(const EoDlgSelectIsometricView&) = delete;
 
   virtual ~EoDlgSelectIsometricView();

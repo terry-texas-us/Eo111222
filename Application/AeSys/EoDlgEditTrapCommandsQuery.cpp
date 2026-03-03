@@ -26,7 +26,8 @@ ON_NOTIFY(TVN_SELCHANGED, IDC_GROUP_TREE, &EoDlgEditTrapCommandsQuery::OnTvnSelc
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
-EoDlgEditTrapCommandsQuery::EoDlgEditTrapCommandsQuery(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgEditTrapCommandsQuery::IDD, pParent) {}
+EoDlgEditTrapCommandsQuery::EoDlgEditTrapCommandsQuery(CWnd* pParent /*=nullptr*/)
+    : CDialog(EoDlgEditTrapCommandsQuery::IDD, pParent) {}
 EoDlgEditTrapCommandsQuery::~EoDlgEditTrapCommandsQuery() {}
 void EoDlgEditTrapCommandsQuery::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);

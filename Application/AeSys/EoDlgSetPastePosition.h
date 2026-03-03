@@ -6,7 +6,7 @@ class EoDlgSetPastePosition : public CDialog {
   EoDlgSetPastePosition(CWnd* pParent = nullptr);
   EoDlgSetPastePosition(const EoDlgSetPastePosition&) = delete;
   EoDlgSetPastePosition& operator=(const EoDlgSetPastePosition&) = delete;
-    
+
   virtual ~EoDlgSetPastePosition();
 
   enum { IDD = IDD_PASTE_POSITION };

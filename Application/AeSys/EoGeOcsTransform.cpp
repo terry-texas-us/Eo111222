@@ -69,9 +69,13 @@ void EoGeOcsTransform::BuildOcsTransformation(const EoGeVector3d& extrusionNorma
   m_4X4[2][2] = n.z;
 }
 
-EoGeVector3d EoGeOcsTransform::GetOcsXAxis() const noexcept { return EoGeVector3d(m_4X4[0][0], m_4X4[1][0], m_4X4[2][0]); }
+EoGeVector3d EoGeOcsTransform::GetOcsXAxis() const noexcept {
+  return EoGeVector3d(m_4X4[0][0], m_4X4[1][0], m_4X4[2][0]);
+}
 
-EoGeVector3d EoGeOcsTransform::GetOcsYAxis() const noexcept { return EoGeVector3d(m_4X4[0][1], m_4X4[1][1], m_4X4[2][1]); }
+EoGeVector3d EoGeOcsTransform::GetOcsYAxis() const noexcept {
+  return EoGeVector3d(m_4X4[0][1], m_4X4[1][1], m_4X4[2][1]);
+}
 
 EoGeOcsTransform EoGeOcsTransform::GetInverseOcsTransform() const {
   EoGeOcsTransform inverse(*this);

@@ -3,7 +3,6 @@
 #include "Resource.h"
 
 class EoDlgEditOptions : public CDialog {
-
  public:
   EoDlgEditOptions(CWnd* parent = nullptr);
   EoDlgEditOptions(AeSysView* view, CWnd* parent = nullptr);

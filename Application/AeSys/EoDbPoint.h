@@ -21,7 +21,8 @@ class EoDbPoint : public EoDbPrimitive {
   EoDbPoint();
   EoDbPoint(const EoGePoint3d& point);
   EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point);
-  EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point, std::uint16_t numberOfDatums, double* data);
+  EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point, std::uint16_t numberOfDatums,
+      double* data);
 
   EoDbPoint(const EoDbPoint& src);
 
@@ -40,7 +41,9 @@ class EoDbPoint : public EoDbPrimitive {
   EoGePoint3d GetControlPoint() override;
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() noexcept override { return m_Point; }
-  bool Identical(EoDbPrimitive* primitive) noexcept override { return m_Point == static_cast<EoDbPoint*>(primitive)->m_Point; }
+  bool Identical(EoDbPrimitive* primitive) noexcept override {
+    return m_Point == static_cast<EoDbPoint*>(primitive)->m_Point;
+  }
   bool Is(std::uint16_t wType) noexcept override { return wType == EoDb::kPointPrimitive; }
   bool IsInView(AeSysView* view) override;
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;

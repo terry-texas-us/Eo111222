@@ -7,7 +7,7 @@ class EoCtrlFindComboBox : public CMFCToolBarComboBoxButton {
  public:
   EoCtrlFindComboBox()
       : CMFCToolBarComboBoxButton(ID_EDIT_FIND_COMBO, GetCmdMgr()->GetCmdImage(ID_EDIT_FIND), CBS_DROPDOWN) {}
-  
+
   EoCtrlFindComboBox(const EoCtrlFindComboBox&) = delete;
   EoCtrlFindComboBox& operator=(const EoCtrlFindComboBox&) = delete;
 

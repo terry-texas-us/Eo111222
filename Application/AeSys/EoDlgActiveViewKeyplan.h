@@ -36,5 +36,6 @@ class EoDlgActiveViewKeyplan : public CDialog {
   DECLARE_MESSAGE_MAP()
 };
 
-// User defined message sent by EoDlgActiveViewKeyplan to WndProcKeyPlan when a new zoom ratio is set using an edit control (LPARAM is the new value of ratio)
+// User defined message sent by EoDlgActiveViewKeyplan to WndProcKeyPlan when a new zoom ratio is set using an edit
+// control (LPARAM is the new value of ratio)
 #define WM_USER_ON_NEW_RATIO WM_USER + 1

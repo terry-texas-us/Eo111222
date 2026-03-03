@@ -40,9 +40,9 @@ class EoDlgLineTypesSelection : public CDialogEx {
  private:
   EoDbLineType* m_selectedLineType{};
 
-   void PopulateList();
+  void PopulateList();
   afx_msg void OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result);
 
-  public:
-   afx_msg void OnBnClickedOk();
+ public:
+  afx_msg void OnBnClickedOk();
 };

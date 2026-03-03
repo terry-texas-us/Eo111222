@@ -56,7 +56,7 @@ EoDbPoint::EoDbPoint(const EoDbPoint& src) {
   for (std::uint16_t n = 0; n < m_NumberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
 }
 EoDbPoint::~EoDbPoint() {
-  if (m_NumberOfDatums != 0) delete[] m_Data;
+  if (m_NumberOfDatums != 0) { delete[] m_Data; }
 }
 const EoDbPoint& EoDbPoint::operator=(const EoDbPoint& src) {
   m_color = src.m_color;
@@ -64,7 +64,7 @@ const EoDbPoint& EoDbPoint::operator=(const EoDbPoint& src) {
 
   m_Point = src.m_Point;
   if (m_NumberOfDatums != src.m_NumberOfDatums) {
-    if (m_NumberOfDatums != 0) delete[] m_Data;
+    if (m_NumberOfDatums != 0) { delete[] m_Data; }
 
     m_NumberOfDatums = src.m_NumberOfDatums;
 
@@ -137,7 +137,8 @@ void EoDbPoint::Display(AeSysView* view, CDC* context) {
     CPen pen(PS_SOLID, 1, hotPenColor);
     CPen* oldPen = context->SelectObject(&pen);
     auto* oldBrush = static_cast<CBrush*>(context->SelectStockObject(NULL_BRUSH));
-    context->Ellipse(clientPoint.x - pixelSize, clientPoint.y - pixelSize, clientPoint.x + pixelSize, clientPoint.y + pixelSize);
+    context->Ellipse(
+        clientPoint.x - pixelSize, clientPoint.y - pixelSize, clientPoint.x + pixelSize, clientPoint.y + pixelSize);
     context->SelectObject(oldPen);
     context->SelectObject(oldBrush);
   }
@@ -238,7 +239,7 @@ void EoDbPoint::SetPoint(double x, double y, double z) noexcept {
 
 void EoDbPoint::Transform(const EoGeTransformMatrix& transformMatrix) { m_Point = transformMatrix * m_Point; }
 void EoDbPoint::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
-  if (mask != 0) m_Point += v;
+  if (mask != 0) { m_Point += v; }
 }
 bool EoDbPoint::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kPointPrimitive));

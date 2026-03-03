@@ -191,29 +191,33 @@ EoGePoint3d EoDbPolyline::GoToNextControlPoint() {
     std::uint16_t wBeg = std::uint16_t(sm_Edge - 1);
     std::uint16_t wEnd = std::uint16_t(sm_Edge % wPts);
 
-    if (m_pts[wEnd].x > m_pts[wBeg].x)
+    if (m_pts[wEnd].x > m_pts[wBeg].x) {
       sm_pivotVertex = wBeg;
-    else if (m_pts[wEnd].x < m_pts[wBeg].x)
+    } else if (m_pts[wEnd].x < m_pts[wBeg].x) {
       sm_pivotVertex = wEnd;
-    else if (m_pts[wEnd].y > m_pts[wBeg].y)
+    } else if (m_pts[wEnd].y > m_pts[wBeg].y) {
       sm_pivotVertex = wBeg;
-    else
+    } else {
       sm_pivotVertex = wEnd;
+    }
   } else if (sm_pivotVertex == 0) {
-    if (sm_Edge == 1)
+    if (sm_Edge == 1) {
       sm_pivotVertex = 1;
-    else
+    } else {
       sm_pivotVertex = wPts - 1;
+    }
   } else if (sm_pivotVertex == wPts - 1) {
-    if (sm_Edge == wPts)
+    if (sm_Edge == wPts) {
       sm_pivotVertex = 0;
-    else
+    } else {
       sm_pivotVertex--;
+    }
   } else {
-    if (sm_Edge == sm_pivotVertex)
+    if (sm_Edge == sm_pivotVertex) {
       sm_pivotVertex--;
-    else
+    } else {
       sm_pivotVertex++;
+    }
   }
   return (m_pts[sm_pivotVertex]);
 }
@@ -242,25 +246,28 @@ bool EoDbPolyline::IsPointOnControlPoint([[maybe_unused]] AeSysView* view, [[may
 bool EoDbPolyline::PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) {
   std::uint16_t wPts = std::uint16_t(m_pts.GetSize());
 
-  if (sm_pivotVertex >= wPts)
+  if (sm_pivotVertex >= wPts) {
     // Not engaged at a vertex
     return false;
+  }
 
   EoGePoint4d ptCtrl(m_pts[sm_pivotVertex]);
   view->ModelViewTransformPoint(ptCtrl);
 
-  if (ptCtrl.DistanceToPointXY(ptView) >= sm_SelectApertureSize)
+  if (ptCtrl.DistanceToPointXY(ptView) >= sm_SelectApertureSize) {
     // Not on proper vertex
     return false;
+  }
 
-  if (sm_pivotVertex == 0)
+  if (sm_pivotVertex == 0) {
     sm_Edge = std::uint16_t(sm_Edge == 1 ? wPts : 1);
-  else if (sm_pivotVertex == wPts - 1)
+  } else if (sm_pivotVertex == wPts - 1) {
     sm_Edge = std::uint16_t(sm_Edge == wPts ? sm_Edge - 1 : wPts);
-  else if (sm_pivotVertex == sm_Edge)
+  } else if (sm_pivotVertex == sm_Edge) {
     sm_Edge++;
-  else
+  } else {
     sm_Edge--;
+  }
 
   return true;
 }
@@ -304,13 +311,14 @@ bool EoDbPolyline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoin
     view->ModelViewTransformPoint(ptEnd);
 
     EoGeLine LineSegment(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
-    if (LineSegment.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+    if (LineSegment.IsSelectedByPointXY(
+            EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
       ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
       return true;
     }
   } else {  // Evaluate entire polyline
     std::uint16_t wEdges = std::uint16_t(m_pts.GetSize());
-    if (!IsLooped()) wEdges--;
+    if (!IsLooped()) { wEdges--; }
 
     EoGePoint4d ptBeg(m_pts[0]);
     view->ModelViewTransformPoint(ptBeg);
@@ -320,7 +328,8 @@ bool EoDbPolyline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoin
       view->ModelViewTransformPoint(ptEnd);
 
       EoGeLine LineSegment(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
-      if (LineSegment.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+      if (LineSegment.IsSelectedByPointXY(
+              EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
         ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
         sm_Edge = w;
         sm_pivotVertex = wPts;
@@ -341,8 +350,9 @@ void EoDbPolyline::Translate(const EoGeVector3d& v) {
   for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i] += v; }
 }
 void EoDbPolyline::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
-  for (auto i = 0; i < m_pts.GetSize(); i++)
-    if (((mask >> i) & 1UL) == 1) m_pts[i] += v;
+  for (auto i = 0; i < m_pts.GetSize(); i++) {
+    if (((mask >> i) & 1UL) == 1) { m_pts[i] += v; }
+  }
 }
 bool EoDbPolyline::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kPolylinePrimitive));
@@ -359,12 +369,13 @@ std::uint16_t EoDbPolyline::SwingVertex() {
 
   std::uint16_t wSwingVertex;
 
-  if (sm_pivotVertex == 0)
+  if (sm_pivotVertex == 0) {
     wSwingVertex = std::uint16_t(sm_Edge == 1 ? 1 : wPts - 1);
-  else if (sm_pivotVertex == std::uint16_t(wPts - 1))
+  } else if (sm_pivotVertex == std::uint16_t(wPts - 1)) {
     wSwingVertex = std::uint16_t(sm_Edge == wPts ? 0 : sm_pivotVertex - 1);
-  else
+  } else {
     wSwingVertex = std::uint16_t(sm_Edge == sm_pivotVertex ? sm_pivotVertex - 1 : sm_pivotVertex + 1);
+  }
 
   return wSwingVertex;
 }

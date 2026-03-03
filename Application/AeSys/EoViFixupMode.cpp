@@ -25,11 +25,11 @@
  * Determine color and lineTypeIndex for newly created chamfer/fillet primitives:
  * - Option 1: Use global primitive state (renderState)
  * - Option 2: Inherit from one of the two source lines
- * 
- * @attention If one line is a reference line, the non-reference line should 
+ *
+ * @attention If one line is a reference line, the non-reference line should
  * define properties.
- * 
- * @note When both lines are trimmed and have different properties, should we 
+ *
+ * @note When both lines are trimmed and have different properties, should we
  * prompt the user? Currently defaults to current line properties.
  */
 
@@ -133,9 +133,9 @@ void AeSysView::OnFixupModeReference() {
   cursorPosition = DetPt();
   referenceLine = static_cast<EoDbLine*>(referencePrimitive)->Line();
 
-  if (previousCommand == 0)
+  if (previousCommand == 0) {
     previousCommand = ModeLineHighlightOp(ID_OP1);
-  else if (previousCommand == ID_OP1)
+  } else if (previousCommand == ID_OP1)
     ;
   else {
     auto* line = static_cast<EoDbLine*>(previousPrimitive);
@@ -146,19 +146,22 @@ void AeSysView::OnFixupModeReference() {
     }
     if (previousCommand == ID_OP2) {
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-      if (EoGeVector3d(line->End(), intersection).Length() < EoGeVector3d(line->End(), intersection).Length())
+      if (EoGeVector3d(line->End(), intersection).Length() < EoGeVector3d(line->End(), intersection).Length()) {
         line->SetBeginPoint(intersection);
-      else
+      } else {
         line->SetEndPoint(intersection);
+      }
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
     } else if (previousCommand == ID_OP3) {
       if (EoGeVector3d(previousLine.begin, intersection).Length() <
-          EoGeVector3d(previousLine.end, intersection).Length())
+          EoGeVector3d(previousLine.end, intersection).Length()) {
         previousLine.begin = previousLine.end;
+      }
       previousLine.end = intersection;
       if (EoGeVector3d(referenceLine.end, intersection).Length() <
-          EoGeVector3d(referenceLine.begin, intersection).Length())
+          EoGeVector3d(referenceLine.begin, intersection).Length()) {
         referenceLine.end = referenceLine.begin;
+      }
       referenceLine.begin = intersection;
       if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, referenceLine, &center)) {
         previousLine.end = previousLine.ProjectPointToLine(center);
@@ -172,12 +175,14 @@ void AeSysView::OnFixupModeReference() {
       }
     } else if (previousCommand == ID_OP4) {
       if (EoGeVector3d(previousLine.begin, intersection).Length() <
-          EoGeVector3d(previousLine.end, intersection).Length())
+          EoGeVector3d(previousLine.end, intersection).Length()) {
         previousLine.begin = previousLine.end;
+      }
       previousLine.end = intersection;
       if (EoGeVector3d(referenceLine.end, intersection).Length() <
-          EoGeVector3d(referenceLine.begin, intersection).Length())
+          EoGeVector3d(referenceLine.begin, intersection).Length()) {
         referenceLine.end = referenceLine.begin;
+      }
       referenceLine.begin = intersection;
       if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, referenceLine, &center)) {
         double angle;
@@ -239,10 +244,11 @@ void AeSysView::OnFixupModeMend() {
       return;
     }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
-    if (EoGeVector3d(pLine->Begin(), intersection).Length() < EoGeVector3d(pLine->End(), intersection).Length())
+    if (EoGeVector3d(pLine->Begin(), intersection).Length() < EoGeVector3d(pLine->End(), intersection).Length()) {
       pLine->SetBeginPoint(intersection);
-    else
+    } else {
       pLine->SetEndPoint(intersection);
+    }
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
   } else {
     if (!EoGeLine::Intersection(previousLine, currentLine, intersection)) {
@@ -252,18 +258,22 @@ void AeSysView::OnFixupModeMend() {
     if (previousCommand == ID_OP2) {
       pLine = static_cast<EoDbLine*>(previousPrimitive);
       document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
-      if (EoGeVector3d(pLine->Begin(), intersection).Length() < EoGeVector3d(pLine->End(), intersection).Length())
+      if (EoGeVector3d(pLine->Begin(), intersection).Length() < EoGeVector3d(pLine->End(), intersection).Length()) {
         pLine->SetBeginPoint(intersection);
-      else
+      } else {
         pLine->SetEndPoint(intersection);
+      }
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
     } else if (previousCommand == ID_OP3) {
       if (EoGeVector3d(previousLine.begin, intersection).Length() <
-          EoGeVector3d(previousLine.end, intersection).Length())
+          EoGeVector3d(previousLine.end, intersection).Length()) {
         previousLine.begin = previousLine.end;
+      }
       previousLine.end = intersection;
-      if (EoGeVector3d(currentLine.end, intersection).Length() < EoGeVector3d(currentLine.begin, intersection).Length())
+      if (EoGeVector3d(currentLine.end, intersection).Length() <
+          EoGeVector3d(currentLine.begin, intersection).Length()) {
         currentLine.end = currentLine.begin;
+      }
       currentLine.begin = intersection;
       if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
         pLine = static_cast<EoDbLine*>(previousPrimitive);
@@ -278,11 +288,14 @@ void AeSysView::OnFixupModeMend() {
       }
     } else if (previousCommand == ID_OP4) {
       if (EoGeVector3d(previousLine.begin, intersection).Length() <
-          EoGeVector3d(previousLine.end, intersection).Length())
+          EoGeVector3d(previousLine.end, intersection).Length()) {
         previousLine.begin = previousLine.end;
+      }
       previousLine.end = intersection;
-      if (EoGeVector3d(currentLine.end, intersection).Length() < EoGeVector3d(currentLine.begin, intersection).Length())
+      if (EoGeVector3d(currentLine.end, intersection).Length() <
+          EoGeVector3d(currentLine.begin, intersection).Length()) {
         currentLine.end = currentLine.begin;
+      }
       currentLine.begin = intersection;
       if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
         pLine = static_cast<EoDbLine*>(previousPrimitive);
@@ -311,10 +324,11 @@ void AeSysView::OnFixupModeMend() {
     }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
     pLine = static_cast<EoDbLine*>(currentPrimitive);
-    if (EoGeVector3d(pLine->Begin(), intersection).Length() < EoGeVector3d(pLine->End(), intersection).Length())
+    if (EoGeVector3d(pLine->Begin(), intersection).Length() < EoGeVector3d(pLine->End(), intersection).Length()) {
       pLine->SetBeginPoint(intersection);
-    else
+    } else {
       pLine->SetEndPoint(intersection);
+    }
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     ModeLineUnhighlightOp(previousCommand);
   }
@@ -345,11 +359,14 @@ void AeSysView::OnFixupModeChamfer() {
       app.AddModeInformationToMessageList();
       return;
     }
-    if (EoGeVector3d(previousLine.begin, intersection).Length() < EoGeVector3d(previousLine.end, intersection).Length())
+    if (EoGeVector3d(previousLine.begin, intersection).Length() <
+        EoGeVector3d(previousLine.end, intersection).Length()) {
       previousLine.begin = previousLine.end;
+    }
     previousLine.end = intersection;
-    if (EoGeVector3d(currentLine.end, intersection).Length() < EoGeVector3d(currentLine.begin, intersection).Length())
+    if (EoGeVector3d(currentLine.end, intersection).Length() < EoGeVector3d(currentLine.begin, intersection).Length()) {
       currentLine.end = currentLine.begin;
+    }
     currentLine.begin = intersection;
     EoGePoint3d center;
     if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
@@ -410,11 +427,14 @@ void AeSysView::OnFixupModeFillet() {
       app.AddModeInformationToMessageList();
       return;
     }
-    if (EoGeVector3d(previousLine.begin, intersection).Length() < EoGeVector3d(previousLine.end, intersection).Length())
+    if (EoGeVector3d(previousLine.begin, intersection).Length() <
+        EoGeVector3d(previousLine.end, intersection).Length()) {
       previousLine.begin = previousLine.end;
+    }
     previousLine.end = intersection;
-    if (EoGeVector3d(currentLine.end, intersection).Length() < EoGeVector3d(currentLine.begin, intersection).Length())
+    if (EoGeVector3d(currentLine.end, intersection).Length() < EoGeVector3d(currentLine.begin, intersection).Length()) {
       currentLine.end = currentLine.begin;
+    }
     currentLine.begin = intersection;
 
     EoGePoint3d center;

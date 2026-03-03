@@ -22,7 +22,7 @@ class CMainFrame : public CMDIFrameWndEx {
  public:
   BOOL PreCreateWindow(CREATESTRUCT& cs) override;
   BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
-                 CWnd* pParentWnd = nullptr, CCreateContext* pContext = nullptr) override;
+      CWnd* pParentWnd = nullptr, CCreateContext* pContext = nullptr) override;
 
  public:
   static CMFCToolBarComboBoxButton* GetFindCombo();
@@ -58,9 +58,9 @@ class CMainFrame : public CMDIFrameWndEx {
   BOOL OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) override;
   BOOL OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOOL bDrop) override;
 
-/** @brief Creates the dockable panes: Output and Properties.
- *  @return TRUE if successful, FALSE otherwise.
- */
+  /** @brief Creates the dockable panes: Output and Properties.
+   *  @return TRUE if successful, FALSE otherwise.
+   */
   BOOL CreateDockablePanes();
   void SetDockablePanesIcons(bool highColorMode);
 

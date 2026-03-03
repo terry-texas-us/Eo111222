@@ -7,12 +7,12 @@
 #include "EoGeVector3d.h"
 
 /** @class Transformation matrix for DXF Object Coordinate System (OCS) conversions
- * 
- * The transformation is built using the arbitrary axis algorithm which constructs an 
+ *
+ * The transformation is built using the arbitrary axis algorithm which constructs an
  * orthonormal basis (u, v, n) from the extrusion normal vector.
  *
  * @note Handles transformations between Object Coordinate System (OCS) and World Coordinate System (WCS)
- * as defined by the DXF arbitrary axis algorithm. This is commonly used for entities like 
+ * as defined by the DXF arbitrary axis algorithm. This is commonly used for entities like
  * circles, arcs, ellipses, and other 2D entities with an extrusion direction in DXF files.
  */
 class EoGeOcsTransform : public EoGeTransformMatrix {
@@ -35,7 +35,7 @@ class EoGeOcsTransform : public EoGeTransformMatrix {
   /** @brief Copy constructor */
   EoGeOcsTransform(const EoGeOcsTransform& other) = default;
 
-    /** @brief Move constructor */
+  /** @brief Move constructor */
   EoGeOcsTransform(EoGeOcsTransform&& other) noexcept = default;
 
   /** @brief Copy assignment */
@@ -48,7 +48,7 @@ class EoGeOcsTransform : public EoGeTransformMatrix {
 
  public:
   /** @brief Gets the extrusion normal (OCS Z-axis) */
-  [[nodiscard]] EoGeVector3d GetExtrusionNormal() const noexcept{ return m_extrusionNormal; }
+  [[nodiscard]] EoGeVector3d GetExtrusionNormal() const noexcept { return m_extrusionNormal; }
 
   /** @brief Sets a new extrusion normal and rebuilds the transformation
    *  @param extrusionNormal New extrusion direction
@@ -96,5 +96,5 @@ class EoGeOcsTransform : public EoGeTransformMatrix {
   EoGeVector3d m_extrusionNormal;  ///< The OCS Z-axis (extrusion direction)
 };
 
-//typedef CList<EoGeOcsTransform> EoGeOcsTransformList;
+// typedef CList<EoGeOcsTransform> EoGeOcsTransformList;
 using EoGeOcsTransforms = std::vector<EoGeOcsTransform>;

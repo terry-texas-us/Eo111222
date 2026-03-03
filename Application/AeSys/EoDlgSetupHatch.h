@@ -6,7 +6,7 @@ class EoDlgSetupHatch : public CDialog {
   EoDlgSetupHatch(CWnd* pParent = nullptr);
   EoDlgSetupHatch(const EoDlgSetupHatch&) = delete;
   EoDlgSetupHatch& operator=(const EoDlgSetupHatch&) = delete;
-  
+
   virtual ~EoDlgSetupHatch();
 
   enum { IDD = IDD_SETUP_HATCH };

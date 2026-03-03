@@ -94,5 +94,5 @@ class EoDbDimension : public EoDbPrimitive {
 
  private:
   static std::uint16_t sm_flags;  // bit 1	clear if dimension selected at note
-                             //			  set if dimension selected at line
+                                  //			  set if dimension selected at line
 };

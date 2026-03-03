@@ -121,7 +121,8 @@ void EoDlgLineTypesSelection::PopulateList() {
     CString indexString = lineType->IndexToString();
     int indexItem = m_lineTypesListControl.InsertItem(lineType->Index(), indexString);
     m_lineTypesListControl.SetItemText(indexItem, 1, lineType->Name());
-    m_lineTypesListControl.SetItemText(indexItem, lineTypePreviewColumnIndex, L"");  // Empty text for preview column; we'll draw it custom
+    m_lineTypesListControl.SetItemText(
+        indexItem, lineTypePreviewColumnIndex, L"");  // Empty text for preview column; we'll draw it custom
 
     // Store pointer for later retrieval (unsafe if list is modified; consider unique IDs or modern containers)
     m_lineTypesListControl.SetItemData(indexItem, reinterpret_cast<DWORD_PTR>(lineType));
@@ -197,7 +198,7 @@ void EoDlgLineTypesSelection::OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result)
                   controlContext.SetPixel(static_cast<int>(x), yCenter, Eo::colorBlack);
                   x += 1.0;  // Small advance
                 }
-                if (x >= xEnd) break;
+                if (x >= xEnd) { break; }
               }
             }
             controlContext.SelectObject(oldPen);

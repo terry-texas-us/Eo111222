@@ -20,9 +20,9 @@ class EoDbConic : public EoDbPrimitive {
   EoGePoint3d m_center{};
   EoGeVector3d m_majorAxis{};
   EoGeVector3d m_extrusion{EoGeVector3d::positiveUnitZ};
-  double m_ratio{1.0};    // Ratio of minor axis to major axis [0.0 to 1.0]
+  double m_ratio{1.0};  // Ratio of minor axis to major axis [0.0 to 1.0]
   double m_startAngle{};  // Start parameter angle in radians
-  double m_endAngle{};    // End parameter angle in radians
+  double m_endAngle{};  // End parameter angle in radians
 
   /** @brief Private constructor for EoDbConic class.
    *
@@ -64,7 +64,8 @@ class EoDbConic : public EoDbPrimitive {
   /**
    * @brief Creates a conic primitive defined by center, extrusion, major axis, ratio, start angle, and end angle.
    *
-   * This static method constructs a conic primitive (circle, ellipse, radial arc, or elliptical arc) using the specified parameters.
+   * This static method constructs a conic primitive (circle, ellipse, radial arc, or elliptical arc) using the
+   * specified parameters.
    * @param center The center point of the conic.
    * @param extrusion The extrusion direction defining the plane of the conic.
    * @param majorAxis The major axis vector of the conic.
@@ -80,18 +81,21 @@ class EoDbConic : public EoDbPrimitive {
 
   /**
    * @brief Creates a conic primitive from given parameters which are used to define deprecated ellipse primitive.
-   * 
+   *
    * This function constructs an conic primitive using the specified center point, major axis vector,
    * minor axis vector, and sweep angle. The extrusion vector is computed as the cross product of the major
    * and minor axes, and the ratio of the minor axis length to the major axis length is calculated.
-   * This factory method creates an EoDbConic object representing an ellipse or elliptical arc based on the provided parameters.
-   * It validates the input parameters to ensure they define a valid ellipse and calculates the necessary properties for the conic.
+   * This factory method creates an EoDbConic object representing an ellipse or elliptical arc based on the provided
+   parameters.
+   * It validates the input parameters to ensure they define a valid ellipse and calculates the necessary properties for
+   the conic.
 
    * @param center The center point of the ellipse.
    * @param majorAxis The major axis vector of the ellipse (must have non-zero length).
    * @param minorAxis The minor axis vector of the ellipse (must be perpendicular to major axis).
    * @param sweepAngle The angle in radians defining the sweep of the arc (0 to 2π for full ellipse).
-   * @throws std::runtime_error if the major axis has zero length, if the minor axis is not perpendicular to the major axis,
+   * @throws std::runtime_error if the major axis has zero length, if the minor axis is not perpendicular to the major
+   axis,
    * @return A pointer to the created EoDbConic object.
    */
   [[nodiscard]] static EoDbConic* CreateConicFromEllipsePrimitive(
@@ -201,8 +205,8 @@ class EoDbConic : public EoDbPrimitive {
   /**
    * @brief Cuts the conic at two specified points, creating new groups for the cut sections.
    *
-   * This method modifies the current conic by cutting it at two specified points. It creates new groups for the sections
-   * that are cut out and adds them to the provided group lists.
+   * This method modifies the current conic by cutting it at two specified points. It creates new groups for the
+   * sections that are cut out and adds them to the provided group lists.
    *
    * @param firstPoint The first point at which to cut the conic.
    * @param secondPoint The second point at which to cut the conic.
@@ -263,7 +267,9 @@ class EoDbConic : public EoDbPrimitive {
     }
   }
 
-  [[nodiscard]] bool IsCircle() const noexcept { return std::abs(1.0 - m_ratio) <= Eo::numericEpsilon && IsFullConic(); }
+  [[nodiscard]] bool IsCircle() const noexcept {
+    return std::abs(1.0 - m_ratio) <= Eo::numericEpsilon && IsFullConic();
+  }
 
   [[nodiscard]] bool IsRadialArc() const noexcept {
     return std::abs(1.0 - m_ratio) <= Eo::numericEpsilon && !IsFullConic();
@@ -283,8 +289,9 @@ class EoDbConic : public EoDbPrimitive {
    */
   [[nodiscard]] bool IsFullConic() const noexcept {
     double sweep = NormalizeTo2Pi(m_endAngle) - NormalizeTo2Pi(m_startAngle);
-    if (sweep <= 0.0) sweep += Eo::TwoPi;
-    return std::abs(sweep - Eo::TwoPi) < Eo::geometricTolerance || std::abs(m_endAngle - m_startAngle) < Eo::geometricTolerance;
+    if (sweep <= 0.0) { sweep += Eo::TwoPi; }
+    return std::abs(sweep - Eo::TwoPi) < Eo::geometricTolerance ||
+           std::abs(m_endAngle - m_startAngle) < Eo::geometricTolerance;
   }
 
   // Enum for cleaner switch statements
@@ -294,9 +301,9 @@ class EoDbConic : public EoDbPrimitive {
     bool isCircular = std::abs(1.0 - m_ratio) <= Eo::numericEpsilon;
     bool isFull = IsFullConic();
 
-    if (isCircular && isFull) return ConicType::Circle;
-    if (isCircular && !isFull) return ConicType::RadialArc;
-    if (!isCircular && isFull) return ConicType::Ellipse;
+    if (isCircular && isFull) { return ConicType::Circle; }
+    if (isCircular && !isFull) { return ConicType::RadialArc; }
+    if (!isCircular && isFull) { return ConicType::Ellipse; }
     return ConicType::EllipticalArc;
   }
 
@@ -355,7 +362,7 @@ class EoDbConic : public EoDbPrimitive {
    */
   [[nodiscard]] double SweepAngle() const noexcept {
     double sweepAngle = NormalizeTo2Pi(m_endAngle) - NormalizeTo2Pi(m_startAngle);
-    if (sweepAngle <= 0.0) sweepAngle += Eo::TwoPi;
+    if (sweepAngle <= 0.0) { sweepAngle += Eo::TwoPi; }
     return sweepAngle;
   }
 
@@ -408,7 +415,8 @@ class EoDbConic : public EoDbPrimitive {
   static CString SubClassName(double ratio, double startAngle, double endAngle);
 };
 
-/** @brief Given a plane normal and three points (two outside and one inside), find the sweep angle defined by the three points about the center point.
+/** @brief Given a plane normal and three points (two outside and one inside), find the sweep angle defined by the three
+ * points about the center point.
  * @param planeNormal Normal vector of the plane containing the points
  * @param firstOutside First outside point
  * @param inside Inside point
@@ -416,6 +424,6 @@ class EoDbConic : public EoDbPrimitive {
  * @param center Center point about which to measure the sweep angle
  * @param[out] sweepAngle Sweep angle result
  * @return true if successful, false if not.
-*/
+ */
 [[nodiscard]] bool SweepAngleFromNormalAnd3Points(const EoGeVector3d& normal, const EoGePoint3d& firstOutside,
     const EoGePoint3d& inside, const EoGePoint3d& secondOutside, const EoGePoint3d& center, double& sweepAngle);

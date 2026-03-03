@@ -30,10 +30,10 @@ class EoDbLineTypeTable {
     m_MapLineTypes.GetNextAssoc(position, name, lineType);
   }
   bool IsEmpty() { return m_MapLineTypes.IsEmpty(); }
-  
+
   std::int16_t LegacyLineTypeIndex(CString& name);
   std::int16_t LegacyLineTypeIndex(std::wstring& name);
-  
+
   /** @brief Looks up a line type by its name.
    *
    * This method searches for a line type in the collection based on its name.
@@ -53,7 +53,7 @@ class EoDbLineTypeTable {
    * @return true if the line type was found; false otherwise.
    */
   bool LookupUsingLegacyIndex(std::uint16_t index, EoDbLineType*& lineType);
-  
+
   void SetAt(const CString& name, EoDbLineType* lineType) { m_MapLineTypes.SetAt(name, lineType); }
 
   /** @brief Counts the number of references to a specific line type in the document.
@@ -61,7 +61,7 @@ class EoDbLineTypeTable {
    * @return The number of references to the specified line type.
    */
   int ReferenceCount(std::int16_t lineType);
-  
+
   int Size() { return (int)m_MapLineTypes.GetSize(); }
   /// <summary>Loads the Line Type table.</summary>
   void LoadLineTypesFromTxtFile(const CString& pathName);

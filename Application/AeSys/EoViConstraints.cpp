@@ -79,7 +79,8 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
   if (DisplayGridWithPoints()) {
     EoGePoint3d pt;
 
-    if (std::abs(m_YGridPointSpacing) > Eo::geometricTolerance && std::abs(m_ZGridPointSpacing) > Eo::geometricTolerance) {
+    if (std::abs(m_YGridPointSpacing) > Eo::geometricTolerance &&
+        std::abs(m_ZGridPointSpacing) > Eo::geometricTolerance) {
       COLORREF Color = app.PenColorsGetHot(1);
 
       pt.x = m_GridOrigin.x;
@@ -93,7 +94,8 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
         pt.z += m_ZGridPointSpacing;
       }
     }
-    if (std::abs(m_XGridPointSpacing) > Eo::geometricTolerance && std::abs(m_ZGridPointSpacing) > Eo::geometricTolerance) {
+    if (std::abs(m_XGridPointSpacing) > Eo::geometricTolerance &&
+        std::abs(m_ZGridPointSpacing) > Eo::geometricTolerance) {
       COLORREF Color = app.PenColorsGetHot(2);
 
       pt.x = m_GridOrigin.x - dHalfPts * m_XGridPointSpacing;
@@ -107,7 +109,8 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
         pt.x += m_XGridPointSpacing;
       }
     }
-    if (std::abs(m_XGridPointSpacing) > Eo::geometricTolerance && std::abs(m_YGridPointSpacing) > Eo::geometricTolerance) {
+    if (std::abs(m_XGridPointSpacing) > Eo::geometricTolerance &&
+        std::abs(m_YGridPointSpacing) > Eo::geometricTolerance) {
       COLORREF Color = app.PenColorsGetHot(3);
 
       pt.y = m_GridOrigin.y - dHalfPts * m_YGridPointSpacing;
@@ -123,7 +126,8 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
     }
   }
   if (DisplayGridWithLines()) {
-    if (std::abs(m_XGridLineSpacing) > Eo::geometricTolerance && std::abs(m_YGridLineSpacing) > Eo::geometricTolerance) {
+    if (std::abs(m_XGridLineSpacing) > Eo::geometricTolerance &&
+        std::abs(m_YGridLineSpacing) > Eo::geometricTolerance) {
       EoGeLine ln;
 
       int i;

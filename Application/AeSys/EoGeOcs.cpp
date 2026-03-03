@@ -12,11 +12,11 @@ static void MakeOrthonormalBasis(EoGeVector3d n, EoGeVector3d& u, EoGeVector3d& 
   // normalize n, fallback to Z if degenerate
   if (n.IsNearNull()) { n = EoGeVector3d(0.0, 0.0, 1.0); }
   n.Normalize();
-  
+
   u = ComputeArbitraryAxis(n);
   if (u.IsNearNull()) { u = EoGeVector3d(1.0, 0.0, 0.0); }
   u.Normalize();
-  
+
   v = CrossProduct(n, u);
   if (v.IsNearNull()) {
     // choose a perpendicular if cross failed

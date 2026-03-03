@@ -161,7 +161,7 @@ void AeSysView::OnCutModeField() {
         group->RemoveAt(posPrimPrv);
 
         for (int i = 0; i < iInts; i += 2) {
-          if (i != 0) GroupsOut->RemoveTail();
+          if (i != 0) { GroupsOut->RemoveTail(); }
           primitive->CutAt2Points(ptInt[i], ptInt[i + 1], GroupsOut, GroupsIn);
         }
       }
@@ -237,9 +237,9 @@ void AeSysView::OnCutModeClip() {
       for (posPrim1 = group->GetHeadPosition(); (posPrim2 = posPrim1) != 0;) {
         EoDbPrimitive* primitive = group->GetNext(posPrim1);
 
-        if (!primitive->SelectUsingPoint(this, ptView[0], ptCut[0])) continue;
+        if (!primitive->SelectUsingPoint(this, ptView[0], ptCut[0])) { continue; }
         dRel[0] = EoDbPrimitive::Rel();
-        if (!primitive->SelectUsingPoint(this, ptView[1], ptCut[1])) continue;
+        if (!primitive->SelectUsingPoint(this, ptView[1], ptCut[1])) { continue; }
         dRel[1] = EoDbPrimitive::Rel();
         // Both pick points are within tolerance of primative
         ptCut[0] = transformMatrix * ptCut[0];

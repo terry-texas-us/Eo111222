@@ -1,10 +1,10 @@
 ﻿#pragma once
 
 class EoDbCharacterCellDefinition {
-  double m_height{0.1};           // height of character cell
+  double m_height{0.1};  // height of character cell
   double m_expansionFactor{1.0};  // expansion factor applied to character cell width
-  double m_rotationAngle{};       // rotation applied to the character cell
-  double m_slantAngle{};          // rotation applied to the vertical component of the character cell
+  double m_rotationAngle{};  // rotation applied to the character cell
+  double m_slantAngle{};  // rotation applied to the vertical component of the character cell
 
  public:
   EoDbCharacterCellDefinition() = default;

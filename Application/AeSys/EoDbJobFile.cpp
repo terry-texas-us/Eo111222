@@ -56,7 +56,7 @@ double CVaxFloat::Convert() {
   } else if (bExp == 1) {  // this is a valid vax exponent but because the vax places the hidden
                            // leading 1 to the right of the binary point we have a problem ..
                            // the possible values are 2.94e-39 to 5.88e-39 .. just call it 0.
-  } else {                 // - 128 + 127 - 1 (to get hidden 1 to the left of the binary point)
+  } else {  // - 128 + 127 - 1 (to get hidden 1 to the left of the binary point)
     bExp -= 2;
 
     pms[3] = BYTE(bExp >> 1);
@@ -82,7 +82,7 @@ void CVaxFloat::Convert(const double& dMS) {
     BYTE bExp = BYTE((pMS[3] << 1) & 0xff);
     bExp |= pMS[2] >> 7;
 
-    if (bExp > 0xfd) bExp = 0xfd;
+    if (bExp > 0xfd) { bExp = 0xfd; }
 
     // - 127 + 128 + 1 (to get hidden 1 to the right of the binary point)
     bExp += 2;
@@ -218,12 +218,12 @@ bool EoDbJobFile::ReadNextPrimitive(CFile& file, std::uint8_t* buffer, std::int1
 }
 int EoDbJobFile::Version() {
   switch (m_PrimBuf[5]) {
-    case 17:   // 0x11 text
-    case 24:   // 0x18 bspline
-    case 33:   // 0x21 conic
-    case 61:   // 0x3D arc
-    case 67:   // 0x43 line
-    case 70:   // 0x46 point
+    case 17:  // 0x11 text
+    case 24:  // 0x18 bspline
+    case 33:  // 0x21 conic
+    case 61:  // 0x3D arc
+    case 67:  // 0x43 line
+    case 70:  // 0x46 point
     case 100:  // 0x64 polygon
       m_Version = 1;
       break;
@@ -235,14 +235,14 @@ int EoDbJobFile::Version() {
 }
 bool EoDbJobFile::IsValidPrimitive(std::int16_t primitiveType) {
   switch (primitiveType) {
-    case EoDb::kPointPrimitive:      // 0x0100
-    case EoDb::kLinePrimitive:       // 0x0200
-    case EoDb::kPolygonPrimitive:    // 0x0400
-    case EoDb::kEllipsePrimitive:    // 0x1003
-    case EoDb::kSplinePrimitive:     // 0x2000
-    case EoDb::kCSplinePrimitive:    // 0x2001
-    case EoDb::kTextPrimitive:       // 0x4000
-    case EoDb::kTagPrimitive:        // 0x4100
+    case EoDb::kPointPrimitive:  // 0x0100
+    case EoDb::kLinePrimitive:  // 0x0200
+    case EoDb::kPolygonPrimitive:  // 0x0400
+    case EoDb::kEllipsePrimitive:  // 0x1003
+    case EoDb::kSplinePrimitive:  // 0x2000
+    case EoDb::kCSplinePrimitive:  // 0x2001
+    case EoDb::kTextPrimitive:  // 0x4000
+    case EoDb::kTagPrimitive:  // 0x4100
     case EoDb::kDimensionPrimitive:  // 0x4200
       return true;
 
@@ -253,12 +253,12 @@ bool EoDbJobFile::IsValidPrimitive(std::int16_t primitiveType) {
 bool EoDbJobFile::IsValidVersion1Primitive(std::int16_t primitiveType) {
   std::uint8_t* PrimitiveType = (std::uint8_t*)&primitiveType;
   switch (PrimitiveType[1]) {
-    case 17:   // 0x11 text
-    case 24:   // 0x18 bspline
-    case 33:   // 0x21 conic
-    case 61:   // 0x3d arc
-    case 67:   // 0x43 line
-    case 70:   // 0x46 point
+    case 17:  // 0x11 text
+    case 24:  // 0x18 bspline
+    case 33:  // 0x21 conic
+    case 61:  // 0x3d arc
+    case 67:  // 0x43 line
+    case 70:  // 0x46 point
     case 100:  // 0x64 polygon
       return true;
 
@@ -520,7 +520,8 @@ EoDbPolygon::EoDbPolygon(std::uint8_t* buffer, int version) {
         m_positiveX.z = 0.0;
         m_positiveY.z = 0.0;
 
-        if (std::abs(dXScal) > Eo::geometricTolerance && std::abs(dYScal) > Eo::geometricTolerance) {  // Have 2 hatch lines
+        if (std::abs(dXScal) > Eo::geometricTolerance &&
+            std::abs(dYScal) > Eo::geometricTolerance) {  // Have 2 hatch lines
           m_fillStyleIndex = 2;
           m_positiveX.x = std::cos(dAng);
           m_positiveX.y = std::sin(dAng);
@@ -675,13 +676,13 @@ EoDbText::EoDbText(std::uint8_t* buffer, int version) {
     char* NextToken = nullptr;
     char* pChr = strtok_s((char*)&buffer[44], "\\", &NextToken);
 
-    if (pChr == 0)
+    if (pChr == 0) {
       m_strText = L"EoDbJobFile.PrimText error: Missing string terminator.";
-    else if (strlen(pChr) > 132)
+    } else if (strlen(pChr) > 132) {
       m_strText = L"EoDbJobFile.PrimText error: Text too long.";
-    else {
+    } else {
       while (*pChr != 0) {
-        if (!isprint(*pChr)) *pChr = '.';
+        if (!isprint(*pChr)) { *pChr = '.'; }
         pChr++;
       }
       m_strText = &buffer[44];
@@ -707,7 +708,7 @@ void EoDbConic::Write(CFile& file, std::uint8_t* buffer) {
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kConicPrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
   buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
-  if (buffer[7] >= 16) buffer[7] = 2;
+  if (buffer[7] >= 16) { buffer[7] = 2; }
 
   ((CVaxPnt*)&buffer[8])->Convert(m_center);
   ((CVaxVec*)&buffer[20])->Convert(m_majorAxis);
@@ -722,7 +723,7 @@ void EoDbEllipse::Write(CFile& file, std::uint8_t* buffer) {
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kEllipsePrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
   buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
-  if (buffer[7] >= 16) buffer[7] = 2;
+  if (buffer[7] >= 16) { buffer[7] = 2; }
 
   ((CVaxPnt*)&buffer[8])->Convert(m_center);
   ((CVaxVec*)&buffer[20])->Convert(m_majorAxis);
@@ -738,7 +739,7 @@ void EoDbDimension::Write(CFile& file, std::uint8_t* buffer) {
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kDimensionPrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
   buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
-  if (buffer[7] >= 16) buffer[7] = 2;
+  if (buffer[7] >= 16) { buffer[7] = 2; }
 
   ((CVaxPnt*)&buffer[8])->Convert(m_line.begin);
   ((CVaxPnt*)&buffer[20])->Convert(m_line.end);
@@ -767,7 +768,7 @@ void EoDbLine::Write(CFile& file, std::uint8_t* buffer) {
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kLinePrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
   buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
-  if (buffer[7] >= 16) buffer[7] = 2;
+  if (buffer[7] >= 16) { buffer[7] = 2; }
 
   ((CVaxPnt*)&buffer[8])->Convert(m_line.begin);
   ((CVaxPnt*)&buffer[20])->Convert(m_line.end);

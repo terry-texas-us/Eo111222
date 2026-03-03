@@ -6,13 +6,15 @@
 #include "EoDbGroupList.h"
 #include "EoDbLineType.h"
 
-/** @brief Represents a layer in the drawing, which can contain groups of entities and has properties such as color and line type.
+/** @brief Represents a layer in the drawing, which can contain groups of entities and has properties such as color and
+ line type.
  * Layer states:
  *   b0 set - resident - layer is displayed using bitmap when possible
  *   b1 set - internal - layer is externally referenced. This means it is not necessary to write disk.
  *   b2 set - work
  *   b3 set - active - may have groups modified (0 or more), displayed using warm color set
- *   b4 set - static - tracing which is viewed or layer which is static (no additions or modifications), displayed using warm color set
+ *   b4 set - static - tracing which is viewed or layer which is static (no additions or modifications), displayed using
+ warm color set
  *   b5 set - off - layer is not displayed
  * Tracing states:
  *   b2 set - tracing is opened
@@ -23,9 +25,9 @@
 
 class EoDbLayer : public EoDbGroupList {
   CString m_name;  // layer name. If layer is externally referenced this is the full specification of the file name.
-  std::uint16_t m_state;         // layer state flag values
+  std::uint16_t m_state;  // layer state flag values
   std::uint16_t m_tracingState;  // Tracing state flags
-  std::int16_t m_color;          // color index, negative if layer is off)
+  std::int16_t m_color;  // color index, negative if layer is off)
   EoDbLineType* m_lineType;
 
  public:

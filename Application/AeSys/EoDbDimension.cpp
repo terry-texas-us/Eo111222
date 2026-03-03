@@ -72,10 +72,10 @@ void EoDbDimension::CutAt2Points(
   if (!m_line.ComputeParametricRelation(secondPoint, dRel[1])) { return; }
 
   EoDbDimension* dimension{};
-  if (dRel[0] < Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance)
+  if (dRel[0] < Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance) {
     // Put entire dimension in trap
     dimension = this;
-  else {  // Something gets cut
+  } else {  // Something gets cut
     dimension = new EoDbDimension(*this);
     if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
       dimension->SetBeginPoint(secondPoint);
@@ -362,9 +362,9 @@ void EoDbDimension::Translate(const EoGeVector3d& v) {
   m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v);
 }
 void EoDbDimension::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
-  if ((mask & 1) == 1) m_line.begin += v;
+  if ((mask & 1) == 1) { m_line.begin += v; }
 
-  if ((mask & 2) == 2) m_line.end += v;
+  if ((mask & 2) == 2) { m_line.end += v; }
 
   SetDefaultNote();
 }

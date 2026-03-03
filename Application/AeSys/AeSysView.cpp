@@ -65,8 +65,8 @@ constexpr double maximumWindowRatio{999.0};
 constexpr double minimumWindowRatio{0.001};
 
 #if defined(LEGACY_ODOMETER)
-/** @deprecated This code is only used for the legacy odometer display, which draws the odometer values directly in the view.
- The current implementation displays the odometer values in the status bar, so this code is no longer needed.*/
+/** @deprecated This code is only used for the legacy odometer display, which draws the odometer values directly in the
+ view. The current implementation displays the odometer values in the status bar, so this code is no longer needed.*/
 void DrawOdometerInView(AeSysView* view, CDC* context, Eo::Units Units, EoGeVector3d& position) {
   auto* oldFont = static_cast<CFont*>(context->SelectStockObject(DEFAULT_GUI_FONT));
   auto oldTextAlign = context->SetTextAlign(TA_LEFT | TA_TOP);
@@ -694,8 +694,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         document->DisplayUniquePoints();
       }
 #else
-        document->DisplayAllLayers(this, deviceContext);
-        document->DisplayUniquePoints();
+      document->DisplayAllLayers(this, deviceContext);
+      document->DisplayUniquePoints();
 #endif
     }
     UpdateStateInformation(All);
@@ -722,12 +722,13 @@ void AeSysView::OnInitialUpdate() {
 }
 
 /** @brief Helper function to display content based on the provided hint, used by OnUpdate for delegation
-* This centralizes the logic for interpreting hints and displaying the appropriate content, allowing OnUpdate to focus on setup/delegation/cleanup
-* @param sender The view that sent the update notification
-* @param hint A bitmask hint indicating what type of content needs to be updated (e.g., primitive, group, layer)
-* @param hintObject The specific object related to the hint (e.g., the primitive or group that changed)
-* @param deviceContext The device context to use for drawing
-*/
+ * This centralizes the logic for interpreting hints and displaying the appropriate content, allowing OnUpdate to focus
+ * on setup/delegation/cleanup
+ * @param sender The view that sent the update notification
+ * @param hint A bitmask hint indicating what type of content needs to be updated (e.g., primitive, group, layer)
+ * @param hintObject The specific object related to the hint (e.g., the primitive or group that changed)
+ * @param deviceContext The device context to use for drawing
+ */
 void AeSysView::DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject, CDC* deviceContext) {
   switch (hint) {
     case EoDb::kPrimitive:
@@ -1815,7 +1816,8 @@ void AeSysView::OnPrimPerpJump() {
 void AeSysView::OnHelpKey() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"READY")); }
 
 /** @brief Retrieves the active view in the MDI application.
- * @note This function assumes that the main window is a CMDIFrameWndEx and that the active child window is a CMDIChildWndEx containing an AeSysView.
+ * @note This function assumes that the main window is a CMDIFrameWndEx and that the active child window is a
+ * CMDIChildWndEx containing an AeSysView.
  * @return A pointer to the active AeSysView, or nullptr if no active view is found.
  */
 AeSysView* AeSysView::GetActiveView() {
@@ -2253,7 +2255,8 @@ void AeSysView::OnEscape() {
 }
 
 /** @brief Handler for the Find command, which retrieves the text from the Find combo box in the main frame and logs it.
- * @note Currently, this function only verifies the combo box text and logs it, but it is intended to be expanded with the actual Find command implementation in the future.
+ * @note Currently, this function only verifies the combo box text and logs it, but it is intended to be expanded with
+ * the actual Find command implementation in the future.
  */
 void AeSysView::OnFind() {
   constexpr auto mainFrameErrorMsg = L"Main frame should exist when Find command is triggered";
@@ -2291,8 +2294,13 @@ void AeSysView::OnFind() {
 
 /** @brief Verifies the text in the Find combo box and updates it if necessary.
  * @param findComboBox The combo box button to verify.
- * @param findComboBoxText A reference to a CString that will be updated with the current text of the combo box if the last command was from the button.
- * @note This function checks if the last command was triggered by the provided combo box button. If it was, it retrieves the current text from the combo box. It then checks if this text already exists in the combo box's list of items. If it does, it removes it and re-inserts it at the top of the list to ensure that the most recently used search term is easily accessible. Finally, if the last command was not from the button, it sets the combo box text to the verified text.
+ * @param findComboBoxText A reference to a CString that will be updated with the current text of the combo box if the
+ * last command was from the button.
+ * @note This function checks if the last command was triggered by the provided combo box button. If it was, it
+ * retrieves the current text from the combo box. It then checks if this text already exists in the combo box's list of
+ * items. If it does, it removes it and re-inserts it at the top of the list to ensure that the most recently used
+ * search term is easily accessible. Finally, if the last command was not from the button, it sets the combo box text to
+ * the verified text.
  */
 void AeSysView::VerifyFindString(CMFCToolBarComboBoxButton* findComboBox, CString& findComboBoxText) {
   if (findComboBox == nullptr) { return; }

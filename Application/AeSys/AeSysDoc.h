@@ -128,7 +128,7 @@ class AeSysDoc : public CDocument {
   [[nodiscard]] EoDbLayer* GetLayerTableLayer(const CString& name);
   [[nodiscard]] EoDbLayer* GetLayerTableLayerAt(int layer);
   [[nodiscard]] int GetLayerTableSize() const { return static_cast<int>(m_LayerTable.GetSize()); }
-  
+
   /** @brief Finds the index of a layer in the layer table by its name.
    * This method performs a case-insensitive search for a layer with the specified name in the layer table.
    * @param name The name of the layer to find.
@@ -169,9 +169,10 @@ class AeSysDoc : public CDocument {
   void AddWorkLayerGroups(EoDbGroupList* groups);
   auto FindWorkLayerGroup(EoDbGroup* group) const { return (m_workLayer->Find(group)); }
   [[nodiscard]] auto GetFirstWorkLayerGroupPosition() const { return m_workLayer->GetHeadPosition(); }
-  
+
   /** @brief Retrieves the last group in the work layer.
-   * @return Pointer to the last EoDbGroup in the work layer, or nullptr if the work layer is not defined or contains no groups.
+   * @return Pointer to the last EoDbGroup in the work layer, or nullptr if the work layer is not defined or contains no
+   * groups.
    */
   [[nodiscard]] EoDbGroup* GetLastWorkLayerGroup() const;
   [[nodiscard]] auto GetLastWorkLayerGroupPosition() const { return m_workLayer->GetTailPosition(); }
@@ -201,8 +202,9 @@ class AeSysDoc : public CDocument {
   /** @brief Combines multiple groups in the trap into a single group.
    *
    * This method creates a new group and adds all primitives from the existing trapped groups to it.
-   * The original groups are removed from the document and deleted, while the new combined group is added to the work layer and the trapped group list.
-   * The new group is added to the hot layer even if the trap contained groups from one or more warm layers.
+   * The original groups are removed from the document and deleted, while the new combined group is added to the work
+   * layer and the trapped group list. The new group is added to the hot layer even if the trap contained groups from
+   * one or more warm layers.
    * @note Text primitives in the new group are sorted by their Y coordinate for proper display.
    */
   void CompressTrappedGroups();
@@ -216,7 +218,8 @@ class AeSysDoc : public CDocument {
    * After copying the data, it closes the clipboard.
    *
    * @param view A pointer to the AeSysView object used for rendering the groups.
-   * @note This is done with two independent clipboard formats. The standard enhanced metafile and the private EoDbGroupList which is read exclusively by Peg.
+   * @note This is done with two independent clipboard formats. The standard enhanced metafile and the private
+   * EoDbGroupList which is read exclusively by Peg.
    */
   void CopyTrappedGroupsToClipboard(AeSysView* view);
 
@@ -228,7 +231,7 @@ class AeSysDoc : public CDocument {
    * The new groups are added to the work layer and the trapped group list.
    */
   void ExpandTrappedGroups();
-  
+
   auto FindTrappedGroup(EoDbGroup* group) { return m_trappedGroups.Find(group); }
   auto GetFirstTrappedGroupPosition() const { return m_trappedGroups.GetHeadPosition(); }
   EoDbGroup* GetNextTrappedGroup(POSITION& position) { return m_trappedGroups.GetNext(position); }
@@ -303,9 +306,9 @@ class AeSysDoc : public CDocument {
 
   /** @brief Pastes the contents of the clipboard into the current drawing.
    *
-   * This method checks the clipboard for data in the EoGroups format, which is specific to the application or CF_TEXT format.
-   * If EoGroups format is found, it is pasted into the current drawing, and any other formats present in the clipboard are ignored.
-   * This ensures that only compatible data is processed and integrated into the drawing.
+   * This method checks the clipboard for data in the EoGroups format, which is specific to the application or CF_TEXT
+   * format. If EoGroups format is found, it is pasted into the current drawing, and any other formats present in the
+   * clipboard are ignored. This ensures that only compatible data is processed and integrated into the drawing.
    */
   afx_msg void OnEditTrapPaste();
 
@@ -339,7 +342,8 @@ class AeSysDoc : public CDocument {
   afx_msg void OnPensTranslate();
   /// <summary>Breaks a primitive into a simpler set of primitives.</summary>
   afx_msg void OnPrimBreak();
-  /// <summary>Searches for closest detectible primitive. If found, primitive is lifted from its group, inserted into a new group which is added to deleted group list. The primitive resources are not freed.</summary>
+  /// <summary>Searches for closest detectible primitive. If found, primitive is lifted from its group, inserted into a
+  /// new group which is added to deleted group list. The primitive resources are not freed.</summary>
   afx_msg void OnToolsPrimitiveDelete();
   afx_msg void OnPrimExtractNum();
   afx_msg void OnPrimExtractStr();
@@ -349,7 +353,7 @@ class AeSysDoc : public CDocument {
   afx_msg void OnPrimModifyAttributes();
 
   /** @brief Snaps the cursor to the nearest endpoint of a primitive in the active view.
-   * 
+   *
    * This function first retrieves the active view and transforms the current cursor position
    * into model coordinates. If a group is currently engaged, it attempts to pivot on the
    * control points of the engaged primitive. If successful, it updates the cursor position
@@ -363,10 +367,12 @@ class AeSysDoc : public CDocument {
   afx_msg void OnToolsGroupBreak();
 
   /** @brief Handles the deletion of a group in the active view.
-    This function retrieves the current cursor position from the active view and attempts to select a group and its primitive at that position.
-    If a group is found, it removes the group from any layer it belongs to, removes it from all views, and checks if it is trapped.
-    If it is trapped, it updates the state information of the active view. The function then updates all views to reflect the deletion of the group and adds the deleted group to a list for potential restoration.
-    Finally, it adds a message to inform the user that the segment has been deleted and can be restored.
+    This function retrieves the current cursor position from the active view and attempts to select a group and its
+    primitive at that position. If a group is found, it removes the group from any layer it belongs to, removes it from
+    all views, and checks if it is trapped. If it is trapped, it updates the state information of the active view. The
+    function then updates all views to reflect the deletion of the group and adds the deleted group to a list for
+    potential restoration. Finally, it adds a message to inform the user that the segment has been deleted and can be
+    restored.
   */
   afx_msg void OnToolsGroupDelete();
   afx_msg void OnToolsGroupDeletelast();
@@ -412,7 +418,8 @@ class AeSysDoc : public CDocument {
    * the layer's name based on the provided file name.
    *
    * @param nameAndLocation The name and location of the tracing layer file.
-   * @note This is a cold state meaning the layer is displayed using warm color set, is not detectable, and may not have its groups modified or deleted. No new groups may be added to the layer.
+   * @note This is a cold state meaning the layer is displayed using warm color set, is not detectable, and may not have
+   * its groups modified or deleted. No new groups may be added to the layer.
    */
   void TracingFuse(CString& nameAndLocation);
   bool TracingLoadLayer(const CString& pathName, EoDbLayer* layer);
@@ -420,15 +427,16 @@ class AeSysDoc : public CDocument {
   /** @brief Maps a tracing file as a layer in the document.
    * @param pathName The file path of the tracing file to be mapped.
    * @return true if the tracing file was successfully mapped; false otherwise.
-   * @note This method checks if the specified tracing file is already loaded as a layer. If it is, it prompts the user to close it first. If not, it attempts to load the tracing file into a new layer and adds it to the layer table. If successful, it sets the appropriate flags on the layer and updates all views to reflect the change.
-   * This is a cold state meaning the tracing is displayed using warm color set, is not detectable,
-   * and may not have its groups modified or deleted.
-   * No new groups may be added to the tracing. Any number of tracings may be mapped.
+   * @note This method checks if the specified tracing file is already loaded as a layer. If it is, it prompts the user
+   * to close it first. If not, it attempts to load the tracing file into a new layer and adds it to the layer table. If
+   * successful, it sets the appropriate flags on the layer and updates all views to reflect the change. This is a cold
+   * state meaning the tracing is displayed using warm color set, is not detectable, and may not have its groups
+   * modified or deleted. No new groups may be added to the tracing. Any number of tracings may be mapped.
    */
   bool TracingMap(const CString& pathName);
 
-  /** @brief Opens a tracing file as a layer. If the file is already loaded, it will be re-opened if it is not currently opened.
-   * If the file is not already loaded, a new layer will be created and the tracing file will be loaded into it.
+  /** @brief Opens a tracing file as a layer. If the file is already loaded, it will be re-opened if it is not currently
+   * opened. If the file is not already loaded, a new layer will be created and the tracing file will be loaded into it.
    * The layer will be set to the opened state and made active. All views will be updated to reflect the changes.
    * @param pathName The name of the tracing file to open.
    * @return true if the tracing file was successfully opened; otherwise, false.
@@ -436,8 +444,9 @@ class AeSysDoc : public CDocument {
   bool TracingOpen(const CString& pathName);
 
   /** @brief Displays a tracing file as a layer in the current document.
-   * This method checks if the specified tracing file is already loaded as a layer. 
-   * If it is, it prompts the user to close it first. If not, it creates a new layer and loads the tracing file into it. The layer is then marked as mapped and the views are updated to display it.
+   * This method checks if the specified tracing file is already loaded as a layer.
+   * If it is, it prompts the user to close it first. If not, it creates a new layer and loads the tracing file into it.
+   * The layer is then marked as mapped and the views are updated to display it.
    * @param pathName The path of the tracing file to be displayed.
    * @return true if the tracing file was successfully loaded and displayed; false otherwise.
    */

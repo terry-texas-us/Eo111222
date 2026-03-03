@@ -105,8 +105,7 @@ class EoGePoint3d {
    */
   [[nodiscard]] double DistanceTo(const EoGePoint3d& p) const noexcept;
 
-  [[nodiscard]] bool IsEqualTo(
-      const EoGePoint3d& p, double tolerance = Eo::geometricTolerance) const noexcept;
+  [[nodiscard]] bool IsEqualTo(const EoGePoint3d& p, double tolerance = Eo::geometricTolerance) const noexcept;
 
   /** Determines if a point is contained by a window.
    * @param lowerLeftPoint The lower-left corner point of the window.

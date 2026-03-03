@@ -77,7 +77,7 @@ void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
   auto BlockPosition = block->GetHeadPosition();
   while (BlockPosition != nullptr) {
     auto* primitive = block->GetNext(BlockPosition);
-    if (primitive->Write(*this)) wPrims++;
+    if (primitive->Write(*this)) { wPrims++; }
   }
   auto dwPosition = GetPosition();
   Seek(static_cast<LONGLONG>(countPosition), begin);

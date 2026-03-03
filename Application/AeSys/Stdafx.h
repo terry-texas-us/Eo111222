@@ -24,16 +24,13 @@
 
 #ifdef _UNICODE
 #if defined _M_IX86
-#pragma comment( \
-    linker,      \
+#pragma comment(linker, \
     "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #elif defined _M_X64
-#pragma comment( \
-    linker,      \
+#pragma comment(linker, \
     "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #else
-#pragma comment( \
-    linker,      \
+#pragma comment(linker, \
     "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
 #endif
@@ -60,7 +57,7 @@ inline void SafeRelease(Interface** ppInterfaceToRelease) {
   } while (0)
 #else
 #define Assert(b)
-#endif  //DEBUG || _DEBUG
+#endif  // DEBUG || _DEBUG
 #endif
 
 #ifndef HINST_THISCOMPONENT
@@ -81,10 +78,10 @@ UINT AFXAPI HashKey(CString& str);
 // Define this to enable the deprecated odometer display overlayed in the view.
 // The preferred odometer implementation is in the status bar.
 // It may be removed in the future if it proves to be more trouble than it's worth.
-//#define LEGACY_ODOMETER
+// #define LEGACY_ODOMETER
 
 #define AESYS_USE_CONIC_PRIMITIVE
-//#define USING_STATE_PATTERN
+// #define USING_STATE_PATTERN
 
 #if defined(USING_DDE)
 #include <ddeml.h>

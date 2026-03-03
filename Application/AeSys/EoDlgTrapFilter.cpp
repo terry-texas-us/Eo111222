@@ -15,7 +15,8 @@
 
 EoDlgTrapFilter::EoDlgTrapFilter(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgTrapFilter::IDD, pParent) {}
 
-EoDlgTrapFilter::EoDlgTrapFilter(AeSysDoc* document, CWnd* pParent /*=nullptr*/) : CDialog(EoDlgTrapFilter::IDD, pParent), m_Document(document) {}
+EoDlgTrapFilter::EoDlgTrapFilter(AeSysDoc* document, CWnd* pParent /*=nullptr*/)
+    : CDialog(EoDlgTrapFilter::IDD, pParent), m_Document(document) {}
 
 EoDlgTrapFilter::~EoDlgTrapFilter() {}
 void EoDlgTrapFilter::DoDataExchange(CDataExchange* dataExchange) {
@@ -42,7 +43,9 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
   auto PrimitiveTypes = App::LoadStringResource(IDS_PRIMITIVE_FILTER_LIST);
 
   int TypesPosition = 0;
-  while (TypesPosition < PrimitiveTypes.GetLength()) { m_FilterPrimitiveTypeListBoxControl.AddString(PrimitiveTypes.Tokenize(L"\n", TypesPosition)); }
+  while (TypesPosition < PrimitiveTypes.GetLength()) {
+    m_FilterPrimitiveTypeListBoxControl.AddString(PrimitiveTypes.Tokenize(L"\n", TypesPosition));
+  }
   m_FilterPrimitiveTypeListBoxControl.SetCurSel(0);
 
   return TRUE;
@@ -139,40 +142,40 @@ void EoDlgTrapFilter::FilterByPrimitiveType(const EoDb::PrimitiveTypes primitive
       EoDbPrimitive* primitive = group->GetNext(primitivePosition);
 
       switch (primitiveType) {
-        case EoDb::kPointPrimitive:           // 0x0100
+        case EoDb::kPointPrimitive:  // 0x0100
           filter = primitive->Is(EoDb::kPointPrimitive);
           break;
-        case EoDb::kInsertPrimitive:          // 0x0101
+        case EoDb::kInsertPrimitive:  // 0x0101
           // @deprecated This feature is obsolete as of Version 2011.00 Use kGroupReferencePrimitive instead.
           break;
         case EoDb::kGroupReferencePrimitive:  // 0x0102
           filter = primitive->Is(EoDb::kGroupReferencePrimitive);
           break;
-        case EoDb::kLinePrimitive:            // 0x0200
+        case EoDb::kLinePrimitive:  // 0x0200
           filter = primitive->Is(EoDb::kLinePrimitive);
           break;
-        case EoDb::kPolygonPrimitive:         // 0x0400
+        case EoDb::kPolygonPrimitive:  // 0x0400
           filter = primitive->Is(EoDb::kPolygonPrimitive);
           break;
-        case EoDb::kEllipsePrimitive:         // 0x1003
+        case EoDb::kEllipsePrimitive:  // 0x1003
           // @deprecated This feature is obsolete as of Version 2026.00 Use kConicPrimitive instead.
           break;
-        case EoDb::kConicPrimitive:           // 0x1004
+        case EoDb::kConicPrimitive:  // 0x1004
           filter = primitive->Is(EoDb::kConicPrimitive);
           break;
-        case EoDb::kSplinePrimitive:          // 0x2000
+        case EoDb::kSplinePrimitive:  // 0x2000
           break;
-        case EoDb::kCSplinePrimitive:         // 0x2001
+        case EoDb::kCSplinePrimitive:  // 0x2001
           break;
-        case EoDb::kPolylinePrimitive:        // 0x2002
+        case EoDb::kPolylinePrimitive:  // 0x2002
           filter = primitive->Is(EoDb::kPolylinePrimitive);
           break;
-        case EoDb::kTextPrimitive:            // 0x4000
+        case EoDb::kTextPrimitive:  // 0x4000
           filter = primitive->Is(EoDb::kTextPrimitive);
           break;
-        case EoDb::kTagPrimitive:             // 0x4100
+        case EoDb::kTagPrimitive:  // 0x4100
           break;
-        case EoDb::kDimensionPrimitive:       // 0x4200
+        case EoDb::kDimensionPrimitive:  // 0x4200
           break;
       }
       if (filter) {

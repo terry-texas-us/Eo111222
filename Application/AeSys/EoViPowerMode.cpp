@@ -92,10 +92,10 @@ void AeSysView::OnPowerModeHome() {
       cursorPosition = circuit->ProjectPointToLine(cursorPosition);
       if (circuit->RelOfPt(cursorPosition) <= 0.5) {
         m_CircuitEndPoint = circuit->End();
-        if (cursorPosition.DistanceTo(circuit->Begin()) <= 0.1) cursorPosition = circuit->Begin();
+        if (cursorPosition.DistanceTo(circuit->Begin()) <= 0.1) { cursorPosition = circuit->Begin(); }
       } else {
         m_CircuitEndPoint = circuit->Begin();
-        if (cursorPosition.DistanceTo(circuit->End()) <= 0.1) cursorPosition = circuit->End();
+        if (cursorPosition.DistanceTo(circuit->End()) <= 0.1) { cursorPosition = circuit->End(); }
       }
       m_PowerArrow = cursorPosition.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
       GenerateHomeRunArrow(cursorPosition, m_CircuitEndPoint);
@@ -132,7 +132,8 @@ void AeSysView::DoPowerModeMouseMove() {
           cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
         }
         auto pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
-        m_PreviewGroup.AddTail(EoDbLine::CreateLine(pt1, cursorPosition)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+        m_PreviewGroup.AddTail(EoDbLine::CreateLine(pt1, cursorPosition)
+                ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;
@@ -163,9 +164,10 @@ void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
       m_CircuitEndPoint = circuit->End();
 
       if (std::abs(m_CircuitEndPoint.x - BeginPoint.x) > 0.025) {
-        if (BeginPoint.x > m_CircuitEndPoint.x) m_CircuitEndPoint = BeginPoint;
-      } else if (BeginPoint.y > m_CircuitEndPoint.y)
+        if (BeginPoint.x > m_CircuitEndPoint.x) { m_CircuitEndPoint = BeginPoint; }
+      } else if (BeginPoint.y > m_CircuitEndPoint.y) {
         m_CircuitEndPoint = BeginPoint;
+      }
 
       GeneratePowerConductorSymbol(conductorType, cursorPosition, m_CircuitEndPoint);
       cursorPosition = cursorPosition.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
@@ -216,7 +218,8 @@ void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& e
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 }
 
-void AeSysView::GeneratePowerConductorSymbol(std::uint16_t conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const {
+void AeSysView::GeneratePowerConductorSymbol(
+    std::uint16_t conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const {
   auto* document = GetDocument();
   EoGePoint3d Points[5]{};
 
@@ -229,7 +232,7 @@ void AeSysView::GeneratePowerConductorSymbol(std::uint16_t conductorType, EoGePo
       Circuit.ProjPtFrom_xy(0.0, 0.075, &Points[1]);
       Circuit.ProjPtFrom_xy(0.0, 0.0875, &Points[2]);
       group->AddTail(EoDbLine::CreateLine(Points[0], Points[1])->WithProperties(1, 1));
-      
+
       auto* circle = EoDbConic::CreateCircleInView(Points[2], 0.0125);
       circle->SetColor(1);
       circle->SetLineTypeIndex(1);

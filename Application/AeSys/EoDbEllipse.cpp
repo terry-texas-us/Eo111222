@@ -53,8 +53,8 @@ EoGePoint3d PointOnArcAtAngle(EoGePoint3d center, EoGeVector3d majorAxis, EoGeVe
 /**
  * @brief Normalizes an angle to the range [0, 2π).
  *
- * This function takes an input angle in radians and normalizes it to be within the range of 0 (inclusive) to 2π (exclusive).
- * If the input angle is not finite, it returns 0.0.
+ * This function takes an input angle in radians and normalizes it to be within the range of 0 (inclusive) to 2π
+ * (exclusive). If the input angle is not finite, it returns 0.0.
  *
  * @param angle The angle in radians to be normalized.
  * @return The normalized angle in the range [0, 2π).
@@ -64,7 +64,7 @@ double EoDbEllipse::NormalizeTo2Pi(double angle) {
 
   // Reduce large values, keep result in [0, two_pi)
   angle = std::fmod(angle, Eo::TwoPi);
-  if (angle < 0.0) angle += Eo::TwoPi;
+  if (angle < 0.0) { angle += Eo::TwoPi; }
 
   // Snap values very close to two_pi back to 0.0 to produce canonical result
   if (angle >= Eo::TwoPi - Eo::geometricTolerance) { angle = 0.0; }
@@ -75,8 +75,8 @@ double EoDbEllipse::NormalizeTo2Pi(double angle) {
 /**
  * @brief Constructs an ellipse segment defined by a center point, major and minor axes, and a sweep angle.
  *
- * This constructor initializes an ellipse segment using the specified center point, major axis, minor axis, and sweep angle.
- * The pen color and line type are set based on the current primitive state.
+ * This constructor initializes an ellipse segment using the specified center point, major axis, minor axis, and sweep
+ * angle. The pen color and line type are set based on the current primitive state.
  *
  * @param center The center point of the ellipse.
  * @param majorAxis The major axis vector of the ellipse.
@@ -141,9 +141,9 @@ EoDbEllipse::EoDbEllipse(
 /**
  * @brief Constructs a circle (as ellipse) primitive defined by a center point and a start point in the current view.
  *
- * This constructor initializes a circle primitive using the specified center point and a start point that defines the radius.
- * The major and minor axes are calculated based on the view's camera direction.
- * The pen color and line type are set based on the current primitive state.
+ * This constructor initializes a circle primitive using the specified center point and a start point that defines the
+ * radius. The major and minor axes are calculated based on the view's camera direction. The pen color and line type are
+ * set based on the current primitive state.
  *
  * @param center The center point of the circle.
  * @param start The start point that defines the radius of the circle.
@@ -173,12 +173,12 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
   m_sweepAngle = Eo::TwoPi;
 }
 */
-/** 
+/**
  * @brief Constructs a radial arc (as ellipse) primitive from three points that define an elliptical arc.
  *
- * This constructor initializes an ellipse segment using three points: a beginning point, an intermediate point, and an end point.
- * It calculates the center point, major axis, minor axis, and sweep angle of the ellipse based on the provided points.
- * The pen color and line type are set based on the current primitive state.
+ * This constructor initializes an ellipse segment using three points: a beginning point, an intermediate point, and an
+ * end point. It calculates the center point, major axis, minor axis, and sweep angle of the ellipse based on the
+ * provided points. The pen color and line type are set based on the current primitive state.
  *
  * @param beginPoint The starting point of the elliptical arc.
  * @param intermediatePoint A point on the elliptical arc between the start and end points.
@@ -233,7 +233,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
     for (int i = 0; i < 3; i++) {  // Translate points into z=0 plane with center point at origin
       pt[i] = transformMatrix * pt[i];
       dAng[i] = atan2(pt[i].y, pt[i].x);
-      if (dAng[i] < 0.0) dAng[i] += Eo::TwoPi;
+      if (dAng[i] < 0.0) { dAng[i] += Eo::TwoPi; }
     }
     double dMin = std::min(dAng[0], dAng[2]);
     double dMax = std::max(dAng[0], dAng[2]);
@@ -242,10 +242,10 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
         std::abs(dAng[1] - dMin) > Eo::geometricTolerance) {  // Inside line is not colinear with outside lines
       m_sweepAngle = dMax - dMin;
       if (dAng[1] > dMin && dAng[1] < dMax) {
-        if (dAng[0] == dMax) m_sweepAngle = -m_sweepAngle;
+        if (dAng[0] == dMax) { m_sweepAngle = -m_sweepAngle; }
       } else {
         m_sweepAngle = Eo::TwoPi - m_sweepAngle;
-        if (dAng[2] == dMax) m_sweepAngle = -m_sweepAngle;
+        if (dAng[2] == dMax) { m_sweepAngle = -m_sweepAngle; }
       }
       EoGePoint3d ptRot = start.RotateAboutAxis(m_center, normal, Eo::HalfPi);
 
@@ -281,15 +281,15 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& center, double radius, double startA
   m_sweepAngle = sweepAngle;
 
   // Build major axis vector from center to start point
-  EoGePoint3d startPoint(m_center.x + radius * std::cos(normalizedStartAngle), m_center.y + radius * std::sin(normalizedStartAngle), m_center.z);
-  m_majorAxis = EoGeVector3d(m_center, startPoint);
+  EoGePoint3d startPoint(m_center.x + radius * std::cos(normalizedStartAngle), m_center.y + radius *
+std::sin(normalizedStartAngle), m_center.z); m_majorAxis = EoGeVector3d(m_center, startPoint);
 
   // Minor axis is major rotated +90 degrees about Z (plane normal)
   m_minorAxis = m_majorAxis;
   m_minorAxis.RotateAboutArbitraryAxis(EoGeVector3d::positiveUnitZ, Eo::HalfPi);
 }
 */
-/** 
+/**
  * @brief Constructs an ellipse segment defined by a center point, major and minor axes, and a sweep angle.
  *
  * This constructor initializes an ellipse segment using the specified pen color, line type, center point,
@@ -408,15 +408,17 @@ void EoDbEllipse::CutAt2Points(
 }
 
 void EoDbEllipse::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
-  if (std::abs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance)
+  if (std::abs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) {
     // Do not fragment a circle
     return;
+  }
 
   double dRel = SweepAngleToPoint(point) / m_sweepAngle;
 
-  if (dRel < Eo::geometricTolerance || dRel >= 1.0 - Eo::geometricTolerance)
+  if (dRel < Eo::geometricTolerance || dRel >= 1.0 - Eo::geometricTolerance) {
     // Nothing to cut
     return;
+  }
 
   double dSwpAng = m_sweepAngle * dRel;
 
@@ -519,7 +521,7 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
     if (arBeg.y >= m_center.y) {  // Arc begins in quadrant one
       if (arEnd.x >= m_center.x) {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant one
-          if (arBeg.x > arEnd.x) {    // Arc in qraudrant one only
+          if (arBeg.x > arEnd.x) {  // Arc in qraudrant one only
             arMin->x = arEnd.x;
             arMin->y = arBeg.y;
             arMax->x = arBeg.x;
@@ -543,7 +545,7 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
           arMin->x = std::min(arBeg.x, arEnd.x);
           arMin->y = arBeg.y;
           arMax->y = arEnd.y;
-        } else {                    // Arc ends in quadrant four
+        } else {  // Arc ends in quadrant four
           if (arBeg.x < arEnd.x) {  // Arc in qraudrant one only
             arMin->x = arBeg.x;
             arMin->y = arBeg.y;
@@ -571,7 +573,7 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
         }
       } else {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
-          if (arBeg.x > arEnd.x) {    // Arc in qraudrant two only
+          if (arBeg.x > arEnd.x) {  // Arc in qraudrant two only
             arMin->x = arEnd.x;
             arMin->y = arEnd.y;
             arMax->x = arBeg.x;
@@ -585,17 +587,17 @@ void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d
       }
     } else {  // Arc begins in quadrant three
       if (arEnd.x >= m_center.x) {
-        if (arEnd.y >= m_center.y)  // Arc ends in quadrant one
+        if (arEnd.y >= m_center.y) {  // Arc ends in quadrant one
           arMax->y = arEnd.y;
-        else {  // Arc ends in quadrant four
+        } else {  // Arc ends in quadrant four
           arMax->x = arEnd.x;
           arMax->y = std::max(arBeg.y, arEnd.y);
         }
         arMin->x = arBeg.x;
       } else {
-        if (arEnd.y >= m_center.y)  // Arc ends in quadrant two
+        if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
           arMin->x = std::min(arBeg.x, arEnd.x);
-        else {                      // Arc ends in quadrant three
+        } else {  // Arc ends in quadrant three
           if (arBeg.x < arEnd.x) {  // Arc in qraudrant three only
             arMin->x = arBeg.x;
             arMin->y = arEnd.y;
@@ -641,13 +643,15 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
   auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
   vPlnNorm.Normalize();
 
-  if (!(CrossProduct(EoGeVector3d::positiveUnitZ, vPlnNorm)).IsNearNull())
+  if (!(CrossProduct(EoGeVector3d::positiveUnitZ, vPlnNorm)).IsNearNull()) {
     // not on plane normal to z-axis
     return 0;
+  }
 
-  if (std::abs(m_majorAxis.Length() - m_minorAxis.Length()) > Eo::geometricTolerance)
+  if (std::abs(m_majorAxis.Length() - m_minorAxis.Length()) > Eo::geometricTolerance) {
     // not radial
     return 0;
+  }
 
   EoGePoint3d ptMin, ptMax;
 
@@ -672,9 +676,10 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
     ptInt[1] = ptEnd;
     return (2);
   }
-  if (ptMin.x >= upperRight.x || ptMax.x <= lowerLeft.x || ptMin.y >= upperRight.y || ptMax.y <= lowerLeft.y)
+  if (ptMin.x >= upperRight.x || ptMax.x <= lowerLeft.x || ptMin.y >= upperRight.y || ptMax.y <= lowerLeft.y) {
     // No extent overlap
     return 0;
+  }
 
   EoGePoint3d ptWrk[8]{};
 
@@ -731,27 +736,29 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
       ptWrk[iSecs++].y = lowerLeft.y;
     }
   }
-  if (iSecs == 0) return 0;
+  if (iSecs == 0) { return 0; }
 
   double dBegAng = atan2(ptBeg.y - m_center.y, ptBeg.x - m_center.x);  // Arc begin angle (-π to π)
 
   double dIntAng[8]{};
   double dWrkAng;
   int iInts = 0;
-  for (int i2 = 0; i2 < iSecs; i2++) {                                    // Loop thru possible intersections
+  for (int i2 = 0; i2 < iSecs; i2++) {  // Loop thru possible intersections
     dWrkAng = atan2(ptWrk[i2].y - m_center.y, ptWrk[i2].x - m_center.x);  // Current intersection angle (-π to π)
-    dIntAng[iInts] = dWrkAng - dBegAng;                                   // Sweep from begin to intersection
-    if (dIntAng[iInts] < 0.0) dIntAng[iInts] += Eo::TwoPi;
+    dIntAng[iInts] = dWrkAng - dBegAng;  // Sweep from begin to intersection
+    if (dIntAng[iInts] < 0.0) { dIntAng[iInts] += Eo::TwoPi; }
     if (std::abs(dIntAng[iInts]) - m_sweepAngle < 0.0) {  // Intersection lies on arc
       int i;
       for (i = 0; i < iInts && ptWrk[i2] != ptInt[i]; i++);
-      if (i == iInts)  // Unique intersection
+      if (i == iInts) {  // Unique intersection
         ptInt[iInts++] = ptWrk[i2];
+      }
     }
   }
-  if (iInts == 0)
+  if (iInts == 0) {
     // None of the intersections are on sweep of arc
     return 0;
+  }
 
   for (int i1 = 0; i1 < iInts; i1++) {  // Sort intersections from begin to end of sweep
     for (int i2 = 1; i2 < iInts - i1; i2++) {
@@ -770,7 +777,7 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
   } else {
     if (ptBeg.x >= lowerLeft.x && ptBeg.x <= upperRight.x && ptBeg.y >= lowerLeft.y &&
         ptBeg.y <= upperRight.y) {  // Add beg point to int set
-      for (int i = iInts; i > 0; i--) ptInt[i] = ptInt[i - 1];
+      for (int i = iInts; i > 0; i--) { ptInt[i] = ptInt[i - 1]; }
       ptInt[0] = ptBeg;
       iInts++;
     }
@@ -854,7 +861,7 @@ void EoDbEllipse::Transform(const EoGeTransformMatrix& transformMatrix) {
 }
 
 void EoDbEllipse::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
-  if (mask != 0) m_center += v;
+  if (mask != 0) { m_center += v; }
 }
 
 bool EoDbEllipse::Write(CFile& file) {
@@ -926,7 +933,9 @@ double EoDbEllipse::SweepAngleToPoint(EoGePoint3d point) {
 
 // The arc's end point and intermediate point (for a 3-point representation) can be computed as:
 
-//EoGePoint3d endPoint(m_centerPoint.x + radius * std::cos(normalizedStartAngle + m_sweepAngle), m_centerPoint.y + radius * std::sin(normalizedStartAngle + m_sweepAngle),
-//                     m_centerPoint.z);
-//EoGePoint3d middlePoint(m_centerPoint.x + radius * std::cos(normalizedStartAngle + m_sweepAngle * 0.5),
-//                        m_centerPoint.y + radius * std::sin(normalizedStartAngle + m_sweepAngle * 0.5), m_centerPoint.z);
+// EoGePoint3d endPoint(m_centerPoint.x + radius * std::cos(normalizedStartAngle + m_sweepAngle), m_centerPoint.y +
+// radius * std::sin(normalizedStartAngle + m_sweepAngle),
+//                      m_centerPoint.z);
+// EoGePoint3d middlePoint(m_centerPoint.x + radius * std::cos(normalizedStartAngle + m_sweepAngle * 0.5),
+//                         m_centerPoint.y + radius * std::sin(normalizedStartAngle + m_sweepAngle * 0.5),
+//                         m_centerPoint.z);

@@ -63,13 +63,13 @@ int EoMfPropertiesDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   m_PropertiesToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_PROPERTIES);
   m_PropertiesToolBar.LoadToolBar(IDR_PROPERTIES, 0, 0, TRUE, 0, 0, 0);
   m_PropertiesToolBar.CleanUpLockedImages();
-  m_PropertiesToolBar.LoadBitmap(static_cast<UINT>(app.HighColorMode() ? IDB_PROPERTIES_HC : IDR_PROPERTIES), 0U, 0U,
-                                 TRUE, 0U, 0U);
+  m_PropertiesToolBar.LoadBitmap(
+      static_cast<UINT>(app.HighColorMode() ? IDB_PROPERTIES_HC : IDR_PROPERTIES), 0U, 0U, TRUE, 0U, 0U);
 
   m_PropertiesToolBar.SetPaneStyle(m_PropertiesToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
-  m_PropertiesToolBar.SetPaneStyle(m_PropertiesToolBar.GetPaneStyle() &
-                                   ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM |
-                                     CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
+  m_PropertiesToolBar.SetPaneStyle(
+      m_PropertiesToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM |
+                                               CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
   m_PropertiesToolBar.SetOwner(this);
 
   // All commands will be routed via this control , not via the parent frame:
@@ -180,12 +180,12 @@ void EoMfPropertiesDockablePane::AdjustLayout() {
   int cyCmb = rectCombo.Size().cy;
   int cyTlb = m_PropertiesToolBar.CalcFixedLayout(FALSE, TRUE).cy;
 
-  m_wndObjectCombo.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), 200,
-                                SWP_NOACTIVATE | SWP_NOZORDER);
-  m_PropertiesToolBar.SetWindowPos(nullptr, rectClient.left, rectClient.top + cyCmb, rectClient.Width(), cyTlb,
-                                   SWP_NOACTIVATE | SWP_NOZORDER);
+  m_wndObjectCombo.SetWindowPos(
+      nullptr, rectClient.left, rectClient.top, rectClient.Width(), 200, SWP_NOACTIVATE | SWP_NOZORDER);
+  m_PropertiesToolBar.SetWindowPos(
+      nullptr, rectClient.left, rectClient.top + cyCmb, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
   m_PropertyGrid.SetWindowPos(nullptr, rectClient.left, rectClient.top + cyCmb + cyTlb, rectClient.Width(),
-                              rectClient.Height() - (cyCmb + cyTlb), SWP_NOACTIVATE | SWP_NOZORDER);
+      rectClient.Height() - (cyCmb + cyTlb), SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
 void EoMfPropertiesDockablePane::InitializePropertyGrid() {
@@ -198,7 +198,7 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   m_PropertyGrid.SetGroupNameFullWidth(TRUE, TRUE);
 
   m_PropertyGrid.MarkModifiedProperties(TRUE, TRUE);
-  
+
   auto* workspaceTabsGroup = new CMFCPropertyGridProperty(L"Workspace Tabs");
 
   auto* tabsStyle = new CMFCPropertyGridProperty(
@@ -210,8 +210,8 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   tabsStyle->AllowEdit(FALSE);
   workspaceTabsGroup->AddSubItem(tabsStyle);
 
-  auto* tabLocation = new CMFCPropertyGridProperty(L"Tab Location", L"", L"Set the Tab Location to Top or Bottom",
-                                                   kTabLocation, nullptr, nullptr, nullptr);
+  auto* tabLocation = new CMFCPropertyGridProperty(
+      L"Tab Location", L"", L"Set the Tab Location to Top or Bottom", kTabLocation, nullptr, nullptr, nullptr);
   tabLocation->AddOption(::TabLocations[0], TRUE);
   tabLocation->AddOption(::TabLocations[1], TRUE);
   tabLocation->SetValue(::TabLocations[app.m_Options.m_mdiTabInfo.m_tabLocation]);
@@ -242,16 +242,15 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   auto* worldScaleProperty = new CMFCPropertyGridProperty(
       L"World Scale", (_variant_t)scale, L"Specifies the world scale used in the Active View", kActiveViewScale);
   activeViewGroup->AddSubItem(worldScaleProperty);
-  activeViewGroup->AddSubItem(new CMFCPropertyGridProperty(L"Use True Type fonts", (_variant_t) true,
-                                                           L"Specifies that the Active View uses True Type fonts"));
+  activeViewGroup->AddSubItem(new CMFCPropertyGridProperty(
+      L"Use True Type fonts", (_variant_t) true, L"Specifies that the Active View uses True Type fonts"));
   m_PropertyGrid.AddProperty(activeViewGroup);
   worldScaleProperty->Enable(activeView != nullptr);
 
   auto* appearanceGroup = new CMFCPropertyGridProperty(L"Appearance");
 
-  appearanceGroup->AddSubItem(
-      new CMFCPropertyGridProperty(L"3D Look", (_variant_t) false,
-                                   L"Specifies the window's font will be non-bold and controls will have a 3D border"));
+  appearanceGroup->AddSubItem(new CMFCPropertyGridProperty(L"3D Look", (_variant_t) false,
+      L"Specifies the window's font will be non-bold and controls will have a 3D border"));
 
   auto* lengthUnits =
       new CMFCPropertyGridProperty(L"Length Units", L"Engineering", L"Specifies the units used to display lengths");
@@ -267,8 +266,8 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   lengthUnits->AllowEdit(FALSE);
   appearanceGroup->AddSubItem(lengthUnits);
 
-  auto* lengthPrecision = new CMFCPropertyGridProperty(L"Length Precision", (_variant_t)8l,
-                                                       L"Specifies the precision used to display lengths");
+  auto* lengthPrecision = new CMFCPropertyGridProperty(
+      L"Length Precision", (_variant_t)8l, L"Specifies the precision used to display lengths");
   lengthPrecision->EnableSpinControl(TRUE, 0, 256);
   appearanceGroup->AddSubItem(lengthPrecision);
 
@@ -279,8 +278,7 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
 
   auto* pointGrid = new CMFCPropertyGridProperty(L"Point Grid", 0, TRUE);
 
-  auto* property =
-      new CMFCPropertyGridProperty(L"X", (_variant_t)3.0, L"Specifies the point grid x spacing");
+  auto* property = new CMFCPropertyGridProperty(L"X", (_variant_t)3.0, L"Specifies the point grid x spacing");
   pointGrid->AddSubItem(property);
 
   property = new CMFCPropertyGridProperty(L"Y", (_variant_t)3.0, L"Specifies the point grid y spacing");
@@ -299,10 +297,10 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
 
   lstrcpy(lf.lfFaceName, L"Arial");
 
-  noteGroup->AddSubItem(new CMFCPropertyGridFontProperty(L"Font", lf, CF_EFFECTS | CF_SCREENFONTS,
-                                                         L"Specifies the default font for the window"));
-  noteGroup->AddSubItem(new CMFCPropertyGridProperty(L"Use System Font", (_variant_t) true,
-                                                     L"Specifies that the window uses MS Shell Dlg font"));
+  noteGroup->AddSubItem(new CMFCPropertyGridFontProperty(
+      L"Font", lf, CF_EFFECTS | CF_SCREENFONTS, L"Specifies the default font for the window"));
+  noteGroup->AddSubItem(new CMFCPropertyGridProperty(
+      L"Use System Font", (_variant_t) true, L"Specifies that the window uses MS Shell Dlg font"));
 
   auto* horizontalAlignment = new CMFCPropertyGridProperty(
       L"Horizontal Alignment", L"Left", L"Specifies the horizontal alignment used for new notes");

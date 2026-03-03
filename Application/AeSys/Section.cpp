@@ -3,7 +3,8 @@
 #include "Section.h"
 
 Section::Section() : m_width(0.0), m_depth(0.0), m_properties(0) {}
-Section::Section(double width, double depth, long properties) : m_width(width), m_depth(depth), m_properties(properties) {}
+Section::Section(double width, double depth, long properties)
+    : m_width(width), m_depth(depth), m_properties(properties) {}
 
 bool Section::operator==(const Section& section) { return Identical(section); }
 bool Section::operator!=(const Section& section) { return !Identical(section); }

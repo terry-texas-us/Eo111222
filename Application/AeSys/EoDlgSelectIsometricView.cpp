@@ -4,23 +4,20 @@
 #include "Resource.h"
 
 EoDlgSelectIsometricView::EoDlgSelectIsometricView(CWnd* pParent /*=nullptr*/)
-	: CDialog(EoDlgSelectIsometricView::IDD, pParent) {
+    : CDialog(EoDlgSelectIsometricView::IDD, pParent) {}
 
-}
-
-EoDlgSelectIsometricView::~EoDlgSelectIsometricView() {
-}
+EoDlgSelectIsometricView::~EoDlgSelectIsometricView() {}
 
 void EoDlgSelectIsometricView::DoDataExchange(CDataExchange* dataExchange) {
-	CDialog::DoDataExchange(dataExchange);
-	DDX_Radio(dataExchange, IDC_VIEW_ISO_LEFT, m_LeftRight);
-	DDX_Radio(dataExchange, IDC_VIEW_ISO_FRONT, m_FrontBack);
-	DDX_Radio(dataExchange, IDC_VIEW_ISO_ABOVE, m_AboveUnder);
+  CDialog::DoDataExchange(dataExchange);
+  DDX_Radio(dataExchange, IDC_VIEW_ISO_LEFT, m_LeftRight);
+  DDX_Radio(dataExchange, IDC_VIEW_ISO_FRONT, m_FrontBack);
+  DDX_Radio(dataExchange, IDC_VIEW_ISO_ABOVE, m_AboveUnder);
 }
 
 BOOL EoDlgSelectIsometricView::OnInitDialog() {
-	CDialog::OnInitDialog();
+  CDialog::OnInitDialog();
 
-	return TRUE;  // return TRUE unless you set the focus to a control
-	// EXCEPTION: OCX Property Pages should return FALSE
+  return TRUE;  // return TRUE unless you set the focus to a control
+  // EXCEPTION: OCX Property Pages should return FALSE
 }

@@ -38,7 +38,7 @@ void AeSysView::OnTrapModeStitch() {
   } else {
     EoGePoint3d pt = GetCursorPosition();
 
-    if (m_PreviousPnt == pt) return;
+    if (m_PreviousPnt == pt) { return; }
 
     auto* document = GetDocument();
 
@@ -69,7 +69,7 @@ void AeSysView::OnTrapModeField() {
     m_PreviousOp = ModeLineHighlightOp(ID_OP4);
   } else {
     auto cursorPosition = GetCursorPosition();
-    if (m_PreviousPnt == cursorPosition) return;
+    if (m_PreviousPnt == cursorPosition) { return; }
 
     auto* document = GetDocument();
 
@@ -182,7 +182,7 @@ void AeSysView::OnTraprModeStitch() {
   } else {
     EoGePoint3d cursorPosition = GetCursorPosition();
 
-    if (m_PreviousPnt == cursorPosition) return;
+    if (m_PreviousPnt == cursorPosition) { return; }
     auto* document = GetDocument();
 
     EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(cursorPosition)};

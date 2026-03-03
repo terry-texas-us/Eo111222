@@ -13,7 +13,7 @@ void CDlgSetPointStyle::DoDataExchange(CDataExchange* pDX) {
   // When loading (pDX->m_bSaveAndValidate == FALSE) break out the parts of the
   // stored flag into the UI-backed variables before calling DDX_ helpers.
   if (!pDX->m_bSaveAndValidate) {
-    m_radioPoint = m_pointStyle & 0x0F;          // radio index stored in low bits
+    m_radioPoint = m_pointStyle & 0x0F;  // radio index stored in low bits
     m_checkCircle = (m_pointStyle & 0x20) != 0;  // 0x20 -> check1
     m_checkSquare = (m_pointStyle & 0x40) != 0;  // 0x40 -> check2
   }
@@ -24,7 +24,9 @@ void CDlgSetPointStyle::DoDataExchange(CDataExchange* pDX) {
   DDX_Text(pDX, IDC_EDIT_POINT_SIZE, m_pointSize);
   if (pDX->m_bSaveAndValidate) { DDV_MinMaxDouble(pDX, m_pointSize, -288.0, 4.0); }
   // When saving, combine UI-backed values back into the single flags integer.
-  if (pDX->m_bSaveAndValidate) { m_pointStyle = (m_radioPoint & 0x0F) | (m_checkCircle ? 0x20 : 0) | (m_checkSquare ? 0x40 : 0); }
+  if (pDX->m_bSaveAndValidate) {
+    m_pointStyle = (m_radioPoint & 0x0F) | (m_checkCircle ? 0x20 : 0) | (m_checkSquare ? 0x40 : 0);
+  }
 }
 BOOL CDlgSetPointStyle::OnInitDialog() {
   CDialogEx::OnInitDialog();

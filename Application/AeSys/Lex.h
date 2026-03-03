@@ -62,47 +62,50 @@ constexpr int BinarySubtractToken = 28;
 constexpr int OpenParenthesesToken = 29;
 constexpr int CloseParenthesesToken = 30;
 
-//* Static array of TokenProperties structures that defines a mapping of various tokens, their precedence, and types used in a lexical analysis context. */
+//* Static array of TokenProperties structures that defines a mapping of various tokens, their precedence, and types
+//used in a lexical analysis context. */
 static TokenProperties TokenPropertiesTable[] = {
-    {0, 0, PlaceHolderForZero},          // unused
-    {110, 85, Other},                    // AbsoluteValue
-    {110, 85, Other},                    // ArcCosine
-    {110, 85, Other},                    // ArcSine
-    {110, 85, Other},                    // ArcTangent
-    {110, 85, Other},                    // ToString
-    {110, 85, Other},                    // Cosine
-    {110, 85, Other},                    // ExponentialValue
-    {110, 85, Other},                    // Int
-    {110, 85, Other},                    // NaturalLogarithm
-    {110, 85, Other},                    // Base10Logarithm
-    {110, 85, Other},                    // Sine
-    {110, 85, Other},                    // SquareRoot
-    {110, 85, Other},                    // Tangent
-    {110, 85, Other},                    // Real
-    {110, 85, Other},                    // UnaryPlus
-    {110, 85, Other},                    // UnaryMinus
-    {0, 0, Constant},                    // IntegerToken
-    {0, 0, Constant},                    // RealToken
-    {0, 0, Constant},                    // ArchitecturalUnitsLengthToken
-    {0, 0, Constant},                    // EngineeringUnitsLengthToken
-    {0, 0, Constant},                    // SimpleUnitsLengthToken
-    {0, 0, Constant},                    // StringToken
-    {0, 0, Identifier},                  // IdentifierToken
+    {0, 0, PlaceHolderForZero},  // unused
+    {110, 85, Other},  // AbsoluteValue
+    {110, 85, Other},  // ArcCosine
+    {110, 85, Other},  // ArcSine
+    {110, 85, Other},  // ArcTangent
+    {110, 85, Other},  // ToString
+    {110, 85, Other},  // Cosine
+    {110, 85, Other},  // ExponentialValue
+    {110, 85, Other},  // Int
+    {110, 85, Other},  // NaturalLogarithm
+    {110, 85, Other},  // Base10Logarithm
+    {110, 85, Other},  // Sine
+    {110, 85, Other},  // SquareRoot
+    {110, 85, Other},  // Tangent
+    {110, 85, Other},  // Real
+    {110, 85, Other},  // UnaryPlus
+    {110, 85, Other},  // UnaryMinus
+    {0, 0, Constant},  // IntegerToken
+    {0, 0, Constant},  // RealToken
+    {0, 0, Constant},  // ArchitecturalUnitsLengthToken
+    {0, 0, Constant},  // EngineeringUnitsLengthToken
+    {0, 0, Constant},  // SimpleUnitsLengthToken
+    {0, 0, Constant},  // StringToken
+    {0, 0, Identifier},  // IdentifierToken
     {80, 79, BinaryArithmeticOperator},  // ExponentiateToken
     {70, 71, BinaryArithmeticOperator},  // MultiplyToken
     {70, 71, BinaryArithmeticOperator},  // DivideToken
     {60, 61, BinaryArithmeticOperator},  // BinaryAddToken
     {60, 61, BinaryArithmeticOperator},  // BinarySubtractToken
-    {110, 1, OpenParentheses},           // OpenParenthesesToken
-    {0, 0, CloseParentheses}             // CloseParenthesesToken
+    {110, 1, OpenParentheses},  // OpenParenthesesToken
+    {0, 0, CloseParentheses}  // CloseParenthesesToken
 };
 
-/** @brief Processes a sequence of tokens starting from a specified location, categorizing them into types and handling operator precedence, while managing parentheses and throwing errors for unbalanced expressions or syntax issues.
-* @param firstTokenLocation (in)  location of first token in stream to consider. (out) location of first token not part of expression
-* @param numberOfTokens (out) number of tokens on stack
-* @param typeOfTokens (out) type of tokens on stack
-* @param locationOfTokens (out) location of tokens on stack
-*/
+/** @brief Processes a sequence of tokens starting from a specified location, categorizing them into types and handling
+ * operator precedence, while managing parentheses and throwing errors for unbalanced expressions or syntax issues.
+ * @param firstTokenLocation (in)  location of first token in stream to consider. (out) location of first token not part
+ * of expression
+ * @param numberOfTokens (out) number of tokens on stack
+ * @param typeOfTokens (out) type of tokens on stack
+ * @param locationOfTokens (out) location of tokens on stack
+ */
 void BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTokens, int* locationOfTokens);
 
 /** @brief Converts a string representation of a value to its internal representation based on the desired type.
@@ -112,7 +115,8 @@ void BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTo
  * @param[out] resultDefinition definition of the resulting value (dimension and length)
  * @param[out] resultValue buffer to store the resulting value
  */
-void ConvertStringToVal(int desiredType, long tokenDefinition, const wchar_t* inputLine, long* resultDefinition, void* resultValue);
+void ConvertStringToVal(
+    int desiredType, long tokenDefinition, const wchar_t* inputLine, long* resultDefinition, void* resultValue);
 
 /** @brief Converts an internal representation of a value to its string representation.
  * @param valueBuffer buffer containing value to convert
@@ -120,8 +124,8 @@ void ConvertStringToVal(int desiredType, long tokenDefinition, const wchar_t* in
  * @param[out] stringBuffer output buffer for string representation
  * @param[out] stringLength length of resulting string
  */
-void ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaInformation, wchar_t* stringbuffer,
-                        int* stringLength);
+void ConvertValToString(
+    void* valueBuffer, ValueMetaInformation* valueMetaInformation, wchar_t* stringbuffer, int* stringLength);
 
 /** @brief Does value type conversion
  * @param currentType current type of value
@@ -131,7 +135,8 @@ void ConvertValToString(void* valueBuffer, ValueMetaInformation* valueMetaInform
  */
 void ConvertValTyp(int currentType, int requiredType, long* valueDefinition, void* valueBuffer);
 
-/** @brief Processes a stream of tokens, evaluating expressions and performing operations based on their types, while managing an operand stack and handling various token classes such as identifiers, constants, and operators.
+/** @brief Processes a stream of tokens, evaluating expressions and performing operations based on their types, while
+ * managing an operand stack and handling various token classes such as identifiers, constants, and operators.
  *
  * @param aiTokId Array of token IDs representing the expression.
  * @param operandDefinition Pointer to store the definition (dimension and length) of the result.
@@ -140,7 +145,8 @@ void ConvertValTyp(int currentType, int requiredType, long* valueDefinition, voi
  */
 void EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandType, void* operandBuffer);
 
-/** @brief Processes a wide-character input line to tokenize it, categorizing each token and storing relevant values in predefined arrays while managing the number of tokens and values encountered.
+/** @brief Processes a wide-character input line to tokenize it, categorizing each token and storing relevant values in
+ * predefined arrays while managing the number of tokens and values encountered.
  * @param inputLine The wide-character input line to parse.
  */
 void Parse(const wchar_t* inputLine);
@@ -148,7 +154,7 @@ void Parse(const wchar_t* inputLine);
 void ParseStringOperand(wchar_t* token);
 
 /** @brief Scans the line buffer for a specific character, skipping whitespace.
-  * @param character The character to scan for.
+ * @param character The character to scan for.
  * @param lineBuffer A pointer to the lineBuffer to scan; updated to point after the found character.
  * @return A pointer to the found character in the string, or nullptr if not found.
  */
@@ -158,12 +164,14 @@ wchar_t* ScanForChar(wchar_t character, wchar_t** lineBuffer);
  *
  * @param ppStr A pointer to the current position in the line buffer; updated to point after the scanned string.
  * @param pszTerm A pointer to store the terminating character after the string.
- * @param ppArgBuf A pointer to the argument buffer to store the scanned string; updated to point to the next free position.
+ * @param ppArgBuf A pointer to the argument buffer to store the scanned string; updated to point to the next free
+ * position.
  * @return A pointer to the start of the scanned string in the argument buffer.
  */
 wchar_t* ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBuf);
 
-/** @brief Scans the input line for the next token, skipping whitespace and returning the token ID and updating the line position.
+/** @brief Scans the input line for the next token, skipping whitespace and returning the token ID and updating the line
+ * position.
  *
  * @param token A buffer to store the scanned token.
  * @param inputLine The input line to scan.

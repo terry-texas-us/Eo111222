@@ -77,7 +77,7 @@ CMainFrame::CMainFrame() : m_currentProgress(0), m_inProgress(false) {
 }
 CMainFrame::~CMainFrame() {}
 int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
-  if (CMDIFrameWndEx::OnCreate(createStruct) == -1) return -1;
+  if (CMDIFrameWndEx::OnCreate(createStruct) == -1) { return -1; }
 
   OnApplicationLook(m_applicationLook);
   UpdateMDITabs(FALSE);
@@ -151,7 +151,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   return 0;
 }
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs) {
-  if (!CMDIFrameWndEx::PreCreateWindow(cs)) return FALSE;
+  if (!CMDIFrameWndEx::PreCreateWindow(cs)) { return FALSE; }
 
   return TRUE;
 }
@@ -181,12 +181,12 @@ void CMainFrame::SetDockablePanesIcons(bool highColorMode) {
 
   HICON propertiesPaneIcon = static_cast<HICON>(
       LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_PROPERTIES_WND_HC : IDI_PROPERTIES_WND),
-                 IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
+          IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
   m_propertiesPane.SetIcon(propertiesPaneIcon, FALSE);
 
   HICON outputPaneIcon =
       static_cast<HICON>(LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND),
-                                    IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
+          IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
   m_outputPane.SetIcon(outputPaneIcon, FALSE);
 
   UpdateMDITabbedBarsIcons();
@@ -363,9 +363,8 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
       ::BringWindowToTop(ActiveWnd);
 
       EnableMDITabs(TRUE, app.m_Options.m_mdiTabInfo.m_bTabIcons, app.m_Options.m_mdiTabInfo.m_tabLocation,
-                    app.m_Options.m_mdiTabInfo.m_bTabCloseButton, app.m_Options.m_mdiTabInfo.m_style,
-                    app.m_Options.m_mdiTabInfo.m_bTabCustomTooltips,
-                    app.m_Options.m_mdiTabInfo.m_bActiveTabCloseButton);
+          app.m_Options.m_mdiTabInfo.m_bTabCloseButton, app.m_Options.m_mdiTabInfo.m_style,
+          app.m_Options.m_mdiTabInfo.m_bTabCustomTooltips, app.m_Options.m_mdiTabInfo.m_bActiveTabCloseButton);
 
       GetMDITabs().EnableAutoColor(app.m_Options.m_mdiTabInfo.m_bAutoColor);
       GetMDITabs().EnableTabDocumentsMenu(app.m_Options.m_mdiTabInfo.m_bDocumentMenu);
@@ -407,10 +406,10 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
           // Force a resize to happen on all the "restored" MDI child windows
           CRect rectFrame;
           frame->GetWindowRect(rectFrame);
-          frame->SetWindowPos(nullptr, -1, -1, rectFrame.Width() + 1, rectFrame.Height(),
-                               SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
-          frame->SetWindowPos(nullptr, -1, -1, rectFrame.Width(), rectFrame.Height(),
-                               SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
+          frame->SetWindowPos(
+              nullptr, -1, -1, rectFrame.Width() + 1, rectFrame.Height(), SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
+          frame->SetWindowPos(
+              nullptr, -1, -1, rectFrame.Width(), rectFrame.Height(), SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
         }
       }
       hwndT = ::GetWindow(hwndT, GW_HWNDNEXT);

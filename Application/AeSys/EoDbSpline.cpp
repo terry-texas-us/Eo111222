@@ -176,8 +176,9 @@ void EoDbSpline::Translate(const EoGeVector3d& v) {
 }
 
 void EoDbSpline::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
-  for (auto i = 0; i < m_pts.GetSize(); i++)
-    if (((mask >> i) & 1UL) == 1) m_pts[i] += v;
+  for (auto i = 0; i < m_pts.GetSize(); i++) {
+    if (((mask >> i) & 1UL) == 1) { m_pts[i] += v; }
+  }
 }
 
 bool EoDbSpline::Write(CFile& file) {
@@ -205,20 +206,22 @@ int EoDbSpline::GenPts(const int iOrder, EoGePoint3dArray& pts) {
   int iTMax = (static_cast<int>(pts.GetSize()) - 1) - iOrder + 2;
   int iKnotVecMax = (static_cast<int>(pts.GetSize()) - 1) + iOrder;  // Maximum number of dKnot vectors
 
-  for (i = 0; i < 65 * 65; i++)  // Set weighting value array with zeros
+  for (i = 0; i < 65 * 65; i++) {  // Set weighting value array with zeros
     dWght[i] = 0.;
+  }
 
   for (i = 0; i <= iKnotVecMax; i++) {  // Determine dKnot vectors
-    if (i <= iOrder - 1)                // Beginning of curve
+    if (i <= iOrder - 1) {  // Beginning of curve
       dKnot[i] = 0.;
-    else if (i >= iTMax + iOrder)  // End of curve
+    } else if (i >= iTMax + iOrder) {  // End of curve
       dKnot[i] = dKnot[i - 1];
-    else {
+    } else {
       i2 = i - iOrder;
-      if (pts[i2] == pts[i2 + 1])  // Repeating vertices
+      if (pts[i2] == pts[i2 + 1]) {  // Repeating vertices
         dKnot[i] = dKnot[i - 1];
-      else  // Successive internal vectors
+      } else {  // Successive internal vectors
         dKnot[i] = dKnot[i - 1] + 1.;
+      }
     }
   }
   if (dKnot[iKnotVecMax] != 0.0) {
@@ -230,31 +233,34 @@ int EoDbSpline::GenPts(const int iOrder, EoGePoint3dArray& pts) {
     int iPts2 = 0;
     for (i4 = iOrder - 1; i4 <= iOrder + iTMax; i4++) {
       for (i = 0; i <= iKnotVecMax - 1; i++) {  // Calculate values for weighting value
-        if (i != i4 || dKnot[i] == dKnot[i + 1])
+        if (i != i4 || dKnot[i] == dKnot[i + 1]) {
           dWght[65 * i + 1] = 0.;
-        else
+        } else {
           dWght[65 * i + 1] = 1.;
+        }
       }
       for (T = dKnot[i4]; T <= dKnot[i4 + 1] - dStep; T += dStep) {
         iPts2++;
         for (i2 = 2; i2 <= iOrder; i2++) {
           for (i = 0; i <= pts.GetSize() - 1; i++) {  // Determine first term of weighting function equation
-            if (dWght[65 * i + i2 - 1] == 0.0)
+            if (dWght[65 * i + i2 - 1] == 0.0) {
               W1 = 0.;
-            else
+            } else {
               W1 = ((T - dKnot[i]) * dWght[65 * i + i2 - 1]) / (dKnot[i + i2 - 1] - dKnot[i]);
+            }
 
-            if (dWght[65 * (i + 1) + i2 - 1] == 0.0)  // Determine second term of weighting function equation
+            if (dWght[65 * (i + 1) + i2 - 1] == 0.0) {  // Determine second term of weighting function equation
               W2 = 0.;
-            else
+            } else {
               W2 = ((dKnot[i + i2] - T) * dWght[65 * (i + 1) + i2 - 1]) / (dKnot[i + i2] - dKnot[i + 1]);
+            }
 
             dWght[65 * i + i2] = W1 + W2;
             G = pts[i].x * dWght[65 * i + i2] + G;
             H = pts[i].y * dWght[65 * i + i2] + H;
             Z = pts[i].z * dWght[65 * i + i2] + Z;
           }
-          if (i2 == iOrder) break;
+          if (i2 == iOrder) { break; }
           G = 0.;
           H = 0.;
           Z = 0.;

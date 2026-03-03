@@ -10,7 +10,7 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
 void __End(AeSysView* view, CDC* deviceContext, std::int16_t lineType);
 /// <summary>Determines points necessary to represent an N-Polygon with line segments.</summary>
 void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis,
-                            int numberOfPoints, EoGePoint3dArray& pts);
+    int numberOfPoints, EoGePoint3dArray& pts);
 /// <summary>Determines how many times (if any), a line segment intersects with polyline.</summary>
 bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections);
 bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, double& dRel, EoGePoint3d& ptProj);

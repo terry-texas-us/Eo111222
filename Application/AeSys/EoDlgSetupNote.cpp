@@ -38,9 +38,9 @@ BOOL EoDlgSetupNote::OnInitDialog() {
   SetDlgItemTextW(IDC_TEXT_SPACING, spacing);
 
   CheckRadioButton(IDC_TEXT_ALIGN_HOR_LEFT, IDC_TEXT_ALIGN_HOR_RIGHT,
-                   IDC_TEXT_ALIGN_HOR_LEFT + static_cast<int>(m_FontDefinition->HorizontalAlignment()) - 1);
+      IDC_TEXT_ALIGN_HOR_LEFT + static_cast<int>(m_FontDefinition->HorizontalAlignment()) - 1);
   CheckRadioButton(IDC_TEXT_ALIGN_VER_BOT, IDC_TEXT_ALIGN_VER_TOP,
-                   IDC_TEXT_ALIGN_VER_BOT - static_cast<int>(m_FontDefinition->VerticalAlignment()) + 4);
+      IDC_TEXT_ALIGN_VER_BOT - static_cast<int>(m_FontDefinition->VerticalAlignment()) + 4);
   CheckRadioButton(IDC_PATH_RIGHT, IDC_PATH_DOWN, IDC_PATH_RIGHT + static_cast<int>(m_FontDefinition->Path()));
 
   return TRUE;

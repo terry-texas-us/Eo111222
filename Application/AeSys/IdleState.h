@@ -21,6 +21,5 @@ class IdleState : public AeSysState {
   void OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]] CDC* deviceContext) override;
 
   bool OnUpdate(AeSysView* context, CView* pSender, LPARAM lHint, CObject* pHint) override;
-
 };
 #endif

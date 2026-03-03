@@ -31,12 +31,12 @@ std::uint16_t EoDbPolygon::sm_Edge{};
 int EoDbPolygon::sm_pivotVertex{};
 
 typedef struct tagFilAreaEdgLis {
-  double yMinExtent;     // minimum y extent of edge
-  double yMaxExtent;     // maximum y extent of edge
+  double yMinExtent;  // minimum y extent of edge
+  double yMaxExtent;  // maximum y extent of edge
   double xIntersection;  // x intersection on edge
   union {
     double inverseSlope;  // inverse slope of edge
-    double xStepSize;     // change in x for each scanline
+    double xStepSize;  // change in x for each scanline
   };
 } pFilAreaEdgLis;
 
@@ -64,7 +64,7 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
     auto normal = CrossProduct(m_positiveX, m_positiveY);
     normal.Normalize();
 
-    if (normal.z < 0) normal = -normal;
+    if (normal.z < 0) { normal = -normal; }
 
     m_positiveX.Normalize();
     m_positiveX.RotateAboutArbitraryAxis(normal, hatch::dOffAng);
@@ -215,10 +215,11 @@ void EoDbPolygon::AddReportToMessageList(const EoGePoint3d& point) {
     double dAng;
     double dLen = EoGeVector3d(*pBegPt, *pEndPt).Length();  // Length of edge
 
-    if (EoGeVector3d(point, *pBegPt).Length() > dLen * 0.5)
+    if (EoGeVector3d(point, *pBegPt).Length() > dLen * 0.5) {
       dAng = EoGeLine(*pEndPt, *pBegPt).AngleFromXAxisXY();
-    else
+    } else {
       dAng = EoGeLine(*pBegPt, *pEndPt).AngleFromXAxisXY();
+    }
 
     CString FormattedLength;
     app.FormatLength(FormattedLength, app.GetUnits(), dLen);
@@ -444,7 +445,7 @@ void EoDbPolygon::SetHatRefVecs(double dOffAng, double dXScal, double dYScal) {
   auto normal = CrossProduct(m_positiveX, m_positiveY);
   normal.Normalize();
 
-  if (normal.z < 0) normal = -normal;
+  if (normal.z < 0) { normal = -normal; }
 
   m_positiveX.Normalize();
   m_positiveX.RotateAboutArbitraryAxis(normal, dOffAng);
@@ -523,17 +524,18 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
   int iHatLns = int(hatch::tableValue[iTblId++]);
 
   for (int i0 = 0; i0 < iHatLns; i0++) {
-    int iStrs = int(hatch::tableValue[iTblId++]);       // number of strokes in line definition
-    double dTotStrLen = hatch::tableValue[iTblId++];    // length of all strokes in line definition
-    double dSinAng = std::sin(hatch::tableValue[iTblId]);    // sine of angle at which line will be drawn
+    int iStrs = int(hatch::tableValue[iTblId++]);  // number of strokes in line definition
+    double dTotStrLen = hatch::tableValue[iTblId++];  // length of all strokes in line definition
+    double dSinAng = std::sin(hatch::tableValue[iTblId]);  // sine of angle at which line will be drawn
     double dCosAng = std::cos(hatch::tableValue[iTblId++]);  // cosine of angle at which line will be drawn
-    double dX = hatch::tableValue[iTblId++];            // displacement to origin of initial line
+    double dX = hatch::tableValue[iTblId++];  // displacement to origin of initial line
     double dY = hatch::tableValue[iTblId++];
     double dShift = hatch::tableValue[iTblId++];  // x-axis origin shift between lines
-    double dSpac = hatch::tableValue[iTblId++];   // spacing between lines
+    double dSpac = hatch::tableValue[iTblId++];  // spacing between lines
 
-    for (i = 0; i < iStrs; i++)  // length of each stoke in line definition
+    for (i = 0; i < iStrs; i++) {  // length of each stoke in line definition
       dStrLen[i] = hatch::tableValue[iTblId++];
+    }
 
     // Rotate origin on z0 plane so hatch x-axis becomes positive x-axis
     double dHatOrigX = dX * dCosAng - dY * (-dSinAng);
@@ -548,7 +550,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
     int iBegPt = 0;
 
     for (i = 0; i < iSets; i++) {
-      if (i != 0) iBegPt = iPtLstsId[i - 1];
+      if (i != 0) { iBegPt = iPtLstsId[i - 1]; }
       ln.begin = pta[iBegPt];
       ln.begin = transformMatrix * ln.begin;  // Apply transform to get areas first point in z0 plane
 
@@ -584,7 +586,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
     }
     // Determine where first scan position is
     dScan = edg[1].yMaxExtent - fmod((edg[1].yMaxExtent - dHatOrigY), dSpac);
-    if (edg[1].yMaxExtent < dScan) dScan = dScan - dSpac;
+    if (edg[1].yMaxExtent < dScan) { dScan = dScan - dSpac; }
     dSecBeg = dHatOrigX + dShift * (dScan - dHatOrigY) / dSpac;
     // Edge list pointers
     iBegEdg = 1;
@@ -623,7 +625,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
       lnS.end.y = dScan;
       for (i = 1; i <= (iEndEdg - iBegEdg) / 2; i++) {
         lnS.begin.x = edg[iCurEdg].xIntersection - fmod((edg[iCurEdg].xIntersection - dSecBeg), dTotStrLen);
-        if (lnS.begin.x > edg[iCurEdg].xIntersection) lnS.begin.x -= dTotStrLen;
+        if (lnS.begin.x > edg[iCurEdg].xIntersection) { lnS.begin.x -= dTotStrLen; }
         iStrId = 0;
         dRemDisToEdg = edg[iCurEdg].xIntersection - lnS.begin.x;
         dCurStrLen = dStrLen[iStrId];

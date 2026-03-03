@@ -4,7 +4,7 @@
 class EoDlgLowPressureDuctOptions : public CDialog {
  public:
   EoDlgLowPressureDuctOptions(CWnd* parent = nullptr);
-  EoDlgLowPressureDuctOptions(const EoDlgLowPressureDuctOptions&) = delete; 
+  EoDlgLowPressureDuctOptions(const EoDlgLowPressureDuctOptions&) = delete;
   EoDlgLowPressureDuctOptions& operator=(const EoDlgLowPressureDuctOptions&) = delete;
 
   virtual ~EoDlgLowPressureDuctOptions();

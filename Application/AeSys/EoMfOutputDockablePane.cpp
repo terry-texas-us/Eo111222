@@ -19,7 +19,7 @@ ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 int EoMfOutputDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
-  if (CDockablePane::OnCreate(createStruct) == -1) return -1;
+  if (CDockablePane::OnCreate(createStruct) == -1) { return -1; }
 
   m_Font.CreateStockObject(DEFAULT_GUI_FONT);
 
@@ -90,8 +90,10 @@ void EoMfOutputListBox::OnContextMenu(CWnd* window, CPoint point) {
   }
   SetFocus();
 }
-/** @brief Handles the "Copy" command from the context menu. Copies the selected text from the list box to the clipboard.
- *  @note If multiple items are selected, they are combined into a single string with newlines separating them before copying. */
+/** @brief Handles the "Copy" command from the context menu. Copies the selected text from the list box to the
+ * clipboard.
+ *  @note If multiple items are selected, they are combined into a single string with newlines separating them before
+ * copying. */
 void EoMfOutputListBox::OnEditCopy() {
   auto selectedCount = GetSelCount();
   if (selectedCount < 1) { return; }

@@ -112,6 +112,6 @@ void EoDlgSetupColor::DrawSelectionInformation(std::uint16_t index) {
 
   CString ColorRGBDescription;
   ColorRGBDescription.Format(L"(%i,%i,%i)", GetRValue(Eo::ColorPalette[index]), GetGValue(Eo::ColorPalette[index]),
-                             GetBValue(Eo::ColorPalette[index]));
+      GetBValue(Eo::ColorPalette[index]));
   SetDlgItemTextW(IDC_RGBNUMBERS, ColorRGBDescription);
 }

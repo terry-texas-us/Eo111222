@@ -48,8 +48,8 @@ bool EoGePoint4d::ClipLine(EoGePoint4d& ptA, EoGePoint4d& ptB) {
   int OutCodeB = 0;
 
   for (int iBC = 0; iBC < 6; iBC++) {
-    if (BoundaryCodeA[iBC] <= 0.0) OutCodeA |= (1 << iBC);
-    if (BoundaryCodeB[iBC] <= 0.0) OutCodeB |= (1 << iBC);
+    if (BoundaryCodeA[iBC] <= 0.0) { OutCodeA |= (1 << iBC); }
+    if (BoundaryCodeB[iBC] <= 0.0) { OutCodeB |= (1 << iBC); }
   }
 
   if ((OutCodeA & OutCodeB) != 0) { return false; }
@@ -92,7 +92,7 @@ void EoGePoint4d::ClipPolygon(EoGePoint4dArray& pointsArray) {
     int iPtsOut = (int)PointsArrayOut.GetSize();
     pointsArray.SetSize(iPtsOut);
 
-    if (iPtsOut == 0) break;
+    if (iPtsOut == 0) { break; }
 
     pointsArray.Copy(PointsArrayOut);
     PointsArrayOut.RemoveAll();
@@ -100,7 +100,7 @@ void EoGePoint4d::ClipPolygon(EoGePoint4dArray& pointsArray) {
 }
 void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoGePoint4d& ptQ,
     EoGeVector3d& planeNormal, EoGePoint4dArray& pointsArrayOut) {
-  if (pointsArrayIn.IsEmpty()) return;
+  if (pointsArrayIn.IsEmpty()) { return; }
 
   EoGePoint4d pt;
   EoGePoint4d ptEdge[2]{};

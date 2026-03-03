@@ -60,7 +60,6 @@ class EoGePoint4d {
 
   [[nodiscard]] constexpr EoGePoint4d operator*(double t) const noexcept { return {x * t, y * t, z * t, w * t}; }
 
-
   [[nodiscard]] constexpr EoGePoint4d Set(double newX, double newY, double newZ, double newW) noexcept {
     x = newX;
     y = newY;
@@ -73,15 +72,20 @@ class EoGePoint4d {
    * @return The vector resulting from the subtraction (xyz components only).
    * @note This is the standard homogeneous-space subtraction:
    *   It assumes the w components are equal (Δw cancels to 0). All model-space points satisfy this (w = 1.0).
-   *   Use Dehomogenize() first if you need the true Cartesian difference after perspective. 
+   *   Use Dehomogenize() first if you need the true Cartesian difference after perspective.
    */
-  [[nodiscard]] constexpr EoGeVector3d operator-(const EoGePoint4d& q) const noexcept { return {x - q.x, y - q.y, z - q.z}; }
+  [[nodiscard]] constexpr EoGeVector3d operator-(const EoGePoint4d& q) const noexcept {
+    return {x - q.x, y - q.y, z - q.z};
+  }
 
-  /** @brief Converts a point from homogeneous coordinates to Cartesian coordinates by dividing the x, y, and z components by the w component.
+  /** @brief Converts a point from homogeneous coordinates to Cartesian coordinates by dividing the x, y, and z
+   * components by the w component.
    * @param homogenizedPoint The point in homogeneous coordinates to be dehomogenized.
-   * @param homoginizedW The homogeneous coordinate `w` of the point, used for perspective division. It is expected that `w` is not zero.
+   * @param homoginizedW The homogeneous coordinate `w` of the point, used for perspective division. It is expected that
+   * `w` is not zero.
    * @return An EoGePoint3d representing the dehomogenized point in Cartesian coordinates.
-   * @note This function assumes that the input point is in homogeneous coordinates (x, y, z, w) and that `w` is not zero.
+   * @note This function assumes that the input point is in homogeneous coordinates (x, y, z, w) and that `w` is not
+   * zero.
    */
   [[nodiscard]] EoGePoint3d Dehomogenize() const noexcept {
     assert(std::abs(w) > Eo::geometricTolerance && "w is too close to zero for dehomogenization");
@@ -90,7 +94,8 @@ class EoGePoint4d {
 
   /** Determines the distance to another point 'q', ignoring z component.
    * @param q The target point to measure the distance to.
-   * @return The Euclidean distance between `this` point and the targetpoint, calculated using only the x and y components.
+   * @return The Euclidean distance between `this` point and the targetpoint, calculated using only the x and y
+   * components.
    */
   [[nodiscard]] double DistanceToPointXY(const EoGePoint4d& q) const noexcept;
 
@@ -110,12 +115,15 @@ class EoGePoint4d {
   static void ClipPolygon(EoGePoint4dArray& pointsArray);
 
   /** @brief Computes the intersection points of a polygon with a clipping plane defined by a point and a normal vector.
-   * This function is typically used as part of the polygon clipping process, where it calculates the intersection points between the edges of the polygon and the clipping plane.
-   * The resulting intersection points are added to the output array, which can then be used to construct the clipped polygon.
+   * This function is typically used as part of the polygon clipping process, where it calculates the intersection
+   * points between the edges of the polygon and the clipping plane. The resulting intersection points are added to the
+   * output array, which can then be used to construct the clipped polygon.
    * @param pointsArrayIn An array of EoGePoint4d objects representing the vertices of the polygon before clipping.
    * @param pointOnClipPlane A point that lies on the clipping plane, used to define the plane's position in space.
-   * @param clipPlaneNormal A normal vector that defines the orientation of the clipping plane. The direction of this vector determines which side of the plane is considered "inside" for clipping purposes.
-   * @param pointsArrayOut An array that will receive the intersection points calculated by this function. The caller is responsible for managing this array and ensuring it has sufficient capacity to hold the results.
+   * @param clipPlaneNormal A normal vector that defines the orientation of the clipping plane. The direction of this
+   * vector determines which side of the plane is considered "inside" for clipping purposes.
+   * @param pointsArrayOut An array that will receive the intersection points calculated by this function. The caller is
+   * responsible for managing this array and ensuring it has sufficient capacity to hold the results.
    */
   static void IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoGePoint4d& pointOnClipPlane,
       EoGeVector3d& clipPlaneNormal, EoGePoint4dArray& pointsArrayOut);

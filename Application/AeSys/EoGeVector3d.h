@@ -104,23 +104,23 @@ class EoGeVector3d {
 };
 
 /** @brief Compute a not so arbitrary axis for AutoCAD entities
-* @param normal Normal vector
-* @return Computed arbitrary axis
-*/
+ * @param normal Normal vector
+ * @return Computed arbitrary axis
+ */
 [[nodiscard]] EoGeVector3d ComputeArbitraryAxis(const EoGeVector3d& normal);
 
 /** @brief Rotates a vector about the Z axis by a given angle
-* @param vector Vector to rotate
-* @param angle Angle in radians
-* @return Rotated vector
-*/
+ * @param vector Vector to rotate
+ * @param angle Angle in radians
+ * @return Rotated vector
+ */
 [[nodiscard]] EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle);
 
 /** @brief Computes the cross product of the two vectors
-* @param vector1 First vector
-* @param vector2 Second vector
-* @return Cross product vector
-*/
+ * @param vector1 First vector
+ * @param vector2 Second vector
+ * @return Cross product vector
+ */
 [[nodiscard]] constexpr EoGeVector3d CrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept;
 
 /** @brief Computes the scalar product (= inner product) of the two vectors.
@@ -131,11 +131,12 @@ class EoGeVector3d {
  * For a vector a, a • a is the square of its length, and, more generally, if b is another vector
  * @code
  * u • v = |u| |v| cos(θ) where |u| and |v| denote the length (magnitude) of u and v and θ is the angle between them.
- * Since |u| cos(θ) is the scalar projection of u onto v, the dot product can be understood geometrically as the product of this projection with the length of v.
- * As the cosine of 90° is zero, the dot product of two perpendicular vectors is always zero. 
-   If u and v have length one (they are unit vectors), the dot product simply gives the cosine of the angle between them. 
-   Thus, given two vectors, the angle between them can be found by rearranging the above formula:
-     θ = arccos(u • v / |u| |v|)
+ * Since |u| cos(θ) is the scalar projection of u onto v, the dot product can be understood geometrically as the product
+ of this projection with the length of v.
+ * As the cosine of 90° is zero, the dot product of two perpendicular vectors is always zero.
+   If u and v have length one (they are unit vectors), the dot product simply gives the cosine of the angle between
+ them. Thus, given two vectors, the angle between them can be found by rearranging the above formula: θ = arccos(u • v /
+ |u| |v|)
  * @endcode
  */
 [[nodiscard]] constexpr double DotProduct(const EoGeVector3d& u, const EoGeVector3d& v) noexcept {

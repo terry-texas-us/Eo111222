@@ -683,23 +683,24 @@ void AeSysView::GenerateLineWithFittings(
   EoGePoint3d pt1 = begin;
   EoGePoint3d pt2 = end;
 
-  if (beginType == ID_OP3)
+  if (beginType == ID_OP3) {
     // Previous fitting is an elbow or side tee
     GenerateTickMark(begin, end, m_PipeRiseDropRadius, group);
-  else if (beginType == ID_OP4) {  // Previous fitting is an elbow down, riser down or bottom tee
+  } else if (beginType == ID_OP4) {  // Previous fitting is an elbow down, riser down or bottom tee
     pt1 = begin.ProjectToward(end, m_PipeRiseDropRadius);
     GenerateTickMark(pt1, end, m_PipeRiseDropRadius, group);
-  } else if (beginType == ID_OP5)
+  } else if (beginType == ID_OP5) {
     // Previous fitting is an elbow up, riser up or top tee
     GenerateTickMark(begin, end, 2.0 * m_PipeRiseDropRadius, group);
+  }
 
-  if (endType == ID_OP3)
+  if (endType == ID_OP3) {
     // Current fitting is an elbow or side tee
     GenerateTickMark(end, begin, m_PipeRiseDropRadius, group);
-  else if (endType == ID_OP4)
+  } else if (endType == ID_OP4) {
     // Current fitting is an elbow down, riser down or bottom tee
     GenerateTickMark(end, begin, 2.0 * m_PipeRiseDropRadius, group);
-  else if (endType == ID_OP5) {  // Current fitting is an elbow up, riser up or top tee
+  } else if (endType == ID_OP5) {  // Current fitting is an elbow up, riser up or top tee
     pt2 = end.ProjectToward(begin, m_PipeRiseDropRadius);
     GenerateTickMark(end, begin, 2.0 * m_PipeRiseDropRadius, group);
   }

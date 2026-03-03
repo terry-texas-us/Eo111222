@@ -30,7 +30,8 @@ class EoDbPolygon : public EoDbPrimitive {
   EoDbPolygon(std::uint8_t* buffer, int version);
 
   /** @brief Constructs an EoDbPolygon object from an array of 3D points.
-   *  @param points An array of 3D points that define the vertices of the polygon. Must contain at least 3 points for proper initialization of the plane vectors.
+   *  @param points An array of 3D points that define the vertices of the polygon. Must contain at least 3 points for
+   * proper initialization of the plane vectors.
    */
   EoDbPolygon(EoGePoint3dArray& points);
 

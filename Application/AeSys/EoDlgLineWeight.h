@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 class EoDlgLineWeight : public CDialog {
-
  public:
   EoDlgLineWeight(CWnd* parent = nullptr);
   EoDlgLineWeight(int originalLineWeight, CWnd* parent = nullptr);

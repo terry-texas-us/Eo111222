@@ -46,7 +46,7 @@ void EoDbGroupList::Display(AeSysView* view, CDC* deviceContext) {
 
 POSITION EoDbGroupList::Remove(EoDbGroup* group) {
   auto position = Find(group);
-  if (position != nullptr) RemoveAt(position);
+  if (position != nullptr) { RemoveAt(position); }
 
   return position;
 }
@@ -90,7 +90,7 @@ void EoDbGroupList::ModifyColor(std::int16_t color) {
 
 void EoDbGroupList::ModifyLineType(std::int16_t nStyle) {
   auto position = GetHeadPosition();
-  while (position != nullptr) (GetNext(position))->ModifyLineType(nStyle);
+  while (position != nullptr) { (GetNext(position))->ModifyLineType(nStyle); }
 }
 
 void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition,
@@ -104,7 +104,7 @@ void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition,
 
 void EoDbGroupList::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
   auto position = GetHeadPosition();
-  while (position != 0) (GetNext(position))->PenTranslation(wCols, pColNew, pCol);
+  while (position != 0) { (GetNext(position))->PenTranslation(wCols, pColNew, pCol); }
 }
 
 int EoDbGroupList::RemoveEmptyNotesAndDelete() {
@@ -175,7 +175,7 @@ void EoDbGroupList::Transform(const EoGeTransformMatrix& transformMatrix) {
 }
 
 void EoDbGroupList::Translate(EoGeVector3d v) {
-  if (v.IsNearNull()) return;
+  if (v.IsNearNull()) { return; }
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
@@ -186,5 +186,5 @@ void EoDbGroupList::Translate(EoGeVector3d v) {
 
 void EoDbGroupList::Write(CFile& file, std::uint8_t* buffer) {
   auto position = GetHeadPosition();
-  while (position != nullptr) GetNext(position)->Write(file, buffer);
+  while (position != nullptr) { GetNext(position)->Write(file, buffer); }
 }

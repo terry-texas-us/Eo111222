@@ -80,13 +80,15 @@ void EoDbGroup::BreakPolylines() {
       EoGePoint3dArray points;
       static_cast<EoDbPolyline*>(primitive)->GetAllPoints(points);
 
-      for (auto i = 0; i < points.GetSize() - 1; i++)
+      for (auto i = 0; i < points.GetSize() - 1; i++) {
         CObList::InsertBefore(
             PrimitivePosition, EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, LineType));
+      }
 
-      if (static_cast<EoDbPolyline*>(primitive)->IsLooped())
+      if (static_cast<EoDbPolyline*>(primitive)->IsLooped()) {
         CObList::InsertBefore(PrimitivePosition,
             EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, LineType));
+      }
       this->RemoveAt(PrimitivePosition);
       delete primitive;
     } else if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
@@ -137,7 +139,7 @@ void EoDbGroup::Display(AeSysView* view, CDC* deviceContext) {
 POSITION EoDbGroup::FindAndRemovePrim(EoDbPrimitive* primitive) {
   auto position = Find(primitive);
 
-  if (position != nullptr) RemoveAt(position);
+  if (position != nullptr) { RemoveAt(position); }
 
   return position;
 }

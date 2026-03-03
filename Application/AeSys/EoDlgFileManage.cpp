@@ -462,7 +462,7 @@ void EoDlgFileManage::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT lpDrawI
   if (controlIdentifier == IDC_LAYERS_LIST_CONTROL) {
     switch (lpDrawItemStruct->itemAction) {
       case ODA_DRAWENTIRE: {
-        //clear item
+        // clear item
         CRect rcItem(lpDrawItemStruct->rcItem);
         CDC DeviceContext;
         COLORREF rgbBkgnd =
@@ -525,7 +525,7 @@ void EoDlgFileManage::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult
       }
       break;
     case Freeze:
-      //Layer->setIsFrozen(!Layer->isFrozen());
+      // Layer->setIsFrozen(!Layer->isFrozen());
       break;
     case Lock:
       if (layer->IsWork()) {
@@ -551,10 +551,10 @@ void EoDlgFileManage::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult
       break;
     }
     case LineWeight: {
-      //EoDlgLineWeight dlg(Layer->lineWeight());
-      //if (IDOK == dlg.DoModal()) {
+      // EoDlgLineWeight dlg(Layer->lineWeight());
+      // if (IDOK == dlg.DoModal()) {
       //	Layer->setLineWeight(dlg.m_LineWeight);
-      //}
+      // }
       break;
     }
   }

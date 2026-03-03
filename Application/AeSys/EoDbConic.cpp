@@ -61,8 +61,8 @@ EoGePoint3d PointOnArcAtAngle(
 /**
  * @brief Normalizes an angle to the range [0, 2π).
  *
- * This function takes an input angle in radians and normalizes it to be within the range of 0 (inclusive) to 2π (exclusive).
- * If the input angle is not finite, it returns 0.0.
+ * This function takes an input angle in radians and normalizes it to be within the range of 0 (inclusive) to 2π
+ * (exclusive). If the input angle is not finite, it returns 0.0.
  *
  * @param angle The angle in radians to be normalized.
  * @return The normalized angle in the range [0, 2π).
@@ -72,7 +72,7 @@ double EoDbConic::NormalizeTo2Pi(double angle) {
 
   // Reduce large values, keep result in [0, two_pi)
   angle = std::fmod(angle, Eo::TwoPi);
-  if (angle < 0.0) angle += Eo::TwoPi;
+  if (angle < 0.0) { angle += Eo::TwoPi; }
 
   // Snap values very close to two_pi back to 0.0 to produce canonical result
   if (angle >= Eo::TwoPi - Eo::geometricTolerance) { angle = 0.0; }
@@ -84,7 +84,7 @@ CString EoDbConic::SubClassName(double ratio, double startAngle, double endAngle
   bool isCircular = std::abs(1.0 - ratio) < Eo::geometricTolerance;
 
   double sweep = NormalizeTo2Pi(endAngle) - NormalizeTo2Pi(startAngle);
-  if (sweep <= 0.0) sweep += Eo::TwoPi;
+  if (sweep <= 0.0) { sweep += Eo::TwoPi; }
   bool isFull = std::abs(sweep - Eo::TwoPi) < Eo::geometricTolerance;
   if (isCircular) {
     return isFull ? L"Circle" : L"Radial Arc";
@@ -152,9 +152,9 @@ EoDbConic* EoDbConic::CreateConicFromEllipsePrimitive(
     if (endParameter < startParameter) { endParameter += Eo::TwoPi; }
   }
   startParameter = std::fmod(startParameter, Eo::TwoPi);
-  if (startParameter < 0.0) startParameter += Eo::TwoPi;
+  if (startParameter < 0.0) { startParameter += Eo::TwoPi; }
   endParameter = std::fmod(endParameter, Eo::TwoPi);
-  if (endParameter < 0.0) endParameter += Eo::TwoPi;
+  if (endParameter < 0.0) { endParameter += Eo::TwoPi; }
 
   return new EoDbConic(center, extrusion, majorAxis, ratio, startParameter, endParameter);
 }
@@ -546,14 +546,15 @@ void EoDbConic::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* 
     if (arBeg.y >= m_center.y) {  // Arc begins in quadrant one
       if (arEnd.x >= m_center.x) {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant one
-          if (arBeg.x > arEnd.x) {    // Arc in quadrant one only
+          if (arBeg.x > arEnd.x) {  // Arc in quadrant one only
             arMin->x = arEnd.x;
             arMin->y = arBeg.y;
             arMax->x = arBeg.x;
             arMax->y = arEnd.y;
           }
-        } else  // Arc ends in quadrant four
+        } else {  // Arc ends in quadrant four
           arMax->x = std::max(arBeg.x, arEnd.x);
+        }
       } else {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
           arMin->x = arEnd.x;
@@ -569,7 +570,7 @@ void EoDbConic::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* 
           arMin->x = std::min(arBeg.x, arEnd.x);
           arMin->y = arBeg.y;
           arMax->y = arEnd.y;
-        } else {                    // Arc ends in quadrant four
+        } else {  // Arc ends in quadrant four
           if (arBeg.x < arEnd.x) {  // Arc in quadrant one only
             arMin->x = arBeg.x;
             arMin->y = arBeg.y;
@@ -589,15 +590,15 @@ void EoDbConic::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* 
   } else {
     if (arBeg.y >= m_center.y) {  // Arc begins in quadrant two
       if (arEnd.x >= m_center.x) {
-        if (arEnd.y >= m_center.y)  // Arc ends in quadrant one
+        if (arEnd.y >= m_center.y) {  // Arc ends in quadrant one
           arMax->y = std::max(arBeg.y, arEnd.y);
-        else {  // Arc ends in quadrant four
+        } else {  // Arc ends in quadrant four
           arMax->x = arEnd.x;
           arMax->y = arBeg.y;
         }
       } else {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
-          if (arBeg.x > arEnd.x) {    // Arc in quadrant two only
+          if (arBeg.x > arEnd.x) {  // Arc in quadrant two only
             arMin->x = arEnd.x;
             arMin->y = arEnd.y;
             arMax->x = arBeg.x;
@@ -621,7 +622,7 @@ void EoDbConic::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* 
       } else {
         if (arEnd.y >= m_center.y) {  // Arc ends in quadrant two
           arMin->x = std::min(arBeg.x, arEnd.x);
-        } else {                    // Arc ends in quadrant three
+        } else {  // Arc ends in quadrant three
           if (arBeg.x < arEnd.x) {  // Arc in quadrant three only
             arMin->x = arBeg.x;
             arMin->y = arEnd.y;
@@ -764,20 +765,22 @@ int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upp
   double dIntAng[8]{};
   double dWrkAng;
   int iInts = 0;
-  for (int i2 = 0; i2 < iSecs; i2++) {                                    // Loop thru possible intersections
+  for (int i2 = 0; i2 < iSecs; i2++) {  // Loop thru possible intersections
     dWrkAng = atan2(ptWrk[i2].y - m_center.y, ptWrk[i2].x - m_center.x);  // Current intersection angle (-π to π)
-    dIntAng[iInts] = dWrkAng - dBegAng;                                   // Sweep from begin to intersection
-    if (dIntAng[iInts] < 0.0) dIntAng[iInts] += Eo::TwoPi;
+    dIntAng[iInts] = dWrkAng - dBegAng;  // Sweep from begin to intersection
+    if (dIntAng[iInts] < 0.0) { dIntAng[iInts] += Eo::TwoPi; }
     if (std::abs(dIntAng[iInts]) - SweepAngle() < 0.0) {  // Intersection lies on arc
       int i;
       for (i = 0; i < iInts && ptWrk[i2] != ptInt[i]; i++);
-      if (i == iInts)  // Unique intersection
+      if (i == iInts) {  // Unique intersection
         ptInt[iInts++] = ptWrk[i2];
+      }
     }
   }
-  if (iInts == 0)
+  if (iInts == 0) {
     // None of the intersections are on sweep of arc
     return 0;
+  }
 
   for (int i1 = 0; i1 < iInts; i1++) {  // Sort intersections from begin to end of sweep
     for (int i2 = 1; i2 < iInts - i1; i2++) {
@@ -796,7 +799,7 @@ int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upp
   } else {
     if (ptBeg.x >= lowerLeft.x && ptBeg.x <= upperRight.x && ptBeg.y >= lowerLeft.y &&
         ptBeg.y <= upperRight.y) {  // Add beg point to int set
-      for (int i = iInts; i > 0; i--) ptInt[i] = ptInt[i - 1];
+      for (int i = iInts; i > 0; i--) { ptInt[i] = ptInt[i - 1]; }
       ptInt[0] = ptBeg;
       iInts++;
     }
@@ -915,7 +918,7 @@ void EoDbConic::Transform(const EoGeTransformMatrix& transformaMatrix) {
 }
 
 void EoDbConic::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
-  if (mask != 0) m_center += v;
+  if (mask != 0) { m_center += v; }
 }
 
 bool EoDbConic::Write(CFile& file) {
@@ -1057,7 +1060,7 @@ bool SweepAngleFromNormalAnd3Points(const EoGeVector3d& normal, const EoGePoint3
   for (int i = 0; i < 3; i++) {  // Translate points into z=0 plane with center point at origin
     rR[i] = transformMatrix * rR[i];
     t[i] = atan2(rR[i].y, rR[i].x);
-    if (t[i] < 0.0) t[i] += Eo::TwoPi;
+    if (t[i] < 0.0) { t[i] += Eo::TwoPi; }
   }
   double tMin = std::min(t[0], t[2]);
   double tMax = std::max(t[0], t[2]);
@@ -1065,10 +1068,10 @@ bool SweepAngleFromNormalAnd3Points(const EoGeVector3d& normal, const EoGePoint3
     // Inside line is not colinear with outside lines
     double theta = tMax - tMin;
     if (t[1] > tMin && t[1] < tMax) {
-      if (t[0] == tMax) theta = -theta;
+      if (t[0] == tMax) { theta = -theta; }
     } else {
       theta = Eo::TwoPi - theta;
-      if (t[2] == tMax) theta = -theta;
+      if (t[2] == tMax) { theta = -theta; }
     }
     sweepAngle = theta;
 

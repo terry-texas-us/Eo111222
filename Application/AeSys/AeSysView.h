@@ -145,7 +145,8 @@ class AeSysView : public CView {
   double AxisConstraintOffsetAngle() const;
   void SetAxisConstraintOffsetAngle(double angle);
   void InitializeConstraints();
-  /// <summary>Generates a point display centered about the user origin in one or more of the three orthogonal planes for the current user grid.</summary>
+  /// <summary>Generates a point display centered about the user origin in one or more of the three orthogonal planes
+  /// for the current user grid.</summary>
   void DisplayGrid(CDC* deviceContext);
   EoGePoint3d GridOrign() const;
   void GridOrign(const EoGePoint3d& origin);
@@ -157,17 +158,17 @@ class AeSysView : public CView {
   void SetGridSnapSpacing(double x, double y, double z);
 
   /** @brief Snaps a point to the nearest grid point based on the current grid snap spacing.
-   * This function calculates the nearest grid point to the input point by rounding the coordinates of the input point to the nearest multiple of the grid snap spacing.
-   * The resulting snapped point is returned.
+   * This function calculates the nearest grid point to the input point by rounding the coordinates of the input point
+   * to the nearest multiple of the grid snap spacing. The resulting snapped point is returned.
    * @param point The point to be snapped to the grid.
    * @return The snapped point that is aligned with the nearest grid intersection.
    */
   [[nodiscard]] EoGePoint3d SnapPointToGrid(const EoGePoint3d& point) const;
 
   /** @brief Snaps a point to the nearest axis if it is within the influence angle of that axis.
-   * This function checks the angle between the line from the begin point to the end point and each of the three orthogonal axes.
-   * If the angle is less than the sum of the influence angle and offset angle, the end point is snapped to that axis.
-   * If multiple axes are within the influence angle, the one with the smallest angle is chosen.
+   * This function checks the angle between the line from the begin point to the end point and each of the three
+   * orthogonal axes. If the angle is less than the sum of the influence angle and offset angle, the end point is
+   * snapped to that axis. If multiple axes are within the influence angle, the one with the smallest angle is chosen.
    * @param begin The starting point from which to measure angles.
    * @param end The point to be potentially snapped.
    * @return The new snapped point if snapping occurred, or the original end point if no snapping was applied.
@@ -224,9 +225,12 @@ class AeSysView : public CView {
    * This method is called by the MFC framework when the document or other views call UpdateAllViews.
    * The hint parameter can be used to determine what type of update occurred and respond accordingly.
    * @param sender The view that sent the update notification, or nullptr if the document sent the notification.
-   * @param hint An application-defined value that indicates the type of update. This can be used to optimize the response.
-   * @param hintObject An optional pointer to an object that provides additional information about the update. The interpretation of this pointer depends on the value of hint.
-   * @note Override this function to handle specific update notifications and refresh the view as needed. If you do not handle a particular hint, call the base class implementation to ensure default processing occurs.
+   * @param hint An application-defined value that indicates the type of update. This can be used to optimize the
+   * response.
+   * @param hintObject An optional pointer to an object that provides additional information about the update. The
+   * interpretation of this pointer depends on the value of hint.
+   * @note Override this function to handle specific update notifications and refresh the view as needed. If you do not
+   * handle a particular hint, call the base class implementation to ensure default processing occurs.
    */
   void OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) override;
 
@@ -284,8 +288,8 @@ class AeSysView : public CView {
 
   /**
    * @brief Handle mouse wheel events for zooming in and out.
-   * This function is called when the mouse wheel is scrolled. It checks the zDelta value to determine the direction of the scroll
-   * and calls the appropriate zoom function (zoom in or zoom out).
+   * This function is called when the mouse wheel is scrolled. It checks the zDelta value to determine the direction of
+   * the scroll and calls the appropriate zoom function (zoom in or zoom out).
    * @param flags Indicates whether various virtual keys are down.
    * @param zDelta The distance the wheel is rotated, expressed in multiples of WHEEL_DELTA.
    * @param point The current position of the cursor, in screen coordinates.
@@ -321,10 +325,10 @@ class AeSysView : public CView {
   /** @brief Disables rubber banding by erasing the current rubber band from the view.
    * @note This function checks if rubber banding is currently active (i.e., m_rubberbandType is not None).
    * If it is active, it retrieves the device context for the view and sets the drawing mode to R2_XORPEN,
-   * which allows for erasing the rubber band by drawing it again. Depending on the type of rubber band (Lines or Rectangles),
-   * it either draws a line or a rectangle using the logical begin and end points of the rubber band.
-   * After erasing the rubber band, it restores the original drawing mode and releases the device context.
-   * Finally, it sets m_rubberbandType to None to indicate that rubber banding is no longer active.
+   * which allows for erasing the rubber band by drawing it again. Depending on the type of rubber band (Lines or
+   * Rectangles), it either draws a line or a rectangle using the logical begin and end points of the rubber band. After
+   * erasing the rubber band, it restores the original drawing mode and releases the device context. Finally, it sets
+   * m_rubberbandType to None to indicate that rubber banding is no longer active.
    */
   void RubberBandingDisable();
   /** @brief Initializes rubber banding for a given point and type.
@@ -332,7 +336,8 @@ class AeSysView : public CView {
    * @param type The type of rubber banding (Lines or Rectangles).
    * @note This function transforms the given point from world coordinates to view coordinates.
    * If the transformed point is within the view, it sets the starting point for rubber banding and initializes
-   * the logical begin and end points to the projected view coordinates. The rubber banding type is also set to the specified type.
+   * the logical begin and end points to the projected view coordinates. The rubber banding type is also set to the
+   * specified type.
    */
   void RubberBandingStartAtEnable(EoGePoint3d point, ERubs type);
 
@@ -341,7 +346,9 @@ class AeSysView : public CView {
 
   /** @brief Retrieves the current cursor position in world coordinates.
    * @return The current cursor position world coordinates.
-   * @note This function gets the current cursor position in device coordinates, converts it to world coordinates using the inverse of the model-view   matrix, and snaps it to the grid if necessary. It also updates the member variables that store the cursor position in both device and world   coordinates.
+   * @note This function gets the current cursor position in device coordinates, converts it to world coordinates using
+   * the inverse of the model-view   matrix, and snaps it to the grid if necessary. It also updates the member variables
+   * that store the cursor position in both device and world   coordinates.
    */
   [[nodiscard]] EoGePoint3d GetCursorPosition();
 
@@ -381,7 +388,8 @@ class AeSysView : public CView {
    * The z-coordinate of the point may be ignored depending on the context in which this function is called.
    * @param deviceContext The device context to use for drawing the pixel.
    * @param colorReference The color to set the pixel to, specified as a COLORREF value.
-   * @param point The 3D point representing the location of the pixel to set. The z-coordinate may be ignored depending on the context.
+   * @param point The 3D point representing the location of the pixel to set. The z-coordinate may be ignored depending
+   * on the context.
    */
   void DisplayPixel(CDC* deviceContext, COLORREF colorReference, const EoGePoint3d& point);
 
@@ -409,8 +417,8 @@ class AeSysView : public CView {
   /** @brief This method handles the rendering of the background image in the view.
    *
    * It calculates the appropriate portion of the
-   * background image to display based on the current view and overview transforms, and then stretches that portion to fit
-   * the viewport. It uses GDI functions to perform the drawing, ensuring that the palette is correctly selected and
+   * background image to display based on the current view and overview transforms, and then stretches that portion to
+   * fit the viewport. It uses GDI functions to perform the drawing, ensuring that the palette is correctly selected and
    * realized for accurate color representation.
    * @param deviceContext The device context to draw on, typically obtained from the view's OnDraw method.
    */
@@ -419,13 +427,13 @@ class AeSysView : public CView {
   [[nodiscard]] EoGeVector3d GetRelPos() const { return m_vRelPos; }
   [[nodiscard]] bool ViewTrueTypeFonts() const { return m_ViewTrueTypeFonts; }
 
-  /** @brief Displays the odometer information showing the relative position from the grid origin to the current cursor position, 
-   * and optionally the line length and angle if in rubber band line mode.
+  /** @brief Displays the odometer information showing the relative position from the grid origin to the current cursor
+   * position, and optionally the line length and angle if in rubber band line mode.
    */
   void DisplayOdometer();
 
   /** Streams a sequence of characters as WM_KEYDOWN or WM_CHAR window messages.
-  */
+   */
   void DoCustomMouseClick(const CString& characters);
   void DoCameraRotate(int iDir);
   void DoWindowPan(double ratio);
@@ -476,17 +484,17 @@ class AeSysView : public CView {
   [[nodiscard]] double OverviewVExt() { return m_OverviewViewTransform.VExtent(); }
   [[nodiscard]] double OverviewVMin() { return m_OverviewViewTransform.VMin(); }
   [[nodiscard]] CPoint ProjectToClient(const EoGePoint4d& ndcPoint) { return m_Viewport.ProjectToClient(ndcPoint); }
-  
+
   void ProjectToClient(CPoint* clientPoints, int numberOfPoints, EoGePoint4d* ndcPoints) {
     m_Viewport.ProjectToClient(clientPoints, numberOfPoints, ndcPoints);
   }
-  
+
   void ProjectToClient(CPoint* clientPoints, EoGePoint4dArray& ndcPoints) {
     m_Viewport.ProjectToClient(clientPoints, ndcPoints);
   }
-  
+
   void DoProjectionInverse(EoGePoint3d& pt) { m_Viewport.DoProjectionInverse(pt); }
-  
+
   [[nodiscard]] double HeightInInches() { return m_Viewport.HeightInInches(); }
   [[nodiscard]] double WidthInInches() { return m_Viewport.WidthInInches(); }
   void ViewportPopActive();
@@ -522,7 +530,7 @@ class AeSysView : public CView {
   void MendPrimitiveReturn();
 
   /// Annotate Mode Interface ///////////////////////////////////////////////////
- private:                   // Annotate and Dimension interface
+ private:  // Annotate and Dimension interface
   double m_GapSpaceFactor;  // Edge space factor 25 percent of character height
   double m_CircleRadius;
   int m_EndItemType;
@@ -602,7 +610,7 @@ class AeSysView : public CView {
   EoGeLine m_currentLeftLine;
   EoGeLine m_currentRightLine;
   EoGeLine m_previousReferenceLine;  // Previous line used as reference for parallel line and corner construction
-  EoGeLine m_currentReferenceLine;   // Current line used as reference for parallel line and corner construction
+  EoGeLine m_currentReferenceLine;  // Current line used as reference for parallel line and corner construction
   EoDbGroup* m_assemblyGroup;
   EoDbGroup* m_endSectionGroup;
   EoDbGroup* m_beginSectionGroup;
@@ -665,7 +673,8 @@ class AeSysView : public CView {
   afx_msg void OnNodalModeToLine();
   afx_msg void OnNodalModeToPolygon();
   afx_msg void OnNodalModeEmpty();
-  /// @brief Handles the engagement of nodal mode by updating the nodal list with all points from the currently engaged primitive.
+  /// @brief Handles the engagement of nodal mode by updating the nodal list with all points from the currently engaged
+  /// primitive.
   afx_msg void OnNodalModeEngage();
   afx_msg void OnNodalModeReturn();
   afx_msg void OnNodalModeEscape();
@@ -824,9 +833,9 @@ class AeSysView : public CView {
       EoDbLine* testLinePrimitive, double angularTolerance, EoGeLine& leftLine, EoGeLine& rightLine);
   /// <summary>Generates an end-cap.</summary>
   /// <remarks>
-  ///End-caps are groups containing a line and a point.  The line defines the orientation of the end-cap.
-  ///The point contains information about the cross-section (width, depth)
-  ///and optionally a number which might be used for something like cfm.
+  /// End-caps are groups containing a line and a point.  The line defines the orientation of the end-cap.
+  /// The point contains information about the cross-section (width, depth)
+  /// and optionally a number which might be used for something like cfm.
   /// </remarks>
   /// <param name="beginPoint">begin point of the line</param>
   /// <param name="endPoint">end point of the line</param>
@@ -862,8 +871,9 @@ class AeSysView : public CView {
    *  @param existingSectionDepth
    *  @param group
    *  @return Center point of end cap of exit transition.
-   *  @note Requires current operation to be a regular rectangular section. The selection based on the current cursor location
-   *  identifies the second section, and the direction from the point to the cursor location defines the direction for the two elbow turns.
+   *  @note Requires current operation to be a regular rectangular section. The selection based on the current cursor
+   * location identifies the second section, and the direction from the point to the cursor location defines the
+   * direction for the two elbow turns.
    *  @note Placeholder until implementation is return of (0.0, 0.0, 0.0)
    */
   [[nodiscard]] EoGePoint3d GenerateBullheadTee(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine,
@@ -907,12 +917,14 @@ class AeSysView : public CView {
   void GenerateLineWithFittings(
       int beginType, const EoGePoint3d& beginPoint, int endType, const EoGePoint3d& endPoint, EoDbGroup* group);
 
-  /** @brief Generates a tick mark at a specified distance along a line defined by two points, and adds it to the given group.
+  /** @brief Generates a tick mark at a specified distance along a line defined by two points, and adds it to the given
+   * group.
    * @param begin The starting point of the line segment.
    * @param end The ending point of the line segment.
    * @param distance The distance from the beginPoint along the line segment where the tick mark should be placed.
    * @param group The group to which the generated tick mark will be added.
-   * @return true if the tick mark was successfully generated and added to the group; false otherwise (e.g., if the distance is greater than the length of the line segment).
+   * @return true if the tick mark was successfully generated and added to the group; false otherwise (e.g., if the
+   * distance is greater than the length of the line segment).
    */
   bool GenerateTickMark(const EoGePoint3d& begin, const EoGePoint3d& end, double distance, EoDbGroup* group) const;
   void DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section);
@@ -958,11 +970,14 @@ class AeSysView : public CView {
   void DoPowerModeConductor(std::uint16_t conductorType);
 
  public:
-  /// @brief Updates the status bar mode line display with mode-specific operation information and optionally draws the pane text in the active view.
+  /// @brief Updates the status bar mode line display with mode-specific operation information and optionally draws the
+  /// pane text in the active view.
   void ModeLineDisplay();
 
-  /// @brief Highlights a mode line operation by setting its text color to red in the status bar and optionally in the active view.
-  /// @param command The operation command identifier to highlight. A value of 0 indicates no operation should be highlighted.
+  /// @brief Highlights a mode line operation by setting its text color to red in the status bar and optionally in the
+  /// active view.
+  /// @param command The operation command identifier to highlight. A value of 0 indicates no operation should be
+  /// highlighted.
   /// @return The command identifier that was highlighted, or 0 if no operation was highlighted.
   [[nodiscard]] std::uint16_t ModeLineHighlightOp(std::uint16_t command);
 

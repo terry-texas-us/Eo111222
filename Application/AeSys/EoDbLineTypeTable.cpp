@@ -14,66 +14,34 @@
 
 namespace {
 
-enum class ElementType {Text, Shape };
+enum class ElementType { Text, Shape };
 
 using SymbolContent = std::variant<int, std::wstring>;
 struct EoDbLineTypeSymbol {
-  double length;         // Dash length (often negative for the space occupied by the element)
-  double scale;          // Scale factor (S value)
-  double rotation;       // Rotation angle (R or U value)
-  double xOffset;        // X offset
-  double yOffset;        // Y offset
-  std::wstring file;     // Text style name (e.g., "Standard" or SHP/SHX file name)
-  SymbolContent content; // Text string (e.g. "HW" or shape number)
-  ElementType type;      // Text or Shape
+  double length;  // Dash length (often negative for the space occupied by the element)
+  double scale;  // Scale factor (S value)
+  double rotation;  // Rotation angle (R or U value)
+  double xOffset;  // X offset
+  double yOffset;  // Y offset
+  std::wstring file;  // Text style name (e.g., "Standard" or SHP/SHX file name)
+  SymbolContent content;  // Text string (e.g. "HW" or shape number)
+  ElementType type;  // Text or Shape
   int absoluteRotation;  // 0 for relative rotation (No), 1 for absolute
-  int upright;           // 0 for no upright orientation (No), 1 for upright (keeps text readable)
+  int upright;  // 0 for no upright orientation (No), 1 for upright (keeps text readable)
 };
 
 constexpr std::uint16_t maxNumberOfDashElementsDefault{8};
 
-const std::pair<const wchar_t*, const wchar_t*> legacyLineTypes[] = {{L"Null", L"0"},
-                                                                     {L"Continuous", L"Continuous"},
-                                                                     {L"Dash2", L"2"},
-                                                                     {L"Dash", L"3"},
-                                                                     {L"DashX2", L"4"},
-                                                                     {L"Center2", L"5"},
-                                                                     {L"DashX2-dot", L"6"},
-                                                                     {L"Divide2", L"7"},
-                                                                     {L"DashX2-triple-dot", L"8"},
-                                                                     {L"Dot", L"9"},
-                                                                     {L"Center", L"10"},
-                                                                     {L"DashX4-dot", L"11"},
-                                                                     {L"Divide", L"12"},
-                                                                     {L"DashX4-triple-dot", L"13"},
-                                                                     {L"CenterX2", L"14"},
-                                                                     {L"DashX8-dot", L"15"},
-                                                                     {L"DivideX2", L"16"},
-                                                                     {L"DashX8-triple-dot", L"17"},
-                                                                     {L"BORDER", L"BORDER"},
-                                                                     {L"BORDER2", L"BORDER2"},
-                                                                     {L"BORDERX2", L"BORDERX2"},
-                                                                     {L"CENTER", L"CENTER"},
-                                                                     {L"CENTER2", L"CENTER2"},
-                                                                     {L"CENTERX2", L"CENTERX2"},
-                                                                     {L"DASHDOT", L"DASHDOT"},
-                                                                     {L"DASHDOT2", L"DASHDOT2"},
-                                                                     {L"DASHDOTX2", L"DASHDOTX2"},
-                                                                     {L"DASHED", L"DASHED"},
-                                                                     {L"DASHED2", L"DASHED2"},
-                                                                     {L"DASHEDX2", L"DASHEDX2"},
-                                                                     {L"DIVIDE", L"DIVIDE"},
-                                                                     {L"DIVIDE2", L"DIVIDE2"},
-                                                                     {L"DIVIDEX2", L"DIVIDEX2"},
-                                                                     {L"DOT", L"DOT"},
-                                                                     {L"DOT2", L"DOT2"},
-                                                                     {L"DOTX2", L"DOTX2"},
-                                                                     {L"HIDDEN", L"HIDDEN"},
-                                                                     {L"HIDDEN2", L"HIDDEN2"},
-                                                                     {L"HIDDENX2", L"HIDDENX2"},
-                                                                     {L"PHANTOM", L"PHANTOM"},
-                                                                     {L"PHANTOM2", L"PHANTOM2"},
-                                                                     {L"PHANTOMX2", L"PHANTOMX2"}};
+const std::pair<const wchar_t*, const wchar_t*> legacyLineTypes[] = {{L"Null", L"0"}, {L"Continuous", L"Continuous"},
+    {L"Dash2", L"2"}, {L"Dash", L"3"}, {L"DashX2", L"4"}, {L"Center2", L"5"}, {L"DashX2-dot", L"6"}, {L"Divide2", L"7"},
+    {L"DashX2-triple-dot", L"8"}, {L"Dot", L"9"}, {L"Center", L"10"}, {L"DashX4-dot", L"11"}, {L"Divide", L"12"},
+    {L"DashX4-triple-dot", L"13"}, {L"CenterX2", L"14"}, {L"DashX8-dot", L"15"}, {L"DivideX2", L"16"},
+    {L"DashX8-triple-dot", L"17"}, {L"BORDER", L"BORDER"}, {L"BORDER2", L"BORDER2"}, {L"BORDERX2", L"BORDERX2"},
+    {L"CENTER", L"CENTER"}, {L"CENTER2", L"CENTER2"}, {L"CENTERX2", L"CENTERX2"}, {L"DASHDOT", L"DASHDOT"},
+    {L"DASHDOT2", L"DASHDOT2"}, {L"DASHDOTX2", L"DASHDOTX2"}, {L"DASHED", L"DASHED"}, {L"DASHED2", L"DASHED2"},
+    {L"DASHEDX2", L"DASHEDX2"}, {L"DIVIDE", L"DIVIDE"}, {L"DIVIDE2", L"DIVIDE2"}, {L"DIVIDEX2", L"DIVIDEX2"},
+    {L"DOT", L"DOT"}, {L"DOT2", L"DOT2"}, {L"DOTX2", L"DOTX2"}, {L"HIDDEN", L"HIDDEN"}, {L"HIDDEN2", L"HIDDEN2"},
+    {L"HIDDENX2", L"HIDDENX2"}, {L"PHANTOM", L"PHANTOM"}, {L"PHANTOM2", L"PHANTOM2"}, {L"PHANTOMX2", L"PHANTOMX2"}};
 
 constexpr std::uint16_t numberOfLegacyLineTypes{size(legacyLineTypes)};
 }  // namespace
@@ -213,7 +181,9 @@ void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
         maxNumberOfDashElements = numberOfDashElements;
       }
       nextToken = 0;
-      for (std::uint16_t i = 0; i < numberOfDashElements; i++) { dashLengths[i] = _wtof(inputLine.Tokenize(L",\n", nextToken)); }
+      for (std::uint16_t i = 0; i < numberOfDashElements; i++) {
+        dashLengths[i] = _wtof(inputLine.Tokenize(L",\n", nextToken));
+      }
       EoDbLineType* lineType;
       if (!Lookup(name, lineType)) {
         m_MapLineTypes.SetAt(name, new EoDbLineType(label, name, comment, numberOfDashElements, dashLengths.data()));
@@ -241,9 +211,9 @@ void EoDbLineTypeTable::RemoveAll() {
 }
 
 void EoDbLineTypeTable::RemoveUnused() {
-  //Note: test new logic for RemoveUnused required since LookupName is gone
-  //int i = m_LineTypes.GetSize();
-  //while (--i != 0) {
+  // Note: test new logic for RemoveUnused required since LookupName is gone
+  // int i = m_LineTypes.GetSize();
+  // while (--i != 0) {
   //	EoDbLineType* LineType = m_LineTypes[i];
   //	std::int16_t LineTypeIndex = LookupName((LPCWSTR) LineType->Name());
   //	if (ReferenceCount(LineTypeIndex) != 0 || i < 10) {
@@ -251,5 +221,5 @@ void EoDbLineTypeTable::RemoveUnused() {
   //		break;
   //	}
   //	delete LineType;
-  //}
+  // }
 }

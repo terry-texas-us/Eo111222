@@ -46,15 +46,15 @@ class EoDbLine : public EoDbPrimitive {
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;
   EoGePoint3d GetControlPoint() noexcept override { return m_line.Midpoint(); }
-  
+
   /** @brief Gets the extents of the line in the current view.
    * @param view The view for which to get the extents.
-   * @param[in/out] minPoint Receives the minimum point of the extents. 
+   * @param[in/out] minPoint Receives the minimum point of the extents.
    * @param[in/out] maxPoint Receives the maximum point of the extents.
    * @param transformMatrix The transformation matrix to apply to the points before calculating the extents.
    */
   void GetExtents(AeSysView* view, EoGePoint3d& minPoint, EoGePoint3d& maxPoint, const EoGeTransformMatrix&) override;
-  
+
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive* primitive) override;
   bool Is(std::uint16_t wType) noexcept override { return wType == EoDb::kLinePrimitive; }
