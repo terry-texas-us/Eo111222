@@ -20,7 +20,6 @@ namespace {
  * @return true if the string was successfully written, false otherwise.
  */
 bool WriteUtf8String(dxfWriter* writer, int code, const std::string& str, DRW::Version ver) {
-  if (ver == DRW::Version::AC1009) { return writer->WriteUtf8Caps(code, str); }
   return writer->WriteUtf8String(code, str);
 }
 }  // namespace

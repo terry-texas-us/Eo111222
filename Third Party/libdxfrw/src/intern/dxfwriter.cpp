@@ -11,13 +11,6 @@ bool dxfWriter::WriteUtf8String(int code, std::string text) {
   return WriteString(code, t);
 }
 
-bool dxfWriter::WriteUtf8Caps(int code, std::string text) {
-  std::string strname = text;
-  std::transform(strname.begin(), strname.end(), strname.begin(), ::toupper);
-  std::string t = m_encoder.FromUtf8(strname);
-  return WriteString(code, t);
-}
-
 bool dxfWriterBinary::WriteString(int code, std::string_view text) {
   char bufcode[2]{};
   bufcode[0] = code & 0xFF;

@@ -24,7 +24,6 @@ class dxfWriter {
   std::string FromUtf8String(std::string t) { return m_encoder.FromUtf8(t); }
 
   bool WriteUtf8String(int code, std::string text);
-  bool WriteUtf8Caps(int code, std::string text);
 
  protected:
   std::ofstream* m_fileStream;
