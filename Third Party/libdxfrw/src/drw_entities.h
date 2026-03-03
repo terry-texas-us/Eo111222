@@ -125,7 +125,7 @@ class DRW_Entity {
    * @param extrusionDirection The extrusion direction vector (N) used in the transformation.
    * @param[out] point A DRW_Coord representing the original point to be transformed. The transformed coordinates will be stored back in this variable.
    */
-  void ExtrudePoint(const DRW_Coord& extrusionDirection, DRW_Coord& point) const noexcept;
+  void ExtrudePointInPlace(const DRW_Coord& extrusionDirection, DRW_Coord& point) const noexcept;
 
  private:
   // Transient cache for ApplyExtrusion() — deliberately NOT copied or cleared.
@@ -258,15 +258,15 @@ class DRW_Arc : public DRW_Circle {
   // center point in OCS
   const DRW_Coord& Center() const { return m_firstPoint; }
   // the radius of the circle
-  [[nodiscard]] double Radius() const { return m_radius; }
+  [[nodiscard]] double Radius() const noexcept { return m_radius; }
   // start angle in radians
-  [[nodiscard]] double StartAngle() const { return m_startAngle; }
+  [[nodiscard]] double StartAngle() const noexcept { return m_startAngle; }
   // end angle in radians
-  [[nodiscard]] double EndAngle() const { return m_endAngle; }
+  [[nodiscard]] double EndAngle() const noexcept { return m_endAngle; }
   // thickness
-  [[nodiscard]] double Thickness() const { return m_thickness; }
+  [[nodiscard]] double Thickness() const noexcept { return m_thickness; }
   // extrusion
-  [[nodiscard]] const DRW_Coord& ExtrusionDirection() const { return m_extrusionDirection; }
+  [[nodiscard]] const DRW_Coord& ExtrusionDirection() const noexcept { return m_extrusionDirection; }
 
  protected:
   // interpret code in dxf reading process or dispatch to inherited class

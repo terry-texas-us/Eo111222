@@ -105,7 +105,7 @@ void DRW_Entity::CalculateArbitraryAxis(const DRW_Coord& extrusionDirection) {
   extAxisY.unitize();
 }
 
-void DRW_Entity::ExtrudePoint(const DRW_Coord& extrusionDirection, DRW_Coord& point) const noexcept {
+void DRW_Entity::ExtrudePointInPlace(const DRW_Coord& extrusionDirection, DRW_Coord& point) const noexcept {
   double px = (extAxisX.x * point.x) + (extAxisY.x * point.y) + (extrusionDirection.x * point.z);
   double py = (extAxisX.y * point.x) + (extAxisY.y * point.y) + (extrusionDirection.y * point.z);
   double pz = (extAxisX.z * point.x) + (extAxisY.z * point.y) + (extrusionDirection.z * point.z);
@@ -311,7 +311,7 @@ void DRW_Circle::ApplyExtrusion() {
     //NOTE: Commenting these out causes the the arcs being tested to be located
     //on the other side of the y axis (all x dimensions are negated).
     CalculateArbitraryAxis(m_extrusionDirection);
-    ExtrudePoint(m_extrusionDirection, m_firstPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_firstPoint);
   }
 }
 
@@ -381,7 +381,7 @@ void DRW_Ellipse::ParseCode(int code, dxfReader* reader) {
 void DRW_Ellipse::ApplyExtrusion() {
   if (m_haveExtrusion) {
     CalculateArbitraryAxis(m_extrusionDirection);
-    ExtrudePoint(m_extrusionDirection, m_secondPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_secondPoint);
     double intialparam = m_startParam;
     if (m_extrusionDirection.z < 0.) {
       m_startParam = DRW::TwoPi - m_endParam;
@@ -449,10 +449,10 @@ void DRW_Ellipse::ToPolyline(DRW_Polyline* pol, int parts) {
 void DRW_Trace::ApplyExtrusion() {
   if (m_haveExtrusion) {
     CalculateArbitraryAxis(m_extrusionDirection);
-    ExtrudePoint(m_extrusionDirection, m_firstPoint);
-    ExtrudePoint(m_extrusionDirection, m_secondPoint);
-    ExtrudePoint(m_extrusionDirection, m_thirdPoint);
-    ExtrudePoint(m_extrusionDirection, m_fourthPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_firstPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_secondPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_thirdPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_fourthPoint);
   }
 }
 
@@ -551,7 +551,7 @@ void DRW_LWPolyline::ApplyExtrusion() {
     for (unsigned int i = 0; i < vertlist.size(); i++) {
       auto* vert = vertlist.at(i);
       DRW_Coord v(vert->x, vert->y, elevation);
-      ExtrudePoint(extPoint, v);
+      ExtrudePointInPlace(extPoint, v);
       vert->x = v.x;
       vert->y = v.y;
     }
