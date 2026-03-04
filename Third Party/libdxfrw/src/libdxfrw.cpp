@@ -638,11 +638,8 @@ bool dxfRW::WritePolyline(DRW_Polyline* ent) {
   m_writer->WriteString(0, "POLYLINE");
   WriteEntity(ent);
 
-  if ((ent->m_polylineFlag & 8) || (ent->m_polylineFlag & 16)) {
-    m_writer->WriteString(100, "AcDb2dPolyline");
-  } else {
-    m_writer->WriteString(100, "AcDb3dPolyline");
-  }
+  const bool is3dPolyline = (ent->m_polylineFlag & (8 | 16 | 64)) != 0;
+  m_writer->WriteString(100, is3dPolyline ? "AcDb3dPolyline" : "AcDb2dPolyline");
 
   m_writer->WriteDouble(10, 0.0);
   m_writer->WriteDouble(20, 0.0);
@@ -665,16 +662,26 @@ bool dxfRW::WritePolyline(DRW_Polyline* ent) {
     m_writer->WriteDouble(230, crd.z);
   }
 
+  // VERTEX entities
   int vertexnum = static_cast<int>(ent->m_vertices.size());
   for (int i = 0; i < vertexnum; i++) {
-    DRW_Vertex* vertex = ent->m_vertices.at(i);
+    auto* vertex = ent->m_vertices.at(i);
     m_writer->WriteString(0, "VERTEX");
-    WriteEntity(ent);
-    m_writer->WriteString(100, "AcDbVertex");
+    WriteEntity(vertex);
+    if (vertex->m_vertexFlags & 128) {
+      m_writer->WriteString(100, "AcDbPolyFaceMeshVertex");
+    } else if (vertex->m_vertexFlags & 64) {
+      m_writer->WriteString(100, "AcDbPolygonMeshVertex");
+    } else if (vertex->m_vertexFlags & 32) {
+      m_writer->WriteString(100, "AcDb3dPolylineVertex");
+    } else {
+      m_writer->WriteString(100, "AcDb2dVertex");
+    }
+
     if ((vertex->m_vertexFlags & 128) != 0 && (vertex->m_vertexFlags & 64) == 0) {
-      m_writer->WriteDouble(10, 0);
-      m_writer->WriteDouble(20, 0);
-      m_writer->WriteDouble(30, 0);
+      m_writer->WriteDouble(10, 0.0);
+      m_writer->WriteDouble(20, 0.0);
+      m_writer->WriteDouble(30, 0.0);
     } else {
       m_writer->WriteDouble(10, vertex->m_firstPoint.x);
       m_writer->WriteDouble(20, vertex->m_firstPoint.y);
@@ -682,7 +689,7 @@ bool dxfRW::WritePolyline(DRW_Polyline* ent) {
     }
     if (vertex->m_startingWidth != 0) { m_writer->WriteDouble(40, vertex->m_startingWidth); }
     if (vertex->m_endingWidth != 0) { m_writer->WriteDouble(41, vertex->m_endingWidth); }
-    if (vertex->m_bulge != 0) { m_writer->WriteDouble(42, vertex->m_bulge); }
+    if (vertex->m_bulge != 0.0) { m_writer->WriteDouble(42, vertex->m_bulge); }
     if (vertex->m_vertexFlags != 0) { m_writer->WriteInt16(70, vertex->m_vertexFlags); }
     if ((vertex->m_vertexFlags & 2) != 0) { m_writer->WriteDouble(50, vertex->m_curveFitTangentDirection); }
     if ((vertex->m_vertexFlags & 128) != 0) {
@@ -690,11 +697,20 @@ bool dxfRW::WritePolyline(DRW_Polyline* ent) {
       if (vertex->m_polyfaceMeshVertexIndex2 != 0) { m_writer->WriteInt16(72, vertex->m_polyfaceMeshVertexIndex2); }
       if (vertex->m_polyfaceMeshVertexIndex3 != 0) { m_writer->WriteInt16(73, vertex->m_polyfaceMeshVertexIndex3); }
       if (vertex->m_polyfaceMeshVertexIndex4 != 0) { m_writer->WriteInt16(74, vertex->m_polyfaceMeshVertexIndex4); }
+      
       if ((vertex->m_vertexFlags & 64) == 0) { m_writer->WriteInt32(91, vertex->m_identifier); }
     }
   }
+
+  // SEQEND entity
+  DRW_Point seqendProxy;
+  seqendProxy.m_layer = ent->m_layer;
+  seqendProxy.m_lineType = ent->m_lineType;
+  seqendProxy.m_color = ent->m_color;
+  seqendProxy.m_lineWeight = ent->m_lineWeight;
   m_writer->WriteString(0, "SEQEND");
-  WriteEntity(ent);
+  WriteEntity(&seqendProxy);
+  if (m_version > DRW::Version::AC1014) { m_writer->WriteString(100, "AcDbSeqend"); }
   return true;
 }
 
