@@ -439,7 +439,7 @@ void DRW_Ellipse::ToPolyline(DRW_Polyline* pol, int parts) {
     pol->addVertex(DRW_Vertex(x, y, 0.0, 0.0));
     curAngle = (++i) * incAngle;
   } while (i < parts);
-  if (fabs(m_endParam - m_startParam - DRW::TwoPi) < 1.0e-10) { pol->flags = 1; }
+  if (fabs(m_endParam - m_startParam - DRW::TwoPi) < 1.0e-10) { pol->m_polylineFlag = 1; }
   pol->m_layer = this->m_layer;
   pol->m_lineType = this->m_lineType;
   pol->m_color = this->m_color;
@@ -676,28 +676,28 @@ void DRW_MText::UpdateAngle() {
 void DRW_Polyline::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 70:
-      flags = reader->GetInt32();
+      m_polylineFlag = reader->GetInt32();
       break;
     case 40:
-      defstawidth = reader->GetDouble();
+      m_defaultStartWidth = reader->GetDouble();
       break;
     case 41:
-      defendwidth = reader->GetDouble();
+      m_defaultEndWidth = reader->GetDouble();
       break;
     case 71:
-      vertexcount = reader->GetInt32();
+      m_polygonMeshVertexCountM = reader->GetInt32();
       break;
     case 72:
-      facecount = reader->GetInt32();
+      m_polygonMeshVertexCountN = reader->GetInt32();
       break;
     case 73:
-      smoothM = reader->GetInt32();
+      m_smoothSurfaceDensityM = reader->GetInt32();
       break;
     case 74:
-      smoothN = reader->GetInt32();
+      m_smoothSurfaceDensityN = reader->GetInt32();
       break;
     case 75:
-      curvetype = reader->GetInt32();
+      m_curvesAndSmoothSurfaceType = reader->GetInt32();
       break;
     default:
       DRW_Point::ParseCode(code, reader);
@@ -708,34 +708,34 @@ void DRW_Polyline::ParseCode(int code, dxfReader* reader) {
 void DRW_Vertex::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 70:
-      flags = reader->GetInt32();
+      m_vertexFlags = reader->GetInt32();
       break;
     case 40:
-      stawidth = reader->GetDouble();
+      m_startingWidth = reader->GetDouble();
       break;
     case 41:
-      endwidth = reader->GetDouble();
+      m_endingWidth = reader->GetDouble();
       break;
     case 42:
-      bulge = reader->GetDouble();
+      m_bulge = reader->GetDouble();
       break;
     case 50:
-      tgdir = reader->GetDouble();
+      m_curveFitTangentDirection = reader->GetDouble();
       break;
     case 71:
-      vindex1 = reader->GetInt32();
+      m_polyfaceMeshVertexIndex1 = reader->GetInt32();
       break;
     case 72:
-      vindex2 = reader->GetInt32();
+      m_polyfaceMeshVertexIndex2 = reader->GetInt32();
       break;
     case 73:
-      vindex3 = reader->GetInt32();
+      m_polyfaceMeshVertexIndex3 = reader->GetInt32();
       break;
     case 74:
-      vindex4 = reader->GetInt32();
+      m_polyfaceMeshVertexIndex4 = reader->GetInt32();
       break;
     case 91:
-      identifier = reader->GetInt32();
+      m_identifier = reader->GetInt32();
       break;
     default:
       DRW_Point::ParseCode(code, reader);

@@ -583,37 +583,27 @@ class DRW_Vertex : public DRW_Point {
   friend class dxfRW;
 
  public:
-  DRW_Vertex() {
-    m_entityType = DRW::VERTEX;
-    stawidth = endwidth = bulge = 0;
-    vindex1 = vindex2 = vindex3 = vindex4 = 0;
-    flags = identifier = 0;
-  }
-  DRW_Vertex(double sx, double sy, double sz, double b) {
-    stawidth = endwidth = 0;
-    vindex1 = vindex2 = vindex3 = vindex4 = 0;
-    flags = identifier = 0;
-    m_firstPoint.x = sx;
-    m_firstPoint.y = sy;
-    m_firstPoint.z = sz;
-    bulge = b;
+  DRW_Vertex() noexcept : DRW_Point{DRW::VERTEX} {}
+
+  DRW_Vertex(double sx, double sy, double sz, double bulge) noexcept : DRW_Point{DRW::VERTEX}, m_bulge{bulge} {
+    m_firstPoint = {sx, sy, sz};
   }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  double stawidth;  // Start width, code 40
-  double endwidth;  // End width, code 41
-  double bulge;  // bulge, code 42
+  double m_startingWidth{};  // Group code 40
+  double m_endingWidth{};  // Group code 41
+  double m_bulge{};  // Group code 42
 
-  int flags;  // vertex flag, code 70, default 0
-  double tgdir{};  // curve fit tangent direction, code 50
-  int vindex1;  // polyface mesh vertex index, code 71, default 0
-  int vindex2;  // polyface mesh vertex index, code 72, default 0
-  int vindex3;  // polyface mesh vertex index, code 73, default 0
-  int vindex4;  // polyface mesh vertex index, code 74, default 0
-  int identifier;  // vertex identifier, code 91, default 0
+  int m_vertexFlags{};  // Group code 70
+  double m_curveFitTangentDirection{};  // Group code 50
+  int m_polyfaceMeshVertexIndex1{};  // Group code 71
+  int m_polyfaceMeshVertexIndex2{};  // Group code 72
+  int m_polyfaceMeshVertexIndex3{};  // Group code 73
+  int m_polyfaceMeshVertexIndex4{};  // Group code 74
+  int m_identifier{};  // vertex identifier, code 91, default 0
 };
 
 class DRW_Polyline : public DRW_Point {
@@ -622,41 +612,50 @@ class DRW_Polyline : public DRW_Point {
  public:
   DRW_Polyline() {
     m_entityType = DRW::POLYLINE;
-    defstawidth = defendwidth = 0.0;
-    m_firstPoint.x = m_firstPoint.y = 0.0;
-    flags = vertexcount = facecount = 0;
-    smoothM = smoothN = curvetype = 0;
+    m_defaultStartWidth = 0.0;
+    m_defaultEndWidth = 0.0;
+    m_firstPoint.x = 0.0;
+    m_firstPoint.y = 0.0;
+    m_polylineFlag = 0;
+    m_polygonMeshVertexCountM = 0;
+    m_polygonMeshVertexCountN = 0;
+    m_smoothSurfaceDensityM = 0;
+    m_smoothSurfaceDensityN = 0;
+    m_curvesAndSmoothSurfaceType = 0;
   }
+
   ~DRW_Polyline() {
-    for (DRW_Vertex* vert : vertlist) { delete vert; }
-    vertlist.clear();
+    for (DRW_Vertex* vert : m_vertices) { delete vert; }
+    m_vertices.clear();
   }
+
   void addVertex(DRW_Vertex v) {
-    DRW_Vertex* vert = new DRW_Vertex();
+    auto* vert = new DRW_Vertex();
     vert->m_firstPoint.x = v.m_firstPoint.x;
     vert->m_firstPoint.y = v.m_firstPoint.y;
     vert->m_firstPoint.z = v.m_firstPoint.z;
-    vert->stawidth = v.stawidth;
-    vert->endwidth = v.endwidth;
-    vert->bulge = v.bulge;
-    vertlist.push_back(vert);
+    vert->m_startingWidth = v.m_startingWidth;
+    vert->m_endingWidth = v.m_endingWidth;
+    vert->m_bulge = v.m_bulge;
+    m_vertices.push_back(vert);
   }
-  void appendVertex(DRW_Vertex* v) { vertlist.push_back(v); }
+
+  void appendVertex(DRW_Vertex* v) { m_vertices.push_back(v); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  int flags;  // polyline flag, code 70, default 0
-  double defstawidth;  // Start width, code 40, default 0
-  double defendwidth;  // End width, code 41, default 0
-  int vertexcount;  // polygon mesh M vertex or  polyface vertex num, code 71, default 0
-  int facecount;  // polygon mesh N vertex or  polyface face num, code 72, default 0
-  int smoothM;  // smooth surface M density, code 73, default 0
-  int smoothN;  // smooth surface M density, code 74, default 0
-  int curvetype;  // curves & smooth surface type, code 75, default 0
+  int m_polylineFlag{};  // Group code 70
+  double m_defaultStartWidth{};  // Group code 40
+  double m_defaultEndWidth{};  // Group code 41
+  int m_polygonMeshVertexCountM{};  // Group code 71
+  int m_polygonMeshVertexCountN{};  // Group code 72
+  int m_smoothSurfaceDensityM{};  // Group code 73
+  int m_smoothSurfaceDensityN{};  // Group code 74
+  int m_curvesAndSmoothSurfaceType{};  // Group code 75
 
-  std::vector<DRW_Vertex*> vertlist;  // vertex list
+  std::vector<DRW_Vertex*> m_vertices;  // vertex list
 };
 
 /** @brief Class to handle spline entity

@@ -638,7 +638,7 @@ bool dxfRW::WritePolyline(DRW_Polyline* ent) {
   m_writer->WriteString(0, "POLYLINE");
   WriteEntity(ent);
 
-  if (ent->flags & 8 || ent->flags & 16) {
+  if ((ent->m_polylineFlag & 8) || (ent->m_polylineFlag & 16)) {
     m_writer->WriteString(100, "AcDb2dPolyline");
   } else {
     m_writer->WriteString(100, "AcDb3dPolyline");
@@ -648,49 +648,49 @@ bool dxfRW::WritePolyline(DRW_Polyline* ent) {
   m_writer->WriteDouble(20, 0.0);
   m_writer->WriteDouble(30, ent->m_firstPoint.z);
   if (ent->m_thickness != 0) { m_writer->WriteDouble(39, ent->m_thickness); }
-  m_writer->WriteInt16(70, ent->flags);
-  if (ent->defstawidth != 0) { m_writer->WriteDouble(40, ent->defstawidth); }
-  if (ent->defendwidth != 0) { m_writer->WriteDouble(41, ent->defendwidth); }
-  if (ent->flags & 16 || ent->flags & 32) {
-    m_writer->WriteInt16(71, ent->vertexcount);
-    m_writer->WriteInt16(72, ent->facecount);
+  m_writer->WriteInt16(70, ent->m_polylineFlag);
+  if (ent->m_defaultStartWidth != 0) { m_writer->WriteDouble(40, ent->m_defaultStartWidth); }
+  if (ent->m_defaultEndWidth != 0) { m_writer->WriteDouble(41, ent->m_defaultEndWidth); }
+  if ((ent->m_polylineFlag & 16) || (ent->m_polylineFlag & 32)) {
+    m_writer->WriteInt16(71, ent->m_polygonMeshVertexCountM);
+    m_writer->WriteInt16(72, ent->m_polygonMeshVertexCountN);
   }
-  if (ent->smoothM != 0) { m_writer->WriteInt16(73, ent->smoothM); }
-  if (ent->smoothN != 0) { m_writer->WriteInt16(74, ent->smoothN); }
-  if (ent->curvetype != 0) { m_writer->WriteInt16(75, ent->curvetype); }
-  DRW_Coord crd = ent->m_extrusionDirection;
+  if (ent->m_smoothSurfaceDensityM != 0) { m_writer->WriteInt16(73, ent->m_smoothSurfaceDensityM); }
+  if (ent->m_smoothSurfaceDensityN != 0) { m_writer->WriteInt16(74, ent->m_smoothSurfaceDensityN); }
+  if (ent->m_curvesAndSmoothSurfaceType != 0) { m_writer->WriteInt16(75, ent->m_curvesAndSmoothSurfaceType); }
+  auto crd = ent->m_extrusionDirection;
   if (crd.x != 0 || crd.y != 0 || crd.z != 1) {
     m_writer->WriteDouble(210, crd.x);
     m_writer->WriteDouble(220, crd.y);
     m_writer->WriteDouble(230, crd.z);
   }
 
-  int vertexnum = static_cast<int>(ent->vertlist.size());
+  int vertexnum = static_cast<int>(ent->m_vertices.size());
   for (int i = 0; i < vertexnum; i++) {
-    DRW_Vertex* v = ent->vertlist.at(i);
+    DRW_Vertex* vertex = ent->m_vertices.at(i);
     m_writer->WriteString(0, "VERTEX");
     WriteEntity(ent);
     m_writer->WriteString(100, "AcDbVertex");
-    if ((v->flags & 128) && !(v->flags & 64)) {
+    if ((vertex->m_vertexFlags & 128) != 0 && (vertex->m_vertexFlags & 64) == 0) {
       m_writer->WriteDouble(10, 0);
       m_writer->WriteDouble(20, 0);
       m_writer->WriteDouble(30, 0);
     } else {
-      m_writer->WriteDouble(10, v->m_firstPoint.x);
-      m_writer->WriteDouble(20, v->m_firstPoint.y);
-      m_writer->WriteDouble(30, v->m_firstPoint.z);
+      m_writer->WriteDouble(10, vertex->m_firstPoint.x);
+      m_writer->WriteDouble(20, vertex->m_firstPoint.y);
+      m_writer->WriteDouble(30, vertex->m_firstPoint.z);
     }
-    if (v->stawidth != 0) { m_writer->WriteDouble(40, v->stawidth); }
-    if (v->endwidth != 0) { m_writer->WriteDouble(41, v->endwidth); }
-    if (v->bulge != 0) { m_writer->WriteDouble(42, v->bulge); }
-    if (v->flags != 0) { m_writer->WriteInt16(70, ent->flags); }
-    if (v->flags & 2) { m_writer->WriteDouble(50, v->tgdir); }
-    if (v->flags & 128) {
-      if (v->vindex1 != 0) { m_writer->WriteInt16(71, v->vindex1); }
-      if (v->vindex2 != 0) { m_writer->WriteInt16(72, v->vindex2); }
-      if (v->vindex3 != 0) { m_writer->WriteInt16(73, v->vindex3); }
-      if (v->vindex4 != 0) { m_writer->WriteInt16(74, v->vindex4); }
-      if (!(v->flags & 64)) { m_writer->WriteInt32(91, v->identifier); }
+    if (vertex->m_startingWidth != 0) { m_writer->WriteDouble(40, vertex->m_startingWidth); }
+    if (vertex->m_endingWidth != 0) { m_writer->WriteDouble(41, vertex->m_endingWidth); }
+    if (vertex->m_bulge != 0) { m_writer->WriteDouble(42, vertex->m_bulge); }
+    if (vertex->m_vertexFlags != 0) { m_writer->WriteInt16(70, vertex->m_vertexFlags); }
+    if ((vertex->m_vertexFlags & 2) != 0) { m_writer->WriteDouble(50, vertex->m_curveFitTangentDirection); }
+    if ((vertex->m_vertexFlags & 128) != 0) {
+      if (vertex->m_polyfaceMeshVertexIndex1 != 0) { m_writer->WriteInt16(71, vertex->m_polyfaceMeshVertexIndex1); }
+      if (vertex->m_polyfaceMeshVertexIndex2 != 0) { m_writer->WriteInt16(72, vertex->m_polyfaceMeshVertexIndex2); }
+      if (vertex->m_polyfaceMeshVertexIndex3 != 0) { m_writer->WriteInt16(73, vertex->m_polyfaceMeshVertexIndex3); }
+      if (vertex->m_polyfaceMeshVertexIndex4 != 0) { m_writer->WriteInt16(74, vertex->m_polyfaceMeshVertexIndex4); }
+      if ((vertex->m_vertexFlags & 64) == 0) { m_writer->WriteInt32(91, vertex->m_identifier); }
     }
   }
   m_writer->WriteString(0, "SEQEND");
