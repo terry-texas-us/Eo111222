@@ -614,19 +614,21 @@ bool dxfRW::WriteLWPolyline(DRW_LWPolyline* ent) {
   m_writer->WriteString(0, "LWPOLYLINE");
   WriteEntity(ent);
   m_writer->WriteString(100, "AcDbPolyline");
-  ent->vertexnum = static_cast<int>(ent->vertlist.size());
-  m_writer->WriteInt32(90, ent->vertexnum);
-  m_writer->WriteInt16(70, ent->flags);
-  m_writer->WriteDouble(43, ent->width);
-  if (ent->elevation != 0) { m_writer->WriteDouble(38, ent->elevation); }
-  if (ent->thickness != 0) { m_writer->WriteDouble(39, ent->thickness); }
-  for (int i = 0; i < ent->vertexnum; i++) {
-    auto* v = ent->vertlist.at(i);
-    m_writer->WriteDouble(10, v->x);
-    m_writer->WriteDouble(20, v->y);
-    if (v->stawidth != 0) { m_writer->WriteDouble(40, v->stawidth); }
-    if (v->endwidth != 0) { m_writer->WriteDouble(41, v->endwidth); }
-    if (v->bulge != 0) { m_writer->WriteDouble(42, v->bulge); }
+
+  // Modern container – no more raw pointers
+  ent->m_numberOfVertices = static_cast<int>(ent->m_vertices.size());
+  m_writer->WriteInt32(90, ent->m_numberOfVertices);
+  m_writer->WriteInt16(70, ent->m_polylineFlag);
+  m_writer->WriteDouble(43, ent->m_constantWidth);
+  if (ent->m_elevation != 0.0) { m_writer->WriteDouble(38, ent->m_elevation); }
+  if (ent->m_thickness != 0.0) { m_writer->WriteDouble(39, ent->m_thickness); }
+
+  for (const auto& v : ent->m_vertices) {  // range-based, value semantics
+    m_writer->WriteDouble(10, v.x);
+    m_writer->WriteDouble(20, v.y);
+    if (v.stawidth != 0.0) { m_writer->WriteDouble(40, v.stawidth); }
+    if (v.endwidth != 0.0) { m_writer->WriteDouble(41, v.endwidth); }
+    if (v.bulge != 0.0) { m_writer->WriteDouble(42, v.bulge); }
   }
 
   return true;
@@ -946,19 +948,19 @@ bool dxfRW::WriteInsert(DRW_Insert* ent) {
   WriteEntity(ent);
 
   m_writer->WriteString(100, "AcDbBlockReference");
-  m_writer->WriteUtf8String(2, ent->name);
+  m_writer->WriteUtf8String(2, ent->m_blockName);
 
   m_writer->WriteDouble(10, ent->m_firstPoint.x);
   m_writer->WriteDouble(20, ent->m_firstPoint.y);
   m_writer->WriteDouble(30, ent->m_firstPoint.z);
-  m_writer->WriteDouble(41, ent->xscale);
-  m_writer->WriteDouble(42, ent->yscale);
-  m_writer->WriteDouble(43, ent->zscale);
-  m_writer->WriteDouble(50, (ent->angle) * DRW::RadiansToDegrees);  // in dxf angle is written in degrees
-  m_writer->WriteInt16(70, ent->colcount);
-  m_writer->WriteInt16(71, ent->rowcount);
-  m_writer->WriteDouble(44, ent->colspace);
-  m_writer->WriteDouble(45, ent->rowspace);
+  m_writer->WriteDouble(41, ent->m_xScaleFactor);
+  m_writer->WriteDouble(42, ent->m_yScaleFactor);
+  m_writer->WriteDouble(43, ent->m_zScaleFactor);
+  m_writer->WriteDouble(50, (ent->m_rotationAngle) * DRW::RadiansToDegrees);  // in dxf angle is written in degrees
+  m_writer->WriteInt16(70, ent->m_columnCount);
+  m_writer->WriteInt16(71, ent->m_rowCount);
+  m_writer->WriteDouble(44, ent->m_columnSpacing);
+  m_writer->WriteDouble(45, ent->m_rowSpacing);
   return true;
 }
 
@@ -979,8 +981,8 @@ bool dxfRW::WriteText(DRW_Text* ent) {
   m_writer->WriteUtf8String(7, ent->m_textStyleName);
 
   m_writer->WriteInt16(71, ent->m_textGenerationFlags);
-  if (ent->m_horizontalAlignment != DRW_Text::HLeft) { m_writer->WriteInt16(72, ent->m_horizontalAlignment); }
-  if (ent->m_horizontalAlignment != DRW_Text::HLeft || ent->m_verticalAlignment != DRW_Text::VBaseLine) {
+  if (ent->m_horizontalAlignment != DRW_Text::HAlign::Left) { m_writer->WriteInt16(72, ent->m_horizontalAlignment); }
+  if (ent->m_horizontalAlignment != DRW_Text::HAlign::Left || ent->m_verticalAlignment != DRW_Text::VAlign::BaseLine) {
     m_writer->WriteDouble(11, ent->m_secondPoint.x);
     m_writer->WriteDouble(21, ent->m_secondPoint.y);
     m_writer->WriteDouble(31, ent->m_secondPoint.z);
@@ -989,7 +991,7 @@ bool dxfRW::WriteText(DRW_Text* ent) {
   m_writer->WriteDouble(220, ent->m_extrusionDirection.y);
   m_writer->WriteDouble(230, ent->m_extrusionDirection.z);
   m_writer->WriteString(100, "AcDbText");
-  if (ent->m_verticalAlignment != DRW_Text::VBaseLine) { m_writer->WriteInt16(73, ent->m_verticalAlignment); }
+  if (ent->m_verticalAlignment != DRW_Text::VAlign::BaseLine) { m_writer->WriteInt16(73, ent->m_verticalAlignment); }
   return true;
 }
 
@@ -1101,7 +1103,7 @@ bool dxfRW::WriteBlockRecord(std::string name) {
   return true;
 }
 
-bool dxfRW::WriteBlock(DRW_Block* bk) {
+bool dxfRW::WriteBlock(DRW_Block* block) {
   if (m_writingBlock) {
     m_writer->WriteString(0, "ENDBLK");
 
@@ -1115,7 +1117,7 @@ bool dxfRW::WriteBlock(DRW_Block* bk) {
   m_writingBlock = true;
   m_writer->WriteString(0, "BLOCK");
 
-  m_currentHandle = (*(m_blockMap.find(bk->name))).second;
+  m_currentHandle = (*(m_blockMap.find(block->name))).second;
   m_writer->WriteString(5, ToHexString(m_currentHandle + 1));
   if (m_version > DRW::Version::AC1014) { m_writer->WriteString(330, ToHexString(m_currentHandle)); }
   m_writer->WriteString(100, "AcDbEntity");
@@ -1123,14 +1125,14 @@ bool dxfRW::WriteBlock(DRW_Block* bk) {
   m_writer->WriteString(8, "0");
 
   m_writer->WriteString(100, "AcDbBlockBegin");
-  m_writer->WriteUtf8String(2, bk->name);
+  m_writer->WriteUtf8String(2, block->name);
 
-  m_writer->WriteInt16(70, bk->flags);
-  m_writer->WriteDouble(10, bk->m_firstPoint.x);
-  m_writer->WriteDouble(20, bk->m_firstPoint.y);
-  if (bk->m_firstPoint.z != 0.0) { m_writer->WriteDouble(30, bk->m_firstPoint.z); }
+  m_writer->WriteInt16(70, block->m_flags);
+  m_writer->WriteDouble(10, block->m_firstPoint.x);
+  m_writer->WriteDouble(20, block->m_firstPoint.y);
+  if (block->m_firstPoint.z != 0.0) { m_writer->WriteDouble(30, block->m_firstPoint.z); }
 
-  m_writer->WriteUtf8String(3, bk->name);
+  m_writer->WriteUtf8String(3, block->name);
 
   m_writer->WriteString(1, "");
 

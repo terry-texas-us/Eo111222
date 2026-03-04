@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <list>
 #include <string>
@@ -392,8 +393,8 @@ void DRW_Ellipse::ApplyExtrusion() {
 
 // if ratio > 1 minor axis are greather than major axis, correct it
 void DRW_Ellipse::CorrectAxis() {
-  bool complete = false;
-  if (m_startParam == m_endParam) {
+  bool complete{};
+  if (fabs(m_startParam - m_endParam) < DRW::geometricTolerance) {
     m_startParam = 0.0;
     m_endParam = DRW::TwoPi;
     complete = true;
@@ -501,7 +502,7 @@ void DRW_Block::ParseCode(int code, dxfReader* reader) {
       name = reader->GetUtf8String();
       break;
     case 70:
-      flags = reader->GetInt32();
+      m_flags = reader->GetInt32();
       break;
     default:
       DRW_Point::ParseCode(code, reader);
@@ -512,32 +513,32 @@ void DRW_Block::ParseCode(int code, dxfReader* reader) {
 void DRW_Insert::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 2:
-      name = reader->GetUtf8String();
+      m_blockName = reader->GetUtf8String();
       break;
     case 41:
-      xscale = reader->GetDouble();
+      m_xScaleFactor = reader->GetDouble();
       break;
     case 42:
-      yscale = reader->GetDouble();
+      m_yScaleFactor = reader->GetDouble();
       break;
     case 43:
-      zscale = reader->GetDouble();
+      m_zScaleFactor = reader->GetDouble();
       break;
     case 50:
-      angle = reader->GetDouble();
-      angle = angle * DRW::DegreesToRadians;
+      m_rotationAngle = reader->GetDouble();
+      m_rotationAngle = m_rotationAngle * DRW::DegreesToRadians;
       break;
     case 70:
-      colcount = reader->GetInt32();
+      m_columnCount = reader->GetInt32();
       break;
     case 71:
-      rowcount = reader->GetInt32();
+      m_rowCount = reader->GetInt32();
       break;
     case 44:
-      colspace = reader->GetDouble();
+      m_columnSpacing = reader->GetDouble();
       break;
     case 45:
-      rowspace = reader->GetDouble();
+      m_rowSpacing = reader->GetDouble();
       break;
     default:
       DRW_Point::ParseCode(code, reader);
@@ -547,13 +548,12 @@ void DRW_Insert::ParseCode(int code, dxfReader* reader) {
 
 void DRW_LWPolyline::ApplyExtrusion() {
   if (m_haveExtrusion) {
-    CalculateArbitraryAxis(extPoint);
-    for (unsigned int i = 0; i < vertlist.size(); i++) {
-      auto* vert = vertlist.at(i);
-      DRW_Coord v(vert->x, vert->y, elevation);
-      ExtrudePointInPlace(extPoint, v);
-      vert->x = v.x;
-      vert->y = v.y;
+    CalculateArbitraryAxis(m_extrusionDirection);
+    for (auto& vert : m_vertices) {  // range-based, value semantics – no raw pointer
+      DRW_Coord v(vert.x, vert.y, m_elevation);
+      ExtrudePointInPlace(m_extrusionDirection, v);
+      vert.x = v.x;
+      vert.y = v.y;
     }
   }
 }
@@ -561,48 +561,48 @@ void DRW_LWPolyline::ApplyExtrusion() {
 void DRW_LWPolyline::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 10: {
-      vertex = new DRW_Vertex2D();
-      vertlist.push_back(vertex);
-      vertex->x = reader->GetDouble();
+      m_vertices.emplace_back();
+      m_currentVertexIndex = static_cast<int>(m_vertices.size()) - 1;
+      m_vertices.back().x = reader->GetDouble();
       break;
     }
     case 20:
-      if (vertex != nullptr) { vertex->y = reader->GetDouble(); }
+      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].y = reader->GetDouble(); }
       break;
     case 40:
-      if (vertex != nullptr) { vertex->stawidth = reader->GetDouble(); }
+      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].stawidth = reader->GetDouble(); }
       break;
     case 41:
-      if (vertex != nullptr) { vertex->endwidth = reader->GetDouble(); }
+      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].endwidth = reader->GetDouble(); }
       break;
     case 42:
-      if (vertex != nullptr) { vertex->bulge = reader->GetDouble(); }
+      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].bulge = reader->GetDouble(); }
       break;
     case 38:
-      elevation = reader->GetDouble();
+      m_elevation = reader->GetDouble();
       break;
     case 39:
-      thickness = reader->GetDouble();
+      m_thickness = reader->GetDouble();
       break;
     case 43:
-      width = reader->GetDouble();
+      m_constantWidth = reader->GetDouble();
       break;
     case 70:
-      flags = reader->GetInt32();
+      m_polylineFlag = reader->GetInt32();
       break;
     case 90:
-      vertexnum = reader->GetInt32();
-      vertlist.reserve(vertexnum);
+      m_numberOfVertices = reader->GetInt32();
+      m_vertices.reserve(m_numberOfVertices);  // now reserves the correct container
       break;
     case 210:
       m_haveExtrusion = true;
-      extPoint.x = reader->GetDouble();
+      m_extrusionDirection.x = reader->GetDouble();
       break;
     case 220:
-      extPoint.y = reader->GetDouble();
+      m_extrusionDirection.y = reader->GetDouble();
       break;
     case 230:
-      extPoint.z = reader->GetDouble();
+      m_extrusionDirection.z = reader->GetDouble();
       break;
     default:
       DRW_Entity::ParseCode(code, reader);
@@ -628,10 +628,12 @@ void DRW_Text::ParseCode(int code, dxfReader* reader) {
       m_textGenerationFlags = reader->GetInt32();
       break;
     case 72:
-      m_horizontalAlignment = (HAlign)reader->GetInt32();
+      m_horizontalAlignment = static_cast<HAlign>(
+          std::clamp(reader->GetInt32(), static_cast<int>(HAlign::Left), static_cast<int>(HAlign::FitIfBaseLine)));
       break;
     case 73:
-      m_verticalAlignment = (VAlign)reader->GetInt32();
+      m_verticalAlignment = static_cast<VAlign>(
+          std::clamp(reader->GetInt32(), static_cast<int>(VAlign::Top), static_cast<int>(VAlign::Bottom)));
       break;
     case 1:
       m_string = reader->GetUtf8String();
@@ -769,15 +771,15 @@ void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
       if (pt) {
         pt->m_firstPoint.x = reader->GetDouble();
       } else if (m_polyline) {
-        plvert = m_polyline->addVertex();
-        plvert->x = reader->GetDouble();
+        m_polylineVertex = &m_polyline->AddVertex();
+        m_polylineVertex->x = reader->GetDouble();
       }
       break;
     case 20:
       if (pt) {
         pt->m_firstPoint.y = reader->GetDouble();
-      } else if (plvert) {
-        plvert->y = reader->GetDouble();
+      } else if (m_polylineVertex) {
+        m_polylineVertex->y = reader->GetDouble();
       }
       break;
     case 11:
@@ -805,7 +807,7 @@ void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
       scale = reader->GetDouble();
       break;
     case 42:
-      if (plvert) { plvert->bulge = reader->GetDouble(); }
+      if (m_polylineVertex) { m_polylineVertex->bulge = reader->GetDouble(); }
       break;
     case 50:
       if (arc) {
@@ -828,7 +830,7 @@ void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
       if (arc) {
         arc->m_isCounterClockwise = reader->GetInt32();
       } else if (m_polyline) {
-        m_polyline->flags = reader->GetInt32();
+        m_polyline->m_polylineFlag = reader->GetInt32();
       }
       break;
     case 75:
@@ -863,12 +865,13 @@ void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
     }
     case 93:
       if (m_polyline) {
-        m_polyline->vertexnum = reader->GetInt32();
-      } else {
+        m_polyline->m_numberOfVertices = reader->GetInt32();
+        m_polyline->m_vertices.reserve(m_polyline->m_numberOfVertices);  // modern reserve on new container
+      } else if (loop) {
         loop->numedges = reader->GetInt32();
       }
       break;
-    case 98:  // seed points ??
+    case 98:
       clearEntities();
       break;
     default:

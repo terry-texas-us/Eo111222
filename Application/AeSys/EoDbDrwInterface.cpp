@@ -254,7 +254,7 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* docu
 
   auto* newBlock =
       new EoDbBlock(static_cast<std::uint16_t>(
-                        block.flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
+                        block.m_flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
           EoGePoint3d(block.m_firstPoint.x, block.m_firstPoint.y, block.m_firstPoint.z),  // group codes 10, 20 and 30
           blockName.c_str());
 
@@ -412,13 +412,13 @@ void EoDbDrwInterface::ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* d
   ATLTRACE2(traceGeneral, 3, L"Insert entity conversion\n");
   auto insertPrimitive = new EoDbBlockReference();
   insertPrimitive->SetBaseProperties(&insert, document);
-  auto name = Eo::MultiByteToWString(insert.name.c_str());
+  auto name = Eo::MultiByteToWString(insert.m_blockName.c_str());
   insertPrimitive->SetName(CString(name.c_str()));
   insertPrimitive->SetInsertionPoint(insert.m_firstPoint);
   insertPrimitive->SetNormal(
       EoGeVector3d(insert.m_extrusionDirection.x, insert.m_extrusionDirection.y, insert.m_extrusionDirection.z));
-  insertPrimitive->SetScaleFactors(EoGeVector3d(insert.xscale, insert.yscale, insert.zscale));
-  insertPrimitive->SetRotation(insert.angle);
+  insertPrimitive->SetScaleFactors(EoGeVector3d(insert.m_xScaleFactor, insert.m_yScaleFactor, insert.m_zScaleFactor));
+  insertPrimitive->SetRotation(insert.m_rotationAngle);
 
   AddToDocument(insertPrimitive, document);
 }
@@ -435,15 +435,18 @@ void EoDbDrwInterface::ConvertLineEntity(const DRW_Line& line, AeSysDoc* documen
 
 void EoDbDrwInterface::ConvertLWPolylineEntity(const DRW_LWPolyline& lwPolyline, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"LWPolyline entity conversion\n");
-  auto polylinePrimitive = new EoDbPolyline();
+
+  auto* polylinePrimitive = new EoDbPolyline();
   polylinePrimitive->SetBaseProperties(&lwPolyline, document);
 
-  polylinePrimitive->SetNumberOfVertices(lwPolyline.vertlist.size());
+  const auto numVerts = static_cast<std::uint16_t>(lwPolyline.m_vertices.size());
+  polylinePrimitive->SetNumberOfVertices(numVerts);
 
-  for (size_t index = 0; index < lwPolyline.vertlist.size(); index++) {
-    polylinePrimitive->SetVertex2D(index, *lwPolyline.vertlist.at(index));
+  for (std::uint16_t index = 0; index < numVerts; ++index) {
+    polylinePrimitive->SetVertex2D(index, lwPolyline.m_vertices[index]);  // value vector, no raw pointer
   }
-  if (lwPolyline.flags & 0x01) { polylinePrimitive->SetFlag(EoDbPolyline::sm_Closed); }
+
+  if (lwPolyline.m_polylineFlag & 0x01) { polylinePrimitive->SetFlag(EoDbPolyline::sm_Closed); }
 
   AddToDocument(polylinePrimitive, document);
 }

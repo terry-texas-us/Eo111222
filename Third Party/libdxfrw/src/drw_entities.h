@@ -199,7 +199,7 @@ class DRW_Line : public DRW_Point {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord m_secondPoint;  // code 11, 21 & 31
+  DRW_Coord m_secondPoint;  // Group code 11, 21 & 31
 };
 
 /** @brief Class to handle ray entity
@@ -306,10 +306,10 @@ class DRW_Ellipse : public DRW_Line {
   void CorrectAxis();
 
  public:
-  double m_ratio{};  // code 40
-  double m_startParam{};  // code 41, 0.0 for full ellipse
-  double m_endParam{};  // code 42, 2*PI for full ellipse
-  int m_isCounterClockwise{1};  // code 73 (only used in hatch)
+  double m_ratio{};  // Group code 40
+  double m_startParam{};  // Group code 41, 0.0 for full ellipse
+  double m_endParam{};  // Group code 42, 2*PI for full ellipse
+  int m_isCounterClockwise{1};  // Group code 73 (only used in hatch)
 };
 
 /** @@brief Class to handle trace entity
@@ -332,8 +332,8 @@ class DRW_Trace : public DRW_Line {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord m_thirdPoint{};  // code 12, 22 & 32
-  DRW_Coord m_fourthPoint{};  // code 13, 23 & 33
+  DRW_Coord m_thirdPoint{};  // Group code 12, 22 & 32
+  DRW_Coord m_fourthPoint{};  // Group code 13, 23 & 33
 };
 
 /** @brief Class to handle solid entity
@@ -403,7 +403,7 @@ class DRW_3Dface : public DRW_Trace {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  int m_invisibleFlag{};  // code 70
+  int m_invisibleFlag{};  // Group code 70
 };
 
 /** @brief Class to handle block entries
@@ -425,8 +425,8 @@ class DRW_Block : public DRW_Point {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  UTF8STRING name{"*U0"};  // code 2
-  int flags{};  // code 70
+  UTF8STRING name{"*U0"};  // Group code 2
+  int m_flags{};  // Group code 70
 };
 
 /** @brief Class to handle insert entries
@@ -449,87 +449,60 @@ class DRW_Insert : public DRW_Point {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  UTF8STRING name;  // code 2
-  double xscale{1.0};  // code 41
-  double yscale{1.0};  // code 42
-  double zscale{1.0};  // code 43
-  double angle{};  // code 50 (in radians)
-  int colcount{1};  // code 70
-  int rowcount{1};  // code 71
-  double colspace{};  // code 44
-  double rowspace{};  // code 45
+  UTF8STRING m_blockName;  // Group code 2
+  double m_xScaleFactor{1.0};  // Group code 41
+  double m_yScaleFactor{1.0};  // Group code 42
+  double m_zScaleFactor{1.0};  // Group code 43
+  double m_rotationAngle{};  // Group code 50 (in radians)
+  int m_columnCount{1};  // Group code 70
+  int m_rowCount{1};  // Group code 71
+  double m_columnSpacing{};  // Group code 44
+  double m_rowSpacing{};  // Group code 45
 };
 
-//! Class to handle lwpolyline entity
-/*!
- *  Class to handle lwpolyline entity
+/** @brief Class to handle lightweight polyline entity
+ *
+ *  A lightweight polyline is a series of connected line segments that can be either open or closed.
+ *  It is defined by its vertices, which are specified in the DXF file using group codes 10, 20 for the vertex
+ * coordinates, and optionally 30 for elevation. The lightweight polyline entity can also include properties such as
+ * width (code 43), flags (code 70), and extrusion direction (code 210, 220, 230), which can affect how it is rendered
+ * in the drawing.
  */
 class DRW_LWPolyline : public DRW_Entity {
   friend class dxfRW;
 
  public:
-  DRW_LWPolyline() {
-    m_entityType = DRW::LWPOLYLINE;
-    elevation = thickness = width = 0.0;
-    flags = 0;
-    extPoint.x = extPoint.y = 0;
-    extPoint.z = 1;
-    vertex = nullptr;
-  }
+  explicit DRW_LWPolyline(DRW::ETYPE entityType = DRW::LWPOLYLINE) noexcept : DRW_Entity{entityType} {}
 
-  DRW_LWPolyline(const DRW_LWPolyline& p) : DRW_Entity(p) {
-    this->m_entityType = DRW::LWPOLYLINE;
-    this->elevation = p.elevation;
-    this->thickness = p.thickness;
-    this->width = p.width;
-    this->flags = p.flags;
-    this->extPoint = p.extPoint;
-    this->vertex = nullptr;
-    for (unsigned i = 0; i < p.vertlist.size(); i++) {
-      this->vertlist.push_back(new DRW_Vertex2D(*(p.vertlist.at(i))));
-    }
-    this->vertex = nullptr;
-  }
+  DRW_LWPolyline(const DRW_LWPolyline&) = default;
+  DRW_LWPolyline(DRW_LWPolyline&&) noexcept = default;
+  DRW_LWPolyline& operator=(const DRW_LWPolyline&) = default;
+  DRW_LWPolyline& operator=(DRW_LWPolyline&&) noexcept = default;
 
-  ~DRW_LWPolyline() {
-    for (auto* vert : vertlist) { delete vert; }
-    vertlist.clear();
-    /* @bugfix TAS 2026-02-03: memory leak fix - pop_back does not delete the pointers
-    while (!vertlist.empty()) {
-      vertlist.pop_back();
-    }
-    */
-  }
+  ~DRW_LWPolyline() = default;
+
   void ApplyExtrusion() override;
 
-  void addVertex(DRW_Vertex2D v) {
-    auto* vert = new DRW_Vertex2D();
-    vert->x = v.x;
-    vert->y = v.y;
-    vert->stawidth = v.stawidth;
-    vert->endwidth = v.endwidth;
-    vert->bulge = v.bulge;
-    vertlist.push_back(vert);
-  }
+  void AddVertex(const DRW_Vertex2D& vertex) { m_vertices.push_back(vertex); }
 
-  DRW_Vertex2D* addVertex() {
-    auto* vert = new DRW_Vertex2D();
-    vertlist.push_back(vert);
-    return vert;
-  }
+  [[nodiscard]] DRW_Vertex2D& AddVertex() { return m_vertices.emplace_back(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  int vertexnum{}; /*!< number of vertex, code 90 */
-  int flags; /*!< polyline flag, code 70, default 0 */
-  double width; /*!< constant width, code 43 */
-  double elevation; /*!< elevation, code 38 */
-  double thickness; /*!< thickness, code 39 */
-  DRW_Coord extPoint; /*!<  Dir extrusion normal vector, code 210, 220 & 230 */
-  DRW_Vertex2D* vertex; /*!< current vertex to add data */
-  std::vector<DRW_Vertex2D*> vertlist; /*!< vertex list */
+  int m_numberOfVertices{};  // Group code 90
+  int m_polylineFlag{};  // Group code 70, (1 = Closed; 128 = Plinegen)
+  double m_constantWidth{};  // Group code 43
+  double m_elevation{};  // Group code 38
+  double m_thickness{};  // Group code 39
+  DRW_Coord m_extrusionDirection{0.0, 0.0, 1.0};  //  code 210, 220 & 230
+  std::vector<DRW_Vertex2D> m_vertices;
+
+ private:
+  // Index of the current vertex being populated during parsing (-1 = none).
+  // Using an index instead of a pointer avoids dangling after vector reallocation.
+  int m_currentVertexIndex{-1};
 };
 
 /** @brief Class to handle text entity
@@ -543,16 +516,9 @@ class DRW_Text : public DRW_Line {
   friend class dxfRW;
 
  public:
-  enum VAlign { VBaseLine = 0, VBottom, VMiddle, VTop };
+  enum VAlign { BaseLine = 0, Bottom, Middle, Top };
 
-  enum HAlign {
-    HLeft = 0,
-    HCenter,
-    HRight,
-    HAligned,  // = 3 (if VAlign is 0)
-    HMiddle,  // = 4 (if VAlign is 0) */
-    HFit  // fit into point = 5 (if VAlign is 0)
-  };
+  enum HAlign { Left = 0, Center, Right, AlignedIfBaseLine, MiddleIfBaseLine, FitIfBaseLine };
 
   explicit DRW_Text(DRW::ETYPE entityType = DRW::TEXT) noexcept : DRW_Line{entityType} {}
 
@@ -562,15 +528,15 @@ class DRW_Text : public DRW_Line {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  double m_textHeight{};  // code 40
-  UTF8STRING m_string;  // code 1
-  double m_textRotation{};  // code 50
-  double m_scaleFactorWidth{1.0};  // code 41
-  double m_obliqueAngle{};  // code 51
-  UTF8STRING m_textStyleName{"STANDARD"};  // code 7
-  int m_textGenerationFlags{};  // code 71
-  enum HAlign m_horizontalAlignment { HLeft };  // code 72
-  enum VAlign m_verticalAlignment { VBaseLine };  // code 73
+  double m_textHeight{};  // Group code 40
+  UTF8STRING m_string;  // Group code 1
+  double m_textRotation{};  // Group code 50
+  double m_scaleFactorWidth{1.0};  // Group code 41
+  double m_obliqueAngle{};  // Group code 51
+  UTF8STRING m_textStyleName{"STANDARD"};  // Group code 7
+  int m_textGenerationFlags{};  // Group code 71
+  enum HAlign m_horizontalAlignment { Left };  // Group code 72
+  enum VAlign m_verticalAlignment { BaseLine };  // Group code 73
 };
 
 /** @brief Class to handle mtext entity
@@ -608,7 +574,7 @@ class DRW_MText : public DRW_Text {
   void UpdateAngle();  // recalculate angle if 'm_haveXAxisDirection' is true
 
  public:
-  double m_lineSpacingFactor{1.0};  // code 44 (optional)
+  double m_lineSpacingFactor{1.0};  // Group code 44 (optional)
  private:
   bool m_haveXAxisDirection{};
 };
@@ -637,17 +603,17 @@ class DRW_Vertex : public DRW_Point {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  double stawidth; /*!< Start width, code 40 */
-  double endwidth; /*!< End width, code 41 */
-  double bulge; /*!< bulge, code 42 */
+  double stawidth;  // Start width, code 40
+  double endwidth;  // End width, code 41
+  double bulge;  // bulge, code 42
 
-  int flags; /*!< vertex flag, code 70, default 0 */
-  double tgdir{}; /*!< curve fit tangent direction, code 50 */
-  int vindex1; /*!< polyface mesh vertex index, code 71, default 0 */
-  int vindex2; /*!< polyface mesh vertex index, code 72, default 0 */
-  int vindex3; /*!< polyface mesh vertex index, code 73, default 0 */
-  int vindex4; /*!< polyface mesh vertex index, code 74, default 0 */
-  int identifier; /*!< vertex identifier, code 91, default 0 */
+  int flags;  // vertex flag, code 70, default 0
+  double tgdir{};  // curve fit tangent direction, code 50
+  int vindex1;  // polyface mesh vertex index, code 71, default 0
+  int vindex2;  // polyface mesh vertex index, code 72, default 0
+  int vindex3;  // polyface mesh vertex index, code 73, default 0
+  int vindex4;  // polyface mesh vertex index, code 74, default 0
+  int identifier;  // vertex identifier, code 91, default 0
 };
 
 class DRW_Polyline : public DRW_Point {
@@ -664,11 +630,6 @@ class DRW_Polyline : public DRW_Point {
   ~DRW_Polyline() {
     for (DRW_Vertex* vert : vertlist) { delete vert; }
     vertlist.clear();
-    /* @bugfix TAS 2026-02-03: memory leak fix - pop_back does not delete pointers
-    while (!vertlist.empty()) {
-      vertlist.pop_back();
-    }
-    */
   }
   void addVertex(DRW_Vertex v) {
     DRW_Vertex* vert = new DRW_Vertex();
@@ -686,21 +647,24 @@ class DRW_Polyline : public DRW_Point {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  int flags; /*!< polyline flag, code 70, default 0 */
-  double defstawidth; /*!< Start width, code 40, default 0 */
-  double defendwidth; /*!< End width, code 41, default 0 */
-  int vertexcount; /*!< polygon mesh M vertex or  polyface vertex num, code 71, default 0 */
-  int facecount; /*!< polygon mesh N vertex or  polyface face num, code 72, default 0 */
-  int smoothM; /*!< smooth surface M density, code 73, default 0 */
-  int smoothN; /*!< smooth surface M density, code 74, default 0 */
-  int curvetype; /*!< curves & smooth surface type, code 75, default 0 */
+  int flags;  // polyline flag, code 70, default 0
+  double defstawidth;  // Start width, code 40, default 0
+  double defendwidth;  // End width, code 41, default 0
+  int vertexcount;  // polygon mesh M vertex or  polyface vertex num, code 71, default 0
+  int facecount;  // polygon mesh N vertex or  polyface face num, code 72, default 0
+  int smoothM;  // smooth surface M density, code 73, default 0
+  int smoothN;  // smooth surface M density, code 74, default 0
+  int curvetype;  // curves & smooth surface type, code 75, default 0
 
-  std::vector<DRW_Vertex*> vertlist; /*!< vertex list */
+  std::vector<DRW_Vertex*> vertlist;  // vertex list
 };
 
-//! Class to handle spline entity
-/*!
- *  Class to handle spline entity
+/** @brief Class to handle spline entity
+ *
+ *  A spline is a smooth curve defined by control points and a degree.
+ *  It is specified in the DXF file using group codes for its control points (code 10, 20, 30), degree (code 71),
+ * and number of control points (code 73). The spline entity can also include properties such as knot values (code 40),
+ * flags (code 70), and extrusion direction (code 210, 220, 230), which can affect how it is rendered in the drawing.
  */
 class DRW_Spline : public DRW_Entity {
   friend class dxfRW;
@@ -716,15 +680,6 @@ class DRW_Spline : public DRW_Entity {
     controllist.clear();
     for (DRW_Coord* pt : fitlist) { delete pt; }
     fitlist.clear();
-
-    /* @bugfix TAS 2026-02-03: memory leak fix - pop_back does not delete pointers
-    while (!controllist.empty()) {
-      controllist.pop_back();
-    }
-    while (!fitlist.empty()) {
-      fitlist.pop_back();
-    }
-    */
   }
   void ApplyExtrusion() override {}
 
@@ -732,39 +687,42 @@ class DRW_Spline : public DRW_Entity {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  //    double ex;                /*!< normal vector x coordinate, code 210 */
-  //    double ey;                /*!< normal vector y coordinate, code 220 */
-  //    double ez;                /*!< normal vector z coordinate, code 230 */
-  DRW_Coord normalVec; /*!< normal vector, code 210, 220, 230 */
-  DRW_Coord tgStart; /*!< start tangent, code 12, 22, 32 */
-  //    double tgsx;              /*!< start tangent x coordinate, code 12 */
-  //    double tgsy;              /*!< start tangent y coordinate, code 22 */
-  //    double tgsz;              /*!< start tangent z coordinate, code 32 */
-  DRW_Coord tgEnd; /*!< end tangent, code 13, 23, 33 */
-  //    double tgex;              /*!< end tangent x coordinate, code 13 */
-  //    double tgey;              /*!< end tangent y coordinate, code 23 */
-  //    double tgez;              /*!< end tangent z coordinate, code 33 */
-  int flags; /*!< spline flag, code 70 */
-  int degree{}; /*!< degree of the spline, code 71 */
-  std::int32_t nknots; /*!< number of knots, code 72, default 0 */
-  std::int32_t ncontrol; /*!< number of control points, code 73, default 0 */
-  std::int32_t nfit; /*!< number of fit points, code 74, default 0 */
-  double tolknot; /*!< knot tolerance, code 42, default 0.0000001 */
-  double tolcontrol; /*!< control point tolerance, code 43, default 0.0000001 */
-  double tolfit; /*!< fit point tolerance, code 44, default 0.0000001 */
+  //    double ex;                // normal vector x coordinate, code 210
+  //    double ey;                // normal vector y coordinate, code 220
+  //    double ez;                // normal vector z coordinate, code 230
+  DRW_Coord normalVec;  // normal vector, code 210, 220, 230
+  DRW_Coord tgStart;  // start tangent, code 12, 22, 32
+  //    double tgsx;              // start tangent x coordinate, code 12
+  //    double tgsy;              // start tangent y coordinate, code 22
+  //    double tgsz;              // start tangent z coordinate, code 32
+  DRW_Coord tgEnd;  // end tangent, code 13, 23, 33
+  //    double tgex;              // end tangent x coordinate, code 13
+  //    double tgey;              // end tangent y coordinate, code 23
+  //    double tgez;              // end tangent z coordinate, code 33
+  int flags;  // spline flag, code 70
+  int degree{};  // degree of the spline, code 71
+  std::int32_t nknots;  // number of knots, code 72, default 0
+  std::int32_t ncontrol;  // number of control points, code 73, default 0
+  std::int32_t nfit;  // number of fit points, code 74, default 0
+  double tolknot;  // knot tolerance, code 42, default 0.0000001
+  double tolcontrol;  // control point tolerance, code 43, default 0.0000001
+  double tolfit;  // fit point tolerance, code 44, default 0.0000001
 
-  std::vector<double> knotslist; /*!< knots list, code 40 */
-  std::vector<DRW_Coord*> controllist; /*!< control points list, code 10, 20 & 30 */
-  std::vector<DRW_Coord*> fitlist; /*!< fit points list, code 11, 21 & 31 */
+  std::vector<double> knotslist;  // knots list, code 40
+  std::vector<DRW_Coord*> controllist;  // control points list, code 10, 20 & 30
+  std::vector<DRW_Coord*> fitlist;  // fit points list, code 11, 21 & 31
 
  private:
-  DRW_Coord* controlpoint{}; /*!< current control point to add data */
-  DRW_Coord* fitpoint{}; /*!< current fit point to add data */
+  DRW_Coord* controlpoint{};  // current control point to add data
+  DRW_Coord* fitpoint{};  // current fit point to add data
 };
 
-//! Class to handle hatch loop
-/*!
- *  Class to handle hatch loop
+/** @brief Class to handle hatch loop
+ *
+ *  A hatch loop represents a closed boundary path that defines the area to be filled with a hatch pattern.
+ *  It is defined by its type (code 92) and the number of edges (code 93). The hatch loop can include various
+ * entities such as lines, arcs, circles, ellipses, splines, and lightweight polylines that make up the boundary of the
+ * hatch.
  */
 class DRW_HatchLoop {
  public:
@@ -776,28 +734,27 @@ class DRW_HatchLoop {
   ~DRW_HatchLoop() {
     for (DRW_Entity* obj : objlist) { delete obj; }
     objlist.clear();
-    /* TAS 2026-02-03: memory leak fix - pop_back does not delete pointers
-    while (!objlist.empty()) {
-      objlist.pop_back();
-    }
-    */
   }
 
   void update() { numedges = static_cast<int>(objlist.size()); }
 
  public:
-  int type; /*!< boundary path type, code 92, polyline=2, default=0 */
-  int numedges; /*!< number of edges (if not a polyline), code 93 */
+  int type;  // boundary path type, code 92, polyline=2, default=0
+  int numedges;  // number of edges (if not a polyline), code 93
   // TODO: store lwpolylines as entities
-  //     std::vector<DRW_LWPolyline *> pollist;  /*!< polyline list */
-  std::vector<DRW_Entity*> objlist; /*!< entities list */
+  //     std::vector<DRW_LWPolyline *> pollist;  // polyline list
+  std::vector<DRW_Entity*> objlist;  // entities list
 };
 
-//! Class to handle hatch entity
-/*!
- *  Class to handle hatch entity
+/** @brief Class to handle hatch entity
+ *
+ *  A hatch entity represents a filled area defined by a hatch pattern.
+ *  It is defined by its pattern name (code 2), solid fill flag (code 70), associativity (code 71), hatch style (code
+ * 75), hatch pattern type (code 76), and hatch pattern angle and scale (code 52 and 41). The hatch entity can also
+ * include properties such as the number of boundary paths (code 91) and the number of pattern definition lines (code
+ * 78), which can affect how it is rendered in the drawing. The boundary paths of the hatch are defined by hatch loops,
+ * which can include various entities such as lines, arcs, circles, ellipses, splines, and lightweight polylines.
  */
-// TODO: handle lwpolylines, splines and ellipses
 class DRW_Hatch : public DRW_Point {
   friend class dxfRW;
 
@@ -816,11 +773,6 @@ class DRW_Hatch : public DRW_Point {
   ~DRW_Hatch() {
     for (DRW_HatchLoop* lp : looplist) { delete lp; }
     looplist.clear();
-    /* TAS 2026-02-03: memory leak fix - pop_back does not delete pointers
-    while (!looplist.empty()) {
-      looplist.pop_back();
-    }
-    */
   }
 
   void appendLoop(DRW_HatchLoop* v) { looplist.push_back(v); }
@@ -831,18 +783,18 @@ class DRW_Hatch : public DRW_Point {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  UTF8STRING name; /*!< hatch pattern name, code 2 */
-  int solid; /*!< solid fill flag, code 70, solid=1, pattern=0 */
-  int associative; /*!< associativity, code 71, associatve=1, non-assoc.=0 */
-  int hstyle; /*!< hatch style, code 75 */
-  int hpattern; /*!< hatch pattern type, code 76 */
-  int doubleflag; /*!< hatch pattern double flag, code 77, double=1, single=0 */
-  int loopsnum; /*!< namber of boundary paths (loops), code 91 */
-  double angle; /*!< hatch pattern angle, code 52 */
-  double scale; /*!< hatch pattern scale, code 41 */
-  int deflines; /*!< number of pattern definition lines, code 78 */
+  UTF8STRING name;  // hatch pattern name, code 2
+  int solid;  // solid fill flag, code 70, solid=1, pattern=0
+  int associative;  // associativity, code 71, associatve=1, non-assoc.=0
+  int hstyle;  // hatch style, code 75
+  int hpattern;  // hatch pattern type, code 76
+  int doubleflag;  // hatch pattern double flag, code 77, double=1, single=0
+  int loopsnum;  // namber of boundary paths (loops), code 91
+  double angle;  // hatch pattern angle, code 52
+  double scale;  // hatch pattern scale, code 41
+  int deflines;  // number of pattern definition lines, code 78
 
-  std::vector<DRW_HatchLoop*> looplist; /*!< polyline list */
+  std::vector<DRW_HatchLoop*> looplist;  // polyline list
 
  private:
   void clearEntities() {
@@ -851,7 +803,7 @@ class DRW_Hatch : public DRW_Point {
     arc = nullptr;
     ellipse = nullptr;
     spline = nullptr;
-    plvert = nullptr;
+    m_polylineVertex = nullptr;
   }
 
   void addLine() {
@@ -887,20 +839,24 @@ class DRW_Hatch : public DRW_Point {
     }
   }
 
-  DRW_HatchLoop* loop; /*!< current loop to add data */
+  DRW_HatchLoop* loop;  // current loop to add data
   DRW_Line* line;
   DRW_Arc* arc;
   DRW_Ellipse* ellipse;
   DRW_Spline* spline;
   DRW_LWPolyline* m_polyline;
   DRW_Point* pt;
-  DRW_Vertex2D* plvert;
+  DRW_Vertex2D* m_polylineVertex;
   bool m_isPolyline{};
 };
 
-//! Class to handle image entity
-/*!
- *  Class to handle image entity
+/** @brief Class to handle image entity
+ *
+ *  An image entity represents a raster image that is embedded in a drawing.
+ *  It is defined by its reference to an image definition object (code 340), the V-vector of a single pixel (code 12,
+ * 22, 32), the size of the image in pixels (code 13 and 23), and the z coordinate (code 33). The image entity can also
+ * include properties such as clipping state (code 280), brightness (code 281), contrast (code 282), and fade (code
+ * 283), which can affect how the image is rendered in the drawing.
  */
 class DRW_Image : public DRW_Line {
   friend class dxfRW;
@@ -916,23 +872,28 @@ class DRW_Image : public DRW_Line {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  std::uint32_t ref{}; /*!< Hard reference to imagedef object, code 340 */
-  DRW_Coord vVector; /*!< V-vector of single pixel, x coordinate, code 12, 22 & 32 */
-  //    double vx;                 /*!< V-vector of single pixel, x coordinate, code 12 */
-  //    double vy;                 /*!< V-vector of single pixel, y coordinate, code 22 */
-  //    double vz;                 /*!< V-vector of single pixel, z coordinate, code 32 */
-  double sizeu{}; /*!< image size in pixels, U value, code 13 */
-  double sizev{}; /*!< image size in pixels, V value, code 23 */
-  double dz{}; /*!< z coordinate, code 33 */
-  int clip; /*!< Clipping state, code 280, 0=off 1=on */
-  int brightness; /*!< Brightness value, code 281, (0-100) default 50 */
-  int contrast; /*!< Brightness value, code 282, (0-100) default 50 */
-  int fade; /*!< Brightness value, code 283, (0-100) default 0 */
+  std::uint32_t ref{};  // Hard reference to imagedef object, code 340
+  DRW_Coord vVector;  // V-vector of single pixel, x coordinate, code 12, 22 & 32
+  //    double vx;                 // V-vector of single pixel, x coordinate, code 12
+  //    double vy;                 // V-vector of single pixel, y coordinate, code 22
+  //    double vz;                 // V-vector of single pixel, z coordinate, code 32
+  double sizeu{};  // image size in pixels, U value, code 13
+  double sizev{};  // image size in pixels, V value, code 23
+  double dz{};  // z coordinate, code 33
+  int clip;  // Clipping state, code 280, 0=off 1=on
+  int brightness;  // Brightness value, code 281, (0-100) default 50
+  int contrast;  // Brightness value, code 282, (0-100) default 50
+  int fade;  // Brightness value, code 283, (0-100) default 0
 };
 
-//! Base class for dimension entity
-/*!
- *  Base class for dimension entity
+/** @brief Class to handle dimension entity
+ *
+ *  A dimension entity represents a measurement annotation in a drawing.
+ *  It is defined by its type (code 70), definition point (code 10, 20, 30), and text point (code 11, 21, 31).
+ *  The dimension entity can also include properties such as the dimension style (code 3), attachment point (code 71),
+ * text line spacing style (code 72), dimension text (code 1), text line spacing factor (code 41), rotation angle of
+ * the dimension text (code 53), and extrusion direction (code 210, 220, 230), which can affect how it is rendered in
+ * the drawing.
  */
 class DRW_Dimension : public DRW_Entity {
   friend class dxfRW;
@@ -981,30 +942,28 @@ class DRW_Dimension : public DRW_Entity {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord getDefPoint() const { return defPoint; } /*!< Definition point, code 10, 20 & 30 */
+  DRW_Coord getDefPoint() const { return defPoint; }  // Definition point, code 10, 20 & 30
   void setDefPoint(const DRW_Coord p) { defPoint = p; }
-  DRW_Coord getTextPoint() const { return textPoint; } /*!< Middle point of text, code 11, 21 & 31 */
+  DRW_Coord getTextPoint() const { return textPoint; }  // Middle point of text, code 11, 21 & 31
   void setTextPoint(const DRW_Coord p) { textPoint = p; }
-  std::string getStyle() const { return style; } /*!< Dimension style, code 3 */
+  std::string getStyle() const { return style; }  // Dimension style, code 3
   void setStyle(const std::string s) { style = s; }
-  int getAlign() const { return align; } /*!< attachment point, code 71 */
+  int getAlign() const { return align; }  // attachment point, code 71
   void setAlign(const int a) { align = a; }
-  int getTextLineStyle() const { return linesty; } /*!< Dimension text line spacing style, code 72, default 1 */
+  int getTextLineStyle() const { return linesty; }  // Dimension text line spacing style, code 72, default 1
   void setTextLineStyle(const int l) { linesty = l; }
-  std::string getText() const { return text; } /*!< Dimension text explicitly entered by the user, code 1 */
+  std::string getText() const { return text; }  // Dimension text explicitly entered by the user, code 1
   void setText(const std::string t) { text = t; }
-  double getTextLineFactor() const {
-    return linefactor;
-  } /*!< Dimension text line spacing factor, code 41, default 1? */
+  double getTextLineFactor() const { return linefactor; }  // Dimension text line spacing factor, code 41, default 1?
   void setTextLineFactor(const double l) { linefactor = l; }
-  double getDir() const { return rot; } /*!< rotation angle of the dimension text, code 53 (optional) default 0 */
+  double getDir() const { return rot; }  // rotation angle of the dimension text, code 53 (optional) default 0
   void setDir(const double d) { rot = d; }
 
-  DRW_Coord getExtrusion() { return extPoint; } /*!< extrusion, code 210, 220 & 230 */
+  DRW_Coord getExtrusion() { return extPoint; }  // extrusion, code 210, 220 & 230
   void setExtrusion(const DRW_Coord p) { extPoint = p; }
-  std::string getName() { return name; } /*!< Name of the block that contains the entities, code 2 */
+  std::string getName() { return name; }  // Name of the block that contains the entities, code 2
   void setName(const std::string s) { name = s; }
-  //    int getType(){ return type;}                      /*!< Dimension type, code 70 */
+  //    int getType(){ return type;}                      // Dimension type, code 70
 
  protected:
   DRW_Coord getPt2() const { return clonePoint; }
@@ -1017,42 +976,47 @@ class DRW_Dimension : public DRW_Entity {
   void setPt5(const DRW_Coord p) { circlePoint = p; }
   DRW_Coord getPt6() const { return arcPoint; }
   void setPt6(const DRW_Coord p) { arcPoint = p; }
-  double getAn50() const { return angle; } /*!< Angle of rotated, horizontal, or vertical dimensions, code 50 */
+  double getAn50() const { return angle; }  // Angle of rotated, horizontal, or vertical dimensions, code 50
   void setAn50(const double d) { angle = d; }
-  double getOb52() const { return oblique; } /*!< oblique angle, code 52 */
+  double getOb52() const { return oblique; }  // oblique angle, code 52
   void setOb52(const double d) { oblique = d; }
-  double getRa40() const { return length; } /*!< Leader length, code 40 */
+  double getRa40() const { return length; }  // Leader length, code 40
   void setRa40(const double d) { length = d; }
 
  public:
-  int type; /*!< Dimension type, code 70 */
+  int type;  // Dimension type, code 70
  private:
-  std::string name; /*!< Name of the block that contains the entities, code 2 */
-  DRW_Coord defPoint; /*!<  definition point, code 10, 20 & 30 (WCS) */
-  DRW_Coord textPoint; /*!< Middle point of text, code 11, 21 & 31 (OCS) */
-  UTF8STRING text; /*!< Dimension text explicitly entered by the user, code 1 */
-  UTF8STRING style; /*!< Dimension style, code 3 */
-  int align; /*!< attachment point, code 71 */
-  int linesty; /*!< Dimension text line spacing style, code 72, default 1 */
-  double linefactor; /*!< Dimension text line spacing factor, code 41, default 1? (value range 0.25 to 4.00*/
-  double rot; /*!< rotation angle of the dimension text, code 53 */
-  DRW_Coord extPoint; /*!<  extrusion normal vector, code 210, 220 & 230 */
+  std::string name;  // Name of the block that contains the entities, code 2
+  DRW_Coord defPoint;  //  definition point, code 10, 20 & 30 (WCS)
+  DRW_Coord textPoint;  // Middle point of text, code 11, 21 & 31 (OCS)
+  UTF8STRING text;  // Dimension text explicitly entered by the user, code 1
+  UTF8STRING style;  // Dimension style, code 3
+  int align;  // attachment point, code 71
+  int linesty;  // Dimension text line spacing style, code 72, default 1
+  double linefactor;  // Dimension text line spacing factor, code 41, default 1? (value range 0.25 to 4.00*/
+  double rot;  // rotation angle of the dimension text, code 53
+  DRW_Coord extPoint;  //  extrusion normal vector, code 210, 220 & 230
 
-  double hdir{}; /*!< horizontal direction for the dimension, code 51, default ? */
-  DRW_Coord clonePoint; /*!< Insertion point for clones (Baseline & Continue), code 12, 22 & 32 (OCS) */
-  DRW_Coord def1; /*!< Definition point 1for linear & angular, code 13, 23 & 33 (WCS) */
-  DRW_Coord def2; /*!< Definition point 2, code 14, 24 & 34 (WCS) */
-  double angle; /*!< Angle of rotated, horizontal, or vertical dimensions, code 50 */
-  double oblique; /*!< oblique angle, code 52 */
+  double hdir{};  // horizontal direction for the dimension, code 51, default ?
+  DRW_Coord clonePoint;  // Insertion point for clones (Baseline & Continue), code 12, 22 & 32 (OCS)
+  DRW_Coord def1;  // Definition point 1for linear & angular, code 13, 23 & 33 (WCS)
+  DRW_Coord def2;  // Definition point 2, code 14, 24 & 34 (WCS)
+  double angle;  // Angle of rotated, horizontal, or vertical dimensions, code 50
+  double oblique;  // oblique angle, code 52
 
-  DRW_Coord circlePoint; /*!< Definition point for diameter, radius & angular dims code 15, 25 & 35 (WCS) */
-  DRW_Coord arcPoint; /*!< Point defining dimension arc, x coordinate, code 16, 26 & 36 (OCS) */
-  double length{}; /*!< Leader length, code 40 */
+  DRW_Coord circlePoint;  // Definition point for diameter, radius & angular dims code 15, 25 & 35 (WCS)
+  DRW_Coord arcPoint;  // Point defining dimension arc, x coordinate, code 16, 26 & 36 (OCS)
+  double length{};  // Leader length, code 40
 };
 
-//! Class to handle  aligned dimension entity
-/*!
- *  Class to handle aligned dimension entity
+/** @brief Class to handle aligned dimension entity
+ *
+ *  An aligned dimension is a type of dimension that measures the distance between two points along a specified
+ * direction. It is defined by its definition point (code 10, 20, 30), text point (code 11, 21, 31), and the two
+ * definition points (code 13, 23, 33 and code 14, 24, 34). The aligned dimension can also include properties such as
+ * the dimension style (code 3), attachment point (code 71), text line spacing style (code 72), dimension text (code 1),
+ * text line spacing factor (code 41), rotation angle of the dimension text (code 53), and extrusion direction (code
+ * 210, 220, 230), which can affect how it is rendered in the drawing.
  */
 class DRW_DimAligned : public DRW_Dimension {
   friend class dxfRW;
@@ -1061,35 +1025,46 @@ class DRW_DimAligned : public DRW_Dimension {
   DRW_DimAligned() { m_entityType = DRW::DIMALIGNED; }
   DRW_DimAligned(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMALIGNED; }
 
-  DRW_Coord getClonepoint() const { return getPt2(); } /*!< Insertion for clones (Baseline & Continue), 12, 22 & 32 */
+  DRW_Coord getClonepoint() const { return getPt2(); }  // Insertion for clones (Baseline & Continue), 12, 22 & 32
   void setClonePoint(DRW_Coord c) { setPt2(c); }
 
-  DRW_Coord getDimPoint() const { return getDefPoint(); } /*!< dim line location point, code 10, 20 & 30 */
+  DRW_Coord getDimPoint() const { return getDefPoint(); }  // dim line location point, code 10, 20 & 30
   void setDimPoint(const DRW_Coord p) { setDefPoint(p); }
-  DRW_Coord getDef1Point() const { return getPt3(); } /*!< Definition point 1, code 13, 23 & 33 */
+  DRW_Coord getDef1Point() const { return getPt3(); }  // Definition point 1, code 13, 23 & 33
   void setDef1Point(const DRW_Coord p) { setPt3(p); }
-  DRW_Coord getDef2Point() const { return getPt4(); } /*!< Definition point 2, code 14, 24 & 34 */
+  DRW_Coord getDef2Point() const { return getPt4(); }  // Definition point 2, code 14, 24 & 34
   void setDef2Point(const DRW_Coord p) { setPt4(p); }
 };
 
-//! Class to handle  linear or rotated dimension entity
-/*!
- *  Class to handle linear or rotated dimension entity
+/** @brief Class to handle linear dimension entity
+ *
+ *  A linear dimension is a type of dimension that measures the distance between two points along a specified direction.
+ *  It is defined by its definition point (code 10, 20, 30), text point (code 11, 21, 31), and the two definition points
+ * (code 13, 23, 33 and code 14, 24, 34). The linear dimension can also include properties such as the dimension style
+ * (code 3), attachment point (code 71), text line spacing style (code 72), dimension text (code 1), text line spacing
+ * factor (code 41), rotation angle of the dimension text (code 53), and extrusion direction (code 210, 220, 230),
+ * which can affect how it is rendered in the drawing. Additionally, linear dimensions can have an oblique angle
+ * (code 52) that specifies the angle of the dimension line relative to the horizontal plane.
  */
 class DRW_DimLinear : public DRW_DimAligned {
  public:
   DRW_DimLinear() { m_entityType = DRW::DIMLINEAR; }
   DRW_DimLinear(const DRW_Dimension& d) : DRW_DimAligned(d) { m_entityType = DRW::DIMLINEAR; }
 
-  double getAngle() const { return getAn50(); } /*!< Angle of rotated, horizontal, or vertical dimensions, code 50 */
+  double getAngle() const { return getAn50(); }  // Angle of rotated, horizontal, or vertical dimensions, code 50
   void setAngle(const double d) { setAn50(d); }
-  double getOblique() const { return getOb52(); } /*!< oblique angle, code 52 */
+  double getOblique() const { return getOb52(); }  // oblique angle, code 52
   void setOblique(const double d) { setOb52(d); }
 };
 
-//! Class to handle radial dimension entity
-/*!
- *  Class to handle aligned, linear or rotated dimension entity
+/** @brief Class to handle radial dimension entity
+ *
+ *  A radial dimension is a type of dimension that measures the radius of a circle or arc.
+ *  It is defined by its center point (code 10, 20, 30), text point (code 11, 21, 31), and the definition point for the
+ * radius (code 15, 25, 35). The radial dimension can also include properties such as the dimension style (code 3),
+ * attachment point (code 71), text line spacing style (code 72), dimension text (code 1), text line spacing factor
+ * (code 41), rotation angle of the dimension text (code 53), and extrusion direction (code 210, 220, 230), which can
+ * affect how it is rendered in the drawing.
  */
 class DRW_DimRadial : public DRW_Dimension {
   friend class dxfRW;
@@ -1098,17 +1073,22 @@ class DRW_DimRadial : public DRW_Dimension {
   DRW_DimRadial() { m_entityType = DRW::DIMRADIAL; }
   DRW_DimRadial(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMRADIAL; }
 
-  DRW_Coord getCenterPoint() const { return getDefPoint(); } /*!< center point, code 10, 20 & 30 */
+  DRW_Coord getCenterPoint() const { return getDefPoint(); }  // center point, code 10, 20 & 30
   void setCenterPoint(const DRW_Coord p) { setDefPoint(p); }
-  DRW_Coord getDiameterPoint() const { return getPt5(); } /*!< Definition point for radius, code 15, 25 & 35 */
+  DRW_Coord getDiameterPoint() const { return getPt5(); }  // Definition point for radius, code 15, 25 & 35
   void setDiameterPoint(const DRW_Coord p) { setPt5(p); }
-  double getLeaderLength() const { return getRa40(); } /*!< Leader length, code 40 */
+  double getLeaderLength() const { return getRa40(); }  // Leader length, code 40
   void setLeaderLength(const double d) { setRa40(d); }
 };
 
-//! Class to handle radial dimension entity
-/*!
- *  Class to handle aligned, linear or rotated dimension entity
+/** @brief Class to handle diametric dimension entity
+ *
+ *  A diametric dimension is a type of dimension that measures the diameter of a circle or arc.
+ *  It is defined by its center point (code 10, 20, 30), text point (code 11, 21, 31), and the definition point for the
+ * diameter (code 15, 25, 35). The diametric dimension can also include properties such as the dimension style (code 3),
+ * attachment point (code 71), text line spacing style (code 72), dimension text (code 1), text line spacing factor
+ * (code 41), rotation angle of the dimension text (code 53), and extrusion direction (code 210, 220, 230), which can
+ * affect how it is rendered in the drawing.
  */
 class DRW_DimDiametric : public DRW_Dimension {
   friend class dxfRW;
@@ -1117,11 +1097,11 @@ class DRW_DimDiametric : public DRW_Dimension {
   DRW_DimDiametric() { m_entityType = DRW::DIMDIAMETRIC; }
   DRW_DimDiametric(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMDIAMETRIC; }
 
-  DRW_Coord getDiameter1Point() const { return getPt5(); } /*!< First definition point for diameter, code 15, 25 & 35 */
+  DRW_Coord getDiameter1Point() const { return getPt5(); }  // First definition point for diameter, code 15, 25 & 35
   void setDiameter1Point(const DRW_Coord p) { setPt5(p); }
-  DRW_Coord getDiameter2Point() const { return getDefPoint(); } /*!< Oposite point for diameter, code 10, 20 & 30 */
+  DRW_Coord getDiameter2Point() const { return getDefPoint(); }  // Oposite point for diameter, code 10, 20 & 30
   void setDiameter2Point(const DRW_Coord p) { setDefPoint(p); }
-  double getLeaderLength() const { return getRa40(); } /*!< Leader length, code 40 */
+  double getLeaderLength() const { return getRa40(); }  // Leader length, code 40
   void setLeaderLength(const double d) { setRa40(d); }
 };
 
@@ -1136,21 +1116,26 @@ class DRW_DimAngular : public DRW_Dimension {
   DRW_DimAngular() { m_entityType = DRW::DIMANGULAR; }
   DRW_DimAngular(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMANGULAR; }
 
-  DRW_Coord getFirstLine1() const { return getPt3(); } /*!< Definition point line 1-1, code 13, 23 & 33 */
+  DRW_Coord getFirstLine1() const { return getPt3(); }  // Definition point line 1-1, code 13, 23 & 33
   void setFirstLine1(const DRW_Coord p) { setPt3(p); }
-  DRW_Coord getFirstLine2() const { return getPt4(); } /*!< Definition point line 1-2, code 14, 24 & 34 */
+  DRW_Coord getFirstLine2() const { return getPt4(); }  // Definition point line 1-2, code 14, 24 & 34
   void setFirstLine2(const DRW_Coord p) { setPt4(p); }
-  DRW_Coord getSecondLine1() const { return getPt5(); } /*!< Definition point line 2-1, code 15, 25 & 35 */
+  DRW_Coord getSecondLine1() const { return getPt5(); }  // Definition point line 2-1, code 15, 25 & 35
   void setSecondLine1(const DRW_Coord p) { setPt5(p); }
-  DRW_Coord getSecondLine2() const { return getDefPoint(); } /*!< Definition point line 2-2, code 10, 20 & 30 */
+  DRW_Coord getSecondLine2() const { return getDefPoint(); }  // Definition point line 2-2, code 10, 20 & 30
   void setSecondLine2(const DRW_Coord p) { setDefPoint(p); }
-  DRW_Coord getDimPoint() const { return getPt6(); } /*!< Dimension definition point, code 16, 26 & 36 */
+  DRW_Coord getDimPoint() const { return getPt6(); }  // Dimension definition point, code 16, 26 & 36
   void setDimPoint(const DRW_Coord p) { setPt6(p); }
 };
 
-//! Class to handle angular 3p dimension entity
-/*!
- *  Class to handle angular 3p dimension entity
+/** @brief Class to handle 3 point angular dimension entity
+ *
+ *  A 3 point angular dimension is a type of dimension that measures the angle between three points.
+ *  It is defined by its vertex point (code 15, 25, 35), the two definition points for the lines (code 13, 23, 33 and
+ * code 14, 24, 34), and the dimension definition point (code 10, 20, 30). The 3 point angular dimension can also
+ * include properties such as the dimension style (code 3), attachment point (code 71), text line spacing style (code
+ * 72), dimension text (code 1), text line spacing factor (code 41), rotation angle of the dimension text (code 53), and
+ * extrusion direction (code 210, 220, 230), which can affect how it is rendered in the drawing.
  */
 class DRW_DimAngular3p : public DRW_Dimension {
   friend class dxfRW;
@@ -1159,19 +1144,24 @@ class DRW_DimAngular3p : public DRW_Dimension {
   DRW_DimAngular3p() { m_entityType = DRW::DIMANGULAR3P; }
   DRW_DimAngular3p(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMANGULAR3P; }
 
-  DRW_Coord getFirstLine() const { return getPt3(); } /*!< Definition point line 1, code 13, 23 & 33 */
+  DRW_Coord getFirstLine() const { return getPt3(); }  // Definition point line 1, code 13, 23 & 33
   void setFirstLine(const DRW_Coord p) { setPt3(p); }
-  DRW_Coord getSecondLine() const { return getPt4(); } /*!< Definition point line 2, code 14, 24 & 34 */
+  DRW_Coord getSecondLine() const { return getPt4(); }  // Definition point line 2, code 14, 24 & 34
   void setSecondLine(const DRW_Coord p) { setPt4(p); }
-  DRW_Coord getVertexPoint() const { return getPt5(); } /*!< Vertex point, code 15, 25 & 35 */
+  DRW_Coord getVertexPoint() const { return getPt5(); }  // Vertex point, code 15, 25 & 35
   void SetVertexPoint(const DRW_Coord p) { setPt5(p); }
-  DRW_Coord getDimPoint() const { return getDefPoint(); } /*!< Dimension definition point, code 10, 20 & 30 */
+  DRW_Coord getDimPoint() const { return getDefPoint(); }  // Dimension definition point, code 10, 20 & 30
   void setDimPoint(const DRW_Coord p) { setDefPoint(p); }
 };
 
-//! Class to handle ordinate dimension entity
-/*!
- *  Class to handle ordinate dimension entity
+/** @brief Class to handle ordinate dimension entity
+ *
+ *  An ordinate dimension is a type of dimension that measures the distance from a specified origin point to a feature
+ * location point along a specified direction. It is defined by its origin point (code 10, 20, 30), the feature location
+ * point (code 13, 23, 33), and the leader end point (code 14, 24, 34). The ordinate dimension can also include
+ * properties such as the dimension style (code 3), attachment point (code 71), text line spacing style (code 72),
+ * dimension text (code 1), text line spacing factor (code 41), rotation angle of the dimension text (code 53), and
+ * extrusion direction (code 210, 220, 230), which can affect how it is rendered in the drawing.
  */
 class DRW_DimOrdinate : public DRW_Dimension {
   friend class dxfRW;
@@ -1180,17 +1170,24 @@ class DRW_DimOrdinate : public DRW_Dimension {
   DRW_DimOrdinate() { m_entityType = DRW::DIMORDINATE; }
   DRW_DimOrdinate(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMORDINATE; }
 
-  DRW_Coord getOriginPoint() const { return getDefPoint(); } /*!< Origin definition point, code 10, 20 & 30 */
+  DRW_Coord getOriginPoint() const { return getDefPoint(); }  // Origin definition point, code 10, 20 & 30
   void setOriginPoint(const DRW_Coord p) { setDefPoint(p); }
-  DRW_Coord getFirstLine() const { return getPt3(); } /*!< Feature location point, code 13, 23 & 33 */
+  DRW_Coord getFirstLine() const { return getPt3(); }  // Feature location point, code 13, 23 & 33
   void setFirstLine(const DRW_Coord p) { setPt3(p); }
-  DRW_Coord getSecondLine() const { return getPt4(); } /*!< Leader end point, code 14, 24 & 34 */
+  DRW_Coord getSecondLine() const { return getPt4(); }  // Leader end point, code 14, 24 & 34
   void setSecondLine(const DRW_Coord p) { setPt4(p); }
 };
 
-//! Class to handle leader entity
-/*!
- *  Class to handle leader entity
+/** @brief Class to handle leader entity
+ *
+ *  A leader entity represents a line or curve that connects an annotation to a feature in a drawing.
+ *  It is defined by its dimension style (code 3), arrowhead flag (code 71), leader path type (code 72), and leader
+ * creation flag (code 73). The leader entity can also include properties such as the hook line direction flag (code
+ * 74), hook line flag (code 75), text annotation height (code 40), text annotation width (code 41), number of vertices
+ * (code 76), color to use if leader's DIMCLRD = BYBLOCK (code 77), hard reference to associated annotation (code 340),
+ * extrusion direction (code 210, 220, 230), "horizontal" direction for leader (code 211, 221, 231), offset of last
+ * leader vertex from block (code 212, 222, 232), and offset of last leader vertex from annotation (code 213, 223, 233).
+ * The geometry of the leader is defined by a list of vertices (code 10, 20, 30).
  */
 class DRW_Leader : public DRW_Entity {
   friend class dxfRW;
@@ -1207,11 +1204,6 @@ class DRW_Leader : public DRW_Entity {
   ~DRW_Leader() {
     for (DRW_Coord* vert : vertexlist) { delete vert; }
     vertexlist.clear();
-    /* TAS 2026-02-03: memory leak fix - pop_back does not delete pointers
-    while (!vertexlist.empty()) {
-      vertexlist.pop_back();
-    }
-    */
   }
 
   virtual void ApplyExtrusion() {}
@@ -1220,31 +1212,37 @@ class DRW_Leader : public DRW_Entity {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  UTF8STRING style; /*!< Dimension style name, code 3 */
-  int arrow; /*!< Arrowhead flag, code 71, 0=Disabled; 1=Enabled */
-  int leadertype; /*!< Leader path type, code 72, 0=Straight line segments; 1=Spline */
-  int flag; /*!< Leader creation flag, code 73, default 3 */
-  int hookline{}; /*!< Hook line direction flag, code 74, default 1 */
-  int hookflag; /*!< Hook line flag, code 75 */
-  double textheight{}; /*!< Text annotation height, code 40 */
-  double textwidth{}; /*!< Text annotation width, code 41 */
-  int vertnum; /*!< Number of vertices, code 76 */
-  int coloruse{}; /*!< Color to use if leader's DIMCLRD = BYBLOCK, code 77 */
-  std::uint32_t annotHandle{}; /*!< Hard reference to associated annotation, code 340 */
-  DRW_Coord extrusionPoint; /*!< Normal vector, code 210, 220 & 230 */
-  DRW_Coord horizdir; /*!< "Horizontal" direction for leader, code 211, 221 & 231 */
-  DRW_Coord offsetblock; /*!< Offset of last leader vertex from block, code 212, 222 & 232 */
-  DRW_Coord offsettext; /*!< Offset of last leader vertex from annotation, code 213, 223 & 233 */
+  UTF8STRING style;  // Dimension style name, code 3
+  int arrow;  // Arrowhead flag, code 71, 0=Disabled; 1=Enabled
+  int leadertype;  // Leader path type, code 72, 0=Straight line segments; 1=Spline
+  int flag;  // Leader creation flag, code 73, default 3
+  int hookline{};  // Hook line direction flag, code 74, default 1
+  int hookflag;  // Hook line flag, code 75
+  double textheight{};  // Text annotation height, code 40
+  double textwidth{};  // Text annotation width, code 41
+  int vertnum;  // Number of vertices, code 76
+  int coloruse{};  // Color to use if leader's DIMCLRD = BYBLOCK, code 77
+  std::uint32_t annotHandle{};  // Hard reference to associated annotation, code 340
+  DRW_Coord extrusionPoint;  // Normal vector, code 210, 220 & 230
+  DRW_Coord horizdir;  // "Horizontal" direction for leader, code 211, 221 & 231
+  DRW_Coord offsetblock;  // Offset of last leader vertex from block, code 212, 222 & 232
+  DRW_Coord offsettext;  // Offset of last leader vertex from annotation, code 213, 223 & 233
 
-  std::vector<DRW_Coord*> vertexlist; /*!< vertex points list, code 10, 20 & 30 */
+  std::vector<DRW_Coord*> vertexlist;  // vertex points list, code 10, 20 & 30
 
  private:
-  DRW_Coord* vertexpoint{}; /*!< current control point to add data */
+  DRW_Coord* vertexpoint{};  // current control point to add data
 };
 
-//! Class to handle viewport entity
-/*!
- *  Class to handle viewport entity
+/** @brief Class to handle viewport entity
+ *
+ *  A viewport entity represents a window in paper space that displays a view of the model space.
+ *  It is defined by its width and height in paper space units (code 40 and 41), viewport status (code 68), and viewport
+ * ID (code 69). The viewport entity can also include properties such as the view center point (code 12 and 22), snap
+ * base point (code 13 and 23), snap spacing (code 14 and 24), view direction vector (code 16, 26, and 36), view target
+ * point (code 17, 27, and 37), perspective lens length (code 42), front clip plane Z value (code 43), back clip plane Z
+ * value (code 44), view height in model space units (code 45), snap angle (code 50), and view twist angle (code 51),
+ * which can affect how the viewport displays the model space.
  */
 class DRW_Viewport : public DRW_Point {
   friend class dxfRW;
@@ -1265,25 +1263,25 @@ class DRW_Viewport : public DRW_Point {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  double pswidth; /*!< Width in paper space units, code 40 */
-  double psheight; /*!< Height in paper space units, code 41 */
-  int vpstatus; /*!< Viewport status, code 68 */
-  int vpID{}; /*!< Viewport ID, code 69 */
-  double centerPX; /*!< view center point X, code 12 */
-  double centerPY; /*!< view center point Y, code 22 */
-  double snapPX{}; /*!< Snap base point X, code 13 */
-  double snapPY{}; /*!< Snap base point Y, code 23 */
-  double snapSpPX{}; /*!< Snap spacing X, code 14 */
-  double snapSpPY{}; /*!< Snap spacing Y, code 24 */
+  double pswidth;  // Width in paper space units, code 40
+  double psheight;  // Height in paper space units, code 41
+  int vpstatus;  // Viewport status, code 68
+  int vpID{};  // Viewport ID, code 69
+  double centerPX;  // view center point X, code 12
+  double centerPY;  // view center point Y, code 22
+  double snapPX{};  // Snap base point X, code 13
+  double snapPY{};  // Snap base point Y, code 23
+  double snapSpPX{};  // Snap spacing X, code 14
+  double snapSpPY{};  // Snap spacing Y, code 24
   // TODO: complete in dxf
-  DRW_Coord viewDir; /*!< View direction vector, code 16, 26 & 36 */
-  DRW_Coord viewTarget; /*!< View target point, code 17, 27, 37 */
-  double viewLength{}; /*!< Perspective lens length, code 42 */
-  double frontClip{}; /*!< Front clip plane Z value, code 43 */
-  double backClip{}; /*!< Back clip plane Z value, code 44 */
-  double viewHeight{}; /*!< View height in model space units, code 45 */
-  double snapAngle{}; /*!< Snap angle, code 50 */
-  double twistAngle{}; /*!< view twist angle, code 51 */
+  DRW_Coord viewDir;  // View direction vector, code 16, 26 & 36
+  DRW_Coord viewTarget;  // View target point, code 17, 27, 37
+  double viewLength{};  // Perspective lens length, code 42
+  double frontClip{};  // Front clip plane Z value, code 43
+  double backClip{};  // Back clip plane Z value, code 44
+  double viewHeight{};  // View height in model space units, code 45
+  double snapAngle{};  // Snap angle, code 50
+  double twistAngle{};  // view twist angle, code 51
 
  private:
   std::uint32_t frozenLyCount{};
