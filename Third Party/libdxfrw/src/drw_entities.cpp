@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -746,24 +747,27 @@ void DRW_Vertex::ParseCode(int code, dxfReader* reader) {
 void DRW_Hatch::AddLine() {
   ClearEntities();
   if (m_hatchLoop) {
-    m_point = m_line = new DRW_Line;
-    m_hatchLoop->m_entities.push_back(m_line);
+    auto entity = std::make_unique<DRW_Line>();
+    m_point = m_line = entity.get();
+    m_hatchLoop->m_entities.push_back(std::move(entity));
   }
 }
 
 void DRW_Hatch::AddArc() {
   ClearEntities();
   if (m_hatchLoop) {
-    m_point = m_arc = new DRW_Arc;
-    m_hatchLoop->m_entities.push_back(m_arc);
+    auto entity = std::make_unique<DRW_Arc>();
+    m_point = m_arc = entity.get();
+    m_hatchLoop->m_entities.push_back(std::move(entity));
   }
 }
 
 void DRW_Hatch::AddEllipse() {
   ClearEntities();
   if (m_hatchLoop) {
-    m_point = m_ellipse = new DRW_Ellipse;
-    m_hatchLoop->m_entities.push_back(m_ellipse);
+    auto entity = std::make_unique<DRW_Ellipse>();
+    m_point = m_ellipse = entity.get();
+    m_hatchLoop->m_entities.push_back(std::move(entity));
   }
 }
 
@@ -771,8 +775,9 @@ void DRW_Hatch::AddSpline() {
   ClearEntities();
   if (m_hatchLoop) {
     m_point = nullptr;
-    m_spline = new DRW_Spline;
-    m_hatchLoop->m_entities.push_back(m_spline);
+    auto entity = std::make_unique<DRW_Spline>();
+    m_spline = entity.get();
+    m_hatchLoop->m_entities.push_back(std::move(entity));
   }
 }
 
@@ -913,8 +918,9 @@ void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
       if (boundaryPathType & 2) {  // polyline
         m_isPolyline = true;
         ClearEntities();
-        m_polyline = new DRW_LWPolyline;
-        m_hatchLoop->m_entities.push_back(m_polyline);
+        auto entity = std::make_unique<DRW_LWPolyline>();
+        m_polyline = entity.get();
+        m_hatchLoop->m_entities.push_back(std::move(entity));
       } else {
         m_isPolyline = false;
       }

@@ -1,4 +1,4 @@
-﻿#include "libdxfrw.h"
+#include "libdxfrw.h"
 
 #include <algorithm>
 #include <cctype>
@@ -658,20 +658,20 @@ bool dxfRW::WritePolyline(DRW_Polyline* polyline) {
   if (polyline->m_smoothSurfaceDensityM != 0) { m_writer->WriteInt16(73, polyline->m_smoothSurfaceDensityM); }
   if (polyline->m_smoothSurfaceDensityN != 0) { m_writer->WriteInt16(74, polyline->m_smoothSurfaceDensityN); }
   if (polyline->m_curvesAndSmoothSurfaceType != 0) { m_writer->WriteInt16(75, polyline->m_curvesAndSmoothSurfaceType); }
-  auto crd = polyline->m_extrusionDirection;
-  if (crd.x > DRW::geometricTolerance || crd.y < -DRW::geometricTolerance ||
-      std::abs(crd.z - 1.0) > DRW::geometricTolerance) {
-    m_writer->WriteDouble(210, crd.x);
-    m_writer->WriteDouble(220, crd.y);
-    m_writer->WriteDouble(230, crd.z);
+  auto extrusionDirection = polyline->m_extrusionDirection;
+  if (extrusionDirection.x > DRW::geometricTolerance || extrusionDirection.y < -DRW::geometricTolerance ||
+      std::abs(extrusionDirection.z - 1.0) > DRW::geometricTolerance) {
+    m_writer->WriteDouble(210, extrusionDirection.x);
+    m_writer->WriteDouble(220, extrusionDirection.y);
+    m_writer->WriteDouble(230, extrusionDirection.z);
   }
 
   // VERTEX entities
   const auto polylineHandle = polyline->m_handle;
-  for (const auto* vertex : polyline->m_vertices) {
+  for (auto* vertex : polyline->m_vertices) {
     m_writer->WriteString(0, "VERTEX");
     // WriteEntity assigns a new handle and writes AcDbEntity subclass
-    WriteEntity(const_cast<DRW_Vertex*>(vertex));
+    WriteEntity(vertex);
 
     // Base subclass marker required before the specific subclass
     if (vertex->m_vertexFlags & 128) {
@@ -800,7 +800,7 @@ bool dxfRW::WriteHatch(DRW_Hatch* hatch) {
     if ((hatchLoop->m_boundaryPathType & 2) == 2) {
       // polyline boundary path
       if (!hatchLoop->m_entities.empty() && hatchLoop->m_entities.front()->m_entityType == DRW::LWPOLYLINE) {
-        auto* polyline = static_cast<DRW_LWPolyline*>(hatchLoop->m_entities.front());
+        auto* polyline = static_cast<DRW_LWPolyline*>(hatchLoop->m_entities.front().get());
         m_writer->WriteInt16(72, (polyline->m_constantWidth != 0.0) ? 1 : 0);
         m_writer->WriteInt16(73, polyline->m_polylineFlag);
         m_writer->WriteInt32(93, static_cast<int>(polyline->m_vertices.size()));
@@ -818,7 +818,7 @@ bool dxfRW::WriteHatch(DRW_Hatch* hatch) {
         switch ((hatchLoop->m_entities.at(j))->m_entityType) {
           case DRW::LINE: {
             m_writer->WriteInt16(72, 1);
-            auto* line = static_cast<DRW_Line*>(hatchLoop->m_entities.at(j));
+            auto* line = static_cast<DRW_Line*>(hatchLoop->m_entities.at(j).get());
             m_writer->WriteDouble(10, line->m_firstPoint.x);
             m_writer->WriteDouble(20, line->m_firstPoint.y);
             m_writer->WriteDouble(11, line->m_secondPoint.x);
@@ -827,7 +827,7 @@ bool dxfRW::WriteHatch(DRW_Hatch* hatch) {
           }
           case DRW::ARC: {
             m_writer->WriteInt16(72, 2);
-            auto* arc = static_cast<DRW_Arc*>(hatchLoop->m_entities.at(j));
+            auto* arc = static_cast<DRW_Arc*>(hatchLoop->m_entities.at(j).get());
             m_writer->WriteDouble(10, arc->m_firstPoint.x);
             m_writer->WriteDouble(20, arc->m_firstPoint.y);
             m_writer->WriteDouble(40, arc->m_radius);
@@ -838,15 +838,15 @@ bool dxfRW::WriteHatch(DRW_Hatch* hatch) {
           }
           case DRW::ELLIPSE: {
             m_writer->WriteInt16(72, 3);
-            auto* ellipse = static_cast<DRW_Ellipse*>(hatchLoop->m_entities.at(j));
+            auto* ellipse = static_cast<DRW_Ellipse*>(hatchLoop->m_entities.at(j).get());
             ellipse->CorrectAxis();
             m_writer->WriteDouble(10, ellipse->m_firstPoint.x);
             m_writer->WriteDouble(20, ellipse->m_firstPoint.y);
             m_writer->WriteDouble(11, ellipse->m_secondPoint.x);
             m_writer->WriteDouble(21, ellipse->m_secondPoint.y);
             m_writer->WriteDouble(40, ellipse->m_ratio);
-            m_writer->WriteDouble(50, ellipse->m_startParam);  // in radians for parameters
-            m_writer->WriteDouble(51, ellipse->m_endParam);  // in radians for parameters
+            m_writer->WriteDouble(50, ellipse->m_startParam);
+            m_writer->WriteDouble(51, ellipse->m_endParam);
             m_writer->WriteInt16(73, ellipse->m_isCounterClockwise);
             break;
           }

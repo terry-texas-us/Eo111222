@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -749,9 +750,7 @@ class DRW_HatchLoop {
  public:
   explicit DRW_HatchLoop(int boundaryPathType) : m_boundaryPathType{boundaryPathType} {}
 
-  ~DRW_HatchLoop() {
-    for (auto* entity : m_entities) { delete entity; }
-  }
+  ~DRW_HatchLoop() = default;
 
   DRW_HatchLoop(const DRW_HatchLoop&) = delete;
   DRW_HatchLoop& operator=(const DRW_HatchLoop&) = delete;
@@ -765,7 +764,7 @@ class DRW_HatchLoop {
   int m_boundaryPathType{};  // Group code 92
   int m_numberOfEdges{};  // Group code 93
 
-  std::vector<DRW_Entity*> m_entities;
+  std::vector<std::unique_ptr<DRW_Entity>> m_entities;
 };
 
 /** @brief Class to handle hatch entity
