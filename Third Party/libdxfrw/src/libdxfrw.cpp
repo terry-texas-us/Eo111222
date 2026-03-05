@@ -1766,7 +1766,7 @@ bool dxfRW::ProcessLType() {
       sectionstr = m_reader->GetString();
       if (sectionstr == "LTYPE") {
         reading = true;
-        ltype.reset();
+        ltype.Reset();
       } else if (sectionstr == "ENDTAB") {
         DRW_DBG("<leaving dxfRW::ProcessLType>\n");
         return true;
@@ -1790,7 +1790,7 @@ bool dxfRW::ProcessLayer() {
       sectionstr = m_reader->GetString();
       if (sectionstr == "LAYER") {
         reading = true;
-        layer.reset();
+        layer.Reset();
       } else if (sectionstr == "ENDTAB") {
         DRW_DBG("<leaving dxfRW::ProcessLayer>\n");
         return true;
@@ -1806,21 +1806,21 @@ bool dxfRW::ProcessDimStyle() {
   DRW_DBG("<entering dxfRW::ProcessDimStyle>");
   int code;
   std::string sectionstr;
-  bool reading = false;
-  DRW_Dimstyle dimSty;
+  bool reading{};
+  DRW_Dimstyle dimStyle;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) { m_interface->addDimStyle(dimSty); }
+      if (reading) { m_interface->addDimStyle(dimStyle); }
       sectionstr = m_reader->GetString();
       if (sectionstr == "DIMSTYLE") {
         reading = true;
-        dimSty.reset();
+        dimStyle.Reset();
       } else if (sectionstr == "ENDTAB") {
         DRW_DBG("<leaving dxfRW::ProcessDimStyle>\n");
         return true;
       }
     } else if (reading) {
-      dimSty.ParseCode(code, m_reader);
+      dimStyle.ParseCode(code, m_reader);
     }
   }
   return true;
@@ -1830,21 +1830,21 @@ bool dxfRW::ProcessTextStyle() {
   DRW_DBG("entering dxfRW::ProcessTextStyle");
   int code;
   std::string sectionstr;
-  bool reading = false;
-  DRW_Textstyle TxtSty;
+  bool reading{};
+  DRW_Textstyle textStyle;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) { m_interface->addTextStyle(TxtSty); }
+      if (reading) { m_interface->addTextStyle(textStyle); }
       sectionstr = m_reader->GetString();
       if (sectionstr == "STYLE") {
         reading = true;
-        TxtSty.reset();
+        textStyle.Reset();
       } else if (sectionstr == "ENDTAB") {
         DRW_DBG("<leaving dxfRW::ProcessTextStyle>\n");
         return true;
       }
     } else if (reading) {
-      TxtSty.ParseCode(code, m_reader);
+      textStyle.ParseCode(code, m_reader);
     }
   }
   return true;
@@ -1854,21 +1854,21 @@ bool dxfRW::ProcessVports() {
   DRW_DBG("entering dxfRW::ProcessVports");
   int code;
   std::string sectionstr;
-  bool reading = false;
-  DRW_Vport vp;
+  bool reading{};
+  DRW_Vport viewport;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) { m_interface->addVport(vp); }
+      if (reading) { m_interface->addVport(viewport); }
       sectionstr = m_reader->GetString();
       if (sectionstr == "VPORT") {
         reading = true;
-        vp.reset();
+        viewport.Reset();
       } else if (sectionstr == "ENDTAB") {
         DRW_DBG("<leaving dxfRW::ProcessVports>\n");
         return true;
       }
     } else if (reading) {
-      vp.ParseCode(code, m_reader);
+      viewport.ParseCode(code, m_reader);
     }
   }
   return true;
@@ -1879,20 +1879,20 @@ bool dxfRW::ProcessAppId() {
   int code;
   std::string sectionstr;
   bool reading = false;
-  DRW_AppId vp;
+  DRW_AppId appId;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) { m_interface->addAppId(vp); }
+      if (reading) { m_interface->addAppId(appId); }
       sectionstr = m_reader->GetString();
       if (sectionstr == "APPID") {
         reading = true;
-        vp.reset();
+        appId.Reset();
       } else if (sectionstr == "ENDTAB") {
         DRW_DBG("<leaving dxfRW::ProcessAppId>\n");
         return true;
       }
     } else if (reading) {
-      vp.ParseCode(code, m_reader);
+      appId.ParseCode(code, m_reader);
     }
   }
   return true;

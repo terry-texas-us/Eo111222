@@ -6,10 +6,6 @@
 #include "drw_objects.h"
 #include "intern/dxfreader.h"
 
-//! Base class for tables entries
-/*!
- *  Base class for tables entries
- */
 void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 5:
@@ -66,10 +62,17 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-//! Class to handle dimstyle entries
-/*!
- *  Class to handle ldim style symbol table entries
- */
+void DRW_Block_Record::ParseCode(int code, dxfReader* reader) {
+  switch (code) {
+    case 70:
+      m_blockInsertionUnits = reader->GetInt32();
+      break;
+    default:
+      DRW_TableEntry::ParseCode(code, reader);
+      break;
+  }
+}
+
 void DRW_Dimstyle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 105:
@@ -288,10 +291,6 @@ void DRW_Dimstyle::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-//! Class to handle line type entries
-/*!
- *  Class to handle line type symbol table entries
- */
 void DRW_LType::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 3:
@@ -317,11 +316,6 @@ void DRW_LType::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-//! Update line type
-/*!
- *  Update the size and length of line type acording to the path
- */
-/*TODO: control max length permited */
 void DRW_LType::update() {
   double d = 0;
   size = static_cast<int>(path.size());
@@ -329,10 +323,6 @@ void DRW_LType::update() {
   length = d;
 }
 
-//! Class to handle layer entries
-/*!
- *  Class to handle layer symbol table entries
- */
 void DRW_Layer::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 6:
@@ -362,10 +352,6 @@ void DRW_Layer::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-//! Class to handle text style entries
-/*!
- *  Class to handle text style symbol table entries
- */
 void DRW_Textstyle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 3:
@@ -398,10 +384,6 @@ void DRW_Textstyle::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-//! Class to handle vport entries
-/*!
- *  Class to handle vport symbol table entries
- */
 void DRW_Vport::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 10:
@@ -507,6 +489,17 @@ void DRW_Vport::ParseCode(int code, dxfReader* reader) {
       DRW_TableEntry::ParseCode(code, reader);
       break;
   }
+}
+
+void DRW_ImageDef::Reset() {
+  imgVersion = 0;
+  u = 0.0;
+  v = 0.0;
+  up = 0.0;
+  vp = 0.0;
+  loaded = 0;
+  resolution = 0;
+  DRW_TableEntry::Reset();
 }
 
 void DRW_ImageDef::ParseCode(int code, dxfReader* reader) {

@@ -48,10 +48,12 @@ class DRW_TableEntry {
 
  protected:
   void ParseCode(int code, dxfReader* reader);
-  void reset() {
+
+  void Reset() {
     flags = 0;
-    for (std::vector<DRW_Variant*>::iterator it = extData.begin(); it != extData.end(); ++it) { delete *it; }
+    for (auto* variant : extData) { delete variant; }
     extData.clear();
+    m_currentVariant = nullptr;
   }
 
  public:
@@ -78,10 +80,12 @@ class DRW_Dimstyle : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Dimstyle() { reset(); }
+  DRW_Dimstyle() : DRW_TableEntry(DRW::DIMSTYLE) { Reset(); }
 
-  void reset() {
-    tType = DRW::DIMSTYLE;
+ protected:
+  void ParseCode(int code, dxfReader* reader);
+
+  void Reset() {
     dimasz = dimtxt = dimexe = 0.18;
     dimexo = 0.0625;
     dimgap = dimcen = 0.09;
@@ -102,11 +106,8 @@ class DRW_Dimstyle : public DRW_TableEntry {
     dimfit = dimatfit = 3;
     dimdsep = '.';
     dimlwd = dimlwe = -2;
-    DRW_TableEntry::reset();
+    DRW_TableEntry::Reset();
   }
-
- protected:
-  void ParseCode(int code, dxfReader* reader);
 
  public:
   UTF8STRING dimpost;  // Group code 3
@@ -192,19 +193,19 @@ class DRW_LType : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_LType() { reset(); }
+  DRW_LType() : DRW_TableEntry(DRW::LTYPE) { Reset(); }
 
-  void reset() {
-    tType = DRW::LTYPE;
+ protected:
+  void ParseCode(int code, dxfReader* reader);
+
+  void Reset() {
     desc = "";
     size = 0;
     length = 0.0;
     pathIdx = 0;
-    DRW_TableEntry::reset();
+    DRW_TableEntry::Reset();
   }
 
- protected:
-  void ParseCode(int code, dxfReader* reader);
   void update();
 
  public:
@@ -228,20 +229,19 @@ class DRW_Layer : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Layer() { reset(); }
+  DRW_Layer() : DRW_TableEntry(DRW::LAYER) { Reset(); }
 
-  void reset() {
-    tType = DRW::LAYER;
+ protected:
+  void ParseCode(int code, dxfReader* reader);
+
+  void Reset() {
     lineType = "CONTINUOUS";
     color = 7;  // default BYLAYER (256)
     plotF = true;  // default TRUE (plot yes)
     lWeight = DRW_LW_Conv::widthDefault;  // default BYDEFAULT (dxf -3)
     color24 = -1;  // default -1 not set
-    DRW_TableEntry::reset();
+    DRW_TableEntry::Reset();
   }
-
- protected:
-  void ParseCode(int code, dxfReader* reader);
 
  public:
   UTF8STRING lineType;  // Group code 6
@@ -265,18 +265,19 @@ class DRW_Block_Record : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Block_Record() { reset(); }
-  void reset() {
-    tType = DRW::BLOCK_RECORD;
-    flags = 0;
-    DRW_TableEntry::reset();
-  }
+  DRW_Block_Record() : DRW_TableEntry(DRW::BLOCK_RECORD) { Reset(); }
 
  protected:
-  //    void ParseCode(int code, dxfReader *reader);
+  void ParseCode(int code, dxfReader* reader);
+
+  void Reset() {
+    m_blockInsertionUnits = 0;
+    flags = 0;
+    DRW_TableEntry::Reset();
+  }
+
  public:
-  // Note:    int DRW_TableEntry::flags; contains code 70 of block
-  int insUnits;  // Group code 70 of block_record
+  int m_blockInsertionUnits;  // Group code 70
   DRW_Coord m_firstPoint;
 };
 
@@ -292,20 +293,19 @@ class DRW_Textstyle : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Textstyle() { reset(); }
+  DRW_Textstyle() : DRW_TableEntry(DRW::STYLE) { Reset(); }
+
+ protected:
+  void ParseCode(int code, dxfReader* reader);
 
   void reset() {
-    tType = DRW::STYLE;
     height = oblique = 0.0;
     width = lastHeight = 1.0;
     font = "txt";
     genFlag = 0;  // 2= X mirror, 4= Y mirror
     fontFamily = 0;
-    DRW_TableEntry::reset();
+    DRW_TableEntry::Reset();
   }
-
- protected:
-  void ParseCode(int code, dxfReader* reader);
 
  public:
   double height;  // Group code 40
@@ -332,10 +332,9 @@ class DRW_Vport : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Vport() { reset(); }
+  DRW_Vport() : DRW_TableEntry(DRW::VPORT) { Reset(); }
 
-  void reset() {
-    tType = DRW::VPORT;
+  void Reset() {
     upperRight.x = upperRight.y = 1.0;
     snapSpacing.x = snapSpacing.y = 10.0;
     gridSpacing = snapSpacing;
@@ -351,7 +350,7 @@ class DRW_Vport : public DRW_TableEntry {
     circleZoom = 100;
     ucsIcon = 3;
     gridBehavior = 7;
-    DRW_TableEntry::reset();
+    DRW_TableEntry::Reset();
   }
 
  protected:
@@ -402,27 +401,23 @@ class DRW_ImageDef : public DRW_TableEntry {  //
   friend class dxfRW;
 
  public:
-  DRW_ImageDef() { reset(); }
-
-  void reset() {
-    tType = DRW::IMAGEDEF;
-    imgVersion = 0;
-    DRW_TableEntry::reset();
-  }
+  DRW_ImageDef() : DRW_TableEntry(DRW::IMAGEDEF) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
+
+  void Reset();
 
  public:
   //    std::string handle;       // Group code 5
   UTF8STRING name;  // Group code 1
   int imgVersion;  // Group code 90, 0=R14 version
-  double u;  // Group code 10
-  double v;  // Group code 20
-  double up;  // Group code 11
-  double vp;  // Group code 12 really is 21
-  int loaded;  // Group code 280, 0=unloaded, 1=loaded
-  int resolution;  // Group code 281, 0=no, 2=centimeters, 5=inch
+  double u{};  // Group code 10
+  double v{};  // Group code 20
+  double up{};  // Group code 11
+  double vp{};  // Group code 12 really is 21
+  int loaded{};  // Group code 280, 0=unloaded, 1=loaded
+  int resolution{};  // Group code 281, 0=no, 2=centimeters, 5=inch
 
   std::map<std::string, std::string> reactors;
 };
@@ -437,24 +432,22 @@ class DRW_AppId : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_AppId() { reset(); }
-
-  void reset() {
-    tType = DRW::APPID;
-    flags = 0;
-    name = "";
-  }
+  DRW_AppId() : DRW_TableEntry(DRW::APPID) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader) { DRW_TableEntry::ParseCode(code, reader); }
+
+  void Reset() {
+    flags = 0;
+    name = "";
+    DRW_TableEntry::Reset();
+  }
 };
 
 namespace DRW {
 
-// Extended color palette:
-// The first entry is only for direct indexing starting with [1]
-// Color 1 is red (1,0,0)
-const unsigned char dxfColors[][3] = {
+// Extended color palette: The first entry is only for direct indexing starting with [1]
+inline constexpr unsigned char dxfColors[][3] = {
     {0, 0, 0},  // unused
     {255, 0, 0},  // 1 red
     {255, 255, 0},  // 2 yellow
