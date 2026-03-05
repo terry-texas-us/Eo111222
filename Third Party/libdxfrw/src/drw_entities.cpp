@@ -743,121 +743,178 @@ void DRW_Vertex::ParseCode(int code, dxfReader* reader) {
   }
 }
 
+void DRW_Hatch::AddLine() {
+  ClearEntities();
+  if (m_hatchLoop) {
+    m_point = m_line = new DRW_Line;
+    m_hatchLoop->m_entities.push_back(m_line);
+  }
+}
+
+void DRW_Hatch::AddArc() {
+  ClearEntities();
+  if (m_hatchLoop) {
+    m_point = m_arc = new DRW_Arc;
+    m_hatchLoop->m_entities.push_back(m_arc);
+  }
+}
+
+void DRW_Hatch::AddEllipse() {
+  ClearEntities();
+  if (m_hatchLoop) {
+    m_point = m_ellipse = new DRW_Ellipse;
+    m_hatchLoop->m_entities.push_back(m_ellipse);
+  }
+}
+
+void DRW_Hatch::AddSpline() {
+  ClearEntities();
+  if (m_hatchLoop) {
+    m_point = nullptr;
+    m_spline = new DRW_Spline;
+    m_hatchLoop->m_entities.push_back(m_spline);
+  }
+}
+
+void DRW_Hatch::ClearEntities() noexcept {
+  m_point = nullptr;
+  m_line = nullptr;
+  m_polyline = nullptr;
+  m_arc = nullptr;
+  m_ellipse = nullptr;
+  m_spline = nullptr;
+  m_polylineVertex = nullptr;
+}
+
 void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 2:
-      name = reader->GetUtf8String();
+      m_hatchPatternName = reader->GetUtf8String();
       break;
     case 70:
-      solid = reader->GetInt32();
+      m_solidFillFlag = reader->GetInt32();
       break;
     case 71:
-      associative = reader->GetInt32();
-      break;
-    case 72: /*edge type*/
-      if (m_isPolyline) {  // if is polyline is a as_bulge flag
-        break;
-      } else if (reader->GetInt32() == 1) {  // line
-        addLine();
-      } else if (reader->GetInt32() == 2) {  // arc
-        addArc();
-      } else if (reader->GetInt32() == 3) {  // elliptic arc
-        addEllipse();
-      } else if (reader->GetInt32() == 4) {  // spline
-        addSpline();
-      }
+      m_associativityFlag = reader->GetInt32();
       break;
     case 10:
-      if (pt) {
-        pt->m_firstPoint.x = reader->GetDouble();
+      if (m_point) {
+        m_point->m_firstPoint.x = reader->GetDouble();
+      } else if (m_spline) {
+        // Add routing for the active m_spline data groups
       } else if (m_polyline) {
         m_polylineVertex = &m_polyline->AddVertex();
         m_polylineVertex->x = reader->GetDouble();
       }
       break;
     case 20:
-      if (pt) {
-        pt->m_firstPoint.y = reader->GetDouble();
+      if (m_point) {
+        m_point->m_firstPoint.y = reader->GetDouble();
+      } else if (m_spline) {
+        // Add routing for the active m_spline data groups
       } else if (m_polylineVertex) {
         m_polylineVertex->y = reader->GetDouble();
       }
       break;
     case 11:
-      if (line) {
-        line->m_secondPoint.x = reader->GetDouble();
-      } else if (ellipse) {
-        ellipse->m_secondPoint.x = reader->GetDouble();
+      if (m_line) {
+        m_line->m_secondPoint.x = reader->GetDouble();
+      } else if (m_ellipse) {
+        m_ellipse->m_secondPoint.x = reader->GetDouble();
       }
       break;
     case 21:
-      if (line) {
-        line->m_secondPoint.y = reader->GetDouble();
-      } else if (ellipse) {
-        ellipse->m_secondPoint.y = reader->GetDouble();
+      if (m_line) {
+        m_line->m_secondPoint.y = reader->GetDouble();
+      } else if (m_ellipse) {
+        m_ellipse->m_secondPoint.y = reader->GetDouble();
       }
       break;
     case 40:
-      if (arc) {
-        arc->m_radius = reader->GetDouble();
-      } else if (ellipse) {
-        ellipse->m_ratio = reader->GetDouble();
+      if (m_arc) {
+        m_arc->m_radius = reader->GetDouble();
+      } else if (m_ellipse) {
+        m_ellipse->m_ratio = reader->GetDouble();
+      } else if (m_spline) {
+        // Add routing for the active m_spline data groups
       }
       break;
     case 41:
-      scale = reader->GetDouble();
+      m_hatchPatternScaleOrSpacing = reader->GetDouble();
       break;
     case 42:
       if (m_polylineVertex) { m_polylineVertex->bulge = reader->GetDouble(); }
       break;
     case 50:
-      if (arc) {
-        arc->m_startAngle = reader->GetDouble() * DRW::DegreesToRadians;
-      } else if (ellipse) {
-        ellipse->m_startParam = reader->GetDouble();
+      if (m_arc) {
+        m_arc->m_startAngle = reader->GetDouble() * DRW::DegreesToRadians;
+      } else if (m_ellipse) {
+        m_ellipse->m_startParam = reader->GetDouble();
       }
       break;
     case 51:
-      if (arc) {
-        arc->m_endAngle = reader->GetDouble() * DRW::DegreesToRadians;
-      } else if (ellipse) {
-        ellipse->m_endParam = reader->GetDouble();
+      if (m_arc) {
+        m_arc->m_endAngle = reader->GetDouble() * DRW::DegreesToRadians;
+      } else if (m_ellipse) {
+        m_ellipse->m_endParam = reader->GetDouble();
       }
       break;
     case 52:
-      angle = reader->GetDouble();
+      m_hatchPatternAngle = reader->GetDouble();
       break;
     case 73:
-      if (arc) {
-        arc->m_isCounterClockwise = reader->GetInt32();
+      if (m_arc) {
+        m_arc->m_isCounterClockwise = reader->GetInt32();
+      } else if (m_ellipse) {
+        m_ellipse->m_isCounterClockwise = reader->GetInt32();
       } else if (m_polyline) {
         m_polyline->m_polylineFlag = reader->GetInt32();
       }
       break;
     case 75:
-      hstyle = reader->GetInt32();
+      m_hatchStyle = reader->GetInt32();
       break;
     case 76:
-      hpattern = reader->GetInt32();
+      m_hatchPatternType = reader->GetInt32();
       break;
     case 77:
-      doubleflag = reader->GetInt32();
+      m_hatchPatternDoubleFlag = reader->GetInt32();
       break;
     case 78:
-      deflines = reader->GetInt32();
+      m_numberOfPatternDefinitionLines = reader->GetInt32();
       break;
+
     case 91:
-      loopsnum = reader->GetInt32();
-      looplist.reserve(loopsnum);
+      m_numberOfBoundaryPaths = reader->GetInt32();
+      m_hatchLoops.reserve(m_numberOfBoundaryPaths);
+      break;
+
+    // Hatch boundary path data groups
+    case 72:
+      if (m_isPolyline) {
+        break;
+      } else {
+        int edgeType = reader->GetInt32();
+        if (edgeType == 1) {  // line
+          AddLine();
+        } else if (edgeType == 2) {  // circular arc
+          AddArc();
+        } else if (edgeType == 3) {  // elliptic arc
+          AddEllipse();
+        } else if (edgeType == 4) {  // spline
+          AddSpline();
+        }
+      }
       break;
     case 92: {
-      int32_t boundaryPathType = reader->GetInt32();
-      loop = new DRW_HatchLoop(boundaryPathType);
-      looplist.push_back(loop);
-      if (boundaryPathType & 2) {  // Boundary-path type (2 = polyline)
+      auto boundaryPathType = reader->GetInt32();
+      m_hatchLoop = new DRW_HatchLoop(boundaryPathType);
+      m_hatchLoops.push_back(m_hatchLoop);
+      if (boundaryPathType & 2) {  // polyline
         m_isPolyline = true;
-        clearEntities();
+        ClearEntities();
         m_polyline = new DRW_LWPolyline;
-        loop->objlist.push_back(m_polyline);
+        m_hatchLoop->m_entities.push_back(m_polyline);
       } else {
         m_isPolyline = false;
       }
@@ -867,12 +924,27 @@ void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
       if (m_polyline) {
         m_polyline->m_numberOfVertices = reader->GetInt32();
         m_polyline->m_vertices.reserve(m_polyline->m_numberOfVertices);  // modern reserve on new container
-      } else if (loop) {
-        loop->numedges = reader->GetInt32();
+      } else if (m_hatchLoop) {
+        m_hatchLoop->m_numberOfEdges = reader->GetInt32();
       }
       break;
+
+    // Spline-specific data groups (94, 95, 96) are stored on the active m_spline if it exists, otherwise ignored
+    case 94:
+      if (m_spline) { m_spline->m_degreeOfTheSplineCurve = reader->GetInt32(); }
+      break;
+    case 95:
+      if (m_spline) {
+        m_spline->m_numberOfKnots = reader->GetInt32();
+        m_spline->m_knotValues.reserve(m_spline->m_numberOfKnots);
+      }
+      break;
+    case 96:
+      if (m_spline) { m_spline->m_numberOfControlPoints = reader->GetInt32(); }
+      break;
+
     case 98:
-      clearEntities();
+      ClearEntities();
       break;
     default:
       DRW_Point::ParseCode(code, reader);
@@ -883,85 +955,84 @@ void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
 void DRW_Spline::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 210:
-      normalVec.x = reader->GetDouble();
+      m_normalVector.x = reader->GetDouble();
       break;
     case 220:
-      normalVec.y = reader->GetDouble();
+      m_normalVector.y = reader->GetDouble();
       break;
     case 230:
-      normalVec.z = reader->GetDouble();
+      m_normalVector.z = reader->GetDouble();
       break;
     case 12:
-      tgStart.x = reader->GetDouble();
+      m_startTangent.x = reader->GetDouble();
       break;
     case 22:
-      tgStart.y = reader->GetDouble();
+      m_startTangent.y = reader->GetDouble();
       break;
     case 32:
-      tgStart.z = reader->GetDouble();
+      m_startTangent.z = reader->GetDouble();
       break;
     case 13:
-      tgEnd.x = reader->GetDouble();
+      m_endTangent.x = reader->GetDouble();
       break;
     case 23:
-      tgEnd.y = reader->GetDouble();
+      m_endTangent.y = reader->GetDouble();
       break;
     case 33:
-      tgEnd.z = reader->GetDouble();
+      m_endTangent.z = reader->GetDouble();
       break;
     case 70:
-      flags = reader->GetInt32();
+      m_splineFlag = reader->GetInt32();
       break;
     case 71:
-      degree = reader->GetInt32();
+      m_degreeOfTheSplineCurve = reader->GetInt32();
       break;
     case 72:
-      nknots = reader->GetInt32();
+      m_numberOfKnots = reader->GetInt32();
       break;
     case 73:
-      ncontrol = reader->GetInt32();
+      m_numberOfControlPoints = reader->GetInt32();
       break;
     case 74:
-      nfit = reader->GetInt32();
+      m_numberOfFitPoints = reader->GetInt32();
       break;
     case 42:
-      tolknot = reader->GetDouble();
+      m_knotTolerance = reader->GetDouble();
       break;
     case 43:
-      tolcontrol = reader->GetDouble();
+      m_controlPointTolerance = reader->GetDouble();
       break;
     case 44:
-      tolfit = reader->GetDouble();
+      m_fitTolerance = reader->GetDouble();
       break;
-    case 10: {
-      controlpoint = new DRW_Coord();
-      controllist.push_back(controlpoint);
-      controlpoint->x = reader->GetDouble();
+    case 10:
+      m_controlPoint = new DRW_Coord();
+      m_controlPoints.push_back(m_controlPoint);
+      m_controlPoint->x = reader->GetDouble();
       break;
-    }
     case 20:
-      if (controlpoint != nullptr) { controlpoint->y = reader->GetDouble(); }
+      if (m_controlPoint != nullptr) { m_controlPoint->y = reader->GetDouble(); }
       break;
     case 30:
-      if (controlpoint != nullptr) { controlpoint->z = reader->GetDouble(); }
+      if (m_controlPoint != nullptr) { m_controlPoint->z = reader->GetDouble(); }
       break;
-    case 11: {
-      fitpoint = new DRW_Coord();
-      fitlist.push_back(fitpoint);
-      fitpoint->x = reader->GetDouble();
+    case 11:
+      m_fitPoint = new DRW_Coord();
+      m_fitPoints.push_back(m_fitPoint);
+      m_fitPoint->x = reader->GetDouble();
       break;
-    }
     case 21:
-      if (fitpoint != nullptr) { fitpoint->y = reader->GetDouble(); }
+      if (m_fitPoint != nullptr) { m_fitPoint->y = reader->GetDouble(); }
       break;
     case 31:
-      if (fitpoint != nullptr) { fitpoint->z = reader->GetDouble(); }
+      if (m_fitPoint != nullptr) { m_fitPoint->z = reader->GetDouble(); }
       break;
     case 40:
-      knotslist.push_back(reader->GetDouble());
+      m_knotValues.push_back(reader->GetDouble());
       break;
-      //    case 41:
-      //        break;
+
+    // case 41:
+    //   break;
     default:
       DRW_Entity::ParseCode(code, reader);
       break;

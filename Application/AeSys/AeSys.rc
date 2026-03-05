@@ -3204,6 +3204,8 @@ BEGIN
     IDS_MSG_OPENFILE_DIALOG_ERROR "Error opening pen colors file."
     IDS_MSG_NO_LINETYPES_DEFINED "Current drawing has no line types defined."
     IDS_MSG_PEGFILE_OPEN_FAILURE "Peg file open failure."
+    IDS_MSG_DXF_SAVE_SUCCESS "Peg file was successfully saved as %s."
+    IDS_MSG_DXF_SAVE_FAILURE "Peg file could not be saved as %s."
 END
 
 STRINGTABLE

@@ -349,17 +349,18 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
   }
   return TRUE;
 }
+
 BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
-  BOOL ReturnStatus = FALSE;
+  BOOL returnStatus{};
 
   switch (m_SaveAsType) {
     case EoDb::FileTypes::Peg: {
       WriteShadowFile();
-      EoDbPegFile File;
+      EoDbPegFile file;
       CFileException e;
-      if (File.Open(pathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive, &e)) {
-        File.Unload(this);
-        ReturnStatus = TRUE;
+      if (file.Open(pathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive, &e)) {
+        file.Unload(this);
+        returnStatus = TRUE;
       }
       break;
     }
@@ -382,15 +383,24 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
           TracingFile.WriteLayer(File, layer);
         }
         app.AddStringToMessageList(IDS_MSG_TRACING_SAVE_SUCCESS, pathName);
-        ReturnStatus = TRUE;
+        returnStatus = TRUE;
       }
       break;
     }
     case EoDb::FileTypes::Dwg:
     case EoDb::FileTypes::Dxf:
-    case EoDb::FileTypes::Dxb:
-      // TODO: Implement DXF/DXB saving using EoDbDrwInterface and libdxfrw
-      break;
+    case EoDb::FileTypes::Dxb: {
+      // Begin implementation of DXF/DXB saving using EoDbDrwInterface
+      EoDbDrwInterface dxfInterface(this);
+      dxfRW dxfWriter(Eo::WStringToMultiByte(pathName).data());
+      dxfWriter.SetDebug(DRW::DebugTraceLevel::Debug);
+      if (dxfWriter.Write(&dxfInterface, DRW::Version::AC1032, true)) {
+        app.AddStringToMessageList(IDS_MSG_DXF_SAVE_SUCCESS, pathName);
+        returnStatus = TRUE;
+      } else {
+        app.WarningMessageBox(IDS_MSG_DXF_SAVE_FAILURE, pathName);
+      }
+    } break;
 
     case EoDb::FileTypes::Unknown:
       break;
@@ -398,7 +408,7 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
     default:
       app.WarningMessageBox(IDS_MSG_NOTHING_TO_SAVE);
   }
-  return ReturnStatus;
+  return returnStatus;
 }
 
 void AeSysDoc::AddTextBlock(LPWSTR pszText) {

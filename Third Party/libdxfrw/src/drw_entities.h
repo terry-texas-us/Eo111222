@@ -52,7 +52,7 @@ enum ETYPE {
   RAY,
   //        REGION, //encripted propietry data
   //        SECTION,
-  //        SEQEND,//not needed?? used in polyline and insert/attrib
+  SEQEND,
   //        SHAPE,
   SOLID,
   SPLINE,
@@ -603,41 +603,69 @@ class DRW_Vertex : public DRW_Point {
   int m_polyfaceMeshVertexIndex2{};  // Group code 72
   int m_polyfaceMeshVertexIndex3{};  // Group code 73
   int m_polyfaceMeshVertexIndex4{};  // Group code 74
-  int m_identifier{};  // vertex identifier, code 91, default 0
+  int m_identifier{};  // Group code 91
+};
+
+/** @brief Class to handle seqend entity
+ *
+ *  A SEQEND entity is used to indicate the end of a sequence of vertices in a POLYLINE or INSERT entity.
+ *  It does not contain any geometric data itself, but serves as a marker to signify the conclusion of the vertex list
+ * for the associated entity. The SEQEND entity can inherit properties such as layer and display settings from its
+ * owning POLYLINE or INSERT entity, but it does not have its own unique properties.
+ */
+class DRW_SeqEnd : public DRW_Entity {
+  friend class dxfRW;
+
+ public:
+  DRW_SeqEnd() noexcept : DRW_Entity{DRW::SEQEND} {}
+
+  /** @brief Constructs a SEQEND that inherits layer and display properties
+   *         from the owning POLYLINE or INSERT entity.
+   *  @param owner The entity whose sequence this SEQEND terminates.
+   */
+  explicit DRW_SeqEnd(const DRW_Entity& owner) noexcept : DRW_Entity{DRW::SEQEND} {
+    m_layer = owner.m_layer;
+    m_lineType = owner.m_lineType;
+    m_color = owner.m_color;
+    m_lineWeight = owner.m_lineWeight;
+  }
+
+  void ApplyExtrusion() override {}
 };
 
 class DRW_Polyline : public DRW_Point {
   friend class dxfRW;
 
  public:
-  DRW_Polyline() {
-    m_entityType = DRW::POLYLINE;
-    m_defaultStartWidth = 0.0;
-    m_defaultEndWidth = 0.0;
-    m_firstPoint.x = 0.0;
-    m_firstPoint.y = 0.0;
-    m_polylineFlag = 0;
-    m_polygonMeshVertexCountM = 0;
-    m_polygonMeshVertexCountN = 0;
-    m_smoothSurfaceDensityM = 0;
-    m_smoothSurfaceDensityN = 0;
-    m_curvesAndSmoothSurfaceType = 0;
-  }
+  DRW_Polyline() noexcept : DRW_Point{DRW::POLYLINE} {}
 
   ~DRW_Polyline() {
-    for (DRW_Vertex* vert : m_vertices) { delete vert; }
-    m_vertices.clear();
+    for (DRW_Vertex* vertex : m_vertices) { delete vertex; }
   }
 
-  void addVertex(DRW_Vertex v) {
-    auto* vert = new DRW_Vertex();
-    vert->m_firstPoint.x = v.m_firstPoint.x;
-    vert->m_firstPoint.y = v.m_firstPoint.y;
-    vert->m_firstPoint.z = v.m_firstPoint.z;
-    vert->m_startingWidth = v.m_startingWidth;
-    vert->m_endingWidth = v.m_endingWidth;
-    vert->m_bulge = v.m_bulge;
-    m_vertices.push_back(vert);
+  // Prevent double-free from shallow copy of raw-pointer vector
+  DRW_Polyline(const DRW_Polyline&) = delete;
+  DRW_Polyline& operator=(const DRW_Polyline&) = delete;
+
+  DRW_Polyline(DRW_Polyline&& other) noexcept = default;
+  DRW_Polyline& operator=(DRW_Polyline&& other) noexcept = default;
+
+  void addVertex(const DRW_Vertex& v) {
+    auto* vertex = new DRW_Vertex();
+    vertex->m_firstPoint = v.m_firstPoint;
+    vertex->m_startingWidth = v.m_startingWidth;
+    vertex->m_endingWidth = v.m_endingWidth;
+    vertex->m_bulge = v.m_bulge;
+
+    vertex->m_vertexFlags = v.m_vertexFlags;
+    vertex->m_curveFitTangentDirection = v.m_curveFitTangentDirection;
+    vertex->m_polyfaceMeshVertexIndex1 = v.m_polyfaceMeshVertexIndex1;
+    vertex->m_polyfaceMeshVertexIndex2 = v.m_polyfaceMeshVertexIndex2;
+    vertex->m_polyfaceMeshVertexIndex3 = v.m_polyfaceMeshVertexIndex3;
+    vertex->m_polyfaceMeshVertexIndex4 = v.m_polyfaceMeshVertexIndex4;
+    vertex->m_identifier = v.m_identifier;
+
+    m_vertices.push_back(vertex);
   }
 
   void appendVertex(DRW_Vertex* v) { m_vertices.push_back(v); }
@@ -669,51 +697,45 @@ class DRW_Spline : public DRW_Entity {
   friend class dxfRW;
 
  public:
-  DRW_Spline() {
-    m_entityType = DRW::SPLINE;
-    flags = nknots = ncontrol = nfit = 0;
-    tolknot = tolcontrol = tolfit = 0.0000001;
-  }
+  DRW_Spline() noexcept : DRW_Entity{DRW::SPLINE} {}
+
   ~DRW_Spline() {
-    for (DRW_Coord* pt : controllist) { delete pt; }
-    controllist.clear();
-    for (DRW_Coord* pt : fitlist) { delete pt; }
-    fitlist.clear();
+    for (DRW_Coord* point : m_controlPoints) { delete point; }
+    for (DRW_Coord* point : m_fitPoints) { delete point; }
   }
+
+  // Prevent double-free from shallow copy of raw-pointer vectors
+  DRW_Spline(const DRW_Spline&) = delete;
+  DRW_Spline& operator=(const DRW_Spline&) = delete;
+
+  DRW_Spline(DRW_Spline&& other) noexcept = default;
+  DRW_Spline& operator=(DRW_Spline&& other) noexcept = default;
+
   void ApplyExtrusion() override {}
 
  protected:
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  //    double ex;                // normal vector x coordinate, code 210
-  //    double ey;                // normal vector y coordinate, code 220
-  //    double ez;                // normal vector z coordinate, code 230
-  DRW_Coord normalVec;  // normal vector, code 210, 220, 230
-  DRW_Coord tgStart;  // start tangent, code 12, 22, 32
-  //    double tgsx;              // start tangent x coordinate, code 12
-  //    double tgsy;              // start tangent y coordinate, code 22
-  //    double tgsz;              // start tangent z coordinate, code 32
-  DRW_Coord tgEnd;  // end tangent, code 13, 23, 33
-  //    double tgex;              // end tangent x coordinate, code 13
-  //    double tgey;              // end tangent y coordinate, code 23
-  //    double tgez;              // end tangent z coordinate, code 33
-  int flags;  // spline flag, code 70
-  int degree{};  // degree of the spline, code 71
-  std::int32_t nknots;  // number of knots, code 72, default 0
-  std::int32_t ncontrol;  // number of control points, code 73, default 0
-  std::int32_t nfit;  // number of fit points, code 74, default 0
-  double tolknot;  // knot tolerance, code 42, default 0.0000001
-  double tolcontrol;  // control point tolerance, code 43, default 0.0000001
-  double tolfit;  // fit point tolerance, code 44, default 0.0000001
+  DRW_Coord m_normalVector;  // Group codes 210, 220, 230
+  DRW_Coord m_startTangent;  // Group codes 12, 22, 32
+  DRW_Coord m_endTangent;  // Group codes 13, 23, 33
+  int m_splineFlag{};  // Group code 70
+  int m_degreeOfTheSplineCurve{};  // Group code 71
+  std::int32_t m_numberOfKnots{};  // Group code 72
+  std::int32_t m_numberOfControlPoints{};  // Group code 73
+  std::int32_t m_numberOfFitPoints{};  // Group code 74
+  double m_knotTolerance{0.0000001};  // Group code 42
+  double m_controlPointTolerance{0.0000001};  // Group code 43
+  double m_fitTolerance{0.0000000001};  // Group code 44
 
-  std::vector<double> knotslist;  // knots list, code 40
-  std::vector<DRW_Coord*> controllist;  // control points list, code 10, 20 & 30
-  std::vector<DRW_Coord*> fitlist;  // fit points list, code 11, 21 & 31
+  std::vector<double> m_knotValues;  // Group code 40, (one entry per knot)
+  std::vector<DRW_Coord*> m_controlPoints;  // Group codes 10, 20 & 30 (one entry per control point)
+  std::vector<DRW_Coord*> m_fitPoints;  // Group codes 11, 21 & 31 (one entry per fit point)
 
  private:
-  DRW_Coord* controlpoint{};  // current control point to add data
-  DRW_Coord* fitpoint{};  // current fit point to add data
+  DRW_Coord* m_controlPoint{};  // current control point to add data
+  DRW_Coord* m_fitPoint{};  // current fit point to add data
 };
 
 /** @brief Class to handle hatch loop
@@ -725,24 +747,25 @@ class DRW_Spline : public DRW_Entity {
  */
 class DRW_HatchLoop {
  public:
-  DRW_HatchLoop(int t) {
-    type = t;
-    numedges = 0;
-  }
+  explicit DRW_HatchLoop(int boundaryPathType) : m_boundaryPathType{boundaryPathType} {}
 
   ~DRW_HatchLoop() {
-    for (DRW_Entity* obj : objlist) { delete obj; }
-    objlist.clear();
+    for (auto* entity : m_entities) { delete entity; }
   }
 
-  void update() { numedges = static_cast<int>(objlist.size()); }
+  DRW_HatchLoop(const DRW_HatchLoop&) = delete;
+  DRW_HatchLoop& operator=(const DRW_HatchLoop&) = delete;
+  DRW_HatchLoop(DRW_HatchLoop&&) = delete;
+  DRW_HatchLoop& operator=(DRW_HatchLoop&&) = delete;
+
+
+  void Update() { m_numberOfEdges = static_cast<int>(m_entities.size()); }
 
  public:
-  int type;  // boundary path type, code 92, polyline=2, default=0
-  int numedges;  // number of edges (if not a polyline), code 93
-  // TODO: store lwpolylines as entities
-  //     std::vector<DRW_LWPolyline *> pollist;  // polyline list
-  std::vector<DRW_Entity*> objlist;  // entities list
+  int m_boundaryPathType{};  // Group code 92
+  int m_numberOfEdges{};  // Group code 93
+
+  std::vector<DRW_Entity*> m_entities;
 };
 
 /** @brief Class to handle hatch entity
@@ -758,23 +781,18 @@ class DRW_Hatch : public DRW_Point {
   friend class dxfRW;
 
  public:
-  DRW_Hatch() {
-    m_entityType = DRW::HATCH;
-    angle = scale = 0.0;
-    m_firstPoint.x = m_firstPoint.y = m_firstPoint.z = 0.0;
-    loopsnum = hstyle = associative = 0;
-    solid = hpattern = 1;
-    deflines = doubleflag = 0;
-    loop = nullptr;
-    clearEntities();
-  }
+  DRW_Hatch() : DRW_Point{DRW::HATCH} {}
 
   ~DRW_Hatch() {
-    for (DRW_HatchLoop* lp : looplist) { delete lp; }
-    looplist.clear();
+    for (auto* hatchLoop : m_hatchLoops) { delete hatchLoop; }
   }
 
-  void appendLoop(DRW_HatchLoop* v) { looplist.push_back(v); }
+  DRW_Hatch(const DRW_Hatch&) = delete;
+  DRW_Hatch& operator=(const DRW_Hatch&) = delete;
+  DRW_Hatch(DRW_Hatch&&) = delete;
+  DRW_Hatch& operator=(DRW_Hatch&&) = delete;
+
+  void AppendLoop(DRW_HatchLoop* hatchLoop) { m_hatchLoops.push_back(hatchLoop); }
 
   void ApplyExtrusion() override {}
 
@@ -782,70 +800,38 @@ class DRW_Hatch : public DRW_Point {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  UTF8STRING name;  // hatch pattern name, code 2
-  int solid;  // solid fill flag, code 70, solid=1, pattern=0
-  int associative;  // associativity, code 71, associatve=1, non-assoc.=0
-  int hstyle;  // hatch style, code 75
-  int hpattern;  // hatch pattern type, code 76
-  int doubleflag;  // hatch pattern double flag, code 77, double=1, single=0
-  int loopsnum;  // namber of boundary paths (loops), code 91
-  double angle;  // hatch pattern angle, code 52
-  double scale;  // hatch pattern scale, code 41
-  int deflines;  // number of pattern definition lines, code 78
+  UTF8STRING m_hatchPatternName;  // Group code 2
+  int m_solidFillFlag{1};  // Group code 70
+  int m_associativityFlag{};  // Group code 71
+  int m_hatchStyle{};  // Group code 75
+  int m_hatchPatternType{1};  // Group code 76
+  int m_hatchPatternDoubleFlag{};  // Group code 77
+  int m_numberOfBoundaryPaths{};  // Group code 91
+  double m_hatchPatternAngle{};  // Group code 52
+  double m_hatchPatternScaleOrSpacing{};  // Group code 41
+  int m_numberOfPatternDefinitionLines{};  //   Group code 78
 
-  std::vector<DRW_HatchLoop*> looplist;  // polyline list
+  std::vector<DRW_HatchLoop*> m_hatchLoops;
 
  private:
-  void clearEntities() {
-    pt = line = nullptr;
-    m_polyline = nullptr;
-    arc = nullptr;
-    ellipse = nullptr;
-    spline = nullptr;
-    m_polylineVertex = nullptr;
-  }
+  void ClearEntities() noexcept;
 
-  void addLine() {
-    clearEntities();
-    if (loop) {
-      pt = line = new DRW_Line;
-      loop->objlist.push_back(line);
-    }
-  }
+  void AddLine();
+  
+  void AddArc();
 
-  void addArc() {
-    clearEntities();
-    if (loop) {
-      pt = arc = new DRW_Arc;
-      loop->objlist.push_back(arc);
-    }
-  }
+  void AddEllipse();
 
-  void addEllipse() {
-    clearEntities();
-    if (loop) {
-      pt = ellipse = new DRW_Ellipse;
-      loop->objlist.push_back(ellipse);
-    }
-  }
+  void AddSpline();
 
-  void addSpline() {
-    clearEntities();
-    if (loop) {
-      pt = nullptr;
-      spline = new DRW_Spline;
-      loop->objlist.push_back(spline);
-    }
-  }
-
-  DRW_HatchLoop* loop;  // current loop to add data
-  DRW_Line* line;
-  DRW_Arc* arc;
-  DRW_Ellipse* ellipse;
-  DRW_Spline* spline;
-  DRW_LWPolyline* m_polyline;
-  DRW_Point* pt;
-  DRW_Vertex2D* m_polylineVertex;
+  DRW_HatchLoop* m_hatchLoop{};  // current loop to add data
+  DRW_Line* m_line{};
+  DRW_Arc* m_arc{};
+  DRW_Ellipse* m_ellipse{};
+  DRW_Spline* m_spline{};
+  DRW_LWPolyline* m_polyline{};
+  DRW_Point* m_point{};
+  DRW_Vertex2D* m_polylineVertex{};
   bool m_isPolyline{};
 };
 

@@ -1,4 +1,4 @@
-#include "libdxfrw.h"
+﻿#include "libdxfrw.h"
 
 #include <algorithm>
 #include <cctype>
@@ -615,7 +615,7 @@ bool dxfRW::WriteLWPolyline(DRW_LWPolyline* ent) {
   WriteEntity(ent);
   m_writer->WriteString(100, "AcDbPolyline");
 
-  // Modern container � no more raw pointers
+  // Modern container – no more raw pointers
   ent->m_numberOfVertices = static_cast<int>(ent->m_vertices.size());
   m_writer->WriteInt32(90, ent->m_numberOfVertices);
   m_writer->WriteInt16(70, ent->m_polylineFlag);
@@ -634,40 +634,46 @@ bool dxfRW::WriteLWPolyline(DRW_LWPolyline* ent) {
   return true;
 }
 
-bool dxfRW::WritePolyline(DRW_Polyline* ent) {
+bool dxfRW::WritePolyline(DRW_Polyline* polyline) {
   m_writer->WriteString(0, "POLYLINE");
-  WriteEntity(ent);
+  WriteEntity(polyline);
 
-  const bool is3dPolyline = (ent->m_polylineFlag & (8 | 16 | 64)) != 0;
+  const bool is3dPolyline = (polyline->m_polylineFlag & (8 | 16 | 64)) != 0;
   m_writer->WriteString(100, is3dPolyline ? "AcDb3dPolyline" : "AcDb2dPolyline");
+
+  // Group code 66, `entities follow flag` is optional in AC1015, ignored in AC1018 and later)
+  if (m_version == DRW::Version::AC1014) { m_writer->WriteInt16(66, 1); }
 
   m_writer->WriteDouble(10, 0.0);
   m_writer->WriteDouble(20, 0.0);
-  m_writer->WriteDouble(30, ent->m_firstPoint.z);
-  if (ent->m_thickness != 0) { m_writer->WriteDouble(39, ent->m_thickness); }
-  m_writer->WriteInt16(70, ent->m_polylineFlag);
-  if (ent->m_defaultStartWidth != 0) { m_writer->WriteDouble(40, ent->m_defaultStartWidth); }
-  if (ent->m_defaultEndWidth != 0) { m_writer->WriteDouble(41, ent->m_defaultEndWidth); }
-  if ((ent->m_polylineFlag & 16) || (ent->m_polylineFlag & 32)) {
-    m_writer->WriteInt16(71, ent->m_polygonMeshVertexCountM);
-    m_writer->WriteInt16(72, ent->m_polygonMeshVertexCountN);
+  m_writer->WriteDouble(30, polyline->m_firstPoint.z);
+  if (polyline->m_thickness != 0) { m_writer->WriteDouble(39, polyline->m_thickness); }
+  m_writer->WriteInt16(70, polyline->m_polylineFlag);
+  if (polyline->m_defaultStartWidth != 0) { m_writer->WriteDouble(40, polyline->m_defaultStartWidth); }
+  if (polyline->m_defaultEndWidth != 0) { m_writer->WriteDouble(41, polyline->m_defaultEndWidth); }
+  if ((polyline->m_polylineFlag & 16) || (polyline->m_polylineFlag & 32)) {
+    m_writer->WriteInt16(71, polyline->m_polygonMeshVertexCountM);
+    m_writer->WriteInt16(72, polyline->m_polygonMeshVertexCountN);
   }
-  if (ent->m_smoothSurfaceDensityM != 0) { m_writer->WriteInt16(73, ent->m_smoothSurfaceDensityM); }
-  if (ent->m_smoothSurfaceDensityN != 0) { m_writer->WriteInt16(74, ent->m_smoothSurfaceDensityN); }
-  if (ent->m_curvesAndSmoothSurfaceType != 0) { m_writer->WriteInt16(75, ent->m_curvesAndSmoothSurfaceType); }
-  auto crd = ent->m_extrusionDirection;
-  if (crd.x != 0 || crd.y != 0 || crd.z != 1) {
+  if (polyline->m_smoothSurfaceDensityM != 0) { m_writer->WriteInt16(73, polyline->m_smoothSurfaceDensityM); }
+  if (polyline->m_smoothSurfaceDensityN != 0) { m_writer->WriteInt16(74, polyline->m_smoothSurfaceDensityN); }
+  if (polyline->m_curvesAndSmoothSurfaceType != 0) { m_writer->WriteInt16(75, polyline->m_curvesAndSmoothSurfaceType); }
+  auto crd = polyline->m_extrusionDirection;
+  if (crd.x > DRW::geometricTolerance || crd.y < -DRW::geometricTolerance ||
+      std::abs(crd.z - 1.0) > DRW::geometricTolerance) {
     m_writer->WriteDouble(210, crd.x);
     m_writer->WriteDouble(220, crd.y);
     m_writer->WriteDouble(230, crd.z);
   }
 
   // VERTEX entities
-  int vertexnum = static_cast<int>(ent->m_vertices.size());
-  for (int i = 0; i < vertexnum; i++) {
-    auto* vertex = ent->m_vertices.at(i);
+  const auto polylineHandle = polyline->m_handle;
+  for (const auto* vertex : polyline->m_vertices) {
     m_writer->WriteString(0, "VERTEX");
-    WriteEntity(vertex);
+    // WriteEntity assigns a new handle and writes AcDbEntity subclass
+    WriteEntity(const_cast<DRW_Vertex*>(vertex));
+
+    // Base subclass marker required before the specific subclass
     if (vertex->m_vertexFlags & 128) {
       m_writer->WriteString(100, "AcDbPolyFaceMeshVertex");
     } else if (vertex->m_vertexFlags & 64) {
@@ -679,6 +685,7 @@ bool dxfRW::WritePolyline(DRW_Polyline* ent) {
     }
 
     if ((vertex->m_vertexFlags & 128) != 0 && (vertex->m_vertexFlags & 64) == 0) {
+      // Polyface face records (flag 128 without flag 64): dummy coordinates
       m_writer->WriteDouble(10, 0.0);
       m_writer->WriteDouble(20, 0.0);
       m_writer->WriteDouble(30, 0.0);
@@ -692,112 +699,155 @@ bool dxfRW::WritePolyline(DRW_Polyline* ent) {
     if (vertex->m_bulge != 0.0) { m_writer->WriteDouble(42, vertex->m_bulge); }
     if (vertex->m_vertexFlags != 0) { m_writer->WriteInt16(70, vertex->m_vertexFlags); }
     if ((vertex->m_vertexFlags & 2) != 0) { m_writer->WriteDouble(50, vertex->m_curveFitTangentDirection); }
+
     if ((vertex->m_vertexFlags & 128) != 0) {
       if (vertex->m_polyfaceMeshVertexIndex1 != 0) { m_writer->WriteInt16(71, vertex->m_polyfaceMeshVertexIndex1); }
       if (vertex->m_polyfaceMeshVertexIndex2 != 0) { m_writer->WriteInt16(72, vertex->m_polyfaceMeshVertexIndex2); }
       if (vertex->m_polyfaceMeshVertexIndex3 != 0) { m_writer->WriteInt16(73, vertex->m_polyfaceMeshVertexIndex3); }
       if (vertex->m_polyfaceMeshVertexIndex4 != 0) { m_writer->WriteInt16(74, vertex->m_polyfaceMeshVertexIndex4); }
-      
-      if ((vertex->m_vertexFlags & 64) == 0) { m_writer->WriteInt32(91, vertex->m_identifier); }
+
+      if ((vertex->m_vertexFlags & 64) == 0 && vertex->m_identifier != 0) {
+        m_writer->WriteInt32(91, vertex->m_identifier);
+      }
     }
   }
 
   // SEQEND entity
-  DRW_Point seqendProxy;
-  seqendProxy.m_layer = ent->m_layer;
-  seqendProxy.m_lineType = ent->m_lineType;
-  seqendProxy.m_color = ent->m_color;
-  seqendProxy.m_lineWeight = ent->m_lineWeight;
   m_writer->WriteString(0, "SEQEND");
-  WriteEntity(&seqendProxy);
-  if (m_version > DRW::Version::AC1014) { m_writer->WriteString(100, "AcDbSeqend"); }
+
+  DRW_SeqEnd seqEnd{*polyline};
+  seqEnd.m_handle = ++m_entityCount;
+  m_writer->WriteString(5, ToHexString(seqEnd.m_handle));
+  m_writer->WriteString(330, ToHexString(polylineHandle));
+  m_writer->WriteString(100, "AcDbEntity");
+  m_writer->WriteUtf8String(8, seqEnd.m_layer);
+
   return true;
 }
 
-bool dxfRW::WriteSpline(DRW_Spline* ent) {
+bool dxfRW::WriteSpline(DRW_Spline* spline) {
   m_writer->WriteString(0, "SPLINE");
-  WriteEntity(ent);
+  WriteEntity(spline);
   m_writer->WriteString(100, "AcDbSpline");
-  m_writer->WriteDouble(210, ent->normalVec.x);
-  m_writer->WriteDouble(220, ent->normalVec.y);
-  m_writer->WriteDouble(230, ent->normalVec.z);
-  m_writer->WriteInt16(70, ent->flags);
-  m_writer->WriteInt16(71, ent->degree);
-  m_writer->WriteInt16(72, ent->nknots);
-  m_writer->WriteInt16(73, ent->ncontrol);
-  m_writer->WriteInt16(74, ent->nfit);
-  m_writer->WriteDouble(42, ent->tolknot);
-  m_writer->WriteDouble(43, ent->tolcontrol);
-  // @bug warning check if nknots are correct and ncontrol
-  for (int i = 0; i < ent->nknots; i++) { m_writer->WriteDouble(40, ent->knotslist.at(i)); }
-  for (int i = 0; i < ent->ncontrol; i++) {
-    DRW_Coord* crd = ent->controllist.at(i);
-    m_writer->WriteDouble(10, crd->x);
-    m_writer->WriteDouble(20, crd->y);
-    m_writer->WriteDouble(30, crd->z);
+  
+  m_writer->WriteDouble(210, spline->m_normalVector.x);
+  m_writer->WriteDouble(220, spline->m_normalVector.y);
+  m_writer->WriteDouble(230, spline->m_normalVector.z);
+  
+  m_writer->WriteInt16(70, spline->m_splineFlag);
+  m_writer->WriteInt16(71, spline->m_degreeOfTheSplineCurve);
+  
+  m_writer->WriteInt16(72, spline->m_numberOfKnots);
+  m_writer->WriteInt16(73, spline->m_numberOfControlPoints);
+  m_writer->WriteInt16(74, spline->m_numberOfFitPoints);
+
+  m_writer->WriteDouble(42, spline->m_knotTolerance);
+  m_writer->WriteDouble(43, spline->m_controlPointTolerance);
+  m_writer->WriteDouble(44, spline->m_fitTolerance);
+
+  // Start tangent (12, 22, 32) — write when spline flag bit 1 is set (tangent defined)
+  if ((spline->m_splineFlag & 1) != 0) {
+    m_writer->WriteDouble(12, spline->m_startTangent.x);
+    m_writer->WriteDouble(22, spline->m_startTangent.y);
+    m_writer->WriteDouble(32, spline->m_startTangent.z);
   }
 
+  // End tangent (13, 23, 33)
+  if ((spline->m_splineFlag & 1) != 0) {
+    m_writer->WriteDouble(13, spline->m_endTangent.x);
+    m_writer->WriteDouble(23, spline->m_endTangent.y);
+    m_writer->WriteDouble(33, spline->m_endTangent.z);
+  }
+
+  for (int i = 0; i < spline->m_numberOfKnots; i++) { m_writer->WriteDouble(40, spline->m_knotValues.at(i)); }
+
+  for (int i = 0; i < spline->m_numberOfControlPoints; i++) {
+    auto* controlPoint = spline->m_controlPoints.at(i);
+    m_writer->WriteDouble(10, controlPoint->x);
+    m_writer->WriteDouble(20, controlPoint->y);
+    m_writer->WriteDouble(30, controlPoint->z);
+  }
+
+  // Fit points (11, 21, 31)
+  for (std::int32_t i = 0; i < spline->m_numberOfFitPoints; ++i) {
+    const auto* fitPoint = spline->m_fitPoints[static_cast<size_t>(i)];
+    m_writer->WriteDouble(11, fitPoint->x);
+    m_writer->WriteDouble(21, fitPoint->y);
+    m_writer->WriteDouble(31, fitPoint->z);
+  }
   return true;
 }
 
-bool dxfRW::WriteHatch(DRW_Hatch* ent) {
+bool dxfRW::WriteHatch(DRW_Hatch* hatch) {
   m_writer->WriteString(0, "HATCH");
-  WriteEntity(ent);
+  WriteEntity(hatch);
   m_writer->WriteString(100, "AcDbHatch");
-  m_writer->WriteDouble(10, 0.0);
-  m_writer->WriteDouble(20, 0.0);
-  m_writer->WriteDouble(30, ent->m_firstPoint.z);
-  m_writer->WriteDouble(210, ent->m_extrusionDirection.x);
-  m_writer->WriteDouble(220, ent->m_extrusionDirection.y);
-  m_writer->WriteDouble(230, ent->m_extrusionDirection.z);
-  m_writer->WriteString(2, ent->name);
-  m_writer->WriteInt16(70, ent->solid);
-  m_writer->WriteInt16(71, ent->associative);
-  ent->loopsnum = static_cast<int>(ent->looplist.size());
-  m_writer->WriteInt16(91, ent->loopsnum);
+  m_writer->WriteDouble(10, hatch->m_firstPoint.x);
+  m_writer->WriteDouble(20, hatch->m_firstPoint.y);
+  m_writer->WriteDouble(30, hatch->m_firstPoint.z);
+  m_writer->WriteDouble(210, hatch->m_extrusionDirection.x);
+  m_writer->WriteDouble(220, hatch->m_extrusionDirection.y);
+  m_writer->WriteDouble(230, hatch->m_extrusionDirection.z);
+  m_writer->WriteString(2, hatch->m_hatchPatternName);
+  m_writer->WriteInt16(70, hatch->m_solidFillFlag);
+  m_writer->WriteInt16(71, hatch->m_associativityFlag);
+  hatch->m_numberOfBoundaryPaths = static_cast<int>(hatch->m_hatchLoops.size());
+  m_writer->WriteInt32(91, hatch->m_numberOfBoundaryPaths);
   // write paths data
-  for (int i = 0; i < ent->loopsnum; i++) {
-    DRW_HatchLoop* loop = ent->looplist.at(i);
-    m_writer->WriteInt16(92, loop->type);
-    if ((loop->type & 2) == 2) {
+  for (int i = 0; i < hatch->m_numberOfBoundaryPaths; i++) {
+    auto* hatchLoop = hatch->m_hatchLoops.at(i);
+    m_writer->WriteInt32(92, hatchLoop->m_boundaryPathType);
+    if ((hatchLoop->m_boundaryPathType & 2) == 2) {
+      // polyline boundary path
+      if (!hatchLoop->m_entities.empty() && hatchLoop->m_entities.front()->m_entityType == DRW::LWPOLYLINE) {
+        auto* polyline = static_cast<DRW_LWPolyline*>(hatchLoop->m_entities.front());
+        m_writer->WriteInt16(72, (polyline->m_constantWidth != 0.0) ? 1 : 0);
+        m_writer->WriteInt16(73, polyline->m_polylineFlag);
+        m_writer->WriteInt32(93, static_cast<int>(polyline->m_vertices.size()));
+        for (const auto& v : polyline->m_vertices) {
+          m_writer->WriteDouble(10, v.x);
+          m_writer->WriteDouble(20, v.y);
+          if (v.bulge != 0.0) { m_writer->WriteDouble(42, v.bulge); }
+        }
+      }
+      m_writer->WriteInt32(97, 0);
     } else {
-      // boundary path
-      loop->update();
-      m_writer->WriteInt16(93, loop->numedges);
-      for (int j = 0; j < loop->numedges; ++j) {
-        switch ((loop->objlist.at(j))->m_entityType) {
+      hatchLoop->Update();
+      m_writer->WriteInt32(93, hatchLoop->m_numberOfEdges);
+      for (int j = 0; j < hatchLoop->m_numberOfEdges; ++j) {
+        switch ((hatchLoop->m_entities.at(j))->m_entityType) {
           case DRW::LINE: {
             m_writer->WriteInt16(72, 1);
-            DRW_Line* l = (DRW_Line*)loop->objlist.at(j);
-            m_writer->WriteDouble(10, l->m_firstPoint.x);
-            m_writer->WriteDouble(20, l->m_firstPoint.y);
-            m_writer->WriteDouble(11, l->m_secondPoint.x);
-            m_writer->WriteDouble(21, l->m_secondPoint.y);
+            auto* line = static_cast<DRW_Line*>(hatchLoop->m_entities.at(j));
+            m_writer->WriteDouble(10, line->m_firstPoint.x);
+            m_writer->WriteDouble(20, line->m_firstPoint.y);
+            m_writer->WriteDouble(11, line->m_secondPoint.x);
+            m_writer->WriteDouble(21, line->m_secondPoint.y);
             break;
           }
           case DRW::ARC: {
             m_writer->WriteInt16(72, 2);
-            DRW_Arc* a = (DRW_Arc*)loop->objlist.at(j);
-            m_writer->WriteDouble(10, a->m_firstPoint.x);
-            m_writer->WriteDouble(20, a->m_firstPoint.y);
-            m_writer->WriteDouble(40, a->m_radius);
-            m_writer->WriteDouble(50, a->m_startAngle * DRW::RadiansToDegrees);
-            m_writer->WriteDouble(51, a->m_endAngle * DRW::RadiansToDegrees);
-            m_writer->WriteInt16(73, a->m_isCounterClockwise);
+            auto* arc = static_cast<DRW_Arc*>(hatchLoop->m_entities.at(j));
+            m_writer->WriteDouble(10, arc->m_firstPoint.x);
+            m_writer->WriteDouble(20, arc->m_firstPoint.y);
+            m_writer->WriteDouble(40, arc->m_radius);
+            m_writer->WriteDouble(50, arc->m_startAngle * DRW::RadiansToDegrees);
+            m_writer->WriteDouble(51, arc->m_endAngle * DRW::RadiansToDegrees);
+            m_writer->WriteInt16(73, arc->m_isCounterClockwise);
             break;
           }
           case DRW::ELLIPSE: {
             m_writer->WriteInt16(72, 3);
-            DRW_Ellipse* a = (DRW_Ellipse*)loop->objlist.at(j);
-            a->CorrectAxis();
-            m_writer->WriteDouble(10, a->m_firstPoint.x);
-            m_writer->WriteDouble(20, a->m_firstPoint.y);
-            m_writer->WriteDouble(11, a->m_secondPoint.x);
-            m_writer->WriteDouble(21, a->m_secondPoint.y);
-            m_writer->WriteDouble(40, a->m_ratio);
-            m_writer->WriteDouble(50, a->m_startParam * DRW::RadiansToDegrees);
-            m_writer->WriteDouble(51, a->m_endParam * DRW::RadiansToDegrees);
-            m_writer->WriteInt16(73, a->m_isCounterClockwise);
+            auto* ellipse = static_cast<DRW_Ellipse*>(hatchLoop->m_entities.at(j));
+            ellipse->CorrectAxis();
+            m_writer->WriteDouble(10, ellipse->m_firstPoint.x);
+            m_writer->WriteDouble(20, ellipse->m_firstPoint.y);
+            m_writer->WriteDouble(11, ellipse->m_secondPoint.x);
+            m_writer->WriteDouble(21, ellipse->m_secondPoint.y);
+            m_writer->WriteDouble(40, ellipse->m_ratio);
+            m_writer->WriteDouble(50, ellipse->m_startParam);  // in radians for parameters
+            m_writer->WriteDouble(51, ellipse->m_endParam);  // in radians for parameters
+            m_writer->WriteInt16(73, ellipse->m_isCounterClockwise);
             break;
           }
           case DRW::SPLINE:
@@ -806,16 +856,16 @@ bool dxfRW::WriteHatch(DRW_Hatch* ent) {
             break;
         }
       }
-      m_writer->WriteInt16(97, 0);
+      m_writer->WriteInt32(97, 0);
     }
   }
-  m_writer->WriteInt16(75, ent->hstyle);
-  m_writer->WriteInt16(76, ent->hpattern);
-  if (!ent->solid) {
-    m_writer->WriteDouble(52, ent->angle);
-    m_writer->WriteDouble(41, ent->scale);
-    m_writer->WriteInt16(77, ent->doubleflag);
-    m_writer->WriteInt16(78, ent->deflines);
+  m_writer->WriteInt16(75, hatch->m_hatchStyle);
+  m_writer->WriteInt16(76, hatch->m_hatchPatternType);
+  if (!hatch->m_solidFillFlag) {
+    m_writer->WriteDouble(52, hatch->m_hatchPatternAngle);
+    m_writer->WriteDouble(41, hatch->m_hatchPatternScaleOrSpacing);
+    m_writer->WriteInt16(77, hatch->m_hatchPatternDoubleFlag);
+    m_writer->WriteInt16(78, hatch->m_numberOfPatternDefinitionLines);
   }
   m_writer->WriteInt32(98, 0);
 
@@ -1460,7 +1510,7 @@ bool dxfRW::WriteObjects() {
       m_writer->WriteString(5, it->first);
       m_writer->WriteString(330, it->second);
       m_writer->WriteString(100, "AcDbRasterImageDefReactor");
-      m_writer->WriteInt16(90, 2);  // version 2=R14 to v2010
+      m_writer->WriteInt32(90, 2);  // version 2=R14 to v2010
       m_writer->WriteString(330, it->second);
     }
   }
@@ -1491,7 +1541,7 @@ bool dxfRW::WriteObjects() {
     for (it = id->reactors.begin(); it != id->reactors.end(); ++it) { m_writer->WriteString(330, it->first); }
     m_writer->WriteString(102, "}");
     m_writer->WriteString(100, "AcDbRasterImageDef");
-    m_writer->WriteInt16(90, 0);  // version 0=R14 to v2010
+    m_writer->WriteInt32(90, 0);  // version 0=R14 to v2010
     m_writer->WriteUtf8String(1, id->name);
     m_writer->WriteDouble(10, id->u);
     m_writer->WriteDouble(20, id->v);
@@ -2274,7 +2324,7 @@ bool dxfRW::ProcessLWPolyline() {
 bool dxfRW::ProcessPolyline() {
   DRW_DBG("dxfRW::ProcessPolyline\n");
   int code;
-  DRW_Polyline pl;
+  DRW_Polyline polyline;
   while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
@@ -2283,46 +2333,46 @@ bool dxfRW::ProcessPolyline() {
         m_nextEntity = m_reader->GetString();
         DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (m_nextEntity != "VERTEX") {
-          m_interface->addPolyline(pl);
-          return true;  // found new entity or ENDSEC, terminate
-        } else {
-          ProcessVertex(&pl);
-        }
+        if (m_nextEntity == "VERTEX") { ProcessVertex(&polyline); }
+        m_interface->addPolyline(polyline);
+        return true;
       }
-        [[fallthrough]];  // in case there is no vertex
       default:
-        pl.ParseCode(code, m_reader);
+        polyline.ParseCode(code, m_reader);
         break;
     }
   }
   return true;
 }
 
-bool dxfRW::ProcessVertex(DRW_Polyline* pl) {
+bool dxfRW::ProcessVertex(DRW_Polyline* polyline) {
   DRW_DBG("dxfRW::ProcessVertex\n");
   int code;
-  DRW_Vertex* v = new DRW_Vertex();
+  auto* vertex = new DRW_Vertex();
   while (m_reader->ReadRec(&code)) {
     DRW_DBG(code);
     DRW_DBG("\n");
     switch (code) {
       case 0: {
-        pl->appendVertex(v);
+        polyline->appendVertex(vertex);
         m_nextEntity = m_reader->GetString();
         DRW_DBG(m_nextEntity);
         DRW_DBG("\n");
-        if (m_nextEntity == "SEQEND") {
-          return true;  // found SEQEND no more vertex, terminate
-        } else if (m_nextEntity == "VERTEX") {
-          v = new DRW_Vertex();  // another vertex
+        if (m_nextEntity == "SEQEND") { return true; }
+        if (m_nextEntity == "VERTEX") {
+          vertex = new DRW_Vertex();
+          break;
         }
+        // Unexpected entity, stop processing vertices
+        return true;
       }
       default:
-        v->ParseCode(code, m_reader);
+        vertex->ParseCode(code, m_reader);
         break;
     }
   }
+  // Unexpected end of file while processing vertices - avoid leaking in-process vertex
+  delete vertex;
   return true;
 }
 
