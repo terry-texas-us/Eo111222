@@ -10,33 +10,27 @@ class dxfWriter;
 
 namespace DRW {
 
-//! Table entries type.
 enum TTYPE { UNKNOWNT, LTYPE, LAYER, STYLE, DIMSTYLE, VPORT, BLOCK_RECORD, APPID, IMAGEDEF };
 
-// pending VIEW, UCS, APPID, VP_ENT_HDR, GROUP, MLINESTYLE, LONG_TRANSACTION, XRECORD,
+// pending VIEW, UCS, VP_ENT_HDR, GROUP, MLINESTYLE, LONG_TRANSACTION, XRECORD,
 // ACDBPLACEHOLDER, VBA_PROJECT, ACAD_TABLE, CELLSTYLEMAP, DBCOLOR, DICTIONARYVAR,
-// DICTIONARYWDFLT, FIELD, IDBUFFER, IMAGEDEF, IMAGEDEFREACTOR, LAYER_INDEX, LAYOUT
+// DICTIONARYWDFLT, FIELD, IDBUFFER, IMAGEDEFREACTOR, LAYER_INDEX, LAYOUT
 // MATERIAL, PLACEHOLDER, PLOTSETTINGS, RASTERVARIABLES, SCALE, SORTENTSTABLE,
-// SPATIAL_INDEX, SPATIAL_FILTER, TABLEGEOMETRY, TABLESTYLES,VISUALSTYLE,
+// SPATIAL_INDEX, SPATIAL_FILTER, TABLEGEOMETRY, TABLESTYLES, VISUALSTYLE
+
 }  // namespace DRW
 
-//! Base class for tables entries
-/*!
- *  Base class for tables entries
- */
 class DRW_TableEntry {
  public:
-  // initializes default values
-  DRW_TableEntry() {
-    tType = DRW::UNKNOWNT;
-    flags = 0;
-    parentHandle = 0;
-    m_currentVariant = nullptr;
-  }
+  DRW_TableEntry() : tType{DRW::UNKNOWNT}, flags{}, parentHandle{}, m_currentVariant{} {}
 
+ protected:
+  explicit DRW_TableEntry(DRW::TTYPE tableType) noexcept
+      : tType{tableType}, flags{}, parentHandle{}, m_currentVariant{} {}
+
+ public:
   virtual ~DRW_TableEntry() {
     for (std::vector<DRW_Variant*>::iterator it = extData.begin(); it != extData.end(); ++it) { delete *it; }
-
     extData.clear();
   }
 
@@ -61,20 +55,24 @@ class DRW_TableEntry {
   }
 
  public:
-  enum DRW::TTYPE tType; /*!< enum: entity type, code 0 */
-  std::uint32_t handle{}; /*!< entity identifier, code 5 */
-  int parentHandle; /*!< Soft-pointer ID/handle to owner object, code 330 */
-  UTF8STRING name; /*!< entry name, code 2 */
-  int flags; /*!< Flags relevant to entry, code 70 */
-  std::vector<DRW_Variant*> extData; /*!< FIFO list of extended data, codes 1000 to 1071*/
+  enum DRW::TTYPE tType{DRW::UNKNOWNT};  // Group code 0
+  std::uint32_t handle{};  // Group code 5
+  int parentHandle{};  // Group code 330
+  UTF8STRING name;  // Group code 2
+  int flags{};  // Group code 70
+  std::vector<DRW_Variant*> extData;  // Group codes 1000 to 1071
 
  private:
-  DRW_Variant* m_currentVariant;
+  DRW_Variant* m_currentVariant{};
 };
 
-//! Class to handle dimstyle entries
-/*!
- *  Class to handle dim style symbol table entries
+/**@brief Class to handle dimension style table entry
+ *
+ *  A dimension style table entry represents a set of properties that control the appearance of dimensions in a drawing.
+ *  It is defined by its name (code 2) and various properties such as text height (code 140), arrow size (code 41),
+ *  extension line offset (code 42), dimension line gap (code 147), and many others. The dimension style can also
+ * include properties such as the dimension scale factor (code 40), dimension line extension (code 44), and dimension
+ * text placement (code 71), which can affect how dimensions are displayed in the drawing.
  */
 class DRW_Dimstyle : public DRW_TableEntry {
   friend class dxfRW;
@@ -109,86 +107,87 @@ class DRW_Dimstyle : public DRW_TableEntry {
 
  protected:
   void ParseCode(int code, dxfReader* reader);
-  void update();
 
  public:
-  // V12
-  UTF8STRING dimpost; /*!< code 3 */
-  UTF8STRING dimapost; /*!< code 4 */
-  /* handle are code 105 */
-  UTF8STRING dimblk; /*!< code 5, code 342 V2000+ */
-  UTF8STRING dimblk1; /*!< code 6, code 343 V2000+ */
-  UTF8STRING dimblk2; /*!< code 7, code 344 V2000+ */
-  double dimscale; /*!< code 40 */
-  double dimasz; /*!< code 41 */
-  double dimexo; /*!< code 42 */
-  double dimdli; /*!< code 43 */
-  double dimexe; /*!< code 44 */
-  double dimrnd; /*!< code 45 */
-  double dimdle; /*!< code 46 */
-  double dimtp; /*!< code 47 */
-  double dimtm; /*!< code 48 */
-  double dimfxl; /*!< code 49 V2007+ */
-  double dimtxt; /*!< code 140 */
-  double dimcen; /*!< code 141 */
-  double dimtsz; /*!< code 142 */
-  double dimaltf; /*!< code 143 */
-  double dimlfac; /*!< code 144 */
-  double dimtvp; /*!< code 145 */
-  double dimtfac; /*!< code 146 */
-  double dimgap; /*!< code 147 */
-  double dimaltrnd; /*!< code 148 V2000+ */
-  int dimtol; /*!< code 71 */
-  int dimlim; /*!< code 72 */
-  int dimtih; /*!< code 73 */
-  int dimtoh; /*!< code 74 */
-  int dimse1; /*!< code 75 */
-  int dimse2; /*!< code 76 */
-  int dimtad; /*!< code 77 */
-  int dimzin; /*!< code 78 */
-  int dimazin; /*!< code 79 V2000+ */
-  int dimalt; /*!< code 170 */
-  int dimaltd; /*!< code 171 */
-  int dimtofl; /*!< code 172 */
-  int dimsah; /*!< code 173 */
-  int dimtix; /*!< code 174 */
-  int dimsoxd; /*!< code 175 */
-  int dimclrd; /*!< code 176 */
-  int dimclre; /*!< code 177 */
-  int dimclrt; /*!< code 178 */
-  int dimadec; /*!< code 179 V2000+ */
-  int dimunit; /*!< code 270 R13+ (obsolete 2000+, use dimlunit & dimfrac) */
-  int dimdec; /*!< code 271 R13+ */
-  int dimtdec; /*!< code 272 R13+ */
-  int dimaltu; /*!< code 273 R13+ */
-  int dimalttd; /*!< code 274 R13+ */
-  int dimaunit; /*!< code 275 R13+ */
-  int dimfrac; /*!< code 276 V2000+ */
-  int dimlunit; /*!< code 277 V2000+ */
-  int dimdsep; /*!< code 278 V2000+ */
-  int dimtmove; /*!< code 279 V2000+ */
-  int dimjust; /*!< code 280 R13+ */
-  int dimsd1; /*!< code 281 R13+ */
-  int dimsd2; /*!< code 282 R13+ */
-  int dimtolj; /*!< code 283 R13+ */
-  int dimtzin; /*!< code 284 R13+ */
-  int dimaltz; /*!< code 285 R13+ */
-  int dimaltttz; /*!< code 286 R13+ */
-  int dimfit; /*!< code 287 R13+  (obsolete 2000+, use dimatfit & dimtmove)*/
-  int dimupt; /*!< code 288 R13+ */
-  int dimatfit; /*!< code 289 V2000+ */
-  int dimfxlon; /*!< code 290 V2007+ */
-  UTF8STRING dimtxsty; /*!< code 340 R13+ */
-  UTF8STRING dimldrblk; /*!< code 341 V2000+ */
-  int dimlwd; /*!< code 371 V2000+ */
-  int dimlwe; /*!< code 372 V2000+ */
+  UTF8STRING dimpost;  // Group code 3
+  UTF8STRING dimapost;  // Group code 4
+
+  UTF8STRING dimblk;  // Group code 5, code 342 V2000+
+  UTF8STRING dimblk1;  // Group code 6, code 343 V2000+
+  UTF8STRING dimblk2;  // Group code 7, code 344 V2000+
+  double dimscale;  // Group code 40
+  double dimasz;  // Group code 41
+  double dimexo;  // Group code 42
+  double dimdli;  // Group code 43
+  double dimexe;  // Group code 44
+  double dimrnd;  // Group code 45
+  double dimdle;  // Group code 46
+  double dimtp;  // Group code 47
+  double dimtm;  // Group code 48
+  double dimfxl;  // Group code 49 V2007+
+  double dimtxt;  // Group code 140
+  double dimcen;  // Group code 141
+  double dimtsz;  // Group code 142
+  double dimaltf;  // Group code 143
+  double dimlfac;  // Group code 144
+  double dimtvp;  // Group code 145
+  double dimtfac;  // Group code 146
+  double dimgap;  // Group code 147
+  double dimaltrnd;  // Group code 148 V2000+
+  int dimtol;  // Group code 71
+  int dimlim;  // Group code 72
+  int dimtih;  // Group code 73
+  int dimtoh;  // Group code 74
+  int dimse1;  // Group code 75
+  int dimse2;  // Group code 76
+  int dimtad;  // Group code 77
+  int dimzin;  // Group code 78
+  int dimazin;  // Group code 79 V2000+
+  int dimalt;  // Group code 170
+  int dimaltd;  // Group code 171
+  int dimtofl;  // Group code 172
+  int dimsah;  // Group code 173
+  int dimtix;  // Group code 174
+  int dimsoxd;  // Group code 175
+  int dimclrd;  // Group code 176
+  int dimclre;  // Group code 177
+  int dimclrt;  // Group code 178
+  int dimadec;  // Group code 179 V2000+
+  int dimunit;  // Group code 270 R13+ (obsolete 2000+, use dimlunit & dimfrac)
+  int dimdec;  // Group code 271 R13+
+  int dimtdec;  // Group code 272 R13+
+  int dimaltu;  // Group code 273 R13+
+  int dimalttd;  // Group code 274 R13+
+  int dimaunit;  // Group code 275 R13+
+  int dimfrac;  // Group code 276 V2000+
+  int dimlunit;  // Group code 277 V2000+
+  int dimdsep;  // Group code 278 V2000+
+  int dimtmove;  // Group code 279 V2000+
+  int dimjust;  // Group code 280 R13+
+  int dimsd1;  // Group code 281 R13+
+  int dimsd2;  // Group code 282 R13+
+  int dimtolj;  // Group code 283 R13+
+  int dimtzin;  // Group code 284 R13+
+  int dimaltz;  // Group code 285 R13+
+  int dimaltttz;  // Group code 286 R13+
+  int dimfit;  // Group code 287 R13+  (obsolete 2000+, use dimatfit & dimtmove)
+  int dimupt;  // Group code 288 R13+
+  int dimatfit;  // Group code 289 V2000+
+  int dimfxlon;  // Group code 290 V2007+
+  UTF8STRING dimtxsty;  // Group code 340 R13+
+  UTF8STRING dimldrblk;  // Group code 341 V2000+
+  int dimlwd;  // Group code 371 V2000+
+  int dimlwe;  // Group code 372 V2000+
 };
 
-//! Class to handle line type entries
-/*!
- *  Class to handle line type symbol table entries
+/** Class to handle linetype entries
+ *
+ *  A linetype table entry represents a pattern of dashes and gaps that can be applied to lines in a drawing.
+ *  It is defined by its name (code 2) and various properties such as the description (code 3), number of elements
+ * (code 73), total length of the pattern (code 40), and the sequence of dash and gap lengths (code 49). The linetype
+ * can also include properties such as the alignment code (code 72) and the complex linetype type flag (code 74),
+ * which can affect how the linetype is rendered in the drawing.
  */
-/*TODO: handle complex lineType*/
 class DRW_LType : public DRW_TableEntry {
   friend class dxfRW;
 
@@ -209,19 +208,21 @@ class DRW_LType : public DRW_TableEntry {
   void update();
 
  public:
-  UTF8STRING desc; /*!< descriptive string, code 3 */
-  //    int align;               /*!< align code, always 65 ('A') code 72 */
-  int size; /*!< element number, code 73 */
-  double length; /*!< total length of pattern, code 40 */
-  //    int haveShape;      /*!< complex linetype type, code 74 */
-  std::vector<double> path; /*!< trace, point or space length sequence, code 49 */
+  UTF8STRING desc;  // Group code 3
+  int size;  // Group code 73
+  double length;  // Group code 40
+  std::vector<double> path;  // Group code 49
  private:
   int pathIdx;
 };
 
-//! Class to handle layer entries
-/*!
- *  Class to handle layer symbol table entries
+/** Class to handle layer entries
+ *
+ *  A layer table entry represents a layer in a drawing, which is a logical grouping of entities that can be turned on
+ * or off for display and plotting purposes. It is defined by its name (code 2) and various properties such as the line
+ * type (code 6), color (code 62), plot flag (code 290), line weight (code 370), and 24-bit color (code 420). The layer
+ * can also include properties such as the hard-pointer ID/handle of the plot style (code 390) and material style (code
+ * 347), which can affect how entities on the layer are rendered in the drawing.
  */
 class DRW_Layer : public DRW_TableEntry {
   friend class dxfRW;
@@ -243,18 +244,22 @@ class DRW_Layer : public DRW_TableEntry {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  UTF8STRING lineType; /*!< line type, code 6 */
-  int color; /*!< layer color, code 62 */
-  int color24; /*!< 24-bit color, code 420 */
-  bool plotF; /*!< Plot flag, code 290 */
-  enum DRW_LW_Conv::lineWidth lWeight; /*!< layer lineweight, code 370 */
-  std::string handlePlotS; /*!< Hard-pointer ID/handle of plotstyle, code 390 */
-  std::string handleMaterialS; /*!< Hard-pointer ID/handle of materialstyle, code 347 */
+  UTF8STRING lineType;  // Group code 6
+  int color;  // Group code 62
+  int color24;  // Group code 420
+  bool plotF;  // Group code 290
+  enum DRW_LW_Conv::lineWidth lWeight;  // Group code 370
+  std::string handlePlotS;  // Group code 390
+  std::string handleMaterialS;  // Group code 347
 };
 
-//! Class to handle block record entries
-/*!
- *  Class to handle block record table entries
+/** Class to handle block record entries
+ *
+ *  A block record table entry represents a block definition in a drawing, which is a collection of entities that can be
+ * inserted into the drawing as a single object. It is defined by its name (code 2) and various properties such as the
+ * block insertion units (code 70) and the block insertion base point (code 10, 20, and 30). The block record can also
+ * include properties such as flags (code 70), which can indicate whether the block is anonymous, external, or has
+ * attributes.
  */
 class DRW_Block_Record : public DRW_TableEntry {
   friend class dxfRW;
@@ -271,13 +276,17 @@ class DRW_Block_Record : public DRW_TableEntry {
   //    void ParseCode(int code, dxfReader *reader);
  public:
   // Note:    int DRW_TableEntry::flags; contains code 70 of block
-  int insUnits; /*!< block insertion units, code 70 of block_record*/
-  DRW_Coord m_firstPoint; /*!<  block insertion base point dwg only */
+  int insUnits;  // Group code 70 of block_record
+  DRW_Coord m_firstPoint;
 };
 
-//! Class to handle text style entries
-/*!
- *  Class to handle text style symbol table entries
+/** Class to handle textstyle entries
+ *
+ *  A text style table entry represents a text style in a drawing, which defines the appearance of text entities such as
+ * single-line text and multi-line text. It is defined by its name (code 2) and various properties such as the fixed
+ * text height (code 40), width factor (code 41), oblique angle (code 50), and font file name (code 3). The text style
+ * can also include properties such as the last height used (code 42) and the big font file name (code 4), which can
+ * affect how text entities are rendered in the drawing.
  */
 class DRW_Textstyle : public DRW_TableEntry {
   friend class dxfRW;
@@ -299,19 +308,25 @@ class DRW_Textstyle : public DRW_TableEntry {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  double height; /*!< Fixed text height (0 not set), code 40 */
-  double width; /*!< Width factor, code 41 */
-  double oblique; /*!< Oblique angle, code 50 */
-  int genFlag; /*!< Text generation flags, code 71 */
-  double lastHeight; /*!< Last height used, code 42 */
-  UTF8STRING font; /*!< primary font file name, code 3 */
-  UTF8STRING bigFont; /*!< bigfont file name or blank if none, code 4 */
-  int fontFamily; /*!< ttf font family, italic and bold flags, code 1071 */
+  double height;  // Group code 40
+  double width;  // Group code 41
+  double oblique;  // Group code 50
+  int genFlag;  // Group code 71
+  double lastHeight;  // Group code 42
+  UTF8STRING font;  // Group code 3
+  UTF8STRING bigFont;  // Group code 4
+  int fontFamily;  // Group code 1071
 };
 
-//! Class to handle vport entries
-/*!
- *  Class to handle vport symbol table entries
+/** Class to handle viewport entries
+ *
+ *  A viewport table entry represents a viewport in a drawing, which is a window through which the model space is viewed
+ * in paper space. It is defined by its name (code 2) and various properties such as the lower left corner (code 10,
+ * 20), upper right corner (code 11, 21), center point (code 12, 22), snap base point (code 13, 23), snap spacing (code
+ * 14, 24), grid spacing (code 15, 25), view direction (code 16, 26, 36), and view target point (code 17, 27, 37). The
+ * viewport can also include properties such as the view height (code 40), aspect ratio (code 41), lens height (code
+ * 42), front clipping plane (code 43), back clipping plane (code 44), snap rotation angle (code 50), view twist angle
+ * (code 51), and various flags for view mode, snap, grid, and UCS icon display.
  */
 class DRW_Vport : public DRW_TableEntry {
   friend class dxfRW;
@@ -343,30 +358,30 @@ class DRW_Vport : public DRW_TableEntry {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord lowerLeft; /*!< Lower left corner, code 10 & 20 */
-  DRW_Coord upperRight; /*!< Upper right corner, code 11 & 21 */
-  DRW_Coord center; /*!< center point in WCS, code 12 & 22 */
-  DRW_Coord snapBase; /*!< snap base point in DCS, code 13 & 23 */
-  DRW_Coord snapSpacing; /*!< snap Spacing, code 14 & 24 */
-  DRW_Coord gridSpacing; /*!< grid Spacing, code 15 & 25 */
-  DRW_Coord viewDir; /*!< view direction from target point, code 16, 26 & 36 */
-  DRW_Coord viewTarget; /*!< view target point, code 17, 27 & 37 */
-  double height; /*!< view height, code 40 */
-  double ratio; /*!< viewport aspect ratio, code 41 */
-  double lensHeight; /*!< lens height, code 42 */
-  double frontClip; /*!< front clipping plane, code 43 */
-  double backClip; /*!< back clipping plane, code 44 */
-  double snapAngle; /*!< snap rotation angle, code 50 */
-  double twistAngle; /*!< view twist angle, code 51 */
-  int viewMode; /*!< view mode, code 71 */
-  int circleZoom; /*!< circle zoom percent, code 72 */
-  int fastZoom; /*!< fast zoom setting, code 73 */
-  int ucsIcon; /*!< UCSICON setting, code 74 */
-  int snap; /*!< snap on/off, code 75 */
-  int grid; /*!< grid on/off, code 76 */
-  int snapStyle; /*!< snap style, code 77 */
-  int snapIsopair; /*!< snap isopair, code 78 */
-  int gridBehavior; /*!< grid behavior, code 60, undocummented */
+  DRW_Coord lowerLeft;  // Group codes 10 & 20
+  DRW_Coord upperRight;  // Group codes 11 & 21
+  DRW_Coord center;  // Group codes 12 & 22
+  DRW_Coord snapBase;  // Group codes 13 & 23
+  DRW_Coord snapSpacing;  // Group codes 14 & 24
+  DRW_Coord gridSpacing;  // Group codes 15 & 25
+  DRW_Coord viewDir;  // Group codes 16, 26 & 36
+  DRW_Coord viewTarget;  // Group codes 17, 27 & 37
+  double height;  // Group code 40
+  double ratio;  // Group code 41
+  double lensHeight;  // Group code 42
+  double frontClip;  // Group code 43
+  double backClip;  // Group code 44
+  double snapAngle;  // Group code 50
+  double twistAngle;  // Group code 51
+  int viewMode;  // Group code 71
+  int circleZoom;  // Group code 72
+  int fastZoom;  // Group code 73
+  int ucsIcon;  // Group code 74
+  int snap;  // Group code 75
+  int grid;  // Group code 76
+  int snapStyle;  // Group code 77
+  int snapIsopair;  // Group code 78
+  int gridBehavior;  // Group code 60, undocumented
   /** code 60, bit coded possible value are
    * bit 1 (1) show out of limits
    * bit 2 (2) adaptive grid
@@ -375,9 +390,13 @@ class DRW_Vport : public DRW_TableEntry {
    **/
 };
 
-//! Class to handle imagedef entries
-/*!
- *  Class to handle image definitions object entries
+/** Class to handle image definition entries
+ *
+ *  A image definition table entry represents an image definition in a drawing, which defines the properties of an image
+ * that can be inserted into the drawing. It is defined by its name (code 1) and various properties such as the image
+ * size in pixels (code 10 and 20), default size of one pixel (code 11 and 12), loaded flag (code 280), and resolution
+ * units (code 281). The image definition can also include properties such as the group class version (code 90) and a
+ * map of reactors, which are objects that react to changes in the image definition.
  */
 class DRW_ImageDef : public DRW_TableEntry {  //
   friend class dxfRW;
@@ -395,22 +414,24 @@ class DRW_ImageDef : public DRW_TableEntry {  //
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  //    std::string handle;       /*!< entity identifier, code 5 */
-  UTF8STRING name; /*!< File name of image, code 1 */
-  int imgVersion; /*!< class version, code 90, 0=R14 version */
-  double u; /*!< image size in pixels U value, code 10 */
-  double v; /*!< image size in pixels V value, code 20 */
-  double up; /*!< default size of one pixel U value, code 11 */
-  double vp; /*!< default size of one pixel V value, code 12 really is 21*/
-  int loaded; /*!< image is loaded flag, code 280, 0=unloaded, 1=loaded */
-  int resolution; /*!< resolution units, code 281, 0=no, 2=centimeters, 5=inch */
+  //    std::string handle;       // Group code 5
+  UTF8STRING name;  // Group code 1
+  int imgVersion;  // Group code 90, 0=R14 version
+  double u;  // Group code 10
+  double v;  // Group code 20
+  double up;  // Group code 11
+  double vp;  // Group code 12 really is 21
+  int loaded;  // Group code 280, 0=unloaded, 1=loaded
+  int resolution;  // Group code 281, 0=no, 2=centimeters, 5=inch
 
   std::map<std::string, std::string> reactors;
 };
 
-//! Class to handle AppId entries
-/*!
- *  Class to handle AppId symbol table entries
+/** Class to handle application ID entries
+ *
+ *  An application ID table entry represents an application-defined identifier in a drawing, which can be used to
+ * associate custom data with entities in the drawing. It is defined by its name (code 2) and various properties such as
+ * flags (code 70), which can indicate whether the application ID is for internal use only or is externally referenced.
  */
 class DRW_AppId : public DRW_TableEntry {
   friend class dxfRW;
