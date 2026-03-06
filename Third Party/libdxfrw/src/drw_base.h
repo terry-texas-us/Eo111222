@@ -28,7 +28,7 @@ constexpr auto DRW_VERSION = "0.6.3";
 #define DRW_POSIX
 #endif
 
-namespace DRW {
+namespace EoDxf {
 constexpr double geometricTolerance{1e-9};  // TAS: Added for geometric calculations, point coincidence etc.
 
 constexpr auto Pi{std::numbers::pi};
@@ -74,7 +74,7 @@ enum PlotStyleCodes { DefaultPlotStyle = 0 };
 //! Special kinds of transparencies
 enum TransparencyCodes { Opaque = 0, Transparent = -1 };
 
-}  // namespace DRW
+}  // namespace EoDxf
 
 /** @brief Class representing a generalized 3D coordinate (using for point and vector) with x, y, and z components.
  *  Provides constructors for initialization and a method to unitize the vector.
@@ -99,7 +99,7 @@ class DRW_Coord {
    */
   void unitize() noexcept {
     const double dist = sqrt(x * x + y * y + z * z);
-    if (dist > DRW::geometricTolerance) {
+    if (dist > EoDxf::geometricTolerance) {
       x = x / dist;
       y = y / dist;
       z = z / dist;

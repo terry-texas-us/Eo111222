@@ -14,7 +14,7 @@ class dxfWriter;
  */
 class DRW_Header {
  public:
-  DRW_Header() { m_version = DRW::Version::AC1021; }
+  DRW_Header() { m_version = EoDxf::Version::AC1021; }
 
   DRW_Header(const DRW_Header& other);
 
@@ -38,7 +38,7 @@ class DRW_Header {
    * @param writer Pointer to a dxfWriter object used to write the header variables to the output DXF file.
    * @param version The version of the DXF format to use for writing (e.g., AC1009, AC1015, etc.).
    */
-  void Write(dxfWriter* writer, DRW::Version version);
+  void Write(dxfWriter* writer, EoDxf::Version version);
   void AddComment(std::string c);
 
  protected:
@@ -53,50 +53,50 @@ class DRW_Header {
   void ParseCode(int code, dxfReader* reader);
 
  private:
-  void WriteBase(dxfWriter* writer, DRW::Version version);
+  void WriteBase(dxfWriter* writer, EoDxf::Version version);
 
   /** @brief Writes header variables that were added in AC1009 (R11/R12) but not present in AC1006 (R10).
    * Maximum legacy compatibility (still the safest target for 30-year-old viewers.
    * @param writer The dxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1009Additions(dxfWriter* writer, DRW::Version version);
+  void WriteAC1009Additions(dxfWriter* writer, EoDxf::Version version);
 
   /** @brief Writes header variables that were added in AC1012 (R13)
    * Writes AC1012 additions to the header section.
    * @param writer The dxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1012Additions(dxfWriter* writer, DRW::Version version);
+  void WriteAC1012Additions(dxfWriter* writer, EoDxf::Version version);
 
   /** @brief Writes header variables that were added in AC1014 (R14)
    * Big internal redesign after R13; the first truly stable “modern” DWG
    * @param writer The dxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1014Additions(dxfWriter* writer, DRW::Version version);
+  void WriteAC1014Additions(dxfWriter* writer, EoDxf::Version version);
 
   /** @brief Writes header variables that were added in AC1015 (2000)
    * The gold-standard safe default — almost every CAD program on the planet opens it perfectly
    * @param writer The dxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1015Additions(dxfWriter* writer, DRW::Version version);
+  void WriteAC1015Additions(dxfWriter* writer, EoDxf::Version version);
 
   /** @brief Writes header variables that were added in AC1018 (2004)
    * Handle/security improvements; still the most common corporate baseline
    * @param writer The dxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1018Additions(dxfWriter* writer, DRW::Version version);
-  void WriteAC1021Additions(dxfWriter* writer, DRW::Version version);
+  void WriteAC1018Additions(dxfWriter* writer, EoDxf::Version version);
+  void WriteAC1021Additions(dxfWriter* writer, EoDxf::Version version);
 
   /** @brief Writes header variables that were added in AC1018 (2004)
    * Current long-term format (no data loss, smallest modern files)
    * @param writer The dxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1024Additions(dxfWriter* writer, DRW::Version version);
+  void WriteAC1024Additions(dxfWriter* writer, EoDxf::Version version);
 
   [[nodiscard]] bool GetDouble(const std::string& key, double* varDouble);
   [[nodiscard]] bool GetInteger(const std::string& key, int* varInt);

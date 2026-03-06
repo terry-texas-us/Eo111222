@@ -18,7 +18,7 @@ class DRW_Class {
 
   void ParseCode(int code, dxfReader* reader) noexcept;
   void clear() noexcept;
-  void write(dxfWriter* writer, DRW::Version version) const noexcept;
+  void write(dxfWriter* writer, EoDxf::Version version) const noexcept;
 
   UTF8STRING recName;  // group 1 - dxf record name
   UTF8STRING className;  // group 2 - C++ class name

@@ -48,11 +48,11 @@ dxfRW (Main API Class)
 ├── DRW_Interface (Abstract Interface)
 ├── dxfReader/dxfWriter (DXF I/O Handlers)
 ├── DRW_Header (Header Variables)
-├── DRW_Entity (Geometric Entities)
-│   ├── DRW_Point
-│   ├── DRW_Line
+├── EoDxfEntiry (Geometric Entities)
+│   ├── EoDxfPoint
+│   ├── EoDxfLine
 │   ├── DRW_Arc
-│   ├── DRW_Circle
+│   ├── EoDxfCircle
 │   ├── DRW_Ellipse
 │   ├── DRW_LWPolyline
 │   ├── DRW_Polyline
@@ -122,7 +122,7 @@ bool read(DRW_Interface *interface_, bool ext);
 ##### Writing
 
 ```cpp
-bool write(DRW_Interface *interface_, DRW::Version ver, bool bin);
+bool write(DRW_Interface *interface_, EoDxf::Version ver, bool bin);
 ```
 
 - **Parameters**:
@@ -134,9 +134,9 @@ bool write(DRW_Interface *interface_, DRW::Version ver, bool bin);
 ##### Entity Writing Methods
 
 ```cpp
-bool writePoint(DRW_Point *ent);
-bool writeLine(DRW_Line *ent);
-bool writeCircle(DRW_Circle *ent);
+bool writePoint(EoDxfPoint* point);
+bool writeLine(EoDxfLine* line);
+bool writeCircle(EoDxfCircle* circle);
 bool writeArc(DRW_Arc *ent);
 bool writeEllipse(DRW_Ellipse *ent);
 bool writeLWPolyline(DRW_LWPolyline *ent);
@@ -192,11 +192,11 @@ virtual void endBlock() = 0;
 ##### Entities
 
 ```cpp
-virtual void addPoint(const DRW_Point& data) = 0;
-virtual void addLine(const DRW_Line& data) = 0;
+virtual void addPoint(const EoDxfPoint& point) = 0;
+virtual void addLine(const EoDxfLine& data) = 0;
 virtual void addRay(const DRW_Ray& data) = 0;
 virtual void addXline(const DRW_Xline& data) = 0;
-virtual void addCircle(const DRW_Circle& data) = 0;
+virtual void addCircle(const EoDxfCircle& circle) = 0;
 virtual void addArc(const DRW_Arc& data) = 0;
 virtual void addEllipse(const DRW_Ellipse& data) = 0;
 virtual void addLWPolyline(const DRW_LWPolyline& data) = 0;
@@ -344,7 +344,7 @@ namespace DRW {
 ### Entity Base Class
 
 ```cpp
-class DRW_Entity {
+class EoDxfEntiry {
 public:
     enum DRW_EntityType {
         POINT, LINE, CIRCLE, ARC, ELLIPSE,

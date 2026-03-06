@@ -16,7 +16,7 @@ class DRW_TextCodec {
 
   /** @brief Sets the version for the text codec based on the provided string and format.
    * The function checks the version string against known versions and sets the internal version accordingly.
-   * If the version string does not match any known versions, it defaults to DRW::Version::AC1021.
+   * If the version string does not match any known versions, it defaults to EoDxf::Version::AC1021.
    * @param version Pointer to a string representing the version to set
    * @param dxfFormat Boolean indicating whether the format is DXF or not
    */

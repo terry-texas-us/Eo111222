@@ -9,7 +9,7 @@
 #include "drw_entities.h"
 #include "intern/dxfreader.h"
 
-DRW_Entity::DRW_Entity(const DRW_Entity& other)
+EoDxfEntiry::EoDxfEntiry(const EoDxfEntiry& other)
     : m_appData{other.m_appData},
       m_layer{other.m_layer},
       m_lineType{other.m_lineType},
@@ -35,7 +35,7 @@ DRW_Entity::DRW_Entity(const DRW_Entity& other)
   for (const auto* v : other.m_extendedData) { m_extendedData.push_back(new DRW_Variant(*v)); }
 }
 
-DRW_Entity& DRW_Entity::operator=(const DRW_Entity& other) {
+EoDxfEntiry& EoDxfEntiry::operator=(const EoDxfEntiry& other) {
   if (this != &other) {
     clearExtendedData();
 
@@ -67,19 +67,19 @@ DRW_Entity& DRW_Entity::operator=(const DRW_Entity& other) {
   return *this;
 }
 
-DRW_Entity::~DRW_Entity() { clearExtendedData(); }
+EoDxfEntiry::~EoDxfEntiry() { clearExtendedData(); }
 
-void DRW_Entity::Clear() {
+void EoDxfEntiry::Clear() {
   clearExtendedData();
   // extend this later for more state reset if needed
 }
 
-void DRW_Entity::clearExtendedData() noexcept {
+void EoDxfEntiry::clearExtendedData() noexcept {
   for (auto* v : m_extendedData) { delete v; }
   m_extendedData.clear();
 }
 
-void DRW_Entity::CalculateArbitraryAxis(const DRW_Coord& extrusionDirection) {
+void EoDxfEntiry::CalculateArbitraryAxis(const DRW_Coord& extrusionDirection) {
   // Follow the arbitrary DXF definitions for extrusion axes.
   if (fabs(extrusionDirection.x) < 0.015625 && fabs(extrusionDirection.y) < 0.015625) {
     // If we get here, implement Ax = Wy x N where Wy is [0,1,0] per the DXF spec.
@@ -107,7 +107,7 @@ void DRW_Entity::CalculateArbitraryAxis(const DRW_Coord& extrusionDirection) {
   extAxisY.unitize();
 }
 
-void DRW_Entity::ExtrudePointInPlace(const DRW_Coord& extrusionDirection, DRW_Coord& point) const noexcept {
+void EoDxfEntiry::ExtrudePointInPlace(const DRW_Coord& extrusionDirection, DRW_Coord& point) const noexcept {
   double px = (extAxisX.x * point.x) + (extAxisY.x * point.y) + (extrusionDirection.x * point.z);
   double py = (extAxisX.y * point.x) + (extAxisY.y * point.y) + (extrusionDirection.y * point.z);
   double pz = (extAxisX.z * point.x) + (extAxisY.z * point.y) + (extrusionDirection.z * point.z);
@@ -117,7 +117,7 @@ void DRW_Entity::ExtrudePointInPlace(const DRW_Coord& extrusionDirection, DRW_Co
   point.z = pz;
 }
 
-void DRW_Entity::ParseCode(int code, dxfReader* reader) {
+void EoDxfEntiry::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 5:
       m_handle = reader->GetHandleString();
@@ -145,7 +145,7 @@ void DRW_Entity::ParseCode(int code, dxfReader* reader) {
       break;
     case 284:
       // @bug possible: 284 is a bitmask using 8-bit integer values, reading as int32 for simplicity
-      m_shadowMode = static_cast<DRW::ShadowMode>(reader->GetInt32());
+      m_shadowMode = static_cast<EoDxf::ShadowMode>(reader->GetInt32());
       break;
     case 390:
       m_plotStyle = reader->GetHandleString();
@@ -160,7 +160,7 @@ void DRW_Entity::ParseCode(int code, dxfReader* reader) {
       m_transparency = reader->GetInt32();
       break;
     case 67:
-      m_space = static_cast<DRW::Space>(reader->GetInt32());
+      m_space = static_cast<EoDxf::Space>(reader->GetInt32());
       break;
     case 102:
       ParseAppDataGroup(reader);
@@ -207,7 +207,7 @@ void DRW_Entity::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-bool DRW_Entity::ParseAppDataGroup(dxfReader* reader) {
+bool EoDxfEntiry::ParseAppDataGroup(dxfReader* reader) {
   std::list<DRW_Variant> groupList;
 
   DRW_Variant currentVariant;
@@ -261,7 +261,7 @@ bool DRW_Entity::ParseAppDataGroup(dxfReader* reader) {
   return true;
 }
 
-void DRW_Point::ParseCode(int code, dxfReader* reader) {
+void EoDxfPoint::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 10:
       m_firstPoint.x = reader->GetDouble();
@@ -286,12 +286,12 @@ void DRW_Point::ParseCode(int code, dxfReader* reader) {
       m_extrusionDirection.z = reader->GetDouble();
       break;
     default:
-      DRW_Entity::ParseCode(code, reader);
+      EoDxfEntiry::ParseCode(code, reader);
       break;
   }
 }
 
-void DRW_Line::ParseCode(int code, dxfReader* reader) {
+void EoDxfLine::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 11:
       m_secondPoint.x = reader->GetDouble();
@@ -303,12 +303,12 @@ void DRW_Line::ParseCode(int code, dxfReader* reader) {
       m_secondPoint.z = reader->GetDouble();
       break;
     default:
-      DRW_Point::ParseCode(code, reader);
+      EoDxfPoint::ParseCode(code, reader);
       break;
   }
 }
 
-void DRW_Circle::ApplyExtrusion() {
+void EoDxfCircle::ApplyExtrusion() {
   if (m_haveExtrusion) {
     // NOTE: Commenting these out causes the the arcs being tested to be located
     // on the other side of the y axis (all x dimensions are negated).
@@ -317,19 +317,19 @@ void DRW_Circle::ApplyExtrusion() {
   }
 }
 
-void DRW_Circle::ParseCode(int code, dxfReader* reader) {
+void EoDxfCircle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 40:
       m_radius = reader->GetDouble();
       break;
     default:
-      DRW_Point::ParseCode(code, reader);
+      EoDxfPoint::ParseCode(code, reader);
       break;
   }
 }
 
 void DRW_Arc::ApplyExtrusion() {
-  DRW_Circle::ApplyExtrusion();
+  EoDxfCircle::ApplyExtrusion();
 
   if (m_haveExtrusion) {
     // If the extrusion vector has a z value less than 0, the angles for the arc
@@ -339,8 +339,8 @@ void DRW_Arc::ApplyExtrusion() {
     // extrusion axis (with x and y values greater than 1/64) may still have issues.
     if (fabs(m_extrusionDirection.x) < 0.015625 && fabs(m_extrusionDirection.y) < 0.015625 &&
         m_extrusionDirection.z < 0.0) {
-      m_startAngle = DRW::Pi - m_startAngle;
-      m_endAngle = DRW::Pi - m_endAngle;
+      m_startAngle = EoDxf::Pi - m_startAngle;
+      m_endAngle = EoDxf::Pi - m_endAngle;
 
       double temp = m_startAngle;
       m_startAngle = m_endAngle;
@@ -352,13 +352,13 @@ void DRW_Arc::ApplyExtrusion() {
 void DRW_Arc::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 50:
-      m_startAngle = reader->GetDouble() * DRW::DegreesToRadians;
+      m_startAngle = reader->GetDouble() * EoDxf::DegreesToRadians;
       break;
     case 51:
-      m_endAngle = reader->GetDouble() * DRW::DegreesToRadians;
+      m_endAngle = reader->GetDouble() * EoDxf::DegreesToRadians;
       break;
     default:
-      DRW_Circle::ParseCode(code, reader);
+      EoDxfCircle::ParseCode(code, reader);
       break;
   }
 }
@@ -375,7 +375,7 @@ void DRW_Ellipse::ParseCode(int code, dxfReader* reader) {
       m_endParam = reader->GetDouble();
       break;
     default:
-      DRW_Line::ParseCode(code, reader);
+      EoDxfLine::ParseCode(code, reader);
       break;
   }
 }
@@ -386,8 +386,8 @@ void DRW_Ellipse::ApplyExtrusion() {
     ExtrudePointInPlace(m_extrusionDirection, m_secondPoint);
     double intialparam = m_startParam;
     if (m_extrusionDirection.z < 0.) {
-      m_startParam = DRW::TwoPi - m_endParam;
-      m_endParam = DRW::TwoPi - intialparam;
+      m_startParam = EoDxf::TwoPi - m_endParam;
+      m_endParam = EoDxf::TwoPi - intialparam;
     }
   }
 }
@@ -395,22 +395,22 @@ void DRW_Ellipse::ApplyExtrusion() {
 // if ratio > 1 minor axis are greather than major axis, correct it
 void DRW_Ellipse::CorrectAxis() {
   bool complete{};
-  if (fabs(m_startParam - m_endParam) < DRW::geometricTolerance) {
+  if (fabs(m_startParam - m_endParam) < EoDxf::geometricTolerance) {
     m_startParam = 0.0;
-    m_endParam = DRW::TwoPi;
+    m_endParam = EoDxf::TwoPi;
     complete = true;
   }
   if (m_ratio > 1.0) {
-    if (fabs(m_endParam - m_startParam - DRW::TwoPi) < 1.0e-10) { complete = true; }
+    if (fabs(m_endParam - m_startParam - EoDxf::TwoPi) < 1.0e-10) { complete = true; }
     double incX = m_secondPoint.x;
     m_secondPoint.x = -(m_secondPoint.y * m_ratio);
     m_secondPoint.y = incX * m_ratio;
     m_ratio = 1.0 / m_ratio;
     if (!complete) {
-      if (m_startParam < DRW::HalfPi) { m_startParam += DRW::TwoPi; }
-      if (m_endParam < DRW::HalfPi) { m_endParam += DRW::TwoPi; }
-      m_endParam -= DRW::HalfPi;
-      m_startParam -= DRW::HalfPi;
+      if (m_startParam < EoDxf::HalfPi) { m_startParam += EoDxf::TwoPi; }
+      if (m_endParam < EoDxf::HalfPi) { m_endParam += EoDxf::TwoPi; }
+      m_endParam -= EoDxf::HalfPi;
+      m_startParam -= EoDxf::HalfPi;
     }
   }
 }
@@ -425,7 +425,7 @@ void DRW_Ellipse::ToPolyline(DRW_Polyline* pol, int parts) {
   incAngle = atan2(m_secondPoint.y, m_secondPoint.x);
   cosRot = cos(incAngle);
   sinRot = sin(incAngle);
-  incAngle = DRW::TwoPi / parts;
+  incAngle = EoDxf::TwoPi / parts;
   curAngle = m_startParam;
   int i = static_cast<int>(curAngle / incAngle);
   do {
@@ -440,7 +440,7 @@ void DRW_Ellipse::ToPolyline(DRW_Polyline* pol, int parts) {
     pol->addVertex(DRW_Vertex(x, y, 0.0, 0.0));
     curAngle = (++i) * incAngle;
   } while (i < parts);
-  if (fabs(m_endParam - m_startParam - DRW::TwoPi) < 1.0e-10) { pol->m_polylineFlag = 1; }
+  if (fabs(m_endParam - m_startParam - EoDxf::TwoPi) < 1.0e-10) { pol->m_polylineFlag = 1; }
   pol->m_layer = this->m_layer;
   pol->m_lineType = this->m_lineType;
   pol->m_color = this->m_color;
@@ -479,7 +479,7 @@ void DRW_Trace::ParseCode(int code, dxfReader* reader) {
       m_fourthPoint.z = reader->GetDouble();
       break;
     default:
-      DRW_Line::ParseCode(code, reader);
+      EoDxfLine::ParseCode(code, reader);
       break;
   }
 }
@@ -506,7 +506,7 @@ void DRW_Block::ParseCode(int code, dxfReader* reader) {
       m_flags = reader->GetInt32();
       break;
     default:
-      DRW_Point::ParseCode(code, reader);
+      EoDxfPoint::ParseCode(code, reader);
       break;
   }
 }
@@ -527,7 +527,7 @@ void DRW_Insert::ParseCode(int code, dxfReader* reader) {
       break;
     case 50:
       m_rotationAngle = reader->GetDouble();
-      m_rotationAngle = m_rotationAngle * DRW::DegreesToRadians;
+      m_rotationAngle = m_rotationAngle * EoDxf::DegreesToRadians;
       break;
     case 70:
       m_columnCount = reader->GetInt32();
@@ -542,7 +542,7 @@ void DRW_Insert::ParseCode(int code, dxfReader* reader) {
       m_rowSpacing = reader->GetDouble();
       break;
     default:
-      DRW_Point::ParseCode(code, reader);
+      EoDxfPoint::ParseCode(code, reader);
       break;
   }
 }
@@ -606,7 +606,7 @@ void DRW_LWPolyline::ParseCode(int code, dxfReader* reader) {
       m_extrusionDirection.z = reader->GetDouble();
       break;
     default:
-      DRW_Entity::ParseCode(code, reader);
+      EoDxfEntiry::ParseCode(code, reader);
       break;
   }
 }
@@ -643,7 +643,7 @@ void DRW_Text::ParseCode(int code, dxfReader* reader) {
       m_textStyleName = reader->GetUtf8String();
       break;
     default:
-      DRW_Line::ParseCode(code, reader);
+      EoDxfLine::ParseCode(code, reader);
       break;
   }
 }
@@ -671,7 +671,7 @@ void DRW_MText::ParseCode(int code, dxfReader* reader) {
 }
 
 void DRW_MText::UpdateAngle() {
-  if (m_haveXAxisDirection) { m_textRotation = atan2(m_secondPoint.y, m_secondPoint.x) * DRW::RadiansToDegrees; }
+  if (m_haveXAxisDirection) { m_textRotation = atan2(m_secondPoint.y, m_secondPoint.x) * EoDxf::RadiansToDegrees; }
 }
 
 void DRW_Polyline::ParseCode(int code, dxfReader* reader) {
@@ -701,7 +701,7 @@ void DRW_Polyline::ParseCode(int code, dxfReader* reader) {
       m_curvesAndSmoothSurfaceType = reader->GetInt32();
       break;
     default:
-      DRW_Point::ParseCode(code, reader);
+      EoDxfPoint::ParseCode(code, reader);
       break;
   }
 }
@@ -739,7 +739,7 @@ void DRW_Vertex::ParseCode(int code, dxfReader* reader) {
       m_identifier = reader->GetInt32();
       break;
     default:
-      DRW_Point::ParseCode(code, reader);
+      EoDxfPoint::ParseCode(code, reader);
       break;
   }
 }
@@ -747,7 +747,7 @@ void DRW_Vertex::ParseCode(int code, dxfReader* reader) {
 void DRW_Hatch::AddLine() {
   ClearEntities();
   if (m_hatchLoop) {
-    auto entity = std::make_unique<DRW_Line>();
+    auto entity = std::make_unique<EoDxfLine>();
     m_point = m_line = entity.get();
     m_hatchLoop->m_entities.push_back(std::move(entity));
   }
@@ -852,14 +852,14 @@ void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
       break;
     case 50:
       if (m_arc) {
-        m_arc->m_startAngle = reader->GetDouble() * DRW::DegreesToRadians;
+        m_arc->m_startAngle = reader->GetDouble() * EoDxf::DegreesToRadians;
       } else if (m_ellipse) {
         m_ellipse->m_startParam = reader->GetDouble();
       }
       break;
     case 51:
       if (m_arc) {
-        m_arc->m_endAngle = reader->GetDouble() * DRW::DegreesToRadians;
+        m_arc->m_endAngle = reader->GetDouble() * EoDxf::DegreesToRadians;
       } else if (m_ellipse) {
         m_ellipse->m_endParam = reader->GetDouble();
       }
@@ -953,7 +953,7 @@ void DRW_Hatch::ParseCode(int code, dxfReader* reader) {
       ClearEntities();
       break;
     default:
-      DRW_Point::ParseCode(code, reader);
+      EoDxfPoint::ParseCode(code, reader);
       break;
   }
 }
@@ -1040,7 +1040,7 @@ void DRW_Spline::ParseCode(int code, dxfReader* reader) {
     // case 41:
     //   break;
     default:
-      DRW_Entity::ParseCode(code, reader);
+      EoDxfEntiry::ParseCode(code, reader);
       break;
   }
 }
@@ -1078,7 +1078,7 @@ void DRW_Image::ParseCode(int code, dxfReader* reader) {
       fade = reader->GetInt32();
       break;
     default:
-      DRW_Line::ParseCode(code, reader);
+      EoDxfLine::ParseCode(code, reader);
       break;
   }
 }
@@ -1185,7 +1185,7 @@ void EoDxfDimension::ParseCode(int code, dxfReader* reader) {
       hdir = reader->GetDouble();
       break;
     default:
-      DRW_Entity::ParseCode(code, reader);
+      EoDxfEntiry::ParseCode(code, reader);
       break;
   }
 }
@@ -1274,7 +1274,7 @@ void DRW_Leader::ParseCode(int code, dxfReader* reader) {
       offsettext.z = reader->GetDouble();
       break;
     default:
-      DRW_Entity::ParseCode(code, reader);
+      EoDxfEntiry::ParseCode(code, reader);
       break;
   }
 }
@@ -1301,7 +1301,7 @@ void DRW_Viewport::ParseCode(int code, dxfReader* reader) {
       centerPY = reader->GetDouble();
       break;
     default:
-      DRW_Point::ParseCode(code, reader);
+      EoDxfPoint::ParseCode(code, reader);
       break;
   }
 }

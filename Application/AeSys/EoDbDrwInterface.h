@@ -20,41 +20,41 @@ class EoDbDrwInterface : public DRW_Interface {
   EoDbDrwInterface(AeSysDoc* document) : m_document(document) {}
 
   void addHeader(const DRW_Header* header) override {
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addHeader called\n");
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addHeader called\n");
     ConvertHeaderSection(header, m_document);
   }
 
   void addClass(const DRW_Class& class_) override {
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addClass called\n");
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addClass called\n");
     ConvertClassesSection(class_, m_document);
   }
 
   // Table objects
 
   void addAppId(const DRW_AppId& appId) override {
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addAppId called\n");
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addAppId called\n");
     ConvertAppIdTable(appId, m_document);
   }
   void addDimStyle(const DRW_DimStyle& dimStyle) override {
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addDimStyle called\n");
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addDimStyle called\n");
     ConvertDimStyle(dimStyle, m_document);
   }
 
   void addLayer(const DRW_Layer& layer) override {
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLayer called\n");
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLayer called\n");
     ConvertLayerTable(layer, m_document);
   }
   void addLinetype(const DRW_Linetype& lType) override {
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLinetype called\n");
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLinetype called\n");
     ConvertLinetypesTable(lType, m_document);
   }
   void addTextStyle(const DRW_Textstyle& textStyle) override {
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addTextStyle called\n");
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addTextStyle called\n");
     ConvertTextStyleTable(textStyle, m_document);
   }
 
   void addVport(const DRW_Vport& viewport) override {
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addVport called\n");
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addVport called\n");
     ConvertViewportTable(viewport, m_document);
   }
 
@@ -62,15 +62,15 @@ class EoDbDrwInterface : public DRW_Interface {
   void addBlock(const DRW_Block& block) override {
     inBlockDefinition = true;
     blockName = Eo::MultiByteToWString(block.name.c_str());
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addBlock <%s>\n", blockName.c_str());
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addBlock <%s>\n", blockName.c_str());
     currentOpenBlockDefinition = ConvertBlock(block, m_document);
   }
   void setBlock(const int handle) override {
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::setBlock\n");
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::setBlock\n");
     ConvertBlockSet(handle, m_document);
   }
   void endBlock() override {
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::endBlock\n");
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::endBlock\n");
     inBlockDefinition = false;
     currentOpenBlockDefinition = nullptr;
     blockName.clear();
@@ -87,21 +87,21 @@ class EoDbDrwInterface : public DRW_Interface {
   void addArc(const DRW_Arc& arc) override {
     countOfArc++;
     if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addArc - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addArc - block <%s>\n", blockName.c_str());
     } else {
-      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addArc - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addArc - entities section\n");
     }
     ConvertArcEntity(arc, m_document);
   }
   // ATTDEF not implemented in DRW
   // ATTRIB not implemented in DRW
   // BODY not implemented in DRW
-  void addCircle(const DRW_Circle& circle) override {
+  void addCircle(const EoDxfCircle& circle) override {
     countOfCircle++;
     if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addCircle - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addCircle - block <%s>\n", blockName.c_str());
     } else {
-      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addCircle - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addCircle - entities section\n");
     }
     ConvertCircleEntity(circle, m_document);
   }
@@ -126,9 +126,9 @@ class EoDbDrwInterface : public DRW_Interface {
   void addEllipse(const DRW_Ellipse& ellipse) override {
     countOfEllipse++;
     if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addCircle - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addCircle - block <%s>\n", blockName.c_str());
     } else {
-      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addCircle - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addCircle - entities section\n");
     }
     ConvertEllipseEntity(ellipse, m_document);
   }
@@ -140,23 +140,23 @@ class EoDbDrwInterface : public DRW_Interface {
   void addInsert(const DRW_Insert& insert) override {
     countOfInsert++;
     if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLine - block <%s>\n", blockName.c_str());
       ConvertInsertEntity(insert, m_document);
     } else {
-      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLine - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLine - entities section\n");
       ConvertInsertEntity(insert, m_document);
     }
   }
   void addLeader(const DRW_Leader* leader) override { (void)leader; }
   // LIGHT not implemented in DRW
 
-  void addLine(const DRW_Line& line) override {
+  void addLine(const EoDxfLine& line) override {
     countOfLine++;
     if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLine - block <%s>\n", blockName.c_str());
       ConvertLineEntity(line, m_document);
     } else {
-      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLine - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLine - entities section\n");
       ConvertLineEntity(line, m_document);
     }
   }
@@ -164,10 +164,10 @@ class EoDbDrwInterface : public DRW_Interface {
   void addLWPolyline(const DRW_LWPolyline& lwPolyline) override {
     countOfLWPolyline++;
     if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addLine - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLine - block <%s>\n", blockName.c_str());
       ConvertLWPolylineEntity(lwPolyline, m_document);
     } else {
-      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLine - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLine - entities section\n");
       ConvertLWPolylineEntity(lwPolyline, m_document);
     }
   }
@@ -179,22 +179,22 @@ class EoDbDrwInterface : public DRW_Interface {
     (void)mText;
     countOfMText++;
     if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addMText - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addMText - block <%s>\n", blockName.c_str());
     } else {
-      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addMText - entities section\n");
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addMText - entities section\n");
     }
   }
 
   // OLEFRAME not implemented in DRW
   // OLE2FRAME not implemented in DRW
 
-  void addPoint(const DRW_Point& point) override {
+  void addPoint(const EoDxfPoint& point) override {
     countOfPoint++;
     if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addPoint - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addPoint - block <%s>\n", blockName.c_str());
       ConvertPointEntity(point, m_document);
     } else {
-      ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addPoint - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addPoint - entities section\n");
       ConvertPointEntity(point, m_document);
     }
   }
@@ -220,9 +220,9 @@ class EoDbDrwInterface : public DRW_Interface {
     (void)text;
     countOfText++;
     if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addText - block <%s>\n", blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addText - block <%s>\n", blockName.c_str());
     } else {
-      ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addText - entities section\n");
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addText - entities section\n");
     }
   }
 
@@ -236,10 +236,10 @@ class EoDbDrwInterface : public DRW_Interface {
 
   // Others
   void addComment(const char* comment) override {
-    ATLTRACE2(traceGeneral, 2, L"DRW_Interface::addComment(%s)\n", comment);
+    ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addComment(%s)\n", comment);
   }
   void linkImage(const DRW_ImageDef* imageDefinition) override { (void)imageDefinition; }
-  void addKnot(const DRW_Entity& /* knot */) override { countOfKnot++; }
+  void addKnot(const EoDxfEntiry& /* knot */) override { countOfKnot++; }
 
   // Writing methods
   void writeAppId() override {};
@@ -324,12 +324,12 @@ class EoDbDrwInterface : public DRW_Interface {
   void AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document);
 
   void ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document);
-  void ConvertCircleEntity(const DRW_Circle& circle, AeSysDoc* document);
+  void ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document);
   void ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc* document);
   void ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* document);
-  void ConvertLineEntity(const DRW_Line& line, AeSysDoc* document);
+  void ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document);
   void ConvertLWPolylineEntity(const DRW_LWPolyline& lwPolyline, AeSysDoc* document);
-  void ConvertPointEntity(const DRW_Point& point, AeSysDoc* document);
+  void ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document);
 
  private:
   AeSysDoc* m_document{};

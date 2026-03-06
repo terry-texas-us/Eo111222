@@ -42,14 +42,14 @@ void DRW_Class::clear() noexcept {
   isAnEntityFlag = 0;
 }
 
-void DRW_Class::write(dxfWriter* writer, DRW::Version version) const noexcept {
-  if (version < DRW::Version::AC1012) { return; }
+void DRW_Class::write(dxfWriter* writer, EoDxf::Version version) const noexcept {
+  if (version < EoDxf::Version::AC1012) { return; }
   writer->WriteString(0, "CLASS");
   writer->WriteString(1, recName);
   writer->WriteString(2, className);
   writer->WriteString(3, appName);
   writer->WriteInt32(90, proxyCapabilities);
-  if (version >= DRW::Version::AC1018) { writer->WriteInt32(91, instanceCount); }
+  if (version >= EoDxf::Version::AC1018) { writer->WriteInt32(91, instanceCount); }
   writer->WriteInt16(280, wasAProxyFlag);
   writer->WriteInt16(281, isAnEntityFlag);
 }

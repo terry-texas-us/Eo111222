@@ -230,7 +230,7 @@ class EoDbConic : public EoDbPrimitive {
   void ExportToDxf(DRW_Interface* writer) const {
     switch (Subclass()) {
       case ConicType::Circle: {
-        DRW_Circle circle;
+        EoDxfCircle circle;
         circle.m_firstPoint = {m_center.x, m_center.y, m_center.z};
         circle.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
         circle.m_radius = Radius();

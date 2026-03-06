@@ -49,18 +49,18 @@ class dxfRW {
    * @param binaryFile Boolean flag indicating whether to write in binary format (true) or ASCII format (false).
    * @return true if the file was successfully written; false if an error occurred during writing.
    */
-  bool Write(DRW_Interface* interface_, DRW::Version version, bool binaryFile);
+  bool Write(DRW_Interface* interface_, EoDxf::Version version, bool binaryFile);
   bool WriteLinetype(DRW_Linetype* ent);
   bool WriteLayer(DRW_Layer* ent);
   bool WriteDimStyle(DRW_DimStyle* ent);
   bool WriteTextstyle(DRW_Textstyle* ent);
   bool WriteVport(DRW_Vport* ent);
   bool WriteAppId(DRW_AppId* ent);
-  bool WritePoint(DRW_Point* ent);
-  bool WriteLine(DRW_Line* ent);
+  bool WritePoint(EoDxfPoint* point);
+  bool WriteLine(EoDxfLine* ent);
   bool WriteRay(DRW_Ray* ent);
   bool WriteXline(DRW_Xline* ent);
-  bool WriteCircle(DRW_Circle* ent);
+  bool WriteCircle(EoDxfCircle* ent);
   bool WriteArc(DRW_Arc* ent);
   bool WriteEllipse(DRW_Ellipse* ent);
   bool WriteTrace(DRW_Trace* ent);
@@ -138,7 +138,7 @@ class dxfRW {
   bool ProcessDimension();
   bool ProcessLeader();
 
-  bool WriteEntity(DRW_Entity* ent);
+  bool WriteEntity(EoDxfEntiry* ent);
   bool WriteTables();
   bool WriteBlocks();
   bool WriteObjects();
@@ -162,7 +162,7 @@ class dxfRW {
   DRW_Interface* m_interface{};
   int m_entityCount{};
   int m_ellipseParts;  // number of parts when rendering ellipse as polyline
-  DRW::Version m_version{};
+  EoDxf::Version m_version{};
   std::uint32_t m_currentHandle{};
   bool wlayer0{};
   bool m_standardDimensionStyle{};

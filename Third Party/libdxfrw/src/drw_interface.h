@@ -57,10 +57,10 @@ class DRW_Interface {
   virtual void endBlock() = 0;
 
   /** Called for every point */
-  virtual void addPoint(const DRW_Point& data) = 0;
+  virtual void addPoint(const EoDxfPoint& point) = 0;
 
   /** Called for every line */
-  virtual void addLine(const DRW_Line& data) = 0;
+  virtual void addLine(const EoDxfLine& line) = 0;
 
   /** Called for every ray */
   virtual void addRay(const DRW_Ray& data) = 0;
@@ -72,7 +72,7 @@ class DRW_Interface {
   virtual void addArc(const DRW_Arc& data) = 0;
 
   /** Called for every circle */
-  virtual void addCircle(const DRW_Circle& data) = 0;
+  virtual void addCircle(const EoDxfCircle& data) = 0;
 
   /** Called for every ellipse */
   virtual void addEllipse(const DRW_Ellipse& data) = 0;
@@ -87,7 +87,7 @@ class DRW_Interface {
   virtual void addSpline(const DRW_Spline* data) = 0;
 
   /** Called for every spline knot value */
-  virtual void addKnot(const DRW_Entity& data) = 0;
+  virtual void addKnot(const EoDxfEntiry& data) = 0;
 
   /** Called for every insert. */
   virtual void addInsert(const DRW_Insert& data) = 0;

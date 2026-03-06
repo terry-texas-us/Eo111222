@@ -8,7 +8,7 @@
 class dxfReader;
 class dxfWriter;
 
-namespace DRW {
+namespace EoDxf {
 
 enum class SymbolTable : std::uint8_t {
   Unknown,
@@ -23,14 +23,14 @@ enum class SymbolTable : std::uint8_t {
   Viewport
 };
 
-}  // namespace DRW
+}  // namespace EoDxf
 
 class DRW_TableEntry {
  public:
-  DRW_TableEntry() : tType{DRW::SymbolTable::Unknown}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
+  DRW_TableEntry() : tType{EoDxf::SymbolTable::Unknown}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
 
  protected:
-  explicit DRW_TableEntry(DRW::SymbolTable tableType) noexcept
+  explicit DRW_TableEntry(EoDxf::SymbolTable tableType) noexcept
       : tType{tableType}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
  public:
   virtual ~DRW_TableEntry() {
@@ -55,7 +55,7 @@ class DRW_TableEntry {
   void Reset();
 
  public:
-  DRW::SymbolTable tType{DRW::SymbolTable::Unknown};  // Group code 0
+  EoDxf::SymbolTable tType{EoDxf::SymbolTable::Unknown};  // Group code 0
   std::uint32_t m_handle{};  // Group code 5
   std::uint32_t m_ownerHandle{};  // Group code 330
   UTF8STRING m_tableName;  // Group code 2
@@ -78,7 +78,7 @@ class DRW_DimStyle : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_DimStyle() : DRW_TableEntry(DRW::SymbolTable::DimStyle) { Reset(); }
+  DRW_DimStyle() : DRW_TableEntry(EoDxf::SymbolTable::DimStyle) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
@@ -168,7 +168,7 @@ class DRW_Linetype : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Linetype() : DRW_TableEntry(DRW::SymbolTable::Linetype) { Reset(); }
+  DRW_Linetype() : DRW_TableEntry(EoDxf::SymbolTable::Linetype) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
@@ -196,7 +196,7 @@ class DRW_Layer : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Layer() : DRW_TableEntry(DRW::SymbolTable::Layer) { Reset(); }
+  DRW_Layer() : DRW_TableEntry(EoDxf::SymbolTable::Layer) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
@@ -224,7 +224,7 @@ class DRW_BlockRecord : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_BlockRecord() : DRW_TableEntry(DRW::SymbolTable::Block) { Reset(); }
+  DRW_BlockRecord() : DRW_TableEntry(EoDxf::SymbolTable::Block) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
@@ -247,7 +247,7 @@ class DRW_Textstyle : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Textstyle() : DRW_TableEntry(DRW::SymbolTable::TextStyle) { Reset(); }
+  DRW_Textstyle() : DRW_TableEntry(EoDxf::SymbolTable::TextStyle) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
@@ -286,7 +286,7 @@ class DRW_Vport : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Vport() : DRW_TableEntry(DRW::SymbolTable::Viewport) { Reset(); }
+  DRW_Vport() : DRW_TableEntry(EoDxf::SymbolTable::Viewport) { Reset(); }
 
   void Reset();
 
@@ -336,7 +336,7 @@ class DRW_AppId : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_AppId() : DRW_TableEntry(DRW::SymbolTable::RegApp) { Reset(); }
+  DRW_AppId() : DRW_TableEntry(EoDxf::SymbolTable::RegApp) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader) { DRW_TableEntry::ParseCode(code, reader); }
@@ -347,7 +347,7 @@ class DRW_AppId : public DRW_TableEntry {
   }
 };
 
-namespace DRW {
+namespace EoDxf {
 
 // Extended color palette: The first entry is only for direct indexing starting with [1]
 inline constexpr unsigned char dxfColors[][3] = {
@@ -413,4 +413,4 @@ inline constexpr unsigned char dxfColors[][3] = {
     {91, 91, 91}, {132, 132, 132}, {173, 173, 173}, {214, 214, 214}, {255, 255, 255}  // 255
 };
 
-}  // namespace DRW
+}  // namespace EoDxf

@@ -35,7 +35,7 @@ void EoDbPrimitive::CutAtPoint([[maybe_unused]] const EoGePoint3d& point, [[mayb
 int EoDbPrimitive::IsWithinArea(const EoGePoint3d&, const EoGePoint3d&, EoGePoint3d*) { return 0; }
 bool EoDbPrimitive::PivotOnControlPoint(AeSysView*, const EoGePoint4d&) { return false; }
 
-void EoDbPrimitive::SetBaseProperties(const DRW_Entity* entity, AeSysDoc* document) {
+void EoDbPrimitive::SetBaseProperties(const EoDxfEntiry* entity, AeSysDoc* document) {
   m_color = static_cast<std::int16_t>(entity->m_color);
   m_lineTypeName = Eo::MultiByteToWString(entity->m_lineType.c_str());
   m_layerName = Eo::MultiByteToWString(entity->m_layer.c_str());

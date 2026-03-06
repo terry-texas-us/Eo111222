@@ -18,7 +18,7 @@ namespace {
  * @param ver The DXF version being targeted for writing, which determines how the string is formatted.
  * @return true if the string was successfully written, false otherwise.
  */
-bool WriteUtf8String(dxfWriter* writer, int code, const std::string& str, DRW::Version ver) {
+bool WriteUtf8String(dxfWriter* writer, int code, const std::string& str, EoDxf::Version ver) {
   return writer->WriteUtf8String(code, str);
 }
 }  // namespace
@@ -49,7 +49,7 @@ void DRW_Header::ParseCode(int code, dxfReader* reader) {
     case 9:
       m_currentVariant = new DRW_Variant();
       m_name = reader->GetString();
-      if (m_version < DRW::Version::AC1015 && m_name == "$DIMUNIT") { m_name = "$DIMLUNIT"; }
+      if (m_version < EoDxf::Version::AC1015 && m_name == "$DIMUNIT") { m_name = "$DIMLUNIT"; }
       m_variants[m_name] = m_currentVariant;
       break;
     case 1:
@@ -119,7 +119,7 @@ void DRW_Header::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_Header::WriteBase(dxfWriter* writer, DRW::Version version) {
+void DRW_Header::WriteBase(dxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -514,7 +514,7 @@ void DRW_Header::WriteBase(dxfWriter* writer, DRW::Version version) {
   writer->WriteInt16(70, GetInteger("$WORLDVIEW", &variantInteger) ? variantInteger : 1);
 }
 
-void DRW_Header::WriteAC1009Additions(dxfWriter* writer, DRW::Version version) {
+void DRW_Header::WriteAC1009Additions(dxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -657,7 +657,7 @@ void DRW_Header::WriteAC1009Additions(dxfWriter* writer, DRW::Version version) {
   writer->WriteInt16(70, GetInteger("$PSLTSCALE", &variantInteger) ? variantInteger : 1);
 }
 
-void DRW_Header::WriteAC1012Additions(dxfWriter* writer, DRW::Version version) {
+void DRW_Header::WriteAC1012Additions(dxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -749,7 +749,7 @@ void DRW_Header::WriteAC1012Additions(dxfWriter* writer, DRW::Version version) {
   writer->WriteDouble(40, GetDouble("$CMLSCALE", &variantDouble) ? variantDouble : 20.0);
 }
 
-void DRW_Header::WriteAC1014Additions(dxfWriter* writer, DRW::Version version) {
+void DRW_Header::WriteAC1014Additions(dxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
 
   writer->WriteString(9, "$PROXYGRAPHICS");
@@ -759,7 +759,7 @@ void DRW_Header::WriteAC1014Additions(dxfWriter* writer, DRW::Version version) {
   writer->WriteInt16(70, GetInteger("$MEASUREMENT", &variantInteger) ? variantInteger : 1);
 }
 
-void DRW_Header::WriteAC1015Additions(dxfWriter* writer, DRW::Version version) {
+void DRW_Header::WriteAC1015Additions(dxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -798,7 +798,7 @@ void DRW_Header::WriteAC1015Additions(dxfWriter* writer, DRW::Version version) {
   }
   if (variantInteger < 1 || variantInteger > 6) { variantInteger = 2; }
 
-  if (version > DRW::Version::AC1014) {
+  if (version > EoDxf::Version::AC1014) {
     writer->WriteString(9, "$DIMLUNIT");
   } else {
     writer->WriteString(9, "$DIMUNIT");
@@ -1029,7 +1029,7 @@ void DRW_Header::WriteAC1015Additions(dxfWriter* writer, DRW::Version version) {
   writer->WriteInt16(290, GetInteger("$OLESTARTUP", &variantInteger) ? variantInteger : 0);
 }
 
-void DRW_Header::WriteAC1018Additions(dxfWriter* writer, DRW::Version version) {
+void DRW_Header::WriteAC1018Additions(dxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
   std::string variantString;
 
@@ -1043,7 +1043,7 @@ void DRW_Header::WriteAC1018Additions(dxfWriter* writer, DRW::Version version) {
   writer->WriteInt16(280, GetInteger("$HIDETEXT", &variantInteger) ? variantInteger : 1);
 
   writer->WriteString(9, "$XCLIPFRAME");
-  if (version > DRW::Version::AC1021) {
+  if (version > EoDxf::Version::AC1021) {
     if (GetInteger("$XCLIPFRAME", &variantInteger)) {
       writer->WriteInt16(280, variantInteger);
     } else {
@@ -1083,7 +1083,7 @@ void DRW_Header::WriteAC1018Additions(dxfWriter* writer, DRW::Version version) {
   }
 }
 
-void DRW_Header::WriteAC1021Additions(dxfWriter* writer, DRW::Version version) {
+void DRW_Header::WriteAC1021Additions(dxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -1152,10 +1152,10 @@ void DRW_Header::WriteAC1021Additions(dxfWriter* writer, DRW::Version version) {
   writer->WriteDouble(40, GetDouble("$PSOLHEIGHT", &variantDouble) ? variantDouble : 80.0);
 
   writer->WriteString(9, "$LOFTANG1");
-  writer->WriteDouble(40, GetDouble("$LOFTANG1", &variantDouble) ? variantDouble : DRW::HalfPi);
+  writer->WriteDouble(40, GetDouble("$LOFTANG1", &variantDouble) ? variantDouble : EoDxf::HalfPi);
 
   writer->WriteString(9, "$LOFTANG2");
-  writer->WriteDouble(40, GetDouble("$LOFTANG2", &variantDouble) ? variantDouble : DRW::HalfPi);
+  writer->WriteDouble(40, GetDouble("$LOFTANG2", &variantDouble) ? variantDouble : EoDxf::HalfPi);
 
   writer->WriteString(9, "$LOFTMAG1");
   writer->WriteDouble(40, GetDouble("$LOFTMAG1", &variantDouble) ? variantDouble : 0.0);
@@ -1212,44 +1212,44 @@ void DRW_Header::WriteAC1021Additions(dxfWriter* writer, DRW::Version version) {
   writer->WriteDouble(40, GetDouble("$SHADOWPLANELOCATION", &variantDouble) ? variantDouble : 0.0);
 }
 
-void DRW_Header::WriteAC1024Additions(dxfWriter* writer, DRW::Version version) {
+void DRW_Header::WriteAC1024Additions(dxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
 
   writer->WriteString(9, "$DIMTXTDIRECTION");
   writer->WriteInt16(70, GetInteger("$DIMTXTDIRECTION", &variantInteger) ? variantInteger : 0);
 }
 
-void DRW_Header::Write(dxfWriter* writer, DRW::Version version) {
+void DRW_Header::Write(dxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
   std::string variantString;
   DRW_Coord variantCoord;
   writer->WriteString(2, "HEADER");
   writer->WriteString(9, "$ACADVER");
   switch (version) {
-    case DRW::Version::AC1006:  // R10 (not supported) [1988]
-    case DRW::Version::AC1009:  // R11 [1990] & R12 [1992]
+    case EoDxf::Version::AC1006:  // R10 (not supported) [1988]
+    case EoDxf::Version::AC1009:  // R11 [1990] & R12 [1992]
       variantString = "AC1009";
       break;
-    case DRW::Version::AC1012:  // R13 (not supported)
-    case DRW::Version::AC1014:  // R14
+    case EoDxf::Version::AC1012:  // R13 (not supported)
+    case EoDxf::Version::AC1014:  // R14
       variantString = "AC1014";
       break;
-    case DRW::Version::AC1015:  // AutoCAD 2000 / 2000i / 2002
+    case EoDxf::Version::AC1015:  // AutoCAD 2000 / 2000i / 2002
       variantString = "AC1015";
       break;
-    case DRW::Version::AC1018:  // AutoCAD 2004 / 2005 / 2006
+    case EoDxf::Version::AC1018:  // AutoCAD 2004 / 2005 / 2006
       variantString = "AC1018";
       break;
-    case DRW::Version::AC1024:  // AutoCAD 2010 / 2011 / 2012
+    case EoDxf::Version::AC1024:  // AutoCAD 2010 / 2011 / 2012
       variantString = "AC1024";
       break;
-    case DRW::Version::AC1027:  // AutoCAD 2013 / 2014 / 2015 / 2016 / 2017
+    case EoDxf::Version::AC1027:  // AutoCAD 2013 / 2014 / 2015 / 2016 / 2017
       variantString = "AC1027";
       break;
-    case DRW::Version::AC1032:  // AutoCAD 2018 / 2019 / 2020 / 2021 / 2022 / 2023 / 2024 / 2025 / 2026
+    case EoDxf::Version::AC1032:  // AutoCAD 2018 / 2019 / 2020 / 2021 / 2022 / 2023 / 2024 / 2025 / 2026
       variantString = "AC1032";
       break;
-    case DRW::Version::AC1021:  // AutoCAD 2007 / 2008 / 2009
+    case EoDxf::Version::AC1021:  // AutoCAD 2007 / 2008 / 2009
       [[fallthrough]];  // intentional fallthrough to default case
     default:
       variantString = "AC1021";
@@ -1300,7 +1300,7 @@ void DRW_Header::Write(dxfWriter* writer, DRW::Version version) {
   WriteAC1021Additions(writer, version);
   WriteAC1024Additions(writer, version);
 
-  if (version < DRW::Version::AC1015) {  // so only write them if the version is AC1014 or earlier
+  if (version < EoDxf::Version::AC1015) {  // so only write them if the version is AC1014 or earlier
     writer->WriteString(9, "$DRAGMODE");
     writer->WriteInt16(70, GetInteger("$DRAGMODE", &variantInteger) ? variantInteger : 2);
 

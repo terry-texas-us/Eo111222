@@ -392,7 +392,7 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
       // Begin implementation of DXF/DXB saving using EoDbDrwInterface
       EoDbDrwInterface dxfInterface(this);
       dxfRW dxfWriter(Eo::WStringToMultiByte(pathName).data());
-      if (dxfWriter.Write(&dxfInterface, DRW::Version::AC1032, true)) {
+      if (dxfWriter.Write(&dxfInterface, EoDxf::Version::AC1032, true)) {
         app.AddStringToMessageList(IDS_MSG_DXF_SAVE_SUCCESS, pathName);
         returnStatus = TRUE;
       } else {

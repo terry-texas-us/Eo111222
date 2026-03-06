@@ -367,7 +367,7 @@ void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) 
   AddToDocument(radialArc, document);
 }
 
-void EoDbDrwInterface::ConvertCircleEntity(const DRW_Circle& circle, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Circle entity conversion\n");
 
   EoGePoint3d center(circle.m_firstPoint.x, circle.m_firstPoint.y, circle.m_firstPoint.z);
@@ -423,7 +423,7 @@ void EoDbDrwInterface::ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* d
   AddToDocument(insertPrimitive, document);
 }
 
-void EoDbDrwInterface::ConvertLineEntity(const DRW_Line& line, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Line entity conversion\n");
 
   auto linePrimitive = new EoDbLine();
@@ -451,7 +451,7 @@ void EoDbDrwInterface::ConvertLWPolylineEntity(const DRW_LWPolyline& lwPolyline,
   AddToDocument(polylinePrimitive, document);
 }
 
-void EoDbDrwInterface::ConvertPointEntity(const DRW_Point& point, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Point entity conversion\n");
 
   auto pointPrimitive = new EoDbPoint();
