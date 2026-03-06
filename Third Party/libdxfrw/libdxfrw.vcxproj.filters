@@ -36,9 +36,6 @@
     <ClInclude Include="src\intern\drw_cptables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\intern\drw_dbg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\intern\drw_textcodec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -49,9 +46,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\libdxfrw.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\intern\dxfLiteralStrings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\drw_objects.h">
@@ -71,9 +65,6 @@
     <ClCompile Include="src\drw_tables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\intern\drw_dbg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\intern\drw_textcodec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -89,8 +80,5 @@
     <ClCompile Include="src\drw_objects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="SPECIFICATIONS.md" />
   </ItemGroup>
 </Project>

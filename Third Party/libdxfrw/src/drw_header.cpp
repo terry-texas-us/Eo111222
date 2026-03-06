@@ -3,7 +3,6 @@
 
 #include "drw_base.h"
 #include "drw_header.h"
-#include "intern/drw_dbg.h"
 #include "intern/dxfreader.h"
 #include "intern/dxfwriter.h"
 #include <algorithm>
@@ -1324,14 +1323,6 @@ void DRW_Header::Write(dxfWriter* writer, DRW::Version version) {
     writer->WriteString(9, "$HANDLING");
     writer->WriteInt16(70, GetInteger("$HANDLING", &variantInteger) ? variantInteger : 1);
   }
-
-#ifdef DRW_DBG
-  std::map<std::string, DRW_Variant*>::const_iterator it;
-  for (it = m_variants.begin(); it != m_variants.end(); ++it) {
-    DRW_DBG(it->first);
-    DRW_DBG("\n");
-  }
-#endif
 }
 
 void DRW_Header::AddDouble(const std::string& key, double value, int code) {

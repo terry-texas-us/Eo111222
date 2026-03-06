@@ -15,7 +15,6 @@
 #include "drw_header.h"
 #include "drw_interface.h"
 #include "drw_objects.h"
-#include "intern/drw_dbg.h"
 #include "intern/dxfreader.h"
 #include "intern/dxfwriter.h"
 
@@ -24,7 +23,6 @@ constexpr auto FIRSTHANDLE{48};
 }  // namespace
 
 dxfRW::dxfRW(const char* name) {
-  DRW_DBGSL(DRW_dbg::none);
   m_fileName = name;
   m_reader = nullptr;
   m_writer = nullptr;
@@ -42,10 +40,9 @@ dxfRW::~dxfRW() {
 void dxfRW::SetDebug(DRW::DebugTraceLevel traceLevel) {
   switch (traceLevel) {
     case DRW::DebugTraceLevel::Debug:
-      DRW_DBGSL(DRW_dbg::debug);
       break;
     default:
-      DRW_DBGSL(DRW_dbg::none);
+      break;
   }
 }
 
@@ -60,7 +57,6 @@ bool dxfRW::Read(DRW_Interface* interface_, bool ext) {
   if (!filestr.good()) { return isOk; }
 
   char line[22]{};
-  DRW_DBG("dxfRW::read first 22 binary bytes looking for binary file sentinel\n");
   filestr.read(line, 22);
   filestr.close();
 
@@ -80,12 +76,10 @@ bool dxfRW::Read(DRW_Interface* interface_, bool ext) {
     // skip sentinel
     filestr.seekg(22, std::ios::beg);
     m_reader = new dxfReaderBinary(&filestr);
-    DRW_DBG("dxfRW::read sentinel match: binary file\n");
   } else {
     m_binaryFile = false;
     filestr.open(m_fileName.c_str(), std::ios_base::in);
     m_reader = new dxfReaderAscii(&filestr);
-    DRW_DBG("dxfRW::read confirm ascii file\n");
   }
   isOk = ProcessDxf();
   filestr.close();
@@ -105,7 +99,6 @@ bool dxfRW::Write(DRW_Interface* interface_, DRW::Version version, bool binaryFi
     // write sentinel
     filestr << "AutoCAD Binary DXF\r\n" << (char)26 << '\0';
     m_writer = new dxfWriterBinary(&filestr);
-    DRW_DBG("dxfRW::read binary file\n");
   } else {
     filestr.open(m_fileName.c_str(), std::ios_base::out | std::ios::trunc);
     m_writer = new dxfWriterAscii(&filestr);
@@ -729,14 +722,14 @@ bool dxfRW::WriteSpline(DRW_Spline* spline) {
   m_writer->WriteString(0, "SPLINE");
   WriteEntity(spline);
   m_writer->WriteString(100, "AcDbSpline");
-  
+
   m_writer->WriteDouble(210, spline->m_normalVector.x);
   m_writer->WriteDouble(220, spline->m_normalVector.y);
   m_writer->WriteDouble(230, spline->m_normalVector.z);
-  
+
   m_writer->WriteInt16(70, spline->m_splineFlag);
   m_writer->WriteInt16(71, spline->m_degreeOfTheSplineCurve);
-  
+
   m_writer->WriteInt16(72, spline->m_numberOfKnots);
   m_writer->WriteInt16(73, spline->m_numberOfControlPoints);
   m_writer->WriteInt16(74, spline->m_numberOfFitPoints);
@@ -1600,7 +1593,6 @@ bool dxfRW::WriteExtData(const std::vector<DRW_Variant*>& ed) {
 /********* Reader Process *********/
 
 bool dxfRW::ProcessDxf() {
-  DRW_DBG("<entered dxfRW::ProcessDxf()>\n");
   int code;
   bool more = true;
   std::string sectionstr;
@@ -1646,7 +1638,6 @@ bool dxfRW::ProcessDxf() {
 /********* Header Section *********/
 
 bool dxfRW::ProcessHeader() {
-  DRW_DBG("<entered dxfRW::ProcessHeader>\n");
   std::string zeroGroupTag;
   int code{};
   while (m_reader->ReadRec(&code)) {
@@ -1660,19 +1651,15 @@ bool dxfRW::ProcessHeader() {
       m_header.ParseCode(code, m_reader);
     }
   }
-  DRW_DBG("<leaving dxfRW::ProcessHeader>\n");
   return true;
 }
 
 /********* Classes Section *********/
 
 bool dxfRW::ProcessClasses() {
-  DRW_DBG("<entered dxfRW::ProcessClasses>\n");
   std::string zeroGroupTag;
   int code{};
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     if (code == 0) {
       zeroGroupTag = m_reader->GetString();
       if (zeroGroupTag == "CLASS") {
@@ -1685,7 +1672,6 @@ bool dxfRW::ProcessClasses() {
               class_.clear();
             } else if (zeroGroupTag == "ENDSEC") {
               m_interface->addClass(class_);
-              DRW_DBG("<leaving dxfRW::ProcessClasses>\n");
               return true;
             }
           } else {
@@ -1693,7 +1679,6 @@ bool dxfRW::ProcessClasses() {
           }
         }
       } else if (zeroGroupTag == "ENDSEC") {
-        DRW_DBG("<leaving dxfRW::ProcessClasses>\n");
         return true;
       }
     }
@@ -1704,13 +1689,10 @@ bool dxfRW::ProcessClasses() {
 /********* Tables Section *********/
 
 bool dxfRW::ProcessTables() {
-  DRW_DBG("<entered dxfRW::ProcessTables>\n");
   int code;
   std::string sectionstr;
   bool more = true;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     if (code == 0) {
       sectionstr = m_reader->GetString();
       if (sectionstr == "TABLE") {
@@ -1742,7 +1724,6 @@ bool dxfRW::ProcessTables() {
           }
         }
       } else if (sectionstr == "ENDSEC") {
-        DRW_DBG("<leaving dxfRW::ProcessTables>\n");
         return true;
       }
     }
@@ -1751,7 +1732,6 @@ bool dxfRW::ProcessTables() {
 }
 
 bool dxfRW::ProcessLType() {
-  DRW_DBG("<entering dxfRW::ProcessLType>\n");
   int code;
   std::string sectionstr;
   bool reading = false;
@@ -1767,7 +1747,6 @@ bool dxfRW::ProcessLType() {
         reading = true;
         ltype.Reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::ProcessLType>\n");
         return true;
       }
     } else if (reading) {
@@ -1778,7 +1757,6 @@ bool dxfRW::ProcessLType() {
 }
 
 bool dxfRW::ProcessLayer() {
-  DRW_DBG("<entering dxfRW::ProcessLayer>\n");
   int code;
   std::string sectionstr;
   bool reading = false;
@@ -1791,7 +1769,6 @@ bool dxfRW::ProcessLayer() {
         reading = true;
         layer.Reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::ProcessLayer>\n");
         return true;
       }
     } else if (reading) {
@@ -1802,7 +1779,6 @@ bool dxfRW::ProcessLayer() {
 }
 
 bool dxfRW::ProcessDimStyle() {
-  DRW_DBG("<entering dxfRW::ProcessDimStyle>");
   int code;
   std::string sectionstr;
   bool reading{};
@@ -1815,7 +1791,6 @@ bool dxfRW::ProcessDimStyle() {
         reading = true;
         dimStyle.Reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::ProcessDimStyle>\n");
         return true;
       }
     } else if (reading) {
@@ -1826,7 +1801,6 @@ bool dxfRW::ProcessDimStyle() {
 }
 
 bool dxfRW::ProcessTextStyle() {
-  DRW_DBG("entering dxfRW::ProcessTextStyle");
   int code;
   std::string sectionstr;
   bool reading{};
@@ -1839,7 +1813,6 @@ bool dxfRW::ProcessTextStyle() {
         reading = true;
         textStyle.Reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::ProcessTextStyle>\n");
         return true;
       }
     } else if (reading) {
@@ -1850,7 +1823,6 @@ bool dxfRW::ProcessTextStyle() {
 }
 
 bool dxfRW::ProcessVports() {
-  DRW_DBG("entering dxfRW::ProcessVports");
   int code;
   std::string sectionstr;
   bool reading{};
@@ -1863,7 +1835,6 @@ bool dxfRW::ProcessVports() {
         reading = true;
         viewport.Reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::ProcessVports>\n");
         return true;
       }
     } else if (reading) {
@@ -1874,7 +1845,6 @@ bool dxfRW::ProcessVports() {
 }
 
 bool dxfRW::ProcessAppId() {
-  DRW_DBG("<entering dxfRW::ProcessAppId>");
   int code;
   std::string sectionstr;
   bool reading = false;
@@ -1887,7 +1857,6 @@ bool dxfRW::ProcessAppId() {
         reading = true;
         appId.Reset();
       } else if (sectionstr == "ENDTAB") {
-        DRW_DBG("<leaving dxfRW::ProcessAppId>\n");
         return true;
       }
     } else if (reading) {
@@ -1900,20 +1869,14 @@ bool dxfRW::ProcessAppId() {
 /********* Block Section *********/
 
 bool dxfRW::ProcessBlocks() {
-  DRW_DBG("entering dxfRW::ProcessBlocks\n");
   int code;
   std::string sectionstr;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     if (code == 0) {
       sectionstr = m_reader->GetString();
-      DRW_DBG(sectionstr);
-      DRW_DBG("\n");
       if (sectionstr == "BLOCK") {
         ProcessBlock();
       } else if (sectionstr == "ENDSEC") {
-        DRW_DBG("<leaving dxfRW::ProcessBlocks>\n");
         return true;
       }
     }
@@ -1922,17 +1885,12 @@ bool dxfRW::ProcessBlocks() {
 }
 
 bool dxfRW::ProcessBlock() {
-  DRW_DBG("entering dxfRW::ProcessBlock");
   int code;
   DRW_Block block;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->addBlock(block);
         if (m_nextEntity == "ENDBLK") {
           m_interface->endBlock();
@@ -1954,7 +1912,6 @@ bool dxfRW::ProcessBlock() {
 /********* Entities Section *********/
 
 bool dxfRW::ProcessEntities(bool isblock) {
-  DRW_DBG("entering dxfRW::ProcessEntities\n");
   int code;
   if (!m_reader->ReadRec(&code)) { return false; }
   bool next = true;
@@ -1965,7 +1922,6 @@ bool dxfRW::ProcessEntities(bool isblock) {
   }
   do {
     if (m_nextEntity == "ENDSEC" || m_nextEntity == "ENDBLK") {
-      DRW_DBG("<leaving dxfRW::ProcessEntities>\n");
       return true;
     } else if (m_nextEntity == "POINT") {
       ProcessPoint();
@@ -2022,17 +1978,12 @@ bool dxfRW::ProcessEntities(bool isblock) {
 }
 
 bool dxfRW::ProcessEllipse() {
-  DRW_DBG("dxfRW::ProcessEllipse\n");
   int code;
   DRW_Ellipse ellipse;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         if (m_applyExtrusion) { ellipse.ApplyExtrusion(); }
         m_interface->addEllipse(ellipse);
         return true;  // found new entity or ENDSEC, terminate
@@ -2046,17 +1997,12 @@ bool dxfRW::ProcessEllipse() {
 }
 
 bool dxfRW::ProcessTrace() {
-  DRW_DBG("dxfRW::ProcessTrace\n");
   int code;
   DRW_Trace trace;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         if (m_applyExtrusion) { trace.ApplyExtrusion(); }
         m_interface->addTrace(trace);
         return true;  // found new entity or ENDSEC, terminate
@@ -2070,17 +2016,12 @@ bool dxfRW::ProcessTrace() {
 }
 
 bool dxfRW::ProcessSolid() {
-  DRW_DBG("dxfRW::ProcessSolid\n");
   int code;
   DRW_Solid solid;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         if (m_applyExtrusion) { solid.ApplyExtrusion(); }
         m_interface->addSolid(solid);
         return true;  // found new entity or ENDSEC, terminate
@@ -2094,17 +2035,12 @@ bool dxfRW::ProcessSolid() {
 }
 
 bool dxfRW::Process3dface() {
-  DRW_DBG("dxfRW::Process3dface\n");
   int code;
   DRW_3Dface face;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->add3dFace(face);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -2117,17 +2053,12 @@ bool dxfRW::Process3dface() {
 }
 
 bool dxfRW::ProcessViewport() {
-  DRW_DBG("dxfRW::ProcessViewport\n");
   int code;
   DRW_Viewport vp;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->addViewport(vp);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -2140,7 +2071,6 @@ bool dxfRW::ProcessViewport() {
 }
 
 bool dxfRW::ProcessPoint() {
-  DRW_DBG("entering dxfRW::ProcessPoint\n");
   int code;
   DRW_Point point;
   while (m_reader->ReadRec(&code)) {
@@ -2148,7 +2078,6 @@ bool dxfRW::ProcessPoint() {
       case 0: {
         m_nextEntity = m_reader->GetString();
         m_interface->addPoint(point);
-        DRW_DBG("leaving dxfRW::ProcessPoint\n");
         return true;
       }
       default:
@@ -2160,7 +2089,6 @@ bool dxfRW::ProcessPoint() {
 }
 
 bool dxfRW::ProcessLine() {
-  DRW_DBG("entering dxfRW::ProcessLine\n");
   int code;
   DRW_Line line;
   while (m_reader->ReadRec(&code)) {
@@ -2168,7 +2096,6 @@ bool dxfRW::ProcessLine() {
       case 0: {
         m_nextEntity = m_reader->GetString();
         m_interface->addLine(line);
-        DRW_DBG("leaving dxfRW::ProcessLine\n");
         return true;
       }
       default:
@@ -2180,17 +2107,12 @@ bool dxfRW::ProcessLine() {
 }
 
 bool dxfRW::ProcessRay() {
-  DRW_DBG("dxfRW::ProcessRay\n");
   int code;
   DRW_Ray line;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->addRay(line);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -2203,17 +2125,12 @@ bool dxfRW::ProcessRay() {
 }
 
 bool dxfRW::ProcessXline() {
-  DRW_DBG("dxfRW::ProcessXline\n");
   int code;
   DRW_Xline line;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->addXline(line);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -2226,17 +2143,12 @@ bool dxfRW::ProcessXline() {
 }
 
 bool dxfRW::ProcessCircle() {
-  DRW_DBG("dxfRW::ProcessPoint\n");
   int code;
   DRW_Circle circle;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         if (m_applyExtrusion) { circle.ApplyExtrusion(); }
         m_interface->addCircle(circle);
         return true;  // found new entity or ENDSEC, terminate
@@ -2250,17 +2162,12 @@ bool dxfRW::ProcessCircle() {
 }
 
 bool dxfRW::ProcessArc() {
-  DRW_DBG("dxfRW::ProcessArc\n");
   int code;
   DRW_Arc arc;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         if (m_applyExtrusion) { arc.ApplyExtrusion(); }
         m_interface->addArc(arc);
         return true;  // found new entity or ENDSEC, terminate
@@ -2274,17 +2181,12 @@ bool dxfRW::ProcessArc() {
 }
 
 bool dxfRW::ProcessInsert() {
-  DRW_DBG("dxfRW::ProcessInsert\n");
   int code;
   DRW_Insert insert;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->addInsert(insert);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -2297,17 +2199,12 @@ bool dxfRW::ProcessInsert() {
 }
 
 bool dxfRW::ProcessLWPolyline() {
-  DRW_DBG("dxfRW::ProcessLWPolyline\n");
   int code;
   DRW_LWPolyline pl;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         if (m_applyExtrusion) { pl.ApplyExtrusion(); }
         m_interface->addLWPolyline(pl);
         return true;  // found new entity or ENDSEC, terminate
@@ -2321,17 +2218,12 @@ bool dxfRW::ProcessLWPolyline() {
 }
 
 bool dxfRW::ProcessPolyline() {
-  DRW_DBG("dxfRW::ProcessPolyline\n");
   int code;
   DRW_Polyline polyline;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         if (m_nextEntity == "VERTEX") { ProcessVertex(&polyline); }
         m_interface->addPolyline(polyline);
         return true;
@@ -2345,18 +2237,13 @@ bool dxfRW::ProcessPolyline() {
 }
 
 bool dxfRW::ProcessVertex(DRW_Polyline* polyline) {
-  DRW_DBG("dxfRW::ProcessVertex\n");
   int code;
   auto* vertex = new DRW_Vertex();
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         polyline->appendVertex(vertex);
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         if (m_nextEntity == "SEQEND") { return true; }
         if (m_nextEntity == "VERTEX") {
           vertex = new DRW_Vertex();
@@ -2376,17 +2263,12 @@ bool dxfRW::ProcessVertex(DRW_Polyline* polyline) {
 }
 
 bool dxfRW::ProcessText() {
-  DRW_DBG("dxfRW::ProcessText\n");
   int code;
   DRW_Text txt;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->addText(txt);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -2399,17 +2281,12 @@ bool dxfRW::ProcessText() {
 }
 
 bool dxfRW::ProcessMText() {
-  DRW_DBG("dxfRW::ProcessMText\n");
   int code;
   DRW_MText txt;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         txt.UpdateAngle();
         m_interface->addMText(txt);
         return true;  // found new entity or ENDSEC, terminate
@@ -2423,17 +2300,12 @@ bool dxfRW::ProcessMText() {
 }
 
 bool dxfRW::ProcessHatch() {
-  DRW_DBG("dxfRW::ProcessHatch\n");
   int code;
   DRW_Hatch hatch;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->addHatch(&hatch);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -2446,17 +2318,12 @@ bool dxfRW::ProcessHatch() {
 }
 
 bool dxfRW::ProcessSpline() {
-  DRW_DBG("dxfRW::ProcessSpline\n");
   int code;
   DRW_Spline sp;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->addSpline(&sp);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -2469,17 +2336,12 @@ bool dxfRW::ProcessSpline() {
 }
 
 bool dxfRW::ProcessImage() {
-  DRW_DBG("dxfRW::ProcessImage\n");
   int code;
   DRW_Image img;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->addImage(&img);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -2492,17 +2354,12 @@ bool dxfRW::ProcessImage() {
 }
 
 bool dxfRW::ProcessDimension() {
-  DRW_DBG("dxfRW::ProcessDimension\n");
   int code;
   DRW_Dimension dim;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         int type = dim.type & 0x0F;
         switch (type) {
           case 0: {
@@ -2552,17 +2409,12 @@ bool dxfRW::ProcessDimension() {
 }
 
 bool dxfRW::ProcessLeader() {
-  DRW_DBG("dxfRW::ProcessLeader\n");
   int code;
   DRW_Leader leader;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->addLeader(&leader);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -2577,7 +2429,6 @@ bool dxfRW::ProcessLeader() {
 /********* Objects Section *********/
 
 bool dxfRW::ProcessObjects() {
-  DRW_DBG("dxfRW::ProcessObjects\n");
   int code;
   if (!m_reader->ReadRec(&code)) { return false; }
   if (code == 0) {
@@ -2601,17 +2452,12 @@ bool dxfRW::ProcessObjects() {
 }
 
 bool dxfRW::ProcessImageDef() {
-  DRW_DBG("dxfRW::ProcessImageDef\n");
   int code;
   DRW_ImageDef img;
   while (m_reader->ReadRec(&code)) {
-    DRW_DBG(code);
-    DRW_DBG("\n");
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        DRW_DBG(m_nextEntity);
-        DRW_DBG("\n");
         m_interface->linkImage(&img);
         return true;  // found new entity or ENDSEC, terminate
       }

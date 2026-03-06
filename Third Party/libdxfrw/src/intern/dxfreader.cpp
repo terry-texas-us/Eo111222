@@ -6,8 +6,6 @@
 #include <sstream>
 #include <string>
 
-#include "drw_dbg.h"
-
 namespace {
 constexpr std::int16_t legacyAcGroupCode90Threshhold{2000};
 }
@@ -107,8 +105,6 @@ bool dxfReaderBinary::ReadCode(int* code) {
     raw = readLE<uint16_t>(*m_fileStream);  // now read the real next group code
   }
   *code = static_cast<int>(raw);
-  DRW_DBG(*code);
-  DRW_DBG("\n");
 
   return m_fileStream->good();
 }
@@ -116,16 +112,12 @@ bool dxfReaderBinary::ReadCode(int* code) {
 bool dxfReaderBinary::ReadString() {
   m_type = Type::String;
   std::getline(*m_fileStream, m_string, '\0');
-  DRW_DBG(m_string);
-  DRW_DBG(" `group value (string)`\n");
   return (m_fileStream->good());
 }
 
 bool dxfReaderBinary::ReadString(std::string* text) {
   m_type = Type::String;
   std::getline(*m_fileStream, *text, '\0');
-  DRW_DBG(*text);
-  DRW_DBG(" `group value (string)`\n");
   return (m_fileStream->good());
 }
 
@@ -133,40 +125,30 @@ bool dxfReaderBinary::ReadInt16() {
   m_type = Type::Int32;
   m_int16Data = readLE<std::int16_t>(*m_fileStream);  // or uint16_t depending on semantics
   m_intData = m_int16Data;  // keep your existing storage
-  DRW_DBG(m_intData);
-  DRW_DBG(" `group value (int16)`\n");
   return m_fileStream->good();
 }
 
 bool dxfReaderBinary::ReadInt32() {
   m_type = Type::Int32;
   m_intData = readLE<std::int32_t>(*m_fileStream);
-  DRW_DBG(m_intData);
-  DRW_DBG(" `group value (int32)`\n");
   return m_fileStream->good();
 }
 
 bool dxfReaderBinary::ReadInt64() {
   m_type = Type::Int64;
   m_int64 = readLE<std::uint64_t>(*m_fileStream);
-  DRW_DBG(m_int64);
-  DRW_DBG(" `group value (int64)`\n");
   return m_fileStream->good();
 }
 
 bool dxfReaderBinary::ReadDouble() {
   m_type = Type::Double;
   m_double = readLE<double>(*m_fileStream);
-  DRW_DBG(m_double);
-  DRW_DBG(" `group value (double)`\n");
   return m_fileStream->good();
 }
 
 bool dxfReaderBinary::ReadBool() {
   m_type = Type::Bool;
   m_intData = readLE<uint8_t>(*m_fileStream);  // bool is stored as single byte (0 or 1)
-  DRW_DBG(m_intData);
-  DRW_DBG(" `group value (bool)`\n");
   return m_fileStream->good();
 }
 
@@ -176,8 +158,6 @@ bool dxfReaderAscii::ReadCode(int* code) {
   std::string text;
   std::getline(*m_fileStream, text);
   *code = atoi(text.c_str());
-  DRW_DBG(*code);
-  DRW_DBG(" `group code`\n");
   return (m_fileStream->good());
 }
 bool dxfReaderAscii::ReadString(std::string* text) {
@@ -191,8 +171,6 @@ bool dxfReaderAscii::ReadString() {
   m_type = Type::String;
   std::getline(*m_fileStream, m_string);
   if (!m_string.empty() && m_string.at(m_string.size() - 1) == '\r') { m_string.erase(m_string.size() - 1); }
-  DRW_DBG(m_string);
-  DRW_DBG(" `group value (string)`\n");
   return (m_fileStream->good());
 }
 
@@ -201,8 +179,6 @@ bool dxfReaderAscii::ReadInt16() {
   std::string text;
   if (!ReadString(&text)) { return false; }
   m_intData = atoi(text.c_str());
-  DRW_DBG(m_intData);
-  DRW_DBG(" `group value (int16)`\n");
   return true;
 }
 
@@ -222,8 +198,6 @@ bool dxfReaderAscii::ReadDouble() {
   if (!ReadString(&text)) { return false; }
   std::istringstream sd(text);
   sd >> m_double;
-  DRW_DBG(m_double);
-  DRW_DBG(" `group value (double)`\n");
   return true;
 }
 
@@ -233,7 +207,5 @@ bool dxfReaderAscii::ReadBool() {
   std::string text;
   if (!ReadString(&text)) { return false; }
   m_intData = atoi(text.c_str());
-  DRW_DBG(m_intData);
-  DRW_DBG(" `group value (bool)`\n");
   return true;
 }

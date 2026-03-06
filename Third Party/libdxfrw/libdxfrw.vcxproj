@@ -161,9 +161,7 @@
     <ClInclude Include="src\drw_objects.h" />
     <ClInclude Include="src\drw_tables.h" />
     <ClInclude Include="src\intern\drw_cptables.h" />
-    <ClInclude Include="src\intern\drw_dbg.h" />
     <ClInclude Include="src\intern\drw_textcodec.h" />
-    <ClInclude Include="src\intern\dxfLiteralStrings.h" />
     <ClInclude Include="src\intern\dxfreader.h" />
     <ClInclude Include="src\intern\dxfwriter.h" />
     <ClInclude Include="src\libdxfrw.h" />
@@ -174,7 +172,6 @@
     <ClCompile Include="src\drw_header.cpp" />
     <ClCompile Include="src\drw_objects.cpp" />
     <ClCompile Include="src\drw_tables.cpp" />
-    <ClCompile Include="src\intern\drw_dbg.cpp" />
     <ClCompile Include="src\intern\drw_textcodec.cpp" />
     <ClCompile Include="src\intern\dxfreader.cpp" />
     <ClCompile Include="src\intern\dxfwriter.cpp" />
@@ -188,7 +185,4 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
   </Target>
-  <ItemGroup>
-    <None Include="SPECIFICATIONS.md" />
-  </ItemGroup>
 </Project>

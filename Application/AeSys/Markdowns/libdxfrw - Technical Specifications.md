@@ -389,24 +389,6 @@ libdxfrw supports multiple character code pages:
 
 ---
 
-## Error Handling and Debugging
-
-### Debug Level Settings
-
-```cpp
-void setDebug(DRW::DebugTraceLevel lvl);
-```
-
-**Debug Levels**:
-- `DRW::none`: No debug output
-- `DRW::debug`: Debug information output
-
-### Debug Utilities
-
-- `src/intern/drw_dbg.h/cpp`: Debug output utilities
-
----
-
 ## Performance Considerations
 
 ### Memory Management
