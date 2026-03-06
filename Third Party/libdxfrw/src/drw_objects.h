@@ -1,6 +1,5 @@
 #pragma once
 
-#include "drw_tables.h"
 #include <map>
 #include <string>
 #include <vector>

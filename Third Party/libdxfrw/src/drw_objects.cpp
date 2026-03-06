@@ -1,5 +1,6 @@
 #include <string>
 
+#include "drw_base.h"
 #include "drw_objects.h"
 #include "intern/dxfreader.h"
 

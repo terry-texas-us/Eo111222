@@ -3,7 +3,7 @@
 #include <string>
 
 #include "drw_base.h"
-#include "drw_objects.h"
+#include "drw_tables.h"
 #include "intern/dxfreader.h"
 
 void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
