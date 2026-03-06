@@ -60,7 +60,7 @@ dxfRW (Main API Class)
 │   ├── DRW_Text
 │   ├── DRW_MText
 │   ├── DRW_Hatch
-│   ├── DRW_Dimension (various dimension types)
+│   ├── EoDxfDimension (various dimension types)
 │   └── Other entities
 └── DRW_Object (Non-geometric Objects)
     ├── DRW_Layer
@@ -216,13 +216,13 @@ virtual void addImage(const DRW_Image *data) = 0;
 ##### Dimensions
 
 ```cpp
-virtual void addDimAlign(const DRW_DimAligned *data) = 0;
-virtual void addDimLinear(const DRW_DimLinear *data) = 0;
-virtual void addDimRadial(const DRW_DimRadial *data) = 0;
-virtual void addDimDiametric(const DRW_DimDiametric *data) = 0;
-virtual void addDimAngular(const DRW_DimAngular *data) = 0;
-virtual void addDimAngular3P(const DRW_DimAngular3p *data) = 0;
-virtual void addDimOrdinate(const DRW_DimOrdinate *data) = 0;
+virtual void addDimAlign(const EoDxfAlignedDimension *data) = 0;
+virtual void addDimLinear(const EoDxfDimLinear *data) = 0;
+virtual void addDimRadial(const EoDxfRadialDimension *data) = 0;
+virtual void addDimDiametric(const EoDxfDiametricDimension *data) = 0;
+virtual void addDimAngular(const EoDxf2LineAngularDimension *data) = 0;
+virtual void addDimAngular3P(const EoDxf3PointAngularDimension *data) = 0;
+virtual void addDimOrdinate(const EoDxfOrdinateDimension *data) = 0;
 ```
 
 ##### Others

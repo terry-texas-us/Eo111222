@@ -1083,7 +1083,7 @@ void DRW_Image::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_Dimension::ParseCode(int code, dxfReader* reader) {
+void EoDxfDimension::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 1:
       text = reader->GetUtf8String();

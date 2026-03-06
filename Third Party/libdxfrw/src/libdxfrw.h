@@ -18,7 +18,6 @@ class dxfRW {
  public:
   dxfRW(const char* name);
   ~dxfRW();
-  void SetDebug(DRW::DebugTraceLevel traceLevel);
 
   /** @brief Reads a DXF file and populates the provided DRW_Interface with the parsed data.
    *
@@ -79,7 +78,7 @@ class dxfRW {
   bool WriteViewport(DRW_Viewport* ent);
   DRW_ImageDef* WriteImage(DRW_Image* ent, std::string name);
   bool WriteLeader(DRW_Leader* ent);
-  bool WriteDimension(DRW_Dimension* ent);
+  bool WriteDimension(EoDxfDimension* dimension);
   /** @brief Sets the number of parts to use when rendering an ellipse as a polyline.
    * This method allows you to specify how many segments (parts) should be used to approximate an ellipse when it is
    * rendered as a polyline. The value is clamped between 1 and 1024 to ensure a reasonable level of detail without

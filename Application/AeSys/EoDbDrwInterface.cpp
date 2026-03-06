@@ -74,17 +74,17 @@ void EoDbDrwInterface::ConvertClassesSection(const DRW_Class& class_, [[maybe_un
 }
 
 void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, [[maybe_unused]] AeSysDoc* document) {
-  std::wstring appIdName = Eo::MultiByteToWString(appId.name.c_str());
+  std::wstring appIdName = Eo::MultiByteToWString(appId.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
 }
 
 void EoDbDrwInterface::ConvertDimStyle(const DRW_DimStyle& dimStyle, [[maybe_unused]] AeSysDoc* document) {
-  std::wstring dimStyleName = Eo::MultiByteToWString(dimStyle.name.c_str());
+  std::wstring dimStyleName = Eo::MultiByteToWString(dimStyle.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"DimStyle - Name: <%s> (unsupported in AeSys)\n", dimStyleName.c_str());
 }
 
 void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* document) {
-  std::wstring layerName = Eo::MultiByteToWString(layer.name.c_str());
+  std::wstring layerName = Eo::MultiByteToWString(layer.m_tableName.c_str());
 
   ATLTRACE2(traceGeneral, 3, L"%s   Loading layer definition\n", layerName.c_str());
 
@@ -96,11 +96,11 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
   EoDbLayer* newLayer = new EoDbLayer(layerName.c_str(), commonState);
 
   // Color number (if negative the layer is off) group code 62
-  newLayer->SetColorIndex(static_cast<std::int16_t>(abs(layer.color)));
-  if (layer.color < 0) { newLayer->SetStateOff(); }
+  newLayer->SetColorIndex(static_cast<std::int16_t>(abs(layer.m_colorNumber)));
+  if (layer.m_colorNumber < 0) { newLayer->SetStateOff(); }
 
   // Linetype name group code 6
-  std::wstring lineTypeName = Eo::MultiByteToWString(layer.lineType.c_str());
+  std::wstring lineTypeName = Eo::MultiByteToWString(layer.m_linetypeName.c_str());
   EoDbLineType* lineType;
   if (document->LineTypeTable()->Lookup(lineTypeName.c_str(), lineType)) { newLayer->SetLineType(lineType); }
 
@@ -115,8 +115,8 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
   edited. (This flag is for the benefit of AutoCAD commands. It can be ignored by most programs that read DXF files and
   need not be set by programs that write DXF files)
    */
-  auto isFrozen = (layer.flags & 0x01) == 0x01;
-  auto isLocked = (layer.flags & 0x04) == 0x04;
+  auto isFrozen = (layer.m_flagValues & 0x01) == 0x01;
+  auto isLocked = (layer.m_flagValues & 0x04) == 0x04;
 
   if (isFrozen) { newLayer->SetStateOff(); }
   document->AddLayerTableLayer(newLayer);
@@ -127,9 +127,9 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
   displayed and plotted. The lineweights are in 100ths of a millimeter, except for the negative values. The negative
   values denote the default indicated by their constant's name.
   */
-  ATLTRACE2(traceGeneral, 2, L"Line weight: %i\n", layer.lWeight);
+  ATLTRACE2(traceGeneral, 2, L"Line weight: %i\n", layer.m_lineweightEnumValue);
   ATLTRACE2(traceGeneral, 2, L"Layer is locked: %i\n", isLocked);
-  ATLTRACE2(traceGeneral, 2, L"Layer is plottable: %i\n", layer.plotF);
+  ATLTRACE2(traceGeneral, 2, L"Layer is plottable: %i\n", layer.m_plottingFlag);
 
   // Hard-pointer to ID/handle of PlotStyleName object (not supported in AeSys) group code 390
   ATLTRACE2(traceGeneral, 3, L"Plot style name objects not supported\n");
@@ -144,7 +144,7 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
 }
 
 void EoDbDrwInterface::ConvertLinetypesTable(const DRW_Linetype& data, AeSysDoc* document) {
-  std::wstring lineTypeName = Eo::MultiByteToWString(data.name.c_str());  // Linetype name (group code 2)
+  std::wstring lineTypeName = Eo::MultiByteToWString(data.m_tableName.c_str());  // Linetype name (group code 2)
   std::wstring lineTypeDesc =
       Eo::MultiByteToWString(data.desc.c_str());  // Descriptive text for linetype (group code 3)
 
@@ -172,14 +172,14 @@ void EoDbDrwInterface::ConvertLinetypesTable(const DRW_Linetype& data, AeSysDoc*
 }
 
 void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, [[maybe_unused]] AeSysDoc* document) {
-  std::wstring textStyleName = Eo::MultiByteToWString(textStyle.name.c_str());
+  std::wstring textStyleName = Eo::MultiByteToWString(textStyle.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"Text Style - Name: %s (unsupported in AeSys)\n", textStyleName.c_str());
 
   // auto height = textStyle.height;         // Fixed text height; 0 if not fixed (group code 40)
   // auto width = textStyle.width;           // Width factor (group code 41)
   // auto obliqueAngle = textStyle.oblique;  // Oblique angle (group code 50)
   // auto textGenerationFlags =
-  textStyle.flags;  // Text generation flags (group code 71) 0x02 - text is backward, mirrored in X - 0x04 - text is
+  textStyle.m_flagValues;  // Text generation flags (group code 71) 0x02 - text is backward, mirrored in X - 0x04 - text is
   // upside down, mirrored in Y
   // auto lastHeight = textStyle.lastHeight;  // Last height used (group code 42)
 
@@ -190,7 +190,7 @@ void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, [[m
 }
 
 void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, [[maybe_unused]] AeSysDoc* document) {
-  std::wstring viewportName = Eo::MultiByteToWString(viewport.name.c_str());
+  std::wstring viewportName = Eo::MultiByteToWString(viewport.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"Viewport - Name: %s (unsupported in AeSys)\n", viewportName.c_str());
 
   auto lowerLeft = EoGePoint3d(viewport.lowerLeft.x, viewport.lowerLeft.y,

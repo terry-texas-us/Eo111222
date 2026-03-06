@@ -53,8 +53,6 @@ enum Version {
           // 2018)
 };
 
-enum DebugTraceLevel { None, Debug };
-
 //! Special codes for colors
 enum ColorCodes { ColorByLayer = 256, ColorByBlock = 0 };
 

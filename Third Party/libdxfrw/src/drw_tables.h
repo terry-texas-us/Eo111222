@@ -27,27 +27,26 @@ enum class SymbolTable : std::uint8_t {
 
 class DRW_TableEntry {
  public:
-  DRW_TableEntry() : tType{DRW::SymbolTable::Unknown}, flags{}, m_ownerHandle{}, m_currentVariant{} {}
+  DRW_TableEntry() : tType{DRW::SymbolTable::Unknown}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
 
  protected:
   explicit DRW_TableEntry(DRW::SymbolTable tableType) noexcept
-      : tType{tableType}, flags{}, m_ownerHandle{}, m_currentVariant{} {}
-
+      : tType{tableType}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
  public:
   virtual ~DRW_TableEntry() {
-    for (std::vector<DRW_Variant*>::iterator it = extData.begin(); it != extData.end(); ++it) { delete *it; }
-    extData.clear();
+    for (std::vector<DRW_Variant*>::iterator it = m_extensionData.begin(); it != m_extensionData.end(); ++it) { delete *it; }
+    m_extensionData.clear();
   }
 
   DRW_TableEntry(const DRW_TableEntry& e) {
     tType = e.tType;
     m_handle = e.m_handle;
     m_ownerHandle = e.m_ownerHandle;
-    name = e.name;
-    flags = e.flags;
+    m_tableName = e.m_tableName;
+    m_flagValues = e.m_flagValues;
     m_currentVariant = e.m_currentVariant;
-    for (std::vector<DRW_Variant*>::const_iterator it = e.extData.begin(); it != e.extData.end(); ++it) {
-      extData.push_back(new DRW_Variant(*(*it)));
+    for (std::vector<DRW_Variant*>::const_iterator it = e.m_extensionData.begin(); it != e.m_extensionData.end(); ++it) {
+      m_extensionData.push_back(new DRW_Variant(*(*it)));
     }
   }
 
@@ -59,9 +58,9 @@ class DRW_TableEntry {
   DRW::SymbolTable tType{DRW::SymbolTable::Unknown};  // Group code 0
   std::uint32_t m_handle{};  // Group code 5
   std::uint32_t m_ownerHandle{};  // Group code 330
-  UTF8STRING name;  // Group code 2
-  int flags{};  // Group code 70
-  std::vector<DRW_Variant*> extData;  // Group codes 1000 to 1071
+  UTF8STRING m_tableName;  // Group code 2
+  int m_flagValues{};  // Group code 70
+  std::vector<DRW_Variant*> m_extensionData;  // Group codes 1000 to 1071
 
  private:
   DRW_Variant* m_currentVariant{};
@@ -204,13 +203,13 @@ class DRW_Layer : public DRW_TableEntry {
   void Reset();
 
  public:
-  UTF8STRING lineType;  // Group code 6
-  int color;  // Group code 62
+  UTF8STRING m_linetypeName;  // Group code 6
+  int m_colorNumber;  // Group code 62 (if negative, then layer is turned off)
   int color24;  // Group code 420
-  bool plotF;  // Group code 290
-  enum DRW_LW_Conv::lineWidth lWeight;  // Group code 370
-  std::string handlePlotS;  // Group code 390
-  std::string handleMaterialS;  // Group code 347
+  bool m_plottingFlag;  // Group code 290 (if set to zero, then layer is not plotted)
+  enum DRW_LW_Conv::lineWidth m_lineweightEnumValue;  // Group code 370
+  std::string m_handleOfPlotStyleName;  // Group code 390
+  std::string m_handleOfMaterialStyleName;  // Group code 347
 };
 
 /** Class to handle block record entries
@@ -343,8 +342,7 @@ class DRW_AppId : public DRW_TableEntry {
   void ParseCode(int code, dxfReader* reader) { DRW_TableEntry::ParseCode(code, reader); }
 
   void Reset() {
-    flags = 0;
-    name = "";
+    m_tableName = "";
     DRW_TableEntry::Reset();
   }
 };

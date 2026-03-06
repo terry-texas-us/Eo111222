@@ -15,10 +15,10 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
       m_ownerHandle = reader->GetHandleString();
       break;
     case 2:
-      name = reader->GetUtf8String();
+      m_tableName = reader->GetUtf8String();
       break;
     case 70:
-      flags = reader->GetInt32();
+      m_flagValues = reader->GetInt32();
       break;
     case 1000:
     case 1001:
@@ -26,14 +26,14 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
     case 1003:
     case 1004:
     case 1005:
-      extData.push_back(new DRW_Variant(code, reader->GetString()));
+      m_extensionData.push_back(new DRW_Variant(code, reader->GetString()));
       break;
     case 1010:
     case 1011:
     case 1012:
     case 1013:
       m_currentVariant = new DRW_Variant(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
-      extData.push_back(m_currentVariant);
+      m_extensionData.push_back(m_currentVariant);
       break;
     case 1020:
     case 1021:
@@ -51,11 +51,11 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
     case 1040:
     case 1041:
     case 1042:
-      extData.push_back(new DRW_Variant(code, reader->GetDouble()));
+      m_extensionData.push_back(new DRW_Variant(code, reader->GetDouble()));
       break;
     case 1070:
     case 1071:
-      extData.push_back(new DRW_Variant(code, reader->GetInt32()));
+      m_extensionData.push_back(new DRW_Variant(code, reader->GetInt32()));
       break;
     default:
       break;
@@ -63,9 +63,9 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
 }
 
 void DRW_TableEntry::Reset() {
-  flags = 0;
-  for (auto* variant : extData) { delete variant; }
-  extData.clear();
+  m_flagValues = 0;
+  for (auto* variant : m_extensionData) { delete variant; }
+  m_extensionData.clear();
   m_currentVariant = nullptr;
 }
 
@@ -73,6 +73,7 @@ void DRW_BlockRecord::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 70:
       m_blockInsertionUnits = reader->GetInt32();
+      m_flagValues = m_blockInsertionUnits;  // Block records only flag: block insertion units
       break;
     default:
       DRW_TableEntry::ParseCode(code, reader);
@@ -81,8 +82,7 @@ void DRW_BlockRecord::ParseCode(int code, dxfReader* reader) {
 }
 
 void DRW_BlockRecord::Reset() {
-  m_blockInsertionUnits = 0;
-  flags = 0;
+  m_blockInsertionUnits = 0;   // Block records only flag: block insertion units
   DRW_TableEntry::Reset();
 }
 
@@ -385,9 +385,6 @@ void DRW_Linetype::ParseCode(int code, dxfReader* reader) {
       path.push_back(reader->GetDouble());
       pathIdx++;
       break;
-      /*    case 74:
-            haveShape = reader->GetInt32();
-            break;*/
     default:
       DRW_TableEntry::ParseCode(code, reader);
       break;
@@ -412,22 +409,22 @@ void DRW_Linetype::Update() {
 void DRW_Layer::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 6:
-      lineType = reader->GetUtf8String();
+      m_linetypeName = reader->GetUtf8String();
       break;
     case 62:
-      color = reader->GetInt32();
+      m_colorNumber = reader->GetInt32();
       break;
     case 290:
-      plotF = reader->GetBool();
+      m_plottingFlag = reader->GetBool();
       break;
     case 370:
-      lWeight = DRW_LW_Conv::dxfInt2lineWidth(reader->GetInt32());
+      m_lineweightEnumValue = DRW_LW_Conv::dxfInt2lineWidth(reader->GetInt32());
       break;
     case 390:
-      handlePlotS = reader->GetString();
+      m_handleOfPlotStyleName = reader->GetString();
       break;
     case 347:
-      handleMaterialS = reader->GetString();
+      m_handleOfMaterialStyleName = reader->GetString();
       break;
     case 420:
       color24 = reader->GetInt32();
@@ -439,11 +436,11 @@ void DRW_Layer::ParseCode(int code, dxfReader* reader) {
 }
 
 void DRW_Layer::Reset() {
-  lineType = "CONTINUOUS";
-  color = 7;  // default BYLAYER (256)
-  plotF = true;  // default TRUE (plot yes)
-  lWeight = DRW_LW_Conv::widthDefault;  // default BYDEFAULT (dxf -3)
-  color24 = -1;  // default -1 not set
+  m_linetypeName = "CONTINUOUS";
+  m_colorNumber = 7;
+  m_plottingFlag = true;
+  m_lineweightEnumValue = DRW_LW_Conv::widthDefault;
+  color24 = -1;
   DRW_TableEntry::Reset();
 }
 

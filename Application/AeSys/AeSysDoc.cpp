@@ -280,7 +280,6 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
     case EoDb::FileTypes::Dxb: {
       EoDbDrwInterface dxfInterface(this);
       dxfRW dxfReader(Eo::WStringToMultiByte(pathName).data());
-      dxfReader.SetDebug(DRW::DebugTraceLevel::None);
       SetCommonTableEntries();
       bool success = dxfReader.Read(&dxfInterface, true);  // true for verbose output, false for silent
       if (success) {
@@ -393,7 +392,6 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
       // Begin implementation of DXF/DXB saving using EoDbDrwInterface
       EoDbDrwInterface dxfInterface(this);
       dxfRW dxfWriter(Eo::WStringToMultiByte(pathName).data());
-      dxfWriter.SetDebug(DRW::DebugTraceLevel::Debug);
       if (dxfWriter.Write(&dxfInterface, DRW::Version::AC1032, true)) {
         app.AddStringToMessageList(IDS_MSG_DXF_SAVE_SUCCESS, pathName);
         returnStatus = TRUE;

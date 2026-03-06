@@ -879,11 +879,11 @@ class DRW_Image : public DRW_Line {
  * the dimension text (code 53), and extrusion direction (code 210, 220, 230), which can affect how it is rendered in
  * the drawing.
  */
-class DRW_Dimension : public DRW_Entity {
+class EoDxfDimension : public DRW_Entity {
   friend class dxfRW;
 
  public:
-  DRW_Dimension() {
+  EoDxfDimension() {
     m_entityType = DRW::DIMENSION;
     type = 0;
     linesty = 1;
@@ -896,7 +896,7 @@ class DRW_Dimension : public DRW_Entity {
     clonePoint.x = clonePoint.y = clonePoint.z = 0;
   }
 
-  DRW_Dimension(const DRW_Dimension& d) : DRW_Entity(d) {
+  EoDxfDimension(const EoDxfDimension& d) : DRW_Entity(d) {
     m_entityType = DRW::DIMENSION;
     type = d.type;
     name = d.name;
@@ -918,7 +918,7 @@ class DRW_Dimension : public DRW_Entity {
     circlePoint = d.circlePoint;
     length = d.length;
   }
-  virtual ~DRW_Dimension() = default;
+  virtual ~EoDxfDimension() = default;
 
   virtual void ApplyExtrusion() {}
 
@@ -1002,12 +1002,12 @@ class DRW_Dimension : public DRW_Entity {
  * text line spacing factor (code 41), rotation angle of the dimension text (code 53), and extrusion direction (code
  * 210, 220, 230), which can affect how it is rendered in the drawing.
  */
-class DRW_DimAligned : public DRW_Dimension {
+class EoDxfAlignedDimension : public EoDxfDimension {
   friend class dxfRW;
 
  public:
-  DRW_DimAligned() { m_entityType = DRW::DIMALIGNED; }
-  DRW_DimAligned(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMALIGNED; }
+  EoDxfAlignedDimension() { m_entityType = DRW::DIMALIGNED; }
+  EoDxfAlignedDimension(const EoDxfDimension& d) : EoDxfDimension(d) { m_entityType = DRW::DIMALIGNED; }
 
   DRW_Coord getClonepoint() const { return getPt2(); }  // Insertion for clones (Baseline & Continue), 12, 22 & 32
   void setClonePoint(DRW_Coord c) { setPt2(c); }
@@ -1030,10 +1030,10 @@ class DRW_DimAligned : public DRW_Dimension {
  * which can affect how it is rendered in the drawing. Additionally, linear dimensions can have an oblique angle
  * (code 52) that specifies the angle of the dimension line relative to the horizontal plane.
  */
-class DRW_DimLinear : public DRW_DimAligned {
+class EoDxfDimLinear : public EoDxfAlignedDimension {
  public:
-  DRW_DimLinear() { m_entityType = DRW::DIMLINEAR; }
-  DRW_DimLinear(const DRW_Dimension& d) : DRW_DimAligned(d) { m_entityType = DRW::DIMLINEAR; }
+  EoDxfDimLinear() { m_entityType = DRW::DIMLINEAR; }
+  EoDxfDimLinear(const EoDxfDimension& dimension) : EoDxfAlignedDimension(dimension) { m_entityType = DRW::DIMLINEAR; }
 
   double getAngle() const { return getAn50(); }  // Angle of rotated, horizontal, or vertical dimensions, code 50
   void setAngle(const double d) { setAn50(d); }
@@ -1050,12 +1050,12 @@ class DRW_DimLinear : public DRW_DimAligned {
  * (code 41), rotation angle of the dimension text (code 53), and extrusion direction (code 210, 220, 230), which can
  * affect how it is rendered in the drawing.
  */
-class DRW_DimRadial : public DRW_Dimension {
+class EoDxfRadialDimension : public EoDxfDimension {
   friend class dxfRW;
 
  public:
-  DRW_DimRadial() { m_entityType = DRW::DIMRADIAL; }
-  DRW_DimRadial(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMRADIAL; }
+  EoDxfRadialDimension() { m_entityType = DRW::DIMRADIAL; }
+  EoDxfRadialDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = DRW::DIMRADIAL; }
 
   DRW_Coord getCenterPoint() const { return getDefPoint(); }  // center point, code 10, 20 & 30
   void setCenterPoint(const DRW_Coord p) { setDefPoint(p); }
@@ -1074,12 +1074,12 @@ class DRW_DimRadial : public DRW_Dimension {
  * (code 41), rotation angle of the dimension text (code 53), and extrusion direction (code 210, 220, 230), which can
  * affect how it is rendered in the drawing.
  */
-class DRW_DimDiametric : public DRW_Dimension {
+class EoDxfDiametricDimension : public EoDxfDimension {
   friend class dxfRW;
 
  public:
-  DRW_DimDiametric() { m_entityType = DRW::DIMDIAMETRIC; }
-  DRW_DimDiametric(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMDIAMETRIC; }
+  EoDxfDiametricDimension() { m_entityType = DRW::DIMDIAMETRIC; }
+  EoDxfDiametricDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = DRW::DIMDIAMETRIC; }
 
   DRW_Coord getDiameter1Point() const { return getPt5(); }  // First definition point for diameter, code 15, 25 & 35
   void setDiameter1Point(const DRW_Coord p) { setPt5(p); }
@@ -1093,12 +1093,12 @@ class DRW_DimDiametric : public DRW_Dimension {
 /*!
  *  Class to handle angular dimension entity
  */
-class DRW_DimAngular : public DRW_Dimension {
+class EoDxf2LineAngularDimension : public EoDxfDimension {
   friend class dxfRW;
 
  public:
-  DRW_DimAngular() { m_entityType = DRW::DIMANGULAR; }
-  DRW_DimAngular(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMANGULAR; }
+  EoDxf2LineAngularDimension() { m_entityType = DRW::DIMANGULAR; }
+  EoDxf2LineAngularDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = DRW::DIMANGULAR; }
 
   DRW_Coord getFirstLine1() const { return getPt3(); }  // Definition point line 1-1, code 13, 23 & 33
   void setFirstLine1(const DRW_Coord p) { setPt3(p); }
@@ -1121,12 +1121,12 @@ class DRW_DimAngular : public DRW_Dimension {
  * 72), dimension text (code 1), text line spacing factor (code 41), rotation angle of the dimension text (code 53), and
  * extrusion direction (code 210, 220, 230), which can affect how it is rendered in the drawing.
  */
-class DRW_DimAngular3p : public DRW_Dimension {
+class EoDxf3PointAngularDimension : public EoDxfDimension {
   friend class dxfRW;
 
  public:
-  DRW_DimAngular3p() { m_entityType = DRW::DIMANGULAR3P; }
-  DRW_DimAngular3p(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMANGULAR3P; }
+  EoDxf3PointAngularDimension() { m_entityType = DRW::DIMANGULAR3P; }
+  EoDxf3PointAngularDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = DRW::DIMANGULAR3P; }
 
   DRW_Coord getFirstLine() const { return getPt3(); }  // Definition point line 1, code 13, 23 & 33
   void setFirstLine(const DRW_Coord p) { setPt3(p); }
@@ -1147,12 +1147,12 @@ class DRW_DimAngular3p : public DRW_Dimension {
  * dimension text (code 1), text line spacing factor (code 41), rotation angle of the dimension text (code 53), and
  * extrusion direction (code 210, 220, 230), which can affect how it is rendered in the drawing.
  */
-class DRW_DimOrdinate : public DRW_Dimension {
+class EoDxfOrdinateDimension : public EoDxfDimension {
   friend class dxfRW;
 
  public:
-  DRW_DimOrdinate() { m_entityType = DRW::DIMORDINATE; }
-  DRW_DimOrdinate(const DRW_Dimension& d) : DRW_Dimension(d) { m_entityType = DRW::DIMORDINATE; }
+  EoDxfOrdinateDimension() { m_entityType = DRW::DIMORDINATE; }
+  EoDxfOrdinateDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = DRW::DIMORDINATE; }
 
   DRW_Coord getOriginPoint() const { return getDefPoint(); }  // Origin definition point, code 10, 20 & 30
   void setOriginPoint(const DRW_Coord p) { setDefPoint(p); }

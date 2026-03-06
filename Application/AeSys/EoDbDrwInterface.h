@@ -110,18 +110,18 @@ class EoDbDrwInterface : public DRW_Interface {
 
   // Dimensions
 
-  void addDimAlign([[maybe_unused]] const DRW_DimAligned* dimAlign) override { countOfDimAlign++; }
+  void addDimAlign([[maybe_unused]] const EoDxfAlignedDimension* dimAlign) override { countOfDimAlign++; }
 
-  void addDimAngular([[maybe_unused]] const DRW_DimAngular* dimAngular) override { countOfDimAngular++; }
-  void addDimAngular3P([[maybe_unused]] const DRW_DimAngular3p* dimAngular3P) override { countOfDimAngular3P++; }
+  void addDimAngular([[maybe_unused]] const EoDxf2LineAngularDimension* dimAngular) override { countOfDimAngular++; }
+  void addDimAngular3P([[maybe_unused]] const EoDxf3PointAngularDimension* dimAngular3P) override { countOfDimAngular3P++; }
 
-  void addDimLinear([[maybe_unused]] const DRW_DimLinear* dimLinear) override { countOfDimLinear++; }
+  void addDimLinear([[maybe_unused]] const EoDxfDimLinear* dimLinear) override { countOfDimLinear++; }
 
-  void addDimOrdinate([[maybe_unused]] const DRW_DimOrdinate* dimOrdinate) override { countOfDimOrdinate++; }
+  void addDimOrdinate([[maybe_unused]] const EoDxfOrdinateDimension* dimOrdinate) override { countOfDimOrdinate++; }
 
-  void addDimRadial([[maybe_unused]] const DRW_DimRadial* dimRadial) override { countOfDimRadial++; }
+  void addDimRadial([[maybe_unused]] const EoDxfRadialDimension* dimRadial) override { countOfDimRadial++; }
 
-  void addDimDiametric([[maybe_unused]] const DRW_DimDiametric* dimDiametric) override { countOfDimDiametric++; }
+  void addDimDiametric([[maybe_unused]] const EoDxfDiametricDimension* dimDiametric) override { countOfDimDiametric++; }
 
   void addEllipse(const DRW_Ellipse& ellipse) override {
     countOfEllipse++;
