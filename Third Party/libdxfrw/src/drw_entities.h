@@ -153,7 +153,7 @@ class DRW_Entity {
   int m_numberOfBytesInProxyGraphics{};  // group code 92 (optional) [unused]
   int m_color24{-1};  // 24-bit color, code 420
   int m_transparency{DRW::TransparencyCodes::Opaque};  // group code 440
-  int m_plotStyle{DRW::PlotStyleCodes::DefaultPlotStyle};  // hard pointer id to plot style object, code 390
+  std::uint32_t m_plotStyle{DRW::PlotStyleCodes::DefaultPlotStyle};  // hard pointer id to plot style object, code 390
   DRW::ShadowMode m_shadowMode{DRW::ShadowMode::CastAndReceiveShadows};  // group code 284
   DRW::Space m_space{DRW::Space::ModelSpace};  // space indicator, code 67
   bool m_visible{true};  // entity visibility, code 60

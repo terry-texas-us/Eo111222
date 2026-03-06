@@ -164,7 +164,7 @@ class dxfRW {
   int m_entityCount{};
   int m_ellipseParts;  // number of parts when rendering ellipse as polyline
   DRW::Version m_version{};
-  int m_currentHandle{};
+  std::uint32_t m_currentHandle{};
   bool wlayer0{};
   bool m_standardDimensionStyle{};
   bool m_applyExtrusion;

@@ -24,16 +24,16 @@ class DRW_ObjectEntry {
   DRW_ObjectEntry() = default;
 
   virtual ~DRW_ObjectEntry() {
-    for (auto* variant : extData) { delete variant; }
-    extData.clear();
+    for (auto* variant : m_extensionData) { delete variant; }
+    m_extensionData.clear();
   }
 
   DRW_ObjectEntry(const DRW_ObjectEntry& e) {
-    handle = e.handle;
-    ownerHandle = e.ownerHandle;
-    xDictionaryHandle = e.xDictionaryHandle;
-    reactorHandles = e.reactorHandles;
-    for (auto* variant : e.extData) { extData.push_back(new DRW_Variant(*variant)); }
+    m_handle = e.m_handle;
+    m_ownerHandle = e.m_ownerHandle;
+    m_extensionDictionaryHandle = e.m_extensionDictionaryHandle;
+    m_reactorHandles = e.m_reactorHandles;
+    for (auto* variant : e.m_extensionData) { m_extensionData.push_back(new DRW_Variant(*variant)); }
   }
 
  protected:
@@ -41,11 +41,11 @@ class DRW_ObjectEntry {
   void Reset();
 
  public:
-  std::uint32_t handle{};             // Group code 5
-  int ownerHandle{};                  // Group code 330 (soft-pointer to owner dictionary)
-  int xDictionaryHandle{};            // Group code 360 (hard-owner, extension dictionary)
-  std::vector<int> reactorHandles;    // Group code 330 handles within ACAD_REACTORS group
-  std::vector<DRW_Variant*> extData;  // Group codes 1000 to 1071
+  std::uint32_t m_handle{};  // Group code 5
+  std::uint32_t m_ownerHandle{};  // Group code 330 (soft-pointer to owner dictionary)
+  std::uint32_t m_extensionDictionaryHandle{};  // Group code 360 (hard-owner, extension dictionary)
+  std::vector<std::uint32_t> m_reactorHandles;  // Group code 330 handles within ACAD_REACTORS group
+  std::vector<DRW_Variant*> m_extensionData;  // Group codes 1000 to 1071
 
  private:
   DRW_Variant* m_currentVariant{};

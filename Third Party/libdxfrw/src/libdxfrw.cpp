@@ -1119,7 +1119,7 @@ DRW_ImageDef* dxfRW::WriteImage(DRW_Image* ent, std::string name) {
   if (id == nullptr) {
     id = new DRW_ImageDef();
     m_imageDef.push_back(id);
-    id->handle = ++m_entityCount;
+    id->m_handle = ++m_entityCount;
   }
   id->m_fileNameOfImage = name;
   std::string idReactor = ToHexString(++m_entityCount);
@@ -1138,7 +1138,7 @@ DRW_ImageDef* dxfRW::WriteImage(DRW_Image* ent, std::string name) {
   m_writer->WriteDouble(32, ent->vVector.z);
   m_writer->WriteDouble(13, ent->sizeu);
   m_writer->WriteDouble(23, ent->sizev);
-  m_writer->WriteString(340, ToHexString(id->handle));
+  m_writer->WriteString(340, ToHexString(id->m_handle));
   m_writer->WriteInt16(70, 1);
   m_writer->WriteInt16(280, ent->clip);
   m_writer->WriteInt16(281, ent->brightness);
@@ -1526,13 +1526,13 @@ bool dxfRW::WriteObjects() {
       f2 = m_imageDef.at(i)->m_fileNameOfImage.find_last_of('.');
       ++f1;
       m_writer->WriteString(3, m_imageDef.at(i)->m_fileNameOfImage.substr(f1, f2 - f1));
-      m_writer->WriteString(350, ToHexString(m_imageDef.at(i)->handle));
+      m_writer->WriteString(350, ToHexString(m_imageDef.at(i)->m_handle));
     }
   }
   for (unsigned int i = 0; i < m_imageDef.size(); i++) {
     DRW_ImageDef* id = m_imageDef.at(i);
     m_writer->WriteString(0, "IMAGEDEF");
-    m_writer->WriteString(5, ToHexString(id->handle));
+    m_writer->WriteString(5, ToHexString(id->m_handle));
     if (m_version > DRW::Version::AC1014) { m_writer->WriteString(330, imgDictH); }
     m_writer->WriteString(102, "{ACAD_REACTORS");
     std::map<std::string, std::string>::iterator it;

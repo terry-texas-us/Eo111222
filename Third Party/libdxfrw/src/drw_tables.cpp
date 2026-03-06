@@ -9,10 +9,10 @@
 void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 5:
-      handle = reader->GetHandleString();
+      m_handle = reader->GetHandleString();
       break;
     case 330:
-      parentHandle = reader->GetHandleString();
+      m_ownerHandle = reader->GetHandleString();
       break;
     case 2:
       name = reader->GetUtf8String();
@@ -89,7 +89,7 @@ void DRW_BlockRecord::Reset() {
 void DRW_DimStyle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 105:
-      handle = reader->GetHandleString();
+      m_handle = reader->GetHandleString();
       break;
     case 3:
       dimpost = reader->GetUtf8String();

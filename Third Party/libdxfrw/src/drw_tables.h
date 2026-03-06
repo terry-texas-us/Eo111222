@@ -27,11 +27,11 @@ enum class SymbolTable : std::uint8_t {
 
 class DRW_TableEntry {
  public:
-  DRW_TableEntry() : tType{DRW::SymbolTable::Unknown}, flags{}, parentHandle{}, m_currentVariant{} {}
+  DRW_TableEntry() : tType{DRW::SymbolTable::Unknown}, flags{}, m_ownerHandle{}, m_currentVariant{} {}
 
  protected:
   explicit DRW_TableEntry(DRW::SymbolTable tableType) noexcept
-      : tType{tableType}, flags{}, parentHandle{}, m_currentVariant{} {}
+      : tType{tableType}, flags{}, m_ownerHandle{}, m_currentVariant{} {}
 
  public:
   virtual ~DRW_TableEntry() {
@@ -41,8 +41,8 @@ class DRW_TableEntry {
 
   DRW_TableEntry(const DRW_TableEntry& e) {
     tType = e.tType;
-    handle = e.handle;
-    parentHandle = e.parentHandle;
+    m_handle = e.m_handle;
+    m_ownerHandle = e.m_ownerHandle;
     name = e.name;
     flags = e.flags;
     m_currentVariant = e.m_currentVariant;
@@ -57,8 +57,8 @@ class DRW_TableEntry {
 
  public:
   DRW::SymbolTable tType{DRW::SymbolTable::Unknown};  // Group code 0
-  std::uint32_t handle{};  // Group code 5
-  int parentHandle{};  // Group code 330
+  std::uint32_t m_handle{};  // Group code 5
+  std::uint32_t m_ownerHandle{};  // Group code 330
   UTF8STRING name;  // Group code 2
   int flags{};  // Group code 70
   std::vector<DRW_Variant*> extData;  // Group codes 1000 to 1071

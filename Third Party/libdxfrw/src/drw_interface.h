@@ -4,6 +4,7 @@
 #include "drw_entities.h"
 #include "drw_header.h"
 #include "drw_objects.h"
+#include "drw_tables.h"
 
 /**
  * Abstract class (interface) for comunicate dxfReader with the application.

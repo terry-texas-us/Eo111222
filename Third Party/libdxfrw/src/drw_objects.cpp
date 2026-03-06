@@ -7,7 +7,7 @@
 void DRW_ObjectEntry::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 5:
-      handle = reader->GetHandleString();
+      m_handle = reader->GetHandleString();
       break;
     case 102: {
       std::string value = reader->GetString();
@@ -23,13 +23,13 @@ void DRW_ObjectEntry::ParseCode(int code, dxfReader* reader) {
     }
     case 330:
       if (m_inReactors) {
-        reactorHandles.push_back(reader->GetHandleString());
+        m_reactorHandles.push_back(reader->GetHandleString());
       } else {
-        ownerHandle = reader->GetHandleString();
+        m_ownerHandle = reader->GetHandleString();
       }
       break;
     case 360:
-      if (m_inXDictionary) { xDictionaryHandle = reader->GetHandleString(); }
+      if (m_inXDictionary) { m_extensionDictionaryHandle = reader->GetHandleString(); }
       break;
     case 1000:
     case 1001:
@@ -37,14 +37,14 @@ void DRW_ObjectEntry::ParseCode(int code, dxfReader* reader) {
     case 1003:
     case 1004:
     case 1005:
-      extData.push_back(new DRW_Variant(code, reader->GetString()));
+      m_extensionData.push_back(new DRW_Variant(code, reader->GetString()));
       break;
     case 1010:
     case 1011:
     case 1012:
     case 1013:
       m_currentVariant = new DRW_Variant(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
-      extData.push_back(m_currentVariant);
+      m_extensionData.push_back(m_currentVariant);
       break;
     case 1020:
     case 1021:
@@ -62,11 +62,11 @@ void DRW_ObjectEntry::ParseCode(int code, dxfReader* reader) {
     case 1040:
     case 1041:
     case 1042:
-      extData.push_back(new DRW_Variant(code, reader->GetDouble()));
+      m_extensionData.push_back(new DRW_Variant(code, reader->GetDouble()));
       break;
     case 1070:
     case 1071:
-      extData.push_back(new DRW_Variant(code, reader->GetInt32()));
+      m_extensionData.push_back(new DRW_Variant(code, reader->GetInt32()));
       break;
     default:
       break;
@@ -74,11 +74,11 @@ void DRW_ObjectEntry::ParseCode(int code, dxfReader* reader) {
 }
 
 void DRW_ObjectEntry::Reset() {
-  ownerHandle = 0;
-  xDictionaryHandle = 0;
-  reactorHandles.clear();
-  for (auto* variant : extData) { delete variant; }
-  extData.clear();
+  m_ownerHandle = 0;
+  m_extensionDictionaryHandle = 0;
+  m_reactorHandles.clear();
+  for (auto* variant : m_extensionData) { delete variant; }
+  m_extensionData.clear();
   m_currentVariant = nullptr;
   m_inReactors = false;
   m_inXDictionary = false;
