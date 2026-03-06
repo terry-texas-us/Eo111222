@@ -1,24 +1,34 @@
-#include <cmath>
-#include <new>
 #include <string>
 
-#include "drw_base.h"
 #include "drw_objects.h"
 #include "intern/dxfreader.h"
 
-void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
+void DRW_ObjectEntry::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 5:
       handle = reader->GetHandleString();
       break;
+    case 102: {
+      std::string value = reader->GetString();
+      if (value == "{ACAD_REACTORS") {
+        m_inReactors = true;
+      } else if (value == "{ACAD_XDICTIONARY") {
+        m_inXDictionary = true;
+      } else if (value == "}") {
+        m_inReactors = false;
+        m_inXDictionary = false;
+      }
+      break;
+    }
     case 330:
-      parentHandle = reader->GetHandleString();
+      if (m_inReactors) {
+        reactorHandles.push_back(reader->GetHandleString());
+      } else {
+        ownerHandle = reader->GetHandleString();
+      }
       break;
-    case 2:
-      name = reader->GetUtf8String();
-      break;
-    case 70:
-      flags = reader->GetInt32();
+    case 360:
+      if (m_inXDictionary) { xDictionaryHandle = reader->GetHandleString(); }
       break;
     case 1000:
     case 1001:
@@ -62,600 +72,58 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_TableEntry::Reset() {
-  flags = 0;
+void DRW_ObjectEntry::Reset() {
+  ownerHandle = 0;
+  xDictionaryHandle = 0;
+  reactorHandles.clear();
   for (auto* variant : extData) { delete variant; }
   extData.clear();
   m_currentVariant = nullptr;
-}
-
-void DRW_BlockRecord::ParseCode(int code, dxfReader* reader) {
-  switch (code) {
-    case 70:
-      m_blockInsertionUnits = reader->GetInt32();
-      break;
-    default:
-      DRW_TableEntry::ParseCode(code, reader);
-      break;
-  }
-}
-
-void DRW_BlockRecord::Reset() {
-  m_blockInsertionUnits = 0;
-  flags = 0;
-  DRW_TableEntry::Reset();
-}
-
-void DRW_DimStyle::ParseCode(int code, dxfReader* reader) {
-  switch (code) {
-    case 105:
-      handle = reader->GetHandleString();
-      break;
-    case 3:
-      dimpost = reader->GetUtf8String();
-      break;
-    case 4:
-      dimapost = reader->GetUtf8String();
-      break;
-    case 5:
-      dimblk = reader->GetUtf8String();
-      break;
-    case 6:
-      dimblk1 = reader->GetUtf8String();
-      break;
-    case 7:
-      dimblk2 = reader->GetUtf8String();
-      break;
-    case 40:
-      dimscale = reader->GetDouble();
-      break;
-    case 41:
-      dimasz = reader->GetDouble();
-      break;
-    case 42:
-      dimexo = reader->GetDouble();
-      break;
-    case 43:
-      dimdli = reader->GetDouble();
-      break;
-    case 44:
-      dimexe = reader->GetDouble();
-      break;
-    case 45:
-      dimrnd = reader->GetDouble();
-      break;
-    case 46:
-      dimdle = reader->GetDouble();
-      break;
-    case 47:
-      dimtp = reader->GetDouble();
-      break;
-    case 48:
-      dimtm = reader->GetDouble();
-      break;
-    case 49:
-      dimfxl = reader->GetDouble();
-      break;
-    case 140:
-      dimtxt = reader->GetDouble();
-      break;
-    case 141:
-      dimcen = reader->GetDouble();
-      break;
-    case 142:
-      dimtsz = reader->GetDouble();
-      break;
-    case 143:
-      dimaltf = reader->GetDouble();
-      break;
-    case 144:
-      dimlfac = reader->GetDouble();
-      break;
-    case 145:
-      dimtvp = reader->GetDouble();
-      break;
-    case 146:
-      dimtfac = reader->GetDouble();
-      break;
-    case 147:
-      dimgap = reader->GetDouble();
-      break;
-    case 148:
-      dimaltrnd = reader->GetDouble();
-      break;
-    case 71:
-      dimtol = reader->GetInt32();
-      break;
-    case 72:
-      dimlim = reader->GetInt32();
-      break;
-    case 73:
-      dimtih = reader->GetInt32();
-      break;
-    case 74:
-      dimtoh = reader->GetInt32();
-      break;
-    case 75:
-      dimse1 = reader->GetInt32();
-      break;
-    case 76:
-      dimse2 = reader->GetInt32();
-      break;
-    case 77:
-      dimtad = reader->GetInt32();
-      break;
-    case 78:
-      dimzin = reader->GetInt32();
-      break;
-    case 79:
-      dimazin = reader->GetInt32();
-      break;
-    case 170:
-      dimalt = reader->GetInt32();
-      break;
-    case 171:
-      dimaltd = reader->GetInt32();
-      break;
-    case 172:
-      dimtofl = reader->GetInt32();
-      break;
-    case 173:
-      dimsah = reader->GetInt32();
-      break;
-    case 174:
-      dimtix = reader->GetInt32();
-      break;
-    case 175:
-      dimsoxd = reader->GetInt32();
-      break;
-    case 176:
-      dimclrd = reader->GetInt32();
-      break;
-    case 177:
-      dimclre = reader->GetInt32();
-      break;
-    case 178:
-      dimclrt = reader->GetInt32();
-      break;
-    case 179:
-      dimadec = reader->GetInt32();
-      break;
-    case 270:
-      dimunit = reader->GetInt32();
-      break;
-    case 271:
-      dimdec = reader->GetInt32();
-      break;
-    case 272:
-      dimtdec = reader->GetInt32();
-      break;
-    case 273:
-      dimaltu = reader->GetInt32();
-      break;
-    case 274:
-      dimalttd = reader->GetInt32();
-      break;
-    case 275:
-      dimaunit = reader->GetInt32();
-      break;
-    case 276:
-      dimfrac = reader->GetInt32();
-      break;
-    case 277:
-      dimlunit = reader->GetInt32();
-      break;
-    case 278:
-      dimdsep = reader->GetInt32();
-      break;
-    case 279:
-      dimtmove = reader->GetInt32();
-      break;
-    case 280:
-      dimjust = reader->GetInt32();
-      break;
-    case 281:
-      dimsd1 = reader->GetInt32();
-      break;
-    case 282:
-      dimsd2 = reader->GetInt32();
-      break;
-    case 283:
-      dimtolj = reader->GetInt32();
-      break;
-    case 284:
-      dimtzin = reader->GetInt32();
-      break;
-    case 285:
-      dimaltz = reader->GetInt32();
-      break;
-    case 286:
-      dimaltttz = reader->GetInt32();
-      break;
-    case 287:
-      dimfit = reader->GetInt32();
-      break;
-    case 288:
-      dimupt = reader->GetInt32();
-      break;
-    case 289:
-      dimatfit = reader->GetInt32();
-      break;
-    case 290:
-      dimfxlon = reader->GetInt32();
-      break;
-    case 340:
-      dimtxsty = reader->GetUtf8String();
-      break;
-    case 341:
-      dimldrblk = reader->GetUtf8String();
-      break;
-    case 342:
-      dimblk = reader->GetUtf8String();
-      break;
-    case 343:
-      dimblk1 = reader->GetUtf8String();
-      break;
-    case 344:
-      dimblk2 = reader->GetUtf8String();
-      break;
-    default:
-      DRW_TableEntry::ParseCode(code, reader);
-      break;
-  }
-}
-
-void DRW_DimStyle::Reset() {
-  dimasz = 0.18;
-  dimtxt = 0.18;
-  dimexe = 0.18;
-  dimexo = 0.0625;
-  dimgap = dimcen = 0.09;
-  dimtxsty = "Standard";
-  dimscale = 1.0;
-  dimlfac = 1.0;
-  dimtfac = 1.0;
-  dimfxl = 1.0;
-  dimdli = 0.38;
-  dimrnd = 0.0;
-  dimdle = 0.0;
-  dimtp = 0.0;
-  dimtm = 0.0;
-  dimtsz = 0.0;
-  dimtvp = 0.0;
-  dimaltf = 25.4;
-  dimtol = 0;
-  dimlim = 0;
-  dimse1 = 0;
-  dimse2 = 0;
-  dimtad = 0;
-  dimzin = 0;
-  dimtoh = 1;
-  dimtolj = 1;
-  dimalt = 0;
-  dimtofl = 0;
-  dimsah = 0;
-  dimtix = 0;
-  dimsoxd = 0;
-  dimfxlon = 0;
-  dimaltd = 2;
-  dimunit = 2;
-  dimaltu = 2;
-  dimalttd = 2;
-  dimlunit = 2;
-  dimclrd = 0;
-  dimclre = 0;
-  dimclrt = 0;
-  dimjust = 0;
-  dimupt = 0;
-  dimazin = 0;
-  dimaltz = 0;
-  dimaltttz = 0;
-  dimtzin = 0;
-  dimfrac = 0;
-  dimtih = 0;
-  dimadec = 0;
-  dimaunit = 0;
-  dimsd1 = 0;
-  dimsd2 = 0;
-  dimtmove = 0;
-  dimaltrnd = 0.0;
-  dimdec = 4;
-  dimtdec = 4;
-  dimfit = 3;
-  dimatfit = 3;
-  dimdsep = '.';
-  dimlwd = -2;
-  dimlwe = -2;
-  DRW_TableEntry::Reset();
-}
-
-void DRW_Linetype::ParseCode(int code, dxfReader* reader) {
-  switch (code) {
-    case 3:
-      desc = reader->GetUtf8String();
-      break;
-    case 73:
-      size = reader->GetInt32();
-      path.reserve(size);
-      break;
-    case 40:
-      length = reader->GetDouble();
-      break;
-    case 49:
-      path.push_back(reader->GetDouble());
-      pathIdx++;
-      break;
-      /*    case 74:
-            haveShape = reader->GetInt32();
-            break;*/
-    default:
-      DRW_TableEntry::ParseCode(code, reader);
-      break;
-  }
-}
-
-void DRW_Linetype::Reset() {
-  desc = "";
-  size = 0;
-  length = 0.0;
-  pathIdx = 0;
-  DRW_TableEntry::Reset();
-}
-
-void DRW_Linetype::Update() {
-  double d = 0;
-  size = static_cast<int>(path.size());
-  for (int i = 0; i < size; i++) { d += fabs(path.at(i)); }
-  length = d;
-}
-
-void DRW_Layer::ParseCode(int code, dxfReader* reader) {
-  switch (code) {
-    case 6:
-      lineType = reader->GetUtf8String();
-      break;
-    case 62:
-      color = reader->GetInt32();
-      break;
-    case 290:
-      plotF = reader->GetBool();
-      break;
-    case 370:
-      lWeight = DRW_LW_Conv::dxfInt2lineWidth(reader->GetInt32());
-      break;
-    case 390:
-      handlePlotS = reader->GetString();
-      break;
-    case 347:
-      handleMaterialS = reader->GetString();
-      break;
-    case 420:
-      color24 = reader->GetInt32();
-      break;
-    default:
-      DRW_TableEntry::ParseCode(code, reader);
-      break;
-  }
-}
-
-void DRW_Layer::Reset() {
-  lineType = "CONTINUOUS";
-  color = 7;  // default BYLAYER (256)
-  plotF = true;  // default TRUE (plot yes)
-  lWeight = DRW_LW_Conv::widthDefault;  // default BYDEFAULT (dxf -3)
-  color24 = -1;  // default -1 not set
-  DRW_TableEntry::Reset();
-}
-
-
-void DRW_Textstyle::ParseCode(int code, dxfReader* reader) {
-  switch (code) {
-    case 3:
-      font = reader->GetUtf8String();
-      break;
-    case 4:
-      bigFont = reader->GetUtf8String();
-      break;
-    case 40:
-      height = reader->GetDouble();
-      break;
-    case 41:
-      width = reader->GetDouble();
-      break;
-    case 50:
-      oblique = reader->GetDouble();
-      break;
-    case 42:
-      lastHeight = reader->GetDouble();
-      break;
-    case 71:
-      genFlag = reader->GetInt32();
-      break;
-    case 1071:
-      fontFamily = reader->GetInt32();
-      break;
-    default:
-      DRW_TableEntry::ParseCode(code, reader);
-      break;
-  }
-}
-
-void DRW_Vport::ParseCode(int code, dxfReader* reader) {
-  switch (code) {
-    case 10:
-      lowerLeft.x = reader->GetDouble();
-      break;
-    case 20:
-      lowerLeft.y = reader->GetDouble();
-      break;
-    case 11:
-      upperRight.x = reader->GetDouble();
-      break;
-    case 21:
-      upperRight.y = reader->GetDouble();
-      break;
-    case 12:
-      center.x = reader->GetDouble();
-      break;
-    case 22:
-      center.y = reader->GetDouble();
-      break;
-    case 13:
-      snapBase.x = reader->GetDouble();
-      break;
-    case 23:
-      snapBase.y = reader->GetDouble();
-      break;
-    case 14:
-      snapSpacing.x = reader->GetDouble();
-      break;
-    case 24:
-      snapSpacing.y = reader->GetDouble();
-      break;
-    case 15:
-      gridSpacing.x = reader->GetDouble();
-      break;
-    case 25:
-      gridSpacing.y = reader->GetDouble();
-      break;
-    case 16:
-      viewDir.x = reader->GetDouble();
-      break;
-    case 26:
-      viewDir.y = reader->GetDouble();
-      break;
-    case 36:
-      viewDir.z = reader->GetDouble();
-      break;
-    case 17:
-      viewTarget.x = reader->GetDouble();
-      break;
-    case 27:
-      viewTarget.y = reader->GetDouble();
-      break;
-    case 37:
-      viewTarget.z = reader->GetDouble();
-      break;
-    case 40:
-      height = reader->GetDouble();
-      break;
-    case 41:
-      ratio = reader->GetDouble();
-      break;
-    case 42:
-      lensHeight = reader->GetDouble();
-      break;
-    case 43:
-      frontClip = reader->GetDouble();
-      break;
-    case 44:
-      backClip = reader->GetDouble();
-      break;
-    case 50:
-      snapAngle = reader->GetDouble();
-      break;
-    case 51:
-      twistAngle = reader->GetDouble();
-      break;
-    case 71:
-      viewMode = reader->GetInt32();
-      break;
-    case 72:
-      circleZoom = reader->GetInt32();
-      break;
-    case 73:
-      fastZoom = reader->GetInt32();
-      break;
-    case 74:
-      ucsIcon = reader->GetInt32();
-      break;
-    case 75:
-      snap = reader->GetInt32();
-      break;
-    case 76:
-      grid = reader->GetInt32();
-      break;
-    case 77:
-      snapStyle = reader->GetInt32();
-      break;
-    case 78:
-      snapIsopair = reader->GetInt32();
-      break;
-    default:
-      DRW_TableEntry::ParseCode(code, reader);
-      break;
-  }
-}
-
-void DRW_Vport::Reset() {
-  upperRight.x = 1.0;
-  upperRight.y = 1.0;
-  snapSpacing.x = 10.0;
-  snapSpacing.y = 10.0;
-  gridSpacing = snapSpacing;
-  center.x = 0.651828;
-  center.y = -0.16;
-  viewDir.z = 1;
-  height = 5.13732;
-  ratio = 2.4426877;
-  lensHeight = 50;
-  frontClip = 0.0;
-  backClip = 0.0;
-  snapAngle = 0.0;
-  twistAngle = 0.0;
-  viewMode = 0;
-  snap = 0;
-  grid = 0;
-  snapStyle = 0;
-  snapIsopair = 0;
-  fastZoom = 1;
-  circleZoom = 100;
-  ucsIcon = 3;
-  gridBehavior = 7;
-  DRW_TableEntry::Reset();
+  m_inReactors = false;
+  m_inXDictionary = false;
 }
 
 void DRW_ImageDef::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 1:
-      name = reader->GetUtf8String();
+      m_fileNameOfImage = reader->GetUtf8String();
       break;
-    case 5:
-      handle = reader->GetHandleString();
+    case 90:
+      imgVersion = reader->GetInt32();
       break;
     case 10:
-      u = reader->GetDouble();
+      m_uImageSizeInPixels = reader->GetDouble();
       break;
     case 20:
-      v = reader->GetDouble();
+      m_vImageSizeInPixels = reader->GetDouble();
       break;
     case 11:
-      up = reader->GetDouble();
+      m_uSizeOfOnePixel = reader->GetDouble();
       break;
     case 12:
-      vp = reader->GetDouble();
-      break;
-    case 21:
-      vp = reader->GetDouble();
+      [[fallthrough]];  // Group code 12 is used for the v size of one pixel in the DXF documentation.
+    case 21:  // However, we will always write group code 21 for the v size of one pixel.
+      m_vSizeOfOnePixel = reader->GetDouble();
       break;
     case 280:
-      loaded = reader->GetInt32();
+      m_imageIsLoadedFlag = reader->GetInt32();
       break;
     case 281:
-      resolution = reader->GetInt32();
+      m_resolutionUnits = reader->GetInt32();
       break;
     default:
+      DRW_ObjectEntry::ParseCode(code, reader);
       break;
   }
 }
 
 void DRW_ImageDef::Reset() {
   imgVersion = 0;
-  u = 0.0;
-  v = 0.0;
-  up = 0.0;
-  vp = 0.0;
-  loaded = 0;
-  resolution = 0;
-  DRW_TableEntry::Reset();
+  m_uImageSizeInPixels = 0.0;
+  m_vImageSizeInPixels = 0.0;
+  m_uSizeOfOnePixel = 0.0;
+  m_vSizeOfOnePixel = 0.0;
+  m_imageIsLoadedFlag = 0;
+  m_resolutionUnits = 0;
+  DRW_ObjectEntry::Reset();
 }

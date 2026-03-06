@@ -1111,7 +1111,7 @@ DRW_ImageDef* dxfRW::WriteImage(DRW_Image* ent, std::string name) {
   // search if exist imagedef with this mane (image inserted more than 1 time)
   DRW_ImageDef* id = nullptr;
   for (unsigned int i = 0; i < m_imageDef.size(); i++) {
-    if (m_imageDef.at(i)->name == name) {
+    if (m_imageDef.at(i)->m_fileNameOfImage == name) {
       id = m_imageDef.at(i);
       continue;
     }
@@ -1121,7 +1121,7 @@ DRW_ImageDef* dxfRW::WriteImage(DRW_Image* ent, std::string name) {
     m_imageDef.push_back(id);
     id->handle = ++m_entityCount;
   }
-  id->name = name;
+  id->m_fileNameOfImage = name;
   std::string idReactor = ToHexString(++m_entityCount);
 
   m_writer->WriteString(0, "IMAGE");
@@ -1522,10 +1522,10 @@ bool dxfRW::WriteObjects() {
     m_writer->WriteInt16(281, 1);
     for (unsigned int i = 0; i < m_imageDef.size(); i++) {
       size_t f1, f2;
-      f1 = m_imageDef.at(i)->name.find_last_of("/\\");
-      f2 = m_imageDef.at(i)->name.find_last_of('.');
+      f1 = m_imageDef.at(i)->m_fileNameOfImage.find_last_of("/\\");
+      f2 = m_imageDef.at(i)->m_fileNameOfImage.find_last_of('.');
       ++f1;
-      m_writer->WriteString(3, m_imageDef.at(i)->name.substr(f1, f2 - f1));
+      m_writer->WriteString(3, m_imageDef.at(i)->m_fileNameOfImage.substr(f1, f2 - f1));
       m_writer->WriteString(350, ToHexString(m_imageDef.at(i)->handle));
     }
   }
@@ -1533,25 +1533,24 @@ bool dxfRW::WriteObjects() {
     DRW_ImageDef* id = m_imageDef.at(i);
     m_writer->WriteString(0, "IMAGEDEF");
     m_writer->WriteString(5, ToHexString(id->handle));
-    if (m_version > DRW::Version::AC1014) {
-      //            m_writer->WriteString(330, "0"); handle to DICTIONARY
-    }
+    if (m_version > DRW::Version::AC1014) { m_writer->WriteString(330, imgDictH); }
     m_writer->WriteString(102, "{ACAD_REACTORS");
     std::map<std::string, std::string>::iterator it;
     for (it = id->reactors.begin(); it != id->reactors.end(); ++it) { m_writer->WriteString(330, it->first); }
     m_writer->WriteString(102, "}");
     m_writer->WriteString(100, "AcDbRasterImageDef");
     m_writer->WriteInt32(90, 0);  // version 0=R14 to v2010
-    m_writer->WriteUtf8String(1, id->name);
-    m_writer->WriteDouble(10, id->u);
-    m_writer->WriteDouble(20, id->v);
-    m_writer->WriteDouble(11, id->up);
-    m_writer->WriteDouble(21, id->vp);
-    m_writer->WriteInt16(280, id->loaded);
-    m_writer->WriteInt16(281, id->resolution);
+    m_writer->WriteUtf8String(1, id->m_fileNameOfImage);
+    m_writer->WriteDouble(10, id->m_uImageSizeInPixels);
+    m_writer->WriteDouble(20, id->m_vImageSizeInPixels);
+    m_writer->WriteDouble(11, id->m_uSizeOfOnePixel);
+    m_writer->WriteDouble(21, id->m_vSizeOfOnePixel);
+    m_writer->WriteInt16(280, id->m_imageIsLoadedFlag);
+    m_writer->WriteInt16(281, id->m_resolutionUnits);
   }
   // no more needed imageDef, delete it
-  while (!m_imageDef.empty()) { m_imageDef.pop_back(); }
+  for (auto* id_ : m_imageDef) { delete id_; }
+  m_imageDef.clear();
 
   return true;
 }
@@ -2581,13 +2580,12 @@ bool dxfRW::ProcessObjects() {
   DRW_DBG("dxfRW::ProcessObjects\n");
   int code;
   if (!m_reader->ReadRec(&code)) { return false; }
-  bool next = true;
   if (code == 0) {
     m_nextEntity = m_reader->GetString();
   } else {
     return false;  // first record in objects is 0
   }
-  do {
+  for (;;) {
     if (m_nextEntity == "ENDSEC") {
       return true;  // found ENDSEC terminate
     } else if (m_nextEntity == "IMAGEDEF") {
@@ -2599,9 +2597,7 @@ bool dxfRW::ProcessObjects() {
         return false;  // end of file without ENDSEC
       }
     }
-
-  } while (next);
-  return true;
+  }
 }
 
 bool dxfRW::ProcessImageDef() {

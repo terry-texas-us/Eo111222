@@ -30,7 +30,7 @@
     <ClInclude Include="src\drw_interface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\drw_objects.h">
+    <ClInclude Include="src\drw_tables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\intern\drw_cptables.h">
@@ -54,6 +54,9 @@
     <ClInclude Include="src\intern\dxfLiteralStrings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\drw_objects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\drw_classes.cpp">
@@ -65,7 +68,7 @@
     <ClCompile Include="src\drw_header.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\drw_objects.cpp">
+    <ClCompile Include="src\drw_tables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\intern\drw_dbg.cpp">
@@ -81,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\libdxfrw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drw_objects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

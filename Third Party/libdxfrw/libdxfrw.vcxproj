@@ -159,6 +159,7 @@
     <ClInclude Include="src\drw_header.h" />
     <ClInclude Include="src\drw_interface.h" />
     <ClInclude Include="src\drw_objects.h" />
+    <ClInclude Include="src\drw_tables.h" />
     <ClInclude Include="src\intern\drw_cptables.h" />
     <ClInclude Include="src\intern\drw_dbg.h" />
     <ClInclude Include="src\intern\drw_textcodec.h" />
@@ -172,6 +173,7 @@
     <ClCompile Include="src\drw_entities.cpp" />
     <ClCompile Include="src\drw_header.cpp" />
     <ClCompile Include="src\drw_objects.cpp" />
+    <ClCompile Include="src\drw_tables.cpp" />
     <ClCompile Include="src\intern\drw_dbg.cpp" />
     <ClCompile Include="src\intern\drw_textcodec.cpp" />
     <ClCompile Include="src\intern\dxfreader.cpp" />
