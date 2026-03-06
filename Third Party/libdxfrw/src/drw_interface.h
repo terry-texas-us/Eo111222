@@ -23,11 +23,11 @@ class DRW_Interface {
   virtual void addClass(const DRW_Class& data) = 0;
 
   /** Called for every line Type.  */
-  virtual void addLType(const DRW_LType& data) = 0;
+  virtual void addLinetype(const DRW_Linetype& data) = 0;
   /** Called for every layer. */
   virtual void addLayer(const DRW_Layer& data) = 0;
   /** Called for every dim style. */
-  virtual void addDimStyle(const DRW_Dimstyle& data) = 0;
+  virtual void addDimStyle(const DRW_DimStyle& data) = 0;
   /** Called for every VPORT table. */
   virtual void addVport(const DRW_Vport& data) = 0;
   /** Called for every text style. */

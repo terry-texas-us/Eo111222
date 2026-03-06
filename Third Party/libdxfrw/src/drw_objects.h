@@ -10,9 +10,21 @@ class dxfWriter;
 
 namespace DRW {
 
-enum TTYPE { UNKNOWNT, LTYPE, LAYER, STYLE, DIMSTYLE, VPORT, BLOCK_RECORD, APPID, IMAGEDEF };
+enum class SymbolTable : std::uint8_t {
+  Unknown,
+  Block,
+  DimStyle,
+  Layer,
+  Linetype,
+  RegApp,
+  TextStyle,
+  UCS,
+  View,
+  Viewport,
+  IMAGEDEF
+};
 
-// pending VIEW, UCS, VP_ENT_HDR, GROUP, MLINESTYLE, LONG_TRANSACTION, XRECORD,
+// pending VP_ENT_HDR, GROUP, MLINESTYLE, LONG_TRANSACTION, XRECORD,
 // ACDBPLACEHOLDER, VBA_PROJECT, ACAD_TABLE, CELLSTYLEMAP, DBCOLOR, DICTIONARYVAR,
 // DICTIONARYWDFLT, FIELD, IDBUFFER, IMAGEDEFREACTOR, LAYER_INDEX, LAYOUT
 // MATERIAL, PLACEHOLDER, PLOTSETTINGS, RASTERVARIABLES, SCALE, SORTENTSTABLE,
@@ -22,10 +34,10 @@ enum TTYPE { UNKNOWNT, LTYPE, LAYER, STYLE, DIMSTYLE, VPORT, BLOCK_RECORD, APPID
 
 class DRW_TableEntry {
  public:
-  DRW_TableEntry() : tType{DRW::UNKNOWNT}, flags{}, parentHandle{}, m_currentVariant{} {}
+  DRW_TableEntry() : tType{DRW::SymbolTable::Unknown}, flags{}, parentHandle{}, m_currentVariant{} {}
 
  protected:
-  explicit DRW_TableEntry(DRW::TTYPE tableType) noexcept
+  explicit DRW_TableEntry(DRW::SymbolTable tableType) noexcept
       : tType{tableType}, flags{}, parentHandle{}, m_currentVariant{} {}
 
  public:
@@ -48,16 +60,10 @@ class DRW_TableEntry {
 
  protected:
   void ParseCode(int code, dxfReader* reader);
-
-  void Reset() {
-    flags = 0;
-    for (auto* variant : extData) { delete variant; }
-    extData.clear();
-    m_currentVariant = nullptr;
-  }
+  void Reset();
 
  public:
-  enum DRW::TTYPE tType{DRW::UNKNOWNT};  // Group code 0
+  DRW::SymbolTable tType{DRW::SymbolTable::Unknown};  // Group code 0
   std::uint32_t handle{};  // Group code 5
   int parentHandle{};  // Group code 330
   UTF8STRING name;  // Group code 2
@@ -76,38 +82,15 @@ class DRW_TableEntry {
  * include properties such as the dimension scale factor (code 40), dimension line extension (code 44), and dimension
  * text placement (code 71), which can affect how dimensions are displayed in the drawing.
  */
-class DRW_Dimstyle : public DRW_TableEntry {
+class DRW_DimStyle : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Dimstyle() : DRW_TableEntry(DRW::DIMSTYLE) { Reset(); }
+  DRW_DimStyle() : DRW_TableEntry(DRW::SymbolTable::DimStyle) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
-
-  void Reset() {
-    dimasz = dimtxt = dimexe = 0.18;
-    dimexo = 0.0625;
-    dimgap = dimcen = 0.09;
-    dimtxsty = "Standard";
-    dimscale = dimlfac = dimtfac = dimfxl = 1.0;
-    dimdli = 0.38;
-    dimrnd = dimdle = dimtp = dimtm = dimtsz = dimtvp = 0.0;
-    dimaltf = 25.4;
-    dimtol = dimlim = dimse1 = dimse2 = dimtad = dimzin = 0;
-    dimtoh = dimtolj = 1;
-    dimalt = dimtofl = dimsah = dimtix = dimsoxd = dimfxlon = 0;
-    dimaltd = dimunit = dimaltu = dimalttd = dimlunit = 2;
-    dimclrd = dimclre = dimclrt = dimjust = dimupt = 0;
-    dimazin = dimaltz = dimaltttz = dimtzin = dimfrac = 0;
-    dimtih = dimadec = dimaunit = dimsd1 = dimsd2 = dimtmove = 0;
-    dimaltrnd = 0.0;
-    dimdec = dimtdec = 4;
-    dimfit = dimatfit = 3;
-    dimdsep = '.';
-    dimlwd = dimlwe = -2;
-    DRW_TableEntry::Reset();
-  }
+  void Reset();
 
  public:
   UTF8STRING dimpost;  // Group code 3
@@ -189,24 +172,16 @@ class DRW_Dimstyle : public DRW_TableEntry {
  * can also include properties such as the alignment code (code 72) and the complex linetype type flag (code 74),
  * which can affect how the linetype is rendered in the drawing.
  */
-class DRW_LType : public DRW_TableEntry {
+class DRW_Linetype : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_LType() : DRW_TableEntry(DRW::LTYPE) { Reset(); }
+  DRW_Linetype() : DRW_TableEntry(DRW::SymbolTable::Linetype) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
-
-  void Reset() {
-    desc = "";
-    size = 0;
-    length = 0.0;
-    pathIdx = 0;
-    DRW_TableEntry::Reset();
-  }
-
-  void update();
+  void Reset();
+  void Update();
 
  public:
   UTF8STRING desc;  // Group code 3
@@ -229,19 +204,11 @@ class DRW_Layer : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Layer() : DRW_TableEntry(DRW::LAYER) { Reset(); }
+  DRW_Layer() : DRW_TableEntry(DRW::SymbolTable::Layer) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
-
-  void Reset() {
-    lineType = "CONTINUOUS";
-    color = 7;  // default BYLAYER (256)
-    plotF = true;  // default TRUE (plot yes)
-    lWeight = DRW_LW_Conv::widthDefault;  // default BYDEFAULT (dxf -3)
-    color24 = -1;  // default -1 not set
-    DRW_TableEntry::Reset();
-  }
+  void Reset();
 
  public:
   UTF8STRING lineType;  // Group code 6
@@ -261,20 +228,15 @@ class DRW_Layer : public DRW_TableEntry {
  * include properties such as flags (code 70), which can indicate whether the block is anonymous, external, or has
  * attributes.
  */
-class DRW_Block_Record : public DRW_TableEntry {
+class DRW_BlockRecord : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Block_Record() : DRW_TableEntry(DRW::BLOCK_RECORD) { Reset(); }
+  DRW_BlockRecord() : DRW_TableEntry(DRW::SymbolTable::Block) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
-
-  void Reset() {
-    m_blockInsertionUnits = 0;
-    flags = 0;
-    DRW_TableEntry::Reset();
-  }
+  void Reset();
 
  public:
   int m_blockInsertionUnits;  // Group code 70
@@ -293,12 +255,12 @@ class DRW_Textstyle : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Textstyle() : DRW_TableEntry(DRW::STYLE) { Reset(); }
+  DRW_Textstyle() : DRW_TableEntry(DRW::SymbolTable::TextStyle) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
 
-  void reset() {
+  void Reset() {
     height = oblique = 0.0;
     width = lastHeight = 1.0;
     font = "txt";
@@ -332,26 +294,9 @@ class DRW_Vport : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Vport() : DRW_TableEntry(DRW::VPORT) { Reset(); }
+  DRW_Vport() : DRW_TableEntry(DRW::SymbolTable::Viewport) { Reset(); }
 
-  void Reset() {
-    upperRight.x = upperRight.y = 1.0;
-    snapSpacing.x = snapSpacing.y = 10.0;
-    gridSpacing = snapSpacing;
-    center.x = 0.651828;
-    center.y = -0.16;
-    viewDir.z = 1;
-    height = 5.13732;
-    ratio = 2.4426877;
-    lensHeight = 50;
-    frontClip = backClip = snapAngle = twistAngle = 0.0;
-    viewMode = snap = grid = snapStyle = snapIsopair = 0;
-    fastZoom = 1;
-    circleZoom = 100;
-    ucsIcon = 3;
-    gridBehavior = 7;
-    DRW_TableEntry::Reset();
-  }
+  void Reset();
 
  protected:
   void ParseCode(int code, dxfReader* reader);
@@ -401,7 +346,7 @@ class DRW_ImageDef : public DRW_TableEntry {  //
   friend class dxfRW;
 
  public:
-  DRW_ImageDef() : DRW_TableEntry(DRW::IMAGEDEF) { Reset(); }
+  DRW_ImageDef() : DRW_TableEntry(DRW::SymbolTable::IMAGEDEF) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
@@ -432,7 +377,7 @@ class DRW_AppId : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_AppId() : DRW_TableEntry(DRW::APPID) { Reset(); }
+  DRW_AppId() : DRW_TableEntry(DRW::SymbolTable::RegApp) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader) { DRW_TableEntry::ParseCode(code, reader); }

@@ -35,7 +35,7 @@ class EoDbDrwInterface : public DRW_Interface {
     ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addAppId called\n");
     ConvertAppIdTable(appId, m_document);
   }
-  void addDimStyle(const DRW_Dimstyle& dimStyle) override {
+  void addDimStyle(const DRW_DimStyle& dimStyle) override {
     ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addDimStyle called\n");
     ConvertDimStyle(dimStyle, m_document);
   }
@@ -44,8 +44,8 @@ class EoDbDrwInterface : public DRW_Interface {
     ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLayer called\n");
     ConvertLayerTable(layer, m_document);
   }
-  void addLType(const DRW_LType& lType) override {
-    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLType called\n");
+  void addLinetype(const DRW_Linetype& lType) override {
+    ATLTRACE2(traceGeneral, 3, L"DRW_Interface::addLinetype called\n");
     ConvertLinetypesTable(lType, m_document);
   }
   void addTextStyle(const DRW_Textstyle& textStyle) override {
@@ -260,7 +260,7 @@ class EoDbDrwInterface : public DRW_Interface {
   void ConvertClassesSection(const DRW_Class& class_, AeSysDoc* document);
 
   void ConvertAppIdTable(const DRW_AppId& appId, AeSysDoc* document);
-  void ConvertDimStyle(const DRW_Dimstyle& dimStyle, AeSysDoc* document);
+  void ConvertDimStyle(const DRW_DimStyle& dimStyle, AeSysDoc* document);
 
   /** @brief Converts a DRW_Layer object to the corresponding AeSys document representation.
    *
@@ -272,12 +272,12 @@ class EoDbDrwInterface : public DRW_Interface {
    */
   void ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* document);
 
-  /** @brief Converts a DRW_LType object to the corresponding AeSys document representation.
+  /** @brief Converts a DRW_Linetype object to the corresponding AeSys document representation.
    *
-   * This method takes a DRW_LType object, which represents line type information from a DXF/DWG file, and converts it
+   * This method takes a DRW_Linetype object, which represents line type information from a DXF/DWG file, and converts it
    * into the appropriate format for storage in the provided AeSysDoc document.
    *
-   * @param lineType The DRW_LType object containing line type data to be converted.
+   * @param lineType The DRW_Linetype object containing line type data to be converted.
    * @param document A pointer to the AeSysDoc where the converted line type will be stored.
    * @note unimplemented complex linetype elements (group code 74)
    *  Complex linetype element type (one per element). Default is 0 (no embedded shape/text). The following codes are
@@ -292,7 +292,7 @@ class EoDbDrwInterface : public DRW_Interface {
    * (optional); multiple entries can exist group code 45 - Y = Y offset value (optional); multiple entries can exist
    *   group code 9 - Text string (one per element if code 74 = 2)
    */
-  void ConvertLinetypesTable(const DRW_LType& lineType, AeSysDoc* document);
+  void ConvertLinetypesTable(const DRW_Linetype& lineType, AeSysDoc* document);
 
   /** @brief Converts a DRW_Textstyle object to the corresponding AeSys document representation.
    *

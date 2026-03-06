@@ -62,7 +62,14 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_Block_Record::ParseCode(int code, dxfReader* reader) {
+void DRW_TableEntry::Reset() {
+  flags = 0;
+  for (auto* variant : extData) { delete variant; }
+  extData.clear();
+  m_currentVariant = nullptr;
+}
+
+void DRW_BlockRecord::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 70:
       m_blockInsertionUnits = reader->GetInt32();
@@ -73,7 +80,13 @@ void DRW_Block_Record::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_Dimstyle::ParseCode(int code, dxfReader* reader) {
+void DRW_BlockRecord::Reset() {
+  m_blockInsertionUnits = 0;
+  flags = 0;
+  DRW_TableEntry::Reset();
+}
+
+void DRW_DimStyle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 105:
       handle = reader->GetHandleString();
@@ -291,7 +304,72 @@ void DRW_Dimstyle::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_LType::ParseCode(int code, dxfReader* reader) {
+void DRW_DimStyle::Reset() {
+  dimasz = 0.18;
+  dimtxt = 0.18;
+  dimexe = 0.18;
+  dimexo = 0.0625;
+  dimgap = dimcen = 0.09;
+  dimtxsty = "Standard";
+  dimscale = 1.0;
+  dimlfac = 1.0;
+  dimtfac = 1.0;
+  dimfxl = 1.0;
+  dimdli = 0.38;
+  dimrnd = 0.0;
+  dimdle = 0.0;
+  dimtp = 0.0;
+  dimtm = 0.0;
+  dimtsz = 0.0;
+  dimtvp = 0.0;
+  dimaltf = 25.4;
+  dimtol = 0;
+  dimlim = 0;
+  dimse1 = 0;
+  dimse2 = 0;
+  dimtad = 0;
+  dimzin = 0;
+  dimtoh = 1;
+  dimtolj = 1;
+  dimalt = 0;
+  dimtofl = 0;
+  dimsah = 0;
+  dimtix = 0;
+  dimsoxd = 0;
+  dimfxlon = 0;
+  dimaltd = 2;
+  dimunit = 2;
+  dimaltu = 2;
+  dimalttd = 2;
+  dimlunit = 2;
+  dimclrd = 0;
+  dimclre = 0;
+  dimclrt = 0;
+  dimjust = 0;
+  dimupt = 0;
+  dimazin = 0;
+  dimaltz = 0;
+  dimaltttz = 0;
+  dimtzin = 0;
+  dimfrac = 0;
+  dimtih = 0;
+  dimadec = 0;
+  dimaunit = 0;
+  dimsd1 = 0;
+  dimsd2 = 0;
+  dimtmove = 0;
+  dimaltrnd = 0.0;
+  dimdec = 4;
+  dimtdec = 4;
+  dimfit = 3;
+  dimatfit = 3;
+  dimdsep = '.';
+  dimlwd = -2;
+  dimlwe = -2;
+  DRW_TableEntry::Reset();
+}
+
+void DRW_Linetype::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 3:
       desc = reader->GetUtf8String();
@@ -316,7 +394,15 @@ void DRW_LType::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_LType::update() {
+void DRW_Linetype::Reset() {
+  desc = "";
+  size = 0;
+  length = 0.0;
+  pathIdx = 0;
+  DRW_TableEntry::Reset();
+}
+
+void DRW_Linetype::Update() {
   double d = 0;
   size = static_cast<int>(path.size());
   for (int i = 0; i < size; i++) { d += fabs(path.at(i)); }
@@ -351,6 +437,16 @@ void DRW_Layer::ParseCode(int code, dxfReader* reader) {
       break;
   }
 }
+
+void DRW_Layer::Reset() {
+  lineType = "CONTINUOUS";
+  color = 7;  // default BYLAYER (256)
+  plotF = true;  // default TRUE (plot yes)
+  lWeight = DRW_LW_Conv::widthDefault;  // default BYDEFAULT (dxf -3)
+  color24 = -1;  // default -1 not set
+  DRW_TableEntry::Reset();
+}
+
 
 void DRW_Textstyle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
@@ -491,14 +587,31 @@ void DRW_Vport::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_ImageDef::Reset() {
-  imgVersion = 0;
-  u = 0.0;
-  v = 0.0;
-  up = 0.0;
-  vp = 0.0;
-  loaded = 0;
-  resolution = 0;
+void DRW_Vport::Reset() {
+  upperRight.x = 1.0;
+  upperRight.y = 1.0;
+  snapSpacing.x = 10.0;
+  snapSpacing.y = 10.0;
+  gridSpacing = snapSpacing;
+  center.x = 0.651828;
+  center.y = -0.16;
+  viewDir.z = 1;
+  height = 5.13732;
+  ratio = 2.4426877;
+  lensHeight = 50;
+  frontClip = 0.0;
+  backClip = 0.0;
+  snapAngle = 0.0;
+  twistAngle = 0.0;
+  viewMode = 0;
+  snap = 0;
+  grid = 0;
+  snapStyle = 0;
+  snapIsopair = 0;
+  fastZoom = 1;
+  circleZoom = 100;
+  ucsIcon = 3;
+  gridBehavior = 7;
   DRW_TableEntry::Reset();
 }
 
@@ -534,4 +647,15 @@ void DRW_ImageDef::ParseCode(int code, dxfReader* reader) {
     default:
       break;
   }
+}
+
+void DRW_ImageDef::Reset() {
+  imgVersion = 0;
+  u = 0.0;
+  v = 0.0;
+  up = 0.0;
+  vp = 0.0;
+  loaded = 0;
+  resolution = 0;
+  DRW_TableEntry::Reset();
 }

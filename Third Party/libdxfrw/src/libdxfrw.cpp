@@ -166,8 +166,8 @@ bool dxfRW::WriteEntity(DRW_Entity* ent) {
   return true;
 }
 
-bool dxfRW::WriteLineType(DRW_LType* ent) {
-  std::string strname = ent->name;
+bool dxfRW::WriteLinetype(DRW_Linetype* lineType) {
+  std::string strname = lineType->name;
 
   transform(strname.begin(), strname.end(), strname.begin(), ::toupper);
   // do not write linetypes handled by library
@@ -178,17 +178,17 @@ bool dxfRW::WriteLineType(DRW_LType* ent) {
   m_writer->WriteString(330, "5");
   m_writer->WriteString(100, "AcDbSymbolTableRecord");
   m_writer->WriteString(100, "AcDbLinetypeTableRecord");
-  m_writer->WriteUtf8String(2, ent->name);
+  m_writer->WriteUtf8String(2, lineType->name);
 
-  m_writer->WriteInt16(70, ent->flags);
-  m_writer->WriteUtf8String(3, ent->desc);
-  ent->update();
+  m_writer->WriteInt16(70, lineType->flags);
+  m_writer->WriteUtf8String(3, lineType->desc);
+  lineType->Update();
   m_writer->WriteInt16(72, 65);
-  m_writer->WriteInt16(73, ent->size);
-  m_writer->WriteDouble(40, ent->length);
+  m_writer->WriteInt16(73, lineType->size);
+  m_writer->WriteDouble(40, lineType->length);
 
-  for (unsigned int i = 0; i < ent->path.size(); i++) {
-    m_writer->WriteDouble(49, ent->path.at(i));
+  for (unsigned int i = 0; i < lineType->path.size(); i++) {
+    m_writer->WriteDouble(49, lineType->path.at(i));
     m_writer->WriteInt16(74, 0);
   }
   return true;
@@ -327,7 +327,7 @@ bool dxfRW::WriteVport(DRW_Vport* ent) {
   return true;
 }
 
-bool dxfRW::WriteDimstyle(DRW_Dimstyle* ent) {
+bool dxfRW::WriteDimStyle(DRW_DimStyle* ent) {
   m_writer->WriteString(0, "DIMSTYLE");
   if (!m_standardDimensionStyle) {
     std::string name = ent->name;
@@ -1367,9 +1367,9 @@ bool dxfRW::WriteTables() {
   m_standardDimensionStyle = false;
   m_interface->writeDimstyles();
   if (!m_standardDimensionStyle) {
-    DRW_Dimstyle dsty;
+    DRW_DimStyle dsty;
     dsty.name = "Standard";
-    WriteDimstyle(&dsty);
+    WriteDimStyle(&dsty);
   }
   m_writer->WriteString(0, "ENDTAB");
 
@@ -1756,12 +1756,12 @@ bool dxfRW::ProcessLType() {
   int code;
   std::string sectionstr;
   bool reading = false;
-  DRW_LType ltype;
+  DRW_Linetype ltype;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       if (reading) {
-        ltype.update();
-        m_interface->addLType(ltype);
+        ltype.Update();
+        m_interface->addLinetype(ltype);
       }
       sectionstr = m_reader->GetString();
       if (sectionstr == "LTYPE") {
@@ -1807,7 +1807,7 @@ bool dxfRW::ProcessDimStyle() {
   int code;
   std::string sectionstr;
   bool reading{};
-  DRW_Dimstyle dimStyle;
+  DRW_DimStyle dimStyle;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       if (reading) { m_interface->addDimStyle(dimStyle); }

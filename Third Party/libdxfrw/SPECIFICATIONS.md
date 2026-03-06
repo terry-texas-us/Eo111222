@@ -64,9 +64,9 @@ dxfRW (Main API Class)
 │   └── Other entities
 └── DRW_Object (Non-geometric Objects)
     ├── DRW_Layer
-    ├── DRW_LType
+    ├── DRW_Linetype
     ├── DRW_Textstyle
-    ├── DRW_Dimstyle
+    ├── DRW_DimStyle
     └── Other objects
 ```
 
@@ -148,9 +148,9 @@ bool writeHatch(DRW_Hatch *ent);
 
 ```cpp
 bool writeLayer(DRW_Layer *ent);
-bool writeLineType(DRW_LType *ent);
+bool writeLineType(DRW_Linetype *ent);
 bool writeTextstyle(DRW_Textstyle *ent);
-bool writeDimstyle(DRW_Dimstyle *ent);
+bool writeDimstyle(DRW_DimStyle *ent);
 bool writeVport(DRW_Vport *ent);
 bool writeAppId(DRW_AppId *ent);
 ```
@@ -171,8 +171,8 @@ virtual void addHeader(const DRW_Header* data) = 0;
 
 ```cpp
 virtual void addLayer(const DRW_Layer& data) = 0;
-virtual void addLType(const DRW_LType& data) = 0;
-virtual void addDimStyle(const DRW_Dimstyle& data) = 0;
+virtual void addLinetype(const DRW_Linetype& data) = 0;
+virtual void addDimStyle(const DRW_DimStyle& data) = 0;
 virtual void addTextStyle(const DRW_Textstyle& data) = 0;
 virtual void addVport(const DRW_Vport& data) = 0;
 virtual void addAppId(const DRW_AppId& data) = 0;

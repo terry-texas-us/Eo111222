@@ -51,9 +51,9 @@ class dxfRW {
    * @return true if the file was successfully written; false if an error occurred during writing.
    */
   bool Write(DRW_Interface* interface_, DRW::Version version, bool binaryFile);
-  bool WriteLineType(DRW_LType* ent);
+  bool WriteLinetype(DRW_Linetype* ent);
   bool WriteLayer(DRW_Layer* ent);
-  bool WriteDimstyle(DRW_Dimstyle* ent);
+  bool WriteDimStyle(DRW_DimStyle* ent);
   bool WriteTextstyle(DRW_Textstyle* ent);
   bool WriteVport(DRW_Vport* ent);
   bool WriteAppId(DRW_AppId* ent);

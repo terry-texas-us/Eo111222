@@ -78,7 +78,7 @@ void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, [[maybe_unused]
   ATLTRACE2(traceGeneral, 3, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
 }
 
-void EoDbDrwInterface::ConvertDimStyle(const DRW_Dimstyle& dimStyle, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDrwInterface::ConvertDimStyle(const DRW_DimStyle& dimStyle, [[maybe_unused]] AeSysDoc* document) {
   std::wstring dimStyleName = Eo::MultiByteToWString(dimStyle.name.c_str());
   ATLTRACE2(traceGeneral, 3, L"DimStyle - Name: <%s> (unsupported in AeSys)\n", dimStyleName.c_str());
 }
@@ -143,7 +143,7 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
   // for affected viewports.
 }
 
-void EoDbDrwInterface::ConvertLinetypesTable(const DRW_LType& data, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertLinetypesTable(const DRW_Linetype& data, AeSysDoc* document) {
   std::wstring lineTypeName = Eo::MultiByteToWString(data.name.c_str());  // Linetype name (group code 2)
   std::wstring lineTypeDesc =
       Eo::MultiByteToWString(data.desc.c_str());  // Descriptive text for linetype (group code 3)
