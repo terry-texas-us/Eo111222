@@ -13,9 +13,9 @@
 #include "drw_interface.h"
 #include "drw_objects.h"
 
-// Minimal implementation of DRW_Interface
+// Minimal implementation of EoDxfInterface
 // In a real scenario, implement these methods to handle the parsed entities
-class EoDbDrwInterface : public DRW_Interface {
+class EoDbDrwInterface : public EoDxfInterface {
  public:
   EoDbDrwInterface(AeSysDoc* document) : m_document(document) {}
 
@@ -24,20 +24,20 @@ class EoDbDrwInterface : public DRW_Interface {
     ConvertHeaderSection(header, m_document);
   }
 
-  void addClass(const DRW_Class& class_) override {
+  void addClass(const EoDxfClass& class_) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addClass called\n");
     ConvertClassesSection(class_, m_document);
   }
 
   // Table objects
 
-  void addAppId(const DRW_AppId& appId) override {
+  void addAppId(const EoDxfAppId& appId) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addAppId called\n");
     ConvertAppIdTable(appId, m_document);
   }
-  void addDimStyle(const DRW_DimStyle& dimStyle) override {
+  void addDimStyle(const EoDxfDimensionStyle& dimensionStyle) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addDimStyle called\n");
-    ConvertDimStyle(dimStyle, m_document);
+    ConvertDimStyle(dimensionStyle, m_document);
   }
 
   void addLayer(const EoDxfLayer& layer) override {
@@ -48,18 +48,18 @@ class EoDbDrwInterface : public DRW_Interface {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLinetype called\n");
     ConvertLinetypesTable(lType, m_document);
   }
-  void addTextStyle(const DRW_Textstyle& textStyle) override {
+  void addTextStyle(const EoDxfTextStyle& textStyle) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addTextStyle called\n");
     ConvertTextStyleTable(textStyle, m_document);
   }
 
-  void addVport(const DRW_Vport& viewport) override {
+  void addVport(const EoDxfViewport& viewport) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addVport called\n");
     ConvertViewportTable(viewport, m_document);
   }
 
   // Blocks
-  void addBlock(const DRW_Block& block) override {
+  void addBlock(const EoDxfBlock& block) override {
     inBlockDefinition = true;
     blockName = Eo::MultiByteToWString(block.name.c_str());
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addBlock <%s>\n", blockName.c_str());
@@ -148,7 +148,7 @@ class EoDbDrwInterface : public DRW_Interface {
     }
   }
 
-  void addLeader(const DRW_Leader* leader) override { (void)leader; }
+  void addLeader(const EoDxfLeader* leader) override { (void)leader; }
   // LIGHT not implemented in DRW
 
   void addLine(const EoDxfLine& line) override {
@@ -239,7 +239,7 @@ class EoDbDrwInterface : public DRW_Interface {
   void addComment(const char* comment) override {
     ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addComment(%s)\n", comment);
   }
-  void linkImage(const DRW_ImageDef* imageDefinition) override { (void)imageDefinition; }
+  void linkImage(const EoDxfImageDefinition* imageDefinition) override { (void)imageDefinition; }
   void addKnot(const EoDxfEntity& /* knot */) override { countOfKnot++; }
 
   // Writing methods
@@ -258,10 +258,10 @@ class EoDbDrwInterface : public DRW_Interface {
       const EoDxfHeader* header, const std::string& keyToFind, EoDbHeaderSection& headerSection);
 
   void ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc* document);
-  void ConvertClassesSection(const DRW_Class& class_, AeSysDoc* document);
+  void ConvertClassesSection(const EoDxfClass& class_, AeSysDoc* document);
 
-  void ConvertAppIdTable(const DRW_AppId& appId, AeSysDoc* document);
-  void ConvertDimStyle(const DRW_DimStyle& dimStyle, AeSysDoc* document);
+  void ConvertAppIdTable(const EoDxfAppId& appId, AeSysDoc* document);
+  void ConvertDimStyle(const EoDxfDimensionStyle& dimensionStyle, AeSysDoc* document);
 
   /** @brief Converts a EoDxfLayer object to the corresponding AeSys document representation.
    *
@@ -300,25 +300,25 @@ class EoDbDrwInterface : public DRW_Interface {
    * This method takes a EoDxfTextstyle object, which represents text style information from a DXF/DWG file, and converts
    * it into the appropriate format for storage in the provided AeSysDoc document.
    *
-   * @param textStyle The DRW_Textstyle object containing text style data to be converted.
+   * @param textStyle The EoDxfTextStyle object containing text style data to be converted.
    * @param document A pointer to the AeSysDoc where the converted text style will be stored.
    * @note A style table item is also used to record shape file LOAD command requests. In this case the first bit (0x01)
    * is set in the 70 group flags and only the 3 group (shape file name) is meaningful (all the other groups are output,
    * however).
    */
-  void ConvertTextStyleTable(const DRW_Textstyle& textStyle, AeSysDoc* document);
+  void ConvertTextStyleTable(const EoDxfTextStyle& textStyle, AeSysDoc* document);
 
-  /** @brief Converts a DRW_Vport object to the corresponding AeSys document representation.
+  /** @brief Converts a EoDxfViewport object to the corresponding AeSys document representation.
    *
-   * This method takes a DRW_Vport object, which represents viewport information from a DXF/DWG file, and converts it
+   * This method takes a EoDxfViewport object, which represents viewport information from a DXF/DWG file, and converts it
    * into the appropriate format for storage in the provided AeSysDoc document.
    *
-   * @param viewport The DRW_Vport object containing viewport data to be converted.
+   * @param viewport The EoDxfViewport object containing viewport data to be converted.
    * @param document A pointer to the AeSysDoc where the converted viewport will be stored.
    */
-  void ConvertViewportTable(const DRW_Vport& viewport, AeSysDoc* document);
+  void ConvertViewportTable(const EoDxfViewport& viewport, AeSysDoc* document);
 
-  EoDbBlock* ConvertBlock(const DRW_Block& block, AeSysDoc* document);
+  EoDbBlock* ConvertBlock(const EoDxfBlock& block, AeSysDoc* document);
   void ConvertBlockSet(const int handle, AeSysDoc* document);
   void ConvertBlockEnd(AeSysDoc* document);
 

@@ -19,7 +19,7 @@ class EoGePoint3d {
   constexpr EoGePoint3d() noexcept = default;
   constexpr EoGePoint3d(double x, double y, double z) noexcept : x{x}, y{y}, z{z} {}
 
-  constexpr explicit EoGePoint3d(const DRW_Coord& point) noexcept : x{point.x}, y{point.y}, z{point.z} {}
+  constexpr explicit EoGePoint3d(const EoDxfGeometryBase3d& point) noexcept : x{point.x}, y{point.y}, z{point.z} {}
 
   explicit EoGePoint3d(const EoGePoint4d& point) noexcept;
 

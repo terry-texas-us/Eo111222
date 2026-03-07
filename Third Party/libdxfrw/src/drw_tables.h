@@ -25,20 +25,20 @@ enum class SymbolTable : std::uint8_t {
 
 }  // namespace EoDxf
 
-class DRW_TableEntry {
+class EoDxfTableEntry {
  public:
-  DRW_TableEntry() : tType{EoDxf::SymbolTable::Unknown}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
+  EoDxfTableEntry() : tType{EoDxf::SymbolTable::Unknown}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
 
  protected:
-  explicit DRW_TableEntry(EoDxf::SymbolTable tableType) noexcept
+  explicit EoDxfTableEntry(EoDxf::SymbolTable tableType) noexcept
       : tType{tableType}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
  public:
-  virtual ~DRW_TableEntry() {
+  virtual ~EoDxfTableEntry() {
     for (std::vector<EoDxfGroupCodeValuesVariant*>::iterator it = m_extensionData.begin(); it != m_extensionData.end(); ++it) { delete *it; }
     m_extensionData.clear();
   }
 
-  DRW_TableEntry(const DRW_TableEntry& e) {
+  EoDxfTableEntry(const EoDxfTableEntry& e) {
     tType = e.tType;
     m_handle = e.m_handle;
     m_ownerHandle = e.m_ownerHandle;
@@ -74,12 +74,11 @@ class DRW_TableEntry {
  * include properties such as the dimension scale factor (code 40), dimension line extension (code 44), and dimension
  * text placement (code 71), which can affect how dimensions are displayed in the drawing.
  */
-class DRW_DimStyle : public DRW_TableEntry {
+class EoDxfDimensionStyle : public EoDxfTableEntry {
   friend class dxfRW;
 
  public:
-  DRW_DimStyle() : DRW_TableEntry(EoDxf::SymbolTable::DimStyle) { Reset(); }
-
+  EoDxfDimensionStyle() : EoDxfTableEntry(EoDxf::SymbolTable::DimStyle) { Reset(); }
  protected:
   void ParseCode(int code, dxfReader* reader);
   void Reset();
@@ -164,11 +163,11 @@ class DRW_DimStyle : public DRW_TableEntry {
  * can also include properties such as the alignment code (code 72) and the complex linetype type flag (code 74),
  * which can affect how the linetype is rendered in the drawing.
  */
-class EoDxfLinetype : public DRW_TableEntry {
+class EoDxfLinetype : public EoDxfTableEntry {
   friend class dxfRW;
 
  public:
-  EoDxfLinetype() : DRW_TableEntry(EoDxf::SymbolTable::Linetype) { Reset(); }
+  EoDxfLinetype() : EoDxfTableEntry(EoDxf::SymbolTable::Linetype) { Reset(); }
  protected:
   void ParseCode(int code, dxfReader* reader);
   void Reset();
@@ -191,12 +190,11 @@ class EoDxfLinetype : public DRW_TableEntry {
  * can also include properties such as the hard-pointer ID/handle of the plot style (code 390) and material style (code
  * 347), which can affect how entities on the layer are rendered in the drawing.
  */
-class EoDxfLayer : public DRW_TableEntry {
+class EoDxfLayer : public EoDxfTableEntry {
   friend class dxfRW;
 
  public:
-  EoDxfLayer() : DRW_TableEntry(EoDxf::SymbolTable::Layer) { Reset(); }
-
+  EoDxfLayer() : EoDxfTableEntry(EoDxf::SymbolTable::Layer) { Reset(); }
  protected:
   void ParseCode(int code, dxfReader* reader);
   void Reset();
@@ -219,19 +217,18 @@ class EoDxfLayer : public DRW_TableEntry {
  * include properties such as flags (code 70), which can indicate whether the block is anonymous, external, or has
  * attributes.
  */
-class DRW_BlockRecord : public DRW_TableEntry {
+class DRW_BlockRecord : public EoDxfTableEntry {
   friend class dxfRW;
 
  public:
-  DRW_BlockRecord() : DRW_TableEntry(EoDxf::SymbolTable::Block) { Reset(); }
-
+  DRW_BlockRecord() : EoDxfTableEntry(EoDxf::SymbolTable::Block) { Reset(); }
  protected:
   void ParseCode(int code, dxfReader* reader);
   void Reset();
 
  public:
   int m_blockInsertionUnits;  // Group code 70
-  DRW_Coord m_firstPoint;
+  EoDxfGeometryBase3d m_firstPoint;
 };
 
 /** Class to handle textstyle entries
@@ -242,12 +239,11 @@ class DRW_BlockRecord : public DRW_TableEntry {
  * can also include properties such as the last height used (code 42) and the big font file name (code 4), which can
  * affect how text entities are rendered in the drawing.
  */
-class DRW_Textstyle : public DRW_TableEntry {
+class EoDxfTextStyle : public EoDxfTableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Textstyle() : DRW_TableEntry(EoDxf::SymbolTable::TextStyle) { Reset(); }
-
+  EoDxfTextStyle() : EoDxfTableEntry(EoDxf::SymbolTable::TextStyle) { Reset(); }
  protected:
   void ParseCode(int code, dxfReader* reader);
 
@@ -257,7 +253,7 @@ class DRW_Textstyle : public DRW_TableEntry {
     font = "txt";
     genFlag = 0;  // 2= X mirror, 4= Y mirror
     fontFamily = 0;
-    DRW_TableEntry::Reset();
+    EoDxfTableEntry::Reset();
   }
 
  public:
@@ -281,26 +277,25 @@ class DRW_Textstyle : public DRW_TableEntry {
  * 42), front clipping plane (code 43), back clipping plane (code 44), snap rotation angle (code 50), view twist angle
  * (code 51), and various flags for view mode, snap, grid, and UCS icon display.
  */
-class DRW_Vport : public DRW_TableEntry {
+class EoDxfViewport : public EoDxfTableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Vport() : DRW_TableEntry(EoDxf::SymbolTable::Viewport) { Reset(); }
-
+  EoDxfViewport() : EoDxfTableEntry(EoDxf::SymbolTable::Viewport) { Reset(); }
   void Reset();
 
  protected:
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord lowerLeft;  // Group codes 10 & 20
-  DRW_Coord upperRight;  // Group codes 11 & 21
-  DRW_Coord center;  // Group codes 12 & 22
-  DRW_Coord snapBase;  // Group codes 13 & 23
-  DRW_Coord snapSpacing;  // Group codes 14 & 24
-  DRW_Coord gridSpacing;  // Group codes 15 & 25
-  DRW_Coord viewDir;  // Group codes 16, 26 & 36
-  DRW_Coord viewTarget;  // Group codes 17, 27 & 37
+  EoDxfGeometryBase3d lowerLeft;  // Group codes 10 & 20
+  EoDxfGeometryBase3d upperRight;  // Group codes 11 & 21
+  EoDxfGeometryBase3d center;  // Group codes 12 & 22
+  EoDxfGeometryBase3d snapBase;  // Group codes 13 & 23
+  EoDxfGeometryBase3d snapSpacing;  // Group codes 14 & 24
+  EoDxfGeometryBase3d gridSpacing;  // Group codes 15 & 25
+  EoDxfGeometryBase3d viewDir;  // Group codes 16, 26 & 36
+  EoDxfGeometryBase3d viewTarget;  // Group codes 17, 27 & 37
   double height;  // Group code 40
   double ratio;  // Group code 41
   double lensHeight;  // Group code 42
@@ -331,18 +326,17 @@ class DRW_Vport : public DRW_TableEntry {
  * associate custom data with entities in the drawing. It is defined by its name (code 2) and various properties such as
  * flags (code 70), which can indicate whether the application ID is for internal use only or is externally referenced.
  */
-class DRW_AppId : public DRW_TableEntry {
+class EoDxfAppId : public EoDxfTableEntry {
   friend class dxfRW;
 
  public:
-  DRW_AppId() : DRW_TableEntry(EoDxf::SymbolTable::RegApp) { Reset(); }
-
+  EoDxfAppId() : EoDxfTableEntry(EoDxf::SymbolTable::RegApp) { Reset(); }
  protected:
-  void ParseCode(int code, dxfReader* reader) { DRW_TableEntry::ParseCode(code, reader); }
+  void ParseCode(int code, dxfReader* reader) { EoDxfTableEntry::ParseCode(code, reader); }
 
   void Reset() {
     m_tableName = "";
-    DRW_TableEntry::Reset();
+    EoDxfTableEntry::Reset();
   }
 };
 

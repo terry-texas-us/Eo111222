@@ -116,7 +116,7 @@ class EoDxfEntity {
    *  @param extrusionDirection The extrusion direction vector from the DXF entity, used to calculate the arbitrary
    * axes.
    */
-  void CalculateArbitraryAxis(const DRW_Coord& extrusionDirection);
+  void CalculateArbitraryAxis(const EoDxfGeometryBase3d& extrusionDirection);
 
   /** @brief Applies an extrusion transformation to the given point using the pre-calculated arbitrary axes and the
    * extrusion direction. The transformation is defined as: P' = (Ax * point.x) + (Ay * point.y) + (N * point.z), where
@@ -124,16 +124,16 @@ class EoDxfEntity {
    * stored back in the provided point reference.
    *
    * @param extrusionDirection The extrusion direction vector (N) used in the transformation.
-   * @param[out] point A DRW_Coord representing the original point to be transformed. The transformed coordinates will
+   * @param[out] point A EoDxfGeometryBase3d representing the original point to be transformed. The transformed coordinates will
    * be stored back in this variable.
    */
-  void ExtrudePointInPlace(const DRW_Coord& extrusionDirection, DRW_Coord& point) const noexcept;
+  void ExtrudePointInPlace(const EoDxfGeometryBase3d& extrusionDirection, EoDxfGeometryBase3d& point) const noexcept;
 
  private:
   // Transient cache for ApplyExtrusion() — deliberately NOT copied or cleared.
   // Always recomputed from m_extrusionDirection when needed.
-  DRW_Coord extAxisX{};
-  DRW_Coord extAxisY{};
+  EoDxfGeometryBase3d extAxisX{};
+  EoDxfGeometryBase3d extAxisY{};
 
  public:
   std::list<std::list<EoDxfGroupCodeValuesVariant>> m_appData{};  // list of application data, code 102
@@ -178,10 +178,10 @@ class EoDxfPoint : public EoDxfEntity {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord m_firstPoint{};  //  base point, code 10, 20 & 30
+  EoDxfGeometryBase3d m_firstPoint{};  //  base point, code 10, 20 & 30
   double m_thickness{};  // Thickness, code 39
   //  Extrusion direction, code 210, 220 & 230 (optional, default 0,0,1)
-  DRW_Coord m_extrusionDirection{0.0, 0.0, 1.0};
+  EoDxfGeometryBase3d m_extrusionDirection{0.0, 0.0, 1.0};
   //  Angle of the X axis for the UCS in effect when the point was drawn, code 50 (optional, default 0.0)
   double m_angleX{};
 };
@@ -200,7 +200,7 @@ class EoDxfLine : public EoDxfPoint {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord m_secondPoint;  // Group code 11, 21 & 31
+  EoDxfGeometryBase3d m_secondPoint;  // Group code 11, 21 & 31
 };
 
 /** @brief Class to handle ray entity
@@ -258,7 +258,7 @@ class EoDxfArc : public EoDxfCircle {
   void ApplyExtrusion() override;
 
   // center point in OCS
-  const DRW_Coord& Center() const { return m_firstPoint; }
+  const EoDxfGeometryBase3d& Center() const { return m_firstPoint; }
   // the radius of the circle
   [[nodiscard]] double Radius() const noexcept { return m_radius; }
   // start angle in radians
@@ -268,7 +268,7 @@ class EoDxfArc : public EoDxfCircle {
   // thickness
   [[nodiscard]] double Thickness() const noexcept { return m_thickness; }
   // extrusion
-  [[nodiscard]] const DRW_Coord& ExtrusionDirection() const noexcept { return m_extrusionDirection; }
+  [[nodiscard]] const EoDxfGeometryBase3d& ExtrusionDirection() const noexcept { return m_extrusionDirection; }
 
  protected:
   // interpret code in dxf reading process or dispatch to inherited class
@@ -333,8 +333,8 @@ class EoDxfTrace : public EoDxfLine {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord m_thirdPoint{};  // Group code 12, 22 & 32
-  DRW_Coord m_fourthPoint{};  // Group code 13, 23 & 33
+  EoDxfGeometryBase3d m_thirdPoint{};  // Group code 12, 22 & 32
+  EoDxfGeometryBase3d m_fourthPoint{};  // Group code 13, 23 & 33
 };
 
 /** @brief Class to handle solid entity
@@ -356,13 +356,13 @@ class EoDxfSolid : public EoDxfTrace {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  [[nodiscard]] const DRW_Coord& FirstCorner() const noexcept { return m_firstPoint; }
-  [[nodiscard]] const DRW_Coord& SecondCorner() const noexcept { return m_secondPoint; }
-  [[nodiscard]] const DRW_Coord& ThirdCorner() const noexcept { return m_thirdPoint; }
-  [[nodiscard]] const DRW_Coord& FourthCorner() const noexcept { return m_fourthPoint; }
+  [[nodiscard]] const EoDxfGeometryBase3d& FirstCorner() const noexcept { return m_firstPoint; }
+  [[nodiscard]] const EoDxfGeometryBase3d& SecondCorner() const noexcept { return m_secondPoint; }
+  [[nodiscard]] const EoDxfGeometryBase3d& ThirdCorner() const noexcept { return m_thirdPoint; }
+  [[nodiscard]] const EoDxfGeometryBase3d& FourthCorner() const noexcept { return m_fourthPoint; }
   [[nodiscard]] double thick() const noexcept { return m_thickness; }
   [[nodiscard]] double elevation() const noexcept { return m_firstPoint.z; }
-  [[nodiscard]] const DRW_Coord& extrusion() const noexcept { return m_extrusionDirection; }
+  [[nodiscard]] const EoDxfGeometryBase3d& extrusion() const noexcept { return m_extrusionDirection; }
 };
 
 /** @brief Class to handle 3dFace entity
@@ -391,10 +391,10 @@ class EoDxf3dFace : public EoDxfTrace {
 
   void ApplyExtrusion() override {}
 
-  [[nodiscard]] const DRW_Coord& FirstCorner() const noexcept { return m_firstPoint; }
-  [[nodiscard]] const DRW_Coord& SecondCorner() const noexcept { return m_secondPoint; }
-  [[nodiscard]] const DRW_Coord& ThirdCorner() const noexcept { return m_thirdPoint; }
-  [[nodiscard]] const DRW_Coord& FourthCorner() const noexcept { return m_fourthPoint; }
+  [[nodiscard]] const EoDxfGeometryBase3d& FirstCorner() const noexcept { return m_firstPoint; }
+  [[nodiscard]] const EoDxfGeometryBase3d& SecondCorner() const noexcept { return m_secondPoint; }
+  [[nodiscard]] const EoDxfGeometryBase3d& ThirdCorner() const noexcept { return m_thirdPoint; }
+  [[nodiscard]] const EoDxfGeometryBase3d& FourthCorner() const noexcept { return m_fourthPoint; }
   [[nodiscard]] InvisibleEdgeFlags edgeFlags() const noexcept {
     return static_cast<InvisibleEdgeFlags>(m_invisibleFlag);
   }
@@ -414,11 +414,11 @@ class EoDxf3dFace : public EoDxfTrace {
  * using group code 70. The block entity can also include properties such as layer, line type, and extrusion direction,
  * which can affect how it is rendered in the drawing.
  */
-class DRW_Block : public EoDxfPoint {
+class EoDxfBlock : public EoDxfPoint {
   friend class dxfRW;
 
  public:
-  explicit DRW_Block(EoDxf::ETYPE entityType = EoDxf::BLOCK) noexcept : EoDxfPoint{entityType} {}
+  explicit EoDxfBlock(EoDxf::ETYPE entityType = EoDxf::BLOCK) noexcept : EoDxfPoint{entityType} {}
 
   void ApplyExtrusion() override {}
 
@@ -495,7 +495,7 @@ class EoDxfLwPolyline : public EoDxfEntity {
   double m_constantWidth{};  // Group code 43
   double m_elevation{};  // Group code 38
   double m_thickness{};  // Group code 39
-  DRW_Coord m_extrusionDirection{0.0, 0.0, 1.0};  //  code 210, 220 & 230
+  EoDxfGeometryBase3d m_extrusionDirection{0.0, 0.0, 1.0};  //  code 210, 220 & 230
   std::vector<DRW_Vertex2D> m_vertices;
 
  private:
@@ -699,8 +699,8 @@ class EoDxfSpline : public EoDxfEntity {
   EoDxfSpline() noexcept : EoDxfEntity{EoDxf::SPLINE} {}
 
   ~EoDxfSpline() {
-    for (DRW_Coord* point : m_controlPoints) { delete point; }
-    for (DRW_Coord* point : m_fitPoints) { delete point; }
+    for (EoDxfGeometryBase3d* point : m_controlPoints) { delete point; }
+    for (EoDxfGeometryBase3d* point : m_fitPoints) { delete point; }
   }
 
   // Prevent double-free from shallow copy of raw-pointer vectors
@@ -716,9 +716,9 @@ class EoDxfSpline : public EoDxfEntity {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord m_normalVector;  // Group codes 210, 220, 230
-  DRW_Coord m_startTangent;  // Group codes 12, 22, 32
-  DRW_Coord m_endTangent;  // Group codes 13, 23, 33
+  EoDxfGeometryBase3d m_normalVector;  // Group codes 210, 220, 230
+  EoDxfGeometryBase3d m_startTangent;  // Group codes 12, 22, 32
+  EoDxfGeometryBase3d m_endTangent;  // Group codes 13, 23, 33
   int m_splineFlag{};  // Group code 70
   int m_degreeOfTheSplineCurve{};  // Group code 71
   std::int32_t m_numberOfKnots{};  // Group code 72
@@ -729,12 +729,12 @@ class EoDxfSpline : public EoDxfEntity {
   double m_fitTolerance{0.0000000001};  // Group code 44
 
   std::vector<double> m_knotValues;  // Group code 40, (one entry per knot)
-  std::vector<DRW_Coord*> m_controlPoints;  // Group codes 10, 20 & 30 (one entry per control point)
-  std::vector<DRW_Coord*> m_fitPoints;  // Group codes 11, 21 & 31 (one entry per fit point)
+  std::vector<EoDxfGeometryBase3d*> m_controlPoints;  // Group codes 10, 20 & 30 (one entry per control point)
+  std::vector<EoDxfGeometryBase3d*> m_fitPoints;  // Group codes 11, 21 & 31 (one entry per fit point)
 
  private:
-  DRW_Coord* m_controlPoint{};  // current control point to add data
-  DRW_Coord* m_fitPoint{};  // current fit point to add data
+  EoDxfGeometryBase3d* m_controlPoint{};  // current control point to add data
+  EoDxfGeometryBase3d* m_fitPoint{};  // current fit point to add data
 };
 
 /** @brief Class to handle hatch loop
@@ -855,7 +855,7 @@ class EoDxfImage : public EoDxfLine {
 
  public:
   std::uint32_t ref{};  // Hard reference to imagedef object, code 340
-  DRW_Coord vVector;  // V-vector of single pixel, x coordinate, code 12, 22 & 32
+  EoDxfGeometryBase3d vVector;  // V-vector of single pixel, x coordinate, code 12, 22 & 32
   double sizeu{};  // image size in pixels, U value, code 13
   double sizev{};  // image size in pixels, V value, code 23
   double dz{};  // z coordinate, code 33
@@ -921,10 +921,10 @@ class EoDxfDimension : public EoDxfEntity {
   void ParseCode(int code, dxfReader* reader);
 
  public:
-  DRW_Coord getDefPoint() const { return defPoint; }  // Definition point, code 10, 20 & 30
-  void setDefPoint(const DRW_Coord p) { defPoint = p; }
-  DRW_Coord getTextPoint() const { return textPoint; }  // Middle point of text, code 11, 21 & 31
-  void setTextPoint(const DRW_Coord p) { textPoint = p; }
+  EoDxfGeometryBase3d getDefPoint() const { return defPoint; }  // Definition point, code 10, 20 & 30
+  void setDefPoint(const EoDxfGeometryBase3d p) { defPoint = p; }
+  EoDxfGeometryBase3d getTextPoint() const { return textPoint; }  // Middle point of text, code 11, 21 & 31
+  void setTextPoint(const EoDxfGeometryBase3d p) { textPoint = p; }
   std::string getStyle() const { return style; }  // Dimension style, code 3
   void setStyle(const std::string s) { style = s; }
   int getAlign() const { return align; }  // attachment point, code 71
@@ -938,23 +938,23 @@ class EoDxfDimension : public EoDxfEntity {
   double getDir() const { return rot; }  // rotation angle of the dimension text, code 53 (optional) default 0
   void setDir(const double d) { rot = d; }
 
-  DRW_Coord getExtrusion() { return extPoint; }  // extrusion, code 210, 220 & 230
-  void setExtrusion(const DRW_Coord p) { extPoint = p; }
+  EoDxfGeometryBase3d getExtrusion() { return extPoint; }  // extrusion, code 210, 220 & 230
+  void setExtrusion(const EoDxfGeometryBase3d p) { extPoint = p; }
   std::string getName() { return name; }  // Name of the block that contains the entities, code 2
   void setName(const std::string s) { name = s; }
   //    int getType(){ return type;}                      // Dimension type, code 70
 
  protected:
-  DRW_Coord getPt2() const { return clonePoint; }
-  void setPt2(const DRW_Coord p) { clonePoint = p; }
-  DRW_Coord getPt3() const { return def1; }
-  void setPt3(const DRW_Coord p) { def1 = p; }
-  DRW_Coord getPt4() const { return def2; }
-  void setPt4(const DRW_Coord p) { def2 = p; }
-  DRW_Coord getPt5() const { return circlePoint; }
-  void setPt5(const DRW_Coord p) { circlePoint = p; }
-  DRW_Coord getPt6() const { return arcPoint; }
-  void setPt6(const DRW_Coord p) { arcPoint = p; }
+  EoDxfGeometryBase3d getPt2() const { return clonePoint; }
+  void setPt2(const EoDxfGeometryBase3d p) { clonePoint = p; }
+  EoDxfGeometryBase3d getPt3() const { return def1; }
+  void setPt3(const EoDxfGeometryBase3d p) { def1 = p; }
+  EoDxfGeometryBase3d getPt4() const { return def2; }
+  void setPt4(const EoDxfGeometryBase3d p) { def2 = p; }
+  EoDxfGeometryBase3d getPt5() const { return circlePoint; }
+  void setPt5(const EoDxfGeometryBase3d p) { circlePoint = p; }
+  EoDxfGeometryBase3d getPt6() const { return arcPoint; }
+  void setPt6(const EoDxfGeometryBase3d p) { arcPoint = p; }
   double getAn50() const { return angle; }  // Angle of rotated, horizontal, or vertical dimensions, code 50
   void setAn50(const double d) { angle = d; }
   double getOb52() const { return oblique; }  // oblique angle, code 52
@@ -966,25 +966,25 @@ class EoDxfDimension : public EoDxfEntity {
   int type;  // Dimension type, code 70
  private:
   std::string name;  // Name of the block that contains the entities, code 2
-  DRW_Coord defPoint;  //  definition point, code 10, 20 & 30 (WCS)
-  DRW_Coord textPoint;  // Middle point of text, code 11, 21 & 31 (OCS)
+  EoDxfGeometryBase3d defPoint;  //  definition point, code 10, 20 & 30 (WCS)
+  EoDxfGeometryBase3d textPoint;  // Middle point of text, code 11, 21 & 31 (OCS)
   UTF8STRING text;  // Dimension text explicitly entered by the user, code 1
   UTF8STRING style;  // Dimension style, code 3
   int align;  // attachment point, code 71
   int linesty;  // Dimension text line spacing style, code 72, default 1
   double linefactor;  // Dimension text line spacing factor, code 41, default 1? (value range 0.25 to 4.00*/
   double rot;  // rotation angle of the dimension text, code 53
-  DRW_Coord extPoint;  //  extrusion normal vector, code 210, 220 & 230
+  EoDxfGeometryBase3d extPoint;  //  extrusion normal vector, code 210, 220 & 230
 
   double hdir{};  // horizontal direction for the dimension, code 51, default ?
-  DRW_Coord clonePoint;  // Insertion point for clones (Baseline & Continue), code 12, 22 & 32 (OCS)
-  DRW_Coord def1;  // Definition point 1for linear & angular, code 13, 23 & 33 (WCS)
-  DRW_Coord def2;  // Definition point 2, code 14, 24 & 34 (WCS)
+  EoDxfGeometryBase3d clonePoint;  // Insertion point for clones (Baseline & Continue), code 12, 22 & 32 (OCS)
+  EoDxfGeometryBase3d def1;  // Definition point 1for linear & angular, code 13, 23 & 33 (WCS)
+  EoDxfGeometryBase3d def2;  // Definition point 2, code 14, 24 & 34 (WCS)
   double angle;  // Angle of rotated, horizontal, or vertical dimensions, code 50
   double oblique;  // oblique angle, code 52
 
-  DRW_Coord circlePoint;  // Definition point for diameter, radius & angular dims code 15, 25 & 35 (WCS)
-  DRW_Coord arcPoint;  // Point defining dimension arc, x coordinate, code 16, 26 & 36 (OCS)
+  EoDxfGeometryBase3d circlePoint;  // Definition point for diameter, radius & angular dims code 15, 25 & 35 (WCS)
+  EoDxfGeometryBase3d arcPoint;  // Point defining dimension arc, x coordinate, code 16, 26 & 36 (OCS)
   double length{};  // Leader length, code 40
 };
 
@@ -1004,15 +1004,15 @@ class EoDxfAlignedDimension : public EoDxfDimension {
   EoDxfAlignedDimension() { m_entityType = EoDxf::DIMALIGNED; }
   EoDxfAlignedDimension(const EoDxfDimension& d) : EoDxfDimension(d) { m_entityType = EoDxf::DIMALIGNED; }
 
-  DRW_Coord getClonepoint() const { return getPt2(); }  // Insertion for clones (Baseline & Continue), 12, 22 & 32
-  void setClonePoint(DRW_Coord c) { setPt2(c); }
+  EoDxfGeometryBase3d getClonepoint() const { return getPt2(); }  // Insertion for clones (Baseline & Continue), 12, 22 & 32
+  void setClonePoint(EoDxfGeometryBase3d c) { setPt2(c); }
 
-  DRW_Coord getDimPoint() const { return getDefPoint(); }  // dim line location point, code 10, 20 & 30
-  void setDimPoint(const DRW_Coord p) { setDefPoint(p); }
-  DRW_Coord getDef1Point() const { return getPt3(); }  // Definition point 1, code 13, 23 & 33
-  void setDef1Point(const DRW_Coord p) { setPt3(p); }
-  DRW_Coord getDef2Point() const { return getPt4(); }  // Definition point 2, code 14, 24 & 34
-  void setDef2Point(const DRW_Coord p) { setPt4(p); }
+  EoDxfGeometryBase3d getDimPoint() const { return getDefPoint(); }  // dim line location point, code 10, 20 & 30
+  void setDimPoint(const EoDxfGeometryBase3d p) { setDefPoint(p); }
+  EoDxfGeometryBase3d getDef1Point() const { return getPt3(); }  // Definition point 1, code 13, 23 & 33
+  void setDef1Point(const EoDxfGeometryBase3d p) { setPt3(p); }
+  EoDxfGeometryBase3d getDef2Point() const { return getPt4(); }  // Definition point 2, code 14, 24 & 34
+  void setDef2Point(const EoDxfGeometryBase3d p) { setPt4(p); }
 };
 
 /** @brief Class to handle linear dimension entity
@@ -1052,10 +1052,10 @@ class EoDxfRadialDimension : public EoDxfDimension {
   EoDxfRadialDimension() { m_entityType = EoDxf::DIMRADIAL; }
   EoDxfRadialDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMRADIAL; }
 
-  DRW_Coord getCenterPoint() const { return getDefPoint(); }  // center point, code 10, 20 & 30
-  void setCenterPoint(const DRW_Coord p) { setDefPoint(p); }
-  DRW_Coord getDiameterPoint() const { return getPt5(); }  // Definition point for radius, code 15, 25 & 35
-  void setDiameterPoint(const DRW_Coord p) { setPt5(p); }
+  EoDxfGeometryBase3d getCenterPoint() const { return getDefPoint(); }  // center point, code 10, 20 & 30
+  void setCenterPoint(const EoDxfGeometryBase3d p) { setDefPoint(p); }
+  EoDxfGeometryBase3d getDiameterPoint() const { return getPt5(); }  // Definition point for radius, code 15, 25 & 35
+  void setDiameterPoint(const EoDxfGeometryBase3d p) { setPt5(p); }
   double getLeaderLength() const { return getRa40(); }  // Leader length, code 40
   void setLeaderLength(const double d) { setRa40(d); }
 };
@@ -1076,10 +1076,10 @@ class EoDxfDiametricDimension : public EoDxfDimension {
   EoDxfDiametricDimension() { m_entityType = EoDxf::DIMDIAMETRIC; }
   EoDxfDiametricDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMDIAMETRIC; }
 
-  DRW_Coord getDiameter1Point() const { return getPt5(); }  // First definition point for diameter, code 15, 25 & 35
-  void setDiameter1Point(const DRW_Coord p) { setPt5(p); }
-  DRW_Coord getDiameter2Point() const { return getDefPoint(); }  // Oposite point for diameter, code 10, 20 & 30
-  void setDiameter2Point(const DRW_Coord p) { setDefPoint(p); }
+  EoDxfGeometryBase3d getDiameter1Point() const { return getPt5(); }  // First definition point for diameter, code 15, 25 & 35
+  void setDiameter1Point(const EoDxfGeometryBase3d p) { setPt5(p); }
+  EoDxfGeometryBase3d getDiameter2Point() const { return getDefPoint(); }  // Oposite point for diameter, code 10, 20 & 30
+  void setDiameter2Point(const EoDxfGeometryBase3d p) { setDefPoint(p); }
   double getLeaderLength() const { return getRa40(); }  // Leader length, code 40
   void setLeaderLength(const double d) { setRa40(d); }
 };
@@ -1095,16 +1095,16 @@ class EoDxf2LineAngularDimension : public EoDxfDimension {
   EoDxf2LineAngularDimension() { m_entityType = EoDxf::DIMANGULAR; }
   EoDxf2LineAngularDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMANGULAR; }
 
-  DRW_Coord getFirstLine1() const { return getPt3(); }  // Definition point line 1-1, code 13, 23 & 33
-  void setFirstLine1(const DRW_Coord p) { setPt3(p); }
-  DRW_Coord getFirstLine2() const { return getPt4(); }  // Definition point line 1-2, code 14, 24 & 34
-  void setFirstLine2(const DRW_Coord p) { setPt4(p); }
-  DRW_Coord getSecondLine1() const { return getPt5(); }  // Definition point line 2-1, code 15, 25 & 35
-  void setSecondLine1(const DRW_Coord p) { setPt5(p); }
-  DRW_Coord getSecondLine2() const { return getDefPoint(); }  // Definition point line 2-2, code 10, 20 & 30
-  void setSecondLine2(const DRW_Coord p) { setDefPoint(p); }
-  DRW_Coord getDimPoint() const { return getPt6(); }  // Dimension definition point, code 16, 26 & 36
-  void setDimPoint(const DRW_Coord p) { setPt6(p); }
+  EoDxfGeometryBase3d getFirstLine1() const { return getPt3(); }  // Definition point line 1-1, code 13, 23 & 33
+  void setFirstLine1(const EoDxfGeometryBase3d p) { setPt3(p); }
+  EoDxfGeometryBase3d getFirstLine2() const { return getPt4(); }  // Definition point line 1-2, code 14, 24 & 34
+  void setFirstLine2(const EoDxfGeometryBase3d p) { setPt4(p); }
+  EoDxfGeometryBase3d getSecondLine1() const { return getPt5(); }  // Definition point line 2-1, code 15, 25 & 35
+  void setSecondLine1(const EoDxfGeometryBase3d p) { setPt5(p); }
+  EoDxfGeometryBase3d getSecondLine2() const { return getDefPoint(); }  // Definition point line 2-2, code 10, 20 & 30
+  void setSecondLine2(const EoDxfGeometryBase3d p) { setDefPoint(p); }
+  EoDxfGeometryBase3d getDimPoint() const { return getPt6(); }  // Dimension definition point, code 16, 26 & 36
+  void setDimPoint(const EoDxfGeometryBase3d p) { setPt6(p); }
 };
 
 /** @brief Class to handle 3 point angular dimension entity
@@ -1123,14 +1123,14 @@ class EoDxf3PointAngularDimension : public EoDxfDimension {
   EoDxf3PointAngularDimension() { m_entityType = EoDxf::DIMANGULAR3P; }
   EoDxf3PointAngularDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMANGULAR3P; }
 
-  DRW_Coord getFirstLine() const { return getPt3(); }  // Definition point line 1, code 13, 23 & 33
-  void setFirstLine(const DRW_Coord p) { setPt3(p); }
-  DRW_Coord getSecondLine() const { return getPt4(); }  // Definition point line 2, code 14, 24 & 34
-  void setSecondLine(const DRW_Coord p) { setPt4(p); }
-  DRW_Coord getVertexPoint() const { return getPt5(); }  // Vertex point, code 15, 25 & 35
-  void SetVertexPoint(const DRW_Coord p) { setPt5(p); }
-  DRW_Coord getDimPoint() const { return getDefPoint(); }  // Dimension definition point, code 10, 20 & 30
-  void setDimPoint(const DRW_Coord p) { setDefPoint(p); }
+  EoDxfGeometryBase3d getFirstLine() const { return getPt3(); }  // Definition point line 1, code 13, 23 & 33
+  void setFirstLine(const EoDxfGeometryBase3d p) { setPt3(p); }
+  EoDxfGeometryBase3d getSecondLine() const { return getPt4(); }  // Definition point line 2, code 14, 24 & 34
+  void setSecondLine(const EoDxfGeometryBase3d p) { setPt4(p); }
+  EoDxfGeometryBase3d getVertexPoint() const { return getPt5(); }  // Vertex point, code 15, 25 & 35
+  void SetVertexPoint(const EoDxfGeometryBase3d p) { setPt5(p); }
+  EoDxfGeometryBase3d getDimPoint() const { return getDefPoint(); }  // Dimension definition point, code 10, 20 & 30
+  void setDimPoint(const EoDxfGeometryBase3d p) { setDefPoint(p); }
 };
 
 /** @brief Class to handle ordinate dimension entity
@@ -1149,12 +1149,12 @@ class EoDxfOrdinateDimension : public EoDxfDimension {
   EoDxfOrdinateDimension() { m_entityType = EoDxf::DIMORDINATE; }
   EoDxfOrdinateDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMORDINATE; }
 
-  DRW_Coord getOriginPoint() const { return getDefPoint(); }  // Origin definition point, code 10, 20 & 30
-  void setOriginPoint(const DRW_Coord p) { setDefPoint(p); }
-  DRW_Coord getFirstLine() const { return getPt3(); }  // Feature location point, code 13, 23 & 33
-  void setFirstLine(const DRW_Coord p) { setPt3(p); }
-  DRW_Coord getSecondLine() const { return getPt4(); }  // Leader end point, code 14, 24 & 34
-  void setSecondLine(const DRW_Coord p) { setPt4(p); }
+  EoDxfGeometryBase3d getOriginPoint() const { return getDefPoint(); }  // Origin definition point, code 10, 20 & 30
+  void setOriginPoint(const EoDxfGeometryBase3d p) { setDefPoint(p); }
+  EoDxfGeometryBase3d getFirstLine() const { return getPt3(); }  // Feature location point, code 13, 23 & 33
+  void setFirstLine(const EoDxfGeometryBase3d p) { setPt3(p); }
+  EoDxfGeometryBase3d getSecondLine() const { return getPt4(); }  // Leader end point, code 14, 24 & 34
+  void setSecondLine(const EoDxfGeometryBase3d p) { setPt4(p); }
 };
 
 /** @brief Class to handle leader entity
@@ -1168,11 +1168,11 @@ class EoDxfOrdinateDimension : public EoDxfDimension {
  * leader vertex from block (code 212, 222, 232), and offset of last leader vertex from annotation (code 213, 223, 233).
  * The geometry of the leader is defined by a list of vertices (code 10, 20, 30).
  */
-class DRW_Leader : public EoDxfEntity {
+class EoDxfLeader : public EoDxfEntity {
   friend class dxfRW;
 
  public:
-  DRW_Leader() {
+  EoDxfLeader() {
     m_entityType = EoDxf::LEADER;
     flag = 3;
     hookflag = vertnum = leadertype = 0;
@@ -1180,8 +1180,8 @@ class DRW_Leader : public EoDxfEntity {
     arrow = 1;
     extrusionPoint.z = 1.0;
   }
-  ~DRW_Leader() {
-    for (DRW_Coord* vert : vertexlist) { delete vert; }
+  ~EoDxfLeader() {
+    for (EoDxfGeometryBase3d* vert : vertexlist) { delete vert; }
     vertexlist.clear();
   }
 
@@ -1202,15 +1202,15 @@ class DRW_Leader : public EoDxfEntity {
   int vertnum;  // Number of vertices, code 76
   int coloruse{};  // Color to use if leader's DIMCLRD = BYBLOCK, code 77
   std::uint32_t annotHandle{};  // Hard reference to associated annotation, code 340
-  DRW_Coord extrusionPoint;  // Normal vector, code 210, 220 & 230
-  DRW_Coord horizdir;  // "Horizontal" direction for leader, code 211, 221 & 231
-  DRW_Coord offsetblock;  // Offset of last leader vertex from block, code 212, 222 & 232
-  DRW_Coord offsettext;  // Offset of last leader vertex from annotation, code 213, 223 & 233
+  EoDxfGeometryBase3d extrusionPoint;  // Normal vector, code 210, 220 & 230
+  EoDxfGeometryBase3d horizdir;  // "Horizontal" direction for leader, code 211, 221 & 231
+  EoDxfGeometryBase3d offsetblock;  // Offset of last leader vertex from block, code 212, 222 & 232
+  EoDxfGeometryBase3d offsettext;  // Offset of last leader vertex from annotation, code 213, 223 & 233
 
-  std::vector<DRW_Coord*> vertexlist;  // vertex points list, code 10, 20 & 30
+  std::vector<EoDxfGeometryBase3d*> vertexlist;  // vertex points list, code 10, 20 & 30
 
  private:
-  DRW_Coord* vertexpoint{};  // current control point to add data
+  EoDxfGeometryBase3d* vertexpoint{};  // current control point to add data
 };
 
 /** @brief Class to handle viewport entity
@@ -1253,8 +1253,8 @@ class EoDxfViewPort : public EoDxfPoint {
   double snapSpPX{};  // Snap spacing X, code 14
   double snapSpPY{};  // Snap spacing Y, code 24
   // TODO: complete in dxf
-  DRW_Coord viewDir;  // View direction vector, code 16, 26 & 36
-  DRW_Coord viewTarget;  // View target point, code 17, 27, 37
+  EoDxfGeometryBase3d viewDir;  // View direction vector, code 16, 26 & 36
+  EoDxfGeometryBase3d viewTarget;  // View target point, code 17, 27, 37
   double viewLength{};  // Perspective lens length, code 42
   double frontClip{};  // Front clip plane Z value, code 43
   double backClip{};  // Back clip plane Z value, code 44

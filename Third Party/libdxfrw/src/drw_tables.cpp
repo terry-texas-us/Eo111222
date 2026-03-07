@@ -6,7 +6,7 @@
 #include "drw_tables.h"
 #include "intern/dxfreader.h"
 
-void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
+void EoDxfTableEntry::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 5:
       m_handle = reader->GetHandleString();
@@ -32,7 +32,7 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
     case 1011:
     case 1012:
     case 1013:
-      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
+      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
       m_extensionData.push_back(m_currentVariant);
       break;
     case 1020:
@@ -62,7 +62,7 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_TableEntry::Reset() {
+void EoDxfTableEntry::Reset() {
   m_flagValues = 0;
   for (auto* variant : m_extensionData) { delete variant; }
   m_extensionData.clear();
@@ -76,17 +76,17 @@ void DRW_BlockRecord::ParseCode(int code, dxfReader* reader) {
       m_flagValues = m_blockInsertionUnits;  // Block records only flag: block insertion units
       break;
     default:
-      DRW_TableEntry::ParseCode(code, reader);
+      EoDxfTableEntry::ParseCode(code, reader);
       break;
   }
 }
 
 void DRW_BlockRecord::Reset() {
   m_blockInsertionUnits = 0;   // Block records only flag: block insertion units
-  DRW_TableEntry::Reset();
+  EoDxfTableEntry::Reset();
 }
 
-void DRW_DimStyle::ParseCode(int code, dxfReader* reader) {
+void EoDxfDimensionStyle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 105:
       m_handle = reader->GetHandleString();
@@ -299,12 +299,12 @@ void DRW_DimStyle::ParseCode(int code, dxfReader* reader) {
       dimblk2 = reader->GetUtf8String();
       break;
     default:
-      DRW_TableEntry::ParseCode(code, reader);
+      EoDxfTableEntry::ParseCode(code, reader);
       break;
   }
 }
 
-void DRW_DimStyle::Reset() {
+void EoDxfDimensionStyle::Reset() {
   dimasz = 0.18;
   dimtxt = 0.18;
   dimexe = 0.18;
@@ -366,7 +366,7 @@ void DRW_DimStyle::Reset() {
   dimdsep = '.';
   dimlwd = -2;
   dimlwe = -2;
-  DRW_TableEntry::Reset();
+  EoDxfTableEntry::Reset();
 }
 
 void EoDxfLinetype::ParseCode(int code, dxfReader* reader) {
@@ -386,7 +386,7 @@ void EoDxfLinetype::ParseCode(int code, dxfReader* reader) {
       pathIdx++;
       break;
     default:
-      DRW_TableEntry::ParseCode(code, reader);
+      EoDxfTableEntry::ParseCode(code, reader);
       break;
   }
 }
@@ -396,7 +396,7 @@ void EoDxfLinetype::Reset() {
   size = 0;
   length = 0.0;
   pathIdx = 0;
-  DRW_TableEntry::Reset();
+  EoDxfTableEntry::Reset();
 }
 
 void EoDxfLinetype::Update() {
@@ -430,7 +430,7 @@ void EoDxfLayer::ParseCode(int code, dxfReader* reader) {
       color24 = reader->GetInt32();
       break;
     default:
-      DRW_TableEntry::ParseCode(code, reader);
+      EoDxfTableEntry::ParseCode(code, reader);
       break;
   }
 }
@@ -441,11 +441,11 @@ void EoDxfLayer::Reset() {
   m_plottingFlag = true;
   m_lineweightEnumValue = DRW_LW_Conv::widthDefault;
   color24 = -1;
-  DRW_TableEntry::Reset();
+  EoDxfTableEntry::Reset();
 }
 
 
-void DRW_Textstyle::ParseCode(int code, dxfReader* reader) {
+void EoDxfTextStyle::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 3:
       font = reader->GetUtf8String();
@@ -472,12 +472,12 @@ void DRW_Textstyle::ParseCode(int code, dxfReader* reader) {
       fontFamily = reader->GetInt32();
       break;
     default:
-      DRW_TableEntry::ParseCode(code, reader);
+      EoDxfTableEntry::ParseCode(code, reader);
       break;
   }
 }
 
-void DRW_Vport::ParseCode(int code, dxfReader* reader) {
+void EoDxfViewport::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 10:
       lowerLeft.x = reader->GetDouble();
@@ -579,12 +579,12 @@ void DRW_Vport::ParseCode(int code, dxfReader* reader) {
       snapIsopair = reader->GetInt32();
       break;
     default:
-      DRW_TableEntry::ParseCode(code, reader);
+      EoDxfTableEntry::ParseCode(code, reader);
       break;
   }
 }
 
-void DRW_Vport::Reset() {
+void EoDxfViewport::Reset() {
   upperRight.x = 1.0;
   upperRight.y = 1.0;
   snapSpacing.x = 10.0;
@@ -609,5 +609,5 @@ void DRW_Vport::Reset() {
   circleZoom = 100;
   ucsIcon = 3;
   gridBehavior = 7;
-  DRW_TableEntry::Reset();
+  EoDxfTableEntry::Reset();
 }

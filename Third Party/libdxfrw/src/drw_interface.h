@@ -12,29 +12,29 @@
  * processed DXF file from this interface.
  *
  */
-class DRW_Interface {
+class EoDxfInterface {
  public:
-  DRW_Interface() {}
-  virtual ~DRW_Interface() = default;
+  EoDxfInterface() {}
+  virtual ~EoDxfInterface() = default;
 
   /** Called when header is parsed.  */
-  virtual void addHeader(const EoDxfHeader* data) = 0;
+  virtual void addHeader(const EoDxfHeader* header) = 0;
 
   /** Called for every class.  */
-  virtual void addClass(const DRW_Class& data) = 0;
+  virtual void addClass(const EoDxfClass& class_) = 0;
 
   /** Called for every line Type.  */
-  virtual void addLinetype(const EoDxfLinetype& data) = 0;
+  virtual void addLinetype(const EoDxfLinetype& linetype) = 0;
   /** Called for every layer. */
   virtual void addLayer(const EoDxfLayer& layer) = 0;
   /** Called for every dim style. */
-  virtual void addDimStyle(const DRW_DimStyle& data) = 0;
+  virtual void addDimStyle(const EoDxfDimensionStyle& dimensionStyle) = 0;
   /** Called for every VPORT table. */
-  virtual void addVport(const DRW_Vport& data) = 0;
+  virtual void addVport(const EoDxfViewport& viewport) = 0;
   /** Called for every text style. */
-  virtual void addTextStyle(const DRW_Textstyle& data) = 0;
+  virtual void addTextStyle(const EoDxfTextStyle& textStyle) = 0;
   /** Called for every AppId entry. */
-  virtual void addAppId(const DRW_AppId& data) = 0;
+  virtual void addAppId(const EoDxfAppId& appId) = 0;
 
   /**
    * Called for every block. Note: all entities added after this
@@ -42,14 +42,14 @@ class DRW_Interface {
    *
    * @see endBlock()
    */
-  virtual void addBlock(const DRW_Block& data) = 0;
+  virtual void addBlock(const EoDxfBlock& block) = 0;
 
   /**
    * Called when the following entities corresponding to a
    * block different from the current. Note: all entities added after this
    * command go into this block until setBlock() is called already.
    *
-   * int handle are the value of DRW_Block::handleBlock added with addBlock()
+   * int handle are the value of EoDxfBlock::handleBlock added with addBlock()
    */
   virtual void setBlock(const int handle) = 0;
 
@@ -144,7 +144,7 @@ class DRW_Interface {
   /**
    * Called for every leader start.
    */
-  virtual void addLeader(const DRW_Leader* data) = 0;
+  virtual void addLeader(const EoDxfLeader* leader) = 0;
 
   /**
    * Called for every hatch entity.
@@ -164,7 +164,7 @@ class DRW_Interface {
   /**
    * Called for every image definition.
    */
-  virtual void linkImage(const DRW_ImageDef* data) = 0;
+  virtual void linkImage(const EoDxfImageDefinition* data) = 0;
 
   /**
    * Called for every comment in the DXF file (code 999).

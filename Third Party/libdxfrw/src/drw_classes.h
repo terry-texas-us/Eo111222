@@ -11,10 +11,10 @@ class dxfWriter;
  * names, application names, and proxy flags. This class represents an entry in that section and provides methods to
  * parse from a DXF reader and write to a DXF writer.
  */
-class DRW_Class {
+class EoDxfClass {
  public:
-  DRW_Class() = default;
-  ~DRW_Class() = default;
+  EoDxfClass() = default;
+  ~EoDxfClass() = default;
 
   void ParseCode(int code, dxfReader* reader) noexcept;
   void clear() noexcept;

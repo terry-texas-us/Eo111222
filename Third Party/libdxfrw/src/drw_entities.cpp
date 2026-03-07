@@ -79,7 +79,7 @@ void EoDxfEntity::clearExtendedData() noexcept {
   m_extendedData.clear();
 }
 
-void EoDxfEntity::CalculateArbitraryAxis(const DRW_Coord& extrusionDirection) {
+void EoDxfEntity::CalculateArbitraryAxis(const EoDxfGeometryBase3d& extrusionDirection) {
   // Follow the arbitrary DXF definitions for extrusion axes.
   if (fabs(extrusionDirection.x) < 0.015625 && fabs(extrusionDirection.y) < 0.015625) {
     // If we get here, implement Ax = Wy x N where Wy is [0,1,0] per the DXF spec.
@@ -107,7 +107,7 @@ void EoDxfEntity::CalculateArbitraryAxis(const DRW_Coord& extrusionDirection) {
   extAxisY.unitize();
 }
 
-void EoDxfEntity::ExtrudePointInPlace(const DRW_Coord& extrusionDirection, DRW_Coord& point) const noexcept {
+void EoDxfEntity::ExtrudePointInPlace(const EoDxfGeometryBase3d& extrusionDirection, EoDxfGeometryBase3d& point) const noexcept {
   double px = (extAxisX.x * point.x) + (extAxisY.x * point.y) + (extrusionDirection.x * point.z);
   double py = (extAxisX.y * point.x) + (extAxisY.y * point.y) + (extrusionDirection.y * point.z);
   double pz = (extAxisX.z * point.x) + (extAxisY.z * point.y) + (extrusionDirection.z * point.z);
@@ -177,7 +177,7 @@ void EoDxfEntity::ParseCode(int code, dxfReader* reader) {
     case 1011:
     case 1012:
     case 1013:
-      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
+      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
       m_extendedData.push_back(m_currentVariant);
       break;
     case 1020:
@@ -497,7 +497,7 @@ void EoDxf3dFace::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_Block::ParseCode(int code, dxfReader* reader) {
+void EoDxfBlock::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 2:
       name = reader->GetUtf8String();
@@ -551,7 +551,7 @@ void EoDxfLwPolyline::ApplyExtrusion() {
   if (m_haveExtrusion) {
     CalculateArbitraryAxis(m_extrusionDirection);
     for (auto& vert : m_vertices) {  // range-based, value semantics – no raw pointer
-      DRW_Coord v(vert.x, vert.y, m_elevation);
+      EoDxfGeometryBase3d v(vert.x, vert.y, m_elevation);
       ExtrudePointInPlace(m_extrusionDirection, v);
       vert.x = v.x;
       vert.y = v.y;
@@ -634,7 +634,7 @@ void EoDxfText::ParseCode(int code, dxfReader* reader) {
       break;
     case 73:
       m_verticalAlignment = static_cast<VAlign>(
-          std::clamp(reader->GetInt32(), static_cast<int>(VAlign::Top), static_cast<int>(VAlign::Bottom)));
+          std::clamp(reader->GetInt32(), static_cast<int>(VAlign::Bottom), static_cast<int>(VAlign::Top)));
       break;
     case 1:
       m_string = reader->GetUtf8String();
@@ -1012,7 +1012,7 @@ void EoDxfSpline::ParseCode(int code, dxfReader* reader) {
       m_fitTolerance = reader->GetDouble();
       break;
     case 10:
-      m_controlPoint = new DRW_Coord();
+      m_controlPoint = new EoDxfGeometryBase3d();
       m_controlPoints.push_back(m_controlPoint);
       m_controlPoint->x = reader->GetDouble();
       break;
@@ -1023,7 +1023,7 @@ void EoDxfSpline::ParseCode(int code, dxfReader* reader) {
       if (m_controlPoint != nullptr) { m_controlPoint->z = reader->GetDouble(); }
       break;
     case 11:
-      m_fitPoint = new DRW_Coord();
+      m_fitPoint = new EoDxfGeometryBase3d();
       m_fitPoints.push_back(m_fitPoint);
       m_fitPoint->x = reader->GetDouble();
       break;
@@ -1190,7 +1190,7 @@ void EoDxfDimension::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_Leader::ParseCode(int code, dxfReader* reader) {
+void EoDxfLeader::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 3:
       style = reader->GetUtf8String();
@@ -1223,7 +1223,7 @@ void DRW_Leader::ParseCode(int code, dxfReader* reader) {
       textwidth = reader->GetDouble();
       break;
     case 10: {
-      vertexpoint = new DRW_Coord();
+      vertexpoint = new EoDxfGeometryBase3d();
       vertexlist.push_back(vertexpoint);
       vertexpoint->x = reader->GetDouble();
       break;

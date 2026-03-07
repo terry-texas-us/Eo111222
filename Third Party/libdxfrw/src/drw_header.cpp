@@ -79,7 +79,7 @@ void EoDxfHeader::ParseCode(int code, dxfReader* reader) {
       m_currentVariant->addString(code, reader->GetUtf8String());
       break;
     case 10:
-      m_currentVariant->addCoord(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
+      m_currentVariant->addCoord(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
       break;
     case 20:
       m_currentVariant->setCoordY(reader->GetDouble());
@@ -123,7 +123,7 @@ void EoDxfHeader::WriteBase(dxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
-  DRW_Coord variantCoord;
+  EoDxfGeometryBase3d variantCoord;
 
   writer->WriteString(9, "$INSBASE");
   if (GetCoord("$INSBASE", &variantCoord)) {
@@ -518,7 +518,7 @@ void EoDxfHeader::WriteAC1009Additions(dxfWriter* writer, EoDxf::Version version
   double variantDouble;
   int variantInteger;
   std::string variantString;
-  DRW_Coord variantCoord;
+  EoDxfGeometryBase3d variantCoord;
 
   writer->WriteString(9, "$DIMSTYLE");  // not used before AC1009
   if (GetString("$DIMSTYLE", &variantString)) {
@@ -661,7 +661,7 @@ void EoDxfHeader::WriteAC1012Additions(dxfWriter* writer, EoDxf::Version version
   double variantDouble;
   int variantInteger;
   std::string variantString;
-  DRW_Coord variantCoord;
+  EoDxfGeometryBase3d variantCoord;
 
   writer->WriteString(9, "$CELTSCALE");
   writer->WriteDouble(40, GetDouble("$CELTSCALE", &variantDouble) ? variantDouble : 1.0);
@@ -763,7 +763,7 @@ void EoDxfHeader::WriteAC1015Additions(dxfWriter* writer, EoDxf::Version version
   double variantDouble;
   int variantInteger;
   std::string variantString;
-  DRW_Coord variantCoord;
+  EoDxfGeometryBase3d variantCoord;
 
   writer->WriteString(9, "$DIMADEC");
   writer->WriteInt16(70, GetInteger("$DIMADEC", &variantInteger) ? variantInteger : 0);
@@ -1222,7 +1222,7 @@ void EoDxfHeader::WriteAC1024Additions(dxfWriter* writer, EoDxf::Version version
 void EoDxfHeader::Write(dxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
   std::string variantString;
-  DRW_Coord variantCoord;
+  EoDxfGeometryBase3d variantCoord;
   writer->WriteString(2, "HEADER");
   writer->WriteString(9, "$ACADVER");
   switch (version) {
@@ -1340,7 +1340,7 @@ void EoDxfHeader::AddString(const std::string& key, std::string value, int code)
   m_variants[key] = m_currentVariant;
 }
 
-void EoDxfHeader::AddCoord(const std::string& key, DRW_Coord value, int code) {
+void EoDxfHeader::AddCoord(const std::string& key, EoDxfGeometryBase3d value, int code) {
   m_currentVariant = new EoDxfGroupCodeValuesVariant(code, value);
   m_variants[key] = m_currentVariant;
 }
@@ -1391,7 +1391,7 @@ bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) 
   return false;
 }
 
-bool EoDxfHeader::GetCoord(const std::string& key, DRW_Coord* variantCoord) {
+bool EoDxfHeader::GetCoord(const std::string& key, EoDxfGeometryBase3d* variantCoord) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second;
     if (variant->type() == EoDxfGroupCodeValuesVariant::Type::Coord) {

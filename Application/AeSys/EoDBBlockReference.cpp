@@ -267,7 +267,7 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
   return bResult;
 }
 
-void EoDbBlockReference::SetInsertionPoint(const DRW_Coord& point) {
+void EoDbBlockReference::SetInsertionPoint(const EoDxfGeometryBase3d& point) {
   m_insertionPoint.x = point.x;
   m_insertionPoint.y = point.y;
   m_insertionPoint.z = point.z;

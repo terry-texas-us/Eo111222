@@ -19,43 +19,43 @@ class dxfRW {
   dxfRW(const char* name);
   ~dxfRW();
 
-  /** @brief Reads a DXF file and populates the provided DRW_Interface with the parsed data.
+  /** @brief Reads a DXF file and populates the provided EoDxfInterface with the parsed data.
    *
    * This method processes the DXF file specified in the constructor, parsing its contents and invoking callbacks
-   * on the provided DRW_Interface for each entity, table entry, and header variable encountered. The `ext` parameter
+   * on the provided EoDxfInterface for each entity, table entry, and header variable encountered. The `ext` parameter
    * controls whether extrusion should be applied when converting 3D entities to 2D representations.
    *
-   * @param interface_ Pointer to a DRW_Interface implementation that will receive callbacks for parsed entities and
+   * @param interface_ Pointer to a EoDxfInterface implementation that will receive callbacks for parsed entities and
    * data.
    * @param ext Boolean flag indicating whether to apply extrusion when converting 3D entities to 2D (true) or not
    * (false).
    * @return true if the file was successfully read and processed; false if an error occurred during reading or parsing.
    */
-  bool Read(DRW_Interface* interface_, bool ext);
+  bool Read(EoDxfInterface* interface_, bool ext);
   void SetBinary(bool binaryFile) { m_binaryFile = binaryFile; }
 
-  /** @brief Writes the current state of the DRW_Interface to a DXF file in the specified version and format (binary or
+  /** @brief Writes the current state of the EoDxfInterface to a DXF file in the specified version and format (binary or
    * ASCII).
    *
-   * This method generates a DXF file based on the data provided through the DRW_Interface. It writes the necessary
+   * This method generates a DXF file based on the data provided through the EoDxfInterface. It writes the necessary
    * sections (HEADER, CLASSES, TABLES, BLOCKS, ENTITIES, OBJECTS) according to the specified DXF version. The
    * `binaryFile` parameter determines whether the output should be in binary format (DXB) or ASCII format (DXF). The
    * method handles writing of entities, tables, and other components as required by the DXF specification for the given
    * version.
    *
-   * @param interface_ Pointer to a DRW_Interface implementation that provides access to the data to be written to the
+   * @param interface_ Pointer to a EoDxfInterface implementation that provides access to the data to be written to the
    * DXF file.
    * @param version The version of the DXF format to use for writing (e.g., AC1009, AC1015, etc.).
    * @param binaryFile Boolean flag indicating whether to write in binary format (true) or ASCII format (false).
    * @return true if the file was successfully written; false if an error occurred during writing.
    */
-  bool Write(DRW_Interface* interface_, EoDxf::Version version, bool binaryFile);
+  bool Write(EoDxfInterface* interface_, EoDxf::Version version, bool binaryFile);
   bool WriteLinetype(EoDxfLinetype* linetype);
   bool WriteLayer(EoDxfLayer* layer);
-  bool WriteDimStyle(DRW_DimStyle* ent);
-  bool WriteTextstyle(DRW_Textstyle* ent);
-  bool WriteVport(DRW_Vport* ent);
-  bool WriteAppId(DRW_AppId* ent);
+  bool WriteDimStyle(EoDxfDimensionStyle* dimensionStyle);
+  bool WriteTextstyle(EoDxfTextStyle* textStyle);
+  bool WriteVport(EoDxfViewport* viewport);
+  bool WriteAppId(EoDxfAppId* appId);
   bool WritePoint(EoDxfPoint* point);
   bool WriteLine(EoDxfLine* ent);
   bool WriteRay(EoDxfRay* ray);
@@ -70,14 +70,14 @@ class dxfRW {
   bool WritePolyline(EoDxfPolyline* polyline);
   bool WriteSpline(EoDxfSpline* spline);
   bool WriteBlockRecord(std::string name);
-  bool WriteBlock(DRW_Block* ent);
+  bool WriteBlock(EoDxfBlock* block);
   bool WriteInsert(EoDxfInsert* blockReference);
   bool WriteMText(EoDxfMText* mText);
   bool WriteText(EoDxfText* text);
   bool WriteHatch(EoDxfHatch* hatch);
   bool WriteViewport(EoDxfViewPort* viewport);
-  DRW_ImageDef* WriteImage(EoDxfImage* image, std::string name);
-  bool WriteLeader(DRW_Leader* ent);
+  EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::string name);
+  bool WriteLeader(EoDxfLeader* leader);
   bool WriteDimension(EoDxfDimension* dimension);
   /** @brief Sets the number of parts to use when rendering an ellipse as a polyline.
    * This method allows you to specify how many segments (parts) should be used to approximate an ellipse when it is
@@ -155,11 +155,11 @@ class dxfRW {
   std::string m_fileName;
   std::string m_codePage;
   std::string m_nextEntity;
-  std::vector<DRW_ImageDef*> m_imageDef;  // list of image definitions to write at the end of file
+  std::vector<EoDxfImageDefinition*> m_imageDef;  // list of image definitions to write at the end of file
   std::map<std::string, int> m_blockMap;
   dxfReader* m_reader;
   dxfWriter* m_writer;
-  DRW_Interface* m_interface{};
+  EoDxfInterface* m_interface{};
   int m_entityCount{};
   int m_ellipseParts;  // number of parts when rendering ellipse as polyline
   EoDxf::Version m_version{};

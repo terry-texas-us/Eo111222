@@ -68,18 +68,18 @@ void EoDbDrwInterface::ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc*
   for (const auto& key : keys) { SetHeaderSectionVariable(header, key, headerSection); }
 }
 
-void EoDbDrwInterface::ConvertClassesSection(const DRW_Class& class_, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDrwInterface::ConvertClassesSection(const EoDxfClass& class_, [[maybe_unused]] AeSysDoc* document) {
   std::wstring recordName = Eo::MultiByteToWString(class_.recName.c_str());
   ATLTRACE2(traceGeneral, 2, L"Class - Name: %s (unsupported in AeSys)\n", recordName.c_str());
 }
 
-void EoDbDrwInterface::ConvertAppIdTable(const DRW_AppId& appId, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDrwInterface::ConvertAppIdTable(const EoDxfAppId& appId, [[maybe_unused]] AeSysDoc* document) {
   std::wstring appIdName = Eo::MultiByteToWString(appId.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
 }
 
-void EoDbDrwInterface::ConvertDimStyle(const DRW_DimStyle& dimStyle, [[maybe_unused]] AeSysDoc* document) {
-  std::wstring dimStyleName = Eo::MultiByteToWString(dimStyle.m_tableName.c_str());
+void EoDbDrwInterface::ConvertDimStyle(const EoDxfDimensionStyle& dimensionStyle, [[maybe_unused]] AeSysDoc* document) {
+  std::wstring dimStyleName = Eo::MultiByteToWString(dimensionStyle.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"DimStyle - Name: <%s> (unsupported in AeSys)\n", dimStyleName.c_str());
 }
 
@@ -171,7 +171,7 @@ void EoDbDrwInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSy
   }
 }
 
-void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDrwInterface::ConvertTextStyleTable(const EoDxfTextStyle& textStyle, [[maybe_unused]] AeSysDoc* document) {
   std::wstring textStyleName = Eo::MultiByteToWString(textStyle.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"Text Style - Name: %s (unsupported in AeSys)\n", textStyleName.c_str());
 
@@ -190,7 +190,7 @@ void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, [[m
   // charset, and italic and bold flags (group code 1071)
 }
 
-void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDrwInterface::ConvertViewportTable(const EoDxfViewport& viewport, [[maybe_unused]] AeSysDoc* document) {
   std::wstring viewportName = Eo::MultiByteToWString(viewport.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"Viewport - Name: %s (unsupported in AeSys)\n", viewportName.c_str());
 
@@ -225,7 +225,7 @@ void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, [[maybe_u
 
 /** @brief This method is invoked when a new block definition is encountered in the file.
  *
- *  The DRW_Block parameter provides header information such as the block name, flags, base point, and handle. In your
+ *  The EoDxfBlock parameter provides header information such as the block name, flags, base point, and handle. In your
  * implementation, use this to initialize a new block object in your application's data model. All subsequent entity
  * callbacks (e.g., for lines, arcs) will apply to this block until endBlock is called.
  * @note
@@ -242,7 +242,7 @@ void EoDbDrwInterface::ConvertViewportTable(const DRW_Vport& viewport, [[maybe_u
  * is *Paper_Space1, and so on. The interleaving between model space and paper space no longer occurs. Instead, all
  * paper space entities are output, followed by model space entities. The flag distinguishing them is the group code 67.
  */
-EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* document) {
+EoDbBlock* EoDbDrwInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* document) {
   blockName = Eo::MultiByteToWString(block.name.c_str());  // Block Name (group code 2)
 
   // auto handle = block.handle;              // group code 5
@@ -265,7 +265,7 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const DRW_Block& block, AeSysDoc* docu
 
 /** @brief This method is primarily used in DWG files when the parser switches to entities belonging to a different
  * block than the current one. The handle parameter corresponds to the block handle previously provided via addBlock
- * (accessible as DRW_Block::handleBlock). In your implementation, switch the current block context to the one matching
+ * (accessible as EoDxfBlock::handleBlock). In your implementation, switch the current block context to the one matching
  * this handle. For DXF files, this callback may not be triggered, or it may be used sparingly if blocks are referenced
  * out of sequence. */
 void EoDbDrwInterface::ConvertBlockSet([[maybe_unused]] const int handle, [[maybe_unused]] AeSysDoc* document) {

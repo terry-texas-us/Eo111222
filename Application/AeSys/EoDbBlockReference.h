@@ -81,7 +81,7 @@ class EoDbBlockReference : public EoDbPrimitive {
   void SetColumnSpacing(double columnSpacing) { m_columnSpacing = columnSpacing; }
   void SetName(CString name) { m_blockName = std::move(name); }
   void SetNormal(EoGeVector3d normal) { m_normal = std::move(normal); }
-  void SetInsertionPoint(const DRW_Coord& point);
+  void SetInsertionPoint(const EoDxfGeometryBase3d& point);
   void SetInsertionPoint(const EoGePoint3d& point) { m_insertionPoint = point; }
   void SetRotation(double rotation) { m_rotation = rotation; }
   void SetRows(std::uint16_t rows) { m_rowCount = rows; }

@@ -4,7 +4,7 @@
 #include "intern/dxfreader.h"
 #include "intern/dxfwriter.h"
 
-void DRW_Class::ParseCode(int code, dxfReader* reader) noexcept {
+void EoDxfClass::ParseCode(int code, dxfReader* reader) noexcept {
   switch (code) {
     case 1:
       recName = reader->GetUtf8String();
@@ -32,7 +32,7 @@ void DRW_Class::ParseCode(int code, dxfReader* reader) noexcept {
   }
 }
 
-void DRW_Class::clear() noexcept {
+void EoDxfClass::clear() noexcept {
   recName.clear();
   className.clear();
   appName.clear();
@@ -42,7 +42,7 @@ void DRW_Class::clear() noexcept {
   isAnEntityFlag = 0;
 }
 
-void DRW_Class::write(dxfWriter* writer, EoDxf::Version version) const noexcept {
+void EoDxfClass::write(dxfWriter* writer, EoDxf::Version version) const noexcept {
   if (version < EoDxf::Version::AC1012) { return; }
   writer->WriteString(0, "CLASS");
   writer->WriteString(1, recName);

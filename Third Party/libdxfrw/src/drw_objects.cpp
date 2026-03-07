@@ -4,7 +4,7 @@
 #include "drw_objects.h"
 #include "intern/dxfreader.h"
 
-void DRW_ObjectEntry::ParseCode(int code, dxfReader* reader) {
+void EoDxfObjectEntry::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 5:
       m_handle = reader->GetHandleString();
@@ -43,7 +43,7 @@ void DRW_ObjectEntry::ParseCode(int code, dxfReader* reader) {
     case 1011:
     case 1012:
     case 1013:
-      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
+      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
       m_extensionData.push_back(m_currentVariant);
       break;
     case 1020:
@@ -73,7 +73,7 @@ void DRW_ObjectEntry::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_ObjectEntry::Reset() {
+void EoDxfObjectEntry::Reset() {
   m_ownerHandle = 0;
   m_extensionDictionaryHandle = 0;
   m_reactorHandles.clear();
@@ -84,7 +84,7 @@ void DRW_ObjectEntry::Reset() {
   m_inXDictionary = false;
 }
 
-void DRW_ImageDef::ParseCode(int code, dxfReader* reader) {
+void EoDxfImageDefinition::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 1:
       m_fileNameOfImage = reader->GetUtf8String();
@@ -113,12 +113,12 @@ void DRW_ImageDef::ParseCode(int code, dxfReader* reader) {
       m_resolutionUnits = reader->GetInt32();
       break;
     default:
-      DRW_ObjectEntry::ParseCode(code, reader);
+      EoDxfObjectEntry::ParseCode(code, reader);
       break;
   }
 }
 
-void DRW_ImageDef::Reset() {
+void EoDxfImageDefinition::Reset() {
   imgVersion = 0;
   m_uImageSizeInPixels = 0.0;
   m_vImageSizeInPixels = 0.0;
@@ -126,5 +126,5 @@ void DRW_ImageDef::Reset() {
   m_vSizeOfOnePixel = 0.0;
   m_imageIsLoadedFlag = 0;
   m_resolutionUnits = 0;
-  DRW_ObjectEntry::Reset();
+  EoDxfObjectEntry::Reset();
 }

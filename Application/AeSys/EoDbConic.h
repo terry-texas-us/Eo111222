@@ -227,7 +227,7 @@ class EoDbConic : public EoDbPrimitive {
    */
   void GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d majorAxis) const;
 
-  void ExportToDxf(DRW_Interface* writer) const {
+  void ExportToDxf(EoDxfInterface* writer) const {
     switch (Subclass()) {
       case ConicType::Circle: {
         EoDxfCircle circle;

@@ -10,7 +10,7 @@ class dxfWriter;
 /** @brief Base class for DXF OBJECTS section entries.
  *
  *  Handles common group codes shared by all DXF object types in the OBJECTS section,
- *  analogous to DRW_TableEntry for TABLE section entries.
+ *  analogous to EoDxfTableEntry for TABLE section entries.
  *
  *  Common group codes handled:
  *  - 5: Handle
@@ -19,16 +19,16 @@ class dxfWriter;
  *  - 360: Hard-owner ID/handle (extension dictionary handle within ACAD_XDICTIONARY)
  *  - 1000-1071: Extended data
  */
-class DRW_ObjectEntry {
+class EoDxfObjectEntry {
  public:
-  DRW_ObjectEntry() = default;
+  EoDxfObjectEntry() = default;
 
-  virtual ~DRW_ObjectEntry() {
+  virtual ~EoDxfObjectEntry() {
     for (auto* variant : m_extensionData) { delete variant; }
     m_extensionData.clear();
   }
 
-  DRW_ObjectEntry(const DRW_ObjectEntry& e) {
+  EoDxfObjectEntry(const EoDxfObjectEntry& e) {
     m_handle = e.m_handle;
     m_ownerHandle = e.m_ownerHandle;
     m_extensionDictionaryHandle = e.m_extensionDictionaryHandle;
@@ -65,11 +65,11 @@ class DRW_ObjectEntry {
  *  resolution units (code 281). The image definition can also include properties such as the group class version
  *  (code 90) and a map of reactors, which are objects that react to changes in the image definition.
  */
-class DRW_ImageDef : public DRW_ObjectEntry {
+class EoDxfImageDefinition : public EoDxfObjectEntry {
   friend class dxfRW;
 
  public:
-  DRW_ImageDef() { Reset(); }
+  EoDxfImageDefinition() { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);

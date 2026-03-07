@@ -45,7 +45,7 @@ libdxfrw is a free C++ library for reading and writing DXF (Drawing eXchange For
 
 ```
 dxfRW (Main API Class)
-├── DRW_Interface (Abstract Interface)
+├── EoDxfInterface (Abstract Interface)
 ├── dxfReader/dxfWriter (DXF I/O Handlers)
 ├── EoDxfHeader (Header Variables)
 ├── EoDxfEntity (Geometric Entities)
@@ -65,8 +65,8 @@ dxfRW (Main API Class)
 └── DRW_Object (Non-geometric Objects)
     ├── EoDxfLayer
     ├── EoDxfLinetype
-    ├── DRW_Textstyle
-    ├── DRW_DimStyle
+    ├── EoDxfTextStyle
+    ├── EoDxfDimensionStyle
     └── Other objects
 ```
 
@@ -110,7 +110,7 @@ dxfRW(const char* name);
 ##### Reading
 
 ```cpp
-bool read(DRW_Interface *interface_, bool ext);
+bool read(EoDxfInterface* interface_, bool ext);
 ```
 
 - **Parameters**:
@@ -122,7 +122,7 @@ bool read(DRW_Interface *interface_, bool ext);
 ##### Writing
 
 ```cpp
-bool write(DRW_Interface *interface_, EoDxf::Version ver, bool bin);
+bool write(EoDxfInterface* interface_, EoDxf::Version ver, bool bin);
 ```
 
 - **Parameters**:
@@ -152,13 +152,13 @@ bool writeHatch(EoDxfHatch* hatch);
 ```cpp
 bool writeLayer(EoDxfLayer* layer);
 bool writeLineType(EoDxfLinetype* linetype);
-bool writeTextstyle(DRW_Textstyle *ent);
-bool writeDimstyle(DRW_DimStyle *ent);
-bool writeVport(DRW_Vport *ent);
-bool writeAppId(DRW_AppId *ent);
+bool writeTextstyle(EoDxfTextStyle* textStyle);
+bool writeDimstyle(EoDxfDimensionStyle* dimensionStyle);
+bool writeVport(EoDxfViewport* viewport);
+bool writeAppId(EoDxfAppId* appId);
 ```
 
-### Interface: DRW_Interface
+### Interface: EoDxfInterface
 
 Applications must inherit from this interface and implement callback methods.
 
@@ -175,16 +175,16 @@ virtual void addHeader(const EoDxfHeader* data) = 0;
 ```cpp
 virtual void addLayer(const EoDxfLayer& layer) = 0;
 virtual void addLinetype(const EoDxfLinetype& linetype) = 0;
-virtual void addDimStyle(const DRW_DimStyle& data) = 0;
-virtual void addTextStyle(const DRW_Textstyle& data) = 0;
-virtual void addVport(const DRW_Vport& data) = 0;
-virtual void addAppId(const DRW_AppId& data) = 0;
+virtual void addDimStyle(const EoDxfDimensionStyle& dimensionStyle) = 0;
+virtual void addTextStyle(const EoDxfTextStyle& textStyle) = 0;
+virtual void addVport(const EoDxfViewport& viewport) = 0;
+virtual void addAppId(const EoDxfAppId& appId) = 0;
 ```
 
 ##### Blocks
 
 ```cpp
-virtual void addBlock(const DRW_Block& data) = 0;
+virtual void addBlock(const EoDxfBlock& block) = 0;
 virtual void setBlock(const int handle) = 0;
 virtual void endBlock() = 0;
 ```
@@ -229,8 +229,8 @@ virtual void addDimOrdinate(const EoDxfOrdinateDimension *data) = 0;
 ##### Others
 
 ```cpp
-virtual void addLeader(const DRW_Leader *data) = 0;
-virtual void linkImage(const DRW_ImageDef *data) = 0;
+virtual void addLeader(const EoDxfLeader* leader) = 0;
+virtual void linkImage(const EoDxfImageDefinition* imageDef) = 0;
 virtual void addComment(const char* comment) = 0;
 ```
 
@@ -355,7 +355,7 @@ public:
         // ... others
     };
 
-    DRW_Coord basePoint;      // Base point
+    EoDxfGeometryBase3d basePoint;      // Base point
     std::string layer;        // Layer name
     std::string lineType;     // Line type
     int color;                // Color number
@@ -369,7 +369,7 @@ public:
 ### Coordinate Type
 
 ```cpp
-class DRW_Coord {
+class EoDxfGeometryBase3d {
 public:
     double x;
     double y;

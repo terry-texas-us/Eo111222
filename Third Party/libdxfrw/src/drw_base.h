@@ -79,21 +79,21 @@ enum TransparencyCodes { Opaque = 0, Transparent = -1 };
 /** @brief Class representing a generalized 3D coordinate (using for point and vector) with x, y, and z components.
  *  Provides constructors for initialization and a method to unitize the vector.
  */
-class DRW_Coord {
+class EoDxfGeometryBase3d {
  public:
   double x{};
   double y{};
   double z{};
 
-  DRW_Coord() noexcept = default;
+  EoDxfGeometryBase3d() noexcept = default;
 
-  DRW_Coord(double x, double y, double z) : x{x}, y{y}, z{z} {}
+  EoDxfGeometryBase3d(double x, double y, double z) : x{x}, y{y}, z{z} {}
 
-  DRW_Coord(const DRW_Coord& other) noexcept = default;
-  DRW_Coord& operator=(const DRW_Coord& data) noexcept = default;
+  EoDxfGeometryBase3d(const EoDxfGeometryBase3d& other) noexcept = default;
+  EoDxfGeometryBase3d& operator=(const EoDxfGeometryBase3d& data) noexcept = default;
 
-  DRW_Coord(DRW_Coord&& other) noexcept = default;
-  DRW_Coord& operator=(DRW_Coord&& other) noexcept = default;
+  EoDxfGeometryBase3d(EoDxfGeometryBase3d&& other) noexcept = default;
+  EoDxfGeometryBase3d& operator=(EoDxfGeometryBase3d&& other) noexcept = default;
 
   /** @brief Convert `this` coordinate to a unit-length vector (in-place).
    */
@@ -106,7 +106,7 @@ class DRW_Coord {
     }
   }
 
-  /// @todo Non-modifying version of unitize() that returns a new DRW_Coord instead of modifying `this` in-place.
+  /// @todo Non-modifying version of unitize() that returns a new EoDxfGeometryBase3d instead of modifying `this` in-place.
 };
 
 /**
@@ -146,7 +146,7 @@ class EoDxfGroupCodeValuesVariant {
 
   EoDxfGroupCodeValuesVariant(int c, double d) : sdata(std::string()), vdata(), content(d), vType(Type::Double), vCode(c) {}
   EoDxfGroupCodeValuesVariant(int c, UTF8STRING s) : sdata(s), vdata(), content(&sdata), vType(Type::String), vCode(c) {}
-  EoDxfGroupCodeValuesVariant(int c, DRW_Coord crd) : sdata(std::string()), vdata(crd), content(&vdata), vType(Type::Coord), vCode(c) {}
+  EoDxfGroupCodeValuesVariant(int c, EoDxfGeometryBase3d crd) : sdata(std::string()), vdata(crd), content(&vdata), vType(Type::Coord), vCode(c) {}
 
   EoDxfGroupCodeValuesVariant(const EoDxfGroupCodeValuesVariant& d)
       : sdata(d.sdata), vdata(d.vdata), content(d.content), vType(d.vType), vCode(d.vCode) {
@@ -172,7 +172,7 @@ class EoDxfGroupCodeValuesVariant {
     content.d = d;
     vCode = c;
   }
-  void addCoord(int c, DRW_Coord v) {
+  void addCoord(int c, EoDxfGeometryBase3d v) {
     vType = Type::Coord;
     vdata = v;
     content.v = &vdata;
@@ -192,19 +192,19 @@ class EoDxfGroupCodeValuesVariant {
 
  private:
   std::string sdata;
-  DRW_Coord vdata;
+  EoDxfGeometryBase3d vdata;
 
  private:
   union DRW_VarContent {
     UTF8STRING* s;
     std::int32_t i;
     double d;
-    DRW_Coord* v;
+    EoDxfGeometryBase3d* v;
 
     DRW_VarContent(UTF8STRING* sd) : s(sd) {}
     DRW_VarContent(std::int32_t id) : i(id) {}
     DRW_VarContent(double dd) : d(dd) {}
-    DRW_VarContent(DRW_Coord* vd) : v(vd) {}
+    DRW_VarContent(EoDxfGeometryBase3d* vd) : v(vd) {}
   };
 
  public:
