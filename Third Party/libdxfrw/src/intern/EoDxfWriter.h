@@ -5,10 +5,10 @@
 #include <fstream>
 #include <string>
 
-class dxfWriter {
+class EoDxfWriter {
  public:
-  explicit dxfWriter(std::ofstream* stream) noexcept : m_fileStream{stream} {}
-  virtual ~dxfWriter() = default;
+  explicit EoDxfWriter(std::ofstream* stream) noexcept : m_fileStream{stream} {}
+  virtual ~EoDxfWriter() = default;
 
   virtual bool WriteString(int code, std::string_view text) = 0;
   virtual bool WriteInt16(int code, int data) = 0;
@@ -32,10 +32,10 @@ class dxfWriter {
   DRW_TextCodec m_encoder;
 };
 
-class dxfWriterBinary : public dxfWriter {
+class EoDxfWriterBinary : public EoDxfWriter {
  public:
-  dxfWriterBinary(std::ofstream* stream) : dxfWriter(stream) {}
-  ~dxfWriterBinary() = default;
+  EoDxfWriterBinary(std::ofstream* stream) : EoDxfWriter(stream) {}
+  ~EoDxfWriterBinary() = default;
 
   bool WriteString(int code, std::string_view text) override;
   bool WriteInt16(int code, int data) override;
@@ -45,10 +45,10 @@ class dxfWriterBinary : public dxfWriter {
   bool WriteBool(int code, bool data) override;
 };
 
-class dxfWriterAscii : public dxfWriter {
+class EoDxfWriterAscii : public EoDxfWriter {
  public:
-  dxfWriterAscii(std::ofstream* stream) : dxfWriter(stream) { m_fileStream->precision(16); }
-  ~dxfWriterAscii() = default;
+  EoDxfWriterAscii(std::ofstream* stream) : EoDxfWriter(stream) { m_fileStream->precision(16); }
+  ~EoDxfWriterAscii() = default;
 
   bool WriteString(int code, std::string_view text) override;
   bool WriteInt16(int code, int data) override;

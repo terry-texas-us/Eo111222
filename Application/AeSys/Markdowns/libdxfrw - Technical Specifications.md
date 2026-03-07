@@ -46,7 +46,7 @@ libdxfrw is a free C++ library for reading and writing DXF (Drawing eXchange For
 ```
 dxfRW (Main API Class)
 ├── EoDxfInterface (Abstract Interface)
-├── dxfReader/dxfWriter (DXF I/O Handlers)
+├── EoDxfReader/EoDxfWriter (DXF I/O Handlers)
 ├── EoDxfHeader (Header Variables)
 ├── EoDxfEntity (Geometric Entities)
 │   ├── EoDxfPoint

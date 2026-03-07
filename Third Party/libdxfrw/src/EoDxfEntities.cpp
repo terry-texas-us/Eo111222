@@ -117,7 +117,7 @@ void EoDxfEntity::ExtrudePointInPlace(const EoDxfGeometryBase3d& extrusionDirect
   point.z = pz;
 }
 
-void EoDxfEntity::ParseCode(int code, dxfReader* reader) {
+void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 5:
       m_handle = reader->GetHandleString();
@@ -207,7 +207,7 @@ void EoDxfEntity::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-bool EoDxfEntity::ParseAppDataGroup(dxfReader* reader) {
+bool EoDxfEntity::ParseAppDataGroup(EoDxfReader* reader) {
   std::list<EoDxfGroupCodeValuesVariant> groupList;
 
   EoDxfGroupCodeValuesVariant currentVariant;
@@ -236,17 +236,17 @@ bool EoDxfEntity::ParseAppDataGroup(dxfReader* reader) {
         currentVariant.addInt(nextCode, reader->GetHandleString());
       } else {
         switch (reader->GetType()) {
-          case dxfReader::Type::String:
+          case EoDxfReader::Type::String:
             currentVariant.addString(nextCode, reader->GetString());
             break;
-          case dxfReader::Type::Int32:
-          case dxfReader::Type::Int64:
+          case EoDxfReader::Type::Int32:
+          case EoDxfReader::Type::Int64:
             currentVariant.addInt(nextCode, reader->GetInt32());
             break;
-          case dxfReader::Type::Double:
+          case EoDxfReader::Type::Double:
             currentVariant.addDouble(nextCode, reader->GetDouble());
             break;
-          case dxfReader::Type::Bool:
+          case EoDxfReader::Type::Bool:
             currentVariant.addInt(nextCode, reader->GetInt32());
             break;
           default:
@@ -261,7 +261,7 @@ bool EoDxfEntity::ParseAppDataGroup(dxfReader* reader) {
   return true;
 }
 
-void EoDxfPoint::ParseCode(int code, dxfReader* reader) {
+void EoDxfPoint::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 10:
       m_firstPoint.x = reader->GetDouble();
@@ -291,7 +291,7 @@ void EoDxfPoint::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfLine::ParseCode(int code, dxfReader* reader) {
+void EoDxfLine::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 11:
       m_secondPoint.x = reader->GetDouble();
@@ -317,7 +317,7 @@ void EoDxfCircle::ApplyExtrusion() {
   }
 }
 
-void EoDxfCircle::ParseCode(int code, dxfReader* reader) {
+void EoDxfCircle::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 40:
       m_radius = reader->GetDouble();
@@ -349,7 +349,7 @@ void EoDxfArc::ApplyExtrusion() {
   }
 }
 
-void EoDxfArc::ParseCode(int code, dxfReader* reader) {
+void EoDxfArc::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 50:
       m_startAngle = reader->GetDouble() * EoDxf::DegreesToRadians;
@@ -363,7 +363,7 @@ void EoDxfArc::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfEllipse::ParseCode(int code, dxfReader* reader) {
+void EoDxfEllipse::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 40:
       m_ratio = reader->GetDouble();
@@ -458,7 +458,7 @@ void EoDxfTrace::ApplyExtrusion() {
   }
 }
 
-void EoDxfTrace::ParseCode(int code, dxfReader* reader) {
+void EoDxfTrace::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 12:
       m_thirdPoint.x = reader->GetDouble();
@@ -484,9 +484,9 @@ void EoDxfTrace::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfSolid::ParseCode(int code, dxfReader* reader) { EoDxfTrace::ParseCode(code, reader); }
+void EoDxfSolid::ParseCode(int code, EoDxfReader* reader) { EoDxfTrace::ParseCode(code, reader); }
 
-void EoDxf3dFace::ParseCode(int code, dxfReader* reader) {
+void EoDxf3dFace::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 70:
       m_invisibleFlag = reader->GetInt32();
@@ -497,7 +497,7 @@ void EoDxf3dFace::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfBlock::ParseCode(int code, dxfReader* reader) {
+void EoDxfBlock::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 2:
       name = reader->GetUtf8String();
@@ -511,7 +511,7 @@ void EoDxfBlock::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfInsert::ParseCode(int code, dxfReader* reader) {
+void EoDxfInsert::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 2:
       m_blockName = reader->GetUtf8String();
@@ -559,7 +559,7 @@ void EoDxfLwPolyline::ApplyExtrusion() {
   }
 }
 
-void EoDxfLwPolyline::ParseCode(int code, dxfReader* reader) {
+void EoDxfLwPolyline::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 10: {
       m_vertices.emplace_back();
@@ -611,7 +611,7 @@ void EoDxfLwPolyline::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfText::ParseCode(int code, dxfReader* reader) {
+void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 40:
       m_textHeight = reader->GetDouble();
@@ -648,7 +648,7 @@ void EoDxfText::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfMText::ParseCode(int code, dxfReader* reader) {
+void EoDxfMText::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 1:
       m_string += reader->GetString();
@@ -674,7 +674,7 @@ void EoDxfMText::UpdateAngle() {
   if (m_haveXAxisDirection) { m_textRotation = atan2(m_secondPoint.y, m_secondPoint.x) * EoDxf::RadiansToDegrees; }
 }
 
-void EoDxfPolyline::ParseCode(int code, dxfReader* reader) {
+void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 70:
       m_polylineFlag = reader->GetInt32();
@@ -706,7 +706,7 @@ void EoDxfPolyline::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfVertex::ParseCode(int code, dxfReader* reader) {
+void EoDxfVertex::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 70:
       m_vertexFlags = reader->GetInt32();
@@ -791,7 +791,7 @@ void EoDxfHatch::ClearEntities() noexcept {
   m_polylineVertex = nullptr;
 }
 
-void EoDxfHatch::ParseCode(int code, dxfReader* reader) {
+void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 2:
       m_hatchPatternName = reader->GetUtf8String();
@@ -958,7 +958,7 @@ void EoDxfHatch::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfSpline::ParseCode(int code, dxfReader* reader) {
+void EoDxfSpline::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 210:
       m_normalVector.x = reader->GetDouble();
@@ -1045,7 +1045,7 @@ void EoDxfSpline::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfImage::ParseCode(int code, dxfReader* reader) {
+void EoDxfImage::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 12:
       vVector.x = reader->GetDouble();
@@ -1083,7 +1083,7 @@ void EoDxfImage::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfDimension::ParseCode(int code, dxfReader* reader) {
+void EoDxfDimension::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 1:
       text = reader->GetUtf8String();
@@ -1190,7 +1190,7 @@ void EoDxfDimension::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfLeader::ParseCode(int code, dxfReader* reader) {
+void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 3:
       style = reader->GetUtf8String();
@@ -1279,7 +1279,7 @@ void EoDxfLeader::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfViewPort::ParseCode(int code, dxfReader* reader) {
+void EoDxfViewPort::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 40:
       pswidth = reader->GetDouble();

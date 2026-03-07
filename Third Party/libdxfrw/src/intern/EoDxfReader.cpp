@@ -10,7 +10,7 @@ namespace {
 constexpr std::int16_t legacyAcGroupCode90Threshhold{2000};
 }
 
-bool dxfReader::ReadRec(int* codeData) {
+bool EoDxfReader::ReadRec(int* codeData) {
   int code;
 
   if (!ReadCode(&code)) { return false; }
@@ -83,7 +83,7 @@ bool dxfReader::ReadRec(int* codeData) {
   return (m_fileStream->good());
 }
 
-int dxfReader::GetHandleString() const {
+int EoDxfReader::GetHandleString() const {
   int res;
   std::istringstream Convert(m_string);
   if (!(Convert >> std::hex >> res)) { res = 0; }
@@ -92,7 +92,7 @@ int dxfReader::GetHandleString() const {
 
 // --- Binary reader ---
 
-bool dxfReaderBinary::ReadCode(int* code) {
+bool EoDxfReaderBinary::ReadCode(int* code) {
   // Always read exactly 2 bytes as little-endian uint16_t (official binary DXF rule)
   uint16_t raw = readLE<uint16_t>(*m_fileStream);
 
@@ -109,44 +109,44 @@ bool dxfReaderBinary::ReadCode(int* code) {
   return m_fileStream->good();
 }
 
-bool dxfReaderBinary::ReadString() {
+bool EoDxfReaderBinary::ReadString() {
   m_type = Type::String;
   std::getline(*m_fileStream, m_string, '\0');
   return (m_fileStream->good());
 }
 
-bool dxfReaderBinary::ReadString(std::string* text) {
+bool EoDxfReaderBinary::ReadString(std::string* text) {
   m_type = Type::String;
   std::getline(*m_fileStream, *text, '\0');
   return (m_fileStream->good());
 }
 
-bool dxfReaderBinary::ReadInt16() {
+bool EoDxfReaderBinary::ReadInt16() {
   m_type = Type::Int32;
   m_int16Data = readLE<std::int16_t>(*m_fileStream);  // or uint16_t depending on semantics
   m_intData = m_int16Data;  // keep your existing storage
   return m_fileStream->good();
 }
 
-bool dxfReaderBinary::ReadInt32() {
+bool EoDxfReaderBinary::ReadInt32() {
   m_type = Type::Int32;
   m_intData = readLE<std::int32_t>(*m_fileStream);
   return m_fileStream->good();
 }
 
-bool dxfReaderBinary::ReadInt64() {
+bool EoDxfReaderBinary::ReadInt64() {
   m_type = Type::Int64;
   m_int64 = readLE<std::uint64_t>(*m_fileStream);
   return m_fileStream->good();
 }
 
-bool dxfReaderBinary::ReadDouble() {
+bool EoDxfReaderBinary::ReadDouble() {
   m_type = Type::Double;
   m_double = readLE<double>(*m_fileStream);
   return m_fileStream->good();
 }
 
-bool dxfReaderBinary::ReadBool() {
+bool EoDxfReaderBinary::ReadBool() {
   m_type = Type::Bool;
   m_intData = readLE<uint8_t>(*m_fileStream);  // bool is stored as single byte (0 or 1)
   return m_fileStream->good();
@@ -154,27 +154,27 @@ bool dxfReaderBinary::ReadBool() {
 
 // --- Ascii reader ---
 
-bool dxfReaderAscii::ReadCode(int* code) {
+bool EoDxfReaderAscii::ReadCode(int* code) {
   std::string text;
   std::getline(*m_fileStream, text);
   *code = atoi(text.c_str());
   return (m_fileStream->good());
 }
-bool dxfReaderAscii::ReadString(std::string* text) {
+bool EoDxfReaderAscii::ReadString(std::string* text) {
   m_type = Type::String;
   std::getline(*m_fileStream, *text);
   if (!text->empty() && text->at(text->size() - 1) == '\r') { text->erase(text->size() - 1); }
   return (m_fileStream->good());
 }
 
-bool dxfReaderAscii::ReadString() {
+bool EoDxfReaderAscii::ReadString() {
   m_type = Type::String;
   std::getline(*m_fileStream, m_string);
   if (!m_string.empty() && m_string.at(m_string.size() - 1) == '\r') { m_string.erase(m_string.size() - 1); }
   return (m_fileStream->good());
 }
 
-bool dxfReaderAscii::ReadInt16() {
+bool EoDxfReaderAscii::ReadInt16() {
   m_type = Type::Int32;
   std::string text;
   if (!ReadString(&text)) { return false; }
@@ -182,17 +182,17 @@ bool dxfReaderAscii::ReadInt16() {
   return true;
 }
 
-bool dxfReaderAscii::ReadInt32() {
+bool EoDxfReaderAscii::ReadInt32() {
   m_type = Type::Int32;
   return ReadInt16();
 }
 
-bool dxfReaderAscii::ReadInt64() {
+bool EoDxfReaderAscii::ReadInt64() {
   m_type = Type::Int64;
   return ReadInt16();
 }
 
-bool dxfReaderAscii::ReadDouble() {
+bool EoDxfReaderAscii::ReadDouble() {
   m_type = Type::Double;
   std::string text;
   if (!ReadString(&text)) { return false; }
@@ -202,7 +202,7 @@ bool dxfReaderAscii::ReadDouble() {
 }
 
 // saved as int or add a bool member??
-bool dxfReaderAscii::ReadBool() {
+bool EoDxfReaderAscii::ReadBool() {
   m_type = Type::Bool;
   std::string text;
   if (!ReadString(&text)) { return false; }

@@ -4,8 +4,7 @@
 #include <string>
 #include <vector>
 
-class dxfReader;
-class dxfWriter;
+#include "intern/EoDxfReader.h"
 
 /** @brief Base class for DXF OBJECTS section entries.
  *
@@ -37,7 +36,7 @@ class EoDxfObjectEntry {
   }
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
   void Reset();
 
  public:
@@ -72,7 +71,7 @@ class EoDxfImageDefinition : public EoDxfObjectEntry {
   EoDxfImageDefinition() { Reset(); }
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
   void Reset();
 

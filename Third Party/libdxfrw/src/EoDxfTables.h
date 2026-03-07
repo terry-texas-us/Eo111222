@@ -4,9 +4,7 @@
 #include <vector>
 
 #include "EoDxfBase.h"
-
-class dxfReader;
-class dxfWriter;
+#include "intern/EoDxfReader.h"
 
 namespace EoDxf {
 
@@ -51,7 +49,7 @@ class EoDxfTableEntry {
   }
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
   void Reset();
 
  public:
@@ -80,7 +78,7 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
  public:
   EoDxfDimensionStyle() : EoDxfTableEntry(EoDxf::SymbolTable::DimStyle) { Reset(); }
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
   void Reset();
 
  public:
@@ -169,7 +167,7 @@ class EoDxfLinetype : public EoDxfTableEntry {
  public:
   EoDxfLinetype() : EoDxfTableEntry(EoDxf::SymbolTable::Linetype) { Reset(); }
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
   void Reset();
   void Update();
 
@@ -196,7 +194,7 @@ class EoDxfLayer : public EoDxfTableEntry {
  public:
   EoDxfLayer() : EoDxfTableEntry(EoDxf::SymbolTable::Layer) { Reset(); }
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
   void Reset();
 
  public:
@@ -223,7 +221,7 @@ class EoDxfBlockRecord : public EoDxfTableEntry {
  public:
   EoDxfBlockRecord() : EoDxfTableEntry(EoDxf::SymbolTable::Block) { Reset(); }
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
   void Reset();
 
  public:
@@ -245,7 +243,7 @@ class EoDxfTextStyle : public EoDxfTableEntry {
  public:
   EoDxfTextStyle() : EoDxfTableEntry(EoDxf::SymbolTable::TextStyle) { Reset(); }
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
   void Reset() {
     height = oblique = 0.0;
@@ -285,7 +283,7 @@ class EoDxfViewport : public EoDxfTableEntry {
   void Reset();
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   EoDxfGeometryBase3d lowerLeft;  // Group codes 10 & 20
@@ -332,7 +330,7 @@ class EoDxfAppId : public EoDxfTableEntry {
  public:
   EoDxfAppId() : EoDxfTableEntry(EoDxf::SymbolTable::RegApp) { Reset(); }
  protected:
-  void ParseCode(int code, dxfReader* reader) { EoDxfTableEntry::ParseCode(code, reader); }
+  void ParseCode(int code, EoDxfReader* reader) { EoDxfTableEntry::ParseCode(code, reader); }
 
   void Reset() {
     m_tableName = "";

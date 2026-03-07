@@ -7,13 +7,12 @@
 
 #include "EoDxfTextCodec.h"
 
-class dxfReader {
+class EoDxfReader {
  public:
   enum class Type : std::uint8_t { String, Int16, Int32, Int64, Double, Bool, Invalid };
 
-  explicit dxfReader(std::ifstream* stream) noexcept : m_fileStream{stream}, m_type{Type::Invalid} {}
-
-  virtual ~dxfReader() = default;
+  explicit EoDxfReader(std::ifstream* stream) noexcept : m_fileStream{stream}, m_type{Type::Invalid} {}
+  virtual ~EoDxfReader() = default;
   bool ReadRec(int* code);
 
   [[nodiscard]] const std::string& GetString() const { return m_string; }
@@ -51,10 +50,10 @@ class dxfReader {
   bool m_isAsciiFile{};  // set to true for ascii reader, false for binary reader
 };
 
-class dxfReaderBinary : public dxfReader {
+class EoDxfReaderBinary : public EoDxfReader {
  public:
-  dxfReaderBinary(std::ifstream* stream) : dxfReader(stream) { m_isAsciiFile = false; }
-  ~dxfReaderBinary() = default;
+  EoDxfReaderBinary(std::ifstream* stream) : EoDxfReader(stream) { m_isAsciiFile = false; }
+  ~EoDxfReaderBinary() = default;
   bool ReadCode(int* code) override;
   bool ReadString(std::string* text) override;
   bool ReadString() override;
@@ -88,10 +87,10 @@ class dxfReaderBinary : public dxfReader {
   }
 };
 
-class dxfReaderAscii : public dxfReader {
+class EoDxfReaderAscii : public EoDxfReader {
  public:
-  dxfReaderAscii(std::ifstream* stream) : dxfReader(stream) { m_isAsciiFile = true; }
-  ~dxfReaderAscii() = default;
+  EoDxfReaderAscii(std::ifstream* stream) : EoDxfReader(stream) { m_isAsciiFile = true; }
+  ~EoDxfReaderAscii() = default;
   bool ReadCode(int* code) override;
   bool ReadString(std::string* text) override;
   bool ReadString() override;

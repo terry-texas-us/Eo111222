@@ -1,17 +1,14 @@
-#include <algorithm>
-#include <cctype>
-#include <fstream>
 #include <ostream>
 #include <string>
 
 #include "EoDxfWriter.h"
 
-bool dxfWriter::WriteUtf8String(int code, std::string text) {
+bool EoDxfWriter::WriteUtf8String(int code, std::string text) {
   std::string t = m_encoder.FromUtf8(text);
   return WriteString(code, t);
 }
 
-bool dxfWriterBinary::WriteString(int code, std::string_view text) {
+bool EoDxfWriterBinary::WriteString(int code, std::string_view text) {
   char bufcode[2]{};
   bufcode[0] = code & 0xFF;
   bufcode[1] = static_cast<char>(code >> 8);
@@ -23,7 +20,7 @@ bool dxfWriterBinary::WriteString(int code, std::string_view text) {
   return (m_fileStream->good());
 }
 
-bool dxfWriterBinary::WriteInt16(int code, int data) {
+bool EoDxfWriterBinary::WriteInt16(int code, int data) {
   char bufcode[2]{};
   char buffer[2]{};
   bufcode[0] = code & 0xFF;
@@ -35,7 +32,7 @@ bool dxfWriterBinary::WriteInt16(int code, int data) {
   return (m_fileStream->good());
 }
 
-bool dxfWriterBinary::WriteInt32(int code, int data) {
+bool EoDxfWriterBinary::WriteInt32(int code, int data) {
   char buffer[4]{};
   buffer[0] = code & 0xFF;
   buffer[1] = static_cast<char>(code >> 8);
@@ -49,7 +46,7 @@ bool dxfWriterBinary::WriteInt32(int code, int data) {
   return (m_fileStream->good());
 }
 
-bool dxfWriterBinary::WriteInt64(int code, unsigned long long int data) {
+bool EoDxfWriterBinary::WriteInt64(int code, unsigned long long int data) {
   char buffer[8]{};
   buffer[0] = code & 0xFF;
   buffer[1] = static_cast<char>(code >> 8);
@@ -67,7 +64,7 @@ bool dxfWriterBinary::WriteInt64(int code, unsigned long long int data) {
   return (m_fileStream->good());
 }
 
-bool dxfWriterBinary::WriteDouble(int code, double data) {
+bool EoDxfWriterBinary::WriteDouble(int code, double data) {
   char bufcode[2]{};
   char buffer[8]{};
   bufcode[0] = code & 0xFF;
@@ -82,7 +79,7 @@ bool dxfWriterBinary::WriteDouble(int code, double data) {
 }
 
 // saved as int or add a bool member??
-bool dxfWriterBinary::WriteBool(int code, bool data) {
+bool EoDxfWriterBinary::WriteBool(int code, bool data) {
   char buffer[1]{};
   char bufcode[2]{};
   bufcode[0] = code & 0xFF;
@@ -93,7 +90,7 @@ bool dxfWriterBinary::WriteBool(int code, bool data) {
   return (m_fileStream->good());
 }
 
-bool dxfWriterAscii::WriteString(int code, std::string_view text) {
+bool EoDxfWriterAscii::WriteString(int code, std::string_view text) {
   m_fileStream->width(3);
   *m_fileStream << std::right << code << std::endl;
   m_fileStream->width(0);
@@ -101,7 +98,7 @@ bool dxfWriterAscii::WriteString(int code, std::string_view text) {
   return (m_fileStream->good());
 }
 
-bool dxfWriterAscii::WriteInt16(int code, int data) {
+bool EoDxfWriterAscii::WriteInt16(int code, int data) {
   m_fileStream->width(3);
   *m_fileStream << std::right << code << std::endl;
   m_fileStream->width(5);
@@ -109,9 +106,9 @@ bool dxfWriterAscii::WriteInt16(int code, int data) {
   return (m_fileStream->good());
 }
 
-bool dxfWriterAscii::WriteInt32(int code, int data) { return WriteInt16(code, data); }
+bool EoDxfWriterAscii::WriteInt32(int code, int data) { return WriteInt16(code, data); }
 
-bool dxfWriterAscii::WriteInt64(int code, unsigned long long int data) {
+bool EoDxfWriterAscii::WriteInt64(int code, unsigned long long int data) {
   m_fileStream->width(3);
   *m_fileStream << std::right << code << std::endl;
   m_fileStream->width(5);
@@ -119,7 +116,7 @@ bool dxfWriterAscii::WriteInt64(int code, unsigned long long int data) {
   return (m_fileStream->good());
 }
 
-bool dxfWriterAscii::WriteDouble(int code, double data) {
+bool EoDxfWriterAscii::WriteDouble(int code, double data) {
   m_fileStream->width(3);
   *m_fileStream << std::right << code << std::endl;
   *m_fileStream << data << std::endl;
@@ -127,7 +124,7 @@ bool dxfWriterAscii::WriteDouble(int code, double data) {
 }
 
 // saved as int or add a bool member??
-bool dxfWriterAscii::WriteBool(int code, bool data) {
+bool EoDxfWriterAscii::WriteBool(int code, bool data) {
   *m_fileStream << code << std::endl << data << std::endl;
   return (m_fileStream->good());
 }

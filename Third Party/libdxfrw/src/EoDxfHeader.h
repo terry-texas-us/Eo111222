@@ -5,8 +5,8 @@
 
 #include "EoDxfBase.h"
 
-class dxfReader;
-class dxfWriter;
+class EoDxfReader;
+class EoDxfWriter;
 
 /** Class to handle header vars, to read iterate over "std::map vars"
  *  to write add a EoDxfGroupCodeValuesVariant* into "std::map vars" (do not delete it, they are cleared in dtor)
@@ -38,65 +38,65 @@ class EoDxfHeader {
    * @param writer Pointer to a dxfWriter object used to write the header variables to the output DXF file.
    * @param version The version of the DXF format to use for writing (e.g., AC1009, AC1015, etc.).
    */
-  void Write(dxfWriter* writer, EoDxf::Version version);
+  void Write(EoDxfWriter* writer, EoDxf::Version version);
   void AddComment(std::string c);
 
  protected:
-  /** @brief Parses a header variable from the given dxfReader object based on the provided group code.
+  /** @brief Parses a header variable from the given EoDxfReader object based on the provided group code.
    *  This method reads the value corresponding to the code from the reader and stores it in the m_variants map
    *  using the current variable name (m_name) as the key. The type of value read (string, double, int, or coord)
    *  is determined by the code and stored in a EoDxfGroupCodeValuesVariant object.
    *
    *  @param code The group code indicating the type of header variable being parsed.
-   *  @param reader Pointer to dxfReader object to read values from.
+   *  @param reader Pointer to EoDxfReader object to read values from.
    */
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  private:
-  void WriteBase(dxfWriter* writer, EoDxf::Version version);
+  void WriteBase(EoDxfWriter* writer, EoDxf::Version version);
 
   /** @brief Writes header variables that were added in AC1009 (R11/R12) but not present in AC1006 (R10).
    * Maximum legacy compatibility (still the safest target for 30-year-old viewers.
-   * @param writer The dxfWriter to write the header variables to.
+   * @param writer The EoDxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1009Additions(dxfWriter* writer, EoDxf::Version version);
+  void WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version version);
 
   /** @brief Writes header variables that were added in AC1012 (R13)
    * Writes AC1012 additions to the header section.
-   * @param writer The dxfWriter to write the header variables to.
+   * @param writer The EoDxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1012Additions(dxfWriter* writer, EoDxf::Version version);
+  void WriteAC1012Additions(EoDxfWriter* writer, EoDxf::Version version);
 
   /** @brief Writes header variables that were added in AC1014 (R14)
    * Big internal redesign after R13; the first truly stable “modern” DWG
-   * @param writer The dxfWriter to write the header variables to.
+   * @param writer The EoDxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1014Additions(dxfWriter* writer, EoDxf::Version version);
+  void WriteAC1014Additions(EoDxfWriter* writer, EoDxf::Version version);
 
   /** @brief Writes header variables that were added in AC1015 (2000)
    * The gold-standard safe default — almost every CAD program on the planet opens it perfectly
-   * @param writer The dxfWriter to write the header variables to.
+   * @param writer The EoDxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1015Additions(dxfWriter* writer, EoDxf::Version version);
+  void WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version version);
 
   /** @brief Writes header variables that were added in AC1018 (2004)
    * Handle/security improvements; still the most common corporate baseline
-   * @param writer The dxfWriter to write the header variables to.
+   * @param writer The EoDxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1018Additions(dxfWriter* writer, EoDxf::Version version);
-  void WriteAC1021Additions(dxfWriter* writer, EoDxf::Version version);
-
-  /** @brief Writes header variables that were added in AC1018 (2004)
-   * Current long-term format (no data loss, smallest modern files)
-   * @param writer The dxfWriter to write the header variables to.
+  void WriteAC1018Additions(EoDxfWriter* writer, EoDxf::Version version);
+  void WriteAC1021Additions(EoDxfWriter* writer, EoDxf::Version version);
+  
+  /** @brief Writes header variables that were added in AC1024 (2010)
+   * The latest version with any new header variables; the current “modern” standard
+   * @param writer The EoDxfWriter to write the header variables to.
    * @param version The DXF version being written, used to determine how to write string variables.
    */
-  void WriteAC1024Additions(dxfWriter* writer, EoDxf::Version version);
+  void WriteAC1024Additions(EoDxfWriter* writer, EoDxf::Version version);
 
   [[nodiscard]] bool GetDouble(const std::string& key, double* varDouble);
   [[nodiscard]] bool GetInteger(const std::string& key, int* varInt);

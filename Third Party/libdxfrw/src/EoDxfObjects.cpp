@@ -4,7 +4,7 @@
 #include "EoDxfObjects.h"
 #include "intern/EoDxfReader.h"
 
-void EoDxfObjectEntry::ParseCode(int code, dxfReader* reader) {
+void EoDxfObjectEntry::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 5:
       m_handle = reader->GetHandleString();
@@ -84,7 +84,7 @@ void EoDxfObjectEntry::Reset() {
   m_inXDictionary = false;
 }
 
-void EoDxfImageDefinition::ParseCode(int code, dxfReader* reader) {
+void EoDxfImageDefinition::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 1:
       m_fileNameOfImage = reader->GetUtf8String();

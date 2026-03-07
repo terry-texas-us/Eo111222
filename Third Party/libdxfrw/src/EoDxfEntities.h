@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "EoDxfBase.h"
+#include "intern/EoDxfReader.h"
 
-class dxfReader;
 class EoDxfPolyline;
 
 namespace EoDxf {
@@ -100,15 +100,15 @@ class EoDxfEntity {
  protected:
   /** @brief Parses dxf code and value to read entity data
    *  @param code dxf code
-   *  @param reader pointer to dxfReader to read value
+   *  @param reader pointer to EoDxfReader to read value
    */
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
   /** @brief Parses application-defined group (code 102) and its associated data until the closing tag is reached.
-   *  @param reader pointer to dxfReader to read value
+   *  @param reader pointer to EoDxfReader to read value
    *  @return true if group is successfully parsed, false if group is not recognized or an error occurs
    */
-  bool ParseAppDataGroup(dxfReader* reader);
+  bool ParseAppDataGroup(EoDxfReader* reader);
 
   /** @brief Calculates the arbitrary extrusion axis (extAxisX and extAxisY) based on the given extrusion direction
    * (extPoint). This follows the DXF specification for handling extrusion directions and their corresponding axes. The
@@ -175,7 +175,7 @@ class EoDxfPoint : public EoDxfEntity {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   EoDxfGeometryBase3d m_firstPoint{};  //  base point, code 10, 20 & 30
@@ -197,7 +197,7 @@ class EoDxfLine : public EoDxfPoint {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   EoDxfGeometryBase3d m_secondPoint;  // Group code 11, 21 & 31
@@ -243,7 +243,7 @@ class EoDxfCircle : public EoDxfPoint {
   void ApplyExtrusion() override;
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   double m_radius{};  // Radius, code 40
@@ -272,7 +272,7 @@ class EoDxfArc : public EoDxfCircle {
 
  protected:
   // interpret code in dxf reading process or dispatch to inherited class
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   double m_startAngle{};  // group code 50 (in radians)
@@ -299,9 +299,9 @@ class EoDxfEllipse : public EoDxfLine {
  protected:
   /** @brief Parses dxf code and value to read ellipse entity data
    *  @param code dxf code
-   *  @param reader pointer to dxfReader to read value
+   *  @param reader pointer to EoDxfReader to read value
    */
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  private:
   void CorrectAxis();
@@ -330,7 +330,7 @@ class EoDxfTrace : public EoDxfLine {
   void ApplyExtrusion() override;
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   EoDxfGeometryBase3d m_thirdPoint{};  // Group code 12, 22 & 32
@@ -353,7 +353,7 @@ class EoDxfSolid : public EoDxfTrace {
 
  protected:
   //! interpret code in dxf reading process or dispatch to inherited class
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   [[nodiscard]] const EoDxfGeometryBase3d& FirstCorner() const noexcept { return m_firstPoint; }
@@ -401,7 +401,7 @@ class EoDxf3dFace : public EoDxfTrace {
 
  protected:
   //! interpret code in dxf reading process or dispatch to inherited class
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   int m_invisibleFlag{};  // Group code 70
@@ -423,7 +423,7 @@ class EoDxfBlock : public EoDxfPoint {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   UTF8STRING name{"*U0"};  // Group code 2
@@ -447,7 +447,7 @@ class EoDxfInsert : public EoDxfPoint {
   void ApplyExtrusion() override { EoDxfPoint::ApplyExtrusion(); }
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   UTF8STRING m_blockName;  // Group code 2
@@ -487,7 +487,7 @@ class EoDxfLwPolyline : public EoDxfEntity {
   [[nodiscard]] DRW_Vertex2D& AddVertex() { return m_vertices.emplace_back(); }
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   int m_numberOfVertices{};  // Group code 90
@@ -524,7 +524,7 @@ class EoDxfText : public EoDxfLine {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   double m_textHeight{};  // Group code 40
@@ -569,7 +569,7 @@ class EoDxfMText : public EoDxfText {
   }
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
   void UpdateAngle();  // recalculate angle if 'm_haveXAxisDirection' is true
 
  public:
@@ -589,7 +589,7 @@ class EoDxfVertex : public EoDxfPoint {
   }
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   double m_startingWidth{};  // Group code 40
@@ -670,7 +670,7 @@ class EoDxfPolyline : public EoDxfPoint {
   void appendVertex(EoDxfVertex* v) { m_vertices.push_back(v); }
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   int m_polylineFlag{};  // Group code 70
@@ -713,7 +713,7 @@ class EoDxfSpline : public EoDxfEntity {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   EoDxfGeometryBase3d m_normalVector;  // Group codes 210, 220, 230
@@ -794,7 +794,7 @@ class EoDxfHatch : public EoDxfPoint {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   UTF8STRING m_hatchPatternName;  // Group code 2
@@ -851,7 +851,7 @@ class EoDxfImage : public EoDxfLine {
   }
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   std::uint32_t ref{};  // Hard reference to imagedef object, code 340
@@ -918,7 +918,7 @@ class EoDxfDimension : public EoDxfEntity {
   virtual void ApplyExtrusion() {}
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   EoDxfGeometryBase3d getDefPoint() const { return defPoint; }  // Definition point, code 10, 20 & 30
@@ -1188,7 +1188,7 @@ class EoDxfLeader : public EoDxfEntity {
   virtual void ApplyExtrusion() {}
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   UTF8STRING style;  // Dimension style name, code 3
@@ -1239,7 +1239,7 @@ class EoDxfViewPort : public EoDxfPoint {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, dxfReader* reader);
+  void ParseCode(int code, EoDxfReader* reader);
 
  public:
   double pswidth;  // Width in paper space units, code 40

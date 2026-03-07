@@ -2,8 +2,8 @@
 
 #include "EoDxfBase.h"
 
-class dxfReader;
-class dxfWriter;
+class EoDxfReader;
+class EoDxfWriter;
 
 /**
  * @brief Class to handle classes table entries introduced in R13 (AC1012) and used in later versions of the DXF format.
@@ -16,9 +16,9 @@ class EoDxfClass {
   EoDxfClass() = default;
   ~EoDxfClass() = default;
 
-  void ParseCode(int code, dxfReader* reader) noexcept;
+  void ParseCode(int code, EoDxfReader* reader) noexcept;
   void clear() noexcept;
-  void write(dxfWriter* writer, EoDxf::Version version) const noexcept;
+  void write(EoDxfWriter* writer, EoDxf::Version version) const noexcept;
 
   UTF8STRING recName;  // group 1 - dxf record name
   UTF8STRING className;  // group 2 - C++ class name

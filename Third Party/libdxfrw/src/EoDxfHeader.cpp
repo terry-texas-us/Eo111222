@@ -5,7 +5,6 @@
 #include "EoDxfHeader.h"
 #include "intern/EoDxfReader.h"
 #include "intern/EoDxfWriter.h"
-#include <algorithm>
 
 namespace {
 /** Helper function to write a UTF-8 string to the dxfWriter, handling differences in how strings are written based on
@@ -18,7 +17,7 @@ namespace {
  * @param ver The DXF version being targeted for writing, which determines how the string is formatted.
  * @return true if the string was successfully written, false otherwise.
  */
-bool WriteUtf8String(dxfWriter* writer, int code, const std::string& str, EoDxf::Version ver) {
+bool WriteUtf8String(EoDxfWriter* writer, int code, const std::string& str, EoDxf::Version ver) {
   return writer->WriteUtf8String(code, str);
 }
 }  // namespace
@@ -44,7 +43,7 @@ void EoDxfHeader::AddComment(std::string comment) {
   m_comments += comment;
 }
 
-void EoDxfHeader::ParseCode(int code, dxfReader* reader) {
+void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 9:
       m_currentVariant = new EoDxfGroupCodeValuesVariant();
@@ -119,7 +118,7 @@ void EoDxfHeader::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfHeader::WriteBase(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -514,7 +513,7 @@ void EoDxfHeader::WriteBase(dxfWriter* writer, EoDxf::Version version) {
   writer->WriteInt16(70, GetInteger("$WORLDVIEW", &variantInteger) ? variantInteger : 1);
 }
 
-void EoDxfHeader::WriteAC1009Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -657,7 +656,7 @@ void EoDxfHeader::WriteAC1009Additions(dxfWriter* writer, EoDxf::Version version
   writer->WriteInt16(70, GetInteger("$PSLTSCALE", &variantInteger) ? variantInteger : 1);
 }
 
-void EoDxfHeader::WriteAC1012Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -749,7 +748,7 @@ void EoDxfHeader::WriteAC1012Additions(dxfWriter* writer, EoDxf::Version version
   writer->WriteDouble(40, GetDouble("$CMLSCALE", &variantDouble) ? variantDouble : 20.0);
 }
 
-void EoDxfHeader::WriteAC1014Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1014Additions(EoDxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
 
   writer->WriteString(9, "$PROXYGRAPHICS");
@@ -759,7 +758,7 @@ void EoDxfHeader::WriteAC1014Additions(dxfWriter* writer, EoDxf::Version version
   writer->WriteInt16(70, GetInteger("$MEASUREMENT", &variantInteger) ? variantInteger : 1);
 }
 
-void EoDxfHeader::WriteAC1015Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -1029,7 +1028,7 @@ void EoDxfHeader::WriteAC1015Additions(dxfWriter* writer, EoDxf::Version version
   writer->WriteInt16(290, GetInteger("$OLESTARTUP", &variantInteger) ? variantInteger : 0);
 }
 
-void EoDxfHeader::WriteAC1018Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1018Additions(EoDxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
   std::string variantString;
 
@@ -1083,7 +1082,7 @@ void EoDxfHeader::WriteAC1018Additions(dxfWriter* writer, EoDxf::Version version
   }
 }
 
-void EoDxfHeader::WriteAC1021Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1021Additions(EoDxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -1212,14 +1211,14 @@ void EoDxfHeader::WriteAC1021Additions(dxfWriter* writer, EoDxf::Version version
   writer->WriteDouble(40, GetDouble("$SHADOWPLANELOCATION", &variantDouble) ? variantDouble : 0.0);
 }
 
-void EoDxfHeader::WriteAC1024Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1024Additions(EoDxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
 
   writer->WriteString(9, "$DIMTXTDIRECTION");
   writer->WriteInt16(70, GetInteger("$DIMTXTDIRECTION", &variantInteger) ? variantInteger : 0);
 }
 
-void EoDxfHeader::Write(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
   std::string variantString;
   EoDxfGeometryBase3d variantCoord;

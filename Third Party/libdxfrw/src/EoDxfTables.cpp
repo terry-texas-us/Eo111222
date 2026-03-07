@@ -6,7 +6,7 @@
 #include "EoDxfTables.h"
 #include "intern/EoDxfReader.h"
 
-void EoDxfTableEntry::ParseCode(int code, dxfReader* reader) {
+void EoDxfTableEntry::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 5:
       m_handle = reader->GetHandleString();
@@ -69,7 +69,7 @@ void EoDxfTableEntry::Reset() {
   m_currentVariant = nullptr;
 }
 
-void EoDxfBlockRecord::ParseCode(int code, dxfReader* reader) {
+void EoDxfBlockRecord::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 70:
       m_blockInsertionUnits = reader->GetInt32();
@@ -86,7 +86,7 @@ void EoDxfBlockRecord::Reset() {
   EoDxfTableEntry::Reset();
 }
 
-void EoDxfDimensionStyle::ParseCode(int code, dxfReader* reader) {
+void EoDxfDimensionStyle::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 105:
       m_handle = reader->GetHandleString();
@@ -369,7 +369,7 @@ void EoDxfDimensionStyle::Reset() {
   EoDxfTableEntry::Reset();
 }
 
-void EoDxfLinetype::ParseCode(int code, dxfReader* reader) {
+void EoDxfLinetype::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 3:
       desc = reader->GetUtf8String();
@@ -406,7 +406,7 @@ void EoDxfLinetype::Update() {
   length = d;
 }
 
-void EoDxfLayer::ParseCode(int code, dxfReader* reader) {
+void EoDxfLayer::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 6:
       m_linetypeName = reader->GetUtf8String();
@@ -445,7 +445,7 @@ void EoDxfLayer::Reset() {
 }
 
 
-void EoDxfTextStyle::ParseCode(int code, dxfReader* reader) {
+void EoDxfTextStyle::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 3:
       font = reader->GetUtf8String();
@@ -477,7 +477,7 @@ void EoDxfTextStyle::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void EoDxfViewport::ParseCode(int code, dxfReader* reader) {
+void EoDxfViewport::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 10:
       lowerLeft.x = reader->GetDouble();

@@ -11,8 +11,8 @@
 #include "EoDxfInterface.h"
 #include "EoDxfObjects.h"
 
-class dxfReader;
-class dxfWriter;
+class EoDxfReader;
+class EoDxfWriter;
 
 class dxfRW {
  public:
@@ -157,8 +157,8 @@ class dxfRW {
   std::string m_nextEntity;
   std::vector<EoDxfImageDefinition*> m_imageDef;  // list of image definitions to write at the end of file
   std::map<std::string, int> m_blockMap;
-  dxfReader* m_reader;
-  dxfWriter* m_writer;
+  EoDxfReader* m_reader;
+  EoDxfWriter* m_writer;
   EoDxfInterface* m_interface{};
   int m_entityCount{};
   int m_ellipseParts;  // number of parts when rendering ellipse as polyline

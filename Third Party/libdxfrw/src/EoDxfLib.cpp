@@ -66,11 +66,11 @@ bool dxfRW::Read(EoDxfInterface* interface_, bool ext) {
     m_binaryFile = true;
     // skip sentinel
     filestr.seekg(22, std::ios::beg);
-    m_reader = new dxfReaderBinary(&filestr);
+    m_reader = new EoDxfReaderBinary(&filestr);
   } else {
     m_binaryFile = false;
     filestr.open(m_fileName.c_str(), std::ios_base::in);
-    m_reader = new dxfReaderAscii(&filestr);
+    m_reader = new EoDxfReaderAscii(&filestr);
   }
   isOk = ProcessDxf();
   filestr.close();
@@ -89,10 +89,10 @@ bool dxfRW::Write(EoDxfInterface* interface_, EoDxf::Version version, bool binar
     filestr.open(m_fileName.c_str(), std::ios_base::out | std::ios::binary | std::ios::trunc);
     // write sentinel
     filestr << "AutoCAD Binary DXF\r\n" << (char)26 << '\0';
-    m_writer = new dxfWriterBinary(&filestr);
+    m_writer = new EoDxfWriterBinary(&filestr);
   } else {
     filestr.open(m_fileName.c_str(), std::ios_base::out | std::ios::trunc);
-    m_writer = new dxfWriterAscii(&filestr);
+    m_writer = new EoDxfWriterAscii(&filestr);
     std::string comm = std::string("dxfrw ") + std::string(DRW_VERSION);
     m_writer->WriteString(999, comm);
   }
