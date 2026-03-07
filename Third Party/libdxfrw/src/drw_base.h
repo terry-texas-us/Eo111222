@@ -135,28 +135,26 @@ struct DRW_Vertex2D {
 /*!
  *  Class to handle header vars
  */
-class DRW_Variant {
+class EoDxfGroupCodeValuesVariant {
  public:
   enum Type { String, Integer, Double, Coord, Invalid };
   // TODO: add INT64 support
-  DRW_Variant() : sdata(std::string()), vdata(), content(0), vType(Type::Invalid), vCode(0) {}
-
-  DRW_Variant(int c, std::int32_t i) : sdata(std::string()), vdata(), content(i), vType(Type::Integer), vCode(c) {}
-  DRW_Variant(int c, std::uint32_t i)
+  EoDxfGroupCodeValuesVariant() : sdata(std::string()), vdata(), content(0), vType(Type::Invalid), vCode(0) {}
+  EoDxfGroupCodeValuesVariant(int c, std::int32_t i) : sdata(std::string()), vdata(), content(i), vType(Type::Integer), vCode(c) {}
+  EoDxfGroupCodeValuesVariant(int c, std::uint32_t i)
       : sdata(std::string()), vdata(), content(static_cast<std::int32_t>(i)), vType(Type::Integer), vCode(c) {}
 
-  DRW_Variant(int c, double d) : sdata(std::string()), vdata(), content(d), vType(Type::Double), vCode(c) {}
-  DRW_Variant(int c, UTF8STRING s) : sdata(s), vdata(), content(&sdata), vType(Type::String), vCode(c) {}
+  EoDxfGroupCodeValuesVariant(int c, double d) : sdata(std::string()), vdata(), content(d), vType(Type::Double), vCode(c) {}
+  EoDxfGroupCodeValuesVariant(int c, UTF8STRING s) : sdata(s), vdata(), content(&sdata), vType(Type::String), vCode(c) {}
+  EoDxfGroupCodeValuesVariant(int c, DRW_Coord crd) : sdata(std::string()), vdata(crd), content(&vdata), vType(Type::Coord), vCode(c) {}
 
-  DRW_Variant(int c, DRW_Coord crd) : sdata(std::string()), vdata(crd), content(&vdata), vType(Type::Coord), vCode(c) {}
-
-  DRW_Variant(const DRW_Variant& d)
+  EoDxfGroupCodeValuesVariant(const EoDxfGroupCodeValuesVariant& d)
       : sdata(d.sdata), vdata(d.vdata), content(d.content), vType(d.vType), vCode(d.vCode) {
     if (d.vType == Type::Coord) { content.v = &vdata; }
     if (d.vType == Type::String) { content.s = &sdata; }
   }
 
-  ~DRW_Variant() {}
+  ~EoDxfGroupCodeValuesVariant() {}
 
   void addString(int c, UTF8STRING s) {
     vType = Type::String;
@@ -181,15 +179,15 @@ class DRW_Variant {
     vCode = c;
   }
   void setCoordX(double d) {
-    if (vType == DRW_Variant::Type::Coord) { vdata.x = d; }
+    if (vType == EoDxfGroupCodeValuesVariant::Type::Coord) { vdata.x = d; }
   }
   void setCoordY(double d) {
-    if (vType == DRW_Variant::Type::Coord) { vdata.y = d; }
+    if (vType == EoDxfGroupCodeValuesVariant::Type::Coord) { vdata.y = d; }
   }
   void setCoordZ(double d) {
-    if (vType == DRW_Variant::Type::Coord) { vdata.z = d; }
+    if (vType == EoDxfGroupCodeValuesVariant::Type::Coord) { vdata.z = d; }
   }
-  enum DRW_Variant::Type type() const { return vType; }
+  enum EoDxfGroupCodeValuesVariant::Type type() const { return vType; }
   int code() const { return vCode; }
 
  private:
@@ -213,7 +211,7 @@ class DRW_Variant {
   DRW_VarContent content;
 
  private:
-  enum DRW_Variant::Type vType;
+  enum EoDxfGroupCodeValuesVariant::Type vType;
   int vCode;
 };
 

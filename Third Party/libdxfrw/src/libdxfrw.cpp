@@ -96,7 +96,7 @@ bool dxfRW::Write(DRW_Interface* interface_, EoDxf::Version version, bool binary
     std::string comm = std::string("dxfrw ") + std::string(DRW_VERSION);
     m_writer->WriteString(999, comm);
   }
-  DRW_Header header;
+  EoDxfHeader header;
   m_interface->writeHeader(header);
   m_writer->WriteString(0, "SECTION");
   m_entityCount = FIRSTHANDLE;
@@ -135,7 +135,7 @@ bool dxfRW::Write(DRW_Interface* interface_, EoDxf::Version version, bool binary
   return isOk;
 }
 
-bool dxfRW::WriteEntity(EoDxfEntiry* entity) {
+bool dxfRW::WriteEntity(EoDxfEntity* entity) {
   entity->m_handle = ++m_entityCount;
   m_writer->WriteString(5, ToHexString(entity->m_handle));
   m_writer->WriteString(100, "AcDbEntity");
@@ -150,7 +150,7 @@ bool dxfRW::WriteEntity(EoDxfEntiry* entity) {
   return true;
 }
 
-bool dxfRW::WriteLinetype(DRW_Linetype* lineType) {
+bool dxfRW::WriteLinetype(EoDxfLinetype* lineType) {
   std::string strname = lineType->m_tableName;
 
   transform(strname.begin(), strname.end(), strname.begin(), ::toupper);
@@ -178,7 +178,7 @@ bool dxfRW::WriteLinetype(DRW_Linetype* lineType) {
   return true;
 }
 
-bool dxfRW::WriteLayer(DRW_Layer* layer) {
+bool dxfRW::WriteLayer(EoDxfLayer* layer) {
   m_writer->WriteString(0, "LAYER");
   if (!wlayer0 && layer->m_tableName == "0") {
     wlayer0 = true;
@@ -449,7 +449,7 @@ bool dxfRW::WriteLine(EoDxfLine* line) {
   return true;
 }
 
-bool dxfRW::WriteRay(DRW_Ray* ray) {
+bool dxfRW::WriteRay(EoDxfRay* ray) {
   m_writer->WriteString(0, "RAY");
   WriteEntity(ray);
   m_writer->WriteString(100, "AcDbRay");
@@ -469,7 +469,7 @@ bool dxfRW::WriteRay(DRW_Ray* ray) {
   return true;
 }
 
-bool dxfRW::WriteXline(DRW_Xline* xline) {
+bool dxfRW::WriteXline(EoDxfXline* xline) {
   m_writer->WriteString(0, "XLINE");
   WriteEntity(xline);
   m_writer->WriteString(100, "AcDbXline");
@@ -500,7 +500,7 @@ bool dxfRW::WriteCircle(EoDxfCircle* circle) {
   return true;
 }
 
-bool dxfRW::WriteArc(DRW_Arc* arc) {
+bool dxfRW::WriteArc(EoDxfArc* arc) {
   m_writer->WriteString(0, "ARC");
   WriteEntity(arc);
   m_writer->WriteString(100, "AcDbCircle");
@@ -514,7 +514,7 @@ bool dxfRW::WriteArc(DRW_Arc* arc) {
   return true;
 }
 
-bool dxfRW::WriteEllipse(DRW_Ellipse* ellipse) {
+bool dxfRW::WriteEllipse(EoDxfEllipse* ellipse) {
   // verify axis/ratio and params for full ellipse
   ellipse->CorrectAxis();
 
@@ -534,7 +534,7 @@ bool dxfRW::WriteEllipse(DRW_Ellipse* ellipse) {
   return true;
 }
 
-bool dxfRW::WriteTrace(DRW_Trace* trace) {
+bool dxfRW::WriteTrace(EoDxfTrace* trace) {
   m_writer->WriteString(0, "TRACE");
   WriteEntity(trace);
   m_writer->WriteString(100, "AcDbTrace");
@@ -553,7 +553,7 @@ bool dxfRW::WriteTrace(DRW_Trace* trace) {
   return true;
 }
 
-bool dxfRW::WriteSolid(DRW_Solid* solid) {
+bool dxfRW::WriteSolid(EoDxfSolid* solid) {
   m_writer->WriteString(0, "SOLID");
   WriteEntity(solid);
   m_writer->WriteString(100, "AcDbTrace");  // SOLID shares the same subclass as TRACE
@@ -572,7 +572,7 @@ bool dxfRW::WriteSolid(DRW_Solid* solid) {
   return true;
 }
 
-bool dxfRW::Write3dface(DRW_3Dface* face) {
+bool dxfRW::Write3dFace(EoDxf3dFace* face) {
   m_writer->WriteString(0, "3DFACE");
   WriteEntity(face);
   m_writer->WriteString(100, "AcDbFace");
@@ -592,7 +592,7 @@ bool dxfRW::Write3dface(DRW_3Dface* face) {
   return true;
 }
 
-bool dxfRW::WriteLWPolyline(DRW_LWPolyline* polyline) {
+bool dxfRW::WriteLWPolyline(EoDxfLwPolyline* polyline) {
   m_writer->WriteString(0, "LWPOLYLINE");
   WriteEntity(polyline);
   m_writer->WriteString(100, "AcDbPolyline");
@@ -615,7 +615,7 @@ bool dxfRW::WriteLWPolyline(DRW_LWPolyline* polyline) {
   return true;
 }
 
-bool dxfRW::WritePolyline(DRW_Polyline* polyline) {
+bool dxfRW::WritePolyline(EoDxfPolyline* polyline) {
   m_writer->WriteString(0, "POLYLINE");
   WriteEntity(polyline);
 
@@ -706,7 +706,7 @@ bool dxfRW::WritePolyline(DRW_Polyline* polyline) {
   return true;
 }
 
-bool dxfRW::WriteSpline(DRW_Spline* spline) {
+bool dxfRW::WriteSpline(EoDxfSpline* spline) {
   m_writer->WriteString(0, "SPLINE");
   WriteEntity(spline);
   m_writer->WriteString(100, "AcDbSpline");
@@ -759,7 +759,7 @@ bool dxfRW::WriteSpline(DRW_Spline* spline) {
   return true;
 }
 
-bool dxfRW::WriteHatch(DRW_Hatch* hatch) {
+bool dxfRW::WriteHatch(EoDxfHatch* hatch) {
   m_writer->WriteString(0, "HATCH");
   WriteEntity(hatch);
   m_writer->WriteString(100, "AcDbHatch");
@@ -781,7 +781,7 @@ bool dxfRW::WriteHatch(DRW_Hatch* hatch) {
     if ((hatchLoop->m_boundaryPathType & 2) == 2) {
       // polyline boundary path
       if (!hatchLoop->m_entities.empty() && hatchLoop->m_entities.front()->m_entityType == EoDxf::LWPOLYLINE) {
-        auto* polyline = static_cast<DRW_LWPolyline*>(hatchLoop->m_entities.front().get());
+        auto* polyline = static_cast<EoDxfLwPolyline*>(hatchLoop->m_entities.front().get());
         m_writer->WriteInt16(72, (polyline->m_constantWidth != 0.0) ? 1 : 0);
         m_writer->WriteInt16(73, polyline->m_polylineFlag);
         m_writer->WriteInt32(93, static_cast<int>(polyline->m_vertices.size()));
@@ -808,7 +808,7 @@ bool dxfRW::WriteHatch(DRW_Hatch* hatch) {
           }
           case EoDxf::ARC: {
             m_writer->WriteInt16(72, 2);
-            auto* arc = static_cast<DRW_Arc*>(hatchLoop->m_entities.at(j).get());
+            auto* arc = static_cast<EoDxfArc*>(hatchLoop->m_entities.at(j).get());
             m_writer->WriteDouble(10, arc->m_firstPoint.x);
             m_writer->WriteDouble(20, arc->m_firstPoint.y);
             m_writer->WriteDouble(40, arc->m_radius);
@@ -819,7 +819,7 @@ bool dxfRW::WriteHatch(DRW_Hatch* hatch) {
           }
           case EoDxf::ELLIPSE: {
             m_writer->WriteInt16(72, 3);
-            auto* ellipse = static_cast<DRW_Ellipse*>(hatchLoop->m_entities.at(j).get());
+            auto* ellipse = static_cast<EoDxfEllipse*>(hatchLoop->m_entities.at(j).get());
             ellipse->CorrectAxis();
             m_writer->WriteDouble(10, ellipse->m_firstPoint.x);
             m_writer->WriteDouble(20, ellipse->m_firstPoint.y);
@@ -991,7 +991,7 @@ bool dxfRW::WriteDimension(EoDxfDimension* dimension) {
   return true;
 }
 
-bool dxfRW::WriteInsert(DRW_Insert* blockReference) {
+bool dxfRW::WriteInsert(EoDxfInsert* blockReference) {
   m_writer->WriteString(0, "INSERT");
   WriteEntity(blockReference);
 
@@ -1012,7 +1012,7 @@ bool dxfRW::WriteInsert(DRW_Insert* blockReference) {
   return true;
 }
 
-bool dxfRW::WriteText(DRW_Text* text) {
+bool dxfRW::WriteText(EoDxfText* text) {
   m_writer->WriteString(0, "TEXT");
   WriteEntity(text);
   m_writer->WriteString(100, "AcDbText");
@@ -1029,8 +1029,8 @@ bool dxfRW::WriteText(DRW_Text* text) {
   m_writer->WriteUtf8String(7, text->m_textStyleName);
 
   m_writer->WriteInt16(71, text->m_textGenerationFlags);
-  if (text->m_horizontalAlignment != DRW_Text::HAlign::Left) { m_writer->WriteInt16(72, text->m_horizontalAlignment); }
-  if (text->m_horizontalAlignment != DRW_Text::HAlign::Left || text->m_verticalAlignment != DRW_Text::VAlign::BaseLine) {
+  if (text->m_horizontalAlignment != EoDxfText::HAlign::Left) { m_writer->WriteInt16(72, text->m_horizontalAlignment); }
+  if (text->m_horizontalAlignment != EoDxfText::HAlign::Left || text->m_verticalAlignment != EoDxfText::VAlign::BaseLine) {
     m_writer->WriteDouble(11, text->m_secondPoint.x);
     m_writer->WriteDouble(21, text->m_secondPoint.y);
     m_writer->WriteDouble(31, text->m_secondPoint.z);
@@ -1039,11 +1039,11 @@ bool dxfRW::WriteText(DRW_Text* text) {
   m_writer->WriteDouble(220, text->m_extrusionDirection.y);
   m_writer->WriteDouble(230, text->m_extrusionDirection.z);
   m_writer->WriteString(100, "AcDbText");
-  if (text->m_verticalAlignment != DRW_Text::VAlign::BaseLine) { m_writer->WriteInt16(73, text->m_verticalAlignment); }
+  if (text->m_verticalAlignment != EoDxfText::VAlign::BaseLine) { m_writer->WriteInt16(73, text->m_verticalAlignment); }
   return true;
 }
 
-bool dxfRW::WriteMText(DRW_MText* mText) {
+bool dxfRW::WriteMText(EoDxfMText* mText) {
   m_writer->WriteString(0, "MTEXT");
   WriteEntity(mText);
   m_writer->WriteString(100, "AcDbMText");
@@ -1073,7 +1073,7 @@ bool dxfRW::WriteMText(DRW_MText* mText) {
   return true;
 }
 
-bool dxfRW::WriteViewport(DRW_Viewport* viewport) {
+bool dxfRW::WriteViewport(EoDxfViewPort* viewport) {
   m_writer->WriteString(0, "VIEWPORT");
   WriteEntity(viewport);
   m_writer->WriteString(100, "AcDbViewport");
@@ -1089,7 +1089,7 @@ bool dxfRW::WriteViewport(DRW_Viewport* viewport) {
   return true;
 }
 
-DRW_ImageDef* dxfRW::WriteImage(DRW_Image* rasterImage, std::string name) {
+DRW_ImageDef* dxfRW::WriteImage(EoDxfImage* rasterImage, std::string name) {
   // search if exist imagedef with this mane (image inserted more than 1 time)
   DRW_ImageDef* id = nullptr;
   for (unsigned int i = 0; i < m_imageDef.size(); i++) {
@@ -1271,9 +1271,9 @@ bool dxfRW::WriteTables() {
   wlayer0 = false;
   m_interface->writeLayers();
   if (!wlayer0) {
-    DRW_Layer lay0;
-    lay0.m_tableName = "0";
-    WriteLayer(&lay0);
+    EoDxfLayer defaultLayer;
+    defaultLayer.m_tableName = "0";
+    WriteLayer(&defaultLayer);
   }
   m_writer->WriteString(0, "ENDTAB");
   /*** STYLE ***/
@@ -1537,8 +1537,8 @@ bool dxfRW::WriteObjects() {
   return true;
 }
 
-bool dxfRW::WriteExtData(const std::vector<DRW_Variant*>& ed) {
-  for (std::vector<DRW_Variant*>::const_iterator it = ed.begin(); it != ed.end(); ++it) {
+bool dxfRW::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& ed) {
+  for (std::vector<EoDxfGroupCodeValuesVariant*>::const_iterator it = ed.begin(); it != ed.end(); ++it) {
     switch ((*it)->code()) {
       case 1000:
       case 1001:
@@ -1547,7 +1547,7 @@ bool dxfRW::WriteExtData(const std::vector<DRW_Variant*>& ed) {
       case 1004:
       case 1005: {
         int cc = (*it)->code();
-        if ((*it)->type() == DRW_Variant::Type::String) { m_writer->WriteUtf8String(cc, *(*it)->content.s); }
+        if ((*it)->type() == EoDxfGroupCodeValuesVariant::Type::String) { m_writer->WriteUtf8String(cc, *(*it)->content.s); }
         //            m_writer->WriteUtf8String((*it)->code, (*it)->content.s);
         break;
       }
@@ -1555,7 +1555,7 @@ bool dxfRW::WriteExtData(const std::vector<DRW_Variant*>& ed) {
       case 1011:
       case 1012:
       case 1013:
-        if ((*it)->type() == DRW_Variant::Type::Coord) {
+        if ((*it)->type() == EoDxfGroupCodeValuesVariant::Type::Coord) {
           m_writer->WriteDouble((*it)->code(), (*it)->content.v->x);
           m_writer->WriteDouble((*it)->code() + 10, (*it)->content.v->y);
           m_writer->WriteDouble((*it)->code() + 20, (*it)->content.v->z);
@@ -1564,13 +1564,13 @@ bool dxfRW::WriteExtData(const std::vector<DRW_Variant*>& ed) {
       case 1040:
       case 1041:
       case 1042:
-        if ((*it)->type() == DRW_Variant::Type::Double) { m_writer->WriteDouble((*it)->code(), (*it)->content.d); }
+        if ((*it)->type() == EoDxfGroupCodeValuesVariant::Type::Double) { m_writer->WriteDouble((*it)->code(), (*it)->content.d); }
         break;
       case 1070:
-        if ((*it)->type() == DRW_Variant::Type::Integer) { m_writer->WriteInt16((*it)->code(), (*it)->content.i); }
+        if ((*it)->type() == EoDxfGroupCodeValuesVariant::Type::Integer) { m_writer->WriteInt16((*it)->code(), (*it)->content.i); }
         break;
       case 1071:
-        if ((*it)->type() == DRW_Variant::Type::Integer) { m_writer->WriteInt32((*it)->code(), (*it)->content.i); }
+        if ((*it)->type() == EoDxfGroupCodeValuesVariant::Type::Integer) { m_writer->WriteInt32((*it)->code(), (*it)->content.i); }
         break;
       default:
         break;
@@ -1724,22 +1724,22 @@ bool dxfRW::ProcessLType() {
   int code;
   std::string sectionstr;
   bool reading = false;
-  DRW_Linetype ltype;
+  EoDxfLinetype linetype;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       if (reading) {
-        ltype.Update();
-        m_interface->addLinetype(ltype);
+        linetype.Update();
+        m_interface->addLinetype(linetype);
       }
       sectionstr = m_reader->GetString();
       if (sectionstr == "LTYPE") {
         reading = true;
-        ltype.Reset();
+        linetype.Reset();
       } else if (sectionstr == "ENDTAB") {
         return true;
       }
     } else if (reading) {
-      ltype.ParseCode(code, m_reader);
+      linetype.ParseCode(code, m_reader);
     }
   }
   return true;
@@ -1749,7 +1749,7 @@ bool dxfRW::ProcessLayer() {
   int code;
   std::string sectionstr;
   bool reading = false;
-  DRW_Layer layer;
+  EoDxfLayer layer;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       if (reading) { m_interface->addLayer(layer); }
@@ -1941,7 +1941,7 @@ bool dxfRW::ProcessEntities(bool isblock) {
     } else if (m_nextEntity == "SPLINE") {
       ProcessSpline();
     } else if (m_nextEntity == "3DFACE") {
-      Process3dface();
+      Process3dFace();
     } else if (m_nextEntity == "VIEWPORT") {
       ProcessViewport();
     } else if (m_nextEntity == "IMAGE") {
@@ -1968,7 +1968,7 @@ bool dxfRW::ProcessEntities(bool isblock) {
 
 bool dxfRW::ProcessEllipse() {
   int code;
-  DRW_Ellipse ellipse;
+  EoDxfEllipse ellipse;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -1987,7 +1987,7 @@ bool dxfRW::ProcessEllipse() {
 
 bool dxfRW::ProcessTrace() {
   int code;
-  DRW_Trace trace;
+  EoDxfTrace trace;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -2006,7 +2006,7 @@ bool dxfRW::ProcessTrace() {
 
 bool dxfRW::ProcessSolid() {
   int code;
-  DRW_Solid solid;
+  EoDxfSolid solid;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -2023,9 +2023,9 @@ bool dxfRW::ProcessSolid() {
   return true;
 }
 
-bool dxfRW::Process3dface() {
+bool dxfRW::Process3dFace() {
   int code;
-  DRW_3Dface face;
+  EoDxf3dFace face;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -2043,16 +2043,16 @@ bool dxfRW::Process3dface() {
 
 bool dxfRW::ProcessViewport() {
   int code;
-  DRW_Viewport vp;
+  EoDxfViewPort viewport;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        m_interface->addViewport(vp);
+        m_interface->addViewport(viewport);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        vp.ParseCode(code, m_reader);
+        viewport.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2097,16 +2097,16 @@ bool dxfRW::ProcessLine() {
 
 bool dxfRW::ProcessRay() {
   int code;
-  DRW_Ray line;
+  EoDxfRay ray;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        m_interface->addRay(line);
+        m_interface->addRay(ray);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        line.ParseCode(code, m_reader);
+        ray.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2115,7 +2115,7 @@ bool dxfRW::ProcessRay() {
 
 bool dxfRW::ProcessXline() {
   int code;
-  DRW_Xline line;
+  EoDxfXline line;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -2152,7 +2152,7 @@ bool dxfRW::ProcessCircle() {
 
 bool dxfRW::ProcessArc() {
   int code;
-  DRW_Arc arc;
+  EoDxfArc arc;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -2171,7 +2171,7 @@ bool dxfRW::ProcessArc() {
 
 bool dxfRW::ProcessInsert() {
   int code;
-  DRW_Insert insert;
+  EoDxfInsert insert;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -2189,17 +2189,17 @@ bool dxfRW::ProcessInsert() {
 
 bool dxfRW::ProcessLWPolyline() {
   int code;
-  DRW_LWPolyline pl;
+  EoDxfLwPolyline polyline;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        if (m_applyExtrusion) { pl.ApplyExtrusion(); }
-        m_interface->addLWPolyline(pl);
+        if (m_applyExtrusion) { polyline.ApplyExtrusion(); }
+        m_interface->addLWPolyline(polyline);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        pl.ParseCode(code, m_reader);
+        polyline.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2208,7 +2208,7 @@ bool dxfRW::ProcessLWPolyline() {
 
 bool dxfRW::ProcessPolyline() {
   int code;
-  DRW_Polyline polyline;
+  EoDxfPolyline polyline;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -2225,7 +2225,7 @@ bool dxfRW::ProcessPolyline() {
   return true;
 }
 
-bool dxfRW::ProcessVertex(DRW_Polyline* polyline) {
+bool dxfRW::ProcessVertex(EoDxfPolyline* polyline) {
   int code;
   auto* vertex = new DRW_Vertex();
   while (m_reader->ReadRec(&code)) {
@@ -2253,16 +2253,16 @@ bool dxfRW::ProcessVertex(DRW_Polyline* polyline) {
 
 bool dxfRW::ProcessText() {
   int code;
-  DRW_Text txt;
+  EoDxfText text;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        m_interface->addText(txt);
+        m_interface->addText(text);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        txt.ParseCode(code, m_reader);
+        text.ParseCode(code, m_reader);
         break;
     }
   }
@@ -2271,7 +2271,7 @@ bool dxfRW::ProcessText() {
 
 bool dxfRW::ProcessMText() {
   int code;
-  DRW_MText txt;
+  EoDxfMText txt;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -2290,7 +2290,7 @@ bool dxfRW::ProcessMText() {
 
 bool dxfRW::ProcessHatch() {
   int code;
-  DRW_Hatch hatch;
+  EoDxfHatch hatch;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -2308,7 +2308,7 @@ bool dxfRW::ProcessHatch() {
 
 bool dxfRW::ProcessSpline() {
   int code;
-  DRW_Spline sp;
+  EoDxfSpline sp;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -2326,16 +2326,16 @@ bool dxfRW::ProcessSpline() {
 
 bool dxfRW::ProcessImage() {
   int code;
-  DRW_Image img;
+  EoDxfImage image;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        m_interface->addImage(&img);
+        m_interface->addImage(&image);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        img.ParseCode(code, m_reader);
+        image.ParseCode(code, m_reader);
         break;
     }
   }

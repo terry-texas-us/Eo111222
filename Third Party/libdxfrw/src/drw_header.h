@@ -9,18 +9,18 @@ class dxfReader;
 class dxfWriter;
 
 /** Class to handle header vars, to read iterate over "std::map vars"
- *  to write add a DRW_Variant* into "std::map vars" (do not delete it, they are cleared in dtor)
+ *  to write add a EoDxfGroupCodeValuesVariant* into "std::map vars" (do not delete it, they are cleared in dtor)
  *  or use add* helper functions.
  */
-class DRW_Header {
+class EoDxfHeader {
  public:
-  DRW_Header() { m_version = EoDxf::Version::AC1021; }
+  EoDxfHeader() { m_version = EoDxf::Version::AC1021; }
 
-  DRW_Header(const DRW_Header& other);
+  EoDxfHeader(const EoDxfHeader& other);
 
-  DRW_Header& operator=(const DRW_Header& other);
+  EoDxfHeader& operator=(const EoDxfHeader& other);
 
-  ~DRW_Header() { ClearVariants(); }
+  ~EoDxfHeader() { ClearVariants(); }
 
   void AddDouble(const std::string& key, double value, int code);
   void AddInteger(const std::string& key, int value, int code);
@@ -29,7 +29,7 @@ class DRW_Header {
 
   [[nodiscard]] std::string GetComments() const { return m_comments; }
 
-  /** @brief Writes the header variables stored in this DRW_Header instance to the provided dxfWriter object in the
+  /** @brief Writes the header variables stored in this EoDxfHeader instance to the provided dxfWriter object in the
    * format specified by the given DXF version. This method iterates over the header variables stored in the m_variants
    * map and writes them to the dxfWriter using the appropriate group codes and value types based on the DXF version. It
    * handles writing of standard header variables such as $ACADVER, $DWGCODEPAGE, and others, ensuring that the output
@@ -45,7 +45,7 @@ class DRW_Header {
   /** @brief Parses a header variable from the given dxfReader object based on the provided group code.
    *  This method reads the value corresponding to the code from the reader and stores it in the m_variants map
    *  using the current variable name (m_name) as the key. The type of value read (string, double, int, or coord)
-   *  is determined by the code and stored in a DRW_Variant object.
+   *  is determined by the code and stored in a EoDxfGroupCodeValuesVariant object.
    *
    *  @param code The group code indicating the type of header variable being parsed.
    *  @param reader Pointer to dxfReader object to read values from.
@@ -110,19 +110,19 @@ class DRW_Header {
   [[nodiscard]] bool GetString(const std::string& key, std::string* variantString);
   [[nodiscard]] bool GetCoord(const std::string& key, DRW_Coord* varStr);
 
-  /** @brief Clears all header variables stored in the m_variants map, deleting the associated DRW_Variant objects and
+  /** @brief Clears all header variables stored in the m_variants map, deleting the associated EoDxfGroupCodeValuesVariant objects and
    * emptying the map. This method is used to free memory allocated for header variables and reset the state of the
-   * DRW_Header instance.
+   * EoDxfHeader instance.
    */
   void ClearVariants();
 
  public:
-  std::map<std::string, DRW_Variant*> m_variants;
+  std::map<std::string, EoDxfGroupCodeValuesVariant*> m_variants;
 
  private:
   std::string m_comments{};
   std::string m_name{};
-  DRW_Variant* m_currentVariant{};
+  EoDxfGroupCodeValuesVariant* m_currentVariant{};
   int m_version{};
 
   friend class dxfRW;

@@ -23,31 +23,31 @@ bool WriteUtf8String(dxfWriter* writer, int code, const std::string& str, EoDxf:
 }
 }  // namespace
 
-DRW_Header::DRW_Header(const DRW_Header& other)
+EoDxfHeader::EoDxfHeader(const EoDxfHeader& other)
     : m_version{other.m_version}, m_comments{other.m_comments}, m_currentVariant{nullptr} {
-  for (const auto& [key, variant] : other.m_variants) { m_variants.emplace(key, new DRW_Variant(*variant)); }
+  for (const auto& [key, variant] : other.m_variants) { m_variants.emplace(key, new EoDxfGroupCodeValuesVariant(*variant)); }
 }
 
-DRW_Header& DRW_Header::operator=(const DRW_Header& other) {
+EoDxfHeader& EoDxfHeader::operator=(const EoDxfHeader& other) {
   if (this == &other) { return *this; }
   ClearVariants();
   m_version = other.m_version;
   m_comments = other.m_comments;
   m_currentVariant = nullptr;
 
-  for (const auto& [key, variant] : other.m_variants) { m_variants.emplace(key, new DRW_Variant(*variant)); }
+  for (const auto& [key, variant] : other.m_variants) { m_variants.emplace(key, new EoDxfGroupCodeValuesVariant(*variant)); }
   return *this;
 }
 
-void DRW_Header::AddComment(std::string comment) {
+void EoDxfHeader::AddComment(std::string comment) {
   if (!m_comments.empty()) { m_comments += '\n'; }
   m_comments += comment;
 }
 
-void DRW_Header::ParseCode(int code, dxfReader* reader) {
+void EoDxfHeader::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 9:
-      m_currentVariant = new DRW_Variant();
+      m_currentVariant = new EoDxfGroupCodeValuesVariant();
       m_name = reader->GetString();
       if (m_version < EoDxf::Version::AC1015 && m_name == "$DIMUNIT") { m_name = "$DIMLUNIT"; }
       m_variants[m_name] = m_currentVariant;
@@ -119,7 +119,7 @@ void DRW_Header::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_Header::WriteBase(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteBase(dxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -514,7 +514,7 @@ void DRW_Header::WriteBase(dxfWriter* writer, EoDxf::Version version) {
   writer->WriteInt16(70, GetInteger("$WORLDVIEW", &variantInteger) ? variantInteger : 1);
 }
 
-void DRW_Header::WriteAC1009Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1009Additions(dxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -657,7 +657,7 @@ void DRW_Header::WriteAC1009Additions(dxfWriter* writer, EoDxf::Version version)
   writer->WriteInt16(70, GetInteger("$PSLTSCALE", &variantInteger) ? variantInteger : 1);
 }
 
-void DRW_Header::WriteAC1012Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1012Additions(dxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -749,7 +749,7 @@ void DRW_Header::WriteAC1012Additions(dxfWriter* writer, EoDxf::Version version)
   writer->WriteDouble(40, GetDouble("$CMLSCALE", &variantDouble) ? variantDouble : 20.0);
 }
 
-void DRW_Header::WriteAC1014Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1014Additions(dxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
 
   writer->WriteString(9, "$PROXYGRAPHICS");
@@ -759,7 +759,7 @@ void DRW_Header::WriteAC1014Additions(dxfWriter* writer, EoDxf::Version version)
   writer->WriteInt16(70, GetInteger("$MEASUREMENT", &variantInteger) ? variantInteger : 1);
 }
 
-void DRW_Header::WriteAC1015Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1015Additions(dxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -1029,7 +1029,7 @@ void DRW_Header::WriteAC1015Additions(dxfWriter* writer, EoDxf::Version version)
   writer->WriteInt16(290, GetInteger("$OLESTARTUP", &variantInteger) ? variantInteger : 0);
 }
 
-void DRW_Header::WriteAC1018Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1018Additions(dxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
   std::string variantString;
 
@@ -1083,7 +1083,7 @@ void DRW_Header::WriteAC1018Additions(dxfWriter* writer, EoDxf::Version version)
   }
 }
 
-void DRW_Header::WriteAC1021Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1021Additions(dxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -1212,14 +1212,14 @@ void DRW_Header::WriteAC1021Additions(dxfWriter* writer, EoDxf::Version version)
   writer->WriteDouble(40, GetDouble("$SHADOWPLANELOCATION", &variantDouble) ? variantDouble : 0.0);
 }
 
-void DRW_Header::WriteAC1024Additions(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1024Additions(dxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
 
   writer->WriteString(9, "$DIMTXTDIRECTION");
   writer->WriteInt16(70, GetInteger("$DIMTXTDIRECTION", &variantInteger) ? variantInteger : 0);
 }
 
-void DRW_Header::Write(dxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::Write(dxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
   std::string variantString;
   DRW_Coord variantCoord;
@@ -1325,30 +1325,30 @@ void DRW_Header::Write(dxfWriter* writer, EoDxf::Version version) {
   }
 }
 
-void DRW_Header::AddDouble(const std::string& key, double value, int code) {
-  m_currentVariant = new DRW_Variant(code, value);
+void EoDxfHeader::AddDouble(const std::string& key, double value, int code) {
+  m_currentVariant = new EoDxfGroupCodeValuesVariant(code, value);
   m_variants[key] = m_currentVariant;
 }
 
-void DRW_Header::AddInteger(const std::string& key, int value, int code) {
-  m_currentVariant = new DRW_Variant(code, value);
+void EoDxfHeader::AddInteger(const std::string& key, int value, int code) {
+  m_currentVariant = new EoDxfGroupCodeValuesVariant(code, value);
   m_variants[key] = m_currentVariant;
 }
 
-void DRW_Header::AddString(const std::string& key, std::string value, int code) {
-  m_currentVariant = new DRW_Variant(code, value);
+void EoDxfHeader::AddString(const std::string& key, std::string value, int code) {
+  m_currentVariant = new EoDxfGroupCodeValuesVariant(code, value);
   m_variants[key] = m_currentVariant;
 }
 
-void DRW_Header::AddCoord(const std::string& key, DRW_Coord value, int code) {
-  m_currentVariant = new DRW_Variant(code, value);
+void EoDxfHeader::AddCoord(const std::string& key, DRW_Coord value, int code) {
+  m_currentVariant = new EoDxfGroupCodeValuesVariant(code, value);
   m_variants[key] = m_currentVariant;
 }
 
-bool DRW_Header::GetDouble(const std::string& key, double* variantDouble) {
+bool EoDxfHeader::GetDouble(const std::string& key, double* variantDouble) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second;
-    if (variant->type() == DRW_Variant::Type::Double) {
+    if (variant->type() == EoDxfGroupCodeValuesVariant::Type::Double) {
       *variantDouble = variant->content.d;
       delete variant;
       m_variants.erase(it);
@@ -1359,10 +1359,10 @@ bool DRW_Header::GetDouble(const std::string& key, double* variantDouble) {
   return false;
 }
 
-bool DRW_Header::GetInteger(const std::string& key, int* variantInteger) {
+bool EoDxfHeader::GetInteger(const std::string& key, int* variantInteger) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second;
-    if (variant->type() == DRW_Variant::Type::Integer) {
+    if (variant->type() == EoDxfGroupCodeValuesVariant::Type::Integer) {
       *variantInteger = variant->content.i;
       delete variant;
       m_variants.erase(it);
@@ -1373,10 +1373,10 @@ bool DRW_Header::GetInteger(const std::string& key, int* variantInteger) {
   return false;
 }
 
-bool DRW_Header::GetString(const std::string& key, std::string* variantString) {
+bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second;
-    if (variant->type() == DRW_Variant::Type::String) {
+    if (variant->type() == EoDxfGroupCodeValuesVariant::Type::String) {
       if (variant->content.s != nullptr) {
         *variantString = *variant->content.s;
       } else {
@@ -1391,10 +1391,10 @@ bool DRW_Header::GetString(const std::string& key, std::string* variantString) {
   return false;
 }
 
-bool DRW_Header::GetCoord(const std::string& key, DRW_Coord* variantCoord) {
+bool EoDxfHeader::GetCoord(const std::string& key, DRW_Coord* variantCoord) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second;
-    if (variant->type() == DRW_Variant::Type::Coord) {
+    if (variant->type() == EoDxfGroupCodeValuesVariant::Type::Coord) {
       *variantCoord = *variant->content.v;
       delete variant;
       m_variants.erase(it);
@@ -1405,8 +1405,8 @@ bool DRW_Header::GetCoord(const std::string& key, DRW_Coord* variantCoord) {
   return false;
 }
 
-void DRW_Header::ClearVariants() {
-  for (std::map<std::string, DRW_Variant*>::iterator it = m_variants.begin(); it != m_variants.end(); ++it) {
+void EoDxfHeader::ClearVariants() {
+  for (std::map<std::string, EoDxfGroupCodeValuesVariant*>::iterator it = m_variants.begin(); it != m_variants.end(); ++it) {
     delete it->second;
   }
 

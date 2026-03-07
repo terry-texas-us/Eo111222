@@ -37,13 +37,13 @@ void DRW_ObjectEntry::ParseCode(int code, dxfReader* reader) {
     case 1003:
     case 1004:
     case 1005:
-      m_extensionData.push_back(new DRW_Variant(code, reader->GetString()));
+      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetString()));
       break;
     case 1010:
     case 1011:
     case 1012:
     case 1013:
-      m_currentVariant = new DRW_Variant(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
+      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
       m_extensionData.push_back(m_currentVariant);
       break;
     case 1020:
@@ -62,11 +62,11 @@ void DRW_ObjectEntry::ParseCode(int code, dxfReader* reader) {
     case 1040:
     case 1041:
     case 1042:
-      m_extensionData.push_back(new DRW_Variant(code, reader->GetDouble()));
+      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetDouble()));
       break;
     case 1070:
     case 1071:
-      m_extensionData.push_back(new DRW_Variant(code, reader->GetInt32()));
+      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt32()));
       break;
     default:
       break;

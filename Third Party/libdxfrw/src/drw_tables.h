@@ -34,7 +34,7 @@ class DRW_TableEntry {
       : tType{tableType}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
  public:
   virtual ~DRW_TableEntry() {
-    for (std::vector<DRW_Variant*>::iterator it = m_extensionData.begin(); it != m_extensionData.end(); ++it) { delete *it; }
+    for (std::vector<EoDxfGroupCodeValuesVariant*>::iterator it = m_extensionData.begin(); it != m_extensionData.end(); ++it) { delete *it; }
     m_extensionData.clear();
   }
 
@@ -45,8 +45,8 @@ class DRW_TableEntry {
     m_tableName = e.m_tableName;
     m_flagValues = e.m_flagValues;
     m_currentVariant = e.m_currentVariant;
-    for (std::vector<DRW_Variant*>::const_iterator it = e.m_extensionData.begin(); it != e.m_extensionData.end(); ++it) {
-      m_extensionData.push_back(new DRW_Variant(*(*it)));
+    for (std::vector<EoDxfGroupCodeValuesVariant*>::const_iterator it = e.m_extensionData.begin(); it != e.m_extensionData.end(); ++it) {
+      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(*(*it)));
     }
   }
 
@@ -60,10 +60,10 @@ class DRW_TableEntry {
   std::uint32_t m_ownerHandle{};  // Group code 330
   UTF8STRING m_tableName;  // Group code 2
   int m_flagValues{};  // Group code 70
-  std::vector<DRW_Variant*> m_extensionData;  // Group codes 1000 to 1071
+  std::vector<EoDxfGroupCodeValuesVariant*> m_extensionData;  // Group codes 1000 to 1071
 
  private:
-  DRW_Variant* m_currentVariant{};
+  EoDxfGroupCodeValuesVariant* m_currentVariant{};
 };
 
 /**@brief Class to handle dimension style table entry
@@ -164,12 +164,11 @@ class DRW_DimStyle : public DRW_TableEntry {
  * can also include properties such as the alignment code (code 72) and the complex linetype type flag (code 74),
  * which can affect how the linetype is rendered in the drawing.
  */
-class DRW_Linetype : public DRW_TableEntry {
+class EoDxfLinetype : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Linetype() : DRW_TableEntry(EoDxf::SymbolTable::Linetype) { Reset(); }
-
+  EoDxfLinetype() : DRW_TableEntry(EoDxf::SymbolTable::Linetype) { Reset(); }
  protected:
   void ParseCode(int code, dxfReader* reader);
   void Reset();
@@ -192,11 +191,11 @@ class DRW_Linetype : public DRW_TableEntry {
  * can also include properties such as the hard-pointer ID/handle of the plot style (code 390) and material style (code
  * 347), which can affect how entities on the layer are rendered in the drawing.
  */
-class DRW_Layer : public DRW_TableEntry {
+class EoDxfLayer : public DRW_TableEntry {
   friend class dxfRW;
 
  public:
-  DRW_Layer() : DRW_TableEntry(EoDxf::SymbolTable::Layer) { Reset(); }
+  EoDxfLayer() : DRW_TableEntry(EoDxf::SymbolTable::Layer) { Reset(); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);

@@ -50,33 +50,33 @@ class dxfRW {
    * @return true if the file was successfully written; false if an error occurred during writing.
    */
   bool Write(DRW_Interface* interface_, EoDxf::Version version, bool binaryFile);
-  bool WriteLinetype(DRW_Linetype* ent);
-  bool WriteLayer(DRW_Layer* ent);
+  bool WriteLinetype(EoDxfLinetype* linetype);
+  bool WriteLayer(EoDxfLayer* layer);
   bool WriteDimStyle(DRW_DimStyle* ent);
   bool WriteTextstyle(DRW_Textstyle* ent);
   bool WriteVport(DRW_Vport* ent);
   bool WriteAppId(DRW_AppId* ent);
   bool WritePoint(EoDxfPoint* point);
   bool WriteLine(EoDxfLine* ent);
-  bool WriteRay(DRW_Ray* ent);
-  bool WriteXline(DRW_Xline* ent);
-  bool WriteCircle(EoDxfCircle* ent);
-  bool WriteArc(DRW_Arc* ent);
-  bool WriteEllipse(DRW_Ellipse* ent);
-  bool WriteTrace(DRW_Trace* ent);
-  bool WriteSolid(DRW_Solid* ent);
-  bool Write3dface(DRW_3Dface* ent);
-  bool WriteLWPolyline(DRW_LWPolyline* ent);
-  bool WritePolyline(DRW_Polyline* ent);
-  bool WriteSpline(DRW_Spline* ent);
+  bool WriteRay(EoDxfRay* ray);
+  bool WriteXline(EoDxfXline* xline);
+  bool WriteCircle(EoDxfCircle* circle);
+  bool WriteArc(EoDxfArc* arc);
+  bool WriteEllipse(EoDxfEllipse* ellipse);
+  bool WriteTrace(EoDxfTrace* trace);
+  bool WriteSolid(EoDxfSolid* solid);
+  bool Write3dFace(EoDxf3dFace* face);
+  bool WriteLWPolyline(EoDxfLwPolyline* polyline);
+  bool WritePolyline(EoDxfPolyline* polyline);
+  bool WriteSpline(EoDxfSpline* spline);
   bool WriteBlockRecord(std::string name);
   bool WriteBlock(DRW_Block* ent);
-  bool WriteInsert(DRW_Insert* ent);
-  bool WriteMText(DRW_MText* ent);
-  bool WriteText(DRW_Text* ent);
-  bool WriteHatch(DRW_Hatch* ent);
-  bool WriteViewport(DRW_Viewport* ent);
-  DRW_ImageDef* WriteImage(DRW_Image* ent, std::string name);
+  bool WriteInsert(EoDxfInsert* blockReference);
+  bool WriteMText(EoDxfMText* mText);
+  bool WriteText(EoDxfText* text);
+  bool WriteHatch(EoDxfHatch* hatch);
+  bool WriteViewport(EoDxfViewPort* viewport);
+  DRW_ImageDef* WriteImage(EoDxfImage* image, std::string name);
   bool WriteLeader(DRW_Leader* ent);
   bool WriteDimension(EoDxfDimension* dimension);
   /** @brief Sets the number of parts to use when rendering an ellipse as a polyline.
@@ -126,23 +126,23 @@ class dxfRW {
   bool ProcessInsert();
   bool ProcessLWPolyline();
   bool ProcessPolyline();
-  bool ProcessVertex(DRW_Polyline* pl);
+  bool ProcessVertex(EoDxfPolyline* polyline);
   bool ProcessText();
   bool ProcessMText();
   bool ProcessHatch();
   bool ProcessSpline();
-  bool Process3dface();
+  bool Process3dFace();
   bool ProcessViewport();
   bool ProcessImage();
   bool ProcessImageDef();
   bool ProcessDimension();
   bool ProcessLeader();
 
-  bool WriteEntity(EoDxfEntiry* ent);
+  bool WriteEntity(EoDxfEntity* ent);
   bool WriteTables();
   bool WriteBlocks();
   bool WriteObjects();
-  bool WriteExtData(const std::vector<DRW_Variant*>& ed);
+  bool WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& extensionData);
 
   /** @brief Convert integer to hex string
    * @param n integer number
@@ -151,7 +151,7 @@ class dxfRW {
   std::string ToHexString(int n);
 
  private:
-  DRW_Header m_header;
+  EoDxfHeader m_header;
   std::string m_fileName;
   std::string m_codePage;
   std::string m_nextEntity;

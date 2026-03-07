@@ -9,7 +9,7 @@
 #include "drw_base.h"
 
 class dxfReader;
-class DRW_Polyline;
+class EoDxfPolyline;
 
 namespace EoDxf {
 
@@ -75,23 +75,23 @@ enum ETYPE {
 
 /** @brief Base class for entities
  */
-class EoDxfEntiry {
+class EoDxfEntity {
   friend class dxfRW;
 
  public:
-  EoDxfEntiry() = default;
+  EoDxfEntity() = default;
 
  protected:
-  explicit EoDxfEntiry(EoDxf::ETYPE entityType) noexcept : m_entityType{entityType} {}
+  explicit EoDxfEntity(EoDxf::ETYPE entityType) noexcept : m_entityType{entityType} {}
 
  public:
-  EoDxfEntiry(const EoDxfEntiry& other);
-  EoDxfEntiry& operator=(const EoDxfEntiry& other);
+  EoDxfEntity(const EoDxfEntity& other);
+  EoDxfEntity& operator=(const EoDxfEntity& other);
 
-  EoDxfEntiry(EoDxfEntiry&&) noexcept = default;
-  EoDxfEntiry& operator=(EoDxfEntiry&&) noexcept = default;
+  EoDxfEntity(EoDxfEntity&&) noexcept = default;
+  EoDxfEntity& operator=(EoDxfEntity&&) noexcept = default;
 
-  virtual ~EoDxfEntiry();
+  virtual ~EoDxfEntity();
 
   void Clear();
 
@@ -136,8 +136,8 @@ class EoDxfEntiry {
   DRW_Coord extAxisY{};
 
  public:
-  std::list<std::list<DRW_Variant>> m_appData{};  // list of application data, code 102
-  std::vector<DRW_Variant*> m_extendedData{};  // codes 1000 to 1071
+  std::list<std::list<EoDxfGroupCodeValuesVariant>> m_appData{};  // list of application data, code 102
+  std::vector<EoDxfGroupCodeValuesVariant*> m_extendedData{};  // codes 1000 to 1071
   UTF8STRING m_layer{"0"};  // layer name, code 8
   UTF8STRING m_lineType{"BYLAYER"};  // line type, code 6
   std::string m_proxyEntityGraphicsData{};  // group code 310 (optional) [unused]
@@ -161,16 +161,16 @@ class EoDxfEntiry {
  private:
   void clearExtendedData() noexcept;
 
-  DRW_Variant* m_currentVariant{};
+  EoDxfGroupCodeValuesVariant* m_currentVariant{};
 };
 
 /** @brief Class to handle point entity
  */
-class EoDxfPoint : public EoDxfEntiry {
+class EoDxfPoint : public EoDxfEntity {
   friend class dxfRW;
 
  public:
-  explicit EoDxfPoint(EoDxf::ETYPE entityType = EoDxf::POINT) noexcept : EoDxfEntiry{entityType} {}
+  explicit EoDxfPoint(EoDxf::ETYPE entityType = EoDxf::POINT) noexcept : EoDxfEntity{entityType} {}
 
   void ApplyExtrusion() override {}
 
@@ -209,11 +209,11 @@ class EoDxfLine : public EoDxfPoint {
  *  It differs from a line entity in that a line has two endpoints,
  *  while a ray has only one starting point and extends infinitely in the direction defined by its second point.
  */
-class DRW_Ray : public EoDxfLine {
+class EoDxfRay : public EoDxfLine {
   friend class dxfRW;
 
  public:
-  explicit DRW_Ray(EoDxf::ETYPE entityType = EoDxf::RAY) noexcept : EoDxfLine{entityType} {}
+  explicit EoDxfRay(EoDxf::ETYPE entityType = EoDxf::RAY) noexcept : EoDxfLine{entityType} {}
 };
 
 /** @brief Class to handle xline entity
@@ -222,9 +222,9 @@ class DRW_Ray : public EoDxfLine {
  *  It differs from a line entity in that a line has two endpoints,
  *  while an xline extends infinitely in both directions defined by its two points.
  */
-class DRW_Xline : public DRW_Ray {
+class EoDxfXline : public EoDxfRay {
  public:
-  explicit DRW_Xline(EoDxf::ETYPE entityType = EoDxf::XLINE) noexcept : DRW_Ray{entityType} {}
+  explicit EoDxfXline(EoDxf::ETYPE entityType = EoDxf::XLINE) noexcept : EoDxfRay{entityType} {}
 };
 
 /** @brief Class to handle circle entity
@@ -249,11 +249,11 @@ class EoDxfCircle : public EoDxfPoint {
   double m_radius{};  // Radius, code 40
 };
 
-class DRW_Arc : public EoDxfCircle {
+class EoDxfArc : public EoDxfCircle {
   friend class dxfRW;
 
  public:
-  explicit DRW_Arc(EoDxf::ETYPE entityType = EoDxf::ARC) noexcept : EoDxfCircle{entityType} {}
+  explicit EoDxfArc(EoDxf::ETYPE entityType = EoDxf::ARC) noexcept : EoDxfCircle{entityType} {}
 
   void ApplyExtrusion() override;
 
@@ -287,13 +287,13 @@ class DRW_Arc : public EoDxfCircle {
  *  The ellipse entity in DXF can also include additional properties such as thickness and extrusion direction,
  *  which can affect how the ellipse is rendered in 3D space.
  */
-class DRW_Ellipse : public EoDxfLine {
+class EoDxfEllipse : public EoDxfLine {
   friend class dxfRW;
 
  public:
-  explicit DRW_Ellipse(EoDxf::ETYPE entityType = EoDxf::ELLIPSE) noexcept : EoDxfLine{entityType} {}
+  explicit EoDxfEllipse(EoDxf::ETYPE entityType = EoDxf::ELLIPSE) noexcept : EoDxfLine{entityType} {}
 
-  void ToPolyline(DRW_Polyline* polyline, int parts = 128);
+  void ToPolyline(EoDxfPolyline* polyline, int parts = 128);
   void ApplyExtrusion() override;
 
  protected:
@@ -321,11 +321,11 @@ class DRW_Ellipse : public EoDxfLine {
  *  The trace entity can also include properties such as thickness and extrusion direction, which can affect how it is
  * rendered in 3D space.
  */
-class DRW_Trace : public EoDxfLine {
+class EoDxfTrace : public EoDxfLine {
   friend class dxfRW;
 
  public:
-  explicit DRW_Trace(EoDxf::ETYPE entityType = EoDxf::TRACE) noexcept : EoDxfLine{entityType} {}
+  explicit EoDxfTrace(EoDxf::ETYPE entityType = EoDxf::TRACE) noexcept : EoDxfLine{entityType} {}
 
   void ApplyExtrusion() override;
 
@@ -345,11 +345,11 @@ class DRW_Trace : public EoDxfLine {
  *  The solid entity can also include properties such as thickness and extrusion direction, which can affect how it is
  * rendered in 3D space.
  */
-class DRW_Solid : public DRW_Trace {
+class EoDxfSolid : public EoDxfTrace {
   friend class dxfRW;
 
  public:
-  DRW_Solid() { m_entityType = EoDxf::SOLID; }
+  EoDxfSolid() { m_entityType = EoDxf::SOLID; }
 
  protected:
   //! interpret code in dxf reading process or dispatch to inherited class
@@ -365,7 +365,7 @@ class DRW_Solid : public DRW_Trace {
   [[nodiscard]] const DRW_Coord& extrusion() const noexcept { return m_extrusionDirection; }
 };
 
-/** @brief Class to handle 3dface entity
+/** @brief Class to handle 3dFace entity
  *
  *  A 3D face is a three- or four-sided planar surface defined by its corner points.
  *  It is specified in the DXF file using group codes 10, 20, 30 for the first point;
@@ -374,7 +374,7 @@ class DRW_Solid : public DRW_Trace {
  *  The entity can also include properties such as thickness and extrusion direction, which can affect how it is
  * rendered in 3D space.
  */
-class DRW_3Dface : public DRW_Trace {
+class EoDxf3dFace : public EoDxfTrace {
   friend class dxfRW;
 
  public:
@@ -387,7 +387,7 @@ class DRW_3Dface : public DRW_Trace {
     AllEdges = 0x0F
   };
 
-  explicit DRW_3Dface(EoDxf::ETYPE entityType = EoDxf::E3DFACE) noexcept : DRW_Trace{entityType} {}
+  explicit EoDxf3dFace(EoDxf::ETYPE entityType = EoDxf::E3DFACE) noexcept : EoDxfTrace{entityType} {}
 
   void ApplyExtrusion() override {}
 
@@ -438,11 +438,11 @@ class DRW_Block : public EoDxfPoint {
  * such as scale factors (code 41, 42, 43), rotation angle (code 50), and number of columns and rows for array inserts
  * (code 70 and 71), which can affect how it is rendered in the drawing.
  */
-class DRW_Insert : public EoDxfPoint {
+class EoDxfInsert : public EoDxfPoint {
   friend class dxfRW;
 
  public:
-  explicit DRW_Insert(EoDxf::ETYPE entityType = EoDxf::INSERT) noexcept : EoDxfPoint{entityType} {}
+  explicit EoDxfInsert(EoDxf::ETYPE entityType = EoDxf::INSERT) noexcept : EoDxfPoint{entityType} {}
 
   void ApplyExtrusion() override { EoDxfPoint::ApplyExtrusion(); }
 
@@ -469,18 +469,16 @@ class DRW_Insert : public EoDxfPoint {
  * width (code 43), flags (code 70), and extrusion direction (code 210, 220, 230), which can affect how it is rendered
  * in the drawing.
  */
-class DRW_LWPolyline : public EoDxfEntiry {
+class EoDxfLwPolyline : public EoDxfEntity {
   friend class dxfRW;
 
  public:
-  explicit DRW_LWPolyline(EoDxf::ETYPE entityType = EoDxf::LWPOLYLINE) noexcept : EoDxfEntiry{entityType} {}
-
-  DRW_LWPolyline(const DRW_LWPolyline&) = default;
-  DRW_LWPolyline(DRW_LWPolyline&&) noexcept = default;
-  DRW_LWPolyline& operator=(const DRW_LWPolyline&) = default;
-  DRW_LWPolyline& operator=(DRW_LWPolyline&&) noexcept = default;
-
-  ~DRW_LWPolyline() = default;
+  explicit EoDxfLwPolyline(EoDxf::ETYPE entityType = EoDxf::LWPOLYLINE) noexcept : EoDxfEntity{entityType} {}
+  EoDxfLwPolyline(const EoDxfLwPolyline&) = default;
+  EoDxfLwPolyline(EoDxfLwPolyline&&) noexcept = default;
+  EoDxfLwPolyline& operator=(const EoDxfLwPolyline&) = default;
+  EoDxfLwPolyline& operator=(EoDxfLwPolyline&&) noexcept = default;
+  ~EoDxfLwPolyline() = default;
 
   void ApplyExtrusion() override;
 
@@ -513,7 +511,7 @@ class DRW_LWPolyline : public EoDxfEntiry {
  *  The text entity can also include properties such as rotation angle (code 50), width scale factor (code 41), oblique
  * angle (code 51), and text style name (code 7), which can affect how the text is rendered in the drawing.
  */
-class DRW_Text : public EoDxfLine {
+class EoDxfText : public EoDxfLine {
   friend class dxfRW;
 
  public:
@@ -521,7 +519,7 @@ class DRW_Text : public EoDxfLine {
 
   enum HAlign { Left = 0, Center, Right, AlignedIfBaseLine, MiddleIfBaseLine, FitIfBaseLine };
 
-  explicit DRW_Text(EoDxf::ETYPE entityType = EoDxf::TEXT) noexcept : EoDxfLine{entityType} {}
+  explicit EoDxfText(EoDxf::ETYPE entityType = EoDxf::TEXT) noexcept : EoDxfLine{entityType} {}
 
   void ApplyExtrusion() override {}
 
@@ -549,7 +547,7 @@ class DRW_Text : public EoDxfLine {
  *  Additionally, mtext supports more complex formatting options such as multiple lines of text, different alignments,
  * and special characters.
  */
-class DRW_MText : public DRW_Text {
+class EoDxfMText : public EoDxfText {
   friend class dxfRW;
 
  public:
@@ -565,7 +563,7 @@ class DRW_MText : public DRW_Text {
     BottomRight
   };
 
-  explicit DRW_MText(EoDxf::ETYPE entityType = EoDxf::MTEXT) noexcept : DRW_Text{entityType} {
+  explicit EoDxfMText(EoDxf::ETYPE entityType = EoDxf::MTEXT) noexcept : EoDxfText{entityType} {
     m_verticalAlignment = (VAlign)TopLeft;
     m_textGenerationFlags = 1;
   }
@@ -614,17 +612,17 @@ class DRW_Vertex : public EoDxfPoint {
  * for the associated entity. The SEQEND entity can inherit properties such as layer and display settings from its
  * owning POLYLINE or INSERT entity, but it does not have its own unique properties.
  */
-class DRW_SeqEnd : public EoDxfEntiry {
+class DRW_SeqEnd : public EoDxfEntity {
   friend class dxfRW;
 
  public:
-  DRW_SeqEnd() noexcept : EoDxfEntiry{EoDxf::SEQEND} {}
+  DRW_SeqEnd() noexcept : EoDxfEntity{EoDxf::SEQEND} {}
 
   /** @brief Constructs a SEQEND that inherits layer and display properties
    *         from the owning POLYLINE or INSERT entity.
    *  @param owner The entity whose sequence this SEQEND terminates.
    */
-  explicit DRW_SeqEnd(const EoDxfEntiry& owner) noexcept : EoDxfEntiry{EoDxf::SEQEND} {
+  explicit DRW_SeqEnd(const EoDxfEntity& owner) noexcept : EoDxfEntity{EoDxf::SEQEND} {
     m_layer = owner.m_layer;
     m_lineType = owner.m_lineType;
     m_color = owner.m_color;
@@ -634,22 +632,22 @@ class DRW_SeqEnd : public EoDxfEntiry {
   void ApplyExtrusion() override {}
 };
 
-class DRW_Polyline : public EoDxfPoint {
+class EoDxfPolyline : public EoDxfPoint {
   friend class dxfRW;
 
  public:
-  DRW_Polyline() noexcept : EoDxfPoint{EoDxf::POLYLINE} {}
+  EoDxfPolyline() noexcept : EoDxfPoint{EoDxf::POLYLINE} {}
 
-  ~DRW_Polyline() {
+  ~EoDxfPolyline() {
     for (DRW_Vertex* vertex : m_vertices) { delete vertex; }
   }
 
   // Prevent double-free from shallow copy of raw-pointer vector
-  DRW_Polyline(const DRW_Polyline&) = delete;
-  DRW_Polyline& operator=(const DRW_Polyline&) = delete;
+  EoDxfPolyline(const EoDxfPolyline&) = delete;
+  EoDxfPolyline& operator=(const EoDxfPolyline&) = delete;
 
-  DRW_Polyline(DRW_Polyline&& other) noexcept = default;
-  DRW_Polyline& operator=(DRW_Polyline&& other) noexcept = default;
+  EoDxfPolyline(EoDxfPolyline&& other) noexcept = default;
+  EoDxfPolyline& operator=(EoDxfPolyline&& other) noexcept = default;
 
   void addVertex(const DRW_Vertex& v) {
     auto* vertex = new DRW_Vertex();
@@ -694,23 +692,23 @@ class DRW_Polyline : public EoDxfPoint {
  * and number of control points (code 73). The spline entity can also include properties such as knot values (code 40),
  * flags (code 70), and extrusion direction (code 210, 220, 230), which can affect how it is rendered in the drawing.
  */
-class DRW_Spline : public EoDxfEntiry {
+class EoDxfSpline : public EoDxfEntity {
   friend class dxfRW;
 
  public:
-  DRW_Spline() noexcept : EoDxfEntiry{EoDxf::SPLINE} {}
+  EoDxfSpline() noexcept : EoDxfEntity{EoDxf::SPLINE} {}
 
-  ~DRW_Spline() {
+  ~EoDxfSpline() {
     for (DRW_Coord* point : m_controlPoints) { delete point; }
     for (DRW_Coord* point : m_fitPoints) { delete point; }
   }
 
   // Prevent double-free from shallow copy of raw-pointer vectors
-  DRW_Spline(const DRW_Spline&) = delete;
-  DRW_Spline& operator=(const DRW_Spline&) = delete;
+  EoDxfSpline(const EoDxfSpline&) = delete;
+  EoDxfSpline& operator=(const EoDxfSpline&) = delete;
 
-  DRW_Spline(DRW_Spline&& other) noexcept = default;
-  DRW_Spline& operator=(DRW_Spline&& other) noexcept = default;
+  EoDxfSpline(EoDxfSpline&& other) noexcept = default;
+  EoDxfSpline& operator=(EoDxfSpline&& other) noexcept = default;
 
   void ApplyExtrusion() override {}
 
@@ -764,7 +762,7 @@ class DRW_HatchLoop {
   int m_boundaryPathType{};  // Group code 92
   int m_numberOfEdges{};  // Group code 93
 
-  std::vector<std::unique_ptr<EoDxfEntiry>> m_entities;
+  std::vector<std::unique_ptr<EoDxfEntity>> m_entities;
 };
 
 /** @brief Class to handle hatch entity
@@ -776,20 +774,20 @@ class DRW_HatchLoop {
  * 78), which can affect how it is rendered in the drawing. The boundary paths of the hatch are defined by hatch loops,
  * which can include various entities such as lines, arcs, circles, ellipses, splines, and lightweight polylines.
  */
-class DRW_Hatch : public EoDxfPoint {
+class EoDxfHatch : public EoDxfPoint {
   friend class dxfRW;
 
  public:
-  DRW_Hatch() : EoDxfPoint{EoDxf::HATCH} {}
+  EoDxfHatch() : EoDxfPoint{EoDxf::HATCH} {}
 
-  ~DRW_Hatch() {
+  ~EoDxfHatch() {
     for (auto* hatchLoop : m_hatchLoops) { delete hatchLoop; }
   }
 
-  DRW_Hatch(const DRW_Hatch&) = delete;
-  DRW_Hatch& operator=(const DRW_Hatch&) = delete;
-  DRW_Hatch(DRW_Hatch&&) = delete;
-  DRW_Hatch& operator=(DRW_Hatch&&) = delete;
+  EoDxfHatch(const EoDxfHatch&) = delete;
+  EoDxfHatch& operator=(const EoDxfHatch&) = delete;
+  EoDxfHatch(EoDxfHatch&&) = delete;
+  EoDxfHatch& operator=(EoDxfHatch&&) = delete;
 
   void AppendLoop(DRW_HatchLoop* hatchLoop) { m_hatchLoops.push_back(hatchLoop); }
 
@@ -825,10 +823,10 @@ class DRW_Hatch : public EoDxfPoint {
 
   DRW_HatchLoop* m_hatchLoop{};  // current loop to add data
   EoDxfLine* m_line{};
-  DRW_Arc* m_arc{};
-  DRW_Ellipse* m_ellipse{};
-  DRW_Spline* m_spline{};
-  DRW_LWPolyline* m_polyline{};
+  EoDxfArc* m_arc{};
+  EoDxfEllipse* m_ellipse{};
+  EoDxfSpline* m_spline{};
+  EoDxfLwPolyline* m_polyline{};
   EoDxfPoint* m_point{};
   DRW_Vertex2D* m_polylineVertex{};
   bool m_isPolyline{};
@@ -842,11 +840,11 @@ class DRW_Hatch : public EoDxfPoint {
  * include properties such as clipping state (code 280), brightness (code 281), contrast (code 282), and fade (code
  * 283), which can affect how the image is rendered in the drawing.
  */
-class DRW_Image : public EoDxfLine {
+class EoDxfImage : public EoDxfLine {
   friend class dxfRW;
 
  public:
-  DRW_Image() {
+  EoDxfImage() {
     m_entityType = EoDxf::IMAGE;
     fade = clip = 0;
     brightness = contrast = 50;
@@ -858,9 +856,6 @@ class DRW_Image : public EoDxfLine {
  public:
   std::uint32_t ref{};  // Hard reference to imagedef object, code 340
   DRW_Coord vVector;  // V-vector of single pixel, x coordinate, code 12, 22 & 32
-  //    double vx;                 // V-vector of single pixel, x coordinate, code 12
-  //    double vy;                 // V-vector of single pixel, y coordinate, code 22
-  //    double vz;                 // V-vector of single pixel, z coordinate, code 32
   double sizeu{};  // image size in pixels, U value, code 13
   double sizev{};  // image size in pixels, V value, code 23
   double dz{};  // z coordinate, code 33
@@ -879,7 +874,7 @@ class DRW_Image : public EoDxfLine {
  * the dimension text (code 53), and extrusion direction (code 210, 220, 230), which can affect how it is rendered in
  * the drawing.
  */
-class EoDxfDimension : public EoDxfEntiry {
+class EoDxfDimension : public EoDxfEntity {
   friend class dxfRW;
 
  public:
@@ -896,7 +891,7 @@ class EoDxfDimension : public EoDxfEntiry {
     clonePoint.x = clonePoint.y = clonePoint.z = 0;
   }
 
-  EoDxfDimension(const EoDxfDimension& d) : EoDxfEntiry(d) {
+  EoDxfDimension(const EoDxfDimension& d) : EoDxfEntity(d) {
     m_entityType = EoDxf::DIMENSION;
     type = d.type;
     name = d.name;
@@ -1173,7 +1168,7 @@ class EoDxfOrdinateDimension : public EoDxfDimension {
  * leader vertex from block (code 212, 222, 232), and offset of last leader vertex from annotation (code 213, 223, 233).
  * The geometry of the leader is defined by a list of vertices (code 10, 20, 30).
  */
-class DRW_Leader : public EoDxfEntiry {
+class DRW_Leader : public EoDxfEntity {
   friend class dxfRW;
 
  public:
@@ -1228,11 +1223,11 @@ class DRW_Leader : public EoDxfEntiry {
  * value (code 44), view height in model space units (code 45), snap angle (code 50), and view twist angle (code 51),
  * which can affect how the viewport displays the model space.
  */
-class DRW_Viewport : public EoDxfPoint {
+class EoDxfViewPort : public EoDxfPoint {
   friend class dxfRW;
 
  public:
-  DRW_Viewport() {
+  EoDxfViewPort() {
     m_entityType = EoDxf::VIEWPORT;
     vpstatus = 0;
     pswidth = 205;

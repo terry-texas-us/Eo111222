@@ -18,15 +18,15 @@ class DRW_Interface {
   virtual ~DRW_Interface() = default;
 
   /** Called when header is parsed.  */
-  virtual void addHeader(const DRW_Header* data) = 0;
+  virtual void addHeader(const EoDxfHeader* data) = 0;
 
   /** Called for every class.  */
   virtual void addClass(const DRW_Class& data) = 0;
 
   /** Called for every line Type.  */
-  virtual void addLinetype(const DRW_Linetype& data) = 0;
+  virtual void addLinetype(const EoDxfLinetype& data) = 0;
   /** Called for every layer. */
-  virtual void addLayer(const DRW_Layer& data) = 0;
+  virtual void addLayer(const EoDxfLayer& layer) = 0;
   /** Called for every dim style. */
   virtual void addDimStyle(const DRW_DimStyle& data) = 0;
   /** Called for every VPORT table. */
@@ -63,49 +63,49 @@ class DRW_Interface {
   virtual void addLine(const EoDxfLine& line) = 0;
 
   /** Called for every ray */
-  virtual void addRay(const DRW_Ray& data) = 0;
+  virtual void addRay(const EoDxfRay& ray) = 0;
 
   /** Called for every xline */
-  virtual void addXline(const DRW_Xline& data) = 0;
+  virtual void addXline(const EoDxfXline& xline) = 0;
 
   /** Called for every arc */
-  virtual void addArc(const DRW_Arc& data) = 0;
+  virtual void addArc(const EoDxfArc& arc) = 0;
 
   /** Called for every circle */
   virtual void addCircle(const EoDxfCircle& data) = 0;
 
   /** Called for every ellipse */
-  virtual void addEllipse(const DRW_Ellipse& data) = 0;
+  virtual void addEllipse(const EoDxfEllipse& ellipse) = 0;
 
   /** Called for every lwpolyline */
-  virtual void addLWPolyline(const DRW_LWPolyline& data) = 0;
+  virtual void addLWPolyline(const EoDxfLwPolyline& polyline) = 0;
 
   /** Called for every polyline start */
-  virtual void addPolyline(const DRW_Polyline& data) = 0;
+  virtual void addPolyline(const EoDxfPolyline& polyline) = 0;
 
   /** Called for every spline */
-  virtual void addSpline(const DRW_Spline* data) = 0;
+  virtual void addSpline(const EoDxfSpline* spline) = 0;
 
   /** Called for every spline knot value */
-  virtual void addKnot(const EoDxfEntiry& data) = 0;
+  virtual void addKnot(const EoDxfEntity& data) = 0;
 
   /** Called for every insert. */
-  virtual void addInsert(const DRW_Insert& data) = 0;
+  virtual void addInsert(const EoDxfInsert& blockReference) = 0;
 
   /** Called for every trace start */
-  virtual void addTrace(const DRW_Trace& data) = 0;
+  virtual void addTrace(const EoDxfTrace& trace) = 0;
 
-  /** Called for every 3dface start */
-  virtual void add3dFace(const DRW_3Dface& data) = 0;
+  /** Called for every 3dFace start */
+  virtual void add3dFace(const EoDxf3dFace& face) = 0;
 
   /** Called for every solid start */
-  virtual void addSolid(const DRW_Solid& data) = 0;
+  virtual void addSolid(const EoDxfSolid& data) = 0;
 
   /** Called for every Multi Text entity. */
-  virtual void addMText(const DRW_MText& data) = 0;
+  virtual void addMText(const EoDxfMText& mText) = 0;
 
   /** Called for every Text entity. */
-  virtual void addText(const DRW_Text& data) = 0;
+  virtual void addText(const EoDxfText& text) = 0;
 
   /**
    * Called for every aligned dimension entity.
@@ -149,17 +149,17 @@ class DRW_Interface {
   /**
    * Called for every hatch entity.
    */
-  virtual void addHatch(const DRW_Hatch* data) = 0;
+  virtual void addHatch(const EoDxfHatch* data) = 0;
 
   /**
    * Called for every viewport entity.
    */
-  virtual void addViewport(const DRW_Viewport& data) = 0;
+  virtual void addViewport(const EoDxfViewPort& viewport) = 0;
 
   /**
    * Called for every image entity.
    */
-  virtual void addImage(const DRW_Image* data) = 0;
+  virtual void addImage(const EoDxfImage* image) = 0;
 
   /**
    * Called for every image definition.
@@ -171,7 +171,7 @@ class DRW_Interface {
    */
   virtual void addComment(const char* comment) = 0;
 
-  virtual void writeHeader(DRW_Header& data) = 0;
+  virtual void writeHeader(EoDxfHeader& data) = 0;
   virtual void writeBlocks() = 0;
   virtual void writeBlockRecords() = 0;
   virtual void writeEntities() = 0;

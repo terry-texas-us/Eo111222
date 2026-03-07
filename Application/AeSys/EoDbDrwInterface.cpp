@@ -31,26 +31,26 @@
 #include "drw_objects.h"
 
 void EoDbDrwInterface::SetHeaderSectionVariable(
-    const DRW_Header* header, const std::string& keyToFind, EoDbHeaderSection& headerSection) {
+    const EoDxfHeader* header, const std::string& keyToFind, EoDbHeaderSection& headerSection) {
   HeaderVariable value;
   auto it = header->m_variants.find(keyToFind);
   if (it != header->m_variants.end() && it->second != nullptr) {
     std::wstring key = Eo::MultiByteToWString(it->first.c_str());
     auto& second = *(it->second);
     switch (second.type()) {
-      case DRW_Variant::Type::String:
+      case EoDxfGroupCodeValuesVariant::Type::String:
         value = Eo::MultiByteToWString(second.content.s->c_str());
         break;
-      case DRW_Variant::Type::Integer:
+      case EoDxfGroupCodeValuesVariant::Type::Integer:
         value = second.content.i;
         break;
-      case DRW_Variant::Type::Double:
+      case EoDxfGroupCodeValuesVariant::Type::Double:
         value = second.content.d;
         break;
-      case DRW_Variant::Type::Coord:
+      case EoDxfGroupCodeValuesVariant::Type::Coord:
         value = EoGePoint3d(*second.content.v);
         break;
-      case DRW_Variant::Type::Invalid:
+      case EoDxfGroupCodeValuesVariant::Type::Invalid:
       default:
         value = L"";
         break;
@@ -59,7 +59,7 @@ void EoDbDrwInterface::SetHeaderSectionVariable(
   }
 }
 
-void EoDbDrwInterface::ConvertHeaderSection(const DRW_Header* header, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Converting Header: %i variables\n", header->m_variants.size());
 
   std::vector<std::string> keys{"$ACADVER", "$CLAYER", "$PDMODE", "$PDSIZE"};
@@ -83,7 +83,7 @@ void EoDbDrwInterface::ConvertDimStyle(const DRW_DimStyle& dimStyle, [[maybe_unu
   ATLTRACE2(traceGeneral, 3, L"DimStyle - Name: <%s> (unsupported in AeSys)\n", dimStyleName.c_str());
 }
 
-void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* document) {
   std::wstring layerName = Eo::MultiByteToWString(layer.m_tableName.c_str());
 
   ATLTRACE2(traceGeneral, 3, L"%s   Loading layer definition\n", layerName.c_str());
@@ -143,31 +143,31 @@ void EoDbDrwInterface::ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* docum
   // for affected viewports.
 }
 
-void EoDbDrwInterface::ConvertLinetypesTable(const DRW_Linetype& data, AeSysDoc* document) {
-  std::wstring lineTypeName = Eo::MultiByteToWString(data.m_tableName.c_str());  // Linetype name (group code 2)
+void EoDbDrwInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSysDoc* document) {
+  std::wstring lineTypeName = Eo::MultiByteToWString(linetype.m_tableName.c_str());  // Linetype name (group code 2)
   std::wstring lineTypeDesc =
-      Eo::MultiByteToWString(data.desc.c_str());  // Descriptive text for linetype (group code 3)
+      Eo::MultiByteToWString(linetype.desc.c_str());  // Descriptive text for linetype (group code 3)
 
   ATLTRACE2(traceGeneral, 3, L"Converting Linetype: %s\n", lineTypeName.c_str());
 
   EoDbLineTypeTable* lineTypeTable = document->LineTypeTable();
-  EoDbLineType* LineType{};
+  EoDbLineType* convertedLinetype{};
 
-  if (!lineTypeTable->Lookup(lineTypeName.c_str(), LineType)) {
-    auto numberOfElements = static_cast<std::uint16_t>(data.size);  // Number of linetype elements (group code 73)
-    // double patternLength = data.length;                        // group code 40
+  if (!lineTypeTable->Lookup(lineTypeName.c_str(), convertedLinetype)) {
+    auto numberOfElements = static_cast<std::uint16_t>(linetype.size);  // Number of linetype elements (group code 73)
+    // double patternLength = linetype.length;                        // group code 40
 
     std::vector<double> dashLengths(numberOfElements);
 
     for (std::uint16_t index = 0; index < numberOfElements; index++) {
-      dashLengths[index] = data.path[index];  // group code 49
+      dashLengths[index] = linetype.path[index];  // group code 49
     }
     CString name(lineTypeName.c_str());
     CString desc(lineTypeDesc.c_str());
     auto lineTypeIndex = lineTypeTable->LegacyLineTypeIndex(name);
 
-    LineType = new EoDbLineType(lineTypeIndex, name, desc, numberOfElements, dashLengths.data());
-    lineTypeTable->SetAt(name, LineType);
+    convertedLinetype = new EoDbLineType(lineTypeIndex, name, desc, numberOfElements, dashLengths.data());
+    lineTypeTable->SetAt(name, convertedLinetype);
   }
 }
 
@@ -179,7 +179,8 @@ void EoDbDrwInterface::ConvertTextStyleTable(const DRW_Textstyle& textStyle, [[m
   // auto width = textStyle.width;           // Width factor (group code 41)
   // auto obliqueAngle = textStyle.oblique;  // Oblique angle (group code 50)
   // auto textGenerationFlags =
-  textStyle.m_flagValues;  // Text generation flags (group code 71) 0x02 - text is backward, mirrored in X - 0x04 - text is
+  textStyle
+      .m_flagValues;  // Text generation flags (group code 71) 0x02 - text is backward, mirrored in X - 0x04 - text is
   // upside down, mirrored in Y
   // auto lastHeight = textStyle.lastHeight;  // Last height used (group code 42)
 
@@ -329,7 +330,7 @@ void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
   currentOpenBlockDefinition->AddTail(primitive);
 }
 
-void EoDbDrwInterface::ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Arc entity conversion\n");
 
   if (arc.m_radius < Eo::geometricTolerance) {
@@ -382,7 +383,7 @@ void EoDbDrwInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* 
   AddToDocument(conic, document);
 }
 
-void EoDbDrwInterface::ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Ellipse entity conversion\n");
 
   if (ellipse.m_ratio <= 0.0 || ellipse.m_ratio > 1.0) {
@@ -408,17 +409,18 @@ void EoDbDrwInterface::ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc
   AddToDocument(conic, document);
 }
 
-void EoDbDrwInterface::ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Insert entity conversion\n");
   auto insertPrimitive = new EoDbBlockReference();
-  insertPrimitive->SetBaseProperties(&insert, document);
-  auto name = Eo::MultiByteToWString(insert.m_blockName.c_str());
+  insertPrimitive->SetBaseProperties(&blockReference, document);
+  auto name = Eo::MultiByteToWString(blockReference.m_blockName.c_str());
   insertPrimitive->SetName(CString(name.c_str()));
-  insertPrimitive->SetInsertionPoint(insert.m_firstPoint);
-  insertPrimitive->SetNormal(
-      EoGeVector3d(insert.m_extrusionDirection.x, insert.m_extrusionDirection.y, insert.m_extrusionDirection.z));
-  insertPrimitive->SetScaleFactors(EoGeVector3d(insert.m_xScaleFactor, insert.m_yScaleFactor, insert.m_zScaleFactor));
-  insertPrimitive->SetRotation(insert.m_rotationAngle);
+  insertPrimitive->SetInsertionPoint(blockReference.m_firstPoint);
+  insertPrimitive->SetNormal(EoGeVector3d(blockReference.m_extrusionDirection.x, blockReference.m_extrusionDirection.y,
+      blockReference.m_extrusionDirection.z));
+  insertPrimitive->SetScaleFactors(
+      EoGeVector3d(blockReference.m_xScaleFactor, blockReference.m_yScaleFactor, blockReference.m_zScaleFactor));
+  insertPrimitive->SetRotation(blockReference.m_rotationAngle);
 
   AddToDocument(insertPrimitive, document);
 }
@@ -433,20 +435,20 @@ void EoDbDrwInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* docume
   AddToDocument(linePrimitive, document);
 }
 
-void EoDbDrwInterface::ConvertLWPolylineEntity(const DRW_LWPolyline& lwPolyline, AeSysDoc* document) {
+void EoDbDrwInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"LWPolyline entity conversion\n");
 
   auto* polylinePrimitive = new EoDbPolyline();
-  polylinePrimitive->SetBaseProperties(&lwPolyline, document);
+  polylinePrimitive->SetBaseProperties(&polyline, document);
 
-  const auto numVerts = static_cast<std::uint16_t>(lwPolyline.m_vertices.size());
+  const auto numVerts = static_cast<std::uint16_t>(polyline.m_vertices.size());
   polylinePrimitive->SetNumberOfVertices(numVerts);
 
   for (std::uint16_t index = 0; index < numVerts; ++index) {
-    polylinePrimitive->SetVertex2D(index, lwPolyline.m_vertices[index]);  // value vector, no raw pointer
+    polylinePrimitive->SetVertex2D(index, polyline.m_vertices[index]);  // value vector, no raw pointer
   }
 
-  if (lwPolyline.m_polylineFlag & 0x01) { polylinePrimitive->SetFlag(EoDbPolyline::sm_Closed); }
+  if (polyline.m_polylineFlag & 0x01) { polylinePrimitive->SetFlag(EoDbPolyline::sm_Closed); }
 
   AddToDocument(polylinePrimitive, document);
 }

@@ -47,24 +47,24 @@ libdxfrw is a free C++ library for reading and writing DXF (Drawing eXchange For
 dxfRW (Main API Class)
 ├── DRW_Interface (Abstract Interface)
 ├── dxfReader/dxfWriter (DXF I/O Handlers)
-├── DRW_Header (Header Variables)
-├── EoDxfEntiry (Geometric Entities)
+├── EoDxfHeader (Header Variables)
+├── EoDxfEntity (Geometric Entities)
 │   ├── EoDxfPoint
 │   ├── EoDxfLine
-│   ├── DRW_Arc
+│   ├── EoDxfArc
 │   ├── EoDxfCircle
-│   ├── DRW_Ellipse
-│   ├── DRW_LWPolyline
-│   ├── DRW_Polyline
-│   ├── DRW_Spline
-│   ├── DRW_Text
-│   ├── DRW_MText
-│   ├── DRW_Hatch
+│   ├── EoDxfEllipse
+│   ├── EoDxfLwPolyline
+│   ├── EoDxfPolyline
+│   ├── EoDxfSpline
+│   ├── EoDxfText
+│   ├── EoDxfMText
+│   ├── EoDxfHatch
 │   ├── EoDxfDimension (various dimension types)
 │   └── Other entities
 └── DRW_Object (Non-geometric Objects)
-    ├── DRW_Layer
-    ├── DRW_Linetype
+    ├── EoDxfLayer
+    ├── EoDxfLinetype
     ├── DRW_Textstyle
     ├── DRW_DimStyle
     └── Other objects
@@ -127,7 +127,7 @@ bool write(DRW_Interface *interface_, EoDxf::Version ver, bool bin);
 
 - **Parameters**:
   - `interface_`: Interface implementation providing data
-  - `ver`: DXF version (R12, 2000, 2004, 2007, 2010)
+  - `ver`: DXF version (R14, 2000, 2004, 2007, 2010)
   - `bin`: Output in binary format
 - **Returns**: true on success, false on failure
 
@@ -137,21 +137,21 @@ bool write(DRW_Interface *interface_, EoDxf::Version ver, bool bin);
 bool writePoint(EoDxfPoint* point);
 bool writeLine(EoDxfLine* line);
 bool writeCircle(EoDxfCircle* circle);
-bool writeArc(DRW_Arc *ent);
-bool writeEllipse(DRW_Ellipse *ent);
-bool writeLWPolyline(DRW_LWPolyline *ent);
-bool writeSpline(DRW_Spline *ent);
-bool writeText(DRW_Text *ent);
-bool writeMText(DRW_MText *ent);
-bool writeHatch(DRW_Hatch *ent);
+bool writeArc(EoDxfArc* arc);
+bool writeEllipse(EoDxfEllipse *ellipse);
+bool writeLwPolyline(EoDxfLwPolyline* polyline);
+bool writeSpline(EoDxfSpline* spline);
+bool writeText(EoDxfText* text);
+bool writeMText(EoDxfMText* mText);
+bool writeHatch(EoDxfHatch* hatch);
 // ... many more
 ```
 
 ##### Table Object Writing Methods
 
 ```cpp
-bool writeLayer(DRW_Layer *ent);
-bool writeLineType(DRW_Linetype *ent);
+bool writeLayer(EoDxfLayer* layer);
+bool writeLineType(EoDxfLinetype* linetype);
 bool writeTextstyle(DRW_Textstyle *ent);
 bool writeDimstyle(DRW_DimStyle *ent);
 bool writeVport(DRW_Vport *ent);
@@ -167,14 +167,14 @@ Applications must inherit from this interface and implement callback methods.
 ##### Header
 
 ```cpp
-virtual void addHeader(const DRW_Header* data) = 0;
+virtual void addHeader(const EoDxfHeader* data) = 0;
 ```
 
 ##### Table Objects
 
 ```cpp
-virtual void addLayer(const DRW_Layer& data) = 0;
-virtual void addLinetype(const DRW_Linetype& data) = 0;
+virtual void addLayer(const EoDxfLayer& layer) = 0;
+virtual void addLinetype(const EoDxfLinetype& linetype) = 0;
 virtual void addDimStyle(const DRW_DimStyle& data) = 0;
 virtual void addTextStyle(const DRW_Textstyle& data) = 0;
 virtual void addVport(const DRW_Vport& data) = 0;
@@ -193,24 +193,25 @@ virtual void endBlock() = 0;
 
 ```cpp
 virtual void addPoint(const EoDxfPoint& point) = 0;
-virtual void addLine(const EoDxfLine& data) = 0;
-virtual void addRay(const DRW_Ray& data) = 0;
-virtual void addXline(const DRW_Xline& data) = 0;
+virtual void addLine(const EoDxfLine& line) = 0;
+virtual void addRay(const EoDxfRay& ray) = 0;
+virtual void addXline(const EoDxfXline& xline) = 0;
 virtual void addCircle(const EoDxfCircle& circle) = 0;
-virtual void addArc(const DRW_Arc& data) = 0;
-virtual void addEllipse(const DRW_Ellipse& data) = 0;
-virtual void addLWPolyline(const DRW_LWPolyline& data) = 0;
-virtual void addPolyline(const DRW_Polyline& data) = 0;
-virtual void addSpline(const DRW_Spline* data) = 0;
-virtual void addInsert(const DRW_Insert& data) = 0;
-virtual void addTrace(const DRW_Trace& data) = 0;
-virtual void add3dFace(const DRW_3Dface& data) = 0;
-virtual void addSolid(const DRW_Solid& data) = 0;
-virtual void addMText(const DRW_MText& data) = 0;
-virtual void addText(const DRW_Text& data) = 0;
-virtual void addHatch(const DRW_Hatch *data) = 0;
-virtual void addViewport(const DRW_Viewport& data) = 0;
-virtual void addImage(const DRW_Image *data) = 0;
+virtual void addArc(const EoDxfArc& arc) = 0;
+virtual void addEllipse(const EoDxfEllipse& ellipse) = 0;
+virtual void addLWPolyline(const EoDxfLwPolyline& polyline) = 0;
+virtual void addPolyline(const EoDxfPolyline& polyline) = 0;
+virtual void addSpline(const EoDxfSpline* spline) = 0;
+virtual void addInsert(const EoDxfInsert& blockReference) = 0;
+virtual void addTrace(const EoDxfTrace& trace) = 0;
+virtual void add3dFace(const EoDxf3dFace& face) = 0;
+virtual void addSolid(const EoDxfSolid& solid) = 0;
+virtual void addMText(const EoDxfMText& mText) = 0;
+virtual void addText(const EoDxfText& text) = 0;
+virtual void addHatch(const EoDxfHatch* hatch) = 0;
+virtual void addViewport(const EoDxfViewPort& data) = 0;
+
+virtual void addImage(const EoDxfImage* image) = 0;
 ```
 
 ##### Dimensions
@@ -236,7 +237,7 @@ virtual void addComment(const char* comment) = 0;
 ##### Writing Methods
 
 ```cpp
-virtual void writeHeader(DRW_Header& data) = 0;
+virtual void writeHeader(EoDxfHeader& data) = 0;
 virtual void writeBlocks() = 0;
 virtual void writeBlockRecords() = 0;
 virtual void writeEntities() = 0;
@@ -344,7 +345,7 @@ namespace DRW {
 ### Entity Base Class
 
 ```cpp
-class EoDxfEntiry {
+class EoDxfEntity {
 public:
     enum DRW_EntityType {
         POINT, LINE, CIRCLE, ARC, ELLIPSE,

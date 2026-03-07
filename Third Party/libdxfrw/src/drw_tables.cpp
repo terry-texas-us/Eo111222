@@ -26,13 +26,13 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
     case 1003:
     case 1004:
     case 1005:
-      m_extensionData.push_back(new DRW_Variant(code, reader->GetString()));
+      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetString()));
       break;
     case 1010:
     case 1011:
     case 1012:
     case 1013:
-      m_currentVariant = new DRW_Variant(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
+      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, DRW_Coord(reader->GetDouble(), 0.0, 0.0));
       m_extensionData.push_back(m_currentVariant);
       break;
     case 1020:
@@ -51,11 +51,11 @@ void DRW_TableEntry::ParseCode(int code, dxfReader* reader) {
     case 1040:
     case 1041:
     case 1042:
-      m_extensionData.push_back(new DRW_Variant(code, reader->GetDouble()));
+      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetDouble()));
       break;
     case 1070:
     case 1071:
-      m_extensionData.push_back(new DRW_Variant(code, reader->GetInt32()));
+      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt32()));
       break;
     default:
       break;
@@ -369,7 +369,7 @@ void DRW_DimStyle::Reset() {
   DRW_TableEntry::Reset();
 }
 
-void DRW_Linetype::ParseCode(int code, dxfReader* reader) {
+void EoDxfLinetype::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 3:
       desc = reader->GetUtf8String();
@@ -391,7 +391,7 @@ void DRW_Linetype::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_Linetype::Reset() {
+void EoDxfLinetype::Reset() {
   desc = "";
   size = 0;
   length = 0.0;
@@ -399,14 +399,14 @@ void DRW_Linetype::Reset() {
   DRW_TableEntry::Reset();
 }
 
-void DRW_Linetype::Update() {
+void EoDxfLinetype::Update() {
   double d = 0;
   size = static_cast<int>(path.size());
   for (int i = 0; i < size; i++) { d += fabs(path.at(i)); }
   length = d;
 }
 
-void DRW_Layer::ParseCode(int code, dxfReader* reader) {
+void EoDxfLayer::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 6:
       m_linetypeName = reader->GetUtf8String();
@@ -435,7 +435,7 @@ void DRW_Layer::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_Layer::Reset() {
+void EoDxfLayer::Reset() {
   m_linetypeName = "CONTINUOUS";
   m_colorNumber = 7;
   m_plottingFlag = true;

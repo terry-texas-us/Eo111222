@@ -240,7 +240,7 @@ class EoDbConic : public EoDbPrimitive {
       }
 
       case ConicType::RadialArc: {
-        DRW_Arc arc;
+        EoDxfArc arc;
         arc.m_firstPoint = {m_center.x, m_center.y, m_center.z};
         arc.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
         arc.m_radius = Radius();
@@ -253,7 +253,7 @@ class EoDbConic : public EoDbPrimitive {
 
       case ConicType::Ellipse:
       case ConicType::EllipticalArc: {
-        DRW_Ellipse ellipse;
+        EoDxfEllipse ellipse;
         ellipse.m_firstPoint = {m_center.x, m_center.y, m_center.z};
         ellipse.m_secondPoint = {m_majorAxis.x, m_majorAxis.y, m_majorAxis.z};
         ellipse.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};

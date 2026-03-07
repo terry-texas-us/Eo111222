@@ -33,7 +33,7 @@ class DRW_ObjectEntry {
     m_ownerHandle = e.m_ownerHandle;
     m_extensionDictionaryHandle = e.m_extensionDictionaryHandle;
     m_reactorHandles = e.m_reactorHandles;
-    for (auto* variant : e.m_extensionData) { m_extensionData.push_back(new DRW_Variant(*variant)); }
+    for (auto* variant : e.m_extensionData) { m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(*variant)); }
   }
 
  protected:
@@ -45,10 +45,10 @@ class DRW_ObjectEntry {
   std::uint32_t m_ownerHandle{};  // Group code 330 (soft-pointer to owner dictionary)
   std::uint32_t m_extensionDictionaryHandle{};  // Group code 360 (hard-owner, extension dictionary)
   std::vector<std::uint32_t> m_reactorHandles;  // Group code 330 handles within ACAD_REACTORS group
-  std::vector<DRW_Variant*> m_extensionData;  // Group codes 1000 to 1071
+  std::vector<EoDxfGroupCodeValuesVariant*> m_extensionData;  // Group codes 1000 to 1071
 
  private:
-  DRW_Variant* m_currentVariant{};
+  EoDxfGroupCodeValuesVariant* m_currentVariant{};
   bool m_inReactors{};
   bool m_inXDictionary{};
 };

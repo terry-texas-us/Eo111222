@@ -19,7 +19,7 @@ class EoDbDrwInterface : public DRW_Interface {
  public:
   EoDbDrwInterface(AeSysDoc* document) : m_document(document) {}
 
-  void addHeader(const DRW_Header* header) override {
+  void addHeader(const EoDxfHeader* header) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addHeader called\n");
     ConvertHeaderSection(header, m_document);
   }
@@ -40,11 +40,11 @@ class EoDbDrwInterface : public DRW_Interface {
     ConvertDimStyle(dimStyle, m_document);
   }
 
-  void addLayer(const DRW_Layer& layer) override {
+  void addLayer(const EoDxfLayer& layer) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLayer called\n");
     ConvertLayerTable(layer, m_document);
   }
-  void addLinetype(const DRW_Linetype& lType) override {
+  void addLinetype(const EoDxfLinetype& lType) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLinetype called\n");
     ConvertLinetypesTable(lType, m_document);
   }
@@ -80,11 +80,11 @@ class EoDbDrwInterface : public DRW_Interface {
   // AutoDesk DXF Reference for Entities Section
   // https://help.autodesk.com/view/OARX/2018/ENU/?guid=GUID-7D07C886-FD1D-4A0C-A7AB-B4D21F18E484
 
-  void add3dFace(const DRW_3Dface& /* 3dFace */) override { countOf3dFace++; }
+  void add3dFace(const EoDxf3dFace& /* 3dFace */) override { countOf3dFace++; }
   // 3DSOLID not implemented in DRW
   // ACAD_PROXY_ENTITY not implemented in DRW
 
-  void addArc(const DRW_Arc& arc) override {
+  void addArc(const EoDxfArc& arc) override {
     countOfArc++;
     if (inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addArc - block <%s>\n", blockName.c_str());
@@ -123,7 +123,7 @@ class EoDbDrwInterface : public DRW_Interface {
 
   void addDimDiametric([[maybe_unused]] const EoDxfDiametricDimension* dimDiametric) override { countOfDimDiametric++; }
 
-  void addEllipse(const DRW_Ellipse& ellipse) override {
+  void addEllipse(const EoDxfEllipse& ellipse) override {
     countOfEllipse++;
     if (inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addCircle - block <%s>\n", blockName.c_str());
@@ -132,21 +132,22 @@ class EoDbDrwInterface : public DRW_Interface {
     }
     ConvertEllipseEntity(ellipse, m_document);
   }
-  void addHatch([[maybe_unused]] const DRW_Hatch* hatch) override { countOfHatch++; }
+  void addHatch([[maybe_unused]] const EoDxfHatch* hatch) override { countOfHatch++; }
 
   // HELIX not implemented in DRW
-  void addImage([[maybe_unused]] const DRW_Image* image) override { countOfImage++; }
+  void addImage([[maybe_unused]] const EoDxfImage* image) override { countOfImage++; }
 
-  void addInsert(const DRW_Insert& insert) override {
+  void addInsert(const EoDxfInsert& blockReference) override {
     countOfInsert++;
     if (inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLine - block <%s>\n", blockName.c_str());
-      ConvertInsertEntity(insert, m_document);
+      ConvertInsertEntity(blockReference, m_document);
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLine - entities section\n");
-      ConvertInsertEntity(insert, m_document);
+      ConvertInsertEntity(blockReference, m_document);
     }
   }
+
   void addLeader(const DRW_Leader* leader) override { (void)leader; }
   // LIGHT not implemented in DRW
 
@@ -161,21 +162,21 @@ class EoDbDrwInterface : public DRW_Interface {
     }
   }
 
-  void addLWPolyline(const DRW_LWPolyline& lwPolyline) override {
+  void addLWPolyline(const EoDxfLwPolyline& polyline) override {
     countOfLWPolyline++;
     if (inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLine - block <%s>\n", blockName.c_str());
-      ConvertLWPolylineEntity(lwPolyline, m_document);
+      ConvertLWPolylineEntity(polyline, m_document);
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLine - entities section\n");
-      ConvertLWPolylineEntity(lwPolyline, m_document);
+      ConvertLWPolylineEntity(polyline, m_document);
     }
   }
   // MESH not implemented in DRW
   // MLeader not implemented in DRW
   // MLINE not implemented in DRW
 
-  void addMText(const DRW_MText& mText) override {
+  void addMText(const EoDxfMText& mText) override {
     (void)mText;
     countOfMText++;
     if (inBlockDefinition) {
@@ -199,15 +200,15 @@ class EoDbDrwInterface : public DRW_Interface {
     }
   }
 
-  void addPolyline(const DRW_Polyline& /* polyline */) override { countOfPolyline++; }
-  void addRay(const DRW_Ray& /* ray */) override { countOfRay++; }
+  void addPolyline(const EoDxfPolyline& /* polyline */) override { countOfPolyline++; }
+  void addRay(const EoDxfRay& /* ray */) override { countOfRay++; }
   // REGION not implemented in DRW
   // SECTION not implemented in DRW
   // SEQEND not implemented in DRW
   // SHAPE not implemented in DRW
 
-  void addSolid(const DRW_Solid& /* solid */) override { countOfSolid++; }
-  void addSpline(const DRW_Spline* spline) override {
+  void addSolid(const EoDxfSolid& /* solid */) override { countOfSolid++; }
+  void addSpline(const EoDxfSpline* spline) override {
     (void)spline;
 
     countOfSpline++;
@@ -216,7 +217,7 @@ class EoDbDrwInterface : public DRW_Interface {
   // SURFACE not implemented in DRW
   // TABLE not implemented in DRW
 
-  void addText(const DRW_Text& text) override {
+  void addText(const EoDxfText& text) override {
     (void)text;
     countOfText++;
     if (inBlockDefinition) {
@@ -227,19 +228,19 @@ class EoDbDrwInterface : public DRW_Interface {
   }
 
   // TOLERANCE not implemented in DRW
-  void addTrace(const DRW_Trace& /* trace */) override { countOfTrace++; }
+  void addTrace(const EoDxfTrace& /* trace */) override { countOfTrace++; }
   // UNDERLAY not implemented in DRW
   // VERTEX not implemented in DRW
-  void addViewport(const DRW_Viewport& /* viewport */) override { countOfViewport++; }
+  void addViewport(const EoDxfViewPort& /* viewport */) override { countOfViewport++; }
   // WIPEOUT not implemented in DRW
-  void addXline(const DRW_Xline& /* Xline */) override { countOfXline++; }
+  void addXline(const EoDxfXline& /* Xline */) override { countOfXline++; }
 
   // Others
   void addComment(const char* comment) override {
     ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addComment(%s)\n", comment);
   }
   void linkImage(const DRW_ImageDef* imageDefinition) override { (void)imageDefinition; }
-  void addKnot(const EoDxfEntiry& /* knot */) override { countOfKnot++; }
+  void addKnot(const EoDxfEntity& /* knot */) override { countOfKnot++; }
 
   // Writing methods
   void writeAppId() override {};
@@ -247,37 +248,37 @@ class EoDbDrwInterface : public DRW_Interface {
   void writeBlocks() override {};
   void writeDimstyles() override {};
   void writeEntities() override {};
-  void writeHeader(DRW_Header& /* header */) override {};
+  void writeHeader(EoDxfHeader& /* header */) override {};
   void writeLayers() override {};
   void writeLTypes() override {};
   void writeTextstyles() override {};
   void writeVports() override {};
 
   void SetHeaderSectionVariable(
-      const DRW_Header* header, const std::string& keyToFind, EoDbHeaderSection& headerSection);
+      const EoDxfHeader* header, const std::string& keyToFind, EoDbHeaderSection& headerSection);
 
-  void ConvertHeaderSection(const DRW_Header* header, AeSysDoc* document);
+  void ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc* document);
   void ConvertClassesSection(const DRW_Class& class_, AeSysDoc* document);
 
   void ConvertAppIdTable(const DRW_AppId& appId, AeSysDoc* document);
   void ConvertDimStyle(const DRW_DimStyle& dimStyle, AeSysDoc* document);
 
-  /** @brief Converts a DRW_Layer object to the corresponding AeSys document representation.
+  /** @brief Converts a EoDxfLayer object to the corresponding AeSys document representation.
    *
-   * This method takes a DRW_Layer object, which represents layer information from a DXF/DWG file, and converts it into
+   * This method takes a EoDxfLayer object, which represents layer information from a DXF/DWG file, and converts it into
    * the appropriate format for storage in the provided AeSysDoc document.
    *
-   * @param layer The DRW_Layer object containing layer data to be converted.
+   * @param layer The EoDxfLayer object containing layer data to be converted.
    * @param document A pointer to the AeSysDoc where the converted layer will be stored.
    */
-  void ConvertLayerTable(const DRW_Layer& layer, AeSysDoc* document);
+  void ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* document);
 
-  /** @brief Converts a DRW_Linetype object to the corresponding AeSys document representation.
+  /** @brief Converts a EoDxfLinetype object to the corresponding AeSys document representation.
    *
-   * This method takes a DRW_Linetype object, which represents line type information from a DXF/DWG file, and converts it
+   * This method takes a EoDxfLinetype object, which represents line type information from a DXF/DWG file, and converts it
    * into the appropriate format for storage in the provided AeSysDoc document.
    *
-   * @param lineType The DRW_Linetype object containing line type data to be converted.
+   * @param lineType The EoDxfLinetype object containing line type data to be converted.
    * @param document A pointer to the AeSysDoc where the converted line type will be stored.
    * @note unimplemented complex linetype elements (group code 74)
    *  Complex linetype element type (one per element). Default is 0 (no embedded shape/text). The following codes are
@@ -292,11 +293,11 @@ class EoDbDrwInterface : public DRW_Interface {
    * (optional); multiple entries can exist group code 45 - Y = Y offset value (optional); multiple entries can exist
    *   group code 9 - Text string (one per element if code 74 = 2)
    */
-  void ConvertLinetypesTable(const DRW_Linetype& lineType, AeSysDoc* document);
+  void ConvertLinetypesTable(const EoDxfLinetype& lineType, AeSysDoc* document);
 
-  /** @brief Converts a DRW_Textstyle object to the corresponding AeSys document representation.
+  /** @brief Converts a EoDxfTextstyle object to the corresponding AeSys document representation.
    *
-   * This method takes a DRW_Textstyle object, which represents text style information from a DXF/DWG file, and converts
+   * This method takes a EoDxfTextstyle object, which represents text style information from a DXF/DWG file, and converts
    * it into the appropriate format for storage in the provided AeSysDoc document.
    *
    * @param textStyle The DRW_Textstyle object containing text style data to be converted.
@@ -323,12 +324,12 @@ class EoDbDrwInterface : public DRW_Interface {
 
   void AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document);
 
-  void ConvertArcEntity(const DRW_Arc& arc, AeSysDoc* document);
+  void ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document);
   void ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document);
-  void ConvertEllipseEntity(const DRW_Ellipse& ellipse, AeSysDoc* document);
-  void ConvertInsertEntity(const DRW_Insert& insert, AeSysDoc* document);
+  void ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document);
+  void ConvertInsertEntity(const EoDxfInsert& insert, AeSysDoc* document);
   void ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document);
-  void ConvertLWPolylineEntity(const DRW_LWPolyline& lwPolyline, AeSysDoc* document);
+  void ConvertLWPolylineEntity(const EoDxfLwPolyline& lwPolyline, AeSysDoc* document);
   void ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document);
 
  private:

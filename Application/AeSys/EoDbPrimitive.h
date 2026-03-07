@@ -97,7 +97,7 @@ class EoDbPrimitive : public CObject {
   virtual void ModifyState();
   virtual bool PivotOnControlPoint(AeSysView*, const EoGePoint4d&);
 
-  void SetBaseProperties(const EoDxfEntiry* entity, AeSysDoc* document);
+  void SetBaseProperties(const EoDxfEntity* entity, AeSysDoc* document);
 
   CString FormatPenColor() const;
   CString FormatLineType() const;
