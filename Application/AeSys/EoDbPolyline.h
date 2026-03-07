@@ -10,7 +10,7 @@
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "drw_base.h"
+#include "EoDxfBase.h"
 
 class EoDbPolyline : public EoDbPrimitive {
   static std::uint16_t sm_EdgeToEvaluate;

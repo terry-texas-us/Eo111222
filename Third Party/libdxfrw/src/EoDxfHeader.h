@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 
-#include "drw_base.h"
+#include "EoDxfBase.h"
 
 class dxfReader;
 class dxfWriter;

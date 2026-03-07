@@ -13,8 +13,8 @@
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "drw_base.h"
-#include "drw_interface.h"
+#include "EoDxfBase.h"
+#include "EoDxfInterface.h"
 
 class EoDbConic : public EoDbPrimitive {
   EoGePoint3d m_center{};

@@ -1,7 +1,7 @@
 #include <string>
 
-#include "drw_base.h"
-#include "drw_objects.h"
+#include "EoDxfBase.h"
+#include "EoDxfObjects.h"
 #include "intern/dxfreader.h"
 
 void EoDxfObjectEntry::ParseCode(int code, dxfReader* reader) {

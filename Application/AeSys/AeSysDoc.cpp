@@ -56,7 +56,7 @@
 #include "Hatch.h"
 #include "Lex.h"
 #include "Resource.h"
-#include "drw_base.h"
+#include "EoDxfBase.h"
 #include "libdxfrw.h"
 
 #if defined(USING_DDE)

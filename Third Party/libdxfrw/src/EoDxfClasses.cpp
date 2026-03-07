@@ -1,6 +1,6 @@
-#include "drw_classes.h"
+#include "EoDxfClasses.h"
 
-#include "drw_base.h"
+#include "EoDxfBase.h"
 #include "intern/dxfreader.h"
 #include "intern/dxfwriter.h"
 

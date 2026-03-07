@@ -1,8 +1,8 @@
 #include <map>
 #include <string>
 
-#include "drw_base.h"
-#include "drw_header.h"
+#include "EoDxfBase.h"
+#include "EoDxfHeader.h"
 #include "intern/dxfreader.h"
 #include "intern/dxfwriter.h"
 #include <algorithm>

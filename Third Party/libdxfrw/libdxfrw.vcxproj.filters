@@ -15,19 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\drw_base.h">
+    <ClInclude Include="src\EoDxfBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\drw_classes.h">
+    <ClInclude Include="src\EoDxfClasses.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\drw_entities.h">
+    <ClInclude Include="src\EoDxfEntities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\drw_header.h">
+    <ClInclude Include="src\EoDxfHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\drw_interface.h">
+    <ClInclude Include="src\EoDxfInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\drw_tables.h">
@@ -48,18 +48,21 @@
     <ClInclude Include="src\libdxfrw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\drw_objects.h">
+    <ClInclude Include="src\EoDxfObjects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EoDxfTables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\drw_classes.cpp">
+    <ClCompile Include="src\EoDxfClasses.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\drw_entities.cpp">
+    <ClCompile Include="src\EoDxfEntities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\drw_header.cpp">
+    <ClCompile Include="src\EoDxfHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\drw_tables.cpp">
@@ -77,7 +80,10 @@
     <ClCompile Include="src\libdxfrw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\drw_objects.cpp">
+    <ClCompile Include="src\EoDxfObjects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EoDxfTables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

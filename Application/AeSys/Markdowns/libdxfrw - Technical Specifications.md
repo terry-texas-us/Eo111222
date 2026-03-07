@@ -76,11 +76,11 @@ dxfRW (Main API Class)
 libdxfrw/
 ├── src/                      # Library source code
 │   ├── libdxfrw.h/cpp       # Main API class
-│   ├── drw_interface.h      # Abstract interface
-│   ├── drw_entities.h/cpp   # Entity definitions
-│   ├── drw_objects.h/cpp    # Object definitions
-│   ├── drw_header.h/cpp     # Header variables
-│   ├── drw_base.h           # Basic data structures
+│   ├── EoDxfInterface.h      # Abstract interface
+│   ├── EoDxfEntities.h/cpp   # Entity definitions
+│   ├── EoDxfObjects.h/cpp    # Object definitions
+│   ├── EoDxfHeader.h/cpp     # Header variables
+│   ├── EoDxfBase.h           # Basic data structures
 │   └── intern/              # Internal implementation
 │       ├── dxfreader.h/cpp     # DXF reader
 │       ├── dxfwriter.h/cpp     # DXF writer

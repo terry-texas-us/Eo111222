@@ -2,8 +2,8 @@
 #include <new>
 #include <string>
 
-#include "drw_base.h"
-#include "drw_tables.h"
+#include "EoDxfBase.h"
+#include "EoDxfTables.h"
 #include "intern/dxfreader.h"
 
 void EoDxfTableEntry::ParseCode(int code, dxfReader* reader) {

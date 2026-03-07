@@ -1,10 +1,10 @@
 #pragma once
 
-#include "drw_classes.h"
-#include "drw_entities.h"
-#include "drw_header.h"
-#include "drw_objects.h"
-#include "drw_tables.h"
+#include "EoDxfClasses.h"
+#include "EoDxfEntities.h"
+#include "EoDxfHeader.h"
+#include "EoDxfObjects.h"
+#include "EoDxfTables.h"
 
 /**
  * Abstract class (interface) for comunicate dxfReader with the application.

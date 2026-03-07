@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "drw_base.h"
+#include "EoDxfBase.h"
 
 class dxfReader;
 class EoDxfPolyline;

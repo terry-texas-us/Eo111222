@@ -25,10 +25,10 @@
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
-#include "drw_base.h"
-#include "drw_entities.h"
-#include "drw_header.h"
-#include "drw_objects.h"
+#include "EoDxfBase.h"
+#include "EoDxfEntities.h"
+#include "EoDxfHeader.h"
+#include "EoDxfObjects.h"
 
 void EoDbDrwInterface::SetHeaderSectionVariable(
     const EoDxfHeader* header, const std::string& keyToFind, EoDbHeaderSection& headerSection) {

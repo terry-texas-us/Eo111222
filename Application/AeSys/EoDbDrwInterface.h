@@ -7,11 +7,11 @@
 #include "EoDbBlock.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbPrimitive.h"
-#include "drw_classes.h"
-#include "drw_entities.h"
-#include "drw_header.h"
-#include "drw_interface.h"
-#include "drw_objects.h"
+#include "EoDxfClasses.h"
+#include "EoDxfEntities.h"
+#include "EoDxfHeader.h"
+#include "EoDxfInterface.h"
+#include "EoDxfObjects.h"
 
 // Minimal implementation of EoDxfInterface
 // In a real scenario, implement these methods to handle the parsed entities

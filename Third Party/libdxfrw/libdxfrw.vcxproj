@@ -153,13 +153,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\drw_base.h" />
-    <ClInclude Include="src\drw_classes.h" />
-    <ClInclude Include="src\drw_entities.h" />
-    <ClInclude Include="src\drw_header.h" />
-    <ClInclude Include="src\drw_interface.h" />
-    <ClInclude Include="src\drw_objects.h" />
-    <ClInclude Include="src\drw_tables.h" />
+    <ClInclude Include="src\EoDxfBase.h" />
+    <ClInclude Include="src\EoDxfClasses.h" />
+    <ClInclude Include="src\EoDxfEntities.h" />
+    <ClInclude Include="src\EoDxfHeader.h" />
+    <ClInclude Include="src\EoDxfInterface.h" />
+    <ClInclude Include="src\EoDxfObjects.h" />
+    <ClInclude Include="src\EoDxfTables.h" />
     <ClInclude Include="src\intern\drw_cptables.h" />
     <ClInclude Include="src\intern\drw_textcodec.h" />
     <ClInclude Include="src\intern\dxfreader.h" />
@@ -167,11 +167,11 @@
     <ClInclude Include="src\libdxfrw.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\drw_classes.cpp" />
-    <ClCompile Include="src\drw_entities.cpp" />
-    <ClCompile Include="src\drw_header.cpp" />
-    <ClCompile Include="src\drw_objects.cpp" />
-    <ClCompile Include="src\drw_tables.cpp" />
+    <ClCompile Include="src\EoDxfClasses.cpp" />
+    <ClCompile Include="src\EoDxfEntities.cpp" />
+    <ClCompile Include="src\EoDxfHeader.cpp" />
+    <ClCompile Include="src\EoDxfObjects.cpp" />
+    <ClCompile Include="src\EoDxfTables.cpp" />
     <ClCompile Include="src\intern\drw_textcodec.cpp" />
     <ClCompile Include="src\intern\dxfreader.cpp" />
     <ClCompile Include="src\intern\dxfwriter.cpp" />

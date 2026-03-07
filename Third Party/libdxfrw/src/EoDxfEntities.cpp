@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "drw_base.h"
-#include "drw_entities.h"
+#include "EoDxfBase.h"
+#include "EoDxfEntities.h"
 #include "intern/dxfreader.h"
 
 EoDxfEntity::EoDxfEntity(const EoDxfEntity& other)

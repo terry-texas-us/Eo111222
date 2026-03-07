@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "drw_base.h"
-#include "drw_classes.h"
-#include "drw_entities.h"
-#include "drw_header.h"
-#include "drw_interface.h"
-#include "drw_objects.h"
+#include "EoDxfBase.h"
+#include "EoDxfClasses.h"
+#include "EoDxfEntities.h"
+#include "EoDxfHeader.h"
+#include "EoDxfInterface.h"
+#include "EoDxfObjects.h"
 #include "intern/dxfreader.h"
 #include "intern/dxfwriter.h"
 

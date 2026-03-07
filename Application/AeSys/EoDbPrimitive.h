@@ -8,7 +8,7 @@
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeVector3d.h"
-#include "drw_entities.h"
+#include "EoDxfEntities.h"
 
 HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR pszText, LPCVOID object);
 
