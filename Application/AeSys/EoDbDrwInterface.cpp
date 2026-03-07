@@ -22,13 +22,13 @@
 #include "EoDbPoint.h"
 #include "EoDbPolyline.h"
 #include "EoDbPrimitive.h"
-#include "EoGeLine.h"
-#include "EoGePoint3d.h"
-#include "EoGeVector3d.h"
 #include "EoDxfBase.h"
 #include "EoDxfEntities.h"
 #include "EoDxfHeader.h"
 #include "EoDxfObjects.h"
+#include "EoGeLine.h"
+#include "EoGePoint3d.h"
+#include "EoGeVector3d.h"
 
 void EoDbDrwInterface::SetHeaderSectionVariable(
     const EoDxfHeader* header, const std::string& keyToFind, EoDbHeaderSection& headerSection) {
@@ -37,18 +37,18 @@ void EoDbDrwInterface::SetHeaderSectionVariable(
   if (it != header->m_variants.end() && it->second != nullptr) {
     std::wstring key = Eo::MultiByteToWString(it->first.c_str());
     auto& second = *(it->second);
-    switch (second.type()) {
+    switch (second.GetType()) {
       case EoDxfGroupCodeValuesVariant::Type::String:
-        value = Eo::MultiByteToWString(second.content.s->c_str());
+        value = Eo::MultiByteToWString(second.m_content.s->c_str());
         break;
       case EoDxfGroupCodeValuesVariant::Type::Integer:
-        value = second.content.i;
+        value = second.GetInteger();
         break;
       case EoDxfGroupCodeValuesVariant::Type::Double:
-        value = second.content.d;
+        value = second.GetDouble();
         break;
-      case EoDxfGroupCodeValuesVariant::Type::Coord:
-        value = EoGePoint3d(*second.content.v);
+      case EoDxfGroupCodeValuesVariant::Type::GeometryBase:
+        value = EoGePoint3d(*second.m_content.v);
         break;
       case EoDxfGroupCodeValuesVariant::Type::Invalid:
       default:

@@ -25,7 +25,7 @@ class EoDxfHeader {
   void AddDouble(const std::string& key, double value, int code);
   void AddInteger(const std::string& key, int value, int code);
   void AddString(const std::string& key, std::string value, int code);
-  void AddCoord(const std::string& key, EoDxfGeometryBase3d value, int code);
+  void AddGeometryBase(const std::string& key, EoDxfGeometryBase3d value, int code);
 
   [[nodiscard]] std::string GetComments() const { return m_comments; }
 
@@ -108,7 +108,7 @@ class EoDxfHeader {
    * @return True if the variant was found and removed, false otherwise.
    */
   [[nodiscard]] bool GetString(const std::string& key, std::string* variantString);
-  [[nodiscard]] bool GetCoord(const std::string& key, EoDxfGeometryBase3d* varStr);
+  [[nodiscard]] bool GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* variantGeometryBase);
 
   /** @brief Clears all header variables stored in the m_variants map, deleting the associated EoDxfGroupCodeValuesVariant objects and
    * emptying the map. This method is used to free memory allocated for header variables and reset the state of the

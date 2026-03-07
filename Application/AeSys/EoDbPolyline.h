@@ -5,12 +5,12 @@
 #include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfBase.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "EoDxfBase.h"
 
 class EoDbPolyline : public EoDbPrimitive {
   static std::uint16_t sm_EdgeToEvaluate;
@@ -73,7 +73,7 @@ class EoDbPolyline : public EoDbPrimitive {
 
   void SetNumberOfVertices(const size_t numberOfVertices) { m_pts.SetSize(static_cast<int64_t>(numberOfVertices)); }
 
-  void SetVertex2D(size_t index, const DRW_Vertex2D& vertex) {
+  void SetVertex2D(size_t index, const EoDxfPolylineVertex2d& vertex) {
     m_pts[static_cast<int64_t>(index)].x = vertex.x;
     m_pts[static_cast<int64_t>(index)].y = vertex.y;
     m_pts[static_cast<int64_t>(index)].z = 0.0;

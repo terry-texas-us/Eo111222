@@ -365,7 +365,7 @@ public:
 };
 ```
 
-### Coordinate Type
+### Geometry Base Type
 
 ```cpp
 class EoDxfGeometryBase3d {

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <fstream>
 #include <ios>
@@ -19,6 +20,7 @@
 #include "intern/EoDxfWriter.h"
 
 namespace {
+constexpr auto EODXFLIB_VERSION = "0.1";
 constexpr auto FIRSTHANDLE{48};
 }  // namespace
 
@@ -32,13 +34,15 @@ dxfRW::dxfRW(const char* name) {
 dxfRW::~dxfRW() {
   if (m_reader != nullptr) { delete m_reader; }
   if (m_writer != nullptr) { delete m_writer; }
-  for (std::vector<EoDxfImageDefinition*>::iterator it = m_imageDef.begin(); it != m_imageDef.end(); ++it) { delete *it; }
+  for (std::vector<EoDxfImageDefinition*>::iterator it = m_imageDef.begin(); it != m_imageDef.end(); ++it) {
+    delete *it;
+  }
 
   m_imageDef.clear();
 }
 
 bool dxfRW::Read(EoDxfInterface* interface_, bool ext) {
-  drw_assert(fileName.empty() == false);
+  assert(!m_fileName.empty());
   bool isOk = false;
   m_applyExtrusion = ext;
   std::ifstream filestr;
@@ -93,7 +97,7 @@ bool dxfRW::Write(EoDxfInterface* interface_, EoDxf::Version version, bool binar
   } else {
     filestr.open(m_fileName.c_str(), std::ios_base::out | std::ios::trunc);
     m_writer = new EoDxfWriterAscii(&filestr);
-    std::string comm = std::string("dxfrw ") + std::string(DRW_VERSION);
+    std::string comm = std::string("EoDxf ") + std::string(EODXFLIB_VERSION);
     m_writer->WriteString(999, comm);
   }
   EoDxfHeader header;
@@ -146,7 +150,9 @@ bool dxfRW::WriteEntity(EoDxfEntity* entity) {
 
   m_writer->WriteInt16(62, entity->m_color);
   if (m_version > EoDxf::Version::AC1015 && entity->m_color24 >= 0) { m_writer->WriteInt32(420, entity->m_color24); }
-  if (m_version > EoDxf::Version::AC1014) { m_writer->WriteInt16(370, DRW_LW_Conv::lineWidth2dxfInt(entity->m_lineWeight)); }
+  if (m_version > EoDxf::Version::AC1014) {
+    m_writer->WriteInt16(370, DRW_LW_Conv::lineWidth2dxfInt(entity->m_lineWeight));
+  }
   return true;
 }
 
@@ -325,11 +331,21 @@ bool dxfRW::WriteDimStyle(EoDxfDimensionStyle* dimensionStyle) {
   m_writer->WriteUtf8String(2, dimensionStyle->m_tableName);
 
   m_writer->WriteInt16(70, dimensionStyle->m_flagValues);
-  if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimpost.empty())) { m_writer->WriteUtf8String(3, dimensionStyle->dimpost); }
-  if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimapost.empty())) { m_writer->WriteUtf8String(4, dimensionStyle->dimapost); }
-  if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimblk.empty())) { m_writer->WriteUtf8String(5, dimensionStyle->dimblk); }
-  if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimblk1.empty())) { m_writer->WriteUtf8String(6, dimensionStyle->dimblk1); }
-  if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimblk2.empty())) { m_writer->WriteUtf8String(7, dimensionStyle->dimblk2); }
+  if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimpost.empty())) {
+    m_writer->WriteUtf8String(3, dimensionStyle->dimpost);
+  }
+  if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimapost.empty())) {
+    m_writer->WriteUtf8String(4, dimensionStyle->dimapost);
+  }
+  if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimblk.empty())) {
+    m_writer->WriteUtf8String(5, dimensionStyle->dimblk);
+  }
+  if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimblk1.empty())) {
+    m_writer->WriteUtf8String(6, dimensionStyle->dimblk1);
+  }
+  if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimblk2.empty())) {
+    m_writer->WriteUtf8String(7, dimensionStyle->dimblk2);
+  }
   m_writer->WriteDouble(40, dimensionStyle->dimscale);
   m_writer->WriteDouble(41, dimensionStyle->dimasz);
   m_writer->WriteDouble(42, dimensionStyle->dimexo);
@@ -339,7 +355,9 @@ bool dxfRW::WriteDimStyle(EoDxfDimensionStyle* dimensionStyle) {
   m_writer->WriteDouble(46, dimensionStyle->dimdle);
   m_writer->WriteDouble(47, dimensionStyle->dimtp);
   m_writer->WriteDouble(48, dimensionStyle->dimtm);
-  if (m_version > EoDxf::Version::AC1018 || dimensionStyle->dimfxl != 0) { m_writer->WriteDouble(49, dimensionStyle->dimfxl); }
+  if (m_version > EoDxf::Version::AC1018 || dimensionStyle->dimfxl != 0) {
+    m_writer->WriteDouble(49, dimensionStyle->dimfxl);
+  }
   m_writer->WriteDouble(140, dimensionStyle->dimtxt);
   m_writer->WriteDouble(141, dimensionStyle->dimcen);
   m_writer->WriteDouble(142, dimensionStyle->dimtsz);
@@ -394,7 +412,9 @@ bool dxfRW::WriteDimStyle(EoDxfDimensionStyle* dimensionStyle) {
   m_writer->WriteInt16(288, dimensionStyle->dimupt);
 
   if (m_version > EoDxf::Version::AC1014) { m_writer->WriteInt16(289, dimensionStyle->dimatfit); }
-  if (m_version > EoDxf::Version::AC1018 && dimensionStyle->dimfxlon != 0) { m_writer->WriteInt16(290, dimensionStyle->dimfxlon); }
+  if (m_version > EoDxf::Version::AC1018 && dimensionStyle->dimfxlon != 0) {
+    m_writer->WriteInt16(290, dimensionStyle->dimfxlon);
+  }
   m_writer->WriteUtf8String(340, dimensionStyle->dimtxsty);
   if (m_version > EoDxf::Version::AC1014) {
     m_writer->WriteUtf8String(341, dimensionStyle->dimldrblk);
@@ -453,19 +473,14 @@ bool dxfRW::WriteRay(EoDxfRay* ray) {
   m_writer->WriteString(0, "RAY");
   WriteEntity(ray);
   m_writer->WriteString(100, "AcDbRay");
-  EoDxfGeometryBase3d crd = ray->m_secondPoint;
-  crd.unitize();
   m_writer->WriteDouble(10, ray->m_firstPoint.x);
   m_writer->WriteDouble(20, ray->m_firstPoint.y);
-  if (ray->m_firstPoint.z != 0.0 || ray->m_secondPoint.z != 0.0) {
-    m_writer->WriteDouble(30, ray->m_firstPoint.z);
-    m_writer->WriteDouble(11, crd.x);
-    m_writer->WriteDouble(21, crd.y);
-    m_writer->WriteDouble(31, crd.z);
-  } else {
-    m_writer->WriteDouble(11, crd.x);
-    m_writer->WriteDouble(21, crd.y);
-  }
+  if (std::fabs(ray->m_firstPoint.z) > EoDxf::geometricTolerance) { m_writer->WriteDouble(30, ray->m_firstPoint.z); }
+  auto direction = ray->m_secondPoint;
+  direction.Unitize();
+  m_writer->WriteDouble(11, direction.x);
+  m_writer->WriteDouble(21, direction.y);
+  if (std::fabs(direction.z) > EoDxf::geometricTolerance) { m_writer->WriteDouble(31, direction.z); }
   return true;
 }
 
@@ -473,19 +488,16 @@ bool dxfRW::WriteXline(EoDxfXline* xline) {
   m_writer->WriteString(0, "XLINE");
   WriteEntity(xline);
   m_writer->WriteString(100, "AcDbXline");
-  EoDxfGeometryBase3d crd = xline->m_secondPoint;
-  crd.unitize();
   m_writer->WriteDouble(10, xline->m_firstPoint.x);
   m_writer->WriteDouble(20, xline->m_firstPoint.y);
-  if (xline->m_firstPoint.z != 0.0 || xline->m_secondPoint.z != 0.0) {
+  if (std::fabs(xline->m_firstPoint.z) > EoDxf::geometricTolerance) {
     m_writer->WriteDouble(30, xline->m_firstPoint.z);
-    m_writer->WriteDouble(11, crd.x);
-    m_writer->WriteDouble(21, crd.y);
-    m_writer->WriteDouble(31, crd.z);
-  } else {
-    m_writer->WriteDouble(11, crd.x);
-    m_writer->WriteDouble(21, crd.y);
   }
+  auto direction = xline->m_secondPoint;
+  direction.Unitize();
+  m_writer->WriteDouble(11, direction.x);
+  m_writer->WriteDouble(21, direction.y);
+  if (std::fabs(direction.z) > EoDxf::geometricTolerance) { m_writer->WriteDouble(31, direction.z); }
   return true;
 }
 
@@ -1004,7 +1016,8 @@ bool dxfRW::WriteInsert(EoDxfInsert* blockReference) {
   m_writer->WriteDouble(41, blockReference->m_xScaleFactor);
   m_writer->WriteDouble(42, blockReference->m_yScaleFactor);
   m_writer->WriteDouble(43, blockReference->m_zScaleFactor);
-  m_writer->WriteDouble(50, (blockReference->m_rotationAngle) * EoDxf::RadiansToDegrees);  // in dxf angle is written in degrees
+  m_writer->WriteDouble(
+      50, (blockReference->m_rotationAngle) * EoDxf::RadiansToDegrees);  // in dxf angle is written in degrees
   m_writer->WriteInt16(70, blockReference->m_columnCount);
   m_writer->WriteInt16(71, blockReference->m_rowCount);
   m_writer->WriteDouble(44, blockReference->m_columnSpacing);
@@ -1030,7 +1043,8 @@ bool dxfRW::WriteText(EoDxfText* text) {
 
   m_writer->WriteInt16(71, text->m_textGenerationFlags);
   if (text->m_horizontalAlignment != EoDxfText::HAlign::Left) { m_writer->WriteInt16(72, text->m_horizontalAlignment); }
-  if (text->m_horizontalAlignment != EoDxfText::HAlign::Left || text->m_verticalAlignment != EoDxfText::VAlign::BaseLine) {
+  if (text->m_horizontalAlignment != EoDxfText::HAlign::Left ||
+      text->m_verticalAlignment != EoDxfText::VAlign::BaseLine) {
     m_writer->WriteDouble(11, text->m_secondPoint.x);
     m_writer->WriteDouble(21, text->m_secondPoint.y);
     m_writer->WriteDouble(31, text->m_secondPoint.z);
@@ -1539,15 +1553,17 @@ bool dxfRW::WriteObjects() {
 
 bool dxfRW::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& ed) {
   for (std::vector<EoDxfGroupCodeValuesVariant*>::const_iterator it = ed.begin(); it != ed.end(); ++it) {
-    switch ((*it)->code()) {
+    switch ((*it)->Code()) {
       case 1000:
       case 1001:
       case 1002:
       case 1003:
       case 1004:
       case 1005: {
-        int cc = (*it)->code();
-        if ((*it)->type() == EoDxfGroupCodeValuesVariant::Type::String) { m_writer->WriteUtf8String(cc, *(*it)->content.s); }
+        int cc = (*it)->Code();
+        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::String) {
+          m_writer->WriteUtf8String(cc, *(*it)->m_content.s);
+        }
         //            m_writer->WriteUtf8String((*it)->code, (*it)->content.s);
         break;
       }
@@ -1555,22 +1571,28 @@ bool dxfRW::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& ed) {
       case 1011:
       case 1012:
       case 1013:
-        if ((*it)->type() == EoDxfGroupCodeValuesVariant::Type::Coord) {
-          m_writer->WriteDouble((*it)->code(), (*it)->content.v->x);
-          m_writer->WriteDouble((*it)->code() + 10, (*it)->content.v->y);
-          m_writer->WriteDouble((*it)->code() + 20, (*it)->content.v->z);
+        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::GeometryBase) {
+          m_writer->WriteDouble((*it)->Code(), (*it)->m_content.v->x);
+          m_writer->WriteDouble((*it)->Code() + 10, (*it)->m_content.v->y);
+          m_writer->WriteDouble((*it)->Code() + 20, (*it)->m_content.v->z);
         }
         break;
       case 1040:
       case 1041:
       case 1042:
-        if ((*it)->type() == EoDxfGroupCodeValuesVariant::Type::Double) { m_writer->WriteDouble((*it)->code(), (*it)->content.d); }
+        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::Double) {
+          m_writer->WriteDouble((*it)->Code(), (*it)->GetDouble());
+        }
         break;
       case 1070:
-        if ((*it)->type() == EoDxfGroupCodeValuesVariant::Type::Integer) { m_writer->WriteInt16((*it)->code(), (*it)->content.i); }
+        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::Integer) {
+          m_writer->WriteInt16((*it)->Code(), (*it)->GetInteger());
+        }
         break;
       case 1071:
-        if ((*it)->type() == EoDxfGroupCodeValuesVariant::Type::Integer) { m_writer->WriteInt32((*it)->code(), (*it)->content.i); }
+        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::Integer) {
+          m_writer->WriteInt32((*it)->Code(), (*it)->GetInteger());
+        }
         break;
       default:
         break;

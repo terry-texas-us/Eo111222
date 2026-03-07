@@ -58,7 +58,28 @@ class dxfRW {
   bool WriteAppId(EoDxfAppId* appId);
   bool WritePoint(EoDxfPoint* point);
   bool WriteLine(EoDxfLine* ent);
+
+  /** @brief Writes a RAY entity to the DXF file (R13+).
+   *
+   * A RAY is defined by a starting point and a direction vector. The direction vector is derived from the second point
+   * of the RAY, which is normalized to ensure it represents only the direction without affecting the length. The method
+   * writes the necessary DXF group codes and values to represent the RAY entity correctly in the DXF format.
+   *
+   * @param ray A pointer to the EoDxfRay object containing the RAY's properties.
+   * @return true if the RAY was successfully written; otherwise, false.
+   */
   bool WriteRay(EoDxfRay* ray);
+
+  /** @brief Writes an XLINE entity to the DXF file.
+   *
+   * An XLINE (construction line) is defined by a starting point and a direction vector. The direction vector is derived
+   * from the second point of the XLINE, which is normalized to ensure it represents only the direction without
+   * affecting the length. The method writes the necessary DXF group codes and values to represent the XLINE entity
+   * correctly in the DXF format.
+   *
+   * @param xline A pointer to the EoDxfXline object containing the XLINE's properties.
+   * @return true if the XLINE was successfully written; otherwise, false.
+   */
   bool WriteXline(EoDxfXline* xline);
   bool WriteCircle(EoDxfCircle* circle);
   bool WriteArc(EoDxfArc* arc);

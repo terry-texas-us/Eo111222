@@ -50,13 +50,13 @@ void EoDxfObjectEntry::ParseCode(int code, EoDxfReader* reader) {
     case 1021:
     case 1022:
     case 1023:
-      if (m_currentVariant) { m_currentVariant->setCoordY(reader->GetDouble()); }
+      if (m_currentVariant) { m_currentVariant->SetGeometryBaseY(reader->GetDouble()); }
       break;
     case 1030:
     case 1031:
     case 1032:
     case 1033:
-      if (m_currentVariant) { m_currentVariant->setCoordZ(reader->GetDouble()); }
+      if (m_currentVariant) { m_currentVariant->SetGeometryBaseZ(reader->GetDouble()); }
       m_currentVariant = nullptr;
       break;
     case 1040:

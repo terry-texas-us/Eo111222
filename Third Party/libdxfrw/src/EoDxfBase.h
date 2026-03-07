@@ -1,32 +1,10 @@
 #pragma once
 
-#pragma warning(disable : 4996)  // Ignore C4996, unsafe strncpy. TODO use safe alternative
-
-constexpr auto DRW_VERSION = "0.6.3";
-
+#include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <numbers>
 #include <string>
-
-#ifdef DRW_ASSERTS
-#define drw_assert(a) assert(a)
-#else
-#define drw_assert(a)
-#endif
-
-#define UTF8STRING std::string
-#define DRW_UNUSED(x) (void)x
-
-#if defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
-#define DRW_WIN
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#define DRW_WIN
-#elif defined(__MWERKS__) && defined(__INTEL__)
-#define DRW_WIN
-#else
-#define DRW_POSIX
-#endif
 
 namespace EoDxf {
 constexpr double geometricTolerance{1e-9};  // TAS: Added for geometric calculations, point coincidence etc.
@@ -37,7 +15,7 @@ constexpr auto HalfPi{std::numbers::pi / 2.0};
 constexpr auto RadiansToDegrees{180.0 / std::numbers::pi};
 constexpr auto DegreesToRadians{std::numbers::pi / 180.0};
 
-/// Version numbers for the DXF Format.
+// Version numbers for the DXF Format.
 enum Version {
   UNKNOWNV,  // UNKNOWN VERSION (default / unreadable header)
   AC1006,  // R10
@@ -49,29 +27,28 @@ enum Version {
   AC1021,  // AutoCAD 2007 / 2008 / 2009
   AC1024,  // AutoCAD 2010 / 2011 / 2012
   AC1027,  // AutoCAD 2013 / 2014 / 2015 / 2016 / 2017
-  AC1032  // AutoCAD 2018 / 2019 / 2020 / 2021 / 2022 / 2023 / 2024 / 2025 / 2026 (current format – no new code since
-          // 2018)
+  AC1032  // AutoCAD 2018 / 2019 / 2020 / 2021 / 2022 / 2023 / 2024 / 2025 / 2026 (no new code since 2018)
 };
 
-//! Special codes for colors
+// Special codes for colors
 enum ColorCodes { ColorByLayer = 256, ColorByBlock = 0 };
 
-//! Spaces
+// Spaces
 enum Space { ModelSpace = 0, PaperSpace = 1 };
 
-//! Special kinds of handles
+// Special kinds of handles
 enum HandleCodes { NoHandle = 0 };
 
-//! Shadow mode
+// Shadow mode
 enum ShadowMode { CastAndReceiveShadows = 0, CastShadows = 1, ReceiveShadows = 2, IgnoreShadows = 3 };
 
-//! Special kinds of materials
+// Special kinds of materials
 enum MaterialCodes { MaterialByLayer = 0 };
 
-//! Special kinds of plot styles
+// Special kinds of plot styles
 enum PlotStyleCodes { DefaultPlotStyle = 0 };
 
-//! Special kinds of transparencies
+// Special kinds of transparencies
 enum TransparencyCodes { Opaque = 0, Transparent = -1 };
 
 }  // namespace EoDxf
@@ -87,7 +64,7 @@ class EoDxfGeometryBase3d {
 
   EoDxfGeometryBase3d() noexcept = default;
 
-  EoDxfGeometryBase3d(double x, double y, double z) : x{x}, y{y}, z{z} {}
+  EoDxfGeometryBase3d(double x, double y, double z) noexcept : x{x}, y{y}, z{z} {}
 
   EoDxfGeometryBase3d(const EoDxfGeometryBase3d& other) noexcept = default;
   EoDxfGeometryBase3d& operator=(const EoDxfGeometryBase3d& data) noexcept = default;
@@ -97,8 +74,9 @@ class EoDxfGeometryBase3d {
 
   /** @brief Convert `this` coordinate to a unit-length vector (in-place).
    */
-  void unitize() noexcept {
+  void Unitize() noexcept {
     const double dist = sqrt(x * x + y * y + z * z);
+
     if (dist > EoDxf::geometricTolerance) {
       x = x / dist;
       y = y / dist;
@@ -106,15 +84,16 @@ class EoDxfGeometryBase3d {
     }
   }
 
-  /// @todo Non-modifying version of unitize() that returns a new EoDxfGeometryBase3d instead of modifying `this` in-place.
+  /// @todo Non-modifying version of unitize() that returns a new EoDxfGeometryBase3d instead of modifying `this`
+  /// in-place.
 };
 
-/**
- * @brief 2D vertex for DXF LWPOLYLINE/POLYLINE entities (group codes 10/20/40/41/42).
- *
- * All values are in the entity's OCS.
+/** @brief Class representing a vertex of a lightweight polyline, with 2D coordinates and optional width and bulge
+ * properties. The vertex is defined by its x and y coordinates (group codes 10 and 20), optional start and end widths
+ * (group codes 40 and 41), and an optional bulge value (group code 42) that defines the curvature between this vertex
+ * and the next one in the polyline.
  */
-struct DRW_Vertex2D {
+struct EoDxfPolylineVertex2d {
   double x{};  // x coordinate, code 10
   double y{};  // y coordinate, code 20
   double stawidth{};  // Start width, code 40
@@ -122,135 +101,206 @@ struct DRW_Vertex2D {
   double bulge{};  // bulge, code 42
 
   /** @brief Default-constructed vertex (all zero). */
-  DRW_Vertex2D() noexcept = default;
+  EoDxfPolylineVertex2d() noexcept = default;
 
   /** @brief Position + bulge constructor (widths stay zero).
    * Matches the most common usage in DXF parsers.
    */
-  constexpr DRW_Vertex2D(double x, double y, double bulge = {}) noexcept
+  constexpr EoDxfPolylineVertex2d(double x, double y, double bulge = {}) noexcept
       : x{x}, y{y}, stawidth{}, endwidth{}, bulge{bulge} {}
 };
 
-//! Class to handle header vars
-/*!
- *  Class to handle header vars
+/** @brief Class representing a variant type for storing different types of values associated with DXF group codes.
+ *  The class can hold a string, integer, double, or coordinate value, and it tracks the type of value currently stored.
+ *  It provides constructors for each type, as well as copy and move semantics. The Add* methods allow updating the
+ *  stored value and type after construction.
  */
 class EoDxfGroupCodeValuesVariant {
  public:
-  enum Type { String, Integer, Double, Coord, Invalid };
-  // TODO: add INT64 support
-  EoDxfGroupCodeValuesVariant() : sdata(std::string()), vdata(), content(0), vType(Type::Invalid), vCode(0) {}
-  EoDxfGroupCodeValuesVariant(int c, std::int32_t i) : sdata(std::string()), vdata(), content(i), vType(Type::Integer), vCode(c) {}
-  EoDxfGroupCodeValuesVariant(int c, std::uint32_t i)
-      : sdata(std::string()), vdata(), content(static_cast<std::int32_t>(i)), vType(Type::Integer), vCode(c) {}
+  enum Type { String, Integer, Double, GeometryBase, Invalid };
 
-  EoDxfGroupCodeValuesVariant(int c, double d) : sdata(std::string()), vdata(), content(d), vType(Type::Double), vCode(c) {}
-  EoDxfGroupCodeValuesVariant(int c, UTF8STRING s) : sdata(s), vdata(), content(&sdata), vType(Type::String), vCode(c) {}
-  EoDxfGroupCodeValuesVariant(int c, EoDxfGeometryBase3d crd) : sdata(std::string()), vdata(crd), content(&vdata), vType(Type::Coord), vCode(c) {}
+  EoDxfGroupCodeValuesVariant() = default;
 
-  EoDxfGroupCodeValuesVariant(const EoDxfGroupCodeValuesVariant& d)
-      : sdata(d.sdata), vdata(d.vdata), content(d.content), vType(d.vType), vCode(d.vCode) {
-    if (d.vType == Type::Coord) { content.v = &vdata; }
-    if (d.vType == Type::String) { content.s = &sdata; }
+  EoDxfGroupCodeValuesVariant(int code, std::int32_t i) noexcept
+      : m_content{i}, m_variantType{Type::Integer}, m_code{code} {}
+
+  EoDxfGroupCodeValuesVariant(int code, std::uint32_t i) noexcept
+      : m_content{static_cast<std::int32_t>(i)}, m_variantType{Type::Integer}, m_code{code} {}
+
+  EoDxfGroupCodeValuesVariant(int code, double d) noexcept : m_content{d}, m_variantType{Type::Double}, m_code{code} {}
+
+  EoDxfGroupCodeValuesVariant(int code, std::string s) noexcept
+      : m_stringValue{std::move(s)}, m_content{&m_stringValue}, m_variantType{Type::String}, m_code{code} {}
+
+  EoDxfGroupCodeValuesVariant(int code, EoDxfGeometryBase3d gb) noexcept
+      : m_geometryBaseValue{gb}, m_content{&m_geometryBaseValue}, m_variantType{Type::GeometryBase}, m_code{code} {}
+
+  EoDxfGroupCodeValuesVariant(const EoDxfGroupCodeValuesVariant& other)
+      : m_stringValue{other.m_stringValue},
+        m_geometryBaseValue{other.m_geometryBaseValue},
+        m_content{other.m_content},
+        m_variantType{other.m_variantType},
+        m_code{other.m_code} {
+    if (other.m_variantType == Type::GeometryBase) { m_content.v = &m_geometryBaseValue; }
+    if (other.m_variantType == Type::String) { m_content.s = &m_stringValue; }
   }
 
-  ~EoDxfGroupCodeValuesVariant() {}
+  EoDxfGroupCodeValuesVariant& operator=(const EoDxfGroupCodeValuesVariant& other) {
+    if (this != &other) {
+      m_stringValue = other.m_stringValue;
+      m_geometryBaseValue = other.m_geometryBaseValue;
+      m_content = other.m_content;
+      m_variantType = other.m_variantType;
+      m_code = other.m_code;
+      if (other.m_variantType == Type::GeometryBase) { m_content.v = &m_geometryBaseValue; }
+      if (other.m_variantType == Type::String) { m_content.s = &m_stringValue; }
+    }
+    return *this;
+  }
 
-  void addString(int c, UTF8STRING s) {
-    vType = Type::String;
-    sdata = s;
-    content.s = &sdata;
-    vCode = c;
+  EoDxfGroupCodeValuesVariant(EoDxfGroupCodeValuesVariant&& other) noexcept
+      : m_stringValue{std::move(other.m_stringValue)},
+        m_geometryBaseValue{other.m_geometryBaseValue},
+        m_content{other.m_content},
+        m_variantType{other.m_variantType},
+        m_code{other.m_code} {
+    if (m_variantType == Type::GeometryBase) { m_content.v = &m_geometryBaseValue; }
+    if (m_variantType == Type::String) { m_content.s = &m_stringValue; }
   }
-  void addInt(int c, int i) {
-    vType = Type::Integer;
-    content.i = i;
-    vCode = c;
+
+  EoDxfGroupCodeValuesVariant& operator=(EoDxfGroupCodeValuesVariant&& other) noexcept {
+    if (this != &other) {
+      m_stringValue = std::move(other.m_stringValue);
+      m_geometryBaseValue = other.m_geometryBaseValue;
+      m_content = other.m_content;
+      m_variantType = other.m_variantType;
+      m_code = other.m_code;
+      if (m_variantType == Type::GeometryBase) { m_content.v = &m_geometryBaseValue; }
+      if (m_variantType == Type::String) { m_content.s = &m_stringValue; }
+    }
+    return *this;
   }
-  void addDouble(int c, double d) {
-    vType = Type::Double;
-    content.d = d;
-    vCode = c;
+
+  ~EoDxfGroupCodeValuesVariant() = default;
+
+  void AddString(int code, std::string s) {
+    m_variantType = Type::String;
+    m_stringValue = std::move(s);
+    m_content.s = &m_stringValue;
+    m_code = code;
   }
-  void addCoord(int c, EoDxfGeometryBase3d v) {
-    vType = Type::Coord;
-    vdata = v;
-    content.v = &vdata;
-    vCode = c;
+  void AddInteger(int code, int i) {
+    m_variantType = Type::Integer;
+    m_content.i = i;
+    m_code = code;
   }
-  void setCoordX(double d) {
-    if (vType == EoDxfGroupCodeValuesVariant::Type::Coord) { vdata.x = d; }
+  void AddDouble(int code, double d) {
+    m_variantType = Type::Double;
+    m_content.d = d;
+    m_code = code;
   }
-  void setCoordY(double d) {
-    if (vType == EoDxfGroupCodeValuesVariant::Type::Coord) { vdata.y = d; }
+  void AddGeometryBase(int code, EoDxfGeometryBase3d v) {
+    m_variantType = Type::GeometryBase;
+    m_geometryBaseValue = v;
+    m_content.v = &m_geometryBaseValue;
+    m_code = code;
   }
-  void setCoordZ(double d) {
-    if (vType == EoDxfGroupCodeValuesVariant::Type::Coord) { vdata.z = d; }
+
+  void SetGeometryBaseX(double d) {
+    assert(m_variantType == Type::GeometryBase);
+    m_geometryBaseValue.x = d;
   }
-  enum EoDxfGroupCodeValuesVariant::Type type() const { return vType; }
-  int code() const { return vCode; }
+  void SetGeometryBaseY(double d) {
+    assert(m_variantType == Type::GeometryBase);
+    m_geometryBaseValue.y = d;
+  }
+  void SetGeometryBaseZ(double d) {
+    assert(m_variantType == Type::GeometryBase);
+    m_geometryBaseValue.z = d;
+  }
+
+  [[nodiscard]] const std::string& GetString() const {
+    assert(m_variantType == Type::String);
+    return m_stringValue;
+  }
+  [[nodiscard]] std::int32_t GetInteger() const {
+    assert(m_variantType == Type::Integer);
+    return m_content.i;
+  }
+  [[nodiscard]] double GetDouble() const {
+    assert(m_variantType == Type::Double);
+    return m_content.d;
+  }
+  [[nodiscard]] const EoDxfGeometryBase3d& GetGeometryBase() const {
+    assert(m_variantType == Type::GeometryBase);
+    return m_geometryBaseValue;
+  }
+
+  [[nodiscard]] enum Type GetType() const noexcept { return m_variantType; }
+  [[nodiscard]] int Code() const noexcept { return m_code; }
 
  private:
-  std::string sdata;
-  EoDxfGeometryBase3d vdata;
+  std::string m_stringValue;
+  EoDxfGeometryBase3d m_geometryBaseValue;
 
- private:
-  union DRW_VarContent {
-    UTF8STRING* s;
+  union EoDxfVariantContent {
+    std::string* s;
     std::int32_t i;
     double d;
     EoDxfGeometryBase3d* v;
 
-    DRW_VarContent(UTF8STRING* sd) : s(sd) {}
-    DRW_VarContent(std::int32_t id) : i(id) {}
-    DRW_VarContent(double dd) : d(dd) {}
-    DRW_VarContent(EoDxfGeometryBase3d* vd) : v(vd) {}
+    EoDxfVariantContent() noexcept : i{} {}
+    EoDxfVariantContent(std::string* sd) noexcept : s{sd} {}
+    EoDxfVariantContent(std::int32_t id) noexcept : i{id} {}
+    EoDxfVariantContent(double dd) noexcept : d{dd} {}
+    EoDxfVariantContent(EoDxfGeometryBase3d* gb) noexcept : v{gb} {}
   };
 
  public:
-  DRW_VarContent content;
+  EoDxfVariantContent m_content;
 
  private:
-  enum EoDxfGroupCodeValuesVariant::Type vType;
-  int vCode;
+  enum EoDxfGroupCodeValuesVariant::Type m_variantType{Type::Invalid};
+  int m_code{};
 };
 
-//! Class to convert between line width and integer
-/*!
- *  Class to convert between line width and integer
- *  verifing valid values, if value is not valid
- *  returns widthDefault.
+/** @brief Class to handle conversion between DXF line width codes and internal line width enumeration.
+ *
+ *  The DRW_LW_Conv class provides an enumeration of line widths corresponding to standard DXF line width codes, as well
+ * as static methods to convert between the internal line width enumeration and the integer codes used in DXF files.
+ * This allows for consistent handling of line widths when reading from or writing to DXF files, ensuring that the
+ * correct line widths are applied based on the specified codes.
  */
 class DRW_LW_Conv {
  public:
   enum lineWidth {
-    width00 = 0, // 0.00mm (dxf 0)
-    width01 = 1, // 0.05mm (dxf 5)
-    width02 = 2, // 0.09mm (dxf 9)
-    width03 = 3, // 0.13mm (dxf 13)
-    width04 = 4, // 0.15mm (dxf 15)
-    width05 = 5, // 0.18mm (dxf 18)
-    width06 = 6, // 0.20mm (dxf 20)
-    width07 = 7, // 0.25mm (dxf 25)
-    width08 = 8, // 0.30mm (dxf 30)
-    width09 = 9, // 0.35mm (dxf 35)
-    width10 = 10, // 0.40mm (dxf 40)
-    width11 = 11, // 0.50mm (dxf 50)
-    width12 = 12, // 0.53mm (dxf 53)
-    width13 = 13, // 0.60mm (dxf 60)
-    width14 = 14, // 0.70mm (dxf 70)
-    width15 = 15, // 0.80mm (dxf 80)
-    width16 = 16, // 0.90mm (dxf 90)
-    width17 = 17, // 1.00mm (dxf 100)
-    width18 = 18, // 1.06mm (dxf 106)
-    width19 = 19, // 1.20mm (dxf 120)
-    width20 = 20, // 1.40mm (dxf 140)
-    width21 = 21, // 1.58mm (dxf 158)
-    width22 = 22, // 2.00mm (dxf 200)
-    width23 = 23, // 2.11mm (dxf 211)
-    widthByLayer = 29, // by layer (dxf -1)
-    widthByBlock = 30, // by block (dxf -2)
-    widthDefault = 31 // by default (dxf -3)
+    width00 = 0,  // 0.00mm (dxf 0)
+    width01 = 1,  // 0.05mm (dxf 5)
+    width02 = 2,  // 0.09mm (dxf 9)
+    width03 = 3,  // 0.13mm (dxf 13)
+    width04 = 4,  // 0.15mm (dxf 15)
+    width05 = 5,  // 0.18mm (dxf 18)
+    width06 = 6,  // 0.20mm (dxf 20)
+    width07 = 7,  // 0.25mm (dxf 25)
+    width08 = 8,  // 0.30mm (dxf 30)
+    width09 = 9,  // 0.35mm (dxf 35)
+    width10 = 10,  // 0.40mm (dxf 40)
+    width11 = 11,  // 0.50mm (dxf 50)
+    width12 = 12,  // 0.53mm (dxf 53)
+    width13 = 13,  // 0.60mm (dxf 60)
+    width14 = 14,  // 0.70mm (dxf 70)
+    width15 = 15,  // 0.80mm (dxf 80)
+    width16 = 16,  // 0.90mm (dxf 90)
+    width17 = 17,  // 1.00mm (dxf 100)
+    width18 = 18,  // 1.06mm (dxf 106)
+    width19 = 19,  // 1.20mm (dxf 120)
+    width20 = 20,  // 1.40mm (dxf 140)
+    width21 = 21,  // 1.58mm (dxf 158)
+    width22 = 22,  // 2.00mm (dxf 200)
+    width23 = 23,  // 2.11mm (dxf 211)
+    widthByLayer = 29,  // by layer (dxf -1)
+    widthByBlock = 30,  // by block (dxf -2)
+    widthDefault = 31  // by default (dxf -3)
   };
 
   static int lineWidth2dxfInt(enum lineWidth lw) {
@@ -375,12 +425,6 @@ class DRW_LW_Conv {
     } else {
       return width23;
     }
-    // default by default
-    return widthDefault;
-  }
-
-  static enum lineWidth dwgInt2lineWidth(int i) {
-    if ((i > -1 && i < 24) || (i > 28 && i < 32)) { return static_cast<lineWidth>(i); }
     // default by default
     return widthDefault;
   }

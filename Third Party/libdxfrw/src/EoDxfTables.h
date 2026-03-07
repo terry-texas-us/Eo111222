@@ -56,7 +56,7 @@ class EoDxfTableEntry {
   EoDxf::SymbolTable tType{EoDxf::SymbolTable::Unknown};  // Group code 0
   std::uint32_t m_handle{};  // Group code 5
   std::uint32_t m_ownerHandle{};  // Group code 330
-  UTF8STRING m_tableName;  // Group code 2
+  std::string m_tableName;  // Group code 2
   int m_flagValues{};  // Group code 70
   std::vector<EoDxfGroupCodeValuesVariant*> m_extensionData;  // Group codes 1000 to 1071
 
@@ -82,12 +82,12 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
   void Reset();
 
  public:
-  UTF8STRING dimpost;  // Group code 3
-  UTF8STRING dimapost;  // Group code 4
+  std::string dimpost;  // Group code 3
+  std::string dimapost;  // Group code 4
 
-  UTF8STRING dimblk;  // Group code 5, code 342 V2000+
-  UTF8STRING dimblk1;  // Group code 6, code 343 V2000+
-  UTF8STRING dimblk2;  // Group code 7, code 344 V2000+
+  std::string dimblk;  // Group code 5, code 342 V2000+
+  std::string dimblk1;  // Group code 6, code 343 V2000+
+  std::string dimblk2;  // Group code 7, code 344 V2000+
   double dimscale;  // Group code 40
   double dimasz;  // Group code 41
   double dimexo;  // Group code 42
@@ -147,8 +147,8 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
   int dimupt;  // Group code 288 R13+
   int dimatfit;  // Group code 289 V2000+
   int dimfxlon;  // Group code 290 V2007+
-  UTF8STRING dimtxsty;  // Group code 340 R13+
-  UTF8STRING dimldrblk;  // Group code 341 V2000+
+  std::string dimtxsty;  // Group code 340 R13+
+  std::string dimldrblk;  // Group code 341 V2000+
   int dimlwd;  // Group code 371 V2000+
   int dimlwe;  // Group code 372 V2000+
 };
@@ -172,7 +172,7 @@ class EoDxfLinetype : public EoDxfTableEntry {
   void Update();
 
  public:
-  UTF8STRING desc;  // Group code 3
+  std::string desc;  // Group code 3
   int size;  // Group code 73
   double length;  // Group code 40
   std::vector<double> path;  // Group code 49
@@ -198,7 +198,7 @@ class EoDxfLayer : public EoDxfTableEntry {
   void Reset();
 
  public:
-  UTF8STRING m_linetypeName;  // Group code 6
+  std::string m_linetypeName;  // Group code 6
   int m_colorNumber;  // Group code 62 (if negative, then layer is turned off)
   int color24;  // Group code 420
   bool m_plottingFlag;  // Group code 290 (if set to zero, then layer is not plotted)
@@ -260,8 +260,8 @@ class EoDxfTextStyle : public EoDxfTableEntry {
   double oblique;  // Group code 50
   int genFlag;  // Group code 71
   double lastHeight;  // Group code 42
-  UTF8STRING font;  // Group code 3
-  UTF8STRING bigFont;  // Group code 4
+  std::string font;  // Group code 3
+  std::string bigFont;  // Group code 4
   int fontFamily;  // Group code 1071
 };
 

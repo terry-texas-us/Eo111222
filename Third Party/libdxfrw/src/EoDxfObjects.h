@@ -76,7 +76,7 @@ class EoDxfImageDefinition : public EoDxfObjectEntry {
   void Reset();
 
  public:
-  UTF8STRING m_fileNameOfImage;  // Group code 1
+  std::string m_fileNameOfImage;  // Group code 1
   int imgVersion;  // Group code 90, 0=R14 version
   double m_uImageSizeInPixels{};  // Group code 10
   double m_vImageSizeInPixels{};  // Group code 20

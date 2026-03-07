@@ -138,8 +138,8 @@ class EoDxfEntity {
  public:
   std::list<std::list<EoDxfGroupCodeValuesVariant>> m_appData{};  // list of application data, code 102
   std::vector<EoDxfGroupCodeValuesVariant*> m_extendedData{};  // codes 1000 to 1071
-  UTF8STRING m_layer{"0"};  // layer name, code 8
-  UTF8STRING m_lineType{"BYLAYER"};  // line type, code 6
+  std::string m_layer{"0"};  // layer name, code 8
+  std::string m_lineType{"BYLAYER"};  // line type, code 6
   std::string m_proxyEntityGraphicsData{};  // group code 310 (optional) [unused]
   std::string m_colorName{};  // group code 430
   double m_lineTypeScale{1.0};  // linetype scale, code 48
@@ -426,7 +426,7 @@ class EoDxfBlock : public EoDxfPoint {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  UTF8STRING name{"*U0"};  // Group code 2
+  std::string name{"*U0"};  // Group code 2
   int m_flags{};  // Group code 70
 };
 
@@ -450,7 +450,7 @@ class EoDxfInsert : public EoDxfPoint {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  UTF8STRING m_blockName;  // Group code 2
+  std::string m_blockName;  // Group code 2
   double m_xScaleFactor{1.0};  // Group code 41
   double m_yScaleFactor{1.0};  // Group code 42
   double m_zScaleFactor{1.0};  // Group code 43
@@ -482,9 +482,9 @@ class EoDxfLwPolyline : public EoDxfEntity {
 
   void ApplyExtrusion() override;
 
-  void AddVertex(const DRW_Vertex2D& vertex) { m_vertices.push_back(vertex); }
+  void AddVertex(const EoDxfPolylineVertex2d& vertex) { m_vertices.push_back(vertex); }
 
-  [[nodiscard]] DRW_Vertex2D& AddVertex() { return m_vertices.emplace_back(); }
+  [[nodiscard]] EoDxfPolylineVertex2d& AddVertex() { return m_vertices.emplace_back(); }
 
  protected:
   void ParseCode(int code, EoDxfReader* reader);
@@ -496,7 +496,7 @@ class EoDxfLwPolyline : public EoDxfEntity {
   double m_elevation{};  // Group code 38
   double m_thickness{};  // Group code 39
   EoDxfGeometryBase3d m_extrusionDirection{0.0, 0.0, 1.0};  //  code 210, 220 & 230
-  std::vector<DRW_Vertex2D> m_vertices;
+  std::vector<EoDxfPolylineVertex2d> m_vertices;
 
  private:
   // Index of the current vertex being populated during parsing (-1 = none).
@@ -528,11 +528,11 @@ class EoDxfText : public EoDxfLine {
 
  public:
   double m_textHeight{};  // Group code 40
-  UTF8STRING m_string;  // Group code 1
+  std::string m_string;  // Group code 1
   double m_textRotation{};  // Group code 50
   double m_scaleFactorWidth{1.0};  // Group code 41
   double m_obliqueAngle{};  // Group code 51
-  UTF8STRING m_textStyleName{"STANDARD"};  // Group code 7
+  std::string m_textStyleName{"STANDARD"};  // Group code 7
   int m_textGenerationFlags{};  // Group code 71
   enum HAlign m_horizontalAlignment { Left };  // Group code 72
   enum VAlign m_verticalAlignment { BaseLine };  // Group code 73
@@ -797,7 +797,7 @@ class EoDxfHatch : public EoDxfPoint {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  UTF8STRING m_hatchPatternName;  // Group code 2
+  std::string m_hatchPatternName;  // Group code 2
   int m_solidFillFlag{1};  // Group code 70
   int m_associativityFlag{};  // Group code 71
   int m_hatchStyle{};  // Group code 75
@@ -828,7 +828,7 @@ class EoDxfHatch : public EoDxfPoint {
   EoDxfSpline* m_spline{};
   EoDxfLwPolyline* m_polyline{};
   EoDxfPoint* m_point{};
-  DRW_Vertex2D* m_polylineVertex{};
+  EoDxfPolylineVertex2d* m_polylineVertex{};
   bool m_isPolyline{};
 };
 
@@ -968,8 +968,8 @@ class EoDxfDimension : public EoDxfEntity {
   std::string name;  // Name of the block that contains the entities, code 2
   EoDxfGeometryBase3d defPoint;  //  definition point, code 10, 20 & 30 (WCS)
   EoDxfGeometryBase3d textPoint;  // Middle point of text, code 11, 21 & 31 (OCS)
-  UTF8STRING text;  // Dimension text explicitly entered by the user, code 1
-  UTF8STRING style;  // Dimension style, code 3
+  std::string text;  // Dimension text explicitly entered by the user, code 1
+  std::string style;  // Dimension style, code 3
   int align;  // attachment point, code 71
   int linesty;  // Dimension text line spacing style, code 72, default 1
   double linefactor;  // Dimension text line spacing factor, code 41, default 1? (value range 0.25 to 4.00*/
@@ -1191,7 +1191,7 @@ class EoDxfLeader : public EoDxfEntity {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  UTF8STRING style;  // Dimension style name, code 3
+  std::string style;  // Dimension style name, code 3
   int arrow;  // Arrowhead flag, code 71, 0=Disabled; 1=Enabled
   int leadertype;  // Leader path type, code 72, 0=Straight line segments; 1=Spline
   int flag;  // Leader creation flag, code 73, default 3

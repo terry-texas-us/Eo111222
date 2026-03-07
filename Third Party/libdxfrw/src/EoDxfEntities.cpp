@@ -97,14 +97,14 @@ void EoDxfEntity::CalculateArbitraryAxis(const EoDxfGeometryBase3d& extrusionDir
     extAxisX.z = 0;
   }
 
-  extAxisX.unitize();
+  extAxisX.Unitize();
 
   // Ay = N x Ax
   extAxisY.x = (extrusionDirection.y * extAxisX.z) - (extAxisX.y * extrusionDirection.z);
   extAxisY.y = (extrusionDirection.z * extAxisX.x) - (extAxisX.z * extrusionDirection.x);
   extAxisY.z = (extrusionDirection.x * extAxisX.y) - (extAxisX.x * extrusionDirection.y);
 
-  extAxisY.unitize();
+  extAxisY.Unitize();
 }
 
 void EoDxfEntity::ExtrudePointInPlace(const EoDxfGeometryBase3d& extrusionDirection, EoDxfGeometryBase3d& point) const noexcept {
@@ -184,13 +184,13 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
     case 1021:
     case 1022:
     case 1023:
-      if (m_currentVariant) { m_currentVariant->setCoordY(reader->GetDouble()); }
+      if (m_currentVariant) { m_currentVariant->SetGeometryBaseY(reader->GetDouble()); }
       break;
     case 1030:
     case 1031:
     case 1032:
     case 1033:
-      if (m_currentVariant) { m_currentVariant->setCoordZ(reader->GetDouble()); }
+      if (m_currentVariant) { m_currentVariant->SetGeometryBaseZ(reader->GetDouble()); }
       m_currentVariant = nullptr;
       break;
     case 1040:
@@ -216,7 +216,7 @@ bool EoDxfEntity::ParseAppDataGroup(EoDxfReader* reader) {
   if (appName.empty() || appName[0] != '{') { return false; }
 
   // opening line: store without the leading '{'
-  currentVariant.addString(102, appName.substr(1));
+  currentVariant.AddString(102, appName.substr(1));
   groupList.push_back(currentVariant);
 
   while (true) {
@@ -229,25 +229,25 @@ bool EoDxfEntity::ParseAppDataGroup(EoDxfReader* reader) {
 
       // rare nested control string
       currentVariant = EoDxfGroupCodeValuesVariant{};
-      currentVariant.addString(102, val);
+      currentVariant.AddString(102, val);
     } else {
       currentVariant = EoDxfGroupCodeValuesVariant{};
       if (nextCode == 330 || nextCode == 360) {
-        currentVariant.addInt(nextCode, reader->GetHandleString());
+        currentVariant.AddInteger(nextCode, reader->GetHandleString());
       } else {
         switch (reader->GetType()) {
           case EoDxfReader::Type::String:
-            currentVariant.addString(nextCode, reader->GetString());
+            currentVariant.AddString(nextCode, reader->GetString());
             break;
           case EoDxfReader::Type::Int32:
           case EoDxfReader::Type::Int64:
-            currentVariant.addInt(nextCode, reader->GetInt32());
+            currentVariant.AddInteger(nextCode, reader->GetInt32());
             break;
           case EoDxfReader::Type::Double:
-            currentVariant.addDouble(nextCode, reader->GetDouble());
+            currentVariant.AddDouble(nextCode, reader->GetDouble());
             break;
           case EoDxfReader::Type::Bool:
-            currentVariant.addInt(nextCode, reader->GetInt32());
+            currentVariant.AddInteger(nextCode, reader->GetInt32());
             break;
           default:
             break;

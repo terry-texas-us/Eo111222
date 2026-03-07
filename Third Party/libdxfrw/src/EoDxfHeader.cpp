@@ -52,66 +52,66 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       m_variants[m_name] = m_currentVariant;
       break;
     case 1:
-      m_currentVariant->addString(code, reader->GetUtf8String());
+      m_currentVariant->AddString(code, reader->GetUtf8String());
       if (m_name == "$ACADVER") {
-        reader->SetVersion(m_currentVariant->content.s, true);
+        reader->SetVersion(m_currentVariant->m_content.s, true);
         m_version = reader->GetVersion();
       }
       break;
     case 2:
-      m_currentVariant->addString(code, reader->GetUtf8String());
+      m_currentVariant->AddString(code, reader->GetUtf8String());
       break;
     case 3:
-      m_currentVariant->addString(code, reader->GetUtf8String());
+      m_currentVariant->AddString(code, reader->GetUtf8String());
       if (m_name == "$DWGCODEPAGE") {
-        reader->SetCodePage(m_currentVariant->content.s);
-        m_currentVariant->addString(code, reader->GetCodePage());
+        reader->SetCodePage(m_currentVariant->m_content.s);
+        m_currentVariant->AddString(code, reader->GetCodePage());
       }
       break;
     case 6:
-      m_currentVariant->addString(code, reader->GetUtf8String());
+      m_currentVariant->AddString(code, reader->GetUtf8String());
       break;
     case 7:
-      m_currentVariant->addString(code, reader->GetUtf8String());
+      m_currentVariant->AddString(code, reader->GetUtf8String());
       break;
     case 8:
-      m_currentVariant->addString(code, reader->GetUtf8String());
+      m_currentVariant->AddString(code, reader->GetUtf8String());
       break;
     case 10:
-      m_currentVariant->addCoord(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
+      m_currentVariant->AddGeometryBase(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
       break;
     case 20:
-      m_currentVariant->setCoordY(reader->GetDouble());
+      m_currentVariant->SetGeometryBaseY(reader->GetDouble());
       break;
     case 30:
-      m_currentVariant->setCoordZ(reader->GetDouble());
+      m_currentVariant->SetGeometryBaseZ(reader->GetDouble());
       break;
     case 40:
-      m_currentVariant->addDouble(code, reader->GetDouble());
+      m_currentVariant->AddDouble(code, reader->GetDouble());
       break;
     case 50:
-      m_currentVariant->addDouble(code, reader->GetDouble());
+      m_currentVariant->AddDouble(code, reader->GetDouble());
       break;
     case 62:
-      m_currentVariant->addInt(code, reader->GetInt32());
+      m_currentVariant->AddInteger(code, reader->GetInt32());
       break;
     case 70:
-      m_currentVariant->addInt(code, reader->GetInt32());
+      m_currentVariant->AddInteger(code, reader->GetInt32());
       break;
     case 280:
-      m_currentVariant->addInt(code, reader->GetInt32());
+      m_currentVariant->AddInteger(code, reader->GetInt32());
       break;
     case 290:
-      m_currentVariant->addInt(code, reader->GetInt32());
+      m_currentVariant->AddInteger(code, reader->GetInt32());
       break;
     case 370:
-      m_currentVariant->addInt(code, reader->GetInt32());
+      m_currentVariant->AddInteger(code, reader->GetInt32());
       break;
     case 380:
-      m_currentVariant->addInt(code, reader->GetInt32());
+      m_currentVariant->AddInteger(code, reader->GetInt32());
       break;
     case 390:
-      m_currentVariant->addString(code, reader->GetUtf8String());
+      m_currentVariant->AddString(code, reader->GetUtf8String());
       break;
     default:
       break;
@@ -122,13 +122,13 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
-  EoDxfGeometryBase3d variantCoord;
+  EoDxfGeometryBase3d variantGeometryBase;
 
   writer->WriteString(9, "$INSBASE");
-  if (GetCoord("$INSBASE", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$INSBASE", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -136,10 +136,10 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
   }
 
   writer->WriteString(9, "$EXTMIN");
-  if (GetCoord("$EXTMIN", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$EXTMIN", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 1.0000000000000000E+020);
     writer->WriteDouble(20, 1.0000000000000000E+020);
@@ -147,10 +147,10 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
   }
 
   writer->WriteString(9, "$EXTMAX");
-  if (GetCoord("$EXTMAX", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$EXTMAX", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, -1.0000000000000000E+020);
     writer->WriteDouble(20, -1.0000000000000000E+020);
@@ -158,18 +158,18 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
   }
 
   writer->WriteString(9, "$LIMMIN");
-  if (GetCoord("$LIMMIN", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
+  if (GetGeometryBase("$LIMMIN", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
   }
 
   writer->WriteString(9, "$LIMMAX");
-  if (GetCoord("$LIMMAX", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
+  if (GetGeometryBase("$LIMMAX", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
   } else {
     writer->WriteDouble(10, 420.0);
     writer->WriteDouble(20, 297.0);
@@ -447,10 +447,10 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
   }
 
   writer->WriteString(9, "$UCSORG");
-  if (GetCoord("$UCSORG", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$UCSORG", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -458,10 +458,10 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
   }
 
   writer->WriteString(9, "$UCSXDIR");
-  if (GetCoord("$UCSXDIR", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$UCSXDIR", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 1.0);
     writer->WriteDouble(20, 0.0);
@@ -469,10 +469,10 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
   }
 
   writer->WriteString(9, "$UCSYDIR");
-  if (GetCoord("$UCSYDIR", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$UCSYDIR", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 1.0);
@@ -517,7 +517,7 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version versi
   double variantDouble;
   int variantInteger;
   std::string variantString;
-  EoDxfGeometryBase3d variantCoord;
+  EoDxfGeometryBase3d variantGeometryBase;
 
   writer->WriteString(9, "$DIMSTYLE");  // not used before AC1009
   if (GetString("$DIMSTYLE", &variantString)) {
@@ -552,10 +552,10 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$PUCSORG");
-  if (GetCoord("$PUCSORG", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PUCSORG", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -563,10 +563,10 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$PUCSXDIR");
-  if (GetCoord("$PUCSXDIR", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PUCSXDIR", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 1.0);
     writer->WriteDouble(20, 0.0);
@@ -574,10 +574,10 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$PUCSYDIR");
-  if (GetCoord("$PUCSYDIR", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PUCSYDIR", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 1.0);
@@ -600,10 +600,10 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version versi
   writer->WriteInt16(70, GetInteger("$PLIMCHECK", &variantInteger) ? variantInteger : 0);
 
   writer->WriteString(9, "$PEXTMIN");
-  if (GetCoord("$PEXTMIN", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PEXTMIN", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -611,10 +611,10 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$PEXTMAX");
-  if (GetCoord("$PEXTMAX", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PEXTMAX", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -622,18 +622,18 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$PLIMMIN");
-  if (GetCoord("$PLIMMIN", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
+  if (GetGeometryBase("$PLIMMIN", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
   }
 
   writer->WriteString(9, "$PLIMMAX");
-  if (GetCoord("$PLIMMAX", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
+  if (GetGeometryBase("$PLIMMAX", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
   } else {
     writer->WriteDouble(10, 297.0);
     writer->WriteDouble(20, 210.0);
@@ -660,7 +660,7 @@ void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer, EoDxf::Version versi
   double variantDouble;
   int variantInteger;
   std::string variantString;
-  EoDxfGeometryBase3d variantCoord;
+  EoDxfGeometryBase3d variantGeometryBase;
 
   writer->WriteString(9, "$CELTSCALE");
   writer->WriteDouble(40, GetDouble("$CELTSCALE", &variantDouble) ? variantDouble : 1.0);
@@ -721,10 +721,10 @@ void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer, EoDxf::Version versi
   writer->WriteDouble(40, GetDouble("$CHAMFERD", &variantDouble) ? variantDouble : 0.0);
 
   writer->WriteString(9, "$PINSBASE");
-  if (GetCoord("$PINSBASE", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PINSBASE", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -762,7 +762,7 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   double variantDouble;
   int variantInteger;
   std::string variantString;
-  EoDxfGeometryBase3d variantCoord;
+  EoDxfGeometryBase3d variantGeometryBase;
 
   writer->WriteString(9, "$DIMADEC");
   writer->WriteInt16(70, GetInteger("$DIMADEC", &variantInteger) ? variantInteger : 0);
@@ -825,10 +825,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   writer->WriteInt16(70, GetInteger("$UCSORTHOVIEW", &variantInteger) ? variantInteger : 0);
 
   writer->WriteString(9, "$UCSORGTOP");
-  if (GetCoord("$UCSORGTOP", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$UCSORGTOP", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -836,10 +836,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$UCSORGBOTTOM");
-  if (GetCoord("$UCSORGBOTTOM", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$UCSORGBOTTOM", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -847,10 +847,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$UCSORGLEFT");
-  if (GetCoord("$UCSORGLEFT", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$UCSORGLEFT", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -858,10 +858,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$UCSORGRIGHT");
-  if (GetCoord("$UCSORGRIGHT", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$UCSORGRIGHT", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -869,10 +869,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$UCSORGFRONT");
-  if (GetCoord("$UCSORGFRONT", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$UCSORGFRONT", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -880,10 +880,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$UCSORGBACK");
-  if (GetCoord("$UCSORGBACK", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$UCSORGBACK", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -915,10 +915,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   writer->WriteInt16(70, GetInteger("$PUCSORTHOVIEW", &variantInteger) ? variantInteger : 0);
 
   writer->WriteString(9, "$PUCSORGTOP");
-  if (GetCoord("$PUCSORGTOP", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PUCSORGTOP", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -926,10 +926,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$PUCSORGBOTTOM");
-  if (GetCoord("$PUCSORGBOTTOM", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PUCSORGBOTTOM", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -937,10 +937,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$PUCSORGLEFT");
-  if (GetCoord("$PUCSORGLEFT", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PUCSORGLEFT", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -948,10 +948,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$PUCSORGRIGHT");
-  if (GetCoord("$PUCSORGRIGHT", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PUCSORGRIGHT", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -959,10 +959,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$PUCSORGFRONT");
-  if (GetCoord("$PUCSORGFRONT", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PUCSORGFRONT", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -970,10 +970,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 
   writer->WriteString(9, "$PUCSORGBACK");
-  if (GetCoord("$PUCSORGBACK", &variantCoord)) {
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
-    writer->WriteDouble(30, variantCoord.z);
+  if (GetGeometryBase("$PUCSORGBACK", &variantGeometryBase)) {
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
+    writer->WriteDouble(30, variantGeometryBase.z);
   } else {
     writer->WriteDouble(10, 0.0);
     writer->WriteDouble(20, 0.0);
@@ -1221,7 +1221,7 @@ void EoDxfHeader::WriteAC1024Additions(EoDxfWriter* writer, EoDxf::Version versi
 void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
   int variantInteger;
   std::string variantString;
-  EoDxfGeometryBase3d variantCoord;
+  EoDxfGeometryBase3d variantGeometryBase;
   writer->WriteString(2, "HEADER");
   writer->WriteString(9, "$ACADVER");
   switch (version) {
@@ -1278,16 +1278,16 @@ void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
     writer->WriteInt16(70, variantInteger);
   }
 
-  if (GetCoord("$GRIDUNIT", &variantCoord)) {
+  if (GetGeometryBase("$GRIDUNIT", &variantGeometryBase)) {
     writer->WriteString(9, "$GRIDUNIT");
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
   }
 
-  if (GetCoord("$VIEWCTR", &variantCoord)) {
+  if (GetGeometryBase("$VIEWCTR", &variantGeometryBase)) {
     writer->WriteString(9, "$VIEWCTR");
-    writer->WriteDouble(10, variantCoord.x);
-    writer->WriteDouble(20, variantCoord.y);
+    writer->WriteDouble(10, variantGeometryBase.x);
+    writer->WriteDouble(20, variantGeometryBase.y);
   }
 
   WriteBase(writer, version);
@@ -1339,7 +1339,7 @@ void EoDxfHeader::AddString(const std::string& key, std::string value, int code)
   m_variants[key] = m_currentVariant;
 }
 
-void EoDxfHeader::AddCoord(const std::string& key, EoDxfGeometryBase3d value, int code) {
+void EoDxfHeader::AddGeometryBase(const std::string& key, EoDxfGeometryBase3d value, int code) {
   m_currentVariant = new EoDxfGroupCodeValuesVariant(code, value);
   m_variants[key] = m_currentVariant;
 }
@@ -1347,8 +1347,8 @@ void EoDxfHeader::AddCoord(const std::string& key, EoDxfGeometryBase3d value, in
 bool EoDxfHeader::GetDouble(const std::string& key, double* variantDouble) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second;
-    if (variant->type() == EoDxfGroupCodeValuesVariant::Type::Double) {
-      *variantDouble = variant->content.d;
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Double) {
+      *variantDouble = variant->GetDouble();
       delete variant;
       m_variants.erase(it);
       return true;
@@ -1361,8 +1361,8 @@ bool EoDxfHeader::GetDouble(const std::string& key, double* variantDouble) {
 bool EoDxfHeader::GetInteger(const std::string& key, int* variantInteger) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second;
-    if (variant->type() == EoDxfGroupCodeValuesVariant::Type::Integer) {
-      *variantInteger = variant->content.i;
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Integer) {
+      *variantInteger = variant->GetInteger();
       delete variant;
       m_variants.erase(it);
       return true;
@@ -1375,9 +1375,9 @@ bool EoDxfHeader::GetInteger(const std::string& key, int* variantInteger) {
 bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second;
-    if (variant->type() == EoDxfGroupCodeValuesVariant::Type::String) {
-      if (variant->content.s != nullptr) {
-        *variantString = *variant->content.s;
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::String) {
+      if (variant->m_content.s != nullptr) {
+        *variantString = *variant->m_content.s;
       } else {
         variantString->clear();  // null → empty string (safe default)
       }
@@ -1390,17 +1390,17 @@ bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) 
   return false;
 }
 
-bool EoDxfHeader::GetCoord(const std::string& key, EoDxfGeometryBase3d* variantCoord) {
+bool EoDxfHeader::GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* variantGeometryBase) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second;
-    if (variant->type() == EoDxfGroupCodeValuesVariant::Type::Coord) {
-      *variantCoord = *variant->content.v;
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::GeometryBase) {
+      *variantGeometryBase = *variant->m_content.v;
       delete variant;
       m_variants.erase(it);
       return true;
     }
   }
-  // Non-Coord variants deliberately left in the map
+  // Non-GeometryBase variants deliberately left in the map
   return false;
 }
 
