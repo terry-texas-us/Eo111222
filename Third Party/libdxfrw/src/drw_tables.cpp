@@ -69,7 +69,7 @@ void EoDxfTableEntry::Reset() {
   m_currentVariant = nullptr;
 }
 
-void DRW_BlockRecord::ParseCode(int code, dxfReader* reader) {
+void EoDxfBlockRecord::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 70:
       m_blockInsertionUnits = reader->GetInt32();
@@ -81,7 +81,7 @@ void DRW_BlockRecord::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_BlockRecord::Reset() {
+void EoDxfBlockRecord::Reset() {
   m_blockInsertionUnits = 0;   // Block records only flag: block insertion units
   EoDxfTableEntry::Reset();
 }

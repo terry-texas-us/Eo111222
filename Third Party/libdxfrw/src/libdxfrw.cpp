@@ -696,7 +696,7 @@ bool dxfRW::WritePolyline(EoDxfPolyline* polyline) {
   // SEQEND entity
   m_writer->WriteString(0, "SEQEND");
 
-  DRW_SeqEnd seqEnd{*polyline};
+  EoDxfSeqEnd seqEnd{*polyline};
   seqEnd.m_handle = ++m_entityCount;
   m_writer->WriteString(5, ToHexString(seqEnd.m_handle));
   m_writer->WriteString(330, ToHexString(polylineHandle));
@@ -2227,7 +2227,7 @@ bool dxfRW::ProcessPolyline() {
 
 bool dxfRW::ProcessVertex(EoDxfPolyline* polyline) {
   int code;
-  auto* vertex = new DRW_Vertex();
+  auto* vertex = new EoDxfVertex();
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
@@ -2235,7 +2235,7 @@ bool dxfRW::ProcessVertex(EoDxfPolyline* polyline) {
         m_nextEntity = m_reader->GetString();
         if (m_nextEntity == "SEQEND") { return true; }
         if (m_nextEntity == "VERTEX") {
-          vertex = new DRW_Vertex();
+          vertex = new EoDxfVertex();
           break;
         }
         // Unexpected entity, stop processing vertices

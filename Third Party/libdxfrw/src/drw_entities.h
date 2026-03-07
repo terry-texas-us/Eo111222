@@ -578,13 +578,13 @@ class EoDxfMText : public EoDxfText {
   bool m_haveXAxisDirection{};
 };
 
-class DRW_Vertex : public EoDxfPoint {
+class EoDxfVertex : public EoDxfPoint {
   friend class dxfRW;
 
  public:
-  DRW_Vertex() noexcept : EoDxfPoint{EoDxf::VERTEX} {}
+  EoDxfVertex() noexcept : EoDxfPoint{EoDxf::VERTEX} {}
 
-  DRW_Vertex(double sx, double sy, double sz, double bulge) noexcept : EoDxfPoint{EoDxf::VERTEX}, m_bulge{bulge} {
+  EoDxfVertex(double sx, double sy, double sz, double bulge) noexcept : EoDxfPoint{EoDxf::VERTEX}, m_bulge{bulge} {
     m_firstPoint = {sx, sy, sz};
   }
 
@@ -612,17 +612,17 @@ class DRW_Vertex : public EoDxfPoint {
  * for the associated entity. The SEQEND entity can inherit properties such as layer and display settings from its
  * owning POLYLINE or INSERT entity, but it does not have its own unique properties.
  */
-class DRW_SeqEnd : public EoDxfEntity {
+class EoDxfSeqEnd : public EoDxfEntity {
   friend class dxfRW;
 
  public:
-  DRW_SeqEnd() noexcept : EoDxfEntity{EoDxf::SEQEND} {}
+  EoDxfSeqEnd() noexcept : EoDxfEntity{EoDxf::SEQEND} {}
 
   /** @brief Constructs a SEQEND that inherits layer and display properties
    *         from the owning POLYLINE or INSERT entity.
    *  @param owner The entity whose sequence this SEQEND terminates.
    */
-  explicit DRW_SeqEnd(const EoDxfEntity& owner) noexcept : EoDxfEntity{EoDxf::SEQEND} {
+  explicit EoDxfSeqEnd(const EoDxfEntity& owner) noexcept : EoDxfEntity{EoDxf::SEQEND} {
     m_layer = owner.m_layer;
     m_lineType = owner.m_lineType;
     m_color = owner.m_color;
@@ -639,7 +639,7 @@ class EoDxfPolyline : public EoDxfPoint {
   EoDxfPolyline() noexcept : EoDxfPoint{EoDxf::POLYLINE} {}
 
   ~EoDxfPolyline() {
-    for (DRW_Vertex* vertex : m_vertices) { delete vertex; }
+    for (EoDxfVertex* vertex : m_vertices) { delete vertex; }
   }
 
   // Prevent double-free from shallow copy of raw-pointer vector
@@ -649,8 +649,8 @@ class EoDxfPolyline : public EoDxfPoint {
   EoDxfPolyline(EoDxfPolyline&& other) noexcept = default;
   EoDxfPolyline& operator=(EoDxfPolyline&& other) noexcept = default;
 
-  void addVertex(const DRW_Vertex& v) {
-    auto* vertex = new DRW_Vertex();
+  void addVertex(const EoDxfVertex& v) {
+    auto* vertex = new EoDxfVertex();
     vertex->m_firstPoint = v.m_firstPoint;
     vertex->m_startingWidth = v.m_startingWidth;
     vertex->m_endingWidth = v.m_endingWidth;
@@ -667,7 +667,7 @@ class EoDxfPolyline : public EoDxfPoint {
     m_vertices.push_back(vertex);
   }
 
-  void appendVertex(DRW_Vertex* v) { m_vertices.push_back(v); }
+  void appendVertex(EoDxfVertex* v) { m_vertices.push_back(v); }
 
  protected:
   void ParseCode(int code, dxfReader* reader);
@@ -682,7 +682,7 @@ class EoDxfPolyline : public EoDxfPoint {
   int m_smoothSurfaceDensityN{};  // Group code 74
   int m_curvesAndSmoothSurfaceType{};  // Group code 75
 
-  std::vector<DRW_Vertex*> m_vertices;  // vertex list
+  std::vector<EoDxfVertex*> m_vertices;  // vertex list
 };
 
 /** @brief Class to handle spline entity
@@ -744,16 +744,16 @@ class EoDxfSpline : public EoDxfEntity {
  * entities such as lines, arcs, circles, ellipses, splines, and lightweight polylines that make up the boundary of the
  * hatch.
  */
-class DRW_HatchLoop {
+class EoDxfHatchLoop {
  public:
-  explicit DRW_HatchLoop(int boundaryPathType) : m_boundaryPathType{boundaryPathType} {}
+  explicit EoDxfHatchLoop(int boundaryPathType) : m_boundaryPathType{boundaryPathType} {}
 
-  ~DRW_HatchLoop() = default;
+  ~EoDxfHatchLoop() = default;
 
-  DRW_HatchLoop(const DRW_HatchLoop&) = delete;
-  DRW_HatchLoop& operator=(const DRW_HatchLoop&) = delete;
-  DRW_HatchLoop(DRW_HatchLoop&&) = delete;
-  DRW_HatchLoop& operator=(DRW_HatchLoop&&) = delete;
+  EoDxfHatchLoop(const EoDxfHatchLoop&) = delete;
+  EoDxfHatchLoop& operator=(const EoDxfHatchLoop&) = delete;
+  EoDxfHatchLoop(EoDxfHatchLoop&&) = delete;
+  EoDxfHatchLoop& operator=(EoDxfHatchLoop&&) = delete;
 
 
   void Update() { m_numberOfEdges = static_cast<int>(m_entities.size()); }
@@ -789,7 +789,7 @@ class EoDxfHatch : public EoDxfPoint {
   EoDxfHatch(EoDxfHatch&&) = delete;
   EoDxfHatch& operator=(EoDxfHatch&&) = delete;
 
-  void AppendLoop(DRW_HatchLoop* hatchLoop) { m_hatchLoops.push_back(hatchLoop); }
+  void AppendLoop(EoDxfHatchLoop* hatchLoop) { m_hatchLoops.push_back(hatchLoop); }
 
   void ApplyExtrusion() override {}
 
@@ -808,7 +808,7 @@ class EoDxfHatch : public EoDxfPoint {
   double m_hatchPatternScaleOrSpacing{};  // Group code 41
   int m_numberOfPatternDefinitionLines{};  //   Group code 78
 
-  std::vector<DRW_HatchLoop*> m_hatchLoops;
+  std::vector<EoDxfHatchLoop*> m_hatchLoops;
 
  private:
   void ClearEntities() noexcept;
@@ -821,7 +821,7 @@ class EoDxfHatch : public EoDxfPoint {
 
   void AddSpline();
 
-  DRW_HatchLoop* m_hatchLoop{};  // current loop to add data
+  EoDxfHatchLoop* m_hatchLoop{};  // current loop to add data
   EoDxfLine* m_line{};
   EoDxfArc* m_arc{};
   EoDxfEllipse* m_ellipse{};

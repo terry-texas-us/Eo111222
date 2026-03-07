@@ -437,7 +437,7 @@ void EoDxfEllipse::ToPolyline(EoDxfPolyline* polyline, int parts) {
     sinCurr = sin(curAngle);
     double x = m_firstPoint.x + (cosCurr * cosRot * radMajor) - (sinCurr * sinRot * radMinor);
     double y = m_firstPoint.y + (cosCurr * sinRot * radMajor) + (sinCurr * cosRot * radMinor);
-    polyline->addVertex(DRW_Vertex(x, y, 0.0, 0.0));
+    polyline->addVertex(EoDxfVertex(x, y, 0.0, 0.0));
     curAngle = (++i) * incAngle;
   } while (i < parts);
   if (fabs(m_endParam - m_startParam - EoDxf::TwoPi) < 1.0e-10) { polyline->m_polylineFlag = 1; }
@@ -706,7 +706,7 @@ void EoDxfPolyline::ParseCode(int code, dxfReader* reader) {
   }
 }
 
-void DRW_Vertex::ParseCode(int code, dxfReader* reader) {
+void EoDxfVertex::ParseCode(int code, dxfReader* reader) {
   switch (code) {
     case 70:
       m_vertexFlags = reader->GetInt32();
@@ -913,7 +913,7 @@ void EoDxfHatch::ParseCode(int code, dxfReader* reader) {
       break;
     case 92: {
       auto boundaryPathType = reader->GetInt32();
-      m_hatchLoop = new DRW_HatchLoop(boundaryPathType);
+      m_hatchLoop = new EoDxfHatchLoop(boundaryPathType);
       m_hatchLoops.push_back(m_hatchLoop);
       if (boundaryPathType & 2) {  // polyline
         m_isPolyline = true;

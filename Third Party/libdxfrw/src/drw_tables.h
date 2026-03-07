@@ -217,11 +217,11 @@ class EoDxfLayer : public EoDxfTableEntry {
  * include properties such as flags (code 70), which can indicate whether the block is anonymous, external, or has
  * attributes.
  */
-class DRW_BlockRecord : public EoDxfTableEntry {
+class EoDxfBlockRecord : public EoDxfTableEntry {
   friend class dxfRW;
 
  public:
-  DRW_BlockRecord() : EoDxfTableEntry(EoDxf::SymbolTable::Block) { Reset(); }
+  EoDxfBlockRecord() : EoDxfTableEntry(EoDxf::SymbolTable::Block) { Reset(); }
  protected:
   void ParseCode(int code, dxfReader* reader);
   void Reset();
