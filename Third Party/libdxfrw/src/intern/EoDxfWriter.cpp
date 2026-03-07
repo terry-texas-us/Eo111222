@@ -4,7 +4,7 @@
 #include <ostream>
 #include <string>
 
-#include "dxfwriter.h"
+#include "EoDxfWriter.h"
 
 bool dxfWriter::WriteUtf8String(int code, std::string text) {
   std::string t = m_encoder.FromUtf8(text);

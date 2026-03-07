@@ -3,8 +3,8 @@
 
 #include "EoDxfBase.h"
 #include "EoDxfHeader.h"
-#include "intern/dxfreader.h"
-#include "intern/dxfwriter.h"
+#include "intern/EoDxfReader.h"
+#include "intern/EoDxfWriter.h"
 #include <algorithm>
 
 namespace {

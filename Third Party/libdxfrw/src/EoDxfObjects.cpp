@@ -2,7 +2,7 @@
 
 #include "EoDxfBase.h"
 #include "EoDxfObjects.h"
-#include "intern/dxfreader.h"
+#include "intern/EoDxfReader.h"
 
 void EoDxfObjectEntry::ParseCode(int code, dxfReader* reader) {
   switch (code) {

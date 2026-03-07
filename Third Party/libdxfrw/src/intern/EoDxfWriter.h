@@ -1,6 +1,6 @@
 #pragma once
 
-#include "drw_textcodec.h"
+#include "EoDxfTextCodec.h"
 
 #include <fstream>
 #include <string>

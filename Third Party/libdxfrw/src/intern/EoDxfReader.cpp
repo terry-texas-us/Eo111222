@@ -1,4 +1,4 @@
-#include "dxfreader.h"
+#include "EoDxfReader.h"
 
 #include <cstdlib>
 #include <ios>

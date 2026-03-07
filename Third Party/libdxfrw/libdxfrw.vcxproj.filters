@@ -30,19 +30,19 @@
     <ClInclude Include="src\EoDxfInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\intern\drw_cptables.h">
+    <ClInclude Include="src\intern\EoDxfCodePageTables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\intern\drw_textcodec.h">
+    <ClInclude Include="src\intern\EoDxfTextCodec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\intern\dxfreader.h">
+    <ClInclude Include="src\intern\EoDxfReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\intern\dxfwriter.h">
+    <ClInclude Include="src\intern\EoDxfWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\libdxfrw.h">
+    <ClInclude Include="src\EoDxfLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\EoDxfObjects.h">
@@ -62,16 +62,16 @@
     <ClCompile Include="src\EoDxfHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\intern\drw_textcodec.cpp">
+    <ClCompile Include="src\intern\EoDxfTextCodec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\intern\dxfreader.cpp">
+    <ClCompile Include="src\intern\EoDxfReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\intern\dxfwriter.cpp">
+    <ClCompile Include="src\intern\EoDxfWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\libdxfrw.cpp">
+    <ClCompile Include="src\EoDxfLib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\EoDxfObjects.cpp">

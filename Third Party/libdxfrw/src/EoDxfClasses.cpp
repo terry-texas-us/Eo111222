@@ -1,8 +1,8 @@
 #include "EoDxfClasses.h"
 
 #include "EoDxfBase.h"
-#include "intern/dxfreader.h"
-#include "intern/dxfwriter.h"
+#include "intern/EoDxfReader.h"
+#include "intern/EoDxfWriter.h"
 
 void EoDxfClass::ParseCode(int code, dxfReader* reader) noexcept {
   switch (code) {

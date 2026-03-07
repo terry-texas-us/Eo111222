@@ -75,17 +75,16 @@ dxfRW (Main API Class)
 ```
 libdxfrw/
 ├── src/                      # Library source code
-│   ├── libdxfrw.h/cpp       # Main API class
+│   ├── EoDxfLib.h/cpp        # Main API class
 │   ├── EoDxfInterface.h      # Abstract interface
+│   ├── EoDxfBase.h           # Basic data structures
+│   ├── EoDxfHeader.h/cpp     # Header variables
 │   ├── EoDxfEntities.h/cpp   # Entity definitions
 │   ├── EoDxfObjects.h/cpp    # Object definitions
-│   ├── EoDxfHeader.h/cpp     # Header variables
-│   ├── EoDxfBase.h           # Basic data structures
 │   └── intern/              # Internal implementation
-│       ├── dxfreader.h/cpp     # DXF reader
-│       ├── dxfwriter.h/cpp     # DXF writer
-│       ├── dwgbuffer.h/cpp     # DWG buffer
-│       ├── drw_textcodec.h/cpp # Character encoding
+│       ├── EoDxfReader.h/cpp     # DXF reader
+│       ├── EoDxfWriter.h/cpp     # DXF writer
+│       ├── EoDxfTextCodec.h/cpp # Character encoding
 │       └── Other utilities
 ├── bin/                      # Executable scripts
 ```
@@ -385,8 +384,8 @@ libdxfrw supports multiple character code pages:
 
 ### Implementation Files
 
-- `src/intern/drw_textcodec.h/cpp`: Character encoding conversion engine
-- `src/intern/drw_cptables.h`: Code page table integration
+- `src/intern/EoDxfTextCodec.h/cpp`: Character encoding conversion engine
+- `src/intern/EoDxfCodePageTables.h`: Code page table integration
 
 ---
 

@@ -5,7 +5,7 @@
 #include <fstream>
 #include <string>
 
-#include "drw_textcodec.h"
+#include "EoDxfTextCodec.h"
 
 class dxfReader {
  public:

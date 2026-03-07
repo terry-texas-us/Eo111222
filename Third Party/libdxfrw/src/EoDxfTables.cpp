@@ -4,7 +4,7 @@
 
 #include "EoDxfBase.h"
 #include "EoDxfTables.h"
-#include "intern/dxfreader.h"
+#include "intern/EoDxfReader.h"
 
 void EoDxfTableEntry::ParseCode(int code, dxfReader* reader) {
   switch (code) {

@@ -1,5 +1,3 @@
-#include "libdxfrw.h"
-
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -9,14 +7,16 @@
 #include <string>
 #include <vector>
 
+#include "EoDxfLib.h"
+
 #include "EoDxfBase.h"
 #include "EoDxfClasses.h"
 #include "EoDxfEntities.h"
 #include "EoDxfHeader.h"
 #include "EoDxfInterface.h"
 #include "EoDxfObjects.h"
-#include "intern/dxfreader.h"
-#include "intern/dxfwriter.h"
+#include "intern/EoDxfReader.h"
+#include "intern/EoDxfWriter.h"
 
 namespace {
 constexpr auto FIRSTHANDLE{48};

@@ -1,5 +1,5 @@
-﻿#include "drw_cptables.h"
-#include "drw_textcodec.h"
+﻿#include "EoDxfCodePageTables.h"
+#include "EoDxfTextCodec.h"
 
 DRW_TextCodec::DRW_TextCodec() : m_codePage{"ANSI_1252"}, m_converter{nullptr}, m_version{} {}
 

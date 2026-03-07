@@ -57,7 +57,7 @@
 #include "Lex.h"
 #include "Resource.h"
 #include "EoDxfBase.h"
-#include "libdxfrw.h"
+#include "EoDxfLib.h"
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"

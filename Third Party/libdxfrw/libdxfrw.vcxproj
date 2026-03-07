@@ -160,11 +160,11 @@
     <ClInclude Include="src\EoDxfInterface.h" />
     <ClInclude Include="src\EoDxfObjects.h" />
     <ClInclude Include="src\EoDxfTables.h" />
-    <ClInclude Include="src\intern\drw_cptables.h" />
-    <ClInclude Include="src\intern\drw_textcodec.h" />
-    <ClInclude Include="src\intern\dxfreader.h" />
-    <ClInclude Include="src\intern\dxfwriter.h" />
-    <ClInclude Include="src\libdxfrw.h" />
+    <ClInclude Include="src\intern\EoDxfCodePageTables.h" />
+    <ClInclude Include="src\intern\EoDxfTextCodec.h" />
+    <ClInclude Include="src\intern\EoDxfReader.h" />
+    <ClInclude Include="src\intern\EoDxfWriter.h" />
+    <ClInclude Include="src\EoDxfLib.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\EoDxfClasses.cpp" />
@@ -172,10 +172,10 @@
     <ClCompile Include="src\EoDxfHeader.cpp" />
     <ClCompile Include="src\EoDxfObjects.cpp" />
     <ClCompile Include="src\EoDxfTables.cpp" />
-    <ClCompile Include="src\intern\drw_textcodec.cpp" />
-    <ClCompile Include="src\intern\dxfreader.cpp" />
-    <ClCompile Include="src\intern\dxfwriter.cpp" />
-    <ClCompile Include="src\libdxfrw.cpp" />
+    <ClCompile Include="src\intern\EoDxfTextCodec.cpp" />
+    <ClCompile Include="src\intern\EoDxfReader.cpp" />
+    <ClCompile Include="src\intern\EoDxfWriter.cpp" />
+    <ClCompile Include="src\EoDxfLib.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
