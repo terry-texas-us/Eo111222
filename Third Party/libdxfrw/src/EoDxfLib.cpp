@@ -2480,8 +2480,8 @@ bool dxfRW::ProcessImageDef() {
   return true;
 }
 
-std::string dxfRW::ToHexString(int n) {
+std::string dxfRW::ToHexString(uint64_t hexValue) {
   std::ostringstream convert;
-  convert << std::uppercase << std::hex << n;
+  convert << std::uppercase << std::hex << hexValue;
   return convert.str();
 }

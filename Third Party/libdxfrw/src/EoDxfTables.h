@@ -54,8 +54,8 @@ class EoDxfTableEntry {
 
  public:
   EoDxf::SymbolTable tType{EoDxf::SymbolTable::Unknown};  // Group code 0
-  std::uint32_t m_handle{};  // Group code 5
-  std::uint32_t m_ownerHandle{};  // Group code 330
+  std::uint64_t m_handle{};  // Group code 5
+  std::uint64_t m_ownerHandle{};  // Group code 330
   std::string m_tableName;  // Group code 2
   int m_flagValues{};  // Group code 70
   std::vector<EoDxfGroupCodeValuesVariant*> m_extensionData;  // Group codes 1000 to 1071

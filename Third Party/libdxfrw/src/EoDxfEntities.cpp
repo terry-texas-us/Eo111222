@@ -19,13 +19,13 @@ EoDxfEntity::EoDxfEntity(const EoDxfEntity& other)
       m_entityType{other.m_entityType},
       m_handle{other.m_handle},
       m_ownerHandle{other.m_ownerHandle},
-      m_material{other.m_material},
+      m_materialHandle{other.m_materialHandle},
       m_color{other.m_color},
       m_lineWeight{other.m_lineWeight},
       m_numberOfBytesInProxyGraphics{other.m_numberOfBytesInProxyGraphics},
       m_color24{other.m_color24},
       m_transparency{other.m_transparency},
-      m_plotStyle{other.m_plotStyle},
+      m_plotStyleHandle{other.m_plotStyleHandle},
       m_shadowMode{other.m_shadowMode},
       m_space{other.m_space},
       m_visible{other.m_visible},
@@ -48,13 +48,13 @@ EoDxfEntity& EoDxfEntity::operator=(const EoDxfEntity& other) {
     m_entityType = other.m_entityType;
     m_handle = other.m_handle;
     m_ownerHandle = other.m_ownerHandle;
-    m_material = other.m_material;
+    m_materialHandle = other.m_materialHandle;
     m_color = other.m_color;
     m_lineWeight = other.m_lineWeight;
     m_numberOfBytesInProxyGraphics = other.m_numberOfBytesInProxyGraphics;
     m_color24 = other.m_color24;
     m_transparency = other.m_transparency;
-    m_plotStyle = other.m_plotStyle;
+    m_plotStyleHandle = other.m_plotStyleHandle;
     m_shadowMode = other.m_shadowMode;
     m_space = other.m_space;
     m_visible = other.m_visible;
@@ -148,7 +148,7 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
       m_shadowMode = static_cast<EoDxf::ShadowMode>(reader->GetInt32());
       break;
     case 390:
-      m_plotStyle = reader->GetHandleString();
+      m_plotStyleHandle = reader->GetHandleString();
       break;
     case 420:
       m_color24 = reader->GetInt32();
@@ -233,7 +233,7 @@ bool EoDxfEntity::ParseAppDataGroup(EoDxfReader* reader) {
     } else {
       currentVariant = EoDxfGroupCodeValuesVariant{};
       if (nextCode == 330 || nextCode == 360) {
-        currentVariant.AddInteger(nextCode, reader->GetHandleString());
+        currentVariant.AddHandle(nextCode, reader->GetHandleString());
       } else {
         switch (reader->GetType()) {
           case EoDxfReader::Type::String:
@@ -1063,7 +1063,7 @@ void EoDxfImage::ParseCode(int code, EoDxfReader* reader) {
       sizev = reader->GetDouble();
       break;
     case 340:
-      ref = reader->GetHandleString();
+      m_imageDefinitionHandle = reader->GetHandleString();
       break;
     case 280:
       clip = reader->GetInt32();
@@ -1235,7 +1235,7 @@ void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
       if (vertexpoint != nullptr) { vertexpoint->z = reader->GetDouble(); }
       break;
     case 340:
-      annotHandle = reader->GetHandleString();
+      m_associatedAnnotationHandle = reader->GetHandleString();
       break;
     case 210:
       extrusionPoint.x = reader->GetDouble();

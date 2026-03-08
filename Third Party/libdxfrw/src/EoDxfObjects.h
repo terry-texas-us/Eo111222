@@ -40,10 +40,10 @@ class EoDxfObjectEntry {
   void Reset();
 
  public:
-  std::uint32_t m_handle{};  // Group code 5
-  std::uint32_t m_ownerHandle{};  // Group code 330 (soft-pointer to owner dictionary)
-  std::uint32_t m_extensionDictionaryHandle{};  // Group code 360 (hard-owner, extension dictionary)
-  std::vector<std::uint32_t> m_reactorHandles;  // Group code 330 handles within ACAD_REACTORS group
+  std::uint64_t m_handle{};  // Group code 5
+  std::uint64_t m_ownerHandle{};  // Group code 330 (soft-pointer to owner dictionary)
+  std::uint64_t m_extensionDictionaryHandle{};  // Group code 360 (hard-owner, extension dictionary)
+  std::vector<std::uint64_t> m_reactorHandles;  // Group code 330 handles within ACAD_REACTORS group
   std::vector<EoDxfGroupCodeValuesVariant*> m_extensionData;  // Group codes 1000 to 1071
 
  private:

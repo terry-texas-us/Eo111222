@@ -83,11 +83,11 @@ bool EoDxfReader::ReadRec(int* codeData) {
   return (m_fileStream->good());
 }
 
-int EoDxfReader::GetHandleString() const {
-  int res;
+std::uint64_t EoDxfReader::GetHandleString() const {
+  std::uint64_t handleValue;
   std::istringstream Convert(m_string);
-  if (!(Convert >> std::hex >> res)) { res = 0; }
-  return res;
+  if (!(Convert >> std::hex >> handleValue)) { handleValue = 0; }
+  return handleValue;
 }
 
 // --- Binary reader ---

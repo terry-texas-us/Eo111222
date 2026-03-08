@@ -16,7 +16,7 @@ class EoDxfReader {
   bool ReadRec(int* code);
 
   [[nodiscard]] const std::string& GetString() const { return m_string; }
-  [[nodiscard]] int GetHandleString() const;
+  [[nodiscard]] std::uint64_t GetHandleString() const;
   [[nodiscard]] std::string ToUtf8String(const std::string& t) { return m_decoder.ToUtf8(t); }
   [[nodiscard]] std::string GetUtf8String() const { return m_decoder.ToUtf8(m_string); }
   [[nodiscard]] constexpr double GetDouble() const noexcept { return m_double; }

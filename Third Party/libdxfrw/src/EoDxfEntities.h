@@ -144,16 +144,16 @@ class EoDxfEntity {
   std::string m_colorName{};  // group code 430
   double m_lineTypeScale{1.0};  // linetype scale, code 48
   enum EoDxf::ETYPE m_entityType{EoDxf::UNKNOWN};  // entity type, code 0
-  std::uint32_t m_handle{EoDxf::HandleCodes::NoHandle};  // entity identifier, code 5
+  std::uint64_t m_handle{EoDxf::HandleCodes::NoHandle};  // entity identifier, code 5
   // Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330
-  std::uint32_t m_ownerHandle{EoDxf::HandleCodes::NoHandle};
-  std::uint32_t m_material{EoDxf::MaterialCodes::MaterialByLayer};  // hard pointer id to material object, code 347
+  std::uint64_t m_ownerHandle{EoDxf::HandleCodes::NoHandle};
+  std::uint64_t m_materialHandle{EoDxf::MaterialCodes::MaterialByLayer};  // hard pointer id to material object, code 347
   int m_color{EoDxf::ColorCodes::ColorByLayer};  // entity color, code 62
   enum DRW_LW_Conv::lineWidth m_lineWeight{DRW_LW_Conv::widthByLayer};  // entity lineweight, code 370
   int m_numberOfBytesInProxyGraphics{};  // group code 92 (optional) [unused]
   int m_color24{-1};  // 24-bit color, code 420
   int m_transparency{EoDxf::TransparencyCodes::Opaque};  // group code 440
-  std::uint32_t m_plotStyle{EoDxf::PlotStyleCodes::DefaultPlotStyle};  // hard pointer id to plot style object, code 390
+  std::uint64_t m_plotStyleHandle{EoDxf::PlotStyleCodes::DefaultPlotStyle};  // hard pointer id to plot style object, code 390
   EoDxf::ShadowMode m_shadowMode{EoDxf::ShadowMode::CastAndReceiveShadows};  // group code 284
   EoDxf::Space m_space{EoDxf::Space::ModelSpace};  // space indicator, code 67
   bool m_visible{true};  // entity visibility, code 60
@@ -854,7 +854,7 @@ class EoDxfImage : public EoDxfLine {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  std::uint32_t ref{};  // Hard reference to imagedef object, code 340
+  std::uint64_t m_imageDefinitionHandle{};  // Hard reference to imagedef object, code 340
   EoDxfGeometryBase3d vVector;  // V-vector of single pixel, x coordinate, code 12, 22 & 32
   double sizeu{};  // image size in pixels, U value, code 13
   double sizev{};  // image size in pixels, V value, code 23
@@ -1201,7 +1201,7 @@ class EoDxfLeader : public EoDxfEntity {
   double textwidth{};  // Text annotation width, code 41
   int vertnum;  // Number of vertices, code 76
   int coloruse{};  // Color to use if leader's DIMCLRD = BYBLOCK, code 77
-  std::uint32_t annotHandle{};  // Hard reference to associated annotation, code 340
+  std::uint64_t m_associatedAnnotationHandle{};  // Group code 340
   EoDxfGeometryBase3d extrusionPoint;  // Normal vector, code 210, 220 & 230
   EoDxfGeometryBase3d horizdir;  // "Horizontal" direction for leader, code 211, 221 & 231
   EoDxfGeometryBase3d offsetblock;  // Offset of last leader vertex from block, code 212, 222 & 232

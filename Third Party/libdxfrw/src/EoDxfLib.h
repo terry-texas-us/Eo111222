@@ -169,7 +169,7 @@ class dxfRW {
    * @param n integer number
    * @return hex string
    */
-  std::string ToHexString(int n);
+  std::string ToHexString(uint64_t hexValue);
 
  private:
   EoDxfHeader m_header;
@@ -184,7 +184,7 @@ class dxfRW {
   int m_entityCount{};
   int m_ellipseParts;  // number of parts when rendering ellipse as polyline
   EoDxf::Version m_version{};
-  std::uint32_t m_currentHandle{};
+  std::uint64_t m_currentHandle{};
   bool wlayer0{};
   bool m_standardDimensionStyle{};
   bool m_applyExtrusion;
