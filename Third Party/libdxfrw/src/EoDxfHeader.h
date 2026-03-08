@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "EoDxfBase.h"
@@ -8,9 +9,8 @@
 class EoDxfReader;
 class EoDxfWriter;
 
-/** Class to handle header vars, to read iterate over "std::map vars"
- *  to write add a EoDxfGroupCodeValuesVariant* into "std::map vars" (do not delete it, they are cleared in dtor)
- *  or use add* helper functions.
+/** Class to handle header vars, to read iterate over "std::map vars".
+ *  To write, use the add* helper functions.
  */
 class EoDxfHeader {
  public:
@@ -20,12 +20,14 @@ class EoDxfHeader {
 
   EoDxfHeader& operator=(const EoDxfHeader& other);
 
-  ~EoDxfHeader() { ClearVariants(); }
+  ~EoDxfHeader() = default;
 
   void AddDouble(const std::string& key, double value, int code);
+  void AddInt16(const std::string& key, std::int16_t value, int code);
   void AddInteger(const std::string& key, int value, int code);
   void AddString(const std::string& key, std::string value, int code);
   void AddGeometryBase(const std::string& key, EoDxfGeometryBase3d value, int code);
+  void AddHandle(const std::string& key, std::uint64_t value, int code);
 
   [[nodiscard]] std::string GetComments() const { return m_comments; }
 
@@ -94,6 +96,7 @@ class EoDxfHeader {
   void WriteAC1024Additions(EoDxfWriter* writer);
 
   [[nodiscard]] bool GetDouble(const std::string& key, double* varDouble);
+  [[nodiscard]] bool GetInt16(const std::string& key, int* varInt);
   [[nodiscard]] bool GetInteger(const std::string& key, int* varInt);
 
   /** @brief Retrieves a String variant from the map and removes it if found. If the variant's string pointer is null,
@@ -104,15 +107,15 @@ class EoDxfHeader {
    */
   [[nodiscard]] bool GetString(const std::string& key, std::string* variantString);
   [[nodiscard]] bool GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* variantGeometryBase);
+  [[nodiscard]] bool GetHandle(const std::string& key, std::uint64_t* varHandle);
 
-  /** @brief Clears all header variables stored in the m_variants map, deleting the associated EoDxfGroupCodeValuesVariant objects and
-   * emptying the map. This method is used to free memory allocated for header variables and reset the state of the
-   * EoDxfHeader instance.
+  /** @brief Clears all header variables stored in the m_variants map and resets the state of the
+   * EoDxfHeader instance. unique_ptr elements are automatically destroyed when erased.
    */
   void ClearVariants();
 
  public:
-  std::map<std::string, EoDxfGroupCodeValuesVariant*> m_variants;
+  std::map<std::string, std::unique_ptr<EoDxfGroupCodeValuesVariant>> m_variants;
 
  private:
   std::string m_comments{};

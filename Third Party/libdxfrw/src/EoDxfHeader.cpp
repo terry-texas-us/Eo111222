@@ -1,4 +1,6 @@
 #include <map>
+#include <memory>
+#include <sstream>
 #include <string>
 
 #include "EoDxfBase.h"
@@ -9,7 +11,7 @@
 EoDxfHeader::EoDxfHeader(const EoDxfHeader& other)
     : m_version{other.m_version}, m_comments{other.m_comments}, m_name{other.m_name}, m_currentVariant{nullptr} {
   for (const auto& [key, variant] : other.m_variants) {
-    m_variants.emplace(key, new EoDxfGroupCodeValuesVariant(*variant));
+    m_variants.emplace(key, std::make_unique<EoDxfGroupCodeValuesVariant>(*variant));
   }
 }
 
@@ -22,7 +24,7 @@ EoDxfHeader& EoDxfHeader::operator=(const EoDxfHeader& other) {
   m_currentVariant = nullptr;
 
   for (const auto& [key, variant] : other.m_variants) {
-    m_variants.emplace(key, new EoDxfGroupCodeValuesVariant(*variant));
+    m_variants.emplace(key, std::make_unique<EoDxfGroupCodeValuesVariant>(*variant));
   }
   return *this;
 }
@@ -58,12 +60,15 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
         m_currentVariant->AddString(code, reader->GetCodePage());
       }
       break;
-    case 5:
-      // Group code 5 is a handle, which is a hexadecimal string representing a unique identifier for an object in the
-      // DXF file. It is stored as a string in the EoDxfGroupCodeValuesVariant, but it can be converted to an integer
-      // handle value using the GetHandleString() method of the EoDxfReader. This allows the handle to be stored and
-      // accessed as an integer while still being read from the file as a string.
-      break;
+    case 5: {
+      // Group code 5 is a handle — a hexadecimal string representing a unique identifier for an object in the
+      // DXF file. Convert the hex string to a uint64_t and store as a Handle variant for proper numeric access.
+      const auto& hexStr = reader->GetString();
+      std::uint64_t handle{};
+      std::istringstream iss(hexStr);
+      iss >> std::hex >> handle;
+      m_currentVariant->AddHandle(code, handle);
+    } break;
     case 6:
       m_currentVariant->AddString(code, reader->GetUtf8String());
       break;
@@ -74,16 +79,11 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       m_currentVariant->AddString(code, reader->GetUtf8String());
       break;
     case 9: {
-      auto newVariant = new EoDxfGroupCodeValuesVariant();
+      auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>();
+      m_currentVariant = newVariant.get();
       m_name = reader->GetString();
       if (m_version < EoDxf::Version::AC1015 && m_name == "$DIMUNIT") { m_name = "$DIMLUNIT"; }
-      if (auto it = m_variants.find(m_name); it != m_variants.end()) {
-        delete it->second;
-        it->second = newVariant;
-      } else {
-        m_variants[m_name] = newVariant;
-      }
-      m_currentVariant = newVariant;
+      m_variants[m_name] = std::move(newVariant);
     } break;
     case 10:
       m_currentVariant->AddGeometryBase(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
@@ -105,37 +105,34 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       m_currentVariant->AddDouble(code, reader->GetDouble());
       break;
     case 62:
-      m_currentVariant->AddInteger(code, reader->GetInt32());
+      m_currentVariant->AddInt16(code, static_cast<std::int16_t>(reader->GetInt32()));
       break;
-    case 70:  // 16-bit integer / bit flags are stored as 32-bit integers in the EoDxfGroupCodeValuesVariant for
-              // simplicity, but they are read from the file as 16-bit integers using GetInt16() to ensure correct
-              // parsing of the value.
-      m_currentVariant->AddInteger(code, reader->GetInt32());
+    case 70:  // 16-bit integer / bit flags — stored as Int16 in the variant to preserve the DXF-specified type.
+              // Use GetInt16() or the widening GetInteger() to retrieve.
+      m_currentVariant->AddInt16(code, static_cast<std::int16_t>(reader->GetInt32()));
       break;
-    case 280:  // 8-bit flag / small int are stored as 32-bit integers in the EoDxfGroupCodeValuesVariant for
-               // simplicity, but they are read from the file as 8-bit integers using GetInt32() to ensure correct
-               // parsing of the value.
-      m_currentVariant->AddInteger(code, reader->GetInt32());
+    case 280:  // 8-bit flag / small int — DXF spec groups 280-289 as 16-bit integer range.
+      m_currentVariant->AddInt16(code, static_cast<std::int16_t>(reader->GetInt32()));
       break;
-    case 290:  // boolean (0/1) are stored as 32-bit integers in the EoDxfGroupCodeValuesVariant for simplicity, but
-               // they are read from the file as 16-bit integers using GetInt32() to ensure correct parsing of the
-               // value.
-      m_currentVariant->AddInteger(code, reader->GetInt32());
+    case 290:  // boolean (0/1) — DXF spec groups 290-299 as boolean, stored in the 16-bit integer range.
+      m_currentVariant->AddInt16(code, static_cast<std::int16_t>(reader->GetInt32()));
       break;
-    case 345:  // hard-pointer handle reference, stored as a string in the EoDxfGroupCodeValuesVariant, but it can be
-               // converted to an integer handle value using the GetHandleString() method of the EoDxfReader. This
-               // allows the handle to be stored and accessed as an integer while still being read from the file as a
-               // string.
+    case 345:  // hard-pointer handle reference — convert hex string to uint64_t Handle variant.
       [[fallthrough]];
     case 346:
       [[fallthrough]];
-    case 349:
-      break;
+    case 349: {
+      const auto& hexStr = reader->GetString();
+      std::uint64_t handle{};
+      std::istringstream iss(hexStr);
+      iss >> std::hex >> handle;
+      m_currentVariant->AddHandle(code, handle);
+    } break;
     case 370:
-      m_currentVariant->AddInteger(code, reader->GetInt32());
+      m_currentVariant->AddInt16(code, static_cast<std::int16_t>(reader->GetInt32()));
       break;
     case 380:
-      m_currentVariant->AddInteger(code, reader->GetInt32());
+      m_currentVariant->AddInt16(code, static_cast<std::int16_t>(reader->GetInt32()));
       break;
     case 390:
       m_currentVariant->AddString(code, reader->GetUtf8String());
@@ -1288,7 +1285,14 @@ void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
   writer->WriteString(3, writer->GetCodePage());
 
   writer->WriteString(9, "$HANDSEED");
-  writer->WriteString(5, "20000");
+  std::uint64_t variantHandle;
+  if (GetHandle("$HANDSEED", &variantHandle)) {
+    std::ostringstream oss;
+    oss << std::uppercase << std::hex << variantHandle;
+    writer->WriteString(5, oss.str());
+  } else {
+    writer->WriteString(5, "20000");
+  }
 
   if (GetInteger("$GRIDMODE", &variantInteger)) {
     writer->WriteString(9, "$GRIDMODE");
@@ -1348,56 +1352,60 @@ void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
 }
 
 void EoDxfHeader::AddDouble(const std::string& key, double value, int code) {
-  auto newVariant = new EoDxfGroupCodeValuesVariant(code, value);
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
-    delete it->second;
-    it->second = newVariant;
-  } else {
-    m_variants[key] = newVariant;
-  }
-  m_currentVariant = newVariant;
+  auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
+  m_currentVariant = newVariant.get();
+  m_variants[key] = std::move(newVariant);
 }
 
 void EoDxfHeader::AddInteger(const std::string& key, int value, int code) {
-  auto newVariant = new EoDxfGroupCodeValuesVariant(code, value);
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
-    delete it->second;
-    it->second = newVariant;
-  } else {
-    m_variants[key] = newVariant;
-  }
-  m_currentVariant = newVariant;
+  auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
+  m_currentVariant = newVariant.get();
+  m_variants[key] = std::move(newVariant);
 }
 
 void EoDxfHeader::AddString(const std::string& key, std::string value, int code) {
-  auto newVariant = new EoDxfGroupCodeValuesVariant(code, std::move(value));
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
-    delete it->second;
-    it->second = newVariant;
-  } else {
-    m_variants[key] = newVariant;
-  }
-  m_currentVariant = newVariant;
+  auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, std::move(value));
+  m_currentVariant = newVariant.get();
+  m_variants[key] = std::move(newVariant);
 }
 
 void EoDxfHeader::AddGeometryBase(const std::string& key, EoDxfGeometryBase3d value, int code) {
-  auto newVariant = new EoDxfGroupCodeValuesVariant(code, value);
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
-    delete it->second;
-    it->second = newVariant;
-  } else {
-    m_variants[key] = newVariant;
-  }
-  m_currentVariant = newVariant;
+  auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
+  m_currentVariant = newVariant.get();
+  m_variants[key] = std::move(newVariant);
+}
+
+void EoDxfHeader::AddInt16(const std::string& key, std::int16_t value, int code) {
+  auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
+  m_currentVariant = newVariant.get();
+  m_variants[key] = std::move(newVariant);
+}
+
+void EoDxfHeader::AddHandle(const std::string& key, std::uint64_t value, int code) {
+  auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
+  m_currentVariant = newVariant.get();
+  m_variants[key] = std::move(newVariant);
 }
 
 bool EoDxfHeader::GetDouble(const std::string& key, double* variantDouble) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
-    auto* variant = it->second;
+    auto* variant = it->second.get();
     if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Double) {
       *variantDouble = variant->GetDouble();
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
-      delete variant;
+      m_variants.erase(it);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool EoDxfHeader::GetInt16(const std::string& key, int* variantInt) {
+  if (auto it = m_variants.find(key); it != m_variants.end()) {
+    auto* variant = it->second.get();
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Int16) {
+      *variantInt = variant->GetInt16();  // lossless widening to int
+      if (m_currentVariant == variant) { m_currentVariant = nullptr; }
       m_variants.erase(it);
       return true;
     }
@@ -1407,26 +1415,32 @@ bool EoDxfHeader::GetDouble(const std::string& key, double* variantDouble) {
 
 bool EoDxfHeader::GetInteger(const std::string& key, int* variantInteger) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
-    auto* variant = it->second;
+    auto* variant = it->second.get();
     if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Integer) {
       *variantInteger = variant->GetInteger();
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
-      delete variant;
+      m_variants.erase(it);
+      return true;
+    }
+    // Int16 is widened to int for backward compatibility with callers that
+    // do not yet distinguish 16-bit vs 32-bit integer group codes.
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Int16) {
+      *variantInteger = variant->GetInt16();  // lossless promotion
+      if (m_currentVariant == variant) { m_currentVariant = nullptr; }
       m_variants.erase(it);
       return true;
     }
   }
-  // Non-Integer variants deliberately left in the map
+  // Non-Integer/Int16 variants deliberately left in the map
   return false;
 }
 
 bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
-    auto* variant = it->second;
+    auto* variant = it->second.get();
     if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::String) {
       *variantString = variant->GetString();
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
-      delete variant;
       m_variants.erase(it);
       return true;
     }
@@ -1437,11 +1451,10 @@ bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) 
 
 bool EoDxfHeader::GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* variantGeometryBase) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
-    auto* variant = it->second;
+    auto* variant = it->second.get();
     if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::GeometryBase) {
       *variantGeometryBase = variant->GetGeometryBase();
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
-      delete variant;
       m_variants.erase(it);
       return true;
     }
@@ -1450,7 +1463,20 @@ bool EoDxfHeader::GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* v
   return false;
 }
 
+bool EoDxfHeader::GetHandle(const std::string& key, std::uint64_t* varHandle) {
+  if (auto it = m_variants.find(key); it != m_variants.end()) {
+    auto* variant = it->second.get();
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Handle) {
+      *varHandle = variant->GetHandle();
+      if (m_currentVariant == variant) { m_currentVariant = nullptr; }
+      m_variants.erase(it);
+      return true;
+    }
+  }
+  // Non-Handle variants deliberately left in the map
+  return false;
+}
+
 void EoDxfHeader::ClearVariants() {
-  for (auto& [key, variant] : m_variants) { delete variant; }
   m_variants.clear();
 }

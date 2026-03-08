@@ -117,15 +117,29 @@ struct EoDxfPolylineVertex2d {
  */
 class EoDxfGroupCodeValuesVariant {
  public:
-  enum Type { String, Integer, Double, GeometryBase, Invalid };
+  enum Type {
+    String,
+    Int16,       ///< 16-bit signed integer (DXF group codes 60-79, 170-179, 270-289, 370-389, 400-409, 1060-1070)
+    Integer,     ///< 32-bit signed integer (DXF group codes 90-99, 420-429, 440-449, 450-459, 1071)
+    Double,
+    GeometryBase,
+    Handle,      ///< 64-bit unsigned handle (DXF group codes 5, 105, 310-369 handle references)
+    Invalid
+  };
 
   EoDxfGroupCodeValuesVariant() = default;
+
+  EoDxfGroupCodeValuesVariant(int code, std::int16_t i16) noexcept
+      : m_content{i16}, m_variantType{Type::Int16}, m_code{code} {}
 
   EoDxfGroupCodeValuesVariant(int code, std::int32_t i) noexcept
       : m_content{i}, m_variantType{Type::Integer}, m_code{code} {}
 
   EoDxfGroupCodeValuesVariant(int code, std::uint32_t i) noexcept
       : m_content{static_cast<std::int32_t>(i)}, m_variantType{Type::Integer}, m_code{code} {}
+
+  EoDxfGroupCodeValuesVariant(int code, std::uint64_t h) noexcept
+      : m_content{h}, m_variantType{Type::Handle}, m_code{code} {}
 
   EoDxfGroupCodeValuesVariant(int code, double d) noexcept : m_content{d}, m_variantType{Type::Double}, m_code{code} {}
 
@@ -189,6 +203,11 @@ class EoDxfGroupCodeValuesVariant {
     m_content.s = &m_stringValue;
     m_code = code;
   }
+  void AddInt16(int code, std::int16_t i16) {
+    m_variantType = Type::Int16;
+    m_content.i16 = i16;
+    m_code = code;
+  }
   void AddInteger(int code, int i) {
     m_variantType = Type::Integer;
     m_content.i = i;
@@ -203,6 +222,11 @@ class EoDxfGroupCodeValuesVariant {
     m_variantType = Type::GeometryBase;
     m_geometryBaseValue = v;
     m_content.v = &m_geometryBaseValue;
+    m_code = code;
+  }
+  void AddHandle(int code, std::uint64_t h) {
+    m_variantType = Type::Handle;
+    m_content.h = h;
     m_code = code;
   }
 
@@ -223,6 +247,10 @@ class EoDxfGroupCodeValuesVariant {
     assert(m_variantType == Type::String);
     return m_stringValue;
   }
+  [[nodiscard]] std::int16_t GetInt16() const {
+    assert(m_variantType == Type::Int16);
+    return m_content.i16;
+  }
   [[nodiscard]] std::int32_t GetInteger() const {
     assert(m_variantType == Type::Integer);
     return m_content.i;
@@ -235,6 +263,10 @@ class EoDxfGroupCodeValuesVariant {
     assert(m_variantType == Type::GeometryBase);
     return m_geometryBaseValue;
   }
+  [[nodiscard]] std::uint64_t GetHandle() const {
+    assert(m_variantType == Type::Handle);
+    return m_content.h;
+  }
 
   [[nodiscard]] enum Type GetType() const noexcept { return m_variantType; }
   [[nodiscard]] int Code() const noexcept { return m_code; }
@@ -245,13 +277,17 @@ class EoDxfGroupCodeValuesVariant {
 
   union EoDxfVariantContent {
     std::string* s;
+    std::int16_t i16;     ///< 16-bit signed integer (group codes 60-79, 170-179, 270-289, etc.)
     std::int32_t i;
+    std::uint64_t h;      ///< handle stored as 64-bit unsigned (parsed from hex string)
     double d;
     EoDxfGeometryBase3d* v;
 
     EoDxfVariantContent() noexcept : i{} {}
     EoDxfVariantContent(std::string* sd) noexcept : s{sd} {}
+    EoDxfVariantContent(std::int16_t i16d) noexcept : i16{i16d} {}
     EoDxfVariantContent(std::int32_t id) noexcept : i{id} {}
+    EoDxfVariantContent(std::uint64_t hd) noexcept : h{hd} {}
     EoDxfVariantContent(double dd) noexcept : d{dd} {}
     EoDxfVariantContent(EoDxfGeometryBase3d* gb) noexcept : v{gb} {}
   };
