@@ -40,7 +40,7 @@ class EoDxfReader {
   virtual bool ReadBool() = 0;
 
   std::string m_string;
-  DRW_TextCodec m_decoder;
+  EoTcTextCodec m_decoder;
   std::ifstream* m_fileStream;
   double m_double{};
   unsigned long long int m_int64{};  // 64 bits integer

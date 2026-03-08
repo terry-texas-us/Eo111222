@@ -73,7 +73,8 @@ class EoDxfTableEntry {
  * text placement (code 71), which can affect how dimensions are displayed in the drawing.
  */
 class EoDxfDimensionStyle : public EoDxfTableEntry {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfDimensionStyle() : EoDxfTableEntry(EoDxf::SymbolTable::DimStyle) { Reset(); }
@@ -162,7 +163,8 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
  * which can affect how the linetype is rendered in the drawing.
  */
 class EoDxfLinetype : public EoDxfTableEntry {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfLinetype() : EoDxfTableEntry(EoDxf::SymbolTable::Linetype) { Reset(); }
@@ -189,7 +191,8 @@ class EoDxfLinetype : public EoDxfTableEntry {
  * 347), which can affect how entities on the layer are rendered in the drawing.
  */
 class EoDxfLayer : public EoDxfTableEntry {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfLayer() : EoDxfTableEntry(EoDxf::SymbolTable::Layer) { Reset(); }
@@ -202,7 +205,7 @@ class EoDxfLayer : public EoDxfTableEntry {
   int m_colorNumber;  // Group code 62 (if negative, then layer is turned off)
   int color24;  // Group code 420
   bool m_plottingFlag;  // Group code 290 (if set to zero, then layer is not plotted)
-  enum DRW_LW_Conv::lineWidth m_lineweightEnumValue;  // Group code 370
+  enum EoDxfLineWidths::lineWidth m_lineweightEnumValue;  // Group code 370
   std::string m_handleOfPlotStyleName;  // Group code 390
   std::string m_handleOfMaterialStyleName;  // Group code 347
 };
@@ -216,7 +219,8 @@ class EoDxfLayer : public EoDxfTableEntry {
  * attributes.
  */
 class EoDxfBlockRecord : public EoDxfTableEntry {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfBlockRecord() : EoDxfTableEntry(EoDxf::SymbolTable::Block) { Reset(); }
@@ -238,7 +242,8 @@ class EoDxfBlockRecord : public EoDxfTableEntry {
  * affect how text entities are rendered in the drawing.
  */
 class EoDxfTextStyle : public EoDxfTableEntry {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfTextStyle() : EoDxfTableEntry(EoDxf::SymbolTable::TextStyle) { Reset(); }
@@ -276,7 +281,8 @@ class EoDxfTextStyle : public EoDxfTableEntry {
  * (code 51), and various flags for view mode, snap, grid, and UCS icon display.
  */
 class EoDxfViewport : public EoDxfTableEntry {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfViewport() : EoDxfTableEntry(EoDxf::SymbolTable::Viewport) { Reset(); }
@@ -325,7 +331,8 @@ class EoDxfViewport : public EoDxfTableEntry {
  * flags (code 70), which can indicate whether the application ID is for internal use only or is externally referenced.
  */
 class EoDxfAppId : public EoDxfTableEntry {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfAppId() : EoDxfTableEntry(EoDxf::SymbolTable::RegApp) { Reset(); }

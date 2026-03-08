@@ -418,7 +418,7 @@ void EoDxfLayer::ParseCode(int code, EoDxfReader* reader) {
       m_plottingFlag = reader->GetBool();
       break;
     case 370:
-      m_lineweightEnumValue = DRW_LW_Conv::dxfInt2lineWidth(reader->GetInt32());
+      m_lineweightEnumValue = EoDxfLineWidths::dxfInt2lineWidth(reader->GetInt32());
       break;
     case 390:
       m_handleOfPlotStyleName = reader->GetString();
@@ -439,7 +439,7 @@ void EoDxfLayer::Reset() {
   m_linetypeName = "CONTINUOUS";
   m_colorNumber = 7;
   m_plottingFlag = true;
-  m_lineweightEnumValue = DRW_LW_Conv::widthDefault;
+  m_lineweightEnumValue = EoDxfLineWidths::widthDefault;
   color24 = -1;
   EoDxfTableEntry::Reset();
 }

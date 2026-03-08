@@ -29,7 +29,7 @@ class EoDxfWriter {
   std::ofstream* m_fileStream;
 
  private:
-  DRW_TextCodec m_encoder;
+  EoTcTextCodec m_encoder;
 };
 
 class EoDxfWriterBinary : public EoDxfWriter {

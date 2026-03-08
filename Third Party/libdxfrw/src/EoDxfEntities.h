@@ -76,7 +76,8 @@ enum ETYPE {
 /** @brief Base class for entities
  */
 class EoDxfEntity {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfEntity() = default;
@@ -149,7 +150,7 @@ class EoDxfEntity {
   std::uint64_t m_ownerHandle{EoDxf::HandleCodes::NoHandle};
   std::uint64_t m_materialHandle{EoDxf::MaterialCodes::MaterialByLayer};  // hard pointer id to material object, code 347
   int m_color{EoDxf::ColorCodes::ColorByLayer};  // entity color, code 62
-  enum DRW_LW_Conv::lineWidth m_lineWeight{DRW_LW_Conv::widthByLayer};  // entity lineweight, code 370
+  enum EoDxfLineWidths::lineWidth m_lineWeight{EoDxfLineWidths::widthByLayer};  // entity lineweight, code 370
   int m_numberOfBytesInProxyGraphics{};  // group code 92 (optional) [unused]
   int m_color24{-1};  // 24-bit color, code 420
   int m_transparency{EoDxf::TransparencyCodes::Opaque};  // group code 440
@@ -167,7 +168,8 @@ class EoDxfEntity {
 /** @brief Class to handle point entity
  */
 class EoDxfPoint : public EoDxfEntity {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   explicit EoDxfPoint(EoDxf::ETYPE entityType = EoDxf::POINT) noexcept : EoDxfEntity{entityType} {}
@@ -189,7 +191,8 @@ class EoDxfPoint : public EoDxfEntity {
 /** @brief Class to handle line entity
  */
 class EoDxfLine : public EoDxfPoint {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   explicit EoDxfLine(EoDxf::ETYPE entityType = EoDxf::LINE) noexcept : EoDxfPoint{entityType} {}
@@ -210,7 +213,8 @@ class EoDxfLine : public EoDxfPoint {
  *  while a ray has only one starting point and extends infinitely in the direction defined by its second point.
  */
 class EoDxfRay : public EoDxfLine {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   explicit EoDxfRay(EoDxf::ETYPE entityType = EoDxf::RAY) noexcept : EoDxfLine{entityType} {}
@@ -235,7 +239,8 @@ class EoDxfXline : public EoDxfRay {
  *  which can affect how the circle is rendered in 3D space.
  */
 class EoDxfCircle : public EoDxfPoint {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   explicit EoDxfCircle(EoDxf::ETYPE entityType = EoDxf::CIRCLE) noexcept : EoDxfPoint{entityType} {}
@@ -250,7 +255,8 @@ class EoDxfCircle : public EoDxfPoint {
 };
 
 class EoDxfArc : public EoDxfCircle {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   explicit EoDxfArc(EoDxf::ETYPE entityType = EoDxf::ARC) noexcept : EoDxfCircle{entityType} {}
@@ -288,7 +294,8 @@ class EoDxfArc : public EoDxfCircle {
  *  which can affect how the ellipse is rendered in 3D space.
  */
 class EoDxfEllipse : public EoDxfLine {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   explicit EoDxfEllipse(EoDxf::ETYPE entityType = EoDxf::ELLIPSE) noexcept : EoDxfLine{entityType} {}
@@ -322,7 +329,8 @@ class EoDxfEllipse : public EoDxfLine {
  * rendered in 3D space.
  */
 class EoDxfTrace : public EoDxfLine {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   explicit EoDxfTrace(EoDxf::ETYPE entityType = EoDxf::TRACE) noexcept : EoDxfLine{entityType} {}
@@ -346,7 +354,8 @@ class EoDxfTrace : public EoDxfLine {
  * rendered in 3D space.
  */
 class EoDxfSolid : public EoDxfTrace {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfSolid() { m_entityType = EoDxf::SOLID; }
@@ -375,7 +384,8 @@ class EoDxfSolid : public EoDxfTrace {
  * rendered in 3D space.
  */
 class EoDxf3dFace : public EoDxfTrace {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   enum InvisibleEdgeFlags {
@@ -415,7 +425,8 @@ class EoDxf3dFace : public EoDxfTrace {
  * which can affect how it is rendered in the drawing.
  */
 class EoDxfBlock : public EoDxfPoint {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   explicit EoDxfBlock(EoDxf::ETYPE entityType = EoDxf::BLOCK) noexcept : EoDxfPoint{entityType} {}
@@ -439,7 +450,8 @@ class EoDxfBlock : public EoDxfPoint {
  * (code 70 and 71), which can affect how it is rendered in the drawing.
  */
 class EoDxfInsert : public EoDxfPoint {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   explicit EoDxfInsert(EoDxf::ETYPE entityType = EoDxf::INSERT) noexcept : EoDxfPoint{entityType} {}
@@ -470,7 +482,8 @@ class EoDxfInsert : public EoDxfPoint {
  * in the drawing.
  */
 class EoDxfLwPolyline : public EoDxfEntity {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   explicit EoDxfLwPolyline(EoDxf::ETYPE entityType = EoDxf::LWPOLYLINE) noexcept : EoDxfEntity{entityType} {}
@@ -512,7 +525,8 @@ class EoDxfLwPolyline : public EoDxfEntity {
  * angle (code 51), and text style name (code 7), which can affect how the text is rendered in the drawing.
  */
 class EoDxfText : public EoDxfLine {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   enum VAlign { BaseLine = 0, Bottom, Middle, Top };
@@ -548,7 +562,8 @@ class EoDxfText : public EoDxfLine {
  * and special characters.
  */
 class EoDxfMText : public EoDxfText {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   enum Attach {
@@ -579,7 +594,8 @@ class EoDxfMText : public EoDxfText {
 };
 
 class EoDxfVertex : public EoDxfPoint {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfVertex() noexcept : EoDxfPoint{EoDxf::VERTEX} {}
@@ -613,7 +629,8 @@ class EoDxfVertex : public EoDxfPoint {
  * owning POLYLINE or INSERT entity, but it does not have its own unique properties.
  */
 class EoDxfSeqEnd : public EoDxfEntity {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfSeqEnd() noexcept : EoDxfEntity{EoDxf::SEQEND} {}
@@ -633,7 +650,8 @@ class EoDxfSeqEnd : public EoDxfEntity {
 };
 
 class EoDxfPolyline : public EoDxfPoint {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfPolyline() noexcept : EoDxfPoint{EoDxf::POLYLINE} {}
@@ -693,7 +711,8 @@ class EoDxfPolyline : public EoDxfPoint {
  * flags (code 70), and extrusion direction (code 210, 220, 230), which can affect how it is rendered in the drawing.
  */
 class EoDxfSpline : public EoDxfEntity {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfSpline() noexcept : EoDxfEntity{EoDxf::SPLINE} {}
@@ -775,7 +794,8 @@ class EoDxfHatchLoop {
  * which can include various entities such as lines, arcs, circles, ellipses, splines, and lightweight polylines.
  */
 class EoDxfHatch : public EoDxfPoint {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfHatch() : EoDxfPoint{EoDxf::HATCH} {}
@@ -841,7 +861,8 @@ class EoDxfHatch : public EoDxfPoint {
  * 283), which can affect how the image is rendered in the drawing.
  */
 class EoDxfImage : public EoDxfLine {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfImage() {
@@ -875,7 +896,8 @@ class EoDxfImage : public EoDxfLine {
  * the drawing.
  */
 class EoDxfDimension : public EoDxfEntity {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfDimension() {
@@ -998,7 +1020,8 @@ class EoDxfDimension : public EoDxfEntity {
  * 210, 220, 230), which can affect how it is rendered in the drawing.
  */
 class EoDxfAlignedDimension : public EoDxfDimension {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfAlignedDimension() { m_entityType = EoDxf::DIMALIGNED; }
@@ -1046,7 +1069,8 @@ class EoDxfDimLinear : public EoDxfAlignedDimension {
  * affect how it is rendered in the drawing.
  */
 class EoDxfRadialDimension : public EoDxfDimension {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfRadialDimension() { m_entityType = EoDxf::DIMRADIAL; }
@@ -1070,7 +1094,8 @@ class EoDxfRadialDimension : public EoDxfDimension {
  * affect how it is rendered in the drawing.
  */
 class EoDxfDiametricDimension : public EoDxfDimension {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfDiametricDimension() { m_entityType = EoDxf::DIMDIAMETRIC; }
@@ -1089,7 +1114,8 @@ class EoDxfDiametricDimension : public EoDxfDimension {
  *  Class to handle angular dimension entity
  */
 class EoDxf2LineAngularDimension : public EoDxfDimension {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxf2LineAngularDimension() { m_entityType = EoDxf::DIMANGULAR; }
@@ -1117,7 +1143,8 @@ class EoDxf2LineAngularDimension : public EoDxfDimension {
  * extrusion direction (code 210, 220, 230), which can affect how it is rendered in the drawing.
  */
 class EoDxf3PointAngularDimension : public EoDxfDimension {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxf3PointAngularDimension() { m_entityType = EoDxf::DIMANGULAR3P; }
@@ -1143,7 +1170,8 @@ class EoDxf3PointAngularDimension : public EoDxfDimension {
  * extrusion direction (code 210, 220, 230), which can affect how it is rendered in the drawing.
  */
 class EoDxfOrdinateDimension : public EoDxfDimension {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfOrdinateDimension() { m_entityType = EoDxf::DIMORDINATE; }
@@ -1169,7 +1197,8 @@ class EoDxfOrdinateDimension : public EoDxfDimension {
  * The geometry of the leader is defined by a list of vertices (code 10, 20, 30).
  */
 class EoDxfLeader : public EoDxfEntity {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfLeader() {
@@ -1224,7 +1253,8 @@ class EoDxfLeader : public EoDxfEntity {
  * which can affect how the viewport displays the model space.
  */
 class EoDxfViewPort : public EoDxfPoint {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfViewPort() {

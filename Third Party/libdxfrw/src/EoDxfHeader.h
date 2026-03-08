@@ -123,5 +123,6 @@ class EoDxfHeader {
   EoDxfGroupCodeValuesVariant* m_currentVariant{};
   int m_version{};
 
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 };

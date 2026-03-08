@@ -1,12 +1,12 @@
 #pragma once
 #include <string>
 
-class DRW_Converter;
+class EoTcConverter;
 
-class DRW_TextCodec {
+class EoTcTextCodec {
  public:
-  DRW_TextCodec();
-  ~DRW_TextCodec();
+  EoTcTextCodec();
+  ~EoTcTextCodec();
 
   [[nodiscard]] std::string FromUtf8(std::string s);
 
@@ -32,17 +32,17 @@ class DRW_TextCodec {
   [[nodiscard]] std::string NormalizeCodePage(const std::string_view codePage) noexcept;
 
   std::string m_codePage;
-  DRW_Converter* m_converter;
+  EoTcConverter* m_converter;
   int m_version;
 };
 
 /** @brief Base class for text conversion. It can handle character encoding and decoding,
  * providing methods to convert between UTF-8 strings and other formats using a specified character table.
  */
-class DRW_Converter {
+class EoTcConverter {
  public:
-  DRW_Converter(const int* table, int length) : m_table{table}, m_codePageLength{length} {}
-  virtual ~DRW_Converter() = default;
+  EoTcConverter(const int* table, int length) : m_table{table}, m_codePageLength{length} {}
+  virtual ~EoTcConverter() = default;
 
   virtual [[nodiscard]] std::string FromUtf8(std::string* s) { return *s; }
   virtual [[nodiscard]] std::string ToUtf8(std::string* s) { return *s; }
@@ -56,9 +56,9 @@ class DRW_Converter {
  * encoded strings. It overrides the FromUtf8 and ToUtf8 methods to perform the necessary conversions using UTF-16
  * encoding rules.
  */
-class DRW_ConvUTF16 : public DRW_Converter {
+class EoTcConvertUtf16 : public EoTcConverter {
  public:
-  DRW_ConvUTF16() : DRW_Converter(nullptr, 0) {}
+  EoTcConvertUtf16() : EoTcConverter(nullptr, 0) {}
   [[nodiscard]] std::string FromUtf8(std::string* s) override { return *s; }
   [[nodiscard]] std::string ToUtf8(std::string* s) override { return *s; }
 };
@@ -67,9 +67,9 @@ class DRW_ConvUTF16 : public DRW_Converter {
  * strings encoded using a specified character table. It uses the character table provided in the constructor to perform
  * the necessary conversions in the FromUtf8 and ToUtf8 methods.
  */
-class DRW_ConvTable : public DRW_Converter {
+class EoTcConvertTable : public EoTcConverter {
  public:
-  DRW_ConvTable(const int* table, int length) : DRW_Converter(table, length) {}
+  EoTcConvertTable(const int* table, int length) : EoTcConverter(table, length) {}
   [[nodiscard]] std::string FromUtf8(std::string* s) override { return *s; }
   [[nodiscard]] std::string ToUtf8(std::string* s) override { return *s; }
 };
@@ -79,10 +79,10 @@ class DRW_ConvTable : public DRW_Converter {
  * table. It uses the lead byte table and double-byte character table provided in the constructor to perform the
  * necessary conversions in the FromUtf8 and ToUtf8 methods.
  */
-class DRW_ConvDBCSTable : public DRW_Converter {
+class EoTcConvertDBCSTable : public EoTcConverter {
  public:
-  DRW_ConvDBCSTable(const int* table, const int* leadTable, const int doubleTable[][2], int length)
-      : DRW_Converter(table, length) {
+  EoTcConvertDBCSTable(const int* table, const int* leadTable, const int doubleTable[][2], int length)
+      : EoTcConverter(table, length) {
     m_leadTable = leadTable;
     m_doubleTable = doubleTable;
   }

@@ -164,7 +164,8 @@
     <ClInclude Include="src\intern\EoDxfTextCodec.h" />
     <ClInclude Include="src\intern\EoDxfReader.h" />
     <ClInclude Include="src\intern\EoDxfWriter.h" />
-    <ClInclude Include="src\EoDxfLib.h" />
+    <ClInclude Include="src\EoDxfRead.h" />
+    <ClInclude Include="src\EoDxfWrite.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\EoDxfClasses.cpp" />
@@ -175,7 +176,8 @@
     <ClCompile Include="src\intern\EoDxfTextCodec.cpp" />
     <ClCompile Include="src\intern\EoDxfReader.cpp" />
     <ClCompile Include="src\intern\EoDxfWriter.cpp" />
-    <ClCompile Include="src\EoDxfLib.cpp" />
+    <ClCompile Include="src\EoDxfRead.cpp" />
+    <ClCompile Include="src\EoDxfWrite.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

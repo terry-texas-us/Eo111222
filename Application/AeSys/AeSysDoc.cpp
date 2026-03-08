@@ -46,6 +46,9 @@
 #include "EoDlgSetupNote.h"
 #include "EoDlgSetupPointStyle.h"
 #include "EoDlgTrapFilter.h"
+#include "EoDxfBase.h"
+#include "EoDxfRead.h"
+#include "EoDxfWrite.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeReferenceSystem.h"
@@ -56,8 +59,6 @@
 #include "Hatch.h"
 #include "Lex.h"
 #include "Resource.h"
-#include "EoDxfBase.h"
-#include "EoDxfLib.h"
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"
@@ -279,7 +280,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
     case EoDb::FileTypes::Dxf:
     case EoDb::FileTypes::Dxb: {
       EoDbDrwInterface dxfInterface(this);
-      dxfRW dxfReader(Eo::WStringToMultiByte(pathName).data());
+      EoDxfRead dxfReader(Eo::WStringToMultiByte(pathName).data());
       SetCommonTableEntries();
       bool success = dxfReader.Read(&dxfInterface, true);  // true for verbose output, false for silent
       if (success) {
@@ -391,7 +392,7 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
     case EoDb::FileTypes::Dxb: {
       // Begin implementation of DXF/DXB saving using EoDbDrwInterface
       EoDbDrwInterface dxfInterface(this);
-      dxfRW dxfWriter(Eo::WStringToMultiByte(pathName).data());
+      EoDxfWrite dxfWriter(Eo::WStringToMultiByte(pathName).data());
       if (dxfWriter.Write(&dxfInterface, EoDxf::Version::AC1032, true)) {
         app.AddStringToMessageList(IDS_MSG_DXF_SAVE_SUCCESS, pathName);
         returnStatus = TRUE;

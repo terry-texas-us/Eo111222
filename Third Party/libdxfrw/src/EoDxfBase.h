@@ -302,12 +302,12 @@ class EoDxfGroupCodeValuesVariant {
 
 /** @brief Class to handle conversion between DXF line width codes and internal line width enumeration.
  *
- *  The DRW_LW_Conv class provides an enumeration of line widths corresponding to standard DXF line width codes, as well
+ *  The EoDxfLineWidths class provides an enumeration of line widths corresponding to standard DXF line width codes, as well
  * as static methods to convert between the internal line width enumeration and the integer codes used in DXF files.
  * This allows for consistent handling of line widths when reading from or writing to DXF files, ensuring that the
  * correct line widths are applied based on the specified codes.
  */
-class DRW_LW_Conv {
+class EoDxfLineWidths {
  public:
   enum lineWidth {
     width00 = 0,  // 0.00mm (dxf 0)

@@ -1,26 +1,26 @@
 ﻿#include "EoDxfCodePageTables.h"
 #include "EoDxfTextCodec.h"
 
-DRW_TextCodec::DRW_TextCodec() : m_codePage{"ANSI_1252"}, m_converter{nullptr}, m_version{} {}
+EoTcTextCodec::EoTcTextCodec() : m_codePage{"ANSI_1252"}, m_converter{nullptr}, m_version{} {}
 
-DRW_TextCodec::~DRW_TextCodec() { delete m_converter; }
+EoTcTextCodec::~EoTcTextCodec() { delete m_converter; }
 
-std::string DRW_TextCodec::FromUtf8(std::string s) {
+std::string EoTcTextCodec::FromUtf8(std::string s) {
   if (m_converter) { return m_converter->FromUtf8(&s); }
   return s;
 }
 
-std::string DRW_TextCodec::ToUtf8(std::string s) const {
+std::string EoTcTextCodec::ToUtf8(std::string s) const {
   if (m_converter) { return m_converter->ToUtf8(&s); }
   return s;
 }
 
-void DRW_TextCodec::SetVersion(const std::string& version, bool dxfFormat) {
+void EoTcTextCodec::SetVersion(const std::string& version, bool dxfFormat) {
   m_version = 0;
   if (!version.empty()) {}
 }
 
-void DRW_TextCodec::SetVersion(int version, bool dxfFormat) { m_version = version; }
+void EoTcTextCodec::SetVersion(int version, bool dxfFormat) { m_version = version; }
 
 /** @brief Standardizes a DXF code page string to one of the standard internal forms.
  *
@@ -32,7 +32,7 @@ void DRW_TextCodec::SetVersion(int version, bool dxfFormat) { m_version = versio
  * @param codePage Input code page identifier (from DXF $DWGCODEPAGE or similar).
  * @return Standardized code page string.
  */
-std::string DRW_TextCodec::NormalizeCodePage(const std::string_view codePage) noexcept {
+std::string EoTcTextCodec::NormalizeCodePage(const std::string_view codePage) noexcept {
   if (codePage.empty()) { return "ANSI_1252"; }
 
   if (codePage == "UTF-8" || codePage == "UTF8") { return "UTF-8"; }
@@ -41,7 +41,7 @@ std::string DRW_TextCodec::NormalizeCodePage(const std::string_view codePage) no
   return "ANSI_1252";
 }
 
-void DRW_TextCodec::SetCodePage(const std::string& codePage, bool dxfFormat) {
+void EoTcTextCodec::SetCodePage(const std::string& codePage, bool dxfFormat) {
   delete m_converter;
   m_converter = nullptr;
 
@@ -49,10 +49,10 @@ void DRW_TextCodec::SetCodePage(const std::string& codePage, bool dxfFormat) {
   m_codePage = normalizedCodePage;
 
   if (normalizedCodePage == "UTF-16") {
-    m_converter = new DRW_ConvUTF16();
+    m_converter = new EoTcConvertUtf16();
   } else if (normalizedCodePage == "UTF-8") {
-    m_converter = new DRW_ConvTable(nullptr, 0);
+    m_converter = new EoTcConvertTable(nullptr, 0);
   } else {
-    m_converter = new DRW_ConvTable(DRW_Table1252, 256);
+    m_converter = new EoTcConvertTable(DRW_Table1252, 256);
   }
 }

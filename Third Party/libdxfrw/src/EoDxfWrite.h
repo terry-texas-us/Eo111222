@@ -1,38 +1,20 @@
 #pragma once
 
-#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "EoDxfBase.h"
 #include "EoDxfEntities.h"
-#include "EoDxfHeader.h"
 #include "EoDxfInterface.h"
 #include "EoDxfObjects.h"
 
-class EoDxfReader;
 class EoDxfWriter;
 
-class dxfRW {
+class EoDxfWrite {
  public:
-  dxfRW(const char* name);
-  ~dxfRW();
-
-  /** @brief Reads a DXF file and populates the provided EoDxfInterface with the parsed data.
-   *
-   * This method processes the DXF file specified in the constructor, parsing its contents and invoking callbacks
-   * on the provided EoDxfInterface for each entity, table entry, and header variable encountered. The `ext` parameter
-   * controls whether extrusion should be applied when converting 3D entities to 2D representations.
-   *
-   * @param interface_ Pointer to a EoDxfInterface implementation that will receive callbacks for parsed entities and
-   * data.
-   * @param ext Boolean flag indicating whether to apply extrusion when converting 3D entities to 2D (true) or not
-   * (false).
-   * @return true if the file was successfully read and processed; false if an error occurred during reading or parsing.
-   */
-  bool Read(EoDxfInterface* interface_, bool ext);
-  void SetBinary(bool binaryFile) { m_binaryFile = binaryFile; }
+  EoDxfWrite(const char* name);
+  ~EoDxfWrite();
 
   /** @brief Writes the current state of the EoDxfInterface to a DXF file in the specified version and format (binary or
    * ASCII).
@@ -100,65 +82,8 @@ class dxfRW {
   EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::string name);
   bool WriteLeader(EoDxfLeader* leader);
   bool WriteDimension(EoDxfDimension* dimension);
-  /** @brief Sets the number of parts to use when rendering an ellipse as a polyline.
-   * This method allows you to specify how many segments (parts) should be used to approximate an ellipse when it is
-   * rendered as a polyline. The value is clamped between 1 and 1024 to ensure a reasonable level of detail without
-   * excessive computational overhead.
-   * @param parts The number of parts (segments) to use for rendering the ellipse. Must be between 1 and 1024.
-   */
-  void SetEllipseParts(int parts) { m_ellipseParts = std::clamp(parts, 1, 1024); }
 
  private:
-  /** @brief Used by read() to parse the file.  */
-  [[nodiscard]] bool ProcessDxf();
-
-  /** @brief Used by read() to parse the HEADER section of the file.  */
-  bool ProcessHeader();
-
-  /** @brief Used by read() to parse the CLASSES section of the file.  */
-  bool ProcessClasses();
-
-  /** @brief Used by read() to parse the TABLES section of the file.  */
-  bool ProcessTables();
-
-  /** @brief Used by read() to parse the BLOCKS section of the file.  */
-  bool ProcessBlocks();
-
-  bool ProcessBlock();
-  bool ProcessEntities(bool isblock);
-  bool ProcessObjects();
-
-  bool ProcessLType();
-  bool ProcessLayer();
-  bool ProcessDimStyle();
-  bool ProcessTextStyle();
-  bool ProcessVports();
-  bool ProcessAppId();
-
-  bool ProcessPoint();
-  bool ProcessLine();
-  bool ProcessRay();
-  bool ProcessXline();
-  bool ProcessCircle();
-  bool ProcessArc();
-  bool ProcessEllipse();
-  bool ProcessTrace();
-  bool ProcessSolid();
-  bool ProcessInsert();
-  bool ProcessLWPolyline();
-  bool ProcessPolyline();
-  bool ProcessVertex(EoDxfPolyline* polyline);
-  bool ProcessText();
-  bool ProcessMText();
-  bool ProcessHatch();
-  bool ProcessSpline();
-  bool Process3dFace();
-  bool ProcessViewport();
-  bool ProcessImage();
-  bool ProcessImageDef();
-  bool ProcessDimension();
-  bool ProcessLeader();
-
   bool WriteEntity(EoDxfEntity* ent);
   bool WriteTables();
   bool WriteBlocks();
@@ -166,28 +91,22 @@ class dxfRW {
   bool WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& extensionData);
 
   /** @brief Convert integer to hex string
-   * @param n integer number
+   * @param hexValue integer number
    * @return hex string
    */
   std::string ToHexString(uint64_t hexValue);
 
  private:
-  EoDxfHeader m_header;
   std::string m_fileName;
-  std::string m_codePage;
-  std::string m_nextEntity;
   std::vector<EoDxfImageDefinition*> m_imageDef;  // list of image definitions to write at the end of file
   std::map<std::string, int> m_blockMap;
-  EoDxfReader* m_reader;
   EoDxfWriter* m_writer;
   EoDxfInterface* m_interface{};
   int m_entityCount{};
-  int m_ellipseParts;  // number of parts when rendering ellipse as polyline
   EoDxf::Version m_version{};
   std::uint64_t m_currentHandle{};
   bool wlayer0{};
   bool m_standardDimensionStyle{};
-  bool m_applyExtrusion;
   bool m_writingBlock{};
   bool m_binaryFile{};
 };

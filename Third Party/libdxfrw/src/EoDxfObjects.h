@@ -65,7 +65,8 @@ class EoDxfObjectEntry {
  *  (code 90) and a map of reactors, which are objects that react to changes in the image definition.
  */
 class EoDxfImageDefinition : public EoDxfObjectEntry {
-  friend class dxfRW;
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
 
  public:
   EoDxfImageDefinition() { Reset(); }

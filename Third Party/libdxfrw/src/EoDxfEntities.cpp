@@ -135,7 +135,7 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
       m_color = reader->GetInt32();
       break;
     case 370:
-      m_lineWeight = DRW_LW_Conv::dxfInt2lineWidth(reader->GetInt32());
+      m_lineWeight = EoDxfLineWidths::dxfInt2lineWidth(reader->GetInt32());
       break;
     case 48:
       m_lineTypeScale = reader->GetDouble();

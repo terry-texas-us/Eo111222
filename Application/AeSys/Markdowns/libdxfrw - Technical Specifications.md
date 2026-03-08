@@ -75,7 +75,8 @@ dxfRW (Main API Class)
 ```
 libdxfrw/
 ├── src/                      # Library source code
-│   ├── EoDxfLib.h/cpp        # Main API class
+│   ├── EoDxfRead.h/cpp        # Main Read API class
+│   ├── EoDxfWrite.h/cpp       # Main Write API class
 │   ├── EoDxfInterface.h      # Abstract interface
 │   ├── EoDxfBase.h           # Basic data structures
 │   ├── EoDxfHeader.h/cpp     # Header variables
