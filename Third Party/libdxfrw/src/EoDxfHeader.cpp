@@ -6,25 +6,11 @@
 #include "intern/EoDxfReader.h"
 #include "intern/EoDxfWriter.h"
 
-namespace {
-/** Helper function to write a UTF-8 string to the dxfWriter, handling differences in how strings are written based on
- * the DXF version. For AC1009 (R11/R12), strings are written in uppercase, while for later versions, they are written
- * as-is.
- *
- * @param writer Pointer to the dxfWriter object used to write the string.
- * @param code The group code associated with the string being written.
- * @param str The UTF-8 string to be written to the dxfWriter.
- * @param ver The DXF version being targeted for writing, which determines how the string is formatted.
- * @return true if the string was successfully written, false otherwise.
- */
-bool WriteUtf8String(EoDxfWriter* writer, int code, const std::string& str, EoDxf::Version ver) {
-  return writer->WriteUtf8String(code, str);
-}
-}  // namespace
-
 EoDxfHeader::EoDxfHeader(const EoDxfHeader& other)
-    : m_version{other.m_version}, m_comments{other.m_comments}, m_currentVariant{nullptr} {
-  for (const auto& [key, variant] : other.m_variants) { m_variants.emplace(key, new EoDxfGroupCodeValuesVariant(*variant)); }
+    : m_version{other.m_version}, m_comments{other.m_comments}, m_name{other.m_name}, m_currentVariant{nullptr} {
+  for (const auto& [key, variant] : other.m_variants) {
+    m_variants.emplace(key, new EoDxfGroupCodeValuesVariant(*variant));
+  }
 }
 
 EoDxfHeader& EoDxfHeader::operator=(const EoDxfHeader& other) {
@@ -32,9 +18,12 @@ EoDxfHeader& EoDxfHeader::operator=(const EoDxfHeader& other) {
   ClearVariants();
   m_version = other.m_version;
   m_comments = other.m_comments;
+  m_name = other.m_name;
   m_currentVariant = nullptr;
 
-  for (const auto& [key, variant] : other.m_variants) { m_variants.emplace(key, new EoDxfGroupCodeValuesVariant(*variant)); }
+  for (const auto& [key, variant] : other.m_variants) {
+    m_variants.emplace(key, new EoDxfGroupCodeValuesVariant(*variant));
+  }
   return *this;
 }
 
@@ -44,13 +33,14 @@ void EoDxfHeader::AddComment(std::string comment) {
 }
 
 void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
+  if (code != 9 && m_currentVariant == nullptr) { return; }
+  // The header section is structured as a series of variables, each starting with a group code of 9 followed by the
+  // variable name as a string. Subsequent group codes and values belong to that variable until the next group code of 9
+  // is encountered, which indicates the start of a new variable. Therefore, when group code 9 is encountered, create a
+  // new EoDxfGroupCodeValuesVariant for the new variable and store it in the m_variants map using the variable
+  // name as the key. For other group codes, add the corresponding value to the current variant being processed.
+
   switch (code) {
-    case 9:
-      m_currentVariant = new EoDxfGroupCodeValuesVariant();
-      m_name = reader->GetString();
-      if (m_version < EoDxf::Version::AC1015 && m_name == "$DIMUNIT") { m_name = "$DIMLUNIT"; }
-      m_variants[m_name] = m_currentVariant;
-      break;
     case 1:
       m_currentVariant->AddString(code, reader->GetUtf8String());
       if (m_name == "$ACADVER") {
@@ -77,14 +67,30 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
     case 8:
       m_currentVariant->AddString(code, reader->GetUtf8String());
       break;
+    case 9: {
+      auto newVariant = new EoDxfGroupCodeValuesVariant();
+      m_name = reader->GetString();
+      if (m_version < EoDxf::Version::AC1015 && m_name == "$DIMUNIT") { m_name = "$DIMLUNIT"; }
+      if (auto it = m_variants.find(m_name); it != m_variants.end()) {
+        delete it->second;
+        it->second = newVariant;
+      } else {
+        m_variants[m_name] = newVariant;
+      }
+      m_currentVariant = newVariant;
+    } break;
     case 10:
       m_currentVariant->AddGeometryBase(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
       break;
     case 20:
-      m_currentVariant->SetGeometryBaseY(reader->GetDouble());
+      if (m_currentVariant->GetType() == EoDxfGroupCodeValuesVariant::Type::GeometryBase) {
+        m_currentVariant->SetGeometryBaseY(reader->GetDouble());
+      }
       break;
     case 30:
-      m_currentVariant->SetGeometryBaseZ(reader->GetDouble());
+      if (m_currentVariant->GetType() == EoDxfGroupCodeValuesVariant::Type::GeometryBase) {
+        m_currentVariant->SetGeometryBaseZ(reader->GetDouble());
+      }
       break;
     case 40:
       m_currentVariant->AddDouble(code, reader->GetDouble());
@@ -118,7 +124,7 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -204,21 +210,21 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
 
   writer->WriteString(9, "$TEXTSTYLE");
   if (GetString("$TEXTSTYLE", &variantString)) {
-    WriteUtf8String(writer, 7, variantString, version);
+    writer->WriteUtf8String(7, variantString);
   } else {
     writer->WriteString(7, "STANDARD");
   }
 
   writer->WriteString(9, "$CLAYER");
   if (GetString("$CLAYER", &variantString)) {
-    WriteUtf8String(writer, 8, variantString, version);
+    writer->WriteUtf8String(8, variantString);
   } else {
     writer->WriteString(8, "0");
   }
 
   writer->WriteString(9, "$CELTYPE");
   if (GetString("$CELTYPE", &variantString)) {
-    WriteUtf8String(writer, 6, variantString, version);
+    writer->WriteUtf8String(6, variantString);
   } else {
     writer->WriteString(6, "BYLAYER");
   }
@@ -288,7 +294,7 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
 
   writer->WriteString(9, "$DIMBLK");
   if (GetString("$DIMBLK", &variantString)) {
-    WriteUtf8String(writer, 1, variantString, version);
+    writer->WriteUtf8String(1, variantString);
   } else {
     writer->WriteString(1, "");
   }
@@ -301,14 +307,14 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
 
   writer->WriteString(9, "$DIMPOST");
   if (GetString("$DIMPOST", &variantString)) {
-    WriteUtf8String(writer, 1, variantString, version);
+    writer->WriteUtf8String(1, variantString);
   } else {
     writer->WriteString(1, "");
   }
 
   writer->WriteString(9, "$DIMAPOST");
   if (GetString("$DIMAPOST", &variantString)) {
-    WriteUtf8String(writer, 1, variantString, version);
+    writer->WriteUtf8String(1, variantString);
   } else {
     writer->WriteString(1, "");
   }
@@ -342,14 +348,14 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
 
   writer->WriteString(9, "$DIMBLK1");
   if (GetString("$DIMBLK1", &variantString)) {
-    WriteUtf8String(writer, 1, variantString, version);
+    writer->WriteUtf8String(1, variantString);
   } else {
     writer->WriteString(1, "");
   }
 
   writer->WriteString(9, "$DIMBLK2");
   if (GetString("$DIMBLK2", &variantString)) {
-    WriteUtf8String(writer, 1, variantString, version);
+    writer->WriteUtf8String(1, variantString);
   } else {
     writer->WriteString(1, "");
   }
@@ -374,7 +380,7 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
 
   writer->WriteString(9, "$MENU");
   if (GetString("$MENU", &variantString)) {
-    WriteUtf8String(writer, 1, variantString, version);
+    writer->WriteUtf8String(1, variantString);
   } else {
     writer->WriteString(1, ".");
   }
@@ -441,7 +447,7 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
 
   writer->WriteString(9, "$UCSNAME");
   if (GetString("$UCSNAME", &variantString)) {
-    WriteUtf8String(writer, 2, variantString, version);
+    writer->WriteUtf8String(2, variantString);
   } else {
     writer->WriteString(2, "");
   }
@@ -513,7 +519,7 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer, EoDxf::Version version) {
   writer->WriteInt16(70, GetInteger("$WORLDVIEW", &variantInteger) ? variantInteger : 1);
 }
 
-void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -521,7 +527,7 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version versi
 
   writer->WriteString(9, "$DIMSTYLE");  // not used before AC1009
   if (GetString("$DIMSTYLE", &variantString)) {
-    WriteUtf8String(writer, 2, variantString, version);
+    writer->WriteUtf8String(2, variantString);
   } else {
     writer->WriteString(2, "STANDARD");
   }
@@ -546,7 +552,7 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version versi
 
   writer->WriteString(9, "$PUCSNAME");
   if (GetString("$PUCSNAME", &variantString)) {
-    WriteUtf8String(writer, 2, variantString, version);
+    writer->WriteUtf8String(2, variantString);
   } else {
     writer->WriteString(2, "");
   }
@@ -656,7 +662,7 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer, EoDxf::Version versi
   writer->WriteInt16(70, GetInteger("$PSLTSCALE", &variantInteger) ? variantInteger : 1);
 }
 
-void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -706,7 +712,7 @@ void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer, EoDxf::Version versi
 
   writer->WriteString(9, "$DIMTXSTY");
   if (GetString("$DIMTXSTY", &variantString)) {
-    WriteUtf8String(writer, 7, variantString, version);
+    writer->WriteUtf8String(7, variantString);
   } else {
     writer->WriteString(7, "STANDARD");
   }
@@ -736,7 +742,7 @@ void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer, EoDxf::Version versi
 
   writer->WriteString(9, "$CMLSTYLE");
   if (GetString("$CMLSTYLE", &variantString)) {
-    WriteUtf8String(writer, 2, variantString, version);
+    writer->WriteUtf8String(2, variantString);
   } else {
     writer->WriteString(2, "Standard");
   }
@@ -748,7 +754,7 @@ void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer, EoDxf::Version versi
   writer->WriteDouble(40, GetDouble("$CMLSCALE", &variantDouble) ? variantDouble : 20.0);
 }
 
-void EoDxfHeader::WriteAC1014Additions(EoDxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1014Additions(EoDxfWriter* writer) {
   int variantInteger;
 
   writer->WriteString(9, "$PROXYGRAPHICS");
@@ -758,7 +764,7 @@ void EoDxfHeader::WriteAC1014Additions(EoDxfWriter* writer, EoDxf::Version versi
   writer->WriteInt16(70, GetInteger("$MEASUREMENT", &variantInteger) ? variantInteger : 1);
 }
 
-void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -784,12 +790,11 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
 
   writer->WriteString(9, "$DIMLDRBLK");
   if (GetString("$DIMLDRBLK", &variantString)) {
-    WriteUtf8String(writer, 1, variantString, version);
+    writer->WriteUtf8String(1, variantString);
   } else {
     writer->WriteString(1, "STANDARD");
   }
 
-  //----------------------------
   // `$DIMLUNIT` replaced `$DIMUNIT` in AC1015, but `$DIMUNIT` may still be present in AC1012 and AC1014 files,
   // so check for both and default to 2 (decimal) if neither is found or if the value is out of range
   if (!GetInteger("$DIMLUNIT", &variantInteger)) {
@@ -797,13 +802,8 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
   if (variantInteger < 1 || variantInteger > 6) { variantInteger = 2; }
 
-  if (version > EoDxf::Version::AC1014) {
-    writer->WriteString(9, "$DIMLUNIT");
-  } else {
-    writer->WriteString(9, "$DIMUNIT");
-  }
+  writer->WriteString(9, "$DIMLUNIT");
   writer->WriteInt16(70, variantInteger);
-  //----------------------------
 
   writer->WriteString(9, "$DIMLWD");
   writer->WriteInt16(70, GetInteger("$DIMLWD", &variantInteger) ? variantInteger : -2);
@@ -816,7 +816,7 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
 
   writer->WriteString(9, "$UCSORTHOREF");
   if (GetString("$UCSORTHOREF", &variantString)) {
-    WriteUtf8String(writer, 2, variantString, version);
+    writer->WriteUtf8String(2, variantString);
   } else {
     writer->WriteString(2, "");
   }
@@ -892,21 +892,21 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
 
   writer->WriteString(9, "$UCSBASE");
   if (GetString("$UCSBASE", &variantString)) {
-    WriteUtf8String(writer, 2, variantString, version);
+    writer->WriteUtf8String(2, variantString);
   } else {
     writer->WriteString(2, "");
   }
 
   writer->WriteString(9, "$PUCSBASE");
   if (GetString("$PUCSBASE", &variantString)) {
-    WriteUtf8String(writer, 2, variantString, version);
+    writer->WriteUtf8String(2, variantString);
   } else {
     writer->WriteString(2, "");
   }
 
   writer->WriteString(9, "$PUCSORTHOREF");
   if (GetString("$PUCSORTHOREF", &variantString)) {
-    WriteUtf8String(writer, 2, variantString, version);
+    writer->WriteUtf8String(2, variantString);
   } else {
     writer->WriteString(2, "");
   }
@@ -997,14 +997,14 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer, EoDxf::Version versi
 
   writer->WriteString(9, "$HYPERLINKBASE");
   if (GetString("$HYPERLINKBASE", &variantString)) {
-    WriteUtf8String(writer, 1, variantString, version);
+    writer->WriteUtf8String(1, variantString);
   } else {
     writer->WriteString(1, "");
   }
 
   writer->WriteString(9, "$STYLESHEET");
   if (GetString("$STYLESHEET", &variantString)) {
-    WriteUtf8String(writer, 1, variantString, version);
+    writer->WriteUtf8String(1, variantString);
   } else {
     writer->WriteString(1, "");
   }
@@ -1082,7 +1082,7 @@ void EoDxfHeader::WriteAC1018Additions(EoDxfWriter* writer, EoDxf::Version versi
   }
 }
 
-void EoDxfHeader::WriteAC1021Additions(EoDxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1021Additions(EoDxfWriter* writer) {
   double variantDouble;
   int variantInteger;
   std::string variantString;
@@ -1211,7 +1211,7 @@ void EoDxfHeader::WriteAC1021Additions(EoDxfWriter* writer, EoDxf::Version versi
   writer->WriteDouble(40, GetDouble("$SHADOWPLANELOCATION", &variantDouble) ? variantDouble : 0.0);
 }
 
-void EoDxfHeader::WriteAC1024Additions(EoDxfWriter* writer, EoDxf::Version version) {
+void EoDxfHeader::WriteAC1024Additions(EoDxfWriter* writer) {
   int variantInteger;
 
   writer->WriteString(9, "$DIMTXTDIRECTION");
@@ -1290,14 +1290,15 @@ void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
     writer->WriteDouble(20, variantGeometryBase.y);
   }
 
-  WriteBase(writer, version);
-  WriteAC1009Additions(writer, version);
-  WriteAC1012Additions(writer, version);
-  WriteAC1014Additions(writer, version);
-  WriteAC1015Additions(writer, version);
-  WriteAC1018Additions(writer, version);
-  WriteAC1021Additions(writer, version);
-  WriteAC1024Additions(writer, version);
+  WriteBase(writer);
+
+  if (version >= EoDxf::Version::AC1009) { WriteAC1009Additions(writer); }
+  if (version >= EoDxf::Version::AC1012) { WriteAC1012Additions(writer); }
+  if (version >= EoDxf::Version::AC1014) { WriteAC1014Additions(writer); }
+  if (version >= EoDxf::Version::AC1015) { WriteAC1015Additions(writer); }
+  if (version >= EoDxf::Version::AC1018) { WriteAC1018Additions(writer, version); }
+  if (version >= EoDxf::Version::AC1021) { WriteAC1021Additions(writer); }
+  if (version >= EoDxf::Version::AC1024) { WriteAC1024Additions(writer); }
 
   if (version < EoDxf::Version::AC1015) {  // so only write them if the version is AC1014 or earlier
     writer->WriteString(9, "$DRAGMODE");
@@ -1325,13 +1326,25 @@ void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
 }
 
 void EoDxfHeader::AddDouble(const std::string& key, double value, int code) {
-  m_currentVariant = new EoDxfGroupCodeValuesVariant(code, value);
-  m_variants[key] = m_currentVariant;
+  auto newVariant = new EoDxfGroupCodeValuesVariant(code, value);
+  if (auto it = m_variants.find(key); it != m_variants.end()) {
+    delete it->second;
+    it->second = newVariant;
+  } else {
+    m_variants[key] = newVariant;
+  }
+  m_currentVariant = newVariant;
 }
 
 void EoDxfHeader::AddInteger(const std::string& key, int value, int code) {
-  m_currentVariant = new EoDxfGroupCodeValuesVariant(code, value);
-  m_variants[key] = m_currentVariant;
+  auto newVariant = new EoDxfGroupCodeValuesVariant(code, value);
+  if (auto it = m_variants.find(key); it != m_variants.end()) {
+    delete it->second;
+    it->second = newVariant;
+  } else {
+    m_variants[key] = newVariant;
+  }
+  m_currentVariant = newVariant;
 }
 
 void EoDxfHeader::AddString(const std::string& key, std::string value, int code) {
@@ -1376,11 +1389,7 @@ bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) 
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second;
     if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::String) {
-      if (variant->m_content.s != nullptr) {
-        *variantString = *variant->m_content.s;
-      } else {
-        variantString->clear();  // null → empty string (safe default)
-      }
+      *variantString = variant->GetString();
       delete variant;
       m_variants.erase(it);
       return true;
@@ -1394,7 +1403,7 @@ bool EoDxfHeader::GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* v
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second;
     if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::GeometryBase) {
-      *variantGeometryBase = *variant->m_content.v;
+      *variantGeometryBase = variant->GetGeometryBase();
       delete variant;
       m_variants.erase(it);
       return true;
@@ -1405,9 +1414,6 @@ bool EoDxfHeader::GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* v
 }
 
 void EoDxfHeader::ClearVariants() {
-  for (std::map<std::string, EoDxfGroupCodeValuesVariant*>::iterator it = m_variants.begin(); it != m_variants.end(); ++it) {
-    delete it->second;
-  }
-
+  for (auto& [key, variant] : m_variants) { delete variant; }
   m_variants.clear();
 }
