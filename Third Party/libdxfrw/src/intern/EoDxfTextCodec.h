@@ -20,20 +20,13 @@ class DRW_TextCodec {
    * @param version Pointer to a string representing the version to set
    * @param dxfFormat Boolean indicating whether the format is DXF or not
    */
-  void SetVersion(std::string* version, bool dxfFormat);
+  void SetVersion(const std::string& version, bool dxfFormat);
 
   void SetVersion(int version, bool dxfFormat);
 
   [[nodiscard]] const std::string& GetCodePage() const noexcept { return m_codePage; }
 
-  /** @brief Sets the code page for the text codec based on the provided string and format.
-   * The function first corrects the code page string, then deletes any existing converter.
-   * Depending on the version and format, it initializes a new converter with the appropriate table or encoding.
-   * @param c Pointer to a string representing the code page to set
-   * @param dxfFormat Boolean indicating whether the format is DXF or not
-   */
-  void SetCodePage(std::string c, bool dxfFormat) { SetCodePage(&c, dxfFormat); }
-  void SetCodePage(std::string* c, bool dxfFormat);
+  void SetCodePage(const std::string& codePage, bool dxfFormat);
 
  private:
   [[nodiscard]] std::string NormalizeCodePage(const std::string_view codePage) noexcept;

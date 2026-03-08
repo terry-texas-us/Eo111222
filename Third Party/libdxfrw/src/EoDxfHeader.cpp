@@ -44,7 +44,7 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
     case 1:
       m_currentVariant->AddString(code, reader->GetUtf8String());
       if (m_name == "$ACADVER") {
-        reader->SetVersion(m_currentVariant->m_content.s, true);
+        reader->SetVersion(m_currentVariant->GetString(), true);
         m_version = reader->GetVersion();
       }
       break;
@@ -54,7 +54,7 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
     case 3:
       m_currentVariant->AddString(code, reader->GetUtf8String());
       if (m_name == "$DWGCODEPAGE") {
-        reader->SetCodePage(m_currentVariant->m_content.s);
+        reader->SetCodePage(m_currentVariant->GetString());
         m_currentVariant->AddString(code, reader->GetCodePage());
       }
       break;
@@ -1255,14 +1255,14 @@ void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
       break;
   }
   writer->WriteString(1, variantString);
-  writer->SetVersion(&variantString, true);
+  writer->SetVersion(variantString, true);
 
   (void)GetString("$ACADVER", &variantString);
   (void)GetString("$ACADMAINTVER", &variantString);
 
   if (!GetString("$DWGCODEPAGE", &variantString)) { variantString = "ANSI_1252"; }
   writer->WriteString(9, "$DWGCODEPAGE");
-  writer->SetCodePage(&variantString);
+  writer->SetCodePage(variantString);
   writer->WriteString(3, writer->GetCodePage());
 
   writer->WriteString(9, "$HANDSEED");

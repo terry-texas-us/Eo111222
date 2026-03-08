@@ -15,9 +15,9 @@ std::string DRW_TextCodec::ToUtf8(std::string s) const {
   return s;
 }
 
-void DRW_TextCodec::SetVersion(std::string* version, bool dxfFormat) {
+void DRW_TextCodec::SetVersion(const std::string& version, bool dxfFormat) {
   m_version = 0;
-  if (version && !version->empty()) {}
+  if (!version.empty()) {}
 }
 
 void DRW_TextCodec::SetVersion(int version, bool dxfFormat) { m_version = version; }
@@ -41,11 +41,11 @@ std::string DRW_TextCodec::NormalizeCodePage(const std::string_view codePage) no
   return "ANSI_1252";
 }
 
-void DRW_TextCodec::SetCodePage(std::string* codePage, bool dxfFormat) {
+void DRW_TextCodec::SetCodePage(const std::string& codePage, bool dxfFormat) {
   delete m_converter;
   m_converter = nullptr;
 
-  std::string normalizedCodePage = NormalizeCodePage(*codePage);
+  std::string normalizedCodePage = NormalizeCodePage(codePage);
   m_codePage = normalizedCodePage;
 
   if (normalizedCodePage == "UTF-16") {
