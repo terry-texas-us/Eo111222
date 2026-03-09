@@ -1,75 +1,75 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="src\EoDxfClasses.cpp">
+    <ClCompile Include="EoDxfClasses.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EoDxfEntities.cpp">
+    <ClCompile Include="EoDxfEntities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EoDxfHeader.cpp">
+    <ClCompile Include="EoDxfHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EoDxfObjects.cpp">
+    <ClCompile Include="EoDxfObjects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EoDxfRead.cpp">
+    <ClCompile Include="EoDxfRead.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EoDxfReader.cpp">
+    <ClCompile Include="EoDxfReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EoDxfTables.cpp">
+    <ClCompile Include="EoDxfTables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EoDxfTextCodec.cpp">
+    <ClCompile Include="EoDxfTextCodec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EoDxfWrite.cpp">
+    <ClCompile Include="EoDxfWrite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EoDxfWriter.cpp">
+    <ClCompile Include="EoDxfWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\EoDxfBase.h">
+    <ClInclude Include="EoDxfBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfClasses.h">
+    <ClInclude Include="EoDxfClasses.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfCodePageTables.h">
+    <ClInclude Include="EoDxfCodePageTables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfEntities.h">
+    <ClInclude Include="EoDxfEntities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfHeader.h">
+    <ClInclude Include="EoDxfHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfInterface.h">
+    <ClInclude Include="EoDxfInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfObjects.h">
+    <ClInclude Include="EoDxfObjects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfRead.h">
+    <ClInclude Include="EoDxfRead.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfReader.h">
+    <ClInclude Include="EoDxfReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfTables.h">
+    <ClInclude Include="EoDxfTables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfTextCodec.h">
+    <ClInclude Include="EoDxfTextCodec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfWrite.h">
+    <ClInclude Include="EoDxfWrite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EoDxfWriter.h">
+    <ClInclude Include="EoDxfWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
