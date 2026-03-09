@@ -436,6 +436,8 @@ bool EoDxfRead::ProcessEntities(bool isblock) {
       ProcessDimension();
     } else if (m_nextEntity == "LEADER") {
       ProcessLeader();
+    } else if (m_nextEntity == "MULTILEADER" || m_nextEntity == "MLEADER") {
+      ProcessMLeader();
     } else if (m_nextEntity == "RAY") {
       ProcessRay();
     } else if (m_nextEntity == "XLINE") {
@@ -895,6 +897,24 @@ bool EoDxfRead::ProcessLeader() {
       }
       default:
         leader.ParseCode(code, m_reader);
+        break;
+    }
+  }
+  return true;
+}
+
+bool EoDxfRead::ProcessMLeader() {
+  int code;
+  EoDxfMLeader mLeader;
+  while (m_reader->ReadRec(&code)) {
+    switch (code) {
+      case 0: {
+        m_nextEntity = m_reader->GetString();
+        m_interface->addMLeader(&mLeader);
+        return true;  // found new entity or ENDSEC, terminate
+      }
+      default:
+        mLeader.ParseCode(code, m_reader);
         break;
     }
   }

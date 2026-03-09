@@ -170,15 +170,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EoDxfClasses.cpp" />
+    <ClCompile Include="EoDxfDrawing.cpp" />
     <ClCompile Include="EoDxfEntities.cpp" />
     <ClCompile Include="EoDxfHeader.cpp" />
     <ClCompile Include="EoDxfObjects.cpp" />
     <ClCompile Include="EoDxfTables.cpp" />
     <ClCompile Include="EoDxfTextCodec.cpp" />
     <ClCompile Include="EoDxfReader.cpp" />
+    <ClCompile Include="EoDxfWriteAnnotation.cpp" />
     <ClCompile Include="EoDxfWriter.cpp" />
     <ClCompile Include="EoDxfRead.cpp" />
     <ClCompile Include="EoDxfWrite.cpp" />
+    <ClCompile Include="EoDxfWriteTables.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AcadEntityObjectHierarchy.md">

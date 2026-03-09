@@ -87,6 +87,7 @@ class EoDxfRead {
   bool ProcessImageDef();
   bool ProcessDimension();
   bool ProcessLeader();
+  bool ProcessMLeader();
 
  private:
   EoDxfHeader m_header;

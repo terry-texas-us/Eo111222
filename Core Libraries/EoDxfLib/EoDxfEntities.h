@@ -44,7 +44,7 @@ enum ETYPE {
   //        MESH,
   //        MLINE,
   //        MLEADERSTYLE,
-  //        MLEADER,
+  MLEADER,
   MTEXT,
   //        OLEFRAME,
   //        OLE2FRAME,
@@ -1255,6 +1255,159 @@ class EoDxfLeader : public EoDxfEntity {
 
  private:
   int m_currentVertexIndex{-1};
+};
+
+/** @brief A single leader line within an MLEADER leader branch.
+ *
+ *  Delimited in DXF by group code 304 "LEADER_LINE{" and 305 "}".
+ *  Contains vertex points (code 10, 20, 30 — repeated) and an
+ *  index (code 91) that identifies the line within its branch.
+ */
+struct EoDxfMLeaderLine {
+  std::vector<EoDxfGeometryBase3d> m_vertices;  // code 10, 20, 30 (repeated)
+  int m_leaderLineIndex{};  // code 91
+  int m_leaderLineColorOverride{EoDxf::ColorCodes::ColorByLayer};  // code 92 (optional)
+  std::uint64_t m_leaderLineTypeHandle{EoDxf::HandleCodes::NoHandle};  // code 340 (optional)
+  int m_leaderLineWeightOverride{-1};  // code 171 (optional, -1 = no override)
+  double m_arrowheadSize{};  // code 40 (optional, 0 = use context default)
+  std::uint64_t m_arrowheadHandle{EoDxf::HandleCodes::NoHandle};  // code 341 (optional)
+};
+
+/** @brief A leader branch within an MLEADER entity.
+ *
+ *  Delimited in DXF by group code 302 "LEADER{" and 303 "}".
+ *  Each branch has a last leader line point, a dogleg vector,
+ *  a dogleg length, and one or more leader lines.
+ */
+struct EoDxfMLeaderBranch {
+  bool m_hasSetLastLeaderLinePoint{};  // code 290
+  bool m_hasSetDoglegVector{};  // code 291
+  EoDxfGeometryBase3d m_lastLeaderLinePoint;  // code 10, 20, 30
+  EoDxfGeometryBase3d m_doglegVector;  // code 11, 21, 31
+  int m_leaderBranchIndex{};  // code 90
+  double m_doglegLength{};  // code 40
+  std::vector<EoDxfMLeaderLine> m_leaderLines;
+};
+
+/** @brief Context data for an MLEADER entity.
+ *
+ *  Delimited in DXF by group code 300 "CONTEXT_DATA{" and 301 "}".
+ *  Contains the overall layout parameters plus nested LEADER branches
+ *  and optional MText / Block content fields.
+ */
+struct EoDxfMLeaderContextData {
+  // --- General context ---
+  double m_contentScale{1.0};  // code 40
+  EoDxfGeometryBase3d m_contentBasePoint;  // code 10, 20, 30
+  double m_textHeight{};  // code 41
+  double m_arrowheadSize{};  // code 140
+  double m_landingGap{};  // code 145
+  int m_textLeftAttachment{1};  // code 174
+  int m_textRightAttachment{1};  // code 175
+  int m_textAlignmentType{};  // code 176
+  int m_blockContentConnectionType{};  // code 177
+  bool m_hasMText{};  // code 290
+  bool m_hasContent{true};  // code 296
+
+  // --- MText content (delimited by code 304 "{" ... 305 "}") ---
+  EoDxfGeometryBase3d m_textLocation;  // code 12, 22, 32
+  EoDxfGeometryBase3d m_textDirection;  // code 13, 23, 33
+  double m_textRotation{};  // code 42
+  double m_textWidth{};  // code 43
+  double m_textDefinedWidth{};  // code 44
+  double m_textDefinedHeight{};  // code 45
+  int m_textLineSpacingStyle{1};  // code 171
+  double m_textLineSpacingFactor{1.0};  // code 141
+  int m_textFlowDirection{1};  // code 90
+  int m_textColor{EoDxf::ColorCodes::ColorByLayer};  // code 91
+  int m_textAttachment{1};  // code 170
+  int m_textBackgroundFill{};  // code 172
+  std::uint64_t m_textStyleHandle{EoDxf::HandleCodes::NoHandle};  // code 340
+  std::string m_textString;  // code 1 (and 3 for overflow)
+
+  // --- Block content ---
+  std::uint64_t m_blockContentHandle{EoDxf::HandleCodes::NoHandle};  // code 341
+  EoDxfGeometryBase3d m_blockContentNormalDirection{0.0, 0.0, 1.0};  // code 14, 24, 34
+  EoDxfGeometryBase3d m_blockContentScale{1.0, 1.0, 1.0};  // code 15, 25, 35
+  double m_blockContentRotation{};  // code 46
+  int m_blockContentColor{EoDxf::ColorCodes::ColorByLayer};  // code 93
+
+  // --- Leader branches ---
+  std::vector<EoDxfMLeaderBranch> m_leaders;
+};
+
+/** @brief Class to handle MULTILEADER (MLEADER) entity.
+ *
+ *  A multileader entity is an annotation object that associates leader lines with
+ *  either MText or a block reference.  Introduced in AutoCAD 2008 (DXF AC1021).
+ *  The entity has three nested sub-elements:
+ *    1. **CONTEXT_DATA** — overall layout parameters, text/block content
+ *    2. **LEADER** — a leader branch with a dogleg vector and dogleg length
+ *    3. **LEADER_LINE** — vertex list for one leader line segment
+ *
+ *  Nesting is delimited in DXF by string-valued group codes:
+ *    - 300 "CONTEXT_DATA{"  /  301 "}"
+ *    - 302 "LEADER{"        /  303 "}"
+ *    - 304 "LEADER_LINE{"   /  305 "}"
+ */
+class EoDxfMLeader : public EoDxfEntity {
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
+
+ public:
+  EoDxfMLeader() noexcept : EoDxfEntity{EoDxf::MLEADER} {}
+
+  EoDxfMLeader(const EoDxfMLeader&) = delete;
+  EoDxfMLeader& operator=(const EoDxfMLeader&) = delete;
+
+  EoDxfMLeader(EoDxfMLeader&&) noexcept = default;
+  EoDxfMLeader& operator=(EoDxfMLeader&&) noexcept = default;
+
+  ~EoDxfMLeader() = default;
+
+  void ApplyExtrusion() override {}
+
+ protected:
+  void ParseCode(int code, EoDxfReader* reader);
+
+ public:
+  // --- Top-level AcDbMLeader properties ---
+  int m_leaderType{1};  // code 170 (0=invisible, 1=straight, 2=spline)
+  int m_leaderLineColor{EoDxf::ColorCodes::ColorByLayer};  // code 91
+  std::uint64_t m_leaderLineTypeHandle{EoDxf::HandleCodes::NoHandle};  // code 341
+  int m_leaderLineWeight{-1};  // code 171
+  bool m_enableLanding{true};  // code 290
+  bool m_enableDogleg{true};  // code 291
+  double m_doglegLength{};  // code 41
+  double m_arrowheadSize{};  // code 42
+  int m_contentType{2};  // code 172 (0=none, 1=block, 2=mtext)
+  std::uint64_t m_textStyleHandle{EoDxf::HandleCodes::NoHandle};  // code 343
+  int m_textLeftAttachmentType{1};  // code 173
+  int m_textRightAttachmentType{1};  // code 95
+  int m_textAngleType{};  // code 174
+  int m_textAlignmentType{};  // code 175
+  int m_textColor{EoDxf::ColorCodes::ColorByLayer};  // code 92
+  bool m_enableFrameText{};  // code 292
+  std::uint64_t m_blockContentHandle{EoDxf::HandleCodes::NoHandle};  // code 344
+  int m_blockContentColor{EoDxf::ColorCodes::ColorByLayer};  // code 93
+  EoDxfGeometryBase3d m_blockContentScale{1.0, 1.0, 1.0};  // code 10, 20, 30 (top-level)
+  double m_blockContentRotation{};  // code 43
+  int m_blockContentConnectionType{};  // code 176
+  bool m_enableAnnotationScale{true};  // code 293
+  std::uint64_t m_leaderStyleHandle{EoDxf::HandleCodes::NoHandle};  // code 340
+  int m_propertyOverrideFlag{};  // code 90
+  double m_overallScale{1.0};  // code 45
+  int m_textDirectionNegative{};  // code 294 (0=left-to-right, 1=used by BiDi)
+  int m_textTopAttachmentType{9};  // code 271
+  int m_textBottomAttachmentType{9};  // code 272
+
+  // Context data (only one per MLEADER)
+  EoDxfMLeaderContextData m_contextData;
+
+ private:
+  /** @brief Parsing state for the nested MLEADER sub-element structure. */
+  enum class ParseState { TopLevel, ContextData, Leader, LeaderLine, MTextContent };
+  ParseState m_parseState{ParseState::TopLevel};
 };
 
 /** @brief Class to handle viewport entity

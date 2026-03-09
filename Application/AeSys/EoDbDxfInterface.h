@@ -81,8 +81,8 @@ class EoDbDxfInterface : public EoDxfInterface {
   // https://help.autodesk.com/view/OARX/2018/ENU/?guid=GUID-7D07C886-FD1D-4A0C-A7AB-B4D21F18E484
 
   void add3dFace(const EoDxf3dFace& /* 3dFace */) override { countOf3dFace++; }
-  // 3DSOLID not implemented in DRW
-  // ACAD_PROXY_ENTITY not implemented in DRW
+  // 3DSOLID not implemented
+  // ACAD_PROXY_ENTITY not implemented
 
   void addArc(const EoDxfArc& arc) override {
     countOfArc++;
@@ -93,9 +93,9 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
     ConvertArcEntity(arc, m_document);
   }
-  // ATTDEF not implemented in DRW
-  // ATTRIB not implemented in DRW
-  // BODY not implemented in DRW
+  // ATTDEF not implemented
+  // ATTRIB not implemented
+  // BODY not implemented
   void addCircle(const EoDxfCircle& circle) override {
     countOfCircle++;
     if (m_inBlockDefinition) {
@@ -106,7 +106,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertCircleEntity(circle, m_document);
   }
 
-  // COORDINATION_MODEL not implemented in DRW
+  // COORDINATION_MODEL not implemented
 
   // Dimensions
 
@@ -134,7 +134,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
   void addHatch([[maybe_unused]] const EoDxfHatch* hatch) override { countOfHatch++; }
 
-  // HELIX not implemented in DRW
+  // HELIX not implemented
   void addImage([[maybe_unused]] const EoDxfImage* image) override { countOfImage++; }
 
   void addInsert(const EoDxfInsert& blockReference) override {
@@ -149,7 +149,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
 
   void addLeader(const EoDxfLeader* leader) override { (void)leader; }
-  // LIGHT not implemented in DRW
+  // LIGHT not implemented
 
   void addLine(const EoDxfLine& line) override {
     countOfLine++;
@@ -172,10 +172,11 @@ class EoDbDxfInterface : public EoDxfInterface {
       ConvertLWPolylineEntity(polyline, m_document);
     }
   }
-  // MESH not implemented in DRW
-  // MLeader not implemented in DRW
-  // MLINE not implemented in DRW
+  // MESH not implemented
+  
+  void addMLeader(const EoDxfMLeader* mLeader) override { (void)mLeader; }
 
+  // MLINE not implemented
   void addMText(const EoDxfMText& mText) override {
     (void)mText;
     countOfMText++;
@@ -186,8 +187,8 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
   }
 
-  // OLEFRAME not implemented in DRW
-  // OLE2FRAME not implemented in DRW
+  // OLEFRAME not implemented
+  // OLE2FRAME not implemented
 
   void addPoint(const EoDxfPoint& point) override {
     countOfPoint++;
@@ -202,10 +203,10 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void addPolyline(const EoDxfPolyline& /* polyline */) override { countOfPolyline++; }
   void addRay(const EoDxfRay& /* ray */) override { countOfRay++; }
-  // REGION not implemented in DRW
-  // SECTION not implemented in DRW
-  // SEQEND not implemented in DRW
-  // SHAPE not implemented in DRW
+  // REGION not implemented
+  // SECTION not implemented
+  // SEQEND not implemented
+  // SHAPE not implemented
 
   void addSolid(const EoDxfSolid& /* solid */) override { countOfSolid++; }
   void addSpline(const EoDxfSpline* spline) override {
@@ -213,9 +214,9 @@ class EoDbDxfInterface : public EoDxfInterface {
 
     countOfSpline++;
   }
-  // SUN not implemented in DRW
-  // SURFACE not implemented in DRW
-  // TABLE not implemented in DRW
+  // SUN not implemented
+  // SURFACE not implemented
+  // TABLE not implemented
 
   void addText(const EoDxfText& text) override {
     (void)text;
@@ -227,12 +228,12 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
   }
 
-  // TOLERANCE not implemented in DRW
+  // TOLERANCE not implemented
   void addTrace(const EoDxfTrace& /* trace */) override { countOfTrace++; }
-  // UNDERLAY not implemented in DRW
-  // VERTEX not implemented in DRW
+  // UNDERLAY not implemented
+  // VERTEX not implemented
   void addViewport(const EoDxfViewPort& /* viewport */) override { countOfViewport++; }
-  // WIPEOUT not implemented in DRW
+  // WIPEOUT not implemented
   void addXline(const EoDxfXline& /* Xline */) override { countOfXline++; }
 
   // Others

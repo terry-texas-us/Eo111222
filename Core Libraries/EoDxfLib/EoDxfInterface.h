@@ -147,6 +147,11 @@ class EoDxfInterface {
   virtual void addLeader(const EoDxfLeader* leader) = 0;
 
   /**
+   * Called for every multileader entity.
+   */
+  virtual void addMLeader(const EoDxfMLeader* mLeader) = 0;
+
+  /**
    * Called for every hatch entity.
    */
   virtual void addHatch(const EoDxfHatch* data) = 0;

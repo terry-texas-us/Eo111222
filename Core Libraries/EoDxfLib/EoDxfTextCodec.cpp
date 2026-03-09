@@ -53,6 +53,6 @@ void EoTcTextCodec::SetCodePage(const std::string& codePage, bool dxfFormat) {
   } else if (normalizedCodePage == "UTF-8") {
     m_converter = new EoTcConvertTable(nullptr, 0);
   } else {
-    m_converter = new EoTcConvertTable(DRW_Table1252, 256);
+    m_converter = new EoTcConvertTable(EoTcTable1252, 256);
   }
 }

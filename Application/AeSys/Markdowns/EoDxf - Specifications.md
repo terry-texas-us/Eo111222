@@ -62,7 +62,7 @@ dxfRW (Main API Class)
 │   ├── EoDxfHatch
 │   ├── EoDxfDimension (various dimension types)
 │   └── Other entities
-└── DRW_Object (Non-geometric Objects)
+└── EoDxfObject (Non-geometric Objects)
     ├── EoDxfLayer
     ├── EoDxfLinetype
     ├── EoDxfTextStyle
@@ -327,7 +327,7 @@ python bin/dxf2txt.py input.dxf
 ### Basic Types
 
 ```cpp
-namespace DRW {
+namespace EoDxf {
     enum Version {
         UNKNOWNV,    // Unknown
         R12,         // R12 DXF

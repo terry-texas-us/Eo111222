@@ -81,6 +81,7 @@ class EoDxfWrite {
   bool WriteViewport(EoDxfViewPort* viewport);
   EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::string name);
   bool WriteLeader(EoDxfLeader* leader);
+  bool WriteMLeader(EoDxfMLeader* mLeader);
   bool WriteDimension(EoDxfDimension* dimension);
 
  private:

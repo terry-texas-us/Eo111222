@@ -1,6 +1,6 @@
 #pragma once
 // Windows - 1252 code page(also known as CP1252 or "Western European (Windows)")
-static const int DRW_Table1252[] = {
+static const int EoTcTable1252[] = {
     0x20AC,  // Unicode code point for '€'
     0x00,  // Undefined
     0x201A,  // Unicode code point for '‚'
