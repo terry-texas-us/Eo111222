@@ -1249,7 +1249,7 @@ class EoDxfLeader : public EoDxfEntity {
   int m_colorToUse{};  // Group code 77
   std::uint64_t m_associatedAnnotationHandle{};  // Group code 340
   EoDxfGeometryBase3d m_normalVector{0.0, 0.0, 1.0};  // Group codes 210, 220 & 230
-  EoDxfGeometryBase3d m_horizontalDirectionForLeader;  // Group codes 211, 221 & 231
+  EoDxfGeometryBase3d m_horizontalDirectionForLeader{1.0, 0.0, 0.0};  // Group codes 211, 221 & 231
   EoDxfGeometryBase3d m_offsetFromBlockInsertionPoint;  // Group codes 212, 222 & 232
   EoDxfGeometryBase3d m_offsetFromAnnotationPlacementPoint;  // Group codes 213, 223 & 233
 
