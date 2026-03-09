@@ -477,7 +477,7 @@ void EoDxfTextStyle::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfViewport::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfVPort::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 10:
       lowerLeft.x = reader->GetDouble();
@@ -584,7 +584,7 @@ void EoDxfViewport::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfViewport::Reset() {
+void EoDxfVPort::Reset() {
   upperRight.x = 1.0;
   upperRight.y = 1.0;
   snapSpacing.x = 10.0;

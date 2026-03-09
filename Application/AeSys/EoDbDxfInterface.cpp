@@ -190,7 +190,7 @@ void EoDbDxfInterface::ConvertTextStyleTable(const EoDxfTextStyle& textStyle, [[
   // charset, and italic and bold flags (group code 1071)
 }
 
-void EoDbDxfInterface::ConvertViewportTable(const EoDxfViewport& viewport, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertVPortTable(const EoDxfVPort& viewport, [[maybe_unused]] AeSysDoc* document) {
   std::wstring viewportName = Eo::MultiByteToWString(viewport.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"Viewport - Name: %s (unsupported in AeSys)\n", viewportName.c_str());
 

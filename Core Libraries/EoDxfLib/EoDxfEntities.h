@@ -1341,24 +1341,17 @@ struct EoDxfMLeaderContextData {
  *  A viewport entity represents a window in paper space that displays a view of the model space.
  *  It is defined by its width and height in paper space units (code 40 and 41), viewport status (code 68), and viewport
  * ID (code 69). The viewport entity can also include properties such as the view center point (code 12 and 22), snap
- * base point (code 13 and 23), snap spacing (code 14 and 24), view direction vector (code 16, 26, and 36), view target
- * point (code 17, 27, and 37), perspective lens length (code 42), front clip plane Z value (code 43), back clip plane Z
- * value (code 44), view height in model space units (code 45), snap angle (code 50), and view twist angle (code 51),
- * which can affect how the viewport displays the model space.
+ * base point (code 13 and 23), snap spacing (code 14 and 24), grid spacing (code 15 and 25), view direction vector
+ * (code 16, 26, and 36), view target point (code 17, 27, and 37), perspective lens length (code 42), front clip plane Z
+ * value (code 43), back clip plane Z value (code 44), view height in model space units (code 45), snap angle (code 50),
+ * and view twist angle (code 51), which can affect how the viewport displays the model space.
  */
-class EoDxfViewPort : public EoDxfPoint {
+class EoDxfViewport : public EoDxfPoint {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  EoDxfViewPort() {
-    m_entityType = EoDxf::VIEWPORT;
-    vpstatus = 0;
-    pswidth = 205;
-    psheight = 156;
-    centerPX = 128.5;
-    centerPY = 97.5;
-  }
+  EoDxfViewport() noexcept { m_entityType = EoDxf::VIEWPORT; }
 
   void ApplyExtrusion() override {}
 
@@ -1366,26 +1359,27 @@ class EoDxfViewPort : public EoDxfPoint {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  double pswidth;  // Width in paper space units, code 40
-  double psheight;  // Height in paper space units, code 41
-  int vpstatus;  // Viewport status, code 68
-  int vpID{};  // Viewport ID, code 69
-  double centerPX;  // view center point X, code 12
-  double centerPY;  // view center point Y, code 22
-  double snapPX{};  // Snap base point X, code 13
-  double snapPY{};  // Snap base point Y, code 23
-  double snapSpPX{};  // Snap spacing X, code 14
-  double snapSpPY{};  // Snap spacing Y, code 24
-  // TODO: complete in dxf
-  EoDxfGeometryBase3d viewDir;  // View direction vector, code 16, 26 & 36
-  EoDxfGeometryBase3d viewTarget;  // View target point, code 17, 27, 37
-  double viewLength{};  // Perspective lens length, code 42
-  double frontClip{};  // Front clip plane Z value, code 43
-  double backClip{};  // Back clip plane Z value, code 44
-  double viewHeight{};  // View height in model space units, code 45
-  double snapAngle{};  // Snap angle, code 50
-  double twistAngle{};  // view twist angle, code 51
+  double m_width{205.0};  // Width in paper space units, code 40
+  double m_height{156.0};  // Height in paper space units, code 41
+  int m_viewportStatus{};  // Viewport status field, code 68
+  int m_viewportId{};  // Viewport ID, code 69
+  double m_viewCenterX{128.5};  // View center point X (in DCS), code 12
+  double m_viewCenterY{97.5};  // View center point Y (in DCS), code 22
+  double m_snapBasePointX{};  // Snap base point X, code 13
+  double m_snapBasePointY{};  // Snap base point Y, code 23
+  double m_snapSpacingX{};  // Snap spacing X, code 14
+  double m_snapSpacingY{};  // Snap spacing Y, code 24
+  double m_gridSpacingX{};  // Grid spacing X, code 15
+  double m_gridSpacingY{};  // Grid spacing Y, code 25
+  EoDxfGeometryBase3d m_viewDirection{0.0, 0.0, 1.0};  // View direction from target point (WCS), code 16, 26, 36
+  EoDxfGeometryBase3d m_viewTargetPoint;  // View target point (WCS), code 17, 27, 37
+  double m_lensLength{};  // Perspective lens length, code 42
+  double m_frontClipPlane{};  // Front clip plane Z value, code 43
+  double m_backClipPlane{};  // Back clip plane Z value, code 44
+  double m_viewHeight{};  // View height in model space units, code 45
+  double m_snapAngle{};  // Snap angle, code 50
+  double m_twistAngle{};  // View twist angle, code 51
 
  private:
-  std::uint32_t frozenLyCount{};
+  std::uint32_t m_frozenLayerCount{};  // Number of frozen layers, code 90
 };

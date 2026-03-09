@@ -21,7 +21,7 @@ bool EoDxfWrite::WriteTables() {
   m_standardDimensionStyle = false;
   m_interface->writeVports();
   if (!m_standardDimensionStyle) {
-    EoDxfViewport activeViewport;
+    EoDxfVPort activeViewport;
     activeViewport.m_tableName = "*ACTIVE";
     WriteVport(&activeViewport);
   }
@@ -422,7 +422,7 @@ bool EoDxfWrite::WriteTextstyle(EoDxfTextStyle* textStyle) {
   return true;
 }
 
-bool EoDxfWrite::WriteVport(EoDxfViewport* viewport) {
+bool EoDxfWrite::WriteVport(EoDxfVPort* viewport) {
   if (!m_standardDimensionStyle) {
     viewport->m_tableName = "*ACTIVE";
     m_standardDimensionStyle = true;

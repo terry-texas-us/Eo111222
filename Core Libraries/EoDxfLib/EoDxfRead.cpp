@@ -302,7 +302,7 @@ bool EoDxfRead::ProcessVports() {
   int code;
   std::string sectionstr;
   bool reading{};
-  EoDxfViewport viewport;
+  EoDxfVPort viewport;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       if (reading) { m_interface->addVport(viewport); }
@@ -532,7 +532,7 @@ bool EoDxfRead::Process3dFace() {
 
 bool EoDxfRead::ProcessViewport() {
   int code;
-  EoDxfViewPort viewport;
+  EoDxfViewport viewport;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {

@@ -280,12 +280,12 @@ class EoDxfTextStyle : public EoDxfTableEntry {
  * 42), front clipping plane (code 43), back clipping plane (code 44), snap rotation angle (code 50), view twist angle
  * (code 51), and various flags for view mode, snap, grid, and UCS icon display.
  */
-class EoDxfViewport : public EoDxfTableEntry {
+class EoDxfVPort : public EoDxfTableEntry {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  EoDxfViewport() : EoDxfTableEntry(EoDxf::SymbolTable::Viewport) { Reset(); }
+  EoDxfVPort() : EoDxfTableEntry(EoDxf::SymbolTable::Viewport) { Reset(); }
   void Reset();
 
  protected:

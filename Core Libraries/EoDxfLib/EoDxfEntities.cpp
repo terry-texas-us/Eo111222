@@ -1281,26 +1281,82 @@ void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfViewPort::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfViewport::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 12:
+      m_viewCenterX = reader->GetDouble();
+      break;
+    case 13:
+      m_snapBasePointX = reader->GetDouble();
+      break;
+    case 14:
+      m_snapSpacingX = reader->GetDouble();
+      break;
+    case 15:
+      m_gridSpacingX = reader->GetDouble();
+      break;
+    case 16:
+      m_viewDirection.x = reader->GetDouble();
+      break;
+    case 17:
+      m_viewTargetPoint.x = reader->GetDouble();
+      break;
+    case 22:
+      m_viewCenterY = reader->GetDouble();
+      break;
+    case 23:
+      m_snapBasePointY = reader->GetDouble();
+      break;
+    case 24:
+      m_snapSpacingY = reader->GetDouble();
+      break;
+    case 25:
+      m_gridSpacingY = reader->GetDouble();
+      break;
+    case 26:
+      m_viewDirection.y = reader->GetDouble();
+      break;
+    case 27:
+      m_viewTargetPoint.y = reader->GetDouble();
+      break;
+    case 36:
+      m_viewDirection.z = reader->GetDouble();
+      break;
+    case 37:
+      m_viewTargetPoint.z = reader->GetDouble();
+      break;
     case 40:
-      pswidth = reader->GetDouble();
+      m_width = reader->GetDouble();
       break;
     case 41:
-      psheight = reader->GetDouble();
+      m_height = reader->GetDouble();
+      break;
+    case 42:
+      m_lensLength = reader->GetDouble();
+      break;
+    case 43:
+      m_frontClipPlane = reader->GetDouble();
+      break;
+    case 44:
+      m_backClipPlane = reader->GetDouble();
+      break;
+    case 45:
+      m_viewHeight = reader->GetDouble();
+      break;
+    case 50:
+      m_snapAngle = reader->GetDouble();
+      break;
+    case 51:
+      m_twistAngle = reader->GetDouble();
       break;
     case 68:
-      vpstatus = reader->GetInt32();
+      m_viewportStatus = reader->GetInt32();
       break;
     case 69:
-      vpID = reader->GetInt32();
+      m_viewportId = reader->GetInt32();
       break;
-    case 12: {
-      centerPX = reader->GetDouble();
-      break;
-    }
-    case 22:
-      centerPY = reader->GetDouble();
+    case 90:
+      m_frozenLayerCount = static_cast<std::uint32_t>(reader->GetInt32());
       break;
     default:
       EoDxfPoint::ParseCode(code, reader);

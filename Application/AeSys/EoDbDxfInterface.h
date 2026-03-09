@@ -54,9 +54,9 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertTextStyleTable(textStyle, m_document);
   }
 
-  void addVport(const EoDxfViewport& viewport) override {
+  void addVport(const EoDxfVPort& viewport) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addVport called\n");
-    ConvertViewportTable(viewport, m_document);
+    ConvertVPortTable(viewport, m_document);
   }
 
   // Blocks
@@ -233,7 +233,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   void addTrace(const EoDxfTrace& /* trace */) override { countOfTrace++; }
   // UNDERLAY not implemented
   // VERTEX not implemented
-  void addViewport(const EoDxfViewPort& /* viewport */) override { countOfViewport++; }
+  void addViewport(const EoDxfViewport& /* viewport */) override { countOfViewport++; }
   // WIPEOUT not implemented
   void addXline(const EoDxfXline& /* Xline */) override { countOfXline++; }
 
@@ -310,15 +310,15 @@ class EoDbDxfInterface : public EoDxfInterface {
    */
   void ConvertTextStyleTable(const EoDxfTextStyle& textStyle, AeSysDoc* document);
 
-  /** @brief Converts a EoDxfViewport object to the corresponding AeSys document representation.
+  /** @brief Converts a EoDxfVPort object to the corresponding AeSys document representation.
    *
-   * This method takes a EoDxfViewport object, which represents viewport information from a DXF/DWG file, and converts it
+   * This method takes a EoDxfVPort object, which represents viewport information from a DXF/DWG file, and converts it
    * into the appropriate format for storage in the provided AeSysDoc document.
    *
-   * @param viewport The EoDxfViewport object containing viewport data to be converted.
+   * @param viewport The EoDxfVPort object containing viewport data to be converted.
    * @param document A pointer to the AeSysDoc where the converted viewport will be stored.
    */
-  void ConvertViewportTable(const EoDxfViewport& viewport, AeSysDoc* document);
+  void ConvertVPortTable(const EoDxfVPort& viewport, AeSysDoc* document);
 
   EoDbBlock* ConvertBlock(const EoDxfBlock& block, AeSysDoc* document);
   void ConvertBlockSet(const int handle, AeSysDoc* document);

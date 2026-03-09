@@ -37,7 +37,7 @@ class EoDxfWrite {
   bool WriteLayer(EoDxfLayer* layer);
   bool WriteDimStyle(EoDxfDimensionStyle* dimensionStyle);
   bool WriteTextstyle(EoDxfTextStyle* textStyle);
-  bool WriteVport(EoDxfViewport* viewport);
+  bool WriteVport(EoDxfVPort* viewport);
   bool WriteAppId(EoDxfAppId* appId);
   bool WritePoint(EoDxfPoint* point);
   bool WriteLine(EoDxfLine* ent);
@@ -79,7 +79,7 @@ class EoDxfWrite {
   bool WriteMText(EoDxfMText* mText);
   bool WriteText(EoDxfText* text);
   bool WriteHatch(EoDxfHatch* hatch);
-  bool WriteViewport(EoDxfViewPort* viewport);
+  bool WriteViewport(EoDxfViewport* viewport);
   EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::string name);
   bool WriteLeader(EoDxfLeader* leader);
   

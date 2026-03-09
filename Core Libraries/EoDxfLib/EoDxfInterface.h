@@ -31,7 +31,7 @@ class EoDxfInterface {
   /** Called for every dim style. */
   virtual void addDimStyle(const EoDxfDimensionStyle& dimensionStyle) = 0;
   /** Called for every VPORT table. */
-  virtual void addVport(const EoDxfViewport& viewport) = 0;
+  virtual void addVport(const EoDxfVPort& viewport) = 0;
   /** Called for every text style. */
   virtual void addTextStyle(const EoDxfTextStyle& textStyle) = 0;
   /** Called for every AppId entry. */
@@ -160,7 +160,7 @@ class EoDxfInterface {
   /**
    * Called for every viewport entity.
    */
-  virtual void addViewport(const EoDxfViewPort& viewport) = 0;
+  virtual void addViewport(const EoDxfViewport& viewport) = 0;
 
   /**
    * Called for every image entity.
