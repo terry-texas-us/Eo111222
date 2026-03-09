@@ -821,23 +821,38 @@ bool EoDxfWrite::WriteLeader(EoDxfLeader* leader) {
   m_writer->WriteString(0, "LEADER");
   WriteEntity(leader);
   m_writer->WriteString(100, "AcDbLeader");
-  m_writer->WriteUtf8String(3, leader->style);
-  m_writer->WriteInt16(71, leader->arrow);
-  m_writer->WriteInt16(72, leader->leadertype);
-  m_writer->WriteInt16(73, leader->flag);
+  m_writer->WriteUtf8String(3, leader->m_dimensionStyleName);
+  m_writer->WriteInt16(71, leader->m_arrowheadFlag);
+  m_writer->WriteInt16(72, leader->m_leaderPathType);
+  m_writer->WriteInt16(73, leader->m_leaderCreationFlag);
   m_writer->WriteInt16(74, leader->hookline);
   m_writer->WriteInt16(75, leader->hookflag);
-  m_writer->WriteDouble(40, leader->textheight);
-  m_writer->WriteDouble(41, leader->textwidth);
-  m_writer->WriteDouble(76, leader->vertnum);
+  m_writer->WriteDouble(40, leader->m_textAnnotationHeight);
+  m_writer->WriteDouble(41, leader->m_textAnnotationWidth);
   m_writer->WriteDouble(76, static_cast<double>(leader->vertexlist.size()));
+
   for (unsigned int i = 0; i < leader->vertexlist.size(); i++) {
     auto* vertex = leader->vertexlist.at(i);
     m_writer->WriteDouble(10, vertex->x);
     m_writer->WriteDouble(20, vertex->y);
     m_writer->WriteDouble(30, vertex->z);
   }
-
+  m_writer->WriteInt16(77, leader->m_colorToUse);
+  if (leader->m_associatedAnnotationHandle != EoDxf::HandleCodes::NoHandle) {
+    m_writer->WriteString(340, ToHexString(leader->m_associatedAnnotationHandle));
+  }
+  m_writer->WriteDouble(210, leader->m_normalVector.x);
+  m_writer->WriteDouble(220, leader->m_normalVector.y);
+  m_writer->WriteDouble(230, leader->m_normalVector.z);
+  m_writer->WriteDouble(211, leader->m_horizontalDirectionForLeader.x);
+  m_writer->WriteDouble(221, leader->m_horizontalDirectionForLeader.y);
+  m_writer->WriteDouble(231, leader->m_horizontalDirectionForLeader.z);
+  m_writer->WriteDouble(212, leader->m_offsetFromBlockInsertionPoint.x);
+  m_writer->WriteDouble(222, leader->m_offsetFromBlockInsertionPoint.y);
+  m_writer->WriteDouble(232, leader->m_offsetFromBlockInsertionPoint.z);
+  m_writer->WriteDouble(213, leader->m_offsetFromAnnotationPlacementPoint.x);
+  m_writer->WriteDouble(223, leader->m_offsetFromAnnotationPlacementPoint.y);
+  m_writer->WriteDouble(233, leader->m_offsetFromAnnotationPlacementPoint.z);
   return true;
 }
 

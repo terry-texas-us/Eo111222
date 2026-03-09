@@ -1193,16 +1193,16 @@ void EoDxfDimension::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 3:
-      style = reader->GetUtf8String();
+      m_dimensionStyleName = reader->GetUtf8String();
       break;
     case 71:
-      arrow = reader->GetInt32();
+      m_arrowheadFlag = reader->GetInt32();
       break;
     case 72:
-      leadertype = reader->GetInt32();
+      m_leaderPathType = reader->GetInt32();
       break;
     case 73:
-      flag = reader->GetInt32();
+      m_leaderCreationFlag = reader->GetInt32();
       break;
     case 74:
       hookline = reader->GetInt32();
@@ -1214,13 +1214,13 @@ void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
       vertnum = reader->GetInt32();
       break;
     case 77:
-      coloruse = reader->GetInt32();
+      m_colorToUse = reader->GetInt32();
       break;
     case 40:
-      textheight = reader->GetDouble();
+      m_textAnnotationHeight = reader->GetDouble();
       break;
     case 41:
-      textwidth = reader->GetDouble();
+      m_textAnnotationWidth = reader->GetDouble();
       break;
     case 10: {
       vertexpoint = new EoDxfGeometryBase3d();
@@ -1238,40 +1238,40 @@ void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
       m_associatedAnnotationHandle = reader->GetHandleString();
       break;
     case 210:
-      extrusionPoint.x = reader->GetDouble();
+      m_normalVector.x = reader->GetDouble();
       break;
     case 220:
-      extrusionPoint.y = reader->GetDouble();
+      m_normalVector.y = reader->GetDouble();
       break;
     case 230:
-      extrusionPoint.z = reader->GetDouble();
+      m_normalVector.z = reader->GetDouble();
       break;
     case 211:
-      horizdir.x = reader->GetDouble();
+      m_horizontalDirectionForLeader.x = reader->GetDouble();
       break;
     case 221:
-      horizdir.y = reader->GetDouble();
+      m_horizontalDirectionForLeader.y = reader->GetDouble();
       break;
     case 231:
-      horizdir.z = reader->GetDouble();
+      m_horizontalDirectionForLeader.z = reader->GetDouble();
       break;
     case 212:
-      offsetblock.x = reader->GetDouble();
+      m_offsetFromBlockInsertionPoint.x = reader->GetDouble();
       break;
     case 222:
-      offsetblock.y = reader->GetDouble();
+      m_offsetFromBlockInsertionPoint.y = reader->GetDouble();
       break;
     case 232:
-      offsetblock.z = reader->GetDouble();
+      m_offsetFromBlockInsertionPoint.z = reader->GetDouble();
       break;
     case 213:
-      offsettext.x = reader->GetDouble();
+      m_offsetFromAnnotationPlacementPoint.x = reader->GetDouble();
       break;
     case 223:
-      offsettext.y = reader->GetDouble();
+      m_offsetFromAnnotationPlacementPoint.y = reader->GetDouble();
       break;
     case 233:
-      offsettext.z = reader->GetDouble();
+      m_offsetFromAnnotationPlacementPoint.z = reader->GetDouble();
       break;
     default:
       EoDxfEntity::ParseCode(code, reader);

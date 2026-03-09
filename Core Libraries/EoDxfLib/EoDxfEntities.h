@@ -125,8 +125,8 @@ class EoDxfEntity {
    * stored back in the provided point reference.
    *
    * @param extrusionDirection The extrusion direction vector (N) used in the transformation.
-   * @param[out] point A EoDxfGeometryBase3d representing the original point to be transformed. The transformed coordinates will
-   * be stored back in this variable.
+   * @param[out] point A EoDxfGeometryBase3d representing the original point to be transformed. The transformed
+   * coordinates will be stored back in this variable.
    */
   void ExtrudePointInPlace(const EoDxfGeometryBase3d& extrusionDirection, EoDxfGeometryBase3d& point) const noexcept;
 
@@ -148,13 +148,15 @@ class EoDxfEntity {
   std::uint64_t m_handle{EoDxf::HandleCodes::NoHandle};  // entity identifier, code 5
   // Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330
   std::uint64_t m_ownerHandle{EoDxf::HandleCodes::NoHandle};
-  std::uint64_t m_materialHandle{EoDxf::MaterialCodes::MaterialByLayer};  // hard pointer id to material object, code 347
+  std::uint64_t m_materialHandle{
+      EoDxf::MaterialCodes::MaterialByLayer};  // hard pointer id to material object, code 347
   int m_color{EoDxf::ColorCodes::ColorByLayer};  // entity color, code 62
   enum EoDxfLineWidths::lineWidth m_lineWeight{EoDxfLineWidths::widthByLayer};  // entity lineweight, code 370
   int m_numberOfBytesInProxyGraphics{};  // group code 92 (optional) [unused]
   int m_color24{-1};  // 24-bit color, code 420
   int m_transparency{EoDxf::TransparencyCodes::Opaque};  // group code 440
-  std::uint64_t m_plotStyleHandle{EoDxf::PlotStyleCodes::DefaultPlotStyle};  // hard pointer id to plot style object, code 390
+  std::uint64_t m_plotStyleHandle{
+      EoDxf::PlotStyleCodes::DefaultPlotStyle};  // hard pointer id to plot style object, code 390
   EoDxf::ShadowMode m_shadowMode{EoDxf::ShadowMode::CastAndReceiveShadows};  // group code 284
   EoDxf::Space m_space{EoDxf::Space::ModelSpace};  // space indicator, code 67
   bool m_visible{true};  // entity visibility, code 60
@@ -774,7 +776,6 @@ class EoDxfHatchLoop {
   EoDxfHatchLoop(EoDxfHatchLoop&&) = delete;
   EoDxfHatchLoop& operator=(EoDxfHatchLoop&&) = delete;
 
-
   void Update() { m_numberOfEdges = static_cast<int>(m_entities.size()); }
 
  public:
@@ -834,7 +835,7 @@ class EoDxfHatch : public EoDxfPoint {
   void ClearEntities() noexcept;
 
   void AddLine();
-  
+
   void AddArc();
 
   void AddEllipse();
@@ -1027,7 +1028,9 @@ class EoDxfAlignedDimension : public EoDxfDimension {
   EoDxfAlignedDimension() { m_entityType = EoDxf::DIMALIGNED; }
   EoDxfAlignedDimension(const EoDxfDimension& d) : EoDxfDimension(d) { m_entityType = EoDxf::DIMALIGNED; }
 
-  EoDxfGeometryBase3d getClonepoint() const { return getPt2(); }  // Insertion for clones (Baseline & Continue), 12, 22 & 32
+  EoDxfGeometryBase3d getClonepoint() const {
+    return getPt2();
+  }  // Insertion for clones (Baseline & Continue), 12, 22 & 32
   void setClonePoint(EoDxfGeometryBase3d c) { setPt2(c); }
 
   EoDxfGeometryBase3d getDimPoint() const { return getDefPoint(); }  // dim line location point, code 10, 20 & 30
@@ -1051,7 +1054,9 @@ class EoDxfAlignedDimension : public EoDxfDimension {
 class EoDxfDimLinear : public EoDxfAlignedDimension {
  public:
   EoDxfDimLinear() { m_entityType = EoDxf::DIMLINEAR; }
-  EoDxfDimLinear(const EoDxfDimension& dimension) : EoDxfAlignedDimension(dimension) { m_entityType = EoDxf::DIMLINEAR; }
+  EoDxfDimLinear(const EoDxfDimension& dimension) : EoDxfAlignedDimension(dimension) {
+    m_entityType = EoDxf::DIMLINEAR;
+  }
 
   double getAngle() const { return getAn50(); }  // Angle of rotated, horizontal, or vertical dimensions, code 50
   void setAngle(const double d) { setAn50(d); }
@@ -1099,11 +1104,17 @@ class EoDxfDiametricDimension : public EoDxfDimension {
 
  public:
   EoDxfDiametricDimension() { m_entityType = EoDxf::DIMDIAMETRIC; }
-  EoDxfDiametricDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMDIAMETRIC; }
+  EoDxfDiametricDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) {
+    m_entityType = EoDxf::DIMDIAMETRIC;
+  }
 
-  EoDxfGeometryBase3d getDiameter1Point() const { return getPt5(); }  // First definition point for diameter, code 15, 25 & 35
+  EoDxfGeometryBase3d getDiameter1Point() const {
+    return getPt5();
+  }  // First definition point for diameter, code 15, 25 & 35
   void setDiameter1Point(const EoDxfGeometryBase3d p) { setPt5(p); }
-  EoDxfGeometryBase3d getDiameter2Point() const { return getDefPoint(); }  // Oposite point for diameter, code 10, 20 & 30
+  EoDxfGeometryBase3d getDiameter2Point() const {
+    return getDefPoint();
+  }  // Oposite point for diameter, code 10, 20 & 30
   void setDiameter2Point(const EoDxfGeometryBase3d p) { setDefPoint(p); }
   double getLeaderLength() const { return getRa40(); }  // Leader length, code 40
   void setLeaderLength(const double d) { setRa40(d); }
@@ -1119,7 +1130,9 @@ class EoDxf2LineAngularDimension : public EoDxfDimension {
 
  public:
   EoDxf2LineAngularDimension() { m_entityType = EoDxf::DIMANGULAR; }
-  EoDxf2LineAngularDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMANGULAR; }
+  EoDxf2LineAngularDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) {
+    m_entityType = EoDxf::DIMANGULAR;
+  }
 
   EoDxfGeometryBase3d getFirstLine1() const { return getPt3(); }  // Definition point line 1-1, code 13, 23 & 33
   void setFirstLine1(const EoDxfGeometryBase3d p) { setPt3(p); }
@@ -1148,7 +1161,9 @@ class EoDxf3PointAngularDimension : public EoDxfDimension {
 
  public:
   EoDxf3PointAngularDimension() { m_entityType = EoDxf::DIMANGULAR3P; }
-  EoDxf3PointAngularDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMANGULAR3P; }
+  EoDxf3PointAngularDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) {
+    m_entityType = EoDxf::DIMANGULAR3P;
+  }
 
   EoDxfGeometryBase3d getFirstLine() const { return getPt3(); }  // Definition point line 1, code 13, 23 & 33
   void setFirstLine(const EoDxfGeometryBase3d p) { setPt3(p); }
@@ -1175,7 +1190,9 @@ class EoDxfOrdinateDimension : public EoDxfDimension {
 
  public:
   EoDxfOrdinateDimension() { m_entityType = EoDxf::DIMORDINATE; }
-  EoDxfOrdinateDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMORDINATE; }
+  EoDxfOrdinateDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) {
+    m_entityType = EoDxf::DIMORDINATE;
+  }
 
   EoDxfGeometryBase3d getOriginPoint() const { return getDefPoint(); }  // Origin definition point, code 10, 20 & 30
   void setOriginPoint(const EoDxfGeometryBase3d p) { setDefPoint(p); }
@@ -1201,14 +1218,14 @@ class EoDxfLeader : public EoDxfEntity {
   friend class EoDxfWrite;
 
  public:
-  EoDxfLeader() {
-    m_entityType = EoDxf::LEADER;
-    flag = 3;
-    hookflag = vertnum = leadertype = 0;
-    extrusionPoint.x = extrusionPoint.y = 0.0;
-    arrow = 1;
-    extrusionPoint.z = 1.0;
-  }
+  EoDxfLeader() { m_entityType = EoDxf::LEADER; }
+
+  EoDxfLeader(const EoDxfLeader&) = delete;
+  EoDxfLeader& operator=(const EoDxfLeader&) = delete;
+
+  EoDxfLeader(EoDxfLeader&&) noexcept = default;
+  EoDxfLeader& operator=(EoDxfLeader&&) noexcept = default;
+
   ~EoDxfLeader() {
     for (EoDxfGeometryBase3d* vert : vertexlist) { delete vert; }
     vertexlist.clear();
@@ -1220,23 +1237,24 @@ class EoDxfLeader : public EoDxfEntity {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  std::string style;  // Dimension style name, code 3
-  int arrow;  // Arrowhead flag, code 71, 0=Disabled; 1=Enabled
-  int leadertype;  // Leader path type, code 72, 0=Straight line segments; 1=Spline
-  int flag;  // Leader creation flag, code 73, default 3
+  std::string m_dimensionStyleName{};  // Group code 3
+  int m_arrowheadFlag{1};  // Group code 71, 0=Disabled; 1=Enabled
+  int m_leaderPathType{};  // Group code 72, 0=Straight line segments; 1=Spline
+  int m_leaderCreationFlag{3};  // Group code 73
   int hookline{};  // Hook line direction flag, code 74, default 1
-  int hookflag;  // Hook line flag, code 75
-  double textheight{};  // Text annotation height, code 40
-  double textwidth{};  // Text annotation width, code 41
-  int vertnum;  // Number of vertices, code 76
-  int coloruse{};  // Color to use if leader's DIMCLRD = BYBLOCK, code 77
-  std::uint64_t m_associatedAnnotationHandle{};  // Group code 340
-  EoDxfGeometryBase3d extrusionPoint;  // Normal vector, code 210, 220 & 230
-  EoDxfGeometryBase3d horizdir;  // "Horizontal" direction for leader, code 211, 221 & 231
-  EoDxfGeometryBase3d offsetblock;  // Offset of last leader vertex from block, code 212, 222 & 232
-  EoDxfGeometryBase3d offsettext;  // Offset of last leader vertex from annotation, code 213, 223 & 233
+  int hookflag{};  // Hook line flag, code 75
+  double m_textAnnotationHeight{};  // Group code 40
+  double m_textAnnotationWidth{};  // Group code 41
+  int vertnum{};  // Number of vertices, code 76
 
   std::vector<EoDxfGeometryBase3d*> vertexlist;  // vertex points list, code 10, 20 & 30
+
+  int m_colorToUse{};  // Group code 77
+  std::uint64_t m_associatedAnnotationHandle{};  // Group code 340
+  EoDxfGeometryBase3d m_normalVector{0.0, 0.0, 1.0};  // Group codes 210, 220 & 230
+  EoDxfGeometryBase3d m_horizontalDirectionForLeader;  // Group codes 211, 221 & 231
+  EoDxfGeometryBase3d m_offsetFromBlockInsertionPoint;  // Group codes 212, 222 & 232
+  EoDxfGeometryBase3d m_offsetFromAnnotationPlacementPoint;  // Group codes 213, 223 & 233
 
  private:
   EoDxfGeometryBase3d* vertexpoint{};  // current control point to add data
