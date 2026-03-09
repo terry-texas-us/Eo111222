@@ -9,6 +9,7 @@
 #include "EoDxfEntities.h"
 #include "EoDxfHeader.h"
 #include "EoDxfInterface.h"
+#include "EoDxfMLeader.h"
 #include "EoDxfObjects.h"
 #include "EoDxfReader.h"
 

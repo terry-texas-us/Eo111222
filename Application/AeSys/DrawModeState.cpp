@@ -61,7 +61,7 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
         context->m_PreviewGroup.DeletePrimitivesAndRemoveAll();
       }
       break;
-    // Migrate others: Polygon, Arc, etc. For DXF: Map to libdxfrw entities with handles
+    // Migrate others: Polygon, Arc, etc. For DXF: Map to EoDxf entities with handles
     case ID_DRAW_MODE_ESCAPE:  // Or return
       context->PopState();  // Exit to idle/previous
       break;

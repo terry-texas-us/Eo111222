@@ -40,6 +40,9 @@
     <ClCompile Include="EoDxfWriteTables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EoDxfMLeader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EoDxfBase.h">
@@ -79,6 +82,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EoDxfWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EoDxfMLeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

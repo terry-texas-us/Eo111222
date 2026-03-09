@@ -7,6 +7,7 @@
 #include "EoDxfBase.h"
 #include "EoDxfEntities.h"
 #include "EoDxfInterface.h"
+#include "EoDxfMLeader.h"
 #include "EoDxfObjects.h"
 
 class EoDxfWriter;
@@ -81,7 +82,30 @@ class EoDxfWrite {
   bool WriteViewport(EoDxfViewPort* viewport);
   EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::string name);
   bool WriteLeader(EoDxfLeader* leader);
+  
+  /** @brief Writes an MLEADER entity to the DXF file.
+   *
+   * This method handles the writing of an MLEADER (multileader) entity, which represents a leader with multiple segments
+   * and associated content (such as text or blocks) in a DXF file. The method writes the necessary group codes and
+   * values to represent the MLEADER correctly according to the DXF specification. It also takes into account the
+   * specific properties of the MLEADER, such as its leader type, line color, line type, content type, and other
+   * attributes that define its appearance and behavior in the drawing.
+   *
+   * @param mLeader A pointer to the EoDxfMLeader object containing the properties of the MLEADER to be written.
+   * @return true if the MLEADER was successfully written; otherwise, false.
+   */
   bool WriteMLeader(EoDxfMLeader* mLeader);
+  
+  /** @brief Writes a DIMENSION entity to the DXF file.
+   *
+   * This method handles the writing of a DIMENSION entity, which represents various types of dimensions (linear, aligned,
+   * angular, etc.) in a DXF file. The method writes the necessary group codes and values to represent the dimension
+   * correctly according to the DXF specification. It also takes into account the specific properties of the dimension,
+   * such as its type, measurement points, and associated styles.
+   *
+   * @param dimension A pointer to the EoDxfDimension object containing the properties of the dimension to be written.
+   * @return true if the dimension was successfully written; otherwise, false.
+   */
   bool WriteDimension(EoDxfDimension* dimension);
 
  private:

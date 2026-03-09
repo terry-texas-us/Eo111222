@@ -348,7 +348,7 @@ void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
   double startAngle = arc.m_startAngle;
   double endAngle = arc.m_endAngle;
 
-  // For negative Z extrusion, libdxfrw angles need mirroring to match AutoCAD behavior
+  // For negative Z extrusion, EoDxf angles need mirroring to match AutoCAD behavior
   const bool isNegativeExtrusion = extrusion.z < -Eo::geometricTolerance;
   if (isNegativeExtrusion) {
     startAngle = Eo::TwoPi - arc.m_startAngle;

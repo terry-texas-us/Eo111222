@@ -4,6 +4,7 @@
 
 #include "EoDxfBase.h"
 #include "EoDxfEntities.h"
+#include "EoDxfMLeader.h"
 #include "EoDxfWriter.h"
 
 bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
@@ -226,24 +227,23 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
   m_writer->WriteInt16(272, mLeader->m_textBottomAttachmentType);
 
   // --- CONTEXT_DATA ---
-  const auto& ctx = mLeader->m_contextData;
+  const auto& contextData = mLeader->m_contextData;
   m_writer->WriteString(300, "CONTEXT_DATA{");
-  m_writer->WriteDouble(40, ctx.m_contentScale);
-  m_writer->WriteDouble(10, ctx.m_contentBasePoint.x);
-  m_writer->WriteDouble(20, ctx.m_contentBasePoint.y);
-  m_writer->WriteDouble(30, ctx.m_contentBasePoint.z);
-  m_writer->WriteDouble(41, ctx.m_textHeight);
-  m_writer->WriteDouble(140, ctx.m_arrowheadSize);
-  m_writer->WriteDouble(145, ctx.m_landingGap);
-  m_writer->WriteInt16(174, ctx.m_textLeftAttachment);
-  m_writer->WriteInt16(175, ctx.m_textRightAttachment);
-  m_writer->WriteInt16(176, ctx.m_textAlignmentType);
-  m_writer->WriteInt16(177, ctx.m_blockContentConnectionType);
-  m_writer->WriteBool(290, ctx.m_hasMText);
-  m_writer->WriteBool(296, ctx.m_hasContent);
-
+  m_writer->WriteDouble(40, contextData.m_contentScale);
+  m_writer->WriteDouble(10, contextData.m_contentBasePoint.x);
+  m_writer->WriteDouble(20, contextData.m_contentBasePoint.y);
+  m_writer->WriteDouble(30, contextData.m_contentBasePoint.z);
+  m_writer->WriteDouble(41, contextData.m_textHeight);
+  m_writer->WriteDouble(140, contextData.m_arrowheadSize);
+  m_writer->WriteDouble(145, contextData.m_landingGap);
+  m_writer->WriteInt16(174, contextData.m_textLeftAttachment);
+  m_writer->WriteInt16(175, contextData.m_textRightAttachment);
+  m_writer->WriteInt16(176, contextData.m_textAlignmentType);
+  m_writer->WriteInt16(177, contextData.m_blockContentConnectionType);
+  m_writer->WriteBool(290, contextData.m_hasMText);
+  m_writer->WriteBool(296, contextData.m_hasContent);
   // --- Leader branches ---
-  for (const auto& branch : ctx.m_leaders) {
+  for (const auto& branch : contextData.m_leaders) {
     m_writer->WriteString(302, "LEADER{");
     m_writer->WriteBool(290, branch.m_hasSetLastLeaderLinePoint);
     m_writer->WriteBool(291, branch.m_hasSetDoglegVector);
@@ -279,42 +279,49 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
   }
 
   // --- MText content ---
-  if (ctx.m_hasMText) {
+  if (contextData.m_hasMText) {
     m_writer->WriteString(304, "{");
-    m_writer->WriteDouble(12, ctx.m_textLocation.x);
-    m_writer->WriteDouble(22, ctx.m_textLocation.y);
-    m_writer->WriteDouble(32, ctx.m_textLocation.z);
-    m_writer->WriteDouble(13, ctx.m_textDirection.x);
-    m_writer->WriteDouble(23, ctx.m_textDirection.y);
-    m_writer->WriteDouble(33, ctx.m_textDirection.z);
-    m_writer->WriteDouble(42, ctx.m_textRotation);
-    m_writer->WriteDouble(43, ctx.m_textWidth);
-    m_writer->WriteDouble(44, ctx.m_textDefinedWidth);
-    m_writer->WriteDouble(45, ctx.m_textDefinedHeight);
-    m_writer->WriteInt16(170, ctx.m_textAttachment);
-    m_writer->WriteInt32(90, ctx.m_textFlowDirection);
-    m_writer->WriteInt32(91, ctx.m_textColor);
-    m_writer->WriteDouble(141, ctx.m_textLineSpacingFactor);
-    m_writer->WriteInt16(171, ctx.m_textLineSpacingStyle);
-    m_writer->WriteInt16(172, ctx.m_textBackgroundFill);
-    if (ctx.m_textStyleHandle != EoDxf::HandleCodes::NoHandle) {
-      m_writer->WriteString(340, ToHexString(ctx.m_textStyleHandle));
+    m_writer->WriteDouble(12, contextData.m_textLocation.x);
+    m_writer->WriteDouble(22, contextData.m_textLocation.y);
+    m_writer->WriteDouble(32, contextData.m_textLocation.z);
+    m_writer->WriteDouble(13, contextData.m_textDirection.x);
+    m_writer->WriteDouble(23, contextData.m_textDirection.y);
+    m_writer->WriteDouble(33, contextData.m_textDirection.z);
+    m_writer->WriteDouble(42, contextData.m_textRotation);
+    m_writer->WriteDouble(43, contextData.m_textWidth);
+    m_writer->WriteDouble(44, contextData.m_textDefinedWidth);
+    m_writer->WriteDouble(45, contextData.m_textDefinedHeight);
+    m_writer->WriteInt16(170, contextData.m_textAttachment);
+    m_writer->WriteInt32(90, contextData.m_textFlowDirection);
+    m_writer->WriteInt32(91, contextData.m_textColor);
+    m_writer->WriteDouble(141, contextData.m_textLineSpacingFactor);
+    m_writer->WriteInt16(171, contextData.m_textLineSpacingStyle);
+    m_writer->WriteInt16(172, contextData.m_textBackgroundFill);
+    if (contextData.m_textStyleHandle != EoDxf::HandleCodes::NoHandle) {
+      m_writer->WriteString(340, ToHexString(contextData.m_textStyleHandle));
     }
-    if (!ctx.m_textString.empty()) { m_writer->WriteUtf8String(1, ctx.m_textString); }
+    if (!contextData.m_textString.empty()) {
+      auto text = m_writer->FromUtf8String(contextData.m_textString);
+      size_t chunkOffset{};
+      for (; (text.size() - chunkOffset) > EoDxf::StringGroupCodeMaxChunk; chunkOffset += EoDxf::StringGroupCodeMaxChunk) {
+        m_writer->WriteString(3, text.substr(chunkOffset, EoDxf::StringGroupCodeMaxChunk));
+      }
+      m_writer->WriteString(1, text.substr(chunkOffset));
+    }
     m_writer->WriteString(301, "}");
   }
 
   // --- Block content (non-MText) ---
-  if (ctx.m_blockContentHandle != EoDxf::HandleCodes::NoHandle) {
-    m_writer->WriteString(341, ToHexString(ctx.m_blockContentHandle));
-    m_writer->WriteDouble(14, ctx.m_blockContentNormalDirection.x);
-    m_writer->WriteDouble(24, ctx.m_blockContentNormalDirection.y);
-    m_writer->WriteDouble(34, ctx.m_blockContentNormalDirection.z);
-    m_writer->WriteDouble(15, ctx.m_blockContentScale.x);
-    m_writer->WriteDouble(25, ctx.m_blockContentScale.y);
-    m_writer->WriteDouble(35, ctx.m_blockContentScale.z);
-    m_writer->WriteDouble(46, ctx.m_blockContentRotation);
-    m_writer->WriteInt32(93, ctx.m_blockContentColor);
+  if (contextData.m_blockContentHandle != EoDxf::HandleCodes::NoHandle) {
+    m_writer->WriteString(341, ToHexString(contextData.m_blockContentHandle));
+    m_writer->WriteDouble(14, contextData.m_blockContentNormalDirection.x);
+    m_writer->WriteDouble(24, contextData.m_blockContentNormalDirection.y);
+    m_writer->WriteDouble(34, contextData.m_blockContentNormalDirection.z);
+    m_writer->WriteDouble(15, contextData.m_blockContentScale.x);
+    m_writer->WriteDouble(25, contextData.m_blockContentScale.y);
+    m_writer->WriteDouble(35, contextData.m_blockContentScale.z);
+    m_writer->WriteDouble(46, contextData.m_blockContentRotation);
+    m_writer->WriteInt32(93, contextData.m_blockContentColor);
   }
 
   m_writer->WriteString(301, "}");  // close CONTEXT_DATA
@@ -334,12 +341,11 @@ bool EoDxfWrite::WriteMText(EoDxfMText* mText) {
   m_writer->WriteInt16(72, mText->m_horizontalAlignment);
   std::string text = m_writer->FromUtf8String(mText->m_string);
 
-  int i;
-  for (i = 0; (text.size() - i) > 250;) {
-    m_writer->WriteString(3, text.substr(i, 250));
-    i += 250;
+  size_t chunkOffset{};
+  for (; (text.size() - chunkOffset) > EoDxf::StringGroupCodeMaxChunk; chunkOffset += EoDxf::StringGroupCodeMaxChunk) {
+    m_writer->WriteString(3, text.substr(chunkOffset, EoDxf::StringGroupCodeMaxChunk));
   }
-  m_writer->WriteString(1, text.substr(i));
+  m_writer->WriteString(1, text.substr(chunkOffset));
   m_writer->WriteString(7, mText->m_textStyleName);
   m_writer->WriteDouble(210, mText->m_extrusionDirection.x);
   m_writer->WriteDouble(220, mText->m_extrusionDirection.y);

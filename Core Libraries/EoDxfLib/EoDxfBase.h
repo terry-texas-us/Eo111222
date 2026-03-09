@@ -18,6 +18,8 @@ constexpr auto HalfPi{std::numbers::pi / 2.0};
 constexpr auto RadiansToDegrees{180.0 / std::numbers::pi};
 constexpr auto DegreesToRadians{std::numbers::pi / 180.0};
 
+constexpr size_t StringGroupCodeMaxChunk{250};
+
 // Version numbers for the DXF Format.
 enum Version {
   UNKNOWNV,  // UNKNOWN VERSION (default / unreadable header)

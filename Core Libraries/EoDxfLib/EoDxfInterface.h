@@ -6,6 +6,7 @@
 #include "EoDxfObjects.h"
 #include "EoDxfTables.h"
 
+class EoDxfMLeader;
 /**
  * Abstract class (interface) for comunicate EoDxfReader with the application.
  * Inherit your class which takes care of the entities in the

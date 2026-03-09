@@ -159,6 +159,7 @@
     <ClInclude Include="EoDxfEntities.h" />
     <ClInclude Include="EoDxfHeader.h" />
     <ClInclude Include="EoDxfInterface.h" />
+    <ClInclude Include="EoDxfMLeader.h" />
     <ClInclude Include="EoDxfObjects.h" />
     <ClInclude Include="EoDxfTables.h" />
     <ClInclude Include="EoDxfCodePageTables.h" />
@@ -173,6 +174,7 @@
     <ClCompile Include="EoDxfDrawing.cpp" />
     <ClCompile Include="EoDxfEntities.cpp" />
     <ClCompile Include="EoDxfHeader.cpp" />
+    <ClCompile Include="EoDxfMLeader.cpp" />
     <ClCompile Include="EoDxfObjects.cpp" />
     <ClCompile Include="EoDxfTables.cpp" />
     <ClCompile Include="EoDxfTextCodec.cpp" />
