@@ -14,7 +14,7 @@
 #include "EoDxfHeader.h"
 #include "EoDxfInterface.h"
 #include "EoDxfObjects.h"
-#include "intern/EoDxfWriter.h"
+#include "EoDxfWriter.h"
 
 namespace {
 constexpr auto EODXFLIB_VERSION = "0.1";

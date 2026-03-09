@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "EoDxfBase.h"
-#include "intern/EoDxfReader.h"
+#include "EoDxfReader.h"
 
 namespace EoDxf {
 

@@ -7,7 +7,7 @@
 
 #include "EoDxfBase.h"
 #include "EoDxfEntities.h"
-#include "intern/EoDxfReader.h"
+#include "EoDxfReader.h"
 
 EoDxfEntity::EoDxfEntity(const EoDxfEntity& other)
     : m_appData{other.m_appData},

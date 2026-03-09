@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "intern/EoDxfReader.h"
+#include "EoDxfReader.h"
 
 /** @brief Base class for DXF OBJECTS section entries.
  *

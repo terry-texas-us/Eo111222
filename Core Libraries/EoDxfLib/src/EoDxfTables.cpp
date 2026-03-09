@@ -3,8 +3,8 @@
 #include <string>
 
 #include "EoDxfBase.h"
+#include "EoDxfReader.h"
 #include "EoDxfTables.h"
-#include "intern/EoDxfReader.h"
 
 void EoDxfTableEntry::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {

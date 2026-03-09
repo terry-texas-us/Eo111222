@@ -5,8 +5,8 @@
 
 #include "EoDxfBase.h"
 #include "EoDxfHeader.h"
-#include "intern/EoDxfReader.h"
-#include "intern/EoDxfWriter.h"
+#include "EoDxfReader.h"
+#include "EoDxfWriter.h"
 
 EoDxfHeader::EoDxfHeader(const EoDxfHeader& other)
     : m_version{other.m_version}, m_comments{other.m_comments}, m_name{other.m_name}, m_currentVariant{nullptr} {

@@ -10,7 +10,7 @@
 #include "EoDxfHeader.h"
 #include "EoDxfInterface.h"
 #include "EoDxfObjects.h"
-#include "intern/EoDxfReader.h"
+#include "EoDxfReader.h"
 
 EoDxfRead::EoDxfRead(const char* name) {
   m_fileName = name;

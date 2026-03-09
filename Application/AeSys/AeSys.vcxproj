@@ -91,7 +91,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableSpecificWarnings>5045;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Third Party\libdxfrw\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Core Libraries\EoDxfLib\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -123,7 +123,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableSpecificWarnings>5045;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Third Party\libdxfrw\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Core Libraries\EoDxfLib\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -155,7 +155,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>5045;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Third Party\libdxfrw\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Core Libraries\EoDxfLib\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -189,7 +189,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>5045;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Third Party\libdxfrw\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Third Party\RE-flex\include;$(SolutionDir)Core Libraries\EoDxfLib\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -245,7 +245,6 @@
     <None Include="res\AeSys.rc2" />
     <Text Include="res\LineTypes\*.txt" />
     <None Include="vshints.hm" />
-    <None Include="C:\Users\tsmit\Desktop\Help Peg.pdf" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="lex_rules.l" />
@@ -257,7 +256,7 @@
     <ProjectReference Include="..\..\Core Libraries\Reflex\Reflex.vcxproj">
       <Project>{ad220b98-ad6d-4826-b211-96dc6ebbf69b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Third Party\libdxfrw\libdxfrw.vcxproj">
+    <ProjectReference Include="..\..\Core Libraries\EoDxfLib\EoDxfLib.vcxproj">
       <Project>{357a8016-9ad4-47ef-b23c-2071c264793b}</Project>
     </ProjectReference>
   </ItemGroup>

@@ -20,7 +20,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Reflex", "Core Libraries\Re
 		{79C9DBD9-E32A-4B2B-BEF5-0271973883EC} = {79C9DBD9-E32A-4B2B-BEF5-0271973883EC}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libdxfrw", "Third Party\libdxfrw\libdxfrw.vcxproj", "{357A8016-9AD4-47EF-B23C-2071C264793B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EoDxfLib", "Core Libraries\EoDxfLib\EoDxfLib.vcxproj", "{357A8016-9AD4-47EF-B23C-2071C264793B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solution Items", "{7FCDF878-F1AE-4461-8BEE-CEA429D91BCF}"
 	ProjectSection(SolutionItems) = preProject
@@ -42,6 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1024 - 2010\AC1024 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1024 - 2010\AC1024 - Empty-1layout.dxf
 		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1027 - 2013\AC1027 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1027 - 2013\AC1027 - Empty-1layout.dxf
 		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1032 - 2018\AC1032 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1032 - 2018\AC1032 - Empty-1layout.dxf
+		C:\Users\tsmit\Desktop\Help Peg.pdf = C:\Users\tsmit\Desktop\Help Peg.pdf
 	EndProjectSection
 EndProject
 Global
@@ -92,7 +93,7 @@ Global
 		{99616C98-7844-41E8-BC1F-B16C4044EB44} = {A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
 		{79C9DBD9-E32A-4B2B-BEF5-0271973883EC} = {79DF9179-1B4A-475B-8004-50C36CCC6BD1}
 		{AD220B98-AD6D-4826-B211-96DC6EBBF69B} = {79DF9179-1B4A-475B-8004-50C36CCC6BD1}
-		{357A8016-9AD4-47EF-B23C-2071C264793B} = {17F1358A-135A-41E2-9EB1-86E0B4B5F9FD}
+		{357A8016-9AD4-47EF-B23C-2071C264793B} = {79DF9179-1B4A-475B-8004-50C36CCC6BD1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {18F1F5CF-3E94-4C17-A101-89EB8CA0D5E6}
