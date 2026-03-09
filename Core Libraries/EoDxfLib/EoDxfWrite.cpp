@@ -825,14 +825,14 @@ bool EoDxfWrite::WriteLeader(EoDxfLeader* leader) {
   m_writer->WriteInt16(71, leader->m_arrowheadFlag);
   m_writer->WriteInt16(72, leader->m_leaderPathType);
   m_writer->WriteInt16(73, leader->m_leaderCreationFlag);
-  m_writer->WriteInt16(74, leader->hookline);
-  m_writer->WriteInt16(75, leader->hookflag);
+  m_writer->WriteInt16(74, leader->m_hookLineDirection);
+  m_writer->WriteInt16(75, leader->m_hookLineFlag);
   m_writer->WriteDouble(40, leader->m_textAnnotationHeight);
   m_writer->WriteDouble(41, leader->m_textAnnotationWidth);
-  m_writer->WriteDouble(76, static_cast<double>(leader->vertexlist.size()));
+  m_writer->WriteInt16(76, static_cast<int>(leader->m_vertexList.size()));
 
-  for (unsigned int i = 0; i < leader->vertexlist.size(); i++) {
-    auto* vertex = leader->vertexlist.at(i);
+  for (unsigned int i = 0; i < leader->m_vertexList.size(); i++) {
+    auto* vertex = leader->m_vertexList.at(i);
     m_writer->WriteDouble(10, vertex->x);
     m_writer->WriteDouble(20, vertex->y);
     m_writer->WriteDouble(30, vertex->z);

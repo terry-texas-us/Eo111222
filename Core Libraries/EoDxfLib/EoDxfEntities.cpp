@@ -1205,13 +1205,14 @@ void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
       m_leaderCreationFlag = reader->GetInt32();
       break;
     case 74:
-      hookline = reader->GetInt32();
+      m_hookLineDirection = reader->GetInt32();
       break;
     case 75:
-      hookflag = reader->GetInt32();
+      m_hookLineFlag = reader->GetInt32();
       break;
     case 76:
-      vertnum = reader->GetInt32();
+      m_numberOfVertices = reader->GetInt32();
+      m_vertexList.reserve(m_numberOfVertices);
       break;
     case 77:
       m_colorToUse = reader->GetInt32();
@@ -1223,16 +1224,16 @@ void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
       m_textAnnotationWidth = reader->GetDouble();
       break;
     case 10: {
-      vertexpoint = new EoDxfGeometryBase3d();
-      vertexlist.push_back(vertexpoint);
-      vertexpoint->x = reader->GetDouble();
+      m_vertexPoint = new EoDxfGeometryBase3d();
+      m_vertexList.push_back(m_vertexPoint);
+      m_vertexPoint->x = reader->GetDouble();
       break;
     }
     case 20:
-      if (vertexpoint != nullptr) { vertexpoint->y = reader->GetDouble(); }
+      if (m_vertexPoint != nullptr) { m_vertexPoint->y = reader->GetDouble(); }
       break;
     case 30:
-      if (vertexpoint != nullptr) { vertexpoint->z = reader->GetDouble(); }
+      if (m_vertexPoint != nullptr) { m_vertexPoint->z = reader->GetDouble(); }
       break;
     case 340:
       m_associatedAnnotationHandle = reader->GetHandleString();

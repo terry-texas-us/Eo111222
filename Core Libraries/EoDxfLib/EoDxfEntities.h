@@ -1218,7 +1218,7 @@ class EoDxfLeader : public EoDxfEntity {
   friend class EoDxfWrite;
 
  public:
-  EoDxfLeader() { m_entityType = EoDxf::LEADER; }
+  EoDxfLeader() noexcept : EoDxfEntity{EoDxf::LEADER} {}
 
   EoDxfLeader(const EoDxfLeader&) = delete;
   EoDxfLeader& operator=(const EoDxfLeader&) = delete;
@@ -1227,11 +1227,10 @@ class EoDxfLeader : public EoDxfEntity {
   EoDxfLeader& operator=(EoDxfLeader&&) noexcept = default;
 
   ~EoDxfLeader() {
-    for (EoDxfGeometryBase3d* vert : vertexlist) { delete vert; }
-    vertexlist.clear();
+    for (EoDxfGeometryBase3d* vert : m_vertexList) { delete vert; }
   }
 
-  virtual void ApplyExtrusion() {}
+  void ApplyExtrusion() override {}
 
  protected:
   void ParseCode(int code, EoDxfReader* reader);
@@ -1241,13 +1240,13 @@ class EoDxfLeader : public EoDxfEntity {
   int m_arrowheadFlag{1};  // Group code 71, 0=Disabled; 1=Enabled
   int m_leaderPathType{};  // Group code 72, 0=Straight line segments; 1=Spline
   int m_leaderCreationFlag{3};  // Group code 73
-  int hookline{};  // Hook line direction flag, code 74, default 1
-  int hookflag{};  // Hook line flag, code 75
+  int m_hookLineDirection{1};  // Hook line direction flag, code 74, default 1
+  int m_hookLineFlag{};  // Hook line flag, code 75
   double m_textAnnotationHeight{};  // Group code 40
   double m_textAnnotationWidth{};  // Group code 41
-  int vertnum{};  // Number of vertices, code 76
+  int m_numberOfVertices{};  // Number of vertices, code 76
 
-  std::vector<EoDxfGeometryBase3d*> vertexlist;  // vertex points list, code 10, 20 & 30
+  std::vector<EoDxfGeometryBase3d*> m_vertexList;  // vertex points list, code 10, 20 & 30
 
   int m_colorToUse{};  // Group code 77
   std::uint64_t m_associatedAnnotationHandle{};  // Group code 340
@@ -1257,7 +1256,7 @@ class EoDxfLeader : public EoDxfEntity {
   EoDxfGeometryBase3d m_offsetFromAnnotationPlacementPoint;  // Group codes 213, 223 & 233
 
  private:
-  EoDxfGeometryBase3d* vertexpoint{};  // current control point to add data
+  EoDxfGeometryBase3d* m_vertexPoint{};  // current vertex point to add data
 };
 
 /** @brief Class to handle viewport entity
