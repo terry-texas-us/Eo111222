@@ -1224,16 +1224,16 @@ void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
       m_textAnnotationWidth = reader->GetDouble();
       break;
     case 10: {
-      m_vertexPoint = new EoDxfGeometryBase3d();
-      m_vertexList.push_back(m_vertexPoint);
-      m_vertexPoint->x = reader->GetDouble();
+      m_vertexList.emplace_back();  // value semantics
+      m_currentVertexIndex = static_cast<int>(m_vertexList.size()) - 1;
+      m_vertexList.back().x = reader->GetDouble();
       break;
     }
     case 20:
-      if (m_vertexPoint != nullptr) { m_vertexPoint->y = reader->GetDouble(); }
+      if (m_currentVertexIndex >= 0) { m_vertexList[m_currentVertexIndex].y = reader->GetDouble(); }
       break;
     case 30:
-      if (m_vertexPoint != nullptr) { m_vertexPoint->z = reader->GetDouble(); }
+      if (m_currentVertexIndex >= 0) { m_vertexList[m_currentVertexIndex].z = reader->GetDouble(); }
       break;
     case 340:
       m_associatedAnnotationHandle = reader->GetHandleString();

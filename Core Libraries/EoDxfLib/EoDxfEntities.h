@@ -1226,9 +1226,7 @@ class EoDxfLeader : public EoDxfEntity {
   EoDxfLeader(EoDxfLeader&&) noexcept = default;
   EoDxfLeader& operator=(EoDxfLeader&&) noexcept = default;
 
-  ~EoDxfLeader() {
-    for (EoDxfGeometryBase3d* vert : m_vertexList) { delete vert; }
-  }
+  ~EoDxfLeader() = default;
 
   void ApplyExtrusion() override {}
 
@@ -1246,7 +1244,7 @@ class EoDxfLeader : public EoDxfEntity {
   double m_textAnnotationWidth{};  // Group code 41
   int m_numberOfVertices{};  // Number of vertices, code 76
 
-  std::vector<EoDxfGeometryBase3d*> m_vertexList;  // vertex points list, code 10, 20 & 30
+  std::vector<EoDxfGeometryBase3d> m_vertexList;  // vertex points list, code 10, 20 & 30
 
   int m_colorToUse{};  // Group code 77
   std::uint64_t m_associatedAnnotationHandle{};  // Group code 340
@@ -1256,7 +1254,7 @@ class EoDxfLeader : public EoDxfEntity {
   EoDxfGeometryBase3d m_offsetFromAnnotationPlacementPoint;  // Group codes 213, 223 & 233
 
  private:
-  EoDxfGeometryBase3d* m_vertexPoint{};  // current vertex point to add data
+  int m_currentVertexIndex{-1};
 };
 
 /** @brief Class to handle viewport entity

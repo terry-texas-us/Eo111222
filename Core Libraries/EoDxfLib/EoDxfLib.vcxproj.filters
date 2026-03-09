@@ -81,4 +81,7 @@
       <UniqueIdentifier>{6f1206c9-afc1-4057-9b0e-c6ac84303b57}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="AcadEntityObjectHierarchy.md" />
+  </ItemGroup>
 </Project>

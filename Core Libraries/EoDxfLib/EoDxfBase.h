@@ -9,6 +9,9 @@
 namespace EoDxf {
 constexpr double geometricTolerance{1e-9};  // TAS: Added for geometric calculations, point coincidence etc.
 
+// Machine epsilon for dimensionless comparisons
+constexpr double numericEpsilon = std::numeric_limits<double>::epsilon();
+
 constexpr auto Pi{std::numbers::pi};
 constexpr auto TwoPi{2.0 * std::numbers::pi};
 constexpr auto HalfPi{std::numbers::pi / 2.0};
@@ -72,6 +75,54 @@ class EoDxfGeometryBase3d {
   EoDxfGeometryBase3d(EoDxfGeometryBase3d&& other) noexcept = default;
   EoDxfGeometryBase3d& operator=(EoDxfGeometryBase3d&& other) noexcept = default;
 
+  /** @brief Checks if the coordinate is effectively the default normal vector (0.0, 0.0, 1.0) within a specified tolerance.
+   *
+   * This method determines if the x and y components of the coordinate are within a certain distance (tolerance) from
+   * zero, and if the z component is within a certain distance from 1.0. This is useful for geometric calculations
+   * where the default normal vector may not be exactly (0.0, 0.0, 1.0) due to floating-point precision limitations. The default
+   * tolerance is defined by EoDxf::geometricTolerance, but it can be overridden by providing a different value when
+   * calling the method.
+   *
+   * @param tolerance The distance from zero for x and y, and from one for z, within which the coordinate is considered
+   * effectively the default normal vector.
+   * @return true if x and y are within the specified tolerance of zero and z is within the specified tolerance of one;
+   * otherwise, false.
+   */
+  [[nodiscard]] bool IsDefaultNormal(double tolerance = EoDxf::geometricTolerance) const noexcept {
+    return std::abs(x) < tolerance && std::abs(y) < tolerance && std::abs(z - 1.0) < tolerance;
+  }
+
+  /** @brief Checks if this coordinate is effectively equal to another coordinate within a specified tolerance.
+   *
+   * This method compares the x, y, and z components of this coordinate with those of another EoDxfGeometryBase3d
+   * instance. It determines if the absolute difference between each corresponding component is less than a specified
+   * tolerance value. This is useful for geometric calculations where exact equality may not be achievable due to
+   * floating-point precision limitations. The default tolerance is defined by EoDxf::geometricTolerance, but it can be
+   * overridden by providing a different value when calling the method.
+   *
+   * @param other The other EoDxfGeometryBase3d instance to compare against.
+   * @param tolerance The distance within which the components of the two coordinates are considered equal.
+   * @return true if the absolute difference between each corresponding component (x, y, z) of the two coordinates is
+   * less than the specified tolerance; otherwise, false.
+   */
+  [[nodiscard]] bool IsEqualTo(const EoDxfGeometryBase3d& other, double tolerance = EoDxf::geometricTolerance) const noexcept {
+    return std::abs(x - other.x) < tolerance && std::abs(y - other.y) < tolerance && std::abs(z - other.z) < tolerance;
+  }
+
+  /** @brief Checks if the coordinate is effectively zero within a specified tolerance.
+   *
+   * This method determines if the x, y, and z components of the coordinate are all within a certain distance
+   * (tolerance) from zero. This is useful for geometric calculations where exact zero may not be achievable due to
+   * floating-point precision limitations. The default tolerance is defined by EoDxf::geometricTolerance, but it can be
+   * overridden by providing a different value when calling the method.
+   *
+   * @param tolerance The distance from zero within which the coordinate components are considered effectively zero.
+   * @return true if all components (x, y, z) are within the specified tolerance of zero; otherwise, false.
+   */
+  [[nodiscard]] bool IsZero(double tolerance = EoDxf::geometricTolerance) const noexcept {
+    return std::abs(x) < tolerance && std::abs(y) < tolerance && std::abs(z) < tolerance;
+  }
+
   /** @brief Convert `this` coordinate to a unit-length vector (in-place).
    */
   void Unitize() noexcept {
@@ -119,11 +170,11 @@ class EoDxfGroupCodeValuesVariant {
  public:
   enum Type {
     String,
-    Int16,       ///< 16-bit signed integer (DXF group codes 60-79, 170-179, 270-289, 370-389, 400-409, 1060-1070)
-    Integer,     ///< 32-bit signed integer (DXF group codes 90-99, 420-429, 440-449, 450-459, 1071)
+    Int16,  ///< 16-bit signed integer (DXF group codes 60-79, 170-179, 270-289, 370-389, 400-409, 1060-1070)
+    Integer,  ///< 32-bit signed integer (DXF group codes 90-99, 420-429, 440-449, 450-459, 1071)
     Double,
     GeometryBase,
-    Handle,      ///< 64-bit unsigned handle (DXF group codes 5, 105, 310-369 handle references)
+    Handle,  ///< 64-bit unsigned handle (DXF group codes 5, 105, 310-369 handle references)
     Invalid
   };
 
@@ -277,9 +328,9 @@ class EoDxfGroupCodeValuesVariant {
 
   union EoDxfVariantContent {
     std::string* s;
-    std::int16_t i16;     ///< 16-bit signed integer (group codes 60-79, 170-179, 270-289, etc.)
+    std::int16_t i16;  ///< 16-bit signed integer (group codes 60-79, 170-179, 270-289, etc.)
     std::int32_t i;
-    std::uint64_t h;      ///< handle stored as 64-bit unsigned (parsed from hex string)
+    std::uint64_t h;  ///< handle stored as 64-bit unsigned (parsed from hex string)
     double d;
     EoDxfGeometryBase3d* v;
 
@@ -302,10 +353,10 @@ class EoDxfGroupCodeValuesVariant {
 
 /** @brief Class to handle conversion between DXF line width codes and internal line width enumeration.
  *
- *  The EoDxfLineWidths class provides an enumeration of line widths corresponding to standard DXF line width codes, as well
- * as static methods to convert between the internal line width enumeration and the integer codes used in DXF files.
- * This allows for consistent handling of line widths when reading from or writing to DXF files, ensuring that the
- * correct line widths are applied based on the specified codes.
+ *  The EoDxfLineWidths class provides an enumeration of line widths corresponding to standard DXF line width codes, as
+ * well as static methods to convert between the internal line width enumeration and the integer codes used in DXF
+ * files. This allows for consistent handling of line widths when reading from or writing to DXF files, ensuring that
+ * the correct line widths are applied based on the specified codes.
  */
 class EoDxfLineWidths {
  public:
