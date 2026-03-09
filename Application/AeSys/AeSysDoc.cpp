@@ -18,7 +18,7 @@
 #include "EoDbBlockReference.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbDimension.h"
-#include "EoDbDrwInterface.h"
+#include "EoDbDxfInterface.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
@@ -176,7 +176,7 @@ AeSysDoc::~AeSysDoc() {}
 void AeSysDoc::DeleteContents() {
   ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::DeleteContents() - BlockTableSize: %d\n", this, BlockTableSize());
 
-  // TODO: Release EoDbDrwInterface resources if any
+  // TODO: Release EoDbDxfInterface resources if any
 
   m_LineTypeTable.RemoveAll();
 
@@ -211,7 +211,7 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
         PathName += Extension;
       }
     }
-    /// @todo Implement a EoDbDrwInterface Save As dialog if needed
+    /// @todo Implement a EoDbDxfInterface Save As dialog if needed
   }
   if (!OnSaveDocument(PathName)) {
     if (pathName == nullptr) {
@@ -279,7 +279,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       break;
     case EoDb::FileTypes::Dxf:
     case EoDb::FileTypes::Dxb: {
-      EoDbDrwInterface dxfInterface(this);
+      EoDbDxfInterface dxfInterface(this);
       EoDxfRead dxfReader(Eo::WStringToMultiByte(pathName).data());
       SetCommonTableEntries();
       bool success = dxfReader.Read(&dxfInterface, true);  // true for verbose output, false for silent
@@ -316,7 +316,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       }
       // read dxf/dxb file and save pointer to the database
       // determine the version of the file (from header section) and set m_SaveAsType to EoDb::kDxf or EoDb::kDxb
-      // create EoDbDrwInterface object and do conversion
+      // create EoDbDxfInterface object and do conversion
       // set work layer to layer `0`
     } break;
     case EoDb::FileTypes::Peg:
@@ -390,8 +390,8 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
     case EoDb::FileTypes::Dwg:
     case EoDb::FileTypes::Dxf:
     case EoDb::FileTypes::Dxb: {
-      // Begin implementation of DXF/DXB saving using EoDbDrwInterface
-      EoDbDrwInterface dxfInterface(this);
+      // Begin implementation of DXF/DXB saving using EoDbDxfInterface
+      EoDbDxfInterface dxfInterface(this);
       EoDxfWrite dxfWriter(Eo::WStringToMultiByte(pathName).data());
       if (dxfWriter.Write(&dxfInterface, EoDxf::Version::AC1032, true)) {
         app.AddStringToMessageList(IDS_MSG_DXF_SAVE_SUCCESS, pathName);

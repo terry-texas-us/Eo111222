@@ -12,7 +12,7 @@
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
 #include "EoDbConic.h"
-#include "EoDbDrwInterface.h"
+#include "EoDbDxfInterface.h"
 #include "EoDbGroup.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbLayer.h"
@@ -30,7 +30,7 @@
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
 
-void EoDbDrwInterface::SetHeaderSectionVariable(
+void EoDbDxfInterface::SetHeaderSectionVariable(
     const EoDxfHeader* header, const std::string& keyToFind, EoDbHeaderSection& headerSection) {
   HeaderVariable value;
   auto it = header->m_variants.find(keyToFind);
@@ -59,7 +59,7 @@ void EoDbDrwInterface::SetHeaderSectionVariable(
   }
 }
 
-void EoDbDrwInterface::ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Converting Header: %i variables\n", header->m_variants.size());
 
   std::vector<std::string> keys{"$ACADVER", "$CLAYER", "$PDMODE", "$PDSIZE"};
@@ -68,22 +68,22 @@ void EoDbDrwInterface::ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc*
   for (const auto& key : keys) { SetHeaderSectionVariable(header, key, headerSection); }
 }
 
-void EoDbDrwInterface::ConvertClassesSection(const EoDxfClass& class_, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertClassesSection(const EoDxfClass& class_, [[maybe_unused]] AeSysDoc* document) {
   std::wstring recordName = Eo::MultiByteToWString(class_.recName.c_str());
   ATLTRACE2(traceGeneral, 2, L"Class - Name: %s (unsupported in AeSys)\n", recordName.c_str());
 }
 
-void EoDbDrwInterface::ConvertAppIdTable(const EoDxfAppId& appId, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertAppIdTable(const EoDxfAppId& appId, [[maybe_unused]] AeSysDoc* document) {
   std::wstring appIdName = Eo::MultiByteToWString(appId.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
 }
 
-void EoDbDrwInterface::ConvertDimStyle(const EoDxfDimensionStyle& dimensionStyle, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertDimStyle(const EoDxfDimensionStyle& dimensionStyle, [[maybe_unused]] AeSysDoc* document) {
   std::wstring dimStyleName = Eo::MultiByteToWString(dimensionStyle.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"DimStyle - Name: <%s> (unsupported in AeSys)\n", dimStyleName.c_str());
 }
 
-void EoDbDrwInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* document) {
   std::wstring layerName = Eo::MultiByteToWString(layer.m_tableName.c_str());
 
   ATLTRACE2(traceGeneral, 3, L"%s   Loading layer definition\n", layerName.c_str());
@@ -143,7 +143,7 @@ void EoDbDrwInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* docu
   // for affected viewports.
 }
 
-void EoDbDrwInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSysDoc* document) {
   std::wstring lineTypeName = Eo::MultiByteToWString(linetype.m_tableName.c_str());  // Linetype name (group code 2)
   std::wstring lineTypeDesc =
       Eo::MultiByteToWString(linetype.desc.c_str());  // Descriptive text for linetype (group code 3)
@@ -171,7 +171,7 @@ void EoDbDrwInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSy
   }
 }
 
-void EoDbDrwInterface::ConvertTextStyleTable(const EoDxfTextStyle& textStyle, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertTextStyleTable(const EoDxfTextStyle& textStyle, [[maybe_unused]] AeSysDoc* document) {
   std::wstring textStyleName = Eo::MultiByteToWString(textStyle.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"Text Style - Name: %s (unsupported in AeSys)\n", textStyleName.c_str());
 
@@ -190,7 +190,7 @@ void EoDbDrwInterface::ConvertTextStyleTable(const EoDxfTextStyle& textStyle, [[
   // charset, and italic and bold flags (group code 1071)
 }
 
-void EoDbDrwInterface::ConvertViewportTable(const EoDxfViewport& viewport, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertViewportTable(const EoDxfViewport& viewport, [[maybe_unused]] AeSysDoc* document) {
   std::wstring viewportName = Eo::MultiByteToWString(viewport.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"Viewport - Name: %s (unsupported in AeSys)\n", viewportName.c_str());
 
@@ -242,8 +242,8 @@ void EoDbDrwInterface::ConvertViewportTable(const EoDxfViewport& viewport, [[may
  * is *Paper_Space1, and so on. The interleaving between model space and paper space no longer occurs. Instead, all
  * paper space entities are output, followed by model space entities. The flag distinguishing them is the group code 67.
  */
-EoDbBlock* EoDbDrwInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* document) {
-  blockName = Eo::MultiByteToWString(block.name.c_str());  // Block Name (group code 2)
+EoDbBlock* EoDbDxfInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* document) {
+  m_blockName = Eo::MultiByteToWString(block.name.c_str());  // Block Name (group code 2)
 
   // auto handle = block.handle;              // group code 5
   // auto parentHandle = block.parentHandle;  // Soft-pointer ID/handle to owner object (group code 330)
@@ -257,9 +257,9 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* doc
       new EoDbBlock(static_cast<std::uint16_t>(
                         block.m_flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
           EoGePoint3d(block.m_firstPoint.x, block.m_firstPoint.y, block.m_firstPoint.z),  // group codes 10, 20 and 30
-          blockName.c_str());
+          m_blockName.c_str());
 
-  document->InsertBlock(blockName.c_str(), newBlock);
+  document->InsertBlock(m_blockName.c_str(), newBlock);
   return newBlock;
 }
 
@@ -268,14 +268,14 @@ EoDbBlock* EoDbDrwInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* doc
  * (accessible as EoDxfBlock::handleBlock). In your implementation, switch the current block context to the one matching
  * this handle. For DXF files, this callback may not be triggered, or it may be used sparingly if blocks are referenced
  * out of sequence. */
-void EoDbDrwInterface::ConvertBlockSet([[maybe_unused]] const int handle, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertBlockSet([[maybe_unused]] const int handle, [[maybe_unused]] AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Block set\n");
 }
 
 /** @brief This method signals the end of the current block definition. In your implementation, finalize the block
  * (e.g., add it to a document's block table or collection) and reset the context to the default (model space or paper
  * space).*/
-void EoDbDrwInterface::ConvertBlockEnd([[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertBlockEnd([[maybe_unused]] AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Block end\n");
 }
 
@@ -304,7 +304,7 @@ class EoGeVertex2D {
  * @param primitive Pointer to the EoDbPrimitive to be added.
  * @param document Pointer to the AeSysDoc where the primitive will be added.
  */
-void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document) {
+void EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document) {
   auto layerName = primitive->LayerName().c_str();
   auto* layer = document->GetLayerTableLayer(layerName);
   if (layer == nullptr) {
@@ -314,9 +314,9 @@ void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
   }
 
   ATLTRACE2(traceGeneral, 3, L"AddToDocument: primitive=%p, inBlock=%d, currentBlock=%p, layer='%s'\n", primitive,
-      inBlockDefinition ? 1 : 0, currentOpenBlockDefinition, layerName);
+      m_inBlockDefinition ? 1 : 0, m_currentOpenBlockDefinition, layerName);
 
-  if (currentOpenBlockDefinition == nullptr) {
+  if (m_currentOpenBlockDefinition == nullptr) {
     auto* group = new EoDbGroup();
 
     ATLTRACE2(traceGeneral, 3, L"  -> Creating MODEL SPACE group %p for primitive %p\n", group, primitive);
@@ -325,12 +325,12 @@ void EoDbDrwInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
     layer->AddTail(group);
     return;
   }
-  ATLTRACE2(traceGeneral, 3, L"  -> Adding to BLOCK at %p\n", currentOpenBlockDefinition);
+  ATLTRACE2(traceGeneral, 3, L"  -> Adding to BLOCK at %p\n", m_currentOpenBlockDefinition);
 
-  currentOpenBlockDefinition->AddTail(primitive);
+  m_currentOpenBlockDefinition->AddTail(primitive);
 }
 
-void EoDbDrwInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Arc entity conversion\n");
 
   if (arc.m_radius < Eo::geometricTolerance) {
@@ -368,7 +368,7 @@ void EoDbDrwInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
   AddToDocument(radialArc, document);
 }
 
-void EoDbDrwInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Circle entity conversion\n");
 
   EoGePoint3d center(circle.m_firstPoint.x, circle.m_firstPoint.y, circle.m_firstPoint.z);
@@ -383,7 +383,7 @@ void EoDbDrwInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* 
   AddToDocument(conic, document);
 }
 
-void EoDbDrwInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Ellipse entity conversion\n");
 
   if (ellipse.m_ratio <= 0.0 || ellipse.m_ratio > 1.0) {
@@ -409,7 +409,7 @@ void EoDbDrwInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   AddToDocument(conic, document);
 }
 
-void EoDbDrwInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Insert entity conversion\n");
   auto insertPrimitive = new EoDbBlockReference();
   insertPrimitive->SetBaseProperties(&blockReference, document);
@@ -425,7 +425,7 @@ void EoDbDrwInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, Ae
   AddToDocument(insertPrimitive, document);
 }
 
-void EoDbDrwInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Line entity conversion\n");
 
   auto linePrimitive = new EoDbLine();
@@ -435,7 +435,7 @@ void EoDbDrwInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* docume
   AddToDocument(linePrimitive, document);
 }
 
-void EoDbDrwInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"LWPolyline entity conversion\n");
 
   auto* polylinePrimitive = new EoDbPolyline();
@@ -453,7 +453,7 @@ void EoDbDrwInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
   AddToDocument(polylinePrimitive, document);
 }
 
-void EoDbDrwInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Point entity conversion\n");
 
   auto pointPrimitive = new EoDbPoint();

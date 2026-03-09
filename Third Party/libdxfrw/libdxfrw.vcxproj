@@ -22,6 +22,7 @@
     <ProjectGuid>{357A8016-9AD4-47EF-B23C-2071C264793B}</ProjectGuid>
     <RootNamespace>libdxfrw</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>EoDxfLib</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

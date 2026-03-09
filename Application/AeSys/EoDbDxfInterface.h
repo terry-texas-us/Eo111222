@@ -15,9 +15,9 @@
 
 // Minimal implementation of EoDxfInterface
 // In a real scenario, implement these methods to handle the parsed entities
-class EoDbDrwInterface : public EoDxfInterface {
+class EoDbDxfInterface : public EoDxfInterface {
  public:
-  EoDbDrwInterface(AeSysDoc* document) : m_document(document) {}
+  EoDbDxfInterface(AeSysDoc* document) : m_document(document) {}
 
   void addHeader(const EoDxfHeader* header) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addHeader called\n");
@@ -60,10 +60,10 @@ class EoDbDrwInterface : public EoDxfInterface {
 
   // Blocks
   void addBlock(const EoDxfBlock& block) override {
-    inBlockDefinition = true;
-    blockName = Eo::MultiByteToWString(block.name.c_str());
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addBlock <%s>\n", blockName.c_str());
-    currentOpenBlockDefinition = ConvertBlock(block, m_document);
+    m_inBlockDefinition = true;
+    m_blockName = Eo::MultiByteToWString(block.name.c_str());
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addBlock <%s>\n", m_blockName.c_str());
+    m_currentOpenBlockDefinition = ConvertBlock(block, m_document);
   }
   void setBlock(const int handle) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::setBlock\n");
@@ -71,9 +71,9 @@ class EoDbDrwInterface : public EoDxfInterface {
   }
   void endBlock() override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::endBlock\n");
-    inBlockDefinition = false;
-    currentOpenBlockDefinition = nullptr;
-    blockName.clear();
+    m_inBlockDefinition = false;
+    m_currentOpenBlockDefinition = nullptr;
+    m_blockName.clear();
     ConvertBlockEnd(m_document);
   }
 
@@ -86,8 +86,8 @@ class EoDbDrwInterface : public EoDxfInterface {
 
   void addArc(const EoDxfArc& arc) override {
     countOfArc++;
-    if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addArc - block <%s>\n", blockName.c_str());
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addArc - block <%s>\n", m_blockName.c_str());
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addArc - entities section\n");
     }
@@ -98,8 +98,8 @@ class EoDbDrwInterface : public EoDxfInterface {
   // BODY not implemented in DRW
   void addCircle(const EoDxfCircle& circle) override {
     countOfCircle++;
-    if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addCircle - block <%s>\n", blockName.c_str());
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addCircle - block <%s>\n", m_blockName.c_str());
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addCircle - entities section\n");
     }
@@ -125,10 +125,10 @@ class EoDbDrwInterface : public EoDxfInterface {
 
   void addEllipse(const EoDxfEllipse& ellipse) override {
     countOfEllipse++;
-    if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addCircle - block <%s>\n", blockName.c_str());
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addEllipse - block <%s>\n", m_blockName.c_str());
     } else {
-      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addCircle - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addEllipse - entities section\n");
     }
     ConvertEllipseEntity(ellipse, m_document);
   }
@@ -139,11 +139,11 @@ class EoDbDrwInterface : public EoDxfInterface {
 
   void addInsert(const EoDxfInsert& blockReference) override {
     countOfInsert++;
-    if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLine - block <%s>\n", blockName.c_str());
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addInsert - block <%s>\n", m_blockName.c_str());
       ConvertInsertEntity(blockReference, m_document);
     } else {
-      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLine - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addInsert - entities section\n");
       ConvertInsertEntity(blockReference, m_document);
     }
   }
@@ -153,8 +153,8 @@ class EoDbDrwInterface : public EoDxfInterface {
 
   void addLine(const EoDxfLine& line) override {
     countOfLine++;
-    if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLine - block <%s>\n", blockName.c_str());
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLine - block <%s>\n", m_blockName.c_str());
       ConvertLineEntity(line, m_document);
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLine - entities section\n");
@@ -164,11 +164,11 @@ class EoDbDrwInterface : public EoDxfInterface {
 
   void addLWPolyline(const EoDxfLwPolyline& polyline) override {
     countOfLWPolyline++;
-    if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLine - block <%s>\n", blockName.c_str());
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLWPolyline - block <%s>\n", m_blockName.c_str());
       ConvertLWPolylineEntity(polyline, m_document);
     } else {
-      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLine - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLWPolyline - entities section\n");
       ConvertLWPolylineEntity(polyline, m_document);
     }
   }
@@ -179,8 +179,8 @@ class EoDbDrwInterface : public EoDxfInterface {
   void addMText(const EoDxfMText& mText) override {
     (void)mText;
     countOfMText++;
-    if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addMText - block <%s>\n", blockName.c_str());
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addMText - block <%s>\n", m_blockName.c_str());
     } else {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addMText - entities section\n");
     }
@@ -191,8 +191,8 @@ class EoDbDrwInterface : public EoDxfInterface {
 
   void addPoint(const EoDxfPoint& point) override {
     countOfPoint++;
-    if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addPoint - block <%s>\n", blockName.c_str());
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addPoint - block <%s>\n", m_blockName.c_str());
       ConvertPointEntity(point, m_document);
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addPoint - entities section\n");
@@ -220,8 +220,8 @@ class EoDbDrwInterface : public EoDxfInterface {
   void addText(const EoDxfText& text) override {
     (void)text;
     countOfText++;
-    if (inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addText - block <%s>\n", blockName.c_str());
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addText - block <%s>\n", m_blockName.c_str());
     } else {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addText - entities section\n");
     }
@@ -334,9 +334,9 @@ class EoDbDrwInterface : public EoDxfInterface {
 
  private:
   AeSysDoc* m_document{};
-  std::wstring blockName{};
-  bool inBlockDefinition{};
-  EoDbBlock* currentOpenBlockDefinition{};
+  std::wstring m_blockName{};
+  bool m_inBlockDefinition{};
+  EoDbBlock* m_currentOpenBlockDefinition{};
 
  public:
   int countOf3dFace{};
