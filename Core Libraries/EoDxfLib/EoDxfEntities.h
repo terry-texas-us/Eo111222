@@ -1363,14 +1363,10 @@ class EoDxfViewport : public EoDxfPoint {
   double m_height{156.0};  // Height in paper space units, code 41
   int m_viewportStatus{};  // Viewport status field, code 68
   int m_viewportId{};  // Viewport ID, code 69
-  double m_viewCenterX{128.5};  // View center point X (in DCS), code 12
-  double m_viewCenterY{97.5};  // View center point Y (in DCS), code 22
-  double m_snapBasePointX{};  // Snap base point X, code 13
-  double m_snapBasePointY{};  // Snap base point Y, code 23
-  double m_snapSpacingX{};  // Snap spacing X, code 14
-  double m_snapSpacingY{};  // Snap spacing Y, code 24
-  double m_gridSpacingX{};  // Grid spacing X, code 15
-  double m_gridSpacingY{};  // Grid spacing Y, code 25
+  EoDxfGeometryBase2d m_viewCenter{128.5, 97.5};  // Group codes 12 and 22 (in DCS)
+  EoDxfGeometryBase2d m_snapBasePoint{};  // Group codes 13 and 23
+  EoDxfGeometryBase2d m_snapSpacing{};  // Group codes 14 and 24
+  EoDxfGeometryBase2d m_gridSpacing{};  // Group codes 15 and 25
   EoDxfGeometryBase3d m_viewDirection{0.0, 0.0, 1.0};  // View direction from target point (WCS), code 16, 26, 36
   EoDxfGeometryBase3d m_viewTargetPoint;  // View target point (WCS), code 17, 27, 37
   double m_lensLength{};  // Perspective lens length, code 42

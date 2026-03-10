@@ -71,19 +71,20 @@ class EoDxfGeometryBase3d {
 
   EoDxfGeometryBase3d(double x, double y, double z) noexcept : x{x}, y{y}, z{z} {}
 
-  EoDxfGeometryBase3d(const EoDxfGeometryBase3d& other) noexcept = default;
-  EoDxfGeometryBase3d& operator=(const EoDxfGeometryBase3d& data) noexcept = default;
+  EoDxfGeometryBase3d(const EoDxfGeometryBase3d&) noexcept = default;
+  EoDxfGeometryBase3d& operator=(const EoDxfGeometryBase3d&) noexcept = default;
 
-  EoDxfGeometryBase3d(EoDxfGeometryBase3d&& other) noexcept = default;
-  EoDxfGeometryBase3d& operator=(EoDxfGeometryBase3d&& other) noexcept = default;
+  EoDxfGeometryBase3d(EoDxfGeometryBase3d&&) noexcept = default;
+  EoDxfGeometryBase3d& operator=(EoDxfGeometryBase3d&&) noexcept = default;
 
-  /** @brief Checks if the coordinate is effectively the default normal vector (0.0, 0.0, 1.0) within a specified tolerance.
+  /** @brief Checks if the coordinate is effectively the default normal vector (0.0, 0.0, 1.0) within a specified
+   * tolerance.
    *
    * This method determines if the x and y components of the coordinate are within a certain distance (tolerance) from
    * zero, and if the z component is within a certain distance from 1.0. This is useful for geometric calculations
-   * where the default normal vector may not be exactly (0.0, 0.0, 1.0) due to floating-point precision limitations. The default
-   * tolerance is defined by EoDxf::geometricTolerance, but it can be overridden by providing a different value when
-   * calling the method.
+   * where the default normal vector may not be exactly (0.0, 0.0, 1.0) due to floating-point precision limitations. The
+   * default tolerance is defined by EoDxf::geometricTolerance, but it can be overridden by providing a different value
+   * when calling the method.
    *
    * @param tolerance The distance from zero for x and y, and from one for z, within which the coordinate is considered
    * effectively the default normal vector.
@@ -107,7 +108,8 @@ class EoDxfGeometryBase3d {
    * @return true if the absolute difference between each corresponding component (x, y, z) of the two coordinates is
    * less than the specified tolerance; otherwise, false.
    */
-  [[nodiscard]] bool IsEqualTo(const EoDxfGeometryBase3d& other, double tolerance = EoDxf::geometricTolerance) const noexcept {
+  [[nodiscard]] bool IsEqualTo(
+      const EoDxfGeometryBase3d& other, double tolerance = EoDxf::geometricTolerance) const noexcept {
     return std::abs(x - other.x) < tolerance && std::abs(y - other.y) < tolerance && std::abs(z - other.z) < tolerance;
   }
 
@@ -137,8 +139,75 @@ class EoDxfGeometryBase3d {
     }
   }
 
-  /// @todo Non-modifying version of unitize() that returns a new EoDxfGeometryBase3d instead of modifying `this`
-  /// in-place.
+  /** @brief Return a unitized copy of `this` coordinate.
+   *  This method creates a copy of the current EoDxfGeometryBase3d instance, applies the Unitize() method to the copy,
+   *  and returns the unitized copy. The original coordinate remains unchanged.
+   *  @return A new EoDxfGeometryBase3d instance that is a unitized version of the original coordinate.
+  */
+  [[nodiscard]] EoDxfGeometryBase3d Unitized() const noexcept {
+    EoDxfGeometryBase3d result{*this};
+    result.Unitize();
+    return result;
+  }
+};
+
+/** @brief Class representing a 2D coordinate with x and y components.
+ *  Used for DXF group code pairs that are inherently 2D (e.g., snap base, grid spacing, view center in DCS).
+ */
+class EoDxfGeometryBase2d {
+ public:
+  double x{};
+  double y{};
+
+  EoDxfGeometryBase2d() noexcept = default;
+
+  constexpr EoDxfGeometryBase2d(double x, double y) noexcept : x{x}, y{y} {}
+
+  EoDxfGeometryBase2d(const EoDxfGeometryBase2d&) noexcept = default;
+  EoDxfGeometryBase2d& operator=(const EoDxfGeometryBase2d&) noexcept = default;
+
+  EoDxfGeometryBase2d(EoDxfGeometryBase2d&&) noexcept = default;
+  EoDxfGeometryBase2d& operator=(EoDxfGeometryBase2d&&) noexcept = default;
+
+  /** @brief Checks if this coordinate is effectively equal to another coordinate within a specified tolerance.
+   *
+   * This method compares the x and y components of this coordinate with those of another EoDxfGeometryBase2d
+   * instance. It determines if the absolute difference between each corresponding component is less than a specified
+   * tolerance value. This is useful for geometric calculations where exact equality may not be achievable due to
+   * floating-point precision limitations. The default tolerance is defined by EoDxf::geometricTolerance, but it can be
+   * overridden by providing a different value when calling the method.
+   *
+   * @param other The other EoDxfGeometryBase2d instance to compare against.
+   * @param tolerance The distance within which the components of the two coordinates are considered equal.
+   * @return true if the absolute difference between each corresponding component (x, y) of the two coordinates is
+   * less than the specified tolerance; otherwise, false.
+   */
+  [[nodiscard]] bool IsEqualTo(
+      const EoDxfGeometryBase2d& other, double tolerance = EoDxf::geometricTolerance) const noexcept {
+    return std::abs(x - other.x) < tolerance && std::abs(y - other.y) < tolerance;
+  }
+
+  /** @brief Checks if the coordinate is effectively zero within a specified tolerance.
+   *
+   * This method determines if the x and y components of the coordinate are all within a certain distance
+   * (tolerance) from zero. This is useful for geometric calculations where exact zero may not be achievable due to
+   * floating-point precision limitations. The default tolerance is defined by EoDxf::geometricTolerance, but it can
+   * be overridden by providing a different value when calling the method.
+   *
+   * @param tolerance The distance from zero within which the coordinate components are considered effectively zero.
+   * @return true if all components (x, y) are within the specified tolerance of zero; otherwise, false.
+   */
+  [[nodiscard]] bool IsZero(double tolerance = EoDxf::geometricTolerance) const noexcept {
+    return std::abs(x) < tolerance && std::abs(y) < tolerance;
+  }
+
+  /** @brief Promote to 3D with z = 0.
+   *  This method creates a new EoDxfGeometryBase3d instance using the x and y components of the current 2D coordinate
+   *  and the specified z value (default is 0.0). The original 2D coordinate remains unchanged.
+   *  @param z The z-coordinate for the new 3D coordinate. Default is 0.0.
+   *  @return A new EoDxfGeometryBase3d instance with the specified z value.
+   */
+  [[nodiscard]] EoDxfGeometryBase3d To3d(double z = 0.0) const noexcept { return {x, y, z}; }
 };
 
 /** @brief Class representing a vertex of a lightweight polyline, with 2D coordinates and optional width and bulge

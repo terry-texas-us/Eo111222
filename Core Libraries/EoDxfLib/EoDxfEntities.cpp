@@ -1284,34 +1284,34 @@ void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfViewport::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 12:
-      m_viewCenterX = reader->GetDouble();
+      m_viewCenter.x = reader->GetDouble();
+      break;
+    case 22:
+      m_viewCenter.y = reader->GetDouble();
       break;
     case 13:
-      m_snapBasePointX = reader->GetDouble();
+      m_snapBasePoint.x = reader->GetDouble();
+      break;
+    case 23:
+      m_snapBasePoint.y = reader->GetDouble();
       break;
     case 14:
-      m_snapSpacingX = reader->GetDouble();
+      m_snapSpacing.x = reader->GetDouble();
+      break;
+    case 24:
+      m_snapSpacing.y = reader->GetDouble();
       break;
     case 15:
-      m_gridSpacingX = reader->GetDouble();
+      m_gridSpacing.x = reader->GetDouble();
+      break;
+    case 25:
+      m_gridSpacing.y = reader->GetDouble();
       break;
     case 16:
       m_viewDirection.x = reader->GetDouble();
       break;
     case 17:
       m_viewTargetPoint.x = reader->GetDouble();
-      break;
-    case 22:
-      m_viewCenterY = reader->GetDouble();
-      break;
-    case 23:
-      m_snapBasePointY = reader->GetDouble();
-      break;
-    case 24:
-      m_snapSpacingY = reader->GetDouble();
-      break;
-    case 25:
-      m_gridSpacingY = reader->GetDouble();
       break;
     case 26:
       m_viewDirection.y = reader->GetDouble();

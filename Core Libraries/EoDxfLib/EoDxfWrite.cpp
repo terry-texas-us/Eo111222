@@ -139,21 +139,22 @@ bool EoDxfWrite::WriteViewport(EoDxfViewport* viewport) {
   m_writer->WriteDouble(41, viewport->m_height);
   if (viewport->m_viewportStatus != 0) { m_writer->WriteInt16(68, viewport->m_viewportStatus); }
   if (viewport->m_viewportId != 0) { m_writer->WriteInt16(69, viewport->m_viewportId); }
-  if (viewport->m_viewCenterX != 0.0 || viewport->m_viewCenterY != 0.0) {
-    m_writer->WriteDouble(12, viewport->m_viewCenterX);
-    m_writer->WriteDouble(22, viewport->m_viewCenterY);
+  
+  if (!viewport->m_viewCenter.IsZero()) {
+    m_writer->WriteDouble(12, viewport->m_viewCenter.x);
+    m_writer->WriteDouble(22, viewport->m_viewCenter.y);
   }
-  if (viewport->m_snapBasePointX != 0.0 || viewport->m_snapBasePointY != 0.0) {
-    m_writer->WriteDouble(13, viewport->m_snapBasePointX);
-    m_writer->WriteDouble(23, viewport->m_snapBasePointY);
+  if (!viewport->m_snapBasePoint.IsZero()) {
+    m_writer->WriteDouble(13, viewport->m_snapBasePoint.x);
+    m_writer->WriteDouble(23, viewport->m_snapBasePoint.y);
   }
-  if (viewport->m_snapSpacingX != 0.0 || viewport->m_snapSpacingY != 0.0) {
-    m_writer->WriteDouble(14, viewport->m_snapSpacingX);
-    m_writer->WriteDouble(24, viewport->m_snapSpacingY);
+  if (!viewport->m_snapSpacing.IsZero()) {
+    m_writer->WriteDouble(14, viewport->m_snapSpacing.x);
+    m_writer->WriteDouble(24, viewport->m_snapSpacing.y);
   }
-  if (viewport->m_gridSpacingX != 0.0 || viewport->m_gridSpacingY != 0.0) {
-    m_writer->WriteDouble(15, viewport->m_gridSpacingX);
-    m_writer->WriteDouble(25, viewport->m_gridSpacingY);
+  if (!viewport->m_gridSpacing.IsZero()) {
+    m_writer->WriteDouble(15, viewport->m_gridSpacing.x);
+    m_writer->WriteDouble(25, viewport->m_gridSpacing.y);
   }
   if (!viewport->m_viewDirection.IsDefaultNormal()) {
     m_writer->WriteDouble(16, viewport->m_viewDirection.x);
