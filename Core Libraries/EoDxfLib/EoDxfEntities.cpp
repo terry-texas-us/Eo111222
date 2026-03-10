@@ -689,19 +689,19 @@ void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {
       m_defaultEndWidth = reader->GetDouble();
       break;
     case 71:
-      m_polygonMeshVertexCountM = reader->GetInt32();
+      m_polygonMeshVertexCountM = reader->GetInt16();
       break;
     case 72:
-      m_polygonMeshVertexCountN = reader->GetInt32();
+      m_polygonMeshVertexCountN = reader->GetInt16();
       break;
     case 73:
-      m_smoothSurfaceDensityM = reader->GetInt32();
+      m_smoothSurfaceDensityM = reader->GetInt16();
       break;
     case 74:
-      m_smoothSurfaceDensityN = reader->GetInt32();
+      m_smoothSurfaceDensityN = reader->GetInt16();
       break;
     case 75:
-      m_curvesAndSmoothSurfaceType = reader->GetInt32();
+      m_curvesAndSmoothSurfaceType = reader->GetInt16();
       break;
     default:
       EoDxfPoint::ParseCode(code, reader);
@@ -712,7 +712,7 @@ void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfVertex::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 70:
-      m_vertexFlags = reader->GetInt32();
+      m_vertexFlags = reader->GetInt16();
       break;
     case 40:
       m_startingWidth = reader->GetDouble();
@@ -727,16 +727,16 @@ void EoDxfVertex::ParseCode(int code, EoDxfReader* reader) {
       m_curveFitTangentDirection = reader->GetDouble();
       break;
     case 71:
-      m_polyfaceMeshVertexIndex1 = reader->GetInt32();
+      m_polyfaceMeshVertexIndex1 = reader->GetInt16();
       break;
     case 72:
-      m_polyfaceMeshVertexIndex2 = reader->GetInt32();
+      m_polyfaceMeshVertexIndex2 = reader->GetInt16();
       break;
     case 73:
-      m_polyfaceMeshVertexIndex3 = reader->GetInt32();
+      m_polyfaceMeshVertexIndex3 = reader->GetInt16();
       break;
     case 74:
-      m_polyfaceMeshVertexIndex4 = reader->GetInt32();
+      m_polyfaceMeshVertexIndex4 = reader->GetInt16();
       break;
     case 91:
       m_identifier = reader->GetInt32();
@@ -800,10 +800,10 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
       m_hatchPatternName = reader->GetUtf8String();
       break;
     case 70:
-      m_solidFillFlag = reader->GetInt32();
+      m_solidFillFlag = reader->GetInt16();
       break;
     case 71:
-      m_associativityFlag = reader->GetInt32();
+      m_associativityFlag = reader->GetInt16();
       break;
     case 10:
       if (m_point) {
@@ -872,24 +872,24 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
       break;
     case 73:
       if (m_arc) {
-        m_arc->m_isCounterClockwise = reader->GetInt32();
+        m_arc->m_isCounterClockwise = reader->GetInt16();
       } else if (m_ellipse) {
-        m_ellipse->m_isCounterClockwise = reader->GetInt32();
+        m_ellipse->m_isCounterClockwise = reader->GetInt16();
       } else if (m_polyline) {
         m_polyline->m_polylineFlag = reader->GetInt16();
       }
       break;
     case 75:
-      m_hatchStyle = reader->GetInt32();
+      m_hatchStyle = reader->GetInt16();
       break;
     case 76:
-      m_hatchPatternType = reader->GetInt32();
+      m_hatchPatternType = reader->GetInt16();
       break;
     case 77:
-      m_hatchPatternDoubleFlag = reader->GetInt32();
+      m_hatchPatternDoubleFlag = reader->GetInt16();
       break;
     case 78:
-      m_numberOfPatternDefinitionLines = reader->GetInt32();
+      m_numberOfPatternDefinitionLines = reader->GetInt16();
       break;
 
     case 91:
@@ -902,7 +902,7 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
       if (m_isPolyline) {
         break;
       } else {
-        int edgeType = reader->GetInt32();
+        std::int16_t edgeType = reader->GetInt16();
         if (edgeType == 1) {  // line
           AddLine();
         } else if (edgeType == 2) {  // circular arc
@@ -940,16 +940,16 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
 
     // Spline-specific data groups (94, 95, 96) are stored on the active m_spline if it exists, otherwise ignored
     case 94:
-      if (m_spline) { m_spline->m_degreeOfTheSplineCurve = reader->GetInt32(); }
+      if (m_spline) { m_spline->m_degreeOfTheSplineCurve = reader->GetInt16(); }
       break;
     case 95:
       if (m_spline) {
-        m_spline->m_numberOfKnots = reader->GetInt32();
+        m_spline->m_numberOfKnots = reader->GetInt16();
         m_spline->m_knotValues.reserve(m_spline->m_numberOfKnots);
       }
       break;
     case 96:
-      if (m_spline) { m_spline->m_numberOfControlPoints = reader->GetInt32(); }
+      if (m_spline) { m_spline->m_numberOfControlPoints = reader->GetInt16(); }
       break;
 
     case 98:
@@ -991,19 +991,19 @@ void EoDxfSpline::ParseCode(int code, EoDxfReader* reader) {
       m_endTangent.z = reader->GetDouble();
       break;
     case 70:
-      m_splineFlag = reader->GetInt32();
+      m_splineFlag = reader->GetInt16();
       break;
     case 71:
-      m_degreeOfTheSplineCurve = reader->GetInt32();
+      m_degreeOfTheSplineCurve = reader->GetInt16();
       break;
     case 72:
-      m_numberOfKnots = reader->GetInt32();
+      m_numberOfKnots = reader->GetInt16();
       break;
     case 73:
-      m_numberOfControlPoints = reader->GetInt32();
+      m_numberOfControlPoints = reader->GetInt16();
       break;
     case 74:
-      m_numberOfFitPoints = reader->GetInt32();
+      m_numberOfFitPoints = reader->GetInt16();
       break;
     case 42:
       m_knotTolerance = reader->GetDouble();
@@ -1098,13 +1098,13 @@ void EoDxfDimension::ParseCode(int code, EoDxfReader* reader) {
       style = reader->GetUtf8String();
       break;
     case 70:
-      type = reader->GetInt32();
+      m_dimensionType = reader->GetInt16();
       break;
     case 71:
-      align = reader->GetInt32();
+      m_attachmentPoint = reader->GetInt16();
       break;
     case 72:
-      linesty = reader->GetInt32();
+      m_dimensionTextLineSpacingStyle = reader->GetInt16();
       break;
     case 10:
       defPoint.x = reader->GetDouble();
@@ -1199,26 +1199,26 @@ void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
       m_dimensionStyleName = reader->GetUtf8String();
       break;
     case 71:
-      m_arrowheadFlag = reader->GetInt32();
+      m_arrowheadFlag = reader->GetInt16();
       break;
     case 72:
-      m_leaderPathType = reader->GetInt32();
+      m_leaderPathType = reader->GetInt16();
       break;
     case 73:
-      m_leaderCreationFlag = reader->GetInt32();
+      m_leaderCreationFlag = reader->GetInt16();
       break;
     case 74:
-      m_hookLineDirection = reader->GetInt32();
+      m_hookLineDirection = reader->GetInt16();
       break;
     case 75:
-      m_hookLineFlag = reader->GetInt32();
+      m_hookLineFlag = reader->GetInt16();
       break;
     case 76:
-      m_numberOfVertices = reader->GetInt32();
+      m_numberOfVertices = reader->GetInt16();
       m_vertexList.reserve(m_numberOfVertices);
       break;
     case 77:
-      m_colorToUse = reader->GetInt32();
+      m_colorToUse = reader->GetInt16();
       break;
     case 40:
       m_textAnnotationHeight = reader->GetDouble();
@@ -1352,10 +1352,10 @@ void EoDxfViewport::ParseCode(int code, EoDxfReader* reader) {
       m_twistAngle = reader->GetDouble();
       break;
     case 68:
-      m_viewportStatus = reader->GetInt32();
+      m_viewportStatus = reader->GetInt16();
       break;
     case 69:
-      m_viewportId = reader->GetInt32();
+      m_viewportId = reader->GetInt16();
       break;
     case 90:
       m_frozenLayerCount = static_cast<std::uint32_t>(reader->GetInt32());

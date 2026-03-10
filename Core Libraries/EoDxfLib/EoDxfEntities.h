@@ -283,7 +283,7 @@ class EoDxfArc : public EoDxfCircle {
  public:
   double m_startAngle{};  // group code 50 (in radians)
   double m_endAngle{};  // group code 51 (in radians)
-  int m_isCounterClockwise{1};  // group code 73
+  std::int16_t m_isCounterClockwise{1};  // group code 73
 };
 
 /** @brief Class to handle ellipse entity
@@ -317,7 +317,7 @@ class EoDxfEllipse : public EoDxfLine {
   double m_ratio{};  // Group code 40
   double m_startParam{};  // Group code 41, 0.0 for full ellipse
   double m_endParam{};  // Group code 42, 2*PI for full ellipse
-  int m_isCounterClockwise{1};  // Group code 73 (only used in hatch)
+  std::int16_t m_isCounterClockwise{1};  // Group code 73 (only used in hatch)
 };
 
 /** @@brief Class to handle trace entity
@@ -612,12 +612,12 @@ class EoDxfVertex : public EoDxfPoint {
   double m_endingWidth{};  // Group code 41
   double m_bulge{};  // Group code 42
 
-  int m_vertexFlags{};  // Group code 70
+  std::int16_t m_vertexFlags{};  // Group code 70
   double m_curveFitTangentDirection{};  // Group code 50
-  int m_polyfaceMeshVertexIndex1{};  // Group code 71
-  int m_polyfaceMeshVertexIndex2{};  // Group code 72
-  int m_polyfaceMeshVertexIndex3{};  // Group code 73
-  int m_polyfaceMeshVertexIndex4{};  // Group code 74
+  std::int16_t m_polyfaceMeshVertexIndex1{};  // Group code 71
+  std::int16_t m_polyfaceMeshVertexIndex2{};  // Group code 72
+  std::int16_t m_polyfaceMeshVertexIndex3{};  // Group code 73
+  std::int16_t m_polyfaceMeshVertexIndex4{};  // Group code 74
   int m_identifier{};  // Group code 91
 };
 
@@ -694,11 +694,11 @@ class EoDxfPolyline : public EoDxfPoint {
   std::int16_t m_polylineFlag{};  // Group code 70
   double m_defaultStartWidth{};  // Group code 40
   double m_defaultEndWidth{};  // Group code 41
-  int m_polygonMeshVertexCountM{};  // Group code 71
-  int m_polygonMeshVertexCountN{};  // Group code 72
-  int m_smoothSurfaceDensityM{};  // Group code 73
-  int m_smoothSurfaceDensityN{};  // Group code 74
-  int m_curvesAndSmoothSurfaceType{};  // Group code 75
+  std::int16_t m_polygonMeshVertexCountM{};  // Group code 71
+  std::int16_t m_polygonMeshVertexCountN{};  // Group code 72
+  std::int16_t m_smoothSurfaceDensityM{};  // Group code 73
+  std::int16_t m_smoothSurfaceDensityN{};  // Group code 74
+  std::int16_t m_curvesAndSmoothSurfaceType{};  // Group code 75
 
   std::vector<EoDxfVertex*> m_vertices;  // vertex list
 };
@@ -738,11 +738,11 @@ class EoDxfSpline : public EoDxfEntity {
   EoDxfGeometryBase3d m_normalVector;  // Group codes 210, 220, 230
   EoDxfGeometryBase3d m_startTangent;  // Group codes 12, 22, 32
   EoDxfGeometryBase3d m_endTangent;  // Group codes 13, 23, 33
-  int m_splineFlag{};  // Group code 70
-  int m_degreeOfTheSplineCurve{};  // Group code 71
-  std::int32_t m_numberOfKnots{};  // Group code 72
-  std::int32_t m_numberOfControlPoints{};  // Group code 73
-  std::int32_t m_numberOfFitPoints{};  // Group code 74
+  std::int16_t m_splineFlag{};  // Group code 70
+  std::int16_t m_degreeOfTheSplineCurve{};  // Group code 71
+  std::int16_t m_numberOfKnots{};  // Group code 72
+  std::int16_t m_numberOfControlPoints{};  // Group code 73
+  std::int16_t m_numberOfFitPoints{};  // Group code 74
   double m_knotTolerance{0.0000001};  // Group code 42
   double m_controlPointTolerance{0.0000001};  // Group code 43
   double m_fitTolerance{0.0000000001};  // Group code 44
@@ -817,15 +817,15 @@ class EoDxfHatch : public EoDxfPoint {
 
  public:
   std::string m_hatchPatternName;  // Group code 2
-  int m_solidFillFlag{1};  // Group code 70
-  int m_associativityFlag{};  // Group code 71
-  int m_hatchStyle{};  // Group code 75
-  int m_hatchPatternType{1};  // Group code 76
-  int m_hatchPatternDoubleFlag{};  // Group code 77
+  std::int16_t m_solidFillFlag{1};  // Group code 70
+  std::int16_t m_associativityFlag{};  // Group code 71
+  std::int16_t m_hatchStyle{};  // Group code 75
+  std::int16_t m_hatchPatternType{1};  // Group code 76
+  std::int16_t m_hatchPatternDoubleFlag{};  // Group code 77
   int m_numberOfBoundaryPaths{};  // Group code 91
   double m_hatchPatternAngle{};  // Group code 52
   double m_hatchPatternScaleOrSpacing{};  // Group code 41
-  int m_numberOfPatternDefinitionLines{};  //   Group code 78
+  std::int16_t m_numberOfPatternDefinitionLines{};  //   Group code 78
 
   std::vector<EoDxfHatchLoop*> m_hatchLoops;
 
@@ -901,11 +901,11 @@ class EoDxfDimension : public EoDxfEntity {
  public:
   EoDxfDimension() {
     m_entityType = EoDxf::DIMENSION;
-    type = 0;
-    linesty = 1;
+    m_dimensionType = 0;
+    m_dimensionTextLineSpacingStyle = 1;
     linefactor = extPoint.z = 1.0;
     angle = oblique = rot = 0.0;
-    align = 5;
+    m_attachmentPoint = 5;
     style = "STANDARD";
     defPoint.z = extPoint.x = extPoint.y = 0;
     textPoint.z = rot = 0;
@@ -914,14 +914,14 @@ class EoDxfDimension : public EoDxfEntity {
 
   EoDxfDimension(const EoDxfDimension& d) : EoDxfEntity(d) {
     m_entityType = EoDxf::DIMENSION;
-    type = d.type;
+    m_dimensionType = d.m_dimensionType;
     name = d.name;
     defPoint = d.defPoint;
     textPoint = d.textPoint;
     text = d.text;
     style = d.style;
-    align = d.align;
-    linesty = d.linesty;
+    m_attachmentPoint = d.m_attachmentPoint;
+    m_dimensionTextLineSpacingStyle = d.m_dimensionTextLineSpacingStyle;
     linefactor = d.linefactor;
     rot = d.rot;
     extPoint = d.extPoint;
@@ -948,10 +948,12 @@ class EoDxfDimension : public EoDxfEntity {
   void setTextPoint(const EoDxfGeometryBase3d p) { textPoint = p; }
   std::string getStyle() const { return style; }  // Dimension style, code 3
   void setStyle(const std::string s) { style = s; }
-  int getAlign() const { return align; }  // attachment point, code 71
-  void setAlign(const int a) { align = a; }
-  int getTextLineStyle() const { return linesty; }  // Dimension text line spacing style, code 72, default 1
-  void setTextLineStyle(const int l) { linesty = l; }
+  [[nodiscard]] std::int16_t GetAttachmentPoint() const noexcept { return m_attachmentPoint; }  // Group code 71
+  void SetAttachmentPoint(const std::int16_t attachmentPoint) { m_attachmentPoint = attachmentPoint; }
+  [[nodiscard]] std::int16_t getTextLineStyle() const noexcept { return m_dimensionTextLineSpacingStyle; }  // Group code 72
+  void setTextLineStyle(const std::int16_t dimensionTextLineSpacingStyle) {
+    m_dimensionTextLineSpacingStyle = dimensionTextLineSpacingStyle;
+  }
   std::string getText() const { return text; }  // Dimension text explicitly entered by the user, code 1
   void setText(const std::string t) { text = t; }
   double getTextLineFactor() const { return linefactor; }  // Dimension text line spacing factor, code 41, default 1?
@@ -984,15 +986,15 @@ class EoDxfDimension : public EoDxfEntity {
   void setRa40(const double d) { length = d; }
 
  public:
-  int type;  // Dimension type, code 70
+  std::int16_t m_dimensionType;  // Dimension type, code 70
  private:
   std::string name;  // Name of the block that contains the entities, code 2
   EoDxfGeometryBase3d defPoint;  //  definition point, code 10, 20 & 30 (WCS)
   EoDxfGeometryBase3d textPoint;  // Middle point of text, code 11, 21 & 31 (OCS)
   std::string text;  // Dimension text explicitly entered by the user, code 1
   std::string style;  // Dimension style, code 3
-  int align;  // attachment point, code 71
-  int linesty;  // Dimension text line spacing style, code 72, default 1
+  std::int16_t m_attachmentPoint;  // attachment point, code 71
+  std::int16_t m_dimensionTextLineSpacingStyle{1};  // Group code 72 (optional)
   double linefactor;  // Dimension text line spacing factor, code 41, default 1? (value range 0.25 to 4.00*/
   double rot;  // rotation angle of the dimension text, code 53
   EoDxfGeometryBase3d extPoint;  //  extrusion normal vector, code 210, 220 & 230
@@ -1233,18 +1235,18 @@ class EoDxfLeader : public EoDxfEntity {
 
  public:
   std::string m_dimensionStyleName{};  // Group code 3
-  int m_arrowheadFlag{1};  // Group code 71, 0=Disabled; 1=Enabled
-  int m_leaderPathType{};  // Group code 72, 0=Straight line segments; 1=Spline
-  int m_leaderCreationFlag{3};  // Group code 73
-  int m_hookLineDirection{1};  // Hook line direction flag, code 74, default 1
-  int m_hookLineFlag{};  // Hook line flag, code 75
+  std::int16_t m_arrowheadFlag{1};  // Group code 71, 0=Disabled; 1=Enabled
+  std::int16_t m_leaderPathType{};  // Group code 72, 0=Straight line segments; 1=Spline
+  std::int16_t m_leaderCreationFlag{3};  // Group code 73
+  std::int16_t m_hookLineDirection{1};  // Hook line direction flag, code 74, default 1
+  std::int16_t m_hookLineFlag{};  // Hook line flag, code 75
   double m_textAnnotationHeight{};  // Group code 40
   double m_textAnnotationWidth{};  // Group code 41
-  int m_numberOfVertices{};  // Number of vertices, code 76
+  std::int16_t m_numberOfVertices{};  // Number of vertices, code 76
 
   std::vector<EoDxfGeometryBase3d> m_vertexList;  // vertex points list, code 10, 20 & 30
 
-  int m_colorToUse{};  // Group code 77
+  std::int16_t m_colorToUse{};  // Group code 77
   std::uint64_t m_associatedAnnotationHandle{};  // Group code 340
   EoDxfGeometryBase3d m_normalVector{0.0, 0.0, 1.0};  // Group codes 210, 220 & 230
   EoDxfGeometryBase3d m_horizontalDirectionForLeader{1.0, 0.0, 0.0};  // Group codes 211, 221 & 231
@@ -1359,8 +1361,8 @@ class EoDxfViewport : public EoDxfPoint {
  public:
   double m_width{205.0};  // Width in paper space units, code 40
   double m_height{156.0};  // Height in paper space units, code 41
-  int m_viewportStatus{};  // Viewport status field, code 68
-  int m_viewportId{};  // Viewport ID, code 69
+  std::int16_t m_viewportStatus{};  // Viewport status field, code 68
+  std::int16_t m_viewportId{};  // Viewport ID, code 69
   EoDxfGeometryBase2d m_viewCenter{128.5, 97.5};  // Group codes 12 and 22 (in DCS)
   EoDxfGeometryBase2d m_snapBasePoint{};  // Group codes 13 and 23
   EoDxfGeometryBase2d m_snapSpacing{};  // Group codes 14 and 24

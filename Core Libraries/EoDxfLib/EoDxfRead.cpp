@@ -838,7 +838,7 @@ bool EoDxfRead::ProcessDimension() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetString();
-        int type = dimension.type & 0x0F;
+        auto type = dimension.m_dimensionType & 0x0F;
         switch (type) {
           case 0: {
             EoDxfDimLinear d(dimension);

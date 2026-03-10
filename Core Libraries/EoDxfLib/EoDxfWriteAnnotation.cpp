@@ -18,10 +18,10 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
   m_writer->WriteDouble(11, dimension->getTextPoint().x);
   m_writer->WriteDouble(21, dimension->getTextPoint().y);
   m_writer->WriteDouble(31, dimension->getTextPoint().z);
-  if (!(dimension->type & 32)) { dimension->type = dimension->type + 32; }
-  m_writer->WriteInt16(70, dimension->type);
+  if (!(dimension->m_dimensionType & 32)) { dimension->m_dimensionType = dimension->m_dimensionType + 32; }
+  m_writer->WriteInt16(70, dimension->m_dimensionType);
   if (!(dimension->getText().empty())) { m_writer->WriteUtf8String(1, dimension->getText()); }
-  m_writer->WriteInt16(71, dimension->getAlign());
+  m_writer->WriteInt16(71, dimension->GetAttachmentPoint());
   if (dimension->getTextLineStyle() != 1) { m_writer->WriteInt16(72, dimension->getTextLineStyle()); }
   if (dimension->getTextLineFactor() != 1) { m_writer->WriteDouble(41, dimension->getTextLineFactor()); }
   m_writer->WriteUtf8String(3, dimension->getStyle());

@@ -419,7 +419,7 @@ bool EoDxfWrite::WriteSpline(EoDxfSpline* spline) {
   }
 
   // Fit points (11, 21, 31)
-  for (std::int32_t i = 0; i < spline->m_numberOfFitPoints; ++i) {
+  for (std::int16_t i = 0; i < spline->m_numberOfFitPoints; ++i) {
     const auto* fitPoint = spline->m_fitPoints[static_cast<size_t>(i)];
     m_writer->WriteDouble(11, fitPoint->x);
     m_writer->WriteDouble(21, fitPoint->y);
