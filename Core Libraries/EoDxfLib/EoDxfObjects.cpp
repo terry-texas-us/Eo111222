@@ -65,6 +65,8 @@ void EoDxfObjectEntry::ParseCode(int code, EoDxfReader* reader) {
       m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetDouble()));
       break;
     case 1070:
+      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt16()));
+      break;
     case 1071:
       m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt32()));
       break;

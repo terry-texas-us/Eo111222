@@ -1268,7 +1268,7 @@ struct EoDxfMLeaderLine {
   int m_leaderLineIndex{};  // code 91
   int m_leaderLineColorOverride{EoDxf::colorByLayer};  // code 92 (optional)
   std::uint64_t m_leaderLineTypeHandle{EoDxf::NoHandle};  // code 340 (optional)
-  int m_leaderLineWeightOverride{-1};  // code 171 (optional, -1 = no override)
+  std::int16_t m_leaderLineWeightOverride{-1};  // code 171 (optional, -1 = no override)
   double m_arrowheadSize{};  // code 40 (optional, 0 = use context default)
   std::uint64_t m_arrowheadHandle{EoDxf::NoHandle};  // code 341 (optional)
 };
@@ -1302,10 +1302,10 @@ struct EoDxfMLeaderContextData {
   double m_textHeight{};  // code 41
   double m_arrowheadSize{};  // code 140
   double m_landingGap{};  // code 145
-  int m_textLeftAttachment{1};  // code 174
-  int m_textRightAttachment{1};  // code 175
-  int m_textAlignmentType{};  // code 176
-  int m_blockContentConnectionType{};  // code 177
+  std::int16_t m_textLeftAttachment{1};  // code 174
+  std::int16_t m_textRightAttachment{1};  // code 175
+  std::int16_t m_textAlignmentType{};  // code 176
+  std::int16_t m_blockContentConnectionType{};  // code 177
   bool m_hasMText{};  // code 290
   bool m_hasContent{true};  // code 296
 
@@ -1316,12 +1316,12 @@ struct EoDxfMLeaderContextData {
   double m_textWidth{};  // code 43
   double m_textDefinedWidth{};  // code 44
   double m_textDefinedHeight{};  // code 45
-  int m_textLineSpacingStyle{1};  // code 171
+  std::int16_t m_textLineSpacingStyle{1};  // code 171
   double m_textLineSpacingFactor{1.0};  // code 141
   int m_textFlowDirection{1};  // code 90
   int m_textColor{EoDxf::colorByLayer};  // code 91
-  int m_textAttachment{1};  // code 170
-  int m_textBackgroundFill{};  // code 172
+  std::int16_t m_textAttachment{1};  // code 170
+  std::int16_t m_textBackgroundFill{};  // code 172
   std::uint64_t m_textStyleHandle{EoDxf::NoHandle};  // code 340
   std::string m_textString;  // code 1 (and 3 for overflow)
 

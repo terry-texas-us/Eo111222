@@ -42,34 +42,34 @@ class EoDxfMLeader : public EoDxfEntity {
 
  public:
   // --- Top-level AcDbMLeader properties ---
-  int m_leaderType{1};  // code 170 (0=invisible, 1=straight, 2=spline)
+  std::int16_t m_leaderType{1};  // code 170 (0=invisible, 1=straight, 2=spline)
   int m_leaderLineColor{EoDxf::colorByLayer};  // code 91
   std::uint64_t m_leaderLineTypeHandle{EoDxf::NoHandle};  // code 341
-  int m_leaderLineWeight{-1};  // code 171
+  std::int16_t m_leaderLineWeight{-1};  // code 171
   bool m_enableLanding{true};  // code 290
   bool m_enableDogleg{true};  // code 291
   double m_doglegLength{};  // code 41
   double m_arrowheadSize{};  // code 42
-  int m_contentType{2};  // code 172 (0=none, 1=block, 2=mtext)
+  std::int16_t m_contentType{2};  // code 172 (0=none, 1=block, 2=mtext)
   std::uint64_t m_textStyleHandle{EoDxf::NoHandle};  // code 343
-  int m_textLeftAttachmentType{1};  // code 173
+  std::int16_t m_textLeftAttachmentType{1};  // code 173
   int m_textRightAttachmentType{1};  // code 95
-  int m_textAngleType{};  // code 174
-  int m_textAlignmentType{};  // code 175
+  std::int16_t m_textAngleType{};  // code 174
+  std::int16_t m_textAlignmentType{};  // code 175
   int m_textColor{EoDxf::colorByLayer};  // code 92
   bool m_enableFrameText{};  // code 292
   std::uint64_t m_blockContentHandle{EoDxf::NoHandle};  // code 344
   int m_blockContentColor{EoDxf::colorByLayer};  // code 93
   EoDxfGeometryBase3d m_blockContentScale{1.0, 1.0, 1.0};  // code 10, 20, 30 (top-level)
   double m_blockContentRotation{};  // code 43
-  int m_blockContentConnectionType{};  // code 176
+  std::int16_t m_blockContentConnectionType{};  // code 176
   bool m_enableAnnotationScale{true};  // code 293
   std::uint64_t m_leaderStyleHandle{EoDxf::NoHandle};  // code 340
   int m_propertyOverrideFlag{};  // code 90
   double m_overallScale{1.0};  // code 45
   int m_textDirectionNegative{};  // code 294 (0=left-to-right, 1=used by BiDi)
-  int m_textTopAttachmentType{9};  // code 271
-  int m_textBottomAttachmentType{9};  // code 272
+  std::int16_t m_textTopAttachmentType{9};  // code 271
+  std::int16_t m_textBottomAttachmentType{9};  // code 272
 
   // Context data (only one per MLEADER)
   EoDxfMLeaderContextData m_contextData;

@@ -74,7 +74,7 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           line.m_leaderLineColorOverride = reader->GetInt32();
           break;
         case 171:
-          line.m_leaderLineWeightOverride = reader->GetInt32();
+          line.m_leaderLineWeightOverride = reader->GetInt16();
           break;
         case 40:
           line.m_arrowheadSize = reader->GetDouble();
@@ -169,7 +169,7 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           ctx.m_textDefinedHeight = reader->GetDouble();
           break;
         case 170:
-          ctx.m_textAttachment = reader->GetInt32();
+          ctx.m_textAttachment = reader->GetInt16();
           break;
         case 90:
           ctx.m_textFlowDirection = reader->GetInt32();
@@ -181,10 +181,10 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           ctx.m_textLineSpacingFactor = reader->GetDouble();
           break;
         case 171:
-          ctx.m_textLineSpacingStyle = reader->GetInt32();
+          ctx.m_textLineSpacingStyle = reader->GetInt16();
           break;
         case 172:
-          ctx.m_textBackgroundFill = reader->GetInt32();
+          ctx.m_textBackgroundFill = reader->GetInt16();
           break;
         case 340:
           ctx.m_textStyleHandle = reader->GetHandleString();
@@ -228,16 +228,16 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           ctx.m_landingGap = reader->GetDouble();
           break;
         case 174:
-          ctx.m_textLeftAttachment = reader->GetInt32();
+          ctx.m_textLeftAttachment = reader->GetInt16();
           break;
         case 175:
-          ctx.m_textRightAttachment = reader->GetInt32();
+          ctx.m_textRightAttachment = reader->GetInt16();
           break;
         case 176:
-          ctx.m_textAlignmentType = reader->GetInt32();
+          ctx.m_textAlignmentType = reader->GetInt16();
           break;
         case 177:
-          ctx.m_blockContentConnectionType = reader->GetInt32();
+          ctx.m_blockContentConnectionType = reader->GetInt16();
           break;
         case 290:
           ctx.m_hasMText = reader->GetBool();
@@ -284,7 +284,7 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
     default: {
       switch (code) {
         case 170:
-          m_leaderType = reader->GetInt32();
+          m_leaderType = reader->GetInt16();
           break;
         case 91:
           m_leaderLineColor = reader->GetInt32();
@@ -293,7 +293,7 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           m_leaderLineTypeHandle = reader->GetHandleString();
           break;
         case 171:
-          m_leaderLineWeight = reader->GetInt32();
+          m_leaderLineWeight = reader->GetInt16();
           break;
         case 290:
           m_enableLanding = reader->GetBool();
@@ -308,22 +308,22 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           m_arrowheadSize = reader->GetDouble();
           break;
         case 172:
-          m_contentType = reader->GetInt32();
+          m_contentType = reader->GetInt16();
           break;
         case 343:
           m_textStyleHandle = reader->GetHandleString();
           break;
         case 173:
-          m_textLeftAttachmentType = reader->GetInt32();
+          m_textLeftAttachmentType = reader->GetInt16();
           break;
         case 95:
           m_textRightAttachmentType = reader->GetInt32();
           break;
         case 174:
-          m_textAngleType = reader->GetInt32();
+          m_textAngleType = reader->GetInt16();
           break;
         case 175:
-          m_textAlignmentType = reader->GetInt32();
+          m_textAlignmentType = reader->GetInt16();
           break;
         case 92:
           m_textColor = reader->GetInt32();
@@ -350,7 +350,7 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           m_blockContentRotation = reader->GetDouble();
           break;
         case 176:
-          m_blockContentConnectionType = reader->GetInt32();
+          m_blockContentConnectionType = reader->GetInt16();
           break;
         case 293:
           m_enableAnnotationScale = reader->GetBool();
@@ -368,10 +368,10 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           m_textDirectionNegative = reader->GetInt32();
           break;
         case 271:
-          m_textTopAttachmentType = reader->GetInt32();
+          m_textTopAttachmentType = reader->GetInt16();
           break;
         case 272:
-          m_textBottomAttachmentType = reader->GetInt32();
+          m_textBottomAttachmentType = reader->GetInt16();
           break;
         default:
           EoDxfEntity::ParseCode(code, reader);
