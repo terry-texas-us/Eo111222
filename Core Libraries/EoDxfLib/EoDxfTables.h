@@ -57,7 +57,7 @@ class EoDxfTableEntry {
   std::uint64_t m_handle{};  // Group code 5
   std::uint64_t m_ownerHandle{};  // Group code 330
   std::string m_tableName;  // Group code 2
-  int m_flagValues{};  // Group code 70
+  std::int16_t m_flagValues{};  // Group code 70
   std::vector<EoDxfGroupCodeValuesVariant*> m_extensionData;  // Group codes 1000 to 1071
 
  private:
@@ -86,9 +86,9 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
   std::string dimpost;  // Group code 3
   std::string dimapost;  // Group code 4
 
-  std::string dimblk;  // Group code 5, code 342 V2000+
-  std::string dimblk1;  // Group code 6, code 343 V2000+
-  std::string dimblk2;  // Group code 7, code 344 V2000+
+  std::string dimblk;  // Group code 5, code 342 (AC1015+)
+  std::string dimblk1;  // Group code 6, code 343 (AC1015+)
+  std::string dimblk2;  // Group code 7, code 344 (AC1015+)
   double dimscale;  // Group code 40
   double dimasz;  // Group code 41
   double dimexo;  // Group code 42
@@ -98,7 +98,7 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
   double dimdle;  // Group code 46
   double dimtp;  // Group code 47
   double dimtm;  // Group code 48
-  double dimfxl;  // Group code 49 V2007+
+  double dimfxl;  // Group code 49 (AC1021+)
   double dimtxt;  // Group code 140
   double dimcen;  // Group code 141
   double dimtsz;  // Group code 142
@@ -107,51 +107,51 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
   double dimtvp;  // Group code 145
   double dimtfac;  // Group code 146
   double dimgap;  // Group code 147
-  double dimaltrnd;  // Group code 148 V2000+
-  int dimtol;  // Group code 71
-  int dimlim;  // Group code 72
-  int dimtih;  // Group code 73
-  int dimtoh;  // Group code 74
-  int dimse1;  // Group code 75
-  int dimse2;  // Group code 76
-  int dimtad;  // Group code 77
-  int dimzin;  // Group code 78
-  int dimazin;  // Group code 79 V2000+
-  int dimalt;  // Group code 170
-  int dimaltd;  // Group code 171
-  int dimtofl;  // Group code 172
-  int dimsah;  // Group code 173
-  int dimtix;  // Group code 174
-  int dimsoxd;  // Group code 175
-  int dimclrd;  // Group code 176
-  int dimclre;  // Group code 177
-  int dimclrt;  // Group code 178
-  int dimadec;  // Group code 179 V2000+
-  int dimunit;  // Group code 270 R13+ (obsolete 2000+, use dimlunit & dimfrac)
-  int dimdec;  // Group code 271 R13+
-  int dimtdec;  // Group code 272 R13+
-  int dimaltu;  // Group code 273 R13+
-  int dimalttd;  // Group code 274 R13+
-  int dimaunit;  // Group code 275 R13+
-  int dimfrac;  // Group code 276 V2000+
-  int dimlunit;  // Group code 277 V2000+
-  int dimdsep;  // Group code 278 V2000+
-  int dimtmove;  // Group code 279 V2000+
-  int dimjust;  // Group code 280 R13+
-  int dimsd1;  // Group code 281 R13+
-  int dimsd2;  // Group code 282 R13+
-  int dimtolj;  // Group code 283 R13+
-  int dimtzin;  // Group code 284 R13+
-  int dimaltz;  // Group code 285 R13+
-  int dimaltttz;  // Group code 286 R13+
-  int dimfit;  // Group code 287 R13+  (obsolete 2000+, use dimatfit & dimtmove)
-  int dimupt;  // Group code 288 R13+
-  int dimatfit;  // Group code 289 V2000+
-  int dimfxlon;  // Group code 290 V2007+
-  std::string dimtxsty;  // Group code 340 R13+
-  std::string dimldrblk;  // Group code 341 V2000+
-  int dimlwd;  // Group code 371 V2000+
-  int dimlwe;  // Group code 372 V2000+
+  double dimaltrnd;  // Group code 148 (AC1015+)
+  std::int16_t dimtol;  // Group code 71
+  std::int16_t dimlim;  // Group code 72
+  std::int16_t dimtih;  // Group code 73
+  std::int16_t dimtoh;  // Group code 74
+  std::int16_t dimse1;  // Group code 75
+  std::int16_t dimse2;  // Group code 76
+  std::int16_t dimtad;  // Group code 77
+  std::int16_t dimzin;  // Group code 78
+  std::int16_t dimazin;  // Group code 79 (AC1015+)
+  std::int16_t dimalt;  // Group code 170
+  std::int16_t dimaltd;  // Group code 171
+  std::int16_t dimtofl;  // Group code 172
+  std::int16_t dimsah;  // Group code 173
+  std::int16_t dimtix;  // Group code 174
+  std::int16_t dimsoxd;  // Group code 175
+  std::int16_t dimclrd;  // Group code 176
+  std::int16_t dimclre;  // Group code 177
+  std::int16_t dimclrt;  // Group code 178
+  std::int16_t dimadec;  // Group code 179 (AC1015+)
+  std::int16_t dimunit;  // Group code 270 (AC1012+) (obsolete 2000+, use dimlunit & dimfrac)
+  std::int16_t dimdec;  // Group code 271 (AC1012+)
+  std::int16_t dimtdec;  // Group code 272 (AC1012+)
+  std::int16_t dimaltu;  // Group code 273 (AC1012+)
+  std::int16_t dimalttd;  // Group code 274 (AC1012+)
+  std::int16_t dimaunit;  // Group code 275 (AC1012+)
+  std::int16_t dimfrac;  // Group code 276 (AC1015+)
+  std::int16_t dimlunit;  // Group code 277 (AC1015+)
+  std::int16_t dimdsep;  // Group code 278 (AC1015+)
+  std::int16_t dimtmove;  // Group code 279 (AC1015+)
+  std::int16_t dimjust;  // Group code 280 (AC1012+)
+  std::int16_t dimsd1;  // Group code 281 (AC1012+)
+  std::int16_t dimsd2;  // Group code 282 (AC1012+)
+  std::int16_t dimtolj;  // Group code 283 (AC1012+)
+  std::int16_t dimtzin;  // Group code 284 (AC1012+)
+  std::int16_t dimaltz;  // Group code 285 (AC1012+)
+  std::int16_t dimaltttz;  // Group code 286 (AC1012+)
+  std::int16_t dimfit;  // Group code 287 (AC1012+)  (obsolete 2000+, use dimatfit & dimtmove)
+  std::int16_t dimupt;  // Group code 288 (AC1012+)
+  std::int16_t dimatfit;  // Group code 289 (AC1015+)
+  int dimfxlon;  // Group code 290 (AC1021+)
+  std::string dimtxsty;  // Group code 340 (AC1012+)
+  std::string dimldrblk;  // Group code 341 (AC1015+)
+  std::int16_t dimlwd;  // Group code 371 (AC1015+)
+  std::int16_t dimlwe;  // Group code 372 (AC1015+)
 };
 
 /** Class to handle linetype entries
@@ -175,7 +175,7 @@ class EoDxfLinetype : public EoDxfTableEntry {
 
  public:
   std::string desc;  // Group code 3
-  int size;  // Group code 73
+  std::int16_t m_numberOfLinetypeElements;  // Group code 73
   double length;  // Group code 40
   std::vector<double> path;  // Group code 49
  private:
@@ -202,7 +202,7 @@ class EoDxfLayer : public EoDxfTableEntry {
 
  public:
   std::string m_linetypeName;  // Group code 6
-  int m_colorNumber;  // Group code 62 (if negative, then layer is turned off)
+  std::int16_t m_colorNumber;  // Group code 62 (if negative, then layer is turned off)
   int color24;  // Group code 420
   bool m_plottingFlag;  // Group code 290 (if set to zero, then layer is not plotted)
   enum EoDxfLineWidths::lineWidth m_lineweightEnumValue;  // Group code 370
@@ -229,7 +229,7 @@ class EoDxfBlockRecord : public EoDxfTableEntry {
   void Reset();
 
  public:
-  int m_blockInsertionUnits;  // Group code 70
+  std::int16_t m_blockInsertionUnits;  // Group code 70
   EoDxfGeometryBase3d m_firstPoint;
 };
 
@@ -254,7 +254,7 @@ class EoDxfTextStyle : public EoDxfTableEntry {
     height = oblique = 0.0;
     width = lastHeight = 1.0;
     font = "txt";
-    genFlag = 0;  // 2= X mirror, 4= Y mirror
+    m_textGenerationFlag = 0;  // 2= X mirror, 4= Y mirror
     fontFamily = 0;
     EoDxfTableEntry::Reset();
   }
@@ -263,7 +263,7 @@ class EoDxfTextStyle : public EoDxfTableEntry {
   double height;  // Group code 40
   double width;  // Group code 41
   double oblique;  // Group code 50
-  int genFlag;  // Group code 71
+  std::int16_t m_textGenerationFlag;  // Group code 71
   double lastHeight;  // Group code 42
   std::string font;  // Group code 3
   std::string bigFont;  // Group code 4
@@ -307,15 +307,15 @@ class EoDxfVPort : public EoDxfTableEntry {
   double m_backClipPlane{};  // Back clipping plane offset, code 44
   double m_snapRotationAngle{};  // Snap rotation angle, code 50
   double m_viewTwistAngle{};  // View twist angle, code 51
-  int m_viewMode{};  // View mode (VIEWMODE system variable), code 71
-  int m_circleZoomPercent{100};  // Circle zoom percent, code 72
-  int m_fastZoom{1};  // Fast zoom setting, code 73
-  int m_ucsIcon{3};  // UCSICON setting, code 74
-  int m_snapOn{};  // Snap on/off, code 75
-  int m_gridOn{};  // Grid on/off, code 76
-  int m_snapStyle{};  // Snap style, code 77
-  int m_snapIsopair{};  // Snap isopair, code 78
-  int m_gridBehavior{7};  // Grid behavior flags, code 60
+  std::int16_t m_viewMode{};  // Group code 71 (VIEWMODE system variable)
+  std::int16_t m_circleZoomPercent{100};  // Circle zoom percent, code 72
+  std::int16_t m_fastZoom{1};  // Fast zoom setting, code 73
+  std::int16_t m_ucsIcon{3};  // UCSICON setting, code 74
+  std::int16_t m_snapOn{};  // Snap on/off, code 75
+  std::int16_t m_gridOn{};  // Grid on/off, code 76
+  std::int16_t m_snapStyle{};  // Snap style, code 77
+  std::int16_t m_snapIsopair{};  // Snap isopair, code 78
+  std::int16_t m_gridBehavior{7};  // Grid behavior flags, code 60
   /** code 60, bit coded possible values are
    * bit 1 (1) show out of limits
    * bit 2 (2) adaptive grid

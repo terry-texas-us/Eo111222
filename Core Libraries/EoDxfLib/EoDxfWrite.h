@@ -42,7 +42,7 @@ class EoDxfWrite {
   bool WritePoint(EoDxfPoint* point);
   bool WriteLine(EoDxfLine* ent);
 
-  /** @brief Writes a RAY entity to the DXF file (R13+).
+  /** @brief Writes a RAY entity to the DXF file (AC1012+).
    *
    * A RAY is defined by a starting point and a direction vector. The direction vector is derived from the second point
    * of the RAY, which is normalized to ensure it represents only the direction without affecting the length. The method

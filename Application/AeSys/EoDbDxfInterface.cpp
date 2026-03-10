@@ -154,7 +154,7 @@ void EoDbDxfInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSy
   EoDbLineType* convertedLinetype{};
 
   if (!lineTypeTable->Lookup(lineTypeName.c_str(), convertedLinetype)) {
-    auto numberOfElements = static_cast<std::uint16_t>(linetype.size);  // Number of linetype elements (group code 73)
+    auto numberOfElements = static_cast<std::uint16_t>(linetype.m_numberOfLinetypeElements);  // Number of linetype elements (group code 73)
     // double patternLength = linetype.length;                        // group code 40
 
     std::vector<double> dashLengths(numberOfElements);

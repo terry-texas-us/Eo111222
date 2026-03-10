@@ -577,7 +577,7 @@ class EoDxfLineWidths {
 
   static int lineWidth2dwgInt(enum lineWidth lw) { return static_cast<int>(lw); }
 
-  static enum lineWidth dxfInt2lineWidth(int i) {
+  static enum lineWidth dxfInt2lineWidth(std::int16_t i) {
     if (i < 0) {
       if (i == -1) {
         return widthByLayer;

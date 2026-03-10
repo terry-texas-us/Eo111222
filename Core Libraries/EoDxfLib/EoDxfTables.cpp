@@ -18,7 +18,7 @@ void EoDxfTableEntry::ParseCode(int code, EoDxfReader* reader) {
       m_tableName = reader->GetUtf8String();
       break;
     case 70:
-      m_flagValues = reader->GetInt32();
+      m_flagValues = reader->GetInt16();
       break;
     case 1000:
     case 1001:
@@ -54,6 +54,8 @@ void EoDxfTableEntry::ParseCode(int code, EoDxfReader* reader) {
       m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetDouble()));
       break;
     case 1070:
+      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt16()));
+      break;
     case 1071:
       m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt32()));
       break;
@@ -72,7 +74,7 @@ void EoDxfTableEntry::Reset() {
 void EoDxfBlockRecord::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 70:
-      m_blockInsertionUnits = reader->GetInt32();
+      m_blockInsertionUnits = reader->GetInt16();
       m_flagValues = m_blockInsertionUnits;  // Block records only flag: block insertion units
       break;
     default:
@@ -164,121 +166,121 @@ void EoDxfDimensionStyle::ParseCode(int code, EoDxfReader* reader) {
       dimaltrnd = reader->GetDouble();
       break;
     case 71:
-      dimtol = reader->GetInt32();
+      dimtol = reader->GetInt16();
       break;
     case 72:
-      dimlim = reader->GetInt32();
+      dimlim = reader->GetInt16();
       break;
     case 73:
-      dimtih = reader->GetInt32();
+      dimtih = reader->GetInt16();
       break;
     case 74:
-      dimtoh = reader->GetInt32();
+      dimtoh = reader->GetInt16();
       break;
     case 75:
-      dimse1 = reader->GetInt32();
+      dimse1 = reader->GetInt16();
       break;
     case 76:
-      dimse2 = reader->GetInt32();
+      dimse2 = reader->GetInt16();
       break;
     case 77:
-      dimtad = reader->GetInt32();
+      dimtad = reader->GetInt16();
       break;
     case 78:
-      dimzin = reader->GetInt32();
+      dimzin = reader->GetInt16();
       break;
     case 79:
-      dimazin = reader->GetInt32();
+      dimazin = reader->GetInt16();
       break;
     case 170:
-      dimalt = reader->GetInt32();
+      dimalt = reader->GetInt16();
       break;
     case 171:
-      dimaltd = reader->GetInt32();
+      dimaltd = reader->GetInt16();
       break;
     case 172:
-      dimtofl = reader->GetInt32();
+      dimtofl = reader->GetInt16();
       break;
     case 173:
-      dimsah = reader->GetInt32();
+      dimsah = reader->GetInt16();
       break;
     case 174:
-      dimtix = reader->GetInt32();
+      dimtix = reader->GetInt16();
       break;
     case 175:
-      dimsoxd = reader->GetInt32();
+      dimsoxd = reader->GetInt16();
       break;
     case 176:
-      dimclrd = reader->GetInt32();
+      dimclrd = reader->GetInt16();
       break;
     case 177:
-      dimclre = reader->GetInt32();
+      dimclre = reader->GetInt16();
       break;
     case 178:
-      dimclrt = reader->GetInt32();
+      dimclrt = reader->GetInt16();
       break;
     case 179:
-      dimadec = reader->GetInt32();
+      dimadec = reader->GetInt16();
       break;
     case 270:
-      dimunit = reader->GetInt32();
+      dimunit = reader->GetInt16();
       break;
     case 271:
-      dimdec = reader->GetInt32();
+      dimdec = reader->GetInt16();
       break;
     case 272:
-      dimtdec = reader->GetInt32();
+      dimtdec = reader->GetInt16();
       break;
     case 273:
-      dimaltu = reader->GetInt32();
+      dimaltu = reader->GetInt16();
       break;
     case 274:
-      dimalttd = reader->GetInt32();
+      dimalttd = reader->GetInt16();
       break;
     case 275:
-      dimaunit = reader->GetInt32();
+      dimaunit = reader->GetInt16();
       break;
     case 276:
-      dimfrac = reader->GetInt32();
+      dimfrac = reader->GetInt16();
       break;
     case 277:
-      dimlunit = reader->GetInt32();
+      dimlunit = reader->GetInt16();
       break;
     case 278:
-      dimdsep = reader->GetInt32();
+      dimdsep = reader->GetInt16();
       break;
     case 279:
-      dimtmove = reader->GetInt32();
+      dimtmove = reader->GetInt16();
       break;
     case 280:
-      dimjust = reader->GetInt32();
+      dimjust = reader->GetInt16();
       break;
     case 281:
-      dimsd1 = reader->GetInt32();
+      dimsd1 = reader->GetInt16();
       break;
     case 282:
-      dimsd2 = reader->GetInt32();
+      dimsd2 = reader->GetInt16();
       break;
     case 283:
-      dimtolj = reader->GetInt32();
+      dimtolj = reader->GetInt16();
       break;
     case 284:
-      dimtzin = reader->GetInt32();
+      dimtzin = reader->GetInt16();
       break;
     case 285:
-      dimaltz = reader->GetInt32();
+      dimaltz = reader->GetInt16();
       break;
     case 286:
-      dimaltttz = reader->GetInt32();
+      dimaltttz = reader->GetInt16();
       break;
     case 287:
-      dimfit = reader->GetInt32();
+      dimfit = reader->GetInt16();
       break;
     case 288:
-      dimupt = reader->GetInt32();
+      dimupt = reader->GetInt16();
       break;
     case 289:
-      dimatfit = reader->GetInt32();
+      dimatfit = reader->GetInt16();
       break;
     case 290:
       dimfxlon = reader->GetInt32();
@@ -375,8 +377,8 @@ void EoDxfLinetype::ParseCode(int code, EoDxfReader* reader) {
       desc = reader->GetUtf8String();
       break;
     case 73:
-      size = reader->GetInt32();
-      path.reserve(size);
+      m_numberOfLinetypeElements = reader->GetInt16();
+      path.reserve(m_numberOfLinetypeElements);
       break;
     case 40:
       length = reader->GetDouble();
@@ -393,16 +395,16 @@ void EoDxfLinetype::ParseCode(int code, EoDxfReader* reader) {
 
 void EoDxfLinetype::Reset() {
   desc = "";
-  size = 0;
+  m_numberOfLinetypeElements = 0;
   length = 0.0;
   pathIdx = 0;
   EoDxfTableEntry::Reset();
 }
 
 void EoDxfLinetype::Update() {
-  double d = 0;
-  size = static_cast<int>(path.size());
-  for (int i = 0; i < size; i++) { d += fabs(path.at(i)); }
+  double d{};
+  m_numberOfLinetypeElements = static_cast<std::int16_t>(path.size());
+  for (int i = 0; i < m_numberOfLinetypeElements; i++) { d += fabs(path.at(i)); }
   length = d;
 }
 
@@ -412,13 +414,13 @@ void EoDxfLayer::ParseCode(int code, EoDxfReader* reader) {
       m_linetypeName = reader->GetUtf8String();
       break;
     case 62:
-      m_colorNumber = reader->GetInt32();
+      m_colorNumber = reader->GetInt16();
       break;
     case 290:
       m_plottingFlag = reader->GetBool();
       break;
     case 370:
-      m_lineweightEnumValue = EoDxfLineWidths::dxfInt2lineWidth(reader->GetInt32());
+      m_lineweightEnumValue = EoDxfLineWidths::dxfInt2lineWidth(reader->GetInt16());
       break;
     case 390:
       m_handleOfPlotStyleName = reader->GetString();
@@ -466,7 +468,7 @@ void EoDxfTextStyle::ParseCode(int code, EoDxfReader* reader) {
       lastHeight = reader->GetDouble();
       break;
     case 71:
-      genFlag = reader->GetInt32();
+      m_textGenerationFlag = reader->GetInt16();
       break;
     case 1071:
       fontFamily = reader->GetInt32();
@@ -555,31 +557,31 @@ void EoDxfVPort::ParseCode(int code, EoDxfReader* reader) {
       m_viewTwistAngle = reader->GetDouble();
       break;
     case 60:
-      m_gridBehavior = reader->GetInt32();
+      m_gridBehavior = reader->GetInt16();
       break;
     case 71:
-      m_viewMode = reader->GetInt32();
+      m_viewMode = reader->GetInt16();
       break;
     case 72:
-      m_circleZoomPercent = reader->GetInt32();
+      m_circleZoomPercent = reader->GetInt16();
       break;
     case 73:
-      m_fastZoom = reader->GetInt32();
+      m_fastZoom = reader->GetInt16();
       break;
     case 74:
-      m_ucsIcon = reader->GetInt32();
+      m_ucsIcon = reader->GetInt16();
       break;
     case 75:
-      m_snapOn = reader->GetInt32();
+      m_snapOn = reader->GetInt16();
       break;
     case 76:
-      m_gridOn = reader->GetInt32();
+      m_gridOn = reader->GetInt16();
       break;
     case 77:
-      m_snapStyle = reader->GetInt32();
+      m_snapStyle = reader->GetInt16();
       break;
     case 78:
-      m_snapIsopair = reader->GetInt32();
+      m_snapIsopair = reader->GetInt16();
       break;
     default:
       EoDxfTableEntry::ParseCode(code, reader);

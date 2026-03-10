@@ -384,7 +384,7 @@ bool EoDxfWrite::WriteLinetype(EoDxfLinetype* lineType) {
   m_writer->WriteUtf8String(3, lineType->desc);
   lineType->Update();
   m_writer->WriteInt16(72, 65);
-  m_writer->WriteInt16(73, lineType->size);
+  m_writer->WriteInt16(73, lineType->m_numberOfLinetypeElements);
   m_writer->WriteDouble(40, lineType->length);
 
   for (unsigned int i = 0; i < lineType->path.size(); i++) {
@@ -413,7 +413,7 @@ bool EoDxfWrite::WriteTextstyle(EoDxfTextStyle* textStyle) {
   m_writer->WriteDouble(40, textStyle->height);
   m_writer->WriteDouble(41, textStyle->width);
   m_writer->WriteDouble(50, textStyle->oblique);
-  m_writer->WriteInt16(71, textStyle->genFlag);
+  m_writer->WriteInt16(71, textStyle->m_textGenerationFlag);
   m_writer->WriteDouble(42, textStyle->lastHeight);
 
   m_writer->WriteUtf8String(3, textStyle->font);
