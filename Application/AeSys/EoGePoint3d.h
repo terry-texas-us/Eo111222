@@ -2,8 +2,8 @@
 
 #include <format>
 
+#include "EoDxfGeometry.h"
 #include "EoGeVector3d.h"
-#include "EoDxfBase.h"
 
 class EoGePoint3d;
 class EoGePoint4d;

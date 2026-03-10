@@ -2,7 +2,8 @@
 #include <new>
 #include <string>
 
-#include "EoDxfBase.h"
+#include "EoDxfGroupCodeValuesVariant.h"
+#include "EoDxfLineWidths.h"
 #include "EoDxfReader.h"
 #include "EoDxfTables.h"
 

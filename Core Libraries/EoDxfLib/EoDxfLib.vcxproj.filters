@@ -87,6 +87,11 @@
     <ClInclude Include="EoDxfMLeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EoDxfGeometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EoDxfGroupCodeValuesVariant.h" />
+    <ClInclude Include="EoDxfLineWidths.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

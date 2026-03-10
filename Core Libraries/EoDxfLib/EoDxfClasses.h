@@ -1,7 +1,8 @@
 #pragma once
 
-#include "EoDxfBase.h"
+#include <string>
 
+#include "EoDxfBase.h"
 class EoDxfReader;
 class EoDxfWriter;
 

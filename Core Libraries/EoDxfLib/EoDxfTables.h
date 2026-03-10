@@ -6,23 +6,6 @@
 #include "EoDxfBase.h"
 #include "EoDxfReader.h"
 
-namespace EoDxf {
-
-enum class SymbolTable : std::uint8_t {
-  Unknown,
-  Block,
-  DimStyle,
-  Layer,
-  Linetype,
-  RegApp,
-  TextStyle,
-  UCS,
-  View,
-  Viewport
-};
-
-}  // namespace EoDxf
-
 class EoDxfTableEntry {
  public:
   EoDxfTableEntry() : tType{EoDxf::SymbolTable::Unknown}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}

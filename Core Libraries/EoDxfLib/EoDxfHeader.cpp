@@ -105,11 +105,11 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       m_currentVariant->AddDouble(code, reader->GetDouble());
       break;
     case 62:
-      m_currentVariant->AddInt16(code, static_cast<std::int16_t>(reader->GetInt32()));
+      m_currentVariant->AddInt16(code, reader->GetInt16());
       break;
     case 70:  // 16-bit integer / bit flags — stored as Int16 in the variant to preserve the DXF-specified type.
               // Use GetInt16() or the widening GetInteger() to retrieve.
-      m_currentVariant->AddInt16(code, static_cast<std::int16_t>(reader->GetInt32()));
+      m_currentVariant->AddInt16(code, reader->GetInt16());
       break;
     case 280:  // 8-bit flag / small int — DXF spec groups 280-289 as 16-bit integer range.
       m_currentVariant->AddInt16(code, static_cast<std::int16_t>(reader->GetInt32()));
@@ -129,10 +129,10 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       m_currentVariant->AddHandle(code, handle);
     } break;
     case 370:
-      m_currentVariant->AddInt16(code, static_cast<std::int16_t>(reader->GetInt32()));
+      m_currentVariant->AddInt16(code, reader->GetInt16());
       break;
     case 380:
-      m_currentVariant->AddInt16(code, static_cast<std::int16_t>(reader->GetInt32()));
+      m_currentVariant->AddInt16(code, reader->GetInt16());
       break;
     case 390:
       m_currentVariant->AddString(code, reader->GetUtf8String());

@@ -5,7 +5,6 @@
 #include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbPrimitive.h"
-#include "EoDxfBase.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"

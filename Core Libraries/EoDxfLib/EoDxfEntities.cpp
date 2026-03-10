@@ -7,6 +7,8 @@
 
 #include "EoDxfBase.h"
 #include "EoDxfEntities.h"
+#include "EoDxfGeometry.h"
+#include "EoDxfGroupCodeValuesVariant.h"
 #include "EoDxfReader.h"
 
 EoDxfEntity::EoDxfEntity(const EoDxfEntity& other)
@@ -136,7 +138,7 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
       m_color = reader->GetInt16();
       break;
     case 370:
-      m_lineWeight = EoDxfLineWidths::dxfInt2lineWidth(reader->GetInt32());
+      m_lineWeight = EoDxfLineWidths::dxfInt2lineWidth(reader->GetInt16());
       break;
     case 48:
       m_lineTypeScale = reader->GetDouble();

@@ -11,7 +11,6 @@
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "EoDxfBase.h"
 
 class EoDbBlockReference : public EoDbPrimitive {
   CString m_blockName;

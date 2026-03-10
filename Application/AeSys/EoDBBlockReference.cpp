@@ -17,7 +17,6 @@
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "EoDxfBase.h"
 
 EoDbBlockReference::EoDbBlockReference() {
   m_insertionPoint = EoGePoint3d::kOrigin;

@@ -1,6 +1,6 @@
 #include <string>
 
-#include "EoDxfBase.h"
+#include "EoDxfGroupCodeValuesVariant.h"
 #include "EoDxfObjects.h"
 #include "EoDxfReader.h"
 

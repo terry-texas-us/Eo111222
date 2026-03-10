@@ -1,7 +1,6 @@
 #include <string>
 #include <vector>
 
-#include "EoDxfBase.h"
 #include "EoDxfEntities.h"
 #include "EoDxfMLeader.h"
 #include "EoDxfReader.h"

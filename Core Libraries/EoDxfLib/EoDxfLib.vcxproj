@@ -157,8 +157,11 @@
     <ClInclude Include="EoDxfBase.h" />
     <ClInclude Include="EoDxfClasses.h" />
     <ClInclude Include="EoDxfEntities.h" />
+    <ClInclude Include="EoDxfGeometry.h" />
+    <ClInclude Include="EoDxfGroupCodeValuesVariant.h" />
     <ClInclude Include="EoDxfHeader.h" />
     <ClInclude Include="EoDxfInterface.h" />
+    <ClInclude Include="EoDxfLineWidths.h" />
     <ClInclude Include="EoDxfMLeader.h" />
     <ClInclude Include="EoDxfObjects.h" />
     <ClInclude Include="EoDxfTables.h" />

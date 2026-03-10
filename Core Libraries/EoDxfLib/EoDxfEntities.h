@@ -7,71 +7,12 @@
 #include <vector>
 
 #include "EoDxfBase.h"
+#include "EoDxfGeometry.h"
+#include "EoDxfGroupCodeValuesVariant.h"
+#include "EoDxfLineWidths.h"
 #include "EoDxfReader.h"
 
 class EoDxfPolyline;
-
-namespace EoDxf {
-
-//! Entity's type.
-enum ETYPE {
-  E3DFACE,
-  //        E3DSOLID, //encripted propietry data
-  //        ACAD_PROXY_ENTITY,
-  ARC,
-  //        ATTDEF,
-  //        ATTRIB,
-  BLOCK,  // and ENDBLK
-  //        BODY, //encripted propietry data
-  CIRCLE,
-  DIMENSION,
-  DIMALIGNED,
-  DIMLINEAR,
-  DIMRADIAL,
-  DIMDIAMETRIC,
-  DIMANGULAR,
-  DIMANGULAR3P,
-  DIMORDINATE,
-  ELLIPSE,
-  HATCH,
-  //        HELIX,
-  IMAGE,
-  INSERT,
-  LEADER,
-  //        LIGHT,
-  LINE,
-  LWPOLYLINE,
-  //        MESH,
-  //        MLINE,
-  //        MLEADERSTYLE,
-  MLEADER,
-  MTEXT,
-  //        OLEFRAME,
-  //        OLE2FRAME,
-  POINT,
-  POLYLINE,
-  RAY,
-  //        REGION, //encripted propietry data
-  //        SECTION,
-  SEQEND,
-  //        SHAPE,
-  SOLID,
-  SPLINE,
-  //        SUN,
-  //        SURFACE, //encripted propietry data can be four types
-  //        TABLE,
-  TEXT,
-  //        TOLERANCE,
-  TRACE,
-  UNDERLAY,
-  VERTEX,
-  VIEWPORT,
-  //        WIPEOUT, //WIPEOUTVARIABLE
-  XLINE,
-  UNKNOWN
-};
-
-}  // namespace EoDxf
 
 /** @brief Base class for entities
  */

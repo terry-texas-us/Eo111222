@@ -5,6 +5,7 @@
 #include <string>
 
 #include "EoDxfBase.h"
+#include "EoDxfGroupCodeValuesVariant.h"
 
 class EoDxfReader;
 class EoDxfWriter;

@@ -8,13 +8,12 @@
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "EoDxfBase.h"
-#include "EoDxfInterface.h"
 
 class EoDbConic : public EoDbPrimitive {
   EoGePoint3d m_center{};
