@@ -429,7 +429,7 @@ bool EoDxfWrite::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& e
       case 1005: {
         int cc = (*it)->Code();
         if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::String) {
-          m_writer->WriteUtf8String(cc, *(*it)->m_content.s);
+          m_writer->WriteUtf8String(cc, (*it)->GetString());
         }
         //            m_writer->WriteUtf8String((*it)->code, (*it)->content.s);
         break;
@@ -439,9 +439,10 @@ bool EoDxfWrite::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& e
       case 1012:
       case 1013:
         if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::GeometryBase) {
-          m_writer->WriteDouble((*it)->Code(), (*it)->m_content.v->x);
-          m_writer->WriteDouble((*it)->Code() + 10, (*it)->m_content.v->y);
-          m_writer->WriteDouble((*it)->Code() + 20, (*it)->m_content.v->z);
+          const auto& geometryBase = (*it)->GetGeometryBase();
+          m_writer->WriteDouble((*it)->Code(), geometryBase.x);
+          m_writer->WriteDouble((*it)->Code() + 10, geometryBase.y);
+          m_writer->WriteDouble((*it)->Code() + 20, geometryBase.z);
         }
         break;
       case 1040:

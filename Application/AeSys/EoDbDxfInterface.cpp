@@ -38,7 +38,7 @@ void EoDbDxfInterface::SetHeaderSectionVariable(
     auto& second = *(it->second);
     switch (second.GetType()) {
       case EoDxfGroupCodeValuesVariant::Type::String:
-        value = Eo::MultiByteToWString(second.m_content.s->c_str());
+        value = Eo::MultiByteToWString(second.GetString().c_str());
         break;
       case EoDxfGroupCodeValuesVariant::Type::Integer:
         value = second.GetInteger();
@@ -47,7 +47,7 @@ void EoDbDxfInterface::SetHeaderSectionVariable(
         value = second.GetDouble();
         break;
       case EoDxfGroupCodeValuesVariant::Type::GeometryBase:
-        value = EoGePoint3d(*second.m_content.v);
+        value = EoGePoint3d(second.GetGeometryBase());
         break;
       case EoDxfGroupCodeValuesVariant::Type::Invalid:
       default:
@@ -153,7 +153,8 @@ void EoDbDxfInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSy
   EoDbLineType* convertedLinetype{};
 
   if (!lineTypeTable->Lookup(lineTypeName.c_str(), convertedLinetype)) {
-    auto numberOfElements = static_cast<std::uint16_t>(linetype.m_numberOfLinetypeElements);  // Number of linetype elements (group code 73)
+    auto numberOfElements =
+        static_cast<std::uint16_t>(linetype.m_numberOfLinetypeElements);  // Number of linetype elements (group code 73)
     // double patternLength = linetype.length;                        // group code 40
 
     std::vector<double> dashLengths(numberOfElements);
