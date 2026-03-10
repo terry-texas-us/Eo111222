@@ -14,7 +14,7 @@ class EoDxfWriter;
  */
 class EoDxfHeader {
  public:
-  EoDxfHeader() { m_version = EoDxf::Version::AC1021; }
+  EoDxfHeader() { m_version = static_cast<int>(EoDxf::Version::AC1021); }
 
   EoDxfHeader(const EoDxfHeader& other);
 

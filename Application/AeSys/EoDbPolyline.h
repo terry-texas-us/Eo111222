@@ -18,10 +18,10 @@ class EoDbPolyline : public EoDbPrimitive {
   static int sm_pivotVertex;
 
  public:
-  static const std::uint16_t sm_Closed = 0x0010;
+  static const std::int16_t sm_Closed = 0x0010;
 
  private:
-  std::uint16_t m_flags;
+  std::int16_t m_flags;
   EoGePoint3dArray m_pts;
 
  public:
@@ -69,7 +69,7 @@ class EoDbPolyline : public EoDbPrimitive {
   static std::uint16_t& EdgeToEvaluate() noexcept { return sm_EdgeToEvaluate; }
   static std::uint16_t& Edge() noexcept { return sm_Edge; }
   bool IsLooped() const noexcept { return (m_flags != 0); }
-  void SetFlag(const std::uint16_t flags) noexcept { m_flags = flags; }
+  void SetFlag(const std::int16_t flags) noexcept { m_flags = flags; }
 
   void SetNumberOfVertices(const size_t numberOfVertices) { m_pts.SetSize(static_cast<int64_t>(numberOfVertices)); }
 

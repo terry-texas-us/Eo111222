@@ -93,7 +93,7 @@ bool EoDxfWrite::WriteEntity(EoDxfEntity* entity) {
   entity->m_handle = ++m_entityCount;
   m_writer->WriteString(5, ToHexString(entity->m_handle));
   m_writer->WriteString(100, "AcDbEntity");
-  if (entity->m_space == 1) { m_writer->WriteInt16(67, 1); }
+  if (entity->m_space == EoDxf::Space::PaperSpace) { m_writer->WriteInt16(67, 1); }
 
   m_writer->WriteUtf8String(8, entity->m_layer);
   m_writer->WriteUtf8String(6, entity->m_lineType);

@@ -20,6 +20,8 @@ class EoDxfReader {
   [[nodiscard]] std::string ToUtf8String(const std::string& t) { return m_decoder.ToUtf8(t); }
   [[nodiscard]] std::string GetUtf8String() const { return m_decoder.ToUtf8(m_string); }
   [[nodiscard]] constexpr double GetDouble() const noexcept { return m_double; }
+
+  [[nodiscard]] constexpr std::int16_t GetInt16() const noexcept { return static_cast<std::int16_t>(m_intData); }
   [[nodiscard]] constexpr int GetInt32() const noexcept { return m_intData; }
   [[nodiscard]] constexpr unsigned long long int GetInt64() const noexcept { return m_int64; }
   [[nodiscard]] constexpr bool GetBool() const noexcept { return (m_intData == 0) ? false : true; }

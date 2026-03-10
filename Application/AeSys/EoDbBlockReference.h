@@ -20,8 +20,8 @@ class EoDbBlockReference : public EoDbPrimitive {
   EoGeVector3d m_scaleFactors;
   double m_rotation;
 
-  std::uint16_t m_columnCount;
-  std::uint16_t m_rowCount;
+  std::int16_t m_columnCount;
+  std::int16_t m_rowCount;
   double m_columnSpacing;
   double m_rowSpacing;
 
@@ -67,24 +67,24 @@ class EoDbBlockReference : public EoDbPrimitive {
  public:
   EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& insertionPoint) const;
 
-  std::uint16_t ColumnCount() const noexcept { return m_columnCount; }
+  [[nodiscard]] constexpr std::int16_t ColumnCount() const noexcept { return m_columnCount; }
   double ColumnSpacing() const noexcept { return m_columnSpacing; }
   const CString& BlockName() const noexcept { return m_blockName; }
   double Rotation() const noexcept { return m_rotation; }
   const EoGeVector3d& ScaleFactors() const noexcept { return m_scaleFactors; }
   const EoGePoint3d& InsertionPoint() const noexcept { return m_insertionPoint; }
   const EoGeVector3d& Normal() const noexcept { return m_normal; }
-  std::uint16_t RowCount() const noexcept { return m_rowCount; }
+  [[nodiscard]] constexpr std::int16_t RowCount() const noexcept { return m_rowCount; }
   double RowSpacing() const noexcept { return m_rowSpacing; }
 
-  void SetColumns(std::uint16_t columns) { m_columnCount = columns; }
+  void SetColumns(std::int16_t columns) { m_columnCount = columns; }
   void SetColumnSpacing(double columnSpacing) { m_columnSpacing = columnSpacing; }
   void SetName(CString name) { m_blockName = std::move(name); }
   void SetNormal(EoGeVector3d normal) { m_normal = std::move(normal); }
   void SetInsertionPoint(const EoDxfGeometryBase3d& point);
   void SetInsertionPoint(const EoGePoint3d& point) { m_insertionPoint = point; }
   void SetRotation(double rotation) { m_rotation = rotation; }
-  void SetRows(std::uint16_t rows) { m_rowCount = rows; }
+  void SetRows(std::int16_t rows) { m_rowCount = rows; }
   void SetRowSpacing(double rowSpacing) { m_rowSpacing = rowSpacing; }
   void SetScaleFactors(const EoGeVector3d& scaleFactors) { m_scaleFactors = scaleFactors; }
 };

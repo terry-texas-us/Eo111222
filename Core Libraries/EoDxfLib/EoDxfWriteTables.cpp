@@ -435,40 +435,46 @@ bool EoDxfWrite::WriteVport(EoDxfVPort* viewport) {
   m_writer->WriteString(100, "AcDbViewportTableRecord");
   m_writer->WriteUtf8String(2, viewport->m_tableName);
 
-  m_writer->WriteInt16(70, viewport->m_flagValues);
-  m_writer->WriteDouble(10, viewport->lowerLeft.x);
-  m_writer->WriteDouble(20, viewport->lowerLeft.y);
-  m_writer->WriteDouble(11, viewport->upperRight.x);
-  m_writer->WriteDouble(21, viewport->upperRight.y);
-  m_writer->WriteDouble(12, viewport->center.x);
-  m_writer->WriteDouble(22, viewport->center.y);
-  m_writer->WriteDouble(13, viewport->snapBase.x);
-  m_writer->WriteDouble(23, viewport->snapBase.y);
-  m_writer->WriteDouble(14, viewport->snapSpacing.x);
-  m_writer->WriteDouble(24, viewport->snapSpacing.y);
-  m_writer->WriteDouble(15, viewport->gridSpacing.x);
-  m_writer->WriteDouble(25, viewport->gridSpacing.y);
-  m_writer->WriteDouble(16, viewport->viewDir.x);
-  m_writer->WriteDouble(26, viewport->viewDir.y);
-  m_writer->WriteDouble(36, viewport->viewDir.z);
-  m_writer->WriteDouble(17, viewport->viewTarget.x);
-  m_writer->WriteDouble(27, viewport->viewTarget.y);
-  m_writer->WriteDouble(37, viewport->viewTarget.z);
-  m_writer->WriteDouble(40, viewport->height);
-  m_writer->WriteDouble(41, viewport->ratio);
-  m_writer->WriteDouble(42, viewport->lensHeight);
-  m_writer->WriteDouble(43, viewport->frontClip);
-  m_writer->WriteDouble(44, viewport->backClip);
-  m_writer->WriteDouble(50, viewport->snapAngle);
-  m_writer->WriteDouble(51, viewport->twistAngle);
-  m_writer->WriteInt16(71, viewport->viewMode);
-  m_writer->WriteInt16(72, viewport->circleZoom);
-  m_writer->WriteInt16(73, viewport->fastZoom);
-  m_writer->WriteInt16(74, viewport->ucsIcon);
-  m_writer->WriteInt16(75, viewport->snap);
-  m_writer->WriteInt16(76, viewport->grid);
-  m_writer->WriteInt16(77, viewport->snapStyle);
-  m_writer->WriteInt16(78, viewport->snapIsopair);
+  if (viewport->m_flagValues != 0) { m_writer->WriteInt16(70, viewport->m_flagValues); }
+  if (!viewport->m_lowerLeftCorner.IsZero()) {
+    m_writer->WriteDouble(10, viewport->m_lowerLeftCorner.x);
+    m_writer->WriteDouble(20, viewport->m_lowerLeftCorner.y);
+  }
+  m_writer->WriteDouble(11, viewport->m_upperRightCorner.x);
+  m_writer->WriteDouble(21, viewport->m_upperRightCorner.y);
+  m_writer->WriteDouble(12, viewport->m_viewCenter.x);
+  m_writer->WriteDouble(22, viewport->m_viewCenter.y);
+  if (!viewport->m_snapBasePoint.IsZero()) {
+    m_writer->WriteDouble(13, viewport->m_snapBasePoint.x);
+    m_writer->WriteDouble(23, viewport->m_snapBasePoint.y);
+  }
+  m_writer->WriteDouble(14, viewport->m_snapSpacing.x);
+  m_writer->WriteDouble(24, viewport->m_snapSpacing.y);
+  m_writer->WriteDouble(15, viewport->m_gridSpacing.x);
+  m_writer->WriteDouble(25, viewport->m_gridSpacing.y);
+  m_writer->WriteDouble(16, viewport->m_viewDirection.x);
+  m_writer->WriteDouble(26, viewport->m_viewDirection.y);
+  m_writer->WriteDouble(36, viewport->m_viewDirection.z);
+  if (!viewport->m_viewTargetPoint.IsZero()) {
+    m_writer->WriteDouble(17, viewport->m_viewTargetPoint.x);
+    m_writer->WriteDouble(27, viewport->m_viewTargetPoint.y);
+    m_writer->WriteDouble(37, viewport->m_viewTargetPoint.z);
+  }
+  m_writer->WriteDouble(40, viewport->m_viewHeight);
+  m_writer->WriteDouble(41, viewport->m_viewAspectRatio);
+  m_writer->WriteDouble(42, viewport->m_lensLength);
+  if (viewport->m_frontClipPlane != 0.0) { m_writer->WriteDouble(43, viewport->m_frontClipPlane); }
+  if (viewport->m_backClipPlane != 0.0) { m_writer->WriteDouble(44, viewport->m_backClipPlane); }
+  if (viewport->m_snapRotationAngle != 0.0) { m_writer->WriteDouble(50, viewport->m_snapRotationAngle); }
+  if (viewport->m_viewTwistAngle != 0.0) { m_writer->WriteDouble(51, viewport->m_viewTwistAngle); }
+  if (viewport->m_viewMode != 0) { m_writer->WriteInt16(71, viewport->m_viewMode); }
+  m_writer->WriteInt16(72, viewport->m_circleZoomPercent);
+  m_writer->WriteInt16(73, viewport->m_fastZoom);
+  m_writer->WriteInt16(74, viewport->m_ucsIcon);
+  if (viewport->m_snapOn != 0) { m_writer->WriteInt16(75, viewport->m_snapOn); }
+  if (viewport->m_gridOn != 0) { m_writer->WriteInt16(76, viewport->m_gridOn); }
+  if (viewport->m_snapStyle != 0) { m_writer->WriteInt16(77, viewport->m_snapStyle); }
+  if (viewport->m_snapIsopair != 0) { m_writer->WriteInt16(78, viewport->m_snapIsopair); }
   if (m_version > EoDxf::Version::AC1014) {
     m_writer->WriteInt16(281, 0);
     m_writer->WriteInt16(65, 1);
@@ -485,7 +491,7 @@ bool EoDxfWrite::WriteVport(EoDxfVPort* viewport) {
     m_writer->WriteDouble(146, 0.0);
     if (m_version > EoDxf::Version::AC1018) {
       m_writer->WriteString(348, "10020");
-      m_writer->WriteInt16(60, viewport->gridBehavior);
+      m_writer->WriteInt16(60, viewport->m_gridBehavior);
       m_writer->WriteInt16(61, 5);
       m_writer->WriteBool(292, 1);
       m_writer->WriteInt16(282, 1);

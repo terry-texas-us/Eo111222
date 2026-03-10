@@ -150,7 +150,7 @@ bool EoDxfWrite::WriteLeader(EoDxfLeader* leader) {
   }
   if (leader->m_colorToUse != 0) { m_writer->WriteInt16(77, leader->m_colorToUse); }
 
-  if (leader->m_associatedAnnotationHandle != EoDxf::HandleCodes::NoHandle) {
+  if (leader->m_associatedAnnotationHandle != EoDxf::NoHandle) {
     m_writer->WriteString(340, ToHexString(leader->m_associatedAnnotationHandle));
   }
 
@@ -186,7 +186,7 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
   m_writer->WriteInt16(170, mLeader->m_leaderType);
   m_writer->WriteInt16(91, mLeader->m_leaderLineColor);
 
-  if (mLeader->m_leaderLineTypeHandle != EoDxf::HandleCodes::NoHandle) {
+  if (mLeader->m_leaderLineTypeHandle != EoDxf::NoHandle) {
     m_writer->WriteString(341, ToHexString(mLeader->m_leaderLineTypeHandle));
   }
   m_writer->WriteInt16(171, mLeader->m_leaderLineWeight);
@@ -196,7 +196,7 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
   m_writer->WriteDouble(42, mLeader->m_arrowheadSize);
   m_writer->WriteInt16(172, mLeader->m_contentType);
 
-  if (mLeader->m_textStyleHandle != EoDxf::HandleCodes::NoHandle) {
+  if (mLeader->m_textStyleHandle != EoDxf::NoHandle) {
     m_writer->WriteString(343, ToHexString(mLeader->m_textStyleHandle));
   }
   m_writer->WriteInt16(173, mLeader->m_textLeftAttachmentType);
@@ -206,7 +206,7 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
   m_writer->WriteInt32(92, mLeader->m_textColor);
   m_writer->WriteBool(292, mLeader->m_enableFrameText);
 
-  if (mLeader->m_blockContentHandle != EoDxf::HandleCodes::NoHandle) {
+  if (mLeader->m_blockContentHandle != EoDxf::NoHandle) {
     m_writer->WriteString(344, ToHexString(mLeader->m_blockContentHandle));
   }
   m_writer->WriteInt32(93, mLeader->m_blockContentColor);
@@ -217,7 +217,7 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
   m_writer->WriteInt16(176, mLeader->m_blockContentConnectionType);
   m_writer->WriteBool(293, mLeader->m_enableAnnotationScale);
 
-  if (mLeader->m_leaderStyleHandle != EoDxf::HandleCodes::NoHandle) {
+  if (mLeader->m_leaderStyleHandle != EoDxf::NoHandle) {
     m_writer->WriteString(340, ToHexString(mLeader->m_leaderStyleHandle));
   }
   m_writer->WriteInt32(90, mLeader->m_propertyOverrideFlag);
@@ -265,12 +265,12 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
         m_writer->WriteDouble(30, vertex.z);
       }
       m_writer->WriteInt32(91, line.m_leaderLineIndex);
-      if (line.m_leaderLineColorOverride != EoDxf::ColorCodes::ColorByLayer) {
+      if (line.m_leaderLineColorOverride != EoDxf::colorByLayer) {
         m_writer->WriteInt32(92, line.m_leaderLineColorOverride);
       }
       if (line.m_leaderLineWeightOverride >= 0) { m_writer->WriteInt16(171, line.m_leaderLineWeightOverride); }
       if (std::abs(line.m_arrowheadSize) > EoDxf::numericEpsilon) { m_writer->WriteDouble(40, line.m_arrowheadSize); }
-      if (line.m_arrowheadHandle != EoDxf::HandleCodes::NoHandle) {
+      if (line.m_arrowheadHandle != EoDxf::NoHandle) {
         m_writer->WriteString(341, ToHexString(line.m_arrowheadHandle));
       }
       m_writer->WriteString(305, "}");
@@ -297,13 +297,14 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
     m_writer->WriteDouble(141, contextData.m_textLineSpacingFactor);
     m_writer->WriteInt16(171, contextData.m_textLineSpacingStyle);
     m_writer->WriteInt16(172, contextData.m_textBackgroundFill);
-    if (contextData.m_textStyleHandle != EoDxf::HandleCodes::NoHandle) {
+    if (contextData.m_textStyleHandle != EoDxf::NoHandle) {
       m_writer->WriteString(340, ToHexString(contextData.m_textStyleHandle));
     }
     if (!contextData.m_textString.empty()) {
       auto text = m_writer->FromUtf8String(contextData.m_textString);
       size_t chunkOffset{};
-      for (; (text.size() - chunkOffset) > EoDxf::StringGroupCodeMaxChunk; chunkOffset += EoDxf::StringGroupCodeMaxChunk) {
+      for (; (text.size() - chunkOffset) > EoDxf::StringGroupCodeMaxChunk;
+          chunkOffset += EoDxf::StringGroupCodeMaxChunk) {
         m_writer->WriteString(3, text.substr(chunkOffset, EoDxf::StringGroupCodeMaxChunk));
       }
       m_writer->WriteString(1, text.substr(chunkOffset));
@@ -312,7 +313,7 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
   }
 
   // --- Block content (non-MText) ---
-  if (contextData.m_blockContentHandle != EoDxf::HandleCodes::NoHandle) {
+  if (contextData.m_blockContentHandle != EoDxf::NoHandle) {
     m_writer->WriteString(341, ToHexString(contextData.m_blockContentHandle));
     m_writer->WriteDouble(14, contextData.m_blockContentNormalDirection.x);
     m_writer->WriteDouble(24, contextData.m_blockContentNormalDirection.y);

@@ -480,103 +480,106 @@ void EoDxfTextStyle::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfVPort::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 10:
-      lowerLeft.x = reader->GetDouble();
+      m_lowerLeftCorner.x = reader->GetDouble();
       break;
     case 20:
-      lowerLeft.y = reader->GetDouble();
+      m_lowerLeftCorner.y = reader->GetDouble();
       break;
     case 11:
-      upperRight.x = reader->GetDouble();
+      m_upperRightCorner.x = reader->GetDouble();
       break;
     case 21:
-      upperRight.y = reader->GetDouble();
+      m_upperRightCorner.y = reader->GetDouble();
       break;
     case 12:
-      center.x = reader->GetDouble();
+      m_viewCenter.x = reader->GetDouble();
       break;
     case 22:
-      center.y = reader->GetDouble();
+      m_viewCenter.y = reader->GetDouble();
       break;
     case 13:
-      snapBase.x = reader->GetDouble();
+      m_snapBasePoint.x = reader->GetDouble();
       break;
     case 23:
-      snapBase.y = reader->GetDouble();
+      m_snapBasePoint.y = reader->GetDouble();
       break;
     case 14:
-      snapSpacing.x = reader->GetDouble();
+      m_snapSpacing.x = reader->GetDouble();
       break;
     case 24:
-      snapSpacing.y = reader->GetDouble();
+      m_snapSpacing.y = reader->GetDouble();
       break;
     case 15:
-      gridSpacing.x = reader->GetDouble();
+      m_gridSpacing.x = reader->GetDouble();
       break;
     case 25:
-      gridSpacing.y = reader->GetDouble();
+      m_gridSpacing.y = reader->GetDouble();
       break;
     case 16:
-      viewDir.x = reader->GetDouble();
+      m_viewDirection.x = reader->GetDouble();
       break;
     case 26:
-      viewDir.y = reader->GetDouble();
+      m_viewDirection.y = reader->GetDouble();
       break;
     case 36:
-      viewDir.z = reader->GetDouble();
+      m_viewDirection.z = reader->GetDouble();
       break;
     case 17:
-      viewTarget.x = reader->GetDouble();
+      m_viewTargetPoint.x = reader->GetDouble();
       break;
     case 27:
-      viewTarget.y = reader->GetDouble();
+      m_viewTargetPoint.y = reader->GetDouble();
       break;
     case 37:
-      viewTarget.z = reader->GetDouble();
+      m_viewTargetPoint.z = reader->GetDouble();
       break;
     case 40:
-      height = reader->GetDouble();
+      m_viewHeight = reader->GetDouble();
       break;
     case 41:
-      ratio = reader->GetDouble();
+      m_viewAspectRatio = reader->GetDouble();
       break;
     case 42:
-      lensHeight = reader->GetDouble();
+      m_lensLength = reader->GetDouble();
       break;
     case 43:
-      frontClip = reader->GetDouble();
+      m_frontClipPlane = reader->GetDouble();
       break;
     case 44:
-      backClip = reader->GetDouble();
+      m_backClipPlane = reader->GetDouble();
       break;
     case 50:
-      snapAngle = reader->GetDouble();
+      m_snapRotationAngle = reader->GetDouble();
       break;
     case 51:
-      twistAngle = reader->GetDouble();
+      m_viewTwistAngle = reader->GetDouble();
+      break;
+    case 60:
+      m_gridBehavior = reader->GetInt32();
       break;
     case 71:
-      viewMode = reader->GetInt32();
+      m_viewMode = reader->GetInt32();
       break;
     case 72:
-      circleZoom = reader->GetInt32();
+      m_circleZoomPercent = reader->GetInt32();
       break;
     case 73:
-      fastZoom = reader->GetInt32();
+      m_fastZoom = reader->GetInt32();
       break;
     case 74:
-      ucsIcon = reader->GetInt32();
+      m_ucsIcon = reader->GetInt32();
       break;
     case 75:
-      snap = reader->GetInt32();
+      m_snapOn = reader->GetInt32();
       break;
     case 76:
-      grid = reader->GetInt32();
+      m_gridOn = reader->GetInt32();
       break;
     case 77:
-      snapStyle = reader->GetInt32();
+      m_snapStyle = reader->GetInt32();
       break;
     case 78:
-      snapIsopair = reader->GetInt32();
+      m_snapIsopair = reader->GetInt32();
       break;
     default:
       EoDxfTableEntry::ParseCode(code, reader);
@@ -585,29 +588,29 @@ void EoDxfVPort::ParseCode(int code, EoDxfReader* reader) {
 }
 
 void EoDxfVPort::Reset() {
-  upperRight.x = 1.0;
-  upperRight.y = 1.0;
-  snapSpacing.x = 10.0;
-  snapSpacing.y = 10.0;
-  gridSpacing = snapSpacing;
-  center.x = 0.651828;
-  center.y = -0.16;
-  viewDir.z = 1;
-  height = 5.13732;
-  ratio = 2.4426877;
-  lensHeight = 50;
-  frontClip = 0.0;
-  backClip = 0.0;
-  snapAngle = 0.0;
-  twistAngle = 0.0;
-  viewMode = 0;
-  snap = 0;
-  grid = 0;
-  snapStyle = 0;
-  snapIsopair = 0;
-  fastZoom = 1;
-  circleZoom = 100;
-  ucsIcon = 3;
-  gridBehavior = 7;
+  m_lowerLeftCorner = {};
+  m_upperRightCorner = {1.0, 1.0};
+  m_viewCenter = {0.651828, -0.16};
+  m_snapBasePoint = {};
+  m_snapSpacing = {10.0, 10.0};
+  m_gridSpacing = {10.0, 10.0};
+  m_viewDirection = {0.0, 0.0, 1.0};
+  m_viewTargetPoint = {};
+  m_viewHeight = 5.13732;
+  m_viewAspectRatio = 2.4426877;
+  m_lensLength = 50.0;
+  m_frontClipPlane = 0.0;
+  m_backClipPlane = 0.0;
+  m_snapRotationAngle = 0.0;
+  m_viewTwistAngle = 0.0;
+  m_viewMode = 0;
+  m_circleZoomPercent = 100;
+  m_fastZoom = 1;
+  m_ucsIcon = 3;
+  m_snapOn = 0;
+  m_gridOn = 0;
+  m_snapStyle = 0;
+  m_snapIsopair = 0;
+  m_gridBehavior = 7;
   EoDxfTableEntry::Reset();
 }

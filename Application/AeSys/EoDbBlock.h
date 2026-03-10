@@ -20,8 +20,8 @@ class EoDbBlock : public EoDbGroup {
 
  public:
   EoDbBlock() { m_blockTypeFlags = 0; }
-  EoDbBlock(std::uint16_t flags, EoGePoint3d basePoint);
-  EoDbBlock(std::uint16_t flags, EoGePoint3d basePoint, const CString& name);
+  EoDbBlock(std::int16_t flags, EoGePoint3d basePoint);
+  EoDbBlock(std::int16_t flags, EoGePoint3d basePoint, const CString& name);
   EoDbBlock& operator=(const EoDbBlock&) = delete;
 
   [[nodiscard]] EoGePoint3d BasePoint() const noexcept { return m_firstPoint; }

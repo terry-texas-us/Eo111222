@@ -1,15 +1,10 @@
 ﻿# Copilot Instructions
 
-I am working on an old C++ MFC CAD project that I stopped coding on around 2000. I have the project building warning free at Wall using Visual Studio 2026 with the C++latest (19.5) compiler and the v145 toolset.
-The local project repo is in a folder called `D:\Visual Studio\migrations\Peg111222`. I have introduced version control with a local .git and GitHub. The public repo at GitHub URL is `https://github.com/terry-texas-us/Eo111222`, and the main project is `https://github.com/terry-texas-us/Eo111222/tree/master/AeSys`. I encourage you to reference the code there if necessary.
+I am working on an old C++ MFC CAD project that I stopped coding on around 2000. I have the project building warning free at Wall using Visual Studio 2026 with the C++latest (19.5) compiler and the v145 toolset. The local project repo is in a folder called `D:\Visual Studio\migrations\Peg111222`. I have introduced version control with a local .git and GitHub. The public repo at GitHub URL is `https://github.com/terry-texas-us/Eo111222`, and the main project is `https://github.com/terry-texas-us/Eo111222/tree/master/AeSys`. I encourage you to reference the code there if necessary.
 
-I need a solution for reading open source .DXF CAD files, which I will convert to the proprietary .PEG (`Peg & Tra File Formats.md`) file. 
-For DXF initial parsing, I will use `libdxfrw`, since this is the only C++ option.
+I need a solution for reading open source .DXF CAD files, which I will convert to the proprietary .PEG (`Peg & Tra File Formats.md`) file. For DXF initial parsing, I will use `libdxfrw`, since this is the only C++ option.
 
-I will be making substantial changes to the .PEG file to make linear parsing of .DXF easier.
-Using the terminology of the .DXF specification, I want to use a handle architecture for at least the header and table sections. 
-The only hard resource handles will be from the entities to the header and tables. I am uncertain if I need to implement extension dictionaries, but it would help with future proofing. 
-I have no experience with this type of persistence database design.
+I will be making substantial changes to the .PEG file to make linear parsing of .DXF easier. Using the terminology of the .DXF specification, I want to use a handle architecture for at least the header and table sections. The only hard resource handles will be from the entities to the header and tables. I am uncertain if I need to implement extension dictionaries, but it would help with future proofing. I have no experience with this type of persistence database design.
 
 You can assume I know the code base well and should have little trouble with modern versions of C++. Provide suggestions detailing the code modernization.
 
@@ -28,6 +23,7 @@ You can assume I know the code base well and should have little trouble with mod
 - Prefer camelCase for local variables; convert PascalCase local variables to camelCase when requested.
 - Prefer marking simple geometric operations and getters `noexcept` when possible.
 - Prefer `[[nodiscard]]` for getters when possible.
+- Use verbose naming for variables and functions to enhance self-documentation. Aim for clarity over terseness, and include comments where necessary to explain complex logic.
 
 ## DPI Handling
 - Prefer using `GetDpiForSystem` (or `GetDpiForWindow` when available) for DPI fixes in this codebase.
@@ -64,3 +60,6 @@ You can assume I know the code base well and should have little trouble with mod
   - `AeSys\EoDbLine.h`, `AeSys\EoDbConic.h`
   - `AeSys\EoDbPoint.h`, `AeSys\EoDbPolyline.h`, `AeSys\EoDbPolygon.h`, `AeSys\EoDbSpline.h`
   - `AeSys\EoDbText.h`, `AeSys\EoDbBlockReference.h`
+
+## Documentation
+- Utilize Doxygen for automated documentation generation. Ensure that comments are clear and descriptive, and consider the balance between verbosity and clarity to maintain readability.

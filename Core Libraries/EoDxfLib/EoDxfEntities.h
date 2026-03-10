@@ -145,18 +145,16 @@ class EoDxfEntity {
   std::string m_colorName{};  // group code 430
   double m_lineTypeScale{1.0};  // linetype scale, code 48
   enum EoDxf::ETYPE m_entityType{EoDxf::UNKNOWN};  // entity type, code 0
-  std::uint64_t m_handle{EoDxf::HandleCodes::NoHandle};  // entity identifier, code 5
+  std::uint64_t m_handle{EoDxf::NoHandle};  // entity identifier, code 5
   // Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330
-  std::uint64_t m_ownerHandle{EoDxf::HandleCodes::NoHandle};
-  std::uint64_t m_materialHandle{
-      EoDxf::MaterialCodes::MaterialByLayer};  // hard pointer id to material object, code 347
-  int m_color{EoDxf::ColorCodes::ColorByLayer};  // entity color, code 62
+  std::uint64_t m_ownerHandle{EoDxf::NoHandle};
+  std::uint64_t m_materialHandle{EoDxf::NoHandle};  // hard pointer id to material object, code 347
+  std::int16_t m_color{EoDxf::colorByLayer};  // entity color, code 62
   enum EoDxfLineWidths::lineWidth m_lineWeight{EoDxfLineWidths::widthByLayer};  // entity lineweight, code 370
   int m_numberOfBytesInProxyGraphics{};  // group code 92 (optional) [unused]
   int m_color24{-1};  // 24-bit color, code 420
-  int m_transparency{EoDxf::TransparencyCodes::Opaque};  // group code 440
-  std::uint64_t m_plotStyleHandle{
-      EoDxf::PlotStyleCodes::DefaultPlotStyle};  // hard pointer id to plot style object, code 390
+  EoDxf::TransparencyCodes m_transparency{EoDxf::TransparencyCodes::Opaque};  // group code 440
+  std::uint64_t m_plotStyleHandle{EoDxf::NoHandle};  // hard pointer id to plot style object, code 390
   EoDxf::ShadowMode m_shadowMode{EoDxf::ShadowMode::CastAndReceiveShadows};  // group code 284
   EoDxf::Space m_space{EoDxf::Space::ModelSpace};  // space indicator, code 67
   bool m_visible{true};  // entity visibility, code 60
@@ -416,7 +414,7 @@ class EoDxf3dFace : public EoDxfTrace {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  int m_invisibleFlag{};  // Group code 70
+  std::int16_t m_invisibleFlag{};  // Group code 70
 };
 
 /** @brief Class to handle block entries
@@ -440,7 +438,7 @@ class EoDxfBlock : public EoDxfPoint {
 
  public:
   std::string name{"*U0"};  // Group code 2
-  int m_flags{};  // Group code 70
+  std::int16_t m_flags{};  // Group code 70
 };
 
 /** @brief Class to handle insert entries
@@ -469,8 +467,8 @@ class EoDxfInsert : public EoDxfPoint {
   double m_yScaleFactor{1.0};  // Group code 42
   double m_zScaleFactor{1.0};  // Group code 43
   double m_rotationAngle{};  // Group code 50 (in radians)
-  int m_columnCount{1};  // Group code 70
-  int m_rowCount{1};  // Group code 71
+  std::int16_t m_columnCount{1};  // Group code 70
+  std::int16_t m_rowCount{1};  // Group code 71
   double m_columnSpacing{};  // Group code 44
   double m_rowSpacing{};  // Group code 45
 };
@@ -506,7 +504,7 @@ class EoDxfLwPolyline : public EoDxfEntity {
 
  public:
   int m_numberOfVertices{};  // Group code 90
-  int m_polylineFlag{};  // Group code 70, (1 = Closed; 128 = Plinegen)
+  std::int16_t m_polylineFlag{};  // Group code 70, (1 = Closed; 128 = Plinegen)
   double m_constantWidth{};  // Group code 43
   double m_elevation{};  // Group code 38
   double m_thickness{};  // Group code 39
@@ -549,7 +547,7 @@ class EoDxfText : public EoDxfLine {
   double m_scaleFactorWidth{1.0};  // Group code 41
   double m_obliqueAngle{};  // Group code 51
   std::string m_textStyleName{"STANDARD"};  // Group code 7
-  int m_textGenerationFlags{};  // Group code 71
+  std::int16_t m_textGenerationFlags{};  // Group code 71
   enum HAlign m_horizontalAlignment { Left };  // Group code 72
   enum VAlign m_verticalAlignment { BaseLine };  // Group code 73
 };
@@ -693,7 +691,7 @@ class EoDxfPolyline : public EoDxfPoint {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  int m_polylineFlag{};  // Group code 70
+  std::int16_t m_polylineFlag{};  // Group code 70
   double m_defaultStartWidth{};  // Group code 40
   double m_defaultEndWidth{};  // Group code 41
   int m_polygonMeshVertexCountM{};  // Group code 71
@@ -1266,11 +1264,11 @@ class EoDxfLeader : public EoDxfEntity {
 struct EoDxfMLeaderLine {
   std::vector<EoDxfGeometryBase3d> m_vertices;  // code 10, 20, 30 (repeated)
   int m_leaderLineIndex{};  // code 91
-  int m_leaderLineColorOverride{EoDxf::ColorCodes::ColorByLayer};  // code 92 (optional)
-  std::uint64_t m_leaderLineTypeHandle{EoDxf::HandleCodes::NoHandle};  // code 340 (optional)
+  int m_leaderLineColorOverride{EoDxf::colorByLayer};  // code 92 (optional)
+  std::uint64_t m_leaderLineTypeHandle{EoDxf::NoHandle};  // code 340 (optional)
   int m_leaderLineWeightOverride{-1};  // code 171 (optional, -1 = no override)
   double m_arrowheadSize{};  // code 40 (optional, 0 = use context default)
-  std::uint64_t m_arrowheadHandle{EoDxf::HandleCodes::NoHandle};  // code 341 (optional)
+  std::uint64_t m_arrowheadHandle{EoDxf::NoHandle};  // code 341 (optional)
 };
 
 /** @brief A leader branch within an MLEADER entity.
@@ -1319,18 +1317,18 @@ struct EoDxfMLeaderContextData {
   int m_textLineSpacingStyle{1};  // code 171
   double m_textLineSpacingFactor{1.0};  // code 141
   int m_textFlowDirection{1};  // code 90
-  int m_textColor{EoDxf::ColorCodes::ColorByLayer};  // code 91
+  int m_textColor{EoDxf::colorByLayer};  // code 91
   int m_textAttachment{1};  // code 170
   int m_textBackgroundFill{};  // code 172
-  std::uint64_t m_textStyleHandle{EoDxf::HandleCodes::NoHandle};  // code 340
+  std::uint64_t m_textStyleHandle{EoDxf::NoHandle};  // code 340
   std::string m_textString;  // code 1 (and 3 for overflow)
 
   // --- Block content ---
-  std::uint64_t m_blockContentHandle{EoDxf::HandleCodes::NoHandle};  // code 341
+  std::uint64_t m_blockContentHandle{EoDxf::NoHandle};  // code 341
   EoDxfGeometryBase3d m_blockContentNormalDirection{0.0, 0.0, 1.0};  // code 14, 24, 34
   EoDxfGeometryBase3d m_blockContentScale{1.0, 1.0, 1.0};  // code 15, 25, 35
   double m_blockContentRotation{};  // code 46
-  int m_blockContentColor{EoDxf::ColorCodes::ColorByLayer};  // code 93
+  int m_blockContentColor{EoDxf::colorByLayer};  // code 93
 
   // --- Leader branches ---
   std::vector<EoDxfMLeaderBranch> m_leaders;

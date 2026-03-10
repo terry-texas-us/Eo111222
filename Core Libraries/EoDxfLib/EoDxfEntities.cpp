@@ -133,7 +133,7 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
       m_lineType = reader->GetUtf8String();
       break;
     case 62:
-      m_color = reader->GetInt32();
+      m_color = reader->GetInt16();
       break;
     case 370:
       m_lineWeight = EoDxfLineWidths::dxfInt2lineWidth(reader->GetInt32());
@@ -158,10 +158,10 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
       m_colorName = reader->GetString();
       break;
     case 440:
-      m_transparency = reader->GetInt32();
+      m_transparency = static_cast<EoDxf::TransparencyCodes>(reader->GetInt32());
       break;
     case 67:
-      m_space = static_cast<EoDxf::Space>(reader->GetInt32());
+      m_space = static_cast<EoDxf::Space>(reader->GetInt16());
       break;
     case 102:
       ParseAppDataGroup(reader);
@@ -200,6 +200,8 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
       m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetDouble()));
       break;
     case 1070:
+      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt16()));
+      break;
     case 1071:
       m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt32()));
       break;
@@ -490,7 +492,7 @@ void EoDxfSolid::ParseCode(int code, EoDxfReader* reader) { EoDxfTrace::ParseCod
 void EoDxf3dFace::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 70:
-      m_invisibleFlag = reader->GetInt32();
+      m_invisibleFlag = reader->GetInt16();
       break;
     default:
       EoDxfTrace::ParseCode(code, reader);
@@ -504,7 +506,7 @@ void EoDxfBlock::ParseCode(int code, EoDxfReader* reader) {
       name = reader->GetUtf8String();
       break;
     case 70:
-      m_flags = reader->GetInt32();
+      m_flags = reader->GetInt16();
       break;
     default:
       EoDxfPoint::ParseCode(code, reader);
@@ -531,10 +533,10 @@ void EoDxfInsert::ParseCode(int code, EoDxfReader* reader) {
       m_rotationAngle = m_rotationAngle * EoDxf::DegreesToRadians;
       break;
     case 70:
-      m_columnCount = reader->GetInt32();
+      m_columnCount = reader->GetInt16();
       break;
     case 71:
-      m_rowCount = reader->GetInt32();
+      m_rowCount = reader->GetInt16();
       break;
     case 44:
       m_columnSpacing = reader->GetDouble();
@@ -590,7 +592,7 @@ void EoDxfLwPolyline::ParseCode(int code, EoDxfReader* reader) {
       m_constantWidth = reader->GetDouble();
       break;
     case 70:
-      m_polylineFlag = reader->GetInt32();
+      m_polylineFlag = reader->GetInt16();
       break;
     case 90:
       m_numberOfVertices = reader->GetInt32();
@@ -627,15 +629,15 @@ void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
       m_obliqueAngle = reader->GetDouble();
       break;
     case 71:
-      m_textGenerationFlags = reader->GetInt32();
+      m_textGenerationFlags = reader->GetInt16();
       break;
     case 72:
-      m_horizontalAlignment = static_cast<HAlign>(
-          std::clamp(reader->GetInt32(), static_cast<int>(HAlign::Left), static_cast<int>(HAlign::FitIfBaseLine)));
+      m_horizontalAlignment = static_cast<HAlign>(std::clamp(reader->GetInt16(),
+          static_cast<std::int16_t>(HAlign::Left), static_cast<std::int16_t>(HAlign::FitIfBaseLine)));
       break;
     case 73:
-      m_verticalAlignment = static_cast<VAlign>(
-          std::clamp(reader->GetInt32(), static_cast<int>(VAlign::Bottom), static_cast<int>(VAlign::Top)));
+      m_verticalAlignment = static_cast<VAlign>(std::clamp(
+          reader->GetInt16(), static_cast<std::int16_t>(VAlign::Bottom), static_cast<std::int16_t>(VAlign::Top)));
       break;
     case 1:
       m_string = reader->GetUtf8String();
@@ -678,7 +680,7 @@ void EoDxfMText::UpdateAngle() {
 void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 70:
-      m_polylineFlag = reader->GetInt32();
+      m_polylineFlag = reader->GetInt16();
       break;
     case 40:
       m_defaultStartWidth = reader->GetDouble();
@@ -874,7 +876,7 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
       } else if (m_ellipse) {
         m_ellipse->m_isCounterClockwise = reader->GetInt32();
       } else if (m_polyline) {
-        m_polyline->m_polylineFlag = reader->GetInt32();
+        m_polyline->m_polylineFlag = reader->GetInt16();
       }
       break;
     case 75:

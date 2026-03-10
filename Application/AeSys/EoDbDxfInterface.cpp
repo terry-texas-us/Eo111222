@@ -194,33 +194,33 @@ void EoDbDxfInterface::ConvertVPortTable(const EoDxfVPort& viewport, [[maybe_unu
   std::wstring viewportName = Eo::MultiByteToWString(viewport.m_tableName.c_str());
   ATLTRACE2(traceGeneral, 3, L"Viewport - Name: %s (unsupported in AeSys)\n", viewportName.c_str());
 
-  auto lowerLeft = EoGePoint3d(viewport.lowerLeft.x, viewport.lowerLeft.y,
-      viewport.lowerLeft.z);  // group codes 10 and 20 (2D point)
-  auto upperRight = EoGePoint3d(viewport.upperRight.x, viewport.upperRight.y,
-      viewport.upperRight.z);  // group codes 11 and 21 (2D point)
-  auto center =
-      EoGePoint3d(viewport.center.x, viewport.center.y, viewport.center.z);  // group codes 12 and 22 (2D point in DCS)
-  auto snapBase = EoGePoint3d(viewport.snapBase.x, viewport.snapBase.y,
-      viewport.snapBase.z);  // group codes 13 and 23 (2D point in DCS)
-  auto snapSpacing = EoGePoint3d(viewport.snapSpacing.x, viewport.snapSpacing.y,
-      viewport.snapSpacing.z);  // group codes 14 and 24 (2D point in DCS)
-  auto gridSpacing = EoGePoint3d(viewport.gridSpacing.x, viewport.gridSpacing.y,
-      viewport.gridSpacing.z);  // group codes 15 and 25 (2D point in DCS)
-  auto viewDirection = EoGeVector3d(viewport.viewDir.x, viewport.viewDir.y,
-      viewport.viewDir.z);  // group codes 16, 26 and 36 (3D point in WCS)
-  auto viewTarget = EoGeVector3d(viewport.viewTarget.x, viewport.viewTarget.y,
-      viewport.viewTarget.z);  // group codes 17, 27 and 37 (3D point in WCS)
+  auto lowerLeft = EoGePoint3d(viewport.m_lowerLeftCorner.x, viewport.m_lowerLeftCorner.y,
+      0.0);  // code 10 & 20 (2D point)
+  auto upperRight = EoGePoint3d(viewport.m_upperRightCorner.x, viewport.m_upperRightCorner.y,
+      0.0);  // code 11 & 21 (2D point)
+  auto center = EoGePoint3d(viewport.m_viewCenter.x, viewport.m_viewCenter.y,
+      0.0);  // code 12 & 22 (2D point in DCS)
+  auto snapBase = EoGePoint3d(viewport.m_snapBasePoint.x, viewport.m_snapBasePoint.y,
+      0.0);  // code 13 & 23 (2D point in DCS)
+  auto snapSpacing = EoGePoint3d(viewport.m_snapSpacing.x, viewport.m_snapSpacing.y,
+      0.0);  // code 14 & 24 (2D point in DCS)
+  auto gridSpacing = EoGePoint3d(viewport.m_gridSpacing.x, viewport.m_gridSpacing.y,
+      0.0);  // code 15 & 25 (2D point in DCS)
+  auto viewDirection = EoGeVector3d(viewport.m_viewDirection.x, viewport.m_viewDirection.y,
+      viewport.m_viewDirection.z);  // code 16, 26 & 36 (3D point in WCS)
+  auto viewTarget = EoGeVector3d(viewport.m_viewTargetPoint.x, viewport.m_viewTargetPoint.y,
+      viewport.m_viewTargetPoint.z);  // code 17, 27 & 37 (3D point in WCS)
 
-  // auto height = viewport.height;  // group code 45
-  // auto ratio = viewport.ratio;
-  // auto lensHeight = viewport.lensHeight;        // group code 42
-  // auto frontClip = viewport.frontClip;          // group code 43
-  // auto backClip = viewport.backClip;            // group code 44
-  // auto snapRotationAngle = viewport.snapAngle;  // group code 50
-  // auto viewTwistAngle = viewport.twistAngle;    // group code 51
+  // auto viewHeight = viewport.m_viewHeight;                   // code 40
+  // auto viewAspectRatio = viewport.m_viewAspectRatio;         // code 41
+  // auto lensLength = viewport.m_lensLength;                   // code 42
+  // auto frontClipPlane = viewport.m_frontClipPlane;           // code 43
+  // auto backClipPlane = viewport.m_backClipPlane;             // code 44
+  // auto snapRotationAngle = viewport.m_snapRotationAngle;    // code 50
+  // auto viewTwistAngle = viewport.m_viewTwistAngle;          // code 51
 
-  // auto viewMode = viewport.viewMode;  // group code 71
-  // auto ucsIcon = viewport.ucsIcon;    // group code 74
+  // auto viewMode = viewport.m_viewMode;  // code 71
+  // auto ucsIcon = viewport.m_ucsIcon;    // code 74
 }
 
 /** @brief This method is invoked when a new block definition is encountered in the file.
@@ -253,11 +253,10 @@ EoDbBlock* EoDbDxfInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* doc
 
   // @todo Check if block already exists and clean it up first
 
-  auto* newBlock =
-      new EoDbBlock(static_cast<std::uint16_t>(
-                        block.m_flags),  //  Block-type bit-coded (see note) which may be combined (group code 70)
-          EoGePoint3d(block.m_firstPoint.x, block.m_firstPoint.y, block.m_firstPoint.z),  // group codes 10, 20 and 30
-          m_blockName.c_str());
+  //  Block-type bit-coded (see note) which may be combined (group code 70)
+  auto* newBlock = new EoDbBlock(block.m_flags,
+      EoGePoint3d(block.m_firstPoint.x, block.m_firstPoint.y, block.m_firstPoint.z),  // group codes 10, 20 and 30
+      m_blockName.c_str());
 
   document->InsertBlock(m_blockName.c_str(), newBlock);
   return newBlock;
