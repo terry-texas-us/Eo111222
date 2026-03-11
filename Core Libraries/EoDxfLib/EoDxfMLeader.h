@@ -67,7 +67,7 @@ class EoDxfMLeader : public EoDxfEntity {
   std::uint64_t m_leaderStyleHandle{EoDxf::NoHandle};  // code 340
   std::int32_t m_propertyOverrideFlag{};  // code 90
   double m_overallScale{1.0};  // code 45
-  int m_textDirectionNegative{};  // code 294 (0=left-to-right, 1=used by BiDi)
+  bool m_textDirectionNegative{};  // code 294 (0=left-to-right, 1=used by BiDi)
   std::int16_t m_textTopAttachmentType{9};  // code 271
   std::int16_t m_textBottomAttachmentType{9};  // code 272
 

@@ -96,6 +96,7 @@ class EoDxfHeader {
    */
   void WriteAC1024Additions(EoDxfWriter* writer);
 
+  [[nodiscard]] bool GetBool(const std::string& key, bool* variantBool);
   [[nodiscard]] bool GetDouble(const std::string& key, double* varDouble);
   [[nodiscard]] bool GetInt16(const std::string& key, std::int16_t* varInt);
   [[nodiscard]] bool GetInt32(const std::string& key, std::int32_t* varInt);

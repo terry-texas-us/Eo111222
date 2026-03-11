@@ -144,7 +144,6 @@ bool EoDxfReaderBinary::ReadDouble() {
 
 bool EoDxfReaderBinary::ReadBool() {
   m_boolData = readLE<uint8_t>(*m_fileStream) != 0;
-  m_int16 = m_boolData ? 1 : 0;
   return m_fileStream->good();
 }
 
@@ -177,8 +176,6 @@ bool EoDxfReaderAscii::ReadDouble() {
 bool EoDxfReaderAscii::ReadBool() {
   std::int16_t boolValue{};
   if (!ParseInteger(boolValue)) { return false; }
-
-  m_int16 = boolValue;
   m_boolData = (boolValue != 0);
   return true;
 }

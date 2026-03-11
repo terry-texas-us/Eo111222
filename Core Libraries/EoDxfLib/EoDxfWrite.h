@@ -1,7 +1,9 @@
 #pragma once
 
+#include <ios>
 #include <map>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "EoDxfBase.h"
@@ -9,8 +11,7 @@
 #include "EoDxfInterface.h"
 #include "EoDxfMLeader.h"
 #include "EoDxfObjects.h"
-
-class EoDxfWriter;
+#include "EoDxfWriter.h"
 
 class EoDxfWrite {
  public:
@@ -109,6 +110,31 @@ class EoDxfWrite {
   bool WriteDimension(EoDxfDimension* dimension);
 
  private:
+  bool TrackWriteResult(bool isOk) noexcept {
+    m_writeOk = m_writeOk && isOk;
+    return m_writeOk;
+  }
+  bool TrackStreamState(const std::ios& stream) noexcept { return TrackWriteResult(stream.good()); }
+  bool WriteCodeString(int code, std::string_view text) {
+    return TrackWriteResult(m_writer != nullptr && m_writer->WriteString(code, text));
+  }
+  bool WriteCodeUtf8String(int code, const std::string& text) {
+    return TrackWriteResult(m_writer != nullptr && m_writer->WriteUtf8String(code, text));
+  }
+  bool WriteCodeInt16(int code, std::int16_t value) {
+    return TrackWriteResult(m_writer != nullptr && m_writer->WriteInt16(code, value));
+  }
+  bool WriteCodeInt32(int code, std::int32_t value) {
+    return TrackWriteResult(m_writer != nullptr && m_writer->WriteInt32(code, value));
+  }
+  bool WriteCodeInt64(int code, std::int64_t value) {
+    return TrackWriteResult(m_writer != nullptr && m_writer->WriteInt64(code, value));
+  }
+  bool WriteCodeDouble(int code, double value) {
+    return TrackWriteResult(m_writer != nullptr && m_writer->WriteDouble(code, value));
+  }
+  bool WriteCodeBool(int code, bool value) { return TrackWriteResult(m_writer != nullptr && m_writer->WriteBool(code, value)); }
+
   bool WriteEntity(EoDxfEntity* ent);
   bool WriteTables();
   bool WriteBlocks();
@@ -134,4 +160,5 @@ class EoDxfWrite {
   bool m_standardDimensionStyle{};
   bool m_writingBlock{};
   bool m_binaryFile{};
+  bool m_writeOk{true};
 };

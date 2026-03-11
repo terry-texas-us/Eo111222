@@ -779,8 +779,9 @@ void EoDxfHeader::WriteAC1014Additions(EoDxfWriter* writer) {
 }
 
 void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
-  double variantDouble;
-  std::int16_t variantInt16;
+  bool variantBool{};
+  double variantDouble{};
+  std::int16_t variantInt16{};
   std::string variantString;
   EoDxfGeometryBase3d variantGeometryBase;
 
@@ -1004,7 +1005,7 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
   writer->WriteInt16(280, GetInt16("$JOINSTYLE", &variantInt16) ? variantInt16 : 0);
 
   writer->WriteString(9, "$LWDISPLAY");
-  writer->WriteInt16(290, GetInt16("$LWDISPLAY", &variantInt16) ? variantInt16 : 0);
+  writer->WriteBool(290, GetBool("$LWDISPLAY", &variantBool) ? variantBool : false);
 
   writer->WriteString(9, "$INSUNITS");
   writer->WriteInt16(70, GetInt16("$INSUNITS", &variantInt16) ? variantInt16 : 0);
@@ -1024,26 +1025,27 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
   }
 
   writer->WriteString(9, "$XEDIT");
-  writer->WriteInt16(290, GetInt16("$XEDIT", &variantInt16) ? variantInt16 : 1);
+  writer->WriteBool(290, GetBool("$XEDIT", &variantBool) ? variantBool : true);
 
   writer->WriteString(9, "$CEPSNTYPE");
   writer->WriteInt16(380, GetInt16("$CEPSNTYPE", &variantInt16) ? variantInt16 : 0);
 
   writer->WriteString(9, "$PSTYLEMODE");
-  writer->WriteInt16(290, GetInt16("$PSTYLEMODE", &variantInt16) ? variantInt16 : 1);
+  writer->WriteBool(290, GetBool("$PSTYLEMODE", &variantBool) ? variantBool : true);
 
   writer->WriteString(9, "$EXTNAMES");
-  writer->WriteInt16(290, GetInt16("$EXTNAMES", &variantInt16) ? variantInt16 : 1);
+  writer->WriteBool(290, GetBool("$EXTNAMES", &variantBool) ? variantBool : true);
 
   writer->WriteString(9, "$PSVPSCALE");
   writer->WriteDouble(40, GetDouble("$PSVPSCALE", &variantDouble) ? variantDouble : 0.0);
 
   writer->WriteString(9, "$OLESTARTUP");
-  writer->WriteInt16(290, GetInt16("$OLESTARTUP", &variantInt16) ? variantInt16 : 0);
+  writer->WriteBool(290, GetBool("$OLESTARTUP", &variantBool) ? variantBool : false);
 }
 
 void EoDxfHeader::WriteAC1018Additions(EoDxfWriter* writer, EoDxf::Version version) {
-  std::int16_t variantInt16;
+  bool variantBool{};
+  std::int16_t variantInt16{};
   std::string variantString;
 
   writer->WriteString(9, "$SORTENTS");
@@ -1063,10 +1065,10 @@ void EoDxfHeader::WriteAC1018Additions(EoDxfWriter* writer, EoDxf::Version versi
       writer->WriteInt16(280, 0);
     }
   } else {
-    if (GetInt16("$XCLIPFRAME", &variantInt16)) {
-      writer->WriteInt16(290, variantInt16);
+    if (GetBool("$XCLIPFRAME", &variantBool)) {
+      writer->WriteBool(290, variantBool);
     } else {
-      writer->WriteInt16(290, 0);
+      writer->WriteBool(290, false);
     }
   }
 
@@ -1097,8 +1099,9 @@ void EoDxfHeader::WriteAC1018Additions(EoDxfWriter* writer, EoDxf::Version versi
 }
 
 void EoDxfHeader::WriteAC1021Additions(EoDxfWriter* writer) {
-  double variantDouble;
-  std::int16_t variantInt16;
+  bool variantBool{};
+  double variantDouble{};
+  std::int16_t variantInt16{};
   std::string variantString;
 
   writer->WriteString(9, "$DIMFXL");
@@ -1141,7 +1144,7 @@ void EoDxfHeader::WriteAC1021Additions(EoDxfWriter* writer) {
   }
 
   writer->WriteString(9, "$CAMERADISPLAY");
-  writer->WriteInt16(290, GetInt16("$CAMERADISPLAY", &variantInt16) ? variantInt16 : 0);
+  writer->WriteBool(290, GetBool("$CAMERADISPLAY", &variantBool) ? variantBool : false);
 
   writer->WriteString(9, "$LENSLENGTH");
   writer->WriteDouble(40, GetDouble("$LENSLENGTH", &variantDouble) ? variantDouble : 50.0);
@@ -1213,7 +1216,7 @@ void EoDxfHeader::WriteAC1021Additions(EoDxfWriter* writer) {
   writer->WriteInt16(280, GetInt16("$DGNFRAME", &variantInt16) ? variantInt16 : 0);
 
   writer->WriteString(9, "$REALWORLDSCALE");
-  writer->WriteInt16(290, GetInt16("$REALWORLDSCALE", &variantInt16) ? variantInt16 : 1);
+  writer->WriteBool(290, GetBool("$REALWORLDSCALE", &variantBool) ? variantBool : true);
 
   writer->WriteString(9, "$INTERFERECOLOR");
   writer->WriteInt16(62, GetInt16("$INTERFERECOLOR", &variantInt16) ? variantInt16 : 1);
@@ -1380,6 +1383,19 @@ void EoDxfHeader::AddHandle(const std::string& key, std::uint64_t value, int cod
   auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
   m_currentVariant = newVariant.get();
   m_variants[key] = std::move(newVariant);
+}
+
+bool EoDxfHeader::GetBool(const std::string& key, bool* variantBool) {
+  if (auto it = m_variants.find(key); it != m_variants.end()) {
+    auto* variant = it->second.get();
+    if (const auto* value = variant->GetIf<bool>()) {
+      *variantBool = *value;
+      if (m_currentVariant == variant) { m_currentVariant = nullptr; }
+      m_variants.erase(it);
+      return true;
+    }
+  }
+  return false;
 }
 
 bool EoDxfHeader::GetDouble(const std::string& key, double* variantDouble) {

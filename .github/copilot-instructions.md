@@ -23,7 +23,7 @@ You can assume I know the code base well and should have little trouble with mod
 - Prefer camelCase for local variables; convert PascalCase local variables to camelCase when requested.
 - Prefer marking simple geometric operations and getters `noexcept` when possible.
 - Prefer `[[nodiscard]]` for getters when possible.
-- Use verbose naming for variables and functions to enhance self-documentation. Aim for clarity over terseness, and include comments where necessary to explain complex logic.
+- Use verbose naming for variables and functions to enhance self-documentation. Aim for clarity over terseness, and include comments where necessary to explain complex logic. Favor explicit formatting/parsing options when behavior is intended to be self-documenting.
 
 ## DPI Handling
 - Prefer using `GetDpiForSystem` (or `GetDpiForWindow` when available) for DPI fixes in this codebase.

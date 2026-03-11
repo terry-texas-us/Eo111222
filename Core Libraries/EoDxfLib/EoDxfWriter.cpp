@@ -131,6 +131,6 @@ bool EoDxfWriterAscii::WriteDouble(int code, double data) {
 
 // saved as int or add a bool member??
 bool EoDxfWriterAscii::WriteBool(int code, bool data) {
-  *m_fileStream << code << std::endl << data << std::endl;
+  *m_fileStream << code << std::endl << static_cast<int>(data) << std::endl;
   return (m_fileStream->good());
 }

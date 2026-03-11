@@ -134,7 +134,7 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
   std::int16_t dimfit;  // Group code 287 (AC1012+)  (obsolete 2000+, use dimatfit & dimtmove)
   std::int16_t dimupt;  // Group code 288 (AC1012+)
   std::int16_t dimatfit;  // Group code 289 (AC1015+)
-  int dimfxlon;  // Group code 290 (AC1021+)
+  bool dimfxlon;  // Group code 290 (AC1021+)
   std::string dimtxsty;  // Group code 340 (AC1012+)
   std::string dimldrblk;  // Group code 341 (AC1015+)
   std::int16_t dimlwd;  // Group code 371 (AC1015+)

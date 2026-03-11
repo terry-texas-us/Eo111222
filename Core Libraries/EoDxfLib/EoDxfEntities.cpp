@@ -79,7 +79,7 @@ EoDxfEntity::EoDxfEntity(const EoDxfEntity& other)
       m_plotStyleHandle{other.m_plotStyleHandle},
       m_shadowMode{other.m_shadowMode},
       m_space{other.m_space},
-      m_visible{other.m_visible},
+      m_visibilityFlag{other.m_visibilityFlag},
       m_haveExtrusion{other.m_haveExtrusion},
       m_currentVariant{nullptr} {
   m_extendedData.reserve(other.m_extendedData.size());
@@ -108,7 +108,7 @@ EoDxfEntity& EoDxfEntity::operator=(const EoDxfEntity& other) {
     m_plotStyleHandle = other.m_plotStyleHandle;
     m_shadowMode = other.m_shadowMode;
     m_space = other.m_space;
-    m_visible = other.m_visible;
+    m_visibilityFlag = other.m_visibilityFlag;
     m_haveExtrusion = other.m_haveExtrusion;
     m_currentVariant = nullptr;
 
@@ -193,7 +193,7 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
       m_lineTypeScale = reader->GetDouble();
       break;
     case 60:
-      m_visible = reader->GetBool();
+      m_visibilityFlag = reader->GetInt16();
       break;
     case 284:
       // @bug possible: 284 is a bitmask using 8-bit integer values, reading as int32 for simplicity

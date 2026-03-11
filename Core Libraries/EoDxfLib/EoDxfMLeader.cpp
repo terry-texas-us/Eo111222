@@ -364,7 +364,7 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           m_overallScale = reader->GetDouble();
           break;
         case 294:
-          m_textDirectionNegative = reader->GetInt16();
+          m_textDirectionNegative = reader->GetBool();
           break;
         case 271:
           m_textTopAttachmentType = reader->GetInt16();

@@ -79,26 +79,26 @@ class EoDxfEntity {
 
  public:
   std::list<std::list<EoDxfGroupCodeValuesVariant>> m_appData{};  // list of application data, code 102
-  std::vector<EoDxfGroupCodeValuesVariant*> m_extendedData{};  // codes 1000 to 1071
+  std::vector<EoDxfGroupCodeValuesVariant*> m_extendedData{};  // Group codes 1000 to 1071
   std::string m_layer{"0"};  // layer name, code 8
   std::string m_lineType{"BYLAYER"};  // line type, code 6
   std::string m_proxyEntityGraphicsData{};  // group code 310 (optional) [unused]
-  std::string m_colorName{};  // group code 430
-  double m_lineTypeScale{1.0};  // linetype scale, code 48
-  enum EoDxf::ETYPE m_entityType{EoDxf::UNKNOWN};  // entity type, code 0
-  std::uint64_t m_handle{EoDxf::NoHandle};  // entity identifier, code 5
+  std::string m_colorName{};  // Group code 430
+  double m_lineTypeScale{1.0};  // Group code 48
+  enum EoDxf::ETYPE m_entityType{EoDxf::UNKNOWN};  // Group code 0
+  std::uint64_t m_handle{EoDxf::NoHandle};  // Group code 5
   // Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330
   std::uint64_t m_ownerHandle{EoDxf::NoHandle};
   std::uint64_t m_materialHandle{EoDxf::NoHandle};  // hard pointer id to material object, code 347
-  std::int16_t m_color{EoDxf::colorByLayer};  // entity color, code 62
-  enum EoDxfLineWidths::lineWidth m_lineWeight{EoDxfLineWidths::widthByLayer};  // entity lineweight, code 370
-  int m_numberOfBytesInProxyGraphics{};  // group code 92 (optional) [unused]
-  std::int32_t m_color24{-1};  // 24-bit color, code 420
-  EoDxf::TransparencyCodes m_transparency{EoDxf::TransparencyCodes::Opaque};  // group code 440
-  std::uint64_t m_plotStyleHandle{EoDxf::NoHandle};  // hard pointer id to plot style object, code 390
-  EoDxf::ShadowMode m_shadowMode{EoDxf::ShadowMode::CastAndReceiveShadows};  // group code 284
-  EoDxf::Space m_space{EoDxf::Space::ModelSpace};  // space indicator, code 67
-  bool m_visible{true};  // entity visibility, code 60
+  std::int16_t m_color{EoDxf::colorByLayer};  // Group code 62
+  enum EoDxfLineWidths::lineWidth m_lineWeight{EoDxfLineWidths::widthByLayer};  // Group code 370
+  int m_numberOfBytesInProxyGraphics{};  // Group code 92 (optional) [unused]
+  std::int32_t m_color24{-1};  // Group code 420
+  EoDxf::TransparencyCodes m_transparency{EoDxf::TransparencyCodes::Opaque};  // Group code 440
+  std::uint64_t m_plotStyleHandle{EoDxf::NoHandle};  // Group code 390
+  EoDxf::ShadowMode m_shadowMode{EoDxf::ShadowMode::CastAndReceiveShadows};  // Group code 284
+  EoDxf::Space m_space{EoDxf::Space::ModelSpace};  // Group code 67
+  std::int16_t m_visibilityFlag{0};  // Group code 60 (0 for visible, 1 for invisible)
   bool m_haveExtrusion{};  // set to true if the entity have extrusion
  private:
   void clearExtendedData() noexcept;
