@@ -13,6 +13,7 @@ constexpr std::int16_t legacyAcGroupCode90Threshhold{2000};
 
 bool EoDxfReader::ReadRec(int* codeData) {
   int code;
+  bool readSucceeded{};
 
   if (!ReadCode(&code)) { return false; }
   *codeData = code;
@@ -21,67 +22,67 @@ bool EoDxfReader::ReadRec(int* codeData) {
     // String (with the introduction of extended symbol names in AutoCAD 2000,
     // the 255-character limit has been increased to 2049 single-byte characters not including the newline at the end of
     // the line.)
-    ReadString();
+    readSucceeded = ReadString();
   } else if (code < 60) {  // Double precision 3D point value (10-39); Double-precision floating-point value (40-59)
-    ReadDouble();
+    readSucceeded = ReadDouble();
   } else if (code < 80) {  // 16-bit integer value
-    ReadInt16();
+    readSucceeded = ReadInt16();
   } else if (code > 89 && code < 100) {  // 32-bit integer value (this is where group code 90 lives)
-    ReadInt32();
+    readSucceeded = ReadInt32();
   } else if (code == 100 || code == 102) {  // String (255-character maximum, less for Unicode strings)
-    ReadString();
+    readSucceeded = ReadString();
   } else if (code == 105) {  // String representing hexadecimal (hex) handle value
-    ReadString();
+    readSucceeded = ReadString();
   } else if (code > 109 && code < 150) {  // double precision floating-point value (140-149 scalar values)
-    ReadDouble();
+    readSucceeded = ReadDouble();
   } else if (code > 159 && code < 170) {  // 64-bit integer value
-    ReadInt64();
+    readSucceeded = ReadInt64();
   } else if (code < 180) {
-    ReadInt16();
+    readSucceeded = ReadInt16();
   } else if (code > 209 && code < 240) {  // double-precision floating-point value
-    ReadDouble();
+    readSucceeded = ReadDouble();
   } else if (code > 269 && code < 290) {  // 16-bit integer value
-    ReadInt16();
+    readSucceeded = ReadInt16();
   } else if (code < 300) {  // boolean flag value (290-299)
-    ReadBool();
+    readSucceeded = ReadBool();
   } else if (code < 370) {
-    ReadString();
+    readSucceeded = ReadString();
   } else if (code < 390) {
-    ReadInt16();
+    readSucceeded = ReadInt16();
   } else if (code < 400) {
-    ReadString();
+    readSucceeded = ReadString();
   } else if (code < 410) {
-    ReadInt16();
+    readSucceeded = ReadInt16();
   } else if (code < 420) {
-    ReadString();
+    readSucceeded = ReadString();
   } else if (code < 430) {  // 32-bit integer value (420-429)
-    ReadInt32();
+    readSucceeded = ReadInt32();
   } else if (code < 440) {
-    ReadString();
+    readSucceeded = ReadString();
   } else if (code < 450) {  // 32-bit integer value (440-449)
-    ReadInt32();
+    readSucceeded = ReadInt32();
   } else if (code < 460) {  // long (450-459)
-    ReadInt32();
+    readSucceeded = ReadInt32();
   } else if (code < 470) {  // Double-precision floating-point value (460-469)
-    ReadDouble();
+    readSucceeded = ReadDouble();
   } else if (code < 481) {
-    ReadString();
+    readSucceeded = ReadString();
   } else if (code == 999) {  // is used for comment strings in DXF files
-    ReadString();
+    readSucceeded = ReadString();
   } else if (code >= 1000 && code <= 1009) {  // String (same limits as indicated with 0-9 code range)
-    ReadString();
+    readSucceeded = ReadString();
   } else if (code >= 1010 && code <= 1059) {  // Double-precision floating-point value
-    ReadDouble();
+    readSucceeded = ReadDouble();
   } else if (code >= 1060 && code <= 1070) {  // 16-bit integer value
-    ReadInt16();
+    readSucceeded = ReadInt16();
   } else if (code == 1071) {  // 32-bit integer value
-    ReadInt32();
+    readSucceeded = ReadInt32();
   } else if (m_isAsciiFile) {  // skip code in ascii files because the behavior is predictable, but not in binary files
-    ReadString();
+    readSucceeded = ReadString();
   } else {  // break in binary files because the conduct is unpredictable
     return false;
   }
-  return (m_fileStream->good());
+  return readSucceeded;
 }
 
 std::uint64_t EoDxfReader::GetHandleString() const {
