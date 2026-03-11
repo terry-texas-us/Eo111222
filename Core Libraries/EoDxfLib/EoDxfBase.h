@@ -157,4 +157,17 @@ enum ETYPE {
   UNKNOWN
 };
 
+namespace Detail {
+
+/** @brief Trims leading and trailing whitespace exactly as DXF ASCII parsers (atoi/istringstream) have done
+ * historically. Uses std::isspace so it accepts space, tab, \r, \n, etc. This is the canonical whitespace rule for all
+ * EoDxf ASCII parsing.
+ */
+inline std::string_view Trim(std::string_view s) noexcept {
+  while (!s.empty() && std::isspace(static_cast<unsigned char>(s.front()))) { s.remove_prefix(1); }
+  while (!s.empty() && std::isspace(static_cast<unsigned char>(s.back()))) { s.remove_suffix(1); }
+  return s;
+}
+
+}  // namespace Detail
 }  // namespace EoDxf

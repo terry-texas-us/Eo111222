@@ -1,5 +1,6 @@
 #include "EoDxfReader.h"
 
+#include <charconv>
 #include <cstdlib>
 #include <ios>
 #include <istream>
@@ -120,12 +121,12 @@ bool EoDxfReaderBinary::ReadString(std::string* text) {
 }
 
 bool EoDxfReaderBinary::ReadInt16() {
-  m_int16Data = readLE<std::int16_t>(*m_fileStream);
+  m_int16 = readLE<std::int16_t>(*m_fileStream);
   return m_fileStream->good();
 }
 
 bool EoDxfReaderBinary::ReadInt32() {
-  m_int32Data = readLE<std::int32_t>(*m_fileStream);
+  m_int32 = readLE<std::int32_t>(*m_fileStream);
   return m_fileStream->good();
 }
 
@@ -141,7 +142,7 @@ bool EoDxfReaderBinary::ReadDouble() {
 
 bool EoDxfReaderBinary::ReadBool() {
   m_boolData = readLE<uint8_t>(*m_fileStream) != 0;
-  m_int16Data = m_boolData ? 1 : 0;
+  m_int16 = m_boolData ? 1 : 0;
   return m_fileStream->good();
 }
 
@@ -165,24 +166,10 @@ bool EoDxfReaderAscii::ReadString() {
   return (m_fileStream->good());
 }
 
-bool EoDxfReaderAscii::ReadInt16() {
-  std::string text;
-  if (!ReadString(&text)) { return false; }
-  m_int16Data = atoi(text.c_str());
-  return true;
-}
+bool EoDxfReaderAscii::ReadInt16() { return ParseInteger(m_int16); }
+bool EoDxfReaderAscii::ReadInt32() { return ParseInteger(m_int32); }
+bool EoDxfReaderAscii::ReadInt64() { return ParseInteger(m_int64); }
 
-bool EoDxfReaderAscii::ReadInt32() {
-  return ReadInt16();
-}
-
-bool EoDxfReaderAscii::ReadInt64() {
-  std::string text;
-  if (!ReadString(&text)) { return false; }
-  std::istringstream valueStream(text);
-  valueStream >> m_int64;
-  return !valueStream.fail();
-}
 
 bool EoDxfReaderAscii::ReadDouble() {
   std::string text;
@@ -195,7 +182,7 @@ bool EoDxfReaderAscii::ReadDouble() {
 bool EoDxfReaderAscii::ReadBool() {
   std::string text;
   if (!ReadString(&text)) { return false; }
-  m_int16Data = atoi(text.c_str());
-  m_boolData = (m_int16Data != 0);
+  m_int16 = atoi(text.c_str());
+  m_boolData = (m_int16 != 0);
   return true;
 }

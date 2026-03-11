@@ -1,11 +1,13 @@
 #pragma once
 
 #include <bit>
+#include <charconv>
 #include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <string>
 
+#include "EoDxfBase.h"
 #include "EoDxfTextCodec.h"
 
 class EoDxfReader {
@@ -20,8 +22,8 @@ class EoDxfReader {
   [[nodiscard]] std::string GetUtf8String() const { return m_decoder.ToUtf8(m_string); }
   [[nodiscard]] constexpr double GetDouble() const noexcept { return m_double; }
 
-  [[nodiscard]] constexpr std::int16_t GetInt16() const noexcept { return m_int16Data; }
-  [[nodiscard]] constexpr std::int32_t GetInt32() const noexcept { return m_int32Data; }
+  [[nodiscard]] constexpr std::int16_t GetInt16() const noexcept { return m_int16; }
+  [[nodiscard]] constexpr std::int32_t GetInt32() const noexcept { return m_int32; }
   [[nodiscard]] constexpr std::int64_t GetInt64() const noexcept { return m_int64; }
   [[nodiscard]] constexpr bool GetBool() const noexcept { return m_boolData; }
   [[nodiscard]] constexpr int GetVersion() const noexcept { return m_decoder.GetVersion(); }
@@ -31,21 +33,21 @@ class EoDxfReader {
 
  protected:
   virtual bool ReadCode(int* code) = 0;  // return true if successful (not EOF)
-  virtual bool ReadString(std::string* text) = 0;
   virtual bool ReadString() = 0;
+  virtual bool ReadString(std::string* text) = 0;
   virtual bool ReadInt16() = 0;
   virtual bool ReadInt32() = 0;
   virtual bool ReadInt64() = 0;
-  virtual bool ReadDouble() = 0;
   virtual bool ReadBool() = 0;
+  virtual bool ReadDouble() = 0;
 
   std::string m_string;
   EoTcTextCodec m_decoder;
   std::ifstream* m_fileStream;
   double m_double{};
   std::int64_t m_int64{};
-  std::int32_t m_int32Data{};
-  std::int16_t m_int16Data{};
+  std::int32_t m_int32{};
+  std::int16_t m_int16{};
   bool m_boolData{};
   bool m_isAsciiFile{};  // set to true for ascii reader, false for binary reader
 };
@@ -54,20 +56,23 @@ class EoDxfReaderBinary : public EoDxfReader {
  public:
   EoDxfReaderBinary(std::ifstream* stream) : EoDxfReader(stream) { m_isAsciiFile = false; }
   ~EoDxfReaderBinary() = default;
-  bool ReadCode(int* code) override;
-  bool ReadString(std::string* text) override;
-  bool ReadString() override;
-  bool ReadInt16() override;
-  bool ReadInt32() override;
-  bool ReadInt64() override;
-  bool ReadDouble() override;
+  
+  [[nodiscard]] bool ReadCode(int* code) override;
+  [[nodiscard]] bool ReadString() override;
+  [[nodiscard]] bool ReadString(std::string* text) override;
+  [[nodiscard]] bool ReadInt16() override;
+  [[nodiscard]] bool ReadInt32() override;
+  [[nodiscard]] bool ReadInt64() override;
 
   /** @brief The method reads a single byte from the input stream, interprets it as a boolean value (non-zero is true,
-   * zero is false), and stores the result in the m_boolData member variable. Additionally, it sets the m_int16Data
+   * zero is false), and stores the result in the m_boolData member variable. Additionally, it sets the m_int16
    * member to 1 if the boolean value is true, or 0 if it is false, for reference. The method returns true if the read
    * operation was successful and the stream is still in a good state, or false if an error occurred during reading.
    */
   bool ReadBool() override;
+
+  bool ReadDouble() override;
+
 
  private:
   /** @brief Reads a value of type T from the input stream in little-endian format.
@@ -94,20 +99,49 @@ class EoDxfReaderBinary : public EoDxfReader {
 };
 
 class EoDxfReaderAscii : public EoDxfReader {
+  /** @brief Parses an integer value of type T from the current string buffer.
+   *  The function reads a string using ReadString(), trims leading and trailing whitespace, and then attempts to
+   *  convert the trimmed string to an integer of type T using std::from_chars. If the conversion is successful and
+   *  consumes the entire trimmed string, the resulting value is stored in the output parameter 'out' and the function
+   *  returns true. If any step fails (e.g., reading the string, trimming results in an empty string, conversion fails,
+   *  or extra characters remain after conversion), the function returns false.
+   *
+   *  @tparam T The integer type to parse (e.g., int16_t, int32_t, int64_t).
+   *  @param out Reference to a variable where the parsed integer value will be stored if successful.
+   *  @return true if parsing was successful and 'out' contains a valid integer; false otherwise.
+   */
+  template <typename T>
+  [[nodiscard]] bool ParseInteger(T& out) {
+    std::string text;
+    if (!ReadString(&text)) { return false; }
+
+    std::string_view trimmedText = EoDxf::Detail::Trim(text);
+    if (trimmedText.empty()) { return false; }
+
+    T value{};
+    auto [ptr, ec] = std::from_chars(trimmedText.data(), trimmedText.data() + trimmedText.size(), value);
+    if (ec != std::errc{} || ptr != trimmedText.data() + trimmedText.size()) { return false; }
+
+    out = value;
+    return true;
+  }
+
  public:
   EoDxfReaderAscii(std::ifstream* stream) : EoDxfReader(stream) { m_isAsciiFile = true; }
   ~EoDxfReaderAscii() = default;
-  bool ReadCode(int* code) override;
-  bool ReadString(std::string* text) override;
-  bool ReadString() override;
-  bool ReadInt16() override;
-  bool ReadDouble() override;
-  bool ReadInt32() override;
-  bool ReadInt64() override;
+
+  [[nodiscard]] bool ReadCode(int* code) override;
+  [[nodiscard]] bool ReadString() override;
+  [[nodiscard]] bool ReadString(std::string* text) override;
+  [[nodiscard]] bool ReadInt16() override;
+  [[nodiscard]] bool ReadInt32() override;
+  [[nodiscard]] bool ReadInt64() override;
 
   /** @brief The method reads the string representation of the boolean value, converts it to an integer using atoi,
    * and then sets the m_boolData member to true if the integer is non-zero, or false if it is zero.
-   * @note The integer value is also retained in m_int16Data for reference.
+   * @note The integer value is also retained in m_int16 for reference.
    */
   bool ReadBool() override;
+
+  bool ReadDouble() override;
 };

@@ -12,8 +12,8 @@ class EoDxfWriter {
 
   virtual bool WriteString(int code, std::string_view text) = 0;
   virtual bool WriteInt16(int code, std::int16_t data) = 0;
-  virtual bool WriteInt32(int code, int data) = 0;
-  virtual bool WriteInt64(int code, unsigned long long int data) = 0;
+  virtual bool WriteInt32(int code, std::int32_t data) = 0;
+  virtual bool WriteInt64(int code, std::int64_t data) = 0;
   virtual bool WriteDouble(int code, double data) = 0;
   virtual bool WriteBool(int code, bool data) = 0;
 
@@ -39,8 +39,8 @@ class EoDxfWriterBinary : public EoDxfWriter {
 
   bool WriteString(int code, std::string_view text) override;
   bool WriteInt16(int code, std::int16_t data) override;
-  bool WriteInt32(int code, int data) override;
-  bool WriteInt64(int code, unsigned long long int data) override;
+  bool WriteInt32(int code, std::int32_t data) override;
+  bool WriteInt64(int code, std::int64_t data) override;
   bool WriteDouble(int code, double data) override;
   bool WriteBool(int code, bool data) override;
 };
@@ -52,8 +52,8 @@ class EoDxfWriterAscii : public EoDxfWriter {
 
   bool WriteString(int code, std::string_view text) override;
   bool WriteInt16(int code, std::int16_t data) override;
-  bool WriteInt32(int code, int data) override;
-  bool WriteInt64(int code, unsigned long long int data) override;
+  bool WriteInt32(int code, std::int32_t data) override;
+  bool WriteInt64(int code, std::int64_t data) override;
   bool WriteDouble(int code, double data) override;
   bool WriteBool(int code, bool data) override;
 };

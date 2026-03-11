@@ -32,7 +32,7 @@ bool EoDxfWriterBinary::WriteInt16(int code, std::int16_t data) {
   return (m_fileStream->good());
 }
 
-bool EoDxfWriterBinary::WriteInt32(int code, int data) {
+bool EoDxfWriterBinary::WriteInt32(int code, std::int32_t data) {
   char buffer[4]{};
   buffer[0] = code & 0xFF;
   buffer[1] = static_cast<char>(code >> 8);
@@ -46,7 +46,7 @@ bool EoDxfWriterBinary::WriteInt32(int code, int data) {
   return (m_fileStream->good());
 }
 
-bool EoDxfWriterBinary::WriteInt64(int code, unsigned long long int data) {
+bool EoDxfWriterBinary::WriteInt64(int code, std::int64_t data) {
   char buffer[8]{};
   buffer[0] = code & 0xFF;
   buffer[1] = static_cast<char>(code >> 8);
@@ -106,9 +106,15 @@ bool EoDxfWriterAscii::WriteInt16(int code, std::int16_t data) {
   return (m_fileStream->good());
 }
 
-bool EoDxfWriterAscii::WriteInt32(int code, int data) { return WriteInt16(code, data); }
+bool EoDxfWriterAscii::WriteInt32(int code, std::int32_t data) {
+  m_fileStream->width(3);
+  *m_fileStream << std::right << code << std::endl;
+  m_fileStream->width(5);
+  *m_fileStream << data << std::endl;
+  return (m_fileStream->good());
+}
 
-bool EoDxfWriterAscii::WriteInt64(int code, unsigned long long int data) {
+bool EoDxfWriterAscii::WriteInt64(int code, std::int64_t data) {
   m_fileStream->width(3);
   *m_fileStream << std::right << code << std::endl;
   m_fileStream->width(5);

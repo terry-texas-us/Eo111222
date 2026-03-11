@@ -56,16 +56,16 @@ class EoDxfMLeader : public EoDxfEntity {
   int m_textRightAttachmentType{1};  // code 95
   std::int16_t m_textAngleType{};  // code 174
   std::int16_t m_textAlignmentType{};  // code 175
-  int m_textColor{EoDxf::colorByLayer};  // code 92
+  std::int32_t m_textColor{EoDxf::colorByLayer};  // code 92
   bool m_enableFrameText{};  // code 292
   std::uint64_t m_blockContentHandle{EoDxf::NoHandle};  // code 344
-  int m_blockContentColor{EoDxf::colorByLayer};  // code 93
+  std::int32_t m_blockContentColor{EoDxf::colorByLayer};  // code 93
   EoDxfGeometryBase3d m_blockContentScale{1.0, 1.0, 1.0};  // code 10, 20, 30 (top-level)
   double m_blockContentRotation{};  // code 43
   std::int16_t m_blockContentConnectionType{};  // code 176
   bool m_enableAnnotationScale{true};  // code 293
   std::uint64_t m_leaderStyleHandle{EoDxf::NoHandle};  // code 340
-  int m_propertyOverrideFlag{};  // code 90
+  std::int32_t m_propertyOverrideFlag{};  // code 90
   double m_overallScale{1.0};  // code 45
   int m_textDirectionNegative{};  // code 294 (0=left-to-right, 1=used by BiDi)
   std::int16_t m_textTopAttachmentType{9};  // code 271

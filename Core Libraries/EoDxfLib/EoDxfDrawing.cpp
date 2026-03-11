@@ -94,7 +94,7 @@ bool EoDxfWrite::WriteHatch(EoDxfHatch* hatch) {
         auto* polyline = static_cast<EoDxfLwPolyline*>(hatchLoop->m_entities.front().get());
         m_writer->WriteInt16(72, (polyline->m_constantWidth != 0.0) ? 1 : 0);
         m_writer->WriteInt16(73, polyline->m_polylineFlag);
-        m_writer->WriteInt32(93, static_cast<int>(polyline->m_vertices.size()));
+        m_writer->WriteInt32(93, static_cast<std::int32_t>(polyline->m_vertices.size()));
         for (const auto& v : polyline->m_vertices) {
           m_writer->WriteDouble(10, v.x);
           m_writer->WriteDouble(20, v.y);
