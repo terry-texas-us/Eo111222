@@ -284,7 +284,7 @@ void EoDxfDimensionStyle::ParseCode(int code, EoDxfReader* reader) {
       dimatfit = reader->GetInt16();
       break;
     case 290:
-      dimfxlon = reader->GetInt32();
+      dimfxlon = reader->GetInt16();
       break;
     case 340:
       dimtxsty = reader->GetUtf8String();

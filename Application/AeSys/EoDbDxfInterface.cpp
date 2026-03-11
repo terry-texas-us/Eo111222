@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <limits>
 #include <string>
 #include <utility>
 #include <variant>
@@ -36,23 +37,26 @@ void EoDbDxfInterface::SetHeaderSectionVariable(
   if (it != header->m_variants.end() && it->second != nullptr) {
     std::wstring key = Eo::MultiByteToWString(it->first.c_str());
     auto& second = *(it->second);
-    switch (second.GetType()) {
-      case EoDxfGroupCodeValuesVariant::VariantType::String:
-        value = Eo::MultiByteToWString(second.GetString().c_str());
-        break;
-      case EoDxfGroupCodeValuesVariant::VariantType::Integer:
-        value = second.GetInteger();
-        break;
-      case EoDxfGroupCodeValuesVariant::VariantType::Double:
-        value = second.GetDouble();
-        break;
-      case EoDxfGroupCodeValuesVariant::VariantType::GeometryBase:
-        value = EoGePoint3d(second.GetGeometryBase());
-        break;
-      case EoDxfGroupCodeValuesVariant::VariantType::Invalid:
-      default:
+    if (const auto* stringValue = second.GetIf<std::string>()) {
+      value = Eo::MultiByteToWString(stringValue->c_str());
+    } else if (const auto* int16Value = second.GetIf<std::int16_t>()) {
+      value = static_cast<int>(*int16Value);
+    } else if (const auto* integerValue = second.GetIf<std::int32_t>()) {
+      value = *integerValue;
+    } else if (const auto* booleanValue = second.GetIf<bool>()) {
+      value = *booleanValue ? 1 : 0;
+    } else if (const auto* int64Value = second.GetIf<std::int64_t>()) {
+      if (*int64Value >= std::numeric_limits<int>::min() && *int64Value <= std::numeric_limits<int>::max()) {
+        value = static_cast<int>(*int64Value);
+      } else {
         value = L"";
-        break;
+      }
+    } else if (const auto* doubleValue = second.GetIf<double>()) {
+      value = *doubleValue;
+    } else if (const auto* geometryValue = second.GetIf<EoDxfGeometryBase3d>()) {
+      value = EoGePoint3d(*geometryValue);
+    } else {
+      value = L"";
     }
     headerSection.SetVariable(key, HeaderVariable(value));
   }
@@ -68,7 +72,7 @@ void EoDbDxfInterface::ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc*
 }
 
 void EoDbDxfInterface::ConvertClassesSection(const EoDxfClass& class_, [[maybe_unused]] AeSysDoc* document) {
-  std::wstring recordName = Eo::MultiByteToWString(class_.recName.c_str());
+  std::wstring recordName = Eo::MultiByteToWString(class_.m_classDxfRecordName.c_str());
   ATLTRACE2(traceGeneral, 2, L"Class - Name: %s (unsupported in AeSys)\n", recordName.c_str());
 }
 

@@ -21,11 +21,11 @@ class EoDxfClass {
   void clear() noexcept;
   void write(EoDxfWriter* writer, EoDxf::Version version) const noexcept;
 
-  std::string recName;  // group 1 - dxf record name
-  std::string className;  // group 2 - C++ class name
-  std::string appName;  // group 3 - application name
-  int proxyCapabilities{};  // group 90 - Proxy capabilities flag
-  int instanceCount{};  // group 91 - instance count for a custom class
-  std::int16_t wasAProxyFlag{};  // group 280 - was-a-proxy flag (app loaded on save)
-  std::int16_t isAnEntityFlag{};  // group 281 - is-an-entity flag (0 object, 1 entity)
+  std::string m_classDxfRecordName;  // Group code 1
+  std::string m_cppClassName;  // Group code 2
+  std::string m_applicationName;  // Group code 3
+  std::int32_t m_proxyCapabilitiesFlag{};  // Group code 90
+  std::int32_t m_instanceCount{};  // Group code 91
+  std::int16_t m_wasAProxyFlag{};  // Group code 280
+  std::int16_t m_isAnEntityFlag{};  // Group code 281 (0 object, 1 entity)
 };

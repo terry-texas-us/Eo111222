@@ -7,25 +7,25 @@
 void EoDxfClass::ParseCode(int code, EoDxfReader* reader) noexcept {
   switch (code) {
     case 1:
-      recName = reader->GetUtf8String();
+      m_classDxfRecordName = reader->GetUtf8String();
       break;
     case 2:
-      className = reader->GetUtf8String();
+      m_cppClassName = reader->GetUtf8String();
       break;
     case 3:
-      appName = reader->GetUtf8String();
+      m_applicationName = reader->GetUtf8String();
       break;
     case 90:
-      proxyCapabilities = reader->GetInt32();
+      m_proxyCapabilitiesFlag = reader->GetInt32();
       break;
     case 91:
-      instanceCount = reader->GetInt32();
+      m_instanceCount = reader->GetInt32();
       break;
     case 280:
-      wasAProxyFlag = reader->GetInt32();
+      m_wasAProxyFlag = reader->GetInt16();
       break;
     case 281:
-      isAnEntityFlag = reader->GetInt32();
+      m_isAnEntityFlag = reader->GetInt16();
       break;
     default:
       break;
@@ -33,23 +33,23 @@ void EoDxfClass::ParseCode(int code, EoDxfReader* reader) noexcept {
 }
 
 void EoDxfClass::clear() noexcept {
-  recName.clear();
-  className.clear();
-  appName.clear();
-  proxyCapabilities = 0;
-  instanceCount = 0;
-  wasAProxyFlag = 0;
-  isAnEntityFlag = 0;
+  m_classDxfRecordName.clear();
+  m_cppClassName.clear();
+  m_applicationName.clear();
+  m_proxyCapabilitiesFlag = 0;
+  m_instanceCount = 0;
+  m_wasAProxyFlag = 0;
+  m_isAnEntityFlag = 0;
 }
 
 void EoDxfClass::write(EoDxfWriter* writer, EoDxf::Version version) const noexcept {
   if (version < EoDxf::Version::AC1012) { return; }
   writer->WriteString(0, "CLASS");
-  writer->WriteString(1, recName);
-  writer->WriteString(2, className);
-  writer->WriteString(3, appName);
-  writer->WriteInt32(90, proxyCapabilities);
-  if (version >= EoDxf::Version::AC1018) { writer->WriteInt32(91, instanceCount); }
-  writer->WriteInt16(280, wasAProxyFlag);
-  writer->WriteInt16(281, isAnEntityFlag);
+  writer->WriteString(1, m_classDxfRecordName);
+  writer->WriteString(2, m_cppClassName);
+  writer->WriteString(3, m_applicationName);
+  writer->WriteInt32(90, m_proxyCapabilitiesFlag);
+  if (version >= EoDxf::Version::AC1018) { writer->WriteInt32(91, m_instanceCount); }
+  writer->WriteInt16(280, m_wasAProxyFlag);
+  writer->WriteInt16(281, m_isAnEntityFlag);
 }

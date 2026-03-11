@@ -109,10 +109,10 @@ void EoDxfImageDefinition::ParseCode(int code, EoDxfReader* reader) {
       m_vSizeOfOnePixel = reader->GetDouble();
       break;
     case 280:
-      m_imageIsLoadedFlag = reader->GetInt32();
+      m_imageIsLoadedFlag = reader->GetInt16();
       break;
     case 281:
-      m_resolutionUnits = reader->GetInt32();
+      m_resolutionUnits = reader->GetInt16();
       break;
     default:
       EoDxfObjectEntry::ParseCode(code, reader);

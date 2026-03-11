@@ -11,6 +11,55 @@
 #include "EoDxfGroupCodeValuesVariant.h"
 #include "EoDxfReader.h"
 
+namespace {
+
+/** @brief Helper function to parse application-defined group (code 102) and its associated data until the closing tag is reached.
+ *  @param reader pointer to EoDxfReader to read value
+ *  @return true if group is successfully parsed, false if group is not recognized or an error occurs
+ *
+ *  This function reads the application-defined group code (102) and its associated data,
+ *  which can include various types of values based on the DXF specification.
+ *  It continues reading until it encounters the closing tag for the group.
+ *  The parsed values are stored in an EoDxfGroupCodeValuesVariant, which can hold different types of data
+ *  based on the group code ranges defined in the DXF format.
+ */
+bool AddAppDataValue(EoDxfGroupCodeValuesVariant& variant, int code, EoDxfReader* reader) {
+  if (code == 330 || code == 360) {
+    variant.AddHandle(code, reader->GetHandleString());
+    return true;
+  }
+  if (code <= 9 || code == 100 || code == 102 || code == 105 || (code >= 300 && code < 370) ||
+      (code >= 390 && code < 400) || (code >= 410 && code < 420) || (code >= 430 && code < 440) ||
+      (code >= 470 && code < 481) || code == 999 || (code >= 1000 && code <= 1009)) {
+    variant.AddString(code, reader->GetString());
+    return true;
+  }
+  if ((code >= 10 && code < 60) || (code >= 110 && code < 150) || (code >= 210 && code < 240) ||
+      (code >= 460 && code < 470) || (code >= 1010 && code <= 1059)) {
+    variant.AddDouble(code, reader->GetDouble());
+    return true;
+  }
+  if ((code >= 60 && code < 80) || (code >= 170 && code < 180) || (code >= 270 && code < 290) ||
+      (code >= 370 && code < 390) || (code >= 400 && code < 410) || (code >= 1060 && code <= 1070)) {
+    variant.AddInt16(code, reader->GetInt16());
+    return true;
+  }
+  if ((code >= 90 && code < 100) || (code >= 420 && code < 430) || (code >= 440 && code < 460) || code == 1071) {
+    variant.AddInt32(code, reader->GetInt32());
+    return true;
+  }
+  if (code >= 160 && code < 170) {
+    variant.AddInt64(code, reader->GetInt64());
+    return true;
+  }
+  if (code >= 290 && code < 300) {
+    variant.AddBoolean(code, reader->GetBool());
+    return true;
+  }
+  return false;
+}
+}  // namespace
+
 EoDxfEntity::EoDxfEntity(const EoDxfEntity& other)
     : m_appData{other.m_appData},
       m_layer{other.m_layer},
@@ -148,7 +197,7 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
       break;
     case 284:
       // @bug possible: 284 is a bitmask using 8-bit integer values, reading as int32 for simplicity
-      m_shadowMode = static_cast<EoDxf::ShadowMode>(reader->GetInt32());
+      m_shadowMode = static_cast<EoDxf::ShadowMode>(reader->GetInt16());
       break;
     case 390:
       m_plotStyleHandle = reader->GetHandleString();
@@ -227,6 +276,7 @@ bool EoDxfEntity::ParseAppDataGroup(EoDxfReader* reader) {
   while (true) {
     int nextCode{};
     if (!reader->ReadRec(&nextCode)) { break; }  // EOF or read error
+    bool hasValue{};
 
     if (nextCode == 102) {
       std::string val = reader->GetString();
@@ -235,31 +285,12 @@ bool EoDxfEntity::ParseAppDataGroup(EoDxfReader* reader) {
       // rare nested control string
       currentVariant = EoDxfGroupCodeValuesVariant{};
       currentVariant.AddString(102, val);
+      hasValue = true;
     } else {
       currentVariant = EoDxfGroupCodeValuesVariant{};
-      if (nextCode == 330 || nextCode == 360) {
-        currentVariant.AddHandle(nextCode, reader->GetHandleString());
-      } else {
-        switch (reader->GetType()) {
-          case EoDxfReader::Type::String:
-            currentVariant.AddString(nextCode, reader->GetString());
-            break;
-          case EoDxfReader::Type::Int32:
-          case EoDxfReader::Type::Int64:
-            currentVariant.AddInteger(nextCode, reader->GetInt32());
-            break;
-          case EoDxfReader::Type::Double:
-            currentVariant.AddDouble(nextCode, reader->GetDouble());
-            break;
-          case EoDxfReader::Type::Bool:
-            currentVariant.AddInteger(nextCode, reader->GetInt32());
-            break;
-          default:
-            break;
-        }
-      }
+      hasValue = AddAppDataValue(currentVariant, nextCode, reader);
     }
-    groupList.push_back(currentVariant);
+    if (hasValue) { groupList.push_back(currentVariant); }
   }
 
   m_appData.push_back(std::move(groupList));  // avoid copy
@@ -1071,16 +1102,16 @@ void EoDxfImage::ParseCode(int code, EoDxfReader* reader) {
       m_imageDefinitionHandle = reader->GetHandleString();
       break;
     case 280:
-      clip = reader->GetInt32();
+      clip = reader->GetInt16();
       break;
     case 281:
-      brightness = reader->GetInt32();
+      brightness = reader->GetInt16();
       break;
     case 282:
-      contrast = reader->GetInt32();
+      contrast = reader->GetInt16();
       break;
     case 283:
-      fade = reader->GetInt32();
+      fade = reader->GetInt16();
       break;
     default:
       EoDxfLine::ParseCode(code, reader);

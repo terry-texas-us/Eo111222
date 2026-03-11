@@ -20,7 +20,7 @@ bool EoDxfWriterBinary::WriteString(int code, std::string_view text) {
   return (m_fileStream->good());
 }
 
-bool EoDxfWriterBinary::WriteInt16(int code, int data) {
+bool EoDxfWriterBinary::WriteInt16(int code, std::int16_t data) {
   char bufcode[2]{};
   char buffer[2]{};
   bufcode[0] = code & 0xFF;
@@ -98,7 +98,7 @@ bool EoDxfWriterAscii::WriteString(int code, std::string_view text) {
   return (m_fileStream->good());
 }
 
-bool EoDxfWriterAscii::WriteInt16(int code, int data) {
+bool EoDxfWriterAscii::WriteInt16(int code, std::int16_t data) {
   m_fileStream->width(3);
   *m_fileStream << std::right << code << std::endl;
   m_fileStream->width(5);

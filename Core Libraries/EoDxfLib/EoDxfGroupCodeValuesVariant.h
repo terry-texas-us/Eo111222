@@ -8,27 +8,39 @@
 #include "EoDxfGeometry.h"
 
 /** @brief Class representing a variant type for storing different types of values associated with DXF group codes.
- *  The class can hold a string, integer, double, or coordinate value. The active type is tracked automatically by
+ *  The class can hold all DXF Group Coded value types. The active type is tracked automatically by
  *  the underlying std::variant. It provides constructors for each type, as well as compiler-generated copy and move
  *  semantics (Rule of Zero). The Add* methods allow updating the stored value and type after construction.
  *
- *  Variant index mapping (used internally by GetType()):
- *    0 = std::monostate (Invalid), 1 = std::string (String), 2 = std::int16_t (Int16),
- *    3 = std::int32_t (Integer), 4 = std::uint64_t (Handle), 5 = double (Double),
- *    6 = EoDxfGeometryBase3d (GeometryBase)
+ * @note To add a new stored type in future:
+ *  1. Add the new type to `m_content` in the correct semantic position.
+ *  2. Add a constructor overload taking `(int code, NewType value)`.
+ *  3. Add an `Add...()` mutator for assigning the new type after construction.
+ *  4. Add a `Get...()` accessor and rely on `GetIf<NewType>()` for non-asserting access.
+ *  5. Update all DXF read paths that should parse the new group-code range into that type.
+ *  6. Update all DXF write paths that should emit that type back out.
+ *  7. Update any widening or compatibility helpers such as header retrieval methods.
+ *  8. Add round-trip coverage for ASCII DXF and binary DXF persistence.
+ *
+ *  The preferred extension model is to let `std::variant` remain the single source of truth.
+ *  New types should therefore be integrated through direct `GetIf<T>()`, `std::holds_alternative<T>()`,
+ *  or `std::visit` usage rather than by introducing parallel type enums.
  */
 class EoDxfGroupCodeValuesVariant {
  public:
   EoDxfGroupCodeValuesVariant() = default;
 
+  /// Constructor overloads taking `(int code, NewType value)`
+  
   EoDxfGroupCodeValuesVariant(int code, std::int16_t i16) noexcept : m_content{i16}, m_code{code} {}
 
   EoDxfGroupCodeValuesVariant(int code, std::int32_t i) noexcept : m_content{i}, m_code{code} {}
 
-  EoDxfGroupCodeValuesVariant(int code, std::uint32_t i) noexcept
-      : m_content{static_cast<std::int32_t>(i)}, m_code{code} {}
+  EoDxfGroupCodeValuesVariant(int code, std::int64_t i64) noexcept : m_content{i64}, m_code{code} {}
 
   EoDxfGroupCodeValuesVariant(int code, std::uint64_t h) noexcept : m_content{h}, m_code{code} {}
+
+  EoDxfGroupCodeValuesVariant(int code, bool b) noexcept : m_content{b}, m_code{code} {}
 
   EoDxfGroupCodeValuesVariant(int code, double d) noexcept : m_content{d}, m_code{code} {}
 
@@ -36,7 +48,7 @@ class EoDxfGroupCodeValuesVariant {
 
   EoDxfGroupCodeValuesVariant(int code, EoDxfGeometryBase3d gb) noexcept : m_content{gb}, m_code{code} {}
 
-  // Rule of Zero: compiler-generated copy/move/destructor handle std::variant correctly.
+  /// `Add...()` mutator for assigning the new type after construction.
 
   void AddString(int code, std::string s) {
     m_content = std::move(s);
@@ -46,8 +58,12 @@ class EoDxfGroupCodeValuesVariant {
     m_content = i16;
     m_code = code;
   }
-  void AddInteger(int code, std::int32_t i) noexcept {
-    m_content = i;
+  void AddInt32(int code, std::int32_t i32) noexcept {
+    m_content = i32;
+    m_code = code;
+  }
+  void AddInt64(int code, std::int64_t i64) noexcept {
+    m_content = i64;
     m_code = code;
   }
   void AddDouble(int code, double d) noexcept {
@@ -61,6 +77,20 @@ class EoDxfGroupCodeValuesVariant {
   void AddHandle(int code, std::uint64_t h) noexcept {
     m_content = h;
     m_code = code;
+  }
+  void AddBoolean(int code, bool b) noexcept {
+    m_content = b;
+    m_code = code;
+  }
+
+  template <typename T>
+  [[nodiscard]] const T* GetIf() const noexcept {
+    return std::get_if<T>(&m_content);
+  }
+
+  template <typename T>
+  [[nodiscard]] T* GetIf() noexcept {
+    return std::get_if<T>(&m_content);
   }
 
   void SetGeometryBaseX(double d) {
@@ -76,6 +106,8 @@ class EoDxfGroupCodeValuesVariant {
     std::get<EoDxfGeometryBase3d>(m_content).z = d;
   }
 
+  /// `Get...()` accessor and rely on `GetIf<NewType>()` for non-asserting access.
+
   [[nodiscard]] const std::string& GetString() const {
     assert(std::holds_alternative<std::string>(m_content));
     return std::get<std::string>(m_content);
@@ -84,9 +116,13 @@ class EoDxfGroupCodeValuesVariant {
     assert(std::holds_alternative<std::int16_t>(m_content));
     return std::get<std::int16_t>(m_content);
   }
-  [[nodiscard]] std::int32_t GetInteger() const {
+  [[nodiscard]] std::int32_t GetInt32() const {
     assert(std::holds_alternative<std::int32_t>(m_content));
     return std::get<std::int32_t>(m_content);
+  }
+  [[nodiscard]] std::int64_t GetInt64() const {
+    assert(std::holds_alternative<std::int64_t>(m_content));
+    return std::get<std::int64_t>(m_content);
   }
   [[nodiscard]] double GetDouble() const {
     assert(std::holds_alternative<double>(m_content));
@@ -100,31 +136,16 @@ class EoDxfGroupCodeValuesVariant {
     assert(std::holds_alternative<std::uint64_t>(m_content));
     return std::get<std::uint64_t>(m_content);
   }
-
-  enum VariantType {
-    String,
-    Int16,  ///< 16-bit signed integer (DXF group codes 60-79, 170-179, 270-289, 370-389, 400-409, 1060-1070)
-    Integer,  ///< 32-bit signed integer (DXF group codes 90-99, 420-429, 440-449, 450-459, 1071)
-    Double,
-    GeometryBase,
-    Handle,  ///< 64-bit unsigned handle (DXF group codes 5, 105, 310-369 handle references)
-    Invalid
-  };
-
-  [[nodiscard]] enum VariantType GetType() const noexcept {
-    if (m_content.valueless_by_exception()) { return Invalid; }
-    // Maps std::variant index to the public VariantType enum.
-    // Order must match the variant alternative order declared below.
-    static constexpr VariantType indexToType[] = {Invalid, String, Int16, Integer, Handle, Double, GeometryBase};
-    return indexToType[m_content.index()];
+  [[nodiscard]] bool GetBoolean() const {
+    assert(std::holds_alternative<bool>(m_content));
+    return std::get<bool>(m_content);
   }
 
   [[nodiscard]] int Code() const noexcept { return m_code; }
 
  private:
-  /** Discriminated storage — Alternative order: monostate(Invalid), 
-   * string(String), int16_t(Int16), int32_t(Integer), uint64_t(Handle), double(Double), EoDxfGeometryBase3d(GeometryBase).*/
-  std::variant<std::monostate, std::string, std::int16_t, std::int32_t, std::uint64_t, double, EoDxfGeometryBase3d>
+  std::variant<std::monostate, std::string, std::int16_t, std::int32_t, std::int64_t, std::uint64_t, bool, double,
+      EoDxfGeometryBase3d>
       m_content;
 
   int m_code{};

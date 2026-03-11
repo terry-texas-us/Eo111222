@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bit>
+#include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <string>
@@ -9,9 +10,7 @@
 
 class EoDxfReader {
  public:
-  enum class Type : std::uint8_t { String, Int16, Int32, Int64, Double, Bool, Invalid };
-
-  explicit EoDxfReader(std::ifstream* stream) noexcept : m_fileStream{stream}, m_type{Type::Invalid} {}
+  explicit EoDxfReader(std::ifstream* stream) noexcept : m_fileStream{stream} {}
   virtual ~EoDxfReader() = default;
   bool ReadRec(int* code);
 
@@ -21,15 +20,14 @@ class EoDxfReader {
   [[nodiscard]] std::string GetUtf8String() const { return m_decoder.ToUtf8(m_string); }
   [[nodiscard]] constexpr double GetDouble() const noexcept { return m_double; }
 
-  [[nodiscard]] constexpr std::int16_t GetInt16() const noexcept { return static_cast<std::int16_t>(m_intData); }
-  [[nodiscard]] constexpr int GetInt32() const noexcept { return m_intData; }
-  [[nodiscard]] constexpr unsigned long long int GetInt64() const noexcept { return m_int64; }
-  [[nodiscard]] constexpr bool GetBool() const noexcept { return (m_intData == 0) ? false : true; }
+  [[nodiscard]] constexpr std::int16_t GetInt16() const noexcept { return m_int16Data; }
+  [[nodiscard]] constexpr std::int32_t GetInt32() const noexcept { return m_int32Data; }
+  [[nodiscard]] constexpr std::int64_t GetInt64() const noexcept { return m_int64; }
+  [[nodiscard]] constexpr bool GetBool() const noexcept { return m_boolData; }
   [[nodiscard]] constexpr int GetVersion() const noexcept { return m_decoder.GetVersion(); }
   void SetVersion(const std::string& version, bool dxfFormat) { m_decoder.SetVersion(version, dxfFormat); }
   void SetCodePage(const std::string& codePage) { m_decoder.SetCodePage(codePage, true); }
   [[nodiscard]] std::string GetCodePage() const noexcept { return m_decoder.GetCodePage(); }
-  [[nodiscard]] constexpr Type GetType() const noexcept { return m_type; }
 
  protected:
   virtual bool ReadCode(int* code) = 0;  // return true if successful (not EOF)
@@ -45,10 +43,10 @@ class EoDxfReader {
   EoTcTextCodec m_decoder;
   std::ifstream* m_fileStream;
   double m_double{};
-  unsigned long long int m_int64{};  // 64 bits integer
-  signed int m_intData{};  // 32 bits integer
-  std::int16_t m_int16Data{};  // 16 bits integer
-  Type m_type{Type::Invalid};
+  std::int64_t m_int64{};
+  std::int32_t m_int32Data{};
+  std::int16_t m_int16Data{};
+  bool m_boolData{};
   bool m_isAsciiFile{};  // set to true for ascii reader, false for binary reader
 };
 
@@ -63,6 +61,12 @@ class EoDxfReaderBinary : public EoDxfReader {
   bool ReadInt32() override;
   bool ReadInt64() override;
   bool ReadDouble() override;
+
+  /** @brief The method reads a single byte from the input stream, interprets it as a boolean value (non-zero is true,
+   * zero is false), and stores the result in the m_boolData member variable. Additionally, it sets the m_int16Data
+   * member to 1 if the boolean value is true, or 0 if it is false, for reference. The method returns true if the read
+   * operation was successful and the stream is still in a good state, or false if an error occurred during reading.
+   */
   bool ReadBool() override;
 
  private:
@@ -100,5 +104,10 @@ class EoDxfReaderAscii : public EoDxfReader {
   bool ReadDouble() override;
   bool ReadInt32() override;
   bool ReadInt64() override;
+
+  /** @brief The method reads the string representation of the boolean value, converts it to an integer using atoi,
+   * and then sets the m_boolData member to true if the integer is non-zero, or false if it is zero.
+   * @note The integer value is also retained in m_int16Data for reference.
+   */
   bool ReadBool() override;
 };

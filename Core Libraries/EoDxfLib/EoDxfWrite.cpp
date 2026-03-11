@@ -139,7 +139,7 @@ bool EoDxfWrite::WriteViewport(EoDxfViewport* viewport) {
   m_writer->WriteDouble(41, viewport->m_height);
   if (viewport->m_viewportStatus != 0) { m_writer->WriteInt16(68, viewport->m_viewportStatus); }
   if (viewport->m_viewportId != 0) { m_writer->WriteInt16(69, viewport->m_viewportId); }
-  
+
   if (!viewport->m_viewCenter.IsZero()) {
     m_writer->WriteDouble(12, viewport->m_viewCenter.x);
     m_writer->WriteDouble(22, viewport->m_viewCenter.y);
@@ -428,9 +428,7 @@ bool EoDxfWrite::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& e
       case 1004:
       case 1005: {
         int cc = (*it)->Code();
-        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::VariantType::String) {
-          m_writer->WriteUtf8String(cc, (*it)->GetString());
-        }
+        if (const auto* value = (*it)->GetIf<std::string>()) { m_writer->WriteUtf8String(cc, *value); }
         //            m_writer->WriteUtf8String((*it)->code, (*it)->content.s);
         break;
       }
@@ -438,29 +436,26 @@ bool EoDxfWrite::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& e
       case 1011:
       case 1012:
       case 1013:
-        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::VariantType::GeometryBase) {
-          const auto& geometryBase = (*it)->GetGeometryBase();
-          m_writer->WriteDouble((*it)->Code(), geometryBase.x);
-          m_writer->WriteDouble((*it)->Code() + 10, geometryBase.y);
-          m_writer->WriteDouble((*it)->Code() + 20, geometryBase.z);
+        if (const auto* geometryBase = (*it)->GetIf<EoDxfGeometryBase3d>()) {
+          m_writer->WriteDouble((*it)->Code(), geometryBase->x);
+          m_writer->WriteDouble((*it)->Code() + 10, geometryBase->y);
+          m_writer->WriteDouble((*it)->Code() + 20, geometryBase->z);
         }
         break;
       case 1040:
       case 1041:
       case 1042:
-        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::VariantType::Double) {
-          m_writer->WriteDouble((*it)->Code(), (*it)->GetDouble());
-        }
+        if (const auto* value = (*it)->GetIf<double>()) { m_writer->WriteDouble((*it)->Code(), *value); }
         break;
       case 1070:
-        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::VariantType::Integer) {
-          m_writer->WriteInt16((*it)->Code(), (*it)->GetInteger());
+        if (const auto* value = (*it)->GetIf<std::int16_t>()) {
+          m_writer->WriteInt16((*it)->Code(), *value);
+        } else if (const auto* value = (*it)->GetIf<bool>()) {
+          m_writer->WriteInt16((*it)->Code(), *value ? 1 : 0);
         }
         break;
       case 1071:
-        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::VariantType::Integer) {
-          m_writer->WriteInt32((*it)->Code(), (*it)->GetInteger());
-        }
+        if (const auto* value = (*it)->GetIf<std::int32_t>()) { m_writer->WriteInt32((*it)->Code(), *value); }
         break;
       default:
         break;

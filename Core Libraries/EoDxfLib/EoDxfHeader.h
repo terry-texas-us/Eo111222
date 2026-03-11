@@ -25,7 +25,7 @@ class EoDxfHeader {
 
   void AddDouble(const std::string& key, double value, int code);
   void AddInt16(const std::string& key, std::int16_t value, int code);
-  void AddInteger(const std::string& key, int value, int code);
+  void AddInt32(const std::string& key, std::int32_t value, int code);
   void AddString(const std::string& key, std::string value, int code);
   void AddGeometryBase(const std::string& key, EoDxfGeometryBase3d value, int code);
   void AddHandle(const std::string& key, std::uint64_t value, int code);
@@ -97,8 +97,8 @@ class EoDxfHeader {
   void WriteAC1024Additions(EoDxfWriter* writer);
 
   [[nodiscard]] bool GetDouble(const std::string& key, double* varDouble);
-  [[nodiscard]] bool GetInt16(const std::string& key, int* varInt);
-  [[nodiscard]] bool GetInteger(const std::string& key, int* varInt);
+  [[nodiscard]] bool GetInt16(const std::string& key, std::int16_t* varInt);
+  [[nodiscard]] bool GetInt32(const std::string& key, std::int32_t* varInt);
 
   /** @brief Retrieves a String variant from the map and removes it if found. If the variant's string pointer is null,
    * the output string is set to empty.

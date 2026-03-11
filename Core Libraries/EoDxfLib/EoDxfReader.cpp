@@ -110,45 +110,38 @@ bool EoDxfReaderBinary::ReadCode(int* code) {
 }
 
 bool EoDxfReaderBinary::ReadString() {
-  m_type = Type::String;
   std::getline(*m_fileStream, m_string, '\0');
   return (m_fileStream->good());
 }
 
 bool EoDxfReaderBinary::ReadString(std::string* text) {
-  m_type = Type::String;
   std::getline(*m_fileStream, *text, '\0');
   return (m_fileStream->good());
 }
 
 bool EoDxfReaderBinary::ReadInt16() {
-  m_type = Type::Int32;
-  m_int16Data = readLE<std::int16_t>(*m_fileStream);  // or uint16_t depending on semantics
-  m_intData = m_int16Data;  // keep your existing storage
+  m_int16Data = readLE<std::int16_t>(*m_fileStream);
   return m_fileStream->good();
 }
 
 bool EoDxfReaderBinary::ReadInt32() {
-  m_type = Type::Int32;
-  m_intData = readLE<std::int32_t>(*m_fileStream);
+  m_int32Data = readLE<std::int32_t>(*m_fileStream);
   return m_fileStream->good();
 }
 
 bool EoDxfReaderBinary::ReadInt64() {
-  m_type = Type::Int64;
-  m_int64 = readLE<std::uint64_t>(*m_fileStream);
+  m_int64 = readLE<std::int64_t>(*m_fileStream);
   return m_fileStream->good();
 }
 
 bool EoDxfReaderBinary::ReadDouble() {
-  m_type = Type::Double;
   m_double = readLE<double>(*m_fileStream);
   return m_fileStream->good();
 }
 
 bool EoDxfReaderBinary::ReadBool() {
-  m_type = Type::Bool;
-  m_intData = readLE<uint8_t>(*m_fileStream);  // bool is stored as single byte (0 or 1)
+  m_boolData = readLE<uint8_t>(*m_fileStream) != 0;
+  m_int16Data = m_boolData ? 1 : 0;
   return m_fileStream->good();
 }
 
@@ -161,39 +154,37 @@ bool EoDxfReaderAscii::ReadCode(int* code) {
   return (m_fileStream->good());
 }
 bool EoDxfReaderAscii::ReadString(std::string* text) {
-  m_type = Type::String;
   std::getline(*m_fileStream, *text);
   if (!text->empty() && text->at(text->size() - 1) == '\r') { text->erase(text->size() - 1); }
   return (m_fileStream->good());
 }
 
 bool EoDxfReaderAscii::ReadString() {
-  m_type = Type::String;
   std::getline(*m_fileStream, m_string);
   if (!m_string.empty() && m_string.at(m_string.size() - 1) == '\r') { m_string.erase(m_string.size() - 1); }
   return (m_fileStream->good());
 }
 
 bool EoDxfReaderAscii::ReadInt16() {
-  m_type = Type::Int32;
   std::string text;
   if (!ReadString(&text)) { return false; }
-  m_intData = atoi(text.c_str());
+  m_int16Data = atoi(text.c_str());
   return true;
 }
 
 bool EoDxfReaderAscii::ReadInt32() {
-  m_type = Type::Int32;
   return ReadInt16();
 }
 
 bool EoDxfReaderAscii::ReadInt64() {
-  m_type = Type::Int64;
-  return ReadInt16();
+  std::string text;
+  if (!ReadString(&text)) { return false; }
+  std::istringstream valueStream(text);
+  valueStream >> m_int64;
+  return !valueStream.fail();
 }
 
 bool EoDxfReaderAscii::ReadDouble() {
-  m_type = Type::Double;
   std::string text;
   if (!ReadString(&text)) { return false; }
   std::istringstream sd(text);
@@ -201,11 +192,10 @@ bool EoDxfReaderAscii::ReadDouble() {
   return true;
 }
 
-// saved as int or add a bool member??
 bool EoDxfReaderAscii::ReadBool() {
-  m_type = Type::Bool;
   std::string text;
   if (!ReadString(&text)) { return false; }
-  m_intData = atoi(text.c_str());
+  m_int16Data = atoi(text.c_str());
+  m_boolData = (m_int16Data != 0);
   return true;
 }
