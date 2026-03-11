@@ -151,10 +151,7 @@ bool EoDxfReaderBinary::ReadBool() {
 // --- Ascii reader ---
 
 bool EoDxfReaderAscii::ReadCode(int* code) {
-  std::string text;
-  std::getline(*m_fileStream, text);
-  *code = atoi(text.c_str());
-  return (m_fileStream->good());
+  return ParseInteger(*code);
 }
 bool EoDxfReaderAscii::ReadString(std::string* text) {
   std::getline(*m_fileStream, *text);
@@ -174,17 +171,14 @@ bool EoDxfReaderAscii::ReadInt64() { return ParseInteger(m_int64); }
 
 
 bool EoDxfReaderAscii::ReadDouble() {
-  std::string text;
-  if (!ReadString(&text)) { return false; }
-  std::istringstream sd(text);
-  sd >> m_double;
-  return true;
+  return ParseDouble(m_double);
 }
 
 bool EoDxfReaderAscii::ReadBool() {
-  std::string text;
-  if (!ReadString(&text)) { return false; }
-  m_int16 = atoi(text.c_str());
-  m_boolData = (m_int16 != 0);
+  std::int16_t boolValue{};
+  if (!ParseInteger(boolValue)) { return false; }
+
+  m_int16 = boolValue;
+  m_boolData = (boolValue != 0);
   return true;
 }

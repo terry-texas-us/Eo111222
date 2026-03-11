@@ -129,6 +129,22 @@ class EoDxfReaderAscii : public EoDxfReader {
     return true;
   }
 
+  [[nodiscard]] bool ParseDouble(double& out) {
+    std::string text;
+    if (!ReadString(&text)) { return false; }
+
+    std::string_view trimmedText = EoDxf::Detail::Trim(text);
+    if (trimmedText.empty()) { return false; }
+
+    double value{};
+    auto [ptr, ec] = std::from_chars(
+        trimmedText.data(), trimmedText.data() + trimmedText.size(), value, std::chars_format::general);
+    if (ec != std::errc{} || ptr != trimmedText.data() + trimmedText.size()) { return false; }
+
+    out = value;
+    return true;
+  }
+
  public:
   EoDxfReaderAscii(std::ifstream* stream) : EoDxfReader(stream) { m_isAsciiFile = true; }
   ~EoDxfReaderAscii() = default;
@@ -140,8 +156,8 @@ class EoDxfReaderAscii : public EoDxfReader {
   [[nodiscard]] bool ReadInt32() override;
   [[nodiscard]] bool ReadInt64() override;
 
-  /** @brief The method reads the string representation of the boolean value, converts it to an integer using atoi,
-   * and then sets the m_boolData member to true if the integer is non-zero, or false if it is zero.
+  /** @brief The method reads the string representation of the boolean value, converts it to an integer using
+   * std::from_chars, and then sets the m_boolData member to true if the integer is non-zero, or false if it is zero.
    * @note The integer value is also retained in m_int16 for reference.
    */
   bool ReadBool() override;
