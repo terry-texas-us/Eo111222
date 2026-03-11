@@ -99,13 +99,14 @@ bool EoDxfReaderBinary::ReadCode(int* code) {
 
   // Some older AutoCAD versions write 32-bit values for code 90 using only 2 bytes when the value fits in 16 bits.
   // This leaves the next "group code" bytes actually being the high 16 bits of the previous 32-bit value → raw > 2000.
-  // We detect it by looking at the PREVIOUS code (*code == 90) and rewind.
-  if (*code == 90 && raw > legacyAcGroupCode90Threshhold) {
+  // We detect it by looking at the previous group code and rewind.
+  if (m_previousCode == 90 && raw > legacyAcGroupCode90Threshhold) {
     // rewind past the bogus 2 bytes + the 2 bytes that were mistakenly read by the previous ReadInt32()
     m_fileStream->seekg(-4, std::ios_base::cur);
     raw = readLE<uint16_t>(*m_fileStream);  // now read the real next group code
   }
   *code = static_cast<int>(raw);
+  m_previousCode = *code;
 
   return m_fileStream->good();
 }

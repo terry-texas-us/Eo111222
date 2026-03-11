@@ -56,7 +56,7 @@ class EoDxfReaderBinary : public EoDxfReader {
  public:
   EoDxfReaderBinary(std::ifstream* stream) : EoDxfReader(stream) { m_isAsciiFile = false; }
   ~EoDxfReaderBinary() = default;
-  
+
   [[nodiscard]] bool ReadCode(int* code) override;
   [[nodiscard]] bool ReadString() override;
   [[nodiscard]] bool ReadString(std::string* text) override;
@@ -73,8 +73,11 @@ class EoDxfReaderBinary : public EoDxfReader {
 
   bool ReadDouble() override;
 
-
  private:
+  /** @brief Threshold for detecting legacy AutoCAD versions that write 32-bit values for code 90 using only 2 bytes
+   * when the value fits in 16 bits.*/
+  int m_previousCode{};
+
   /** @brief Reads a value of type T from the input stream in little-endian format.
    *  The function reads sizeof(T) bytes from the stream, reverses the byte order if the system is big-endian,
    *  and then copies the bytes into a variable of type T to return the value.
