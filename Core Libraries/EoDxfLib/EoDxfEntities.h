@@ -1318,5 +1318,5 @@ class EoDxfViewport : public EoDxfPoint {
   double m_twistAngle{};  // View twist angle, code 51
 
  private:
-  std::uint32_t m_frozenLayerCount{};  // Number of frozen layers, code 90
+  std::int32_t m_viewportStatusBitCodedFlags{};  // Group code 90
 };

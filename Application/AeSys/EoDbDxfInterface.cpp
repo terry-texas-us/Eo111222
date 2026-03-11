@@ -37,19 +37,19 @@ void EoDbDxfInterface::SetHeaderSectionVariable(
     std::wstring key = Eo::MultiByteToWString(it->first.c_str());
     auto& second = *(it->second);
     switch (second.GetType()) {
-      case EoDxfGroupCodeValuesVariant::Type::String:
+      case EoDxfGroupCodeValuesVariant::VariantType::String:
         value = Eo::MultiByteToWString(second.GetString().c_str());
         break;
-      case EoDxfGroupCodeValuesVariant::Type::Integer:
+      case EoDxfGroupCodeValuesVariant::VariantType::Integer:
         value = second.GetInteger();
         break;
-      case EoDxfGroupCodeValuesVariant::Type::Double:
+      case EoDxfGroupCodeValuesVariant::VariantType::Double:
         value = second.GetDouble();
         break;
-      case EoDxfGroupCodeValuesVariant::Type::GeometryBase:
+      case EoDxfGroupCodeValuesVariant::VariantType::GeometryBase:
         value = EoGePoint3d(second.GetGeometryBase());
         break;
-      case EoDxfGroupCodeValuesVariant::Type::Invalid:
+      case EoDxfGroupCodeValuesVariant::VariantType::Invalid:
       default:
         value = L"";
         break;

@@ -15,7 +15,10 @@ class EoDxfTableEntry {
       : tType{tableType}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
  public:
   virtual ~EoDxfTableEntry() {
-    for (std::vector<EoDxfGroupCodeValuesVariant*>::iterator it = m_extensionData.begin(); it != m_extensionData.end(); ++it) { delete *it; }
+    for (std::vector<EoDxfGroupCodeValuesVariant*>::iterator it = m_extensionData.begin(); it != m_extensionData.end();
+        ++it) {
+      delete *it;
+    }
     m_extensionData.clear();
   }
 
@@ -26,7 +29,8 @@ class EoDxfTableEntry {
     m_tableName = e.m_tableName;
     m_flagValues = e.m_flagValues;
     m_currentVariant = e.m_currentVariant;
-    for (std::vector<EoDxfGroupCodeValuesVariant*>::const_iterator it = e.m_extensionData.begin(); it != e.m_extensionData.end(); ++it) {
+    for (std::vector<EoDxfGroupCodeValuesVariant*>::const_iterator it = e.m_extensionData.begin();
+        it != e.m_extensionData.end(); ++it) {
       m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(*(*it)));
     }
   }
@@ -298,13 +302,11 @@ class EoDxfVPort : public EoDxfTableEntry {
   std::int16_t m_gridOn{};  // Grid on/off, code 76
   std::int16_t m_snapStyle{};  // Snap style, code 77
   std::int16_t m_snapIsopair{};  // Snap isopair, code 78
-  std::int16_t m_gridBehavior{7};  // Grid behavior flags, code 60
-  /** code 60, bit coded possible values are
-   * bit 1 (1) show out of limits
-   * bit 2 (2) adaptive grid
-   * bit 3 (4) allow subdivision
-   * bit 4 (8) follow dynamic SCP
-   **/
+  std::int16_t m_gridBehavior{7}; /** Group code 60, possible values are
+                                   * bit 1 (1) show out of limits
+                                   * bit 2 (2) adaptive grid
+                                   * bit 3 (4) allow subdivision
+                                   * bit 4 (8) follow dynamic SCP **/
 };
 
 /** Class to handle application ID entries

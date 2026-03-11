@@ -428,7 +428,7 @@ bool EoDxfWrite::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& e
       case 1004:
       case 1005: {
         int cc = (*it)->Code();
-        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::String) {
+        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::VariantType::String) {
           m_writer->WriteUtf8String(cc, (*it)->GetString());
         }
         //            m_writer->WriteUtf8String((*it)->code, (*it)->content.s);
@@ -438,7 +438,7 @@ bool EoDxfWrite::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& e
       case 1011:
       case 1012:
       case 1013:
-        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::GeometryBase) {
+        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::VariantType::GeometryBase) {
           const auto& geometryBase = (*it)->GetGeometryBase();
           m_writer->WriteDouble((*it)->Code(), geometryBase.x);
           m_writer->WriteDouble((*it)->Code() + 10, geometryBase.y);
@@ -448,17 +448,17 @@ bool EoDxfWrite::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& e
       case 1040:
       case 1041:
       case 1042:
-        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::Double) {
+        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::VariantType::Double) {
           m_writer->WriteDouble((*it)->Code(), (*it)->GetDouble());
         }
         break;
       case 1070:
-        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::Integer) {
+        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::VariantType::Integer) {
           m_writer->WriteInt16((*it)->Code(), (*it)->GetInteger());
         }
         break;
       case 1071:
-        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::Type::Integer) {
+        if ((*it)->GetType() == EoDxfGroupCodeValuesVariant::VariantType::Integer) {
           m_writer->WriteInt32((*it)->Code(), (*it)->GetInteger());
         }
         break;

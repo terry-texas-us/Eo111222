@@ -1360,7 +1360,7 @@ void EoDxfViewport::ParseCode(int code, EoDxfReader* reader) {
       m_viewportId = reader->GetInt16();
       break;
     case 90:
-      m_frozenLayerCount = static_cast<std::uint32_t>(reader->GetInt32());
+      m_viewportStatusBitCodedFlags = reader->GetInt32();
       break;
     default:
       EoDxfPoint::ParseCode(code, reader);

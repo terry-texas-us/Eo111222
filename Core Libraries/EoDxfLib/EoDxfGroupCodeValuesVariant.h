@@ -19,16 +19,6 @@
  */
 class EoDxfGroupCodeValuesVariant {
  public:
-  enum Type {
-    String,
-    Int16,  ///< 16-bit signed integer (DXF group codes 60-79, 170-179, 270-289, 370-389, 400-409, 1060-1070)
-    Integer,  ///< 32-bit signed integer (DXF group codes 90-99, 420-429, 440-449, 450-459, 1071)
-    Double,
-    GeometryBase,
-    Handle,  ///< 64-bit unsigned handle (DXF group codes 5, 105, 310-369 handle references)
-    Invalid
-  };
-
   EoDxfGroupCodeValuesVariant() = default;
 
   EoDxfGroupCodeValuesVariant(int code, std::int16_t i16) noexcept : m_content{i16}, m_code{code} {}
@@ -111,17 +101,29 @@ class EoDxfGroupCodeValuesVariant {
     return std::get<std::uint64_t>(m_content);
   }
 
-  [[nodiscard]] enum Type GetType() const noexcept {
-    // Maps std::variant index to the public Type enum.
+  enum VariantType {
+    String,
+    Int16,  ///< 16-bit signed integer (DXF group codes 60-79, 170-179, 270-289, 370-389, 400-409, 1060-1070)
+    Integer,  ///< 32-bit signed integer (DXF group codes 90-99, 420-429, 440-449, 450-459, 1071)
+    Double,
+    GeometryBase,
+    Handle,  ///< 64-bit unsigned handle (DXF group codes 5, 105, 310-369 handle references)
+    Invalid
+  };
+
+  [[nodiscard]] enum VariantType GetType() const noexcept {
+    if (m_content.valueless_by_exception()) { return Invalid; }
+    // Maps std::variant index to the public VariantType enum.
     // Order must match the variant alternative order declared below.
-    static constexpr Type indexToType[] = {Invalid, String, Int16, Integer, Handle, Double, GeometryBase};
+    static constexpr VariantType indexToType[] = {Invalid, String, Int16, Integer, Handle, Double, GeometryBase};
     return indexToType[m_content.index()];
   }
+
   [[nodiscard]] int Code() const noexcept { return m_code; }
 
  private:
-  /// Discriminated storage — Alternative order: monostate(Invalid), string(String), int16_t(Int16), int32_t(Integer),
-  /// uint64_t(Handle), double(Double), EoDxfGeometryBase3d(GeometryBase).
+  /** Discriminated storage — Alternative order: monostate(Invalid), 
+   * string(String), int16_t(Int16), int32_t(Integer), uint64_t(Handle), double(Double), EoDxfGeometryBase3d(GeometryBase).*/
   std::variant<std::monostate, std::string, std::int16_t, std::int32_t, std::uint64_t, double, EoDxfGeometryBase3d>
       m_content;
 

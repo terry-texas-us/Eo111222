@@ -89,12 +89,12 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       m_currentVariant->AddGeometryBase(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
       break;
     case 20:
-      if (m_currentVariant->GetType() == EoDxfGroupCodeValuesVariant::Type::GeometryBase) {
+      if (m_currentVariant->GetType() == EoDxfGroupCodeValuesVariant::VariantType::GeometryBase) {
         m_currentVariant->SetGeometryBaseY(reader->GetDouble());
       }
       break;
     case 30:
-      if (m_currentVariant->GetType() == EoDxfGroupCodeValuesVariant::Type::GeometryBase) {
+      if (m_currentVariant->GetType() == EoDxfGroupCodeValuesVariant::VariantType::GeometryBase) {
         m_currentVariant->SetGeometryBaseZ(reader->GetDouble());
       }
       break;
@@ -1390,7 +1390,7 @@ void EoDxfHeader::AddHandle(const std::string& key, std::uint64_t value, int cod
 bool EoDxfHeader::GetDouble(const std::string& key, double* variantDouble) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second.get();
-    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Double) {
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::VariantType::Double) {
       *variantDouble = variant->GetDouble();
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
       m_variants.erase(it);
@@ -1403,7 +1403,7 @@ bool EoDxfHeader::GetDouble(const std::string& key, double* variantDouble) {
 bool EoDxfHeader::GetInt16(const std::string& key, int* variantInt) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second.get();
-    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Int16) {
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::VariantType::Int16) {
       *variantInt = variant->GetInt16();  // lossless widening to int
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
       m_variants.erase(it);
@@ -1416,7 +1416,7 @@ bool EoDxfHeader::GetInt16(const std::string& key, int* variantInt) {
 bool EoDxfHeader::GetInteger(const std::string& key, int* variantInteger) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second.get();
-    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Integer) {
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::VariantType::Integer) {
       *variantInteger = variant->GetInteger();
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
       m_variants.erase(it);
@@ -1424,7 +1424,7 @@ bool EoDxfHeader::GetInteger(const std::string& key, int* variantInteger) {
     }
     // Int16 is widened to int for backward compatibility with callers that
     // do not yet distinguish 16-bit vs 32-bit integer group codes.
-    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Int16) {
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::VariantType::Int16) {
       *variantInteger = variant->GetInt16();  // lossless promotion
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
       m_variants.erase(it);
@@ -1438,7 +1438,7 @@ bool EoDxfHeader::GetInteger(const std::string& key, int* variantInteger) {
 bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second.get();
-    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::String) {
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::VariantType::String) {
       *variantString = variant->GetString();
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
       m_variants.erase(it);
@@ -1452,7 +1452,7 @@ bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) 
 bool EoDxfHeader::GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* variantGeometryBase) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second.get();
-    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::GeometryBase) {
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::VariantType::GeometryBase) {
       *variantGeometryBase = variant->GetGeometryBase();
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
       m_variants.erase(it);
@@ -1466,7 +1466,7 @@ bool EoDxfHeader::GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* v
 bool EoDxfHeader::GetHandle(const std::string& key, std::uint64_t* varHandle) {
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second.get();
-    if (variant->GetType() == EoDxfGroupCodeValuesVariant::Type::Handle) {
+    if (variant->GetType() == EoDxfGroupCodeValuesVariant::VariantType::Handle) {
       *varHandle = variant->GetHandle();
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
       m_variants.erase(it);
