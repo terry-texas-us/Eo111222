@@ -3,9 +3,12 @@
 
 #include "EoDxfWriter.h"
 
+bool EoDxfWriter::WriteWideString(int code, std::wstring_view text) {
+  return WriteString(code, m_encoder.FromWide(text));
+}
+
 bool EoDxfWriter::WriteUtf8String(int code, std::string text) {
-  std::string t = m_encoder.FromUtf8(text);
-  return WriteString(code, t);
+  return WriteString(code, m_encoder.FromUtf8(text));
 }
 
 bool EoDxfWriterBinary::WriteString(int code, std::string_view text) {

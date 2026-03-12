@@ -21,8 +21,10 @@ class EoDxfWriter {
   void SetCodePage(const std::string& codePage) { m_encoder.SetCodePage(codePage); }
   [[nodiscard]] const std::string& GetCodePage() const { return m_encoder.GetCodePage(); }
 
+  std::string FromWideString(std::wstring_view text) { return m_encoder.FromWide(text); }
   std::string FromUtf8String(std::string t) { return m_encoder.FromUtf8(t); }
 
+  bool WriteWideString(int code, std::wstring_view text);
   bool WriteUtf8String(int code, std::string text);
 
  protected:

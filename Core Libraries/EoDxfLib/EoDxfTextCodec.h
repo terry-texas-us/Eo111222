@@ -18,6 +18,8 @@ class EoTcTextCodec {
   EoTcTextCodec(EoTcTextCodec&& other) noexcept;
   EoTcTextCodec& operator=(EoTcTextCodec&& other) noexcept;
 
+  [[nodiscard]] std::string FromWide(std::wstring_view text) const;
+  [[nodiscard]] std::wstring ToWide(std::string_view text) const;
   [[nodiscard]] std::string FromUtf8(std::string s);
 
   [[nodiscard]] std::string ToUtf8(std::string s) const;
@@ -78,6 +80,8 @@ class EoTcConverter {
   EoTcConverter(const int* table, int length) : m_table{table}, m_codePageLength{length} {}
   virtual ~EoTcConverter() = default;
 
+  virtual [[nodiscard]] std::string FromWide(std::wstring_view text) const;
+  virtual [[nodiscard]] std::wstring ToWide(std::string_view text) const;
   virtual [[nodiscard]] std::string FromUtf8(std::string* s) { return *s; }
   virtual [[nodiscard]] std::string ToUtf8(std::string* s) { return *s; }
 
@@ -93,6 +97,8 @@ class EoTcConverter {
 class EoTcConvertUtf8 : public EoTcConverter {
  public:
   EoTcConvertUtf8() : EoTcConverter(nullptr, 0) {}
+  [[nodiscard]] std::string FromWide(std::wstring_view text) const override;
+  [[nodiscard]] std::wstring ToWide(std::string_view text) const override;
   [[nodiscard]] std::string FromUtf8(std::string* s) override { return *s; }
   [[nodiscard]] std::string ToUtf8(std::string* s) override { return *s; }
 };
@@ -105,6 +111,8 @@ class EoTcConvertUtf8 : public EoTcConverter {
 class EoTcConvertUtf16 : public EoTcConverter {
  public:
   EoTcConvertUtf16() : EoTcConverter(nullptr, 0) {}
+  [[nodiscard]] std::string FromWide(std::wstring_view text) const override;
+  [[nodiscard]] std::wstring ToWide(std::string_view text) const override;
   [[nodiscard]] std::string FromUtf8(std::string* s) override;
   [[nodiscard]] std::string ToUtf8(std::string* s) override;
 };
@@ -116,6 +124,8 @@ class EoTcConvertUtf16 : public EoTcConverter {
 class EoTcConvertTable : public EoTcConverter {
  public:
   EoTcConvertTable(const int* table, int length) : EoTcConverter(table, length) {}
+  [[nodiscard]] std::string FromWide(std::wstring_view text) const override;
+  [[nodiscard]] std::wstring ToWide(std::string_view text) const override;
   [[nodiscard]] std::string FromUtf8(std::string* s) override;
   [[nodiscard]] std::string ToUtf8(std::string* s) override;
 };
@@ -132,6 +142,8 @@ class EoTcConvertDBCSTable : public EoTcConverter {
     m_leadTable = leadTable;
     m_doubleTable = doubleTable;
   }
+  [[nodiscard]] std::string FromWide(std::wstring_view text) const override { return EoTcConverter::FromWide(text); }
+  [[nodiscard]] std::wstring ToWide(std::string_view text) const override { return EoTcConverter::ToWide(text); }
   [[nodiscard]] std::string FromUtf8(std::string* s) override { return *s; }
   [[nodiscard]] std::string ToUtf8(std::string* s) override { return *s; }
 

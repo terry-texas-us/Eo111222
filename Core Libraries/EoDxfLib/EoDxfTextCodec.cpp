@@ -182,6 +182,16 @@ EoTcTextCodec::EoTcTextCodec(EoTcTextCodec&& other) noexcept = default;
 
 EoTcTextCodec& EoTcTextCodec::operator=(EoTcTextCodec&& other) noexcept = default;
 
+std::string EoTcTextCodec::FromWide(std::wstring_view text) const {
+  if (m_converter) { return m_converter->FromWide(text); }
+  return {};
+}
+
+std::wstring EoTcTextCodec::ToWide(std::string_view text) const {
+  if (m_converter) { return m_converter->ToWide(text); }
+  return {};
+}
+
 std::unique_ptr<EoTcConverter> EoTcTextCodec::CreateConverter(const std::string_view normalizedCodePage) {
   if (normalizedCodePage == "UTF-16") { return std::make_unique<EoTcConvertUtf16>(); }
   if (normalizedCodePage == "UTF-8") { return std::make_unique<EoTcConvertUtf8>(); }
@@ -189,13 +199,11 @@ std::unique_ptr<EoTcConverter> EoTcTextCodec::CreateConverter(const std::string_
 }
 
 std::string EoTcTextCodec::FromUtf8(std::string s) {
-  if (m_converter) { return m_converter->FromUtf8(&s); }
-  return s;
+  return FromWide(Utf8ToWide(s));
 }
 
 std::string EoTcTextCodec::ToUtf8(std::string s) const {
-  if (m_converter) { return m_converter->ToUtf8(&s); }
-  return s;
+  return WideToUtf8(ToWide(s));
 }
 
 void EoTcTextCodec::SetVersion(const std::string& version) {
@@ -245,19 +253,50 @@ std::string EoTcTextCodec::NormalizeCodePage(const std::string_view codePage) {
 
 void EoTcTextCodec::SetCodePage(const std::string& codePage) {
   const std::string normalizedCodePage = NormalizeCodePage(codePage);
-  auto converter = CreateConverter(normalizedCodePage);
+  m_converter = CreateConverter(normalizedCodePage);
   m_codePage = normalizedCodePage;
-  m_converter = std::move(converter);
 }
 
-std::string EoTcConvertUtf16::FromUtf8(std::string* s) { return EncodeUtf16(Utf8ToWide(*s)); }
+std::string EoTcConverter::FromWide(std::wstring_view text) const {
+  return std::string(text.begin(), text.end());
+}
 
-std::string EoTcConvertUtf16::ToUtf8(std::string* s) { return WideToUtf8(DecodeUtf16(*s)); }
+std::wstring EoTcConverter::ToWide(std::string_view text) const {
+  return std::wstring(text.begin(), text.end());
+}
+
+std::string EoTcConvertUtf8::FromWide(std::wstring_view text) const {
+  return WideToUtf8(text);
+}
+
+std::wstring EoTcConvertUtf8::ToWide(std::string_view text) const {
+  return Utf8ToWide(text);
+}
+
+std::string EoTcConvertUtf16::FromWide(std::wstring_view text) const {
+  return EncodeUtf16(text);
+}
+
+std::wstring EoTcConvertUtf16::ToWide(std::string_view text) const {
+  return DecodeUtf16(text);
+}
+
+std::string EoTcConvertUtf16::FromUtf8(std::string* s) { return FromWide(Utf8ToWide(*s)); }
+
+std::string EoTcConvertUtf16::ToUtf8(std::string* s) { return WideToUtf8(ToWide(*s)); }
+
+std::string EoTcConvertTable::FromWide(std::wstring_view text) const {
+  return EncodeAnsiTable(text, m_table, m_codePageLength);
+}
+
+std::wstring EoTcConvertTable::ToWide(std::string_view text) const {
+  return DecodeAnsiTable(text, m_table, m_codePageLength);
+}
 
 std::string EoTcConvertTable::FromUtf8(std::string* s) {
-  return EncodeAnsiTable(Utf8ToWide(*s), m_table, m_codePageLength);
+  return FromWide(Utf8ToWide(*s));
 }
 
 std::string EoTcConvertTable::ToUtf8(std::string* s) {
-  return WideToUtf8(DecodeAnsiTable(*s, m_table, m_codePageLength));
+  return WideToUtf8(ToWide(*s));
 }
