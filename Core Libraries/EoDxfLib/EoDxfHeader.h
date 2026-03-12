@@ -15,7 +15,7 @@ class EoDxfWriter;
  */
 class EoDxfHeader {
  public:
-  EoDxfHeader() { m_version = static_cast<int>(EoDxf::Version::AC1021); }
+  EoDxfHeader() { m_version = EoDxf::Version::AC1021; }
 
   EoDxfHeader(const EoDxfHeader& other);
 
@@ -123,7 +123,7 @@ class EoDxfHeader {
   std::string m_comments{};
   std::string m_name{};
   EoDxfGroupCodeValuesVariant* m_currentVariant{};
-  int m_version{};
+  EoDxf::Version m_version{};
 
   friend class EoDxfRead;
   friend class EoDxfWrite;

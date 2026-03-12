@@ -2,7 +2,10 @@
 
 #include <string_view>
 
+#include <memory>
 #include <string>
+
+#include "EoDxfBase.h"
 
 class EoTcConverter;
 
@@ -10,12 +13,16 @@ class EoTcTextCodec {
  public:
   EoTcTextCodec();
   ~EoTcTextCodec();
+  EoTcTextCodec(const EoTcTextCodec& other);
+  EoTcTextCodec& operator=(const EoTcTextCodec& other);
+  EoTcTextCodec(EoTcTextCodec&& other) noexcept;
+  EoTcTextCodec& operator=(EoTcTextCodec&& other) noexcept;
 
   [[nodiscard]] std::string FromUtf8(std::string s);
 
   [[nodiscard]] std::string ToUtf8(std::string s) const;
 
-  [[nodiscard]] constexpr int GetVersion() const noexcept { return m_version; }
+  [[nodiscard]] constexpr EoDxf::Version GetVersion() const noexcept { return m_version; }
 
   /** @brief Sets the version for the text codec. This method allows you to specify the version of the DXF format that the text
    * codec should use when encoding and decoding text. The version can affect how certain characters are handled, as different
@@ -26,7 +33,7 @@ class EoTcTextCodec {
    * the EoDxf::Version enumeration.
    */
   void SetVersion(const std::string& version);
-  void SetVersion(int version);
+  void SetVersion(EoDxf::Version version) noexcept;
 
   /** @brief Gets the current code page used by the text codec.
    * The code page is a character encoding standard that defines how characters are represented in bytes.
@@ -43,6 +50,7 @@ class EoTcTextCodec {
   void SetCodePage(const std::string& codePage);
 
  private:
+  [[nodiscard]] static std::unique_ptr<EoTcConverter> CreateConverter(const std::string_view normalizedCodePage);
 
   /** @brief Standardizes a DXF code page string to one of the standard internal forms.
    *
@@ -57,8 +65,8 @@ class EoTcTextCodec {
   [[nodiscard]] std::string NormalizeCodePage(const std::string_view codePage);
 
   std::string m_codePage;
-  EoTcConverter* m_converter;
-  int m_version;
+  std::unique_ptr<EoTcConverter> m_converter;
+  EoDxf::Version m_version;
 };
 
 /** @brief Base converter class for text encoding conversions. This class provides a common interface for converting between

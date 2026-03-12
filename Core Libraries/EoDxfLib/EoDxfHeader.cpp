@@ -82,7 +82,7 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>();
       m_currentVariant = newVariant.get();
       m_name = reader->GetString();
-      if (m_version < static_cast<int>(EoDxf::Version::AC1015) && m_name == "$DIMUNIT") { m_name = "$DIMLUNIT"; }
+      if (m_version < EoDxf::Version::AC1015 && m_name == "$DIMUNIT") { m_name = "$DIMLUNIT"; }
       m_variants[m_name] = std::move(newVariant);
     } break;
     case 10:

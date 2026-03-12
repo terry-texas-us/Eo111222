@@ -4,6 +4,7 @@
 #include <Windows.h>
 
 #include <cctype>
+#include <memory>
 #include <string_view>
 
 #include "EoDxfBase.h"
@@ -159,10 +160,33 @@ constexpr int cp1252TableLength{128};
 }  // namespace
 
 EoTcTextCodec::EoTcTextCodec()
-    : m_codePage{"ANSI_1252"}, m_converter{new EoTcConvertTable(EoTcTable1252, cp1252TableLength)},
+    : m_codePage{"ANSI_1252"},
+      m_converter{CreateConverter("ANSI_1252")},
       m_version{static_cast<int>(EoDxf::Version::UNKNOWN)} {}
 
-EoTcTextCodec::~EoTcTextCodec() { delete m_converter; }
+EoTcTextCodec::~EoTcTextCodec() = default;
+
+EoTcTextCodec::EoTcTextCodec(const EoTcTextCodec& other)
+    : m_codePage{other.m_codePage}, m_converter{CreateConverter(other.m_codePage)}, m_version{other.m_version} {}
+
+EoTcTextCodec& EoTcTextCodec::operator=(const EoTcTextCodec& other) {
+  if (this != &other) {
+    m_codePage = other.m_codePage;
+    m_converter = CreateConverter(other.m_codePage);
+    m_version = other.m_version;
+  }
+  return *this;
+}
+
+EoTcTextCodec::EoTcTextCodec(EoTcTextCodec&& other) noexcept = default;
+
+EoTcTextCodec& EoTcTextCodec::operator=(EoTcTextCodec&& other) noexcept = default;
+
+std::unique_ptr<EoTcConverter> EoTcTextCodec::CreateConverter(const std::string_view normalizedCodePage) {
+  if (normalizedCodePage == "UTF-16") { return std::make_unique<EoTcConvertUtf16>(); }
+  if (normalizedCodePage == "UTF-8") { return std::make_unique<EoTcConvertUtf8>(); }
+  return std::make_unique<EoTcConvertTable>(EoTcTable1252, cp1252TableLength);
+}
 
 std::string EoTcTextCodec::FromUtf8(std::string s) {
   if (m_converter) { return m_converter->FromUtf8(&s); }
@@ -177,33 +201,33 @@ std::string EoTcTextCodec::ToUtf8(std::string s) const {
 void EoTcTextCodec::SetVersion(const std::string& version) {
   const auto normalizedVersion = NormalizeToken(version);
   if (normalizedVersion == "AC1006") {
-    m_version = static_cast<int>(EoDxf::Version::AC1006);
+    m_version = EoDxf::Version::AC1006;
   } else if (normalizedVersion == "AC1009") {
-    m_version = static_cast<int>(EoDxf::Version::AC1009);
+    m_version = EoDxf::Version::AC1009;
   } else if (normalizedVersion == "AC1012") {
-    m_version = static_cast<int>(EoDxf::Version::AC1012);
+    m_version = EoDxf::Version::AC1012;
   } else if (normalizedVersion == "AC1014") {
-    m_version = static_cast<int>(EoDxf::Version::AC1014);
+    m_version = EoDxf::Version::AC1014;
   } else if (normalizedVersion == "AC1015") {
-    m_version = static_cast<int>(EoDxf::Version::AC1015);
+    m_version = EoDxf::Version::AC1015;
   } else if (normalizedVersion == "AC1018") {
-    m_version = static_cast<int>(EoDxf::Version::AC1018);
+    m_version = EoDxf::Version::AC1018;
   } else if (normalizedVersion == "AC1021") {
-    m_version = static_cast<int>(EoDxf::Version::AC1021);
+    m_version = EoDxf::Version::AC1021;
   } else if (normalizedVersion == "AC1024") {
-    m_version = static_cast<int>(EoDxf::Version::AC1024);
+    m_version = EoDxf::Version::AC1024;
   } else if (normalizedVersion == "AC1027") {
-    m_version = static_cast<int>(EoDxf::Version::AC1027);
+    m_version = EoDxf::Version::AC1027;
   } else if (normalizedVersion == "AC1032") {
-    m_version = static_cast<int>(EoDxf::Version::AC1032);
+    m_version = EoDxf::Version::AC1032;
   } else if (normalizedVersion.empty()) {
-    m_version = static_cast<int>(EoDxf::Version::UNKNOWN);
+    m_version = EoDxf::Version::UNKNOWN;
   } else {
-    m_version = static_cast<int>(EoDxf::Version::AC1021);
+    m_version = EoDxf::Version::AC1021;
   }
 }
 
-void EoTcTextCodec::SetVersion(int version) { m_version = version; }
+void EoTcTextCodec::SetVersion(EoDxf::Version version) noexcept { m_version = version; }
 
 std::string EoTcTextCodec::NormalizeCodePage(const std::string_view codePage) {
   const auto normalizedCodePage = NormalizeToken(codePage);
@@ -220,28 +244,15 @@ std::string EoTcTextCodec::NormalizeCodePage(const std::string_view codePage) {
 }
 
 void EoTcTextCodec::SetCodePage(const std::string& codePage) {
-  delete m_converter;
-  m_converter = nullptr;
-
-  std::string normalizedCodePage = NormalizeCodePage(codePage);
+  const std::string normalizedCodePage = NormalizeCodePage(codePage);
+  auto converter = CreateConverter(normalizedCodePage);
   m_codePage = normalizedCodePage;
-
-  if (normalizedCodePage == "UTF-16") {
-    m_converter = new EoTcConvertUtf16();
-  } else if (normalizedCodePage == "UTF-8") {
-    m_converter = new EoTcConvertUtf8();
-  } else {
-    m_converter = new EoTcConvertTable(EoTcTable1252, cp1252TableLength);
-  }
+  m_converter = std::move(converter);
 }
 
-std::string EoTcConvertUtf16::FromUtf8(std::string* s) {
-  return EncodeUtf16(Utf8ToWide(*s));
-}
+std::string EoTcConvertUtf16::FromUtf8(std::string* s) { return EncodeUtf16(Utf8ToWide(*s)); }
 
-std::string EoTcConvertUtf16::ToUtf8(std::string* s) {
-  return WideToUtf8(DecodeUtf16(*s));
-}
+std::string EoTcConvertUtf16::ToUtf8(std::string* s) { return WideToUtf8(DecodeUtf16(*s)); }
 
 std::string EoTcConvertTable::FromUtf8(std::string* s) {
   return EncodeAnsiTable(Utf8ToWide(*s), m_table, m_codePageLength);

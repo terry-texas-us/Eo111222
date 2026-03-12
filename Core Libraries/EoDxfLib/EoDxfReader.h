@@ -26,7 +26,7 @@ class EoDxfReader {
   [[nodiscard]] constexpr std::int32_t GetInt32() const noexcept { return m_int32; }
   [[nodiscard]] constexpr std::int64_t GetInt64() const noexcept { return m_int64; }
   [[nodiscard]] constexpr bool GetBool() const noexcept { return m_boolData; }
-  [[nodiscard]] constexpr int GetVersion() const noexcept { return m_decoder.GetVersion(); }
+  [[nodiscard]] constexpr EoDxf::Version GetVersion() const noexcept { return m_decoder.GetVersion(); }
   void SetVersion(const std::string& version) { m_decoder.SetVersion(version); }
   void SetCodePage(const std::string& codePage) { m_decoder.SetCodePage(codePage); }
   [[nodiscard]] std::string GetCodePage() const noexcept { return m_decoder.GetCodePage(); }
