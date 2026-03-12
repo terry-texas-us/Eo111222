@@ -31,7 +31,11 @@ namespace {
 }  // namespace
 
 EoDxfHeader::EoDxfHeader(const EoDxfHeader& other)
-    : m_version{other.m_version}, m_comments{other.m_comments}, m_name{other.m_name}, m_currentVariant{nullptr} {
+    : m_version{other.m_version},
+      m_comments{other.m_comments},
+      m_originalCodePageToken{other.m_originalCodePageToken},
+      m_name{other.m_name},
+      m_currentVariant{nullptr} {
   for (const auto& [key, variant] : other.m_variants) {
     m_variants.emplace(key, std::make_unique<EoDxfGroupCodeValuesVariant>(*variant));
   }
@@ -42,6 +46,7 @@ EoDxfHeader& EoDxfHeader::operator=(const EoDxfHeader& other) {
   ClearVariants();
   m_version = other.m_version;
   m_comments = other.m_comments;
+  m_originalCodePageToken = other.m_originalCodePageToken;
   m_name = other.m_name;
   m_currentVariant = nullptr;
 
@@ -78,8 +83,8 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
     case 3:
       m_currentVariant->AddWideString(code, reader->GetWideString());
       if (m_name == L"$DWGCODEPAGE") {
-        reader->SetCodePage(m_currentVariant->GetWideString());
-        m_currentVariant->AddWideString(code, reader->GetCodePage());
+        m_originalCodePageToken = m_currentVariant->GetWideString();
+        reader->SetCodePage(m_originalCodePageToken);
       }
       break;
     case 5: {
@@ -1182,10 +1187,14 @@ void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
   writer->WriteWideString(1, variantWideString);
   writer->SetVersion(variantWideString);
 
-  if (!GetWideString(L"$DWGCODEPAGE", &variantWideString)) { variantWideString = L"ANSI_1252"; }
+  if (!m_originalCodePageToken.empty()) {
+    variantWideString = m_originalCodePageToken;
+  } else if (!GetWideString(L"$DWGCODEPAGE", &variantWideString)) {
+    variantWideString = L"ANSI_1252";
+  }
   writer->WriteWideString(9, L"$DWGCODEPAGE");
   writer->SetCodePage(variantWideString);
-  writer->WriteWideString(3, writer->GetCodePage());
+  writer->WriteWideString(3, variantWideString);
 
   writer->WriteWideString(9, L"$HANDSEED");
   std::uint64_t variantHandle;
@@ -1266,6 +1275,7 @@ void EoDxfHeader::AddInt32(std::wstring_view key, std::int32_t value, int code) 
 }
 
 void EoDxfHeader::AddWideString(std::wstring_view key, std::wstring value, int code) {
+  if (key == L"$DWGCODEPAGE") { m_originalCodePageToken = value; }
   auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, std::move(value));
   m_currentVariant = newVariant.get();
   m_variants[std::wstring{key}] = std::move(newVariant);
@@ -1409,4 +1419,5 @@ bool EoDxfHeader::GetHandle(std::wstring_view key, std::uint64_t* varHandle) {
 
 void EoDxfHeader::ClearVariants() {
   m_variants.clear();
+  m_originalCodePageToken.clear();
 }

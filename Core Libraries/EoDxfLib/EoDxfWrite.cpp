@@ -20,17 +20,8 @@ constexpr std::wstring_view EODXFLIB_VERSION{L"0.1"};
 constexpr auto FIRSTHANDLE{48};
 
 [[nodiscard]] std::wstring GetRequestedCodePage(const EoDxfHeader& header) {
-  const auto headerVariable = header.m_variants.find(L"$DWGCODEPAGE");
-  if (headerVariable == header.m_variants.end() || headerVariable->second == nullptr) {
-    return L"ANSI_1252";
-  }
-
-  const auto* codePage = headerVariable->second->GetIf<std::wstring>();
-  if (codePage == nullptr || codePage->empty()) {
-    return L"ANSI_1252";
-  }
-
-  return *codePage;
+  if (!header.GetCodePageToken().empty()) { return header.GetCodePageToken(); }
+  return L"ANSI_1252";
 }
 
 [[nodiscard]] bool IsUtf16CodePage(std::wstring_view codePage) {

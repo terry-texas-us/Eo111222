@@ -32,6 +32,7 @@ class EoDxfHeader {
   void AddHandle(std::wstring_view key, std::uint64_t value, int code);
 
   [[nodiscard]] std::wstring GetComments() const { return m_comments; }
+  [[nodiscard]] const std::wstring& GetCodePageToken() const noexcept { return m_originalCodePageToken; }
 
   /** @brief Writes the header variables stored in this EoDxfHeader instance to the provided dxfWriter object in the
    * format specified by the given DXF version. This method iterates over the header variables stored in the m_variants
@@ -123,6 +124,7 @@ class EoDxfHeader {
 
  private:
   std::wstring m_comments{};
+  std::wstring m_originalCodePageToken{};
   std::wstring m_name{};
   EoDxfGroupCodeValuesVariant* m_currentVariant{};
   EoDxf::Version m_version{};
