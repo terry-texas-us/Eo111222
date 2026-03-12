@@ -51,7 +51,7 @@ EoDxfHeader& EoDxfHeader::operator=(const EoDxfHeader& other) {
   return *this;
 }
 
-void EoDxfHeader::AddComment(const std::wstring& comment) {
+void EoDxfHeader::AddComment(std::wstring_view comment) {
   if (!m_comments.empty()) { m_comments += '\n'; }
   m_comments += comment;
 }

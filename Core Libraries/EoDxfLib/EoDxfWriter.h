@@ -17,8 +17,8 @@ class EoDxfWriter {
   virtual bool WriteDouble(int code, double data) = 0;
   virtual bool WriteBool(int code, bool data) = 0;
 
-  void SetVersion(const std::wstring& version) { m_encoder.SetVersion(version); }
-  void SetCodePage(const std::wstring& codePage) { m_encoder.SetCodePage(codePage); }
+  void SetVersion(std::wstring_view version) { m_encoder.SetVersion(version); }
+  void SetCodePage(std::wstring_view codePage) { m_encoder.SetCodePage(codePage); }
   [[nodiscard]] const std::wstring& GetCodePage() const { return m_encoder.GetCodePage(); }
 
   bool WriteWideString(int code, std::wstring_view text);

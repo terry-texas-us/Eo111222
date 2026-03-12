@@ -14,14 +14,12 @@
 #include "EoDxfObjects.h"
 #include "EoDxfReader.h"
 
-EoDxfRead::EoDxfRead(std::wstring_view name) {
-  m_fileName = name;
+EoDxfRead::EoDxfRead(const std::filesystem::path& fileName) {
+  m_fileName = fileName.wstring();
   m_reader = nullptr;
   m_applyExtrusion = false;
   m_ellipseParts = 128;  // parts number when convert ellipse to polyline
 }
-
-EoDxfRead::EoDxfRead(const char* name) : EoDxfRead(std::filesystem::path{name != nullptr ? name : ""}.wstring()) {}
 
 EoDxfRead::~EoDxfRead() {
   if (m_reader != nullptr) { delete m_reader; }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <ios>
 #include <map>
 #include <string>
@@ -15,8 +16,7 @@
 
 class EoDxfWrite {
  public:
-  EoDxfWrite(const char* name);
-  EoDxfWrite(std::wstring_view name);
+  explicit EoDxfWrite(const std::filesystem::path& fileName);
   ~EoDxfWrite();
 
   /** @brief Writes the current state of the EoDxfInterface to a DXF file in the specified version and format (binary or
@@ -75,14 +75,14 @@ class EoDxfWrite {
   bool WriteLWPolyline(EoDxfLwPolyline* polyline);
   bool WritePolyline(EoDxfPolyline* polyline);
   bool WriteSpline(EoDxfSpline* spline);
-  bool WriteBlockRecord(std::wstring name);
+  bool WriteBlockRecord(std::wstring_view name);
   bool WriteBlock(EoDxfBlock* block);
   bool WriteInsert(EoDxfInsert* blockReference);
   bool WriteMText(EoDxfMText* mText);
   bool WriteText(EoDxfText* text);
   bool WriteHatch(EoDxfHatch* hatch);
   bool WriteViewport(EoDxfViewport* viewport);
-  EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::wstring name);
+  EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::wstring_view name);
   bool WriteLeader(EoDxfLeader* leader);
   
   /** @brief Writes an MLEADER entity to the DXF file.

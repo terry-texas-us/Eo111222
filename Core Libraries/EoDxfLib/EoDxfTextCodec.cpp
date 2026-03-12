@@ -225,7 +225,7 @@ std::wstring EoTcTextCodec::GetVersion() const {
   }
 }
 
-void EoTcTextCodec::SetVersion(const std::wstring& version) {
+void EoTcTextCodec::SetVersion(std::wstring_view version) {
   const auto normalizedVersion = NormalizeToken(version);
   if (normalizedVersion == L"AC1006") {
     m_version = EoDxf::Version::AC1006;
@@ -272,7 +272,7 @@ std::wstring EoTcTextCodec::NormalizeCodePage(std::wstring_view codePage) {
   return L"ANSI_1252";
 }
 
-void EoTcTextCodec::SetCodePage(const std::wstring& codePage) {
+void EoTcTextCodec::SetCodePage(std::wstring_view codePage) {
   const std::wstring normalizedCodePage = NormalizeCodePage(codePage);
   m_converter = CreateConverter(normalizedCodePage);
   m_codePage = normalizedCodePage;

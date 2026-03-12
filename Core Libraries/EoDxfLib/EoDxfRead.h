@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <filesystem>
 #include <string>
 
 #include "EoDxfEntities.h"
@@ -11,8 +12,7 @@ class EoDxfReader;
 
 class EoDxfRead {
  public:
-  EoDxfRead(std::wstring_view name);
-  EoDxfRead(const char* name);
+  explicit EoDxfRead(const std::filesystem::path& fileName);
   ~EoDxfRead();
 
   /** @brief Reads a DXF file and populates the provided EoDxfInterface with the parsed data.

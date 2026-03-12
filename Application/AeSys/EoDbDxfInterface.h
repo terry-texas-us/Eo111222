@@ -114,7 +114,9 @@ class EoDbDxfInterface : public EoDxfInterface {
   void addDimAlign([[maybe_unused]] const EoDxfAlignedDimension* dimAlign) override { countOfDimAlign++; }
 
   void addDimAngular([[maybe_unused]] const EoDxf2LineAngularDimension* dimAngular) override { countOfDimAngular++; }
-  void addDimAngular3P([[maybe_unused]] const EoDxf3PointAngularDimension* dimAngular3P) override { countOfDimAngular3P++; }
+  void addDimAngular3P([[maybe_unused]] const EoDxf3PointAngularDimension* dimAngular3P) override {
+    countOfDimAngular3P++;
+  }
 
   void addDimLinear([[maybe_unused]] const EoDxfDimLinear* dimLinear) override { countOfDimLinear++; }
 
@@ -174,7 +176,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
   }
   // MESH not implemented
-  
+
   void addMLeader(const EoDxfMLeader* mLeader) override { (void)mLeader; }
 
   // MLINE not implemented
@@ -238,8 +240,8 @@ class EoDbDxfInterface : public EoDxfInterface {
   void addXline(const EoDxfXline& /* Xline */) override { countOfXline++; }
 
   // Others
-  void addComment(const char* comment) override {
-    ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addComment(%s)\n", comment);
+  void addComment(std::wstring_view comment) override {
+    ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addComment(%.*s)\n", static_cast<int>(comment.size()), comment.data());
   }
   void linkImage(const EoDxfImageDefinition* imageDefinition) override { (void)imageDefinition; }
   void addKnot(const EoDxfEntity& /* knot */) override { countOfKnot++; }
@@ -277,8 +279,8 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   /** @brief Converts a EoDxfLinetype object to the corresponding AeSys document representation.
    *
-   * This method takes a EoDxfLinetype object, which represents line type information from a DXF/DWG file, and converts it
-   * into the appropriate format for storage in the provided AeSysDoc document.
+   * This method takes a EoDxfLinetype object, which represents line type information from a DXF/DWG file, and converts
+   * it into the appropriate format for storage in the provided AeSysDoc document.
    *
    * @param lineType The EoDxfLinetype object containing line type data to be converted.
    * @param document A pointer to the AeSysDoc where the converted line type will be stored.
@@ -299,8 +301,8 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   /** @brief Converts a EoDxfTextstyle object to the corresponding AeSys document representation.
    *
-   * This method takes a EoDxfTextstyle object, which represents text style information from a DXF/DWG file, and converts
-   * it into the appropriate format for storage in the provided AeSysDoc document.
+   * This method takes a EoDxfTextstyle object, which represents text style information from a DXF/DWG file, and
+   * converts it into the appropriate format for storage in the provided AeSysDoc document.
    *
    * @param textStyle The EoDxfTextStyle object containing text style data to be converted.
    * @param document A pointer to the AeSysDoc where the converted text style will be stored.

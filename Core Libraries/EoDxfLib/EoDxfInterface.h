@@ -175,7 +175,7 @@ class EoDxfInterface {
   /**
    * Called for every comment in the DXF file (code 999).
    */
-  virtual void addComment(const char* comment) = 0;
+  virtual void addComment(std::wstring_view comment) = 0;
 
   virtual void writeHeader(EoDxfHeader& data) = 0;
   virtual void writeBlocks() = 0;

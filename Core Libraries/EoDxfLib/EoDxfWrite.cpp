@@ -18,20 +18,12 @@
 namespace {
 constexpr std::wstring_view EODXFLIB_VERSION{L"0.1"};
 constexpr auto FIRSTHANDLE{48};
-
-[[nodiscard]] std::wstring Utf8StringToWide(std::string_view text) {
-  EoTcTextCodec utf8Codec;
-  utf8Codec.SetCodePage(L"UTF-8");
-  return utf8Codec.DecodeText(text);
-}
 }  // namespace
 
-EoDxfWrite::EoDxfWrite(std::wstring_view name) {
-  m_fileName = name;
+EoDxfWrite::EoDxfWrite(const std::filesystem::path& fileName) {
+  m_fileName = fileName.wstring();
   m_writer = nullptr;
 }
-
-EoDxfWrite::EoDxfWrite(const char* name) : EoDxfWrite(Utf8StringToWide(name != nullptr ? std::string_view{name} : std::string_view{})) {}
 
 EoDxfWrite::~EoDxfWrite() {
   if (m_writer != nullptr) { delete m_writer; }
@@ -207,7 +199,7 @@ bool EoDxfWrite::WriteViewport(EoDxfViewport* viewport) {
   return m_writeOk;
 }
 
-EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstring name) {
+EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstring_view name) {
   // search if exist imagedef with this name (image inserted more than 1 time)
   EoDxfImageDefinition* id = nullptr;
   for (unsigned int i = 0; i < m_imageDef.size(); i++) {
@@ -249,11 +241,11 @@ EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstri
   return id;
 }
 
-bool EoDxfWrite::WriteBlockRecord(std::wstring name) {
+bool EoDxfWrite::WriteBlockRecord(std::wstring_view name) {
   WriteCodeString(0, L"BLOCK_RECORD");
   WriteCodeString(5, ToHexString(++m_entityCount));
 
-  m_blockMap[name] = m_entityCount;
+  m_blockMap.emplace(name, m_entityCount);
   m_entityCount = 2 + m_entityCount;  // reserve 2 for BLOCK & ENDBLOCK
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1"); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");

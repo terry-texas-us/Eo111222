@@ -32,7 +32,7 @@ class EoTcTextCodec {
    * @param version The version to set, specified as a string (e.g., "AC1015", "AC1021") or as an integer corresponding to
    * the EoDxf::Version enumeration.
    */
-  void SetVersion(const std::wstring& version);
+  void SetVersion(std::wstring_view version);
   void SetVersion(EoDxf::Version version) noexcept;
 
   /** @brief Gets the current code page used by the text codec.
@@ -47,7 +47,7 @@ class EoTcTextCodec {
    *
    * @param codePage The code page to set, specified as a string (e.g., "UTF-8", "UTF-16", "ANSI_1252").
    */
-  void SetCodePage(const std::wstring& codePage);
+  void SetCodePage(std::wstring_view codePage);
 
  private:
   [[nodiscard]] static std::unique_ptr<EoTcConverter> CreateConverter(std::wstring_view normalizedCodePage);

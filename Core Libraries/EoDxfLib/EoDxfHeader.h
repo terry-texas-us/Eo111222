@@ -43,7 +43,7 @@ class EoDxfHeader {
    * @param version The version of the DXF format to use for writing (e.g., AC1009, AC1015, etc.).
    */
   void Write(EoDxfWriter* writer, EoDxf::Version version);
-  void AddComment(const std::wstring& comment);
+  void AddComment(std::wstring_view comment);
 
  protected:
   /** @brief Parses a header variable from the given EoDxfReader object based on the provided group code.
