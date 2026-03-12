@@ -83,24 +83,23 @@ bool EoDxfRead::ProcessDxf() {
       }
       if (sectionstr == "SECTION") {
         more = m_reader->ReadRec(&code);
-        if (!more) {
-          return false;  // wrong dxf file
-        }
+        // check for early return if malformed dxf file
+        if (!more) { return false; }
         if (code == 2) {
           sectionstr = m_reader->GetString();
           // found section, process it
           if (sectionstr == "HEADER") {
-            ProcessHeader();
+            if (!ProcessHeader()) { return false; }
           } else if (sectionstr == "CLASSES") {
             ProcessClasses();
           } else if (sectionstr == "TABLES") {
-            ProcessTables();
+            if (!ProcessTables()) { return false; }
           } else if (sectionstr == "BLOCKS") {
-            ProcessBlocks();
+            if (!ProcessBlocks()) { return false; }
           } else if (sectionstr == "ENTITIES") {
-            ProcessEntities(false);
+            if (!ProcessEntities(false)) { return false; }
           } else if (sectionstr == "OBJECTS") {
-            ProcessObjects();
+            if (!ProcessObjects()) { return false; }
           }
         }
       }
