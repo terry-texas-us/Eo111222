@@ -77,17 +77,17 @@ void EoDbDxfInterface::ConvertClassesSection(const EoDxfClass& class_, [[maybe_u
 }
 
 void EoDbDxfInterface::ConvertAppIdTable(const EoDxfAppId& appId, [[maybe_unused]] AeSysDoc* document) {
-  std::wstring appIdName = Eo::MultiByteToWString(appId.m_tableName.c_str());
+  const auto& appIdName = appId.m_tableName;
   ATLTRACE2(traceGeneral, 3, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
 }
 
 void EoDbDxfInterface::ConvertDimStyle(const EoDxfDimensionStyle& dimensionStyle, [[maybe_unused]] AeSysDoc* document) {
-  std::wstring dimStyleName = Eo::MultiByteToWString(dimensionStyle.m_tableName.c_str());
+  const auto& dimStyleName = dimensionStyle.m_tableName;
   ATLTRACE2(traceGeneral, 3, L"DimStyle - Name: <%s> (unsupported in AeSys)\n", dimStyleName.c_str());
 }
 
 void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* document) {
-  std::wstring layerName = Eo::MultiByteToWString(layer.m_tableName.c_str());
+  const auto& layerName = layer.m_tableName;
 
   ATLTRACE2(traceGeneral, 3, L"%s   Loading layer definition\n", layerName.c_str());
 
@@ -103,7 +103,7 @@ void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* docu
   if (layer.m_colorNumber < 0) { newLayer->SetStateOff(); }
 
   // Linetype name group code 6
-  std::wstring lineTypeName = Eo::MultiByteToWString(layer.m_linetypeName.c_str());
+  const auto& lineTypeName = layer.m_linetypeName;
   EoDbLineType* lineType;
   if (document->LineTypeTable()->Lookup(lineTypeName.c_str(), lineType)) { newLayer->SetLineType(lineType); }
 
@@ -147,9 +147,8 @@ void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* docu
 }
 
 void EoDbDxfInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSysDoc* document) {
-  std::wstring lineTypeName = Eo::MultiByteToWString(linetype.m_tableName.c_str());  // Linetype name (group code 2)
-  std::wstring lineTypeDesc =
-      Eo::MultiByteToWString(linetype.desc.c_str());  // Descriptive text for linetype (group code 3)
+  const auto& lineTypeName = linetype.m_tableName;  // Linetype name (group code 2)
+  const auto& lineTypeDesc = linetype.desc;  // Descriptive text for linetype (group code 3)
 
   ATLTRACE2(traceGeneral, 3, L"Converting Linetype: %s\n", lineTypeName.c_str());
 
@@ -176,7 +175,7 @@ void EoDbDxfInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSy
 }
 
 void EoDbDxfInterface::ConvertTextStyleTable(const EoDxfTextStyle& textStyle, [[maybe_unused]] AeSysDoc* document) {
-  std::wstring textStyleName = Eo::MultiByteToWString(textStyle.m_tableName.c_str());
+  const auto& textStyleName = textStyle.m_tableName;
   ATLTRACE2(traceGeneral, 3, L"Text Style - Name: %s (unsupported in AeSys)\n", textStyleName.c_str());
 
   // auto height = textStyle.height;         // Fixed text height; 0 if not fixed (group code 40)
@@ -195,7 +194,7 @@ void EoDbDxfInterface::ConvertTextStyleTable(const EoDxfTextStyle& textStyle, [[
 }
 
 void EoDbDxfInterface::ConvertVPortTable(const EoDxfVPort& viewport, [[maybe_unused]] AeSysDoc* document) {
-  std::wstring viewportName = Eo::MultiByteToWString(viewport.m_tableName.c_str());
+  const auto& viewportName = viewport.m_tableName;
   ATLTRACE2(traceGeneral, 3, L"Viewport - Name: %s (unsupported in AeSys)\n", viewportName.c_str());
 
   auto lowerLeft = EoGePoint3d(viewport.m_lowerLeftCorner.x, viewport.m_lowerLeftCorner.y,

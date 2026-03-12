@@ -448,7 +448,11 @@ bool EoDxfWrite::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& e
       case 1004:
       case 1005: {
         int cc = (*it)->Code();
-        if (const auto* value = (*it)->GetIf<std::string>()) { WriteCodeUtf8String(cc, *value); }
+        if (const auto* value = (*it)->GetIf<std::wstring>()) {
+          WriteCodeWideString(cc, *value);
+        } else if (const auto* value = (*it)->GetIf<std::string>()) {
+          WriteCodeUtf8String(cc, *value);
+        }
         //            m_writer->WriteUtf8String((*it)->code, (*it)->content.s);
         break;
       }

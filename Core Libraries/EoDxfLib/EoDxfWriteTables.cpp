@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cctype>
+#include <cwctype>
 #include <string>
 #include <vector>
 
@@ -7,6 +8,17 @@
 
 #include "EoDxfBase.h"
 #include "EoDxfWriter.h"
+
+namespace {
+
+[[nodiscard]] std::wstring UppercaseTableToken(std::wstring value) {
+  std::transform(value.begin(), value.end(), value.begin(), [](const wchar_t character) {
+    return static_cast<wchar_t>(std::towupper(character));
+  });
+  return value;
+}
+
+}  // namespace
 
 bool EoDxfWrite::WriteTables() {
   WriteCodeString(0, "TABLE");
@@ -22,7 +34,7 @@ bool EoDxfWrite::WriteTables() {
   m_interface->writeVports();
   if (!m_standardDimensionStyle) {
     EoDxfVPort activeViewport;
-    activeViewport.m_tableName = "*ACTIVE";
+    activeViewport.m_tableName = L"*ACTIVE";
     WriteVport(&activeViewport);
   }
   WriteCodeString(0, "ENDTAB");
@@ -93,7 +105,7 @@ bool EoDxfWrite::WriteTables() {
   m_interface->writeLayers();
   if (!wlayer0) {
     EoDxfLayer defaultLayer;
-    defaultLayer.m_tableName = "0";
+    defaultLayer.m_tableName = L"0";
     WriteLayer(&defaultLayer);
   }
   WriteCodeString(0, "ENDTAB");
@@ -110,7 +122,7 @@ bool EoDxfWrite::WriteTables() {
   m_interface->writeTextstyles();
   if (!m_standardDimensionStyle) {
     EoDxfTextStyle textStyle;
-    textStyle.m_tableName = "Standard";
+    textStyle.m_tableName = L"Standard";
     WriteTextstyle(&textStyle);
   }
   WriteCodeString(0, "ENDTAB");
@@ -171,7 +183,7 @@ bool EoDxfWrite::WriteTables() {
   m_interface->writeDimstyles();
   if (!m_standardDimensionStyle) {
     EoDxfDimensionStyle dimensionStyle;
-    dimensionStyle.m_tableName = "Standard";
+    dimensionStyle.m_tableName = L"Standard";
     WriteDimStyle(&dimensionStyle);
   }
   WriteCodeString(0, "ENDTAB");
@@ -214,17 +226,16 @@ bool EoDxfWrite::WriteTables() {
 }
 
 bool EoDxfWrite::WriteAppId(EoDxfAppId* appId) {
-  std::string strname = appId->m_tableName;
-  std::transform(strname.begin(), strname.end(), strname.begin(), ::toupper);
+  const auto upperName = UppercaseTableToken(appId->m_tableName);
   // do not write mandatory ACAD appId, handled by library
-  if (strname == "ACAD") { return true; }
+  if (upperName == L"ACAD") { return true; }
   WriteCodeString(0, "APPID");
 
   WriteCodeString(5, ToHexString(++m_entityCount));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, "9"); }
   WriteCodeString(100, "AcDbSymbolTableRecord");
   WriteCodeString(100, "AcDbRegAppTableRecord");
-  WriteCodeUtf8String(2, appId->m_tableName);
+  WriteCodeWideString(2, appId->m_tableName);
 
   WriteCodeInt16(70, appId->m_flagValues);
   return m_writeOk;
@@ -233,9 +244,7 @@ bool EoDxfWrite::WriteAppId(EoDxfAppId* appId) {
 bool EoDxfWrite::WriteDimStyle(EoDxfDimensionStyle* dimensionStyle) {
   WriteCodeString(0, "DIMSTYLE");
   if (!m_standardDimensionStyle) {
-    std::string name = dimensionStyle->m_tableName;
-    std::transform(name.begin(), name.end(), name.begin(), ::toupper);
-    if (name == "STANDARD") { m_standardDimensionStyle = true; }
+    if (UppercaseTableToken(dimensionStyle->m_tableName) == L"STANDARD") { m_standardDimensionStyle = true; }
   }
   WriteCodeString(105, ToHexString(++m_entityCount));
 
@@ -243,23 +252,23 @@ bool EoDxfWrite::WriteDimStyle(EoDxfDimensionStyle* dimensionStyle) {
 
   WriteCodeString(100, "AcDbSymbolTableRecord");
   WriteCodeString(100, "AcDbDimStyleTableRecord");
-  WriteCodeUtf8String(2, dimensionStyle->m_tableName);
+  WriteCodeWideString(2, dimensionStyle->m_tableName);
 
   WriteCodeInt16(70, dimensionStyle->m_flagValues);
   if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimpost.empty())) {
-    WriteCodeUtf8String(3, dimensionStyle->dimpost);
+    WriteCodeWideString(3, dimensionStyle->dimpost);
   }
   if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimapost.empty())) {
-    WriteCodeUtf8String(4, dimensionStyle->dimapost);
+    WriteCodeWideString(4, dimensionStyle->dimapost);
   }
   if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimblk.empty())) {
-    WriteCodeUtf8String(5, dimensionStyle->dimblk);
+    WriteCodeWideString(5, dimensionStyle->dimblk);
   }
   if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimblk1.empty())) {
-    WriteCodeUtf8String(6, dimensionStyle->dimblk1);
+    WriteCodeWideString(6, dimensionStyle->dimblk1);
   }
   if (m_version == EoDxf::Version::AC1009 || !(dimensionStyle->dimblk2.empty())) {
-    WriteCodeUtf8String(7, dimensionStyle->dimblk2);
+    WriteCodeWideString(7, dimensionStyle->dimblk2);
   }
   WriteCodeDouble(40, dimensionStyle->dimscale);
   WriteCodeDouble(41, dimensionStyle->dimasz);
@@ -330,9 +339,9 @@ bool EoDxfWrite::WriteDimStyle(EoDxfDimensionStyle* dimensionStyle) {
   if (m_version > EoDxf::Version::AC1018 && dimensionStyle->dimfxlon) {
     WriteCodeBool(290, dimensionStyle->dimfxlon);
   }
-  WriteCodeUtf8String(340, dimensionStyle->dimtxsty);
+  WriteCodeWideString(340, dimensionStyle->dimtxsty);
   if (m_version > EoDxf::Version::AC1014) {
-    WriteCodeUtf8String(341, dimensionStyle->dimldrblk);
+    WriteCodeWideString(341, dimensionStyle->dimldrblk);
     WriteCodeInt16(371, dimensionStyle->dimlwd);
     WriteCodeInt16(372, dimensionStyle->dimlwe);
   }
@@ -341,7 +350,7 @@ bool EoDxfWrite::WriteDimStyle(EoDxfDimensionStyle* dimensionStyle) {
 
 bool EoDxfWrite::WriteLayer(EoDxfLayer* layer) {
   WriteCodeString(0, "LAYER");
-  if (!wlayer0 && layer->m_tableName == "0") {
+  if (!wlayer0 && layer->m_tableName == L"0") {
     wlayer0 = true;
     WriteCodeString(5, "10");
   } else {
@@ -351,12 +360,12 @@ bool EoDxfWrite::WriteLayer(EoDxfLayer* layer) {
 
   WriteCodeString(100, "AcDbSymbolTableRecord");
   WriteCodeString(100, "AcDbLayerTableRecord");
-  WriteCodeUtf8String(2, layer->m_tableName);
+  WriteCodeWideString(2, layer->m_tableName);
 
   WriteCodeInt16(70, layer->m_flagValues);
   WriteCodeInt16(62, layer->m_colorNumber);
   if (m_version > EoDxf::Version::AC1015 && layer->color24 >= 0) { WriteCodeInt32(420, layer->color24); }
-  WriteCodeUtf8String(6, layer->m_linetypeName);
+  WriteCodeWideString(6, layer->m_linetypeName);
   if (!layer->m_plottingFlag) { WriteCodeBool(290, layer->m_plottingFlag); }
   WriteCodeInt16(370, EoDxfLineWidths::lineWidth2dxfInt(layer->m_lineweightEnumValue));
   WriteCodeString(390, "F");
@@ -367,21 +376,19 @@ bool EoDxfWrite::WriteLayer(EoDxfLayer* layer) {
 }
 
 bool EoDxfWrite::WriteLinetype(EoDxfLinetype* lineType) {
-  std::string strname = lineType->m_tableName;
-
-  std::transform(strname.begin(), strname.end(), strname.begin(), ::toupper);
+  const auto upperName = UppercaseTableToken(lineType->m_tableName);
   // do not write linetypes handled by library
-  if (strname == "BYLAYER" || strname == "BYBLOCK" || strname == "CONTINUOUS") { return true; }
+  if (upperName == L"BYLAYER" || upperName == L"BYBLOCK" || upperName == L"CONTINUOUS") { return true; }
   WriteCodeString(0, "LTYPE");
 
   WriteCodeString(5, ToHexString(++m_entityCount));
   WriteCodeString(330, "5");
   WriteCodeString(100, "AcDbSymbolTableRecord");
   WriteCodeString(100, "AcDbLinetypeTableRecord");
-  WriteCodeUtf8String(2, lineType->m_tableName);
+  WriteCodeWideString(2, lineType->m_tableName);
 
   WriteCodeInt16(70, lineType->m_flagValues);
-  WriteCodeUtf8String(3, lineType->desc);
+  WriteCodeWideString(3, lineType->desc);
   lineType->Update();
   WriteCodeInt16(72, 65);
   WriteCodeInt16(73, lineType->m_numberOfLinetypeElements);
@@ -397,9 +404,7 @@ bool EoDxfWrite::WriteLinetype(EoDxfLinetype* lineType) {
 bool EoDxfWrite::WriteTextstyle(EoDxfTextStyle* textStyle) {
   WriteCodeString(0, "STYLE");
   if (!m_standardDimensionStyle) {
-    std::string name = textStyle->m_tableName;
-    std::transform(name.begin(), name.end(), name.begin(), ::toupper);
-    if (name == "STANDARD") { m_standardDimensionStyle = true; }
+    if (UppercaseTableToken(textStyle->m_tableName) == L"STANDARD") { m_standardDimensionStyle = true; }
   }
   WriteCodeString(5, ToHexString(++m_entityCount));
 
@@ -407,7 +412,7 @@ bool EoDxfWrite::WriteTextstyle(EoDxfTextStyle* textStyle) {
 
   WriteCodeString(100, "AcDbSymbolTableRecord");
   WriteCodeString(100, "AcDbTextStyleTableRecord");
-  WriteCodeUtf8String(2, textStyle->m_tableName);
+  WriteCodeWideString(2, textStyle->m_tableName);
 
   WriteCodeInt16(70, textStyle->m_flagValues);
   WriteCodeDouble(40, textStyle->height);
@@ -416,15 +421,15 @@ bool EoDxfWrite::WriteTextstyle(EoDxfTextStyle* textStyle) {
   WriteCodeInt16(71, textStyle->m_textGenerationFlag);
   WriteCodeDouble(42, textStyle->lastHeight);
 
-  WriteCodeUtf8String(3, textStyle->font);
-  WriteCodeUtf8String(4, textStyle->bigFont);
+  WriteCodeWideString(3, textStyle->font);
+  WriteCodeWideString(4, textStyle->bigFont);
   if (textStyle->fontFamily != 0) { WriteCodeInt32(1071, textStyle->fontFamily); }
   return m_writeOk;
 }
 
 bool EoDxfWrite::WriteVport(EoDxfVPort* viewport) {
   if (!m_standardDimensionStyle) {
-    viewport->m_tableName = "*ACTIVE";
+    viewport->m_tableName = L"*ACTIVE";
     m_standardDimensionStyle = true;
   }
   WriteCodeString(0, "VPORT");
@@ -433,7 +438,7 @@ bool EoDxfWrite::WriteVport(EoDxfVPort* viewport) {
   WriteCodeString(330, "2");
   WriteCodeString(100, "AcDbSymbolTableRecord");
   WriteCodeString(100, "AcDbViewportTableRecord");
-  WriteCodeUtf8String(2, viewport->m_tableName);
+  WriteCodeWideString(2, viewport->m_tableName);
 
   if (viewport->m_flagValues != 0) { WriteCodeInt16(70, viewport->m_flagValues); }
   if (!viewport->m_lowerLeftCorner.IsZero()) {

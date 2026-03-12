@@ -16,7 +16,7 @@ void EoDxfTableEntry::ParseCode(int code, EoDxfReader* reader) {
       m_ownerHandle = reader->GetHandleString();
       break;
     case 2:
-      m_tableName = reader->GetUtf8String();
+      m_tableName = reader->GetWideString();
       break;
     case 70:
       m_flagValues = reader->GetInt16();
@@ -27,7 +27,7 @@ void EoDxfTableEntry::ParseCode(int code, EoDxfReader* reader) {
     case 1003:
     case 1004:
     case 1005:
-      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetString()));
+      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetWideString()));
       break;
     case 1010:
     case 1011:
@@ -95,19 +95,19 @@ void EoDxfDimensionStyle::ParseCode(int code, EoDxfReader* reader) {
       m_handle = reader->GetHandleString();
       break;
     case 3:
-      dimpost = reader->GetUtf8String();
+      dimpost = reader->GetWideString();
       break;
     case 4:
-      dimapost = reader->GetUtf8String();
+      dimapost = reader->GetWideString();
       break;
     case 5:
-      dimblk = reader->GetUtf8String();
+      dimblk = reader->GetWideString();
       break;
     case 6:
-      dimblk1 = reader->GetUtf8String();
+      dimblk1 = reader->GetWideString();
       break;
     case 7:
-      dimblk2 = reader->GetUtf8String();
+      dimblk2 = reader->GetWideString();
       break;
     case 40:
       dimscale = reader->GetDouble();
@@ -287,19 +287,19 @@ void EoDxfDimensionStyle::ParseCode(int code, EoDxfReader* reader) {
       dimfxlon = reader->GetBool();
       break;
     case 340:
-      dimtxsty = reader->GetUtf8String();
+      dimtxsty = reader->GetWideString();
       break;
     case 341:
-      dimldrblk = reader->GetUtf8String();
+      dimldrblk = reader->GetWideString();
       break;
     case 342:
-      dimblk = reader->GetUtf8String();
+      dimblk = reader->GetWideString();
       break;
     case 343:
-      dimblk1 = reader->GetUtf8String();
+      dimblk1 = reader->GetWideString();
       break;
     case 344:
-      dimblk2 = reader->GetUtf8String();
+      dimblk2 = reader->GetWideString();
       break;
     default:
       EoDxfTableEntry::ParseCode(code, reader);
@@ -313,7 +313,7 @@ void EoDxfDimensionStyle::Reset() {
   dimexe = 0.18;
   dimexo = 0.0625;
   dimgap = dimcen = 0.09;
-  dimtxsty = "Standard";
+  dimtxsty = L"Standard";
   dimscale = 1.0;
   dimlfac = 1.0;
   dimtfac = 1.0;
@@ -375,7 +375,7 @@ void EoDxfDimensionStyle::Reset() {
 void EoDxfLinetype::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 3:
-      desc = reader->GetUtf8String();
+      desc = reader->GetWideString();
       break;
     case 73:
       m_numberOfLinetypeElements = reader->GetInt16();
@@ -395,7 +395,7 @@ void EoDxfLinetype::ParseCode(int code, EoDxfReader* reader) {
 }
 
 void EoDxfLinetype::Reset() {
-  desc = "";
+  desc = L"";
   m_numberOfLinetypeElements = 0;
   length = 0.0;
   pathIdx = 0;
@@ -412,7 +412,7 @@ void EoDxfLinetype::Update() {
 void EoDxfLayer::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 6:
-      m_linetypeName = reader->GetUtf8String();
+      m_linetypeName = reader->GetWideString();
       break;
     case 62:
       m_colorNumber = reader->GetInt16();
@@ -424,10 +424,10 @@ void EoDxfLayer::ParseCode(int code, EoDxfReader* reader) {
       m_lineweightEnumValue = EoDxfLineWidths::dxfInt2lineWidth(reader->GetInt16());
       break;
     case 390:
-      m_handleOfPlotStyleName = reader->GetString();
+      m_handleOfPlotStyleName = reader->GetWideString();
       break;
     case 347:
-      m_handleOfMaterialStyleName = reader->GetString();
+      m_handleOfMaterialStyleName = reader->GetWideString();
       break;
     case 420:
       color24 = reader->GetInt32();
@@ -439,7 +439,7 @@ void EoDxfLayer::ParseCode(int code, EoDxfReader* reader) {
 }
 
 void EoDxfLayer::Reset() {
-  m_linetypeName = "CONTINUOUS";
+  m_linetypeName = L"CONTINUOUS";
   m_colorNumber = 7;
   m_plottingFlag = true;
   m_lineweightEnumValue = EoDxfLineWidths::widthDefault;
@@ -451,10 +451,10 @@ void EoDxfLayer::Reset() {
 void EoDxfTextStyle::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 3:
-      font = reader->GetUtf8String();
+      font = reader->GetWideString();
       break;
     case 4:
-      bigFont = reader->GetUtf8String();
+      bigFont = reader->GetWideString();
       break;
     case 40:
       height = reader->GetDouble();

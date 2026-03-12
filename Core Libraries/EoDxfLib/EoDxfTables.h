@@ -43,7 +43,7 @@ class EoDxfTableEntry {
   EoDxf::SymbolTable tType{EoDxf::SymbolTable::Unknown};  // Group code 0
   std::uint64_t m_handle{};  // Group code 5
   std::uint64_t m_ownerHandle{};  // Group code 330
-  std::string m_tableName;  // Group code 2
+  std::wstring m_tableName;  // Group code 2
   std::int16_t m_flagValues{};  // Group code 70
   std::vector<EoDxfGroupCodeValuesVariant*> m_extensionData;  // Group codes 1000 to 1071
 
@@ -70,12 +70,12 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
   void Reset();
 
  public:
-  std::string dimpost;  // Group code 3
-  std::string dimapost;  // Group code 4
+  std::wstring dimpost;  // Group code 3
+  std::wstring dimapost;  // Group code 4
 
-  std::string dimblk;  // Group code 5, code 342 (AC1015+)
-  std::string dimblk1;  // Group code 6, code 343 (AC1015+)
-  std::string dimblk2;  // Group code 7, code 344 (AC1015+)
+  std::wstring dimblk;  // Group code 5, code 342 (AC1015+)
+  std::wstring dimblk1;  // Group code 6, code 343 (AC1015+)
+  std::wstring dimblk2;  // Group code 7, code 344 (AC1015+)
   double dimscale;  // Group code 40
   double dimasz;  // Group code 41
   double dimexo;  // Group code 42
@@ -135,8 +135,8 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
   std::int16_t dimupt;  // Group code 288 (AC1012+)
   std::int16_t dimatfit;  // Group code 289 (AC1015+)
   bool dimfxlon;  // Group code 290 (AC1021+)
-  std::string dimtxsty;  // Group code 340 (AC1012+)
-  std::string dimldrblk;  // Group code 341 (AC1015+)
+  std::wstring dimtxsty;  // Group code 340 (AC1012+)
+  std::wstring dimldrblk;  // Group code 341 (AC1015+)
   std::int16_t dimlwd;  // Group code 371 (AC1015+)
   std::int16_t dimlwe;  // Group code 372 (AC1015+)
 };
@@ -161,7 +161,7 @@ class EoDxfLinetype : public EoDxfTableEntry {
   void Update();
 
  public:
-  std::string desc;  // Group code 3
+  std::wstring desc;  // Group code 3
   std::int16_t m_numberOfLinetypeElements;  // Group code 73
   double length;  // Group code 40
   std::vector<double> path;  // Group code 49
@@ -188,13 +188,13 @@ class EoDxfLayer : public EoDxfTableEntry {
   void Reset();
 
  public:
-  std::string m_linetypeName;  // Group code 6
+  std::wstring m_linetypeName;  // Group code 6
   std::int16_t m_colorNumber;  // Group code 62 (if negative, then layer is turned off)
   int color24;  // Group code 420
   bool m_plottingFlag;  // Group code 290 (if set to zero, then layer is not plotted)
   enum EoDxfLineWidths::lineWidth m_lineweightEnumValue;  // Group code 370
-  std::string m_handleOfPlotStyleName;  // Group code 390
-  std::string m_handleOfMaterialStyleName;  // Group code 347
+  std::wstring m_handleOfPlotStyleName;  // Group code 390
+  std::wstring m_handleOfMaterialStyleName;  // Group code 347
 };
 
 /** Class to handle block record entries
@@ -240,7 +240,7 @@ class EoDxfTextStyle : public EoDxfTableEntry {
   void Reset() {
     height = oblique = 0.0;
     width = lastHeight = 1.0;
-    font = "txt";
+      font = L"txt";
     m_textGenerationFlag = 0;  // 2= X mirror, 4= Y mirror
     fontFamily = 0;
     EoDxfTableEntry::Reset();
@@ -252,8 +252,8 @@ class EoDxfTextStyle : public EoDxfTableEntry {
   double oblique;  // Group code 50
   std::int16_t m_textGenerationFlag;  // Group code 71
   double lastHeight;  // Group code 42
-  std::string font;  // Group code 3
-  std::string bigFont;  // Group code 4
+  std::wstring font;  // Group code 3
+  std::wstring bigFont;  // Group code 4
   int fontFamily;  // Group code 1071
 };
 
@@ -325,7 +325,7 @@ class EoDxfAppId : public EoDxfTableEntry {
   void ParseCode(int code, EoDxfReader* reader) { EoDxfTableEntry::ParseCode(code, reader); }
 
   void Reset() {
-    m_tableName = "";
+      m_tableName = L"";
     EoDxfTableEntry::Reset();
   }
 };

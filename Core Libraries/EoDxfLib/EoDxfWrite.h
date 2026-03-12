@@ -118,6 +118,9 @@ class EoDxfWrite {
   bool WriteCodeString(int code, std::string_view text) {
     return TrackWriteResult(m_writer != nullptr && m_writer->WriteString(code, text));
   }
+  bool WriteCodeWideString(int code, std::wstring_view text) {
+    return TrackWriteResult(m_writer != nullptr && m_writer->WriteWideString(code, text));
+  }
   bool WriteCodeUtf8String(int code, const std::string& text) {
     return TrackWriteResult(m_writer != nullptr && m_writer->WriteUtf8String(code, text));
   }
