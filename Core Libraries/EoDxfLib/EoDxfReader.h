@@ -16,33 +16,31 @@ class EoDxfReader {
   virtual ~EoDxfReader() = default;
   bool ReadRec(int* code);
 
-  [[nodiscard]] const std::string& GetString() const { return m_string; }
   [[nodiscard]] std::uint64_t GetHandleString() const;
-  [[nodiscard]] std::wstring GetWideString() const { return m_decoder.ToWide(m_string); }
-  [[nodiscard]] std::string ToUtf8String(const std::string& t) { return m_decoder.ToUtf8(t); }
-  [[nodiscard]] std::string GetUtf8String() const { return m_decoder.ToUtf8(m_string); }
+  [[nodiscard]] std::wstring GetWideString() const { return m_decoder.DecodeText(m_encodedText); }
   [[nodiscard]] constexpr double GetDouble() const noexcept { return m_double; }
 
   [[nodiscard]] constexpr std::int16_t GetInt16() const noexcept { return m_int16; }
   [[nodiscard]] constexpr std::int32_t GetInt32() const noexcept { return m_int32; }
   [[nodiscard]] constexpr std::int64_t GetInt64() const noexcept { return m_int64; }
   [[nodiscard]] constexpr bool GetBool() const noexcept { return m_boolData; }
-  [[nodiscard]] constexpr EoDxf::Version GetVersion() const noexcept { return m_decoder.GetVersion(); }
-  void SetVersion(const std::string& version) { m_decoder.SetVersion(version); }
-  void SetCodePage(const std::string& codePage) { m_decoder.SetCodePage(codePage); }
-  [[nodiscard]] std::string GetCodePage() const noexcept { return m_decoder.GetCodePage(); }
+  [[nodiscard]] std::wstring GetVersion() const { return m_decoder.GetVersion(); }
+  [[nodiscard]] constexpr EoDxf::Version GetVersionEnum() const noexcept { return m_decoder.GetVersionEnum(); }
+  void SetVersion(const std::wstring& version) { m_decoder.SetVersion(version); }
+  void SetCodePage(const std::wstring& codePage) { m_decoder.SetCodePage(codePage); }
+  [[nodiscard]] const std::wstring& GetCodePage() const noexcept { return m_decoder.GetCodePage(); }
 
  protected:
   virtual bool ReadCode(int* code) = 0;  // return true if successful (not EOF)
-  virtual bool ReadString() = 0;
-  virtual bool ReadString(std::string* text) = 0;
+  virtual bool ReadEncodedText() = 0;
+  virtual bool ReadEncodedText(std::string* encodedText) = 0;
   virtual bool ReadInt16() = 0;
   virtual bool ReadInt32() = 0;
   virtual bool ReadInt64() = 0;
   virtual bool ReadBool() = 0;
   virtual bool ReadDouble() = 0;
 
-  std::string m_string;
+  std::string m_encodedText;
   EoTcTextCodec m_decoder;
   std::ifstream* m_fileStream;
   double m_double{};
@@ -59,8 +57,8 @@ class EoDxfReaderBinary : public EoDxfReader {
   ~EoDxfReaderBinary() = default;
 
   [[nodiscard]] bool ReadCode(int* code) override;
-  [[nodiscard]] bool ReadString() override;
-  [[nodiscard]] bool ReadString(std::string* text) override;
+  [[nodiscard]] bool ReadEncodedText() override;
+  [[nodiscard]] bool ReadEncodedText(std::string* encodedText) override;
   [[nodiscard]] bool ReadInt16() override;
   [[nodiscard]] bool ReadInt32() override;
   [[nodiscard]] bool ReadInt64() override;
@@ -104,7 +102,7 @@ class EoDxfReaderBinary : public EoDxfReader {
 
 class EoDxfReaderAscii : public EoDxfReader {
   /** @brief Parses an integer value of type T from the current string buffer.
-   *  The function reads a string using ReadString(), trims leading and trailing whitespace, and then attempts to
+   *  The function reads encoded text using ReadEncodedText(), trims leading and trailing whitespace, and then attempts to
    *  convert the trimmed string to an integer of type T using std::from_chars. If the conversion is successful and
    *  consumes the entire trimmed string, the resulting value is stored in the output parameter 'out' and the function
    *  returns true. If any step fails (e.g., reading the string, trimming results in an empty string, conversion fails,
@@ -117,7 +115,7 @@ class EoDxfReaderAscii : public EoDxfReader {
   template <typename T>
   [[nodiscard]] bool ParseInteger(T& out) {
     std::string text;
-    if (!ReadString(&text)) { return false; }
+    if (!ReadEncodedText(&text)) { return false; }
 
     std::string_view trimmedText = EoDxf::Detail::Trim(text);
     if (trimmedText.empty()) { return false; }
@@ -132,7 +130,7 @@ class EoDxfReaderAscii : public EoDxfReader {
 
   [[nodiscard]] bool ParseDouble(double& out) {
     std::string text;
-    if (!ReadString(&text)) { return false; }
+    if (!ReadEncodedText(&text)) { return false; }
 
     std::string_view trimmedText = EoDxf::Detail::Trim(text);
     if (trimmedText.empty()) { return false; }
@@ -151,8 +149,8 @@ class EoDxfReaderAscii : public EoDxfReader {
   ~EoDxfReaderAscii() = default;
 
   [[nodiscard]] bool ReadCode(int* code) override;
-  [[nodiscard]] bool ReadString() override;
-  [[nodiscard]] bool ReadString(std::string* text) override;
+  [[nodiscard]] bool ReadEncodedText() override;
+  [[nodiscard]] bool ReadEncodedText(std::string* encodedText) override;
   [[nodiscard]] bool ReadInt16() override;
   [[nodiscard]] bool ReadInt32() override;
   [[nodiscard]] bool ReadInt64() override;

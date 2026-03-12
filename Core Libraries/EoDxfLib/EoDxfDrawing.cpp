@@ -5,9 +5,9 @@
 #include "EoDxfWriter.h"
 
 bool EoDxfWrite::Write3dFace(EoDxf3dFace* face) {
-  WriteCodeString(0, "3DFACE");
+  WriteCodeString(0, L"3DFACE");
   WriteEntity(face);
-  WriteCodeString(100, "AcDbFace");
+  WriteCodeString(100, L"AcDbFace");
   WriteCodeDouble(10, face->m_firstPoint.x);
   WriteCodeDouble(20, face->m_firstPoint.y);
   WriteCodeDouble(30, face->m_firstPoint.z);
@@ -25,23 +25,23 @@ bool EoDxfWrite::Write3dFace(EoDxf3dFace* face) {
 }
 
 bool EoDxfWrite::WriteArc(EoDxfArc* arc) {
-  WriteCodeString(0, "ARC");
+  WriteCodeString(0, L"ARC");
   WriteEntity(arc);
-  WriteCodeString(100, "AcDbCircle");
+  WriteCodeString(100, L"AcDbCircle");
   WriteCodeDouble(10, arc->m_firstPoint.x);
   WriteCodeDouble(20, arc->m_firstPoint.y);
   if (arc->m_firstPoint.z != 0.0) { WriteCodeDouble(30, arc->m_firstPoint.z); }
   WriteCodeDouble(40, arc->m_radius);
-  WriteCodeString(100, "AcDbArc");
+  WriteCodeString(100, L"AcDbArc");
   WriteCodeDouble(50, arc->m_startAngle * EoDxf::RadiansToDegrees);
   WriteCodeDouble(51, arc->m_endAngle * EoDxf::RadiansToDegrees);
   return m_writeOk;
 }
 
 bool EoDxfWrite::WriteCircle(EoDxfCircle* circle) {
-  WriteCodeString(0, "CIRCLE");
+  WriteCodeString(0, L"CIRCLE");
   WriteEntity(circle);
-  WriteCodeString(100, "AcDbCircle");
+  WriteCodeString(100, L"AcDbCircle");
   WriteCodeDouble(10, circle->m_firstPoint.x);
   WriteCodeDouble(20, circle->m_firstPoint.y);
   if (circle->m_firstPoint.z != 0.0) { WriteCodeDouble(30, circle->m_firstPoint.z); }
@@ -53,9 +53,9 @@ bool EoDxfWrite::WriteEllipse(EoDxfEllipse* ellipse) {
   // verify axis/ratio and params for full ellipse
   ellipse->CorrectAxis();
 
-  WriteCodeString(0, "ELLIPSE");
+  WriteCodeString(0, L"ELLIPSE");
   WriteEntity(ellipse);
-  WriteCodeString(100, "AcDbEllipse");
+  WriteCodeString(100, L"AcDbEllipse");
   WriteCodeDouble(10, ellipse->m_firstPoint.x);
   WriteCodeDouble(20, ellipse->m_firstPoint.y);
   WriteCodeDouble(30, ellipse->m_firstPoint.z);
@@ -70,16 +70,16 @@ bool EoDxfWrite::WriteEllipse(EoDxfEllipse* ellipse) {
 }
 
 bool EoDxfWrite::WriteHatch(EoDxfHatch* hatch) {
-  WriteCodeString(0, "HATCH");
+  WriteCodeString(0, L"HATCH");
   WriteEntity(hatch);
-  WriteCodeString(100, "AcDbHatch");
+  WriteCodeString(100, L"AcDbHatch");
   WriteCodeDouble(10, hatch->m_firstPoint.x);
   WriteCodeDouble(20, hatch->m_firstPoint.y);
   WriteCodeDouble(30, hatch->m_firstPoint.z);
   WriteCodeDouble(210, hatch->m_extrusionDirection.x);
   WriteCodeDouble(220, hatch->m_extrusionDirection.y);
   WriteCodeDouble(230, hatch->m_extrusionDirection.z);
-  WriteCodeString(2, hatch->m_hatchPatternName);
+  WriteCodeWideString(2, hatch->m_hatchPatternName);
   WriteCodeInt16(70, hatch->m_solidFillFlag);
   WriteCodeInt16(71, hatch->m_associativityFlag);
   hatch->m_numberOfBoundaryPaths = static_cast<int>(hatch->m_hatchLoops.size());
@@ -164,9 +164,9 @@ bool EoDxfWrite::WriteHatch(EoDxfHatch* hatch) {
 }
 
 bool EoDxfWrite::WriteLine(EoDxfLine* line) {
-  WriteCodeString(0, "LINE");
+  WriteCodeString(0, L"LINE");
   WriteEntity(line);
-  WriteCodeString(100, "AcDbLine");
+  WriteCodeString(100, L"AcDbLine");
   WriteCodeDouble(10, line->m_firstPoint.x);
   WriteCodeDouble(20, line->m_firstPoint.y);
   if (line->m_firstPoint.z != 0.0 || line->m_secondPoint.z != 0.0) {
@@ -182,9 +182,9 @@ bool EoDxfWrite::WriteLine(EoDxfLine* line) {
 }
 
 bool EoDxfWrite::WritePoint(EoDxfPoint* point) {
-  WriteCodeString(0, "POINT");
+  WriteCodeString(0, L"POINT");
   WriteEntity(point);
-  WriteCodeString(100, "AcDbPoint");
+  WriteCodeString(100, L"AcDbPoint");
   WriteCodeDouble(10, point->m_firstPoint.x);
   WriteCodeDouble(20, point->m_firstPoint.y);
   if (point->m_firstPoint.z != 0.0) { WriteCodeDouble(30, point->m_firstPoint.z); }
@@ -192,9 +192,9 @@ bool EoDxfWrite::WritePoint(EoDxfPoint* point) {
 }
 
 bool EoDxfWrite::WriteRay(EoDxfRay* ray) {
-  WriteCodeString(0, "RAY");
+  WriteCodeString(0, L"RAY");
   WriteEntity(ray);
-  WriteCodeString(100, "AcDbRay");
+  WriteCodeString(100, L"AcDbRay");
   WriteCodeDouble(10, ray->m_firstPoint.x);
   WriteCodeDouble(20, ray->m_firstPoint.y);
   if (std::fabs(ray->m_firstPoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, ray->m_firstPoint.z); }
@@ -207,9 +207,9 @@ bool EoDxfWrite::WriteRay(EoDxfRay* ray) {
 }
 
 bool EoDxfWrite::WriteSolid(EoDxfSolid* solid) {
-  WriteCodeString(0, "SOLID");
+  WriteCodeString(0, L"SOLID");
   WriteEntity(solid);
-  WriteCodeString(100, "AcDbTrace");  // SOLID shares the same subclass as TRACE
+  WriteCodeString(100, L"AcDbTrace");  // SOLID shares the same subclass as TRACE
   WriteCodeDouble(10, solid->m_firstPoint.x);
   WriteCodeDouble(20, solid->m_firstPoint.y);
   WriteCodeDouble(30, solid->m_firstPoint.z);
@@ -226,9 +226,9 @@ bool EoDxfWrite::WriteSolid(EoDxfSolid* solid) {
 }
 
 bool EoDxfWrite::WriteTrace(EoDxfTrace* trace) {
-  WriteCodeString(0, "TRACE");
+  WriteCodeString(0, L"TRACE");
   WriteEntity(trace);
-  WriteCodeString(100, "AcDbTrace");
+  WriteCodeString(100, L"AcDbTrace");
   WriteCodeDouble(10, trace->m_firstPoint.x);
   WriteCodeDouble(20, trace->m_firstPoint.y);
   WriteCodeDouble(30, trace->m_firstPoint.z);
@@ -245,9 +245,9 @@ bool EoDxfWrite::WriteTrace(EoDxfTrace* trace) {
 }
 
 bool EoDxfWrite::WriteXline(EoDxfXline* xline) {
-  WriteCodeString(0, "XLINE");
+  WriteCodeString(0, L"XLINE");
   WriteEntity(xline);
-  WriteCodeString(100, "AcDbXline");
+  WriteCodeString(100, L"AcDbXline");
   WriteCodeDouble(10, xline->m_firstPoint.x);
   WriteCodeDouble(20, xline->m_firstPoint.y);
   if (std::fabs(xline->m_firstPoint.z) > EoDxf::geometricTolerance) {
@@ -262,9 +262,9 @@ bool EoDxfWrite::WriteXline(EoDxfXline* xline) {
 }
 
 bool EoDxfWrite::WriteLWPolyline(EoDxfLwPolyline* polyline) {
-  WriteCodeString(0, "LWPOLYLINE");
+  WriteCodeString(0, L"LWPOLYLINE");
   WriteEntity(polyline);
-  WriteCodeString(100, "AcDbPolyline");
+  WriteCodeString(100, L"AcDbPolyline");
 
   // Modern container – no more raw pointers
   polyline->m_numberOfVertices = static_cast<int>(polyline->m_vertices.size());
@@ -285,11 +285,11 @@ bool EoDxfWrite::WriteLWPolyline(EoDxfLwPolyline* polyline) {
 }
 
 bool EoDxfWrite::WritePolyline(EoDxfPolyline* polyline) {
-  WriteCodeString(0, "POLYLINE");
+  WriteCodeString(0, L"POLYLINE");
   WriteEntity(polyline);
 
   const bool is3dPolyline = (polyline->m_polylineFlag & (8 | 16 | 64)) != 0;
-  WriteCodeString(100, is3dPolyline ? "AcDb3dPolyline" : "AcDb2dPolyline");
+  WriteCodeString(100, is3dPolyline ? L"AcDb3dPolyline" : L"AcDb2dPolyline");
 
   // Group code 66, `entities follow flag` is optional in AC1015, ignored in AC1018 and later)
   if (m_version == EoDxf::Version::AC1014) { WriteCodeInt16(66, 1); }
@@ -319,19 +319,19 @@ bool EoDxfWrite::WritePolyline(EoDxfPolyline* polyline) {
   // VERTEX entities
   const auto polylineHandle = polyline->m_handle;
   for (auto* vertex : polyline->m_vertices) {
-    WriteCodeString(0, "VERTEX");
+    WriteCodeString(0, L"VERTEX");
     // WriteEntity assigns a new handle and writes AcDbEntity subclass
     WriteEntity(vertex);
 
     // Base subclass marker required before the specific subclass
     if (vertex->m_vertexFlags & 128) {
-      WriteCodeString(100, "AcDbPolyFaceMeshVertex");
+      WriteCodeString(100, L"AcDbPolyFaceMeshVertex");
     } else if (vertex->m_vertexFlags & 64) {
-      WriteCodeString(100, "AcDbPolygonMeshVertex");
+      WriteCodeString(100, L"AcDbPolygonMeshVertex");
     } else if (vertex->m_vertexFlags & 32) {
-      WriteCodeString(100, "AcDb3dPolylineVertex");
+      WriteCodeString(100, L"AcDb3dPolylineVertex");
     } else {
-      WriteCodeString(100, "AcDb2dVertex");
+      WriteCodeString(100, L"AcDb2dVertex");
     }
 
     if ((vertex->m_vertexFlags & 128) != 0 && (vertex->m_vertexFlags & 64) == 0) {
@@ -363,22 +363,22 @@ bool EoDxfWrite::WritePolyline(EoDxfPolyline* polyline) {
   }
 
   // SEQEND entity
-  WriteCodeString(0, "SEQEND");
+  WriteCodeString(0, L"SEQEND");
 
   EoDxfSeqEnd seqEnd{*polyline};
   seqEnd.m_handle = ++m_entityCount;
   WriteCodeString(5, ToHexString(seqEnd.m_handle));
   WriteCodeString(330, ToHexString(polylineHandle));
-  WriteCodeString(100, "AcDbEntity");
-  WriteCodeUtf8String(8, seqEnd.m_layer);
+  WriteCodeString(100, L"AcDbEntity");
+  WriteCodeWideString(8, seqEnd.m_layer);
 
   return m_writeOk;
 }
 
 bool EoDxfWrite::WriteSpline(EoDxfSpline* spline) {
-  WriteCodeString(0, "SPLINE");
+  WriteCodeString(0, L"SPLINE");
   WriteEntity(spline);
-  WriteCodeString(100, "AcDbSpline");
+  WriteCodeString(100, L"AcDbSpline");
 
   WriteCodeDouble(210, spline->m_normalVector.x);
   WriteCodeDouble(220, spline->m_normalVector.y);

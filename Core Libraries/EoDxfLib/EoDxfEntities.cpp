@@ -31,7 +31,7 @@ bool AddAppDataValue(EoDxfGroupCodeValuesVariant& variant, int code, EoDxfReader
   if (code <= 9 || code == 100 || code == 102 || code == 105 || (code >= 300 && code < 370) ||
       (code >= 390 && code < 400) || (code >= 410 && code < 420) || (code >= 430 && code < 440) ||
       (code >= 470 && code < 481) || code == 999 || (code >= 1000 && code <= 1009)) {
-    variant.AddString(code, reader->GetString());
+    variant.AddWideString(code, reader->GetWideString());
     return true;
   }
   if ((code >= 10 && code < 60) || (code >= 110 && code < 150) || (code >= 210 && code < 240) ||
@@ -178,10 +178,10 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
       m_ownerHandle = reader->GetHandleString();
       break;
     case 8:
-      m_layer = reader->GetUtf8String();
+      m_layer = reader->GetWideString();
       break;
     case 6:
-      m_lineType = reader->GetUtf8String();
+      m_lineType = reader->GetWideString();
       break;
     case 62:
       m_color = reader->GetInt16();
@@ -206,7 +206,7 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
       m_color24 = reader->GetInt32();
       break;
     case 430:
-      m_colorName = reader->GetString();
+      m_colorName = reader->GetWideString();
       break;
     case 440:
       m_transparency = static_cast<EoDxf::TransparencyCodes>(reader->GetInt32());
@@ -223,7 +223,7 @@ void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
     case 1003:
     case 1004:
     case 1005:
-      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetString()));
+      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetWideString()));
       break;
     case 1010:
     case 1011:
@@ -266,11 +266,11 @@ bool EoDxfEntity::ParseAppDataGroup(EoDxfReader* reader) {
 
   EoDxfGroupCodeValuesVariant currentVariant;
 
-  std::string appName = reader->GetString();
-  if (appName.empty() || appName[0] != '{') { return false; }
+  std::wstring appName = reader->GetWideString();
+  if (appName.empty() || appName[0] != L'{') { return false; }
 
   // opening line: store without the leading '{'
-  currentVariant.AddString(102, appName.substr(1));
+  currentVariant.AddWideString(102, appName.substr(1));
   groupList.push_back(currentVariant);
 
   while (true) {
@@ -279,12 +279,12 @@ bool EoDxfEntity::ParseAppDataGroup(EoDxfReader* reader) {
     bool hasValue{};
 
     if (nextCode == 102) {
-      std::string val = reader->GetString();
-      if (!val.empty() && val[0] == '}') { break; }  // closing 102 } — do not store the closing tag
+      std::wstring val = reader->GetWideString();
+      if (!val.empty() && val[0] == L'}') { break; }  // closing 102 } — do not store the closing tag
 
       // rare nested control string
       currentVariant = EoDxfGroupCodeValuesVariant{};
-      currentVariant.AddString(102, val);
+      currentVariant.AddWideString(102, val);
       hasValue = true;
     } else {
       currentVariant = EoDxfGroupCodeValuesVariant{};
@@ -536,7 +536,7 @@ void EoDxf3dFace::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfBlock::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 2:
-      name = reader->GetUtf8String();
+      name = reader->GetWideString();
       break;
     case 70:
       m_flags = reader->GetInt16();
@@ -550,7 +550,7 @@ void EoDxfBlock::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfInsert::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 2:
-      m_blockName = reader->GetUtf8String();
+      m_blockName = reader->GetWideString();
       break;
     case 41:
       m_xScaleFactor = reader->GetDouble();
@@ -673,10 +673,10 @@ void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
           reader->GetInt16(), static_cast<std::int16_t>(VAlign::Bottom), static_cast<std::int16_t>(VAlign::Top)));
       break;
     case 1:
-      m_string = reader->GetUtf8String();
+      m_string = reader->GetWideString();
       break;
     case 7:
-      m_textStyleName = reader->GetUtf8String();
+      m_textStyleName = reader->GetWideString();
       break;
     default:
       EoDxfLine::ParseCode(code, reader);
@@ -687,15 +687,14 @@ void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfMText::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 1:
-      m_string += reader->GetString();
-      m_string = reader->ToUtf8String(m_string);
+      m_string += reader->GetWideString();
       break;
     case 11:
       m_haveXAxisDirection = true;
       EoDxfText::ParseCode(code, reader);
       break;
     case 3:
-      m_string += reader->GetString();
+      m_string += reader->GetWideString();
       break;
     case 44:
       m_lineSpacingFactor = reader->GetDouble();
@@ -830,7 +829,7 @@ void EoDxfHatch::ClearEntities() noexcept {
 void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 2:
-      m_hatchPatternName = reader->GetUtf8String();
+      m_hatchPatternName = reader->GetWideString();
       break;
     case 70:
       m_solidFillFlag = reader->GetInt16();
@@ -1122,13 +1121,13 @@ void EoDxfImage::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfDimension::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 1:
-      text = reader->GetUtf8String();
+      text = reader->GetWideString();
       break;
     case 2:
-      name = reader->GetString();
+      name = reader->GetWideString();
       break;
     case 3:
-      style = reader->GetUtf8String();
+      style = reader->GetWideString();
       break;
     case 70:
       m_dimensionType = reader->GetInt16();
@@ -1229,7 +1228,7 @@ void EoDxfDimension::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 3:
-      m_dimensionStyleName = reader->GetUtf8String();
+      m_dimensionStyleName = reader->GetWideString();
       break;
     case 71:
       m_arrowheadFlag = reader->GetInt16();

@@ -18,7 +18,7 @@ You can assume I know the code base well and should have little trouble with mod
 - Repository contains `.clang-format` and `.clang-tidy` at root – prefer those settings for formatting and static-analysis suggestions.
 - For Visual Studio-specific formatting preferences, reference __Tools > Options > Text Editor > C/C++ > Formatting__.
 - Minimize raw `new`/`delete`.
-- Be conservative in migration from `CString` to `std::wstring` – prefer consistent conversions and avoid unnecessary copies.
+- Be conservative in migration from `CString` to `std::wstring` – prefer consistent conversions and avoid unnecessary copies. Transition away from `std::string` where possible in the DXF/text-codec migration, favoring `std::wstring` when practical. In `EoDxfLib`, prefer `std::wstring` as the only internal text API and avoid `std::string` except at unavoidable external byte boundaries.
 - Step away from MFC `CObject`; minimize dynamic runtime features; avoid file serialization.
 - Prefer camelCase for local variables; convert PascalCase local variables to camelCase when requested.
 - Prefer marking simple geometric operations and getters `noexcept` when possible.

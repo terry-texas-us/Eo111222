@@ -28,21 +28,6 @@ namespace {
   return wideText;
 }
 
-[[nodiscard]] std::string WideToUtf8Text(const std::wstring_view text) {
-  if (text.empty()) { return {}; }
-
-  const auto inputLength = static_cast<int>(text.size());
-  const auto requiredLength = WideCharToMultiByte(CP_UTF8, 0, text.data(), inputLength, nullptr, 0, nullptr, nullptr);
-  if (requiredLength <= 0) { return {}; }
-
-  std::string utf8Text(static_cast<std::size_t>(requiredLength), '\0');
-  const auto convertedLength =
-      WideCharToMultiByte(CP_UTF8, 0, text.data(), inputLength, utf8Text.data(), requiredLength, nullptr, nullptr);
-  if (convertedLength != requiredLength) { return {}; }
-
-  return utf8Text;
-}
-
 }  // namespace
 
 EoDxfHeader::EoDxfHeader(const EoDxfHeader& other)
@@ -66,7 +51,7 @@ EoDxfHeader& EoDxfHeader::operator=(const EoDxfHeader& other) {
   return *this;
 }
 
-void EoDxfHeader::AddComment(const std::string& comment) {
+void EoDxfHeader::AddComment(const std::wstring& comment) {
   if (!m_comments.empty()) { m_comments += '\n'; }
   m_comments += comment;
 }
@@ -82,9 +67,9 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 1:
       m_currentVariant->AddWideString(code, reader->GetWideString());
-      if (m_name == "$ACADVER") {
-        reader->SetVersion(WideToUtf8Text(m_currentVariant->GetWideString()));
-        m_version = reader->GetVersion();
+      if (m_name == L"$ACADVER") {
+        reader->SetVersion(m_currentVariant->GetWideString());
+        m_version = reader->GetVersionEnum();
       }
       break;
     case 2:
@@ -92,19 +77,15 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       break;
     case 3:
       m_currentVariant->AddWideString(code, reader->GetWideString());
-      if (m_name == "$DWGCODEPAGE") {
-        reader->SetCodePage(WideToUtf8Text(m_currentVariant->GetWideString()));
-        m_currentVariant->AddWideString(code, Utf8ToWideText(reader->GetCodePage()));
+      if (m_name == L"$DWGCODEPAGE") {
+        reader->SetCodePage(m_currentVariant->GetWideString());
+        m_currentVariant->AddWideString(code, reader->GetCodePage());
       }
       break;
     case 5: {
       // Group code 5 is a handle — a hexadecimal string representing a unique identifier for an object in the
       // DXF file. Convert the hex string to a uint64_t and store as a Handle variant for proper numeric access.
-      const auto& hexStr = reader->GetString();
-      std::uint64_t handle{};
-      std::istringstream iss(hexStr);
-      iss >> std::hex >> handle;
-      m_currentVariant->AddHandle(code, handle);
+      m_currentVariant->AddHandle(code, reader->GetHandleString());
     } break;
     case 6:
       m_currentVariant->AddWideString(code, reader->GetWideString());
@@ -118,8 +99,8 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
     case 9: {
       auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>();
       m_currentVariant = newVariant.get();
-      m_name = reader->GetString();
-      if (m_version < EoDxf::Version::AC1015 && m_name == "$DIMUNIT") { m_name = "$DIMLUNIT"; }
+      m_name = reader->GetWideString();
+      if (m_version < EoDxf::Version::AC1015 && m_name == L"$DIMUNIT") { m_name = L"$DIMLUNIT"; }
       m_variants[m_name] = std::move(newVariant);
     } break;
     case 10:
@@ -154,11 +135,7 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
     case 346:
       [[fallthrough]];
     case 349: {
-      const auto& hexStr = reader->GetString();
-      std::uint64_t handle{};
-      std::istringstream iss(hexStr);
-      iss >> std::hex >> handle;
-      m_currentVariant->AddHandle(code, handle);
+      m_currentVariant->AddHandle(code, reader->GetHandleString());
     } break;
     case 370:
       m_currentVariant->AddInt16(code, reader->GetInt16());
@@ -180,8 +157,8 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
   std::int16_t variantInt16;
   EoDxfGeometryBase3d variantGeometryBase;
 
-  writer->WriteString(9, "$INSBASE");
-  if (GetGeometryBase("$INSBASE", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$INSBASE");
+  if (GetGeometryBase(L"$INSBASE", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -191,8 +168,8 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$EXTMIN");
-  if (GetGeometryBase("$EXTMIN", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$EXTMIN");
+  if (GetGeometryBase(L"$EXTMIN", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -202,8 +179,8 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
     writer->WriteDouble(30, 1.0000000000000000E+020);
   }
 
-  writer->WriteString(9, "$EXTMAX");
-  if (GetGeometryBase("$EXTMAX", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$EXTMAX");
+  if (GetGeometryBase(L"$EXTMAX", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -213,8 +190,8 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
     writer->WriteDouble(30, -1.0000000000000000E+020);
   }
 
-  writer->WriteString(9, "$LIMMIN");
-  if (GetGeometryBase("$LIMMIN", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$LIMMIN");
+  if (GetGeometryBase(L"$LIMMIN", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
   } else {
@@ -222,8 +199,8 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
     writer->WriteDouble(20, 0.0);
   }
 
-  writer->WriteString(9, "$LIMMAX");
-  if (GetGeometryBase("$LIMMAX", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$LIMMAX");
+  if (GetGeometryBase(L"$LIMMAX", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
   } else {
@@ -231,239 +208,239 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
     writer->WriteDouble(20, 297.0);
   }
 
-  writer->WriteString(9, "$ORTHOMODE");
-  writer->WriteInt16(70, GetInt16("$ORTHOMODE", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$ORTHOMODE");
+  writer->WriteInt16(70, GetInt16(L"$ORTHOMODE", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$REGENMODE");
-  writer->WriteInt16(70, GetInt16("$REGENMODE", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$REGENMODE");
+  writer->WriteInt16(70, GetInt16(L"$REGENMODE", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$FILLMODE");
-  writer->WriteInt16(70, GetInt16("$FILLMODE", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$FILLMODE");
+  writer->WriteInt16(70, GetInt16(L"$FILLMODE", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$QTEXTMODE");
-  writer->WriteInt16(70, GetInt16("$QTEXTMODE", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$QTEXTMODE");
+  writer->WriteInt16(70, GetInt16(L"$QTEXTMODE", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$MIRRTEXT");
-  writer->WriteInt16(70, GetInt16("$MIRRTEXT", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$MIRRTEXT");
+  writer->WriteInt16(70, GetInt16(L"$MIRRTEXT", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$LTSCALE");
-  writer->WriteDouble(40, GetDouble("$LTSCALE", &variantDouble) ? variantDouble : 1.0);
+  writer->WriteWideString(9, L"$LTSCALE");
+  writer->WriteDouble(40, GetDouble(L"$LTSCALE", &variantDouble) ? variantDouble : 1.0);
 
-  writer->WriteString(9, "$ATTMODE");
-  writer->WriteInt16(70, GetInt16("$ATTMODE", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$ATTMODE");
+  writer->WriteInt16(70, GetInt16(L"$ATTMODE", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$TEXTSIZE");
-  writer->WriteDouble(40, GetDouble("$TEXTSIZE", &variantDouble) ? variantDouble : 2.5);
+  writer->WriteWideString(9, L"$TEXTSIZE");
+  writer->WriteDouble(40, GetDouble(L"$TEXTSIZE", &variantDouble) ? variantDouble : 2.5);
 
-  writer->WriteString(9, "$TRACEWID");
-  writer->WriteDouble(40, GetDouble("$TRACEWID", &variantDouble) ? variantDouble : 15.68);
+  writer->WriteWideString(9, L"$TRACEWID");
+  writer->WriteDouble(40, GetDouble(L"$TRACEWID", &variantDouble) ? variantDouble : 15.68);
 
-  writer->WriteString(9, "$TEXTSTYLE");
-  WriteStoredWideString(writer, "$TEXTSTYLE", 7, L"STANDARD");
+  writer->WriteWideString(9, L"$TEXTSTYLE");
+  WriteStoredWideString(writer, L"$TEXTSTYLE", 7, L"STANDARD");
 
-  writer->WriteString(9, "$CLAYER");
-  WriteStoredWideString(writer, "$CLAYER", 8, L"0");
+  writer->WriteWideString(9, L"$CLAYER");
+  WriteStoredWideString(writer, L"$CLAYER", 8, L"0");
 
-  writer->WriteString(9, "$CELTYPE");
-  WriteStoredWideString(writer, "$CELTYPE", 6, L"BYLAYER");
+  writer->WriteWideString(9, L"$CELTYPE");
+  WriteStoredWideString(writer, L"$CELTYPE", 6, L"BYLAYER");
 
-  writer->WriteString(9, "$CECOLOR");
-  writer->WriteInt16(62, GetInt16("$CECOLOR", &variantInt16) ? variantInt16 : 256);
+  writer->WriteWideString(9, L"$CECOLOR");
+  writer->WriteInt16(62, GetInt16(L"$CECOLOR", &variantInt16) ? variantInt16 : 256);
 
-  writer->WriteString(9, "$DIMSCALE");
-  writer->WriteDouble(40, GetDouble("$DIMSCALE", &variantDouble) ? variantDouble : 2.5);
+  writer->WriteWideString(9, L"$DIMSCALE");
+  writer->WriteDouble(40, GetDouble(L"$DIMSCALE", &variantDouble) ? variantDouble : 2.5);
 
-  writer->WriteString(9, "$DIMASZ");
-  writer->WriteDouble(40, GetDouble("$DIMASZ", &variantDouble) ? variantDouble : 2.5);
+  writer->WriteWideString(9, L"$DIMASZ");
+  writer->WriteDouble(40, GetDouble(L"$DIMASZ", &variantDouble) ? variantDouble : 2.5);
 
-  writer->WriteString(9, "$DIMEXO");
-  writer->WriteDouble(40, GetDouble("$DIMEXO", &variantDouble) ? variantDouble : 0.625);
+  writer->WriteWideString(9, L"$DIMEXO");
+  writer->WriteDouble(40, GetDouble(L"$DIMEXO", &variantDouble) ? variantDouble : 0.625);
 
-  writer->WriteString(9, "$DIMDLI");
-  writer->WriteDouble(40, GetDouble("$DIMDLI", &variantDouble) ? variantDouble : 3.75);
+  writer->WriteWideString(9, L"$DIMDLI");
+  writer->WriteDouble(40, GetDouble(L"$DIMDLI", &variantDouble) ? variantDouble : 3.75);
 
-  writer->WriteString(9, "$DIMRND");
-  writer->WriteDouble(40, GetDouble("$DIMRND", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$DIMRND");
+  writer->WriteDouble(40, GetDouble(L"$DIMRND", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$DIMDLE");
-  writer->WriteDouble(40, GetDouble("$DIMDLE", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$DIMDLE");
+  writer->WriteDouble(40, GetDouble(L"$DIMDLE", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$DIMEXE");
-  writer->WriteDouble(40, GetDouble("$DIMEXE", &variantDouble) ? variantDouble : 1.25);
+  writer->WriteWideString(9, L"$DIMEXE");
+  writer->WriteDouble(40, GetDouble(L"$DIMEXE", &variantDouble) ? variantDouble : 1.25);
 
-  writer->WriteString(9, "$DIMTP");
-  writer->WriteDouble(40, GetDouble("$DIMTP", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$DIMTP");
+  writer->WriteDouble(40, GetDouble(L"$DIMTP", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$DIMTM");
-  writer->WriteDouble(40, GetDouble("$DIMTM", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$DIMTM");
+  writer->WriteDouble(40, GetDouble(L"$DIMTM", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$DIMTXT");
-  writer->WriteDouble(40, GetDouble("$DIMTXT", &variantDouble) ? variantDouble : 2.5);
+  writer->WriteWideString(9, L"$DIMTXT");
+  writer->WriteDouble(40, GetDouble(L"$DIMTXT", &variantDouble) ? variantDouble : 2.5);
 
-  writer->WriteString(9, "$DIMCEN");
-  writer->WriteDouble(40, GetDouble("$DIMCEN", &variantDouble) ? variantDouble : 2.5);
+  writer->WriteWideString(9, L"$DIMCEN");
+  writer->WriteDouble(40, GetDouble(L"$DIMCEN", &variantDouble) ? variantDouble : 2.5);
 
-  writer->WriteString(9, "$DIMTSZ");
-  writer->WriteDouble(40, GetDouble("$DIMTSZ", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$DIMTSZ");
+  writer->WriteDouble(40, GetDouble(L"$DIMTSZ", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$DIMTOL");
-  writer->WriteInt16(70, GetInt16("$DIMTOL", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMTOL");
+  writer->WriteInt16(70, GetInt16(L"$DIMTOL", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMLIM");
-  writer->WriteInt16(70, GetInt16("$DIMLIM", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMLIM");
+  writer->WriteInt16(70, GetInt16(L"$DIMLIM", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMTIH");
-  writer->WriteInt16(70, GetInt16("$DIMTIH", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMTIH");
+  writer->WriteInt16(70, GetInt16(L"$DIMTIH", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMTOH");
-  writer->WriteInt16(70, GetInt16("$DIMTOH", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMTOH");
+  writer->WriteInt16(70, GetInt16(L"$DIMTOH", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMSE1");
-  writer->WriteInt16(70, GetInt16("$DIMSE1", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMSE1");
+  writer->WriteInt16(70, GetInt16(L"$DIMSE1", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMSE2");
-  writer->WriteInt16(70, GetInt16("$DIMSE2", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMSE2");
+  writer->WriteInt16(70, GetInt16(L"$DIMSE2", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMTAD");
-  writer->WriteInt16(70, GetInt16("$DIMTAD", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$DIMTAD");
+  writer->WriteInt16(70, GetInt16(L"$DIMTAD", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$DIMZIN");
-  writer->WriteInt16(70, GetInt16("$DIMZIN", &variantInt16) ? variantInt16 : 8);
+  writer->WriteWideString(9, L"$DIMZIN");
+  writer->WriteInt16(70, GetInt16(L"$DIMZIN", &variantInt16) ? variantInt16 : 8);
 
-  writer->WriteString(9, "$DIMBLK");
-  WriteStoredWideString(writer, "$DIMBLK", 1, L"");
+  writer->WriteWideString(9, L"$DIMBLK");
+  WriteStoredWideString(writer, L"$DIMBLK", 1, L"");
 
-  writer->WriteString(9, "$DIMASO");
-  writer->WriteInt16(70, GetInt16("$DIMASO", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$DIMASO");
+  writer->WriteInt16(70, GetInt16(L"$DIMASO", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$DIMSHO");
-  writer->WriteInt16(70, GetInt16("$DIMSHO", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$DIMSHO");
+  writer->WriteInt16(70, GetInt16(L"$DIMSHO", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$DIMPOST");
-  WriteStoredWideString(writer, "$DIMPOST", 1, L"");
+  writer->WriteWideString(9, L"$DIMPOST");
+  WriteStoredWideString(writer, L"$DIMPOST", 1, L"");
 
-  writer->WriteString(9, "$DIMAPOST");
-  WriteStoredWideString(writer, "$DIMAPOST", 1, L"");
+  writer->WriteWideString(9, L"$DIMAPOST");
+  WriteStoredWideString(writer, L"$DIMAPOST", 1, L"");
 
-  writer->WriteString(9, "$DIMALT");
-  writer->WriteInt16(70, GetInt16("$DIMALT", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMALT");
+  writer->WriteInt16(70, GetInt16(L"$DIMALT", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMALTD");
-  writer->WriteInt16(70, GetInt16("$DIMALTD", &variantInt16) ? variantInt16 : 3);
+  writer->WriteWideString(9, L"$DIMALTD");
+  writer->WriteInt16(70, GetInt16(L"$DIMALTD", &variantInt16) ? variantInt16 : 3);
 
-  writer->WriteString(9, "$DIMALTF");
-  writer->WriteDouble(40, GetDouble("$DIMALTF", &variantDouble) ? variantDouble : 0.03937);
+  writer->WriteWideString(9, L"$DIMALTF");
+  writer->WriteDouble(40, GetDouble(L"$DIMALTF", &variantDouble) ? variantDouble : 0.03937);
 
-  writer->WriteString(9, "$DIMLFAC");
-  writer->WriteDouble(40, GetDouble("$DIMLFAC", &variantDouble) ? variantDouble : 1.0);
+  writer->WriteWideString(9, L"$DIMLFAC");
+  writer->WriteDouble(40, GetDouble(L"$DIMLFAC", &variantDouble) ? variantDouble : 1.0);
 
-  writer->WriteString(9, "$DIMTOFL");
-  writer->WriteInt16(70, GetInt16("$DIMTOFL", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$DIMTOFL");
+  writer->WriteInt16(70, GetInt16(L"$DIMTOFL", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$DIMTVP");
-  writer->WriteDouble(40, GetDouble("$DIMTVP", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$DIMTVP");
+  writer->WriteDouble(40, GetDouble(L"$DIMTVP", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$DIMTIX");
-  writer->WriteInt16(70, GetInt16("$DIMTIX", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMTIX");
+  writer->WriteInt16(70, GetInt16(L"$DIMTIX", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMSOXD");
-  writer->WriteInt16(70, GetInt16("$DIMSOXD", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMSOXD");
+  writer->WriteInt16(70, GetInt16(L"$DIMSOXD", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMSAH");
-  writer->WriteInt16(70, GetInt16("$DIMSAH", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMSAH");
+  writer->WriteInt16(70, GetInt16(L"$DIMSAH", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMBLK1");
-  WriteStoredWideString(writer, "$DIMBLK1", 1, L"");
+  writer->WriteWideString(9, L"$DIMBLK1");
+  WriteStoredWideString(writer, L"$DIMBLK1", 1, L"");
 
-  writer->WriteString(9, "$DIMBLK2");
-  WriteStoredWideString(writer, "$DIMBLK2", 1, L"");
+  writer->WriteWideString(9, L"$DIMBLK2");
+  WriteStoredWideString(writer, L"$DIMBLK2", 1, L"");
 
-  writer->WriteString(9, "$LUNITS");
-  writer->WriteInt16(70, GetInt16("$LUNITS", &variantInt16) ? variantInt16 : 2);
+  writer->WriteWideString(9, L"$LUNITS");
+  writer->WriteInt16(70, GetInt16(L"$LUNITS", &variantInt16) ? variantInt16 : 2);
 
-  writer->WriteString(9, "$LUPREC");
-  writer->WriteInt16(70, GetInt16("$LUPREC", &variantInt16) ? variantInt16 : 4);
+  writer->WriteWideString(9, L"$LUPREC");
+  writer->WriteInt16(70, GetInt16(L"$LUPREC", &variantInt16) ? variantInt16 : 4);
 
-  writer->WriteString(9, "$SKETCHINC");
-  writer->WriteDouble(40, GetDouble("$SKETCHINC", &variantDouble) ? variantDouble : 1.0);
+  writer->WriteWideString(9, L"$SKETCHINC");
+  writer->WriteDouble(40, GetDouble(L"$SKETCHINC", &variantDouble) ? variantDouble : 1.0);
 
-  writer->WriteString(9, "$FILLETRAD");
-  writer->WriteDouble(40, GetDouble("$FILLETRAD", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$FILLETRAD");
+  writer->WriteDouble(40, GetDouble(L"$FILLETRAD", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$AUNITS");
-  writer->WriteInt16(70, GetInt16("$AUNITS", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$AUNITS");
+  writer->WriteInt16(70, GetInt16(L"$AUNITS", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$AUPREC");
-  writer->WriteInt16(70, GetInt16("$AUPREC", &variantInt16) ? variantInt16 : 2);
+  writer->WriteWideString(9, L"$AUPREC");
+  writer->WriteInt16(70, GetInt16(L"$AUPREC", &variantInt16) ? variantInt16 : 2);
 
-  writer->WriteString(9, "$MENU");
-  WriteStoredWideString(writer, "$MENU", 1, L".");
+  writer->WriteWideString(9, L"$MENU");
+  WriteStoredWideString(writer, L"$MENU", 1, L".");
 
-  writer->WriteString(9, "$ELEVATION");
-  writer->WriteDouble(40, GetDouble("$ELEVATION", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$ELEVATION");
+  writer->WriteDouble(40, GetDouble(L"$ELEVATION", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$THICKNESS");
-  writer->WriteDouble(40, GetDouble("$THICKNESS", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$THICKNESS");
+  writer->WriteDouble(40, GetDouble(L"$THICKNESS", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$LIMCHECK");
-  writer->WriteInt16(70, GetInt16("$LIMCHECK", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$LIMCHECK");
+  writer->WriteInt16(70, GetInt16(L"$LIMCHECK", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$CHAMFERA");
-  writer->WriteDouble(40, GetDouble("$CHAMFERA", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$CHAMFERA");
+  writer->WriteDouble(40, GetDouble(L"$CHAMFERA", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$CHAMFERB");
-  writer->WriteDouble(40, GetDouble("$CHAMFERB", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$CHAMFERB");
+  writer->WriteDouble(40, GetDouble(L"$CHAMFERB", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$SKPOLY");
-  writer->WriteInt16(70, GetInt16("$SKPOLY", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$SKPOLY");
+  writer->WriteInt16(70, GetInt16(L"$SKPOLY", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$USRTIMER");
-  writer->WriteInt16(70, GetInt16("$USRTIMER", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$USRTIMER");
+  writer->WriteInt16(70, GetInt16(L"$USRTIMER", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$ANGBASE");
-  writer->WriteDouble(50, GetDouble("$ANGBASE", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$ANGBASE");
+  writer->WriteDouble(50, GetDouble(L"$ANGBASE", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$ANGDIR");
-  writer->WriteInt16(70, GetInt16("$ANGDIR", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$ANGDIR");
+  writer->WriteInt16(70, GetInt16(L"$ANGDIR", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$PDMODE");
-  writer->WriteInt16(70, GetInt16("$PDMODE", &variantInt16) ? variantInt16 : 34);
+  writer->WriteWideString(9, L"$PDMODE");
+  writer->WriteInt16(70, GetInt16(L"$PDMODE", &variantInt16) ? variantInt16 : 34);
 
-  writer->WriteString(9, "$PDSIZE");
-  writer->WriteDouble(40, GetDouble("$PDSIZE", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$PDSIZE");
+  writer->WriteDouble(40, GetDouble(L"$PDSIZE", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$PLINEWID");
-  writer->WriteDouble(40, GetDouble("$PLINEWID", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$PLINEWID");
+  writer->WriteDouble(40, GetDouble(L"$PLINEWID", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$SPLFRAME");
-  writer->WriteInt16(70, GetInt16("$SPLFRAME", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$SPLFRAME");
+  writer->WriteInt16(70, GetInt16(L"$SPLFRAME", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$SPLINETYPE");
-  writer->WriteInt16(70, GetInt16("$SPLINETYPE", &variantInt16) ? variantInt16 : 2);
+  writer->WriteWideString(9, L"$SPLINETYPE");
+  writer->WriteInt16(70, GetInt16(L"$SPLINETYPE", &variantInt16) ? variantInt16 : 2);
 
-  writer->WriteString(9, "$SPLINESEGS");
-  writer->WriteInt16(70, GetInt16("$SPLINESEGS", &variantInt16) ? variantInt16 : 8);
+  writer->WriteWideString(9, L"$SPLINESEGS");
+  writer->WriteInt16(70, GetInt16(L"$SPLINESEGS", &variantInt16) ? variantInt16 : 8);
 
-  writer->WriteString(9, "$SURFTAB1");
-  writer->WriteInt16(70, GetInt16("$SURFTAB1", &variantInt16) ? variantInt16 : 6);
+  writer->WriteWideString(9, L"$SURFTAB1");
+  writer->WriteInt16(70, GetInt16(L"$SURFTAB1", &variantInt16) ? variantInt16 : 6);
 
-  writer->WriteString(9, "$SURFTAB2");
-  writer->WriteInt16(70, GetInt16("$SURFTAB2", &variantInt16) ? variantInt16 : 6);
+  writer->WriteWideString(9, L"$SURFTAB2");
+  writer->WriteInt16(70, GetInt16(L"$SURFTAB2", &variantInt16) ? variantInt16 : 6);
 
-  writer->WriteString(9, "$SURFTYPE");
-  writer->WriteInt16(70, GetInt16("$SURFTYPE", &variantInt16) ? variantInt16 : 6);
+  writer->WriteWideString(9, L"$SURFTYPE");
+  writer->WriteInt16(70, GetInt16(L"$SURFTYPE", &variantInt16) ? variantInt16 : 6);
 
-  writer->WriteString(9, "$SURFU");
-  writer->WriteInt16(70, GetInt16("$SURFU", &variantInt16) ? variantInt16 : 6);
+  writer->WriteWideString(9, L"$SURFU");
+  writer->WriteInt16(70, GetInt16(L"$SURFU", &variantInt16) ? variantInt16 : 6);
 
-  writer->WriteString(9, "$SURFV");
-  writer->WriteInt16(70, GetInt16("$SURFV", &variantInt16) ? variantInt16 : 6);
+  writer->WriteWideString(9, L"$SURFV");
+  writer->WriteInt16(70, GetInt16(L"$SURFV", &variantInt16) ? variantInt16 : 6);
 
-  writer->WriteString(9, "$UCSNAME");
-  WriteStoredWideString(writer, "$UCSNAME", 2, L"");
+  writer->WriteWideString(9, L"$UCSNAME");
+  WriteStoredWideString(writer, L"$UCSNAME", 2, L"");
 
-  writer->WriteString(9, "$UCSORG");
-  if (GetGeometryBase("$UCSORG", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$UCSORG");
+  if (GetGeometryBase(L"$UCSORG", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -473,8 +450,8 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$UCSXDIR");
-  if (GetGeometryBase("$UCSXDIR", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$UCSXDIR");
+  if (GetGeometryBase(L"$UCSXDIR", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -484,8 +461,8 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$UCSYDIR");
-  if (GetGeometryBase("$UCSYDIR", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$UCSYDIR");
+  if (GetGeometryBase(L"$UCSYDIR", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -495,38 +472,38 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$USERI1");
-  writer->WriteInt16(70, GetInt16("$USERI1", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$USERI1");
+  writer->WriteInt16(70, GetInt16(L"$USERI1", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$USERI2");
-  writer->WriteInt16(70, GetInt16("$USERI2", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$USERI2");
+  writer->WriteInt16(70, GetInt16(L"$USERI2", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$USERI3");
-  writer->WriteInt16(70, GetInt16("$USERI3", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$USERI3");
+  writer->WriteInt16(70, GetInt16(L"$USERI3", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$USERI4");
-  writer->WriteInt16(70, GetInt16("$USERI4", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$USERI4");
+  writer->WriteInt16(70, GetInt16(L"$USERI4", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$USERI5");
-  writer->WriteInt16(70, GetInt16("$USERI5", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$USERI5");
+  writer->WriteInt16(70, GetInt16(L"$USERI5", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$USERR1");
-  writer->WriteDouble(40, GetDouble("$USERR1", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$USERR1");
+  writer->WriteDouble(40, GetDouble(L"$USERR1", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$USERR2");
-  writer->WriteDouble(40, GetDouble("$USERR2", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$USERR2");
+  writer->WriteDouble(40, GetDouble(L"$USERR2", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$USERR3");
-  writer->WriteDouble(40, GetDouble("$USERR3", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$USERR3");
+  writer->WriteDouble(40, GetDouble(L"$USERR3", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$USERR4");
-  writer->WriteDouble(40, GetDouble("$USERR4", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$USERR4");
+  writer->WriteDouble(40, GetDouble(L"$USERR4", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$USERR5");
-  writer->WriteDouble(40, GetDouble("$USERR5", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$USERR5");
+  writer->WriteDouble(40, GetDouble(L"$USERR5", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$WORLDVIEW");
-  writer->WriteInt16(70, GetInt16("$WORLDVIEW", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$WORLDVIEW");
+  writer->WriteInt16(70, GetInt16(L"$WORLDVIEW", &variantInt16) ? variantInt16 : 1);
 }
 
 void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
@@ -534,32 +511,32 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
   std::int16_t variantInt16;
   EoDxfGeometryBase3d variantGeometryBase;
 
-  writer->WriteString(9, "$DIMSTYLE");  // not used before AC1009
-  WriteStoredWideString(writer, "$DIMSTYLE", 2, L"STANDARD");
+  writer->WriteWideString(9, L"$DIMSTYLE");  // not used before AC1009
+  WriteStoredWideString(writer, L"$DIMSTYLE", 2, L"STANDARD");
 
-  writer->WriteString(9, "$DIMCLRD");
-  writer->WriteInt16(70, GetInt16("$DIMCLRD", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMCLRD");
+  writer->WriteInt16(70, GetInt16(L"$DIMCLRD", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMCLRE");
-  writer->WriteInt16(70, GetInt16("$DIMCLRE", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMCLRE");
+  writer->WriteInt16(70, GetInt16(L"$DIMCLRE", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMCLRT");
-  writer->WriteInt16(70, GetInt16("$DIMCLRT", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMCLRT");
+  writer->WriteInt16(70, GetInt16(L"$DIMCLRT", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMTFAC");
-  writer->WriteDouble(40, GetDouble("$DIMTFAC", &variantDouble) ? variantDouble : 1.0);
+  writer->WriteWideString(9, L"$DIMTFAC");
+  writer->WriteDouble(40, GetDouble(L"$DIMTFAC", &variantDouble) ? variantDouble : 1.0);
 
-  writer->WriteString(9, "$DIMGAP");
-  writer->WriteDouble(40, GetDouble("$DIMGAP", &variantDouble) ? variantDouble : 0.625);
+  writer->WriteWideString(9, L"$DIMGAP");
+  writer->WriteDouble(40, GetDouble(L"$DIMGAP", &variantDouble) ? variantDouble : 0.625);
 
-  writer->WriteString(9, "$PELEVATION");
-  writer->WriteDouble(40, GetDouble("$PELEVATION", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$PELEVATION");
+  writer->WriteDouble(40, GetDouble(L"$PELEVATION", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$PUCSNAME");
-  WriteStoredWideString(writer, "$PUCSNAME", 2, L"");
+  writer->WriteWideString(9, L"$PUCSNAME");
+  WriteStoredWideString(writer, L"$PUCSNAME", 2, L"");
 
-  writer->WriteString(9, "$PUCSORG");
-  if (GetGeometryBase("$PUCSORG", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PUCSORG");
+  if (GetGeometryBase(L"$PUCSORG", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -569,8 +546,8 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$PUCSXDIR");
-  if (GetGeometryBase("$PUCSXDIR", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PUCSXDIR");
+  if (GetGeometryBase(L"$PUCSXDIR", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -580,8 +557,8 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$PUCSYDIR");
-  if (GetGeometryBase("$PUCSYDIR", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PUCSYDIR");
+  if (GetGeometryBase(L"$PUCSYDIR", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -591,23 +568,23 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$SHADEDGE");
-  writer->WriteInt16(70, GetInt16("$SHADEDGE", &variantInt16) ? variantInt16 : 3);
+  writer->WriteWideString(9, L"$SHADEDGE");
+  writer->WriteInt16(70, GetInt16(L"$SHADEDGE", &variantInt16) ? variantInt16 : 3);
 
-  writer->WriteString(9, "$SHADEDIF");
-  writer->WriteInt16(70, GetInt16("$SHADEDIF", &variantInt16) ? variantInt16 : 70);
+  writer->WriteWideString(9, L"$SHADEDIF");
+  writer->WriteInt16(70, GetInt16(L"$SHADEDIF", &variantInt16) ? variantInt16 : 70);
 
-  writer->WriteString(9, "$TILEMODE");
-  writer->WriteInt16(70, GetInt16("$TILEMODE", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$TILEMODE");
+  writer->WriteInt16(70, GetInt16(L"$TILEMODE", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$MAXACTVP");
-  writer->WriteInt16(70, GetInt16("$MAXACTVP", &variantInt16) ? variantInt16 : 64);
+  writer->WriteWideString(9, L"$MAXACTVP");
+  writer->WriteInt16(70, GetInt16(L"$MAXACTVP", &variantInt16) ? variantInt16 : 64);
 
-  writer->WriteString(9, "$PLIMCHECK");
-  writer->WriteInt16(70, GetInt16("$PLIMCHECK", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$PLIMCHECK");
+  writer->WriteInt16(70, GetInt16(L"$PLIMCHECK", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$PEXTMIN");
-  if (GetGeometryBase("$PEXTMIN", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PEXTMIN");
+  if (GetGeometryBase(L"$PEXTMIN", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -617,8 +594,8 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$PEXTMAX");
-  if (GetGeometryBase("$PEXTMAX", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PEXTMAX");
+  if (GetGeometryBase(L"$PEXTMAX", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -628,8 +605,8 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$PLIMMIN");
-  if (GetGeometryBase("$PLIMMIN", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PLIMMIN");
+  if (GetGeometryBase(L"$PLIMMIN", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
   } else {
@@ -637,8 +614,8 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
     writer->WriteDouble(20, 0.0);
   }
 
-  writer->WriteString(9, "$PLIMMAX");
-  if (GetGeometryBase("$PLIMMAX", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PLIMMAX");
+  if (GetGeometryBase(L"$PLIMMAX", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
   } else {
@@ -646,21 +623,21 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
     writer->WriteDouble(20, 210.0);
   }
 
-  writer->WriteString(9, "$UNITMODE");
-  if (GetInt16("$UNITMODE", &variantInt16)) {
+  writer->WriteWideString(9, L"$UNITMODE");
+  if (GetInt16(L"$UNITMODE", &variantInt16)) {
     writer->WriteInt16(70, variantInt16);
   } else {
     writer->WriteInt16(70, 0);
   }
 
-  writer->WriteString(9, "$VISRETAIN");
-  writer->WriteInt16(70, GetInt16("$VISRETAIN", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$VISRETAIN");
+  writer->WriteInt16(70, GetInt16(L"$VISRETAIN", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$PLINEGEN");
-  writer->WriteInt16(70, GetInt16("$PLINEGEN", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$PLINEGEN");
+  writer->WriteInt16(70, GetInt16(L"$PLINEGEN", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$PSLTSCALE");
-  writer->WriteInt16(70, GetInt16("$PSLTSCALE", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$PSLTSCALE");
+  writer->WriteInt16(70, GetInt16(L"$PSLTSCALE", &variantInt16) ? variantInt16 : 1);
 }
 
 void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer) {
@@ -668,62 +645,62 @@ void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer) {
   std::int16_t variantInt16;
   EoDxfGeometryBase3d variantGeometryBase;
 
-  writer->WriteString(9, "$CELTSCALE");
-  writer->WriteDouble(40, GetDouble("$CELTSCALE", &variantDouble) ? variantDouble : 1.0);
+  writer->WriteWideString(9, L"$CELTSCALE");
+  writer->WriteDouble(40, GetDouble(L"$CELTSCALE", &variantDouble) ? variantDouble : 1.0);
 
-  writer->WriteString(9, "$DISPSILH");
-  writer->WriteInt16(70, GetInt16("$DISPSILH", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DISPSILH");
+  writer->WriteInt16(70, GetInt16(L"$DISPSILH", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMJUST");
-  writer->WriteInt16(70, GetInt16("$DIMJUST", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMJUST");
+  writer->WriteInt16(70, GetInt16(L"$DIMJUST", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMSD1");
-  writer->WriteInt16(70, GetInt16("$DIMSD1", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMSD1");
+  writer->WriteInt16(70, GetInt16(L"$DIMSD1", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMSD2");
-  writer->WriteInt16(70, GetInt16("$DIMSD2", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMSD2");
+  writer->WriteInt16(70, GetInt16(L"$DIMSD2", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMTOLJ");
-  writer->WriteInt16(70, GetInt16("$DIMTOLJ", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMTOLJ");
+  writer->WriteInt16(70, GetInt16(L"$DIMTOLJ", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMTZIN");
-  writer->WriteInt16(70, GetInt16("$DIMTZIN", &variantInt16) ? variantInt16 : 8);
+  writer->WriteWideString(9, L"$DIMTZIN");
+  writer->WriteInt16(70, GetInt16(L"$DIMTZIN", &variantInt16) ? variantInt16 : 8);
 
-  writer->WriteString(9, "$DIMALTZ");
-  writer->WriteInt16(70, GetInt16("$DIMALTZ", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMALTZ");
+  writer->WriteInt16(70, GetInt16(L"$DIMALTZ", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMALTTZ");
-  writer->WriteInt16(70, GetInt16("$DIMALTTZ", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMALTTZ");
+  writer->WriteInt16(70, GetInt16(L"$DIMALTTZ", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMUPT");
-  writer->WriteInt16(70, GetInt16("$DIMUPT", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMUPT");
+  writer->WriteInt16(70, GetInt16(L"$DIMUPT", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMDEC");
-  writer->WriteInt16(70, GetInt16("$DIMDEC", &variantInt16) ? variantInt16 : 2);
+  writer->WriteWideString(9, L"$DIMDEC");
+  writer->WriteInt16(70, GetInt16(L"$DIMDEC", &variantInt16) ? variantInt16 : 2);
 
-  writer->WriteString(9, "$DIMTDEC");
-  writer->WriteInt16(70, GetInt16("$DIMTDEC", &variantInt16) ? variantInt16 : 2);
+  writer->WriteWideString(9, L"$DIMTDEC");
+  writer->WriteInt16(70, GetInt16(L"$DIMTDEC", &variantInt16) ? variantInt16 : 2);
 
-  writer->WriteString(9, "$DIMALTU");
-  writer->WriteInt16(70, GetInt16("$DIMALTU", &variantInt16) ? variantInt16 : 2);
+  writer->WriteWideString(9, L"$DIMALTU");
+  writer->WriteInt16(70, GetInt16(L"$DIMALTU", &variantInt16) ? variantInt16 : 2);
 
-  writer->WriteString(9, "$DIMALTTD");
-  writer->WriteInt16(70, GetInt16("$DIMALTTD", &variantInt16) ? variantInt16 : 3);
+  writer->WriteWideString(9, L"$DIMALTTD");
+  writer->WriteInt16(70, GetInt16(L"$DIMALTTD", &variantInt16) ? variantInt16 : 3);
 
-  writer->WriteString(9, "$DIMTXSTY");
-  WriteStoredWideString(writer, "$DIMTXSTY", 7, L"STANDARD");
+  writer->WriteWideString(9, L"$DIMTXSTY");
+  WriteStoredWideString(writer, L"$DIMTXSTY", 7, L"STANDARD");
 
-  writer->WriteString(9, "$DIMAUNIT");
-  writer->WriteInt16(70, GetInt16("$DIMAUNIT", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMAUNIT");
+  writer->WriteInt16(70, GetInt16(L"$DIMAUNIT", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$CHAMFERC");
-  writer->WriteDouble(40, GetDouble("$CHAMFERC", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$CHAMFERC");
+  writer->WriteDouble(40, GetDouble(L"$CHAMFERC", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$CHAMFERD");
-  writer->WriteDouble(40, GetDouble("$CHAMFERD", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$CHAMFERD");
+  writer->WriteDouble(40, GetDouble(L"$CHAMFERD", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$PINSBASE");
-  if (GetGeometryBase("$PINSBASE", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PINSBASE");
+  if (GetGeometryBase(L"$PINSBASE", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -733,84 +710,83 @@ void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$TREEDEPTH");
-  writer->WriteInt16(70, GetInt16("$TREEDEPTH", &variantInt16) ? variantInt16 : 3020);
+  writer->WriteWideString(9, L"$TREEDEPTH");
+  writer->WriteInt16(70, GetInt16(L"$TREEDEPTH", &variantInt16) ? variantInt16 : 3020);
 
-  writer->WriteString(9, "$CMLSTYLE");
-  WriteStoredWideString(writer, "$CMLSTYLE", 2, L"Standard");
+  writer->WriteWideString(9, L"$CMLSTYLE");
+  WriteStoredWideString(writer, L"$CMLSTYLE", 2, L"Standard");
 
-  writer->WriteString(9, "$CMLJUST");
-  writer->WriteInt16(70, GetInt16("$CMLJUST", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$CMLJUST");
+  writer->WriteInt16(70, GetInt16(L"$CMLJUST", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$CMLSCALE");
-  writer->WriteDouble(40, GetDouble("$CMLSCALE", &variantDouble) ? variantDouble : 20.0);
+  writer->WriteWideString(9, L"$CMLSCALE");
+  writer->WriteDouble(40, GetDouble(L"$CMLSCALE", &variantDouble) ? variantDouble : 20.0);
 }
 
 void EoDxfHeader::WriteAC1014Additions(EoDxfWriter* writer) {
   std::int16_t variantInt16;
 
-  writer->WriteString(9, "$PROXYGRAPHICS");
-  writer->WriteInt16(70, GetInt16("$PROXYGRAPHICS", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$PROXYGRAPHICS");
+  writer->WriteInt16(70, GetInt16(L"$PROXYGRAPHICS", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$MEASUREMENT");
-  writer->WriteInt16(70, GetInt16("$MEASUREMENT", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$MEASUREMENT");
+  writer->WriteInt16(70, GetInt16(L"$MEASUREMENT", &variantInt16) ? variantInt16 : 1);
 }
 
 void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
   bool variantBool{};
   double variantDouble{};
   std::int16_t variantInt16{};
-  std::string variantString;
   EoDxfGeometryBase3d variantGeometryBase;
 
-  writer->WriteString(9, "$DIMADEC");
-  writer->WriteInt16(70, GetInt16("$DIMADEC", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMADEC");
+  writer->WriteInt16(70, GetInt16(L"$DIMADEC", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMALTRND");
-  writer->WriteDouble(40, GetDouble("$DIMALTRND", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$DIMALTRND");
+  writer->WriteDouble(40, GetDouble(L"$DIMALTRND", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$DIMAZIN");
-  writer->WriteInt16(70, GetInt16("$DIMAZIN", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMAZIN");
+  writer->WriteInt16(70, GetInt16(L"$DIMAZIN", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMDSEP");
-  writer->WriteInt16(70, GetInt16("$DIMDSEP", &variantInt16) ? variantInt16 : 44);
+  writer->WriteWideString(9, L"$DIMDSEP");
+  writer->WriteInt16(70, GetInt16(L"$DIMDSEP", &variantInt16) ? variantInt16 : 44);
 
-  writer->WriteString(9, "$DIMATFIT");
-  writer->WriteInt16(70, GetInt16("$DIMATFIT", &variantInt16) ? variantInt16 : 3);
+  writer->WriteWideString(9, L"$DIMATFIT");
+  writer->WriteInt16(70, GetInt16(L"$DIMATFIT", &variantInt16) ? variantInt16 : 3);
 
-  writer->WriteString(9, "$DIMFRAC");
-  writer->WriteInt16(70, GetInt16("$DIMFRAC", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMFRAC");
+  writer->WriteInt16(70, GetInt16(L"$DIMFRAC", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMLDRBLK");
-  WriteStoredWideString(writer, "$DIMLDRBLK", 1, L"STANDARD");
+  writer->WriteWideString(9, L"$DIMLDRBLK");
+  WriteStoredWideString(writer, L"$DIMLDRBLK", 1, L"STANDARD");
 
   // `$DIMLUNIT` replaced `$DIMUNIT` in AC1015, but `$DIMUNIT` may still be present in AC1012 and AC1014 files,
   // so check for both and default to 2 (decimal) if neither is found or if the value is out of range
-  if (!GetInt16("$DIMLUNIT", &variantInt16)) {
-    if (!GetInt16("$DIMUNIT", &variantInt16)) { variantInt16 = 2; }
+  if (!GetInt16(L"$DIMLUNIT", &variantInt16)) {
+    if (!GetInt16(L"$DIMUNIT", &variantInt16)) { variantInt16 = 2; }
   }
   if (variantInt16 < 1 || variantInt16 > 6) { variantInt16 = 2; }
 
-  writer->WriteString(9, "$DIMLUNIT");
+  writer->WriteWideString(9, L"$DIMLUNIT");
   writer->WriteInt16(70, variantInt16);
 
-  writer->WriteString(9, "$DIMLWD");
-  writer->WriteInt16(70, GetInt16("$DIMLWD", &variantInt16) ? variantInt16 : -2);
+  writer->WriteWideString(9, L"$DIMLWD");
+  writer->WriteInt16(70, GetInt16(L"$DIMLWD", &variantInt16) ? variantInt16 : -2);
 
-  writer->WriteString(9, "$DIMLWE");
-  writer->WriteInt16(70, GetInt16("$DIMLWE", &variantInt16) ? variantInt16 : -2);
+  writer->WriteWideString(9, L"$DIMLWE");
+  writer->WriteInt16(70, GetInt16(L"$DIMLWE", &variantInt16) ? variantInt16 : -2);
 
-  writer->WriteString(9, "$DIMTMOVE");
-  writer->WriteInt16(70, GetInt16("$DIMTMOVE", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMTMOVE");
+  writer->WriteInt16(70, GetInt16(L"$DIMTMOVE", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$UCSORTHOREF");
-  WriteStoredWideString(writer, "$UCSORTHOREF", 2, L"");
+  writer->WriteWideString(9, L"$UCSORTHOREF");
+  WriteStoredWideString(writer, L"$UCSORTHOREF", 2, L"");
 
-  writer->WriteString(9, "$UCSORTHOVIEW");
-  writer->WriteInt16(70, GetInt16("$UCSORTHOVIEW", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$UCSORTHOVIEW");
+  writer->WriteInt16(70, GetInt16(L"$UCSORTHOVIEW", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$UCSORGTOP");
-  if (GetGeometryBase("$UCSORGTOP", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$UCSORGTOP");
+  if (GetGeometryBase(L"$UCSORGTOP", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -820,8 +796,8 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$UCSORGBOTTOM");
-  if (GetGeometryBase("$UCSORGBOTTOM", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$UCSORGBOTTOM");
+  if (GetGeometryBase(L"$UCSORGBOTTOM", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -831,8 +807,8 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$UCSORGLEFT");
-  if (GetGeometryBase("$UCSORGLEFT", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$UCSORGLEFT");
+  if (GetGeometryBase(L"$UCSORGLEFT", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -842,8 +818,8 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$UCSORGRIGHT");
-  if (GetGeometryBase("$UCSORGRIGHT", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$UCSORGRIGHT");
+  if (GetGeometryBase(L"$UCSORGRIGHT", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -853,8 +829,8 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$UCSORGFRONT");
-  if (GetGeometryBase("$UCSORGFRONT", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$UCSORGFRONT");
+  if (GetGeometryBase(L"$UCSORGFRONT", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -864,8 +840,8 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$UCSORGBACK");
-  if (GetGeometryBase("$UCSORGBACK", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$UCSORGBACK");
+  if (GetGeometryBase(L"$UCSORGBACK", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -875,20 +851,20 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$UCSBASE");
-  WriteStoredWideString(writer, "$UCSBASE", 2, L"");
+  writer->WriteWideString(9, L"$UCSBASE");
+  WriteStoredWideString(writer, L"$UCSBASE", 2, L"");
 
-  writer->WriteString(9, "$PUCSBASE");
-  WriteStoredWideString(writer, "$PUCSBASE", 2, L"");
+  writer->WriteWideString(9, L"$PUCSBASE");
+  WriteStoredWideString(writer, L"$PUCSBASE", 2, L"");
 
-  writer->WriteString(9, "$PUCSORTHOREF");
-  WriteStoredWideString(writer, "$PUCSORTHOREF", 2, L"");
+  writer->WriteWideString(9, L"$PUCSORTHOREF");
+  WriteStoredWideString(writer, L"$PUCSORTHOREF", 2, L"");
 
-  writer->WriteString(9, "$PUCSORTHOVIEW");
-  writer->WriteInt16(70, GetInt16("$PUCSORTHOVIEW", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$PUCSORTHOVIEW");
+  writer->WriteInt16(70, GetInt16(L"$PUCSORTHOVIEW", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$PUCSORGTOP");
-  if (GetGeometryBase("$PUCSORGTOP", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PUCSORGTOP");
+  if (GetGeometryBase(L"$PUCSORGTOP", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -898,8 +874,8 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$PUCSORGBOTTOM");
-  if (GetGeometryBase("$PUCSORGBOTTOM", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PUCSORGBOTTOM");
+  if (GetGeometryBase(L"$PUCSORGBOTTOM", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -909,8 +885,8 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$PUCSORGLEFT");
-  if (GetGeometryBase("$PUCSORGLEFT", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PUCSORGLEFT");
+  if (GetGeometryBase(L"$PUCSORGLEFT", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -920,8 +896,8 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$PUCSORGRIGHT");
-  if (GetGeometryBase("$PUCSORGRIGHT", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PUCSORGRIGHT");
+  if (GetGeometryBase(L"$PUCSORGRIGHT", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -931,8 +907,8 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$PUCSORGFRONT");
-  if (GetGeometryBase("$PUCSORGFRONT", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PUCSORGFRONT");
+  if (GetGeometryBase(L"$PUCSORGFRONT", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -942,8 +918,8 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$PUCSORGBACK");
-  if (GetGeometryBase("$PUCSORGBACK", &variantGeometryBase)) {
+  writer->WriteWideString(9, L"$PUCSORGBACK");
+  if (GetGeometryBase(L"$PUCSORGBACK", &variantGeometryBase)) {
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
     writer->WriteDouble(30, variantGeometryBase.z);
@@ -953,94 +929,94 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
     writer->WriteDouble(30, 0.0);
   }
 
-  writer->WriteString(9, "$CELWEIGHT");
-  writer->WriteInt16(370, GetInt16("$CELWEIGHT", &variantInt16) ? variantInt16 : -1);
+  writer->WriteWideString(9, L"$CELWEIGHT");
+  writer->WriteInt16(370, GetInt16(L"$CELWEIGHT", &variantInt16) ? variantInt16 : -1);
 
-  writer->WriteString(9, "$ENDCAPS");
-  writer->WriteInt16(280, GetInt16("$ENDCAPS", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$ENDCAPS");
+  writer->WriteInt16(280, GetInt16(L"$ENDCAPS", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$JOINSTYLE");
-  writer->WriteInt16(280, GetInt16("$JOINSTYLE", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$JOINSTYLE");
+  writer->WriteInt16(280, GetInt16(L"$JOINSTYLE", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$LWDISPLAY");
-  writer->WriteBool(290, GetBool("$LWDISPLAY", &variantBool) ? variantBool : false);
+  writer->WriteWideString(9, L"$LWDISPLAY");
+  writer->WriteBool(290, GetBool(L"$LWDISPLAY", &variantBool) ? variantBool : false);
 
-  writer->WriteString(9, "$INSUNITS");
-  writer->WriteInt16(70, GetInt16("$INSUNITS", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$INSUNITS");
+  writer->WriteInt16(70, GetInt16(L"$INSUNITS", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$HYPERLINKBASE");
-  WriteStoredWideString(writer, "$HYPERLINKBASE", 1, L"");
+  writer->WriteWideString(9, L"$HYPERLINKBASE");
+  WriteStoredWideString(writer, L"$HYPERLINKBASE", 1, L"");
 
-  writer->WriteString(9, "$STYLESHEET");
-  WriteStoredWideString(writer, "$STYLESHEET", 1, L"");
+  writer->WriteWideString(9, L"$STYLESHEET");
+  WriteStoredWideString(writer, L"$STYLESHEET", 1, L"");
 
-  writer->WriteString(9, "$XEDIT");
-  writer->WriteBool(290, GetBool("$XEDIT", &variantBool) ? variantBool : true);
+  writer->WriteWideString(9, L"$XEDIT");
+  writer->WriteBool(290, GetBool(L"$XEDIT", &variantBool) ? variantBool : true);
 
-  writer->WriteString(9, "$CEPSNTYPE");
-  writer->WriteInt16(380, GetInt16("$CEPSNTYPE", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$CEPSNTYPE");
+  writer->WriteInt16(380, GetInt16(L"$CEPSNTYPE", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$PSTYLEMODE");
-  writer->WriteBool(290, GetBool("$PSTYLEMODE", &variantBool) ? variantBool : true);
+  writer->WriteWideString(9, L"$PSTYLEMODE");
+  writer->WriteBool(290, GetBool(L"$PSTYLEMODE", &variantBool) ? variantBool : true);
 
-  writer->WriteString(9, "$EXTNAMES");
-  writer->WriteBool(290, GetBool("$EXTNAMES", &variantBool) ? variantBool : true);
+  writer->WriteWideString(9, L"$EXTNAMES");
+  writer->WriteBool(290, GetBool(L"$EXTNAMES", &variantBool) ? variantBool : true);
 
-  writer->WriteString(9, "$PSVPSCALE");
-  writer->WriteDouble(40, GetDouble("$PSVPSCALE", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$PSVPSCALE");
+  writer->WriteDouble(40, GetDouble(L"$PSVPSCALE", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$OLESTARTUP");
-  writer->WriteBool(290, GetBool("$OLESTARTUP", &variantBool) ? variantBool : false);
+  writer->WriteWideString(9, L"$OLESTARTUP");
+  writer->WriteBool(290, GetBool(L"$OLESTARTUP", &variantBool) ? variantBool : false);
 }
 
 void EoDxfHeader::WriteAC1018Additions(EoDxfWriter* writer, EoDxf::Version version) {
   bool variantBool{};
   std::int16_t variantInt16{};
 
-  writer->WriteString(9, "$SORTENTS");
-  writer->WriteInt16(280, GetInt16("$SORTENTS", &variantInt16) ? variantInt16 : 127);
+  writer->WriteWideString(9, L"$SORTENTS");
+  writer->WriteInt16(280, GetInt16(L"$SORTENTS", &variantInt16) ? variantInt16 : 127);
 
-  writer->WriteString(9, "$INDEXCTL");
-  writer->WriteInt16(280, GetInt16("$INDEXCTL", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$INDEXCTL");
+  writer->WriteInt16(280, GetInt16(L"$INDEXCTL", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$HIDETEXT");
-  writer->WriteInt16(280, GetInt16("$HIDETEXT", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$HIDETEXT");
+  writer->WriteInt16(280, GetInt16(L"$HIDETEXT", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$XCLIPFRAME");
+  writer->WriteWideString(9, L"$XCLIPFRAME");
   if (version > EoDxf::Version::AC1021) {
-    if (GetInt16("$XCLIPFRAME", &variantInt16)) {
+    if (GetInt16(L"$XCLIPFRAME", &variantInt16)) {
       writer->WriteInt16(280, variantInt16);
     } else {
       writer->WriteInt16(280, 0);
     }
   } else {
-    if (GetBool("$XCLIPFRAME", &variantBool)) {
+    if (GetBool(L"$XCLIPFRAME", &variantBool)) {
       writer->WriteBool(290, variantBool);
     } else {
       writer->WriteBool(290, false);
     }
   }
 
-  writer->WriteString(9, "$HALOGAP");
-  writer->WriteInt16(280, GetInt16("$HALOGAP", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$HALOGAP");
+  writer->WriteInt16(280, GetInt16(L"$HALOGAP", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$OBSCOLOR");
-  writer->WriteInt16(70, GetInt16("$OBSCOLOR", &variantInt16) ? variantInt16 : 257);
+  writer->WriteWideString(9, L"$OBSCOLOR");
+  writer->WriteInt16(70, GetInt16(L"$OBSCOLOR", &variantInt16) ? variantInt16 : 257);
 
-  writer->WriteString(9, "$OBSLTYPE");
-  writer->WriteInt16(280, GetInt16("$OBSLTYPE", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$OBSLTYPE");
+  writer->WriteInt16(280, GetInt16(L"$OBSLTYPE", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$INTERSECTIONDISPLAY");
-  writer->WriteInt16(280, GetInt16("$INTERSECTIONDISPLAY", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$INTERSECTIONDISPLAY");
+  writer->WriteInt16(280, GetInt16(L"$INTERSECTIONDISPLAY", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$INTERSECTIONCOLOR");
-  writer->WriteInt16(70, GetInt16("$INTERSECTIONCOLOR", &variantInt16) ? variantInt16 : 257);
+  writer->WriteWideString(9, L"$INTERSECTIONCOLOR");
+  writer->WriteInt16(70, GetInt16(L"$INTERSECTIONCOLOR", &variantInt16) ? variantInt16 : 257);
 
-  writer->WriteString(9, "$DIMASSOC");
-  writer->WriteInt16(280, GetInt16("$DIMASSOC", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$DIMASSOC");
+  writer->WriteInt16(280, GetInt16(L"$DIMASSOC", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$PROJECTNAME");
-  WriteStoredWideString(writer, "$PROJECTNAME", 1, L"");
+  writer->WriteWideString(9, L"$PROJECTNAME");
+  WriteStoredWideString(writer, L"$PROJECTNAME", 1, L"");
 }
 
 void EoDxfHeader::WriteAC1021Additions(EoDxfWriter* writer) {
@@ -1048,200 +1024,197 @@ void EoDxfHeader::WriteAC1021Additions(EoDxfWriter* writer) {
   double variantDouble{};
   std::int16_t variantInt16{};
 
-  writer->WriteString(9, "$DIMFXL");
-  writer->WriteDouble(40, GetDouble("$DIMFXL", &variantDouble) ? variantDouble : 1.0);
+  writer->WriteWideString(9, L"$DIMFXL");
+  writer->WriteDouble(40, GetDouble(L"$DIMFXL", &variantDouble) ? variantDouble : 1.0);
 
-  writer->WriteString(9, "$DIMFXLON");
-  writer->WriteInt16(70, GetInt16("$DIMFXLON", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMFXLON");
+  writer->WriteInt16(70, GetInt16(L"$DIMFXLON", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMJOGANG");
-  writer->WriteDouble(40, GetDouble("$DIMJOGANG", &variantDouble) ? variantDouble : 0.7854);
+  writer->WriteWideString(9, L"$DIMJOGANG");
+  writer->WriteDouble(40, GetDouble(L"$DIMJOGANG", &variantDouble) ? variantDouble : 0.7854);
 
-  writer->WriteString(9, "$DIMTFILL");
-  writer->WriteInt16(70, GetInt16("$DIMTFILL", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMTFILL");
+  writer->WriteInt16(70, GetInt16(L"$DIMTFILL", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMTFILLCLR");
-  writer->WriteInt16(70, GetInt16("$DIMTFILLCLR", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMTFILLCLR");
+  writer->WriteInt16(70, GetInt16(L"$DIMTFILLCLR", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMARCSYM");
-  writer->WriteInt16(70, GetInt16("$DIMARCSYM", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMARCSYM");
+  writer->WriteInt16(70, GetInt16(L"$DIMARCSYM", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$DIMLTYPE");
-  WriteStoredWideString(writer, "$DIMLTYPE", 6, L"");
+  writer->WriteWideString(9, L"$DIMLTYPE");
+  WriteStoredWideString(writer, L"$DIMLTYPE", 6, L"");
 
-  writer->WriteString(9, "$DIMLTEX1");
-  WriteStoredWideString(writer, "$DIMLTEX1", 6, L"");
+  writer->WriteWideString(9, L"$DIMLTEX1");
+  WriteStoredWideString(writer, L"$DIMLTEX1", 6, L"");
 
-  writer->WriteString(9, "$DIMLTEX2");
-  WriteStoredWideString(writer, "$DIMLTEX2", 6, L"");
+  writer->WriteWideString(9, L"$DIMLTEX2");
+  WriteStoredWideString(writer, L"$DIMLTEX2", 6, L"");
 
-  writer->WriteString(9, "$CAMERADISPLAY");
-  writer->WriteBool(290, GetBool("$CAMERADISPLAY", &variantBool) ? variantBool : false);
+  writer->WriteWideString(9, L"$CAMERADISPLAY");
+  writer->WriteBool(290, GetBool(L"$CAMERADISPLAY", &variantBool) ? variantBool : false);
 
-  writer->WriteString(9, "$LENSLENGTH");
-  writer->WriteDouble(40, GetDouble("$LENSLENGTH", &variantDouble) ? variantDouble : 50.0);
+  writer->WriteWideString(9, L"$LENSLENGTH");
+  writer->WriteDouble(40, GetDouble(L"$LENSLENGTH", &variantDouble) ? variantDouble : 50.0);
 
-  writer->WriteString(9, "$CAMERAHEIGHT");
-  writer->WriteDouble(40, GetDouble("$CAMERAHEIGHT", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$CAMERAHEIGHT");
+  writer->WriteDouble(40, GetDouble(L"$CAMERAHEIGHT", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$STEPSPERSEC");
-  writer->WriteDouble(40, GetDouble("$STEPSPERSEC", &variantDouble) ? variantDouble : 2.0);
+  writer->WriteWideString(9, L"$STEPSPERSEC");
+  writer->WriteDouble(40, GetDouble(L"$STEPSPERSEC", &variantDouble) ? variantDouble : 2.0);
 
-  writer->WriteString(9, "$STEPSIZE");
-  writer->WriteDouble(40, GetDouble("$STEPSIZE", &variantDouble) ? variantDouble : 50.0);
+  writer->WriteWideString(9, L"$STEPSIZE");
+  writer->WriteDouble(40, GetDouble(L"$STEPSIZE", &variantDouble) ? variantDouble : 50.0);
 
-  writer->WriteString(9, "$3DDWFPREC");
-  writer->WriteDouble(40, GetDouble("$3DDWFPREC", &variantDouble) ? variantDouble : 2.0);
+  writer->WriteWideString(9, L"$3DDWFPREC");
+  writer->WriteDouble(40, GetDouble(L"$3DDWFPREC", &variantDouble) ? variantDouble : 2.0);
 
-  writer->WriteString(9, "$PSOLWIDTH");
-  writer->WriteDouble(40, GetDouble("$PSOLWIDTH", &variantDouble) ? variantDouble : 5.0);
+  writer->WriteWideString(9, L"$PSOLWIDTH");
+  writer->WriteDouble(40, GetDouble(L"$PSOLWIDTH", &variantDouble) ? variantDouble : 5.0);
 
-  writer->WriteString(9, "$PSOLHEIGHT");
-  writer->WriteDouble(40, GetDouble("$PSOLHEIGHT", &variantDouble) ? variantDouble : 80.0);
+  writer->WriteWideString(9, L"$PSOLHEIGHT");
+  writer->WriteDouble(40, GetDouble(L"$PSOLHEIGHT", &variantDouble) ? variantDouble : 80.0);
 
-  writer->WriteString(9, "$LOFTANG1");
-  writer->WriteDouble(40, GetDouble("$LOFTANG1", &variantDouble) ? variantDouble : EoDxf::HalfPi);
+  writer->WriteWideString(9, L"$LOFTANG1");
+  writer->WriteDouble(40, GetDouble(L"$LOFTANG1", &variantDouble) ? variantDouble : EoDxf::HalfPi);
 
-  writer->WriteString(9, "$LOFTANG2");
-  writer->WriteDouble(40, GetDouble("$LOFTANG2", &variantDouble) ? variantDouble : EoDxf::HalfPi);
+  writer->WriteWideString(9, L"$LOFTANG2");
+  writer->WriteDouble(40, GetDouble(L"$LOFTANG2", &variantDouble) ? variantDouble : EoDxf::HalfPi);
 
-  writer->WriteString(9, "$LOFTMAG1");
-  writer->WriteDouble(40, GetDouble("$LOFTMAG1", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$LOFTMAG1");
+  writer->WriteDouble(40, GetDouble(L"$LOFTMAG1", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$LOFTMAG2");
-  writer->WriteDouble(40, GetDouble("$LOFTMAG2", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$LOFTMAG2");
+  writer->WriteDouble(40, GetDouble(L"$LOFTMAG2", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$LOFTPARAM");
-  writer->WriteInt16(70, GetInt16("$LOFTPARAM", &variantInt16) ? variantInt16 : 7);
+  writer->WriteWideString(9, L"$LOFTPARAM");
+  writer->WriteInt16(70, GetInt16(L"$LOFTPARAM", &variantInt16) ? variantInt16 : 7);
 
-  writer->WriteString(9, "$LOFTNORMALS");
-  writer->WriteInt16(280, GetInt16("$LOFTNORMALS", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$LOFTNORMALS");
+  writer->WriteInt16(280, GetInt16(L"$LOFTNORMALS", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$LATITUDE");
-  writer->WriteDouble(40, GetDouble("$LATITUDE", &variantDouble) ? variantDouble : 1.0);
+  writer->WriteWideString(9, L"$LATITUDE");
+  writer->WriteDouble(40, GetDouble(L"$LATITUDE", &variantDouble) ? variantDouble : 1.0);
 
-  writer->WriteString(9, "$LONGITUDE");
-  writer->WriteDouble(40, GetDouble("$LONGITUDE", &variantDouble) ? variantDouble : 1.0);
+  writer->WriteWideString(9, L"$LONGITUDE");
+  writer->WriteDouble(40, GetDouble(L"$LONGITUDE", &variantDouble) ? variantDouble : 1.0);
 
-  writer->WriteString(9, "$NORTHDIRECTION");
-  writer->WriteDouble(40, GetDouble("$NORTHDIRECTION", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$NORTHDIRECTION");
+  writer->WriteDouble(40, GetDouble(L"$NORTHDIRECTION", &variantDouble) ? variantDouble : 0.0);
 
-  writer->WriteString(9, "$TIMEZONE");
-  writer->WriteInt16(70, GetInt16("$TIMEZONE", &variantInt16) ? variantInt16 : -8000);
+  writer->WriteWideString(9, L"$TIMEZONE");
+  writer->WriteInt16(70, GetInt16(L"$TIMEZONE", &variantInt16) ? variantInt16 : -8000);
 
-  writer->WriteString(9, "$LIGHTGLYPHDISPLAY");
-  writer->WriteInt16(280, GetInt16("$LIGHTGLYPHDISPLAY", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$LIGHTGLYPHDISPLAY");
+  writer->WriteInt16(280, GetInt16(L"$LIGHTGLYPHDISPLAY", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$TILEMODELIGHTSYNCH");
-  writer->WriteInt16(280, GetInt16("$TILEMODELIGHTSYNCH", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$TILEMODELIGHTSYNCH");
+  writer->WriteInt16(280, GetInt16(L"$TILEMODELIGHTSYNCH", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$SOLIDHIST");
-  writer->WriteInt16(280, GetInt16("$SOLIDHIST", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$SOLIDHIST");
+  writer->WriteInt16(280, GetInt16(L"$SOLIDHIST", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$SHOWHIST");
-  writer->WriteInt16(280, GetInt16("$SHOWHIST", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$SHOWHIST");
+  writer->WriteInt16(280, GetInt16(L"$SHOWHIST", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$DWFFRAME");
-  writer->WriteInt16(280, GetInt16("$DWFFRAME", &variantInt16) ? variantInt16 : 2);
+  writer->WriteWideString(9, L"$DWFFRAME");
+  writer->WriteInt16(280, GetInt16(L"$DWFFRAME", &variantInt16) ? variantInt16 : 2);
 
-  writer->WriteString(9, "$DGNFRAME");
-  writer->WriteInt16(280, GetInt16("$DGNFRAME", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DGNFRAME");
+  writer->WriteInt16(280, GetInt16(L"$DGNFRAME", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$REALWORLDSCALE");
-  writer->WriteBool(290, GetBool("$REALWORLDSCALE", &variantBool) ? variantBool : true);
+  writer->WriteWideString(9, L"$REALWORLDSCALE");
+  writer->WriteBool(290, GetBool(L"$REALWORLDSCALE", &variantBool) ? variantBool : true);
 
-  writer->WriteString(9, "$INTERFERECOLOR");
-  writer->WriteInt16(62, GetInt16("$INTERFERECOLOR", &variantInt16) ? variantInt16 : 1);
+  writer->WriteWideString(9, L"$INTERFERECOLOR");
+  writer->WriteInt16(62, GetInt16(L"$INTERFERECOLOR", &variantInt16) ? variantInt16 : 1);
 
-  writer->WriteString(9, "$CSHADOW");
-  writer->WriteInt16(280, GetInt16("$CSHADOW", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$CSHADOW");
+  writer->WriteInt16(280, GetInt16(L"$CSHADOW", &variantInt16) ? variantInt16 : 0);
 
-  writer->WriteString(9, "$SHADOWPLANELOCATION");
-  writer->WriteDouble(40, GetDouble("$SHADOWPLANELOCATION", &variantDouble) ? variantDouble : 0.0);
+  writer->WriteWideString(9, L"$SHADOWPLANELOCATION");
+  writer->WriteDouble(40, GetDouble(L"$SHADOWPLANELOCATION", &variantDouble) ? variantDouble : 0.0);
 }
 
 void EoDxfHeader::WriteAC1024Additions(EoDxfWriter* writer) {
   std::int16_t variantInt16;
 
-  writer->WriteString(9, "$DIMTXTDIRECTION");
-  writer->WriteInt16(70, GetInt16("$DIMTXTDIRECTION", &variantInt16) ? variantInt16 : 0);
+  writer->WriteWideString(9, L"$DIMTXTDIRECTION");
+  writer->WriteInt16(70, GetInt16(L"$DIMTXTDIRECTION", &variantInt16) ? variantInt16 : 0);
 }
 
 void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
   std::int16_t variantInt16;
-  std::string variantString;
+  std::wstring variantWideString;
   EoDxfGeometryBase3d variantGeometryBase;
-  writer->WriteString(2, "HEADER");
-  writer->WriteString(9, "$ACADVER");
+  writer->WriteWideString(2, L"HEADER");
+  writer->WriteWideString(9, L"$ACADVER");
   switch (version) {
     case EoDxf::Version::AC1006:  // R10 (not supported) [1988]
     case EoDxf::Version::AC1009:  // R11 [1990] & R12 [1992]
-      variantString = "AC1009";
+      variantWideString = L"AC1009";
       break;
     case EoDxf::Version::AC1012:  // R13 (not supported)
     case EoDxf::Version::AC1014:  // R14
-      variantString = "AC1014";
+      variantWideString = L"AC1014";
       break;
     case EoDxf::Version::AC1015:  // AutoCAD 2000 / 2000i / 2002
-      variantString = "AC1015";
+      variantWideString = L"AC1015";
       break;
     case EoDxf::Version::AC1018:  // AutoCAD 2004 / 2005 / 2006
-      variantString = "AC1018";
+      variantWideString = L"AC1018";
       break;
     case EoDxf::Version::AC1024:  // AutoCAD 2010 / 2011 / 2012
-      variantString = "AC1024";
+      variantWideString = L"AC1024";
       break;
     case EoDxf::Version::AC1027:  // AutoCAD 2013 / 2014 / 2015 / 2016 / 2017
-      variantString = "AC1027";
+      variantWideString = L"AC1027";
       break;
     case EoDxf::Version::AC1032:  // AutoCAD 2018 / 2019 / 2020 / 2021 / 2022 / 2023 / 2024 / 2025 / 2026
-      variantString = "AC1032";
+      variantWideString = L"AC1032";
       break;
     case EoDxf::Version::AC1021:  // AutoCAD 2007 / 2008 / 2009
       [[fallthrough]];  // intentional fallthrough to default case
     default:
-      variantString = "AC1021";
+      variantWideString = L"AC1021";
       break;
   }
-  writer->WriteString(1, variantString);
-  writer->SetVersion(variantString);
+  writer->WriteWideString(1, variantWideString);
+  writer->SetVersion(variantWideString);
 
-  (void)GetString("$ACADVER", &variantString);
-  (void)GetString("$ACADMAINTVER", &variantString);
+  if (!GetWideString(L"$DWGCODEPAGE", &variantWideString)) { variantWideString = L"ANSI_1252"; }
+  writer->WriteWideString(9, L"$DWGCODEPAGE");
+  writer->SetCodePage(variantWideString);
+  writer->WriteWideString(3, writer->GetCodePage());
 
-  if (!GetString("$DWGCODEPAGE", &variantString)) { variantString = "ANSI_1252"; }
-  writer->WriteString(9, "$DWGCODEPAGE");
-  writer->SetCodePage(variantString);
-  writer->WriteString(3, writer->GetCodePage());
-
-  writer->WriteString(9, "$HANDSEED");
+  writer->WriteWideString(9, L"$HANDSEED");
   std::uint64_t variantHandle;
-  if (GetHandle("$HANDSEED", &variantHandle)) {
-    std::ostringstream oss;
+  if (GetHandle(L"$HANDSEED", &variantHandle)) {
+    std::wostringstream oss;
     oss << std::uppercase << std::hex << variantHandle;
-    writer->WriteString(5, oss.str());
+    writer->WriteWideString(5, oss.str());
   } else {
-    writer->WriteString(5, "20000");
+    writer->WriteWideString(5, L"20000");
   }
 
-  if (GetInt16("$GRIDMODE", &variantInt16)) {
-    writer->WriteString(9, "$GRIDMODE");
+  if (GetInt16(L"$GRIDMODE", &variantInt16)) {
+    writer->WriteWideString(9, L"$GRIDMODE");
     writer->WriteInt16(70, variantInt16);
   }
 
-  if (GetInt16("$SNAPSTYLE", &variantInt16)) {
-    writer->WriteString(9, "$SNAPSTYLE");
+  if (GetInt16(L"$SNAPSTYLE", &variantInt16)) {
+    writer->WriteWideString(9, L"$SNAPSTYLE");
     writer->WriteInt16(70, variantInt16);
   }
 
-  if (GetGeometryBase("$GRIDUNIT", &variantGeometryBase)) {
-    writer->WriteString(9, "$GRIDUNIT");
+  if (GetGeometryBase(L"$GRIDUNIT", &variantGeometryBase)) {
+    writer->WriteWideString(9, L"$GRIDUNIT");
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
   }
 
-  if (GetGeometryBase("$VIEWCTR", &variantGeometryBase)) {
-    writer->WriteString(9, "$VIEWCTR");
+  if (GetGeometryBase(L"$VIEWCTR", &variantGeometryBase)) {
+    writer->WriteWideString(9, L"$VIEWCTR");
     writer->WriteDouble(10, variantGeometryBase.x);
     writer->WriteDouble(20, variantGeometryBase.y);
   }
@@ -1256,73 +1229,72 @@ void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
   if (version >= EoDxf::Version::AC1021) { WriteAC1021Additions(writer); }
   if (version >= EoDxf::Version::AC1024) { WriteAC1024Additions(writer); }
 
-  if (version < EoDxf::Version::AC1015) {  // so only write them if the version is AC1014 or earlier
-    writer->WriteString(9, "$DRAGMODE");
-    writer->WriteInt16(70, GetInt16("$DRAGMODE", &variantInt16) ? variantInt16 : 2);
+  if (version < EoDxf::Version::AC1015) {
+    writer->WriteWideString(9, L"$DRAGMODE");
+    writer->WriteInt16(70, GetInt16(L"$DRAGMODE", &variantInt16) ? variantInt16 : 2);
 
-    writer->WriteString(9, "$OSMODE");
-    writer->WriteInt16(70, GetInt16("$OSMODE", &variantInt16) ? variantInt16 : 0);
+    writer->WriteWideString(9, L"$OSMODE");
+    writer->WriteInt16(70, GetInt16(L"$OSMODE", &variantInt16) ? variantInt16 : 0);
 
-    writer->WriteString(9, "$COORDS");
-    writer->WriteInt16(70, GetInt16("$COORDS", &variantInt16) ? variantInt16 : 2);
+    writer->WriteWideString(9, L"$COORDS");
+    writer->WriteInt16(70, GetInt16(L"$COORDS", &variantInt16) ? variantInt16 : 2);
 
-    writer->WriteString(9, "$ATTDIA");
-    writer->WriteInt16(70, GetInt16("$ATTDIA", &variantInt16) ? variantInt16 : 1);
+    writer->WriteWideString(9, L"$ATTDIA");
+    writer->WriteInt16(70, GetInt16(L"$ATTDIA", &variantInt16) ? variantInt16 : 1);
 
-    writer->WriteString(9, "$ATTREQ");
-    writer->WriteInt16(70, GetInt16("$ATTREQ", &variantInt16) ? variantInt16 : 1);
+    writer->WriteWideString(9, L"$ATTREQ");
+    writer->WriteInt16(70, GetInt16(L"$ATTREQ", &variantInt16) ? variantInt16 : 1);
 
-    writer->WriteString(9, "$BLIPMODE");
-    writer->WriteInt16(70, GetInt16("$BLIPMODE", &variantInt16) ? variantInt16 : 0);
+    writer->WriteWideString(9, L"$BLIPMODE");
+    writer->WriteInt16(70, GetInt16(L"$BLIPMODE", &variantInt16) ? variantInt16 : 0);
 
-    // but not written in AC1004 (which is not supported)
-    writer->WriteString(9, "$HANDLING");
-    writer->WriteInt16(70, GetInt16("$HANDLING", &variantInt16) ? variantInt16 : 1);
+    writer->WriteWideString(9, L"$HANDLING");
+    writer->WriteInt16(70, GetInt16(L"$HANDLING", &variantInt16) ? variantInt16 : 1);
   }
 }
 
-void EoDxfHeader::AddDouble(const std::string& key, double value, int code) {
+void EoDxfHeader::AddDouble(std::wstring_view key, double value, int code) {
   auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
   m_currentVariant = newVariant.get();
-  m_variants[key] = std::move(newVariant);
+  m_variants[std::wstring{key}] = std::move(newVariant);
 }
 
-void EoDxfHeader::AddInt32(const std::string& key, std::int32_t value, int code) {
+void EoDxfHeader::AddInt32(std::wstring_view key, std::int32_t value, int code) {
   auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
   m_currentVariant = newVariant.get();
-  m_variants[key] = std::move(newVariant);
+  m_variants[std::wstring{key}] = std::move(newVariant);
 }
 
-void EoDxfHeader::AddWideString(const std::string& key, std::wstring value, int code) {
+void EoDxfHeader::AddWideString(std::wstring_view key, std::wstring value, int code) {
   auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, std::move(value));
   m_currentVariant = newVariant.get();
-  m_variants[key] = std::move(newVariant);
+  m_variants[std::wstring{key}] = std::move(newVariant);
 }
 
-void EoDxfHeader::AddString(const std::string& key, std::string value, int code) {
+void EoDxfHeader::AddString(std::wstring_view key, std::string value, int code) {
   AddWideString(key, Utf8ToWideText(value), code);
 }
 
-void EoDxfHeader::AddGeometryBase(const std::string& key, EoDxfGeometryBase3d value, int code) {
+void EoDxfHeader::AddGeometryBase(std::wstring_view key, EoDxfGeometryBase3d value, int code) {
   auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
   m_currentVariant = newVariant.get();
-  m_variants[key] = std::move(newVariant);
+  m_variants[std::wstring{key}] = std::move(newVariant);
 }
 
-void EoDxfHeader::AddInt16(const std::string& key, std::int16_t value, int code) {
+void EoDxfHeader::AddInt16(std::wstring_view key, std::int16_t value, int code) {
   auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
   m_currentVariant = newVariant.get();
-  m_variants[key] = std::move(newVariant);
+  m_variants[std::wstring{key}] = std::move(newVariant);
 }
 
-void EoDxfHeader::AddHandle(const std::string& key, std::uint64_t value, int code) {
+void EoDxfHeader::AddHandle(std::wstring_view key, std::uint64_t value, int code) {
   auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
   m_currentVariant = newVariant.get();
-  m_variants[key] = std::move(newVariant);
+  m_variants[std::wstring{key}] = std::move(newVariant);
 }
 
-bool EoDxfHeader::GetBool(const std::string& key, bool* variantBool) {
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
+bool EoDxfHeader::GetBool(std::wstring_view key, bool* variantBool) {
+  if (auto it = m_variants.find(std::wstring{key}); it != m_variants.end()) {
     auto* variant = it->second.get();
     if (const auto* value = variant->GetIf<bool>()) {
       *variantBool = *value;
@@ -1334,8 +1306,8 @@ bool EoDxfHeader::GetBool(const std::string& key, bool* variantBool) {
   return false;
 }
 
-bool EoDxfHeader::GetDouble(const std::string& key, double* variantDouble) {
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
+bool EoDxfHeader::GetDouble(std::wstring_view key, double* variantDouble) {
+  if (auto it = m_variants.find(std::wstring{key}); it != m_variants.end()) {
     auto* variant = it->second.get();
     if (const auto* value = variant->GetIf<double>()) {
       *variantDouble = *value;
@@ -1347,8 +1319,8 @@ bool EoDxfHeader::GetDouble(const std::string& key, double* variantDouble) {
   return false;
 }
 
-bool EoDxfHeader::GetInt16(const std::string& key, std::int16_t* variantInt16) {
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
+bool EoDxfHeader::GetInt16(std::wstring_view key, std::int16_t* variantInt16) {
+  if (auto it = m_variants.find(std::wstring{key}); it != m_variants.end()) {
     auto* variant = it->second.get();
     if (const auto* value = variant->GetIf<std::int16_t>()) {
       *variantInt16 = *value;
@@ -1360,8 +1332,8 @@ bool EoDxfHeader::GetInt16(const std::string& key, std::int16_t* variantInt16) {
   return false;
 }
 
-bool EoDxfHeader::GetInt32(const std::string& key, std::int32_t* variantInteger) {
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
+bool EoDxfHeader::GetInt32(std::wstring_view key, std::int32_t* variantInteger) {
+  if (auto it = m_variants.find(std::wstring{key}); it != m_variants.end()) {
     auto* variant = it->second.get();
     if (const auto* value = variant->GetIf<std::int32_t>()) {
       *variantInteger = *value;
@@ -1388,37 +1360,11 @@ bool EoDxfHeader::GetInt32(const std::string& key, std::int32_t* variantInteger)
   return false;
 }
 
-bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) {
-  std::wstring variantWideString;
-  if (GetWideString(key, &variantWideString)) {
-    *variantString = WideToUtf8Text(variantWideString);
-    return true;
-  }
-
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
-    auto* variant = it->second.get();
-    if (const auto* value = variant->GetIf<std::string>()) {
-      *variantString = *value;
-      if (m_currentVariant == variant) { m_currentVariant = nullptr; }
-      m_variants.erase(it);
-      return true;
-    }
-  }
-  // Non-String variants deliberately left in the map
-  return false;
-}
-
-bool EoDxfHeader::GetWideString(const std::string& key, std::wstring* variantString) {
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
+bool EoDxfHeader::GetWideString(std::wstring_view key, std::wstring* variantWideString) {
+  if (auto it = m_variants.find(std::wstring{key}); it != m_variants.end()) {
     auto* variant = it->second.get();
     if (const auto* value = variant->GetIf<std::wstring>()) {
-      *variantString = *value;
-      if (m_currentVariant == variant) { m_currentVariant = nullptr; }
-      m_variants.erase(it);
-      return true;
-    }
-    if (const auto* value = variant->GetIf<std::string>()) {
-      *variantString = Utf8ToWideText(*value);
+      *variantWideString = *value;
       if (m_currentVariant == variant) { m_currentVariant = nullptr; }
       m_variants.erase(it);
       return true;
@@ -1428,7 +1374,7 @@ bool EoDxfHeader::GetWideString(const std::string& key, std::wstring* variantStr
 }
 
 void EoDxfHeader::WriteStoredWideString(
-    EoDxfWriter* writer, const char* key, const int code, const std::wstring_view defaultValue) {
+    EoDxfWriter* writer, std::wstring_view key, const int code, const std::wstring_view defaultValue) {
   std::wstring variantWideString;
   if (GetWideString(key, &variantWideString)) {
     writer->WriteWideString(code, variantWideString);
@@ -1437,8 +1383,8 @@ void EoDxfHeader::WriteStoredWideString(
   }
 }
 
-bool EoDxfHeader::GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* variantGeometryBase) {
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
+bool EoDxfHeader::GetGeometryBase(std::wstring_view key, EoDxfGeometryBase3d* variantGeometryBase) {
+  if (auto it = m_variants.find(std::wstring{key}); it != m_variants.end()) {
     auto* variant = it->second.get();
     if (const auto* value = variant->GetIf<EoDxfGeometryBase3d>()) {
       *variantGeometryBase = *value;
@@ -1451,8 +1397,8 @@ bool EoDxfHeader::GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* v
   return false;
 }
 
-bool EoDxfHeader::GetHandle(const std::string& key, std::uint64_t* varHandle) {
-  if (auto it = m_variants.find(key); it != m_variants.end()) {
+bool EoDxfHeader::GetHandle(std::wstring_view key, std::uint64_t* varHandle) {
+  if (auto it = m_variants.find(std::wstring{key}); it != m_variants.end()) {
     auto* variant = it->second.get();
     if (const auto* value = variant->GetIf<std::uint64_t>()) {
       *varHandle = *value;

@@ -4,6 +4,7 @@
 #include <Windows.h>
 
 #include <cctype>
+#include <cwctype>
 #include <memory>
 #include <string_view>
 
@@ -143,14 +144,13 @@ constexpr int cp1252TableLength{128};
   return utf16Text;
 }
 
-[[nodiscard]] std::string NormalizeToken(const std::string_view value) {
-  std::string normalizedValue;
+[[nodiscard]] std::wstring NormalizeTokenImpl(const std::wstring_view value) {
+  std::wstring normalizedValue;
   normalizedValue.reserve(value.size());
 
   for (const auto character : value) {
-    const auto unsignedCharacter = static_cast<unsigned char>(character);
-    if (std::isalnum(unsignedCharacter) != 0) {
-      normalizedValue.push_back(static_cast<char>(std::toupper(unsignedCharacter)));
+    if (std::iswalnum(character) != 0) {
+      normalizedValue.push_back(static_cast<wchar_t>(std::towupper(character)));
     }
   }
 
@@ -160,8 +160,8 @@ constexpr int cp1252TableLength{128};
 }  // namespace
 
 EoTcTextCodec::EoTcTextCodec()
-    : m_codePage{"ANSI_1252"},
-      m_converter{CreateConverter("ANSI_1252")},
+    : m_codePage{L"ANSI_1252"},
+      m_converter{CreateConverter(L"ANSI_1252")},
       m_version{static_cast<int>(EoDxf::Version::UNKNOWN)} {}
 
 EoTcTextCodec::~EoTcTextCodec() = default;
@@ -182,51 +182,70 @@ EoTcTextCodec::EoTcTextCodec(EoTcTextCodec&& other) noexcept = default;
 
 EoTcTextCodec& EoTcTextCodec::operator=(EoTcTextCodec&& other) noexcept = default;
 
-std::string EoTcTextCodec::FromWide(std::wstring_view text) const {
-  if (m_converter) { return m_converter->FromWide(text); }
+std::string EoTcTextCodec::EncodeText(std::wstring_view text) const {
+  if (m_converter) { return m_converter->EncodeText(text); }
   return {};
 }
 
-std::wstring EoTcTextCodec::ToWide(std::string_view text) const {
-  if (m_converter) { return m_converter->ToWide(text); }
+std::wstring EoTcTextCodec::DecodeText(std::string_view encodedText) const {
+  if (m_converter) { return m_converter->DecodeText(encodedText); }
   return {};
 }
 
-std::unique_ptr<EoTcConverter> EoTcTextCodec::CreateConverter(const std::string_view normalizedCodePage) {
-  if (normalizedCodePage == "UTF-16") { return std::make_unique<EoTcConvertUtf16>(); }
-  if (normalizedCodePage == "UTF-8") { return std::make_unique<EoTcConvertUtf8>(); }
+std::unique_ptr<EoTcConverter> EoTcTextCodec::CreateConverter(std::wstring_view normalizedCodePage) {
+  if (normalizedCodePage == L"UTF-16") { return std::make_unique<EoTcConvertUtf16>(); }
+  if (normalizedCodePage == L"UTF-8") { return std::make_unique<EoTcConvertUtf8>(); }
   return std::make_unique<EoTcConvertTable>(EoTcTable1252, cp1252TableLength);
 }
 
-std::string EoTcTextCodec::FromUtf8(std::string s) {
-  return FromWide(Utf8ToWide(s));
+std::wstring EoTcTextCodec::GetVersion() const {
+  switch (m_version) {
+    case EoDxf::Version::AC1006:
+      return L"AC1006";
+    case EoDxf::Version::AC1009:
+      return L"AC1009";
+    case EoDxf::Version::AC1012:
+      return L"AC1012";
+    case EoDxf::Version::AC1014:
+      return L"AC1014";
+    case EoDxf::Version::AC1015:
+      return L"AC1015";
+    case EoDxf::Version::AC1018:
+      return L"AC1018";
+    case EoDxf::Version::AC1021:
+      return L"AC1021";
+    case EoDxf::Version::AC1024:
+      return L"AC1024";
+    case EoDxf::Version::AC1027:
+      return L"AC1027";
+    case EoDxf::Version::AC1032:
+      return L"AC1032";
+    default:
+      return {};
+  }
 }
 
-std::string EoTcTextCodec::ToUtf8(std::string s) const {
-  return WideToUtf8(ToWide(s));
-}
-
-void EoTcTextCodec::SetVersion(const std::string& version) {
+void EoTcTextCodec::SetVersion(const std::wstring& version) {
   const auto normalizedVersion = NormalizeToken(version);
-  if (normalizedVersion == "AC1006") {
+  if (normalizedVersion == L"AC1006") {
     m_version = EoDxf::Version::AC1006;
-  } else if (normalizedVersion == "AC1009") {
+  } else if (normalizedVersion == L"AC1009") {
     m_version = EoDxf::Version::AC1009;
-  } else if (normalizedVersion == "AC1012") {
+  } else if (normalizedVersion == L"AC1012") {
     m_version = EoDxf::Version::AC1012;
-  } else if (normalizedVersion == "AC1014") {
+  } else if (normalizedVersion == L"AC1014") {
     m_version = EoDxf::Version::AC1014;
-  } else if (normalizedVersion == "AC1015") {
+  } else if (normalizedVersion == L"AC1015") {
     m_version = EoDxf::Version::AC1015;
-  } else if (normalizedVersion == "AC1018") {
+  } else if (normalizedVersion == L"AC1018") {
     m_version = EoDxf::Version::AC1018;
-  } else if (normalizedVersion == "AC1021") {
+  } else if (normalizedVersion == L"AC1021") {
     m_version = EoDxf::Version::AC1021;
-  } else if (normalizedVersion == "AC1024") {
+  } else if (normalizedVersion == L"AC1024") {
     m_version = EoDxf::Version::AC1024;
-  } else if (normalizedVersion == "AC1027") {
+  } else if (normalizedVersion == L"AC1027") {
     m_version = EoDxf::Version::AC1027;
-  } else if (normalizedVersion == "AC1032") {
+  } else if (normalizedVersion == L"AC1032") {
     m_version = EoDxf::Version::AC1032;
   } else if (normalizedVersion.empty()) {
     m_version = EoDxf::Version::UNKNOWN;
@@ -237,66 +256,56 @@ void EoTcTextCodec::SetVersion(const std::string& version) {
 
 void EoTcTextCodec::SetVersion(EoDxf::Version version) noexcept { m_version = version; }
 
-std::string EoTcTextCodec::NormalizeCodePage(const std::string_view codePage) {
-  const auto normalizedCodePage = NormalizeToken(codePage);
-  if (normalizedCodePage.empty()) { return "ANSI_1252"; }
+std::wstring EoTcTextCodec::NormalizeToken(std::wstring_view value) { return NormalizeTokenImpl(value); }
 
-  if (normalizedCodePage == "UTF8") { return "UTF-8"; }
-  if (normalizedCodePage == "UTF16" || normalizedCodePage == "UTF16LE") { return "UTF-16"; }
-  if (normalizedCodePage == "ANSI1252" || normalizedCodePage == "CP1252" || normalizedCodePage == "WINDOWS1252" ||
-      normalizedCodePage == "1252") {
-    return "ANSI_1252";
+std::wstring EoTcTextCodec::NormalizeCodePage(std::wstring_view codePage) {
+  const auto normalizedCodePage = NormalizeToken(codePage);
+  if (normalizedCodePage.empty()) { return L"ANSI_1252"; }
+
+  if (normalizedCodePage == L"UTF8") { return L"UTF-8"; }
+  if (normalizedCodePage == L"UTF16" || normalizedCodePage == L"UTF16LE") { return L"UTF-16"; }
+  if (normalizedCodePage == L"ANSI1252" || normalizedCodePage == L"CP1252" || normalizedCodePage == L"WINDOWS1252" ||
+      normalizedCodePage == L"1252") {
+    return L"ANSI_1252";
   }
 
-  return "ANSI_1252";
+  return L"ANSI_1252";
 }
 
-void EoTcTextCodec::SetCodePage(const std::string& codePage) {
-  const std::string normalizedCodePage = NormalizeCodePage(codePage);
+void EoTcTextCodec::SetCodePage(const std::wstring& codePage) {
+  const std::wstring normalizedCodePage = NormalizeCodePage(codePage);
   m_converter = CreateConverter(normalizedCodePage);
   m_codePage = normalizedCodePage;
 }
 
-std::string EoTcConverter::FromWide(std::wstring_view text) const {
-  return std::string(text.begin(), text.end());
-}
-
-std::wstring EoTcConverter::ToWide(std::string_view text) const {
-  return std::wstring(text.begin(), text.end());
-}
-
-std::string EoTcConvertUtf8::FromWide(std::wstring_view text) const {
+std::string EoTcConvertUtf8::EncodeText(std::wstring_view text) const {
   return WideToUtf8(text);
 }
 
-std::wstring EoTcConvertUtf8::ToWide(std::string_view text) const {
-  return Utf8ToWide(text);
+std::wstring EoTcConvertUtf8::DecodeText(std::string_view encodedText) const {
+  return Utf8ToWide(encodedText);
 }
 
-std::string EoTcConvertUtf16::FromWide(std::wstring_view text) const {
+std::string EoTcConvertUtf16::EncodeText(std::wstring_view text) const {
   return EncodeUtf16(text);
 }
 
-std::wstring EoTcConvertUtf16::ToWide(std::string_view text) const {
-  return DecodeUtf16(text);
+std::wstring EoTcConvertUtf16::DecodeText(std::string_view encodedText) const {
+  return DecodeUtf16(encodedText);
 }
 
-std::string EoTcConvertUtf16::FromUtf8(std::string* s) { return FromWide(Utf8ToWide(*s)); }
-
-std::string EoTcConvertUtf16::ToUtf8(std::string* s) { return WideToUtf8(ToWide(*s)); }
-
-std::string EoTcConvertTable::FromWide(std::wstring_view text) const {
+std::string EoTcConvertTable::EncodeText(std::wstring_view text) const {
   return EncodeAnsiTable(text, m_table, m_codePageLength);
 }
 
-std::wstring EoTcConvertTable::ToWide(std::string_view text) const {
-  return DecodeAnsiTable(text, m_table, m_codePageLength);
+std::wstring EoTcConvertTable::DecodeText(std::string_view encodedText) const {
+  return DecodeAnsiTable(encodedText, m_table, m_codePageLength);
 }
 
-std::string EoTcConvertTable::FromUtf8(std::string* s) {
-  return FromWide(Utf8ToWide(*s));
+std::string EoTcConvertDBCSTable::EncodeText(std::wstring_view text) const {
+  return EncodeAnsiTable(text, m_table, m_codePageLength);
 }
 
-std::string EoTcConvertTable::ToUtf8(std::string* s) {
-  return WideToUtf8(ToWide(*s));
+std::wstring EoTcConvertDBCSTable::DecodeText(std::string_view encodedText) const {
+  return DecodeAnsiTable(encodedText, m_table, m_codePageLength);
 }

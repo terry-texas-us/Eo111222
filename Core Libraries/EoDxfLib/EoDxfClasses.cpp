@@ -7,13 +7,13 @@
 void EoDxfClass::ParseCode(int code, EoDxfReader* reader) noexcept {
   switch (code) {
     case 1:
-      m_classDxfRecordName = reader->GetUtf8String();
+      m_classDxfRecordName = reader->GetWideString();
       break;
     case 2:
-      m_cppClassName = reader->GetUtf8String();
+      m_cppClassName = reader->GetWideString();
       break;
     case 3:
-      m_applicationName = reader->GetUtf8String();
+      m_applicationName = reader->GetWideString();
       break;
     case 90:
       m_proxyCapabilitiesFlag = reader->GetInt32();
@@ -44,10 +44,10 @@ void EoDxfClass::clear() noexcept {
 
 void EoDxfClass::write(EoDxfWriter* writer, EoDxf::Version version) const noexcept {
   if (version < EoDxf::Version::AC1012) { return; }
-  writer->WriteString(0, "CLASS");
-  writer->WriteString(1, m_classDxfRecordName);
-  writer->WriteString(2, m_cppClassName);
-  writer->WriteString(3, m_applicationName);
+  writer->WriteWideString(0, L"CLASS");
+  writer->WriteWideString(1, m_classDxfRecordName);
+  writer->WriteWideString(2, m_cppClassName);
+  writer->WriteWideString(3, m_applicationName);
   writer->WriteInt32(90, m_proxyCapabilitiesFlag);
   if (version >= EoDxf::Version::AC1018) { writer->WriteInt32(91, m_instanceCount); }
   writer->WriteInt16(280, m_wasAProxyFlag);

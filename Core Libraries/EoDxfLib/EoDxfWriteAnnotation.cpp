@@ -8,10 +8,10 @@
 #include "EoDxfWriter.h"
 
 bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
-  WriteCodeString(0, "DIMENSION");
+  WriteCodeString(0, L"DIMENSION");
   WriteEntity(dimension);
-  WriteCodeString(100, "AcDbDimension");
-  if (!dimension->getName().empty()) { WriteCodeString(2, dimension->getName()); }
+  WriteCodeString(100, L"AcDbDimension");
+  if (!dimension->getName().empty()) { WriteCodeWideString(2, dimension->getName()); }
   WriteCodeDouble(10, dimension->getDefPoint().x);
   WriteCodeDouble(20, dimension->getDefPoint().y);
   WriteCodeDouble(30, dimension->getDefPoint().z);
@@ -20,11 +20,11 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
   WriteCodeDouble(31, dimension->getTextPoint().z);
   if (!(dimension->m_dimensionType & 32)) { dimension->m_dimensionType = dimension->m_dimensionType + 32; }
   WriteCodeInt16(70, dimension->m_dimensionType);
-  if (!(dimension->getText().empty())) { WriteCodeUtf8String(1, dimension->getText()); }
+  if (!(dimension->getText().empty())) { WriteCodeWideString(1, dimension->getText()); }
   WriteCodeInt16(71, dimension->GetAttachmentPoint());
   if (dimension->getTextLineStyle() != 1) { WriteCodeInt16(72, dimension->getTextLineStyle()); }
   if (dimension->getTextLineFactor() != 1) { WriteCodeDouble(41, dimension->getTextLineFactor()); }
-  WriteCodeUtf8String(3, dimension->getStyle());
+  WriteCodeWideString(3, dimension->getStyle());
   if (dimension->getTextLineFactor() != 0) { WriteCodeDouble(53, dimension->getDir()); }
   WriteCodeDouble(210, dimension->getExtrusion().x);
   WriteCodeDouble(220, dimension->getExtrusion().y);
@@ -34,7 +34,7 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
     case EoDxf::DIMALIGNED:
     case EoDxf::DIMLINEAR: {
       auto* alignedDimension = dynamic_cast<EoDxfAlignedDimension*>(dimension);
-      WriteCodeString(100, "AcDbAlignedDimension");
+      WriteCodeString(100, L"AcDbAlignedDimension");
       auto crd = alignedDimension->getClonepoint();
       if (crd.x != 0 || crd.y != 0 || crd.z != 0) {
         WriteCodeDouble(12, crd.x);
@@ -51,13 +51,13 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
         auto* dl = dynamic_cast<EoDxfDimLinear*>(dimension);
         if (dl->getAngle() != 0) { WriteCodeDouble(50, dl->getAngle()); }
         if (dl->getOblique() != 0) { WriteCodeDouble(52, dl->getOblique()); }
-        WriteCodeString(100, "AcDbRotatedDimension");
+        WriteCodeString(100, L"AcDbRotatedDimension");
       }
       break;
     }
     case EoDxf::DIMRADIAL: {
       auto* radialDimension = dynamic_cast<EoDxfRadialDimension*>(dimension);
-      WriteCodeString(100, "AcDbRadialDimension");
+      WriteCodeString(100, L"AcDbRadialDimension");
       WriteCodeDouble(15, radialDimension->getDiameterPoint().x);
       WriteCodeDouble(25, radialDimension->getDiameterPoint().y);
       WriteCodeDouble(35, radialDimension->getDiameterPoint().z);
@@ -66,7 +66,7 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
     }
     case EoDxf::DIMDIAMETRIC: {
       auto* diametricDimension = dynamic_cast<EoDxfDiametricDimension*>(dimension);
-      WriteCodeString(100, "AcDbDiametricDimension");
+      WriteCodeString(100, L"AcDbDiametricDimension");
       WriteCodeDouble(15, diametricDimension->getDiameter1Point().x);
       WriteCodeDouble(25, diametricDimension->getDiameter1Point().y);
       WriteCodeDouble(35, diametricDimension->getDiameter1Point().z);
@@ -75,7 +75,7 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
     }
     case EoDxf::DIMANGULAR: {
       auto* _2LineAngularDimension = dynamic_cast<EoDxf2LineAngularDimension*>(dimension);
-      WriteCodeString(100, "AcDb2LineAngularDimension");
+      WriteCodeString(100, L"AcDb2LineAngularDimension");
       WriteCodeDouble(13, _2LineAngularDimension->getFirstLine1().x);
       WriteCodeDouble(23, _2LineAngularDimension->getFirstLine1().y);
       WriteCodeDouble(33, _2LineAngularDimension->getFirstLine1().z);
@@ -92,7 +92,7 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
     }
     case EoDxf::DIMANGULAR3P: {
       auto* _3PointAngularDimension = dynamic_cast<EoDxf3PointAngularDimension*>(dimension);
-      WriteCodeString(100, "AcDb3PointAngularDimension");
+      WriteCodeString(100, L"AcDb3PointAngularDimension");
       WriteCodeDouble(13, _3PointAngularDimension->getFirstLine().x);
       WriteCodeDouble(23, _3PointAngularDimension->getFirstLine().y);
       WriteCodeDouble(33, _3PointAngularDimension->getFirstLine().z);
@@ -106,7 +106,7 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
     }
     case EoDxf::DIMORDINATE: {
       auto* ordinateDimension = dynamic_cast<EoDxfOrdinateDimension*>(dimension);
-      WriteCodeString(100, "AcDbOrdinateDimension");
+      WriteCodeString(100, L"AcDbOrdinateDimension");
       WriteCodeDouble(13, ordinateDimension->getFirstLine().x);
       WriteCodeDouble(23, ordinateDimension->getFirstLine().y);
       WriteCodeDouble(33, ordinateDimension->getFirstLine().z);
@@ -123,10 +123,10 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
 }
 
 bool EoDxfWrite::WriteLeader(EoDxfLeader* leader) {
-  WriteCodeString(0, "LEADER");
+  WriteCodeString(0, L"LEADER");
   WriteEntity(leader);
-  WriteCodeString(100, "AcDbLeader");
-  WriteCodeUtf8String(3, leader->m_dimensionStyleName);
+  WriteCodeString(100, L"AcDbLeader");
+  WriteCodeWideString(3, leader->m_dimensionStyleName);
 
   if (leader->m_arrowheadFlag != 1) { WriteCodeInt16(71, leader->m_arrowheadFlag); }
   if (leader->m_leaderPathType != 0) { WriteCodeInt16(72, leader->m_leaderPathType); }
@@ -178,9 +178,9 @@ bool EoDxfWrite::WriteLeader(EoDxfLeader* leader) {
 }
 
 bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
-  WriteCodeString(0, "MULTILEADER");
+  WriteCodeString(0, L"MULTILEADER");
   WriteEntity(mLeader);
-  WriteCodeString(100, "AcDbMLeader");
+  WriteCodeString(100, L"AcDbMLeader");
 
   // --- Top-level properties ---
   WriteCodeInt16(170, mLeader->m_leaderType);
@@ -228,7 +228,7 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
 
   // --- CONTEXT_DATA ---
   const auto& contextData = mLeader->m_contextData;
-  WriteCodeString(300, "CONTEXT_DATA{");
+  WriteCodeString(300, L"CONTEXT_DATA{");
   WriteCodeDouble(40, contextData.m_contentScale);
   WriteCodeDouble(10, contextData.m_contentBasePoint.x);
   WriteCodeDouble(20, contextData.m_contentBasePoint.y);
@@ -244,7 +244,7 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
   WriteCodeBool(296, contextData.m_hasContent);
   // --- Leader branches ---
   for (const auto& branch : contextData.m_leaders) {
-    WriteCodeString(302, "LEADER{");
+    WriteCodeString(302, L"LEADER{");
     WriteCodeBool(290, branch.m_hasSetLastLeaderLinePoint);
     WriteCodeBool(291, branch.m_hasSetDoglegVector);
     WriteCodeDouble(10, branch.m_lastLeaderLinePoint.x);
@@ -258,7 +258,7 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
 
     // --- Leader lines ---
     for (const auto& line : branch.m_leaderLines) {
-      WriteCodeString(304, "LEADER_LINE{");
+      WriteCodeString(304, L"LEADER_LINE{");
       for (const auto& vertex : line.m_vertices) {
         WriteCodeDouble(10, vertex.x);
         WriteCodeDouble(20, vertex.y);
@@ -273,14 +273,14 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
       if (line.m_arrowheadHandle != EoDxf::NoHandle) {
         WriteCodeString(341, ToHexString(line.m_arrowheadHandle));
       }
-      WriteCodeString(305, "}");
+      WriteCodeString(305, L"}");
     }
-    WriteCodeString(303, "}");
+    WriteCodeString(303, L"}");
   }
 
   // --- MText content ---
   if (contextData.m_hasMText) {
-    WriteCodeString(304, "{");
+    WriteCodeString(304, L"{");
     WriteCodeDouble(12, contextData.m_textLocation.x);
     WriteCodeDouble(22, contextData.m_textLocation.y);
     WriteCodeDouble(32, contextData.m_textLocation.z);
@@ -301,15 +301,14 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
       WriteCodeString(340, ToHexString(contextData.m_textStyleHandle));
     }
     if (!contextData.m_textString.empty()) {
-      auto text = m_writer->FromUtf8String(contextData.m_textString);
       size_t chunkOffset{};
-      for (; (text.size() - chunkOffset) > EoDxf::StringGroupCodeMaxChunk;
+      for (; (contextData.m_textString.size() - chunkOffset) > EoDxf::StringGroupCodeMaxChunk;
           chunkOffset += EoDxf::StringGroupCodeMaxChunk) {
-        WriteCodeString(3, text.substr(chunkOffset, EoDxf::StringGroupCodeMaxChunk));
+        WriteCodeWideString(3, contextData.m_textString.substr(chunkOffset, EoDxf::StringGroupCodeMaxChunk));
       }
-      WriteCodeString(1, text.substr(chunkOffset));
+      WriteCodeWideString(1, contextData.m_textString.substr(chunkOffset));
     }
-    WriteCodeString(301, "}");
+    WriteCodeString(301, L"}");
   }
 
   // --- Block content (non-MText) ---
@@ -325,14 +324,14 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
     WriteCodeInt32(93, contextData.m_blockContentColor);
   }
 
-  WriteCodeString(301, "}");  // close CONTEXT_DATA
+  WriteCodeString(301, L"}");  // close CONTEXT_DATA
   return m_writeOk;
 }
 
 bool EoDxfWrite::WriteMText(EoDxfMText* mText) {
-  WriteCodeString(0, "MTEXT");
+  WriteCodeString(0, L"MTEXT");
   WriteEntity(mText);
-  WriteCodeString(100, "AcDbMText");
+  WriteCodeString(100, L"AcDbMText");
   WriteCodeDouble(10, mText->m_firstPoint.x);
   WriteCodeDouble(20, mText->m_firstPoint.y);
   WriteCodeDouble(30, mText->m_firstPoint.z);
@@ -340,14 +339,14 @@ bool EoDxfWrite::WriteMText(EoDxfMText* mText) {
   WriteCodeDouble(41, mText->m_scaleFactorWidth);
   WriteCodeInt16(71, mText->m_textGenerationFlags);
   WriteCodeInt16(72, mText->m_horizontalAlignment);
-  std::string text = m_writer->FromUtf8String(mText->m_string);
 
   size_t chunkOffset{};
-  for (; (text.size() - chunkOffset) > EoDxf::StringGroupCodeMaxChunk; chunkOffset += EoDxf::StringGroupCodeMaxChunk) {
-    WriteCodeString(3, text.substr(chunkOffset, EoDxf::StringGroupCodeMaxChunk));
+  for (; (mText->m_string.size() - chunkOffset) > EoDxf::StringGroupCodeMaxChunk;
+      chunkOffset += EoDxf::StringGroupCodeMaxChunk) {
+    WriteCodeWideString(3, mText->m_string.substr(chunkOffset, EoDxf::StringGroupCodeMaxChunk));
   }
-  WriteCodeString(1, text.substr(chunkOffset));
-  WriteCodeString(7, mText->m_textStyleName);
+  WriteCodeWideString(1, mText->m_string.substr(chunkOffset));
+  WriteCodeWideString(7, mText->m_textStyleName);
   WriteCodeDouble(210, mText->m_extrusionDirection.x);
   WriteCodeDouble(220, mText->m_extrusionDirection.y);
   WriteCodeDouble(230, mText->m_extrusionDirection.z);
@@ -359,20 +358,20 @@ bool EoDxfWrite::WriteMText(EoDxfMText* mText) {
 }
 
 bool EoDxfWrite::WriteText(EoDxfText* text) {
-  WriteCodeString(0, "TEXT");
+  WriteCodeString(0, L"TEXT");
   WriteEntity(text);
-  WriteCodeString(100, "AcDbText");
+  WriteCodeString(100, L"AcDbText");
 
   WriteCodeDouble(10, text->m_firstPoint.x);
   WriteCodeDouble(20, text->m_firstPoint.y);
   WriteCodeDouble(30, text->m_firstPoint.z);
   WriteCodeDouble(40, text->m_textHeight);
-  WriteCodeUtf8String(1, text->m_string);
+  WriteCodeWideString(1, text->m_string);
   WriteCodeDouble(50, text->m_textRotation);
   WriteCodeDouble(41, text->m_scaleFactorWidth);
   WriteCodeDouble(51, text->m_obliqueAngle);
 
-  WriteCodeUtf8String(7, text->m_textStyleName);
+  WriteCodeWideString(7, text->m_textStyleName);
 
   WriteCodeInt16(71, text->m_textGenerationFlags);
   if (text->m_horizontalAlignment != EoDxfText::HAlign::Left) { WriteCodeInt16(72, text->m_horizontalAlignment); }
@@ -385,7 +384,7 @@ bool EoDxfWrite::WriteText(EoDxfText* text) {
   WriteCodeDouble(210, text->m_extrusionDirection.x);
   WriteCodeDouble(220, text->m_extrusionDirection.y);
   WriteCodeDouble(230, text->m_extrusionDirection.z);
-  WriteCodeString(100, "AcDbText");
+  WriteCodeString(100, L"AcDbText");
   if (text->m_verticalAlignment != EoDxfText::VAlign::BaseLine) { WriteCodeInt16(73, text->m_verticalAlignment); }
   return m_writeOk;
 }

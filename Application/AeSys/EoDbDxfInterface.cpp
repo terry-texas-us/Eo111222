@@ -31,14 +31,14 @@
 #include "EoGeVector3d.h"
 
 void EoDbDxfInterface::SetHeaderSectionVariable(
-    const EoDxfHeader* header, const std::string& keyToFind, EoDbHeaderSection& headerSection) {
+    const EoDxfHeader* header, std::wstring_view keyToFind, EoDbHeaderSection& headerSection) {
   HeaderVariable value;
-  auto it = header->m_variants.find(keyToFind);
+  auto it = header->m_variants.find(std::wstring{keyToFind});
   if (it != header->m_variants.end() && it->second != nullptr) {
-    std::wstring key = Eo::MultiByteToWString(it->first.c_str());
+    const std::wstring& key = it->first;
     auto& second = *(it->second);
-    if (const auto* stringValue = second.GetIf<std::string>()) {
-      value = Eo::MultiByteToWString(stringValue->c_str());
+    if (const auto* stringValue = second.GetIf<std::wstring>()) {
+      value = *stringValue;
     } else if (const auto* int16Value = second.GetIf<std::int16_t>()) {
       value = static_cast<int>(*int16Value);
     } else if (const auto* integerValue = second.GetIf<std::int32_t>()) {
@@ -65,15 +65,14 @@ void EoDbDxfInterface::SetHeaderSectionVariable(
 void EoDbDxfInterface::ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Converting Header: %i variables\n", header->m_variants.size());
 
-  std::vector<std::string> keys{"$ACADVER", "$CLAYER", "$PDMODE", "$PDSIZE"};
+  std::vector<std::wstring> keys{L"$ACADVER", L"$CLAYER", L"$PDMODE", L"$PDSIZE"};
 
   EoDbHeaderSection& headerSection = document->HeaderSection();
   for (const auto& key : keys) { SetHeaderSectionVariable(header, key, headerSection); }
 }
 
 void EoDbDxfInterface::ConvertClassesSection(const EoDxfClass& class_, [[maybe_unused]] AeSysDoc* document) {
-  std::wstring recordName = Eo::MultiByteToWString(class_.m_classDxfRecordName.c_str());
-  ATLTRACE2(traceGeneral, 2, L"Class - Name: %s (unsupported in AeSys)\n", recordName.c_str());
+  ATLTRACE2(traceGeneral, 2, L"Class - Name: %s (unsupported in AeSys)\n", class_.m_classDxfRecordName.c_str());
 }
 
 void EoDbDxfInterface::ConvertAppIdTable(const EoDxfAppId& appId, [[maybe_unused]] AeSysDoc* document) {
@@ -246,7 +245,7 @@ void EoDbDxfInterface::ConvertVPortTable(const EoDxfVPort& viewport, [[maybe_unu
  * paper space entities are output, followed by model space entities. The flag distinguishing them is the group code 67.
  */
 EoDbBlock* EoDbDxfInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* document) {
-  m_blockName = Eo::MultiByteToWString(block.name.c_str());  // Block Name (group code 2)
+  m_blockName = block.name;  // Block Name (group code 2)
 
   // auto handle = block.handle;              // group code 5
   // auto parentHandle = block.parentHandle;  // Soft-pointer ID/handle to owner object (group code 330)
@@ -415,8 +414,7 @@ void EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, Ae
   ATLTRACE2(traceGeneral, 3, L"Insert entity conversion\n");
   auto insertPrimitive = new EoDbBlockReference();
   insertPrimitive->SetBaseProperties(&blockReference, document);
-  auto name = Eo::MultiByteToWString(blockReference.m_blockName.c_str());
-  insertPrimitive->SetName(CString(name.c_str()));
+  insertPrimitive->SetName(CString(blockReference.m_blockName.c_str()));
   insertPrimitive->SetInsertionPoint(blockReference.m_firstPoint);
   insertPrimitive->SetNormal(EoGeVector3d(blockReference.m_extrusionDirection.x, blockReference.m_extrusionDirection.y,
       blockReference.m_extrusionDirection.z));

@@ -24,15 +24,15 @@ class EoDxfHeader {
 
   ~EoDxfHeader() = default;
 
-  void AddDouble(const std::string& key, double value, int code);
-  void AddInt16(const std::string& key, std::int16_t value, int code);
-  void AddInt32(const std::string& key, std::int32_t value, int code);
-  void AddWideString(const std::string& key, std::wstring value, int code);
-  void AddString(const std::string& key, std::string value, int code);
-  void AddGeometryBase(const std::string& key, EoDxfGeometryBase3d value, int code);
-  void AddHandle(const std::string& key, std::uint64_t value, int code);
+  void AddDouble(std::wstring_view key, double value, int code);
+  void AddInt16(std::wstring_view key, std::int16_t value, int code);
+  void AddInt32(std::wstring_view key, std::int32_t value, int code);
+  void AddWideString(std::wstring_view key, std::wstring value, int code);
+  void AddString(std::wstring_view key, std::string value, int code);
+  void AddGeometryBase(std::wstring_view key, EoDxfGeometryBase3d value, int code);
+  void AddHandle(std::wstring_view key, std::uint64_t value, int code);
 
-  [[nodiscard]] std::string GetComments() const { return m_comments; }
+  [[nodiscard]] std::wstring GetComments() const { return m_comments; }
 
   /** @brief Writes the header variables stored in this EoDxfHeader instance to the provided dxfWriter object in the
    * format specified by the given DXF version. This method iterates over the header variables stored in the m_variants
@@ -44,7 +44,7 @@ class EoDxfHeader {
    * @param version The version of the DXF format to use for writing (e.g., AC1009, AC1015, etc.).
    */
   void Write(EoDxfWriter* writer, EoDxf::Version version);
-  void AddComment(const std::string& comment);
+  void AddComment(const std::wstring& comment);
 
  protected:
   /** @brief Parses a header variable from the given EoDxfReader object based on the provided group code.
@@ -59,7 +59,7 @@ class EoDxfHeader {
 
  private:
   void WriteBase(EoDxfWriter* writer);
-  void WriteStoredWideString(EoDxfWriter* writer, const char* key, int code, std::wstring_view defaultValue);
+  void WriteStoredWideString(EoDxfWriter* writer, std::wstring_view key, int code, std::wstring_view defaultValue);
 
   /** @brief Writes header variables that were added in AC1009 (R11/R12) but not present in AC1006 (R10).
    * Maximum legacy compatibility (still the safest target for 30-year-old viewers.
@@ -99,21 +99,20 @@ class EoDxfHeader {
    */
   void WriteAC1024Additions(EoDxfWriter* writer);
 
-  [[nodiscard]] bool GetBool(const std::string& key, bool* variantBool);
-  [[nodiscard]] bool GetDouble(const std::string& key, double* varDouble);
-  [[nodiscard]] bool GetInt16(const std::string& key, std::int16_t* varInt);
-  [[nodiscard]] bool GetInt32(const std::string& key, std::int32_t* varInt);
+  [[nodiscard]] bool GetBool(std::wstring_view key, bool* variantBool);
+  [[nodiscard]] bool GetDouble(std::wstring_view key, double* varDouble);
+  [[nodiscard]] bool GetInt16(std::wstring_view key, std::int16_t* varInt);
+  [[nodiscard]] bool GetInt32(std::wstring_view key, std::int32_t* varInt);
 
   /** @brief Retrieves a String variant from the map and removes it if found. If the variant's string pointer is null,
    * the output string is set to empty.
    * @param key The key to look up in the map.
-   * @param variantString Pointer to the output string.
+   * @param variantWideString Pointer to the output wide string.
    * @return True if the variant was found and removed, false otherwise.
    */
-  [[nodiscard]] bool GetWideString(const std::string& key, std::wstring* variantString);
-  [[nodiscard]] bool GetString(const std::string& key, std::string* variantString);
-  [[nodiscard]] bool GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* variantGeometryBase);
-  [[nodiscard]] bool GetHandle(const std::string& key, std::uint64_t* varHandle);
+  [[nodiscard]] bool GetWideString(std::wstring_view key, std::wstring* variantWideString);
+  [[nodiscard]] bool GetGeometryBase(std::wstring_view key, EoDxfGeometryBase3d* variantGeometryBase);
+  [[nodiscard]] bool GetHandle(std::wstring_view key, std::uint64_t* varHandle);
 
   /** @brief Clears all header variables stored in the m_variants map and resets the state of the
    * EoDxfHeader instance. unique_ptr elements are automatically destroyed when erased.
@@ -121,11 +120,11 @@ class EoDxfHeader {
   void ClearVariants();
 
  public:
-  std::map<std::string, std::unique_ptr<EoDxfGroupCodeValuesVariant>> m_variants;
+  std::map<std::wstring, std::unique_ptr<EoDxfGroupCodeValuesVariant>> m_variants;
 
  private:
-  std::string m_comments{};
-  std::string m_name{};
+  std::wstring m_comments{};
+  std::wstring m_name{};
   EoDxfGroupCodeValuesVariant* m_currentVariant{};
   EoDxf::Version m_version{};
 

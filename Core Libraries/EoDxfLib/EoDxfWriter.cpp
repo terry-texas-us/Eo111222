@@ -1,22 +1,19 @@
 #include <ostream>
 #include <string>
+#include <string_view>
 
 #include "EoDxfWriter.h"
 
 bool EoDxfWriter::WriteWideString(int code, std::wstring_view text) {
-  return WriteString(code, m_encoder.FromWide(text));
+  return WriteEncodedText(code, m_encoder.EncodeText(text));
 }
 
-bool EoDxfWriter::WriteUtf8String(int code, std::string text) {
-  return WriteString(code, m_encoder.FromUtf8(text));
-}
-
-bool EoDxfWriterBinary::WriteString(int code, std::string_view text) {
+bool EoDxfWriterBinary::WriteEncodedText(int code, std::string_view encodedText) {
   char bufcode[2]{};
   bufcode[0] = code & 0xFF;
   bufcode[1] = static_cast<char>(code >> 8);
   m_fileStream->write(bufcode, 2);
-  m_fileStream->write(text.data(), static_cast<std::streamsize>(text.size()));
+  m_fileStream->write(encodedText.data(), static_cast<std::streamsize>(encodedText.size()));
   const char terminator = '\0';
   m_fileStream->write(&terminator, 1);
 
@@ -93,11 +90,11 @@ bool EoDxfWriterBinary::WriteBool(int code, bool data) {
   return (m_fileStream->good());
 }
 
-bool EoDxfWriterAscii::WriteString(int code, std::string_view text) {
+bool EoDxfWriterAscii::WriteEncodedText(int code, std::string_view encodedText) {
   m_fileStream->width(3);
   *m_fileStream << std::right << code << std::endl;
   m_fileStream->width(0);
-  *m_fileStream << std::left << text << std::endl;
+  *m_fileStream << std::left << encodedText << std::endl;
   return (m_fileStream->good());
 }
 

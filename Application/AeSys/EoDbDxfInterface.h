@@ -62,7 +62,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   // Blocks
   void addBlock(const EoDxfBlock& block) override {
     m_inBlockDefinition = true;
-    m_blockName = Eo::MultiByteToWString(block.name.c_str());
+    m_blockName = block.name;
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addBlock <%s>\n", m_blockName.c_str());
     m_currentOpenBlockDefinition = ConvertBlock(block, m_document);
   }
@@ -257,7 +257,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   void writeVports() override {};
 
   void SetHeaderSectionVariable(
-      const EoDxfHeader* header, const std::string& keyToFind, EoDbHeaderSection& headerSection);
+      const EoDxfHeader* header, std::wstring_view keyToFind, EoDbHeaderSection& headerSection);
 
   void ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc* document);
   void ConvertClassesSection(const EoDxfClass& class_, AeSysDoc* document);

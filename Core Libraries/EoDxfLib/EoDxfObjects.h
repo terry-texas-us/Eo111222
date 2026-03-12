@@ -77,7 +77,7 @@ class EoDxfImageDefinition : public EoDxfObjectEntry {
   void Reset();
 
  public:
-  std::string m_fileNameOfImage;  // Group code 1
+  std::wstring m_fileNameOfImage;  // Group code 1
   int imgVersion;  // Group code 90, 0=R14 version
   double m_uImageSizeInPixels{};  // Group code 10
   double m_vImageSizeInPixels{};  // Group code 20
@@ -86,5 +86,5 @@ class EoDxfImageDefinition : public EoDxfObjectEntry {
   int m_imageIsLoadedFlag{};  // Group code 280, 0=unloaded, 1=loaded
   int m_resolutionUnits{};  // Group code 281, 0=no, 2=centimeters, 5=inch
 
-  std::map<std::string, std::string> reactors;
+  std::map<std::wstring, std::wstring> reactors;
 };

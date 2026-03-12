@@ -1,4 +1,5 @@
 #include <cassert>
+#include <filesystem>
 #include <fstream>
 #include <ios>
 #include <string>
@@ -13,12 +14,14 @@
 #include "EoDxfObjects.h"
 #include "EoDxfReader.h"
 
-EoDxfRead::EoDxfRead(const char* name) {
+EoDxfRead::EoDxfRead(std::wstring_view name) {
   m_fileName = name;
   m_reader = nullptr;
   m_applyExtrusion = false;
   m_ellipseParts = 128;  // parts number when convert ellipse to polyline
 }
+
+EoDxfRead::EoDxfRead(const char* name) : EoDxfRead(std::filesystem::path{name != nullptr ? name : ""}.wstring()) {}
 
 EoDxfRead::~EoDxfRead() {
   if (m_reader != nullptr) { delete m_reader; }
@@ -30,7 +33,7 @@ bool EoDxfRead::Read(EoDxfInterface* interface_, bool ext) {
   m_applyExtrusion = ext;
   std::ifstream filestr;
   if (interface_ == nullptr) { return isOk; }
-  filestr.open(m_fileName.c_str(), std::ios_base::in | std::ios::binary);
+  filestr.open(std::filesystem::path{m_fileName}, std::ios_base::in | std::ios::binary);
   if (!filestr.is_open()) { return isOk; }
   if (!filestr.good()) { return isOk; }
 
@@ -49,14 +52,14 @@ bool EoDxfRead::Read(EoDxfInterface* interface_, bool ext) {
 
   m_interface = interface_;
   if (strcmp(line, line2) == 0) {
-    filestr.open(m_fileName.c_str(), std::ios_base::in | std::ios::binary);
+    filestr.open(std::filesystem::path{m_fileName}, std::ios_base::in | std::ios::binary);
     m_binaryFile = true;
     // skip sentinel
     filestr.seekg(22, std::ios::beg);
     m_reader = new EoDxfReaderBinary(&filestr);
   } else {
     m_binaryFile = false;
-    filestr.open(m_fileName.c_str(), std::ios_base::in);
+    filestr.open(std::filesystem::path{m_fileName}, std::ios_base::in);
     m_reader = new EoDxfReaderAscii(&filestr);
   }
   isOk = ProcessDxf();
@@ -71,34 +74,34 @@ bool EoDxfRead::Read(EoDxfInterface* interface_, bool ext) {
 bool EoDxfRead::ProcessDxf() {
   int code;
   bool more = true;
-  std::string sectionstr;
+  std::wstring sectionstr;
   //    section = secUnknown;
   while (m_reader->ReadRec(&code)) {
     if (code == 999) {
-      m_header.AddComment(m_reader->GetString());
+      m_header.AddComment(m_reader->GetWideString());
     } else if (code == 0) {
-      sectionstr = m_reader->GetString();
-      if (sectionstr == "EOF") {
+      sectionstr = m_reader->GetWideString();
+      if (sectionstr == L"EOF") {
         return true;  // found EOF terminate
       }
-      if (sectionstr == "SECTION") {
+      if (sectionstr == L"SECTION") {
         more = m_reader->ReadRec(&code);
         // check for early return if malformed dxf file
         if (!more) { return false; }
         if (code == 2) {
-          sectionstr = m_reader->GetString();
+          sectionstr = m_reader->GetWideString();
           // found section, process it
-          if (sectionstr == "HEADER") {
+          if (sectionstr == L"HEADER") {
             if (!ProcessHeader()) { return false; }
-          } else if (sectionstr == "CLASSES") {
+          } else if (sectionstr == L"CLASSES") {
             ProcessClasses();
-          } else if (sectionstr == "TABLES") {
+          } else if (sectionstr == L"TABLES") {
             if (!ProcessTables()) { return false; }
-          } else if (sectionstr == "BLOCKS") {
+          } else if (sectionstr == L"BLOCKS") {
             if (!ProcessBlocks()) { return false; }
-          } else if (sectionstr == "ENTITIES") {
+          } else if (sectionstr == L"ENTITIES") {
             if (!ProcessEntities(false)) { return false; }
-          } else if (sectionstr == "OBJECTS") {
+          } else if (sectionstr == L"OBJECTS") {
             if (!ProcessObjects()) { return false; }
           }
         }
@@ -113,12 +116,12 @@ bool EoDxfRead::ProcessDxf() {
 /********* Header Section *********/
 
 bool EoDxfRead::ProcessHeader() {
-  std::string zeroGroupTag;
+  std::wstring zeroGroupTag;
   int code{};
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      zeroGroupTag = m_reader->GetString();
-      if (zeroGroupTag == "ENDSEC") {
+      zeroGroupTag = m_reader->GetWideString();
+      if (zeroGroupTag == L"ENDSEC") {
         m_interface->addHeader(&m_header);
         return true;
       }
@@ -132,20 +135,20 @@ bool EoDxfRead::ProcessHeader() {
 /********* Classes Section *********/
 
 bool EoDxfRead::ProcessClasses() {
-  std::string zeroGroupTag;
+  std::wstring zeroGroupTag;
   int code{};
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      zeroGroupTag = m_reader->GetString();
-      if (zeroGroupTag == "CLASS") {
+      zeroGroupTag = m_reader->GetWideString();
+      if (zeroGroupTag == L"CLASS") {
         EoDxfClass class_;
         while (m_reader->ReadRec(&code)) {
           if (code == 0) {
-            zeroGroupTag = m_reader->GetString();
-            if (zeroGroupTag == "CLASS") {
+            zeroGroupTag = m_reader->GetWideString();
+            if (zeroGroupTag == L"CLASS") {
               m_interface->addClass(class_);
               class_.clear();
-            } else if (zeroGroupTag == "ENDSEC") {
+            } else if (zeroGroupTag == L"ENDSEC") {
               m_interface->addClass(class_);
               return true;
             }
@@ -153,7 +156,7 @@ bool EoDxfRead::ProcessClasses() {
             class_.ParseCode(code, m_reader);
           }
         }
-      } else if (zeroGroupTag == "ENDSEC") {
+      } else if (zeroGroupTag == L"ENDSEC") {
         return true;
       }
     }
@@ -165,40 +168,40 @@ bool EoDxfRead::ProcessClasses() {
 
 bool EoDxfRead::ProcessTables() {
   int code;
-  std::string sectionstr;
+  std::wstring sectionstr;
   bool more = true;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      sectionstr = m_reader->GetString();
-      if (sectionstr == "TABLE") {
+      sectionstr = m_reader->GetWideString();
+      if (sectionstr == L"TABLE") {
         more = m_reader->ReadRec(&code);
         if (!more) {
           return false;  // wrong dxf file
         }
         if (code == 2) {
-          sectionstr = m_reader->GetString();
+          sectionstr = m_reader->GetWideString();
 
-          if (sectionstr == "LTYPE") {
+          if (sectionstr == L"LTYPE") {
             ProcessLType();
-          } else if (sectionstr == "LAYER") {
+          } else if (sectionstr == L"LAYER") {
             ProcessLayer();
-          } else if (sectionstr == "STYLE") {
+          } else if (sectionstr == L"STYLE") {
             ProcessTextStyle();
-          } else if (sectionstr == "VPORT") {
+          } else if (sectionstr == L"VPORT") {
             ProcessVports();
-          } else if (sectionstr == "VIEW") {
+          } else if (sectionstr == L"VIEW") {
             // processView();
-          } else if (sectionstr == "UCS") {
+          } else if (sectionstr == L"UCS") {
             // processUCS();
-          } else if (sectionstr == "APPID") {
+          } else if (sectionstr == L"APPID") {
             ProcessAppId();
-          } else if (sectionstr == "DIMSTYLE") {
+          } else if (sectionstr == L"DIMSTYLE") {
             ProcessDimStyle();
-          } else if (sectionstr == "BLOCK_RECORD") {
+          } else if (sectionstr == L"BLOCK_RECORD") {
             // processBlockRecord();
           }
         }
-      } else if (sectionstr == "ENDSEC") {
+      } else if (sectionstr == L"ENDSEC") {
         return true;
       }
     }
@@ -208,7 +211,7 @@ bool EoDxfRead::ProcessTables() {
 
 bool EoDxfRead::ProcessLType() {
   int code;
-  std::string sectionstr;
+  std::wstring sectionstr;
   bool reading = false;
   EoDxfLinetype linetype;
   while (m_reader->ReadRec(&code)) {
@@ -217,11 +220,11 @@ bool EoDxfRead::ProcessLType() {
         linetype.Update();
         m_interface->addLinetype(linetype);
       }
-      sectionstr = m_reader->GetString();
-      if (sectionstr == "LTYPE") {
+      sectionstr = m_reader->GetWideString();
+      if (sectionstr == L"LTYPE") {
         reading = true;
         linetype.Reset();
-      } else if (sectionstr == "ENDTAB") {
+      } else if (sectionstr == L"ENDTAB") {
         return true;
       }
     } else if (reading) {
@@ -233,17 +236,17 @@ bool EoDxfRead::ProcessLType() {
 
 bool EoDxfRead::ProcessLayer() {
   int code;
-  std::string sectionstr;
+  std::wstring sectionstr;
   bool reading = false;
   EoDxfLayer layer;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       if (reading) { m_interface->addLayer(layer); }
-      sectionstr = m_reader->GetString();
-      if (sectionstr == "LAYER") {
+      sectionstr = m_reader->GetWideString();
+      if (sectionstr == L"LAYER") {
         reading = true;
         layer.Reset();
-      } else if (sectionstr == "ENDTAB") {
+      } else if (sectionstr == L"ENDTAB") {
         return true;
       }
     } else if (reading) {
@@ -255,17 +258,17 @@ bool EoDxfRead::ProcessLayer() {
 
 bool EoDxfRead::ProcessDimStyle() {
   int code;
-  std::string sectionstr;
+  std::wstring sectionstr;
   bool reading{};
   EoDxfDimensionStyle dimensionStyle;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       if (reading) { m_interface->addDimStyle(dimensionStyle); }
-      sectionstr = m_reader->GetString();
-      if (sectionstr == "DIMSTYLE") {
+      sectionstr = m_reader->GetWideString();
+      if (sectionstr == L"DIMSTYLE") {
         reading = true;
         dimensionStyle.Reset();
-      } else if (sectionstr == "ENDTAB") {
+      } else if (sectionstr == L"ENDTAB") {
         return true;
       }
     } else if (reading) {
@@ -277,17 +280,17 @@ bool EoDxfRead::ProcessDimStyle() {
 
 bool EoDxfRead::ProcessTextStyle() {
   int code;
-  std::string sectionstr;
+  std::wstring sectionstr;
   bool reading{};
   EoDxfTextStyle textStyle;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       if (reading) { m_interface->addTextStyle(textStyle); }
-      sectionstr = m_reader->GetString();
-      if (sectionstr == "STYLE") {
+      sectionstr = m_reader->GetWideString();
+      if (sectionstr == L"STYLE") {
         reading = true;
         textStyle.Reset();
-      } else if (sectionstr == "ENDTAB") {
+      } else if (sectionstr == L"ENDTAB") {
         return true;
       }
     } else if (reading) {
@@ -299,17 +302,17 @@ bool EoDxfRead::ProcessTextStyle() {
 
 bool EoDxfRead::ProcessVports() {
   int code;
-  std::string sectionstr;
+  std::wstring sectionstr;
   bool reading{};
   EoDxfVPort viewport;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       if (reading) { m_interface->addVport(viewport); }
-      sectionstr = m_reader->GetString();
-      if (sectionstr == "VPORT") {
+      sectionstr = m_reader->GetWideString();
+      if (sectionstr == L"VPORT") {
         reading = true;
         viewport.Reset();
-      } else if (sectionstr == "ENDTAB") {
+      } else if (sectionstr == L"ENDTAB") {
         return true;
       }
     } else if (reading) {
@@ -321,17 +324,17 @@ bool EoDxfRead::ProcessVports() {
 
 bool EoDxfRead::ProcessAppId() {
   int code;
-  std::string sectionstr;
+  std::wstring sectionstr;
   bool reading = false;
   EoDxfAppId appId;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       if (reading) { m_interface->addAppId(appId); }
-      sectionstr = m_reader->GetString();
-      if (sectionstr == "APPID") {
+      sectionstr = m_reader->GetWideString();
+      if (sectionstr == L"APPID") {
         reading = true;
         appId.Reset();
-      } else if (sectionstr == "ENDTAB") {
+      } else if (sectionstr == L"ENDTAB") {
         return true;
       }
     } else if (reading) {
@@ -345,13 +348,13 @@ bool EoDxfRead::ProcessAppId() {
 
 bool EoDxfRead::ProcessBlocks() {
   int code;
-  std::string sectionstr;
+  std::wstring sectionstr;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      sectionstr = m_reader->GetString();
-      if (sectionstr == "BLOCK") {
+      sectionstr = m_reader->GetWideString();
+      if (sectionstr == L"BLOCK") {
         ProcessBlock();
-      } else if (sectionstr == "ENDSEC") {
+      } else if (sectionstr == L"ENDSEC") {
         return true;
       }
     }
@@ -365,9 +368,9 @@ bool EoDxfRead::ProcessBlock() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addBlock(block);
-        if (m_nextEntity == "ENDBLK") {
+        if (m_nextEntity == L"ENDBLK") {
           m_interface->endBlock();
           return true;  // found ENDBLK, terminate
         } else {
@@ -391,60 +394,60 @@ bool EoDxfRead::ProcessEntities(bool isblock) {
   if (!m_reader->ReadRec(&code)) { return false; }
   bool next = true;
   if (code == 0) {
-    m_nextEntity = m_reader->GetString();
+    m_nextEntity = m_reader->GetWideString();
   } else if (!isblock) {
     return false;  // first record in entities is 0
   }
   do {
-    if (m_nextEntity == "ENDSEC" || m_nextEntity == "ENDBLK") {
+    if (m_nextEntity == L"ENDSEC" || m_nextEntity == L"ENDBLK") {
       return true;
-    } else if (m_nextEntity == "POINT") {
+    } else if (m_nextEntity == L"POINT") {
       ProcessPoint();
-    } else if (m_nextEntity == "LINE") {
+    } else if (m_nextEntity == L"LINE") {
       ProcessLine();
-    } else if (m_nextEntity == "CIRCLE") {
+    } else if (m_nextEntity == L"CIRCLE") {
       ProcessCircle();
-    } else if (m_nextEntity == "ARC") {
+    } else if (m_nextEntity == L"ARC") {
       ProcessArc();
-    } else if (m_nextEntity == "ELLIPSE") {
+    } else if (m_nextEntity == L"ELLIPSE") {
       ProcessEllipse();
-    } else if (m_nextEntity == "TRACE") {
+    } else if (m_nextEntity == L"TRACE") {
       ProcessTrace();
-    } else if (m_nextEntity == "SOLID") {
+    } else if (m_nextEntity == L"SOLID") {
       ProcessSolid();
-    } else if (m_nextEntity == "INSERT") {
+    } else if (m_nextEntity == L"INSERT") {
       ProcessInsert();
-    } else if (m_nextEntity == "LWPOLYLINE") {
+    } else if (m_nextEntity == L"LWPOLYLINE") {
       ProcessLWPolyline();
-    } else if (m_nextEntity == "POLYLINE") {
+    } else if (m_nextEntity == L"POLYLINE") {
       ProcessPolyline();
-    } else if (m_nextEntity == "TEXT") {
+    } else if (m_nextEntity == L"TEXT") {
       ProcessText();
-    } else if (m_nextEntity == "MTEXT") {
+    } else if (m_nextEntity == L"MTEXT") {
       ProcessMText();
-    } else if (m_nextEntity == "HATCH") {
+    } else if (m_nextEntity == L"HATCH") {
       ProcessHatch();
-    } else if (m_nextEntity == "SPLINE") {
+    } else if (m_nextEntity == L"SPLINE") {
       ProcessSpline();
-    } else if (m_nextEntity == "3DFACE") {
+    } else if (m_nextEntity == L"3DFACE") {
       Process3dFace();
-    } else if (m_nextEntity == "VIEWPORT") {
+    } else if (m_nextEntity == L"VIEWPORT") {
       ProcessViewport();
-    } else if (m_nextEntity == "IMAGE") {
+    } else if (m_nextEntity == L"IMAGE") {
       ProcessImage();
-    } else if (m_nextEntity == "DIMENSION") {
+    } else if (m_nextEntity == L"DIMENSION") {
       ProcessDimension();
-    } else if (m_nextEntity == "LEADER") {
+    } else if (m_nextEntity == L"LEADER") {
       ProcessLeader();
-    } else if (m_nextEntity == "MULTILEADER" || m_nextEntity == "MLEADER") {
+    } else if (m_nextEntity == L"MULTILEADER" || m_nextEntity == L"MLEADER") {
       ProcessMLeader();
-    } else if (m_nextEntity == "RAY") {
+    } else if (m_nextEntity == L"RAY") {
       ProcessRay();
-    } else if (m_nextEntity == "XLINE") {
+    } else if (m_nextEntity == L"XLINE") {
       ProcessXline();
     } else {
       if (m_reader->ReadRec(&code)) {
-        if (code == 0) { m_nextEntity = m_reader->GetString(); }
+        if (code == 0) { m_nextEntity = m_reader->GetWideString(); }
       } else {
         return false;  // end of file without ENDSEC
       }
@@ -460,7 +463,7 @@ bool EoDxfRead::ProcessEllipse() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { ellipse.ApplyExtrusion(); }
         m_interface->addEllipse(ellipse);
         return true;  // found new entity or ENDSEC, terminate
@@ -479,7 +482,7 @@ bool EoDxfRead::ProcessTrace() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { trace.ApplyExtrusion(); }
         m_interface->addTrace(trace);
         return true;  // found new entity or ENDSEC, terminate
@@ -498,7 +501,7 @@ bool EoDxfRead::ProcessSolid() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { solid.ApplyExtrusion(); }
         m_interface->addSolid(solid);
         return true;  // found new entity or ENDSEC, terminate
@@ -517,7 +520,7 @@ bool EoDxfRead::Process3dFace() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->add3dFace(face);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -535,7 +538,7 @@ bool EoDxfRead::ProcessViewport() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addViewport(viewport);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -553,7 +556,7 @@ bool EoDxfRead::ProcessPoint() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addPoint(point);
         return true;
       }
@@ -571,7 +574,7 @@ bool EoDxfRead::ProcessLine() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addLine(line);
         return true;
       }
@@ -589,7 +592,7 @@ bool EoDxfRead::ProcessRay() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addRay(ray);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -607,7 +610,7 @@ bool EoDxfRead::ProcessXline() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addXline(line);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -625,7 +628,7 @@ bool EoDxfRead::ProcessCircle() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { circle.ApplyExtrusion(); }
         m_interface->addCircle(circle);
         return true;  // found new entity or ENDSEC, terminate
@@ -644,7 +647,7 @@ bool EoDxfRead::ProcessArc() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { arc.ApplyExtrusion(); }
         m_interface->addArc(arc);
         return true;  // found new entity or ENDSEC, terminate
@@ -663,7 +666,7 @@ bool EoDxfRead::ProcessInsert() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addInsert(insert);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -681,7 +684,7 @@ bool EoDxfRead::ProcessLWPolyline() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { polyline.ApplyExtrusion(); }
         m_interface->addLWPolyline(polyline);
         return true;  // found new entity or ENDSEC, terminate
@@ -700,8 +703,8 @@ bool EoDxfRead::ProcessPolyline() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
-        if (m_nextEntity == "VERTEX") { ProcessVertex(&polyline); }
+        m_nextEntity = m_reader->GetWideString();
+        if (m_nextEntity == L"VERTEX") { ProcessVertex(&polyline); }
         m_interface->addPolyline(polyline);
         return true;
       }
@@ -720,9 +723,9 @@ bool EoDxfRead::ProcessVertex(EoDxfPolyline* polyline) {
     switch (code) {
       case 0: {
         polyline->appendVertex(vertex);
-        m_nextEntity = m_reader->GetString();
-        if (m_nextEntity == "SEQEND") { return true; }
-        if (m_nextEntity == "VERTEX") {
+        m_nextEntity = m_reader->GetWideString();
+        if (m_nextEntity == L"SEQEND") { return true; }
+        if (m_nextEntity == L"VERTEX") {
           vertex = new EoDxfVertex();
           break;
         }
@@ -745,7 +748,7 @@ bool EoDxfRead::ProcessText() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addText(text);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -763,7 +766,7 @@ bool EoDxfRead::ProcessMText() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         txt.UpdateAngle();
         m_interface->addMText(txt);
         return true;  // found new entity or ENDSEC, terminate
@@ -782,7 +785,7 @@ bool EoDxfRead::ProcessHatch() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addHatch(&hatch);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -800,7 +803,7 @@ bool EoDxfRead::ProcessSpline() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addSpline(&sp);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -818,7 +821,7 @@ bool EoDxfRead::ProcessImage() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addImage(&image);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -836,7 +839,7 @@ bool EoDxfRead::ProcessDimension() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         auto type = dimension.m_dimensionType & 0x0F;
         switch (type) {
           case 0: {
@@ -891,7 +894,7 @@ bool EoDxfRead::ProcessLeader() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addLeader(&leader);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -909,7 +912,7 @@ bool EoDxfRead::ProcessMLeader() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->addMLeader(&mLeader);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -927,18 +930,18 @@ bool EoDxfRead::ProcessObjects() {
   int code;
   if (!m_reader->ReadRec(&code)) { return false; }
   if (code == 0) {
-    m_nextEntity = m_reader->GetString();
+    m_nextEntity = m_reader->GetWideString();
   } else {
     return false;  // first record in objects is 0
   }
   for (;;) {
-    if (m_nextEntity == "ENDSEC") {
+    if (m_nextEntity == L"ENDSEC") {
       return true;  // found ENDSEC terminate
-    } else if (m_nextEntity == "IMAGEDEF") {
+    } else if (m_nextEntity == L"IMAGEDEF") {
       ProcessImageDef();
     } else {
       if (m_reader->ReadRec(&code)) {
-        if (code == 0) { m_nextEntity = m_reader->GetString(); }
+        if (code == 0) { m_nextEntity = m_reader->GetWideString(); }
       } else {
         return false;  // end of file without ENDSEC
       }
@@ -952,7 +955,7 @@ bool EoDxfRead::ProcessImageDef() {
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
-        m_nextEntity = m_reader->GetString();
+        m_nextEntity = m_reader->GetWideString();
         m_interface->linkImage(&imageDefinition);
         return true;  // found new entity or ENDSEC, terminate
       }

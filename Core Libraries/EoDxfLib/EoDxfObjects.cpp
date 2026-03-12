@@ -10,12 +10,12 @@ void EoDxfObjectEntry::ParseCode(int code, EoDxfReader* reader) {
       m_handle = reader->GetHandleString();
       break;
     case 102: {
-      std::string value = reader->GetString();
-      if (value == "{ACAD_REACTORS") {
+      const std::wstring value = reader->GetWideString();
+      if (value == L"{ACAD_REACTORS") {
         m_inReactors = true;
-      } else if (value == "{ACAD_XDICTIONARY") {
+      } else if (value == L"{ACAD_XDICTIONARY") {
         m_inXDictionary = true;
-      } else if (value == "}") {
+      } else if (value == L"}") {
         m_inReactors = false;
         m_inXDictionary = false;
       }
@@ -37,7 +37,7 @@ void EoDxfObjectEntry::ParseCode(int code, EoDxfReader* reader) {
     case 1003:
     case 1004:
     case 1005:
-      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetString()));
+      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetWideString()));
       break;
     case 1010:
     case 1011:
@@ -89,7 +89,7 @@ void EoDxfObjectEntry::Reset() {
 void EoDxfImageDefinition::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 1:
-      m_fileNameOfImage = reader->GetUtf8String();
+      m_fileNameOfImage = reader->GetWideString();
       break;
     case 90:
       imgVersion = reader->GetInt32();

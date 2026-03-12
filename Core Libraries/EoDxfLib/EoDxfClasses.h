@@ -21,9 +21,9 @@ class EoDxfClass {
   void clear() noexcept;
   void write(EoDxfWriter* writer, EoDxf::Version version) const noexcept;
 
-  std::string m_classDxfRecordName;  // Group code 1
-  std::string m_cppClassName;  // Group code 2
-  std::string m_applicationName;  // Group code 3
+  std::wstring m_classDxfRecordName;  // Group code 1
+  std::wstring m_cppClassName;  // Group code 2
+  std::wstring m_applicationName;  // Group code 3
   std::int32_t m_proxyCapabilitiesFlag{};  // Group code 90
   std::int32_t m_instanceCount{};  // Group code 91
   std::int16_t m_wasAProxyFlag{};  // Group code 280

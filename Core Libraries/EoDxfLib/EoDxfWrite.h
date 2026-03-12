@@ -16,6 +16,7 @@
 class EoDxfWrite {
  public:
   EoDxfWrite(const char* name);
+  EoDxfWrite(std::wstring_view name);
   ~EoDxfWrite();
 
   /** @brief Writes the current state of the EoDxfInterface to a DXF file in the specified version and format (binary or
@@ -74,14 +75,14 @@ class EoDxfWrite {
   bool WriteLWPolyline(EoDxfLwPolyline* polyline);
   bool WritePolyline(EoDxfPolyline* polyline);
   bool WriteSpline(EoDxfSpline* spline);
-  bool WriteBlockRecord(std::string name);
+  bool WriteBlockRecord(std::wstring name);
   bool WriteBlock(EoDxfBlock* block);
   bool WriteInsert(EoDxfInsert* blockReference);
   bool WriteMText(EoDxfMText* mText);
   bool WriteText(EoDxfText* text);
   bool WriteHatch(EoDxfHatch* hatch);
   bool WriteViewport(EoDxfViewport* viewport);
-  EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::string name);
+  EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::wstring name);
   bool WriteLeader(EoDxfLeader* leader);
   
   /** @brief Writes an MLEADER entity to the DXF file.
@@ -115,14 +116,11 @@ class EoDxfWrite {
     return m_writeOk;
   }
   bool TrackStreamState(const std::ios& stream) noexcept { return TrackWriteResult(stream.good()); }
-  bool WriteCodeString(int code, std::string_view text) {
-    return TrackWriteResult(m_writer != nullptr && m_writer->WriteString(code, text));
+  bool WriteCodeString(int code, std::wstring_view text) {
+    return TrackWriteResult(m_writer != nullptr && m_writer->WriteWideString(code, text));
   }
   bool WriteCodeWideString(int code, std::wstring_view text) {
     return TrackWriteResult(m_writer != nullptr && m_writer->WriteWideString(code, text));
-  }
-  bool WriteCodeUtf8String(int code, const std::string& text) {
-    return TrackWriteResult(m_writer != nullptr && m_writer->WriteUtf8String(code, text));
   }
   bool WriteCodeInt16(int code, std::int16_t value) {
     return TrackWriteResult(m_writer != nullptr && m_writer->WriteInt16(code, value));
@@ -142,18 +140,20 @@ class EoDxfWrite {
   bool WriteTables();
   bool WriteBlocks();
   bool WriteObjects();
+  bool WriteAppData(const std::list<std::list<EoDxfGroupCodeValuesVariant>>& appData);
   bool WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& extensionData);
+  bool WriteVariantValue(const EoDxfGroupCodeValuesVariant& value);
 
   /** @brief Convert integer to hex string
    * @param hexValue integer number
    * @return hex string
    */
-  std::string ToHexString(uint64_t hexValue);
+  std::wstring ToHexString(uint64_t hexValue);
 
  private:
-  std::string m_fileName;
+  std::wstring m_fileName;
   std::vector<EoDxfImageDefinition*> m_imageDef;  // list of image definitions to write at the end of file
-  std::map<std::string, int> m_blockMap;
+  std::map<std::wstring, int> m_blockMap;
   EoDxfWriter* m_writer;
   EoDxfInterface* m_interface{};
   int m_entityCount{};

@@ -80,10 +80,10 @@ class EoDxfEntity {
  public:
   std::list<std::list<EoDxfGroupCodeValuesVariant>> m_appData{};  // list of application data, code 102
   std::vector<EoDxfGroupCodeValuesVariant*> m_extendedData{};  // Group codes 1000 to 1071
-  std::string m_layer{"0"};  // layer name, code 8
-  std::string m_lineType{"BYLAYER"};  // line type, code 6
-  std::string m_proxyEntityGraphicsData{};  // group code 310 (optional) [unused]
-  std::string m_colorName{};  // Group code 430
+  std::wstring m_layer{L"0"};  // layer name, code 8
+  std::wstring m_lineType{L"BYLAYER"};  // line type, code 6
+  std::wstring m_proxyEntityGraphicsData{};  // group code 310 (optional) [unused]
+  std::wstring m_colorName{};  // Group code 430
   double m_lineTypeScale{1.0};  // Group code 48
   enum EoDxf::ETYPE m_entityType{EoDxf::UNKNOWN};  // Group code 0
   std::uint64_t m_handle{EoDxf::NoHandle};  // Group code 5
@@ -378,7 +378,7 @@ class EoDxfBlock : public EoDxfPoint {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  std::string name{"*U0"};  // Group code 2
+   std::wstring name{L"*U0"};  // Group code 2
   std::int16_t m_flags{};  // Group code 70
 };
 
@@ -403,7 +403,7 @@ class EoDxfInsert : public EoDxfPoint {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  std::string m_blockName;  // Group code 2
+  std::wstring m_blockName;  // Group code 2
   double m_xScaleFactor{1.0};  // Group code 41
   double m_yScaleFactor{1.0};  // Group code 42
   double m_zScaleFactor{1.0};  // Group code 43
@@ -483,11 +483,11 @@ class EoDxfText : public EoDxfLine {
 
  public:
   double m_textHeight{};  // Group code 40
-  std::string m_string;  // Group code 1
+  std::wstring m_string;  // Group code 1
   double m_textRotation{};  // Group code 50
   double m_scaleFactorWidth{1.0};  // Group code 41
   double m_obliqueAngle{};  // Group code 51
-  std::string m_textStyleName{"STANDARD"};  // Group code 7
+  std::wstring m_textStyleName{L"STANDARD"};  // Group code 7
   std::int16_t m_textGenerationFlags{};  // Group code 71
   enum HAlign m_horizontalAlignment { Left };  // Group code 72
   enum VAlign m_verticalAlignment { BaseLine };  // Group code 73
@@ -757,7 +757,7 @@ class EoDxfHatch : public EoDxfPoint {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  std::string m_hatchPatternName;  // Group code 2
+  std::wstring m_hatchPatternName;  // Group code 2
   std::int16_t m_solidFillFlag{1};  // Group code 70
   std::int16_t m_associativityFlag{};  // Group code 71
   std::int16_t m_hatchStyle{};  // Group code 75
@@ -847,7 +847,7 @@ class EoDxfDimension : public EoDxfEntity {
     linefactor = extPoint.z = 1.0;
     angle = oblique = rot = 0.0;
     m_attachmentPoint = 5;
-    style = "STANDARD";
+    style = L"STANDARD";
     defPoint.z = extPoint.x = extPoint.y = 0;
     textPoint.z = rot = 0;
     clonePoint.x = clonePoint.y = clonePoint.z = 0;
@@ -887,16 +887,16 @@ class EoDxfDimension : public EoDxfEntity {
   void setDefPoint(const EoDxfGeometryBase3d p) { defPoint = p; }
   EoDxfGeometryBase3d getTextPoint() const { return textPoint; }  // Middle point of text, code 11, 21 & 31
   void setTextPoint(const EoDxfGeometryBase3d p) { textPoint = p; }
-  std::string getStyle() const { return style; }  // Dimension style, code 3
-  void setStyle(const std::string s) { style = s; }
+  const std::wstring& getStyle() const { return style; }  // Dimension style, code 3
+  void setStyle(const std::wstring& s) { style = s; }
   [[nodiscard]] std::int16_t GetAttachmentPoint() const noexcept { return m_attachmentPoint; }  // Group code 71
   void SetAttachmentPoint(const std::int16_t attachmentPoint) { m_attachmentPoint = attachmentPoint; }
   [[nodiscard]] std::int16_t getTextLineStyle() const noexcept { return m_dimensionTextLineSpacingStyle; }  // Group code 72
   void setTextLineStyle(const std::int16_t dimensionTextLineSpacingStyle) {
     m_dimensionTextLineSpacingStyle = dimensionTextLineSpacingStyle;
   }
-  std::string getText() const { return text; }  // Dimension text explicitly entered by the user, code 1
-  void setText(const std::string t) { text = t; }
+  const std::wstring& getText() const { return text; }  // Dimension text explicitly entered by the user, code 1
+  void setText(const std::wstring& t) { text = t; }
   double getTextLineFactor() const { return linefactor; }  // Dimension text line spacing factor, code 41, default 1?
   void setTextLineFactor(const double l) { linefactor = l; }
   double getDir() const { return rot; }  // rotation angle of the dimension text, code 53 (optional) default 0
@@ -904,8 +904,8 @@ class EoDxfDimension : public EoDxfEntity {
 
   EoDxfGeometryBase3d getExtrusion() { return extPoint; }  // extrusion, code 210, 220 & 230
   void setExtrusion(const EoDxfGeometryBase3d p) { extPoint = p; }
-  std::string getName() { return name; }  // Name of the block that contains the entities, code 2
-  void setName(const std::string s) { name = s; }
+  const std::wstring& getName() const { return name; }  // Name of the block that contains the entities, code 2
+  void setName(const std::wstring& s) { name = s; }
   //    int getType(){ return type;}                      // Dimension type, code 70
 
  protected:
@@ -929,11 +929,11 @@ class EoDxfDimension : public EoDxfEntity {
  public:
   std::int16_t m_dimensionType;  // Dimension type, code 70
  private:
-  std::string name;  // Name of the block that contains the entities, code 2
+  std::wstring name;  // Name of the block that contains the entities, code 2
   EoDxfGeometryBase3d defPoint;  //  definition point, code 10, 20 & 30 (WCS)
   EoDxfGeometryBase3d textPoint;  // Middle point of text, code 11, 21 & 31 (OCS)
-  std::string text;  // Dimension text explicitly entered by the user, code 1
-  std::string style;  // Dimension style, code 3
+  std::wstring text;  // Dimension text explicitly entered by the user, code 1
+  std::wstring style;  // Dimension style, code 3
   std::int16_t m_attachmentPoint;  // attachment point, code 71
   std::int16_t m_dimensionTextLineSpacingStyle{1};  // Group code 72 (optional)
   double linefactor;  // Dimension text line spacing factor, code 41, default 1? (value range 0.25 to 4.00*/
@@ -1175,7 +1175,7 @@ class EoDxfLeader : public EoDxfEntity {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  std::string m_dimensionStyleName{};  // Group code 3
+  std::wstring m_dimensionStyleName{};  // Group code 3
   std::int16_t m_arrowheadFlag{1};  // Group code 71, 0=Disabled; 1=Enabled
   std::int16_t m_leaderPathType{};  // Group code 72, 0=Straight line segments; 1=Spline
   std::int16_t m_leaderCreationFlag{3};  // Group code 73
@@ -1264,7 +1264,7 @@ struct EoDxfMLeaderContextData {
   std::int16_t m_textAttachment{1};  // code 170
   std::int16_t m_textBackgroundFill{};  // code 172
   std::uint64_t m_textStyleHandle{EoDxf::NoHandle};  // code 340
-  std::string m_textString;  // code 1 (and 3 for overflow)
+  std::wstring m_textString;  // code 1 (and 3 for overflow)
 
   // --- Block content ---
   std::uint64_t m_blockContentHandle{EoDxf::NoHandle};  // code 341

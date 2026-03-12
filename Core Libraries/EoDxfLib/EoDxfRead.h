@@ -11,6 +11,7 @@ class EoDxfReader;
 
 class EoDxfRead {
  public:
+  EoDxfRead(std::wstring_view name);
   EoDxfRead(const char* name);
   ~EoDxfRead();
 
@@ -91,9 +92,9 @@ class EoDxfRead {
 
  private:
   EoDxfHeader m_header;
-  std::string m_fileName;
-  std::string m_codePage;
-  std::string m_nextEntity;
+  std::wstring m_fileName;
+  std::wstring m_codePage;
+  std::wstring m_nextEntity;
   EoDxfReader* m_reader;
   EoDxfInterface* m_interface{};
   int m_ellipseParts;

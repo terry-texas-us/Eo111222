@@ -18,13 +18,11 @@ class EoTcTextCodec {
   EoTcTextCodec(EoTcTextCodec&& other) noexcept;
   EoTcTextCodec& operator=(EoTcTextCodec&& other) noexcept;
 
-  [[nodiscard]] std::string FromWide(std::wstring_view text) const;
-  [[nodiscard]] std::wstring ToWide(std::string_view text) const;
-  [[nodiscard]] std::string FromUtf8(std::string s);
+  [[nodiscard]] std::string EncodeText(std::wstring_view text) const;
+  [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const;
 
-  [[nodiscard]] std::string ToUtf8(std::string s) const;
-
-  [[nodiscard]] constexpr EoDxf::Version GetVersion() const noexcept { return m_version; }
+  [[nodiscard]] std::wstring GetVersion() const;
+  [[nodiscard]] constexpr EoDxf::Version GetVersionEnum() const noexcept { return m_version; }
 
   /** @brief Sets the version for the text codec. This method allows you to specify the version of the DXF format that the text
    * codec should use when encoding and decoding text. The version can affect how certain characters are handled, as different
@@ -34,14 +32,14 @@ class EoTcTextCodec {
    * @param version The version to set, specified as a string (e.g., "AC1015", "AC1021") or as an integer corresponding to
    * the EoDxf::Version enumeration.
    */
-  void SetVersion(const std::string& version);
+  void SetVersion(const std::wstring& version);
   void SetVersion(EoDxf::Version version) noexcept;
 
   /** @brief Gets the current code page used by the text codec.
    * The code page is a character encoding standard that defines how characters are represented in bytes.
    * @return The current code page as a string.
    */
-  [[nodiscard]] const std::string& GetCodePage() const noexcept { return m_codePage; }
+  [[nodiscard]] const std::wstring& GetCodePage() const noexcept { return m_codePage; }
 
   /** @brief Sets the code page for the text codec. This method allows you to specify the character encoding standard that
    * the text codec should use when encoding and decoding text. The code page can affect how characters are represented
@@ -49,10 +47,10 @@ class EoTcTextCodec {
    *
    * @param codePage The code page to set, specified as a string (e.g., "UTF-8", "UTF-16", "ANSI_1252").
    */
-  void SetCodePage(const std::string& codePage);
+  void SetCodePage(const std::wstring& codePage);
 
  private:
-  [[nodiscard]] static std::unique_ptr<EoTcConverter> CreateConverter(const std::string_view normalizedCodePage);
+  [[nodiscard]] static std::unique_ptr<EoTcConverter> CreateConverter(std::wstring_view normalizedCodePage);
 
   /** @brief Standardizes a DXF code page string to one of the standard internal forms.
    *
@@ -64,9 +62,10 @@ class EoTcTextCodec {
    * @param codePage Input code page identifier (from DXF $DWGCODEPAGE or similar).
    * @return Standardized code page string.
    */
-  [[nodiscard]] std::string NormalizeCodePage(const std::string_view codePage);
+  [[nodiscard]] static std::wstring NormalizeToken(std::wstring_view value);
+  [[nodiscard]] std::wstring NormalizeCodePage(std::wstring_view codePage);
 
-  std::string m_codePage;
+  std::wstring m_codePage;
   std::unique_ptr<EoTcConverter> m_converter;
   EoDxf::Version m_version;
 };
@@ -80,10 +79,8 @@ class EoTcConverter {
   EoTcConverter(const int* table, int length) : m_table{table}, m_codePageLength{length} {}
   virtual ~EoTcConverter() = default;
 
-  virtual [[nodiscard]] std::string FromWide(std::wstring_view text) const;
-  virtual [[nodiscard]] std::wstring ToWide(std::string_view text) const;
-  virtual [[nodiscard]] std::string FromUtf8(std::string* s) { return *s; }
-  virtual [[nodiscard]] std::string ToUtf8(std::string* s) { return *s; }
+  virtual [[nodiscard]] std::string EncodeText(std::wstring_view text) const = 0;
+  virtual [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const = 0;
 
  protected:
   const int* m_table;
@@ -97,10 +94,8 @@ class EoTcConverter {
 class EoTcConvertUtf8 : public EoTcConverter {
  public:
   EoTcConvertUtf8() : EoTcConverter(nullptr, 0) {}
-  [[nodiscard]] std::string FromWide(std::wstring_view text) const override;
-  [[nodiscard]] std::wstring ToWide(std::string_view text) const override;
-  [[nodiscard]] std::string FromUtf8(std::string* s) override { return *s; }
-  [[nodiscard]] std::string ToUtf8(std::string* s) override { return *s; }
+  [[nodiscard]] std::string EncodeText(std::wstring_view text) const override;
+  [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const override;
 };
 
 /** @brief Converter class for UTF-16 encoding. This class provides methods to convert between UTF-8 strings and UTF-16
@@ -111,10 +106,8 @@ class EoTcConvertUtf8 : public EoTcConverter {
 class EoTcConvertUtf16 : public EoTcConverter {
  public:
   EoTcConvertUtf16() : EoTcConverter(nullptr, 0) {}
-  [[nodiscard]] std::string FromWide(std::wstring_view text) const override;
-  [[nodiscard]] std::wstring ToWide(std::string_view text) const override;
-  [[nodiscard]] std::string FromUtf8(std::string* s) override;
-  [[nodiscard]] std::string ToUtf8(std::string* s) override;
+  [[nodiscard]] std::string EncodeText(std::wstring_view text) const override;
+  [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const override;
 };
 
 /** @brief Converter class for character tables. This class provides methods to convert between UTF-8 strings and strings
@@ -124,10 +117,8 @@ class EoTcConvertUtf16 : public EoTcConverter {
 class EoTcConvertTable : public EoTcConverter {
  public:
   EoTcConvertTable(const int* table, int length) : EoTcConverter(table, length) {}
-  [[nodiscard]] std::string FromWide(std::wstring_view text) const override;
-  [[nodiscard]] std::wstring ToWide(std::string_view text) const override;
-  [[nodiscard]] std::string FromUtf8(std::string* s) override;
-  [[nodiscard]] std::string ToUtf8(std::string* s) override;
+  [[nodiscard]] std::string EncodeText(std::wstring_view text) const override;
+  [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const override;
 };
 
 /** @brief Converter class for DBCS (Double-Byte Character Set) tables. This class provides methods to convert between UTF-8
@@ -142,10 +133,8 @@ class EoTcConvertDBCSTable : public EoTcConverter {
     m_leadTable = leadTable;
     m_doubleTable = doubleTable;
   }
-  [[nodiscard]] std::string FromWide(std::wstring_view text) const override { return EoTcConverter::FromWide(text); }
-  [[nodiscard]] std::wstring ToWide(std::string_view text) const override { return EoTcConverter::ToWide(text); }
-  [[nodiscard]] std::string FromUtf8(std::string* s) override { return *s; }
-  [[nodiscard]] std::string ToUtf8(std::string* s) override { return *s; }
+  [[nodiscard]] std::string EncodeText(std::wstring_view text) const override;
+  [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const override;
 
  private:
   const int* m_leadTable;

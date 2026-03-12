@@ -1,4 +1,5 @@
 #include <fstream>
+#include <filesystem>
 #include <ios>
 #include <map>
 #include <sstream>
@@ -15,14 +16,22 @@
 #include "EoDxfWriter.h"
 
 namespace {
-constexpr auto EODXFLIB_VERSION = "0.1";
+constexpr std::wstring_view EODXFLIB_VERSION{L"0.1"};
 constexpr auto FIRSTHANDLE{48};
+
+[[nodiscard]] std::wstring Utf8StringToWide(std::string_view text) {
+  EoTcTextCodec utf8Codec;
+  utf8Codec.SetCodePage(L"UTF-8");
+  return utf8Codec.DecodeText(text);
+}
 }  // namespace
 
-EoDxfWrite::EoDxfWrite(const char* name) {
+EoDxfWrite::EoDxfWrite(std::wstring_view name) {
   m_fileName = name;
   m_writer = nullptr;
 }
+
+EoDxfWrite::EoDxfWrite(const char* name) : EoDxfWrite(Utf8StringToWide(name != nullptr ? std::string_view{name} : std::string_view{})) {}
 
 EoDxfWrite::~EoDxfWrite() {
   if (m_writer != nullptr) { delete m_writer; }
@@ -45,7 +54,7 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
   if (!m_writeOk) { return false; }
 
   if (m_binaryFile) {
-    filestr.open(m_fileName.c_str(), std::ios_base::out | std::ios::binary | std::ios::trunc);
+      filestr.open(std::filesystem::path{m_fileName}, std::ios_base::out | std::ios::binary | std::ios::trunc);
     TrackStreamState(filestr);
     if (m_writeOk) {
       filestr << "AutoCAD Binary DXF\r\n" << (char)26 << '\0';
@@ -53,11 +62,11 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
       m_writer = new EoDxfWriterBinary(&filestr);
     }
   } else {
-    filestr.open(m_fileName.c_str(), std::ios_base::out | std::ios::trunc);
+    filestr.open(std::filesystem::path{m_fileName}, std::ios_base::out | std::ios::trunc);
     TrackStreamState(filestr);
     if (m_writeOk) {
       m_writer = new EoDxfWriterAscii(&filestr);
-      const std::string comm = std::string("EoDxf ") + EODXFLIB_VERSION;
+      const std::wstring comm = std::wstring{L"EoDxf "} + std::wstring{EODXFLIB_VERSION};
       WriteCodeString(999, comm);
     }
   }
@@ -69,36 +78,36 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
   EoDxfHeader header;
   m_interface->writeHeader(header);
   m_entityCount = FIRSTHANDLE;
-  WriteCodeString(0, "SECTION");
+   WriteCodeString(0, L"SECTION");
   header.Write(m_writer, m_version);
   TrackStreamState(filestr);
-  WriteCodeString(0, "ENDSEC");
+   WriteCodeString(0, L"ENDSEC");
 
-  WriteCodeString(0, "SECTION");
-  WriteCodeString(2, "CLASSES");
-  WriteCodeString(0, "ENDSEC");
+   WriteCodeString(0, L"SECTION");
+   WriteCodeString(2, L"CLASSES");
+   WriteCodeString(0, L"ENDSEC");
 
-  WriteCodeString(0, "SECTION");
-  WriteCodeString(2, "TABLES");
+   WriteCodeString(0, L"SECTION");
+   WriteCodeString(2, L"TABLES");
   TrackWriteResult(WriteTables());
-  WriteCodeString(0, "ENDSEC");
-  WriteCodeString(0, "SECTION");
-  WriteCodeString(2, "BLOCKS");
+   WriteCodeString(0, L"ENDSEC");
+   WriteCodeString(0, L"SECTION");
+   WriteCodeString(2, L"BLOCKS");
   TrackWriteResult(WriteBlocks());
-  WriteCodeString(0, "ENDSEC");
+   WriteCodeString(0, L"ENDSEC");
 
-  WriteCodeString(0, "SECTION");
-  WriteCodeString(2, "ENTITIES");
+   WriteCodeString(0, L"SECTION");
+   WriteCodeString(2, L"ENTITIES");
   m_interface->writeEntities();
   TrackStreamState(filestr);
-  WriteCodeString(0, "ENDSEC");
+   WriteCodeString(0, L"ENDSEC");
 
-  WriteCodeString(0, "SECTION");
-  WriteCodeString(2, "OBJECTS");
+   WriteCodeString(0, L"SECTION");
+   WriteCodeString(2, L"OBJECTS");
   TrackWriteResult(WriteObjects());
-  WriteCodeString(0, "ENDSEC");
+   WriteCodeString(0, L"ENDSEC");
 
-  WriteCodeString(0, "EOF");
+   WriteCodeString(0, L"EOF");
   filestr.flush();
   TrackStreamState(filestr);
   filestr.close();
@@ -112,26 +121,29 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
 bool EoDxfWrite::WriteEntity(EoDxfEntity* entity) {
   entity->m_handle = ++m_entityCount;
   WriteCodeString(5, ToHexString(entity->m_handle));
-  WriteCodeString(100, "AcDbEntity");
+  WriteCodeString(100, L"AcDbEntity");
   if (entity->m_space == EoDxf::Space::PaperSpace) { WriteCodeInt16(67, 1); }
 
-  WriteCodeUtf8String(8, entity->m_layer);
-  WriteCodeUtf8String(6, entity->m_lineType);
+  WriteCodeWideString(8, entity->m_layer);
+  WriteCodeWideString(6, entity->m_lineType);
 
   WriteCodeInt16(62, entity->m_color);
   if (m_version > EoDxf::Version::AC1015 && entity->m_color24 >= 0) { WriteCodeInt32(420, entity->m_color24); }
+  if (m_version > EoDxf::Version::AC1015 && !entity->m_colorName.empty()) { WriteCodeWideString(430, entity->m_colorName); }
   if (m_version > EoDxf::Version::AC1014) {
     WriteCodeInt16(370, EoDxfLineWidths::lineWidth2dxfInt(entity->m_lineWeight));
   }
+  if (!entity->m_appData.empty()) { WriteAppData(entity->m_appData); }
+  if (!entity->m_extendedData.empty()) { WriteExtData(entity->m_extendedData); }
   return m_writeOk;
 }
 
 bool EoDxfWrite::WriteInsert(EoDxfInsert* blockReference) {
-  WriteCodeString(0, "INSERT");
+  WriteCodeString(0, L"INSERT");
   WriteEntity(blockReference);
 
-  WriteCodeString(100, "AcDbBlockReference");
-  WriteCodeUtf8String(2, blockReference->m_blockName);
+  WriteCodeString(100, L"AcDbBlockReference");
+  WriteCodeWideString(2, blockReference->m_blockName);
 
   WriteCodeDouble(10, blockReference->m_firstPoint.x);
   WriteCodeDouble(20, blockReference->m_firstPoint.y);
@@ -149,9 +161,9 @@ bool EoDxfWrite::WriteInsert(EoDxfInsert* blockReference) {
 }
 
 bool EoDxfWrite::WriteViewport(EoDxfViewport* viewport) {
-  WriteCodeString(0, "VIEWPORT");
+  WriteCodeString(0, L"VIEWPORT");
   WriteEntity(viewport);
-  WriteCodeString(100, "AcDbViewport");
+  WriteCodeString(100, L"AcDbViewport");
   WriteCodeDouble(10, viewport->m_firstPoint.x);
   WriteCodeDouble(20, viewport->m_firstPoint.y);
   if (viewport->m_firstPoint.z != 0.0) { WriteCodeDouble(30, viewport->m_firstPoint.z); }
@@ -195,7 +207,7 @@ bool EoDxfWrite::WriteViewport(EoDxfViewport* viewport) {
   return m_writeOk;
 }
 
-EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::string name) {
+EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstring name) {
   // search if exist imagedef with this name (image inserted more than 1 time)
   EoDxfImageDefinition* id = nullptr;
   for (unsigned int i = 0; i < m_imageDef.size(); i++) {
@@ -210,11 +222,11 @@ EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::strin
     id->m_handle = ++m_entityCount;
   }
   id->m_fileNameOfImage = name;
-  std::string idReactor = ToHexString(++m_entityCount);
+  std::wstring idReactor = ToHexString(++m_entityCount);
 
-  WriteCodeString(0, "IMAGE");
+  WriteCodeString(0, L"IMAGE");
   WriteEntity(rasterImage);
-  WriteCodeString(100, "AcDbRasterImage");
+  WriteCodeString(100, L"AcDbRasterImage");
   WriteCodeDouble(10, rasterImage->m_firstPoint.x);
   WriteCodeDouble(20, rasterImage->m_firstPoint.y);
   WriteCodeDouble(30, rasterImage->m_firstPoint.z);
@@ -237,16 +249,16 @@ EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::strin
   return id;
 }
 
-bool EoDxfWrite::WriteBlockRecord(std::string name) {
-  WriteCodeString(0, "BLOCK_RECORD");
+bool EoDxfWrite::WriteBlockRecord(std::wstring name) {
+  WriteCodeString(0, L"BLOCK_RECORD");
   WriteCodeString(5, ToHexString(++m_entityCount));
 
   m_blockMap[name] = m_entityCount;
   m_entityCount = 2 + m_entityCount;  // reserve 2 for BLOCK & ENDBLOCK
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, "1"); }
-  WriteCodeString(100, "AcDbSymbolTableRecord");
-  WriteCodeString(100, "AcDbBlockTableRecord");
-  WriteCodeUtf8String(2, name);
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1"); }
+  WriteCodeString(100, L"AcDbSymbolTableRecord");
+  WriteCodeString(100, L"AcDbBlockTableRecord");
+  WriteCodeWideString(2, name);
   if (m_version > EoDxf::Version::AC1018) {
     //    m_writer->WriteInt16(340, 22);
     WriteCodeInt16(70, 0);
@@ -259,171 +271,171 @@ bool EoDxfWrite::WriteBlockRecord(std::string name) {
 
 bool EoDxfWrite::WriteBlock(EoDxfBlock* block) {
   if (m_writingBlock) {
-    WriteCodeString(0, "ENDBLK");
+    WriteCodeString(0, L"ENDBLK");
 
     WriteCodeString(5, ToHexString(m_currentHandle + 2));
     if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(m_currentHandle)); }
-    WriteCodeString(100, "AcDbEntity");
+    WriteCodeString(100, L"AcDbEntity");
 
-    WriteCodeString(8, "0");
-    WriteCodeString(100, "AcDbBlockEnd");
+    WriteCodeString(8, L"0");
+    WriteCodeString(100, L"AcDbBlockEnd");
   }
   m_writingBlock = true;
-  WriteCodeString(0, "BLOCK");
+  WriteCodeString(0, L"BLOCK");
 
   m_currentHandle = (*(m_blockMap.find(block->name))).second;
   WriteCodeString(5, ToHexString(m_currentHandle + 1));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(m_currentHandle)); }
-  WriteCodeString(100, "AcDbEntity");
+  WriteCodeString(100, L"AcDbEntity");
 
-  WriteCodeString(8, "0");
+  WriteCodeString(8, L"0");
 
-  WriteCodeString(100, "AcDbBlockBegin");
-  WriteCodeUtf8String(2, block->name);
+  WriteCodeString(100, L"AcDbBlockBegin");
+  WriteCodeWideString(2, block->name);
 
   WriteCodeInt16(70, block->m_flags);
   WriteCodeDouble(10, block->m_firstPoint.x);
   WriteCodeDouble(20, block->m_firstPoint.y);
   if (block->m_firstPoint.z != 0.0) { WriteCodeDouble(30, block->m_firstPoint.z); }
 
-  WriteCodeUtf8String(3, block->name);
+  WriteCodeWideString(3, block->name);
 
-  WriteCodeString(1, "");
+  WriteCodeString(1, L"");
 
   return m_writeOk;
 }
 
 bool EoDxfWrite::WriteBlocks() {
-  WriteCodeString(0, "BLOCK");
+  WriteCodeString(0, L"BLOCK");
 
-  WriteCodeString(5, "20");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, "1F"); }
-  WriteCodeString(100, "AcDbEntity");
+  WriteCodeString(5, L"20");
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1F"); }
+  WriteCodeString(100, L"AcDbEntity");
 
-  WriteCodeString(8, "0");
+  WriteCodeString(8, L"0");
 
-  WriteCodeString(100, "AcDbBlockBegin");
-  WriteCodeString(2, "*Model_Space");
-
-  WriteCodeInt16(70, 0);
-  WriteCodeDouble(10, 0.0);
-  WriteCodeDouble(20, 0.0);
-  WriteCodeDouble(30, 0.0);
-
-  WriteCodeString(3, "*Model_Space");
-
-  WriteCodeString(1, "");
-  WriteCodeString(0, "ENDBLK");
-
-  WriteCodeString(5, "21");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, "1F"); }
-  WriteCodeString(100, "AcDbEntity");
-
-  WriteCodeString(8, "0");
-  WriteCodeString(100, "AcDbBlockEnd");
-  WriteCodeString(0, "BLOCK");
-
-  WriteCodeString(5, "1C");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, "1B"); }
-  WriteCodeString(100, "AcDbEntity");
-
-  WriteCodeString(8, "0");
-
-  WriteCodeString(100, "AcDbBlockBegin");
-  WriteCodeString(2, "*Paper_Space");
+  WriteCodeString(100, L"AcDbBlockBegin");
+  WriteCodeString(2, L"*Model_Space");
 
   WriteCodeInt16(70, 0);
   WriteCodeDouble(10, 0.0);
   WriteCodeDouble(20, 0.0);
   WriteCodeDouble(30, 0.0);
 
-  WriteCodeString(3, "*Paper_Space");
+  WriteCodeString(3, L"*Model_Space");
 
-  WriteCodeString(1, "");
-  WriteCodeString(0, "ENDBLK");
+  WriteCodeString(1, L"");
+  WriteCodeString(0, L"ENDBLK");
 
-  WriteCodeString(5, "1D");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, "1F"); }
-  WriteCodeString(100, "AcDbEntity");
+  WriteCodeString(5, L"21");
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1F"); }
+  WriteCodeString(100, L"AcDbEntity");
 
-  WriteCodeString(8, "0");
-  WriteCodeString(100, "AcDbBlockEnd");
+  WriteCodeString(8, L"0");
+  WriteCodeString(100, L"AcDbBlockEnd");
+  WriteCodeString(0, L"BLOCK");
+
+  WriteCodeString(5, L"1C");
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1B"); }
+  WriteCodeString(100, L"AcDbEntity");
+
+  WriteCodeString(8, L"0");
+
+  WriteCodeString(100, L"AcDbBlockBegin");
+  WriteCodeString(2, L"*Paper_Space");
+
+  WriteCodeInt16(70, 0);
+  WriteCodeDouble(10, 0.0);
+  WriteCodeDouble(20, 0.0);
+  WriteCodeDouble(30, 0.0);
+
+  WriteCodeString(3, L"*Paper_Space");
+
+  WriteCodeString(1, L"");
+  WriteCodeString(0, L"ENDBLK");
+
+  WriteCodeString(5, L"1D");
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1F"); }
+  WriteCodeString(100, L"AcDbEntity");
+
+  WriteCodeString(8, L"0");
+  WriteCodeString(100, L"AcDbBlockEnd");
   m_writingBlock = false;
   m_interface->writeBlocks();
   if (m_writingBlock) {
     m_writingBlock = false;
-    WriteCodeString(0, "ENDBLK");
+    WriteCodeString(0, L"ENDBLK");
 
     WriteCodeString(5, ToHexString(m_currentHandle + 2));
     //            m_writer->WriteString(5, "1D");
     if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(m_currentHandle)); }
-    WriteCodeString(100, "AcDbEntity");
+    WriteCodeString(100, L"AcDbEntity");
 
-    WriteCodeString(8, "0");
-    WriteCodeString(100, "AcDbBlockEnd");
+    WriteCodeString(8, L"0");
+    WriteCodeString(100, L"AcDbBlockEnd");
   }
   return m_writeOk;
 }
 
 bool EoDxfWrite::WriteObjects() {
-  WriteCodeString(0, "DICTIONARY");
-  std::string imgDictH;
-  WriteCodeString(5, "C");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, "0"); }
-  WriteCodeString(100, "AcDbDictionary");
+  WriteCodeString(0, L"DICTIONARY");
+  std::wstring imgDictH;
+  WriteCodeString(5, L"C");
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"0"); }
+  WriteCodeString(100, L"AcDbDictionary");
   WriteCodeInt16(281, 1);
-  WriteCodeString(3, "ACAD_GROUP");
-  WriteCodeString(350, "D");
+  WriteCodeString(3, L"ACAD_GROUP");
+  WriteCodeString(350, L"D");
   if (m_imageDef.size() != 0) {
-    WriteCodeString(3, "ACAD_IMAGE_DICT");
+    WriteCodeString(3, L"ACAD_IMAGE_DICT");
     imgDictH = ToHexString(++m_entityCount);
     WriteCodeString(350, imgDictH);
   }
-  WriteCodeString(0, "DICTIONARY");
-  WriteCodeString(5, "D");
-  WriteCodeString(330, "C");
-  WriteCodeString(100, "AcDbDictionary");
+  WriteCodeString(0, L"DICTIONARY");
+  WriteCodeString(5, L"D");
+  WriteCodeString(330, L"C");
+  WriteCodeString(100, L"AcDbDictionary");
   WriteCodeInt16(281, 1);
   // write IMAGEDEF_REACTOR
   for (unsigned int i = 0; i < m_imageDef.size(); i++) {
     EoDxfImageDefinition* id = m_imageDef.at(i);
-    std::map<std::string, std::string>::iterator it;
+    std::map<std::wstring, std::wstring>::iterator it;
     for (it = id->reactors.begin(); it != id->reactors.end(); ++it) {
-      WriteCodeString(0, "IMAGEDEF_REACTOR");
+      WriteCodeString(0, L"IMAGEDEF_REACTOR");
       WriteCodeString(5, it->first);
       WriteCodeString(330, it->second);
-      WriteCodeString(100, "AcDbRasterImageDefReactor");
+      WriteCodeString(100, L"AcDbRasterImageDefReactor");
       WriteCodeInt32(90, 2);  // version 2=R14 to v2010
       WriteCodeString(330, it->second);
     }
   }
   if (m_imageDef.size() != 0) {
-    WriteCodeString(0, "DICTIONARY");
+    WriteCodeString(0, L"DICTIONARY");
     WriteCodeString(5, imgDictH);
-    WriteCodeString(330, "C");
-    WriteCodeString(100, "AcDbDictionary");
+    WriteCodeString(330, L"C");
+    WriteCodeString(100, L"AcDbDictionary");
     WriteCodeInt16(281, 1);
     for (unsigned int i = 0; i < m_imageDef.size(); i++) {
       size_t f1, f2;
-      f1 = m_imageDef.at(i)->m_fileNameOfImage.find_last_of("/\\");
-      f2 = m_imageDef.at(i)->m_fileNameOfImage.find_last_of('.');
+      f1 = m_imageDef.at(i)->m_fileNameOfImage.find_last_of(L"/\\");
+      f2 = m_imageDef.at(i)->m_fileNameOfImage.find_last_of(L'.');
       ++f1;
-      WriteCodeString(3, m_imageDef.at(i)->m_fileNameOfImage.substr(f1, f2 - f1));
+      WriteCodeWideString(3, m_imageDef.at(i)->m_fileNameOfImage.substr(f1, f2 - f1));
       WriteCodeString(350, ToHexString(m_imageDef.at(i)->m_handle));
     }
   }
   for (unsigned int i = 0; i < m_imageDef.size(); i++) {
     EoDxfImageDefinition* id = m_imageDef.at(i);
-    WriteCodeString(0, "IMAGEDEF");
+    WriteCodeString(0, L"IMAGEDEF");
     WriteCodeString(5, ToHexString(id->m_handle));
     if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, imgDictH); }
-    WriteCodeString(102, "{ACAD_REACTORS");
-    std::map<std::string, std::string>::iterator it;
+    WriteCodeString(102, L"{ACAD_REACTORS");
+    std::map<std::wstring, std::wstring>::iterator it;
     for (it = id->reactors.begin(); it != id->reactors.end(); ++it) { WriteCodeString(330, it->first); }
-    WriteCodeString(102, "}");
-    WriteCodeString(100, "AcDbRasterImageDef");
+    WriteCodeString(102, L"}");
+    WriteCodeString(100, L"AcDbRasterImageDef");
     WriteCodeInt32(90, 0);  // version 0=R14 to v2010
-    WriteCodeUtf8String(1, id->m_fileNameOfImage);
+    WriteCodeWideString(1, id->m_fileNameOfImage);
     WriteCodeDouble(10, id->m_uImageSizeInPixels);
     WriteCodeDouble(20, id->m_vImageSizeInPixels);
     WriteCodeDouble(11, id->m_uSizeOfOnePixel);
@@ -438,58 +450,66 @@ bool EoDxfWrite::WriteObjects() {
   return m_writeOk;
 }
 
+bool EoDxfWrite::WriteAppData(const std::list<std::list<EoDxfGroupCodeValuesVariant>>& appData) {
+  for (const auto& group : appData) {
+    if (group.empty()) { continue; }
+
+    auto variant = group.begin();
+    if (variant->Code() != 102) { continue; }
+
+    if (const auto* value = variant->GetIf<std::wstring>()) {
+      WriteCodeWideString(102, std::wstring{L"{"} + *value);
+    } else {
+      continue;
+    }
+
+    ++variant;
+    for (; variant != group.end(); ++variant) { WriteVariantValue(*variant); }
+    WriteCodeString(102, L"}");
+  }
+
+  return m_writeOk;
+}
+
 bool EoDxfWrite::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& ed) {
   for (std::vector<EoDxfGroupCodeValuesVariant*>::const_iterator it = ed.begin(); it != ed.end(); ++it) {
-    switch ((*it)->Code()) {
-      case 1000:
-      case 1001:
-      case 1002:
-      case 1003:
-      case 1004:
-      case 1005: {
-        int cc = (*it)->Code();
-        if (const auto* value = (*it)->GetIf<std::wstring>()) {
-          WriteCodeWideString(cc, *value);
-        } else if (const auto* value = (*it)->GetIf<std::string>()) {
-          WriteCodeUtf8String(cc, *value);
-        }
-        //            m_writer->WriteUtf8String((*it)->code, (*it)->content.s);
-        break;
-      }
-      case 1010:
-      case 1011:
-      case 1012:
-      case 1013:
-        if (const auto* geometryBase = (*it)->GetIf<EoDxfGeometryBase3d>()) {
-          WriteCodeDouble((*it)->Code(), geometryBase->x);
-          WriteCodeDouble((*it)->Code() + 10, geometryBase->y);
-          WriteCodeDouble((*it)->Code() + 20, geometryBase->z);
-        }
-        break;
-      case 1040:
-      case 1041:
-      case 1042:
-        if (const auto* value = (*it)->GetIf<double>()) { WriteCodeDouble((*it)->Code(), *value); }
-        break;
-      case 1070:
-        if (const auto* value = (*it)->GetIf<std::int16_t>()) {
-          WriteCodeInt16((*it)->Code(), *value);
-        } else if (const auto* value = (*it)->GetIf<bool>()) {
-          WriteCodeInt16((*it)->Code(), *value ? 1 : 0);
-        }
-        break;
-      case 1071:
-        if (const auto* value = (*it)->GetIf<std::int32_t>()) { WriteCodeInt32((*it)->Code(), *value); }
-        break;
-      default:
-        break;
-    }
+    if (*it != nullptr) { WriteVariantValue(*(*it)); }
   }
   return m_writeOk;
 }
 
-std::string EoDxfWrite::ToHexString(uint64_t hexValue) {
-  std::ostringstream convert;
+bool EoDxfWrite::WriteVariantValue(const EoDxfGroupCodeValuesVariant& value) {
+  const auto code = value.Code();
+
+  if (const auto* wideStringValue = value.GetIf<std::wstring>()) {
+    WriteCodeWideString(code, *wideStringValue);
+  } else if (const auto* handleValue = value.GetIf<std::uint64_t>()) {
+    WriteCodeString(code, ToHexString(*handleValue));
+  } else if (const auto* geometryBase = value.GetIf<EoDxfGeometryBase3d>()) {
+    WriteCodeDouble(code, geometryBase->x);
+    WriteCodeDouble(code + 10, geometryBase->y);
+    WriteCodeDouble(code + 20, geometryBase->z);
+  } else if (const auto* int16Value = value.GetIf<std::int16_t>()) {
+    WriteCodeInt16(code, *int16Value);
+  } else if (const auto* int32Value = value.GetIf<std::int32_t>()) {
+    WriteCodeInt32(code, *int32Value);
+  } else if (const auto* int64Value = value.GetIf<std::int64_t>()) {
+    WriteCodeInt64(code, *int64Value);
+  } else if (const auto* boolValue = value.GetIf<bool>()) {
+    if (code == 1070) {
+      WriteCodeInt16(code, *boolValue ? 1 : 0);
+    } else {
+      WriteCodeBool(code, *boolValue);
+    }
+  } else if (const auto* doubleValue = value.GetIf<double>()) {
+    WriteCodeDouble(code, *doubleValue);
+  }
+
+  return m_writeOk;
+}
+
+std::wstring EoDxfWrite::ToHexString(uint64_t hexValue) {
+  std::wostringstream convert;
   convert << std::uppercase << std::hex << hexValue;
   return convert.str();
 }

@@ -8,13 +8,13 @@
 void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
   // Handle state transitions driven by string-valued bracket markers.
   if (code >= 300 && code <= 305) {
-    const std::string marker = reader->GetString();
+    const std::wstring marker = reader->GetWideString();
 
-    if (code == 300 && marker == "CONTEXT_DATA{") {
+    if (code == 300 && marker == L"CONTEXT_DATA{") {
       m_parseState = ParseState::ContextData;
       return;
     }
-    if (code == 301 && marker == "}") {
+    if (code == 301 && marker == L"}") {
       // Closing bracket — could end MTextContent or CONTEXT_DATA.
       if (m_parseState == ParseState::MTextContent) {
         m_parseState = ParseState::ContextData;
@@ -23,26 +23,26 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
       }
       return;
     }
-    if (code == 302 && marker == "LEADER{") {
+    if (code == 302 && marker == L"LEADER{") {
       m_contextData.m_leaders.emplace_back();
       m_parseState = ParseState::Leader;
       return;
     }
-    if (code == 303 && marker == "}") {
+    if (code == 303 && marker == L"}") {
       m_parseState = ParseState::ContextData;
       return;
     }
-    if (code == 304 && marker == "LEADER_LINE{") {
+    if (code == 304 && marker == L"LEADER_LINE{") {
       if (!m_contextData.m_leaders.empty()) { m_contextData.m_leaders.back().m_leaderLines.emplace_back(); }
       m_parseState = ParseState::LeaderLine;
       return;
     }
-    if (code == 304 && marker == "{") {
+    if (code == 304 && marker == L"{") {
       // Opens the MText content sub-block inside CONTEXT_DATA.
       m_parseState = ParseState::MTextContent;
       return;
     }
-    if (code == 305 && marker == "}") {
+    if (code == 305 && marker == L"}") {
       m_parseState = ParseState::Leader;
       return;
     }
@@ -189,10 +189,10 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           ctx.m_textStyleHandle = reader->GetHandleString();
           break;
         case 1:
-          ctx.m_textString = reader->GetUtf8String();
+          ctx.m_textString = reader->GetWideString();
           break;
         case 3:
-          ctx.m_textString += reader->GetUtf8String();
+          ctx.m_textString += reader->GetWideString();
           break;
         default:
           EoDxfEntity::ParseCode(code, reader);
