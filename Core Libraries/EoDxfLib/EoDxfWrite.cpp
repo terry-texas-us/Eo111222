@@ -18,6 +18,26 @@
 namespace {
 constexpr std::wstring_view EODXFLIB_VERSION{L"0.1"};
 constexpr auto FIRSTHANDLE{48};
+
+[[nodiscard]] std::wstring GetRequestedCodePage(const EoDxfHeader& header) {
+  const auto headerVariable = header.m_variants.find(L"$DWGCODEPAGE");
+  if (headerVariable == header.m_variants.end() || headerVariable->second == nullptr) {
+    return L"ANSI_1252";
+  }
+
+  const auto* codePage = headerVariable->second->GetIf<std::wstring>();
+  if (codePage == nullptr || codePage->empty()) {
+    return L"ANSI_1252";
+  }
+
+  return *codePage;
+}
+
+[[nodiscard]] bool IsUtf16CodePage(std::wstring_view codePage) {
+  EoTcTextCodec textCodec;
+  textCodec.SetCodePage(codePage);
+  return textCodec.GetCodePage() == L"UTF-16";
+}
 }  // namespace
 
 EoDxfWrite::EoDxfWrite(const std::filesystem::path& fileName) {
@@ -38,12 +58,19 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
   delete m_writer;
   m_writer = nullptr;
 
+  EoDxfHeader header;
+  if (interface_ != nullptr) { interface_->writeHeader(header); }
+
   std::ofstream filestr;
   m_version = version;
   m_binaryFile = binaryFile;
   m_interface = interface_;
   m_writeOk = (m_interface != nullptr);
   if (!m_writeOk) { return false; }
+  if (m_binaryFile && IsUtf16CodePage(GetRequestedCodePage(header))) {
+    m_writeOk = false;
+    return false;
+  }
 
   if (m_binaryFile) {
       filestr.open(std::filesystem::path{m_fileName}, std::ios_base::out | std::ios::binary | std::ios::trunc);
@@ -67,8 +94,6 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
     return false;
   }
 
-  EoDxfHeader header;
-  m_interface->writeHeader(header);
   m_entityCount = FIRSTHANDLE;
    WriteCodeString(0, L"SECTION");
   header.Write(m_writer, m_version);
