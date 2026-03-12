@@ -1,12 +1,49 @@
+#include <Windows.h>
+
 #include <map>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <string_view>
 
 #include "EoDxfBase.h"
 #include "EoDxfHeader.h"
 #include "EoDxfReader.h"
 #include "EoDxfWriter.h"
+
+namespace {
+
+[[nodiscard]] std::wstring Utf8ToWideText(const std::string_view text) {
+  if (text.empty()) { return {}; }
+
+  const auto inputLength = static_cast<int>(text.size());
+  const auto requiredLength = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text.data(), inputLength, nullptr, 0);
+  if (requiredLength <= 0) { return {}; }
+
+  std::wstring wideText(static_cast<std::size_t>(requiredLength), L'\0');
+  const auto convertedLength =
+      MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text.data(), inputLength, wideText.data(), requiredLength);
+  if (convertedLength != requiredLength) { return {}; }
+
+  return wideText;
+}
+
+[[nodiscard]] std::string WideToUtf8Text(const std::wstring_view text) {
+  if (text.empty()) { return {}; }
+
+  const auto inputLength = static_cast<int>(text.size());
+  const auto requiredLength = WideCharToMultiByte(CP_UTF8, 0, text.data(), inputLength, nullptr, 0, nullptr, nullptr);
+  if (requiredLength <= 0) { return {}; }
+
+  std::string utf8Text(static_cast<std::size_t>(requiredLength), '\0');
+  const auto convertedLength =
+      WideCharToMultiByte(CP_UTF8, 0, text.data(), inputLength, utf8Text.data(), requiredLength, nullptr, nullptr);
+  if (convertedLength != requiredLength) { return {}; }
+
+  return utf8Text;
+}
+
+}  // namespace
 
 EoDxfHeader::EoDxfHeader(const EoDxfHeader& other)
     : m_version{other.m_version}, m_comments{other.m_comments}, m_name{other.m_name}, m_currentVariant{nullptr} {
@@ -44,20 +81,20 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
 
   switch (code) {
     case 1:
-      m_currentVariant->AddString(code, reader->GetUtf8String());
+      m_currentVariant->AddWideString(code, reader->GetWideString());
       if (m_name == "$ACADVER") {
-        reader->SetVersion(m_currentVariant->GetString());
+        reader->SetVersion(WideToUtf8Text(m_currentVariant->GetWideString()));
         m_version = reader->GetVersion();
       }
       break;
     case 2:
-      m_currentVariant->AddString(code, reader->GetUtf8String());
+      m_currentVariant->AddWideString(code, reader->GetWideString());
       break;
     case 3:
-      m_currentVariant->AddString(code, reader->GetUtf8String());
+      m_currentVariant->AddWideString(code, reader->GetWideString());
       if (m_name == "$DWGCODEPAGE") {
-        reader->SetCodePage(m_currentVariant->GetString());
-        m_currentVariant->AddString(code, reader->GetCodePage());
+        reader->SetCodePage(WideToUtf8Text(m_currentVariant->GetWideString()));
+        m_currentVariant->AddWideString(code, Utf8ToWideText(reader->GetCodePage()));
       }
       break;
     case 5: {
@@ -70,13 +107,13 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       m_currentVariant->AddHandle(code, handle);
     } break;
     case 6:
-      m_currentVariant->AddString(code, reader->GetUtf8String());
+      m_currentVariant->AddWideString(code, reader->GetWideString());
       break;
     case 7:
-      m_currentVariant->AddString(code, reader->GetUtf8String());
+      m_currentVariant->AddWideString(code, reader->GetWideString());
       break;
     case 8:
-      m_currentVariant->AddString(code, reader->GetUtf8String());
+      m_currentVariant->AddWideString(code, reader->GetWideString());
       break;
     case 9: {
       auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>();
@@ -130,7 +167,7 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       m_currentVariant->AddInt16(code, reader->GetInt16());
       break;
     case 390:
-      m_currentVariant->AddString(code, reader->GetUtf8String());
+      m_currentVariant->AddWideString(code, reader->GetWideString());
       break;
     default:
       // Unrecognized group code for header variable; ignore (and/or log) it and continue parsing.
@@ -141,7 +178,6 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
   double variantDouble;
   std::int16_t variantInt16;
-  std::string variantString;
   EoDxfGeometryBase3d variantGeometryBase;
 
   writer->WriteString(9, "$INSBASE");
@@ -223,25 +259,13 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
   writer->WriteDouble(40, GetDouble("$TRACEWID", &variantDouble) ? variantDouble : 15.68);
 
   writer->WriteString(9, "$TEXTSTYLE");
-  if (GetString("$TEXTSTYLE", &variantString)) {
-    writer->WriteUtf8String(7, variantString);
-  } else {
-    writer->WriteString(7, "STANDARD");
-  }
+  WriteStoredWideString(writer, "$TEXTSTYLE", 7, L"STANDARD");
 
   writer->WriteString(9, "$CLAYER");
-  if (GetString("$CLAYER", &variantString)) {
-    writer->WriteUtf8String(8, variantString);
-  } else {
-    writer->WriteString(8, "0");
-  }
+  WriteStoredWideString(writer, "$CLAYER", 8, L"0");
 
   writer->WriteString(9, "$CELTYPE");
-  if (GetString("$CELTYPE", &variantString)) {
-    writer->WriteUtf8String(6, variantString);
-  } else {
-    writer->WriteString(6, "BYLAYER");
-  }
+  WriteStoredWideString(writer, "$CELTYPE", 6, L"BYLAYER");
 
   writer->WriteString(9, "$CECOLOR");
   writer->WriteInt16(62, GetInt16("$CECOLOR", &variantInt16) ? variantInt16 : 256);
@@ -307,11 +331,7 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
   writer->WriteInt16(70, GetInt16("$DIMZIN", &variantInt16) ? variantInt16 : 8);
 
   writer->WriteString(9, "$DIMBLK");
-  if (GetString("$DIMBLK", &variantString)) {
-    writer->WriteUtf8String(1, variantString);
-  } else {
-    writer->WriteString(1, "");
-  }
+  WriteStoredWideString(writer, "$DIMBLK", 1, L"");
 
   writer->WriteString(9, "$DIMASO");
   writer->WriteInt16(70, GetInt16("$DIMASO", &variantInt16) ? variantInt16 : 1);
@@ -320,18 +340,10 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
   writer->WriteInt16(70, GetInt16("$DIMSHO", &variantInt16) ? variantInt16 : 1);
 
   writer->WriteString(9, "$DIMPOST");
-  if (GetString("$DIMPOST", &variantString)) {
-    writer->WriteUtf8String(1, variantString);
-  } else {
-    writer->WriteString(1, "");
-  }
+  WriteStoredWideString(writer, "$DIMPOST", 1, L"");
 
   writer->WriteString(9, "$DIMAPOST");
-  if (GetString("$DIMAPOST", &variantString)) {
-    writer->WriteUtf8String(1, variantString);
-  } else {
-    writer->WriteString(1, "");
-  }
+  WriteStoredWideString(writer, "$DIMAPOST", 1, L"");
 
   writer->WriteString(9, "$DIMALT");
   writer->WriteInt16(70, GetInt16("$DIMALT", &variantInt16) ? variantInt16 : 0);
@@ -361,18 +373,10 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
   writer->WriteInt16(70, GetInt16("$DIMSAH", &variantInt16) ? variantInt16 : 0);
 
   writer->WriteString(9, "$DIMBLK1");
-  if (GetString("$DIMBLK1", &variantString)) {
-    writer->WriteUtf8String(1, variantString);
-  } else {
-    writer->WriteString(1, "");
-  }
+  WriteStoredWideString(writer, "$DIMBLK1", 1, L"");
 
   writer->WriteString(9, "$DIMBLK2");
-  if (GetString("$DIMBLK2", &variantString)) {
-    writer->WriteUtf8String(1, variantString);
-  } else {
-    writer->WriteString(1, "");
-  }
+  WriteStoredWideString(writer, "$DIMBLK2", 1, L"");
 
   writer->WriteString(9, "$LUNITS");
   writer->WriteInt16(70, GetInt16("$LUNITS", &variantInt16) ? variantInt16 : 2);
@@ -393,11 +397,7 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
   writer->WriteInt16(70, GetInt16("$AUPREC", &variantInt16) ? variantInt16 : 2);
 
   writer->WriteString(9, "$MENU");
-  if (GetString("$MENU", &variantString)) {
-    writer->WriteUtf8String(1, variantString);
-  } else {
-    writer->WriteString(1, ".");
-  }
+  WriteStoredWideString(writer, "$MENU", 1, L".");
 
   writer->WriteString(9, "$ELEVATION");
   writer->WriteDouble(40, GetDouble("$ELEVATION", &variantDouble) ? variantDouble : 0.0);
@@ -460,11 +460,7 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
   writer->WriteInt16(70, GetInt16("$SURFV", &variantInt16) ? variantInt16 : 6);
 
   writer->WriteString(9, "$UCSNAME");
-  if (GetString("$UCSNAME", &variantString)) {
-    writer->WriteUtf8String(2, variantString);
-  } else {
-    writer->WriteString(2, "");
-  }
+  WriteStoredWideString(writer, "$UCSNAME", 2, L"");
 
   writer->WriteString(9, "$UCSORG");
   if (GetGeometryBase("$UCSORG", &variantGeometryBase)) {
@@ -536,15 +532,10 @@ void EoDxfHeader::WriteBase(EoDxfWriter* writer) {
 void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
   double variantDouble;
   std::int16_t variantInt16;
-  std::string variantString;
   EoDxfGeometryBase3d variantGeometryBase;
 
   writer->WriteString(9, "$DIMSTYLE");  // not used before AC1009
-  if (GetString("$DIMSTYLE", &variantString)) {
-    writer->WriteUtf8String(2, variantString);
-  } else {
-    writer->WriteString(2, "STANDARD");
-  }
+  WriteStoredWideString(writer, "$DIMSTYLE", 2, L"STANDARD");
 
   writer->WriteString(9, "$DIMCLRD");
   writer->WriteInt16(70, GetInt16("$DIMCLRD", &variantInt16) ? variantInt16 : 0);
@@ -565,11 +556,7 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
   writer->WriteDouble(40, GetDouble("$PELEVATION", &variantDouble) ? variantDouble : 0.0);
 
   writer->WriteString(9, "$PUCSNAME");
-  if (GetString("$PUCSNAME", &variantString)) {
-    writer->WriteUtf8String(2, variantString);
-  } else {
-    writer->WriteString(2, "");
-  }
+  WriteStoredWideString(writer, "$PUCSNAME", 2, L"");
 
   writer->WriteString(9, "$PUCSORG");
   if (GetGeometryBase("$PUCSORG", &variantGeometryBase)) {
@@ -679,7 +666,6 @@ void EoDxfHeader::WriteAC1009Additions(EoDxfWriter* writer) {
 void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer) {
   double variantDouble;
   std::int16_t variantInt16;
-  std::string variantString;
   EoDxfGeometryBase3d variantGeometryBase;
 
   writer->WriteString(9, "$CELTSCALE");
@@ -725,11 +711,7 @@ void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer) {
   writer->WriteInt16(70, GetInt16("$DIMALTTD", &variantInt16) ? variantInt16 : 3);
 
   writer->WriteString(9, "$DIMTXSTY");
-  if (GetString("$DIMTXSTY", &variantString)) {
-    writer->WriteUtf8String(7, variantString);
-  } else {
-    writer->WriteString(7, "STANDARD");
-  }
+  WriteStoredWideString(writer, "$DIMTXSTY", 7, L"STANDARD");
 
   writer->WriteString(9, "$DIMAUNIT");
   writer->WriteInt16(70, GetInt16("$DIMAUNIT", &variantInt16) ? variantInt16 : 0);
@@ -755,11 +737,7 @@ void EoDxfHeader::WriteAC1012Additions(EoDxfWriter* writer) {
   writer->WriteInt16(70, GetInt16("$TREEDEPTH", &variantInt16) ? variantInt16 : 3020);
 
   writer->WriteString(9, "$CMLSTYLE");
-  if (GetString("$CMLSTYLE", &variantString)) {
-    writer->WriteUtf8String(2, variantString);
-  } else {
-    writer->WriteString(2, "Standard");
-  }
+  WriteStoredWideString(writer, "$CMLSTYLE", 2, L"Standard");
 
   writer->WriteString(9, "$CMLJUST");
   writer->WriteInt16(70, GetInt16("$CMLJUST", &variantInt16) ? variantInt16 : 0);
@@ -804,11 +782,7 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
   writer->WriteInt16(70, GetInt16("$DIMFRAC", &variantInt16) ? variantInt16 : 0);
 
   writer->WriteString(9, "$DIMLDRBLK");
-  if (GetString("$DIMLDRBLK", &variantString)) {
-    writer->WriteUtf8String(1, variantString);
-  } else {
-    writer->WriteString(1, "STANDARD");
-  }
+  WriteStoredWideString(writer, "$DIMLDRBLK", 1, L"STANDARD");
 
   // `$DIMLUNIT` replaced `$DIMUNIT` in AC1015, but `$DIMUNIT` may still be present in AC1012 and AC1014 files,
   // so check for both and default to 2 (decimal) if neither is found or if the value is out of range
@@ -830,11 +804,7 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
   writer->WriteInt16(70, GetInt16("$DIMTMOVE", &variantInt16) ? variantInt16 : 0);
 
   writer->WriteString(9, "$UCSORTHOREF");
-  if (GetString("$UCSORTHOREF", &variantString)) {
-    writer->WriteUtf8String(2, variantString);
-  } else {
-    writer->WriteString(2, "");
-  }
+  WriteStoredWideString(writer, "$UCSORTHOREF", 2, L"");
 
   writer->WriteString(9, "$UCSORTHOVIEW");
   writer->WriteInt16(70, GetInt16("$UCSORTHOVIEW", &variantInt16) ? variantInt16 : 0);
@@ -906,25 +876,13 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
   }
 
   writer->WriteString(9, "$UCSBASE");
-  if (GetString("$UCSBASE", &variantString)) {
-    writer->WriteUtf8String(2, variantString);
-  } else {
-    writer->WriteString(2, "");
-  }
+  WriteStoredWideString(writer, "$UCSBASE", 2, L"");
 
   writer->WriteString(9, "$PUCSBASE");
-  if (GetString("$PUCSBASE", &variantString)) {
-    writer->WriteUtf8String(2, variantString);
-  } else {
-    writer->WriteString(2, "");
-  }
+  WriteStoredWideString(writer, "$PUCSBASE", 2, L"");
 
   writer->WriteString(9, "$PUCSORTHOREF");
-  if (GetString("$PUCSORTHOREF", &variantString)) {
-    writer->WriteUtf8String(2, variantString);
-  } else {
-    writer->WriteString(2, "");
-  }
+  WriteStoredWideString(writer, "$PUCSORTHOREF", 2, L"");
 
   writer->WriteString(9, "$PUCSORTHOVIEW");
   writer->WriteInt16(70, GetInt16("$PUCSORTHOVIEW", &variantInt16) ? variantInt16 : 0);
@@ -1011,18 +969,10 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
   writer->WriteInt16(70, GetInt16("$INSUNITS", &variantInt16) ? variantInt16 : 0);
 
   writer->WriteString(9, "$HYPERLINKBASE");
-  if (GetString("$HYPERLINKBASE", &variantString)) {
-    writer->WriteUtf8String(1, variantString);
-  } else {
-    writer->WriteString(1, "");
-  }
+  WriteStoredWideString(writer, "$HYPERLINKBASE", 1, L"");
 
   writer->WriteString(9, "$STYLESHEET");
-  if (GetString("$STYLESHEET", &variantString)) {
-    writer->WriteUtf8String(1, variantString);
-  } else {
-    writer->WriteString(1, "");
-  }
+  WriteStoredWideString(writer, "$STYLESHEET", 1, L"");
 
   writer->WriteString(9, "$XEDIT");
   writer->WriteBool(290, GetBool("$XEDIT", &variantBool) ? variantBool : true);
@@ -1046,7 +996,6 @@ void EoDxfHeader::WriteAC1015Additions(EoDxfWriter* writer) {
 void EoDxfHeader::WriteAC1018Additions(EoDxfWriter* writer, EoDxf::Version version) {
   bool variantBool{};
   std::int16_t variantInt16{};
-  std::string variantString;
 
   writer->WriteString(9, "$SORTENTS");
   writer->WriteInt16(280, GetInt16("$SORTENTS", &variantInt16) ? variantInt16 : 127);
@@ -1091,18 +1040,13 @@ void EoDxfHeader::WriteAC1018Additions(EoDxfWriter* writer, EoDxf::Version versi
   writer->WriteInt16(280, GetInt16("$DIMASSOC", &variantInt16) ? variantInt16 : 1);
 
   writer->WriteString(9, "$PROJECTNAME");
-  if (GetString("$PROJECTNAME", &variantString)) {
-    writer->WriteUtf8String(1, variantString);
-  } else {
-    writer->WriteString(1, "");
-  }
+  WriteStoredWideString(writer, "$PROJECTNAME", 1, L"");
 }
 
 void EoDxfHeader::WriteAC1021Additions(EoDxfWriter* writer) {
   bool variantBool{};
   double variantDouble{};
   std::int16_t variantInt16{};
-  std::string variantString;
 
   writer->WriteString(9, "$DIMFXL");
   writer->WriteDouble(40, GetDouble("$DIMFXL", &variantDouble) ? variantDouble : 1.0);
@@ -1123,25 +1067,13 @@ void EoDxfHeader::WriteAC1021Additions(EoDxfWriter* writer) {
   writer->WriteInt16(70, GetInt16("$DIMARCSYM", &variantInt16) ? variantInt16 : 0);
 
   writer->WriteString(9, "$DIMLTYPE");
-  if (GetString("$DIMLTYPE", &variantString)) {
-    writer->WriteUtf8String(6, variantString);
-  } else {
-    writer->WriteString(6, "");
-  }
+  WriteStoredWideString(writer, "$DIMLTYPE", 6, L"");
 
   writer->WriteString(9, "$DIMLTEX1");
-  if (GetString("$DIMLTEX1", &variantString)) {
-    writer->WriteUtf8String(6, variantString);
-  } else {
-    writer->WriteString(6, "");
-  }
+  WriteStoredWideString(writer, "$DIMLTEX1", 6, L"");
 
   writer->WriteString(9, "$DIMLTEX2");
-  if (GetString("$DIMLTEX2", &variantString)) {
-    writer->WriteUtf8String(6, variantString);
-  } else {
-    writer->WriteString(6, "");
-  }
+  WriteStoredWideString(writer, "$DIMLTEX2", 6, L"");
 
   writer->WriteString(9, "$CAMERADISPLAY");
   writer->WriteBool(290, GetBool("$CAMERADISPLAY", &variantBool) ? variantBool : false);
@@ -1361,10 +1293,14 @@ void EoDxfHeader::AddInt32(const std::string& key, std::int32_t value, int code)
   m_variants[key] = std::move(newVariant);
 }
 
-void EoDxfHeader::AddString(const std::string& key, std::string value, int code) {
+void EoDxfHeader::AddWideString(const std::string& key, std::wstring value, int code) {
   auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, std::move(value));
   m_currentVariant = newVariant.get();
   m_variants[key] = std::move(newVariant);
+}
+
+void EoDxfHeader::AddString(const std::string& key, std::string value, int code) {
+  AddWideString(key, Utf8ToWideText(value), code);
 }
 
 void EoDxfHeader::AddGeometryBase(const std::string& key, EoDxfGeometryBase3d value, int code) {
@@ -1453,6 +1389,12 @@ bool EoDxfHeader::GetInt32(const std::string& key, std::int32_t* variantInteger)
 }
 
 bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) {
+  std::wstring variantWideString;
+  if (GetWideString(key, &variantWideString)) {
+    *variantString = WideToUtf8Text(variantWideString);
+    return true;
+  }
+
   if (auto it = m_variants.find(key); it != m_variants.end()) {
     auto* variant = it->second.get();
     if (const auto* value = variant->GetIf<std::string>()) {
@@ -1464,6 +1406,35 @@ bool EoDxfHeader::GetString(const std::string& key, std::string* variantString) 
   }
   // Non-String variants deliberately left in the map
   return false;
+}
+
+bool EoDxfHeader::GetWideString(const std::string& key, std::wstring* variantString) {
+  if (auto it = m_variants.find(key); it != m_variants.end()) {
+    auto* variant = it->second.get();
+    if (const auto* value = variant->GetIf<std::wstring>()) {
+      *variantString = *value;
+      if (m_currentVariant == variant) { m_currentVariant = nullptr; }
+      m_variants.erase(it);
+      return true;
+    }
+    if (const auto* value = variant->GetIf<std::string>()) {
+      *variantString = Utf8ToWideText(*value);
+      if (m_currentVariant == variant) { m_currentVariant = nullptr; }
+      m_variants.erase(it);
+      return true;
+    }
+  }
+  return false;
+}
+
+void EoDxfHeader::WriteStoredWideString(
+    EoDxfWriter* writer, const char* key, const int code, const std::wstring_view defaultValue) {
+  std::wstring variantWideString;
+  if (GetWideString(key, &variantWideString)) {
+    writer->WriteWideString(code, variantWideString);
+  } else {
+    writer->WriteWideString(code, defaultValue);
+  }
 }
 
 bool EoDxfHeader::GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* variantGeometryBase) {

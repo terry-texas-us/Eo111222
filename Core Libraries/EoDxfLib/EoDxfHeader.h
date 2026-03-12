@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "EoDxfBase.h"
 #include "EoDxfGroupCodeValuesVariant.h"
@@ -26,6 +27,7 @@ class EoDxfHeader {
   void AddDouble(const std::string& key, double value, int code);
   void AddInt16(const std::string& key, std::int16_t value, int code);
   void AddInt32(const std::string& key, std::int32_t value, int code);
+  void AddWideString(const std::string& key, std::wstring value, int code);
   void AddString(const std::string& key, std::string value, int code);
   void AddGeometryBase(const std::string& key, EoDxfGeometryBase3d value, int code);
   void AddHandle(const std::string& key, std::uint64_t value, int code);
@@ -57,6 +59,7 @@ class EoDxfHeader {
 
  private:
   void WriteBase(EoDxfWriter* writer);
+  void WriteStoredWideString(EoDxfWriter* writer, const char* key, int code, std::wstring_view defaultValue);
 
   /** @brief Writes header variables that were added in AC1009 (R11/R12) but not present in AC1006 (R10).
    * Maximum legacy compatibility (still the safest target for 30-year-old viewers.
@@ -107,6 +110,7 @@ class EoDxfHeader {
    * @param variantString Pointer to the output string.
    * @return True if the variant was found and removed, false otherwise.
    */
+  [[nodiscard]] bool GetWideString(const std::string& key, std::wstring* variantString);
   [[nodiscard]] bool GetString(const std::string& key, std::string* variantString);
   [[nodiscard]] bool GetGeometryBase(const std::string& key, EoDxfGeometryBase3d* variantGeometryBase);
   [[nodiscard]] bool GetHandle(const std::string& key, std::uint64_t* varHandle);

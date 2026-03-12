@@ -46,11 +46,17 @@ class EoDxfGroupCodeValuesVariant {
 
   EoDxfGroupCodeValuesVariant(int code, std::string s) noexcept : m_content{std::move(s)}, m_code{code} {}
 
+  EoDxfGroupCodeValuesVariant(int code, std::wstring s) noexcept : m_content{std::move(s)}, m_code{code} {}
+
   EoDxfGroupCodeValuesVariant(int code, EoDxfGeometryBase3d gb) noexcept : m_content{gb}, m_code{code} {}
 
   /// `Add...()` mutator for assigning the new type after construction.
 
   void AddString(int code, std::string s) {
+    m_content = std::move(s);
+    m_code = code;
+  }
+  void AddWideString(int code, std::wstring s) {
     m_content = std::move(s);
     m_code = code;
   }
@@ -112,6 +118,10 @@ class EoDxfGroupCodeValuesVariant {
     assert(std::holds_alternative<std::string>(m_content));
     return std::get<std::string>(m_content);
   }
+  [[nodiscard]] const std::wstring& GetWideString() const {
+    assert(std::holds_alternative<std::wstring>(m_content));
+    return std::get<std::wstring>(m_content);
+  }
   [[nodiscard]] std::int16_t GetInt16() const {
     assert(std::holds_alternative<std::int16_t>(m_content));
     return std::get<std::int16_t>(m_content);
@@ -144,7 +154,7 @@ class EoDxfGroupCodeValuesVariant {
   [[nodiscard]] int Code() const noexcept { return m_code; }
 
  private:
-  std::variant<std::monostate, std::string, std::int16_t, std::int32_t, std::int64_t, std::uint64_t, bool, double,
+  std::variant<std::monostate, std::string, std::wstring, std::int16_t, std::int32_t, std::int64_t, std::uint64_t, bool, double,
       EoDxfGeometryBase3d>
       m_content;
 
