@@ -174,7 +174,7 @@ std::string EoTcTextCodec::ToUtf8(std::string s) const {
   return s;
 }
 
-void EoTcTextCodec::SetVersion(const std::string& version, bool dxfFormat) {
+void EoTcTextCodec::SetVersion(const std::string& version) {
   const auto normalizedVersion = NormalizeToken(version);
   if (normalizedVersion == "AC1006") {
     m_version = static_cast<int>(EoDxf::Version::AC1006);
@@ -203,7 +203,7 @@ void EoTcTextCodec::SetVersion(const std::string& version, bool dxfFormat) {
   }
 }
 
-void EoTcTextCodec::SetVersion(int version, bool dxfFormat) { m_version = version; }
+void EoTcTextCodec::SetVersion(int version) { m_version = version; }
 
 std::string EoTcTextCodec::NormalizeCodePage(const std::string_view codePage) noexcept {
   const auto normalizedCodePage = NormalizeToken(codePage);

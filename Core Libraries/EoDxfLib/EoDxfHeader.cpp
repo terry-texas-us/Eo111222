@@ -46,7 +46,7 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
     case 1:
       m_currentVariant->AddString(code, reader->GetUtf8String());
       if (m_name == "$ACADVER") {
-        reader->SetVersion(m_currentVariant->GetString(), true);
+        reader->SetVersion(m_currentVariant->GetString());
         m_version = reader->GetVersion();
       }
       break;
@@ -1272,7 +1272,7 @@ void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
       break;
   }
   writer->WriteString(1, variantString);
-  writer->SetVersion(variantString, true);
+  writer->SetVersion(variantString);
 
   (void)GetString("$ACADVER", &variantString);
   (void)GetString("$ACADMAINTVER", &variantString);

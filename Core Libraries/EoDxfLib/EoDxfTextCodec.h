@@ -17,15 +17,16 @@ class EoTcTextCodec {
 
   [[nodiscard]] constexpr int GetVersion() const noexcept { return m_version; }
 
-  /** @brief Sets the version of the text codec. This method allows you to specify the version of the text codec being
-   * used, which can affect how text is encoded and decoded. The version can be set using either a string representation
-   * or an integer value, and the dxfFormat parameter indicates whether the version is in DXF format.
+  /** @brief Sets the version for the text codec. This method allows you to specify the version of the DXF format that the text
+   * codec should use when encoding and decoding text. The version can affect how certain characters are handled, as different
+   * versions of the DXF format may have different rules for character encoding. By setting the version correctly, you can
+   * ensure that the text codec behaves in a way that is compatible with the specific DXF version you are working with.
    *
-   * @param version The version to set, either as a string or an integer.
-   * @param dxfFormat A boolean indicating whether the version is in DXF format.
+   * @param version The version to set, specified as a string (e.g., "AC1015", "AC1021") or as an integer corresponding to
+   * the EoDxf::Version enumeration.
    */
-  void SetVersion(const std::string& version, bool dxfFormat);
-  void SetVersion(int version, bool dxfFormat);
+  void SetVersion(const std::string& version);
+  void SetVersion(int version);
 
   /** @brief Gets the current code page used by the text codec.
    * The code page is a character encoding standard that defines how characters are represented in bytes.

@@ -17,7 +17,7 @@ class EoDxfWriter {
   virtual bool WriteDouble(int code, double data) = 0;
   virtual bool WriteBool(int code, bool data) = 0;
 
-  void SetVersion(const std::string& version, bool dxfFormat) { m_encoder.SetVersion(version, dxfFormat); }
+  void SetVersion(const std::string& version) { m_encoder.SetVersion(version); }
   void SetCodePage(const std::string& codePage) { m_encoder.SetCodePage(codePage); }
   [[nodiscard]] const std::string& GetCodePage() const { return m_encoder.GetCodePage(); }
 
