@@ -141,7 +141,7 @@ bool EoDxfWrite::WriteLeader(EoDxfLeader* leader) {
     WriteCodeDouble(41, leader->m_textAnnotationWidth);
   }
 
-  WriteCodeInt16(76, static_cast<int>(leader->m_vertexList.size()));
+  WriteCodeInt16(76, static_cast<std::int16_t>(leader->m_vertexList.size()));
 
   for (const auto& vertex : leader->m_vertexList) {
     WriteCodeDouble(10, vertex.x);
@@ -184,7 +184,7 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
 
   // --- Top-level properties ---
   WriteCodeInt16(170, mLeader->m_leaderType);
-  WriteCodeInt16(91, mLeader->m_leaderLineColor);
+  WriteCodeInt32(91, mLeader->m_leaderLineColor);
 
   if (mLeader->m_leaderLineTypeHandle != EoDxf::NoHandle) {
     WriteCodeString(341, ToHexString(mLeader->m_leaderLineTypeHandle));
@@ -196,11 +196,9 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
   WriteCodeDouble(42, mLeader->m_arrowheadSize);
   WriteCodeInt16(172, mLeader->m_contentType);
 
-  if (mLeader->m_textStyleHandle != EoDxf::NoHandle) {
-    WriteCodeString(343, ToHexString(mLeader->m_textStyleHandle));
-  }
+  if (mLeader->m_textStyleHandle != EoDxf::NoHandle) { WriteCodeString(343, ToHexString(mLeader->m_textStyleHandle)); }
   WriteCodeInt16(173, mLeader->m_textLeftAttachmentType);
-  WriteCodeInt16(95, mLeader->m_textRightAttachmentType);
+  WriteCodeInt32(95, mLeader->m_textRightAttachmentType);
   WriteCodeInt16(174, mLeader->m_textAngleType);
   WriteCodeInt16(175, mLeader->m_textAlignmentType);
   WriteCodeInt32(92, mLeader->m_textColor);
@@ -265,14 +263,10 @@ bool EoDxfWrite::WriteMLeader(EoDxfMLeader* mLeader) {
         WriteCodeDouble(30, vertex.z);
       }
       WriteCodeInt32(91, line.m_leaderLineIndex);
-      if (line.m_leaderLineColorOverride != EoDxf::colorByLayer) {
-        WriteCodeInt32(92, line.m_leaderLineColorOverride);
-      }
+      if (line.m_leaderLineColorOverride != EoDxf::colorByLayer) { WriteCodeInt32(92, line.m_leaderLineColorOverride); }
       if (line.m_leaderLineWeightOverride >= 0) { WriteCodeInt16(171, line.m_leaderLineWeightOverride); }
       if (std::abs(line.m_arrowheadSize) > EoDxf::numericEpsilon) { WriteCodeDouble(40, line.m_arrowheadSize); }
-      if (line.m_arrowheadHandle != EoDxf::NoHandle) {
-        WriteCodeString(341, ToHexString(line.m_arrowheadHandle));
-      }
+      if (line.m_arrowheadHandle != EoDxf::NoHandle) { WriteCodeString(341, ToHexString(line.m_arrowheadHandle)); }
       WriteCodeString(305, L"}");
     }
     WriteCodeString(303, L"}");
@@ -338,7 +332,7 @@ bool EoDxfWrite::WriteMText(EoDxfMText* mText) {
   WriteCodeDouble(40, mText->m_textHeight);
   WriteCodeDouble(41, mText->m_scaleFactorWidth);
   WriteCodeInt16(71, mText->m_textGenerationFlags);
-  WriteCodeInt16(72, mText->m_horizontalAlignment);
+  WriteCodeInt16(72, static_cast<std::int16_t>(mText->m_horizontalAlignment));
 
   size_t chunkOffset{};
   for (; (mText->m_string.size() - chunkOffset) > EoDxf::StringGroupCodeMaxChunk;
@@ -351,7 +345,7 @@ bool EoDxfWrite::WriteMText(EoDxfMText* mText) {
   WriteCodeDouble(220, mText->m_extrusionDirection.y);
   WriteCodeDouble(230, mText->m_extrusionDirection.z);
   WriteCodeDouble(50, mText->m_textRotation);
-  WriteCodeInt16(73, mText->m_verticalAlignment);
+  WriteCodeInt16(73, static_cast<std::int16_t>(mText->m_verticalAlignment));
   WriteCodeDouble(44, mText->m_lineSpacingFactor);
 
   return m_writeOk;
@@ -374,7 +368,9 @@ bool EoDxfWrite::WriteText(EoDxfText* text) {
   WriteCodeWideString(7, text->m_textStyleName);
 
   WriteCodeInt16(71, text->m_textGenerationFlags);
-  if (text->m_horizontalAlignment != EoDxfText::HAlign::Left) { WriteCodeInt16(72, text->m_horizontalAlignment); }
+  if (text->m_horizontalAlignment != EoDxfText::HAlign::Left) {
+    WriteCodeInt16(72, static_cast<std::int16_t>(text->m_horizontalAlignment));
+  }
   if (text->m_horizontalAlignment != EoDxfText::HAlign::Left ||
       text->m_verticalAlignment != EoDxfText::VAlign::BaseLine) {
     WriteCodeDouble(11, text->m_secondPoint.x);
@@ -385,6 +381,8 @@ bool EoDxfWrite::WriteText(EoDxfText* text) {
   WriteCodeDouble(220, text->m_extrusionDirection.y);
   WriteCodeDouble(230, text->m_extrusionDirection.z);
   WriteCodeString(100, L"AcDbText");
-  if (text->m_verticalAlignment != EoDxfText::VAlign::BaseLine) { WriteCodeInt16(73, text->m_verticalAlignment); }
+  if (text->m_verticalAlignment != EoDxfText::VAlign::BaseLine) {
+    WriteCodeInt16(73, static_cast<std::int16_t>(text->m_verticalAlignment));
+  }
   return m_writeOk;
 }

@@ -378,7 +378,7 @@ class EoDxfBlock : public EoDxfPoint {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-   std::wstring name{L"*U0"};  // Group code 2
+  std::wstring m_name{L"*U0"};  // Group code 2
   std::int16_t m_flags{};  // Group code 70
 };
 
@@ -805,11 +805,7 @@ class EoDxfImage : public EoDxfLine {
   friend class EoDxfWrite;
 
  public:
-  EoDxfImage() {
-    m_entityType = EoDxf::IMAGE;
-    fade = clip = 0;
-    brightness = contrast = 50;
-  }
+  EoDxfImage() { m_entityType = EoDxf::IMAGE; }
 
  protected:
   void ParseCode(int code, EoDxfReader* reader);
@@ -820,10 +816,10 @@ class EoDxfImage : public EoDxfLine {
   double sizeu{};  // image size in pixels, U value, code 13
   double sizev{};  // image size in pixels, V value, code 23
   double dz{};  // z coordinate, code 33
-  int clip;  // Clipping state, code 280, 0=off 1=on
-  int brightness;  // Brightness value, code 281, (0-100) default 50
-  int contrast;  // Brightness value, code 282, (0-100) default 50
-  int fade;  // Brightness value, code 283, (0-100) default 0
+  std::int16_t m_clippingState{};  // Group code 280, 0=off 1=on
+  std::int16_t m_brightnessValue{50};  // Group code 281, (0-100)
+  std::int16_t m_contrastValue{50};  // Group code 282, (0-100)
+  std::int16_t m_fadeValue{};  // Group code 283, (0-100)
 };
 
 /** @brief Class to handle dimension entity
@@ -891,7 +887,9 @@ class EoDxfDimension : public EoDxfEntity {
   void setStyle(const std::wstring& s) { style = s; }
   [[nodiscard]] std::int16_t GetAttachmentPoint() const noexcept { return m_attachmentPoint; }  // Group code 71
   void SetAttachmentPoint(const std::int16_t attachmentPoint) { m_attachmentPoint = attachmentPoint; }
-  [[nodiscard]] std::int16_t getTextLineStyle() const noexcept { return m_dimensionTextLineSpacingStyle; }  // Group code 72
+  [[nodiscard]] std::int16_t getTextLineStyle() const noexcept {
+    return m_dimensionTextLineSpacingStyle;
+  }  // Group code 72
   void setTextLineStyle(const std::int16_t dimensionTextLineSpacingStyle) {
     m_dimensionTextLineSpacingStyle = dimensionTextLineSpacingStyle;
   }

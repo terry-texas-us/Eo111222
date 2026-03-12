@@ -92,7 +92,7 @@ void EoDxfImageDefinition::ParseCode(int code, EoDxfReader* reader) {
       m_fileNameOfImage = reader->GetWideString();
       break;
     case 90:
-      imgVersion = reader->GetInt32();
+      m_classVersion = reader->GetInt32();
       break;
     case 10:
       m_uImageSizeInPixels = reader->GetDouble();
@@ -121,7 +121,7 @@ void EoDxfImageDefinition::ParseCode(int code, EoDxfReader* reader) {
 }
 
 void EoDxfImageDefinition::Reset() {
-  imgVersion = 0;
+  m_classVersion = 0;
   m_uImageSizeInPixels = 0.0;
   m_vImageSizeInPixels = 0.0;
   m_uSizeOfOnePixel = 0.0;

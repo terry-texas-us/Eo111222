@@ -78,13 +78,13 @@ class EoDxfImageDefinition : public EoDxfObjectEntry {
 
  public:
   std::wstring m_fileNameOfImage;  // Group code 1
-  int imgVersion;  // Group code 90, 0=R14 version
+  std::int32_t m_classVersion;  // Group code 90, 0=R14 version
   double m_uImageSizeInPixels{};  // Group code 10
   double m_vImageSizeInPixels{};  // Group code 20
   double m_uSizeOfOnePixel{};  // Group code 11
   double m_vSizeOfOnePixel{};  // Group code 21
-  int m_imageIsLoadedFlag{};  // Group code 280, 0=unloaded, 1=loaded
-  int m_resolutionUnits{};  // Group code 281, 0=no, 2=centimeters, 5=inch
+  std::int16_t m_imageIsLoadedFlag{};  // Group code 280, 0=unloaded, 1=loaded
+  std::int16_t m_resolutionUnits{};  // Group code 281, 0=no, 2=centimeters, 5=inch
 
   std::map<std::wstring, std::wstring> reactors;
 };

@@ -41,7 +41,7 @@ class EoDxfLineWidths {
     widthDefault = 31  // by default (dxf -3)
   };
 
-  static int lineWidth2dxfInt(enum lineWidth lw) {
+  static std::int16_t LineWidthToDxfIndex(enum lineWidth lw) {
     switch (lw) {
       case widthByLayer:
         return -1;

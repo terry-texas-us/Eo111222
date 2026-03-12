@@ -28,7 +28,6 @@ class EoDxfHeader {
   void AddInt16(std::wstring_view key, std::int16_t value, int code);
   void AddInt32(std::wstring_view key, std::int32_t value, int code);
   void AddWideString(std::wstring_view key, std::wstring value, int code);
-  void AddString(std::wstring_view key, std::string value, int code);
   void AddGeometryBase(std::wstring_view key, EoDxfGeometryBase3d value, int code);
   void AddHandle(std::wstring_view key, std::uint64_t value, int code);
 

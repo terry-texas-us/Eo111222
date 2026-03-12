@@ -245,7 +245,7 @@ void EoDbDxfInterface::ConvertVPortTable(const EoDxfVPort& viewport, [[maybe_unu
  * paper space entities are output, followed by model space entities. The flag distinguishing them is the group code 67.
  */
 EoDbBlock* EoDbDxfInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* document) {
-  m_blockName = block.name;  // Block Name (group code 2)
+  m_blockName = block.m_name;  // Block Name (group code 2)
 
   // auto handle = block.handle;              // group code 5
   // auto parentHandle = block.parentHandle;  // Soft-pointer ID/handle to owner object (group code 330)

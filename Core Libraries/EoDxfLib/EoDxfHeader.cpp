@@ -1271,10 +1271,6 @@ void EoDxfHeader::AddWideString(std::wstring_view key, std::wstring value, int c
   m_variants[std::wstring{key}] = std::move(newVariant);
 }
 
-void EoDxfHeader::AddString(std::wstring_view key, std::string value, int code) {
-  AddWideString(key, Utf8ToWideText(value), code);
-}
-
 void EoDxfHeader::AddGeometryBase(std::wstring_view key, EoDxfGeometryBase3d value, int code) {
   auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, value);
   m_currentVariant = newVariant.get();

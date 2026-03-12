@@ -131,7 +131,7 @@ bool EoDxfWrite::WriteEntity(EoDxfEntity* entity) {
   if (m_version > EoDxf::Version::AC1015 && entity->m_color24 >= 0) { WriteCodeInt32(420, entity->m_color24); }
   if (m_version > EoDxf::Version::AC1015 && !entity->m_colorName.empty()) { WriteCodeWideString(430, entity->m_colorName); }
   if (m_version > EoDxf::Version::AC1014) {
-    WriteCodeInt16(370, EoDxfLineWidths::lineWidth2dxfInt(entity->m_lineWeight));
+    WriteCodeInt16(370, EoDxfLineWidths::LineWidthToDxfIndex(entity->m_lineWeight));
   }
   if (!entity->m_appData.empty()) { WriteAppData(entity->m_appData); }
   if (!entity->m_extendedData.empty()) { WriteExtData(entity->m_extendedData); }
@@ -240,10 +240,10 @@ EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstri
   WriteCodeDouble(23, rasterImage->sizev);
   WriteCodeString(340, ToHexString(id->m_handle));
   WriteCodeInt16(70, 1);
-  WriteCodeInt16(280, rasterImage->clip);
-  WriteCodeInt16(281, rasterImage->brightness);
-  WriteCodeInt16(282, rasterImage->contrast);
-  WriteCodeInt16(283, rasterImage->fade);
+  WriteCodeInt16(280, rasterImage->m_clippingState);
+  WriteCodeInt16(281, rasterImage->m_brightnessValue);
+  WriteCodeInt16(282, rasterImage->m_contrastValue);
+  WriteCodeInt16(283, rasterImage->m_fadeValue);
   WriteCodeString(360, idReactor);
   id->reactors[idReactor] = ToHexString(rasterImage->m_handle);
   return id;
@@ -283,7 +283,7 @@ bool EoDxfWrite::WriteBlock(EoDxfBlock* block) {
   m_writingBlock = true;
   WriteCodeString(0, L"BLOCK");
 
-  m_currentHandle = (*(m_blockMap.find(block->name))).second;
+  m_currentHandle = (*(m_blockMap.find(block->m_name))).second;
   WriteCodeString(5, ToHexString(m_currentHandle + 1));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(m_currentHandle)); }
   WriteCodeString(100, L"AcDbEntity");
@@ -291,14 +291,14 @@ bool EoDxfWrite::WriteBlock(EoDxfBlock* block) {
   WriteCodeString(8, L"0");
 
   WriteCodeString(100, L"AcDbBlockBegin");
-  WriteCodeWideString(2, block->name);
+  WriteCodeWideString(2, block->m_name);
 
   WriteCodeInt16(70, block->m_flags);
   WriteCodeDouble(10, block->m_firstPoint.x);
   WriteCodeDouble(20, block->m_firstPoint.y);
   if (block->m_firstPoint.z != 0.0) { WriteCodeDouble(30, block->m_firstPoint.z); }
 
-  WriteCodeWideString(3, block->name);
+  WriteCodeWideString(3, block->m_name);
 
   WriteCodeString(1, L"");
 

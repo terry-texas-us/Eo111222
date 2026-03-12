@@ -536,7 +536,7 @@ void EoDxf3dFace::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfBlock::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 2:
-      name = reader->GetWideString();
+      m_name = reader->GetWideString();
       break;
     case 70:
       m_flags = reader->GetInt16();
@@ -1101,16 +1101,16 @@ void EoDxfImage::ParseCode(int code, EoDxfReader* reader) {
       m_imageDefinitionHandle = reader->GetHandleString();
       break;
     case 280:
-      clip = reader->GetInt16();
+      m_clippingState = reader->GetInt16();
       break;
     case 281:
-      brightness = reader->GetInt16();
+      m_brightnessValue = reader->GetInt16();
       break;
     case 282:
-      contrast = reader->GetInt16();
+      m_contrastValue = reader->GetInt16();
       break;
     case 283:
-      fade = reader->GetInt16();
+      m_fadeValue = reader->GetInt16();
       break;
     default:
       EoDxfLine::ParseCode(code, reader);

@@ -43,7 +43,7 @@ class EoDxfMLeader : public EoDxfEntity {
  public:
   // --- Top-level AcDbMLeader properties ---
   std::int16_t m_leaderType{1};  // code 170 (0=invisible, 1=straight, 2=spline)
-  int m_leaderLineColor{EoDxf::colorByLayer};  // code 91
+  std::int32_t m_leaderLineColor{EoDxf::colorByLayer};  // code 91
   std::uint64_t m_leaderLineTypeHandle{EoDxf::NoHandle};  // code 341
   std::int16_t m_leaderLineWeight{-1};  // code 171
   bool m_enableLanding{true};  // code 290
@@ -53,7 +53,7 @@ class EoDxfMLeader : public EoDxfEntity {
   std::int16_t m_contentType{2};  // code 172 (0=none, 1=block, 2=mtext)
   std::uint64_t m_textStyleHandle{EoDxf::NoHandle};  // code 343
   std::int16_t m_textLeftAttachmentType{1};  // code 173
-  int m_textRightAttachmentType{1};  // code 95
+  std::int32_t m_textRightAttachmentType{1};  // code 95
   std::int16_t m_textAngleType{};  // code 174
   std::int16_t m_textAlignmentType{};  // code 175
   std::int32_t m_textColor{EoDxf::colorByLayer};  // code 92
