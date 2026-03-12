@@ -205,7 +205,7 @@ void EoTcTextCodec::SetVersion(const std::string& version) {
 
 void EoTcTextCodec::SetVersion(int version) { m_version = version; }
 
-std::string EoTcTextCodec::NormalizeCodePage(const std::string_view codePage) noexcept {
+std::string EoTcTextCodec::NormalizeCodePage(const std::string_view codePage) {
   const auto normalizedCodePage = NormalizeToken(codePage);
   if (normalizedCodePage.empty()) { return "ANSI_1252"; }
 

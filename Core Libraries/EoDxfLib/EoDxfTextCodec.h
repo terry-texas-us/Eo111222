@@ -54,7 +54,7 @@ class EoTcTextCodec {
    * @param codePage Input code page identifier (from DXF $DWGCODEPAGE or similar).
    * @return Standardized code page string.
    */
-  [[nodiscard]] std::string NormalizeCodePage(const std::string_view codePage) noexcept;
+  [[nodiscard]] std::string NormalizeCodePage(const std::string_view codePage);
 
   std::string m_codePage;
   EoTcConverter* m_converter;
