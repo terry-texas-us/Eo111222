@@ -14,6 +14,121 @@ namespace {
 
 constexpr int cp1252TableLength{128};
 
+struct WindowsCodePageMapping {
+  std::wstring_view normalizedToken;
+  std::wstring_view canonicalToken;
+  unsigned int codePage;
+};
+
+constexpr WindowsCodePageMapping windowsCodePageMappings[] = {
+    {L"ANSI874", L"ANSI_874", 874},
+    {L"CP874", L"ANSI_874", 874},
+    {L"WINDOWS874", L"ANSI_874", 874},
+    {L"874", L"ANSI_874", 874},
+    {L"ANSI932", L"ANSI_932", 932},
+    {L"CP932", L"ANSI_932", 932},
+    {L"WINDOWS932", L"ANSI_932", 932},
+    {L"SHIFTJIS", L"ANSI_932", 932},
+    {L"SHIFTJISX0213", L"ANSI_932", 932},
+    {L"932", L"ANSI_932", 932},
+    {L"ANSI936", L"ANSI_936", 936},
+    {L"CP936", L"ANSI_936", 936},
+    {L"WINDOWS936", L"ANSI_936", 936},
+    {L"GBK", L"ANSI_936", 936},
+    {L"936", L"ANSI_936", 936},
+    {L"ANSI949", L"ANSI_949", 949},
+    {L"CP949", L"ANSI_949", 949},
+    {L"WINDOWS949", L"ANSI_949", 949},
+    {L"UHC", L"ANSI_949", 949},
+    {L"949", L"ANSI_949", 949},
+    {L"ANSI950", L"ANSI_950", 950},
+    {L"CP950", L"ANSI_950", 950},
+    {L"WINDOWS950", L"ANSI_950", 950},
+    {L"BIG5", L"ANSI_950", 950},
+    {L"950", L"ANSI_950", 950},
+    {L"ANSI1250", L"ANSI_1250", 1250},
+    {L"CP1250", L"ANSI_1250", 1250},
+    {L"WINDOWS1250", L"ANSI_1250", 1250},
+    {L"1250", L"ANSI_1250", 1250},
+    {L"ANSI1251", L"ANSI_1251", 1251},
+    {L"CP1251", L"ANSI_1251", 1251},
+    {L"WINDOWS1251", L"ANSI_1251", 1251},
+    {L"1251", L"ANSI_1251", 1251},
+    {L"ANSI1253", L"ANSI_1253", 1253},
+    {L"CP1253", L"ANSI_1253", 1253},
+    {L"WINDOWS1253", L"ANSI_1253", 1253},
+    {L"1253", L"ANSI_1253", 1253},
+    {L"ANSI1254", L"ANSI_1254", 1254},
+    {L"CP1254", L"ANSI_1254", 1254},
+    {L"WINDOWS1254", L"ANSI_1254", 1254},
+    {L"1254", L"ANSI_1254", 1254},
+    {L"ANSI1255", L"ANSI_1255", 1255},
+    {L"CP1255", L"ANSI_1255", 1255},
+    {L"WINDOWS1255", L"ANSI_1255", 1255},
+    {L"1255", L"ANSI_1255", 1255},
+    {L"ANSI1256", L"ANSI_1256", 1256},
+    {L"CP1256", L"ANSI_1256", 1256},
+    {L"WINDOWS1256", L"ANSI_1256", 1256},
+    {L"1256", L"ANSI_1256", 1256},
+    {L"ANSI1257", L"ANSI_1257", 1257},
+    {L"CP1257", L"ANSI_1257", 1257},
+    {L"WINDOWS1257", L"ANSI_1257", 1257},
+    {L"1257", L"ANSI_1257", 1257},
+    {L"ANSI1258", L"ANSI_1258", 1258},
+    {L"CP1258", L"ANSI_1258", 1258},
+    {L"WINDOWS1258", L"ANSI_1258", 1258},
+    {L"1258", L"ANSI_1258", 1258},
+    {L"DOS437", L"DOS437", 437},
+    {L"CP437", L"DOS437", 437},
+    {L"IBM437", L"DOS437", 437},
+    {L"OEM437", L"DOS437", 437},
+    {L"DOS850", L"DOS850", 850},
+    {L"CP850", L"DOS850", 850},
+    {L"IBM850", L"DOS850", 850},
+    {L"DOS852", L"DOS852", 852},
+    {L"CP852", L"DOS852", 852},
+    {L"IBM852", L"DOS852", 852},
+    {L"DOS855", L"DOS855", 855},
+    {L"CP855", L"DOS855", 855},
+    {L"IBM855", L"DOS855", 855},
+    {L"DOS857", L"DOS857", 857},
+    {L"CP857", L"DOS857", 857},
+    {L"IBM857", L"DOS857", 857},
+    {L"DOS860", L"DOS860", 860},
+    {L"CP860", L"DOS860", 860},
+    {L"IBM860", L"DOS860", 860},
+    {L"DOS861", L"DOS861", 861},
+    {L"CP861", L"DOS861", 861},
+    {L"IBM861", L"DOS861", 861},
+    {L"DOS863", L"DOS863", 863},
+    {L"CP863", L"DOS863", 863},
+    {L"IBM863", L"DOS863", 863},
+    {L"DOS864", L"DOS864", 864},
+    {L"CP864", L"DOS864", 864},
+    {L"IBM864", L"DOS864", 864},
+    {L"DOS865", L"DOS865", 865},
+    {L"CP865", L"DOS865", 865},
+    {L"IBM865", L"DOS865", 865},
+    {L"DOS866", L"DOS866", 866},
+    {L"CP866", L"DOS866", 866},
+    {L"IBM866", L"DOS866", 866},
+    {L"DOS869", L"DOS869", 869},
+    {L"CP869", L"DOS869", 869},
+    {L"IBM869", L"DOS869", 869},
+};
+
+[[nodiscard]] bool TryGetWindowsCodePageMapping(
+    std::wstring_view normalizedToken, std::wstring* canonicalToken, unsigned int* codePage) {
+  for (const auto& mapping : windowsCodePageMappings) {
+    if (mapping.normalizedToken == normalizedToken) {
+      if (canonicalToken != nullptr) { *canonicalToken = mapping.canonicalToken; }
+      if (codePage != nullptr) { *codePage = mapping.codePage; }
+      return true;
+    }
+  }
+  return false;
+}
+
 [[nodiscard]] std::wstring Utf8ToWide(const std::string_view text) {
   if (text.empty()) { return {}; }
 
@@ -24,6 +139,20 @@ constexpr int cp1252TableLength{128};
   std::wstring wideText(static_cast<std::size_t>(requiredLength), L'\0');
   const auto convertedLength =
       MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text.data(), inputLength, wideText.data(), requiredLength);
+  if (convertedLength != requiredLength) { return {}; }
+
+  return wideText;
+}
+
+[[nodiscard]] std::wstring DecodeWindowsCodePage(const std::string_view text, const unsigned int codePage) {
+  if (text.empty()) { return {}; }
+
+  const auto inputLength = static_cast<int>(text.size());
+  const auto requiredLength = MultiByteToWideChar(codePage, 0, text.data(), inputLength, nullptr, 0);
+  if (requiredLength <= 0) { return {}; }
+
+  std::wstring wideText(static_cast<std::size_t>(requiredLength), L'\0');
+  const auto convertedLength = MultiByteToWideChar(codePage, 0, text.data(), inputLength, wideText.data(), requiredLength);
   if (convertedLength != requiredLength) { return {}; }
 
   return wideText;
@@ -42,6 +171,24 @@ constexpr int cp1252TableLength{128};
   if (convertedLength != requiredLength) { return {}; }
 
   return utf8Text;
+}
+
+[[nodiscard]] std::string EncodeWindowsCodePage(const std::wstring_view text, const unsigned int codePage) {
+  if (text.empty()) { return {}; }
+
+  const auto inputLength = static_cast<int>(text.size());
+  BOOL usedDefaultCharacter = FALSE;
+  const auto requiredLength =
+      WideCharToMultiByte(codePage, WC_NO_BEST_FIT_CHARS, text.data(), inputLength, nullptr, 0, nullptr, &usedDefaultCharacter);
+  if (requiredLength <= 0) { return {}; }
+
+  std::string encodedText(static_cast<std::size_t>(requiredLength), '\0');
+  usedDefaultCharacter = FALSE;
+  const auto convertedLength = WideCharToMultiByte(
+      codePage, WC_NO_BEST_FIT_CHARS, text.data(), inputLength, encodedText.data(), requiredLength, nullptr, &usedDefaultCharacter);
+  if (convertedLength != requiredLength) { return {}; }
+
+  return encodedText;
 }
 
 [[nodiscard]] std::wstring DecodeAnsiTable(const std::string_view text, const int* table, const int length) {
@@ -195,6 +342,13 @@ std::wstring EoTcTextCodec::DecodeText(std::string_view encodedText) const {
 std::unique_ptr<EoTcConverter> EoTcTextCodec::CreateConverter(std::wstring_view normalizedCodePage) {
   if (normalizedCodePage == L"UTF-16") { return std::make_unique<EoTcConvertUtf16>(); }
   if (normalizedCodePage == L"UTF-8") { return std::make_unique<EoTcConvertUtf8>(); }
+  if (normalizedCodePage == L"ANSI_1252") { return std::make_unique<EoTcConvertTable>(EoTcTable1252, cp1252TableLength); }
+
+  unsigned int windowsCodePage{};
+  if (TryGetWindowsCodePageMapping(normalizedCodePage, nullptr, &windowsCodePage)) {
+    return std::make_unique<EoTcConvertWindowsCodePage>(windowsCodePage);
+  }
+
   return std::make_unique<EoTcConvertTable>(EoTcTable1252, cp1252TableLength);
 }
 
@@ -269,6 +423,9 @@ std::wstring EoTcTextCodec::NormalizeCodePage(std::wstring_view codePage) {
     return L"ANSI_1252";
   }
 
+  std::wstring canonicalCodePage;
+  if (TryGetWindowsCodePageMapping(normalizedCodePage, &canonicalCodePage, nullptr)) { return canonicalCodePage; }
+
   return L"ANSI_1252";
 }
 
@@ -308,4 +465,12 @@ std::string EoTcConvertDBCSTable::EncodeText(std::wstring_view text) const {
 
 std::wstring EoTcConvertDBCSTable::DecodeText(std::string_view encodedText) const {
   return DecodeAnsiTable(encodedText, m_table, m_codePageLength);
+}
+
+std::string EoTcConvertWindowsCodePage::EncodeText(std::wstring_view text) const {
+  return EncodeWindowsCodePage(text, m_codePage);
+}
+
+std::wstring EoTcConvertWindowsCodePage::DecodeText(std::string_view encodedText) const {
+  return DecodeWindowsCodePage(encodedText, m_codePage);
 }

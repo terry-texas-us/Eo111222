@@ -76,13 +76,29 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
     TrackStreamState(filestr);
     if (m_writeOk) {
       m_writer = new EoDxfWriterAscii(&filestr);
-      const std::wstring comm = std::wstring{L"EoDxf "} + std::wstring{EODXFLIB_VERSION};
-      WriteCodeString(999, comm);
     }
   }
   if (m_writer == nullptr) {
     if (filestr.is_open()) { filestr.close(); }
     return false;
+  }
+
+  const auto preservedComments = header.GetComments();
+  if (!preservedComments.empty()) {
+    std::size_t lineStart{};
+    while (lineStart <= preservedComments.size()) {
+      const auto lineEnd = preservedComments.find(L'\n', lineStart);
+      auto commentLine =
+          lineEnd == std::wstring::npos ? preservedComments.substr(lineStart) : preservedComments.substr(lineStart, lineEnd - lineStart);
+      if (!commentLine.empty() && commentLine.back() == L'\r') { commentLine.pop_back(); }
+      WriteCodeString(999, commentLine);
+      if (lineEnd == std::wstring::npos) { break; }
+      lineStart = lineEnd + 1;
+    }
+  }
+  if (!m_binaryFile) {
+    const std::wstring comment = std::wstring{L"EoDxf "} + std::wstring{EODXFLIB_VERSION};
+    WriteCodeString(999, comment);
   }
 
   m_entityCount = FIRSTHANDLE;

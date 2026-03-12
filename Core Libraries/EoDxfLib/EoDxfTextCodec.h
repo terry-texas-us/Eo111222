@@ -57,7 +57,8 @@ class EoTcTextCodec {
    * - Empty string → "ANSI_1252"
    * - "UTF-8" or "UTF8" → "UTF-8"
    * - "UTF-16" or "UTF16" → "UTF-16"
-   * - Everything else (including all ANSI-1252 variants and unknown values) → "ANSI_1252"
+   * - Common DXF ANSI and DOS code-page aliases normalize to canonical DXF tokens such as "ANSI_1251" or "DOS866"
+   * - Unknown values → "ANSI_1252"
    *
    * @param codePage Input code page identifier (from DXF $DWGCODEPAGE or similar).
    * @return Standardized code page string.
@@ -139,4 +140,14 @@ class EoTcConvertDBCSTable : public EoTcConverter {
  private:
   const int* m_leadTable;
   const int (*m_doubleTable)[2];
+};
+
+class EoTcConvertWindowsCodePage : public EoTcConverter {
+ public:
+  explicit EoTcConvertWindowsCodePage(unsigned int codePage) noexcept : EoTcConverter(nullptr, 0), m_codePage{codePage} {}
+  [[nodiscard]] std::string EncodeText(std::wstring_view text) const override;
+  [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const override;
+
+ private:
+  unsigned int m_codePage;
 };
