@@ -330,7 +330,7 @@ void DisplayTextSegment(AeSysView* view, CDC* deviceContext, EoDbFontDefinition&
     view->ModelViewTransformVector(YDirection);
 
     auto normal = CrossProduct(XDirection, YDirection);
-    normal.Normalize();
+    normal.Unitize();
 
     if (normal == EoGeVector3d::positiveUnitZ) {
       if (DisplayTextSegmentUsingTrueTypeFont(
@@ -743,7 +743,7 @@ EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontDefinition, EoGeRef
     position += path * characterSpaceFactor;
     EoGeVector3d unitNormal = referenceSystem.UnitNormal();
 
-    path.Normalize();
+    path.Unitize();
     path *= -(yDirection.Length() * lineSpaceFactor);
     path.RotateAboutArbitraryAxis(unitNormal, Eo::HalfPi);
   }

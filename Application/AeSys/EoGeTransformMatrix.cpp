@@ -84,7 +84,7 @@ EoGeTransformMatrix::EoGeTransformMatrix(
     Identity();
     return;
   }
-  normal.Normalize();
+  normal.Unitize();
 
   ConstructUsingReferencePointAndNormal(referencePoint, normal);
 
@@ -96,7 +96,7 @@ EoGeTransformMatrix::EoGeTransformMatrix(
   if (xyMagnitude < Eo::geometricTolerance) { return; }
   EoGeVector3d scaleVector(1.0 / xyMagnitude, 1.0, 1.0);
 
-  xAxisTransformed.Normalize();
+  xAxisTransformed.Unitize();
 
   // To get x-axis reference vector as x-axis
   *this *= ZAxisRotation(-xAxisTransformed.y, xAxisTransformed.x);

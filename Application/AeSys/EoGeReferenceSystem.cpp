@@ -30,7 +30,7 @@ EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin, EoGeVector3d
 
 EoGeVector3d EoGeReferenceSystem::UnitNormal() const {
   EoGeVector3d normal = CrossProduct(m_xDirection, m_yDirection);
-  normal.Normalize();
+  normal.Unitize();
   return normal;
 }
 
@@ -40,7 +40,7 @@ EoGeTransformMatrix EoGeReferenceSystem::TransformMatrix() const {
 
 void EoGeReferenceSystem::Rescale(const EoDbCharacterCellDefinition& characterCellDefinition) {
   EoGeVector3d normal = UnitNormal();
-  m_xDirection.Normalize();
+  m_xDirection.Unitize();
   m_yDirection = m_xDirection;
   m_yDirection.RotateAboutArbitraryAxis(normal, Eo::HalfPi + characterCellDefinition.SlantAngle());
   m_xDirection *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height() *

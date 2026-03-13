@@ -79,7 +79,7 @@ void EoDlgViewParameters::OnBnClickedApply() {
   if (viewUp.IsNearNull()) {
     viewUp = EoGeVector3d::positiveUnitY;
   } else {
-    viewUp.Normalize();
+    viewUp.Unitize();
   }
   modelView->SetView(position, target, viewUp);
   modelView->SetLensLength(lensLength);

@@ -106,7 +106,7 @@ EoDbConic::EoDbConic(const EoGePoint3d& center, const EoGeVector3d& extrusion, c
   assert(m_ratio > 0.0 && m_ratio <= 1.0 + Eo::numericEpsilon && "Ratio must be in (0, 1]");
   assert(m_extrusion.Length() > Eo::geometricTolerance && "Extrusion must have non-zero length");
 
-  m_extrusion.Normalize();
+  m_extrusion.Unitize();
 }
 
 EoDbConic* EoDbConic::CreateCircle(const EoGePoint3d& center, const EoGeVector3d& extrusion, double radius) {
@@ -121,7 +121,7 @@ EoDbConic* EoDbConic::CreateCircleInView(const EoGePoint3d& center, double radiu
     return nullptr;
   }
   auto cameraDirection = activeView->CameraDirection();
-  cameraDirection.Normalize();
+  cameraDirection.Unitize();
 
   return CreateCircle(center, cameraDirection, radius);
 }
@@ -141,7 +141,7 @@ EoDbConic* EoDbConic::CreateConicFromEllipsePrimitive(
     throw std::runtime_error("Conic: Major and minor axes are not perpendicular.");
   }
   auto extrusion{CrossProduct(majorAxis, minorAxis)};
-  extrusion.Normalize();
+  extrusion.Unitize();
 
   double startParameter{};
   double endParameter{sweepAngle};
@@ -176,7 +176,7 @@ EoDbConic* EoDbConic::CreateRadialArc(
   }
   // Compute OCS X-axis (major axis direction) using arbitrary axis algorithm
   EoGeVector3d normalizedExtrusion = extrusion;
-  normalizedExtrusion.Normalize();
+  normalizedExtrusion.Unitize();
 
   auto majorAxis = ComputeArbitraryAxis(normalizedExtrusion) * radius;
   return new EoDbConic(center, normalizedExtrusion, majorAxis, 1.0, startAngle, endAngle);
@@ -187,7 +187,7 @@ EoDbConic* EoDbConic::CreateRadialArcFrom3Points(
   EoGeVector3d startToIntermediate(start, intermediate);
   EoGeVector3d startToEnd(start, end);
   auto normal = CrossProduct(startToIntermediate, startToEnd);
-  normal.Normalize();
+  normal.Unitize();
 
   // Ensure extrusion points in positive Z direction
   // If normal.z < 0, the arc is CW when viewed from +Z, so swap start/end to make it CCW
@@ -666,7 +666,7 @@ bool EoDbConic::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point)
 
 int EoDbConic::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d* ptInt) {
   auto normal = CrossProduct(m_majorAxis, MinorAxis());
-  normal.Normalize();
+  normal.Unitize();
 
   if (!(CrossProduct(EoGeVector3d::positiveUnitZ, normal)).IsNearNull()) { return 0; }
 
@@ -914,7 +914,7 @@ void EoDbConic::Transform(const EoGeTransformMatrix& transformaMatrix) {
     m_startAngle = NormalizeTo2Pi(m_startAngle);
     m_endAngle = NormalizeTo2Pi(m_endAngle);
   }
-  m_extrusion.Normalize();
+  m_extrusion.Unitize();
 }
 
 void EoDbConic::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
@@ -1024,7 +1024,7 @@ double EoDbConic::SweepAngleToPoint(const EoGePoint3d& point) {
 
   auto normal = CrossProduct(m_majorAxis, MinorAxis());
   if (normal.Length() < Eo::geometricTolerance) { return 0.0; }
-  normal.Normalize();
+  normal.Unitize();
 
   EoGeTransformMatrix transformMatrix(m_center, normal);
 

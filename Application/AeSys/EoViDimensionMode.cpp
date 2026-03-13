@@ -395,7 +395,7 @@ void AeSysView::OnDimensionModeAngle() {
       EoGeVector3d vCenterToProjPt(center, rProjPt[0]);
       EoGeVector3d vCenterToCur(center, cursorPosition);
       auto normal = CrossProduct(vCenterToProjPt, vCenterToCur);
-      normal.Normalize();
+      normal.Unitize();
       if (SweepAngleFromNormalAnd3Points(normal, rProjPt[0], cursorPosition, rProjPt[1], center, sweepAngle)) {
         double dRad = EoGeVector3d(center, cursorPosition).Length();
 

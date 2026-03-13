@@ -11,11 +11,11 @@ namespace EoGeOcs {
 static void MakeOrthonormalBasis(EoGeVector3d n, EoGeVector3d& u, EoGeVector3d& v) {
   // normalize n, fallback to Z if degenerate
   if (n.IsNearNull()) { n = EoGeVector3d(0.0, 0.0, 1.0); }
-  n.Normalize();
+  n.Unitize();
 
   u = ComputeArbitraryAxis(n);
   if (u.IsNearNull()) { u = EoGeVector3d(1.0, 0.0, 0.0); }
-  u.Normalize();
+  u.Unitize();
 
   v = CrossProduct(n, u);
   if (v.IsNearNull()) {
@@ -26,10 +26,10 @@ static void MakeOrthonormalBasis(EoGeVector3d n, EoGeVector3d& u, EoGeVector3d& 
       v = CrossProduct(n, EoGeVector3d(0.0, 1.0, 0.0));
     }
   }
-  v.Normalize();
+  v.Unitize();
   // ensure u is exactly perpendicular again
   u = CrossProduct(v, n);
-  u.Normalize();
+  u.Unitize();
 }
 
 // OCS -> WCS: W = u*x + v*y + n*z

@@ -128,9 +128,9 @@ EoDbEllipse::EoDbEllipse(
     EoGePoint3d& center, EoGeVector3d& normal, double radius, std::int16_t color, std::int16_t lineType)
     : EoDbPrimitive(color, lineType), m_center(center) {
   EoGeVector3d PlaneNormal(normal);
-  PlaneNormal.Normalize();
+  PlaneNormal.Unitize();
   m_majorAxis = ComputeArbitraryAxis(PlaneNormal);
-  m_majorAxis.Normalize();
+  m_majorAxis.Unitize();
   m_majorAxis *= radius;
   m_minorAxis = m_majorAxis;
   EoGeTransformMatrix transformMatrix(center, PlaneNormal, Eo::HalfPi);
@@ -193,7 +193,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
   EoGeVector3d startToIntermediate(start, intermediate);
   EoGeVector3d startToEnd(start, end);
   auto normal = CrossProduct(startToIntermediate, startToEnd);
-  normal.Normalize();
+  normal.Unitize();
 
   // Build transformation matrix which will get int and end points to z=0 plane with beg point as origin
 
@@ -350,7 +350,7 @@ void EoDbEllipse::CutAt2Points(
     pArc = this;
   } else {  // Something gets cut
     auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
-    vPlnNorm.Normalize();
+    vPlnNorm.Unitize();
 
     if (std::abs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) {  // Closed arc
       m_sweepAngle = (dRel[1] - dRel[0]) * Eo::TwoPi;
@@ -427,7 +427,7 @@ void EoDbEllipse::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   group->AddTail(pArc);
 
   auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
-  vPlnNorm.Normalize();
+  vPlnNorm.Unitize();
 
   m_majorAxis.RotateAboutArbitraryAxis(vPlnNorm, dSwpAng);
   m_minorAxis.RotateAboutArbitraryAxis(vPlnNorm, dSwpAng);
@@ -641,7 +641,7 @@ bool EoDbEllipse::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& poin
 
 int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d* ptInt) {
   auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
-  vPlnNorm.Normalize();
+  vPlnNorm.Unitize();
 
   if (!(CrossProduct(EoGeVector3d::positiveUnitZ, vPlnNorm)).IsNearNull()) {
     // not on plane normal to z-axis
@@ -916,7 +916,7 @@ void EoDbEllipse::GetBoundingBox(EoGePoint3dArray& ptsBox) {
 
 double EoDbEllipse::SweepAngleToPoint(EoGePoint3d point) {
   auto normal = CrossProduct(m_majorAxis, m_minorAxis);
-  normal.Normalize();
+  normal.Unitize();
 
   EoGeTransformMatrix transformMatrix(m_center, normal);
 

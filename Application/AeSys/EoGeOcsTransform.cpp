@@ -26,16 +26,16 @@ void EoGeOcsTransform::SetExtrusionNormal(const EoGeVector3d& extrusionNormal) {
 }
 
 void EoGeOcsTransform::BuildOcsTransformation(const EoGeVector3d& extrusionNormal) {
-  // Normalize the extrusion normal (OCS Z-axis)
+  // Unitize the extrusion normal (OCS Z-axis)
   EoGeVector3d n = extrusionNormal;
   if (n.IsNearNull()) { n = EoGeVector3d::positiveUnitZ; }
-  n.Normalize();
+  n.Unitize();
   m_extrusionNormal = n;
 
   // Use the DXF arbitrary axis algorithm to compute OCS X-axis
   EoGeVector3d u = ComputeArbitraryAxis(n);
   if (u.IsNearNull()) { u = EoGeVector3d::positiveUnitX; }
-  u.Normalize();
+  u.Unitize();
 
   // Compute OCS Y-axis as cross product
   auto v = CrossProduct(n, u);
@@ -47,11 +47,11 @@ void EoGeOcsTransform::BuildOcsTransformation(const EoGeVector3d& extrusionNorma
       v = CrossProduct(n, EoGeVector3d::positiveUnitY);
     }
   }
-  v.Normalize();
+  v.Unitize();
 
   // Ensure u is exactly perpendicular (Gram-Schmidt orthogonalization)
   u = CrossProduct(v, n);
-  u.Normalize();
+  u.Unitize();
 
   // Build the transformation matrix
   // Matrix columns are the basis vectors: [u v n]

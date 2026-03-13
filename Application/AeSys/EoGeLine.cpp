@@ -435,7 +435,7 @@ bool EoGeLine::Intersection(const EoGeLine& firstLine, const EoGeLine& secondLin
 
   auto normal = CrossProduct(firstVector, secondVector);
   if (normal.IsNearNull()) { return false; }
-  normal.Normalize();
+  normal.Unitize();
 
   EoGeVector3d v3(firstLine.begin, secondLine.begin);
 

@@ -347,7 +347,7 @@ void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
   if (extrusion.IsNearNull()) {
     extrusion = EoGeVector3d::positiveUnitZ;
   } else {
-    extrusion.Normalize();
+    extrusion.Unitize();
   }
   double startAngle = arc.m_startAngle;
   double endAngle = arc.m_endAngle;
@@ -380,7 +380,7 @@ void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* 
   if (extrusion.IsNearNull()) {
     extrusion = EoGeVector3d::positiveUnitZ;
   } else {
-    extrusion.Normalize();
+    extrusion.Unitize();
   }
   auto* conic = EoDbConic::CreateCircle(center, extrusion, circle.m_radius);
   conic->SetBaseProperties(&circle, document);
@@ -404,7 +404,7 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   if (extrusion.IsNearNull()) {
     extrusion = EoGeVector3d::positiveUnitZ;
   } else {
-    extrusion.Normalize();
+    extrusion.Unitize();
   }
   auto center = EoGePoint3d(ellipse.m_firstPoint.x, ellipse.m_firstPoint.y, ellipse.m_firstPoint.z);
   auto* conic =
@@ -499,8 +499,13 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   auto horizontalAlignment = text.m_horizontalAlignment;  // Group code 72
 
   auto secondAlignmentPointInOcs = EoGePoint3d{text.m_secondPoint.x, text.m_secondPoint.y, text.m_secondPoint.z};
-  auto extrusionDirection =
-      EoGeVector3d{text.m_extrusionDirection.x, text.m_extrusionDirection.y, text.m_extrusionDirection.z};
+  EoGeVector3d extrusionDirection{
+      text.m_extrusionDirection.x, text.m_extrusionDirection.y, text.m_extrusionDirection.z};
+  if (!text.m_haveExtrusion || extrusionDirection.IsNearNull()) {
+    extrusionDirection = EoGeVector3d::positiveUnitZ;
+  } else {
+    extrusionDirection.Unitize();
+  }
 
   auto verticalAlignment = text.m_verticalAlignment;  // Group code 73
 
@@ -510,24 +515,28 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   EoGePoint3d firstAlignmentPointInWcs;
   EoGePoint3d secondAlignmentPointInWcs;
 
-  if (haveBaselineDirection && text.m_haveExtrusion && !extrusionDirection.IsNearNull()) {
-    extrusionDirection.Unitize();
+  // Always transform points to WCS (simplifies branches)
+  EoGeOcsTransform transformOcs{extrusionDirection};
+  firstAlignmentPointInWcs = transformOcs * firstAlignmentPointInOcs;
+  secondAlignmentPointInWcs = transformOcs * secondAlignmentPointInOcs;
 
-    // Rotation of second alignment points is applied before ocs transformation to match AutoCAD behavior.
-    secondAlignmentPointInOcs =
-        secondAlignmentPointInOcs.RotateAboutAxis(firstAlignmentPointInOcs, extrusionDirection, textRotation);
+  // Compute baseline direction – respect DXF rules for Aligned/Fit
+  baselineDirection = EoGeVector3d::positiveUnitX;
+  const bool isAlignedOrFit = (horizontalAlignment == EoDxfText::HorizontalAlignment::AlignedIfBaseLine ||
+                               horizontalAlignment == EoDxfText::HorizontalAlignment::FitIfBaseLine);
 
-    EoGeOcsTransform transformOcs{extrusionDirection};
-    firstAlignmentPointInWcs = transformOcs * firstAlignmentPointInOcs;
-    secondAlignmentPointInWcs = transformOcs * secondAlignmentPointInOcs;
-    baselineDirection = secondAlignmentPointInWcs - firstAlignmentPointInWcs;
+  if (haveBaselineDirection && isAlignedOrFit) {
+    // Spec: ignore textRotation; use points only
+    baselineDirection = (secondAlignmentPointInWcs - firstAlignmentPointInWcs);
     baselineDirection.Unitize();
   } else {
-    firstAlignmentPointInWcs = firstAlignmentPointInOcs;
-    secondAlignmentPointInWcs = secondAlignmentPointInOcs;
-    baselineDirection = EoGeVector3d::positiveUnitX;  // Default baseline direction along X-axis if not defined
+    // Normal case: rotation defines direction (in OCS plane, but we already transformed)
+    // Rotate default X around the (now unit) extrusion
     baselineDirection.RotateAboutArbitraryAxis(extrusionDirection, textRotation);
+    // If second point exists but not Aligned/Fit, it is just the alignment reference point
+    // (we still use firstWcs as origin per your alignment-flag approach)
   }
+
   auto xAxisDirection = baselineDirection;
   auto yAxisDirection = CrossProduct(extrusionDirection, xAxisDirection);
 

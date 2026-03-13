@@ -60,13 +60,13 @@ void EoGsViewTransform::BuildTransformMatrix() {
   m_Matrix.Identity();
 
   EoGeVector3d n = Position() - Target();
-  n.Normalize();
+  n.Unitize();
 
   auto u = CrossProduct(ViewUp(), n);
-  u.Normalize();
+  u.Unitize();
 
   auto v = CrossProduct(n, u);
-  v.Normalize();
+  v.Unitize();
 
   EoGeVector3d vector = EoGeVector3d(Position(), EoGePoint3d::kOrigin);
 

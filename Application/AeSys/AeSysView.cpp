@@ -1228,13 +1228,13 @@ void AeSysView::DisplayPixel(CDC* deviceContext, COLORREF cr, const EoGePoint3d&
 void AeSysView::DoCameraRotate(int rotationDirection) {
   try {
     auto normal = m_ViewTransform.Position() - m_ViewTransform.Target();
-    normal.Normalize();
+    normal.Unitize();
 
     auto u = CrossProduct(ViewUp(), normal);
-    u.Normalize();
+    u.Unitize();
 
     auto v = CrossProduct(normal, u);
-    v.Normalize();
+    v.Unitize();
 
     auto position = m_ViewTransform.Position();
     auto target = m_ViewTransform.Target();
@@ -1374,7 +1374,7 @@ void AeSysView::On3dViewsIsometric() {
 
     auto viewUp = CrossProduct(Direction, EoGeVector3d::positiveUnitZ);
     viewUp = CrossProduct(viewUp, Direction);
-    viewUp.Normalize();
+    viewUp.Unitize();
 
     m_ViewTransform.SetViewUp(viewUp);
     m_ViewTransform.SetCenteredWindow(m_Viewport, 0.0, 0.0);

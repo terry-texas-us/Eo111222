@@ -245,7 +245,7 @@ void AeSysView::OnDrawModeReturn() {
 
       if (minorAxis.Length() < Eo::geometricTolerance) { break; }
       auto extrusion = CrossProduct(majorAxis, minorAxis);
-      extrusion.Normalize();
+      extrusion.Unitize();
       double ratio = minorAxis.Length() / majorAxis.Length();
       auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
       ellipse->SetColor(renderState.Color());
@@ -395,7 +395,7 @@ void AeSysView::DoDrawModeMouseMove() {
 
         if (minorAxis.Length() < Eo::geometricTolerance) { break; }
         auto extrusion = CrossProduct(majorAxis, minorAxis);
-        extrusion.Normalize();
+        extrusion.Unitize();
         double ratio = minorAxis.Length() / majorAxis.Length();
         auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
         ellipse->SetColor(renderState.Color());

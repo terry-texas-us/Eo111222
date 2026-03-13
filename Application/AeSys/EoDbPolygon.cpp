@@ -62,11 +62,11 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
     m_positiveX = EoGeVector3d(points[0], points[1]);
     m_positiveY = EoGeVector3d(points[0], points[2]);
     auto normal = CrossProduct(m_positiveX, m_positiveY);
-    normal.Normalize();
+    normal.Unitize();
 
     if (normal.z < 0) { normal = -normal; }
 
-    m_positiveX.Normalize();
+    m_positiveX.Unitize();
     m_positiveX.RotateAboutArbitraryAxis(normal, hatch::dOffAng);
     m_positiveY = m_positiveX;
     m_positiveY.RotateAboutArbitraryAxis(normal, Eo::HalfPi);
@@ -443,11 +443,11 @@ void EoDbPolygon::SetHatRefVecs(double dOffAng, double dXScal, double dYScal) {
   m_positiveY = EoGeVector3d(m_vertices[0], m_vertices[2]);
 
   auto normal = CrossProduct(m_positiveX, m_positiveY);
-  normal.Normalize();
+  normal.Unitize();
 
   if (normal.z < 0) { normal = -normal; }
 
-  m_positiveX.Normalize();
+  m_positiveX.Unitize();
   m_positiveX.RotateAboutArbitraryAxis(normal, dOffAng);
   m_positiveY = m_positiveX;
   m_positiveY.RotateAboutArbitraryAxis(normal, Eo::HalfPi);

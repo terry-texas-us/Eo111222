@@ -72,9 +72,7 @@ EoGeLine currentLine{};
   if (secondLineLength < Eo::geometricTolerance) { return false; }
 
   auto normal = CrossProduct(u, v);  // Determine vector normal to tangent vectors
-  normal.Normalize();
-  if (normal.IsNearNull()) { return false; }
-
+  normal.Unitize();
   if (std::abs(DotProduct(normal, EoGeVector3d(firstLine.begin, secondLine.begin))) > Eo::geometricTolerance) {
     // Four points are not coplanar
     return false;
@@ -197,7 +195,7 @@ void AeSysView::OnFixupModeReference() {
         EoGeVector3d previousEndToIntersection(previousLine.end, intersection);
         EoGeVector3d previousEndToReferenceBegin(previousLine.end, referenceLine.begin);
         auto normal = CrossProduct(previousEndToIntersection, previousEndToReferenceBegin);
-        normal.Normalize();
+        normal.Unitize();
         if (SweepAngleFromNormalAnd3Points(
                 normal, previousLine.end, intersection, referenceLine.begin, center, angle)) {
           auto majorAxis = EoGeVector3d(center, previousLine.end);
@@ -307,7 +305,7 @@ void AeSysView::OnFixupModeMend() {
         EoGeVector3d rPrvEndInter(previousLine.end, intersection);
         EoGeVector3d rPrvEndSecBeg(previousLine.end, currentLine.begin);
         EoGeVector3d normal = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
-        normal.Normalize();
+        normal.Unitize();
         double angle{};
         if (SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, currentLine.begin, center, angle)) {
           auto majorAxis = EoGeVector3d(center, previousLine.end);
@@ -466,7 +464,7 @@ void AeSysView::OnFixupModeFillet() {
       EoGeVector3d previousEndToIntersection(previousLine.end, intersection);
       EoGeVector3d previousEndToCurrentBegin(previousLine.end, currentLine.begin);
       normal = CrossProduct(previousEndToIntersection, previousEndToCurrentBegin);
-      normal.Normalize();
+      normal.Unitize();
       double angle;
       if (SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, currentLine.begin, center, angle)) {
         auto majorAxis = EoGeVector3d(center, previousLine.end);

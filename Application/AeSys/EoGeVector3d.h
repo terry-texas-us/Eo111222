@@ -93,24 +93,11 @@ class EoGeVector3d {
     return *this;
   }
 
-  /** @brief Normalizes the vector to a unit vector.
-   * If the vector is a null vector, it remains unchanged.
-   */
-  void Normalize() {
-    if (IsNearNull()) { throw std::domain_error("Cannot normalize zero-length vector"); }
-    *this /= Length();
-  }
-
   /** @brief Convert `this` vector to a unit-length vector (in-place).
    */
-  void Unitize() noexcept {
-    const double dist = sqrt(x * x + y * y + z * z);
-
-    if (dist > EoDxf::geometricTolerance) {
-      x = x / dist;
-      y = y / dist;
-      z = z / dist;
-    }
+  void Unitize() {
+    if (IsNearNull()) { throw std::domain_error("Cannot unitize zero-length vector"); }
+    *this /= Length();
   }
 
   /** @brief Return a unitized copy of `this` vector.
@@ -118,7 +105,7 @@ class EoGeVector3d {
    *  and returns the unitized copy. The original vector remains unchanged.
    *  @return A new EoGeVector3d instance that is a unitized version of the original vector.
    */
-  [[nodiscard]] EoGeVector3d Unitized() const noexcept {
+  [[nodiscard]] EoGeVector3d Unitized() const {
     EoGeVector3d result{*this};
     result.Unitize();
     return result;
