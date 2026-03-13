@@ -13,6 +13,8 @@
 namespace {
 
 constexpr int cp1252TableLength{128};
+constexpr DWORD strictUtf8DecodeFlags{MB_ERR_INVALID_CHARS};
+constexpr DWORD strictWindowsCodePageEncodeFlags{WC_NO_BEST_FIT_CHARS};
 
 struct WindowsCodePageMapping {
   std::wstring_view normalizedToken;
@@ -30,11 +32,14 @@ constexpr WindowsCodePageMapping windowsCodePageMappings[] = {
     {L"WINDOWS932", L"ANSI_932", 932},
     {L"SHIFTJIS", L"ANSI_932", 932},
     {L"SHIFTJISX0213", L"ANSI_932", 932},
+    {L"WINDOWS31J", L"ANSI_932", 932},
+    {L"MSKANJI", L"ANSI_932", 932},
     {L"932", L"ANSI_932", 932},
     {L"ANSI936", L"ANSI_936", 936},
     {L"CP936", L"ANSI_936", 936},
     {L"WINDOWS936", L"ANSI_936", 936},
     {L"GBK", L"ANSI_936", 936},
+    {L"GB2312", L"ANSI_936", 936},
     {L"936", L"ANSI_936", 936},
     {L"ANSI949", L"ANSI_949", 949},
     {L"CP949", L"ANSI_949", 949},
@@ -54,6 +59,12 @@ constexpr WindowsCodePageMapping windowsCodePageMappings[] = {
     {L"CP1251", L"ANSI_1251", 1251},
     {L"WINDOWS1251", L"ANSI_1251", 1251},
     {L"1251", L"ANSI_1251", 1251},
+    {L"ANSI1252", L"ANSI_1252", 1252},
+    {L"CP1252", L"ANSI_1252", 1252},
+    {L"WINDOWS1252", L"ANSI_1252", 1252},
+    {L"LATIN1", L"ANSI_1252", 1252},
+    {L"ISO88591", L"ANSI_1252", 1252},
+    {L"1252", L"ANSI_1252", 1252},
     {L"ANSI1253", L"ANSI_1253", 1253},
     {L"CP1253", L"ANSI_1253", 1253},
     {L"WINDOWS1253", L"ANSI_1253", 1253},
@@ -82,6 +93,15 @@ constexpr WindowsCodePageMapping windowsCodePageMappings[] = {
     {L"CP437", L"DOS437", 437},
     {L"IBM437", L"DOS437", 437},
     {L"OEM437", L"DOS437", 437},
+    {L"DOS720", L"DOS720", 720},
+    {L"CP720", L"DOS720", 720},
+    {L"IBM720", L"DOS720", 720},
+    {L"DOS737", L"DOS737", 737},
+    {L"CP737", L"DOS737", 737},
+    {L"IBM737", L"DOS737", 737},
+    {L"DOS775", L"DOS775", 775},
+    {L"CP775", L"DOS775", 775},
+    {L"IBM775", L"DOS775", 775},
     {L"DOS850", L"DOS850", 850},
     {L"CP850", L"DOS850", 850},
     {L"IBM850", L"DOS850", 850},
@@ -94,12 +114,18 @@ constexpr WindowsCodePageMapping windowsCodePageMappings[] = {
     {L"DOS857", L"DOS857", 857},
     {L"CP857", L"DOS857", 857},
     {L"IBM857", L"DOS857", 857},
+    {L"DOS858", L"DOS858", 858},
+    {L"CP858", L"DOS858", 858},
+    {L"IBM858", L"DOS858", 858},
     {L"DOS860", L"DOS860", 860},
     {L"CP860", L"DOS860", 860},
     {L"IBM860", L"DOS860", 860},
     {L"DOS861", L"DOS861", 861},
     {L"CP861", L"DOS861", 861},
     {L"IBM861", L"DOS861", 861},
+    {L"DOS862", L"DOS862", 862},
+    {L"CP862", L"DOS862", 862},
+    {L"IBM862", L"DOS862", 862},
     {L"DOS863", L"DOS863", 863},
     {L"CP863", L"DOS863", 863},
     {L"IBM863", L"DOS863", 863},
@@ -129,66 +155,65 @@ constexpr WindowsCodePageMapping windowsCodePageMappings[] = {
   return false;
 }
 
-[[nodiscard]] std::wstring Utf8ToWide(const std::string_view text) {
+[[nodiscard]] std::wstring DecodeMultiByteText(const std::string_view text, const unsigned int codePage, const DWORD flags) {
   if (text.empty()) { return {}; }
 
   const auto inputLength = static_cast<int>(text.size());
-  const auto requiredLength = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text.data(), inputLength, nullptr, 0);
+  const auto requiredLength = MultiByteToWideChar(codePage, flags, text.data(), inputLength, nullptr, 0);
   if (requiredLength <= 0) { return {}; }
 
   std::wstring wideText(static_cast<std::size_t>(requiredLength), L'\0');
-  const auto convertedLength =
-      MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text.data(), inputLength, wideText.data(), requiredLength);
+  const auto convertedLength = MultiByteToWideChar(codePage, flags, text.data(), inputLength, wideText.data(), requiredLength);
   if (convertedLength != requiredLength) { return {}; }
 
   return wideText;
 }
 
-[[nodiscard]] std::wstring DecodeWindowsCodePage(const std::string_view text, const unsigned int codePage) {
-  if (text.empty()) { return {}; }
-
-  const auto inputLength = static_cast<int>(text.size());
-  const auto requiredLength = MultiByteToWideChar(codePage, 0, text.data(), inputLength, nullptr, 0);
-  if (requiredLength <= 0) { return {}; }
-
-  std::wstring wideText(static_cast<std::size_t>(requiredLength), L'\0');
-  const auto convertedLength = MultiByteToWideChar(codePage, 0, text.data(), inputLength, wideText.data(), requiredLength);
-  if (convertedLength != requiredLength) { return {}; }
-
-  return wideText;
-}
-
-[[nodiscard]] std::string WideToUtf8(const std::wstring_view text) {
-  if (text.empty()) { return {}; }
-
-  const auto inputLength = static_cast<int>(text.size());
-  const auto requiredLength = WideCharToMultiByte(CP_UTF8, 0, text.data(), inputLength, nullptr, 0, nullptr, nullptr);
-  if (requiredLength <= 0) { return {}; }
-
-  std::string utf8Text(static_cast<std::size_t>(requiredLength), '\0');
-  const auto convertedLength =
-      WideCharToMultiByte(CP_UTF8, 0, text.data(), inputLength, utf8Text.data(), requiredLength, nullptr, nullptr);
-  if (convertedLength != requiredLength) { return {}; }
-
-  return utf8Text;
-}
-
-[[nodiscard]] std::string EncodeWindowsCodePage(const std::wstring_view text, const unsigned int codePage) {
+[[nodiscard]] std::string EncodeWideText(
+    const std::wstring_view text, const unsigned int codePage, const DWORD flags, const bool failOnDefaultCharacter = false) {
   if (text.empty()) { return {}; }
 
   const auto inputLength = static_cast<int>(text.size());
   BOOL usedDefaultCharacter = FALSE;
-  const auto requiredLength =
-      WideCharToMultiByte(codePage, WC_NO_BEST_FIT_CHARS, text.data(), inputLength, nullptr, 0, nullptr, &usedDefaultCharacter);
+  auto* usedDefaultCharacterPointer = failOnDefaultCharacter ? &usedDefaultCharacter : nullptr;
+  const auto requiredLength = WideCharToMultiByte(
+      codePage, flags, text.data(), inputLength, nullptr, 0, nullptr, usedDefaultCharacterPointer);
   if (requiredLength <= 0) { return {}; }
+  if (failOnDefaultCharacter && usedDefaultCharacter != FALSE) { return {}; }
 
   std::string encodedText(static_cast<std::size_t>(requiredLength), '\0');
   usedDefaultCharacter = FALSE;
   const auto convertedLength = WideCharToMultiByte(
-      codePage, WC_NO_BEST_FIT_CHARS, text.data(), inputLength, encodedText.data(), requiredLength, nullptr, &usedDefaultCharacter);
+      codePage, flags, text.data(), inputLength, encodedText.data(), requiredLength, nullptr, usedDefaultCharacterPointer);
   if (convertedLength != requiredLength) { return {}; }
+  if (failOnDefaultCharacter && usedDefaultCharacter != FALSE) { return {}; }
+  if (failOnDefaultCharacter && DecodeMultiByteText(encodedText, codePage, 0) != text) { return {}; }
 
   return encodedText;
+}
+
+[[nodiscard]] bool IsHighSurrogate(const std::uint16_t codeUnit) noexcept {
+  return codeUnit >= 0xD800 && codeUnit <= 0xDBFF;
+}
+
+[[nodiscard]] bool IsLowSurrogate(const std::uint16_t codeUnit) noexcept {
+  return codeUnit >= 0xDC00 && codeUnit <= 0xDFFF;
+}
+
+[[nodiscard]] std::wstring DecodeUtf8(const std::string_view text) {
+  return DecodeMultiByteText(text, CP_UTF8, strictUtf8DecodeFlags);
+}
+
+[[nodiscard]] std::string EncodeUtf8(const std::wstring_view text) {
+  return EncodeWideText(text, CP_UTF8, 0);
+}
+
+[[nodiscard]] std::wstring DecodeWindowsCodePage(const std::string_view text, const unsigned int codePage) {
+  return DecodeMultiByteText(text, codePage, 0);
+}
+
+[[nodiscard]] std::string EncodeWindowsCodePage(const std::wstring_view text, const unsigned int codePage) {
+  return EncodeWideText(text, codePage, strictWindowsCodePageEncodeFlags, true);
 }
 
 [[nodiscard]] std::wstring DecodeAnsiTable(const std::string_view text, const int* table, const int length) {
@@ -265,15 +290,30 @@ constexpr WindowsCodePageMapping windowsCodePageMappings[] = {
     }
   }
 
+  if (((text.size() - offset) % 2) != 0) { return {}; }
+
   std::wstring wideText;
   wideText.reserve((text.size() - offset) / 2);
+  bool expectLowSurrogate{};
   for (auto index = offset; index + 1 < text.size(); index += 2) {
     const auto firstByte = static_cast<unsigned char>(text[index]);
     const auto secondByte = static_cast<unsigned char>(text[index + 1]);
     const auto codeUnit = littleEndian ? static_cast<std::uint16_t>(firstByte | (secondByte << 8))
                                        : static_cast<std::uint16_t>((firstByte << 8) | secondByte);
+
+    if (expectLowSurrogate) {
+      if (!IsLowSurrogate(codeUnit)) { return {}; }
+      expectLowSurrogate = false;
+    } else if (IsLowSurrogate(codeUnit)) {
+      return {};
+    } else if (IsHighSurrogate(codeUnit)) {
+      expectLowSurrogate = true;
+    }
+
     wideText.push_back(static_cast<wchar_t>(codeUnit));
   }
+
+  if (expectLowSurrogate) { return {}; }
 
   return wideText;
 }
@@ -282,11 +322,24 @@ constexpr WindowsCodePageMapping windowsCodePageMappings[] = {
   std::string utf16Text;
   utf16Text.reserve(text.size() * 2);
 
+  bool expectLowSurrogate{};
   for (const auto wideChar : text) {
     const auto codeUnit = static_cast<std::uint16_t>(wideChar);
+
+    if (expectLowSurrogate) {
+      if (!IsLowSurrogate(codeUnit)) { return {}; }
+      expectLowSurrogate = false;
+    } else if (IsLowSurrogate(codeUnit)) {
+      return {};
+    } else if (IsHighSurrogate(codeUnit)) {
+      expectLowSurrogate = true;
+    }
+
     utf16Text.push_back(static_cast<char>(codeUnit & 0xFF));
     utf16Text.push_back(static_cast<char>((codeUnit >> 8) & 0xFF));
   }
+
+  if (expectLowSurrogate) { return {}; }
 
   return utf16Text;
 }
@@ -416,11 +469,9 @@ std::wstring EoTcTextCodec::NormalizeCodePage(std::wstring_view codePage) {
   const auto normalizedCodePage = NormalizeToken(codePage);
   if (normalizedCodePage.empty()) { return L"ANSI_1252"; }
 
-  if (normalizedCodePage == L"UTF8") { return L"UTF-8"; }
-  if (normalizedCodePage == L"UTF16" || normalizedCodePage == L"UTF16LE") { return L"UTF-16"; }
-  if (normalizedCodePage == L"ANSI1252" || normalizedCodePage == L"CP1252" || normalizedCodePage == L"WINDOWS1252" ||
-      normalizedCodePage == L"1252") {
-    return L"ANSI_1252";
+  if (normalizedCodePage == L"UTF8" || normalizedCodePage == L"UTF8NOBOM") { return L"UTF-8"; }
+  if (normalizedCodePage == L"UTF16" || normalizedCodePage == L"UTF16LE" || normalizedCodePage == L"UNICODE") {
+    return L"UTF-16";
   }
 
   std::wstring canonicalCodePage;
@@ -436,11 +487,11 @@ void EoTcTextCodec::SetCodePage(std::wstring_view codePage) {
 }
 
 std::string EoTcConvertUtf8::EncodeText(std::wstring_view text) const {
-  return WideToUtf8(text);
+  return EncodeUtf8(text);
 }
 
 std::wstring EoTcConvertUtf8::DecodeText(std::string_view encodedText) const {
-  return Utf8ToWide(encodedText);
+  return DecodeUtf8(encodedText);
 }
 
 std::string EoTcConvertUtf16::EncodeText(std::wstring_view text) const {

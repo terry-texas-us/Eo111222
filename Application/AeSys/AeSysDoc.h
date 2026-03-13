@@ -70,8 +70,16 @@ class AeSysDoc : public CDocument {
   EoDbHeaderSection& HeaderSection() { return m_HeaderSection; }
   const EoDbHeaderSection& HeaderSection() const { return m_HeaderSection; }
 
-  /// <summary>Constructs 0 to many seperate text primitives for each "\r\n" delimited substr.</summary>
-  void AddTextBlock(LPWSTR pszText);
+  /** @brief Adds text to the document as one or more EoDbText primitives.
+   *
+   * The input text is expected to be a single string with lines separated by "\r\n".
+   * Each line of text is added as a separate EoDbText primitive to the document.
+   * The position of the first line of text is determined by the current cursor position in the application,
+   * and subsequent lines are positioned based on the font definition and character cell settings.
+   *
+   * @param textBlock A pointer to a wide string containing the text to add. Lines should be separated by "\r\n".
+   */
+  void AddTextBlock(LPWSTR textBlock);
 
   // Block Table interface
   [[nodiscard]] EoDbBlocks* BlocksTable() { return (&m_BlocksTable); }

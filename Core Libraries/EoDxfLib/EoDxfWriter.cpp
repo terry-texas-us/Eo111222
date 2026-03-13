@@ -5,7 +5,10 @@
 #include "EoDxfWriter.h"
 
 bool EoDxfWriter::WriteWideString(int code, std::wstring_view text) {
-  return WriteEncodedText(code, m_encoder.EncodeText(text));
+  const auto encodedText = EncodeWideText(text);
+  if (!text.empty() && encodedText.empty()) { return false; }
+
+  return WriteEncodedText(code, encodedText);
 }
 
 bool EoDxfWriterBinary::WriteEncodedText(int code, std::string_view encodedText) {

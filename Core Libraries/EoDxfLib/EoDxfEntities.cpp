@@ -13,7 +13,8 @@
 
 namespace {
 
-/** @brief Helper function to parse application-defined group (code 102) and its associated data until the closing tag is reached.
+/** @brief Helper function to parse application-defined group (code 102) and its associated data until the closing tag
+ * is reached.
  *  @param reader pointer to EoDxfReader to read value
  *  @return true if group is successfully parsed, false if group is not recognized or an error occurs
  *
@@ -665,12 +666,13 @@ void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
       m_textGenerationFlags = reader->GetInt16();
       break;
     case 72:
-      m_horizontalAlignment = static_cast<HAlign>(std::clamp(reader->GetInt16(),
-          static_cast<std::int16_t>(HAlign::Left), static_cast<std::int16_t>(HAlign::FitIfBaseLine)));
+      m_horizontalAlignment = static_cast<HorizontalAlignment>(
+          std::clamp(reader->GetInt16(), static_cast<std::int16_t>(HorizontalAlignment::Left),
+              static_cast<std::int16_t>(HorizontalAlignment::FitIfBaseLine)));
       break;
     case 73:
-      m_verticalAlignment = static_cast<VAlign>(std::clamp(
-          reader->GetInt16(), static_cast<std::int16_t>(VAlign::Bottom), static_cast<std::int16_t>(VAlign::Top)));
+      m_verticalAlignment = static_cast<VerticalAlignment>(std::clamp(reader->GetInt16(),
+          static_cast<std::int16_t>(VerticalAlignment::Bottom), static_cast<std::int16_t>(VerticalAlignment::Top)));
       break;
     case 1:
       m_string = reader->GetWideString();
@@ -706,7 +708,7 @@ void EoDxfMText::ParseCode(int code, EoDxfReader* reader) {
 }
 
 void EoDxfMText::UpdateAngle() {
-  if (m_haveXAxisDirection) { m_textRotation = atan2(m_secondPoint.y, m_secondPoint.x) * EoDxf::RadiansToDegrees; }
+  if (m_haveXAxisDirection) { m_textRotation = atan2(m_secondPoint.y, m_secondPoint.x); }
 }
 
 void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {

@@ -44,6 +44,7 @@ void EoDbFontDefinition::SetAlignment(
 }
 void EoDbFontDefinition::SetCharacterSpacing(double characterSpacing) { m_characterSpacing = characterSpacing; }
 void EoDbFontDefinition::SetFontName(const CString& fontName) { m_fontName = fontName; }
+void EoDbFontDefinition::SetFontName(const std::wstring& fontName) { m_fontName = fontName.c_str(); }
 void EoDbFontDefinition::SetHorizontalAlignment(EoDb::HorizontalAlignment horizontalAlignment) {
   m_horizontalAlignment = horizontalAlignment;
 }

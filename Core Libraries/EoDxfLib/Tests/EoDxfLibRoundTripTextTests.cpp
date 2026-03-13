@@ -11,6 +11,7 @@
 #include "..\EoDxfInterface.h"
 #include "..\EoDxfRead.h"
 #include "..\EoDxfTables.h"
+#include "..\EoDxfTextCodec.h"
 #include "..\EoDxfWrite.h"
 
 namespace {
@@ -59,7 +60,7 @@ class RoundTripFixtureModel final : public EoDxfInterface {
   void addDimOrdinate(const EoDxfOrdinateDimension*) override {}
   void addLeader(const EoDxfLeader*) override {}
   void addMLeader(const EoDxfMLeader*) override {}
-  void addHatch(const EoDxfHatch*) override {}
+  void addHatch(const EoDxfHatch&) override {}
   void addViewport(const EoDxfViewport&) override {}
   void addImage(const EoDxfImage*) override {}
   void linkImage(const EoDxfImageDefinition* imageDefinition) override {
@@ -163,6 +164,18 @@ void Expect(bool condition, std::wstring_view message, int& failureCount) {
 [[nodiscard]] std::wstring MakeMessage(std::wstring_view prefix, std::wstring_view scenarioName) {
   std::wstring message{prefix};
   message += scenarioName;
+  return message;
+}
+
+[[nodiscard]] std::wstring MakeDiagnosticMessage(
+    std::wstring_view prefix, std::wstring_view label, std::wstring_view actual, std::wstring_view expected) {
+  std::wstring message{prefix};
+  message += label;
+  message += L" actual=[";
+  message += actual;
+  message += L"] expected=[";
+  message += expected;
+  message += L"]";
   return message;
 }
 
@@ -288,7 +301,7 @@ void BuildUtf16SourceModel(RoundTripFixtureModel& model) {
   mText.m_scaleFactorWidth = 20.0;
   mText.m_string = L"MText ASCII only";
   mText.m_textStyleName = L"STANDARD";
-  mText.m_verticalAlignment = EoDxfText::VAlign::Bottom;
+  mText.m_verticalAlignment = EoDxfText::VerticalAlignment::Bottom;
   model.addMText(mText);
 }
 
@@ -368,6 +381,78 @@ void RunScenario(const Scenario& scenario, int& failureCount) {
   }
 }
 
+void RunNormalizationDiagnostics(int& failureCount) {
+  struct NormalizationCase {
+    std::wstring_view inputToken;
+    std::wstring_view expectedToken;
+  };
+
+  const std::vector<NormalizationCase> normalizationCases{
+      {L"windows-31j", L"ANSI_932"},
+      {L"gb2312", L"ANSI_936"},
+      {L"latin-1", L"ANSI_1252"},
+      {L"unicode", L"UTF-16"},
+      {L"utf8-no-bom", L"UTF-8"},
+      {L"unknown-code-page", L"ANSI_1252"},
+  };
+
+  for (const auto& normalizationCase : normalizationCases) {
+    EoTcTextCodec codec;
+    codec.SetCodePage(normalizationCase.inputToken);
+    Expect(
+        codec.GetCodePage() == normalizationCase.expectedToken,
+        MakeDiagnosticMessage(L"Normalization mismatch: ", normalizationCase.inputToken, codec.GetCodePage(), normalizationCase.expectedToken),
+        failureCount);
+  }
+}
+
+void RunBoundaryDiagnostics(int& failureCount) {
+  {
+    EoTcTextCodec codec;
+    codec.SetCodePage(L"UTF-8");
+    const std::string invalidUtf8{"\xC3\x28", 2};
+    const auto decodedText = codec.DecodeText(invalidUtf8);
+    Expect(
+        decodedText.empty(),
+        MakeDiagnosticMessage(L"Invalid UTF-8 should fail decode: ", L"UTF-8", DescribeCodeUnits(decodedText), L""),
+        failureCount);
+  }
+
+  {
+    EoTcTextCodec codec;
+    codec.SetCodePage(L"UTF-16");
+    const std::string oddLengthUtf16{"A\0B", 3};
+    const auto decodedText = codec.DecodeText(oddLengthUtf16);
+    Expect(
+        decodedText.empty(),
+        MakeDiagnosticMessage(L"Odd-length UTF-16 should fail decode: ", L"UTF-16", DescribeCodeUnits(decodedText), L""),
+        failureCount);
+  }
+
+  {
+    EoTcTextCodec codec;
+    codec.SetCodePage(L"UTF-16");
+    std::wstring danglingHighSurrogate;
+    danglingHighSurrogate.push_back(static_cast<wchar_t>(0xD800));
+    const auto encodedText = codec.EncodeText(danglingHighSurrogate);
+    Expect(
+        encodedText.empty(),
+        MakeDiagnosticMessage(L"Dangling UTF-16 high surrogate should fail encode: ", L"UTF-16", L"non-empty result", L""),
+        failureCount);
+  }
+
+  {
+    EoTcTextCodec codec;
+    codec.SetCodePage(L"UTF-16");
+    const std::string loneLowSurrogate{"\x00\xDC", 2};
+    const auto decodedText = codec.DecodeText(loneLowSurrogate);
+    Expect(
+        decodedText.empty(),
+        MakeDiagnosticMessage(L"Lone UTF-16 low surrogate should fail decode: ", L"UTF-16", DescribeCodeUnits(decodedText), L""),
+        failureCount);
+  }
+}
+
 }  // namespace
 
 int wmain() {
@@ -386,6 +471,9 @@ int wmain() {
   for (const auto& scenario : scenarios) {
     RunScenario(scenario, failureCount);
   }
+
+  RunNormalizationDiagnostics(failureCount);
+  RunBoundaryDiagnostics(failureCount);
 
   if (failureCount == 0) {
     std::wcout << L"All EoDxfLib round-trip text tests passed.\n";

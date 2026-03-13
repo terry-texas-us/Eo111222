@@ -1,6 +1,6 @@
 ﻿#include "Stdafx.h"
 
-#include <cmath>
+#include <cstdlib>
 #include <iterator>
 
 #include "AeSysDoc.h"

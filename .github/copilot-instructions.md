@@ -27,6 +27,7 @@ You can assume I know the code base well and should have little trouble with mod
 
 ## EoDxf Text Support
 - Implement only essential codec behavior first: CP1252 plus round-trip support goals for ASCII and binary DXF with ANSI_1252, UTF-8, and UTF-16.
+- Current priority is EoDxfLib read/write refinement: harden the wide/narrow text boundary, then implement DXF text and hatch read/write mapped to AeSys `EoDbText` and `EoDbPolygon`, using ODA_Converter as the DWG-to-DXF intermediate.
 
 ## DPI Handling
 - Prefer using `GetDpiForSystem` (or `GetDpiForWindow` when available) for DPI fixes in this codebase.
@@ -66,3 +67,6 @@ You can assume I know the code base well and should have little trouble with mod
 
 ## Documentation
 - Utilize Doxygen for automated documentation generation. Ensure that comments are clear and descriptive, and consider the balance between verbosity and clarity to maintain readability.
+
+## Response Formatting Preference
+- Format responses as a cleaner Markdown-style preview, with better visual structure than plain text.

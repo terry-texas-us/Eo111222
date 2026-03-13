@@ -487,7 +487,7 @@ EoDbDimension::EoDbDimension(std::uint8_t* buffer) {
 
   m_color = std::int16_t(buffer[32]);
 
-  m_fontDefinition.SetFontName(Eo::defaultStrokeFont);
+  m_fontDefinition.SetFontName(std::wstring(Eo::defaultStrokeFont));
   m_fontDefinition.SetPrecision(EoDb::Precision::StrokeType);
   m_fontDefinition.SetCharacterSpacing(((CVaxFloat*)&buffer[36])->Convert());
   m_fontDefinition.SetPath(static_cast<EoDb::Path>(buffer[40]));
@@ -626,7 +626,7 @@ EoDbSpline::EoDbSpline(std::uint8_t* buffer, int version) {
 
 EoDbText::EoDbText(std::uint8_t* buffer, int version) {
   m_fontDefinition.SetPrecision(EoDb::Precision::StrokeType);
-  m_fontDefinition.SetFontName(Eo::defaultStrokeFont);
+  m_fontDefinition.SetFontName(std::wstring(Eo::defaultStrokeFont));
 
   if (version == 1) {
     m_color = std::int16_t(buffer[4] & 0x000f);

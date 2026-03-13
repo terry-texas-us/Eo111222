@@ -18,7 +18,8 @@ class EoDxfReader {
 
   [[nodiscard]] std::uint64_t GetHandleString() const;
   [[nodiscard]] std::string_view GetEncodedText() const noexcept { return m_encodedText; }
-  [[nodiscard]] std::wstring GetWideString() const { return m_decoder.DecodeText(m_encodedText); }
+  [[nodiscard]] std::wstring DecodeEncodedText(std::string_view encodedText) const { return m_decoder.DecodeText(encodedText); }
+  [[nodiscard]] std::wstring GetWideString() const { return DecodeEncodedText(m_encodedText); }
   [[nodiscard]] constexpr double GetDouble() const noexcept { return m_double; }
 
   [[nodiscard]] constexpr std::int16_t GetInt16() const noexcept { return m_int16; }

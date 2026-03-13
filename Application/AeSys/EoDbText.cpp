@@ -67,26 +67,33 @@ bool HasFormattingCharacters(const CString& text) {
 }
 
 }  // namespace
-EoDbText::EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text) {
+
+EoDbText::EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text)
+    : EoDbPrimitive(), m_fontDefinition{fd}, m_ReferenceSystem{referenceSystem}, m_strText{text} {
   m_color = renderState.Color();
-  m_fontDefinition = fd;
-  m_ReferenceSystem = referenceSystem;
-  m_strText = text;
 }
-EoDbText::EoDbText(const EoDbText& src) {
-  m_color = src.m_color;
-  m_fontDefinition = src.m_fontDefinition;
-  m_ReferenceSystem = src.m_ReferenceSystem;
-  m_strText = src.m_strText;
+
+EoDbText::EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const std::wstring& text)
+    : EoDbPrimitive(), m_fontDefinition{fd}, m_ReferenceSystem{referenceSystem}, m_strText{text.c_str()} {
+  m_color = renderState.Color();
 }
-const EoDbText& EoDbText::operator=(const EoDbText& src) {
-  m_color = src.m_color;
-  m_fontDefinition = src.m_fontDefinition;
-  m_ReferenceSystem = src.m_ReferenceSystem;
-  m_strText = src.m_strText;
+
+EoDbText::EoDbText(const EoDbText& other) {
+  m_color = other.m_color;
+  m_fontDefinition = other.m_fontDefinition;
+  m_ReferenceSystem = other.m_ReferenceSystem;
+  m_strText = other.m_strText;
+}
+
+const EoDbText& EoDbText::operator=(const EoDbText& other) {
+  m_color = other.m_color;
+  m_fontDefinition = other.m_fontDefinition;
+  m_ReferenceSystem = other.m_ReferenceSystem;
+  m_strText = other.m_strText;
 
   return (*this);
 }
+
 void EoDbText::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   CString label{L"<Text>"};
   tvAddItem(tree, parent, label.GetBuffer(), this);

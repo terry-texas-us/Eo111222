@@ -33,6 +33,7 @@ class EoDbFontDefinition {
   void SetAlignment(EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment);
   void SetCharacterSpacing(double characterSpacing);
   void SetFontName(const CString& fontName);
+  void SetFontName(const std::wstring& fontName);
   void SetHorizontalAlignment(EoDb::HorizontalAlignment horizontalAlignment);
   void SetPath(EoDb::Path path);
   void SetPrecision(EoDb::Precision precision);

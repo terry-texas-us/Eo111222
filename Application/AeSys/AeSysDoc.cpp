@@ -410,7 +410,7 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
   return returnStatus;
 }
 
-void AeSysDoc::AddTextBlock(LPWSTR pszText) {
+void AeSysDoc::AddTextBlock(LPWSTR textBlock) {
   auto cursorPosition = app.GetCursorPosition();
 
   const auto& fontDefinition = renderState.FontDefinition();
@@ -418,18 +418,18 @@ void AeSysDoc::AddTextBlock(LPWSTR pszText) {
 
   EoGeReferenceSystem ReferenceSystem(cursorPosition, characterCellDefinition);
 
-  LPWSTR NextToken = nullptr;
-  LPWSTR pText = wcstok_s(pszText, L"\r", &NextToken);
-  while (pText != 0) {
-    if (wcslen(pText) > 0) {
-      auto* Group = new EoDbGroup(new EoDbText(fontDefinition, ReferenceSystem, pText));
-      AddWorkLayerGroup(Group);
-      UpdateAllViews(nullptr, EoDb::kGroup, Group);
+  LPWSTR nextToken = nullptr;
+  LPWSTR text = wcstok_s(textBlock, L"\r", &nextToken);
+  while (text != nullptr) {
+    if (wcslen(text) > 0) {
+      auto* group = new EoDbGroup(new EoDbText(fontDefinition, ReferenceSystem, std::wstring(text)));
+      AddWorkLayerGroup(group);
+      UpdateAllViews(nullptr, EoDb::kGroup, group);
     }
     ReferenceSystem.SetOrigin(text_GetNewLinePos(fontDefinition, ReferenceSystem, 1.0, 0));
-    pText = wcstok_s(0, L"\r", &NextToken);
-    if (pText == 0) { break; }
-    pText++;
+    text = wcstok_s(0, L"\r", &nextToken);
+    if (text == nullptr) { break; }
+    text++;
   }
 }
 

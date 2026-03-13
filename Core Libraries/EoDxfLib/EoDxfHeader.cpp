@@ -1,5 +1,3 @@
-#include <Windows.h>
-
 #include <map>
 #include <memory>
 #include <sstream>
@@ -13,19 +11,27 @@
 
 namespace {
 
-[[nodiscard]] std::wstring Utf8ToWideText(const std::string_view text) {
-  if (text.empty()) { return {}; }
+[[nodiscard]] std::wstring DecodeAsciiTransportText(std::string_view encodedText) {
+  std::wstring decodedText;
+  decodedText.reserve(encodedText.size());
 
-  const auto inputLength = static_cast<int>(text.size());
-  const auto requiredLength = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text.data(), inputLength, nullptr, 0);
-  if (requiredLength <= 0) { return {}; }
+  for (const auto encodedCharacter : encodedText) {
+    decodedText.push_back(static_cast<wchar_t>(static_cast<unsigned char>(encodedCharacter)));
+  }
 
-  std::wstring wideText(static_cast<std::size_t>(requiredLength), L'\0');
-  const auto convertedLength =
-      MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text.data(), inputLength, wideText.data(), requiredLength);
-  if (convertedLength != requiredLength) { return {}; }
+  return decodedText;
+}
 
-  return wideText;
+[[nodiscard]] std::string EncodeAsciiTransportText(std::wstring_view text) {
+  std::string encodedText;
+  encodedText.reserve(text.size());
+
+  for (const auto wideCharacter : text) {
+    if (static_cast<unsigned int>(wideCharacter) > 0x7F) { return {}; }
+    encodedText.push_back(static_cast<char>(wideCharacter));
+  }
+
+  return encodedText;
 }
 
 }  // namespace
@@ -81,9 +87,10 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       m_currentVariant->AddWideString(code, reader->GetWideString());
       break;
     case 3:
-      m_currentVariant->AddWideString(code, reader->GetWideString());
       if (m_name == L"$DWGCODEPAGE") {
-        m_originalCodePageToken = m_currentVariant->GetWideString();
+        const auto codePageToken = DecodeAsciiTransportText(reader->GetEncodedText());
+        m_currentVariant->AddWideString(code, codePageToken);
+        m_originalCodePageToken = codePageToken;
         EoTcTextCodec readerCodec;
         readerCodec.SetCodePage(m_originalCodePageToken);
         if (reader->IsAsciiFile() && readerCodec.GetCodePage() == L"UTF-16") {
@@ -91,6 +98,8 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
         } else {
           reader->SetCodePage(m_originalCodePageToken);
         }
+      } else {
+        m_currentVariant->AddWideString(code, reader->GetWideString());
       }
       break;
     case 5: {
@@ -1199,7 +1208,12 @@ void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
     variantWideString = L"ANSI_1252";
   }
   writer->WriteWideString(9, L"$DWGCODEPAGE");
-  writer->WriteWideString(3, variantWideString);
+  const auto encodedCodePageToken = EncodeAsciiTransportText(variantWideString);
+  if (!encodedCodePageToken.empty() || variantWideString.empty()) {
+    writer->WriteEncodedText(3, encodedCodePageToken);
+  } else {
+    writer->WriteWideString(3, variantWideString);
+  }
   EoTcTextCodec outputCodec;
   outputCodec.SetCodePage(variantWideString);
   writer->SetCodePage(outputCodec.GetCodePage() == L"UTF-16" ? L"ANSI_1252" : outputCodec.GetCodePage());

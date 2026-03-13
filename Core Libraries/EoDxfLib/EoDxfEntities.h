@@ -470,9 +470,16 @@ class EoDxfText : public EoDxfLine {
   friend class EoDxfWrite;
 
  public:
-  enum VAlign { BaseLine = 0, Bottom, Middle, Top };
+  enum class VerticalAlignment : std::int16_t { BaseLine, Bottom, Middle, Top };
 
-  enum HAlign { Left = 0, Center, Right, AlignedIfBaseLine, MiddleIfBaseLine, FitIfBaseLine };
+  enum class HorizontalAlignment : std::int16_t {
+    Left,
+    Center,
+    Right,
+    AlignedIfBaseLine,
+    MiddleIfBaseLine,
+    FitIfBaseLine
+  };
 
   explicit EoDxfText(EoDxf::ETYPE entityType = EoDxf::TEXT) noexcept : EoDxfLine{entityType} {}
 
@@ -488,9 +495,9 @@ class EoDxfText : public EoDxfLine {
   double m_scaleFactorWidth{1.0};  // Group code 41
   double m_obliqueAngle{};  // Group code 51
   std::wstring m_textStyleName{L"STANDARD"};  // Group code 7
-  std::int16_t m_textGenerationFlags{};  // Group code 71
-  enum HAlign m_horizontalAlignment { Left };  // Group code 72
-  enum VAlign m_verticalAlignment { BaseLine };  // Group code 73
+  std::int16_t m_textGenerationFlags{};  // Group code 71 (optional)
+  HorizontalAlignment m_horizontalAlignment{HorizontalAlignment::Left};  // Group code 72 (optional)
+  VerticalAlignment m_verticalAlignment{VerticalAlignment::BaseLine};  // Group code 73 (optional)
 };
 
 /** @brief Class to handle mtext entity
@@ -519,10 +526,7 @@ class EoDxfMText : public EoDxfText {
     BottomRight
   };
 
-  explicit EoDxfMText(EoDxf::ETYPE entityType = EoDxf::MTEXT) noexcept : EoDxfText{entityType} {
-    m_verticalAlignment = (VAlign)TopLeft;
-    m_textGenerationFlags = 1;
-  }
+  explicit EoDxfMText(EoDxf::ETYPE entityType = EoDxf::MTEXT) noexcept : EoDxfText{entityType} {}
 
  protected:
   void ParseCode(int code, EoDxfReader* reader);

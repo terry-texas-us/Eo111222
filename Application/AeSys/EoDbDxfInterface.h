@@ -135,10 +135,23 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
     ConvertEllipseEntity(ellipse, m_document);
   }
-  void addHatch([[maybe_unused]] const EoDxfHatch* hatch) override { countOfHatch++; }
+  
+  void addHatch(const EoDxfHatch& hatch) override { 
+  countOfHatch++; 
+  if (m_inBlockDefinition) {
+    ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addHatch - block <%s>\n", m_blockName.c_str());
+    ConvertHatchEntity(hatch, m_document);
+  } else {
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addHatch - entities section\n");
+    ConvertHatchEntity(hatch, m_document);
+  }
+
+  }
 
   // HELIX not implemented
+  
   void addImage([[maybe_unused]] const EoDxfImage* image) override { countOfImage++; }
+  
   void addUnsupportedObject(const EoDxfUnsupportedObject& /* objectData */) override {}
 
   void addInsert(const EoDxfInsert& blockReference) override {
@@ -153,6 +166,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
 
   void addLeader(const EoDxfLeader* leader) override { (void)leader; }
+  
   // LIGHT not implemented
 
   void addLine(const EoDxfLine& line) override {
@@ -181,13 +195,16 @@ class EoDbDxfInterface : public EoDxfInterface {
   void addMLeader(const EoDxfMLeader* mLeader) override { (void)mLeader; }
 
   // MLINE not implemented
+
   void addMText(const EoDxfMText& mText) override {
     (void)mText;
     countOfMText++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addMText - block <%s>\n", m_blockName.c_str());
+      ConvertMTextEntity(mText, m_document);
     } else {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addMText - entities section\n");
+      ConvertMTextEntity(mText, m_document);
     }
   }
 
@@ -223,12 +240,13 @@ class EoDbDxfInterface : public EoDxfInterface {
   // TABLE not implemented
 
   void addText(const EoDxfText& text) override {
-    (void)text;
     countOfText++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addText - block <%s>\n", m_blockName.c_str());
+      ConvertTextEntity(text, m_document);
     } else {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addText - entities section\n");
+      ConvertTextEntity(text, m_document);
     }
   }
 
@@ -335,10 +353,13 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document);
   void ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document);
   void ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document);
+  void ConvertHatchEntity(const EoDxfHatch& hatch, [[maybe_unused]] AeSysDoc* document);
   void ConvertInsertEntity(const EoDxfInsert& insert, AeSysDoc* document);
   void ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document);
   void ConvertLWPolylineEntity(const EoDxfLwPolyline& lwPolyline, AeSysDoc* document);
+  void ConvertMTextEntity(const EoDxfMText& mText, [[maybe_unused]] AeSysDoc* document);
   void ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document);
+  void ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document);
 
  private:
   AeSysDoc* m_document{};

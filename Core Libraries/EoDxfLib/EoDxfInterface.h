@@ -155,7 +155,7 @@ class EoDxfInterface {
   /**
    * Called for every hatch entity.
    */
-  virtual void addHatch(const EoDxfHatch* data) = 0;
+  virtual void addHatch(const EoDxfHatch& data) = 0;
 
   /**
    * Called for every viewport entity.

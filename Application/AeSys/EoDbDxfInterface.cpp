@@ -14,6 +14,7 @@
 #include "EoDbBlockReference.h"
 #include "EoDbConic.h"
 #include "EoDbDxfInterface.h"
+#include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbLayer.h"
@@ -23,10 +24,12 @@
 #include "EoDbPoint.h"
 #include "EoDbPolyline.h"
 #include "EoDbPrimitive.h"
+#include "EoDbText.h"
 #include "EoDxfEntities.h"
 #include "EoDxfGroupCodeValuesVariant.h"
 #include "EoDxfHeader.h"
 #include "EoGeLine.h"
+#include "EoGeOcsTransform.h"
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
 
@@ -410,6 +413,11 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   AddToDocument(conic, document);
 }
 
+void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, [[maybe_unused]] AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 3, L"Hatch entity conversion - Pattern: %s (under construction)\n",
+      hatch.m_hatchPatternName.c_str());
+}
+
 void EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Insert entity conversion\n");
   auto insertPrimitive = new EoDbBlockReference();
@@ -453,6 +461,11 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
   AddToDocument(polylinePrimitive, document);
 }
 
+void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unused]] AeSysDoc* document) {
+  const auto& textValue = mtext.m_string;
+  ATLTRACE2(traceGeneral, 3, L"MText entity conversion - Value: %s (under construction)\n", textValue.c_str());
+}
+
 void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Point entity conversion\n");
 
@@ -460,4 +473,115 @@ void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* doc
   pointPrimitive->SetBaseProperties(&point, document);
   pointPrimitive->SetPoint(point.m_firstPoint.x, point.m_firstPoint.y, point.m_firstPoint.z);
   AddToDocument(pointPrimitive, document);
+}
+
+void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 2, L"Text entity conversion - (under construction)\n");
+
+  [[maybe_unused]] auto thickness = text.m_thickness;  // Group code 50 (is not supported in AeSys)
+  auto firstAlignmentPointInOcs = EoGePoint3d{text.m_firstPoint.x, text.m_firstPoint.y, text.m_firstPoint.z};
+  auto textHeight = text.m_textHeight;  // Group code 40
+
+  /** This is the text string itself, which may contain embedded formatting codes:
+   *    \P for new line, \L and \l for overline and underline start, \S for stacked fraction, etc.).
+   * The handling of these formatting codes is complex and may require a dedicated parser to interpret them correctly.
+   * For now, we will treat the entire string as plain text without special formatting.
+   */
+  std::wstring string{text.m_string.c_str()};  // Group code 1
+
+  auto textRotation = Eo::DegreeToRadian(text.m_textRotation);  // Group code 50
+  auto xScaleFactorWidth = text.m_scaleFactorWidth;  // Group code 41
+  [[maybe_unused]] auto obliqueAngle = Eo::DegreeToRadian(text.m_obliqueAngle);
+
+  std::wstring textStyleName = text.m_textStyleName;  // Group code 7
+
+  [[maybe_unused]] auto textGenerationFlags = text.m_textGenerationFlags;  // Group code 71 (is not supported in AeSys)
+  auto horizontalAlignment = text.m_horizontalAlignment;  // Group code 72
+
+  auto secondAlignmentPointInOcs = EoGePoint3d{text.m_secondPoint.x, text.m_secondPoint.y, text.m_secondPoint.z};
+  auto extrusionDirection =
+      EoGeVector3d{text.m_extrusionDirection.x, text.m_extrusionDirection.y, text.m_extrusionDirection.z};
+
+  auto verticalAlignment = text.m_verticalAlignment;  // Group code 73
+
+  auto baselineDirection = secondAlignmentPointInOcs - firstAlignmentPointInOcs;
+  [[maybe_unused]] auto haveBaselineDirection = !baselineDirection.IsNearNull();
+
+  EoGePoint3d firstAlignmentPointInWcs;
+  EoGePoint3d secondAlignmentPointInWcs;
+
+  if (haveBaselineDirection && text.m_haveExtrusion && !extrusionDirection.IsNearNull()) {
+    extrusionDirection.Unitize();
+
+    // Rotation of second alignment points is applied before ocs transformation to match AutoCAD behavior.
+    secondAlignmentPointInOcs =
+        secondAlignmentPointInOcs.RotateAboutAxis(firstAlignmentPointInOcs, extrusionDirection, textRotation);
+
+    EoGeOcsTransform transformOcs{extrusionDirection};
+    firstAlignmentPointInWcs = transformOcs * firstAlignmentPointInOcs;
+    secondAlignmentPointInWcs = transformOcs * secondAlignmentPointInOcs;
+    baselineDirection = secondAlignmentPointInWcs - firstAlignmentPointInWcs;
+    baselineDirection.Unitize();
+  } else {
+    firstAlignmentPointInWcs = firstAlignmentPointInOcs;
+    secondAlignmentPointInWcs = secondAlignmentPointInOcs;
+    baselineDirection = EoGeVector3d::positiveUnitX;  // Default baseline direction along X-axis if not defined
+    baselineDirection.RotateAboutArbitraryAxis(extrusionDirection, textRotation);
+  }
+  auto xAxisDirection = baselineDirection;
+  auto yAxisDirection = CrossProduct(extrusionDirection, xAxisDirection);
+
+  yAxisDirection *= textHeight;
+  xAxisDirection *= xScaleFactorWidth * textHeight * Eo::defaultCharacterCellAspectRatio;
+  EoGeReferenceSystem referenceSystem(firstAlignmentPointInWcs, xAxisDirection, yAxisDirection);
+
+  EoDbFontDefinition fontDefinition{};
+  fontDefinition.SetFontName(textStyleName);
+
+  /** Only Left(0), Center(1) and Right(2) horizontal alignment options are supported in AeSys so options
+   * Aligned(3) → Left, Middle(4) → Center, and Fit(5) → Right; (should only pair with Baseline(0) vertical alignment
+   * and when the second alignment point is defined).
+   * @todo: AeSys does not support the stretching behavior of these options.
+   * Consider adding support for the stretching behavior in AeSys and mapping these options directly.
+   */
+  switch (horizontalAlignment) {
+    case EoDxfText::HorizontalAlignment::Center:
+      [[fallthrough]];
+    case EoDxfText::HorizontalAlignment::MiddleIfBaseLine:
+      fontDefinition.SetHorizontalAlignment(EoDb::HorizontalAlignment::Center);
+      break;
+    case EoDxfText::HorizontalAlignment::Right:
+      [[fallthrough]];
+    case EoDxfText::HorizontalAlignment::FitIfBaseLine:
+      fontDefinition.SetHorizontalAlignment(EoDb::HorizontalAlignment::Right);
+      break;
+    case EoDxfText::HorizontalAlignment::Left:
+      [[fallthrough]];
+    case EoDxfText::HorizontalAlignment::AlignedIfBaseLine:
+      [[fallthrough]];
+    default:
+      fontDefinition.SetHorizontalAlignment(EoDb::HorizontalAlignment::Left);
+      break;
+  }
+
+  switch (verticalAlignment) {
+    case EoDxfText::VerticalAlignment::Middle:
+      fontDefinition.SetVerticalAlignment(EoDb::VerticalAlignment::Middle);
+      break;
+    case EoDxfText::VerticalAlignment::Top:
+      fontDefinition.SetVerticalAlignment(EoDb::VerticalAlignment::Top);
+      break;
+    case EoDxfText::VerticalAlignment::BaseLine:
+      [[fallthrough]];
+    case EoDxfText::VerticalAlignment::Bottom:
+      [[fallthrough]];
+    default:
+      fontDefinition.SetVerticalAlignment(EoDb::VerticalAlignment::Bottom);
+      break;
+  }
+
+  auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, string);
+  textPrimitive->SetBaseProperties(&text, document);
+
+  AddToDocument(textPrimitive, document);
 }

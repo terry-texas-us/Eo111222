@@ -4,11 +4,11 @@
 #include <string>
 #include <utility>
 
+#include "EoDxfEntities.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeVector3d.h"
-#include "EoDxfEntities.h"
 
 HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR pszText, LPCVOID object);
 

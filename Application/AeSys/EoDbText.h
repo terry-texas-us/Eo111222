@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <cstdint>
+#include <string>
 
 #include "AeSysView.h"
 #include "EoDb.h"
@@ -24,6 +25,7 @@ class EoDbText : public EoDbPrimitive {
   EoDbText() {}
   EoDbText(std::uint8_t* buffer, int version);
   EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text);
+  EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const std::wstring& text);
   EoDbText(const EoDbText&);
 
   ~EoDbText() override = default;
@@ -70,7 +72,11 @@ class EoDbText : public EoDbPrimitive {
 
   EoGePoint3d ReferenceOrigin() { return m_ReferenceSystem.Origin(); }
 
+  void SetFontDefinition(const EoDbFontDefinition& fontDefinition) noexcept { m_fontDefinition = fontDefinition; }
+  void SetReferenceOrigin(const EoGePoint3d& origin) { m_ReferenceSystem.SetOrigin(origin); }
+  void SetReferenceSystem(const EoGeReferenceSystem& referenceSystem) noexcept { m_ReferenceSystem = referenceSystem; }
   void SetText(const CString& text) { m_strText = text; }
+  void SetText(const std::wstring& text) { m_strText = text.c_str(); }
 };
 
 void DisplayText(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem,

@@ -153,10 +153,8 @@ bool EoDxfRead::ProcessHeader() {
     if (code == 0) {
       zeroGroupTag = m_reader->GetWideString();
       if (zeroGroupTag == L"ENDSEC") {
-        EoTcTextCodec commentDecoder;
-        commentDecoder.SetCodePage(m_reader->GetCodePage());
         for (const auto& pendingComment : m_pendingComments) {
-          m_header.AddComment(commentDecoder.DecodeText(pendingComment));
+          m_header.AddComment(m_reader->DecodeEncodedText(pendingComment));
         }
         m_pendingComments.clear();
         m_headerParsed = true;
@@ -824,7 +822,7 @@ bool EoDxfRead::ProcessHatch() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addHatch(&hatch);
+        m_interface->addHatch(hatch);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:

@@ -51,11 +51,6 @@ bool EoGeVector3d::IsEqualTo(const EoGeVector3d& other, double tolerance) const 
 
 double EoGeVector3d::Length() const { return std::sqrt(SquaredLength()); }
 
-void EoGeVector3d::Normalize() {
-  if (IsNearNull()) { throw std::domain_error("Cannot normalize zero-length vector"); }
-  *this /= Length();
-}
-
 void EoGeVector3d::Read(CFile& file) {
   file.Read(&x, sizeof(double));
   file.Read(&y, sizeof(double));
