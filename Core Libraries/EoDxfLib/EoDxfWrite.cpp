@@ -29,6 +29,13 @@ constexpr auto FIRSTHANDLE{48};
   textCodec.SetCodePage(codePage);
   return textCodec.GetCodePage() == L"UTF-16";
 }
+
+[[nodiscard]] std::wstring GetActiveWriteCodePage(std::wstring_view codePage, bool binaryFile) {
+  EoTcTextCodec textCodec;
+  textCodec.SetCodePage(codePage);
+  if (!binaryFile && textCodec.GetCodePage() == L"UTF-16") { return L"ANSI_1252"; }
+  return textCodec.GetCodePage();
+}
 }  // namespace
 
 EoDxfWrite::EoDxfWrite(const std::filesystem::path& fileName) {
@@ -82,6 +89,8 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
     if (filestr.is_open()) { filestr.close(); }
     return false;
   }
+
+  m_writer->SetCodePage(GetActiveWriteCodePage(GetRequestedCodePage(header), m_binaryFile));
 
   const auto preservedComments = header.GetComments();
   if (!preservedComments.empty()) {
@@ -139,6 +148,22 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
 
   delete m_writer;
   m_writer = nullptr;
+  return m_writeOk;
+}
+
+bool EoDxfWrite::WriteClass(EoDxfClass* class_) {
+  if (class_ == nullptr || m_writer == nullptr) { return false; }
+  class_->write(m_writer, m_version);
+  return m_writeOk;
+}
+
+void EoDxfWrite::AddImageDefinition(const EoDxfImageDefinition& imageDefinition) {
+  auto* preservedImageDefinition = new EoDxfImageDefinition(imageDefinition);
+  m_imageDef.push_back(preservedImageDefinition);
+}
+
+bool EoDxfWrite::WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData) {
+  objectData.Write(m_writer);
   return m_writeOk;
 }
 
@@ -402,6 +427,7 @@ bool EoDxfWrite::WriteBlocks() {
 }
 
 bool EoDxfWrite::WriteObjects() {
+  m_interface->writeObjects();
   WriteCodeString(0, L"DICTIONARY");
   std::wstring imgDictH;
   WriteCodeString(5, L"C");
@@ -470,6 +496,8 @@ bool EoDxfWrite::WriteObjects() {
   // no more needed imageDef, delete it
   for (auto* id_ : m_imageDef) { delete id_; }
   m_imageDef.clear();
+
+  m_interface->writeUnsupportedObjects();
 
   return m_writeOk;
 }

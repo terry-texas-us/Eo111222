@@ -17,6 +17,7 @@ class EoDxfReader {
   bool ReadRec(int* code);
 
   [[nodiscard]] std::uint64_t GetHandleString() const;
+  [[nodiscard]] std::string_view GetEncodedText() const noexcept { return m_encodedText; }
   [[nodiscard]] std::wstring GetWideString() const { return m_decoder.DecodeText(m_encodedText); }
   [[nodiscard]] constexpr double GetDouble() const noexcept { return m_double; }
 
@@ -26,6 +27,7 @@ class EoDxfReader {
   [[nodiscard]] constexpr bool GetBool() const noexcept { return m_boolData; }
   [[nodiscard]] std::wstring GetVersion() const { return m_decoder.GetVersion(); }
   [[nodiscard]] constexpr EoDxf::Version GetVersionEnum() const noexcept { return m_decoder.GetVersionEnum(); }
+  [[nodiscard]] bool IsAsciiFile() const noexcept { return m_isAsciiFile; }
   void SetVersion(std::wstring_view version) { m_decoder.SetVersion(version); }
   void SetCodePage(std::wstring_view codePage) { m_decoder.SetCodePage(codePage); }
   [[nodiscard]] const std::wstring& GetCodePage() const noexcept { return m_decoder.GetCodePage(); }

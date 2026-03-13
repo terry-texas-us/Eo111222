@@ -14,11 +14,38 @@
 #include "EoDxfObjects.h"
 #include "EoDxfReader.h"
 
+namespace {
+
+[[nodiscard]] EoDxfGroupCodeValuesVariant CreateRawRecordValue(int code, EoDxfReader* reader) {
+  if (code <= 9 || code == 100 || code == 102 || code == 105 || (code >= 300 && code < 370) || (code >= 390 && code < 400) ||
+      (code >= 410 && code < 420) || (code >= 430 && code < 440) || (code >= 470 && code < 481) ||
+      (code >= 999 && code <= 1009)) {
+    return EoDxfGroupCodeValuesVariant(code, reader->GetWideString());
+  }
+  if ((code >= 10 && code < 60) || (code >= 110 && code < 150) || (code >= 210 && code < 240) || (code >= 460 && code < 470) ||
+      (code >= 1010 && code <= 1059)) {
+    return EoDxfGroupCodeValuesVariant(code, reader->GetDouble());
+  }
+  if ((code >= 60 && code < 80) || (code >= 170 && code < 180) || (code >= 270 && code < 290) ||
+      (code >= 370 && code < 390) || (code >= 400 && code < 410) || (code >= 1060 && code <= 1070)) {
+    return EoDxfGroupCodeValuesVariant(code, reader->GetInt16());
+  }
+  if ((code >= 90 && code < 100) || (code >= 420 && code < 460) || code == 1071) {
+    return EoDxfGroupCodeValuesVariant(code, reader->GetInt32());
+  }
+  if (code >= 160 && code < 170) { return EoDxfGroupCodeValuesVariant(code, reader->GetInt64()); }
+  if (code >= 290 && code < 300) { return EoDxfGroupCodeValuesVariant(code, reader->GetBool()); }
+  return EoDxfGroupCodeValuesVariant(code, reader->GetWideString());
+}
+
+}  // namespace
+
 EoDxfRead::EoDxfRead(const std::filesystem::path& fileName) {
   m_fileName = fileName.wstring();
   m_reader = nullptr;
   m_applyExtrusion = false;
   m_ellipseParts = 128;  // parts number when convert ellipse to polyline
+  m_headerParsed = false;
 }
 
 EoDxfRead::~EoDxfRead() {
@@ -29,6 +56,8 @@ bool EoDxfRead::Read(EoDxfInterface* interface_, bool ext) {
   assert(!m_fileName.empty());
   bool isOk = false;
   m_applyExtrusion = ext;
+  m_headerParsed = false;
+  m_pendingComments.clear();
   std::ifstream filestr;
   if (interface_ == nullptr) { return isOk; }
   filestr.open(std::filesystem::path{m_fileName}, std::ios_base::in | std::ios::binary);
@@ -76,7 +105,11 @@ bool EoDxfRead::ProcessDxf() {
   //    section = secUnknown;
   while (m_reader->ReadRec(&code)) {
     if (code == 999) {
-      m_header.AddComment(m_reader->GetWideString());
+      if (m_headerParsed) {
+        m_header.AddComment(m_reader->GetWideString());
+      } else {
+        m_pendingComments.emplace_back(m_reader->GetEncodedText());
+      }
     } else if (code == 0) {
       sectionstr = m_reader->GetWideString();
       if (sectionstr == L"EOF") {
@@ -120,6 +153,13 @@ bool EoDxfRead::ProcessHeader() {
     if (code == 0) {
       zeroGroupTag = m_reader->GetWideString();
       if (zeroGroupTag == L"ENDSEC") {
+        EoTcTextCodec commentDecoder;
+        commentDecoder.SetCodePage(m_reader->GetCodePage());
+        for (const auto& pendingComment : m_pendingComments) {
+          m_header.AddComment(commentDecoder.DecodeText(pendingComment));
+        }
+        m_pendingComments.clear();
+        m_headerParsed = true;
         m_interface->addHeader(&m_header);
         return true;
       }
@@ -938,11 +978,7 @@ bool EoDxfRead::ProcessObjects() {
     } else if (m_nextEntity == L"IMAGEDEF") {
       ProcessImageDef();
     } else {
-      if (m_reader->ReadRec(&code)) {
-        if (code == 0) { m_nextEntity = m_reader->GetWideString(); }
-      } else {
-        return false;  // end of file without ENDSEC
-      }
+      ProcessUnsupportedObject();
     }
   }
 }
@@ -963,4 +999,25 @@ bool EoDxfRead::ProcessImageDef() {
     }
   }
   return true;
+}
+
+bool EoDxfRead::ProcessUnsupportedObject() {
+  int code;
+  EoDxfUnsupportedObject unsupportedObject;
+  unsupportedObject.m_objectType = m_nextEntity;
+
+  while (m_reader->ReadRec(&code)) {
+    if (code == 0) {
+      m_nextEntity = m_reader->GetWideString();
+      m_interface->addUnsupportedObject(unsupportedObject);
+      return true;
+    }
+    unsupportedObject.m_values.push_back(CreateRawRecordValue(code, m_reader));
+  }
+
+  if (!unsupportedObject.m_objectType.empty()) {
+    m_interface->addUnsupportedObject(unsupportedObject);
+    return true;
+  }
+  return false;
 }

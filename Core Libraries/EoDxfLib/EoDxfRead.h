@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <string>
+#include <vector>
 
 #include "EoDxfEntities.h"
 #include "EoDxfHeader.h"
@@ -86,6 +87,7 @@ class EoDxfRead {
   bool ProcessViewport();
   bool ProcessImage();
   bool ProcessImageDef();
+  bool ProcessUnsupportedObject();
   bool ProcessDimension();
   bool ProcessLeader();
   bool ProcessMLeader();
@@ -100,4 +102,6 @@ class EoDxfRead {
   int m_ellipseParts;
   bool m_applyExtrusion;
   bool m_binaryFile{};
+  bool m_headerParsed{};
+  std::vector<std::string> m_pendingComments;
 };

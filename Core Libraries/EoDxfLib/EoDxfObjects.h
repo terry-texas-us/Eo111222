@@ -4,7 +4,10 @@
 #include <string>
 #include <vector>
 
+#include "EoDxfGroupCodeValuesVariant.h"
 #include "EoDxfReader.h"
+
+class EoDxfWriter;
 
 /** @brief Base class for DXF OBJECTS section entries.
  *
@@ -87,4 +90,12 @@ class EoDxfImageDefinition : public EoDxfObjectEntry {
   std::int16_t m_resolutionUnits{};  // Group code 281, 0=no, 2=centimeters, 5=inch
 
   std::map<std::wstring, std::wstring> reactors;
+};
+
+class EoDxfUnsupportedObject {
+ public:
+  void Write(EoDxfWriter* writer) const;
+
+  std::wstring m_objectType;
+  std::vector<EoDxfGroupCodeValuesVariant> m_values;
 };

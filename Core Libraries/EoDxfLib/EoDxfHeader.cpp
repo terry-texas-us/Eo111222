@@ -84,7 +84,13 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
       m_currentVariant->AddWideString(code, reader->GetWideString());
       if (m_name == L"$DWGCODEPAGE") {
         m_originalCodePageToken = m_currentVariant->GetWideString();
-        reader->SetCodePage(m_originalCodePageToken);
+        EoTcTextCodec readerCodec;
+        readerCodec.SetCodePage(m_originalCodePageToken);
+        if (reader->IsAsciiFile() && readerCodec.GetCodePage() == L"UTF-16") {
+          reader->SetCodePage(L"ANSI_1252");
+        } else {
+          reader->SetCodePage(m_originalCodePageToken);
+        }
       }
       break;
     case 5: {
@@ -1193,8 +1199,10 @@ void EoDxfHeader::Write(EoDxfWriter* writer, EoDxf::Version version) {
     variantWideString = L"ANSI_1252";
   }
   writer->WriteWideString(9, L"$DWGCODEPAGE");
-  writer->SetCodePage(variantWideString);
   writer->WriteWideString(3, variantWideString);
+  EoTcTextCodec outputCodec;
+  outputCodec.SetCodePage(variantWideString);
+  writer->SetCodePage(outputCodec.GetCodePage() == L"UTF-16" ? L"ANSI_1252" : outputCodec.GetCodePage());
 
   writer->WriteWideString(9, L"$HANDSEED");
   std::uint64_t variantHandle;

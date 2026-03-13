@@ -173,14 +173,22 @@ class EoDxfInterface {
   virtual void linkImage(const EoDxfImageDefinition* data) = 0;
 
   /**
+   * Called for unsupported object records that should be preserved for rewrite fidelity.
+   */
+  virtual void addUnsupportedObject(const EoDxfUnsupportedObject& objectData) = 0;
+
+  /**
    * Called for every comment in the DXF file (code 999).
    */
   virtual void addComment(std::wstring_view comment) = 0;
 
   virtual void writeHeader(EoDxfHeader& data) = 0;
+  virtual void writeClasses() = 0;
   virtual void writeBlocks() = 0;
   virtual void writeBlockRecords() = 0;
   virtual void writeEntities() = 0;
+  virtual void writeObjects() = 0;
+  virtual void writeUnsupportedObjects() = 0;
   virtual void writeLTypes() = 0;
   virtual void writeLayers() = 0;
   virtual void writeTextstyles() = 0;

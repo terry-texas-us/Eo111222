@@ -35,6 +35,7 @@ class EoDxfWrite {
    * @return true if the file was successfully written; false if an error occurred during writing.
    */
   bool Write(EoDxfInterface* interface_, EoDxf::Version version, bool binaryFile);
+  bool WriteClass(EoDxfClass* class_);
   bool WriteLinetype(EoDxfLinetype* linetype);
   bool WriteLayer(EoDxfLayer* layer);
   bool WriteDimStyle(EoDxfDimensionStyle* dimensionStyle);
@@ -78,6 +79,8 @@ class EoDxfWrite {
   bool WriteBlockRecord(std::wstring_view name);
   bool WriteBlock(EoDxfBlock* block);
   bool WriteInsert(EoDxfInsert* blockReference);
+  void AddImageDefinition(const EoDxfImageDefinition& imageDefinition);
+  bool WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData);
   bool WriteMText(EoDxfMText* mText);
   bool WriteText(EoDxfText* text);
   bool WriteHatch(EoDxfHatch* hatch);

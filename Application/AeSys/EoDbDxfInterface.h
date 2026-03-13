@@ -139,6 +139,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   // HELIX not implemented
   void addImage([[maybe_unused]] const EoDxfImage* image) override { countOfImage++; }
+  void addUnsupportedObject(const EoDxfUnsupportedObject& /* objectData */) override {}
 
   void addInsert(const EoDxfInsert& blockReference) override {
     countOfInsert++;
@@ -250,9 +251,12 @@ class EoDbDxfInterface : public EoDxfInterface {
   void writeAppId() override {};
   void writeBlockRecords() override {};
   void writeBlocks() override {};
+  void writeClasses() override {};
   void writeDimstyles() override {};
   void writeEntities() override {};
   void writeHeader(EoDxfHeader& /* header */) override {};
+  void writeObjects() override {};
+  void writeUnsupportedObjects() override {};
   void writeLayers() override {};
   void writeLTypes() override {};
   void writeTextstyles() override {};

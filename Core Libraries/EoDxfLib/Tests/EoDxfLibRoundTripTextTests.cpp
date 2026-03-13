@@ -1,5 +1,7 @@
 #include <filesystem>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -21,7 +23,7 @@ class RoundTripFixtureModel final : public EoDxfInterface {
     if (header != nullptr) { m_header = *header; }
   }
 
-  void addClass(const EoDxfClass&) override {}
+  void addClass(const EoDxfClass& classData) override { m_classes.push_back(classData); }
   void addLinetype(const EoDxfLinetype&) override {}
   void addLayer(const EoDxfLayer& layer) override { m_layers.push_back(layer); }
   void addDimStyle(const EoDxfDimensionStyle&) override {}
@@ -60,10 +62,19 @@ class RoundTripFixtureModel final : public EoDxfInterface {
   void addHatch(const EoDxfHatch*) override {}
   void addViewport(const EoDxfViewport&) override {}
   void addImage(const EoDxfImage*) override {}
-  void linkImage(const EoDxfImageDefinition*) override {}
+  void linkImage(const EoDxfImageDefinition* imageDefinition) override {
+    if (imageDefinition != nullptr) { m_imageDefinitions.push_back(*imageDefinition); }
+  }
+  void addUnsupportedObject(const EoDxfUnsupportedObject& objectData) override { m_unsupportedObjects.push_back(objectData); }
   void addComment(std::wstring_view comment) override { m_comments.emplace_back(comment); }
 
   void writeHeader(EoDxfHeader& data) override { data = m_header; }
+  void writeClasses() override {
+    if (m_writer == nullptr) { return; }
+    for (auto& classData : m_classes) {
+      m_writer->WriteClass(&classData);
+    }
+  }
   void writeBlocks() override {}
   void writeBlockRecords() override {}
   void writeEntities() override {
@@ -73,6 +84,18 @@ class RoundTripFixtureModel final : public EoDxfInterface {
     }
     for (auto& mText : m_mTexts) {
       m_writer->WriteMText(&mText);
+    }
+  }
+  void writeObjects() override {
+    if (m_writer == nullptr) { return; }
+    for (const auto& imageDefinition : m_imageDefinitions) {
+      m_writer->AddImageDefinition(imageDefinition);
+    }
+  }
+  void writeUnsupportedObjects() override {
+    if (m_writer == nullptr) { return; }
+    for (const auto& objectData : m_unsupportedObjects) {
+      m_writer->WriteUnsupportedObject(objectData);
     }
   }
   void writeLTypes() override {}
@@ -93,6 +116,9 @@ class RoundTripFixtureModel final : public EoDxfInterface {
   void writeAppId() override {}
 
   [[nodiscard]] const EoDxfHeader& Header() const noexcept { return m_header; }
+  [[nodiscard]] const std::vector<EoDxfClass>& Classes() const noexcept { return m_classes; }
+  [[nodiscard]] const std::vector<EoDxfImageDefinition>& ImageDefinitions() const noexcept { return m_imageDefinitions; }
+  [[nodiscard]] const std::vector<EoDxfUnsupportedObject>& UnsupportedObjects() const noexcept { return m_unsupportedObjects; }
   [[nodiscard]] const std::vector<EoDxfLayer>& Layers() const noexcept { return m_layers; }
   [[nodiscard]] const std::vector<EoDxfTextStyle>& TextStyles() const noexcept { return m_textStyles; }
   [[nodiscard]] const std::vector<EoDxfText>& Texts() const noexcept { return m_texts; }
@@ -101,6 +127,9 @@ class RoundTripFixtureModel final : public EoDxfInterface {
  private:
   EoDxfWrite* m_writer{};
   EoDxfHeader m_header;
+  std::vector<EoDxfClass> m_classes;
+  std::vector<EoDxfImageDefinition> m_imageDefinitions;
+  std::vector<EoDxfUnsupportedObject> m_unsupportedObjects;
   std::vector<EoDxfLayer> m_layers;
   std::vector<EoDxfTextStyle> m_textStyles;
   std::vector<EoDxfText> m_texts;
@@ -135,6 +164,18 @@ void Expect(bool condition, std::wstring_view message, int& failureCount) {
   std::wstring message{prefix};
   message += scenarioName;
   return message;
+}
+
+[[nodiscard]] std::wstring DescribeCodeUnits(std::wstring_view text) {
+  std::wostringstream stream;
+  stream << std::uppercase << std::hex;
+  bool firstValue{true};
+  for (const auto codeUnit : text) {
+    if (!firstValue) { stream << L' '; }
+    stream << static_cast<unsigned int>(codeUnit);
+    firstValue = false;
+  }
+  return stream.str();
 }
 
 [[nodiscard]] bool ContainsLayer(const RoundTripFixtureModel& model, std::wstring_view layerName) {
@@ -208,6 +249,16 @@ void BuildUtf16SourceModel(RoundTripFixtureModel& model) {
   header.AddComment(L"Programmatic UTF-16 comment");
   header.AddWideString(L"$DWGCODEPAGE", L"UTF-16", 3);
   model.addHeader(&header);
+
+  EoDxfClass classData;
+  classData.m_classDxfRecordName = L"TEST_CLASS";
+  classData.m_cppClassName = L"RoundTripFixtureClass";
+  classData.m_applicationName = L"EoDxfLibTests";
+  classData.m_proxyCapabilitiesFlag = 0;
+  classData.m_instanceCount = 1;
+  classData.m_wasAProxyFlag = 0;
+  classData.m_isAnEntityFlag = 0;
+  model.addClass(classData);
 
   EoDxfLayer defaultLayer;
   defaultLayer.m_tableName = L"0";
@@ -295,8 +346,11 @@ void RunScenario(const Scenario& scenario, int& failureCount) {
       roundTripModel.Header().GetComments() == scenario.expectedComments,
       roundTripModel.Header().GetComments() == scenario.expectedComments
           ? MakeMessage(L"Comment mismatch: ", scenario.name)
-          : MakeMessage(L"Comment mismatch: ", scenario.name) + std::wstring{L" actual comments=["} +
-                roundTripModel.Header().GetComments() + L"]",
+          : MakeMessage(L"Comment mismatch: ", scenario.name) + std::wstring{L" actual length="} +
+                std::to_wstring(roundTripModel.Header().GetComments().size()) + L" actual codes=[" +
+                DescribeCodeUnits(roundTripModel.Header().GetComments()) + L"] expected length=" +
+                std::to_wstring(scenario.expectedComments.size()) + L" expected codes=[" +
+                DescribeCodeUnits(scenario.expectedComments) + L"]",
       failureCount);
   Expect(ContainsLayer(roundTripModel, scenario.expectedLayerName), MakeMessage(L"Layer mismatch: ", scenario.name), failureCount);
   Expect(ContainsTextStyle(roundTripModel, L"STANDARD", L"txt"), MakeMessage(L"Text style mismatch: ", scenario.name), failureCount);
@@ -321,10 +375,10 @@ int wmain() {
   const auto fixtureDirectory = GetFixtureDirectory();
 
   const std::vector<Scenario> scenarios{
-      {L"ansi_1252_ascii", fixtureDirectory / L"ansi_1252_ascii.dxf", L"ANSI_1252", L"Fixture ANSI_1252 café € —\nEoDxf 0.1", L"Layer1252", L"café € — naïve", L"MText café € —", false, true},
-      {L"ansi_1252_binary", fixtureDirectory / L"ansi_1252_ascii.dxf", L"ANSI_1252", L"Fixture ANSI_1252 café € —", L"Layer1252", L"café € — naïve", L"MText café € —", true, true},
-      {L"utf8_ascii", fixtureDirectory / L"utf8_ascii.dxf", L"UTF-8", L"Fixture UTF-8 Привет 日本語 Ω\nEoDxf 0.1", L"LayerUtf8", L"Привет 日本語 Ω", L"MText Привет 日本語 Ω", false, true},
-      {L"utf8_binary", fixtureDirectory / L"utf8_ascii.dxf", L"UTF-8", L"Fixture UTF-8 Привет 日本語 Ω", L"LayerUtf8", L"Привет 日本語 Ω", L"MText Привет 日本語 Ω", true, true},
+      {L"ansi_1252_ascii", fixtureDirectory / L"ansi_1252_ascii.dxf", L"ANSI_1252", L"Fixture ANSI_1252 caf\u00E9 \u20AC \u2014\nEoDxf 0.1", L"Layer1252", L"caf\u00E9 \u20AC \u2014 na\u00EFve", L"MText caf\u00E9 \u20AC \u2014", false, true},
+      {L"ansi_1252_binary", fixtureDirectory / L"ansi_1252_ascii.dxf", L"ANSI_1252", L"Fixture ANSI_1252 caf\u00E9 \u20AC \u2014", L"Layer1252", L"caf\u00E9 \u20AC \u2014 na\u00EFve", L"MText caf\u00E9 \u20AC \u2014", true, true},
+      {L"utf8_ascii", fixtureDirectory / L"utf8_ascii.dxf", L"UTF-8", L"Fixture UTF-8 \u041F\u0440\u0438\u0432\u0435\u0442 \u65E5\u672C\u8A9E \u03A9\nEoDxf 0.1", L"LayerUtf8", L"\u041F\u0440\u0438\u0432\u0435\u0442 \u65E5\u672C\u8A9E \u03A9", L"MText \u041F\u0440\u0438\u0432\u0435\u0442 \u65E5\u672C\u8A9E \u03A9", false, true},
+      {L"utf8_binary", fixtureDirectory / L"utf8_ascii.dxf", L"UTF-8", L"Fixture UTF-8 \u041F\u0440\u0438\u0432\u0435\u0442 \u65E5\u672C\u8A9E \u03A9", L"LayerUtf8", L"\u041F\u0440\u0438\u0432\u0435\u0442 \u65E5\u672C\u8A9E \u03A9", L"MText \u041F\u0440\u0438\u0432\u0435\u0442 \u65E5\u672C\u8A9E \u03A9", true, true},
       {L"utf16_token_ascii", {}, L"UTF-16", L"Programmatic UTF-16 comment\nEoDxf 0.1", L"LayerUtf16", L"ASCII only text", L"MText ASCII only", false, true},
       {L"utf16_token_binary_rejected", {}, L"UTF-16", L"Programmatic UTF-16 comment", L"LayerUtf16", L"ASCII only text", L"MText ASCII only", true, false},
   };
