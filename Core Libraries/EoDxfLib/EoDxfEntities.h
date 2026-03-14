@@ -75,6 +75,8 @@ class EoDxfGraphic : public EoDxfEntity {
 
   virtual void ApplyExtrusion() = 0;
 
+  [[nodiscard]] double GetThickness() const noexcept { return m_thickness; }
+
  protected:
   /** @brief Parses dxf code and value to read entity data
    *  @param code dxf code
@@ -161,7 +163,6 @@ class EoDxfPoint : public EoDxfGraphic {
  */
 class EoDxfLine : public EoDxfGraphic {
   friend class EoDxfRead;
-  friend class EoDxfWrite;
 
  public:
   explicit EoDxfLine(EoDxf::ETYPE entityType = EoDxf::LINE) noexcept : EoDxfGraphic{entityType} {}
@@ -182,12 +183,20 @@ class EoDxfLine : public EoDxfGraphic {
  *  It differs from a line entity in that a line has two endpoints,
  *  while a ray has only one starting point and extends infinitely in the direction defined by its second point.
  */
-class EoDxfRay : public EoDxfLine {
+class EoDxfRay : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  explicit EoDxfRay(EoDxf::ETYPE entityType = EoDxf::RAY) noexcept : EoDxfLine{entityType} {}
+  explicit EoDxfRay(EoDxf::ETYPE entityType = EoDxf::RAY) noexcept : EoDxfGraphic{entityType} {}
+
+  void ApplyExtrusion() override {}
+
+ protected:
+  void ParseCode(int code, EoDxfReader* reader);
+
+  EoDxfGeometryBase3d m_startPoint{};  // Group code 10, 20 & 30
+  EoDxfGeometryBase3d m_unitDirectionVector{};  // Group code 11, 21 & 31
 };
 
 /** @brief Class to handle xline entity
@@ -196,9 +205,20 @@ class EoDxfRay : public EoDxfLine {
  *  It differs from a line entity in that a line has two endpoints,
  *  while an xline extends infinitely in both directions defined by its two points.
  */
-class EoDxfXline : public EoDxfRay {
+class EoDxfXline : public EoDxfGraphic {
+  friend class EoDxfRead;
+
  public:
-  explicit EoDxfXline(EoDxf::ETYPE entityType = EoDxf::XLINE) noexcept : EoDxfRay{entityType} {}
+  explicit EoDxfXline(EoDxf::ETYPE entityType = EoDxf::XLINE) noexcept : EoDxfGraphic{entityType} {}
+
+  void ApplyExtrusion() override {}
+
+ protected:
+  void ParseCode(int code, EoDxfReader* reader);
+
+ public:
+  EoDxfGeometryBase3d m_startPoint{};  // Group code 10, 20 & 30
+  EoDxfGeometryBase3d m_unitDirectionVector{};  // Group code 11, 21 & 31
 };
 
 /** @brief Class to handle circle entity
@@ -225,33 +245,41 @@ class EoDxfCircle : public EoDxfGraphic {
   double m_radius{};  // Group code 40
 };
 
-class EoDxfArc : public EoDxfCircle {
+class EoDxfArc : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  explicit EoDxfArc(EoDxf::ETYPE entityType = EoDxf::ARC) noexcept : EoDxfCircle{entityType} {}
+  explicit EoDxfArc(EoDxf::ETYPE entityType = EoDxf::ARC) noexcept : EoDxfGraphic{entityType} {}
 
+  /** @brief Applies extrusion to the arc's center point and adjusts start and end angles if necessary.
+   *
+   *  If the arc has an extrusion direction defined, this method calculates the arbitrary axis based on the extrusion
+   * direction and extrudes the center point of the arc accordingly. Additionally, if the extrusion direction has a z
+   * value less than 0, it mirrors the start and end angles of the arc to account for the right-hand rule used in DXF
+   * files.
+   *
+   *  Note: Commenting out the calls to CalculateArbitraryAxis and ExtrudePointInPlace will cause arcs being tested to
+   * be located on the other side of the y axis (all x dimensions are negated).
+   */
   void ApplyExtrusion() override;
 
-  // center point in OCS
   const EoDxfGeometryBase3d& Center() const { return m_centerPoint; }
-  // the radius of the circle
   [[nodiscard]] double Radius() const noexcept { return m_radius; }
-  // start angle in radians
   [[nodiscard]] double StartAngle() const noexcept { return m_startAngle; }
-  // end angle in radians
   [[nodiscard]] double EndAngle() const noexcept { return m_endAngle; }
-  // thickness
-  [[nodiscard]] double Thickness() const noexcept { return m_thickness; }
-  // extrusion
   [[nodiscard]] const EoDxfGeometryBase3d& ExtrusionDirection() const noexcept { return m_extrusionDirection; }
 
  protected:
-  // interpret code in dxf reading process or dispatch to inherited class
+  /** @brief Parses dxf code and value to read arc entity data
+   *  @param code dxf code
+   *  @param reader pointer to EoDxfReader to read value
+   */
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
+  EoDxfGeometryBase3d m_centerPoint{};  // Group codes 10, 20 & 30
+  double m_radius{};  // Group code 40
   double m_startAngle{};  // group code 50 (in radians)
   double m_endAngle{};  // group code 51 (in radians)
   std::int16_t m_isCounterClockwise{1};  // group code 73
@@ -264,12 +292,12 @@ class EoDxfArc : public EoDxfCircle {
  *  The ellipse entity in DXF can also include additional properties such as thickness and extrusion direction,
  *  which can affect how the ellipse is rendered in 3D space.
  */
-class EoDxfEllipse : public EoDxfLine {
+class EoDxfEllipse : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  explicit EoDxfEllipse(EoDxf::ETYPE entityType = EoDxf::ELLIPSE) noexcept : EoDxfLine{entityType} {}
+  explicit EoDxfEllipse(EoDxf::ETYPE entityType = EoDxf::ELLIPSE) noexcept : EoDxfGraphic{entityType} {}
 
   void ToPolyline(EoDxfPolyline* polyline, int parts = 128);
   void ApplyExtrusion() override;
@@ -285,6 +313,8 @@ class EoDxfEllipse : public EoDxfLine {
   void CorrectAxis();
 
  public:
+  EoDxfGeometryBase3d m_centerPoint{};  // Group codes 10, 20 & 30
+  EoDxfGeometryBase3d m_endPointOfMajorAxis{};  // Group codes 11, 21 & 31 (defines the major axis direction and length)
   double m_ratio{};  // Group code 40
   double m_startParam{};  // Group code 41, 0.0 for full ellipse
   double m_endParam{};  // Group code 42, 2*PI for full ellipse
@@ -299,12 +329,12 @@ class EoDxfEllipse : public EoDxfLine {
  *  The trace entity can also include properties such as thickness and extrusion direction, which can affect how it is
  * rendered in 3D space.
  */
-class EoDxfTrace : public EoDxfLine {
+class EoDxfTrace : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  explicit EoDxfTrace(EoDxf::ETYPE entityType = EoDxf::TRACE) noexcept : EoDxfLine{entityType} {}
+  explicit EoDxfTrace(EoDxf::ETYPE entityType = EoDxf::TRACE) noexcept : EoDxfGraphic{entityType} {}
 
   void ApplyExtrusion() override;
 
@@ -312,8 +342,10 @@ class EoDxfTrace : public EoDxfLine {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  EoDxfGeometryBase3d m_thirdPoint{};  // Group code 12, 22 & 32
-  EoDxfGeometryBase3d m_fourthPoint{};  // Group code 13, 23 & 33
+  EoDxfGeometryBase3d m_firstCorner{};  // Group code 10, 20 & 30
+  EoDxfGeometryBase3d m_secondCorner{};  // Group code 11, 21 & 31
+  EoDxfGeometryBase3d m_thirdCorner{};  // Group code 12, 22 & 32
+  EoDxfGeometryBase3d m_fourthCorner{};  // Group code 13, 23 & 33
 };
 
 /** @brief Class to handle solid entity
@@ -324,25 +356,31 @@ class EoDxfTrace : public EoDxfLine {
  *  The solid entity can also include properties such as thickness and extrusion direction, which can affect how it is
  * rendered in 3D space.
  */
-class EoDxfSolid : public EoDxfTrace {
+class EoDxfSolid : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
   EoDxfSolid() { m_entityType = EoDxf::SOLID; }
 
+  void ApplyExtrusion() override;
+
  protected:
-  //! interpret code in dxf reading process or dispatch to inherited class
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  [[nodiscard]] const EoDxfGeometryBase3d& FirstCorner() const noexcept { return m_startPoint; }
-  [[nodiscard]] const EoDxfGeometryBase3d& SecondCorner() const noexcept { return m_endPoint; }
-  [[nodiscard]] const EoDxfGeometryBase3d& ThirdCorner() const noexcept { return m_thirdPoint; }
-  [[nodiscard]] const EoDxfGeometryBase3d& FourthCorner() const noexcept { return m_fourthPoint; }
-  [[nodiscard]] double thick() const noexcept { return m_thickness; }
-  [[nodiscard]] double elevation() const noexcept { return m_startPoint.z; }
+  [[nodiscard]] const EoDxfGeometryBase3d& FirstCorner() const noexcept { return m_firstCorner; }
+  [[nodiscard]] const EoDxfGeometryBase3d& SecondCorner() const noexcept { return m_secondCorner; }
+  [[nodiscard]] const EoDxfGeometryBase3d& ThirdCorner() const noexcept { return m_thirdCorner; }
+  [[nodiscard]] const EoDxfGeometryBase3d& FourthCorner() const noexcept { return m_fourthCorner; }
+  [[nodiscard]] double elevation() const noexcept { return m_firstCorner.z; }
   [[nodiscard]] const EoDxfGeometryBase3d& extrusion() const noexcept { return m_extrusionDirection; }
+
+ public:
+  EoDxfGeometryBase3d m_firstCorner{};  // Group code 10, 20 & 30
+  EoDxfGeometryBase3d m_secondCorner{};  // Group code 11, 21 & 31
+  EoDxfGeometryBase3d m_thirdCorner{};  // Group code 12, 22 & 32
+  EoDxfGeometryBase3d m_fourthCorner{};  // Group code 13, 23 & 33
 };
 
 /** @brief Class to handle 3dFace entity
@@ -354,7 +392,7 @@ class EoDxfSolid : public EoDxfTrace {
  *  The entity can also include properties such as thickness and extrusion direction, which can affect how it is
  * rendered in 3D space.
  */
-class EoDxf3dFace : public EoDxfTrace {
+class EoDxf3dFace : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
@@ -368,14 +406,14 @@ class EoDxf3dFace : public EoDxfTrace {
     AllEdges = 0x0F
   };
 
-  explicit EoDxf3dFace(EoDxf::ETYPE entityType = EoDxf::E3DFACE) noexcept : EoDxfTrace{entityType} {}
+  explicit EoDxf3dFace(EoDxf::ETYPE entityType = EoDxf::E3DFACE) noexcept : EoDxfGraphic{entityType} {}
 
   void ApplyExtrusion() override {}
 
-  [[nodiscard]] const EoDxfGeometryBase3d& FirstCorner() const noexcept { return m_startPoint; }
-  [[nodiscard]] const EoDxfGeometryBase3d& SecondCorner() const noexcept { return m_endPoint; }
-  [[nodiscard]] const EoDxfGeometryBase3d& ThirdCorner() const noexcept { return m_thirdPoint; }
-  [[nodiscard]] const EoDxfGeometryBase3d& FourthCorner() const noexcept { return m_fourthPoint; }
+  [[nodiscard]] const EoDxfGeometryBase3d& FirstCorner() const noexcept { return m_firstCorner; }
+  [[nodiscard]] const EoDxfGeometryBase3d& SecondCorner() const noexcept { return m_secondCorner; }
+  [[nodiscard]] const EoDxfGeometryBase3d& ThirdCorner() const noexcept { return m_thirdCorner; }
+  [[nodiscard]] const EoDxfGeometryBase3d& FourthCorner() const noexcept { return m_fourthCorner; }
   [[nodiscard]] InvisibleEdgeFlags edgeFlags() const noexcept {
     return static_cast<InvisibleEdgeFlags>(m_invisibleFlag);
   }
@@ -385,6 +423,10 @@ class EoDxf3dFace : public EoDxfTrace {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
+  EoDxfGeometryBase3d m_firstCorner{};  // Group code 10, 20 & 30
+  EoDxfGeometryBase3d m_secondCorner{};  // Group code 11, 21 & 31
+  EoDxfGeometryBase3d m_thirdCorner{};  // Group code 12, 22 & 32
+  EoDxfGeometryBase3d m_fourthCorner{};  // Group code 13, 23 & 33
   std::int16_t m_invisibleFlag{};  // Group code 70
 };
 
@@ -482,7 +524,6 @@ class EoDxfLwPolyline : public EoDxfGraphic {
   std::int16_t m_polylineFlag{};  // Group code 70, (1 = Closed; 128 = Plinegen)
   double m_constantWidth{};  // Group code 43
   double m_elevation{};  // Group code 38
-  double m_thickness{};  // Group code 39
   EoDxfGeometryBase3d m_extrusionDirection{0.0, 0.0, 1.0};  //  code 210, 220 & 230
   std::vector<EoDxfPolylineVertex2d> m_vertices;
 
@@ -811,7 +852,6 @@ class EoDxfHatchLoop {
   std::vector<std::unique_ptr<EoDxfGraphic>> m_entities;
 };
 
-
 /** @brief Class to handle image entity
  *
  *  An image entity represents a raster image that is embedded in a drawing.
@@ -820,18 +860,22 @@ class EoDxfHatchLoop {
  * include properties such as clipping state (code 280), brightness (code 281), contrast (code 282), and fade (code
  * 283), which can affect how the image is rendered in the drawing.
  */
-class EoDxfImage : public EoDxfLine {
+class EoDxfImage : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
   EoDxfImage() { m_entityType = EoDxf::IMAGE; }
 
+  void ApplyExtrusion() override {}
+
  protected:
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
   std::uint64_t m_imageDefinitionHandle{};  // Hard reference to imagedef object, code 340
+  EoDxfGeometryBase3d m_insertionPoint;  // Insertion point, code 10, 20 & 30
+  EoDxfGeometryBase3d m_uVector;  // U-vector of single pixel, x coordinate, code 11, 21 & 31
   EoDxfGeometryBase3d vVector;  // V-vector of single pixel, x coordinate, code 12, 22 & 32
   double sizeu{};  // image size in pixels, U value, code 13
   double sizev{};  // image size in pixels, V value, code 23

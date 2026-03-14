@@ -394,7 +394,8 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
     ATLTRACE2(traceGeneral, 3, L"Warning: Ellipse entity with invalid ratio (%f) skipped.\n", ellipse.m_ratio);
     return;
   }
-  EoGeVector3d majorAxis(ellipse.m_endPoint.x, ellipse.m_endPoint.y, ellipse.m_endPoint.z);
+  EoGeVector3d majorAxis(
+      ellipse.m_endPointOfMajorAxis.x, ellipse.m_endPointOfMajorAxis.y, ellipse.m_endPointOfMajorAxis.z);
   if (majorAxis.IsNearNull()) {
     ATLTRACE2(traceGeneral, 3, L"Warning: Zero-length major axis\n");
     return;
@@ -406,7 +407,7 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   } else {
     extrusion.Unitize();
   }
-  auto center = EoGePoint3d(ellipse.m_startPoint.x, ellipse.m_startPoint.y, ellipse.m_startPoint.z);
+  auto center = EoGePoint3d(ellipse.m_centerPoint.x, ellipse.m_centerPoint.y, ellipse.m_centerPoint.z);
   auto* conic =
       EoDbConic::CreateConic(center, majorAxis, extrusion, ellipse.m_ratio, ellipse.m_startParam, ellipse.m_endParam);
   conic->SetBaseProperties(&ellipse, document);

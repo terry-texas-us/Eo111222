@@ -356,6 +356,58 @@ void EoDxfLine::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
+void EoDxfRay::ParseCode(int code, EoDxfReader* reader) {
+  switch (code) {
+    case 10:
+      m_startPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_startPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_startPoint.z = reader->GetDouble();
+      break;
+    case 11:
+      m_unitDirectionVector.x = reader->GetDouble();
+      break;
+    case 21:
+      m_unitDirectionVector.y = reader->GetDouble();
+      break;
+    case 31:
+      m_unitDirectionVector.z = reader->GetDouble();
+      break;
+    default:
+      EoDxfGraphic::ParseCode(code, reader);
+      break;
+  }
+}
+
+void EoDxfXline::ParseCode(int code, EoDxfReader* reader) {
+  switch (code) {
+    case 10:
+      m_startPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_startPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_startPoint.z = reader->GetDouble();
+      break;
+    case 11:
+      m_unitDirectionVector.x = reader->GetDouble();
+      break;
+    case 21:
+      m_unitDirectionVector.y = reader->GetDouble();
+      break;
+    case 31:
+      m_unitDirectionVector.z = reader->GetDouble();
+      break;
+    default:
+      EoDxfGraphic::ParseCode(code, reader);
+      break;
+  }
+}
+
 void EoDxfCircle::ApplyExtrusion() {
   if (m_haveExtrusion) {
     // NOTE: Commenting these out causes the the arcs being tested to be located
@@ -386,28 +438,43 @@ void EoDxfCircle::ParseCode(int code, EoDxfReader* reader) {
 }
 
 void EoDxfArc::ApplyExtrusion() {
-  EoDxfCircle::ApplyExtrusion();
+  if (!m_haveExtrusion) { return; }
 
-  if (m_haveExtrusion) {
-    // If the extrusion vector has a z value less than 0, the angles for the arc
-    // have to be mirrored since DXF files use the right hand rule.
-    // Note that the following code only handles the special case where there is a 2D
-    // drawing with the z axis heading into the paper (or rather screen). An arbitrary
-    // extrusion axis (with x and y values greater than 1/64) may still have issues.
-    if (fabs(m_extrusionDirection.x) < 0.015625 && fabs(m_extrusionDirection.y) < 0.015625 &&
-        m_extrusionDirection.z < 0.0) {
-      m_startAngle = EoDxf::Pi - m_startAngle;
-      m_endAngle = EoDxf::Pi - m_endAngle;
+  CalculateArbitraryAxis(m_extrusionDirection);
+  ExtrudePointInPlace(m_extrusionDirection, m_centerPoint);
 
-      double temp = m_startAngle;
-      m_startAngle = m_endAngle;
-      m_endAngle = temp;
-    }
+  /* If the extrusion vector has a z value less than 0, the angles for the arc have to be mirrored since DXF files use
+   the right hand rule. Note that the following code only handles the special case where there is a 2D drawing with the
+   z axis heading into the paper (or rather screen). An arbitrary extrusion axis (with x and y values greater than 1/64)
+   may still have issues.*/
+
+  if (fabs(m_extrusionDirection.x) >= 0.015625 || fabs(m_extrusionDirection.y) >= 0.015625 ||
+      m_extrusionDirection.z >= 0.0) {
+    return;
   }
+
+  m_startAngle = EoDxf::Pi - m_startAngle;
+  m_endAngle = EoDxf::Pi - m_endAngle;
+
+  double temp = m_startAngle;
+  m_startAngle = m_endAngle;
+  m_endAngle = temp;
 }
 
 void EoDxfArc::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_centerPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_centerPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_centerPoint.z = reader->GetDouble();
+      break;
+    case 40:
+      m_radius = reader->GetDouble();
+      break;
     case 50:
       m_startAngle = reader->GetDouble() * EoDxf::DegreesToRadians;
       break;
@@ -415,13 +482,31 @@ void EoDxfArc::ParseCode(int code, EoDxfReader* reader) {
       m_endAngle = reader->GetDouble() * EoDxf::DegreesToRadians;
       break;
     default:
-      EoDxfCircle::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
 
 void EoDxfEllipse::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_centerPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_centerPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_centerPoint.z = reader->GetDouble();
+      break;
+    case 11:
+      m_endPointOfMajorAxis.x = reader->GetDouble();
+      break;
+    case 21:
+      m_endPointOfMajorAxis.y = reader->GetDouble();
+      break;
+    case 31:
+      m_endPointOfMajorAxis.z = reader->GetDouble();
+      break;
     case 40:
       m_ratio = reader->GetDouble();
       break;
@@ -432,7 +517,7 @@ void EoDxfEllipse::ParseCode(int code, EoDxfReader* reader) {
       m_endParam = reader->GetDouble();
       break;
     default:
-      EoDxfLine::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -440,7 +525,7 @@ void EoDxfEllipse::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfEllipse::ApplyExtrusion() {
   if (m_haveExtrusion) {
     CalculateArbitraryAxis(m_extrusionDirection);
-    ExtrudePointInPlace(m_extrusionDirection, m_endPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_endPointOfMajorAxis);
     double intialparam = m_startParam;
     if (m_extrusionDirection.z < 0.) {
       m_startParam = EoDxf::TwoPi - m_endParam;
@@ -459,9 +544,9 @@ void EoDxfEllipse::CorrectAxis() {
   }
   if (m_ratio > 1.0) {
     if (fabs(m_endParam - m_startParam - EoDxf::TwoPi) < 1.0e-10) { complete = true; }
-    double incX = m_endPoint.x;
-    m_endPoint.x = -(m_endPoint.y * m_ratio);
-    m_endPoint.y = incX * m_ratio;
+    double incX = m_endPointOfMajorAxis.x;
+    m_endPointOfMajorAxis.x = -(m_endPointOfMajorAxis.y * m_ratio);
+    m_endPointOfMajorAxis.y = incX * m_ratio;
     m_ratio = 1.0 / m_ratio;
     if (!complete) {
       if (m_startParam < EoDxf::HalfPi) { m_startParam += EoDxf::TwoPi; }
@@ -476,10 +561,11 @@ void EoDxfEllipse::CorrectAxis() {
 void EoDxfEllipse::ToPolyline(EoDxfPolyline* polyline, int parts) {
   double radMajor, radMinor, cosRot, sinRot, incAngle, curAngle;
   double cosCurr, sinCurr;
-  radMajor = sqrt(m_endPoint.x * m_endPoint.x + m_endPoint.y * m_endPoint.y);
+  radMajor =
+      sqrt(m_endPointOfMajorAxis.x * m_endPointOfMajorAxis.x + m_endPointOfMajorAxis.y * m_endPointOfMajorAxis.y);
   radMinor = radMajor * m_ratio;
   // calculate sin & cos of included angle
-  incAngle = atan2(m_endPoint.y, m_endPoint.x);
+  incAngle = atan2(m_endPointOfMajorAxis.y, m_endPointOfMajorAxis.x);
   cosRot = cos(incAngle);
   sinRot = sin(incAngle);
   incAngle = EoDxf::TwoPi / parts;
@@ -492,8 +578,8 @@ void EoDxfEllipse::ToPolyline(EoDxfPolyline* polyline, int parts) {
     }
     cosCurr = cos(curAngle);
     sinCurr = sin(curAngle);
-    double x = m_startPoint.x + (cosCurr * cosRot * radMajor) - (sinCurr * sinRot * radMinor);
-    double y = m_startPoint.y + (cosCurr * sinRot * radMajor) + (sinCurr * cosRot * radMinor);
+    double x = m_centerPoint.x + (cosCurr * cosRot * radMajor) - (sinCurr * sinRot * radMinor);
+    double y = m_centerPoint.y + (cosCurr * sinRot * radMajor) + (sinCurr * cosRot * radMinor);
     polyline->addVertex(EoDxfVertex(x, y, 0.0, 0.0));
     curAngle = (++i) * incAngle;
   } while (i < parts);
@@ -508,48 +594,154 @@ void EoDxfEllipse::ToPolyline(EoDxfPolyline* polyline, int parts) {
 void EoDxfTrace::ApplyExtrusion() {
   if (m_haveExtrusion) {
     CalculateArbitraryAxis(m_extrusionDirection);
-    ExtrudePointInPlace(m_extrusionDirection, m_startPoint);
-    ExtrudePointInPlace(m_extrusionDirection, m_endPoint);
-    ExtrudePointInPlace(m_extrusionDirection, m_thirdPoint);
-    ExtrudePointInPlace(m_extrusionDirection, m_fourthPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_firstCorner);
+    ExtrudePointInPlace(m_extrusionDirection, m_secondCorner);
+    ExtrudePointInPlace(m_extrusionDirection, m_thirdCorner);
+    ExtrudePointInPlace(m_extrusionDirection, m_fourthCorner);
   }
 }
 
 void EoDxfTrace::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_firstCorner.x = reader->GetDouble();
+      break;
+    case 20:
+      m_firstCorner.y = reader->GetDouble();
+      break;
+    case 30:
+      m_firstCorner.z = reader->GetDouble();
+      break;
+    case 11:
+      m_secondCorner.x = reader->GetDouble();
+      break;
+    case 21:
+      m_secondCorner.y = reader->GetDouble();
+      break;
+    case 31:
+      m_secondCorner.z = reader->GetDouble();
+      break;
     case 12:
-      m_thirdPoint.x = reader->GetDouble();
+      m_thirdCorner.x = reader->GetDouble();
       break;
     case 22:
-      m_thirdPoint.y = reader->GetDouble();
+      m_thirdCorner.y = reader->GetDouble();
       break;
     case 32:
-      m_thirdPoint.z = reader->GetDouble();
+      m_thirdCorner.z = reader->GetDouble();
       break;
     case 13:
-      m_fourthPoint.x = reader->GetDouble();
+      m_fourthCorner.x = reader->GetDouble();
       break;
     case 23:
-      m_fourthPoint.y = reader->GetDouble();
+      m_fourthCorner.y = reader->GetDouble();
       break;
     case 33:
-      m_fourthPoint.z = reader->GetDouble();
+      m_fourthCorner.z = reader->GetDouble();
       break;
     default:
-      EoDxfLine::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
 
-void EoDxfSolid::ParseCode(int code, EoDxfReader* reader) { EoDxfTrace::ParseCode(code, reader); }
+void EoDxfSolid::ApplyExtrusion() {
+  if (m_haveExtrusion) {
+    CalculateArbitraryAxis(m_extrusionDirection);
+    ExtrudePointInPlace(m_extrusionDirection, m_firstCorner);
+    ExtrudePointInPlace(m_extrusionDirection, m_secondCorner);
+    ExtrudePointInPlace(m_extrusionDirection, m_thirdCorner);
+    ExtrudePointInPlace(m_extrusionDirection, m_fourthCorner);
+  }
+}
+
+void EoDxfSolid::ParseCode(int code, EoDxfReader* reader) { 
+  switch (code) {
+    case 10:
+      m_firstCorner.x = reader->GetDouble();
+      break;
+    case 20:
+      m_firstCorner.y = reader->GetDouble();
+      break;
+    case 30:
+      m_firstCorner.z = reader->GetDouble();
+      break;
+    case 11:
+      m_secondCorner.x = reader->GetDouble();
+      break;
+    case 21:
+      m_secondCorner.y = reader->GetDouble();
+      break;
+    case 31:
+      m_secondCorner.z = reader->GetDouble();
+      break;
+    case 12:
+      m_thirdCorner.x = reader->GetDouble();
+      break;
+    case 22:
+      m_thirdCorner.y = reader->GetDouble();
+      break;
+    case 32:
+      m_thirdCorner.z = reader->GetDouble();
+      break;
+    case 13:
+      m_fourthCorner.x = reader->GetDouble();
+      break;
+    case 23:
+      m_fourthCorner.y = reader->GetDouble();
+      break;
+    case 33:
+      m_fourthCorner.z = reader->GetDouble();
+      break;
+    default:
+      EoDxfGraphic::ParseCode(code, reader);
+      break;
+  }
+}
 
 void EoDxf3dFace::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_firstCorner.x = reader->GetDouble();
+      break;
+    case 20:
+      m_firstCorner.y = reader->GetDouble();
+      break;
+    case 30:
+      m_firstCorner.z = reader->GetDouble();
+      break;
+    case 11:
+      m_secondCorner.x = reader->GetDouble();
+      break;
+    case 21:
+      m_secondCorner.y = reader->GetDouble();
+      break;
+    case 31:
+      m_secondCorner.z = reader->GetDouble();
+      break;
+    case 12:
+      m_thirdCorner.x = reader->GetDouble();
+      break;
+    case 22:
+      m_thirdCorner.y = reader->GetDouble();
+      break;
+    case 32:
+      m_thirdCorner.z = reader->GetDouble();
+      break;
+    case 13:
+      m_fourthCorner.x = reader->GetDouble();
+      break;
+    case 23:
+      m_fourthCorner.y = reader->GetDouble();
+      break;
+    case 33:
+      m_fourthCorner.z = reader->GetDouble();
+      break;
     case 70:
       m_invisibleFlag = reader->GetInt16();
       break;
     default:
-      EoDxfTrace::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -667,9 +859,6 @@ void EoDxfLwPolyline::ParseCode(int code, EoDxfReader* reader) {
       break;
     case 38:
       m_elevation = reader->GetDouble();
-      break;
-    case 39:
-      m_thickness = reader->GetDouble();
       break;
     case 43:
       m_constantWidth = reader->GetDouble();
@@ -849,7 +1038,7 @@ void EoDxfMText::UpdateAngle() {
 void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 10:
-      m_polylineElevation.x = reader->GetDouble(); // always 0.0
+      m_polylineElevation.x = reader->GetDouble();  // always 0.0
       break;
     case 20:
       m_polylineElevation.y = reader->GetDouble();  // always 0.0
@@ -1023,6 +1212,24 @@ void EoDxfSpline::ParseCode(int code, EoDxfReader* reader) {
 
 void EoDxfImage::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_insertionPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_insertionPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_insertionPoint.z = reader->GetDouble();
+      break;
+    case 11:
+      m_uVector.x = reader->GetDouble();
+      break;
+    case 21:
+      m_uVector.y = reader->GetDouble();
+      break;
+    case 31:
+      m_uVector.z = reader->GetDouble();
+      break;
     case 12:
       vVector.x = reader->GetDouble();
       break;
@@ -1054,7 +1261,7 @@ void EoDxfImage::ParseCode(int code, EoDxfReader* reader) {
       m_fadeValue = reader->GetInt16();
       break;
     default:
-      EoDxfLine::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }

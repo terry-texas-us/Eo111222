@@ -253,8 +253,8 @@ class EoDbConic : public EoDbPrimitive {
       case ConicType::Ellipse:
       case ConicType::EllipticalArc: {
         EoDxfEllipse ellipse;
-        ellipse.m_startPoint = {m_center.x, m_center.y, m_center.z};
-        ellipse.m_endPoint = {m_majorAxis.x, m_majorAxis.y, m_majorAxis.z};
+        ellipse.m_centerPoint = {m_center.x, m_center.y, m_center.z};
+        ellipse.m_endPointOfMajorAxis = {m_majorAxis.x, m_majorAxis.y, m_majorAxis.z};
         ellipse.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
         ellipse.m_ratio = m_ratio;
         ellipse.m_startParam = m_startAngle;

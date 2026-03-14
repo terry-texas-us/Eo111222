@@ -276,12 +276,12 @@ EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstri
   WriteCodeString(0, L"IMAGE");
   WriteEntity(rasterImage);
   WriteCodeString(100, L"AcDbRasterImage");
-  WriteCodeDouble(10, rasterImage->m_startPoint.x);
-  WriteCodeDouble(20, rasterImage->m_startPoint.y);
-  WriteCodeDouble(30, rasterImage->m_startPoint.z);
-  WriteCodeDouble(11, rasterImage->m_endPoint.x);
-  WriteCodeDouble(21, rasterImage->m_endPoint.y);
-  WriteCodeDouble(31, rasterImage->m_endPoint.z);
+  WriteCodeDouble(10, rasterImage->m_insertionPoint.x);
+  WriteCodeDouble(20, rasterImage->m_insertionPoint.y);
+  WriteCodeDouble(30, rasterImage->m_insertionPoint.z);
+  WriteCodeDouble(11, rasterImage->m_uVector.x);
+  WriteCodeDouble(21, rasterImage->m_uVector.y);
+  WriteCodeDouble(31, rasterImage->m_uVector.z);
   WriteCodeDouble(12, rasterImage->vVector.x);
   WriteCodeDouble(22, rasterImage->vVector.y);
   WriteCodeDouble(32, rasterImage->vVector.z);

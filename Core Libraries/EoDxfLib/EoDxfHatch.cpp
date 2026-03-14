@@ -129,14 +129,14 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
       if (m_line) {
         m_line->m_endPoint.x = reader->GetDouble();
       } else if (m_ellipse) {
-        m_ellipse->m_endPoint.x = reader->GetDouble();
+        m_ellipse->m_endPointOfMajorAxis.x = reader->GetDouble();
       }
       break;
     case 21:
       if (m_line) {
         m_line->m_endPoint.y = reader->GetDouble();
       } else if (m_ellipse) {
-        m_ellipse->m_endPoint.y = reader->GetDouble();
+        m_ellipse->m_endPointOfMajorAxis.y = reader->GetDouble();
       }
       break;
     case 40:
