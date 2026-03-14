@@ -373,9 +373,9 @@ bool EoDxfWrite::WriteText(EoDxfText* text) {
   }
   if (text->m_horizontalAlignment != EoDxfText::HorizontalAlignment::Left ||
       text->m_verticalAlignment != EoDxfText::VerticalAlignment::BaseLine) {
-    WriteCodeDouble(11, text->m_secondPoint.x);
-    WriteCodeDouble(21, text->m_secondPoint.y);
-    WriteCodeDouble(31, text->m_secondPoint.z);
+    WriteCodeDouble(11, text->m_secondAlignmentPoint.x);
+    WriteCodeDouble(21, text->m_secondAlignmentPoint.y);
+    WriteCodeDouble(31, text->m_secondAlignmentPoint.z);
   }
   WriteCodeDouble(210, text->m_extrusionDirection.x);
   WriteCodeDouble(220, text->m_extrusionDirection.y);

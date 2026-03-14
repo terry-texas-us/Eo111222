@@ -465,7 +465,7 @@ class EoDxfLwPolyline : public EoDxfEntity {
  *  The text entity can also include properties such as rotation angle (code 50), width scale factor (code 41), oblique
  * angle (code 51), and text style name (code 7), which can affect how the text is rendered in the drawing.
  */
-class EoDxfText : public EoDxfLine {
+class EoDxfText : public EoDxfPoint {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
@@ -481,7 +481,7 @@ class EoDxfText : public EoDxfLine {
     FitIfBaseLine
   };
 
-  explicit EoDxfText(EoDxf::ETYPE entityType = EoDxf::TEXT) noexcept : EoDxfLine{entityType} {}
+  explicit EoDxfText(EoDxf::ETYPE entityType = EoDxf::TEXT) noexcept : EoDxfPoint{entityType} {}
 
   void ApplyExtrusion() override {}
 
@@ -489,6 +489,7 @@ class EoDxfText : public EoDxfLine {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
+  EoDxfGeometryBase3d m_secondAlignmentPoint;  // Group codes 11, 21 & 31
   double m_textHeight{};  // Group code 40
   std::wstring m_string;  // Group code 1
   double m_textRotation{};  // Group code 50
@@ -498,6 +499,15 @@ class EoDxfText : public EoDxfLine {
   std::int16_t m_textGenerationFlags{};  // Group code 71 (optional)
   HorizontalAlignment m_horizontalAlignment{HorizontalAlignment::Left};  // Group code 72 (optional)
   VerticalAlignment m_verticalAlignment{VerticalAlignment::BaseLine};  // Group code 73 (optional)
+
+  [[nodiscard]] bool IsAlignedOrFit() const noexcept {
+    return m_horizontalAlignment == HorizontalAlignment::AlignedIfBaseLine ||
+           m_horizontalAlignment == HorizontalAlignment::FitIfBaseLine;
+  }
+  [[nodiscard]] bool HasSecondAlignmentPoint() const noexcept { return m_hasSecondAlignmentPoint; }
+
+ private:
+  bool m_hasSecondAlignmentPoint{};  // Hassecond alignment point, so baseline can determine text rotation
 };
 
 /** @brief Class to handle mtext entity

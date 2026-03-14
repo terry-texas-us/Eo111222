@@ -498,7 +498,8 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   [[maybe_unused]] auto textGenerationFlags = text.m_textGenerationFlags;  // Group code 71 (is not supported in AeSys)
   auto horizontalAlignment = text.m_horizontalAlignment;  // Group code 72
 
-  auto secondAlignmentPointInOcs = EoGePoint3d{text.m_secondPoint.x, text.m_secondPoint.y, text.m_secondPoint.z};
+  auto secondAlignmentPointInOcs =
+      EoGePoint3d{text.m_secondAlignmentPoint.x, text.m_secondAlignmentPoint.y, text.m_secondAlignmentPoint.z};
   EoGeVector3d extrusionDirection{
       text.m_extrusionDirection.x, text.m_extrusionDirection.y, text.m_extrusionDirection.z};
   if (!text.m_haveExtrusion || extrusionDirection.IsNearNull()) {

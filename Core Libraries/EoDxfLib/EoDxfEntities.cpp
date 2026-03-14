@@ -650,6 +650,18 @@ void EoDxfLwPolyline::ParseCode(int code, EoDxfReader* reader) {
 
 void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 11:
+      m_hasSecondAlignmentPoint = true;
+      m_secondAlignmentPoint.x = reader->GetDouble();
+      break;
+    case 21:
+      m_hasSecondAlignmentPoint = true;
+      m_secondAlignmentPoint.y = reader->GetDouble();
+      break;
+    case 31:
+      m_hasSecondAlignmentPoint = true;
+      m_secondAlignmentPoint.z = reader->GetDouble();
+      break;
     case 40:
       m_textHeight = reader->GetDouble();
       break;
@@ -681,7 +693,7 @@ void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
       m_textStyleName = reader->GetWideString();
       break;
     default:
-      EoDxfLine::ParseCode(code, reader);
+      EoDxfPoint::ParseCode(code, reader);
       break;
   }
 }
@@ -708,7 +720,7 @@ void EoDxfMText::ParseCode(int code, EoDxfReader* reader) {
 }
 
 void EoDxfMText::UpdateAngle() {
-  if (m_haveXAxisDirection) { m_textRotation = atan2(m_secondPoint.y, m_secondPoint.x); }
+  if (m_haveXAxisDirection) { m_textRotation = atan2(m_secondAlignmentPoint.y, m_secondAlignmentPoint.x); }
 }
 
 void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {
