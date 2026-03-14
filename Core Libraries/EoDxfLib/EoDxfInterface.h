@@ -88,7 +88,7 @@ class EoDxfInterface {
   virtual void addSpline(const EoDxfSpline* spline) = 0;
 
   /** Called for every spline knot value */
-  virtual void addKnot(const EoDxfEntity& data) = 0;
+  virtual void addKnot(const EoDxfGraphic& data) = 0;
 
   /** Called for every insert. */
   virtual void addInsert(const EoDxfInsert& blockReference) = 0;

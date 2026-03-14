@@ -20,12 +20,12 @@
  *    - 302 "LEADER{"        /  303 "}"
  *    - 304 "LEADER_LINE{"   /  305 "}"
  */
-class EoDxfMLeader : public EoDxfEntity {
+class EoDxfMLeader : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  EoDxfMLeader() noexcept : EoDxfEntity{EoDxf::MLEADER} {}
+  EoDxfMLeader() noexcept : EoDxfGraphic{EoDxf::MLEADER} {}
 
   EoDxfMLeader(const EoDxfMLeader&) = delete;
   EoDxfMLeader& operator=(const EoDxfMLeader&) = delete;

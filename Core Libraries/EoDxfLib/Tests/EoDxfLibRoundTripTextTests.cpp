@@ -44,7 +44,7 @@ class RoundTripFixtureModel final : public EoDxfInterface {
   void addLWPolyline(const EoDxfLwPolyline&) override {}
   void addPolyline(const EoDxfPolyline&) override {}
   void addSpline(const EoDxfSpline*) override {}
-  void addKnot(const EoDxfEntity&) override {}
+  void addKnot(const EoDxfGraphic&) override {}
   void addInsert(const EoDxfInsert&) override {}
   void addTrace(const EoDxfTrace&) override {}
   void add3dFace(const EoDxf3dFace&) override {}

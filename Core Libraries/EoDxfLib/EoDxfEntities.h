@@ -15,26 +15,61 @@
 
 class EoDxfPolyline;
 
-/** @brief Base class for entities
- */
 class EoDxfEntity {
+ public:
+  EoDxfEntity() = default;
+  explicit EoDxfEntity(EoDxf::ETYPE entityType) noexcept : m_entityType{entityType} {}
+
+  EoDxfEntity(const EoDxfEntity& other) : m_appData{other.m_appData}, m_entityType{other.m_entityType} {}
+
+  EoDxfEntity& operator=(const EoDxfEntity& other) {
+    if (this != &other) {
+      m_appData = other.m_appData;
+      m_entityType = other.m_entityType;
+    }
+    return *this;
+  }
+
+  virtual ~EoDxfEntity() = default;
+
+ protected:
+  /** @brief Parses application-defined group (code 102) and its associated data until the closing tag is reached.
+   *  @param reader pointer to EoDxfReader to read value
+   *  @return true if group is successfully parsed, false if group is not recognized or an error occurs
+   */
+  bool ParseAppDataGroup(EoDxfReader* reader);
+
+ protected:
+  std::list<std::list<EoDxfGroupCodeValuesVariant>> m_appData{};  // Group code 102
+
+  enum EoDxf::ETYPE m_entityType{EoDxf::UNKNOWN};  // Group code 0
+};
+
+/** @brief Base class for all DXF entities, containing common properties and methods for parsing and extrusion.
+ *
+ *  This class serves as the base for all specific DXF entity types (e.g., Point, Line, Circle, etc.). It contains
+ * common properties such as layer, line type, color, and extrusion direction, as well as methods for parsing DXF group
+ * codes and applying extrusion transformations. Derived classes will implement the specific parsing logic for their
+ * respective entity types and may override the ApplyExtrusion method if they have extrusion data.
+ */
+class EoDxfGraphic : public EoDxfEntity {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  EoDxfEntity() = default;
+  EoDxfGraphic() = default;
 
  protected:
-  explicit EoDxfEntity(EoDxf::ETYPE entityType) noexcept : m_entityType{entityType} {}
+  explicit EoDxfGraphic(EoDxf::ETYPE entityType) noexcept : EoDxfEntity{entityType} {}
 
  public:
-  EoDxfEntity(const EoDxfEntity& other);
-  EoDxfEntity& operator=(const EoDxfEntity& other);
+  EoDxfGraphic(const EoDxfGraphic& other);
+  EoDxfGraphic& operator=(const EoDxfGraphic& other);
 
-  EoDxfEntity(EoDxfEntity&&) noexcept = default;
-  EoDxfEntity& operator=(EoDxfEntity&&) noexcept = default;
+  EoDxfGraphic(EoDxfGraphic&&) noexcept = default;
+  EoDxfGraphic& operator=(EoDxfGraphic&&) noexcept = default;
 
-  virtual ~EoDxfEntity();
+  virtual ~EoDxfGraphic();
 
   void Clear();
 
@@ -46,12 +81,6 @@ class EoDxfEntity {
    *  @param reader pointer to EoDxfReader to read value
    */
   void ParseCode(int code, EoDxfReader* reader);
-
-  /** @brief Parses application-defined group (code 102) and its associated data until the closing tag is reached.
-   *  @param reader pointer to EoDxfReader to read value
-   *  @return true if group is successfully parsed, false if group is not recognized or an error occurs
-   */
-  bool ParseAppDataGroup(EoDxfReader* reader);
 
   /** @brief Calculates the arbitrary extrusion axis (extAxisX and extAxisY) based on the given extrusion direction
    * (extPoint). This follows the DXF specification for handling extrusion directions and their corresponding axes. The
@@ -79,14 +108,12 @@ class EoDxfEntity {
   EoDxfGeometryBase3d extAxisY{};
 
  public:
-  std::list<std::list<EoDxfGroupCodeValuesVariant>> m_appData{};  // list of application data, code 102
   std::vector<EoDxfGroupCodeValuesVariant*> m_extendedData{};  // Group codes 1000 to 1071
   std::wstring m_layer{L"0"};  // layer name, code 8
   std::wstring m_lineType{L"BYLAYER"};  // line type, code 6
   std::wstring m_proxyEntityGraphicsData{};  // group code 310 (optional) [unused]
   std::wstring m_colorName{};  // Group code 430
   double m_lineTypeScale{1.0};  // Group code 48
-  enum EoDxf::ETYPE m_entityType{EoDxf::UNKNOWN};  // Group code 0
   std::uint64_t m_handle{EoDxf::NoHandle};  // Group code 5
   // Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330
   std::uint64_t m_ownerHandle{EoDxf::NoHandle};
@@ -100,7 +127,11 @@ class EoDxfEntity {
   EoDxf::ShadowMode m_shadowMode{EoDxf::ShadowMode::CastAndReceiveShadows};  // Group code 284
   EoDxf::Space m_space{EoDxf::Space::ModelSpace};  // Group code 67
   std::int16_t m_visibilityFlag{0};  // Group code 60 (0 for visible, 1 for invisible)
+
+  EoDxfGeometryBase3d m_extrusionDirection{0.0, 0.0, 1.0};  //  Group codes 210, 220 & 230 (optional)
+  double m_thickness{};  // Thickness, code 39
   bool m_haveExtrusion{};  // set to true if the entity have extrusion
+
  private:
   void clearExtendedData() noexcept;
 
@@ -109,12 +140,12 @@ class EoDxfEntity {
 
 /** @brief Class to handle point entity
  */
-class EoDxfPoint : public EoDxfEntity {
+class EoDxfPoint : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  explicit EoDxfPoint(EoDxf::ETYPE entityType = EoDxf::POINT) noexcept : EoDxfEntity{entityType} {}
+  explicit EoDxfPoint(EoDxf::ETYPE entityType = EoDxf::POINT) noexcept : EoDxfGraphic{entityType} {}
 
   void ApplyExtrusion() override {}
 
@@ -123,9 +154,6 @@ class EoDxfPoint : public EoDxfEntity {
 
  public:
   EoDxfGeometryBase3d m_firstPoint{};  //  base point, code 10, 20 & 30
-  double m_thickness{};  // Thickness, code 39
-  //  Extrusion direction, code 210, 220 & 230 (optional, default 0,0,1)
-  EoDxfGeometryBase3d m_extrusionDirection{0.0, 0.0, 1.0};
   //  Angle of the X axis for the UCS in effect when the point was drawn, code 50 (optional, default 0.0)
   double m_angleX{};
 };
@@ -423,12 +451,12 @@ class EoDxfInsert : public EoDxfPoint {
  * width (code 43), flags (code 70), and extrusion direction (code 210, 220, 230), which can affect how it is rendered
  * in the drawing.
  */
-class EoDxfLwPolyline : public EoDxfEntity {
+class EoDxfLwPolyline : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  explicit EoDxfLwPolyline(EoDxf::ETYPE entityType = EoDxf::LWPOLYLINE) noexcept : EoDxfEntity{entityType} {}
+  explicit EoDxfLwPolyline(EoDxf::ETYPE entityType = EoDxf::LWPOLYLINE) noexcept : EoDxfGraphic{entityType} {}
   EoDxfLwPolyline(const EoDxfLwPolyline&) = default;
   EoDxfLwPolyline(EoDxfLwPolyline&&) noexcept = default;
   EoDxfLwPolyline& operator=(const EoDxfLwPolyline&) = default;
@@ -614,18 +642,18 @@ class EoDxfVertex : public EoDxfPoint {
  * for the associated entity. The SEQEND entity can inherit properties such as layer and display settings from its
  * owning POLYLINE or INSERT entity, but it does not have its own unique properties.
  */
-class EoDxfSeqEnd : public EoDxfEntity {
+class EoDxfSeqEnd : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  EoDxfSeqEnd() noexcept : EoDxfEntity{EoDxf::SEQEND} {}
+  EoDxfSeqEnd() noexcept : EoDxfGraphic{EoDxf::SEQEND} {}
 
   /** @brief Constructs a SEQEND that inherits layer and display properties
    *         from the owning POLYLINE or INSERT entity.
    *  @param owner The entity whose sequence this SEQEND terminates.
    */
-  explicit EoDxfSeqEnd(const EoDxfEntity& owner) noexcept : EoDxfEntity{EoDxf::SEQEND} {
+  explicit EoDxfSeqEnd(const EoDxfGraphic& owner) noexcept : EoDxfGraphic{EoDxf::SEQEND} {
     m_layer = owner.m_layer;
     m_lineType = owner.m_lineType;
     m_color = owner.m_color;
@@ -696,12 +724,12 @@ class EoDxfPolyline : public EoDxfPoint {
  * and number of control points (code 73). The spline entity can also include properties such as knot values (code 40),
  * flags (code 70), and extrusion direction (code 210, 220, 230), which can affect how it is rendered in the drawing.
  */
-class EoDxfSpline : public EoDxfEntity {
+class EoDxfSpline : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  EoDxfSpline() noexcept : EoDxfEntity{EoDxf::SPLINE} {}
+  EoDxfSpline() noexcept : EoDxfGraphic{EoDxf::SPLINE} {}
 
   ~EoDxfSpline() {
     for (EoDxfGeometryBase3d* point : m_controlPoints) { delete point; }
@@ -766,7 +794,7 @@ class EoDxfHatchLoop {
   std::int32_t m_boundaryPathType{};  // Group code 92
   std::int32_t m_numberOfEdges{};  // Group code 93
 
-  std::vector<std::unique_ptr<EoDxfEntity>> m_entities;
+  std::vector<std::unique_ptr<EoDxfGraphic>> m_entities;
 };
 
 /** @brief Class to handle hatch entity
@@ -876,7 +904,7 @@ class EoDxfImage : public EoDxfLine {
  * the dimension text (code 53), and extrusion direction (code 210, 220, 230), which can affect how it is rendered in
  * the drawing.
  */
-class EoDxfDimension : public EoDxfEntity {
+class EoDxfDimension : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
@@ -894,7 +922,7 @@ class EoDxfDimension : public EoDxfEntity {
     clonePoint.x = clonePoint.y = clonePoint.z = 0;
   }
 
-  EoDxfDimension(const EoDxfDimension& d) : EoDxfEntity(d) {
+  EoDxfDimension(const EoDxfDimension& d) : EoDxfGraphic(d) {
     m_entityType = EoDxf::DIMENSION;
     m_dimensionType = d.m_dimensionType;
     name = d.name;
@@ -1197,12 +1225,12 @@ class EoDxfOrdinateDimension : public EoDxfDimension {
  * leader vertex from block (code 212, 222, 232), and offset of last leader vertex from annotation (code 213, 223, 233).
  * The geometry of the leader is defined by a list of vertices (code 10, 20, 30).
  */
-class EoDxfLeader : public EoDxfEntity {
+class EoDxfLeader : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  EoDxfLeader() noexcept : EoDxfEntity{EoDxf::LEADER} {}
+  EoDxfLeader() noexcept : EoDxfGraphic{EoDxf::LEADER} {}
 
   EoDxfLeader(const EoDxfLeader&) = delete;
   EoDxfLeader& operator=(const EoDxfLeader&) = delete;

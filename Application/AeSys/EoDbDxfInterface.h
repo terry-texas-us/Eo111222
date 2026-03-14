@@ -263,7 +263,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addComment(%.*s)\n", static_cast<int>(comment.size()), comment.data());
   }
   void linkImage(const EoDxfImageDefinition* imageDefinition) override { (void)imageDefinition; }
-  void addKnot(const EoDxfEntity& /* knot */) override { countOfKnot++; }
+  void addKnot(const EoDxfGraphic& /* knot */) override { countOfKnot++; }
 
   // Writing methods
   void writeAppId() override {};

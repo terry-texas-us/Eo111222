@@ -167,7 +167,7 @@ bool EoDxfWrite::WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData
   return m_writeOk;
 }
 
-bool EoDxfWrite::WriteEntity(EoDxfEntity* entity) {
+bool EoDxfWrite::WriteEntity(EoDxfGraphic* entity) {
   entity->m_handle = ++m_entityCount;
   WriteCodeString(5, ToHexString(entity->m_handle));
   WriteCodeString(100, L"AcDbEntity");

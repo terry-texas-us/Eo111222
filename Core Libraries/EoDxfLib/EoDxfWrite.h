@@ -139,7 +139,7 @@ class EoDxfWrite {
   }
   bool WriteCodeBool(int code, bool value) { return TrackWriteResult(m_writer != nullptr && m_writer->WriteBool(code, value)); }
 
-  bool WriteEntity(EoDxfEntity* ent);
+  bool WriteEntity(EoDxfGraphic* ent);
   bool WriteTables();
   bool WriteBlocks();
   bool WriteObjects();

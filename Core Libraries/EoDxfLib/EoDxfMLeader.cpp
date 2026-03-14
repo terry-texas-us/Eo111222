@@ -85,7 +85,7 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           line.m_arrowheadHandle = reader->GetHandleString();
           break;
         default:
-          EoDxfEntity::ParseCode(code, reader);
+          EoDxfGraphic::ParseCode(code, reader);
           break;
       }
       break;
@@ -127,7 +127,7 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           branch.m_doglegLength = reader->GetDouble();
           break;
         default:
-          EoDxfEntity::ParseCode(code, reader);
+          EoDxfGraphic::ParseCode(code, reader);
           break;
       }
       break;
@@ -195,7 +195,7 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           ctx.m_textString += reader->GetWideString();
           break;
         default:
-          EoDxfEntity::ParseCode(code, reader);
+          EoDxfGraphic::ParseCode(code, reader);
           break;
       }
       break;
@@ -272,7 +272,7 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           ctx.m_blockContentColor = reader->GetInt32();
           break;
         default:
-          EoDxfEntity::ParseCode(code, reader);
+          EoDxfGraphic::ParseCode(code, reader);
           break;
       }
       break;
@@ -373,7 +373,7 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
           m_textBottomAttachmentType = reader->GetInt16();
           break;
         default:
-          EoDxfEntity::ParseCode(code, reader);
+          EoDxfGraphic::ParseCode(code, reader);
           break;
       }
       break;

@@ -61,14 +61,13 @@ bool AddAppDataValue(EoDxfGroupCodeValuesVariant& variant, int code, EoDxfReader
 }
 }  // namespace
 
-EoDxfEntity::EoDxfEntity(const EoDxfEntity& other)
-    : m_appData{other.m_appData},
+EoDxfGraphic::EoDxfGraphic(const EoDxfGraphic& other)
+    : EoDxfEntity{other},
       m_layer{other.m_layer},
       m_lineType{other.m_lineType},
       m_proxyEntityGraphicsData{other.m_proxyEntityGraphicsData},
       m_colorName{other.m_colorName},
       m_lineTypeScale{other.m_lineTypeScale},
-      m_entityType{other.m_entityType},
       m_handle{other.m_handle},
       m_ownerHandle{other.m_ownerHandle},
       m_materialHandle{other.m_materialHandle},
@@ -87,17 +86,16 @@ EoDxfEntity::EoDxfEntity(const EoDxfEntity& other)
   for (const auto* v : other.m_extendedData) { m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(*v)); }
 }
 
-EoDxfEntity& EoDxfEntity::operator=(const EoDxfEntity& other) {
+EoDxfGraphic& EoDxfGraphic::operator=(const EoDxfGraphic& other) {
   if (this != &other) {
+    EoDxfEntity::operator=(other);
     clearExtendedData();
 
-    m_appData = other.m_appData;
     m_layer = other.m_layer;
     m_lineType = other.m_lineType;
     m_proxyEntityGraphicsData = other.m_proxyEntityGraphicsData;
     m_colorName = other.m_colorName;
     m_lineTypeScale = other.m_lineTypeScale;
-    m_entityType = other.m_entityType;
     m_handle = other.m_handle;
     m_ownerHandle = other.m_ownerHandle;
     m_materialHandle = other.m_materialHandle;
@@ -119,19 +117,19 @@ EoDxfEntity& EoDxfEntity::operator=(const EoDxfEntity& other) {
   return *this;
 }
 
-EoDxfEntity::~EoDxfEntity() { clearExtendedData(); }
+EoDxfGraphic::~EoDxfGraphic() { clearExtendedData(); }
 
-void EoDxfEntity::Clear() {
+void EoDxfGraphic::Clear() {
   clearExtendedData();
   // extend this later for more state reset if needed
 }
 
-void EoDxfEntity::clearExtendedData() noexcept {
+void EoDxfGraphic::clearExtendedData() noexcept {
   for (auto* v : m_extendedData) { delete v; }
   m_extendedData.clear();
 }
 
-void EoDxfEntity::CalculateArbitraryAxis(const EoDxfGeometryBase3d& extrusionDirection) {
+void EoDxfGraphic::CalculateArbitraryAxis(const EoDxfGeometryBase3d& extrusionDirection) {
   // Follow the arbitrary DXF definitions for extrusion axes.
   if (fabs(extrusionDirection.x) < 0.015625 && fabs(extrusionDirection.y) < 0.015625) {
     // If we get here, implement Ax = Wy x N where Wy is [0,1,0] per the DXF spec.
@@ -159,7 +157,7 @@ void EoDxfEntity::CalculateArbitraryAxis(const EoDxfGeometryBase3d& extrusionDir
   extAxisY.Unitize();
 }
 
-void EoDxfEntity::ExtrudePointInPlace(
+void EoDxfGraphic::ExtrudePointInPlace(
     const EoDxfGeometryBase3d& extrusionDirection, EoDxfGeometryBase3d& point) const noexcept {
   double px = (extAxisX.x * point.x) + (extAxisY.x * point.y) + (extrusionDirection.x * point.z);
   double py = (extAxisX.y * point.x) + (extAxisY.y * point.y) + (extrusionDirection.y * point.z);
@@ -170,7 +168,7 @@ void EoDxfEntity::ExtrudePointInPlace(
   point.z = pz;
 }
 
-void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfGraphic::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 5:
       m_handle = reader->GetHandleString();
@@ -323,7 +321,7 @@ void EoDxfPoint::ParseCode(int code, EoDxfReader* reader) {
       m_extrusionDirection.z = reader->GetDouble();
       break;
     default:
-      EoDxfEntity::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -643,7 +641,7 @@ void EoDxfLwPolyline::ParseCode(int code, EoDxfReader* reader) {
       m_extrusionDirection.z = reader->GetDouble();
       break;
     default:
-      EoDxfEntity::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -1145,7 +1143,7 @@ void EoDxfSpline::ParseCode(int code, EoDxfReader* reader) {
     // case 41:
     //   break;
     default:
-      EoDxfEntity::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -1290,7 +1288,7 @@ void EoDxfDimension::ParseCode(int code, EoDxfReader* reader) {
       hdir = reader->GetDouble();
       break;
     default:
-      EoDxfEntity::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -1380,7 +1378,7 @@ void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
       m_offsetFromAnnotationPlacementPoint.z = reader->GetDouble();
       break;
     default:
-      EoDxfEntity::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
