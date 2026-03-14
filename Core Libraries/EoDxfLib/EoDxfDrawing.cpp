@@ -296,7 +296,7 @@ bool EoDxfWrite::WritePolyline(EoDxfPolyline* polyline) {
 
   WriteCodeDouble(10, 0.0);
   WriteCodeDouble(20, 0.0);
-  WriteCodeDouble(30, polyline->m_firstPoint.z);
+  WriteCodeDouble(30, polyline->m_polylineElevation.z);
   if (polyline->m_thickness != 0) { WriteCodeDouble(39, polyline->m_thickness); }
   WriteCodeInt16(70, polyline->m_polylineFlag);
   if (polyline->m_defaultStartWidth != 0) { WriteCodeDouble(40, polyline->m_defaultStartWidth); }

@@ -674,12 +674,12 @@ class EoDxfSeqEnd : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 };
 
-class EoDxfPolyline : public EoDxfPoint {
+class EoDxfPolyline : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  EoDxfPolyline() noexcept : EoDxfPoint{EoDxf::POLYLINE} {}
+  EoDxfPolyline() noexcept : EoDxfGraphic{EoDxf::POLYLINE} {}
 
   ~EoDxfPolyline() {
     for (EoDxfVertex* vertex : m_vertices) { delete vertex; }
@@ -712,10 +712,13 @@ class EoDxfPolyline : public EoDxfPoint {
 
   void appendVertex(EoDxfVertex* v) { m_vertices.push_back(v); }
 
+  void ApplyExtrusion() override {}
+
  protected:
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
+  EoDxfGeometryBase3d m_polylineElevation{};  // Group codes 10, 20 & 30
   std::int16_t m_polylineFlag{};  // Group code 70
   double m_defaultStartWidth{};  // Group code 40
   double m_defaultEndWidth{};  // Group code 41

@@ -848,6 +848,15 @@ void EoDxfMText::UpdateAngle() {
 
 void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_polylineElevation.x = reader->GetDouble(); // always 0.0
+      break;
+    case 20:
+      m_polylineElevation.y = reader->GetDouble();  // always 0.0
+      break;
+    case 30:
+      m_polylineElevation.z = reader->GetDouble();
+      break;
     case 70:
       m_polylineFlag = reader->GetInt16();
       break;
@@ -873,7 +882,7 @@ void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {
       m_curvesAndSmoothSurfaceType = reader->GetInt16();
       break;
     default:
-      EoDxfPoint::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -924,7 +933,6 @@ void EoDxfVertex::ParseCode(int code, EoDxfReader* reader) {
       break;
   }
 }
-
 
 void EoDxfSpline::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
