@@ -946,47 +946,29 @@ class EoDxfDimension : public EoDxfGraphic {
   EoDxfGeometryBase3d getDefPoint() const { return defPoint; }  // Definition point, code 10, 20 & 30
   void setDefPoint(const EoDxfGeometryBase3d p) { defPoint = p; }
   EoDxfGeometryBase3d getTextPoint() const { return textPoint; }  // Middle point of text, code 11, 21 & 31
-  void setTextPoint(const EoDxfGeometryBase3d p) { textPoint = p; }
   const std::wstring& getStyle() const { return style; }  // Dimension style, code 3
-  void setStyle(const std::wstring& s) { style = s; }
   [[nodiscard]] std::int16_t GetAttachmentPoint() const noexcept { return m_attachmentPoint; }  // Group code 71
-  void SetAttachmentPoint(const std::int16_t attachmentPoint) { m_attachmentPoint = attachmentPoint; }
   [[nodiscard]] std::int16_t getTextLineStyle() const noexcept {
     return m_dimensionTextLineSpacingStyle;
   }  // Group code 72
-  void setTextLineStyle(const std::int16_t dimensionTextLineSpacingStyle) {
-    m_dimensionTextLineSpacingStyle = dimensionTextLineSpacingStyle;
-  }
   const std::wstring& getText() const { return text; }  // Dimension text explicitly entered by the user, code 1
-  void setText(const std::wstring& t) { text = t; }
   double getTextLineFactor() const { return linefactor; }  // Dimension text line spacing factor, code 41, default 1?
-  void setTextLineFactor(const double l) { linefactor = l; }
   double getDir() const { return rot; }  // rotation angle of the dimension text, code 53 (optional) default 0
-  void setDir(const double d) { rot = d; }
 
   EoDxfGeometryBase3d getExtrusion() { return extPoint; }  // extrusion, code 210, 220 & 230
-  void setExtrusion(const EoDxfGeometryBase3d p) { extPoint = p; }
   const std::wstring& getName() const { return name; }  // Name of the block that contains the entities, code 2
-  void setName(const std::wstring& s) { name = s; }
-  //    int getType(){ return type;}                      // Dimension type, code 70
 
  protected:
   EoDxfGeometryBase3d getPt2() const { return clonePoint; }
   void setPt2(const EoDxfGeometryBase3d p) { clonePoint = p; }
   EoDxfGeometryBase3d getPt3() const { return def1; }
-  void setPt3(const EoDxfGeometryBase3d p) { def1 = p; }
   EoDxfGeometryBase3d getPt4() const { return def2; }
-  void setPt4(const EoDxfGeometryBase3d p) { def2 = p; }
   EoDxfGeometryBase3d getPt5() const { return circlePoint; }
-  void setPt5(const EoDxfGeometryBase3d p) { circlePoint = p; }
   EoDxfGeometryBase3d getPt6() const { return arcPoint; }
   void setPt6(const EoDxfGeometryBase3d p) { arcPoint = p; }
   double getAn50() const { return angle; }  // Angle of rotated, horizontal, or vertical dimensions, code 50
-  void setAn50(const double d) { angle = d; }
   double getOb52() const { return oblique; }  // oblique angle, code 52
-  void setOb52(const double d) { oblique = d; }
   double getRa40() const { return length; }  // Leader length, code 40
-  void setRa40(const double d) { length = d; }
 
  public:
   std::int16_t m_dimensionType;  // Dimension type, code 70
@@ -1039,9 +1021,7 @@ class EoDxfAlignedDimension : public EoDxfDimension {
   EoDxfGeometryBase3d getDimPoint() const { return getDefPoint(); }  // dim line location point, code 10, 20 & 30
   void setDimPoint(const EoDxfGeometryBase3d p) { setDefPoint(p); }
   EoDxfGeometryBase3d getDef1Point() const { return getPt3(); }  // Definition point 1, code 13, 23 & 33
-  void setDef1Point(const EoDxfGeometryBase3d p) { setPt3(p); }
   EoDxfGeometryBase3d getDef2Point() const { return getPt4(); }  // Definition point 2, code 14, 24 & 34
-  void setDef2Point(const EoDxfGeometryBase3d p) { setPt4(p); }
 };
 
 /** @brief Class to handle linear dimension entity
@@ -1054,17 +1034,15 @@ class EoDxfAlignedDimension : public EoDxfDimension {
  * which can affect how it is rendered in the drawing. Additionally, linear dimensions can have an oblique angle
  * (code 52) that specifies the angle of the dimension line relative to the horizontal plane.
  */
-class EoDxfDimLinear : public EoDxfAlignedDimension {
+class EoDxfDimLinear : public EoDxfDimension {
  public:
   EoDxfDimLinear() { m_entityType = EoDxf::DIMLINEAR; }
-  EoDxfDimLinear(const EoDxfDimension& dimension) : EoDxfAlignedDimension(dimension) {
+  EoDxfDimLinear(const EoDxfDimension& dimension) : EoDxfDimension(dimension) {
     m_entityType = EoDxf::DIMLINEAR;
   }
 
   double getAngle() const { return getAn50(); }  // Angle of rotated, horizontal, or vertical dimensions, code 50
-  void setAngle(const double d) { setAn50(d); }
   double getOblique() const { return getOb52(); }  // oblique angle, code 52
-  void setOblique(const double d) { setOb52(d); }
 };
 
 /** @brief Class to handle radial dimension entity
@@ -1084,12 +1062,8 @@ class EoDxfRadialDimension : public EoDxfDimension {
   EoDxfRadialDimension() { m_entityType = EoDxf::DIMRADIAL; }
   EoDxfRadialDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMRADIAL; }
 
-  EoDxfGeometryBase3d getCenterPoint() const { return getDefPoint(); }  // center point, code 10, 20 & 30
-  void setCenterPoint(const EoDxfGeometryBase3d p) { setDefPoint(p); }
   EoDxfGeometryBase3d getDiameterPoint() const { return getPt5(); }  // Definition point for radius, code 15, 25 & 35
-  void setDiameterPoint(const EoDxfGeometryBase3d p) { setPt5(p); }
   double getLeaderLength() const { return getRa40(); }  // Leader length, code 40
-  void setLeaderLength(const double d) { setRa40(d); }
 };
 
 /** @brief Class to handle diametric dimension entity
@@ -1114,13 +1088,7 @@ class EoDxfDiametricDimension : public EoDxfDimension {
   EoDxfGeometryBase3d getDiameter1Point() const {
     return getPt5();
   }  // First definition point for diameter, code 15, 25 & 35
-  void setDiameter1Point(const EoDxfGeometryBase3d p) { setPt5(p); }
-  EoDxfGeometryBase3d getDiameter2Point() const {
-    return getDefPoint();
-  }  // Oposite point for diameter, code 10, 20 & 30
-  void setDiameter2Point(const EoDxfGeometryBase3d p) { setDefPoint(p); }
   double getLeaderLength() const { return getRa40(); }  // Leader length, code 40
-  void setLeaderLength(const double d) { setRa40(d); }
 };
 
 //! Class to handle angular dimension entity
@@ -1138,13 +1106,8 @@ class EoDxf2LineAngularDimension : public EoDxfDimension {
   }
 
   EoDxfGeometryBase3d getFirstLine1() const { return getPt3(); }  // Definition point line 1-1, code 13, 23 & 33
-  void setFirstLine1(const EoDxfGeometryBase3d p) { setPt3(p); }
   EoDxfGeometryBase3d getFirstLine2() const { return getPt4(); }  // Definition point line 1-2, code 14, 24 & 34
-  void setFirstLine2(const EoDxfGeometryBase3d p) { setPt4(p); }
   EoDxfGeometryBase3d getSecondLine1() const { return getPt5(); }  // Definition point line 2-1, code 15, 25 & 35
-  void setSecondLine1(const EoDxfGeometryBase3d p) { setPt5(p); }
-  EoDxfGeometryBase3d getSecondLine2() const { return getDefPoint(); }  // Definition point line 2-2, code 10, 20 & 30
-  void setSecondLine2(const EoDxfGeometryBase3d p) { setDefPoint(p); }
   EoDxfGeometryBase3d getDimPoint() const { return getPt6(); }  // Dimension definition point, code 16, 26 & 36
   void setDimPoint(const EoDxfGeometryBase3d p) { setPt6(p); }
 };
@@ -1169,11 +1132,8 @@ class EoDxf3PointAngularDimension : public EoDxfDimension {
   }
 
   EoDxfGeometryBase3d getFirstLine() const { return getPt3(); }  // Definition point line 1, code 13, 23 & 33
-  void setFirstLine(const EoDxfGeometryBase3d p) { setPt3(p); }
   EoDxfGeometryBase3d getSecondLine() const { return getPt4(); }  // Definition point line 2, code 14, 24 & 34
-  void setSecondLine(const EoDxfGeometryBase3d p) { setPt4(p); }
   EoDxfGeometryBase3d getVertexPoint() const { return getPt5(); }  // Vertex point, code 15, 25 & 35
-  void SetVertexPoint(const EoDxfGeometryBase3d p) { setPt5(p); }
   EoDxfGeometryBase3d getDimPoint() const { return getDefPoint(); }  // Dimension definition point, code 10, 20 & 30
   void setDimPoint(const EoDxfGeometryBase3d p) { setDefPoint(p); }
 };
@@ -1197,12 +1157,8 @@ class EoDxfOrdinateDimension : public EoDxfDimension {
     m_entityType = EoDxf::DIMORDINATE;
   }
 
-  EoDxfGeometryBase3d getOriginPoint() const { return getDefPoint(); }  // Origin definition point, code 10, 20 & 30
-  void setOriginPoint(const EoDxfGeometryBase3d p) { setDefPoint(p); }
   EoDxfGeometryBase3d getFirstLine() const { return getPt3(); }  // Feature location point, code 13, 23 & 33
-  void setFirstLine(const EoDxfGeometryBase3d p) { setPt3(p); }
   EoDxfGeometryBase3d getSecondLine() const { return getPt4(); }  // Leader end point, code 14, 24 & 34
-  void setSecondLine(const EoDxfGeometryBase3d p) { setPt4(p); }
 };
 
 /** @brief Class to handle leader entity
