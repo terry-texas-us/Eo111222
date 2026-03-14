@@ -2,6 +2,7 @@
 
 #include "EoDxfClasses.h"
 #include "EoDxfEntities.h"
+#include "EoDxfHatch.h"
 #include "EoDxfHeader.h"
 #include "EoDxfObjects.h"
 #include "EoDxfTables.h"

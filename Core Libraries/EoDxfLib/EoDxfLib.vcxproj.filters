@@ -44,6 +44,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Tests\EoDxfLibRoundTripTextTests.cpp" />
+    <ClCompile Include="EoDxfHatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EoDxfBase.h">
@@ -93,6 +96,9 @@
     </ClInclude>
     <ClInclude Include="EoDxfGroupCodeValuesVariant.h" />
     <ClInclude Include="EoDxfLineWidths.h" />
+    <ClInclude Include="EoDxfHatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

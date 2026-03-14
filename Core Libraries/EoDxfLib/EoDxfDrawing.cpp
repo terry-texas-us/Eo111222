@@ -2,7 +2,7 @@
 
 #include "EoDxfBase.h"
 #include "EoDxfEntities.h"
-#include "EoDxfWriter.h"
+#include "EoDxfHatch.h"
 
 bool EoDxfWrite::Write3dFace(EoDxf3dFace* face) {
   WriteCodeString(0, L"3DFACE");

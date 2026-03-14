@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "..\EoDxfEntities.h"
+#include "..\EoDxfHatch.h"
 #include "..\EoDxfInterface.h"
 #include "..\EoDxfRead.h"
 #include "..\EoDxfTables.h"

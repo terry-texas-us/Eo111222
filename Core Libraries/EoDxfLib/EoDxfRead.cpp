@@ -8,6 +8,7 @@
 
 #include "EoDxfClasses.h"
 #include "EoDxfEntities.h"
+#include "EoDxfHatch.h"
 #include "EoDxfHeader.h"
 #include "EoDxfInterface.h"
 #include "EoDxfMLeader.h"
