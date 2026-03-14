@@ -73,9 +73,9 @@ bool EoDxfWrite::WriteHatch(EoDxfHatch* hatch) {
   WriteCodeString(0, L"HATCH");
   WriteEntity(hatch);
   WriteCodeString(100, L"AcDbHatch");
-  WriteCodeDouble(10, hatch->m_firstPoint.x);
-  WriteCodeDouble(20, hatch->m_firstPoint.y);
-  WriteCodeDouble(30, hatch->m_firstPoint.z);
+  WriteCodeDouble(10, hatch->m_elevationPoint.x);
+  WriteCodeDouble(20, hatch->m_elevationPoint.y);
+  WriteCodeDouble(30, hatch->m_elevationPoint.z);
   WriteCodeDouble(210, hatch->m_extrusionDirection.x);
   WriteCodeDouble(220, hatch->m_extrusionDirection.y);
   WriteCodeDouble(230, hatch->m_extrusionDirection.z);
@@ -340,9 +340,9 @@ bool EoDxfWrite::WritePolyline(EoDxfPolyline* polyline) {
       WriteCodeDouble(20, 0.0);
       WriteCodeDouble(30, 0.0);
     } else {
-      WriteCodeDouble(10, vertex->m_firstPoint.x);
-      WriteCodeDouble(20, vertex->m_firstPoint.y);
-      WriteCodeDouble(30, vertex->m_firstPoint.z);
+      WriteCodeDouble(10, vertex->m_locationPoint.x);
+      WriteCodeDouble(20, vertex->m_locationPoint.y);
+      WriteCodeDouble(30, vertex->m_locationPoint.z);
     }
     if (vertex->m_startingWidth != 0) { WriteCodeDouble(40, vertex->m_startingWidth); }
     if (vertex->m_endingWidth != 0) { WriteCodeDouble(41, vertex->m_endingWidth); }

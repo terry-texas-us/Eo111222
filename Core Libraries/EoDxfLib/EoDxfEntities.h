@@ -614,21 +614,24 @@ class EoDxfMText : public EoDxfGraphic {
   bool m_haveXAxisDirection{};
 };
 
-class EoDxfVertex : public EoDxfPoint {
+class EoDxfVertex : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  EoDxfVertex() noexcept : EoDxfPoint{EoDxf::VERTEX} {}
+  EoDxfVertex() noexcept : EoDxfGraphic{EoDxf::VERTEX} {}
 
-  EoDxfVertex(double sx, double sy, double sz, double bulge) noexcept : EoDxfPoint{EoDxf::VERTEX}, m_bulge{bulge} {
-    m_firstPoint = {sx, sy, sz};
+  EoDxfVertex(double sx, double sy, double sz, double bulge) noexcept : EoDxfGraphic{EoDxf::VERTEX}, m_bulge{bulge} {
+    m_locationPoint = {sx, sy, sz};
   }
+
+  void ApplyExtrusion() override {}
 
  protected:
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
+  EoDxfGeometryBase3d m_locationPoint{};  // Group codes 10, 20 & 30
   double m_startingWidth{};  // Group code 40
   double m_endingWidth{};  // Group code 41
   double m_bulge{};  // Group code 42
@@ -690,7 +693,7 @@ class EoDxfPolyline : public EoDxfPoint {
 
   void addVertex(const EoDxfVertex& v) {
     auto* vertex = new EoDxfVertex();
-    vertex->m_firstPoint = v.m_firstPoint;
+    vertex->m_locationPoint = v.m_locationPoint;
     vertex->m_startingWidth = v.m_startingWidth;
     vertex->m_endingWidth = v.m_endingWidth;
     vertex->m_bulge = v.m_bulge;
@@ -813,12 +816,12 @@ class EoDxfHatchLoop {
  * 78), which can affect how it is rendered in the drawing. The boundary paths of the hatch are defined by hatch loops,
  * which can include various entities such as lines, arcs, circles, ellipses, splines, and lightweight polylines.
  */
-class EoDxfHatch : public EoDxfPoint {
+class EoDxfHatch : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  EoDxfHatch() : EoDxfPoint{EoDxf::HATCH} {}
+  EoDxfHatch() : EoDxfGraphic{EoDxf::HATCH} {}
 
   ~EoDxfHatch() {
     for (auto* hatchLoop : m_hatchLoops) { delete hatchLoop; }
@@ -837,6 +840,7 @@ class EoDxfHatch : public EoDxfPoint {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
+  EoDxfGeometryBase3d m_elevationPoint{};  // Group codes 10, 20 & 30
   std::wstring m_hatchPatternName;  // Group code 2
   std::int16_t m_solidFillFlag{1};  // Group code 70
   std::int16_t m_associativityFlag{};  // Group code 71
@@ -848,8 +852,6 @@ class EoDxfHatch : public EoDxfPoint {
   double m_hatchPatternScaleOrSpacing{};  // Group code 41
   std::int16_t m_numberOfPatternDefinitionLines{};  //   Group code 78
 
-  std::vector<EoDxfHatchLoop*> m_hatchLoops;
-
  private:
   void ClearEntities() noexcept;
 
@@ -860,6 +862,14 @@ class EoDxfHatch : public EoDxfPoint {
   void AddEllipse();
 
   void AddSpline();
+
+  bool m_isElevationPointParsed{};
+  bool m_isReadingSeedPoints{};
+  int m_seedPointsRemaining{};
+  std::vector<std::unique_ptr<EoDxfPoint>> m_seedPoints;  // ← one per seed point
+  EoDxfPoint* m_currentSeedPoint{};  // temp while reading the pair
+
+  std::vector<EoDxfHatchLoop*> m_hatchLoops;
 
   EoDxfHatchLoop* m_hatchLoop{};  // current loop to add data
   EoDxfLine* m_line{};
@@ -1365,7 +1375,7 @@ struct EoDxfMLeaderContextData {
  * value (code 43), back clip plane Z value (code 44), view height in model space units (code 45), snap angle (code 50),
  * and view twist angle (code 51), which can affect how the viewport displays the model space.
  */
-class EoDxfViewport : public EoDxfPoint {
+class EoDxfViewport : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
@@ -1378,9 +1388,10 @@ class EoDxfViewport : public EoDxfPoint {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  double m_width{205.0};  // Width in paper space units, code 40
-  double m_height{156.0};  // Height in paper space units, code 41
-  std::int16_t m_viewportStatus{};  // Viewport status field, code 68
+  EoDxfGeometryBase3d m_centerPoint{};  // Group codes 10, 20 & 30 (in DCS)
+  double m_width{205.0};  // Group code 40
+  double m_height{156.0};  // Group code 41
+  std::int16_t m_viewportStatus{};  // Groupcode 68
   std::int16_t m_viewportId{};  // Viewport ID, code 69
   EoDxfGeometryBase2d m_viewCenter{128.5, 97.5};  // Group codes 12 and 22 (in DCS)
   EoDxfGeometryBase2d m_snapBasePoint{};  // Group codes 13 and 23

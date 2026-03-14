@@ -870,6 +870,15 @@ void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {
 
 void EoDxfVertex::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_locationPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_locationPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_locationPoint.z = reader->GetDouble();
+      break;
     case 70:
       m_vertexFlags = reader->GetInt16();
       break;
@@ -901,7 +910,7 @@ void EoDxfVertex::ParseCode(int code, EoDxfReader* reader) {
       m_identifier = reader->GetInt32();
       break;
     default:
-      EoDxfPoint::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -951,10 +960,69 @@ void EoDxfHatch::ClearEntities() noexcept {
   m_ellipse = nullptr;
   m_spline = nullptr;
   m_polylineVertex = nullptr;
+
+  m_seedPoints.clear();
+  m_currentSeedPoint = nullptr;
+  m_isReadingSeedPoints = false;
+  m_seedPointsRemaining = 0;
+  m_isElevationPointParsed = false;  // also safe to reset here
 }
 
 void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10: {
+      double val = reader->GetDouble();
+
+      if (!m_isElevationPointParsed) {
+        m_elevationPoint.x = val;  // always 0.0
+      } else if (m_isReadingSeedPoints && m_seedPointsRemaining > 0) {
+        // ← SEED POINT PATH (never reaches AddLine etc.)
+        auto entity = std::make_unique<EoDxfPoint>();
+        m_currentSeedPoint = entity.get();
+        m_seedPoints.push_back(std::move(entity));
+        m_currentSeedPoint->m_firstPoint.x = val;
+      } else if (m_polyline) {
+        if (!m_polylineVertex) { m_polylineVertex = &m_polyline->AddVertex(); }
+        m_polylineVertex->x = val;
+      } else if (m_line) {
+        // TODO: your line start/end point routing
+      } else if (m_spline || m_arc || m_ellipse) {
+        // TODO: your spline/arc/ellipse center/control points
+      }
+      break;
+    }
+    case 20: {
+      double val = reader->GetDouble();
+
+      if (!m_isElevationPointParsed) {
+        m_elevationPoint.y = val;  // always 0.0
+      } else if (m_currentSeedPoint) {
+        // ← SEED POINT PATH
+        m_currentSeedPoint->m_firstPoint.y = val;
+        m_currentSeedPoint = nullptr;  // pair complete
+        --m_seedPointsRemaining;
+      } else if (m_polylineVertex) {
+        m_polylineVertex->y = val;
+        m_polylineVertex = nullptr;
+      }
+      // TODO: other Y cases (line, arc, etc.)
+      break;
+    }
+    case 30:
+      m_elevationPoint.z = reader->GetDouble();  // elevation value for the hatch
+      m_isElevationPointParsed = true;
+      break;
+
+      // --------------------------------------------------
+      // SEED POINTS (after all boundary paths)
+      // --------------------------------------------------
+    case 98: {
+      m_seedPointsRemaining = reader->GetInt32();  // or GetInt() if your reader uses int
+      m_seedPoints.clear();
+      m_isReadingSeedPoints = (m_seedPointsRemaining > 0);
+      m_currentSeedPoint = nullptr;
+      break;
+    }
     case 2:
       m_hatchPatternName = reader->GetWideString();
       break;
@@ -963,25 +1031,6 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
       break;
     case 71:
       m_associativityFlag = reader->GetInt16();
-      break;
-    case 10:
-      if (m_point) {
-        m_point->m_firstPoint.x = reader->GetDouble();
-      } else if (m_spline) {
-        // Add routing for the active m_spline data groups
-      } else if (m_polyline) {
-        m_polylineVertex = &m_polyline->AddVertex();
-        m_polylineVertex->x = reader->GetDouble();
-      }
-      break;
-    case 20:
-      if (m_point) {
-        m_point->m_firstPoint.y = reader->GetDouble();
-      } else if (m_spline) {
-        // Add routing for the active m_spline data groups
-      } else if (m_polylineVertex) {
-        m_polylineVertex->y = reader->GetDouble();
-      }
       break;
     case 11:
       if (m_line) {
@@ -1057,22 +1106,27 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
       break;
 
     // Hatch boundary path data groups
-    case 72:
-      if (m_isPolyline) {
-        break;
-      } else {
-        std::int16_t edgeType = reader->GetInt16();
-        if (edgeType == 1) {  // line
-          AddLine();
-        } else if (edgeType == 2) {  // circular arc
-          AddArc();
-        } else if (edgeType == 3) {  // elliptic arc
-          AddEllipse();
-        } else if (edgeType == 4) {  // spline
-          AddSpline();
+    case 72: {
+      int edgeType = reader->GetInt16();
+      if (m_hatchLoop) {
+        switch (edgeType) {
+          case 1:
+            AddLine();
+            break;
+          case 2:
+            AddArc();
+            break;
+          case 3:
+            AddEllipse();
+            break;
+          case 4:
+            AddSpline();
+            break;
+            // case for polyline boundaries usually handled via 92/93
         }
       }
       break;
+    }
     case 92: {
       auto boundaryPathType = reader->GetInt32();
       m_hatchLoop = new EoDxfHatchLoop(boundaryPathType);
@@ -1111,11 +1165,8 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
       if (m_spline) { m_spline->m_numberOfControlPoints = reader->GetInt16(); }
       break;
 
-    case 98:
-      ClearEntities();
-      break;
     default:
-      EoDxfPoint::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -1444,6 +1495,15 @@ void EoDxfLeader::ParseCode(int code, EoDxfReader* reader) {
 
 void EoDxfViewport::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_centerPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_centerPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_centerPoint.z = reader->GetDouble();
+      break;
     case 12:
       m_viewCenter.x = reader->GetDouble();
       break;
@@ -1520,7 +1580,7 @@ void EoDxfViewport::ParseCode(int code, EoDxfReader* reader) {
       m_viewportStatusBitCodedFlags = reader->GetInt32();
       break;
     default:
-      EoDxfPoint::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }

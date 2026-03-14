@@ -213,9 +213,9 @@ bool EoDxfWrite::WriteViewport(EoDxfViewport* viewport) {
   WriteCodeString(0, L"VIEWPORT");
   WriteEntity(viewport);
   WriteCodeString(100, L"AcDbViewport");
-  WriteCodeDouble(10, viewport->m_firstPoint.x);
-  WriteCodeDouble(20, viewport->m_firstPoint.y);
-  if (viewport->m_firstPoint.z != 0.0) { WriteCodeDouble(30, viewport->m_firstPoint.z); }
+  WriteCodeDouble(10, viewport->m_centerPoint.x);
+  WriteCodeDouble(20, viewport->m_centerPoint.y);
+  if (std::abs(viewport->m_centerPoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, viewport->m_centerPoint.z); }
   WriteCodeDouble(40, viewport->m_width);
   WriteCodeDouble(41, viewport->m_height);
   if (viewport->m_viewportStatus != 0) { WriteCodeInt16(68, viewport->m_viewportStatus); }
