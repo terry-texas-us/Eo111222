@@ -700,27 +700,83 @@ void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
 
 void EoDxfMText::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
-    case 1:
-      m_string += reader->GetWideString();
+    case 40:
+      m_nominalTextHeight = reader->GetDouble();
       break;
+    case 41:
+      m_referenceRectangleWidth = reader->GetDouble();
+      break;
+    case 7:
+      m_textStyleName = reader->GetWideString();
+      break;
+    case 50:
+      m_rotationAngle = reader->GetDouble();
+      break;
+
     case 11:
       m_haveXAxisDirection = true;
-      EoDxfText::ParseCode(code, reader);
+      m_xAxisDirectionVector.x = reader->GetDouble();
       break;
-    case 3:
-      m_string += reader->GetWideString();
+    case 21:
+      m_xAxisDirectionVector.y = reader->GetDouble();
+      break;
+    case 31:
+      m_xAxisDirectionVector.z = reader->GetDouble();
+      break;
+
+    case 71:
+      m_attachmentPoint = static_cast<AttachmentPoint>(reader->GetInt16());
+      break;
+    case 72:
+      m_drawingDirection = static_cast<DrawingDirection>(reader->GetInt16());
+      break;
+    case 73:
+      m_lineSpacingStyle = static_cast<LineSpacingStyle>(reader->GetInt16());
       break;
     case 44:
       m_lineSpacingFactor = reader->GetDouble();
       break;
+    
+    case 1:  // final chunk (or only chunk if no continuation chunks) of text string
+      m_textString += reader->GetWideString();
+      break;
+    case 3:  // continuation chunk (multiple allowed)
+      m_textString += reader->GetWideString();
+      break;
+    
+    // (AC1021+) ? must appear together
+    case 90:
+      m_backgroundFillSetting = reader->GetInt32();
+      break;
+    case 45:
+      m_fillBoxScale = reader->GetDouble();
+      break;
+    case 63:
+      m_backgroundColor = reader->GetInt16();
+      break;
+    case 421:
+      m_backgroundColor = reader->GetInt32();
+      break;
+    case 431:
+      m_backgroundColorName = reader->GetWideString();
+      break;
+
+    // calculated values (can ignore)
+    case 42:
+      m_horizontalWidth = reader->GetDouble();
+      break;
+    case 43:
+      m_verticalHeight = reader->GetDouble();
+      break;
+
     default:
-      EoDxfText::ParseCode(code, reader);
+      EoDxfPoint::ParseCode(code, reader);
       break;
   }
 }
 
 void EoDxfMText::UpdateAngle() {
-  if (m_haveXAxisDirection) { m_textRotation = atan2(m_secondAlignmentPoint.y, m_secondAlignmentPoint.x); }
+  if (m_haveXAxisDirection) { m_rotationAngle = atan2(m_xAxisDirectionVector.y, m_xAxisDirectionVector.x); }
 }
 
 void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {

@@ -329,24 +329,31 @@ bool EoDxfWrite::WriteMText(EoDxfMText* mText) {
   WriteCodeDouble(10, mText->m_firstPoint.x);
   WriteCodeDouble(20, mText->m_firstPoint.y);
   WriteCodeDouble(30, mText->m_firstPoint.z);
-  WriteCodeDouble(40, mText->m_textHeight);
-  WriteCodeDouble(41, mText->m_scaleFactorWidth);
-  WriteCodeInt16(71, mText->m_textGenerationFlags);
-  WriteCodeInt16(72, static_cast<std::int16_t>(mText->m_horizontalAlignment));
+  WriteCodeDouble(40, mText->m_nominalTextHeight);
+  WriteCodeDouble(41, mText->m_referenceRectangleWidth);
+  WriteCodeWideString(7, mText->m_textStyleName);
+  WriteCodeDouble(50, mText->m_rotationAngle);
+
+  if (mText->m_haveXAxisDirection) {
+    WriteCodeDouble(11, mText->m_xAxisDirectionVector.x);
+    WriteCodeDouble(21, mText->m_xAxisDirectionVector.y);
+    WriteCodeDouble(31, mText->m_xAxisDirectionVector.z);
+  }
+  WriteCodeInt16(71, static_cast<std::int16_t>(mText->m_attachmentPoint));
+  WriteCodeInt16(72, static_cast<std::int16_t>(mText->m_drawingDirection));
+  WriteCodeInt16(73, static_cast<std::int16_t>(mText->m_lineSpacingStyle));
+  WriteCodeDouble(44, mText->m_lineSpacingFactor);
 
   size_t chunkOffset{};
-  for (; (mText->m_string.size() - chunkOffset) > EoDxf::StringGroupCodeMaxChunk;
+  for (; (mText->m_textString.size() - chunkOffset) > EoDxf::StringGroupCodeMaxChunk;
       chunkOffset += EoDxf::StringGroupCodeMaxChunk) {
-    WriteCodeWideString(3, mText->m_string.substr(chunkOffset, EoDxf::StringGroupCodeMaxChunk));
+    WriteCodeWideString(3, mText->m_textString.substr(chunkOffset, EoDxf::StringGroupCodeMaxChunk));
   }
-  WriteCodeWideString(1, mText->m_string.substr(chunkOffset));
-  WriteCodeWideString(7, mText->m_textStyleName);
+  WriteCodeWideString(1, mText->m_textString.substr(chunkOffset));
+
   WriteCodeDouble(210, mText->m_extrusionDirection.x);
   WriteCodeDouble(220, mText->m_extrusionDirection.y);
   WriteCodeDouble(230, mText->m_extrusionDirection.z);
-  WriteCodeDouble(50, mText->m_textRotation);
-  WriteCodeInt16(73, static_cast<std::int16_t>(mText->m_verticalAlignment));
-  WriteCodeDouble(44, mText->m_lineSpacingFactor);
 
   return m_writeOk;
 }

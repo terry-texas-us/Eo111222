@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <list>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -519,12 +520,12 @@ class EoDxfText : public EoDxfPoint {
  *  Additionally, mtext supports more complex formatting options such as multiple lines of text, different alignments,
  * and special characters.
  */
-class EoDxfMText : public EoDxfText {
+class EoDxfMText : public EoDxfPoint {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  enum Attach {
+  enum class AttachmentPoint : std::int16_t {
     TopLeft = 1,
     TopCenter,
     TopRight,
@@ -535,15 +536,45 @@ class EoDxfMText : public EoDxfText {
     BottomCenter,
     BottomRight
   };
+  enum class DrawingDirection : std::int16_t { LeftToRight = 1, TopToBottom = 3, ByStyle = 5 };
+  enum class LineSpacingStyle : std::int16_t { AtLeast = 1, Exact = 2 };
 
-  explicit EoDxfMText(EoDxf::ETYPE entityType = EoDxf::MTEXT) noexcept : EoDxfText{entityType} {}
+  explicit EoDxfMText(EoDxf::ETYPE entityType = EoDxf::MTEXT) noexcept : EoDxfPoint{entityType} {}
 
  protected:
   void ParseCode(int code, EoDxfReader* reader);
-  void UpdateAngle();  // recalculate angle if 'm_haveXAxisDirection' is true
 
  public:
-  double m_lineSpacingFactor{1.0};  // Group code 44 (optional)
+  EoDxfGeometryBase3d m_insertionPoint;  // Group codes 10/20/30 (insertion point in OCS)
+  double m_nominalTextHeight{1.0};  // Group code 40
+  double m_referenceRectangleWidth{};  // Group code 41 (wrapping box width)
+  std::wstring m_textStyleName{L"STANDARD"};  // Group code 7
+  double m_rotationAngle{};  // Group code 50 (in radians!)
+  EoDxfGeometryBase3d m_xAxisDirectionVector{1.0, 0.0, 0.0};  // Group codes 11/21/31
+
+  AttachmentPoint m_attachmentPoint{AttachmentPoint::TopLeft};  // Group code 71
+  DrawingDirection m_drawingDirection{DrawingDirection::LeftToRight};  // Group code 72
+  LineSpacingStyle m_lineSpacingStyle{LineSpacingStyle::AtLeast};  // Group 73
+  double m_lineSpacingFactor{1.0};  // Group 44 (clamped to 0.25, 4.0)
+
+  std::wstring
+      m_textString;  // If the text string is less than 250 characters, all characters appear in Group code 1.
+                     // If the text string is greater than 250 characters, the string is divided into
+                     // 250-character chunks, which appear in one or more group 3 codes.
+                     // If group 3 codes are used, the last group is a group 1 and has fewer than 250 characters
+
+  std::uint32_t m_backgroundFillSetting{};  // Group code 90
+  double m_fillBoxScale{1.5};  // Group code 45
+  int m_backgroundFillColor{};  // Group code 63
+  std::uint32_t m_backgroundColor{};  // Group code 421
+  std::wstring m_backgroundColorName;  // Group code 431 (rare)
+
+  // calculated (often present)
+  std::optional<double> m_horizontalWidth{};  // Group code 42
+  std::optional<double> m_verticalHeight{};  // Group code 43
+
+ protected:
+  void UpdateAngle();  // recalculate angle if 'm_haveXAxisDirection' is true
  private:
   bool m_haveXAxisDirection{};
 };

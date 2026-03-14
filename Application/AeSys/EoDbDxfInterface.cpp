@@ -462,8 +462,10 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
 }
 
 void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unused]] AeSysDoc* document) {
-  const auto& textValue = mtext.m_string;
+  const auto& textValue = mtext.m_textString;
   ATLTRACE2(traceGeneral, 3, L"MText entity conversion - Value: %s (under construction)\n", textValue.c_str());
+
+
 }
 
 void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) {

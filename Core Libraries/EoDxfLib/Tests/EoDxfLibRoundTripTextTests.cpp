@@ -225,7 +225,7 @@ void Expect(bool condition, std::wstring_view message, int& failureCount) {
 
 [[nodiscard]] bool ContainsMTextValue(const RoundTripFixtureModel& model, std::wstring_view textValue) {
   for (const auto& mText : model.MTexts()) {
-    if (mText.m_string == textValue) { return true; }
+    if (mText.m_textString == textValue) { return true; }
   }
   return false;
 }
@@ -246,7 +246,7 @@ void Expect(bool condition, std::wstring_view message, int& failureCount) {
   for (const auto& mText : model.MTexts()) {
     if (!description.empty()) { description += L", "; }
     description += L"[";
-    description += mText.m_string;
+    description += mText.m_textString;
     description += L"]";
   }
   return description;
@@ -297,11 +297,11 @@ void BuildUtf16SourceModel(RoundTripFixtureModel& model) {
 
   EoDxfMText mText;
   mText.m_layer = L"0";
-  mText.m_textHeight = 2.5;
-  mText.m_scaleFactorWidth = 20.0;
-  mText.m_string = L"MText ASCII only";
+  mText.m_nominalTextHeight = 2.5;
+  mText.m_referenceRectangleWidth = 20.0;
+  mText.m_textString = L"MText ASCII only";
   mText.m_textStyleName = L"STANDARD";
-  mText.m_verticalAlignment = EoDxfText::VerticalAlignment::Bottom;
+  mText.m_attachmentPoint = EoDxfMText::AttachmentPoint::TopLeft;
   model.addMText(mText);
 }
 
