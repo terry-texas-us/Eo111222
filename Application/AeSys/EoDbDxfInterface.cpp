@@ -248,7 +248,7 @@ void EoDbDxfInterface::ConvertVPortTable(const EoDxfVPort& viewport, [[maybe_unu
  * paper space entities are output, followed by model space entities. The flag distinguishing them is the group code 67.
  */
 EoDbBlock* EoDbDxfInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* document) {
-  m_blockName = block.m_name;  // Block Name (group code 2)
+  m_blockName = block.m_blockName;  // Block Name (group code 2)
 
   // auto handle = block.handle;              // group code 5
   // auto parentHandle = block.parentHandle;  // Soft-pointer ID/handle to owner object (group code 330)
@@ -259,8 +259,8 @@ EoDbBlock* EoDbDxfInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* doc
   // @todo Check if block already exists and clean it up first
 
   //  Block-type bit-coded (see note) which may be combined (group code 70)
-  auto* newBlock = new EoDbBlock(block.m_flags,
-      EoGePoint3d(block.m_firstPoint.x, block.m_firstPoint.y, block.m_firstPoint.z),  // group codes 10, 20 and 30
+  auto* newBlock = new EoDbBlock(block.m_blockTypeFlags,
+      EoGePoint3d(block.m_basePoint.x, block.m_basePoint.y, block.m_basePoint.z),  // group codes 10, 20 and 30
       m_blockName.c_str());
 
   document->InsertBlock(m_blockName.c_str(), newBlock);
@@ -341,7 +341,7 @@ void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
     ATLTRACE2(traceGeneral, 3, L"Warning: Arc entity with non-positive radius (%f) skipped.\n", arc.m_radius);
     return;
   }
-  EoGePoint3d center(arc.m_firstPoint.x, arc.m_firstPoint.y, arc.m_firstPoint.z);
+  EoGePoint3d center(arc.m_centerPoint.x, arc.m_centerPoint.y, arc.m_centerPoint.z);
 
   EoGeVector3d extrusion(arc.m_extrusionDirection.x, arc.m_extrusionDirection.y, arc.m_extrusionDirection.z);
   if (extrusion.IsNearNull()) {
@@ -375,7 +375,7 @@ void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
 void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Circle entity conversion\n");
 
-  EoGePoint3d center(circle.m_firstPoint.x, circle.m_firstPoint.y, circle.m_firstPoint.z);
+  EoGePoint3d center(circle.m_centerPoint.x, circle.m_centerPoint.y, circle.m_centerPoint.z);
   EoGeVector3d extrusion(circle.m_extrusionDirection.x, circle.m_extrusionDirection.y, circle.m_extrusionDirection.z);
   if (extrusion.IsNearNull()) {
     extrusion = EoGeVector3d::positiveUnitZ;
@@ -394,7 +394,7 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
     ATLTRACE2(traceGeneral, 3, L"Warning: Ellipse entity with invalid ratio (%f) skipped.\n", ellipse.m_ratio);
     return;
   }
-  EoGeVector3d majorAxis(ellipse.m_secondPoint.x, ellipse.m_secondPoint.y, ellipse.m_secondPoint.z);
+  EoGeVector3d majorAxis(ellipse.m_endPoint.x, ellipse.m_endPoint.y, ellipse.m_endPoint.z);
   if (majorAxis.IsNearNull()) {
     ATLTRACE2(traceGeneral, 3, L"Warning: Zero-length major axis\n");
     return;
@@ -406,7 +406,7 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   } else {
     extrusion.Unitize();
   }
-  auto center = EoGePoint3d(ellipse.m_firstPoint.x, ellipse.m_firstPoint.y, ellipse.m_firstPoint.z);
+  auto center = EoGePoint3d(ellipse.m_startPoint.x, ellipse.m_startPoint.y, ellipse.m_startPoint.z);
   auto* conic =
       EoDbConic::CreateConic(center, majorAxis, extrusion, ellipse.m_ratio, ellipse.m_startParam, ellipse.m_endParam);
   conic->SetBaseProperties(&ellipse, document);
@@ -439,7 +439,7 @@ void EoDbDxfInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* docume
   auto linePrimitive = new EoDbLine();
   linePrimitive->SetBaseProperties(&line, document);
 
-  linePrimitive->SetLine(EoGeLine(EoGePoint3d{line.m_firstPoint}, EoGePoint3d{line.m_secondPoint}));
+  linePrimitive->SetLine(EoGeLine(EoGePoint3d{line.m_startPoint}, EoGePoint3d{line.m_endPoint}));
   AddToDocument(linePrimitive, document);
 }
 
@@ -464,8 +464,6 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
 void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unused]] AeSysDoc* document) {
   const auto& textValue = mtext.m_textString;
   ATLTRACE2(traceGeneral, 3, L"MText entity conversion - Value: %s (under construction)\n", textValue.c_str());
-
-
 }
 
 void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) {
@@ -481,7 +479,8 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   ATLTRACE2(traceGeneral, 2, L"Text entity conversion - (under construction)\n");
 
   [[maybe_unused]] auto thickness = text.m_thickness;  // Group code 50 (is not supported in AeSys)
-  auto firstAlignmentPointInOcs = EoGePoint3d{text.m_firstPoint.x, text.m_firstPoint.y, text.m_firstPoint.z};
+  auto firstAlignmentPointInOcs =
+      EoGePoint3d{text.m_firstAlignmentPoint.x, text.m_firstAlignmentPoint.y, text.m_firstAlignmentPoint.z};
   auto textHeight = text.m_textHeight;  // Group code 40
 
   /** This is the text string itself, which may contain embedded formatting codes:

@@ -276,12 +276,12 @@ EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstri
   WriteCodeString(0, L"IMAGE");
   WriteEntity(rasterImage);
   WriteCodeString(100, L"AcDbRasterImage");
-  WriteCodeDouble(10, rasterImage->m_firstPoint.x);
-  WriteCodeDouble(20, rasterImage->m_firstPoint.y);
-  WriteCodeDouble(30, rasterImage->m_firstPoint.z);
-  WriteCodeDouble(11, rasterImage->m_secondPoint.x);
-  WriteCodeDouble(21, rasterImage->m_secondPoint.y);
-  WriteCodeDouble(31, rasterImage->m_secondPoint.z);
+  WriteCodeDouble(10, rasterImage->m_startPoint.x);
+  WriteCodeDouble(20, rasterImage->m_startPoint.y);
+  WriteCodeDouble(30, rasterImage->m_startPoint.z);
+  WriteCodeDouble(11, rasterImage->m_endPoint.x);
+  WriteCodeDouble(21, rasterImage->m_endPoint.y);
+  WriteCodeDouble(31, rasterImage->m_endPoint.z);
   WriteCodeDouble(12, rasterImage->vVector.x);
   WriteCodeDouble(22, rasterImage->vVector.y);
   WriteCodeDouble(32, rasterImage->vVector.z);
@@ -332,7 +332,7 @@ bool EoDxfWrite::WriteBlock(EoDxfBlock* block) {
   m_writingBlock = true;
   WriteCodeString(0, L"BLOCK");
 
-  m_currentHandle = (*(m_blockMap.find(block->m_name))).second;
+  m_currentHandle = (*(m_blockMap.find(block->m_blockName))).second;
   WriteCodeString(5, ToHexString(m_currentHandle + 1));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(m_currentHandle)); }
   WriteCodeString(100, L"AcDbEntity");
@@ -340,14 +340,14 @@ bool EoDxfWrite::WriteBlock(EoDxfBlock* block) {
   WriteCodeString(8, L"0");
 
   WriteCodeString(100, L"AcDbBlockBegin");
-  WriteCodeWideString(2, block->m_name);
+  WriteCodeWideString(2, block->m_blockName);
 
-  WriteCodeInt16(70, block->m_flags);
-  WriteCodeDouble(10, block->m_firstPoint.x);
-  WriteCodeDouble(20, block->m_firstPoint.y);
-  if (block->m_firstPoint.z != 0.0) { WriteCodeDouble(30, block->m_firstPoint.z); }
+  WriteCodeInt16(70, block->m_blockTypeFlags);
+  WriteCodeDouble(10, block->m_basePoint.x);
+  WriteCodeDouble(20, block->m_basePoint.y);
+  if (std::abs(block->m_basePoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, block->m_basePoint.z); }
 
-  WriteCodeWideString(3, block->m_name);
+  WriteCodeWideString(3, block->m_blockName);
 
   WriteCodeString(1, L"");
 

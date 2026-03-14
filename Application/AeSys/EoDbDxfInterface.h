@@ -62,7 +62,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   // Blocks
   void addBlock(const EoDxfBlock& block) override {
     m_inBlockDefinition = true;
-    m_blockName = block.m_name;
+    m_blockName = block.m_blockName;
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addBlock <%s>\n", m_blockName.c_str());
     m_currentOpenBlockDefinition = ConvertBlock(block, m_document);
   }

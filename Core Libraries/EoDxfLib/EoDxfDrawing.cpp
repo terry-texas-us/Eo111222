@@ -8,12 +8,12 @@ bool EoDxfWrite::Write3dFace(EoDxf3dFace* face) {
   WriteCodeString(0, L"3DFACE");
   WriteEntity(face);
   WriteCodeString(100, L"AcDbFace");
-  WriteCodeDouble(10, face->m_firstPoint.x);
-  WriteCodeDouble(20, face->m_firstPoint.y);
-  WriteCodeDouble(30, face->m_firstPoint.z);
-  WriteCodeDouble(11, face->m_secondPoint.x);
-  WriteCodeDouble(21, face->m_secondPoint.y);
-  WriteCodeDouble(31, face->m_secondPoint.z);
+  WriteCodeDouble(10, face->m_startPoint.x);
+  WriteCodeDouble(20, face->m_startPoint.y);
+  WriteCodeDouble(30, face->m_startPoint.z);
+  WriteCodeDouble(11, face->m_endPoint.x);
+  WriteCodeDouble(21, face->m_endPoint.y);
+  WriteCodeDouble(31, face->m_endPoint.z);
   WriteCodeDouble(12, face->m_thirdPoint.x);
   WriteCodeDouble(22, face->m_thirdPoint.y);
   WriteCodeDouble(32, face->m_thirdPoint.z);
@@ -28,9 +28,9 @@ bool EoDxfWrite::WriteArc(EoDxfArc* arc) {
   WriteCodeString(0, L"ARC");
   WriteEntity(arc);
   WriteCodeString(100, L"AcDbCircle");
-  WriteCodeDouble(10, arc->m_firstPoint.x);
-  WriteCodeDouble(20, arc->m_firstPoint.y);
-  if (arc->m_firstPoint.z != 0.0) { WriteCodeDouble(30, arc->m_firstPoint.z); }
+  WriteCodeDouble(10, arc->m_centerPoint.x);
+  WriteCodeDouble(20, arc->m_centerPoint.y);
+  if (std::abs(arc->m_centerPoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, arc->m_centerPoint.z); }
   WriteCodeDouble(40, arc->m_radius);
   WriteCodeString(100, L"AcDbArc");
   WriteCodeDouble(50, arc->m_startAngle * EoDxf::RadiansToDegrees);
@@ -42,9 +42,9 @@ bool EoDxfWrite::WriteCircle(EoDxfCircle* circle) {
   WriteCodeString(0, L"CIRCLE");
   WriteEntity(circle);
   WriteCodeString(100, L"AcDbCircle");
-  WriteCodeDouble(10, circle->m_firstPoint.x);
-  WriteCodeDouble(20, circle->m_firstPoint.y);
-  if (circle->m_firstPoint.z != 0.0) { WriteCodeDouble(30, circle->m_firstPoint.z); }
+  WriteCodeDouble(10, circle->m_centerPoint.x);
+  WriteCodeDouble(20, circle->m_centerPoint.y);
+  if (std::abs(circle->m_centerPoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, circle->m_centerPoint.z); }
   WriteCodeDouble(40, circle->m_radius);
   return m_writeOk;
 }
@@ -56,12 +56,12 @@ bool EoDxfWrite::WriteEllipse(EoDxfEllipse* ellipse) {
   WriteCodeString(0, L"ELLIPSE");
   WriteEntity(ellipse);
   WriteCodeString(100, L"AcDbEllipse");
-  WriteCodeDouble(10, ellipse->m_firstPoint.x);
-  WriteCodeDouble(20, ellipse->m_firstPoint.y);
-  WriteCodeDouble(30, ellipse->m_firstPoint.z);
-  WriteCodeDouble(11, ellipse->m_secondPoint.x);
-  WriteCodeDouble(21, ellipse->m_secondPoint.y);
-  WriteCodeDouble(31, ellipse->m_secondPoint.z);
+  WriteCodeDouble(10, ellipse->m_startPoint.x);
+  WriteCodeDouble(20, ellipse->m_startPoint.y);
+  WriteCodeDouble(30, ellipse->m_startPoint.z);
+  WriteCodeDouble(11, ellipse->m_endPoint.x);
+  WriteCodeDouble(21, ellipse->m_endPoint.y);
+  WriteCodeDouble(31, ellipse->m_endPoint.z);
   WriteCodeDouble(40, ellipse->m_ratio);
   WriteCodeDouble(41, ellipse->m_startParam);
   WriteCodeDouble(42, ellipse->m_endParam);
@@ -110,17 +110,17 @@ bool EoDxfWrite::WriteHatch(EoDxfHatch* hatch) {
           case EoDxf::LINE: {
             WriteCodeInt16(72, 1);
             auto* line = static_cast<EoDxfLine*>(hatchLoop->m_entities.at(j).get());
-            WriteCodeDouble(10, line->m_firstPoint.x);
-            WriteCodeDouble(20, line->m_firstPoint.y);
-            WriteCodeDouble(11, line->m_secondPoint.x);
-            WriteCodeDouble(21, line->m_secondPoint.y);
+            WriteCodeDouble(10, line->m_startPoint.x);
+            WriteCodeDouble(20, line->m_startPoint.y);
+            WriteCodeDouble(11, line->m_endPoint.x);
+            WriteCodeDouble(21, line->m_endPoint.y);
             break;
           }
           case EoDxf::ARC: {
             WriteCodeInt16(72, 2);
             auto* arc = static_cast<EoDxfArc*>(hatchLoop->m_entities.at(j).get());
-            WriteCodeDouble(10, arc->m_firstPoint.x);
-            WriteCodeDouble(20, arc->m_firstPoint.y);
+            WriteCodeDouble(10, arc->m_centerPoint.x);
+            WriteCodeDouble(20, arc->m_centerPoint.y);
             WriteCodeDouble(40, arc->m_radius);
             WriteCodeDouble(50, arc->m_startAngle * EoDxf::RadiansToDegrees);
             WriteCodeDouble(51, arc->m_endAngle * EoDxf::RadiansToDegrees);
@@ -131,10 +131,10 @@ bool EoDxfWrite::WriteHatch(EoDxfHatch* hatch) {
             WriteCodeInt16(72, 3);
             auto* ellipse = static_cast<EoDxfEllipse*>(hatchLoop->m_entities.at(j).get());
             ellipse->CorrectAxis();
-            WriteCodeDouble(10, ellipse->m_firstPoint.x);
-            WriteCodeDouble(20, ellipse->m_firstPoint.y);
-            WriteCodeDouble(11, ellipse->m_secondPoint.x);
-            WriteCodeDouble(21, ellipse->m_secondPoint.y);
+            WriteCodeDouble(10, ellipse->m_startPoint.x);
+            WriteCodeDouble(20, ellipse->m_startPoint.y);
+            WriteCodeDouble(11, ellipse->m_endPoint.x);
+            WriteCodeDouble(21, ellipse->m_endPoint.y);
             WriteCodeDouble(40, ellipse->m_ratio);
             WriteCodeDouble(50, ellipse->m_startParam);
             WriteCodeDouble(51, ellipse->m_endParam);
@@ -167,16 +167,16 @@ bool EoDxfWrite::WriteLine(EoDxfLine* line) {
   WriteCodeString(0, L"LINE");
   WriteEntity(line);
   WriteCodeString(100, L"AcDbLine");
-  WriteCodeDouble(10, line->m_firstPoint.x);
-  WriteCodeDouble(20, line->m_firstPoint.y);
-  if (line->m_firstPoint.z != 0.0 || line->m_secondPoint.z != 0.0) {
-    WriteCodeDouble(30, line->m_firstPoint.z);
-    WriteCodeDouble(11, line->m_secondPoint.x);
-    WriteCodeDouble(21, line->m_secondPoint.y);
-    WriteCodeDouble(31, line->m_secondPoint.z);
+  WriteCodeDouble(10, line->m_startPoint.x);
+  WriteCodeDouble(20, line->m_startPoint.y);
+  if (line->m_startPoint.z != 0.0 || line->m_endPoint.z != 0.0) {
+    WriteCodeDouble(30, line->m_startPoint.z);
+    WriteCodeDouble(11, line->m_endPoint.x);
+    WriteCodeDouble(21, line->m_endPoint.y);
+    WriteCodeDouble(31, line->m_endPoint.z);
   } else {
-    WriteCodeDouble(11, line->m_secondPoint.x);
-    WriteCodeDouble(21, line->m_secondPoint.y);
+    WriteCodeDouble(11, line->m_endPoint.x);
+    WriteCodeDouble(21, line->m_endPoint.y);
   }
   return m_writeOk;
 }
@@ -195,10 +195,10 @@ bool EoDxfWrite::WriteRay(EoDxfRay* ray) {
   WriteCodeString(0, L"RAY");
   WriteEntity(ray);
   WriteCodeString(100, L"AcDbRay");
-  WriteCodeDouble(10, ray->m_firstPoint.x);
-  WriteCodeDouble(20, ray->m_firstPoint.y);
-  if (std::fabs(ray->m_firstPoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, ray->m_firstPoint.z); }
-  auto direction = ray->m_secondPoint;
+  WriteCodeDouble(10, ray->m_startPoint.x);
+  WriteCodeDouble(20, ray->m_startPoint.y);
+  if (std::fabs(ray->m_startPoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, ray->m_startPoint.z); }
+  auto direction = ray->m_endPoint;
   direction.Unitize();
   WriteCodeDouble(11, direction.x);
   WriteCodeDouble(21, direction.y);
@@ -210,12 +210,12 @@ bool EoDxfWrite::WriteSolid(EoDxfSolid* solid) {
   WriteCodeString(0, L"SOLID");
   WriteEntity(solid);
   WriteCodeString(100, L"AcDbTrace");  // SOLID shares the same subclass as TRACE
-  WriteCodeDouble(10, solid->m_firstPoint.x);
-  WriteCodeDouble(20, solid->m_firstPoint.y);
-  WriteCodeDouble(30, solid->m_firstPoint.z);
-  WriteCodeDouble(11, solid->m_secondPoint.x);
-  WriteCodeDouble(21, solid->m_secondPoint.y);
-  WriteCodeDouble(31, solid->m_secondPoint.z);
+  WriteCodeDouble(10, solid->m_startPoint.x);
+  WriteCodeDouble(20, solid->m_startPoint.y);
+  WriteCodeDouble(30, solid->m_startPoint.z);
+  WriteCodeDouble(11, solid->m_endPoint.x);
+  WriteCodeDouble(21, solid->m_endPoint.y);
+  WriteCodeDouble(31, solid->m_endPoint.z);
   WriteCodeDouble(12, solid->m_thirdPoint.x);
   WriteCodeDouble(22, solid->m_thirdPoint.y);
   WriteCodeDouble(32, solid->m_thirdPoint.z);
@@ -229,12 +229,12 @@ bool EoDxfWrite::WriteTrace(EoDxfTrace* trace) {
   WriteCodeString(0, L"TRACE");
   WriteEntity(trace);
   WriteCodeString(100, L"AcDbTrace");
-  WriteCodeDouble(10, trace->m_firstPoint.x);
-  WriteCodeDouble(20, trace->m_firstPoint.y);
-  WriteCodeDouble(30, trace->m_firstPoint.z);
-  WriteCodeDouble(11, trace->m_secondPoint.x);
-  WriteCodeDouble(21, trace->m_secondPoint.y);
-  WriteCodeDouble(31, trace->m_secondPoint.z);
+  WriteCodeDouble(10, trace->m_startPoint.x);
+  WriteCodeDouble(20, trace->m_startPoint.y);
+  WriteCodeDouble(30, trace->m_startPoint.z);
+  WriteCodeDouble(11, trace->m_endPoint.x);
+  WriteCodeDouble(21, trace->m_endPoint.y);
+  WriteCodeDouble(31, trace->m_endPoint.z);
   WriteCodeDouble(12, trace->m_thirdPoint.x);
   WriteCodeDouble(22, trace->m_thirdPoint.y);
   WriteCodeDouble(32, trace->m_thirdPoint.z);
@@ -248,12 +248,12 @@ bool EoDxfWrite::WriteXline(EoDxfXline* xline) {
   WriteCodeString(0, L"XLINE");
   WriteEntity(xline);
   WriteCodeString(100, L"AcDbXline");
-  WriteCodeDouble(10, xline->m_firstPoint.x);
-  WriteCodeDouble(20, xline->m_firstPoint.y);
-  if (std::fabs(xline->m_firstPoint.z) > EoDxf::geometricTolerance) {
-    WriteCodeDouble(30, xline->m_firstPoint.z);
+  WriteCodeDouble(10, xline->m_startPoint.x);
+  WriteCodeDouble(20, xline->m_startPoint.y);
+  if (std::fabs(xline->m_startPoint.z) > EoDxf::geometricTolerance) {
+    WriteCodeDouble(30, xline->m_startPoint.z);
   }
-  auto direction = xline->m_secondPoint;
+  auto direction = xline->m_endPoint;
   direction.Unitize();
   WriteCodeDouble(11, direction.x);
   WriteCodeDouble(21, direction.y);

@@ -230,7 +230,7 @@ class EoDbConic : public EoDbPrimitive {
     switch (Subclass()) {
       case ConicType::Circle: {
         EoDxfCircle circle;
-        circle.m_firstPoint = {m_center.x, m_center.y, m_center.z};
+        circle.m_centerPoint = {m_center.x, m_center.y, m_center.z};
         circle.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
         circle.m_radius = Radius();
         /// @todoSetDxfBaseProperties(&circle);
@@ -240,7 +240,7 @@ class EoDbConic : public EoDbPrimitive {
 
       case ConicType::RadialArc: {
         EoDxfArc arc;
-        arc.m_firstPoint = {m_center.x, m_center.y, m_center.z};
+        arc.m_centerPoint = {m_center.x, m_center.y, m_center.z};
         arc.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
         arc.m_radius = Radius();
         arc.m_startAngle = m_startAngle;
@@ -253,8 +253,8 @@ class EoDbConic : public EoDbPrimitive {
       case ConicType::Ellipse:
       case ConicType::EllipticalArc: {
         EoDxfEllipse ellipse;
-        ellipse.m_firstPoint = {m_center.x, m_center.y, m_center.z};
-        ellipse.m_secondPoint = {m_majorAxis.x, m_majorAxis.y, m_majorAxis.z};
+        ellipse.m_startPoint = {m_center.x, m_center.y, m_center.z};
+        ellipse.m_endPoint = {m_majorAxis.x, m_majorAxis.y, m_majorAxis.z};
         ellipse.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
         ellipse.m_ratio = m_ratio;
         ellipse.m_startParam = m_startAngle;

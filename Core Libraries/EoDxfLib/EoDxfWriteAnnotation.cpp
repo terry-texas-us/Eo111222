@@ -326,9 +326,9 @@ bool EoDxfWrite::WriteMText(EoDxfMText* mText) {
   WriteCodeString(0, L"MTEXT");
   WriteEntity(mText);
   WriteCodeString(100, L"AcDbMText");
-  WriteCodeDouble(10, mText->m_firstPoint.x);
-  WriteCodeDouble(20, mText->m_firstPoint.y);
-  WriteCodeDouble(30, mText->m_firstPoint.z);
+  WriteCodeDouble(10, mText->m_insertionPoint.x);
+  WriteCodeDouble(20, mText->m_insertionPoint.y);
+  WriteCodeDouble(30, mText->m_insertionPoint.z);
   WriteCodeDouble(40, mText->m_nominalTextHeight);
   WriteCodeDouble(41, mText->m_referenceRectangleWidth);
   WriteCodeWideString(7, mText->m_textStyleName);
@@ -363,9 +363,9 @@ bool EoDxfWrite::WriteText(EoDxfText* text) {
   WriteEntity(text);
   WriteCodeString(100, L"AcDbText");
 
-  WriteCodeDouble(10, text->m_firstPoint.x);
-  WriteCodeDouble(20, text->m_firstPoint.y);
-  WriteCodeDouble(30, text->m_firstPoint.z);
+  WriteCodeDouble(10, text->m_firstAlignmentPoint.x);
+  WriteCodeDouble(20, text->m_firstAlignmentPoint.y);
+  WriteCodeDouble(30, text->m_firstAlignmentPoint.z);
   WriteCodeDouble(40, text->m_textHeight);
   WriteCodeWideString(1, text->m_string);
   WriteCodeDouble(50, text->m_textRotation);

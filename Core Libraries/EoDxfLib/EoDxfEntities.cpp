@@ -194,6 +194,19 @@ void EoDxfGraphic::ParseCode(int code, EoDxfReader* reader) {
     case 60:
       m_visibilityFlag = reader->GetInt16();
       break;
+    case 39:
+      m_thickness = reader->GetDouble();
+      break;
+    case 210:
+      m_haveExtrusion = true;
+      m_extrusionDirection.x = reader->GetDouble();
+      break;
+    case 220:
+      m_extrusionDirection.y = reader->GetDouble();
+      break;
+    case 230:
+      m_extrusionDirection.z = reader->GetDouble();
+      break;
     case 284:
       // @bug possible: 284 is a bitmask using 8-bit integer values, reading as int32 for simplicity
       m_shadowMode = static_cast<EoDxf::ShadowMode>(reader->GetInt16());
@@ -307,18 +320,8 @@ void EoDxfPoint::ParseCode(int code, EoDxfReader* reader) {
     case 30:
       m_firstPoint.z = reader->GetDouble();
       break;
-    case 39:
-      m_thickness = reader->GetDouble();
-      break;
-    case 210:
-      m_haveExtrusion = true;
-      m_extrusionDirection.x = reader->GetDouble();
-      break;
-    case 220:
-      m_extrusionDirection.y = reader->GetDouble();
-      break;
-    case 230:
-      m_extrusionDirection.z = reader->GetDouble();
+    case 50:
+      m_angleOfXAxis = reader->GetDouble() * EoDxf::DegreesToRadians;
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -328,17 +331,26 @@ void EoDxfPoint::ParseCode(int code, EoDxfReader* reader) {
 
 void EoDxfLine::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_startPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_startPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_startPoint.z = reader->GetDouble();
+      break;
     case 11:
-      m_secondPoint.x = reader->GetDouble();
+      m_endPoint.x = reader->GetDouble();
       break;
     case 21:
-      m_secondPoint.y = reader->GetDouble();
+      m_endPoint.y = reader->GetDouble();
       break;
     case 31:
-      m_secondPoint.z = reader->GetDouble();
+      m_endPoint.z = reader->GetDouble();
       break;
     default:
-      EoDxfPoint::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -348,17 +360,26 @@ void EoDxfCircle::ApplyExtrusion() {
     // NOTE: Commenting these out causes the the arcs being tested to be located
     // on the other side of the y axis (all x dimensions are negated).
     CalculateArbitraryAxis(m_extrusionDirection);
-    ExtrudePointInPlace(m_extrusionDirection, m_firstPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_centerPoint);
   }
 }
 
 void EoDxfCircle::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_centerPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_centerPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_centerPoint.z = reader->GetDouble();
+      break;
     case 40:
       m_radius = reader->GetDouble();
       break;
     default:
-      EoDxfPoint::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -418,7 +439,7 @@ void EoDxfEllipse::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfEllipse::ApplyExtrusion() {
   if (m_haveExtrusion) {
     CalculateArbitraryAxis(m_extrusionDirection);
-    ExtrudePointInPlace(m_extrusionDirection, m_secondPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_endPoint);
     double intialparam = m_startParam;
     if (m_extrusionDirection.z < 0.) {
       m_startParam = EoDxf::TwoPi - m_endParam;
@@ -437,9 +458,9 @@ void EoDxfEllipse::CorrectAxis() {
   }
   if (m_ratio > 1.0) {
     if (fabs(m_endParam - m_startParam - EoDxf::TwoPi) < 1.0e-10) { complete = true; }
-    double incX = m_secondPoint.x;
-    m_secondPoint.x = -(m_secondPoint.y * m_ratio);
-    m_secondPoint.y = incX * m_ratio;
+    double incX = m_endPoint.x;
+    m_endPoint.x = -(m_endPoint.y * m_ratio);
+    m_endPoint.y = incX * m_ratio;
     m_ratio = 1.0 / m_ratio;
     if (!complete) {
       if (m_startParam < EoDxf::HalfPi) { m_startParam += EoDxf::TwoPi; }
@@ -454,10 +475,10 @@ void EoDxfEllipse::CorrectAxis() {
 void EoDxfEllipse::ToPolyline(EoDxfPolyline* polyline, int parts) {
   double radMajor, radMinor, cosRot, sinRot, incAngle, curAngle;
   double cosCurr, sinCurr;
-  radMajor = sqrt(m_secondPoint.x * m_secondPoint.x + m_secondPoint.y * m_secondPoint.y);
+  radMajor = sqrt(m_endPoint.x * m_endPoint.x + m_endPoint.y * m_endPoint.y);
   radMinor = radMajor * m_ratio;
   // calculate sin & cos of included angle
-  incAngle = atan2(m_secondPoint.y, m_secondPoint.x);
+  incAngle = atan2(m_endPoint.y, m_endPoint.x);
   cosRot = cos(incAngle);
   sinRot = sin(incAngle);
   incAngle = EoDxf::TwoPi / parts;
@@ -470,8 +491,8 @@ void EoDxfEllipse::ToPolyline(EoDxfPolyline* polyline, int parts) {
     }
     cosCurr = cos(curAngle);
     sinCurr = sin(curAngle);
-    double x = m_firstPoint.x + (cosCurr * cosRot * radMajor) - (sinCurr * sinRot * radMinor);
-    double y = m_firstPoint.y + (cosCurr * sinRot * radMajor) + (sinCurr * cosRot * radMinor);
+    double x = m_startPoint.x + (cosCurr * cosRot * radMajor) - (sinCurr * sinRot * radMinor);
+    double y = m_startPoint.y + (cosCurr * sinRot * radMajor) + (sinCurr * cosRot * radMinor);
     polyline->addVertex(EoDxfVertex(x, y, 0.0, 0.0));
     curAngle = (++i) * incAngle;
   } while (i < parts);
@@ -486,8 +507,8 @@ void EoDxfEllipse::ToPolyline(EoDxfPolyline* polyline, int parts) {
 void EoDxfTrace::ApplyExtrusion() {
   if (m_haveExtrusion) {
     CalculateArbitraryAxis(m_extrusionDirection);
-    ExtrudePointInPlace(m_extrusionDirection, m_firstPoint);
-    ExtrudePointInPlace(m_extrusionDirection, m_secondPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_startPoint);
+    ExtrudePointInPlace(m_extrusionDirection, m_endPoint);
     ExtrudePointInPlace(m_extrusionDirection, m_thirdPoint);
     ExtrudePointInPlace(m_extrusionDirection, m_fourthPoint);
   }
@@ -535,13 +556,33 @@ void EoDxf3dFace::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfBlock::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 2:
-      m_name = reader->GetWideString();
+      [[fallthrough]];  // They are always identical in every valid DXF file (regular blocks, anonymous blocks, XREFs,
+                        // overlays, everything). Both groups 2 and 3 contain the block name, and the DXF spec confirms
+                        // this is intentional for backward compatibility. It seems that group 3 may be missing on read
+                        // but it should be written out with both groups 2 and 3.
+    case 3:
+      m_blockName = reader->GetWideString();
       break;
     case 70:
-      m_flags = reader->GetInt16();
+      m_blockTypeFlags = reader->GetInt16();
+      break;
+    case 10:
+      m_basePoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_basePoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_basePoint.z = reader->GetDouble();
+      break;
+    case 1:
+      m_xrefPathName = reader->GetWideString();
+      break;
+    case 4:
+      m_blockDescription = reader->GetWideString();
       break;
     default:
-      EoDxfPoint::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -648,6 +689,15 @@ void EoDxfLwPolyline::ParseCode(int code, EoDxfReader* reader) {
 
 void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_firstAlignmentPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_firstAlignmentPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_firstAlignmentPoint.z = reader->GetDouble();
+      break;
     case 11:
       m_hasSecondAlignmentPoint = true;
       m_secondAlignmentPoint.x = reader->GetDouble();
@@ -691,13 +741,22 @@ void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
       m_textStyleName = reader->GetWideString();
       break;
     default:
-      EoDxfPoint::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
 
 void EoDxfMText::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
+    case 10:
+      m_insertionPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_insertionPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_insertionPoint.z = reader->GetDouble();
+      break;
     case 40:
       m_nominalTextHeight = reader->GetDouble();
       break;
@@ -734,14 +793,14 @@ void EoDxfMText::ParseCode(int code, EoDxfReader* reader) {
     case 44:
       m_lineSpacingFactor = reader->GetDouble();
       break;
-    
+
     case 1:  // final chunk (or only chunk if no continuation chunks) of text string
       m_textString += reader->GetWideString();
       break;
     case 3:  // continuation chunk (multiple allowed)
       m_textString += reader->GetWideString();
       break;
-    
+
     // (AC1021+) ? must appear together
     case 90:
       m_backgroundFillSetting = reader->GetInt32();
@@ -768,7 +827,7 @@ void EoDxfMText::ParseCode(int code, EoDxfReader* reader) {
       break;
 
     default:
-      EoDxfPoint::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
@@ -851,7 +910,7 @@ void EoDxfHatch::AddLine() {
   ClearEntities();
   if (m_hatchLoop) {
     auto entity = std::make_unique<EoDxfLine>();
-    m_point = m_line = entity.get();
+    m_line = entity.get();
     m_hatchLoop->m_entities.push_back(std::move(entity));
   }
 }
@@ -860,7 +919,7 @@ void EoDxfHatch::AddArc() {
   ClearEntities();
   if (m_hatchLoop) {
     auto entity = std::make_unique<EoDxfArc>();
-    m_point = m_arc = entity.get();
+    m_arc = entity.get();
     m_hatchLoop->m_entities.push_back(std::move(entity));
   }
 }
@@ -869,7 +928,7 @@ void EoDxfHatch::AddEllipse() {
   ClearEntities();
   if (m_hatchLoop) {
     auto entity = std::make_unique<EoDxfEllipse>();
-    m_point = m_ellipse = entity.get();
+    m_ellipse = entity.get();
     m_hatchLoop->m_entities.push_back(std::move(entity));
   }
 }
@@ -926,16 +985,16 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
       break;
     case 11:
       if (m_line) {
-        m_line->m_secondPoint.x = reader->GetDouble();
+        m_line->m_endPoint.x = reader->GetDouble();
       } else if (m_ellipse) {
-        m_ellipse->m_secondPoint.x = reader->GetDouble();
+        m_ellipse->m_endPoint.x = reader->GetDouble();
       }
       break;
     case 21:
       if (m_line) {
-        m_line->m_secondPoint.y = reader->GetDouble();
+        m_line->m_endPoint.y = reader->GetDouble();
       } else if (m_ellipse) {
-        m_ellipse->m_secondPoint.y = reader->GetDouble();
+        m_ellipse->m_endPoint.y = reader->GetDouble();
       }
       break;
     case 40:
