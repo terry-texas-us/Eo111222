@@ -194,9 +194,9 @@ bool EoDxfWrite::WriteInsert(EoDxfInsert* blockReference) {
   WriteCodeString(100, L"AcDbBlockReference");
   WriteCodeWideString(2, blockReference->m_blockName);
 
-  WriteCodeDouble(10, blockReference->m_firstPoint.x);
-  WriteCodeDouble(20, blockReference->m_firstPoint.y);
-  WriteCodeDouble(30, blockReference->m_firstPoint.z);
+  WriteCodeDouble(10, blockReference->m_insertionPoint.x);
+  WriteCodeDouble(20, blockReference->m_insertionPoint.y);
+  WriteCodeDouble(30, blockReference->m_insertionPoint.z);
   WriteCodeDouble(41, blockReference->m_xScaleFactor);
   WriteCodeDouble(42, blockReference->m_yScaleFactor);
   WriteCodeDouble(43, blockReference->m_zScaleFactor);

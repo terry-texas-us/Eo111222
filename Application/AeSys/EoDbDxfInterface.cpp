@@ -423,7 +423,7 @@ void EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, Ae
   auto insertPrimitive = new EoDbBlockReference();
   insertPrimitive->SetBaseProperties(&blockReference, document);
   insertPrimitive->SetName(CString(blockReference.m_blockName.c_str()));
-  insertPrimitive->SetInsertionPoint(blockReference.m_firstPoint);
+  insertPrimitive->SetInsertionPoint(blockReference.m_insertionPoint);
   insertPrimitive->SetNormal(EoGeVector3d(blockReference.m_extrusionDirection.x, blockReference.m_extrusionDirection.y,
       blockReference.m_extrusionDirection.z));
   insertPrimitive->SetScaleFactors(

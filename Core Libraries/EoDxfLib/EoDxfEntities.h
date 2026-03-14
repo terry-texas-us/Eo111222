@@ -423,20 +423,21 @@ class EoDxfBlock : public EoDxfGraphic {
  * such as scale factors (code 41, 42, 43), rotation angle (code 50), and number of columns and rows for array inserts
  * (code 70 and 71), which can affect how it is rendered in the drawing.
  */
-class EoDxfInsert : public EoDxfPoint {
+class EoDxfInsert : public EoDxfGraphic {
   friend class EoDxfRead;
   friend class EoDxfWrite;
 
  public:
-  explicit EoDxfInsert(EoDxf::ETYPE entityType = EoDxf::INSERT) noexcept : EoDxfPoint{entityType} {}
+  explicit EoDxfInsert(EoDxf::ETYPE entityType = EoDxf::INSERT) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override { EoDxfPoint::ApplyExtrusion(); }
+  void ApplyExtrusion() override {}
 
  protected:
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
   std::wstring m_blockName;  // Group code 2
+  EoDxfGeometryBase3d m_insertionPoint;  // Group codes 10, 20 & 30
   double m_xScaleFactor{1.0};  // Group code 41
   double m_yScaleFactor{1.0};  // Group code 42
   double m_zScaleFactor{1.0};  // Group code 43

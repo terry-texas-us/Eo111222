@@ -593,6 +593,15 @@ void EoDxfInsert::ParseCode(int code, EoDxfReader* reader) {
     case 2:
       m_blockName = reader->GetWideString();
       break;
+    case 10:
+      m_insertionPoint.x = reader->GetDouble();
+      break;
+    case 20:
+      m_insertionPoint.y = reader->GetDouble();
+      break;
+    case 30:
+      m_insertionPoint.z = reader->GetDouble();
+      break;
     case 41:
       m_xScaleFactor = reader->GetDouble();
       break;
@@ -619,7 +628,7 @@ void EoDxfInsert::ParseCode(int code, EoDxfReader* reader) {
       m_rowSpacing = reader->GetDouble();
       break;
     default:
-      EoDxfPoint::ParseCode(code, reader);
+      EoDxfGraphic::ParseCode(code, reader);
       break;
   }
 }
