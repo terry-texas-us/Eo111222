@@ -187,9 +187,9 @@ bool EoDxfWrite::WritePoint(EoDxfPoint* point) {
   WriteCodeString(0, L"POINT");
   WriteEntity(point);
   WriteCodeString(100, L"AcDbPoint");
-  WriteCodeDouble(10, point->m_firstPoint.x);
-  WriteCodeDouble(20, point->m_firstPoint.y);
-  if (point->m_firstPoint.z != 0.0) { WriteCodeDouble(30, point->m_firstPoint.z); }
+  WriteCodeDouble(10, point->m_pointLocation.x);
+  WriteCodeDouble(20, point->m_pointLocation.y);
+  if (point->m_pointLocation.z != 0.0) { WriteCodeDouble(30, point->m_pointLocation.z); }
   return m_writeOk;
 }
 

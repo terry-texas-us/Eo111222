@@ -73,7 +73,7 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
         auto entity = std::make_unique<EoDxfPoint>();
         m_currentSeedPoint = entity.get();
         m_seedPoints.push_back(std::move(entity));
-        m_currentSeedPoint->m_firstPoint.x = val;
+        m_currentSeedPoint->m_pointLocation.x = val;
       } else if (m_polyline) {
         if (!m_polylineVertex) { m_polylineVertex = &m_polyline->AddVertex(); }
         m_polylineVertex->x = val;
@@ -91,7 +91,7 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
         m_elevationPoint.y = val;  // always 0.0
       } else if (m_currentSeedPoint) {
         // ← SEED POINT PATH
-        m_currentSeedPoint->m_firstPoint.y = val;
+        m_currentSeedPoint->m_pointLocation.y = val;
         m_currentSeedPoint = nullptr;  // pair complete
         --m_seedPointsRemaining;
       } else if (m_polylineVertex) {

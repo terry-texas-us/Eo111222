@@ -43,6 +43,8 @@ class EoDxfEntity {
   std::list<std::list<EoDxfGroupCodeValuesVariant>> m_appData{};  // Group code 102
 
   enum EoDxf::ETYPE m_entityType{EoDxf::UNKNOWN};  // Group code 0
+  std::uint64_t m_handle{EoDxf::NoHandle};  // Group code 5
+  std::uint64_t m_ownerHandle{EoDxf::NoHandle};
 };
 
 /** @brief Base class for all DXF entities, containing common properties and methods for parsing and extrusion.
@@ -116,9 +118,7 @@ class EoDxfGraphic : public EoDxfEntity {
   std::wstring m_proxyEntityGraphicsData{};  // group code 310 (optional) [unused]
   std::wstring m_colorName{};  // Group code 430
   double m_lineTypeScale{1.0};  // Group code 48
-  std::uint64_t m_handle{EoDxf::NoHandle};  // Group code 5
   // Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330
-  std::uint64_t m_ownerHandle{EoDxf::NoHandle};
   std::uint64_t m_materialHandle{EoDxf::NoHandle};  // hard pointer id to material object, code 347
   std::int16_t m_color{EoDxf::colorByLayer};  // Group code 62
   enum EoDxfLineWidths::lineWidth m_lineWeight{EoDxfLineWidths::widthByLayer};  // Group code 370
@@ -155,7 +155,7 @@ class EoDxfPoint : public EoDxfGraphic {
   void ParseCode(int code, EoDxfReader* reader);
 
  public:
-  EoDxfGeometryBase3d m_firstPoint{};  //  Group codes 10, 20 & 30
+  EoDxfGeometryBase3d m_pointLocation{};  //  Group codes 10, 20 & 30
   double m_angleOfXAxis{};  // Group code 50 (optional, in radians)
 };
 

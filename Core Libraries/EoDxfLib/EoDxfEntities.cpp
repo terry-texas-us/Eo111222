@@ -68,8 +68,6 @@ EoDxfGraphic::EoDxfGraphic(const EoDxfGraphic& other)
       m_proxyEntityGraphicsData{other.m_proxyEntityGraphicsData},
       m_colorName{other.m_colorName},
       m_lineTypeScale{other.m_lineTypeScale},
-      m_handle{other.m_handle},
-      m_ownerHandle{other.m_ownerHandle},
       m_materialHandle{other.m_materialHandle},
       m_color{other.m_color},
       m_lineWeight{other.m_lineWeight},
@@ -96,8 +94,6 @@ EoDxfGraphic& EoDxfGraphic::operator=(const EoDxfGraphic& other) {
     m_proxyEntityGraphicsData = other.m_proxyEntityGraphicsData;
     m_colorName = other.m_colorName;
     m_lineTypeScale = other.m_lineTypeScale;
-    m_handle = other.m_handle;
-    m_ownerHandle = other.m_ownerHandle;
     m_materialHandle = other.m_materialHandle;
     m_color = other.m_color;
     m_lineWeight = other.m_lineWeight;
@@ -312,13 +308,13 @@ bool EoDxfEntity::ParseAppDataGroup(EoDxfReader* reader) {
 void EoDxfPoint::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 10:
-      m_firstPoint.x = reader->GetDouble();
+      m_pointLocation.x = reader->GetDouble();
       break;
     case 20:
-      m_firstPoint.y = reader->GetDouble();
+      m_pointLocation.y = reader->GetDouble();
       break;
     case 30:
-      m_firstPoint.z = reader->GetDouble();
+      m_pointLocation.z = reader->GetDouble();
       break;
     case 50:
       m_angleOfXAxis = reader->GetDouble() * EoDxf::DegreesToRadians;
