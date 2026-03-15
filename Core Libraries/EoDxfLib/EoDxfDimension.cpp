@@ -103,21 +103,6 @@ void EoDxfDimension::ParseCode(int code, EoDxfReader* reader) {
     case 53:
       m_rotationAngleAwayFromDefault = reader->GetDouble();
       break;
-/*
-    case 50:
-      angle = reader->GetDouble();
-      break;
-*/
-/*
-    case 52:
-      oblique = reader->GetDouble();
-      break;
-*/
-/*
-case 40:
-      length = reader->GetDouble();
-      break;
-*/
     case 51:
       m_horizontalDirection = reader->GetDouble();
       break;
@@ -130,22 +115,22 @@ case 40:
 void EoDxfAlignedDimension::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 13:
-      def1.x = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.x = reader->GetDouble();
       break;
     case 23:
-      def1.y = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.y = reader->GetDouble();
       break;
     case 33:
-      def1.z = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.z = reader->GetDouble();
       break;
     case 14:
-      def2.x = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.x = reader->GetDouble();
       break;
     case 24:
-      def2.y = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.y = reader->GetDouble();
       break;
     case 34:
-      def2.z = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.z = reader->GetDouble();
       break;
     default:
       EoDxfDimension::ParseCode(code, reader);
@@ -156,28 +141,28 @@ void EoDxfAlignedDimension::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfDimLinear::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 13:
-      def1.x = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.x = reader->GetDouble();
       break;
     case 23:
-      def1.y = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.y = reader->GetDouble();
       break;
     case 33:
-      def1.z = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.z = reader->GetDouble();
       break;
     case 14:
-      def2.x = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.x = reader->GetDouble();
       break;
     case 24:
-      def2.y = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.y = reader->GetDouble();
       break;
     case 34:
-      def2.z = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.z = reader->GetDouble();
       break;
     case 50:
-      angle = reader->GetDouble();
+      m_angleOfRotatedHorizontalOrVerticalDimensions = reader->GetDouble();
       break;
     case 52:
-      oblique = reader->GetDouble();
+      m_angleOfExtensionLines = reader->GetDouble();
       break;
     default:
       EoDxfDimension::ParseCode(code, reader);
@@ -188,16 +173,16 @@ void EoDxfDimLinear::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfRadialDimension::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 15:
-      circlePoint.x = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.x = reader->GetDouble();
       break;
     case 25:
-      circlePoint.y = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.y = reader->GetDouble();
       break;
     case 35:
-      circlePoint.z = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.z = reader->GetDouble();
       break;
     case 40:
-      length = reader->GetDouble();
+      m_leaderLengthForRadiusAndDiameterDimensions = reader->GetDouble();
       break;
     default:
       EoDxfDimension::ParseCode(code, reader);
@@ -208,16 +193,16 @@ void EoDxfRadialDimension::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfDiametricDimension::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 15:
-      circlePoint.x = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.x = reader->GetDouble();
       break;
     case 25:
-      circlePoint.y = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.y = reader->GetDouble();
       break;
     case 35:
-      circlePoint.z = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.z = reader->GetDouble();
       break;
     case 40:
-      length = reader->GetDouble();
+      m_leaderLengthForRadiusAndDiameterDimensions = reader->GetDouble();
       break;
     default:
       EoDxfDimension::ParseCode(code, reader);
@@ -228,40 +213,40 @@ void EoDxfDiametricDimension::ParseCode(int code, EoDxfReader* reader) {
 void EoDxf2LineAngularDimension::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 13:
-      def1.x = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.x = reader->GetDouble();
       break;
     case 23:
-      def1.y = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.y = reader->GetDouble();
       break;
     case 33:
-      def1.z = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.z = reader->GetDouble();
       break;
     case 14:
-      def2.x = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.x = reader->GetDouble();
       break;
     case 24:
-      def2.y = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.y = reader->GetDouble();
       break;
     case 34:
-      def2.z = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.z = reader->GetDouble();
       break;
     case 15:
-      circlePoint.x = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.x = reader->GetDouble();
       break;
     case 25:
-      circlePoint.y = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.y = reader->GetDouble();
       break;
     case 35:
-      circlePoint.z = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.z = reader->GetDouble();
       break;
     case 16:
-      arcPoint.x = reader->GetDouble();
+      m_pointDefiningDimensionArcForAngularDimensions.x = reader->GetDouble();
       break;
     case 26:
-      arcPoint.y = reader->GetDouble();
+      m_pointDefiningDimensionArcForAngularDimensions.y = reader->GetDouble();
       break;
     case 36:
-      arcPoint.z = reader->GetDouble();
+      m_pointDefiningDimensionArcForAngularDimensions.z = reader->GetDouble();
       break;
     default:
       EoDxfDimension::ParseCode(code, reader);
@@ -272,40 +257,40 @@ void EoDxf2LineAngularDimension::ParseCode(int code, EoDxfReader* reader) {
 void EoDxf3PointAngularDimension::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 13:
-      def1.x = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.x = reader->GetDouble();
       break;
     case 23:
-      def1.y = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.y = reader->GetDouble();
       break;
     case 33:
-      def1.z = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.z = reader->GetDouble();
       break;
     case 14:
-      def2.x = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.x = reader->GetDouble();
       break;
     case 24:
-      def2.y = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.y = reader->GetDouble();
       break;
     case 34:
-      def2.z = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.z = reader->GetDouble();
       break;
     case 15:
-      circlePoint.x = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.x = reader->GetDouble();
       break;
     case 25:
-      circlePoint.y = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.y = reader->GetDouble();
       break;
     case 35:
-      circlePoint.z = reader->GetDouble();
+      m_definitionPointForDiameterRadiusAndAngularDimensions.z = reader->GetDouble();
       break;
     case 16:
-      arcPoint.x = reader->GetDouble();
+      m_pointDefiningDimensionArcForAngularDimensions.x = reader->GetDouble();
       break;
     case 26:
-      arcPoint.y = reader->GetDouble();
+      m_pointDefiningDimensionArcForAngularDimensions.y = reader->GetDouble();
       break;
     case 36:
-      arcPoint.z = reader->GetDouble();
+      m_pointDefiningDimensionArcForAngularDimensions.z = reader->GetDouble();
       break;
     default:
       EoDxfDimension::ParseCode(code, reader);
@@ -316,22 +301,22 @@ void EoDxf3PointAngularDimension::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfOrdinateDimension::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 13:
-      def1.x = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.x = reader->GetDouble();
       break;
     case 23:
-      def1.y = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.y = reader->GetDouble();
       break;
     case 33:
-      def1.z = reader->GetDouble();
+      m_firstDefinitinPointForLinearAndAngularDimensions.z = reader->GetDouble();
       break;
     case 14:
-      def2.x = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.x = reader->GetDouble();
       break;
     case 24:
-      def2.y = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.y = reader->GetDouble();
       break;
     case 34:
-      def2.z = reader->GetDouble();
+      m_secondDefinitinPointForLinearAndAngularDimensions.z = reader->GetDouble();
       break;
     default:
       EoDxfDimension::ParseCode(code, reader);

@@ -17,23 +17,40 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
   WriteCodeDouble(11, dimension->getTextPoint().x);
   WriteCodeDouble(21, dimension->getTextPoint().y);
   WriteCodeDouble(31, dimension->getTextPoint().z);
+
   if (!(dimension->m_dimensionType & 32)) { dimension->m_dimensionType = dimension->m_dimensionType + 32; }
   WriteCodeInt16(70, dimension->m_dimensionType);
-  if (!(dimension->GetExplicitDimensionText().empty())) {
-    WriteCodeWideString(1, dimension->GetExplicitDimensionText());
-  }
+
   WriteCodeInt16(71, dimension->GetAttachmentPoint());
   if (dimension->getTextLineStyle() != 1) { WriteCodeInt16(72, dimension->getTextLineStyle()); }
+
   if (dimension->GetDimensionTextLineSpacingFactor() != 1) {
     WriteCodeDouble(41, dimension->GetDimensionTextLineSpacingFactor());
   }
-  WriteCodeWideString(3, dimension->GetDimensionStyleName());
+  // Group code 42 - Actual measurement (optional; read-only value) - is not written by AeSys, as it is a read-only
+  // value that is calculated by AutoCAD based on the dimension's geometry and properties. It is not a property that can
+  // be set or modified directly by the user, and therefore does not need to be included in the DXF output when writing
+  // dimension entities.
+
+  if (!(dimension->GetExplicitDimensionText().empty())) {
+    WriteCodeWideString(1, dimension->GetExplicitDimensionText());
+  }
   if (std::abs(dimension->GetRotationAngleAwayFromDefault()) > EoDxf::geometricTolerance) {
     WriteCodeDouble(53, dimension->GetRotationAngleAwayFromDefault());
   }
-  WriteCodeDouble(210, dimension->m_extrusionDirection.x);
-  WriteCodeDouble(220, dimension->m_extrusionDirection.y);
-  WriteCodeDouble(230, dimension->m_extrusionDirection.z);
+  // Group code 51 - All dimension types have an optional 51 group code, which indicates the horizontal direction for
+  // the dimension entity. The dimension entity determines the orientation of dimension text and lines for horizontal,
+  // vertical, and rotated linear dimensions. This group value is the negative of the angle between the OCS X axis and
+  // the UCS X axis.It is always in the XY plane of the OCS - not written byAeSys.
+
+  if (!dimension->extAxisX.IsDefaultNormal() || !dimension->extAxisY.IsDefaultNormal()) {
+    WriteCodeDouble(210, dimension->m_extrusionDirection.x);
+    WriteCodeDouble(220, dimension->m_extrusionDirection.y);
+    WriteCodeDouble(230, dimension->m_extrusionDirection.z);
+  }
+  WriteCodeWideString(3, dimension->GetDimensionStyleName());
+
+  // End of AcDbDimension group, start of specific dimension type group
 
   switch (dimension->m_entityType) {
     case EoDxf::DIMALIGNED:
@@ -46,12 +63,12 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
         WriteCodeDouble(22, crd.y);
         WriteCodeDouble(32, crd.z);
       }
-      WriteCodeDouble(13, alignedDimension->def1.x);
-      WriteCodeDouble(23, alignedDimension->def1.y);
-      WriteCodeDouble(33, alignedDimension->def1.z);
-      WriteCodeDouble(14, alignedDimension->def2.x);
-      WriteCodeDouble(24, alignedDimension->def2.y);
-      WriteCodeDouble(34, alignedDimension->def2.z);
+      WriteCodeDouble(13, alignedDimension->m_firstDefinitinPointForLinearAndAngularDimensions.x);
+      WriteCodeDouble(23, alignedDimension->m_firstDefinitinPointForLinearAndAngularDimensions.y);
+      WriteCodeDouble(33, alignedDimension->m_firstDefinitinPointForLinearAndAngularDimensions.z);
+      WriteCodeDouble(14, alignedDimension->m_secondDefinitinPointForLinearAndAngularDimensions.x);
+      WriteCodeDouble(24, alignedDimension->m_secondDefinitinPointForLinearAndAngularDimensions.y);
+      WriteCodeDouble(34, alignedDimension->m_secondDefinitinPointForLinearAndAngularDimensions.z);
       if (dimension->m_entityType == EoDxf::DIMLINEAR) {
         auto* dl = dynamic_cast<EoDxfDimLinear*>(dimension);
         if (dl->getAngle() != 0) { WriteCodeDouble(50, dl->getAngle()); }
@@ -63,61 +80,61 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
     case EoDxf::DIMRADIAL: {
       auto* radialDimension = dynamic_cast<EoDxfRadialDimension*>(dimension);
       WriteCodeString(100, L"AcDbRadialDimension");
-      WriteCodeDouble(15, radialDimension->circlePoint.x);
-      WriteCodeDouble(25, radialDimension->circlePoint.y);
-      WriteCodeDouble(35, radialDimension->circlePoint.z);
-      WriteCodeDouble(40, radialDimension->getLeaderLength());
+      WriteCodeDouble(15, radialDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.x);
+      WriteCodeDouble(25, radialDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.y);
+      WriteCodeDouble(35, radialDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.z);
+      WriteCodeDouble(40, radialDimension->m_leaderLengthForRadiusAndDiameterDimensions);
       break;
     }
     case EoDxf::DIMDIAMETRIC: {
       auto* diametricDimension = dynamic_cast<EoDxfDiametricDimension*>(dimension);
       WriteCodeString(100, L"AcDbDiametricDimension");
-      WriteCodeDouble(15, diametricDimension->circlePoint.x);
-      WriteCodeDouble(25, diametricDimension->circlePoint.y);
-      WriteCodeDouble(35, diametricDimension->circlePoint.z);
-      WriteCodeDouble(40, diametricDimension->getLeaderLength());
+      WriteCodeDouble(15, diametricDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.x);
+      WriteCodeDouble(25, diametricDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.y);
+      WriteCodeDouble(35, diametricDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.z);
+      WriteCodeDouble(40, diametricDimension->m_leaderLengthForRadiusAndDiameterDimensions);
       break;
     }
     case EoDxf::DIMANGULAR: {
       auto* _2LineAngularDimension = dynamic_cast<EoDxf2LineAngularDimension*>(dimension);
       WriteCodeString(100, L"AcDb2LineAngularDimension");
-      WriteCodeDouble(13, _2LineAngularDimension->def1.x);
-      WriteCodeDouble(23, _2LineAngularDimension->def1.y);
-      WriteCodeDouble(33, _2LineAngularDimension->def1.z);
-      WriteCodeDouble(14, _2LineAngularDimension->def2.x);
-      WriteCodeDouble(24, _2LineAngularDimension->def2.y);
-      WriteCodeDouble(34, _2LineAngularDimension->def2.z);
-      WriteCodeDouble(15, _2LineAngularDimension->circlePoint.x);
-      WriteCodeDouble(25, _2LineAngularDimension->circlePoint.y);
-      WriteCodeDouble(35, _2LineAngularDimension->circlePoint.z);
-      WriteCodeDouble(16, _2LineAngularDimension->arcPoint.x);
-      WriteCodeDouble(26, _2LineAngularDimension->arcPoint.y);
-      WriteCodeDouble(36, _2LineAngularDimension->arcPoint.z);
+      WriteCodeDouble(13, _2LineAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.x);
+      WriteCodeDouble(23, _2LineAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.y);
+      WriteCodeDouble(33, _2LineAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.z);
+      WriteCodeDouble(14, _2LineAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.x);
+      WriteCodeDouble(24, _2LineAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.y);
+      WriteCodeDouble(34, _2LineAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.z);
+      WriteCodeDouble(15, _2LineAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.x);
+      WriteCodeDouble(25, _2LineAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.y);
+      WriteCodeDouble(35, _2LineAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.z);
+      WriteCodeDouble(16, _2LineAngularDimension->m_pointDefiningDimensionArcForAngularDimensions.x);
+      WriteCodeDouble(26, _2LineAngularDimension->m_pointDefiningDimensionArcForAngularDimensions.y);
+      WriteCodeDouble(36, _2LineAngularDimension->m_pointDefiningDimensionArcForAngularDimensions.z);
       break;
     }
     case EoDxf::DIMANGULAR3P: {
       auto* _3PointAngularDimension = dynamic_cast<EoDxf3PointAngularDimension*>(dimension);
       WriteCodeString(100, L"AcDb3PointAngularDimension");
-      WriteCodeDouble(13, _3PointAngularDimension->def1.x);
-      WriteCodeDouble(23, _3PointAngularDimension->def1.y);
-      WriteCodeDouble(33, _3PointAngularDimension->def1.z);
-      WriteCodeDouble(14, _3PointAngularDimension->def2.x);
-      WriteCodeDouble(24, _3PointAngularDimension->def2.y);
-      WriteCodeDouble(34, _3PointAngularDimension->def2.z);
-      WriteCodeDouble(15, _3PointAngularDimension->circlePoint.x);
-      WriteCodeDouble(25, _3PointAngularDimension->circlePoint.y);
-      WriteCodeDouble(35, _3PointAngularDimension->circlePoint.z);
+      WriteCodeDouble(13, _3PointAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.x);
+      WriteCodeDouble(23, _3PointAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.y);
+      WriteCodeDouble(33, _3PointAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.z);
+      WriteCodeDouble(14, _3PointAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.x);
+      WriteCodeDouble(24, _3PointAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.y);
+      WriteCodeDouble(34, _3PointAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.z);
+      WriteCodeDouble(15, _3PointAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.x);
+      WriteCodeDouble(25, _3PointAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.y);
+      WriteCodeDouble(35, _3PointAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.z);
       break;
     }
     case EoDxf::DIMORDINATE: {
       auto* ordinateDimension = dynamic_cast<EoDxfOrdinateDimension*>(dimension);
       WriteCodeString(100, L"AcDbOrdinateDimension");
-      WriteCodeDouble(13, ordinateDimension->def1.x);
-      WriteCodeDouble(23, ordinateDimension->def1.y);
-      WriteCodeDouble(33, ordinateDimension->def1.z);
-      WriteCodeDouble(14, ordinateDimension->def2.x);
-      WriteCodeDouble(24, ordinateDimension->def2.y);
-      WriteCodeDouble(34, ordinateDimension->def2.z);
+      WriteCodeDouble(13, ordinateDimension->m_firstDefinitinPointForLinearAndAngularDimensions.x);
+      WriteCodeDouble(23, ordinateDimension->m_firstDefinitinPointForLinearAndAngularDimensions.y);
+      WriteCodeDouble(33, ordinateDimension->m_firstDefinitinPointForLinearAndAngularDimensions.z);
+      WriteCodeDouble(14, ordinateDimension->m_secondDefinitinPointForLinearAndAngularDimensions.x);
+      WriteCodeDouble(24, ordinateDimension->m_secondDefinitinPointForLinearAndAngularDimensions.y);
+      WriteCodeDouble(34, ordinateDimension->m_secondDefinitinPointForLinearAndAngularDimensions.z);
       break;
     }
     default:

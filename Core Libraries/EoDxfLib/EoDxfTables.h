@@ -13,6 +13,7 @@ class EoDxfTableEntry {
  protected:
   explicit EoDxfTableEntry(EoDxf::SymbolTable tableType) noexcept
       : tType{tableType}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
+
  public:
   virtual ~EoDxfTableEntry() {
     for (std::vector<EoDxfGroupCodeValuesVariant*>::iterator it = m_extensionData.begin(); it != m_extensionData.end();
@@ -65,6 +66,7 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
 
  public:
   EoDxfDimensionStyle() : EoDxfTableEntry(EoDxf::SymbolTable::DimStyle) { Reset(); }
+
  protected:
   void ParseCode(int code, EoDxfReader* reader);
   void Reset();
@@ -155,6 +157,7 @@ class EoDxfLinetype : public EoDxfTableEntry {
 
  public:
   EoDxfLinetype() : EoDxfTableEntry(EoDxf::SymbolTable::Linetype) { Reset(); }
+
  protected:
   void ParseCode(int code, EoDxfReader* reader);
   void Reset();
@@ -183,6 +186,7 @@ class EoDxfLayer : public EoDxfTableEntry {
 
  public:
   EoDxfLayer() : EoDxfTableEntry(EoDxf::SymbolTable::Layer) { Reset(); }
+
  protected:
   void ParseCode(int code, EoDxfReader* reader);
   void Reset();
@@ -211,6 +215,7 @@ class EoDxfBlockRecord : public EoDxfTableEntry {
 
  public:
   EoDxfBlockRecord() : EoDxfTableEntry(EoDxf::SymbolTable::Block) { Reset(); }
+
  protected:
   void ParseCode(int code, EoDxfReader* reader);
   void Reset();
@@ -234,13 +239,15 @@ class EoDxfTextStyle : public EoDxfTableEntry {
 
  public:
   EoDxfTextStyle() : EoDxfTableEntry(EoDxf::SymbolTable::TextStyle) { Reset(); }
+
  protected:
   void ParseCode(int code, EoDxfReader* reader);
 
   void Reset() {
-    height = oblique = 0.0;
+    height = 0.0;
+    oblique = 0.0;
     width = lastHeight = 1.0;
-      font = L"txt";
+    font = L"txt";
     m_textGenerationFlag = 0;  // 2= X mirror, 4= Y mirror
     fontFamily = 0;
     EoDxfTableEntry::Reset();
@@ -321,11 +328,12 @@ class EoDxfAppId : public EoDxfTableEntry {
 
  public:
   EoDxfAppId() : EoDxfTableEntry(EoDxf::SymbolTable::RegApp) { Reset(); }
+
  protected:
   void ParseCode(int code, EoDxfReader* reader) { EoDxfTableEntry::ParseCode(code, reader); }
 
   void Reset() {
-      m_tableName = L"";
+    m_tableName = L"";
     EoDxfTableEntry::Reset();
   }
 };
