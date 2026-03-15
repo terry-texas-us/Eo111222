@@ -49,12 +49,8 @@ class EoDxfDimension : public EoDxfGraphic {
     m_dimensionTextLineSpacingFactor = other.m_dimensionTextLineSpacingFactor;
     m_rotationAngleAwayFromDefault = other.m_rotationAngleAwayFromDefault;
     clonePoint = other.clonePoint;
-    def1 = other.def1;
-    def2 = other.def2;
     angle = other.angle;
     oblique = other.oblique;
-    arcPoint = other.arcPoint;
-    circlePoint = other.circlePoint;
     length = other.length;
   }
   virtual ~EoDxfDimension() = default;
@@ -82,11 +78,11 @@ class EoDxfDimension : public EoDxfGraphic {
  protected:
   EoDxfGeometryBase3d getPt2() const { return clonePoint; }
   void setPt2(const EoDxfGeometryBase3d p) { clonePoint = p; }
-  EoDxfGeometryBase3d getPt3() const { return def1; }
-  EoDxfGeometryBase3d getPt4() const { return def2; }
-  EoDxfGeometryBase3d getPt5() const { return circlePoint; }
-  EoDxfGeometryBase3d getPt6() const { return arcPoint; }
-  void setPt6(const EoDxfGeometryBase3d p) { arcPoint = p; }
+  //  EoDxfGeometryBase3d getPt3() const { return def1; }
+  //  EoDxfGeometryBase3d getPt4() const { return def2; }
+  //  EoDxfGeometryBase3d getPt5() const { return circlePoint; }
+  //  EoDxfGeometryBase3d getPt6() const { return arcPoint; }
+  //  void setPt6(const EoDxfGeometryBase3d p) { arcPoint = p; }
   double getAn50() const { return angle; }  // Angle of rotated, horizontal, or vertical dimensions, code 50
   double getOb52() const { return oblique; }  // oblique angle, code 52
   double getRa40() const { return length; }  // Leader length, code 40
@@ -107,14 +103,15 @@ class EoDxfDimension : public EoDxfGraphic {
   double m_horizontalDirection{};  // Group code 51 (optional)
 
   EoDxfGeometryBase3d clonePoint;  // Insertion point for clones (Baseline & Continue), code 12, 22 & 32 (OCS)
-  EoDxfGeometryBase3d def1;  // Definition point 1for linear & angular, code 13, 23 & 33 (WCS)
-  EoDxfGeometryBase3d def2;  // Definition point 2, code 14, 24 & 34 (WCS)
+
+  //  EoDxfGeometryBase3d def1;  // Definition point 1for linear & angular, code 13, 23 & 33 (WCS)
+  //  EoDxfGeometryBase3d def2;  // Definition point 2, code 14, 24 & 34 (WCS)
 
   double angle;  // Angle of rotated, horizontal, or vertical dimensions, code 50
   double oblique;  // oblique angle, code 52
 
-  EoDxfGeometryBase3d circlePoint;  // Definition point for diameter, radius & angular dims code 15, 25 & 35 (WCS)
-  EoDxfGeometryBase3d arcPoint;  // Point defining dimension arc, x coordinate, code 16, 26 & 36 (OCS)
+  //  EoDxfGeometryBase3d circlePoint;  // Definition point for diameter, radius & angular dims code 15, 25 & 35 (WCS)
+  //  EoDxfGeometryBase3d arcPoint;  // Point defining dimension arc, x coordinate, code 16, 26 & 36 (OCS)
   double length{};  // Leader length, code 40
 };
 
@@ -142,8 +139,15 @@ class EoDxfAlignedDimension : public EoDxfDimension {
 
   EoDxfGeometryBase3d getDimPoint() const { return GetDefinitionPoint(); }
   void setDimPoint(const EoDxfGeometryBase3d p) { setDefPoint(p); }
-  EoDxfGeometryBase3d getDef1Point() const { return getPt3(); }  // Definition point 1, code 13, 23 & 33
-  EoDxfGeometryBase3d getDef2Point() const { return getPt4(); }  // Definition point 2, code 14, 24 & 34
+  //  EoDxfGeometryBase3d getDef1Point() const { return getPt3(); }  // Definition point 1, code 13, 23 & 33
+  //  EoDxfGeometryBase3d getDef2Point() const { return getPt4(); }  // Definition point 2, code 14, 24 & 34
+
+ protected:
+  void ParseCode(int code, EoDxfReader* reader);
+
+ private:
+  EoDxfGeometryBase3d def1;  // Group codes 13, 23 & 33 (WCS)
+  EoDxfGeometryBase3d def2;  // Group code 14, 24 & 34 (WCS)
 };
 
 /** @brief Class to handle linear dimension entity
@@ -163,6 +167,15 @@ class EoDxfDimLinear : public EoDxfDimension {
 
   double getAngle() const { return getAn50(); }  // Angle of rotated, horizontal, or vertical dimensions, code 50
   double getOblique() const { return getOb52(); }  // oblique angle, code 52
+
+ protected:
+  void ParseCode(int code, EoDxfReader* reader);
+
+ private:
+  EoDxfGeometryBase3d def1;  // Group codes 13, 23 & 33 (WCS)
+  EoDxfGeometryBase3d def2;  // Group code 14, 24 & 34 (WCS)
+  double angle;  // Group code 50
+  double oblique;  // Group code 52
 };
 
 /** @brief Class to handle radial dimension entity
@@ -182,8 +195,16 @@ class EoDxfRadialDimension : public EoDxfDimension {
   EoDxfRadialDimension() { m_entityType = EoDxf::DIMRADIAL; }
   EoDxfRadialDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMRADIAL; }
 
-  EoDxfGeometryBase3d getDiameterPoint() const { return getPt5(); }  // Definition point for radius, code 15, 25 & 35
+  //  EoDxfGeometryBase3d getDiameterPoint() const { return getPt5(); }  // Definition point for radius, code 15, 25 &
+  //  35
   double getLeaderLength() const { return getRa40(); }  // Leader length, code 40
+
+ protected:
+  void ParseCode(int code, EoDxfReader* reader);
+
+ private:
+  EoDxfGeometryBase3d circlePoint;  // Group codes 15, 25 & 35 (WCS)
+  double length{};  // Group code 40
 };
 
 /** @brief Class to handle diametric dimension entity
@@ -205,10 +226,15 @@ class EoDxfDiametricDimension : public EoDxfDimension {
     m_entityType = EoDxf::DIMDIAMETRIC;
   }
 
-  EoDxfGeometryBase3d getDiameter1Point() const {
-    return getPt5();
-  }  // First definition point for diameter, code 15, 25 & 35
+//  EoDxfGeometryBase3d getDiameter1Point() const { return getPt5(); }
   double getLeaderLength() const { return getRa40(); }  // Leader length, code 40
+
+ protected:
+  void ParseCode(int code, EoDxfReader* reader);
+
+ private:
+  EoDxfGeometryBase3d circlePoint;  // Definition point for diameter, radius & angular dims code 15, 25 & 35 (WCS)
+  double length{};  // Leader length, code 40
 };
 
 /** @brief Class to handle 2 line angular dimension entity
@@ -230,11 +256,20 @@ class EoDxf2LineAngularDimension : public EoDxfDimension {
     m_entityType = EoDxf::DIMANGULAR;
   }
 
-  EoDxfGeometryBase3d getFirstLine1() const { return getPt3(); }  // Definition point line 1-1, code 13, 23 & 33
-  EoDxfGeometryBase3d getFirstLine2() const { return getPt4(); }  // Definition point line 1-2, code 14, 24 & 34
-  EoDxfGeometryBase3d getSecondLine1() const { return getPt5(); }  // Definition point line 2-1, code 15, 25 & 35
-  EoDxfGeometryBase3d getDimPoint() const { return getPt6(); }  // Dimension definition point, code 16, 26 & 36
-  void setDimPoint(const EoDxfGeometryBase3d p) { setPt6(p); }
+//  EoDxfGeometryBase3d getFirstLine1() const { return getPt3(); }  // Definition point line 1-1, code 13, 23 & 33
+//  EoDxfGeometryBase3d getFirstLine2() const { return getPt4(); }  // Definition point line 1-2, code 14, 24 & 34
+//  EoDxfGeometryBase3d getSecondLine1() const { return getPt5(); }  // Definition point line 2-1, code 15, 25 & 35
+//  EoDxfGeometryBase3d getDimPoint() const { return getPt6(); }  // Dimension definition point, code 16, 26 & 36
+//  void setDimPoint(const EoDxfGeometryBase3d p) { setPt6(p); }
+
+ protected:
+  void ParseCode(int code, EoDxfReader* reader);
+
+ private:
+  EoDxfGeometryBase3d def1;  // Group codes 13, 23 & 33 (WCS)
+  EoDxfGeometryBase3d def2;  // Group code 14, 24 & 34 (WCS)
+  EoDxfGeometryBase3d circlePoint;  // Group codes 15, 25 & 35 (WCS)
+  EoDxfGeometryBase3d arcPoint;  // Group code 16, 26 & 36 (OCS)
 };
 
 /** @brief Class to handle 3 point angular dimension entity
@@ -256,11 +291,20 @@ class EoDxf3PointAngularDimension : public EoDxfDimension {
     m_entityType = EoDxf::DIMANGULAR3P;
   }
 
-  EoDxfGeometryBase3d getFirstLine() const { return getPt3(); }  // Definition point line 1, code 13, 23 & 33
-  EoDxfGeometryBase3d getSecondLine() const { return getPt4(); }  // Definition point line 2, code 14, 24 & 34
-  EoDxfGeometryBase3d getVertexPoint() const { return getPt5(); }  // Vertex point, code 15, 25 & 35
+//  EoDxfGeometryBase3d getFirstLine() const { return getPt3(); }  // Definition point line 1, code 13, 23 & 33
+//  EoDxfGeometryBase3d getSecondLine() const { return getPt4(); }  // Definition point line 2, code 14, 24 & 34
+//  EoDxfGeometryBase3d getVertexPoint() const { return getPt5(); }  // Vertex point, code 15, 25 & 35
   EoDxfGeometryBase3d getDimPoint() const { return GetDefinitionPoint(); }
   void setDimPoint(const EoDxfGeometryBase3d p) { setDefPoint(p); }
+
+ protected:
+  void ParseCode(int code, EoDxfReader* reader);
+
+ private:
+  EoDxfGeometryBase3d def1;  // Group codes 13, 23 & 33 (WCS)
+  EoDxfGeometryBase3d def2;  // Group code 14, 24 & 34 (WCS)
+  EoDxfGeometryBase3d circlePoint;  // Group codes 15, 25 & 35 (WCS)
+  EoDxfGeometryBase3d arcPoint;  // Group code 16, 26 & 36 (OCS)
 };
 
 /** @brief Class to handle ordinate dimension entity
@@ -282,6 +326,13 @@ class EoDxfOrdinateDimension : public EoDxfDimension {
     m_entityType = EoDxf::DIMORDINATE;
   }
 
-  EoDxfGeometryBase3d getFirstLine() const { return getPt3(); }  // Feature location point, code 13, 23 & 33
-  EoDxfGeometryBase3d getSecondLine() const { return getPt4(); }  // Leader end point, code 14, 24 & 34
+//  EoDxfGeometryBase3d getFirstLine() const { return getPt3(); }  // Feature location point, code 13, 23 & 33
+//  EoDxfGeometryBase3d getSecondLine() const { return getPt4(); }  // Leader end point, code 14, 24 & 34
+
+ protected:
+  void ParseCode(int code, EoDxfReader* reader);
+
+ private:
+  EoDxfGeometryBase3d def1;  // Group codes 13, 23 & 33 (WCS)
+  EoDxfGeometryBase3d def2;  // Group code 14, 24 & 34 (WCS)
 };

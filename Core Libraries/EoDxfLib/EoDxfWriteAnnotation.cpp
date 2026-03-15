@@ -46,12 +46,12 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
         WriteCodeDouble(22, crd.y);
         WriteCodeDouble(32, crd.z);
       }
-      WriteCodeDouble(13, alignedDimension->getDef1Point().x);
-      WriteCodeDouble(23, alignedDimension->getDef1Point().y);
-      WriteCodeDouble(33, alignedDimension->getDef1Point().z);
-      WriteCodeDouble(14, alignedDimension->getDef2Point().x);
-      WriteCodeDouble(24, alignedDimension->getDef2Point().y);
-      WriteCodeDouble(34, alignedDimension->getDef2Point().z);
+      WriteCodeDouble(13, alignedDimension->def1.x);
+      WriteCodeDouble(23, alignedDimension->def1.y);
+      WriteCodeDouble(33, alignedDimension->def1.z);
+      WriteCodeDouble(14, alignedDimension->def2.x);
+      WriteCodeDouble(24, alignedDimension->def2.y);
+      WriteCodeDouble(34, alignedDimension->def2.z);
       if (dimension->m_entityType == EoDxf::DIMLINEAR) {
         auto* dl = dynamic_cast<EoDxfDimLinear*>(dimension);
         if (dl->getAngle() != 0) { WriteCodeDouble(50, dl->getAngle()); }
@@ -63,61 +63,61 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
     case EoDxf::DIMRADIAL: {
       auto* radialDimension = dynamic_cast<EoDxfRadialDimension*>(dimension);
       WriteCodeString(100, L"AcDbRadialDimension");
-      WriteCodeDouble(15, radialDimension->getDiameterPoint().x);
-      WriteCodeDouble(25, radialDimension->getDiameterPoint().y);
-      WriteCodeDouble(35, radialDimension->getDiameterPoint().z);
+      WriteCodeDouble(15, radialDimension->circlePoint.x);
+      WriteCodeDouble(25, radialDimension->circlePoint.y);
+      WriteCodeDouble(35, radialDimension->circlePoint.z);
       WriteCodeDouble(40, radialDimension->getLeaderLength());
       break;
     }
     case EoDxf::DIMDIAMETRIC: {
       auto* diametricDimension = dynamic_cast<EoDxfDiametricDimension*>(dimension);
       WriteCodeString(100, L"AcDbDiametricDimension");
-      WriteCodeDouble(15, diametricDimension->getDiameter1Point().x);
-      WriteCodeDouble(25, diametricDimension->getDiameter1Point().y);
-      WriteCodeDouble(35, diametricDimension->getDiameter1Point().z);
+      WriteCodeDouble(15, diametricDimension->circlePoint.x);
+      WriteCodeDouble(25, diametricDimension->circlePoint.y);
+      WriteCodeDouble(35, diametricDimension->circlePoint.z);
       WriteCodeDouble(40, diametricDimension->getLeaderLength());
       break;
     }
     case EoDxf::DIMANGULAR: {
       auto* _2LineAngularDimension = dynamic_cast<EoDxf2LineAngularDimension*>(dimension);
       WriteCodeString(100, L"AcDb2LineAngularDimension");
-      WriteCodeDouble(13, _2LineAngularDimension->getFirstLine1().x);
-      WriteCodeDouble(23, _2LineAngularDimension->getFirstLine1().y);
-      WriteCodeDouble(33, _2LineAngularDimension->getFirstLine1().z);
-      WriteCodeDouble(14, _2LineAngularDimension->getFirstLine2().x);
-      WriteCodeDouble(24, _2LineAngularDimension->getFirstLine2().y);
-      WriteCodeDouble(34, _2LineAngularDimension->getFirstLine2().z);
-      WriteCodeDouble(15, _2LineAngularDimension->getSecondLine1().x);
-      WriteCodeDouble(25, _2LineAngularDimension->getSecondLine1().y);
-      WriteCodeDouble(35, _2LineAngularDimension->getSecondLine1().z);
-      WriteCodeDouble(16, _2LineAngularDimension->getDimPoint().x);
-      WriteCodeDouble(26, _2LineAngularDimension->getDimPoint().y);
-      WriteCodeDouble(36, _2LineAngularDimension->getDimPoint().z);
+      WriteCodeDouble(13, _2LineAngularDimension->def1.x);
+      WriteCodeDouble(23, _2LineAngularDimension->def1.y);
+      WriteCodeDouble(33, _2LineAngularDimension->def1.z);
+      WriteCodeDouble(14, _2LineAngularDimension->def2.x);
+      WriteCodeDouble(24, _2LineAngularDimension->def2.y);
+      WriteCodeDouble(34, _2LineAngularDimension->def2.z);
+      WriteCodeDouble(15, _2LineAngularDimension->circlePoint.x);
+      WriteCodeDouble(25, _2LineAngularDimension->circlePoint.y);
+      WriteCodeDouble(35, _2LineAngularDimension->circlePoint.z);
+      WriteCodeDouble(16, _2LineAngularDimension->arcPoint.x);
+      WriteCodeDouble(26, _2LineAngularDimension->arcPoint.y);
+      WriteCodeDouble(36, _2LineAngularDimension->arcPoint.z);
       break;
     }
     case EoDxf::DIMANGULAR3P: {
       auto* _3PointAngularDimension = dynamic_cast<EoDxf3PointAngularDimension*>(dimension);
       WriteCodeString(100, L"AcDb3PointAngularDimension");
-      WriteCodeDouble(13, _3PointAngularDimension->getFirstLine().x);
-      WriteCodeDouble(23, _3PointAngularDimension->getFirstLine().y);
-      WriteCodeDouble(33, _3PointAngularDimension->getFirstLine().z);
-      WriteCodeDouble(14, _3PointAngularDimension->getSecondLine().x);
-      WriteCodeDouble(24, _3PointAngularDimension->getSecondLine().y);
-      WriteCodeDouble(34, _3PointAngularDimension->getSecondLine().z);
-      WriteCodeDouble(15, _3PointAngularDimension->getVertexPoint().x);
-      WriteCodeDouble(25, _3PointAngularDimension->getVertexPoint().y);
-      WriteCodeDouble(35, _3PointAngularDimension->getVertexPoint().z);
+      WriteCodeDouble(13, _3PointAngularDimension->def1.x);
+      WriteCodeDouble(23, _3PointAngularDimension->def1.y);
+      WriteCodeDouble(33, _3PointAngularDimension->def1.z);
+      WriteCodeDouble(14, _3PointAngularDimension->def2.x);
+      WriteCodeDouble(24, _3PointAngularDimension->def2.y);
+      WriteCodeDouble(34, _3PointAngularDimension->def2.z);
+      WriteCodeDouble(15, _3PointAngularDimension->circlePoint.x);
+      WriteCodeDouble(25, _3PointAngularDimension->circlePoint.y);
+      WriteCodeDouble(35, _3PointAngularDimension->circlePoint.z);
       break;
     }
     case EoDxf::DIMORDINATE: {
       auto* ordinateDimension = dynamic_cast<EoDxfOrdinateDimension*>(dimension);
       WriteCodeString(100, L"AcDbOrdinateDimension");
-      WriteCodeDouble(13, ordinateDimension->getFirstLine().x);
-      WriteCodeDouble(23, ordinateDimension->getFirstLine().y);
-      WriteCodeDouble(33, ordinateDimension->getFirstLine().z);
-      WriteCodeDouble(14, ordinateDimension->getSecondLine().x);
-      WriteCodeDouble(24, ordinateDimension->getSecondLine().y);
-      WriteCodeDouble(34, ordinateDimension->getSecondLine().z);
+      WriteCodeDouble(13, ordinateDimension->def1.x);
+      WriteCodeDouble(23, ordinateDimension->def1.y);
+      WriteCodeDouble(33, ordinateDimension->def1.z);
+      WriteCodeDouble(14, ordinateDimension->def2.x);
+      WriteCodeDouble(24, ordinateDimension->def2.y);
+      WriteCodeDouble(34, ordinateDimension->def2.z);
       break;
     }
     default:
