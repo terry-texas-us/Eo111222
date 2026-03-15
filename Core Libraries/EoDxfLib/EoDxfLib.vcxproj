@@ -191,7 +191,6 @@
     <ClCompile Include="EoDxfRead.cpp" />
     <ClCompile Include="EoDxfWrite.cpp" />
     <ClCompile Include="EoDxfWriteTables.cpp" />
-    <ClCompile Include="Tests\EoDxfLibRoundTripTextTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AcadEntityObjectHierarchy.md">
@@ -199,7 +198,6 @@
       </SubType>
     </None>
     <None Include="TestData\CodePages\README.md" />
-    <None Include="Tests\EoDxfLibRoundTripTextTests.vcxproj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

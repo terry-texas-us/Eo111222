@@ -43,7 +43,6 @@
     <ClCompile Include="EoDxfMLeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Tests\EoDxfLibRoundTripTextTests.cpp" />
     <ClCompile Include="EoDxfHatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -117,6 +116,5 @@
   <ItemGroup>
     <None Include="AcadEntityObjectHierarchy.md" />
     <None Include="TestData\CodePages\README.md" />
-    <None Include="Tests\EoDxfLibRoundTripTextTests.vcxproj" />
   </ItemGroup>
 </Project>
