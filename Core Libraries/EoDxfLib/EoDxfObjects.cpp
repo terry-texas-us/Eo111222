@@ -6,85 +6,16 @@
 #include "EoDxfWriter.h"
 
 void EoDxfObjectEntry::ParseCode(int code, EoDxfReader* reader) {
-  switch (code) {
-    case 5:
-      m_handle = reader->GetHandleString();
-      break;
-    case 102: {
-      const std::wstring value = reader->GetWideString();
-      if (value == L"{ACAD_REACTORS") {
-        m_inReactors = true;
-      } else if (value == L"{ACAD_XDICTIONARY") {
-        m_inXDictionary = true;
-      } else if (value == L"}") {
-        m_inReactors = false;
-        m_inXDictionary = false;
-      }
-      break;
-    }
-    case 330:
-      if (m_inReactors) {
-        m_reactorHandles.push_back(reader->GetHandleString());
-      } else {
-        m_ownerHandle = reader->GetHandleString();
-      }
-      break;
-    case 360:
-      if (m_inXDictionary) { m_extensionDictionaryHandle = reader->GetHandleString(); }
-      break;
-    case 1000:
-    case 1001:
-    case 1002:
-    case 1003:
-    case 1004:
-    case 1005:
-      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetWideString()));
-      break;
-    case 1010:
-    case 1011:
-    case 1012:
-    case 1013:
-      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
-      m_extensionData.push_back(m_currentVariant);
-      break;
-    case 1020:
-    case 1021:
-    case 1022:
-    case 1023:
-      if (m_currentVariant) { m_currentVariant->SetGeometryBaseY(reader->GetDouble()); }
-      break;
-    case 1030:
-    case 1031:
-    case 1032:
-    case 1033:
-      if (m_currentVariant) { m_currentVariant->SetGeometryBaseZ(reader->GetDouble()); }
-      m_currentVariant = nullptr;
-      break;
-    case 1040:
-    case 1041:
-    case 1042:
-      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetDouble()));
-      break;
-    case 1070:
-      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt16()));
-      break;
-    case 1071:
-      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt32()));
-      break;
-    default:
-      break;
-  }
+  EoDxfEntity::ParseCode(code, reader);
 }
 
 void EoDxfObjectEntry::Reset() {
-  m_ownerHandle = 0;
-  m_extensionDictionaryHandle = 0;
+  m_handle = EoDxf::NoHandle;
+  m_ownerHandle = EoDxf::NoHandle;
+  m_extensionDictionaryHandle = EoDxf::NoHandle;
   m_reactorHandles.clear();
-  for (auto* variant : m_extensionData) { delete variant; }
-  m_extensionData.clear();
-  m_currentVariant = nullptr;
-  m_inReactors = false;
-  m_inXDictionary = false;
+  clearExtendedData();
+  m_appData.clear();
 }
 
 void EoDxfImageDefinition::ParseCode(int code, EoDxfReader* reader) {

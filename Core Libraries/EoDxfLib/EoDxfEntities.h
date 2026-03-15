@@ -1,53 +1,18 @@
 #pragma once
 
 #include <cstdint>
-#include <list>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
 
 #include "EoDxfBase.h"
+#include "EoDxfEntity.h"
 #include "EoDxfGeometry.h"
-#include "EoDxfGroupCodeValuesVariant.h"
 #include "EoDxfLineWidths.h"
 #include "EoDxfReader.h"
 
 class EoDxfPolyline;
-
-class EoDxfEntity {
- public:
-  EoDxfEntity() = default;
-  explicit EoDxfEntity(EoDxf::ETYPE entityType) noexcept : m_entityType{entityType} {}
-  EoDxfEntity(const EoDxfEntity& other);
-  EoDxfEntity& operator=(const EoDxfEntity& other);
-
-  EoDxfEntity(EoDxfEntity&&) noexcept = default;
-  EoDxfEntity& operator=(EoDxfEntity&&) noexcept = default;
-
-  virtual ~EoDxfEntity();
-
- protected:
-  /** @brief Parses application-defined group (code 102) and its associated data until the closing tag is reached.
-   *  @param reader pointer to EoDxfReader to read value
-   *  @return true if group is successfully parsed, false if group is not recognized or an error occurs
-   */
-  bool ParseAppDataGroup(EoDxfReader* reader);
-
-  void ParseCode(int code, EoDxfReader* reader);
-
-  void clearExtendedData() noexcept;
-
- public:
-  std::vector<EoDxfGroupCodeValuesVariant*> m_extendedData{};  // Group codes 1000 to 1071
-
- protected:
-  std::list<std::list<EoDxfGroupCodeValuesVariant>> m_appData{};  // Group code 102
-  std::uint64_t m_handle{EoDxf::NoHandle};  // Group code 5
-  std::uint64_t m_ownerHandle{EoDxf::NoHandle};
-  EoDxfGroupCodeValuesVariant* m_currentVariant{};
-  enum EoDxf::ETYPE m_entityType{EoDxf::UNKNOWN};  // Group code 0
-};
 
 /** @brief Base class for all DXF entities, containing common properties and methods for parsing and extrusion.
  *

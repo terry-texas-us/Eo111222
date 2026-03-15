@@ -61,8 +61,12 @@ bool AddAppDataValue(EoDxfGroupCodeValuesVariant& variant, int code, EoDxfReader
 }  // namespace
 
 EoDxfEntity::EoDxfEntity(const EoDxfEntity& other)
-    : m_appData{other.m_appData}, m_entityType{other.m_entityType}, m_handle{other.m_handle},
-      m_ownerHandle{other.m_ownerHandle} {
+    : m_handle{other.m_handle},
+      m_ownerHandle{other.m_ownerHandle},
+      m_entityType{other.m_entityType},
+      m_reactorHandles{other.m_reactorHandles},
+      m_extensionDictionaryHandle{other.m_extensionDictionaryHandle},
+      m_appData{other.m_appData} {
   m_extendedData.reserve(other.m_extendedData.size());
   for (const auto* variant : other.m_extendedData) {
     m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(*variant));
@@ -79,10 +83,12 @@ EoDxfEntity& EoDxfEntity::operator=(const EoDxfEntity& other) {
 
     clearExtendedData();
 
-    m_appData = other.m_appData;
-    m_entityType = other.m_entityType;
     m_handle = other.m_handle;
     m_ownerHandle = other.m_ownerHandle;
+    m_entityType = other.m_entityType;
+    m_reactorHandles = other.m_reactorHandles;
+    m_extensionDictionaryHandle = other.m_extensionDictionaryHandle;
+    m_appData = other.m_appData;
     m_extendedData = std::move(extendedData);
     m_currentVariant = nullptr;
   }
@@ -277,7 +283,6 @@ void EoDxfGraphic::ParseCode(int code, EoDxfReader* reader) {
       m_extrusionDirection.z = reader->GetDouble();
       break;
     case 284:
-      // @bug possible: 284 is a bitmask using 8-bit integer values, reading as int32 for simplicity
       m_shadowMode = static_cast<EoDxf::ShadowMode>(reader->GetInt16());
       break;
     case 390:
@@ -302,12 +307,48 @@ void EoDxfGraphic::ParseCode(int code, EoDxfReader* reader) {
 }
 
 bool EoDxfEntity::ParseAppDataGroup(EoDxfReader* reader) {
-  std::list<EoDxfGroupCodeValuesVariant> groupList;
-
-  EoDxfGroupCodeValuesVariant currentVariant;
-
-  std::wstring appName = reader->GetWideString();
+  auto appName = reader->GetWideString();
   if (appName.empty() || appName[0] != L'{') { return false; }
+
+  // Structurally extract ACAD_REACTORS: collect soft-pointer handles (code 330) into m_reactorHandles.
+  if (appName == L"{ACAD_REACTORS") {
+    while (true) {
+      int nextCode{};
+      if (!reader->ReadRec(&nextCode)) { break; }
+      if (nextCode == 102) {
+        auto value = reader->GetWideString();
+        if (!value.empty() && value[0] == L'}') { break; }
+      } else if (nextCode == 330) {
+        m_reactorHandles.push_back(reader->GetHandleString());
+      } else {
+        // Unexpected code inside ACAD_REACTORS — consume and discard
+        (void)reader->GetWideString();
+      }
+    }
+    return true;
+  }
+
+  // Structurally extract ACAD_XDICTIONARY: store hard-owner handle (code 360) in m_extensionDictionaryHandle.
+  if (appName == L"{ACAD_XDICTIONARY") {
+    while (true) {
+      int nextCode{};
+      if (!reader->ReadRec(&nextCode)) { break; }
+      if (nextCode == 102) {
+        auto value = reader->GetWideString();
+        if (!value.empty() && value[0] == L'}') { break; }
+      } else if (nextCode == 360) {
+        m_extensionDictionaryHandle = reader->GetHandleString();
+      } else {
+        // Unexpected code inside ACAD_XDICTIONARY — consume and discard
+        (void)reader->GetWideString();
+      }
+    }
+    return true;
+  }
+
+  // All other application-defined groups: store opaquely in m_appData for round-trip fidelity.
+  std::list<EoDxfGroupCodeValuesVariant> groupList;
+  EoDxfGroupCodeValuesVariant currentVariant;
 
   // opening line: store without the leading '{'
   currentVariant.AddWideString(102, appName.substr(1));

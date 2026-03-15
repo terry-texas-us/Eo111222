@@ -71,7 +71,7 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
   }
 
   if (m_binaryFile) {
-      filestr.open(std::filesystem::path{m_fileName}, std::ios_base::out | std::ios::binary | std::ios::trunc);
+    filestr.open(std::filesystem::path{m_fileName}, std::ios_base::out | std::ios::binary | std::ios::trunc);
     TrackStreamState(filestr);
     if (m_writeOk) {
       filestr << "AutoCAD Binary DXF\r\n" << (char)26 << '\0';
@@ -81,9 +81,7 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
   } else {
     filestr.open(std::filesystem::path{m_fileName}, std::ios_base::out | std::ios::trunc);
     TrackStreamState(filestr);
-    if (m_writeOk) {
-      m_writer = new EoDxfWriterAscii(&filestr);
-    }
+    if (m_writeOk) { m_writer = new EoDxfWriterAscii(&filestr); }
   }
   if (m_writer == nullptr) {
     if (filestr.is_open()) { filestr.close(); }
@@ -97,8 +95,8 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
     std::size_t lineStart{};
     while (lineStart <= preservedComments.size()) {
       const auto lineEnd = preservedComments.find(L'\n', lineStart);
-      auto commentLine =
-          lineEnd == std::wstring::npos ? preservedComments.substr(lineStart) : preservedComments.substr(lineStart, lineEnd - lineStart);
+      auto commentLine = lineEnd == std::wstring::npos ? preservedComments.substr(lineStart)
+                                                       : preservedComments.substr(lineStart, lineEnd - lineStart);
       if (!commentLine.empty() && commentLine.back() == L'\r') { commentLine.pop_back(); }
       WriteCodeString(999, commentLine);
       if (lineEnd == std::wstring::npos) { break; }
@@ -111,36 +109,36 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
   }
 
   m_entityCount = FIRSTHANDLE;
-   WriteCodeString(0, L"SECTION");
+  WriteCodeString(0, L"SECTION");
   header.Write(m_writer, m_version);
   TrackStreamState(filestr);
-   WriteCodeString(0, L"ENDSEC");
+  WriteCodeString(0, L"ENDSEC");
 
-   WriteCodeString(0, L"SECTION");
-   WriteCodeString(2, L"CLASSES");
-   WriteCodeString(0, L"ENDSEC");
+  WriteCodeString(0, L"SECTION");
+  WriteCodeString(2, L"CLASSES");
+  WriteCodeString(0, L"ENDSEC");
 
-   WriteCodeString(0, L"SECTION");
-   WriteCodeString(2, L"TABLES");
+  WriteCodeString(0, L"SECTION");
+  WriteCodeString(2, L"TABLES");
   TrackWriteResult(WriteTables());
-   WriteCodeString(0, L"ENDSEC");
-   WriteCodeString(0, L"SECTION");
-   WriteCodeString(2, L"BLOCKS");
+  WriteCodeString(0, L"ENDSEC");
+  WriteCodeString(0, L"SECTION");
+  WriteCodeString(2, L"BLOCKS");
   TrackWriteResult(WriteBlocks());
-   WriteCodeString(0, L"ENDSEC");
+  WriteCodeString(0, L"ENDSEC");
 
-   WriteCodeString(0, L"SECTION");
-   WriteCodeString(2, L"ENTITIES");
+  WriteCodeString(0, L"SECTION");
+  WriteCodeString(2, L"ENTITIES");
   m_interface->writeEntities();
   TrackStreamState(filestr);
-   WriteCodeString(0, L"ENDSEC");
+  WriteCodeString(0, L"ENDSEC");
 
-   WriteCodeString(0, L"SECTION");
-   WriteCodeString(2, L"OBJECTS");
+  WriteCodeString(0, L"SECTION");
+  WriteCodeString(2, L"OBJECTS");
   TrackWriteResult(WriteObjects());
-   WriteCodeString(0, L"ENDSEC");
+  WriteCodeString(0, L"ENDSEC");
 
-   WriteCodeString(0, L"EOF");
+  WriteCodeString(0, L"EOF");
   filestr.flush();
   TrackStreamState(filestr);
   filestr.close();
@@ -170,18 +168,49 @@ bool EoDxfWrite::WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData
 bool EoDxfWrite::WriteEntity(EoDxfGraphic* entity) {
   entity->m_handle = ++m_entityCount;
   WriteCodeString(5, ToHexString(entity->m_handle));
+
+  // Write reactor handles (102 {ACAD_REACTORS ... }) — DXF spec places these between code 5 and code 100.
+  if (!entity->m_reactorHandles.empty()) {
+    WriteCodeString(102, L"{ACAD_REACTORS");
+    for (const auto reactorHandle : entity->m_reactorHandles) { WriteCodeString(330, ToHexString(reactorHandle)); }
+    WriteCodeString(102, L"}");
+  }
+
+  // Write extension dictionary handle (102 {ACAD_XDICTIONARY ... })
+  if (entity->m_extensionDictionaryHandle != EoDxf::NoHandle) {
+    WriteCodeString(102, L"{ACAD_XDICTIONARY");
+    WriteCodeString(360, ToHexString(entity->m_extensionDictionaryHandle));
+    WriteCodeString(102, L"}");
+  }
+  if (m_version > EoDxf::Version::AC1014 && entity->m_ownerHandle != EoDxf::NoHandle) {
+    WriteCodeString(330, ToHexString(entity->m_ownerHandle));
+  }
   WriteCodeString(100, L"AcDbEntity");
   if (entity->m_space == EoDxf::Space::PaperSpace) { WriteCodeInt16(67, 1); }
 
   WriteCodeWideString(8, entity->m_layer);
-  WriteCodeWideString(6, entity->m_lineType);
-
-  WriteCodeInt16(62, entity->m_color);
-  if (m_version > EoDxf::Version::AC1015 && entity->m_color24 >= 0) { WriteCodeInt32(420, entity->m_color24); }
-  if (m_version > EoDxf::Version::AC1015 && !entity->m_colorName.empty()) { WriteCodeWideString(430, entity->m_colorName); }
+  if (entity->m_lineType != L"BYLAYER") {
+    WriteCodeWideString(6, entity->m_lineType);
+    // code 347 is for the line type's object handle, but until AeSys supports custom line types, skip
+  }
+  if (entity->m_color != 256) { WriteCodeInt16(62, entity->m_color); }
   if (m_version > EoDxf::Version::AC1014) {
     WriteCodeInt16(370, EoDxfLineWidths::LineWidthToDxfIndex(entity->m_lineWeight));
   }
+
+  // Optional code 92 Number of bytes in the proxy entity graphics in the 310 groups, which are binary chunk records
+  // Optional code 310 Proxy entity graphics data (multiple lines; 256 characters max. per line) (optional)
+
+  if (m_version > EoDxf::Version::AC1015 && entity->m_color24 >= 0) { WriteCodeInt32(420, entity->m_color24); }
+  if (m_version > EoDxf::Version::AC1015 && !entity->m_colorName.empty()) {
+    WriteCodeWideString(430, entity->m_colorName);
+  }
+  // code 440 is for transparency, but until AeSys supports transparency, skip
+
+  // code 390 is for plot style handle, but until AeSys supports plot styles, skip
+
+  // code 284 is for Shadow mode, it is obsolete now and not supported by AeSys, so skip
+
   if (!entity->m_appData.empty()) { WriteAppData(entity->m_appData); }
   if (!entity->m_extendedData.empty()) { WriteExtData(entity->m_extendedData); }
   return m_writeOk;
@@ -216,7 +245,9 @@ bool EoDxfWrite::WriteViewport(EoDxfViewport* viewport) {
   WriteCodeString(100, L"AcDbViewport");
   WriteCodeDouble(10, viewport->m_centerPoint.x);
   WriteCodeDouble(20, viewport->m_centerPoint.y);
-  if (std::abs(viewport->m_centerPoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, viewport->m_centerPoint.z); }
+  if (std::abs(viewport->m_centerPoint.z) > EoDxf::geometricTolerance) {
+    WriteCodeDouble(30, viewport->m_centerPoint.z);
+  }
   WriteCodeDouble(40, viewport->m_width);
   WriteCodeDouble(41, viewport->m_height);
   if (viewport->m_viewportStatus != 0) { WriteCodeInt16(68, viewport->m_viewportStatus); }
@@ -263,7 +294,7 @@ EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstri
   for (unsigned int i = 0; i < m_imageDef.size(); i++) {
     if (m_imageDef.at(i)->m_fileNameOfImage == name) {
       id = m_imageDef.at(i);
-      continue;
+      break;
     }
   }
   if (id == nullptr) {

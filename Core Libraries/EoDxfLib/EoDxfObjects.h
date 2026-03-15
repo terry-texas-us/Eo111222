@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "EoDxfEntity.h"
 #include "EoDxfGroupCodeValuesVariant.h"
 #include "EoDxfReader.h"
 
@@ -11,48 +12,32 @@ class EoDxfWriter;
 
 /** @brief Base class for DXF OBJECTS section entries.
  *
- *  Handles common group codes shared by all DXF object types in the OBJECTS section,
- *  analogous to EoDxfTableEntry for TABLE section entries.
+ *  Derives from EoDxfEntity to share the common database-identity fields (handle, owner handle,
+ *  reactor handles, extension dictionary handle, extended data, and application-defined groups)
+ *  with graphical entity types. This unifies all handle-bearing DXF objects under a single
+ *  hierarchy, following the same pattern as ezdxf's DXFEntity base.
  *
- *  Common group codes handled:
+ *  Common group codes inherited from EoDxfEntity:
  *  - 5: Handle
- *  - 102: Application-defined groups (ACAD_REACTORS, ACAD_XDICTIONARY)
+ *  - 102: Application-defined groups (ACAD_REACTORS, ACAD_XDICTIONARY, and others)
  *  - 330: Soft-pointer ID/handle to owner dictionary (or reactor handle within ACAD_REACTORS)
  *  - 360: Hard-owner ID/handle (extension dictionary handle within ACAD_XDICTIONARY)
  *  - 1000-1071: Extended data
  */
-class EoDxfObjectEntry {
+class EoDxfObjectEntry : public EoDxfEntity {
  public:
   EoDxfObjectEntry() = default;
+  ~EoDxfObjectEntry() override = default;
 
-  virtual ~EoDxfObjectEntry() {
-    for (auto* variant : m_extensionData) { delete variant; }
-    m_extensionData.clear();
-  }
-
-  EoDxfObjectEntry(const EoDxfObjectEntry& e) {
-    m_handle = e.m_handle;
-    m_ownerHandle = e.m_ownerHandle;
-    m_extensionDictionaryHandle = e.m_extensionDictionaryHandle;
-    m_reactorHandles = e.m_reactorHandles;
-    for (auto* variant : e.m_extensionData) { m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(*variant)); }
-  }
+  EoDxfObjectEntry(const EoDxfObjectEntry&) = default;
+  EoDxfObjectEntry& operator=(const EoDxfObjectEntry&) = default;
+  EoDxfObjectEntry(EoDxfObjectEntry&&) noexcept = default;
+  EoDxfObjectEntry& operator=(EoDxfObjectEntry&&) noexcept = default;
 
  protected:
+  /// Delegates to EoDxfEntity::ParseCode for all common group codes.
   void ParseCode(int code, EoDxfReader* reader);
   void Reset();
-
- public:
-  std::uint64_t m_handle{};  // Group code 5
-  std::uint64_t m_ownerHandle{};  // Group code 330 (soft-pointer to owner dictionary)
-  std::uint64_t m_extensionDictionaryHandle{};  // Group code 360 (hard-owner, extension dictionary)
-  std::vector<std::uint64_t> m_reactorHandles;  // Group code 330 handles within ACAD_REACTORS group
-  std::vector<EoDxfGroupCodeValuesVariant*> m_extensionData;  // Group codes 1000 to 1071
-
- private:
-  EoDxfGroupCodeValuesVariant* m_currentVariant{};
-  bool m_inReactors{};
-  bool m_inXDictionary{};
 };
 
 // ACDBPLACEHOLDER, DICTIONARYVAR, FIELD, GROUP, IDBUFFER, IMAGEDEF_REACTOR, LAYER_FILTER, LAYER_INDEX, LAYOUT,
