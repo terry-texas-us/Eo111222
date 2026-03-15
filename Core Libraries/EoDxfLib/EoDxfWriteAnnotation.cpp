@@ -5,30 +5,35 @@
 #include "EoDxfBase.h"
 #include "EoDxfEntities.h"
 #include "EoDxfMLeader.h"
-#include "EoDxfWriter.h"
 
 bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
   WriteCodeString(0, L"DIMENSION");
   WriteEntity(dimension);
   WriteCodeString(100, L"AcDbDimension");
   if (!dimension->getName().empty()) { WriteCodeWideString(2, dimension->getName()); }
-  WriteCodeDouble(10, dimension->getDefPoint().x);
-  WriteCodeDouble(20, dimension->getDefPoint().y);
-  WriteCodeDouble(30, dimension->getDefPoint().z);
+  WriteCodeDouble(10, dimension->GetDefinitionPoint().x);
+  WriteCodeDouble(20, dimension->GetDefinitionPoint().y);
+  WriteCodeDouble(30, dimension->GetDefinitionPoint().z);
   WriteCodeDouble(11, dimension->getTextPoint().x);
   WriteCodeDouble(21, dimension->getTextPoint().y);
   WriteCodeDouble(31, dimension->getTextPoint().z);
   if (!(dimension->m_dimensionType & 32)) { dimension->m_dimensionType = dimension->m_dimensionType + 32; }
   WriteCodeInt16(70, dimension->m_dimensionType);
-  if (!(dimension->getText().empty())) { WriteCodeWideString(1, dimension->getText()); }
+  if (!(dimension->GetExplicitDimensionText().empty())) {
+    WriteCodeWideString(1, dimension->GetExplicitDimensionText());
+  }
   WriteCodeInt16(71, dimension->GetAttachmentPoint());
   if (dimension->getTextLineStyle() != 1) { WriteCodeInt16(72, dimension->getTextLineStyle()); }
-  if (dimension->getTextLineFactor() != 1) { WriteCodeDouble(41, dimension->getTextLineFactor()); }
-  WriteCodeWideString(3, dimension->getStyle());
-  if (dimension->getTextLineFactor() != 0) { WriteCodeDouble(53, dimension->getDir()); }
-  WriteCodeDouble(210, dimension->getExtrusion().x);
-  WriteCodeDouble(220, dimension->getExtrusion().y);
-  WriteCodeDouble(230, dimension->getExtrusion().z);
+  if (dimension->GetDimensionTextLineSpacingFactor() != 1) {
+    WriteCodeDouble(41, dimension->GetDimensionTextLineSpacingFactor());
+  }
+  WriteCodeWideString(3, dimension->GetDimensionStyleName());
+  if (std::abs(dimension->GetRotationAngleAwayFromDefault()) > EoDxf::geometricTolerance) {
+    WriteCodeDouble(53, dimension->GetRotationAngleAwayFromDefault());
+  }
+  WriteCodeDouble(210, dimension->m_extrusionDirection.x);
+  WriteCodeDouble(220, dimension->m_extrusionDirection.y);
+  WriteCodeDouble(230, dimension->m_extrusionDirection.z);
 
   switch (dimension->m_entityType) {
     case EoDxf::DIMALIGNED:

@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "..\EoDxfDimension.h"
 #include "..\EoDxfEntities.h"
 #include "..\EoDxfHatch.h"
 #include "..\EoDxfInterface.h"

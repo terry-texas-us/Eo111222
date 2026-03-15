@@ -3,7 +3,6 @@
 #include <string>
 
 #include "AeSysDoc.h"
-#include "Eo.h"
 #include "EoDbBlock.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbPrimitive.h"

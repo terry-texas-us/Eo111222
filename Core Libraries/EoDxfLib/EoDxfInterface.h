@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EoDxfClasses.h"
+#include "EoDxfDimension.h"
 #include "EoDxfEntities.h"
 #include "EoDxfHatch.h"
 #include "EoDxfHeader.h"

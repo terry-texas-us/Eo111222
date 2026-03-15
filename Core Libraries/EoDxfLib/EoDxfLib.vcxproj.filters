@@ -99,6 +99,9 @@
     <ClInclude Include="EoDxfHatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EoDxfDimension.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

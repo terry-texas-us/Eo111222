@@ -1,15 +1,14 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
-#include <memory>
 #include <string>
 #include <vector>
 
 #include "EoDxfBase.h"
+#include "EoDxfDimension.h"
 #include "EoDxfEntities.h"
 #include "EoDxfGeometry.h"
 #include "EoDxfGroupCodeValuesVariant.h"
-#include "EoDxfHatch.h"
 #include "EoDxfReader.h"
 
 namespace {
@@ -1269,13 +1268,13 @@ void EoDxfImage::ParseCode(int code, EoDxfReader* reader) {
 void EoDxfDimension::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
     case 1:
-      text = reader->GetWideString();
+      m_explicitDimensionText = reader->GetWideString();
       break;
     case 2:
-      name = reader->GetWideString();
+      m_nameOfBlockContainer = reader->GetWideString();
       break;
     case 3:
-      style = reader->GetWideString();
+      m_dimensionStyleName = reader->GetWideString();
       break;
     case 70:
       m_dimensionType = reader->GetInt16();
@@ -1287,22 +1286,22 @@ void EoDxfDimension::ParseCode(int code, EoDxfReader* reader) {
       m_dimensionTextLineSpacingStyle = reader->GetInt16();
       break;
     case 10:
-      defPoint.x = reader->GetDouble();
+      m_definitionPoint.x = reader->GetDouble();
       break;
     case 20:
-      defPoint.y = reader->GetDouble();
+      m_definitionPoint.y = reader->GetDouble();
       break;
     case 30:
-      defPoint.z = reader->GetDouble();
+      m_definitionPoint.z = reader->GetDouble();
       break;
     case 11:
-      textPoint.x = reader->GetDouble();
+      m_middlePointOfDimensionText.x = reader->GetDouble();
       break;
     case 21:
-      textPoint.y = reader->GetDouble();
+      m_middlePointOfDimensionText.y = reader->GetDouble();
       break;
     case 31:
-      textPoint.z = reader->GetDouble();
+      m_middlePointOfDimensionText.z = reader->GetDouble();
       break;
     case 12:
       clonePoint.x = reader->GetDouble();
@@ -1350,10 +1349,10 @@ void EoDxfDimension::ParseCode(int code, EoDxfReader* reader) {
       arcPoint.z = reader->GetDouble();
       break;
     case 41:
-      linefactor = reader->GetDouble();
+      m_dimensionTextLineSpacingFactor = reader->GetDouble();
       break;
     case 53:
-      rot = reader->GetDouble();
+      m_rotationAngleAwayFromDefault = reader->GetDouble();
       break;
     case 50:
       angle = reader->GetDouble();
@@ -1365,7 +1364,7 @@ void EoDxfDimension::ParseCode(int code, EoDxfReader* reader) {
       length = reader->GetDouble();
       break;
     case 51:
-      hdir = reader->GetDouble();
+      m_horizontalDirection = reader->GetDouble();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
