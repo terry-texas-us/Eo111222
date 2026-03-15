@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "EoDxfBase.h"
-#include "EoDxfDimension.h"
 #include "EoDxfEntities.h"
 #include "EoDxfGeometry.h"
 #include "EoDxfGroupCodeValuesVariant.h"
@@ -61,6 +60,43 @@ bool AddAppDataValue(EoDxfGroupCodeValuesVariant& variant, int code, EoDxfReader
 }
 }  // namespace
 
+EoDxfEntity::EoDxfEntity(const EoDxfEntity& other)
+    : m_appData{other.m_appData}, m_entityType{other.m_entityType}, m_handle{other.m_handle},
+      m_ownerHandle{other.m_ownerHandle} {
+  m_extendedData.reserve(other.m_extendedData.size());
+  for (const auto* variant : other.m_extendedData) {
+    m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(*variant));
+  }
+}
+
+EoDxfEntity& EoDxfEntity::operator=(const EoDxfEntity& other) {
+  if (this != &other) {
+    std::vector<EoDxfGroupCodeValuesVariant*> extendedData;
+    extendedData.reserve(other.m_extendedData.size());
+    for (const auto* variant : other.m_extendedData) {
+      extendedData.push_back(new EoDxfGroupCodeValuesVariant(*variant));
+    }
+
+    clearExtendedData();
+
+    m_appData = other.m_appData;
+    m_entityType = other.m_entityType;
+    m_handle = other.m_handle;
+    m_ownerHandle = other.m_ownerHandle;
+    m_extendedData = std::move(extendedData);
+    m_currentVariant = nullptr;
+  }
+  return *this;
+}
+
+EoDxfEntity::~EoDxfEntity() { clearExtendedData(); }
+
+void EoDxfEntity::clearExtendedData() noexcept {
+  for (auto* variant : m_extendedData) { delete variant; }
+  m_extendedData.clear();
+  m_currentVariant = nullptr;
+}
+
 EoDxfGraphic::EoDxfGraphic(const EoDxfGraphic& other)
     : EoDxfEntity{other},
       m_layer{other.m_layer},
@@ -78,16 +114,13 @@ EoDxfGraphic::EoDxfGraphic(const EoDxfGraphic& other)
       m_shadowMode{other.m_shadowMode},
       m_space{other.m_space},
       m_visibilityFlag{other.m_visibilityFlag},
-      m_haveExtrusion{other.m_haveExtrusion},
-      m_currentVariant{nullptr} {
-  m_extendedData.reserve(other.m_extendedData.size());
-  for (const auto* v : other.m_extendedData) { m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(*v)); }
-}
+      m_extrusionDirection{other.m_extrusionDirection},
+      m_thickness{other.m_thickness},
+      m_haveExtrusion{other.m_haveExtrusion} {}
 
 EoDxfGraphic& EoDxfGraphic::operator=(const EoDxfGraphic& other) {
   if (this != &other) {
     EoDxfEntity::operator=(other);
-    clearExtendedData();
 
     m_layer = other.m_layer;
     m_lineType = other.m_lineType;
@@ -104,25 +137,71 @@ EoDxfGraphic& EoDxfGraphic::operator=(const EoDxfGraphic& other) {
     m_shadowMode = other.m_shadowMode;
     m_space = other.m_space;
     m_visibilityFlag = other.m_visibilityFlag;
+    m_extrusionDirection = other.m_extrusionDirection;
+    m_thickness = other.m_thickness;
     m_haveExtrusion = other.m_haveExtrusion;
-    m_currentVariant = nullptr;
-
-    m_extendedData.reserve(other.m_extendedData.size());
-    for (const auto* v : other.m_extendedData) { m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(*v)); }
   }
   return *this;
 }
-
-EoDxfGraphic::~EoDxfGraphic() { clearExtendedData(); }
 
 void EoDxfGraphic::Clear() {
   clearExtendedData();
   // extend this later for more state reset if needed
 }
 
-void EoDxfGraphic::clearExtendedData() noexcept {
-  for (auto* v : m_extendedData) { delete v; }
-  m_extendedData.clear();
+void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
+  switch (code) {
+    case 5:
+      m_handle = reader->GetHandleString();
+      break;
+    case 330:
+      m_ownerHandle = reader->GetHandleString();
+      break;
+    case 102:
+      ParseAppDataGroup(reader);
+      break;
+    case 1000:
+    case 1001:
+    case 1002:
+    case 1003:
+    case 1004:
+    case 1005:
+      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetWideString()));
+      break;
+    case 1010:
+    case 1011:
+    case 1012:
+    case 1013:
+      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
+      m_extendedData.push_back(m_currentVariant);
+      break;
+    case 1020:
+    case 1021:
+    case 1022:
+    case 1023:
+      if (m_currentVariant) { m_currentVariant->SetGeometryBaseY(reader->GetDouble()); }
+      break;
+    case 1030:
+    case 1031:
+    case 1032:
+    case 1033:
+      if (m_currentVariant) { m_currentVariant->SetGeometryBaseZ(reader->GetDouble()); }
+      m_currentVariant = nullptr;
+      break;
+    case 1040:
+    case 1041:
+    case 1042:
+      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetDouble()));
+      break;
+    case 1070:
+      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt16()));
+      break;
+    case 1071:
+      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt32()));
+      break;
+    default:
+      break;
+  }
 }
 
 void EoDxfGraphic::CalculateArbitraryAxis(const EoDxfGeometryBase3d& extrusionDirection) {
@@ -166,12 +245,6 @@ void EoDxfGraphic::ExtrudePointInPlace(
 
 void EoDxfGraphic::ParseCode(int code, EoDxfReader* reader) {
   switch (code) {
-    case 5:
-      m_handle = reader->GetHandleString();
-      break;
-    case 330:
-      m_ownerHandle = reader->GetHandleString();
-      break;
     case 8:
       m_layer = reader->GetWideString();
       break;
@@ -222,49 +295,8 @@ void EoDxfGraphic::ParseCode(int code, EoDxfReader* reader) {
     case 67:
       m_space = static_cast<EoDxf::Space>(reader->GetInt16());
       break;
-    case 102:
-      ParseAppDataGroup(reader);
-      break;
-    case 1000:
-    case 1001:
-    case 1002:
-    case 1003:
-    case 1004:
-    case 1005:
-      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetWideString()));
-      break;
-    case 1010:
-    case 1011:
-    case 1012:
-    case 1013:
-      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
-      m_extendedData.push_back(m_currentVariant);
-      break;
-    case 1020:
-    case 1021:
-    case 1022:
-    case 1023:
-      if (m_currentVariant) { m_currentVariant->SetGeometryBaseY(reader->GetDouble()); }
-      break;
-    case 1030:
-    case 1031:
-    case 1032:
-    case 1033:
-      if (m_currentVariant) { m_currentVariant->SetGeometryBaseZ(reader->GetDouble()); }
-      m_currentVariant = nullptr;
-      break;
-    case 1040:
-    case 1041:
-    case 1042:
-      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetDouble()));
-      break;
-    case 1070:
-      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt16()));
-      break;
-    case 1071:
-      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt32()));
-      break;
     default:
+      EoDxfEntity::ParseCode(code, reader);
       break;
   }
 }
@@ -865,16 +897,6 @@ void EoDxfLwPolyline::ParseCode(int code, EoDxfReader* reader) {
       m_numberOfVertices = reader->GetInt32();
       m_vertices.reserve(m_numberOfVertices);  // now reserves the correct container
       break;
-    case 210:
-      m_haveExtrusion = true;
-      m_extrusionDirection.x = reader->GetDouble();
-      break;
-    case 220:
-      m_extrusionDirection.y = reader->GetDouble();
-      break;
-    case 230:
-      m_extrusionDirection.z = reader->GetDouble();
-      break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
       break;
@@ -926,7 +948,7 @@ void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
       break;
     case 73:
       m_verticalAlignment = static_cast<VerticalAlignment>(std::clamp(reader->GetInt16(),
-          static_cast<std::int16_t>(VerticalAlignment::Bottom), static_cast<std::int16_t>(VerticalAlignment::Top)));
+          static_cast<std::int16_t>(VerticalAlignment::BaseLine), static_cast<std::int16_t>(VerticalAlignment::Top)));
       break;
     case 1:
       m_string = reader->GetWideString();
@@ -1003,7 +1025,7 @@ void EoDxfMText::ParseCode(int code, EoDxfReader* reader) {
       m_fillBoxScale = reader->GetDouble();
       break;
     case 63:
-      m_backgroundColor = reader->GetInt16();
+      m_backgroundFillColor = reader->GetInt16();
       break;
     case 421:
       m_backgroundColor = reader->GetInt32();
@@ -1226,19 +1248,19 @@ void EoDxfImage::ParseCode(int code, EoDxfReader* reader) {
       m_uVector.z = reader->GetDouble();
       break;
     case 12:
-      vVector.x = reader->GetDouble();
+      m_vVector.x = reader->GetDouble();
       break;
     case 22:
-      vVector.y = reader->GetDouble();
+      m_vVector.y = reader->GetDouble();
       break;
     case 32:
-      vVector.z = reader->GetDouble();
+      m_vVector.z = reader->GetDouble();
       break;
     case 13:
-      sizeu = reader->GetDouble();
+      m_uImageSizeInPixels = reader->GetDouble();
       break;
     case 23:
-      sizev = reader->GetDouble();
+      m_vImageSizeInPixels = reader->GetDouble();
       break;
     case 340:
       m_imageDefinitionHandle = reader->GetHandleString();

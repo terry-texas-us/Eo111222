@@ -553,16 +553,16 @@ bool EoDxfRead::ProcessSolid() {
 
 bool EoDxfRead::Process3dFace() {
   int code;
-  EoDxf3dFace face;
+  EoDxf3dFace _3dFace;
   while (m_reader->ReadRec(&code)) {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->add3dFace(face);
+        m_interface->add3dFace(_3dFace);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        face.ParseCode(code, m_reader);
+        _3dFace.ParseCode(code, m_reader);
         break;
     }
   }

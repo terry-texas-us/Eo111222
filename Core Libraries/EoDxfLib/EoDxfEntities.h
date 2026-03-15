@@ -19,18 +19,13 @@ class EoDxfEntity {
  public:
   EoDxfEntity() = default;
   explicit EoDxfEntity(EoDxf::ETYPE entityType) noexcept : m_entityType{entityType} {}
+  EoDxfEntity(const EoDxfEntity& other);
+  EoDxfEntity& operator=(const EoDxfEntity& other);
 
-  EoDxfEntity(const EoDxfEntity& other) : m_appData{other.m_appData}, m_entityType{other.m_entityType} {}
+  EoDxfEntity(EoDxfEntity&&) noexcept = default;
+  EoDxfEntity& operator=(EoDxfEntity&&) noexcept = default;
 
-  EoDxfEntity& operator=(const EoDxfEntity& other) {
-    if (this != &other) {
-      m_appData = other.m_appData;
-      m_entityType = other.m_entityType;
-    }
-    return *this;
-  }
-
-  virtual ~EoDxfEntity() = default;
+  virtual ~EoDxfEntity();
 
  protected:
   /** @brief Parses application-defined group (code 102) and its associated data until the closing tag is reached.
@@ -39,12 +34,19 @@ class EoDxfEntity {
    */
   bool ParseAppDataGroup(EoDxfReader* reader);
 
+  void ParseCode(int code, EoDxfReader* reader);
+
+  void clearExtendedData() noexcept;
+
+ public:
+  std::vector<EoDxfGroupCodeValuesVariant*> m_extendedData{};  // Group codes 1000 to 1071
+
  protected:
   std::list<std::list<EoDxfGroupCodeValuesVariant>> m_appData{};  // Group code 102
-
-  enum EoDxf::ETYPE m_entityType{EoDxf::UNKNOWN};  // Group code 0
   std::uint64_t m_handle{EoDxf::NoHandle};  // Group code 5
   std::uint64_t m_ownerHandle{EoDxf::NoHandle};
+  EoDxfGroupCodeValuesVariant* m_currentVariant{};
+  enum EoDxf::ETYPE m_entityType{EoDxf::UNKNOWN};  // Group code 0
 };
 
 /** @brief Base class for all DXF entities, containing common properties and methods for parsing and extrusion.
@@ -71,7 +73,7 @@ class EoDxfGraphic : public EoDxfEntity {
   EoDxfGraphic(EoDxfGraphic&&) noexcept = default;
   EoDxfGraphic& operator=(EoDxfGraphic&&) noexcept = default;
 
-  virtual ~EoDxfGraphic();
+  virtual ~EoDxfGraphic() = default;
 
   void Clear();
 
@@ -112,7 +114,6 @@ class EoDxfGraphic : public EoDxfEntity {
   EoDxfGeometryBase3d extAxisY{};
 
  public:
-  std::vector<EoDxfGroupCodeValuesVariant*> m_extendedData{};  // Group codes 1000 to 1071
   std::wstring m_layer{L"0"};  // layer name, code 8
   std::wstring m_lineType{L"BYLAYER"};  // line type, code 6
   std::wstring m_proxyEntityGraphicsData{};  // group code 310 (optional) [unused]
@@ -120,24 +121,19 @@ class EoDxfGraphic : public EoDxfEntity {
   double m_lineTypeScale{1.0};  // Group code 48
   // Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330
   std::uint64_t m_materialHandle{EoDxf::NoHandle};  // hard pointer id to material object, code 347
-  std::int16_t m_color{EoDxf::colorByLayer};  // Group code 62
+  std::uint64_t m_plotStyleHandle{EoDxf::NoHandle};  // Group code 390
   enum EoDxfLineWidths::lineWidth m_lineWeight{EoDxfLineWidths::widthByLayer};  // Group code 370
   int m_numberOfBytesInProxyGraphics{};  // Group code 92 (optional) [unused]
   std::int32_t m_color24{-1};  // Group code 420
-  EoDxf::TransparencyCodes m_transparency{EoDxf::TransparencyCodes::Opaque};  // Group code 440
-  std::uint64_t m_plotStyleHandle{EoDxf::NoHandle};  // Group code 390
-  EoDxf::ShadowMode m_shadowMode{EoDxf::ShadowMode::CastAndReceiveShadows};  // Group code 284
-  EoDxf::Space m_space{EoDxf::Space::ModelSpace};  // Group code 67
+  std::int16_t m_color{EoDxf::colorByLayer};  // Group code 62
   std::int16_t m_visibilityFlag{0};  // Group code 60 (0 for visible, 1 for invisible)
 
   EoDxfGeometryBase3d m_extrusionDirection{0.0, 0.0, 1.0};  //  Group codes 210, 220 & 230 (optional)
   double m_thickness{};  // Thickness, code 39
+  EoDxf::Space m_space{EoDxf::Space::ModelSpace};  // Group code 67
+  EoDxf::ShadowMode m_shadowMode{EoDxf::ShadowMode::CastAndReceiveShadows};  // Group code 284
+  EoDxf::TransparencyCodes m_transparency{EoDxf::TransparencyCodes::Opaque};  // Group code 440
   bool m_haveExtrusion{};  // set to true if the entity have extrusion
-
- private:
-  void clearExtendedData() noexcept;
-
-  EoDxfGroupCodeValuesVariant* m_currentVariant{};
 };
 
 /** @brief Class to handle point entity
@@ -361,7 +357,7 @@ class EoDxfSolid : public EoDxfGraphic {
   friend class EoDxfWrite;
 
  public:
-  EoDxfSolid() { m_entityType = EoDxf::SOLID; }
+  explicit EoDxfSolid(EoDxf::ETYPE entityType = EoDxf::SOLID) noexcept : EoDxfGraphic{entityType} {}
 
   void ApplyExtrusion() override;
 
@@ -400,7 +396,7 @@ class EoDxf3dFace : public EoDxfGraphic {
   enum InvisibleEdgeFlags {
     NoEdge = 0x00,
     FirstEdge = 0x01,
-    SecodEdge = 0x02,
+    SecondEdge = 0x02,
     ThirdEdge = 0x04,
     FourthEdge = 0x08,
     AllEdges = 0x0F
@@ -524,7 +520,6 @@ class EoDxfLwPolyline : public EoDxfGraphic {
   std::int16_t m_polylineFlag{};  // Group code 70, (1 = Closed; 128 = Plinegen)
   double m_constantWidth{};  // Group code 43
   double m_elevation{};  // Group code 38
-  EoDxfGeometryBase3d m_extrusionDirection{0.0, 0.0, 1.0};  //  code 210, 220 & 230
   std::vector<EoDxfPolylineVertex2d> m_vertices;
 
  private:
@@ -642,7 +637,7 @@ class EoDxfMText : public EoDxfGraphic {
 
   std::uint32_t m_backgroundFillSetting{};  // Group code 90
   double m_fillBoxScale{1.5};  // Group code 45
-  int m_backgroundFillColor{};  // Group code 63
+  std::int16_t m_backgroundFillColor{};  // Group code 63
   std::uint32_t m_backgroundColor{};  // Group code 421
   std::wstring m_backgroundColorName;  // Group code 431 (rare)
 
@@ -705,7 +700,7 @@ class EoDxfSeqEnd : public EoDxfGraphic {
    *         from the owning POLYLINE or INSERT entity.
    *  @param owner The entity whose sequence this SEQEND terminates.
    */
-  explicit EoDxfSeqEnd(const EoDxfGraphic& owner) noexcept : EoDxfGraphic{EoDxf::SEQEND} {
+  explicit EoDxfSeqEnd(const EoDxfGraphic& owner) : EoDxfGraphic{EoDxf::SEQEND} {
     m_layer = owner.m_layer;
     m_lineType = owner.m_lineType;
     m_color = owner.m_color;
@@ -800,6 +795,8 @@ class EoDxfSpline : public EoDxfGraphic {
 
   void ApplyExtrusion() override {}
 
+  [[nodiscard]] const bool IsTangentValid() const noexcept { return m_splineFlag & 0x01; }
+
  protected:
   void ParseCode(int code, EoDxfReader* reader);
 
@@ -865,7 +862,7 @@ class EoDxfImage : public EoDxfGraphic {
   friend class EoDxfWrite;
 
  public:
-  EoDxfImage() { m_entityType = EoDxf::IMAGE; }
+  explicit EoDxfImage(EoDxf::ETYPE entityType = EoDxf::IMAGE) noexcept : EoDxfGraphic{entityType} {}
 
   void ApplyExtrusion() override {}
 
@@ -875,11 +872,10 @@ class EoDxfImage : public EoDxfGraphic {
  public:
   std::uint64_t m_imageDefinitionHandle{};  // Hard reference to imagedef object, code 340
   EoDxfGeometryBase3d m_insertionPoint;  // Insertion point, code 10, 20 & 30
-  EoDxfGeometryBase3d m_uVector;  // U-vector of single pixel, x coordinate, code 11, 21 & 31
-  EoDxfGeometryBase3d vVector;  // V-vector of single pixel, x coordinate, code 12, 22 & 32
-  double sizeu{};  // image size in pixels, U value, code 13
-  double sizev{};  // image size in pixels, V value, code 23
-  double dz{};  // z coordinate, code 33
+  EoDxfGeometryBase3d m_uVector;  // Group codes 11, 21 & 31
+  EoDxfGeometryBase3d m_vVector;  // Group codes 12, 22 & 32
+  double m_uImageSizeInPixels{};  // Group code 13
+  double m_vImageSizeInPixels{};  // Group code 23
   std::int16_t m_clippingState{};  // Group code 280, 0=off 1=on
   std::int16_t m_brightnessValue{50};  // Group code 281, (0-100)
   std::int16_t m_contrastValue{50};  // Group code 282, (0-100)
@@ -1035,7 +1031,7 @@ class EoDxfViewport : public EoDxfGraphic {
   friend class EoDxfWrite;
 
  public:
-  EoDxfViewport() noexcept { m_entityType = EoDxf::VIEWPORT; }
+  explicit EoDxfViewport(EoDxf::ETYPE entityType = EoDxf::VIEWPORT) noexcept : EoDxfGraphic{entityType} {}
 
   void ApplyExtrusion() override {}
 

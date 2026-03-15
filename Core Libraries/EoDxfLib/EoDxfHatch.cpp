@@ -110,7 +110,7 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader* reader) {
       // SEED POINTS (after all boundary paths)
       // --------------------------------------------------
     case 98: {
-      m_seedPointsRemaining = reader->GetInt32();  // or GetInt() if your reader uses int
+      m_seedPointsRemaining = reader->GetInt32();
       m_seedPoints.clear();
       m_isReadingSeedPoints = (m_seedPointsRemaining > 0);
       m_currentSeedPoint = nullptr;

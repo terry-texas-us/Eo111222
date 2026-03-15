@@ -99,7 +99,7 @@ class EoDxfInterface {
   virtual void addTrace(const EoDxfTrace& trace) = 0;
 
   /** Called for every 3dFace start */
-  virtual void add3dFace(const EoDxf3dFace& face) = 0;
+  virtual void add3dFace(const EoDxf3dFace& _3dFace) = 0;
 
   /** Called for every solid start */
   virtual void addSolid(const EoDxfSolid& data) = 0;

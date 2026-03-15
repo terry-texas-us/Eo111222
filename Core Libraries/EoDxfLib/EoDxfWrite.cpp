@@ -206,6 +206,7 @@ bool EoDxfWrite::WriteInsert(EoDxfInsert* blockReference) {
   WriteCodeInt16(71, blockReference->m_rowCount);
   WriteCodeDouble(44, blockReference->m_columnSpacing);
   WriteCodeDouble(45, blockReference->m_rowSpacing);
+  WriteExtrusionDirection(*blockReference);
   return m_writeOk;
 }
 
@@ -282,11 +283,11 @@ EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstri
   WriteCodeDouble(11, rasterImage->m_uVector.x);
   WriteCodeDouble(21, rasterImage->m_uVector.y);
   WriteCodeDouble(31, rasterImage->m_uVector.z);
-  WriteCodeDouble(12, rasterImage->vVector.x);
-  WriteCodeDouble(22, rasterImage->vVector.y);
-  WriteCodeDouble(32, rasterImage->vVector.z);
-  WriteCodeDouble(13, rasterImage->sizeu);
-  WriteCodeDouble(23, rasterImage->sizev);
+  WriteCodeDouble(12, rasterImage->m_vVector.x);
+  WriteCodeDouble(22, rasterImage->m_vVector.y);
+  WriteCodeDouble(32, rasterImage->m_vVector.z);
+  WriteCodeDouble(13, rasterImage->m_uImageSizeInPixels);
+  WriteCodeDouble(23, rasterImage->m_vImageSizeInPixels);
   WriteCodeString(340, ToHexString(id->m_handle));
   WriteCodeInt16(70, 1);
   WriteCodeInt16(280, rasterImage->m_clippingState);

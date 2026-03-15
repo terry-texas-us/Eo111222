@@ -43,8 +43,74 @@ class EoDxfWrite {
   bool WriteTextstyle(EoDxfTextStyle* textStyle);
   bool WriteVport(EoDxfVPort* viewport);
   bool WriteAppId(EoDxfAppId* appId);
+
+  void WriteCodePoint3d(int code, const EoDxfGeometryBase3d& point);
+  void WriteCodeVector3d(int code, const EoDxfGeometryBase3d& vector);
+
+  /** @brief Writes the extrusion direction of a graphic entity to the DXF file if it is not the default normal vector.
+   *
+   * This method checks if the extrusion direction of the given graphic entity is effectively different from the default
+   * normal vector (0.0, 0.0, 1.0) within a specified tolerance. If it is different, it writes the corresponding DXF
+   * group codes (210, 220, 230) and their values (x, y, z components of the extrusion direction) to the output stream.
+   * This is necessary for entities that have an extrusion direction defined, as it affects how they are rendered in 3D
+   * space.
+   *
+   * @param entity A reference to the EoDxfGraphic entity whose extrusion direction is to be written.
+   */
+  void WriteExtrusionDirection(const EoDxfGraphic& entity);
+
+  /** @brief Writes the thickness of a graphic entity to the DXF file if it is greater than a specified geometric
+   * tolerance.
+   *
+   * This method checks if the thickness of the given graphic entity is effectively greater than a defined geometric
+   * tolerance (EoDxf::geometricTolerance). If the thickness is greater than this tolerance, it writes the corresponding
+   * DXF group code (39) and its value (the thickness) to the output stream. This is important for entities that have a
+   * non-default thickness, as it affects how they are rendered in 3D space.
+   *
+   * @param entity A reference to the EoDxfGraphic entity whose thickness is to be written.
+   */
+  void WriteThickness(const EoDxfGraphic& entity);
+
+  bool Write3dFace(EoDxf3dFace* _3dFace);
+
+  bool WriteArc(EoDxfArc* arc);
+  bool WriteCircle(EoDxfCircle* circle);
+ 
+  /** @brief Writes a DIMENSION entity to the DXF file.
+   *
+   * This method handles the writing of a DIMENSION entity, which represents various types of dimensions (linear,
+   * aligned, angular, etc.) in a DXF file. The method writes the necessary group codes and values to represent the
+   * dimension correctly according to the DXF specification. It also takes into account the specific properties of the
+   * dimension, such as its type, measurement points, and associated styles.
+   *
+   * @param dimension A pointer to the EoDxfDimension object containing the properties of the dimension to be written.
+   * @return true if the dimension was successfully written; otherwise, false.
+   */
+  bool WriteDimension(EoDxfDimension* dimension);
+
+  bool WriteEllipse(EoDxfEllipse* ellipse);
+  bool WriteHatch(EoDxfHatch* hatch);
+  bool WriteInsert(EoDxfInsert* blockReference);
+  bool WriteLeader(EoDxfLeader* leader);
+  bool WriteLine(EoDxfLine* line);
+  bool WriteLWPolyline(EoDxfLwPolyline* polyline);
+ 
+ /** @brief Writes an MLEADER entity to the DXF file.
+   *
+   * This method handles the writing of an MLEADER (multileader) entity, which represents a leader with multiple
+   * segments and associated content (such as text or blocks) in a DXF file. The method writes the necessary group codes
+   * and values to represent the MLEADER correctly according to the DXF specification. It also takes into account the
+   * specific properties of the MLEADER, such as its leader type, line color, line type, content type, and other
+   * attributes that define its appearance and behavior in the drawing.
+   *
+   * @param mLeader A pointer to the EoDxfMLeader object containing the properties of the MLEADER to be written.
+   * @return true if the MLEADER was successfully written; otherwise, false.
+   */
+  bool WriteMLeader(EoDxfMLeader* mLeader);
+
+  bool WriteMText(EoDxfMText* mText);
   bool WritePoint(EoDxfPoint* point);
-  bool WriteLine(EoDxfLine* ent);
+  bool WritePolyline(EoDxfPolyline* polyline);
 
   /** @brief Writes a RAY entity to the DXF file (AC1012+).
    *
@@ -57,6 +123,12 @@ class EoDxfWrite {
    */
   bool WriteRay(EoDxfRay* ray);
 
+  bool WriteSolid(EoDxfSolid* solid);
+  bool WriteSpline(EoDxfSpline* spline);
+  bool WriteText(EoDxfText* text);
+  bool WriteTrace(EoDxfTrace* trace);
+  bool WriteViewport(EoDxfViewport* viewport);
+
   /** @brief Writes an XLINE entity to the DXF file.
    *
    * An XLINE (construction line) is defined by a starting point and a direction vector. The direction vector is derived
@@ -68,52 +140,13 @@ class EoDxfWrite {
    * @return true if the XLINE was successfully written; otherwise, false.
    */
   bool WriteXline(EoDxfXline* xline);
-  bool WriteCircle(EoDxfCircle* circle);
-  bool WriteArc(EoDxfArc* arc);
-  bool WriteEllipse(EoDxfEllipse* ellipse);
-  bool WriteTrace(EoDxfTrace* trace);
-  bool WriteSolid(EoDxfSolid* solid);
-  bool Write3dFace(EoDxf3dFace* face);
-  bool WriteLWPolyline(EoDxfLwPolyline* polyline);
-  bool WritePolyline(EoDxfPolyline* polyline);
-  bool WriteSpline(EoDxfSpline* spline);
+
   bool WriteBlockRecord(std::wstring_view name);
   bool WriteBlock(EoDxfBlock* block);
-  bool WriteInsert(EoDxfInsert* blockReference);
   void AddImageDefinition(const EoDxfImageDefinition& imageDefinition);
   bool WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData);
-  bool WriteMText(EoDxfMText* mText);
-  bool WriteText(EoDxfText* text);
-  bool WriteHatch(EoDxfHatch* hatch);
-  bool WriteViewport(EoDxfViewport* viewport);
   EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::wstring_view name);
-  bool WriteLeader(EoDxfLeader* leader);
-  
-  /** @brief Writes an MLEADER entity to the DXF file.
-   *
-   * This method handles the writing of an MLEADER (multileader) entity, which represents a leader with multiple segments
-   * and associated content (such as text or blocks) in a DXF file. The method writes the necessary group codes and
-   * values to represent the MLEADER correctly according to the DXF specification. It also takes into account the
-   * specific properties of the MLEADER, such as its leader type, line color, line type, content type, and other
-   * attributes that define its appearance and behavior in the drawing.
-   *
-   * @param mLeader A pointer to the EoDxfMLeader object containing the properties of the MLEADER to be written.
-   * @return true if the MLEADER was successfully written; otherwise, false.
-   */
-  bool WriteMLeader(EoDxfMLeader* mLeader);
-  
-  /** @brief Writes a DIMENSION entity to the DXF file.
-   *
-   * This method handles the writing of a DIMENSION entity, which represents various types of dimensions (linear, aligned,
-   * angular, etc.) in a DXF file. The method writes the necessary group codes and values to represent the dimension
-   * correctly according to the DXF specification. It also takes into account the specific properties of the dimension,
-   * such as its type, measurement points, and associated styles.
-   *
-   * @param dimension A pointer to the EoDxfDimension object containing the properties of the dimension to be written.
-   * @return true if the dimension was successfully written; otherwise, false.
-   */
-  bool WriteDimension(EoDxfDimension* dimension);
-
+ 
  private:
   bool TrackWriteResult(bool isOk) noexcept {
     m_writeOk = m_writeOk && isOk;
@@ -140,7 +173,8 @@ class EoDxfWrite {
   }
   bool WriteCodeBool(int code, bool value) { return TrackWriteResult(m_writer != nullptr && m_writer->WriteBool(code, value)); }
 
-  bool WriteEntity(EoDxfGraphic* ent);
+  bool WriteEntity(EoDxfGraphic* entity);
+
   bool WriteTables();
   bool WriteBlocks();
   bool WriteObjects();

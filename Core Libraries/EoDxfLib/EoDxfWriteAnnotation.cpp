@@ -43,11 +43,7 @@ bool EoDxfWrite::WriteDimension(EoDxfDimension* dimension) {
   // vertical, and rotated linear dimensions. This group value is the negative of the angle between the OCS X axis and
   // the UCS X axis.It is always in the XY plane of the OCS - not written byAeSys.
 
-  if (!dimension->extAxisX.IsDefaultNormal() || !dimension->extAxisY.IsDefaultNormal()) {
-    WriteCodeDouble(210, dimension->m_extrusionDirection.x);
-    WriteCodeDouble(220, dimension->m_extrusionDirection.y);
-    WriteCodeDouble(230, dimension->m_extrusionDirection.z);
-  }
+  WriteExtrusionDirection(*dimension);
   WriteCodeWideString(3, dimension->GetDimensionStyleName());
 
   // End of AcDbDimension group, start of specific dimension type group
@@ -373,9 +369,7 @@ bool EoDxfWrite::WriteMText(EoDxfMText* mText) {
   }
   WriteCodeWideString(1, mText->m_textString.substr(chunkOffset));
 
-  WriteCodeDouble(210, mText->m_extrusionDirection.x);
-  WriteCodeDouble(220, mText->m_extrusionDirection.y);
-  WriteCodeDouble(230, mText->m_extrusionDirection.z);
+  WriteExtrusionDirection(*mText);
 
   return m_writeOk;
 }
@@ -384,7 +378,7 @@ bool EoDxfWrite::WriteText(EoDxfText* text) {
   WriteCodeString(0, L"TEXT");
   WriteEntity(text);
   WriteCodeString(100, L"AcDbText");
-
+  WriteThickness(*text);
   WriteCodeDouble(10, text->m_firstAlignmentPoint.x);
   WriteCodeDouble(20, text->m_firstAlignmentPoint.y);
   WriteCodeDouble(30, text->m_firstAlignmentPoint.z);
@@ -406,9 +400,8 @@ bool EoDxfWrite::WriteText(EoDxfText* text) {
     WriteCodeDouble(21, text->m_secondAlignmentPoint.y);
     WriteCodeDouble(31, text->m_secondAlignmentPoint.z);
   }
-  WriteCodeDouble(210, text->m_extrusionDirection.x);
-  WriteCodeDouble(220, text->m_extrusionDirection.y);
-  WriteCodeDouble(230, text->m_extrusionDirection.z);
+  WriteExtrusionDirection(*text);
+
   WriteCodeString(100, L"AcDbText");
   if (text->m_verticalAlignment != EoDxfText::VerticalAlignment::BaseLine) {
     WriteCodeInt16(73, static_cast<std::int16_t>(text->m_verticalAlignment));

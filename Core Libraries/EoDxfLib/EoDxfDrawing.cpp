@@ -4,23 +4,35 @@
 #include "EoDxfEntities.h"
 #include "EoDxfHatch.h"
 
-bool EoDxfWrite::Write3dFace(EoDxf3dFace* face) {
+void EoDxfWrite::WriteCodePoint3d(int code, const EoDxfGeometryBase3d& point) {
+  WriteCodeDouble(code, point.x);
+  WriteCodeDouble(code + 10, point.y);
+  WriteCodeDouble(code + 20, point.z);
+}
+
+void EoDxfWrite::WriteCodeVector3d(int code, const EoDxfGeometryBase3d& vector) {
+  WriteCodeDouble(code, vector.x);
+  WriteCodeDouble(code + 10, vector.y);
+  WriteCodeDouble(code + 20, vector.z);
+}
+
+void EoDxfWrite::WriteExtrusionDirection(const EoDxfGraphic& entity) {
+  if (!entity.m_extrusionDirection.IsDefaultNormal()) { WriteCodeVector3d(210, entity.m_extrusionDirection); }
+}
+
+void EoDxfWrite::WriteThickness(const EoDxfGraphic& entity) {
+  if (std::abs(entity.m_thickness) > EoDxf::geometricTolerance) { WriteCodeDouble(39, entity.m_thickness); }
+}
+
+bool EoDxfWrite::Write3dFace(EoDxf3dFace* _3dFace) {
   WriteCodeString(0, L"3DFACE");
-  WriteEntity(face);
+  WriteEntity(_3dFace);
   WriteCodeString(100, L"AcDbFace");
-  WriteCodeDouble(10, face->m_firstCorner.x);
-  WriteCodeDouble(20, face->m_firstCorner.y);
-  WriteCodeDouble(30, face->m_firstCorner.z);
-  WriteCodeDouble(11, face->m_secondCorner.x);
-  WriteCodeDouble(21, face->m_secondCorner.y);
-  WriteCodeDouble(31, face->m_secondCorner.z);
-  WriteCodeDouble(12, face->m_thirdCorner.x);
-  WriteCodeDouble(22, face->m_thirdCorner.y);
-  WriteCodeDouble(32, face->m_thirdCorner.z);
-  WriteCodeDouble(13, face->m_fourthCorner.x);
-  WriteCodeDouble(23, face->m_fourthCorner.y);
-  WriteCodeDouble(33, face->m_fourthCorner.z);
-  if (face->m_invisibleFlag != 0) { WriteCodeInt16(70, face->m_invisibleFlag); }
+  WriteCodePoint3d(10, _3dFace->m_firstCorner);
+  WriteCodePoint3d(11, _3dFace->m_secondCorner);
+  WriteCodePoint3d(12, _3dFace->m_thirdCorner);
+  WriteCodePoint3d(13, _3dFace->m_fourthCorner);
+  if (_3dFace->m_invisibleFlag != 0) { WriteCodeInt16(70, _3dFace->m_invisibleFlag); }
   return m_writeOk;
 }
 
@@ -28,10 +40,12 @@ bool EoDxfWrite::WriteArc(EoDxfArc* arc) {
   WriteCodeString(0, L"ARC");
   WriteEntity(arc);
   WriteCodeString(100, L"AcDbCircle");
+  WriteThickness(*arc);
   WriteCodeDouble(10, arc->m_centerPoint.x);
   WriteCodeDouble(20, arc->m_centerPoint.y);
   if (std::abs(arc->m_centerPoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, arc->m_centerPoint.z); }
   WriteCodeDouble(40, arc->m_radius);
+  WriteExtrusionDirection(*arc);
   WriteCodeString(100, L"AcDbArc");
   WriteCodeDouble(50, arc->m_startAngle * EoDxf::RadiansToDegrees);
   WriteCodeDouble(51, arc->m_endAngle * EoDxf::RadiansToDegrees);
@@ -42,10 +56,12 @@ bool EoDxfWrite::WriteCircle(EoDxfCircle* circle) {
   WriteCodeString(0, L"CIRCLE");
   WriteEntity(circle);
   WriteCodeString(100, L"AcDbCircle");
+  WriteThickness(*circle);
   WriteCodeDouble(10, circle->m_centerPoint.x);
   WriteCodeDouble(20, circle->m_centerPoint.y);
   if (std::abs(circle->m_centerPoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, circle->m_centerPoint.z); }
   WriteCodeDouble(40, circle->m_radius);
+  WriteExtrusionDirection(*circle);
   return m_writeOk;
 }
 
@@ -56,12 +72,11 @@ bool EoDxfWrite::WriteEllipse(EoDxfEllipse* ellipse) {
   WriteCodeString(0, L"ELLIPSE");
   WriteEntity(ellipse);
   WriteCodeString(100, L"AcDbEllipse");
-  WriteCodeDouble(10, ellipse->m_centerPoint.x);
-  WriteCodeDouble(20, ellipse->m_centerPoint.y);
-  WriteCodeDouble(30, ellipse->m_centerPoint.z);
+  WriteCodePoint3d(10, ellipse->m_centerPoint);
   WriteCodeDouble(11, ellipse->m_endPointOfMajorAxis.x);
   WriteCodeDouble(21, ellipse->m_endPointOfMajorAxis.y);
   WriteCodeDouble(31, ellipse->m_endPointOfMajorAxis.z);
+  WriteExtrusionDirection(*ellipse);
   WriteCodeDouble(40, ellipse->m_ratio);
   WriteCodeDouble(41, ellipse->m_startParam);
   WriteCodeDouble(42, ellipse->m_endParam);
@@ -73,21 +88,17 @@ bool EoDxfWrite::WriteHatch(EoDxfHatch* hatch) {
   WriteCodeString(0, L"HATCH");
   WriteEntity(hatch);
   WriteCodeString(100, L"AcDbHatch");
-  WriteCodeDouble(10, hatch->m_elevationPoint.x);
-  WriteCodeDouble(20, hatch->m_elevationPoint.y);
-  WriteCodeDouble(30, hatch->m_elevationPoint.z);
-  WriteCodeDouble(210, hatch->m_extrusionDirection.x);
-  WriteCodeDouble(220, hatch->m_extrusionDirection.y);
-  WriteCodeDouble(230, hatch->m_extrusionDirection.z);
+  WriteCodePoint3d(10, hatch->m_elevationPoint);
+  WriteExtrusionDirection(*hatch);
   WriteCodeWideString(2, hatch->m_hatchPatternName);
   WriteCodeInt16(70, hatch->m_solidFillFlag);
   WriteCodeInt16(71, hatch->m_associativityFlag);
   hatch->m_numberOfBoundaryPaths = static_cast<int>(hatch->m_hatchLoops.size());
   WriteCodeInt32(91, hatch->m_numberOfBoundaryPaths);
-  // write paths data
+  // Repeating/varying boundary path data
   for (int i = 0; i < hatch->m_numberOfBoundaryPaths; i++) {
     auto* hatchLoop = hatch->m_hatchLoops.at(i);
-      WriteCodeInt32(92, hatchLoop->m_boundaryPathType);
+    WriteCodeInt32(92, hatchLoop->m_boundaryPathType);
     if ((hatchLoop->m_boundaryPathType & 2) == 2) {
       // polyline boundary path
       if (!hatchLoop->m_entities.empty() && hatchLoop->m_entities.front()->m_entityType == EoDxf::LWPOLYLINE) {
@@ -131,12 +142,8 @@ bool EoDxfWrite::WriteHatch(EoDxfHatch* hatch) {
             WriteCodeInt16(72, 3);
             auto* ellipse = static_cast<EoDxfEllipse*>(hatchLoop->m_entities.at(j).get());
             ellipse->CorrectAxis();
-            WriteCodeDouble(10, ellipse->m_centerPoint.x);
-            WriteCodeDouble(20, ellipse->m_centerPoint.y);
-            WriteCodeDouble(30, ellipse->m_centerPoint.z);
-            WriteCodeDouble(11, ellipse->m_endPointOfMajorAxis.x);
-            WriteCodeDouble(21, ellipse->m_endPointOfMajorAxis.y);
-            WriteCodeDouble(31, ellipse->m_endPointOfMajorAxis.z);
+            WriteCodePoint3d(10, ellipse->m_centerPoint);
+            WriteCodePoint3d(11, ellipse->m_endPointOfMajorAxis);
             WriteCodeDouble(40, ellipse->m_ratio);
             WriteCodeDouble(50, ellipse->m_startParam);
             WriteCodeDouble(51, ellipse->m_endParam);
@@ -157,8 +164,10 @@ bool EoDxfWrite::WriteHatch(EoDxfHatch* hatch) {
   if (!hatch->m_solidFillFlag) {
     WriteCodeDouble(52, hatch->m_hatchPatternAngle);
     WriteCodeDouble(41, hatch->m_hatchPatternScaleOrSpacing);
+    if (hatch->m_mPolygonBoundaryAnnotationFlag) { WriteCodeInt16(73, hatch->m_mPolygonBoundaryAnnotationFlag); }
     WriteCodeInt16(77, hatch->m_hatchPatternDoubleFlag);
     WriteCodeInt16(78, hatch->m_numberOfPatternDefinitionLines);
+    // Pattern line data would go here, but it's not implemented in AeSys yet
   }
   WriteCodeInt32(98, 0);
 
@@ -169,6 +178,7 @@ bool EoDxfWrite::WriteLine(EoDxfLine* line) {
   WriteCodeString(0, L"LINE");
   WriteEntity(line);
   WriteCodeString(100, L"AcDbLine");
+  WriteThickness(*line);
   WriteCodeDouble(10, line->m_startPoint.x);
   WriteCodeDouble(20, line->m_startPoint.y);
   if (line->m_startPoint.z != 0.0 || line->m_endPoint.z != 0.0) {
@@ -180,6 +190,7 @@ bool EoDxfWrite::WriteLine(EoDxfLine* line) {
     WriteCodeDouble(11, line->m_endPoint.x);
     WriteCodeDouble(21, line->m_endPoint.y);
   }
+  WriteExtrusionDirection(*line);
   return m_writeOk;
 }
 
@@ -189,7 +200,12 @@ bool EoDxfWrite::WritePoint(EoDxfPoint* point) {
   WriteCodeString(100, L"AcDbPoint");
   WriteCodeDouble(10, point->m_pointLocation.x);
   WriteCodeDouble(20, point->m_pointLocation.y);
-  if (point->m_pointLocation.z != 0.0) { WriteCodeDouble(30, point->m_pointLocation.z); }
+  if (std::abs(point->m_pointLocation.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, point->m_pointLocation.z); }
+  WriteThickness(*point);
+  WriteExtrusionDirection(*point);
+  if (std::abs(point->m_angleOfXAxis) > EoDxf::geometricTolerance) {
+    WriteCodeDouble(50, point->m_angleOfXAxis * EoDxf::RadiansToDegrees);
+  }
   return m_writeOk;
 }
 
@@ -212,18 +228,12 @@ bool EoDxfWrite::WriteSolid(EoDxfSolid* solid) {
   WriteCodeString(0, L"SOLID");
   WriteEntity(solid);
   WriteCodeString(100, L"AcDbTrace");  // SOLID shares the same subclass as TRACE
-  WriteCodeDouble(10, solid->m_firstCorner.x);
-  WriteCodeDouble(20, solid->m_firstCorner.y);
-  WriteCodeDouble(30, solid->m_firstCorner.z);
-  WriteCodeDouble(11, solid->m_secondCorner.x);
-  WriteCodeDouble(21, solid->m_secondCorner.y);
-  WriteCodeDouble(31, solid->m_secondCorner.z);
-  WriteCodeDouble(12, solid->m_thirdCorner.x);
-  WriteCodeDouble(22, solid->m_thirdCorner.y);
-  WriteCodeDouble(32, solid->m_thirdCorner.z);
-  WriteCodeDouble(13, solid->m_fourthCorner.x);
-  WriteCodeDouble(23, solid->m_fourthCorner.y);
-  WriteCodeDouble(33, solid->m_fourthCorner.z);
+  WriteCodePoint3d(10, solid->m_firstCorner);
+  WriteCodePoint3d(11, solid->m_secondCorner);
+  WriteCodePoint3d(12, solid->m_thirdCorner);
+  WriteCodePoint3d(13, solid->m_fourthCorner);
+  WriteThickness(*solid);
+  WriteExtrusionDirection(*solid);
   return m_writeOk;
 }
 
@@ -231,18 +241,12 @@ bool EoDxfWrite::WriteTrace(EoDxfTrace* trace) {
   WriteCodeString(0, L"TRACE");
   WriteEntity(trace);
   WriteCodeString(100, L"AcDbTrace");
-  WriteCodeDouble(10, trace->m_firstCorner.x);
-  WriteCodeDouble(20, trace->m_firstCorner.y);
-  WriteCodeDouble(30, trace->m_firstCorner.z);
-  WriteCodeDouble(11, trace->m_secondCorner.x);
-  WriteCodeDouble(21, trace->m_secondCorner.y);
-  WriteCodeDouble(31, trace->m_secondCorner.z);
-  WriteCodeDouble(12, trace->m_thirdCorner.x);
-  WriteCodeDouble(22, trace->m_thirdCorner.y);
-  WriteCodeDouble(32, trace->m_thirdCorner.z);
-  WriteCodeDouble(13, trace->m_fourthCorner.x);
-  WriteCodeDouble(23, trace->m_fourthCorner.y);
-  WriteCodeDouble(33, trace->m_fourthCorner.z);
+  WriteCodePoint3d(10, trace->m_firstCorner);
+  WriteCodePoint3d(11, trace->m_secondCorner);
+  WriteCodePoint3d(12, trace->m_thirdCorner);
+  WriteCodePoint3d(13, trace->m_fourthCorner);
+  WriteThickness(*trace);
+  WriteExtrusionDirection(*trace);
   return m_writeOk;
 }
 
@@ -252,9 +256,7 @@ bool EoDxfWrite::WriteXline(EoDxfXline* xline) {
   WriteCodeString(100, L"AcDbXline");
   WriteCodeDouble(10, xline->m_startPoint.x);
   WriteCodeDouble(20, xline->m_startPoint.y);
-  if (std::fabs(xline->m_startPoint.z) > EoDxf::geometricTolerance) {
-    WriteCodeDouble(30, xline->m_startPoint.z);
-  }
+  if (std::fabs(xline->m_startPoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, xline->m_startPoint.z); }
   auto direction = xline->m_unitDirectionVector;
   direction.Unitize();
   WriteCodeDouble(11, direction.x);
@@ -268,13 +270,13 @@ bool EoDxfWrite::WriteLWPolyline(EoDxfLwPolyline* polyline) {
   WriteEntity(polyline);
   WriteCodeString(100, L"AcDbPolyline");
 
-  // Modern container – no more raw pointers
   polyline->m_numberOfVertices = static_cast<int>(polyline->m_vertices.size());
   WriteCodeInt32(90, polyline->m_numberOfVertices);
   WriteCodeInt16(70, polyline->m_polylineFlag);
   WriteCodeDouble(43, polyline->m_constantWidth);
   if (polyline->m_elevation != 0.0) { WriteCodeDouble(38, polyline->m_elevation); }
-  if (polyline->m_thickness != 0.0) { WriteCodeDouble(39, polyline->m_thickness); }
+  WriteThickness(*polyline);
+  WriteExtrusionDirection(*polyline);
   for (const auto& vertex : polyline->m_vertices) {
     WriteCodeDouble(10, vertex.x);
     WriteCodeDouble(20, vertex.y);
@@ -299,7 +301,7 @@ bool EoDxfWrite::WritePolyline(EoDxfPolyline* polyline) {
   WriteCodeDouble(10, 0.0);
   WriteCodeDouble(20, 0.0);
   WriteCodeDouble(30, polyline->m_polylineElevation.z);
-  if (polyline->m_thickness != 0) { WriteCodeDouble(39, polyline->m_thickness); }
+  WriteThickness(*polyline);
   WriteCodeInt16(70, polyline->m_polylineFlag);
   if (polyline->m_defaultStartWidth != 0) { WriteCodeDouble(40, polyline->m_defaultStartWidth); }
   if (polyline->m_defaultEndWidth != 0) { WriteCodeDouble(41, polyline->m_defaultEndWidth); }
@@ -310,13 +312,7 @@ bool EoDxfWrite::WritePolyline(EoDxfPolyline* polyline) {
   if (polyline->m_smoothSurfaceDensityM != 0) { WriteCodeInt16(73, polyline->m_smoothSurfaceDensityM); }
   if (polyline->m_smoothSurfaceDensityN != 0) { WriteCodeInt16(74, polyline->m_smoothSurfaceDensityN); }
   if (polyline->m_curvesAndSmoothSurfaceType != 0) { WriteCodeInt16(75, polyline->m_curvesAndSmoothSurfaceType); }
-  auto extrusionDirection = polyline->m_extrusionDirection;
-  if (extrusionDirection.x > EoDxf::geometricTolerance || extrusionDirection.y < -EoDxf::geometricTolerance ||
-      std::abs(extrusionDirection.z - 1.0) > EoDxf::geometricTolerance) {
-    WriteCodeDouble(210, extrusionDirection.x);
-    WriteCodeDouble(220, extrusionDirection.y);
-    WriteCodeDouble(230, extrusionDirection.z);
-  }
+  WriteExtrusionDirection(*polyline);
 
   // VERTEX entities
   const auto polylineHandle = polyline->m_handle;
@@ -338,13 +334,9 @@ bool EoDxfWrite::WritePolyline(EoDxfPolyline* polyline) {
 
     if ((vertex->m_vertexFlags & 128) != 0 && (vertex->m_vertexFlags & 64) == 0) {
       // Polyface face records (flag 128 without flag 64): dummy coordinates
-      WriteCodeDouble(10, 0.0);
-      WriteCodeDouble(20, 0.0);
-      WriteCodeDouble(30, 0.0);
+      WriteCodePoint3d(10, {0.0, 0.0, 0.0});
     } else {
-      WriteCodeDouble(10, vertex->m_locationPoint.x);
-      WriteCodeDouble(20, vertex->m_locationPoint.y);
-      WriteCodeDouble(30, vertex->m_locationPoint.z);
+      WriteCodePoint3d(10, vertex->m_locationPoint);
     }
     if (vertex->m_startingWidth != 0) { WriteCodeDouble(40, vertex->m_startingWidth); }
     if (vertex->m_endingWidth != 0) { WriteCodeDouble(41, vertex->m_endingWidth); }
@@ -358,9 +350,7 @@ bool EoDxfWrite::WritePolyline(EoDxfPolyline* polyline) {
       if (vertex->m_polyfaceMeshVertexIndex3 != 0) { WriteCodeInt16(73, vertex->m_polyfaceMeshVertexIndex3); }
       if (vertex->m_polyfaceMeshVertexIndex4 != 0) { WriteCodeInt16(74, vertex->m_polyfaceMeshVertexIndex4); }
 
-      if ((vertex->m_vertexFlags & 64) == 0 && vertex->m_identifier != 0) {
-        WriteCodeInt32(91, vertex->m_identifier);
-      }
+      if ((vertex->m_vertexFlags & 64) == 0 && vertex->m_identifier != 0) { WriteCodeInt32(91, vertex->m_identifier); }
     }
   }
 
@@ -382,9 +372,7 @@ bool EoDxfWrite::WriteSpline(EoDxfSpline* spline) {
   WriteEntity(spline);
   WriteCodeString(100, L"AcDbSpline");
 
-  WriteCodeDouble(210, spline->m_normalVector.x);
-  WriteCodeDouble(220, spline->m_normalVector.y);
-  WriteCodeDouble(230, spline->m_normalVector.z);
+  WriteCodeVector3d(210, spline->m_normalVector);
 
   WriteCodeInt16(70, spline->m_splineFlag);
   WriteCodeInt16(71, spline->m_degreeOfTheSplineCurve);
@@ -397,18 +385,9 @@ bool EoDxfWrite::WriteSpline(EoDxfSpline* spline) {
   WriteCodeDouble(43, spline->m_controlPointTolerance);
   WriteCodeDouble(44, spline->m_fitTolerance);
 
-  // Start tangent (12, 22, 32) — write when spline flag bit 1 is set (tangent defined)
-  if ((spline->m_splineFlag & 1) != 0) {
-    WriteCodeDouble(12, spline->m_startTangent.x);
-    WriteCodeDouble(22, spline->m_startTangent.y);
-    WriteCodeDouble(32, spline->m_startTangent.z);
-  }
-
-  // End tangent (13, 23, 33)
-  if ((spline->m_splineFlag & 1) != 0) {
-    WriteCodeDouble(13, spline->m_endTangent.x);
-    WriteCodeDouble(23, spline->m_endTangent.y);
-    WriteCodeDouble(33, spline->m_endTangent.z);
+  if (spline->IsTangentValid()) {
+    WriteCodeVector3d(12, spline->m_startTangent);
+    WriteCodeVector3d(13, spline->m_endTangent);
   }
 
   for (int i = 0; i < spline->m_numberOfKnots; i++) { WriteCodeDouble(40, spline->m_knotValues.at(i)); }
