@@ -12,6 +12,7 @@
 #include "EoDxfLineWidths.h"
 #include "EoDxfReader.h"
 
+class EoDxfAttrib;
 class EoDxfPolyline;
 
 /** @brief Base class for all DXF entities, containing common properties and methods for parsing and extrusion.
@@ -476,18 +477,23 @@ class EoDxfInsert : public EoDxfGraphic {
  protected:
   void ParseCode(int code, EoDxfReader& reader);
 
- public:
-  std::wstring m_blockName;  // Group code 2
-  EoDxfGeometryBase3d m_insertionPoint;  // Group codes 10, 20 & 30
-  double m_xScaleFactor{1.0};  // Group code 41
-  double m_yScaleFactor{1.0};  // Group code 42
-  double m_zScaleFactor{1.0};  // Group code 43
-  double m_rotationAngle{};  // Group code 50 (in radians)
-  std::int16_t m_columnCount{1};  // Group code 70
-  std::int16_t m_rowCount{1};  // Group code 71
-  double m_columnSpacing{};  // Group code 44
-  double m_rowSpacing{};  // Group code 45
-};
+   [[nodiscard]] bool HasAttributesFollow() const noexcept { return m_attributesFollow; }
+
+  public:
+   std::wstring m_blockName;  // Group code 2
+   EoDxfGeometryBase3d m_insertionPoint;  // Group codes 10, 20 & 30
+   double m_xScaleFactor{1.0};  // Group code 41
+   double m_yScaleFactor{1.0};  // Group code 42
+   double m_zScaleFactor{1.0};  // Group code 43
+   double m_rotationAngle{};  // Group code 50 (in radians)
+   std::int16_t m_columnCount{1};  // Group code 70
+   std::int16_t m_rowCount{1};  // Group code 71
+   double m_columnSpacing{};  // Group code 44
+   double m_rowSpacing{};  // Group code 45
+
+  private:
+   bool m_attributesFollow{};  // Group code 66 (1 = ATTRIB entities follow until SEQEND)
+ };
 
 /** @brief Class to handle lightweight polyline entity
  *

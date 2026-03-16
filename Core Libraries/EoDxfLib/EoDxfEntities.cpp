@@ -704,6 +704,9 @@ void EoDxfInsert::ParseCode(int code, EoDxfReader& reader) {
       m_rotationAngle = reader.GetDouble();
       m_rotationAngle = m_rotationAngle * EoDxf::DegreesToRadians;
       break;
+    case 66:
+      m_attributesFollow = (reader.GetInt16() != 0);
+      break;
     case 70:
       m_columnCount = reader.GetInt16();
       break;

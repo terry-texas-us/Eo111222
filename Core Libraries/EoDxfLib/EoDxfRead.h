@@ -79,6 +79,7 @@ class EoDxfRead {
   bool ProcessTrace();
   bool ProcessSolid();
   bool ProcessInsert();
+  bool ProcessInsertAttribs(EoDxfInsert& insert);
   bool ProcessLWPolyline();
   bool ProcessPolyline();
   bool ProcessVertex(EoDxfPolyline* polyline);

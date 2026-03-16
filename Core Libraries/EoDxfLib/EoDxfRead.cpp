@@ -488,6 +488,15 @@ bool EoDxfRead::ProcessEntities(bool isblock) {
       ProcessRay();
     } else if (m_nextEntity == L"XLINE") {
       ProcessXline();
+    } else if (m_nextEntity == L"SEQEND") {
+      // SEQEND terminates POLYLINE/INSERT attribute sequences.
+      // Normally consumed by ProcessVertex/ProcessInsertAttribs; if orphaned, skip it.
+      while (m_reader->ReadRec(&code)) {
+        if (code == 0) {
+          m_nextEntity = m_reader->GetWideString();
+          break;
+        }
+      }
     } else {
       if (m_reader->ReadRec(&code)) {
         if (code == 0) { m_nextEntity = m_reader->GetWideString(); }
@@ -729,6 +738,7 @@ bool EoDxfRead::ProcessAttDef() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
+        if (m_applyExtrusion) { attdef.ApplyExtrusion(); }
         m_interface->AddAttDef(attdef);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -747,6 +757,7 @@ bool EoDxfRead::ProcessAttrib() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
+        if (m_applyExtrusion) { attrib.ApplyExtrusion(); }
         m_interface->AddAttrib(attrib);
         return true;  // found new entity or ENDSEC, terminate
       }
@@ -766,10 +777,59 @@ bool EoDxfRead::ProcessInsert() {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
         m_interface->AddInsert(insert);
+        // When group code 66 = 1, ATTRIB entities follow until SEQEND
+        if (insert.HasAttributesFollow()) { ProcessInsertAttribs(insert); }
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
         insert.ParseCode(code, *m_reader);
+        break;
+    }
+  }
+  return true;
+}
+
+bool EoDxfRead::ProcessInsertAttribs(EoDxfInsert& /*insert*/) {
+  int code;
+  EoDxfAttrib attrib;
+  while (m_reader->ReadRec(&code)) {
+    switch (code) {
+      case 0: {
+        m_nextEntity = m_reader->GetWideString();
+        if (m_nextEntity == L"SEQEND") {
+          // Deliver the final ATTRIB if it has content, then stop
+          if (!attrib.m_tagString.empty()) {
+            if (m_applyExtrusion) { attrib.ApplyExtrusion(); }
+            m_interface->AddAttrib(attrib);
+          }
+          // Consume SEQEND's group codes until the next code 0 record
+          while (m_reader->ReadRec(&code)) {
+            if (code == 0) {
+              m_nextEntity = m_reader->GetWideString();
+              return true;
+            }
+            // Skip SEQEND's own group codes (layer, handle, etc.)
+          }
+          return true;
+        }
+        if (m_nextEntity == L"ATTRIB") {
+          // Deliver the previous ATTRIB and start a new one
+          if (!attrib.m_tagString.empty()) {
+            if (m_applyExtrusion) { attrib.ApplyExtrusion(); }
+            m_interface->AddAttrib(attrib);
+          }
+          attrib = EoDxfAttrib{};
+          break;
+        }
+        // Unexpected entity before SEQEND — deliver any pending ATTRIB and bail out
+        if (!attrib.m_tagString.empty()) {
+          if (m_applyExtrusion) { attrib.ApplyExtrusion(); }
+          m_interface->AddAttrib(attrib);
+        }
+        return true;
+      }
+      default:
+        attrib.ParseCode(code, *m_reader);
         break;
     }
   }
