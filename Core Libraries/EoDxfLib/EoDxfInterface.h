@@ -71,8 +71,17 @@ class EoDxfInterface {
   /** Called for every xline */
   virtual void AddXline(const EoDxfXline& xline) = 0;
 
+  /** Called for every acad proxy entity */
+  virtual void AddAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity) = 0;
+
   /** Called for every arc */
   virtual void AddArc(const EoDxfArc& arc) = 0;
+
+  /** Called for every attribute definition */
+  virtual void AddAttDef(const EoDxfAttDef& attdef) = 0;
+
+  /** Called for every attribute */
+  virtual void AddAttrib(const EoDxfAttrib& attrib) = 0;
 
   /** Called for every circle */
   virtual void AddCircle(const EoDxfCircle& data) = 0;

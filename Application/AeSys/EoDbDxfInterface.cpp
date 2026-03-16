@@ -66,7 +66,7 @@ void EoDbDxfInterface::SetHeaderSectionVariable(
 }
 
 void EoDbDxfInterface::ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 3, L"Converting Header: %i variables\n", header->m_variants.size());
+  ATLTRACE2(traceGeneral, 3, L"Converting Header: %i variables\n", static_cast<int>(header->m_variants.size()));
 
   std::vector<std::wstring> keys{L"$ACADVER", L"$CLAYER", L"$PDMODE", L"$PDSIZE"};
 
@@ -375,6 +375,10 @@ void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
 void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Circle entity conversion\n");
 
+  if (circle.m_radius < Eo::geometricTolerance) {
+    ATLTRACE2(traceGeneral, 3, L"Warning: Circle entity with non-positive radius (%f) skipped.\n", circle.m_radius);
+    return;
+  }
   EoGePoint3d center(circle.m_centerPoint.x, circle.m_centerPoint.y, circle.m_centerPoint.z);
   EoGeVector3d extrusion(circle.m_extrusionDirection.x, circle.m_extrusionDirection.y, circle.m_extrusionDirection.z);
   if (extrusion.IsNearNull()) {
@@ -383,6 +387,10 @@ void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* 
     extrusion.Unitize();
   }
   auto* conic = EoDbConic::CreateCircle(center, extrusion, circle.m_radius);
+  if (conic == nullptr) {
+    ATLTRACE2(traceGeneral, 3, L"Warning: Failed to create circle.\n");
+    return;
+  }
   conic->SetBaseProperties(&circle, document);
   AddToDocument(conic, document);
 }
@@ -410,6 +418,10 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   auto center = EoGePoint3d(ellipse.m_centerPoint.x, ellipse.m_centerPoint.y, ellipse.m_centerPoint.z);
   auto* conic =
       EoDbConic::CreateConic(center, majorAxis, extrusion, ellipse.m_ratio, ellipse.m_startParam, ellipse.m_endParam);
+  if (conic == nullptr) {
+    ATLTRACE2(traceGeneral, 3, L"Warning: Failed to create ellipse.\n");
+    return;
+  }
   conic->SetBaseProperties(&ellipse, document);
   AddToDocument(conic, document);
 }
@@ -481,8 +493,7 @@ void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unuse
 
   std::wstring textStyleName = mtext.m_textStyleName;  // Group code 7
 
-  auto insertionPointInOcs =
-      EoGePoint3d{mtext.m_insertionPoint.x, mtext.m_insertionPoint.y, mtext.m_insertionPoint.z};
+  auto insertionPointInOcs = EoGePoint3d{mtext.m_insertionPoint.x, mtext.m_insertionPoint.y, mtext.m_insertionPoint.z};
   EoGeVector3d extrusionDirection{
       mtext.m_extrusionDirection.x, mtext.m_extrusionDirection.y, mtext.m_extrusionDirection.z};
   if (!mtext.m_haveExtrusion || extrusionDirection.IsNearNull()) {
@@ -654,6 +665,11 @@ void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unuse
   fontDefinition.SetFontName(textStyleName);
   fontDefinition.SetHorizontalAlignment(horizontalAlignment);
   fontDefinition.SetVerticalAlignment(verticalAlignment);
+
+  // Map MTEXT drawing direction (group 72) to AeSys font path
+  if (mtext.m_drawingDirection == EoDxfMText::DrawingDirection::TopToBottom) {
+    fontDefinition.SetPath(EoDb::Path::Down);
+  }
 
   EoGeReferenceSystem referenceSystem(insertionPointInWcs, xAxisDirection, yAxisDirection);
 

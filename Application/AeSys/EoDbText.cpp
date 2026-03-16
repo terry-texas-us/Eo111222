@@ -510,16 +510,13 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
               }
               StartPosition = EndSemicolon + 1;
               CurrentPosition = StartPosition;
-              NumberOfCharactersToDisplay = text.GetLength() - StartPosition;
+              NumberOfCharactersToDisplay = 0;
 
               if (Parameter == '1') {
                 ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 0.5, 0.0));
               } else if (Parameter == '2') {
                 ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, -0.5, 0.0));
               }
-              DisplayTextSegment(
-                  view, deviceContext, fd, ReferenceSystem, StartPosition, NumberOfCharactersToDisplay, text);
-              return;
             }
           }
         }

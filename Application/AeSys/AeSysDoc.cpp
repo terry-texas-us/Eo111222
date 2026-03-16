@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <format>
 #include <new>
 #include <stdexcept>
 #include <string>
@@ -284,35 +285,38 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       SetCommonTableEntries();
       bool success = dxfReader.Read(&dxfInterface, true);  // true for verbose output, false for silent
       if (success) {
-        ATLTRACE2(traceGeneral, 3, L"3dFace: %d.\n", dxfInterface.countOf3dFace);
-        ATLTRACE2(traceGeneral, 3, L"Arc: %d.\n", dxfInterface.countOfArc);
-        ATLTRACE2(traceGeneral, 3, L"Circle: %d.\n", dxfInterface.countOfCircle);
-        ATLTRACE2(traceGeneral, 3, L"DimAlign: %d.\n", dxfInterface.countOfDimAlign);
-        ATLTRACE2(traceGeneral, 3, L"DimLinear: %d.\n", dxfInterface.countOfDimLinear);
-        ATLTRACE2(traceGeneral, 3, L"DimAngular: %d.\n", dxfInterface.countOfDimAngular);
-        ATLTRACE2(traceGeneral, 3, L"DimAngular3P: %d.\n", dxfInterface.countOfDimAngular3P);
-        ATLTRACE2(traceGeneral, 3, L"DimDiametric: %d.\n", dxfInterface.countOfDimDiametric);
-        ATLTRACE2(traceGeneral, 3, L"DimLinear: %d.\n", dxfInterface.countOfDimLinear);
-        ATLTRACE2(traceGeneral, 3, L"DimOrdinate: %d.\n", dxfInterface.countOfDimOrdinate);
-        ATLTRACE2(traceGeneral, 3, L"DimRadial: %d.\n", dxfInterface.countOfDimRadial);
-        ATLTRACE2(traceGeneral, 3, L"Ellipse: %d.\n", dxfInterface.countOfEllipse);
-        ATLTRACE2(traceGeneral, 3, L"Hatch: %d.\n", dxfInterface.countOfHatch);
-        ATLTRACE2(traceGeneral, 3, L"Image: %d.\n", dxfInterface.countOfImage);
-        ATLTRACE2(traceGeneral, 3, L"Insert: %d.\n", dxfInterface.countOfInsert);
-        ATLTRACE2(traceGeneral, 3, L"Knot: %d.\n", dxfInterface.countOfKnot);
-        ATLTRACE2(traceGeneral, 3, L"Line: %d.\n", dxfInterface.countOfLine);
-        ATLTRACE2(traceGeneral, 3, L"LWPolyline: %d.\n", dxfInterface.countOfLWPolyline);
-        ATLTRACE2(traceGeneral, 3, L"MText: %d.\n", dxfInterface.countOfMText);
-        ATLTRACE2(traceGeneral, 3, L"Point: %d.\n", dxfInterface.countOfPoint);
-        ATLTRACE2(traceGeneral, 3, L"Polyline: %d.\n", dxfInterface.countOfPolyline);
-        ATLTRACE2(traceGeneral, 3, L"Ray: %d.\n", dxfInterface.countOfRay);
-        ATLTRACE2(traceGeneral, 3, L"Solid: %d.\n", dxfInterface.countOfSolid);
-        ATLTRACE2(traceGeneral, 3, L"Spline: %d.\n", dxfInterface.countOfSpline);
-        ATLTRACE2(traceGeneral, 3, L"Text: %d.\n", dxfInterface.countOfText);
-        ATLTRACE2(traceGeneral, 3, L"Trace: %d.\n", dxfInterface.countOfTrace);
-        ATLTRACE2(traceGeneral, 3, L"Viewport: %d.\n", dxfInterface.countOfViewport);
+        app.AddStringToReportsList(std::format(L"3dFace: {}", dxfInterface.countOf3dFace));
+        app.AddStringToReportsList(std::format(L"AcadProxyEntity: {}", dxfInterface.countOfAcadProxyEntity));
+        app.AddStringToReportsList(std::format(L"Arc: {}", dxfInterface.countOfArc));
+        app.AddStringToReportsList(std::format(L"AttDef: {}", dxfInterface.countOfAttDef));
+        app.AddStringToReportsList(std::format(L"Attrib: {}", dxfInterface.countOfAttrib));
+        app.AddStringToReportsList(std::format(L"Circle: {}", dxfInterface.countOfCircle));
+        app.AddStringToReportsList(std::format(L"DimAlign: {}", dxfInterface.countOfDimAlign));
+        app.AddStringToReportsList(std::format(L"DimLinear: {}", dxfInterface.countOfDimLinear));
+        app.AddStringToReportsList(std::format(L"DimAngular: {}", dxfInterface.countOfDimAngular));
+        app.AddStringToReportsList(std::format(L"DimAngular3P: {}", dxfInterface.countOfDimAngular3P));
+        app.AddStringToReportsList(std::format(L"DimDiametric: {}", dxfInterface.countOfDimDiametric));
+        app.AddStringToReportsList(std::format(L"DimLinear: {}", dxfInterface.countOfDimLinear));
+        app.AddStringToReportsList(std::format(L"DimOrdinate: {}", dxfInterface.countOfDimOrdinate));
+        app.AddStringToReportsList(std::format(L"DimRadial: {}", dxfInterface.countOfDimRadial));
+        app.AddStringToReportsList(std::format(L"Ellipse: {}", dxfInterface.countOfEllipse));
+        app.AddStringToReportsList(std::format(L"Hatch: {}", dxfInterface.countOfHatch));
+        app.AddStringToReportsList(std::format(L"Image: {}", dxfInterface.countOfImage));
+        app.AddStringToReportsList(std::format(L"Insert: {}", dxfInterface.countOfInsert));
+        app.AddStringToReportsList(std::format(L"Knot: {}", dxfInterface.countOfKnot));
+        app.AddStringToReportsList(std::format(L"Line: {}", dxfInterface.countOfLine));
+        app.AddStringToReportsList(std::format(L"LWPolyline: {}", dxfInterface.countOfLWPolyline));
+        app.AddStringToReportsList(std::format(L"MText: {}", dxfInterface.countOfMText));
+        app.AddStringToReportsList(std::format(L"Point: {}", dxfInterface.countOfPoint));
+        app.AddStringToReportsList(std::format(L"Polyline: {}", dxfInterface.countOfPolyline));
+        app.AddStringToReportsList(std::format(L"Ray: {}", dxfInterface.countOfRay));
+        app.AddStringToReportsList(std::format(L"Solid: {}", dxfInterface.countOfSolid));
+        app.AddStringToReportsList(std::format(L"Spline: {}", dxfInterface.countOfSpline));
+        app.AddStringToReportsList(std::format(L"Text: {}", dxfInterface.countOfText));
+        app.AddStringToReportsList(std::format(L"Trace: {}", dxfInterface.countOfTrace));
+        app.AddStringToReportsList(std::format(L"Viewport: {}", dxfInterface.countOfViewport));
       } else {
-        ATLTRACE2(traceGeneral, 3, L"Error loading DXF file.\n");
+        app.AddStringToReportsList(L"Error loading DXF file.");
       }
       // read dxf/dxb file and save pointer to the database
       // determine the version of the file (from header section) and set m_SaveAsType to EoDb::kDxf or EoDb::kDxb

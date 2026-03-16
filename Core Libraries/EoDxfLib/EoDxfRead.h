@@ -71,7 +71,10 @@ class EoDxfRead {
   bool ProcessRay();
   bool ProcessXline();
   bool ProcessCircle();
+  bool ProcessAcadProxyEntity();
   bool ProcessArc();
+  bool ProcessAttDef();
+  bool ProcessAttrib();
   bool ProcessEllipse();
   bool ProcessTrace();
   bool ProcessSolid();

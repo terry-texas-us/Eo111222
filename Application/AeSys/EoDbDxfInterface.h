@@ -77,12 +77,14 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertBlockEnd(m_document);
   }
 
-  // AutoDesk DXF Reference for Entities Section
-  // https://help.autodesk.com/view/OARX/2018/ENU/?guid=GUID-7D07C886-FD1D-4A0C-A7AB-B4D21F18E484
+  // AutoDesk DXF Reference
+  // https://help.autodesk.com/view/OARX/2026/ENU/?guid=GUID-235B22E0-A567-4CF6-92D3-38A2306D73F3
 
-  void Add3dFace(const EoDxf3dFace& /* 3dFace */) override { countOf3dFace++; }
+  void Add3dFace([[maybe_unused]] const EoDxf3dFace& _3dFace) override { countOf3dFace++; }
+
   // 3DSOLID not implemented
-  // ACAD_PROXY_ENTITY not implemented
+
+  void AddAcadProxyEntity([[maybe_unused]] const EoDxfAcadProxyEntity& proxyEntity) override { countOfAcadProxyEntity++; }
 
   void AddArc(const EoDxfArc& arc) override {
     countOfArc++;
@@ -93,8 +95,11 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
     ConvertArcEntity(arc, m_document);
   }
-  // ATTDEF not implemented
-  // ATTRIB not implemented
+
+  void AddAttDef([[maybe_unused]] const EoDxfAttDef& attdef) override { countOfAttDef++; }
+
+  void AddAttrib([[maybe_unused]] const EoDxfAttrib& attrib) override { countOfAttrib++; }
+
   // BODY not implemented
   void AddCircle(const EoDxfCircle& circle) override {
     countOfCircle++;
@@ -133,23 +138,22 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
     ConvertEllipseEntity(ellipse, m_document);
   }
-  
-  void AddHatch(const EoDxfHatch& hatch) override { 
-  countOfHatch++; 
-  if (m_inBlockDefinition) {
-    ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddHatch - block <%s>\n", m_blockName.c_str());
-    ConvertHatchEntity(hatch, m_document);
-  } else {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddHatch - entities section\n");
-    ConvertHatchEntity(hatch, m_document);
-  }
 
+  void AddHatch(const EoDxfHatch& hatch) override {
+    countOfHatch++;
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddHatch - block <%s>\n", m_blockName.c_str());
+      ConvertHatchEntity(hatch, m_document);
+    } else {
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddHatch - entities section\n");
+      ConvertHatchEntity(hatch, m_document);
+    }
   }
 
   // HELIX not implemented
-  
+
   void AddImage([[maybe_unused]] const EoDxfImage* image) override { countOfImage++; }
-  
+
   void AddUnsupportedObject(const EoDxfUnsupportedObject& /* objectData */) override {}
 
   void AddInsert(const EoDxfInsert& blockReference) override {
@@ -164,7 +168,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
 
   void AddLeader(const EoDxfLeader* leader) override { (void)leader; }
-  
+
   // LIGHT not implemented
 
   void AddLine(const EoDxfLine& line) override {
@@ -195,7 +199,6 @@ class EoDbDxfInterface : public EoDxfInterface {
   // MLINE not implemented
 
   void AddMText(const EoDxfMText& mText) override {
-    (void)mText;
     countOfMText++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addMText - block <%s>\n", m_blockName.c_str());
@@ -228,11 +231,8 @@ class EoDbDxfInterface : public EoDxfInterface {
   // SHAPE not implemented
 
   void AddSolid(const EoDxfSolid& /* solid */) override { countOfSolid++; }
-  void AddSpline(const EoDxfSpline* spline) override {
-    (void)spline;
+  void AddSpline([[maybe_unused]] const EoDxfSpline* spline) override { countOfSpline++; }
 
-    countOfSpline++;
-  }
   // SUN not implemented
   // SURFACE not implemented
   // TABLE not implemented
@@ -366,31 +366,34 @@ class EoDbDxfInterface : public EoDxfInterface {
   EoDbBlock* m_currentOpenBlockDefinition{};
 
  public:
-  int countOf3dFace{};
-  int countOfArc{};
-  int countOfCircle{};
-  int countOfDimAlign{};
-  int countOfDimAngular{};
-  int countOfDimAngular3P{};
-  int countOfDimDiametric{};
-  int countOfDimLinear{};
-  int countOfDimOrdinate{};
-  int countOfDimRadial{};
-  int countOfEllipse{};
-  int countOfHatch{};
-  int countOfImage{};
-  int countOfInsert{};
-  int countOfKnot{};
-  int countOfLine{};
-  int countOfLWPolyline{};
-  int countOfMText{};
-  int countOfPoint{};
-  int countOfPolyline{};
-  int countOfRay{};
-  int countOfSolid{};
-  int countOfSpline{};
-  int countOfText{};
-  int countOfTrace{};
-  int countOfViewport{};
-  int countOfXline{};
+  std::int16_t countOf3dFace{};
+  std::int16_t countOfAcadProxyEntity{};
+  std::int16_t countOfArc{};
+  std::int16_t countOfAttDef{};
+  std::int16_t countOfAttrib{};
+  std::int16_t countOfCircle{};
+  std::int16_t countOfDimAlign{};
+  std::int16_t countOfDimAngular{};
+  std::int16_t countOfDimAngular3P{};
+  std::int16_t countOfDimDiametric{};
+  std::int16_t countOfDimLinear{};
+  std::int16_t countOfDimOrdinate{};
+  std::int16_t countOfDimRadial{};
+  std::int16_t countOfEllipse{};
+  std::int16_t countOfHatch{};
+  std::int16_t countOfImage{};
+  std::int16_t countOfInsert{};
+  std::int16_t countOfKnot{};
+  std::int16_t countOfLine{};
+  std::int16_t countOfLWPolyline{};
+  std::int16_t countOfMText{};
+  std::int16_t countOfPoint{};
+  std::int16_t countOfPolyline{};
+  std::int16_t countOfRay{};
+  std::int16_t countOfSolid{};
+  std::int16_t countOfSpline{};
+  std::int16_t countOfText{};
+  std::int16_t countOfTrace{};
+  std::int16_t countOfViewport{};
+  std::int16_t countOfXline{};
 };

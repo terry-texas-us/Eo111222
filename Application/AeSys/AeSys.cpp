@@ -288,13 +288,6 @@ int AeSys::ConfirmMessageBox(UINT stringResourceIdentifier, const CString& strin
 
   return (MessageBoxW(0, message, caption, MB_ICONINFORMATION | MB_YESNOCANCEL | MB_DEFBUTTON2));
 }
-
-void AeSys::AddStringToMessageList(const CString& message) {
-  auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-
-  mainFrame->GetOutputPane().AddStringToMessageList(message);
-  if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message); }
-}
 void AeSys::AddStringToMessageList(const std::wstring& message) {
   auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
 
@@ -307,6 +300,14 @@ void AeSys::AddStringToMessageList(const wchar_t* message) {
   mainFrame->GetOutputPane().AddStringToMessageList(std::wstring(message));
   if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message); }
 }
+
+void AeSys::AddStringToReportsList(const std::wstring& message) {
+  auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+
+  mainFrame->GetOutputPane().AddStringToReportsList(message);
+  if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message.c_str()); }
+}
+
 
 void AeSys::AddModeInformationToMessageList() {
   auto resourceString = App::LoadStringResource(static_cast<UINT>(m_CurrentMode));

@@ -73,6 +73,17 @@ class EoDxfWrite {
 
   bool Write3dFace(EoDxf3dFace* _3dFace);
 
+  /** @brief Writes an ACAD_PROXY_ENTITY to the DXF file.
+   *
+   *  Proxy entities preserve custom entity data for round-trip fidelity when the defining ObjectARX application is
+   *  not loaded. The method writes the class IDs, graphics and entity binary chunk data (code 310), object-ID handle
+   *  references, and the original data format flag.
+   *
+   *  @param proxyEntity A pointer to the EoDxfAcadProxyEntity object containing the proxy entity's properties.
+   *  @return true if the entity was successfully written; otherwise, false.
+   */
+  bool WriteAcadProxyEntity(EoDxfAcadProxyEntity* proxyEntity);
+
   bool WriteArc(EoDxfArc* arc);
   bool WriteCircle(EoDxfCircle* circle);
  

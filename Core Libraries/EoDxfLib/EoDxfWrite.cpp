@@ -216,6 +216,35 @@ bool EoDxfWrite::WriteEntity(EoDxfGraphic* entity) {
   return m_writeOk;
 }
 
+bool EoDxfWrite::WriteAcadProxyEntity(EoDxfAcadProxyEntity* proxyEntity) {
+  WriteCodeString(0, L"ACAD_PROXY_ENTITY");
+  WriteEntity(proxyEntity);
+  WriteCodeString(100, L"AcDbProxyEntity");
+
+  WriteCodeInt32(90, proxyEntity->m_proxyEntityClassId);
+  WriteCodeInt32(91, proxyEntity->m_applicationEntityClassId);
+
+  // Graphics data: size followed by binary chunk records
+  WriteCodeInt32(92, proxyEntity->m_graphicsDataSizeInBytes);
+  for (const auto& chunk : proxyEntity->m_graphicsDataChunks) { WriteCodeWideString(310, chunk); }
+
+  // Entity data: size (in bits) followed by binary chunk records
+  WriteCodeInt32(93, proxyEntity->m_entityDataSizeInBits);
+  for (const auto& chunk : proxyEntity->m_entityDataChunks) { WriteCodeWideString(310, chunk); }
+
+  // Object ID handle references
+  for (const auto handle : proxyEntity->m_softPointerHandles) { WriteCodeString(330, ToHexString(handle)); }
+  for (const auto handle : proxyEntity->m_hardPointerHandles) { WriteCodeString(340, ToHexString(handle)); }
+  for (const auto handle : proxyEntity->m_softOwnerHandles) { WriteCodeString(350, ToHexString(handle)); }
+  for (const auto handle : proxyEntity->m_hardOwnerHandles) { WriteCodeString(360, ToHexString(handle)); }
+
+  WriteCodeInt32(94, proxyEntity->m_objectIdSectionEnd);
+  WriteCodeInt32(95, proxyEntity->m_objectDrawingFormat);
+  WriteCodeInt16(70, proxyEntity->m_originalDataFormatFlag);
+
+  return m_writeOk;
+}
+
 bool EoDxfWrite::WriteInsert(EoDxfInsert* blockReference) {
   WriteCodeString(0, L"INSERT");
   WriteEntity(blockReference);

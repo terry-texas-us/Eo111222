@@ -444,8 +444,14 @@ bool EoDxfRead::ProcessEntities(bool isblock) {
       ProcessLine();
     } else if (m_nextEntity == L"CIRCLE") {
       ProcessCircle();
+    } else if (m_nextEntity == L"ACAD_PROXY_ENTITY") {
+      ProcessAcadProxyEntity();
     } else if (m_nextEntity == L"ARC") {
       ProcessArc();
+    } else if (m_nextEntity == L"ATTDEF") {
+      ProcessAttDef();
+    } else if (m_nextEntity == L"ATTRIB") {
+      ProcessAttrib();
     } else if (m_nextEntity == L"ELLIPSE") {
       ProcessEllipse();
     } else if (m_nextEntity == L"TRACE") {
@@ -678,6 +684,25 @@ bool EoDxfRead::ProcessCircle() {
   return true;
 }
 
+bool EoDxfRead::ProcessAcadProxyEntity() {
+  int code;
+  EoDxfAcadProxyEntity proxyEntity;
+  while (m_reader->ReadRec(&code)) {
+    switch (code) {
+      case 0: {
+        m_nextEntity = m_reader->GetWideString();
+        if (m_applyExtrusion) { proxyEntity.ApplyExtrusion(); }
+        m_interface->AddAcadProxyEntity(proxyEntity);
+        return true;  // found new entity or ENDSEC, terminate
+      }
+      default:
+        proxyEntity.ParseCode(code, *m_reader);
+        break;
+    }
+  }
+  return true;
+}
+
 bool EoDxfRead::ProcessArc() {
   int code;
   EoDxfArc arc;
@@ -691,6 +716,42 @@ bool EoDxfRead::ProcessArc() {
       }
       default:
         arc.ParseCode(code, *m_reader);
+        break;
+    }
+  }
+  return true;
+}
+
+bool EoDxfRead::ProcessAttDef() {
+  int code;
+  EoDxfAttDef attdef;
+  while (m_reader->ReadRec(&code)) {
+    switch (code) {
+      case 0: {
+        m_nextEntity = m_reader->GetWideString();
+        m_interface->AddAttDef(attdef);
+        return true;  // found new entity or ENDSEC, terminate
+      }
+      default:
+        attdef.ParseCode(code, *m_reader);
+        break;
+    }
+  }
+  return true;
+}
+
+bool EoDxfRead::ProcessAttrib() {
+  int code;
+  EoDxfAttrib attrib;
+  while (m_reader->ReadRec(&code)) {
+    switch (code) {
+      case 0: {
+        m_nextEntity = m_reader->GetWideString();
+        m_interface->AddAttrib(attrib);
+        return true;  // found new entity or ENDSEC, terminate
+      }
+      default:
+        attrib.ParseCode(code, *m_reader);
         break;
     }
   }

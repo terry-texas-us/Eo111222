@@ -100,11 +100,13 @@ class AeSys : public CWinAppEx {
 
  public:
   void AddModeInformationToMessageList();
-  void AddStringToMessageList(const CString& message);
   void AddStringToMessageList(const std::wstring& message);
   void AddStringToMessageList(const wchar_t* message);
   void AddStringToMessageList(UINT stringResourceIdentifier);
   void AddStringToMessageList(UINT stringResourceIdentifier, const CString& string);
+
+  void AddStringToReportsList(const std::wstring& string);
+  
   // Modifies the base accelerator table by defining the mode specific keys.
   void BuildModifiedAcceleratorTable();
 

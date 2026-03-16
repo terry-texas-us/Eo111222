@@ -157,6 +157,56 @@ void EoDxfGraphic::ParseCode(int code, EoDxfReader& reader) {
   }
 }
 
+void EoDxfAcadProxyEntity::ParseCode(int code, EoDxfReader& reader) {
+  switch (code) {
+    case 90:
+      m_proxyEntityClassId = reader.GetInt32();
+      break;
+    case 91:
+      m_applicationEntityClassId = reader.GetInt32();
+      break;
+    case 92:
+      m_graphicsDataSizeInBytes = reader.GetInt32();
+      m_readingGraphicsData = true;
+      break;
+    case 93:
+      m_entityDataSizeInBits = reader.GetInt32();
+      m_readingGraphicsData = false;  // subsequent 310 groups belong to entity data
+      break;
+    case 94:
+      m_objectIdSectionEnd = reader.GetInt32();
+      break;
+    case 95:
+      m_objectDrawingFormat = reader.GetInt32();
+      break;
+    case 70:
+      m_originalDataFormatFlag = reader.GetInt16();
+      break;
+    case 310:
+      if (m_readingGraphicsData) {
+        m_graphicsDataChunks.push_back(reader.GetWideString());
+      } else {
+        m_entityDataChunks.push_back(reader.GetWideString());
+      }
+      break;
+    case 330:
+      m_softPointerHandles.push_back(reader.GetHandleString());
+      break;
+    case 340:
+      m_hardPointerHandles.push_back(reader.GetHandleString());
+      break;
+    case 350:
+      m_softOwnerHandles.push_back(reader.GetHandleString());
+      break;
+    case 360:
+      m_hardOwnerHandles.push_back(reader.GetHandleString());
+      break;
+    default:
+      EoDxfGraphic::ParseCode(code, reader);
+      break;
+  }
+}
+
 void EoDxfPoint::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
@@ -327,6 +377,159 @@ void EoDxfArc::ParseCode(int code, EoDxfReader& reader) {
       break;
     case 51:
       m_endAngle = reader.GetDouble() * EoDxf::DegreesToRadians;
+      break;
+    default:
+      EoDxfGraphic::ParseCode(code, reader);
+      break;
+  }
+}
+
+void EoDxfAttDef::ApplyExtrusion() {
+  if (m_haveExtrusion) {
+    CalculateArbitraryAxis(m_extrusionDirection);
+    ExtrudePointInPlace(m_extrusionDirection, m_insertionPoint);
+  }
+}
+
+void EoDxfAttDef::ParseCode(int code, EoDxfReader& reader) {
+  switch (code) {
+    case 10:
+      m_insertionPoint.x = reader.GetDouble();
+      break;
+    case 20:
+      m_insertionPoint.y = reader.GetDouble();
+      break;
+    case 30:
+      m_insertionPoint.z = reader.GetDouble();
+      break;
+    case 11:
+      m_hasSecondAlignmentPoint = true;
+      m_secondAlignmentPoint.x = reader.GetDouble();
+      break;
+    case 21:
+      m_hasSecondAlignmentPoint = true;
+      m_secondAlignmentPoint.y = reader.GetDouble();
+      break;
+    case 31:
+      m_hasSecondAlignmentPoint = true;
+      m_secondAlignmentPoint.z = reader.GetDouble();
+      break;
+    case 40:
+      m_textHeight = reader.GetDouble();
+      break;
+    case 41:
+      m_relativeXScaleFactor = reader.GetDouble();
+      break;
+    case 50:
+      m_textRotation = reader.GetDouble();
+      break;
+    case 51:
+      m_obliqueAngle = reader.GetDouble();
+      break;
+    case 1:
+      m_defaultValue = reader.GetWideString();
+      break;
+    case 2:
+      m_tagString = reader.GetWideString();
+      break;
+    case 3:
+      m_promptString = reader.GetWideString();
+      break;
+    case 7:
+      m_textStyleName = reader.GetWideString();
+      break;
+    case 70:
+      m_attributeFlags = reader.GetInt16();
+      break;
+    case 71:
+      m_textGenerationFlags = reader.GetInt16();
+      break;
+    case 72:
+      m_horizontalTextJustification = reader.GetInt16();
+      break;
+    case 73:
+      m_fieldLength = reader.GetInt16();
+      break;
+    case 74:
+      m_verticalTextJustification = reader.GetInt16();
+      break;
+    case 280:
+      m_versionNumber = reader.GetInt16();
+      break;
+    default:
+      EoDxfGraphic::ParseCode(code, reader);
+      break;
+  }
+}
+
+void EoDxfAttrib::ApplyExtrusion() {
+  if (m_haveExtrusion) {
+    CalculateArbitraryAxis(m_extrusionDirection);
+    ExtrudePointInPlace(m_extrusionDirection, m_firstAlignmentPoint);
+  }
+}
+
+void EoDxfAttrib::ParseCode(int code, EoDxfReader& reader) {
+  switch (code) {
+    case 10:
+      m_firstAlignmentPoint.x = reader.GetDouble();
+      break;
+    case 20:
+      m_firstAlignmentPoint.y = reader.GetDouble();
+      break;
+    case 30:
+      m_firstAlignmentPoint.z = reader.GetDouble();
+      break;
+    case 11:
+      m_hasSecondAlignmentPoint = true;
+      m_secondAlignmentPoint.x = reader.GetDouble();
+      break;
+    case 21:
+      m_hasSecondAlignmentPoint = true;
+      m_secondAlignmentPoint.y = reader.GetDouble();
+      break;
+    case 31:
+      m_hasSecondAlignmentPoint = true;
+      m_secondAlignmentPoint.z = reader.GetDouble();
+      break;
+    case 40:
+      m_textHeight = reader.GetDouble();
+      break;
+    case 41:
+      m_relativeXScaleFactor = reader.GetDouble();
+      break;
+    case 50:
+      m_textRotation = reader.GetDouble();
+      break;
+    case 51:
+      m_obliqueAngle = reader.GetDouble();
+      break;
+    case 1:
+      m_attributeValue = reader.GetWideString();
+      break;
+    case 2:
+      m_tagString = reader.GetWideString();
+      break;
+    case 7:
+      m_textStyleName = reader.GetWideString();
+      break;
+    case 70:
+      m_attributeFlags = reader.GetInt16();
+      break;
+    case 71:
+      m_textGenerationFlags = reader.GetInt16();
+      break;
+    case 72:
+      m_horizontalTextJustification = reader.GetInt16();
+      break;
+    case 73:
+      m_fieldLength = reader.GetInt16();
+      break;
+    case 74:
+      m_verticalTextJustification = reader.GetInt16();
+      break;
+    case 280:
+      m_versionNumber = reader.GetInt16();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);

@@ -182,6 +182,44 @@ class EoDxfXline : public EoDxfGraphic {
   EoDxfGeometryBase3d m_unitDirectionVector{};  // Group code 11, 21 & 31
 };
 
+/** @brief Class to handle ACAD_PROXY_ENTITY
+ *
+ *  An ACAD_PROXY_ENTITY is a placeholder for a custom entity whose defining ObjectARX application is not currently
+ *  loaded. AutoCAD preserves the entity's binary data so that it can be round-tripped without loss even when the
+ *  application is unavailable. DXF group codes specific to the proxy include the class IDs, graphics/entity data
+ *  sizes, binary chunk records (code 310), and object-ID handle references (codes 330, 340, 350, 360).
+ */
+class EoDxfAcadProxyEntity : public EoDxfGraphic {
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
+
+ public:
+  explicit EoDxfAcadProxyEntity(EoDxf::ETYPE entityType = EoDxf::ACAD_PROXY_ENTITY) noexcept
+      : EoDxfGraphic{entityType} {}
+  void ApplyExtrusion() override {}
+
+ protected:
+  void ParseCode(int code, EoDxfReader& reader);
+
+ public:
+  std::int32_t m_proxyEntityClassId{498};  // Group code 90 (always 498 for proxy entities)
+  std::int32_t m_applicationEntityClassId{};  // Group code 91 (class ID from CLASSES section, 500-based)
+  std::int32_t m_graphicsDataSizeInBytes{};  // Group code 92 (byte count of graphics data in following 310 groups)
+  std::int32_t m_entityDataSizeInBits{};  // Group code 93 (bit count of entity data in following 310 groups)
+  std::int32_t m_objectIdSectionEnd{};  // Group code 94 (always 0, marks end of object ID section)
+  std::int32_t m_objectDrawingFormat{};  // Group code 95 (0 = R13, 14 = R14, ...)
+  std::int16_t m_originalDataFormatFlag{};  // Group code 70 (0 = DWG format, 1 = DXF format)
+  std::vector<std::wstring> m_graphicsDataChunks;  // Group code 310 (binary chunk records for proxy graphics)
+  std::vector<std::wstring> m_entityDataChunks;  // Group code 310 (binary chunk records for entity data)
+  std::vector<std::uint64_t> m_softPointerHandles;  // Group code 330 (soft pointer IDs, after entity-level ones)
+  std::vector<std::uint64_t> m_hardPointerHandles;  // Group code 340 (hard pointer IDs)
+  std::vector<std::uint64_t> m_softOwnerHandles;  // Group code 350 (soft owner IDs)
+  std::vector<std::uint64_t> m_hardOwnerHandles;  // Group code 360 (hard owner IDs)
+
+ private:
+  bool m_readingGraphicsData{true};  // Tracks whether 310 groups belong to graphics data or entity data
+};
+
 /** @brief Class to handle circle entity
  *
  *  A circle is a closed curve where all points are equidistant from a fixed center point.
@@ -244,6 +282,91 @@ class EoDxfArc : public EoDxfGraphic {
   double m_startAngle{};  // group code 50 (in radians)
   double m_endAngle{};  // group code 51 (in radians)
   std::int16_t m_isCounterClockwise{1};  // group code 73
+};
+
+class EoDxfAttDef : public EoDxfGraphic {
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
+
+ public:
+  explicit EoDxfAttDef(EoDxf::ETYPE entityType = EoDxf::ATTDEF) noexcept : EoDxfGraphic{entityType} {}
+  void ApplyExtrusion() override;
+
+  [[nodiscard]] bool HasSecondAlignmentPoint() const noexcept { return m_hasSecondAlignmentPoint; }
+
+ protected:
+  /** @brief Parses dxf code and value to read attribute definition entity data
+   *  @param code dxf code
+   *  @param reader reference to EoDxfReader to read value
+   */
+  void ParseCode(int code, EoDxfReader& reader);
+
+ public:
+  // --- Subclass AcDbText ---
+  EoDxfGeometryBase3d m_insertionPoint{};  // Group codes 10, 20 & 30 (first alignment point in OCS)
+  EoDxfGeometryBase3d m_secondAlignmentPoint{};  // Group codes 11, 21 & 31 (second alignment point in OCS)
+  double m_textHeight{};  // Group code 40
+  std::wstring m_defaultValue;  // Group code 1 (default attribute value string)
+  double m_textRotation{};  // Group code 50 (in degrees)
+  double m_relativeXScaleFactor{1.0};  // Group code 41 (width factor, default 1.0)
+  double m_obliqueAngle{};  // Group code 51 (in degrees)
+  std::wstring m_textStyleName{L"STANDARD"};  // Group code 7
+  std::int16_t m_textGenerationFlags{};  // Group code 71 (optional; 2=backward, 4=upside down)
+  std::int16_t
+      m_horizontalTextJustification{};  // Group code 72 (0=Left, 1=Center, 2=Right, 3=Aligned, 4=Middle, 5=Fit)
+
+  // --- Subclass AcDbAttributeDefinition ---
+  std::int16_t m_versionNumber{};  // Group code 280 (0 = 2010)
+  std::wstring m_promptString;  // Group code 3 (prompt string displayed during attribute insertion)
+  std::wstring m_tagString;  // Group code 2 (attribute tag, cannot contain spaces)
+  std::int16_t m_attributeFlags{};  // Group code 70 (1=Invisible, 2=Constant, 4=Verification required, 8=Preset)
+  std::int16_t m_fieldLength{};  // Group code 73 (optional, not currently used)
+  std::int16_t m_verticalTextJustification{};  // Group code 74 (0=Baseline, 1=Bottom, 2=Middle, 3=Top)
+
+ private:
+  bool m_hasSecondAlignmentPoint{};
+};
+
+class EoDxfAttrib : public EoDxfGraphic {
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
+
+ public:
+  explicit EoDxfAttrib(EoDxf::ETYPE entityType = EoDxf::ATTRIB) noexcept : EoDxfGraphic{entityType} {}
+  void ApplyExtrusion() override;
+
+  [[nodiscard]] bool HasSecondAlignmentPoint() const noexcept { return m_hasSecondAlignmentPoint; }
+
+ protected:
+  /** @brief Parses dxf code and value to read attribute entity data
+   *  @param code dxf code
+   *  @param reader reference to EoDxfReader to read value
+   */
+  void ParseCode(int code, EoDxfReader& reader);
+
+ public:
+  // --- Subclass AcDbText ---
+  EoDxfGeometryBase3d m_firstAlignmentPoint{};  // Group codes 10, 20 & 30 (text start point in OCS)
+  double m_textHeight{};  // Group code 40
+  std::wstring m_attributeValue;  // Group code 1 (attribute value string)
+  double m_textRotation{};  // Group code 50 (in degrees)
+  double m_relativeXScaleFactor{1.0};  // Group code 41 (width factor, default 1.0)
+  double m_obliqueAngle{};  // Group code 51 (in degrees)
+  std::wstring m_textStyleName{L"STANDARD"};  // Group code 7
+  std::int16_t m_textGenerationFlags{};  // Group code 71 (optional; 2=backward, 4=upside down)
+  std::int16_t
+      m_horizontalTextJustification{};  // Group code 72 (0=Left, 1=Center, 2=Right, 3=Aligned, 4=Middle, 5=Fit)
+
+  // --- Subclass AcDbAttribute ---
+  std::int16_t m_versionNumber{};  // Group code 280 (0 = 2010)
+  std::wstring m_tagString;  // Group code 2 (attribute tag)
+  std::int16_t m_attributeFlags{};  // Group code 70 (1=Invisible, 2=Constant, 4=Verification required, 8=Preset)
+  std::int16_t m_fieldLength{};  // Group code 73 (optional, not currently used)
+  std::int16_t m_verticalTextJustification{};  // Group code 74 (0=Baseline, 1=Bottom, 2=Middle, 3=Top)
+  EoDxfGeometryBase3d m_secondAlignmentPoint{};  // Group codes 11, 21 & 31 (alignment/fit point in OCS)
+
+ private:
+  bool m_hasSecondAlignmentPoint{};
 };
 
 /** @brief Class to handle ellipse entity
