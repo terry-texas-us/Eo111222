@@ -463,8 +463,204 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
 }
 
 void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unused]] AeSysDoc* document) {
-  const auto& textValue = mtext.m_textString;
-  ATLTRACE2(traceGeneral, 3, L"MText entity conversion - Value: %s (under construction)\n", textValue.c_str());
+  ATLTRACE2(traceGeneral, 2, L"MText entity conversion\n");
+
+  if (mtext.m_nominalTextHeight < Eo::geometricTolerance) {
+    ATLTRACE2(traceGeneral, 1, L"MText entity skipped: zero or near-zero text height\n");
+    return;
+  }
+  if (mtext.m_textString.empty()) {
+    ATLTRACE2(traceGeneral, 1, L"MText entity skipped: empty text string\n");
+    return;
+  }
+
+  auto textHeight = mtext.m_nominalTextHeight;  // Group code 40
+
+  // MTEXT rotation (group code 50) is already in radians; UpdateAngle() has resolved xAxisDirection if present
+  auto textRotation = mtext.m_rotationAngle;
+
+  std::wstring textStyleName = mtext.m_textStyleName;  // Group code 7
+
+  auto insertionPointInOcs =
+      EoGePoint3d{mtext.m_insertionPoint.x, mtext.m_insertionPoint.y, mtext.m_insertionPoint.z};
+  EoGeVector3d extrusionDirection{
+      mtext.m_extrusionDirection.x, mtext.m_extrusionDirection.y, mtext.m_extrusionDirection.z};
+  if (!mtext.m_haveExtrusion || extrusionDirection.IsNearNull()) {
+    extrusionDirection = EoGeVector3d::positiveUnitZ;
+  } else {
+    extrusionDirection.Unitize();
+  }
+
+  // Transform insertion point OCS → WCS
+  EoGeOcsTransform transformOcs{extrusionDirection};
+  auto insertionPointInWcs = transformOcs * insertionPointInOcs;
+
+  // Build baseline direction from rotation angle
+  auto baselineDirection = EoGeVector3d::positiveUnitX;
+  baselineDirection.RotateAboutArbitraryAxis(extrusionDirection, textRotation);
+
+  auto xAxisDirection = baselineDirection;
+  auto yAxisDirection = CrossProduct(extrusionDirection, xAxisDirection);
+
+  yAxisDirection *= textHeight;
+  xAxisDirection *= textHeight * Eo::defaultCharacterCellAspectRatio;
+
+  // Map MTEXT AttachmentPoint (9-point grid) to AeSys horizontal and vertical alignment
+  EoDb::HorizontalAlignment horizontalAlignment = EoDb::HorizontalAlignment::Left;
+  EoDb::VerticalAlignment verticalAlignment = EoDb::VerticalAlignment::Top;
+
+  switch (mtext.m_attachmentPoint) {
+    case EoDxfMText::AttachmentPoint::TopLeft:
+      horizontalAlignment = EoDb::HorizontalAlignment::Left;
+      verticalAlignment = EoDb::VerticalAlignment::Top;
+      break;
+    case EoDxfMText::AttachmentPoint::TopCenter:
+      horizontalAlignment = EoDb::HorizontalAlignment::Center;
+      verticalAlignment = EoDb::VerticalAlignment::Top;
+      break;
+    case EoDxfMText::AttachmentPoint::TopRight:
+      horizontalAlignment = EoDb::HorizontalAlignment::Right;
+      verticalAlignment = EoDb::VerticalAlignment::Top;
+      break;
+    case EoDxfMText::AttachmentPoint::MiddleLeft:
+      horizontalAlignment = EoDb::HorizontalAlignment::Left;
+      verticalAlignment = EoDb::VerticalAlignment::Middle;
+      break;
+    case EoDxfMText::AttachmentPoint::MiddleCenter:
+      horizontalAlignment = EoDb::HorizontalAlignment::Center;
+      verticalAlignment = EoDb::VerticalAlignment::Middle;
+      break;
+    case EoDxfMText::AttachmentPoint::MiddleRight:
+      horizontalAlignment = EoDb::HorizontalAlignment::Right;
+      verticalAlignment = EoDb::VerticalAlignment::Middle;
+      break;
+    case EoDxfMText::AttachmentPoint::BottomLeft:
+      horizontalAlignment = EoDb::HorizontalAlignment::Left;
+      verticalAlignment = EoDb::VerticalAlignment::Bottom;
+      break;
+    case EoDxfMText::AttachmentPoint::BottomCenter:
+      horizontalAlignment = EoDb::HorizontalAlignment::Center;
+      verticalAlignment = EoDb::VerticalAlignment::Bottom;
+      break;
+    case EoDxfMText::AttachmentPoint::BottomRight:
+      horizontalAlignment = EoDb::HorizontalAlignment::Right;
+      verticalAlignment = EoDb::VerticalAlignment::Bottom;
+      break;
+    default:
+      break;
+  }
+
+  /** @brief Strip only MTEXT formatting codes that AeSys cannot render; preserve codes the renderer handles.
+   *
+   * AeSys DisplayTextWithFormattingCharacters() handles at render time:
+   *  - \P  → hard line break (paragraph)
+   *  - \A  → alignment change (bottom/center/top)
+   *  - \S  → stacked fractions (numerator/denominator with / or ^ delimiter)
+   *
+   * Everything else is stripped here at import time:
+   *  - \fFontName|...; \HValue; \CValue; \TValue; \QValue; \WValue; → skip to semicolon
+   *  - \L \l \O \o → underline/overline start/stop (dropped)
+   *  - \~ → non-breaking space (converted to regular space)
+   *  - \\ \{ \} → escaped literals (resolved to the literal character)
+   *  - { } → brace grouping (braces stripped, content preserved)
+   */
+  const auto& rawText = mtext.m_textString;
+  std::wstring cleanedText;
+  cleanedText.reserve(rawText.size());
+
+  for (std::size_t i = 0; i < rawText.size(); ++i) {
+    const wchar_t currentCharacter = rawText[i];
+
+    if (currentCharacter == L'\\' && i + 1 < rawText.size()) {
+      const wchar_t nextCharacter = rawText[i + 1];
+      switch (nextCharacter) {
+        case L'P':
+        case L'S':
+          // Renderer handles \P and \S — pass through verbatim
+          cleanedText += L'\\';
+          cleanedText += nextCharacter;
+          ++i;
+          break;
+        case L'A': {
+          // Renderer handles \A — pass through the complete \Avalue; sequence
+          auto semicolonPosition = rawText.find(L';', i + 2);
+          if (semicolonPosition != std::wstring::npos) {
+            cleanedText += rawText.substr(i, semicolonPosition - i + 1);
+            i = semicolonPosition;
+          } else {
+            cleanedText += L'\\';
+            cleanedText += nextCharacter;
+            ++i;
+          }
+          break;
+        }
+        case L'\\':
+        case L'{':
+        case L'}':
+          // Escaped literal characters — resolve to the literal
+          cleanedText += nextCharacter;
+          ++i;
+          break;
+        case L'~':
+          // Non-breaking space → regular space
+          cleanedText += L' ';
+          ++i;
+          break;
+        case L'L':
+        case L'l':
+        case L'O':
+        case L'o':
+          // Underline/overline start/stop → strip
+          ++i;
+          break;
+        case L'f':
+        case L'F':
+        case L'H':
+        case L'C':
+        case L'T':
+        case L'Q':
+        case L'W':
+        case L'p': {
+          // Unsupported formatting commands with value ending in semicolon → skip to semicolon
+          auto semicolonPosition = rawText.find(L';', i + 2);
+          if (semicolonPosition != std::wstring::npos) {
+            i = semicolonPosition;
+          } else {
+            ++i;
+          }
+          break;
+        }
+        default:
+          // Unknown escape → keep as-is
+          cleanedText += currentCharacter;
+          cleanedText += nextCharacter;
+          ++i;
+          break;
+      }
+    } else if (currentCharacter == L'{' || currentCharacter == L'}') {
+      // Brace grouping → strip braces, content preserved
+      continue;
+    } else {
+      cleanedText += currentCharacter;
+    }
+  }
+
+  if (cleanedText.empty()) {
+    ATLTRACE2(traceGeneral, 1, L"MText entity skipped: no text content after formatting strip\n");
+    return;
+  }
+
+  EoDbFontDefinition fontDefinition{};
+  fontDefinition.SetFontName(textStyleName);
+  fontDefinition.SetHorizontalAlignment(horizontalAlignment);
+  fontDefinition.SetVerticalAlignment(verticalAlignment);
+
+  EoGeReferenceSystem referenceSystem(insertionPointInWcs, xAxisDirection, yAxisDirection);
+
+  auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, cleanedText);
+  textPrimitive->SetBaseProperties(&mtext, document);
+
+  AddToDocument(textPrimitive, document);
 }
 
 void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) {
@@ -477,27 +673,32 @@ void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* doc
 }
 
 void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 2, L"Text entity conversion - (under construction)\n");
+  ATLTRACE2(traceGeneral, 2, L"Text entity conversion\n");
 
-  [[maybe_unused]] auto thickness = text.m_thickness;  // Group code 50 (is not supported in AeSys)
+  // Guard: skip degenerate entities with zero height or empty string
+  if (text.m_textHeight < Eo::geometricTolerance) {
+    ATLTRACE2(traceGeneral, 1, L"Text entity skipped: zero or near-zero text height\n");
+    return;
+  }
+  if (text.m_string.empty()) {
+    ATLTRACE2(traceGeneral, 1, L"Text entity skipped: empty text string\n");
+    return;
+  }
+
+  [[maybe_unused]] auto thickness = text.m_thickness;  // Group code 39 (not supported in AeSys)
   auto firstAlignmentPointInOcs =
       EoGePoint3d{text.m_firstAlignmentPoint.x, text.m_firstAlignmentPoint.y, text.m_firstAlignmentPoint.z};
   auto textHeight = text.m_textHeight;  // Group code 40
 
-  /** This is the text string itself, which may contain embedded formatting codes:
-   *    \P for new line, \L and \l for overline and underline start, \S for stacked fraction, etc.).
-   * The handling of these formatting codes is complex and may require a dedicated parser to interpret them correctly.
-   * For now, we will treat the entire string as plain text without special formatting.
-   */
-  std::wstring string{text.m_string.c_str()};  // Group code 1
+  std::wstring string{text.m_string};  // Group code 1
 
-  auto textRotation = Eo::DegreeToRadian(text.m_textRotation);  // Group code 50
+  auto textRotation = Eo::DegreeToRadian(text.m_textRotation);  // Group code 50 (degrees → radians)
   auto xScaleFactorWidth = text.m_scaleFactorWidth;  // Group code 41
-  [[maybe_unused]] auto obliqueAngle = Eo::DegreeToRadian(text.m_obliqueAngle);
+  auto obliqueAngle = Eo::DegreeToRadian(text.m_obliqueAngle);  // Group code 51 (degrees → radians)
 
   std::wstring textStyleName = text.m_textStyleName;  // Group code 7
 
-  [[maybe_unused]] auto textGenerationFlags = text.m_textGenerationFlags;  // Group code 71 (is not supported in AeSys)
+  [[maybe_unused]] auto textGenerationFlags = text.m_textGenerationFlags;  // Group code 71 (not supported in AeSys)
   auto horizontalAlignment = text.m_horizontalAlignment;  // Group code 72
 
   auto secondAlignmentPointInOcs =
@@ -512,8 +713,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
 
   auto verticalAlignment = text.m_verticalAlignment;  // Group code 73
 
-  auto baselineDirection = secondAlignmentPointInOcs - firstAlignmentPointInOcs;
-  [[maybe_unused]] auto haveBaselineDirection = !baselineDirection.IsNearNull();
+  const bool hasSecondAlignmentPoint = text.HasSecondAlignmentPoint();
 
   EoGePoint3d firstAlignmentPointInWcs;
   EoGePoint3d secondAlignmentPointInWcs;
@@ -523,29 +723,54 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   firstAlignmentPointInWcs = transformOcs * firstAlignmentPointInOcs;
   secondAlignmentPointInWcs = transformOcs * secondAlignmentPointInOcs;
 
-  // Compute baseline direction – respect DXF rules for Aligned/Fit
-  baselineDirection = EoGeVector3d::positiveUnitX;
+  // Determine if this is the default alignment (Left + Baseline)
+  const bool isDefaultAlignment = (horizontalAlignment == EoDxfText::HorizontalAlignment::Left &&
+                                   verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
   const bool isAlignedOrFit = (horizontalAlignment == EoDxfText::HorizontalAlignment::AlignedIfBaseLine ||
                                horizontalAlignment == EoDxfText::HorizontalAlignment::FitIfBaseLine);
 
-  if (haveBaselineDirection && isAlignedOrFit) {
-    // Spec: ignore textRotation; use points only
-    baselineDirection = (secondAlignmentPointInWcs - firstAlignmentPointInWcs);
-    baselineDirection.Unitize();
+  // Compute baseline direction – respect DXF rules for Aligned/Fit
+  auto baselineDirection = EoGeVector3d::positiveUnitX;
+
+  if (hasSecondAlignmentPoint && isAlignedOrFit) {
+    // Spec: for Aligned/Fit, ignore textRotation; baseline direction is defined by both points
+    auto alignedDirection = secondAlignmentPointInWcs - firstAlignmentPointInWcs;
+    if (!alignedDirection.IsNearNull()) {
+      baselineDirection = alignedDirection;
+      baselineDirection.Unitize();
+    }
   } else {
-    // Normal case: rotation defines direction (in OCS plane, but we already transformed)
-    // Rotate default X around the (now unit) extrusion
+    // Normal case: rotation defines direction
     baselineDirection.RotateAboutArbitraryAxis(extrusionDirection, textRotation);
-    // If second point exists but not Aligned/Fit, it is just the alignment reference point
-    // (we still use firstWcs as origin per your alignment-flag approach)
+  }
+
+  /** DXF origin selection rules:
+   *  - Default alignment (Left + Baseline): first alignment point is the insertion point
+   *  - Aligned/Fit: first alignment point is the baseline start
+   *  - All other non-default alignments: second alignment point is the reference point
+   */
+  EoGePoint3d referenceOrigin;
+  if (isDefaultAlignment || isAlignedOrFit) {
+    referenceOrigin = firstAlignmentPointInWcs;
+  } else if (hasSecondAlignmentPoint) {
+    referenceOrigin = secondAlignmentPointInWcs;
+  } else {
+    // Fallback: if second point was not parsed, use first (malformed DXF data)
+    ATLTRACE2(traceGeneral, 1, L"Text entity: non-default alignment but no second alignment point; using first\n");
+    referenceOrigin = firstAlignmentPointInWcs;
   }
 
   auto xAxisDirection = baselineDirection;
   auto yAxisDirection = CrossProduct(extrusionDirection, xAxisDirection);
 
+  // Apply oblique angle: shear the Y-axis by rotating it toward the baseline
+  if (std::abs(obliqueAngle) > Eo::geometricTolerance) {
+    yAxisDirection.RotateAboutArbitraryAxis(extrusionDirection, -obliqueAngle);
+  }
+
   yAxisDirection *= textHeight;
   xAxisDirection *= xScaleFactorWidth * textHeight * Eo::defaultCharacterCellAspectRatio;
-  EoGeReferenceSystem referenceSystem(firstAlignmentPointInWcs, xAxisDirection, yAxisDirection);
+  EoGeReferenceSystem referenceSystem(referenceOrigin, xAxisDirection, yAxisDirection);
 
   EoDbFontDefinition fontDefinition{};
   fontDefinition.SetFontName(textStyleName);
@@ -553,8 +778,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   /** Only Left(0), Center(1) and Right(2) horizontal alignment options are supported in AeSys so options
    * Aligned(3) → Left, Middle(4) → Center, and Fit(5) → Right; (should only pair with Baseline(0) vertical alignment
    * and when the second alignment point is defined).
-   * @todo: AeSys does not support the stretching behavior of these options.
-   * Consider adding support for the stretching behavior in AeSys and mapping these options directly.
+   * @todo AeSys does not support the stretching behavior of Aligned/Fit options.
    */
   switch (horizontalAlignment) {
     case EoDxfText::HorizontalAlignment::Center:

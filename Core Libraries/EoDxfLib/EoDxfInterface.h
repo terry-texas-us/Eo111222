@@ -7,6 +7,7 @@
 #include "EoDxfHeader.h"
 #include "EoDxfObjects.h"
 #include "EoDxfTables.h"
+#include "EoDxfText.h"
 
 class EoDxfMLeader;
 /**

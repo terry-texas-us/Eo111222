@@ -29,6 +29,50 @@ You can assume I know the code base well and should have little trouble with mod
 - Implement only essential codec behavior first: CP1252 plus round-trip support goals for ASCII and binary DXF with ANSI_1252, UTF-8, and UTF-16.
 - Current priority is EoDxfLib read/write refinement: harden the wide/narrow text boundary, then implement DXF text and hatch read/write mapped to AeSys `EoDbText` and `EoDbPolygon`, using ODA_Converter as the DWG-to-DXF intermediate.
 
+## EoDbText ↔ DXF TEXT/MTEXT Mapping Conventions
+### Reference System Encoding
+- `EoDbText` stores all geometric text properties in its `EoGeReferenceSystem`:
+  - `yDirection.Length()` recovers **text height**
+  - `xDirection.Length()` recovers **widthScale × height × 0.6** (where 0.6 = `Eo::defaultCharacterCellAspectRatio`)
+  - Direction of `xDirection` encodes the **baseline direction** (rotation)
+  - Oblique angle is baked into the Y-direction as a shear rotation around the extrusion normal
+
+To recover DXF properties from the reference system:
+- `height = yDirection.Length()`
+- `widthScale = xDirection.Length() / (height * Eo::defaultCharacterCellAspectRatio)`
+
+### Character Cell Aspect Ratio and Line Spacing Reciprocal
+- `Eo::defaultCharacterCellAspectRatio = 0.6` (width/height). Its reciprocal `1/0.6 = 5/3` is exactly the DXF default MTEXT baseline-to-baseline line spacing ratio. This is not coincidental — both derive from the same stroke font cell geometry.
+
+### DXF Alignment → AeSys Alignment (Lossy Mapping)
+- DXF TEXT has 6 horizontal × 4 vertical alignment values. AeSys supports only 3×3:
+  - **H**: Left, Center, Right (DXF Aligned→Left, Middle→Center, Fit→Right)
+  - **V**: Top, Middle, Bottom (DXF Baseline→Bottom, Bottom→Bottom)
+  - Aligned/Fit stretching behavior is NOT implemented — only direction is preserved.
+
+### MTEXT → EoDbText Multiline Convention
+- DXF MTEXT becomes **multiple EoDbText primitives in a single EoDbGroup** (model space) or sequential primitives in a block. Lines are split on `\P` paragraph breaks. Each line shares the same font definition and alignment but has its own reference system origin offset by `lineSpacingFactor × (5/3) × height` downward per line.
+
+### DXF TEXT group code 50 is in DEGREES; MTEXT group code 50 is in RADIANS
+- This is a known DXF spec inconsistency. `EoDxfMText::UpdateAngle()` resolves the x-axis direction vector if present.
+
+### .PEG Text Serialization (fixed format)
+- `kTextPrimitive` → color → lineTypeIndex → fontDefinition → referenceSystem → text string (tab-delimited CP_ACP). No oblique angle, width scale, or text generation flags are persisted separately — they must be baked into the reference system or font definition at import time.
+
+### DXF TEXT Origin Point Selection
+- Left + Baseline: first alignment point (group 10/20/30)
+- Aligned/Fit: first alignment point (baseline start); both points define direction
+- All other non-default alignments: **second alignment point** (group 11/21/31)
+
+## EoDbText Render-Time Formatting Architecture
+- AeSys already handles `\P`, `\A`, and `\S` formatting codes **at render time** inside `DisplayTextWithFormattingCharacters()`. The detection is done by `HasFormattingCharacters()` in `EoDbText.cpp`. This means MTEXT formatting codes that map to these (paragraph breaks, alignment changes, stacked fractions) can be **preserved in the text string** rather than stripped at import time — the renderer will handle them. Only formatting codes that AeSys does NOT support at render time (font changes \f, color \C, height \H, width \W, tracking \T, oblique \Q, underline \L/\l, overline \O/\o) need to be stripped during DXF import.
+
+## .PEG Legacy Formatting Convention
+- Legacy .peg files use `^/` … `^` for stacked fractions. `ConvertFormattingCharacters()` converts these to `\S` … `;` format at load time. DXF MTEXT already uses `\S` natively, so MTEXT stacked fractions can be passed through directly.
+
+## EoDbText Constructor Behavior
+- Both `EoDbText` constructors (`CString&` and `std::wstring&` variants) call `renderState.Color()` to set `m_color`. When importing from DXF, `SetBaseProperties()` must be called AFTER construction to override this with the entity's actual color. The current conversion code does this correctly.
+
 ## DPI Handling
 - Prefer using `GetDpiForSystem` (or `GetDpiForWindow` when available) for DPI fixes in this codebase.
 
@@ -67,6 +111,13 @@ You can assume I know the code base well and should have little trouble with mod
 
 ## Documentation
 - Utilize Doxygen for automated documentation generation. Ensure that comments are clear and descriptive, and consider the balance between verbosity and clarity to maintain readability.
+
+## AeSys Text Rendering Architecture Notes
+- Some DXF text formatting is handled at **render time** in AeSys, not at import time. See `DisplayTextWithFormattingCharacters()`, `HasFormattingCharacters()` in `EoDbText.cpp`.
+- The `\r\n` newline convention is handled during `DisplayText()` by splitting into segments and calling `text_GetNewLinePos()` for line advancement.
+- `ConvertFormattingCharacters()` is called after constructing text primitives from .peg files to normalize legacy formatting.
+- The stroke font renderer (`DisplayTextSegmentUsingStrokeFont`) uses `Eo::defaultCharacterCellAspectRatio` (0.6) for character spacing, confirming the cell geometry assumption.
+- TrueType font rendering path (`DisplayTextSegmentUsingTrueTypeFont`) is conditional on the font definition's precision and view settings.
 
 ## Response Formatting Preference
 - Format responses as a cleaner Markdown-style preview, with better visual structure than plain text.
