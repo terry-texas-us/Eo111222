@@ -8,10 +8,10 @@
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfEntities.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGsRenderState.h"
-#include "EoDxfEntities.h"
 
 std::int16_t EoDbPrimitive::sm_layerColor{COLOR_BYLAYER};
 std::int16_t EoDbPrimitive::sm_layerLineTypeIndex{LINETYPE_BYLAYER};

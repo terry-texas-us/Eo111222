@@ -29,7 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solutio
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DC37B473-B533-4702-B6C8-FE02708EB7DB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DXF Test FIles", "DXF Test FIles", "{DC37B473-B533-4702-B6C8-FE02708EB7DB}"
 	ProjectSection(SolutionItems) = preProject
 		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1004 - R9\AC1004 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1004 - R9\AC1004 - Empty-1layout.dxf
 		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1006 - R10\AC1006 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1006 - R10\AC1006 - Empty-1layout.dxf
@@ -43,6 +43,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1027 - 2013\AC1027 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1027 - 2013\AC1027 - Empty-1layout.dxf
 		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1032 - 2018\AC1032 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1032 - 2018\AC1032 - Empty-1layout.dxf
 		C:\Users\tsmit\Desktop\Help Peg.pdf = C:\Users\tsmit\Desktop\Help Peg.pdf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{923FCE64-FB18-4901-944B-3F0567CAD53C}"
+	ProjectSection(SolutionItems) = preProject
+		Tools\ConvertPsfToText.ps1 = Tools\ConvertPsfToText.ps1
+		Tools\ConvertStrokeFontV1ToV2.ps1 = Tools\ConvertStrokeFontV1ToV2.ps1
+		Tools\ConvertTextToPsf.ps1 = Tools\ConvertTextToPsf.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{89A30A22-22FE-4682-AFD1-A948713CDE20}"
+	ProjectSection(SolutionItems) = preProject
+		Documentation\Dde Description and Few Uses.md = Documentation\Dde Description and Few Uses.md
+		Application\AeSys\DXF - Storage of String Values.md = Application\AeSys\DXF - Storage of String Values.md
+		Documentation\dxf header.md = Documentation\dxf header.md
+		Documentation\Job File Format.md = Documentation\Job File Format.md
+		Documentation\Simplex PSF Format.md = Documentation\Simplex PSF Format.md
 	EndProjectSection
 EndProject
 Global

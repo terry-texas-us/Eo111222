@@ -63,6 +63,21 @@ constexpr const wchar_t* defaultStrokeFont = L"Simplex.psf";
 constexpr double defaultStrokeFontHeight = 0.125;
 constexpr double defaultCharacterCellAspectRatio = 0.6;  // Width to height ratio of the character cell
 
+/// Stroke font file format constants.
+/// v1: 96 offset entries (chars 32-126 + sentinel), stroke data at int32[96], 16384 bytes total.
+/// v2: magic at int32[0], 225 offset entries at int32[1], 224 advance widths at int32[226],
+///     224 left bearings at int32[450], stroke data at int32[674].
+constexpr int strokeFontFileSizeInBytes = 16384;
+constexpr int strokeFontV1OffsetTableSize = 96;
+constexpr int strokeFontV1MaxCharacterCode = 126;
+constexpr int strokeFontV2MagicNumber = -2;
+constexpr int strokeFontV2OffsetTableStart = 1;           // offset table begins at int32[1]
+constexpr int strokeFontV2OffsetTableEntries = 225;        // 224 characters (32-255) + 1 sentinel
+constexpr int strokeFontV2AdvanceWidthTableStart = 226;    // 224 advance widths (raw stroke X-units)
+constexpr int strokeFontV2LeftBearingTableStart = 450;     // 224 left bearings (raw stroke X-units)
+constexpr int strokeFontV2StrokeDataStart = 674;           // stroke data follows left bearing table
+constexpr int strokeFontV2MaxCharacterCode = 255;
+
 constexpr std::int16_t continuousLineTypeIndex{1};
 
 constexpr COLORREF colorBlack = RGB(0, 0, 0);

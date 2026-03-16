@@ -115,6 +115,7 @@ AeSys::AeSys()
       m_traDocumentTemplate{},
       m_MainFrameMenuHandle{},
       m_SimplexStrokeFont{},
+      m_StrokeFontVersion{},
       m_DeviceHeightInMillimeters{},
       m_DeviceHeightInPixels{},
       m_DeviceWidthInMillimeters{},
@@ -579,15 +580,20 @@ void AeSys::LoadModeResources(int mode, AeSysView* targetView) {
 /// b0 - b11  relative y displacement
 /// b12 - b23 relative x displacement
 /// b24 - b31 operation code (5 for line, else move)
-/// The font is exactly 16384 bytes and defines a 96 character font set with a maximum of 4096 stokes
+///
+/// v1: 16384 bytes, 96-entry offset table (chars 32-126 + sentinel), stroke data at int32[96].
+/// v2: 16384 bytes, magic (-2) at int32[0], 225-entry offset table at int32[1],
+///     224-entry advance width table at int32[226], stroke data at int32[450].
 /// </remarks>
 void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
   HANDLE OpenHandle = CreateFile(pathName, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
   if (OpenHandle != INVALID_HANDLE_VALUE) {
     if (SetFilePointer(OpenHandle, 0, 0, FILE_BEGIN) != (DWORD)-1) {
-      if (m_SimplexStrokeFont == 0) { m_SimplexStrokeFont = new char[16384]; }
+      if (m_SimplexStrokeFont == nullptr) { m_SimplexStrokeFont = new char[Eo::strokeFontFileSizeInBytes]; }
       DWORD NumberOfBytesRead;
-      if (!ReadFile(OpenHandle, m_SimplexStrokeFont, 16384U, &NumberOfBytesRead, 0)) { ReleaseSimplexStrokeFont(); }
+      if (!ReadFile(OpenHandle, m_SimplexStrokeFont, Eo::strokeFontFileSizeInBytes, &NumberOfBytesRead, 0)) {
+        ReleaseSimplexStrokeFont();
+      }
     }
     CloseHandle(OpenHandle);
   } else {
@@ -598,6 +604,10 @@ void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
       LPVOID Resource = LockResource(LoadResource(nullptr, ResourceHandle));
       memcpy_s(m_SimplexStrokeFont, ResourceSize, Resource, ResourceSize);
     }
+  }
+  if (m_SimplexStrokeFont != nullptr) {
+    auto* fontData = reinterpret_cast<long*>(m_SimplexStrokeFont);
+    m_StrokeFontVersion = (fontData[0] == Eo::strokeFontV2MagicNumber) ? 2 : 1;
   }
 }
 void AeSys::ReleaseSimplexStrokeFont() {

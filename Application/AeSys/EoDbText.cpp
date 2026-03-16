@@ -345,14 +345,35 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDb
     EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text) {
   if (numberOfCharacters == 0) { return; }
 
-  long* plStrokeFontDef = (long*)app.SimplexStrokeFont();
-  if (plStrokeFontDef == 0) { return; }
+  auto* fontData = reinterpret_cast<long*>(app.SimplexStrokeFont());
+  if (fontData == nullptr) { return; }
 
   EoGeTransformMatrix transformMatrix(referenceSystem.TransformMatrix());
   transformMatrix.Inverse();
 
-  long* plStrokeChrDef = plStrokeFontDef + 96;
-  double dChrSpac = 1.0 + (0.32 + fontDefinition.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
+  // Resolve font layout based on version (v1 = legacy 96-entry header, v2 = extended with advance widths and left bearings)
+  long* offsetTable;
+  long* advanceWidthTable;
+  long* leftBearingTable;
+  long* strokeData;
+  int maxCharacterCode;
+
+  if (app.StrokeFontVersion() == 2) {
+    offsetTable = fontData + Eo::strokeFontV2OffsetTableStart;
+    advanceWidthTable = fontData + Eo::strokeFontV2AdvanceWidthTableStart;
+    leftBearingTable = fontData + Eo::strokeFontV2LeftBearingTableStart;
+    strokeData = fontData + Eo::strokeFontV2StrokeDataStart;
+    maxCharacterCode = Eo::strokeFontV2MaxCharacterCode;
+  } else {
+    offsetTable = fontData;
+    advanceWidthTable = nullptr;
+    leftBearingTable = nullptr;
+    strokeData = fontData + Eo::strokeFontV1OffsetTableSize;
+    maxCharacterCode = Eo::strokeFontV1MaxCharacterCode;
+  }
+
+  double interCharacterGap = (0.32 + fontDefinition.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
+  double fixedCharacterAdvance = 1.0 + interCharacterGap;
 
   EoGePoint3d ptStroke = EoGePoint3d::kOrigin;
   EoGePoint3d ptChrPos = ptStroke;
@@ -363,18 +384,24 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDb
   while (n < startPosition + numberOfCharacters) {
     polyline::BeginLineStrip();
 
-    int Character = text.GetAt(n);
-    if (Character < 32 || Character > 126) { Character = '.'; }
+    int character = text.GetAt(n);
+    if (character < 32 || character > maxCharacterCode) { character = '.'; }
 
-    for (int i = (int)plStrokeFontDef[Character - 32]; i <= plStrokeFontDef[Character - 32 + 1] - 1; i++) {
-      int iY = (int)(plStrokeChrDef[i - 1] % 4096L);
+    // Apply left bearing offset so character strokes are left-aligned within their proportional cell
+    if (leftBearingTable != nullptr) {
+      int rawLeftBearing = leftBearingTable[character - 32];
+      ptStroke += EoGeVector3d(-rawLeftBearing * 0.01 / Eo::defaultCharacterCellAspectRatio, 0.0, 0.0);
+    }
+
+    for (int i = offsetTable[character - 32]; i <= offsetTable[character - 32 + 1] - 1; i++) {
+      int iY = static_cast<int>(strokeData[i - 1] % 4096L);
       if ((iY & 2048) != 0) { iY = -(iY - 2048); }
-      int iX = (int)((plStrokeChrDef[i - 1] / 4096L) % 4096L);
+      int iX = static_cast<int>((strokeData[i - 1] / 4096L) % 4096L);
       if ((iX & 2048) != 0) { iX = -(iX - 2048); }
 
       ptStroke += EoGeVector3d(0.01 / Eo::defaultCharacterCellAspectRatio * iX, 0.01 * iY, 0.0);
 
-      if (plStrokeChrDef[i - 1] / 16777216 == 5) {
+      if (strokeData[i - 1] / 16777216 == 5) {
         polyline::__End(view, deviceContext, 1);
         polyline::BeginLineStrip();
       }
@@ -382,20 +409,30 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDb
     }
     polyline::__End(view, deviceContext, 1);
 
+    // Per-character proportional advance when v2 advance widths are available
+    double characterAdvance = fixedCharacterAdvance;
+    if (advanceWidthTable != nullptr) {
+      int rawAdvanceWidth = advanceWidthTable[character - 32];
+      if (rawAdvanceWidth > 0) {
+        double characterCellWidth = rawAdvanceWidth * 0.01 / Eo::defaultCharacterCellAspectRatio;
+        characterAdvance = characterCellWidth + interCharacterGap;
+      }
+    }
+
     switch (fontDefinition.Path()) {
       case EoDb::Path::Left:
-        ptChrPos.x -= dChrSpac;
+        ptChrPos.x -= characterAdvance;
         break;
       case EoDb::Path::Up:
-        ptChrPos.y += dChrSpac;
+        ptChrPos.y += characterAdvance;
         break;
       case EoDb::Path::Down:
-        ptChrPos.y -= dChrSpac;
+        ptChrPos.y -= characterAdvance;
         break;
       case EoDb::Path::Right:
         [[fallthrough]];  // default is left to right
       default:
-        ptChrPos.x += dChrSpac;
+        ptChrPos.x += characterAdvance;
     }
     ptStroke = ptChrPos;
     n++;

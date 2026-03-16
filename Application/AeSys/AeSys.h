@@ -65,6 +65,7 @@ class AeSys : public CWinAppEx {
   CMultiDocTemplate* m_traDocumentTemplate;
   HMENU m_MainFrameMenuHandle;
   char* m_SimplexStrokeFont;
+  int m_StrokeFontVersion;  // 1 = legacy 96-entry header, 2 = extended 225-entry header with advance widths
 
   double m_DeviceHeightInMillimeters;
   double m_DeviceHeightInPixels;
@@ -244,6 +245,7 @@ class AeSys : public CWinAppEx {
   void SetUnits(Eo::Units units) { m_Units = units; }
   [[nodiscard]] CString ShadowFolderPath() { return m_ShadowFolderPath; }
   char* SimplexStrokeFont() { return m_SimplexStrokeFont; }
+  [[nodiscard]] int StrokeFontVersion() const { return m_StrokeFontVersion; }
   [[nodiscard]] std::int16_t TrapHighlightColor() const { return m_TrapHighlightColor; }
   void UpdateMDITabs(BOOL resetMDIChild);
   void WarningMessageBox(UINT stringResourceIdentifier);

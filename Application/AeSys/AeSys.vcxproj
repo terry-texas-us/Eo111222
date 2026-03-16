@@ -232,10 +232,6 @@
   <ItemGroup>
     <!-- These files are not compiled, but we want them in the project for easy access. -->
     <!-- Documentation -->
-    <None Include="DXF - Storage of String Values.md">
-      <SubType>
-      </SubType>
-    </None>
     <None Include="Markdowns\Analysis of lex.cpp and Modernization Suggestions.md" />
     <None Include="Markdowns\Dde Description and Few Uses.md" />
     <None Include="Markdowns\dxf header.md" />
