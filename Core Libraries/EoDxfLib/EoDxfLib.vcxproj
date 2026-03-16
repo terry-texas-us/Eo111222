@@ -154,6 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="EoDxfAttributes.h" />
     <ClInclude Include="EoDxfBase.h" />
     <ClInclude Include="EoDxfClasses.h" />
     <ClInclude Include="EoDxfEntities.h" />
@@ -177,6 +178,7 @@
     <ClInclude Include="EoDxfWrite.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EoDxfAttributes.cpp" />
     <ClCompile Include="EoDxfClasses.cpp" />
     <ClCompile Include="EoDxfDimension.cpp" />
     <ClCompile Include="EoDxfDrawing.cpp" />
