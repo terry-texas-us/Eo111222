@@ -36,8 +36,8 @@ class EoMfOutputDockablePane : public CDockablePane {
   virtual ~EoMfOutputDockablePane();
   void ModifyCaption(const CString& string) { SetWindowTextW(string); }
   
-  void AddStringToMessageList(const std::wstring& string_) { m_OutputMessagesList.AddString(string_.c_str()); }
-  void AddStringToReportsList(const std::wstring& string_) { m_OutputReportsList.AddString(string_.c_str()); }
+  void AddStringToMessageList(const std::wstring& message) { m_OutputMessagesList.AddString(message.c_str()); }
+  void AddStringToReportsList(const std::wstring& message) { m_OutputReportsList.AddString(message.c_str()); }
 
  protected:
   afx_msg int OnCreate(LPCREATESTRUCT createStruct);
