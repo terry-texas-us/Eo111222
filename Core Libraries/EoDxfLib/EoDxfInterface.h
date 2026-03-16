@@ -22,180 +22,171 @@ class EoDxfInterface {
   virtual ~EoDxfInterface() = default;
 
   /** Called when header is parsed.  */
-  virtual void addHeader(const EoDxfHeader* header) = 0;
+  virtual void AddHeader(const EoDxfHeader* header) = 0;
 
   /** Called for every class.  */
-  virtual void addClass(const EoDxfClass& class_) = 0;
+  virtual void AddClass(const EoDxfClass& class_) = 0;
 
   /** Called for every line Type.  */
-  virtual void addLinetype(const EoDxfLinetype& linetype) = 0;
+  virtual void AddLinetype(const EoDxfLinetype& linetype) = 0;
   /** Called for every layer. */
-  virtual void addLayer(const EoDxfLayer& layer) = 0;
+  virtual void AddLayer(const EoDxfLayer& layer) = 0;
   /** Called for every dim style. */
-  virtual void addDimStyle(const EoDxfDimensionStyle& dimensionStyle) = 0;
+  virtual void AddDimStyle(const EoDxfDimensionStyle& dimensionStyle) = 0;
   /** Called for every VPORT table. */
-  virtual void addVport(const EoDxfVPort& viewport) = 0;
+  virtual void AddVport(const EoDxfVPort& viewport) = 0;
   /** Called for every text style. */
-  virtual void addTextStyle(const EoDxfTextStyle& textStyle) = 0;
+  virtual void AddTextStyle(const EoDxfTextStyle& textStyle) = 0;
   /** Called for every AppId entry. */
-  virtual void addAppId(const EoDxfAppId& appId) = 0;
-
+  virtual void AddAppId(const EoDxfAppId& appId) = 0;
   /**
    * Called for every block. Note: all entities added after this
    * command go into this block until endBlock() is called.
    *
    * @see endBlock()
    */
-  virtual void addBlock(const EoDxfBlock& block) = 0;
+  virtual void AddBlock(const EoDxfBlock& block) = 0;
 
   /**
    * Called when the following entities corresponding to a
    * block different from the current. Note: all entities added after this
    * command go into this block until setBlock() is called already.
    *
-   * int handle are the value of EoDxfBlock::handleBlock added with addBlock()
+   * int handle are the value of EoDxfBlock::handleBlock added with AddBlock()
    */
-  virtual void setBlock(const int handle) = 0;
+  virtual void SetBlock(const int handle) = 0;
 
   /** Called to end the current block */
-  virtual void endBlock() = 0;
+  virtual void EndBlock() = 0;
 
   /** Called for every point */
-  virtual void addPoint(const EoDxfPoint& point) = 0;
+  virtual void AddPoint(const EoDxfPoint& point) = 0;
 
   /** Called for every line */
-  virtual void addLine(const EoDxfLine& line) = 0;
+  virtual void AddLine(const EoDxfLine& line) = 0;
 
   /** Called for every ray */
-  virtual void addRay(const EoDxfRay& ray) = 0;
+  virtual void AddRay(const EoDxfRay& ray) = 0;
 
   /** Called for every xline */
-  virtual void addXline(const EoDxfXline& xline) = 0;
+  virtual void AddXline(const EoDxfXline& xline) = 0;
 
   /** Called for every arc */
-  virtual void addArc(const EoDxfArc& arc) = 0;
+  virtual void AddArc(const EoDxfArc& arc) = 0;
 
   /** Called for every circle */
-  virtual void addCircle(const EoDxfCircle& data) = 0;
+  virtual void AddCircle(const EoDxfCircle& data) = 0;
 
   /** Called for every ellipse */
-  virtual void addEllipse(const EoDxfEllipse& ellipse) = 0;
+  virtual void AddEllipse(const EoDxfEllipse& ellipse) = 0;
 
   /** Called for every lwpolyline */
-  virtual void addLWPolyline(const EoDxfLwPolyline& polyline) = 0;
+  virtual void AddLWPolyline(const EoDxfLwPolyline& polyline) = 0;
 
   /** Called for every polyline start */
-  virtual void addPolyline(const EoDxfPolyline& polyline) = 0;
+  virtual void AddPolyline(const EoDxfPolyline& polyline) = 0;
 
   /** Called for every spline */
-  virtual void addSpline(const EoDxfSpline* spline) = 0;
+  virtual void AddSpline(const EoDxfSpline* spline) = 0;
 
   /** Called for every spline knot value */
-  virtual void addKnot(const EoDxfGraphic& data) = 0;
+  virtual void AddKnot(const EoDxfGraphic& data) = 0;
 
   /** Called for every insert. */
-  virtual void addInsert(const EoDxfInsert& blockReference) = 0;
+  virtual void AddInsert(const EoDxfInsert& blockReference) = 0;
 
   /** Called for every trace start */
-  virtual void addTrace(const EoDxfTrace& trace) = 0;
+  virtual void AddTrace(const EoDxfTrace& trace) = 0;
 
   /** Called for every 3dFace start */
-  virtual void add3dFace(const EoDxf3dFace& _3dFace) = 0;
+  virtual void Add3dFace(const EoDxf3dFace& _3dFace) = 0;
 
   /** Called for every solid start */
-  virtual void addSolid(const EoDxfSolid& data) = 0;
+  virtual void AddSolid(const EoDxfSolid& data) = 0;
 
   /** Called for every Multi Text entity. */
-  virtual void addMText(const EoDxfMText& mText) = 0;
+  virtual void AddMText(const EoDxfMText& mText) = 0;
 
   /** Called for every Text entity. */
-  virtual void addText(const EoDxfText& text) = 0;
+  virtual void AddText(const EoDxfText& text) = 0;
 
   /**
    * Called for every aligned dimension entity.
    */
-  virtual void addDimAlign(const EoDxfAlignedDimension* data) = 0;
+  virtual void AddDimAlign(const EoDxfAlignedDimension* data) = 0;
   /**
    * Called for every linear or rotated dimension entity.
    */
-  virtual void addDimLinear(const EoDxfDimLinear* data) = 0;
-
+  virtual void AddDimLinear(const EoDxfDimLinear* data) = 0;
   /**
    * Called for every radial dimension entity.
    */
-  virtual void addDimRadial(const EoDxfRadialDimension* data) = 0;
-
+  virtual void AddDimRadial(const EoDxfRadialDimension* data) = 0;
   /**
    * Called for every diametric dimension entity.
    */
-  virtual void addDimDiametric(const EoDxfDiametricDimension* data) = 0;
-
+  virtual void AddDimDiametric(const EoDxfDiametricDimension* data) = 0;
   /**
    * Called for every angular dimension (2 lines version) entity.
    */
-  virtual void addDimAngular(const EoDxf2LineAngularDimension* data) = 0;
-
+  virtual void AddDimAngular(const EoDxf2LineAngularDimension* data) = 0;
   /**
    * Called for every angular dimension (3 points version) entity.
    */
-  virtual void addDimAngular3P(const EoDxf3PointAngularDimension* data) = 0;
-
+  virtual void AddDimAngular3P(const EoDxf3PointAngularDimension* data) = 0;
   /**
    * Called for every ordinate dimension entity.
    */
-  virtual void addDimOrdinate(const EoDxfOrdinateDimension* data) = 0;
-
+  virtual void AddDimOrdinate(const EoDxfOrdinateDimension* data) = 0;
   /**
    * Called for every leader start.
    */
-  virtual void addLeader(const EoDxfLeader* leader) = 0;
-
+  virtual void AddLeader(const EoDxfLeader* leader) = 0;
   /**
    * Called for every multileader entity.
    */
-  virtual void addMLeader(const EoDxfMLeader* mLeader) = 0;
-
+  virtual void AddMLeader(const EoDxfMLeader* mLeader) = 0;
   /**
    * Called for every hatch entity.
    */
-  virtual void addHatch(const EoDxfHatch& data) = 0;
+  virtual void AddHatch(const EoDxfHatch& data) = 0;
 
   /**
    * Called for every viewport entity.
    */
-  virtual void addViewport(const EoDxfViewport& viewport) = 0;
+  virtual void AddViewport(const EoDxfViewport& viewport) = 0;
 
   /**
    * Called for every image entity.
    */
-  virtual void addImage(const EoDxfImage* image) = 0;
+  virtual void AddImage(const EoDxfImage* image) = 0;
 
   /**
    * Called for every image definition.
    */
-  virtual void linkImage(const EoDxfImageDefinition* data) = 0;
+  virtual void LinkImage(const EoDxfImageDefinition* data) = 0;
 
   /**
    * Called for unsupported object records that should be preserved for rewrite fidelity.
    */
-  virtual void addUnsupportedObject(const EoDxfUnsupportedObject& objectData) = 0;
+  virtual void AddUnsupportedObject(const EoDxfUnsupportedObject& objectData) = 0;
 
   /**
    * Called for every comment in the DXF file (code 999).
    */
-  virtual void addComment(std::wstring_view comment) = 0;
+  virtual void AddComment(std::wstring_view comment) = 0;
 
-  virtual void writeHeader(EoDxfHeader& data) = 0;
-  virtual void writeClasses() = 0;
-  virtual void writeBlocks() = 0;
-  virtual void writeBlockRecords() = 0;
-  virtual void writeEntities() = 0;
-  virtual void writeObjects() = 0;
-  virtual void writeUnsupportedObjects() = 0;
-  virtual void writeLTypes() = 0;
-  virtual void writeLayers() = 0;
-  virtual void writeTextstyles() = 0;
-  virtual void writeVports() = 0;
-  virtual void writeDimstyles() = 0;
-  virtual void writeAppId() = 0;
+  virtual void WriteHeader(EoDxfHeader& data) = 0;
+  virtual void WriteClasses() = 0;
+  virtual void WriteBlocks() = 0;
+  virtual void WriteBlockRecords() = 0;
+  virtual void WriteEntities() = 0;
+  virtual void WriteObjects() = 0;
+  virtual void WriteUnsupportedObjects() = 0;
+  virtual void WriteLTypes() = 0;
+  virtual void WriteLayers() = 0;
+  virtual void WriteTextstyles() = 0;
+  virtual void WriteVports() = 0;
+  virtual void WriteDimstyles() = 0;
+  virtual void WriteAppId() = 0;
 };

@@ -159,7 +159,7 @@ bool EoDxfRead::ProcessHeader() {
         }
         m_pendingComments.clear();
         m_headerParsed = true;
-        m_interface->addHeader(&m_header);
+        m_interface->AddHeader(&m_header);
         return true;
       }
     } else {
@@ -183,10 +183,10 @@ bool EoDxfRead::ProcessClasses() {
           if (code == 0) {
             zeroGroupTag = m_reader->GetWideString();
             if (zeroGroupTag == L"CLASS") {
-              m_interface->addClass(class_);
+              m_interface->AddClass(class_);
               class_.clear();
             } else if (zeroGroupTag == L"ENDSEC") {
-              m_interface->addClass(class_);
+              m_interface->AddClass(class_);
               return true;
             }
           } else {
@@ -255,7 +255,7 @@ bool EoDxfRead::ProcessLType() {
     if (code == 0) {
       if (reading) {
         linetype.Update();
-        m_interface->addLinetype(linetype);
+        m_interface->AddLinetype(linetype);
       }
       sectionstr = m_reader->GetWideString();
       if (sectionstr == L"LTYPE") {
@@ -278,7 +278,7 @@ bool EoDxfRead::ProcessLayer() {
   EoDxfLayer layer;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) { m_interface->addLayer(layer); }
+      if (reading) { m_interface->AddLayer(layer); }
       sectionstr = m_reader->GetWideString();
       if (sectionstr == L"LAYER") {
         reading = true;
@@ -300,7 +300,7 @@ bool EoDxfRead::ProcessDimStyle() {
   EoDxfDimensionStyle dimensionStyle;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) { m_interface->addDimStyle(dimensionStyle); }
+      if (reading) { m_interface->AddDimStyle(dimensionStyle); }
       sectionstr = m_reader->GetWideString();
       if (sectionstr == L"DIMSTYLE") {
         reading = true;
@@ -322,7 +322,7 @@ bool EoDxfRead::ProcessTextStyle() {
   EoDxfTextStyle textStyle;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) { m_interface->addTextStyle(textStyle); }
+      if (reading) { m_interface->AddTextStyle(textStyle); }
       sectionstr = m_reader->GetWideString();
       if (sectionstr == L"STYLE") {
         reading = true;
@@ -344,7 +344,7 @@ bool EoDxfRead::ProcessVports() {
   EoDxfVPort viewport;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) { m_interface->addVport(viewport); }
+      if (reading) { m_interface->AddVport(viewport); }
       sectionstr = m_reader->GetWideString();
       if (sectionstr == L"VPORT") {
         reading = true;
@@ -366,7 +366,7 @@ bool EoDxfRead::ProcessAppId() {
   EoDxfAppId appId;
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
-      if (reading) { m_interface->addAppId(appId); }
+      if (reading) { m_interface->AddAppId(appId); }
       sectionstr = m_reader->GetWideString();
       if (sectionstr == L"APPID") {
         reading = true;
@@ -406,13 +406,13 @@ bool EoDxfRead::ProcessBlock() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addBlock(block);
+        m_interface->AddBlock(block);
         if (m_nextEntity == L"ENDBLK") {
-          m_interface->endBlock();
+          m_interface->EndBlock();
           return true;  // found ENDBLK, terminate
         } else {
           ProcessEntities(true);
-          m_interface->endBlock();
+          m_interface->EndBlock();
           return true;  // found ENDBLK, terminate
         }
       }
@@ -502,7 +502,7 @@ bool EoDxfRead::ProcessEllipse() {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { ellipse.ApplyExtrusion(); }
-        m_interface->addEllipse(ellipse);
+        m_interface->AddEllipse(ellipse);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -521,7 +521,7 @@ bool EoDxfRead::ProcessTrace() {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { trace.ApplyExtrusion(); }
-        m_interface->addTrace(trace);
+        m_interface->AddTrace(trace);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -540,7 +540,7 @@ bool EoDxfRead::ProcessSolid() {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { solid.ApplyExtrusion(); }
-        m_interface->addSolid(solid);
+        m_interface->AddSolid(solid);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -558,7 +558,7 @@ bool EoDxfRead::Process3dFace() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->add3dFace(_3dFace);
+        m_interface->Add3dFace(_3dFace);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -576,7 +576,7 @@ bool EoDxfRead::ProcessViewport() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addViewport(viewport);
+        m_interface->AddViewport(viewport);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -594,7 +594,7 @@ bool EoDxfRead::ProcessPoint() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addPoint(point);
+        m_interface->AddPoint(point);
         return true;
       }
       default:
@@ -612,7 +612,7 @@ bool EoDxfRead::ProcessLine() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addLine(line);
+        m_interface->AddLine(line);
         return true;
       }
       default:
@@ -630,7 +630,7 @@ bool EoDxfRead::ProcessRay() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addRay(ray);
+        m_interface->AddRay(ray);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -648,7 +648,7 @@ bool EoDxfRead::ProcessXline() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addXline(line);
+        m_interface->AddXline(line);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -667,7 +667,7 @@ bool EoDxfRead::ProcessCircle() {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { circle.ApplyExtrusion(); }
-        m_interface->addCircle(circle);
+        m_interface->AddCircle(circle);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -686,7 +686,7 @@ bool EoDxfRead::ProcessArc() {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { arc.ApplyExtrusion(); }
-        m_interface->addArc(arc);
+        m_interface->AddArc(arc);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -704,7 +704,7 @@ bool EoDxfRead::ProcessInsert() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addInsert(insert);
+        m_interface->AddInsert(insert);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -723,7 +723,7 @@ bool EoDxfRead::ProcessLWPolyline() {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
         if (m_applyExtrusion) { polyline.ApplyExtrusion(); }
-        m_interface->addLWPolyline(polyline);
+        m_interface->AddLWPolyline(polyline);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -742,7 +742,7 @@ bool EoDxfRead::ProcessPolyline() {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
         if (m_nextEntity == L"VERTEX") { ProcessVertex(&polyline); }
-        m_interface->addPolyline(polyline);
+        m_interface->AddPolyline(polyline);
         return true;
       }
       default:
@@ -786,7 +786,7 @@ bool EoDxfRead::ProcessText() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addText(text);
+        m_interface->AddText(text);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -805,7 +805,7 @@ bool EoDxfRead::ProcessMText() {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
         txt.UpdateAngle();
-        m_interface->addMText(txt);
+        m_interface->AddMText(txt);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -823,7 +823,7 @@ bool EoDxfRead::ProcessHatch() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addHatch(hatch);
+        m_interface->AddHatch(hatch);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -841,7 +841,7 @@ bool EoDxfRead::ProcessSpline() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addSpline(&sp);
+        m_interface->AddSpline(&sp);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -859,7 +859,7 @@ bool EoDxfRead::ProcessImage() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addImage(&image);
+        m_interface->AddImage(&image);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -881,37 +881,37 @@ bool EoDxfRead::ProcessDimension() {
         switch (type) {
           case 0: {
             EoDxfDimLinear d(dimension);
-            m_interface->addDimLinear(&d);
+            m_interface->AddDimLinear(&d);
             break;
           }
           case 1: {
             EoDxfAlignedDimension d(dimension);
-            m_interface->addDimAlign(&d);
+            m_interface->AddDimAlign(&d);
             break;
           }
           case 2: {
             EoDxf2LineAngularDimension d(dimension);
-            m_interface->addDimAngular(&d);
+            m_interface->AddDimAngular(&d);
             break;
           }
           case 3: {
             EoDxfDiametricDimension d(dimension);
-            m_interface->addDimDiametric(&d);
+            m_interface->AddDimDiametric(&d);
             break;
           }
           case 4: {
             EoDxfRadialDimension d(dimension);
-            m_interface->addDimRadial(&d);
+            m_interface->AddDimRadial(&d);
             break;
           }
           case 5: {
             EoDxf3PointAngularDimension d(dimension);
-            m_interface->addDimAngular3P(&d);
+            m_interface->AddDimAngular3P(&d);
             break;
           }
           case 6: {
             EoDxfOrdinateDimension d(dimension);
-            m_interface->addDimOrdinate(&d);
+            m_interface->AddDimOrdinate(&d);
             break;
           }
         }
@@ -932,7 +932,7 @@ bool EoDxfRead::ProcessLeader() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addLeader(&leader);
+        m_interface->AddLeader(&leader);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -950,7 +950,7 @@ bool EoDxfRead::ProcessMLeader() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->addMLeader(&mLeader);
+        m_interface->AddMLeader(&mLeader);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -989,7 +989,7 @@ bool EoDxfRead::ProcessImageDef() {
     switch (code) {
       case 0: {
         m_nextEntity = m_reader->GetWideString();
-        m_interface->linkImage(&imageDefinition);
+        m_interface->LinkImage(&imageDefinition);
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
@@ -1008,14 +1008,14 @@ bool EoDxfRead::ProcessUnsupportedObject() {
   while (m_reader->ReadRec(&code)) {
     if (code == 0) {
       m_nextEntity = m_reader->GetWideString();
-      m_interface->addUnsupportedObject(unsupportedObject);
+      m_interface->AddUnsupportedObject(unsupportedObject);
       return true;
     }
     unsupportedObject.m_values.push_back(CreateRawRecordValue(code, m_reader));
   }
 
   if (!unsupportedObject.m_objectType.empty()) {
-    m_interface->addUnsupportedObject(unsupportedObject);
+    m_interface->AddUnsupportedObject(unsupportedObject);
     return true;
   }
   return false;

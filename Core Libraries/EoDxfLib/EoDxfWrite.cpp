@@ -57,7 +57,7 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
   m_writer = nullptr;
 
   EoDxfHeader header;
-  if (interface_ != nullptr) { interface_->writeHeader(header); }
+  if (interface_ != nullptr) { interface_->WriteHeader(header); }
 
   std::ofstream filestr;
   m_version = version;
@@ -129,7 +129,7 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
 
   WriteCodeString(0, L"SECTION");
   WriteCodeString(2, L"ENTITIES");
-  m_interface->writeEntities();
+  m_interface->WriteEntities();
   TrackStreamState(filestr);
   WriteCodeString(0, L"ENDSEC");
 
@@ -442,7 +442,7 @@ bool EoDxfWrite::WriteBlocks() {
   WriteCodeString(8, L"0");
   WriteCodeString(100, L"AcDbBlockEnd");
   m_writingBlock = false;
-  m_interface->writeBlocks();
+  m_interface->WriteBlocks();
   if (m_writingBlock) {
     m_writingBlock = false;
     WriteCodeString(0, L"ENDBLK");
@@ -459,7 +459,7 @@ bool EoDxfWrite::WriteBlocks() {
 }
 
 bool EoDxfWrite::WriteObjects() {
-  m_interface->writeObjects();
+  m_interface->WriteObjects();
   WriteCodeString(0, L"DICTIONARY");
   std::wstring imgDictH;
   WriteCodeString(5, L"C");
@@ -529,7 +529,7 @@ bool EoDxfWrite::WriteObjects() {
   for (auto* id_ : m_imageDef) { delete id_; }
   m_imageDef.clear();
 
-  m_interface->writeUnsupportedObjects();
+  m_interface->WriteUnsupportedObjects();
 
   return m_writeOk;
 }

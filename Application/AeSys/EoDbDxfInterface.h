@@ -19,58 +19,58 @@ class EoDbDxfInterface : public EoDxfInterface {
  public:
   EoDbDxfInterface(AeSysDoc* document) : m_document(document) {}
 
-  void addHeader(const EoDxfHeader* header) override {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addHeader called\n");
+  void AddHeader(const EoDxfHeader* header) override {
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddHeader called\n");
     ConvertHeaderSection(header, m_document);
   }
 
-  void addClass(const EoDxfClass& class_) override {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addClass called\n");
+  void AddClass(const EoDxfClass& class_) override {
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddClass called\n");
     ConvertClassesSection(class_, m_document);
   }
 
   // Table objects
 
-  void addAppId(const EoDxfAppId& appId) override {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addAppId called\n");
+  void AddAppId(const EoDxfAppId& appId) override {
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddAppId called\n");
     ConvertAppIdTable(appId, m_document);
   }
-  void addDimStyle(const EoDxfDimensionStyle& dimensionStyle) override {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addDimStyle called\n");
+  void AddDimStyle(const EoDxfDimensionStyle& dimensionStyle) override {
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddDimStyle called\n");
     ConvertDimStyle(dimensionStyle, m_document);
   }
 
-  void addLayer(const EoDxfLayer& layer) override {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLayer called\n");
+  void AddLayer(const EoDxfLayer& layer) override {
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddLayer called\n");
     ConvertLayerTable(layer, m_document);
   }
-  void addLinetype(const EoDxfLinetype& lType) override {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLinetype called\n");
+  void AddLinetype(const EoDxfLinetype& lType) override {
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddLinetype called\n");
     ConvertLinetypesTable(lType, m_document);
   }
-  void addTextStyle(const EoDxfTextStyle& textStyle) override {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addTextStyle called\n");
+  void AddTextStyle(const EoDxfTextStyle& textStyle) override {
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddTextStyle called\n");
     ConvertTextStyleTable(textStyle, m_document);
   }
 
-  void addVport(const EoDxfVPort& viewport) override {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addVport called\n");
+  void AddVport(const EoDxfVPort& viewport) override {
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddVport called\n");
     ConvertVPortTable(viewport, m_document);
   }
 
   // Blocks
-  void addBlock(const EoDxfBlock& block) override {
+  void AddBlock(const EoDxfBlock& block) override {
     m_inBlockDefinition = true;
     m_blockName = block.m_blockName;
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addBlock <%s>\n", m_blockName.c_str());
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddBlock <%s>\n", m_blockName.c_str());
     m_currentOpenBlockDefinition = ConvertBlock(block, m_document);
   }
-  void setBlock(const int handle) override {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::setBlock\n");
+  void SetBlock(const int handle) override {
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::SetBlock\n");
     ConvertBlockSet(handle, m_document);
   }
-  void endBlock() override {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::endBlock\n");
+  void EndBlock() override {
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::EndBlock\n");
     m_inBlockDefinition = false;
     m_currentOpenBlockDefinition = nullptr;
     m_blockName.clear();
@@ -80,28 +80,28 @@ class EoDbDxfInterface : public EoDxfInterface {
   // AutoDesk DXF Reference for Entities Section
   // https://help.autodesk.com/view/OARX/2018/ENU/?guid=GUID-7D07C886-FD1D-4A0C-A7AB-B4D21F18E484
 
-  void add3dFace(const EoDxf3dFace& /* 3dFace */) override { countOf3dFace++; }
+  void Add3dFace(const EoDxf3dFace& /* 3dFace */) override { countOf3dFace++; }
   // 3DSOLID not implemented
   // ACAD_PROXY_ENTITY not implemented
 
-  void addArc(const EoDxfArc& arc) override {
+  void AddArc(const EoDxfArc& arc) override {
     countOfArc++;
     if (m_inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addArc - block <%s>\n", m_blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddArc - block <%s>\n", m_blockName.c_str());
     } else {
-      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addArc - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddArc - entities section\n");
     }
     ConvertArcEntity(arc, m_document);
   }
   // ATTDEF not implemented
   // ATTRIB not implemented
   // BODY not implemented
-  void addCircle(const EoDxfCircle& circle) override {
+  void AddCircle(const EoDxfCircle& circle) override {
     countOfCircle++;
     if (m_inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addCircle - block <%s>\n", m_blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddCircle - block <%s>\n", m_blockName.c_str());
     } else {
-      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addCircle - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddCircle - entities section\n");
     }
     ConvertCircleEntity(circle, m_document);
   }
@@ -110,38 +110,37 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   // Dimensions
 
-  void addDimAlign([[maybe_unused]] const EoDxfAlignedDimension* dimAlign) override { countOfDimAlign++; }
+  void AddDimAlign([[maybe_unused]] const EoDxfAlignedDimension* dimAlign) override { countOfDimAlign++; }
 
-  void addDimAngular([[maybe_unused]] const EoDxf2LineAngularDimension* dimAngular) override { countOfDimAngular++; }
-  void addDimAngular3P([[maybe_unused]] const EoDxf3PointAngularDimension* dimAngular3P) override {
+  void AddDimAngular([[maybe_unused]] const EoDxf2LineAngularDimension* dimAngular) override { countOfDimAngular++; }
+  void AddDimAngular3P([[maybe_unused]] const EoDxf3PointAngularDimension* dimAngular3P) override {
     countOfDimAngular3P++;
   }
 
-  void addDimLinear([[maybe_unused]] const EoDxfDimLinear* dimLinear) override { countOfDimLinear++; }
+  void AddDimLinear([[maybe_unused]] const EoDxfDimLinear* dimLinear) override { countOfDimLinear++; }
+  void AddDimOrdinate([[maybe_unused]] const EoDxfOrdinateDimension* dimOrdinate) override { countOfDimOrdinate++; }
 
-  void addDimOrdinate([[maybe_unused]] const EoDxfOrdinateDimension* dimOrdinate) override { countOfDimOrdinate++; }
+  void AddDimRadial([[maybe_unused]] const EoDxfRadialDimension* dimRadial) override { countOfDimRadial++; }
 
-  void addDimRadial([[maybe_unused]] const EoDxfRadialDimension* dimRadial) override { countOfDimRadial++; }
+  void AddDimDiametric([[maybe_unused]] const EoDxfDiametricDimension* dimDiametric) override { countOfDimDiametric++; }
 
-  void addDimDiametric([[maybe_unused]] const EoDxfDiametricDimension* dimDiametric) override { countOfDimDiametric++; }
-
-  void addEllipse(const EoDxfEllipse& ellipse) override {
+  void AddEllipse(const EoDxfEllipse& ellipse) override {
     countOfEllipse++;
     if (m_inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addEllipse - block <%s>\n", m_blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddEllipse - block <%s>\n", m_blockName.c_str());
     } else {
-      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addEllipse - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddEllipse - entities section\n");
     }
     ConvertEllipseEntity(ellipse, m_document);
   }
   
-  void addHatch(const EoDxfHatch& hatch) override { 
+  void AddHatch(const EoDxfHatch& hatch) override { 
   countOfHatch++; 
   if (m_inBlockDefinition) {
-    ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addHatch - block <%s>\n", m_blockName.c_str());
+    ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddHatch - block <%s>\n", m_blockName.c_str());
     ConvertHatchEntity(hatch, m_document);
   } else {
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addHatch - entities section\n");
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddHatch - entities section\n");
     ConvertHatchEntity(hatch, m_document);
   }
 
@@ -149,53 +148,53 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   // HELIX not implemented
   
-  void addImage([[maybe_unused]] const EoDxfImage* image) override { countOfImage++; }
+  void AddImage([[maybe_unused]] const EoDxfImage* image) override { countOfImage++; }
   
-  void addUnsupportedObject(const EoDxfUnsupportedObject& /* objectData */) override {}
+  void AddUnsupportedObject(const EoDxfUnsupportedObject& /* objectData */) override {}
 
-  void addInsert(const EoDxfInsert& blockReference) override {
+  void AddInsert(const EoDxfInsert& blockReference) override {
     countOfInsert++;
     if (m_inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addInsert - block <%s>\n", m_blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddInsert - block <%s>\n", m_blockName.c_str());
       ConvertInsertEntity(blockReference, m_document);
     } else {
-      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addInsert - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddInsert - entities section\n");
       ConvertInsertEntity(blockReference, m_document);
     }
   }
 
-  void addLeader(const EoDxfLeader* leader) override { (void)leader; }
+  void AddLeader(const EoDxfLeader* leader) override { (void)leader; }
   
   // LIGHT not implemented
 
-  void addLine(const EoDxfLine& line) override {
+  void AddLine(const EoDxfLine& line) override {
     countOfLine++;
     if (m_inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLine - block <%s>\n", m_blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddLine - block <%s>\n", m_blockName.c_str());
       ConvertLineEntity(line, m_document);
     } else {
-      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLine - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddLine - entities section\n");
       ConvertLineEntity(line, m_document);
     }
   }
 
-  void addLWPolyline(const EoDxfLwPolyline& polyline) override {
+  void AddLWPolyline(const EoDxfLwPolyline& polyline) override {
     countOfLWPolyline++;
     if (m_inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addLWPolyline - block <%s>\n", m_blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddLWPolyline - block <%s>\n", m_blockName.c_str());
       ConvertLWPolylineEntity(polyline, m_document);
     } else {
-      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addLWPolyline - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddLWPolyline - entities section\n");
       ConvertLWPolylineEntity(polyline, m_document);
     }
   }
   // MESH not implemented
 
-  void addMLeader(const EoDxfMLeader* mLeader) override { (void)mLeader; }
+  void AddMLeader(const EoDxfMLeader* mLeader) override { (void)mLeader; }
 
   // MLINE not implemented
 
-  void addMText(const EoDxfMText& mText) override {
+  void AddMText(const EoDxfMText& mText) override {
     (void)mText;
     countOfMText++;
     if (m_inBlockDefinition) {
@@ -210,26 +209,26 @@ class EoDbDxfInterface : public EoDxfInterface {
   // OLEFRAME not implemented
   // OLE2FRAME not implemented
 
-  void addPoint(const EoDxfPoint& point) override {
+  void AddPoint(const EoDxfPoint& point) override {
     countOfPoint++;
     if (m_inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addPoint - block <%s>\n", m_blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddPoint - block <%s>\n", m_blockName.c_str());
       ConvertPointEntity(point, m_document);
     } else {
-      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::addPoint - entities section\n");
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddPoint - entities section\n");
       ConvertPointEntity(point, m_document);
     }
   }
 
-  void addPolyline(const EoDxfPolyline& /* polyline */) override { countOfPolyline++; }
-  void addRay(const EoDxfRay& /* ray */) override { countOfRay++; }
+  void AddPolyline(const EoDxfPolyline& /* polyline */) override { countOfPolyline++; }
+  void AddRay(const EoDxfRay& /* ray */) override { countOfRay++; }
   // REGION not implemented
   // SECTION not implemented
   // SEQEND not implemented
   // SHAPE not implemented
 
-  void addSolid(const EoDxfSolid& /* solid */) override { countOfSolid++; }
-  void addSpline(const EoDxfSpline* spline) override {
+  void AddSolid(const EoDxfSolid& /* solid */) override { countOfSolid++; }
+  void AddSpline(const EoDxfSpline* spline) override {
     (void)spline;
 
     countOfSpline++;
@@ -238,46 +237,46 @@ class EoDbDxfInterface : public EoDxfInterface {
   // SURFACE not implemented
   // TABLE not implemented
 
-  void addText(const EoDxfText& text) override {
+  void AddText(const EoDxfText& text) override {
     countOfText++;
     if (m_inBlockDefinition) {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addText - block <%s>\n", m_blockName.c_str());
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddText - block <%s>\n", m_blockName.c_str());
       ConvertTextEntity(text, m_document);
     } else {
-      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addText - entities section\n");
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddText - entities section\n");
       ConvertTextEntity(text, m_document);
     }
   }
 
   // TOLERANCE not implemented
-  void addTrace(const EoDxfTrace& /* trace */) override { countOfTrace++; }
+  void AddTrace(const EoDxfTrace& /* trace */) override { countOfTrace++; }
   // UNDERLAY not implemented
   // VERTEX not implemented
-  void addViewport(const EoDxfViewport& /* viewport */) override { countOfViewport++; }
+  void AddViewport(const EoDxfViewport& /* viewport */) override { countOfViewport++; }
   // WIPEOUT not implemented
-  void addXline(const EoDxfXline& /* Xline */) override { countOfXline++; }
+  void AddXline(const EoDxfXline& /* Xline */) override { countOfXline++; }
 
   // Others
-  void addComment(std::wstring_view comment) override {
-    ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addComment(%.*s)\n", static_cast<int>(comment.size()), comment.data());
+  void AddComment(std::wstring_view comment) override {
+    ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddComment(%.*s)\n", static_cast<int>(comment.size()), comment.data());
   }
-  void linkImage(const EoDxfImageDefinition* imageDefinition) override { (void)imageDefinition; }
-  void addKnot(const EoDxfGraphic& /* knot */) override { countOfKnot++; }
+  void LinkImage(const EoDxfImageDefinition* imageDefinition) override { (void)imageDefinition; }
+  void AddKnot(const EoDxfGraphic& /* knot */) override { countOfKnot++; }
 
   // Writing methods
-  void writeAppId() override {};
-  void writeBlockRecords() override {};
-  void writeBlocks() override {};
-  void writeClasses() override {};
-  void writeDimstyles() override {};
-  void writeEntities() override {};
-  void writeHeader(EoDxfHeader& /* header */) override {};
-  void writeObjects() override {};
-  void writeUnsupportedObjects() override {};
-  void writeLayers() override {};
-  void writeLTypes() override {};
-  void writeTextstyles() override {};
-  void writeVports() override {};
+  void WriteAppId() override {};
+  void WriteBlockRecords() override {};
+  void WriteBlocks() override {};
+  void WriteClasses() override {};
+  void WriteDimstyles() override {};
+  void WriteEntities() override {};
+  void WriteHeader(EoDxfHeader& /* header */) override {};
+  void WriteObjects() override {};
+  void WriteUnsupportedObjects() override {};
+  void WriteLayers() override {};
+  void WriteLTypes() override {};
+  void WriteTextstyles() override {};
+  void WriteVports() override {};
 
   void SetHeaderSectionVariable(
       const EoDxfHeader* header, std::wstring_view keyToFind, EoDbHeaderSection& headerSection);

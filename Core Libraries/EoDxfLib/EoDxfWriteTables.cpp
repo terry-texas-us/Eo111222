@@ -31,7 +31,7 @@ bool EoDxfWrite::WriteTables() {
   WriteCodeInt16(70, 1);  // end table def
   /*** VPORT ***/
   m_standardDimensionStyle = false;
-  m_interface->writeVports();
+  m_interface->WriteVports();
   if (!m_standardDimensionStyle) {
     EoDxfVPort activeViewport;
     activeViewport.m_tableName = L"*ACTIVE";
@@ -90,7 +90,7 @@ bool EoDxfWrite::WriteTables() {
   WriteCodeInt16(73, 0);
   WriteCodeDouble(40, 0.0);
   // Application linetypes
-  m_interface->writeLTypes();
+  m_interface->WriteLTypes();
   WriteCodeString(0, L"ENDTAB");
   /*** LAYER ***/
   WriteCodeString(0, L"TABLE");
@@ -102,7 +102,7 @@ bool EoDxfWrite::WriteTables() {
 
   WriteCodeInt16(70, 1);  // end table def
   wlayer0 = false;
-  m_interface->writeLayers();
+  m_interface->WriteLayers();
   if (!wlayer0) {
     EoDxfLayer defaultLayer;
     defaultLayer.m_tableName = L"0";
@@ -119,7 +119,7 @@ bool EoDxfWrite::WriteTables() {
 
   WriteCodeInt16(70, 3);  // end table def
   m_standardDimensionStyle = false;
-  m_interface->writeTextstyles();
+  m_interface->WriteTextstyles();
   if (!m_standardDimensionStyle) {
     EoDxfTextStyle textStyle;
     textStyle.m_tableName = L"Standard";
@@ -164,7 +164,7 @@ bool EoDxfWrite::WriteTables() {
 
   WriteCodeString(2, L"ACAD");
   WriteCodeInt16(70, 0);
-  m_interface->writeAppId();
+  m_interface->WriteAppId();
   WriteCodeString(0, L"ENDTAB");
 
   WriteCodeString(0, L"TABLE");
@@ -180,7 +180,7 @@ bool EoDxfWrite::WriteTables() {
     WriteCodeInt16(71, 1);  // end table def
   }
   m_standardDimensionStyle = false;
-  m_interface->writeDimstyles();
+  m_interface->WriteDimstyles();
   if (!m_standardDimensionStyle) {
     EoDxfDimensionStyle dimensionStyle;
     dimensionStyle.m_tableName = L"Standard";
@@ -219,8 +219,8 @@ bool EoDxfWrite::WriteTables() {
     WriteCodeInt16(281, 0);
   }
 
-  /* always call writeBlockRecords to interface for prepare unnamed blocks */
-  m_interface->writeBlockRecords();
+  /* always call WriteBlockRecords to interface for prepare unnamed blocks */
+  m_interface->WriteBlockRecords();
   WriteCodeString(0, L"ENDTAB");
   return m_writeOk;
 }
