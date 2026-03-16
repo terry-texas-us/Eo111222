@@ -442,6 +442,10 @@ void EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, Ae
   insertPrimitive->SetScaleFactors(
       EoGeVector3d(blockReference.m_xScaleFactor, blockReference.m_yScaleFactor, blockReference.m_zScaleFactor));
   insertPrimitive->SetRotation(blockReference.m_rotationAngle);
+  insertPrimitive->SetColumns(blockReference.m_columnCount);
+  insertPrimitive->SetColumnSpacing(blockReference.m_columnSpacing);
+  insertPrimitive->SetRows(blockReference.m_rowCount);
+  insertPrimitive->SetRowSpacing(blockReference.m_rowSpacing);
 
   AddToDocument(insertPrimitive, document);
 }
