@@ -38,7 +38,7 @@ class EoDxfMLeader : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   // --- Top-level AcDbMLeader properties ---

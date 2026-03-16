@@ -1,43 +1,80 @@
 #pragma once
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "EoDxfBase.h"
+#include "EoDxfGroupCodeValuesVariant.h"
 #include "EoDxfReader.h"
 
 class EoDxfTableEntry {
  public:
-  EoDxfTableEntry() : tType{EoDxf::SymbolTable::Unknown}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
+  EoDxfTableEntry() = default;
 
  protected:
   explicit EoDxfTableEntry(EoDxf::SymbolTable tableType) noexcept
-      : tType{tableType}, m_flagValues{}, m_ownerHandle{}, m_currentVariant{} {}
+      : tType{tableType} {}
 
  public:
-  virtual ~EoDxfTableEntry() {
-    for (std::vector<EoDxfGroupCodeValuesVariant*>::iterator it = m_extensionData.begin(); it != m_extensionData.end();
-        ++it) {
-      delete *it;
+  virtual ~EoDxfTableEntry() = default;
+
+  EoDxfTableEntry(const EoDxfTableEntry& other)
+      : tType{other.tType},
+        m_handle{other.m_handle},
+        m_ownerHandle{other.m_ownerHandle},
+        m_tableName{other.m_tableName},
+        m_flagValues{other.m_flagValues} {
+    m_extensionData.reserve(other.m_extensionData.size());
+    for (const auto& variant : other.m_extensionData) {
+      m_extensionData.push_back(std::make_unique<EoDxfGroupCodeValuesVariant>(*variant));
     }
-    m_extensionData.clear();
   }
 
-  EoDxfTableEntry(const EoDxfTableEntry& e) {
-    tType = e.tType;
-    m_handle = e.m_handle;
-    m_ownerHandle = e.m_ownerHandle;
-    m_tableName = e.m_tableName;
-    m_flagValues = e.m_flagValues;
-    m_currentVariant = e.m_currentVariant;
-    for (std::vector<EoDxfGroupCodeValuesVariant*>::const_iterator it = e.m_extensionData.begin();
-        it != e.m_extensionData.end(); ++it) {
-      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(*(*it)));
+  EoDxfTableEntry& operator=(const EoDxfTableEntry& other) {
+    if (this != &other) {
+      std::vector<std::unique_ptr<EoDxfGroupCodeValuesVariant>> extensionData;
+      extensionData.reserve(other.m_extensionData.size());
+      for (const auto& variant : other.m_extensionData) {
+        extensionData.push_back(std::make_unique<EoDxfGroupCodeValuesVariant>(*variant));
+      }
+
+      tType = other.tType;
+      m_handle = other.m_handle;
+      m_ownerHandle = other.m_ownerHandle;
+      m_tableName = other.m_tableName;
+      m_flagValues = other.m_flagValues;
+      m_extensionData = std::move(extensionData);
+      m_currentVariant = nullptr;
     }
+    return *this;
+  }
+
+  EoDxfTableEntry(EoDxfTableEntry&& other) noexcept
+      : tType{other.tType},
+        m_handle{other.m_handle},
+        m_ownerHandle{other.m_ownerHandle},
+        m_tableName{std::move(other.m_tableName)},
+        m_flagValues{other.m_flagValues},
+        m_extensionData{std::move(other.m_extensionData)},
+        m_currentVariant{std::exchange(other.m_currentVariant, nullptr)} {}
+
+  EoDxfTableEntry& operator=(EoDxfTableEntry&& other) noexcept {
+    if (this != &other) {
+      tType = other.tType;
+      m_handle = other.m_handle;
+      m_ownerHandle = other.m_ownerHandle;
+      m_tableName = std::move(other.m_tableName);
+      m_flagValues = other.m_flagValues;
+      m_extensionData = std::move(other.m_extensionData);
+      m_currentVariant = std::exchange(other.m_currentVariant, nullptr);
+    }
+    return *this;
   }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
   void Reset();
 
  public:
@@ -46,9 +83,10 @@ class EoDxfTableEntry {
   std::uint64_t m_ownerHandle{};  // Group code 330
   std::wstring m_tableName;  // Group code 2
   std::int16_t m_flagValues{};  // Group code 70
-  std::vector<EoDxfGroupCodeValuesVariant*> m_extensionData;  // Group codes 1000 to 1071
+  std::vector<std::unique_ptr<EoDxfGroupCodeValuesVariant>> m_extensionData;  // Group codes 1000 to 1071
 
  private:
+  /// Non-owning observer for the in-progress geometry variant during extended-data 1010/1020/1030 triplet parsing.
   EoDxfGroupCodeValuesVariant* m_currentVariant{};
 };
 
@@ -68,7 +106,7 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
   EoDxfDimensionStyle() : EoDxfTableEntry(EoDxf::SymbolTable::DimStyle) { Reset(); }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
   void Reset();
 
  public:
@@ -159,7 +197,7 @@ class EoDxfLinetype : public EoDxfTableEntry {
   EoDxfLinetype() : EoDxfTableEntry(EoDxf::SymbolTable::Linetype) { Reset(); }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
   void Reset();
   void Update();
 
@@ -188,7 +226,7 @@ class EoDxfLayer : public EoDxfTableEntry {
   EoDxfLayer() : EoDxfTableEntry(EoDxf::SymbolTable::Layer) { Reset(); }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
   void Reset();
 
  public:
@@ -217,7 +255,7 @@ class EoDxfBlockRecord : public EoDxfTableEntry {
   EoDxfBlockRecord() : EoDxfTableEntry(EoDxf::SymbolTable::Block) { Reset(); }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
   void Reset();
 
  public:
@@ -241,7 +279,7 @@ class EoDxfTextStyle : public EoDxfTableEntry {
   EoDxfTextStyle() : EoDxfTableEntry(EoDxf::SymbolTable::TextStyle) { Reset(); }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
   void Reset() {
     height = 0.0;
@@ -283,7 +321,7 @@ class EoDxfVPort : public EoDxfTableEntry {
   void Reset();
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase2d m_lowerLeftCorner;  // Lower-left corner of viewport, code 10 & 20
@@ -330,7 +368,7 @@ class EoDxfAppId : public EoDxfTableEntry {
   EoDxfAppId() : EoDxfTableEntry(EoDxf::SymbolTable::RegApp) { Reset(); }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader) { EoDxfTableEntry::ParseCode(code, reader); }
+  void ParseCode(int code, EoDxfReader& reader) { EoDxfTableEntry::ParseCode(code, reader); }
 
   void Reset() {
     m_tableName = L"";

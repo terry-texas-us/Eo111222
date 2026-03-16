@@ -5,7 +5,7 @@
 #include "EoDxfReader.h"
 #include "EoDxfWriter.h"
 
-void EoDxfObjectEntry::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfObjectEntry::ParseCode(int code, EoDxfReader& reader) {
   EoDxfEntity::ParseCode(code, reader);
 }
 
@@ -14,37 +14,38 @@ void EoDxfObjectEntry::Reset() {
   m_ownerHandle = EoDxf::NoHandle;
   m_extensionDictionaryHandle = EoDxf::NoHandle;
   m_reactorHandles.clear();
-  clearExtendedData();
+  m_extendedData.clear();
+  m_currentVariant = nullptr;
   m_appData.clear();
 }
 
-void EoDxfImageDefinition::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfImageDefinition::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 1:
-      m_fileNameOfImage = reader->GetWideString();
+      m_fileNameOfImage = reader.GetWideString();
       break;
     case 90:
-      m_classVersion = reader->GetInt32();
+      m_classVersion = reader.GetInt32();
       break;
     case 10:
-      m_uImageSizeInPixels = reader->GetDouble();
+      m_uImageSizeInPixels = reader.GetDouble();
       break;
     case 20:
-      m_vImageSizeInPixels = reader->GetDouble();
+      m_vImageSizeInPixels = reader.GetDouble();
       break;
     case 11:
-      m_uSizeOfOnePixel = reader->GetDouble();
+      m_uSizeOfOnePixel = reader.GetDouble();
       break;
     case 12:
       [[fallthrough]];  // Group code 12 is used for the v size of one pixel in the DXF documentation.
     case 21:  // However, we will always write group code 21 for the v size of one pixel.
-      m_vSizeOfOnePixel = reader->GetDouble();
+      m_vSizeOfOnePixel = reader.GetDouble();
       break;
     case 280:
-      m_imageIsLoadedFlag = reader->GetInt16();
+      m_imageIsLoadedFlag = reader.GetInt16();
       break;
     case 281:
-      m_resolutionUnits = reader->GetInt16();
+      m_resolutionUnits = reader.GetInt16();
       break;
     default:
       EoDxfObjectEntry::ParseCode(code, reader);

@@ -54,7 +54,7 @@ class EoDxfDimension : public EoDxfGraphic {
   virtual void ApplyExtrusion() {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   [[nodiscard]] EoDxfGeometryBase3d GetDefinitionPoint() const noexcept { return m_definitionPoint; }
@@ -110,7 +110,7 @@ class EoDxfAlignedDimension : public EoDxfDimension {
   void setClonePoint(EoDxfGeometryBase3d c) { setPt2(c); }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  private:
   EoDxfGeometryBase3d m_firstDefinitinPointForLinearAndAngularDimensions;  // Group codes 13, 23 & 33 (WCS)
@@ -136,7 +136,7 @@ class EoDxfDimLinear : public EoDxfDimension {
   double getOblique() const { return m_angleOfExtensionLines; }  // oblique angle, code 52
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  private:
   EoDxfGeometryBase3d m_firstDefinitinPointForLinearAndAngularDimensions;  // Group codes 13, 23 & 33 (WCS)
@@ -163,7 +163,7 @@ class EoDxfRadialDimension : public EoDxfDimension {
   EoDxfRadialDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMRADIAL; }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  private:
   EoDxfGeometryBase3d m_definitionPointForDiameterRadiusAndAngularDimensions;  // Group codes 15, 25 & 35 (WCS)
@@ -190,7 +190,7 @@ class EoDxfDiametricDimension : public EoDxfDimension {
   }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  private:
   EoDxfGeometryBase3d m_definitionPointForDiameterRadiusAndAngularDimensions;  // Group codes 15, 25 & 35 (WCS)
@@ -217,7 +217,7 @@ class EoDxf2LineAngularDimension : public EoDxfDimension {
   }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  private:
   EoDxfGeometryBase3d m_firstDefinitinPointForLinearAndAngularDimensions;  // Group codes 13, 23 & 33 (WCS)
@@ -246,7 +246,7 @@ class EoDxf3PointAngularDimension : public EoDxfDimension {
   }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  private:
   EoDxfGeometryBase3d m_firstDefinitinPointForLinearAndAngularDimensions;  // Group codes 13, 23 & 33 (WCS)
@@ -275,7 +275,7 @@ class EoDxfOrdinateDimension : public EoDxfDimension {
   }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  private:
   EoDxfGeometryBase3d m_firstDefinitinPointForLinearAndAngularDimensions;  // Group codes 13, 23 & 33 (WCS)

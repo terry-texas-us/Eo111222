@@ -4,28 +4,28 @@
 #include "EoDxfReader.h"
 #include "EoDxfWriter.h"
 
-void EoDxfClass::ParseCode(int code, EoDxfReader* reader) noexcept {
+void EoDxfClass::ParseCode(int code, EoDxfReader& reader) noexcept {
   switch (code) {
     case 1:
-      m_classDxfRecordName = reader->GetWideString();
+      m_classDxfRecordName = reader.GetWideString();
       break;
     case 2:
-      m_cppClassName = reader->GetWideString();
+      m_cppClassName = reader.GetWideString();
       break;
     case 3:
-      m_applicationName = reader->GetWideString();
+      m_applicationName = reader.GetWideString();
       break;
     case 90:
-      m_proxyCapabilitiesFlag = reader->GetInt32();
+      m_proxyCapabilitiesFlag = reader.GetInt32();
       break;
     case 91:
-      m_instanceCount = reader->GetInt32();
+      m_instanceCount = reader.GetInt32();
       break;
     case 280:
-      m_wasAProxyFlag = reader->GetInt16();
+      m_wasAProxyFlag = reader.GetInt16();
       break;
     case 281:
-      m_isAnEntityFlag = reader->GetInt16();
+      m_isAnEntityFlag = reader.GetInt16();
       break;
     default:
       break;

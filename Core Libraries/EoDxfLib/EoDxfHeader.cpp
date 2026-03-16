@@ -67,7 +67,7 @@ void EoDxfHeader::AddComment(std::wstring_view comment) {
   m_comments += comment;
 }
 
-void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfHeader::ParseCode(int code, EoDxfReader& reader) {
   if (code != 9 && m_currentVariant == nullptr) { return; }
   // The header section is structured as a series of variables, each starting with a group code of 9 followed by the
   // variable name as a string. Subsequent group codes and values belong to that variable until the next group code of 9
@@ -77,94 +77,94 @@ void EoDxfHeader::ParseCode(int code, EoDxfReader* reader) {
 
   switch (code) {
     case 1:
-      m_currentVariant->AddWideString(code, reader->GetWideString());
+      m_currentVariant->AddWideString(code, reader.GetWideString());
       if (m_name == L"$ACADVER") {
-        reader->SetVersion(m_currentVariant->GetWideString());
-        m_version = reader->GetVersionEnum();
+        reader.SetVersion(m_currentVariant->GetWideString());
+        m_version = reader.GetVersionEnum();
       }
       break;
     case 2:
-      m_currentVariant->AddWideString(code, reader->GetWideString());
+      m_currentVariant->AddWideString(code, reader.GetWideString());
       break;
     case 3:
       if (m_name == L"$DWGCODEPAGE") {
-        const auto codePageToken = DecodeAsciiTransportText(reader->GetEncodedText());
+        const auto codePageToken = DecodeAsciiTransportText(reader.GetEncodedText());
         m_currentVariant->AddWideString(code, codePageToken);
         m_originalCodePageToken = codePageToken;
         EoTcTextCodec readerCodec;
         readerCodec.SetCodePage(m_originalCodePageToken);
-        if (reader->IsAsciiFile() && readerCodec.GetCodePage() == L"UTF-16") {
-          reader->SetCodePage(L"ANSI_1252");
+        if (reader.IsAsciiFile() && readerCodec.GetCodePage() == L"UTF-16") {
+          reader.SetCodePage(L"ANSI_1252");
         } else {
-          reader->SetCodePage(m_originalCodePageToken);
+          reader.SetCodePage(m_originalCodePageToken);
         }
       } else {
-        m_currentVariant->AddWideString(code, reader->GetWideString());
+        m_currentVariant->AddWideString(code, reader.GetWideString());
       }
       break;
     case 5: {
       // Group code 5 is a handle — a hexadecimal string representing a unique identifier for an object in the
       // DXF file. Convert the hex string to a uint64_t and store as a Handle variant for proper numeric access.
-      m_currentVariant->AddHandle(code, reader->GetHandleString());
+      m_currentVariant->AddHandle(code, reader.GetHandleString());
     } break;
     case 6:
-      m_currentVariant->AddWideString(code, reader->GetWideString());
+      m_currentVariant->AddWideString(code, reader.GetWideString());
       break;
     case 7:
-      m_currentVariant->AddWideString(code, reader->GetWideString());
+      m_currentVariant->AddWideString(code, reader.GetWideString());
       break;
     case 8:
-      m_currentVariant->AddWideString(code, reader->GetWideString());
+      m_currentVariant->AddWideString(code, reader.GetWideString());
       break;
     case 9: {
       auto newVariant = std::make_unique<EoDxfGroupCodeValuesVariant>();
       m_currentVariant = newVariant.get();
-      m_name = reader->GetWideString();
+      m_name = reader.GetWideString();
       if (m_version < EoDxf::Version::AC1015 && m_name == L"$DIMUNIT") { m_name = L"$DIMLUNIT"; }
       m_variants[m_name] = std::move(newVariant);
     } break;
     case 10:
-      m_currentVariant->AddGeometryBase(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
+      m_currentVariant->AddGeometryBase(code, EoDxfGeometryBase3d(reader.GetDouble(), 0.0, 0.0));
       break;
     case 20:
-      if (m_currentVariant->GetIf<EoDxfGeometryBase3d>() != nullptr) { m_currentVariant->SetGeometryBaseY(reader->GetDouble()); }
+      if (m_currentVariant->GetIf<EoDxfGeometryBase3d>() != nullptr) { m_currentVariant->SetGeometryBaseY(reader.GetDouble()); }
       break;
     case 30:
-      if (m_currentVariant->GetIf<EoDxfGeometryBase3d>() != nullptr) { m_currentVariant->SetGeometryBaseZ(reader->GetDouble()); }
+      if (m_currentVariant->GetIf<EoDxfGeometryBase3d>() != nullptr) { m_currentVariant->SetGeometryBaseZ(reader.GetDouble()); }
       break;
     case 40:  // distance, scale and factors are stored as doubles in drawing units
-      m_currentVariant->AddDouble(code, reader->GetDouble());
+      m_currentVariant->AddDouble(code, reader.GetDouble());
       break;
     case 50:  // angle is stored as doubles in radians
-      m_currentVariant->AddDouble(code, reader->GetDouble());
+      m_currentVariant->AddDouble(code, reader.GetDouble());
       break;
     case 62:
-      m_currentVariant->AddInt16(code, reader->GetInt16());
+      m_currentVariant->AddInt16(code, reader.GetInt16());
       break;
     case 70:  // 16-bit integer / bit flags — stored as Int16 in the variant to preserve the DXF-specified type.
-      m_currentVariant->AddInt16(code, reader->GetInt16());
+      m_currentVariant->AddInt16(code, reader.GetInt16());
       break;
     case 280:  // 8-bit flag / small int — DXF spec groups 280-289 as 16-bit integer range.
-      m_currentVariant->AddInt16(code, reader->GetInt16());
+      m_currentVariant->AddInt16(code, reader.GetInt16());
       break;
     case 290:  // boolean (0/1) — DXF spec groups 290-299 as a dedicated boolean type.
-      m_currentVariant->AddBoolean(code, reader->GetBool());
+      m_currentVariant->AddBoolean(code, reader.GetBool());
       break;
     case 345:  // hard-pointer handle reference — convert hex string to uint64_t Handle variant.
       [[fallthrough]];
     case 346:
       [[fallthrough]];
     case 349: {
-      m_currentVariant->AddHandle(code, reader->GetHandleString());
+      m_currentVariant->AddHandle(code, reader.GetHandleString());
     } break;
     case 370:
-      m_currentVariant->AddInt16(code, reader->GetInt16());
+      m_currentVariant->AddInt16(code, reader.GetInt16());
       break;
     case 380:
-      m_currentVariant->AddInt16(code, reader->GetInt16());
+      m_currentVariant->AddInt16(code, reader.GetInt16());
       break;
     case 390:
-      m_currentVariant->AddWideString(code, reader->GetWideString());
+      m_currentVariant->AddWideString(code, reader.GetWideString());
       break;
     default:
       // Unrecognized group code for header variable; ignore (and/or log) it and continue parsing.

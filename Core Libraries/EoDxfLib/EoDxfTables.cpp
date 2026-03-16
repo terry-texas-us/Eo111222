@@ -1,25 +1,26 @@
 #include <cmath>
-#include <new>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "EoDxfGroupCodeValuesVariant.h"
 #include "EoDxfLineWidths.h"
 #include "EoDxfReader.h"
 #include "EoDxfTables.h"
 
-void EoDxfTableEntry::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfTableEntry::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 5:
-      m_handle = reader->GetHandleString();
+      m_handle = reader.GetHandleString();
       break;
     case 330:
-      m_ownerHandle = reader->GetHandleString();
+      m_ownerHandle = reader.GetHandleString();
       break;
     case 2:
-      m_tableName = reader->GetWideString();
+      m_tableName = reader.GetWideString();
       break;
     case 70:
-      m_flagValues = reader->GetInt16();
+      m_flagValues = reader.GetInt16();
       break;
     case 1000:
     case 1001:
@@ -27,38 +28,41 @@ void EoDxfTableEntry::ParseCode(int code, EoDxfReader* reader) {
     case 1003:
     case 1004:
     case 1005:
-      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetWideString()));
+      m_extensionData.push_back(std::make_unique<EoDxfGroupCodeValuesVariant>(code, reader.GetWideString()));
       break;
     case 1010:
     case 1011:
     case 1012:
-    case 1013:
-      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
-      m_extensionData.push_back(m_currentVariant);
+    case 1013: {
+      m_currentVariant = nullptr;
+      auto variant = std::make_unique<EoDxfGroupCodeValuesVariant>(code, EoDxfGeometryBase3d(reader.GetDouble(), 0.0, 0.0));
+      m_currentVariant = variant.get();
+      m_extensionData.push_back(std::move(variant));
       break;
+    }
     case 1020:
     case 1021:
     case 1022:
     case 1023:
-      if (m_currentVariant) { m_currentVariant->SetGeometryBaseY(reader->GetDouble()); }
+      if (m_currentVariant) { m_currentVariant->SetGeometryBaseY(reader.GetDouble()); }
       break;
     case 1030:
     case 1031:
     case 1032:
     case 1033:
-      if (m_currentVariant) { m_currentVariant->SetGeometryBaseZ(reader->GetDouble()); }
+      if (m_currentVariant) { m_currentVariant->SetGeometryBaseZ(reader.GetDouble()); }
       m_currentVariant = nullptr;
       break;
     case 1040:
     case 1041:
     case 1042:
-      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetDouble()));
+      m_extensionData.push_back(std::make_unique<EoDxfGroupCodeValuesVariant>(code, reader.GetDouble()));
       break;
     case 1070:
-      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt16()));
+      m_extensionData.push_back(std::make_unique<EoDxfGroupCodeValuesVariant>(code, reader.GetInt16()));
       break;
     case 1071:
-      m_extensionData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt32()));
+      m_extensionData.push_back(std::make_unique<EoDxfGroupCodeValuesVariant>(code, reader.GetInt32()));
       break;
     default:
       break;
@@ -67,15 +71,14 @@ void EoDxfTableEntry::ParseCode(int code, EoDxfReader* reader) {
 
 void EoDxfTableEntry::Reset() {
   m_flagValues = 0;
-  for (auto* variant : m_extensionData) { delete variant; }
   m_extensionData.clear();
   m_currentVariant = nullptr;
 }
 
-void EoDxfBlockRecord::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfBlockRecord::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 70:
-      m_blockInsertionUnits = reader->GetInt16();
+      m_blockInsertionUnits = reader.GetInt16();
       m_flagValues = m_blockInsertionUnits;  // Block records only flag: block insertion units
       break;
     default:
@@ -89,217 +92,217 @@ void EoDxfBlockRecord::Reset() {
   EoDxfTableEntry::Reset();
 }
 
-void EoDxfDimensionStyle::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfDimensionStyle::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 105:
-      m_handle = reader->GetHandleString();
+      m_handle = reader.GetHandleString();
       break;
     case 3:
-      dimpost = reader->GetWideString();
+      dimpost = reader.GetWideString();
       break;
     case 4:
-      dimapost = reader->GetWideString();
+      dimapost = reader.GetWideString();
       break;
     case 5:
-      dimblk = reader->GetWideString();
+      dimblk = reader.GetWideString();
       break;
     case 6:
-      dimblk1 = reader->GetWideString();
+      dimblk1 = reader.GetWideString();
       break;
     case 7:
-      dimblk2 = reader->GetWideString();
+      dimblk2 = reader.GetWideString();
       break;
     case 40:
-      dimscale = reader->GetDouble();
+      dimscale = reader.GetDouble();
       break;
     case 41:
-      dimasz = reader->GetDouble();
+      dimasz = reader.GetDouble();
       break;
     case 42:
-      dimexo = reader->GetDouble();
+      dimexo = reader.GetDouble();
       break;
     case 43:
-      dimdli = reader->GetDouble();
+      dimdli = reader.GetDouble();
       break;
     case 44:
-      dimexe = reader->GetDouble();
+      dimexe = reader.GetDouble();
       break;
     case 45:
-      dimrnd = reader->GetDouble();
+      dimrnd = reader.GetDouble();
       break;
     case 46:
-      dimdle = reader->GetDouble();
+      dimdle = reader.GetDouble();
       break;
     case 47:
-      dimtp = reader->GetDouble();
+      dimtp = reader.GetDouble();
       break;
     case 48:
-      dimtm = reader->GetDouble();
+      dimtm = reader.GetDouble();
       break;
     case 49:
-      dimfxl = reader->GetDouble();
+      dimfxl = reader.GetDouble();
       break;
     case 140:
-      dimtxt = reader->GetDouble();
+      dimtxt = reader.GetDouble();
       break;
     case 141:
-      dimcen = reader->GetDouble();
+      dimcen = reader.GetDouble();
       break;
     case 142:
-      dimtsz = reader->GetDouble();
+      dimtsz = reader.GetDouble();
       break;
     case 143:
-      dimaltf = reader->GetDouble();
+      dimaltf = reader.GetDouble();
       break;
     case 144:
-      dimlfac = reader->GetDouble();
+      dimlfac = reader.GetDouble();
       break;
     case 145:
-      dimtvp = reader->GetDouble();
+      dimtvp = reader.GetDouble();
       break;
     case 146:
-      dimtfac = reader->GetDouble();
+      dimtfac = reader.GetDouble();
       break;
     case 147:
-      dimgap = reader->GetDouble();
+      dimgap = reader.GetDouble();
       break;
     case 148:
-      dimaltrnd = reader->GetDouble();
+      dimaltrnd = reader.GetDouble();
       break;
     case 71:
-      dimtol = reader->GetInt16();
+      dimtol = reader.GetInt16();
       break;
     case 72:
-      dimlim = reader->GetInt16();
+      dimlim = reader.GetInt16();
       break;
     case 73:
-      dimtih = reader->GetInt16();
+      dimtih = reader.GetInt16();
       break;
     case 74:
-      dimtoh = reader->GetInt16();
+      dimtoh = reader.GetInt16();
       break;
     case 75:
-      dimse1 = reader->GetInt16();
+      dimse1 = reader.GetInt16();
       break;
     case 76:
-      dimse2 = reader->GetInt16();
+      dimse2 = reader.GetInt16();
       break;
     case 77:
-      dimtad = reader->GetInt16();
+      dimtad = reader.GetInt16();
       break;
     case 78:
-      dimzin = reader->GetInt16();
+      dimzin = reader.GetInt16();
       break;
     case 79:
-      dimazin = reader->GetInt16();
+      dimazin = reader.GetInt16();
       break;
     case 170:
-      dimalt = reader->GetInt16();
+      dimalt = reader.GetInt16();
       break;
     case 171:
-      dimaltd = reader->GetInt16();
+      dimaltd = reader.GetInt16();
       break;
     case 172:
-      dimtofl = reader->GetInt16();
+      dimtofl = reader.GetInt16();
       break;
     case 173:
-      dimsah = reader->GetInt16();
+      dimsah = reader.GetInt16();
       break;
     case 174:
-      dimtix = reader->GetInt16();
+      dimtix = reader.GetInt16();
       break;
     case 175:
-      dimsoxd = reader->GetInt16();
+      dimsoxd = reader.GetInt16();
       break;
     case 176:
-      dimclrd = reader->GetInt16();
+      dimclrd = reader.GetInt16();
       break;
     case 177:
-      dimclre = reader->GetInt16();
+      dimclre = reader.GetInt16();
       break;
     case 178:
-      dimclrt = reader->GetInt16();
+      dimclrt = reader.GetInt16();
       break;
     case 179:
-      dimadec = reader->GetInt16();
+      dimadec = reader.GetInt16();
       break;
     case 270:
-      dimunit = reader->GetInt16();
+      dimunit = reader.GetInt16();
       break;
     case 271:
-      dimdec = reader->GetInt16();
+      dimdec = reader.GetInt16();
       break;
     case 272:
-      dimtdec = reader->GetInt16();
+      dimtdec = reader.GetInt16();
       break;
     case 273:
-      dimaltu = reader->GetInt16();
+      dimaltu = reader.GetInt16();
       break;
     case 274:
-      dimalttd = reader->GetInt16();
+      dimalttd = reader.GetInt16();
       break;
     case 275:
-      dimaunit = reader->GetInt16();
+      dimaunit = reader.GetInt16();
       break;
     case 276:
-      dimfrac = reader->GetInt16();
+      dimfrac = reader.GetInt16();
       break;
     case 277:
-      dimlunit = reader->GetInt16();
+      dimlunit = reader.GetInt16();
       break;
     case 278:
-      dimdsep = reader->GetInt16();
+      dimdsep = reader.GetInt16();
       break;
     case 279:
-      dimtmove = reader->GetInt16();
+      dimtmove = reader.GetInt16();
       break;
     case 280:
-      dimjust = reader->GetInt16();
+      dimjust = reader.GetInt16();
       break;
     case 281:
-      dimsd1 = reader->GetInt16();
+      dimsd1 = reader.GetInt16();
       break;
     case 282:
-      dimsd2 = reader->GetInt16();
+      dimsd2 = reader.GetInt16();
       break;
     case 283:
-      dimtolj = reader->GetInt16();
+      dimtolj = reader.GetInt16();
       break;
     case 284:
-      dimtzin = reader->GetInt16();
+      dimtzin = reader.GetInt16();
       break;
     case 285:
-      dimaltz = reader->GetInt16();
+      dimaltz = reader.GetInt16();
       break;
     case 286:
-      dimaltttz = reader->GetInt16();
+      dimaltttz = reader.GetInt16();
       break;
     case 287:
-      dimfit = reader->GetInt16();
+      dimfit = reader.GetInt16();
       break;
     case 288:
-      dimupt = reader->GetInt16();
+      dimupt = reader.GetInt16();
       break;
     case 289:
-      dimatfit = reader->GetInt16();
+      dimatfit = reader.GetInt16();
       break;
     case 290:
-      dimfxlon = reader->GetBool();
+      dimfxlon = reader.GetBool();
       break;
     case 340:
-      dimtxsty = reader->GetWideString();
+      dimtxsty = reader.GetWideString();
       break;
     case 341:
-      dimldrblk = reader->GetWideString();
+      dimldrblk = reader.GetWideString();
       break;
     case 342:
-      dimblk = reader->GetWideString();
+      dimblk = reader.GetWideString();
       break;
     case 343:
-      dimblk1 = reader->GetWideString();
+      dimblk1 = reader.GetWideString();
       break;
     case 344:
-      dimblk2 = reader->GetWideString();
+      dimblk2 = reader.GetWideString();
       break;
     default:
       EoDxfTableEntry::ParseCode(code, reader);
@@ -372,20 +375,20 @@ void EoDxfDimensionStyle::Reset() {
   EoDxfTableEntry::Reset();
 }
 
-void EoDxfLinetype::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfLinetype::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 3:
-      desc = reader->GetWideString();
+      desc = reader.GetWideString();
       break;
     case 73:
-      m_numberOfLinetypeElements = reader->GetInt16();
+      m_numberOfLinetypeElements = reader.GetInt16();
       path.reserve(m_numberOfLinetypeElements);
       break;
     case 40:
-      length = reader->GetDouble();
+      length = reader.GetDouble();
       break;
     case 49:
-      path.push_back(reader->GetDouble());
+      path.push_back(reader.GetDouble());
       pathIdx++;
       break;
     default:
@@ -409,28 +412,28 @@ void EoDxfLinetype::Update() {
   length = d;
 }
 
-void EoDxfLayer::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfLayer::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 6:
-      m_linetypeName = reader->GetWideString();
+      m_linetypeName = reader.GetWideString();
       break;
     case 62:
-      m_colorNumber = reader->GetInt16();
+      m_colorNumber = reader.GetInt16();
       break;
     case 290:
-      m_plottingFlag = reader->GetBool();
+      m_plottingFlag = reader.GetBool();
       break;
     case 370:
-      m_lineweightEnumValue = EoDxfLineWidths::dxfInt2lineWidth(reader->GetInt16());
+      m_lineweightEnumValue = EoDxfLineWidths::dxfInt2lineWidth(reader.GetInt16());
       break;
     case 390:
-      m_handleOfPlotStyleName = reader->GetWideString();
+      m_handleOfPlotStyleName = reader.GetWideString();
       break;
     case 347:
-      m_handleOfMaterialStyleName = reader->GetWideString();
+      m_handleOfMaterialStyleName = reader.GetWideString();
       break;
     case 420:
-      color24 = reader->GetInt32();
+      color24 = reader.GetInt32();
       break;
     default:
       EoDxfTableEntry::ParseCode(code, reader);
@@ -448,31 +451,31 @@ void EoDxfLayer::Reset() {
 }
 
 
-void EoDxfTextStyle::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfTextStyle::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 3:
-      font = reader->GetWideString();
+      font = reader.GetWideString();
       break;
     case 4:
-      bigFont = reader->GetWideString();
+      bigFont = reader.GetWideString();
       break;
     case 40:
-      height = reader->GetDouble();
+      height = reader.GetDouble();
       break;
     case 41:
-      width = reader->GetDouble();
+      width = reader.GetDouble();
       break;
     case 50:
-      oblique = reader->GetDouble();
+      oblique = reader.GetDouble();
       break;
     case 42:
-      lastHeight = reader->GetDouble();
+      lastHeight = reader.GetDouble();
       break;
     case 71:
-      m_textGenerationFlag = reader->GetInt16();
+      m_textGenerationFlag = reader.GetInt16();
       break;
     case 1071:
-      fontFamily = reader->GetInt32();
+      fontFamily = reader.GetInt32();
       break;
     default:
       EoDxfTableEntry::ParseCode(code, reader);
@@ -480,109 +483,109 @@ void EoDxfTextStyle::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfVPort::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfVPort::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_lowerLeftCorner.x = reader->GetDouble();
+      m_lowerLeftCorner.x = reader.GetDouble();
       break;
     case 20:
-      m_lowerLeftCorner.y = reader->GetDouble();
+      m_lowerLeftCorner.y = reader.GetDouble();
       break;
     case 11:
-      m_upperRightCorner.x = reader->GetDouble();
+      m_upperRightCorner.x = reader.GetDouble();
       break;
     case 21:
-      m_upperRightCorner.y = reader->GetDouble();
+      m_upperRightCorner.y = reader.GetDouble();
       break;
     case 12:
-      m_viewCenter.x = reader->GetDouble();
+      m_viewCenter.x = reader.GetDouble();
       break;
     case 22:
-      m_viewCenter.y = reader->GetDouble();
+      m_viewCenter.y = reader.GetDouble();
       break;
     case 13:
-      m_snapBasePoint.x = reader->GetDouble();
+      m_snapBasePoint.x = reader.GetDouble();
       break;
     case 23:
-      m_snapBasePoint.y = reader->GetDouble();
+      m_snapBasePoint.y = reader.GetDouble();
       break;
     case 14:
-      m_snapSpacing.x = reader->GetDouble();
+      m_snapSpacing.x = reader.GetDouble();
       break;
     case 24:
-      m_snapSpacing.y = reader->GetDouble();
+      m_snapSpacing.y = reader.GetDouble();
       break;
     case 15:
-      m_gridSpacing.x = reader->GetDouble();
+      m_gridSpacing.x = reader.GetDouble();
       break;
     case 25:
-      m_gridSpacing.y = reader->GetDouble();
+      m_gridSpacing.y = reader.GetDouble();
       break;
     case 16:
-      m_viewDirection.x = reader->GetDouble();
+      m_viewDirection.x = reader.GetDouble();
       break;
     case 26:
-      m_viewDirection.y = reader->GetDouble();
+      m_viewDirection.y = reader.GetDouble();
       break;
     case 36:
-      m_viewDirection.z = reader->GetDouble();
+      m_viewDirection.z = reader.GetDouble();
       break;
     case 17:
-      m_viewTargetPoint.x = reader->GetDouble();
+      m_viewTargetPoint.x = reader.GetDouble();
       break;
     case 27:
-      m_viewTargetPoint.y = reader->GetDouble();
+      m_viewTargetPoint.y = reader.GetDouble();
       break;
     case 37:
-      m_viewTargetPoint.z = reader->GetDouble();
+      m_viewTargetPoint.z = reader.GetDouble();
       break;
     case 40:
-      m_viewHeight = reader->GetDouble();
+      m_viewHeight = reader.GetDouble();
       break;
     case 41:
-      m_viewAspectRatio = reader->GetDouble();
+      m_viewAspectRatio = reader.GetDouble();
       break;
     case 42:
-      m_lensLength = reader->GetDouble();
+      m_lensLength = reader.GetDouble();
       break;
     case 43:
-      m_frontClipPlane = reader->GetDouble();
+      m_frontClipPlane = reader.GetDouble();
       break;
     case 44:
-      m_backClipPlane = reader->GetDouble();
+      m_backClipPlane = reader.GetDouble();
       break;
     case 50:
-      m_snapRotationAngle = reader->GetDouble();
+      m_snapRotationAngle = reader.GetDouble();
       break;
     case 51:
-      m_viewTwistAngle = reader->GetDouble();
+      m_viewTwistAngle = reader.GetDouble();
       break;
     case 60:
-      m_gridBehavior = reader->GetInt16();
+      m_gridBehavior = reader.GetInt16();
       break;
     case 71:
-      m_viewMode = reader->GetInt16();
+      m_viewMode = reader.GetInt16();
       break;
     case 72:
-      m_circleZoomPercent = reader->GetInt16();
+      m_circleZoomPercent = reader.GetInt16();
       break;
     case 73:
-      m_fastZoom = reader->GetInt16();
+      m_fastZoom = reader.GetInt16();
       break;
     case 74:
-      m_ucsIcon = reader->GetInt16();
+      m_ucsIcon = reader.GetInt16();
       break;
     case 75:
-      m_snapOn = reader->GetInt16();
+      m_snapOn = reader.GetInt16();
       break;
     case 76:
-      m_gridOn = reader->GetInt16();
+      m_gridOn = reader.GetInt16();
       break;
     case 77:
-      m_snapStyle = reader->GetInt16();
+      m_snapStyle = reader.GetInt16();
       break;
     case 78:
-      m_snapIsopair = reader->GetInt16();
+      m_snapIsopair = reader.GetInt16();
       break;
     default:
       EoDxfTableEntry::ParseCode(code, reader);

@@ -180,6 +180,7 @@
     <ClCompile Include="EoDxfDimension.cpp" />
     <ClCompile Include="EoDxfDrawing.cpp" />
     <ClCompile Include="EoDxfEntities.cpp" />
+    <ClCompile Include="EoDxfEntity.cpp" />
     <ClCompile Include="EoDxfHatch.cpp" />
     <ClCompile Include="EoDxfHeader.cpp" />
     <ClCompile Include="EoDxfMLeader.cpp" />

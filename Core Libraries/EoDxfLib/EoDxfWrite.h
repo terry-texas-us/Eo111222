@@ -179,7 +179,7 @@ class EoDxfWrite {
   bool WriteBlocks();
   bool WriteObjects();
   bool WriteAppData(const std::list<std::list<EoDxfGroupCodeValuesVariant>>& appData);
-  bool WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& extensionData);
+  bool WriteExtData(const std::vector<std::unique_ptr<EoDxfGroupCodeValuesVariant>>& extensionData);
   bool WriteVariantValue(const EoDxfGroupCodeValuesVariant& value);
 
   /** @brief Convert integer to hex string

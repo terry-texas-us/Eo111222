@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "EoDxfBase.h"
@@ -15,8 +16,8 @@ class EoDxfEntity {
   EoDxfEntity(const EoDxfEntity& other);
   EoDxfEntity& operator=(const EoDxfEntity& other);
 
-  EoDxfEntity(EoDxfEntity&&) noexcept = default;
-  EoDxfEntity& operator=(EoDxfEntity&&) noexcept = default;
+  EoDxfEntity(EoDxfEntity&& other) noexcept;
+  EoDxfEntity& operator=(EoDxfEntity&& other) noexcept;
 
   virtual ~EoDxfEntity();
 
@@ -29,13 +30,11 @@ class EoDxfEntity {
    *  @param reader pointer to EoDxfReader to read value
    *  @return true if group is successfully parsed, false if group is not recognized or an error occurs
    */
-  bool ParseAppDataGroup(EoDxfReader* reader);
+  bool ParseAppDataGroup(EoDxfReader& reader);
 
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
-  void clearExtendedData() noexcept;
-
- public:
+  public:
   // Database identity — common to all DXF database-resident objects (entities, table entries, objects).
   std::uint64_t m_handle{EoDxf::NoHandle};  // Group code 5
   std::uint64_t m_ownerHandle{EoDxf::NoHandle};  // Group code 330 (soft-pointer to owner)
@@ -48,11 +47,12 @@ class EoDxfEntity {
   std::uint64_t m_extensionDictionaryHandle{EoDxf::NoHandle};
 
   // Extended data (group codes 1000 to 1071)
-  std::vector<EoDxfGroupCodeValuesVariant*> m_extendedData{};
+  std::vector<std::unique_ptr<EoDxfGroupCodeValuesVariant>> m_extendedData{};
 
   // Application-defined groups (group code 102), excluding ACAD_REACTORS and ACAD_XDICTIONARY
   std::list<std::list<EoDxfGroupCodeValuesVariant>> m_appData{};
 
  protected:
+  /// Non-owning observer for the in-progress geometry variant during extended-data 1010/1020/1030 triplet parsing.
   EoDxfGroupCodeValuesVariant* m_currentVariant{};
 };

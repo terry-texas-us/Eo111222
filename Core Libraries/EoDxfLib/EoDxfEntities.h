@@ -51,7 +51,7 @@ class EoDxfGraphic : public EoDxfEntity {
    *  @param code dxf code
    *  @param reader pointer to EoDxfReader to read value
    */
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
   /** @brief Calculates the arbitrary extrusion axis (extAxisX and extAxisY) based on the given extrusion direction
    * (extPoint). This follows the DXF specification for handling extrusion directions and their corresponding axes. The
@@ -113,7 +113,7 @@ class EoDxfPoint : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_pointLocation{};  //  Group codes 10, 20 & 30
@@ -131,7 +131,7 @@ class EoDxfLine : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_startPoint;  // Group code 10, 20 & 30
@@ -154,7 +154,7 @@ class EoDxfRay : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
   EoDxfGeometryBase3d m_startPoint{};  // Group code 10, 20 & 30
   EoDxfGeometryBase3d m_unitDirectionVector{};  // Group code 11, 21 & 31
@@ -175,7 +175,7 @@ class EoDxfXline : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_startPoint{};  // Group code 10, 20 & 30
@@ -199,7 +199,7 @@ class EoDxfCircle : public EoDxfGraphic {
   void ApplyExtrusion() override;
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_centerPoint{};  // Group codes 10, 20 & 30
@@ -236,7 +236,7 @@ class EoDxfArc : public EoDxfGraphic {
    *  @param code dxf code
    *  @param reader pointer to EoDxfReader to read value
    */
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_centerPoint{};  // Group codes 10, 20 & 30
@@ -268,7 +268,7 @@ class EoDxfEllipse : public EoDxfGraphic {
    *  @param code dxf code
    *  @param reader pointer to EoDxfReader to read value
    */
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  private:
   void CorrectAxis();
@@ -300,7 +300,7 @@ class EoDxfTrace : public EoDxfGraphic {
   void ApplyExtrusion() override;
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_firstCorner{};  // Group code 10, 20 & 30
@@ -327,7 +327,7 @@ class EoDxfSolid : public EoDxfGraphic {
   void ApplyExtrusion() override;
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   [[nodiscard]] const EoDxfGeometryBase3d& FirstCorner() const noexcept { return m_firstCorner; }
@@ -381,7 +381,7 @@ class EoDxf3dFace : public EoDxfGraphic {
 
  protected:
   //! interpret code in dxf reading process or dispatch to inherited class
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_firstCorner{};  // Group code 10, 20 & 30
@@ -408,7 +408,7 @@ class EoDxfBlock : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   std::wstring m_blockName{L"*U0"};  // Group code 2 or 3
@@ -436,7 +436,7 @@ class EoDxfInsert : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   std::wstring m_blockName;  // Group code 2
@@ -478,7 +478,7 @@ class EoDxfLwPolyline : public EoDxfGraphic {
   [[nodiscard]] EoDxfPolylineVertex2d& AddVertex() { return m_vertices.emplace_back(); }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   std::int32_t m_numberOfVertices{};  // Group code 90
@@ -521,7 +521,7 @@ class EoDxfText : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_firstAlignmentPoint;  // Group codes 10, 20 & 30
@@ -579,7 +579,7 @@ class EoDxfMText : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_insertionPoint;  // Group codes 10/20/30 (insertion point in OCS)
@@ -630,7 +630,7 @@ class EoDxfVertex : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_locationPoint{};  // Group codes 10, 20 & 30
@@ -716,7 +716,7 @@ class EoDxfPolyline : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_polylineElevation{};  // Group codes 10, 20 & 30
@@ -763,7 +763,7 @@ class EoDxfSpline : public EoDxfGraphic {
   [[nodiscard]] const bool IsTangentValid() const noexcept { return m_splineFlag & 0x01; }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_normalVector;  // Group codes 210, 220, 230
@@ -832,7 +832,7 @@ class EoDxfImage : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   std::uint64_t m_imageDefinitionHandle{};  // Hard reference to imagedef object, code 340
@@ -876,7 +876,7 @@ class EoDxfLeader : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   std::wstring m_dimensionStyleName{};  // Group code 3
@@ -1001,7 +1001,7 @@ class EoDxfViewport : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_centerPoint{};  // Group codes 10, 20 & 30 (in DCS)

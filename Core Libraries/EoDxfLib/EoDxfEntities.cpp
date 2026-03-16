@@ -1,107 +1,12 @@
 #include <algorithm>
 #include <cmath>
-#include <list>
 #include <string>
 #include <vector>
 
 #include "EoDxfBase.h"
 #include "EoDxfEntities.h"
 #include "EoDxfGeometry.h"
-#include "EoDxfGroupCodeValuesVariant.h"
 #include "EoDxfReader.h"
-
-namespace {
-
-/** @brief Helper function to parse application-defined group (code 102) and its associated data until the closing tag
- * is reached.
- *  @param reader pointer to EoDxfReader to read value
- *  @return true if group is successfully parsed, false if group is not recognized or an error occurs
- *
- *  This function reads the application-defined group code (102) and its associated data,
- *  which can include various types of values based on the DXF specification.
- *  It continues reading until it encounters the closing tag for the group.
- *  The parsed values are stored in an EoDxfGroupCodeValuesVariant, which can hold different types of data
- *  based on the group code ranges defined in the DXF format.
- */
-bool AddAppDataValue(EoDxfGroupCodeValuesVariant& variant, int code, EoDxfReader* reader) {
-  if (code == 330 || code == 360) {
-    variant.AddHandle(code, reader->GetHandleString());
-    return true;
-  }
-  if (code <= 9 || code == 100 || code == 102 || code == 105 || (code >= 300 && code < 370) ||
-      (code >= 390 && code < 400) || (code >= 410 && code < 420) || (code >= 430 && code < 440) ||
-      (code >= 470 && code < 481) || code == 999 || (code >= 1000 && code <= 1009)) {
-    variant.AddWideString(code, reader->GetWideString());
-    return true;
-  }
-  if ((code >= 10 && code < 60) || (code >= 110 && code < 150) || (code >= 210 && code < 240) ||
-      (code >= 460 && code < 470) || (code >= 1010 && code <= 1059)) {
-    variant.AddDouble(code, reader->GetDouble());
-    return true;
-  }
-  if ((code >= 60 && code < 80) || (code >= 170 && code < 180) || (code >= 270 && code < 290) ||
-      (code >= 370 && code < 390) || (code >= 400 && code < 410) || (code >= 1060 && code <= 1070)) {
-    variant.AddInt16(code, reader->GetInt16());
-    return true;
-  }
-  if ((code >= 90 && code < 100) || (code >= 420 && code < 430) || (code >= 440 && code < 460) || code == 1071) {
-    variant.AddInt32(code, reader->GetInt32());
-    return true;
-  }
-  if (code >= 160 && code < 170) {
-    variant.AddInt64(code, reader->GetInt64());
-    return true;
-  }
-  if (code >= 290 && code < 300) {
-    variant.AddBoolean(code, reader->GetBool());
-    return true;
-  }
-  return false;
-}
-}  // namespace
-
-EoDxfEntity::EoDxfEntity(const EoDxfEntity& other)
-    : m_handle{other.m_handle},
-      m_ownerHandle{other.m_ownerHandle},
-      m_entityType{other.m_entityType},
-      m_reactorHandles{other.m_reactorHandles},
-      m_extensionDictionaryHandle{other.m_extensionDictionaryHandle},
-      m_appData{other.m_appData} {
-  m_extendedData.reserve(other.m_extendedData.size());
-  for (const auto* variant : other.m_extendedData) {
-    m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(*variant));
-  }
-}
-
-EoDxfEntity& EoDxfEntity::operator=(const EoDxfEntity& other) {
-  if (this != &other) {
-    std::vector<EoDxfGroupCodeValuesVariant*> extendedData;
-    extendedData.reserve(other.m_extendedData.size());
-    for (const auto* variant : other.m_extendedData) {
-      extendedData.push_back(new EoDxfGroupCodeValuesVariant(*variant));
-    }
-
-    clearExtendedData();
-
-    m_handle = other.m_handle;
-    m_ownerHandle = other.m_ownerHandle;
-    m_entityType = other.m_entityType;
-    m_reactorHandles = other.m_reactorHandles;
-    m_extensionDictionaryHandle = other.m_extensionDictionaryHandle;
-    m_appData = other.m_appData;
-    m_extendedData = std::move(extendedData);
-    m_currentVariant = nullptr;
-  }
-  return *this;
-}
-
-EoDxfEntity::~EoDxfEntity() { clearExtendedData(); }
-
-void EoDxfEntity::clearExtendedData() noexcept {
-  for (auto* variant : m_extendedData) { delete variant; }
-  m_extendedData.clear();
-  m_currentVariant = nullptr;
-}
 
 EoDxfGraphic::EoDxfGraphic(const EoDxfGraphic& other)
     : EoDxfEntity{other},
@@ -151,63 +56,9 @@ EoDxfGraphic& EoDxfGraphic::operator=(const EoDxfGraphic& other) {
 }
 
 void EoDxfGraphic::Clear() {
-  clearExtendedData();
+  m_extendedData.clear();
+  m_currentVariant = nullptr;
   // extend this later for more state reset if needed
-}
-
-void EoDxfEntity::ParseCode(int code, EoDxfReader* reader) {
-  switch (code) {
-    case 5:
-      m_handle = reader->GetHandleString();
-      break;
-    case 330:
-      m_ownerHandle = reader->GetHandleString();
-      break;
-    case 102:
-      ParseAppDataGroup(reader);
-      break;
-    case 1000:
-    case 1001:
-    case 1002:
-    case 1003:
-    case 1004:
-    case 1005:
-      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetWideString()));
-      break;
-    case 1010:
-    case 1011:
-    case 1012:
-    case 1013:
-      m_currentVariant = new EoDxfGroupCodeValuesVariant(code, EoDxfGeometryBase3d(reader->GetDouble(), 0.0, 0.0));
-      m_extendedData.push_back(m_currentVariant);
-      break;
-    case 1020:
-    case 1021:
-    case 1022:
-    case 1023:
-      if (m_currentVariant) { m_currentVariant->SetGeometryBaseY(reader->GetDouble()); }
-      break;
-    case 1030:
-    case 1031:
-    case 1032:
-    case 1033:
-      if (m_currentVariant) { m_currentVariant->SetGeometryBaseZ(reader->GetDouble()); }
-      m_currentVariant = nullptr;
-      break;
-    case 1040:
-    case 1041:
-    case 1042:
-      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetDouble()));
-      break;
-    case 1070:
-      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt16()));
-      break;
-    case 1071:
-      m_extendedData.push_back(new EoDxfGroupCodeValuesVariant(code, reader->GetInt32()));
-      break;
-    default:
-      break;
-  }
 }
 
 void EoDxfGraphic::CalculateArbitraryAxis(const EoDxfGeometryBase3d& extrusionDirection) {
@@ -249,56 +100,56 @@ void EoDxfGraphic::ExtrudePointInPlace(
   point.z = pz;
 }
 
-void EoDxfGraphic::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfGraphic::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 8:
-      m_layer = reader->GetWideString();
+      m_layer = reader.GetWideString();
       break;
     case 6:
-      m_lineType = reader->GetWideString();
+      m_lineType = reader.GetWideString();
       break;
     case 62:
-      m_color = reader->GetInt16();
+      m_color = reader.GetInt16();
       break;
     case 370:
-      m_lineWeight = EoDxfLineWidths::dxfInt2lineWidth(reader->GetInt16());
+      m_lineWeight = EoDxfLineWidths::dxfInt2lineWidth(reader.GetInt16());
       break;
     case 48:
-      m_lineTypeScale = reader->GetDouble();
+      m_lineTypeScale = reader.GetDouble();
       break;
     case 60:
-      m_visibilityFlag = reader->GetInt16();
+      m_visibilityFlag = reader.GetInt16();
       break;
     case 39:
-      m_thickness = reader->GetDouble();
+      m_thickness = reader.GetDouble();
       break;
     case 210:
       m_haveExtrusion = true;
-      m_extrusionDirection.x = reader->GetDouble();
+      m_extrusionDirection.x = reader.GetDouble();
       break;
     case 220:
-      m_extrusionDirection.y = reader->GetDouble();
+      m_extrusionDirection.y = reader.GetDouble();
       break;
     case 230:
-      m_extrusionDirection.z = reader->GetDouble();
+      m_extrusionDirection.z = reader.GetDouble();
       break;
     case 284:
-      m_shadowMode = static_cast<EoDxf::ShadowMode>(reader->GetInt16());
+      m_shadowMode = static_cast<EoDxf::ShadowMode>(reader.GetInt16());
       break;
     case 390:
-      m_plotStyleHandle = reader->GetHandleString();
+      m_plotStyleHandle = reader.GetHandleString();
       break;
     case 420:
-      m_color24 = reader->GetInt32();
+      m_color24 = reader.GetInt32();
       break;
     case 430:
-      m_colorName = reader->GetWideString();
+      m_colorName = reader.GetWideString();
       break;
     case 440:
-      m_transparency = static_cast<EoDxf::TransparencyCodes>(reader->GetInt32());
+      m_transparency = static_cast<EoDxf::TransparencyCodes>(reader.GetInt32());
       break;
     case 67:
-      m_space = static_cast<EoDxf::Space>(reader->GetInt16());
+      m_space = static_cast<EoDxf::Space>(reader.GetInt16());
       break;
     default:
       EoDxfEntity::ParseCode(code, reader);
@@ -306,91 +157,19 @@ void EoDxfGraphic::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-bool EoDxfEntity::ParseAppDataGroup(EoDxfReader* reader) {
-  auto appName = reader->GetWideString();
-  if (appName.empty() || appName[0] != L'{') { return false; }
-
-  // Structurally extract ACAD_REACTORS: collect soft-pointer handles (code 330) into m_reactorHandles.
-  if (appName == L"{ACAD_REACTORS") {
-    while (true) {
-      int nextCode{};
-      if (!reader->ReadRec(&nextCode)) { break; }
-      if (nextCode == 102) {
-        auto value = reader->GetWideString();
-        if (!value.empty() && value[0] == L'}') { break; }
-      } else if (nextCode == 330) {
-        m_reactorHandles.push_back(reader->GetHandleString());
-      } else {
-        // Unexpected code inside ACAD_REACTORS — consume and discard
-        (void)reader->GetWideString();
-      }
-    }
-    return true;
-  }
-
-  // Structurally extract ACAD_XDICTIONARY: store hard-owner handle (code 360) in m_extensionDictionaryHandle.
-  if (appName == L"{ACAD_XDICTIONARY") {
-    while (true) {
-      int nextCode{};
-      if (!reader->ReadRec(&nextCode)) { break; }
-      if (nextCode == 102) {
-        auto value = reader->GetWideString();
-        if (!value.empty() && value[0] == L'}') { break; }
-      } else if (nextCode == 360) {
-        m_extensionDictionaryHandle = reader->GetHandleString();
-      } else {
-        // Unexpected code inside ACAD_XDICTIONARY — consume and discard
-        (void)reader->GetWideString();
-      }
-    }
-    return true;
-  }
-
-  // All other application-defined groups: store opaquely in m_appData for round-trip fidelity.
-  std::list<EoDxfGroupCodeValuesVariant> groupList;
-  EoDxfGroupCodeValuesVariant currentVariant;
-
-  // opening line: store without the leading '{'
-  currentVariant.AddWideString(102, appName.substr(1));
-  groupList.push_back(currentVariant);
-
-  while (true) {
-    int nextCode{};
-    if (!reader->ReadRec(&nextCode)) { break; }  // EOF or read error
-    bool hasValue{};
-
-    if (nextCode == 102) {
-      std::wstring val = reader->GetWideString();
-      if (!val.empty() && val[0] == L'}') { break; }  // closing 102 } — do not store the closing tag
-
-      // rare nested control string
-      currentVariant = EoDxfGroupCodeValuesVariant{};
-      currentVariant.AddWideString(102, val);
-      hasValue = true;
-    } else {
-      currentVariant = EoDxfGroupCodeValuesVariant{};
-      hasValue = AddAppDataValue(currentVariant, nextCode, reader);
-    }
-    if (hasValue) { groupList.push_back(currentVariant); }
-  }
-
-  m_appData.push_back(std::move(groupList));  // avoid copy
-  return true;
-}
-
-void EoDxfPoint::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfPoint::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_pointLocation.x = reader->GetDouble();
+      m_pointLocation.x = reader.GetDouble();
       break;
     case 20:
-      m_pointLocation.y = reader->GetDouble();
+      m_pointLocation.y = reader.GetDouble();
       break;
     case 30:
-      m_pointLocation.z = reader->GetDouble();
+      m_pointLocation.z = reader.GetDouble();
       break;
     case 50:
-      m_angleOfXAxis = reader->GetDouble() * EoDxf::DegreesToRadians;
+      m_angleOfXAxis = reader.GetDouble() * EoDxf::DegreesToRadians;
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -398,25 +177,25 @@ void EoDxfPoint::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfLine::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfLine::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_startPoint.x = reader->GetDouble();
+      m_startPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_startPoint.y = reader->GetDouble();
+      m_startPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_startPoint.z = reader->GetDouble();
+      m_startPoint.z = reader.GetDouble();
       break;
     case 11:
-      m_endPoint.x = reader->GetDouble();
+      m_endPoint.x = reader.GetDouble();
       break;
     case 21:
-      m_endPoint.y = reader->GetDouble();
+      m_endPoint.y = reader.GetDouble();
       break;
     case 31:
-      m_endPoint.z = reader->GetDouble();
+      m_endPoint.z = reader.GetDouble();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -424,25 +203,25 @@ void EoDxfLine::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfRay::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfRay::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_startPoint.x = reader->GetDouble();
+      m_startPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_startPoint.y = reader->GetDouble();
+      m_startPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_startPoint.z = reader->GetDouble();
+      m_startPoint.z = reader.GetDouble();
       break;
     case 11:
-      m_unitDirectionVector.x = reader->GetDouble();
+      m_unitDirectionVector.x = reader.GetDouble();
       break;
     case 21:
-      m_unitDirectionVector.y = reader->GetDouble();
+      m_unitDirectionVector.y = reader.GetDouble();
       break;
     case 31:
-      m_unitDirectionVector.z = reader->GetDouble();
+      m_unitDirectionVector.z = reader.GetDouble();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -450,25 +229,25 @@ void EoDxfRay::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfXline::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfXline::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_startPoint.x = reader->GetDouble();
+      m_startPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_startPoint.y = reader->GetDouble();
+      m_startPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_startPoint.z = reader->GetDouble();
+      m_startPoint.z = reader.GetDouble();
       break;
     case 11:
-      m_unitDirectionVector.x = reader->GetDouble();
+      m_unitDirectionVector.x = reader.GetDouble();
       break;
     case 21:
-      m_unitDirectionVector.y = reader->GetDouble();
+      m_unitDirectionVector.y = reader.GetDouble();
       break;
     case 31:
-      m_unitDirectionVector.z = reader->GetDouble();
+      m_unitDirectionVector.z = reader.GetDouble();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -485,19 +264,19 @@ void EoDxfCircle::ApplyExtrusion() {
   }
 }
 
-void EoDxfCircle::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfCircle::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_centerPoint.x = reader->GetDouble();
+      m_centerPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_centerPoint.y = reader->GetDouble();
+      m_centerPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_centerPoint.z = reader->GetDouble();
+      m_centerPoint.z = reader.GetDouble();
       break;
     case 40:
-      m_radius = reader->GetDouble();
+      m_radius = reader.GetDouble();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -529,25 +308,25 @@ void EoDxfArc::ApplyExtrusion() {
   m_endAngle = temp;
 }
 
-void EoDxfArc::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfArc::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_centerPoint.x = reader->GetDouble();
+      m_centerPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_centerPoint.y = reader->GetDouble();
+      m_centerPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_centerPoint.z = reader->GetDouble();
+      m_centerPoint.z = reader.GetDouble();
       break;
     case 40:
-      m_radius = reader->GetDouble();
+      m_radius = reader.GetDouble();
       break;
     case 50:
-      m_startAngle = reader->GetDouble() * EoDxf::DegreesToRadians;
+      m_startAngle = reader.GetDouble() * EoDxf::DegreesToRadians;
       break;
     case 51:
-      m_endAngle = reader->GetDouble() * EoDxf::DegreesToRadians;
+      m_endAngle = reader.GetDouble() * EoDxf::DegreesToRadians;
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -555,34 +334,34 @@ void EoDxfArc::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfEllipse::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfEllipse::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_centerPoint.x = reader->GetDouble();
+      m_centerPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_centerPoint.y = reader->GetDouble();
+      m_centerPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_centerPoint.z = reader->GetDouble();
+      m_centerPoint.z = reader.GetDouble();
       break;
     case 11:
-      m_endPointOfMajorAxis.x = reader->GetDouble();
+      m_endPointOfMajorAxis.x = reader.GetDouble();
       break;
     case 21:
-      m_endPointOfMajorAxis.y = reader->GetDouble();
+      m_endPointOfMajorAxis.y = reader.GetDouble();
       break;
     case 31:
-      m_endPointOfMajorAxis.z = reader->GetDouble();
+      m_endPointOfMajorAxis.z = reader.GetDouble();
       break;
     case 40:
-      m_ratio = reader->GetDouble();
+      m_ratio = reader.GetDouble();
       break;
     case 41:
-      m_startParam = reader->GetDouble();
+      m_startParam = reader.GetDouble();
       break;
     case 42:
-      m_endParam = reader->GetDouble();
+      m_endParam = reader.GetDouble();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -669,43 +448,43 @@ void EoDxfTrace::ApplyExtrusion() {
   }
 }
 
-void EoDxfTrace::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfTrace::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_firstCorner.x = reader->GetDouble();
+      m_firstCorner.x = reader.GetDouble();
       break;
     case 20:
-      m_firstCorner.y = reader->GetDouble();
+      m_firstCorner.y = reader.GetDouble();
       break;
     case 30:
-      m_firstCorner.z = reader->GetDouble();
+      m_firstCorner.z = reader.GetDouble();
       break;
     case 11:
-      m_secondCorner.x = reader->GetDouble();
+      m_secondCorner.x = reader.GetDouble();
       break;
     case 21:
-      m_secondCorner.y = reader->GetDouble();
+      m_secondCorner.y = reader.GetDouble();
       break;
     case 31:
-      m_secondCorner.z = reader->GetDouble();
+      m_secondCorner.z = reader.GetDouble();
       break;
     case 12:
-      m_thirdCorner.x = reader->GetDouble();
+      m_thirdCorner.x = reader.GetDouble();
       break;
     case 22:
-      m_thirdCorner.y = reader->GetDouble();
+      m_thirdCorner.y = reader.GetDouble();
       break;
     case 32:
-      m_thirdCorner.z = reader->GetDouble();
+      m_thirdCorner.z = reader.GetDouble();
       break;
     case 13:
-      m_fourthCorner.x = reader->GetDouble();
+      m_fourthCorner.x = reader.GetDouble();
       break;
     case 23:
-      m_fourthCorner.y = reader->GetDouble();
+      m_fourthCorner.y = reader.GetDouble();
       break;
     case 33:
-      m_fourthCorner.z = reader->GetDouble();
+      m_fourthCorner.z = reader.GetDouble();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -723,43 +502,43 @@ void EoDxfSolid::ApplyExtrusion() {
   }
 }
 
-void EoDxfSolid::ParseCode(int code, EoDxfReader* reader) { 
+void EoDxfSolid::ParseCode(int code, EoDxfReader& reader) { 
   switch (code) {
     case 10:
-      m_firstCorner.x = reader->GetDouble();
+      m_firstCorner.x = reader.GetDouble();
       break;
     case 20:
-      m_firstCorner.y = reader->GetDouble();
+      m_firstCorner.y = reader.GetDouble();
       break;
     case 30:
-      m_firstCorner.z = reader->GetDouble();
+      m_firstCorner.z = reader.GetDouble();
       break;
     case 11:
-      m_secondCorner.x = reader->GetDouble();
+      m_secondCorner.x = reader.GetDouble();
       break;
     case 21:
-      m_secondCorner.y = reader->GetDouble();
+      m_secondCorner.y = reader.GetDouble();
       break;
     case 31:
-      m_secondCorner.z = reader->GetDouble();
+      m_secondCorner.z = reader.GetDouble();
       break;
     case 12:
-      m_thirdCorner.x = reader->GetDouble();
+      m_thirdCorner.x = reader.GetDouble();
       break;
     case 22:
-      m_thirdCorner.y = reader->GetDouble();
+      m_thirdCorner.y = reader.GetDouble();
       break;
     case 32:
-      m_thirdCorner.z = reader->GetDouble();
+      m_thirdCorner.z = reader.GetDouble();
       break;
     case 13:
-      m_fourthCorner.x = reader->GetDouble();
+      m_fourthCorner.x = reader.GetDouble();
       break;
     case 23:
-      m_fourthCorner.y = reader->GetDouble();
+      m_fourthCorner.y = reader.GetDouble();
       break;
     case 33:
-      m_fourthCorner.z = reader->GetDouble();
+      m_fourthCorner.z = reader.GetDouble();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -767,46 +546,46 @@ void EoDxfSolid::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxf3dFace::ParseCode(int code, EoDxfReader* reader) {
+void EoDxf3dFace::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_firstCorner.x = reader->GetDouble();
+      m_firstCorner.x = reader.GetDouble();
       break;
     case 20:
-      m_firstCorner.y = reader->GetDouble();
+      m_firstCorner.y = reader.GetDouble();
       break;
     case 30:
-      m_firstCorner.z = reader->GetDouble();
+      m_firstCorner.z = reader.GetDouble();
       break;
     case 11:
-      m_secondCorner.x = reader->GetDouble();
+      m_secondCorner.x = reader.GetDouble();
       break;
     case 21:
-      m_secondCorner.y = reader->GetDouble();
+      m_secondCorner.y = reader.GetDouble();
       break;
     case 31:
-      m_secondCorner.z = reader->GetDouble();
+      m_secondCorner.z = reader.GetDouble();
       break;
     case 12:
-      m_thirdCorner.x = reader->GetDouble();
+      m_thirdCorner.x = reader.GetDouble();
       break;
     case 22:
-      m_thirdCorner.y = reader->GetDouble();
+      m_thirdCorner.y = reader.GetDouble();
       break;
     case 32:
-      m_thirdCorner.z = reader->GetDouble();
+      m_thirdCorner.z = reader.GetDouble();
       break;
     case 13:
-      m_fourthCorner.x = reader->GetDouble();
+      m_fourthCorner.x = reader.GetDouble();
       break;
     case 23:
-      m_fourthCorner.y = reader->GetDouble();
+      m_fourthCorner.y = reader.GetDouble();
       break;
     case 33:
-      m_fourthCorner.z = reader->GetDouble();
+      m_fourthCorner.z = reader.GetDouble();
       break;
     case 70:
-      m_invisibleFlag = reader->GetInt16();
+      m_invisibleFlag = reader.GetInt16();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -814,7 +593,7 @@ void EoDxf3dFace::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfBlock::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfBlock::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 2:
       [[fallthrough]];  // They are always identical in every valid DXF file (regular blocks, anonymous blocks, XREFs,
@@ -822,25 +601,25 @@ void EoDxfBlock::ParseCode(int code, EoDxfReader* reader) {
                         // this is intentional for backward compatibility. It seems that group 3 may be missing on read
                         // but it should be written out with both groups 2 and 3.
     case 3:
-      m_blockName = reader->GetWideString();
+      m_blockName = reader.GetWideString();
       break;
     case 70:
-      m_blockTypeFlags = reader->GetInt16();
+      m_blockTypeFlags = reader.GetInt16();
       break;
     case 10:
-      m_basePoint.x = reader->GetDouble();
+      m_basePoint.x = reader.GetDouble();
       break;
     case 20:
-      m_basePoint.y = reader->GetDouble();
+      m_basePoint.y = reader.GetDouble();
       break;
     case 30:
-      m_basePoint.z = reader->GetDouble();
+      m_basePoint.z = reader.GetDouble();
       break;
     case 1:
-      m_xrefPathName = reader->GetWideString();
+      m_xrefPathName = reader.GetWideString();
       break;
     case 4:
-      m_blockDescription = reader->GetWideString();
+      m_blockDescription = reader.GetWideString();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -848,44 +627,44 @@ void EoDxfBlock::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfInsert::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfInsert::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 2:
-      m_blockName = reader->GetWideString();
+      m_blockName = reader.GetWideString();
       break;
     case 10:
-      m_insertionPoint.x = reader->GetDouble();
+      m_insertionPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_insertionPoint.y = reader->GetDouble();
+      m_insertionPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_insertionPoint.z = reader->GetDouble();
+      m_insertionPoint.z = reader.GetDouble();
       break;
     case 41:
-      m_xScaleFactor = reader->GetDouble();
+      m_xScaleFactor = reader.GetDouble();
       break;
     case 42:
-      m_yScaleFactor = reader->GetDouble();
+      m_yScaleFactor = reader.GetDouble();
       break;
     case 43:
-      m_zScaleFactor = reader->GetDouble();
+      m_zScaleFactor = reader.GetDouble();
       break;
     case 50:
-      m_rotationAngle = reader->GetDouble();
+      m_rotationAngle = reader.GetDouble();
       m_rotationAngle = m_rotationAngle * EoDxf::DegreesToRadians;
       break;
     case 70:
-      m_columnCount = reader->GetInt16();
+      m_columnCount = reader.GetInt16();
       break;
     case 71:
-      m_rowCount = reader->GetInt16();
+      m_rowCount = reader.GetInt16();
       break;
     case 44:
-      m_columnSpacing = reader->GetDouble();
+      m_columnSpacing = reader.GetDouble();
       break;
     case 45:
-      m_rowSpacing = reader->GetDouble();
+      m_rowSpacing = reader.GetDouble();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -905,37 +684,37 @@ void EoDxfLwPolyline::ApplyExtrusion() {
   }
 }
 
-void EoDxfLwPolyline::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfLwPolyline::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10: {
       m_vertices.emplace_back();
       m_currentVertexIndex = static_cast<int>(m_vertices.size()) - 1;
-      m_vertices.back().x = reader->GetDouble();
+      m_vertices.back().x = reader.GetDouble();
       break;
     }
     case 20:
-      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].y = reader->GetDouble(); }
+      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].y = reader.GetDouble(); }
       break;
     case 40:
-      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].stawidth = reader->GetDouble(); }
+      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].stawidth = reader.GetDouble(); }
       break;
     case 41:
-      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].endwidth = reader->GetDouble(); }
+      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].endwidth = reader.GetDouble(); }
       break;
     case 42:
-      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].bulge = reader->GetDouble(); }
+      if (m_currentVertexIndex >= 0) { m_vertices[m_currentVertexIndex].bulge = reader.GetDouble(); }
       break;
     case 38:
-      m_elevation = reader->GetDouble();
+      m_elevation = reader.GetDouble();
       break;
     case 43:
-      m_constantWidth = reader->GetDouble();
+      m_constantWidth = reader.GetDouble();
       break;
     case 70:
-      m_polylineFlag = reader->GetInt16();
+      m_polylineFlag = reader.GetInt16();
       break;
     case 90:
-      m_numberOfVertices = reader->GetInt32();
+      m_numberOfVertices = reader.GetInt32();
       m_vertices.reserve(m_numberOfVertices);  // now reserves the correct container
       break;
     default:
@@ -944,58 +723,58 @@ void EoDxfLwPolyline::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfText::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_firstAlignmentPoint.x = reader->GetDouble();
+      m_firstAlignmentPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_firstAlignmentPoint.y = reader->GetDouble();
+      m_firstAlignmentPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_firstAlignmentPoint.z = reader->GetDouble();
+      m_firstAlignmentPoint.z = reader.GetDouble();
       break;
     case 11:
       m_hasSecondAlignmentPoint = true;
-      m_secondAlignmentPoint.x = reader->GetDouble();
+      m_secondAlignmentPoint.x = reader.GetDouble();
       break;
     case 21:
       m_hasSecondAlignmentPoint = true;
-      m_secondAlignmentPoint.y = reader->GetDouble();
+      m_secondAlignmentPoint.y = reader.GetDouble();
       break;
     case 31:
       m_hasSecondAlignmentPoint = true;
-      m_secondAlignmentPoint.z = reader->GetDouble();
+      m_secondAlignmentPoint.z = reader.GetDouble();
       break;
     case 40:
-      m_textHeight = reader->GetDouble();
+      m_textHeight = reader.GetDouble();
       break;
     case 41:
-      m_scaleFactorWidth = reader->GetDouble();
+      m_scaleFactorWidth = reader.GetDouble();
       break;
     case 50:
-      m_textRotation = reader->GetDouble();
+      m_textRotation = reader.GetDouble();
       break;
     case 51:
-      m_obliqueAngle = reader->GetDouble();
+      m_obliqueAngle = reader.GetDouble();
       break;
     case 71:
-      m_textGenerationFlags = reader->GetInt16();
+      m_textGenerationFlags = reader.GetInt16();
       break;
     case 72:
       m_horizontalAlignment = static_cast<HorizontalAlignment>(
-          std::clamp(reader->GetInt16(), static_cast<std::int16_t>(HorizontalAlignment::Left),
+          std::clamp(reader.GetInt16(), static_cast<std::int16_t>(HorizontalAlignment::Left),
               static_cast<std::int16_t>(HorizontalAlignment::FitIfBaseLine)));
       break;
     case 73:
-      m_verticalAlignment = static_cast<VerticalAlignment>(std::clamp(reader->GetInt16(),
+      m_verticalAlignment = static_cast<VerticalAlignment>(std::clamp(reader.GetInt16(),
           static_cast<std::int16_t>(VerticalAlignment::BaseLine), static_cast<std::int16_t>(VerticalAlignment::Top)));
       break;
     case 1:
-      m_string = reader->GetWideString();
+      m_string = reader.GetWideString();
       break;
     case 7:
-      m_textStyleName = reader->GetWideString();
+      m_textStyleName = reader.GetWideString();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -1003,84 +782,84 @@ void EoDxfText::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfMText::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfMText::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_insertionPoint.x = reader->GetDouble();
+      m_insertionPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_insertionPoint.y = reader->GetDouble();
+      m_insertionPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_insertionPoint.z = reader->GetDouble();
+      m_insertionPoint.z = reader.GetDouble();
       break;
     case 40:
-      m_nominalTextHeight = reader->GetDouble();
+      m_nominalTextHeight = reader.GetDouble();
       break;
     case 41:
-      m_referenceRectangleWidth = reader->GetDouble();
+      m_referenceRectangleWidth = reader.GetDouble();
       break;
     case 7:
-      m_textStyleName = reader->GetWideString();
+      m_textStyleName = reader.GetWideString();
       break;
     case 50:
-      m_rotationAngle = reader->GetDouble();
+      m_rotationAngle = reader.GetDouble();
       break;
 
     case 11:
       m_haveXAxisDirection = true;
-      m_xAxisDirectionVector.x = reader->GetDouble();
+      m_xAxisDirectionVector.x = reader.GetDouble();
       break;
     case 21:
-      m_xAxisDirectionVector.y = reader->GetDouble();
+      m_xAxisDirectionVector.y = reader.GetDouble();
       break;
     case 31:
-      m_xAxisDirectionVector.z = reader->GetDouble();
+      m_xAxisDirectionVector.z = reader.GetDouble();
       break;
 
     case 71:
-      m_attachmentPoint = static_cast<AttachmentPoint>(reader->GetInt16());
+      m_attachmentPoint = static_cast<AttachmentPoint>(reader.GetInt16());
       break;
     case 72:
-      m_drawingDirection = static_cast<DrawingDirection>(reader->GetInt16());
+      m_drawingDirection = static_cast<DrawingDirection>(reader.GetInt16());
       break;
     case 73:
-      m_lineSpacingStyle = static_cast<LineSpacingStyle>(reader->GetInt16());
+      m_lineSpacingStyle = static_cast<LineSpacingStyle>(reader.GetInt16());
       break;
     case 44:
-      m_lineSpacingFactor = reader->GetDouble();
+      m_lineSpacingFactor = reader.GetDouble();
       break;
 
     case 1:  // final chunk (or only chunk if no continuation chunks) of text string
-      m_textString += reader->GetWideString();
+      m_textString += reader.GetWideString();
       break;
     case 3:  // continuation chunk (multiple allowed)
-      m_textString += reader->GetWideString();
+      m_textString += reader.GetWideString();
       break;
 
     // (AC1021+) ? must appear together
     case 90:
-      m_backgroundFillSetting = reader->GetInt32();
+      m_backgroundFillSetting = reader.GetInt32();
       break;
     case 45:
-      m_fillBoxScale = reader->GetDouble();
+      m_fillBoxScale = reader.GetDouble();
       break;
     case 63:
-      m_backgroundFillColor = reader->GetInt16();
+      m_backgroundFillColor = reader.GetInt16();
       break;
     case 421:
-      m_backgroundColor = reader->GetInt32();
+      m_backgroundColor = reader.GetInt32();
       break;
     case 431:
-      m_backgroundColorName = reader->GetWideString();
+      m_backgroundColorName = reader.GetWideString();
       break;
 
     // calculated values (can ignore)
     case 42:
-      m_horizontalWidth = reader->GetDouble();
+      m_horizontalWidth = reader.GetDouble();
       break;
     case 43:
-      m_verticalHeight = reader->GetDouble();
+      m_verticalHeight = reader.GetDouble();
       break;
 
     default:
@@ -1093,40 +872,40 @@ void EoDxfMText::UpdateAngle() {
   if (m_haveXAxisDirection) { m_rotationAngle = atan2(m_xAxisDirectionVector.y, m_xAxisDirectionVector.x); }
 }
 
-void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfPolyline::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_polylineElevation.x = reader->GetDouble();  // always 0.0
+      m_polylineElevation.x = reader.GetDouble();  // always 0.0
       break;
     case 20:
-      m_polylineElevation.y = reader->GetDouble();  // always 0.0
+      m_polylineElevation.y = reader.GetDouble();  // always 0.0
       break;
     case 30:
-      m_polylineElevation.z = reader->GetDouble();
+      m_polylineElevation.z = reader.GetDouble();
       break;
     case 70:
-      m_polylineFlag = reader->GetInt16();
+      m_polylineFlag = reader.GetInt16();
       break;
     case 40:
-      m_defaultStartWidth = reader->GetDouble();
+      m_defaultStartWidth = reader.GetDouble();
       break;
     case 41:
-      m_defaultEndWidth = reader->GetDouble();
+      m_defaultEndWidth = reader.GetDouble();
       break;
     case 71:
-      m_polygonMeshVertexCountM = reader->GetInt16();
+      m_polygonMeshVertexCountM = reader.GetInt16();
       break;
     case 72:
-      m_polygonMeshVertexCountN = reader->GetInt16();
+      m_polygonMeshVertexCountN = reader.GetInt16();
       break;
     case 73:
-      m_smoothSurfaceDensityM = reader->GetInt16();
+      m_smoothSurfaceDensityM = reader.GetInt16();
       break;
     case 74:
-      m_smoothSurfaceDensityN = reader->GetInt16();
+      m_smoothSurfaceDensityN = reader.GetInt16();
       break;
     case 75:
-      m_curvesAndSmoothSurfaceType = reader->GetInt16();
+      m_curvesAndSmoothSurfaceType = reader.GetInt16();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -1134,46 +913,46 @@ void EoDxfPolyline::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfVertex::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfVertex::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_locationPoint.x = reader->GetDouble();
+      m_locationPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_locationPoint.y = reader->GetDouble();
+      m_locationPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_locationPoint.z = reader->GetDouble();
+      m_locationPoint.z = reader.GetDouble();
       break;
     case 70:
-      m_vertexFlags = reader->GetInt16();
+      m_vertexFlags = reader.GetInt16();
       break;
     case 40:
-      m_startingWidth = reader->GetDouble();
+      m_startingWidth = reader.GetDouble();
       break;
     case 41:
-      m_endingWidth = reader->GetDouble();
+      m_endingWidth = reader.GetDouble();
       break;
     case 42:
-      m_bulge = reader->GetDouble();
+      m_bulge = reader.GetDouble();
       break;
     case 50:
-      m_curveFitTangentDirection = reader->GetDouble();
+      m_curveFitTangentDirection = reader.GetDouble();
       break;
     case 71:
-      m_polyfaceMeshVertexIndex1 = reader->GetInt16();
+      m_polyfaceMeshVertexIndex1 = reader.GetInt16();
       break;
     case 72:
-      m_polyfaceMeshVertexIndex2 = reader->GetInt16();
+      m_polyfaceMeshVertexIndex2 = reader.GetInt16();
       break;
     case 73:
-      m_polyfaceMeshVertexIndex3 = reader->GetInt16();
+      m_polyfaceMeshVertexIndex3 = reader.GetInt16();
       break;
     case 74:
-      m_polyfaceMeshVertexIndex4 = reader->GetInt16();
+      m_polyfaceMeshVertexIndex4 = reader.GetInt16();
       break;
     case 91:
-      m_identifier = reader->GetInt32();
+      m_identifier = reader.GetInt32();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -1181,83 +960,83 @@ void EoDxfVertex::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfSpline::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfSpline::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 210:
-      m_normalVector.x = reader->GetDouble();
+      m_normalVector.x = reader.GetDouble();
       break;
     case 220:
-      m_normalVector.y = reader->GetDouble();
+      m_normalVector.y = reader.GetDouble();
       break;
     case 230:
-      m_normalVector.z = reader->GetDouble();
+      m_normalVector.z = reader.GetDouble();
       break;
     case 12:
-      m_startTangent.x = reader->GetDouble();
+      m_startTangent.x = reader.GetDouble();
       break;
     case 22:
-      m_startTangent.y = reader->GetDouble();
+      m_startTangent.y = reader.GetDouble();
       break;
     case 32:
-      m_startTangent.z = reader->GetDouble();
+      m_startTangent.z = reader.GetDouble();
       break;
     case 13:
-      m_endTangent.x = reader->GetDouble();
+      m_endTangent.x = reader.GetDouble();
       break;
     case 23:
-      m_endTangent.y = reader->GetDouble();
+      m_endTangent.y = reader.GetDouble();
       break;
     case 33:
-      m_endTangent.z = reader->GetDouble();
+      m_endTangent.z = reader.GetDouble();
       break;
     case 70:
-      m_splineFlag = reader->GetInt16();
+      m_splineFlag = reader.GetInt16();
       break;
     case 71:
-      m_degreeOfTheSplineCurve = reader->GetInt16();
+      m_degreeOfTheSplineCurve = reader.GetInt16();
       break;
     case 72:
-      m_numberOfKnots = reader->GetInt16();
+      m_numberOfKnots = reader.GetInt16();
       break;
     case 73:
-      m_numberOfControlPoints = reader->GetInt16();
+      m_numberOfControlPoints = reader.GetInt16();
       break;
     case 74:
-      m_numberOfFitPoints = reader->GetInt16();
+      m_numberOfFitPoints = reader.GetInt16();
       break;
     case 42:
-      m_knotTolerance = reader->GetDouble();
+      m_knotTolerance = reader.GetDouble();
       break;
     case 43:
-      m_controlPointTolerance = reader->GetDouble();
+      m_controlPointTolerance = reader.GetDouble();
       break;
     case 44:
-      m_fitTolerance = reader->GetDouble();
+      m_fitTolerance = reader.GetDouble();
       break;
     case 10:
       m_controlPoint = new EoDxfGeometryBase3d();
       m_controlPoints.push_back(m_controlPoint);
-      m_controlPoint->x = reader->GetDouble();
+      m_controlPoint->x = reader.GetDouble();
       break;
     case 20:
-      if (m_controlPoint != nullptr) { m_controlPoint->y = reader->GetDouble(); }
+      if (m_controlPoint != nullptr) { m_controlPoint->y = reader.GetDouble(); }
       break;
     case 30:
-      if (m_controlPoint != nullptr) { m_controlPoint->z = reader->GetDouble(); }
+      if (m_controlPoint != nullptr) { m_controlPoint->z = reader.GetDouble(); }
       break;
     case 11:
       m_fitPoint = new EoDxfGeometryBase3d();
       m_fitPoints.push_back(m_fitPoint);
-      m_fitPoint->x = reader->GetDouble();
+      m_fitPoint->x = reader.GetDouble();
       break;
     case 21:
-      if (m_fitPoint != nullptr) { m_fitPoint->y = reader->GetDouble(); }
+      if (m_fitPoint != nullptr) { m_fitPoint->y = reader.GetDouble(); }
       break;
     case 31:
-      if (m_fitPoint != nullptr) { m_fitPoint->z = reader->GetDouble(); }
+      if (m_fitPoint != nullptr) { m_fitPoint->z = reader.GetDouble(); }
       break;
     case 40:
-      m_knotValues.push_back(reader->GetDouble());
+      m_knotValues.push_back(reader.GetDouble());
       break;
 
     // case 41:
@@ -1268,55 +1047,55 @@ void EoDxfSpline::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfImage::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfImage::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_insertionPoint.x = reader->GetDouble();
+      m_insertionPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_insertionPoint.y = reader->GetDouble();
+      m_insertionPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_insertionPoint.z = reader->GetDouble();
+      m_insertionPoint.z = reader.GetDouble();
       break;
     case 11:
-      m_uVector.x = reader->GetDouble();
+      m_uVector.x = reader.GetDouble();
       break;
     case 21:
-      m_uVector.y = reader->GetDouble();
+      m_uVector.y = reader.GetDouble();
       break;
     case 31:
-      m_uVector.z = reader->GetDouble();
+      m_uVector.z = reader.GetDouble();
       break;
     case 12:
-      m_vVector.x = reader->GetDouble();
+      m_vVector.x = reader.GetDouble();
       break;
     case 22:
-      m_vVector.y = reader->GetDouble();
+      m_vVector.y = reader.GetDouble();
       break;
     case 32:
-      m_vVector.z = reader->GetDouble();
+      m_vVector.z = reader.GetDouble();
       break;
     case 13:
-      m_uImageSizeInPixels = reader->GetDouble();
+      m_uImageSizeInPixels = reader.GetDouble();
       break;
     case 23:
-      m_vImageSizeInPixels = reader->GetDouble();
+      m_vImageSizeInPixels = reader.GetDouble();
       break;
     case 340:
-      m_imageDefinitionHandle = reader->GetHandleString();
+      m_imageDefinitionHandle = reader.GetHandleString();
       break;
     case 280:
-      m_clippingState = reader->GetInt16();
+      m_clippingState = reader.GetInt16();
       break;
     case 281:
-      m_brightnessValue = reader->GetInt16();
+      m_brightnessValue = reader.GetInt16();
       break;
     case 282:
-      m_contrastValue = reader->GetInt16();
+      m_contrastValue = reader.GetInt16();
       break;
     case 283:
-      m_fadeValue = reader->GetInt16();
+      m_fadeValue = reader.GetInt16();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
@@ -1324,91 +1103,91 @@ void EoDxfImage::ParseCode(int code, EoDxfReader* reader) {
   }
 }
 
-void EoDxfViewport::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfViewport::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
     case 10:
-      m_centerPoint.x = reader->GetDouble();
+      m_centerPoint.x = reader.GetDouble();
       break;
     case 20:
-      m_centerPoint.y = reader->GetDouble();
+      m_centerPoint.y = reader.GetDouble();
       break;
     case 30:
-      m_centerPoint.z = reader->GetDouble();
+      m_centerPoint.z = reader.GetDouble();
       break;
     case 12:
-      m_viewCenter.x = reader->GetDouble();
+      m_viewCenter.x = reader.GetDouble();
       break;
     case 22:
-      m_viewCenter.y = reader->GetDouble();
+      m_viewCenter.y = reader.GetDouble();
       break;
     case 13:
-      m_snapBasePoint.x = reader->GetDouble();
+      m_snapBasePoint.x = reader.GetDouble();
       break;
     case 23:
-      m_snapBasePoint.y = reader->GetDouble();
+      m_snapBasePoint.y = reader.GetDouble();
       break;
     case 14:
-      m_snapSpacing.x = reader->GetDouble();
+      m_snapSpacing.x = reader.GetDouble();
       break;
     case 24:
-      m_snapSpacing.y = reader->GetDouble();
+      m_snapSpacing.y = reader.GetDouble();
       break;
     case 15:
-      m_gridSpacing.x = reader->GetDouble();
+      m_gridSpacing.x = reader.GetDouble();
       break;
     case 25:
-      m_gridSpacing.y = reader->GetDouble();
+      m_gridSpacing.y = reader.GetDouble();
       break;
     case 16:
-      m_viewDirection.x = reader->GetDouble();
+      m_viewDirection.x = reader.GetDouble();
       break;
     case 17:
-      m_viewTargetPoint.x = reader->GetDouble();
+      m_viewTargetPoint.x = reader.GetDouble();
       break;
     case 26:
-      m_viewDirection.y = reader->GetDouble();
+      m_viewDirection.y = reader.GetDouble();
       break;
     case 27:
-      m_viewTargetPoint.y = reader->GetDouble();
+      m_viewTargetPoint.y = reader.GetDouble();
       break;
     case 36:
-      m_viewDirection.z = reader->GetDouble();
+      m_viewDirection.z = reader.GetDouble();
       break;
     case 37:
-      m_viewTargetPoint.z = reader->GetDouble();
+      m_viewTargetPoint.z = reader.GetDouble();
       break;
     case 40:
-      m_width = reader->GetDouble();
+      m_width = reader.GetDouble();
       break;
     case 41:
-      m_height = reader->GetDouble();
+      m_height = reader.GetDouble();
       break;
     case 42:
-      m_lensLength = reader->GetDouble();
+      m_lensLength = reader.GetDouble();
       break;
     case 43:
-      m_frontClipPlane = reader->GetDouble();
+      m_frontClipPlane = reader.GetDouble();
       break;
     case 44:
-      m_backClipPlane = reader->GetDouble();
+      m_backClipPlane = reader.GetDouble();
       break;
     case 45:
-      m_viewHeight = reader->GetDouble();
+      m_viewHeight = reader.GetDouble();
       break;
     case 50:
-      m_snapAngle = reader->GetDouble();
+      m_snapAngle = reader.GetDouble();
       break;
     case 51:
-      m_twistAngle = reader->GetDouble();
+      m_twistAngle = reader.GetDouble();
       break;
     case 68:
-      m_viewportStatus = reader->GetInt16();
+      m_viewportStatus = reader.GetInt16();
       break;
     case 69:
-      m_viewportId = reader->GetInt16();
+      m_viewportId = reader.GetInt16();
       break;
     case 90:
-      m_viewportStatusBitCodedFlags = reader->GetInt32();
+      m_viewportStatusBitCodedFlags = reader.GetInt32();
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);

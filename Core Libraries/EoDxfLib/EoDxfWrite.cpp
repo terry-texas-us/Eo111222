@@ -555,9 +555,9 @@ bool EoDxfWrite::WriteAppData(const std::list<std::list<EoDxfGroupCodeValuesVari
   return m_writeOk;
 }
 
-bool EoDxfWrite::WriteExtData(const std::vector<EoDxfGroupCodeValuesVariant*>& ed) {
-  for (std::vector<EoDxfGroupCodeValuesVariant*>::const_iterator it = ed.begin(); it != ed.end(); ++it) {
-    if (*it != nullptr) { WriteVariantValue(*(*it)); }
+bool EoDxfWrite::WriteExtData(const std::vector<std::unique_ptr<EoDxfGroupCodeValuesVariant>>& ed) {
+  for (const auto& variant : ed) {
+    if (variant) { WriteVariantValue(*variant); }
   }
   return m_writeOk;
 }

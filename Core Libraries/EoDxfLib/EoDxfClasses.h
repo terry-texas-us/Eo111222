@@ -17,7 +17,7 @@ class EoDxfClass {
   EoDxfClass() = default;
   ~EoDxfClass() = default;
 
-  void ParseCode(int code, EoDxfReader* reader) noexcept;
+  void ParseCode(int code, EoDxfReader& reader) noexcept;
   void clear() noexcept;
   void write(EoDxfWriter* writer, EoDxf::Version version) const noexcept;
 

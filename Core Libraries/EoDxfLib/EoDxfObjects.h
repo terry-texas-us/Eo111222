@@ -36,7 +36,7 @@ class EoDxfObjectEntry : public EoDxfEntity {
 
  protected:
   /// Delegates to EoDxfEntity::ParseCode for all common group codes.
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
   void Reset();
 };
 
@@ -60,7 +60,7 @@ class EoDxfImageDefinition : public EoDxfObjectEntry {
   EoDxfImageDefinition() { Reset(); }
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
   void Reset();
 

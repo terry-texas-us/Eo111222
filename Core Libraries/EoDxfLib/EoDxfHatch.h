@@ -40,7 +40,7 @@ class EoDxfHatch : public EoDxfGraphic {
   void ApplyExtrusion() override {}
 
  protected:
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  public:
   EoDxfGeometryBase3d m_elevationPoint{};  // Group codes 10, 20 & 30

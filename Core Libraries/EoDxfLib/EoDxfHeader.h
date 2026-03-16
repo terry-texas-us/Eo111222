@@ -55,7 +55,7 @@ class EoDxfHeader {
    *  @param code The group code indicating the type of header variable being parsed.
    *  @param reader Pointer to EoDxfReader object to read values from.
    */
-  void ParseCode(int code, EoDxfReader* reader);
+  void ParseCode(int code, EoDxfReader& reader);
 
  private:
   void WriteBase(EoDxfWriter* writer);

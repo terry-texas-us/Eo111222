@@ -163,7 +163,7 @@ bool EoDxfRead::ProcessHeader() {
         return true;
       }
     } else {
-      m_header.ParseCode(code, m_reader);
+      m_header.ParseCode(code, *m_reader);
     }
   }
   return true;
@@ -190,7 +190,7 @@ bool EoDxfRead::ProcessClasses() {
               return true;
             }
           } else {
-            class_.ParseCode(code, m_reader);
+            class_.ParseCode(code, *m_reader);
           }
         }
       } else if (zeroGroupTag == L"ENDSEC") {
@@ -265,7 +265,7 @@ bool EoDxfRead::ProcessLType() {
         return true;
       }
     } else if (reading) {
-      linetype.ParseCode(code, m_reader);
+      linetype.ParseCode(code, *m_reader);
     }
   }
   return true;
@@ -287,7 +287,7 @@ bool EoDxfRead::ProcessLayer() {
         return true;
       }
     } else if (reading) {
-      layer.ParseCode(code, m_reader);
+      layer.ParseCode(code, *m_reader);
     }
   }
   return true;
@@ -309,7 +309,7 @@ bool EoDxfRead::ProcessDimStyle() {
         return true;
       }
     } else if (reading) {
-      dimensionStyle.ParseCode(code, m_reader);
+      dimensionStyle.ParseCode(code, *m_reader);
     }
   }
   return true;
@@ -331,7 +331,7 @@ bool EoDxfRead::ProcessTextStyle() {
         return true;
       }
     } else if (reading) {
-      textStyle.ParseCode(code, m_reader);
+      textStyle.ParseCode(code, *m_reader);
     }
   }
   return true;
@@ -353,7 +353,7 @@ bool EoDxfRead::ProcessVports() {
         return true;
       }
     } else if (reading) {
-      viewport.ParseCode(code, m_reader);
+      viewport.ParseCode(code, *m_reader);
     }
   }
   return true;
@@ -375,7 +375,7 @@ bool EoDxfRead::ProcessAppId() {
         return true;
       }
     } else if (reading) {
-      appId.ParseCode(code, m_reader);
+      appId.ParseCode(code, *m_reader);
     }
   }
   return true;
@@ -417,7 +417,7 @@ bool EoDxfRead::ProcessBlock() {
         }
       }
       default:
-        block.ParseCode(code, m_reader);
+        block.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -506,7 +506,7 @@ bool EoDxfRead::ProcessEllipse() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        ellipse.ParseCode(code, m_reader);
+        ellipse.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -525,7 +525,7 @@ bool EoDxfRead::ProcessTrace() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        trace.ParseCode(code, m_reader);
+        trace.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -544,7 +544,7 @@ bool EoDxfRead::ProcessSolid() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        solid.ParseCode(code, m_reader);
+        solid.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -562,7 +562,7 @@ bool EoDxfRead::Process3dFace() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        _3dFace.ParseCode(code, m_reader);
+        _3dFace.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -580,7 +580,7 @@ bool EoDxfRead::ProcessViewport() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        viewport.ParseCode(code, m_reader);
+        viewport.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -598,7 +598,7 @@ bool EoDxfRead::ProcessPoint() {
         return true;
       }
       default:
-        point.ParseCode(code, m_reader);
+        point.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -616,7 +616,7 @@ bool EoDxfRead::ProcessLine() {
         return true;
       }
       default:
-        line.ParseCode(code, m_reader);
+        line.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -634,7 +634,7 @@ bool EoDxfRead::ProcessRay() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        ray.ParseCode(code, m_reader);
+        ray.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -652,7 +652,7 @@ bool EoDxfRead::ProcessXline() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        line.ParseCode(code, m_reader);
+        line.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -671,7 +671,7 @@ bool EoDxfRead::ProcessCircle() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        circle.ParseCode(code, m_reader);
+        circle.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -690,7 +690,7 @@ bool EoDxfRead::ProcessArc() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        arc.ParseCode(code, m_reader);
+        arc.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -708,7 +708,7 @@ bool EoDxfRead::ProcessInsert() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        insert.ParseCode(code, m_reader);
+        insert.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -727,7 +727,7 @@ bool EoDxfRead::ProcessLWPolyline() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        polyline.ParseCode(code, m_reader);
+        polyline.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -746,7 +746,7 @@ bool EoDxfRead::ProcessPolyline() {
         return true;
       }
       default:
-        polyline.ParseCode(code, m_reader);
+        polyline.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -770,7 +770,7 @@ bool EoDxfRead::ProcessVertex(EoDxfPolyline* polyline) {
         return true;
       }
       default:
-        vertex->ParseCode(code, m_reader);
+        vertex->ParseCode(code, *m_reader);
         break;
     }
   }
@@ -790,7 +790,7 @@ bool EoDxfRead::ProcessText() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        text.ParseCode(code, m_reader);
+        text.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -809,7 +809,7 @@ bool EoDxfRead::ProcessMText() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        txt.ParseCode(code, m_reader);
+        txt.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -827,7 +827,7 @@ bool EoDxfRead::ProcessHatch() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        hatch.ParseCode(code, m_reader);
+        hatch.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -845,7 +845,7 @@ bool EoDxfRead::ProcessSpline() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        sp.ParseCode(code, m_reader);
+        sp.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -863,7 +863,7 @@ bool EoDxfRead::ProcessImage() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        image.ParseCode(code, m_reader);
+        image.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -918,7 +918,7 @@ bool EoDxfRead::ProcessDimension() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        dimension.ParseCode(code, m_reader);
+        dimension.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -936,7 +936,7 @@ bool EoDxfRead::ProcessLeader() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        leader.ParseCode(code, m_reader);
+        leader.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -954,7 +954,7 @@ bool EoDxfRead::ProcessMLeader() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        mLeader.ParseCode(code, m_reader);
+        mLeader.ParseCode(code, *m_reader);
         break;
     }
   }
@@ -993,7 +993,7 @@ bool EoDxfRead::ProcessImageDef() {
         return true;  // found new entity or ENDSEC, terminate
       }
       default:
-        imageDefinition.ParseCode(code, m_reader);
+        imageDefinition.ParseCode(code, *m_reader);
         break;
     }
   }

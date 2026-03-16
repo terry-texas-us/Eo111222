@@ -5,10 +5,10 @@
 #include "EoDxfMLeader.h"
 #include "EoDxfReader.h"
 
-void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
+void EoDxfMLeader::ParseCode(int code, EoDxfReader& reader) {
   // Handle state transitions driven by string-valued bracket markers.
   if (code >= 300 && code <= 305) {
-    const std::wstring marker = reader->GetWideString();
+    const std::wstring marker = reader.GetWideString();
 
     if (code == 300 && marker == L"CONTEXT_DATA{") {
       m_parseState = ParseState::ContextData;
@@ -58,31 +58,31 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
       switch (code) {
         case 10:
           line.m_vertices.emplace_back();
-          line.m_vertices.back().x = reader->GetDouble();
+          line.m_vertices.back().x = reader.GetDouble();
           break;
         case 20:
-          if (!line.m_vertices.empty()) { line.m_vertices.back().y = reader->GetDouble(); }
+          if (!line.m_vertices.empty()) { line.m_vertices.back().y = reader.GetDouble(); }
           break;
         case 30:
-          if (!line.m_vertices.empty()) { line.m_vertices.back().z = reader->GetDouble(); }
+          if (!line.m_vertices.empty()) { line.m_vertices.back().z = reader.GetDouble(); }
           break;
         case 91:
-          line.m_leaderLineIndex = reader->GetInt32();
+          line.m_leaderLineIndex = reader.GetInt32();
           break;
         case 92:
-          line.m_leaderLineColorOverride = reader->GetInt32();
+          line.m_leaderLineColorOverride = reader.GetInt32();
           break;
         case 171:
-          line.m_leaderLineWeightOverride = reader->GetInt16();
+          line.m_leaderLineWeightOverride = reader.GetInt16();
           break;
         case 40:
-          line.m_arrowheadSize = reader->GetDouble();
+          line.m_arrowheadSize = reader.GetDouble();
           break;
         case 340:
-          line.m_leaderLineTypeHandle = reader->GetHandleString();
+          line.m_leaderLineTypeHandle = reader.GetHandleString();
           break;
         case 341:
-          line.m_arrowheadHandle = reader->GetHandleString();
+          line.m_arrowheadHandle = reader.GetHandleString();
           break;
         default:
           EoDxfGraphic::ParseCode(code, reader);
@@ -97,34 +97,34 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
       auto& branch = m_contextData.m_leaders.back();
       switch (code) {
         case 290:
-          branch.m_hasSetLastLeaderLinePoint = reader->GetBool();
+          branch.m_hasSetLastLeaderLinePoint = reader.GetBool();
           break;
         case 291:
-          branch.m_hasSetDoglegVector = reader->GetBool();
+          branch.m_hasSetDoglegVector = reader.GetBool();
           break;
         case 10:
-          branch.m_lastLeaderLinePoint.x = reader->GetDouble();
+          branch.m_lastLeaderLinePoint.x = reader.GetDouble();
           break;
         case 20:
-          branch.m_lastLeaderLinePoint.y = reader->GetDouble();
+          branch.m_lastLeaderLinePoint.y = reader.GetDouble();
           break;
         case 30:
-          branch.m_lastLeaderLinePoint.z = reader->GetDouble();
+          branch.m_lastLeaderLinePoint.z = reader.GetDouble();
           break;
         case 11:
-          branch.m_doglegVector.x = reader->GetDouble();
+          branch.m_doglegVector.x = reader.GetDouble();
           break;
         case 21:
-          branch.m_doglegVector.y = reader->GetDouble();
+          branch.m_doglegVector.y = reader.GetDouble();
           break;
         case 31:
-          branch.m_doglegVector.z = reader->GetDouble();
+          branch.m_doglegVector.z = reader.GetDouble();
           break;
         case 90:
-          branch.m_leaderBranchIndex = reader->GetInt32();
+          branch.m_leaderBranchIndex = reader.GetInt32();
           break;
         case 40:
-          branch.m_doglegLength = reader->GetDouble();
+          branch.m_doglegLength = reader.GetDouble();
           break;
         default:
           EoDxfGraphic::ParseCode(code, reader);
@@ -138,61 +138,61 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
       auto& ctx = m_contextData;
       switch (code) {
         case 12:
-          ctx.m_textLocation.x = reader->GetDouble();
+          ctx.m_textLocation.x = reader.GetDouble();
           break;
         case 22:
-          ctx.m_textLocation.y = reader->GetDouble();
+          ctx.m_textLocation.y = reader.GetDouble();
           break;
         case 32:
-          ctx.m_textLocation.z = reader->GetDouble();
+          ctx.m_textLocation.z = reader.GetDouble();
           break;
         case 13:
-          ctx.m_textDirection.x = reader->GetDouble();
+          ctx.m_textDirection.x = reader.GetDouble();
           break;
         case 23:
-          ctx.m_textDirection.y = reader->GetDouble();
+          ctx.m_textDirection.y = reader.GetDouble();
           break;
         case 33:
-          ctx.m_textDirection.z = reader->GetDouble();
+          ctx.m_textDirection.z = reader.GetDouble();
           break;
         case 42:
-          ctx.m_textRotation = reader->GetDouble();
+          ctx.m_textRotation = reader.GetDouble();
           break;
         case 43:
-          ctx.m_textWidth = reader->GetDouble();
+          ctx.m_textWidth = reader.GetDouble();
           break;
         case 44:
-          ctx.m_textDefinedWidth = reader->GetDouble();
+          ctx.m_textDefinedWidth = reader.GetDouble();
           break;
         case 45:
-          ctx.m_textDefinedHeight = reader->GetDouble();
+          ctx.m_textDefinedHeight = reader.GetDouble();
           break;
         case 170:
-          ctx.m_textAttachment = reader->GetInt16();
+          ctx.m_textAttachment = reader.GetInt16();
           break;
         case 90:
-          ctx.m_textFlowDirection = reader->GetInt32();
+          ctx.m_textFlowDirection = reader.GetInt32();
           break;
         case 91:
-          ctx.m_textColor = reader->GetInt32();
+          ctx.m_textColor = reader.GetInt32();
           break;
         case 141:
-          ctx.m_textLineSpacingFactor = reader->GetDouble();
+          ctx.m_textLineSpacingFactor = reader.GetDouble();
           break;
         case 171:
-          ctx.m_textLineSpacingStyle = reader->GetInt16();
+          ctx.m_textLineSpacingStyle = reader.GetInt16();
           break;
         case 172:
-          ctx.m_textBackgroundFill = reader->GetInt16();
+          ctx.m_textBackgroundFill = reader.GetInt16();
           break;
         case 340:
-          ctx.m_textStyleHandle = reader->GetHandleString();
+          ctx.m_textStyleHandle = reader.GetHandleString();
           break;
         case 1:
-          ctx.m_textString = reader->GetWideString();
+          ctx.m_textString = reader.GetWideString();
           break;
         case 3:
-          ctx.m_textString += reader->GetWideString();
+          ctx.m_textString += reader.GetWideString();
           break;
         default:
           EoDxfGraphic::ParseCode(code, reader);
@@ -206,70 +206,70 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
       auto& ctx = m_contextData;
       switch (code) {
         case 40:
-          ctx.m_contentScale = reader->GetDouble();
+          ctx.m_contentScale = reader.GetDouble();
           break;
         case 10:
-          ctx.m_contentBasePoint.x = reader->GetDouble();
+          ctx.m_contentBasePoint.x = reader.GetDouble();
           break;
         case 20:
-          ctx.m_contentBasePoint.y = reader->GetDouble();
+          ctx.m_contentBasePoint.y = reader.GetDouble();
           break;
         case 30:
-          ctx.m_contentBasePoint.z = reader->GetDouble();
+          ctx.m_contentBasePoint.z = reader.GetDouble();
           break;
         case 41:
-          ctx.m_textHeight = reader->GetDouble();
+          ctx.m_textHeight = reader.GetDouble();
           break;
         case 140:
-          ctx.m_arrowheadSize = reader->GetDouble();
+          ctx.m_arrowheadSize = reader.GetDouble();
           break;
         case 145:
-          ctx.m_landingGap = reader->GetDouble();
+          ctx.m_landingGap = reader.GetDouble();
           break;
         case 174:
-          ctx.m_textLeftAttachment = reader->GetInt16();
+          ctx.m_textLeftAttachment = reader.GetInt16();
           break;
         case 175:
-          ctx.m_textRightAttachment = reader->GetInt16();
+          ctx.m_textRightAttachment = reader.GetInt16();
           break;
         case 176:
-          ctx.m_textAlignmentType = reader->GetInt16();
+          ctx.m_textAlignmentType = reader.GetInt16();
           break;
         case 177:
-          ctx.m_blockContentConnectionType = reader->GetInt16();
+          ctx.m_blockContentConnectionType = reader.GetInt16();
           break;
         case 290:
-          ctx.m_hasMText = reader->GetBool();
+          ctx.m_hasMText = reader.GetBool();
           break;
         case 296:
-          ctx.m_hasContent = reader->GetBool();
+          ctx.m_hasContent = reader.GetBool();
           break;
         case 341:
-          ctx.m_blockContentHandle = reader->GetHandleString();
+          ctx.m_blockContentHandle = reader.GetHandleString();
           break;
         case 14:
-          ctx.m_blockContentNormalDirection.x = reader->GetDouble();
+          ctx.m_blockContentNormalDirection.x = reader.GetDouble();
           break;
         case 24:
-          ctx.m_blockContentNormalDirection.y = reader->GetDouble();
+          ctx.m_blockContentNormalDirection.y = reader.GetDouble();
           break;
         case 34:
-          ctx.m_blockContentNormalDirection.z = reader->GetDouble();
+          ctx.m_blockContentNormalDirection.z = reader.GetDouble();
           break;
         case 15:
-          ctx.m_blockContentScale.x = reader->GetDouble();
+          ctx.m_blockContentScale.x = reader.GetDouble();
           break;
         case 25:
-          ctx.m_blockContentScale.y = reader->GetDouble();
+          ctx.m_blockContentScale.y = reader.GetDouble();
           break;
         case 35:
-          ctx.m_blockContentScale.z = reader->GetDouble();
+          ctx.m_blockContentScale.z = reader.GetDouble();
           break;
         case 46:
-          ctx.m_blockContentRotation = reader->GetDouble();
+          ctx.m_blockContentRotation = reader.GetDouble();
           break;
         case 93:
-          ctx.m_blockContentColor = reader->GetInt32();
+          ctx.m_blockContentColor = reader.GetInt32();
           break;
         default:
           EoDxfGraphic::ParseCode(code, reader);
@@ -283,94 +283,94 @@ void EoDxfMLeader::ParseCode(int code, EoDxfReader* reader) {
     default: {
       switch (code) {
         case 170:
-          m_leaderType = reader->GetInt16();
+          m_leaderType = reader.GetInt16();
           break;
         case 91:
-          m_leaderLineColor = reader->GetInt32();
+          m_leaderLineColor = reader.GetInt32();
           break;
         case 341:
-          m_leaderLineTypeHandle = reader->GetHandleString();
+          m_leaderLineTypeHandle = reader.GetHandleString();
           break;
         case 171:
-          m_leaderLineWeight = reader->GetInt16();
+          m_leaderLineWeight = reader.GetInt16();
           break;
         case 290:
-          m_enableLanding = reader->GetBool();
+          m_enableLanding = reader.GetBool();
           break;
         case 291:
-          m_enableDogleg = reader->GetBool();
+          m_enableDogleg = reader.GetBool();
           break;
         case 41:
-          m_doglegLength = reader->GetDouble();
+          m_doglegLength = reader.GetDouble();
           break;
         case 42:
-          m_arrowheadSize = reader->GetDouble();
+          m_arrowheadSize = reader.GetDouble();
           break;
         case 172:
-          m_contentType = reader->GetInt16();
+          m_contentType = reader.GetInt16();
           break;
         case 343:
-          m_textStyleHandle = reader->GetHandleString();
+          m_textStyleHandle = reader.GetHandleString();
           break;
         case 173:
-          m_textLeftAttachmentType = reader->GetInt16();
+          m_textLeftAttachmentType = reader.GetInt16();
           break;
         case 95:
-          m_textRightAttachmentType = reader->GetInt32();
+          m_textRightAttachmentType = reader.GetInt32();
           break;
         case 174:
-          m_textAngleType = reader->GetInt16();
+          m_textAngleType = reader.GetInt16();
           break;
         case 175:
-          m_textAlignmentType = reader->GetInt16();
+          m_textAlignmentType = reader.GetInt16();
           break;
         case 92:
-          m_textColor = reader->GetInt32();
+          m_textColor = reader.GetInt32();
           break;
         case 292:
-          m_enableFrameText = reader->GetBool();
+          m_enableFrameText = reader.GetBool();
           break;
         case 344:
-          m_blockContentHandle = reader->GetHandleString();
+          m_blockContentHandle = reader.GetHandleString();
           break;
         case 93:
-          m_blockContentColor = reader->GetInt32();
+          m_blockContentColor = reader.GetInt32();
           break;
         case 10:
-          m_blockContentScale.x = reader->GetDouble();
+          m_blockContentScale.x = reader.GetDouble();
           break;
         case 20:
-          m_blockContentScale.y = reader->GetDouble();
+          m_blockContentScale.y = reader.GetDouble();
           break;
         case 30:
-          m_blockContentScale.z = reader->GetDouble();
+          m_blockContentScale.z = reader.GetDouble();
           break;
         case 43:
-          m_blockContentRotation = reader->GetDouble();
+          m_blockContentRotation = reader.GetDouble();
           break;
         case 176:
-          m_blockContentConnectionType = reader->GetInt16();
+          m_blockContentConnectionType = reader.GetInt16();
           break;
         case 293:
-          m_enableAnnotationScale = reader->GetBool();
+          m_enableAnnotationScale = reader.GetBool();
           break;
         case 340:
-          m_leaderStyleHandle = reader->GetHandleString();
+          m_leaderStyleHandle = reader.GetHandleString();
           break;
         case 90:
-          m_propertyOverrideFlag = reader->GetInt32();
+          m_propertyOverrideFlag = reader.GetInt32();
           break;
         case 45:
-          m_overallScale = reader->GetDouble();
+          m_overallScale = reader.GetDouble();
           break;
         case 294:
-          m_textDirectionNegative = reader->GetBool();
+          m_textDirectionNegative = reader.GetBool();
           break;
         case 271:
-          m_textTopAttachmentType = reader->GetInt16();
+          m_textTopAttachmentType = reader.GetInt16();
           break;
         case 272:
-          m_textBottomAttachmentType = reader->GetInt16();
+          m_textBottomAttachmentType = reader.GetInt16();
           break;
         default:
           EoDxfGraphic::ParseCode(code, reader);
