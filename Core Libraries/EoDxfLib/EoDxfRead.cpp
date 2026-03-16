@@ -4,8 +4,7 @@
 #include <ios>
 #include <string>
 
-#include "EoDxfRead.h"
-
+#include "EoDxfAttributes.h"
 #include "EoDxfClasses.h"
 #include "EoDxfEntities.h"
 #include "EoDxfHatch.h"
@@ -13,6 +12,7 @@
 #include "EoDxfInterface.h"
 #include "EoDxfMLeader.h"
 #include "EoDxfObjects.h"
+#include "EoDxfRead.h"
 #include "EoDxfReader.h"
 
 namespace {

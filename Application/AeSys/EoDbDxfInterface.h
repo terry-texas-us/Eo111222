@@ -6,6 +6,7 @@
 #include "EoDbBlock.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfAttributes.h"
 #include "EoDxfClasses.h"
 #include "EoDxfEntities.h"
 #include "EoDxfHeader.h"
