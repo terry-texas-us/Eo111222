@@ -199,10 +199,6 @@
     <ClCompile Include="EoDxfWriteTables.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="AcadEntityObjectHierarchy.md">
-      <SubType>
-      </SubType>
-    </None>
     <None Include="TestData\CodePages\README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

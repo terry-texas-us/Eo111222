@@ -2,11 +2,11 @@
 
 I am working on an old C++ MFC CAD project that I stopped coding on around 2000. I have the project building warning free at Wall using Visual Studio 2026 with the C++latest (19.5) compiler and the v145 toolset. The local project repo is in a folder called `D:\Visual Studio\migrations\Peg111222`. I have introduced version control with a local .git and GitHub. The public repo at GitHub URL is `https://github.com/terry-texas-us/Eo111222`, and the main project is `https://github.com/terry-texas-us/Eo111222/tree/master/AeSys`. I encourage you to reference the code there if necessary.
 
-I need a solution for reading open source .DXF CAD files, which I will convert to the proprietary .PEG (`Peg & Tra File Formats.md`) file. For DXF initial parsing, I will use `libdxfrw`, since this is the only C++ option.
+I need a solution for reading open source .DXF CAD files, which I will convert to the proprietary .PEG (`Peg & Tra File Formats.md`) file. For DXF initial parsing, I will follow the example of ezdxf.
 
 I will be making substantial changes to the .PEG file to make linear parsing of .DXF easier. Using the terminology of the .DXF specification, I want to use a handle architecture for at least the header and table sections. The only hard resource handles will be from the entities to the header and tables. I am uncertain if I need to implement extension dictionaries, but it would help with future proofing. I have no experience with this type of persistence database design.
 
-You can assume I know the code base well and should have little trouble with modern versions of C++. Provide suggestions detailing the code modernization.
+You can assume I know the code base very well and should have little trouble with modern versions of C++. Provide suggestions detailing the code modernization.
 
 ## General Guidelines
 - Purpose: Native MFC/C++ CAD/graphics application (AeSys). Keep suggestions compatible with the existing MFC architecture and on-disk file formats.
@@ -18,7 +18,7 @@ You can assume I know the code base well and should have little trouble with mod
 - Repository contains `.clang-format` and `.clang-tidy` at root – prefer those settings for formatting and static-analysis suggestions.
 - For Visual Studio-specific formatting preferences, reference __Tools > Options > Text Editor > C/C++ > Formatting__.
 - Minimize raw `new`/`delete`.
-- Be conservative in migration from `CString` to `std::wstring` – prefer consistent conversions and avoid unnecessary copies. Transition away from `std::string` where possible in the DXF/text-codec migration, favoring `std::wstring` when practical. In `EoDxfLib`, prefer `std::wstring` as the only internal text API and avoid `std::string` except at unavoidable external byte boundaries.
+- Be conservative in migration from `CString` to `std::wstring` – prefer consistent conversions and avoid unnecessary copies. Prefer `std::wstring` as the only internal text API and avoid `std::string` except at unavoidable external byte boundaries.
 - Step away from MFC `CObject`; minimize dynamic runtime features; avoid file serialization.
 - Prefer camelCase for local variables; convert PascalCase local variables to camelCase when requested.
 - Prefer marking simple geometric operations and getters `noexcept` when possible.
@@ -118,6 +118,61 @@ To recover DXF properties from the reference system:
 - `ConvertFormattingCharacters()` is called after constructing text primitives from .peg files to normalize legacy formatting.
 - The stroke font renderer (`DisplayTextSegmentUsingStrokeFont`) uses `Eo::defaultCharacterCellAspectRatio` (0.6) for character spacing, confirming the cell geometry assumption.
 - TrueType font rendering path (`DisplayTextSegmentUsingTrueTypeFont`) is conditional on the font definition's precision and view settings.
+
+## Simplex PSF Stroke Font (v2 Format)
+
+### Format Overview
+- `Simplex.psf` is a 16384-byte binary stroke font derived from the Hershey simplex font set.
+- **v1** (legacy): 96-entry offset table for ASCII 32–126, stroke data at `int32[96]`, all characters use a fixed advance width of 1.0 normalized units.
+- **v2** (current): magic `−2` at `int32[0]`, 225-entry offset table at `int32[1]`, 224-entry advance width table at `int32[226]`, 224-entry left bearing table at `int32[450]`, stroke data at `int32[674]`. Supports character codes 32–255 (CP1252).
+- Full format specification: `Documentation/Simplex PSF Format.md`.
+
+### Stroke Encoding
+- Each stroke is a packed 32-bit integer: bits 0–11 Y displacement (sign-magnitude), bits 12–23 X displacement (sign-magnitude), bits 24–31 opcode (5 = MOVE, else DRAW).
+- Hershey origin mapping: `psf_x = hershey_x × 3.75 + 50`. All characters begin with a MOVE to raw X ≈ 50.
+
+### Normalized Coordinate System
+- X displacements are scaled by `0.01 / Eo::defaultCharacterCellAspectRatio` (= 0.01/0.6 ≈ 0.01667).
+- Y displacements are scaled by `0.01`.
+- A full Hershey cell (raw 0–100) spans **1.667** in normalized X and **1.0** in normalized Y.
+- The `EoGeReferenceSystem` transform matrix maps normalized coordinates to world coordinates.
+
+### Per-Character Advance Widths (v2)
+- Each character's advance width is stored in raw stroke X-units in the advance width table.
+- Normalized cell width: `rawAdvanceWidth × 0.01 / 0.6`.
+- Character advance in renderer: `cellWidth + interCharacterGap`, where `interCharacterGap = (0.32 + spacing) / 0.6`.
+- To adjust a character's proportional width, edit only the **advance width table** (`int32[226..449]`).
+
+### Left Bearing Table (v2)
+- Each character's left bearing shifts strokes leftward so they are left-aligned within their proportional cell.
+- Applied before the stroke loop: `ptStroke.x −= rawLeftBearing × 0.01 / 0.6`.
+- Formula used during conversion: `leftBearing = max(0, minCumulativeX − 6)`, where 6 raw units provides a consistent left margin.
+
+### Text Alignment (Center/Middle Justification)
+- `GetBottomLeftCorner()` and `text_GetBoundingBox()` compute text extent using `ComputeStrokeFontTextExtent()`, which sums per-character v2 advance widths (or falls back to fixed 1.0 for v1).
+- `ComputeStrokeFontTextExtent()` skips formatting characters (`\P`, `\A`, `\S` sequences), mirroring `LengthSansFormattingCharacters()` logic.
+- Both functions accept `const CString& text` (not `int` character count) so they can look up per-character advance widths.
+- `CharacterCellWidth()` is a file-local helper that returns the normalized cell width for a single character code.
+
+### Tooling (Round-Trip `.psf` ↔ `.psf.txt`)
+| Tool | Purpose |
+|------|---------|
+| `Tools/ConvertPsfToText.ps1` | Decompiles binary `.psf` → human-readable `.psf.txt` (tab-separated) |
+| `Tools/ConvertTextToPsf.ps1` | Compiles `.psf.txt` → v2 binary `.psf` |
+| `Tools/ConvertStrokeFontV1ToV2.ps1` | One-time v1 → v2 binary migration with advance width and left bearing computation |
+
+- Round-trip is **byte-for-byte identical**: `.psf` → `.psf.txt` → `.psf`.
+- The `.psf.txt` format uses `CHAR` lines with fields: `code`, `label`, `advanceWidth`, `leftBearing`, followed by indented `M` (move) and `D` (draw) stroke lines with raw X, Y values.
+
+### Key Constants (`Eo.h`)
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `strokeFontFileSizeInBytes` | 16384 | Fixed file size for both v1 and v2 |
+| `strokeFontV2MagicNumber` | −2 | Identifies v2 format at `int32[0]` |
+| `strokeFontV2AdvanceWidthTableStart` | 226 | Advance width table begins at `int32[226]` |
+| `strokeFontV2LeftBearingTableStart` | 450 | Left bearing table begins at `int32[450]` |
+| `strokeFontV2StrokeDataStart` | 674 | Stroke data begins at `int32[674]` |
+| `defaultCharacterCellAspectRatio` | 0.6 | Width-to-height ratio of the character cell |
 
 ## Response Formatting Preference
 - Format responses as a cleaner Markdown-style preview, with better visual structure than plain text.

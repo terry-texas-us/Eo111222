@@ -132,7 +132,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="AcadEntityObjectHierarchy.md" />
     <None Include="TestData\CodePages\README.md" />
   </ItemGroup>
 </Project>

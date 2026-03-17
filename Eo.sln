@@ -54,10 +54,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{923FCE64
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{89A30A22-22FE-4682-AFD1-A948713CDE20}"
 	ProjectSection(SolutionItems) = preProject
+		Documentation\AcadEntityObjectHierarchy.md = Documentation\AcadEntityObjectHierarchy.md
+		Documentation\autocad_2012_pdf_dxf-reference_enu.pdf = Documentation\autocad_2012_pdf_dxf-reference_enu.pdf
 		Documentation\Dde Description and Few Uses.md = Documentation\Dde Description and Few Uses.md
-		Application\AeSys\DXF - Storage of String Values.md = Application\AeSys\DXF - Storage of String Values.md
 		Documentation\dxf header.md = Documentation\dxf header.md
+		Documentation\ezdxf class structure diagram.md = Documentation\ezdxf class structure diagram.md
+		Documentation\Help Peg.pdf = Documentation\Help Peg.pdf
 		Documentation\Job File Format.md = Documentation\Job File Format.md
+		Documentation\OpenDesign_Specification_for_.dwg_files.pdf = Documentation\OpenDesign_Specification_for_.dwg_files.pdf
 		Documentation\Simplex PSF Format.md = Documentation\Simplex PSF Format.md
 	EndProjectSection
 EndProject
