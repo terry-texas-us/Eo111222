@@ -93,11 +93,11 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
     EoGeReferenceSystem& referenceSystem, const CString& text);
 /// <summary> Determines the count of characters in string excluding formatting characters.</summary>
 int LengthSansFormattingCharacters(const CString& text);
-/// <summary> Determines the offset to the bottom left alignment position of a string of the specified number of
-/// characters and text attributes in the z=0 plane.</summary>
-void GetBottomLeftCorner(EoDbFontDefinition& fd, int iChrs, EoGePoint3d& pt);
-/// <summary>Returns the region boundaries of a text string applying and optional inflation factor.</summary>
+/// <summary> Determines the offset to the bottom left alignment position of a text string
+/// using per-character advance widths (v2) or fixed cell width (v1) in the z=0 plane.</summary>
+void GetBottomLeftCorner(EoDbFontDefinition& fd, const CString& text, EoGePoint3d& pt);
+/// <summary>Returns the region boundaries of a text string applying an optional inflation factor.</summary>
 void text_GetBoundingBox(
-    EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, int nLen, double dSpacFac, EoGePoint3dArray& ptsBox);
+    EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text, double spaceFactor, EoGePoint3dArray& ptsBox);
 EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontdefinition, EoGeReferenceSystem& referenceSystem,
     double dLineSpaceFac, double dChrSpaceFac);

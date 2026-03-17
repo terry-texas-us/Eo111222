@@ -157,8 +157,7 @@ void EoDbText::FormatGeometry(CString& str) {
   str += L"Y Axis;" + ReferenceSystem.YDirection().ToString();
 }
 void EoDbText::GetBoundingBox(EoGePoint3dArray& ptsBox, double spaceFactor) {
-  int Length = LengthSansFormattingCharacters(m_strText);
-  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, Length, spaceFactor, ptsBox);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText, spaceFactor, ptsBox);
 }
 
 void EoDbText::GetAllPoints(EoGePoint3dArray& points) {
@@ -172,7 +171,7 @@ void EoDbText::GetExtents(
     AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3dArray pts;
 
-  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText, 0.0, pts);
 
   for (auto i = 0; i < pts.GetSize(); i++) {
     view->ModelTransformPoint(pts[i]);
@@ -187,7 +186,7 @@ bool EoDbText::IsInView(AeSysView* view) {
 
   EoGePoint3dArray pts;
 
-  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText, 0.0, pts);
 
   for (INT_PTR n = 0; n <= 2;) {
     pt[0] = EoGePoint4d{pts[n++]};
@@ -201,7 +200,7 @@ bool EoDbText::IsInView(AeSysView* view) {
 }
 bool EoDbText::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
   EoGePoint3dArray pts;
-  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText, 0.0, pts);
   return polyline::SelectUsingRectangle(view, pt1, pt2, pts);
 }
 bool EoDbText::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
@@ -250,7 +249,7 @@ bool EoDbText::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&
 
   EoGePoint3dArray pts;
 
-  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText.GetLength(), 0.0, pts);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText, 0.0, pts);
 
   EoGePoint4d pt0[] = {EoGePoint4d(pts[0]), EoGePoint4d(pts[1]), EoGePoint4d(pts[2]), EoGePoint4d(pts[3])};
 
@@ -294,7 +293,7 @@ void DisplayText(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd, Eo
   transformMatrix.Inverse();
 
   EoGePoint3d BottomLeftCorner;
-  GetBottomLeftCorner(fd, text.GetLength(), BottomLeftCorner);
+  GetBottomLeftCorner(fd, text, BottomLeftCorner);
   BottomLeftCorner = transformMatrix * BottomLeftCorner;
   ReferenceSystem.SetOrigin(BottomLeftCorner);
 
@@ -501,10 +500,8 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
   EoGeTransformMatrix transformMatrix(ReferenceSystem.TransformMatrix());
   transformMatrix.Inverse();
 
-  int Length = LengthSansFormattingCharacters(text);
-
   EoGePoint3d BottomLeftCorner;
-  GetBottomLeftCorner(fd, Length, BottomLeftCorner);
+  GetBottomLeftCorner(fd, text, BottomLeftCorner);
   BottomLeftCorner = transformMatrix * BottomLeftCorner;
   ReferenceSystem.SetOrigin(BottomLeftCorner);
 
@@ -646,9 +643,79 @@ int LengthSansFormattingCharacters(const CString& text) {
   }
   return Length;
 }
-void GetBottomLeftCorner(EoDbFontDefinition& fd, int iChrs, EoGePoint3d& pt) {
-  if (iChrs > 0) {
-    double dTxtExt = iChrs + (iChrs - 1) * (0.32 + fd.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
+/// Returns the normalized cell width for a single character code using v2 advance widths when
+/// available, or 1.0 (fixed cell width) for v1.
+static double CharacterCellWidth(int characterCode, const long* advanceWidthTable, int maxCharacterCode) {
+  if (characterCode < 32 || characterCode > maxCharacterCode) { characterCode = '.'; }
+  if (advanceWidthTable != nullptr) {
+    int rawAdvanceWidth = advanceWidthTable[characterCode - 32];
+    if (rawAdvanceWidth > 0) { return rawAdvanceWidth * 0.01 / Eo::defaultCharacterCellAspectRatio; }
+  }
+  return 1.0;
+}
+/// Computes the total text extent in normalized stroke-font coordinates along the text path,
+/// accounting for per-character v2 advance widths when available. Formatting characters
+/// (\P, \A, \S sequences) are excluded from the extent calculation.
+static double ComputeStrokeFontTextExtent(const EoDbFontDefinition& fontDefinition, const CString& text) {
+  auto* fontData = reinterpret_cast<long*>(app.SimplexStrokeFont());
+
+  long* advanceWidthTable = nullptr;
+  int maxCharacterCode = Eo::strokeFontV1MaxCharacterCode;
+
+  if (fontData != nullptr && app.StrokeFontVersion() == 2) {
+    advanceWidthTable = fontData + Eo::strokeFontV2AdvanceWidthTableStart;
+    maxCharacterCode = Eo::strokeFontV2MaxCharacterCode;
+  }
+
+  double interCharacterGap = (0.32 + fontDefinition.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
+  int displayableCount = 0;
+  double totalCellWidth = 0.0;
+
+  int currentPosition = 0;
+  while (currentPosition < text.GetLength()) {
+    wchar_t c = text[currentPosition++];
+
+    // Skip formatting sequences (mirrors LengthSansFormattingCharacters logic)
+    if (c == '\\' && currentPosition < text.GetLength()) {
+      wchar_t next = text[currentPosition];
+      if (next == 'A') {
+        int endSemicolon = text.Find(';', currentPosition);
+        if (endSemicolon != -1 && endSemicolon == currentPosition + 2) {
+          currentPosition = endSemicolon + 1;
+          continue;
+        }
+      } else if (next == 'P') {
+        currentPosition++;
+        continue;
+      } else if (next == 'S') {
+        int endSemicolon = text.Find(';', currentPosition);
+        if (endSemicolon != -1) {
+          int delimiter = text.Find('/', currentPosition);
+          if (delimiter == -1) { delimiter = text.Find('^', currentPosition); }
+          if (delimiter != -1 && delimiter < endSemicolon) {
+            for (int i = currentPosition + 1; i < endSemicolon; i++) {
+              if (i != delimiter) {
+                totalCellWidth += CharacterCellWidth(text[i], advanceWidthTable, maxCharacterCode);
+                displayableCount++;
+              }
+            }
+            currentPosition = endSemicolon + 1;
+            continue;
+          }
+        }
+      }
+    }
+
+    totalCellWidth += CharacterCellWidth(c, advanceWidthTable, maxCharacterCode);
+    displayableCount++;
+  }
+
+  if (displayableCount <= 0) { return 0.0; }
+  return totalCellWidth + (displayableCount - 1) * interCharacterGap;
+}
+void GetBottomLeftCorner(EoDbFontDefinition& fd, const CString& text, EoGePoint3d& pt) {
+  double dTxtExt = ComputeStrokeFontTextExtent(fd, text);
+  if (dTxtExt > 0.0) {
 
     if (fd.Path() == EoDb::Path::Right || fd.Path() == EoDb::Path::Left) {
       if (fd.Path() == EoDb::Path::Right) {
@@ -711,23 +778,21 @@ void GetBottomLeftCorner(EoDbFontDefinition& fd, int iChrs, EoGePoint3d& pt) {
 }
 
 void text_GetBoundingBox(EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem,
-    int numberOfCharacters, double spaceFactor, EoGePoint3dArray& ptsBox) {
+    const CString& text, double spaceFactor, EoGePoint3dArray& ptsBox) {
   ptsBox.SetSize(4);
 
-  if (numberOfCharacters > 0) {
+  double textExtent = ComputeStrokeFontTextExtent(fontDefinition, text);
+  if (textExtent > 0.0) {
     EoGeTransformMatrix transformMatrix(referenceSystem.TransformMatrix());
     transformMatrix.Inverse();
 
     double TextHeight = 1.0;
     double TextWidth = 1.0;
 
-    double CharacterSpacing = (0.32 + fontDefinition.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
-    double d = (double)numberOfCharacters + CharacterSpacing * (double)(numberOfCharacters - 1);
-
     if (fontDefinition.Path() == EoDb::Path::Right || fontDefinition.Path() == EoDb::Path::Left) {
-      TextWidth = d;
+      TextWidth = textExtent;
     } else {
-      TextHeight = d;
+      TextHeight = textExtent;
     }
     ptsBox[0] = EoGePoint3d::kOrigin;
     ptsBox[1] = ptsBox[0];

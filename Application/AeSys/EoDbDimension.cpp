@@ -169,7 +169,7 @@ void EoDbDimension::GetAllPoints(EoGePoint3dArray& points) {
 }
 // Determination of text extent.
 void EoDbDimension::GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac) {
-  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_text.GetLength(), dSpacFac, ptsBox);
+  text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_text, dSpacFac, ptsBox);
 }
 void EoDbDimension::GetExtents(
     AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
