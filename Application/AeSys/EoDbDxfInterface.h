@@ -13,6 +13,7 @@
 #include "EoDxfInterface.h"
 #include "EoDxfMLeader.h"
 #include "EoDxfObjects.h"
+#include "EoDxfSpline.h"
 
 // Minimal implementation of EoDxfInterface
 // In a real scenario, implement these methods to handle the parsed entities

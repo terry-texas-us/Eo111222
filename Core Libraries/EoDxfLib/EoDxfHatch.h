@@ -10,6 +10,8 @@
 #include "EoDxfGeometry.h"
 #include "EoDxfReader.h"
 
+class EoDxfSpline;
+
 /** @brief Class to handle hatch entity
  *
  *  A hatch entity represents a filled area defined by a hatch pattern.

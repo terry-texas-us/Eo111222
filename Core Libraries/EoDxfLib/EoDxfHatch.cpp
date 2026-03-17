@@ -7,6 +7,7 @@
 #include "EoDxfGeometry.h"
 #include "EoDxfHatch.h"
 #include "EoDxfReader.h"
+#include "EoDxfSpline.h"
 
 void EoDxfHatch::AddLine() {
   ClearEntities();

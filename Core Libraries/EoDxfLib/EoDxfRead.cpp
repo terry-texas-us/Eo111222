@@ -14,6 +14,7 @@
 #include "EoDxfObjects.h"
 #include "EoDxfRead.h"
 #include "EoDxfReader.h"
+#include "EoDxfSpline.h"
 
 namespace {
 

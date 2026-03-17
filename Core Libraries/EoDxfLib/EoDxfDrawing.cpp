@@ -3,6 +3,7 @@
 #include "EoDxfBase.h"
 #include "EoDxfEntities.h"
 #include "EoDxfHatch.h"
+#include "EoDxfSpline.h"
 
 void EoDxfWrite::WriteCodePoint3d(int code, const EoDxfGeometryBase3d& point) {
   WriteCodeDouble(code, point.x);
