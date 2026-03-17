@@ -1277,6 +1277,10 @@ void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* doc
   AddToDocument(pointPrimitive, document);
 }
 
+void EoDbDxfInterface::ConvertSplineEntity([[maybe_unused]] const EoDxfSpline& spline, [[maybe_unused]] AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 2, L"Spline entity conversion\n");
+}
+
 void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Text entity conversion\n");
 

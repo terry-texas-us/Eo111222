@@ -900,6 +900,24 @@ bool EoDxfRead::ProcessVertex(EoDxfPolyline* polyline) {
   return true;
 }
 
+bool EoDxfRead::ProcessSpline() {
+  int code;
+  EoDxfSpline spline;
+  while (m_reader->ReadRec(&code)) {
+    switch (code) {
+      case 0: {
+        m_nextEntity = m_reader->GetWideString();
+        m_interface->AddSpline(spline);
+        return true;  // found new entity or ENDSEC, terminate
+      }
+      default:
+        spline.ParseCode(code, *m_reader);
+        break;
+    }
+  }
+  return true;
+}
+
 bool EoDxfRead::ProcessText() {
   int code;
   EoDxfText text;
@@ -949,24 +967,6 @@ bool EoDxfRead::ProcessHatch() {
       }
       default:
         hatch.ParseCode(code, *m_reader);
-        break;
-    }
-  }
-  return true;
-}
-
-bool EoDxfRead::ProcessSpline() {
-  int code;
-  EoDxfSpline sp;
-  while (m_reader->ReadRec(&code)) {
-    switch (code) {
-      case 0: {
-        m_nextEntity = m_reader->GetWideString();
-        m_interface->AddSpline(&sp);
-        return true;  // found new entity or ENDSEC, terminate
-      }
-      default:
-        sp.ParseCode(code, *m_reader);
         break;
     }
   }

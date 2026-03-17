@@ -81,7 +81,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   // AutoDesk DXF Reference
   // https://help.autodesk.com/view/OARX/2026/ENU/?guid=GUID-235B22E0-A567-4CF6-92D3-38A2306D73F3
 
-  void Add3dFace([[maybe_unused]] const EoDxf3dFace& _3dFace) override { countOf3dFace++; }
+  void Add3dFace([[maybe_unused]] const EoDxf3dFace& _3dFace) override { countOf3dFace--; }
 
   // 3DSOLID not implemented
 
@@ -164,11 +164,10 @@ class EoDbDxfInterface : public EoDxfInterface {
     countOfHatch++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddHatch - block <%s>\n", m_blockName.c_str());
-      ConvertHatchEntity(hatch, m_document);
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddHatch - entities section\n");
-      ConvertHatchEntity(hatch, m_document);
     }
+    ConvertHatchEntity(hatch, m_document);
   }
 
   // HELIX not implemented
@@ -181,11 +180,10 @@ class EoDbDxfInterface : public EoDxfInterface {
     countOfInsert++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddInsert - block <%s>\n", m_blockName.c_str());
-      ConvertInsertEntity(blockReference, m_document);
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddInsert - entities section\n");
-      ConvertInsertEntity(blockReference, m_document);
     }
+    ConvertInsertEntity(blockReference, m_document);
   }
 
   void AddLeader(const EoDxfLeader* leader) override { (void)leader; }
@@ -196,22 +194,20 @@ class EoDbDxfInterface : public EoDxfInterface {
     countOfLine++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddLine - block <%s>\n", m_blockName.c_str());
-      ConvertLineEntity(line, m_document);
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddLine - entities section\n");
-      ConvertLineEntity(line, m_document);
     }
+    ConvertLineEntity(line, m_document);
   }
 
   void AddLWPolyline(const EoDxfLwPolyline& polyline) override {
     countOfLWPolyline++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddLWPolyline - block <%s>\n", m_blockName.c_str());
-      ConvertLWPolylineEntity(polyline, m_document);
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddLWPolyline - entities section\n");
-      ConvertLWPolylineEntity(polyline, m_document);
     }
+    ConvertLWPolylineEntity(polyline, m_document);
   }
   // MESH not implemented
 
@@ -223,11 +219,10 @@ class EoDbDxfInterface : public EoDxfInterface {
     countOfMText++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addMText - block <%s>\n", m_blockName.c_str());
-      ConvertMTextEntity(mText, m_document);
     } else {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addMText - entities section\n");
-      ConvertMTextEntity(mText, m_document);
     }
+    ConvertMTextEntity(mText, m_document);
   }
 
   // OLEFRAME not implemented
@@ -237,22 +232,31 @@ class EoDbDxfInterface : public EoDxfInterface {
     countOfPoint++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddPoint - block <%s>\n", m_blockName.c_str());
-      ConvertPointEntity(point, m_document);
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddPoint - entities section\n");
-      ConvertPointEntity(point, m_document);
     }
+    ConvertPointEntity(point, m_document);
   }
 
-  void AddPolyline(const EoDxfPolyline& /* polyline */) override { countOfPolyline--; }
-  void AddRay(const EoDxfRay& /* ray */) override { countOfRay++; }
+  void AddPolyline([[maybe_unused]] const EoDxfPolyline& polyline) override { countOfPolyline--; }
+  void AddRay([[maybe_unused]] const EoDxfRay& ray) override { countOfRay--; }
+
   // REGION not implemented
   // SECTION not implemented
   // SEQEND not implemented
   // SHAPE not implemented
 
-  void AddSolid(const EoDxfSolid& /* solid */) override { countOfSolid++; }
-  void AddSpline([[maybe_unused]] const EoDxfSpline* spline) override { countOfSpline++; }
+  void AddSolid([[maybe_unused]] const EoDxfSolid& solid) override { countOfSolid--; }
+
+  void AddSpline([[maybe_unused]] const EoDxfSpline& spline) override {
+    countOfSpline--;
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddSpline - block <%s>\n", m_blockName.c_str());
+    } else {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddSpline - entities section\n");
+    }
+    ConvertSplineEntity(spline, m_document);
+  }
 
   // SUN not implemented
   // SURFACE not implemented
@@ -262,27 +266,26 @@ class EoDbDxfInterface : public EoDxfInterface {
     countOfText++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddText - block <%s>\n", m_blockName.c_str());
-      ConvertTextEntity(text, m_document);
     } else {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddText - entities section\n");
-      ConvertTextEntity(text, m_document);
     }
+    ConvertTextEntity(text, m_document);
   }
 
   // TOLERANCE not implemented
-  void AddTrace(const EoDxfTrace& /* trace */) override { countOfTrace++; }
+  void AddTrace([[maybe_unused]] const EoDxfTrace& trace) override { countOfTrace--; }
   // UNDERLAY not implemented
   // VERTEX not implemented
-  void AddViewport(const EoDxfViewport& /* viewport */) override { countOfViewport++; }
+  void AddViewport([[maybe_unused]] const EoDxfViewport& viewport) override { countOfViewport--; }
   // WIPEOUT not implemented
-  void AddXline(const EoDxfXline& /* Xline */) override { countOfXline++; }
+  void AddXline([[maybe_unused]] const EoDxfXline& Xline) override { countOfXline--; }
 
   // Others
   void AddComment(std::wstring_view comment) override {
     ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddComment(%.*s)\n", static_cast<int>(comment.size()), comment.data());
   }
-  void LinkImage(const EoDxfImageDefinition* imageDefinition) override { (void)imageDefinition; }
-  void AddKnot(const EoDxfGraphic& /* knot */) override { countOfKnot++; }
+  void LinkImage([[maybe_unused]] const EoDxfImageDefinition* imageDefinition) override {}
+  void AddKnot([[maybe_unused]] const EoDxfGraphic& knot) override { countOfKnot--; }
 
   // Writing methods
   void WriteAppId() override {};
@@ -381,6 +384,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertLWPolylineEntity(const EoDxfLwPolyline& lwPolyline, AeSysDoc* document);
   void ConvertMTextEntity(const EoDxfMText& mText, [[maybe_unused]] AeSysDoc* document);
   void ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document);
+  void ConvertSplineEntity(const EoDxfSpline& spline, [[maybe_unused]] AeSysDoc* document);
   void ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document);
 
  private:

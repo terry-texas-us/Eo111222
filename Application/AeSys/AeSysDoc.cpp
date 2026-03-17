@@ -296,7 +296,6 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
         app.AddStringToReportsList(std::format(L"DimAngular: {}", dxfInterface.countOfDimAngular));
         app.AddStringToReportsList(std::format(L"DimAngular3P: {}", dxfInterface.countOfDimAngular3P));
         app.AddStringToReportsList(std::format(L"DimDiametric: {}", dxfInterface.countOfDimDiametric));
-        app.AddStringToReportsList(std::format(L"DimLinear: {}", dxfInterface.countOfDimLinear));
         app.AddStringToReportsList(std::format(L"DimOrdinate: {}", dxfInterface.countOfDimOrdinate));
         app.AddStringToReportsList(std::format(L"DimRadial: {}", dxfInterface.countOfDimRadial));
         app.AddStringToReportsList(std::format(L"Ellipse: {}", dxfInterface.countOfEllipse));
