@@ -406,3 +406,8 @@ FodyWeavers.xsd
 /Third Party/libiconv/Debug_x64/libiconv.lib
 /Third Party/libiconv/Debug_x64/libiconv.exp
 /Third Party/libiconv/Debug_x64/libiconv.dll
+/DXF Test Files/Floor Plan Sample-part.dxf
+/DXF Test Files/Floor Plan Sample-part.dwl2
+/DXF Test Files/Floor Plan Sample.dwl2
+/DXF Tests/BLOCK-ATTDEF-INSERT-ATTRIB.dxf
+/DXF Tests/BLOCK-ATTDEF-INSERT-ATTRIB.dxf
