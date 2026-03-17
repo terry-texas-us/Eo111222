@@ -5,18 +5,24 @@
 #include "EoDxfGeometry.h"
 #include "EoDxfReader.h"
 
-void EoDxfAttributeBase::ApplyExtrusion() {
-  if (m_haveExtrusion) {
-    CalculateArbitraryAxis(m_extrusionDirection);
-    ExtrudePointInPlace(m_extrusionDirection, m_firstAlignmentPoint);
-    if (m_hasSecondAlignmentPoint) {
-      ExtrudePointInPlace(m_extrusionDirection, m_secondAlignmentPoint);
-    }
-  }
-}
+// ApplyExtrusion() is now an empty inline override in the header.
+// OCS→WCS transform is handled by ConvertAttribEntity/ConvertAttDefEntity
+// via EoGeOcsTransform, consistent with EoDxfText.
 
 bool EoDxfAttributeBase::ParseBaseCode(int code, EoDxfReader& reader) {
+  // DXF ATTRIB/ATTDEF entities contain two subclass sections: AcDbText (text properties) followed by
+  // AcDbAttribute or AcDbAttributeDefinition (attribute-specific properties). AutoCAD and ODA Converter
+  // duplicate group codes 71, 72, and 11/21/31 in the AcDbAttribute section with potentially different
+  // values. The AcDbText values are authoritative; duplicates after the attribute marker must be ignored.
+  // This mirrors the EoDxfAcadProxyEntity::m_pastProxySubclassMarker pattern for disambiguating code 330.
   switch (code) {
+    case 100: {
+      const auto subclassMarker = reader.GetWideString();
+      if (subclassMarker == L"AcDbAttribute" || subclassMarker == L"AcDbAttributeDefinition") {
+        m_pastAttributeSubclassMarker = true;
+      }
+      return true;
+    }
     case 10:
       m_firstAlignmentPoint.x = reader.GetDouble();
       return true;
@@ -27,16 +33,22 @@ bool EoDxfAttributeBase::ParseBaseCode(int code, EoDxfReader& reader) {
       m_firstAlignmentPoint.z = reader.GetDouble();
       return true;
     case 11:
-      m_hasSecondAlignmentPoint = true;
-      m_secondAlignmentPoint.x = reader.GetDouble();
+      if (!m_pastAttributeSubclassMarker) {
+        m_hasSecondAlignmentPoint = true;
+        m_secondAlignmentPoint.x = reader.GetDouble();
+      }
       return true;
     case 21:
-      m_hasSecondAlignmentPoint = true;
-      m_secondAlignmentPoint.y = reader.GetDouble();
+      if (!m_pastAttributeSubclassMarker) {
+        m_hasSecondAlignmentPoint = true;
+        m_secondAlignmentPoint.y = reader.GetDouble();
+      }
       return true;
     case 31:
-      m_hasSecondAlignmentPoint = true;
-      m_secondAlignmentPoint.z = reader.GetDouble();
+      if (!m_pastAttributeSubclassMarker) {
+        m_hasSecondAlignmentPoint = true;
+        m_secondAlignmentPoint.z = reader.GetDouble();
+      }
       return true;
     case 40:
       m_textHeight = reader.GetDouble();
@@ -60,10 +72,14 @@ bool EoDxfAttributeBase::ParseBaseCode(int code, EoDxfReader& reader) {
       m_attributeFlags = reader.GetInt16();
       return true;
     case 71:
-      m_textGenerationFlags = reader.GetInt16();
+      if (!m_pastAttributeSubclassMarker) {
+        m_textGenerationFlags = reader.GetInt16();
+      }
       return true;
     case 72:
-      m_horizontalTextJustification = reader.GetInt16();
+      if (!m_pastAttributeSubclassMarker) {
+        m_horizontalTextJustification = reader.GetInt16();
+      }
       return true;
     case 73:
       m_fieldLength = reader.GetInt16();

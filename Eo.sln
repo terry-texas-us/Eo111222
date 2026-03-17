@@ -31,18 +31,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solutio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DXF Test FIles", "DXF Test FIles", "{DC37B473-B533-4702-B6C8-FE02708EB7DB}"
 	ProjectSection(SolutionItems) = preProject
-		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1004 - R9\AC1004 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1004 - R9\AC1004 - Empty-1layout.dxf
-		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1006 - R10\AC1006 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1006 - R10\AC1006 - Empty-1layout.dxf
-		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1009 - R12\AC1009 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1009 - R12\AC1009 - Empty-1layout.dxf
-		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1012 - R13\AC1012 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1012 - R13\AC1012 - Empty-1layout.dxf
-		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1014 - R14\AC1014 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1014 - R14\AC1014 - Empty-1layout.dxf
-		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1015 - 2000\AC1015 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1015 - 2000\AC1015 - Empty-1layout.dxf
-		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1018 - 2004\AC1018 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1018 - 2004\AC1018 - Empty-1layout.dxf
-		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1021 - 2007\AC1021 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1021 - 2007\AC1021 - Empty-1layout.dxf
-		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1024 - 2010\AC1024 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1024 - 2010\AC1024 - Empty-1layout.dxf
-		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1027 - 2013\AC1027 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1027 - 2013\AC1027 - Empty-1layout.dxf
-		C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1032 - 2018\AC1032 - Empty-1layout.dxf = C:\Users\tsmit\OneDrive\Documents\ODA File Converter\AC1032 - 2018\AC1032 - Empty-1layout.dxf
+		DXF Test Files\AcadProxyEntity_Test.dxf = DXF Test Files\AcadProxyEntity_Test.dxf
+		DXF Test Files\Floor Plan Sample.dxf = DXF Test Files\Floor Plan Sample.dxf
 		C:\Users\tsmit\Desktop\Help Peg.pdf = C:\Users\tsmit\Desktop\Help Peg.pdf
+		DXF Test Files\RoomNumber_Block_Insert.dxf = DXF Test Files\RoomNumber_Block_Insert.dxf
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{923FCE64-FB18-4901-944B-3F0567CAD53C}"
@@ -63,6 +55,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\Job File Format.md = Documentation\Job File Format.md
 		Documentation\OpenDesign_Specification_for_.dwg_files.pdf = Documentation\OpenDesign_Specification_for_.dwg_files.pdf
 		Documentation\Simplex PSF Format.md = Documentation\Simplex PSF Format.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Header Tests by Version", "Header Tests by Version", "{2ADADC69-8FC1-4F37-BC59-9EB19F00E673}"
+	ProjectSection(SolutionItems) = preProject
+		DXF Test Files\AC1004 - R9\AC1004 - Empty-1layout.dxf = DXF Test Files\AC1004 - R9\AC1004 - Empty-1layout.dxf
+		DXF Test Files\AC1006 - R10\AC1006 - Empty-1layout.dxf = DXF Test Files\AC1006 - R10\AC1006 - Empty-1layout.dxf
+		DXF Test Files\AC1009 - R12\AC1009 - Empty-1layout.dxf = DXF Test Files\AC1009 - R12\AC1009 - Empty-1layout.dxf
+		DXF Test Files\AC1012 - R13\AC1012 - Empty-1layout.dxf = DXF Test Files\AC1012 - R13\AC1012 - Empty-1layout.dxf
+		DXF Test Files\AC1014 - R14\AC1014 - Empty-1layout.dxf = DXF Test Files\AC1014 - R14\AC1014 - Empty-1layout.dxf
+		DXF Test Files\AC1015 - 2000\AC1015 - Empty-1layout.dxf = DXF Test Files\AC1015 - 2000\AC1015 - Empty-1layout.dxf
+		DXF Test Files\AC1018 - 2004\AC1018 - Empty-1layout.dxf = DXF Test Files\AC1018 - 2004\AC1018 - Empty-1layout.dxf
+		DXF Test Files\AC1021 - 2007\AC1021 - Empty-1layout.dxf = DXF Test Files\AC1021 - 2007\AC1021 - Empty-1layout.dxf
+		DXF Test Files\AC1024 - 2010\AC1024 - Empty-1layout.dxf = DXF Test Files\AC1024 - 2010\AC1024 - Empty-1layout.dxf
+		DXF Test Files\AC1027 - 2013\AC1027 - Empty-1layout.dxf = DXF Test Files\AC1027 - 2013\AC1027 - Empty-1layout.dxf
 	EndProjectSection
 EndProject
 Global
@@ -114,6 +120,7 @@ Global
 		{79C9DBD9-E32A-4B2B-BEF5-0271973883EC} = {79DF9179-1B4A-475B-8004-50C36CCC6BD1}
 		{AD220B98-AD6D-4826-B211-96DC6EBBF69B} = {79DF9179-1B4A-475B-8004-50C36CCC6BD1}
 		{357A8016-9AD4-47EF-B23C-2071C264793B} = {79DF9179-1B4A-475B-8004-50C36CCC6BD1}
+		{2ADADC69-8FC1-4F37-BC59-9EB19F00E673} = {DC37B473-B533-4702-B6C8-FE02708EB7DB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {18F1F5CF-3E94-4C17-A101-89EB8CA0D5E6}

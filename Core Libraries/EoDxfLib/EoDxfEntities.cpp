@@ -1,5 +1,7 @@
 #include <algorithm>
 #include <cmath>
+#include <cwctype>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -159,6 +161,14 @@ void EoDxfGraphic::ParseCode(int code, EoDxfReader& reader) {
 
 void EoDxfAcadProxyEntity::ParseCode(int code, EoDxfReader& reader) {
   switch (code) {
+    case 100: {
+      // Detect the AcDbProxyEntity subclass marker to disambiguate group codes that have different
+      // semantics at the entity level (before the marker) vs. the proxy level (after the marker).
+      // Most importantly, code 330 is the owner handle before the marker but a soft-pointer object-ID after it.
+      auto subclassMarker = reader.GetWideString();
+      if (subclassMarker == L"AcDbProxyEntity") { m_pastProxySubclassMarker = true; }
+      break;
+    }
     case 90:
       m_proxyEntityClassId = reader.GetInt32();
       break;
@@ -190,7 +200,12 @@ void EoDxfAcadProxyEntity::ParseCode(int code, EoDxfReader& reader) {
       }
       break;
     case 330:
-      m_softPointerHandles.push_back(reader.GetHandleString());
+      if (m_pastProxySubclassMarker) {
+        m_softPointerHandles.push_back(reader.GetHandleString());
+      } else {
+        // Entity-level 330: owner block record handle — route to base class
+        EoDxfGraphic::ParseCode(code, reader);
+      }
       break;
     case 340:
       m_hardPointerHandles.push_back(reader.GetHandleString());
@@ -205,6 +220,64 @@ void EoDxfAcadProxyEntity::ParseCode(int code, EoDxfReader& reader) {
       EoDxfGraphic::ParseCode(code, reader);
       break;
   }
+}
+
+std::wstring EoDxfAcadProxyEntity::ConcatenateGraphicsHexChunks() const {
+  std::wstring result;
+  auto totalSize = std::accumulate(
+      m_graphicsDataChunks.begin(), m_graphicsDataChunks.end(), std::size_t{0},
+      [](std::size_t sum, const std::wstring& chunk) { return sum + chunk.size(); });
+  result.reserve(totalSize);
+  for (const auto& chunk : m_graphicsDataChunks) { result += chunk; }
+  return result;
+}
+
+std::wstring EoDxfAcadProxyEntity::ConcatenateEntityHexChunks() const {
+  std::wstring result;
+  auto totalSize = std::accumulate(
+      m_entityDataChunks.begin(), m_entityDataChunks.end(), std::size_t{0},
+      [](std::size_t sum, const std::wstring& chunk) { return sum + chunk.size(); });
+  result.reserve(totalSize);
+  for (const auto& chunk : m_entityDataChunks) { result += chunk; }
+  return result;
+}
+
+std::vector<std::uint8_t> EoDxfAcadProxyEntity::DecodeHexToBytes(std::wstring_view hexString) {
+  std::vector<std::uint8_t> bytes;
+  bytes.reserve(hexString.size() / 2);
+
+  bool haveHighNibble = false;
+  std::uint8_t currentByte = 0;
+
+  for (const wchar_t character : hexString) {
+    int nibble = -1;
+    if (character >= L'0' && character <= L'9') {
+      nibble = character - L'0';
+    } else if (character >= L'A' && character <= L'F') {
+      nibble = character - L'A' + 10;
+    } else if (character >= L'a' && character <= L'f') {
+      nibble = character - L'a' + 10;
+    } else {
+      continue;  // skip non-hex characters (whitespace, stray data)
+    }
+
+    if (!haveHighNibble) {
+      currentByte = static_cast<std::uint8_t>(nibble << 4);
+      haveHighNibble = true;
+    } else {
+      currentByte |= static_cast<std::uint8_t>(nibble);
+      bytes.push_back(currentByte);
+      haveHighNibble = false;
+    }
+  }
+  // If an odd number of hex characters, the trailing nibble is discarded (malformed data)
+  return bytes;
+}
+
+std::int32_t EoDxfAcadProxyEntity::ComputedGraphicsDataSizeInBytes() const noexcept {
+  std::size_t totalHexCharacters = 0;
+  for (const auto& chunk : m_graphicsDataChunks) { totalHexCharacters += chunk.size(); }
+  return static_cast<std::int32_t>(totalHexCharacters / 2);
 }
 
 void EoDxfPoint::ParseCode(int code, EoDxfReader& reader) {

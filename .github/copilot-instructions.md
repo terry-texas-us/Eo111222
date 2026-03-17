@@ -64,6 +64,12 @@ To recover DXF properties from the reference system:
 - Aligned/Fit: first alignment point (baseline start); both points define direction
 - All other non-default alignments: **second alignment point** (group 11/21/31)
 
+### DXF ATTRIB Duplicate Group Codes (AcDbText vs AcDbAttribute)
+- DXF ATTRIB entities contain two subclass sections: `AcDbText` (text properties) and `AcDbAttribute` (attribute-specific properties).
+- AutoCAD and ODA Converter **duplicate** group codes 71 (text generation flags), 72 (horizontal justification), and 11/21/31 (second alignment point) in both sections, potentially with **different values**.
+- The `AcDbText` section's values are authoritative. `ParseBaseCode()` tracks the subclass marker via `m_pastAttributeSubclassMarker` and ignores codes 71, 72, 11/21/31 after the `AcDbAttribute` or `AcDbAttributeDefinition` marker.
+- This follows the same pattern as `EoDxfAcadProxyEntity::m_pastProxySubclassMarker` for disambiguating code 330.
+
 ## BLOCK / ATTDEF / INSERT / ATTRIB — Current State and Direction
 
 ### Current Implementation (DXF Import Only)

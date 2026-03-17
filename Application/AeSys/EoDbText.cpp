@@ -551,6 +551,7 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, Eo
               } else if (Parameter == '2') {
                 ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, -0.5, 0.0));
               }
+              BottomLeftCorner = ReferenceSystem.Origin();
             }
           }
         }

@@ -85,7 +85,15 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   // 3DSOLID not implemented
 
-  void AddAcadProxyEntity([[maybe_unused]] const EoDxfAcadProxyEntity& proxyEntity) override { countOfAcadProxyEntity++; }
+  void AddAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity) override {
+    countOfAcadProxyEntity++;
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddAcadProxyEntity - block <%s>\n", m_blockName.c_str());
+    } else {
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddAcadProxyEntity - entities section\n");
+    }
+    ConvertAcadProxyEntity(proxyEntity, m_document);
+  }
 
   void AddArc(const EoDxfArc& arc) override {
     countOfArc++;
@@ -128,19 +136,19 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   // Dimensions
 
-  void AddDimAlign([[maybe_unused]] const EoDxfAlignedDimension* dimAlign) override { countOfDimAlign++; }
+  void AddDimAlign([[maybe_unused]] const EoDxfAlignedDimension* dimAlign) override { countOfDimAlign--; }
 
-  void AddDimAngular([[maybe_unused]] const EoDxf2LineAngularDimension* dimAngular) override { countOfDimAngular++; }
+  void AddDimAngular([[maybe_unused]] const EoDxf2LineAngularDimension* dimAngular) override { countOfDimAngular--; }
   void AddDimAngular3P([[maybe_unused]] const EoDxf3PointAngularDimension* dimAngular3P) override {
-    countOfDimAngular3P++;
+    countOfDimAngular3P--;
   }
 
-  void AddDimLinear([[maybe_unused]] const EoDxfDimLinear* dimLinear) override { countOfDimLinear++; }
-  void AddDimOrdinate([[maybe_unused]] const EoDxfOrdinateDimension* dimOrdinate) override { countOfDimOrdinate++; }
+  void AddDimLinear([[maybe_unused]] const EoDxfDimLinear* dimLinear) override { countOfDimLinear--; }
+  void AddDimOrdinate([[maybe_unused]] const EoDxfOrdinateDimension* dimOrdinate) override { countOfDimOrdinate--; }
 
-  void AddDimRadial([[maybe_unused]] const EoDxfRadialDimension* dimRadial) override { countOfDimRadial++; }
+  void AddDimRadial([[maybe_unused]] const EoDxfRadialDimension* dimRadial) override { countOfDimRadial--; }
 
-  void AddDimDiametric([[maybe_unused]] const EoDxfDiametricDimension* dimDiametric) override { countOfDimDiametric++; }
+  void AddDimDiametric([[maybe_unused]] const EoDxfDiametricDimension* dimDiametric) override { countOfDimDiametric--; }
 
   void AddEllipse(const EoDxfEllipse& ellipse) override {
     countOfEllipse++;
@@ -165,7 +173,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   // HELIX not implemented
 
-  void AddImage([[maybe_unused]] const EoDxfImage* image) override { countOfImage++; }
+  void AddImage([[maybe_unused]] const EoDxfImage* image) override { countOfImage--; }
 
   void AddUnsupportedObject(const EoDxfUnsupportedObject& /* objectData */) override {}
 
@@ -236,7 +244,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
   }
 
-  void AddPolyline(const EoDxfPolyline& /* polyline */) override { countOfPolyline++; }
+  void AddPolyline(const EoDxfPolyline& /* polyline */) override { countOfPolyline--; }
   void AddRay(const EoDxfRay& /* ray */) override { countOfRay++; }
   // REGION not implemented
   // SECTION not implemented
@@ -361,6 +369,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document);
 
+  void ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity, AeSysDoc* document);
   void ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document);
   void ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_unused]] AeSysDoc* document);
   void ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document);

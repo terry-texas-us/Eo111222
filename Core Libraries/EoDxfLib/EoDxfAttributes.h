@@ -22,7 +22,7 @@ class EoDxfAttributeBase : public EoDxfGraphic {
   friend class EoDxfWrite;
 
  public:
-  void ApplyExtrusion() override;
+  void ApplyExtrusion() override {}
 
   [[nodiscard]] bool HasSecondAlignmentPoint() const noexcept { return m_hasSecondAlignmentPoint; }
 
@@ -59,6 +59,11 @@ class EoDxfAttributeBase : public EoDxfGraphic {
 
  private:
   bool m_hasSecondAlignmentPoint{};
+
+  /// Tracks whether the parser has passed the AcDbAttribute or AcDbAttributeDefinition subclass marker (code 100).
+  /// DXF files written by AutoCAD/ODA duplicate group codes 71, 72, and 11/21/31 in both the AcDbText and
+  /// AcDbAttribute sections. The AcDbText values are authoritative; duplicates after the attribute marker are ignored.
+  bool m_pastAttributeSubclassMarker{};
 };
 
 /** @brief Class representing the ATTDEF entity in a DXF file, which defines an attribute definition for block references.

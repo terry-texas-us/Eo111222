@@ -189,6 +189,16 @@ class EoDxfXline : public EoDxfGraphic {
  *  loaded. AutoCAD preserves the entity's binary data so that it can be round-tripped without loss even when the
  *  application is unavailable. DXF group codes specific to the proxy include the class IDs, graphics/entity data
  *  sizes, binary chunk records (code 310), and object-ID handle references (codes 330, 340, 350, 360).
+ *
+ *  The graphics data (code 92 byte-count + code 310 hex chunks) contains an AcGi world-draw graphics stream — a
+ *  binary sequence of drawing commands (polylines, circles, arcs, text) that AutoCAD uses to render the proxy
+ *  placeholder. Multiple 310 groups are concatenated (max ~254 hex chars per group = 127 bytes) to reconstruct the
+ *  full binary blob. The entity data (code 93 bit-count + subsequent 310 hex chunks) preserves the original custom
+ *  entity's DWG-format binary for round-trip fidelity.
+ *
+ *  Group code 330 appears at two levels: once before AcDbProxyEntity as the entity-level owner handle (routed to
+ *  EoDxfEntity::m_ownerHandle), and again after AcDbProxyEntity as proxy-specific soft-pointer object-ID references.
+ *  The m_pastProxySubclassMarker flag disambiguates these two uses.
  */
 class EoDxfAcadProxyEntity : public EoDxfGraphic {
   friend class EoDxfRead;
@@ -198,6 +208,36 @@ class EoDxfAcadProxyEntity : public EoDxfGraphic {
   explicit EoDxfAcadProxyEntity(EoDxf::ETYPE entityType = EoDxf::ACAD_PROXY_ENTITY) noexcept
       : EoDxfGraphic{entityType} {}
   void ApplyExtrusion() override {}
+
+  /** @brief Concatenates all hex-encoded graphics data chunks into a single string.
+   *  Each code 310 group contributes up to ~254 hex characters (127 bytes). The caller can then pass the result
+   *  to DecodeHexToBytes() to obtain the raw AcGi graphics stream.
+   *  @return A single hex string representing the full graphics data blob.
+   */
+  [[nodiscard]] std::wstring ConcatenateGraphicsHexChunks() const;
+
+  /** @brief Concatenates all hex-encoded entity data chunks into a single string.
+   *  @return A single hex string representing the full entity data blob.
+   */
+  [[nodiscard]] std::wstring ConcatenateEntityHexChunks() const;
+
+  /** @brief Decodes a hex-encoded wide string into a vector of raw bytes.
+   *  Each pair of hex characters (e.g., L"4F") produces one byte (0x4F). Characters outside [0-9A-Fa-f] are
+   *  skipped, so whitespace or stray characters are tolerated.
+   *  @param hexString The hex-encoded wide string to decode.
+   *  @return A vector of decoded bytes.
+   */
+  [[nodiscard]] static std::vector<std::uint8_t> DecodeHexToBytes(std::wstring_view hexString);
+
+  /** @brief Computes the actual byte count of all graphics data 310 hex chunks.
+   *  This counts hex character pairs across all chunks. If the result does not match m_graphicsDataSizeInBytes,
+   *  the proxy entity data may be truncated or corrupted.
+   *  @return The computed byte count from the hex chunks.
+   */
+  [[nodiscard]] std::int32_t ComputedGraphicsDataSizeInBytes() const noexcept;
+
+  /** @brief Returns true if the proxy entity contains graphics data that could be decoded for rendering. */
+  [[nodiscard]] bool HasGraphicsData() const noexcept { return m_graphicsDataSizeInBytes > 0 && !m_graphicsDataChunks.empty(); }
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -212,13 +252,14 @@ class EoDxfAcadProxyEntity : public EoDxfGraphic {
   std::int16_t m_originalDataFormatFlag{};  // Group code 70 (0 = DWG format, 1 = DXF format)
   std::vector<std::wstring> m_graphicsDataChunks;  // Group code 310 (binary chunk records for proxy graphics)
   std::vector<std::wstring> m_entityDataChunks;  // Group code 310 (binary chunk records for entity data)
-  std::vector<std::uint64_t> m_softPointerHandles;  // Group code 330 (soft pointer IDs, after entity-level ones)
+  std::vector<std::uint64_t> m_softPointerHandles;  // Group code 330 (soft pointer IDs, after AcDbProxyEntity marker)
   std::vector<std::uint64_t> m_hardPointerHandles;  // Group code 340 (hard pointer IDs)
   std::vector<std::uint64_t> m_softOwnerHandles;  // Group code 350 (soft owner IDs)
   std::vector<std::uint64_t> m_hardOwnerHandles;  // Group code 360 (hard owner IDs)
 
  private:
   bool m_readingGraphicsData{true};  // Tracks whether 310 groups belong to graphics data or entity data
+  bool m_pastProxySubclassMarker{};  // Set when code 100 "AcDbProxyEntity" is seen; disambiguates 330 routing
 };
 
 /** @brief Class to handle circle entity
