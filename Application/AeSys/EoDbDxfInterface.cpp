@@ -841,3 +841,133 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
 
   AddToDocument(textPrimitive, document);
 }
+
+void EoDbDxfInterface::ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_unused]] AeSysDoc* document) {
+  // ATTDEFs define attribute templates inside block definitions. In AutoCAD they are NOT rendered
+  // in entity references — only ATTRIBs following INSERT entities are rendered. Skipping conversion
+  // prevents the default value from overlapping with the actual ATTRIB text at the same position.
+  ATLTRACE2(traceGeneral, 2, L"AttDef entity skipped (tag='%s', default='%s', prompt='%s') — template only\n",
+      attdef.m_tagString.c_str(), attdef.m_defaultValue.c_str(), attdef.m_promptString.c_str());
+}
+
+void EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 2, L"Attrib entity conversion (tag='%s', value='%s')\n", attrib.m_tagString.c_str(),
+      attrib.m_attributeValue.c_str());
+
+  // Skip invisible attributes (flag bit 0)
+  if (attrib.m_attributeFlags & 1) {
+    ATLTRACE2(traceGeneral, 2, L"Attrib entity skipped: invisible flag set\n");
+    return;
+  }
+
+  if (attrib.m_textHeight < Eo::geometricTolerance) {
+    ATLTRACE2(traceGeneral, 1, L"Attrib entity skipped: zero or near-zero text height\n");
+    return;
+  }
+  if (attrib.m_attributeValue.empty()) {
+    ATLTRACE2(traceGeneral, 1, L"Attrib entity skipped: empty attribute value\n");
+    return;
+  }
+
+  auto firstAlignmentPointInOcs =
+      EoGePoint3d{attrib.m_firstAlignmentPoint.x, attrib.m_firstAlignmentPoint.y, attrib.m_firstAlignmentPoint.z};
+  auto textHeight = attrib.m_textHeight;
+  std::wstring string{attrib.m_attributeValue};
+  auto textRotation = Eo::DegreeToRadian(attrib.m_textRotation);
+  auto xScaleFactorWidth = attrib.m_relativeXScaleFactor;
+  auto obliqueAngle = Eo::DegreeToRadian(attrib.m_obliqueAngle);
+  std::wstring textStyleName = attrib.m_textStyleName;
+
+  auto horizontalAlignment = attrib.m_horizontalTextJustification;
+  auto verticalAlignment = attrib.m_verticalTextJustification;
+
+  auto secondAlignmentPointInOcs =
+      EoGePoint3d{attrib.m_secondAlignmentPoint.x, attrib.m_secondAlignmentPoint.y, attrib.m_secondAlignmentPoint.z};
+  EoGeVector3d extrusionDirection{
+      attrib.m_extrusionDirection.x, attrib.m_extrusionDirection.y, attrib.m_extrusionDirection.z};
+  if (!attrib.m_haveExtrusion || extrusionDirection.IsNearNull()) {
+    extrusionDirection = EoGeVector3d::positiveUnitZ;
+  } else {
+    extrusionDirection.Unitize();
+  }
+
+  const bool hasSecondAlignmentPoint = attrib.HasSecondAlignmentPoint();
+
+  EoGeOcsTransform transformOcs{extrusionDirection};
+  auto firstAlignmentPointInWcs = transformOcs * firstAlignmentPointInOcs;
+  auto secondAlignmentPointInWcs = transformOcs * secondAlignmentPointInOcs;
+
+  const bool isDefaultAlignment = (horizontalAlignment == 0 && verticalAlignment == 0);
+  const bool isAlignedOrFit = (horizontalAlignment == 3 || horizontalAlignment == 5);
+
+  auto baselineDirection = EoGeVector3d::positiveUnitX;
+
+  if (hasSecondAlignmentPoint && isAlignedOrFit) {
+    auto alignedDirection = secondAlignmentPointInWcs - firstAlignmentPointInWcs;
+    if (!alignedDirection.IsNearNull()) {
+      baselineDirection = alignedDirection;
+      baselineDirection.Unitize();
+    }
+  } else {
+    baselineDirection.RotateAboutArbitraryAxis(extrusionDirection, textRotation);
+  }
+
+  EoGePoint3d referenceOrigin;
+  if (isDefaultAlignment || isAlignedOrFit) {
+    referenceOrigin = firstAlignmentPointInWcs;
+  } else if (hasSecondAlignmentPoint) {
+    referenceOrigin = secondAlignmentPointInWcs;
+  } else {
+    ATLTRACE2(traceGeneral, 1, L"Attrib entity: non-default alignment but no second alignment point; using first\n");
+    referenceOrigin = firstAlignmentPointInWcs;
+  }
+
+  auto xAxisDirection = baselineDirection;
+  auto yAxisDirection = CrossProduct(extrusionDirection, xAxisDirection);
+
+  if (std::abs(obliqueAngle) > Eo::geometricTolerance) {
+    yAxisDirection.RotateAboutArbitraryAxis(extrusionDirection, -obliqueAngle);
+  }
+
+  yAxisDirection *= textHeight;
+  xAxisDirection *= xScaleFactorWidth * textHeight * Eo::defaultCharacterCellAspectRatio;
+  EoGeReferenceSystem referenceSystem(referenceOrigin, xAxisDirection, yAxisDirection);
+
+  EoDbFontDefinition fontDefinition{};
+  fontDefinition.SetFontName(textStyleName);
+
+  switch (horizontalAlignment) {
+    case 1:  // Center
+    case 4:  // Middle (paired with Baseline)
+      fontDefinition.SetHorizontalAlignment(EoDb::HorizontalAlignment::Center);
+      break;
+    case 2:  // Right
+    case 5:  // Fit (paired with Baseline)
+      fontDefinition.SetHorizontalAlignment(EoDb::HorizontalAlignment::Right);
+      break;
+    case 0:  // Left
+    case 3:  // Aligned (paired with Baseline)
+    default:
+      fontDefinition.SetHorizontalAlignment(EoDb::HorizontalAlignment::Left);
+      break;
+  }
+
+  switch (verticalAlignment) {
+    case 2:  // Middle
+      fontDefinition.SetVerticalAlignment(EoDb::VerticalAlignment::Middle);
+      break;
+    case 3:  // Top
+      fontDefinition.SetVerticalAlignment(EoDb::VerticalAlignment::Top);
+      break;
+    case 0:  // Baseline
+    case 1:  // Bottom
+    default:
+      fontDefinition.SetVerticalAlignment(EoDb::VerticalAlignment::Bottom);
+      break;
+  }
+
+  auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, string);
+  textPrimitive->SetBaseProperties(&attrib, document);
+
+  AddToDocument(textPrimitive, document);
+}

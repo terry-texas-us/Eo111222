@@ -97,9 +97,21 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertArcEntity(arc, m_document);
   }
 
-  void AddAttDef([[maybe_unused]] const EoDxfAttDef& attdef) override { countOfAttDef++; }
+  void AddAttDef(const EoDxfAttDef& attdef) override {
+    countOfAttDef++;
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddAttDef - block <%s>\n", m_blockName.c_str());
+    } else {
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddAttDef - entities section\n");
+    }
+    ConvertAttDefEntity(attdef, m_document);
+  }
 
-  void AddAttrib([[maybe_unused]] const EoDxfAttrib& attrib) override { countOfAttrib++; }
+  void AddAttrib(const EoDxfAttrib& attrib) override {
+    countOfAttrib++;
+    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddAttrib - entities section\n");
+    ConvertAttribEntity(attrib, m_document);
+  }
 
   // BODY not implemented
   void AddCircle(const EoDxfCircle& circle) override {
@@ -350,6 +362,8 @@ class EoDbDxfInterface : public EoDxfInterface {
   void AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document);
 
   void ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document);
+  void ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_unused]] AeSysDoc* document);
+  void ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document);
   void ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document);
   void ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document);
   void ConvertHatchEntity(const EoDxfHatch& hatch, [[maybe_unused]] AeSysDoc* document);

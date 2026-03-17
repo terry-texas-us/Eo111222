@@ -64,6 +64,25 @@ To recover DXF properties from the reference system:
 - Aligned/Fit: first alignment point (baseline start); both points define direction
 - All other non-default alignments: **second alignment point** (group 11/21/31)
 
+## BLOCK / ATTDEF / INSERT / ATTRIB — Current State and Direction
+
+### Current Implementation (DXF Import Only)
+- **ATTDEF** (`ConvertAttDefEntity`): Parsed and counted but **not rendered**. ATTDEFs are block-definition templates; rendering them would produce overlapping text with ATTRIB values at the same transformed position.
+- **ATTRIB** (`ConvertAttribEntity`): Fully converted to `EoDbText` primitives using the same pipeline as `ConvertTextEntity` (OCS→WCS transform, alignment point selection, justification mapping, oblique angle). Added to model-space groups on the entity's layer via `AddToDocument`.
+- **INSERT** (`ConvertInsertEntity`): Creates `EoDbBlockReference` with scale/rotation/normal. The DXF reader calls `AddInsert` first, then `ProcessInsertAttribs` delivers each ATTRIB sequentially — they become separate `EoDbGroup` entries on the layer.
+- **Block geometry** (LINE, ARC, etc. inside BLOCK definitions): Converted normally and stored in `EoDbBlock` via `m_currentOpenBlockDefinition->AddTail()`.
+
+### Structural Limitation
+- ATTRIBs become standalone `EoDbText` with no structural link to their parent INSERT or ATTDEF tag. In .PEG V1, they serialize as ordinary text primitives — the attribute identity (tag name, block association) is lost on save.
+- `EoDbBlock::HasAttributes()` (flag bit 1) is preserved from the DXF block flags but is not currently used during rendering or editing.
+
+### Future Direction (.PEG V2)
+- The BLOCK/ATTDEF/INSERT/ATTRIB relationship is a strong forcing function for the .PEG V2 handle architecture: block references owning attribute handles, ATTDEFs persisting in block definitions, tag-based attribute editing across inserts.
+- Interactive attribute prompting (iterate ATTDEFs on block insertion, prompt for values, create positioned ATTRIBs) is deferred until the handle architecture can preserve the tag association on save.
+
+### Test File
+- `DXF Test Files/RoomNumber_Block_Insert.dxf` — 4×3 rectangle block with centered NUMBER ATTDEF, three INSERT instances with ATTRIB values (101, 102, CONF-A), one with X-scale 1.5.
+
 ## EoDbText Render-Time Formatting Architecture
 - AeSys already handles `\P`, `\A`, and `\S` formatting codes **at render time** inside `DisplayTextWithFormattingCharacters()`. The detection is done by `HasFormattingCharacters()` in `EoDbText.cpp`. This means MTEXT formatting codes that map to these (paragraph breaks, alignment changes, stacked fractions) can be **preserved in the text string** rather than stripped at import time — the renderer will handle them. Only formatting codes that AeSys does NOT support at render time (font changes \f, color \C, height \H, width \W, tracking \T, oblique \Q, underline \L/\l, overline \O/\o) need to be stripped during DXF import.
 
