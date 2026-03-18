@@ -34,7 +34,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DXF Test FIles", "DXF Test 
 		DXF Test Files\AcadProxyEntity_Test.dxf = DXF Test Files\AcadProxyEntity_Test.dxf
 		DXF Test Files\Floor Plan Sample.dxf = DXF Test Files\Floor Plan Sample.dxf
 		C:\Users\tsmit\Desktop\Help Peg.pdf = C:\Users\tsmit\Desktop\Help Peg.pdf
+		DXF Test Files\Minimal_DXF_AC1021.dxf = DXF Test Files\Minimal_DXF_AC1021.dxf
 		DXF Test Files\RoomNumber_Block_Insert.dxf = DXF Test Files\RoomNumber_Block_Insert.dxf
+		DXF Test Files\Spline_Test.dxf = DXF Test Files\Spline_Test.dxf
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{923FCE64-FB18-4901-944B-3F0567CAD53C}"
@@ -49,11 +51,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\AcadEntityObjectHierarchy.md = Documentation\AcadEntityObjectHierarchy.md
 		Documentation\autocad_2012_pdf_dxf-reference_enu.pdf = Documentation\autocad_2012_pdf_dxf-reference_enu.pdf
 		Documentation\Dde Description and Few Uses.md = Documentation\Dde Description and Few Uses.md
+		Documentation\DXF - Storage of String Values.md = Documentation\DXF - Storage of String Values.md
 		Documentation\dxf header.md = Documentation\dxf header.md
 		Documentation\ezdxf class structure diagram.md = Documentation\ezdxf class structure diagram.md
 		Documentation\Help Peg.pdf = Documentation\Help Peg.pdf
+		Documentation\IntroducingHandles.md = Documentation\IntroducingHandles.md
 		Documentation\Job File Format.md = Documentation\Job File Format.md
 		Documentation\OpenDesign_Specification_for_.dwg_files.pdf = Documentation\OpenDesign_Specification_for_.dwg_files.pdf
+		Documentation\Peg & Tra File Formats.md = Documentation\Peg & Tra File Formats.md
 		Documentation\Simplex PSF Format.md = Documentation\Simplex PSF Format.md
 	EndProjectSection
 EndProject

@@ -36,7 +36,14 @@ class EoDxfSpline : public EoDxfGraphic {
 
   void ApplyExtrusion() override {}
 
-  [[nodiscard]] const bool IsTangentValid() const noexcept { return m_splineFlag & 0x01; }
+  [[nodiscard]] bool IsClosed() const noexcept { return (m_splineFlag & 0x01) != 0; }
+  [[nodiscard]] bool IsPeriodic() const noexcept { return (m_splineFlag & 0x02) != 0; }
+  [[nodiscard]] bool IsRational() const noexcept { return (m_splineFlag & 0x04) != 0; }
+
+  /// Start/end tangents are valid when either vector is non-zero.
+  [[nodiscard]] bool IsTangentValid() const noexcept {
+    return !m_startTangent.IsZero() || !m_endTangent.IsZero();
+  }
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -55,6 +62,7 @@ class EoDxfSpline : public EoDxfGraphic {
   double m_fitTolerance{0.0000000001};  // Group code 44
 
   std::vector<double> m_knotValues;  // Group code 40, (one entry per knot)
+  std::vector<double> m_weightValues;  // Group code 41, (one entry per control point, rational splines)
   std::vector<EoDxfGeometryBase3d*> m_controlPoints;  // Group codes 10, 20 & 30 (one entry per control point)
   std::vector<EoDxfGeometryBase3d*> m_fitPoints;  // Group codes 11, 21 & 31 (one entry per fit point)
 

@@ -447,7 +447,7 @@ class EoDxf3dFace : public EoDxfGraphic {
     AllEdges = 0x0F
   };
 
-  explicit EoDxf3dFace(EoDxf::ETYPE entityType = EoDxf::E3DFACE) noexcept : EoDxfGraphic{entityType} {}
+  explicit EoDxf3dFace(EoDxf::ETYPE entityType = EoDxf::_3DFACE) noexcept : EoDxfGraphic{entityType} {}
 
   void ApplyExtrusion() override {}
 

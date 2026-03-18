@@ -393,6 +393,9 @@ bool EoDxfWrite::WriteSpline(EoDxfSpline* spline) {
 
   for (int i = 0; i < spline->m_numberOfKnots; i++) { WriteCodeDouble(40, spline->m_knotValues.at(i)); }
 
+  // Weight values (code 41) — one per control point for rational splines
+  for (const auto& weight : spline->m_weightValues) { WriteCodeDouble(41, weight); }
+
   for (int i = 0; i < spline->m_numberOfControlPoints; i++) {
     auto* controlPoint = spline->m_controlPoints.at(i);
     WriteCodeDouble(10, controlPoint->x);

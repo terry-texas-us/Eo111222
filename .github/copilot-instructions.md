@@ -1,6 +1,6 @@
 ﻿# Copilot Instructions
 
-I am working on an old C++ MFC CAD project that I stopped coding on around 2000. I have the project building warning free at Wall using Visual Studio 2026 with the C++latest (19.5) compiler and the v145 toolset. The local project repo is in a folder called `D:\Visual Studio\migrations\Peg111222`. I have introduced version control with a local .git and GitHub. The public repo at GitHub URL is `https://github.com/terry-texas-us/Eo111222`, and the main project is `https://github.com/terry-texas-us/Eo111222/tree/master/AeSys`. I encourage you to reference the code there if necessary.
+The local project repo is in a folder called `D:\Projects\Eo111222`.
 
 I need a solution for reading open source .DXF CAD files, which I will convert to the proprietary .PEG (`Peg & Tra File Formats.md`) file. For DXF initial parsing, I will follow the example of ezdxf.
 
@@ -89,11 +89,12 @@ To recover DXF properties from the reference system:
 ### Test File
 - `DXF Test Files/RoomNumber_Block_Insert.dxf` — 4×3 rectangle block with centered NUMBER ATTDEF, three INSERT instances with ATTRIB values (101, 102, CONF-A), one with X-scale 1.5.
 
-## EoDbText Render-Time Formatting Architecture
-- AeSys already handles `\P`, `\A`, and `\S` formatting codes **at render time** inside `DisplayTextWithFormattingCharacters()`. The detection is done by `HasFormattingCharacters()` in `EoDbText.cpp`. This means MTEXT formatting codes that map to these (paragraph breaks, alignment changes, stacked fractions) can be **preserved in the text string** rather than stripped at import time — the renderer will handle them. Only formatting codes that AeSys does NOT support at render time (font changes \f, color \C, height \H, width \W, tracking \T, oblique \Q, underline \L/\l, overline \O/\o) need to be stripped during DXF import.
-
-## .PEG Legacy Formatting Convention
-- Legacy .peg files use `^/` … `^` for stacked fractions. `ConvertFormattingCharacters()` converts these to `\S` … `;` format at load time. DXF MTEXT already uses `\S` natively, so MTEXT stacked fractions can be passed through directly.
+## EoDbText Rendering and Formatting Architecture
+- AeSys handles `\P`, `\A`, and `\S` formatting codes **at render time** inside `DisplayTextWithFormattingCharacters()` (detection via `HasFormattingCharacters()` in `EoDbText.cpp`). MTEXT formatting codes that map to these can be **preserved in the text string** rather than stripped at import time. Only unsupported codes (font `\f`, color `\C`, height `\H`, width `\W`, tracking `\T`, oblique `\Q`, underline `\L`/`\l`, overline `\O`/`\o`) need to be stripped during DXF import.
+- The `\r\n` newline convention is handled during `DisplayText()` by splitting into segments via `text_GetNewLinePos()` for line advancement.
+- Legacy .peg files use `^/` … `^` for stacked fractions. `ConvertFormattingCharacters()` converts these to `\S` … `;` format at load time. DXF MTEXT already uses `\S` natively, so MTEXT stacked fractions pass through directly.
+- The stroke font renderer (`DisplayTextSegmentUsingStrokeFont`) uses `Eo::defaultCharacterCellAspectRatio` (0.6) for character spacing.
+- TrueType font rendering path (`DisplayTextSegmentUsingTrueTypeFont`) is conditional on the font definition's precision and view settings.
 
 ## EoDbText Constructor Behavior
 - Both `EoDbText` constructors (`CString&` and `std::wstring&` variants) call `renderState.Color()` to set `m_color`. When importing from DXF, `SetBaseProperties()` must be called AFTER construction to override this with the entity's actual color. The current conversion code does this correctly.
@@ -104,8 +105,12 @@ To recover DXF properties from the reference system:
 ## Coordinate System Conventions
 - **OCS (Object Coordinate System)**: DXF/DWG entities use OCS defined by an extrusion vector. When `extrusion.z < 0`, CCW in OCS appears CW when viewed from +Z in WCS.
 - **WCS (World Coordinate System)**: Legacy PEG files store geometry directly in WCS without OCS conventions.
-- **Normalization strategy**: When converting legacy `EoDbEllipse` to `EoDbConic`, normalize to OCS-based representation so `Display()` logic is consistent across all sources.
 - Use `EoDbPrimitive::ComputeArbitraryAxis()` for DXF arbitrary axis algorithm.
+
+### DXF Entity Coordinate Conventions (OCS vs WCS)
+- **ARC, CIRCLE**: Center (10/20/30) is in **OCS**. Angles (50/51) are in OCS. `ApplyExtrusion()` transforms center OCS→WCS via `CalculateArbitraryAxis` + `ExtrudePointInPlace`.
+- **ELLIPSE**: Center (10/20/30) and major axis endpoint (11/21/31) are in **WCS** per the DXF specification. `ApplyExtrusion()` is a no-op. The extrusion direction (210/220/230) defines the ellipse plane normal only — used by `MinorAxis() = Cross(extrusion, majorAxis) × ratio`.
+- This WCS/OCS difference between ELLIPSE and ARC/CIRCLE is a known DXF specification inconsistency.
 
 ## Angle Conventions
 - All angles are in **radians**.
@@ -136,13 +141,6 @@ To recover DXF properties from the reference system:
 
 ## Documentation
 - Utilize Doxygen for automated documentation generation. Ensure that comments are clear and descriptive, and consider the balance between verbosity and clarity to maintain readability.
-
-## AeSys Text Rendering Architecture Notes
-- Some DXF text formatting is handled at **render time** in AeSys, not at import time. See `DisplayTextWithFormattingCharacters()`, `HasFormattingCharacters()` in `EoDbText.cpp`.
-- The `\r\n` newline convention is handled during `DisplayText()` by splitting into segments and calling `text_GetNewLinePos()` for line advancement.
-- `ConvertFormattingCharacters()` is called after constructing text primitives from .peg files to normalize legacy formatting.
-- The stroke font renderer (`DisplayTextSegmentUsingStrokeFont`) uses `Eo::defaultCharacterCellAspectRatio` (0.6) for character spacing, confirming the cell geometry assumption.
-- TrueType font rendering path (`DisplayTextSegmentUsingTrueTypeFont`) is conditional on the font definition's precision and view settings.
 
 ## Simplex PSF Stroke Font (v2 Format)
 
@@ -198,6 +196,100 @@ To recover DXF properties from the reference system:
 | `strokeFontV2LeftBearingTableStart` | 450 | Left bearing table begins at `int32[450]` |
 | `strokeFontV2StrokeDataStart` | 674 | Stroke data begins at `int32[674]` |
 | `defaultCharacterCellAspectRatio` | 0.6 | Width-to-height ratio of the character cell |
+
+## EoDbConic ↔ DXF Conic Pipeline (ARC, CIRCLE, ELLIPSE)
+
+### Internal Representation
+- `EoDbConic` stores: `m_center` (WCS), `m_majorAxis` (WCS vector), `m_extrusion` (unit normal), `m_ratio` (minor/major, 0 < r ≤ 1), `m_startAngle`, `m_endAngle` (radians).
+- `MinorAxis()` = `CrossProduct(m_extrusion, m_majorAxis) × m_ratio` — derived at render time, not stored.
+- `Subclass()` classifies: `Circle` (ratio ≈ 1, full), `RadialArc` (ratio ≈ 1, partial), `Ellipse` (ratio < 1, full), `EllipticalArc` (ratio < 1, partial).
+
+### DXF Read Pipeline
+
+| Entity | Coord System | ApplyExtrusion | Converter | Factory | Notes |
+|--------|-------------|----------------|-----------|---------|-------|
+| CIRCLE | OCS | `ExtrudePointInPlace(center)` | `ConvertCircleEntity` | `CreateCircle` | majorAxis = `ComputeArbitraryAxis(ext) × radius` |
+| ARC | OCS | `ExtrudePointInPlace(center)` | `ConvertArcEntity` | `CreateRadialArc` | majorAxis = `ComputeArbitraryAxis(ext) × radius`; angles: deg→rad in parser, OCS pass-through |
+| ELLIPSE | **WCS** | **No-op** | `ConvertEllipseEntity` | `CreateConic` | majorAxis from DXF code 11/21/31; angles in radians |
+
+- ARC/CIRCLE: `ApplyExtrusion` transforms center from OCS→WCS. `ComputeArbitraryAxis` reconstructs the OCS X-axis direction as the major axis, encoding the directional flip for negative-Z extrusion.
+- ELLIPSE: Coordinates are already WCS per DXF spec. `ApplyExtrusion()` is intentionally a no-op. Extrusion is used only by `MinorAxis()`.
+
+### Render Pipeline
+- `Display()` → `GenerateApproximationVertices(m_center, m_majorAxis)`
+- Computes `minorAxis = MinorAxis()`, builds `EoGeTransformMatrix(center, majorAxis, minorAxis)`, inverts it.
+- Sweeps unit circle from `m_startAngle` through `(m_endAngle − m_startAngle)` with adaptive tessellation.
+- Transform maps `(cos θ, sin θ, 0)` → WCS points via `transformMatrix * point`.
+
+### DXF Write Pipeline
+- `ExportToDxf()` dispatches on `Subclass()`:
+  - **Circle** → `EoDxfCircle`: center, extrusion, radius.
+  - **RadialArc** → `EoDxfArc`: center, extrusion, radius, start/end angles.
+  - **Ellipse/EllipticalArc** → `EoDxfEllipse`: center, majorAxis, extrusion, ratio, start/end params.
+- `WriteArc` converts angles rad→deg (DXF ARC group 50/51 are in degrees).
+- `WriteEllipse` calls `CorrectAxis()` to validate ratio/axis before output.
+- **Known gap**: ARC/CIRCLE export writes `m_center` (WCS) directly as DXF code 10/20/30, which should be OCS for non-default extrusion. For extrusion `[0,0,1]` (default) WCS = OCS so this is transparent. A WCS→OCS reverse transform is needed for correct round-trip with non-default extrusion.
+
+### Test Files
+- `DXF Test Files/Ellipse_NegZ_CW_Test.dxf` — 24-entity test: 6 ellipticals (E1–E6) + 6 radials (R1–R6) with both `[0,0,1]` and `[0,0,-1]` extrusion, plus default-extrusion baselines.
+- `DXF Test Files/GenerateEllipseTest.ps1` — PowerShell generator using AC1021 skeleton injection.
+
+## EoDbSpline ↔ DXF SPLINE Mapping and V2 .PEG Generalization
+
+### Current State (V1 .PEG)
+- `EoDbSpline` stores **only** control points (`EoGePoint3dArray m_pts`), color, and line type.
+- `Display()` calls `GenPts(orderOfTheSpline, m_pts)` where `orderOfTheSpline` is a file-scope `constexpr std::int16_t{4}` (cubic, degree 3).
+- `GenPts` implements Cox–de Boor B-spline tessellation with a **uniform knot vector** regenerated at render time. The knot vector, degree, weights, and flags from DXF are discarded at import.
+- V1 .PEG serialization: `kSplinePrimitive → color → lineTypeIndex → uint16(pointCount) → points[]`
+- All splines in a drawing render identically as uniform cubic B-splines regardless of their DXF source degree.
+
+### DXF → EoDbSpline Import (Lossy Mapping)
+| DXF Property | Group Codes | Preserved | Notes |
+|---|---|---|---|
+| Control points | 10/20/30 | ✅ | OCS → WCS transform applied |
+| Fit points (fallback) | 11/21/31 | ✅ as control points | Used only when no control points |
+| Degree | 71 | ❌ | All render as cubic (order 4) |
+| Knot vector | 40 | ❌ | Regenerated as uniform |
+| Weights (NURBS) | 41 | ❌ | Treated as non-rational |
+| Flags (closed/periodic) | 70 | ❌ | Closure encoded in control point wrap |
+| Start/end tangents | 12-13/22-23/32-33 | ❌ | Ignored |
+
+### EoDxfSpline Parser Notes
+- `EoDxfSpline::ParseCode()` accumulates control/fit points via heap-allocated `EoDxfGeometryBase3d*`. **Future**: migrate to `std::vector<EoDxfGeometryBase3d>` (value semantics — the type is a trivial POD of 3 doubles).
+- `m_numberOfKnots`, `m_numberOfControlPoints`, `m_numberOfFitPoints` are declared counts (group codes 72/73/74) parsed independently from the actual vectors. The write path iterates declared counts — a count/vector size mismatch from a malformed DXF can cause `std::out_of_range`. Add validation after parse completes.
+- Spline flag bits: `0x01` = Closed, `0x02` = Periodic, `0x04` = Rational, `0x08` = Planar, `0x10` = Linear.
+- `IsTangentValid()` checks whether start/end tangent vectors are non-zero (tangent group codes are optional in DXF, not gated by any flag bit).
+
+### V2 .PEG Spline Record Design
+To preserve DXF fidelity through save/reload, the V2 spline record adds degree, knot vector, and optional weights:
+
+```
+kSplinePrimitive → color → lineTypeIndex → flags(uint16) → degree(int16)
+  → numKnots(uint16) → numControlPoints(uint16)
+  → knots[numKnots] (double[])
+  → weights[numControlPoints] (double[], only if Rational flag set)
+  → controlPoints[numControlPoints] (EoGePoint3d[])
+```
+
+- `Display()` calls `GenPts(degree + 1, m_pts)` using stored degree instead of file-scope constant.
+- If the stored knot vector is non-empty, `GenPts` should use it instead of regenerating a uniform one.
+- Rational flag (bit 0x04): when set, weight values are stored and applied during tessellation (NURBS). When clear, weight values are omitted and all weights are implicitly 1.0.
+- Closed flag (bit 0x01): the control point array already encodes closure through wrapping (AutoCAD convention). The flag is informational for editing/export but does not affect `GenPts` directly.
+- Backward compatibility: V1 spline records (no degree/knots) default to `degree = 3`, uniform knots, non-rational — identical to current behavior.
+
+### GenPts Tessellation Algorithm
+- Implements Cox–de Boor B-spline recursion with `order = degree + 1`.
+- Uses 2D weight array with `stride = order + 1` (rows = knot span count, columns = recursion levels).
+- Tessellation density: `8 × numberOfControlPoints` segments.
+- Dynamic `std::vector<double>` allocation (was fixed 65×66 prior to overflow fix).
+- When `order > numberOfControlPoints`, falls back to a single line segment from first to last control point.
+
+### Known Deferred Work
+- `SelectUsingRectangle` tests the raw **control polygon**, not the tessellated curve (inconsistent with `SelectUsingPoint` which tessellates first). For V2, both should operate on tessellated points.
+- `GetControlPoint()`, `GoToNextControlPoint()`, `IsInView()` lack empty-array guards — add early returns for `m_pts.GetSize() == 0`.
+- `operator=` should add a self-assignment guard for `CArray::Copy` safety.
+- Per-spline degree storage in `EoDbSpline` as an `m_degree` member is the minimum V2 change. Knot/weight storage follows when NURBS round-trip is needed.
+- The `.PEG V2` handle architecture (entity → table/header handles) provides a natural hook for spline style tables if multiple drawings need shared tessellation parameters.
 
 ## Response Formatting Preference
 - Format responses as a cleaner Markdown-style preview, with better visual structure than plain text.

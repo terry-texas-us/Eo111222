@@ -26,6 +26,7 @@
 #include "EoDbPoint.h"
 #include "EoDbPolyline.h"
 #include "EoDbPrimitive.h"
+#include "EoDbSpline.h"
 #include "EoDbText.h"
 #include "EoDxfEntities.h"
 #include "EoDxfGroupCodeValuesVariant.h"
@@ -334,6 +335,67 @@ void EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
   ATLTRACE2(traceGeneral, 3, L"  -> Adding to BLOCK at %p\n", m_currentOpenBlockDefinition);
 
   m_currentOpenBlockDefinition->AddTail(primitive);
+}
+
+/** @brief Converts a DXF 3DFACE entity to an AeSys closed EoDbPolyline primitive.
+ *
+ *  A 3DFACE is a three- or four-sided planar surface defined by corner points in WCS (no OCS
+ *  transform needed — 3DFACE has no extrusion direction). When the fourth corner coincides with
+ *  the third, the face is a triangle; otherwise it is a quadrilateral.
+ *
+ *  ## Mapping Strategy
+ *  - Corners are stored directly in WCS — no OCS→WCS transform is required.
+ *  - The face is represented as a closed `EoDbPolyline` (wireframe outline).
+ *  - Invisible edge flags (group code 70) are logged but not preserved — `EoDbPolyline` does not
+ *    support per-edge visibility. All edges of the resulting polyline are visible.
+ *
+ *  ## Limitations
+ *  - Per-edge visibility (invisible edge flags) is lost. In DXF meshes built from 3DFACEs,
+ *    interior edges are typically marked invisible; those will appear in AeSys.
+ *  - Fill/shading is not represented — the face renders as wireframe only.
+ *
+ *  @param _3dFace The parsed DXF 3DFACE entity.
+ *  @param document The AeSys document receiving the created primitive.
+ */
+void EoDbDxfInterface::Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 2, L"3DFACE entity conversion\n");
+
+  const auto& firstCorner = _3dFace.m_firstCorner;
+  const auto& secondCorner = _3dFace.m_secondCorner;
+  const auto& thirdCorner = _3dFace.m_thirdCorner;
+  const auto& fourthCorner = _3dFace.m_fourthCorner;
+
+  // Detect degenerate faces: all corners coincident
+  if (firstCorner.IsEqualTo(secondCorner) && secondCorner.IsEqualTo(thirdCorner)) {
+    ATLTRACE2(traceGeneral, 1, L"3DFACE entity skipped: degenerate (all corners coincident)\n");
+    return;
+  }
+
+  // Determine triangle vs quadrilateral: 4th corner == 3rd corner means triangle
+  const bool isTriangle = thirdCorner.IsEqualTo(fourthCorner);
+  const auto vertexCount = isTriangle ? 3 : 4;
+
+  // Build point array — 3DFACE corners are already in WCS (no OCS transform)
+  EoGePoint3dArray points;
+  points.SetSize(vertexCount);
+  points[0] = EoGePoint3d{firstCorner.x, firstCorner.y, firstCorner.z};
+  points[1] = EoGePoint3d{secondCorner.x, secondCorner.y, secondCorner.z};
+  points[2] = EoGePoint3d{thirdCorner.x, thirdCorner.y, thirdCorner.z};
+  if (!isTriangle) { points[3] = EoGePoint3d{fourthCorner.x, fourthCorner.y, fourthCorner.z}; }
+
+  auto* polylinePrimitive = new EoDbPolyline(points);
+  polylinePrimitive->SetBaseProperties(&_3dFace, document);
+  polylinePrimitive->SetFlag(EoDbPolyline::sm_Closed);
+
+  if (_3dFace.m_invisibleFlag != 0) {
+    ATLTRACE2(traceGeneral, 2,
+        L"  3DFACE invisible edge flags=0x%02X (not preserved — EoDbPolyline has no per-edge visibility)\n",
+        _3dFace.m_invisibleFlag);
+  }
+
+  AddToDocument(polylinePrimitive, document);
+
+  ATLTRACE2(traceGeneral, 3, L"  3DFACE → closed EoDbPolyline with %d vertices\n", vertexCount);
 }
 
 /** @brief Parses an AcGi proxy graphics metafile stream and creates AeSys primitives.
@@ -934,19 +996,10 @@ void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
   } else {
     extrusion.Unitize();
   }
-  double startAngle = arc.m_startAngle;
-  double endAngle = arc.m_endAngle;
-
-  // For negative Z extrusion, EoDxf angles need mirroring to match AutoCAD behavior
-  const bool isNegativeExtrusion = extrusion.z < -Eo::geometricTolerance;
-  if (isNegativeExtrusion) {
-    startAngle = Eo::TwoPi - arc.m_startAngle;
-    endAngle = Eo::TwoPi - arc.m_endAngle;
-    // Swap start and end to maintain CCW sweep direction
-    std::swap(startAngle, endAngle);
-  }
-  startAngle = EoDbConic::NormalizeTo2Pi(startAngle);
-  endAngle = EoDbConic::NormalizeTo2Pi(endAngle);
+  // OCS parametric angles pass through unchanged — ComputeArbitraryAxis in CreateRadialArc
+  // encodes the OCS→WCS directional flip via the major axis direction.
+  double startAngle = EoDbConic::NormalizeTo2Pi(arc.m_startAngle);
+  double endAngle = EoDbConic::NormalizeTo2Pi(arc.m_endAngle);
 
   auto* radialArc = EoDbConic::CreateRadialArc(center, extrusion, arc.m_radius, startAngle, endAngle);
   if (radialArc == nullptr) {
@@ -980,17 +1033,43 @@ void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* 
   AddToDocument(conic, document);
 }
 
+/** @brief Converts a DXF ELLIPSE entity to an EoDbConic primitive for AeSys rendering.
+ *
+ *  DXF ELLIPSE entities represent both full ellipses and elliptical arcs. The entity is defined
+ *  by a center point, a major axis endpoint (relative to center), a minor-to-major axis ratio,
+ *  and start/end parameter angles. When start=0 and end=2π, it is a full ellipse.
+ *
+ *  ## DXF Group Code Summary
+ *  | Code | Field | Notes |
+ *  |------|-------|-------|
+ *  | 10/20/30 | Center point | In WCS (unlike ARC/CIRCLE which use OCS) |
+ *  | 11/21/31 | Major axis endpoint | Relative to center, in WCS |
+ *  | 40 | Ratio | Minor/major, (0.0, 1.0] |
+ *  | 41 | Start parameter | Radians, 0.0 for full ellipse |
+ *  | 42 | End parameter | Radians, 2π for full ellipse |
+ *  | 210/220/230 | Extrusion direction | WCS — defines ellipse plane normal |
+ *
+ *  ## Coordinate System
+ *  Per the DXF specification, ELLIPSE center and major axis endpoint are in WCS. No OCS→WCS
+ *  transform is applied (unlike ARC/CIRCLE). The extrusion direction defines the ellipse plane
+ *  normal and is used only by MinorAxis() = Cross(extrusion, majorAxis) × ratio.
+ *
+ *  @param ellipse The parsed DXF ELLIPSE entity.
+ *  @param document The AeSys document receiving the created primitive.
+ */
 void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 2, L"Ellipse entity conversion\n");
+  ATLTRACE2(traceGeneral, 2, L"Ellipse entity conversion (ratio=%.4f, startParam=%.4f, endParam=%.4f)\n",
+      ellipse.m_ratio, ellipse.m_startParam, ellipse.m_endParam);
 
   if (ellipse.m_ratio <= 0.0 || ellipse.m_ratio > 1.0) {
-    ATLTRACE2(traceGeneral, 3, L"Warning: Ellipse entity with invalid ratio (%f) skipped.\n", ellipse.m_ratio);
+    ATLTRACE2(traceGeneral, 1, L"Ellipse entity skipped: invalid ratio (%.6f) — must be in (0.0, 1.0]\n",
+        ellipse.m_ratio);
     return;
   }
   EoGeVector3d majorAxis(
       ellipse.m_endPointOfMajorAxis.x, ellipse.m_endPointOfMajorAxis.y, ellipse.m_endPointOfMajorAxis.z);
   if (majorAxis.IsNearNull()) {
-    ATLTRACE2(traceGeneral, 3, L"Warning: Zero-length major axis\n");
+    ATLTRACE2(traceGeneral, 1, L"Ellipse entity skipped: zero-length major axis\n");
     return;
   }
   EoGeVector3d extrusion(
@@ -1001,14 +1080,26 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
     extrusion.Unitize();
   }
   auto center = EoGePoint3d(ellipse.m_centerPoint.x, ellipse.m_centerPoint.y, ellipse.m_centerPoint.z);
+
+  ATLTRACE2(traceGeneral, 3, L"  center=(%.4f, %.4f, %.4f) majorAxis=(%.4f, %.4f, %.4f) majorLen=%.4f\n",
+      center.x, center.y, center.z, majorAxis.x, majorAxis.y, majorAxis.z, majorAxis.Length());
+  ATLTRACE2(traceGeneral, 3, L"  extrusion=(%.4f, %.4f, %.4f) ratio=%.4f\n",
+      extrusion.x, extrusion.y, extrusion.z, ellipse.m_ratio);
+
   auto* conic =
-      EoDbConic::CreateConic(center, majorAxis, extrusion, ellipse.m_ratio, ellipse.m_startParam, ellipse.m_endParam);
+      EoDbConic::CreateConic(center, extrusion, majorAxis, ellipse.m_ratio, ellipse.m_startParam, ellipse.m_endParam);
   if (conic == nullptr) {
-    ATLTRACE2(traceGeneral, 3, L"Warning: Failed to create ellipse.\n");
+    ATLTRACE2(traceGeneral, 1, L"Ellipse entity skipped: CreateConic returned nullptr\n");
     return;
   }
   conic->SetBaseProperties(&ellipse, document);
   AddToDocument(conic, document);
+
+  const bool isFullEllipse = std::abs(ellipse.m_endParam - ellipse.m_startParam - Eo::TwoPi) < Eo::geometricTolerance
+      || std::abs(ellipse.m_endParam - ellipse.m_startParam) < Eo::geometricTolerance;
+  ATLTRACE2(traceGeneral, 2, L"  → EoDbConic %s (majorLen=%.4f, minorLen=%.4f)\n",
+      isFullEllipse ? L"Ellipse" : L"EllipticalArc",
+      majorAxis.Length(), majorAxis.Length() * ellipse.m_ratio);
 }
 
 void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, [[maybe_unused]] AeSysDoc* document) {
@@ -1277,8 +1368,103 @@ void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* doc
   AddToDocument(pointPrimitive, document);
 }
 
-void EoDbDxfInterface::ConvertSplineEntity([[maybe_unused]] const EoDxfSpline& spline, [[maybe_unused]] AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 2, L"Spline entity conversion\n");
+/** @brief Converts a DXF SPLINE entity to an EoDbSpline primitive for AeSys rendering.
+ *
+ *  DXF SPLINE entities (AutoCAD 13+) define B-splines with degree, knot vector, control points,
+ *  and optional fit points and weight values. AeSys `EoDbSpline` stores only control points and
+ *  uses `GenPts(3, m_pts)` to tessellate a uniform cubic B-spline at render time.
+ *
+ *  ## Mapping Strategy
+ *  - **Control points present**: Use them directly. The control polygon defines the spline shape.
+ *    `EoDbSpline::GenPts` applies its own uniform knot vector with order 3 (quadratic), so the
+ *    curve is an approximation of the original DXF spline when the DXF degree differs from 2 or
+ *    the knot vector is non-uniform. This is acceptable for display-quality rendering.
+ *  - **Fit points only (no control points)**: Use fit points as control points. The resulting
+ *    B-spline will approximate the fit points rather than interpolating them exactly.
+ *  - **Closed splines** (flag bit 0x01): Not specially handled; the control point polygon is used
+ *    as-is. AutoCAD wraps control points for closed splines, so the parsed points already encode
+ *    closure.
+ *
+ *  ## Limitations
+ *  - DXF knot vectors, degree, weights, and tolerances are not preserved in `EoDbSpline`.
+ *  - Rational splines (NURBS with non-unit weights) are rendered as non-rational approximations.
+ *  - OCS → WCS transform is applied to control/fit points via `EoGeOcsTransform`.
+ *
+ *  @param spline The parsed DXF spline entity.
+ *  @param document The AeSys document receiving the created primitive.
+ */
+void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 2, L"Spline entity conversion (degree=%d, controlPts=%d, fitPts=%d, knots=%d, flags=0x%04X)\n",
+      spline.m_degreeOfTheSplineCurve,
+      spline.m_numberOfControlPoints,
+      spline.m_numberOfFitPoints,
+      spline.m_numberOfKnots,
+      spline.m_splineFlag);
+
+  // Determine which point set to use: control points preferred, fit points as fallback
+  const auto& controlPoints = spline.m_controlPoints;
+  const auto& fitPoints = spline.m_fitPoints;
+
+  const bool haveControlPoints = !controlPoints.empty();
+  const bool haveFitPoints = !fitPoints.empty();
+
+  if (!haveControlPoints && !haveFitPoints) {
+    ATLTRACE2(traceGeneral, 1, L"Spline entity skipped: no control points and no fit points\n");
+    return;
+  }
+
+  // Select point source
+  const auto& sourcePoints = haveControlPoints ? controlPoints : fitPoints;
+  const auto pointCount = static_cast<std::uint16_t>(sourcePoints.size());
+
+  if (pointCount < 2) {
+    ATLTRACE2(traceGeneral, 1, L"Spline entity skipped: fewer than 2 points (%d)\n", pointCount);
+    return;
+  }
+
+  if (!haveControlPoints) {
+    ATLTRACE2(traceGeneral, 2, L"  Spline: using %d fit points as control points (no control points defined)\n",
+        pointCount);
+  }
+
+  // Resolve extrusion direction for OCS → WCS transform
+  EoGeVector3d extrusionDirection{
+      spline.m_normalVector.x, spline.m_normalVector.y, spline.m_normalVector.z};
+  if (extrusionDirection.IsNearNull()) {
+    // Fall back to base class extrusion direction
+    extrusionDirection = EoGeVector3d{
+        spline.m_extrusionDirection.x, spline.m_extrusionDirection.y, spline.m_extrusionDirection.z};
+    if (extrusionDirection.IsNearNull()) {
+      extrusionDirection = EoGeVector3d::positiveUnitZ;
+    }
+  }
+
+  // Determine if OCS → WCS transform is needed (non-default extrusion)
+  const bool needsOcsTransform =
+      std::abs(extrusionDirection.x) > Eo::geometricTolerance ||
+      std::abs(extrusionDirection.y) > Eo::geometricTolerance ||
+      std::abs(extrusionDirection.z - 1.0) > Eo::geometricTolerance;
+
+  EoGeOcsTransform transformOcs{extrusionDirection};
+
+  // Build the EoGePoint3dArray from the source points, applying OCS → WCS if needed
+  EoGePoint3dArray points;
+  points.SetSize(pointCount);
+
+  for (std::uint16_t i = 0; i < pointCount; ++i) {
+    const auto* sourcePoint = sourcePoints[i];
+    auto point = EoGePoint3d{sourcePoint->x, sourcePoint->y, sourcePoint->z};
+
+    if (needsOcsTransform) { point = transformOcs * point; }
+
+    points[i] = point;
+  }
+
+  auto* splinePrimitive = new EoDbSpline(points);
+  splinePrimitive->SetBaseProperties(&spline, document);
+  AddToDocument(splinePrimitive, document);
+
+  ATLTRACE2(traceGeneral, 2, L"  Spline → EoDbSpline with %d control points\n", pointCount);
 }
 
 void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document) {

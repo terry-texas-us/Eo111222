@@ -82,8 +82,15 @@ class EoDbDxfInterface : public EoDxfInterface {
   // AutoDesk DXF Reference
   // https://help.autodesk.com/view/OARX/2026/ENU/?guid=GUID-235B22E0-A567-4CF6-92D3-38A2306D73F3
 
-  void Add3dFace([[maybe_unused]] const EoDxf3dFace& _3dFace) override { countOf3dFace--; }
-
+  void Add3dFace(const EoDxf3dFace& _3dFace) override {
+    countOf3dFace++;
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::Add3dFace - block <%s>\n", m_blockName.c_str());
+    } else {
+      ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::Add3dFace - entities section\n");
+    }
+    Convert3dFaceEntity(_3dFace, m_document);
+  }
   // 3DSOLID not implemented
 
   void AddAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity) override {
@@ -249,8 +256,8 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddSolid([[maybe_unused]] const EoDxfSolid& solid) override { countOfSolid--; }
 
-  void AddSpline([[maybe_unused]] const EoDxfSpline& spline) override {
-    countOfSpline--;
+  void AddSpline(const EoDxfSpline& spline) override {
+    countOfSpline++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddSpline - block <%s>\n", m_blockName.c_str());
     } else {
@@ -373,6 +380,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document);
 
+  void Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc* document);
   void ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity, AeSysDoc* document);
   void ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document);
   void ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_unused]] AeSysDoc* document);
@@ -385,7 +393,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertLWPolylineEntity(const EoDxfLwPolyline& lwPolyline, AeSysDoc* document);
   void ConvertMTextEntity(const EoDxfMText& mText, [[maybe_unused]] AeSysDoc* document);
   void ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document);
-  void ConvertSplineEntity(const EoDxfSpline& spline, [[maybe_unused]] AeSysDoc* document);
+  void ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* document);
   void ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document);
 
  private:

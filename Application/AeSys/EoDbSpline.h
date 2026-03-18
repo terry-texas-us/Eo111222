@@ -51,6 +51,11 @@ class EoDbSpline : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t* buffer) override;
 
-  int GenPts(const int iOrder, EoGePoint3dArray& pts);
+  /** @brief Generates a set of points along the spline curve based on the control points and the specified order.
+   * @param order The order of the spline (degree + 1).
+   * @param controlPoints An array of control points that define the shape of the spline.
+   * @return The number of points generated along the spline curve.
+   */
+  int GenPts(const std::int16_t order, const EoGePoint3dArray& controlPoints);
   void SetPt(std::uint16_t w, EoGePoint3d pt) { m_pts[w] = pt; }
 };

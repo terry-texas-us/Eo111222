@@ -1,6 +1,7 @@
 ﻿#include "Stdafx.h"
 
 #include <climits>
+#include <vector>
 
 #include "AeSys.h"
 #include "AeSysView.h"
@@ -15,6 +16,10 @@
 #include "EoGeVector3d.h"
 #include "EoGsRenderState.h"
 #include "Resource.h"
+
+namespace {
+constexpr std::int16_t orderOfTheSpline{4}; // this is a 3rd degree cubic spline)
+}
 
 EoDbSpline::EoDbSpline(std::uint16_t wPts, EoGePoint3d* pt) {
   m_color = renderState.Color();
@@ -63,7 +68,7 @@ void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
   renderState.SetPen(view, deviceContext, color, lineType);
 
   polyline::BeginLineStrip();
-  GenPts(3, m_pts);
+  GenPts(orderOfTheSpline, m_pts);
   polyline::__End(view, deviceContext, lineType);
 }
 void EoDbSpline::AddReportToMessageList(const EoGePoint3d&) {
@@ -160,7 +165,7 @@ bool EoDbSpline::SelectUsingLine(
 bool EoDbSpline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   polyline::BeginLineStrip();
 
-  GenPts(3, m_pts);
+  GenPts(orderOfTheSpline, m_pts);
 
   return (polyline::SelectUsingPoint(view, point, sm_RelationshipOfPoint, ptProj));
 }
@@ -192,32 +197,40 @@ bool EoDbSpline::Write(CFile& file) {
   return true;
 }
 
-int EoDbSpline::GenPts(const int iOrder, EoGePoint3dArray& pts) {
-  double* dKnot = new double[65 * 66];
-  if (dKnot == 0) {
-    app.WarningMessageBox(IDS_MSG_MEM_ALLOC_ERR);
-    return 0;
+int EoDbSpline::GenPts(const std::int16_t order, const EoGePoint3dArray& controlPoints) {
+  const auto numberOfControlPoints = static_cast<int>(controlPoints.GetSize());
+  if (numberOfControlPoints < 2) {
+    if (numberOfControlPoints == 1) {
+      polyline::SetVertex(controlPoints[0]);
+      polyline::SetVertex(controlPoints[0]);
+    }
+    return numberOfControlPoints < 1 ? 0 : 2;
   }
-  int iPts = 8 * static_cast<int>(pts.GetSize());
-  double* dWght = &dKnot[65];
+
+  int iPts = 8 * numberOfControlPoints;
 
   int i, i2, i4;
 
-  int iTMax = (static_cast<int>(pts.GetSize()) - 1) - iOrder + 2;
-  int iKnotVecMax = (static_cast<int>(pts.GetSize()) - 1) + iOrder;  // Maximum number of dKnot vectors
+  int iTMax = (numberOfControlPoints - 1) - order + 2;
+  int iKnotVecMax = (numberOfControlPoints - 1) + order;  // Maximum number of knot vectors
 
-  for (i = 0; i < 65 * 65; i++) {  // Set weighting value array with zeros
-    dWght[i] = 0.;
-  }
+  // Dynamic allocation sized to actual control point count.
+  // Original used fixed 65×66 array which overflowed for > ~64 control points.
+  const int stride = order + 1;
+  std::vector<double> knotStorage(static_cast<std::size_t>(iKnotVecMax) + 1, 0.0);
+  std::vector<double> weightStorage(
+      static_cast<std::size_t>(stride) * (static_cast<std::size_t>(iKnotVecMax) + 1), 0.0);
+  double* dKnot = knotStorage.data();
+  double* dWght = weightStorage.data();
 
-  for (i = 0; i <= iKnotVecMax; i++) {  // Determine dKnot vectors
-    if (i <= iOrder - 1) {  // Beginning of curve
+  for (i = 0; i <= iKnotVecMax; i++) {  // Determine knot vectors
+    if (i <= order - 1) {  // Beginning of curve
       dKnot[i] = 0.;
-    } else if (i >= iTMax + iOrder) {  // End of curve
+    } else if (i >= iTMax + order) {  // End of curve
       dKnot[i] = dKnot[i - 1];
     } else {
-      i2 = i - iOrder;
-      if (pts[i2] == pts[i2 + 1]) {  // Repeating vertices
+      i2 = i - order;
+      if (controlPoints[i2] == controlPoints[i2 + 1]) {  // Repeating vertices
         dKnot[i] = dKnot[i - 1];
       } else {  // Successive internal vectors
         dKnot[i] = dKnot[i - 1] + 1.;
@@ -231,36 +244,36 @@ int EoDbSpline::GenPts(const int iOrder, EoGePoint3dArray& pts) {
     double T, W1, W2;
     double dStep = dKnot[iKnotVecMax] / (double)(iPts - 1);
     int iPts2 = 0;
-    for (i4 = iOrder - 1; i4 <= iOrder + iTMax; i4++) {
+    for (i4 = order - 1; i4 <= order + iTMax; i4++) {
       for (i = 0; i <= iKnotVecMax - 1; i++) {  // Calculate values for weighting value
         if (i != i4 || dKnot[i] == dKnot[i + 1]) {
-          dWght[65 * i + 1] = 0.;
+          dWght[stride * i + 1] = 0.;
         } else {
-          dWght[65 * i + 1] = 1.;
+          dWght[stride * i + 1] = 1.;
         }
       }
       for (T = dKnot[i4]; T <= dKnot[i4 + 1] - dStep; T += dStep) {
         iPts2++;
-        for (i2 = 2; i2 <= iOrder; i2++) {
-          for (i = 0; i <= pts.GetSize() - 1; i++) {  // Determine first term of weighting function equation
-            if (dWght[65 * i + i2 - 1] == 0.0) {
+        for (i2 = 2; i2 <= order; i2++) {
+          for (i = 0; i <= numberOfControlPoints - 1; i++) {  // Determine first term of weighting function equation
+            if (dWght[stride * i + i2 - 1] == 0.0) {
               W1 = 0.;
             } else {
-              W1 = ((T - dKnot[i]) * dWght[65 * i + i2 - 1]) / (dKnot[i + i2 - 1] - dKnot[i]);
+              W1 = ((T - dKnot[i]) * dWght[stride * i + i2 - 1]) / (dKnot[i + i2 - 1] - dKnot[i]);
             }
 
-            if (dWght[65 * (i + 1) + i2 - 1] == 0.0) {  // Determine second term of weighting function equation
+            if (dWght[stride * (i + 1) + i2 - 1] == 0.0) {  // Determine second term of weighting function equation
               W2 = 0.;
             } else {
-              W2 = ((dKnot[i + i2] - T) * dWght[65 * (i + 1) + i2 - 1]) / (dKnot[i + i2] - dKnot[i + 1]);
+              W2 = ((dKnot[i + i2] - T) * dWght[stride * (i + 1) + i2 - 1]) / (dKnot[i + i2] - dKnot[i + 1]);
             }
 
-            dWght[65 * i + i2] = W1 + W2;
-            G = pts[i].x * dWght[65 * i + i2] + G;
-            H = pts[i].y * dWght[65 * i + i2] + H;
-            Z = pts[i].z * dWght[65 * i + i2] + Z;
+            dWght[stride * i + i2] = W1 + W2;
+            G = controlPoints[i].x * dWght[stride * i + i2] + G;
+            H = controlPoints[i].y * dWght[stride * i + i2] + H;
+            Z = controlPoints[i].z * dWght[stride * i + i2] + Z;
           }
-          if (i2 == iOrder) { break; }
+          if (i2 == order) { break; }
           G = 0.;
           H = 0.;
           Z = 0.;
@@ -272,13 +285,11 @@ int EoDbSpline::GenPts(const int iOrder, EoGePoint3dArray& pts) {
       }
     }
     iPts = iPts2 + 1;
-  } else {  // either iOrder greater than number of control points or all control points coincidental
+  } else {  // either order greater than number of control points or all control points coincidental
     iPts = 2;
-    polyline::SetVertex(pts[0]);
+    polyline::SetVertex(controlPoints[0]);
   }
-  polyline::SetVertex(pts[pts.GetUpperBound()]);
-
-  delete[] dKnot;
+  polyline::SetVertex(controlPoints[controlPoints.GetUpperBound()]);
 
   return iPts;
 }

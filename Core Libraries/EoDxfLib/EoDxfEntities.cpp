@@ -411,22 +411,8 @@ void EoDxfArc::ApplyExtrusion() {
   CalculateArbitraryAxis(m_extrusionDirection);
   ExtrudePointInPlace(m_extrusionDirection, m_centerPoint);
 
-  /* If the extrusion vector has a z value less than 0, the angles for the arc have to be mirrored since DXF files use
-   the right hand rule. Note that the following code only handles the special case where there is a 2D drawing with the
-   z axis heading into the paper (or rather screen). An arbitrary extrusion axis (with x and y values greater than 1/64)
-   may still have issues.*/
-
-  if (fabs(m_extrusionDirection.x) >= 0.015625 || fabs(m_extrusionDirection.y) >= 0.015625 ||
-      m_extrusionDirection.z >= 0.0) {
-    return;
-  }
-
-  m_startAngle = EoDxf::Pi - m_startAngle;
-  m_endAngle = EoDxf::Pi - m_endAngle;
-
-  double temp = m_startAngle;
-  m_startAngle = m_endAngle;
-  m_endAngle = temp;
+  // OCS parametric angles are correct relative to the extruded major axis direction.
+  // ComputeArbitraryAxis encodes the OCS→WCS directional flip — no angle mirroring needed.
 }
 
 void EoDxfArc::ParseCode(int code, EoDxfReader& reader) {
@@ -491,15 +477,12 @@ void EoDxfEllipse::ParseCode(int code, EoDxfReader& reader) {
 }
 
 void EoDxfEllipse::ApplyExtrusion() {
-  if (m_haveExtrusion) {
-    CalculateArbitraryAxis(m_extrusionDirection);
-    ExtrudePointInPlace(m_extrusionDirection, m_endPointOfMajorAxis);
-    double intialparam = m_startParam;
-    if (m_extrusionDirection.z < 0.) {
-      m_startParam = EoDxf::TwoPi - m_endParam;
-      m_endParam = EoDxf::TwoPi - intialparam;
-    }
-  }
+  // DXF ELLIPSE center (10/20/30) and major axis endpoint (11/21/31) are defined
+  // in WCS per the DXF specification, unlike ARC/CIRCLE which use OCS coordinates.
+  // No OCS→WCS coordinate transformation is needed. The extrusion direction
+  // (210/220/230) defines the ellipse plane normal and is used only by
+  // MinorAxis() = Cross(extrusion, majorAxis) × ratio to compute the
+  // perpendicular minor axis direction.
 }
 
 // if ratio > 1 minor axis are greather than major axis, correct it

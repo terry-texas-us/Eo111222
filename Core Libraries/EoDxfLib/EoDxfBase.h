@@ -121,7 +121,7 @@ enum class SymbolTable : std::uint8_t {
 
 //! Entity's type.
 enum ETYPE {
-  E3DFACE,
+  _3DFACE,
   ACAD_PROXY_ENTITY,
   ARC,
   ATTDEF,

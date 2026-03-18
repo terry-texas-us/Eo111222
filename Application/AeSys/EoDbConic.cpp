@@ -459,23 +459,23 @@ void EoDbConic::GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d m
   if (sweepAngle <= 0.0) { sweepAngle += Eo::TwoPi; }
   if (std::abs(sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) { sweepAngle = Eo::TwoPi; }
 
-  // For negative Z extrusion, OCS CCW appears as WCS CW when viewed from +Z.
-  bool isFlippedOcs = m_extrusion.z < -Eo::geometricTolerance;
-  double effectiveSweep = isFlippedOcs ? -sweepAngle : sweepAngle;
+  // No sweep negation for negative-Z extrusion. The OCS parametric angles are already
+  // correct relative to the extruded majorAxis/minorAxis directions. The OCS→WCS
+  // coordinate flip is fully encoded in the axis vectors via ExtrudePointInPlace.
 
   // Calculate adaptive tessellation based on arc length and curvature
   double maxAxisLength = std::max(majorAxis.Length(), minorAxis.Length());
   int numberOfPoints =
-      std::max(minTessellationPoints, abs(Eo::Round(sweepAngle / Eo::TwoPi * basePointsPerFullCircle)));
+      std::max(minTessellationPoints, Eo::Round(sweepAngle / Eo::TwoPi * basePointsPerFullCircle));
   numberOfPoints = std::min(
-      maxTessellationPoints, std::max(numberOfPoints, abs(Eo::Round(sweepAngle * maxAxisLength / maxSegmentLength))));
+      maxTessellationPoints, std::max(numberOfPoints, Eo::Round(sweepAngle * maxAxisLength / maxSegmentLength)));
 
   // Build OCS to WCS transformation
   EoGeTransformMatrix transformMatrix(center, majorAxis, minorAxis);
   transformMatrix.Inverse();
 
-  // Pre-compute incremental rotation
-  double segmentAngle = effectiveSweep / (numberOfPoints - 1);
+  // Pre-compute incremental rotation (always CCW in parametric space)
+  double segmentAngle = sweepAngle / (numberOfPoints - 1);
   double angleCosine = std::cos(segmentAngle);
   double angleSine = std::sin(segmentAngle);
 

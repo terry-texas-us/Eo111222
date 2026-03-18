@@ -83,9 +83,9 @@ void EoDxfSpline::ParseCode(int code, EoDxfReader& reader) {
     case 40:
       m_knotValues.push_back(reader.GetDouble());
       break;
-
-    // case 41:
-    //   break;
+    case 41:
+      m_weightValues.push_back(reader.GetDouble());
+      break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
       break;
