@@ -129,7 +129,6 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertAttribEntity(attrib, m_document);
   }
 
-  // BODY not implemented
   void AddCircle(const EoDxfCircle& circle) override {
     countOfCircle++;
     if (m_inBlockDefinition) {
@@ -139,8 +138,6 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
     ConvertCircleEntity(circle, m_document);
   }
-
-  // COORDINATION_MODEL not implemented
 
   // Dimensions
 
@@ -178,11 +175,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertHatchEntity(hatch, m_document);
   }
 
-  // HELIX not implemented
-
   void AddImage([[maybe_unused]] const EoDxfImage* image) override { countOfImage--; }
-
-  void AddUnsupportedObject(const EoDxfUnsupportedObject& /* objectData */) override {}
 
   void AddInsert(const EoDxfInsert& blockReference) override {
     countOfInsert++;
@@ -194,9 +187,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertInsertEntity(blockReference, m_document);
   }
 
-  void AddLeader(const EoDxfLeader* leader) override { (void)leader; }
-
-  // LIGHT not implemented
+  void AddLeader([[maybe_unused]] const EoDxfLeader* leader) override {countOfLeader--;}
 
   void AddLine(const EoDxfLine& line) override {
     countOfLine++;
@@ -217,11 +208,8 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
     ConvertLWPolylineEntity(polyline, m_document);
   }
-  // MESH not implemented
 
-  void AddMLeader(const EoDxfMLeader* mLeader) override { (void)mLeader; }
-
-  // MLINE not implemented
+  void AddMLeader([[maybe_unused]] const EoDxfMLeader* mLeader) override { countOfMLeader--; }
 
   void AddMText(const EoDxfMText& mText) override {
     countOfMText++;
@@ -232,9 +220,6 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
     ConvertMTextEntity(mText, m_document);
   }
-
-  // OLEFRAME not implemented
-  // OLE2FRAME not implemented
 
   void AddPoint(const EoDxfPoint& point) override {
     countOfPoint++;
@@ -249,11 +234,6 @@ class EoDbDxfInterface : public EoDxfInterface {
   void AddPolyline([[maybe_unused]] const EoDxfPolyline& polyline) override { countOfPolyline--; }
   void AddRay([[maybe_unused]] const EoDxfRay& ray) override { countOfRay--; }
 
-  // REGION not implemented
-  // SECTION not implemented
-  // SEQEND not implemented
-  // SHAPE not implemented
-
   void AddSolid([[maybe_unused]] const EoDxfSolid& solid) override { countOfSolid--; }
 
   void AddSpline(const EoDxfSpline& spline) override {
@@ -266,10 +246,6 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertSplineEntity(spline, m_document);
   }
 
-  // SUN not implemented
-  // SURFACE not implemented
-  // TABLE not implemented
-
   void AddText(const EoDxfText& text) override {
     countOfText++;
     if (m_inBlockDefinition) {
@@ -280,13 +256,13 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertTextEntity(text, m_document);
   }
 
-  // TOLERANCE not implemented
   void AddTrace([[maybe_unused]] const EoDxfTrace& trace) override { countOfTrace--; }
-  // UNDERLAY not implemented
-  // VERTEX not implemented
+
   void AddViewport([[maybe_unused]] const EoDxfViewport& viewport) override { countOfViewport--; }
-  // WIPEOUT not implemented
+
   void AddXline([[maybe_unused]] const EoDxfXline& Xline) override { countOfXline--; }
+
+  void AddUnsupportedObject([[maybe_unused]] const EoDxfUnsupportedObject& objectData) override {}
 
   // Others
   void AddComment(std::wstring_view comment) override {
@@ -421,8 +397,10 @@ class EoDbDxfInterface : public EoDxfInterface {
   std::int16_t countOfImage{};
   std::int16_t countOfInsert{};
   std::int16_t countOfKnot{};
+  std::int16_t countOfLeader{};
   std::int16_t countOfLine{};
   std::int16_t countOfLWPolyline{};
+  std::int16_t countOfMLeader{};
   std::int16_t countOfMText{};
   std::int16_t countOfPoint{};
   std::int16_t countOfPolyline{};
