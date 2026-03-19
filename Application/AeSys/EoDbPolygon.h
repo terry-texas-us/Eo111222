@@ -99,13 +99,3 @@ class EoDbPolygon : public EoDbPrimitive {
   static std::uint16_t& EdgeToEvaluate() { return sm_EdgeToEvaluate; }
   static std::uint16_t& Edge() { return sm_Edge; }
 };
-/// <summary>A fill area set primative with interior style hatch is generated using ines.</summary>
-// Parameters:	deviceContext
-//				iSets		number of point lists
-//				iPtLstsId	starting indicies for point lists
-void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& transformMatrix, const int iSets,
-    const int* iPtLstsId, EoGePoint3d*);
-/// <summary>Generates polygon.</summary>
-// The polygon is closed automatically by drawing a line from the last vertex to the first.
-// Arrays of vertices are previously modelview transformed and clipped to view volume.
-void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArray);

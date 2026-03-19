@@ -4,6 +4,7 @@
 #include <climits>
 #include <cmath>
 #include <cstdio>
+#include <vector>
 
 #include "AeSys.h"
 #include "AeSysView.h"
@@ -30,6 +31,8 @@ std::uint16_t EoDbPolygon::sm_EdgeToEvaluate{};
 std::uint16_t EoDbPolygon::sm_Edge{};
 int EoDbPolygon::sm_pivotVertex{};
 
+namespace {
+
 typedef struct tagFilAreaEdgLis {
   double yMinExtent;  // minimum y extent of edge
   double yMaxExtent;  // maximum y extent of edge
@@ -39,6 +42,215 @@ typedef struct tagFilAreaEdgLis {
     double xStepSize;  // change in x for each scanline
   };
 } pFilAreaEdgLis;
+
+void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& transformMatrix, const int iSets,
+    const int* iPtLstsId, EoGePoint3d* pta) {
+  double dCurStrLen{};
+  double dEps1{};
+  double dMaxY{};
+  double dRemDisToEdg{};
+  double dScan{};
+  double dSecBeg{};
+  double dStrLen[8]{};
+  int i{};
+  int i2{};
+  int iBegEdg{};
+  int iCurEdg{};
+  int iEndEdg{};
+  int iPts{};
+  int iStrId{};
+
+  EoGeTransformMatrix tmInv;
+
+  // Compute total edge count across all sets for dynamic edge list sizing (1-based indexing)
+  const int totalEdgeCapacity = (iSets > 0) ? iPtLstsId[iSets - 1] + 1 : 1;
+  std::vector<pFilAreaEdgLis> edg(totalEdgeCapacity, pFilAreaEdgLis{});
+
+  EoGeLine ln;
+  EoGeLine lnS;
+  EoGeVector3d vEdg;
+
+  std::int16_t color = renderState.Color();
+  std::int16_t lineType = renderState.LineTypeIndex();
+
+  renderState.SetLineType(deviceContext, 1);
+
+  int iTblId = hatch::tableOffset[renderState.PolygonIntStyleId()];
+  int iHatLns = int(hatch::tableValue[iTblId++]);
+
+  for (int i0 = 0; i0 < iHatLns; i0++) {
+    int iStrs = int(hatch::tableValue[iTblId++]);  // number of strokes in line definition
+    if (iStrs > 8) { iStrs = 8; }  // guard against table data exceeding local buffer
+    double dTotStrLen = hatch::tableValue[iTblId++];  // length of all strokes in line definition
+    double dSinAng = std::sin(hatch::tableValue[iTblId]);  // sine of angle at which line will be drawn
+    double dCosAng = std::cos(hatch::tableValue[iTblId++]);  // cosine of angle at which line will be drawn
+    double dX = hatch::tableValue[iTblId++];  // displacement to origin of initial line
+    double dY = hatch::tableValue[iTblId++];
+    double dShift = hatch::tableValue[iTblId++];  // x-axis origin shift between lines
+    double dSpac = hatch::tableValue[iTblId++];  // spacing between lines
+
+    if (std::abs(dSpac) < Eo::geometricTolerance || std::abs(dTotStrLen) < Eo::geometricTolerance) {
+      // Degenerate spacing or zero total stroke length would cause infinite loop or fmod by zero
+      iTblId += iStrs;  // skip stroke length entries to keep table pointer consistent
+      continue;
+    }
+
+    for (i = 0; i < iStrs; i++) {  // length of each stoke in line definition
+      dStrLen[i] = hatch::tableValue[iTblId++];
+    }
+
+    // Rotate origin on z0 plane so hatch x-axis becomes positive x-axis
+    double dHatOrigX = dX * dCosAng - dY * (-dSinAng);
+    double dHatOrigY = dX * (-dSinAng) + dY * dCosAng;
+
+    // Add rotation to matrix which gets current scan lines parallel to x-axis
+    transformMatrix *= EoGeTransformMatrix::ZAxisRotation(-dSinAng, dCosAng);
+    tmInv = transformMatrix;
+    tmInv.Inverse();
+
+    int iActEdgs = 0;
+    int iBegPt = 0;
+
+    for (i = 0; i < iSets; i++) {
+      if (i != 0) { iBegPt = iPtLstsId[i - 1]; }
+      ln.begin = pta[iBegPt];
+      ln.begin = transformMatrix * ln.begin;  // Apply transform to get areas first point in z0 plane
+
+      iPts = iPtLstsId[i] - iBegPt;  // Determine number of points in current area
+      for (i2 = iBegPt; i2 < (int)iPtLstsId[i]; i2++) {
+        ln.end = pta[((i2 - iBegPt + 1) % iPts) + iBegPt];
+        ln.end = transformMatrix * ln.end;
+        vEdg.x = ln.end.x - ln.begin.x;  // Determine x and y-components of edge
+        vEdg.y = ln.end.y - ln.begin.y;
+        if (std::abs(vEdg.y) >
+            Eo::geometricTolerance * std::sqrt(vEdg.x * vEdg.x + vEdg.y * vEdg.y)) {  // Edge is not horizontal
+          dMaxY = std::max(ln.begin.y, ln.end.y);
+          iCurEdg = iActEdgs + 1;
+          // Find correct insertion point for edge in edge list using ymax as sort key
+          while (iCurEdg != 1 && edg[iCurEdg - 1].yMaxExtent < dMaxY) {
+            edg[iCurEdg] = edg[iCurEdg - 1];  // Move entry down
+            iCurEdg--;
+          }
+          // Insert information about new edge
+          edg[iCurEdg].yMaxExtent = dMaxY;
+          edg[iCurEdg].inverseSlope = vEdg.x / vEdg.y;
+          if (ln.begin.y > ln.end.y) {
+            edg[iCurEdg].yMinExtent = ln.end.y;
+            edg[iCurEdg].xIntersection = ln.begin.x;
+          } else {
+            edg[iCurEdg].yMinExtent = ln.begin.y;
+            edg[iCurEdg].xIntersection = ln.end.x;
+          }
+          iActEdgs++;  // Increment count of active edges in edge list
+        }
+        ln.begin = ln.end;
+      }
+    }
+    // Determine where first scan position is
+    dScan = edg[1].yMaxExtent - fmod((edg[1].yMaxExtent - dHatOrigY), dSpac);
+    if (edg[1].yMaxExtent < dScan) { dScan = dScan - dSpac; }
+    dSecBeg = dHatOrigX + dShift * (dScan - dHatOrigY) / dSpac;
+    // Edge list pointers
+    iBegEdg = 1;
+    iEndEdg = 1;
+    // Determine relative epsilon to be used for extent tests
+  l1:
+    dEps1 = Eo::geometricTolerance + Eo::geometricTolerance * std::abs(dScan);
+    while (iEndEdg <= iActEdgs && edg[iEndEdg].yMaxExtent >= dScan - dEps1) {
+      // Set x intersection back to last scanline
+      edg[iEndEdg].xIntersection += edg[iEndEdg].inverseSlope * (dSpac + dScan - edg[iEndEdg].yMaxExtent);
+      // Determine the change in x per scan
+      edg[iEndEdg].xStepSize = -edg[iEndEdg].inverseSlope * dSpac;
+      iEndEdg++;
+    }
+    for (i = iBegEdg; i < iEndEdg; i++) {
+      iCurEdg = i;
+      if (edg[i].yMinExtent < dScan - dEps1) {  // Edge y-extent overlaps current scan . determine intersections
+        edg[i].xIntersection += edg[i].xStepSize;
+        while (iCurEdg > iBegEdg && edg[iCurEdg].xIntersection < edg[iCurEdg - 1].xIntersection) {
+          edg[0] = edg[iCurEdg];
+          edg[iCurEdg] = edg[iCurEdg - 1];
+          edg[iCurEdg - 1] = edg[0];
+          iCurEdg--;
+        }
+      } else {  // Edge y-extent does not overlap current scan. remove edge from active edge list
+        iBegEdg++;
+        while (iCurEdg >= iBegEdg) {
+          edg[iCurEdg] = edg[iCurEdg - 1];
+          iCurEdg--;
+        }
+      }
+    }
+    if (iEndEdg != iBegEdg) {  // At least one pair of edge intersections .. generate scan lines for each pair
+      iCurEdg = iBegEdg;
+      lnS.begin.y = dScan;
+      lnS.end.y = dScan;
+      for (i = 1; i <= (iEndEdg - iBegEdg) / 2; i++) {
+        lnS.begin.x = edg[iCurEdg].xIntersection - fmod((edg[iCurEdg].xIntersection - dSecBeg), dTotStrLen);
+        if (lnS.begin.x > edg[iCurEdg].xIntersection) { lnS.begin.x -= dTotStrLen; }
+        iStrId = 0;
+        dRemDisToEdg = edg[iCurEdg].xIntersection - lnS.begin.x;
+        dCurStrLen = dStrLen[iStrId];
+        while (dCurStrLen <= dRemDisToEdg + Eo::geometricTolerance) {
+          lnS.begin.x += dCurStrLen;
+          dRemDisToEdg -= dCurStrLen;
+          iStrId = (iStrId + 1) % iStrs;
+          dCurStrLen = dStrLen[iStrId];
+        }
+        lnS.begin.x = edg[iCurEdg].xIntersection;
+        dCurStrLen -= dRemDisToEdg;
+        dRemDisToEdg = edg[iCurEdg + 1].xIntersection - edg[iCurEdg].xIntersection;
+        while (dCurStrLen <= dRemDisToEdg + Eo::geometricTolerance) {
+          lnS.end.x = lnS.begin.x + dCurStrLen;
+          if ((iStrId & 1) == 0) {
+            ln = tmInv * lnS;
+            ln.Display(view, deviceContext);
+          }
+          dRemDisToEdg -= dCurStrLen;
+          iStrId = (iStrId + 1) % iStrs;
+          dCurStrLen = dStrLen[iStrId];
+          lnS.begin.x = lnS.end.x;
+        }
+        if (dRemDisToEdg > Eo::geometricTolerance && (iStrId & 1) == 0) {
+          // Partial component of dash section must produced
+          lnS.end.x = edg[iCurEdg + 1].xIntersection;
+          ln = tmInv * lnS;
+          ln.Display(view, deviceContext);
+        }
+        iCurEdg = iCurEdg + 2;
+      }
+      // Update position of scan line
+      dScan -= dSpac;
+      dSecBeg -= dShift;
+      goto l1;
+    }
+    transformMatrix *= EoGeTransformMatrix::ZAxisRotation(dSinAng, dCosAng);
+  }
+  renderState.SetPen(view, deviceContext, color, lineType);
+}
+
+void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& ndcPoints) {
+  int numberOfPoints = static_cast<int>(ndcPoints.GetSize());
+  if (numberOfPoints < 2) { return; }
+
+  std::vector<CPoint> clientPoints(static_cast<size_t>(numberOfPoints));
+
+  view->ProjectToClient(clientPoints.data(), ndcPoints);
+
+  if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Solid) {
+    CBrush brush(pColTbl[renderState.Color()]);
+    auto* oldBrush = deviceContext->SelectObject(&brush);
+    deviceContext->Polygon(clientPoints.data(), numberOfPoints);
+    deviceContext->SelectObject(oldBrush);
+  } else if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Hollow) {
+    auto* oldBrush = (CBrush*)deviceContext->SelectStockObject(NULL_BRUSH);
+    deviceContext->Polygon(clientPoints.data(), numberOfPoints);
+    deviceContext->SelectObject(oldBrush);
+  } else {
+    deviceContext->Polygon(clientPoints.data(), numberOfPoints);
+  }
+}
+}  // anonymous namespace
 
 EoDbPolygon::EoDbPolygon()
     : m_hatchOrigin{EoGePoint3d::kOrigin},
@@ -54,9 +266,16 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
   m_polygonStyle = renderState.PolygonIntStyle();
   m_fillStyleIndex = renderState.PolygonIntStyleId();
 
-  m_hatchOrigin = points[0];
-
   m_numberOfVertices = std::uint16_t(points.GetSize());
+
+  if (m_numberOfVertices == 0) {
+    m_hatchOrigin = EoGePoint3d::kOrigin;
+    m_positiveX = EoGeVector3d::positiveUnitX;
+    m_positiveY = EoGeVector3d::positiveUnitY;
+    return;
+  }
+
+  m_hatchOrigin = points[0];
 
   if (m_numberOfVertices >= 3) {
     m_positiveX = EoGeVector3d(points[0], points[1]);
@@ -72,13 +291,16 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
     m_positiveY.RotateAboutArbitraryAxis(normal, Eo::HalfPi);
     m_positiveX *= hatch::dXAxRefVecScal;
     m_positiveY *= hatch::dYAxRefVecScal;
-
-    // Project reference origin to plane
-
-    m_vertices = new EoGePoint3d[m_numberOfVertices];
-
-    for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = points[i]; }
+  } else {
+    m_positiveX = EoGeVector3d::positiveUnitX;
+    m_positiveY = EoGeVector3d::positiveUnitY;
   }
+
+  // Project reference origin to plane
+
+  m_vertices = new EoGePoint3d[m_numberOfVertices];
+
+  for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = points[i]; }
 }
 
 EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices, EoGePoint3d* pt) {
@@ -133,8 +355,7 @@ EoDbPolygon::EoDbPolygon(std::int16_t color, EoDb::PolygonStyle style, std::int1
   for (std::uint16_t n = 0; n < m_numberOfVertices; n++) { m_vertices[n] = points[n]; }
 }
 
-EoDbPolygon::EoDbPolygon(const EoDbPolygon& other) {
-  m_color = other.m_color;
+EoDbPolygon::EoDbPolygon(const EoDbPolygon& other) : EoDbPrimitive(other) {
   m_polygonStyle = other.m_polygonStyle;
   m_fillStyleIndex = other.m_fillStyleIndex;
   m_hatchOrigin = other.m_hatchOrigin;
@@ -146,7 +367,10 @@ EoDbPolygon::EoDbPolygon(const EoDbPolygon& other) {
 }
 
 const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& other) {
-  m_color = other.m_color;
+  if (this == &other) { return *this; }
+
+  EoDbPrimitive::operator=(other);
+
   m_polygonStyle = other.m_polygonStyle;
   m_fillStyleIndex = other.m_fillStyleIndex;
   m_hatchOrigin = other.m_hatchOrigin;
@@ -160,7 +384,7 @@ const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& other) {
   }
   for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = other.m_vertices[i]; }
 
-  return (*this);
+  return *this;
 }
 
 EoDbPolygon::~EoDbPolygon() { delete[] m_vertices; }
@@ -468,7 +692,7 @@ void EoDbPolygon::Translate(const EoGeVector3d& v) {
 }
 
 void EoDbPolygon::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
-  // nothing done to hatch coordinate origin
+  // Note: DWORD mask limits selective translation to the first 32 vertices
 
   for (auto i = 0; i < m_numberOfVertices; i++) {
     if (((mask >> i) & 1UL) == 1) { m_vertices[i] += v; }
@@ -505,182 +729,6 @@ bool EoDbPolygon::Write(CFile& file) {
 
   return true;
 }
-void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& transformMatrix, const int iSets,
-    const int* iPtLstsId, EoGePoint3d* pta) {
-  double dCurStrLen{};
-  double dEps1{};
-  double dMaxY{};
-  double dRemDisToEdg{};
-  double dScan{};
-  double dSecBeg{};
-  double dStrLen[8]{};
-  int i{};
-  int i2{};
-  int iBegEdg{};
-  int iCurEdg{};
-  int iEndEdg{};
-  int iPts{};
-  int iStrId{};
-
-  EoGeTransformMatrix tmInv;
-
-  pFilAreaEdgLis edg[65]{};
-
-  EoGeLine ln;
-  EoGeLine lnS;
-  EoGeVector3d vEdg;
-
-  std::int16_t color = renderState.Color();
-  std::int16_t lineType = renderState.LineTypeIndex();
-
-  renderState.SetLineType(deviceContext, 1);
-
-  int iTblId = hatch::tableOffset[renderState.PolygonIntStyleId()];
-  int iHatLns = int(hatch::tableValue[iTblId++]);
-
-  for (int i0 = 0; i0 < iHatLns; i0++) {
-    int iStrs = int(hatch::tableValue[iTblId++]);  // number of strokes in line definition
-    double dTotStrLen = hatch::tableValue[iTblId++];  // length of all strokes in line definition
-    double dSinAng = std::sin(hatch::tableValue[iTblId]);  // sine of angle at which line will be drawn
-    double dCosAng = std::cos(hatch::tableValue[iTblId++]);  // cosine of angle at which line will be drawn
-    double dX = hatch::tableValue[iTblId++];  // displacement to origin of initial line
-    double dY = hatch::tableValue[iTblId++];
-    double dShift = hatch::tableValue[iTblId++];  // x-axis origin shift between lines
-    double dSpac = hatch::tableValue[iTblId++];  // spacing between lines
-
-    for (i = 0; i < iStrs; i++) {  // length of each stoke in line definition
-      dStrLen[i] = hatch::tableValue[iTblId++];
-    }
-
-    // Rotate origin on z0 plane so hatch x-axis becomes positive x-axis
-    double dHatOrigX = dX * dCosAng - dY * (-dSinAng);
-    double dHatOrigY = dX * (-dSinAng) + dY * dCosAng;
-
-    // Add rotation to matrix which gets current scan lines parallel to x-axis
-    transformMatrix *= EoGeTransformMatrix::ZAxisRotation(-dSinAng, dCosAng);
-    tmInv = transformMatrix;
-    tmInv.Inverse();
-
-    int iActEdgs = 0;
-    int iBegPt = 0;
-
-    for (i = 0; i < iSets; i++) {
-      if (i != 0) { iBegPt = iPtLstsId[i - 1]; }
-      ln.begin = pta[iBegPt];
-      ln.begin = transformMatrix * ln.begin;  // Apply transform to get areas first point in z0 plane
-
-      iPts = iPtLstsId[i] - iBegPt;  // Determine number of points in current area
-      for (i2 = iBegPt; i2 < (int)iPtLstsId[i]; i2++) {
-        ln.end = pta[((i2 - iBegPt + 1) % iPts) + iBegPt];
-        ln.end = transformMatrix * ln.end;
-        vEdg.x = ln.end.x - ln.begin.x;  // Determine x and y-components of edge
-        vEdg.y = ln.end.y - ln.begin.y;
-        if (std::abs(vEdg.y) >
-            Eo::geometricTolerance * std::sqrt(vEdg.x * vEdg.x + vEdg.y * vEdg.y)) {  // Edge is not horizontal
-          dMaxY = std::max(ln.begin.y, ln.end.y);
-          iCurEdg = iActEdgs + 1;
-          // Find correct insertion point for edge in edge list using ymax as sort key
-          while (iCurEdg != 1 && edg[iCurEdg - 1].yMaxExtent < dMaxY) {
-            edg[iCurEdg] = edg[iCurEdg - 1];  // Move entry down
-            iCurEdg--;
-          }
-          // Insert information about new edge
-          edg[iCurEdg].yMaxExtent = dMaxY;
-          edg[iCurEdg].inverseSlope = vEdg.x / vEdg.y;
-          if (ln.begin.y > ln.end.y) {
-            edg[iCurEdg].yMinExtent = ln.end.y;
-            edg[iCurEdg].xIntersection = ln.begin.x;
-          } else {
-            edg[iCurEdg].yMinExtent = ln.begin.y;
-            edg[iCurEdg].xIntersection = ln.end.x;
-          }
-          iActEdgs++;  // Increment count of active edges in edge list
-        }
-        ln.begin = ln.end;
-      }
-    }
-    // Determine where first scan position is
-    dScan = edg[1].yMaxExtent - fmod((edg[1].yMaxExtent - dHatOrigY), dSpac);
-    if (edg[1].yMaxExtent < dScan) { dScan = dScan - dSpac; }
-    dSecBeg = dHatOrigX + dShift * (dScan - dHatOrigY) / dSpac;
-    // Edge list pointers
-    iBegEdg = 1;
-    iEndEdg = 1;
-    // Determine relative epsilon to be used for extent tests
-  l1:
-    dEps1 = Eo::geometricTolerance + Eo::geometricTolerance * std::abs(dScan);
-    while (iEndEdg <= iActEdgs && edg[iEndEdg].yMaxExtent >= dScan - dEps1) {
-      // Set x intersection back to last scanline
-      edg[iEndEdg].xIntersection += edg[iEndEdg].inverseSlope * (dSpac + dScan - edg[iEndEdg].yMaxExtent);
-      // Determine the change in x per scan
-      edg[iEndEdg].xStepSize = -edg[iEndEdg].inverseSlope * dSpac;
-      iEndEdg++;
-    }
-    for (i = iBegEdg; i < iEndEdg; i++) {
-      iCurEdg = i;
-      if (edg[i].yMinExtent < dScan - dEps1) {  // Edge y-extent overlaps current scan . determine intersections
-        edg[i].xIntersection += edg[i].xStepSize;
-        while (iCurEdg > iBegEdg && edg[iCurEdg].xIntersection < edg[iCurEdg - 1].xIntersection) {
-          edg[0] = edg[iCurEdg];
-          edg[iCurEdg] = edg[iCurEdg - 1];
-          edg[iCurEdg - 1] = edg[0];
-          iCurEdg--;
-        }
-      } else {  // Edge y-extent does not overlap current scan. remove edge from active edge list
-        iBegEdg++;
-        while (iCurEdg >= iBegEdg) {
-          edg[iCurEdg] = edg[iCurEdg - 1];
-          iCurEdg--;
-        }
-      }
-    }
-    if (iEndEdg != iBegEdg) {  // At least one pair of edge intersections .. generate scan lines for each pair
-      iCurEdg = iBegEdg;
-      lnS.begin.y = dScan;
-      lnS.end.y = dScan;
-      for (i = 1; i <= (iEndEdg - iBegEdg) / 2; i++) {
-        lnS.begin.x = edg[iCurEdg].xIntersection - fmod((edg[iCurEdg].xIntersection - dSecBeg), dTotStrLen);
-        if (lnS.begin.x > edg[iCurEdg].xIntersection) { lnS.begin.x -= dTotStrLen; }
-        iStrId = 0;
-        dRemDisToEdg = edg[iCurEdg].xIntersection - lnS.begin.x;
-        dCurStrLen = dStrLen[iStrId];
-        while (dCurStrLen <= dRemDisToEdg + Eo::geometricTolerance) {
-          lnS.begin.x += dCurStrLen;
-          dRemDisToEdg -= dCurStrLen;
-          iStrId = (iStrId + 1) % iStrs;
-          dCurStrLen = dStrLen[iStrId];
-        }
-        lnS.begin.x = edg[iCurEdg].xIntersection;
-        dCurStrLen -= dRemDisToEdg;
-        dRemDisToEdg = edg[iCurEdg + 1].xIntersection - edg[iCurEdg].xIntersection;
-        while (dCurStrLen <= dRemDisToEdg + Eo::geometricTolerance) {
-          lnS.end.x = lnS.begin.x + dCurStrLen;
-          if ((iStrId & 1) == 0) {
-            ln = tmInv * lnS;
-            ln.Display(view, deviceContext);
-          }
-          dRemDisToEdg -= dCurStrLen;
-          iStrId = (iStrId + 1) % iStrs;
-          dCurStrLen = dStrLen[iStrId];
-          lnS.begin.x = lnS.end.x;
-        }
-        if (dRemDisToEdg > Eo::geometricTolerance && (iStrId & 1) == 0) {
-          // Partial component of dash section must produced
-          lnS.end.x = edg[iCurEdg + 1].xIntersection;
-          ln = tmInv * lnS;
-          ln.Display(view, deviceContext);
-        }
-        iCurEdg = iCurEdg + 2;
-      }
-      // Update position of scan line
-      dScan -= dSpac;
-      dSecBeg -= dShift;
-      goto l1;
-    }
-    transformMatrix *= EoGeTransformMatrix::ZAxisRotation(dSinAng, dCosAng);
-  }
-  renderState.SetPen(view, deviceContext, color, lineType);
-}
 
 std::uint16_t EoDbPolygon::SwingVertex() const {
   std::uint16_t swingVertex;
@@ -693,27 +741,4 @@ std::uint16_t EoDbPolygon::SwingVertex() const {
     swingVertex = std::uint16_t(sm_Edge == sm_pivotVertex ? sm_pivotVertex - 1 : sm_pivotVertex + 1);
   }
   return swingVertex;
-}
-
-void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& ndcPoints) {
-  int numberOfPoints = static_cast<int>(ndcPoints.GetSize());
-  if (numberOfPoints < 2) { return; }
-
-  auto* clientPoints = new CPoint[static_cast<size_t>(numberOfPoints)];
-
-  view->ProjectToClient(clientPoints, ndcPoints);
-
-  if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Solid) {
-    CBrush brush(pColTbl[renderState.Color()]);
-    auto* oldBrush = deviceContext->SelectObject(&brush);
-    deviceContext->Polygon(clientPoints, numberOfPoints);
-    deviceContext->SelectObject(oldBrush);
-  } else if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Hollow) {
-    auto* oldBrush = (CBrush*)deviceContext->SelectStockObject(NULL_BRUSH);
-    deviceContext->Polygon(clientPoints, numberOfPoints);
-    deviceContext->SelectObject(oldBrush);
-  } else {
-    deviceContext->Polygon(clientPoints, numberOfPoints);
-  }
-  delete[] clientPoints;
 }

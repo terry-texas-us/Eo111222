@@ -39,6 +39,9 @@ class EoDxfHatch : public EoDxfGraphic {
 
   void AppendLoop(EoDxfHatchLoop* hatchLoop) { m_hatchLoops.push_back(hatchLoop); }
 
+  /// @brief Returns a read-only reference to the vector of hatch boundary loops.
+  [[nodiscard]] const std::vector<EoDxfHatchLoop*>& HatchLoops() const noexcept { return m_hatchLoops; }
+
   void ApplyExtrusion() override {}
 
  protected:

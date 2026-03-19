@@ -54,12 +54,11 @@ void EoDxfHatch::ClearEntities() noexcept {
   m_ellipse = nullptr;
   m_spline = nullptr;
   m_polylineVertex = nullptr;
-
-  m_seedPoints.clear();
-  m_currentSeedPoint = nullptr;
-  m_isReadingSeedPoints = false;
-  m_seedPointsRemaining = 0;
-  m_isElevationPointParsed = false;  // also safe to reset here
+  // Entity-level state (elevation, seed points) must NOT be reset here.
+  // ClearEntities() is called when switching between edge types within a
+  // single HATCH entity.  Resetting m_isElevationPointParsed would cause
+  // subsequent code 10/20 values to route to the elevation point instead
+  // of to the new edge entity's coordinates.
 }
 
 void EoDxfHatch::ParseCode(int code, EoDxfReader& reader) {
@@ -79,9 +78,13 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader& reader) {
         if (!m_polylineVertex) { m_polylineVertex = &m_polyline->AddVertex(); }
         m_polylineVertex->x = val;
       } else if (m_line) {
-        // TODO: your line start/end point routing
-      } else if (m_spline || m_arc || m_ellipse) {
-        // TODO: your spline/arc/ellipse center/control points
+        m_line->m_startPoint.x = val;
+      } else if (m_arc) {
+        m_arc->m_centerPoint.x = val;
+      } else if (m_ellipse) {
+        m_ellipse->m_centerPoint.x = val;
+      } else if (m_spline) {
+        // TODO: spline control point routing
       }
       break;
     }
@@ -98,8 +101,15 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader& reader) {
       } else if (m_polylineVertex) {
         m_polylineVertex->y = val;
         m_polylineVertex = nullptr;
+      } else if (m_line) {
+        m_line->m_startPoint.y = val;
+      } else if (m_arc) {
+        m_arc->m_centerPoint.y = val;
+      } else if (m_ellipse) {
+        m_ellipse->m_centerPoint.y = val;
+      } else if (m_spline) {
+        // TODO: spline control point routing
       }
-      // TODO: other Y cases (line, arc, etc.)
       break;
     }
     case 30:

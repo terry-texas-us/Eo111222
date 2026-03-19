@@ -25,6 +25,7 @@
 #include "EoDbLineType.h"
 #include "EoDbLineTypeTable.h"
 #include "EoDbPoint.h"
+#include "EoDbPolygon.h"
 #include "EoDbPolyline.h"
 #include "EoDbPrimitive.h"
 #include "EoDbSpline.h"
@@ -35,6 +36,7 @@
 #include "EoGeLine.h"
 #include "EoGeOcsTransform.h"
 #include "EoGePoint3d.h"
+#include "EoGePolyline.h"
 #include "EoGeVector3d.h"
 
 void EoDbDxfInterface::SetHeaderSectionVariable(
@@ -1103,9 +1105,285 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
       majorAxis.Length(), majorAxis.Length() * ellipse.m_ratio);
 }
 
-void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, [[maybe_unused]] AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 3, L"Hatch entity conversion - Pattern: %s (under construction)\n",
-      hatch.m_hatchPatternName.c_str());
+/** @brief Converts a DXF HATCH entity to one or more EoDbPolygon primitives.
+ *
+ * Each hatch boundary loop becomes a separate EoDbPolygon. Polyline boundaries
+ * are tessellated (bulge arcs expanded); edge-type boundaries chain line, arc,
+ * and ellipse edges into a closed vertex array. Spline edges are logged and skipped.
+ *
+ * Solid-fill hatches map to PolygonStyle::Solid. Pattern hatches map to
+ * PolygonStyle::Hatch with reference vectors derived from the DXF pattern angle
+ * and scale. Hollow hatches (solidFillFlag == 0 with pattern name "SOLID" absent)
+ * map to PolygonStyle::Hollow.
+ *
+ * @param hatch  The parsed DXF HATCH entity.
+ * @param document  The AeSysDoc receiving the converted primitives.
+ */
+void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 2, L"Hatch entity conversion - Pattern: %s, Loops: %d, Solid: %d\n",
+      hatch.m_hatchPatternName.c_str(), static_cast<int>(hatch.HatchLoops().size()), hatch.m_solidFillFlag);
+
+  if (hatch.HatchLoops().empty()) { return; }
+
+  // Determine polygon style from DXF hatch properties
+  EoDb::PolygonStyle polygonStyle = EoDb::PolygonStyle::Hollow;
+  std::int16_t fillStyleIndex = 0;
+
+  if (hatch.m_solidFillFlag == 1) {
+    polygonStyle = EoDb::PolygonStyle::Solid;
+  } else if (hatch.m_hatchPatternName == L"HOLLOW" || hatch.m_hatchPatternName.empty()) {
+    polygonStyle = EoDb::PolygonStyle::Hollow;
+  } else {
+    // Pattern hatch — map to AeSys Hatch style
+    polygonStyle = EoDb::PolygonStyle::Hatch;
+    // DXF pattern hatches use fillStyleIndex 1 as a reasonable default (first hatch pattern)
+    fillStyleIndex = 1;
+  }
+
+  // Hatch origin from the elevation point (OCS origin for the hatch plane)
+  const EoGePoint3d hatchOrigin{hatch.m_elevationPoint.x, hatch.m_elevationPoint.y, hatch.m_elevationPoint.z};
+
+  // Build reference vectors from pattern angle and scale
+  // For solid fills, use identity-like reference vectors (unit X and Y)
+  EoGeVector3d xAxis = EoGeVector3d::positiveUnitX;
+  EoGeVector3d yAxis = EoGeVector3d::positiveUnitY;
+
+  if (polygonStyle == EoDb::PolygonStyle::Hatch && hatch.m_hatchPatternScaleOrSpacing > Eo::geometricTolerance) {
+    const double scale = hatch.m_hatchPatternScaleOrSpacing;
+    const double angle = hatch.m_hatchPatternAngle * Eo::Radian;  // DXF pattern angle is in degrees
+    const double cosAngle = std::cos(angle);
+    const double sinAngle = std::sin(angle);
+    xAxis = EoGeVector3d{cosAngle * scale, sinAngle * scale, 0.0};
+    yAxis = EoGeVector3d{-sinAngle * scale, cosAngle * scale, 0.0};
+  }
+
+  int loopIndex = 0;
+  for (const auto* hatchLoop : hatch.HatchLoops()) {
+    ++loopIndex;
+
+    if (hatchLoop->m_entities.empty()) {
+      ATLTRACE2(traceGeneral, 1, L"  Loop %d: empty entity list, skipping\n", loopIndex);
+      continue;
+    }
+
+    // Log island boundaries (bit 0x10 = outermost, bit 0x01 = external)
+    // Inner loops (islands) are still converted but noted in trace output
+    if ((hatchLoop->m_boundaryPathType & 0x01) == 0 && (hatchLoop->m_boundaryPathType & 0x10) == 0) {
+      ATLTRACE2(traceGeneral, 2, L"  Loop %d: island boundary (type 0x%X) — converted as independent polygon\n",
+          loopIndex, hatchLoop->m_boundaryPathType);
+    }
+
+    EoGePoint3dArray boundaryPoints;
+
+    if (hatchLoop->m_boundaryPathType & 2) {
+      // ── Polyline boundary ────────────────────────────────
+      const auto* polylineEntity = (hatchLoop->m_entities.front()->m_entityType == EoDxf::LWPOLYLINE)
+                                       ? static_cast<const EoDxfLwPolyline*>(hatchLoop->m_entities.front().get())
+                                       : nullptr;
+      if (polylineEntity == nullptr || polylineEntity->m_vertices.empty()) {
+        ATLTRACE2(traceGeneral, 1, L"  Loop %d: polyline boundary with no vertices, skipping\n", loopIndex);
+        continue;
+      }
+
+      const auto& vertices = polylineEntity->m_vertices;
+      const auto vertexCount = vertices.size();
+      const double elevation = hatch.m_elevationPoint.z;
+
+      // Check if any vertex has a non-zero bulge
+      const bool hasAnyBulge = std::any_of(vertices.begin(), vertices.end(),
+          [](const EoDxfPolylineVertex2d& vertex) noexcept { return std::abs(vertex.bulge) > Eo::geometricTolerance; });
+
+      if (hasAnyBulge) {
+        // Tessellate bulge arcs into straight segments
+        std::vector<EoGePoint3d> arcPoints;
+        boundaryPoints.Add(EoGePoint3d{vertices[0].x, vertices[0].y, elevation});
+
+        for (size_t i = 0; i < vertexCount - 1; ++i) {
+          const EoGePoint3d startPt{vertices[i].x, vertices[i].y, elevation};
+          const EoGePoint3d endPt{vertices[i + 1].x, vertices[i + 1].y, elevation};
+          polyline::TessellateArcSegment(startPt, endPt, vertices[i].bulge, arcPoints);
+          for (const auto& arcPoint : arcPoints) { boundaryPoints.Add(arcPoint); }
+        }
+
+        // Handle closing segment if polyline is closed
+        if (polylineEntity->m_polylineFlag & 0x01) {
+          const EoGePoint3d startPt{vertices[vertexCount - 1].x, vertices[vertexCount - 1].y, elevation};
+          const EoGePoint3d endPt{vertices[0].x, vertices[0].y, elevation};
+          const double closingBulge = vertices[vertexCount - 1].bulge;
+          if (std::abs(closingBulge) >= Eo::geometricTolerance) {
+            polyline::TessellateArcSegment(startPt, endPt, closingBulge, arcPoints);
+            // Exclude last point (it duplicates the first vertex)
+            for (size_t j = 0; j + 1 < arcPoints.size(); ++j) { boundaryPoints.Add(arcPoints[j]); }
+          }
+        }
+      } else {
+        // No bulges — straight segments only
+        for (size_t i = 0; i < vertexCount; ++i) {
+          boundaryPoints.Add(EoGePoint3d{vertices[i].x, vertices[i].y, elevation});
+        }
+      }
+
+      ATLTRACE2(traceGeneral, 2, L"  Loop %d: polyline boundary → %d tessellated vertices\n",
+          loopIndex, static_cast<int>(boundaryPoints.GetSize()));
+    } else {
+      // ── Edge-type boundary ───────────────────────────────
+      const double elevation = hatch.m_elevationPoint.z;
+
+      for (const auto& edgeEntity : hatchLoop->m_entities) {
+        switch (edgeEntity->m_entityType) {
+          case EoDxf::LINE: {
+            const auto* line = static_cast<const EoDxfLine*>(edgeEntity.get());
+            // Add start point of first edge; subsequent edges share endpoints
+            if (boundaryPoints.IsEmpty()) {
+              boundaryPoints.Add(EoGePoint3d{line->m_startPoint.x, line->m_startPoint.y, elevation});
+            }
+            boundaryPoints.Add(EoGePoint3d{line->m_endPoint.x, line->m_endPoint.y, elevation});
+            break;
+          }
+          case EoDxf::ARC: {
+            const auto* arc = static_cast<const EoDxfArc*>(edgeEntity.get());
+            const double centerX = arc->m_centerPoint.x;
+            const double centerY = arc->m_centerPoint.y;
+            const double radius = arc->m_radius;
+            double startAngle = arc->m_startAngle;
+            double endAngle = arc->m_endAngle;
+
+            // Determine sweep direction from CCW flag
+            double sweepAngle;
+            if (arc->m_isCounterClockwise) {
+              sweepAngle = endAngle - startAngle;
+              if (sweepAngle <= 0.0) { sweepAngle += Eo::TwoPi; }
+            } else {
+              sweepAngle = endAngle - startAngle;
+              if (sweepAngle >= 0.0) { sweepAngle -= Eo::TwoPi; }
+            }
+
+            // Adaptive tessellation
+            const int numberOfSegments = std::max(Eo::arcTessellationMinimumSegments,
+                static_cast<int>(
+                    std::ceil(std::abs(sweepAngle) / Eo::TwoPi * Eo::arcTessellationSegmentsPerFullCircle)));
+
+            // Add start point if this is the first edge
+            if (boundaryPoints.IsEmpty()) {
+              boundaryPoints.Add(EoGePoint3d{
+                  centerX + radius * std::cos(startAngle), centerY + radius * std::sin(startAngle), elevation});
+            }
+
+            const double angleStep = sweepAngle / numberOfSegments;
+            for (int seg = 1; seg <= numberOfSegments; ++seg) {
+              const double angle = startAngle + angleStep * seg;
+              boundaryPoints.Add(EoGePoint3d{centerX + radius * std::cos(angle),
+                  centerY + radius * std::sin(angle), elevation});
+            }
+
+            ATLTRACE2(traceGeneral, 3, L"    Arc edge: center=(%.4f,%.4f) r=%.4f → %d segments\n",
+                centerX, centerY, radius, numberOfSegments);
+            break;
+          }
+          case EoDxf::ELLIPSE: {
+            const auto* ellipse = static_cast<const EoDxfEllipse*>(edgeEntity.get());
+            const double cx = ellipse->m_centerPoint.x;
+            const double cy = ellipse->m_centerPoint.y;
+            const double majorX = ellipse->m_endPointOfMajorAxis.x;
+            const double majorY = ellipse->m_endPointOfMajorAxis.y;
+            const double ratio = ellipse->m_ratio;
+            double startParam = ellipse->m_startParam;
+            double endParam = ellipse->m_endParam;
+
+            // Minor axis perpendicular to major axis in 2D
+            const double minorX = -majorY * ratio;
+            const double minorY = majorX * ratio;
+
+            // Determine sweep
+            double sweepParam;
+            if (ellipse->m_isCounterClockwise) {
+              sweepParam = endParam - startParam;
+              if (sweepParam <= 0.0) { sweepParam += Eo::TwoPi; }
+            } else {
+              sweepParam = endParam - startParam;
+              if (sweepParam >= 0.0) { sweepParam -= Eo::TwoPi; }
+            }
+
+            const int numberOfSegments = std::max(Eo::arcTessellationMinimumSegments,
+                static_cast<int>(
+                    std::ceil(std::abs(sweepParam) / Eo::TwoPi * Eo::arcTessellationSegmentsPerFullCircle)));
+
+            if (boundaryPoints.IsEmpty()) {
+              const double cosStart = std::cos(startParam);
+              const double sinStart = std::sin(startParam);
+              boundaryPoints.Add(EoGePoint3d{
+                  cx + majorX * cosStart + minorX * sinStart,
+                  cy + majorY * cosStart + minorY * sinStart,
+                  elevation});
+            }
+
+            const double paramStep = sweepParam / numberOfSegments;
+            for (int seg = 1; seg <= numberOfSegments; ++seg) {
+              const double param = startParam + paramStep * seg;
+              const double cosParam = std::cos(param);
+              const double sinParam = std::sin(param);
+              boundaryPoints.Add(EoGePoint3d{
+                  cx + majorX * cosParam + minorX * sinParam,
+                  cy + majorY * cosParam + minorY * sinParam,
+                  elevation});
+            }
+
+            ATLTRACE2(traceGeneral, 3, L"    Ellipse edge: center=(%.4f,%.4f) ratio=%.4f → %d segments\n",
+                cx, cy, ratio, numberOfSegments);
+            break;
+          }
+          case EoDxf::SPLINE:
+            ATLTRACE2(traceGeneral, 1, L"    Spline edge in hatch boundary — skipped (not supported in PEG V1)\n");
+            break;
+          default:
+            ATLTRACE2(traceGeneral, 1, L"    Unknown edge type %d in hatch boundary — skipped\n",
+                static_cast<int>(edgeEntity->m_entityType));
+            break;
+        }
+      }
+
+      ATLTRACE2(traceGeneral, 2, L"  Loop %d: edge boundary → %d tessellated vertices\n",
+          loopIndex, static_cast<int>(boundaryPoints.GetSize()));
+    }
+
+    // Need at least 3 points for a valid polygon
+    if (boundaryPoints.GetSize() < 3) {
+      ATLTRACE2(traceGeneral, 1, L"  Loop %d: insufficient vertices (%d), skipping\n",
+          loopIndex, static_cast<int>(boundaryPoints.GetSize()));
+      continue;
+    }
+
+    // Remove duplicate closing vertex if present (EoDbPolygon is implicitly closed)
+    const auto lastIndex = boundaryPoints.GetSize() - 1;
+    const auto& firstPt = boundaryPoints[0];
+    const auto& lastPt = boundaryPoints[lastIndex];
+    if (std::abs(firstPt.x - lastPt.x) < Eo::geometricTolerance
+        && std::abs(firstPt.y - lastPt.y) < Eo::geometricTolerance
+        && std::abs(firstPt.z - lastPt.z) < Eo::geometricTolerance) {
+      boundaryPoints.SetSize(lastIndex);
+    }
+
+    if (boundaryPoints.GetSize() < 3) {
+      ATLTRACE2(traceGeneral, 1, L"  Loop %d: degenerate after dedup (%d vertices), skipping\n",
+          loopIndex, static_cast<int>(boundaryPoints.GetSize()));
+      continue;
+    }
+
+    auto* polygon = new EoDbPolygon(
+        static_cast<std::int16_t>(hatch.m_color), polygonStyle, fillStyleIndex,
+        hatchOrigin, xAxis, yAxis, boundaryPoints);
+
+    // Set layer and line type from the DXF entity for correct document placement
+    polygon->SetBaseProperties(&hatch, document);
+
+    AddToDocument(polygon, document);
+
+    ATLTRACE2(traceGeneral, 2, L"  Loop %d: created EoDbPolygon (%s, %d vertices)\n",
+        loopIndex,
+        polygonStyle == EoDb::PolygonStyle::Solid ? L"Solid"
+            : polygonStyle == EoDb::PolygonStyle::Hatch ? L"Hatch" : L"Hollow",
+        static_cast<int>(boundaryPoints.GetSize()));
+  }
 }
 
 void EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, AeSysDoc* document) {
