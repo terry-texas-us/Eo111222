@@ -104,4 +104,4 @@ HDDEDATA dde::ScaleRequest(UINT wFmt, HSZ, HSZ hszItem) {
   swprintf_s(sz, 32, L"%f", AeSysView::GetActiveView()->GetWorldScale());
   return dde::MakeCFText(wFmt, (LPTSTR)sz, hszItem);
 }
-#endif  // USING_DDE
+#endif

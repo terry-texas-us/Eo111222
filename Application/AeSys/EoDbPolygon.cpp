@@ -23,7 +23,7 @@
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif  // USING_DDE
+#endif
 
 EoDb::PolygonStyle EoDbPolygon::sm_SpecialPolygonStyle = EoDb::PolygonStyle::Special;
 
@@ -458,7 +458,7 @@ void EoDbPolygon::AddReportToMessageList(const EoGePoint3d& point) {
 #if defined(USING_DDE)
     dde::PostAdvise(dde::EngLenInfo);
     dde::PostAdvise(dde::EngAngZInfo);
-#endif  // USING_DDE
+#endif
   }
 }
 

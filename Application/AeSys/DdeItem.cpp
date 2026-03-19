@@ -6,7 +6,7 @@
 using namespace dde;
 
 // Add a new item.
-PITEMINFO dde::ItemAdd(LPTSTR lpszTopic, LPTSTR lpszItem, LPWORD lpFormatList, PREQUESTFN lpReqFn, PPOKEFN lpPokeFn) {
+PITEMINFO dde::ItemAdd(LPCWSTR lpszTopic, LPCWSTR lpszItem, LPWORD lpFormatList, PREQUESTFN lpReqFn, PPOKEFN lpPokeFn) {
   PITEMINFO pItem = 0;
   PTOPICINFO pTopic = TopicFind(lpszTopic);
 
@@ -43,7 +43,7 @@ PITEMINFO dde::ItemAdd(LPTSTR lpszTopic, LPTSTR lpszItem, LPWORD lpFormatList, P
   return pItem;
 }
 /// <summary>Find an item by its name in a topic </summary>
-PITEMINFO dde::ItemFind(PTOPICINFO pTopic, LPTSTR lpszItem) {
+PITEMINFO dde::ItemFind(PTOPICINFO pTopic, LPCWSTR lpszItem) {
   PITEMINFO pItem = pTopic->pItemList;
   while (pItem) {
     if (lstrcmpi(pItem->pszItemName, lpszItem) == 0) { break; }
@@ -63,7 +63,7 @@ PITEMINFO dde::ItemFind(PTOPICINFO pTopic, HSZ hszItem) {
   return pItem;
 }
 // Remove an item from a topic.
-bool dde::ItemRemove(LPTSTR lpszTopic, LPTSTR lpszItem) {
+bool dde::ItemRemove(LPCWSTR lpszTopic, LPCWSTR lpszItem) {
   PTOPICINFO pTopic = TopicFind(lpszTopic);
   PITEMINFO pItem, pPrevItem;
 
@@ -95,4 +95,4 @@ bool dde::ItemRemove(LPTSTR lpszTopic, LPTSTR lpszItem) {
   // We don't have that one
   return false;
 }
-#endif  // USING_DDE
+#endif

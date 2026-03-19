@@ -10,4 +10,4 @@ HDDEDATA SysReqHelp(UINT wFmt, HSZ hszTopic, HSZ hszItem);
 HDDEDATA SysReqProtocols(UINT wFmt, HSZ hszTopic, HSZ hszItem);
 HDDEDATA SysReqTopics(UINT wFmt, HSZ hszTopic, HSZ hszItem);
 }  // namespace dde
-#endif  // USING_DDE
+#endif

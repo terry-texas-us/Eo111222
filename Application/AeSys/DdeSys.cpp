@@ -70,7 +70,7 @@ HDDEDATA dde::SysReqFormats(UINT wFmt, HSZ, HSZ hszItem) {
 HDDEDATA dde::SysReqProtocols(UINT, HSZ, HSZ hszItem) {
   static wchar_t sz[] = L"Execute Control 1";
 
-  return DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE)sz, wcslen(sz) + 1, 0, hszItem, CF_TEXT, 0);
+  return DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE)sz, static_cast<DWORD>(wcslen(sz) + 1), 0, hszItem, CF_TEXT, 0);
   // Return a DDE data handle to the data object containing the return data.
 }
 // Process a request for the topics list.  Typically the data is returned in CF_TEXT format as a tab
@@ -96,4 +96,4 @@ HDDEDATA dde::SysReqTopics(UINT wFmt, HSZ, HSZ hszItem) {
   // Return a DDE data handle to the data object containing the return data.
   return hData;
 }
-#endif  // USING_DDE
+#endif

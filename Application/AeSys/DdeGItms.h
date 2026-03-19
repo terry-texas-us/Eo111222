@@ -29,4 +29,4 @@ HDDEDATA RelPosZRequest(UINT, HSZ, HSZ);
 bool ScalePoke(UINT, HSZ, HSZ, HDDEDATA);
 HDDEDATA ScaleRequest(UINT, HSZ, HSZ);
 }  // namespace dde
-#endif  // USING_DDE
+#endif

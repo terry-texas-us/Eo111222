@@ -4,10 +4,14 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "Resource.h"
 
 #include "ddeCmds.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbJobFile.h"
+#include "EoDbText.h"
+#include "EoGeReferenceSystem.h"
+#include "EoGsRenderState.h"
 
 using namespace dde;
 
@@ -15,10 +19,9 @@ using namespace dde;
 bool dde::ExecNoteHT(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[32]{};
   _tcsncpy_s(szBuf, 32, ppArgs[0], sizeof(szBuf) - 1);
-  EoDbCharacterCellDefinition characterCellDefinition;
-  renderState.GetCharCellDef(characterCellDefinition);
-  characterCellDefinition.ChrHgtSet(_wtof(szBuf));
-  renderState.SetCharCellDef(characterCellDefinition);
+  EoDbCharacterCellDefinition characterCellDefinition = renderState.CharacterCellDefinition();
+  characterCellDefinition.SetHeight(_wtof(szBuf));
+  renderState.SetCharacterCellDefinition(characterCellDefinition);
   return true;
 }
 /// <summary>Sets the Fill.</summary>
@@ -105,12 +108,12 @@ bool dde::ExecFileGet(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArgs) {
   JobFile.ReadLayer(File, Layer);
 
   EoGePoint3d PivotPoint(app.GetCursorPosition());
-  Document->SetTrapPivotPoint(PivotPoint);
+  document->SetTrapPivotPoint(PivotPoint);
 
-  Document->AddGroupsToAllViews(Layer);
-  Document->RemoveAllTrappedGroups();
-  Document->AddGroupsToTrap(Layer);
-  Document->TranslateTrappedGroups(EoGeVector3d(EoGePoint3d::kOrigin, PivotPoint));
+  document->AddGroupsToAllViews(Layer);
+  document->RemoveAllTrappedGroups();
+  document->AddGroupsToTrap(Layer);
+  document->TranslateTrappedGroups(EoGeVector3d(EoGePoint3d::kOrigin, PivotPoint));
   return true;
 }
 /// <summary>Set the position of the cursor.</summary>
@@ -120,7 +123,7 @@ bool dde::ExecGotoPoint(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   _tcsncpy_s(szBuf, 8, ppArgs[0], sizeof(szBuf) - 1);
 
   int iStakeId = _wtoi(szBuf);
-  app.SetCursorPosition(app.HomePointGet(iStakeId));
+  AeSysView::GetActiveView()->SetCursorPosition(app.HomePointGet(iStakeId));
 
   return true;
 }
@@ -154,19 +157,17 @@ bool dde::ExecNote(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
 
   EoGePoint3d ptPvt = app.GetCursorPosition();
 
-  EoDbFontDefinition fd;
-  renderState.GetFontDef(fd);
-  EoDbCharacterCellDefinition characterCellDefinition;
-  renderState.GetCharCellDef(characterCellDefinition);
+  EoDbFontDefinition fd = renderState.FontDefinition();
+  EoDbCharacterCellDefinition characterCellDefinition = renderState.CharacterCellDefinition();
 
-  EoGeReferenceSystem ReferenceSystem(ptPvt, characterCellDefinition);
+  EoGeReferenceSystem referenceSystem(ptPvt, characterCellDefinition);
 
-  auto *Group = new EoDbGroup(new EoDbText(fd, ReferenceSystem, ppArgs[0]));
-  Document->AddWorkLayerGroup(Group);
-  Document->UpdateAllViews(nullptr, EoDb::kGroup, Group);
+  auto *Group = new EoDbGroup(new EoDbText(fd, referenceSystem, CString(ppArgs[0])));
+  document->AddWorkLayerGroup(Group);
+  document->UpdateAllViews(nullptr, EoDb::kGroup, Group);
 
-  ptPvt = text_GetNewLinePos(fd, ReferenceSystem, 1.0, 0);
-  app.SetCursorPosition(ptPvt);
+  ptPvt = text_GetNewLinePos(fd, referenceSystem, 1.0, 0);
+  AeSysView::GetActiveView()->SetCursorPosition(ptPvt);
 
   return true;
 }
@@ -199,4 +200,4 @@ bool dde::ExecSetPoint(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
 
   return true;
 }
-#endif  // USING_DDE
+#endif

@@ -2,6 +2,7 @@
 
 #if defined(USING_DDE)
 #include "AeSys.h"
+#include "Resource.h"
 
 #include "dde.h"
 #include "ddeCmds.h"
@@ -337,7 +338,7 @@ HDDEDATA dde::DoWildConnect(HSZ hszTopic) {
   }
 
   // Big enough for all the HSZPAIRS we'll be sending back plus space for a 0 entry on the end
-  hData = DdeCreateDataHandle(ServerInfo.dwInstance, 0, (iTopics + 1) * sizeof(HSZPAIR), 0, hszItem, wFmt, 0);
+  hData = DdeCreateDataHandle(ServerInfo.dwInstance, 0, (iTopics + 1) * sizeof(HSZPAIR), 0, (HSZ)0, 0, 0);
 
   if (!hData) {  // Failed to create mem object!
     return (HDDEDATA)0;
@@ -364,7 +365,7 @@ HDDEDATA dde::DoWildConnect(HSZ hszTopic) {
   return hData;
 }
 PEXECCMDFNINFO dde::ExecCmdAdd(
-    LPTSTR pszTopic, LPTSTR pszCmdName, PEXECCMDFN pExecCmdFn, UINT uiMinArgs, UINT uiMaxArgs) {
+    LPCTSTR pszTopic, LPCTSTR pszCmdName, PEXECCMDFN pExecCmdFn, UINT uiMinArgs, UINT uiMaxArgs) {
   PEXECCMDFNINFO pCmd = 0;
   PEXECCMDFNINFO pHead;
 
@@ -407,7 +408,7 @@ PEXECCMDFNINFO dde::ExecCmdAdd(
   return pCmd;
 }
 /// <summary>Find a DDE execute command from its string name.</summary>
-PEXECCMDFNINFO dde::ExecCmdFind(PTOPICINFO pTopic, LPTSTR lpszCmd) {
+PEXECCMDFNINFO dde::ExecCmdFind(PTOPICINFO pTopic, LPCTSTR lpszCmd) {
   PEXECCMDFNINFO pCmd = pTopic->pCmdList;
 
   while (pCmd) {
@@ -417,7 +418,7 @@ PEXECCMDFNINFO dde::ExecCmdFind(PTOPICINFO pTopic, LPTSTR lpszCmd) {
   }
   return pCmd;
 }
-bool dde::ExecCmdRemove(LPTSTR pszTopic, LPTSTR pszCmdName) {
+bool dde::ExecCmdRemove(LPCTSTR pszTopic, LPCTSTR pszCmdName) {
   PTOPICINFO pTopic = TopicFind(pszTopic);
 
   if (!pTopic) {  // See if we have this topic
@@ -716,4 +717,4 @@ PEXECCMDFNINFO dde::ScanForCommand(PEXECCMDFNINFO pCmdInfo, LPTSTR* ppStr) {
   *p = cSave;  // Didn't find it, so restore delimiter and return
   return 0;  // not found
 }
-#endif  // USING_DDE
+#endif

@@ -22,7 +22,7 @@
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif  // USING_DDE
+#endif
 
 EoDbLine::EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end) : EoDbPrimitive(), m_line{begin, end} {}
 
@@ -134,7 +134,7 @@ void EoDbLine::AddReportToMessageList(const EoGePoint3d& point) {
 #if defined(USING_DDE)
   dde::PostAdvise(dde::EngLenInfo);
   dde::PostAdvise(dde::EngAngZInfo);
-#endif  // USING_DDE
+#endif
 }
 
 void EoDbLine::FormatExtra(CString& str) {

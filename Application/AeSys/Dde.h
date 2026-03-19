@@ -24,7 +24,7 @@ typedef EXECFN *PEXECFN;
 // Structure used to hold a clipboard id and its text name
 typedef struct _CFTAGNAME {
   std::uint16_t wFmt;
-  LPTSTR pszName;
+  LPCWSTR pszName;
 } CFTAGNAME, *PCFTAGNAME;
 CFTAGNAME CFNames[];
 
@@ -36,7 +36,7 @@ typedef EXECCMDFN *PEXECCMDFN;
 // Structure used to store information on a DDE item
 typedef struct _ITEMINFO {
   struct _ITEMINFO *pNext;  // pointer to the next item
-  LPTSTR pszItemName;  // pointer to its string name
+  LPCWSTR pszItemName;  // pointer to its string name
   HSZ hszItemName;  // DDE string handle for the name
   struct _TOPICINFO *pTopic;  // pointer to the topic it belongs to
   LPWORD pFormatList;  // ptr to null term list of CF format words.
@@ -49,7 +49,7 @@ typedef struct _ITEMINFO {
 typedef struct _EXECCMDFNINFO {
   struct _EXECCMDFNINFO *pNext;  // pointer to the next item
   struct _TOPICINFO *pTopic;  // pointer to the topic it belongs to
-  LPTSTR pszCmdName;  // The name of the command
+  LPCWSTR pszCmdName;  // The name of the command
   PEXECCMDFN pFn;  // A pointer to the function
   UINT uiMinArgs;  // min number of args
   UINT uiMaxArgs;  // max number of args
@@ -66,7 +66,7 @@ typedef struct _CONVINFO {
 // Structure used to store information on a DDE topic
 typedef struct _TOPICINFO {
   struct _TOPICINFO *pNext;  // pointer to the next topic
-  LPTSTR pszTopicName;  // pointer to its string name
+  LPCWSTR pszTopicName;  // pointer to its string name
   HSZ hszTopicName;  // DDE string handle for the name
   PITEMINFO pItemList;  // pointer to its item list
   PEXECFN pfnExec;  // pointer to its DDE Execute processor
@@ -82,7 +82,7 @@ typedef POP *PPOP;
 
 // Structure used to store information on a DDE server which has only one service
 typedef struct _SERVERINFO {
-  LPTSTR lpszServiceName;  // pointer to the service string name
+  LPCWSTR lpszServiceName;  // pointer to the service string name
   HSZ hszServiceName;  // DDE string handle for the name
   PTOPICINFO pTopicList;  // pointer to the topic list
   DWORD dwInstance;  // DDE Instance value
@@ -96,9 +96,9 @@ extern std::uint16_t SysFormatList[];
 extern std::uint16_t MyFormats[];
 extern DWORD dwInstance;  // DDE Instance value
 
-void AddCommands(LPTSTR);
+void AddCommands(LPCWSTR);
 void AddFormatsToList(LPWORD pMain, int iMax, LPWORD pList);
-void AddSystemTopic(LPTSTR, LPWORD);
+void AddSystemTopic(LPCWSTR, LPWORD);
 
 bool ConversationAdd(HCONV hConv, HSZ hszTopic);
 PCONVERSATIONINFO ConversationFind(HSZ hszTopic);
@@ -107,19 +107,19 @@ bool ConversationRemove(HCONV hConv, HSZ hszTopic);
 bool DoCallback(UINT wType, UINT wFmt, HCONV hConv, HSZ hsz1, HSZ hsz2, HDDEDATA hData, HDDEDATA *phReturnData);
 HDDEDATA DoWildConnect(HSZ hszTopic);
 
-PEXECCMDFNINFO ExecCmdAdd(LPTSTR pszTopic, LPTSTR pszCmdName, PEXECCMDFN pExecCmdFn, UINT uiMinArgs, UINT uiMaxArgs);
-PEXECCMDFNINFO ExecCmdFind(PTOPICINFO pTopic, LPTSTR lpszCmd);
-bool ExecCmdRemove(LPTSTR pszTopic, LPTSTR pszCmdName);
+PEXECCMDFNINFO ExecCmdAdd(LPCWSTR pszTopic, LPCWSTR pszCmdName, PEXECCMDFN pExecCmdFn, UINT uiMinArgs, UINT uiMaxArgs);
+PEXECCMDFNINFO ExecCmdFind(PTOPICINFO pTopic, LPCWSTR lpszCmd);
+bool ExecCmdRemove(LPCWSTR pszTopic, LPCWSTR pszCmdName);
 
-PITEMINFO ItemAdd(LPTSTR lpszTopic, LPTSTR lpszItem, LPWORD pFormatList, PREQUESTFN lpReqFn, PPOKEFN lpPokeFn);
+PITEMINFO ItemAdd(LPCWSTR lpszTopic, LPCWSTR lpszItem, LPWORD pFormatList, PREQUESTFN lpReqFn, PPOKEFN lpPokeFn);
 PITEMINFO ItemFind(PTOPICINFO pTopic, HSZ hszItem);
-PITEMINFO ItemFind(PTOPICINFO pTopic, LPTSTR lpszItem);
-bool ItemRemove(LPTSTR lpszTopic, LPTSTR lpszItem);
+PITEMINFO ItemFind(PTOPICINFO pTopic, LPCWSTR lpszItem);
+bool ItemRemove(LPCWSTR lpszTopic, LPCWSTR lpszItem);
 
-PTOPICINFO TopicAdd(LPTSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnRequest, PPOKEFN pfnPoke);
+PTOPICINFO TopicAdd(LPCWSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnRequest, PPOKEFN pfnPoke);
 PTOPICINFO TopicFind(HSZ hszName);
-PTOPICINFO TopicFind(LPTSTR lpszName);
-bool TopicRemove(LPTSTR lpszTopic);
+PTOPICINFO TopicFind(LPCWSTR lpszName);
+bool TopicRemove(LPCWSTR lpszTopic);
 
 LPTSTR GetCFNameFromId(std::uint16_t wFmt, LPTSTR lpBuf, int iSize);
 HDDEDATA MakeCFText(UINT, LPTSTR, HSZ);
@@ -136,4 +136,4 @@ bool SysResultExecCmd(PTOPICINFO pTopic, LPTSTR pszResult, UINT uiResultSize, UI
 HDDEDATA TopicReqFormats(UINT wFmt, HSZ hszTopic, HSZ hszItem);
 void Uninitialize();
 }  // namespace dde
-#endif  // USING_DDE
+#endif

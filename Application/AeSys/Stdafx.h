@@ -83,6 +83,7 @@ UINT AFXAPI HashKey(CString& str);
 #define AESYS_USE_CONIC_PRIMITIVE
 // #define USING_STATE_PATTERN
 
+#define USING_DDE
 #if defined(USING_DDE)
 #include <ddeml.h>
-#endif  // USING_DDE
+#endif

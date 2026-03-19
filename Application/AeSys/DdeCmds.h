@@ -23,4 +23,4 @@ bool ExecTracingMap(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *);
 bool ExecTracingOpen(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *);
 bool ExecTracingView(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *);
 }  // namespace dde
-#endif  // USING_DDE
+#endif

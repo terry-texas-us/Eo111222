@@ -24,7 +24,7 @@
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif  // USING_DDE
+#endif
 
 std::uint16_t EoDbDimension::sm_flags{};
 
@@ -152,7 +152,7 @@ void EoDbDimension::AddReportToMessageList(const EoGePoint3d& point) {
 #if defined(USING_DDE)
   dde::PostAdvise(dde::EngLenInfo);
   dde::PostAdvise(dde::EngAngZInfo);
-#endif  // USING_DDE
+#endif
 }
 
 void EoDbDimension::FormatExtra(CString& str) {

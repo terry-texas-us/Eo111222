@@ -57,7 +57,7 @@
 #if defined(USING_DDE)
 #include "Dde.h"
 #include "DdeGItms.h"
-#endif  // USING_DDE
+#endif
 
 namespace {
 
@@ -1594,7 +1594,7 @@ void AeSysView::OnSetupDimAngle() {
     UpdateStateInformation(DimAng);
 #if defined(USING_DDE)
     dde::PostAdvise(dde::DimAngZInfo);
-#endif  // USING_DDE
+#endif
   }
 }
 
@@ -1888,7 +1888,7 @@ void AeSysView::DisplayOdometer() {
   dde::PostAdvise(dde::RelPosXInfo);
   dde::PostAdvise(dde::RelPosYInfo);
   dde::PostAdvise(dde::RelPosZInfo);
-#endif  // USING_DDE
+#endif
 }
 
 void AeSysView::OnUpdateViewTrueTypeFonts(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewTrueTypeFonts); }
@@ -2496,7 +2496,7 @@ void AeSysView::SetWorldScale(double scale) {
 
 #if defined(USING_DDE)
     dde::PostAdvise(dde::ScaleInfo);
-#endif  // USING_DDE
+#endif
   }
 }
 

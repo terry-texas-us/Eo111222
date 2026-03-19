@@ -18,7 +18,7 @@
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif  // USING_DDE
+#endif
 
 std::uint16_t EoDbPolyline::sm_EdgeToEvaluate{};
 std::uint16_t EoDbPolyline::sm_Edge{};
@@ -218,7 +218,7 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
 #if defined(USING_DDE)
   dde::PostAdvise(dde::EngLenInfo);
   dde::PostAdvise(dde::EngAngZInfo);
-#endif  // USING_DDE
+#endif
 }
 void EoDbPolyline::FormatGeometry(CString& str) {
   for (auto i = 0; i < m_pts.GetSize(); i++) {

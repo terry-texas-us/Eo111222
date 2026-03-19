@@ -30,7 +30,7 @@
 #if defined(USING_DDE)
 #include "Dde.h"
 #include "ddeGItms.h"
-#endif  // USING_DDE
+#endif
 
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);
 ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance);
@@ -245,7 +245,7 @@ BOOL AeSys::InitInstance() {
 #if defined(USING_DDE)
   // Initialize for using DDEML
   dde::Setup(AeSys::GetInstance());
-#endif  // USING_DDE
+#endif
 
   // This is the private data format used to pass EoGroups from one instance to another
   m_ClipboardFormatIdentifierForEoGroups = RegisterClipboardFormatW(L"EoGroups");
@@ -263,7 +263,7 @@ int AeSys::ExitInstance() {
 
 #if defined(USING_DDE)
   dde::Uninitialize();
-#endif  // USING_DDE
+#endif
 
   ReleaseSimplexStrokeFont();
 

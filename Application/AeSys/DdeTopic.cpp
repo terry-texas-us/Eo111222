@@ -7,7 +7,7 @@
 using namespace dde;
 
 /// <summary>Add a new topic and default processing for its item list and formats</summary>
-PTOPICINFO dde::TopicAdd(LPTSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnRequest, PPOKEFN pfnPoke) {
+PTOPICINFO dde::TopicAdd(LPCWSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnRequest, PPOKEFN pfnPoke) {
   PTOPICINFO pTopic = TopicFind(lpszTopic);
 
   // See if we already have this topic
@@ -39,7 +39,7 @@ PTOPICINFO dde::TopicAdd(LPTSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnReques
   return pTopic;
 }
 /// <summary>Find a topic by its name</summary>
-PTOPICINFO dde::TopicFind(LPTSTR lpszName) {
+PTOPICINFO dde::TopicFind(LPCWSTR lpszName) {
   PTOPICINFO pTopic = ServerInfo.pTopicList;
 
   while (pTopic) {
@@ -63,7 +63,7 @@ PTOPICINFO dde::TopicFind(HSZ hszName) {
 /// <summary>
 // Remove a topic and all its items.  If there is an active conversation on the topic then disconnect it.
 /// </summary>
-bool dde::TopicRemove(LPTSTR lpszTopic) {
+bool dde::TopicRemove(LPCWSTR lpszTopic) {
   PTOPICINFO pTopic = ServerInfo.pTopicList;
   PTOPICINFO pPrevTopic = 0;
   PCONVERSATIONINFO pCI;
@@ -139,4 +139,4 @@ HDDEDATA dde::TopicReqFormats(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
   }
   return MakeDataFromFormatList((LPWORD)wFormats, std::uint16_t(wFmt), hszItem);
 }
-#endif  // USING_DDE
+#endif

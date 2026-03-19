@@ -272,7 +272,7 @@ class AeSys : public CWinAppEx {
   void SetExtractedNumber(double number) { m_ExtractedNumber = number; }
   CString ExtractedString() { return m_ExtractedString; }
   void SetExtractedString(const CString& string) { m_ExtractedString = string; }
-#endif  // USING_DDE
+#endif
  protected:
   DECLARE_MESSAGE_MAP()
  public:

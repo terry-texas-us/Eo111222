@@ -25,7 +25,7 @@
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif  // USING_DDE
+#endif
 
 namespace {
 

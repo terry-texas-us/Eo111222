@@ -50,4 +50,4 @@ bool dde::ConversationRemove(HCONV hConv, HSZ hszTopic) {
   }
   return false;  // Not in the list
 }
-#endif  // USING_DDE
+#endif

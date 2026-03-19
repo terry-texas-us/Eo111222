@@ -63,7 +63,7 @@
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"
-#endif  // USING_DDE
+#endif
 #include <cstdint>
 UINT_PTR CALLBACK OFNHookProcFileTracing(HWND, UINT, WPARAM, LPARAM);
 
@@ -1816,9 +1816,9 @@ void AeSysDoc::OnPrimExtractNum() {
       return;
     }
 #if defined(USING_DDE)
-    app.SetExtractedNumber(dVal[0]);
+    app.SetExtractedNumber(value[0]);
     dde::PostAdvise(dde::ExtNumInfo);
-#endif  // USING_DDE
+#endif
   }
 }
 
@@ -1844,7 +1844,7 @@ void AeSysDoc::OnPrimExtractStr() {
 #if defined(USING_DDE)
     app.SetExtractedString(String);
     dde::PostAdvise(dde::ExtStrInfo);
-#endif  // USING_DDE
+#endif
   }
   return;
 }
