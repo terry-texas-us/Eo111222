@@ -93,6 +93,16 @@ class EoDbPolyline : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t* buffer) override { (void)file, (void)buffer; };
 
+  /// @brief Reads a polyline primitive from a PEG file stream (type code kPolylinePrimitive).
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbPolyline.
+  static EoDbPolyline* ReadFromPeg(CFile& file);
+
+  /// @brief Reads a legacy CSpline primitive from a PEG file stream and converts it to a polyline.
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbPolyline.
+  static EoDbPolyline* ReadFromCSplinePeg(CFile& file);
+
  private:
   std::uint16_t SwingVertex();
 

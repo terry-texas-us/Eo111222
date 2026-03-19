@@ -241,6 +241,26 @@ void EoDbPoint::Transform(const EoGeTransformMatrix& transformMatrix) { m_Point 
 void EoDbPoint::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if (mask != 0) { m_Point += v; }
 }
+EoDbPoint* EoDbPoint::ReadFromPeg(CFile& file) {
+  auto color = EoDb::ReadInt16(file);
+  auto pointStyle = EoDb::ReadInt16(file);
+  auto point(EoDb::ReadPoint3d(file));
+  auto numberOfDatums = EoDb::ReadUInt16(file);
+
+  double* data = (numberOfDatums == 0) ? nullptr : new double[numberOfDatums];
+  for (std::uint16_t n = 0; n < numberOfDatums; n++) { EoDb::Read(file, data[n]); }
+
+  return new EoDbPoint(color, pointStyle, point, numberOfDatums, data);
+}
+
+EoDbPoint* EoDbPoint::ReadFromLegacyTagPeg(CFile& file) {
+  auto color = EoDb::ReadInt16(file);
+  auto pointStyle = EoDb::ReadInt16(file);
+  auto point(EoDb::ReadPoint3d(file));
+
+  return new EoDbPoint(color, pointStyle, point);
+}
+
 bool EoDbPoint::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kPointPrimitive));
   EoDb::Write(file, m_color);

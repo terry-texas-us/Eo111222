@@ -186,6 +186,17 @@ void EoDbSpline::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   }
 }
 
+EoDbSpline* EoDbSpline::ReadFromPeg(CFile& file) {
+  auto penColor = EoDb::ReadInt16(file);
+  auto lineType = EoDb::ReadInt16(file);
+  auto numberOfPoints = EoDb::ReadUInt16(file);
+
+  EoGePoint3dArray points;
+  points.SetSize(numberOfPoints);
+  for (std::uint16_t n = 0; n < numberOfPoints; n++) { points[n] = EoDb::ReadPoint3d(file); }
+  return new EoDbSpline(penColor, lineType, points);
+}
+
 bool EoDbSpline::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kSplinePrimitive));
   EoDb::Write(file, m_color);

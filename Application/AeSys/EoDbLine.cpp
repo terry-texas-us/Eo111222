@@ -299,10 +299,10 @@ bool EoDbLine::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3
   return polyline::SelectUsingRectangle(view, pt1, pt2);
 }
 void EoDbLine::Square(AeSysView* view) {
-  EoGePoint3d ptBeg = view->SnapPointToGrid(m_line.begin);
-  EoGePoint3d ptEnd = view->SnapPointToGrid(m_line.end);
+  auto ptBeg = view->SnapPointToGrid(m_line.begin);
+  auto ptEnd = view->SnapPointToGrid(m_line.end);
 
-  EoGePoint3d pt = EoGeLine(ptBeg, ptEnd).Midpoint();
+  auto pt = EoGeLine(ptBeg, ptEnd).Midpoint();
   double dLen = EoGeVector3d(ptBeg, ptEnd).Length();
   ptEnd = view->SnapPointToAxis(pt, ptEnd);
   SetBeginPoint(ptEnd.ProjectToward(pt, dLen));
@@ -319,6 +319,18 @@ void EoDbLine::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 
   if ((mask & 2) == 2) { SetEndPoint(m_line.end + v); }
 }
+EoDbLine* EoDbLine::ReadFromPeg(CFile& file) {
+  auto color = EoDb::ReadInt16(file);
+  auto lineTypeIndex = EoDb::ReadInt16(file);
+  auto begin = EoDb::ReadPoint3d(file);
+  auto end = EoDb::ReadPoint3d(file);
+  
+  auto* line = new EoDbLine(begin, end);
+  line->SetColor(color);
+  line->SetLineTypeIndex(lineTypeIndex);
+  return line;
+}
+
 bool EoDbLine::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kLinePrimitive));
 

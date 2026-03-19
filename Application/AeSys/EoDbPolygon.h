@@ -75,6 +75,11 @@ class EoDbPolygon : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t* buffer) override;
 
+  /// @brief Reads a polygon primitive from a PEG file stream (type code kPolygonPrimitive).
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbPolygon.
+  static EoDbPolygon* ReadFromPeg(CFile& file);
+
   CString FormatIntStyle();
   [[nodiscard]] const EoDb::PolygonStyle& PolygonStyle() { return m_polygonStyle; }
   [[nodiscard]] std::int16_t FillStyleIndex() { return m_fillStyleIndex; }

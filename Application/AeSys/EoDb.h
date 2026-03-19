@@ -64,21 +64,6 @@ enum class HorizontalAlignment : std::uint16_t { Left = 1, Center, Right };
 enum class VerticalAlignment : std::uint16_t { Top = 2, Middle, Bottom };
 enum class Precision : std::uint16_t { TrueType = 1, StrokeType };
 
-void ConstructBlockReferencePrimitive(CFile& file, EoDbPrimitive*& primitive);
-void ConstructBlockReferencePrimitiveFromInsertPrimitive(CFile& file, EoDbPrimitive*& primitive);
-void ConstructConicPrimitive(CFile& file, EoDbPrimitive*& primitive);
-void ConstructDimensionPrimitive(CFile& file, EoDbPrimitive*& primitive);
-
-void ConstructEllipsePrimitive(CFile& file, EoDbPrimitive*& primitive);
-void ConstructLinePrimitive(CFile& file, EoDbPrimitive*& primitive);
-void ConstructPointPrimitive(CFile& file, EoDbPrimitive*& primitive);
-void ConstructPointPrimitiveFromTagPrimitive(CFile& file, EoDbPrimitive*& primitive);
-void ConstructPolygonPrimitive(CFile& file, EoDbPrimitive*& primitive);
-void ConstructPolylinePrimitive(CFile& file, EoDbPrimitive*& primitive);
-void ConstructPolylinePrimitiveFromCSplinePrimitive(CFile& file, EoDbPrimitive*& primitive);
-void ConstructSplinePrimitive(CFile& file, EoDbPrimitive*& primitive);
-void ConstructTextPrimitive(CFile& file, EoDbPrimitive*& primitive);
-
 void Read(CFile& file, CString& string);
 void Read(CFile& file, double& number);
 bool Read(CFile& file, EoDbPrimitive*& primitive);

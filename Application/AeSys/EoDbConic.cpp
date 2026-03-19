@@ -920,6 +920,42 @@ void EoDbConic::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if (mask != 0) { m_center += v; }
 }
 
+EoDbConic* EoDbConic::ReadFromPeg(CFile& file) {
+  auto color = EoDb::ReadInt16(file);
+  auto lineTypeIndex = EoDb::ReadInt16(file);
+  auto center(EoDb::ReadPoint3d(file));
+  auto majorAxis(EoDb::ReadVector3d(file));
+  auto extrusion(EoDb::ReadVector3d(file));
+  double ratio;
+  EoDb::Read(file, ratio);
+  double startAngle;
+  EoDb::Read(file, startAngle);
+  double endAngle;
+  EoDb::Read(file, endAngle);
+
+  auto* conic = new EoDbConic(center, extrusion, majorAxis, ratio, startAngle, endAngle);
+  conic->SetColor(color);
+  conic->SetLineTypeIndex(lineTypeIndex);
+
+  return conic;
+}
+
+EoDbConic* EoDbConic::ReadFromLegacyEllipsePeg(CFile& file) {
+  auto color = EoDb::ReadInt16(file);
+  auto lineTypeIndex = EoDb::ReadInt16(file);
+  auto center(EoDb::ReadPoint3d(file));
+  auto majorAxis(EoDb::ReadVector3d(file));
+  auto minorAxis(EoDb::ReadVector3d(file));
+  double sweepAngle;
+  EoDb::Read(file, sweepAngle);
+
+  auto* conic = CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
+  conic->SetColor(color);
+  conic->SetLineTypeIndex(lineTypeIndex);
+
+  return conic;
+}
+
 bool EoDbConic::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kConicPrimitive));
   EoDb::Write(file, m_color);

@@ -61,6 +61,11 @@ class EoDbDimension : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t* buffer) override;
 
+  /// @brief Reads a dimension primitive from a PEG file stream (type code kDimensionPrimitive).
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbDimension.
+  static EoDbDimension* ReadFromPeg(CFile& file);
+
   void CutAt2Points(
       const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
   void CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) override;

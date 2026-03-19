@@ -368,6 +368,26 @@ void EoDbDimension::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 
   SetDefaultNote();
 }
+EoDbDimension* EoDbDimension::ReadFromPeg(CFile& file) {
+  auto color = EoDb::ReadInt16(file);
+  auto lineType = EoDb::ReadInt16(file);
+  auto beginPoint = EoDb::ReadPoint3d(file);
+  auto endPoint = EoDb::ReadPoint3d(file);
+  auto textColor = EoDb::ReadInt16(file);
+  EoDbFontDefinition fontDefinition;
+  fontDefinition.Read(file);
+  EoGeReferenceSystem referenceSystem;
+  referenceSystem.Read(file);
+  CString text;
+  EoDb::Read(file, text);
+
+  auto* dimension =
+      new EoDbDimension(EoGeLine(beginPoint, endPoint), fontDefinition, referenceSystem, text, textColor);
+  dimension->SetColor(color);
+  dimension->SetLineTypeIndex(lineType);
+  return dimension;
+}
+
 bool EoDbDimension::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kDimensionPrimitive));
 

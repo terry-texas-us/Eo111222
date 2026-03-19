@@ -58,10 +58,18 @@ class EoDbBlockReference : public EoDbPrimitive {
   void Translate(const EoGeVector3d& v) override { m_insertionPoint += v; }
   void TranslateUsingMask(EoGeVector3d v, const DWORD mask) override;
   bool Write(CFile& file) override;
-  void Write(CFile& file, std::uint8_t* buffer) override {
-    (void)file;
-    (void)buffer;
-  };
+  void Write([[maybe_unused]] CFile& file, [[maybe_unused]] std::uint8_t* buffer) override {};
+
+  /// @brief Reads a block reference primitive from a PEG file stream.
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbBlockReference.
+  static EoDbBlockReference* ReadFromPeg(CFile& file);
+
+  /// @brief Reads a legacy insert primitive from a PEG file stream (type code kInsertPrimitive) and converts it to a
+  /// block reference.
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbBlockReference.
+  static EoDbBlockReference* ReadLegacyInsertPeg([[maybe_unused]] CFile& file) {return nullptr;}
 
  public:
   EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& basePoint) const;

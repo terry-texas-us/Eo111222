@@ -269,6 +269,23 @@ void EoDbText::Transform(const EoGeTransformMatrix& transformMatrix) { m_Referen
 void EoDbText::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if (mask != 0) { m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v); }
 }
+EoDbText* EoDbText::ReadFromPeg(CFile& file) {
+  auto color = EoDb::ReadInt16(file);
+  (void)color;  // currently unused, but may be used in the future to indicate the text color
+  auto lineType = EoDb::ReadInt16(file);
+  (void)lineType;  // currently unused, but may be used in the future to indicate the text line type
+  EoDbFontDefinition fontDefinition;
+  fontDefinition.Read(file);
+  EoGeReferenceSystem referenceSystem;
+  referenceSystem.Read(file);
+  CString text;
+  EoDb::Read(file, text);
+
+  auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, text);
+  textPrimitive->ConvertFormattingCharacters();
+  return textPrimitive;
+}
+
 bool EoDbText::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kTextPrimitive));
   EoDb::Write(file, m_color);

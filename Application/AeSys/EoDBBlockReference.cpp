@@ -332,6 +332,30 @@ void EoDbBlockReference::TranslateUsingMask(EoGeVector3d v, DWORD mask) {
   if (mask != 0) { m_insertionPoint += v; }
 }
 
+EoDbBlockReference* EoDbBlockReference::ReadFromPeg(CFile& file) {
+  auto color = EoDb::ReadInt16(file);
+  auto lineType = EoDb::ReadInt16(file);
+  CString name;
+  EoDb::Read(file, name);
+  auto insertionPoint(EoDb::ReadPoint3d(file));
+  auto normal(EoDb::ReadVector3d(file));
+  auto scaleFactors(EoDb::ReadVector3d(file));
+  double rotation = EoDb::ReadDouble(file);
+  auto numberOfColumns = EoDb::ReadInt16(file);
+  auto numberOfRows = EoDb::ReadInt16(file);
+  double columnSpacing = EoDb::ReadDouble(file);
+  double rowSpacing = EoDb::ReadDouble(file);
+
+  auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color),
+      static_cast<std::uint16_t>(lineType), name, insertionPoint, normal, scaleFactors, rotation);
+  blockReference->m_columnCount = numberOfColumns;
+  blockReference->m_rowCount = numberOfRows;
+  blockReference->m_columnSpacing = columnSpacing;
+  blockReference->m_rowSpacing = rowSpacing;
+
+  return blockReference;
+}
+
 bool EoDbBlockReference::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kGroupReferencePrimitive));
   EoDb::Write(file, m_color);

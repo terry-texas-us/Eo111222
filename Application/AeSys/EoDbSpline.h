@@ -51,6 +51,11 @@ class EoDbSpline : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t* buffer) override;
 
+  /// @brief Reads a spline primitive from a PEG file stream (type code kSplinePrimitive).
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbSpline.
+  static EoDbSpline* ReadFromPeg(CFile& file);
+
   /** @brief Generates a set of points along the spline curve based on the control points and the specified order.
    * @param order The order of the spline (degree + 1).
    * @param controlPoints An array of control points that define the shape of the spline.

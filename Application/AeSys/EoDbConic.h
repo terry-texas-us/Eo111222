@@ -189,6 +189,17 @@ class EoDbConic : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t* buffer) override;
 
+  /// @brief Reads a conic primitive from a PEG file stream (type code kConicPrimitive).
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbConic.
+  static EoDbConic* ReadFromPeg(CFile& file);
+
+  /// @brief Reads a legacy ellipse primitive from a PEG file stream (type code kEllipsePrimitive) and converts it to a
+  /// conic.
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbConic.
+  static EoDbConic* ReadFromLegacyEllipsePeg(CFile& file);
+
  public:
   /** @brief Cuts the conic at a specified point, creating a new conic segment.
    *

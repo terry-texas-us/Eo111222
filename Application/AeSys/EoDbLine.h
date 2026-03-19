@@ -70,6 +70,11 @@ class EoDbLine : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t*) override;
 
+  /// @brief Reads a line primitive from a PEG file stream (type code kLinePrimitive).
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbLine.
+  static EoDbLine* ReadFromPeg(CFile& file);
+
   void CutAt2Points(
       const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
 

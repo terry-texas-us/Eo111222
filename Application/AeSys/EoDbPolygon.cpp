@@ -475,6 +475,21 @@ void EoDbPolygon::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   }
 }
 
+EoDbPolygon* EoDbPolygon::ReadFromPeg(CFile& file) {
+  auto penColor = EoDb::ReadInt16(file);
+  auto polygonStyle = static_cast<EoDb::PolygonStyle>(EoDb::ReadInt16(file));
+  auto interiorStyleIndex = EoDb::ReadInt16(file);
+  auto numberOfPoints = EoDb::ReadUInt16(file);
+  auto hatchOrigin = EoDb::ReadPoint3d(file);
+  auto hatchXAxis = EoDb::ReadVector3d(file);
+  auto hatchYAxis = EoDb::ReadVector3d(file);
+
+  EoGePoint3dArray points;
+  points.SetSize(numberOfPoints);
+  for (std::uint16_t n = 0; n < numberOfPoints; n++) { points[n] = EoDb::ReadPoint3d(file); }
+  return new EoDbPolygon(penColor, polygonStyle, interiorStyleIndex, hatchOrigin, hatchXAxis, hatchYAxis, points);
+}
+
 bool EoDbPolygon::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kPolygonPrimitive));
   EoDb::Write(file, m_color);

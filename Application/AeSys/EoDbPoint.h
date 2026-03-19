@@ -57,6 +57,16 @@ class EoDbPoint : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t* buffer) override;
 
+  /// @brief Reads a point primitive from a PEG file stream (type code kPointPrimitive).
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbPoint.
+  static EoDbPoint* ReadFromPeg(CFile& file);
+
+  /// @brief Reads a legacy tag primitive from a PEG file stream (type code kTagPrimitive) and converts it to a point.
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbPoint.
+  static EoDbPoint* ReadFromLegacyTagPeg(CFile& file);
+
   double GetDat(std::uint16_t wDat) const noexcept { return (m_Data[wDat]); }
   EoGePoint3d GetPt() const noexcept { return m_Point; }
   std::int16_t& PointStyle() noexcept { return m_pointStyle; }

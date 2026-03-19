@@ -562,6 +562,55 @@ void EoDbPolyline::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
     if (((mask >> i) & 1UL) == 1) { m_pts[i] += v; }
   }
 }
+EoDbPolyline* EoDbPolyline::ReadFromPeg(CFile& file) {
+  auto color = EoDb::ReadInt16(file);
+  auto lineType = EoDb::ReadInt16(file);
+  auto flags = static_cast<std::int16_t>(EoDb::ReadUInt16(file));
+  auto constantWidth = EoDb::ReadDouble(file);
+  auto numberOfVertices = EoDb::ReadUInt16(file);
+
+  EoGePoint3dArray points;
+  points.SetSize(numberOfVertices);
+
+  for (std::uint16_t n = 0; n < numberOfVertices; n++) { points[n] = EoDb::ReadPoint3d(file); }
+
+  auto* polyline = new EoDbPolyline(color, lineType, points);
+  polyline->m_flags = flags;
+  polyline->m_constantWidth = constantWidth;
+
+  if (flags & sm_HasBulge) {
+    std::vector<double> bulges(numberOfVertices);
+    for (std::uint16_t n = 0; n < numberOfVertices; n++) { bulges[n] = EoDb::ReadDouble(file); }
+    polyline->SetBulges(std::move(bulges));
+  }
+  if (flags & sm_HasWidth) {
+    std::vector<double> startWidths(numberOfVertices);
+    std::vector<double> endWidths(numberOfVertices);
+    for (std::uint16_t n = 0; n < numberOfVertices; n++) { startWidths[n] = EoDb::ReadDouble(file); }
+    for (std::uint16_t n = 0; n < numberOfVertices; n++) { endWidths[n] = EoDb::ReadDouble(file); }
+    polyline->SetWidths(std::move(startWidths), std::move(endWidths));
+  }
+
+  return polyline;
+}
+
+EoDbPolyline* EoDbPolyline::ReadFromCSplinePeg(CFile& file) {
+  auto color = EoDb::ReadInt16(file);
+  auto lineType = EoDb::ReadInt16(file);
+
+  file.Seek(sizeof(std::uint16_t), CFile::current);
+  auto numberOfPoints = EoDb::ReadUInt16(file);
+  file.Seek(sizeof(std::uint16_t), CFile::current);
+  file.Seek(sizeof(EoGeVector3d), CFile::current);
+  file.Seek(sizeof(EoGeVector3d), CFile::current);
+
+  EoGePoint3dArray points;
+  points.SetSize(numberOfPoints);
+  for (std::uint16_t n = 0; n < numberOfPoints; n++) { points[n] = EoDb::ReadPoint3d(file); }
+
+  return new EoDbPolyline(color, lineType, points);
+}
+
 bool EoDbPolyline::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kPolylinePrimitive));
   EoDb::Write(file, m_color);

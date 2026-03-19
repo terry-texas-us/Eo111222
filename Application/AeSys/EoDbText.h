@@ -62,6 +62,11 @@ class EoDbText : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t* buffer) override;
 
+  /// @brief Reads a text primitive from a PEG file stream (type code kTextPrimitive).
+  /// @param file The CFile object representing the PEG file to read from.
+  /// @return A pointer to the constructed EoDbText.
+  static EoDbText* ReadFromPeg(CFile& file);
+
   void ConvertFormattingCharacters();
   void GetBoundingBox(EoGePoint3dArray&, double);
   void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fontDefinition; }
