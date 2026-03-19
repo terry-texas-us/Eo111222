@@ -64,7 +64,8 @@ class EoDbBlockReference : public EoDbPrimitive {
   };
 
  public:
-  EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& insertionPoint) const;
+  EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& basePoint) const;
+  EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& basePoint, const EoGePoint3d& ocsInsertionPoint) const;
 
   [[nodiscard]] constexpr std::int16_t ColumnCount() const noexcept { return m_columnCount; }
   double ColumnSpacing() const noexcept { return m_columnSpacing; }

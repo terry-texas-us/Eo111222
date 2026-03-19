@@ -402,7 +402,7 @@ class EoDbConic : public EoDbPrimitive {
  private:
   [[nodiscard]] EoGePoint3d PointAtAngle(double angle) const {
     const auto minorAxis = MinorAxis();
-    if (m_majorAxis.Length() <= Eo::geometricTolerance) { return m_center; }
+    if (m_majorAxis.Length() < Eo::geometricTolerance) { return m_center; }
 
     EoGeTransformMatrix transformMatrix(m_center, m_majorAxis, minorAxis);
     transformMatrix.Inverse();

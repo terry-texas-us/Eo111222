@@ -13,6 +13,7 @@
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
 #include "EoGeMatrix.h"
+#include "EoGeOcsTransform.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
@@ -41,6 +42,9 @@ EoDbBlockReference::EoDbBlockReference(const CString& name, const EoGePoint3d& i
 }
 
 EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) {
+  m_color = other.m_color;
+  m_lineTypeIndex = other.m_lineTypeIndex;
+  m_layerName = other.m_layerName;
   m_blockName = other.m_blockName;
   m_insertionPoint = other.m_insertionPoint;
   m_normal = other.m_normal;
@@ -64,17 +68,21 @@ EoDbBlockReference::EoDbBlockReference(std::uint16_t color, std::uint16_t lineTy
   m_rowSpacing = 0.0;
 }
 const EoDbBlockReference& EoDbBlockReference::operator=(const EoDbBlockReference& other) {
-  m_blockName = other.m_blockName;
-  m_insertionPoint = other.m_insertionPoint;
-  m_normal = other.m_normal;
-  m_scaleFactors = other.m_scaleFactors;
-  m_rotation = other.m_rotation;
-  m_columnCount = other.m_columnCount;
-  m_rowCount = other.m_rowCount;
-  m_columnSpacing = other.m_columnSpacing;
-  m_rowSpacing = other.m_rowSpacing;
-
-  return (*this);
+  if (this != &other) {
+    m_color = other.m_color;
+    m_lineTypeIndex = other.m_lineTypeIndex;
+    m_layerName = other.m_layerName;
+    m_blockName = other.m_blockName;
+    m_insertionPoint = other.m_insertionPoint;
+    m_normal = other.m_normal;
+    m_scaleFactors = other.m_scaleFactors;
+    m_rotation = other.m_rotation;
+    m_columnCount = other.m_columnCount;
+    m_rowCount = other.m_rowCount;
+    m_columnSpacing = other.m_columnSpacing;
+    m_rowSpacing = other.m_rowSpacing;
+  }
+  return *this;
 }
 void EoDbBlockReference::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   EoDbBlock* Block{};
@@ -86,19 +94,47 @@ void EoDbBlockReference::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   ((EoDbGroup*)Block)->AddPrimsToTreeViewControl(tree, hti);
 }
 
-EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(const EoGePoint3d& insertionPoint) const {
-  // TODO: Validate normal vector
+EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(const EoGePoint3d& basePoint) const {
+  return BuildTransformMatrix(basePoint, m_insertionPoint);
+}
 
-  EoGeTransformMatrix tm1;
-  tm1.Translate(EoGeVector3d(insertionPoint, EoGePoint3d::kOrigin));
-  EoGeTransformMatrix tm2;
-  tm2.Scale(m_scaleFactors);
-  auto zAxisRotation = EoGeTransformMatrix::ZAxisRotation(std::sin(m_rotation), std::cos(m_rotation));
-  EoGeTransformMatrix tm4(EoGePoint3d::kOrigin, m_normal);
-  EoGeTransformMatrix tm5;
-  tm5.Translate(EoGeVector3d(EoGePoint3d::kOrigin, m_insertionPoint));
+/** @brief Builds the composite transform for a specific OCS insertion point.
+ *
+ *  The transform chain applies in order (left-to-right in the operator* chain):
+ *  1. Translate by -basePoint (center block geometry at origin)
+ *  2. Scale by INSERT scale factors
+ *  3. Rotate around OCS Z-axis by INSERT rotation angle
+ *  4. Translate by ocsInsertionPoint (still in OCS space)
+ *  5. Transform OCS → WCS using the DXF arbitrary axis algorithm
+ *
+ *  The two-parameter overload enables array INSERT rendering, where each grid
+ *  instance has an adjusted insertion point offset by (col × colSpacing, row × rowSpacing)
+ *  in OCS coordinates.
+ *
+ *  @param basePoint The block definition's base point (subtracted first to center geometry).
+ *  @param ocsInsertionPoint The insertion point in Object Coordinate System (group 10/20/30).
+ */
+EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(
+    const EoGePoint3d& basePoint, const EoGePoint3d& ocsInsertionPoint) const {
+  // Step 1: Translate block geometry so base point is at origin
+  EoGeTransformMatrix tmNegBase;
+  tmNegBase.Translate(EoGeVector3d(basePoint, EoGePoint3d::kOrigin));
 
-  return ((EoGeMatrix)tm1 * (EoGeMatrix)tm2 * (EoGeMatrix)zAxisRotation * (EoGeMatrix)tm4 * (EoGeMatrix)tm5);
+  // Step 2: Scale by INSERT scale factors
+  EoGeTransformMatrix tmScale;
+  tmScale.Scale(m_scaleFactors);
+
+  // Step 3: Rotate around OCS Z-axis by INSERT rotation angle
+  auto tmZRot = EoGeTransformMatrix::ZAxisRotation(std::sin(m_rotation), std::cos(m_rotation));
+
+  // Step 4: Translate by insertion point in OCS (before OCS→WCS transform)
+  EoGeTransformMatrix tmInsertOcs;
+  tmInsertOcs.Translate(EoGeVector3d(EoGePoint3d::kOrigin, ocsInsertionPoint));
+
+  // Step 5: OCS → WCS using the DXF arbitrary axis algorithm
+  EoGeOcsTransform tmOcsToWcs(m_normal);
+
+  return ((EoGeMatrix)tmNegBase * (EoGeMatrix)tmScale * (EoGeMatrix)tmZRot * (EoGeMatrix)tmInsertOcs * (EoGeMatrix)tmOcsToWcs);
 }
 
 EoDbPrimitive*& EoDbBlockReference::Copy(EoDbPrimitive*& primitive) {
@@ -109,14 +145,25 @@ void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
   EoDbBlock* block{};
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return; }
 
-  auto transformMatrix = BuildTransformMatrix(block->BasePoint());
+  const auto basePoint = block->BasePoint();
 
-  view->PushModelTransform();
-  view->SetLocalModelTransform(transformMatrix);
+  for (std::int16_t col = 0; col < m_columnCount; ++col) {
+    for (std::int16_t row = 0; row < m_rowCount; ++row) {
+      // Compute per-instance insertion point in OCS (grid offset along OCS X/Y axes)
+      auto ocsInsertionPoint = m_insertionPoint;
+      ocsInsertionPoint.x += col * m_columnSpacing;
+      ocsInsertionPoint.y += row * m_rowSpacing;
 
-  block->Display(view, deviceContext);
+      auto transformMatrix = BuildTransformMatrix(basePoint, ocsInsertionPoint);
 
-  view->PopModelTransform();
+      view->PushModelTransform();
+      view->SetLocalModelTransform(transformMatrix);
+
+      block->Display(view, deviceContext);
+
+      view->PopModelTransform();
+    }
+  }
 }
 void EoDbBlockReference::AddReportToMessageList(const EoGePoint3d&) {
   CString message;
@@ -258,6 +305,7 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
   auto position = block->GetHeadPosition();
   while (position != nullptr) {
     if ((block->GetNext(position))->SelectUsingPoint(view, point, ptProj)) {
+      view->ModelTransformPoint(ptProj);
       bResult = true;
       break;
     }
@@ -276,13 +324,14 @@ void EoDbBlockReference::Transform(const EoGeTransformMatrix& transformMatrix) {
   m_insertionPoint = transformMatrix * m_insertionPoint;
   m_normal = transformMatrix * m_normal;
 
-  if (std::abs(m_normal.x) < Eo::geometricTolerance && std::abs(m_normal.y) <= Eo::geometricTolerance) {
+  if (std::abs(m_normal.x) < Eo::geometricTolerance && std::abs(m_normal.y) < Eo::geometricTolerance) {
     m_scaleFactors = transformMatrix * m_scaleFactors;
   }
 }
 void EoDbBlockReference::TranslateUsingMask(EoGeVector3d v, DWORD mask) {
   if (mask != 0) { m_insertionPoint += v; }
 }
+
 bool EoDbBlockReference::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kGroupReferencePrimitive));
   EoDb::Write(file, m_color);

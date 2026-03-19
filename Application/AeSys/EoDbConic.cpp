@@ -450,7 +450,7 @@ void EoDbConic::GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d m
   auto minorAxis = MinorAxis();
 
   // Guard against degenerate geometry
-  if (majorAxis.Length() < Eo::geometricTolerance || minorAxis.Length() <= Eo::geometricTolerance) { return; }
+  if (majorAxis.Length() < Eo::geometricTolerance || minorAxis.Length() < Eo::geometricTolerance) { return; }
 
   double sweepAngle = m_endAngle - m_startAngle;
   if (sweepAngle <= 0.0) { sweepAngle += Eo::TwoPi; }

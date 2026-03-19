@@ -103,7 +103,7 @@ EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle) {
   double sinAngle{};
   double cosAngle{};
 
-  if (std::abs(angle) < Eo::geometricTolerance || std::abs(angle - Eo::TwoPi) <= Eo::geometricTolerance) {
+  if (std::abs(angle) < Eo::geometricTolerance || std::abs(angle - Eo::TwoPi) < Eo::geometricTolerance) {
     cosAngle = 1.0;
   } else if (std::abs(angle - Eo::HalfPi) < Eo::geometricTolerance ||
              std::abs(angle + Eo::Pi + Eo::HalfPi) < Eo::geometricTolerance) {
