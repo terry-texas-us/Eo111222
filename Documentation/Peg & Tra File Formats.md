@@ -186,13 +186,25 @@
       {0 or more control 
       points}                point3d   
 
-#### Polyline primitive (never made it release: if already written flags not streamed)
+#### Polyline primitive
+Generalized polyline supporting straight segments, bulge arcs, and per-vertex widths.
+Handles both DXF LWPOLYLINE and 2D/3D POLYLINE entities.
+
       Type code <0x2002>     uint16_t  [0-1]
       Pen color              uint16_t  [2-3]
       Line type              uint16_t  [4-5]
       Flags                  uint16_t  [6-7]
-      Number of points       uint16_t  [8-9]
-      {0 or more points}     point3d   
+         bit 0 (0x0001): Closed — last vertex connects back to first
+         bit 1 (0x0002): HasBulge — bulge array follows vertices
+         bit 2 (0x0004): HasWidth — start/end width arrays follow
+         bit 3 (0x0008): Plinegen — generate linetype pattern across vertices
+      Number of vertices     uint16_t  [8-9]
+      {vertices}             point3d[]
+      if (Flags & HasBulge):
+        {bulge values}       double[]  (one per vertex, tan(θ/4))
+      if (Flags & HasWidth):
+        {start widths}       double[]  (one per vertex)
+        {end widths}         double[]  (one per vertex)
 
 #### Text primitive
       Type code <0x4000>     uint16_t  [0-1]

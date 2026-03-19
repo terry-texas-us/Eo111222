@@ -1,5 +1,6 @@
 ﻿#include "Stdafx.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
@@ -1146,10 +1147,124 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
   polylinePrimitive->SetNumberOfVertices(numVerts);
 
   for (std::uint16_t index = 0; index < numVerts; ++index) {
-    polylinePrimitive->SetVertex2D(index, polyline.m_vertices[index]);  // value vector, no raw pointer
+    polylinePrimitive->SetVertexFromLwVertex(index, polyline.m_vertices[index]);
   }
 
-  if (polyline.m_polylineFlag & 0x01) { polylinePrimitive->SetFlag(EoDbPolyline::sm_Closed); }
+  if (polyline.m_polylineFlag & 0x01) { polylinePrimitive->SetClosed(true); }
+  if (polyline.m_polylineFlag & 0x80) { polylinePrimitive->SetPlinegen(true); }
+
+  // Store constant width for round-trip fidelity
+  polylinePrimitive->SetConstantWidth(polyline.m_constantWidth);
+
+  // Populate per-vertex bulge values when any vertex has a non-zero bulge
+  const bool hasAnyBulge = std::any_of(polyline.m_vertices.begin(), polyline.m_vertices.end(),
+      [](const EoDxfPolylineVertex2d& vertex) noexcept { return vertex.bulge != 0.0; });
+  if (hasAnyBulge) {
+    std::vector<double> bulges(numVerts);
+    for (std::uint16_t index = 0; index < numVerts; ++index) {
+      bulges[index] = polyline.m_vertices[index].bulge;
+    }
+    polylinePrimitive->SetBulges(std::move(bulges));
+  }
+
+  // Populate per-vertex width values: use per-vertex widths if present, else expand constant width
+  const bool hasAnyPerVertexWidth = std::any_of(polyline.m_vertices.begin(), polyline.m_vertices.end(),
+      [](const EoDxfPolylineVertex2d& vertex) { return vertex.stawidth != 0.0 || vertex.endwidth != 0.0; });
+  if (hasAnyPerVertexWidth) {
+    std::vector<double> startWidths(numVerts);
+    std::vector<double> endWidths(numVerts);
+    for (std::uint16_t index = 0; index < numVerts; ++index) {
+      startWidths[index] = polyline.m_vertices[index].stawidth;
+      endWidths[index] = polyline.m_vertices[index].endwidth;
+    }
+    polylinePrimitive->SetWidths(std::move(startWidths), std::move(endWidths));
+  } else if (polyline.m_constantWidth != 0.0) {
+    // Expand constant width into per-vertex start/end widths
+    std::vector<double> startWidths(numVerts, polyline.m_constantWidth);
+    std::vector<double> endWidths(numVerts, polyline.m_constantWidth);
+    polylinePrimitive->SetWidths(std::move(startWidths), std::move(endWidths));
+  }
+
+  AddToDocument(polylinePrimitive, document);
+}
+
+void EoDbDxfInterface::ConvertPolyline3DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 3, L"Polyline 3D entity conversion (%zu vertices)\n", polyline.m_vertices.size());
+
+  if (polyline.m_vertices.empty()) { return; }
+
+  auto* polylinePrimitive = new EoDbPolyline();
+  polylinePrimitive->SetBaseProperties(&polyline, document);
+
+  const auto numVerts = static_cast<std::uint16_t>(polyline.m_vertices.size());
+  polylinePrimitive->SetNumberOfVertices(numVerts);
+
+  for (std::uint16_t index = 0; index < numVerts; ++index) {
+    const auto& vertex = polyline.m_vertices[index];
+    // 3D polyline vertices are truly 3D — no OCS/elevation mapping needed
+    polylinePrimitive->SetVertex(index,
+        EoGePoint3d{vertex->m_locationPoint.x, vertex->m_locationPoint.y, vertex->m_locationPoint.z});
+  }
+
+  if (polyline.m_polylineFlag & 0x01) { polylinePrimitive->SetClosed(true); }
+  if (polyline.m_polylineFlag & 0x80) { polylinePrimitive->SetPlinegen(true); }
+
+  AddToDocument(polylinePrimitive, document);
+}
+
+void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 3, L"Polyline 2D entity conversion (%zu vertices)\n", polyline.m_vertices.size());
+
+  if (polyline.m_vertices.empty()) { return; }
+
+  // For curve-fit (0x02) and spline-fit (0x04) polylines, keep all vertices including generated
+  // points. The curve-fit/spline-fit structure is lost, but the rendered geometry is preserved.
+
+  auto* polylinePrimitive = new EoDbPolyline();
+  polylinePrimitive->SetBaseProperties(&polyline, document);
+
+  const auto numVerts = static_cast<std::uint16_t>(polyline.m_vertices.size());
+  polylinePrimitive->SetNumberOfVertices(numVerts);
+
+  // 2D POLYLINE: vertex x,y are in OCS; z is the polyline elevation
+  const double elevation = polyline.m_polylineElevation.z;
+  for (std::uint16_t index = 0; index < numVerts; ++index) {
+    const auto& vertex = polyline.m_vertices[index];
+    polylinePrimitive->SetVertex(index,
+        EoGePoint3d{vertex->m_locationPoint.x, vertex->m_locationPoint.y, elevation});
+  }
+
+  if (polyline.m_polylineFlag & 0x01) { polylinePrimitive->SetClosed(true); }
+  if (polyline.m_polylineFlag & 0x80) { polylinePrimitive->SetPlinegen(true); }
+
+  // Populate per-vertex bulge values when any vertex has a non-zero bulge
+  const bool hasAnyBulge = std::any_of(polyline.m_vertices.begin(), polyline.m_vertices.end(),
+      [](const EoDxfVertex* vertex) { return vertex->m_bulge != 0.0; });
+  if (hasAnyBulge) {
+    std::vector<double> bulges(numVerts);
+    for (std::uint16_t index = 0; index < numVerts; ++index) {
+      bulges[index] = polyline.m_vertices[index]->m_bulge;
+    }
+    polylinePrimitive->SetBulges(std::move(bulges));
+  }
+
+  // Populate per-vertex width values: use per-vertex widths if present, else expand default widths
+  const bool hasAnyPerVertexWidth = std::any_of(polyline.m_vertices.begin(), polyline.m_vertices.end(),
+      [](const EoDxfVertex* vertex) { return vertex->m_startingWidth != 0.0 || vertex->m_endingWidth != 0.0; });
+  if (hasAnyPerVertexWidth) {
+    std::vector<double> startWidths(numVerts);
+    std::vector<double> endWidths(numVerts);
+    for (std::uint16_t index = 0; index < numVerts; ++index) {
+      startWidths[index] = polyline.m_vertices[index]->m_startingWidth;
+      endWidths[index] = polyline.m_vertices[index]->m_endingWidth;
+    }
+    polylinePrimitive->SetWidths(std::move(startWidths), std::move(endWidths));
+  } else if (polyline.m_defaultStartWidth != 0.0 || polyline.m_defaultEndWidth != 0.0) {
+    // Expand default widths into per-vertex start/end widths
+    std::vector<double> startWidths(numVerts, polyline.m_defaultStartWidth);
+    std::vector<double> endWidths(numVerts, polyline.m_defaultEndWidth);
+    polylinePrimitive->SetWidths(std::move(startWidths), std::move(endWidths));
+  }
 
   AddToDocument(polylinePrimitive, document);
 }

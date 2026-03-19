@@ -34,6 +34,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DXF Test FIles", "DXF Test 
 		DXF Test Files\AcadProxyEntity_Test.dxf = DXF Test Files\AcadProxyEntity_Test.dxf
 		DXF Test Files\Floor Plan Sample.dxf = DXF Test Files\Floor Plan Sample.dxf
 		C:\Users\tsmit\Desktop\Help Peg.pdf = C:\Users\tsmit\Desktop\Help Peg.pdf
+		DXF Test Files\LWPolyline_Bulge_Test.dxf = DXF Test Files\LWPolyline_Bulge_Test.dxf
 		DXF Test Files\Minimal_DXF_AC1021.dxf = DXF Test Files\Minimal_DXF_AC1021.dxf
 		DXF Test Files\RoomNumber_Block_Insert.dxf = DXF Test Files\RoomNumber_Block_Insert.dxf
 		DXF Test Files\Spline_Test.dxf = DXF Test Files\Spline_Test.dxf

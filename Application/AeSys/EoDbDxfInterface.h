@@ -231,7 +231,36 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertPointEntity(point, m_document);
   }
 
-  void AddPolyline([[maybe_unused]] const EoDxfPolyline& polyline) override { countOfPolyline--; }
+  void AddPolyline(const EoDxfPolyline& polyline) override {
+    const auto flag = polyline.m_polylineFlag;
+    if (flag & 0x40) {
+      // Polyface mesh — decompose face records into individual polygons (deferred to PEG V2)
+      ATLTRACE2(traceGeneral, 1, L"EoDxfInterface::AddPolyline - polyface mesh skipped (flag 0x%04X)\n", flag);
+      countOfPolyline--;
+    } else if (flag & 0x10) {
+      // Polygon mesh — not mappable to current primitives
+      ATLTRACE2(traceGeneral, 1, L"EoDxfInterface::AddPolyline - polygon mesh skipped (flag 0x%04X)\n", flag);
+      countOfPolyline--;
+    } else if (flag & 0x08) {
+      // 3D polyline — straightforward vertex chain
+      countOfPolyline++;
+      if (m_inBlockDefinition) {
+        ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddPolyline3D - block <%s>\n", m_blockName.c_str());
+      } else {
+        ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddPolyline3D - entities section\n");
+      }
+      ConvertPolyline3DEntity(polyline, m_document);
+    } else {
+      // 2D polyline — elevation + optional bulge/width
+      countOfPolyline++;
+      if (m_inBlockDefinition) {
+        ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddPolyline2D - block <%s>\n", m_blockName.c_str());
+      } else {
+        ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddPolyline2D - entities section\n");
+      }
+      ConvertPolyline2DEntity(polyline, m_document);
+    }
+  }
   void AddRay([[maybe_unused]] const EoDxfRay& ray) override { countOfRay--; }
 
   void AddSolid([[maybe_unused]] const EoDxfSolid& solid) override { countOfSolid--; }
@@ -369,6 +398,8 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertLWPolylineEntity(const EoDxfLwPolyline& lwPolyline, AeSysDoc* document);
   void ConvertMTextEntity(const EoDxfMText& mText, [[maybe_unused]] AeSysDoc* document);
   void ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document);
+  void ConvertPolyline2DEntity(const EoDxfPolyline& polyline, AeSysDoc* document);
+  void ConvertPolyline3DEntity(const EoDxfPolyline& polyline, AeSysDoc* document);
   void ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* document);
   void ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document);
 

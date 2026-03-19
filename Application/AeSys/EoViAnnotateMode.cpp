@@ -457,7 +457,7 @@ void AeSysView::GenerateLineEndItem(
     itemPoints.Add(endPoint);
     itemPoints.Add(pt.RotateAboutAxis(endPoint, cameraDirection, -angle));
     EoDbPolyline* polyline = new EoDbPolyline(1, 1, itemPoints);
-    if (type == 2) { polyline->SetFlag(0x0010); }
+    if (type == 2) { polyline->SetClosed(true); }
     group->AddTail(polyline);
   } else if (type == 3) {
     double angle{9.96686524912e-2};

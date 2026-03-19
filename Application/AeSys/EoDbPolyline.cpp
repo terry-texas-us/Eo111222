@@ -37,7 +37,7 @@ EoDbPolyline::EoDbPolyline() { m_flags = 0; }
 EoDbPolyline::EoDbPolyline(
     std::int16_t penColor, std::int16_t lineType, EoGePoint3d& centerPoint, double radius, int numberOfSides)
     : EoDbPrimitive(penColor, lineType) {
-  m_flags = 0x0010;  // polyline is closed
+  m_flags = sm_Closed;
 
   auto* activeView = AeSysView::GetActiveView();
 
@@ -69,13 +69,23 @@ EoDbPolyline::EoDbPolyline(const EoDbPolyline& other) {
   m_lineTypeIndex = other.m_lineTypeIndex;
   m_flags = other.m_flags;
   m_pts.Copy(other.m_pts);
+  m_bulges = other.m_bulges;
+  m_startWidths = other.m_startWidths;
+  m_endWidths = other.m_endWidths;
+  m_constantWidth = other.m_constantWidth;
 }
 
 const EoDbPolyline& EoDbPolyline::operator=(const EoDbPolyline& other) {
-  m_color = other.m_color;
-  m_lineTypeIndex = other.m_lineTypeIndex;
-  m_flags = other.m_flags;
-  m_pts.Copy(other.m_pts);
+  if (this != &other) {
+    m_color = other.m_color;
+    m_lineTypeIndex = other.m_lineTypeIndex;
+    m_flags = other.m_flags;
+    m_pts.Copy(other.m_pts);
+    m_bulges = other.m_bulges;
+    m_startWidths = other.m_startWidths;
+    m_endWidths = other.m_endWidths;
+    m_constantWidth = other.m_constantWidth;
+  }
   return (*this);
 }
 
@@ -91,23 +101,57 @@ EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
 
 /** Display the polyline on the given device context within the specified view.
  *
+ * When the polyline has bulge data, bulged segments are tessellated into arc
+ * approximation points before passing to the polyline rendering pipeline.
+ * The closing segment (for closed polylines) also respects its bulge value.
+ *
  * @param view Pointer to the AeSysView where the polyline will be displayed.
  * @param deviceContext Pointer to the CDC device context for rendering.
  */
 void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
   ATLTRACE2(traceGeneral, 3, L"EoDbPolyline::Display(%p, %p)\n", view, deviceContext);
 
+  const auto numberOfVertices = m_pts.GetSize();
+  if (numberOfVertices < 2) { return; }
+
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();
 
   renderState.SetPen(view, deviceContext, color, lineType);
 
-  if (IsLooped()) {
+  if (IsClosed()) {
     polyline::BeginLineLoop();
   } else {
     polyline::BeginLineStrip();
   }
-  for (auto i = 0; i < m_pts.GetSize(); i++) { polyline::SetVertex(m_pts[i]); }
+
+  if (HasBulge()) {
+    std::vector<EoGePoint3d> arcPoints;
+
+    // Emit the first vertex
+    polyline::SetVertex(m_pts[0]);
+
+    // Emit intermediate and segment-end vertices for each edge
+    for (INT_PTR i = 0; i < numberOfVertices - 1; ++i) {
+      const double bulge = (static_cast<size_t>(i) < m_bulges.size()) ? m_bulges[static_cast<size_t>(i)] : 0.0;
+      polyline::TessellateArcSegment(m_pts[i], m_pts[i + 1], bulge, arcPoints);
+      for (const auto& point : arcPoints) { polyline::SetVertex(point); }
+    }
+
+    // For closed polylines, the closing segment (last → first) also carries a bulge
+    if (IsClosed()) {
+      const double closingBulge = (static_cast<size_t>(numberOfVertices - 1) < m_bulges.size())
+                                      ? m_bulges[static_cast<size_t>(numberOfVertices - 1)]
+                                      : 0.0;
+      if (std::abs(closingBulge) >= Eo::geometricTolerance) {
+        polyline::TessellateArcSegment(m_pts[numberOfVertices - 1], m_pts[0], closingBulge, arcPoints);
+        // Emit all but the last point (which is m_pts[0], already handled by BeginLineLoop)
+        for (size_t j = 0; j + 1 < arcPoints.size(); ++j) { polyline::SetVertex(arcPoints[j]); }
+      }
+    }
+  } else {
+    for (auto i = 0; i < numberOfVertices; i++) { polyline::SetVertex(m_pts[i]); }
+  }
   polyline::__End(view, deviceContext, lineType);
 }
 
@@ -124,22 +168,48 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
     begin = m_pts[sm_pivotVertex];
     end = m_pts[SwingVertex()];
   }
-  double angleInXYPlane;
-  double edgeLength = EoGeVector3d(begin, end).Length();
 
-  if (EoGeVector3d(point, begin).Length() > edgeLength * 0.5) {
-    angleInXYPlane = EoGeLine(end, begin).AngleFromXAxisXY();
-  } else {
+  double edgeLength;
+  double angleInXYPlane;
+
+  // Check if this edge has a non-zero bulge
+  const double bulge =
+      (HasBulge() && static_cast<size_t>(beginVertexIndex) < m_bulges.size())
+          ? m_bulges[static_cast<size_t>(beginVertexIndex)]
+          : 0.0;
+
+  if (std::abs(bulge) >= Eo::geometricTolerance) {
+    // Arc segment: compute arc length = radius × |includedAngle|
+    const double chordLength = EoGeVector3d(begin, end).Length();
+    const double includedAngle = 4.0 * std::atan(std::abs(bulge));
+    const double sinHalfAngle = std::sin(includedAngle / 2.0);
+    if (std::abs(sinHalfAngle) > Eo::geometricTolerance) {
+      const double radius = (chordLength / 2.0) / sinHalfAngle;
+      edgeLength = radius * includedAngle;
+    } else {
+      edgeLength = chordLength;
+    }
+    // Report the chord direction angle (start→end baseline)
     angleInXYPlane = EoGeLine(begin, end).AngleFromXAxisXY();
+  } else {
+    edgeLength = EoGeVector3d(begin, end).Length();
+    if (EoGeVector3d(point, begin).Length() > edgeLength * 0.5) {
+      angleInXYPlane = EoGeLine(end, begin).AngleFromXAxisXY();
+    } else {
+      angleInXYPlane = EoGeLine(begin, end).AngleFromXAxisXY();
+    }
   }
+
   CString lengthAsString;
   CString angleAsString;
   app.FormatLength(lengthAsString, app.GetUnits(), edgeLength);
   app.FormatAngle(angleAsString, angleInXYPlane, 8, 3);
 
+  CString edgeType = (std::abs(bulge) >= Eo::geometricTolerance) ? L"Polyline Arc" : L"Polyline Edge";
   CString message;
-  message.Format(L"<Polyline Edge> Color: %s Line Type: %s \u2022 %s @ %s", FormatPenColor().GetString(),
-      FormatLineType().GetString(), lengthAsString.TrimLeft().GetString(), angleAsString.GetString());
+  message.Format(L"<%s> Color: %s Line Type: %s \u2022 %s @ %s", edgeType.GetString(),
+      FormatPenColor().GetString(), FormatLineType().GetString(),
+      lengthAsString.TrimLeft().GetString(), angleAsString.GetString());
   app.AddStringToMessageList(message);
 
   app.SetEngagedLength(edgeLength);
@@ -151,12 +221,20 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
 #endif  // USING_DDE
 }
 void EoDbPolyline::FormatGeometry(CString& str) {
-  for (auto i = 0; i < m_pts.GetSize(); i++) { str += L"Point;" + m_pts[i].ToString(); }
+  for (auto i = 0; i < m_pts.GetSize(); i++) {
+    str += L"Point;" + m_pts[i].ToString();
+    if (HasBulge() && i < static_cast<INT_PTR>(m_bulges.size())) {
+      CString bulgeStr;
+      bulgeStr.Format(L"\tBulge;%.6f", m_bulges[static_cast<size_t>(i)]);
+      str += bulgeStr;
+    }
+  }
 }
 
 void EoDbPolyline::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
-      static_cast<int>(m_pts.GetSize()));
+  str.Format(L"Color;%s\tStyle;%s\tPoints;%d\tClosed;%s\tBulge;%s\tWidth;%s", FormatPenColor().GetString(),
+      FormatLineType().GetString(), static_cast<int>(m_pts.GetSize()), IsClosed() ? L"Yes" : L"No",
+      HasBulge() ? L"Yes" : L"No", HasWidth() ? L"Yes" : L"No");
 }
 
 void EoDbPolyline::GetAllPoints(EoGePoint3dArray& points) {
@@ -173,10 +251,11 @@ EoGePoint3d EoDbPolyline::GetControlPoint() {
 }
 void EoDbPolyline::GetExtents(
     AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
-  EoGePoint3d pt;
+  EoGePoint3dArray tessellatedPoints;
+  BuildTessellatedPoints(tessellatedPoints);
 
-  for (auto i = 0; i < m_pts.GetSize(); i++) {
-    pt = m_pts[i];
+  for (auto i = 0; i < tessellatedPoints.GetSize(); i++) {
+    EoGePoint3d pt = tessellatedPoints[i];
     view->ModelTransformPoint(pt);
     pt = transformMatrix * pt;
     ptMin = EoGePoint3d::Min(ptMin, pt);
@@ -223,13 +302,18 @@ EoGePoint3d EoDbPolyline::GoToNextControlPoint() {
 }
 
 bool EoDbPolyline::IsInView(AeSysView* view) {
+  EoGePoint3dArray tessellatedPoints;
+  BuildTessellatedPoints(tessellatedPoints);
+
+  if (tessellatedPoints.GetSize() < 2) { return false; }
+
   EoGePoint4d pt[2]{};
 
-  pt[0] = EoGePoint4d{m_pts[0]};
+  pt[0] = EoGePoint4d{tessellatedPoints[0]};
   view->ModelViewTransformPoint(pt[0]);
 
-  for (std::uint16_t w = 1; w < m_pts.GetSize(); w++) {
-    pt[1] = EoGePoint4d{m_pts[w]};
+  for (INT_PTR i = 1; i < tessellatedPoints.GetSize(); i++) {
+    pt[1] = EoGePoint4d{tessellatedPoints[i]};
     view->ModelViewTransformPoint(pt[1]);
 
     if (EoGePoint4d::ClipLine(pt[0], pt[1])) { return true; }
@@ -296,30 +380,49 @@ EoGePoint3d EoDbPolyline::SelectAtControlPoint(AeSysView* view, const EoGePoint4
   return (sm_controlPointIndex == SHRT_MAX) ? EoGePoint3d::kOrigin : m_pts[sm_controlPointIndex];
 }
 
-bool EoDbPolyline::SelectUsingLine(
-    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
-  return false;
-}
+bool EoDbPolyline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) {
+  const auto numberOfVertices = m_pts.GetSize();
+  if (numberOfVertices < 2) { return false; }
 
-bool EoDbPolyline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
-  std::uint16_t wPts = std::uint16_t(m_pts.GetSize());
-  if (sm_EdgeToEvaluate > 0 && sm_EdgeToEvaluate <= wPts) {  // Evaluate specified edge of polyline
-    EoGePoint4d ptBeg(m_pts[sm_EdgeToEvaluate - 1]);
-    EoGePoint4d ptEnd(m_pts[sm_EdgeToEvaluate % wPts]);
+  std::uint16_t wEdges = std::uint16_t(numberOfVertices);
+  if (!IsClosed()) { wEdges--; }
+  std::uint16_t wPts = std::uint16_t(numberOfVertices);
 
-    view->ModelViewTransformPoint(ptBeg);
-    view->ModelViewTransformPoint(ptEnd);
+  if (HasBulge()) {
+    std::vector<EoGePoint3d> arcPoints;
 
-    EoGeLine LineSegment(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
-    if (LineSegment.IsSelectedByPointXY(
-            EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
-      ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
-      return true;
+    for (std::uint16_t w = 1; w <= wEdges; w++) {
+      const INT_PTR edgeStart = w - 1;
+      const INT_PTR edgeEnd = w % wPts;
+      const double bulge =
+          (static_cast<size_t>(edgeStart) < m_bulges.size()) ? m_bulges[static_cast<size_t>(edgeStart)] : 0.0;
+
+      polyline::TessellateArcSegment(m_pts[edgeStart], m_pts[edgeEnd], bulge, arcPoints);
+
+      EoGePoint4d ptBeg(m_pts[edgeStart]);
+      view->ModelViewTransformPoint(ptBeg);
+
+      for (const auto& arcPoint : arcPoints) {
+        EoGePoint4d ptEnd(arcPoint);
+        view->ModelViewTransformPoint(ptEnd);
+
+        EoGePoint3d intersection;
+        if (EoGeLine::Intersection_xy(line, EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}), intersection)) {
+          double relation{};
+
+          if (line.ComputeParametricRelation(intersection, relation)
+              && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+            if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation)
+                && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+              intersection.z = ptBeg.z + relation * (ptEnd.z - ptBeg.z);
+              intersections.Add(intersection);
+            }
+          }
+        }
+        ptBeg = ptEnd;
+      }
     }
-  } else {  // Evaluate entire polyline
-    std::uint16_t wEdges = std::uint16_t(m_pts.GetSize());
-    if (!IsLooped()) { wEdges--; }
-
+  } else {
     EoGePoint4d ptBeg(m_pts[0]);
     view->ModelViewTransformPoint(ptBeg);
 
@@ -327,21 +430,126 @@ bool EoDbPolyline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoin
       EoGePoint4d ptEnd(m_pts[w % wPts]);
       view->ModelViewTransformPoint(ptEnd);
 
-      EoGeLine LineSegment(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
-      if (LineSegment.IsSelectedByPointXY(
-              EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
-        ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
-        sm_Edge = w;
-        sm_pivotVertex = wPts;
-        return true;
+      EoGePoint3d intersection;
+      if (EoGeLine::Intersection_xy(line, EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}), intersection)) {
+        double relation{};
+
+        if (line.ComputeParametricRelation(intersection, relation)
+            && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+          if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation)
+              && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+            intersection.z = ptBeg.z + relation * (ptEnd.z - ptBeg.z);
+            intersections.Add(intersection);
+          }
+        }
       }
       ptBeg = ptEnd;
+    }
+  }
+  return !intersections.IsEmpty();
+}
+
+bool EoDbPolyline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
+  std::uint16_t wPts = std::uint16_t(m_pts.GetSize());
+  if (sm_EdgeToEvaluate > 0 && sm_EdgeToEvaluate <= wPts) {  // Evaluate specified edge of polyline
+    const INT_PTR edgeStart = sm_EdgeToEvaluate - 1;
+    const INT_PTR edgeEnd = sm_EdgeToEvaluate % wPts;
+
+    if (HasBulge()) {
+      // Tessellate the single specified edge and test each sub-segment
+      const double bulge =
+          (static_cast<size_t>(edgeStart) < m_bulges.size()) ? m_bulges[static_cast<size_t>(edgeStart)] : 0.0;
+      std::vector<EoGePoint3d> arcPoints;
+      polyline::TessellateArcSegment(m_pts[edgeStart], m_pts[edgeEnd], bulge, arcPoints);
+
+      EoGePoint4d ptBeg(m_pts[edgeStart]);
+      view->ModelViewTransformPoint(ptBeg);
+
+      for (const auto& arcPoint : arcPoints) {
+        EoGePoint4d ptEnd(arcPoint);
+        view->ModelViewTransformPoint(ptEnd);
+
+        EoGeLine lineSegment(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
+        if (lineSegment.IsSelectedByPointXY(
+                EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+          ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
+          return true;
+        }
+        ptBeg = ptEnd;
+      }
+    } else {
+      EoGePoint4d ptBeg(m_pts[edgeStart]);
+      EoGePoint4d ptEnd(m_pts[edgeEnd]);
+
+      view->ModelViewTransformPoint(ptBeg);
+      view->ModelViewTransformPoint(ptEnd);
+
+      EoGeLine lineSegment(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
+      if (lineSegment.IsSelectedByPointXY(
+              EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+        ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
+        return true;
+      }
+    }
+  } else {  // Evaluate entire polyline
+    std::uint16_t wEdges = std::uint16_t(m_pts.GetSize());
+    if (!IsClosed()) { wEdges--; }
+
+    if (HasBulge()) {
+      std::vector<EoGePoint3d> arcPoints;
+
+      for (std::uint16_t w = 1; w <= wEdges; w++) {
+        const INT_PTR edgeStart = w - 1;
+        const INT_PTR edgeEnd = w % wPts;
+        const double bulge =
+            (static_cast<size_t>(edgeStart) < m_bulges.size()) ? m_bulges[static_cast<size_t>(edgeStart)] : 0.0;
+
+        polyline::TessellateArcSegment(m_pts[edgeStart], m_pts[edgeEnd], bulge, arcPoints);
+
+        EoGePoint4d ptBeg(m_pts[edgeStart]);
+        view->ModelViewTransformPoint(ptBeg);
+
+        for (const auto& arcPoint : arcPoints) {
+          EoGePoint4d ptEnd(arcPoint);
+          view->ModelViewTransformPoint(ptEnd);
+
+          EoGeLine lineSegment(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
+          if (lineSegment.IsSelectedByPointXY(
+                  EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+            ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
+            sm_Edge = w;
+            sm_pivotVertex = wPts;
+            return true;
+          }
+          ptBeg = ptEnd;
+        }
+      }
+    } else {
+      EoGePoint4d ptBeg(m_pts[0]);
+      view->ModelViewTransformPoint(ptBeg);
+
+      for (std::uint16_t w = 1; w <= wEdges; w++) {
+        EoGePoint4d ptEnd(m_pts[w % wPts]);
+        view->ModelViewTransformPoint(ptEnd);
+
+        EoGeLine lineSegment(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
+        if (lineSegment.IsSelectedByPointXY(
+                EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+          ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
+          sm_Edge = w;
+          sm_pivotVertex = wPts;
+          return true;
+        }
+        ptBeg = ptEnd;
+      }
     }
   }
   return false;
 }
 bool EoDbPolyline::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
-  return polyline::SelectUsingRectangle(view, pt1, pt2, m_pts);
+  EoGePoint3dArray tessellatedPoints;
+  BuildTessellatedPoints(tessellatedPoints);
+  return polyline::SelectUsingRectangle(view, pt1, pt2, tessellatedPoints);
 }
 void EoDbPolyline::Transform(const EoGeTransformMatrix& transformMatrix) {
   for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i] = transformMatrix * m_pts[i]; }
@@ -358,12 +566,60 @@ bool EoDbPolyline::Write(CFile& file) {
   EoDb::Write(file, std::uint16_t(EoDb::kPolylinePrimitive));
   EoDb::Write(file, m_color);
   EoDb::Write(file, m_lineTypeIndex);
-  EoDb::Write(file, std::uint16_t(m_pts.GetSize()));
+  EoDb::Write(file, static_cast<std::uint16_t>(m_flags));
+  EoDb::Write(file, m_constantWidth);
+
+  const auto numberOfVertices = static_cast<std::uint16_t>(m_pts.GetSize());
+  EoDb::Write(file, numberOfVertices);
 
   for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i].Write(file); }
 
+  if (HasBulge()) {
+    for (size_t i = 0; i < m_bulges.size(); i++) { EoDb::Write(file, m_bulges[i]); }
+  }
+  if (HasWidth()) {
+    for (size_t i = 0; i < m_startWidths.size(); i++) { EoDb::Write(file, m_startWidths[i]); }
+    for (size_t i = 0; i < m_endWidths.size(); i++) { EoDb::Write(file, m_endWidths[i]); }
+  }
+
   return true;
 }
+
+void EoDbPolyline::BuildTessellatedPoints(EoGePoint3dArray& tessellatedPoints) const {
+  const auto numberOfVertices = m_pts.GetSize();
+  if (numberOfVertices < 2) {
+    tessellatedPoints.SetSize(0);
+    if (numberOfVertices == 1) { tessellatedPoints.Add(m_pts[0]); }
+    return;
+  }
+
+  // Estimate capacity: each vertex plus potential arc points
+  tessellatedPoints.SetSize(0);
+
+  if (HasBulge()) {
+    std::vector<EoGePoint3d> arcPoints;
+
+    tessellatedPoints.Add(m_pts[0]);
+
+    for (INT_PTR i = 0; i < numberOfVertices - 1; ++i) {
+      const double bulge = (static_cast<size_t>(i) < m_bulges.size()) ? m_bulges[static_cast<size_t>(i)] : 0.0;
+      polyline::TessellateArcSegment(m_pts[i], m_pts[i + 1], bulge, arcPoints);
+      for (const auto& point : arcPoints) { tessellatedPoints.Add(point); }
+    }
+
+    if (IsClosed()) {
+      const double closingBulge = (static_cast<size_t>(numberOfVertices - 1) < m_bulges.size())
+                                      ? m_bulges[static_cast<size_t>(numberOfVertices - 1)]
+                                      : 0.0;
+      polyline::TessellateArcSegment(m_pts[numberOfVertices - 1], m_pts[0], closingBulge, arcPoints);
+      for (const auto& point : arcPoints) { tessellatedPoints.Add(point); }
+    }
+  } else {
+    for (auto i = 0; i < numberOfVertices; i++) { tessellatedPoints.Add(m_pts[i]); }
+    if (IsClosed()) { tessellatedPoints.Add(m_pts[0]); }
+  }
+}
+
 std::uint16_t EoDbPolyline::SwingVertex() {
   std::uint16_t wPts = std::uint16_t(m_pts.GetSize());
 

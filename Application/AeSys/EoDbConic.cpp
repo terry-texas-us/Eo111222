@@ -29,9 +29,6 @@
 
 namespace {
 
-constexpr int minTessellationPoints = 2;
-constexpr int maxTessellationPoints = 128;
-constexpr double basePointsPerFullCircle = 32.0;
 constexpr double maxSegmentLength = 0.250;  // Maximum chord length in model units
 
 /** @brief Computes a point on an ellipse arc at a specified angle.
@@ -466,9 +463,11 @@ void EoDbConic::GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d m
   // Calculate adaptive tessellation based on arc length and curvature
   double maxAxisLength = std::max(majorAxis.Length(), minorAxis.Length());
   int numberOfPoints =
-      std::max(minTessellationPoints, Eo::Round(sweepAngle / Eo::TwoPi * basePointsPerFullCircle));
+      std::max(Eo::arcTessellationMinimumSegments,
+          Eo::Round(sweepAngle / Eo::TwoPi * Eo::arcTessellationSegmentsPerFullCircle));
   numberOfPoints = std::min(
-      maxTessellationPoints, std::max(numberOfPoints, Eo::Round(sweepAngle * maxAxisLength / maxSegmentLength)));
+      Eo::arcTessellationMaximumSegments,
+      std::max(numberOfPoints, Eo::Round(sweepAngle * maxAxisLength / maxSegmentLength)));
 
   // Build OCS to WCS transformation
   EoGeTransformMatrix transformMatrix(center, majorAxis, minorAxis);

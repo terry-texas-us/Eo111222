@@ -234,6 +234,103 @@ To recover DXF properties from the reference system:
 - `DXF Test Files/Ellipse_NegZ_CW_Test.dxf` — 24-entity test: 6 ellipticals (E1–E6) + 6 radials (R1–R6) with both `[0,0,1]` and `[0,0,-1]` extrusion, plus default-extrusion baselines.
 - `DXF Test Files/GenerateEllipseTest.ps1` — PowerShell generator using AC1021 skeleton injection.
 
+## EoDbPolyline ↔ DXF LWPOLYLINE / POLYLINE Mapping
+
+### Internal Representation
+- `EoDbPolyline` is the generalized polyline primitive handling both DXF LWPOLYLINE and heavy 2D/3D POLYLINE entities.
+- Core members: `m_flags` (int16), `m_pts` (EoGePoint3dArray), `m_bulges` (vector\<double\>), `m_startWidths` / `m_endWidths` (vector\<double\>), `m_constantWidth` (double).
+- Parallel vectors (`m_bulges`, `m_startWidths`, `m_endWidths`) remain **empty** for simple polylines — zero overhead until DXF import populates them.
+
+### Flag Bit Constants
+| Constant | Value | Meaning |
+|----------|-------|---------|
+| `sm_Closed` | `0x0001` | Last vertex connects back to first |
+| `sm_HasBulge` | `0x0002` | `m_bulges` contains per-vertex bulge values |
+| `sm_HasWidth` | `0x0004` | `m_startWidths` / `m_endWidths` are populated |
+| `sm_Plinegen` | `0x0008` | Generate linetype pattern across vertices |
+
+### PEG Serialization (type code `kPolylinePrimitive` = 0x2002)
+```
+Type code <0x2002>   uint16_t
+Pen color            int16_t
+Line type            int16_t
+Flags                uint16_t   (sm_Closed | sm_HasBulge | sm_HasWidth | sm_Plinegen)
+Constant width       double     (DXF group code 43; 0.0 when not set)
+Number of vertices   uint16_t
+{vertices}           point3d[]
+if (flags & sm_HasBulge):
+  {bulge values}     double[]   (one per vertex)
+if (flags & sm_HasWidth):
+  {start widths}     double[]   (one per vertex)
+  {end widths}       double[]   (one per vertex)
+```
+
+### DXF Read Pipeline
+
+| DXF Entity | Parser | Processor | Callback | Converter | Notes |
+|-----------|--------|-----------|----------|-----------|-------|
+| LWPOLYLINE | `EoDxfLwPolyline::ParseCode` | `ProcessLWPolyline` | `AddLWPolyline` | `ConvertLWPolylineEntity` | Lightweight; vertices in OCS with `z` from elevation |
+| POLYLINE (3D) | `EoDxfPolyline::ParseCode` + `EoDxfVertex::ParseCode` | `ProcessPolyline` + `ProcessVertex` | `AddPolyline` (flag `0x08`) | `ConvertPolyline3DEntity` | Full 3D vertex coordinates |
+| POLYLINE (2D) | Same as 3D | Same as 3D | `AddPolyline` (no 0x08/0x10/0x40) | `ConvertPolyline2DEntity` | OCS x,y + polyline elevation z; bulge/width per vertex |
+| POLYLINE (mesh) | Same as 3D | Same as 3D | `AddPolyline` (flag `0x40` or `0x10`) | **Skipped** | Polyface mesh / polygon mesh not mappable |
+
+### AddPolyline Subtype Discrimination (`EoDbDxfInterface.h`)
+```cpp
+flag & 0x40  → polyface mesh → skip + log
+flag & 0x10  → polygon mesh  → skip + log
+flag & 0x08  → 3D polyline   → ConvertPolyline3DEntity
+else         → 2D polyline   → ConvertPolyline2DEntity
+```
+
+### DXF → EoDbPolyline Property Mapping (LWPOLYLINE)
+| DXF Property | Group Code | EoDbPolyline Member/Method | Notes |
+|---|---|---|---|
+| Vertices (x,y) | 10/20 | `SetVertexFromLwVertex()` | Z from elevation (group 38) via `EoDxfPolylineVertex2d.z` |
+| Closed | flag 0x01 | `SetClosed(true)` | |
+| Plinegen | flag 0x80 | `SetPlinegen(true)` | DXF uses 0x80; PEG uses sm_Plinegen=0x0008 |
+| Constant width | 43 | `SetConstantWidth()` | Expanded to per-vertex widths if no per-vertex data |
+| Per-vertex bulge | per vertex | `SetBulges(vector&&)` | Only populated when any vertex has non-zero bulge |
+| Per-vertex widths | 40/41 per vertex | `SetWidths(vector&&, vector&&)` | Only populated when any vertex has non-zero width |
+
+### DXF → EoDbPolyline Property Mapping (Heavy 2D POLYLINE)
+| DXF Property | Source | EoDbPolyline Member/Method | Notes |
+|---|---|---|---|
+| Vertex x,y | `EoDxfVertex::m_locationPoint` | `SetVertex()` | Z = polyline elevation (`m_polylineElevation.z`) |
+| Closed | POLYLINE flag 0x01 | `SetClosed(true)` | |
+| Plinegen | POLYLINE flag 0x80 | `SetPlinegen(true)` | |
+| Per-vertex bulge | `EoDxfVertex::m_bulge` | `SetBulges(vector&&)` | |
+| Per-vertex widths | `EoDxfVertex::m_startingWidth/m_endingWidth` | `SetWidths(vector&&, vector&&)` | Falls back to `m_defaultStartWidth/m_defaultEndWidth` |
+| Curve-fit / spline-fit | flags 0x02/0x04 | All vertices kept | Structure lost but rendered geometry preserved |
+
+### Bulge Arc Tessellation (`polyline::TessellateArcSegment`)
+- Bulge = `tan(θ/4)` where θ is the included angle of the arc. Positive = CCW, negative = CW.
+- Algorithm: compute center from chord midpoint + perpendicular offset, then direct 2D rotation of the center→start direction vector.
+- Adaptive tessellation: `ceil(|sweepAngle| / 2π × segmentsPerFullCircle)` with minimum 2 segments.
+- Last tessellated point is snapped to the exact endpoint to avoid floating-point drift.
+- Constants: `Eo::arcTessellationSegmentsPerFullCircle = 72`, `Eo::arcTessellationMinimumSegments = 2`.
+
+### Display Pipeline
+- `Display()` → `polyline::BeginLineLoop/Strip` → emit vertices with `polyline::SetVertex` → `polyline::__End`.
+- Bulge-aware: each edge tessellated via `TessellateArcSegment`. Closing segment for closed polylines respects its bulge.
+- Selection/extents use `BuildTessellatedPoints()` (private helper) which produces a flattened point array with arcs expanded.
+- **Width rendering not yet implemented** — width data is preserved for PEG round-trip but polylines render as zero-width lines.
+
+### Known Limitations and Deferred Work
+| Item | Notes |
+|------|-------|
+| Width rendering in `Display()` | Data stored but not rendered; needs filled polygon/trapezoid approach |
+| `ExportToDxf()` | Not implemented; dispatch to `WriteLWPolyline` or `WritePolyline` based on dimensionality |
+| 2D POLYLINE OCS→WCS | `ConvertPolyline2DEntity` stores OCS coordinates directly; non-default extrusion needs transform |
+| Non-uniform scale + bulge | Bulge is dimensionless; non-uniform BLOCK INSERT scales distort arcs (matches AutoCAD behavior) |
+| Break bulge arcs | Decomposing individual bulge arcs to `EoDbConic` for editing is deferred |
+
+### Test Files
+| File | Contents |
+|------|----------|
+| `DXF Test Files/LWPolyline_Bulge_Test.dxf` | 21 LWPOLYLINE cases: open/closed, positive/negative/mixed bulge, semicircle, closed diamond |
+| `DXF Test Files/Heavy_Polyline_Subtypes.dxf` | 13 heavy POLYLINE cases: 3D open/closed, 2D basic/closed/elevation, bulge (±/mixed/closed), per-vertex width, default width, bulge+width, plinegen (open/closed) |
+| `DXF Test Files/GenerateHeavyPolylineTest.ps1` | PowerShell generator for `Heavy_Polyline_Subtypes.dxf` using StringBuilder + helper functions |
+
 ## EoDbSpline ↔ DXF SPLINE Mapping and V2 .PEG Generalization
 
 ### Current State (V1 .PEG)

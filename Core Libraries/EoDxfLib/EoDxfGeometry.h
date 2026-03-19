@@ -148,14 +148,19 @@ class EoDxfGeometryBase3d {
   }
 };
 
-/** @brief Class representing a vertex of a lightweight polyline, with 2D coordinates and optional width and bulge
+/** @brief Class representing a vertex of a lightweight polyline, with coordinates and optional width and bulge
  * properties. The vertex is defined by its x and y coordinates (group codes 10 and 20), optional start and end widths
  * (group codes 40 and 41), and an optional bulge value (group code 42) that defines the curvature between this vertex
  * and the next one in the polyline.
+ *
+ * The z field carries the WCS Z coordinate after ApplyExtrusion() (for non-default extrusion) or the shared
+ * LWPOLYLINE elevation (group code 38) for default extrusion. It is not a DXF group code — it is computed
+ * during import to avoid losing the elevation/extrusion Z component.
  */
 struct EoDxfPolylineVertex2d {
   double x{};  // x coordinate, code 10
   double y{};  // y coordinate, code 20
+  double z{};  // WCS z (computed from elevation/extrusion, not a DXF group code)
   double stawidth{};  // Start width, code 40
   double endwidth{};  // End width, code 41
   double bulge{};  // bulge, code 42
@@ -167,5 +172,5 @@ struct EoDxfPolylineVertex2d {
    * Matches the most common usage in DXF parsers.
    */
   constexpr EoDxfPolylineVertex2d(double x, double y, double bulge = {}) noexcept
-      : x{x}, y{y}, stawidth{}, endwidth{}, bulge{bulge} {}
+      : x{x}, y{y}, z{}, stawidth{}, endwidth{}, bulge{bulge} {}
 };

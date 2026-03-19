@@ -787,7 +787,11 @@ void EoDxfLwPolyline::ApplyExtrusion() {
       ExtrudePointInPlace(m_extrusionDirection, v);
       vert.x = v.x;
       vert.y = v.y;
+      vert.z = v.z;
     }
+  } else if (m_elevation != 0.0) {
+    // Default extrusion [0,0,1]: OCS Z = elevation = WCS Z
+    for (auto& vert : m_vertices) { vert.z = m_elevation; }
   }
 }
 

@@ -273,4 +273,111 @@ void SetVertex(const EoGePoint3d& point) {
   pts_.Add(Point4);
 }
 
+void TessellateArcSegment(
+    const EoGePoint3d& startPoint, const EoGePoint3d& endPoint, double bulge, std::vector<EoGePoint3d>& arcPoints) {
+  arcPoints.clear();
+
+  // Zero bulge — straight segment: just emit the end point
+  if (std::abs(bulge) < Eo::geometricTolerance) {
+    arcPoints.push_back(endPoint);
+    return;
+  }
+
+  // Chord vector and length
+  const EoGeVector3d chord(startPoint, endPoint);
+  const double chordLength = chord.Length();
+
+  if (chordLength < Eo::geometricTolerance) {
+    arcPoints.push_back(endPoint);
+    return;
+  }
+
+  // Included angle: bulge = tan(θ/4), so θ = 4 × atan(|bulge|)
+  const double includedAngle = 4.0 * std::atan(std::abs(bulge));
+
+  // Radius from chord length and included angle: r = (chordLength / 2) / sin(θ / 2)
+  const double halfAngle = includedAngle / 2.0;
+  const double sinHalfAngle = std::sin(halfAngle);
+
+  if (std::abs(sinHalfAngle) < Eo::geometricTolerance) {
+    arcPoints.push_back(endPoint);
+    return;
+  }
+  const double radius = (chordLength / 2.0) / sinHalfAngle;
+
+  // Sagitta: distance from chord midpoint to arc midpoint
+  const double sagitta = std::abs(bulge) * chordLength / 2.0;
+
+  // Arc center: offset perpendicular to chord from the chord midpoint.
+  // The perpendicular direction depends on the sign of bulge and the arc plane.
+  //
+  // Determine the arc plane normal. For 2D polylines (LWPOLYLINE) the plane is XY
+  // after OCS→WCS transform, but the chord may be in an arbitrary 3D plane if the
+  // polyline was extruded. Use the cross product with +Z to get a perpendicular
+  // direction in the chord's plane; if the chord is parallel to Z, fall back to +Y.
+  EoGeVector3d chordUnit = chord;
+  chordUnit /= chordLength;
+
+  EoGeVector3d planeNormal = CrossProduct(chordUnit, EoGeVector3d::positiveUnitZ);
+  if (planeNormal.IsNearNull()) { planeNormal = CrossProduct(chordUnit, EoGeVector3d::positiveUnitY); }
+  if (planeNormal.IsNearNull()) {
+    // Degenerate: chord is a zero-length vector in disguise
+    arcPoints.push_back(endPoint);
+    return;
+  }
+  planeNormal.Unitize();
+
+  // perpDir points from chord midpoint toward the arc center.
+  // Positive bulge = CCW arc = center is to the left of chord direction.
+  // The cross product chordUnit × Z gives a vector pointing to the right,
+  // so for positive bulge we negate it.
+  EoGeVector3d perpDir = planeNormal;
+  if (bulge > 0.0) { perpDir *= -1.0; }
+
+  // Distance from chord midpoint to center = radius - sagitta
+  const double centerOffset = radius - sagitta;
+
+  const EoGePoint3d chordMidpoint = EoGePoint3d::Mid(startPoint, endPoint);
+  const EoGePoint3d center = chordMidpoint + perpDir * centerOffset;
+
+  // Sweep angle: positive bulge → CCW → positive angle
+  //              negative bulge → CW  → negative angle
+  double sweepAngle = includedAngle;
+  if (bulge < 0.0) { sweepAngle = -sweepAngle; }
+
+  // Adaptive tessellation: scale with included angle, minimum 2 segments per arc
+  const int numberOfSegments = std::max(
+      Eo::arcTessellationMinimumSegments,
+      static_cast<int>(std::ceil(std::abs(sweepAngle) / Eo::TwoPi * Eo::arcTessellationSegmentsPerFullCircle)));
+
+  arcPoints.reserve(static_cast<size_t>(numberOfSegments));
+
+  const double segmentAngle = sweepAngle / numberOfSegments;
+  const double cosIncrement = std::cos(segmentAngle);
+  const double sinIncrement = std::sin(segmentAngle);
+
+  // Rotate the direction vector from center to start by incremental angles.
+  // This directly produces arc points without requiring a local coordinate frame.
+  // The 2D rotation matrix naturally handles CCW (positive angle) and CW (negative angle).
+  double directionX = startPoint.x - center.x;
+  double directionY = startPoint.y - center.y;
+
+  // Generate intermediate points (skip index 0 = startPoint, include index N = endPoint)
+  for (int i = 1; i <= numberOfSegments; ++i) {
+    const double rotatedDirectionX = directionX * cosIncrement - directionY * sinIncrement;
+    const double rotatedDirectionY = directionX * sinIncrement + directionY * cosIncrement;
+    directionX = rotatedDirectionX;
+    directionY = rotatedDirectionY;
+
+    EoGePoint3d arcPoint;
+    arcPoint.x = center.x + directionX;
+    arcPoint.y = center.y + directionY;
+    arcPoint.z = startPoint.z;
+    arcPoints.push_back(arcPoint);
+  }
+
+  // Snap the last point to the exact endpoint to avoid floating-point drift
+  if (!arcPoints.empty()) { arcPoints.back() = endPoint; }
+}
+
 }  // namespace polyline

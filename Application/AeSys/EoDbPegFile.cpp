@@ -720,15 +720,35 @@ void EoDb::ConstructPolygonPrimitive(CFile& file, EoDbPrimitive*& primitive) {
 }
 
 void EoDb::ConstructPolylinePrimitive(CFile& file, EoDbPrimitive*& primitive) {
-  std::int16_t PenColor = EoDb::ReadInt16(file);
-  std::int16_t LineType = EoDb::ReadInt16(file);
-  auto numberOfPoints = EoDb::ReadUInt16(file);
+  std::int16_t penColor = EoDb::ReadInt16(file);
+  std::int16_t lineType = EoDb::ReadInt16(file);
+  auto flags = static_cast<std::int16_t>(EoDb::ReadUInt16(file));
+  auto constantWidth = EoDb::ReadDouble(file);
+  auto numberOfVertices = EoDb::ReadUInt16(file);
 
-  EoGePoint3dArray Points;
-  Points.SetSize(numberOfPoints);
+  EoGePoint3dArray points;
+  points.SetSize(numberOfVertices);
 
-  for (std::uint16_t n = 0; n < numberOfPoints; n++) { Points[n] = EoDb::ReadPoint3d(file); }
-  primitive = new EoDbPolyline(PenColor, LineType, Points);
+  for (std::uint16_t n = 0; n < numberOfVertices; n++) { points[n] = EoDb::ReadPoint3d(file); }
+
+  auto* polyline = new EoDbPolyline(penColor, lineType, points);
+  polyline->SetFlag(flags);
+  polyline->SetConstantWidth(constantWidth);
+
+  if (flags & EoDbPolyline::sm_HasBulge) {
+    std::vector<double> bulges(numberOfVertices);
+    for (std::uint16_t n = 0; n < numberOfVertices; n++) { bulges[n] = EoDb::ReadDouble(file); }
+    polyline->SetBulges(std::move(bulges));
+  }
+  if (flags & EoDbPolyline::sm_HasWidth) {
+    std::vector<double> startWidths(numberOfVertices);
+    std::vector<double> endWidths(numberOfVertices);
+    for (std::uint16_t n = 0; n < numberOfVertices; n++) { startWidths[n] = EoDb::ReadDouble(file); }
+    for (std::uint16_t n = 0; n < numberOfVertices; n++) { endWidths[n] = EoDb::ReadDouble(file); }
+    polyline->SetWidths(std::move(startWidths), std::move(endWidths));
+  }
+
+  primitive = polyline;
 }
 
 void EoDb::ConstructPolylinePrimitiveFromCSplinePrimitive(CFile& file, EoDbPrimitive*& primitive) {

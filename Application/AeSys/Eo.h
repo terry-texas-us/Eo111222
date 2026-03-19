@@ -104,6 +104,12 @@ constexpr double RadianToDegree(double angleInRadians) noexcept { return angleIn
 constexpr double generalTolerance = 1e-6;  // For general UI, display rounding (device space)
 constexpr double geometricTolerance = 1e-9;  // For geometric calculations, point coincidence etc. (modelspace)
 
+// Arc/conic tessellation — base number of line segments used to approximate a full 360° circle.
+// Partial arcs scale proportionally: segments = ceil(|sweep| / 2π × arcTessellationSegmentsPerFullCircle).
+constexpr int arcTessellationSegmentsPerFullCircle = 72;
+constexpr int arcTessellationMinimumSegments = 2;
+constexpr int arcTessellationMaximumSegments = 128;
+
 // Machine epsilon for dimensionless comparisons
 constexpr double numericEpsilon = std::numeric_limits<double>::epsilon();
 
