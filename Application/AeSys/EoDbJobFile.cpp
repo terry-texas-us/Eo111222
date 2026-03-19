@@ -787,7 +787,7 @@ void EoDbPoint::Write(CFile& file, std::uint8_t* buffer) {
 
   int bufferIndex{20};
 
-  for (auto i = 0; i < m_NumberOfDatums; i++) {
+  for (auto i = 0; i < m_numberOfDatums; i++) {
     ((CVaxFloat*)&buffer[bufferIndex])->Convert(m_Data[i]);
     bufferIndex += sizeof(CVaxFloat);
   }

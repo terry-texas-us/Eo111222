@@ -101,20 +101,20 @@ inline void Read(CFile& file, EoDb::VerticalAlignment& verticalAlignment) {
 [[nodiscard]] std::uint16_t ReadUInt16(CFile& file);
 
 void Write(CFile& file, const CString& string, UINT codePage = CP_ACP);
-void Write(CFile& file, double number);
-void Write(CFile& file, std::int16_t number);
-void Write(CFile& file, std::uint16_t number);
+void WriteDouble(CFile& file, double number);
+void WriteInt16(CFile& file, std::int16_t number);
+void WriteUInt16(CFile& file, std::uint16_t number);
 
-inline void Write(CFile& file, EoDb::Path path) { Write(file, static_cast<std::uint16_t>(path)); }
+inline void Write(CFile& file, EoDb::Path path) { WriteUInt16(file, static_cast<std::uint16_t>(path)); }
 
-inline void Write(CFile& file, EoDb::Precision precision) { Write(file, static_cast<std::uint16_t>(precision)); }
+inline void Write(CFile& file, EoDb::Precision precision) { WriteUInt16(file, static_cast<std::uint16_t>(precision)); }
 
 inline void Write(CFile& file, EoDb::HorizontalAlignment horizontalAlignment) {
-  Write(file, static_cast<std::uint16_t>(horizontalAlignment));
+  WriteUInt16(file, static_cast<std::uint16_t>(horizontalAlignment));
 }
 
 inline void Write(CFile& file, EoDb::VerticalAlignment verticalAlignment) {
-  Write(file, static_cast<std::uint16_t>(verticalAlignment));
+  WriteUInt16(file, static_cast<std::uint16_t>(verticalAlignment));
 }
 
 }  // namespace EoDb

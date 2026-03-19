@@ -70,9 +70,9 @@ void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
 
   auto countPosition = GetPosition();
 
-  EoDb::Write(*this, wPrims);
+  EoDb::WriteUInt16(*this, wPrims);
   EoDb::Write(*this, strName);
-  EoDb::Write(*this, block->BlockTypeFlags());
+  EoDb::WriteUInt16(*this, block->BlockTypeFlags());
 
   auto BlockPosition = block->GetHeadPosition();
   while (BlockPosition != nullptr) {
@@ -81,13 +81,13 @@ void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
   }
   auto dwPosition = GetPosition();
   Seek(static_cast<LONGLONG>(countPosition), begin);
-  EoDb::Write(*this, wPrims);
+  EoDb::WriteUInt16(*this, wPrims);
   Seek(static_cast<LONGLONG>(dwPosition), begin);
 }
 
 void EoDbBlockFile::WriteBlocks(EoDbBlocks& blocks) {
-  EoDb::Write(*this, std::uint16_t(EoDb::kBlocksSection));
-  EoDb::Write(*this, std::uint16_t(blocks.GetSize()));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kBlocksSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(blocks.GetSize()));
 
   CString Key;
   EoDbBlock* Block{};
@@ -97,7 +97,7 @@ void EoDbBlockFile::WriteBlocks(EoDbBlocks& blocks) {
     blocks.GetNextAssoc(position, Key, Block);
     WriteBlock(Key, Block);
   }
-  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 void EoDbBlockFile::WriteFile(const CString& strPathName, EoDbBlocks& blocks) {
   CFileException e;
@@ -108,7 +108,7 @@ void EoDbBlockFile::WriteFile(const CString& strPathName, EoDbBlocks& blocks) {
   WriteBlocks(blocks);
 }
 void EoDbBlockFile::WriteHeader() {
-  EoDb::Write(*this, std::uint16_t(EoDb::kHeaderSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kHeaderSection));
 
-  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }

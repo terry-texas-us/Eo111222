@@ -612,23 +612,22 @@ EoDbPolyline* EoDbPolyline::ReadFromCSplinePeg(CFile& file) {
 }
 
 bool EoDbPolyline::Write(CFile& file) {
-  EoDb::Write(file, std::uint16_t(EoDb::kPolylinePrimitive));
-  EoDb::Write(file, m_color);
-  EoDb::Write(file, m_lineTypeIndex);
-  EoDb::Write(file, static_cast<std::uint16_t>(m_flags));
-  EoDb::Write(file, m_constantWidth);
-
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kPolylinePrimitive));
+  EoDb::WriteInt16(file, m_color);
+  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteUInt16(file, static_cast<std::uint16_t>(m_flags));
+  EoDb::WriteDouble(file, m_constantWidth);
   const auto numberOfVertices = static_cast<std::uint16_t>(m_pts.GetSize());
-  EoDb::Write(file, numberOfVertices);
+  EoDb::WriteUInt16(file, numberOfVertices);
 
   for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i].Write(file); }
 
   if (HasBulge()) {
-    for (size_t i = 0; i < m_bulges.size(); i++) { EoDb::Write(file, m_bulges[i]); }
+    for (size_t i = 0; i < m_bulges.size(); i++) { EoDb::WriteDouble(file, m_bulges[i]); }
   }
   if (HasWidth()) {
-    for (size_t i = 0; i < m_startWidths.size(); i++) { EoDb::Write(file, m_startWidths[i]); }
-    for (size_t i = 0; i < m_endWidths.size(); i++) { EoDb::Write(file, m_endWidths[i]); }
+    for (size_t i = 0; i < m_startWidths.size(); i++) { EoDb::WriteDouble(file, m_startWidths[i]); }
+    for (size_t i = 0; i < m_endWidths.size(); i++) { EoDb::WriteDouble(file, m_endWidths[i]); }
   }
 
   return true;

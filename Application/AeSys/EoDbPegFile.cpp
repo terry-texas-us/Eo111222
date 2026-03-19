@@ -292,7 +292,7 @@ void EoDbPegFile::Unload(AeSysDoc* document) {
   CFile::Flush();
 }
 void EoDbPegFile::WriteHeaderSection(AeSysDoc* document) {
-  EoDb::Write(*this, std::uint16_t(EoDb::kHeaderSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kHeaderSection));
 
   EoDbHeaderSection& headerSection = document->HeaderSection();
   auto& variables = headerSection.GetVariables();
@@ -306,7 +306,7 @@ void EoDbPegFile::WriteHeaderSection(AeSysDoc* document) {
         [&](auto&& arg) {
           using T = std::decay_t<decltype(arg)>;
           if constexpr (std::is_same_v<T, double>) {
-            EoDb::Write(*this, arg);
+            EoDb::WriteDouble(*this, arg);
           } else if constexpr (std::is_same_v<T, std::wstring>) {
             EoDb::Write(*this, arg.c_str());
           } else if constexpr (std::is_same_v<T, EoGePoint3d>) {
@@ -318,30 +318,30 @@ void EoDbPegFile::WriteHeaderSection(AeSysDoc* document) {
         value);
   }
 
-  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 void EoDbPegFile::WriteTablesSection(AeSysDoc* document) {
-  EoDb::Write(*this, std::uint16_t(EoDb::kTablesSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kTablesSection));
 
   WriteVPortTable(document);
   WriteLinetypeTable(document);
   WriteLayerTable(document);
-  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
 void EoDbPegFile::WriteVPortTable(AeSysDoc*) {
-  EoDb::Write(*this, std::uint16_t(EoDb::kViewPortTable));
-  EoDb::Write(*this, std::uint16_t(0));
-  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfTable));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kViewPortTable));
+  EoDb::WriteUInt16(*this, std::uint16_t(0));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 }
 
 void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
   auto* lineTypeTable = document->LineTypeTable();
 
-  std::uint16_t numberOfLinetypes = std::uint16_t(lineTypeTable->Size());
+  auto numberOfLinetypes = std::uint16_t(lineTypeTable->Size());
 
-  EoDb::Write(*this, std::uint16_t(EoDb::kLinetypeTable));
-  EoDb::Write(*this, numberOfLinetypes);
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kLinetypeTable));
+  EoDb::WriteUInt16(*this, numberOfLinetypes);
 
   CString name;
   EoDbLineType* linetype{};
@@ -351,60 +351,58 @@ void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
     lineTypeTable->GetNextAssoc(position, name, linetype);
 
     EoDb::Write(*this, (LPCWSTR)name);
-    EoDb::Write(*this, std::uint16_t(0));
+    EoDb::WriteUInt16(*this, std::uint16_t(0));
     EoDb::Write(*this, (LPCWSTR)linetype->Description());
 
-    std::uint16_t DefinitionLength = linetype->GetNumberOfDashes();
-    EoDb::Write(*this, DefinitionLength);
-    double PatternLength = linetype->GetPatternLength();
-    EoDb::Write(*this, PatternLength);
+    auto numberOfDashes = linetype->GetNumberOfDashes();
+    EoDb::WriteUInt16(*this, numberOfDashes);
+    double patternLength = linetype->GetPatternLength();
+    EoDb::WriteDouble(*this, patternLength);
 
-    if (DefinitionLength > 0) {
-      double* dashElements = new double[DefinitionLength];
-      linetype->GetDashElements(dashElements);
-      for (auto i = 0; i < DefinitionLength; i++) { EoDb::Write(*this, dashElements[i]); }
-
-      delete[] dashElements;
+    if (numberOfDashes > 0) {
+      auto dashElements = std::make_unique<double[]>(numberOfDashes);
+      linetype->GetDashElements(dashElements.get());
+      for (std::uint16_t i = 0; i < numberOfDashes; i++) { EoDb::WriteDouble(*this, dashElements[i]); }
     }
   }
-  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfTable));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 }
 
 void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
   int NumberOfLayers = document->GetLayerTableSize();
 
-  EoDb::Write(*this, std::uint16_t(EoDb::kLayerTable));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kLayerTable));
 
   auto SavedFilePosition = CFile::GetPosition();
-  EoDb::Write(*this, std::uint16_t(NumberOfLayers));
+  EoDb::WriteUInt16(*this, std::uint16_t(NumberOfLayers));
 
   for (int n = 0; n < document->GetLayerTableSize(); n++) {
     EoDbLayer* Layer = document->GetLayerTableLayerAt(n);
     if (Layer->IsResident()) {
       EoDb::Write(*this, Layer->Name());
-      EoDb::Write(*this, Layer->GetTracingState());
-      EoDb::Write(*this, Layer->GetState());
-      EoDb::Write(*this, Layer->ColorIndex());
+      EoDb::WriteUInt16(*this, Layer->GetTracingState());
+      EoDb::WriteUInt16(*this, Layer->GetState());
+      EoDb::WriteInt16(*this, Layer->ColorIndex());
       EoDb::Write(*this, Layer->LineTypeName());
     } else {
       NumberOfLayers--;
     }
   }
-  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfTable));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 
   if (NumberOfLayers != document->GetLayerTableSize()) {
     auto CurrentFilePosition = CFile::GetPosition();
     CFile::Seek(static_cast<LONGLONG>(SavedFilePosition), CFile::begin);
-    EoDb::Write(*this, std::uint16_t(NumberOfLayers));
+    EoDb::WriteUInt16(*this, std::uint16_t(NumberOfLayers));
     CFile::Seek(static_cast<LONGLONG>(CurrentFilePosition), CFile::begin);
   }
 }
 
 void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
-  EoDb::Write(*this, std::uint16_t(EoDb::kBlocksSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kBlocksSection));
 
   std::uint16_t numberOfBlocks = document->BlockTableSize();
-  EoDb::Write(*this, numberOfBlocks);
+  EoDb::WriteUInt16(*this, numberOfBlocks);
 
   CString name;
   EoDbBlock* block{};
@@ -413,11 +411,11 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
   while (position != nullptr) {
     document->GetNextBlock(position, name, block);
     auto savedFilePosition = CFile::GetPosition();
-    EoDb::Write(*this, std::uint16_t(0));
+    EoDb::WriteUInt16(*this, std::uint16_t(0));
     std::uint16_t numberOfPrimitives{};
 
     EoDb::Write(*this, name);
-    EoDb::Write(*this, block->BlockTypeFlags());
+    EoDb::WriteUInt16(*this, block->BlockTypeFlags());
     block->BasePoint().Write(*this);
 
     auto primitivePosition = block->GetHeadPosition();
@@ -427,23 +425,23 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
     }
     auto currentFilePosition = CFile::GetPosition();
     CFile::Seek(static_cast<LONGLONG>(savedFilePosition), CFile::begin);
-    EoDb::Write(*this, numberOfPrimitives);
+    EoDb::WriteUInt16(*this, numberOfPrimitives);
     CFile::Seek(static_cast<LONGLONG>(currentFilePosition), CFile::begin);
   }
 
-  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
 void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
-  EoDb::Write(*this, std::uint16_t(EoDb::kGroupsSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kGroupsSection));
 
   int NumberOfLayers = document->GetLayerTableSize();
-  EoDb::Write(*this, std::uint16_t(NumberOfLayers));
+  EoDb::WriteUInt16(*this, std::uint16_t(NumberOfLayers));
 
   for (int n = 0; n < NumberOfLayers; n++) {
     auto* layer = document->GetLayerTableLayerAt(n);
     if (layer->IsInternal()) {
-      EoDb::Write(*this, std::uint16_t(layer->GetCount()));
+      EoDb::WriteUInt16(*this, std::uint16_t(layer->GetCount()));
 
       auto position = layer->GetHeadPosition();
       while (position != nullptr) {
@@ -451,10 +449,10 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
         group->Write(*this);
       }
     } else {
-      EoDb::Write(*this, std::uint16_t(0));
+      EoDb::WriteUInt16(*this, std::uint16_t(0));
     }
   }
-  EoDb::Write(*this, std::uint16_t(EoDb::kEndOfSection));
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
 bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive) {
@@ -593,6 +591,6 @@ void EoDb::Write(CFile& file, const CString& string, UINT codePage) {
   file.Write("\t", 1);
 }
 
-void EoDb::Write(CFile& file, double number) { file.Write(&number, sizeof(double)); }
-void EoDb::Write(CFile& file, std::int16_t number) { file.Write(&number, sizeof(std::int16_t)); }
-void EoDb::Write(CFile& file, std::uint16_t number) { file.Write(&number, sizeof(std::uint16_t)); }
+void EoDb::WriteDouble(CFile& file, double number) { file.Write(&number, sizeof(double)); }
+void EoDb::WriteInt16(CFile& file, std::int16_t number) { file.Write(&number, sizeof(std::int16_t)); }
+void EoDb::WriteUInt16(CFile& file, std::uint16_t number) { file.Write(&number, sizeof(std::uint16_t)); }

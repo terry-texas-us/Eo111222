@@ -413,7 +413,7 @@ void EoDbGroup::Translate(EoGeVector3d v) {
   }
 }
 void EoDbGroup::Write(CFile& file) {
-  EoDb::Write(file, std::uint16_t(GetCount()));
+  EoDb::WriteUInt16(file, std::uint16_t(GetCount()));
 
   for (auto position = GetHeadPosition(); position != nullptr;) {
     auto* primitive = GetNext(position);

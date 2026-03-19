@@ -69,5 +69,5 @@ void EoDbFontDefinition::Write(CFile& file) const {
   EoDb::Write(file, m_path);
   EoDb::Write(file, m_horizontalAlignment);
   EoDb::Write(file, m_verticalAlignment);
-  EoDb::Write(file, m_characterSpacing);
+  EoDb::WriteDouble(file, m_characterSpacing);
 }

@@ -865,14 +865,13 @@ void EoDbEllipse::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 }
 
 bool EoDbEllipse::Write(CFile& file) {
-  EoDb::Write(file, std::uint16_t(EoDb::kEllipsePrimitive));
-  EoDb::Write(file, m_color);
-  EoDb::Write(file, m_lineTypeIndex);
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kEllipsePrimitive));
+  EoDb::WriteInt16(file, m_color);
+  EoDb::WriteInt16(file, m_lineTypeIndex);
   m_center.Write(file);
   m_majorAxis.Write(file);
   m_minorAxis.Write(file);
-  EoDb::Write(file, m_sweepAngle);
-
+  EoDb::WriteDouble(file, m_sweepAngle);
   return true;
 }
 

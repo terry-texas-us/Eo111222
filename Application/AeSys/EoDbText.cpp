@@ -287,9 +287,9 @@ EoDbText* EoDbText::ReadFromPeg(CFile& file) {
 }
 
 bool EoDbText::Write(CFile& file) {
-  EoDb::Write(file, std::uint16_t(EoDb::kTextPrimitive));
-  EoDb::Write(file, m_color);
-  EoDb::Write(file, m_lineTypeIndex);
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kTextPrimitive));
+  EoDb::WriteInt16(file, m_color);
+  EoDb::WriteInt16(file, m_lineTypeIndex);
   m_fontDefinition.Write(file);
   m_ReferenceSystem.Write(file);
   EoDb::Write(file, m_strText);

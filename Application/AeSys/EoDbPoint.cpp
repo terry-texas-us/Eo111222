@@ -21,19 +21,19 @@ EoDbPoint::EoDbPoint() {
   m_color = 1;
   m_pointStyle = 0;  // single pixel
   m_Point = EoGePoint3d::kOrigin;
-  m_NumberOfDatums = 0;
+  m_numberOfDatums = 0;
   m_Data = nullptr;
 }
 EoDbPoint::EoDbPoint(const EoGePoint3d& point) : m_Point(point) {
   m_color = 1;
   m_pointStyle = 0;  // single pixel
-  m_NumberOfDatums = 0;
+  m_numberOfDatums = 0;
   m_Data = nullptr;
 }
 EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point) : m_Point(point) {
   m_color = penColor;
   m_pointStyle = pointStyle;
-  m_NumberOfDatums = 0;
+  m_numberOfDatums = 0;
   m_Data = nullptr;
 }
 EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point,
@@ -41,7 +41,7 @@ EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGeP
     : m_Point(point) {
   m_color = penColor;
   m_pointStyle = pointStyle;
-  m_NumberOfDatums = numberOfDatums;
+  m_numberOfDatums = numberOfDatums;
   m_Data = (numberOfDatums == 0) ? nullptr : new double[numberOfDatums];
 
   for (std::uint16_t n = 0; n < numberOfDatums; n++) { m_Data[n] = data[n]; }
@@ -50,27 +50,27 @@ EoDbPoint::EoDbPoint(const EoDbPoint& src) {
   m_color = src.m_color;
   m_pointStyle = src.m_pointStyle;
   m_Point = src.m_Point;
-  m_NumberOfDatums = src.m_NumberOfDatums;
-  m_Data = (m_NumberOfDatums == 0) ? nullptr : new double[m_NumberOfDatums];
+  m_numberOfDatums = src.m_numberOfDatums;
+  m_Data = (m_numberOfDatums == 0) ? nullptr : new double[m_numberOfDatums];
 
-  for (std::uint16_t n = 0; n < m_NumberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
+  for (std::uint16_t n = 0; n < m_numberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
 }
 EoDbPoint::~EoDbPoint() {
-  if (m_NumberOfDatums != 0) { delete[] m_Data; }
+  if (m_numberOfDatums != 0) { delete[] m_Data; }
 }
 const EoDbPoint& EoDbPoint::operator=(const EoDbPoint& src) {
   m_color = src.m_color;
   m_pointStyle = src.m_pointStyle;
 
   m_Point = src.m_Point;
-  if (m_NumberOfDatums != src.m_NumberOfDatums) {
-    if (m_NumberOfDatums != 0) { delete[] m_Data; }
+  if (m_numberOfDatums != src.m_numberOfDatums) {
+    if (m_numberOfDatums != 0) { delete[] m_Data; }
 
-    m_NumberOfDatums = src.m_NumberOfDatums;
+    m_numberOfDatums = src.m_numberOfDatums;
 
-    m_Data = (m_NumberOfDatums == 0) ? 0 : new double[m_NumberOfDatums];
+    m_Data = (m_numberOfDatums == 0) ? 0 : new double[m_numberOfDatums];
   }
-  for (std::uint16_t n = 0; n < m_NumberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
+  for (std::uint16_t n = 0; n < m_numberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
   return (*this);
 }
 void EoDbPoint::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
@@ -223,12 +223,12 @@ void EoDbPoint::ModifyState() {
   m_pointStyle = renderState.PointStyle();
 }
 void EoDbPoint::SetDat(std::uint16_t wDats, double* dDat) {
-  if (m_NumberOfDatums != wDats) {
-    if (m_NumberOfDatums != 0) { delete[] m_Data; }
-    m_NumberOfDatums = wDats;
-    m_Data = (m_NumberOfDatums == 0) ? 0 : new double[m_NumberOfDatums];
+  if (m_numberOfDatums != wDats) {
+    if (m_numberOfDatums != 0) { delete[] m_Data; }
+    m_numberOfDatums = wDats;
+    m_Data = (m_numberOfDatums == 0) ? 0 : new double[m_numberOfDatums];
   }
-  for (auto i = 0; i < m_NumberOfDatums; i++) { m_Data[i] = dDat[i]; }
+  for (auto i = 0; i < m_numberOfDatums; i++) { m_Data[i] = dDat[i]; }
 }
 
 void EoDbPoint::SetPoint(double x, double y, double z) noexcept {
@@ -262,12 +262,12 @@ EoDbPoint* EoDbPoint::ReadFromLegacyTagPeg(CFile& file) {
 }
 
 bool EoDbPoint::Write(CFile& file) {
-  EoDb::Write(file, std::uint16_t(EoDb::kPointPrimitive));
-  EoDb::Write(file, m_color);
-  EoDb::Write(file, m_pointStyle);
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kPointPrimitive));
+  EoDb::WriteInt16(file, m_color);
+  EoDb::WriteInt16(file, m_pointStyle);
   m_Point.Write(file);
-  EoDb::Write(file, m_NumberOfDatums);
-  for (auto i = 0; i < m_NumberOfDatums; i++) { EoDb::Write(file, m_Data[i]); }
+  EoDb::WriteUInt16(file, m_numberOfDatums);
+  for (std::uint16_t i = 0; i < m_numberOfDatums; i++) { EoDb::WriteDouble(file, m_Data[i]); }
 
   return true;
 }

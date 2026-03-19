@@ -332,10 +332,10 @@ EoDbLine* EoDbLine::ReadFromPeg(CFile& file) {
 }
 
 bool EoDbLine::Write(CFile& file) {
-  EoDb::Write(file, std::uint16_t(EoDb::kLinePrimitive));
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kLinePrimitive));
 
-  EoDb::Write(file, m_color);
-  EoDb::Write(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, m_color);
+  EoDb::WriteInt16(file, m_lineTypeIndex);
   m_line.Write(file);
 
   return true;

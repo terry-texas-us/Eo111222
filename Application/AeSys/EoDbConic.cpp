@@ -957,15 +957,15 @@ EoDbConic* EoDbConic::ReadFromLegacyEllipsePeg(CFile& file) {
 }
 
 bool EoDbConic::Write(CFile& file) {
-  EoDb::Write(file, std::uint16_t(EoDb::kConicPrimitive));
-  EoDb::Write(file, m_color);
-  EoDb::Write(file, m_lineTypeIndex);
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kConicPrimitive));
+  EoDb::WriteInt16(file, m_color);
+  EoDb::WriteInt16(file, m_lineTypeIndex);
   m_center.Write(file);
   m_majorAxis.Write(file);
   m_extrusion.Write(file);
-  EoDb::Write(file, m_ratio);
-  EoDb::Write(file, m_startAngle);
-  EoDb::Write(file, m_endAngle);
+  EoDb::WriteDouble(file, m_ratio);
+  EoDb::WriteDouble(file, m_startAngle);
+  EoDb::WriteDouble(file, m_endAngle);
 
   return true;
 }
@@ -985,14 +985,13 @@ bool EoDbConic::WriteLegacyEllipse(CFile& file) {
     rotatedMinorAxis.RotateAboutArbitraryAxis(m_extrusion, m_startAngle);
   }
 
-  EoDb::Write(file, std::uint16_t(EoDb::kEllipsePrimitive));
-  EoDb::Write(file, m_color);
-  EoDb::Write(file, m_lineTypeIndex);
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kEllipsePrimitive));
+  EoDb::WriteInt16(file, m_color);
+  EoDb::WriteInt16(file, m_lineTypeIndex);
   m_center.Write(file);
   rotatedMajorAxis.Write(file);
   rotatedMinorAxis.Write(file);
-  EoDb::Write(file, SweepAngle());
-
+  EoDb::WriteDouble(file, SweepAngle());
   return true;
 }
 

@@ -491,12 +491,12 @@ EoDbPolygon* EoDbPolygon::ReadFromPeg(CFile& file) {
 }
 
 bool EoDbPolygon::Write(CFile& file) {
-  EoDb::Write(file, std::uint16_t(EoDb::kPolygonPrimitive));
-  EoDb::Write(file, m_color);
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kPolygonPrimitive));
+  EoDb::WriteInt16(file, m_color);
   // note polygon style stuffed up into unused line type on io
-  EoDb::Write(file, static_cast<std::int16_t>(m_polygonStyle));
-  EoDb::Write(file, m_fillStyleIndex);
-  EoDb::Write(file, m_numberOfVertices);
+  EoDb::WriteInt16(file, static_cast<std::int16_t>(m_polygonStyle));
+  EoDb::WriteInt16(file, m_fillStyleIndex);
+  EoDb::WriteUInt16(file, m_numberOfVertices);
   m_hatchOrigin.Write(file);
   m_positiveX.Write(file);
   m_positiveY.Write(file);

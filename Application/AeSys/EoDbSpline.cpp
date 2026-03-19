@@ -198,10 +198,10 @@ EoDbSpline* EoDbSpline::ReadFromPeg(CFile& file) {
 }
 
 bool EoDbSpline::Write(CFile& file) {
-  EoDb::Write(file, std::uint16_t(EoDb::kSplinePrimitive));
-  EoDb::Write(file, m_color);
-  EoDb::Write(file, m_lineTypeIndex);
-  EoDb::Write(file, std::uint16_t(m_pts.GetSize()));
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kSplinePrimitive));
+  EoDb::WriteInt16(file, m_color);
+  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteUInt16(file, std::uint16_t(m_pts.GetSize()));
 
   for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i].Write(file); }
 

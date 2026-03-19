@@ -14,7 +14,7 @@
 class EoDbPoint : public EoDbPrimitive {
   std::int16_t m_pointStyle;
   EoGePoint3d m_Point;
-  std::uint16_t m_NumberOfDatums;
+  std::uint16_t m_numberOfDatums;
   double* m_Data;
 
  public:  // Constructors and destructor

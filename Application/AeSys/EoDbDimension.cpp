@@ -389,13 +389,13 @@ EoDbDimension* EoDbDimension::ReadFromPeg(CFile& file) {
 }
 
 bool EoDbDimension::Write(CFile& file) {
-  EoDb::Write(file, std::uint16_t(EoDb::kDimensionPrimitive));
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kDimensionPrimitive));
 
-  EoDb::Write(file, m_color);
-  EoDb::Write(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, m_color);
+  EoDb::WriteInt16(file, m_lineTypeIndex);
   m_line.Write(file);
 
-  EoDb::Write(file, m_textColor);
+  EoDb::WriteInt16(file, m_textColor);
   m_fontDefinition.Write(file);
   m_ReferenceSystem.Write(file);
   EoDb::Write(file, m_text);

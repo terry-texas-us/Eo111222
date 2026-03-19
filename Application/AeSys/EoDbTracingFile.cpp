@@ -52,20 +52,20 @@ EoDbGroup* EoDbTracingFile::ReadGroup(CFile& file) {
 }
 
 void EoDbTracingFile::WriteHeader(CFile& file) {
-  EoDb::Write(file, std::uint16_t(EoDb::kHeaderSection));
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kHeaderSection));
 
-  EoDb::Write(file, std::uint16_t(EoDb::kEndOfSection));
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kEndOfSection));
 }
 void EoDbTracingFile::WriteLayer(CFile& file, EoDbLayer* layer) {
-  EoDb::Write(file, std::uint16_t(EoDb::kGroupsSection));
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kGroupsSection));
 
-  EoDb::Write(file, std::uint16_t(layer->GetCount()));
+  EoDb::WriteUInt16(file, std::uint16_t(layer->GetCount()));
 
   auto position = layer->GetHeadPosition();
   while (position != nullptr) {
     auto* group = layer->GetNext(position);
     group->Write(file);
   }
-  EoDb::Write(file, std::uint16_t(EoDb::kEndOfSection));
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kEndOfSection));
   app.AddStringToMessageList(IDS_MSG_TRACING_SAVE_SUCCESS, layer->Name());
 }

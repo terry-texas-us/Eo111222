@@ -357,18 +357,17 @@ EoDbBlockReference* EoDbBlockReference::ReadFromPeg(CFile& file) {
 }
 
 bool EoDbBlockReference::Write(CFile& file) {
-  EoDb::Write(file, std::uint16_t(EoDb::kGroupReferencePrimitive));
-  EoDb::Write(file, m_color);
-  EoDb::Write(file, m_lineTypeIndex);
+  EoDb::WriteUInt16(file, std::uint16_t(EoDb::kGroupReferencePrimitive));
+  EoDb::WriteInt16(file, m_color);
+  EoDb::WriteInt16(file, m_lineTypeIndex);
   EoDb::Write(file, m_blockName);
   m_insertionPoint.Write(file);
   m_normal.Write(file);
   m_scaleFactors.Write(file);
-  EoDb::Write(file, m_rotation);
-  EoDb::Write(file, m_columnCount);
-  EoDb::Write(file, m_rowCount);
-  EoDb::Write(file, m_columnSpacing);
-  EoDb::Write(file, m_rowSpacing);
-
+  EoDb::WriteDouble(file, m_rotation);
+  EoDb::WriteInt16(file, m_columnCount);
+  EoDb::WriteInt16(file, m_rowCount);
+  EoDb::WriteDouble(file, m_columnSpacing);
+  EoDb::WriteDouble(file, m_rowSpacing);
   return true;
 }
