@@ -1,6 +1,19 @@
 ﻿#pragma once
 
-#if defined(USING_DDE)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#include <Windows.h>
+
+#include <cstdint>
+#include <ddeml.h>
+#include <tchar.h>
+
 // String names for some standard DDE strings not defined in DDEML.H
 
 namespace dde {
@@ -80,6 +93,17 @@ typedef struct _TOPICINFO {
 typedef void *POP;
 typedef POP *PPOP;
 
+/// <summary>Callback invoked when DDE initialization fails.</summary>
+/// <param name="serviceNameForDisplay">The service name string for display in the error message.</param>
+/// <param name="hMainWindow">The main window handle to destroy on fatal failure, or nullptr.</param>
+typedef void(INITERRORFN)(LPCWSTR serviceNameForDisplay, HWND hMainWindow);
+typedef INITERRORFN *PINITERRORFN;
+
+/// <summary>Fallback callback invoked when a topic has no exec function and no command list.</summary>
+/// <param name="hData">The DDE data handle from the execute transaction.</param>
+typedef void(FALLBACKEXECFN)(HDDEDATA hData);
+typedef FALLBACKEXECFN *PFALLBACKEXECFN;
+
 // Structure used to store information on a DDE server which has only one service
 typedef struct _SERVERINFO {
   LPCWSTR lpszServiceName;  // pointer to the service string name
@@ -89,6 +113,7 @@ typedef struct _SERVERINFO {
   PFNCALLBACK pfnStdCallback;  // pointer to standard DDE callback fn
   PFNCALLBACK pfnCustomCallback;  // pointer to custom DDE callback fn
   PCONVERSATIONINFO pConvList;  // pointer to the active conversation list
+  PFALLBACKEXECFN pfnFallbackExec;  // pointer to fallback exec handler (replaces direct PostMessage)
 } SERVERINFO, *PSERVERINFO;
 
 extern SERVERINFO ServerInfo;
@@ -129,11 +154,11 @@ bool ParseCmd(LPTSTR *ppszCmdLine, PTOPICINFO pTopic, LPTSTR pszError, UINT uiEr
 void PostAdvise(PITEMINFO pItemInfo);
 bool ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData);
 PEXECCMDFNINFO ScanForCommand(PEXECCMDFNINFO pCmdInfo, LPTSTR *ppStr);
-void Setup(HINSTANCE);
+bool Initialize(LPCWSTR serviceName, PINITERRORFN pfnInitError, HWND hMainWindow, PFALLBACKEXECFN pfnFallbackExec);
+void RegisterAeSysTopics();
 HDDEDATA WINAPI StdCallback(UINT, UINT, HCONV, HSZ, HSZ, HDDEDATA, DWORD, DWORD);
 HDDEDATA SysReqResultInfo(UINT wFmt, HSZ hszTopic, HSZ hszItem);
 bool SysResultExecCmd(PTOPICINFO pTopic, LPTSTR pszResult, UINT uiResultSize, UINT uiNargs, LPTSTR *ppArgs);
 HDDEDATA TopicReqFormats(UINT wFmt, HSZ hszTopic, HSZ hszItem);
 void Uninitialize();
 }  // namespace dde
-#endif

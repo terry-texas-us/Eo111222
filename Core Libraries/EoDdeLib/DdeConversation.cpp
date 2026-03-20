@@ -1,7 +1,4 @@
-﻿#include "Stdafx.h"
-
-#if defined(USING_DDE)
-#include "dde.h"
+﻿#include "dde.h"
 
 using namespace dde;
 
@@ -50,4 +47,3 @@ bool dde::ConversationRemove(HCONV hConv, HSZ hszTopic) {
   }
   return false;  // Not in the list
 }
-#endif

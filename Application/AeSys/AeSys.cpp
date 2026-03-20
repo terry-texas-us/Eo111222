@@ -243,8 +243,8 @@ BOOL AeSys::InitInstance() {
   // LoadPenColorsFromFile(ResourceFolder + L"Pens\\Colors\\Default.txt"));
 
 #if defined(USING_DDE)
-  // Initialize for using DDEML
-  dde::Setup(AeSys::GetInstance());
+  // Initialize DDE and register AeSys-specific topics, items, and commands
+  dde::RegisterAeSysTopics();
 #endif
 
   // This is the private data format used to pass EoGroups from one instance to another

@@ -1,14 +1,7 @@
-﻿#include "Stdafx.h"
-
-#if defined(USING_DDE)
-#include "AeSys.h"
-#include "Resource.h"
-
-#include "dde.h"
-#include "ddeCmds.h"
-#include "ddeGItms.h"
+﻿#include "dde.h"
 #include "ddeSys.h"
-#include "Lex.h"
+
+#include "DdeStringUtil.h"
 
 using namespace dde;
 
@@ -25,74 +18,43 @@ std::uint16_t dde::MyFormats[] = {CF_TEXT, 0};
 // DDE Instance value
 DWORD dde::dwInstance = 0;
 
-/// <summary>Startup our DDE services and do the basic initialization.</summary>
-void dde::Setup(HINSTANCE) {
-  ServerInfo.pfnStdCallback = (PFNCALLBACK)MakeProcInstance((FARPROC)StdCallback, hInst);
+/// <summary>Initialize DDE server infrastructure: DDEML, service name, and system topic.
+/// App-specific topic/item/command registrations should be done by the caller after this returns true.</summary>
+/// <param name="serviceName">The DDE service name to register.</param>
+/// <param name="pfnInitError">Callback invoked on initialization failure (may be nullptr to silently fail).</param>
+/// <param name="hMainWindow">Main window handle passed to pfnInitError for fatal shutdown.</param>
+/// <param name="pfnFallbackExec">Fallback handler for execute transactions on topics with no exec function and no command list (may be nullptr).</param>
+/// <returns>true if initialization succeeded, false on DDEML error.</returns>
+bool dde::Initialize(
+    LPCWSTR serviceName, PINITERRORFN pfnInitError, HWND hMainWindow, PFALLBACKEXECFN pfnFallbackExec) {
+  ServerInfo.pfnStdCallback = (PFNCALLBACK)MakeProcInstance((FARPROC)StdCallback, nullptr);
   ServerInfo.pfnCustomCallback = 0;
+  ServerInfo.pfnFallbackExec = pfnFallbackExec;
 
   DWORD dwFilterFlags = CBF_FAIL_SELFCONNECTIONS;
 
   UINT uiResult = DdeInitialize(&ServerInfo.dwInstance, ServerInfo.pfnStdCallback, dwFilterFlags, 0L);
   if (uiResult != DMLERR_NO_ERROR) {
-    app.WarningMessageBox(IDS_MSG_DDE_INIT_FAILURE, L"AeSys");
-    ::DestroyWindow(app.GetSafeHwnd());
-    return;
+    if (pfnInitError) { pfnInitError(serviceName, hMainWindow); }
+    return false;
   }
   dwInstance = ServerInfo.dwInstance;
 
-  ServerInfo.lpszServiceName = L"AeSys";
-  ServerInfo.hszServiceName = DdeCreateStringHandle(ServerInfo.dwInstance, L"AeSys", CP_WINANSI);
+  ServerInfo.lpszServiceName = serviceName;
+  ServerInfo.hszServiceName = DdeCreateStringHandle(ServerInfo.dwInstance, serviceName, CP_WINANSI);
 
   // Register the name of the service
   DdeNameService(ServerInfo.dwInstance, ServerInfo.hszServiceName, (HSZ)0, DNS_REGISTER);
 
-  // Add each System!Item pair
+  // Add system topic items (library-portable)
   ItemAdd(SZDDESYS_TOPIC, SZDDESYS_ITEM_FORMATS, SysFormatList, SysReqFormats, 0);
   ItemAdd(SZDDESYS_TOPIC, SZDDESYS_ITEM_HELP, SysFormatList, SysReqHelp, 0);
   ItemAdd(SZDDESYS_TOPIC, SZDDESYS_ITEM_SYSITEMS, SysFormatList, SysReqItems, 0);
   ItemAdd(SZDDESYS_TOPIC, SZDDE_ITEM_ITEMLIST, SysFormatList, SysReqItems, 0);
   ItemAdd(SZDDESYS_TOPIC, SZDDESYS_ITEM_TOPICS, SysFormatList, SysReqTopics, 0);
-
   ItemAdd(SZDDESYS_TOPIC, L"Protocols", SysFormatList, SysReqProtocols, 0);
 
-  ExecCmdAdd(SZDDESYS_TOPIC, L"TracingOpen", ExecTracingOpen, 1, 2);
-  ExecCmdAdd(SZDDESYS_TOPIC, L"TracingMap", ExecTracingMap, 1, 2);
-  ExecCmdAdd(SZDDESYS_TOPIC, L"TracingView", ExecTracingView, 1, 2);
-
-  // Add each General!Item pair
-  DimAngZInfo = ItemAdd(L"General", L"DimAngZ", MyFormats, DimAngZRequest, DimAngZPoke);
-  DimLenInfo = ItemAdd(L"General", L"DimLen", MyFormats, DimLenRequest, DimLenPoke);
-  EngAngZInfo = ItemAdd(L"General", L"EngAngZ", MyFormats, EngAngZRequest, 0);
-  EngLenInfo = ItemAdd(L"General", L"EngLen", MyFormats, EngLenRequest, 0);
-  ExtNumInfo = ItemAdd(L"General", L"ExtNum", MyFormats, ExtNumRequest, 0);
-  ExtStrInfo = ItemAdd(L"General", L"ExtStr", MyFormats, ExtStrRequest, 0);
-  RelPosZInfo = ItemAdd(L"General", L"RelPosZ", MyFormats, RelPosZRequest, 0);
-  RelPosYInfo = ItemAdd(L"General", L"RelPosY", MyFormats, RelPosYRequest, 0);
-  RelPosXInfo = ItemAdd(L"General", L"RelPosX", MyFormats, RelPosXRequest, 0);
-  ScaleInfo = ItemAdd(L"General", L"Scale", MyFormats, ScaleRequest, ScalePoke);
-
-  // Add Topic for command execute connections
-  TopicAdd(L"Commands", 0, 0, 0);
-
-  // Add each Command!Item pair
-  ExecCmdAdd(L"Commands", L"TracingBlank", ExecTracingBlank, 1, 2);
-  ExecCmdAdd(L"Commands", L"TracingMap", ExecTracingMap, 1, 2);
-  ExecCmdAdd(L"Commands", L"TracingOpen", ExecTracingOpen, 1, 2);
-  ExecCmdAdd(L"Commands", L"TracingView", ExecTracingView, 1, 2);
-  ExecCmdAdd(L"Commands", L"FileGet", ExecFileGet, 1, 2);
-  ExecCmdAdd(L"Commands", L"GotoPoint", ExecGotoPoint, 1, 1);
-  ExecCmdAdd(L"Commands", L"Line", ExecLine, 1, 1);
-  ExecCmdAdd(L"Commands", L"Pen", ExecPen, 1, 1);
-  ExecCmdAdd(L"Commands", L"Note", ExecNote, 1, 1);
-  ExecCmdAdd(L"Commands", L"Send", ExecSend, 1, 1);
-  ExecCmdAdd(L"Commands", L"SetPoint", ExecSetPoint, 1, 1);
-  ExecCmdAdd(L"Commands", L"DimAngZ", ExecDA, 1, 1);
-  ExecCmdAdd(L"Commands", L"DimLen", ExecDL, 1, 1);
-  ExecCmdAdd(L"Commands", L"Scale", ExecScale, 1, 1);
-  ExecCmdAdd(L"Commands", L"Fill", ExecFill, 1, 1);
-  ExecCmdAdd(L"Commands", L"NoteHT", ExecNoteHT, 1, 1);
-
-  return;
+  return true;
 }
 /// <summary>Tidy up and close down DDEML.</summary>
 void dde::Uninitialize() {
@@ -193,9 +155,9 @@ bool dde::DoCallback(
         return true;
       }
     } else {
-      char sz[32]{};
-      DdeGetData(hData, (LPBYTE)sz, (DWORD)sizeof(sz), (DWORD)0);
-      ::PostMessage(app.GetSafeHwnd(), WM_CHAR, (WPARAM)sz[0], (LPARAM)1);
+      if (ServerInfo.pfnFallbackExec) {
+        ServerInfo.pfnFallbackExec(hData);
+      }
       *phReturnData = (HDDEDATA)(DWORD)DDE_FACK;
       return true;
     }
@@ -597,9 +559,9 @@ bool dde::ParseCmd(
   wchar_t cTerm;
 
   *ppOp = 0;
-  LPTSTR pCmd = lex::SkipWhiteSpace(*ppszCmdLine);
+  LPTSTR pCmd = dde::SkipWhiteSpace(*ppszCmdLine);
 
-  if (!lex::ScanForChar('[', &pCmd)) {  // Scan for a command leading
+  if (!dde::ScanForChar('[', &pCmd)) {
     _tcsncpy_s(pszError, uiErrorSize, L"Missing '[']", uiErrorSize - 1);
     return false;
   }
@@ -612,21 +574,21 @@ bool dde::ParseCmd(
   *ppOp++ = pExecFnInfo->pFn;  // Add the function pointer to the opcode list
 
   uiNargs = 0;
-  if (lex::ScanForChar('(', &pCmd)) {  // Command has arguments
+  if (dde::ScanForChar('(', &pCmd)) {  // Command has arguments
     do {  // each argument to the op list
-      pArg = lex::ScanForString(&pCmd, &cTerm, &pArgBuf);
+      pArg = dde::ScanForString(&pCmd, &cTerm, &pArgBuf);
       if (pArg) {
         *ppOp++ = pArg;
         uiNargs++;
       }
     } while (cTerm == ',');
 
-    if ((cTerm != ')') && (!lex::ScanForChar(')', &pCmd))) {  // Do not have a terminating ) char
+    if ((cTerm != ')') && (!dde::ScanForChar(')', &pCmd))) {
       _tcsncpy_s(pszError, uiErrorSize, L"Missing ')'", uiErrorSize - 1);
       return false;
     }
   }
-  if (!lex::ScanForChar(']', &pCmd)) {  // Do not have a terminating ] char
+  if (!dde::ScanForChar(']', &pCmd)) {
     _tcsncpy_s(pszError, uiErrorSize, L"Missing ']'", uiErrorSize - 1);
     return false;
   }
@@ -639,7 +601,7 @@ bool dde::ParseCmd(
     return false;
   }
   *ppOp++ = 0;  // Terminate this op list with a 0
-  pCmd = lex::SkipWhiteSpace(pCmd);
+  pCmd = dde::SkipWhiteSpace(pCmd);
   *ppOp = 0;  // Put a final 0 on the op list
   *ppszCmdLine = pCmd;  // Update the buffer pointer
 
@@ -692,7 +654,7 @@ HDDEDATA dde::SysReqResultInfo(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
 //\tpCmdInfo\tPointer to the current command list.
 //\tppStr\t\tPointer to the current scan pointer.
 PEXECCMDFNINFO dde::ScanForCommand(PEXECCMDFNINFO pCmdInfo, LPTSTR* ppStr) {
-  LPTSTR pStart = lex::SkipWhiteSpace(*ppStr);
+  LPTSTR pStart = dde::SkipWhiteSpace(*ppStr);
   LPTSTR p = pStart;
 
   if (!isalpha(*p)) {  // First char is not alpha
@@ -717,4 +679,3 @@ PEXECCMDFNINFO dde::ScanForCommand(PEXECCMDFNINFO pCmdInfo, LPTSTR* ppStr) {
   *p = cSave;  // Didn't find it, so restore delimiter and return
   return 0;  // not found
 }
-#endif

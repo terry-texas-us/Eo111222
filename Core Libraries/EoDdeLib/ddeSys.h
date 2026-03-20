@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#if defined(USING_DDE)
 #include "dde.h"
 
 namespace dde {
@@ -10,4 +9,3 @@ HDDEDATA SysReqHelp(UINT wFmt, HSZ hszTopic, HSZ hszItem);
 HDDEDATA SysReqProtocols(UINT wFmt, HSZ hszTopic, HSZ hszItem);
 HDDEDATA SysReqTopics(UINT wFmt, HSZ hszTopic, HSZ hszItem);
 }  // namespace dde
-#endif

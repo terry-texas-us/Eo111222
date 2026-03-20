@@ -1,7 +1,4 @@
-﻿#include "Stdafx.h"
-
-#if defined(USING_DDE)
-#include "ddeSys.h"
+﻿#include "ddeSys.h"
 
 using namespace dde;
 
@@ -96,4 +93,3 @@ HDDEDATA dde::SysReqTopics(UINT wFmt, HSZ, HSZ hszItem) {
   // Return a DDE data handle to the data object containing the return data.
   return hData;
 }
-#endif

@@ -1,86 +1,96 @@
 
-# MainFrm.cpp
+# EoDdeLib — DDE Server Integration in AeSys
 
-  #include "Dde.h"						
-  
-  dde::Uninitialize();					
+## Overview
 
-# PegAEsys.cpp
+AeSys exposes a Windows DDEML (Dynamic Data Exchange Management Library) server under the service name **`AeSys`**. The DDE infrastructure is split between the **EoDdeLib** static library (generic server engine) and **AeSys** application code (domain-specific topics, items, and commands).
 
-  #include "Dde.h"						
-  
-  dde::Setup(AeSys::GetInstance());				
-  
-  dde::PostAdvise(dde::ExtNumInfo);		
-  dde::PostAdvise(dde::ExtStrInfo);		
+## Architecture
 
-# PegAEsysView.cpp
+## Architecture
 
-  #include "DdeGItms.h"						
-  
-  dde::PostAdvise(dde::ScaleInfo);		
-  dde::PostAdvise(dde::DimLenInfo);		
-  dde::PostAdvise(dde::DimAngZInfo);	
-  dde::PostAdvise(dde::RelPosXInfo);	
-  dde::PostAdvise(dde::RelPosYInfo);	
-  dde::PostAdvise(dde::RelPosZInfo);	
+### EoDdeLib — `Core Libraries\EoDdeLib`
 
-# PrimDim.cpp
+> Static library — no MFC, no app dependencies
 
-  #include "DdeGItms.h"	
-  
-  dde::PostAdvise(dde::EngLenInfo);		
-  dde::PostAdvise(dde::EngAngZInfo);	
-  
-# PrimLine.cpp  
+| File | Responsibility |
+|------|---------------|
+| `dde.h` | Types, structs, callback typedefs, all declarations |
+| `Dde.cpp` | `Initialize` / `Uninitialize`, `StdCallback`, `DoCallback`, command parsing, `PostAdvise` |
+| `DdeItem.cpp` | `ItemAdd` / `ItemFind` / `ItemRemove` |
+| `DdeTopic.cpp` | `TopicAdd` / `TopicFind` / `TopicRemove` |
+| `DdeConversation.cpp` | `ConversationAdd` / `ConversationFind` / `ConversationRemove` |
+| `DdeSys.cpp` | System topic handlers (`SysReqItems`, `SysReqFormats`, etc.) |
+| `DdeStringUtil.cpp` | `SkipWhiteSpace`, `ScanForChar`, `ScanForString` |
 
-  #include "DdeGItms.h"	
-  
-  dde::PostAdvise(dde::EngLenInfo);		
-  dde::PostAdvise(dde::EngAngZInfo);	
-   
-# PrimPolygon.cpp
+*Linked to AeSys via ProjectReference*
 
-  #include "DdeGItms.h"	
-  
-  dde::PostAdvise(dde::EngLenInfo);		
-  dde::PostAdvise(dde::EngAngZInfo);	
+---
 
-# PrimPolyline.cpp
+### AeSys — `Application\AeSys`
 
-  #include "DdeGItms.h"						
+| File | Responsibility |
+|------|---------------|
+| `DdeAeSysRegistration.cpp` | `RegisterAeSysTopics()` — wires everything up; `OnDdeInitError()` — MFC error callback; `OnDdeFallbackExec()` — `WM_CHAR` `PostMessage` |
+| `DdeCmds.cpp` / `ddeCmds.h` | Execute command handlers (`ExecLine`, `ExecFill`, `ExecTracingOpen`, `ExecFileGet`, etc.) |
+| `DdeGItms.cpp` / `ddeGItms.h` | Item request/poke handlers and `PITEMINFO` externs (`DimAngZInfo`, `ScaleInfo`, etc.) |
 
-  dde::PostAdvise(dde::EngLenInfo);		
-  dde::PostAdvise(dde::EngAngZInfo);
-  
-  # Dde.cpp
+## Compile-Time Control
 
-  #include "PegAEsys.h"
-  #include "Lex.h"
-  #include "Messages.h"
+DDE support is controlled by `#define USING_DDE` in `Stdafx.h`. When undefined, all DDE code compiles out of AeSys and `<ddeml.h>` is not included. EoDdeLib always defines `USING_DDE` in its project preprocessor definitions.
 
-  # DdeCmds.cpp
+## Lifecycle
 
-  #include "PegAEsys.h"
-  #include "PegAEsysDoc.h"
+| Event | Location | Call |
+|-------|----------|------|
+| Startup | `AeSys::InitInstance()` | `dde::RegisterAeSysTopics()` — calls `dde::Initialize(L"AeSys", ...)` then registers all topics, items, and commands |
+| Shutdown | `AeSys::ExitInstance()` | `dde::Uninitialize()` — unregisters service, frees handles |
 
-  #include "CharCellDef.h"
-  #include "FileJob.h"
-  #include "FontDef.h"
-  #include "Layer.h"
-  #include "Pnt.h"
-  #include "Prim.h"
-  #include "PrimState.h"
-  #include "PrimText.h"
-  #include "RefSys.h"
-  #include "Seg.h"
-  #include "SegsDet.h"
-  #include "SegsTrap.h"
-  #include "Text.h"
-  #include "UnitsString.h"
-  #include "Vec.h"
+## Topics and Items
 
-  # DdeGItms.cpp
+### System Topic (`SZDDESYS_TOPIC`)
 
-  #include "PegAEsys.h"
-  #include "PegAEsysView.h"
+Standard DDEML system topic with items: `SysItems`, `Formats`, `Help`, `Topics`, `Protocols`. Three execute commands are also registered here: `TracingOpen`, `TracingMap`, `TracingView`.
+
+### General Topic
+
+| Item | Request | Poke | Advised From |
+|------|---------|------|--------------|
+| `DimAngZ` | Current dimensioned angle (Z) | ✔ | `AeSysView` |
+| `DimLen` | Current dimensioned length | ✔ | `AeSysView` |
+| `EngAngZ` | Engaged angle (Z) | — | `EoDbLine`, `EoDbDimension`, `EoDbPolygon`, `EoDbPolyline` |
+| `EngLen` | Engaged length | — | Same as `EngAngZ` |
+| `ExtNum` | External number | — | `AeSysDoc` |
+| `ExtStr` | External string | — | `AeSysDoc` |
+| `RelPosX/Y/Z` | Relative cursor position | — | `AeSysView` |
+| `Scale` | Current view scale | ✔ | `AeSysView` |
+
+Items marked **Poke ✔** accept values from a DDE client; the rest are read-only. `PostAdvise()` is called after the application updates the corresponding value to notify any advise-linked clients.
+
+### Commands Topic
+
+Execute commands available via `[CommandName(args)]` syntax:
+
+| Command | Description |
+|---------|-------------|
+| `TracingBlank` | Blank a tracing |
+| `TracingMap` | Map a tracing |
+| `TracingOpen` | Open a tracing |
+| `TracingView` | View a tracing |
+| `FileGet` | Open a file |
+| `GotoPoint` | Navigate to a point |
+| `Line` | Draw a line |
+| `Pen` | Set pen properties |
+| `Note` / `NoteHT` | Place text / set note height |
+| `Send` | Send data |
+| `SetPoint` | Set current point |
+| `DimAngZ` / `DimLen` | Set dimensioned angle / length |
+| `Scale` | Set view scale |
+| `Fill` | Fill command |
+
+## Callback Decoupling
+
+EoDdeLib uses two callback function pointers (stored in `SERVERINFO`) to avoid depending on MFC:
+
+- **`INITERRORFN`** — called on `DdeInitialize` failure; AeSys implements this with `app.WarningMessageBox()`.
+- **`FALLBACKEXECFN`** — called when a topic has no exec function and no command list; AeSys posts `WM_CHAR` to the main window.

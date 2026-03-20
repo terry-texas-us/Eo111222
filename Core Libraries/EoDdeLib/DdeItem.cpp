@@ -1,7 +1,4 @@
-﻿#include "Stdafx.h"
-
-#if defined(USING_DDE)
-#include "dde.h"
+﻿#include "dde.h"
 
 using namespace dde;
 
@@ -95,4 +92,3 @@ bool dde::ItemRemove(LPCWSTR lpszTopic, LPCWSTR lpszItem) {
   // We don't have that one
   return false;
 }
-#endif

@@ -1,8 +1,4 @@
-﻿#include "Stdafx.h"
-
-#if defined(USING_DDE)
-#include "dde.h"
-#include "ddeSys.h"
+﻿#include "ddeSys.h"
 
 using namespace dde;
 
@@ -139,4 +135,3 @@ HDDEDATA dde::TopicReqFormats(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
   }
   return MakeDataFromFormatList((LPWORD)wFormats, std::uint16_t(wFmt), hszItem);
 }
-#endif
