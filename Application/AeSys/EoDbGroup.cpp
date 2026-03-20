@@ -38,7 +38,7 @@ EoDbGroup::EoDbGroup(const EoDbGroup& group) {
   while (position != nullptr) { AddTail((group.GetNext(position))->Copy(primitive)); }
 }
 
-EoDbPrimitive* EoDbGroup::GetAt(POSITION position) { return (EoDbPrimitive*)CObList::GetAt(position); }
+EoDbPrimitive* EoDbGroup::GetAt(POSITION position) { return static_cast<EoDbPrimitive*>(CObList::GetAt(position)); }
 
 EoDbGroup::EoDbGroup(const EoDbBlock& block) {
   ATLTRACE2(traceGeneral, 3, L"EoDbGroup(copy from block): this=%p, source=%p, count=%d\n", this, &block,
@@ -134,12 +134,14 @@ void EoDbGroup::Display(AeSysView* view, CDC* deviceContext) {
     primitive->Display(view, deviceContext);
   }
 }
-POSITION EoDbGroup::FindAndRemovePrim(EoDbPrimitive* primitive) {
+bool EoDbGroup::FindAndRemovePrim(EoDbPrimitive* primitive) {
   auto position = Find(primitive);
 
-  if (position != nullptr) { RemoveAt(position); }
-
-  return position;
+  if (position != nullptr) {
+    RemoveAt(position);
+    return true;
+  }
+  return false;
 }
 
 EoDbPoint* EoDbGroup::GetFirstDifferentPoint(EoDbPoint* pointPrimitive) {
@@ -157,7 +159,7 @@ void EoDbGroup::InsertBefore(POSITION insertPosition, EoDbGroup* group) {
   auto position = group->GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = group->GetNext(position);
-    CObList::InsertBefore(insertPosition, (CObject*)primitive);
+    CObList::InsertBefore(insertPosition, static_cast<CObject*>(primitive));
   }
 }
 
@@ -343,53 +345,50 @@ EoDbPrimitive* EoDbGroup::SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d& pt
 }
 /** @brief Deletes all primitives in the group and removes them from the group.
  *
- * This method iterates through all primitives in the group, deletes each primitive, and then removes all primitives from the group.
+ * This method iterates through all primitives in the group, deletes each primitive, and then removes all primitives
+ * from the group.
  */
 void EoDbGroup::DeletePrimitivesAndRemoveAll() {
-  int deleted{};
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
-    deleted++;
     delete (primitive);
   }
   RemoveAll();
 }
 
 void EoDbGroup::SortTextOnY() {
-  int iT;
-  int iCount = (int)GetCount();
+  int lastSwappedIndex{};
+  int iCount = static_cast<int>(GetCount());
 
   do {
-    iT = 0;
-
+    lastSwappedIndex = 0;
     auto position = GetHeadPosition();
     for (int i = 1; i < iCount; i++) {
-      POSITION pos1 = position;
-      EoDbPrimitive* pPrim1 = GetNext(pos1);
+      auto firstPosition = position;
+      auto* firstPrimitive = GetNext(firstPosition);
 
-      POSITION pos2 = pos1;
-      EoDbPrimitive* pPrim2 = GetNext(pos2);
-
-      if (pPrim1->Is(EoDb::kTextPrimitive) && pPrim2->Is(EoDb::kTextPrimitive)) {
-        double dY1 = static_cast<EoDbText*>(pPrim1)->ReferenceOrigin().y;
-        double dY2 = static_cast<EoDbText*>(pPrim2)->ReferenceOrigin().y;
-        if (dY1 < dY2) {
-          SetAt(position, pPrim2);
-          SetAt(pos1, pPrim1);
-          iT = i;
+      auto secondPosition = firstPosition;
+      auto* secondPrimitive = GetNext(secondPosition);
+      if (firstPrimitive->Is(EoDb::kTextPrimitive) && secondPrimitive->Is(EoDb::kTextPrimitive)) {
+        double firstTextPrimitiveY = static_cast<EoDbText*>(firstPrimitive)->ReferenceOrigin().y;
+        double secondTextPrimitiveY = static_cast<EoDbText*>(secondPrimitive)->ReferenceOrigin().y;
+        if (firstTextPrimitiveY < secondTextPrimitiveY) {
+          SetAt(position, secondPrimitive);
+          SetAt(firstPosition, firstPrimitive);
+          lastSwappedIndex = i;
         }
-      } else if (!pPrim1->Is(EoDb::kTextPrimitive) && pPrim2->Is(EoDb::kTextPrimitive)) {
+      } else if (!firstPrimitive->Is(EoDb::kTextPrimitive) && secondPrimitive->Is(EoDb::kTextPrimitive)) {
         // Bubble text primitives before non-text primitives
-        SetAt(position, pPrim2);
-        SetAt(pos1, pPrim1);
-        iT = i;
+        SetAt(position, secondPrimitive);
+        SetAt(firstPosition, firstPrimitive);
+        lastSwappedIndex = i;
       }
 
-      position = pos1;
+      position = firstPosition;
     }
-    iCount = iT;
-  } while (iT != 0);
+    iCount = lastSwappedIndex;
+  } while (lastSwappedIndex != 0);
 }
 
 void EoDbGroup::Square(AeSysView* view) {

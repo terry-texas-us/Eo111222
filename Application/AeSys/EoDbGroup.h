@@ -54,7 +54,7 @@ class EoDbGroup : public CObList {
   void ExplodeBlockReferences();
   void DeletePrimitivesAndRemoveAll();
   void Display(AeSysView* view, CDC* deviceContext);
-  POSITION FindAndRemovePrim(EoDbPrimitive* primitive);
+  bool FindAndRemovePrim(EoDbPrimitive* primitive);
   EoDbPrimitive* GetAt(POSITION position);
   int GetBlockRefCount(const CString& blockName);
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&);
