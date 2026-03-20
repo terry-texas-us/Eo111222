@@ -1105,6 +1105,39 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
       majorAxis.Length(), majorAxis.Length() * ellipse.m_ratio);
 }
 
+/** @brief Maps a DXF hatch pattern name to the AeSys fill style index.
+ *
+ * Pattern names are matched case-insensitively against the built-in set loaded
+ * from DefaultSet.txt.  Returns 0 (no match) when the name is unrecognized,
+ * which causes DisplayFilAreaHatch to early-return harmlessly.
+ *
+ * @param patternName  The DXF pattern name (group code 2).
+ * @return The 1-based fill style index, or 0 if no match.
+ */
+static std::int16_t MapHatchPatternNameToIndex(const std::wstring& patternName) {
+  // Table mirrors DefaultSet.txt load order (1-based indices 1–39)
+  static const struct {
+    const wchar_t* name;
+    std::int16_t index;
+  } patternTable[] = {
+      {L"PEG1", 1},    {L"PEG2", 2},    {L"ANGLE", 3},   {L"ANSI31", 4},
+      {L"ANSI32", 5},  {L"ANSI33", 6},  {L"ANSI34", 7},  {L"ANSI35", 8},
+      {L"ANSI36", 9},  {L"ANSI37", 10}, {L"ANSI38", 11}, {L"BOX", 12},
+      {L"BRICK", 13},  {L"CLAY", 14},   {L"CORK", 15},   {L"CROSS", 16},
+      {L"DASH", 17},   {L"DOLMIT", 18}, {L"DOTS", 19},   {L"EARTH", 20},
+      {L"ESCHER", 21},  {L"FLEX", 22},  {L"GRASS", 23},  {L"GRATE", 24},
+      {L"HEX", 25},    {L"HONEY", 26},  {L"HOUND", 27},  {L"INSUL", 28},
+      {L"MUDST", 29},  {L"NET3", 30},   {L"PLAST", 31},  {L"PLASTI", 32},
+      {L"SACNCR", 33}, {L"SQUARE", 34}, {L"STARS", 35},  {L"SWAMP", 36},
+      {L"TRANS", 37},  {L"TRIAN", 38},  {L"ZIGZAG", 39},
+  };
+
+  for (const auto& entry : patternTable) {
+    if (_wcsicmp(patternName.c_str(), entry.name) == 0) { return entry.index; }
+  }
+  return 0;  // Unrecognized pattern — caller falls back to Hollow
+}
+
 /** @brief Converts a DXF HATCH entity to one or more EoDbPolygon primitives.
  *
  * Each hatch boundary loop becomes a separate EoDbPolygon. Polyline boundaries
@@ -1116,6 +1149,12 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
  * and scale. Hollow hatches (solidFillFlag == 0 with pattern name "SOLID" absent)
  * map to PolygonStyle::Hollow.
  *
+ * Boundary points are in OCS; when the extrusion normal differs from positive Z,
+ * the OCS-to-WCS transform is applied to all points and reference vectors.
+ *
+ * Island loops (neither external nor outermost) are rendered as Hollow polygons
+ * when the outer hatch is solid-filled, creating the visual "hole" effect.
+ *
  * @param hatch  The parsed DXF HATCH entity.
  * @param document  The AeSysDoc receiving the converted primitives.
  */
@@ -1124,6 +1163,12 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
       hatch.m_hatchPatternName.c_str(), static_cast<int>(hatch.HatchLoops().size()), hatch.m_solidFillFlag);
 
   if (hatch.HatchLoops().empty()) { return; }
+
+  // Build OCS→WCS transform from the entity's extrusion direction
+  const EoGeVector3d extrusionNormal{
+      hatch.m_extrusionDirection.x, hatch.m_extrusionDirection.y, hatch.m_extrusionDirection.z};
+  const EoGeOcsTransform ocsToWcs = EoGeOcsTransform::CreateOcsToWcs(extrusionNormal);
+  const bool needsOcsTransform = !ocsToWcs.IsWorldCoordinateSystem();
 
   // Determine polygon style from DXF hatch properties
   EoDb::PolygonStyle polygonStyle = EoDb::PolygonStyle::Hollow;
@@ -1134,14 +1179,23 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
   } else if (hatch.m_hatchPatternName == L"HOLLOW" || hatch.m_hatchPatternName.empty()) {
     polygonStyle = EoDb::PolygonStyle::Hollow;
   } else {
-    // Pattern hatch — map to AeSys Hatch style
+    // Pattern hatch — map DXF name to AeSys fill style index
     polygonStyle = EoDb::PolygonStyle::Hatch;
-    // DXF pattern hatches use fillStyleIndex 1 as a reasonable default (first hatch pattern)
-    fillStyleIndex = 1;
+    fillStyleIndex = MapHatchPatternNameToIndex(hatch.m_hatchPatternName);
+    if (fillStyleIndex == 0) {
+      ATLTRACE2(traceGeneral, 1, L"  Unrecognized hatch pattern name \"%s\" — falling back to Hollow\n",
+          hatch.m_hatchPatternName.c_str());
+      polygonStyle = EoDb::PolygonStyle::Hollow;
+    }
+  }
+
+  if (hatch.m_hatchPatternDoubleFlag != 0) {
+    ATLTRACE2(traceGeneral, 1,
+        L"  Hatch pattern double flag set — second 90° pass not implemented in PEG V1\n");
   }
 
   // Hatch origin from the elevation point (OCS origin for the hatch plane)
-  const EoGePoint3d hatchOrigin{hatch.m_elevationPoint.x, hatch.m_elevationPoint.y, hatch.m_elevationPoint.z};
+  EoGePoint3d hatchOrigin{hatch.m_elevationPoint.x, hatch.m_elevationPoint.y, hatch.m_elevationPoint.z};
 
   // Build reference vectors from pattern angle and scale
   // For solid fills, use identity-like reference vectors (unit X and Y)
@@ -1157,6 +1211,17 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     yAxis = EoGeVector3d{-sinAngle * scale, cosAngle * scale, 0.0};
   }
 
+  // Transform hatch origin from OCS to WCS when extrusion is non-default.
+  // Pattern reference vectors (xAxis, yAxis) are NOT transformed — they define
+  // the visual pattern orientation in the rendering plane. Transforming them
+  // through OCS would mirror the pattern for negative-Z extrusion because the
+  // OCS X-axis reverses direction (e.g., [0,0,-1] → OCS X = [-1,0,0]).
+  // AutoCAD renders hatch patterns with the same visual orientation regardless
+  // of extrusion direction; preserving untransformed vectors matches this behavior.
+  if (needsOcsTransform) {
+    hatchOrigin = ocsToWcs * hatchOrigin;
+  }
+
   int loopIndex = 0;
   for (const auto* hatchLoop : hatch.HatchLoops()) {
     ++loopIndex;
@@ -1166,9 +1231,16 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
       continue;
     }
 
-    // Log island boundaries (bit 0x10 = outermost, bit 0x01 = external)
-    // Inner loops (islands) are still converted but noted in trace output
-    if ((hatchLoop->m_boundaryPathType & 0x01) == 0 && (hatchLoop->m_boundaryPathType & 0x10) == 0) {
+    // Determine per-loop polygon style: island boundaries become Hollow when the
+    // outer hatch is solid-filled, creating the visual "hole" effect.
+    const bool isIslandLoop =
+        (hatchLoop->m_boundaryPathType & 0x01) == 0 && (hatchLoop->m_boundaryPathType & 0x10) == 0;
+    EoDb::PolygonStyle loopPolygonStyle = polygonStyle;
+    if (isIslandLoop && polygonStyle == EoDb::PolygonStyle::Solid) {
+      loopPolygonStyle = EoDb::PolygonStyle::Hollow;
+      ATLTRACE2(traceGeneral, 2, L"  Loop %d: island boundary (type 0x%X) — rendered as Hollow\n",
+          loopIndex, hatchLoop->m_boundaryPathType);
+    } else if (isIslandLoop) {
       ATLTRACE2(traceGeneral, 2, L"  Loop %d: island boundary (type 0x%X) — converted as independent polygon\n",
           loopIndex, hatchLoop->m_boundaryPathType);
     }
@@ -1369,8 +1441,15 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
       continue;
     }
 
+    // Transform boundary points from OCS to WCS when extrusion is non-default
+    if (needsOcsTransform) {
+      for (INT_PTR i = 0; i < boundaryPoints.GetSize(); ++i) {
+        boundaryPoints[i] = ocsToWcs * boundaryPoints[i];
+      }
+    }
+
     auto* polygon = new EoDbPolygon(
-        static_cast<std::int16_t>(hatch.m_color), polygonStyle, fillStyleIndex,
+        static_cast<std::int16_t>(hatch.m_color), loopPolygonStyle, fillStyleIndex,
         hatchOrigin, xAxis, yAxis, boundaryPoints);
 
     // Set layer and line type from the DXF entity for correct document placement
@@ -1380,8 +1459,8 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
 
     ATLTRACE2(traceGeneral, 2, L"  Loop %d: created EoDbPolygon (%s, %d vertices)\n",
         loopIndex,
-        polygonStyle == EoDb::PolygonStyle::Solid ? L"Solid"
-            : polygonStyle == EoDb::PolygonStyle::Hatch ? L"Hatch" : L"Hollow",
+        loopPolygonStyle == EoDb::PolygonStyle::Solid ? L"Solid"
+            : loopPolygonStyle == EoDb::PolygonStyle::Hatch ? L"Hatch" : L"Hollow",
         static_cast<int>(boundaryPoints.GetSize()));
   }
 }

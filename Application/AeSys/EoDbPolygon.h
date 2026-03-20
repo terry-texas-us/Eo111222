@@ -21,9 +21,9 @@ class EoDbPolygon : public EoDbPrimitive {
   EoGeVector3d m_positiveX;
   EoGeVector3d m_positiveY;
   EoGePoint3d* m_vertices{};
-  EoDb::PolygonStyle m_polygonStyle;
-  std::int16_t m_fillStyleIndex;
-  std::uint16_t m_numberOfVertices;
+  EoDb::PolygonStyle m_polygonStyle{EoDb::PolygonStyle::Hollow};
+  std::int16_t m_fillStyleIndex{};
+  std::uint16_t m_numberOfVertices{};
 
  public:
   EoDbPolygon();

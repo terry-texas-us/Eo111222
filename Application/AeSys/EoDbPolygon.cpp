@@ -75,7 +75,13 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
 
   renderState.SetLineType(deviceContext, 1);
 
-  int iTblId = hatch::tableOffset[renderState.PolygonIntStyleId()];
+  const int fillStyleIndex = renderState.PolygonIntStyleId();
+  if (fillStyleIndex < 0 || fillStyleIndex >= 64 || hatch::tableOffset[fillStyleIndex] == 0) {
+    renderState.SetPen(view, deviceContext, color, lineType);
+    return;  // Out-of-range or uninitialized hatch table entry — nothing to draw
+  }
+
+  int iTblId = hatch::tableOffset[fillStyleIndex];
   int iHatLns = int(hatch::tableValue[iTblId++]);
 
   for (int i0 = 0; i0 < iHatLns; i0++) {
@@ -475,7 +481,7 @@ CString EoDbPolygon::FormatIntStyle() {
 
   CString str = (m_polygonStyle >= EoDb::PolygonStyle::Hollow && m_polygonStyle <= EoDb::PolygonStyle::Hatch)
                     ? strStyle[static_cast<int>(m_polygonStyle)]
-                    : const_cast<LPWSTR>(L"Invalid!");
+                    : CString(L"Invalid!");
 
   return str;
 }

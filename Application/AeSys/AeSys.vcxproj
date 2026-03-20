@@ -241,6 +241,7 @@
     <None Include="res\*.bmp" />
     <None Include="res\*.cur" />
     <None Include="res\*.ico" />
+    <None Include="res\Hatches\acad.pat" />
     <None Include="res\Simplex.psf" />
     <None Include="res\AeSys.rc2" />
     <Text Include="res\LineTypes\*.txt" />

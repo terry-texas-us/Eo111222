@@ -36,9 +36,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DXF Test FIles", "DXF Test 
 	ProjectSection(SolutionItems) = preProject
 		DXF Test Files\3dFace_Test.dxf = DXF Test Files\3dFace_Test.dxf
 		DXF Test Files\AcadProxyEntity_Test.dxf = DXF Test Files\AcadProxyEntity_Test.dxf
+		DXF Test Files\AEC_Bldg_Plan_Sample-(2010)-1.dxf = DXF Test Files\AEC_Bldg_Plan_Sample-(2010)-1.dxf
 		DXF Test Files\Ellipse_And_EllipticalArc_Test.dxf = DXF Test Files\Ellipse_And_EllipticalArc_Test.dxf
 		DXF Test Files\Ellipse_NegZ_CW_Test.dxf = DXF Test Files\Ellipse_NegZ_CW_Test.dxf
 		DXF Test Files\Floor Plan Sample.dxf = DXF Test Files\Floor Plan Sample.dxf
+		DXF Test Files\Hatch_Boundary_Test_Mixed.dxf = DXF Test Files\Hatch_Boundary_Test_Mixed.dxf
 		DXF Test Files\Heavy_Polyline_Subtypes.dxf = DXF Test Files\Heavy_Polyline_Subtypes.dxf
 		C:\Users\tsmit\Desktop\Help Peg.pdf = C:\Users\tsmit\Desktop\Help Peg.pdf
 		DXF Test Files\LWPolyline_Bulge_Test.dxf = DXF Test Files\LWPolyline_Bulge_Test.dxf
@@ -124,14 +126,14 @@ Global
 		{357A8016-9AD4-47EF-B23C-2071C264793B}.Release|Win32.Build.0 = Release|Win32
 		{357A8016-9AD4-47EF-B23C-2071C264793B}.Release|x64.ActiveCfg = Release|x64
 		{357A8016-9AD4-47EF-B23C-2071C264793B}.Release|x64.Build.0 = Release|x64
-{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Debug|Win32.ActiveCfg = Debug|Win32
-{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Debug|Win32.Build.0 = Debug|Win32
-{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Debug|x64.ActiveCfg = Debug|x64
-{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Debug|x64.Build.0 = Debug|x64
-{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Release|Win32.ActiveCfg = Release|Win32
-{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Release|Win32.Build.0 = Release|Win32
-{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Release|x64.ActiveCfg = Release|x64
-{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Release|x64.Build.0 = Release|x64
+		{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Debug|Win32.Build.0 = Debug|Win32
+		{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Debug|x64.ActiveCfg = Debug|x64
+		{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Debug|x64.Build.0 = Debug|x64
+		{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Release|Win32.ActiveCfg = Release|Win32
+		{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Release|Win32.Build.0 = Release|Win32
+		{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Release|x64.ActiveCfg = Release|x64
+		{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -141,7 +143,7 @@ Global
 		{79C9DBD9-E32A-4B2B-BEF5-0271973883EC} = {79DF9179-1B4A-475B-8004-50C36CCC6BD1}
 		{AD220B98-AD6D-4826-B211-96DC6EBBF69B} = {79DF9179-1B4A-475B-8004-50C36CCC6BD1}
 		{357A8016-9AD4-47EF-B23C-2071C264793B} = {79DF9179-1B4A-475B-8004-50C36CCC6BD1}
-{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A} = {79DF9179-1B4A-475B-8004-50C36CCC6BD1}
+		{B8F5E3A1-7C2D-4E9F-A6D8-3F1B5C8E2D4A} = {79DF9179-1B4A-475B-8004-50C36CCC6BD1}
 		{2ADADC69-8FC1-4F37-BC59-9EB19F00E673} = {DC37B473-B533-4702-B6C8-FE02708EB7DB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
