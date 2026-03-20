@@ -2,6 +2,7 @@
 
 #include <climits>
 #include <cstdint>
+#include <cstring>
 
 #include "AeSysDoc.h"
 #include "AeSysView.h"
@@ -30,8 +31,6 @@ EoDbGroup::EoDbGroup(EoDbPrimitive* primitive) { AddTail(primitive); }
 EoDbGroup::EoDbGroup(const EoDbGroup& group) {
   ATLTRACE2(traceGeneral, 3, L"EoDbGroup(copy from group): this=%p, source=%p, count=%d\n", this, &group,
       static_cast<int>(group.GetCount()));
-  // Trigger debugger break to see call stack:
-  if (group.GetCount() > 0) { __debugbreak(); }
 
   EoDbPrimitive* primitive{};
 
@@ -44,8 +43,6 @@ EoDbPrimitive* EoDbGroup::GetAt(POSITION position) { return (EoDbPrimitive*)CObL
 EoDbGroup::EoDbGroup(const EoDbBlock& block) {
   ATLTRACE2(traceGeneral, 3, L"EoDbGroup(copy from block): this=%p, source=%p, count=%d\n", this, &block,
       static_cast<int>(block.GetCount()));
-  // Trigger debugger break to see call stack:
-  if (block.GetCount() > 0) { __debugbreak(); }
 
   EoDbPrimitive* primitive{};
 
@@ -75,19 +72,21 @@ void EoDbGroup::BreakPolylines() {
     auto* primitive = GetNext(position);
     if (primitive->Is(EoDb::kPolylinePrimitive)) {
       auto color = primitive->Color();
-      auto LineType = primitive->LineTypeIndex();
+      auto lineTypeIndex = primitive->LineTypeIndex();
 
       EoGePoint3dArray points;
       static_cast<EoDbPolyline*>(primitive)->GetAllPoints(points);
 
-      for (auto i = 0; i < points.GetSize() - 1; i++) {
-        CObList::InsertBefore(
-            PrimitivePosition, EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, LineType));
-      }
+      if (points.GetSize() >= 2) {
+        for (auto i = 0; i < points.GetSize() - 1; i++) {
+          CObList::InsertBefore(
+              PrimitivePosition, EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeIndex));
+        }
 
-      if (static_cast<EoDbPolyline*>(primitive)->IsLooped()) {
-        CObList::InsertBefore(PrimitivePosition,
-            EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, LineType));
+        if (static_cast<EoDbPolyline*>(primitive)->IsLooped()) {
+          CObList::InsertBefore(PrimitivePosition,
+              EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeIndex));
+        }
       }
       this->RemoveAt(PrimitivePosition);
       delete primitive;
@@ -100,33 +99,32 @@ void EoDbGroup::BreakPolylines() {
   }
 }
 
-void EoDbGroup::BreakSegRefs() {
-  int iSegRefs;
+void EoDbGroup::ExplodeBlockReferences() {
+  int numberOfGroupReferences{};
   do {
-    iSegRefs = 0;
+    numberOfGroupReferences = 0;
     auto position = GetHeadPosition();
     while (position != nullptr) {
-      auto PrimitivePosition = position;
+      auto primitivePosition = position;
       auto* primitive = GetNext(position);
       if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
-        iSegRefs++;
         EoDbBlock* block{};
         if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(primitive)->BlockName(), block) != 0) {
-          EoDbGroup* pSegT = new EoDbGroup(*block);
+          numberOfGroupReferences++;
+          auto* temporaryGroupTransformed = new EoDbGroup(*block);
           auto basePoint = block->BasePoint();
           EoGeTransformMatrix transformMatrix =
               static_cast<EoDbBlockReference*>(primitive)->BuildTransformMatrix(basePoint);
-          pSegT->Transform(transformMatrix);
-
-          this->InsertBefore(PrimitivePosition, pSegT);
-          this->RemoveAt(PrimitivePosition);
+          temporaryGroupTransformed->Transform(transformMatrix);
+          this->InsertBefore(primitivePosition, temporaryGroupTransformed);
+          this->RemoveAt(primitivePosition);
           delete primitive;
-          pSegT->RemoveAll();
-          delete pSegT;
+          temporaryGroupTransformed->RemoveAll();
+          delete temporaryGroupTransformed;
         }
       }
     }
-  } while (iSegRefs != 0);
+  } while (numberOfGroupReferences != 0);
 }
 
 void EoDbGroup::Display(AeSysView* view, CDC* deviceContext) {
@@ -218,11 +216,11 @@ bool EoDbGroup::SelectUsingLine(AeSysView* view, const EoGePoint3d& pt1, const E
 }
 
 bool EoDbGroup::SelectUsingPoint_(AeSysView* view, EoGePoint4d point) {
-  EoGePoint3d ptSel;
+  EoGePoint3d selectionPoint;
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
-    if (primitive->SelectUsingPoint(view, point, ptSel)) { return true; }
+    if (primitive->SelectUsingPoint(view, point, selectionPoint)) { return true; }
   }
   return false;
 }
@@ -271,23 +269,25 @@ void EoDbGroup::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::
     }
   }
 }
+
 void EoDbGroup::RemoveDuplicatePrimitives() {
-  auto BasePosition = GetHeadPosition();
-  while (BasePosition != 0) {
-    EoDbPrimitive* BasePrimitive = GetNext(BasePosition);
+  auto basePosition = GetHeadPosition();
+  while (basePosition != nullptr) {
+    auto* basePrimitive = GetNext(basePosition);
 
-    auto TestPosition = BasePosition;
-    while (TestPosition != 0) {
-      auto TestPositionSave = TestPosition;
-      EoDbPrimitive* TestPrimitive = GetNext(TestPosition);
+    auto testPosition = basePosition;
+    while (testPosition != nullptr) {
+      auto testPositionSave = testPosition;
+      auto* testPrimitive = GetNext(testPosition);
 
-      if (BasePrimitive->Identical(TestPrimitive)) {
-        RemoveAt(TestPositionSave);
-        delete TestPrimitive;
+      if (basePrimitive->Identical(testPrimitive)) {
+        RemoveAt(testPositionSave);
+        delete testPrimitive;
       }
     }
   }
 }
+
 int EoDbGroup::RemoveEmptyNotesAndDelete() {
   int count{};
 
@@ -305,21 +305,23 @@ int EoDbGroup::RemoveEmptyNotesAndDelete() {
   }
   return count;
 }
+
 EoDbPrimitive* EoDbGroup::SelPrimUsingPoint(
-    AeSysView* view, const EoGePoint4d& point, double& dPicApert, EoGePoint3d& pDetPt) {
+    AeSysView* view, const EoGePoint4d& point, double& selectionDistance, EoGePoint3d& selectionPoint) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
 
-    if (primitive->SelectUsingPoint(view, point, pDetPt)) {
-      dPicApert = point.DistanceToPointXY(EoGePoint4d(pDetPt));
+    if (primitive->SelectUsingPoint(view, point, selectionPoint)) {
+      selectionDistance = point.DistanceToPointXY(EoGePoint4d(selectionPoint));
       return primitive;
     }
   }
   return nullptr;
 }
+
 EoDbPrimitive* EoDbGroup::SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d& ptView, EoGePoint3d* ptCtrl) {
-  EoDbPrimitive* EngagedPrimitive{};
+  EoDbPrimitive* engagedPrimitive{};
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
@@ -330,30 +332,27 @@ EoDbPrimitive* EoDbGroup::SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d& pt
     EoGePoint3d pt = primitive->SelectAtControlPoint(view, ptView);
 
     if (EoDbPrimitive::ControlPointIndex() != SHRT_MAX) {
-      EngagedPrimitive = primitive;
+      engagedPrimitive = primitive;
 
       EoGePoint4d ndcPoint(pt);
       view->ModelViewTransformPoint(ndcPoint);
       *ptCtrl = EoGePoint3d{ndcPoint};
     }
   }
-  return EngagedPrimitive;
+  return engagedPrimitive;
 }
-
+/** @brief Deletes all primitives in the group and removes them from the group.
+ *
+ * This method iterates through all primitives in the group, deletes each primitive, and then removes all primitives from the group.
+ */
 void EoDbGroup::DeletePrimitivesAndRemoveAll() {
-  auto count = GetCount();
-  ATLTRACE2(traceGeneral, 4, L"  DeletePrimitivesAndRemoveAll() - List count: %d, HeadPos: %p\n",
-      static_cast<int>(count), GetHeadPosition());
-
   int deleted{};
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
-    ATLTRACE2(traceGeneral, 4, L"    [%d] Deleting primitive at %p\n", deleted, primitive);
     deleted++;
     delete (primitive);
   }
-  ATLTRACE2(traceGeneral, 4, L"  DeletePrimitivesAndRemoveAll() - Total deleted: %d\n", deleted);
   RemoveAll();
 }
 
@@ -380,7 +379,8 @@ void EoDbGroup::SortTextOnY() {
           SetAt(pos1, pPrim1);
           iT = i;
         }
-      } else if (pPrim1->Is(EoDb::kTextPrimitive) || pPrim2->Is(EoDb::kTextPrimitive)) {
+      } else if (!pPrim1->Is(EoDb::kTextPrimitive) && pPrim2->Is(EoDb::kTextPrimitive)) {
+        // Bubble text primitives before non-text primitives
         SetAt(position, pPrim2);
         SetAt(pos1, pPrim1);
         iT = i;
@@ -391,6 +391,7 @@ void EoDbGroup::SortTextOnY() {
     iCount = iT;
   } while (iT != 0);
 }
+
 void EoDbGroup::Square(AeSysView* view) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
@@ -420,11 +421,13 @@ void EoDbGroup::Write(CFile& file) {
     primitive->Write(file);
   }
 }
+
 void EoDbGroup::Write(CFile& file, std::uint8_t* buffer) {
   // group flags
   buffer[0] = 0;
   // number of primitives in group
-  *((std::int16_t*)&buffer[1]) = std::int16_t(GetCount());
+  auto primitiveCount = static_cast<std::int16_t>(GetCount());
+  std::memcpy(&buffer[1], &primitiveCount, sizeof(primitiveCount));
 
   auto position = GetHeadPosition();
   while (position != nullptr) {

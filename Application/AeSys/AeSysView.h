@@ -396,7 +396,13 @@ class AeSysView : public CView {
   bool GroupIsEngaged() { return m_EngagedGroup != 0; }
   [[nodiscard]] double& SelectApertureSize() { return m_SelectApertureSize; }
   void BreakAllPolylines();
-  void BreakAllSegRefs();
+
+  /** @brief Explodes all block references in the view by iterating through each visible group and calling the
+   * ExplodeBlockReferences method on it.
+   * @note This method modifies the groups in place, so any block references within the groups will be exploded into
+   * their constituent primitives. After calling this method, the view will need to be refreshed to reflect the changes.
+   */
+  void ExplodeAllBlockReferences();
 
   bool PenWidthsOn() const { return m_ViewPenWidths; }
   [[nodiscard]] double GetWorldScale() const { return m_WorldScale; }

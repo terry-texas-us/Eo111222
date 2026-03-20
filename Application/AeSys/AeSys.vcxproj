@@ -244,6 +244,7 @@
     <None Include="res\Hatches\acad.pat" />
     <None Include="res\Simplex.psf" />
     <None Include="res\AeSys.rc2" />
+    <Text Include="res\Hatches\DefaultSet.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <None Include="vshints.hm" />
   </ItemGroup>

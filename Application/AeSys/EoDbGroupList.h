@@ -14,7 +14,6 @@ class EoDbGroupList : public CObList {
 
   ~EoDbGroupList() override {}
 
- public:  // Base class wrappers
   auto AddHead(EoDbGroup* group) { return (CObList::AddHead((CObject*)group)); }
   auto AddTail(EoDbGroup* group) { return (CObList::AddTail((CObject*)group)); }
   void AddTail(EoDbGroupList* groupList) { CObList::AddTail((CObList*)groupList); }
@@ -24,12 +23,17 @@ class EoDbGroupList : public CObList {
   EoDbGroup* RemoveHead() { return (EoDbGroup*)CObList::RemoveHead(); }
   EoDbGroup* RemoveTail() { return (EoDbGroup*)CObList::RemoveTail(); }
 
- public:  // Methods
   void AddToTreeViewControl(HWND hTree, HTREEITEM htiParent);
   void BreakPolylines();
-  void BreakSegRefs();
   void DeleteGroupsAndRemoveAll();
   void Display(AeSysView* view, CDC* deviceContext);
+
+  /** @brief Replaces block reference primitives in all groups with the primitives from the referenced blocks,
+   * transformed according to the block reference's properties.  This is a recursive process that continues until no
+   * block reference primitives remain in any group.
+   */
+  void ExplodeBlockReferences();
+  
   int GetBlockRefCount(const CString& name);
   /// <summary>Determines the extent of all groups in list.</summary>
   void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, EoGeTransformMatrix& transformMatrix);

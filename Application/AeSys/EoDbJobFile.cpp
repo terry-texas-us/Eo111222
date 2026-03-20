@@ -273,13 +273,13 @@ void EoDbJobFile::WriteHeader(CFile& file) {
   file.Write(m_PrimBuf, 96);
 }
 void EoDbJobFile::WriteLayer(CFile& file, EoDbLayer* layer) {
-  layer->BreakSegRefs();
+  layer->ExplodeBlockReferences();
   layer->BreakPolylines();
 
-  auto Position = layer->GetHeadPosition();
-  while (Position != nullptr) {
-    auto* Group = layer->GetNext(Position);
-    WriteGroup(file, Group);
+  auto position = layer->GetHeadPosition();
+  while (position != nullptr) {
+    auto* group = layer->GetNext(position);
+    WriteGroup(file, group);
   }
 }
 

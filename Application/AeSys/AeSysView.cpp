@@ -1962,11 +1962,11 @@ void AeSysView::BreakAllPolylines() {
   }
 }
 
-void AeSysView::BreakAllSegRefs() {
+void AeSysView::ExplodeAllBlockReferences() {
   auto position = GetFirstVisibleGroupPosition();
   while (position != nullptr) {
-    auto* Group = GetNextVisibleGroup(position);
-    Group->BreakSegRefs();
+    auto* group = GetNextVisibleGroup(position);
+    group->ExplodeBlockReferences();
   }
 }
 

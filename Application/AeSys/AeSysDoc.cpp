@@ -1425,7 +1425,7 @@ void AeSysDoc::OnTrapCommandsBlock() {
   InsertBlock(CString(name), block);
 }
 
-void AeSysDoc::OnTrapCommandsUnblock() { m_trappedGroups.BreakSegRefs(); }
+void AeSysDoc::OnTrapCommandsUnblock() { m_trappedGroups.ExplodeBlockReferences(); }
 void AeSysDoc::OnSetupPenColor() {
   EoDlgSetupColor Dialog;
   Dialog.m_ColorIndex = static_cast<std::uint16_t>(renderState.Color());
@@ -1530,7 +1530,7 @@ void AeSysDoc::OnToolsGroupBreak() {
   auto* activeView = AeSysView::GetActiveView();
 
   activeView->BreakAllPolylines();
-  activeView->BreakAllSegRefs();
+  activeView->ExplodeAllBlockReferences();
 }
 
 void AeSysDoc::OnToolsGroupDelete() {

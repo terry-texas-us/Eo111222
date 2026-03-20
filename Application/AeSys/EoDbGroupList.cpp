@@ -29,13 +29,15 @@ void EoDbGroupList::BreakPolylines() {
     group->BreakPolylines();
   }
 }
-void EoDbGroupList::BreakSegRefs() {
+
+void EoDbGroupList::ExplodeBlockReferences() {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    group->BreakSegRefs();
+    group->ExplodeBlockReferences();
   }
 }
+
 void EoDbGroupList::Display(AeSysView* view, CDC* deviceContext) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
