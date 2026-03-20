@@ -34,6 +34,15 @@
 #include "EoGeVector3d.h"
 #include "Resource.h"
 
+// Type discriminator tags
+namespace {
+constexpr std::uint16_t kTypeTagDouble = 0;
+constexpr std::uint16_t kTypeTagInt = 1;
+constexpr std::uint16_t kTypeTagWString = 2;
+constexpr std::uint16_t kTypeTagPoint3d = 3;
+constexpr std::uint16_t kTypeTagVector3d = 4;
+}  // namespace
+
 void EoDbPegFile::Load(AeSysDoc* document) {
   ReadHeaderSection(document);
   ReadTablesSection(document);
@@ -43,10 +52,20 @@ void EoDbPegFile::Load(AeSysDoc* document) {
 
 /**
  * Reads the header section from the PEG file into the document's header section.
+ *
+ * Uses a peek-ahead to distinguish legacy files from V2 files:
+ * - **Legacy**: kHeaderSection is followed immediately by kEndOfSection. Default variables
+ *   are populated with $AESVER = "AE2011".
+ * - **V2**: kHeaderSection is followed by one or more variable triples (name, type tag, value),
+ *   terminated by kEndOfSection.
+ *
+ * The sentinel kEndOfSection (0x01ff) cannot collide with the first two bytes of a
+ * tab-terminated variable name (which starts with '$' = 0x24 in CP_ACP), so the peek
+ * is unambiguous.
+ *
  * @param document Pointer to the AeSysDoc object where the header section will be populated.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kHeaderSection." if the expected sentinel is not found.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection." if the expected end of section sentinel is
- * not found.
+ * @throws std::runtime_error if the expected kHeaderSection sentinel is not found.
+ * @throws std::runtime_error if an unknown type discriminator tag is encountered.
  */
 void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kHeaderSection) {
@@ -54,18 +73,60 @@ void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
   }
   EoDbHeaderSection& headerSection = document->HeaderSection();
 
-  auto& variables = headerSection.GetVariables();
-  if (variables.empty()) {
-    // Legacy AeSys file
-    headerSection.SetVariable(L"$AESVER", HeaderVariable(L"AE2011"));  // AeSys version AE2011
-    headerSection.SetVariable(L"$CLAYER", HeaderVariable(L"0"));  // Current Layer default to `0`
-    headerSection.SetVariable(L"$PDMODE", HeaderVariable(2));  // Point display mode is `+`
-    headerSection.SetVariable(L"$PDSIZE", HeaderVariable(1.0));  // default point size 1.0
-  }
-  // 	With addition of info here will loop key-value pairs till EoDb::kEndOfSection sentinel
+  // Peek at the next uint16_t to distinguish legacy (kEndOfSection) from V2 (variable triples).
+  auto peekPosition = CFile::GetPosition();
+  auto peekedValue = EoDb::ReadUInt16(*this);
 
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
-    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.");
+  if (peekedValue == EoDb::kEndOfSection) {
+    // Legacy AeSys file — no variables stored on disk; populate defaults
+    headerSection.SetVariable(L"$AESVER", HeaderVariable(std::wstring(L"AE2011")));
+    headerSection.SetVariable(L"$CLAYER", HeaderVariable(std::wstring(L"0")));
+    headerSection.SetVariable(L"$PDMODE", HeaderVariable(2));
+    headerSection.SetVariable(L"$PDSIZE", HeaderVariable(1.0));
+    return;
+  }
+
+  // V2 file: rewind past the peeked bytes and read variable triples
+  CFile::Seek(static_cast<LONGLONG>(peekPosition), CFile::begin);
+
+  while (true) {
+    // Peek to check for the end-of-section sentinel
+    peekPosition = CFile::GetPosition();
+    peekedValue = EoDb::ReadUInt16(*this);
+    if (peekedValue == EoDb::kEndOfSection) { break; }
+
+    // Not a sentinel — rewind and read the variable name string
+    CFile::Seek(static_cast<LONGLONG>(peekPosition), CFile::begin);
+
+    CString variableName;
+    EoDb::Read(*this, variableName);
+
+    const auto typeTag = EoDb::ReadUInt16(*this);
+
+    HeaderVariable value;
+    switch (typeTag) {
+      case kTypeTagDouble:
+        value = EoDb::ReadDouble(*this);
+        break;
+      case kTypeTagInt:
+        value = EoDb::ReadInt32(*this);
+        break;
+      case kTypeTagWString: {
+        CString stringValue;
+        EoDb::Read(*this, stringValue);
+        value = std::wstring(stringValue.GetString());
+        break;
+      }
+      case kTypeTagPoint3d:
+        value = EoDb::ReadPoint3d(*this);
+        break;
+      case kTypeTagVector3d:
+        value = EoDb::ReadVector3d(*this);
+        break;
+      default:
+        throw std::runtime_error("Exception EoDbPegFile: Unknown header variable type tag.");
+    }
+    headerSection.SetVariable(std::wstring(variableName.GetString()), value);
   }
 }
 
@@ -153,8 +214,8 @@ void EoDbPegFile::ReadLinetypeDefinition(
   (void)flags;  // currently unused, but may be used in the future to indicate properties of the linetype
   EoDb::Read(*this, description);
   definitionLength = EoDb::ReadUInt16(*this);
-  double PatternLength;
-  EoDb::Read(*this, PatternLength);
+  double patternLength;
+  EoDb::Read(*this, patternLength);
 
   dashLength.resize(definitionLength);
   for (std::uint16_t n = 0; n < definitionLength; n++) { EoDb::Read(*this, dashLength[n]); }
@@ -235,8 +296,9 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
     document->InsertBlock(Name, block);
 
     for (std::uint16_t PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
-      EoDb::Read(*this, primitive);
-      block->AddTail(primitive);
+      if (EoDb::Read(*this, primitive)) {
+        block->AddTail(primitive);
+      }
     }
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
@@ -256,7 +318,9 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
   for (auto n = 0; n < numberOfLayers; n++) {
     auto* layer = document->GetLayerTableLayerAt(n);
 
-    if (layer == nullptr) { return; }
+    if (layer == nullptr) {
+      throw std::runtime_error("Exception EoDbPegFile: Layer table index out of range in entities section.");
+    }
 
     auto numberOfGroups = EoDb::ReadUInt16(*this);
 
@@ -265,8 +329,9 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
         auto* group = new EoDbGroup;
         auto numberOfPrimitives = EoDb::ReadUInt16(*this);
         for (auto PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
-          EoDb::Read(*this, primitive);
-          group->AddTail(primitive);
+          if (EoDb::Read(*this, primitive)) {
+            group->AddTail(primitive);
+          }
         }
         layer->AddTail(group);
       }
@@ -291,35 +356,58 @@ void EoDbPegFile::Unload(AeSysDoc* document) {
 
   CFile::Flush();
 }
+/**
+ * Writes the header section to the PEG file.
+ *
+ * V2 format: each header variable is written as a triple:
+ *   - variable name  (tab-terminated string)
+ *   - type tag       (uint16_t discriminator: 0=double, 1=int, 2=wstring, 3=Point3d, 4=Vector3d)
+ *   - value          (type-specific payload)
+ *
+ * The sentinel kEndOfSection (0x01ff) cannot collide with the first two bytes of a
+ * tab-terminated variable name (which starts with '$' = 0x24), so ReadHeaderSection
+ * can distinguish legacy files (sentinel immediately after kHeaderSection) from V2 files
+ * (variable triples followed by kEndOfSection) by peeking at the next uint16_t.
+ *
+ * @param document Pointer to the AeSysDoc that owns the header section.
+ */
 void EoDbPegFile::WriteHeaderSection(AeSysDoc* document) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kHeaderSection));
 
   EoDbHeaderSection& headerSection = document->HeaderSection();
-  auto& variables = headerSection.GetVariables();
 
-  // write header variant
+  constexpr const wchar_t* kCurrentAeSysVersion = L"AE2026";
+  headerSection.SetVariable(L"$AESVER", HeaderVariable(std::wstring(kCurrentAeSysVersion)));
+
+  const auto& variables = headerSection.GetVariables();
   for (const auto& [name, value] : variables) {
-    // Write the variable name
     EoDb::Write(*this, CString(name.c_str()));
 
     std::visit(
         [&](auto&& arg) {
           using T = std::decay_t<decltype(arg)>;
           if constexpr (std::is_same_v<T, double>) {
+            EoDb::WriteUInt16(*this, kTypeTagDouble);
             EoDb::WriteDouble(*this, arg);
+          } else if constexpr (std::is_same_v<T, int>) {
+            EoDb::WriteUInt16(*this, kTypeTagInt);
+            EoDb::WriteInt32(*this, static_cast<std::int32_t>(arg));
           } else if constexpr (std::is_same_v<T, std::wstring>) {
-            EoDb::Write(*this, arg.c_str());
+            EoDb::WriteUInt16(*this, kTypeTagWString);
+            EoDb::Write(*this, CString(arg.c_str()));
           } else if constexpr (std::is_same_v<T, EoGePoint3d>) {
+            EoDb::WriteUInt16(*this, kTypeTagPoint3d);
             arg.Write(*this);
           } else if constexpr (std::is_same_v<T, EoGeVector3d>) {
+            EoDb::WriteUInt16(*this, kTypeTagVector3d);
             arg.Write(*this);
           }
         },
         value);
   }
-
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
+
 void EoDbPegFile::WriteTablesSection(AeSysDoc* document) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kTablesSection));
 
@@ -350,51 +438,48 @@ void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
   while (position) {
     lineTypeTable->GetNextAssoc(position, name, linetype);
 
-    EoDb::Write(*this, (LPCWSTR)name);
+    EoDb::Write(*this, name);
     EoDb::WriteUInt16(*this, std::uint16_t(0));
-    EoDb::Write(*this, (LPCWSTR)linetype->Description());
+    EoDb::Write(*this, linetype->Description());
 
     auto numberOfDashes = linetype->GetNumberOfDashes();
     EoDb::WriteUInt16(*this, numberOfDashes);
     double patternLength = linetype->GetPatternLength();
     EoDb::WriteDouble(*this, patternLength);
 
-    if (numberOfDashes > 0) {
-      auto dashElements = std::make_unique<double[]>(numberOfDashes);
-      linetype->GetDashElements(dashElements.get());
-      for (std::uint16_t i = 0; i < numberOfDashes; i++) { EoDb::WriteDouble(*this, dashElements[i]); }
-    }
+    const auto& dashElements = linetype->DashElements();
+    for (std::uint16_t i = 0; i < numberOfDashes; i++) { EoDb::WriteDouble(*this, dashElements[i]); }
   }
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 }
 
 void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
-  int NumberOfLayers = document->GetLayerTableSize();
+  int numberOfLayers = document->GetLayerTableSize();
 
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kLayerTable));
 
-  auto SavedFilePosition = CFile::GetPosition();
-  EoDb::WriteUInt16(*this, std::uint16_t(NumberOfLayers));
+  auto savedFilePosition = CFile::GetPosition();
+  EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
 
   for (int n = 0; n < document->GetLayerTableSize(); n++) {
-    EoDbLayer* Layer = document->GetLayerTableLayerAt(n);
-    if (Layer->IsResident()) {
-      EoDb::Write(*this, Layer->Name());
-      EoDb::WriteUInt16(*this, Layer->GetTracingState());
-      EoDb::WriteUInt16(*this, Layer->GetState());
-      EoDb::WriteInt16(*this, Layer->ColorIndex());
-      EoDb::Write(*this, Layer->LineTypeName());
+    EoDbLayer* layer = document->GetLayerTableLayerAt(n);
+    if (layer->IsResident()) {
+      EoDb::Write(*this, layer->Name());
+      EoDb::WriteUInt16(*this, layer->GetTracingState());
+      EoDb::WriteUInt16(*this, layer->GetState());
+      EoDb::WriteInt16(*this, layer->ColorIndex());
+      EoDb::Write(*this, layer->LineTypeName());
     } else {
-      NumberOfLayers--;
+      numberOfLayers--;
     }
   }
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 
-  if (NumberOfLayers != document->GetLayerTableSize()) {
-    auto CurrentFilePosition = CFile::GetPosition();
-    CFile::Seek(static_cast<LONGLONG>(SavedFilePosition), CFile::begin);
-    EoDb::WriteUInt16(*this, std::uint16_t(NumberOfLayers));
-    CFile::Seek(static_cast<LONGLONG>(CurrentFilePosition), CFile::begin);
+  if (numberOfLayers != document->GetLayerTableSize()) {
+    auto currentFilePosition = CFile::GetPosition();
+    CFile::Seek(static_cast<LONGLONG>(savedFilePosition), CFile::begin);
+    EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
+    CFile::Seek(static_cast<LONGLONG>(currentFilePosition), CFile::begin);
   }
 }
 
@@ -435,11 +520,19 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
 void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kGroupsSection));
 
-  int NumberOfLayers = document->GetLayerTableSize();
-  EoDb::WriteUInt16(*this, std::uint16_t(NumberOfLayers));
+  // Count only resident layers to match WriteLayerTable's patched count.
+  // Non-resident layers are not written to the layer table, so their entity
+  // data must also be omitted to keep layer indices aligned on read.
+  int numberOfResidentLayers = 0;
+  for (int n = 0; n < document->GetLayerTableSize(); n++) {
+    if (document->GetLayerTableLayerAt(n)->IsResident()) { numberOfResidentLayers++; }
+  }
+  EoDb::WriteUInt16(*this, std::uint16_t(numberOfResidentLayers));
 
-  for (int n = 0; n < NumberOfLayers; n++) {
+  for (int n = 0; n < document->GetLayerTableSize(); n++) {
     auto* layer = document->GetLayerTableLayerAt(n);
+    if (!layer->IsResident()) { continue; }
+
     if (layer->IsInternal()) {
       EoDb::WriteUInt16(*this, std::uint16_t(layer->GetCount()));
 
@@ -564,6 +657,12 @@ std::int16_t EoDb::ReadInt16(CFile& file) {
   return number;
 }
 
+std::int32_t EoDb::ReadInt32(CFile& file) {
+  std::int32_t number;
+  file.Read(&number, sizeof(std::int32_t));
+  return number;
+}
+
 std::uint16_t EoDb::ReadUInt16(CFile& file) {
   std::uint16_t number;
   file.Read(&number, sizeof(std::uint16_t));
@@ -582,10 +681,9 @@ void EoDb::Write(CFile& file, const CString& string, UINT codePage) {
     auto bufferSize =
         static_cast<size_t>(WideCharToMultiByte(codePage, 0, string, wideLength, nullptr, 0, nullptr, nullptr));
     if (bufferSize > 0) {
-      char* buffer = new char[bufferSize];
-      WideCharToMultiByte(codePage, 0, string, wideLength, buffer, static_cast<int>(bufferSize), nullptr, nullptr);
-      file.Write(buffer, static_cast<UINT>(bufferSize));
-      delete[] buffer;
+      std::vector<char> buffer(bufferSize);
+      WideCharToMultiByte(codePage, 0, string, wideLength, buffer.data(), static_cast<int>(bufferSize), nullptr, nullptr);
+      file.Write(buffer.data(), static_cast<UINT>(bufferSize));
     }
   }
   file.Write("\t", 1);
@@ -593,4 +691,5 @@ void EoDb::Write(CFile& file, const CString& string, UINT codePage) {
 
 void EoDb::WriteDouble(CFile& file, double number) { file.Write(&number, sizeof(double)); }
 void EoDb::WriteInt16(CFile& file, std::int16_t number) { file.Write(&number, sizeof(std::int16_t)); }
+void EoDb::WriteInt32(CFile& file, std::int32_t number) { file.Write(&number, sizeof(std::int32_t)); }
 void EoDb::WriteUInt16(CFile& file, std::uint16_t number) { file.Write(&number, sizeof(std::uint16_t)); }
