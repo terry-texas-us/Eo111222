@@ -69,8 +69,8 @@ typedef struct _EXECCMDFNINFO {
 } EXECCMDFNINFO, *PEXECCMDFNINFO;
 
 // Structure used to store information about a DDE conversation
-typedef struct _CONVINFO {
-  struct _CONVINFO *pNext;  // pointer to the next one
+typedef struct _DDE_CONVERSATIONINFO {
+  struct _DDE_CONVERSATIONINFO *pNext;  // pointer to the next one
   HCONV hConv;  // handle to the conversation
   HSZ hszTopicName;  // HSZ for the topic of the conversation
   PITEMINFO pResultItem;  // pointer to a temp result item

@@ -4,10 +4,9 @@ using namespace dde;
 
 //<summary>Add a conversation to our list.</summary>
 bool dde::ConversationAdd(HCONV hConv, HSZ hszTopic) {
-  PCONVERSATIONINFO pCI = (PCONVERSATIONINFO) new char[sizeof(CONVERSATIONINFO)];
+  auto pCI = new CONVERSATIONINFO{};
   if (!pCI) { return false; }
 
-  ::ZeroMemory(pCI, sizeof(CONVERSATIONINFO));
   pCI->hConv = hConv;
   pCI->hszTopicName = hszTopic;
   pCI->pNext = ServerInfo.pConvList;
@@ -39,7 +38,7 @@ bool dde::ConversationRemove(HCONV hConv, HSZ hszTopic) {
       } else {
         ServerInfo.pConvList = pCI->pNext;
       }
-      delete[] pCI;
+      delete pCI;
       return true;
     }
     pPrevCI = pCI;

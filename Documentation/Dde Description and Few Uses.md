@@ -7,20 +7,19 @@ AeSys exposes a Windows DDEML (Dynamic Data Exchange Management Library) server 
 
 ## Architecture
 
-## Architecture
-
 ### EoDdeLib — `Core Libraries\EoDdeLib`
 
 > Static library — no MFC, no app dependencies
 
 | File | Responsibility |
 |------|---------------|
-| `dde.h` | Types, structs, callback typedefs, all declarations |
+| `dde.h` | Types, structs, callback typedefs, all function declarations (library-internal only — no app-specific declarations) |
 | `Dde.cpp` | `Initialize` / `Uninitialize`, `StdCallback`, `DoCallback`, command parsing, `PostAdvise` |
 | `DdeItem.cpp` | `ItemAdd` / `ItemFind` / `ItemRemove` |
 | `DdeTopic.cpp` | `TopicAdd` / `TopicFind` / `TopicRemove` |
 | `DdeConversation.cpp` | `ConversationAdd` / `ConversationFind` / `ConversationRemove` |
 | `DdeSys.cpp` | System topic handlers (`SysReqItems`, `SysReqFormats`, etc.) |
+| `DdeStringUtil.h` | Declarations for string utility functions |
 | `DdeStringUtil.cpp` | `SkipWhiteSpace`, `ScanForChar`, `ScanForString` |
 
 *Linked to AeSys via ProjectReference*
@@ -31,7 +30,7 @@ AeSys exposes a Windows DDEML (Dynamic Data Exchange Management Library) server 
 
 | File | Responsibility |
 |------|---------------|
-| `DdeAeSysRegistration.cpp` | `RegisterAeSysTopics()` — wires everything up; `OnDdeInitError()` — MFC error callback; `OnDdeFallbackExec()` — `WM_CHAR` `PostMessage` |
+| `DdeAeSysRegistration.cpp` | `RegisterAeSysTopics()` — wires everything up (forward-declared locally, not in `dde.h`); `OnDdeInitError()` — MFC error callback; `OnDdeFallbackExec()` — `WM_CHAR` `PostMessage` |
 | `DdeCmds.cpp` / `ddeCmds.h` | Execute command handlers (`ExecLine`, `ExecFill`, `ExecTracingOpen`, `ExecFileGet`, etc.) |
 | `DdeGItms.cpp` / `ddeGItms.h` | Item request/poke handlers and `PITEMINFO` externs (`DimAngZInfo`, `ScaleInfo`, etc.) |
 
@@ -92,5 +91,29 @@ Execute commands available via `[CommandName(args)]` syntax:
 
 EoDdeLib uses two callback function pointers (stored in `SERVERINFO`) to avoid depending on MFC:
 
-- **`INITERRORFN`** — called on `DdeInitialize` failure; AeSys implements this with `app.WarningMessageBox()`.
-- **`FALLBACKEXECFN`** — called when a topic has no exec function and no command list; AeSys posts `WM_CHAR` to the main window.
+- **`PINITERRORFN`** — called on `DdeInitialize` failure; AeSys implements this with `app.WarningMessageBox()`.
+- **`PFALLBACKEXECFN`** — called when a topic has no exec function and no command list; AeSys posts `WM_CHAR` to the main window.
+
+## Implementation Notes
+
+### Unicode Conventions
+
+- All DDE string handles are created with **`CP_WINUNICODE`** (not `CP_WINANSI`), matching the wide-string (`LPCWSTR`) parameters throughout.
+- All DDE data handles use **`CF_UNICODETEXT`** (not `CF_TEXT`). Byte sizes passed to `DdeCreateDataHandle` and `DdeAddData` account for `sizeof(wchar_t)` per character.
+- The format lists (`SysFormatList`, `MyFormats`) and the standard format name table (`CFNames`) advertise `CF_UNICODETEXT`.
+
+### Struct and Type Names
+
+- The conversation-tracking struct is named **`_DDE_CONVERSATIONINFO`** (typedef `CONVERSATIONINFO`) to avoid collision with the Windows SDK `CONVINFO` type from `<ddeml.h>`.
+
+### Allocation Pattern
+
+- All heap-allocated structs (`TOPICINFO`, `ITEMINFO`, `CONVERSATIONINFO`, `EXECCMDFNINFO`) use **`new T{}`** (value-initialization) and **`delete`**. The legacy `new char[sizeof(T)]` + `ZeroMemory` + `delete[]` pattern has been removed.
+
+### Uninitialize Cleanup
+
+- `Uninitialize()` removes all topics by looping **`TopicRemove()`** on the head of the topic list. `TopicRemove` is responsible for freeing each topic's HSZ handles, items, commands, and conversations. This replaces a previous implementation that manually walked the list, freed HSZ handles inline, and then called `TopicRemove` for hardcoded topic names — a pattern that double-freed handles.
+
+### RegisterAeSysTopics Boundary
+
+- `RegisterAeSysTopics()` is defined in `DdeAeSysRegistration.cpp` (AeSys) and forward-declared locally in both `DdeAeSysRegistration.cpp` and `AeSys.cpp`. It is **not** declared in `dde.h` because it is application-specific, not part of the generic library API.

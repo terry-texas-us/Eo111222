@@ -27,7 +27,7 @@ DWORD dde::dwInstance = 0;
 /// <returns>true if initialization succeeded, false on DDEML error.</returns>
 bool dde::Initialize(
     LPCWSTR serviceName, PINITERRORFN pfnInitError, HWND hMainWindow, PFALLBACKEXECFN pfnFallbackExec) {
-  ServerInfo.pfnStdCallback = (PFNCALLBACK)MakeProcInstance((FARPROC)StdCallback, nullptr);
+  ServerInfo.pfnStdCallback = reinterpret_cast<PFNCALLBACK>(StdCallback);
   ServerInfo.pfnCustomCallback = 0;
   ServerInfo.pfnFallbackExec = pfnFallbackExec;
 
@@ -310,7 +310,6 @@ HDDEDATA dde::DoWildConnect(HSZ hszTopic) {
 PEXECCMDFNINFO dde::ExecCmdAdd(
     LPCTSTR pszTopic, LPCTSTR pszCmdName, PEXECCMDFN pExecCmdFn, UINT uiMinArgs, UINT uiMaxArgs) {
   PEXECCMDFNINFO pCmd = 0;
-  PEXECCMDFNINFO pHead;
 
   PTOPICINFO pTopic = TopicFind(pszTopic);
 
@@ -329,17 +328,15 @@ PEXECCMDFNINFO dde::ExecCmdAdd(
     pCmd->uiMinArgs = uiMinArgs;
     pCmd->uiMaxArgs = uiMaxArgs;
   } else {  // New command item
-    pCmd = (PEXECCMDFNINFO) new char[sizeof(EXECCMDFNINFO)];
+    pCmd = new EXECCMDFNINFO{};
     if (!pCmd) { return 0; }
 
-    ::ZeroMemory(pCmd, sizeof(EXECCMDFNINFO));
     pCmd->pszCmdName = pszCmdName;
     pCmd->pTopic = pTopic;
     pCmd->pFn = pExecCmdFn;
     pCmd->uiMinArgs = uiMinArgs;
     pCmd->uiMaxArgs = uiMaxArgs;
     // Add it to the existing cmd list for this topic
-    pHead = pTopic->pCmdList;
     pCmd->pNext = pTopic->pCmdList;
     pTopic->pCmdList = pCmd;
 
@@ -380,7 +377,7 @@ bool dde::ExecCmdRemove(LPCTSTR pszTopic, LPCTSTR pszCmdName) {
       }
 
       // Free the memory associated with it
-      delete[] pCmd;
+      delete pCmd;
       return true;
     }
     pPrevCmd = pCmd;
@@ -466,10 +463,11 @@ bool dde::ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData) {
   if (!pData) { return false; }
 
   // Allocate double required size we might need so we can avoid doing any space tests.
-  pArgBuf = (LPTSTR) new wchar_t[2 * wcslen(pData)];
+  auto argumentBufferSize = 2 * wcslen(pData) + 2;
+  pArgBuf = (LPTSTR) new wchar_t[argumentBufferSize];
   if (!pArgBuf) { goto PER_exit; }
 
-  ::ZeroMemory(pArgBuf, 2 * wcslen(pData));
+  ::ZeroMemory(pArgBuf, argumentBufferSize * sizeof(wchar_t));
   pCI = ConversationFind(pTopic->hszTopicName);  // Get a pointer to the current conversation
 
   while (pData && *pData) {  // Parse and execute each command in turn

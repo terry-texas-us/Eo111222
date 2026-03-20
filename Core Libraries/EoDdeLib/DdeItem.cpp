@@ -22,10 +22,9 @@ PITEMINFO dde::ItemAdd(LPCWSTR lpszTopic, LPCWSTR lpszItem, LPWORD lpFormatList,
     pItem->pfnPoke = lpPokeFn;
     pItem->pFormatList = lpFormatList;
   } else {  // Create a new item
-    pItem = (PITEMINFO) new char[sizeof(ITEMINFO)];
+    pItem = new ITEMINFO{};
     if (!pItem) { return 0; }
 
-    ::ZeroMemory(pItem, sizeof(ITEMINFO));
     pItem->pszItemName = lpszItem;
     pItem->hszItemName = DdeCreateStringHandle(ServerInfo.dwInstance, lpszItem, CP_WINUNICODE);
     pItem->pTopic = pTopic;
@@ -83,7 +82,7 @@ bool dde::ItemRemove(LPCWSTR lpszTopic, LPCWSTR lpszItem) {
       DdeFreeStringHandle(ServerInfo.dwInstance, pItem->hszItemName);
 
       // Free the memory associated with it
-      delete[] pItem;
+      delete pItem;
       return true;
     }
     pPrevItem = pItem;

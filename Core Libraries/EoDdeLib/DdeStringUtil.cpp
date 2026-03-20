@@ -11,6 +11,8 @@ wchar_t* dde::SkipWhiteSpace(wchar_t* inputLine) {
 wchar_t* dde::ScanForChar(wchar_t character, wchar_t** lineBuffer) {
   auto position = SkipWhiteSpace(*lineBuffer);
 
+  if (!position || !*position) { return nullptr; }
+
   if (*position == character) {
     *lineBuffer = position + 1;
     return position;

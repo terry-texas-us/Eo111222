@@ -1,4 +1,4 @@
-﻿#include "ddeSys.h"
+#include "ddeSys.h"
 
 using namespace dde;
 
@@ -12,17 +12,14 @@ PTOPICINFO dde::TopicAdd(LPCWSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnReque
     pTopic->pfnRequest = pfnRequest;
     pTopic->pfnPoke = pfnPoke;
   } else {  // Create a new topic
-    pTopic = (PTOPICINFO) new char[sizeof(TOPICINFO)];
+    pTopic = new TOPICINFO{};
     if (!pTopic) { return 0; }
 
-    ::ZeroMemory(pTopic, sizeof(TOPICINFO));
     pTopic->pszTopicName = lpszTopic;
     pTopic->hszTopicName = DdeCreateStringHandle(ServerInfo.dwInstance, lpszTopic, CP_WINUNICODE);
-    pTopic->pItemList = 0;
     pTopic->pfnExec = pfnExec;
     pTopic->pfnRequest = pfnRequest;
     pTopic->pfnPoke = pfnPoke;
-    pTopic->pCmdList = 0;
 
     // Add it to the list
     pTopic->pNext = ServerInfo.pTopicList;
@@ -102,7 +99,7 @@ bool dde::TopicRemove(LPCWSTR lpszTopic) {
       DdeFreeStringHandle(ServerInfo.dwInstance, pTopic->hszTopicName);
 
       // Free the memory associated with it
-      delete[] pTopic;
+      delete pTopic;
       return true;
     }
     pPrevTopic = pTopic;
