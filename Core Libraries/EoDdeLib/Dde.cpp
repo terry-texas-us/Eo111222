@@ -13,8 +13,8 @@ CFTAGNAME dde::CFNames[] = {CF_TEXT, L"TEXT", CF_BITMAP, L"BITMAP", CF_METAFILEP
 // Local data
 SERVERINFO dde::ServerInfo;
 // Format lists
-std::uint16_t dde::SysFormatList[] = {CF_TEXT, 0};
-std::uint16_t dde::MyFormats[] = {CF_TEXT, 0};
+std::uint16_t dde::SysFormatList[] = {CF_UNICODETEXT, 0};
+std::uint16_t dde::MyFormats[] = {CF_UNICODETEXT, 0};
 // DDE Instance value
 DWORD dde::dwInstance = 0;
 
@@ -41,7 +41,7 @@ bool dde::Initialize(
   dwInstance = ServerInfo.dwInstance;
 
   ServerInfo.lpszServiceName = serviceName;
-  ServerInfo.hszServiceName = DdeCreateStringHandle(ServerInfo.dwInstance, serviceName, CP_WINANSI);
+  ServerInfo.hszServiceName = DdeCreateStringHandle(ServerInfo.dwInstance, serviceName, CP_WINUNICODE);
 
   // Register the name of the service
   DdeNameService(ServerInfo.dwInstance, ServerInfo.hszServiceName, (HSZ)0, DNS_REGISTER);
@@ -58,39 +58,20 @@ bool dde::Initialize(
 }
 /// <summary>Tidy up and close down DDEML.</summary>
 void dde::Uninitialize() {
-  PITEMINFO pItem;
-
   // Unregister the service name
   DdeNameService(ServerInfo.dwInstance, ServerInfo.hszServiceName, 0, DNS_UNREGISTER);
   // Free the name handle
   DdeFreeStringHandle(ServerInfo.dwInstance, ServerInfo.hszServiceName);
 
-  // Walk the server topic tree, freeing all the other string handles
-  PTOPICINFO pTopic = ServerInfo.pTopicList;
-  while (pTopic) {
-    DdeFreeStringHandle(ServerInfo.dwInstance, pTopic->hszTopicName);
-    pTopic->hszTopicName = 0;
-
-    // Free any item handles owned by topic
-    pItem = pTopic->pItemList;
-    while (pItem) {
-      DdeFreeStringHandle(ServerInfo.dwInstance, pItem->hszItemName);
-      pItem->hszItemName = 0;
-
-      pItem = pItem->pNext;
-    }
-    pTopic = pTopic->pNext;
-  }
-  TopicRemove(L"Commands");
-  TopicRemove(L"General");
-  TopicRemove(SZDDESYS_TOPIC);
+  // Remove all topics (frees HSZ handles, items, commands, and conversations)
+  while (ServerInfo.pTopicList) { TopicRemove(ServerInfo.pTopicList->pszTopicName); }
 
   // Release DDEML
   DdeUninitialize(ServerInfo.dwInstance);
   ServerInfo.dwInstance = 0;
 
-  // Free any proc instances we created
-  if (ServerInfo.pfnCustomCallback) { ServerInfo.pfnCustomCallback = 0; }
+  // Clear callback pointers
+  ServerInfo.pfnCustomCallback = 0;
   ServerInfo.pfnStdCallback = 0;
 }
 // DDE callback function called from DDEML
@@ -426,11 +407,12 @@ LPTSTR dde::GetCFNameFromId(std::uint16_t wFmt, LPTSTR lpBuf, int iSize) {
   return lpBuf;
 }
 
-// Return a string in CF_TEXT format
+// Return a string in CF_UNICODETEXT format
 HDDEDATA dde::MakeCFText(UINT wFmt, LPTSTR lpszStr, HSZ hszItem) {
-  if (wFmt != CF_TEXT) { return 0; }
+  if (wFmt != CF_UNICODETEXT) { return 0; }
 
-  return (DdeCreateDataHandle(dwInstance, (LPBYTE)lpszStr, lstrlen(lpszStr) + 1, 0, hszItem, CF_TEXT, 0));
+  return (DdeCreateDataHandle(
+      dwInstance, (LPBYTE)lpszStr, (lstrlen(lpszStr) + 1) * sizeof(wchar_t), 0, hszItem, CF_UNICODETEXT, 0));
 }
 /// <summary>Create a data item containing the names of all the formats supplied in a list.</summary>
 // Returns: A DDE data handle to a list of the format names.
@@ -443,16 +425,16 @@ HDDEDATA dde::MakeDataFromFormatList(LPWORD pFmt, std::uint16_t wFmt, HSZ hszIte
 
   while (*pFmt) {  // Walk the format list
     if (cbOffset != 0) {  // Put in a tab delimiter
-      DdeAddData(hData, (LPBYTE)L"\t", 1, cbOffset);
-      cbOffset++;
+      DdeAddData(hData, (LPBYTE)L"\t", sizeof(wchar_t), cbOffset);
+      cbOffset += sizeof(wchar_t);
     }
     GetCFNameFromId(*pFmt, Buffer, sizeof(Buffer) / sizeof(wchar_t));  // the string name of the format
-    cb = lstrlen(Buffer);
+    cb = lstrlen(Buffer) * sizeof(wchar_t);
     DdeAddData(hData, (LPBYTE)Buffer, cb, cbOffset);
     cbOffset += cb;
     pFmt++;
   }
-  DdeAddData(hData, (LPBYTE)L"", 1, cbOffset);  // Put a 0 on the end
+  DdeAddData(hData, (LPBYTE)L"", sizeof(wchar_t), cbOffset);  // Put a null terminator on the end
   return hData;
 }
 /// <summary>Post an advise request about an item</summary>
@@ -498,8 +480,8 @@ bool dde::ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData) {
     if (!bResult) {
       if (pCI && pCI->pResultItem) {
         // Current conversation has a results item to pass the error string back in
-        pCI->pResultItem->hData = DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE)szResult, lstrlen(szResult) + 1, 0,
-            pCI->pResultItem->hszItemName, CF_TEXT, 0);
+        pCI->pResultItem->hData = DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE)szResult,
+            (lstrlen(szResult) + 1) * sizeof(wchar_t), 0, pCI->pResultItem->hszItemName, CF_UNICODETEXT, 0);
       }
 
       goto PER_exit;
@@ -519,8 +501,8 @@ bool dde::ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData) {
 
       if (pCI && pCI->pResultItem) {
         // Current conversation has a results item to pass the result string back in
-        pCI->pResultItem->hData = DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE)szResult, lstrlen(szResult) + 1, 0,
-            pCI->pResultItem->hszItemName, CF_TEXT, 0);
+        pCI->pResultItem->hData = DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE)szResult,
+            (lstrlen(szResult) + 1) * sizeof(wchar_t), 0, pCI->pResultItem->hszItemName, CF_UNICODETEXT, 0);
       }
 
       if (!bResult) { goto PER_exit; }
@@ -641,7 +623,8 @@ HDDEDATA dde::SysReqResultInfo(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
   HDDEDATA hData = pItem->hData;
 
   if (!hData) {  // No data to return. Send back an empty string
-    hData = DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE)L"", 1, 0, hszItem, CF_TEXT, wFmt);
+    hData = DdeCreateDataHandle(
+        ServerInfo.dwInstance, (LPBYTE)L"", sizeof(wchar_t), 0, hszItem, CF_UNICODETEXT, wFmt);
   }
 
   ItemRemove(pTopic->pszTopicName, pItem->pszItemName);

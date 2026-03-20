@@ -30,6 +30,9 @@
 #if defined(USING_DDE)
 #include "Dde.h"
 #include "ddeGItms.h"
+namespace dde {
+void RegisterAeSysTopics();
+}
 #endif
 
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);

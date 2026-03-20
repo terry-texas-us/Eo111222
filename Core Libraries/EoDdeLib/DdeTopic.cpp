@@ -17,7 +17,7 @@ PTOPICINFO dde::TopicAdd(LPCWSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnReque
 
     ::ZeroMemory(pTopic, sizeof(TOPICINFO));
     pTopic->pszTopicName = lpszTopic;
-    pTopic->hszTopicName = DdeCreateStringHandle(ServerInfo.dwInstance, lpszTopic, CP_WINANSI);
+    pTopic->hszTopicName = DdeCreateStringHandle(ServerInfo.dwInstance, lpszTopic, CP_WINUNICODE);
     pTopic->pItemList = 0;
     pTopic->pfnExec = pfnExec;
     pTopic->pfnRequest = pfnRequest;
@@ -105,6 +105,7 @@ bool dde::TopicRemove(LPCWSTR lpszTopic) {
       delete[] pTopic;
       return true;
     }
+    pPrevTopic = pTopic;
     pTopic = pTopic->pNext;
   }
   // We don't have this topic
@@ -126,7 +127,6 @@ HDDEDATA dde::TopicReqFormats(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
 
   wFormats[0] = 0;  // Start with an empty list
 
-  DdeCreateDataHandle(ServerInfo.dwInstance, 0, 0, 0, hszItem, wFmt, 0);  // Empty data object to fill
   PITEMINFO pItem = pTopic->pItemList;
 
   while (pItem) {  // Walk the item list for this topic

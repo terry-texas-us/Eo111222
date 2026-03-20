@@ -13,7 +13,7 @@ HDDEDATA dde::SysReqHelp(UINT wFmt, HSZ, HSZ hszItem) {
 }
 /// <summary>Return the system item list.</summary>
 HDDEDATA dde::SysReqItems(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
-  // The data is returned in CF_TEXT format as a tab delimited list of names.
+  // The data is returned as a tab delimited list of names.
   int cb;
 
   PTOPICINFO pTopic = TopicFind(hszTopic);
@@ -28,15 +28,15 @@ HDDEDATA dde::SysReqItems(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
 
   while (pItem) {  // Walk the item list
     if (cbOffset != 0) {  // Put in a tab delimiter
-      DdeAddData(hData, (LPBYTE)L"\t", 1, cbOffset);
-      cbOffset++;
+      DdeAddData(hData, (LPBYTE)L"\t", sizeof(wchar_t), cbOffset);
+      cbOffset += sizeof(wchar_t);
     }
-    cb = lstrlen(pItem->pszItemName);  // the string name of the item
+    cb = lstrlen(pItem->pszItemName) * sizeof(wchar_t);  // byte size of the item name
     DdeAddData(hData, (LPBYTE)pItem->pszItemName, cb, cbOffset);
     cbOffset += cb;
     pItem = pItem->pNext;
   }
-  DdeAddData(hData, (LPBYTE)L"", 1, cbOffset);  // Put a 0 on the end
+  DdeAddData(hData, (LPBYTE)L"", sizeof(wchar_t), cbOffset);  // Put a null terminator on the end
   // Return a DDE data handle to the data object containing the return data.
   return hData;
 }
@@ -47,8 +47,6 @@ HDDEDATA dde::SysReqFormats(UINT wFmt, HSZ, HSZ hszItem) {
   std::uint16_t wFormats[MAXFORMATS];
 
   wFormats[0] = 0;  // Start with an empty list
-
-  DdeCreateDataHandle(ServerInfo.dwInstance, 0, 0, 0, hszItem, wFmt, 0);  // Empty data object to fill
 
   PTOPICINFO pTopic = ServerInfo.pTopicList;
   while (pTopic) {  // Walk the topic list
@@ -67,10 +65,11 @@ HDDEDATA dde::SysReqFormats(UINT wFmt, HSZ, HSZ hszItem) {
 HDDEDATA dde::SysReqProtocols(UINT, HSZ, HSZ hszItem) {
   static wchar_t sz[] = L"Execute Control 1";
 
-  return DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE)sz, static_cast<DWORD>(wcslen(sz) + 1), 0, hszItem, CF_TEXT, 0);
+  return DdeCreateDataHandle(
+      ServerInfo.dwInstance, (LPBYTE)sz, static_cast<DWORD>((wcslen(sz) + 1) * sizeof(wchar_t)), 0, hszItem, CF_UNICODETEXT, 0);
   // Return a DDE data handle to the data object containing the return data.
 }
-// Process a request for the topics list.  Typically the data is returned in CF_TEXT format as a tab
+// Process a request for the topics list.  Typically the data is returned as a tab
 // delimited list of names.
 HDDEDATA dde::SysReqTopics(UINT wFmt, HSZ, HSZ hszItem) {
   int cb;
@@ -81,15 +80,15 @@ HDDEDATA dde::SysReqTopics(UINT wFmt, HSZ, HSZ hszItem) {
 
   while (pTopic) {
     if (cbOffset != 0) {  // Put in a tab delimiter
-      DdeAddData(hData, (LPBYTE)L"\t", 1, cbOffset);
-      cbOffset++;
+      DdeAddData(hData, (LPBYTE)L"\t", sizeof(wchar_t), cbOffset);
+      cbOffset += sizeof(wchar_t);
     }
-    cb = lstrlen(pTopic->pszTopicName);  // the string name of the topic
+    cb = lstrlen(pTopic->pszTopicName) * sizeof(wchar_t);  // byte size of the topic name
     DdeAddData(hData, (LPBYTE)pTopic->pszTopicName, cb, cbOffset);
     cbOffset += cb;
     pTopic = pTopic->pNext;
   }
-  DdeAddData(hData, (LPBYTE)L"", 1, cbOffset);  // Put a 0 on the end
+  DdeAddData(hData, (LPBYTE)L"", sizeof(wchar_t), cbOffset);  // Put a null terminator on the end
   // Return a DDE data handle to the data object containing the return data.
   return hData;
 }

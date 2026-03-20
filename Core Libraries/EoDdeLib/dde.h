@@ -155,7 +155,6 @@ void PostAdvise(PITEMINFO pItemInfo);
 bool ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData);
 PEXECCMDFNINFO ScanForCommand(PEXECCMDFNINFO pCmdInfo, LPTSTR *ppStr);
 bool Initialize(LPCWSTR serviceName, PINITERRORFN pfnInitError, HWND hMainWindow, PFALLBACKEXECFN pfnFallbackExec);
-void RegisterAeSysTopics();
 HDDEDATA WINAPI StdCallback(UINT, UINT, HCONV, HSZ, HSZ, HDDEDATA, DWORD, DWORD);
 HDDEDATA SysReqResultInfo(UINT wFmt, HSZ hszTopic, HSZ hszItem);
 bool SysResultExecCmd(PTOPICINFO pTopic, LPTSTR pszResult, UINT uiResultSize, UINT uiNargs, LPTSTR *ppArgs);

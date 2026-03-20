@@ -27,7 +27,7 @@ PITEMINFO dde::ItemAdd(LPCWSTR lpszTopic, LPCWSTR lpszItem, LPWORD lpFormatList,
 
     ::ZeroMemory(pItem, sizeof(ITEMINFO));
     pItem->pszItemName = lpszItem;
-    pItem->hszItemName = DdeCreateStringHandle(ServerInfo.dwInstance, lpszItem, CP_WINANSI);
+    pItem->hszItemName = DdeCreateStringHandle(ServerInfo.dwInstance, lpszItem, CP_WINUNICODE);
     pItem->pTopic = pTopic;
     pItem->pfnRequest = lpReqFn;
     pItem->pfnPoke = lpPokeFn;

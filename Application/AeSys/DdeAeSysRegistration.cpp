@@ -8,6 +8,10 @@
 #include "ddeCmds.h"
 #include "ddeGItms.h"
 
+namespace dde {
+void RegisterAeSysTopics();
+}
+
 using namespace dde;
 
 /// <summary>Error callback for DDE initialization failure — displays a warning and destroys the main window.</summary>
