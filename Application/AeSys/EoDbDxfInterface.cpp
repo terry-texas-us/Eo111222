@@ -464,21 +464,18 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
   const auto declaredSize = proxyEntity.m_graphicsDataSizeInBytes;
   const auto computedSize = proxyEntity.ComputedGraphicsDataSizeInBytes();
 
-  ATLTRACE2(traceGeneral, 2,
-      L"  Graphics data: declared=%d bytes, computed=%d bytes, chunks=%zu\n",
-      declaredSize, computedSize, proxyEntity.m_graphicsDataChunks.size());
-  ATLTRACE2(traceGeneral, 2,
-      L"  Entity data: %d bits, chunks=%zu\n",
-      proxyEntity.m_entityDataSizeInBits, proxyEntity.m_entityDataChunks.size());
-  ATLTRACE2(traceGeneral, 2,
-      L"  Handle refs: soft=%zu, hard=%zu, softOwner=%zu, hardOwner=%zu\n",
+  ATLTRACE2(traceGeneral, 2, L"  Graphics data: declared=%d bytes, computed=%d bytes, chunks=%zu\n", declaredSize,
+      computedSize, proxyEntity.m_graphicsDataChunks.size());
+  ATLTRACE2(traceGeneral, 2, L"  Entity data: %d bits, chunks=%zu\n", proxyEntity.m_entityDataSizeInBits,
+      proxyEntity.m_entityDataChunks.size());
+  ATLTRACE2(traceGeneral, 2, L"  Handle refs: soft=%zu, hard=%zu, softOwner=%zu, hardOwner=%zu\n",
       proxyEntity.m_softPointerHandles.size(), proxyEntity.m_hardPointerHandles.size(),
       proxyEntity.m_softOwnerHandles.size(), proxyEntity.m_hardOwnerHandles.size());
 
   if (declaredSize != computedSize) {
     ATLTRACE2(traceGeneral, 1,
-        L"  WARNING: Graphics data size mismatch (declared=%d, computed=%d) — data may be truncated\n",
-        declaredSize, computedSize);
+        L"  WARNING: Graphics data size mismatch (declared=%d, computed=%d) — data may be truncated\n", declaredSize,
+        computedSize);
   }
 
   // Decode the graphics hex chunks into raw binary for AcGi stream parsing.
@@ -528,7 +525,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
     offset += 4;
 
     switch (typeCode) {
-      case 1: { // Extents: 6 × double (48 bytes) — bounding box, skip for now
+      case 1: {  // Extents: 6 × double (48 bytes) — bounding box, skip for now
         const std::size_t extentsSize = 48;
         if (offset + extentsSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated extents data at offset %zu\n", offset);
@@ -540,7 +537,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         break;
       }
 
-      case 2: { // Circle: Point3d center, double radius, Vector3d normal (56 bytes)
+      case 2: {  // Circle: Point3d center, double radius, Vector3d normal (56 bytes)
         const std::size_t circleSize = 24 + 8 + 24;
         if (offset + circleSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated circle data at offset %zu\n", offset);
@@ -562,17 +559,16 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           AddToDocument(conicPrimitive, document, proxyEntity.m_space);
           ++primitiveCount;
 
-          ATLTRACE2(traceGeneral, 3,
-              L"  Proxy type 2 → Circle center(%.2f,%.2f,%.2f) r=%.2f\n",
-              center.x, center.y, center.z, radius);
+          ATLTRACE2(traceGeneral, 3, L"  Proxy type 2 → Circle center(%.2f,%.2f,%.2f) r=%.2f\n", center.x, center.y,
+              center.z, radius);
         }
 
         offset += circleSize;
         break;
       }
 
-      case 4: { // CircularArc: Point3d center, double radius, Vector3d normal, Vector3d startVector,
-                //              double sweepAngle, int32 arcType (92 bytes)
+      case 4: {  // CircularArc: Point3d center, double radius, Vector3d normal, Vector3d startVector,
+                 //              double sweepAngle, int32 arcType (92 bytes)
         const std::size_t circularArcSize = 24 + 8 + 24 + 24 + 8 + 4;
         if (offset + circularArcSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated circular arc data at offset %zu\n", offset);
@@ -626,8 +622,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
             AddToDocument(conicPrimitive, document, proxyEntity.m_space);
             ++primitiveCount;
 
-            ATLTRACE2(traceGeneral, 3,
-                L"  Proxy type 4 → Arc center(%.2f,%.2f,%.2f) r=%.2f start=%.4f end=%.4f\n",
+            ATLTRACE2(traceGeneral, 3, L"  Proxy type 4 → Arc center(%.2f,%.2f,%.2f) r=%.2f start=%.4f end=%.4f\n",
                 center.x, center.y, center.z, radius, startAngle, endAngle);
           }
         }
@@ -636,8 +631,8 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         break;
       }
 
-      case 6:   // Polyline: int32 numVertices, Point3d[numVertices]
-      case 7: { // Polygon: same layout as polyline
+      case 6:  // Polyline: int32 numVertices, Point3d[numVertices]
+      case 7: {  // Polygon: same layout as polyline
         std::int32_t numVertices = 0;
         if (!readInt32(offset, numVertices)) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated vertex count at offset %zu\n", offset);
@@ -647,8 +642,8 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         offset += 4;
 
         if (numVertices <= 0 || numVertices > 10000) {
-          ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: unreasonable vertex count %d at offset %zu\n",
-              numVertices, offset - 4);
+          ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: unreasonable vertex count %d at offset %zu\n", numVertices,
+              offset - 4);
           offset = dataSize;
           break;
         }
@@ -656,8 +651,8 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         const auto pointsSize = static_cast<std::size_t>(numVertices) * 24;
         if (offset + pointsSize > dataSize) {
           ATLTRACE2(traceGeneral, 1,
-              L"  Proxy graphics: insufficient data for %d vertices (need %zu bytes, have %zu)\n",
-              numVertices, pointsSize, dataSize - offset);
+              L"  Proxy graphics: insufficient data for %d vertices (need %zu bytes, have %zu)\n", numVertices,
+              pointsSize, dataSize - offset);
           offset = dataSize;
           break;
         }
@@ -675,10 +670,8 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           AddToDocument(linePrimitive, document, proxyEntity.m_space);
           ++primitiveCount;
 
-          ATLTRACE2(traceGeneral, 3,
-              L"  Proxy type %d → Line (%.2f,%.2f,%.2f)→(%.2f,%.2f,%.2f)\n",
-              typeCode, startPoint.x, startPoint.y, startPoint.z,
-              endPoint.x, endPoint.y, endPoint.z);
+          ATLTRACE2(traceGeneral, 3, L"  Proxy type %d → Line (%.2f,%.2f,%.2f)→(%.2f,%.2f,%.2f)\n", typeCode,
+              startPoint.x, startPoint.y, startPoint.z, endPoint.x, endPoint.y, endPoint.z);
         } else {
           // Multi-point polyline or polygon → create EoDbPolyline
           EoGePoint3dArray points;
@@ -695,15 +688,14 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           AddToDocument(polylinePrimitive, document, proxyEntity.m_space);
           ++primitiveCount;
 
-          ATLTRACE2(traceGeneral, 3,
-              L"  Proxy type %d → Polyline with %d vertices\n", typeCode, numVertices);
+          ATLTRACE2(traceGeneral, 3, L"  Proxy type %d → Polyline with %d vertices\n", typeCode, numVertices);
         }
 
         offset += pointsSize;
         break;
       }
 
-      case 3: { // Circle (3pt): Point3d pt1, Point3d pt2, Point3d pt3 (72 bytes)
+      case 3: {  // Circle (3pt): Point3d pt1, Point3d pt2, Point3d pt3 (72 bytes)
         const std::size_t circle3ptSize = 72;
         if (offset + circle3ptSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated 3pt circle data at offset %zu\n", offset);
@@ -716,7 +708,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         break;
       }
 
-      case 5: { // CircularArc (3pt): Point3d start, Point3d point, Point3d end (72 bytes)
+      case 5: {  // CircularArc (3pt): Point3d start, Point3d point, Point3d end (72 bytes)
         const std::size_t arc3ptSize = 72;
         if (offset + arc3ptSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated 3pt arc data at offset %zu\n", offset);
@@ -729,7 +721,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         break;
       }
 
-      case 8: { // Mesh: int32 rows, int32 cols, Point3d[rows×cols]
+      case 8: {  // Mesh: int32 rows, int32 cols, Point3d[rows×cols]
         std::int32_t rows = 0;
         std::int32_t cols = 0;
         if (!readInt32(offset, rows) || !readInt32(offset + 4, cols)) {
@@ -743,14 +735,14 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           offset = dataSize;
           break;
         }
-        ATLTRACE2(traceGeneral, 2, L"  Proxy type 8 → Mesh %dx%d (not rendered, %zu bytes)\n",
-            rows, cols, meshPayloadSize);
+        ATLTRACE2(
+            traceGeneral, 2, L"  Proxy type 8 → Mesh %dx%d (not rendered, %zu bytes)\n", rows, cols, meshPayloadSize);
         ++skippedGeometryCount;
         offset += meshPayloadSize;
         break;
       }
 
-      case 9: { // Shell: int32 numVerts, Point3d[numVerts], int32 numFaceEntries, int32[numFaceEntries]
+      case 9: {  // Shell: int32 numVerts, Point3d[numVerts], int32 numFaceEntries, int32[numFaceEntries]
         std::int32_t numVerts = 0;
         if (!readInt32(offset, numVerts)) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated shell header at offset %zu\n", offset);
@@ -788,15 +780,15 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           offset = dataSize;
           break;
         }
-        ATLTRACE2(traceGeneral, 2, L"  Proxy type 9 → Shell %d verts, %d face entries (not rendered)\n",
-            numVerts, numFaceEntries);
+        ATLTRACE2(traceGeneral, 2, L"  Proxy type 9 → Shell %d verts, %d face entries (not rendered)\n", numVerts,
+            numFaceEntries);
         ++skippedGeometryCount;
         offset += facesSize;
         break;
       }
 
       case 10:
-      case 11: { // Text: Point3d position, Vector3d normal, Vector3d direction, string
+      case 11: {  // Text: Point3d position, Vector3d normal, Vector3d direction, string
         const std::size_t textHeaderSize = 24 + 24 + 24;  // position + normal + direction = 72 bytes
         if (offset + textHeaderSize + 4 > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated text header at offset %zu\n", offset);
@@ -829,7 +821,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 12:  // Xline: Point3d basePoint, Vector3d direction (48 bytes)
-      case 13: { // Ray: same layout as xline
+      case 13: {  // Ray: same layout as xline
         const std::size_t xlineSize = 48;
         if (offset + xlineSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated xline/ray data at offset %zu\n", offset);
@@ -842,106 +834,142 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         break;
       }
 
-      case 14: { // SUBENT: Color (int16 colorIndex = 2 bytes)
+      case 14: {  // SUBENT: Color (int16 colorIndex = 2 bytes)
         const std::size_t payloadSize = 2;
-        if (offset + payloadSize > dataSize) { offset = dataSize; break; }
+        if (offset + payloadSize > dataSize) {
+          offset = dataSize;
+          break;
+        }
         ATLTRACE2(traceGeneral, 3, L"  Proxy type 14 → SUBENT Color (skipped)\n");
         offset += payloadSize;
         break;
       }
 
-      case 15: { // SUBENT: Layer name (int16 len, char[len])
-        if (offset + 2 > dataSize) { offset = dataSize; break; }
+      case 15: {  // SUBENT: Layer name (int16 len, char[len])
+        if (offset + 2 > dataSize) {
+          offset = dataSize;
+          break;
+        }
         std::int16_t nameLength = 0;
         std::memcpy(&nameLength, data + offset, sizeof(std::int16_t));
         offset += 2;
-        if (nameLength < 0 || offset + static_cast<std::size_t>(nameLength) > dataSize) { offset = dataSize; break; }
+        if (nameLength < 0 || offset + static_cast<std::size_t>(nameLength) > dataSize) {
+          offset = dataSize;
+          break;
+        }
         ATLTRACE2(traceGeneral, 3, L"  Proxy type 15 → SUBENT Layer (skipped, %d chars)\n", nameLength);
         offset += static_cast<std::size_t>(nameLength);
         break;
       }
 
-      case 16: { // SUBENT: Linetype name (int16 len, char[len])
-        if (offset + 2 > dataSize) { offset = dataSize; break; }
+      case 16: {  // SUBENT: Linetype name (int16 len, char[len])
+        if (offset + 2 > dataSize) {
+          offset = dataSize;
+          break;
+        }
         std::int16_t nameLength = 0;
         std::memcpy(&nameLength, data + offset, sizeof(std::int16_t));
         offset += 2;
-        if (nameLength < 0 || offset + static_cast<std::size_t>(nameLength) > dataSize) { offset = dataSize; break; }
+        if (nameLength < 0 || offset + static_cast<std::size_t>(nameLength) > dataSize) {
+          offset = dataSize;
+          break;
+        }
         ATLTRACE2(traceGeneral, 3, L"  Proxy type 16 → SUBENT Linetype (skipped, %d chars)\n", nameLength);
         offset += static_cast<std::size_t>(nameLength);
         break;
       }
 
-      case 17: { // SUBENT: Marker (int32 = 4 bytes)
+      case 17: {  // SUBENT: Marker (int32 = 4 bytes)
         const std::size_t payloadSize = 4;
-        if (offset + payloadSize > dataSize) { offset = dataSize; break; }
+        if (offset + payloadSize > dataSize) {
+          offset = dataSize;
+          break;
+        }
         ATLTRACE2(traceGeneral, 3, L"  Proxy type 17 → SUBENT Marker (skipped)\n");
         offset += payloadSize;
         break;
       }
 
-      case 18: { // SUBENT: Fill (int16 = 2 bytes)
+      case 18: {  // SUBENT: Fill (int16 = 2 bytes)
         const std::size_t payloadSize = 2;
-        if (offset + payloadSize > dataSize) { offset = dataSize; break; }
+        if (offset + payloadSize > dataSize) {
+          offset = dataSize;
+          break;
+        }
         ATLTRACE2(traceGeneral, 3, L"  Proxy type 18 → SUBENT Fill (skipped)\n");
         offset += payloadSize;
         break;
       }
 
-      case 20: { // SUBENT: True Color (int32 = 4 bytes)
+      case 20: {  // SUBENT: True Color (int32 = 4 bytes)
         const std::size_t payloadSize = 4;
-        if (offset + payloadSize > dataSize) { offset = dataSize; break; }
+        if (offset + payloadSize > dataSize) {
+          offset = dataSize;
+          break;
+        }
         ATLTRACE2(traceGeneral, 3, L"  Proxy type 20 → SUBENT True Color (skipped)\n");
         offset += payloadSize;
         break;
       }
 
-      case 21: { // SUBENT: Lineweight (int16 = 2 bytes)
+      case 21: {  // SUBENT: Lineweight (int16 = 2 bytes)
         const std::size_t payloadSize = 2;
-        if (offset + payloadSize > dataSize) { offset = dataSize; break; }
+        if (offset + payloadSize > dataSize) {
+          offset = dataSize;
+          break;
+        }
         ATLTRACE2(traceGeneral, 3, L"  Proxy type 21 → SUBENT Lineweight (skipped)\n");
         offset += payloadSize;
         break;
       }
 
-      case 22: { // SUBENT: Linetype Scale (double = 8 bytes)
+      case 22: {  // SUBENT: Linetype Scale (double = 8 bytes)
         const std::size_t payloadSize = 8;
-        if (offset + payloadSize > dataSize) { offset = dataSize; break; }
+        if (offset + payloadSize > dataSize) {
+          offset = dataSize;
+          break;
+        }
         ATLTRACE2(traceGeneral, 3, L"  Proxy type 22 → SUBENT Linetype Scale (skipped)\n");
         offset += payloadSize;
         break;
       }
 
-      case 23: { // SUBENT: Thickness (double = 8 bytes)
+      case 23: {  // SUBENT: Thickness (double = 8 bytes)
         const std::size_t payloadSize = 8;
-        if (offset + payloadSize > dataSize) { offset = dataSize; break; }
+        if (offset + payloadSize > dataSize) {
+          offset = dataSize;
+          break;
+        }
         ATLTRACE2(traceGeneral, 3, L"  Proxy type 23 → SUBENT Thickness (skipped)\n");
         offset += payloadSize;
         break;
       }
 
-      case 24: { // SUBENT: Plot Style Name (int32 = 4 bytes)
+      case 24: {  // SUBENT: Plot Style Name (int32 = 4 bytes)
         const std::size_t payloadSize = 4;
-        if (offset + payloadSize > dataSize) { offset = dataSize; break; }
+        if (offset + payloadSize > dataSize) {
+          offset = dataSize;
+          break;
+        }
         ATLTRACE2(traceGeneral, 3, L"  Proxy type 24 → SUBENT Plot Style (skipped)\n");
         offset += payloadSize;
         break;
       }
 
-      case 19: // SUBENT: no payload
-      case 25: // SUBENT: no payload
-      case 26: { // SUBENT: no payload
+      case 19:  // SUBENT: no payload
+      case 25:  // SUBENT: no payload
+      case 26: {  // SUBENT: no payload
         ATLTRACE2(traceGeneral, 3, L"  Proxy type %d → SUBENT (no payload, skipped)\n", typeCode);
         break;
       }
 
       case 27:  // Push Clip Boundary (no payload)
-      case 28: { // Pop Clip Boundary (no payload)
+      case 28: {  // Pop Clip Boundary (no payload)
         ATLTRACE2(traceGeneral, 3, L"  Proxy type %d → Clip Boundary (skipped)\n", typeCode);
         break;
       }
 
-      case 29: { // Push Model Transform: 4×3 matrix (12 × double = 96 bytes)
+      case 29: {  // Push Model Transform: 4×3 matrix (12 × double = 96 bytes)
         const std::size_t xformSize = 96;
         if (offset + xformSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated model transform at offset %zu\n", offset);
@@ -953,7 +981,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         break;
       }
 
-      case 33: { // LwPolyline: int32 numPoints, int32 flags, Point3d[numPoints]
+      case 33: {  // LwPolyline: int32 numPoints, int32 flags, Point3d[numPoints]
         std::int32_t numPoints = 0;
         if (!readInt32(offset, numPoints)) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated lwpolyline header at offset %zu\n", offset);
@@ -969,8 +997,8 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         // Skip flags (int32) + point data
         const auto lwPolyPayloadSize = 4 + static_cast<std::size_t>(numPoints) * 24;
         if (offset + lwPolyPayloadSize > dataSize) {
-          ATLTRACE2(traceGeneral, 1,
-              L"  Proxy graphics: truncated lwpolyline data for %d points at offset %zu\n", numPoints, offset);
+          ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated lwpolyline data for %d points at offset %zu\n",
+              numPoints, offset);
           offset = dataSize;
           break;
         }
@@ -1049,7 +1077,7 @@ void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* 
   AddToDocument(conic, document, circle.m_space);
 }
 
-/** @brief Converts a DXF ELLIPSE entity
+/** @brief Converts a DXF ELLIPSE entity to an EoDbConic primitive in the AeSys document.
  *
  *  DXF ELLIPSE entities represent both full ellipses and elliptical arcs. The entity is defined
  *  by a center point, a major axis endpoint (relative to center), a minor-to-major axis ratio,
@@ -1078,8 +1106,8 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
       ellipse.m_ratio, ellipse.m_startParam, ellipse.m_endParam);
 
   if (ellipse.m_ratio <= 0.0 || ellipse.m_ratio > 1.0) {
-    ATLTRACE2(traceGeneral, 1, L"Ellipse entity skipped: invalid ratio (%.6f) — must be in (0.0, 1.0]\n",
-        ellipse.m_ratio);
+    ATLTRACE2(
+        traceGeneral, 1, L"Ellipse entity skipped: invalid ratio (%.6f) — must be in (0.0, 1.0]\n", ellipse.m_ratio);
     return;
   }
   EoGeVector3d majorAxis(
@@ -1097,10 +1125,10 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   }
   auto center = EoGePoint3d(ellipse.m_centerPoint.x, ellipse.m_centerPoint.y, ellipse.m_centerPoint.z);
 
-  ATLTRACE2(traceGeneral, 3, L"  center=(%.4f, %.4f, %.4f) majorAxis=(%.4f, %.4f, %.4f) majorLen=%.4f\n",
-      center.x, center.y, center.z, majorAxis.x, majorAxis.y, majorAxis.z, majorAxis.Length());
-  ATLTRACE2(traceGeneral, 3, L"  extrusion=(%.4f, %.4f, %.4f) ratio=%.4f\n",
-      extrusion.x, extrusion.y, extrusion.z, ellipse.m_ratio);
+  ATLTRACE2(traceGeneral, 3, L"  center=(%.4f, %.4f, %.4f) majorAxis=(%.4f, %.4f, %.4f) majorLen=%.4f\n", center.x,
+      center.y, center.z, majorAxis.x, majorAxis.y, majorAxis.z, majorAxis.Length());
+  ATLTRACE2(traceGeneral, 3, L"  extrusion=(%.4f, %.4f, %.4f) ratio=%.4f\n", extrusion.x, extrusion.y, extrusion.z,
+      ellipse.m_ratio);
 
   auto* conic =
       EoDbConic::CreateConic(center, extrusion, majorAxis, ellipse.m_ratio, ellipse.m_startParam, ellipse.m_endParam);
@@ -1111,11 +1139,10 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   conic->SetBaseProperties(&ellipse, document);
   AddToDocument(conic, document, ellipse.m_space);
 
-  const bool isFullEllipse = std::abs(ellipse.m_endParam - ellipse.m_startParam - Eo::TwoPi) < Eo::geometricTolerance
-      || std::abs(ellipse.m_endParam - ellipse.m_startParam) < Eo::geometricTolerance;
+  const bool isFullEllipse = std::abs(ellipse.m_endParam - ellipse.m_startParam - Eo::TwoPi) < Eo::geometricTolerance ||
+                             std::abs(ellipse.m_endParam - ellipse.m_startParam) < Eo::geometricTolerance;
   ATLTRACE2(traceGeneral, 2, L"  → EoDbConic %s (majorLen=%.4f, minorLen=%.4f)\n",
-      isFullEllipse ? L"Ellipse" : L"EllipticalArc",
-      majorAxis.Length(), majorAxis.Length() * ellipse.m_ratio);
+      isFullEllipse ? L"Ellipse" : L"EllipticalArc", majorAxis.Length(), majorAxis.Length() * ellipse.m_ratio);
 }
 
 /** @brief Maps a DXF hatch pattern name to the AeSys fill style index.
@@ -1132,18 +1159,12 @@ static std::int16_t MapHatchPatternNameToIndex(const std::wstring& patternName) 
   static const struct {
     const wchar_t* name;
     std::int16_t index;
-  } patternTable[] = {
-      {L"PEG1", 1},    {L"PEG2", 2},    {L"ANGLE", 3},   {L"ANSI31", 4},
-      {L"ANSI32", 5},  {L"ANSI33", 6},  {L"ANSI34", 7},  {L"ANSI35", 8},
-      {L"ANSI36", 9},  {L"ANSI37", 10}, {L"ANSI38", 11}, {L"BOX", 12},
-      {L"BRICK", 13},  {L"CLAY", 14},   {L"CORK", 15},   {L"CROSS", 16},
-      {L"DASH", 17},   {L"DOLMIT", 18}, {L"DOTS", 19},   {L"EARTH", 20},
-      {L"ESCHER", 21},  {L"FLEX", 22},  {L"GRASS", 23},  {L"GRATE", 24},
-      {L"HEX", 25},    {L"HONEY", 26},  {L"HOUND", 27},  {L"INSUL", 28},
-      {L"MUDST", 29},  {L"NET3", 30},   {L"PLAST", 31},  {L"PLASTI", 32},
-      {L"SACNCR", 33}, {L"SQUARE", 34}, {L"STARS", 35},  {L"SWAMP", 36},
-      {L"TRANS", 37},  {L"TRIAN", 38},  {L"ZIGZAG", 39},
-  };
+  } patternTable[] = {{L"PEG1", 1}, {L"PEG2", 2}, {L"ANGLE", 3}, {L"ANSI31", 4}, {L"ANSI32", 5}, {L"ANSI33", 6},
+      {L"ANSI34", 7}, {L"ANSI35", 8}, {L"ANSI36", 9}, {L"ANSI37", 10}, {L"ANSI38", 11}, {L"BOX", 12}, {L"BRICK", 13},
+      {L"CLAY", 14}, {L"CORK", 15}, {L"CROSS", 16}, {L"DASH", 17}, {L"DOLMIT", 18}, {L"DOTS", 19}, {L"EARTH", 20},
+      {L"ESCHER", 21}, {L"FLEX", 22}, {L"GRASS", 23}, {L"GRATE", 24}, {L"HEX", 25}, {L"HONEY", 26}, {L"HOUND", 27},
+      {L"INSUL", 28}, {L"MUDST", 29}, {L"NET3", 30}, {L"PLAST", 31}, {L"PLASTI", 32}, {L"SACNCR", 33}, {L"SQUARE", 34},
+      {L"STARS", 35}, {L"SWAMP", 36}, {L"TRANS", 37}, {L"TRIAN", 38}, {L"ZIGZAG", 39}, {L"AR-CONC", 40}};
 
   for (const auto& entry : patternTable) {
     if (_wcsicmp(patternName.c_str(), entry.name) == 0) { return entry.index; }
@@ -1203,8 +1224,7 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
   }
 
   if (hatch.m_hatchPatternDoubleFlag != 0) {
-    ATLTRACE2(traceGeneral, 1,
-        L"  Hatch pattern double flag set — second 90° pass not implemented in PEG V1\n");
+    ATLTRACE2(traceGeneral, 1, L"  Hatch pattern double flag set — second 90° pass not implemented in PEG V1\n");
   }
 
   // Hatch origin from the elevation point (OCS origin for the hatch plane)
@@ -1231,9 +1251,7 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
   // OCS X-axis reverses direction (e.g., [0,0,-1] → OCS X = [-1,0,0]).
   // AutoCAD renders hatch patterns with the same visual orientation regardless
   // of extrusion direction; preserving untransformed vectors matches this behavior.
-  if (needsOcsTransform) {
-    hatchOrigin = ocsToWcs * hatchOrigin;
-  }
+  if (needsOcsTransform) { hatchOrigin = ocsToWcs * hatchOrigin; }
 
   int loopIndex = 0;
   for (const auto* hatchLoop : hatch.HatchLoops()) {
@@ -1251,8 +1269,8 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     EoDb::PolygonStyle loopPolygonStyle = polygonStyle;
     if (isIslandLoop && polygonStyle == EoDb::PolygonStyle::Solid) {
       loopPolygonStyle = EoDb::PolygonStyle::Hollow;
-      ATLTRACE2(traceGeneral, 2, L"  Loop %d: island boundary (type 0x%X) — rendered as Hollow\n",
-          loopIndex, hatchLoop->m_boundaryPathType);
+      ATLTRACE2(traceGeneral, 2, L"  Loop %d: island boundary (type 0x%X) — rendered as Hollow\n", loopIndex,
+          hatchLoop->m_boundaryPathType);
     } else if (isIslandLoop) {
       ATLTRACE2(traceGeneral, 2, L"  Loop %d: island boundary (type 0x%X) — converted as independent polygon\n",
           loopIndex, hatchLoop->m_boundaryPathType);
@@ -1308,8 +1326,8 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
         }
       }
 
-      ATLTRACE2(traceGeneral, 2, L"  Loop %d: polyline boundary → %d tessellated vertices\n",
-          loopIndex, static_cast<int>(boundaryPoints.GetSize()));
+      ATLTRACE2(traceGeneral, 2, L"  Loop %d: polyline boundary → %d tessellated vertices\n", loopIndex,
+          static_cast<int>(boundaryPoints.GetSize()));
     } else {
       // ── Edge-type boundary ───────────────────────────────
       const double elevation = hatch.m_elevationPoint.z;
@@ -1357,12 +1375,12 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
             const double angleStep = sweepAngle / numberOfSegments;
             for (int seg = 1; seg <= numberOfSegments; ++seg) {
               const double angle = startAngle + angleStep * seg;
-              boundaryPoints.Add(EoGePoint3d{centerX + radius * std::cos(angle),
-                  centerY + radius * std::sin(angle), elevation});
+              boundaryPoints.Add(
+                  EoGePoint3d{centerX + radius * std::cos(angle), centerY + radius * std::sin(angle), elevation});
             }
 
-            ATLTRACE2(traceGeneral, 3, L"    Arc edge: center=(%.4f,%.4f) r=%.4f → %d segments\n",
-                centerX, centerY, radius, numberOfSegments);
+            ATLTRACE2(traceGeneral, 3, L"    Arc edge: center=(%.4f,%.4f) r=%.4f → %d segments\n", centerX, centerY,
+                radius, numberOfSegments);
             break;
           }
           case EoDxf::ELLIPSE: {
@@ -1397,9 +1415,7 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
               const double cosStart = std::cos(startParam);
               const double sinStart = std::sin(startParam);
               boundaryPoints.Add(EoGePoint3d{
-                  cx + majorX * cosStart + minorX * sinStart,
-                  cy + majorY * cosStart + minorY * sinStart,
-                  elevation});
+                  cx + majorX * cosStart + minorX * sinStart, cy + majorY * cosStart + minorY * sinStart, elevation});
             }
 
             const double paramStep = sweepParam / numberOfSegments;
@@ -1408,13 +1424,11 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
               const double cosParam = std::cos(param);
               const double sinParam = std::sin(param);
               boundaryPoints.Add(EoGePoint3d{
-                  cx + majorX * cosParam + minorX * sinParam,
-                  cy + majorY * cosParam + minorY * sinParam,
-                  elevation});
+                  cx + majorX * cosParam + minorX * sinParam, cy + majorY * cosParam + minorY * sinParam, elevation});
             }
 
-            ATLTRACE2(traceGeneral, 3, L"    Ellipse edge: center=(%.4f,%.4f) ratio=%.4f → %d segments\n",
-                cx, cy, ratio, numberOfSegments);
+            ATLTRACE2(traceGeneral, 3, L"    Ellipse edge: center=(%.4f,%.4f) ratio=%.4f → %d segments\n", cx, cy,
+                ratio, numberOfSegments);
             break;
           }
           case EoDxf::SPLINE:
@@ -1427,14 +1441,14 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
         }
       }
 
-      ATLTRACE2(traceGeneral, 2, L"  Loop %d: edge boundary → %d tessellated vertices\n",
-          loopIndex, static_cast<int>(boundaryPoints.GetSize()));
+      ATLTRACE2(traceGeneral, 2, L"  Loop %d: edge boundary → %d tessellated vertices\n", loopIndex,
+          static_cast<int>(boundaryPoints.GetSize()));
     }
 
     // Need at least 3 points for a valid polygon
     if (boundaryPoints.GetSize() < 3) {
-      ATLTRACE2(traceGeneral, 1, L"  Loop %d: insufficient vertices (%d), skipping\n",
-          loopIndex, static_cast<int>(boundaryPoints.GetSize()));
+      ATLTRACE2(traceGeneral, 1, L"  Loop %d: insufficient vertices (%d), skipping\n", loopIndex,
+          static_cast<int>(boundaryPoints.GetSize()));
       continue;
     }
 
@@ -1442,27 +1456,24 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     const auto lastIndex = boundaryPoints.GetSize() - 1;
     const auto& firstPt = boundaryPoints[0];
     const auto& lastPt = boundaryPoints[lastIndex];
-    if (std::abs(firstPt.x - lastPt.x) < Eo::geometricTolerance
-        && std::abs(firstPt.y - lastPt.y) < Eo::geometricTolerance
-        && std::abs(firstPt.z - lastPt.z) < Eo::geometricTolerance) {
+    if (std::abs(firstPt.x - lastPt.x) < Eo::geometricTolerance &&
+        std::abs(firstPt.y - lastPt.y) < Eo::geometricTolerance &&
+        std::abs(firstPt.z - lastPt.z) < Eo::geometricTolerance) {
       boundaryPoints.SetSize(lastIndex);
     }
 
     if (boundaryPoints.GetSize() < 3) {
-      ATLTRACE2(traceGeneral, 1, L"  Loop %d: degenerate after dedup (%d vertices), skipping\n",
-          loopIndex, static_cast<int>(boundaryPoints.GetSize()));
+      ATLTRACE2(traceGeneral, 1, L"  Loop %d: degenerate after dedup (%d vertices), skipping\n", loopIndex,
+          static_cast<int>(boundaryPoints.GetSize()));
       continue;
     }
 
     // Transform boundary points from OCS to WCS when extrusion is non-default
     if (needsOcsTransform) {
-      for (INT_PTR i = 0; i < boundaryPoints.GetSize(); ++i) {
-        boundaryPoints[i] = ocsToWcs * boundaryPoints[i];
-      }
+      for (INT_PTR i = 0; i < boundaryPoints.GetSize(); ++i) { boundaryPoints[i] = ocsToWcs * boundaryPoints[i]; }
     }
 
-    auto* polygon = new EoDbPolygon(
-        static_cast<std::int16_t>(hatch.m_color), loopPolygonStyle, fillStyleIndex,
+    auto* polygon = new EoDbPolygon(static_cast<std::int16_t>(hatch.m_color), loopPolygonStyle, fillStyleIndex,
         hatchOrigin, xAxis, yAxis, boundaryPoints);
 
     // Set layer and line type from the DXF entity for correct document placement
@@ -1470,10 +1481,10 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
 
     AddToDocument(polygon, document, hatch.m_space);
 
-    ATLTRACE2(traceGeneral, 2, L"  Loop %d: created EoDbPolygon (%s, %d vertices)\n",
-        loopIndex,
-        loopPolygonStyle == EoDb::PolygonStyle::Solid ? L"Solid"
-            : loopPolygonStyle == EoDb::PolygonStyle::Hatch ? L"Hatch" : L"Hollow",
+    ATLTRACE2(traceGeneral, 2, L"  Loop %d: created EoDbPolygon (%s, %d vertices)\n", loopIndex,
+        loopPolygonStyle == EoDb::PolygonStyle::Solid   ? L"Solid"
+        : loopPolygonStyle == EoDb::PolygonStyle::Hatch ? L"Hatch"
+                                                        : L"Hollow",
         static_cast<int>(boundaryPoints.GetSize()));
   }
 }
@@ -1531,9 +1542,7 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
       [](const EoDxfPolylineVertex2d& vertex) noexcept { return vertex.bulge != 0.0; });
   if (hasAnyBulge) {
     std::vector<double> bulges(numVerts);
-    for (std::uint16_t index = 0; index < numVerts; ++index) {
-      bulges[index] = polyline.m_vertices[index].bulge;
-    }
+    for (std::uint16_t index = 0; index < numVerts; ++index) { bulges[index] = polyline.m_vertices[index].bulge; }
     polylinePrimitive->SetBulges(std::move(bulges));
   }
 
@@ -1572,8 +1581,8 @@ void EoDbDxfInterface::ConvertPolyline3DEntity(const EoDxfPolyline& polyline, Ae
   for (std::uint16_t index = 0; index < numVerts; ++index) {
     const auto& vertex = polyline.m_vertices[index];
     // 3D polyline vertices are truly 3D — no OCS/elevation mapping needed
-    polylinePrimitive->SetVertex(index,
-        EoGePoint3d{vertex->m_locationPoint.x, vertex->m_locationPoint.y, vertex->m_locationPoint.z});
+    polylinePrimitive->SetVertex(
+        index, EoGePoint3d{vertex->m_locationPoint.x, vertex->m_locationPoint.y, vertex->m_locationPoint.z});
   }
 
   if (polyline.m_polylineFlag & 0x01) { polylinePrimitive->SetClosed(true); }
@@ -1600,8 +1609,7 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
   const double elevation = polyline.m_polylineElevation.z;
   for (std::uint16_t index = 0; index < numVerts; ++index) {
     const auto& vertex = polyline.m_vertices[index];
-    polylinePrimitive->SetVertex(index,
-        EoGePoint3d{vertex->m_locationPoint.x, vertex->m_locationPoint.y, elevation});
+    polylinePrimitive->SetVertex(index, EoGePoint3d{vertex->m_locationPoint.x, vertex->m_locationPoint.y, elevation});
   }
 
   if (polyline.m_polylineFlag & 0x01) { polylinePrimitive->SetClosed(true); }
@@ -1612,9 +1620,7 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
       [](const EoDxfVertex* vertex) { return vertex->m_bulge != 0.0; });
   if (hasAnyBulge) {
     std::vector<double> bulges(numVerts);
-    for (std::uint16_t index = 0; index < numVerts; ++index) {
-      bulges[index] = polyline.m_vertices[index]->m_bulge;
-    }
+    for (std::uint16_t index = 0; index < numVerts; ++index) { bulges[index] = polyline.m_vertices[index]->m_bulge; }
     polylinePrimitive->SetBulges(std::move(bulges));
   }
 
@@ -1853,7 +1859,7 @@ void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* doc
   AddToDocument(pointPrimitive, document, point.m_space);
 }
 
-/** @brief Converts a DXF SPLINE entity
+/** @brief Converts a DXF SPLINE entity to an EoDbSpline primitive in the AeSys document.
  *
  *  DXF SPLINE entities (AutoCAD 13+) define B-splines with degree, knot vector, control points,
  *  and optional fit points and weight values. AeSys `EoDbSpline` stores only control points and
@@ -1879,12 +1885,10 @@ void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* doc
  *  @param document The AeSys document receiving the created primitive.
  */
 void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 2, L"Spline entity conversion (degree=%d, controlPts=%d, fitPts=%d, knots=%d, flags=0x%04X)\n",
-      spline.m_degreeOfTheSplineCurve,
-      spline.m_numberOfControlPoints,
-      spline.m_numberOfFitPoints,
-      spline.m_numberOfKnots,
-      spline.m_splineFlag);
+  ATLTRACE2(traceGeneral, 2,
+      L"Spline entity conversion (degree=%d, controlPts=%d, fitPts=%d, knots=%d, flags=0x%04X)\n",
+      spline.m_degreeOfTheSplineCurve, spline.m_numberOfControlPoints, spline.m_numberOfFitPoints,
+      spline.m_numberOfKnots, spline.m_splineFlag);
 
   // Determine which point set to use: control points preferred, fit points as fallback
   const auto& controlPoints = spline.m_controlPoints;
@@ -1908,27 +1912,23 @@ void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* 
   }
 
   if (!haveControlPoints) {
-    ATLTRACE2(traceGeneral, 2, L"  Spline: using %d fit points as control points (no control points defined)\n",
-        pointCount);
+    ATLTRACE2(
+        traceGeneral, 2, L"  Spline: using %d fit points as control points (no control points defined)\n", pointCount);
   }
 
   // Resolve extrusion direction for OCS → WCS transform
-  EoGeVector3d extrusionDirection{
-      spline.m_normalVector.x, spline.m_normalVector.y, spline.m_normalVector.z};
+  EoGeVector3d extrusionDirection{spline.m_normalVector.x, spline.m_normalVector.y, spline.m_normalVector.z};
   if (extrusionDirection.IsNearNull()) {
     // Fall back to base class extrusion direction
-    extrusionDirection = EoGeVector3d{
-        spline.m_extrusionDirection.x, spline.m_extrusionDirection.y, spline.m_extrusionDirection.z};
-    if (extrusionDirection.IsNearNull()) {
-      extrusionDirection = EoGeVector3d::positiveUnitZ;
-    }
+    extrusionDirection =
+        EoGeVector3d{spline.m_extrusionDirection.x, spline.m_extrusionDirection.y, spline.m_extrusionDirection.z};
+    if (extrusionDirection.IsNearNull()) { extrusionDirection = EoGeVector3d::positiveUnitZ; }
   }
 
   // Determine if OCS → WCS transform is needed (non-default extrusion)
-  const bool needsOcsTransform =
-      std::abs(extrusionDirection.x) > Eo::geometricTolerance ||
-      std::abs(extrusionDirection.y) > Eo::geometricTolerance ||
-      std::abs(extrusionDirection.z - 1.0) > Eo::geometricTolerance;
+  const bool needsOcsTransform = std::abs(extrusionDirection.x) > Eo::geometricTolerance ||
+                                 std::abs(extrusionDirection.y) > Eo::geometricTolerance ||
+                                 std::abs(extrusionDirection.z - 1.0) > Eo::geometricTolerance;
 
   EoGeOcsTransform transformOcs{extrusionDirection};
 
@@ -2153,8 +2153,8 @@ void EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* 
   auto horizontalAlignment = attrib.m_horizontalTextJustification;
   auto verticalAlignment = attrib.m_verticalTextJustification;
 
-  ATLTRACE2(traceGeneral, 2, L"  Attrib alignment: h=%d, v=%d, hasSecondPt=%d\n",
-      horizontalAlignment, verticalAlignment, attrib.HasSecondAlignmentPoint() ? 1 : 0);
+  ATLTRACE2(traceGeneral, 2, L"  Attrib alignment: h=%d, v=%d, hasSecondPt=%d\n", horizontalAlignment,
+      verticalAlignment, attrib.HasSecondAlignmentPoint() ? 1 : 0);
 
   auto secondAlignmentPointInOcs =
       EoGePoint3d{attrib.m_secondAlignmentPoint.x, attrib.m_secondAlignmentPoint.y, attrib.m_secondAlignmentPoint.z};

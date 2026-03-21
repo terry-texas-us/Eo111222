@@ -3196,7 +3196,7 @@ BEGIN
                             "1st\n2nd\n3rd\n4th\n5th\n6th\n7th\n8th\n9th\nWorking Origin\nPivot\nView Reference"
     IDS_MSG_LINE_NOT_SELECTED 
                             "Unable to locate line within current selection tolerance"
-    IDS_SAVEFILE_FILTER     "Drawing (*.peg)|*.peg|ASCII DXF (2010) (*.dxf)|*.dxf|ASCII DXF (2007) (*.dxf)|*.dxf|Binary DXF (2010) (*.dxf)|*.dxf|Binary DXF (2007) (*.dxf)|*.dxf|DWG 2010 (*.dwg)|*.dwg|DWG 2007 (*.dwg)|*.dwg||"
+    IDS_SAVEFILE_FILTER     "Drawing (*.peg)|*.peg|DXF (2018) (*.dxf)|*.dxf|DXF (2013) (*.dxf)|*.dxf|Binary DXF (2018) (*.dxf)|*.dxf|Binary DXF (2013) (*.dxf)|*.dxf|DWG 2018 (*.dwg)|*.dwg|DWG 2013 (*.dwg)|*.dwg||"
     IDS_METRIC_UNITS        "Meters\nMillimeters\nCentimeters\nDecimeters\nKilometers"
     IDS_PRIMITIVE_FILTER_LIST 
                             "Conic\nInsert\nLine\nPoint\nText\nPanel\nPolyline"

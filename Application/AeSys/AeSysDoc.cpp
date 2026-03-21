@@ -198,29 +198,130 @@ void AeSysDoc::DeleteContents() {
   ResetAllViews();
   CDocument::DeleteContents();
 }
-BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
-  CString PathName = pathName;
-  if (PathName.IsEmpty()) {
-    auto* Template = GetDocTemplate();
-    assert(Template != nullptr);
-
-    PathName = m_strPathName;
-    if (replace && PathName.IsEmpty()) {
-      PathName = m_strTitle;
-
-      int FirstBadCharacterIndex = PathName.FindOneOf(L" #%;/\\");
-      if (FirstBadCharacterIndex != -1) { PathName.ReleaseBuffer(FirstBadCharacterIndex); }
-      CString Extension;
-      if (Template->GetDocString(Extension, CDocTemplate::filterExt) && !Extension.IsEmpty()) {
-        assert(Extension[0] == '.');
-        PathName += Extension;
-      }
-    }
-    /// @todo Implement a EoDbDxfInterface Save As dialog if needed
+/** @brief Maps a 1-based CFileDialog filter index from IDS_SAVEFILE_FILTER to a file type.
+ *
+ * IDS_SAVEFILE_FILTER order:
+ *   1 = Drawing (*.peg)
+ *   2 = ASCII DXF (2018) (*.dxf)
+ *   3 = ASCII DXF (2013) (*.dxf)
+ *   4 = Binary DXF (2018) (*.dxf)
+ *   5 = Binary DXF (2013) (*.dxf)
+ *   6 = DWG 2018 (*.dwg)
+ *   7 = DWG 2013 (*.dwg)
+ */
+static EoDb::FileTypes FileTypeFromFilterIndex(DWORD filterIndex) noexcept {
+  switch (filterIndex) {
+    case 1:
+      return EoDb::FileTypes::Peg;
+    case 2:
+    case 3:
+      return EoDb::FileTypes::Dxf;
+    case 4:
+    case 5:
+      return EoDb::FileTypes::Dxb;
+    case 6:
+    case 7:
+      return EoDb::FileTypes::Dwg;
+    default:
+      return EoDb::FileTypes::Unknown;
   }
-  if (!OnSaveDocument(PathName)) {
-    if (pathName == nullptr) {
-      TRY { CFile::Remove(PathName); }
+}
+
+/** @brief Maps the current m_saveAsType to a 1-based filter index for CFileDialog pre-selection.
+ *
+ * When multiple filter entries map to the same file type (e.g., DXF has both ASCII and Binary
+ * variants), this returns the first matching entry for that type.
+ */
+static DWORD FilterIndexFromFileType(EoDb::FileTypes fileType) noexcept {
+  switch (fileType) {
+    case EoDb::FileTypes::Peg:
+      return 1;
+    case EoDb::FileTypes::Dxf:
+      return 2;
+    case EoDb::FileTypes::Dxb:
+      return 4;
+    case EoDb::FileTypes::Dwg:
+      return 6;
+    default:
+      return 1;
+  }
+}
+
+/** @brief Returns the default file extension (without dot) for a given file type. */
+static LPCWSTR DefaultExtensionForFileType(EoDb::FileTypes fileType) noexcept {
+  switch (fileType) {
+    case EoDb::FileTypes::Peg:
+      return L"peg";
+    case EoDb::FileTypes::Dxf:
+    case EoDb::FileTypes::Dxb:
+      return L"dxf";
+    case EoDb::FileTypes::Dwg:
+      return L"dwg";
+    default:
+      return L"peg";
+  }
+}
+
+BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
+  CString selectedPath = pathName;
+
+  // Determine whether a SaveAs dialog is needed:
+  // - pathName is null/empty (first save or explicit SaveAs invocation)
+  // - m_saveAsType is Unknown (document has no established save format)
+  const bool needsDialog = selectedPath.IsEmpty() || m_saveAsType == EoDb::FileTypes::Unknown;
+
+  if (needsDialog) {
+    // Build a default file name from the document title when no path exists
+    CString defaultFileName = m_strPathName;
+    if (defaultFileName.IsEmpty()) {
+      defaultFileName = m_strTitle;
+      // Strip characters that are problematic in file names
+      const int firstBadCharacterIndex = defaultFileName.FindOneOf(L" #%;/\\");
+      if (firstBadCharacterIndex != -1) { defaultFileName.ReleaseBuffer(firstBadCharacterIndex); }
+    }
+
+    // Extract the directory for the initial dialog location
+    CString initialDirectory;
+    if (!m_strPathName.IsEmpty()) {
+      const int lastSeparatorIndex = m_strPathName.ReverseFind(L'\\');
+      if (lastSeparatorIndex >= 0) { initialDirectory = m_strPathName.Left(lastSeparatorIndex); }
+    }
+
+    const auto filterString = App::LoadStringResource(IDS_SAVEFILE_FILTER);
+    const auto initialFilterIndex = FilterIndexFromFileType(m_saveAsType);
+
+    CFileDialog saveDialog(FALSE,  // FALSE = Save As dialog
+        DefaultExtensionForFileType(m_saveAsType), defaultFileName,
+        OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST, filterString, AfxGetMainWnd());
+
+    saveDialog.m_ofn.nFilterIndex = initialFilterIndex;
+    if (!initialDirectory.IsEmpty()) { saveDialog.m_ofn.lpstrInitialDir = initialDirectory; }
+
+    if (saveDialog.DoModal() != IDOK) { return FALSE; }
+
+    selectedPath = saveDialog.GetPathName();
+    const auto chosenFilterIndex = saveDialog.m_ofn.nFilterIndex;
+
+    // Update the save format from the user's filter selection
+    const EoDb::FileTypes chosenFileType = FileTypeFromFilterIndex(chosenFilterIndex);
+    if (chosenFileType != EoDb::FileTypes::Unknown) {
+      m_saveAsType = chosenFileType;
+    } else {
+      // Fall back to extension-based detection
+      m_saveAsType = App::FileTypeFromPath(selectedPath);
+    }
+
+    if (m_saveAsType == EoDb::FileTypes::Unknown) {
+      ATLTRACE2(
+          traceGeneral, 1, L"DoSave: unable to determine file type for '%s'\n", static_cast<LPCWSTR>(selectedPath));
+      return FALSE;
+    }
+  }
+
+  if (!OnSaveDocument(selectedPath)) {
+    // If this was a new file (no prior path), clean up the partially created file
+    if (pathName == nullptr || CString(pathName).IsEmpty()) {
+      TRY { CFile::Remove(selectedPath); }
       CATCH_ALL(e) {
         ATLTRACE2(traceGeneral, 3, L"Warning: failed to delete file after failed SaveAs.\n");
         do { e->Delete(); } while (0);
@@ -229,7 +330,9 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
     }
     return FALSE;
   }
-  if (replace) { SetPathName(PathName); }
+
+  if (replace) { SetPathName(selectedPath); }
+  SetModifiedFlag(FALSE);
   return TRUE;
 }
 
@@ -285,7 +388,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
 
   switch (App::FileTypeFromPath(pathName)) {
     case EoDb::FileTypes::Dwg:
-      /// @todo Implement DWG support by using ODA_Converter to convert DWG to DXF in memory and then fallthrough to 
+      /// @todo Implement DWG support by using ODA_Converter to convert DWG to DXF in memory and then fallthrough to
       /// EoDbDxfInterface to read the DXF data into the document.
       break;
     case EoDb::FileTypes::Dxf:
@@ -576,17 +679,11 @@ CLayers& AeSysDoc::SpaceLayers(EoDxf::Space space) noexcept {
   return (space == EoDxf::Space::PaperSpace) ? m_paperSpaceLayers : m_modelSpaceLayers;
 }
 
-int AeSysDoc::GetLayerTableSize() const {
-  return static_cast<int>(ActiveSpaceLayers().GetSize());
-}
+int AeSysDoc::GetLayerTableSize() const { return static_cast<int>(ActiveSpaceLayers().GetSize()); }
 
-void AeSysDoc::AddLayerTableLayer(EoDbLayer* layer) {
-  ActiveSpaceLayers().Add(layer);
-}
+void AeSysDoc::AddLayerTableLayer(EoDbLayer* layer) { ActiveSpaceLayers().Add(layer); }
 
-void AeSysDoc::AddLayerToSpace(EoDbLayer* layer, EoDxf::Space space) {
-  SpaceLayers(space).Add(layer);
-}
+void AeSysDoc::AddLayerToSpace(EoDbLayer* layer, EoDxf::Space space) { SpaceLayers(space).Add(layer); }
 
 EoDbLayer* AeSysDoc::FindLayerInSpace(const CString& name, EoDxf::Space space) {
   auto& layers = SpaceLayers(space);
@@ -1971,9 +2068,7 @@ void AeSysDoc::OnViewModelSpace() {
   UpdateAllViews(nullptr, 0L, nullptr);
 }
 
-void AeSysDoc::OnUpdateViewModelSpace(CCmdUI* cmdUI) {
-  cmdUI->SetCheck(m_activeSpace == EoDxf::Space::ModelSpace);
-}
+void AeSysDoc::OnUpdateViewModelSpace(CCmdUI* cmdUI) { cmdUI->SetCheck(m_activeSpace == EoDxf::Space::ModelSpace); }
 
 void AeSysDoc::DeleteNodalResources() {
   auto UniquePointPosition = GetFirstUniquePointPosition();
