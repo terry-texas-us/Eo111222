@@ -23,6 +23,7 @@
 #include "EoDlgModeRevise.h"
 #include "EoGePoint3d.h"
 #include "EoGsRenderState.h"
+#include "Hatch.h"
 #include "Lex.h"
 #include "MainFrm.h"
 #include "Resource.h"
@@ -68,8 +69,8 @@ namespace hatch {
 double dXAxRefVecScal;
 double dYAxRefVecScal;
 double dOffAng;
-int tableOffset[64]{};
-float tableValue[1536]{};
+int tableOffset[maxPatterns]{};
+float tableValue[maxTableValues]{};
 }  // namespace hatch
 
 auto* pColTbl = Eo::ColorPalette;
@@ -448,7 +449,7 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
 
   if (!fl.Open(fileName, CFile::modeRead | CFile::typeText, &e)) { return; }
 
-  wchar_t line[128]{};
+  wchar_t line[256]{};
   double dTotStrsLen{};
   int iNmbEnts{};
   int iNmbStrsId{};
@@ -456,12 +457,17 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
   wchar_t szValDel[] = L",\0";
   int iHatId{};
   int iNmbHatLns{};
-  int iTblId{};
+  int iTblId{1};  // Reserve position 0 as uninitialized sentinel for tableOffset
 
   while (fl.ReadString(line, sizeof(line) / sizeof(wchar_t) - 1) != 0) {
     if (*line == '!') {  // New Hatch index
       if (iHatId != 0) { hatch::tableValue[hatch::tableOffset[iHatId]] = float(iNmbHatLns); }
-      hatch::tableOffset[++iHatId] = iTblId++;
+      ++iHatId;
+      if (iHatId >= hatch::maxPatterns) {
+        ATLTRACE(traceGeneral, 0, L"LoadHatchesFromFile: pattern count exceeds maxPatterns (%d)\n", hatch::maxPatterns);
+        break;
+      }
+      hatch::tableOffset[iHatId] = iTblId++;
       iNmbHatLns = 0;
     } else {
       iNmbStrsId = iTblId;
@@ -471,6 +477,10 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
       LPWSTR NextToken = nullptr;
       LPWSTR pTok = wcstok_s(line, szValDel, &NextToken);
       while (pTok != 0) {
+        if (iTblId >= hatch::maxTableValues) {
+          ATLTRACE(traceGeneral, 0, L"LoadHatchesFromFile: table value overflow at pattern %d\n", iHatId);
+          break;
+        }
         volatile double tempValue = _wtof(pTok);
         hatch::tableValue[iTblId] = static_cast<float>(tempValue);
         iNmbEnts++;

@@ -76,7 +76,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
   renderState.SetLineType(deviceContext, 1);
 
   const int fillStyleIndex = renderState.PolygonIntStyleId();
-  if (fillStyleIndex < 0 || fillStyleIndex >= 64 || hatch::tableOffset[fillStyleIndex] == 0) {
+  if (fillStyleIndex < 0 || fillStyleIndex >= hatch::maxPatterns || hatch::tableOffset[fillStyleIndex] == 0) {
     renderState.SetPen(view, deviceContext, color, lineType);
     return;  // Out-of-range or uninitialized hatch table entry — nothing to draw
   }
@@ -85,8 +85,8 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
   int iHatLns = int(hatch::tableValue[iTblId++]);
 
   for (int i0 = 0; i0 < iHatLns; i0++) {
-    int iStrs = int(hatch::tableValue[iTblId++]);  // number of strokes in line definition
-    if (iStrs > 8) { iStrs = 8; }  // guard against table data exceeding local buffer
+    int iStrsInTable = int(hatch::tableValue[iTblId++]);  // number of strokes stored in table
+    int iStrs = std::min(iStrsInTable, 8);  // local buffer limit
     double dTotStrLen = hatch::tableValue[iTblId++];  // length of all strokes in line definition
     double dSinAng = std::sin(hatch::tableValue[iTblId]);  // sine of angle at which line will be drawn
     double dCosAng = std::cos(hatch::tableValue[iTblId++]);  // cosine of angle at which line will be drawn
@@ -95,19 +95,32 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
     double dShift = hatch::tableValue[iTblId++];  // x-axis origin shift between lines
     double dSpac = hatch::tableValue[iTblId++];  // spacing between lines
 
+    // Scan-line algorithm sweeps top-to-bottom; negative spacing from acad.pat
+    // indicates opposite tiling direction — normalize to positive and flip shift
+    // to preserve the shift-per-step ratio.
+    if (dSpac < 0.0) {
+      dSpac = -dSpac;
+      dShift = -dShift;
+    }
+
     if (std::abs(dSpac) < Eo::geometricTolerance || std::abs(dTotStrLen) < Eo::geometricTolerance) {
       // Degenerate spacing or zero total stroke length would cause infinite loop or fmod by zero
-      iTblId += iStrs;  // skip stroke length entries to keep table pointer consistent
+      iTblId += iStrsInTable;  // skip ALL stroke entries to keep table pointer consistent
       continue;
     }
 
-    for (i = 0; i < iStrs; i++) {  // length of each stoke in line definition
+    for (i = 0; i < iStrs; i++) {  // read usable strokes into local buffer
       dStrLen[i] = hatch::tableValue[iTblId++];
     }
+    iTblId += (iStrsInTable - iStrs);  // skip any excess strokes beyond buffer capacity
 
     // Rotate origin on z0 plane so hatch x-axis becomes positive x-axis
     double dHatOrigX = dX * dCosAng - dY * (-dSinAng);
     double dHatOrigY = dX * (-dSinAng) + dY * dCosAng;
+
+    // Save matrix before rotation — exact restore eliminates FP drift that
+    // accumulates across multi-line patterns (26 matrix multiplies for AR-CONC).
+    EoGeTransformMatrix savedMatrix = transformMatrix;
 
     // Add rotation to matrix which gets current scan lines parallel to x-axis
     transformMatrix *= EoGeTransformMatrix::ZAxisRotation(-dSinAng, dCosAng);
@@ -151,6 +164,10 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
         }
         ln.begin = ln.end;
       }
+    }
+    if (iActEdgs == 0) {
+      transformMatrix = savedMatrix;
+      continue;  // All edges horizontal in this rotated frame — nothing to scan
     }
     // Determine where first scan position is
     dScan = edg[1].yMaxExtent - fmod((edg[1].yMaxExtent - dHatOrigY), dSpac);
@@ -209,8 +226,18 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
         while (dCurStrLen <= dRemDisToEdg + Eo::geometricTolerance) {
           lnS.end.x = lnS.begin.x + dCurStrLen;
           if ((iStrId & 1) == 0) {
-            ln = tmInv * lnS;
-            ln.Display(view, deviceContext);
+            if (dCurStrLen < Eo::geometricTolerance) {
+              // Zero-length dash (dot) — render a single pixel
+              EoGePoint4d ndcPoint(tmInv * lnS.begin);
+              view->ModelViewTransformPoint(ndcPoint);
+              if (ndcPoint.IsInView()) {
+                auto clientPoint = view->ProjectToClient(ndcPoint);
+                deviceContext->SetPixel(clientPoint, pColTbl[color]);
+              }
+            } else {
+              ln = tmInv * lnS;
+              ln.Display(view, deviceContext);
+            }
           }
           dRemDisToEdg -= dCurStrLen;
           iStrId = (iStrId + 1) % iStrs;
@@ -230,7 +257,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
       dSecBeg -= dShift;
       goto l1;
     }
-    transformMatrix *= EoGeTransformMatrix::ZAxisRotation(dSinAng, dCosAng);
+    transformMatrix = savedMatrix;  // exact restore — no accumulated FP error
   }
   renderState.SetPen(view, deviceContext, color, lineType);
 }
