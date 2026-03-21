@@ -278,7 +278,7 @@ int AeSys::ExitInstance() {
 void AeSys::PreLoadState() {
   GetContextMenuManager()->AddMenu(L"My menu", IDR_CONTEXT_MENU);
 
-  // TODO: add another context menus here
+  // @todo add another context menus here
 }
 
 int AeSys::ConfirmMessageBox(UINT stringResourceIdentifier, const CString& string) {

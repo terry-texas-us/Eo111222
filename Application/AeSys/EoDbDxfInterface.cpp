@@ -1164,7 +1164,8 @@ static std::int16_t MapHatchPatternNameToIndex(const std::wstring& patternName) 
       {L"CLAY", 14}, {L"CORK", 15}, {L"CROSS", 16}, {L"DASH", 17}, {L"DOLMIT", 18}, {L"DOTS", 19}, {L"EARTH", 20},
       {L"ESCHER", 21}, {L"FLEX", 22}, {L"GRASS", 23}, {L"GRATE", 24}, {L"HEX", 25}, {L"HONEY", 26}, {L"HOUND", 27},
       {L"INSUL", 28}, {L"MUDST", 29}, {L"NET3", 30}, {L"PLAST", 31}, {L"PLASTI", 32}, {L"SACNCR", 33}, {L"SQUARE", 34},
-      {L"STARS", 35}, {L"SWAMP", 36}, {L"TRANS", 37}, {L"TRIAN", 38}, {L"ZIGZAG", 39}, {L"AR-CONC", 40}};
+      {L"STARS", 35}, {L"SWAMP", 36}, {L"TRANS", 37}, {L"TRIAN", 38}, {L"ZIGZAG", 39}, {L"AR-CONC", 40},
+      {L"AR-SAND", 41}};
 
   for (const auto& entry : patternTable) {
     if (_wcsicmp(patternName.c_str(), entry.name) == 0) { return entry.index; }

@@ -600,7 +600,7 @@ void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deacti
 BOOL AeSysView::PreCreateWindow(CREATESTRUCT& createStructure) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::PreCreateWindow(%08.8lx) ", this, createStructure);
 
-  // TODO: Modify the Window class or styles here by modifying the CREATESTRUCT
+  // @todo Modify the Window class or styles here by modifying the CREATESTRUCT
   return CView::PreCreateWindow(createStructure);
 }
 
@@ -872,7 +872,7 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
 void AeSysView::OnContextMenu(CWnd*, CPoint point) { app.ShowPopupMenu(IDR_CONTEXT_MENU, point, this); }
 
 BOOL AeSysView::OnEraseBkgnd(CDC* deviceContext) {
-  // TODO: Add your message handler code here and/or call default
+  // @todo Add your message handler code here and/or call default
 
   return __super::OnEraseBkgnd(deviceContext);
 }

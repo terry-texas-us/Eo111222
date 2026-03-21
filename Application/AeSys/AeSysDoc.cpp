@@ -181,7 +181,7 @@ AeSysDoc::~AeSysDoc() {}
 void AeSysDoc::DeleteContents() {
   ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::DeleteContents() - BlockTableSize: %d\n", this, BlockTableSize());
 
-  // TODO: Release EoDbDxfInterface resources if any
+  // @todo Release EoDbDxfInterface resources if any
 
   m_LineTypeTable.RemoveAll();
 
@@ -364,7 +364,7 @@ void AeSysDoc::SetCommonTableEntries() {
 
   auto applicationPath = App::PathFromCommandLine();
 
-  // TODO: Peg uses index for line types, need to map names to indexes (index 0 to 41 have been hard coded in Peg).
+  // @todo Peg uses index for line types, need to map names to indexes (index 0 to 41 have been hard coded in Peg).
   //       Need to ensure that line types loaded here match those indexes.
   // m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes.txt");
   // m_LineTypeTable.LoadLineTypesFromTxtFile(applicationPath + L"\\res\\LineTypes\\LineTypes-ACAD(scaled to
@@ -884,10 +884,13 @@ EoDbLayer* AeSysDoc::SetWorkLayer(EoDbLayer* layer) {
     return m_workLayer;
   }
   EoDbLayer* previousWorkLayer = m_workLayer;
+  if (m_workLayer != nullptr && m_workLayer != layer) {
+    m_workLayer->SetStateActive();  // demote previous work layer
+  }
   m_workLayer = layer;
   m_workLayer->SetStateWork();
 
-  // TODO: File Name and Work Layer display? (was appended to MenuBar File command)
+  // @todo File Name and Work Layer display? (was appended to MenuBar File command)
 
   return previousWorkLayer;
 }
