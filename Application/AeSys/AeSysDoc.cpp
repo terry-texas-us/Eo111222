@@ -432,6 +432,8 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       }
       m_saveAsType = EoDb::FileTypes::Peg;  // Set to Peg to allow saving back to Peg format after loading DXF/DXB, can
                                             // be changed to Dxf/Dxb if we want to save back in the same format
+      SetWorkLayer(GetLayerTableLayerAt(0));
+      InitializeGroupAndPrimitiveEdit();
     } break;
     case EoDb::FileTypes::Peg:
       try {
@@ -838,12 +840,20 @@ int AeSysDoc::RemoveEmptyGroups() {
 }
 // Work Layer interface
 void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
+  if (m_workLayer == nullptr) {
+    ATLTRACE2(traceGeneral, 1, L"AeSysDoc::AddWorkLayerGroup: m_workLayer is nullptr\n");
+    return;
+  }
   m_workLayer->AddTail(group);
   AddGroupToAllViews(group);
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
   SetModifiedFlag(TRUE);
 }
 void AeSysDoc::AddWorkLayerGroups(EoDbGroupList* groups) {
+  if (m_workLayer == nullptr) {
+    ATLTRACE2(traceGeneral, 1, L"AeSysDoc::AddWorkLayerGroups: m_workLayer is nullptr\n");
+    return;
+  }
   m_workLayer->AddTail(groups);
   AddGroupsToAllViews(groups);
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
@@ -857,6 +867,10 @@ EoDbGroup* AeSysDoc::GetLastWorkLayerGroup() const {
 }
 
 void AeSysDoc::InitializeWorkLayer() {
+  if (m_workLayer == nullptr) {
+    ATLTRACE2(traceGeneral, 1, L"AeSysDoc::InitializeWorkLayer: m_workLayer is nullptr\n");
+    return;
+  }
   m_workLayer->DeleteGroupsAndRemoveAll();
 
   RemoveAllTrappedGroups();
@@ -865,6 +879,10 @@ void AeSysDoc::InitializeWorkLayer() {
   m_DeletedGroupList.DeleteGroupsAndRemoveAll();
 }
 EoDbLayer* AeSysDoc::SetWorkLayer(EoDbLayer* layer) {
+  if (layer == nullptr) {
+    ATLTRACE2(traceGeneral, 1, L"AeSysDoc::SetWorkLayer called with nullptr\n");
+    return m_workLayer;
+  }
   EoDbLayer* previousWorkLayer = m_workLayer;
   m_workLayer = layer;
   m_workLayer->SetStateWork();
@@ -1285,6 +1303,7 @@ void AeSysDoc::OnLayerMelt() { LayerMelt(m_IdentifiedLayerName); }
 
 void AeSysDoc::OnLayerWork() {
   auto* layer = GetLayerTableLayer(m_IdentifiedLayerName);
+  if (layer == nullptr) { return; }
 
   SetWorkLayer(layer);
 }

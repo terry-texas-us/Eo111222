@@ -198,17 +198,17 @@ class AeSysDoc : public CDocument {
   // Work Layer interface
   void AddWorkLayerGroup(EoDbGroup* group);
   void AddWorkLayerGroups(EoDbGroupList* groups);
-  auto FindWorkLayerGroup(EoDbGroup* group) const { return (m_workLayer->Find(group)); }
-  [[nodiscard]] auto GetFirstWorkLayerGroupPosition() const { return m_workLayer->GetHeadPosition(); }
+  auto FindWorkLayerGroup(EoDbGroup* group) const { return (m_workLayer != nullptr ? m_workLayer->Find(group) : nullptr); }
+  [[nodiscard]] auto GetFirstWorkLayerGroupPosition() const { return (m_workLayer != nullptr ? m_workLayer->GetHeadPosition() : POSITION{}); }
 
   /** @brief Retrieves the last group in the work layer.
    * @return Pointer to the last EoDbGroup in the work layer, or nullptr if the work layer is not defined or contains no
    * groups.
    */
   [[nodiscard]] EoDbGroup* GetLastWorkLayerGroup() const;
-  [[nodiscard]] auto GetLastWorkLayerGroupPosition() const { return m_workLayer->GetTailPosition(); }
-  EoDbGroup* GetNextWorkLayerGroup(POSITION& position) const { return m_workLayer->GetNext(position); }
-  EoDbGroup* GetPreviousWorkLayerGroup(POSITION& position) const { return m_workLayer->GetPrev(position); }
+  [[nodiscard]] auto GetLastWorkLayerGroupPosition() const { return (m_workLayer != nullptr ? m_workLayer->GetTailPosition() : POSITION{}); }
+  EoDbGroup* GetNextWorkLayerGroup(POSITION& position) const { return (m_workLayer != nullptr ? m_workLayer->GetNext(position) : nullptr); }
+  EoDbGroup* GetPreviousWorkLayerGroup(POSITION& position) const { return (m_workLayer != nullptr ? m_workLayer->GetPrev(position) : nullptr); }
   [[nodiscard]] auto* GetWorkLayer() const { return m_workLayer; }
   void InitializeWorkLayer();
   EoDbLayer* SetWorkLayer(EoDbLayer* layer);
