@@ -193,6 +193,14 @@ class AeSys : public CWinAppEx {
   [[nodiscard]] HMENU GetSubMenu(int position) const { return (::GetSubMenu(m_MainFrameMenuHandle, position)); }
   [[nodiscard]] Eo::Units GetUnits() const { return m_Units; }
 
+  /** @brief Loads hatch pattern definitions from a specified file and populates the hatch pattern tables.
+   * The file is expected to contain hatch pattern definitions in a specific format, where each pattern starts with a
+   * line beginning with '!' followed by lines defining the pattern's properties. The method reads the file line by
+   * line, parses the hatch pattern information, and populates the `hatch::tableOffset` and `hatch::tableValue` arrays
+   * accordingly. If the number of patterns exceeds `hatch::maxPatterns` or if the table values exceed
+   * `hatch::maxTableValues`, appropriate warnings are logged.
+   * @param fileName The path to the file containing hatch pattern definitions.
+   */
   void LoadHatchesFromFile(const CString& strFileName);
   [[nodiscard]] bool HighColorMode() const { return m_HighColorMode; }
   [[nodiscard]] EoGePoint3d HomePointGet(int i) const;

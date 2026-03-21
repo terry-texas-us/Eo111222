@@ -313,7 +313,6 @@ void AeSys::AddStringToReportsList(const std::wstring& message) {
   if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message.c_str()); }
 }
 
-
 void AeSys::AddModeInformationToMessageList() {
   auto resourceString = App::LoadStringResource(static_cast<UINT>(m_CurrentMode));
   int nextToken{0};
@@ -442,7 +441,6 @@ EoGePoint3d AeSys::GetCursorPosition() {
   return (activeView == nullptr) ? EoGePoint3d::kOrigin : activeView->GetCursorPosition();
 }
 
-// Loads the hatch table.
 void AeSys::LoadHatchesFromFile(const CString& fileName) {
   CFileException e;
   CStdioFile fl;
