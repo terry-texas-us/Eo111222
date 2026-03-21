@@ -345,6 +345,7 @@ BEGIN
         MENUITEM "Re&fresh\tF5",                ID_VIEW_REFRESH
         MENUITEM "P&en Widths",                 ID_VIEW_PENWIDTHS
         MENUITEM "&Background Image",           ID_VIEW_BACKGROUNDIMAGE
+        MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
         MENUITEM SEPARATOR
         POPUP "&Window\t="
         BEGIN
@@ -622,6 +623,7 @@ BEGIN
         MENUITEM "Re&fresh\tF5",                ID_VIEW_REFRESH
         MENUITEM "P&en Widths",                 ID_VIEW_PENWIDTHS
         MENUITEM "&Background Image",           ID_VIEW_BACKGROUNDIMAGE
+        MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
         MENUITEM SEPARATOR
         POPUP "&Window\t="
         BEGIN

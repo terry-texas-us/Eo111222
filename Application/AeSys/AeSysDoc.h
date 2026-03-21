@@ -12,6 +12,7 @@
 #include "EoDbLineTypeTable.h"
 #include "EoDbMaskedPrimitive.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfBase.h"
 #include "EoGePoint3d.h"
 #include "EoGeUniquePoint.h"
 #include "EoGeVector3d.h"
@@ -35,13 +36,15 @@ class AeSysDoc : public CDocument {
   EoDbGroupList m_NodalGroupList;
   CObList m_MaskedPrimitives;
   CObList m_UniquePoints;
-  CLayers m_LayerTable;
+  CLayers m_modelSpaceLayers;
+  CLayers m_paperSpaceLayers;
+  EoDxf::Space m_activeSpace{EoDxf::Space::ModelSpace};
   EoGePoint3d m_trapPivotPoint;
   EoDbLineType* m_continuousLineType;
   EoDbLayer* m_workLayer;
   CString m_IdentifiedLayerName;
   double m_pointSize{0.0};  // in drawing units when greater than zero; in pixels when less than zero; default otherwise
-  EoDb::FileTypes m_SaveAsType;
+  EoDb::FileTypes m_saveAsType;
 
  public:
   BOOL DoSave(LPCWSTR lpszPathName, BOOL bReplace = TRUE) override;
@@ -127,7 +130,17 @@ class AeSysDoc : public CDocument {
 
   // Layer Table interface
 
-  /** @brief Retrieves a layer from the layer table by name.
+  /// @brief Returns the layer table for the active space (model or paper).
+  [[nodiscard]] CLayers& ActiveSpaceLayers() noexcept;
+  [[nodiscard]] const CLayers& ActiveSpaceLayers() const noexcept;
+
+  /// @brief Returns the layer table for the specified space.
+  [[nodiscard]] CLayers& SpaceLayers(EoDxf::Space space) noexcept;
+
+  /// @brief Returns the active drawing space.
+  [[nodiscard]] EoDxf::Space ActiveSpace() const noexcept { return m_activeSpace; }
+
+  /** @brief Retrieves a layer from the active space layer table by name.
    * This method searches the layer table for a layer with the specified name and returns a pointer to it.
    * If no such layer exists, it returns nullptr.
    * @param name The name of the layer to retrieve.
@@ -135,9 +148,9 @@ class AeSysDoc : public CDocument {
    */
   [[nodiscard]] EoDbLayer* GetLayerTableLayer(const CString& name);
   [[nodiscard]] EoDbLayer* GetLayerTableLayerAt(int layer);
-  [[nodiscard]] int GetLayerTableSize() const { return static_cast<int>(m_LayerTable.GetSize()); }
+  [[nodiscard]] int GetLayerTableSize() const;
 
-  /** @brief Finds the index of a layer in the layer table by its name.
+  /** @brief Finds the index of a layer in the active space layer table by its name.
    * This method performs a case-insensitive search for a layer with the specified name in the layer table.
    * @param name The name of the layer to find.
    * @return The index of the layer if found; otherwise, -1.
@@ -146,8 +159,18 @@ class AeSysDoc : public CDocument {
   void RemoveLayerTableLayer(const CString& strName);
   void RemoveAllLayerTableLayers();
   void RemoveLayerTableLayerAt(int);
-  void AddLayerTableLayer(EoDbLayer* layer) { m_LayerTable.Add(layer); }
+  void AddLayerTableLayer(EoDbLayer* layer);
   void RemoveEmptyLayers();
+
+  /// @brief Adds a layer to a specific space's layer table (used during DXF import).
+  void AddLayerToSpace(EoDbLayer* layer, EoDxf::Space space);
+
+  /** @brief Finds a layer by name in a specific space's layer table.
+   * @param name The layer name to search for.
+   * @param space The target space (ModelSpace or PaperSpace).
+   * @return Pointer to the layer if found; nullptr otherwise.
+   */
+  [[nodiscard]] EoDbLayer* FindLayerInSpace(const CString& name, EoDxf::Space space);
 
   EoDbLayer* LayersSelUsingPoint(const EoGePoint3d&);
 
@@ -418,6 +441,8 @@ class AeSysDoc : public CDocument {
   DECLARE_MESSAGE_MAP()
  public:
   afx_msg void OnHelpKey();
+  afx_msg void OnViewModelSpace();
+  afx_msg void OnUpdateViewModelSpace(CCmdUI* cmdUI);
 
   /** @brief Fuses a tracing layer into the main document converting it to a static layer.
    *

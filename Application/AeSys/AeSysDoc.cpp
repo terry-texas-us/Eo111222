@@ -154,6 +154,8 @@ ON_COMMAND(ID_TRAPCOMMANDS_FILTER, OnTrapCommandsFilter)
 ON_COMMAND(ID_TRAPCOMMANDS_BLOCK, OnTrapCommandsBlock)
 ON_COMMAND(ID_TRAPCOMMANDS_UNBLOCK, OnTrapCommandsUnblock)
 ON_COMMAND(ID_HELP_KEY, OnHelpKey)
+ON_COMMAND(ID_VIEW_MODELSPACE, OnViewModelSpace)
+ON_UPDATE_COMMAND_UI(ID_VIEW_MODELSPACE, OnUpdateViewModelSpace)
 END_MESSAGE_MAP()
 
 AeSysDoc::AeSysDoc()
@@ -165,12 +167,14 @@ AeSysDoc::AeSysDoc()
       m_NodalGroupList{},
       m_MaskedPrimitives{},
       m_UniquePoints{},
-      m_LayerTable{},
+      m_modelSpaceLayers{},
+      m_paperSpaceLayers{},
+      m_activeSpace{EoDxf::Space::ModelSpace},
       m_trapPivotPoint{},
       m_continuousLineType{},
       m_workLayer{},
       m_IdentifiedLayerName{},
-      m_SaveAsType{EoDb::FileTypes::Unknown} {}
+      m_saveAsType{EoDb::FileTypes::Unknown} {}
 
 AeSysDoc::~AeSysDoc() {}
 
@@ -249,7 +253,11 @@ void AeSysDoc::SetCommonTableEntries() {
 
   m_workLayer = new EoDbLayer(L"0", commonState);
   m_workLayer->SetLineType(lineType);
-  AddLayerTableLayer(m_workLayer);
+  AddLayerToSpace(m_workLayer, EoDxf::Space::ModelSpace);
+
+  auto* paperSpaceLayer0 = new EoDbLayer(L"0", commonState);
+  paperSpaceLayer0->SetLineType(lineType);
+  AddLayerToSpace(paperSpaceLayer0, EoDxf::Space::PaperSpace);
 
   auto applicationPath = App::PathFromCommandLine();
 
@@ -266,7 +274,7 @@ BOOL AeSysDoc::OnNewDocument() {
 
   SetCommonTableEntries();
 
-  m_SaveAsType = EoDb::FileTypes::Peg;
+  m_saveAsType = EoDb::FileTypes::Peg;
   SetWorkLayer(GetLayerTableLayerAt(0));
   InitializeGroupAndPrimitiveEdit();
 
@@ -277,6 +285,8 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
 
   switch (App::FileTypeFromPath(pathName)) {
     case EoDb::FileTypes::Dwg:
+      /// @todo Implement DWG support by using ODA_Converter to convert DWG to DXF in memory and then fallthrough to 
+      /// EoDbDxfInterface to read the DXF data into the document.
       break;
     case EoDb::FileTypes::Dxf:
     case EoDb::FileTypes::Dxb: {
@@ -317,10 +327,8 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       } else {
         app.AddStringToReportsList(L"Error loading DXF file.");
       }
-      // read dxf/dxb file and save pointer to the database
-      // determine the version of the file (from header section) and set m_SaveAsType to EoDb::kDxf or EoDb::kDxb
-      // create EoDbDxfInterface object and do conversion
-      // set work layer to layer `0`
+      m_saveAsType = EoDb::FileTypes::Peg;  // Set to Peg to allow saving back to Peg format after loading DXF/DXB, can
+                                            // be changed to Dxf/Dxb if we want to save back in the same format
     } break;
     case EoDb::FileTypes::Peg:
       try {
@@ -328,7 +336,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
         if (file.Open(pathName, CFile::modeRead | CFile::shareDenyNone)) {
           SetCommonTableEntries();
           file.Load(this);
-          m_SaveAsType = EoDb::FileTypes::Peg;
+          m_saveAsType = EoDb::FileTypes::Peg;
         }
       } catch (const wchar_t* e) {
         app.WarningMessageBox(IDS_MSG_PEGFILE_OPEN_FAILURE, pathName);
@@ -356,7 +364,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
 BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
   BOOL returnStatus{};
 
-  switch (m_SaveAsType) {
+  switch (m_saveAsType) {
     case EoDb::FileTypes::Peg: {
       WriteShadowFile();
       EoDbPegFile file;
@@ -376,11 +384,11 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
           app.WarningMessageBox(IDS_MSG_TRACING_WRITE_FAILURE, pathName);
           return FALSE;
         }
-        if (m_SaveAsType == EoDb::FileTypes::Job) {
+        if (m_saveAsType == EoDb::FileTypes::Job) {
           EoDbJobFile JobFile;
           JobFile.WriteHeader(File);
           JobFile.WriteLayer(File, layer);
-        } else if (m_SaveAsType == EoDb::FileTypes::Tracing) {
+        } else if (m_saveAsType == EoDb::FileTypes::Tracing) {
           EoDbTracingFile TracingFile;
           TracingFile.WriteHeader(File);
           TracingFile.WriteLayer(File, layer);
@@ -502,50 +510,91 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
 
 EoDbLayer* AeSysDoc::GetLayerTableLayer(const CString& name) {
   auto i = FindLayerTableLayer(name);
-  return (i < 0 ? nullptr : m_LayerTable.GetAt(i));
+  return (i < 0 ? nullptr : ActiveSpaceLayers().GetAt(i));
 }
 EoDbLayer* AeSysDoc::GetLayerTableLayerAt(int index) {
-  return (index >= (int)m_LayerTable.GetSize() ? nullptr : m_LayerTable.GetAt(index));
+  auto& layers = ActiveSpaceLayers();
+  return (index >= static_cast<int>(layers.GetSize()) ? nullptr : layers.GetAt(index));
 }
 
 int AeSysDoc::FindLayerTableLayer(const CString& name) const {
-  for (auto i = 0; i < m_LayerTable.GetSize(); i++) {
-    auto* layer = m_LayerTable.GetAt(i);
+  const auto& layers = ActiveSpaceLayers();
+  for (auto i = 0; i < layers.GetSize(); i++) {
+    auto* layer = layers.GetAt(i);
     if (name.CompareNoCase(layer->Name()) == 0) { return i; }
   }
   return -1;
 }
 
 void AeSysDoc::RemoveAllLayerTableLayers() {
-  for (std::uint16_t layerTableIndex = 0; layerTableIndex < m_LayerTable.GetSize(); layerTableIndex++) {
-    auto* layer = m_LayerTable.GetAt(layerTableIndex);
-    if (layer) {
-      layer->DeleteGroupsAndRemoveAll();
-      delete layer;
+  auto clearLayers = [](CLayers& layers) {
+    for (INT_PTR i = 0; i < layers.GetSize(); i++) {
+      auto* layer = layers.GetAt(i);
+      if (layer) {
+        layer->DeleteGroupsAndRemoveAll();
+        delete layer;
+      }
     }
-  }
-  m_LayerTable.RemoveAll();
+    layers.RemoveAll();
+  };
+  clearLayers(m_modelSpaceLayers);
+  clearLayers(m_paperSpaceLayers);
 }
 
 void AeSysDoc::RemoveLayerTableLayerAt(int i) {
-  auto* layer = GetLayerTableLayerAt(i);
+  auto& layers = ActiveSpaceLayers();
+  auto* layer = layers.GetAt(i);
 
   layer->DeleteGroupsAndRemoveAll();
   delete layer;
 
-  m_LayerTable.RemoveAt(i);
+  layers.RemoveAt(i);
 }
 
 void AeSysDoc::RemoveEmptyLayers() {
-  for (int index = GetLayerTableSize() - 1; index > 0; index--) {
-    auto* layer = GetLayerTableLayerAt(index);
+  auto& layers = ActiveSpaceLayers();
+  for (int index = static_cast<int>(layers.GetSize()) - 1; index > 0; index--) {
+    auto* layer = layers.GetAt(index);
 
     if (layer && layer->IsEmpty()) {
       layer->DeleteGroupsAndRemoveAll();
       delete layer;
-      m_LayerTable.RemoveAt(index);
+      layers.RemoveAt(index);
     }
   }
+}
+
+CLayers& AeSysDoc::ActiveSpaceLayers() noexcept {
+  return (m_activeSpace == EoDxf::Space::PaperSpace) ? m_paperSpaceLayers : m_modelSpaceLayers;
+}
+
+const CLayers& AeSysDoc::ActiveSpaceLayers() const noexcept {
+  return (m_activeSpace == EoDxf::Space::PaperSpace) ? m_paperSpaceLayers : m_modelSpaceLayers;
+}
+
+CLayers& AeSysDoc::SpaceLayers(EoDxf::Space space) noexcept {
+  return (space == EoDxf::Space::PaperSpace) ? m_paperSpaceLayers : m_modelSpaceLayers;
+}
+
+int AeSysDoc::GetLayerTableSize() const {
+  return static_cast<int>(ActiveSpaceLayers().GetSize());
+}
+
+void AeSysDoc::AddLayerTableLayer(EoDbLayer* layer) {
+  ActiveSpaceLayers().Add(layer);
+}
+
+void AeSysDoc::AddLayerToSpace(EoDbLayer* layer, EoDxf::Space space) {
+  SpaceLayers(space).Add(layer);
+}
+
+EoDbLayer* AeSysDoc::FindLayerInSpace(const CString& name, EoDxf::Space space) {
+  auto& layers = SpaceLayers(space);
+  for (INT_PTR i = 0; i < layers.GetSize(); i++) {
+    auto* layer = layers.GetAt(i);
+    if (name.CompareNoCase(layer->Name()) == 0) { return layer; }
+  }
+  return nullptr;
 }
 
 void AeSysDoc::LayerBlank(const CString& name) {
@@ -563,7 +612,7 @@ void AeSysDoc::LayerBlank(const CString& name) {
       m_DeletedGroupList.DeleteGroupsAndRemoveAll();
 
       SetWorkLayer(GetLayerTableLayerAt(0));
-      m_SaveAsType = EoDb::FileTypes::Unknown;
+      m_saveAsType = EoDb::FileTypes::Unknown;
 
       UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
       RemoveLayerTableLayer(name);
@@ -729,16 +778,19 @@ EoDbLayer* AeSysDoc::SetWorkLayer(EoDbLayer* layer) {
 }
 
 // Locates the layer containing a group and removes it.
-// The group itself is not deleted.
+// The group itself is not deleted. Searches both model and paper space tables.
 EoDbLayer* AeSysDoc::AnyLayerRemove(EoDbGroup* group) {
-  for (auto i = 0; i < GetLayerTableSize(); i++) {
-    auto* layer = GetLayerTableLayerAt(i);
-    if (layer->IsWork() || layer->IsActive()) {
-      if (layer->Remove(group) != 0) {
-        AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
-        SetModifiedFlag(TRUE);
+  CLayers* spaceTables[] = {&m_modelSpaceLayers, &m_paperSpaceLayers};
+  for (auto* layers : spaceTables) {
+    for (INT_PTR i = 0; i < layers->GetSize(); i++) {
+      auto* layer = layers->GetAt(i);
+      if (layer->IsWork() || layer->IsActive()) {
+        if (layer->Remove(group) != 0) {
+          AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
+          SetModifiedFlag(TRUE);
 
-        return layer;
+          return layer;
+        }
       }
     }
   }
@@ -841,7 +893,7 @@ bool AeSysDoc::TracingOpen(const CString& pathName) {
   }
   layer->SetTracingState(static_cast<std::uint16_t>(EoDbLayer::TracingState::isOpened));
 
-  m_SaveAsType = EoDb::FileTypes::Tracing;
+  m_saveAsType = EoDb::FileTypes::Tracing;
   SetWorkLayer(layer);
 
   UpdateAllViews(nullptr, 0L, nullptr);
@@ -879,7 +931,7 @@ bool AeSysDoc::TracingView(const CString& pathName) {
 }
 
 void AeSysDoc::WriteShadowFile() {
-  if (m_SaveAsType == EoDb::FileTypes::Peg) {
+  if (m_saveAsType == EoDb::FileTypes::Peg) {
     CString shadowFilePath(app.ShadowFolderPath());
     shadowFilePath += GetTitle();
     int nExt = shadowFilePath.Find('.');
@@ -1154,7 +1206,7 @@ void AeSysDoc::OnTracingCloak() {
       JobFile.WriteHeader(File);
       JobFile.WriteLayer(File, layer);
       SetWorkLayer(GetLayerTableLayerAt(0));
-      m_SaveAsType = EoDb::FileTypes::Unknown;
+      m_saveAsType = EoDb::FileTypes::Unknown;
       UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
       layer->SetStateOff();
     } else {
@@ -1907,6 +1959,20 @@ void AeSysDoc::OnHelpKey() {
       break;
     }
   }
+}
+
+void AeSysDoc::OnViewModelSpace() {
+  m_activeSpace = (m_activeSpace == EoDxf::Space::ModelSpace) ? EoDxf::Space::PaperSpace : EoDxf::Space::ModelSpace;
+
+  // Switch the work layer to layer "0" in the newly active space
+  auto* layer0 = GetLayerTableLayer(L"0");
+  if (layer0 != nullptr) { SetWorkLayer(layer0); }
+
+  UpdateAllViews(nullptr, 0L, nullptr);
+}
+
+void AeSysDoc::OnUpdateViewModelSpace(CCmdUI* cmdUI) {
+  cmdUI->SetCheck(m_activeSpace == EoDxf::Space::ModelSpace);
 }
 
 void AeSysDoc::DeleteNodalResources() {

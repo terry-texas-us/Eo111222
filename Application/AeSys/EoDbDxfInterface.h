@@ -383,7 +383,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertBlockSet(const int handle, AeSysDoc* document);
   void ConvertBlockEnd(AeSysDoc* document);
 
-  void AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document);
+  void AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space);
 
   void Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc* document);
   void ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity, AeSysDoc* document);

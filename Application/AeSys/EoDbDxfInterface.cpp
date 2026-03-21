@@ -99,21 +99,8 @@ void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* docu
 
   ATLTRACE2(traceGeneral, 3, L"%s   Loading layer definition\n", layerName.c_str());
 
-  if (document->FindLayerTableLayer(layerName.c_str()) >= 0) { return; }
-
   constexpr EoDbLayer::State commonState =
       EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive;
-
-  EoDbLayer* newLayer = new EoDbLayer(layerName.c_str(), commonState);
-
-  // Color number (if negative the layer is off) group code 62
-  newLayer->SetColorIndex(static_cast<std::int16_t>(abs(layer.m_colorNumber)));
-  if (layer.m_colorNumber < 0) { newLayer->SetStateOff(); }
-
-  // Linetype name group code 6
-  const auto& lineTypeName = layer.m_linetypeName;
-  EoDbLineType* lineType;
-  if (document->LineTypeTable()->Lookup(lineTypeName.c_str(), lineType)) { newLayer->SetLineType(lineType); }
 
   /**
   Standard flags (bit-coded values) group code 70:
@@ -129,8 +116,33 @@ void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* docu
   auto isFrozen = (layer.m_flagValues & 0x01) == 0x01;
   auto isLocked = (layer.m_flagValues & 0x04) == 0x04;
 
-  if (isFrozen) { newLayer->SetStateOff(); }
-  document->AddLayerTableLayer(newLayer);
+  // Resolve the line type once for both space layers
+  const auto& lineTypeName = layer.m_linetypeName;
+  EoDbLineType* lineType{};
+  [[maybe_unused]] const bool lineTypeFound = document->LineTypeTable()->Lookup(lineTypeName.c_str(), lineType);
+
+  // Helper: configure a newly created layer with DXF properties
+  auto configureLayer = [&](EoDbLayer* newLayer) {
+    // Color number (if negative the layer is off) group code 62
+    newLayer->SetColorIndex(static_cast<std::int16_t>(abs(layer.m_colorNumber)));
+    if (layer.m_colorNumber < 0) { newLayer->SetStateOff(); }
+    if (lineType != nullptr) { newLayer->SetLineType(lineType); }
+    if (isFrozen) { newLayer->SetStateOff(); }
+  };
+
+  // Create / configure the layer in model space if not already present
+  if (document->FindLayerInSpace(layerName.c_str(), EoDxf::Space::ModelSpace) == nullptr) {
+    auto* modelLayer = new EoDbLayer(layerName.c_str(), commonState);
+    configureLayer(modelLayer);
+    document->AddLayerToSpace(modelLayer, EoDxf::Space::ModelSpace);
+  }
+
+  // Create / configure the layer in paper space if not already present
+  if (document->FindLayerInSpace(layerName.c_str(), EoDxf::Space::PaperSpace) == nullptr) {
+    auto* paperLayer = new EoDbLayer(layerName.c_str(), commonState);
+    configureLayer(paperLayer);
+    document->AddLayerToSpace(paperLayer, EoDxf::Space::PaperSpace);
+  }
 
   /**
   Lineweight enum value (not supported directly in AeSys)  group code 370
@@ -313,10 +325,11 @@ class EoGeVertex2D {
  *
  * @param primitive Pointer to the EoDbPrimitive to be added.
  * @param document Pointer to the AeSysDoc where the primitive will be added.
+ * @param space The DXF space (model or paper) in which the entity resides.
  */
-void EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document) {
+void EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space) {
   auto layerName = primitive->LayerName().c_str();
-  auto* layer = document->GetLayerTableLayer(layerName);
+  auto* layer = document->FindLayerInSpace(layerName, space);
   if (layer == nullptr) {
     ATLTRACE2(traceGeneral, 3, L"Warning: Layer '%s' not found.\n", layerName);
     delete primitive;
@@ -396,7 +409,7 @@ void EoDbDxfInterface::Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc*
         _3dFace.m_invisibleFlag);
   }
 
-  AddToDocument(polylinePrimitive, document);
+  AddToDocument(polylinePrimitive, document, _3dFace.m_space);
 
   ATLTRACE2(traceGeneral, 3, L"  3DFACE → closed EoDbPolyline with %d vertices\n", vertexCount);
 }
@@ -546,7 +559,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           if (normal.IsNearNull()) { normal = EoGeVector3d::positiveUnitZ; }
           auto* conicPrimitive = EoDbConic::CreateCircle(center, normal, radius);
           conicPrimitive->SetBaseProperties(&proxyEntity, document);
-          AddToDocument(conicPrimitive, document);
+          AddToDocument(conicPrimitive, document, proxyEntity.m_space);
           ++primitiveCount;
 
           ATLTRACE2(traceGeneral, 3,
@@ -610,7 +623,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           auto* conicPrimitive = EoDbConic::CreateRadialArc(center, normal, radius, startAngle, endAngle);
           if (conicPrimitive != nullptr) {
             conicPrimitive->SetBaseProperties(&proxyEntity, document);
-            AddToDocument(conicPrimitive, document);
+            AddToDocument(conicPrimitive, document, proxyEntity.m_space);
             ++primitiveCount;
 
             ATLTRACE2(traceGeneral, 3,
@@ -659,7 +672,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           auto* linePrimitive = new EoDbLine();
           linePrimitive->SetBaseProperties(&proxyEntity, document);
           linePrimitive->SetLine(EoGeLine(startPoint, endPoint));
-          AddToDocument(linePrimitive, document);
+          AddToDocument(linePrimitive, document, proxyEntity.m_space);
           ++primitiveCount;
 
           ATLTRACE2(traceGeneral, 3,
@@ -679,7 +692,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           auto* polylinePrimitive = new EoDbPolyline(points);
           polylinePrimitive->SetBaseProperties(&proxyEntity, document);
           if (typeCode == 7) { polylinePrimitive->SetFlag(EoDbPolyline::sm_Closed); }
-          AddToDocument(polylinePrimitive, document);
+          AddToDocument(polylinePrimitive, document, proxyEntity.m_space);
           ++primitiveCount;
 
           ATLTRACE2(traceGeneral, 3,
@@ -1010,7 +1023,7 @@ void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
     return;
   }
   radialArc->SetBaseProperties(&arc, document);
-  AddToDocument(radialArc, document);
+  AddToDocument(radialArc, document, arc.m_space);
 }
 
 void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document) {
@@ -1033,10 +1046,10 @@ void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* 
     return;
   }
   conic->SetBaseProperties(&circle, document);
-  AddToDocument(conic, document);
+  AddToDocument(conic, document, circle.m_space);
 }
 
-/** @brief Converts a DXF ELLIPSE entity to an EoDbConic primitive for AeSys rendering.
+/** @brief Converts a DXF ELLIPSE entity
  *
  *  DXF ELLIPSE entities represent both full ellipses and elliptical arcs. The entity is defined
  *  by a center point, a major axis endpoint (relative to center), a minor-to-major axis ratio,
@@ -1096,7 +1109,7 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
     return;
   }
   conic->SetBaseProperties(&ellipse, document);
-  AddToDocument(conic, document);
+  AddToDocument(conic, document, ellipse.m_space);
 
   const bool isFullEllipse = std::abs(ellipse.m_endParam - ellipse.m_startParam - Eo::TwoPi) < Eo::geometricTolerance
       || std::abs(ellipse.m_endParam - ellipse.m_startParam) < Eo::geometricTolerance;
@@ -1455,7 +1468,7 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     // Set layer and line type from the DXF entity for correct document placement
     polygon->SetBaseProperties(&hatch, document);
 
-    AddToDocument(polygon, document);
+    AddToDocument(polygon, document, hatch.m_space);
 
     ATLTRACE2(traceGeneral, 2, L"  Loop %d: created EoDbPolygon (%s, %d vertices)\n",
         loopIndex,
@@ -1481,7 +1494,7 @@ void EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, Ae
   insertPrimitive->SetRows(blockReference.m_rowCount);
   insertPrimitive->SetRowSpacing(blockReference.m_rowSpacing);
 
-  AddToDocument(insertPrimitive, document);
+  AddToDocument(insertPrimitive, document, blockReference.m_space);
 }
 
 void EoDbDxfInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document) {
@@ -1491,7 +1504,7 @@ void EoDbDxfInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* docume
   linePrimitive->SetBaseProperties(&line, document);
 
   linePrimitive->SetLine(EoGeLine(EoGePoint3d{line.m_startPoint}, EoGePoint3d{line.m_endPoint}));
-  AddToDocument(linePrimitive, document);
+  AddToDocument(linePrimitive, document, line.m_space);
 }
 
 void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, AeSysDoc* document) {
@@ -1542,7 +1555,7 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
     polylinePrimitive->SetWidths(std::move(startWidths), std::move(endWidths));
   }
 
-  AddToDocument(polylinePrimitive, document);
+  AddToDocument(polylinePrimitive, document, polyline.m_space);
 }
 
 void EoDbDxfInterface::ConvertPolyline3DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) {
@@ -1566,7 +1579,7 @@ void EoDbDxfInterface::ConvertPolyline3DEntity(const EoDxfPolyline& polyline, Ae
   if (polyline.m_polylineFlag & 0x01) { polylinePrimitive->SetClosed(true); }
   if (polyline.m_polylineFlag & 0x80) { polylinePrimitive->SetPlinegen(true); }
 
-  AddToDocument(polylinePrimitive, document);
+  AddToDocument(polylinePrimitive, document, polyline.m_space);
 }
 
 void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) {
@@ -1623,7 +1636,7 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
     polylinePrimitive->SetWidths(std::move(startWidths), std::move(endWidths));
   }
 
-  AddToDocument(polylinePrimitive, document);
+  AddToDocument(polylinePrimitive, document, polyline.m_space);
 }
 
 void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unused]] AeSysDoc* document) {
@@ -1828,7 +1841,7 @@ void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unuse
   auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, cleanedText);
   textPrimitive->SetBaseProperties(&mtext, document);
 
-  AddToDocument(textPrimitive, document);
+  AddToDocument(textPrimitive, document, mtext.m_space);
 }
 
 void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) {
@@ -1837,10 +1850,10 @@ void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* doc
   auto pointPrimitive = new EoDbPoint();
   pointPrimitive->SetBaseProperties(&point, document);
   pointPrimitive->SetPoint(point.m_pointLocation.x, point.m_pointLocation.y, point.m_pointLocation.z);
-  AddToDocument(pointPrimitive, document);
+  AddToDocument(pointPrimitive, document, point.m_space);
 }
 
-/** @brief Converts a DXF SPLINE entity to an EoDbSpline primitive for AeSys rendering.
+/** @brief Converts a DXF SPLINE entity
  *
  *  DXF SPLINE entities (AutoCAD 13+) define B-splines with degree, knot vector, control points,
  *  and optional fit points and weight values. AeSys `EoDbSpline` stores only control points and
@@ -1934,7 +1947,7 @@ void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* 
 
   auto* splinePrimitive = new EoDbSpline(points);
   splinePrimitive->SetBaseProperties(&spline, document);
-  AddToDocument(splinePrimitive, document);
+  AddToDocument(splinePrimitive, document, spline.m_space);
 
   ATLTRACE2(traceGeneral, 2, L"  Spline → EoDbSpline with %d control points\n", pointCount);
 }
@@ -2098,7 +2111,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, string);
   textPrimitive->SetBaseProperties(&text, document);
 
-  AddToDocument(textPrimitive, document);
+  AddToDocument(textPrimitive, document, text.m_space);
 }
 
 void EoDbDxfInterface::ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_unused]] AeSysDoc* document) {
@@ -2241,5 +2254,5 @@ void EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* 
   auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, string);
   textPrimitive->SetBaseProperties(&attrib, document);
 
-  AddToDocument(textPrimitive, document);
+  AddToDocument(textPrimitive, document, attrib.m_space);
 }
