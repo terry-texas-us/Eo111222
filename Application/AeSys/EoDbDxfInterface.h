@@ -287,7 +287,10 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddTrace([[maybe_unused]] const EoDxfTrace& trace) override { countOfTrace--; }
 
-  void AddViewport([[maybe_unused]] const EoDxfViewport& viewport) override { countOfViewport--; }
+  void AddViewport(const EoDxfViewport& viewport) override {
+    countOfViewport++;
+    ConvertViewportEntity(viewport, m_document);
+  }
 
   void AddXline([[maybe_unused]] const EoDxfXline& Xline) override { countOfXline--; }
 
@@ -402,6 +405,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertPolyline3DEntity(const EoDxfPolyline& polyline, AeSysDoc* document);
   void ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* document);
   void ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document);
+  void ConvertViewportEntity(const EoDxfViewport& viewport, AeSysDoc* document);
 
  private:
   AeSysDoc* m_document{};

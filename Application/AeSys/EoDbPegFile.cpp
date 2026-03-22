@@ -28,6 +28,7 @@
 #include "EoDbPrimitive.h"
 #include "EoDbSpline.h"
 #include "EoDbText.h"
+#include "EoDbViewport.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGeReferenceSystem.h"
@@ -588,6 +589,9 @@ bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive) {
       break;
     case EoDb::kTagPrimitive:
       primitive = EoDbPoint::ReadFromLegacyTagPeg(file);
+      break;
+    case EoDb::kViewportPrimitive:
+      primitive = EoDbViewport::ReadFromPeg(file);
       break;
 
     default:

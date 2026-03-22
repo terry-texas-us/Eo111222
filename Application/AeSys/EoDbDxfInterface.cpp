@@ -30,6 +30,7 @@
 #include "EoDbPrimitive.h"
 #include "EoDbSpline.h"
 #include "EoDbText.h"
+#include "EoDbViewport.h"
 #include "EoDxfEntities.h"
 #include "EoDxfGroupCodeValuesVariant.h"
 #include "EoDxfHeader.h"
@@ -2256,4 +2257,44 @@ void EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* 
   textPrimitive->SetBaseProperties(&attrib, document);
 
   AddToDocument(textPrimitive, document, attrib.m_space);
+}
+
+void EoDbDxfInterface::ConvertViewportEntity(const EoDxfViewport& viewport, AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 2, L"Viewport entity conversion (id=%d, status=%d)\n", viewport.m_viewportId,
+      viewport.m_viewportStatus);
+
+  auto* viewportPrimitive = new EoDbViewport();
+  viewportPrimitive->SetBaseProperties(&viewport, document);
+
+  // Paper-space geometry
+  viewportPrimitive->SetCenterPoint(
+      EoGePoint3d{viewport.m_centerPoint.x, viewport.m_centerPoint.y, viewport.m_centerPoint.z});
+  viewportPrimitive->SetWidth(viewport.m_width);
+  viewportPrimitive->SetHeight(viewport.m_height);
+
+  // Viewport identity
+  viewportPrimitive->SetViewportStatus(viewport.m_viewportStatus);
+  viewportPrimitive->SetViewportId(viewport.m_viewportId);
+
+  // Model-space view parameters (round-trip preservation)
+  viewportPrimitive->SetViewCenter(EoGePoint3d{viewport.m_viewCenter.x, viewport.m_viewCenter.y, 0.0});
+  viewportPrimitive->SetSnapBasePoint(EoGePoint3d{viewport.m_snapBasePoint.x, viewport.m_snapBasePoint.y, 0.0});
+  viewportPrimitive->SetSnapSpacing(EoGePoint3d{viewport.m_snapSpacing.x, viewport.m_snapSpacing.y, 0.0});
+  viewportPrimitive->SetGridSpacing(EoGePoint3d{viewport.m_gridSpacing.x, viewport.m_gridSpacing.y, 0.0});
+  viewportPrimitive->SetViewDirection(
+      EoGePoint3d{viewport.m_viewDirection.x, viewport.m_viewDirection.y, viewport.m_viewDirection.z});
+  viewportPrimitive->SetViewTargetPoint(
+      EoGePoint3d{viewport.m_viewTargetPoint.x, viewport.m_viewTargetPoint.y, viewport.m_viewTargetPoint.z});
+  viewportPrimitive->SetLensLength(viewport.m_lensLength);
+  viewportPrimitive->SetFrontClipPlane(viewport.m_frontClipPlane);
+  viewportPrimitive->SetBackClipPlane(viewport.m_backClipPlane);
+  viewportPrimitive->SetViewHeight(viewport.m_viewHeight);
+  viewportPrimitive->SetSnapAngle(viewport.m_snapAngle);
+  viewportPrimitive->SetTwistAngle(viewport.m_twistAngle);
+
+  AddToDocument(viewportPrimitive, document, viewport.m_space);
+
+  ATLTRACE2(traceGeneral, 2, L"  Viewport id=%d → EoDbViewport (%.1f x %.1f at (%.4f, %.4f))\n",
+      viewport.m_viewportId, viewport.m_width, viewport.m_height, viewport.m_centerPoint.x,
+      viewport.m_centerPoint.y);
 }

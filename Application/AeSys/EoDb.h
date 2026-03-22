@@ -23,7 +23,8 @@ enum PrimitiveTypes {
   kPolylinePrimitive = 0x2002,
   kTextPrimitive = 0x4000,
   kTagPrimitive = 0x4100,
-  kDimensionPrimitive = 0x4200
+  kDimensionPrimitive = 0x4200,
+  kViewportPrimitive = 0x8000
 };
 enum UpdateViewHints {
   kPrimitive = 0x0001,
