@@ -249,9 +249,7 @@ To recover DXF properties from the reference system:
 | `sm_HasWidth` | `0x0004` | `m_startWidths` / `m_endWidths` are populated |
 | `sm_Plinegen` | `0x0008` | Generate linetype pattern across vertices |
 
-### PEG Serialization (type code `kPolylinePrimitive` = 0x2002)
-```
-Type code <0x2002>   uint16_t
+### PEG Serialization (type code `kPolylinePrimitive` = 0x2002)Type code <0x2002>   uint16_t
 Pen color            int16_t
 Line type            int16_t
 Flags                uint16_t   (sm_Closed | sm_HasBulge | sm_HasWidth | sm_Plinegen)
@@ -263,8 +261,6 @@ if (flags & sm_HasBulge):
 if (flags & sm_HasWidth):
   {start widths}     double[]   (one per vertex)
   {end widths}       double[]   (one per vertex)
-```
-
 ### DXF Read Pipeline
 
 | DXF Entity | Parser | Processor | Callback | Converter | Notes |
@@ -274,14 +270,10 @@ if (flags & sm_HasWidth):
 | POLYLINE (2D) | Same as 3D | Same as 3D | `AddPolyline` (no 0x08/0x10/0x40) | `ConvertPolyline2DEntity` | OCS x,y + polyline elevation z; bulge/width per vertex |
 | POLYLINE (mesh) | Same as 3D | Same as 3D | `AddPolyline` (flag `0x40` or `0x10`) | **Skipped** | Polyface mesh / polygon mesh not mappable |
 
-### AddPolyline Subtype Discrimination (`EoDbDxfInterface.h`)
-```cpp
-flag & 0x40  → polyface mesh → skip + log
+### AddPolyline Subtype Discrimination (`EoDbDxfInterface.h`)flag & 0x40  → polyface mesh → skip + log
 flag & 0x10  → polygon mesh  → skip + log
 flag & 0x08  → 3D polyline   → ConvertPolyline3DEntity
 else         → 2D polyline   → ConvertPolyline2DEntity
-```
-
 ### DXF → EoDbPolyline Property Mapping (LWPOLYLINE)
 | DXF Property | Group Code | EoDbPolyline Member/Method | Notes |
 |---|---|---|---|
@@ -359,7 +351,6 @@ else         → 2D polyline   → ConvertPolyline2DEntity
 
 ### V2 .PEG Spline Record Design
 To preserve DXF fidelity through save/reload, the V2 spline record adds degree, knot vector, and optional weights:
-
 ```
 kSplinePrimitive → color → lineTypeIndex → flags(uint16) → degree(int16)
   → numKnots(uint16) → numControlPoints(uint16)
@@ -390,3 +381,6 @@ kSplinePrimitive → color → lineTypeIndex → flags(uint16) → degree(int16)
 
 ## Response Formatting Preference
 - Format responses as a cleaner Markdown-style preview, with better visual structure than plain text.
+
+## Versioning
+- Use `$AESVER` as the PEG file format version variable. "AES" is shortened from "AeSys". Do not add a separate `$PEGVERSION` — `$AESVER` already serves this purpose.

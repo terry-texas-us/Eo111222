@@ -49,6 +49,7 @@ void EoDbPegFile::Load(AeSysDoc* document) {
   ReadTablesSection(document);
   ReadBlocksSection(document);
   ReadEntitiesSection(document);
+  ReadPaperSpaceExtension(document);
 }
 
 /**
@@ -345,6 +346,124 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
   }
 }
 
+/**
+ * Reads the optional paper-space extension that follows the "EOF" marker.
+ *
+ * V1 files end with an "EOF" string and nothing more. V2 files append a
+ * kPaperSpaceSection (0x0105) block after "EOF" containing paper-space layers
+ * and entity groups in the same format as the main layer table and entities
+ * section. This method:
+ *   1. Consumes the "EOF" string marker.
+ *   2. Checks whether additional data follows.
+ *   3. If a kPaperSpaceSection sentinel is found, reads the paper-space layer
+ *      table and entity groups into the document's paper-space layer collection.
+ *
+ * @param document Pointer to the AeSysDoc that receives paper-space layers.
+ */
+void EoDbPegFile::ReadPaperSpaceExtension(AeSysDoc* document) {
+  // After ReadEntitiesSection the file position is at the "EOF" marker.
+  auto currentPosition = CFile::GetPosition();
+  auto fileLength = CFile::GetLength();
+
+  if (currentPosition >= fileLength) { return; }
+
+  // Consume the "EOF" string
+  CString eofMarker;
+  EoDb::Read(*this, eofMarker);
+
+  // Check for more data beyond "EOF"
+  currentPosition = CFile::GetPosition();
+  if (currentPosition >= fileLength) { return; }
+
+  // Peek at the next sentinel
+  auto sentinel = EoDb::ReadUInt16(*this);
+  if (sentinel != EoDb::kPaperSpaceSection) { return; }
+
+  // --- Paper-space layer table ---
+  if (EoDb::ReadUInt16(*this) != EoDb::kLayerTable) {
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable in paper-space section.");
+  }
+
+  CString layerName;
+  CString lineTypeName;
+  auto numberOfLayers = EoDb::ReadUInt16(*this);
+
+  for (auto n = 0; n < numberOfLayers; n++) {
+    EoDb::Read(*this, layerName);
+    auto tracingState = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
+    auto state = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
+    state |= std::to_underlying(EoDbLayer::State::isResident);
+
+    if ((state & std::to_underlying(EoDbLayer::State::isInternal))
+        != std::to_underlying(EoDbLayer::State::isInternal)) {
+      if (layerName.Find('.') == -1) { layerName += L".jb1"; }
+    }
+    auto colorIndex = EoDb::ReadInt16(*this);
+    EoDb::Read(*this, lineTypeName);
+
+    if (document->FindLayerInSpace(layerName, EoDxf::Space::PaperSpace) == nullptr) {
+      auto* layer = new EoDbLayer(layerName, state);
+      layer->SetTracingState(tracingState);
+      layer->SetColorIndex(colorIndex);
+
+      EoDbLineType* lineType{};
+      if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) {
+        layer->SetLineType(lineType);
+      }
+      document->AddLayerToSpace(layer, EoDxf::Space::PaperSpace);
+    }
+  }
+
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable in paper-space section.");
+  }
+
+  // --- Paper-space entities ---
+  if (EoDb::ReadUInt16(*this) != EoDb::kGroupsSection) {
+    throw std::runtime_error(
+        "Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection in paper-space section.");
+  }
+
+  EoDbPrimitive* primitive{};
+  auto& paperLayers = document->SpaceLayers(EoDxf::Space::PaperSpace);
+  auto numberOfEntityLayers = EoDb::ReadUInt16(*this);
+
+  for (auto n = 0; n < numberOfEntityLayers; n++) {
+    auto* layer = (n < static_cast<int>(paperLayers.GetSize())) ? paperLayers.GetAt(n) : nullptr;
+
+    if (layer == nullptr) {
+      throw std::runtime_error("Exception EoDbPegFile: Paper-space layer table index out of range.");
+    }
+
+    auto numberOfGroups = EoDb::ReadUInt16(*this);
+
+    if (layer->IsInternal()) {
+      for (auto groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
+        auto* group = new EoDbGroup;
+        auto numberOfPrimitives = EoDb::ReadUInt16(*this);
+        for (auto primitiveIndex = 0; primitiveIndex < numberOfPrimitives; primitiveIndex++) {
+          if (EoDb::Read(*this, primitive)) {
+            group->AddTail(primitive);
+          }
+        }
+        layer->AddTail(group);
+      }
+    } else {
+      document->TracingLoadLayer(layer->Name(), layer);
+    }
+  }
+
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
+    throw std::runtime_error(
+        "Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection for paper-space entities.");
+  }
+
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
+    throw std::runtime_error(
+        "Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection for paper-space section.");
+  }
+}
+
 void EoDbPegFile::Unload(AeSysDoc* document) {
   CFile::SetLength(0);
   CFile::SeekToBegin();
@@ -354,6 +473,8 @@ void EoDbPegFile::Unload(AeSysDoc* document) {
   WriteBlocksSection(document);
   WriteEntitiesSection(document);
   EoDb::Write(*this, L"EOF");
+
+  WritePaperSpaceExtension(document);
 
   CFile::Flush();
 }
@@ -455,15 +576,16 @@ void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document) {
 }
 
 void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
-  int numberOfLayers = document->GetLayerTableSize();
+  auto& layers = document->SpaceLayers(EoDxf::Space::ModelSpace);
+  int numberOfLayers = static_cast<int>(layers.GetSize());
 
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kLayerTable));
 
   auto savedFilePosition = CFile::GetPosition();
   EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
 
-  for (int n = 0; n < document->GetLayerTableSize(); n++) {
-    EoDbLayer* layer = document->GetLayerTableLayerAt(n);
+  for (INT_PTR n = 0; n < layers.GetSize(); n++) {
+    EoDbLayer* layer = layers.GetAt(n);
     if (layer->IsResident()) {
       EoDb::Write(*this, layer->Name());
       EoDb::WriteUInt16(*this, layer->GetTracingState());
@@ -476,7 +598,7 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document) {
   }
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 
-  if (numberOfLayers != document->GetLayerTableSize()) {
+  if (numberOfLayers != static_cast<int>(layers.GetSize())) {
     auto currentFilePosition = CFile::GetPosition();
     CFile::Seek(static_cast<LONGLONG>(savedFilePosition), CFile::begin);
     EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
@@ -521,17 +643,19 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document) {
 void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kGroupsSection));
 
+  auto& layers = document->SpaceLayers(EoDxf::Space::ModelSpace);
+
   // Count only resident layers to match WriteLayerTable's patched count.
   // Non-resident layers are not written to the layer table, so their entity
   // data must also be omitted to keep layer indices aligned on read.
   int numberOfResidentLayers = 0;
-  for (int n = 0; n < document->GetLayerTableSize(); n++) {
-    if (document->GetLayerTableLayerAt(n)->IsResident()) { numberOfResidentLayers++; }
+  for (INT_PTR n = 0; n < layers.GetSize(); n++) {
+    if (layers.GetAt(n)->IsResident()) { numberOfResidentLayers++; }
   }
   EoDb::WriteUInt16(*this, std::uint16_t(numberOfResidentLayers));
 
-  for (int n = 0; n < document->GetLayerTableSize(); n++) {
-    auto* layer = document->GetLayerTableLayerAt(n);
+  for (INT_PTR n = 0; n < layers.GetSize(); n++) {
+    auto* layer = layers.GetAt(n);
     if (!layer->IsResident()) { continue; }
 
     if (layer->IsInternal()) {
@@ -546,6 +670,89 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document) {
       EoDb::WriteUInt16(*this, std::uint16_t(0));
     }
   }
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
+}
+
+/**
+ * Writes the paper-space extension after the "EOF" marker.
+ *
+ * V2 format: the paper-space section follows the "EOF" marker so that V1 readers
+ * (which stop after the four main sections) never encounter it. V2 readers detect
+ * the kPaperSpaceSection sentinel and load paper-space layers and entities.
+ *
+ * Layout:
+ *   kPaperSpaceSection (0x0105)
+ *     kLayerTable → count → layer entries → kEndOfTable
+ *     kGroupsSection → count → entity groups → kEndOfSection
+ *   kEndOfSection
+ *
+ * If there are no paper-space layers, nothing is written.
+ *
+ * @param document Pointer to the AeSysDoc that owns the paper-space layers.
+ */
+void EoDbPegFile::WritePaperSpaceExtension(AeSysDoc* document) {
+  auto& layers = document->SpaceLayers(EoDxf::Space::PaperSpace);
+
+  if (layers.GetSize() == 0) { return; }
+
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kPaperSpaceSection));
+
+  // --- Paper-space layer table ---
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kLayerTable));
+
+  int numberOfLayers = static_cast<int>(layers.GetSize());
+  auto savedLayerCountPosition = CFile::GetPosition();
+  EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
+
+  for (INT_PTR n = 0; n < layers.GetSize(); n++) {
+    EoDbLayer* layer = layers.GetAt(n);
+    if (layer->IsResident()) {
+      EoDb::Write(*this, layer->Name());
+      EoDb::WriteUInt16(*this, layer->GetTracingState());
+      EoDb::WriteUInt16(*this, layer->GetState());
+      EoDb::WriteInt16(*this, layer->ColorIndex());
+      EoDb::Write(*this, layer->LineTypeName());
+    } else {
+      numberOfLayers--;
+    }
+  }
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
+
+  if (numberOfLayers != static_cast<int>(layers.GetSize())) {
+    auto currentFilePosition = CFile::GetPosition();
+    CFile::Seek(static_cast<LONGLONG>(savedLayerCountPosition), CFile::begin);
+    EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
+    CFile::Seek(static_cast<LONGLONG>(currentFilePosition), CFile::begin);
+  }
+
+  // --- Paper-space entities ---
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kGroupsSection));
+
+  int numberOfResidentLayers = 0;
+  for (INT_PTR n = 0; n < layers.GetSize(); n++) {
+    if (layers.GetAt(n)->IsResident()) { numberOfResidentLayers++; }
+  }
+  EoDb::WriteUInt16(*this, std::uint16_t(numberOfResidentLayers));
+
+  for (INT_PTR n = 0; n < layers.GetSize(); n++) {
+    auto* layer = layers.GetAt(n);
+    if (!layer->IsResident()) { continue; }
+
+    if (layer->IsInternal()) {
+      EoDb::WriteUInt16(*this, std::uint16_t(layer->GetCount()));
+
+      auto position = layer->GetHeadPosition();
+      while (position != nullptr) {
+        auto* group = layer->GetNext(position);
+        group->Write(*this);
+      }
+    } else {
+      EoDb::WriteUInt16(*this, std::uint16_t(0));
+    }
+  }
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
+
+  // End of paper-space section
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
