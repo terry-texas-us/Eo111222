@@ -396,12 +396,12 @@ kSplinePrimitive → color → lineTypeIndex → flags(uint16) → degree(int16)
 - `AddLayerToSpace(layer, space)` and `FindLayerInSpace(name, space)` target a specific space.
 - View → Model Space menu toggle (`ID_VIEW_MODELSPACE = 4811`) switches `m_activeSpace`.
 
-### On-Disk Format (Post-EOF Extension)
-The PEG V2 format appends paper-space data **after** the "EOF" marker. V1 readers (which stop after the four main sections) never encounter it.
+### On-Disk Format
+The PEG V2 paper-space section is a first-class section positioned between the model-space entities and the "EOF" marker. V1 readers (which stop after `ReadEntitiesSection`) never read past the groups section's `kEndOfSection` sentinel, so the paper-space section is invisible to them.
 
 ```
-[V1-compatible section — all readers see this]
-  kHeaderSection (0x0101) → V2 variable triples ($AESVER, …) → kEndOfSection
+[AE2011 (V1)]
+  kHeaderSection (0x0101) → kEndOfSection
   kTablesSection (0x0102)
     kViewPortTable → 0 → kEndOfTable
     kLinetypeTable → count → entries → kEndOfTable
@@ -410,22 +410,44 @@ The PEG V2 format appends paper-space data **after** the "EOF" marker. V1 reader
   kBlocksSection (0x0103) → count → blocks → kEndOfSection
   kGroupsSection (0x0104) → count → MODEL-SPACE entities → kEndOfSection
   "EOF"
-[V2 extension — only V2 readers continue past "EOF"]
+
+[AE2026 (V2) — with paper-space]
+  kHeaderSection (0x0101) → variable triples ($AESVER, …) → kEndOfSection
+  kTablesSection (0x0102)
+    kViewPortTable → 0 → kEndOfTable
+    kLinetypeTable → count → entries → kEndOfTable
+    kLayerTable → count → MODEL-SPACE layers → kEndOfTable
+  kEndOfSection
+  kBlocksSection (0x0103) → count → blocks → kEndOfSection
+  kGroupsSection (0x0104) → count → MODEL-SPACE entities → kEndOfSection
   kPaperSpaceSection (0x0105)
     kLayerTable → count → PAPER-SPACE layers → kEndOfTable
     kGroupsSection → count → PAPER-SPACE entities → kEndOfSection
   kEndOfSection
+  "EOF"
+
+[AE2026 (V2) — without paper-space]
+  kHeaderSection (0x0101) → variable triples ($AESVER, …) → kEndOfSection
+  kTablesSection (0x0102) → ... → kEndOfSection
+  kBlocksSection (0x0103) → ... → kEndOfSection
+  kGroupsSection (0x0104) → ... → kEndOfSection
+  "EOF"
 ```
 
-- **Binary equality**: A V2 file with no paper-space layers is byte-for-byte identical to V1 — nothing extra in the header, nothing after "EOF".
-- **Write path**: `WriteLayerTable` and `WriteEntitiesSection` explicitly use `SpaceLayers(ModelSpace)`. `WritePaperSpaceExtension` writes the post-EOF section only when paper-space layers exist.
-- **Read path**: `ReadPaperSpaceExtension` consumes the "EOF" string, checks for remaining data, and reads paper-space layers/entities if `kPaperSpaceSection` follows.
+- **"EOF" marker**: Purely conventional — no reader depends on it. Kept as the very last thing in both versions for hex-dump readability.
+- **Sentinel peek**: After `ReadEntitiesSection`, `ReadPaperSpaceSection` peeks at the next `uint16_t`. `kPaperSpaceSection` (0x0105) cannot collide with the "EOF" string (first two CP_ACP bytes 'E','O' → 0x4F45 little-endian).
+- **Write path**: `WriteLayerTable` and `WriteEntitiesSection` explicitly use `SpaceLayers(ModelSpace)`. `WritePaperSpaceSection` writes the paper-space section only when `fileVersion == AE2026` and paper-space layers exist.
+- **Read path**: `ReadPaperSpaceSection` peeks for `kPaperSpaceSection` before the "EOF" marker, reads paper-space layers/entities if present, then consumes the trailing "EOF" string.
+- **Version gate**: `WritePaperSpaceSection` returns immediately for `AE2011` — paper-space data is silently dropped on downgrade save.
 - **Sentinel constants**: `kPaperSpaceSection = 0x0105` in `EoDb::Sentinels`.
+
+### DXF Layout Model vs PEG Paper-Space
+DXF organizes layouts through `BLOCK_RECORD` entries + `*Model_Space`/`*Paper_Space` block definitions + `LAYOUT` objects in the OBJECTS section. Each entity's owner handle determines its space. PEG uses a simpler model: separate layer tables for model-space and paper-space, with the paper-space section containing its own layer table and entity groups.
 
 ### Key Files
 | File | Role |
 |------|------|
-| `EoDbPegFile.cpp` | `Load`/`Unload` + `ReadPaperSpaceExtension`/`WritePaperSpaceExtension` |
+| `EoDbPegFile.cpp` | `Load`/`Unload` + `ReadPaperSpaceSection`/`WritePaperSpaceSection` |
 | `EoDbPegFile.h` | Method declarations |
 | `EoDb.h` | `kPaperSpaceSection` sentinel |
 | `AeSysDoc.h` | Dual-space members, accessors |

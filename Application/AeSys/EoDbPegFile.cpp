@@ -49,7 +49,7 @@ void EoDbPegFile::Load(AeSysDoc* document) {
   ReadTablesSection(document);
   ReadBlocksSection(document);
   ReadEntitiesSection(document);
-  ReadPaperSpaceExtension(document);
+  ReadPaperSpaceSection(document);
 }
 
 /**
@@ -343,113 +343,123 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
 }
 
 /**
- * Reads the optional paper-space extension that follows the "EOF" marker.
+ * Reads the optional paper-space section and the trailing "EOF" marker.
  *
- * V1 files end with an "EOF" string and nothing more. V2 files append a
- * kPaperSpaceSection (0x0105) block after "EOF" containing paper-space layers
- * and entity groups in the same format as the main layer table and entities
- * section. This method:
- *   1. Consumes the "EOF" string marker.
- *   2. Checks whether additional data follows.
- *   3. If a kPaperSpaceSection sentinel is found, reads the paper-space layer
- *      table and entity groups into the document's paper-space layer collection.
+ * After ReadEntitiesSection, the file cursor is positioned immediately after
+ * the kEndOfSection sentinel for the model-space groups. What follows depends
+ * on the file version and content:
+ *
+ * - **V1 (AE2011)**: "EOF" string → end of file.
+ * - **V2 (AE2026), no paper-space**: "EOF" string → end of file.
+ * - **V2 (AE2026), with paper-space**: kPaperSpaceSection → paper-space
+ *   layer table + entity groups → kEndOfSection → "EOF" string → end of file.
+ *
+ * The method peeks at the next uint16_t to distinguish kPaperSpaceSection
+ * (0x0105) from the start of the "EOF" string (first two CP_ACP bytes
+ * are 'E','O' → 0x4F45 little-endian), so the peek is unambiguous.
  *
  * @param document Pointer to the AeSysDoc that receives paper-space layers.
  */
-void EoDbPegFile::ReadPaperSpaceExtension(AeSysDoc* document) {
-  // After ReadEntitiesSection the file position is at the "EOF" marker.
+void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document) {
   auto currentPosition = CFile::GetPosition();
   auto fileLength = CFile::GetLength();
 
   if (currentPosition >= fileLength) { return; }
 
-  // Consume the "EOF" string
-  CString eofMarker;
-  EoDb::Read(*this, eofMarker);
+  // Peek at the next uint16_t to check for kPaperSpaceSection before "EOF".
+  auto peekPosition = CFile::GetPosition();
+  auto peekedSentinel = EoDb::ReadUInt16(*this);
 
-  // Check for more data beyond "EOF"
-  currentPosition = CFile::GetPosition();
-  if (currentPosition >= fileLength) { return; }
-
-  // Peek at the next sentinel
-  auto sentinel = EoDb::ReadUInt16(*this);
-  if (sentinel != EoDb::kPaperSpaceSection) { return; }
-
-  // --- Paper-space layer table ---
-  if (EoDb::ReadUInt16(*this) != EoDb::kLayerTable) {
-    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable in paper-space section.");
-  }
-
-  CString layerName;
-  CString lineTypeName;
-  auto numberOfLayers = EoDb::ReadUInt16(*this);
-
-  for (auto n = 0; n < numberOfLayers; n++) {
-    EoDb::Read(*this, layerName);
-    auto tracingState = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
-    auto state = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
-    state |= std::to_underlying(EoDbLayer::State::isResident);
-
-    if ((state & std::to_underlying(EoDbLayer::State::isInternal)) !=
-        std::to_underlying(EoDbLayer::State::isInternal)) {
-      if (layerName.Find('.') == -1) { layerName += L".jb1"; }
-    }
-    auto colorIndex = EoDb::ReadInt16(*this);
-    EoDb::Read(*this, lineTypeName);
-
-    if (document->FindLayerInSpace(layerName, EoDxf::Space::PaperSpace) == nullptr) {
-      auto* layer = new EoDbLayer(layerName, state);
-      layer->SetTracingState(tracingState);
-      layer->SetColorIndex(colorIndex);
-
-      EoDbLineType* lineType{};
-      if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) { layer->SetLineType(lineType); }
-      document->AddLayerToSpace(layer, EoDxf::Space::PaperSpace);
-    }
-  }
-
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
-    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable in paper-space section.");
-  }
-
-  // --- Paper-space entities ---
-  if (EoDb::ReadUInt16(*this) != EoDb::kGroupsSection) {
-    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection in paper-space section.");
-  }
-
-  EoDbPrimitive* primitive{};
-  auto& paperLayers = document->SpaceLayers(EoDxf::Space::PaperSpace);
-  auto numberOfEntityLayers = EoDb::ReadUInt16(*this);
-
-  for (auto n = 0; n < numberOfEntityLayers; n++) {
-    auto* layer = (n < static_cast<int>(paperLayers.GetSize())) ? paperLayers.GetAt(n) : nullptr;
-
-    if (layer == nullptr) {
-      throw std::runtime_error("Exception EoDbPegFile: Paper-space layer table index out of range.");
+  if (peekedSentinel == EoDb::kPaperSpaceSection) {
+    // --- Paper-space layer table ---
+    if (EoDb::ReadUInt16(*this) != EoDb::kLayerTable) {
+      throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable in paper-space section.");
     }
 
-    auto numberOfGroups = EoDb::ReadUInt16(*this);
+    CString layerName;
+    CString lineTypeName;
+    auto numberOfLayers = EoDb::ReadUInt16(*this);
 
-    if (layer->IsInternal()) {
-      for (auto groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
-        auto* group = new EoDbGroup;
-        auto numberOfPrimitives = EoDb::ReadUInt16(*this);
-        for (auto primitiveIndex = 0; primitiveIndex < numberOfPrimitives; primitiveIndex++) {
-          if (EoDb::Read(*this, primitive)) { group->AddTail(primitive); }
-        }
-        layer->AddTail(group);
+    for (auto n = 0; n < numberOfLayers; n++) {
+      EoDb::Read(*this, layerName);
+      auto tracingState = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
+      auto state = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
+      state |= std::to_underlying(EoDbLayer::State::isResident);
+
+      if ((state & std::to_underlying(EoDbLayer::State::isInternal)) !=
+          std::to_underlying(EoDbLayer::State::isInternal)) {
+        if (layerName.Find('.') == -1) { layerName += L".jb1"; }
       }
-    } else {
-      document->TracingLoadLayer(layer->Name(), layer);
+      auto colorIndex = EoDb::ReadInt16(*this);
+      EoDb::Read(*this, lineTypeName);
+
+      if (document->FindLayerInSpace(layerName, EoDxf::Space::PaperSpace) == nullptr) {
+        auto* layer = new EoDbLayer(layerName, state);
+        layer->SetTracingState(tracingState);
+        layer->SetColorIndex(colorIndex);
+
+        EoDbLineType* lineType{};
+        if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) { layer->SetLineType(lineType); }
+        document->AddLayerToSpace(layer, EoDxf::Space::PaperSpace);
+      }
     }
+
+    if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
+      throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable in paper-space section.");
+    }
+
+    // --- Paper-space entities ---
+    if (EoDb::ReadUInt16(*this) != EoDb::kGroupsSection) {
+      throw std::runtime_error(
+          "Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection in paper-space section.");
+    }
+
+    EoDbPrimitive* primitive{};
+    auto& paperLayers = document->SpaceLayers(EoDxf::Space::PaperSpace);
+    auto numberOfEntityLayers = EoDb::ReadUInt16(*this);
+
+    for (auto n = 0; n < numberOfEntityLayers; n++) {
+      auto* layer = (n < static_cast<int>(paperLayers.GetSize())) ? paperLayers.GetAt(n) : nullptr;
+
+      if (layer == nullptr) {
+        throw std::runtime_error("Exception EoDbPegFile: Paper-space layer table index out of range.");
+      }
+
+      auto numberOfGroups = EoDb::ReadUInt16(*this);
+
+      if (layer->IsInternal()) {
+        for (auto groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
+          auto* group = new EoDbGroup;
+          auto numberOfPrimitives = EoDb::ReadUInt16(*this);
+          for (auto primitiveIndex = 0; primitiveIndex < numberOfPrimitives; primitiveIndex++) {
+            if (EoDb::Read(*this, primitive)) { group->AddTail(primitive); }
+          }
+          layer->AddTail(group);
+        }
+      } else {
+        document->TracingLoadLayer(layer->Name(), layer);
+      }
+    }
+
+    if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
+      throw std::runtime_error(
+          "Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection for paper-space entities.");
+    }
+
+    if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
+      throw std::runtime_error(
+          "Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection for paper-space section.");
+    }
+  } else {
+    // Not a paper-space section — rewind past the peeked bytes.
+    CFile::Seek(static_cast<LONGLONG>(peekPosition), CFile::begin);
   }
 
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
-    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection for paper-space entities.");
-  }
-
-  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
-    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection for paper-space section.");
+  // Consume the trailing "EOF" marker (present in both V1 and V2 files).
+  currentPosition = CFile::GetPosition();
+  if (currentPosition < fileLength) {
+    CString eofMarker;
+    EoDb::Read(*this, eofMarker);
   }
 }
 
@@ -461,9 +471,8 @@ void EoDbPegFile::Unload(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   WriteTablesSection(document, fileVersion);
   WriteBlocksSection(document, fileVersion);
   WriteEntitiesSection(document, fileVersion);
+  WritePaperSpaceSection(document, fileVersion);
   EoDb::Write(*this, L"EOF");
-
-  WritePaperSpaceExtension(document, fileVersion);
 
   CFile::Flush();
 }
@@ -670,11 +679,12 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document, [[maybe_unused]] EoDb
 }
 
 /**
- * Writes the paper-space extension after the "EOF" marker.
+ * Writes the paper-space section before the "EOF" marker.
  *
- * V2 format: the paper-space section follows the "EOF" marker so that V1 readers
- * (which stop after the four main sections) never encounter it. V2 readers detect
- * the kPaperSpaceSection sentinel and load paper-space layers and entities.
+ * AE2026 format: the paper-space section is a first-class section between the
+ * model-space entities and the "EOF" marker. V1 readers (which stop after
+ * ReadEntitiesSection) never encounter it because they do not read past the
+ * groups section's kEndOfSection sentinel.
  *
  * Layout:
  *   kPaperSpaceSection (0x0105)
@@ -682,11 +692,15 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document, [[maybe_unused]] EoDb
  *     kGroupsSection → count → entity groups → kEndOfSection
  *   kEndOfSection
  *
- * If there are no paper-space layers, nothing is written.
+ * If there are no paper-space layers, or the file version is AE2011, nothing
+ * is written.
  *
  * @param document Pointer to the AeSysDoc that owns the paper-space layers.
+ * @param fileVersion The PEG file version being written.
  */
-void EoDbPegFile::WritePaperSpaceExtension(AeSysDoc* document, [[maybe_unused]] EoDb::PegFileVersion fileVersion) {
+void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
+  if (fileVersion == EoDb::PegFileVersion::AE2011) { return; }
+
   auto& layers = document->SpaceLayers(EoDxf::Space::PaperSpace);
 
   if (layers.GetSize() == 0) { return; }
