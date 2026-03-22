@@ -128,6 +128,32 @@ class AeSysDoc : public CDocument {
   /// <summary>Displays drawing and determines which groups are detectable.</summary>
   void DisplayAllLayers(AeSysView* view, CDC* deviceContext);
 
+  /** @brief Renders model-space entities through each paper-space viewport.
+   *
+   *  For each EoDbViewport primitive found in paper-space layers (excluding the
+   *  overall paper-space viewport, id 1, and viewports with no model-space view),
+   *  this method:
+   *  1. Computes the viewport boundary in device coordinates and applies a GDI clip rectangle.
+   *  2. Saves and reconfigures the view transform to match the viewport's model-space view parameters.
+   *  3. Renders all model-space layers through that transform.
+   *  4. Restores the view transform and removes the clip.
+   *
+   *  @param view  The active AeSysView providing transform and projection services.
+   *  @param deviceContext  The CDC to render into.
+   */
+  void DisplayModelSpaceThroughViewports(AeSysView* view, CDC* deviceContext);
+
+  /** @brief Renders model-space layers directly (bypasses active-space routing).
+   *
+   *  Used internally by DisplayModelSpaceThroughViewports to draw model-space content
+   *  through each viewport's clipped/transformed window.  Does not register groups
+   *  for detectability or highlight trapped groups.
+   *
+   *  @param view  The active AeSysView.
+   *  @param deviceContext  The CDC to render into.
+   */
+  void DisplayModelSpaceLayers(AeSysView* view, CDC* deviceContext);
+
   // Layer Table interface
 
   /// @brief Returns the layer table for the active space (model or paper).

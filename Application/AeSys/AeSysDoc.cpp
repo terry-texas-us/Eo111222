@@ -30,6 +30,7 @@
 #include "EoDbMaskedPrimitive.h"
 #include "EoDbPegFile.h"
 #include "EoDbPoint.h"
+#include "EoDbViewport.h"
 #include "EoDbPolygon.h"
 #include "EoDbPolyline.h"
 #include "EoDbPrimitive.h"
@@ -606,11 +607,140 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
       auto* layer = GetLayerTableLayerAt(i);
       layer->Display(view, deviceContext, identifyTrap);
     }
+
+    // When in paper space, render model-space entities through each viewport
+    if (m_activeSpace == EoDxf::Space::PaperSpace) {
+      DisplayModelSpaceThroughViewports(view, deviceContext);
+    }
+
     renderState.Restore(deviceContext, savedRenderState);
     EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
 
     deviceContext->SetBkColor(backgroundColor);
   } catch (CException* e) { e->Delete(); }
+}
+
+void AeSysDoc::DisplayModelSpaceLayers(AeSysView* view, CDC* deviceContext) {
+  auto& layers = m_modelSpaceLayers;
+  for (INT_PTR i = 0; i < layers.GetSize(); i++) {
+    auto* layer = layers.GetAt(i);
+    if (layer != nullptr && !layer->IsOff()) {
+      layer->Display(view, deviceContext);
+    }
+  }
+}
+
+void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, CDC* deviceContext) {
+  // Walk paper-space layers to find EoDbViewport primitives
+  auto& paperLayers = m_paperSpaceLayers;
+
+  for (INT_PTR layerIndex = 0; layerIndex < paperLayers.GetSize(); layerIndex++) {
+    auto* layer = paperLayers.GetAt(layerIndex);
+    if (layer == nullptr || layer->IsOff()) { continue; }
+
+    auto position = layer->GetHeadPosition();
+    while (position != nullptr) {
+      auto* group = layer->GetNext(position);
+      if (group == nullptr) { continue; }
+
+      auto primitivePosition = group->GetHeadPosition();
+      while (primitivePosition != nullptr) {
+        auto* primitive = group->GetNext(primitivePosition);
+        if (primitive == nullptr || !primitive->Is(EoDb::kViewportPrimitive)) { continue; }
+
+        auto* viewport = static_cast<EoDbViewport*>(primitive);
+
+        // Skip the overall paper-space viewport (id 1) and viewports with no model-space view
+        if (viewport->ViewportId() == 1) { continue; }
+        if (viewport->ViewHeight() < Eo::geometricTolerance) { continue; }
+
+        const auto& centerPoint = viewport->CenterPoint();
+        const double halfWidth = viewport->Width() / 2.0;
+        const double halfHeight = viewport->Height() / 2.0;
+
+        // Compute the 4 corners of the viewport boundary in paper space
+        EoGePoint3d corners[4] = {
+            {centerPoint.x - halfWidth, centerPoint.y - halfHeight, centerPoint.z},
+            {centerPoint.x + halfWidth, centerPoint.y - halfHeight, centerPoint.z},
+            {centerPoint.x + halfWidth, centerPoint.y + halfHeight, centerPoint.z},
+            {centerPoint.x - halfWidth, centerPoint.y + halfHeight, centerPoint.z},
+        };
+
+        // Transform corners through the current (paper-space) view to device coordinates
+        CPoint deviceCorners[4];
+        for (int i = 0; i < 4; ++i) {
+          EoGePoint4d ndcPoint(corners[i]);
+          view->ModelViewTransformPoint(ndcPoint);
+          deviceCorners[i] = view->ProjectToClient(ndcPoint);
+        }
+
+        // Compute the bounding device rectangle for the GDI clip
+        int clipLeft = (std::min)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
+        int clipTop = (std::min)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
+        int clipRight = (std::max)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
+        int clipBottom = (std::max)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
+
+        // Skip if the clip rectangle is degenerate
+        if (clipRight <= clipLeft || clipBottom <= clipTop) { continue; }
+
+        // Save DC state (includes clip region) and apply viewport clip
+        const int savedDC = deviceContext->SaveDC();
+        deviceContext->IntersectClipRect(clipLeft, clipTop, clipRight, clipBottom);
+
+        // Save the current view transform and configure for this viewport's model-space view
+        view->PushViewTransform();
+
+        // Configure camera: target at viewport's view target, direction from viewDirection
+        const auto& viewDirection = viewport->ViewDirection();
+        const auto& viewTargetPoint = viewport->ViewTargetPoint();
+        const auto& viewCenter = viewport->ViewCenter();
+        const double viewHeight = viewport->ViewHeight();
+        const double aspectRatio = viewport->Width() / viewport->Height();
+        const double viewWidth = viewHeight * aspectRatio;
+
+        // Set the camera target and direction
+        view->SetCameraTarget(EoGePoint3d(viewCenter.x, viewCenter.y, viewTargetPoint.z));
+        view->SetCameraPosition(EoGeVector3d(viewDirection.x, viewDirection.y, viewDirection.z));
+
+        // Compute an off-center projection window so the model-space view area
+        // (viewWidth × viewHeight) maps exactly to the GDI clip region.
+        // The orthographic projection maps UMin..UMax → NDC [-1,1], and
+        // ProjectToClient maps NDC to the FULL device viewport. Since we clip
+        // to a sub-region, we enlarge and offset the window proportionally.
+        EoGsViewport deviceViewport;
+        view->ModelViewGetViewport(deviceViewport);
+        const double deviceWidth = deviceViewport.Width();
+        const double deviceHeight = deviceViewport.Height();
+        const double clipWidth = static_cast<double>(clipRight - clipLeft);
+        const double clipHeight = static_cast<double>(clipBottom - clipTop);
+        const double clipCenterX = (clipLeft + clipRight) / 2.0;
+        const double clipCenterY = (clipTop + clipBottom) / 2.0;
+
+        // Half-extents scaled so the desired model-space area fills the clip region
+        const double halfExtentU = viewWidth * deviceWidth / (2.0 * clipWidth);
+        const double halfExtentV = viewHeight * deviceHeight / (2.0 * clipHeight);
+
+        // Offset the window center so the camera target projects to the clip region center
+        const double windowCenterU = halfExtentU * (1.0 - 2.0 * clipCenterX / deviceWidth);
+        const double windowCenterV = halfExtentV * (2.0 * clipCenterY / deviceHeight - 1.0);
+
+        view->SetViewWindow(
+            windowCenterU - halfExtentU, windowCenterV - halfExtentV,
+            windowCenterU + halfExtentU, windowCenterV + halfExtentV);
+
+        // Render model-space layers through this viewport
+        int savedModelRenderState = renderState.Save();
+        DisplayModelSpaceLayers(view, deviceContext);
+        renderState.Restore(deviceContext, savedModelRenderState);
+
+        // Restore the previous view transform
+        view->PopViewTransform();
+
+        // Restore the DC (removes the clip region)
+        deviceContext->RestoreDC(savedDC);
+      }
+    }
+  }
 }
 
 EoDbLayer* AeSysDoc::GetLayerTableLayer(const CString& name) {

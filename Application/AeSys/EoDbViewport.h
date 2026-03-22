@@ -16,9 +16,12 @@
 /** @brief Primitive representing a DXF VIEWPORT entity in paper space.
  *
  *  Stores the viewport's paper-space center, width/height, and model-space view
- *  parameters needed for DXF round-trip fidelity.  Display is deliberately
- *  minimal (boundary rectangle only) — the full paper-space clipping pipeline
- *  is deferred to a later phase.
+ *  parameters needed for DXF round-trip fidelity and paper-space display.
+ *
+ *  When the document is in paper-space mode, `DisplayModelSpaceThroughViewports()`
+ *  uses each viewport's view parameters (viewCenter, viewHeight, viewDirection) to
+ *  establish a GDI clip rectangle at the viewport boundary, configure a temporary
+ *  view transform, and render model-space entities through that window.
  */
 class EoDbViewport : public EoDbPrimitive {
  public:
@@ -74,6 +77,11 @@ class EoDbViewport : public EoDbPrimitive {
   [[nodiscard]] double Height() const noexcept { return m_height; }
   [[nodiscard]] std::int16_t ViewportStatus() const noexcept { return m_viewportStatus; }
   [[nodiscard]] std::int16_t ViewportId() const noexcept { return m_viewportId; }
+  [[nodiscard]] const EoGePoint3d& ViewCenter() const noexcept { return m_viewCenter; }
+  [[nodiscard]] const EoGePoint3d& ViewDirection() const noexcept { return m_viewDirection; }
+  [[nodiscard]] const EoGePoint3d& ViewTargetPoint() const noexcept { return m_viewTargetPoint; }
+  [[nodiscard]] double ViewHeight() const noexcept { return m_viewHeight; }
+  [[nodiscard]] double TwistAngle() const noexcept { return m_twistAngle; }
 
   // --- Mutators ---
   void SetCenterPoint(const EoGePoint3d& centerPoint) noexcept { m_centerPoint = centerPoint; }
