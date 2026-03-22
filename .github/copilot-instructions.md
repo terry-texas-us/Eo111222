@@ -384,3 +384,77 @@ kSplinePrimitive → color → lineTypeIndex → flags(uint16) → degree(int16)
 
 ## Versioning
 - Use `$AESVER` as the PEG file format version variable. "AES" is shortened from "AeSys". Do not add a separate `$PEGVERSION` — `$AESVER` already serves this purpose.
+- Two production versions: Legacy `"AE2011"` (2005-era) and current `"AE2026"`.
+- `$AESVER` is informational/documentary; the actual V2 discriminator on read is the post-EOF `kPaperSpaceSection` sentinel.
+
+## PEG V2 Dual-Space Architecture
+
+### In-Memory Model
+- `AeSysDoc` holds two independent layer tables: `CLayers m_modelSpaceLayers` and `CLayers m_paperSpaceLayers`.
+- `EoDxf::Space m_activeSpace` controls which space the UI operates on (default: `ModelSpace`).
+- `ActiveSpaceLayers()` routes by `m_activeSpace`; `SpaceLayers(space)` provides explicit access.
+- `AddLayerToSpace(layer, space)` and `FindLayerInSpace(name, space)` target a specific space.
+- View → Model Space menu toggle (`ID_VIEW_MODELSPACE = 4811`) switches `m_activeSpace`.
+
+### On-Disk Format (Post-EOF Extension)
+The PEG V2 format appends paper-space data **after** the "EOF" marker. V1 readers (which stop after the four main sections) never encounter it.
+
+```
+[V1-compatible section — all readers see this]
+  kHeaderSection (0x0101) → V2 variable triples ($AESVER, …) → kEndOfSection
+  kTablesSection (0x0102)
+    kViewPortTable → 0 → kEndOfTable
+    kLinetypeTable → count → entries → kEndOfTable
+    kLayerTable → count → MODEL-SPACE layers → kEndOfTable
+  kEndOfSection
+  kBlocksSection (0x0103) → count → blocks → kEndOfSection
+  kGroupsSection (0x0104) → count → MODEL-SPACE entities → kEndOfSection
+  "EOF"
+[V2 extension — only V2 readers continue past "EOF"]
+  kPaperSpaceSection (0x0105)
+    kLayerTable → count → PAPER-SPACE layers → kEndOfTable
+    kGroupsSection → count → PAPER-SPACE entities → kEndOfSection
+  kEndOfSection
+```
+
+- **Binary equality**: A V2 file with no paper-space layers is byte-for-byte identical to V1 — nothing extra in the header, nothing after "EOF".
+- **Write path**: `WriteLayerTable` and `WriteEntitiesSection` explicitly use `SpaceLayers(ModelSpace)`. `WritePaperSpaceExtension` writes the post-EOF section only when paper-space layers exist.
+- **Read path**: `ReadPaperSpaceExtension` consumes the "EOF" string, checks for remaining data, and reads paper-space layers/entities if `kPaperSpaceSection` follows.
+- **Sentinel constants**: `kPaperSpaceSection = 0x0105` in `EoDb::Sentinels`.
+
+### Key Files
+| File | Role |
+|------|------|
+| `EoDbPegFile.cpp` | `Load`/`Unload` + `ReadPaperSpaceExtension`/`WritePaperSpaceExtension` |
+| `EoDbPegFile.h` | Method declarations |
+| `EoDb.h` | `kPaperSpaceSection` sentinel |
+| `AeSysDoc.h` | Dual-space members, accessors |
+| `AeSysDoc.cpp` | `ActiveSpaceLayers`, `SpaceLayers`, `AddLayerToSpace`, `FindLayerInSpace` |
+
+## Paper-Space Viewport Display Pipeline
+
+### EoDbViewport Primitive
+- Type code `kViewportPrimitive = 0x8000`. Full `EoDbPrimitive` virtual contract implementation.
+- Stores paper-space geometry (`m_centerPoint`, `m_width`, `m_height`) and model-space view parameters (`m_viewCenter`, `m_viewDirection`, `m_viewHeight`, `m_viewTargetPoint`, `m_twistAngle`, etc.).
+- PEG serialization: 17 members (color, lineType, center, size, viewport identity, 12 view parameters).
+- DXF export via `ExportToDxf(EoDxfViewport&)`.
+- `Display()` renders the viewport boundary rectangle with dotted pen.
+
+### Viewport Rendering (`DisplayModelSpaceThroughViewports`)
+- Walks paper-space layers for `EoDbViewport` primitives.
+- For each viewport: computes GDI clip rect from viewport corners → device coords, `SaveDC`/`IntersectClipRect`.
+- `PushViewTransform` + configures camera (target from `viewCenter`, direction from `viewDirection`).
+- **Off-center projection window**: The orthographic projection maps view window to NDC [-1,1] which maps to FULL device viewport. Since we clip to a sub-region, the window is enlarged by `deviceDimension / clipDimension` and offset so the camera target projects to the clip region center:
+  - `halfExtentU = viewWidth × deviceWidth / (2.0 × clipWidth)`
+  - `halfExtentV = viewHeight × deviceHeight / (2.0 × clipHeight)`
+  - `windowCenterU = halfExtentU × (1.0 - 2.0 × clipCenterX / deviceWidth)`
+  - `windowCenterV = halfExtentV × (2.0 × clipCenterY / deviceHeight - 1.0)`
+- Renders model-space layers, `PopViewTransform`, `RestoreDC`.
+
+### Key Files
+| File | Role |
+|------|------|
+| `EoDbViewport.h` / `.cpp` | Viewport primitive (full virtual contract, PEG serialization, DXF export) |
+| `AeSysDoc.cpp` | `DisplayModelSpaceThroughViewports` (clip + projection pipeline) |
+| `EoDbDxfInterface.h` / `.cpp` | `ConvertViewportEntity` (DXF import) |
+| `EoGsViewTransform.cpp` | `BuildTransformMatrix`, `SetCenteredWindow`, `SetWindow` |
