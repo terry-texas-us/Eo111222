@@ -28,8 +28,8 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
         wchar_t psz[MAX_PATH]{};
         ::SendMessage(GetParent(hDlg), CDM_GETFILEPATH, MAX_PATH, (LPARAM)(LPTSTR)psz);
 
-        CFileStatus fs;
-        if (CFile::GetStatus(psz, fs)) {
+        CFileStatus fileStatus;
+        if (CFile::GetStatus(psz, fileStatus)) {
           auto* layer = document->GetLayerTableLayer(psz);
 
           if (layer != nullptr) {
@@ -52,8 +52,8 @@ UINT_PTR CALLBACK OFNHookProcFileTracing(HWND hDlg, UINT uiMsg, WPARAM wParam, L
     case WM_COMMAND: {
       wchar_t filePath[MAX_PATH]{};
       ::SendMessage(GetParent(hDlg), CDM_GETFILEPATH, MAX_PATH, (LPARAM)(LPTSTR)filePath);
-      CFileStatus fs;
-      if (!CFile::GetStatus(filePath, fs)) {
+      CFileStatus fileStatus;
+      if (!CFile::GetStatus(filePath, fileStatus)) {
         app.WarningMessageBox(IDS_MSG_FILE_NOT_FOUND, filePath);
         return TRUE;
       }

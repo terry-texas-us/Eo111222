@@ -7,9 +7,33 @@
 
 class EoDbPrimitive;
 
+/** * @file EoDb.h
+ * @brief Defines the EoDb namespace, which contains enumerations and functions for reading and writing PEG files.
+ *
+ * The EoDb namespace includes:
+ * - Enumerations for PEG file versions, file types, primitive types, update view hints, sentinels, polygon styles,
+ *   paths, horizontal and vertical alignments, and precision.
+ * - Functions for reading various data types from a CFile object, including strings, numbers, primitives, and custom
+ *   enumerations.
+ * - Functions for writing various data types to a CFile object, including strings, numbers, and custom enumerations.
+ *
+ * This header is intended to be included in other parts of the application that need to read from or write to PEG
+ * files, as well as those that need to work with the defined enumerations.
+ */
 namespace EoDb {
 
-enum class FileTypes { Dwg = 0x00, Dxf = 0x01, Dxb = 0x02, Peg = 0x20, Job = 0x21, Tracing = 0x22, Unknown = -1 };
+enum class PegFileVersion : std::uint16_t { AE2011 = 0, AE2026 = 1 };
+enum class FileTypes {
+  Dwg = 0x00,
+  Dxf = 0x01,
+  Dxb = 0x02,
+  Peg11 = 0x11,
+  Peg = 0x20,
+  Job = 0x21,
+  Tracing = 0x22,
+  Unknown = -1
+};
+
 enum PrimitiveTypes {
   kPointPrimitive = 0x0100,
   kInsertPrimitive = 0x0101,

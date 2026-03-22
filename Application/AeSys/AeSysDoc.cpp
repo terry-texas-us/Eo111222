@@ -202,26 +202,29 @@ void AeSysDoc::DeleteContents() {
 /** @brief Maps a 1-based CFileDialog filter index from IDS_SAVEFILE_FILTER to a file type.
  *
  * IDS_SAVEFILE_FILTER order:
- *   1 = Drawing (*.peg)
- *   2 = ASCII DXF (2018) (*.dxf)
- *   3 = ASCII DXF (2013) (*.dxf)
- *   4 = Binary DXF (2018) (*.dxf)
- *   5 = Binary DXF (2013) (*.dxf)
- *   6 = DWG 2018 (*.dwg)
- *   7 = DWG 2013 (*.dwg)
+ *   1 = Drawing AE2026 (*.peg)
+ *   2 = Drawing AE2011 (*.peg)
+ *   3 = ASCII DXF (2018) (*.dxf)
+ *   4 = ASCII DXF (2013) (*.dxf)
+ *   5 = Binary DXF (2018) (*.dxf)
+ *   6 = Binary DXF (2013) (*.dxf)
+ *   7 = DWG 2018 (*.dwg)
+ *   8 = DWG 2013 (*.dwg)
  */
 static EoDb::FileTypes FileTypeFromFilterIndex(DWORD filterIndex) noexcept {
   switch (filterIndex) {
     case 1:
       return EoDb::FileTypes::Peg;
     case 2:
+      return EoDb::FileTypes::Peg11;
     case 3:
-      return EoDb::FileTypes::Dxf;
     case 4:
+      return EoDb::FileTypes::Dxf;
     case 5:
-      return EoDb::FileTypes::Dxb;
     case 6:
+      return EoDb::FileTypes::Dxb;
     case 7:
+    case 8:
       return EoDb::FileTypes::Dwg;
     default:
       return EoDb::FileTypes::Unknown;
@@ -237,12 +240,14 @@ static DWORD FilterIndexFromFileType(EoDb::FileTypes fileType) noexcept {
   switch (fileType) {
     case EoDb::FileTypes::Peg:
       return 1;
-    case EoDb::FileTypes::Dxf:
+    case EoDb::FileTypes::Peg11:
       return 2;
+    case EoDb::FileTypes::Dxf:
+      return 3;
     case EoDb::FileTypes::Dxb:
-      return 4;
+      return 5;
     case EoDb::FileTypes::Dwg:
-      return 6;
+      return 7;
     default:
       return 1;
   }
@@ -252,6 +257,7 @@ static DWORD FilterIndexFromFileType(EoDb::FileTypes fileType) noexcept {
 static LPCWSTR DefaultExtensionForFileType(EoDb::FileTypes fileType) noexcept {
   switch (fileType) {
     case EoDb::FileTypes::Peg:
+    case EoDb::FileTypes::Peg11:
       return L"peg";
     case EoDb::FileTypes::Dxf:
     case EoDb::FileTypes::Dxb:
@@ -471,12 +477,15 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
   BOOL returnStatus{};
 
   switch (m_saveAsType) {
-    case EoDb::FileTypes::Peg: {
-      WriteShadowFile();
+    case EoDb::FileTypes::Peg:
+    case EoDb::FileTypes::Peg11: {
+      auto fileVersion =
+          (m_saveAsType == EoDb::FileTypes::Peg) ? EoDb::PegFileVersion::AE2026 : EoDb::PegFileVersion::AE2011;
+      WriteShadowFile(fileVersion);
       EoDbPegFile file;
       CFileException e;
       if (file.Open(pathName, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive, &e)) {
-        file.Unload(this);
+        file.Unload(this, fileVersion);
         returnStatus = TRUE;
       }
       break;
@@ -609,9 +618,7 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
     }
 
     // When in paper space, render model-space entities through each viewport
-    if (m_activeSpace == EoDxf::Space::PaperSpace) {
-      DisplayModelSpaceThroughViewports(view, deviceContext);
-    }
+    if (m_activeSpace == EoDxf::Space::PaperSpace) { DisplayModelSpaceThroughViewports(view, deviceContext); }
 
     renderState.Restore(deviceContext, savedRenderState);
     EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
@@ -624,9 +631,7 @@ void AeSysDoc::DisplayModelSpaceLayers(AeSysView* view, CDC* deviceContext) {
   auto& layers = m_modelSpaceLayers;
   for (INT_PTR i = 0; i < layers.GetSize(); i++) {
     auto* layer = layers.GetAt(i);
-    if (layer != nullptr && !layer->IsOff()) {
-      layer->Display(view, deviceContext);
-    }
+    if (layer != nullptr && !layer->IsOff()) { layer->Display(view, deviceContext); }
   }
 }
 
@@ -724,9 +729,8 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, CDC* deviceCon
         const double windowCenterU = halfExtentU * (1.0 - 2.0 * clipCenterX / deviceWidth);
         const double windowCenterV = halfExtentV * (2.0 * clipCenterY / deviceHeight - 1.0);
 
-        view->SetViewWindow(
-            windowCenterU - halfExtentU, windowCenterV - halfExtentV,
-            windowCenterU + halfExtentU, windowCenterV + halfExtentV);
+        view->SetViewWindow(windowCenterU - halfExtentU, windowCenterV - halfExtentV, windowCenterU + halfExtentU,
+            windowCenterV + halfExtentV);
 
         // Render model-space layers through this viewport
         int savedModelRenderState = renderState.Save();
@@ -1178,31 +1182,39 @@ bool AeSysDoc::TracingView(const CString& pathName) {
   return fileOpen;
 }
 
-void AeSysDoc::WriteShadowFile() {
-  if (m_saveAsType == EoDb::FileTypes::Peg) {
-    CString shadowFilePath(app.ShadowFolderPath());
-    shadowFilePath += GetTitle();
-    int nExt = shadowFilePath.Find('.');
-    if (nExt > 0) {
-      CFileStatus fs;
-      CFile::GetStatus(GetPathName(), fs);
+/**
+ * If the current file is a PEG file, creates a shadow copy of the file in the application's shadow folder.
+ * The shadow file is named using the original file's name and last modified timestamp to ensure uniqueness.
+ * If the shadow file cannot be created, displays a warning message to the user.
+ *
+ * @param fileVersion The version of the PEG file format to use when writing the shadow file.
+ */
+void AeSysDoc::WriteShadowFile(EoDb::PegFileVersion fileVersion) {
+  if (m_saveAsType != EoDb::FileTypes::Peg && m_saveAsType != EoDb::FileTypes::Peg11) { return; }
 
-      shadowFilePath.Truncate(nExt);
-      shadowFilePath += fs.m_mtime.Format(L"_%Y%m%d%H%M");
-      shadowFilePath += L".peg";
+  CString shadowFilePath(app.ShadowFolderPath());
+  shadowFilePath += GetTitle();
+  int dotPosition = shadowFilePath.Find('.');
+  if (dotPosition <= 0) { return; }
 
-      CFileException e;
-      EoDbPegFile fp;
-      if (!fp.Open(shadowFilePath, CFile::modeWrite, &e)) {
-        fp.Open(shadowFilePath, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive, &e);
-        fp.Unload(this);
-        app.WarningMessageBox(IDS_MSG_FILE_SHADOWED_AS, shadowFilePath);
-        return;
-      }
-      app.WarningMessageBox(IDS_MSG_SHADOW_FILE_CREATE_FAILURE);
-    }
+  CFileStatus fileStatus;
+  CFile::GetStatus(GetPathName(), fileStatus);
+
+  shadowFilePath.Truncate(dotPosition);
+  shadowFilePath += fileStatus.m_mtime.Format(L"_%Y%m%d%H%M");
+  shadowFilePath += L".peg";
+
+  CFileException e;
+  EoDbPegFile fp;
+  if (!fp.Open(shadowFilePath, CFile::modeWrite, &e)) {
+    fp.Open(shadowFilePath, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive, &e);
+    fp.Unload(this, fileVersion);
+    app.WarningMessageBox(IDS_MSG_FILE_SHADOWED_AS, shadowFilePath);
+    return;
   }
+  app.WarningMessageBox(IDS_MSG_SHADOW_FILE_CREATE_FAILURE);
 }
+
 // AeSysDoc commands
 
 void AeSysDoc::OnClearActiveLayers() {

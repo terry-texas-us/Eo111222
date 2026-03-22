@@ -239,7 +239,7 @@ class AeSysDoc : public CDocument {
   void InitializeWorkLayer();
   EoDbLayer* SetWorkLayer(EoDbLayer* layer);
 
-  void WriteShadowFile();
+  void WriteShadowFile(EoDb::PegFileVersion fileVerion);
 
   // Deleted groups interface
   auto DeletedGroupsAddHead(EoDbGroup* group) { return (m_DeletedGroupList.AddHead(group)); }
