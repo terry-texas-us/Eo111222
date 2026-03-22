@@ -18,7 +18,9 @@ EoDbLineType::EoDbLineType(const EoDbLineType& other)
     : m_Index(other.m_Index),
       m_Name(other.m_Name),
       m_Description(other.m_Description),
-      m_DashElements(other.m_DashElements) {}
+      m_DashElements(other.m_DashElements),
+      m_handle(other.m_handle),
+      m_ownerHandle(other.m_ownerHandle) {}
 
 EoDbLineType& EoDbLineType::operator=(const EoDbLineType& other) {
   if (this != &other) {
@@ -26,6 +28,8 @@ EoDbLineType& EoDbLineType::operator=(const EoDbLineType& other) {
     m_Name = other.m_Name;
     m_Description = other.m_Description;
     m_DashElements = other.m_DashElements;
+    m_handle = other.m_handle;
+    m_ownerHandle = other.m_ownerHandle;
   }
   return (*this);
 }

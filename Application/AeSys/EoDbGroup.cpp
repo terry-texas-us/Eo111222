@@ -421,6 +421,19 @@ void EoDbGroup::Write(CFile& file) {
   }
 }
 
+void EoDbGroup::Write(CFile& file, EoDb::PegFileVersion fileVersion) {
+  EoDb::WriteUInt16(file, std::uint16_t(GetCount()));
+
+  for (auto position = GetHeadPosition(); position != nullptr;) {
+    auto* primitive = GetNext(position);
+    primitive->Write(file);
+    if (fileVersion == EoDb::PegFileVersion::AE2026) {
+      EoDb::WriteUInt64(file, primitive->Handle());
+      EoDb::WriteUInt64(file, primitive->OwnerHandle());
+    }
+  }
+}
+
 void EoDbGroup::Write(CFile& file, std::uint8_t* buffer) {
   // group flags
   buffer[0] = 0;

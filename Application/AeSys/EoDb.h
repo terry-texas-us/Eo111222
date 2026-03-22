@@ -92,7 +92,7 @@ enum class Precision : std::uint16_t { TrueType = 1, StrokeType };
 
 void Read(CFile& file, CString& string);
 void Read(CFile& file, double& number);
-bool Read(CFile& file, EoDbPrimitive*& primitive);
+bool Read(CFile& file, EoDbPrimitive*& primitive, PegFileVersion fileVersion = PegFileVersion::AE2011);
 void Read(CFile& file, std::int16_t& number);
 void Read(CFile& file, std::uint16_t& number);
 
@@ -126,12 +126,14 @@ inline void Read(CFile& file, EoDb::VerticalAlignment& verticalAlignment) {
 [[nodiscard]] EoGePoint3d ReadPoint3d(CFile& file);
 [[nodiscard]] EoGeVector3d ReadVector3d(CFile& file);
 [[nodiscard]] std::uint16_t ReadUInt16(CFile& file);
+[[nodiscard]] std::uint64_t ReadUInt64(CFile& file);
 
 void Write(CFile& file, const CString& string, UINT codePage = CP_ACP);
 void WriteDouble(CFile& file, double number);
 void WriteInt16(CFile& file, std::int16_t number);
 void WriteInt32(CFile& file, std::int32_t number);
 void WriteUInt16(CFile& file, std::uint16_t number);
+void WriteUInt64(CFile& file, std::uint64_t number);
 
 inline void Write(CFile& file, EoDb::Path path) { WriteUInt16(file, static_cast<std::uint16_t>(path)); }
 

@@ -66,9 +66,16 @@ class EoDbLineType : public CObject {
    */
   double GetPatternLength() const;
 
+  [[nodiscard]] std::uint64_t Handle() const noexcept { return m_handle; }
+  [[nodiscard]] std::uint64_t OwnerHandle() const noexcept { return m_ownerHandle; }
+  void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
+  void SetOwnerHandle(std::uint64_t ownerHandle) noexcept { m_ownerHandle = ownerHandle; }
+
  private:
   std::int16_t m_Index;
   CString m_Name;
   CString m_Description;
   std::vector<double> m_DashElements;
+  std::uint64_t m_handle{};
+  std::uint64_t m_ownerHandle{};
 };

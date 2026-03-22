@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <cstdint>
 #include <stdexcept>
@@ -46,10 +46,20 @@ constexpr std::uint16_t kTypeTagVector3d = 4;
 
 void EoDbPegFile::Load(AeSysDoc* document) {
   ReadHeaderSection(document);
-  ReadTablesSection(document);
-  ReadBlocksSection(document);
-  ReadEntitiesSection(document);
-  ReadPaperSpaceSection(document);
+
+  auto fileVersion = EoDb::PegFileVersion::AE2011;
+  const auto* aesVerVariable = document->HeaderSection().SetVariable(L"$AESVER");
+  if (aesVerVariable != nullptr) {
+    const auto* versionString = std::get_if<std::wstring>(aesVerVariable);
+    if (versionString != nullptr && *versionString == L"AE2026") {
+      fileVersion = EoDb::PegFileVersion::AE2026;
+    }
+  }
+
+  ReadTablesSection(document, fileVersion);
+  ReadBlocksSection(document, fileVersion);
+  ReadEntitiesSection(document, fileVersion);
+  ReadPaperSpaceSection(document, fileVersion);
 }
 
 /**
@@ -139,13 +149,13 @@ void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
  * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection." if the expected end of section sentinel is
  * not found.
  */
-void EoDbPegFile::ReadTablesSection(AeSysDoc* document) {
+void EoDbPegFile::ReadTablesSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   if (EoDb::ReadUInt16(*this) != EoDb::kTablesSection) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kTablesSection.");
   }
   ReadViewportTable(document);
-  ReadLinetypesTable(document);
-  ReadLayerTable(document);
+  ReadLinetypesTable(document, fileVersion);
+  ReadLayerTable(document, fileVersion);
 
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.");
@@ -172,7 +182,7 @@ void EoDbPegFile::ReadViewportTable(AeSysDoc*) {
  * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable." if the expected end of table sentinel is not
  * found.
  */
-void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
+void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   auto* lineTypeTable = document->LineTypeTable();
 
   if (EoDb::ReadUInt16(*this) != EoDb::kLinetypeTable) {
@@ -193,6 +203,10 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document) {
       const auto index = lineTypeTable->LegacyLineTypeIndex(name);
       lineType = new EoDbLineType(index, name, description, definitionLength, dashElements.data());
       lineTypeTable->SetAt(name, lineType);
+    }
+    if (fileVersion == EoDb::PegFileVersion::AE2026) {
+      lineType->SetHandle(EoDb::ReadUInt64(*this));
+      lineType->SetOwnerHandle(EoDb::ReadUInt64(*this));
     }
     ATLTRACE2(traceGeneral, 2, L"Index: %d - Name: `%s` `%p`\n", n, name.GetString(), lineType);
   }
@@ -230,7 +244,7 @@ void EoDbPegFile::ReadLinetypeDefinition(
  * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable." if the expected end of table sentinel is not
  * found.
  */
-void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
+void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   if (EoDb::ReadUInt16(*this) != EoDb::kLayerTable) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable.");
   }
@@ -253,6 +267,13 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
     auto colorIndex = EoDb::ReadInt16(*this);
     EoDb::Read(*this, lineTypeName);
 
+    std::uint64_t layerHandle{};
+    std::uint64_t layerOwnerHandle{};
+    if (fileVersion == EoDb::PegFileVersion::AE2026) {
+      layerHandle = EoDb::ReadUInt64(*this);
+      layerOwnerHandle = EoDb::ReadUInt64(*this);
+    }
+
     if (document->FindLayerTableLayer(layerName) < 0) {
       ATLTRACE2(traceGeneral, 2, L"Added Layer: `%s` to Layer Table\n", layerName.GetString());
       ATLTRACE2(traceGeneral, 2, L"  Linetype: `%s`\n", lineTypeName.GetString());
@@ -260,6 +281,8 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
 
       layer->SetTracingState(tracingState);
       layer->SetColorIndex(colorIndex);
+      layer->SetHandle(layerHandle);
+      layer->SetOwnerHandle(layerOwnerHandle);
 
       EoDbLineType* lineType{};
       if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) {
@@ -278,7 +301,7 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document) {
   }
 }
 
-void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
+void EoDbPegFile::ReadBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   if (EoDb::ReadUInt16(*this) != EoDb::kBlocksSection) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kBlocksSection.");
   }
@@ -297,8 +320,13 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
     auto* block = new EoDbBlock(blockTypeFlags, basePoint, XRefPathName);
     document->InsertBlock(Name, block);
 
+    if (fileVersion == EoDb::PegFileVersion::AE2026) {
+      block->SetHandle(EoDb::ReadUInt64(*this));
+      block->SetOwnerHandle(EoDb::ReadUInt64(*this));
+    }
+
     for (std::uint16_t PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
-      if (EoDb::Read(*this, primitive)) { block->AddTail(primitive); }
+      if (EoDb::Read(*this, primitive, fileVersion)) { block->AddTail(primitive); }
     }
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
@@ -306,7 +334,7 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document) {
   }
 }
 
-void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
+void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   if (EoDb::ReadUInt16(*this) != EoDb::kGroupsSection) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection.");
   }
@@ -329,7 +357,7 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
         auto* group = new EoDbGroup;
         auto numberOfPrimitives = EoDb::ReadUInt16(*this);
         for (auto PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
-          if (EoDb::Read(*this, primitive)) { group->AddTail(primitive); }
+          if (EoDb::Read(*this, primitive, fileVersion)) { group->AddTail(primitive); }
         }
         layer->AddTail(group);
       }
@@ -360,7 +388,7 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document) {
  *
  * @param document Pointer to the AeSysDoc that receives paper-space layers.
  */
-void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document) {
+void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   auto currentPosition = CFile::GetPosition();
   auto fileLength = CFile::GetLength();
 
@@ -393,10 +421,19 @@ void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document) {
       auto colorIndex = EoDb::ReadInt16(*this);
       EoDb::Read(*this, lineTypeName);
 
+      std::uint64_t layerHandle{};
+      std::uint64_t layerOwnerHandle{};
+      if (fileVersion == EoDb::PegFileVersion::AE2026) {
+        layerHandle = EoDb::ReadUInt64(*this);
+        layerOwnerHandle = EoDb::ReadUInt64(*this);
+      }
+
       if (document->FindLayerInSpace(layerName, EoDxf::Space::PaperSpace) == nullptr) {
         auto* layer = new EoDbLayer(layerName, state);
         layer->SetTracingState(tracingState);
         layer->SetColorIndex(colorIndex);
+        layer->SetHandle(layerHandle);
+        layer->SetOwnerHandle(layerOwnerHandle);
 
         EoDbLineType* lineType{};
         if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) { layer->SetLineType(lineType); }
@@ -432,7 +469,7 @@ void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document) {
           auto* group = new EoDbGroup;
           auto numberOfPrimitives = EoDb::ReadUInt16(*this);
           for (auto primitiveIndex = 0; primitiveIndex < numberOfPrimitives; primitiveIndex++) {
-            if (EoDb::Read(*this, primitive)) { group->AddTail(primitive); }
+            if (EoDb::Read(*this, primitive, fileVersion)) { group->AddTail(primitive); }
           }
           layer->AddTail(group);
         }
@@ -550,7 +587,7 @@ void EoDbPegFile::WriteVPortTable(AeSysDoc*, [[maybe_unused]] EoDb::PegFileVersi
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 }
 
-void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document, [[maybe_unused]] EoDb::PegFileVersion fileVersion) {
+void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   auto* lineTypeTable = document->LineTypeTable();
 
   auto numberOfLinetypes = std::uint16_t(lineTypeTable->Size());
@@ -576,11 +613,16 @@ void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document, [[maybe_unused]] EoDb::
 
     const auto& dashElements = linetype->DashElements();
     for (std::uint16_t i = 0; i < numberOfDashes; i++) { EoDb::WriteDouble(*this, dashElements[i]); }
+
+    if (fileVersion == EoDb::PegFileVersion::AE2026) {
+      EoDb::WriteUInt64(*this, linetype->Handle());
+      EoDb::WriteUInt64(*this, linetype->OwnerHandle());
+    }
   }
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 }
 
-void EoDbPegFile::WriteLayerTable(AeSysDoc* document, [[maybe_unused]] EoDb::PegFileVersion fileVersion) {
+void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   auto& layers = document->SpaceLayers(EoDxf::Space::ModelSpace);
   int numberOfLayers = static_cast<int>(layers.GetSize());
 
@@ -597,6 +639,10 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, [[maybe_unused]] EoDb::Peg
       EoDb::WriteUInt16(*this, layer->GetState());
       EoDb::WriteInt16(*this, layer->ColorIndex());
       EoDb::Write(*this, layer->LineTypeName());
+      if (fileVersion == EoDb::PegFileVersion::AE2026) {
+        EoDb::WriteUInt64(*this, layer->Handle());
+        EoDb::WriteUInt64(*this, layer->OwnerHandle());
+      }
     } else {
       numberOfLayers--;
     }
@@ -611,7 +657,7 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, [[maybe_unused]] EoDb::Peg
   }
 }
 
-void EoDbPegFile::WriteBlocksSection(AeSysDoc* document, [[maybe_unused]] EoDb::PegFileVersion fileVersion) {
+void EoDbPegFile::WriteBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kBlocksSection));
 
   std::uint16_t numberOfBlocks = document->BlockTableSize();
@@ -631,10 +677,21 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document, [[maybe_unused]] EoDb::
     EoDb::WriteUInt16(*this, block->BlockTypeFlags());
     block->BasePoint().Write(*this);
 
+    if (fileVersion == EoDb::PegFileVersion::AE2026) {
+      EoDb::WriteUInt64(*this, block->Handle());
+      EoDb::WriteUInt64(*this, block->OwnerHandle());
+    }
+
     auto primitivePosition = block->GetHeadPosition();
     while (primitivePosition != nullptr) {
       auto* primitive = block->GetNext(primitivePosition);
-      if (primitive->Write(*this)) { numberOfPrimitives++; }
+      if (primitive->Write(*this)) {
+        if (fileVersion == EoDb::PegFileVersion::AE2026) {
+          EoDb::WriteUInt64(*this, primitive->Handle());
+          EoDb::WriteUInt64(*this, primitive->OwnerHandle());
+        }
+        numberOfPrimitives++;
+      }
     }
     auto currentFilePosition = CFile::GetPosition();
     CFile::Seek(static_cast<LONGLONG>(savedFilePosition), CFile::begin);
@@ -645,7 +702,7 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document, [[maybe_unused]] EoDb::
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
-void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document, [[maybe_unused]] EoDb::PegFileVersion fileVersion) {
+void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kGroupsSection));
 
   auto& layers = document->SpaceLayers(EoDxf::Space::ModelSpace);
@@ -669,7 +726,7 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document, [[maybe_unused]] EoDb
       auto position = layer->GetHeadPosition();
       while (position != nullptr) {
         auto* group = layer->GetNext(position);
-        group->Write(*this);
+        group->Write(*this, fileVersion);
       }
     } else {
       EoDb::WriteUInt16(*this, std::uint16_t(0));
@@ -722,6 +779,10 @@ void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersio
       EoDb::WriteUInt16(*this, layer->GetState());
       EoDb::WriteInt16(*this, layer->ColorIndex());
       EoDb::Write(*this, layer->LineTypeName());
+      if (fileVersion == EoDb::PegFileVersion::AE2026) {
+        EoDb::WriteUInt64(*this, layer->Handle());
+        EoDb::WriteUInt64(*this, layer->OwnerHandle());
+      }
     } else {
       numberOfLayers--;
     }
@@ -754,7 +815,7 @@ void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersio
       auto position = layer->GetHeadPosition();
       while (position != nullptr) {
         auto* group = layer->GetNext(position);
-        group->Write(*this);
+        group->Write(*this, fileVersion);
       }
     } else {
       EoDb::WriteUInt16(*this, std::uint16_t(0));
@@ -766,7 +827,7 @@ void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersio
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
-bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive) {
+bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive, EoDb::PegFileVersion fileVersion) {
   switch (EoDb::ReadUInt16(file)) {
     case EoDb::kPointPrimitive:
       primitive = EoDbPoint::ReadFromPeg(file);
@@ -814,6 +875,10 @@ bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive) {
     default:
       app.WarningMessageBox(IDS_MSG_BAD_PRIM_TYPE);
       return false;
+  }
+  if (fileVersion == EoDb::PegFileVersion::AE2026) {
+    primitive->SetHandle(EoDb::ReadUInt64(file));
+    primitive->SetOwnerHandle(EoDb::ReadUInt64(file));
   }
   return true;
 }
@@ -915,3 +980,12 @@ void EoDb::WriteDouble(CFile& file, double number) { file.Write(&number, sizeof(
 void EoDb::WriteInt16(CFile& file, std::int16_t number) { file.Write(&number, sizeof(std::int16_t)); }
 void EoDb::WriteInt32(CFile& file, std::int32_t number) { file.Write(&number, sizeof(std::int32_t)); }
 void EoDb::WriteUInt16(CFile& file, std::uint16_t number) { file.Write(&number, sizeof(std::uint16_t)); }
+
+
+std::uint64_t EoDb::ReadUInt64(CFile& file) {
+  std::uint64_t number;
+  file.Read(&number, sizeof(std::uint64_t));
+  return number;
+}
+
+void EoDb::WriteUInt64(CFile& file, std::uint64_t number) { file.Write(&number, sizeof(std::uint64_t)); }

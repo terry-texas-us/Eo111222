@@ -32,6 +32,8 @@ class EoDbPrimitive : public CObject {
   std::int16_t m_lineTypeIndex{LINETYPE_BYLAYER};
   std::wstring m_lineTypeName{};
   std::wstring m_layerName{};
+  std::uint64_t m_handle{};
+  std::uint64_t m_ownerHandle{};
 
   static std::int16_t sm_layerColor;
   static std::int16_t sm_layerLineTypeIndex;
@@ -50,7 +52,9 @@ class EoDbPrimitive : public CObject {
       : m_color(other.m_color),
         m_lineTypeIndex(other.m_lineTypeIndex),
         m_lineTypeName(other.m_lineTypeName),
-        m_layerName(other.m_layerName) {}
+        m_layerName(other.m_layerName),
+        m_handle(other.m_handle),
+        m_ownerHandle(other.m_ownerHandle) {}
 
   EoDbPrimitive& operator=(const EoDbPrimitive& other) {
     if (this != &other) {
@@ -58,6 +62,8 @@ class EoDbPrimitive : public CObject {
       m_lineTypeIndex = other.m_lineTypeIndex;
       m_lineTypeName = other.m_lineTypeName;
       m_layerName = other.m_layerName;
+      m_handle = other.m_handle;
+      m_ownerHandle = other.m_ownerHandle;
     }
     return *this;
   }
@@ -108,11 +114,15 @@ class EoDbPrimitive : public CObject {
   [[nodiscard]] std::int16_t LineTypeIndex() const noexcept { return m_lineTypeIndex; }
   [[nodiscard]] const std::wstring& LineTypeName() const noexcept { return m_lineTypeName; }
   [[nodiscard]] const std::wstring& LayerName() const noexcept { return m_layerName; }
+  [[nodiscard]] std::uint64_t Handle() const noexcept { return m_handle; }
+  [[nodiscard]] std::uint64_t OwnerHandle() const noexcept { return m_ownerHandle; }
 
   void SetColor(std::int16_t color) noexcept { m_color = color; }
   void SetLineTypeIndex(std::int16_t lineTypeIndex) noexcept { m_lineTypeIndex = lineTypeIndex; }
   void SetLineTypeName(std::wstring name) noexcept { m_lineTypeName = std::move(name); }
   void SetLayerName(std::wstring name) noexcept { m_layerName = std::move(name); }
+  void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
+  void SetOwnerHandle(std::uint64_t ownerHandle) noexcept { m_ownerHandle = ownerHandle; }
   void SetProperties(std::int16_t color, std::int16_t lineTypeIndex) noexcept {
     m_color = color;
     m_lineTypeIndex = lineTypeIndex;

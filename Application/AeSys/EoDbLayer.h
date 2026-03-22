@@ -29,6 +29,8 @@ class EoDbLayer : public EoDbGroupList {
   std::uint16_t m_tracingState;  // Tracing state flags
   std::int16_t m_color;  // color index, negative if layer is off)
   EoDbLineType* m_lineType;
+  std::uint64_t m_handle{};
+  std::uint64_t m_ownerHandle{};
 
  public:
   enum class State : std::uint16_t {
@@ -63,6 +65,11 @@ class EoDbLayer : public EoDbGroupList {
 
   [[nodiscard]] std::int16_t ColorIndex() const noexcept { return m_color; }
   void SetColorIndex(std::int16_t color) noexcept { m_color = color; }
+
+  [[nodiscard]] std::uint64_t Handle() const noexcept { return m_handle; }
+  [[nodiscard]] std::uint64_t OwnerHandle() const noexcept { return m_ownerHandle; }
+  void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
+  void SetOwnerHandle(std::uint64_t ownerHandle) noexcept { m_ownerHandle = ownerHandle; }
 
   [[nodiscard]] EoDbLineType* LineType() const noexcept { return m_lineType; }
 

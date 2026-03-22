@@ -6,6 +6,10 @@
 #include "EoGePoint4d.h"
 #include "EoGeVector3d.h"
 
+namespace EoDb {
+enum class PegFileVersion : std::uint16_t;
+}  // namespace EoDb
+
 class AeSysView;
 class EoDbBlock;
 class EoDbCharacterCellDefinition;
@@ -94,12 +98,28 @@ class EoDbGroup : public CObList {
   void Translate(EoGeVector3d translate);
   void Write(CFile& file);
 
-  /** @brief Writes the group to the specified file, using the provided buffer for temporary storage.  The buffer should
-   * be at least EoDbPrimitive::BUFFER_SIZE bytes in size to ensure that all primitive types can be written without risk
-   * of overflow.
-   * @param file The file to write to.
-   * @param buffer A temporary buffer for use in writing primitives.  Should be at least EoDbPrimitive::BUFFER_SIZE
-   * bytes in size.
+  /** @brief Writes the group's primitives to a file, including additional handle information for AE2026 file version.
+   *
+   * This method first writes the number of primitives in the group as a 16-bit unsigned integer. Then, for each
+   * primitive in the group, it calls the primitive's Write method to write its data to the file. If the file version is
+   * AE2026, it also writes the primitive's handle and owner handle as 64-bit unsigned integers.
+   *
+   * @param file The file to which the group's primitives will be written.
+   * @param fileVersion The version of the PEG file format being written, which determines whether additional handle
+   * information is included.
+   */
+  void Write(CFile& file, EoDb::PegFileVersion fileVersion);
+
+
+  /** @brief Writes the group data to a buffer for file output.
+   *
+   * This method writes the group flags and the number of primitives in the group to the provided buffer. It then
+   * iterates through each primitive in the group and calls its Write method to write its data to the buffer.
+   *
+   * @param file The file to which the data will be written (not used in this method but may be needed for primitive
+   * Write calls).
+   * @param buffer A pointer to a byte buffer where the group data will be written. The buffer should be large enough to
+   * hold the group flags, primitive count, and all primitive data.
    */
   void Write(CFile& file, std::uint8_t* buffer);
 };

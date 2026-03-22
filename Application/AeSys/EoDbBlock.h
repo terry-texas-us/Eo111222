@@ -17,6 +17,8 @@ class EoDbBlock : public EoDbGroup {
                                    //		b6 set - definition is referenced
   EoGePoint3d m_firstPoint;  // block base point
   CString m_xRefPathName;  // external reference (XRef) path name
+  std::uint64_t m_handle{};
+  std::uint64_t m_ownerHandle{};
 
  public:
   EoDbBlock() { m_blockTypeFlags = 0; }
@@ -31,6 +33,11 @@ class EoDbBlock : public EoDbGroup {
   [[nodiscard]] bool IsFromExternalReference() const noexcept { return (m_blockTypeFlags & 4) == 4; }
   void SetBlockTypeFlags(std::uint16_t flags) { m_blockTypeFlags = flags; }
   void SetBasePoint(EoGePoint3d basePoint) { m_firstPoint = std::move(basePoint); }
+
+  [[nodiscard]] std::uint64_t Handle() const noexcept { return m_handle; }
+  [[nodiscard]] std::uint64_t OwnerHandle() const noexcept { return m_ownerHandle; }
+  void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
+  void SetOwnerHandle(std::uint64_t ownerHandle) noexcept { m_ownerHandle = ownerHandle; }
 };
 
 typedef CTypedPtrMap<CMapStringToOb, CString, EoDbBlock*> EoDbBlocks;

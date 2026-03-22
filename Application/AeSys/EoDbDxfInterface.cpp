@@ -135,6 +135,8 @@ void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* docu
   if (document->FindLayerInSpace(layerName.c_str(), EoDxf::Space::ModelSpace) == nullptr) {
     auto* modelLayer = new EoDbLayer(layerName.c_str(), commonState);
     configureLayer(modelLayer);
+    modelLayer->SetHandle(layer.m_handle);
+    modelLayer->SetOwnerHandle(layer.m_ownerHandle);
     document->AddLayerToSpace(modelLayer, EoDxf::Space::ModelSpace);
   }
 
@@ -142,6 +144,8 @@ void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* docu
   if (document->FindLayerInSpace(layerName.c_str(), EoDxf::Space::PaperSpace) == nullptr) {
     auto* paperLayer = new EoDbLayer(layerName.c_str(), commonState);
     configureLayer(paperLayer);
+    paperLayer->SetHandle(layer.m_handle);
+    paperLayer->SetOwnerHandle(layer.m_ownerHandle);
     document->AddLayerToSpace(paperLayer, EoDxf::Space::PaperSpace);
   }
 
@@ -191,6 +195,8 @@ void EoDbDxfInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSy
     auto lineTypeIndex = lineTypeTable->LegacyLineTypeIndex(name);
 
     convertedLinetype = new EoDbLineType(lineTypeIndex, name, desc, numberOfElements, dashLengths.data());
+    convertedLinetype->SetHandle(linetype.m_handle);
+    convertedLinetype->SetOwnerHandle(linetype.m_ownerHandle);
     lineTypeTable->SetAt(name, convertedLinetype);
   }
 }
@@ -269,10 +275,7 @@ void EoDbDxfInterface::ConvertVPortTable(const EoDxfVPort& viewport, [[maybe_unu
 EoDbBlock* EoDbDxfInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* document) {
   m_blockName = block.m_blockName;  // Block Name (group code 2)
 
-  // auto handle = block.handle;              // group code 5
-  // auto parentHandle = block.parentHandle;  // Soft-pointer ID/handle to owner object (group code 330)
-
-  // Group codes 3, 1 and 4 are for XREF definition. Modern XREF indicated by group 70 with 0x04 bit set and the
+  // Group codes 3, 1 and 4 are for XREF definition.
   // presence of group code 1
 
   // @todo Check if block already exists and clean it up first
@@ -281,6 +284,9 @@ EoDbBlock* EoDbDxfInterface::ConvertBlock(const EoDxfBlock& block, AeSysDoc* doc
   auto* newBlock = new EoDbBlock(block.m_blockTypeFlags,
       EoGePoint3d(block.m_basePoint.x, block.m_basePoint.y, block.m_basePoint.z),  // group codes 10, 20 and 30
       m_blockName.c_str());
+
+  newBlock->SetHandle(block.m_handle);
+  newBlock->SetOwnerHandle(block.m_ownerHandle);
 
   document->InsertBlock(m_blockName.c_str(), newBlock);
   return newBlock;

@@ -48,6 +48,8 @@ void EoDbViewport::swap(EoDbViewport& other) noexcept {
   swap(m_lineTypeIndex, other.m_lineTypeIndex);
   swap(m_lineTypeName, other.m_lineTypeName);
   swap(m_layerName, other.m_layerName);
+  swap(m_handle, other.m_handle);
+  swap(m_ownerHandle, other.m_ownerHandle);
   // Paper-space geometry
   swap(m_centerPoint, other.m_centerPoint);
   swap(m_width, other.m_width);

@@ -53,6 +53,9 @@ void EoDbPrimitive::SetBaseProperties(const EoDxfGraphic* entity, AeSysDoc* docu
 
   auto* linetypeTable = document->LineTypeTable();
   m_lineTypeIndex = linetypeTable->LegacyLineTypeIndex(m_lineTypeName);
+
+  m_handle = entity->m_handle;
+  m_ownerHandle = entity->m_ownerHandle;
 }
 
 CString EoDbPrimitive::FormatPenColor() const {
