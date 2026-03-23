@@ -57,6 +57,7 @@ void EoDbPrimitive::SetBaseProperties(const EoDxfGraphic* entity, AeSysDoc* docu
 
   m_handle = entity->m_handle;
   m_ownerHandle = entity->m_ownerHandle;
+  m_thickness = entity->m_thickness;
 }
 
 CString EoDbPrimitive::FormatPenColor() const {
@@ -123,6 +124,7 @@ void EoDbPrimitive::PopulateDxfBaseProperties(EoDxfGraphic* entity) const {
   } else if (!m_lineTypeName.empty()) {
     entity->m_lineType = m_lineTypeName;
   }
+  entity->m_thickness = m_thickness;
 }
 
 void EoDbPrimitive::ExportToDxf([[maybe_unused]] EoDxfInterface* writer) const {}
@@ -133,14 +135,16 @@ void EoDbPrimitive::ModifyState() {
 }
 
 void EoDbPrimitive::FormatExtra(CString& extra) {
-  extra.Format(L"Handle;%I64X\tOwner;%I64X\tLayer;%s\tColor;%s\tLineType;%s", m_handle, m_ownerHandle,
-      m_layerName.empty() ? L"" : m_layerName.c_str(), FormatPenColor().GetString(), FormatLineType().GetString());
+  extra.Format(L"Handle;%I64X\tOwner;%I64X\tLayer;%s\tColor;%s\tLineType;%s\tThickness;%.6f", m_handle, m_ownerHandle,
+      m_layerName.empty() ? L"" : m_layerName.c_str(), FormatPenColor().GetString(), FormatLineType().GetString(),
+      m_thickness);
 }
 
 void EoDbPrimitive::AddReportToMessageList(const EoGePoint3d&) {
   CString message;
-  message.Format(L"Handle: %I64X  Owner: %I64X  Layer: %s  Color: %s  LineType: %s", m_handle, m_ownerHandle,
-      m_layerName.empty() ? L"" : m_layerName.c_str(), FormatPenColor().GetString(), FormatLineType().GetString());
+  message.Format(L"Handle: %I64X  Owner: %I64X  Layer: %s  Color: %s  LineType: %s  Thickness: %.6f", m_handle,
+      m_ownerHandle, m_layerName.empty() ? L"" : m_layerName.c_str(), FormatPenColor().GetString(),
+      FormatLineType().GetString(), m_thickness);
   app.AddStringToMessageList(message);
 }
 

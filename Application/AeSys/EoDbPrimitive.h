@@ -35,6 +35,7 @@ class EoDbPrimitive : public CObject {
   std::wstring m_layerName{};
   std::uint64_t m_handle{};
   std::uint64_t m_ownerHandle{};
+  double m_thickness{};
 
   static std::int16_t sm_layerColor;
   static std::int16_t sm_layerLineTypeIndex;
@@ -55,7 +56,8 @@ class EoDbPrimitive : public CObject {
         m_lineTypeName(other.m_lineTypeName),
         m_layerName(other.m_layerName),
         m_handle(other.m_handle),
-        m_ownerHandle(other.m_ownerHandle) {}
+        m_ownerHandle(other.m_ownerHandle),
+        m_thickness(other.m_thickness) {}
 
   EoDbPrimitive& operator=(const EoDbPrimitive& other) {
     if (this != &other) {
@@ -65,6 +67,7 @@ class EoDbPrimitive : public CObject {
       m_layerName = other.m_layerName;
       m_handle = other.m_handle;
       m_ownerHandle = other.m_ownerHandle;
+      m_thickness = other.m_thickness;
     }
     return *this;
   }
@@ -127,6 +130,7 @@ class EoDbPrimitive : public CObject {
   [[nodiscard]] const std::wstring& LayerName() const noexcept { return m_layerName; }
   [[nodiscard]] std::uint64_t Handle() const noexcept { return m_handle; }
   [[nodiscard]] std::uint64_t OwnerHandle() const noexcept { return m_ownerHandle; }
+  [[nodiscard]] double Thickness() const noexcept { return m_thickness; }
 
   void SetColor(std::int16_t color) noexcept { m_color = color; }
   void SetLineTypeIndex(std::int16_t lineTypeIndex) noexcept { m_lineTypeIndex = lineTypeIndex; }
@@ -134,6 +138,7 @@ class EoDbPrimitive : public CObject {
   void SetLayerName(std::wstring name) noexcept { m_layerName = std::move(name); }
   void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
   void SetOwnerHandle(std::uint64_t ownerHandle) noexcept { m_ownerHandle = ownerHandle; }
+  void SetThickness(double thickness) noexcept { m_thickness = thickness; }
   void SetProperties(std::int16_t color, std::int16_t lineTypeIndex) noexcept {
     m_color = color;
     m_lineTypeIndex = lineTypeIndex;
