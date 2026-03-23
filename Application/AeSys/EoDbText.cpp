@@ -1,5 +1,6 @@
 ﻿#include "Stdafx.h"
 
+#include <algorithm>
 #include <climits>
 #include <cmath>
 
@@ -154,6 +155,17 @@ void EoDbText::ExportToDxf(EoDxfInterface* writer) const {
   // Rotation angle from xDirection — DXF TEXT group 50 is in degrees
   const auto& xDir = m_ReferenceSystem.XDirection();
   text.m_textRotation = Eo::RadianToDegree(std::atan2(xDir.y, xDir.x));
+
+  // Recover oblique angle from Y-direction shear — DXF TEXT group 51 is in degrees
+  // Import bakes oblique angle into the reference system by rotating Y toward X by -obliqueAngle.
+  // The dot product of unitized X and Y directions equals sin(obliqueAngle) since the angle between
+  // them is (90° - obliqueAngle) instead of the perpendicular 90°.
+  if (textHeight > Eo::geometricTolerance && xDirLength > Eo::geometricTolerance) {
+    const auto xUnit = xDir * (1.0 / xDirLength);
+    const auto yUnit = m_ReferenceSystem.YDirection() * (1.0 / textHeight);
+    const double sinOblique = DotProduct(xUnit, yUnit);
+    text.m_obliqueAngle = Eo::RadianToDegree(std::asin(std::clamp(sinOblique, -1.0, 1.0)));
+  }
 
   // Map AeSys alignment to DXF alignment
   switch (m_fontDefinition.HorizontalAlignment()) {
