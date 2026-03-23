@@ -420,7 +420,91 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
   };
   void WriteClasses() override {};
-  void WriteDimstyles() override {};
+  void WriteDimstyles() override {
+    if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
+
+    for (const auto& entry : m_document->DimStyleTable()) {
+      EoDxfDimensionStyle dxfDimStyle;
+      dxfDimStyle.m_tableName = entry.m_name;
+      dxfDimStyle.m_flagValues = entry.m_flagValues;
+
+      dxfDimStyle.dimpost = entry.dimpost;
+      dxfDimStyle.dimapost = entry.dimapost;
+      dxfDimStyle.dimblk = entry.dimblk;
+      dxfDimStyle.dimblk1 = entry.dimblk1;
+      dxfDimStyle.dimblk2 = entry.dimblk2;
+
+      dxfDimStyle.dimscale = entry.dimscale;
+      dxfDimStyle.dimasz = entry.dimasz;
+      dxfDimStyle.dimexo = entry.dimexo;
+      dxfDimStyle.dimdli = entry.dimdli;
+      dxfDimStyle.dimexe = entry.dimexe;
+      dxfDimStyle.dimrnd = entry.dimrnd;
+      dxfDimStyle.dimdle = entry.dimdle;
+      dxfDimStyle.dimtp = entry.dimtp;
+      dxfDimStyle.dimtm = entry.dimtm;
+      dxfDimStyle.dimfxl = entry.dimfxl;
+      dxfDimStyle.dimtxt = entry.dimtxt;
+      dxfDimStyle.dimcen = entry.dimcen;
+      dxfDimStyle.dimtsz = entry.dimtsz;
+      dxfDimStyle.dimaltf = entry.dimaltf;
+      dxfDimStyle.dimlfac = entry.dimlfac;
+      dxfDimStyle.dimtvp = entry.dimtvp;
+      dxfDimStyle.dimtfac = entry.dimtfac;
+      dxfDimStyle.dimgap = entry.dimgap;
+      dxfDimStyle.dimaltrnd = entry.dimaltrnd;
+
+      dxfDimStyle.dimtol = entry.dimtol;
+      dxfDimStyle.dimlim = entry.dimlim;
+      dxfDimStyle.dimtih = entry.dimtih;
+      dxfDimStyle.dimtoh = entry.dimtoh;
+      dxfDimStyle.dimse1 = entry.dimse1;
+      dxfDimStyle.dimse2 = entry.dimse2;
+      dxfDimStyle.dimtad = entry.dimtad;
+      dxfDimStyle.dimzin = entry.dimzin;
+      dxfDimStyle.dimazin = entry.dimazin;
+      dxfDimStyle.dimalt = entry.dimalt;
+      dxfDimStyle.dimaltd = entry.dimaltd;
+      dxfDimStyle.dimtofl = entry.dimtofl;
+      dxfDimStyle.dimsah = entry.dimsah;
+      dxfDimStyle.dimtix = entry.dimtix;
+      dxfDimStyle.dimsoxd = entry.dimsoxd;
+      dxfDimStyle.dimclrd = entry.dimclrd;
+      dxfDimStyle.dimclre = entry.dimclre;
+      dxfDimStyle.dimclrt = entry.dimclrt;
+      dxfDimStyle.dimadec = entry.dimadec;
+      dxfDimStyle.dimunit = entry.dimunit;
+      dxfDimStyle.dimdec = entry.dimdec;
+      dxfDimStyle.dimtdec = entry.dimtdec;
+      dxfDimStyle.dimaltu = entry.dimaltu;
+      dxfDimStyle.dimalttd = entry.dimalttd;
+      dxfDimStyle.dimaunit = entry.dimaunit;
+      dxfDimStyle.dimfrac = entry.dimfrac;
+      dxfDimStyle.dimlunit = entry.dimlunit;
+      dxfDimStyle.dimdsep = entry.dimdsep;
+      dxfDimStyle.dimtmove = entry.dimtmove;
+      dxfDimStyle.dimjust = entry.dimjust;
+      dxfDimStyle.dimsd1 = entry.dimsd1;
+      dxfDimStyle.dimsd2 = entry.dimsd2;
+      dxfDimStyle.dimtolj = entry.dimtolj;
+      dxfDimStyle.dimtzin = entry.dimtzin;
+      dxfDimStyle.dimaltz = entry.dimaltz;
+      dxfDimStyle.dimaltttz = entry.dimaltttz;
+      dxfDimStyle.dimfit = entry.dimfit;
+      dxfDimStyle.dimupt = entry.dimupt;
+      dxfDimStyle.dimatfit = entry.dimatfit;
+
+      dxfDimStyle.dimfxlon = entry.dimfxlon;
+
+      dxfDimStyle.dimtxsty = entry.dimtxsty;
+      dxfDimStyle.dimldrblk = entry.dimldrblk;
+
+      dxfDimStyle.dimlwd = entry.dimlwd;
+      dxfDimStyle.dimlwe = entry.dimlwe;
+
+      m_dxfWriter->WriteDimStyle(&dxfDimStyle);
+    }
+  };
   void WriteEntities() override {
     if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
 

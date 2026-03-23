@@ -3,6 +3,7 @@
 #include "EoDb.h"
 #include "EoDbBlock.h"
 #include "EoDbCharacterCellDefinition.h"
+#include "EoDbDimStyle.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
@@ -33,6 +34,7 @@ class AeSysDoc : public CDocument {
  private:
   EoDbHeaderSection m_HeaderSection{};
   EoDbLineTypeTable m_LineTypeTable{};
+  std::vector<EoDbDimStyle> m_dimStyleTable{};
   std::vector<EoDbTextStyle> m_textStyleTable{};
   std::vector<EoDbVPortTableEntry> m_vportTable{};
   EoDbBlocks m_BlocksTable{};
@@ -221,6 +223,13 @@ class AeSysDoc : public CDocument {
   // Line Type Table interface
   [[nodiscard]] auto* LineTypeTable() { return &m_LineTypeTable; }
   [[nodiscard]] auto* ContinuousLineType() { return m_continuousLineType; }
+
+  // Dimension Style Table interface
+  [[nodiscard]] auto& DimStyleTable() noexcept { return m_dimStyleTable; }
+  [[nodiscard]] const auto& DimStyleTable() const noexcept { return m_dimStyleTable; }
+  void AddDimStyleEntry(const EoDbDimStyle& entry) { m_dimStyleTable.push_back(entry); }
+  void AddDimStyleEntry(EoDbDimStyle&& entry) { m_dimStyleTable.push_back(std::move(entry)); }
+  void ClearDimStyleTable() noexcept { m_dimStyleTable.clear(); }
 
   // Text Style Table interface
   [[nodiscard]] auto& TextStyleTable() noexcept { return m_textStyleTable; }

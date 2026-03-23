@@ -104,9 +104,91 @@ void EoDbDxfInterface::ConvertAppIdTable(const EoDxfAppId& appId, [[maybe_unused
   ATLTRACE2(traceGeneral, 3, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
 }
 
-void EoDbDxfInterface::ConvertDimStyle(const EoDxfDimensionStyle& dimensionStyle, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertDimStyle(const EoDxfDimensionStyle& dimensionStyle, AeSysDoc* document) {
   const auto& dimStyleName = dimensionStyle.m_tableName;
-  ATLTRACE2(traceGeneral, 3, L"DimStyle - Name: <%s> (unsupported in AeSys)\n", dimStyleName.c_str());
+  ATLTRACE2(traceGeneral, 3, L"DimStyle - Name: <%s>\n", dimStyleName.c_str());
+
+  EoDbDimStyle entry;
+  entry.m_name = dimStyleName;
+  entry.m_flagValues = dimensionStyle.m_flagValues;
+  entry.m_handle = dimensionStyle.m_handle;
+  entry.m_ownerHandle = dimensionStyle.m_ownerHandle;
+
+  entry.dimpost = dimensionStyle.dimpost;
+  entry.dimapost = dimensionStyle.dimapost;
+  entry.dimblk = dimensionStyle.dimblk;
+  entry.dimblk1 = dimensionStyle.dimblk1;
+  entry.dimblk2 = dimensionStyle.dimblk2;
+
+  entry.dimscale = dimensionStyle.dimscale;
+  entry.dimasz = dimensionStyle.dimasz;
+  entry.dimexo = dimensionStyle.dimexo;
+  entry.dimdli = dimensionStyle.dimdli;
+  entry.dimexe = dimensionStyle.dimexe;
+  entry.dimrnd = dimensionStyle.dimrnd;
+  entry.dimdle = dimensionStyle.dimdle;
+  entry.dimtp = dimensionStyle.dimtp;
+  entry.dimtm = dimensionStyle.dimtm;
+  entry.dimfxl = dimensionStyle.dimfxl;
+  entry.dimtxt = dimensionStyle.dimtxt;
+  entry.dimcen = dimensionStyle.dimcen;
+  entry.dimtsz = dimensionStyle.dimtsz;
+  entry.dimaltf = dimensionStyle.dimaltf;
+  entry.dimlfac = dimensionStyle.dimlfac;
+  entry.dimtvp = dimensionStyle.dimtvp;
+  entry.dimtfac = dimensionStyle.dimtfac;
+  entry.dimgap = dimensionStyle.dimgap;
+  entry.dimaltrnd = dimensionStyle.dimaltrnd;
+
+  entry.dimtol = dimensionStyle.dimtol;
+  entry.dimlim = dimensionStyle.dimlim;
+  entry.dimtih = dimensionStyle.dimtih;
+  entry.dimtoh = dimensionStyle.dimtoh;
+  entry.dimse1 = dimensionStyle.dimse1;
+  entry.dimse2 = dimensionStyle.dimse2;
+  entry.dimtad = dimensionStyle.dimtad;
+  entry.dimzin = dimensionStyle.dimzin;
+  entry.dimazin = dimensionStyle.dimazin;
+  entry.dimalt = dimensionStyle.dimalt;
+  entry.dimaltd = dimensionStyle.dimaltd;
+  entry.dimtofl = dimensionStyle.dimtofl;
+  entry.dimsah = dimensionStyle.dimsah;
+  entry.dimtix = dimensionStyle.dimtix;
+  entry.dimsoxd = dimensionStyle.dimsoxd;
+  entry.dimclrd = dimensionStyle.dimclrd;
+  entry.dimclre = dimensionStyle.dimclre;
+  entry.dimclrt = dimensionStyle.dimclrt;
+  entry.dimadec = dimensionStyle.dimadec;
+  entry.dimunit = dimensionStyle.dimunit;
+  entry.dimdec = dimensionStyle.dimdec;
+  entry.dimtdec = dimensionStyle.dimtdec;
+  entry.dimaltu = dimensionStyle.dimaltu;
+  entry.dimalttd = dimensionStyle.dimalttd;
+  entry.dimaunit = dimensionStyle.dimaunit;
+  entry.dimfrac = dimensionStyle.dimfrac;
+  entry.dimlunit = dimensionStyle.dimlunit;
+  entry.dimdsep = dimensionStyle.dimdsep;
+  entry.dimtmove = dimensionStyle.dimtmove;
+  entry.dimjust = dimensionStyle.dimjust;
+  entry.dimsd1 = dimensionStyle.dimsd1;
+  entry.dimsd2 = dimensionStyle.dimsd2;
+  entry.dimtolj = dimensionStyle.dimtolj;
+  entry.dimtzin = dimensionStyle.dimtzin;
+  entry.dimaltz = dimensionStyle.dimaltz;
+  entry.dimaltttz = dimensionStyle.dimaltttz;
+  entry.dimfit = dimensionStyle.dimfit;
+  entry.dimupt = dimensionStyle.dimupt;
+  entry.dimatfit = dimensionStyle.dimatfit;
+
+  entry.dimfxlon = dimensionStyle.dimfxlon;
+
+  entry.dimtxsty = dimensionStyle.dimtxsty;
+  entry.dimldrblk = dimensionStyle.dimldrblk;
+
+  entry.dimlwd = dimensionStyle.dimlwd;
+  entry.dimlwe = dimensionStyle.dimlwe;
+
+  document->AddDimStyleEntry(std::move(entry));
 }
 
 void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* document) {

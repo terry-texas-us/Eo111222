@@ -169,6 +169,8 @@ void AeSysDoc::DeleteContents() {
   // @todo Release EoDbDxfInterface resources if any
 
   m_LineTypeTable.RemoveAll();
+  m_dimStyleTable.clear();
+  m_textStyleTable.clear();
   m_vportTable.clear();
 
   RemoveAllBlocks();
