@@ -16,6 +16,7 @@ class AeSysDoc;
 class AeSysView;
 class EoDbGroupList;
 class EoDbGroup;
+class EoDxfInterface;
 class EoGeTransformMatrix;
 
 class EoDbPrimitive : public CObject {
@@ -104,6 +105,16 @@ class EoDbPrimitive : public CObject {
   virtual bool PivotOnControlPoint(AeSysView*, const EoGePoint4d&);
 
   void SetBaseProperties(const EoDxfGraphic* entity, AeSysDoc* document);
+
+  /// @brief Populates base DXF entity properties from this primitive's members.
+  /// Call this in every ExportToDxf override before writer->Add*().
+  /// @param entity The DXF entity to populate with layer, linetype, color, and handle information.
+  void PopulateDxfBaseProperties(EoDxfGraphic* entity) const;
+
+  /// @brief Exports this primitive to DXF via the writer interface.
+  /// Default implementation is a no-op for primitive types that have no DXF equivalent.
+  /// @param writer The DXF interface to write the entity through.
+  virtual void ExportToDxf(EoDxfInterface* writer) const;
 
   CString FormatPenColor() const;
   CString FormatLineType() const;

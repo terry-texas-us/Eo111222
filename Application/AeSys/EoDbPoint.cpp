@@ -10,6 +10,8 @@
 #include "EoDb.h"
 #include "EoDbPoint.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfEntities.h"
+#include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -150,6 +152,13 @@ void EoDbPoint::Display(AeSysView* view, CDC* context) {
       context->SetPixel(clientPoint.x + pixelSize, clientPoint.y + i, hotPenColor);
     }
   }
+}
+
+void EoDbPoint::ExportToDxf(EoDxfInterface* writer) const {
+  EoDxfPoint point;
+  PopulateDxfBaseProperties(&point);
+  point.m_pointLocation = {m_Point.x, m_Point.y, m_Point.z};
+  writer->AddPoint(point);
 }
 
 void EoDbPoint::AddReportToMessageList(const EoGePoint3d& point) {

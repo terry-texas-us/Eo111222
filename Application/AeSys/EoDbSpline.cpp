@@ -8,6 +8,8 @@
 #include "EoDb.h"
 #include "EoDbPrimitive.h"
 #include "EoDbSpline.h"
+#include "EoDxfInterface.h"
+#include "EoDxfSpline.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -70,6 +72,46 @@ void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
   polyline::BeginLineStrip();
   GenPts(orderOfTheSpline, m_pts);
   polyline::__End(view, deviceContext, lineType);
+}
+
+void EoDbSpline::ExportToDxf(EoDxfInterface* writer) const {
+  const auto numberOfControlPoints = static_cast<std::int16_t>(m_pts.GetSize());
+  if (numberOfControlPoints == 0) { return; }
+
+  EoDxfSpline spline;
+  PopulateDxfBaseProperties(&spline);
+
+  constexpr std::int16_t degree = 3;
+  const std::int16_t order = degree + 1;
+  spline.m_degreeOfTheSplineCurve = degree;
+  spline.m_splineFlag = 0x08;  // planar
+  spline.m_numberOfControlPoints = numberOfControlPoints;
+
+  // Generate uniform knot vector: order zeros, 1..n-order, order (n-order+1)s
+  const std::int16_t numberOfKnots = numberOfControlPoints + order;
+  spline.m_numberOfKnots = numberOfKnots;
+  spline.m_knotValues.reserve(static_cast<size_t>(numberOfKnots));
+  for (std::int16_t i = 0; i < numberOfKnots; ++i) {
+    if (i < order) {
+      spline.m_knotValues.push_back(0.0);
+    } else if (i > numberOfControlPoints) {
+      spline.m_knotValues.push_back(static_cast<double>(numberOfControlPoints - degree));
+    } else {
+      spline.m_knotValues.push_back(static_cast<double>(i - degree));
+    }
+  }
+
+  spline.m_numberOfFitPoints = 0;
+
+  for (INT_PTR i = 0; i < numberOfControlPoints; ++i) {
+    auto* controlPoint = new EoDxfGeometryBase3d();
+    controlPoint->x = m_pts[i].x;
+    controlPoint->y = m_pts[i].y;
+    controlPoint->z = m_pts[i].z;
+    spline.m_controlPoints.push_back(controlPoint);
+  }
+
+  writer->AddSpline(spline);
 }
 
 void EoDbSpline::AddReportToMessageList(const EoGePoint3d& point) {

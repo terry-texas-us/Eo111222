@@ -2,9 +2,9 @@
 
 The local project repo is in a folder called `D:\Projects\Eo111222`.
 
-I need a solution for reading open source .DXF CAD files, which I will convert to the proprietary .PEG (`Peg & Tra File Formats.md`) file. For DXF initial parsing, I will follow the example of ezdxf.
+DXF reading via `EoDxfLib` is operational for core entity types (LINE, ARC, CIRCLE, ELLIPSE, TEXT, MTEXT, ATTRIB, INSERT, LWPOLYLINE, POLYLINE, SPLINE, HATCH, VIEWPORT), following the ezdxf architecture model. Parsed entities are converted to `EoDbPrimitive`-derived objects and stored in `AeSysDoc` layers. See `Peg & Tra File Formats.md` for the legacy file structure.
 
-I will be making substantial changes to the .PEG file to make linear parsing of .DXF easier. Using the terminology of the .DXF specification, I want to use a handle architecture for at least the header and table sections. The only hard resource handles will be from the entities to the header and tables. I am uncertain if I need to implement extension dictionaries, but it would help with future proofing. I have no experience with this type of persistence database design.
+The PEG V2 handle architecture is **implemented**: `EoDbPrimitive` carries `m_handle`/`m_ownerHandle` (`std::uint64_t`), assigned via `EoDbHandleManager`. Entity→layer/linetype handle linkage covers current import/export needs. Extension dictionaries are **deferred** — see the **Handle Architecture** section below.
 
 You can assume I know the code base very well and should have little trouble with modern versions of C++. Provide suggestions detailing the code modernization.
 
@@ -24,6 +24,7 @@ You can assume I know the code base very well and should have little trouble wit
 - Prefer marking simple geometric operations and getters `noexcept` when possible.
 - Prefer `[[nodiscard]]` for getters when possible.
 - Use verbose naming for variables and functions to enhance self-documentation. Aim for clarity over terseness, and include comments where necessary to explain complex logic. Favor explicit formatting/parsing options when behavior is intended to be self-documenting.
+- Use `%I64X` (not `%llX`) for `std::uint64_t` in `CString::Format` — this is the MSVC-traditional specifier and is consistent throughout the codebase.
 
 ## EoDxf Text Support
 - Implement only essential codec behavior first: CP1252 plus round-trip support goals for ASCII and binary DXF with ANSI_1252, UTF-8, and UTF-16.
@@ -138,6 +139,46 @@ To recover DXF properties from the reference system:
   - `AeSys\EoDbLine.h`, `AeSys\EoDbConic.h`
   - `AeSys\EoDbPoint.h`, `AeSys\EoDbPolyline.h`, `AeSys\EoDbPolygon.h`, `AeSys\EoDbSpline.h`
   - `AeSys\EoDbText.h`, `AeSys\EoDbBlockReference.h`
+
+## EoDbPrimitive Virtual Contract
+
+### Non-Pure Virtuals with Base Implementations
+Two methods provide common formatting that all derived classes share — derived overrides call the base first, then append type-specific content:
+
+| Method | Base output | Derived contract |
+|--------|-------------|------------------|
+| `FormatExtra(CString& extra)` | `Handle;%I64X\tOwner;%I64X\tLayer;%s\tColor;%s\tLineType;%s` | Call base → `AppendFormat` type-specific `Name;Value\t` pairs → `extra += L'\t'` terminator |
+| `AddReportToMessageList(const EoGePoint3d&)` | One message line: `Handle: %I64X  Owner: %I64X  Layer: %s  Color: %s  LineType: %s` | Call base → add type-label and geometry lines via `app.AddStringToMessageList` |
+
+### FormatExtra Terminator Rule
+`FillExtraList` in `EoDlgEditTrapCommandsQuery.cpp` parses `FormatExtra` output by alternating `Find(';')` / `Find('\t')`. The last pair **must** end with `\t` — if missing, `CString::Mid(offset, -1)` returns an empty string for the final value. Every `FormatExtra` override must end with `extra += L'\t'`. `EoDbConic` uses a single terminator placed **after** its subtype switch block, not inside each case.
+
+### Pure Virtuals — Candidates for Future Relaxation
+The following `= 0` virtuals have safe universal defaults and are strong candidates to become non-pure virtual:
+
+| Method | Safe default | Rationale |
+|--------|-------------|----------|
+| `Identical(EoDbPrimitive*)` | `return false` | 8 of 11 derived classes already implement exactly this |
+| `SelectUsingLine`, `SelectUsingPoint`, `SelectUsingRectangle`, `IsPointOnControlPoint` | `return false` | Display-only primitives (annotation, viewport overlays) need no selection |
+| `FormatGeometry(CString&)` | no-op | Future non-geometric primitives have no geometry fields to report |
+| `GetAllPoints(EoGePoint3dArray&)` | `points.SetSize(0)` | Semantically correct "no control points" default |
+
+The following must remain `= 0`: `Display`, `Copy`, `Assign`, `Transform`/`Translate`/`TranslateUsingMask`, `Write` (both overloads), `Is`, `AddToTreeViewControl`, `GetExtents`, `IsInView`, `GoToNextControlPoint`/`GetControlPoint`/`SelectAtControlPoint`.
+
+## Handle Architecture
+
+### Implementation Status ✅
+- `EoDbPrimitive::m_handle` / `m_ownerHandle` — `std::uint64_t`, zero-initialized (zero = no handle).
+- `EoDbHandleManager` (`EoDbHandleManager.h`) — `AssignHandle()` increments and returns `m_nextHandle`; `AccommodateHandle(h)` advances the counter past any pre-existing handle imported from DXF. `AeSysDoc` holds one instance; its seed is set from the DXF `$HANDSEED` header variable.
+- `SetBaseProperties(EoDxfGraphic*, AeSysDoc*)` propagates `m_handle`, `m_ownerHandle`, layer name, and linetype from the parsed DXF entity into the primitive.
+
+### Type Decision
+`std::uint64_t` is preferred over a `using EoDbHandle = std::uint64_t` alias. Handle arithmetic (increment, comparison, hex formatting) is intentional — the transparent type correctly communicates that handles are integers. A strong-typedef wrapper would require `explicit` construction and operator overloads with no practical benefit in this codebase.
+
+### Deferred Work
+- **Extension dictionaries** (XDICT, ACAD_REACTORS): not needed for current entity→layer/linetype linkage.
+- **Handle lookup table**: `m_ownerHandle` is stored on each primitive but a reverse map (handle → `EoDbLayer*` / `EoDbLineType*`) is not yet wired. Layer and linetype are currently resolved by name in `SetBaseProperties`.
+- **PEG V2 handle serialization**: handles will be written alongside entity records when V2 binary format is defined per primitive type.
 
 ## Documentation
 - Utilize Doxygen for automated documentation generation. Ensure that comments are clear and descriptive, and consider the balance between verbosity and clarity to maintain readability.

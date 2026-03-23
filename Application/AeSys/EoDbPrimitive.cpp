@@ -110,6 +110,23 @@ std::int16_t EoDbPrimitive::LogicalLineType() const noexcept {
   return lineTypeIndex;
 }
 
+void EoDbPrimitive::PopulateDxfBaseProperties(EoDxfGraphic* entity) const {
+  entity->m_layer = m_layerName;
+  entity->m_color = m_color;
+  entity->m_handle = m_handle;
+  entity->m_ownerHandle = m_ownerHandle;
+
+  if (m_lineTypeIndex == LINETYPE_BYLAYER) {
+    entity->m_lineType = L"BYLAYER";
+  } else if (m_lineTypeIndex == LINETYPE_BYBLOCK) {
+    entity->m_lineType = L"BYBLOCK";
+  } else if (!m_lineTypeName.empty()) {
+    entity->m_lineType = m_lineTypeName;
+  }
+}
+
+void EoDbPrimitive::ExportToDxf([[maybe_unused]] EoDxfInterface* writer) const {}
+
 void EoDbPrimitive::ModifyState() {
   m_color = renderState.Color();
   m_lineTypeIndex = renderState.LineTypeIndex();

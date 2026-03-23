@@ -12,6 +12,8 @@
 #include "EoDbGroupList.h"
 #include "EoDbLine.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfEntities.h"
+#include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -106,6 +108,14 @@ void EoDbLine::Display(AeSysView* view, CDC* deviceContext) {
   polyline::SetVertex(m_line.begin);
   polyline::SetVertex(m_line.end);
   polyline::__End(view, deviceContext, lineType);
+}
+
+void EoDbLine::ExportToDxf(EoDxfInterface* writer) const {
+  EoDxfLine line;
+  PopulateDxfBaseProperties(&line);
+  line.m_startPoint = {m_line.begin.x, m_line.begin.y, m_line.begin.z};
+  line.m_endPoint = {m_line.end.x, m_line.end.y, m_line.end.z};
+  writer->AddLine(line);
 }
 
 void EoDbLine::AddReportToMessageList(const EoGePoint3d& point) {

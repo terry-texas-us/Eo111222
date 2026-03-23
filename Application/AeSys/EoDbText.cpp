@@ -11,6 +11,8 @@
 #include "EoDbFontDefinition.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
+#include "EoDxfInterface.h"
+#include "EoDxfText.h"
 #include "EoDlgTrapModify.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
@@ -131,6 +133,70 @@ void EoDbText::Display(AeSysView* view, CDC* deviceContext) {
 
   DisplayText(view, deviceContext, m_fontDefinition, m_ReferenceSystem, m_strText);
   renderState.SetLineType(deviceContext, lineTypeIndex);
+}
+
+void EoDbText::ExportToDxf(EoDxfInterface* writer) const {
+  EoDxfText text;
+  PopulateDxfBaseProperties(&text);
+
+  text.m_string = std::wstring(m_strText.GetString());
+  text.m_textStyleName = std::wstring(m_fontDefinition.FontName().GetString());
+
+  // Recover DXF properties from the reference system
+  const double textHeight = m_ReferenceSystem.YDirection().Length();
+  text.m_textHeight = textHeight;
+
+  const double xDirLength = m_ReferenceSystem.XDirection().Length();
+  if (textHeight > Eo::geometricTolerance) {
+    text.m_scaleFactorWidth = xDirLength / (textHeight * Eo::defaultCharacterCellAspectRatio);
+  }
+
+  // Rotation angle from xDirection (in radians — DXF TEXT group 50 is degrees but EoDxfWrite converts)
+  const auto& xDir = m_ReferenceSystem.XDirection();
+  text.m_textRotation = std::atan2(xDir.y, xDir.x);
+
+  // Map AeSys alignment to DXF alignment
+  switch (m_fontDefinition.HorizontalAlignment()) {
+    case EoDb::HorizontalAlignment::Center:
+      text.m_horizontalAlignment = EoDxfText::HorizontalAlignment::Center;
+      break;
+    case EoDb::HorizontalAlignment::Right:
+      text.m_horizontalAlignment = EoDxfText::HorizontalAlignment::Right;
+      break;
+    case EoDb::HorizontalAlignment::Left:
+      [[fallthrough]];
+    default:
+      text.m_horizontalAlignment = EoDxfText::HorizontalAlignment::Left;
+      break;
+  }
+
+  switch (m_fontDefinition.VerticalAlignment()) {
+    case EoDb::VerticalAlignment::Top:
+      text.m_verticalAlignment = EoDxfText::VerticalAlignment::Top;
+      break;
+    case EoDb::VerticalAlignment::Middle:
+      text.m_verticalAlignment = EoDxfText::VerticalAlignment::Middle;
+      break;
+    case EoDb::VerticalAlignment::Bottom:
+      [[fallthrough]];
+    default:
+      text.m_verticalAlignment = EoDxfText::VerticalAlignment::Bottom;
+      break;
+  }
+
+  const auto origin = m_ReferenceSystem.Origin();
+
+  // DXF TEXT: Left+Baseline uses first alignment point; all other alignments use second alignment point
+  const bool isDefaultAlignment = (text.m_horizontalAlignment == EoDxfText::HorizontalAlignment::Left &&
+                                   text.m_verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
+  if (isDefaultAlignment) {
+    text.m_firstAlignmentPoint = {origin.x, origin.y, origin.z};
+  } else {
+    text.m_firstAlignmentPoint = {origin.x, origin.y, origin.z};
+    text.m_secondAlignmentPoint = {origin.x, origin.y, origin.z};
+  }
+
+  writer->AddText(text);
 }
 
 void EoDbText::AddReportToMessageList(const EoGePoint3d& point) {

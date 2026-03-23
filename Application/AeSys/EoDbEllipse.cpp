@@ -13,6 +13,8 @@
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfEntities.h"
+#include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -450,6 +452,36 @@ void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
 void EoDbEllipse::GetAllPoints(EoGePoint3dArray& points) {
   points.SetSize(0);
   points.Add(m_center);
+}
+
+void EoDbEllipse::ExportToDxf(EoDxfInterface* writer) const {
+  EoDxfEllipse ellipse;
+  PopulateDxfBaseProperties(&ellipse);
+  ellipse.m_centerPoint = {m_center.x, m_center.y, m_center.z};
+  ellipse.m_endPointOfMajorAxis = {m_majorAxis.x, m_majorAxis.y, m_majorAxis.z};
+
+  auto normal = CrossProduct(m_majorAxis, m_minorAxis);
+  const double normalLength = normal.Length();
+  if (normalLength > Eo::geometricTolerance) {
+    normal /= normalLength;
+  } else {
+    normal = EoGeVector3d(0.0, 0.0, 1.0);
+  }
+  ellipse.m_extrusionDirection = {normal.x, normal.y, normal.z};
+
+  const double majorLength = m_majorAxis.Length();
+  ellipse.m_ratio = majorLength > Eo::geometricTolerance ? m_minorAxis.Length() / majorLength : 1.0;
+
+  const double absSweep = std::abs(m_sweepAngle);
+  if (absSweep >= Eo::TwoPi - Eo::geometricTolerance) {
+    ellipse.m_startParam = 0.0;
+    ellipse.m_endParam = Eo::TwoPi;
+  } else {
+    ellipse.m_startParam = 0.0;
+    ellipse.m_endParam = m_sweepAngle;
+  }
+
+  writer->AddEllipse(ellipse);
 }
 
 void EoDbEllipse::AddReportToMessageList(const EoGePoint3d& point) {

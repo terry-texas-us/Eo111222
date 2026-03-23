@@ -31,6 +31,7 @@ class EoDbSpline : public EoDbPrimitive {
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbSpline*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
+  void ExportToDxf(EoDxfInterface* writer) const override;
   void GetAllPoints(EoGePoint3dArray& pts) override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;

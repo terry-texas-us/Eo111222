@@ -11,6 +11,8 @@
 #include "EoDbBlockReference.h"
 #include "EoDbGroup.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfEntities.h"
+#include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGeMatrix.h"
 #include "EoGeOcsTransform.h"
@@ -164,6 +166,24 @@ void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
       view->PopModelTransform();
     }
   }
+}
+void EoDbBlockReference::ExportToDxf(EoDxfInterface* writer) const {
+  EoDxfInsert insert;
+  PopulateDxfBaseProperties(&insert);
+
+  insert.m_blockName = std::wstring(m_blockName.GetString());
+  insert.m_insertionPoint = {m_insertionPoint.x, m_insertionPoint.y, m_insertionPoint.z};
+  insert.m_xScaleFactor = m_scaleFactors.x;
+  insert.m_yScaleFactor = m_scaleFactors.y;
+  insert.m_zScaleFactor = m_scaleFactors.z;
+  insert.m_rotationAngle = m_rotation;
+  insert.m_extrusionDirection = {m_normal.x, m_normal.y, m_normal.z};
+  insert.m_columnCount = m_columnCount;
+  insert.m_rowCount = m_rowCount;
+  insert.m_columnSpacing = m_columnSpacing;
+  insert.m_rowSpacing = m_rowSpacing;
+
+  writer->AddInsert(insert);
 }
 void EoDbBlockReference::AddReportToMessageList(const EoGePoint3d& point) {
   app.AddStringToMessageList(L"<BlockReference>");

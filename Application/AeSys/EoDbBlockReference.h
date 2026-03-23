@@ -40,6 +40,7 @@ class EoDbBlockReference : public EoDbPrimitive {
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbBlockReference*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, CDC* deviceContext) override;
+  void ExportToDxf(EoDxfInterface* writer) const override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;

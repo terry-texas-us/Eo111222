@@ -8,6 +8,8 @@
 #include "EoDb.h"
 #include "EoDbPolyline.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfEntities.h"
+#include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -153,6 +155,38 @@ void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
     for (auto i = 0; i < numberOfVertices; i++) { polyline::SetVertex(m_pts[i]); }
   }
   polyline::__End(view, deviceContext, lineType);
+}
+
+void EoDbPolyline::ExportToDxf(EoDxfInterface* writer) const {
+  const auto numberOfVertices = static_cast<size_t>(m_pts.GetSize());
+  if (numberOfVertices == 0) { return; }
+
+  EoDxfLwPolyline lwPolyline;
+  PopulateDxfBaseProperties(&lwPolyline);
+
+  lwPolyline.m_numberOfVertices = static_cast<std::int32_t>(numberOfVertices);
+
+  std::int16_t polylineFlag = 0;
+  if (IsClosed()) { polylineFlag |= 0x01; }
+  if (HasPlinegen()) { polylineFlag |= 0x80; }
+  lwPolyline.m_polylineFlag = polylineFlag;
+  lwPolyline.m_constantWidth = m_constantWidth;
+
+  lwPolyline.m_vertices.reserve(numberOfVertices);
+  for (size_t i = 0; i < numberOfVertices; ++i) {
+    EoDxfPolylineVertex2d vertex;
+    vertex.x = m_pts[static_cast<INT_PTR>(i)].x;
+    vertex.y = m_pts[static_cast<INT_PTR>(i)].y;
+    vertex.z = m_pts[static_cast<INT_PTR>(i)].z;
+
+    if (i < m_bulges.size()) { vertex.bulge = m_bulges[i]; }
+    if (i < m_startWidths.size()) { vertex.stawidth = m_startWidths[i]; }
+    if (i < m_endWidths.size()) { vertex.endwidth = m_endWidths[i]; }
+
+    lwPolyline.m_vertices.push_back(vertex);
+  }
+
+  writer->AddLWPolyline(lwPolyline);
 }
 
 void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
