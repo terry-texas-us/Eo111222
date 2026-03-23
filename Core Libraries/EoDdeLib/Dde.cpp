@@ -107,7 +107,7 @@ HDDEDATA WINAPI dde::StdCallback(
       // Try and process them here first.
       if (DoCallback(wType, wFmt, hConv, hsz1, hsz2, hData, &hDdeData)) { return hDdeData; }
 
-      // Fall Through to allow the custom callback a chance
+      [[fallthrough]] // Fall Through to allow the custom callback a chance
     default:
       if (ServerInfo.pfnCustomCallback != 0) {
         return (ServerInfo.pfnCustomCallback(wType, wFmt, hConv, hsz1, hsz2, hData, dwData1, dwData2));

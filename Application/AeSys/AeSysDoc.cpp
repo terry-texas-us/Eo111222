@@ -169,6 +169,7 @@ void AeSysDoc::DeleteContents() {
   // @todo Release EoDbDxfInterface resources if any
 
   m_LineTypeTable.RemoveAll();
+  m_vportTable.clear();
 
   RemoveAllBlocks();
   RemoveAllLayerTableLayers();
@@ -370,6 +371,11 @@ void AeSysDoc::SetCommonTableEntries() {
   auto* paperSpaceLayer0 = new EoDbLayer(L"0", commonState);
   paperSpaceLayer0->SetLineType(lineType);
   AddLayerToSpace(paperSpaceLayer0, EoDxf::Space::PaperSpace);
+
+  // Create the default *ACTIVE viewport table entry if none exists
+  if (m_vportTable.empty()) {
+    m_vportTable.emplace_back();  // EoDbVPortTableEntry defaults to *ACTIVE with sensible values
+  }
 
   auto applicationPath = App::PathFromCommandLine();
 

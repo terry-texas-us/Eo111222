@@ -23,10 +23,6 @@
     <RootNamespace>AeSys</RootNamespace>
     <Keyword>MFCProj</Keyword>
     <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
-    <SccProjectName>SAK</SccProjectName>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccProvider>SAK</SccProvider>
     <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -95,16 +91,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-    <PreBuildEvent>
-      <Command>
-			"$(SolutionDir)$(Platform)\$(Configuration)\Reflex.exe" --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"
-		</Command>
-    </PreBuildEvent>
+	</Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -127,16 +114,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-    <PreBuildEvent>
-      <Command>
-			"$(SolutionDir)$(Platform)\$(Configuration)\Reflex.exe" --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"
-		</Command>
-    </PreBuildEvent>
+	</Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -161,16 +139,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-    </Link>
-    <PreBuildEvent>
-      <Command>
-			"$(SolutionDir)$(Platform)\$(Configuration)\Reflex.exe" --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"
-		</Command>
-    </PreBuildEvent>
+	</Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -195,16 +164,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-    </Link>
-    <PreBuildEvent>
-      <Command>
-			"$(SolutionDir)$(Platform)\$(Configuration)\Reflex.exe" --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "$(ProjectDir)lex_rules.l"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes.txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" "$(OutDir)res\LineTypes\"
-			xcopy /Y /I /E "$(ProjectDir)res\Hatches\DefaultSet.txt" "$(OutDir)res\Hatches\"
-		</Command>
-    </PreBuildEvent>
+	</Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
@@ -249,7 +209,13 @@
     <None Include="vshints.hm" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="lex_rules.l" />
+    <CustomBuild Include="lex_rules.l">
+      <FileType>Document</FileType>
+      <Command>"$(SolutionDir)$(Platform)\$(Configuration)\Reflex.exe" --unicode --header-file="$(ProjectDir)lex.yy.h" --outfile="$(ProjectDir)lex.yy.cpp" "%(FullPath)"</Command>
+      <Outputs>$(ProjectDir)lex.yy.cpp;$(ProjectDir)lex.yy.h</Outputs>
+      <Message>Generating lexer from %(Filename)%(Extension)</Message>
+      <AdditionalInputs>$(SolutionDir)$(Platform)\$(Configuration)\Reflex.exe</AdditionalInputs>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core Libraries\ReflexLib\ReflexLib.vcxproj">
@@ -266,6 +232,12 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="CopyResources" AfterTargets="Build">
+    <Copy SourceFiles="$(ProjectDir)res\LineTypes\LineTypes.txt" DestinationFolder="$(OutDir)res\LineTypes\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(ProjectDir)res\LineTypes\LineTypes-ACAD(scaled to AeSys).txt" DestinationFolder="$(OutDir)res\LineTypes\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(ProjectDir)res\LineTypes\LineTypes-ISO128(scaled to AeSys).txt" DestinationFolder="$(OutDir)res\LineTypes\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(ProjectDir)res\Hatches\DefaultSet.txt" DestinationFolder="$(OutDir)res\Hatches\" SkipUnchangedFiles="true" />
+  </Target>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <ProjectExtensions>

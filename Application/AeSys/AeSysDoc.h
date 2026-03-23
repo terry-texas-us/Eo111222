@@ -12,6 +12,7 @@
 #include "EoDbLineTypeTable.h"
 #include "EoDbMaskedPrimitive.h"
 #include "EoDbPrimitive.h"
+#include "EoDbVPortTableEntry.h"
 #include "EoDxfBase.h"
 #include "EoGePoint3d.h"
 #include "EoGeUniquePoint.h"
@@ -30,6 +31,7 @@ class AeSysDoc : public CDocument {
  private:
   EoDbHeaderSection m_HeaderSection{};
   EoDbLineTypeTable m_LineTypeTable{};
+  std::vector<EoDbVPortTableEntry> m_vportTable{};
   EoDbBlocks m_BlocksTable{};
   EoDbGroupList m_DeletedGroupList{};
   EoDbGroupList m_trappedGroups{};
@@ -208,6 +210,13 @@ class AeSysDoc : public CDocument {
   // Line Type Table interface
   [[nodiscard]] auto* LineTypeTable() { return &m_LineTypeTable; }
   [[nodiscard]] auto* ContinuousLineType() { return m_continuousLineType; }
+
+  // Viewport Table interface (AE2026)
+  [[nodiscard]] auto& VPortTable() noexcept { return m_vportTable; }
+  [[nodiscard]] const auto& VPortTable() const noexcept { return m_vportTable; }
+  void AddVPortTableEntry(const EoDbVPortTableEntry& entry) { m_vportTable.push_back(entry); }
+  void AddVPortTableEntry(EoDbVPortTableEntry&& entry) { m_vportTable.push_back(std::move(entry)); }
+  void ClearVPortTable() noexcept { m_vportTable.clear(); }
 
   void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
 

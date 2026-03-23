@@ -536,7 +536,39 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
   };
   void WriteTextstyles() override {};
-  void WriteVports() override {};
+  void WriteVports() override {
+    if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
+
+    for (const auto& entry : m_document->VPortTable()) {
+      EoDxfVPort dxfVPort;
+      dxfVPort.m_tableName = entry.m_name;
+      dxfVPort.m_lowerLeftCorner = {entry.m_lowerLeftCorner.x, entry.m_lowerLeftCorner.y};
+      dxfVPort.m_upperRightCorner = {entry.m_upperRightCorner.x, entry.m_upperRightCorner.y};
+      dxfVPort.m_viewCenter = {entry.m_viewCenter.x, entry.m_viewCenter.y};
+      dxfVPort.m_snapBasePoint = {entry.m_snapBasePoint.x, entry.m_snapBasePoint.y};
+      dxfVPort.m_snapSpacing = {entry.m_snapSpacing.x, entry.m_snapSpacing.y};
+      dxfVPort.m_gridSpacing = {entry.m_gridSpacing.x, entry.m_gridSpacing.y};
+      dxfVPort.m_viewDirection = {entry.m_viewDirection.x, entry.m_viewDirection.y, entry.m_viewDirection.z};
+      dxfVPort.m_viewTargetPoint = {entry.m_viewTargetPoint.x, entry.m_viewTargetPoint.y, entry.m_viewTargetPoint.z};
+      dxfVPort.m_viewHeight = entry.m_viewHeight;
+      dxfVPort.m_viewAspectRatio = entry.m_viewAspectRatio;
+      dxfVPort.m_lensLength = entry.m_lensLength;
+      dxfVPort.m_frontClipPlane = entry.m_frontClipPlane;
+      dxfVPort.m_backClipPlane = entry.m_backClipPlane;
+      dxfVPort.m_snapRotationAngle = entry.m_snapRotationAngle;
+      dxfVPort.m_viewTwistAngle = entry.m_viewTwistAngle;
+      dxfVPort.m_viewMode = entry.m_viewMode;
+      dxfVPort.m_circleZoomPercent = entry.m_circleZoomPercent;
+      dxfVPort.m_fastZoom = entry.m_fastZoom;
+      dxfVPort.m_ucsIcon = entry.m_ucsIcon;
+      dxfVPort.m_snapOn = entry.m_snapOn;
+      dxfVPort.m_gridOn = entry.m_gridOn;
+      dxfVPort.m_snapStyle = entry.m_snapStyle;
+      dxfVPort.m_snapIsopair = entry.m_snapIsopair;
+      dxfVPort.m_gridBehavior = entry.m_gridBehavior;
+      m_dxfWriter->WriteVport(&dxfVPort);
+    }
+  };
 
   void SetHeaderSectionVariable(
       const EoDxfHeader* header, std::wstring_view keyToFind, EoDbHeaderSection& headerSection);

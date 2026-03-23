@@ -29,6 +29,7 @@
 #include "EoDbSpline.h"
 #include "EoDbText.h"
 #include "EoDbViewport.h"
+#include "EoDbVPortTableEntry.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGeReferenceSystem.h"
@@ -153,7 +154,7 @@ void EoDbPegFile::ReadTablesSection(AeSysDoc* document, EoDb::PegFileVersion fil
   if (EoDb::ReadUInt16(*this) != EoDb::kTablesSection) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kTablesSection.");
   }
-  ReadViewportTable(document);
+  ReadViewportTable(document, fileVersion);
   ReadLinetypesTable(document, fileVersion);
   ReadLayerTable(document, fileVersion);
 
@@ -161,12 +162,21 @@ void EoDbPegFile::ReadTablesSection(AeSysDoc* document, EoDb::PegFileVersion fil
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.");
   }
 }
-void EoDbPegFile::ReadViewportTable(AeSysDoc*) {
+void EoDbPegFile::ReadViewportTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   if (EoDb::ReadUInt16(*this) != EoDb::kViewPortTable) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kViewPortTable.");
   }
 
-  if (EoDb::ReadUInt16(*this) != 0) {
+  const auto numberOfViewports = EoDb::ReadUInt16(*this);
+
+  if (fileVersion == EoDb::PegFileVersion::AE2026 && numberOfViewports > 0) {
+    document->ClearVPortTable();
+    for (std::uint16_t n = 0; n < numberOfViewports; n++) {
+      EoDbVPortTableEntry entry;
+      entry.Read(*this);
+      document->AddVPortTableEntry(std::move(entry));
+    }
+  } else if (numberOfViewports != 0) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting number of viewports to be 0.");
   }
 
@@ -581,9 +591,17 @@ void EoDbPegFile::WriteTablesSection(AeSysDoc* document, EoDb::PegFileVersion fi
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
-void EoDbPegFile::WriteVPortTable(AeSysDoc*, [[maybe_unused]] EoDb::PegFileVersion fileVersion) {
+void EoDbPegFile::WriteVPortTable(AeSysDoc* document, [[maybe_unused]] EoDb::PegFileVersion fileVersion) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kViewPortTable));
-  EoDb::WriteUInt16(*this, std::uint16_t(0));
+
+  if (fileVersion == EoDb::PegFileVersion::AE2026) {
+    const auto& vportTable = document->VPortTable();
+    EoDb::WriteUInt16(*this, static_cast<std::uint16_t>(vportTable.size()));
+    for (const auto& entry : vportTable) { entry.Write(*this); }
+  } else {
+    EoDb::WriteUInt16(*this, std::uint16_t(0));
+  }
+
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 }
 

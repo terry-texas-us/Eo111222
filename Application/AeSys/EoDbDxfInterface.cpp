@@ -220,37 +220,38 @@ void EoDbDxfInterface::ConvertTextStyleTable(const EoDxfTextStyle& textStyle, [[
   // charset, and italic and bold flags (group code 1071)
 }
 
-void EoDbDxfInterface::ConvertVPortTable(const EoDxfVPort& viewport, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertVPortTable(const EoDxfVPort& viewport, AeSysDoc* document) {
   const auto& viewportName = viewport.m_tableName;
-  ATLTRACE2(traceGeneral, 3, L"Viewport - Name: %s (unsupported in AeSys)\n", viewportName.c_str());
+  ATLTRACE2(traceGeneral, 3, L"Viewport - Name: %s\n", viewportName.c_str());
 
-  auto lowerLeft = EoGePoint3d(viewport.m_lowerLeftCorner.x, viewport.m_lowerLeftCorner.y,
-      0.0);  // code 10 & 20 (2D point)
-  auto upperRight = EoGePoint3d(viewport.m_upperRightCorner.x, viewport.m_upperRightCorner.y,
-      0.0);  // code 11 & 21 (2D point)
-  auto center = EoGePoint3d(viewport.m_viewCenter.x, viewport.m_viewCenter.y,
-      0.0);  // code 12 & 22 (2D point in DCS)
-  auto snapBase = EoGePoint3d(viewport.m_snapBasePoint.x, viewport.m_snapBasePoint.y,
-      0.0);  // code 13 & 23 (2D point in DCS)
-  auto snapSpacing = EoGePoint3d(viewport.m_snapSpacing.x, viewport.m_snapSpacing.y,
-      0.0);  // code 14 & 24 (2D point in DCS)
-  auto gridSpacing = EoGePoint3d(viewport.m_gridSpacing.x, viewport.m_gridSpacing.y,
-      0.0);  // code 15 & 25 (2D point in DCS)
-  auto viewDirection = EoGeVector3d(viewport.m_viewDirection.x, viewport.m_viewDirection.y,
-      viewport.m_viewDirection.z);  // code 16, 26 & 36 (3D point in WCS)
-  auto viewTarget = EoGeVector3d(viewport.m_viewTargetPoint.x, viewport.m_viewTargetPoint.y,
-      viewport.m_viewTargetPoint.z);  // code 17, 27 & 37 (3D point in WCS)
+  EoDbVPortTableEntry entry;
+  entry.m_name = viewportName;
+  entry.m_lowerLeftCorner.Set(viewport.m_lowerLeftCorner.x, viewport.m_lowerLeftCorner.y, 0.0);
+  entry.m_upperRightCorner.Set(viewport.m_upperRightCorner.x, viewport.m_upperRightCorner.y, 0.0);
+  entry.m_viewCenter.Set(viewport.m_viewCenter.x, viewport.m_viewCenter.y, 0.0);
+  entry.m_snapBasePoint.Set(viewport.m_snapBasePoint.x, viewport.m_snapBasePoint.y, 0.0);
+  entry.m_snapSpacing.Set(viewport.m_snapSpacing.x, viewport.m_snapSpacing.y, 0.0);
+  entry.m_gridSpacing.Set(viewport.m_gridSpacing.x, viewport.m_gridSpacing.y, 0.0);
+  entry.m_viewDirection.Set(viewport.m_viewDirection.x, viewport.m_viewDirection.y, viewport.m_viewDirection.z);
+  entry.m_viewTargetPoint.Set(viewport.m_viewTargetPoint.x, viewport.m_viewTargetPoint.y, viewport.m_viewTargetPoint.z);
+  entry.m_viewHeight = viewport.m_viewHeight;
+  entry.m_viewAspectRatio = viewport.m_viewAspectRatio;
+  entry.m_lensLength = viewport.m_lensLength;
+  entry.m_frontClipPlane = viewport.m_frontClipPlane;
+  entry.m_backClipPlane = viewport.m_backClipPlane;
+  entry.m_snapRotationAngle = viewport.m_snapRotationAngle;
+  entry.m_viewTwistAngle = viewport.m_viewTwistAngle;
+  entry.m_viewMode = viewport.m_viewMode;
+  entry.m_circleZoomPercent = viewport.m_circleZoomPercent;
+  entry.m_fastZoom = viewport.m_fastZoom;
+  entry.m_ucsIcon = viewport.m_ucsIcon;
+  entry.m_snapOn = viewport.m_snapOn;
+  entry.m_gridOn = viewport.m_gridOn;
+  entry.m_snapStyle = viewport.m_snapStyle;
+  entry.m_snapIsopair = viewport.m_snapIsopair;
+  entry.m_gridBehavior = viewport.m_gridBehavior;
 
-  // auto viewHeight = viewport.m_viewHeight;                   // code 40
-  // auto viewAspectRatio = viewport.m_viewAspectRatio;         // code 41
-  // auto lensLength = viewport.m_lensLength;                   // code 42
-  // auto frontClipPlane = viewport.m_frontClipPlane;           // code 43
-  // auto backClipPlane = viewport.m_backClipPlane;             // code 44
-  // auto snapRotationAngle = viewport.m_snapRotationAngle;    // code 50
-  // auto viewTwistAngle = viewport.m_viewTwistAngle;          // code 51
-
-  // auto viewMode = viewport.m_viewMode;  // code 71
-  // auto ucsIcon = viewport.m_ucsIcon;    // code 74
+  document->AddVPortTableEntry(std::move(entry));
 }
 
 /** @brief This method is invoked when a new block definition is encountered in the file.

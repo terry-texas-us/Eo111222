@@ -21,7 +21,7 @@ class EoDbPegFile : public CFile {
       std::vector<double>& dashLength, CString& name, CString& description, std::uint16_t& definitionLength);
   void ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void ReadTablesSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
-  void ReadViewportTable(AeSysDoc* document);
+  void ReadViewportTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void Unload(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void WriteBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void WriteEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
