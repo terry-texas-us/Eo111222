@@ -502,32 +502,24 @@ void EoDbConic::FormatGeometry(CString& geometry) {
 }
 
 void EoDbConic::FormatExtra(CString& extra) {
-  auto conicType = Subclass();
-  CString format{L"Color;%s\tLine Type;%s\t"};
-
-  switch (conicType) {
+  EoDbPrimitive::FormatExtra(extra);
+  switch (Subclass()) {
     case ConicType::Circle:
-      format += L"Radius;%.4f\t";
-      extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length());
+      extra.AppendFormat(L"\tRadius;%.4f", m_majorAxis.Length());
       break;
-
     case ConicType::RadialArc:
-      format += L"Radius;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°\t";
-      extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length(),
+      extra.AppendFormat(L"\tRadius;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°", m_majorAxis.Length(),
           Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
       break;
-
     case ConicType::Ellipse:
-      format += L"Major Length;%.4f\tRatio;%.4f\t";
-      extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length(), m_ratio);
+      extra.AppendFormat(L"\tMajor Length;%.4f\tRatio;%.4f", m_majorAxis.Length(), m_ratio);
       break;
-
     case ConicType::EllipticalArc:
-      format += L"Major Length;%.4f\tRatio;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°\t";
-      extra.Format(format, FormatPenColor().GetString(), FormatLineType().GetString(), m_majorAxis.Length(), m_ratio,
-          Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
+      extra.AppendFormat(L"\tMajor Length;%.4f\tRatio;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°",
+          m_majorAxis.Length(), m_ratio, Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
       break;
   }
+  extra += L'\t';
 }
 
 void EoDbConic::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* arMin, EoGePoint3d* arMax) const {

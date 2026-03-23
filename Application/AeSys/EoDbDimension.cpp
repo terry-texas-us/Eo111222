@@ -156,7 +156,8 @@ void EoDbDimension::AddReportToMessageList(const EoGePoint3d& point) {
 }
 
 void EoDbDimension::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s", FormatPenColor().GetString(), FormatLineType().GetString());
+  EoDbPrimitive::FormatExtra(str);
+  str += L'\t';
 }
 void EoDbDimension::FormatGeometry(CString& str) {
   str += L"Begin Point;" + m_line.begin.ToString();

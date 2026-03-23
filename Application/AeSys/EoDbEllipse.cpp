@@ -490,8 +490,9 @@ void EoDbEllipse::FormatGeometry(CString& str) {
 }
 
 void EoDbEllipse::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tSweep Angle;%f\tMajor Axis Length;%f", FormatPenColor().GetString(),
-      FormatLineType().GetString(), m_sweepAngle, m_majorAxis.Length());
+  EoDbPrimitive::FormatExtra(str);
+  str.AppendFormat(L"\tSweep Angle;%f\tMajor Axis Length;%f", m_sweepAngle, m_majorAxis.Length());
+  str += L'\t';
 }
 
 EoGePoint3d EoDbEllipse::PointAtStartAngle() { return (m_center + m_majorAxis); }

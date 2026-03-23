@@ -186,8 +186,9 @@ void EoDbBlockReference::GetAllPoints(EoGePoint3dArray& points) {
 }
 
 void EoDbBlockReference::FormatExtra(CString& extra) {
-  extra.Format(L"Color;%s\tStyle;%s\tSegment Name;%s\tRotation Angle;%f", FormatPenColor().GetString(),
-      FormatLineType().GetString(), m_blockName.GetString(), m_rotation);
+  EoDbPrimitive::FormatExtra(extra);
+  extra.AppendFormat(L"\tSegment Name;%s\tRotation Angle;%f", m_blockName.GetString(), m_rotation);
+  extra += L'\t';
 }
 void EoDbBlockReference::FormatGeometry(CString& geometry) {
   geometry += L"Insertion Point;" + m_insertionPoint.ToString();

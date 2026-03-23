@@ -129,7 +129,9 @@ void EoDbViewport::Display(AeSysView* view, CDC* deviceContext) {
 }
 
 void EoDbViewport::FormatExtra(CString& extra) {
-  extra.Format(L"Color;%s\tViewportId;%d\tStatus;%d", FormatPenColor().GetString(), m_viewportId, m_viewportStatus);
+  EoDbPrimitive::FormatExtra(extra);
+  extra.AppendFormat(L"\tViewportId;%d\tStatus;%d", m_viewportId, m_viewportStatus);
+  extra += L'\t';
 }
 
 void EoDbViewport::FormatGeometry(CString& str) {

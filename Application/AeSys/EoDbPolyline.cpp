@@ -232,9 +232,10 @@ void EoDbPolyline::FormatGeometry(CString& str) {
 }
 
 void EoDbPolyline::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tPoints;%d\tClosed;%s\tBulge;%s\tWidth;%s", FormatPenColor().GetString(),
-      FormatLineType().GetString(), static_cast<int>(m_pts.GetSize()), IsClosed() ? L"Yes" : L"No",
-      HasBulge() ? L"Yes" : L"No", HasWidth() ? L"Yes" : L"No");
+  EoDbPrimitive::FormatExtra(str);
+  str.AppendFormat(L"\tPoints;%d\tClosed;%s\tBulge;%s\tWidth;%s", static_cast<int>(m_pts.GetSize()),
+      IsClosed() ? L"Yes" : L"No", HasBulge() ? L"Yes" : L"No", HasWidth() ? L"Yes" : L"No");
+  str += L'\t';
 }
 
 void EoDbPolyline::GetAllPoints(EoGePoint3dArray& points) {

@@ -81,8 +81,9 @@ void EoDbSpline::FormatGeometry(CString& str) {
 }
 
 void EoDbSpline::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%s\tControl Points;%d", FormatPenColor().GetString(), FormatLineType().GetString(),
-      static_cast<int>(m_pts.GetSize()));
+  EoDbPrimitive::FormatExtra(str);
+  str.AppendFormat(L"\tControl Points;%d", static_cast<int>(m_pts.GetSize()));
+  str += L'\t';
 }
 
 void EoDbSpline::GetAllPoints(EoGePoint3dArray& pts) {

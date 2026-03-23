@@ -76,7 +76,7 @@ class EoDbPrimitive : public CObject {
   virtual void Assign(EoDbPrimitive* primitive) = 0;
   virtual EoDbPrimitive*& Copy(EoDbPrimitive*&) = 0;
   virtual void Display(AeSysView* view, CDC* deviceContext) = 0;
-  virtual void FormatExtra(CString& extra) = 0;
+  virtual void FormatExtra(CString& extra);
   virtual void FormatGeometry(CString& str) = 0;
   virtual void GetAllPoints(EoGePoint3dArray& points) = 0;
   virtual EoGePoint3d GetControlPoint() = 0;

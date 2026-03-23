@@ -142,11 +142,13 @@ void EoDbText::AddReportToMessageList(const EoGePoint3d&) {
   app.AddStringToMessageList(str);
 }
 void EoDbText::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tFont;%s\tPrecision;%s\tPath;%s\tAlignment;(%s,%s)\tSpacing;%f\tLength;%d\tText;%s",
-      FormatPenColor().GetString(), m_fontDefinition.FontName().GetString(),
-      m_fontDefinition.FormatPrecision().GetString(), m_fontDefinition.FormatPath().GetString(),
-      m_fontDefinition.FormatHorizontalAlignment().GetString(), m_fontDefinition.FormatVerticalAlignment().GetString(),
-      m_fontDefinition.CharacterSpacing(), m_strText.GetLength(), m_strText.GetString());
+  EoDbPrimitive::FormatExtra(str);
+  str.AppendFormat(L"\tFont;%s\tPrecision;%s\tPath;%s\tAlignment;(%s,%s)\tSpacing;%f\tLength;%d\tText;%s",
+      m_fontDefinition.FontName().GetString(), m_fontDefinition.FormatPrecision().GetString(),
+      m_fontDefinition.FormatPath().GetString(), m_fontDefinition.FormatHorizontalAlignment().GetString(),
+      m_fontDefinition.FormatVerticalAlignment().GetString(), m_fontDefinition.CharacterSpacing(),
+      m_strText.GetLength(), m_strText.GetString());
+  str += L'\t';
 }
 void EoDbText::FormatGeometry(CString& str) {
   EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;

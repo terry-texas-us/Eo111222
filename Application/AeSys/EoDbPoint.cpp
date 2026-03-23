@@ -158,7 +158,9 @@ void EoDbPoint::AddReportToMessageList(const EoGePoint3d&) {
   app.AddStringToMessageList(str);
 }
 void EoDbPoint::FormatExtra(CString& str) {
-  str.Format(L"Color;%s\tStyle;%d", FormatPenColor().GetString(), m_pointStyle);
+  EoDbPrimitive::FormatExtra(str);
+  str.AppendFormat(L"\tStyle;%d", m_pointStyle);
+  str += L'\t';
 }
 void EoDbPoint::FormatGeometry(CString& str) { str += L"Point;" + m_Point.ToString(); }
 EoGePoint3d EoDbPoint::GetControlPoint() { return m_Point; }

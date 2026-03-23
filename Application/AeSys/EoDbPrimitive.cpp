@@ -114,6 +114,11 @@ void EoDbPrimitive::ModifyState() {
   m_lineTypeIndex = renderState.LineTypeIndex();
 }
 
+void EoDbPrimitive::FormatExtra(CString& extra) {
+  extra.Format(L"Handle;%llX\tOwner;%llX\tLayer;%s\tColor;%s\tLineType;%s", m_handle, m_ownerHandle,
+      m_layerName.empty() ? L"" : m_layerName.c_str(), FormatPenColor().GetString(), FormatLineType().GetString());
+}
+
 int EoDbPrimitive::ControlPointIndex() noexcept { return sm_controlPointIndex; }
 bool EoDbPrimitive::IsSupportedTyp(int type) noexcept { return (type <= 7 && type != 4 && type != 5); }
 std::int16_t EoDbPrimitive::LayerColor() noexcept { return sm_layerColor; }

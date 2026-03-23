@@ -138,11 +138,12 @@ void EoDbLine::AddReportToMessageList(const EoGePoint3d& point) {
 }
 
 void EoDbLine::FormatExtra(CString& str) {
-  CString FormattedLength;
-  app.FormatLength(FormattedLength, app.GetUnits(), Length());
-
-  str.Format(L"Color;%s\tStyle;%s\tLength;%s\tZ-Angle;%f", FormatPenColor().GetString(), FormatLineType().GetString(),
-      FormattedLength.TrimLeft().GetString(), Eo::RadianToDegree(m_line.AngleFromXAxisXY()));
+  EoDbPrimitive::FormatExtra(str);
+  CString formattedLength;
+  app.FormatLength(formattedLength, app.GetUnits(), Length());
+  str.AppendFormat(L"\tLength;%s\tZ-Angle;%f", formattedLength.TrimLeft().GetString(),
+      Eo::RadianToDegree(m_line.AngleFromXAxisXY()));
+  str += L'\t';
 }
 void EoDbLine::FormatGeometry(CString& str) {
   str += L"Begin Point;" + m_line.begin.ToString();

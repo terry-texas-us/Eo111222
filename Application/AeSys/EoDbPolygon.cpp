@@ -513,8 +513,9 @@ CString EoDbPolygon::FormatIntStyle() {
   return str;
 }
 void EoDbPolygon::FormatExtra(CString& str) {
-  str.Format(
-      L"Color;%s\tStyle;%s\tPoints;%d", FormatPenColor().GetString(), FormatLineType().GetString(), m_numberOfVertices);
+  EoDbPrimitive::FormatExtra(str);
+  str.AppendFormat(L"\tPoints;%d", m_numberOfVertices);
+  str += L'\t';
 }
 EoGePoint3d EoDbPolygon::GetControlPoint() {
   std::uint16_t wBeg = std::uint16_t(sm_Edge - 1);
