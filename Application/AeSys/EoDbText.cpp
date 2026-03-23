@@ -86,6 +86,7 @@ EoDbText::EoDbText(const EoDbText& other) {
   m_fontDefinition = other.m_fontDefinition;
   m_ReferenceSystem = other.m_ReferenceSystem;
   m_strText = other.m_strText;
+  m_textGenerationFlags = other.m_textGenerationFlags;
 }
 
 const EoDbText& EoDbText::operator=(const EoDbText& other) {
@@ -93,6 +94,7 @@ const EoDbText& EoDbText::operator=(const EoDbText& other) {
   m_fontDefinition = other.m_fontDefinition;
   m_ReferenceSystem = other.m_ReferenceSystem;
   m_strText = other.m_strText;
+  m_textGenerationFlags = other.m_textGenerationFlags;
 
   return (*this);
 }
@@ -207,6 +209,8 @@ void EoDbText::ExportToDxf(EoDxfInterface* writer) const {
     text.m_firstAlignmentPoint = {origin.x, origin.y, origin.z};
     text.m_secondAlignmentPoint = {origin.x, origin.y, origin.z};
   }
+
+  text.m_textGenerationFlags = m_textGenerationFlags;
 
   writer->AddText(text);
 }

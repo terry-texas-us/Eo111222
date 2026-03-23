@@ -1989,7 +1989,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
 
   std::wstring textStyleName = text.m_textStyleName;  // Group code 7
 
-  [[maybe_unused]] auto textGenerationFlags = text.m_textGenerationFlags;  // Group code 71 (not supported in AeSys)
+  auto textGenerationFlags = text.m_textGenerationFlags;  // Group code 71 (2=backward, 4=upside-down)
   auto horizontalAlignment = text.m_horizontalAlignment;  // Group code 72
 
   auto secondAlignmentPointInOcs =
@@ -2121,6 +2121,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
 
   auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, string);
   textPrimitive->SetBaseProperties(&text, document);
+  textPrimitive->SetTextGenerationFlags(textGenerationFlags);
 
   AddToDocument(textPrimitive, document, text.m_space);
 }
@@ -2264,6 +2265,7 @@ void EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* 
 
   auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, string);
   textPrimitive->SetBaseProperties(&attrib, document);
+  textPrimitive->SetTextGenerationFlags(attrib.m_textGenerationFlags);
 
   AddToDocument(textPrimitive, document, attrib.m_space);
 }
