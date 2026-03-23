@@ -5,6 +5,7 @@
 #include <variant>
 
 #include "AeSysDoc.h"
+#include "Eo.h"
 #include "EoDbBlock.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbPrimitive.h"
@@ -535,7 +536,24 @@ class EoDbDxfInterface : public EoDxfInterface {
       m_dxfWriter->WriteLinetype(&dxfLinetype);
     }
   };
-  void WriteTextstyles() override {};
+  void WriteTextstyles() override {
+    if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
+
+    for (const auto& entry : m_document->TextStyleTable()) {
+      EoDxfTextStyle dxfTextStyle;
+      dxfTextStyle.m_tableName = entry.m_name;
+      dxfTextStyle.height = entry.m_height;
+      dxfTextStyle.width = entry.m_widthFactor;
+      dxfTextStyle.oblique = Eo::RadianToDegree(entry.m_obliqueAngle);
+      dxfTextStyle.m_textGenerationFlag = entry.m_textGenerationFlags;
+      dxfTextStyle.lastHeight = entry.m_lastHeight;
+      dxfTextStyle.font = entry.m_font;
+      dxfTextStyle.bigFont = entry.m_bigFont;
+      dxfTextStyle.fontFamily = entry.m_fontFamily;
+      dxfTextStyle.m_flagValues = entry.m_flagValues;
+      m_dxfWriter->WriteTextstyle(&dxfTextStyle);
+    }
+  };
   void WriteVports() override {
     if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
 

@@ -201,23 +201,25 @@ void EoDbDxfInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSy
   }
 }
 
-void EoDbDxfInterface::ConvertTextStyleTable(const EoDxfTextStyle& textStyle, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertTextStyleTable(const EoDxfTextStyle& textStyle, AeSysDoc* document) {
   const auto& textStyleName = textStyle.m_tableName;
-  ATLTRACE2(traceGeneral, 3, L"Text Style - Name: %s (unsupported in AeSys)\n", textStyleName.c_str());
+  ATLTRACE2(traceGeneral, 3, L"Text Style - Name: %s\n", textStyleName.c_str());
 
-  // auto height = textStyle.height;         // Fixed text height; 0 if not fixed (group code 40)
-  // auto width = textStyle.width;           // Width factor (group code 41)
-  // auto obliqueAngle = textStyle.oblique;  // Oblique angle (group code 50)
-  // auto textGenerationFlags =
-  textStyle
-      .m_flagValues;  // Text generation flags (group code 71) 0x02 - text is backward, mirrored in X - 0x04 - text is
-  // upside down, mirrored in Y
-  // auto lastHeight = textStyle.lastHeight;  // Last height used (group code 42)
+  EoDbTextStyle entry;
+  entry.m_name = textStyleName;
+  entry.m_height = textStyle.height;
+  entry.m_widthFactor = textStyle.width;
+  entry.m_obliqueAngle = Eo::DegreeToRadian(textStyle.oblique);
+  entry.m_textGenerationFlags = textStyle.m_textGenerationFlag;
+  entry.m_lastHeight = textStyle.lastHeight;
+  entry.m_font = textStyle.font;
+  entry.m_bigFont = textStyle.bigFont;
+  entry.m_fontFamily = textStyle.fontFamily;
+  entry.m_flagValues = textStyle.m_flagValues;
+  entry.m_handle = textStyle.m_handle;
+  entry.m_ownerHandle = textStyle.m_ownerHandle;
 
-  // auto& font = textStyle.font;        // Primary font file name (group code 3)
-  // auto& bigFont = textStyle.bigFont;  // Bigfont file name; blank if none (group code 4)
-  // auto fontFamily = textStyle.fontFamily;  // A long value which contains a truetype font's pitch and family,
-  // charset, and italic and bold flags (group code 1071)
+  document->AddTextStyleEntry(std::move(entry));
 }
 
 void EoDbDxfInterface::ConvertVPortTable(const EoDxfVPort& viewport, AeSysDoc* document) {

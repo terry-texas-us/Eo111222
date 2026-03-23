@@ -12,6 +12,7 @@
 #include "EoDbLineTypeTable.h"
 #include "EoDbMaskedPrimitive.h"
 #include "EoDbPrimitive.h"
+#include "EoDbTextStyle.h"
 #include "EoDbVPortTableEntry.h"
 #include "EoDxfBase.h"
 #include "EoGePoint3d.h"
@@ -31,6 +32,7 @@ class AeSysDoc : public CDocument {
  private:
   EoDbHeaderSection m_HeaderSection{};
   EoDbLineTypeTable m_LineTypeTable{};
+  std::vector<EoDbTextStyle> m_textStyleTable{};
   std::vector<EoDbVPortTableEntry> m_vportTable{};
   EoDbBlocks m_BlocksTable{};
   EoDbGroupList m_DeletedGroupList{};
@@ -210,6 +212,22 @@ class AeSysDoc : public CDocument {
   // Line Type Table interface
   [[nodiscard]] auto* LineTypeTable() { return &m_LineTypeTable; }
   [[nodiscard]] auto* ContinuousLineType() { return m_continuousLineType; }
+
+  // Text Style Table interface
+  [[nodiscard]] auto& TextStyleTable() noexcept { return m_textStyleTable; }
+  [[nodiscard]] const auto& TextStyleTable() const noexcept { return m_textStyleTable; }
+  void AddTextStyleEntry(const EoDbTextStyle& entry) { m_textStyleTable.push_back(entry); }
+  void AddTextStyleEntry(EoDbTextStyle&& entry) { m_textStyleTable.push_back(std::move(entry)); }
+  void ClearTextStyleTable() noexcept { m_textStyleTable.clear(); }
+
+  /// @brief Finds a text style by name (case-insensitive).
+  /// @return Pointer to the matching entry, or nullptr if not found.
+  [[nodiscard]] const EoDbTextStyle* FindTextStyle(const std::wstring& name) const noexcept {
+    for (const auto& style : m_textStyleTable) {
+      if (_wcsicmp(style.m_name.c_str(), name.c_str()) == 0) { return &style; }
+    }
+    return nullptr;
+  }
 
   // Viewport Table interface (AE2026)
   [[nodiscard]] auto& VPortTable() noexcept { return m_vportTable; }
