@@ -167,8 +167,17 @@ bool EoDxfWrite::WriteHatch(EoDxfHatch* hatch) {
     WriteCodeDouble(41, hatch->m_hatchPatternScaleOrSpacing);
     if (hatch->m_mPolygonBoundaryAnnotationFlag) { WriteCodeInt16(73, hatch->m_mPolygonBoundaryAnnotationFlag); }
     WriteCodeInt16(77, hatch->m_hatchPatternDoubleFlag);
+    hatch->m_numberOfPatternDefinitionLines = static_cast<std::int16_t>(hatch->m_patternDefinitionLines.size());
     WriteCodeInt16(78, hatch->m_numberOfPatternDefinitionLines);
-    // Pattern line data would go here, but it's not implemented in AeSys yet
+    for (const auto& patternLine : hatch->m_patternDefinitionLines) {
+      WriteCodeDouble(53, patternLine.angle);
+      WriteCodeDouble(43, patternLine.basePointX);
+      WriteCodeDouble(44, patternLine.basePointY);
+      WriteCodeDouble(45, patternLine.offsetX);
+      WriteCodeDouble(46, patternLine.offsetY);
+      WriteCodeInt16(79, static_cast<std::int16_t>(patternLine.dashLengths.size()));
+      for (const auto dashLength : patternLine.dashLengths) { WriteCodeDouble(49, dashLength); }
+    }
   }
   WriteCodeInt32(98, 0);
 

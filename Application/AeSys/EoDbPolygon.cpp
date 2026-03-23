@@ -424,6 +424,8 @@ EoDbPolygon::EoDbPolygon(const EoDbPolygon& other) : EoDbPrimitive(other) {
   m_numberOfVertices = other.m_numberOfVertices;
   m_vertices = new EoGePoint3d[m_numberOfVertices];
   for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = other.m_vertices[i]; }
+  m_hatchPatternDoubleFlag = other.m_hatchPatternDoubleFlag;
+  m_patternDefinitionLines = other.m_patternDefinitionLines;
 }
 
 const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& other) {
@@ -443,6 +445,9 @@ const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& other) {
     m_vertices = new EoGePoint3d[m_numberOfVertices];
   }
   for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = other.m_vertices[i]; }
+
+  m_hatchPatternDoubleFlag = other.m_hatchPatternDoubleFlag;
+  m_patternDefinitionLines = other.m_patternDefinitionLines;
 
   return *this;
 }
@@ -526,6 +531,10 @@ void EoDbPolygon::ExportToDxf(EoDxfInterface* writer) const {
 
   hatch.m_hatchStyle = 0;  // normal
   hatch.m_associativityFlag = 0;  // non-associative
+
+  // Passthrough: restore DXF pattern definition lines and double flag for non-solid hatches
+  hatch.m_hatchPatternDoubleFlag = m_hatchPatternDoubleFlag;
+  hatch.m_patternDefinitionLines = m_patternDefinitionLines;
 
   // Build a single polyline boundary loop from the polygon vertices
   auto* hatchLoop = new EoDxfHatchLoop(0x01 | 0x02);  // external + polyline

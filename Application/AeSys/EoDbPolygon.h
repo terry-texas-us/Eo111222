@@ -1,10 +1,12 @@
 ﻿#pragma once
 
 #include <cstdint>
+#include <vector>
 
 #include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfHatch.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -24,6 +26,8 @@ class EoDbPolygon : public EoDbPrimitive {
   EoDb::PolygonStyle m_polygonStyle{EoDb::PolygonStyle::Hollow};
   std::int16_t m_fillStyleIndex{};
   std::uint16_t m_numberOfVertices{};
+  std::int16_t m_hatchPatternDoubleFlag{};  ///< DXF group code 77 passthrough
+  std::vector<EoDxfHatchPatternDefinitionLine> m_patternDefinitionLines;  ///< DXF pattern lines passthrough
 
  public:
   EoDbPolygon();
@@ -90,6 +94,10 @@ class EoDbPolygon : public EoDbPrimitive {
   bool PivotOnControlPoint(AeSysView* view, const EoGePoint4d&) override;
   void SetPolygonStyle(const EoDb::PolygonStyle n) { m_polygonStyle = n; }
   void SetFillStyleIndex(const std::int16_t fillStyleIndex) { m_fillStyleIndex = fillStyleIndex; }
+  void SetHatchPatternDoubleFlag(std::int16_t flag) noexcept { m_hatchPatternDoubleFlag = flag; }
+  void SetPatternDefinitionLines(const std::vector<EoDxfHatchPatternDefinitionLine>& lines) {
+    m_patternDefinitionLines = lines;
+  }
   void SetHatRefVecs(double, double, double);
 
  private:

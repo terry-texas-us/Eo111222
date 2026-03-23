@@ -1487,6 +1487,10 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     auto* polygon = new EoDbPolygon(static_cast<std::int16_t>(hatch.m_color), loopPolygonStyle, fillStyleIndex,
         hatchOrigin, xAxis, yAxis, boundaryPoints);
 
+    // Passthrough: preserve DXF pattern definition lines and double flag for round-trip export
+    polygon->SetHatchPatternDoubleFlag(hatch.m_hatchPatternDoubleFlag);
+    polygon->SetPatternDefinitionLines(hatch.m_patternDefinitionLines);
+
     // Set layer and line type from the DXF entity for correct document placement
     polygon->SetBaseProperties(&hatch, document);
 

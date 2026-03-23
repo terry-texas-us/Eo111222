@@ -12,6 +12,19 @@
 
 class EoDxfSpline;
 
+/// @brief A single pattern definition line within a HATCH entity.
+///
+/// DXF group codes per line: 53 (angle in degrees), 43/44 (base point X/Y),
+/// 45/46 (offset X/Y), 79 (number of dash items), 49 (dash lengths, repeated).
+struct EoDxfHatchPatternDefinitionLine {
+  double angle{};       ///< Line angle in degrees (group code 53)
+  double basePointX{};  ///< Pattern line base point X (group code 43)
+  double basePointY{};  ///< Pattern line base point Y (group code 44)
+  double offsetX{};     ///< Pattern line offset X (group code 45)
+  double offsetY{};     ///< Pattern line offset Y (group code 46)
+  std::vector<double> dashLengths;  ///< Dash lengths (group code 49, repeated per code 79 count)
+};
+
 /** @brief Class to handle hatch entity
  *
  *  A hatch entity represents a filled area defined by a hatch pattern.
@@ -60,6 +73,7 @@ class EoDxfHatch : public EoDxfGraphic {
   std::int16_t m_hatchPatternDoubleFlag{};  // Group code 77
   std::int16_t m_mPolygonBoundaryAnnotationFlag{};  // Group code 73
   std::int16_t m_numberOfPatternDefinitionLines{};  //   Group code 78
+  std::vector<EoDxfHatchPatternDefinitionLine> m_patternDefinitionLines;
 
  private:
   void ClearEntities() noexcept;
@@ -84,4 +98,5 @@ class EoDxfHatch : public EoDxfGraphic {
   EoDxfPoint* m_point{};
   EoDxfPolylineVertex2d* m_polylineVertex{};
   bool m_isPolyline{};
+  EoDxfHatchPatternDefinitionLine* m_currentPatternLine{};  ///< Current pattern line during parsing
 };

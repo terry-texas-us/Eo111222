@@ -202,6 +202,39 @@ void EoDxfHatch::ParseCode(int code, EoDxfReader& reader) {
       break;
     case 78:
       m_numberOfPatternDefinitionLines = reader.GetInt16();
+      m_patternDefinitionLines.clear();
+      m_patternDefinitionLines.reserve(static_cast<size_t>(m_numberOfPatternDefinitionLines));
+      m_currentPatternLine = nullptr;
+      break;
+
+    // Pattern definition line data (one set per line declared by code 78)
+    case 53: {
+      // Code 53 starts a new pattern definition line (angle in degrees)
+      m_patternDefinitionLines.emplace_back();
+      m_currentPatternLine = &m_patternDefinitionLines.back();
+      m_currentPatternLine->angle = reader.GetDouble();
+      break;
+    }
+    case 43:
+      if (m_currentPatternLine) { m_currentPatternLine->basePointX = reader.GetDouble(); }
+      break;
+    case 44:
+      if (m_currentPatternLine) { m_currentPatternLine->basePointY = reader.GetDouble(); }
+      break;
+    case 45:
+      if (m_currentPatternLine) { m_currentPatternLine->offsetX = reader.GetDouble(); }
+      break;
+    case 46:
+      if (m_currentPatternLine) { m_currentPatternLine->offsetY = reader.GetDouble(); }
+      break;
+    case 79:
+      if (m_currentPatternLine) {
+        auto numberOfDashes = reader.GetInt16();
+        m_currentPatternLine->dashLengths.reserve(static_cast<size_t>(numberOfDashes));
+      }
+      break;
+    case 49:
+      if (m_currentPatternLine) { m_currentPatternLine->dashLengths.push_back(reader.GetDouble()); }
       break;
 
     case 91:
