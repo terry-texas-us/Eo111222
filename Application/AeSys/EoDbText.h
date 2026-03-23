@@ -21,6 +21,7 @@ class EoDbText : public EoDbPrimitive {
   EoGeReferenceSystem m_ReferenceSystem;
   CString m_strText;
   std::int16_t m_textGenerationFlags{};  ///< DXF group code 71 (2 = backward, 4 = upside-down)
+  EoGeVector3d m_extrusion{EoGeVector3d::positiveUnitZ};  ///< DXF extrusion direction (group codes 210/220/230)
 
  public:  // Constructors and destructor
   EoDbText() {}
@@ -86,6 +87,8 @@ class EoDbText : public EoDbPrimitive {
   void SetText(const std::wstring& text) { m_strText = text.c_str(); }
   void SetTextGenerationFlags(std::int16_t flags) noexcept { m_textGenerationFlags = flags; }
   [[nodiscard]] std::int16_t TextGenerationFlags() const noexcept { return m_textGenerationFlags; }
+  void SetExtrusion(const EoGeVector3d& extrusion) noexcept { m_extrusion = extrusion; }
+  [[nodiscard]] const EoGeVector3d& Extrusion() const noexcept { return m_extrusion; }
 };
 
 void DisplayText(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem,

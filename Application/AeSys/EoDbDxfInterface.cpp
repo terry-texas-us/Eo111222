@@ -1857,6 +1857,7 @@ void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unuse
 
   auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, cleanedText);
   textPrimitive->SetBaseProperties(&mtext, document);
+  textPrimitive->SetExtrusion(extrusionDirection);
 
   AddToDocument(textPrimitive, document, mtext.m_space);
 }
@@ -2122,6 +2123,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, string);
   textPrimitive->SetBaseProperties(&text, document);
   textPrimitive->SetTextGenerationFlags(textGenerationFlags);
+  textPrimitive->SetExtrusion(extrusionDirection);
 
   AddToDocument(textPrimitive, document, text.m_space);
 }
@@ -2266,6 +2268,7 @@ void EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* 
   auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, string);
   textPrimitive->SetBaseProperties(&attrib, document);
   textPrimitive->SetTextGenerationFlags(attrib.m_textGenerationFlags);
+  textPrimitive->SetExtrusion(extrusionDirection);
 
   AddToDocument(textPrimitive, document, attrib.m_space);
 }

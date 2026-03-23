@@ -87,6 +87,7 @@ EoDbText::EoDbText(const EoDbText& other) {
   m_ReferenceSystem = other.m_ReferenceSystem;
   m_strText = other.m_strText;
   m_textGenerationFlags = other.m_textGenerationFlags;
+  m_extrusion = other.m_extrusion;
 }
 
 const EoDbText& EoDbText::operator=(const EoDbText& other) {
@@ -95,6 +96,7 @@ const EoDbText& EoDbText::operator=(const EoDbText& other) {
   m_ReferenceSystem = other.m_ReferenceSystem;
   m_strText = other.m_strText;
   m_textGenerationFlags = other.m_textGenerationFlags;
+  m_extrusion = other.m_extrusion;
 
   return (*this);
 }
@@ -211,6 +213,7 @@ void EoDbText::ExportToDxf(EoDxfInterface* writer) const {
   }
 
   text.m_textGenerationFlags = m_textGenerationFlags;
+  text.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
 
   writer->AddText(text);
 }
