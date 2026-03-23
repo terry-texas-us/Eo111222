@@ -107,49 +107,6 @@ ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnUpdateTrapcommandsHigh
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
-AeSys::AeSys()
-    : CustomLButtonDownCharacters{},
-      CustomLButtonUpCharacters{L"{13}"},
-      CustomRButtonDownCharacters{},
-      CustomRButtonUpCharacters{L"{27}"},
-      m_Options{},
-      // Private members
-      m_HomePoints{},
-      m_pegDocumentTemplate{},
-      m_traDocumentTemplate{},
-      m_MainFrameMenuHandle{},
-      m_SimplexStrokeFont{},
-      m_StrokeFontVersion{},
-      m_DeviceHeightInMillimeters{},
-      m_DeviceHeightInPixels{},
-      m_DeviceWidthInMillimeters{},
-      m_DeviceWidthInPixels{},
-      m_DimensionAngle{45.0},
-      m_DimensionLength{0.125},
-      m_EngagedAngle{},
-      m_EngagedLength{},
-      m_ShadowFolderPath{L""},
-      m_ClipboardFormatIdentifierForEoGroups{},
-      m_Units{Eo::Units::Inches},
-      m_ArchitecturalUnitsFractionPrecision{16},
-      m_CurrentMode{},
-      m_ModeResourceIdentifier{},
-      m_PrimaryMode{ID_MODE_DRAW},
-      m_TrapHighlightColor{},
-      m_ClipboardDataEoGroups{true},
-      m_ClipboardDataImage{},
-      m_ClipboardDataText{true},
-      m_TrapHighlighted{},
-      m_TrapModeAddGroups{true},
-      m_HighColorMode{},
-      m_ModeInformationOverView{},
-      m_NodalModeAddGroups{true} {
-  // Detect color depth. 256 color toolbars can be used in the high or true color modes only (bits per pixel is > 8):
-  CClientDC dc(AfxGetMainWnd());
-  m_HighColorMode = dc.GetDeviceCaps(BITSPIXEL) > 8;
-  EnableHtmlHelp();
-}
-
 AeSys app;
 
 BOOL AeSys::InitInstance() {
@@ -158,6 +115,7 @@ BOOL AeSys::InitInstance() {
     return FALSE;
   }
   AfxEnableControlContainer();
+  EnableHtmlHelp();
 
 #ifdef _DEBUG
   CTrace::SetLevel(2);
@@ -220,6 +178,7 @@ BOOL AeSys::InitInstance() {
   m_DeviceHeightInPixels = static_cast<double>(DeviceContext->GetDeviceCaps(VERTRES));
   m_DeviceWidthInMillimeters = static_cast<double>(DeviceContext->GetDeviceCaps(HORZSIZE));
   m_DeviceHeightInMillimeters = static_cast<double>(DeviceContext->GetDeviceCaps(VERTSIZE));
+  m_HighColorMode = DeviceContext->GetDeviceCaps(BITSPIXEL) > 8;
   InitGbls(DeviceContext);
   mainFrame->ReleaseDC(DeviceContext);
 

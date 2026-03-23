@@ -9,6 +9,7 @@
 #include "EoApOptions.h"
 #include "EoDb.h"
 #include "EoGePoint3d.h"
+#include "Resource.h"
 
 class AeSysView;
 
@@ -43,7 +44,7 @@ namespace App {
 
 class AeSys : public CWinAppEx {
  public:
-  AeSys();
+  AeSys() = default;
   AeSys(const AeSys&) = delete;
   AeSys& operator=(const AeSys&) = delete;
   // Overrides
@@ -60,40 +61,45 @@ class AeSys : public CWinAppEx {
   EoApOptions m_Options;
 
  private:
-  EoGePoint3d m_HomePoints[9];
-  CMultiDocTemplate* m_pegDocumentTemplate;
-  CMultiDocTemplate* m_traDocumentTemplate;
-  HMENU m_MainFrameMenuHandle;
-  char* m_SimplexStrokeFont;
-  int m_StrokeFontVersion;  // 1 = legacy 96-entry header, 2 = extended 225-entry header with advance widths
+  EoGePoint3d m_HomePoints[9]{};
+  CMultiDocTemplate* m_pegDocumentTemplate{};
+  CMultiDocTemplate* m_traDocumentTemplate{};
+  HMENU m_MainFrameMenuHandle{};
+  char* m_SimplexStrokeFont{};
+  int m_StrokeFontVersion{};  // 1 = legacy 96-entry header, 2 = extended 225-entry header with advance widths
 
-  double m_DeviceHeightInMillimeters;
-  double m_DeviceHeightInPixels;
-  double m_DeviceWidthInMillimeters;
-  double m_DeviceWidthInPixels;
-  double m_DimensionAngle;
-  double m_DimensionLength;
-  double m_EngagedAngle;
-  double m_EngagedLength;
+  double m_DeviceHeightInMillimeters{};
+  double m_DeviceHeightInPixels{};
+  double m_DeviceWidthInMillimeters{};
+  double m_DeviceWidthInPixels{};
+  double m_DimensionAngle{45.0};
+  double m_DimensionLength{0.125};
+  double m_EngagedAngle{};
+  double m_EngagedLength{};
   CString m_ShadowFolderPath;
-  UINT m_ClipboardFormatIdentifierForEoGroups;
-  Eo::Units m_Units;
-  int m_ArchitecturalUnitsFractionPrecision;
-  int m_CurrentMode;
-  int m_ModeResourceIdentifier;
-  int m_PrimaryMode;
+  UINT m_ClipboardFormatIdentifierForEoGroups{};
+  Eo::Units m_Units{Eo::Units::Inches};
+  int m_ArchitecturalUnitsFractionPrecision{16};
+  int m_CurrentMode{};
+  int m_ModeResourceIdentifier{};
+  int m_PrimaryMode{ID_MODE_DRAW};
 
-  std::int16_t m_TrapHighlightColor;
-  bool m_ClipboardDataEoGroups;
-  bool m_ClipboardDataImage;
-  bool m_ClipboardDataText;
-  bool m_TrapHighlighted;
-  bool m_TrapModeAddGroups;
-  bool m_HighColorMode;
-  bool m_ModeInformationOverView;
+  std::int16_t m_TrapHighlightColor{};
+  bool m_ClipboardDataEoGroups{true};
+  bool m_ClipboardDataImage{};
+  bool m_ClipboardDataText{true};
+  bool m_TrapHighlighted{};
+  bool m_TrapModeAddGroups{true};
+  bool m_HighColorMode{};
+  bool m_ModeInformationOverView{};
+
+#if defined(USING_DDE)
+  double m_ExtractedNumber{};
+  CString m_ExtractedString;
+#endif
 
  public:
-  bool m_NodalModeAddGroups;
+  bool m_NodalModeAddGroups{true};
 
 #if defined(USING_Direct2D)
   ID2D1Factory* m_Direct2dFactory;
@@ -271,11 +277,6 @@ class AeSys : public CWinAppEx {
   afx_msg void OnUpdateViewModeinformation(CCmdUI* pCmdUI);
   afx_msg void OnViewModeInformation();
 #if defined(USING_DDE)
- private:
-  double m_ExtractedNumber;
-  CString m_ExtractedString;
-
- public:
   double ExtractedNumber() { return m_ExtractedNumber; }
   void SetExtractedNumber(double number) { m_ExtractedNumber = number; }
   CString ExtractedString() { return m_ExtractedString; }
