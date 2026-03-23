@@ -485,6 +485,7 @@ void EoDbPolygon::AddReportToMessageList(const EoGePoint3d& point) {
     swprintf_s(szBuf, 24, L" @ %6.2f degrees", Eo::RadianToDegree(dAng));
     Message.Append(szBuf);
     app.AddStringToMessageList(Message);
+    EoDbPrimitive::AddReportToMessageList(point);
 
     app.SetEngagedLength(dLen);
     app.SetEngagedAngle(dAng);

@@ -152,11 +152,11 @@ void EoDbPoint::Display(AeSysView* view, CDC* context) {
   }
 }
 
-void EoDbPoint::AddReportToMessageList(const EoGePoint3d&) {
-  CString str;
-  str.Format(L"<Point> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
-  app.AddStringToMessageList(str);
+void EoDbPoint::AddReportToMessageList(const EoGePoint3d& point) {
+  app.AddStringToMessageList(CString(L"<Point>"));
+  EoDbPrimitive::AddReportToMessageList(point);
 }
+
 void EoDbPoint::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
   str.AppendFormat(L"\tStyle;%d", m_pointStyle);

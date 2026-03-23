@@ -71,11 +71,12 @@ void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
   GenPts(orderOfTheSpline, m_pts);
   polyline::__End(view, deviceContext, lineType);
 }
-void EoDbSpline::AddReportToMessageList(const EoGePoint3d&) {
-  CString str;
-  str.Format(L"<BSpline> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
-  app.AddStringToMessageList(str);
+
+void EoDbSpline::AddReportToMessageList(const EoGePoint3d& point) {
+  app.AddStringToMessageList(CString(L"<Spline>"));
+  EoDbPrimitive::AddReportToMessageList(point);
 }
+
 void EoDbSpline::FormatGeometry(CString& str) {
   for (auto i = 0; i < m_pts.GetSize(); i++) { str += L"Control Point;" + m_pts[i].ToString(); }
 }

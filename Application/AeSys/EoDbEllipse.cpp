@@ -452,11 +452,13 @@ void EoDbEllipse::GetAllPoints(EoGePoint3dArray& points) {
   points.Add(m_center);
 }
 
-void EoDbEllipse::AddReportToMessageList(const EoGePoint3d&) {
-  CString str;
-  str.Format(L"<Ellipse> Color: %s Line Type: %s SweepAngle %f MajorAxisLength: %f", FormatPenColor().GetString(),
-      FormatLineType().GetString(), m_sweepAngle, m_majorAxis.Length());
-  app.AddStringToMessageList(str);
+void EoDbEllipse::AddReportToMessageList(const EoGePoint3d& point) {
+  CString message;
+  app.AddStringToMessageList(L"<Ellipse>");
+  EoDbPrimitive::AddReportToMessageList(point);
+  
+  message.Format(L"  SweepAngle: %f  MajorAxisLength: %f", m_sweepAngle, m_majorAxis.Length());
+  app.AddStringToMessageList(message);
 }
 
 void EoDbEllipse::GenPts(

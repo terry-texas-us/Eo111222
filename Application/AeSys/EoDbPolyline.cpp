@@ -158,7 +158,6 @@ void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
 void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
   auto numberOfVertices = std::uint16_t(m_pts.GetSize());
   if (sm_Edge == 0 || sm_Edge > numberOfVertices) { return; }
-
   int beginVertexIndex = static_cast<int>(sm_Edge) - 1;
 
   EoGePoint3d begin = m_pts[beginVertexIndex];
@@ -206,10 +205,11 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
   app.FormatAngle(angleAsString, angleInXYPlane, 8, 3);
 
   CString edgeType = (std::abs(bulge) >= Eo::geometricTolerance) ? L"Polyline Arc" : L"Polyline Edge";
+  app.AddStringToMessageList(edgeType);
+  EoDbPrimitive::AddReportToMessageList(point);
+    
   CString message;
-  message.Format(L"<%s> Color: %s Line Type: %s \u2022 %s @ %s", edgeType.GetString(),
-      FormatPenColor().GetString(), FormatLineType().GetString(),
-      lengthAsString.TrimLeft().GetString(), angleAsString.GetString());
+  message.Format(L"  %s @ %s", lengthAsString.TrimLeft().GetString(), angleAsString.GetString());
   app.AddStringToMessageList(message);
 
   app.SetEngagedLength(edgeLength);

@@ -3,6 +3,7 @@
 #include <climits>
 #include <cstdlib>
 
+#include "AeSys.h"
 #include "AeSysDoc.h"
 #include "Eo.h"
 #include "EoDbGroup.h"
@@ -115,8 +116,15 @@ void EoDbPrimitive::ModifyState() {
 }
 
 void EoDbPrimitive::FormatExtra(CString& extra) {
-  extra.Format(L"Handle;%llX\tOwner;%llX\tLayer;%s\tColor;%s\tLineType;%s", m_handle, m_ownerHandle,
+  extra.Format(L"Handle;%I64X\tOwner;%I64X\tLayer;%s\tColor;%s\tLineType;%s", m_handle, m_ownerHandle,
       m_layerName.empty() ? L"" : m_layerName.c_str(), FormatPenColor().GetString(), FormatLineType().GetString());
+}
+
+void EoDbPrimitive::AddReportToMessageList(const EoGePoint3d&) {
+  CString message;
+  message.Format(L"Handle: %I64X  Owner: %I64X  Layer: %s  Color: %s  LineType: %s", m_handle, m_ownerHandle,
+      m_layerName.empty() ? L"" : m_layerName.c_str(), FormatPenColor().GetString(), FormatLineType().GetString());
+  app.AddStringToMessageList(message);
 }
 
 int EoDbPrimitive::ControlPointIndex() noexcept { return sm_controlPointIndex; }

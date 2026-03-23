@@ -118,15 +118,16 @@ void EoDbLine::AddReportToMessageList(const EoGePoint3d& point) {
   if (relation > 0.5) { angle += Eo::Pi; }
   angle = fmod(angle, Eo::TwoPi);
 
-  CString LengthAsString;
-  CString AngleAsString;
-  app.FormatLength(LengthAsString, app.GetUnits(), length);
-  app.FormatAngle(AngleAsString, angle, 8, 3);
+  CString lengthAsString;
+  CString angleAsString;
+  app.FormatLength(lengthAsString, app.GetUnits(), length);
+  app.FormatAngle(angleAsString, angle, 8, 3);
 
-  CString Message;
-  Message.Format(L"<Line> Color: %s Line Type: %s \u2022 %s @ %s", FormatPenColor().GetString(),
-      FormatLineType().GetString(), LengthAsString.TrimLeft().GetString(), AngleAsString.GetString());
-  app.AddStringToMessageList(Message);
+  app.AddStringToMessageList(L"<Line>");
+  EoDbPrimitive::AddReportToMessageList(point);
+  CString message;
+  message.Format(L"  %s @ %s", lengthAsString.TrimLeft().GetString(), angleAsString.GetString());
+  app.AddStringToMessageList(message);
 
   app.SetEngagedLength(length);
   app.SetEngagedAngle(angle);
@@ -145,6 +146,7 @@ void EoDbLine::FormatExtra(CString& str) {
       Eo::RadianToDegree(m_line.AngleFromXAxisXY()));
   str += L'\t';
 }
+
 void EoDbLine::FormatGeometry(CString& str) {
   str += L"Begin Point;" + m_line.begin.ToString();
   str += L"End Point;" + m_line.end.ToString();

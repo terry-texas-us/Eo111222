@@ -133,14 +133,17 @@ void EoDbText::Display(AeSysView* view, CDC* deviceContext) {
   renderState.SetLineType(deviceContext, lineTypeIndex);
 }
 
-void EoDbText::AddReportToMessageList(const EoGePoint3d&) {
-  CString str;
-  str = L"Color: " + FormatPenColor() + L" Font: " + m_fontDefinition.FontName() + L" Precision: " +
+void EoDbText::AddReportToMessageList(const EoGePoint3d& point) {
+  app.AddStringToMessageList(CString(L"<Text>"));
+  EoDbPrimitive::AddReportToMessageList(point);
+
+  CString message;
+  message = L"  Font: " + m_fontDefinition.FontName() + L" Precision: " +
         m_fontDefinition.FormatPrecision() + L" Path: " + m_fontDefinition.FormatPath() + L" Alignment: (" +
         m_fontDefinition.FormatHorizontalAlignment() + L"," + m_fontDefinition.FormatVerticalAlignment() + L")";
-
-  app.AddStringToMessageList(str);
+  app.AddStringToMessageList(message);
 }
+
 void EoDbText::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
   str.AppendFormat(L"\tFont;%s\tPrecision;%s\tPath;%s\tAlignment;(%s,%s)\tSpacing;%f\tLength;%d\tText;%s",

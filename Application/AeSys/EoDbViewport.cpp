@@ -72,11 +72,13 @@ void EoDbViewport::swap(EoDbViewport& other) noexcept {
   swap(m_twistAngle, other.m_twistAngle);
 }
 
-void EoDbViewport::AddReportToMessageList(const EoGePoint3d&) {
-  CString str;
-  str.Format(L"<Viewport> Id: %d  Center: (%.4f, %.4f, %.4f)  Size: %.4f x %.4f", m_viewportId, m_centerPoint.x,
-      m_centerPoint.y, m_centerPoint.z, m_width, m_height);
-  app.AddStringToMessageList(str);
+void EoDbViewport::AddReportToMessageList(const EoGePoint3d& point) {
+  app.AddStringToMessageList(L"<Viewport>");
+  EoDbPrimitive::AddReportToMessageList(point);
+  CString message;
+  message.Format(L"  Id: %d  Center: (%.4f, %.4f, %.4f)  Size: %.4f x %.4f", m_viewportId, m_centerPoint.x, m_centerPoint.y,
+      m_centerPoint.z, m_width, m_height);
+  app.AddStringToMessageList(message);
 }
 
 void EoDbViewport::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
@@ -175,14 +177,14 @@ void EoDbViewport::GetExtents(
 
 bool EoDbViewport::Identical(EoDbPrimitive* primitive) {
   auto* other = static_cast<EoDbViewport*>(primitive);
-  return m_centerPoint == other->m_centerPoint && m_width == other->m_width && m_height == other->m_height
-      && m_viewportStatus == other->m_viewportStatus && m_viewportId == other->m_viewportId
-      && m_viewCenter == other->m_viewCenter && m_snapBasePoint == other->m_snapBasePoint
-      && m_snapSpacing == other->m_snapSpacing && m_gridSpacing == other->m_gridSpacing
-      && m_viewDirection == other->m_viewDirection && m_viewTargetPoint == other->m_viewTargetPoint
-      && m_lensLength == other->m_lensLength && m_frontClipPlane == other->m_frontClipPlane
-      && m_backClipPlane == other->m_backClipPlane && m_viewHeight == other->m_viewHeight
-      && m_snapAngle == other->m_snapAngle && m_twistAngle == other->m_twistAngle;
+  return m_centerPoint == other->m_centerPoint && m_width == other->m_width && m_height == other->m_height &&
+         m_viewportStatus == other->m_viewportStatus && m_viewportId == other->m_viewportId &&
+         m_viewCenter == other->m_viewCenter && m_snapBasePoint == other->m_snapBasePoint &&
+         m_snapSpacing == other->m_snapSpacing && m_gridSpacing == other->m_gridSpacing &&
+         m_viewDirection == other->m_viewDirection && m_viewTargetPoint == other->m_viewTargetPoint &&
+         m_lensLength == other->m_lensLength && m_frontClipPlane == other->m_frontClipPlane &&
+         m_backClipPlane == other->m_backClipPlane && m_viewHeight == other->m_viewHeight &&
+         m_snapAngle == other->m_snapAngle && m_twistAngle == other->m_twistAngle;
 }
 
 bool EoDbViewport::IsInView(AeSysView* view) {
@@ -245,10 +247,10 @@ bool EoDbViewport::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dAr
     if (EoGeLine::Intersection_xy(line, EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}), intersection)) {
       double relation{};
 
-      if (line.ComputeParametricRelation(intersection, relation)
-          && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
-        if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation)
-            && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+      if (line.ComputeParametricRelation(intersection, relation) && relation >= -Eo::geometricTolerance &&
+          relation <= 1.0 + Eo::geometricTolerance) {
+        if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation) &&
+            relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
           intersection.z = ptBeg.z + relation * (ptEnd.z - ptBeg.z);
           intersections.Add(intersection);
         }
@@ -278,7 +280,8 @@ bool EoDbViewport::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoin
     view->ModelViewTransformPoint(ndcEnd);
 
     EoGeLine edge(EoGePoint3d{ndcBeg}, EoGePoint3d{ndcEnd});
-    if (edge.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), intersectionPoint, &sm_RelationshipOfPoint)) {
+    if (edge.IsSelectedByPointXY(
+            EoGePoint3d{point}, view->SelectApertureSize(), intersectionPoint, &sm_RelationshipOfPoint)) {
       intersectionPoint.z = ndcBeg.z + sm_RelationshipOfPoint * (ndcEnd.z - ndcBeg.z);
       return true;
     }

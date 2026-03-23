@@ -133,9 +133,8 @@ void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
 }
 
 void EoDbDimension::AddReportToMessageList(const EoGePoint3d& point) {
-  CString str;
-  str.Format(L"<Dim> Color: %s Line Type: %s", FormatPenColor().GetString(), FormatLineType().GetString());
-  app.AddStringToMessageList(str);
+  app.AddStringToMessageList(CString(L"<Dimension>"));
+  EoDbPrimitive::AddReportToMessageList(point);
 
   double length = Length();
   double angle = m_line.AngleFromXAxisXY();

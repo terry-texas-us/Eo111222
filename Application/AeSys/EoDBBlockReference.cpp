@@ -165,10 +165,11 @@ void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
     }
   }
 }
-void EoDbBlockReference::AddReportToMessageList(const EoGePoint3d&) {
+void EoDbBlockReference::AddReportToMessageList(const EoGePoint3d& point) {
+  app.AddStringToMessageList(L"<BlockReference>");
+  EoDbPrimitive::AddReportToMessageList(point);
   CString message;
-  message.Format(L"<BlockReference> Color: %s Line Type: %s BlockName %s Layer: %s", FormatPenColor().GetString(),
-      FormatLineType().GetString(), m_blockName.GetString(), m_layerName.c_str());
+  message.Format(L"  BlockName: %s", m_blockName.GetString());
   app.AddStringToMessageList(message);
   message.Format(L"  InsertionPoint: %s", m_insertionPoint.ToString().GetString());
   app.AddStringToMessageList(message);

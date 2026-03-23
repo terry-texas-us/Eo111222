@@ -71,7 +71,7 @@ class EoDbPrimitive : public CObject {
  public:
   ~EoDbPrimitive() override;
 
-  virtual void AddReportToMessageList(const EoGePoint3d&) = 0;
+  virtual void AddReportToMessageList(const EoGePoint3d&);
   virtual void AddToTreeViewControl(HWND, HTREEITEM) = 0;
   virtual void Assign(EoDbPrimitive* primitive) = 0;
   virtual EoDbPrimitive*& Copy(EoDbPrimitive*&) = 0;

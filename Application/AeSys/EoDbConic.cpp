@@ -279,19 +279,15 @@ const EoDbConic& EoDbConic::operator=(const EoDbConic& other) {
   return *this;
 }
 
-void EoDbConic::AddReportToMessageList(const EoGePoint3d&) {
-  CString color = FormatPenColor();
-  CString lineType = FormatLineType();
+void EoDbConic::AddReportToMessageList(const EoGePoint3d& point) {
+  EoDbPrimitive::AddReportToMessageList(point);
 
   auto subClassName = SubClassName(m_ratio, m_startAngle, m_endAngle);
   app.AddStringToMessageList(subClassName);
 
-  CString message;
-  message.Format(L"  Color: %s, Line Type: %s", color.GetBuffer(), lineType.GetBuffer());
-  app.AddStringToMessageList(message);
-
   double radius = m_majorAxis.Length();
 
+  CString message;
   auto conicType = Subclass();
   switch (conicType) {
     case ConicType::Circle:
