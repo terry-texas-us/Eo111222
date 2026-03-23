@@ -159,23 +159,7 @@ ON_COMMAND(ID_VIEW_MODELSPACE, OnViewModelSpace)
 ON_UPDATE_COMMAND_UI(ID_VIEW_MODELSPACE, OnUpdateViewModelSpace)
 END_MESSAGE_MAP()
 
-AeSysDoc::AeSysDoc()
-    : m_HeaderSection{},
-      m_LineTypeTable{},
-      m_BlocksTable{},
-      m_DeletedGroupList{},
-      m_trappedGroups{},
-      m_NodalGroupList{},
-      m_MaskedPrimitives{},
-      m_UniquePoints{},
-      m_modelSpaceLayers{},
-      m_paperSpaceLayers{},
-      m_activeSpace{EoDxf::Space::ModelSpace},
-      m_trapPivotPoint{},
-      m_continuousLineType{},
-      m_workLayer{},
-      m_IdentifiedLayerName{},
-      m_saveAsType{EoDb::FileTypes::Unknown} {}
+AeSysDoc::AeSysDoc() = default;
 
 AeSysDoc::~AeSysDoc() {}
 

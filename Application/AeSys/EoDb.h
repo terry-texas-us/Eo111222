@@ -120,6 +120,8 @@ inline void Read(CFile& file, EoDb::VerticalAlignment& verticalAlignment) {
   verticalAlignment = static_cast<EoDb::VerticalAlignment>(number);
 }
 
+using EoDbHandle = std::uint64_t;
+
 [[nodiscard]] double ReadDouble(CFile& file);
 [[nodiscard]] std::int16_t ReadInt16(CFile& file);
 [[nodiscard]] std::int32_t ReadInt32(CFile& file);

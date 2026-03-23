@@ -28,23 +28,23 @@ class AeSysDoc : public CDocument {
   DECLARE_DYNCREATE(AeSysDoc)
 
  private:
-  EoDbHeaderSection m_HeaderSection;
-  EoDbLineTypeTable m_LineTypeTable;
-  EoDbBlocks m_BlocksTable;
-  EoDbGroupList m_DeletedGroupList;
-  EoDbGroupList m_trappedGroups;
-  EoDbGroupList m_NodalGroupList;
-  CObList m_MaskedPrimitives;
-  CObList m_UniquePoints;
-  CLayers m_modelSpaceLayers;
-  CLayers m_paperSpaceLayers;
+  EoDbHeaderSection m_HeaderSection{};
+  EoDbLineTypeTable m_LineTypeTable{};
+  EoDbBlocks m_BlocksTable{};
+  EoDbGroupList m_DeletedGroupList{};
+  EoDbGroupList m_trappedGroups{};
+  EoDbGroupList m_NodalGroupList{};
+  CObList m_MaskedPrimitives{};
+  CObList m_UniquePoints{};
+  CLayers m_modelSpaceLayers{};
+  CLayers m_paperSpaceLayers{};
   EoDxf::Space m_activeSpace{EoDxf::Space::ModelSpace};
-  EoGePoint3d m_trapPivotPoint;
-  EoDbLineType* m_continuousLineType;
-  EoDbLayer* m_workLayer;
-  CString m_IdentifiedLayerName;
-  double m_pointSize{0.0};  // in drawing units when greater than zero; in pixels when less than zero; default otherwise
-  EoDb::FileTypes m_saveAsType;
+  EoGePoint3d m_trapPivotPoint{};
+  EoDbLineType* m_continuousLineType{};
+  EoDbLayer* m_workLayer{};
+  CString m_IdentifiedLayerName{};
+  double m_pointSize{};  // in drawing units when greater than zero; in pixels when less than zero; default otherwise
+  EoDb::FileTypes m_saveAsType{EoDb::FileTypes::Unknown};
 
  public:
   BOOL DoSave(LPCWSTR lpszPathName, BOOL bReplace = TRUE) override;
@@ -224,17 +224,27 @@ class AeSysDoc : public CDocument {
   // Work Layer interface
   void AddWorkLayerGroup(EoDbGroup* group);
   void AddWorkLayerGroups(EoDbGroupList* groups);
-  auto FindWorkLayerGroup(EoDbGroup* group) const { return (m_workLayer != nullptr ? m_workLayer->Find(group) : nullptr); }
-  [[nodiscard]] auto GetFirstWorkLayerGroupPosition() const { return (m_workLayer != nullptr ? m_workLayer->GetHeadPosition() : POSITION{}); }
+  auto FindWorkLayerGroup(EoDbGroup* group) const {
+    return (m_workLayer != nullptr ? m_workLayer->Find(group) : nullptr);
+  }
+  [[nodiscard]] auto GetFirstWorkLayerGroupPosition() const {
+    return (m_workLayer != nullptr ? m_workLayer->GetHeadPosition() : POSITION{});
+  }
 
   /** @brief Retrieves the last group in the work layer.
    * @return Pointer to the last EoDbGroup in the work layer, or nullptr if the work layer is not defined or contains no
    * groups.
    */
   [[nodiscard]] EoDbGroup* GetLastWorkLayerGroup() const;
-  [[nodiscard]] auto GetLastWorkLayerGroupPosition() const { return (m_workLayer != nullptr ? m_workLayer->GetTailPosition() : POSITION{}); }
-  EoDbGroup* GetNextWorkLayerGroup(POSITION& position) const { return (m_workLayer != nullptr ? m_workLayer->GetNext(position) : nullptr); }
-  EoDbGroup* GetPreviousWorkLayerGroup(POSITION& position) const { return (m_workLayer != nullptr ? m_workLayer->GetPrev(position) : nullptr); }
+  [[nodiscard]] auto GetLastWorkLayerGroupPosition() const {
+    return (m_workLayer != nullptr ? m_workLayer->GetTailPosition() : POSITION{});
+  }
+  EoDbGroup* GetNextWorkLayerGroup(POSITION& position) const {
+    return (m_workLayer != nullptr ? m_workLayer->GetNext(position) : nullptr);
+  }
+  EoDbGroup* GetPreviousWorkLayerGroup(POSITION& position) const {
+    return (m_workLayer != nullptr ? m_workLayer->GetPrev(position) : nullptr);
+  }
   [[nodiscard]] auto* GetWorkLayer() const { return m_workLayer; }
   void InitializeWorkLayer();
   EoDbLayer* SetWorkLayer(EoDbLayer* layer);

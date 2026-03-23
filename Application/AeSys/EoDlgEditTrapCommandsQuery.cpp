@@ -85,7 +85,7 @@ void EoDlgEditTrapCommandsQuery::OnTvnSelchangedGroupTree(NMHDR* pNMHDR, LRESULT
 }
 
 void EoDlgEditTrapCommandsQuery::FillExtraList(EoDbPrimitive* primitive) {
-  wchar_t szBuf[64]{};
+  wchar_t szBuf[128]{};
 
   int iItem{};
 
