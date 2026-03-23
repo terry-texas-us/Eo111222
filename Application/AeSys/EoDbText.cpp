@@ -151,9 +151,9 @@ void EoDbText::ExportToDxf(EoDxfInterface* writer) const {
     text.m_scaleFactorWidth = xDirLength / (textHeight * Eo::defaultCharacterCellAspectRatio);
   }
 
-  // Rotation angle from xDirection (in radians — DXF TEXT group 50 is degrees but EoDxfWrite converts)
+  // Rotation angle from xDirection — DXF TEXT group 50 is in degrees
   const auto& xDir = m_ReferenceSystem.XDirection();
-  text.m_textRotation = std::atan2(xDir.y, xDir.x);
+  text.m_textRotation = Eo::RadianToDegree(std::atan2(xDir.y, xDir.x));
 
   // Map AeSys alignment to DXF alignment
   switch (m_fontDefinition.HorizontalAlignment()) {
