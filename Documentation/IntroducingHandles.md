@@ -16,7 +16,6 @@ Certainly. Here is a detailed plan to refactor the `EoDbPrimitive` hierarchy to 
 
 ## 2. **Handle Architecture Design**
 
-- **Handle Type:** Define a type (e.g., `using EoDbHandle = uint64_t;`) for all handles.
 - **Handle Generation:** Centralize handle generation (e.g., static counter or UUID if needed).
 - **Primitive Handles:** Each `EoDbPrimitive` and derived object gets a unique handle.
 - **Reference Handles:** Where a primitive references another object (e.g., header, table, group), store the handle, not a raw pointer.
@@ -27,8 +26,8 @@ Certainly. Here is a detailed plan to refactor the `EoDbPrimitive` hierarchy to 
 ## 3. **Class Hierarchy Refactor Plan**
 
 ### a. **EoDbPrimitive (Base Class)**
-- Add a private/protected `EoDbHandle m_handle;` member.
-- Add public `[[nodiscard]] EoDbHandle Handle() const noexcept;` getter.
+- Add a private/protected `std::uint64_t m_handle;` member.
+- Add public `[[nodiscard]] std::uint64_t Handle() const noexcept;` getter.
 - Add protected setter for handle (for deserialization).
 - Update constructors to assign/generate a handle.
 - Update serialization/deserialization to include handle (optional for backward compatibility).
@@ -78,7 +77,7 @@ Certainly. Here is a detailed plan to refactor the `EoDbPrimitive` hierarchy to 
 
 ## 8. **Migration Steps**
 
-1. Define `EoDbHandle` and handle generation utilities.
+1. Define `std::uint64_t` handle generation utilities.
 2. Refactor `EoDbPrimitive` to include handle logic.
 3. Update all derived classes to support handle architecture.
 4. Update serialization/deserialization for PEG format.
@@ -88,5 +87,3 @@ Certainly. Here is a detailed plan to refactor the `EoDbPrimitive` hierarchy to 
 8. Review and modernize code per guidelines.
 
 ---
-
-Would you like to proceed with the implementation of step 1 (handle type and generation), or do you want to review/modify this plan first?
