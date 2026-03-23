@@ -10,6 +10,7 @@
 #include "EoDbPrimitive.h"
 #include "EoDxfInterface.h"
 #include "EoGeLine.h"
+#include "EoGeOcsTransform.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
@@ -241,7 +242,8 @@ class EoDbConic : public EoDbPrimitive {
     switch (Subclass()) {
       case ConicType::Circle: {
         EoDxfCircle circle;
-        circle.m_centerPoint = {m_center.x, m_center.y, m_center.z};
+        const auto ocsCenter = EoGeOcsTransform::CreateWcsToOcs(m_extrusion) * m_center;
+        circle.m_centerPoint = {ocsCenter.x, ocsCenter.y, ocsCenter.z};
         circle.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
         circle.m_radius = Radius();
         PopulateDxfBaseProperties(&circle);
@@ -251,7 +253,8 @@ class EoDbConic : public EoDbPrimitive {
 
       case ConicType::RadialArc: {
         EoDxfArc arc;
-        arc.m_centerPoint = {m_center.x, m_center.y, m_center.z};
+        const auto ocsCenter = EoGeOcsTransform::CreateWcsToOcs(m_extrusion) * m_center;
+        arc.m_centerPoint = {ocsCenter.x, ocsCenter.y, ocsCenter.z};
         arc.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
         arc.m_radius = Radius();
         arc.m_startAngle = m_startAngle;
