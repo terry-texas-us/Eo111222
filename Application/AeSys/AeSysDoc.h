@@ -1,8 +1,10 @@
 ﻿#pragma once
 
 #include "EoDb.h"
+#include "EoDbAppIdEntry.h"
 #include "EoDbBlock.h"
 #include "EoDbCharacterCellDefinition.h"
+#include "EoDbClassEntry.h"
 #include "EoDbDimStyle.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
@@ -17,6 +19,7 @@
 #include "EoDbTextStyle.h"
 #include "EoDbVPortTableEntry.h"
 #include "EoDxfBase.h"
+#include "EoDxfObjects.h"
 #include "EoGePoint3d.h"
 #include "EoGeUniquePoint.h"
 #include "EoGeVector3d.h"
@@ -34,8 +37,11 @@ class AeSysDoc : public CDocument {
  private:
   EoDbHeaderSection m_HeaderSection{};
   EoDbLineTypeTable m_LineTypeTable{};
+  std::vector<EoDbAppIdEntry> m_appIdTable{};
+  std::vector<EoDbClassEntry> m_classTable{};
   std::vector<EoDbDimStyle> m_dimStyleTable{};
   std::vector<EoDbTextStyle> m_textStyleTable{};
+  std::vector<EoDxfUnsupportedObject> m_unsupportedObjects{};
   std::vector<EoDbVPortTableEntry> m_vportTable{};
   EoDbBlocks m_BlocksTable{};
   EoDbGroupList m_DeletedGroupList{};
@@ -224,6 +230,13 @@ class AeSysDoc : public CDocument {
   [[nodiscard]] auto* LineTypeTable() { return &m_LineTypeTable; }
   [[nodiscard]] auto* ContinuousLineType() { return m_continuousLineType; }
 
+  // Class Table interface (CLASSES section passthrough)
+  [[nodiscard]] auto& ClassTable() noexcept { return m_classTable; }
+  [[nodiscard]] const auto& ClassTable() const noexcept { return m_classTable; }
+  void AddClassEntry(const EoDbClassEntry& entry) { m_classTable.push_back(entry); }
+  void AddClassEntry(EoDbClassEntry&& entry) { m_classTable.push_back(std::move(entry)); }
+  void ClearClassTable() noexcept { m_classTable.clear(); }
+
   // Dimension Style Table interface
   [[nodiscard]] auto& DimStyleTable() noexcept { return m_dimStyleTable; }
   [[nodiscard]] const auto& DimStyleTable() const noexcept { return m_dimStyleTable; }
@@ -253,6 +266,20 @@ class AeSysDoc : public CDocument {
   void AddVPortTableEntry(const EoDbVPortTableEntry& entry) { m_vportTable.push_back(entry); }
   void AddVPortTableEntry(EoDbVPortTableEntry&& entry) { m_vportTable.push_back(std::move(entry)); }
   void ClearVPortTable() noexcept { m_vportTable.clear(); }
+
+  // AppId Table interface (round-trip passthrough)
+  [[nodiscard]] auto& AppIdTable() noexcept { return m_appIdTable; }
+  [[nodiscard]] const auto& AppIdTable() const noexcept { return m_appIdTable; }
+  void AddAppIdEntry(const EoDbAppIdEntry& entry) { m_appIdTable.push_back(entry); }
+  void AddAppIdEntry(EoDbAppIdEntry&& entry) { m_appIdTable.push_back(std::move(entry)); }
+  void ClearAppIdTable() noexcept { m_appIdTable.clear(); }
+
+  // Unsupported Objects interface (round-trip passthrough)
+  [[nodiscard]] auto& UnsupportedObjects() noexcept { return m_unsupportedObjects; }
+  [[nodiscard]] const auto& UnsupportedObjects() const noexcept { return m_unsupportedObjects; }
+  void AddUnsupportedObject(const EoDxfUnsupportedObject& object) { m_unsupportedObjects.push_back(object); }
+  void AddUnsupportedObject(EoDxfUnsupportedObject&& object) { m_unsupportedObjects.push_back(std::move(object)); }
+  void ClearUnsupportedObjects() noexcept { m_unsupportedObjects.clear(); }
 
   void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
 

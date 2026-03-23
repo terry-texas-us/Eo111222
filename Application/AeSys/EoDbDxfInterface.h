@@ -294,6 +294,14 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
 
   void AddPolyline(const EoDxfPolyline& polyline) override {
+    if (m_dxfWriter) {
+      // EoDxfPolyline has deleted copy ctor (owns raw vertex pointers) — const_cast is safe here
+      // because ExportToDxf constructs the object and m_space is a plain enum member.
+      auto& mutablePolyline = const_cast<EoDxfPolyline&>(polyline);
+      mutablePolyline.m_space = m_currentExportSpace;
+      m_dxfWriter->WritePolyline(&mutablePolyline);
+      return;
+    }
     const auto flag = polyline.m_polylineFlag;
     if (flag & 0x40) {
       // Polyface mesh — decompose face records into individual polygons (deferred to PEG V2)
@@ -373,7 +381,13 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddXline([[maybe_unused]] const EoDxfXline& Xline) override { countOfXline--; }
 
-  void AddUnsupportedObject([[maybe_unused]] const EoDxfUnsupportedObject& objectData) override {}
+  void AddUnsupportedObject(const EoDxfUnsupportedObject& objectData) override {
+    if (m_dxfWriter) {
+      m_dxfWriter->WriteUnsupportedObject(objectData);
+      return;
+    }
+    m_document->AddUnsupportedObject(objectData);
+  }
 
   // Others
   void AddComment(std::wstring_view comment) override {
@@ -383,7 +397,15 @@ class EoDbDxfInterface : public EoDxfInterface {
   void AddKnot([[maybe_unused]] const EoDxfGraphic& knot) override { countOfKnot--; }
 
   // Writing methods
-  void WriteAppId() override {};
+  void WriteAppId() override {
+    if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
+    for (const auto& entry : m_document->AppIdTable()) {
+      EoDxfAppId dxfAppId;
+      dxfAppId.m_tableName = entry.m_name;
+      dxfAppId.m_flagValues = entry.m_flagValues;
+      m_dxfWriter->WriteAppId(&dxfAppId);
+    }
+  };
   void WriteBlockRecords() override {
     if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
     auto position = m_document->GetFirstBlockPosition();
@@ -419,7 +441,21 @@ class EoDbDxfInterface : public EoDxfInterface {
       }
     }
   };
-  void WriteClasses() override {};
+  void WriteClasses() override {
+    if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
+
+    for (const auto& entry : m_document->ClassTable()) {
+      EoDxfClass dxfClass;
+      dxfClass.m_classDxfRecordName = entry.m_classDxfRecordName;
+      dxfClass.m_cppClassName = entry.m_cppClassName;
+      dxfClass.m_applicationName = entry.m_applicationName;
+      dxfClass.m_proxyCapabilitiesFlag = entry.m_proxyCapabilitiesFlag;
+      dxfClass.m_instanceCount = entry.m_instanceCount;
+      dxfClass.m_wasAProxyFlag = entry.m_wasAProxyFlag;
+      dxfClass.m_isAnEntityFlag = entry.m_isAnEntityFlag;
+      m_dxfWriter->WriteClass(&dxfClass);
+    }
+  };
   void WriteDimstyles() override {
     if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
 
@@ -580,7 +616,12 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
   };
   void WriteObjects() override {};
-  void WriteUnsupportedObjects() override {};
+  void WriteUnsupportedObjects() override {
+    if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
+    for (const auto& object : m_document->UnsupportedObjects()) {
+      m_dxfWriter->WriteUnsupportedObject(object);
+    }
+  };
   void WriteLayers() override {
     if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
 

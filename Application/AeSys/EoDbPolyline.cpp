@@ -161,6 +161,27 @@ void EoDbPolyline::ExportToDxf(EoDxfInterface* writer) const {
   const auto numberOfVertices = static_cast<size_t>(m_pts.GetSize());
   if (numberOfVertices == 0) { return; }
 
+  if (Is3D()) {
+    // 3D polyline → heavy POLYLINE with AcDb3dPolyline subclass and AcDb3dPolylineVertex vertices
+    EoDxfPolyline dxfPolyline;
+    PopulateDxfBaseProperties(&dxfPolyline);
+
+    std::int16_t polylineFlag = 0x08;  // 3D polyline
+    if (IsClosed()) { polylineFlag |= 0x01; }
+    if (HasPlinegen()) { polylineFlag |= 0x80; }
+    dxfPolyline.m_polylineFlag = polylineFlag;
+
+    for (size_t i = 0; i < numberOfVertices; ++i) {
+      const auto& point = m_pts[static_cast<INT_PTR>(i)];
+      EoDxfVertex vertex{point.x, point.y, point.z, 0.0};
+      vertex.m_vertexFlags = 0x20;  // AcDb3dPolylineVertex
+      dxfPolyline.addVertex(vertex);
+    }
+
+    writer->AddPolyline(dxfPolyline);
+    return;
+  }
+
   EoDxfLwPolyline lwPolyline;
   PopulateDxfBaseProperties(&lwPolyline);
 

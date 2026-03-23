@@ -23,7 +23,7 @@
 ///   Type code <0x2002>   uint16_t
 ///   Pen color            uint16_t
 ///   Line type            uint16_t
-///   Flags                uint16_t   (sm_Closed | sm_HasBulge | sm_HasWidth | sm_Plinegen)
+///   Flags                uint16_t   (sm_Closed | sm_HasBulge | sm_HasWidth | sm_Plinegen | sm_Is3D)
 ///   Constant width       double     (DXF group code 43; 0.0 when not set)
 ///   Number of vertices   uint16_t
 ///   {vertices}           point3d[]
@@ -45,6 +45,7 @@ class EoDbPolyline : public EoDbPrimitive {
   static constexpr std::int16_t sm_HasBulge = 0x0002;   ///< m_bulges contains per-vertex bulge values
   static constexpr std::int16_t sm_HasWidth = 0x0004;   ///< m_startWidths / m_endWidths are populated
   static constexpr std::int16_t sm_Plinegen = 0x0008;   ///< Generate linetype pattern across vertices
+  static constexpr std::int16_t sm_Is3D = 0x0010;       ///< 3D polyline (DXF heavy POLYLINE flag 0x08)
   /// @}
 
  private:
@@ -128,6 +129,7 @@ class EoDbPolyline : public EoDbPrimitive {
   [[nodiscard]] bool HasBulge() const noexcept { return (m_flags & sm_HasBulge) != 0; }
   [[nodiscard]] bool HasWidth() const noexcept { return (m_flags & sm_HasWidth) != 0; }
   [[nodiscard]] bool HasPlinegen() const noexcept { return (m_flags & sm_Plinegen) != 0; }
+  [[nodiscard]] bool Is3D() const noexcept { return (m_flags & sm_Is3D) != 0; }
 
   void SetClosed(bool closed) noexcept {
     if (closed) {
@@ -141,6 +143,13 @@ class EoDbPolyline : public EoDbPrimitive {
       m_flags |= sm_Plinegen;
     } else {
       m_flags &= ~sm_Plinegen;
+    }
+  }
+  void Set3D(bool is3D) noexcept {
+    if (is3D) {
+      m_flags |= sm_Is3D;
+    } else {
+      m_flags &= ~sm_Is3D;
     }
   }
   /// @}

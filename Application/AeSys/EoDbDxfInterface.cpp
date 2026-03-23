@@ -95,13 +95,32 @@ void EoDbDxfInterface::ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc*
   }
 }
 
-void EoDbDxfInterface::ConvertClassesSection(const EoDxfClass& class_, [[maybe_unused]] AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 2, L"Class - Name: %s (unsupported in AeSys)\n", class_.m_classDxfRecordName.c_str());
+void EoDbDxfInterface::ConvertClassesSection(const EoDxfClass& class_, AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 2, L"Class - Name: %s\n", class_.m_classDxfRecordName.c_str());
+
+  EoDbClassEntry entry;
+  entry.m_classDxfRecordName = class_.m_classDxfRecordName;
+  entry.m_cppClassName = class_.m_cppClassName;
+  entry.m_applicationName = class_.m_applicationName;
+  entry.m_proxyCapabilitiesFlag = class_.m_proxyCapabilitiesFlag;
+  entry.m_instanceCount = class_.m_instanceCount;
+  entry.m_wasAProxyFlag = class_.m_wasAProxyFlag;
+  entry.m_isAnEntityFlag = class_.m_isAnEntityFlag;
+
+  document->AddClassEntry(std::move(entry));
 }
 
-void EoDbDxfInterface::ConvertAppIdTable(const EoDxfAppId& appId, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertAppIdTable(const EoDxfAppId& appId, AeSysDoc* document) {
   const auto& appIdName = appId.m_tableName;
-  ATLTRACE2(traceGeneral, 3, L"AppId - Name: %s (unsupported in AeSys)\n", appIdName.c_str());
+  ATLTRACE2(traceGeneral, 3, L"AppId - Name: %s\n", appIdName.c_str());
+
+  EoDbAppIdEntry entry;
+  entry.m_name = appIdName;
+  entry.m_flagValues = appId.m_flagValues;
+  entry.m_handle = appId.m_handle;
+  entry.m_ownerHandle = appId.m_ownerHandle;
+
+  document->AddAppIdEntry(std::move(entry));
 }
 
 void EoDbDxfInterface::ConvertDimStyle(const EoDxfDimensionStyle& dimensionStyle, AeSysDoc* document) {
@@ -1698,6 +1717,7 @@ void EoDbDxfInterface::ConvertPolyline3DEntity(const EoDxfPolyline& polyline, Ae
 
   if (polyline.m_polylineFlag & 0x01) { polylinePrimitive->SetClosed(true); }
   if (polyline.m_polylineFlag & 0x80) { polylinePrimitive->SetPlinegen(true); }
+  polylinePrimitive->Set3D(true);
 
   AddToDocument(polylinePrimitive, document, polyline.m_space);
 }
@@ -1718,9 +1738,25 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
 
   // 2D POLYLINE: vertex x,y are in OCS; z is the polyline elevation
   const double elevation = polyline.m_polylineElevation.z;
+
+  // Resolve extrusion direction for OCS → WCS transform
+  EoGeVector3d extrusionDirection{
+      polyline.m_extrusionDirection.x, polyline.m_extrusionDirection.y, polyline.m_extrusionDirection.z};
+  if (extrusionDirection.IsNearNull()) {
+    extrusionDirection = EoGeVector3d::positiveUnitZ;
+  } else {
+    extrusionDirection.Unitize();
+  }
+  const bool needsOcsTransform = std::abs(extrusionDirection.x) > Eo::geometricTolerance ||
+                                 std::abs(extrusionDirection.y) > Eo::geometricTolerance ||
+                                 std::abs(extrusionDirection.z - 1.0) > Eo::geometricTolerance;
+  EoGeOcsTransform transformOcs{extrusionDirection};
+
   for (std::uint16_t index = 0; index < numVerts; ++index) {
     const auto& vertex = polyline.m_vertices[index];
-    polylinePrimitive->SetVertex(index, EoGePoint3d{vertex->m_locationPoint.x, vertex->m_locationPoint.y, elevation});
+    auto point = EoGePoint3d{vertex->m_locationPoint.x, vertex->m_locationPoint.y, elevation};
+    if (needsOcsTransform) { point = transformOcs * point; }
+    polylinePrimitive->SetVertex(index, point);
   }
 
   if (polyline.m_polylineFlag & 0x01) { polylinePrimitive->SetClosed(true); }

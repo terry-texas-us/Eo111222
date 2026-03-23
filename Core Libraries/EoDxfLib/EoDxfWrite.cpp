@@ -116,6 +116,7 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
 
   WriteCodeString(0, L"SECTION");
   WriteCodeString(2, L"CLASSES");
+  m_interface->WriteClasses();
   WriteCodeString(0, L"ENDSEC");
 
   WriteCodeString(0, L"SECTION");

@@ -18,29 +18,18 @@
 
 ## 1. CRITICAL — Data Loss on Export
 
-### 1.1 `EoDbPolygon` has no `ExportToDxf` override (HATCH entities silently dropped)
-- **Read**: `ConvertHatchEntity` fully parses HATCH boundary paths (polyline and edge types), OCS→WCS transforms, solid/pattern/hollow styles → creates `EoDbPolygon`.
-- **Write**: `EoDbPolygon` inherits `EoDbPrimitive::ExportToDxf()` which is a **no-op** (line 128 of `EoDbPrimitive.cpp`).
-- **Impact**: Every HATCH entity imported from DXF is silently dropped on re-export. Round-trip test will show all hatches missing.
-- **Fix**: Implement `EoDbPolygon::ExportToDxf()` that reconstructs `EoDxfHatch` from polygon vertices, hatch origin, style, fill index. Writer infrastructure (`WriteHatch`) already supports full HATCH output including polyline boundaries, edge boundaries (LINE, ARC, ELLIPSE), pattern definition lines, and solid fills.
+### 1.1 ~~`EoDbPolygon` has no `ExportToDxf` override (HATCH entities silently dropped)~~ ✅ RESOLVED
+- **Fix applied**: `EoDbPolygon::ExportToDxf()` implemented in `EoDbPolygon.cpp`. Reconstructs `EoDxfHatch` from polygon vertices, hatch origin, style, fill index, pattern definition lines, and double flag. Full pipeline: `ExportToDxf` → `AddHatch` → `WriteHatch`.
 
-### 1.2 TEXT rotation angle exported in radians instead of degrees
-- **Read**: DXF TEXT `group 50` is in **degrees**; parser converts deg→rad correctly.
-- **Write**: `EoDbText::ExportToDxf()` computes rotation via `atan2` (**radians**) and stores in `text.m_textRotation`. `WriteText` (line 387 of `EoDxfWriteAnnotation.cpp`) writes `m_textRotation` **directly** without conversion.
-- **Comparison**: `WriteArc` multiplies by `RadiansToDegrees` (line 52). `WriteInsert` multiplies by `RadiansToDegrees` (line 262). `WriteText` does **not**.
-- **Comment on line 154 is incorrect**: says "EoDxfWrite converts" but WriteText does not convert.
-- **Impact**: All rotated TEXT entities re-exported with wrong angle (e.g., 45° becomes ~0.785 in the DXF, interpreted as <1° by AutoCAD).
-- **Fix**: Either multiply by `RadiansToDegrees` in `ExportToDxf` before assigning to `m_textRotation`, or add conversion in `WriteText`. Prefer converting in `ExportToDxf` for consistency with the "export prepares DXF-ready values" pattern used elsewhere. Fix the misleading comment on line 154.
+### 1.2 ~~TEXT rotation angle exported in radians instead of degrees~~ ✅ RESOLVED
+- **Fix applied**: `EoDbText::ExportToDxf()` now uses `Eo::RadianToDegree(std::atan2(xDir.y, xDir.x))` to convert to degrees before assigning to `text.m_textRotation`.
 
 ---
 
 ## 2. HIGH — Geometric/Structural Fidelity Issues
 
-### 2.1 ARC/CIRCLE center exported as WCS instead of OCS for non-default extrusion
-- **Read**: `ConvertArcEntity`/`ConvertCircleEntity` correctly transform center from OCS→WCS via `ExtrudePointInPlace`.
-- **Write**: `EoDbConic::ExportToDxf()` writes `m_center` (WCS) directly as DXF group `10/20/30` without WCS→OCS reverse transform.
-- **Impact**: For entities with non-default extrusion (e.g., `[0,0,-1]`), the center point is wrong in the output DXF. Default extrusion `[0,0,1]` is transparent (WCS=OCS).
-- **Fix**: Implement WCS→OCS reverse transform in `ExportToDxf` using `ComputeArbitraryAxis(extrusion).Inverse()` to transform center back to OCS before writing.
+### 2.1 ~~ARC/CIRCLE center exported as WCS instead of OCS for non-default extrusion~~ ✅ RESOLVED
+- **Fix applied**: `EoDbConic::ExportToDxf()` now transforms center WCS→OCS via `EoGeOcsTransform::CreateWcsToOcs(m_extrusion) * m_center` before writing Circle and RadialArc entities.
 
 ### 2.2 SPLINE degree, knot vector, and weights discarded at import — always re-exported as uniform cubic
 - **Read**: `ConvertSplineEntity` copies only control points (or fit points as fallback). Degree, knots, weights, flags, tangents are all discarded.
@@ -87,40 +76,23 @@
 
 ## 3. MEDIUM — Property Loss
 
-### 3.1 Text styles not round-tripped
-- **Read**: `ConvertTextStyleTable` logs style name but discards all properties (height, width factor, oblique angle, font file, bigfont, generation flags).
-- **Write**: `WriteTextstyles()` is empty `{}`.
-- **Impact**: All text style references in TEXT/MTEXT entities reference non-existent styles in the output DXF. AutoCAD falls back to "Standard".
-- **Fix**: Implement `EoDbTextStyle` table in `AeSysDoc`; populate from DXF import; export via `WriteTextstyles`.
+### 3.1 ~~Text styles not round-tripped~~ ✅ RESOLVED
+- **Fix applied**: `ConvertTextStyleTable` stores all properties in `EoDbTextStyle` entries via `AeSysDoc::AddTextStyleEntry()`. `WriteTextstyles()` iterates the table and writes each style via `EoDxfWrite::WriteTextstyle()`.
 
-### 3.2 TEXT oblique angle not exported
-- **Read**: `ConvertTextEntity` bakes oblique angle into the reference system Y-direction via shear rotation.
-- **Write**: `EoDbText::ExportToDxf()` does not recover or set `text.m_obliqueAngle` (defaults to 0.0). `WriteText` writes group 51 as 0.0.
-- **Impact**: Oblique (italic-like) text renders correctly in AeSys (baked into reference system) but exports as non-oblique.
-- **Fix**: Recover oblique angle from the reference system's Y-direction shear component during export.
+### 3.2 ~~TEXT oblique angle not exported~~ ✅ RESOLVED
+- **Fix applied**: `EoDbText::ExportToDxf()` recovers oblique angle from Y-direction shear via `DotProduct(xUnit, yUnit)` → `asin` → degrees.
 
-### 3.3 TEXT generation flags not exported
-- **Read**: `ConvertTextEntity` reads `m_textGenerationFlags` (group 71) for backward/upside-down text.
-- **Write**: `EoDbText::ExportToDxf()` does not set `text.m_textGenerationFlags`.
-- **Impact**: Mirrored text loses its mirroring on roundtrip.
-- **Fix**: Store generation flags in `EoDbText` and export them.
+### 3.3 ~~TEXT generation flags not exported~~ ✅ RESOLVED
+- **Fix applied**: `EoDbText::ExportToDxf()` sets `text.m_textGenerationFlags = m_textGenerationFlags`.
 
-### 3.4 TEXT extrusion direction not exported
-- **Read**: Extrusion is used for OCS→WCS transform during conversion.
-- **Write**: `EoDbText::ExportToDxf()` does not set extrusion direction on the `EoDxfText`. Default `[0,0,1]` is assumed.
-- **Impact**: Text with non-default extrusion loses its plane orientation.
-- **Fix**: Store original extrusion in `EoDbText`; set on DXF entity during export.
+### 3.4 ~~TEXT extrusion direction not exported~~ ✅ RESOLVED
+- **Fix applied**: `EoDbText::ExportToDxf()` sets `text.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z}`.
 
-### 3.5 LWPOLYLINE elevation not preserved on export
-- **Read**: `ConvertLWPolylineEntity` uses elevation (group 38) to set vertex Z coordinates.
-- **Write**: `EoDbPolyline::ExportToDxf()` does not recover elevation from vertex Z; writes `m_elevation = 0.0`.
-- **Impact**: LWPOLYLINE entities at non-zero elevation lose their Z position on roundtrip.
-- **Fix**: Set `lwPolyline.m_elevation` from the Z coordinate of the first vertex (LWPOLYLINE vertices share a common Z).
+### 3.5 ~~LWPOLYLINE elevation not preserved on export~~ ✅ RESOLVED
+- **Fix applied**: `EoDbPolyline::ExportToDxf()` sets `lwPolyline.m_elevation = m_pts[0].z`.
 
-### 3.6 LWPOLYLINE plinegen flag mapping
-- **Read**: DXF flag `0x80` → `sm_Plinegen = 0x0008` (correctly mapped).
-- **Write**: Need to verify reverse mapping `0x0008` → DXF flag `0x80` in export. Currently `polylineFlag` is passed through; if internal flags are used directly, plinegen bit will be wrong.
-- **Fix**: Ensure flag bit translation in `ExportToDxf`.
+### 3.6 ~~LWPOLYLINE plinegen flag mapping~~ ✅ RESOLVED
+- **Fix applied**: `EoDbPolyline::ExportToDxf()` maps `HasPlinegen()` → DXF flag `0x80` via explicit `if` check.
 
 ### 3.7 Entity thickness not preserved for most entity types
 - **Read**: Thickness (group 39) is parsed by `EoDxfGraphic::ParseBaseCode`.
@@ -128,10 +100,8 @@
 - **Impact**: Entity thickness lost on roundtrip.
 - **Fix**: Store thickness in `EoDbPrimitive` (base class); propagate in `PopulateDxfBaseProperties`.
 
-### 3.8 HATCH pattern definition lines not written
-- **Write**: `WriteHatch` (line 170–171) writes `m_numberOfPatternDefinitionLines` but has a comment: "Pattern line data would go here, but it's not implemented in AeSys yet."
-- **Impact**: Non-solid hatches lose their pattern definition. AutoCAD will not be able to display the correct pattern.
-- **Fix**: Write pattern definition line data (angle, origin, offset, dash lengths) per boundary path.
+### 3.8 ~~HATCH pattern definition lines not written~~ ✅ RESOLVED
+- **Fix applied**: `WriteHatch` writes full pattern definition line data (angle, base point, offset, dash lengths) from `EoDxfHatch::m_patternDefinitionLines`. `EoDbPolygon::ExportToDxf` passes through stored pattern definition lines.
 
 ### 3.9 POINT display mode ($PDMODE/$PDSIZE) exported but limited
 - **Read**: `$PDMODE` and `$PDSIZE` are among the 4 header variables imported.
@@ -142,23 +112,14 @@
 
 ## 4. LOW — Metadata/Table Gaps
 
-### 4.1 Header variables: only 4 of ~280 imported
-- **Read**: `ConvertHeaderSection` imports only `$ACADVER`, `$CLAYER`, `$PDMODE`, `$PDSIZE`.
-- **Write**: Only variables stored in `EoDbHeaderSection` are exported.
-- **Missing important variables**: `$HANDSEED`, `$INSBASE`, `$EXTMIN`, `$EXTMAX`, `$LIMMIN`, `$LIMMAX`, `$LTSCALE`, `$DIMSCALE`, `$TEXTSIZE`, `$TEXTSTYLE`, `$CELTYPE`, `$CECOLOR`, `$MEASUREMENT`, `$LUNITS`, `$LUPREC`, `$AUNITS`, `$AUPREC`, etc.
-- **Fix**: Add a passthrough map for all header variables, storing them as-is (variant type already supports this). Apply `$HANDSEED` for handle management. Selectively interpret variables that affect rendering (e.g., `$LTSCALE`).
+### 4.1 ~~Header variables: only 4 of ~280 imported~~ ✅ RESOLVED
+- **Fix applied**: `ConvertHeaderSection` now imports ALL header variables as-is via `SetHeaderSectionVariable()` for passthrough round-trip. `$HANDSEED` is applied to the document handle manager. `WriteHeader` exports all stored variables via `std::visit` dispatch on the variant type.
 
-### 4.2 Dimension styles not round-tripped
-- **Read**: `ConvertDimStyle` logs style name, discards all properties.
-- **Write**: `WriteDimstyles()` is empty `{}`.
-- **Impact**: DIMENSION entities reference non-existent dim styles.
-- **Fix**: Implement passthrough storage for dim style tables.
+### 4.2 ~~Dimension styles not round-tripped~~ ✅ RESOLVED
+- **Fix applied**: `ConvertDimStyle` stores all properties in `EoDbDimStyle` entries via `AeSysDoc::AddDimStyleEntry()`. `WriteDimstyles()` iterates the table and writes each style via `EoDxfWrite::WriteDimstyle()`.
 
-### 4.3 CLASSES section not round-tripped
-- **Read**: `ConvertClassesSection` logs class name only.
-- **Write**: `WriteClasses` writes empty CLASSES section.
-- **Impact**: Custom entity classes (proxy entities, ACAD_TABLE, etc.) lose their class definitions. Does not affect standard entity types.
-- **Fix**: Implement passthrough storage for class definitions.
+### 4.3 ~~CLASSES section not round-tripped~~ ✅ RESOLVED
+- **Fix applied**: `ConvertClassesSection` stores all class properties in `EoDbClassEntry` via `AeSysDoc::AddClassEntry()`. `WriteClasses()` iterates the table and writes each class via `EoDxfWrite::WriteClass()`.
 
 ### 4.4 OBJECTS section not round-tripped
 - **Read**: Unsupported objects are stored as raw group code data.
