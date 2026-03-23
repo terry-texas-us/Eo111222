@@ -171,6 +171,7 @@ void EoDbPolyline::ExportToDxf(EoDxfInterface* writer) const {
   if (HasPlinegen()) { polylineFlag |= 0x80; }
   lwPolyline.m_polylineFlag = polylineFlag;
   lwPolyline.m_constantWidth = m_constantWidth;
+  lwPolyline.m_elevation = m_pts[0].z;
 
   lwPolyline.m_vertices.reserve(numberOfVertices);
   for (size_t i = 0; i < numberOfVertices; ++i) {
