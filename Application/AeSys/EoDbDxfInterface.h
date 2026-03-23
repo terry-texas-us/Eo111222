@@ -472,19 +472,24 @@ class EoDbDxfInterface : public EoDxfInterface {
     if (m_document == nullptr) { return; }
     const auto& headerSection = m_document->HeaderSection();
     for (const auto& [name, value] : headerSection.GetVariables()) {
+      const int groupCode = headerSection.GetGroupCode(name);
       std::visit(
-          [&header, &name](const auto& val) {
+          [&header, &name, groupCode](const auto& val) {
             using T = std::decay_t<decltype(val)>;
             if constexpr (std::is_same_v<T, double>) {
-              header.AddDouble(name, val, 40);
+              header.AddDouble(name, val, groupCode != 0 ? groupCode : 40);
             } else if constexpr (std::is_same_v<T, int>) {
-              header.AddInt16(name, static_cast<std::int16_t>(val), 70);
+              header.AddInt16(name, static_cast<std::int16_t>(val), groupCode != 0 ? groupCode : 70);
             } else if constexpr (std::is_same_v<T, std::wstring>) {
-              header.AddWideString(name, val, 1);
+              header.AddWideString(name, val, groupCode != 0 ? groupCode : 1);
             } else if constexpr (std::is_same_v<T, EoGePoint3d>) {
-              header.AddGeometryBase(name, {val.x, val.y, val.z}, 10);
+              header.AddGeometryBase(name, {val.x, val.y, val.z}, groupCode != 0 ? groupCode : 10);
             } else if constexpr (std::is_same_v<T, EoGeVector3d>) {
-              header.AddGeometryBase(name, {val.x, val.y, val.z}, 10);
+              header.AddGeometryBase(name, {val.x, val.y, val.z}, groupCode != 0 ? groupCode : 10);
+            } else if constexpr (std::is_same_v<T, std::uint64_t>) {
+              header.AddHandle(name, val, groupCode != 0 ? groupCode : 5);
+            } else if constexpr (std::is_same_v<T, bool>) {
+              header.AddInt16(name, val ? 1 : 0, groupCode != 0 ? groupCode : 290);
             }
           },
           value);

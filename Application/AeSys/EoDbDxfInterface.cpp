@@ -42,43 +42,57 @@
 
 void EoDbDxfInterface::SetHeaderSectionVariable(
     const EoDxfHeader* header, std::wstring_view keyToFind, EoDbHeaderSection& headerSection) {
-  HeaderVariable value;
   auto it = header->m_variants.find(std::wstring{keyToFind});
-  if (it != header->m_variants.end() && it->second != nullptr) {
-    const std::wstring& key = it->first;
-    auto& second = *(it->second);
-    if (const auto* stringValue = second.GetIf<std::wstring>()) {
-      value = *stringValue;
-    } else if (const auto* int16Value = second.GetIf<std::int16_t>()) {
-      value = static_cast<int>(*int16Value);
-    } else if (const auto* integerValue = second.GetIf<std::int32_t>()) {
-      value = *integerValue;
-    } else if (const auto* booleanValue = second.GetIf<bool>()) {
-      value = *booleanValue ? 1 : 0;
-    } else if (const auto* int64Value = second.GetIf<std::int64_t>()) {
-      if (*int64Value >= std::numeric_limits<int>::min() && *int64Value <= std::numeric_limits<int>::max()) {
-        value = static_cast<int>(*int64Value);
-      } else {
-        value = L"";
-      }
-    } else if (const auto* doubleValue = second.GetIf<double>()) {
-      value = *doubleValue;
-    } else if (const auto* geometryValue = second.GetIf<EoDxfGeometryBase3d>()) {
-      value = EoGePoint3d(*geometryValue);
+  if (it == header->m_variants.end() || it->second == nullptr) { return; }
+
+  const std::wstring& key = it->first;
+  const auto& variant = *(it->second);
+  const int groupCode = variant.Code();
+  HeaderVariable value;
+
+  if (const auto* stringValue = variant.GetIf<std::wstring>()) {
+    value = *stringValue;
+  } else if (const auto* int16Value = variant.GetIf<std::int16_t>()) {
+    value = static_cast<int>(*int16Value);
+  } else if (const auto* integerValue = variant.GetIf<std::int32_t>()) {
+    value = *integerValue;
+  } else if (const auto* booleanValue = variant.GetIf<bool>()) {
+    value = *booleanValue;
+  } else if (const auto* int64Value = variant.GetIf<std::int64_t>()) {
+    if (*int64Value >= std::numeric_limits<int>::min() && *int64Value <= std::numeric_limits<int>::max()) {
+      value = static_cast<int>(*int64Value);
     } else {
       value = L"";
     }
-    headerSection.SetVariable(key, HeaderVariable(value));
+  } else if (const auto* handleValue = variant.GetIf<std::uint64_t>()) {
+    value = *handleValue;
+  } else if (const auto* doubleValue = variant.GetIf<double>()) {
+    value = *doubleValue;
+  } else if (const auto* geometryValue = variant.GetIf<EoDxfGeometryBase3d>()) {
+    value = EoGePoint3d(*geometryValue);
+  } else {
+    value = L"";
   }
+  headerSection.SetVariable(key, value, groupCode);
 }
 
 void EoDbDxfInterface::ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Converting Header: %i variables\n", static_cast<int>(header->m_variants.size()));
 
-  std::vector<std::wstring> keys{L"$ACADVER", L"$CLAYER", L"$PDMODE", L"$PDSIZE"};
-
   EoDbHeaderSection& headerSection = document->HeaderSection();
-  for (const auto& key : keys) { SetHeaderSectionVariable(header, key, headerSection); }
+
+  // Import all header variables as-is for passthrough round-trip.
+  for (const auto& [key, variantPtr] : header->m_variants) {
+    if (variantPtr == nullptr) { continue; }
+    SetHeaderSectionVariable(header, key, headerSection);
+  }
+
+  // Apply $HANDSEED to the document handle manager so new handles do not collide.
+  if (const auto* handSeed = headerSection.SetVariable(L"$HANDSEED")) {
+    if (const auto* handleValue = std::get_if<std::uint64_t>(handSeed)) {
+      document->HandleManager().SetNextHandle(*handleValue);
+    }
+  }
 }
 
 void EoDbDxfInterface::ConvertClassesSection(const EoDxfClass& class_, [[maybe_unused]] AeSysDoc* document) {
@@ -2312,7 +2326,6 @@ void EoDbDxfInterface::ConvertViewportEntity(const EoDxfViewport& viewport, AeSy
 
   AddToDocument(viewportPrimitive, document, viewport.m_space);
 
-  ATLTRACE2(traceGeneral, 2, L"  Viewport id=%d → EoDbViewport (%.1f x %.1f at (%.4f, %.4f))\n",
-      viewport.m_viewportId, viewport.m_width, viewport.m_height, viewport.m_centerPoint.x,
-      viewport.m_centerPoint.y);
+  ATLTRACE2(traceGeneral, 2, L"  Viewport id=%d → EoDbViewport (%.1f x %.1f at (%.4f, %.4f))\n", viewport.m_viewportId,
+      viewport.m_width, viewport.m_height, viewport.m_centerPoint.x, viewport.m_centerPoint.y);
 }

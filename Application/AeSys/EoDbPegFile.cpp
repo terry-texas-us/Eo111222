@@ -43,6 +43,8 @@ constexpr std::uint16_t kTypeTagInt = 1;
 constexpr std::uint16_t kTypeTagWString = 2;
 constexpr std::uint16_t kTypeTagPoint3d = 3;
 constexpr std::uint16_t kTypeTagVector3d = 4;
+constexpr std::uint16_t kTypeTagHandle = 5;
+constexpr std::uint16_t kTypeTagBool = 6;
 }  // namespace
 
 void EoDbPegFile::Load(AeSysDoc* document) {
@@ -135,6 +137,12 @@ void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
         break;
       case kTypeTagVector3d:
         value = EoDb::ReadVector3d(*this);
+        break;
+      case kTypeTagHandle:
+        value = EoDb::ReadUInt64(*this);
+        break;
+      case kTypeTagBool:
+        value = EoDb::ReadUInt16(*this) != 0;
         break;
       default:
         throw std::runtime_error("Exception EoDbPegFile: Unknown header variable type tag.");
@@ -575,6 +583,12 @@ void EoDbPegFile::WriteHeaderSection(AeSysDoc* document, EoDb::PegFileVersion fi
           } else if constexpr (std::is_same_v<T, EoGeVector3d>) {
             EoDb::WriteUInt16(*this, kTypeTagVector3d);
             arg.Write(*this);
+          } else if constexpr (std::is_same_v<T, std::uint64_t>) {
+            EoDb::WriteUInt16(*this, kTypeTagHandle);
+            EoDb::WriteUInt64(*this, arg);
+          } else if constexpr (std::is_same_v<T, bool>) {
+            EoDb::WriteUInt16(*this, kTypeTagBool);
+            EoDb::WriteUInt16(*this, arg ? 1 : 0);
           }
         },
         value);

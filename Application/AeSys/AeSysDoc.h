@@ -6,6 +6,7 @@
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
+#include "EoDbHandleManager.h"
 #include "EoDbHeaderSection.h"
 #include "EoDbLayer.h"
 #include "EoDbLineType.h"
@@ -50,6 +51,7 @@ class AeSysDoc : public CDocument {
   double m_pointSize{};  // in drawing units when greater than zero; in pixels when less than zero; default otherwise
   EoDb::FileTypes m_saveAsType{EoDb::FileTypes::Unknown};
   EoDxf::Version m_dxfVersion{EoDxf::Version::AC1032};
+  EoDbHandleManager m_handleManager{};
 
  public:
   BOOL DoSave(LPCWSTR lpszPathName, BOOL bReplace = TRUE) override;
@@ -77,6 +79,13 @@ class AeSysDoc : public CDocument {
    */
   EoDbHeaderSection& HeaderSection() { return m_HeaderSection; }
   const EoDbHeaderSection& HeaderSection() const { return m_HeaderSection; }
+
+  /** @brief Provides access to the document's handle manager.
+   *
+   * @return A reference to the EoDbHandleManager used to assign and accommodate entity handles.
+   */
+  [[nodiscard]] EoDbHandleManager& HandleManager() noexcept { return m_handleManager; }
+  [[nodiscard]] const EoDbHandleManager& HandleManager() const noexcept { return m_handleManager; }
 
   /** @brief Adds text to the document as one or more EoDbText primitives.
    *
