@@ -67,6 +67,8 @@ class EoDbViewport : public EoDbPrimitive {
   /// @return A pointer to the constructed EoDbViewport.
   static EoDbViewport* ReadFromPeg(CFile& file);
 
+  void ExportToDxf(EoDxfInterface* writer) const override;
+
   /// @brief Populates an EoDxfViewport from this primitive's stored properties for DXF export.
   /// @param viewport The DXF viewport entity to populate.
   void ExportToDxf(EoDxfViewport& viewport) const;

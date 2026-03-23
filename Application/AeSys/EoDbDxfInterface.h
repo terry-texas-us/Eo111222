@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <type_traits>
+#include <variant>
 
 #include "AeSysDoc.h"
 #include "EoDbBlock.h"
@@ -15,11 +17,17 @@
 #include "EoDxfObjects.h"
 #include "EoDxfSpline.h"
 
+#include "EoDxfWrite.h"
+
 // Minimal implementation of EoDxfInterface
 // In a real scenario, implement these methods to handle the parsed entities
 class EoDbDxfInterface : public EoDxfInterface {
  public:
   EoDbDxfInterface(AeSysDoc* document) : m_document(document) {}
+
+  /// @brief Sets the DXF writer back-pointer for write-mode operation.
+  /// When set, Add* methods forward to the writer instead of importing.
+  void SetDxfWriter(EoDxfWrite* dxfWriter) noexcept { m_dxfWriter = dxfWriter; }
 
   void AddHeader(const EoDxfHeader* header) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddHeader called\n");
@@ -104,6 +112,12 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
 
   void AddArc(const EoDxfArc& arc) override {
+    if (m_dxfWriter) {
+      auto mutableArc = arc;
+      mutableArc.m_space = m_currentExportSpace;
+      m_dxfWriter->WriteArc(&mutableArc);
+      return;
+    }
     countOfArc++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddArc - block <%s>\n", m_blockName.c_str());
@@ -130,6 +144,12 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
 
   void AddCircle(const EoDxfCircle& circle) override {
+    if (m_dxfWriter) {
+      auto mutableCircle = circle;
+      mutableCircle.m_space = m_currentExportSpace;
+      m_dxfWriter->WriteCircle(&mutableCircle);
+      return;
+    }
     countOfCircle++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddCircle - block <%s>\n", m_blockName.c_str());
@@ -156,6 +176,12 @@ class EoDbDxfInterface : public EoDxfInterface {
   void AddDimDiametric([[maybe_unused]] const EoDxfDiametricDimension* dimDiametric) override { countOfDimDiametric--; }
 
   void AddEllipse(const EoDxfEllipse& ellipse) override {
+    if (m_dxfWriter) {
+      auto mutableEllipse = ellipse;
+      mutableEllipse.m_space = m_currentExportSpace;
+      m_dxfWriter->WriteEllipse(&mutableEllipse);
+      return;
+    }
     countOfEllipse++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddEllipse - block <%s>\n", m_blockName.c_str());
@@ -166,6 +192,11 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
 
   void AddHatch(const EoDxfHatch& hatch) override {
+    if (m_dxfWriter) {
+      const_cast<EoDxfHatch&>(hatch).m_space = m_currentExportSpace;
+      m_dxfWriter->WriteHatch(const_cast<EoDxfHatch*>(&hatch));
+      return;
+    }
     countOfHatch++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddHatch - block <%s>\n", m_blockName.c_str());
@@ -178,6 +209,12 @@ class EoDbDxfInterface : public EoDxfInterface {
   void AddImage([[maybe_unused]] const EoDxfImage* image) override { countOfImage--; }
 
   void AddInsert(const EoDxfInsert& blockReference) override {
+    if (m_dxfWriter) {
+      auto mutableInsert = blockReference;
+      mutableInsert.m_space = m_currentExportSpace;
+      m_dxfWriter->WriteInsert(&mutableInsert);
+      return;
+    }
     countOfInsert++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddInsert - block <%s>\n", m_blockName.c_str());
@@ -190,6 +227,12 @@ class EoDbDxfInterface : public EoDxfInterface {
   void AddLeader([[maybe_unused]] const EoDxfLeader* leader) override {countOfLeader--;}
 
   void AddLine(const EoDxfLine& line) override {
+    if (m_dxfWriter) {
+      auto mutableLine = line;
+      mutableLine.m_space = m_currentExportSpace;
+      m_dxfWriter->WriteLine(&mutableLine);
+      return;
+    }
     countOfLine++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddLine - block <%s>\n", m_blockName.c_str());
@@ -200,6 +243,12 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
 
   void AddLWPolyline(const EoDxfLwPolyline& polyline) override {
+    if (m_dxfWriter) {
+      auto mutablePolyline = polyline;
+      mutablePolyline.m_space = m_currentExportSpace;
+      m_dxfWriter->WriteLWPolyline(&mutablePolyline);
+      return;
+    }
     countOfLWPolyline++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddLWPolyline - block <%s>\n", m_blockName.c_str());
@@ -212,6 +261,12 @@ class EoDbDxfInterface : public EoDxfInterface {
   void AddMLeader([[maybe_unused]] const EoDxfMLeader* mLeader) override { countOfMLeader--; }
 
   void AddMText(const EoDxfMText& mText) override {
+    if (m_dxfWriter) {
+      auto mutableMText = mText;
+      mutableMText.m_space = m_currentExportSpace;
+      m_dxfWriter->WriteMText(&mutableMText);
+      return;
+    }
     countOfMText++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::addMText - block <%s>\n", m_blockName.c_str());
@@ -222,6 +277,12 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
 
   void AddPoint(const EoDxfPoint& point) override {
+    if (m_dxfWriter) {
+      auto mutablePoint = point;
+      mutablePoint.m_space = m_currentExportSpace;
+      m_dxfWriter->WritePoint(&mutablePoint);
+      return;
+    }
     countOfPoint++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddPoint - block <%s>\n", m_blockName.c_str());
@@ -266,6 +327,11 @@ class EoDbDxfInterface : public EoDxfInterface {
   void AddSolid([[maybe_unused]] const EoDxfSolid& solid) override { countOfSolid--; }
 
   void AddSpline(const EoDxfSpline& spline) override {
+    if (m_dxfWriter) {
+      const_cast<EoDxfSpline&>(spline).m_space = m_currentExportSpace;
+      m_dxfWriter->WriteSpline(const_cast<EoDxfSpline*>(&spline));
+      return;
+    }
     countOfSpline++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddSpline - block <%s>\n", m_blockName.c_str());
@@ -276,6 +342,12 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
 
   void AddText(const EoDxfText& text) override {
+    if (m_dxfWriter) {
+      auto mutableText = text;
+      mutableText.m_space = m_currentExportSpace;
+      m_dxfWriter->WriteText(&mutableText);
+      return;
+    }
     countOfText++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddText - block <%s>\n", m_blockName.c_str());
@@ -288,6 +360,12 @@ class EoDbDxfInterface : public EoDxfInterface {
   void AddTrace([[maybe_unused]] const EoDxfTrace& trace) override { countOfTrace--; }
 
   void AddViewport(const EoDxfViewport& viewport) override {
+    if (m_dxfWriter) {
+      auto mutableViewport = viewport;
+      mutableViewport.m_space = m_currentExportSpace;
+      m_dxfWriter->WriteViewport(&mutableViewport);
+      return;
+    }
     countOfViewport++;
     ConvertViewportEntity(viewport, m_document);
   }
@@ -305,16 +383,158 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   // Writing methods
   void WriteAppId() override {};
-  void WriteBlockRecords() override {};
-  void WriteBlocks() override {};
+  void WriteBlockRecords() override {
+    if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
+    auto position = m_document->GetFirstBlockPosition();
+    while (position != nullptr) {
+      CString name;
+      EoDbBlock* block{};
+      m_document->GetNextBlock(position, name, block);
+      if (block == nullptr) { continue; }
+      m_dxfWriter->WriteBlockRecord(std::wstring(name));
+    }
+  };
+  void WriteBlocks() override {
+    if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
+    auto position = m_document->GetFirstBlockPosition();
+    while (position != nullptr) {
+      CString name;
+      EoDbBlock* block{};
+      m_document->GetNextBlock(position, name, block);
+      if (block == nullptr) { continue; }
+
+      EoDxfBlock dxfBlock;
+      dxfBlock.m_blockName = std::wstring(name);
+      dxfBlock.m_blockTypeFlags = static_cast<std::int16_t>(block->BlockTypeFlags());
+      auto basePoint = block->BasePoint();
+      dxfBlock.m_basePoint = {basePoint.x, basePoint.y, basePoint.z};
+      m_dxfWriter->WriteBlock(&dxfBlock);
+
+      // Write block content entities (primitives stored directly in EoDbBlock)
+      auto primitivePosition = block->GetHeadPosition();
+      while (primitivePosition != nullptr) {
+        auto* primitive = block->GetNext(primitivePosition);
+        if (primitive != nullptr) { primitive->ExportToDxf(this); }
+      }
+    }
+  };
   void WriteClasses() override {};
   void WriteDimstyles() override {};
-  void WriteEntities() override {};
-  void WriteHeader(EoDxfHeader& /* header */) override {};
+  void WriteEntities() override {
+    if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
+
+    // Export model-space entities
+    m_currentExportSpace = EoDxf::Space::ModelSpace;
+    auto& modelLayers = m_document->SpaceLayers(EoDxf::Space::ModelSpace);
+    for (INT_PTR i = 0; i < modelLayers.GetSize(); i++) {
+      auto* layer = modelLayers.GetAt(i);
+      if (layer == nullptr) { continue; }
+      auto position = layer->GetHeadPosition();
+      while (position != nullptr) {
+        auto* group = layer->GetNext(position);
+        if (group == nullptr) { continue; }
+        auto primitivePosition = group->GetHeadPosition();
+        while (primitivePosition != nullptr) {
+          auto* primitive = group->GetNext(primitivePosition);
+          if (primitive != nullptr) {
+            if (primitive->LayerName().empty()) { primitive->SetLayerName(std::wstring(layer->Name())); }
+            primitive->ExportToDxf(this);
+          }
+        }
+      }
+    }
+
+    // Export paper-space entities
+    m_currentExportSpace = EoDxf::Space::PaperSpace;
+    auto& paperLayers = m_document->SpaceLayers(EoDxf::Space::PaperSpace);
+    for (INT_PTR i = 0; i < paperLayers.GetSize(); i++) {
+      auto* layer = paperLayers.GetAt(i);
+      if (layer == nullptr) { continue; }
+      auto position = layer->GetHeadPosition();
+      while (position != nullptr) {
+        auto* group = layer->GetNext(position);
+        if (group == nullptr) { continue; }
+        auto primitivePosition = group->GetHeadPosition();
+        while (primitivePosition != nullptr) {
+          auto* primitive = group->GetNext(primitivePosition);
+          if (primitive != nullptr) {
+            if (primitive->LayerName().empty()) { primitive->SetLayerName(std::wstring(layer->Name())); }
+            primitive->ExportToDxf(this);
+          }
+        }
+      }
+    }
+
+    m_currentExportSpace = EoDxf::Space::ModelSpace;
+  };
+  void WriteHeader(EoDxfHeader& header) override {
+    if (m_document == nullptr) { return; }
+    const auto& headerSection = m_document->HeaderSection();
+    for (const auto& [name, value] : headerSection.GetVariables()) {
+      std::visit(
+          [&header, &name](const auto& val) {
+            using T = std::decay_t<decltype(val)>;
+            if constexpr (std::is_same_v<T, double>) {
+              header.AddDouble(name, val, 40);
+            } else if constexpr (std::is_same_v<T, int>) {
+              header.AddInt16(name, static_cast<std::int16_t>(val), 70);
+            } else if constexpr (std::is_same_v<T, std::wstring>) {
+              header.AddWideString(name, val, 1);
+            } else if constexpr (std::is_same_v<T, EoGePoint3d>) {
+              header.AddGeometryBase(name, {val.x, val.y, val.z}, 10);
+            } else if constexpr (std::is_same_v<T, EoGeVector3d>) {
+              header.AddGeometryBase(name, {val.x, val.y, val.z}, 10);
+            }
+          },
+          value);
+    }
+  };
   void WriteObjects() override {};
   void WriteUnsupportedObjects() override {};
-  void WriteLayers() override {};
-  void WriteLTypes() override {};
+  void WriteLayers() override {
+    if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
+
+    auto writeLayers = [this](CLayers& layers) {
+      for (INT_PTR i = 0; i < layers.GetSize(); i++) {
+        auto* layer = layers.GetAt(i);
+        if (layer == nullptr) { continue; }
+
+        EoDxfLayer dxfLayer;
+        dxfLayer.m_tableName = std::wstring(layer->Name());
+        dxfLayer.m_colorNumber = layer->IsOff() ? static_cast<std::int16_t>(-std::abs(layer->ColorIndex()))
+                                                 : static_cast<std::int16_t>(std::abs(layer->ColorIndex()));
+        dxfLayer.m_linetypeName = layer->LineType() != nullptr ? std::wstring(layer->LineTypeName()) : L"Continuous";
+        dxfLayer.m_plottingFlag = true;
+        m_dxfWriter->WriteLayer(&dxfLayer);
+      }
+    };
+
+    writeLayers(m_document->SpaceLayers(EoDxf::Space::ModelSpace));
+    writeLayers(m_document->SpaceLayers(EoDxf::Space::PaperSpace));
+  };
+  void WriteLTypes() override {
+    if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
+
+    auto* lineTypeTable = m_document->LineTypeTable();
+    auto position = lineTypeTable->GetStartPosition();
+    while (position != nullptr) {
+      CString name;
+      EoDbLineType* lineType{};
+      lineTypeTable->GetNextAssoc(position, name, lineType);
+      if (lineType == nullptr) { continue; }
+
+      EoDxfLinetype dxfLinetype;
+      dxfLinetype.m_tableName = std::wstring(lineType->Name());
+      dxfLinetype.desc = std::wstring(lineType->Description());
+      dxfLinetype.m_numberOfLinetypeElements = static_cast<std::int16_t>(lineType->GetNumberOfDashes());
+      dxfLinetype.length = lineType->GetPatternLength();
+
+      const auto& dashElements = lineType->DashElements();
+      dxfLinetype.path.assign(dashElements.begin(), dashElements.end());
+
+      m_dxfWriter->WriteLinetype(&dxfLinetype);
+    }
+  };
   void WriteTextstyles() override {};
   void WriteVports() override {};
 
@@ -409,9 +629,11 @@ class EoDbDxfInterface : public EoDxfInterface {
 
  private:
   AeSysDoc* m_document{};
+  EoDxfWrite* m_dxfWriter{};
   std::wstring m_blockName{};
   bool m_inBlockDefinition{};
   EoDbBlock* m_currentOpenBlockDefinition{};
+  EoDxf::Space m_currentExportSpace{EoDxf::Space::ModelSpace};
 
  public:
   std::int16_t countOf3dFace{};

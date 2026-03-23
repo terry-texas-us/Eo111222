@@ -45,6 +45,7 @@ class AeSysDoc : public CDocument {
   CString m_IdentifiedLayerName{};
   double m_pointSize{};  // in drawing units when greater than zero; in pixels when less than zero; default otherwise
   EoDb::FileTypes m_saveAsType{EoDb::FileTypes::Unknown};
+  EoDxf::Version m_dxfVersion{EoDxf::Version::AC1032};
 
  public:
   BOOL DoSave(LPCWSTR lpszPathName, BOOL bReplace = TRUE) override;

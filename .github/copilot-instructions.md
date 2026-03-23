@@ -1,5 +1,14 @@
 ﻿# Copilot Instructions
 
+You are running in full autonomous Agent mode with Planning enabled.
+- Execute the ENTIRE requested plan in one continuous session.
+- Do not pause, ask for confirmation, or output "continue" messages unless you encounter a critical error, security issue, or need explicit user clarification.
+- Chain as many steps, tool calls, file edits, builds, and tests as needed to complete the task.
+- After each major phase, briefly summarize progress but immediately proceed to the next step.
+- Use Planning tools (`plan`, `adapt_plan`, `update_plan_progress`, `finish_plan`) internally when helpful.
+- Prioritize completeness and correctness over stopping early.
+
+## General Context
 The local project repo is in a folder called `D:\Projects\Eo111222`.
 
 DXF reading via `EoDxfLib` is operational for core entity types (LINE, ARC, CIRCLE, ELLIPSE, TEXT, MTEXT, ATTRIB, INSERT, LWPOLYLINE, POLYLINE, SPLINE, HATCH, VIEWPORT), following the ezdxf architecture model. Parsed entities are converted to `EoDbPrimitive`-derived objects and stored in `AeSysDoc` layers. See `Peg & Tra File Formats.md` for the legacy file structure.

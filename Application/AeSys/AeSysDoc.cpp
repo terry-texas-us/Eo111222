@@ -215,6 +215,23 @@ static EoDb::FileTypes FileTypeFromFilterIndex(DWORD filterIndex) noexcept {
   }
 }
 
+/** @brief Maps a 1-based CFileDialog filter index to a DXF version.
+ *
+ * Odd DXF/DWG indices (3, 5, 7) select 2018 (AC1032);
+ * even indices (4, 6, 8) select 2013 (AC1027).
+ * Non-DXF indices return AC1032 as a safe default.
+ */
+static EoDxf::Version DxfVersionFromFilterIndex(DWORD filterIndex) noexcept {
+  switch (filterIndex) {
+    case 4:
+    case 6:
+    case 8:
+      return EoDxf::Version::AC1027;
+    default:
+      return EoDxf::Version::AC1032;
+  }
+}
+
 /** @brief Maps the current m_saveAsType to a 1-based filter index for CFileDialog pre-selection.
  *
  * When multiple filter entries map to the same file type (e.g., DXF has both ASCII and Binary
@@ -297,6 +314,7 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
     const EoDb::FileTypes chosenFileType = FileTypeFromFilterIndex(chosenFilterIndex);
     if (chosenFileType != EoDb::FileTypes::Unknown) {
       m_saveAsType = chosenFileType;
+      m_dxfVersion = DxfVersionFromFilterIndex(chosenFilterIndex);
     } else {
       // Fall back to extension-based detection
       m_saveAsType = App::FileTypeFromPath(selectedPath);
@@ -500,10 +518,11 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
     case EoDb::FileTypes::Dwg:
     case EoDb::FileTypes::Dxf:
     case EoDb::FileTypes::Dxb: {
-      // Begin implementation of DXF/DXB saving using EoDbDxfInterface
+      const bool isBinaryDxf = (m_saveAsType == EoDb::FileTypes::Dxb);
       EoDbDxfInterface dxfInterface(this);
       EoDxfWrite dxfWriter(pathName);
-      if (dxfWriter.Write(&dxfInterface, EoDxf::Version::AC1032, true)) {
+      dxfInterface.SetDxfWriter(&dxfWriter);
+      if (dxfWriter.Write(&dxfInterface, m_dxfVersion, isBinaryDxf)) {
         app.AddStringToMessageList(IDS_MSG_DXF_SAVE_SUCCESS, pathName);
         returnStatus = TRUE;
       } else {

@@ -10,6 +10,7 @@
 #include "Eo.h"
 #include "EoDb.h"
 #include "EoDbViewport.h"
+#include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -362,6 +363,13 @@ void EoDbViewport::Write(CFile& file, [[maybe_unused]] std::uint8_t* buffer) {
 }
 
 // --- DXF Export ---
+
+void EoDbViewport::ExportToDxf(EoDxfInterface* writer) const {
+  EoDxfViewport viewport;
+  PopulateDxfBaseProperties(&viewport);
+  ExportToDxf(viewport);
+  writer->AddViewport(viewport);
+}
 
 void EoDbViewport::ExportToDxf(EoDxfViewport& viewport) const {
   viewport.m_centerPoint = {m_centerPoint.x, m_centerPoint.y, m_centerPoint.z};

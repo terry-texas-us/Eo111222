@@ -244,7 +244,7 @@ class EoDbConic : public EoDbPrimitive {
         circle.m_centerPoint = {m_center.x, m_center.y, m_center.z};
         circle.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
         circle.m_radius = Radius();
-        /// @todoSetDxfBaseProperties(&circle);
+        PopulateDxfBaseProperties(&circle);
         writer->AddCircle(circle);
         break;
       }
@@ -256,7 +256,7 @@ class EoDbConic : public EoDbPrimitive {
         arc.m_radius = Radius();
         arc.m_startAngle = m_startAngle;
         arc.m_endAngle = m_endAngle;
-        /// @todo SetDxfBaseProperties(&arc);
+        PopulateDxfBaseProperties(&arc);
         writer->AddArc(arc);
         break;
       }
@@ -270,7 +270,7 @@ class EoDbConic : public EoDbPrimitive {
         ellipse.m_ratio = m_ratio;
         ellipse.m_startParam = m_startAngle;
         ellipse.m_endParam = m_endAngle;
-        /// @todo SetDxfBaseProperties(&ellipse);
+        PopulateDxfBaseProperties(&ellipse);
         writer->AddEllipse(ellipse);
         break;
       }
