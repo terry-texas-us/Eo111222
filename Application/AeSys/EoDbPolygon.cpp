@@ -12,6 +12,8 @@
 #include "EoDb.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
+#include "EoDxfHatch.h"
+#include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -283,6 +285,31 @@ void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& ndcP
     deviceContext->Polygon(clientPoints.data(), numberOfPoints);
   }
 }
+/** @brief Reverse-maps an AeSys fill style index to its DXF hatch pattern name.
+ *
+ * This is the inverse of MapHatchPatternNameToIndex in EoDbDxfInterface.cpp.
+ * Returns L"SOLID" for solid fills, L"HOLLOW" for index 0 or unrecognized indices.
+ *
+ * @param fillStyleIndex  The 1-based fill style index from EoDbPolygon.
+ * @return The DXF pattern name string.
+ */
+std::wstring MapFillStyleIndexToPatternName(std::int16_t fillStyleIndex) {
+  static const struct {
+    std::int16_t index;
+    const wchar_t* name;
+  } patternTable[] = {{1, L"PEG1"}, {2, L"PEG2"}, {3, L"ANGLE"}, {4, L"ANSI31"}, {5, L"ANSI32"}, {6, L"ANSI33"},
+      {7, L"ANSI34"}, {8, L"ANSI35"}, {9, L"ANSI36"}, {10, L"ANSI37"}, {11, L"ANSI38"}, {12, L"BOX"}, {13, L"BRICK"},
+      {14, L"CLAY"}, {15, L"CORK"}, {16, L"CROSS"}, {17, L"DASH"}, {18, L"DOLMIT"}, {19, L"DOTS"}, {20, L"EARTH"},
+      {21, L"ESCHER"}, {22, L"FLEX"}, {23, L"GRASS"}, {24, L"GRATE"}, {25, L"HEX"}, {26, L"HONEY"}, {27, L"HOUND"},
+      {28, L"INSUL"}, {29, L"MUDST"}, {30, L"NET3"}, {31, L"PLAST"}, {32, L"PLASTI"}, {33, L"SACNCR"},
+      {34, L"SQUARE"}, {35, L"STARS"}, {36, L"SWAMP"}, {37, L"TRANS"}, {38, L"TRIAN"}, {39, L"ZIGZAG"},
+      {40, L"AR-CONC"}, {41, L"AR-SAND"}};
+
+  for (const auto& entry : patternTable) {
+    if (entry.index == fillStyleIndex) { return entry.name; }
+  }
+  return L"HOLLOW";
+}
 }  // anonymous namespace
 
 EoDbPolygon::EoDbPolygon()
@@ -456,6 +483,65 @@ void EoDbPolygon::Display(AeSysView* view, CDC* deviceContext) {
     EoGePoint4d::ClipPolygon(PointsArray);
     Polygon_Display(view, deviceContext, PointsArray);
   }
+}
+
+void EoDbPolygon::ExportToDxf(EoDxfInterface* writer) const {
+  if (m_numberOfVertices < 3) { return; }
+
+  EoDxfHatch hatch;
+  PopulateDxfBaseProperties(&hatch);
+
+  // Elevation point carries the Z coordinate of the hatch plane
+  hatch.m_elevationPoint = {0.0, 0.0, m_hatchOrigin.z};
+
+  // Map EoDbPolygon style to DXF hatch properties
+  switch (m_polygonStyle) {
+    case EoDb::PolygonStyle::Solid:
+      hatch.m_solidFillFlag = 1;
+      hatch.m_hatchPatternName = L"SOLID";
+      hatch.m_hatchPatternType = 1;  // predefined
+      break;
+    case EoDb::PolygonStyle::Hatch: {
+      hatch.m_solidFillFlag = 0;
+      hatch.m_hatchPatternName = MapFillStyleIndexToPatternName(m_fillStyleIndex);
+      hatch.m_hatchPatternType = 1;  // predefined
+
+      // Recover pattern angle and scale from the reference vectors.
+      // ConvertHatchEntity encodes: xAxis = {cos(angle)*scale, sin(angle)*scale, 0}
+      const double scale = m_positiveX.Length();
+      if (scale > Eo::geometricTolerance) {
+        hatch.m_hatchPatternScaleOrSpacing = scale;
+        hatch.m_hatchPatternAngle = Eo::RadianToDegree(std::atan2(m_positiveX.y, m_positiveX.x));
+      }
+      break;
+    }
+    case EoDb::PolygonStyle::Hollow:
+      [[fallthrough]];
+    default:
+      hatch.m_solidFillFlag = 0;
+      hatch.m_hatchPatternName = L"HOLLOW";
+      hatch.m_hatchPatternType = 1;  // predefined
+      break;
+  }
+
+  hatch.m_hatchStyle = 0;  // normal
+  hatch.m_associativityFlag = 0;  // non-associative
+
+  // Build a single polyline boundary loop from the polygon vertices
+  auto* hatchLoop = new EoDxfHatchLoop(0x01 | 0x02);  // external + polyline
+
+  auto polyline = std::make_unique<EoDxfLwPolyline>();
+  polyline->m_polylineFlag = 1;  // closed
+  polyline->m_numberOfVertices = static_cast<std::int32_t>(m_numberOfVertices);
+  polyline->m_vertices.reserve(m_numberOfVertices);
+  for (std::uint16_t i = 0; i < m_numberOfVertices; ++i) {
+    polyline->m_vertices.emplace_back(m_vertices[i].x, m_vertices[i].y);
+  }
+
+  hatchLoop->m_entities.push_back(std::move(polyline));
+  hatch.AppendLoop(hatchLoop);
+
+  writer->AddHatch(hatch);
 }
 
 void EoDbPolygon::AddReportToMessageList(const EoGePoint3d& point) {
