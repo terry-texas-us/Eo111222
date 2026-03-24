@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "EoDxfEntities.h"
+#include "EoDxfLineWeights.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -37,6 +38,7 @@ class EoDbPrimitive : public CObject {
   std::uint64_t m_handle{};
   std::uint64_t m_ownerHandle{};
   double m_thickness{};
+  EoDxfLineWeights::LineWeight m_lineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
 
   static std::int16_t sm_layerColor;
   static std::int16_t sm_layerLineTypeIndex;
@@ -125,20 +127,23 @@ class EoDbPrimitive : public CObject {
   std::int16_t LogicalLineType() const noexcept;
 
   [[nodiscard]] std::int16_t Color() const noexcept { return m_color; }
+  [[nodiscard]] std::uint64_t Handle() const noexcept { return m_handle; }
+  [[nodiscard]] const std::wstring& LayerName() const noexcept { return m_layerName; }
   [[nodiscard]] std::int16_t LineTypeIndex() const noexcept { return m_lineTypeIndex; }
   [[nodiscard]] const std::wstring& LineTypeName() const noexcept { return m_lineTypeName; }
-  [[nodiscard]] const std::wstring& LayerName() const noexcept { return m_layerName; }
-  [[nodiscard]] std::uint64_t Handle() const noexcept { return m_handle; }
+  [[nodiscard]] EoDxfLineWeights::LineWeight LineWeight() const noexcept { return m_lineWeight; }
   [[nodiscard]] std::uint64_t OwnerHandle() const noexcept { return m_ownerHandle; }
   [[nodiscard]] double Thickness() const noexcept { return m_thickness; }
 
   void SetColor(std::int16_t color) noexcept { m_color = color; }
+  void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
   void SetLineTypeIndex(std::int16_t lineTypeIndex) noexcept { m_lineTypeIndex = lineTypeIndex; }
   void SetLineTypeName(std::wstring name) noexcept { m_lineTypeName = std::move(name); }
+  void SetLineWeight(EoDxfLineWeights::LineWeight lineWeight) noexcept { m_lineWeight = lineWeight; }
   void SetLayerName(std::wstring name) noexcept { m_layerName = std::move(name); }
-  void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
   void SetOwnerHandle(std::uint64_t ownerHandle) noexcept { m_ownerHandle = ownerHandle; }
   void SetThickness(double thickness) noexcept { m_thickness = thickness; }
+
   void SetProperties(std::int16_t color, std::int16_t lineTypeIndex) noexcept {
     m_color = color;
     m_lineTypeIndex = lineTypeIndex;

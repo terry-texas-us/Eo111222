@@ -112,7 +112,7 @@ void EoDxfGraphic::ParseCode(int code, EoDxfReader& reader) {
       m_color = reader.GetInt16();
       break;
     case 370:
-      m_lineWeight = EoDxfLineWidths::dxfInt2lineWidth(reader.GetInt16());
+      m_lineWeight = EoDxfLineWeights::DxfIndexToLineWeight(reader.GetInt16());
       break;
     case 48:
       m_lineTypeScale = reader.GetDouble();

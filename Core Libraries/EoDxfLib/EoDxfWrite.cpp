@@ -220,7 +220,7 @@ bool EoDxfWrite::WriteEntity(EoDxfGraphic* entity) {
   }
   if (entity->m_color != 256) { WriteCodeInt16(62, entity->m_color); }
   if (m_version > EoDxf::Version::AC1014) {
-    WriteCodeInt16(370, EoDxfLineWidths::LineWidthToDxfIndex(entity->m_lineWeight));
+    WriteCodeInt16(370, EoDxfLineWeights::LineWeightToDxfIndex(entity->m_lineWeight));
   }
 
   // Optional code 92 Number of bytes in the proxy entity graphics in the 310 groups, which are binary chunk records

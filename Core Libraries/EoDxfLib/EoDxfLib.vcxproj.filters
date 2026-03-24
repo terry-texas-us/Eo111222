@@ -109,7 +109,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EoDxfGroupCodeValuesVariant.h" />
-    <ClInclude Include="EoDxfLineWidths.h" />
+    <ClInclude Include="EoDxfLineWeights.h" />
     <ClInclude Include="EoDxfHatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -4,7 +4,7 @@
 #include <utility>
 
 #include "EoDxfGroupCodeValuesVariant.h"
-#include "EoDxfLineWidths.h"
+#include "EoDxfLineWeights.h"
 #include "EoDxfReader.h"
 #include "EoDxfTables.h"
 
@@ -424,7 +424,7 @@ void EoDxfLayer::ParseCode(int code, EoDxfReader& reader) {
       m_plottingFlag = reader.GetBool();
       break;
     case 370:
-      m_lineweightEnumValue = EoDxfLineWidths::dxfInt2lineWidth(reader.GetInt16());
+      m_lineweightEnumValue = EoDxfLineWeights::DxfIndexToLineWeight(reader.GetInt16());
       break;
     case 390:
       m_handleOfPlotStyleName = reader.GetWideString();
@@ -445,7 +445,7 @@ void EoDxfLayer::Reset() {
   m_linetypeName = L"CONTINUOUS";
   m_colorNumber = 7;
   m_plottingFlag = true;
-  m_lineweightEnumValue = EoDxfLineWidths::widthDefault;
+  m_lineweightEnumValue = EoDxfLineWeights::LineWeight::kLnWtByLwDefault;
   color24 = -1;
   EoDxfTableEntry::Reset();
 }

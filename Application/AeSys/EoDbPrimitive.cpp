@@ -5,7 +5,6 @@
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
-#include "Eo.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbHandleManager.h"
@@ -34,7 +33,8 @@ EoDbPrimitive::EoDbPrimitive(const EoDbPrimitive& other)
       m_lineTypeName(other.m_lineTypeName),
       m_layerName(other.m_layerName),
       m_ownerHandle(other.m_ownerHandle),
-      m_thickness(other.m_thickness) {
+      m_thickness(other.m_thickness),
+      m_lineWeight(other.m_lineWeight) {
   if (sm_handleManager != nullptr) { m_handle = sm_handleManager->AssignHandle(); }
 }
 
@@ -76,6 +76,7 @@ void EoDbPrimitive::SetBaseProperties(const EoDxfGraphic* entity, AeSysDoc* docu
   if (sm_handleManager != nullptr) { sm_handleManager->AccommodateHandle(m_handle); }
   m_ownerHandle = entity->m_ownerHandle;
   m_thickness = entity->m_thickness;
+  m_lineWeight = entity->m_lineWeight;
 }
 
 CString EoDbPrimitive::FormatPenColor() const {
@@ -143,6 +144,7 @@ void EoDbPrimitive::PopulateDxfBaseProperties(EoDxfGraphic* entity) const {
     entity->m_lineType = m_lineTypeName;
   }
   entity->m_thickness = m_thickness;
+  entity->m_lineWeight = m_lineWeight;
 }
 
 void EoDbPrimitive::ExportToDxf([[maybe_unused]] EoDxfInterface* writer) const {}

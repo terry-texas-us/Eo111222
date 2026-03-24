@@ -380,7 +380,7 @@ bool EoDxfWrite::WriteLayer(EoDxfLayer* layer) {
   if (m_version > EoDxf::Version::AC1015 && layer->color24 >= 0) { WriteCodeInt32(420, layer->color24); }
   WriteCodeWideString(6, layer->m_linetypeName);
   if (!layer->m_plottingFlag) { WriteCodeBool(290, layer->m_plottingFlag); }
-  WriteCodeInt16(370, EoDxfLineWidths::LineWidthToDxfIndex(layer->m_lineweightEnumValue));
+  WriteCodeInt16(370, EoDxfLineWeights::LineWeightToDxfIndex(layer->m_lineweightEnumValue));
   WriteCodeString(390, L"F");
 
   if (!layer->m_extensionData.empty()) { WriteExtData(layer->m_extensionData); }

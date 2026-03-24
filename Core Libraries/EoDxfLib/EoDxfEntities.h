@@ -9,7 +9,7 @@
 #include "EoDxfBase.h"
 #include "EoDxfEntity.h"
 #include "EoDxfGeometry.h"
-#include "EoDxfLineWidths.h"
+#include "EoDxfLineWeights.h"
 #include "EoDxfReader.h"
 
 class EoDxfAttrib;
@@ -88,7 +88,7 @@ class EoDxfGraphic : public EoDxfEntity {
   // Soft-pointer ID/handle to owner BLOCK_RECORD object, code 330
   std::uint64_t m_materialHandle{EoDxf::NoHandle};  // hard pointer id to material object, code 347
   std::uint64_t m_plotStyleHandle{EoDxf::NoHandle};  // Group code 390
-  enum EoDxfLineWidths::lineWidth m_lineWeight{EoDxfLineWidths::widthByLayer};  // Group code 370
+  EoDxfLineWeights::LineWeight m_lineWeight{EoDxfLineWeights::LineWeight::kLnWtByLayer};  // Group code 370
   int m_numberOfBytesInProxyGraphics{};  // Group code 92 (optional) [unused]
   std::int32_t m_color24{-1};  // Group code 420
   std::int16_t m_color{EoDxf::colorByLayer};  // Group code 62

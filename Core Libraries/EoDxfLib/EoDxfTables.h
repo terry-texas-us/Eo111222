@@ -234,7 +234,7 @@ class EoDxfLayer : public EoDxfTableEntry {
   std::int16_t m_colorNumber;  // Group code 62 (if negative, then layer is turned off)
   int color24;  // Group code 420
   bool m_plottingFlag;  // Group code 290 (if set to zero, then layer is not plotted)
-  enum EoDxfLineWidths::lineWidth m_lineweightEnumValue;  // Group code 370
+  enum EoDxfLineWeights::LineWeight m_lineweightEnumValue;  // Group code 370
   std::wstring m_handleOfPlotStyleName;  // Group code 390
   std::wstring m_handleOfMaterialStyleName;  // Group code 347
 };

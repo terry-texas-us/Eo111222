@@ -165,7 +165,7 @@
     <ClInclude Include="EoDxfHatch.h" />
     <ClInclude Include="EoDxfHeader.h" />
     <ClInclude Include="EoDxfInterface.h" />
-    <ClInclude Include="EoDxfLineWidths.h" />
+    <ClInclude Include="EoDxfLineWeights.h" />
     <ClInclude Include="EoDxfMLeader.h" />
     <ClInclude Include="EoDxfObjects.h" />
     <ClInclude Include="EoDxfSpline.h" />
