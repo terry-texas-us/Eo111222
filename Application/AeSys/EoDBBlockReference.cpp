@@ -56,6 +56,7 @@ EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) {
   m_rowCount = other.m_rowCount;
   m_columnSpacing = other.m_columnSpacing;
   m_rowSpacing = other.m_rowSpacing;
+  m_attributeHandles = other.m_attributeHandles;
 }
 EoDbBlockReference::EoDbBlockReference(std::uint16_t color, std::uint16_t lineType, const CString& name,
     const EoGePoint3d& point, const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation)
@@ -83,6 +84,7 @@ const EoDbBlockReference& EoDbBlockReference::operator=(const EoDbBlockReference
     m_rowCount = other.m_rowCount;
     m_columnSpacing = other.m_columnSpacing;
     m_rowSpacing = other.m_rowSpacing;
+    m_attributeHandles = other.m_attributeHandles;
   }
   return *this;
 }
@@ -199,6 +201,14 @@ void EoDbBlockReference::AddReportToMessageList(const EoGePoint3d& point) {
   app.AddStringToMessageList(message);
   message.Format(L"  Rotation Angle: %f", m_rotation);
   app.AddStringToMessageList(message);
+  if (!m_attributeHandles.empty()) {
+    message.Format(L"  Attributes: %zu", m_attributeHandles.size());
+    app.AddStringToMessageList(message);
+    for (const auto attributeHandle : m_attributeHandles) {
+      message.Format(L"    ATTRIB Handle: %I64X", attributeHandle);
+      app.AddStringToMessageList(message);
+    }
+  }
 }
 
 void EoDbBlockReference::GetAllPoints(EoGePoint3dArray& points) {
@@ -208,7 +218,8 @@ void EoDbBlockReference::GetAllPoints(EoGePoint3dArray& points) {
 
 void EoDbBlockReference::FormatExtra(CString& extra) {
   EoDbPrimitive::FormatExtra(extra);
-  extra.AppendFormat(L"\tSegment Name;%s\tRotation Angle;%f", m_blockName.GetString(), m_rotation);
+  extra.AppendFormat(L"\tSegment Name;%s\tRotation Angle;%f\tAttributes;%zu", m_blockName.GetString(), m_rotation,
+      m_attributeHandles.size());
   extra += L'\t';
 }
 void EoDbBlockReference::FormatGeometry(CString& geometry) {

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <utility>
+#include <vector>
 
 #include "AeSysView.h"
 #include "EoDb.h"
@@ -23,6 +24,10 @@ class EoDbBlockReference : public EoDbPrimitive {
   std::int16_t m_rowCount;
   double m_columnSpacing;
   double m_rowSpacing;
+
+  /// Handles of ATTRIB-derived EoDbText primitives owned by this INSERT.
+  /// Populated during DXF import when ProcessInsertAttribs delivers ATTRIBs.
+  std::vector<std::uint64_t> m_attributeHandles;
 
  public:
   EoDbBlockReference();
@@ -96,4 +101,11 @@ class EoDbBlockReference : public EoDbPrimitive {
   void SetRows(std::int16_t rows) { m_rowCount = rows; }
   void SetRowSpacing(double rowSpacing) { m_rowSpacing = rowSpacing; }
   void SetScaleFactors(const EoGeVector3d& scaleFactors) { m_scaleFactors = scaleFactors; }
+
+  /// @brief Appends an ATTRIB primitive's handle to this INSERT's owned attribute list.
+  void AddAttributeHandle(std::uint64_t handle) { m_attributeHandles.push_back(handle); }
+  /// @brief Returns the list of owned ATTRIB primitive handles.
+  [[nodiscard]] const std::vector<std::uint64_t>& AttributeHandles() const noexcept { return m_attributeHandles; }
+  /// @brief Clears all owned ATTRIB primitive handles.
+  void ClearAttributeHandles() noexcept { m_attributeHandles.clear(); }
 };

@@ -447,6 +447,15 @@ class EoGeVertex2D {
 };
 }  // namespace
 
+void EoDbDxfInterface::AddAttrib(const EoDxfAttrib& attrib) {
+  countOfAttrib++;
+  ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddAttrib - entities section\n");
+  auto* textPrimitive = ConvertAttribEntity(attrib, m_document);
+  if (textPrimitive != nullptr && m_currentInsertPrimitive != nullptr) {
+    m_currentInsertPrimitive->AddAttributeHandle(textPrimitive->Handle());
+  }
+}
+
 /** @brief Adds the given primitive to the appropriate layer in the document.
  *
  * @param primitive Pointer to the EoDbPrimitive to be added.
@@ -1622,7 +1631,7 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
   }
 }
 
-void EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, AeSysDoc* document) {
+EoDbBlockReference* EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 3, L"Insert entity conversion\n");
   auto insertPrimitive = new EoDbBlockReference();
   insertPrimitive->SetBaseProperties(&blockReference, document);
@@ -1639,6 +1648,7 @@ void EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, Ae
   insertPrimitive->SetRowSpacing(blockReference.m_rowSpacing);
 
   AddToDocument(insertPrimitive, document, blockReference.m_space);
+  return insertPrimitive;
 }
 
 void EoDbDxfInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document) {
@@ -2275,23 +2285,23 @@ void EoDbDxfInterface::ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_un
       attdef.m_tagString.c_str(), attdef.m_defaultValue.c_str(), attdef.m_promptString.c_str());
 }
 
-void EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document) {
+EoDbText* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Attrib entity conversion (tag='%s', value='%s')\n", attrib.m_tagString.c_str(),
       attrib.m_attributeValue.c_str());
 
   // Skip invisible attributes (flag bit 0)
   if (attrib.m_attributeFlags & 1) {
     ATLTRACE2(traceGeneral, 2, L"Attrib entity skipped: invisible flag set\n");
-    return;
+    return nullptr;
   }
 
   if (attrib.m_textHeight < Eo::geometricTolerance) {
     ATLTRACE2(traceGeneral, 1, L"Attrib entity skipped: zero or near-zero text height\n");
-    return;
+    return nullptr;
   }
   if (attrib.m_attributeValue.empty()) {
     ATLTRACE2(traceGeneral, 1, L"Attrib entity skipped: empty attribute value\n");
-    return;
+    return nullptr;
   }
 
   auto firstAlignmentPointInOcs =
@@ -2410,6 +2420,7 @@ void EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* 
   textPrimitive->SetExtrusion(extrusionDirection);
 
   AddToDocument(textPrimitive, document, attrib.m_space);
+  return textPrimitive;
 }
 
 void EoDbDxfInterface::ConvertViewportEntity(const EoDxfViewport& viewport, AeSysDoc* document) {

@@ -283,9 +283,26 @@ The complete BLOCK_RECORD → BLOCK → entities → ENDBLK handle chain is now 
 - **Linetype unregistration**: No independent linetype removal path exists outside `DeleteContents` — `RemoveUnused()` is a no-op. The bulk clear covers all linetype handles.
 
 ### Next Phases (Deferred)
-- **Phase 5 — Structural Links**: ATTRIB→INSERT, MTEXT line grouping, OBJECTS section handles.
+- **Phase 5 — Structural Links**: ~~ATTRIB→INSERT~~, MTEXT line grouping, OBJECTS section handles.
 - **Extension dictionaries** (XDICT, ACAD_REACTORS): not needed for current entity→layer/linetype linkage.
 - **PEG V2 handle serialization**: handles will be written alongside entity records when V2 binary format is defined per primitive type.
+
+### Phase 5.1 Complete ✅ — ATTRIB→INSERT Structural Linking
+Each `EoDbBlockReference` now owns a list of ATTRIB primitive handles, populated during DXF import when `ProcessInsertAttribs` delivers ATTRIBs sequentially after the parent INSERT.
+
+| Sub-item | What changed | Key files |
+|----------|-------------|-----------|
+| **P5.1a — Attribute handle storage** | `EoDbBlockReference` gains `std::vector<std::uint64_t> m_attributeHandles` with `AddAttributeHandle()`, `AttributeHandles()`, `ClearAttributeHandles()` API. Copy constructor and `operator=` propagate attribute handles. | `EoDbBlockReference.h`, `EoDbBlockReference.cpp` |
+| **P5.1b — INSERT tracking state** | `EoDbDxfInterface` gains `EoDbBlockReference* m_currentInsertPrimitive{}` — set by `AddInsert`, consumed by `AddAttrib`. Mirrors the `m_currentOpenBlockDefinition` pattern for block definitions. | `EoDbDxfInterface.h` |
+| **P5.1c — Return-value plumbing** | `ConvertInsertEntity` returns `EoDbBlockReference*` (was `void`). `ConvertAttribEntity` returns `EoDbText*` (was `void`), with early returns yielding `nullptr` for skipped ATTRIBs. | `EoDbDxfInterface.h`, `EoDbDxfInterface.cpp` |
+| **P5.1d — Handle linking in AddAttrib** | `AddAttrib` body moved to `.cpp` (avoids circular include). After `ConvertAttribEntity` returns, appends `textPrimitive->Handle()` to `m_currentInsertPrimitive->AddAttributeHandle()` when both are non-null. | `EoDbDxfInterface.cpp` |
+| **P5.1e — Reporting** | `FormatExtra` appends `Attributes;N` count field. `AddReportToMessageList` lists individual ATTRIB handles when present. | `EoDbBlockReference.cpp` |
+
+#### Design Notes
+- **Lifetime**: `m_currentInsertPrimitive` is set in `AddInsert` and consumed by subsequent `AddAttrib` calls. It is naturally superseded by the next `AddInsert` call. The DXF parser flow (`ProcessInsert` → `ProcessInsertAttribs` → SEQEND) guarantees ATTRIBs arrive immediately after their parent INSERT.
+- **Skipped ATTRIBs**: Invisible attributes (flag bit 0), zero-height, and empty-value ATTRIBs are skipped by `ConvertAttribEntity` (returns `nullptr`). Their handles are NOT linked to the parent INSERT — they have no corresponding `EoDbText` primitive.
+- **Handle resolution**: ATTRIB handles stored in `m_attributeHandles` can be resolved to `EoDbText*` via `AeSysDoc::FindPrimitiveByHandle()` (Phase 4 infrastructure).
+- **PEG V2 serialization**: Attribute handle list is not yet persisted — deferred to PEG V2 per-primitive binary format definition. Currently survives only within a single session (DXF import → memory → DXF export is possible via handle lookup; PEG save/load loses the link).
 
 ## Documentation
 - Utilize Doxygen for automated documentation generation. Ensure that comments are clear and descriptive, and consider the balance between verbosity and clarity to maintain readability.

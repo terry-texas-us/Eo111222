@@ -20,6 +20,9 @@
 
 #include "EoDxfWrite.h"
 
+class EoDbBlockReference;
+class EoDbText;
+
 // Minimal implementation of EoDxfInterface
 // In a real scenario, implement these methods to handle the parsed entities
 class EoDbDxfInterface : public EoDxfInterface {
@@ -138,11 +141,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertAttDefEntity(attdef, m_document);
   }
 
-  void AddAttrib(const EoDxfAttrib& attrib) override {
-    countOfAttrib++;
-    ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddAttrib - entities section\n");
-    ConvertAttribEntity(attrib, m_document);
-  }
+  void AddAttrib(const EoDxfAttrib& attrib) override;
 
   void AddCircle(const EoDxfCircle& circle) override {
     if (m_dxfWriter) {
@@ -222,7 +221,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     } else {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddInsert - entities section\n");
     }
-    ConvertInsertEntity(blockReference, m_document);
+    m_currentInsertPrimitive = ConvertInsertEntity(blockReference, m_document);
   }
 
   void AddLeader([[maybe_unused]] const EoDxfLeader* leader) override {countOfLeader--;}
@@ -805,11 +804,11 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity, AeSysDoc* document);
   void ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document);
   void ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_unused]] AeSysDoc* document);
-  void ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document);
+  EoDbText* ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document);
   void ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document);
   void ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document);
   void ConvertHatchEntity(const EoDxfHatch& hatch, [[maybe_unused]] AeSysDoc* document);
-  void ConvertInsertEntity(const EoDxfInsert& insert, AeSysDoc* document);
+  EoDbBlockReference* ConvertInsertEntity(const EoDxfInsert& insert, AeSysDoc* document);
   void ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document);
   void ConvertLWPolylineEntity(const EoDxfLwPolyline& lwPolyline, AeSysDoc* document);
   void ConvertMTextEntity(const EoDxfMText& mText, [[maybe_unused]] AeSysDoc* document);
@@ -827,6 +826,11 @@ class EoDbDxfInterface : public EoDxfInterface {
   bool m_inBlockDefinition{};
   EoDbBlock* m_currentOpenBlockDefinition{};
   EoDxf::Space m_currentExportSpace{EoDxf::Space::ModelSpace};
+
+  /// Non-owning pointer to the most recently created EoDbBlockReference from AddInsert.
+  /// Set during DXF import so that subsequent AddAttrib calls can link ATTRIB handles
+  /// to their parent INSERT. Cleared when the next non-ATTRIB entity is processed.
+  EoDbBlockReference* m_currentInsertPrimitive{};
 
  public:
   std::int16_t countOf3dFace{};
