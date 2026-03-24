@@ -39,6 +39,7 @@ class EoDbPrimitive : public CObject {
   std::uint64_t m_ownerHandle{};
   double m_thickness{};
   EoDxfLineWeights::LineWeight m_lineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
+  double m_lineTypeScale{1.0};
 
   static std::int16_t sm_layerColor;
   static std::int16_t sm_layerLineTypeIndex;
@@ -61,18 +62,7 @@ class EoDbPrimitive : public CObject {
 
   /// @brief Copy-assignment overwrites visual/spatial properties but preserves
   /// the destination's handle — entity identity does not change on property update.
-  EoDbPrimitive& operator=(const EoDbPrimitive& other) {
-    if (this != &other) {
-      m_color = other.m_color;
-      m_lineTypeIndex = other.m_lineTypeIndex;
-      m_lineTypeName = other.m_lineTypeName;
-      m_layerName = other.m_layerName;
-      // m_handle is intentionally NOT copied — entity identity is preserved
-      m_ownerHandle = other.m_ownerHandle;
-      m_thickness = other.m_thickness;
-    }
-    return *this;
-  }
+  EoDbPrimitive& operator=(const EoDbPrimitive& other);
 
  public:
   ~EoDbPrimitive() override;
@@ -131,6 +121,7 @@ class EoDbPrimitive : public CObject {
   [[nodiscard]] const std::wstring& LayerName() const noexcept { return m_layerName; }
   [[nodiscard]] std::int16_t LineTypeIndex() const noexcept { return m_lineTypeIndex; }
   [[nodiscard]] const std::wstring& LineTypeName() const noexcept { return m_lineTypeName; }
+  [[nodiscard]] double LineTypeScale() const noexcept { return m_lineTypeScale; }
   [[nodiscard]] EoDxfLineWeights::LineWeight LineWeight() const noexcept { return m_lineWeight; }
   [[nodiscard]] std::uint64_t OwnerHandle() const noexcept { return m_ownerHandle; }
   [[nodiscard]] double Thickness() const noexcept { return m_thickness; }
@@ -139,6 +130,7 @@ class EoDbPrimitive : public CObject {
   void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
   void SetLineTypeIndex(std::int16_t lineTypeIndex) noexcept { m_lineTypeIndex = lineTypeIndex; }
   void SetLineTypeName(std::wstring name) noexcept { m_lineTypeName = std::move(name); }
+  void SetLineTypeScale(double scale) noexcept { m_lineTypeScale = scale; }
   void SetLineWeight(EoDxfLineWeights::LineWeight lineWeight) noexcept { m_lineWeight = lineWeight; }
   void SetLayerName(std::wstring name) noexcept { m_layerName = std::move(name); }
   void SetOwnerHandle(std::uint64_t ownerHandle) noexcept { m_ownerHandle = ownerHandle; }
