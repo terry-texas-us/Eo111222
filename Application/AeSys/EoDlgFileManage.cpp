@@ -550,13 +550,8 @@ void EoDlgFileManage::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult
       if (dialog.DoModal() == IDOK) { layer->SetLineType(dialog.GetSelectedLineType()); }
       break;
     }
-    case LineWeight: {
-      // EoDlgLineWeight dlg(Layer->lineWeight());
-      // if (IDOK == dlg.DoModal()) {
-      //	Layer->setLineWeight(dlg.m_LineWeight);
-      // }
+    case LineWeight:
       break;
-    }
   }
   m_LayersListControl.Invalidate();
 

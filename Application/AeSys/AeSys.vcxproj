@@ -91,7 +91,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-	</Link>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -114,7 +114,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-	</Link>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -139,7 +139,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-	</Link>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -164,7 +164,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-	</Link>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
@@ -187,7 +187,116 @@
     <ResourceCompile Include="AeSys.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="*.h" />
+    <ClInclude Include="AeSys.h" />
+    <ClInclude Include="AeSysDoc.h" />
+    <ClInclude Include="AeSysState.h" />
+    <ClInclude Include="AeSysView.h" />
+    <ClInclude Include="ChildFrm.h" />
+    <ClInclude Include="DdeCmds.h" />
+    <ClInclude Include="DdeGItms.h" />
+    <ClInclude Include="DrawModeState.h" />
+    <ClInclude Include="Eo.h" />
+    <ClInclude Include="EoApOptions.h" />
+    <ClInclude Include="EoCtrlColorsButton.h" />
+    <ClInclude Include="EoCtrlFindComboBox.h" />
+    <ClInclude Include="EoDb.h" />
+    <ClInclude Include="EoDbAppIdEntry.h" />
+    <ClInclude Include="EoDbBitmapFile.h" />
+    <ClInclude Include="EoDbBlock.h" />
+    <ClInclude Include="EoDbBlockFile.h" />
+    <ClInclude Include="EoDbBlockReference.h" />
+    <ClInclude Include="EoDbCharacterCellDefinition.h" />
+    <ClInclude Include="EoDbClassEntry.h" />
+    <ClInclude Include="EoDbConic.h" />
+    <ClInclude Include="EoDbDimension.h" />
+    <ClInclude Include="EoDbDimStyle.h" />
+    <ClInclude Include="EoDbDxfInterface.h" />
+    <ClInclude Include="EoDbEllipse.h" />
+    <ClInclude Include="EoDbFontDefinition.h" />
+    <ClInclude Include="EoDbGroup.h" />
+    <ClInclude Include="EoDbGroupList.h" />
+    <ClInclude Include="EoDbHandleManager.h" />
+    <ClInclude Include="EoDbHeaderSection.h" />
+    <ClInclude Include="EoDbJobFile.h" />
+    <ClInclude Include="EoDbLayer.h" />
+    <ClInclude Include="EoDbLine.h" />
+    <ClInclude Include="EoDbLineType.h" />
+    <ClInclude Include="EoDbLineTypeTable.h" />
+    <ClInclude Include="EoDbMaskedPrimitive.h" />
+    <ClInclude Include="EoDbPegFile.h" />
+    <ClInclude Include="EoDbPoint.h" />
+    <ClInclude Include="EoDbPolygon.h" />
+    <ClInclude Include="EoDbPolyline.h" />
+    <ClInclude Include="EoDbPrimitive.h" />
+    <ClInclude Include="EoDbSpline.h" />
+    <ClInclude Include="EoDbText.h" />
+    <ClInclude Include="EoDbTextStyle.h" />
+    <ClInclude Include="EoDbTracingFile.h" />
+    <ClInclude Include="EoDbViewport.h" />
+    <ClInclude Include="EoDbVPortTableEntry.h" />
+    <ClInclude Include="EoDlgActiveViewKeyplan.h" />
+    <ClInclude Include="EoDlgAnnotateOptions.h" />
+    <ClInclude Include="EoDlgBlockInsert.h" />
+    <ClInclude Include="EoDlgDrawOptions.h" />
+    <ClInclude Include="EoDlgEditOptions.h" />
+    <ClInclude Include="EoDlgEditTrapCommandsQuery.h" />
+    <ClInclude Include="EoDlgFileManage.h" />
+    <ClInclude Include="EoDlgFixupOptions.h" />
+    <ClInclude Include="EoDlgLineTypesSelection.h" />
+    <ClInclude Include="EoDlgLowPressureDuctOptions.h" />
+    <ClInclude Include="EoDlgModeLetter.h" />
+    <ClInclude Include="EoDlgModeRevise.h" />
+    <ClInclude Include="EoDlgPipeOptions.h" />
+    <ClInclude Include="EoDlgPipeSymbol.h" />
+    <ClInclude Include="EoDlgSelectGotoHomePoint.h" />
+    <ClInclude Include="EoDlgSelectIsometricView.h" />
+    <ClInclude Include="EoDlgSetAngle.h" />
+    <ClInclude Include="EoDlgSetHomePoint.h" />
+    <ClInclude Include="EoDlgSetLength.h" />
+    <ClInclude Include="EoDlgSetPastePosition.h" />
+    <ClInclude Include="EoDlgSetScale.h" />
+    <ClInclude Include="EoDlgSetText.h" />
+    <ClInclude Include="EoDlgSetUnitsAndPrecision.h" />
+    <ClInclude Include="EoDlgSetupColor.h" />
+    <ClInclude Include="EoDlgSetupConstraints.h" />
+    <ClInclude Include="EoDlgSetupCustomMouseCharacters.h" />
+    <ClInclude Include="EoDlgSetupHatch.h" />
+    <ClInclude Include="EoDlgSetupLineType.h" />
+    <ClInclude Include="EoDlgSetupNote.h" />
+    <ClInclude Include="EoDlgSetupPointStyle.h" />
+    <ClInclude Include="EoDlgTrapFilter.h" />
+    <ClInclude Include="EoDlgTrapModify.h" />
+    <ClInclude Include="EoDlgViewParameters.h" />
+    <ClInclude Include="EoDlgViewZoom.h" />
+    <ClInclude Include="EoGeLine.h" />
+    <ClInclude Include="EoGeMatrix.h" />
+    <ClInclude Include="EoGeOcs.h" />
+    <ClInclude Include="EoGeOcsTransform.h" />
+    <ClInclude Include="EoGePoint3d.h" />
+    <ClInclude Include="EoGePoint4d.h" />
+    <ClInclude Include="EoGePolyline.h" />
+    <ClInclude Include="EoGeReferenceSystem.h" />
+    <ClInclude Include="EoGeTransformMatrix.h" />
+    <ClInclude Include="EoGeUniquePoint.h" />
+    <ClInclude Include="EoGeVector3d.h" />
+    <ClInclude Include="EoGsAbstractView.h" />
+    <ClInclude Include="EoGsModelTransform.h" />
+    <ClInclude Include="EoGsRenderState.h" />
+    <ClInclude Include="EoGsViewport.h" />
+    <ClInclude Include="EoGsViewTransform.h" />
+    <ClInclude Include="EoMfOutputDockablePane.h" />
+    <ClInclude Include="EoMfPropertiesDockablePane.h" />
+    <ClInclude Include="Hatch.h" />
+    <ClInclude Include="Header.h" />
+    <ClInclude Include="IdleState.h" />
+    <ClInclude Include="Lex.h" />
+    <ClInclude Include="lex.yy.h" />
+    <ClInclude Include="LexTable.h" />
+    <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="Section.h" />
+    <ClInclude Include="Stdafx.h" />
+    <ClInclude Include="WndProcPreview.h" />
   </ItemGroup>
   <ItemGroup>
     <!-- These files are not compiled, but we want them in the project for easy access. -->

@@ -91,7 +91,6 @@
 #define IDB_LAYER_FILTERS               287
 #define IDB_LAYER_STATES                288
 #define IDB_LAYER_STATES_HC             289
-#define IDD_LINEWEIGHT                  301
 #define IDD_ACTIVE_VIEW_KEYPLAN         338
 #define IDD_LINE_TYPES_DIALOG           342
 #define IDC_ARCHITECTURAL               1000
@@ -274,8 +273,6 @@
 #define IDC_BUTTON_CURRENT              1382
 #define IDC_STATIC_CURRENT_LAYER        1383
 #define IDC_STATIC_LAYER_STATISTIC      1384
-#define IDC_STATIC_LINEWEIGHT_ORIGINAL  1385
-#define IDC_LIST_LINEWEIGHT             1386
 #define IDC_PERSPECTIVE_PROJECTION      1387
 #define IDC_APPLY                       1388
 #define IDC_LIST1                       1393
