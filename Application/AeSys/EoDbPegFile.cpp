@@ -225,6 +225,7 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document, EoDb::PegFileVersion fi
     if (fileVersion == EoDb::PegFileVersion::AE2026) {
       lineType->SetHandle(EoDb::ReadUInt64(*this));
       lineType->SetOwnerHandle(EoDb::ReadUInt64(*this));
+      document->RegisterHandle(lineType);
     }
     ATLTRACE2(traceGeneral, 2, L"Index: %d - Name: `%s` `%p`\n", n, name.GetString(), lineType);
   }
@@ -344,7 +345,10 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fil
     }
 
     for (std::uint16_t PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
-      if (EoDb::Read(*this, primitive, fileVersion)) { block->AddTail(primitive); }
+      if (EoDb::Read(*this, primitive, fileVersion)) {
+        document->RegisterHandle(primitive);
+        block->AddTail(primitive);
+      }
     }
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
@@ -375,7 +379,10 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion f
         auto* group = new EoDbGroup;
         auto numberOfPrimitives = EoDb::ReadUInt16(*this);
         for (auto PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
-          if (EoDb::Read(*this, primitive, fileVersion)) { group->AddTail(primitive); }
+          if (EoDb::Read(*this, primitive, fileVersion)) {
+            document->RegisterHandle(primitive);
+            group->AddTail(primitive);
+          }
         }
         layer->AddTail(group);
       }
@@ -487,7 +494,10 @@ void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion
           auto* group = new EoDbGroup;
           auto numberOfPrimitives = EoDb::ReadUInt16(*this);
           for (auto primitiveIndex = 0; primitiveIndex < numberOfPrimitives; primitiveIndex++) {
-            if (EoDb::Read(*this, primitive, fileVersion)) { group->AddTail(primitive); }
+            if (EoDb::Read(*this, primitive, fileVersion)) {
+              document->RegisterHandle(primitive);
+              group->AddTail(primitive);
+            }
           }
           layer->AddTail(group);
         }

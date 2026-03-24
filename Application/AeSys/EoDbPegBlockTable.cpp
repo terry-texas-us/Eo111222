@@ -37,6 +37,7 @@ void AeSysDoc::RemoveAllBlocks() {
     m_BlocksTable.GetNextAssoc(blockPosition, name, block);
     ATLTRACE2(traceGeneral, 3, L"  Deleting block: %s with %d primitives\n", name.GetString(),
         static_cast<int>(block->GetCount()));
+    UnregisterHandle(block->Handle());
     block->DeletePrimitivesAndRemoveAll();
     delete block;
   }
@@ -53,6 +54,8 @@ void AeSysDoc::RemoveUnusedBlocks() {
     if (GetBlockReferenceCount(Name) == 0) {
       // Note: Deletion by key may cause loop problems
       m_BlocksTable.RemoveKey(Name);
+      UnregisterHandle(Block->Handle());
+      UnregisterGroupHandles(Block);
       Block->DeletePrimitivesAndRemoveAll();
       delete Block;
     }

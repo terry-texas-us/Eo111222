@@ -163,8 +163,83 @@ AeSysDoc::AeSysDoc() { EoDbPrimitive::SetHandleManager(&m_handleManager); }
 
 AeSysDoc::~AeSysDoc() {}
 
+void AeSysDoc::RegisterHandle(EoDbPrimitive* primitive) {
+  const auto handle = primitive->Handle();
+  if (handle != 0) { m_handleMap[handle] = HandleObject{primitive}; }
+}
+
+void AeSysDoc::RegisterHandle(EoDbLayer* layer) {
+  const auto handle = layer->Handle();
+  if (handle != 0) { m_handleMap[handle] = HandleObject{layer}; }
+}
+
+void AeSysDoc::RegisterHandle(EoDbLineType* lineType) {
+  const auto handle = lineType->Handle();
+  if (handle != 0) { m_handleMap[handle] = HandleObject{lineType}; }
+}
+
+void AeSysDoc::RegisterHandle(EoDbBlock* block) {
+  const auto handle = block->Handle();
+  if (handle != 0) { m_handleMap[handle] = HandleObject{block}; }
+}
+
+void AeSysDoc::UnregisterHandle(std::uint64_t handle) noexcept {
+  if (handle != 0) { m_handleMap.erase(handle); }
+}
+
+const HandleObject* AeSysDoc::FindObjectByHandle(std::uint64_t handle) const noexcept {
+  if (handle == 0) { return nullptr; }
+  const auto it = m_handleMap.find(handle);
+  return (it != m_handleMap.end()) ? &it->second : nullptr;
+}
+
+EoDbPrimitive* AeSysDoc::FindPrimitiveByHandle(std::uint64_t handle) const noexcept {
+  const auto* object = FindObjectByHandle(handle);
+  if (object == nullptr) { return nullptr; }
+  const auto* pointer = std::get_if<EoDbPrimitive*>(object);
+  return pointer ? *pointer : nullptr;
+}
+
+EoDbLayer* AeSysDoc::FindLayerByHandle(std::uint64_t handle) const noexcept {
+  const auto* object = FindObjectByHandle(handle);
+  if (object == nullptr) { return nullptr; }
+  const auto* pointer = std::get_if<EoDbLayer*>(object);
+  return pointer ? *pointer : nullptr;
+}
+
+EoDbLineType* AeSysDoc::FindLineTypeByHandle(std::uint64_t handle) const noexcept {
+  const auto* object = FindObjectByHandle(handle);
+  if (object == nullptr) { return nullptr; }
+  const auto* pointer = std::get_if<EoDbLineType*>(object);
+  return pointer ? *pointer : nullptr;
+}
+
+EoDbBlock* AeSysDoc::FindBlockByHandle(std::uint64_t handle) const noexcept {
+  const auto* object = FindObjectByHandle(handle);
+  if (object == nullptr) { return nullptr; }
+  const auto* pointer = std::get_if<EoDbBlock*>(object);
+  return pointer ? *pointer : nullptr;
+}
+
+void AeSysDoc::RegisterGroupHandles(EoDbGroup* group) {
+  auto position = group->GetHeadPosition();
+  while (position != nullptr) {
+    auto* primitive = group->GetNext(position);
+    RegisterHandle(primitive);
+  }
+}
+
+void AeSysDoc::UnregisterGroupHandles(EoDbGroup* group) {
+  auto position = group->GetHeadPosition();
+  while (position != nullptr) {
+    auto* primitive = group->GetNext(position);
+    UnregisterHandle(primitive->Handle());
+  }
+}
+
 void AeSysDoc::DeleteContents() {
   m_handleManager.Reset();
+  m_handleMap.clear();
   ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::DeleteContents() - BlockTableSize: %d\n", this, BlockTableSize());
 
   // @todo Release EoDbDxfInterface resources if any
@@ -781,10 +856,11 @@ int AeSysDoc::FindLayerTableLayer(const CString& name) const {
 }
 
 void AeSysDoc::RemoveAllLayerTableLayers() {
-  auto clearLayers = [](CLayers& layers) {
+  auto clearLayers = [this](CLayers& layers) {
     for (INT_PTR i = 0; i < layers.GetSize(); i++) {
       auto* layer = layers.GetAt(i);
       if (layer) {
+        UnregisterHandle(layer->Handle());
         layer->DeleteGroupsAndRemoveAll();
         delete layer;
       }
@@ -799,6 +875,10 @@ void AeSysDoc::RemoveLayerTableLayerAt(int i) {
   auto& layers = ActiveSpaceLayers();
   auto* layer = layers.GetAt(i);
 
+  auto position = layer->GetHeadPosition();
+  while (position != nullptr) { UnregisterGroupHandles(layer->GetNext(position)); }
+
+  UnregisterHandle(layer->Handle());
   layer->DeleteGroupsAndRemoveAll();
   delete layer;
 
@@ -811,6 +891,7 @@ void AeSysDoc::RemoveEmptyLayers() {
     auto* layer = layers.GetAt(index);
 
     if (layer && layer->IsEmpty()) {
+      UnregisterHandle(layer->Handle());
       layer->DeleteGroupsAndRemoveAll();
       delete layer;
       layers.RemoveAt(index);
@@ -832,9 +913,15 @@ CLayers& AeSysDoc::SpaceLayers(EoDxf::Space space) noexcept {
 
 int AeSysDoc::GetLayerTableSize() const { return static_cast<int>(ActiveSpaceLayers().GetSize()); }
 
-void AeSysDoc::AddLayerTableLayer(EoDbLayer* layer) { ActiveSpaceLayers().Add(layer); }
+void AeSysDoc::AddLayerTableLayer(EoDbLayer* layer) {
+  ActiveSpaceLayers().Add(layer);
+  RegisterHandle(layer);
+}
 
-void AeSysDoc::AddLayerToSpace(EoDbLayer* layer, EoDxf::Space space) { SpaceLayers(space).Add(layer); }
+void AeSysDoc::AddLayerToSpace(EoDbLayer* layer, EoDxf::Space space) {
+  SpaceLayers(space).Add(layer);
+  RegisterHandle(layer);
+}
 
 EoDbLayer* AeSysDoc::FindLayerInSpace(const CString& name, EoDxf::Space space) {
   auto& layers = SpaceLayers(space);
@@ -993,6 +1080,7 @@ void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
     ATLTRACE2(traceGeneral, 1, L"AeSysDoc::AddWorkLayerGroup: m_workLayer is nullptr\n");
     return;
   }
+  RegisterGroupHandles(group);
   m_workLayer->AddTail(group);
   AddGroupToAllViews(group);
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
@@ -1002,6 +1090,11 @@ void AeSysDoc::AddWorkLayerGroups(EoDbGroupList* groups) {
   if (m_workLayer == nullptr) {
     ATLTRACE2(traceGeneral, 1, L"AeSysDoc::AddWorkLayerGroups: m_workLayer is nullptr\n");
     return;
+  }
+  auto position = groups->GetHeadPosition();
+  while (position != nullptr) {
+    auto* group = groups->GetNext(position);
+    RegisterGroupHandles(group);
   }
   m_workLayer->AddTail(groups);
   AddGroupsToAllViews(groups);
@@ -1020,11 +1113,18 @@ void AeSysDoc::InitializeWorkLayer() {
     ATLTRACE2(traceGeneral, 1, L"AeSysDoc::InitializeWorkLayer: m_workLayer is nullptr\n");
     return;
   }
+  auto position = m_workLayer->GetHeadPosition();
+  while (position != nullptr) { UnregisterGroupHandles(m_workLayer->GetNext(position)); }
+
   m_workLayer->DeleteGroupsAndRemoveAll();
 
   RemoveAllTrappedGroups();
   RemoveAllGroupsFromAllViews();
   ResetAllViews();
+
+  position = m_DeletedGroupList.GetHeadPosition();
+  while (position != nullptr) { UnregisterGroupHandles(m_DeletedGroupList.GetNext(position)); }
+
   m_DeletedGroupList.DeleteGroupsAndRemoveAll();
 }
 EoDbLayer* AeSysDoc::SetWorkLayer(EoDbLayer* layer) {
@@ -1239,6 +1339,8 @@ void AeSysDoc::OnClearActiveLayers() {
 
     if (layer->IsActive()) {
       UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+      auto position = layer->GetHeadPosition();
+      while (position != nullptr) { UnregisterGroupHandles(layer->GetNext(position)); }
       layer->DeleteGroupsAndRemoveAll();
     }
   }
@@ -1252,6 +1354,8 @@ void AeSysDoc::OnClearAllLayers() {
 
     if (layer->IsInternal()) {
       UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+      auto position = layer->GetHeadPosition();
+      while (position != nullptr) { UnregisterGroupHandles(layer->GetNext(position)); }
       layer->DeleteGroupsAndRemoveAll();
     }
   }
@@ -1270,6 +1374,8 @@ void AeSysDoc::OnClearAllTracings() {
 
     if (!layer->IsInternal()) {
       UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+      auto position = layer->GetHeadPosition();
+      while (position != nullptr) { UnregisterGroupHandles(layer->GetNext(position)); }
       layer->DeleteGroupsAndRemoveAll();
     }
   }
@@ -1321,6 +1427,7 @@ void AeSysDoc::OnPrimBreak() {
 
     if (primitive->Is(EoDb::kPolylinePrimitive)) {
       group->FindAndRemovePrim(primitive);
+      UnregisterHandle(primitive->Handle());
 
       auto* polyline = static_cast<EoDbPolyline*>(primitive);
 
@@ -1331,11 +1438,14 @@ void AeSysDoc::OnPrimBreak() {
       auto lineTypeIndex = primitive->LineTypeIndex();
 
       for (auto i = 0; i < points.GetSize() - 1; i++) {
-        group->AddTail(EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeIndex));
+        auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeIndex);
+        RegisterHandle(line);
+        group->AddTail(line);
       }
       if (polyline->IsLooped()) {
-        group->AddTail(
-            EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeIndex));
+        auto* line = EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeIndex);
+        RegisterHandle(line);
+        group->AddTail(line);
       }
       delete primitive;
       ResetAllViews();
@@ -1346,11 +1456,13 @@ void AeSysDoc::OnPrimBreak() {
 
       if (LookupBlock(blockReference->BlockName(), block) != 0) {
         group->FindAndRemovePrim(primitive);
+        UnregisterHandle(primitive->Handle());
 
         auto transformMatrix = blockReference->BuildTransformMatrix(block->BasePoint());
 
         EoDbGroup* pSegT = new EoDbGroup(*block);
         pSegT->Transform(transformMatrix);
+        RegisterGroupHandles(pSegT);
         group->AddTail(pSegT);
 
         delete primitive;

@@ -231,7 +231,12 @@ bool EoDxfWrite::WriteAppId(EoDxfAppId* appId) {
   if (upperName == L"ACAD") { return true; }
   WriteCodeString(0, L"APPID");
 
-  WriteCodeString(5, ToHexString(++m_entityCount));
+  if (appId->m_handle != EoDxf::NoHandle) {
+    if (appId->m_handle >= m_entityCount) { m_entityCount = appId->m_handle; }
+    WriteCodeString(5, ToHexString(appId->m_handle));
+  } else {
+    WriteCodeString(5, ToHexString(++m_entityCount));
+  }
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"9"); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbRegAppTableRecord");
@@ -246,7 +251,12 @@ bool EoDxfWrite::WriteDimStyle(EoDxfDimensionStyle* dimensionStyle) {
   if (!m_standardDimensionStyle) {
     if (UppercaseTableToken(dimensionStyle->m_tableName) == L"STANDARD") { m_standardDimensionStyle = true; }
   }
-  WriteCodeString(105, ToHexString(++m_entityCount));
+  if (dimensionStyle->m_handle != EoDxf::NoHandle) {
+    if (dimensionStyle->m_handle >= m_entityCount) { m_entityCount = dimensionStyle->m_handle; }
+    WriteCodeString(105, ToHexString(dimensionStyle->m_handle));
+  } else {
+    WriteCodeString(105, ToHexString(++m_entityCount));
+  }
 
   WriteCodeString(330, L"A");
 
@@ -353,6 +363,9 @@ bool EoDxfWrite::WriteLayer(EoDxfLayer* layer) {
   if (!wlayer0 && layer->m_tableName == L"0") {
     wlayer0 = true;
     WriteCodeString(5, L"10");
+  } else if (layer->m_handle != EoDxf::NoHandle) {
+    if (layer->m_handle >= m_entityCount) { m_entityCount = layer->m_handle; }
+    WriteCodeString(5, ToHexString(layer->m_handle));
   } else {
     WriteCodeString(5, ToHexString(++m_entityCount));
   }
@@ -381,7 +394,12 @@ bool EoDxfWrite::WriteLinetype(EoDxfLinetype* lineType) {
   if (upperName == L"BYLAYER" || upperName == L"BYBLOCK" || upperName == L"CONTINUOUS") { return true; }
   WriteCodeString(0, L"LTYPE");
 
-  WriteCodeString(5, ToHexString(++m_entityCount));
+  if (lineType->m_handle != EoDxf::NoHandle) {
+    if (lineType->m_handle >= m_entityCount) { m_entityCount = lineType->m_handle; }
+    WriteCodeString(5, ToHexString(lineType->m_handle));
+  } else {
+    WriteCodeString(5, ToHexString(++m_entityCount));
+  }
   WriteCodeString(330, L"5");
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbLinetypeTableRecord");
@@ -406,9 +424,14 @@ bool EoDxfWrite::WriteTextstyle(EoDxfTextStyle* textStyle) {
   if (!m_standardDimensionStyle) {
     if (UppercaseTableToken(textStyle->m_tableName) == L"STANDARD") { m_standardDimensionStyle = true; }
   }
-  WriteCodeString(5, ToHexString(++m_entityCount));
+  if (textStyle->m_handle != EoDxf::NoHandle) {
+    if (textStyle->m_handle >= m_entityCount) { m_entityCount = textStyle->m_handle; }
+    WriteCodeString(5, ToHexString(textStyle->m_handle));
+  } else {
+    WriteCodeString(5, ToHexString(++m_entityCount));
+  }
 
-  WriteCodeString(330, L"2");
+  WriteCodeString(330, L"3");
 
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbTextStyleTableRecord");
@@ -434,8 +457,13 @@ bool EoDxfWrite::WriteVport(EoDxfVPort* viewport) {
   }
   WriteCodeString(0, L"VPORT");
 
-  WriteCodeString(5, ToHexString(++m_entityCount));
-  WriteCodeString(330, L"2");
+  if (viewport->m_handle != EoDxf::NoHandle) {
+    if (viewport->m_handle >= m_entityCount) { m_entityCount = viewport->m_handle; }
+    WriteCodeString(5, ToHexString(viewport->m_handle));
+  } else {
+    WriteCodeString(5, ToHexString(++m_entityCount));
+  }
+  WriteCodeString(330, L"8");
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbViewportTableRecord");
   WriteCodeWideString(2, viewport->m_tableName);

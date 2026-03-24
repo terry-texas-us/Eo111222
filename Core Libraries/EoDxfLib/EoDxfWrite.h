@@ -152,7 +152,7 @@ class EoDxfWrite {
    */
   bool WriteXline(EoDxfXline* xline);
 
-  bool WriteBlockRecord(std::wstring_view name);
+  bool WriteBlockRecord(std::wstring_view name, std::uint64_t handle = EoDxf::NoHandle);
   bool WriteBlock(EoDxfBlock* block);
   void AddImageDefinition(const EoDxfImageDefinition& imageDefinition);
   bool WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData);
@@ -202,10 +202,10 @@ class EoDxfWrite {
  private:
   std::wstring m_fileName;
   std::vector<EoDxfImageDefinition*> m_imageDef;  // list of image definitions to write at the end of file
-  std::map<std::wstring, int> m_blockMap;
+  std::map<std::wstring, std::uint64_t> m_blockMap;
   EoDxfWriter* m_writer;
   EoDxfInterface* m_interface{};
-  int m_entityCount{};
+  std::uint64_t m_entityCount{};
   EoDxf::Version m_version{};
   std::uint64_t m_currentHandle{};
   bool wlayer0{};

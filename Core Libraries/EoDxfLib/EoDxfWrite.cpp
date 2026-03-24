@@ -17,7 +17,7 @@
 
 namespace {
 constexpr std::wstring_view EODXFLIB_VERSION{L"0.1"};
-constexpr auto FIRSTHANDLE{48};
+constexpr std::uint64_t FIRSTHANDLE{48};
 
 [[nodiscard]] std::wstring GetRequestedCodePage(const EoDxfHeader& header) {
   if (!header.GetCodePageToken().empty()) { return header.GetCodePageToken(); }
@@ -108,7 +108,11 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
     WriteCodeString(999, comment);
   }
 
-  m_entityCount = FIRSTHANDLE;
+  // Initialize the entity handle counter above both the hardcoded infrastructure range
+  // (FIRSTHANDLE = 48) and any handles already assigned by the application's handle manager.
+  // This prevents collisions between table object handles and preserved entity handles.
+  const auto interfaceHandleSeed = m_interface != nullptr ? m_interface->GetHandleSeed() : std::uint64_t{0};
+  m_entityCount = interfaceHandleSeed > FIRSTHANDLE ? interfaceHandleSeed : FIRSTHANDLE;
   WriteCodeString(0, L"SECTION");
   header.Write(m_writer, m_version);
   TrackStreamState(filestr);
@@ -167,7 +171,14 @@ bool EoDxfWrite::WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData
 }
 
 bool EoDxfWrite::WriteEntity(EoDxfGraphic* entity) {
-  entity->m_handle = ++m_entityCount;
+  // P2.1 — Handle preservation: if the entity already carries a valid handle
+  // (imported from DXF or assigned by HandleManager), keep it and advance the
+  // counter past it to prevent future collisions.  Otherwise allocate a new one.
+  if (entity->m_handle == EoDxf::NoHandle) {
+    entity->m_handle = ++m_entityCount;
+  } else {
+    if (entity->m_handle >= m_entityCount) { m_entityCount = entity->m_handle; }
+  }
   WriteCodeString(5, ToHexString(entity->m_handle));
 
   // Write reactor handles (102 {ACAD_REACTORS ... }) — DXF spec places these between code 5 and code 100.
@@ -183,8 +194,21 @@ bool EoDxfWrite::WriteEntity(EoDxfGraphic* entity) {
     WriteCodeString(360, ToHexString(entity->m_extensionDictionaryHandle));
     WriteCodeString(102, L"}");
   }
-  if (m_version > EoDxf::Version::AC1014 && entity->m_ownerHandle != EoDxf::NoHandle) {
-    WriteCodeString(330, ToHexString(entity->m_ownerHandle));
+
+  // P3.1 — Owner handle derivation: every AC1015+ entity must have an owner.
+  // The owner is derived from the current export context rather than preserved
+  // from import, because table object handles are regenerated on export.
+  //   - Inside a named block definition → owner is the block record handle
+  //   - Paper-space entity → owner is *Paper_Space block record (0x1E)
+  //   - Model-space entity → owner is *Model_Space block record (0x1F)
+  if (m_version > EoDxf::Version::AC1014) {
+    if (m_writingBlock) {
+      WriteCodeString(330, ToHexString(m_currentHandle));
+    } else if (entity->m_space == EoDxf::Space::PaperSpace) {
+      WriteCodeString(330, L"1E");
+    } else {
+      WriteCodeString(330, L"1F");
+    }
   }
   WriteCodeString(100, L"AcDbEntity");
   if (entity->m_space == EoDxf::Space::PaperSpace) { WriteCodeInt16(67, 1); }
@@ -360,12 +384,21 @@ EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstri
   return id;
 }
 
-bool EoDxfWrite::WriteBlockRecord(std::wstring_view name) {
+bool EoDxfWrite::WriteBlockRecord(std::wstring_view name, std::uint64_t handle) {
   WriteCodeString(0, L"BLOCK_RECORD");
-  WriteCodeString(5, ToHexString(++m_entityCount));
 
-  m_blockMap.emplace(name, m_entityCount);
-  m_entityCount = 2 + m_entityCount;  // reserve 2 for BLOCK & ENDBLOCK
+  // P3.4 — Block record handle preservation: if the block already carries a
+  // valid handle from DXF import, keep it and advance the counter past it.
+  // Otherwise allocate a new one sequentially.
+  if (handle != EoDxf::NoHandle) {
+    if (handle >= m_entityCount) { m_entityCount = handle; }
+    WriteCodeString(5, ToHexString(handle));
+    m_blockMap.emplace(name, handle);
+  } else {
+    WriteCodeString(5, ToHexString(++m_entityCount));
+    m_blockMap.emplace(name, m_entityCount);
+  }
+  m_entityCount = 2 + m_entityCount;  // reserve 2 for BLOCK & ENDBLK
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1"); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbBlockTableRecord");
@@ -395,7 +428,14 @@ bool EoDxfWrite::WriteBlock(EoDxfBlock* block) {
   WriteCodeString(0, L"BLOCK");
 
   m_currentHandle = (*(m_blockMap.find(block->m_blockName))).second;
-  WriteCodeString(5, ToHexString(m_currentHandle + 1));
+  // P3.4 — BLOCK entity handle preservation: use the imported handle if
+  // available, otherwise fall back to the block record handle + 1 convention.
+  if (block->m_handle != EoDxf::NoHandle) {
+    if (block->m_handle >= m_entityCount) { m_entityCount = block->m_handle; }
+    WriteCodeString(5, ToHexString(block->m_handle));
+  } else {
+    WriteCodeString(5, ToHexString(m_currentHandle + 1));
+  }
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(m_currentHandle)); }
   WriteCodeString(100, L"AcDbEntity");
 
@@ -447,7 +487,7 @@ bool EoDxfWrite::WriteBlocks() {
   WriteCodeString(0, L"BLOCK");
 
   WriteCodeString(5, L"1C");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1B"); }
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1E"); }
   WriteCodeString(100, L"AcDbEntity");
 
   WriteCodeString(8, L"0");
@@ -466,7 +506,7 @@ bool EoDxfWrite::WriteBlocks() {
   WriteCodeString(0, L"ENDBLK");
 
   WriteCodeString(5, L"1D");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1F"); }
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1E"); }
   WriteCodeString(100, L"AcDbEntity");
 
   WriteCodeString(8, L"0");

@@ -201,10 +201,88 @@ Every `EoDbPrimitive` now carries a unique, non-zero `m_handle` regardless of or
 ### Type Decision
 `std::uint64_t` is preferred over a `using EoDbHandle = std::uint64_t` alias. Handle arithmetic (increment, comparison, hex formatting) is intentional — the transparent type correctly communicates that handles are integers. A strong-typedef wrapper would require `explicit` construction and operator overloads with no practical benefit in this codebase.
 
+### Phase 2 Complete ✅ — DXF Export Handle Unification
+Entity handles survive the import→export round-trip, and the writer's handle counter is seeded from the application's handle manager:
+
+| Sub-item | What changed | Key files |
+|----------|-------------|-----------|
+| **P2.1 — Handle preservation in `WriteEntity()`** | Non-zero entity handles are preserved on export; new handles allocated only for `NoHandle` entities. Counter advances past preserved handles to prevent collisions. | `EoDxfWrite.cpp` |
+| **P2.2 — Type widening + seed initialization** | `m_entityCount` widened from `int` to `std::uint64_t`. `m_blockMap` value type widened to `std::uint64_t`. `FIRSTHANDLE` typed as `std::uint64_t`. Counter initialized from `max(FIRSTHANDLE, interface->GetHandleSeed())`. | `EoDxfWrite.h`, `EoDxfWrite.cpp` |
+| **P2.3 — `$HANDSEED` in header** | `WriteHeader()` appends `$HANDSEED` from `HandleManager().NextHandleValue()` after populating all header variables. `GetHandleSeed()` virtual added to `EoDxfInterface`. | `EoDbDxfInterface.h`, `EoDxfInterface.h` |
+
+### Phase 3.1 Complete ✅ — Owner Handles on Export
+Every AC1015+ entity now gets a DXF-compliant owner handle derived from the export context:
+
+| Sub-item | What changed | Key files |
+|----------|-------------|-----------|
+| **P3.1a — Owner derivation in `WriteEntity()`** | Owner handle is always derived from export context instead of relying on `m_ownerHandle`: block entity → `m_currentHandle` (block record); paper-space entity → `0x1E` (`*Paper_Space` block record); model-space entity → `0x1F` (`*Model_Space` block record). | `EoDxfWrite.cpp` |
+| **P3.1b — Table owner bug fixes** | Fixed 4 incorrect hardcoded owner handles: `WriteTextstyle` `"2"→"3"` (STYLE table), `WriteVport` `"2"→"8"` (VPORT table), `*Paper_Space` BLOCK `"1B"→"1E"` (block record), `*Paper_Space` ENDBLK `"1F"→"1E"` (block record). | `EoDxfWriteTables.cpp`, `EoDxfWrite.cpp` |
+
+### DXF Ownership Hierarchy (Hardcoded Infrastructure Handles)
+```
+0x00  (root)
+├── 0x01  BLOCK_RECORD table → block records (owner=1)
+│   ├── 0x1E  *Paper_Space block record → paper-space entities (owner=1E)
+│   ├── 0x1F  *Model_Space block record → model-space entities (owner=1F)
+│   └── dynamic  named block records → block entities (owner=block record handle)
+├── 0x02  LAYER table → layer entries (owner=2)
+├── 0x03  STYLE table → text style entries (owner=3)
+├── 0x05  LTYPE table → linetype entries (owner=5)
+├── 0x08  VPORT table → vport entries (owner=8)
+├── 0x09  APPID table → app entries (owner=9)
+├── 0x0A  DIMSTYLE table → dimstyle entries (owner=A)
+└── 0x0C  root dictionary
+```
+
+### Phase 3.2+3.3 Complete ✅ — Table Object Handle Preservation
+Imported table entry handles now survive the DXF round-trip. Two-part fix: propagate handles from internal objects into DXF structures (`EoDbDxfInterface.h`), then preserve non-zero handles in the writer (`EoDxfWriteTables.cpp`) using the same conditional pattern as `WriteEntity()`.
+
+| Sub-item | What changed | Key files |
+|----------|-------------|-----------|
+| **P3.2 — Layer handle propagation** | `WriteLayers` lambda sets `dxfLayer.m_handle = layer->Handle()`. `WriteLayer` preserves non-zero handle; layer `"0"` always gets hardcoded `0x10`. | `EoDbDxfInterface.h`, `EoDxfWriteTables.cpp` |
+| **P3.3a — Linetype handle propagation** | `WriteLTypes` sets `dxfLinetype.m_handle = lineType->Handle()`. `WriteLinetype` preserves non-zero handle (skips ByLayer/ByBlock/Continuous which have hardcoded handles). | `EoDbDxfInterface.h`, `EoDxfWriteTables.cpp` |
+| **P3.3b — TextStyle handle propagation** | `WriteTextstyles` sets `dxfTextStyle.m_handle = entry.m_handle`. `WriteTextstyle` preserves non-zero handle. | `EoDbDxfInterface.h`, `EoDxfWriteTables.cpp` |
+| **P3.3c — DimStyle handle propagation** | `WriteDimstyles` sets `dxfDimStyle.m_handle = entry.m_handle`. `WriteDimStyle` preserves non-zero handle via group code `105` (not `5`). | `EoDbDxfInterface.h`, `EoDxfWriteTables.cpp` |
+| **P3.3d — AppId + VPort handle preservation** | `WriteAppId` and `WriteVport` also preserve non-zero handles for completeness (no import propagation yet — VPorts lack internal handle members). | `EoDxfWriteTables.cpp` |
+
+All four internal table object types (`EoDbLayer`, `EoDbLineType`, `EoDbTextStyle`, `EoDbDimStyle`) already had `m_handle`/`m_ownerHandle` members with getters/setters and import-side propagation from prior work — the gap was entirely on the export path.
+
+### Phase 3.4 Complete ✅ — Block Record Handle Preservation
+Imported block record and BLOCK entity handles now survive the DXF round-trip. `WriteBlockRecord` accepts an optional handle parameter and uses the same preservation pattern as `WriteEntity()` and the table write functions. `WriteBlock` preserves the BLOCK entity handle when available; ENDBLK retains the record+2 convention.
+
+| Sub-item | What changed | Key files |
+|----------|-------------|-----------|
+| **P3.4a — Block record handle propagation** | `WriteBlockRecords` passes `block->OwnerHandle()` (= imported BLOCK_RECORD handle). `WriteBlockRecord` preserves non-zero handle; otherwise allocates sequentially. Stored in `m_blockMap` for entity ownership derivation. | `EoDbDxfInterface.h`, `EoDxfWrite.h`, `EoDxfWrite.cpp` |
+| **P3.4b — BLOCK entity handle propagation** | `WriteBlocks` sets `dxfBlock.m_handle = block->Handle()`. `WriteBlock` preserves non-zero BLOCK entity handle; otherwise falls back to record+1 convention. ENDBLK stays at record+2 (handle not stored separately in `EoDbBlock`). | `EoDbDxfInterface.h`, `EoDxfWrite.cpp` |
+
+The complete BLOCK_RECORD → BLOCK → entities → ENDBLK handle chain is now preserved on round-trip: block record handle feeds into `m_blockMap` → `m_currentHandle` → entity owner handles (via `WriteEntity` P3.1), BLOCK entity handle preserved directly, ENDBLK derived as record+2.
+
+### Phase 4 Complete ✅ — Handle → Object Reverse Lookup Map
+`AeSysDoc` maintains a non-owning `std::unordered_map<std::uint64_t, HandleObject> m_handleMap` for O(1) handle-to-object lookup across both spaces, the block table, layer tables, and linetype table. `HandleObject` is `std::variant<EoDbPrimitive*, EoDbLayer*, EoDbLineType*, EoDbBlock*>`, covering all heap-allocated, pointer-stable handle-bearing types.
+
+| Sub-item | What changed | Key files |
+|----------|-------------|-----------|
+| **P4.1 — Map infrastructure** | `m_handleMap` member + 5 methods: `RegisterHandle`, `UnregisterHandle`, `FindPrimitiveByHandle`, `RegisterGroupHandles`, `UnregisterGroupHandles`. `DeleteContents()` bulk-clears with `m_handleMap.clear()`. | `AeSysDoc.h`, `AeSysDoc.cpp` |
+| **P4.1 — Registration at import/load** | `RegisterHandle(primitive)` called in `AddToDocument` (DXF import), `ReadEntitiesSection`/`ReadPaperSpaceSection`/`ReadBlocksSection` (PEG load). | `EoDbDxfInterface.cpp`, `EoDbPegFile.cpp` |
+| **P4.1 — Registration at interactive add** | `RegisterGroupHandles(group)` called in `AddWorkLayerGroup` and `AddWorkLayerGroups` — covers paste, undelete, expand, compress, text add. | `AeSysDoc.cpp` |
+| **P4.1 — Unregistration at hard-delete** | `UnregisterGroupHandles` called in `DeleteAllTrappedGroups`, `InitializeWorkLayer`, `RemoveLayerTableLayerAt`. | `EoDbTrappedGroups.cpp`, `AeSysDoc.cpp` |
+| **P4.2 — Mutation consistency** | All primitive-destroying mutation paths now maintain the map: `OnPrimBreak` (unregister old + register new), `BreakPolylines`/`ExplodeBlockReferences` (via `AeSysDoc::GetDoc()`), `RemoveEmptyNotesAndDelete`/`RemoveDuplicatePrimitives` (unregister before delete), `RemoveUnusedBlocks`/`InsertBlock` (unregister before block destroy), `OnClearActiveLayers`/`OnClearAllLayers`/`OnClearAllTracings` (unregister before `DeleteGroupsAndRemoveAll`). | `AeSysDoc.cpp`, `EoDbGroup.cpp`, `EoDbPegBlockTable.cpp`, `AeSysDoc.h` |
+| **P4.3 — Full object graph** | Map widened from `EoDbPrimitive*` to `HandleObject` variant. 4 `RegisterHandle` overloads (Primitive, Layer, LineType, Block). `FindObjectByHandle` returns `const HandleObject*`; typed finders `FindPrimitiveByHandle`, `FindLayerByHandle`, `FindLineTypeByHandle`, `FindBlockByHandle` extract via `std::get_if`. Registration at all creation points: `AddLayerTableLayer`/`AddLayerToSpace` (layers), `ConvertLinetypesTable`/PEG load (linetypes), `InsertBlock` (blocks). Unregistration at all destruction points: `RemoveAllLayerTableLayers`/`RemoveLayerTableLayerAt`/`RemoveEmptyLayers` (layers), `RemoveAllBlocks`/`RemoveUnusedBlocks`/`InsertBlock` replacement (blocks). | `AeSysDoc.h`, `AeSysDoc.cpp`, `EoDbDxfInterface.cpp`, `EoDbPegFile.cpp`, `EoDbPegBlockTable.cpp` |
+
+### HandleObject Variant Type
+- `using HandleObject = std::variant<EoDbPrimitive*, EoDbLayer*, EoDbLineType*, EoDbBlock*>` — defined before `AeSysDoc` class in `AeSysDoc.h`.
+- Covers all **heap-allocated, pointer-stable** handle-bearing types. Value-type table entries (`EoDbTextStyle`, `EoDbDimStyle`, `EoDbAppIdEntry`) are deferred until migrated to pointer-stable containers — their `std::vector` storage invalidates pointers on reallocation.
+- `EoDbVPortTableEntry` has no handle members and is excluded.
+
+### Handle Map Invariants
+- **Registration is idempotent**: re-registering the same handle overwrites with the same variant value.
+- **Soft-delete preserves registration**: moving primitives to the deleted-groups list keeps pointers valid — no map update needed.
+- **Hard-delete requires unregistration**: any path calling `delete` on a handle-bearing object must call `UnregisterHandle(object->Handle())` first.
+- **`EoDbGroup.cpp` document access**: Group-level methods use `AeSysDoc::GetDoc()` (static) to reach the handle map.
+- **Bulk clear covers teardown ordering**: `DeleteContents()` calls `m_handleMap.clear()` before destroying linetypes, blocks, and layers — so their destructors don't need individual unregistration.
+- **Linetype unregistration**: No independent linetype removal path exists outside `DeleteContents` — `RemoveUnused()` is a no-op. The bulk clear covers all linetype handles.
+
 ### Next Phases (Deferred)
-- **Phase 2 — DXF Export Handle Unification**: P2.1 Use primitive's handle in `WriteEntity()` when non-zero; P2.2 Synchronize `EoDxfWrite::m_entityCount` with `HandleManager`; P2.3 Update `$HANDSEED` in header on export.
-- **Phase 3 — Owner Handles & Table Objects**: Wire `m_ownerHandle` to layer/linetype table entries; assign handles to `EoDbLayer` and `EoDbLineType` objects.
-- **Phase 4 — Handle → Object Reverse Lookup**: Build handle-to-object map for efficient cross-referencing.
 - **Phase 5 — Structural Links**: ATTRIB→INSERT, MTEXT line grouping, OBJECTS section handles.
 - **Extension dictionaries** (XDICT, ACAD_REACTORS): not needed for current entity→layer/linetype linkage.
 - **PEG V2 handle serialization**: handles will be written alongside entity records when V2 binary format is defined per primitive type.

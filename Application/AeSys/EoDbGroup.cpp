@@ -66,6 +66,7 @@ HTREEITEM EoDbGroup::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
 }
 
 void EoDbGroup::BreakPolylines() {
+  auto* document = AeSysDoc::GetDoc();
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto PrimitivePosition = position;
@@ -79,16 +80,19 @@ void EoDbGroup::BreakPolylines() {
 
       if (points.GetSize() >= 2) {
         for (auto i = 0; i < points.GetSize() - 1; i++) {
-          CObList::InsertBefore(
-              PrimitivePosition, EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeIndex));
+          auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeIndex);
+          document->RegisterHandle(line);
+          CObList::InsertBefore(PrimitivePosition, line);
         }
 
         if (static_cast<EoDbPolyline*>(primitive)->IsLooped()) {
-          CObList::InsertBefore(PrimitivePosition,
-              EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeIndex));
+          auto* line = EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeIndex);
+          document->RegisterHandle(line);
+          CObList::InsertBefore(PrimitivePosition, line);
         }
       }
       this->RemoveAt(PrimitivePosition);
+      document->UnregisterHandle(primitive->Handle());
       delete primitive;
     } else if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
       EoDbBlock* block{};
@@ -100,6 +104,7 @@ void EoDbGroup::BreakPolylines() {
 }
 
 void EoDbGroup::ExplodeBlockReferences() {
+  auto* document = AeSysDoc::GetDoc();
   int numberOfGroupReferences{};
   do {
     numberOfGroupReferences = 0;
@@ -109,15 +114,17 @@ void EoDbGroup::ExplodeBlockReferences() {
       auto* primitive = GetNext(position);
       if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
         EoDbBlock* block{};
-        if (AeSysDoc::GetDoc()->LookupBlock(static_cast<EoDbBlockReference*>(primitive)->BlockName(), block) != 0) {
+        if (document->LookupBlock(static_cast<EoDbBlockReference*>(primitive)->BlockName(), block) != 0) {
           numberOfGroupReferences++;
           auto* temporaryGroupTransformed = new EoDbGroup(*block);
           auto basePoint = block->BasePoint();
           EoGeTransformMatrix transformMatrix =
               static_cast<EoDbBlockReference*>(primitive)->BuildTransformMatrix(basePoint);
           temporaryGroupTransformed->Transform(transformMatrix);
+          document->RegisterGroupHandles(temporaryGroupTransformed);
           this->InsertBefore(primitivePosition, temporaryGroupTransformed);
           this->RemoveAt(primitivePosition);
+          document->UnregisterHandle(primitive->Handle());
           delete primitive;
           temporaryGroupTransformed->RemoveAll();
           delete temporaryGroupTransformed;
@@ -273,6 +280,7 @@ void EoDbGroup::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::
 }
 
 void EoDbGroup::RemoveDuplicatePrimitives() {
+  auto* document = AeSysDoc::GetDoc();
   auto basePosition = GetHeadPosition();
   while (basePosition != nullptr) {
     auto* basePrimitive = GetNext(basePosition);
@@ -284,6 +292,7 @@ void EoDbGroup::RemoveDuplicatePrimitives() {
 
       if (basePrimitive->Identical(testPrimitive)) {
         RemoveAt(testPositionSave);
+        document->UnregisterHandle(testPrimitive->Handle());
         delete testPrimitive;
       }
     }
@@ -291,6 +300,7 @@ void EoDbGroup::RemoveDuplicatePrimitives() {
 }
 
 int EoDbGroup::RemoveEmptyNotesAndDelete() {
+  auto* document = AeSysDoc::GetDoc();
   int count{};
 
   auto position = GetHeadPosition();
@@ -300,6 +310,7 @@ int EoDbGroup::RemoveEmptyNotesAndDelete() {
     if (primitive->Is(EoDb::kTextPrimitive)) {
       if (static_cast<EoDbText*>(primitive)->Text().GetLength() == 0) {
         RemoveAt(posPrev);
+        document->UnregisterHandle(primitive->Handle());
         delete primitive;
         count++;
       }

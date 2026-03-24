@@ -414,7 +414,7 @@ class EoDbDxfInterface : public EoDxfInterface {
       EoDbBlock* block{};
       m_document->GetNextBlock(position, name, block);
       if (block == nullptr) { continue; }
-      m_dxfWriter->WriteBlockRecord(std::wstring(name));
+      m_dxfWriter->WriteBlockRecord(std::wstring(name), block->OwnerHandle());
     }
   };
   void WriteBlocks() override {
@@ -429,6 +429,7 @@ class EoDbDxfInterface : public EoDxfInterface {
       EoDxfBlock dxfBlock;
       dxfBlock.m_blockName = std::wstring(name);
       dxfBlock.m_blockTypeFlags = static_cast<std::int16_t>(block->BlockTypeFlags());
+      dxfBlock.m_handle = block->Handle();
       auto basePoint = block->BasePoint();
       dxfBlock.m_basePoint = {basePoint.x, basePoint.y, basePoint.z};
       m_dxfWriter->WriteBlock(&dxfBlock);
@@ -462,6 +463,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     for (const auto& entry : m_document->DimStyleTable()) {
       EoDxfDimensionStyle dxfDimStyle;
       dxfDimStyle.m_tableName = entry.m_name;
+      dxfDimStyle.m_handle = entry.m_handle;
       dxfDimStyle.m_flagValues = entry.m_flagValues;
 
       dxfDimStyle.dimpost = entry.dimpost;
@@ -640,8 +642,9 @@ class EoDbDxfInterface : public EoDxfInterface {
 
         EoDxfLayer dxfLayer;
         dxfLayer.m_tableName = std::wstring(layer->Name());
+        dxfLayer.m_handle = layer->Handle();
         dxfLayer.m_colorNumber = layer->IsOff() ? static_cast<std::int16_t>(-std::abs(layer->ColorIndex()))
-                                                 : static_cast<std::int16_t>(std::abs(layer->ColorIndex()));
+                                                : static_cast<std::int16_t>(std::abs(layer->ColorIndex()));
         dxfLayer.m_linetypeName = layer->LineType() != nullptr ? std::wstring(layer->LineTypeName()) : L"Continuous";
         dxfLayer.m_plottingFlag = true;
         m_dxfWriter->WriteLayer(&dxfLayer);
@@ -664,6 +667,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
       EoDxfLinetype dxfLinetype;
       dxfLinetype.m_tableName = std::wstring(lineType->Name());
+      dxfLinetype.m_handle = lineType->Handle();
       dxfLinetype.desc = std::wstring(lineType->Description());
       dxfLinetype.m_numberOfLinetypeElements = static_cast<std::int16_t>(lineType->GetNumberOfDashes());
       dxfLinetype.length = lineType->GetPatternLength();
@@ -680,6 +684,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     for (const auto& entry : m_document->TextStyleTable()) {
       EoDxfTextStyle dxfTextStyle;
       dxfTextStyle.m_tableName = entry.m_name;
+      dxfTextStyle.m_handle = entry.m_handle;
       dxfTextStyle.height = entry.m_height;
       dxfTextStyle.width = entry.m_widthFactor;
       dxfTextStyle.oblique = Eo::RadianToDegree(entry.m_obliqueAngle);

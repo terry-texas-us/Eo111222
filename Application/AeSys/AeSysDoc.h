@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include <unordered_map>
+#include <variant>
+
 #include "EoDb.h"
 #include "EoDbAppIdEntry.h"
 #include "EoDbBlock.h"
@@ -25,6 +28,13 @@
 #include "EoGeVector3d.h"
 
 class EoGeTransformMatrix;
+
+/// @brief Tagged union of all handle-bearing object types for unified handle graph lookup.
+///
+/// DXF handles are globally unique integers. A single map keyed by handle can resolve
+/// any handle to its owning object regardless of type. The four variant alternatives
+/// cover all heap-allocated, pointer-stable handle-bearing types in the document.
+using HandleObject = std::variant<EoDbPrimitive*, EoDbLayer*, EoDbLineType*, EoDbBlock*>;
 
 class AeSysDoc : public CDocument {
  protected:
@@ -60,6 +70,7 @@ class AeSysDoc : public CDocument {
   EoDb::FileTypes m_saveAsType{EoDb::FileTypes::Unknown};
   EoDxf::Version m_dxfVersion{EoDxf::Version::AC1032};
   EoDbHandleManager m_handleManager{};
+  std::unordered_map<std::uint64_t, HandleObject> m_handleMap{};
 
  public:
   BOOL DoSave(LPCWSTR lpszPathName, BOOL bReplace = TRUE) override;
@@ -95,7 +106,78 @@ class AeSysDoc : public CDocument {
   [[nodiscard]] EoDbHandleManager& HandleManager() noexcept { return m_handleManager; }
   [[nodiscard]] const EoDbHandleManager& HandleManager() const noexcept { return m_handleManager; }
 
-  /** @brief Adds text to the document as one or more EoDbText primitives.
+  // Handle → Object reverse lookup map
+
+  /** @brief Registers a primitive's handle in the lookup map.
+   * Skips zero-handle primitives (no handle assigned yet).
+   * @param primitive Non-null pointer to the primitive to register.
+   */
+  void RegisterHandle(EoDbPrimitive* primitive);
+
+  /** @brief Registers a layer's handle in the lookup map.
+   * Skips zero-handle layers.
+   * @param layer Non-null pointer to the layer to register.
+   */
+  void RegisterHandle(EoDbLayer* layer);
+
+  /** @brief Registers a linetype's handle in the lookup map.
+   * Skips zero-handle linetypes.
+   * @param lineType Non-null pointer to the linetype to register.
+   */
+  void RegisterHandle(EoDbLineType* lineType);
+
+  /** @brief Registers a block's handle in the lookup map.
+   * Skips zero-handle blocks.
+   * @param block Non-null pointer to the block to register.
+   */
+  void RegisterHandle(EoDbBlock* block);
+
+  /** @brief Removes a handle from the lookup map.
+   * @param handle The handle to unregister. Zero handles are silently ignored.
+   */
+  void UnregisterHandle(std::uint64_t handle) noexcept;
+
+  /** @brief Finds any handle-bearing object by its handle.
+   * @param handle The handle to search for.
+   * @return Pointer to the HandleObject variant, or nullptr if not found.
+   */
+  [[nodiscard]] const HandleObject* FindObjectByHandle(std::uint64_t handle) const noexcept;
+
+  /** @brief Finds a primitive by its handle.
+   * @param handle The handle to search for.
+   * @return Pointer to the primitive, or nullptr if the handle is absent or maps to a non-primitive object.
+   */
+  [[nodiscard]] EoDbPrimitive* FindPrimitiveByHandle(std::uint64_t handle) const noexcept;
+
+  /** @brief Finds a layer by its handle.
+   * @param handle The handle to search for.
+   * @return Pointer to the layer, or nullptr if the handle is absent or maps to a non-layer object.
+   */
+  [[nodiscard]] EoDbLayer* FindLayerByHandle(std::uint64_t handle) const noexcept;
+
+  /** @brief Finds a linetype by its handle.
+   * @param handle The handle to search for.
+   * @return Pointer to the linetype, or nullptr if the handle is absent or maps to a non-linetype object.
+   */
+  [[nodiscard]] EoDbLineType* FindLineTypeByHandle(std::uint64_t handle) const noexcept;
+
+  /** @brief Finds a block by its handle.
+   * @param handle The handle to search for.
+   * @return Pointer to the block, or nullptr if the handle is absent or maps to a non-block object.
+   */
+  [[nodiscard]] EoDbBlock* FindBlockByHandle(std::uint64_t handle) const noexcept;
+
+  /** @brief Registers all primitive handles in a group.
+   * @param group Non-null pointer to the group whose primitives are registered.
+   */
+  void RegisterGroupHandles(EoDbGroup* group);
+
+  /** @brief Unregisters all primitive handles in a group.
+   * @param group Non-null pointer to the group whose primitives are unregistered.
+   */
+  void UnregisterGroupHandles(EoDbGroup* group);
+
+  /** @brief Adds text to the document
    *
    * The input text is expected to be a single string with lines separated by "\r\n".
    * Each line of text is added as a separate EoDbText primitive to the document.
@@ -134,10 +216,13 @@ class AeSysDoc : public CDocument {
     EoDbBlock* existing = nullptr;
     if (m_BlocksTable.Lookup(name, existing)) {
       ATLTRACE2(traceGeneral, 3, L"InsertBlock: Replacing existing block '%s'\n", name.GetString());
+      UnregisterHandle(existing->Handle());
+      UnregisterGroupHandles(existing);
       existing->DeletePrimitivesAndRemoveAll();
       delete existing;
     }
     m_BlocksTable.SetAt(name, block);
+    RegisterHandle(block);
   }
 
   void LayerBlank(const CString& strName);

@@ -167,6 +167,7 @@ void AeSysDoc::DeleteAllTrappedGroups() {
     auto* group = m_trappedGroups.GetNext(groupPosition);
     AnyLayerRemove(group);
     RemoveGroupFromAllViews(group);
+    UnregisterGroupHandles(group);
     group->DeletePrimitivesAndRemoveAll();
     delete group;
   }

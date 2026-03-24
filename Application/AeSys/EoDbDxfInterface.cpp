@@ -313,6 +313,7 @@ void EoDbDxfInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSy
     convertedLinetype->SetHandle(linetype.m_handle);
     convertedLinetype->SetOwnerHandle(linetype.m_ownerHandle);
     lineTypeTable->SetAt(name, convertedLinetype);
+    document->RegisterHandle(convertedLinetype);
   }
 }
 
@@ -463,6 +464,8 @@ void EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
 
   ATLTRACE2(traceGeneral, 3, L"AddToDocument: primitive=%p, inBlock=%d, currentBlock=%p, layer='%s'\n", primitive,
       m_inBlockDefinition ? 1 : 0, m_currentOpenBlockDefinition, layerName);
+
+  document->RegisterHandle(primitive);
 
   if (m_currentOpenBlockDefinition == nullptr) {
     auto* group = new EoDbGroup();
