@@ -8,6 +8,7 @@
 #include "Eo.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
+#include "EoDbHandleManager.h"
 #include "EoDbPrimitive.h"
 #include "EoDxfEntities.h"
 #include "EoGePoint3d.h"
@@ -21,9 +22,25 @@ std::int16_t EoDbPrimitive::sm_specialColor{};
 int EoDbPrimitive::sm_controlPointIndex{SHRT_MAX};
 double EoDbPrimitive::sm_RelationshipOfPoint{};
 double EoDbPrimitive::sm_SelectApertureSize{0.02};
+EoDbHandleManager* EoDbPrimitive::sm_handleManager{nullptr};
+
+EoDbPrimitive::EoDbPrimitive() {
+  if (sm_handleManager != nullptr) { m_handle = sm_handleManager->AssignHandle(); }
+}
+
+EoDbPrimitive::EoDbPrimitive(const EoDbPrimitive& other)
+    : m_color(other.m_color),
+      m_lineTypeIndex(other.m_lineTypeIndex),
+      m_lineTypeName(other.m_lineTypeName),
+      m_layerName(other.m_layerName),
+      m_ownerHandle(other.m_ownerHandle),
+      m_thickness(other.m_thickness) {
+  if (sm_handleManager != nullptr) { m_handle = sm_handleManager->AssignHandle(); }
+}
 
 EoDbPrimitive::EoDbPrimitive(std::int16_t color, std::int16_t lineTypeIndex)
     : m_color(color), m_lineTypeIndex(lineTypeIndex) {
+  if (sm_handleManager != nullptr) { m_handle = sm_handleManager->AssignHandle(); }
   ATLTRACE2(traceGeneral, 3, L"EoDbPrimitive(color, lineTypeIndex) CTOR: this=%p, vtable=%p\n", this, *(void**)this);
 }
 
@@ -56,6 +73,7 @@ void EoDbPrimitive::SetBaseProperties(const EoDxfGraphic* entity, AeSysDoc* docu
   m_lineTypeIndex = linetypeTable->LegacyLineTypeIndex(m_lineTypeName);
 
   m_handle = entity->m_handle;
+  if (sm_handleManager != nullptr) { sm_handleManager->AccommodateHandle(m_handle); }
   m_ownerHandle = entity->m_ownerHandle;
   m_thickness = entity->m_thickness;
 }
@@ -159,3 +177,4 @@ void EoDbPrimitive::SetLayerLineTypeIndex(std::int16_t lineTypeIndex) noexcept {
 double& EoDbPrimitive::Rel() noexcept { return sm_RelationshipOfPoint; }
 std::int16_t EoDbPrimitive::SpecialColor() noexcept { return sm_specialColor; }
 void EoDbPrimitive::SetSpecialColor(std::int16_t specialColor) noexcept { sm_specialColor = specialColor; }
+void EoDbPrimitive::SetHandleManager(EoDbHandleManager* handleManager) noexcept { sm_handleManager = handleManager; }

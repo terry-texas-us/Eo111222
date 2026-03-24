@@ -16,6 +16,7 @@ class AeSysDoc;
 class AeSysView;
 class EoDbGroupList;
 class EoDbGroup;
+class EoDbHandleManager;
 class EoDxfInterface;
 class EoGeTransformMatrix;
 
@@ -44,28 +45,27 @@ class EoDbPrimitive : public CObject {
   static int sm_controlPointIndex;
   static double sm_RelationshipOfPoint;
   static double sm_SelectApertureSize;
+  static EoDbHandleManager* sm_handleManager;
 
  public:
-  EoDbPrimitive() = default;
+  EoDbPrimitive();
   EoDbPrimitive(std::int16_t penColor, std::int16_t lineType);
 
  protected:
-  EoDbPrimitive(const EoDbPrimitive& other)
-      : m_color(other.m_color),
-        m_lineTypeIndex(other.m_lineTypeIndex),
-        m_lineTypeName(other.m_lineTypeName),
-        m_layerName(other.m_layerName),
-        m_handle(other.m_handle),
-        m_ownerHandle(other.m_ownerHandle),
-        m_thickness(other.m_thickness) {}
+  /// @brief Copy constructor assigns a fresh handle — a copy is a new entity.
+  /// All visual/spatial properties are copied from @p other, but the handle
+  /// is unique to this instance.
+  EoDbPrimitive(const EoDbPrimitive& other);
 
+  /// @brief Copy-assignment overwrites visual/spatial properties but preserves
+  /// the destination's handle — entity identity does not change on property update.
   EoDbPrimitive& operator=(const EoDbPrimitive& other) {
     if (this != &other) {
       m_color = other.m_color;
       m_lineTypeIndex = other.m_lineTypeIndex;
       m_lineTypeName = other.m_lineTypeName;
       m_layerName = other.m_layerName;
-      m_handle = other.m_handle;
+      // m_handle is intentionally NOT copied — entity identity is preserved
       m_ownerHandle = other.m_ownerHandle;
       m_thickness = other.m_thickness;
     }
@@ -159,4 +159,9 @@ class EoDbPrimitive : public CObject {
   static double& Rel() noexcept;
   static std::int16_t SpecialColor() noexcept;
   static void SetSpecialColor(std::int16_t specialColor) noexcept;
+
+  /// @brief Wires the document-owned handle manager into the primitive base class.
+  /// Called once from the AeSysDoc constructor so that every subsequently-created
+  /// primitive receives a unique handle via AssignHandle().
+  static void SetHandleManager(EoDbHandleManager* handleManager) noexcept;
 };

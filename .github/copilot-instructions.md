@@ -176,17 +176,37 @@ The following must remain `= 0`: `Display`, `Copy`, `Assign`, `Transform`/`Trans
 
 ## Handle Architecture
 
-### Implementation Status ✅
+### Phase 1 Complete ✅ — Make Internal Handles Consistently Valid (Foundation)
+Every `EoDbPrimitive` now carries a unique, non-zero `m_handle` regardless of origin:
+
+| Sub-item | What changed | Key files |
+|----------|-------------|-----------|
+| **P1.1 — Auto-assign in constructors** | `EoDbPrimitive` holds a `static EoDbHandleManager*` (`sm_handleManager`), wired by `AeSysDoc` constructor and reset in `DeleteContents()`. All three base constructors (default, copy, parameterized) call `AssignHandle()` when the manager is set. | `EoDbPrimitive.h/.cpp`, `AeSysDoc.cpp`, `EoDbHandleManager.h` |
+| **P1.2 — Copy = fresh handle** | Copy constructor assigns a fresh handle (new entity identity). `operator=` preserves the target's existing handle. `EoDbViewport::swap()` skips `m_handle`. | `EoDbPrimitive.h/.cpp`, `EoDbViewport.cpp` |
+| **P1.3 — AccommodateHandle on import** | `SetBaseProperties()` calls `AccommodateHandle(m_handle)` after importing the DXF entity's handle, advancing the counter past any handle above `$HANDSEED`. Defensive against malformed DXF files. | `EoDbPrimitive.cpp` |
+| **P1.4 — V1 PEG migration** | Automatically solved by P1.1 — V1 entities get auto-assigned handles through the base constructor on load. |  |
+
+### Three Handle Pipelines
+| Pipeline | Handle source | Mechanism |
+|----------|--------------|-----------|
+| **DXF import** | Entity's DXF handle | `SetBaseProperties()` overwrites the auto-assigned handle with the DXF value, then `AccommodateHandle()` advances the counter. |
+| **PEG V2 load** | Persisted handle | `SetHandle()` overwrites the auto-assigned handle with the stored value. |
+| **Interactive / PEG V1** | Auto-assigned | Constructor's `AssignHandle()` value persists — no overwrite. |
+
+### Implementation Details
 - `EoDbPrimitive::m_handle` / `m_ownerHandle` — `std::uint64_t`, zero-initialized (zero = no handle).
-- `EoDbHandleManager` (`EoDbHandleManager.h`) — `AssignHandle()` increments and returns `m_nextHandle`; `AccommodateHandle(h)` advances the counter past any pre-existing handle imported from DXF. `AeSysDoc` holds one instance; its seed is set from the DXF `$HANDSEED` header variable.
-- `SetBaseProperties(EoDxfGraphic*, AeSysDoc*)` propagates `m_handle`, `m_ownerHandle`, layer name, and linetype from the parsed DXF entity into the primitive.
+- `EoDbHandleManager` (`EoDbHandleManager.h`) — `AssignHandle()` increments and returns `m_nextHandle`; `AccommodateHandle(h)` advances the counter past any pre-existing handle; `Reset()` reinitializes to 1. `AeSysDoc` holds one instance; its seed is set from the DXF `$HANDSEED` header variable.
+- `SetBaseProperties(EoDxfGraphic*, AeSysDoc*)` propagates `m_handle`, `m_ownerHandle`, layer name, linetype, and thickness from the parsed DXF entity into the primitive, then accommodates the imported handle.
 
 ### Type Decision
 `std::uint64_t` is preferred over a `using EoDbHandle = std::uint64_t` alias. Handle arithmetic (increment, comparison, hex formatting) is intentional — the transparent type correctly communicates that handles are integers. A strong-typedef wrapper would require `explicit` construction and operator overloads with no practical benefit in this codebase.
 
-### Deferred Work
+### Next Phases (Deferred)
+- **Phase 2 — DXF Export Handle Unification**: P2.1 Use primitive's handle in `WriteEntity()` when non-zero; P2.2 Synchronize `EoDxfWrite::m_entityCount` with `HandleManager`; P2.3 Update `$HANDSEED` in header on export.
+- **Phase 3 — Owner Handles & Table Objects**: Wire `m_ownerHandle` to layer/linetype table entries; assign handles to `EoDbLayer` and `EoDbLineType` objects.
+- **Phase 4 — Handle → Object Reverse Lookup**: Build handle-to-object map for efficient cross-referencing.
+- **Phase 5 — Structural Links**: ATTRIB→INSERT, MTEXT line grouping, OBJECTS section handles.
 - **Extension dictionaries** (XDICT, ACAD_REACTORS): not needed for current entity→layer/linetype linkage.
-- **Handle lookup table**: `m_ownerHandle` is stored on each primitive but a reverse map (handle → `EoDbLayer*` / `EoDbLineType*`) is not yet wired. Layer and linetype are currently resolved by name in `SetBaseProperties`.
 - **PEG V2 handle serialization**: handles will be written alongside entity records when V2 binary format is defined per primitive type.
 
 ## Documentation

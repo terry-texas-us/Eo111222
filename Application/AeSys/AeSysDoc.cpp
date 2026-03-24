@@ -159,11 +159,12 @@ ON_COMMAND(ID_VIEW_MODELSPACE, OnViewModelSpace)
 ON_UPDATE_COMMAND_UI(ID_VIEW_MODELSPACE, OnUpdateViewModelSpace)
 END_MESSAGE_MAP()
 
-AeSysDoc::AeSysDoc() = default;
+AeSysDoc::AeSysDoc() { EoDbPrimitive::SetHandleManager(&m_handleManager); }
 
 AeSysDoc::~AeSysDoc() {}
 
 void AeSysDoc::DeleteContents() {
+  m_handleManager.Reset();
   ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::DeleteContents() - BlockTableSize: %d\n", this, BlockTableSize());
 
   // @todo Release EoDbDxfInterface resources if any

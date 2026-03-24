@@ -44,12 +44,11 @@ EoDbViewport& EoDbViewport::operator=(EoDbViewport other) noexcept {
 
 void EoDbViewport::swap(EoDbViewport& other) noexcept {
   using std::swap;
-  // Base class protected members
+  // Base class protected members (m_handle intentionally excluded — entity identity is preserved)
   swap(m_color, other.m_color);
   swap(m_lineTypeIndex, other.m_lineTypeIndex);
   swap(m_lineTypeName, other.m_lineTypeName);
   swap(m_layerName, other.m_layerName);
-  swap(m_handle, other.m_handle);
   swap(m_ownerHandle, other.m_ownerHandle);
   // Paper-space geometry
   swap(m_centerPoint, other.m_centerPoint);

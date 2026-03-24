@@ -588,6 +588,10 @@ class EoDbDxfInterface : public EoDxfInterface {
 
     m_currentExportSpace = EoDxf::Space::ModelSpace;
   };
+  [[nodiscard]] std::uint64_t GetHandleSeed() const override {
+    return m_document != nullptr ? m_document->HandleManager().NextHandleValue() : 0;
+  }
+
   void WriteHeader(EoDxfHeader& header) override {
     if (m_document == nullptr) { return; }
     const auto& headerSection = m_document->HeaderSection();
@@ -612,9 +616,13 @@ class EoDbDxfInterface : public EoDxfInterface {
               header.AddInt16(name, val ? 1 : 0, groupCode != 0 ? groupCode : 290);
             }
           },
-          value);
-    }
-  };
+                   value);
+            }
+
+            // Update $HANDSEED to reflect the document's current handle state.
+            // This ensures the exported DXF header advertises a seed above all entity handles.
+            header.AddHandle(L"$HANDSEED", m_document->HandleManager().NextHandleValue(), 5);
+          };
   void WriteObjects() override {};
   void WriteUnsupportedObjects() override {
     if (m_dxfWriter == nullptr || m_document == nullptr) { return; }

@@ -171,6 +171,13 @@ class EoDxfInterface {
    */
   virtual void AddComment(std::wstring_view comment) = 0;
 
+  /// @brief Returns the application's next available entity handle.
+  /// The DXF writer uses this to initialize its internal counter above
+  /// all existing entity handles, preventing collisions between preserved
+  /// imported handles and newly allocated table/object handles.
+  /// @return Next handle value (0 = no application handle manager).
+  [[nodiscard]] virtual std::uint64_t GetHandleSeed() const { return 0; }
+
   virtual void WriteHeader(EoDxfHeader& data) = 0;
   virtual void WriteClasses() = 0;
   virtual void WriteBlocks() = 0;
