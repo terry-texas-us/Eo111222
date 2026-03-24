@@ -2008,6 +2008,15 @@ void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unuse
   textPrimitive->SetBaseProperties(&mtext, document);
   textPrimitive->SetExtrusion(extrusionDirection);
 
+  // Preserve MTEXT-specific DXF properties for round-trip export
+  EoDbMTextProperties mtextProperties;
+  mtextProperties.attachmentPoint = static_cast<std::int16_t>(mtext.m_attachmentPoint);
+  mtextProperties.drawingDirection = static_cast<std::int16_t>(mtext.m_drawingDirection);
+  mtextProperties.lineSpacingStyle = static_cast<std::int16_t>(mtext.m_lineSpacingStyle);
+  mtextProperties.lineSpacingFactor = mtext.m_lineSpacingFactor;
+  mtextProperties.referenceRectangleWidth = mtext.m_referenceRectangleWidth;
+  textPrimitive->SetMTextProperties(mtextProperties);
+
   AddToDocument(textPrimitive, document, mtext.m_space);
 }
 

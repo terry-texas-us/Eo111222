@@ -88,6 +88,7 @@ EoDbText::EoDbText(const EoDbText& other) {
   m_strText = other.m_strText;
   m_textGenerationFlags = other.m_textGenerationFlags;
   m_extrusion = other.m_extrusion;
+  m_mtextProperties = other.m_mtextProperties;
 }
 
 const EoDbText& EoDbText::operator=(const EoDbText& other) {
@@ -97,6 +98,7 @@ const EoDbText& EoDbText::operator=(const EoDbText& other) {
   m_strText = other.m_strText;
   m_textGenerationFlags = other.m_textGenerationFlags;
   m_extrusion = other.m_extrusion;
+  m_mtextProperties = other.m_mtextProperties;
 
   return (*this);
 }
@@ -141,6 +143,11 @@ void EoDbText::Display(AeSysView* view, CDC* deviceContext) {
 }
 
 void EoDbText::ExportToDxf(EoDxfInterface* writer) const {
+  if (m_mtextProperties.has_value()) {
+    ExportAsMText(writer);
+    return;
+  }
+
   EoDxfText text;
   PopulateDxfBaseProperties(&text);
 
@@ -218,8 +225,39 @@ void EoDbText::ExportToDxf(EoDxfInterface* writer) const {
   writer->AddText(text);
 }
 
+void EoDbText::ExportAsMText(EoDxfInterface* writer) const {
+  EoDxfMText mtext;
+  PopulateDxfBaseProperties(&mtext);
+
+  mtext.m_textString = std::wstring(m_strText.GetString());
+  mtext.m_textStyleName = std::wstring(m_fontDefinition.FontName().GetString());
+
+  // Recover text height from the reference system
+  mtext.m_nominalTextHeight = m_ReferenceSystem.YDirection().Length();
+
+  // Rotation angle from xDirection — MTEXT group 50 is in radians
+  const auto& xDir = m_ReferenceSystem.XDirection();
+  mtext.m_rotationAngle = std::atan2(xDir.y, xDir.x);
+
+  // Insertion point from origin
+  const auto origin = m_ReferenceSystem.Origin();
+  mtext.m_insertionPoint = {origin.x, origin.y, origin.z};
+
+  mtext.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
+
+  // Restore preserved MTEXT-specific properties
+  const auto& properties = *m_mtextProperties;
+  mtext.m_attachmentPoint = static_cast<EoDxfMText::AttachmentPoint>(properties.attachmentPoint);
+  mtext.m_drawingDirection = static_cast<EoDxfMText::DrawingDirection>(properties.drawingDirection);
+  mtext.m_lineSpacingStyle = static_cast<EoDxfMText::LineSpacingStyle>(properties.lineSpacingStyle);
+  mtext.m_lineSpacingFactor = properties.lineSpacingFactor;
+  mtext.m_referenceRectangleWidth = properties.referenceRectangleWidth;
+
+  writer->AddMText(mtext);
+}
+
 void EoDbText::AddReportToMessageList(const EoGePoint3d& point) {
-  app.AddStringToMessageList(CString(L"<Text>"));
+  app.AddStringToMessageList(m_mtextProperties.has_value() ? CString(L"<Text (MTEXT)>") : CString(L"<Text>"));
   EoDbPrimitive::AddReportToMessageList(point);
 
   CString message;
@@ -227,15 +265,24 @@ void EoDbText::AddReportToMessageList(const EoGePoint3d& point) {
         m_fontDefinition.FormatPrecision() + L" Path: " + m_fontDefinition.FormatPath() + L" Alignment: (" +
         m_fontDefinition.FormatHorizontalAlignment() + L"," + m_fontDefinition.FormatVerticalAlignment() + L")";
   app.AddStringToMessageList(message);
+
+  if (m_mtextProperties.has_value()) {
+    const auto& properties = *m_mtextProperties;
+    CString mtextMessage;
+    mtextMessage.Format(L"  MTEXT: AttachmentPoint=%d  DrawingDirection=%d  LineSpacing=%.3f (style %d)  RectWidth=%.4f",
+        properties.attachmentPoint, properties.drawingDirection, properties.lineSpacingFactor,
+        properties.lineSpacingStyle, properties.referenceRectangleWidth);
+    app.AddStringToMessageList(mtextMessage);
+  }
 }
 
 void EoDbText::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
-  str.AppendFormat(L"\tFont;%s\tPrecision;%s\tPath;%s\tAlignment;(%s,%s)\tSpacing;%f\tLength;%d\tText;%s",
+  str.AppendFormat(L"\tFont;%s\tPrecision;%s\tPath;%s\tAlignment;(%s,%s)\tSpacing;%f\tLength;%d\tSource;%s\tText;%s",
       m_fontDefinition.FontName().GetString(), m_fontDefinition.FormatPrecision().GetString(),
       m_fontDefinition.FormatPath().GetString(), m_fontDefinition.FormatHorizontalAlignment().GetString(),
       m_fontDefinition.FormatVerticalAlignment().GetString(), m_fontDefinition.CharacterSpacing(),
-      m_strText.GetLength(), m_strText.GetString());
+      m_strText.GetLength(), m_mtextProperties.has_value() ? L"MTEXT" : L"TEXT", m_strText.GetString());
   str += L'\t';
 }
 void EoDbText::FormatGeometry(CString& str) {

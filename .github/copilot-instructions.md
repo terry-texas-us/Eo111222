@@ -283,7 +283,7 @@ The complete BLOCK_RECORD → BLOCK → entities → ENDBLK handle chain is now 
 - **Linetype unregistration**: No independent linetype removal path exists outside `DeleteContents` — `RemoveUnused()` is a no-op. The bulk clear covers all linetype handles.
 
 ### Next Phases (Deferred)
-- **Phase 5 — Structural Links**: ~~ATTRIB→INSERT~~, MTEXT line grouping, OBJECTS section handles.
+- **Phase 5 — Structural Links**: ~~ATTRIB→INSERT~~, ~~MTEXT identity preservation~~, ~~OBJECTS section round-trip~~.
 - **Extension dictionaries** (XDICT, ACAD_REACTORS): not needed for current entity→layer/linetype linkage.
 - **PEG V2 handle serialization**: handles will be written alongside entity records when V2 binary format is defined per primitive type.
 
@@ -303,6 +303,38 @@ Each `EoDbBlockReference` now owns a list of ATTRIB primitive handles, populated
 - **Skipped ATTRIBs**: Invisible attributes (flag bit 0), zero-height, and empty-value ATTRIBs are skipped by `ConvertAttribEntity` (returns `nullptr`). Their handles are NOT linked to the parent INSERT — they have no corresponding `EoDbText` primitive.
 - **Handle resolution**: ATTRIB handles stored in `m_attributeHandles` can be resolved to `EoDbText*` via `AeSysDoc::FindPrimitiveByHandle()` (Phase 4 infrastructure).
 - **PEG V2 serialization**: Attribute handle list is not yet persisted — deferred to PEG V2 per-primitive binary format definition. Currently survives only within a single session (DXF import → memory → DXF export is possible via handle lookup; PEG save/load loses the link).
+
+### Phase 5.2 Complete ✅ — MTEXT Identity Preservation
+Each `EoDbText` that originated from a DXF MTEXT entity now carries an `EoDbMTextProperties` struct preserving MTEXT-specific DXF properties. `ExportToDxf` dispatches to MTEXT export (instead of TEXT) when these properties are present, enabling correct DXF round-trip.
+
+| Sub-item | What changed | Key files |
+|----------|-------------|----------|
+| **P5.2a — Property struct** | `EoDbMTextProperties` struct with 5 fields: `attachmentPoint`, `drawingDirection`, `lineSpacingStyle`, `lineSpacingFactor`, `referenceRectangleWidth`. `std::optional<EoDbMTextProperties> m_mtextProperties` member on `EoDbText`. API: `SetMTextProperties()`, `IsFromMText()`, `MTextProperties()`. | `EoDbText.h` |
+| **P5.2b — Copy/assign propagation** | Copy constructor and `operator=` propagate `m_mtextProperties`. | `EoDbText.cpp` |
+| **P5.2c — Import-side storage** | `ConvertMTextEntity` populates `EoDbMTextProperties` from the parsed `EoDxfMText` and calls `SetMTextProperties()` on the created `EoDbText`. | `EoDbDxfInterface.cpp` |
+| **P5.2d — Export dispatch** | `ExportToDxf` checks `m_mtextProperties.has_value()` and delegates to `ExportAsMText()` which populates `EoDxfMText` from the reference system (height, rotation in radians, insertion point) plus stored MTEXT properties and calls `writer->AddMText()`. TEXT-origin primitives use the existing `AddText()` path. | `EoDbText.cpp` |
+| **P5.2e — Reporting** | `FormatExtra` includes `Source;MTEXT` or `Source;TEXT` field. `AddReportToMessageList` shows `<Text (MTEXT)>` header and a detail line with attachment point, drawing direction, line spacing, and rectangle width. | `EoDbText.cpp` |
+
+#### Design Notes
+- **Single-primitive model**: MTEXT is stored as a single `EoDbText` with `\P` paragraph breaks preserved in the text string. The renderer `DisplayTextWithFormattingCharacters()` handles `\P` splitting at display time. This is more efficient than splitting into multiple primitives and naturally round-trips through the single-MTEXT export path.
+- **DXF TEXT vs MTEXT export**: The presence or absence of `m_mtextProperties` is the sole discriminator. Text primitives created interactively or loaded from PEG files have `m_mtextProperties == std::nullopt` and export as TEXT. Text primitives created by `ConvertMTextEntity` have the struct populated and export as MTEXT.
+- **Rotation angle units**: MTEXT group code 50 is in **radians** (unlike TEXT group code 50 which is in degrees). `ExportAsMText` passes `std::atan2` result directly without degree conversion.
+- **PEG V2 serialization**: `m_mtextProperties` is not yet persisted — deferred to PEG V2 per-primitive binary format definition. Currently survives only within a single session (DXF import → memory → DXF export preserves MTEXT identity; PEG save/load loses it and re-exports as TEXT).
+
+### Phase 5.3 Complete ✅ — OBJECTS Section Round-Trip
+The OBJECTS section now survives DXF round-trip. All non-graphical objects (DICTIONARY, LAYOUT, PLOTSETTINGS, MLINESTYLE, MATERIAL, VISUALSTYLE, etc.) captured during import are written back on export, eliminating the duplicate-dictionary bug.
+
+| Sub-item | What changed | Key files |
+|----------|-------------|----------|
+| **P5.3a — HasUnsupportedObjects() virtual** | `EoDxfInterface` gains `HasUnsupportedObjects()` virtual (default `false`). Provides the conditional gate for the writer to distinguish round-trip exports from new-drawing exports. | `EoDxfInterface.h` |
+| **P5.3b — Interface override** | `EoDbDxfInterface` overrides `HasUnsupportedObjects()` to query `!m_document->UnsupportedObjects().empty()`. | `EoDbDxfInterface.h` |
+| **P5.3c — Conditional WriteObjects()** | `EoDxfWrite::WriteObjects()` checks `HasUnsupportedObjects()`. When true: writes imported objects via `WriteUnsupportedObjects()` and returns (skips hardcoded dicts). When false: writes minimal hardcoded root dict C + ACAD_GROUP D + image definitions (existing behavior for new drawings). | `EoDxfWrite.cpp` |
+
+#### Design Notes
+- **Duplicate-dictionary bug**: Previously, `WriteObjects()` always wrote hardcoded root dict (handle C) and ACAD_GROUP (handle D), then `WriteUnsupportedObjects()` wrote all imported objects which included the original C and D — producing invalid DXF with duplicate dictionaries. The conditional branch eliminates this.
+- **Image definitions**: When the imported-objects path is taken, `m_imageDef` is cleaned up but not written — AeSys does not accumulate image definitions during import (`LinkImage` is a no-op). Image data is preserved in the unsupported objects collection if it was in the source DXF.
+- **Handle preservation**: OBJECTS section handles are within the `$HANDSEED` range from DXF import, so no handle collision risk. The unsupported objects store raw group code data including their original handles.
+- **New-drawing fallback**: When `HasUnsupportedObjects()` returns false (new drawing, PEG import, or no OBJECTS section in source), the original hardcoded minimal-dictionary path runs unchanged.
 
 ## Documentation
 - Utilize Doxygen for automated documentation generation. Ensure that comments are clear and descriptive, and consider the balance between verbosity and clarity to maintain readability.

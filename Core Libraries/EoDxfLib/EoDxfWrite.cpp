@@ -530,6 +530,20 @@ bool EoDxfWrite::WriteBlocks() {
 
 bool EoDxfWrite::WriteObjects() {
   m_interface->WriteObjects();
+
+  // When the interface has imported OBJECTS section data (from DXF round-trip),
+  // write those objects directly — they already contain the root dictionary,
+  // ACAD_GROUP, and all other non-graphical objects. Writing the hardcoded
+  // minimal dictionaries would produce duplicates.
+  if (m_interface->HasUnsupportedObjects()) {
+    m_interface->WriteUnsupportedObjects();
+    // Clean up any image definitions that accumulated during copy mode
+    for (auto* id_ : m_imageDef) { delete id_; }
+    m_imageDef.clear();
+    return m_writeOk;
+  }
+
+  // No imported objects — write minimal hardcoded dictionaries for new drawings
   WriteCodeString(0, L"DICTIONARY");
   std::wstring imgDictH;
   WriteCodeString(5, L"C");
@@ -598,8 +612,6 @@ bool EoDxfWrite::WriteObjects() {
   // no more needed imageDef, delete it
   for (auto* id_ : m_imageDef) { delete id_; }
   m_imageDef.clear();
-
-  m_interface->WriteUnsupportedObjects();
 
   return m_writeOk;
 }

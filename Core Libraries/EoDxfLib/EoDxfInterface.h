@@ -178,6 +178,11 @@ class EoDxfInterface {
   /// @return Next handle value (0 = no application handle manager).
   [[nodiscard]] virtual std::uint64_t GetHandleSeed() const { return 0; }
 
+  /// @brief Returns whether the interface has imported OBJECTS section data.
+  /// When true, the writer skips hardcoded root/ACAD_GROUP dictionaries and
+  /// delegates entirely to WriteUnsupportedObjects() to avoid duplicates.
+  [[nodiscard]] virtual bool HasUnsupportedObjects() const { return false; }
+
   virtual void WriteHeader(EoDxfHeader& data) = 0;
   virtual void WriteClasses() = 0;
   virtual void WriteBlocks() = 0;

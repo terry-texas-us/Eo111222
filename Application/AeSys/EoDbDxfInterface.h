@@ -625,6 +625,9 @@ class EoDbDxfInterface : public EoDxfInterface {
             header.AddHandle(L"$HANDSEED", m_document->HandleManager().NextHandleValue(), 5);
           };
   void WriteObjects() override {};
+  [[nodiscard]] bool HasUnsupportedObjects() const override {
+    return m_document != nullptr && !m_document->UnsupportedObjects().empty();
+  }
   void WriteUnsupportedObjects() override {
     if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
     for (const auto& object : m_document->UnsupportedObjects()) {

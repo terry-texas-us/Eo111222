@@ -146,12 +146,9 @@
 ### 4.3 ~~CLASSES section not round-tripped~~ ✅ RESOLVED
 - **Fix applied**: `ConvertClassesSection` stores all class properties (record type, class name, C++ class name, app name, proxy capabilities flags, instance count, was-a-zombie flag, is-an-entity flag) in `EoDbClassEntry` via `AeSysDoc::AddClassEntry()`. `WriteClasses()` iterates the table and writes each class.
 
-### 4.4 OBJECTS section not round-tripped
-- **Read**: Unsupported objects are stored as raw group code data via `EoDxfUnsupportedObject`.
-- **Write**: `WriteObjects()` is empty `{}`.
-- **Impact**: DICTIONARY, LAYOUT, PLOTSETTINGS, MLINESTYLE, MATERIAL, VISUALSTYLE, etc. all lost. LAYOUT objects in particular break AutoCAD's paper-space/model-space tab structure.
-- **Note**: `WriteUnsupportedObjects()` is now wired (see §4.8) but `WriteObjects()` — which would emit the OBJECTS section framing — remains empty, so unsupported objects are not written either.
-- **Fix**: Implement `WriteObjects()` to emit the OBJECTS section header/footer and call `WriteUnsupportedObjects()` within it.
+### 4.4 ~~OBJECTS section not round-tripped~~ ✅ RESOLVED
+- **Fix applied**: `WriteObjects()` now checks `m_interface->HasUnsupportedObjects()`. When imported OBJECTS section data exists (from DXF round-trip), it writes those objects directly via `WriteUnsupportedObjects()` and returns — the imported data already contains the root dictionary, ACAD_GROUP, and all other non-graphical objects. When no imported objects exist (new drawing), the original hardcoded minimal dictionary path (root dict C, ACAD_GROUP D, image definitions) is used.
+- **Key change**: The `HasUnsupportedObjects()` virtual (default `false`) on `EoDxfInterface` with override in `EoDbDxfInterface` provides the conditional gate. This eliminates the duplicate-dictionary bug where both hardcoded and imported dictionaries were written.
 
 ### 4.5 ~~AppId table not round-tripped~~ ✅ RESOLVED
 - **Fix applied**: `ConvertAppIdTable` stores application ID name, flags, handle, and owner handle in `EoDbAppIdEntry` via `AeSysDoc::AddAppIdEntry()`. `WriteAppId()` iterates the table and writes each entry.
@@ -180,7 +177,7 @@ These entity types are parsed from DXF but have no internal representation or ex
 
 ### 4.8 ~~Unsupported object passthrough not wired~~ ✅ RESOLVED
 - **Fix applied**: `WriteUnsupportedObjects()` iterates stored `EoDxfUnsupportedObject` instances and calls `m_dxfWriter->WriteUnsupportedObject()` for each.
-- **Note**: The method is wired but currently unreachable because `WriteObjects()` is empty (see §4.4).
+- **Note**: Now reachable — `WriteObjects()` calls `WriteUnsupportedObjects()` when `HasUnsupportedObjects()` returns true (see §4.4).
 
 ---
 

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
 #include "AeSysView.h"
@@ -16,12 +17,26 @@
 
 class EoDbCharacterCellDefinition;
 
+/// @brief MTEXT-specific DXF properties for round-trip fidelity.
+/// When present on an EoDbText, indicates the text originated from a DXF MTEXT entity
+/// and should be exported as MTEXT rather than TEXT.
+struct EoDbMTextProperties {
+  double referenceRectangleWidth{};  ///< DXF group 41 (wrapping box width)
+  double lineSpacingFactor{1.0};     ///< DXF group 44 (clamped to [0.25, 4.0])
+  std::int16_t lineSpacingStyle{1};  ///< DXF group 73 (1 = AtLeast, 2 = Exact)
+  std::int16_t drawingDirection{1};  ///< DXF group 72 (1 = LeftToRight, 3 = TopToBottom, 5 = ByStyle)
+  std::int16_t attachmentPoint{1};   ///< DXF group 71 (1–9, maps to 3×3 alignment grid)
+};
+
 class EoDbText : public EoDbPrimitive {
   EoDbFontDefinition m_fontDefinition;
   EoGeReferenceSystem m_ReferenceSystem;
   CString m_strText;
   std::int16_t m_textGenerationFlags{};  ///< DXF group code 71 (2 = backward, 4 = upside-down)
   EoGeVector3d m_extrusion{EoGeVector3d::positiveUnitZ};  ///< DXF extrusion direction (group codes 210/220/230)
+
+  /// When set, the text originated from a DXF MTEXT entity and ExportToDxf writes MTEXT instead of TEXT.
+  std::optional<EoDbMTextProperties> m_mtextProperties{};
 
  public:  // Constructors and destructor
   EoDbText() {}
@@ -89,6 +104,14 @@ class EoDbText : public EoDbPrimitive {
   [[nodiscard]] std::int16_t TextGenerationFlags() const noexcept { return m_textGenerationFlags; }
   void SetExtrusion(const EoGeVector3d& extrusion) noexcept { m_extrusion = extrusion; }
   [[nodiscard]] const EoGeVector3d& Extrusion() const noexcept { return m_extrusion; }
+
+  void SetMTextProperties(const EoDbMTextProperties& properties) noexcept { m_mtextProperties = properties; }
+  [[nodiscard]] bool IsFromMText() const noexcept { return m_mtextProperties.has_value(); }
+  [[nodiscard]] const std::optional<EoDbMTextProperties>& MTextProperties() const noexcept { return m_mtextProperties; }
+
+ private:
+  /// @brief Exports this text primitive as a DXF MTEXT entity using stored MTEXT properties.
+  void ExportAsMText(EoDxfInterface* writer) const;
 };
 
 void DisplayText(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem,
