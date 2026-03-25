@@ -13,6 +13,7 @@
 #include "EoDb.h"
 #include "EoDbConic.h"
 #include "EoDbGroup.h"
+#include "EoGsRenderDevice.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
@@ -420,8 +421,8 @@ void EoDbConic::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   m_endAngle = absoluteAngleAtPoint;
 }
 
-void EoDbConic::Display(AeSysView* view, CDC* deviceContext) {
-  if (view == nullptr || deviceContext == nullptr) { return; }
+void EoDbConic::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
+  if (view == nullptr || renderDevice == nullptr) { return; }
 
   // Skip degenerate arcs
   const double sweepAngle = SweepAngle();
@@ -430,6 +431,7 @@ void EoDbConic::Display(AeSysView* view, CDC* deviceContext) {
   // Skip if major axis is degenerate
   if (m_majorAxis.Length() < Eo::geometricTolerance) { return; }
 
+  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
@@ -437,7 +439,7 @@ void EoDbConic::Display(AeSysView* view, CDC* deviceContext) {
 
   polyline::BeginLineStrip();
   GenerateApproximationVertices(m_center, m_majorAxis);
-  polyline::__End(view, deviceContext, lineType, lineTypeName);
+  polyline::End(view, renderDevice, lineType, lineTypeName);
 }
 
 void EoDbConic::GetAllPoints(EoGePoint3dArray& points) {

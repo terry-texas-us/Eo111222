@@ -384,7 +384,7 @@ Layer line weight defaults to `kLnWtByLwDefault`. DXF import propagates `EoDxfLa
 | 7 | `PS_DASHDOTDOT` | ❌ Dead code |
 | default | `PS_SOLID` | ✅ All visible entity rendering |
 
-**Why the non-SOLID GDI styles are dead code**: Entity linetype rendering is handled by `polyline::__Display()`, which reads dash/gap patterns from `EoDbLineType` objects and draws individual line segments with a PS_SOLID pen. The `__End` function temporarily switches to `PS_SOLID` (via `renderState.SetLineType(deviceContext, 1)`) before calling `__Display`, then restores the original lineTypeIndex. The GDI PS_DOT/PS_DASH patterns in `ManagePenResources` are never visible during entity display.
+**Why the non-SOLID GDI styles are dead code**: Entity linetype rendering is handled by `EoGsVertexBuffer::DisplayDashPattern()`, which reads dash/gap patterns from `EoDbLineType` objects and draws individual line segments with a PS_SOLID pen. The `End` function temporarily switches to `PS_SOLID` (via `renderState.SetLineType(deviceContext, 1)`) before calling `DisplayDashPattern`, then restores the original lineTypeIndex. The GDI PS_DOT/PS_DASH patterns in `ManagePenResources` are never visible during entity display.
 
 ### Non-Entity Pen Usage (Bypasses `ManagePenResources`)
 These UI elements create their own `CPen` objects directly:
@@ -406,7 +406,7 @@ These UI elements create their own `CPen` objects directly:
 | `EoGsRenderState.h` | Render state members (`m_color`, `m_LineTypeIndex`, `m_lineTypeName`, `m_lineTypeScale`) |
 | `EoDbLayer.h/.cpp` | Layer display properties (`m_lineWeight`, `m_lineTypeScale`), static setter calls in `Display()` |
 | `EoDbPrimitive.h/.cpp` | Static layer resolution members (`sm_layerLineWeight`, `sm_layerLineTypeScale`) |
-| `EoGePolyline.cpp` | `polyline::__End` (linetype dispatch), `polyline::__Display` (custom dash rendering) |
+| `EoGePolyline.h/.cpp` | `polyline::` thin wrappers delegating to global `EoGsVertexBuffer` instance |
 | `EoDxfLineWeights.h` | `LineWeight` enum, `LineWeightToDxfIndex`/`DxfIndexToLineWeight` converters |
 
 ## Documentation
@@ -572,16 +572,14 @@ else         → 2D polyline   → ConvertPolyline2DEntity
 - Constants: `Eo::arcTessellationSegmentsPerFullCircle = 72`, `Eo::arcTessellationMinimumSegments = 2`.
 
 ### Display Pipeline
-- `Display()` → `polyline::BeginLineLoop/Strip` → emit vertices with `polyline::SetVertex` → `polyline::__End`.
+- `Display()` → `polyline::BeginLineLoop/Strip` → emit vertices with `polyline::SetVertex` → `polyline::End`.
 - Bulge-aware: each edge tessellated via `TessellateArcSegment`. Closing segment for closed polylines respects its bulge.
 - Selection/extents use `BuildTessellatedPoints()` (private helper) which produces a flattened point array with arcs expanded.
-- **Width rendering not yet implemented** — width data is preserved for PEG round-trip but polylines render as zero-width lines.
+- **Width rendering**: `DisplayWidthFill()` renders per-segment filled trapezoids (GDI `Polygon`) with linearly interpolated widths. Arc segments are tessellated first, then each sub-segment gets a radially-offset quad. Called from `Display()` when width data is present.
 
 ### Known Limitations and Deferred Work
 | Item | Notes |
 |------|-------|
-| Width rendering in `Display()` | Data stored but not rendered; needs filled polygon/trapezoid approach |
-| `ExportToDxf()` | Not implemented; dispatch to `WriteLWPolyline` or `WritePolyline` based on dimensionality |
 | 2D POLYLINE OCS→WCS | `ConvertPolyline2DEntity` stores OCS coordinates directly; non-default extrusion needs transform |
 | Non-uniform scale + bulge | Bulge is dimensionless; non-uniform BLOCK INSERT scales distort arcs (matches AutoCAD behavior) |
 | Break bulge arcs | Decomposing individual bulge arcs to `EoDbConic` for editing is deferred |
@@ -776,11 +774,11 @@ EoGePoint3d (world) → EoGsModelTransform (block stack) → EoGsViewTransform (
 ### What Does NOT Depend on GDI (No Changes Needed)
 Geometry math (`EoGeTransformMatrix`, `EoGeVector3d`, `EoGePoint3d`, `EoGeLine`), entity data model (everything except `Display()`), tessellation (`GenerateApproximationVertices`, `GenPts`, `TessellateArcSegment`), selection, serialization (PEG/DXF), transform pipeline (produces NDC; only final projection touches `CPoint`).
 
-### polyline Namespace — OpenGL Heritage
-- File-scope mutable state: `EoGePoint4dArray pts_` and `bool LoopLine`.
-- Single-threaded, non-reentrant, no batching, no retained geometry.
-- Every `Display()` call rebuilds the vertex array from scratch.
-- To be replaced by `EoGsVertexBuffer` during Direct2D migration.
+### polyline Namespace — Thin Delegation Layer (Phase 5)
+- `polyline::` free functions (`BeginLineStrip`, `BeginLineLoop`, `SetVertex`, `End`, `SelectUsing*`) delegate to a file-scope `EoGsVertexBuffer vertexBuffer_` instance in `EoGePolyline.cpp`.
+- Standalone geometry helpers (`GeneratePointsForNPoly`, `TessellateArcSegment`, explicit-points `SelectUsingRectangle`) remain as pure free functions with no vertex-buffer dependency.
+- `EoGsVertexBuffer::End()` renders via `EoGsRenderDevice*` (`MoveTo`/`LineTo`/`Polyline`) — no direct `CDC*` dependency. `renderState.SetLineType(deviceContext, ...)` remains CDC*-based transitionally (accessed via `GetCDC()`).
+- Single-threaded, non-reentrant — every `Display()` call rebuilds the vertex array from scratch.
 
 ## Direct2D Migration — Architecture and Decisions
 
@@ -791,18 +789,83 @@ Geometry math (`EoGeTransformMatrix`, `EoGeVector3d`, `EoGePoint3d`, `EoGeLine`)
 
 ### Migration Strategy (10 Phases)
 
-| Phase | Goal | Key deliverable |
-|-------|------|-----------------|
-| **1** | Render abstraction interface | `EoGsRenderDevice` pure virtual interface replacing `CDC*` |
-| **2** | GDI backend (zero regression) | `EoGsRenderDeviceGdi` wrapping `CDC*` behind the interface |
-| **3** | Virtual signature change | `Display(AeSysView*, EoGsRenderDevice*)` across all 11 primitive types |
-| **4** | Off-screen frame buffer (GDI) | Back buffer via `CreateCompatibleBitmap`; blit on paint |
-| **5** | Retained vertex buffer | `EoGsVertexBuffer` replacing `polyline::` namespace |
-| **6** | Direct2D backend | `EoGsRenderDeviceDirect2D` — path geometries, brush/stroke cache |
-| **7** | D2D frame buffering | `BeginDraw`/`EndDraw`, resize handling, device loss recovery |
-| **8** | Batch geometry submission | Group primitives by pen state; single path geometry per batch |
-| **9** | GPU transform (optional D3D11) | `SetTransform` for 2D; vertex shader for 3D camera |
-| **10** | Legacy cleanup | Remove GDI-only remnants, deprecate GDI backend (keep for printer) |
+| Phase | Goal | Key deliverable | Status |
+|-------|------|-----------------|--------|
+| **1** | Render abstraction interface | `EoGsRenderDevice` pure virtual interface replacing `CDC*` | ✅ Complete |
+| **2** | GDI backend (zero regression) | `EoGsRenderDeviceGdi` wrapping `CDC*` behind the interface | ✅ Complete |
+| **3** | Virtual signature change | `Display(AeSysView*, EoGsRenderDevice*)` across all 11 primitive types | ✅ Complete |
+| **4** | Off-screen frame buffer (GDI) | Back buffer via `CreateCompatibleBitmap`; blit on paint | ✅ Complete |
+| **5** | Retained vertex buffer | `EoGsVertexBuffer` replacing `polyline::` namespace | ✅ Complete |
+| **6** | Direct2D backend | `EoGsRenderDeviceDirect2D` — path geometries, brush/stroke cache | |
+| **7** | D2D frame buffering | `BeginDraw`/`EndDraw`, resize handling, device loss recovery | |
+| **8** | Batch geometry submission | Group primitives by pen state; single path geometry per batch | |
+| **9** | GPU transform (optional D3D11) | `SetTransform` for 2D; vertex shader for 3D camera | |
+| **10** | Legacy cleanup | Remove GDI-only remnants, deprecate GDI backend (keep for printer) | |
+
+### Phase 1–3 Completion Summary
+- **Phase 1**: `EoGsRenderDevice.h` — 32 pure virtual methods covering all GDI call sites (line drawing, polygon fill, text, pixel, clip, pen/brush state, ROP2, transforms). Includes `GetCDC()` transitional escape hatch.
+- **Phase 2**: `EoGsRenderDeviceGdi.h/.cpp` — concrete GDI backend delegating all 32 methods to the wrapped `CDC*`.
+- **Phase 3**: `Display(AeSysView*, CDC*)` → `Display(AeSysView*, EoGsRenderDevice*)` across the entire call chain:
+  - 18 headers changed (11 primitives + EoGeLine + EoDbGroup + EoDbGroupList + EoDbLayer + AeSysDoc + AeSysView)
+  - 22 `.cpp` files changed. Primitives extract `CDC*` via `auto* deviceContext = renderDevice->GetCDC();`. Containers forward `renderDevice`.
+  - `AeSysView::OnDraw` and `OnUpdate` are the **boundary**: they create `EoGsRenderDeviceGdi renderDevice(deviceContext)` and pass `&renderDevice` downstream.
+  - 5 additional call sites wrapped: `EoViConstraints.cpp` (DisplayGrid), `EoDlgActiveViewKeyplan.cpp`, `EoDbTrappedGroups.cpp`, `WndProcPreview.cpp` (2 functions), `EoDlgSetupLineType.cpp`, `AeSysDoc::OnEditImageToClipboard`.
+  - **Functions that stay as `CDC*`**: `renderState.*`, `BackgroundImageDisplay`, `DisplayGrid`, `DisplayPixel`, `AeSys::InitGbls`. These will migrate in later phases.
+  - **Migrated in Phase 5**: `polyline::End` (was `__End/__Display`) now uses `EoGsRenderDevice*`. `DisplayText*` free functions now take `EoGsRenderDevice*` (were `CDC*`).
+
+### Phase 3→5 Call Chain Architecture
+```
+AeSysView::OnDraw(CDC* pDC)                    ← MFC entry point
+  └─ EoGsRenderDeviceGdi renderDevice(pDC)     ← BOUNDARY: CDC* → EoGsRenderDevice*
+     └─ AeSysDoc::DisplayAllLayers(view, &renderDevice)
+        └─ EoDbLayer::Display(view, renderDevice, ...)
+           └─ EoDbGroup::Display(view, renderDevice)
+              └─ EoDbPrimitive::Display(view, renderDevice)  ← virtual dispatch
+                 └─ auto* dc = renderDevice->GetCDC();       ← escape hatch for CDC* internals
+                    └─ renderState.SetPen(view, dc, ...)     ← still CDC* (Phase 6+ target)
+                    └─ polyline::End(view, renderDevice, ..) ← Phase 5: uses EoGsRenderDevice*
+                       └─ EoGsVertexBuffer::End()            ← renders via renderDevice
+```
+
+### Phase 4 Complete ✅ — Off-Screen Frame Buffer (GDI)
+`AeSysView` now owns a GDI back buffer (`CDC m_backBufferDC` + `CBitmap m_backBuffer`). Scene rendering goes into the memory DC; `OnDraw` blits the cached buffer to screen. A dirty flag (`m_sceneInvalid`) controls when full re-render occurs.
+
+| Sub-item | What changed | Key detail |
+|----------|-------------|------------|
+| **P4.1 — Back-buffer members** | `m_backBufferDC`, `m_backBuffer`, `m_backBufferSize`, `m_sceneInvalid` added to `AeSysView`. | `m_sceneInvalid` initialized `true`; buffer created on first `OnSize`. |
+| **P4.2 — RecreateBackBuffer** | Private helper creates compatible DC + bitmap, selects bitmap, sets dirty flag. | Called from `OnSize(cx, cy)`. Previous buffer cleaned up before recreation. |
+| **P4.3 — InvalidateScene** | Public method: sets `m_sceneInvalid = true` + `InvalidateRect(nullptr, FALSE)`. | Replaces all 30 former `InvalidateRect(nullptr, TRUE)` call sites. |
+| **P4.4 — OnDraw** | When `m_sceneInvalid`: fills buffer with `Eo::ViewBackgroundColor`, renders background image + grid + all layers into `m_backBufferDC`, clears flag. Always `BitBlt` clip rect to screen. Fallback path for pre-`OnSize` state. | Printing bypasses back buffer via `deviceContext->IsPrinting()`. |
+| **P4.5 — OnUpdate** | Hint-based incremental updates render into `m_backBufferDC` when available (was screen DC). After rendering, blits the full client rect to screen. Falls back to screen DC when no back buffer. | XOR erase/trap rendering preserved — operates on back buffer DC. |
+| **P4.6 — OnEraseBkgnd** | Returns `TRUE` — suppresses GDI background erase (back buffer handles clearing). | Eliminates flicker from erase+paint cycle. |
+
+#### Architecture
+```
+AeSysView::OnDraw(CDC* paintDC)                 ← MFC entry point
+  ├─ IsPrinting()? → render directly to printer DC, return
+  ├─ m_sceneInvalid && backBuffer?
+  │   └─ FillSolidRect(Eo::ViewBackgroundColor)
+  │   └─ BackgroundImageDisplay(&m_backBufferDC)
+  │   └─ DisplayGrid(&m_backBufferDC)
+  │   └─ EoGsRenderDeviceGdi renderDevice(&m_backBufferDC)
+  │   └─ document->DisplayAllLayers(this, &renderDevice)
+  │   └─ m_sceneInvalid = false
+  └─ BitBlt(clipRect → paintDC ← m_backBufferDC)
+```
+- **No primitive or container signature changes** — pure `AeSysView` modification.
+- **Rubberband**: Still draws via XOR on the screen DC in `OnMouseMove` — overlays the blitted buffer. Will transition to alpha-blended overlay in D2D phase.
+- **`OnUpdate` incremental hints**: Rendered into back buffer, then blitted to screen. The back buffer accumulates incremental changes between full repaints.
+
+### Phase 5 Complete ✅ — Retained Vertex Buffer (EoGsVertexBuffer)
+The `polyline::` namespace mutable state (`EoGePoint4dArray pts_` + `bool LoopLine`) is encapsulated in `EoGsVertexBuffer`. Rendering calls go through `EoGsRenderDevice*` instead of `CDC*`, eliminating the GDI dependency from the polyline and text rendering pipelines.
+
+| Sub-item | What changed | Key detail |
+|----------|-------------|------------|
+| **P5.1 — EoGsVertexBuffer class** | New class with `BeginLineStrip/Loop()`, `SetVertex()`, `End()`, `SelectUsing*()` methods. `m_points` (EoGePoint4dArray) + `m_isLoop` (bool) replace file-scope state. | `End()` renders via `EoGsRenderDevice*` (`MoveTo`/`LineTo`/`Polyline`). `DisplayDashPattern()` private method handles named linetype rendering. |
+| **P5.2 — Global instance** | File-scope `EoGsVertexBuffer vertexBuffer_` in `EoGePolyline.cpp`. | Single-threaded, non-reentrant — same as the former `pts_` / `LoopLine`. |
+| **P5.3 — polyline:: delegation** | All `polyline::` functions are thin one-line wrappers delegating to `vertexBuffer_`. | `GeneratePointsForNPoly`, `TessellateArcSegment`, explicit-points `SelectUsingRectangle` remain pure free functions. |
+| **P5.4 — Call-site migration** | `polyline::End(view, renderDevice, lineType, lineTypeName)` replaces all former `__End(view, dc, ...)` calls. 8 call sites across 7 `.cpp` files. | Linetype name passed for name-based lookup; index used as fallback for V1 PEG files. |
+| **P5.5 — DisplayText* migration** | `DisplayText`, `DisplayTextSegment`, `DisplayTextSegmentUsingStrokeFont`, `DisplayTextSegmentUsingTrueTypeFont`, `DisplayTextWithFormattingCharacters` — signatures changed from `CDC*` to `EoGsRenderDevice*` in both header and implementations. | `EoDbDimension::Display()` updated to pass `renderDevice`. TrueType path still extracts `CDC*` via `GetCDC()` for GDI font rendering. |
 
 ### EoGsRenderDevice Interface Design Principles
 - Methods accept arrays/spans, not single points — batch-oriented.
@@ -824,11 +887,11 @@ Geometry math (`EoGeTransformMatrix`, `EoGeVector3d`, `EoGePoint3d`, `EoGeLine`)
 | File | Role |
 |------|------|
 | `Documentation/OriginalGDIPipeline.md` | Permanent pre-migration GDI pipeline audit |
-| `EoGsRenderDevice.h` (new) | Abstract rendering interface |
-| `EoGsRenderDeviceGdi.h/.cpp` (new) | GDI backend implementation |
-| `EoGsRenderDeviceDirect2D.h/.cpp` (new) | Direct2D backend |
-| `EoGsVertexBuffer.h/.cpp` (new) | Retained vertex accumulator |
-| `EoDbPrimitive.h` | `Display()` virtual signature change |
-| `EoGsRenderState.h/.cpp` | Migrated into render device internals |
-| `EoGePolyline.h/.cpp` | Replaced by vertex buffer |
-| `AeSysView.h/.cpp` | Render device creation, frame buffer |
+| `EoGsRenderDevice.h` | Abstract rendering interface (32 pure virtuals + `GetCDC()` transitional) |
+| `EoGsRenderDeviceGdi.h/.cpp` | GDI backend implementation |
+| `EoGsRenderDeviceDirect2D.h/.cpp` (future) | Direct2D backend |
+| `EoGsVertexBuffer.h/.cpp` | Retained vertex buffer — rendering via `EoGsRenderDevice*` (Phase 5) |
+| `EoGePolyline.h/.cpp` | Thin `polyline::` wrappers delegating to global `EoGsVertexBuffer` (Phase 5) |
+| `EoDbPrimitive.h` | `Display()` virtual: `EoGsRenderDevice*` (changed in Phase 3) |
+| `EoGsRenderState.h/.cpp` | Pen/brush/linetype state — still `CDC*` (Phase 6+ target) |
+| `AeSysView.h/.cpp` | Render device creation boundary, future frame buffer host |

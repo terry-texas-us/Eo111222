@@ -13,6 +13,7 @@
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
 #include "EoDxfHatch.h"
+#include "EoGsRenderDevice.h"
 #include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
@@ -45,8 +46,9 @@ typedef struct tagFilAreaEdgLis {
   };
 } pFilAreaEdgLis;
 
-void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatrix& transformMatrix, const int iSets,
+void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTransformMatrix& transformMatrix, const int iSets,
     const int* iPtLstsId, EoGePoint3d* pta) {
+  auto* deviceContext = renderDevice->GetCDC();
   double dCurStrLen{};
   double dEps1{};
   double dMaxY{};
@@ -238,7 +240,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
               }
             } else {
               ln = tmInv * lnS;
-              ln.Display(view, deviceContext);
+              ln.Display(view, renderDevice);
             }
           }
           dRemDisToEdg -= dCurStrLen;
@@ -250,7 +252,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
           // Partial component of dash section must produced
           lnS.end.x = edg[iCurEdg + 1].xIntersection;
           ln = tmInv * lnS;
-          ln.Display(view, deviceContext);
+          ln.Display(view, renderDevice);
         }
         iCurEdg = iCurEdg + 2;
       }
@@ -464,7 +466,8 @@ EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
   return primitive;
 }
 
-void EoDbPolygon::Display(AeSysView* view, CDC* deviceContext) {
+void EoDbPolygon::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
+  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
 
   renderState.SetColor(deviceContext, color);
@@ -477,7 +480,7 @@ void EoDbPolygon::Display(AeSysView* view, CDC* deviceContext) {
 
   if (m_polygonStyle == EoDb::PolygonStyle::Hatch) {
     EoGeTransformMatrix transformMatrix(m_hatchOrigin, m_positiveX, m_positiveY);
-    DisplayFilAreaHatch(view, deviceContext, transformMatrix, 1, &iPtLstsId, m_vertices);
+    DisplayFilAreaHatch(view, renderDevice, transformMatrix, 1, &iPtLstsId, m_vertices);
   } else {  // Fill area interior style is hollow, solid or pattern
     EoGePoint4dArray PointsArray;
 

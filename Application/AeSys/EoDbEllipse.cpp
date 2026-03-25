@@ -13,6 +13,7 @@
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
+#include "EoGsRenderDevice.h"
 #include "EoDxfEntities.h"
 #include "EoDxfInterface.h"
 #include "EoGeLine.h"
@@ -436,9 +437,10 @@ void EoDbEllipse::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   m_sweepAngle -= dSwpAng;
 }
 
-void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
+void EoDbEllipse::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   if (Eo::IsGeometricallyZero(m_sweepAngle)) { return; }
 
+  auto* deviceContext = renderDevice->GetCDC();
   auto color = LogicalColor();
   auto lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
@@ -447,7 +449,7 @@ void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
 
   polyline::BeginLineStrip();
   GenPts(m_center, m_majorAxis, m_minorAxis, m_sweepAngle);
-  polyline::__End(view, deviceContext, lineType, lineTypeName);
+  polyline::End(view, renderDevice, lineType, lineTypeName);
 }
 
 void EoDbEllipse::GetAllPoints(EoGePoint3dArray& points) {

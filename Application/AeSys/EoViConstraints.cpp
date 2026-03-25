@@ -4,6 +4,7 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoGsRenderState.h"
+#include "EoGsRenderDeviceGdi.h"
 
 void AeSysView::InitializeConstraints() {
   m_AxisConstraintInfluenceAngle = 5.0;
@@ -125,6 +126,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
   if (DisplayGridWithLines()) {
     if (Eo::IsGeometricallyNonZero(m_XGridLineSpacing) && Eo::IsGeometricallyNonZero(m_YGridLineSpacing)) {
       EoGeLine ln;
+      EoGsRenderDeviceGdi renderDevice(deviceContext);
 
       int i;
       std::int16_t color = renderState.Color();
@@ -138,14 +140,14 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
       ln.end.z = m_GridOrigin.z;
       for (i = 0; i < m_MaximumDotsPerLine; i++) {
         ln.end.y = ln.begin.y;
-        ln.Display(this, deviceContext);
+        ln.Display(this, &renderDevice);
         ln.begin.y += m_YGridLineSpacing;
       }
       ln.begin.y = m_GridOrigin.y - dHalfPts * m_YGridLineSpacing;
       ln.end.y = m_GridOrigin.y + dHalfPts * m_YGridLineSpacing;
       for (i = 0; i < m_MaximumDotsPerLine; i++) {
         ln.end.x = ln.begin.x;
-        ln.Display(this, deviceContext);
+        ln.Display(this, &renderDevice);
         ln.begin.x += m_XGridLineSpacing;
       }
       renderState.SetPen(this, deviceContext, color, LineType);

@@ -16,7 +16,7 @@ EoDbLayer::EoDbLayer(const CString& name, State state)
 EoDbLayer::EoDbLayer(const CString& name, std::uint16_t state)
     : m_name{name}, m_state{state}, m_tracingState{}, m_color{1}, m_lineType{} {}
 
-void EoDbLayer::Display(AeSysView* view, CDC* deviceContext) {
+void EoDbLayer::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   EoDbPrimitive::SetLayerColor(ColorIndex());
   EoDbPrimitive::SetLayerLineTypeIndex(LineTypeIndex());
   EoDbPrimitive::SetLayerLineTypeName(m_lineType != nullptr ? std::wstring(m_lineType->Name()) : std::wstring{});
@@ -27,11 +27,11 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext) {
 
   pColTbl = (IsOpened() || IsWork() || IsActive()) ? Eo::ColorPalette : Eo::GrayPalette;
 
-  EoDbGroupList::Display(view, deviceContext);
+  EoDbGroupList::Display(view, renderDevice);
   pColTbl = pCurColTbl;
 }
-void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) {
-  ATLTRACE2(traceGeneral, 3, L"EoDbLayer<%p>::Display(%p, %p, %i) + Name: %ls\n", this, view, deviceContext,
+void EoDbLayer::Display(AeSysView* view, EoGsRenderDevice* renderDevice, bool identifyTrap) {
+  ATLTRACE2(traceGeneral, 3, L"EoDbLayer<%p>::Display(%p, %p, %i) + Name: %ls\n", this, view, renderDevice,
       identifyTrap, static_cast<LPCWSTR>(this->Name()));
 
   auto* document = AeSysDoc::GetDoc();
@@ -58,10 +58,10 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
           if (LayerIsDetectable) { document->AddGroupToAllViews(group); }
           if (identifyTrap && document->FindTrappedGroup(group) != 0) {
             EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor());
-            group->Display(view, deviceContext);
+            group->Display(view, renderDevice);
             EoDbPrimitive::SetSpecialColor(0);
           } else {
-            group->Display(view, deviceContext);
+            group->Display(view, renderDevice);
           }
         }
       }

@@ -4,7 +4,7 @@
 #include "EoGePoint4d.h"
 
 class AeSysView;
-class CDC;
+class EoGsRenderDevice;
 class CFile;
 class EoGeVector3d;
 
@@ -71,7 +71,7 @@ class EoGeLine {
   */
   int DirRelOfPt(EoGePoint3d point) const;
 
-  void Display(AeSysView* view, CDC* context) const;
+  void Display(AeSysView* view, EoGsRenderDevice* renderDevice) const;
 
   /** @brief Determines the extents of a line.
    * @param minExtent The minimum extent point of the line.

@@ -7,6 +7,7 @@
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGsRenderState.h"
+#include "EoGsRenderDeviceGdi.h"
 
 namespace {
 CBitmap* previewBitmap{};
@@ -76,7 +77,8 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   activeView->SetCameraPosition(activeView->CameraDirection());
 
   int savedRenderState = renderState.Save();
-  block->Display(activeView, &memoryContext);
+  EoGsRenderDeviceGdi renderDevice(&memoryContext);
+  block->Display(activeView, &renderDevice);
 
   activeView->PopViewTransform();
   activeView->ViewportPopActive();
@@ -125,7 +127,8 @@ void WndProcPreviewUpdateLayer(HWND previewWindow, EoDbGroupList* groups) {
   activeView->SetCameraPosition(activeView->CameraDirection());
 
   int savedRenderState = renderState.Save();
-  groups->Display(activeView, &memoryContext);
+  EoGsRenderDeviceGdi renderDevice(&memoryContext);
+  groups->Display(activeView, &renderDevice);
   renderState.Restore(&memoryContext, savedRenderState);
 
   activeView->PopViewTransform();

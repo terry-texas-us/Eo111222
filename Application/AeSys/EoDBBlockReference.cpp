@@ -145,7 +145,7 @@ EoDbPrimitive*& EoDbBlockReference::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbBlockReference(*this);
   return primitive;
 }
-void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
+void EoDbBlockReference::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   EoDbBlock* block{};
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return; }
 
@@ -163,7 +163,7 @@ void EoDbBlockReference::Display(AeSysView* view, CDC* deviceContext) {
       view->PushModelTransform();
       view->SetLocalModelTransform(transformMatrix);
 
-      block->Display(view, deviceContext);
+      block->Display(view, renderDevice);
 
       view->PopModelTransform();
     }

@@ -6,6 +6,8 @@
 #include "EoGePoint4d.h"
 #include "EoGeVector3d.h"
 
+class EoGsRenderDevice;
+
 namespace EoDb {
 enum class PegFileVersion : std::uint16_t;
 }  // namespace EoDb
@@ -57,7 +59,7 @@ class EoDbGroup : public CObList {
    */
   void ExplodeBlockReferences();
   void DeletePrimitivesAndRemoveAll();
-  void Display(AeSysView* view, CDC* deviceContext);
+  void Display(AeSysView* view, EoGsRenderDevice* renderDevice);
   bool FindAndRemovePrim(EoDbPrimitive* primitive);
   EoDbPrimitive* GetAt(POSITION position);
   int GetBlockRefCount(const CString& blockName);

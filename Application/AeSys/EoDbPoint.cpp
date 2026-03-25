@@ -13,6 +13,7 @@
 #include "EoDxfEntities.h"
 #include "EoDxfInterface.h"
 #include "EoGeLine.h"
+#include "EoGsRenderDevice.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
@@ -85,7 +86,8 @@ EoDbPrimitive*& EoDbPoint::Copy(EoDbPrimitive*& primitive) {
   return primitive;
 }
 
-void EoDbPoint::Display(AeSysView* view, CDC* context) {
+void EoDbPoint::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
+  auto* context = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
 
   COLORREF hotPenColor = app.PenColorsGetHot(color);

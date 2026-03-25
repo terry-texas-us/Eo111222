@@ -13,6 +13,7 @@
 #include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
@@ -91,7 +92,8 @@ EoDbPrimitive*& EoDbViewport::Copy(EoDbPrimitive*& primitive) {
   return primitive;
 }
 
-void EoDbViewport::Display(AeSysView* view, CDC* deviceContext) {
+void EoDbViewport::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
+  auto* deviceContext = renderDevice->GetCDC();
   // Minimal display: draw the viewport boundary rectangle in paper space.
   // Full paper-space clipping pipeline is deferred.
   const double halfWidth = m_width / 2.0;

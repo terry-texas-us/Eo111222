@@ -40,7 +40,7 @@ class EoDbViewport : public EoDbPrimitive {
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbViewport*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*& primitive) override;
-  void Display(AeSysView* view, CDC* deviceContext) override;
+  void Display(AeSysView* view, EoGsRenderDevice* renderDevice) override;
   void FormatExtra(CString& extra) override;
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;

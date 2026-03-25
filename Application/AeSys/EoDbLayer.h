@@ -61,8 +61,8 @@ class EoDbLayer : public EoDbGroupList {
 
   ~EoDbLayer() override {}
 
-  void Display(AeSysView* view, CDC* deviceContext);
-  void Display(AeSysView* view, CDC* deviceContext, bool identifyTrap);
+  void Display(AeSysView* view, EoGsRenderDevice* renderDevice);
+  void Display(AeSysView* view, EoGsRenderDevice* renderDevice, bool identifyTrap);
 
   [[nodiscard]] COLORREF ColorValue() const { return Eo::ColorPalette[m_color]; }
 

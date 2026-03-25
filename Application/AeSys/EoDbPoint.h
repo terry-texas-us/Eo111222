@@ -34,7 +34,7 @@ class EoDbPoint : public EoDbPrimitive {
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPoint*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
-  void Display(AeSysView* view, CDC* context) override;
+  void Display(AeSysView* view, EoGsRenderDevice* renderDevice) override;
   void ExportToDxf(EoDxfInterface* writer) const override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;

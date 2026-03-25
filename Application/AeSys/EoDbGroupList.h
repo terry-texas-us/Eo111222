@@ -5,6 +5,7 @@
 class EoDbCharacterCellDefinition;
 class EoDbGroup;
 class EoDbFontDefinition;
+class EoGsRenderDevice;
 
 class EoDbGroupList : public CObList {
  public:
@@ -26,7 +27,7 @@ class EoDbGroupList : public CObList {
   void AddToTreeViewControl(HWND hTree, HTREEITEM htiParent);
   void BreakPolylines();
   void DeleteGroupsAndRemoveAll();
-  void Display(AeSysView* view, CDC* deviceContext);
+  void Display(AeSysView* view, EoGsRenderDevice* renderDevice);
 
   /** @brief Replaces block reference primitives in all groups with the primitives from the referenced blocks,
    * transformed according to the block reference's properties.  This is a recursive process that continues until no

@@ -13,6 +13,7 @@
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGePolyline.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
@@ -63,7 +64,8 @@ EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
   return primitive;
 }
 
-void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
+void EoDbSpline::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
+  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
@@ -72,7 +74,7 @@ void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
 
   polyline::BeginLineStrip();
   GenPts(orderOfTheSpline, m_pts);
-  polyline::__End(view, deviceContext, lineType, lineTypeName);
+  polyline::End(view, renderDevice, lineType, lineTypeName);
 }
 
 void EoDbSpline::ExportToDxf(EoDxfInterface* writer) const {

@@ -55,7 +55,7 @@ class EoDbEllipse : public EoDbPrimitive {
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbEllipse*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
-  void Display(AeSysView* view, CDC* deviceContext) override;
+  void Display(AeSysView* view, EoGsRenderDevice* renderDevice) override;
   void ExportToDxf(EoDxfInterface* writer) const override;
   void GetAllPoints(EoGePoint3dArray& points) override;
   void FormatExtra(CString& str) override;

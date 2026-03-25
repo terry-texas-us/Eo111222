@@ -7,6 +7,7 @@
 #include "EoDbPolygon.h"
 #include "EoDlgActiveViewKeyplan.h"
 #include "EoGeLine.h"
+#include "EoGsRenderDeviceGdi.h"
 #include "Resource.h"
 
 HBITMAP EoDlgActiveViewKeyplan::m_hbmKeyplan = nullptr;
@@ -128,7 +129,8 @@ void EoDlgActiveViewKeyplan::Refresh() {
   m_ActiveView->ModelViewInitialize();
 
   EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Hollow);
-  AeSysDoc::GetDoc()->DisplayAllLayers(m_ActiveView, &dcMem);
+  EoGsRenderDeviceGdi renderDevice(&dcMem);
+  AeSysDoc::GetDoc()->DisplayAllLayers(m_ActiveView, &renderDevice);
   EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
 
   GetDlgItem(IDC_KEYPLAN_AREA)->InvalidateRect(0, TRUE);

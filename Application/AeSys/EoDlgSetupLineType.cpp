@@ -8,6 +8,7 @@
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
 #include "EoGsRenderState.h"
+#include "EoGsRenderDeviceGdi.h"
 #include "Resource.h"
 
 BEGIN_MESSAGE_MAP(EoDlgSetupLineType, CDialog)
@@ -111,7 +112,8 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
                         static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
 
           EoGeLine Line(EoGePoint3d(UMin, VExtent / 2.0, 0.0), EoGePoint3d(UMax, VExtent / 2.0, 0.0));
-          Line.Display(activeView, &deviceContext);
+          EoGsRenderDeviceGdi renderDevice(&deviceContext);
+          Line.Display(activeView, &renderDevice);
 
           activeView->PopViewTransform();
           activeView->ViewportPopActive();

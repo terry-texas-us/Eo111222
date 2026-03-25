@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <algorithm>
 #include <cassert>
@@ -43,6 +43,7 @@
 #include "EoGeVector3d.h"
 #include "EoGsModelTransform.h"
 #include "EoGsRenderState.h"
+#include "EoGsRenderDeviceGdi.h"
 #include "EoGsViewTransform.h"
 #include "MainFrm.h"
 #include "Resource.h"
@@ -640,34 +641,65 @@ void AeSysView::OnPaint() {
 void AeSysView::OnDraw(CDC* deviceContext) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnDraw(%08.8lx) +", this, deviceContext);
 
-  CRect Rect;
-  deviceContext->GetClipBox(Rect);
-  ATLTRACE2(traceGeneral, 3, L" ClipBox(%i, %i, %i, %i)\n", Rect.left, Rect.top, Rect.right, Rect.bottom);
+  // Printing bypasses the back buffer — render directly to the printer DC
+  if (deviceContext->IsPrinting()) {
+    auto* document = GetDocument();
+    assert(document != nullptr);
+    EoGsRenderDeviceGdi renderDevice(deviceContext);
+    document->DisplayAllLayers(this, &renderDevice);
+    return;
+  }
 
-  if (Rect.IsRectEmpty()) { return; }
+  CRect clipRect;
+  deviceContext->GetClipBox(clipRect);
+  ATLTRACE2(traceGeneral, 3, L" ClipBox(%i, %i, %i, %i)\n", clipRect.left, clipRect.top, clipRect.right, clipRect.bottom);
+
+  if (clipRect.IsRectEmpty()) { return; }
 
   try {
     auto* document = GetDocument();
     assert(document != nullptr);
-    if (m_ViewRendered) {
-    } else {
-      BackgroundImageDisplay(deviceContext);
-      DisplayGrid(deviceContext);
+
+    // If back buffer exists and scene is dirty, re-render the entire scene into the back buffer
+    if (m_backBufferDC.GetSafeHdc() != nullptr && m_sceneInvalid) {
+      CRect bufferRect(0, 0, m_backBufferSize.cx, m_backBufferSize.cy);
+      m_backBufferDC.FillSolidRect(bufferRect, Eo::ViewBackgroundColor);
+
+      if (!m_ViewRendered) {
+        BackgroundImageDisplay(&m_backBufferDC);
+        DisplayGrid(&m_backBufferDC);
+        EoGsRenderDeviceGdi renderDevice(&m_backBufferDC);
 #if defined(USING_STATE_PATTERN)
-      // Delegate core drawing to the current state (e.g., for mode-specific overlays or primitives)
-      auto* state = GetCurrentState();
-      if (state) {
-        state->OnDraw(this, deviceContext);
-      } else {
-        // Fallback to existing drawing if no state (e.g., during init)
-        document->DisplayAllLayers(this, deviceContext);
+        auto* state = GetCurrentState();
+        if (state) {
+          state->OnDraw(this, &m_backBufferDC);
+        } else {
+          document->DisplayAllLayers(this, &renderDevice);
+          document->DisplayUniquePoints();
+        }
+#else
+        document->DisplayAllLayers(this, &renderDevice);
+        document->DisplayUniquePoints();
+#endif
+      }
+      m_sceneInvalid = false;
+    }
+
+    // Blit back buffer to screen (or fall back to direct rendering if no back buffer yet)
+    if (m_backBufferDC.GetSafeHdc() != nullptr) {
+      deviceContext->BitBlt(clipRect.left, clipRect.top, clipRect.Width(), clipRect.Height(), &m_backBufferDC,
+                            clipRect.left, clipRect.top, SRCCOPY);
+    } else {
+      // Fallback: direct rendering before first OnSize delivers a back buffer
+      if (!m_ViewRendered) {
+        BackgroundImageDisplay(deviceContext);
+        DisplayGrid(deviceContext);
+        EoGsRenderDeviceGdi renderDevice(deviceContext);
+        document->DisplayAllLayers(this, &renderDevice);
         document->DisplayUniquePoints();
       }
-#else
-      document->DisplayAllLayers(this, deviceContext);
-      document->DisplayUniquePoints();
-#endif
     }
+
     UpdateStateInformation(All);
     ModeLineDisplay();
     ValidateRect(nullptr);
@@ -694,12 +726,12 @@ void AeSysView::OnInitialUpdate() {
  * @param hintObject The specific object related to the hint (e.g., the primitive or group that changed)
  * @param deviceContext The device context to use for drawing
  */
-void AeSysView::DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject, CDC* deviceContext) {
+void AeSysView::DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject, EoGsRenderDevice* renderDevice) {
   switch (hint) {
     case EoDb::kPrimitive:
     case EoDb::kPrimitiveSafe:
     case EoDb::kPrimitiveEraseSafe:
-      static_cast<EoDbPrimitive*>(hintObject)->Display(this, deviceContext);
+      static_cast<EoDbPrimitive*>(hintObject)->Display(this, renderDevice);
       break;
 
     case EoDb::kGroup:
@@ -707,19 +739,19 @@ void AeSysView::DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject
     case EoDb::kGroupEraseSafe:
     case EoDb::kGroupSafeTrap:
     case EoDb::kGroupEraseSafeTrap:
-      static_cast<EoDbGroup*>(hintObject)->Display(this, deviceContext);
+      static_cast<EoDbGroup*>(hintObject)->Display(this, renderDevice);
       break;
 
     case EoDb::kGroups:
     case EoDb::kGroupsSafe:
     case EoDb::kGroupsSafeTrap:
     case EoDb::kGroupsEraseSafeTrap:
-      static_cast<EoDbGroupList*>(hintObject)->Display(this, deviceContext);
+      static_cast<EoDbGroupList*>(hintObject)->Display(this, renderDevice);
       break;
 
     case EoDb::kLayer:
     case EoDb::kLayerErase:
-      static_cast<EoDbLayer*>(hintObject)->Display(this, deviceContext);
+      static_cast<EoDbLayer*>(hintObject)->Display(this, renderDevice);
       break;
 
     default:
@@ -730,30 +762,49 @@ void AeSysView::DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject
 void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint, hintObject);
 
-  // Pre-delegation setup: Configure device context based on hint (e.g., for safe/erase/trap rendering)
-  auto* deviceContext = GetDC();
-  auto backgroundColor = deviceContext->GetBkColor();
-  deviceContext->SetBkColor(Eo::ViewBackgroundColor);
+  // Choose the target DC: back buffer if available, otherwise screen DC
+  CDC* targetDC{};
+  CDC* screenDC{};
+  if (m_backBufferDC.GetSafeHdc() != nullptr) {
+    targetDC = &m_backBufferDC;
+  } else {
+    screenDC = GetDC();
+    targetDC = screenDC;
+  }
+
+  auto backgroundColor = targetDC->GetBkColor();
+  targetDC->SetBkColor(Eo::ViewBackgroundColor);
   int savedRenderState{};
   int drawMode{};
   if ((hint & EoDb::kSafe) == EoDb::kSafe) { savedRenderState = renderState.Save(); }
-  if ((hint & EoDb::kErase) == EoDb::kErase) { drawMode = renderState.SetROP2(deviceContext, R2_XORPEN); }
+  if ((hint & EoDb::kErase) == EoDb::kErase) { drawMode = renderState.SetROP2(targetDC, R2_XORPEN); }
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor()); }
 
+  EoGsRenderDeviceGdi renderDevice(targetDC);
   bool isHandledByState{};
 #if defined(USING_STATE_PATTERN)
-  // Core delegation: Give the current state first crack at handling the update
   auto* state = GetCurrentState();
   if (state) { isHandledByState = state->OnUpdate(this, sender, hint, hintObject); }
 #endif
-  if (!isHandledByState) { DisplayUsingHint(sender, hint, hintObject, deviceContext); }
+  if (!isHandledByState) { DisplayUsingHint(sender, hint, hintObject, &renderDevice); }
 
-  // Post-delegation cleanup: Restore any modified device context settings
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(0); }
-  if ((hint & EoDb::kErase) == EoDb::kErase) { renderState.SetROP2(deviceContext, drawMode); }
-  if ((hint & EoDb::kSafe) == EoDb::kSafe) { renderState.Restore(deviceContext, savedRenderState); }
-  deviceContext->SetBkColor(backgroundColor);
-  ReleaseDC(deviceContext);
+  if ((hint & EoDb::kErase) == EoDb::kErase) { renderState.SetROP2(targetDC, drawMode); }
+  if ((hint & EoDb::kSafe) == EoDb::kSafe) { renderState.Restore(targetDC, savedRenderState); }
+  targetDC->SetBkColor(backgroundColor);
+
+  if (screenDC != nullptr) {
+    ReleaseDC(screenDC);
+  } else {
+    // Rendered into back buffer — blit the updated region to screen
+    auto* dc = GetDC();
+    if (dc != nullptr) {
+      CRect clientRect;
+      GetClientRect(clientRect);
+      dc->BitBlt(0, 0, clientRect.Width(), clientRect.Height(), &m_backBufferDC, 0, 0, SRCCOPY);
+      ReleaseDC(dc);
+    }
+  }
 }
 
 void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
@@ -836,10 +887,9 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
 // Window messages ////////////////////////////////////////////////////////////
 void AeSysView::OnContextMenu(CWnd*, CPoint point) { app.ShowPopupMenu(IDR_CONTEXT_MENU, point, this); }
 
-BOOL AeSysView::OnEraseBkgnd(CDC* deviceContext) {
-  // @todo Add your message handler code here and/or call default
-
-  return __super::OnEraseBkgnd(deviceContext);
+BOOL AeSysView::OnEraseBkgnd([[maybe_unused]] CDC* deviceContext) {
+  // Suppress GDI background erase — the off-screen back buffer covers the entire client area via BitBlt.
+  return TRUE;
 }
 
 void AeSysView::DoCustomMouseClick(const CString& characters) {
@@ -940,7 +990,7 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
     m_ViewTransform.SetPosition(m_ViewTransform.Direction());
     m_ViewTransform.BuildTransformMatrix();
 
-    InvalidateRect(nullptr, TRUE);  // Redraw view
+    InvalidateScene();  // Redraw view
   }
   DisplayOdometer();
 
@@ -1031,6 +1081,33 @@ BOOL AeSysView::OnMouseWheel(UINT flags, std::int16_t zDelta, CPoint point) {
   return __super::OnMouseWheel(flags, zDelta, point);
 }
 
+void AeSysView::RecreateBackBuffer(int width, int height) {
+  if (width <= 0 || height <= 0) { return; }
+
+  auto* screenDC = GetDC();
+  if (screenDC == nullptr) { return; }
+
+  // Delete previous back buffer resources
+  if (m_backBufferDC.GetSafeHdc() != nullptr) {
+    m_backBufferDC.SelectObject(static_cast<CBitmap*>(nullptr));
+    m_backBuffer.DeleteObject();
+    m_backBufferDC.DeleteDC();
+  }
+
+  m_backBufferDC.CreateCompatibleDC(screenDC);
+  m_backBuffer.CreateCompatibleBitmap(screenDC, width, height);
+  m_backBufferDC.SelectObject(&m_backBuffer);
+  m_backBufferSize.SetSize(width, height);
+  m_sceneInvalid = true;
+
+  ReleaseDC(screenDC);
+}
+
+void AeSysView::InvalidateScene() {
+  m_sceneInvalid = true;
+  InvalidateRect(nullptr, FALSE);
+}
+
 void AeSysView::OnSize(UINT type, int cx, int cy) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>OnSize(%i, %i, %i)\n", this, type, cx, cy);
 
@@ -1038,6 +1115,7 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
     SetViewportSize(cx, cy);
     m_ViewTransform.Initialize(m_Viewport);
     m_OverviewViewTransform = m_ViewTransform;
+    RecreateBackBuffer(cx, cy);
   }
 }
 
@@ -1219,7 +1297,7 @@ void AeSysView::DoCameraRotate(int rotationDirection) {
     m_ViewTransform.SetPosition(position);
     m_ViewTransform.SetViewUp(v);
     m_ViewTransform.BuildTransformMatrix();
-    InvalidateRect(nullptr, TRUE);
+    InvalidateScene();
   } catch (const std::domain_error& error) {
     ::MessageBoxA(nullptr, error.what(), "Camera Rotate Error", MB_ICONWARNING | MB_OK);
     return;
@@ -1246,7 +1324,7 @@ void AeSysView::DoWindowPan(double ratio) {
   m_ViewTransform.BuildTransformMatrix();
 
   SetCursorPosition(cursorPosition);
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnSetupScale() {
@@ -1262,7 +1340,7 @@ void AeSysView::On3dViewsTop() {
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
 
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::On3dViewsBottom() {
@@ -1271,7 +1349,7 @@ void AeSysView::On3dViewsBottom() {
   m_ViewTransform.SetViewUp(EoGeVector3d::positiveUnitY);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::On3dViewsLeft() {
@@ -1280,7 +1358,7 @@ void AeSysView::On3dViewsLeft() {
   m_ViewTransform.SetViewUp(EoGeVector3d::positiveUnitZ);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::On3dViewsRight() {
@@ -1289,7 +1367,7 @@ void AeSysView::On3dViewsRight() {
   m_ViewTransform.SetViewUp(EoGeVector3d::positiveUnitZ);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::On3dViewsFront() {
@@ -1298,7 +1376,7 @@ void AeSysView::On3dViewsFront() {
   m_ViewTransform.SetViewUp(EoGeVector3d::positiveUnitZ);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::On3dViewsBack() {
@@ -1307,7 +1385,7 @@ void AeSysView::On3dViewsBack() {
   m_ViewTransform.SetViewUp(EoGeVector3d::positiveUnitZ);
   m_ViewTransform.EnablePerspective(false);
   m_ViewTransform.BuildTransformMatrix();
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::On3dViewsIsometric() {
@@ -1341,7 +1419,7 @@ void AeSysView::On3dViewsIsometric() {
     m_ViewTransform.SetViewUp(viewUp);
     m_ViewTransform.SetCenteredWindow(m_Viewport, 0.0, 0.0);
   }
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnCameraRotateLeft() { DoCameraRotate(ID_CAMERA_ROTATELEFT); }
@@ -1367,17 +1445,17 @@ void AeSysView::OnViewLighting() {}
 
 void AeSysView::OnViewRendered() {
   m_ViewRendered = !m_ViewRendered;
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnViewTrueTypeFonts() {
   m_ViewTrueTypeFonts = !m_ViewTrueTypeFonts;
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnViewPenWidths() {
   m_ViewPenWidths = !m_ViewPenWidths;
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnViewSolid() {}
@@ -1393,22 +1471,22 @@ void AeSysView::OnViewWindow() {
 
 void AeSysView::OnViewWireframe() {
   m_ViewWireframe = !m_ViewWireframe;
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnViewWindowKeyplan() {
   EoDlgActiveViewKeyplan dlg(this);
   dlg.m_dRatio = m_Viewport.WidthInInches() / m_ViewTransform.UExtent();
 
-  if (dlg.DoModal() == IDOK) { InvalidateRect(nullptr, TRUE); }
+  if (dlg.DoModal() == IDOK) { InvalidateScene(); }
 }
 
 void AeSysView::OnViewOdometer() {
   m_ViewOdometer = !m_ViewOdometer;
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
-void AeSysView::OnViewRefresh() { InvalidateRect(nullptr, TRUE); }
+void AeSysView::OnViewRefresh() { InvalidateScene(); }
 
 void AeSysView::OnUpdateViewRendered(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewRendered); }
 
@@ -1448,18 +1526,18 @@ void AeSysView::OnWindowBest() {
     ViewZoomExtents();
 
     SetCursorPosition(Target);
-    InvalidateRect(nullptr, TRUE);
+    InvalidateScene();
   }
 }
 
 void AeSysView::OnWindowLast() {
   ExchangeActiveAndPreviousModelViews();
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnWindowSheet() {
   ModelViewInitialize();
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnWindowZoomIn() { DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() / 0.9); }
@@ -1469,7 +1547,7 @@ void AeSysView::OnWindowZoomOut() { DoWindowPan(m_Viewport.WidthInInches() / m_V
 void AeSysView::OnWindowPan() {
   CopyActiveModelViewToPreviousModelView();
   DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnWindowPanLeft() {
@@ -1481,7 +1559,7 @@ void AeSysView::OnWindowPanLeft() {
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnWindowPanRight() {
@@ -1493,7 +1571,7 @@ void AeSysView::OnWindowPanRight() {
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnWindowPanUp() {
@@ -1505,7 +1583,7 @@ void AeSysView::OnWindowPanUp() {
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnWindowPanDown() {
@@ -1517,7 +1595,7 @@ void AeSysView::OnWindowPanDown() {
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnWindowZoomSpecial() {
@@ -1528,7 +1606,7 @@ void AeSysView::OnWindowZoomSpecial() {
   if (dlg.DoModal() == IDOK) {
     CopyActiveModelViewToPreviousModelView();
     DoWindowPan(dlg.m_Ratio);
-    InvalidateRect(nullptr, TRUE);
+    InvalidateScene();
   }
 }
 
@@ -1864,7 +1942,7 @@ void AeSysView::OnBackgroundImageLoad() {
 
     BitmapFile.Load(dlg.GetPathName(), m_backgroundImageBitmap, m_backgroundImagePalette);
     m_viewBackgroundImage = true;
-    InvalidateRect(nullptr, TRUE);
+    InvalidateScene();
   }
 }
 
@@ -1874,13 +1952,13 @@ void AeSysView::OnBackgroundImageRemove() {
     m_backgroundImagePalette.DeleteObject();
     m_viewBackgroundImage = false;
 
-    InvalidateRect(nullptr, TRUE);
+    InvalidateScene();
   }
 }
 
 void AeSysView::OnViewBackgroundImage() {
   m_viewBackgroundImage = !m_viewBackgroundImage;
-  InvalidateRect(nullptr, TRUE);
+  InvalidateScene();
 }
 
 void AeSysView::OnUpdateViewBackgroundImage(CCmdUI* pCmdUI) {
@@ -2360,7 +2438,7 @@ void AeSysView::SetCursorPosition(const EoGePoint3d& position) {
     m_ViewTransform.SetPosition(m_ViewTransform.Direction());
     m_ViewTransform.BuildTransformMatrix();
 
-    InvalidateRect(nullptr, TRUE);
+    InvalidateScene();
 
     ndcPoint = EoGePoint4d(position);
     ModelViewTransformPoint(ndcPoint);

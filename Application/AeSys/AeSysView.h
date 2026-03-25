@@ -87,6 +87,12 @@ class AeSysView : public CView {
   EoGsViewport m_Viewport;
   EoGsViewTransform m_ViewTransform;
 
+  // Off-screen back buffer (Phase 4)
+  CDC m_backBufferDC;
+  CBitmap m_backBuffer;
+  CSize m_backBufferSize{0, 0};
+  bool m_sceneInvalid{true};
+
   CBitmap m_backgroundImageBitmap;
   CPalette m_backgroundImagePalette;
   EoDbPrimitive* m_EngagedPrimitive;
@@ -210,7 +216,7 @@ class AeSysView : public CView {
   void OnPrepareDC(CDC* deviceContext, CPrintInfo* printInformation) override;
   void OnEndPrinting(CDC* deviceContext, CPrintInfo* printInformation) override;
 
-  void DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject, CDC* deviceContext);
+  void DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject, EoGsRenderDevice* renderDevice);
 
   /** @brief Respond to updates from the document or other views.
    * This method is called by the MFC framework when the document or other views call UpdateAllViews.
@@ -395,6 +401,9 @@ class AeSysView : public CView {
    */
   void ExplodeAllBlockReferences();
 
+  /// @brief Marks the off-screen scene buffer as invalid, triggering a full re-render on the next paint.
+  void InvalidateScene();
+
   bool PenWidthsOn() const { return m_ViewPenWidths; }
   [[nodiscard]] double GetWorldScale() const { return m_WorldScale; }
   void SetWorldScale(double scale);
@@ -404,6 +413,12 @@ class AeSysView : public CView {
   auto RemoveGroup(EoDbGroup* group) { return m_VisibleGroupList.Remove(group); }
   void RemoveAllGroups() { m_VisibleGroupList.RemoveAll(); }
   void ResetView();
+
+ private:
+  /// @brief Recreates the off-screen back buffer to match the given dimensions.
+  void RecreateBackBuffer(int width, int height);
+
+ public:
   /// <summary> Deletes last group detectable in the this view.</summary>
   void DeleteLastGroup();
   auto GetFirstVisibleGroupPosition() const { return m_VisibleGroupList.GetHeadPosition(); }

@@ -16,6 +16,7 @@
 #include "EoGePolyline.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
 #if defined(USING_DDE)
@@ -110,12 +111,13 @@ EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
  * @param view Pointer to the AeSysView where the polyline will be displayed.
  * @param deviceContext Pointer to the CDC device context for rendering.
  */
-void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
-  ATLTRACE2(traceGeneral, 3, L"EoDbPolyline::Display(%p, %p)\n", view, deviceContext);
+void EoDbPolyline::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
+  ATLTRACE2(traceGeneral, 3, L"EoDbPolyline::Display(%p, %p)\n", view, renderDevice);
 
   const auto numberOfVertices = m_pts.GetSize();
   if (numberOfVertices < 2) { return; }
 
+  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
@@ -159,7 +161,7 @@ void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
   } else {
     for (auto i = 0; i < numberOfVertices; i++) { polyline::SetVertex(m_pts[i]); }
   }
-  polyline::__End(view, deviceContext, lineType, lineTypeName);
+  polyline::End(view, renderDevice, lineType, lineTypeName);
 }
 
 void EoDbPolyline::DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::int16_t color) const {

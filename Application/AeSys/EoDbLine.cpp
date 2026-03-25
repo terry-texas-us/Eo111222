@@ -8,6 +8,7 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDb.h"
+#include "EoGsRenderDevice.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbLine.h"
@@ -98,7 +99,8 @@ void EoDbLine::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   }
 }
 
-void EoDbLine::Display(AeSysView* view, CDC* deviceContext) {
+void EoDbLine::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
+  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
@@ -108,7 +110,7 @@ void EoDbLine::Display(AeSysView* view, CDC* deviceContext) {
   polyline::BeginLineStrip();
   polyline::SetVertex(m_line.begin);
   polyline::SetVertex(m_line.end);
-  polyline::__End(view, deviceContext, lineType, lineTypeName);
+  polyline::End(view, renderDevice, lineType, lineTypeName);
 }
 
 void EoDbLine::ExportToDxf(EoDxfInterface* writer) const {

@@ -38,11 +38,11 @@ void EoDbGroupList::ExplodeBlockReferences() {
   }
 }
 
-void EoDbGroupList::Display(AeSysView* view, CDC* deviceContext) {
+void EoDbGroupList::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    group->Display(view, deviceContext);
+    group->Display(view, renderDevice);
   }
 }
 

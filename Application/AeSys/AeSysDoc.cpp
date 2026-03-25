@@ -57,6 +57,8 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeUniquePoint.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
+#include "EoGsRenderDeviceGdi.h"
 #include "EoGsRenderState.h"
 #include "Hatch.h"
 #include "Lex.h"
@@ -690,8 +692,9 @@ int AeSysDoc::NumberOfGroupsInActiveLayers() {
   return static_cast<int>(count);
 }
 
-void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
-  ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view, deviceContext);
+void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice) {
+  auto* deviceContext = renderDevice->GetCDC();
+  ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view, renderDevice);
 
   try {
     bool identifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
@@ -707,11 +710,11 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
 
     for (int i = 0; i < GetLayerTableSize(); i++) {
       auto* layer = GetLayerTableLayerAt(i);
-      layer->Display(view, deviceContext, identifyTrap);
+      layer->Display(view, renderDevice, identifyTrap);
     }
 
     // When in paper space, render model-space entities through each viewport
-    if (m_activeSpace == EoDxf::Space::PaperSpace) { DisplayModelSpaceThroughViewports(view, deviceContext); }
+    if (m_activeSpace == EoDxf::Space::PaperSpace) { DisplayModelSpaceThroughViewports(view, renderDevice); }
 
     renderState.Restore(deviceContext, savedRenderState);
     EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
@@ -720,15 +723,16 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, CDC* deviceContext) {
   } catch (CException* e) { e->Delete(); }
 }
 
-void AeSysDoc::DisplayModelSpaceLayers(AeSysView* view, CDC* deviceContext) {
+void AeSysDoc::DisplayModelSpaceLayers(AeSysView* view, EoGsRenderDevice* renderDevice) {
   auto& layers = m_modelSpaceLayers;
   for (INT_PTR i = 0; i < layers.GetSize(); i++) {
     auto* layer = layers.GetAt(i);
-    if (layer != nullptr && !layer->IsOff()) { layer->Display(view, deviceContext); }
+    if (layer != nullptr && !layer->IsOff()) { layer->Display(view, renderDevice); }
   }
 }
 
-void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, CDC* deviceContext) {
+void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevice* renderDevice) {
+  auto* deviceContext = renderDevice->GetCDC();
   // Walk paper-space layers to find EoDbViewport primitives
   auto& paperLayers = m_paperSpaceLayers;
 
@@ -827,7 +831,7 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, CDC* deviceCon
 
         // Render model-space layers through this viewport
         int savedModelRenderState = renderState.Save();
-        DisplayModelSpaceLayers(view, deviceContext);
+        DisplayModelSpaceLayers(view, renderDevice);
         renderState.Restore(deviceContext, savedModelRenderState);
 
         // Restore the previous view transform
@@ -1657,7 +1661,9 @@ void AeSysDoc::OnEditImageToClipboard() {
   auto* activeView = AeSysView::GetActiveView();
 
   HDC hdcEMF = ::CreateEnhMetaFile(0, 0, 0, 0);
-  DisplayAllLayers(activeView, CDC::FromHandle(hdcEMF));
+  CDC* emfDC = CDC::FromHandle(hdcEMF);
+  EoGsRenderDeviceGdi renderDevice(emfDC);
+  DisplayAllLayers(activeView, &renderDevice);
   HENHMETAFILE hemf = ::CloseEnhMetaFile(hdcEMF);
 
   ::OpenClipboard(nullptr);

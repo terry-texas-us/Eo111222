@@ -134,11 +134,11 @@ void EoDbGroup::ExplodeBlockReferences() {
   } while (numberOfGroupReferences != 0);
 }
 
-void EoDbGroup::Display(AeSysView* view, CDC* deviceContext) {
+void EoDbGroup::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
-    primitive->Display(view, deviceContext);
+    primitive->Display(view, renderDevice);
   }
 }
 bool EoDbGroup::FindAndRemovePrim(EoDbPrimitive* primitive) {

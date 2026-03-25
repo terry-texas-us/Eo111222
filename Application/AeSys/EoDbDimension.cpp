@@ -13,6 +13,7 @@
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
+#include "EoGsRenderDevice.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -117,17 +118,18 @@ void EoDbDimension::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   SetDefaultNote();
 }
 
-void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
+void EoDbDimension::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
+  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
   renderState.SetPen(view, deviceContext, color, LogicalLineType(), LogicalLineTypeName(), m_lineWeight, m_lineTypeScale);
-  m_line.Display(view, deviceContext);
+  m_line.Display(view, renderDevice);
 
   renderState.SetColor(deviceContext, m_textColor);
 
   std::int16_t LineType = renderState.LineTypeIndex();
   renderState.SetLineType(deviceContext, 1);
 
-  DisplayText(view, deviceContext, m_fontDefinition, m_ReferenceSystem, m_text);
+  DisplayText(view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_text);
 
   renderState.SetLineType(deviceContext, LineType);
 }

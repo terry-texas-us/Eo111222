@@ -58,7 +58,7 @@ class EoDbPolygon : public EoDbPrimitive {
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbPolygon*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
-  void Display(AeSysView* view, CDC* deviceContext) override;
+  void Display(AeSysView* view, EoGsRenderDevice* renderDevice) override;
   void ExportToDxf(EoDxfInterface* writer) const override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;

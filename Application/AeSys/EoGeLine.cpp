@@ -12,6 +12,7 @@
 #include "EoGePolyline.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
 inline EoGeLine::EoGeLine(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint)
@@ -145,7 +146,7 @@ int EoGeLine::DirRelOfPt(EoGePoint3d pt) const {
   }
 }
 
-void EoGeLine::Display(AeSysView* view, CDC* deviceContext) const {
+void EoGeLine::Display(AeSysView* view, EoGsRenderDevice* renderDevice) const {
   std::int16_t lineTypeIndex = renderState.LineTypeIndex();
   const auto& lineTypeName = renderState.LineTypeName();
 
@@ -157,13 +158,13 @@ void EoGeLine::Display(AeSysView* view, CDC* deviceContext) const {
     if (EoGePoint4d::ClipLine(ndcPoints[0], ndcPoints[1])) {
       CPoint clientPoints[2]{};
       view->ProjectToClient(clientPoints, 2, ndcPoints);
-      deviceContext->Polyline(clientPoints, 2);
+      renderDevice->Polyline(clientPoints, 2);
     }
   } else {
     polyline::BeginLineStrip();
     polyline::SetVertex(begin);
     polyline::SetVertex(end);
-    polyline::__End(view, deviceContext, lineTypeIndex, lineTypeName);
+    polyline::End(view, renderDevice, lineTypeIndex, lineTypeName);
   }
 }
 

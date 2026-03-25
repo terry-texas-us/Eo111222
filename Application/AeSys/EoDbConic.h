@@ -167,9 +167,9 @@ class EoDbConic : public EoDbPrimitive {
    * and skips degenerate arcs or major axes. It sets the pen state and generates approximation vertices for rendering.
    *
    * @param view Pointer to the AeSysView where the conic will be displayed.
-   * @param deviceContext Pointer to the CDC device context used for rendering.
+   * @param renderDevice Pointer to the render device used for rendering.
    */
-  void Display(AeSysView* view, CDC* deviceContext) override;
+  void Display(AeSysView* view, EoGsRenderDevice* renderDevice) override;
   void GetAllPoints(EoGePoint3dArray& points) override;
   void FormatExtra(CString& extra) override;
   void FormatGeometry(CString& geometry) override;

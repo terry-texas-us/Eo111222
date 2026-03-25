@@ -168,6 +168,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
+    <ClCompile Include="EoGsRenderDeviceGdi.cpp" />
+    <ClCompile Include="EoGsVertexBuffer.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -281,7 +283,10 @@
     <ClInclude Include="EoGeVector3d.h" />
     <ClInclude Include="EoGsAbstractView.h" />
     <ClInclude Include="EoGsModelTransform.h" />
+    <ClInclude Include="EoGsRenderDevice.h" />
+    <ClInclude Include="EoGsRenderDeviceGdi.h" />
     <ClInclude Include="EoGsRenderState.h" />
+    <ClInclude Include="EoGsVertexBuffer.h" />
     <ClInclude Include="EoGsViewport.h" />
     <ClInclude Include="EoGsViewTransform.h" />
     <ClInclude Include="EoMfOutputDockablePane.h" />

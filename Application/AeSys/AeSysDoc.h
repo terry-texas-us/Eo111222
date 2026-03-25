@@ -233,7 +233,7 @@ class AeSysDoc : public CDocument {
   int NumberOfGroupsInWorkLayer();
   int NumberOfGroupsInActiveLayers();
   /// <summary>Displays drawing and determines which groups are detectable.</summary>
-  void DisplayAllLayers(AeSysView* view, CDC* deviceContext);
+  void DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice);
 
   /** @brief Renders model-space entities through each paper-space viewport.
    *
@@ -246,9 +246,9 @@ class AeSysDoc : public CDocument {
    *  4. Restores the view transform and removes the clip.
    *
    *  @param view  The active AeSysView providing transform and projection services.
-   *  @param deviceContext  The CDC to render into.
+   *  @param renderDevice  The render device to render into.
    */
-  void DisplayModelSpaceThroughViewports(AeSysView* view, CDC* deviceContext);
+  void DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevice* renderDevice);
 
   /** @brief Renders model-space layers directly (bypasses active-space routing).
    *
@@ -257,9 +257,9 @@ class AeSysDoc : public CDocument {
    *  for detectability or highlight trapped groups.
    *
    *  @param view  The active AeSysView.
-   *  @param deviceContext  The CDC to render into.
+   *  @param renderDevice  The render device to render into.
    */
-  void DisplayModelSpaceLayers(AeSysView* view, CDC* deviceContext);
+  void DisplayModelSpaceLayers(AeSysView* view, EoGsRenderDevice* renderDevice);
 
   // Layer Table interface
 

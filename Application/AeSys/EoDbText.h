@@ -53,7 +53,7 @@ class EoDbText : public EoDbPrimitive {
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbText*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
-  void Display(AeSysView* view, CDC* deviceContext) override;
+  void Display(AeSysView* view, EoGsRenderDevice* renderDevice) override;
   void ExportToDxf(EoDxfInterface* writer) const override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
@@ -114,17 +114,17 @@ class EoDbText : public EoDbPrimitive {
   void ExportAsMText(EoDxfInterface* writer) const;
 };
 
-void DisplayText(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem,
+void DisplayText(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem,
     const CString& text);
-void DisplayTextSegment(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd,
+void DisplayTextSegment(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text);
 /// <summary> Displays a text string using a stroke font.</summary>
-void DisplayTextSegmentUsingStrokeFont(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd,
+void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text);
 /// <summary> Attempts to display text is using true type font.</summary>
-bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd,
+bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text);
-void DisplayTextWithFormattingCharacters(AeSysView* view, CDC* deviceContext, EoDbFontDefinition& fd,
+void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, const CString& text);
 /// <summary> Determines the count of characters in string excluding formatting characters.</summary>
 int LengthSansFormattingCharacters(const CString& text);

@@ -13,6 +13,7 @@
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
+#include "EoGsRenderDeviceGdi.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
@@ -117,7 +118,9 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
     int savedRenderState = renderState.Save();
 
     auto enhancedMetafileContext = ::CreateEnhMetaFileW(0, 0, 0, 0);
-    m_trappedGroups.Display(view, CDC::FromHandle(enhancedMetafileContext));
+    CDC* emfDC = CDC::FromHandle(enhancedMetafileContext);
+    EoGsRenderDeviceGdi renderDevice(emfDC);
+    m_trappedGroups.Display(view, &renderDevice);
     auto enhancedMetafileHandle = ::CloseEnhMetaFile(enhancedMetafileContext);
     ::SetClipboardData(CF_ENHMETAFILE, enhancedMetafileHandle);
 
