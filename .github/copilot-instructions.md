@@ -750,3 +750,85 @@ DXF organizes layouts through `BLOCK_RECORD` entries + `*Model_Space`/`*Paper_Sp
 | `AeSysDoc.cpp` | `DisplayModelSpaceThroughViewports` (clip + projection pipeline) |
 | `EoDbDxfInterface.h` / `.cpp` | `ConvertViewportEntity` (DXF import) |
 | `EoGsViewTransform.cpp` | `BuildTransformMatrix`, `SetCenteredWindow`, `SetWindow` |
+
+## GDI Rendering Pipeline (Original — Being Replaced by Direct2D)
+
+> Full audit preserved in `Documentation/OriginalGDIPipeline.md`.
+
+### Pipeline Layers
+1. **Frame dispatch** — `AeSysView::OnDraw(CDC*)` → `DisplayAllLayers(view, dc)`. No off-screen buffer; every `WM_PAINT` redraws from entity data.
+2. **Layer iteration** — `EoDbLayer::Display(view, dc)` sets static layer properties (color, linetype, weight, scale) and swaps `pColTbl` between color/gray palettes.
+3. **Primitive virtual dispatch** — `EoDbPrimitive::Display(AeSysView*, CDC*) = 0`. 11 concrete types each call `renderState.SetPen(...)` then emit geometry.
+4. **Geometry emission** — `polyline::BeginLineStrip/Loop()` → `SetVertex()` → `__End()`. File-scope `EoGePoint4dArray pts_` accumulates vertices (OpenGL 1.x heritage). `__End` dispatches to `__Display` for named dash patterns or to `MoveTo`/`LineTo` for solid.
+5. **Rasterization** — `ModelViewTransformPoints` → `ClipLine` → `ProjectToClient` → GDI calls: `MoveTo`/`LineTo`/`Polyline`, `Polygon`, `SetPixel`, `TextOutW`, `Ellipse`, `StretchBlt`. 8-slot LRU pen cache via `ManagePenResources`. `R2_XORPEN` for rubberband.
+
+### GDI Call-Site Summary
+- **27 `.cpp` files** pass `CDC*`. ~115 total `CDC*` parameter occurrences.
+- Core GDI APIs used: `MoveTo` (5), `LineTo` (7), `Polyline` (3), `Polygon` (5), `SetPixel` (12), `TextOutW` (1), `Ellipse` (1), `StretchBlt` (1), `Rectangle` (3), `CreatePen` (3), `SelectObject` (27), `SetROP2` (18), `GetDeviceCaps` (26).
+- No GDI+ usage anywhere in the codebase.
+
+### Transform Pipeline (CPU-Only, Rendering-API-Agnostic)
+```
+EoGePoint3d (world) → EoGsModelTransform (block stack) → EoGsViewTransform (camera)
+  → EoGePoint4d (NDC) → ClipLine/IsInView → EoGsViewport::ProjectToClient → CPoint → GDI
+```
+
+### What Does NOT Depend on GDI (No Changes Needed)
+Geometry math (`EoGeTransformMatrix`, `EoGeVector3d`, `EoGePoint3d`, `EoGeLine`), entity data model (everything except `Display()`), tessellation (`GenerateApproximationVertices`, `GenPts`, `TessellateArcSegment`), selection, serialization (PEG/DXF), transform pipeline (produces NDC; only final projection touches `CPoint`).
+
+### polyline Namespace — OpenGL Heritage
+- File-scope mutable state: `EoGePoint4dArray pts_` and `bool LoopLine`.
+- Single-threaded, non-reentrant, no batching, no retained geometry.
+- Every `Display()` call rebuilds the vertex array from scratch.
+- To be replaced by `EoGsVertexBuffer` during Direct2D migration.
+
+## Direct2D Migration — Architecture and Decisions
+
+### Choice: Direct2D (with D3D11 interop path)
+- **Confirmed**: Direct2D is the rendering backend. Will remain Win32/MFC.
+- D2D gives hardware-accelerated 2D with antialiasing. D3D11 interop opens the door to compute shaders for heavy tessellation later.
+- The abstraction layer (`EoGsRenderDevice`) should be API-agnostic enough that switching backends is possible, but Direct2D is the primary target.
+
+### Migration Strategy (10 Phases)
+
+| Phase | Goal | Key deliverable |
+|-------|------|-----------------|
+| **1** | Render abstraction interface | `EoGsRenderDevice` pure virtual interface replacing `CDC*` |
+| **2** | GDI backend (zero regression) | `EoGsRenderDeviceGdi` wrapping `CDC*` behind the interface |
+| **3** | Virtual signature change | `Display(AeSysView*, EoGsRenderDevice*)` across all 11 primitive types |
+| **4** | Off-screen frame buffer (GDI) | Back buffer via `CreateCompatibleBitmap`; blit on paint |
+| **5** | Retained vertex buffer | `EoGsVertexBuffer` replacing `polyline::` namespace |
+| **6** | Direct2D backend | `EoGsRenderDeviceDirect2D` — path geometries, brush/stroke cache |
+| **7** | D2D frame buffering | `BeginDraw`/`EndDraw`, resize handling, device loss recovery |
+| **8** | Batch geometry submission | Group primitives by pen state; single path geometry per batch |
+| **9** | GPU transform (optional D3D11) | `SetTransform` for 2D; vertex shader for 3D camera |
+| **10** | Legacy cleanup | Remove GDI-only remnants, deprecate GDI backend (keep for printer) |
+
+### EoGsRenderDevice Interface Design Principles
+- Methods accept arrays/spans, not single points — batch-oriented.
+- Color as `COLORREF` or `uint32_t` RGBA — no GDI object handles cross the boundary.
+- No `SelectObject`/`CreatePen` semantics leak through. Pen state set via `SetPen(color, width, dashPattern)`.
+- Clip regions via `PushClip`/`PopClip` — maps to `SaveDC`/`IntersectClipRect` (GDI) or `PushAxisAlignedClip` (D2D).
+- Text via `DrawText(position, text, font, color)` — maps to `TextOutW` (GDI) or `IDWriteTextLayout` (D2D).
+
+### Rubberband Strategy (Post-Migration)
+- No XOR drawing. D2D rubberband uses alpha-blended overlay geometry drawn after the scene.
+- Scene is in the frame buffer; rubberband is a transient overlay redrawn on `WM_MOUSEMOVE`.
+- Alternatively: separate D2D bitmap layer for the scene, draw rubberband directly.
+
+### Printer Fallback
+- `EoGsRenderDeviceGdi` remains available for `CDC*`-based printer output.
+- D2D can also render to `ID2D1DCRenderTarget` wrapping a printer DC if needed.
+
+### Key Files (Migration)
+| File | Role |
+|------|------|
+| `Documentation/OriginalGDIPipeline.md` | Permanent pre-migration GDI pipeline audit |
+| `EoGsRenderDevice.h` (new) | Abstract rendering interface |
+| `EoGsRenderDeviceGdi.h/.cpp` (new) | GDI backend implementation |
+| `EoGsRenderDeviceDirect2D.h/.cpp` (new) | Direct2D backend |
+| `EoGsVertexBuffer.h/.cpp` (new) | Retained vertex accumulator |
+| `EoDbPrimitive.h` | `Display()` virtual signature change |
+| `EoGsRenderState.h/.cpp` | Migrated into render device internals |
+| `EoGePolyline.h/.cpp` | Replaced by vertex buffer |
+| `AeSysView.h/.cpp` | Render device creation, frame buffer |

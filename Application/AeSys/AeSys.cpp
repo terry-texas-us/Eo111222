@@ -148,10 +148,6 @@ BOOL AeSys::InitInstance() {
 
   CWinAppEx::InitInstance();
 
-#if defined(USING_Direct2D)
-  if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_Direct2dFactory))) { return FALSE; }
-#endif
-
   // Register document templates
 
   auto* documentClass = RUNTIME_CLASS(AeSysDoc);

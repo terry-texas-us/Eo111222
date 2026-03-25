@@ -184,15 +184,6 @@ class AeSysView : public CView {
   void EnableGridSnap(bool snap);
   void ViewZoomExtents() {}
 
-#if defined(USING_Direct2D)
-  ID2D1HwndRenderTarget* m_RenderTarget;
-  ID2D1SolidColorBrush* m_LightSlateGrayBrush;
-  ID2D1SolidColorBrush* m_RedBrush;
-
-  HRESULT CreateDeviceResources();
-  void DiscardDeviceResources();
-#endif
-
  public:
   AeSysDoc* GetDocument() const;
 

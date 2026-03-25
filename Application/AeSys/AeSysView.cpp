@@ -647,36 +647,6 @@ void AeSysView::OnDraw(CDC* deviceContext) {
   if (Rect.IsRectEmpty()) { return; }
 
   try {
-#if defined(USING_Direct2D)
-    HRESULT hr = S_OK;
-
-    hr = CreateDeviceResources();
-
-    if (SUCCEEDED(hr)) {
-      m_RenderTarget->BeginDraw();
-      m_RenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
-      m_RenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::Black));
-
-      D2D1_SIZE_F rtSize = m_RenderTarget->GetSize();
-
-      m_RenderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE::D2D1_ANTIALIAS_MODE_ALIASED);
-
-      D2D1_RECT_F rectangle1 = D2D1::RectF(
-          rtSize.width / 2 - 50.0f, rtSize.height / 2 - 50.0f, rtSize.width / 2 + 50.0f, rtSize.height / 2 + 50.0f);
-      D2D1_RECT_F rectangle2 = D2D1::RectF(
-          rtSize.width / 2 - 100.0f, rtSize.height / 2 - 100.0f, rtSize.width / 2 + 100.0f, rtSize.height / 2 + 100.0f);
-
-      m_RenderTarget->FillRectangle(&rectangle1, m_RedBrush);
-      m_RenderTarget->DrawRectangle(&rectangle2, m_LightSlateGrayBrush);
-
-      hr = m_RenderTarget->EndDraw();
-    }
-    if (hr == D2DERR_RECREATE_TARGET) {
-      hr = S_OK;
-      DiscardDeviceResources();
-    }
-#endif
-
     auto* document = GetDocument();
     assert(document != nullptr);
     if (m_ViewRendered) {
@@ -708,11 +678,6 @@ void AeSysView::OnInitialUpdate() {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnInitialUpdate()\n", this);
 
   SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(Eo::ViewBackgroundColor));
-
-#if defined(USING_Direct2D)
-  m_RenderTarget = nullptr;
-  CreateDeviceResources();
-#endif
 
   CView::OnInitialUpdate();
 #if defined(USING_STATE_PATTERN)
@@ -1072,9 +1037,6 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
   if (cx && cy) {
     SetViewportSize(cx, cy);
     m_ViewTransform.Initialize(m_Viewport);
-#if defined(USING_Direct2D)
-    if (m_RenderTarget) { m_RenderTarget->Resize(D2D1::SizeU(cx, cy)); }
-#endif
     m_OverviewViewTransform = m_ViewTransform;
   }
 }
@@ -2701,34 +2663,3 @@ void AeSysView::OnUpdateModePipe(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentM
 void AeSysView::OnUpdateModePower(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_POWER); }
 
 void AeSysView::OnUpdateModeTrap(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_TRAP); }
-
-#if defined(USING_Direct2D)
-HRESULT AeSysView::CreateDeviceResources() {
-  HRESULT hr = S_OK;
-
-  if (!m_RenderTarget) {
-    RECT rc;
-    GetClientRect(&rc);
-
-    D2D1_SIZE_U size = D2D1::SizeU(rc.right - rc.left, rc.bottom - rc.top);
-
-    HWND WindowHandle = GetSafeHwnd();
-    hr = app.m_Direct2dFactory->CreateHwndRenderTarget(
-        D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(WindowHandle, size), &m_RenderTarget);
-
-    if (SUCCEEDED(hr)) {
-      hr = m_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::LightSlateGray), &m_LightSlateGrayBrush);
-    }
-    if (SUCCEEDED(hr)) {
-      hr = m_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red, 0.3f), &m_RedBrush);
-    }
-  }
-  return hr;
-}
-
-void AeSysView::DiscardDeviceResources() {
-  SafeRelease(&m_RenderTarget);
-  SafeRelease(&m_LightSlateGrayBrush);
-  SafeRelease(&m_RedBrush);
-}
-#endif

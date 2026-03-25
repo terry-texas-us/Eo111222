@@ -101,11 +101,6 @@ class AeSys : public CWinAppEx {
  public:
   bool m_NodalModeAddGroups{true};
 
-#if defined(USING_Direct2D)
-  ID2D1Factory* m_Direct2dFactory;
-#endif
-
- public:
   void AddModeInformationToMessageList();
   void AddStringToMessageList(const std::wstring& message);
   void AddStringToMessageList(const wchar_t* message);

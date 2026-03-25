@@ -34,38 +34,6 @@
     "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
 #endif
-
-#if defined(USING_Direct2D)
-#include <d2d1.h>
-#include <d2d1helper.h>
-#include <dwrite.h>
-#include <wincodec.h>
-
-template <class Interface>
-inline void SafeRelease(Interface** ppInterfaceToRelease) {
-  if (*ppInterfaceToRelease != nullptr) {
-    (*ppInterfaceToRelease)->Release();
-    (*ppInterfaceToRelease) = nullptr;
-  }
-}
-
-#ifndef Assert
-#if defined(DEBUG) || defined(_DEBUG)
-#define Assert(b)                                         \
-  do {                                                    \
-    if (!(b)) { OutputDebugStringA("Assert: " #b "\n"); } \
-  } while (0)
-#else
-#define Assert(b)
-#endif  // DEBUG || _DEBUG
-#endif
-
-#ifndef HINST_THISCOMPONENT
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-#define HINST_THISCOMPONENT ((HINSTANCE) & __ImageBase)
-#endif
-#endif
-
 #include <atltrace.h>
 const int traceGeneral = static_cast<int>(atlTraceGeneral);
 
