@@ -71,6 +71,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\Job File Format.md = Documentation\Job File Format.md
 		Documentation\OpenDesign_Specification_for_.dwg_files.pdf = Documentation\OpenDesign_Specification_for_.dwg_files.pdf
 		Documentation\Peg & Tra File Formats.md = Documentation\Peg & Tra File Formats.md
+		Documentation\Phase6_Direct2D_Backend_Plan.md = Documentation\Phase6_Direct2D_Backend_Plan.md
 		Documentation\Simplex PSF Format.md = Documentation\Simplex PSF Format.md
 	EndProjectSection
 EndProject
