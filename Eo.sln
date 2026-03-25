@@ -46,6 +46,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DXF Test FIles", "DXF Test 
 		DXF Test Files\LWPolyline_Bulge_Test.dxf = DXF Test Files\LWPolyline_Bulge_Test.dxf
 		DXF Test Files\Minimal_DXF_AC1021.dxf = DXF Test Files\Minimal_DXF_AC1021.dxf
 		DXF Test Files\RoomNumber_Block_Insert.dxf = DXF Test Files\RoomNumber_Block_Insert.dxf
+		DXF Test Files\Single Polyline (68 vertices) with global vertex width (2.5).dxf = DXF Test Files\Single Polyline (68 vertices) with global vertex width (2.5).dxf
+		DXF Test Files\Single Polyline with vertex widths.dxf = DXF Test Files\Single Polyline with vertex widths.dxf
 		DXF Test Files\Spline_Test.dxf = DXF Test Files\Spline_Test.dxf
 	EndProjectSection
 EndProject

@@ -121,6 +121,7 @@ inline void Read(CFile& file, EoDb::VerticalAlignment& verticalAlignment) {
 }
 
 [[nodiscard]] double ReadDouble(CFile& file);
+[[nodiscard]] std::int8_t ReadInt8(CFile& file);
 [[nodiscard]] std::int16_t ReadInt16(CFile& file);
 [[nodiscard]] std::int32_t ReadInt32(CFile& file);
 [[nodiscard]] EoGePoint3d ReadPoint3d(CFile& file);
@@ -130,6 +131,7 @@ inline void Read(CFile& file, EoDb::VerticalAlignment& verticalAlignment) {
 
 void Write(CFile& file, const CString& string, UINT codePage = CP_ACP);
 void WriteDouble(CFile& file, double number);
+void WriteInt8(CFile& file, std::int8_t number);
 void WriteInt16(CFile& file, std::int16_t number);
 void WriteInt32(CFile& file, std::int32_t number);
 void WriteUInt16(CFile& file, std::uint16_t number);

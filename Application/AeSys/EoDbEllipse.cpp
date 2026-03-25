@@ -441,12 +441,13 @@ void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
 
   auto color = LogicalColor();
   auto lineType = LogicalLineType();
+  const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, deviceContext, color, lineType);
+  renderState.SetPen(view, deviceContext, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   polyline::BeginLineStrip();
   GenPts(m_center, m_majorAxis, m_minorAxis, m_sweepAngle);
-  polyline::__End(view, deviceContext, lineType);
+  polyline::__End(view, deviceContext, lineType, lineTypeName);
 }
 
 void EoDbEllipse::GetAllPoints(EoGePoint3dArray& points) {

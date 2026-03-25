@@ -34,9 +34,10 @@ class EoDbLineTypeTable {
   std::int16_t LegacyLineTypeIndex(CString& name);
   std::int16_t LegacyLineTypeIndex(std::wstring& name);
 
-  /** @brief Looks up a line type by its name.
+  /** @brief Looks up a line type by its name (case-insensitive).
    *
    * This method searches for a line type in the collection based on its name.
+   * The comparison is case-insensitive because DXF linetype names are case-insensitive.
    *
    * @param name The name of the line type to look up.
    * @param lineType A reference to a pointer that will be set to the found line type, if any.

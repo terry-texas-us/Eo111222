@@ -147,8 +147,9 @@ int EoGeLine::DirRelOfPt(EoGePoint3d pt) const {
 
 void EoGeLine::Display(AeSysView* view, CDC* deviceContext) const {
   std::int16_t lineTypeIndex = renderState.LineTypeIndex();
+  const auto& lineTypeName = renderState.LineTypeName();
 
-  if (EoDbPrimitive::IsSupportedTyp(lineTypeIndex)) {
+  if (EoDbPrimitive::IsSupportedTyp(lineTypeIndex) && lineTypeName.empty()) {
     EoGePoint4d ndcPoints[] = {EoGePoint4d(begin), EoGePoint4d(end)};
 
     view->ModelViewTransformPoints(2, ndcPoints);
@@ -162,7 +163,7 @@ void EoGeLine::Display(AeSysView* view, CDC* deviceContext) const {
     polyline::BeginLineStrip();
     polyline::SetVertex(begin);
     polyline::SetVertex(end);
-    polyline::__End(view, deviceContext, lineTypeIndex);
+    polyline::__End(view, deviceContext, lineTypeIndex, lineTypeName);
   }
 }
 

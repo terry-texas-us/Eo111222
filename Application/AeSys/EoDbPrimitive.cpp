@@ -16,6 +16,9 @@
 
 std::int16_t EoDbPrimitive::sm_layerColor{COLOR_BYLAYER};
 std::int16_t EoDbPrimitive::sm_layerLineTypeIndex{LINETYPE_BYLAYER};
+std::wstring EoDbPrimitive::sm_layerLineTypeName{};
+EoDxfLineWeights::LineWeight EoDbPrimitive::sm_layerLineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
+double EoDbPrimitive::sm_layerLineTypeScale{1.0};
 std::int16_t EoDbPrimitive::sm_specialColor{};
 
 int EoDbPrimitive::sm_controlPointIndex{SHRT_MAX};
@@ -147,6 +150,11 @@ std::int16_t EoDbPrimitive::LogicalLineType() const noexcept {
   return lineTypeIndex;
 }
 
+const std::wstring& EoDbPrimitive::LogicalLineTypeName() const {
+  if (m_lineTypeIndex == LINETYPE_BYLAYER) { return sm_layerLineTypeName; }
+  return m_lineTypeName;
+}
+
 void EoDbPrimitive::PopulateDxfBaseProperties(EoDxfGraphic* entity) const {
   entity->m_layer = m_layerName;
   entity->m_color = m_color;
@@ -173,16 +181,16 @@ void EoDbPrimitive::ModifyState() {
 }
 
 void EoDbPrimitive::FormatExtra(CString& extra) {
-  extra.Format(L"Handle;%I64X\tOwner;%I64X\tLayer;%s\tColor;%s\tLineType;%s\tLineWeight;%hhd", m_handle, m_ownerHandle,
+  extra.Format(L"Handle;%I64X\tOwner;%I64X\tLayer;%s\tColor;%s\tLineType;%s\tLineWeight;%hd\tLineTypeScale;%g", m_handle, m_ownerHandle,
       m_layerName.empty() ? L"" : m_layerName.c_str(), FormatPenColor().GetString(), FormatLineType().GetString(),
-      static_cast<std::int8_t>(m_lineWeight));
+      static_cast<std::int16_t>(m_lineWeight), m_lineTypeScale);
 }
 
 void EoDbPrimitive::AddReportToMessageList(const EoGePoint3d&) {
   CString message;
-  message.Format(L"Handle: %I64X  Owner: %I64X  Layer: %s  Color: %s  LineType: %s  LineWeight: %hhd", m_handle,
+  message.Format(L"Handle: %I64X  Owner: %I64X  Layer: %s  Color: %s  LineType: %s  LineWeight: %hd  LineTypeScale: %g", m_handle,
       m_ownerHandle, m_layerName.empty() ? L"" : m_layerName.c_str(), FormatPenColor().GetString(),
-      FormatLineType().GetString(), static_cast<std::int8_t>(m_lineWeight));
+      FormatLineType().GetString(), static_cast<std::int16_t>(m_lineWeight), m_lineTypeScale);
   app.AddStringToMessageList(message);
 }
 
@@ -194,6 +202,14 @@ std::int16_t EoDbPrimitive::LayerLineTypeIndex() noexcept { return sm_layerLineT
 void EoDbPrimitive::SetLayerLineTypeIndex(std::int16_t lineTypeIndex) noexcept {
   sm_layerLineTypeIndex = lineTypeIndex;
 }
+const std::wstring& EoDbPrimitive::LayerLineTypeName() noexcept { return sm_layerLineTypeName; }
+void EoDbPrimitive::SetLayerLineTypeName(const std::wstring& lineTypeName) { sm_layerLineTypeName = lineTypeName; }
+EoDxfLineWeights::LineWeight EoDbPrimitive::LayerLineWeight() noexcept { return sm_layerLineWeight; }
+void EoDbPrimitive::SetLayerLineWeight(EoDxfLineWeights::LineWeight lineWeight) noexcept {
+  sm_layerLineWeight = lineWeight;
+}
+double EoDbPrimitive::LayerLineTypeScale() noexcept { return sm_layerLineTypeScale; }
+void EoDbPrimitive::SetLayerLineTypeScale(double lineTypeScale) noexcept { sm_layerLineTypeScale = lineTypeScale; }
 double& EoDbPrimitive::Rel() noexcept { return sm_RelationshipOfPoint; }
 std::int16_t EoDbPrimitive::SpecialColor() noexcept { return sm_specialColor; }
 void EoDbPrimitive::SetSpecialColor(std::int16_t specialColor) noexcept { sm_specialColor = specialColor; }

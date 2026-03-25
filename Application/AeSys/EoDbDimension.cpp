@@ -119,7 +119,7 @@ void EoDbDimension::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 
 void EoDbDimension::Display(AeSysView* view, CDC* deviceContext) {
   std::int16_t color = LogicalColor();
-  renderState.SetPen(view, deviceContext, color, LogicalLineType());
+  renderState.SetPen(view, deviceContext, color, LogicalLineType(), LogicalLineTypeName(), m_lineWeight, m_lineTypeScale);
   m_line.Display(view, deviceContext);
 
   renderState.SetColor(deviceContext, m_textColor);

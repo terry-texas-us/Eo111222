@@ -10,10 +10,14 @@ class EoDlgLineTypesSelection : public CDialogEx {
  public:
   EoDbLineTypeTable m_lineTypes;
   CListCtrl m_lineTypesListControl;
+  CListCtrl m_fileLineTypesListControl;
 
-  // Getter and setter for m_selectedLineType
   EoDbLineType* GetSelectedLineType() const { return m_selectedLineType; }
   void SetSelectedLineType(EoDbLineType* lineType) { m_selectedLineType = lineType; }
+  [[nodiscard]] bool IsSelectedFromFileList() const noexcept { return m_selectedFromFileList; }
+
+  /// @brief Returns the file-loaded line type table for the caller to merge selected entries.
+  EoDbLineTypeTable& FileLineTypes() noexcept { return m_fileLineTypes; }
 
   EoDlgLineTypesSelection(CWnd* parent = nullptr);
   EoDlgLineTypesSelection(EoDbLineTypeTable& lineTypes, CWnd* pParent = nullptr);
@@ -33,16 +37,20 @@ class EoDlgLineTypesSelection : public CDialogEx {
   void OnOK() override;
   BOOL PreTranslateMessage(MSG* message) override;
 
-  afx_msg void OnSize(UINT type, int x, int y);
+  afx_msg void OnBnClickedLoadFile();
 
   DECLARE_MESSAGE_MAP()
 
  private:
   EoDbLineType* m_selectedLineType{};
+  bool m_selectedFromFileList{};
+  EoDbLineTypeTable m_fileLineTypes;
 
   void PopulateList();
+  void PopulateFileList();
   afx_msg void OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result);
+  afx_msg void OnNMCustomDrawFileList(NMHDR* pNMHDR, LRESULT* result);
 
- public:
-  afx_msg void OnBnClickedOk();
+  /// @brief Shared implementation for NM_CUSTOMDRAW on both list controls.
+  void DrawLineTypePreview(CListCtrl& listControl, NMLVCUSTOMDRAW* listViewCustomDraw, LRESULT* result);
 };

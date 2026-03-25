@@ -452,9 +452,12 @@ void EoDlgFileManage::DrawItem(CDC& deviceContext, int itemID, int labelIndex, c
       deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle,
           LineTypeName, static_cast<UINT>(LineTypeName.GetLength()), nullptr);
     } break;
-    case LineWeight:
-      //::DrawLineWeight(deviceContext, itemRectangle, layer->lineWeight());
-      break;
+    case LineWeight: {
+      CString lineWeight;
+      lineWeight.Format(L"%hd", static_cast<std::int16_t>(layer->LineWeight()));
+      deviceContext.ExtTextOutW(itemRectangle.left + 8, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle,
+          lineWeight, static_cast<UINT>(lineWeight.GetLength()), nullptr);
+    } break;
   }
 }
 
@@ -599,6 +602,7 @@ void EoDlgFileManage::OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESULT* res
 
   EoDbPrimitive::SetLayerColor(layer->ColorIndex());
   EoDbPrimitive::SetLayerLineTypeIndex(layer->LineTypeIndex());
+  EoDbPrimitive::SetLayerLineTypeName(std::wstring(layer->LineTypeName()));
 
   WndProcPreviewUpdateLayer(m_PreviewWindowHandle, layer);
 

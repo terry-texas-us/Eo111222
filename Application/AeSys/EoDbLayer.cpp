@@ -19,6 +19,9 @@ EoDbLayer::EoDbLayer(const CString& name, std::uint16_t state)
 void EoDbLayer::Display(AeSysView* view, CDC* deviceContext) {
   EoDbPrimitive::SetLayerColor(ColorIndex());
   EoDbPrimitive::SetLayerLineTypeIndex(LineTypeIndex());
+  EoDbPrimitive::SetLayerLineTypeName(m_lineType != nullptr ? std::wstring(m_lineType->Name()) : std::wstring{});
+  EoDbPrimitive::SetLayerLineWeight(m_lineWeight);
+  EoDbPrimitive::SetLayerLineTypeScale(m_lineTypeScale);
 
   COLORREF* pCurColTbl = pColTbl;
 
@@ -37,6 +40,9 @@ void EoDbLayer::Display(AeSysView* view, CDC* deviceContext, bool identifyTrap) 
     if (!IsOff()) {
       EoDbPrimitive::SetLayerColor(ColorIndex());
       EoDbPrimitive::SetLayerLineTypeIndex(LineTypeIndex());
+      EoDbPrimitive::SetLayerLineTypeName(m_lineType != nullptr ? std::wstring(m_lineType->Name()) : std::wstring{});
+      EoDbPrimitive::SetLayerLineWeight(m_lineWeight);
+      EoDbPrimitive::SetLayerLineTypeScale(m_lineTypeScale);
 
       COLORREF* pCurColTbl = pColTbl;
 

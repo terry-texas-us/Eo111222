@@ -219,7 +219,7 @@ AcDbSymbolTableRecord
 100
 AcDbLinetypeTableRecord
   2
-Continuous
+CONTINUOUS
  70
 0
   3
@@ -257,7 +257,7 @@ AcDbLayerTableRecord
  62
 7
   6
-Continuous
+CONTINUOUS
 370
 25
 390
@@ -277,7 +277,7 @@ RoomLabels
  62
 3
   6
-Continuous
+CONTINUOUS
 370
 25
 390

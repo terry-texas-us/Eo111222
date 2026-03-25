@@ -288,9 +288,14 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVe
 
     std::uint64_t layerHandle{};
     std::uint64_t layerOwnerHandle{};
+    EoDxfLineWeights::LineWeight layerLineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
+    double layerLineTypeScale{1.0};
     if (fileVersion == EoDb::PegFileVersion::AE2026) {
       layerHandle = EoDb::ReadUInt64(*this);
       layerOwnerHandle = EoDb::ReadUInt64(*this);
+      auto lineWeightDxfCode = EoDb::ReadInt16(*this);
+      layerLineWeight = EoDxfLineWeights::DxfIndexToLineWeight(lineWeightDxfCode);
+      layerLineTypeScale = EoDb::ReadDouble(*this);
     }
 
     if (document->FindLayerTableLayer(layerName) < 0) {
@@ -302,6 +307,8 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVe
       layer->SetColorIndex(colorIndex);
       layer->SetHandle(layerHandle);
       layer->SetOwnerHandle(layerOwnerHandle);
+      layer->SetLineWeight(layerLineWeight);
+      layer->SetLineTypeScale(layerLineTypeScale);
 
       EoDbLineType* lineType{};
       if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) {
@@ -448,9 +455,14 @@ void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion
 
       std::uint64_t layerHandle{};
       std::uint64_t layerOwnerHandle{};
+      EoDxfLineWeights::LineWeight layerLineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
+      double layerLineTypeScale{1.0};
       if (fileVersion == EoDb::PegFileVersion::AE2026) {
         layerHandle = EoDb::ReadUInt64(*this);
         layerOwnerHandle = EoDb::ReadUInt64(*this);
+        auto lineWeightDxfCode = EoDb::ReadInt16(*this);
+        layerLineWeight = EoDxfLineWeights::DxfIndexToLineWeight(lineWeightDxfCode);
+        layerLineTypeScale = EoDb::ReadDouble(*this);
       }
 
       if (document->FindLayerInSpace(layerName, EoDxf::Space::PaperSpace) == nullptr) {
@@ -459,6 +471,8 @@ void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion
         layer->SetColorIndex(colorIndex);
         layer->SetHandle(layerHandle);
         layer->SetOwnerHandle(layerOwnerHandle);
+        layer->SetLineWeight(layerLineWeight);
+        layer->SetLineTypeScale(layerLineTypeScale);
 
         EoDbLineType* lineType{};
         if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) { layer->SetLineType(lineType); }
@@ -684,6 +698,8 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileV
       if (fileVersion == EoDb::PegFileVersion::AE2026) {
         EoDb::WriteUInt64(*this, layer->Handle());
         EoDb::WriteUInt64(*this, layer->OwnerHandle());
+        EoDb::WriteInt16(*this, EoDxfLineWeights::LineWeightToDxfIndex(layer->LineWeight()));
+        EoDb::WriteDouble(*this, layer->LineTypeScale());
       }
     } else {
       numberOfLayers--;
@@ -731,6 +747,8 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fi
         if (fileVersion == EoDb::PegFileVersion::AE2026) {
           EoDb::WriteUInt64(*this, primitive->Handle());
           EoDb::WriteUInt64(*this, primitive->OwnerHandle());
+          EoDb::WriteInt16(*this, EoDxfLineWeights::LineWeightToDxfIndex(primitive->LineWeight()));
+          EoDb::WriteDouble(*this, primitive->LineTypeScale());
         }
         numberOfPrimitives++;
       }
@@ -824,6 +842,8 @@ void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersio
       if (fileVersion == EoDb::PegFileVersion::AE2026) {
         EoDb::WriteUInt64(*this, layer->Handle());
         EoDb::WriteUInt64(*this, layer->OwnerHandle());
+        EoDb::WriteInt16(*this, EoDxfLineWeights::LineWeightToDxfIndex(layer->LineWeight()));
+        EoDb::WriteDouble(*this, layer->LineTypeScale());
       }
     } else {
       numberOfLayers--;
@@ -921,6 +941,8 @@ bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive, EoDb::PegFileVersion fil
   if (fileVersion == EoDb::PegFileVersion::AE2026) {
     primitive->SetHandle(EoDb::ReadUInt64(file));
     primitive->SetOwnerHandle(EoDb::ReadUInt64(file));
+    primitive->SetLineWeight(EoDxfLineWeights::DxfIndexToLineWeight(EoDb::ReadInt16(file)));
+    primitive->SetLineTypeScale(EoDb::ReadDouble(file));
   }
   return true;
 }
@@ -979,6 +1001,12 @@ double EoDb::ReadDouble(CFile& file) {
   return number;
 }
 
+std::int8_t EoDb::ReadInt8(CFile& file) {
+  std::int8_t number;
+  file.Read(&number, sizeof(std::int8_t));
+  return number;
+}
+
 std::int16_t EoDb::ReadInt16(CFile& file) {
   std::int16_t number;
   file.Read(&number, sizeof(std::int16_t));
@@ -1019,6 +1047,7 @@ void EoDb::Write(CFile& file, const CString& string, UINT codePage) {
 }
 
 void EoDb::WriteDouble(CFile& file, double number) { file.Write(&number, sizeof(double)); }
+void EoDb::WriteInt8(CFile& file, std::int8_t number) { file.Write(&number, sizeof(std::int8_t)); }
 void EoDb::WriteInt16(CFile& file, std::int16_t number) { file.Write(&number, sizeof(std::int16_t)); }
 void EoDb::WriteInt32(CFile& file, std::int32_t number) { file.Write(&number, sizeof(std::int32_t)); }
 void EoDb::WriteUInt16(CFile& file, std::uint16_t number) { file.Write(&number, sizeof(std::uint16_t)); }

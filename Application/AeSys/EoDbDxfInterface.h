@@ -305,14 +305,14 @@ class EoDbDxfInterface : public EoDxfInterface {
     if (flag & 0x40) {
       // Polyface mesh — decompose face records into individual polygons (deferred to PEG V2)
       ATLTRACE2(traceGeneral, 1, L"EoDxfInterface::AddPolyline - polyface mesh skipped (flag 0x%04X)\n", flag);
-      countOfPolyline--;
+      countOfPolylineMesh--;
     } else if (flag & 0x10) {
       // Polygon mesh — not mappable to current primitives
       ATLTRACE2(traceGeneral, 1, L"EoDxfInterface::AddPolyline - polygon mesh skipped (flag 0x%04X)\n", flag);
-      countOfPolyline--;
+      countOfPolygonMesh--;
     } else if (flag & 0x08) {
       // 3D polyline — straightforward vertex chain
-      countOfPolyline++;
+      countOf3DPolyline++;
       if (m_inBlockDefinition) {
         ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddPolyline3D - block <%s>\n", m_blockName.c_str());
       } else {
@@ -321,7 +321,7 @@ class EoDbDxfInterface : public EoDxfInterface {
       ConvertPolyline3DEntity(polyline, m_document);
     } else {
       // 2D polyline — elevation + optional bulge/width
-      countOfPolyline++;
+      countOf2DPolyline++;
       if (m_inBlockDefinition) {
         ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddPolyline2D - block <%s>\n", m_blockName.c_str());
       } else {
@@ -647,8 +647,9 @@ class EoDbDxfInterface : public EoDxfInterface {
         dxfLayer.m_handle = layer->Handle();
         dxfLayer.m_colorNumber = layer->IsOff() ? static_cast<std::int16_t>(-std::abs(layer->ColorIndex()))
                                                 : static_cast<std::int16_t>(std::abs(layer->ColorIndex()));
-        dxfLayer.m_linetypeName = layer->LineType() != nullptr ? std::wstring(layer->LineTypeName()) : L"Continuous";
+        dxfLayer.m_linetypeName = layer->LineType() != nullptr ? std::wstring(layer->LineTypeName()) : L"CONTINUOUS";
         dxfLayer.m_plottingFlag = true;
+        dxfLayer.m_lineweightEnumValue = layer->LineWeight();
         m_dxfWriter->WriteLayer(&dxfLayer);
       }
     };
@@ -860,7 +861,10 @@ class EoDbDxfInterface : public EoDxfInterface {
   std::int16_t countOfMLeader{};
   std::int16_t countOfMText{};
   std::int16_t countOfPoint{};
-  std::int16_t countOfPolyline{};
+  std::int16_t countOfPolygonMesh{};
+  std::int16_t countOfPolylineMesh{};
+  std::int16_t countOf2DPolyline{};
+  std::int16_t countOf3DPolyline{};
   std::int16_t countOfRay{};
   std::int16_t countOfSolid{};
   std::int16_t countOfSpline{};

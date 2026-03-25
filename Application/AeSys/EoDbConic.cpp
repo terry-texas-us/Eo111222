@@ -430,11 +430,14 @@ void EoDbConic::Display(AeSysView* view, CDC* deviceContext) {
   // Skip if major axis is degenerate
   if (m_majorAxis.Length() < Eo::geometricTolerance) { return; }
 
-  renderState.SetPen(view, deviceContext, LogicalColor(), LogicalLineType());
+  std::int16_t lineType = LogicalLineType();
+  const auto& lineTypeName = LogicalLineTypeName();
+
+  renderState.SetPen(view, deviceContext, LogicalColor(), lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   polyline::BeginLineStrip();
   GenerateApproximationVertices(m_center, m_majorAxis);
-  polyline::__End(view, deviceContext, LogicalLineType());
+  polyline::__End(view, deviceContext, lineType, lineTypeName);
 }
 
 void EoDbConic::GetAllPoints(EoGePoint3dArray& points) {

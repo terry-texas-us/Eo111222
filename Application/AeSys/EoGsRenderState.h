@@ -1,9 +1,12 @@
 ﻿#pragma once
 
+#include <string>
+
 #include "Eo.h"
 #include "EoDb.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbFontDefinition.h"
+#include "EoDxfLineWeights.h"
 
 class AeSysView;
 
@@ -13,8 +16,10 @@ class EoGsRenderState {
   std::int16_t m_pointStyle{};
   std::int16_t m_color{7};
   std::int16_t m_LineTypeIndex{Eo::continuousLineTypeIndex};
+  std::wstring m_lineTypeName{};
   EoDb::PolygonStyle m_PolygonStyle{EoDb::PolygonStyle::Hollow};
   std::int16_t m_PolygonInteriorStyleIndex{};
+  double m_lineTypeScale{1.0};
 
  public:
   EoGsRenderState() = default;
@@ -41,12 +46,21 @@ class EoGsRenderState {
   void ManagePenResources(CDC* deviceContext, std::int16_t color, int width, std::int16_t lineType);
 
   void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType);
+  void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType,
+      const std::wstring& lineTypeName);
+  void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType,
+      const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight, double lineTypeScale);
 
   void SetColor(CDC* deviceContext, std::int16_t color);
   [[nodiscard]] std::int16_t Color() const { return m_color; }
 
   void SetLineType(CDC* deviceContext, std::int16_t lineType);
   [[nodiscard]] std::int16_t LineTypeIndex() const { return m_LineTypeIndex; }
+
+  void SetLineTypeName(std::wstring name) { m_lineTypeName = std::move(name); }
+  [[nodiscard]] const std::wstring& LineTypeName() const { return m_lineTypeName; }
+
+  [[nodiscard]] double LineTypeScale() const noexcept { return m_lineTypeScale; }
 
   void SetCharacterCellDefinition(EoDbCharacterCellDefinition& characterCellDefinition) {
     m_characterCellDefinition = characterCellDefinition;

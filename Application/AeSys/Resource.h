@@ -303,6 +303,8 @@
 #define IDC_LINE_TYPES_LIST             1455
 #define IDC_CHECK_CIRCLE                1456
 #define IDC_EDIT_POINT_SIZE             1457
+#define IDC_FILE_LINE_TYPES_LIST        1458
+#define IDC_LOAD_LINE_TYPES_FILE        1459
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -790,7 +792,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        345
 #define _APS_NEXT_COMMAND_VALUE         4904
-#define _APS_NEXT_CONTROL_VALUE         1458
+#define _APS_NEXT_CONTROL_VALUE         1460
 #define _APS_NEXT_SYMED_VALUE           500
 #endif
 #endif

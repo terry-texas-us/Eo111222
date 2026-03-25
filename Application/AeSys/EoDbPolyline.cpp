@@ -118,8 +118,12 @@ void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
 
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();
+  const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, deviceContext, color, lineType);
+  renderState.SetPen(view, deviceContext, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
+
+  // Render filled width outline underneath the centerline when width data is present
+  if (HasWidth()) { DisplayWidthFill(view, deviceContext, color); }
 
   if (IsClosed()) {
     polyline::BeginLineLoop();
@@ -154,7 +158,151 @@ void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
   } else {
     for (auto i = 0; i < numberOfVertices; i++) { polyline::SetVertex(m_pts[i]); }
   }
-  polyline::__End(view, deviceContext, lineType);
+  polyline::__End(view, deviceContext, lineType, lineTypeName);
+}
+
+void EoDbPolyline::DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::int16_t color) const {
+  const auto numberOfVertices = m_pts.GetSize();
+  if (numberOfVertices < 2) { return; }
+  if (m_startWidths.empty() && m_endWidths.empty()) { return; }
+
+  // Per-segment rendering: each segment is an independent filled trapezoid (4-point polygon)
+  // offset ±width/2 perpendicular to the segment direction. For bulge-arc segments the arc
+  // is tessellated first and each sub-segment gets its own quad with linearly-interpolated width.
+  // This matches AutoCAD/TrueView behavior where segments overlap at joints.
+
+  CBrush brush(pColTbl[color]);
+  auto* oldBrush = deviceContext->SelectObject(&brush);
+  auto* oldPen = static_cast<CPen*>(deviceContext->SelectStockObject(NULL_PEN));
+
+  // Renders a single sub-segment as a filled trapezoid
+  const auto renderQuad = [&](const EoGePoint3d& startPt, const EoGePoint3d& endPt,
+                              double halfStartWidth, double halfEndWidth) {
+    const EoGeVector3d segDirection(startPt, endPt);
+    if (segDirection.IsNearNull()) { return; }
+
+    // Perpendicular in XY plane: rotate direction 90° CCW → (-dy, dx, 0)
+    EoGeVector3d perpendicular(-segDirection.y, segDirection.x, 0.0);
+    if (perpendicular.IsNearNull()) { return; }
+    perpendicular.Unitize();
+
+    // Four corners: start-left, start-right, end-right, end-left (winding order for CDC::Polygon)
+    EoGePoint4dArray quadNdc;
+    quadNdc.SetSize(4);
+    quadNdc[0] = EoGePoint4d(startPt + perpendicular * halfStartWidth);
+    quadNdc[1] = EoGePoint4d(startPt - perpendicular * halfStartWidth);
+    quadNdc[2] = EoGePoint4d(endPt - perpendicular * halfEndWidth);
+    quadNdc[3] = EoGePoint4d(endPt + perpendicular * halfEndWidth);
+
+    view->ModelViewTransformPoints(quadNdc);
+    EoGePoint4d::ClipPolygon(quadNdc);
+
+    const auto clippedCount = static_cast<int>(quadNdc.GetSize());
+    if (clippedCount < 3) { return; }
+
+    std::vector<CPoint> clientPoints(static_cast<size_t>(clippedCount));
+    view->ProjectToClient(clientPoints.data(), quadNdc);
+    deviceContext->Polygon(clientPoints.data(), clippedCount);
+  };
+
+  const auto segmentCount = IsClosed() ? numberOfVertices : (numberOfVertices - 1);
+
+  for (INT_PTR segmentIndex = 0; segmentIndex < segmentCount; ++segmentIndex) {
+    const auto nextIndex = (segmentIndex + 1) % numberOfVertices;
+    const auto segIdx = static_cast<size_t>(segmentIndex);
+
+    const double segStartWidth = (segIdx < m_startWidths.size()) ? m_startWidths[segIdx] : 0.0;
+    const double segEndWidth = (segIdx < m_endWidths.size()) ? m_endWidths[segIdx] : 0.0;
+
+    const double bulge = (HasBulge() && segIdx < m_bulges.size()) ? m_bulges[segIdx] : 0.0;
+
+    if (std::abs(bulge) >= Eo::geometricTolerance) {
+      // Compute arc center for radial offsetting — same algorithm as TessellateArcSegment
+      const EoGeVector3d chord(m_pts[segmentIndex], m_pts[nextIndex]);
+      const double chordLength = chord.Length();
+
+      if (chordLength < Eo::geometricTolerance) { continue; }
+
+      const double includedAngle = 4.0 * std::atan(std::abs(bulge));
+      const double halfAngle = includedAngle / 2.0;
+      const double sinHalfAngle = std::sin(halfAngle);
+
+      if (std::abs(sinHalfAngle) < Eo::geometricTolerance) {
+        renderQuad(m_pts[segmentIndex], m_pts[nextIndex], segStartWidth / 2.0, segEndWidth / 2.0);
+        continue;
+      }
+
+      const double radius = (chordLength / 2.0) / sinHalfAngle;
+      const double sagitta = std::abs(bulge) * chordLength / 2.0;
+
+      EoGeVector3d chordUnit = chord;
+      chordUnit /= chordLength;
+
+      EoGeVector3d planeNormal = CrossProduct(chordUnit, EoGeVector3d::positiveUnitZ);
+      if (planeNormal.IsNearNull()) { planeNormal = CrossProduct(chordUnit, EoGeVector3d::positiveUnitY); }
+      if (planeNormal.IsNearNull()) {
+        renderQuad(m_pts[segmentIndex], m_pts[nextIndex], segStartWidth / 2.0, segEndWidth / 2.0);
+        continue;
+      }
+      planeNormal.Unitize();
+
+      EoGeVector3d perpDir = planeNormal;
+      if (bulge > 0.0) { perpDir *= -1.0; }
+
+      const double centerOffset = radius - sagitta;
+      const EoGePoint3d chordMidpoint = EoGePoint3d::Mid(m_pts[segmentIndex], m_pts[nextIndex]);
+      const EoGePoint3d arcCenter = chordMidpoint + perpDir * centerOffset;
+
+      // Tessellate the arc, then render each sub-segment using radial offsets from the arc
+      // center. Adjacent sub-segments share the same radial offset at their common point,
+      // producing true trapezoids with zero gaps along the curve.
+      std::vector<EoGePoint3d> arcPoints;
+      polyline::TessellateArcSegment(m_pts[segmentIndex], m_pts[nextIndex], bulge, arcPoints);
+
+      const auto arcCount = arcPoints.size();
+      EoGePoint3d prevPoint = m_pts[segmentIndex];
+      double prevHalfWidth = segStartWidth / 2.0;
+
+      for (size_t arcIndex = 0; arcIndex < arcCount; ++arcIndex) {
+        const double fraction = static_cast<double>(arcIndex + 1) / static_cast<double>(arcCount);
+        const double interpolatedHalfWidth = (segStartWidth + fraction * (segEndWidth - segStartWidth)) / 2.0;
+
+        // Radial unit vectors from arc center to each tessellation point
+        EoGeVector3d radialPrev(arcCenter, prevPoint);
+        EoGeVector3d radialCurr(arcCenter, arcPoints[arcIndex]);
+
+        if (!radialPrev.IsNearNull()) { radialPrev.Unitize(); }
+        if (!radialCurr.IsNearNull()) { radialCurr.Unitize(); }
+
+        // Build quad with radial offsets — true trapezoid aligned to arc curvature
+        EoGePoint4dArray quadNdc;
+        quadNdc.SetSize(4);
+        quadNdc[0] = EoGePoint4d(prevPoint + radialPrev * prevHalfWidth);
+        quadNdc[1] = EoGePoint4d(prevPoint - radialPrev * prevHalfWidth);
+        quadNdc[2] = EoGePoint4d(arcPoints[arcIndex] - radialCurr * interpolatedHalfWidth);
+        quadNdc[3] = EoGePoint4d(arcPoints[arcIndex] + radialCurr * interpolatedHalfWidth);
+
+        view->ModelViewTransformPoints(quadNdc);
+        EoGePoint4d::ClipPolygon(quadNdc);
+
+        const auto clippedCount = static_cast<int>(quadNdc.GetSize());
+        if (clippedCount >= 3) {
+          std::vector<CPoint> clientPoints(static_cast<size_t>(clippedCount));
+          view->ProjectToClient(clientPoints.data(), quadNdc);
+          deviceContext->Polygon(clientPoints.data(), clippedCount);
+        }
+
+        prevPoint = arcPoints[arcIndex];
+        prevHalfWidth = interpolatedHalfWidth;
+      }
+    } else {
+      // Straight segment — single trapezoid
+      renderQuad(m_pts[segmentIndex], m_pts[nextIndex], segStartWidth / 2.0, segEndWidth / 2.0);
+    }
+  }
+
+  deviceContext->SelectObject(oldPen);
+  deviceContext->SelectObject(oldBrush);
 }
 
 void EoDbPolyline::ExportToDxf(EoDxfInterface* writer) const {

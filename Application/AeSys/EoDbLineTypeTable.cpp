@@ -32,7 +32,7 @@ struct EoDbLineTypeSymbol {
 
 constexpr std::uint16_t maxNumberOfDashElementsDefault{8};
 
-const std::pair<const wchar_t*, const wchar_t*> legacyLineTypes[] = {{L"Null", L"0"}, {L"Continuous", L"Continuous"},
+const std::pair<const wchar_t*, const wchar_t*> legacyLineTypes[] = {{L"Null", L"0"}, {L"CONTINUOUS", L"CONTINUOUS"},
     {L"Dash2", L"2"}, {L"Dash", L"3"}, {L"DashX2", L"4"}, {L"Center2", L"5"}, {L"DashX2-dot", L"6"}, {L"Divide2", L"7"},
     {L"DashX2-triple-dot", L"8"}, {L"Dot", L"9"}, {L"Center", L"10"}, {L"DashX4-dot", L"11"}, {L"Divide", L"12"},
     {L"DashX4-triple-dot", L"13"}, {L"CenterX2", L"14"}, {L"DashX8-dot", L"15"}, {L"DivideX2", L"16"},
@@ -111,8 +111,17 @@ std::int16_t EoDbLineTypeTable::LegacyLineTypeIndex(std::wstring& name) {
 
 bool EoDbLineTypeTable::Lookup(const CString& name, EoDbLineType*& lineType) {
   lineType = nullptr;
-  m_MapLineTypes.Lookup(name, lineType);
-  return (lineType != nullptr);
+  POSITION position = m_MapLineTypes.GetStartPosition();
+  while (position != nullptr) {
+    CString key;
+    EoDbLineType* candidate{};
+    m_MapLineTypes.GetNextAssoc(position, key, candidate);
+    if (key.CompareNoCase(name) == 0) {
+      lineType = candidate;
+      return true;
+    }
+  }
+  return false;
 }
 
 bool EoDbLineTypeTable::LookupUsingLegacyIndex(std::uint16_t index, EoDbLineType*& lineType) {

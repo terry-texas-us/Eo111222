@@ -117,8 +117,22 @@ void __Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& pointsArra
   }
 }
 
-void __End(AeSysView* view, CDC* deviceContext, std::int16_t lineTypeIndex) {
-  if (EoDbPrimitive::IsSupportedTyp(lineTypeIndex)) {
+void __End(AeSysView* view, CDC* deviceContext, std::int16_t lineTypeIndex, const std::wstring& lineTypeName) {
+  // Try name-based lookup first for non-Continuous linetypes
+  if (!lineTypeName.empty() && _wcsicmp(lineTypeName.c_str(), L"CONTINUOUS") != 0
+      && _wcsicmp(lineTypeName.c_str(), L"ByLayer") != 0 && _wcsicmp(lineTypeName.c_str(), L"ByBlock") != 0) {
+    auto* lineTypeTable = AeSysDoc::GetDoc()->LineTypeTable();
+    EoDbLineType* lineType{};
+    if (lineTypeTable->Lookup(CString(lineTypeName.c_str()), lineType) && lineType->GetNumberOfDashes() > 0) {
+      renderState.SetLineType(deviceContext, 1);
+      __Display(view, deviceContext, pts_, lineType);
+      renderState.SetLineType(deviceContext, lineTypeIndex);
+      return;
+    }
+  }
+
+  // Continuous or unresolved name — use GDI solid pen for stock types
+  if (lineTypeIndex == 0 || lineTypeIndex == 1 || EoDbPrimitive::IsSupportedTyp(lineTypeIndex)) {
     auto size = pts_.GetSize();
     if (size > 1) {
       view->ModelViewTransformPoints(pts_);
@@ -140,9 +154,10 @@ void __End(AeSysView* view, CDC* deviceContext, std::int16_t lineTypeIndex) {
       }
     }
   } else {
+    // Legacy index fallback for V1 PEG files without linetype names
     auto* lineTypeTable = AeSysDoc::GetDoc()->LineTypeTable();
 
-    EoDbLineType* lineType;
+    EoDbLineType* lineType{};
     if (!lineTypeTable->LookupUsingLegacyIndex(static_cast<std::uint16_t>(lineTypeIndex), lineType)) { return; }
     renderState.SetLineType(deviceContext, 1);
     __Display(view, deviceContext, pts_, lineType);

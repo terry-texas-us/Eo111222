@@ -244,6 +244,7 @@ void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* docu
     if (layer.m_colorNumber < 0) { newLayer->SetStateOff(); }
     if (lineType != nullptr) { newLayer->SetLineType(lineType); }
     if (isFrozen) { newLayer->SetStateOff(); }
+    newLayer->SetLineWeight(layer.m_lineweightEnumValue);
   };
 
   // Create / configure the layer in model space if not already present

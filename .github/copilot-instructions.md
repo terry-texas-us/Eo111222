@@ -336,6 +336,79 @@ The OBJECTS section now survives DXF round-trip. All non-graphical objects (DICT
 - **Handle preservation**: OBJECTS section handles are within the `$HANDSEED` range from DXF import, so no handle collision risk. The unsupported objects store raw group code data including their original handles.
 - **New-drawing fallback**: When `HasUnsupportedObjects()` returns false (new drawing, PEG import, or no OBJECTS section in source), the original hardcoded minimal-dictionary path runs unchanged.
 
+## Pen Render Pipeline
+
+### Architecture Overview
+The pen render pipeline converts entity display properties (color, line type, line weight) into GDI pen resources for on-screen rendering. The pipeline has three layers:
+
+1. **Property resolution** (`EoGsRenderState::SetPen`) — resolves ByLayer/ByBlock/ByLwDefault indirection
+2. **GDI pen management** (`ManagePenResources`) — 8-slot LRU pen cache with `::CreatePen()`
+3. **Linetype rendering** (`polyline::__End` / `polyline::__Display`) — AeSys's own dash pattern engine
+
+### Line Weight Resolution Chain
+`SetPen` (7-arg overload) resolves entity line weight to a concrete pixel width:
+
+| Entity weight | Resolution | Source |
+|--------------|------------|--------|
+| Explicit (enum 0–23) | DXF code → mm → pixels | `LineWeightToDxfIndex` → `dxfCode * (0.01/25.4) * DPI` |
+| `kLnWtByLayer` | → layer's `m_lineWeight` → resolve again | `EoDbPrimitive::LayerLineWeight()` |
+| `kLnWtByLwDefault` | → `kLnWt025` (0.25 mm system default) | Hardcoded in `SetPen` |
+| `kLnWtByBlock` | → `kLnWt025` (same as ByLwDefault) | Passes through ByLwDefault resolution |
+
+- **Zoom-independent**: All line weights render at fixed screen pixel widths regardless of view scale. This matches AutoCAD's "Display Lineweight" model-space behavior.
+- **DPI-aware**: Uses `GetDeviceCaps(LOGPIXELSX)` for the mm-to-pixel conversion.
+- **Toggle**: `View > Pen Widths` (`AeSysView::PenWidthsOn()`) enables/disables width rendering. When off, all pens render at 1px (GDI default width 0).
+
+### Layer Display Properties
+`EoDbLayer` carries display properties set before rendering its groups:
+
+| Property | Member | Static resolver | Set in `Display()` |
+|----------|--------|----------------|-------------------|
+| Color | `m_color` | `EoDbPrimitive::sm_layerColor` | `SetLayerColor()` |
+| LineType index | via `m_lineType->Index()` | `sm_layerLineTypeIndex` | `SetLayerLineTypeIndex()` |
+| LineType name | via `m_lineType->Name()` | `sm_layerLineTypeName` | `SetLayerLineTypeName()` |
+| Line weight | `m_lineWeight` | `sm_layerLineWeight` | `SetLayerLineWeight()` |
+| LineType scale | `m_lineTypeScale` | `sm_layerLineTypeScale` | `SetLayerLineTypeScale()` |
+
+Layer line weight defaults to `kLnWtByLwDefault`. DXF import propagates `EoDxfLayer::m_lineweightEnumValue` (group code 370). DXF export writes it back via `EoDxfLineWeights::LineWeightToDxfIndex()`. PEG V2 serializes it as int16 DXF code after layer handle/ownerHandle.
+
+### GDI Pen Style Mapping (`ManagePenResources`)
+`ManagePenResources` maps the internal `lineTypeIndex` to a GDI pen style:
+
+| Index | GDI Style | Used in practice? |
+|-------|-----------|------------------|
+| 0 | `PS_NULL` | ✅ Invisible entities |
+| 2 | `PS_DOT` | ❌ Dead code for entities — AeSys renders its own patterns |
+| 3 | `PS_DASH` | ❌ Dead code |
+| 6 | `PS_DASHDOT` | ❌ Dead code |
+| 7 | `PS_DASHDOTDOT` | ❌ Dead code |
+| default | `PS_SOLID` | ✅ All visible entity rendering |
+
+**Why the non-SOLID GDI styles are dead code**: Entity linetype rendering is handled by `polyline::__Display()`, which reads dash/gap patterns from `EoDbLineType` objects and draws individual line segments with a PS_SOLID pen. The `__End` function temporarily switches to `PS_SOLID` (via `renderState.SetLineType(deviceContext, 1)`) before calling `__Display`, then restores the original lineTypeIndex. The GDI PS_DOT/PS_DASH patterns in `ManagePenResources` are never visible during entity display.
+
+### Non-Entity Pen Usage (Bypasses `ManagePenResources`)
+These UI elements create their own `CPen` objects directly:
+
+| Element | Pen style | Location |
+|---------|-----------|----------|
+| Rubberband lines | `PS_SOLID` + `Eo::colorRubberband` | `AeSysView::OnMouseMove` |
+| Rubberband rectangles | `PS_SOLID` + `Eo::colorRubberband` | `AeSysView::OnMouseMove` |
+| Viewport boundary | `PS_DOT` + entity color | `EoDbViewport::Display` |
+| Point circles | `PS_SOLID` + entity color | `EoDbPoint::Display` |
+
+### Legacy Color-Based Weight Table
+`penWidths[16]` in `AeSys.cpp` (accessed via `app.LineWeight(colorIndex)`) is a legacy relic from the 4-pen plotter era. It maps 16 color indices to pen widths in inches (4 distinct values: 0.0, 0.0075, 0.015, 0.02, 0.03). This table is **no longer used** by the entity display pipeline — all line weight rendering now uses the DXF line weight enum resolution chain. The table remains for potential future plotter/print output use.
+
+### Key Files
+| File | Role |
+|------|------|
+| `EoGsRenderState.cpp` | `SetPen` (resolution + width calc), `ManagePenResources` (GDI pen cache) |
+| `EoGsRenderState.h` | Render state members (`m_color`, `m_LineTypeIndex`, `m_lineTypeName`, `m_lineTypeScale`) |
+| `EoDbLayer.h/.cpp` | Layer display properties (`m_lineWeight`, `m_lineTypeScale`), static setter calls in `Display()` |
+| `EoDbPrimitive.h/.cpp` | Static layer resolution members (`sm_layerLineWeight`, `sm_layerLineTypeScale`) |
+| `EoGePolyline.cpp` | `polyline::__End` (linetype dispatch), `polyline::__Display` (custom dash rendering) |
+| `EoDxfLineWeights.h` | `LineWeight` enum, `LineWeightToDxfIndex`/`DxfIndexToLineWeight` converters |
+
 ## Documentation
 - Utilize Doxygen for automated documentation generation. Ensure that comments are clear and descriptive, and consider the balance between verbosity and clarity to maintain readability.
 

@@ -10,7 +10,15 @@
 
 namespace {
 constexpr int lineTypePreviewColumnIndex = 2;
+
+/// @brief Case-insensitive comparison callback for SortItems.
+int CALLBACK CompareLineTypeNames(LPARAM lParam1, LPARAM lParam2, LPARAM /*lParamSort*/) {
+  auto* lineType1 = reinterpret_cast<EoDbLineType*>(lParam1);
+  auto* lineType2 = reinterpret_cast<EoDbLineType*>(lParam2);
+  if (lineType1 == nullptr || lineType2 == nullptr) { return 0; }
+  return lineType1->Name().CompareNoCase(lineType2->Name());
 }
+}  // namespace
 
 EoDlgLineTypesSelection::EoDlgLineTypesSelection(CWnd* parent /*=nullptr*/)
     : CDialogEx(IDD_LINE_TYPES_DIALOG, parent) {}
@@ -25,15 +33,16 @@ EoDlgLineTypesSelection::~EoDlgLineTypesSelection() {}
 void EoDlgLineTypesSelection::DoDataExchange(CDataExchange* pDX) {
   CDialogEx::DoDataExchange(pDX);
   DDX_Control(pDX, IDC_LINE_TYPES_LIST, m_lineTypesListControl);
+  DDX_Control(pDX, IDC_FILE_LINE_TYPES_LIST, m_fileLineTypesListControl);
 }
 
 BEGIN_MESSAGE_MAP(EoDlgLineTypesSelection, CDialogEx)
 #pragma warning(push)
 #pragma warning(disable : 4191)
 ON_NOTIFY(NM_CUSTOMDRAW, IDC_LINE_TYPES_LIST, &EoDlgLineTypesSelection::OnNMCustomDrawList)
-ON_WM_SIZE()
+ON_NOTIFY(NM_CUSTOMDRAW, IDC_FILE_LINE_TYPES_LIST, &EoDlgLineTypesSelection::OnNMCustomDrawFileList)
+ON_BN_CLICKED(IDC_LOAD_LINE_TYPES_FILE, &EoDlgLineTypesSelection::OnBnClickedLoadFile)
 #pragma warning(pop)
-ON_BN_CLICKED(IDOK, &EoDlgLineTypesSelection::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 /** @brief Initializes the dialog and its controls.
@@ -47,36 +56,53 @@ END_MESSAGE_MAP()
 BOOL EoDlgLineTypesSelection::OnInitDialog() {
   CDialogEx::OnInitDialog();
 
+  // Set up the document line types list
   m_lineTypesListControl.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
-
-  m_lineTypesListControl.InsertColumn(0, L"Index", LVCFMT_LEFT, 0);  // Hidden column for index
+  m_lineTypesListControl.InsertColumn(0, L"Index", LVCFMT_LEFT, 0);
   m_lineTypesListControl.InsertColumn(1, L"Name", LVCFMT_LEFT, 160);
-  m_lineTypesListControl.InsertColumn(2, L"Line Type Preview", LVCFMT_LEFT, 320);  // This is the custom-drawn column
+  m_lineTypesListControl.InsertColumn(2, L"Line Type Preview", LVCFMT_LEFT, 320);
 
   PopulateList();
 
   m_lineTypesListControl.SetColumnWidth(lineTypePreviewColumnIndex, LVSCW_AUTOSIZE_USEHEADER);
 
   if (m_selectedLineType != nullptr) {
-    // Set the current line type in the list
     for (int i = 0; i < m_lineTypesListControl.GetItemCount(); ++i) {
       auto* lineType = reinterpret_cast<EoDbLineType*>(m_lineTypesListControl.GetItemData(i));
-      if (lineType != nullptr && lineType->Name() == m_selectedLineType->Name()) {
+      if (lineType != nullptr && lineType->Name().CompareNoCase(m_selectedLineType->Name()) == 0) {
         m_lineTypesListControl.SetItemState(i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
         m_lineTypesListControl.EnsureVisible(i, FALSE);
         break;
       }
     }
   }
+
+  // Set up the file-loaded line types list (same column structure, initially empty)
+  m_fileLineTypesListControl.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+  m_fileLineTypesListControl.InsertColumn(0, L"Index", LVCFMT_LEFT, 0);
+  m_fileLineTypesListControl.InsertColumn(1, L"Name", LVCFMT_LEFT, 160);
+  m_fileLineTypesListControl.InsertColumn(2, L"Line Type Preview", LVCFMT_LEFT, 320);
+  m_fileLineTypesListControl.SetColumnWidth(lineTypePreviewColumnIndex, LVSCW_AUTOSIZE_USEHEADER);
+
   return TRUE;
 }
 
 void EoDlgLineTypesSelection::OnOK() {
-  int selectedIndex = m_lineTypesListControl.GetNextItem(-1, LVNI_SELECTED);
-  if (selectedIndex != -1) {
-    m_selectedLineType = reinterpret_cast<EoDbLineType*>(m_lineTypesListControl.GetItemData(selectedIndex));
-  } else {
-    m_selectedLineType = nullptr;  // No selection
+  m_selectedLineType = nullptr;
+  m_selectedFromFileList = false;
+
+  // Prefer file list selection when present
+  int fileSelectedIndex = m_fileLineTypesListControl.GetNextItem(-1, LVNI_SELECTED);
+  if (fileSelectedIndex != -1) {
+    m_selectedLineType = reinterpret_cast<EoDbLineType*>(m_fileLineTypesListControl.GetItemData(fileSelectedIndex));
+    m_selectedFromFileList = true;
+  }
+  // Fall back to document list selection
+  if (m_selectedLineType == nullptr) {
+    int selectedIndex = m_lineTypesListControl.GetNextItem(-1, LVNI_SELECTED);
+    if (selectedIndex != -1) {
+      m_selectedLineType = reinterpret_cast<EoDbLineType*>(m_lineTypesListControl.GetItemData(selectedIndex));
+    }
   }
   CDialogEx::OnOK();
 }
@@ -129,24 +155,54 @@ void EoDlgLineTypesSelection::PopulateList() {
 
     index++;
   }
+  m_lineTypesListControl.SortItems(CompareLineTypeNames, 0);
 }
 
-void EoDlgLineTypesSelection::OnSize(UINT type, int x, int y) {
-  CDialogEx::OnSize(type, x, y);
-  CRect clientRect;
-  GetClientRect(&clientRect);
-  if (m_lineTypesListControl.GetSafeHwnd() != nullptr) {
-    clientRect.left += 10;
-    clientRect.top += 10;
-    clientRect.right -= 10;
-    clientRect.bottom -= 56;
-    m_lineTypesListControl.MoveWindow(clientRect);
-    m_lineTypesListControl.SetColumnWidth(1, LVSCW_AUTOSIZE_USEHEADER);
+void EoDlgLineTypesSelection::OnBnClickedLoadFile() {
+  CFileDialog fileDialog(TRUE, L"txt", nullptr, OFN_HIDEREADONLY | OFN_FILEMUSTEXIST,
+      L"Line Type Files (*.txt)|*.txt|All Files (*.*)|*.*||", this);
+  fileDialog.m_ofn.lpstrTitle = L"Load Line Types";
+
+  if (fileDialog.DoModal() != IDOK) { return; }
+
+  m_fileLineTypes.RemoveAll();
+  m_fileLineTypes.LoadLineTypesFromTxtFile(fileDialog.GetPathName());
+
+  PopulateFileList();
+}
+
+void EoDlgLineTypesSelection::PopulateFileList() {
+  m_fileLineTypesListControl.DeleteAllItems();
+
+  POSITION position = m_fileLineTypes.GetStartPosition();
+  int index = 0;
+  while (position != nullptr) {
+    CString name;
+    EoDbLineType* lineType{};
+    m_fileLineTypes.GetNextAssoc(position, name, lineType);
+
+    CString indexString = lineType->IndexToString();
+    int indexItem = m_fileLineTypesListControl.InsertItem(lineType->Index(), indexString);
+    m_fileLineTypesListControl.SetItemText(indexItem, 1, lineType->Name());
+    m_fileLineTypesListControl.SetItemText(indexItem, lineTypePreviewColumnIndex, L"");
+    m_fileLineTypesListControl.SetItemData(indexItem, reinterpret_cast<DWORD_PTR>(lineType));
+
+    index++;
   }
+  m_fileLineTypesListControl.SortItems(CompareLineTypeNames, 0);
+  m_fileLineTypesListControl.SetColumnWidth(lineTypePreviewColumnIndex, LVSCW_AUTOSIZE_USEHEADER);
 }
 
 void EoDlgLineTypesSelection::OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result) {
-  auto* listViewCustomDraw = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
+  DrawLineTypePreview(m_lineTypesListControl, reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR), result);
+}
+
+void EoDlgLineTypesSelection::OnNMCustomDrawFileList(NMHDR* pNMHDR, LRESULT* result) {
+  DrawLineTypePreview(m_fileLineTypesListControl, reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR), result);
+}
+
+void EoDlgLineTypesSelection::DrawLineTypePreview(
+    CListCtrl& listControl, NMLVCUSTOMDRAW* listViewCustomDraw, LRESULT* result) {
   *result = CDRF_DODEFAULT;
 
   switch (listViewCustomDraw->nmcd.dwDrawStage) {
@@ -159,10 +215,9 @@ void EoDlgLineTypesSelection::OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result)
       break;
 
     case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
-      if (listViewCustomDraw->iSubItem == lineTypePreviewColumnIndex)  // Line type preview column
-      {
+      if (listViewCustomDraw->iSubItem == lineTypePreviewColumnIndex) {
         int item = static_cast<int>(listViewCustomDraw->nmcd.dwItemSpec);
-        auto* lineType = reinterpret_cast<EoDbLineType*>(m_lineTypesListControl.GetItemData(item));
+        auto* lineType = reinterpret_cast<EoDbLineType*>(listControl.GetItemData(item));
 
         if (lineType) {
           CDC controlContext;
@@ -171,16 +226,16 @@ void EoDlgLineTypesSelection::OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result)
 
           auto dpi = static_cast<double>(GetDpiForSystem());
 
-          auto state = m_lineTypesListControl.GetItemState(item, LVIS_SELECTED);
-          COLORREF backgroundColor = (state & LVIS_SELECTED) ? GetSysColor(COLOR_HIGHLIGHT) : GetSysColor(COLOR_WINDOW);
+          auto state = listControl.GetItemState(item, LVIS_SELECTED);
+          COLORREF backgroundColor =
+              (state & LVIS_SELECTED) ? GetSysColor(COLOR_HIGHLIGHT) : GetSysColor(COLOR_WINDOW);
           controlContext.FillSolidRect(controlRect, backgroundColor);
 
-          const auto& dashElements = lineType->DashElements();  // returns vector<double>: +ve dash, -ve space, 0 dot
+          const auto& dashElements = lineType->DashElements();
 
           if (!dashElements.empty()) {
-            // Draw the line type pattern as a horizontal preview line centered in the control rectangle
             int yCenter = controlRect.top + controlRect.Height() / 2;
-            double x = controlRect.left + 4.0;  // Padding
+            double x = controlRect.left + 4.0;
             double xEnd = controlRect.right - 4.0;
 
             CPen pen(PS_SOLID, 1, Eo::colorBlack);
@@ -196,7 +251,7 @@ void EoDlgLineTypesSelection::OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result)
                   x -= std::min(xEnd, len * dpi);
                 } else {
                   controlContext.SetPixel(static_cast<int>(x), yCenter, Eo::colorBlack);
-                  x += 1.0;  // Small advance
+                  x += 1.0;
                 }
                 if (x >= xEnd) { break; }
               }
@@ -205,12 +260,8 @@ void EoDlgLineTypesSelection::OnNMCustomDrawList(NMHDR* pNMHDR, LRESULT* result)
           }
           controlContext.Detach();
         }
-        *result = CDRF_SKIPDEFAULT;  // We handled drawing, skip default text/paint
+        *result = CDRF_SKIPDEFAULT;
       }
       break;
   }
-}
-void EoDlgLineTypesSelection::OnBnClickedOk() {
-  // TODO: Add your control notification handler code here
-  CDialogEx::OnOK();
 }

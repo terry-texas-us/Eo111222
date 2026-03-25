@@ -441,6 +441,8 @@ void EoDbGroup::Write(CFile& file, EoDb::PegFileVersion fileVersion) {
     if (fileVersion == EoDb::PegFileVersion::AE2026) {
       EoDb::WriteUInt64(file, primitive->Handle());
       EoDb::WriteUInt64(file, primitive->OwnerHandle());
+      EoDb::WriteInt16(file, EoDxfLineWeights::LineWeightToDxfIndex(primitive->LineWeight()));
+      EoDb::WriteDouble(file, primitive->LineTypeScale());
     }
   }
 }

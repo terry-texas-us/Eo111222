@@ -82,7 +82,7 @@ bool EoDxfWrite::WriteTables() {
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"5"); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbLinetypeTableRecord");
-  WriteCodeString(2, L"Continuous");
+  WriteCodeString(2, L"CONTINUOUS");
 
   WriteCodeInt16(70, 0);
   WriteCodeString(3, L"Solid line");

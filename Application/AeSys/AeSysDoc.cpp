@@ -438,8 +438,8 @@ void AeSysDoc::SetCommonTableEntries() {
   m_LineTypeTable.SetAt(L"ByBlock", lineType);
   lineType = new EoDbLineType(0, L"ByLayer", L"ByLayer", 0, nullptr);
   m_LineTypeTable.SetAt(L"ByLayer", lineType);
-  lineType = new EoDbLineType(1, L"Continuous", L"Solid line", 0, nullptr);
-  m_LineTypeTable.SetAt(L"Continuous", lineType);
+  lineType = new EoDbLineType(1, L"CONTINUOUS", L"Solid line", 0, nullptr);
+  m_LineTypeTable.SetAt(L"CONTINUOUS", lineType);
   m_continuousLineType = lineType;
 
   constexpr EoDbLayer::State commonState =
@@ -516,7 +516,10 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
         app.AddStringToReportsList(std::format(L"LWPolyline: {}", dxfInterface.countOfLWPolyline));
         app.AddStringToReportsList(std::format(L"MText: {}", dxfInterface.countOfMText));
         app.AddStringToReportsList(std::format(L"Point: {}", dxfInterface.countOfPoint));
-        app.AddStringToReportsList(std::format(L"Polyline: {}", dxfInterface.countOfPolyline));
+        app.AddStringToReportsList(std::format(L"PolygonMesh: {}", dxfInterface.countOfPolygonMesh));
+        app.AddStringToReportsList(std::format(L"PolylineMesh: {}", dxfInterface.countOfPolylineMesh));
+        app.AddStringToReportsList(std::format(L"2DPolyline: {}", dxfInterface.countOf2DPolyline));
+        app.AddStringToReportsList(std::format(L"3DPolyline: {}", dxfInterface.countOf3DPolyline));
         app.AddStringToReportsList(std::format(L"Ray: {}", dxfInterface.countOfRay));
         app.AddStringToReportsList(std::format(L"Solid: {}", dxfInterface.countOfSolid));
         app.AddStringToReportsList(std::format(L"Spline: {}", dxfInterface.countOfSpline));
@@ -1893,7 +1896,14 @@ void AeSysDoc::OnSetupLineType() {
 
   EoDbLineType* currentLineType{};
 
-  m_LineTypeTable.LookupUsingLegacyIndex(static_cast<std::uint16_t>(renderState.LineTypeIndex()), currentLineType);
+  // Prefer name-based lookup when a linetype name is set on the render state
+  const auto& currentName = renderState.LineTypeName();
+  if (!currentName.empty()) {
+    [[maybe_unused]] const auto found = m_LineTypeTable.Lookup(CString(currentName.c_str()), currentLineType);
+  }
+  if (currentLineType == nullptr) {
+    m_LineTypeTable.LookupUsingLegacyIndex(static_cast<std::uint16_t>(renderState.LineTypeIndex()), currentLineType);
+  }
   dialog.SetSelectedLineType(currentLineType);
 
   if (dialog.DoModal() != IDOK) { return; }
@@ -1903,7 +1913,22 @@ void AeSysDoc::OnSetupLineType() {
     ATLTRACE2(traceGeneral, 3, L"AeSysDoc::OnSetupLineType: No line type selected.\n");
     return;
   }
+
+  // When the selection came from the file-loaded list, copy the linetype into the
+  // document's table so the pointer remains valid after the dialog is destroyed.
+  if (dialog.IsSelectedFromFileList()) {
+    EoDbLineType* existingLineType{};
+    if (!m_LineTypeTable.Lookup(selectedLineType->Name(), existingLineType)) {
+      auto* clonedLineType = new EoDbLineType(*selectedLineType);
+      m_LineTypeTable.SetAt(clonedLineType->Name(), clonedLineType);
+      selectedLineType = clonedLineType;
+    } else {
+      selectedLineType = existingLineType;
+    }
+  }
+
   renderState.SetLineType(nullptr, static_cast<std::int16_t>(selectedLineType->Index()));
+  renderState.SetLineTypeName(std::wstring(selectedLineType->Name()));
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
 }
 

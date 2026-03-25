@@ -66,12 +66,13 @@ EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
 void EoDbSpline::Display(AeSysView* view, CDC* deviceContext) {
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();
+  const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, deviceContext, color, lineType);
+  renderState.SetPen(view, deviceContext, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   polyline::BeginLineStrip();
   GenPts(orderOfTheSpline, m_pts);
-  polyline::__End(view, deviceContext, lineType);
+  polyline::__End(view, deviceContext, lineType, lineTypeName);
 }
 
 void EoDbSpline::ExportToDxf(EoDxfInterface* writer) const {

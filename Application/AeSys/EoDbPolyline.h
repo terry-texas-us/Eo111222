@@ -119,6 +119,19 @@ class EoDbPolyline : public EoDbPrimitive {
   /// @param[out] tessellatedPoints  Output array receiving the complete tessellated polyline.
   void BuildTessellatedPoints(EoGePoint3dArray& tessellatedPoints) const;
 
+  /// @brief Renders width-bearing polyline segments as individually filled trapezoids.
+  ///
+  /// Each segment is rendered independently as a 4-point polygon offset perpendicular to the
+  /// segment direction by ±startWidth/2 at its start and ±endWidth/2 at its end. Segments
+  /// overlap at joints, matching AutoCAD/TrueView per-segment rendering behavior. For bulge-arc
+  /// segments the arc is tessellated first and each sub-segment gets its own quad with linearly
+  /// interpolated width.
+  ///
+  /// @param view      View context for model-to-client coordinate transforms.
+  /// @param deviceContext  GDI device context for polygon fill rendering.
+  /// @param color     Resolved entity color index (for the fill brush).
+  void DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::int16_t color) const;
+
  public:
   static std::uint16_t& EdgeToEvaluate() noexcept { return sm_EdgeToEvaluate; }
   static std::uint16_t& Edge() noexcept { return sm_Edge; }

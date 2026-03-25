@@ -43,6 +43,9 @@ class EoDbPrimitive : public CObject {
 
   static std::int16_t sm_layerColor;
   static std::int16_t sm_layerLineTypeIndex;
+  static std::wstring sm_layerLineTypeName;
+  static EoDxfLineWeights::LineWeight sm_layerLineWeight;
+  static double sm_layerLineTypeScale;
 
   static std::int16_t sm_specialColor;
   static int sm_controlPointIndex;
@@ -115,6 +118,7 @@ class EoDbPrimitive : public CObject {
   CString FormatLineType() const;
   std::int16_t LogicalColor() const noexcept;
   std::int16_t LogicalLineType() const noexcept;
+  [[nodiscard]] const std::wstring& LogicalLineTypeName() const;
 
   [[nodiscard]] std::int16_t Color() const noexcept { return m_color; }
   [[nodiscard]] std::uint64_t Handle() const noexcept { return m_handle; }
@@ -153,6 +157,12 @@ class EoDbPrimitive : public CObject {
   static void SetLayerColor(std::int16_t layerColor) noexcept;
   static std::int16_t LayerLineTypeIndex() noexcept;
   static void SetLayerLineTypeIndex(std::int16_t lineTypeIndex) noexcept;
+  static const std::wstring& LayerLineTypeName() noexcept;
+  static void SetLayerLineTypeName(const std::wstring& lineTypeName);
+  static EoDxfLineWeights::LineWeight LayerLineWeight() noexcept;
+  static void SetLayerLineWeight(EoDxfLineWeights::LineWeight lineWeight) noexcept;
+  static double LayerLineTypeScale() noexcept;
+  static void SetLayerLineTypeScale(double lineTypeScale) noexcept;
   static double& Rel() noexcept;
   static std::int16_t SpecialColor() noexcept;
   static void SetSpecialColor(std::int16_t specialColor) noexcept;

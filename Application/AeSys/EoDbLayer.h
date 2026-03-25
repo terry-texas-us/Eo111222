@@ -5,6 +5,7 @@
 
 #include "EoDbGroupList.h"
 #include "EoDbLineType.h"
+#include "EoDxfLineWeights.h"
 
 /** @brief Represents a layer in the drawing, which can contain groups of entities and has properties such as color and
  line type.
@@ -29,6 +30,8 @@ class EoDbLayer : public EoDbGroupList {
   std::uint16_t m_tracingState;  // Tracing state flags
   std::int16_t m_color;  // color index, negative if layer is off)
   EoDbLineType* m_lineType;
+  EoDxfLineWeights::LineWeight m_lineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
+  double m_lineTypeScale{1.0};
   std::uint64_t m_handle{};
   std::uint64_t m_ownerHandle{};
 
@@ -78,6 +81,12 @@ class EoDbLayer : public EoDbGroupList {
   [[nodiscard]] CString LineTypeName() const { return (m_lineType != nullptr) ? m_lineType->Name() : CString{}; }
 
   void SetLineType(EoDbLineType* lineType) noexcept { m_lineType = lineType; }
+
+  [[nodiscard]] EoDxfLineWeights::LineWeight LineWeight() const noexcept { return m_lineWeight; }
+  void SetLineWeight(EoDxfLineWeights::LineWeight lineWeight) noexcept { m_lineWeight = lineWeight; }
+
+  [[nodiscard]] double LineTypeScale() const noexcept { return m_lineTypeScale; }
+  void SetLineTypeScale(double lineTypeScale) noexcept { m_lineTypeScale = lineTypeScale; }
   void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
 
   [[nodiscard]] CString Name() const { return m_name; }
