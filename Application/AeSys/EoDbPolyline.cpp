@@ -122,8 +122,9 @@ void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
 
   renderState.SetPen(view, deviceContext, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
-  // Render filled width outline underneath the centerline when width data is present
-  if (HasWidth()) { DisplayWidthFill(view, deviceContext, color); }
+  // Render filled width outline underneath the centerline when width data is present.
+  // HasWidth() covers per-vertex vectors; m_constantWidth covers the global-width-only case.
+  if (HasWidth() || Eo::IsGeometricallyNonZero(m_constantWidth)) { DisplayWidthFill(view, deviceContext, color); }
 
   if (IsClosed()) {
     polyline::BeginLineLoop();
@@ -149,7 +150,7 @@ void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
       const double closingBulge = (static_cast<size_t>(numberOfVertices - 1) < m_bulges.size())
                                       ? m_bulges[static_cast<size_t>(numberOfVertices - 1)]
                                       : 0.0;
-      if (std::abs(closingBulge) >= Eo::geometricTolerance) {
+      if (Eo::IsGeometricallyNonZero(closingBulge)) {
         polyline::TessellateArcSegment(m_pts[numberOfVertices - 1], m_pts[0], closingBulge, arcPoints);
         // Emit all but the last point (which is m_pts[0], already handled by BeginLineLoop)
         for (size_t j = 0; j + 1 < arcPoints.size(); ++j) { polyline::SetVertex(arcPoints[j]); }
@@ -164,7 +165,12 @@ void EoDbPolyline::Display(AeSysView* view, CDC* deviceContext) {
 void EoDbPolyline::DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::int16_t color) const {
   const auto numberOfVertices = m_pts.GetSize();
   if (numberOfVertices < 2) { return; }
-  if (m_startWidths.empty() && m_endWidths.empty()) { return; }
+
+  // Determine effective width source: per-vertex vectors take priority, then constant width fallback
+  const bool hasPerVertexWidths = !m_startWidths.empty() || !m_endWidths.empty();
+  const double constantFallback = m_constantWidth;
+
+  if (!hasPerVertexWidths && Eo::IsGeometricallyZero(constantFallback)) { return; }
 
   // Per-segment rendering: each segment is an independent filled trapezoid (4-point polygon)
   // offset ±width/2 perpendicular to the segment direction. For bulge-arc segments the arc
@@ -176,8 +182,8 @@ void EoDbPolyline::DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::in
   auto* oldPen = static_cast<CPen*>(deviceContext->SelectStockObject(NULL_PEN));
 
   // Renders a single sub-segment as a filled trapezoid
-  const auto renderQuad = [&](const EoGePoint3d& startPt, const EoGePoint3d& endPt,
-                              double halfStartWidth, double halfEndWidth) {
+  const auto renderQuad = [&](const EoGePoint3d& startPt, const EoGePoint3d& endPt, double halfStartWidth,
+                              double halfEndWidth) {
     const EoGeVector3d segDirection(startPt, endPt);
     if (segDirection.IsNearNull()) { return; }
 
@@ -211,12 +217,22 @@ void EoDbPolyline::DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::in
     const auto nextIndex = (segmentIndex + 1) % numberOfVertices;
     const auto segIdx = static_cast<size_t>(segmentIndex);
 
-    const double segStartWidth = (segIdx < m_startWidths.size()) ? m_startWidths[segIdx] : 0.0;
-    const double segEndWidth = (segIdx < m_endWidths.size()) ? m_endWidths[segIdx] : 0.0;
+    // Resolve effective width: per-vertex vector → constant width fallback
+    const double segStartWidth = (segIdx < m_startWidths.size() && Eo::IsGeometricallyNonZero(m_startWidths[segIdx]))
+                                     ? m_startWidths[segIdx]
+                                     : constantFallback;
+    const double segEndWidth = (segIdx < m_endWidths.size() && Eo::IsGeometricallyNonZero(m_endWidths[segIdx]))
+                                   ? m_endWidths[segIdx]
+                                   : constantFallback;
+
+    // Skip degenerate zero-width segments — no visible fill to render
+    if (Eo::IsGeometricallyZero(segStartWidth) && Eo::IsGeometricallyZero(segEndWidth)) {
+      continue;
+    }
 
     const double bulge = (HasBulge() && segIdx < m_bulges.size()) ? m_bulges[segIdx] : 0.0;
 
-    if (std::abs(bulge) >= Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyNonZero(bulge)) {
       // Compute arc center for radial offsetting — same algorithm as TessellateArcSegment
       const EoGeVector3d chord(m_pts[segmentIndex], m_pts[nextIndex]);
       const double chordLength = chord.Length();
@@ -376,12 +392,11 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
   double angleInXYPlane;
 
   // Check if this edge has a non-zero bulge
-  const double bulge =
-      (HasBulge() && static_cast<size_t>(beginVertexIndex) < m_bulges.size())
-          ? m_bulges[static_cast<size_t>(beginVertexIndex)]
-          : 0.0;
+  const double bulge = (HasBulge() && static_cast<size_t>(beginVertexIndex) < m_bulges.size())
+                           ? m_bulges[static_cast<size_t>(beginVertexIndex)]
+                           : 0.0;
 
-  if (std::abs(bulge) >= Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(bulge)) {
     // Arc segment: compute arc length = radius × |includedAngle|
     const double chordLength = EoGeVector3d(begin, end).Length();
     const double includedAngle = 4.0 * std::atan(std::abs(bulge));
@@ -408,10 +423,10 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
   app.FormatLength(lengthAsString, app.GetUnits(), edgeLength);
   app.FormatAngle(angleAsString, angleInXYPlane, 8, 3);
 
-  CString edgeType = (std::abs(bulge) >= Eo::geometricTolerance) ? L"Polyline Arc" : L"Polyline Edge";
+  auto edgeType = (Eo::IsGeometricallyNonZero(bulge)) ? L"Polyline Arc" : L"Polyline Edge";
   app.AddStringToMessageList(edgeType);
   EoDbPrimitive::AddReportToMessageList(point);
-    
+
   CString message;
   message.Format(L"  %s @ %s", lengthAsString.TrimLeft().GetString(), angleAsString.GetString());
   app.AddStringToMessageList(message);
@@ -615,10 +630,10 @@ bool EoDbPolyline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dAr
         if (EoGeLine::Intersection_xy(line, EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}), intersection)) {
           double relation{};
 
-          if (line.ComputeParametricRelation(intersection, relation)
-              && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
-            if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation)
-                && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+          if (line.ComputeParametricRelation(intersection, relation) && relation >= -Eo::geometricTolerance &&
+              relation <= 1.0 + Eo::geometricTolerance) {
+            if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation) &&
+                relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
               intersection.z = ptBeg.z + relation * (ptEnd.z - ptBeg.z);
               intersections.Add(intersection);
             }
@@ -639,10 +654,10 @@ bool EoDbPolyline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dAr
       if (EoGeLine::Intersection_xy(line, EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}), intersection)) {
         double relation{};
 
-        if (line.ComputeParametricRelation(intersection, relation)
-            && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
-          if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation)
-              && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+        if (line.ComputeParametricRelation(intersection, relation) && relation >= -Eo::geometricTolerance &&
+            relation <= 1.0 + Eo::geometricTolerance) {
+          if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation) &&
+              relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
             intersection.z = ptBeg.z + relation * (ptEnd.z - ptBeg.z);
             intersections.Add(intersection);
           }
@@ -828,11 +843,19 @@ bool EoDbPolyline::Write(CFile& file) {
   for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i].Write(file); }
 
   if (HasBulge()) {
-    for (size_t i = 0; i < m_bulges.size(); i++) { EoDb::WriteDouble(file, m_bulges[i]); }
+    // Write exactly numberOfVertices bulge values, clamped to vector size (pad with 0.0 if short)
+    for (std::uint16_t i = 0; i < numberOfVertices; i++) {
+      EoDb::WriteDouble(file, (i < m_bulges.size()) ? m_bulges[i] : 0.0);
+    }
   }
   if (HasWidth()) {
-    for (size_t i = 0; i < m_startWidths.size(); i++) { EoDb::WriteDouble(file, m_startWidths[i]); }
-    for (size_t i = 0; i < m_endWidths.size(); i++) { EoDb::WriteDouble(file, m_endWidths[i]); }
+    // Write exactly numberOfVertices width values per channel, clamped to vector size
+    for (std::uint16_t i = 0; i < numberOfVertices; i++) {
+      EoDb::WriteDouble(file, (i < m_startWidths.size()) ? m_startWidths[i] : 0.0);
+    }
+    for (std::uint16_t i = 0; i < numberOfVertices; i++) {
+      EoDb::WriteDouble(file, (i < m_endWidths.size()) ? m_endWidths[i] : 0.0);
+    }
   }
 
   return true;

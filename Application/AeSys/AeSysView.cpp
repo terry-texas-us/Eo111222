@@ -1107,7 +1107,7 @@ void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, 
 
   double Scale = 1.0 - (m_Viewport.WidthInInches() / UExtent) / ratio;
 
-  if (std::abs(Scale) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(Scale)) {
     XAdjustment = Scale * UExtent;
     YAdjustment = Scale * VExtent;
   }

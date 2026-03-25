@@ -34,9 +34,9 @@ void EoGeVector3d::operator/=(double t) {
 }
 
 EoGeVector3d EoGeVector3d::operator/(double t) const {
-  assert(std::abs(t) > Eo::geometricTolerance && "Division by near-zero in EoGeVector3d::operator/");
+  assert(Eo::IsGeometricallyNonZero(t) && "Division by near-zero in EoGeVector3d::operator/");
 
-  if (std::abs(t) > Eo::geometricTolerance) { return EoGeVector3d(x / t, y / t, z / t); }
+  if (Eo::IsGeometricallyNonZero(t)) { return EoGeVector3d(x / t, y / t, z / t); }
   return *this;  // Return unchanged on near-zero
 }
 

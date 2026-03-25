@@ -11,3 +11,5 @@ AlignAfterOpenBracket: DontAlign
 ContinuationIndentWidth: 4
 InsertBraces: true
 BreakBeforeBraces: Attach
+AlignOperands: DontAlign
+BreakBeforeTernaryOperators: true

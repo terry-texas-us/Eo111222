@@ -79,8 +79,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
   if (DisplayGridWithPoints()) {
     EoGePoint3d pt;
 
-    if (std::abs(m_YGridPointSpacing) > Eo::geometricTolerance &&
-        std::abs(m_ZGridPointSpacing) > Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyNonZero(m_YGridPointSpacing) && Eo::IsGeometricallyNonZero(m_ZGridPointSpacing)) {
       COLORREF Color = app.PenColorsGetHot(1);
 
       pt.x = m_GridOrigin.x;
@@ -94,8 +93,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
         pt.z += m_ZGridPointSpacing;
       }
     }
-    if (std::abs(m_XGridPointSpacing) > Eo::geometricTolerance &&
-        std::abs(m_ZGridPointSpacing) > Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyNonZero(m_XGridPointSpacing) && Eo::IsGeometricallyNonZero(m_ZGridPointSpacing)) {
       COLORREF Color = app.PenColorsGetHot(2);
 
       pt.x = m_GridOrigin.x - dHalfPts * m_XGridPointSpacing;
@@ -109,8 +107,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
         pt.x += m_XGridPointSpacing;
       }
     }
-    if (std::abs(m_XGridPointSpacing) > Eo::geometricTolerance &&
-        std::abs(m_YGridPointSpacing) > Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyNonZero(m_XGridPointSpacing) && Eo::IsGeometricallyNonZero(m_YGridPointSpacing)) {
       COLORREF Color = app.PenColorsGetHot(3);
 
       pt.y = m_GridOrigin.y - dHalfPts * m_YGridPointSpacing;
@@ -126,8 +123,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
     }
   }
   if (DisplayGridWithLines()) {
-    if (std::abs(m_XGridLineSpacing) > Eo::geometricTolerance &&
-        std::abs(m_YGridLineSpacing) > Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyNonZero(m_XGridLineSpacing) && Eo::IsGeometricallyNonZero(m_YGridLineSpacing)) {
       EoGeLine ln;
 
       int i;
@@ -166,19 +162,19 @@ EoGePoint3d AeSysView::SnapPointToGrid(const EoGePoint3d& point) const {
   EoGePoint3d snappedPoint = point;
 
   if (GridSnap()) {
-    if (std::abs(m_XGridSnapSpacing) > Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyNonZero(m_XGridSnapSpacing)) {
       snappedPoint.x -= fmod((point.x - m_GridOrigin.x), m_XGridSnapSpacing);
       if (std::abs(snappedPoint.x - point.x) > m_XGridSnapSpacing * 0.5) {
         snappedPoint.x += Eo::CopySign(m_XGridSnapSpacing, point.x - m_GridOrigin.x);
       }
     }
-    if (std::abs(m_YGridSnapSpacing) > Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyNonZero(m_YGridSnapSpacing)) {
       snappedPoint.y -= fmod((point.y - m_GridOrigin.y), m_YGridSnapSpacing);
       if (std::abs(snappedPoint.y - point.y) > m_YGridSnapSpacing * 0.5) {
         snappedPoint.y += Eo::CopySign(m_YGridSnapSpacing, point.y - m_GridOrigin.y);
       }
     }
-    if (std::abs(m_ZGridSnapSpacing) > Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyNonZero(m_ZGridSnapSpacing)) {
       snappedPoint.z -= fmod((point.z - m_GridOrigin.z), m_ZGridSnapSpacing);
       if (std::abs(snappedPoint.z - point.z) > m_ZGridSnapSpacing * 0.5) {
         snappedPoint.z += Eo::CopySign(m_ZGridSnapSpacing, point.z - m_GridOrigin.z);

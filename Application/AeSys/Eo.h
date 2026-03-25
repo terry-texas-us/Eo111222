@@ -104,6 +104,18 @@ constexpr double RadianToDegree(double angleInRadians) noexcept { return angleIn
 constexpr double generalTolerance = 1e-6;  // For general UI, display rounding (device space)
 constexpr double geometricTolerance = 1e-9;  // For geometric calculations, point coincidence etc. (modelspace)
 
+/** @brief Checks if a geometric value is effectively non-zero considering the defined geometric tolerance.
+ * @param geometricValue The value to check.
+ * @return true if the absolute value of geometricValue is greater than geometricTolerance, false otherwise.
+ */
+inline bool IsGeometricallyNonZero(double geometricValue) { return std::abs(geometricValue) > geometricTolerance; }
+
+/** @brief Checks if a geometric value is effectively zero considering the defined geometric tolerance.
+ * @param geometricValue The value to check.
+ * @return true if the absolute value of geometricValue is less than or equal to geometricTolerance, false otherwise.
+ */
+inline bool IsGeometricallyZero(double geometricValue) { return std::abs(geometricValue) <= geometricTolerance; }
+
 // Arc/conic tessellation — base number of line segments used to approximate a full 360° circle.
 // Partial arcs scale proportionally: segments = ceil(|sweep| / 2π × arcTessellationSegmentsPerFullCircle).
 constexpr int arcTessellationSegmentsPerFullCircle = 72;

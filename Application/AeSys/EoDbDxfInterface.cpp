@@ -727,7 +727,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         readVector3d(offset + 56, startVector);
         readDouble(offset + 80, sweepAngle);
 
-        if (radius > Eo::geometricTolerance && std::abs(sweepAngle) > Eo::geometricTolerance) {
+        if (radius > Eo::geometricTolerance && Eo::IsGeometricallyNonZero(sweepAngle)) {
           if (normal.IsNearNull()) { normal = EoGeVector3d::positiveUnitZ; }
           normal.Unitize();
 
@@ -1278,7 +1278,7 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   AddToDocument(conic, document, ellipse.m_space);
 
   const bool isFullEllipse = std::abs(ellipse.m_endParam - ellipse.m_startParam - Eo::TwoPi) < Eo::geometricTolerance ||
-                             std::abs(ellipse.m_endParam - ellipse.m_startParam) < Eo::geometricTolerance;
+      std::abs(ellipse.m_endParam - ellipse.m_startParam) < Eo::geometricTolerance;
   ATLTRACE2(traceGeneral, 2, L"  → EoDbConic %s (majorLen=%.4f, minorLen=%.4f)\n",
       isFullEllipse ? L"Ellipse" : L"EllipticalArc", majorAxis.Length(), majorAxis.Length() * ellipse.m_ratio);
 }
@@ -1420,8 +1420,8 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     if (hatchLoop->m_boundaryPathType & 2) {
       // ── Polyline boundary ────────────────────────────────
       const auto* polylineEntity = (hatchLoop->m_entities.front()->m_entityType == EoDxf::LWPOLYLINE)
-                                       ? static_cast<const EoDxfLwPolyline*>(hatchLoop->m_entities.front().get())
-                                       : nullptr;
+          ? static_cast<const EoDxfLwPolyline*>(hatchLoop->m_entities.front().get())
+          : nullptr;
       if (polylineEntity == nullptr || polylineEntity->m_vertices.empty()) {
         ATLTRACE2(traceGeneral, 1, L"  Loop %d: polyline boundary with no vertices, skipping\n", loopIndex);
         continue;
@@ -1433,7 +1433,7 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
 
       // Check if any vertex has a non-zero bulge
       const bool hasAnyBulge = std::any_of(vertices.begin(), vertices.end(),
-          [](const EoDxfPolylineVertex2d& vertex) noexcept { return std::abs(vertex.bulge) > Eo::geometricTolerance; });
+          [](const EoDxfPolylineVertex2d& vertex) noexcept { return Eo::IsGeometricallyNonZero(vertex.bulge); });
 
       if (hasAnyBulge) {
         // Tessellate bulge arcs into straight segments
@@ -1452,7 +1452,7 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
           const EoGePoint3d startPt{vertices[vertexCount - 1].x, vertices[vertexCount - 1].y, elevation};
           const EoGePoint3d endPt{vertices[0].x, vertices[0].y, elevation};
           const double closingBulge = vertices[vertexCount - 1].bulge;
-          if (std::abs(closingBulge) >= Eo::geometricTolerance) {
+          if (Eo::IsGeometricallyNonZero(closingBulge)) {
             polyline::TessellateArcSegment(startPt, endPt, closingBulge, arcPoints);
             // Exclude last point (it duplicates the first vertex)
             for (size_t j = 0; j + 1 < arcPoints.size(); ++j) { boundaryPoints.Add(arcPoints[j]); }
@@ -1625,9 +1625,9 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     AddToDocument(polygon, document, hatch.m_space);
 
     ATLTRACE2(traceGeneral, 2, L"  Loop %d: created EoDbPolygon (%s, %d vertices)\n", loopIndex,
-        loopPolygonStyle == EoDb::PolygonStyle::Solid   ? L"Solid"
-        : loopPolygonStyle == EoDb::PolygonStyle::Hatch ? L"Hatch"
-                                                        : L"Hollow",
+        loopPolygonStyle == EoDb::PolygonStyle::Solid       ? L"Solid"
+            : loopPolygonStyle == EoDb::PolygonStyle::Hatch ? L"Hatch"
+                                                            : L"Hollow",
         static_cast<int>(boundaryPoints.GetSize()));
   }
 }
@@ -1690,18 +1690,22 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
     polylinePrimitive->SetBulges(std::move(bulges));
   }
 
-  // Populate per-vertex width values: use per-vertex widths if present, else expand constant width
+  // Populate per-vertex width values: use per-vertex widths if present, else expand constant width.
+  // DXF convention: per-vertex width 0 means "use the constant width" when a constant width is set.
+  // When any vertex has an explicit non-zero width, we still fill zero-width vertices with the
+  // constant width as fallback (mixed usage).
   const bool hasAnyPerVertexWidth = std::any_of(polyline.m_vertices.begin(), polyline.m_vertices.end(),
       [](const EoDxfPolylineVertex2d& vertex) { return vertex.stawidth != 0.0 || vertex.endwidth != 0.0; });
   if (hasAnyPerVertexWidth) {
     std::vector<double> startWidths(numVerts);
     std::vector<double> endWidths(numVerts);
     for (std::uint16_t index = 0; index < numVerts; ++index) {
-      startWidths[index] = polyline.m_vertices[index].stawidth;
-      endWidths[index] = polyline.m_vertices[index].endwidth;
+      const auto& vertex = polyline.m_vertices[index];
+      startWidths[index] = (Eo::IsGeometricallyNonZero(vertex.stawidth)) ? vertex.stawidth : polyline.m_constantWidth;
+      endWidths[index] = (Eo::IsGeometricallyNonZero(vertex.endwidth)) ? vertex.endwidth : polyline.m_constantWidth;
     }
     polylinePrimitive->SetWidths(std::move(startWidths), std::move(endWidths));
-  } else if (polyline.m_constantWidth != 0.0) {
+  } else if (Eo::IsGeometricallyNonZero(polyline.m_constantWidth)) {
     // Expand constant width into per-vertex start/end widths
     std::vector<double> startWidths(numVerts, polyline.m_constantWidth);
     std::vector<double> endWidths(numVerts, polyline.m_constantWidth);
@@ -1761,9 +1765,9 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
   } else {
     extrusionDirection.Unitize();
   }
-  const bool needsOcsTransform = std::abs(extrusionDirection.x) > Eo::geometricTolerance ||
-                                 std::abs(extrusionDirection.y) > Eo::geometricTolerance ||
-                                 std::abs(extrusionDirection.z - 1.0) > Eo::geometricTolerance;
+  const bool needsOcsTransform = Eo::IsGeometricallyNonZero(extrusionDirection.x) ||
+      Eo::IsGeometricallyNonZero(extrusionDirection.y) ||
+      Eo::IsGeometricallyNonZero(extrusionDirection.z - 1.0);
   EoGeOcsTransform transformOcs{extrusionDirection};
 
   for (std::uint16_t index = 0; index < numVerts; ++index) {
@@ -1785,18 +1789,23 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
     polylinePrimitive->SetBulges(std::move(bulges));
   }
 
-  // Populate per-vertex width values: use per-vertex widths if present, else expand default widths
+  // Populate per-vertex width values: use per-vertex widths if present, else expand default widths.
+  // DXF convention: per-vertex width 0 means "use default width" when default widths are set.
   const bool hasAnyPerVertexWidth = std::any_of(polyline.m_vertices.begin(), polyline.m_vertices.end(),
       [](const EoDxfVertex* vertex) { return vertex->m_startingWidth != 0.0 || vertex->m_endingWidth != 0.0; });
   if (hasAnyPerVertexWidth) {
     std::vector<double> startWidths(numVerts);
     std::vector<double> endWidths(numVerts);
     for (std::uint16_t index = 0; index < numVerts; ++index) {
-      startWidths[index] = polyline.m_vertices[index]->m_startingWidth;
-      endWidths[index] = polyline.m_vertices[index]->m_endingWidth;
+      const auto* vertex = polyline.m_vertices[index];
+      startWidths[index] = (Eo::IsGeometricallyNonZero(vertex->m_startingWidth)) ? vertex->m_startingWidth
+                                                                                 : polyline.m_defaultStartWidth;
+      endWidths[index] =
+          (Eo::IsGeometricallyNonZero(vertex->m_endingWidth)) ? vertex->m_endingWidth : polyline.m_defaultEndWidth;
     }
     polylinePrimitive->SetWidths(std::move(startWidths), std::move(endWidths));
-  } else if (polyline.m_defaultStartWidth != 0.0 || polyline.m_defaultEndWidth != 0.0) {
+  } else if (Eo::IsGeometricallyNonZero(polyline.m_defaultStartWidth) ||
+      Eo::IsGeometricallyNonZero(polyline.m_defaultEndWidth)) {
     // Expand default widths into per-vertex start/end widths
     std::vector<double> startWidths(numVerts, polyline.m_defaultStartWidth);
     std::vector<double> endWidths(numVerts, polyline.m_defaultEndWidth);
@@ -2097,9 +2106,9 @@ void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* 
   }
 
   // Determine if OCS → WCS transform is needed (non-default extrusion)
-  const bool needsOcsTransform = std::abs(extrusionDirection.x) > Eo::geometricTolerance ||
-                                 std::abs(extrusionDirection.y) > Eo::geometricTolerance ||
-                                 std::abs(extrusionDirection.z - 1.0) > Eo::geometricTolerance;
+  const bool needsOcsTransform = Eo::IsGeometricallyNonZero(extrusionDirection.x) ||
+      Eo::IsGeometricallyNonZero(extrusionDirection.y) ||
+      Eo::IsGeometricallyNonZero(extrusionDirection.z - 1.0);
 
   EoGeOcsTransform transformOcs{extrusionDirection};
 
@@ -2176,9 +2185,9 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
 
   // Determine if this is the default alignment (Left + Baseline)
   const bool isDefaultAlignment = (horizontalAlignment == EoDxfText::HorizontalAlignment::Left &&
-                                   verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
+      verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
   const bool isAlignedOrFit = (horizontalAlignment == EoDxfText::HorizontalAlignment::AlignedIfBaseLine ||
-                               horizontalAlignment == EoDxfText::HorizontalAlignment::FitIfBaseLine);
+      horizontalAlignment == EoDxfText::HorizontalAlignment::FitIfBaseLine);
 
   // Compute baseline direction – respect DXF rules for Aligned/Fit
   auto baselineDirection = EoGeVector3d::positiveUnitX;
@@ -2215,7 +2224,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   auto yAxisDirection = CrossProduct(extrusionDirection, xAxisDirection);
 
   // Apply oblique angle: shear the Y-axis by rotating it toward the baseline
-  if (std::abs(obliqueAngle) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(obliqueAngle)) {
     yAxisDirection.RotateAboutArbitraryAxis(extrusionDirection, -obliqueAngle);
   }
 
@@ -2237,7 +2246,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
    *  (Baseline). Override the vertical to Middle when this special case is detected.
    */
   const bool isMiddleComposite = (horizontalAlignment == EoDxfText::HorizontalAlignment::MiddleIfBaseLine &&
-                                  verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
+      verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
 
   switch (horizontalAlignment) {
     case EoDxfText::HorizontalAlignment::Center:
@@ -2373,7 +2382,7 @@ EoDbText* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSys
   auto xAxisDirection = baselineDirection;
   auto yAxisDirection = CrossProduct(extrusionDirection, xAxisDirection);
 
-  if (std::abs(obliqueAngle) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(obliqueAngle)) {
     yAxisDirection.RotateAboutArbitraryAxis(extrusionDirection, -obliqueAngle);
   }
 

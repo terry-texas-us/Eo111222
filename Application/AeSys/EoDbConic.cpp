@@ -205,7 +205,7 @@ EoDbConic* EoDbConic::CreateRadialArcFrom3Points(
 
   double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
 
-  if (std::abs(determinant) > Eo::geometricTolerance) {  // Three points are not colinear
+  if (Eo::IsGeometricallyNonZero(determinant)) {  // Three points are not colinear
     double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
 
     EoGePoint3d center{(pt[1].x - pt[1].y * dT) * 0.5, (pt[1].y + pt[1].x * dT) * 0.5, 0.0};
@@ -970,7 +970,7 @@ bool EoDbConic::WriteLegacyEllipse(CFile& file) {
   EoGeVector3d rotatedMajorAxis = m_majorAxis;
   EoGeVector3d rotatedMinorAxis = minorAxis;
 
-  if (std::abs(m_startAngle) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(m_startAngle)) {
     // Rotate axes to align with start angle so legacy format sees sweep from major axis
     rotatedMajorAxis.RotateAboutArbitraryAxis(m_extrusion, m_startAngle);
     rotatedMinorAxis.RotateAboutArbitraryAxis(m_extrusion, m_startAngle);
@@ -1089,7 +1089,7 @@ bool SweepAngleFromNormalAnd3Points(const EoGeVector3d& normal, const EoGePoint3
   }
   double tMin = std::min(t[0], t[2]);
   double tMax = std::max(t[0], t[2]);
-  if (std::abs(t[1] - tMax) > Eo::geometricTolerance && std::abs(t[1] - tMin) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(t[1] - tMax) && Eo::IsGeometricallyNonZero(t[1] - tMin)) {
     // Inside line is not colinear with outside lines
     double theta = tMax - tMin;
     if (t[1] > tMin && t[1] < tMax) {
