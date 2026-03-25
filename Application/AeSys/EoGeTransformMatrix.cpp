@@ -105,13 +105,13 @@ EoGeTransformMatrix::EoGeTransformMatrix(
   EoGeVector3d yAxisTransformed = yAxis;
   yAxisTransformed = *this * yAxisTransformed;
 
-  if (std::abs(yAxisTransformed.y) < Eo::geometricTolerance) { return; }
+  if (Eo::IsGeometricallyZero(yAxisTransformed.y)) { return; }
 
   scaleVector.y = 1.0 / yAxisTransformed.y;
   scaleVector.z = 1.0;
 
   // Add shear to matrix which gets positive y-axis reference vector as y-axis
-  if (std::abs(yAxisTransformed.x) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(yAxisTransformed.x)) {
     double shearFactor = -yAxisTransformed.x / yAxisTransformed.y;
     for (int i = 0; i < 4; i++) { m_4X4[0][i] += m_4X4[1][i] * shearFactor; }
   }
@@ -139,19 +139,19 @@ EoGeTransformMatrix EoGeTransformMatrix::BuildRotationTransformMatrix(const EoGe
 }
 
 void EoGeTransformMatrix::AppendXAxisRotation(double angle) {
-  if (std::abs(angle) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(angle)) {
     *this *= XAxisRotation(std::sin(Eo::DegreeToRadian(angle)), std::cos(Eo::DegreeToRadian(angle)));
   }
 }
 
 void EoGeTransformMatrix::AppendYAxisRotation(double angle) {
-  if (std::abs(angle) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(angle)) {
     *this *= YAxisRotation(std::sin(Eo::DegreeToRadian(angle)), std::cos(Eo::DegreeToRadian(angle)));
   }
 }
 
 void EoGeTransformMatrix::AppendZAxisRotation(double angle) {
-  if (std::abs(angle) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(angle)) {
     *this *= ZAxisRotation(std::sin(Eo::DegreeToRadian(angle)), std::cos(Eo::DegreeToRadian(angle)));
   }
 }
@@ -180,7 +180,7 @@ void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(
   }
 
   if (d > Eo::geometricTolerance) { *this *= XAxisRotation(normal.y / d, normal.z / d); }
-  if (std::abs(normal.x) > Eo::geometricTolerance) { *this *= YAxisRotation(-normal.x, d); }
+  if (Eo::IsGeometricallyNonZero(normal.x)) { *this *= YAxisRotation(-normal.x, d); }
 }
 
 /** @brief Initializes a matrix for rotation about the x-axis, the y-axis rotates to the z-axis

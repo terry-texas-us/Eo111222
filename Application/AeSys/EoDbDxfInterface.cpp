@@ -1277,8 +1277,8 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   conic->SetBaseProperties(&ellipse, document);
   AddToDocument(conic, document, ellipse.m_space);
 
-  const bool isFullEllipse = std::abs(ellipse.m_endParam - ellipse.m_startParam - Eo::TwoPi) < Eo::geometricTolerance ||
-      std::abs(ellipse.m_endParam - ellipse.m_startParam) < Eo::geometricTolerance;
+  const bool isFullEllipse = Eo::IsGeometricallyZero(ellipse.m_endParam - ellipse.m_startParam - Eo::TwoPi) ||
+      Eo::IsGeometricallyZero(ellipse.m_endParam - ellipse.m_startParam);
   ATLTRACE2(traceGeneral, 2, L"  → EoDbConic %s (majorLen=%.4f, minorLen=%.4f)\n",
       isFullEllipse ? L"Ellipse" : L"EllipticalArc", majorAxis.Length(), majorAxis.Length() * ellipse.m_ratio);
 }
@@ -1595,9 +1595,8 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     const auto lastIndex = boundaryPoints.GetSize() - 1;
     const auto& firstPt = boundaryPoints[0];
     const auto& lastPt = boundaryPoints[lastIndex];
-    if (std::abs(firstPt.x - lastPt.x) < Eo::geometricTolerance &&
-        std::abs(firstPt.y - lastPt.y) < Eo::geometricTolerance &&
-        std::abs(firstPt.z - lastPt.z) < Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyZero(firstPt.x - lastPt.x) && Eo::IsGeometricallyZero(firstPt.y - lastPt.y) &&
+        Eo::IsGeometricallyZero(firstPt.z - lastPt.z)) {
       boundaryPoints.SetSize(lastIndex);
     }
 
@@ -1766,8 +1765,7 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
     extrusionDirection.Unitize();
   }
   const bool needsOcsTransform = Eo::IsGeometricallyNonZero(extrusionDirection.x) ||
-      Eo::IsGeometricallyNonZero(extrusionDirection.y) ||
-      Eo::IsGeometricallyNonZero(extrusionDirection.z - 1.0);
+      Eo::IsGeometricallyNonZero(extrusionDirection.y) || Eo::IsGeometricallyNonZero(extrusionDirection.z - 1.0);
   EoGeOcsTransform transformOcs{extrusionDirection};
 
   for (std::uint16_t index = 0; index < numVerts; ++index) {
@@ -2107,8 +2105,7 @@ void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* 
 
   // Determine if OCS → WCS transform is needed (non-default extrusion)
   const bool needsOcsTransform = Eo::IsGeometricallyNonZero(extrusionDirection.x) ||
-      Eo::IsGeometricallyNonZero(extrusionDirection.y) ||
-      Eo::IsGeometricallyNonZero(extrusionDirection.z - 1.0);
+      Eo::IsGeometricallyNonZero(extrusionDirection.y) || Eo::IsGeometricallyNonZero(extrusionDirection.z - 1.0);
 
   EoGeOcsTransform transformOcs{extrusionDirection};
 

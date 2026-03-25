@@ -440,7 +440,7 @@ bool EoGeLine::Intersection(const EoGeLine& firstLine, const EoGeLine& secondLin
 
   EoGeVector3d v3(firstLine.begin, secondLine.begin);
 
-  if (std::abs(DotProduct(normal, v3)) > Eo::geometricTolerance) { return false; }
+  if (Eo::IsGeometricallyNonZero(DotProduct(normal, v3))) { return false; }
 
   EoGeTransformMatrix transformMatrix(firstLine.begin, normal);
 

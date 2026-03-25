@@ -293,7 +293,7 @@ void TessellateArcSegment(
   arcPoints.clear();
 
   // Zero bulge — straight segment: just emit the end point
-  if (std::abs(bulge) < Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyZero(bulge)) {
     arcPoints.push_back(endPoint);
     return;
   }
@@ -314,7 +314,7 @@ void TessellateArcSegment(
   const double halfAngle = includedAngle / 2.0;
   const double sinHalfAngle = std::sin(halfAngle);
 
-  if (std::abs(sinHalfAngle) < Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyZero(sinHalfAngle)) {
     arcPoints.push_back(endPoint);
     return;
   }

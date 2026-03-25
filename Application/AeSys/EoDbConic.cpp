@@ -78,11 +78,11 @@ double EoDbConic::NormalizeTo2Pi(double angle) {
 }
 
 CString EoDbConic::SubClassName(double ratio, double startAngle, double endAngle) {
-  bool isCircular = std::abs(1.0 - ratio) < Eo::geometricTolerance;
+  bool isCircular = Eo::IsGeometricallyZero(1.0 - ratio);
 
   double sweep = NormalizeTo2Pi(endAngle) - NormalizeTo2Pi(startAngle);
   if (sweep <= 0.0) { sweep += Eo::TwoPi; }
-  bool isFull = std::abs(sweep - Eo::TwoPi) < Eo::geometricTolerance;
+  bool isFull = Eo::IsGeometricallyZero(sweep - Eo::TwoPi);
   if (isCircular) {
     return isFull ? L"Circle" : L"Radial Arc";
   } else {
@@ -134,7 +134,7 @@ EoDbConic* EoDbConic::CreateConicFromEllipsePrimitive(
   if (majorAxisLength < Eo::geometricTolerance) { throw std::runtime_error("Conic: Near-zero major axis length."); }
   double ratio{minorAxis.Length() / majorAxisLength};
 
-  if (std::abs(DotProduct(majorAxis, minorAxis)) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(DotProduct(majorAxis, minorAxis))) {
     throw std::runtime_error("Conic: Major and minor axes are not perpendicular.");
   }
   auto extrusion{CrossProduct(majorAxis, minorAxis)};
@@ -402,7 +402,7 @@ void EoDbConic::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   if (IsFullConic()) { return; }  // @todo Consider moving start angle to point, but no cutting needed
 
   double sweepAngle = SweepAngle();
-  if (std::abs(sweepAngle) < Eo::geometricTolerance) { return; }  // Nothing to cut
+  if (Eo::IsGeometricallyZero(sweepAngle)) { return; }  // Nothing to cut
 
   double parameterAtPoint = SweepAngleToPoint(point) / sweepAngle;
 
@@ -453,7 +453,7 @@ void EoDbConic::GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d m
 
   double sweepAngle = m_endAngle - m_startAngle;
   if (sweepAngle <= 0.0) { sweepAngle += Eo::TwoPi; }
-  if (std::abs(sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) { sweepAngle = Eo::TwoPi; }
+  if (Eo::IsGeometricallyZero(sweepAngle - Eo::TwoPi)) { sweepAngle = Eo::TwoPi; }
 
   // No sweep negation for negative-Z extrusion. The OCS parametric angles are already
   // correct relative to the extruded majorAxis/minorAxis directions. The OCS→WCS
@@ -461,11 +461,9 @@ void EoDbConic::GenerateApproximationVertices(EoGePoint3d center, EoGeVector3d m
 
   // Calculate adaptive tessellation based on arc length and curvature
   double maxAxisLength = std::max(majorAxis.Length(), minorAxis.Length());
-  int numberOfPoints =
-      std::max(Eo::arcTessellationMinimumSegments,
-          Eo::Round(sweepAngle / Eo::TwoPi * Eo::arcTessellationSegmentsPerFullCircle));
-  numberOfPoints = std::min(
-      Eo::arcTessellationMaximumSegments,
+  int numberOfPoints = std::max(
+      Eo::arcTessellationMinimumSegments, Eo::Round(sweepAngle / Eo::TwoPi * Eo::arcTessellationSegmentsPerFullCircle));
+  numberOfPoints = std::min(Eo::arcTessellationMaximumSegments,
       std::max(numberOfPoints, Eo::Round(sweepAngle * maxAxisLength / maxSegmentLength)));
 
   // Build OCS to WCS transformation
@@ -514,8 +512,8 @@ void EoDbConic::FormatExtra(CString& extra) {
       extra.AppendFormat(L"\tMajor Length;%.4f\tRatio;%.4f", m_majorAxis.Length(), m_ratio);
       break;
     case ConicType::EllipticalArc:
-      extra.AppendFormat(L"\tMajor Length;%.4f\tRatio;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°",
-          m_majorAxis.Length(), m_ratio, Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
+      extra.AppendFormat(L"\tMajor Length;%.4f\tRatio;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°", m_majorAxis.Length(),
+          m_ratio, Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
       break;
   }
   extra += L'\t';

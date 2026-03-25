@@ -243,7 +243,7 @@ void EoDbPolyline::DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::in
       const double halfAngle = includedAngle / 2.0;
       const double sinHalfAngle = std::sin(halfAngle);
 
-      if (std::abs(sinHalfAngle) < Eo::geometricTolerance) {
+      if (Eo::IsGeometricallyZero(sinHalfAngle)) {
         renderQuad(m_pts[segmentIndex], m_pts[nextIndex], segStartWidth / 2.0, segEndWidth / 2.0);
         continue;
       }
@@ -401,7 +401,7 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
     const double chordLength = EoGeVector3d(begin, end).Length();
     const double includedAngle = 4.0 * std::atan(std::abs(bulge));
     const double sinHalfAngle = std::sin(includedAngle / 2.0);
-    if (std::abs(sinHalfAngle) > Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyNonZero(sinHalfAngle)) {
       const double radius = (chordLength / 2.0) / sinHalfAngle;
       edgeLength = radius * includedAngle;
     } else {

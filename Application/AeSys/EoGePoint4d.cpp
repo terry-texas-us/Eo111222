@@ -5,8 +5,8 @@
 #include "EoGeLine.h"
 
 void EoGePoint4d::operator/=(double t) {
-  assert(std::abs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint4d::operator/=");
-  if (std::abs(t) > Eo::geometricTolerance) {
+  assert(Eo::IsGeometricallyNonZero(t) && "Division by near-zero in EoGePoint4d::operator/=");
+  if (Eo::IsGeometricallyNonZero(t)) {
     x /= t;
     y /= t;
     z /= t;
@@ -21,8 +21,8 @@ void EoGePoint4d::operator/=(double t) {
  * @note This operator does not modify the original point; it returns a new point with the result of the division.
  */
 EoGePoint4d EoGePoint4d::operator/(double t) const {
-  assert(std::abs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint4d::operator/");
-  if (std::abs(t) > Eo::geometricTolerance) { return {x / t, y / t, z / t, w / t}; }
+  assert(Eo::IsGeometricallyNonZero(t) && "Division by near-zero in EoGePoint4d::operator/");
+  if (Eo::IsGeometricallyNonZero(t)) { return {x / t, y / t, z / t, w / t}; }
   // Silently unchanged in release if t ≈ 0
   return *this;
 }

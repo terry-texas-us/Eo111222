@@ -23,9 +23,9 @@ bool EoGeVector3d::operator!=(const EoGeVector3d& v) const noexcept { return !Is
  * @param t The scalar value to divide the vector by.
  */
 void EoGeVector3d::operator/=(double t) {
-  assert(std::abs(t) > Eo::geometricTolerance && "Division by near-zero in EoGeVector3d::operator/=");
+  assert(Eo::IsGeometricallyNonZero(t) && "Division by near-zero in EoGeVector3d::operator/=");
 
-  if (std::abs(t) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(t)) {
     x /= t;
     y /= t;
     z /= t;
@@ -103,15 +103,15 @@ EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle) {
   double sinAngle{};
   double cosAngle{};
 
-  if (std::abs(angle) < Eo::geometricTolerance || std::abs(angle - Eo::TwoPi) < Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyZero(angle) || Eo::IsGeometricallyZero(angle - Eo::TwoPi)) {
     cosAngle = 1.0;
-  } else if (std::abs(angle - Eo::HalfPi) < Eo::geometricTolerance ||
-             std::abs(angle + Eo::Pi + Eo::HalfPi) < Eo::geometricTolerance) {
+  } else if (Eo::IsGeometricallyZero(angle - Eo::HalfPi) ||
+             Eo::IsGeometricallyZero(angle + Eo::Pi + Eo::HalfPi)) {
     sinAngle = 1.0;
-  } else if (std::abs(angle - Eo::Pi) < Eo::geometricTolerance) {
+  } else if (Eo::IsGeometricallyZero(angle - Eo::Pi)) {
     cosAngle = -1.0;
-  } else if (std::abs(angle - Eo::Pi - Eo::HalfPi) < Eo::geometricTolerance ||
-             std::abs(angle + Eo::HalfPi) < Eo::geometricTolerance) {
+  } else if (Eo::IsGeometricallyZero(angle - Eo::Pi - Eo::HalfPi) ||
+             Eo::IsGeometricallyZero(angle + Eo::HalfPi)) {
     sinAngle = -1.0;
   } else {
     sinAngle = std::sin(angle);

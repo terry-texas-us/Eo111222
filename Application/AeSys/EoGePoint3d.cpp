@@ -22,9 +22,9 @@ bool EoGePoint3d::operator!=(const EoGePoint3d& point) const noexcept {
 }
 
 void EoGePoint3d::operator/=(double t) {
-  assert(std::abs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint3d::operator/=");
+  assert(Eo::IsGeometricallyNonZero(t) && "Division by near-zero in EoGePoint3d::operator/=");
 
-  if (std::abs(t) > Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyNonZero(t)) {
     x /= t;
     y /= t;
     z /= t;
@@ -33,9 +33,9 @@ void EoGePoint3d::operator/=(double t) {
 }
 
 EoGePoint3d EoGePoint3d::operator/(double t) const {
-  assert(std::abs(t) > Eo::geometricTolerance && "Division by near-zero in EoGePoint3d::operator/");
+  assert(Eo::IsGeometricallyNonZero(t) && "Division by near-zero in EoGePoint3d::operator/");
 
-  if (std::abs(t) > Eo::geometricTolerance) { return EoGePoint3d(x / t, y / t, z / t); }
+  if (Eo::IsGeometricallyNonZero(t)) { return EoGePoint3d(x / t, y / t, z / t); }
   return EoGePoint3d(x, y, z);
 }
 

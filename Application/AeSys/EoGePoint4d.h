@@ -88,7 +88,7 @@ class EoGePoint4d {
    * zero.
    */
   [[nodiscard]] EoGePoint3d Dehomogenize() const noexcept {
-    assert(std::abs(w) > Eo::geometricTolerance && "w is too close to zero for dehomogenization");
+    assert(Eo::IsGeometricallyNonZero(w) && "w is too close to zero for dehomogenization");
     return {x / w, y / w, z / w};
   }
 

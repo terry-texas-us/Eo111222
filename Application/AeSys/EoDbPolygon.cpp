@@ -105,7 +105,7 @@ void DisplayFilAreaHatch(AeSysView* view, CDC* deviceContext, EoGeTransformMatri
       dShift = -dShift;
     }
 
-    if (std::abs(dSpac) < Eo::geometricTolerance || std::abs(dTotStrLen) < Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyZero(dSpac) || Eo::IsGeometricallyZero(dTotStrLen)) {
       // Degenerate spacing or zero total stroke length would cause infinite loop or fmod by zero
       iTblId += iStrsInTable;  // skip ALL stroke entries to keep table pointer consistent
       continue;

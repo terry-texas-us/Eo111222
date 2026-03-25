@@ -303,8 +303,7 @@ class EoDbConic : public EoDbPrimitive {
   [[nodiscard]] bool IsFullConic() const noexcept {
     double sweep = NormalizeTo2Pi(m_endAngle) - NormalizeTo2Pi(m_startAngle);
     if (sweep <= 0.0) { sweep += Eo::TwoPi; }
-    return std::abs(sweep - Eo::TwoPi) < Eo::geometricTolerance ||
-           std::abs(m_endAngle - m_startAngle) < Eo::geometricTolerance;
+    return Eo::IsGeometricallyZero(sweep - Eo::TwoPi) || Eo::IsGeometricallyZero(m_endAngle - m_startAngle);
   }
 
   // Enum for cleaner switch statements

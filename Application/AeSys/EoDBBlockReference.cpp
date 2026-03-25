@@ -357,7 +357,7 @@ void EoDbBlockReference::Transform(const EoGeTransformMatrix& transformMatrix) {
   m_insertionPoint = transformMatrix * m_insertionPoint;
   m_normal = transformMatrix * m_normal;
 
-  if (std::abs(m_normal.x) < Eo::geometricTolerance && std::abs(m_normal.y) < Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyZero(m_normal.x) && Eo::IsGeometricallyZero(m_normal.y)) {
     m_scaleFactors = transformMatrix * m_scaleFactors;
   }
 }

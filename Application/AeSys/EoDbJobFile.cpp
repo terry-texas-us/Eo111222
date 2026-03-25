@@ -520,8 +520,8 @@ EoDbPolygon::EoDbPolygon(std::uint8_t* buffer, int version) {
         m_positiveX.z = 0.0;
         m_positiveY.z = 0.0;
 
-        if (std::abs(dXScal) > Eo::geometricTolerance &&
-            std::abs(dYScal) > Eo::geometricTolerance) {  // Have 2 hatch lines
+        if (Eo::IsGeometricallyNonZero(dXScal) &&
+            Eo::IsGeometricallyNonZero(dYScal)) {  // Have 2 hatch lines
           m_fillStyleIndex = 2;
           m_positiveX.x = std::cos(dAng);
           m_positiveX.y = std::sin(dAng);
@@ -529,7 +529,7 @@ EoDbPolygon::EoDbPolygon(std::uint8_t* buffer, int version) {
           m_positiveY.y = m_positiveX.x;
           m_positiveX *= dXScal * 1.e-3;
           m_positiveY *= dYScal * 1.e-3;
-        } else if (std::abs(dXScal) > Eo::geometricTolerance) {  // Vertical hatch lines
+        } else if (Eo::IsGeometricallyNonZero(dXScal)) {  // Vertical hatch lines
           m_fillStyleIndex = 1;
           m_positiveX.x = std::cos(dAng + Eo::HalfPi);
           m_positiveX.y = std::sin(dAng + Eo::HalfPi);
@@ -665,7 +665,7 @@ EoDbText::EoDbText(std::uint8_t* buffer, int version) {
     double rotationAngle = ((CVaxFloat*)&buffer[28])->Convert();
     rotationAngle = std::min(std::max(rotationAngle, -Eo::TwoPi), Eo::TwoPi);
 
-    if (std::abs(rotationAngle) > Eo::geometricTolerance) {
+    if (Eo::IsGeometricallyNonZero(rotationAngle)) {
       EoGeVector3d xDirection(m_ReferenceSystem.XDirection());
       xDirection = RotateVectorAboutZAxis(xDirection, rotationAngle);
       m_ReferenceSystem.SetXDirection(xDirection);

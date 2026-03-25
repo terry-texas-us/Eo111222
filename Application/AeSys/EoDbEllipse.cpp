@@ -212,7 +212,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
 
   double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
 
-  if (std::abs(determinant) > Eo::geometricTolerance) {  // Three points are not colinear
+  if (Eo::IsGeometricallyNonZero(determinant)) {  // Three points are not colinear
     double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
 
     m_center.x = (pt[1].x - pt[1].y * dT) * 0.5;
@@ -240,8 +240,8 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
     double dMin = std::min(dAng[0], dAng[2]);
     double dMax = std::max(dAng[0], dAng[2]);
 
-    if (std::abs(dAng[1] - dMax) > Eo::geometricTolerance &&
-        std::abs(dAng[1] - dMin) > Eo::geometricTolerance) {  // Inside line is not colinear with outside lines
+    if (Eo::IsGeometricallyNonZero(dAng[1] - dMax) && Eo::IsGeometricallyNonZero(dAng[1] - dMin)) {
+      // Inside line is not colinear with outside lines
       m_sweepAngle = dMax - dMin;
       if (dAng[1] > dMin && dAng[1] < dMax) {
         if (dAng[0] == dMax) { m_sweepAngle = -m_sweepAngle; }
@@ -279,7 +279,7 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& center, double radius, double startA
   // Compute CCW sweep from start to end in range (0, 2*pi] (canonical representation: positive = CCW sweep)
   double sweepAngle = normalizedEndAngle - normalizedStartAngle;
   if (sweepAngle < 0.0) sweepAngle += Eo::TwoPi;
-  if (std::abs(sweepAngle) < Eo::geometricTolerance) sweepAngle = Eo::TwoPi;  // identical => full circle
+  if (Eo::IsGeometricallyZero(sweepAngle)) sweepAngle = Eo::TwoPi;  // identical => full circle
   m_sweepAngle = sweepAngle;
 
   // Build major axis vector from center to start point
@@ -354,7 +354,7 @@ void EoDbEllipse::CutAt2Points(
     auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
     vPlnNorm.Unitize();
 
-    if (std::abs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) {  // Closed arc
+    if (Eo::IsGeometricallyZero(m_sweepAngle - Eo::TwoPi)) {  // Closed arc
       m_sweepAngle = (dRel[1] - dRel[0]) * Eo::TwoPi;
 
       m_majorAxis.RotateAboutArbitraryAxis(vPlnNorm, dRel[0] * Eo::TwoPi);
@@ -410,7 +410,7 @@ void EoDbEllipse::CutAt2Points(
 }
 
 void EoDbEllipse::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
-  if (std::abs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) {
+  if (Eo::IsGeometricallyZero(m_sweepAngle - Eo::TwoPi)) {
     // Do not fragment a circle
     return;
   }
@@ -437,7 +437,7 @@ void EoDbEllipse::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 }
 
 void EoDbEllipse::Display(AeSysView* view, CDC* deviceContext) {
-  if (std::abs(m_sweepAngle) < Eo::geometricTolerance) { return; }
+  if (Eo::IsGeometricallyZero(m_sweepAngle)) { return; }
 
   auto color = LogicalColor();
   auto lineType = LogicalLineType();
@@ -489,7 +489,7 @@ void EoDbEllipse::AddReportToMessageList(const EoGePoint3d& point) {
   CString message;
   app.AddStringToMessageList(L"<Ellipse>");
   EoDbPrimitive::AddReportToMessageList(point);
-  
+
   message.Format(L"  SweepAngle: %f  MajorAxisLength: %f", m_sweepAngle, m_majorAxis.Length());
   app.AddStringToMessageList(message);
 }
@@ -680,16 +680,13 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
   vPlnNorm.Unitize();
 
   if (!(CrossProduct(EoGeVector3d::positiveUnitZ, vPlnNorm)).IsNearNull()) {
-    // not on plane normal to z-axis
     return 0;
-  }
+  }  // not on plane normal to z-axis
 
-  if (std::abs(m_majorAxis.Length() - m_minorAxis.Length()) > Eo::geometricTolerance) {
-    // not radial
-    return 0;
-  }
+  if (Eo::IsGeometricallyNonZero(m_majorAxis.Length() - m_minorAxis.Length())) { return 0; }  // not radial
 
-  EoGePoint3d ptMin, ptMax;
+  EoGePoint3d ptMin;
+  EoGePoint3d ptMax;
 
   EoGePoint3d ptBeg = PointAtStartAngle();
   EoGePoint3d ptEnd = PointAtEndAngle();
@@ -808,7 +805,7 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
       }
     }
   }
-  if (std::abs(m_sweepAngle - Eo::TwoPi) < Eo::geometricTolerance) {  // Arc is a circle in disuise
+  if (Eo::IsGeometricallyZero(m_sweepAngle - Eo::TwoPi)) {  // Arc is a circle in disuise
 
   } else {
     if (ptBeg.x >= lowerLeft.x && ptBeg.x <= upperRight.x && ptBeg.y >= lowerLeft.y &&
