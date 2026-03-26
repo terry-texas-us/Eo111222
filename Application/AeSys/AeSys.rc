@@ -346,6 +346,7 @@ BEGIN
         MENUITEM "P&en Widths",                 ID_VIEW_PENWIDTHS
         MENUITEM "&Background Image",           ID_VIEW_BACKGROUNDIMAGE
         MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
+        MENUITEM "Use &Direct2D",               ID_VIEW_DIRECT2D
         MENUITEM SEPARATOR
         POPUP "&Window\t="
         BEGIN
@@ -624,6 +625,7 @@ BEGIN
         MENUITEM "P&en Widths",                 ID_VIEW_PENWIDTHS
         MENUITEM "&Background Image",           ID_VIEW_BACKGROUNDIMAGE
         MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
+        MENUITEM "Use &Direct2D",               ID_VIEW_DIRECT2D
         MENUITEM SEPARATOR
         POPUP "&Window\t="
         BEGIN

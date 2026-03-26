@@ -117,16 +117,15 @@ void EoDbPolyline::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   const auto numberOfVertices = m_pts.GetSize();
   if (numberOfVertices < 2) { return; }
 
-  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, deviceContext, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
+  renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   // Render filled width outline underneath the centerline when width data is present.
   // HasWidth() covers per-vertex vectors; m_constantWidth covers the global-width-only case.
-  if (HasWidth() || Eo::IsGeometricallyNonZero(m_constantWidth)) { DisplayWidthFill(view, deviceContext, color); }
+  if (HasWidth() || Eo::IsGeometricallyNonZero(m_constantWidth)) { DisplayWidthFill(view, renderDevice, color); }
 
   if (IsClosed()) {
     polyline::BeginLineLoop();
@@ -164,7 +163,7 @@ void EoDbPolyline::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   polyline::End(view, renderDevice, lineType, lineTypeName);
 }
 
-void EoDbPolyline::DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::int16_t color) const {
+void EoDbPolyline::DisplayWidthFill(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color) const {
   const auto numberOfVertices = m_pts.GetSize();
   if (numberOfVertices < 2) { return; }
 
@@ -179,9 +178,8 @@ void EoDbPolyline::DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::in
   // is tessellated first and each sub-segment gets its own quad with linearly-interpolated width.
   // This matches AutoCAD/TrueView behavior where segments overlap at joints.
 
-  CBrush brush(pColTbl[color]);
-  auto* oldBrush = deviceContext->SelectObject(&brush);
-  auto* oldPen = static_cast<CPen*>(deviceContext->SelectStockObject(NULL_PEN));
+  renderDevice->SelectSolidBrush(pColTbl[color]);
+  renderDevice->SelectPen(PS_NULL, 0, 0);
 
   // Renders a single sub-segment as a filled trapezoid
   const auto renderQuad = [&](const EoGePoint3d& startPt, const EoGePoint3d& endPt, double halfStartWidth,
@@ -210,7 +208,7 @@ void EoDbPolyline::DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::in
 
     std::vector<CPoint> clientPoints(static_cast<size_t>(clippedCount));
     view->ProjectToClient(clientPoints.data(), quadNdc);
-    deviceContext->Polygon(clientPoints.data(), clippedCount);
+    renderDevice->Polygon(clientPoints.data(), clippedCount);
   };
 
   const auto segmentCount = IsClosed() ? numberOfVertices : (numberOfVertices - 1);
@@ -307,7 +305,7 @@ void EoDbPolyline::DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::in
         if (clippedCount >= 3) {
           std::vector<CPoint> clientPoints(static_cast<size_t>(clippedCount));
           view->ProjectToClient(clientPoints.data(), quadNdc);
-          deviceContext->Polygon(clientPoints.data(), clippedCount);
+          renderDevice->Polygon(clientPoints.data(), clippedCount);
         }
 
         prevPoint = arcPoints[arcIndex];
@@ -319,8 +317,8 @@ void EoDbPolyline::DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::in
     }
   }
 
-  deviceContext->SelectObject(oldPen);
-  deviceContext->SelectObject(oldBrush);
+  renderDevice->RestorePen();
+  renderDevice->RestoreBrush();
 }
 
 void EoDbPolyline::ExportToDxf(EoDxfInterface* writer) const {

@@ -133,15 +133,14 @@ void EoDbText::ConvertFormattingCharacters() {
 }
 
 void EoDbText::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
-  renderState.SetColor(deviceContext, color);
+  renderState.SetColor(renderDevice, color);
 
   std::int16_t lineTypeIndex = renderState.LineTypeIndex();
-  renderState.SetLineType(deviceContext, 1);
+  renderState.SetLineType(renderDevice, 1);
 
   DisplayText(view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_strText);
-  renderState.SetLineType(deviceContext, lineTypeIndex);
+  renderState.SetLineType(renderDevice, lineTypeIndex);
 }
 
 void EoDbText::ExportToDxf(EoDxfInterface* writer) const {
@@ -477,8 +476,7 @@ void DisplayText(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefini
 }
 void DisplayTextSegment(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text) {
-  auto* deviceContext = renderDevice->GetCDC();
-  if (deviceContext != 0 && fd.Precision() == EoDb::Precision::TrueType && view->ViewTrueTypeFonts()) {
+  if (renderDevice != nullptr && fd.Precision() == EoDb::Precision::TrueType && view->ViewTrueTypeFonts()) {
     EoGeVector3d XDirection(referenceSystem.XDirection());
     EoGeVector3d YDirection(referenceSystem.YDirection());
 
@@ -599,8 +597,6 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* rend
     EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text) {
   if (numberOfCharacters <= 0) { return true; }
 
-  auto* deviceContext = renderDevice->GetCDC();
-
   EoGeTransformMatrix transformMatrix(referenceSystem.TransformMatrix());
   transformMatrix.Inverse();
 
@@ -638,16 +634,15 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* rend
   logfont.lfPitchAndFamily = DEFAULT_PITCH;
   wcscpy_s(logfont.lfFaceName, LF_FACESIZE, fontDefinition.FontName());
 
-  CFont font;
-  font.CreateFontIndirect(&logfont);
-  CFont* pfntold = (CFont*)deviceContext->SelectObject(&font);
-  UINT uTextAlign = deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);
-  int iBkMode = deviceContext->SetBkMode(TRANSPARENT);
+  renderDevice->SelectFont(&logfont);
+  UINT uTextAlign = renderDevice->SetTextAlign(TA_LEFT | TA_BASELINE);
+  int iBkMode = renderDevice->SetBkMode(TRANSPARENT);
 
-  deviceContext->TextOutW(clientPoint.x, clientPoint.y, (LPCWSTR)text.Mid(startPosition), numberOfCharacters);
-  deviceContext->SetBkMode(iBkMode);
-  deviceContext->SetTextAlign(uTextAlign);
-  deviceContext->SelectObject(pfntold);
+  const wchar_t* textData = static_cast<const wchar_t*>(text) + startPosition;
+  renderDevice->TextOut(clientPoint.x, clientPoint.y, textData, numberOfCharacters);
+  renderDevice->SetBkMode(iBkMode);
+  renderDevice->SetTextAlign(uTextAlign);
+  renderDevice->RestoreFont();
 
   return true;
 }

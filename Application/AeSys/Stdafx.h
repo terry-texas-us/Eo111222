@@ -37,6 +37,13 @@
 #include <atltrace.h>
 const int traceGeneral = static_cast<int>(atlTraceGeneral);
 
+// Direct2D / DirectWrite — Phase 6 of the rendering migration
+#include <d2d1.h>
+#include <dwrite.h>
+#include <wrl/client.h>
+#pragma comment(lib, "d2d1.lib")
+#pragma comment(lib, "dwrite.lib")
+
 #ifdef TRACE
 #undef TRACE  // Suppress the default TRACE macro to avoid conflicts with ATL's tracing system
 #endif

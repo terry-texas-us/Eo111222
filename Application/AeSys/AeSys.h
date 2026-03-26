@@ -93,6 +93,10 @@ class AeSys : public CWinAppEx {
   bool m_HighColorMode{};
   bool m_ModeInformationOverView{};
 
+  // Direct2D / DirectWrite factory singletons (Phase 6)
+  Microsoft::WRL::ComPtr<ID2D1Factory> m_d2dFactory;
+  Microsoft::WRL::ComPtr<IDWriteFactory> m_dwriteFactory;
+
 #if defined(USING_DDE)
   double m_ExtractedNumber{};
   CString m_ExtractedString;
@@ -204,6 +208,13 @@ class AeSys : public CWinAppEx {
    */
   void LoadHatchesFromFile(const CString& strFileName);
   [[nodiscard]] bool HighColorMode() const { return m_HighColorMode; }
+
+  /// @brief Returns the process-wide Direct2D factory (single-threaded).
+  [[nodiscard]] ID2D1Factory* D2DFactory() const { return m_d2dFactory.Get(); }
+
+  /// @brief Returns the process-wide DirectWrite factory.
+  [[nodiscard]] IDWriteFactory* DWriteFactory() const { return m_dwriteFactory.Get(); }
+
   [[nodiscard]] EoGePoint3d HomePointGet(int i) const;
   void HomePointSave(int i, const EoGePoint3d& pt);
   void InitGbls(CDC* deviceContext);

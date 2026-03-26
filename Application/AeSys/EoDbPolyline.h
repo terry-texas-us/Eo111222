@@ -128,9 +128,9 @@ class EoDbPolyline : public EoDbPrimitive {
   /// interpolated width.
   ///
   /// @param view      View context for model-to-client coordinate transforms.
-  /// @param deviceContext  GDI device context for polygon fill rendering.
+  /// @param renderDevice  Render device for polygon fill rendering.
   /// @param color     Resolved entity color index (for the fill brush).
-  void DisplayWidthFill(AeSysView* view, CDC* deviceContext, std::int16_t color) const;
+  void DisplayWidthFill(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color) const;
 
  public:
   static std::uint16_t& EdgeToEvaluate() noexcept { return sm_EdgeToEvaluate; }

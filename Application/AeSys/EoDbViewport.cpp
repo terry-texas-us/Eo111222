@@ -93,7 +93,6 @@ EoDbPrimitive*& EoDbViewport::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbViewport::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  auto* deviceContext = renderDevice->GetCDC();
   // Minimal display: draw the viewport boundary rectangle in paper space.
   // Full paper-space clipping pipeline is deferred.
   const double halfWidth = m_width / 2.0;
@@ -109,8 +108,7 @@ void EoDbViewport::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   const std::int16_t color = LogicalColor();
   const COLORREF hotPenColor = app.PenColorsGetHot(color);
 
-  CPen pen(PS_DOT, 1, hotPenColor);
-  CPen* previousPen = deviceContext->SelectObject(&pen);
+  renderDevice->SelectPen(PS_DOT, 1, hotPenColor);
 
   EoGePoint4d ndcCorners[4];
   CPoint clientCorners[4];
@@ -124,12 +122,12 @@ void EoDbViewport::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   }
 
   if (anyInView) {
-    deviceContext->MoveTo(clientCorners[0]);
-    for (int i = 1; i < 4; ++i) { deviceContext->LineTo(clientCorners[i]); }
-    deviceContext->LineTo(clientCorners[0]);
+    renderDevice->MoveTo(clientCorners[0].x, clientCorners[0].y);
+    for (int i = 1; i < 4; ++i) { renderDevice->LineTo(clientCorners[i].x, clientCorners[i].y); }
+    renderDevice->LineTo(clientCorners[0].x, clientCorners[0].y);
   }
 
-  deviceContext->SelectObject(previousPen);
+  renderDevice->RestorePen();
 }
 
 void EoDbViewport::FormatExtra(CString& extra) {

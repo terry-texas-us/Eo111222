@@ -440,12 +440,11 @@ void EoDbEllipse::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 void EoDbEllipse::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   if (Eo::IsGeometricallyZero(m_sweepAngle)) { return; }
 
-  auto* deviceContext = renderDevice->GetCDC();
   auto color = LogicalColor();
   auto lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, deviceContext, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
+  renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   polyline::BeginLineStrip();
   GenPts(m_center, m_majorAxis, m_minorAxis, m_sweepAngle);

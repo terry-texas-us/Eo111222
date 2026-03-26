@@ -44,6 +44,7 @@
 #include "EoGsModelTransform.h"
 #include "EoGsRenderState.h"
 #include "EoGsRenderDeviceGdi.h"
+#include "EoGsRenderDeviceDirect2D.h"
 #include "EoGsViewTransform.h"
 #include "MainFrm.h"
 #include "Resource.h"
@@ -241,6 +242,7 @@ ON_COMMAND(ID_VIEW_STATEINFORMATION, OnViewStateInformation)
 ON_COMMAND(ID_VIEW_TRUETYPEFONTS, OnViewTrueTypeFonts)
 ON_COMMAND(ID_VIEW_WINDOW, OnViewWindow)
 ON_COMMAND(ID_VIEW_WIREFRAME, OnViewWireframe)
+ON_COMMAND(ID_VIEW_DIRECT2D, OnViewDirect2D)
 ON_COMMAND(ID_WINDOW_BEST, OnWindowBest)
 ON_COMMAND(ID_WINDOW_NORMAL, OnWindowNormal)
 ON_COMMAND(ID_WINDOW_LAST, OnWindowLast)
@@ -265,6 +267,7 @@ ON_UPDATE_COMMAND_UI(ID_VIEW_RENDERED, OnUpdateViewRendered)
 ON_UPDATE_COMMAND_UI(ID_VIEW_STATEINFORMATION, OnUpdateViewStateinformation)
 ON_UPDATE_COMMAND_UI(ID_VIEW_TRUETYPEFONTS, OnUpdateViewTrueTypeFonts)
 ON_UPDATE_COMMAND_UI(ID_VIEW_WIREFRAME, OnUpdateViewWireframe)
+ON_UPDATE_COMMAND_UI(ID_VIEW_DIRECT2D, OnUpdateViewDirect2D)
 #if defined(USING_STATE_PATTERN)
 ON_COMMAND_RANGE(ID_DRAW_MODE_OPTIONS, ID_DRAW_MODE_SHIFT_RETURN, &AeSysView::OnDrawCommand)
 #endif
@@ -650,6 +653,57 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     return;
   }
 
+  // Direct2D rendering path — the HWND render target is inherently double-buffered
+  if (m_useD2D && m_d2dRenderTarget) {
+    if (m_sceneInvalid) {
+      m_d2dRenderTarget->BeginDraw();
+      auto bkColor = D2D1::ColorF(
+          GetRValue(Eo::ViewBackgroundColor) / 255.0f,
+          GetGValue(Eo::ViewBackgroundColor) / 255.0f,
+          GetBValue(Eo::ViewBackgroundColor) / 255.0f);
+      m_d2dRenderTarget->Clear(bkColor);
+
+      auto* document = GetDocument();
+      assert(document != nullptr);
+      EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
+      document->DisplayAllLayers(this, &renderDevice);
+      document->DisplayUniquePoints();
+
+      // Draw rubberband overlay after the scene
+      if (m_rubberbandType != None) {
+        Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> rubberbandBrush;
+        constexpr auto cr = Eo::colorRubberband;
+        auto rubberbandColor = D2D1::ColorF(
+            (cr & 0xFF) / 255.0f, ((cr >> 8) & 0xFF) / 255.0f, ((cr >> 16) & 0xFF) / 255.0f);
+        m_d2dRenderTarget->CreateSolidColorBrush(rubberbandColor, &rubberbandBrush);
+        if (rubberbandBrush) {
+          auto begin = D2D1::Point2F(
+              static_cast<float>(m_rubberbandLogicalBegin.x), static_cast<float>(m_rubberbandLogicalBegin.y));
+          auto end = D2D1::Point2F(
+              static_cast<float>(m_rubberbandLogicalEnd.x), static_cast<float>(m_rubberbandLogicalEnd.y));
+          if (m_rubberbandType == Lines) {
+            m_d2dRenderTarget->DrawLine(begin, end, rubberbandBrush.Get(), 1.0f);
+          } else if (m_rubberbandType == Rectangles) {
+            auto rect = D2D1::RectF(begin.x, begin.y, end.x, end.y);
+            m_d2dRenderTarget->DrawRectangle(rect, rubberbandBrush.Get(), 1.0f);
+          }
+        }
+      }
+
+      HRESULT hr = m_d2dRenderTarget->EndDraw();
+      if (hr == D2DERR_RECREATE_TARGET) {
+        DiscardD2DResources();
+        InvalidateScene();
+        return;
+      }
+      m_sceneInvalid = false;
+    }
+    UpdateStateInformation(All);
+    ModeLineDisplay();
+    ValidateRect(nullptr);
+    return;
+  }
+
   CRect clipRect;
   deviceContext->GetClipBox(clipRect);
   ATLTRACE2(traceGeneral, 3, L" ClipBox(%i, %i, %i, %i)\n", clipRect.left, clipRect.top, clipRect.right, clipRect.bottom);
@@ -761,6 +815,20 @@ void AeSysView::DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject
 
 void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnUpdate(%p, %p, %p)\n", this, sender, hint, hintObject);
+
+  // Hint 0 means full scene refresh (e.g., model/paper space toggle, layer visibility change).
+  // Mark scene dirty and let OnDraw re-render from scratch.
+  if (hint == 0) {
+    InvalidateScene();
+    return;
+  }
+
+  // D2D path: incremental XOR-based updates are not supported — invalidate
+  // the scene and let OnDraw do a full re-render (fast with D2D).
+  if (m_useD2D) {
+    InvalidateScene();
+    return;
+  }
 
   // Choose the target DC: back buffer if available, otherwise screen DC
   CDC* targetDC{};
@@ -1035,38 +1103,44 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
       PreviewGroupEdit();
       break;
   }
-  if (m_rubberbandType == Lines) {
-    auto* deviceContext = GetDC();
-    auto drawMode = deviceContext->SetROP2(R2_XORPEN);
-    CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
-    auto* pen = deviceContext->SelectObject(&grayPen);
+  if (m_rubberbandType == Lines || m_rubberbandType == Rectangles) {
+    if (m_useD2D) {
+      // D2D path: update endpoint and invalidate — rubberband drawn as overlay in OnDraw
+      m_rubberbandLogicalEnd = point;
+      InvalidateScene();
+    } else if (m_rubberbandType == Lines) {
+      auto* deviceContext = GetDC();
+      auto drawMode = deviceContext->SetROP2(R2_XORPEN);
+      CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
+      auto* pen = deviceContext->SelectObject(&grayPen);
 
-    deviceContext->MoveTo(m_rubberbandLogicalBegin);
-    deviceContext->LineTo(m_rubberbandLogicalEnd);
+      deviceContext->MoveTo(m_rubberbandLogicalBegin);
+      deviceContext->LineTo(m_rubberbandLogicalEnd);
 
-    m_rubberbandLogicalEnd = point;
-    deviceContext->MoveTo(m_rubberbandLogicalBegin);
-    deviceContext->LineTo(m_rubberbandLogicalEnd);
-    deviceContext->SelectObject(pen);
-    deviceContext->SetROP2(drawMode);
-    ReleaseDC(deviceContext);
-  } else if (m_rubberbandType == Rectangles) {
-    auto* deviceContext = GetDC();
-    auto drawMode = deviceContext->SetROP2(R2_XORPEN);
-    CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
-    auto* pen = deviceContext->SelectObject(&grayPen);
-    auto* brush = deviceContext->SelectStockObject(NULL_BRUSH);
+      m_rubberbandLogicalEnd = point;
+      deviceContext->MoveTo(m_rubberbandLogicalBegin);
+      deviceContext->LineTo(m_rubberbandLogicalEnd);
+      deviceContext->SelectObject(pen);
+      deviceContext->SetROP2(drawMode);
+      ReleaseDC(deviceContext);
+    } else {  // Rectangles, GDI path
+      auto* deviceContext = GetDC();
+      auto drawMode = deviceContext->SetROP2(R2_XORPEN);
+      CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
+      auto* pen = deviceContext->SelectObject(&grayPen);
+      auto* brush = deviceContext->SelectStockObject(NULL_BRUSH);
 
-    deviceContext->Rectangle(
-        m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y, m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
+      deviceContext->Rectangle(
+          m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y, m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
 
-    m_rubberbandLogicalEnd = point;
-    deviceContext->Rectangle(
-        m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y, m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
-    deviceContext->SelectObject(brush);
-    deviceContext->SelectObject(pen);
-    deviceContext->SetROP2(drawMode);
-    ReleaseDC(deviceContext);
+      m_rubberbandLogicalEnd = point;
+      deviceContext->Rectangle(
+          m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y, m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
+      deviceContext->SelectObject(brush);
+      deviceContext->SelectObject(pen);
+      deviceContext->SetROP2(drawMode);
+      ReleaseDC(deviceContext);
+    }
   }
 }
 
@@ -1108,6 +1182,34 @@ void AeSysView::InvalidateScene() {
   InvalidateRect(nullptr, FALSE);
 }
 
+void AeSysView::CreateD2DRenderTarget() {
+  if (m_d2dRenderTarget) { return; }  // already created
+
+  auto* factory = app.D2DFactory();
+  if (factory == nullptr) { return; }
+
+  CRect clientRect;
+  GetClientRect(&clientRect);
+  if (clientRect.IsRectEmpty()) { return; }
+
+  D2D1_SIZE_U size = D2D1::SizeU(static_cast<UINT32>(clientRect.Width()), static_cast<UINT32>(clientRect.Height()));
+
+  D2D1_RENDER_TARGET_PROPERTIES rtProps = D2D1::RenderTargetProperties();
+  rtProps.dpiX = 96.0f;
+  rtProps.dpiY = 96.0f;
+  D2D1_HWND_RENDER_TARGET_PROPERTIES hwndProps = D2D1::HwndRenderTargetProperties(GetSafeHwnd(), size);
+
+  HRESULT hr = factory->CreateHwndRenderTarget(rtProps, hwndProps, &m_d2dRenderTarget);
+  if (FAILED(hr)) {
+    ATLTRACE2(traceGeneral, 0, L"AeSysView<%p>::CreateD2DRenderTarget() FAILED hr=0x%08X\n", this, hr);
+    m_d2dRenderTarget.Reset();
+  }
+}
+
+void AeSysView::DiscardD2DResources() {
+  m_d2dRenderTarget.Reset();
+}
+
 void AeSysView::OnSize(UINT type, int cx, int cy) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>OnSize(%i, %i, %i)\n", this, type, cx, cy);
 
@@ -1115,7 +1217,24 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
     SetViewportSize(cx, cy);
     m_ViewTransform.Initialize(m_Viewport);
     m_OverviewViewTransform = m_ViewTransform;
-    RecreateBackBuffer(cx, cy);
+
+    if (m_useD2D) {
+      if (!m_d2dRenderTarget) { CreateD2DRenderTarget(); }
+      if (m_d2dRenderTarget) {
+        D2D1_SIZE_U size = D2D1::SizeU(static_cast<UINT32>(cx), static_cast<UINT32>(cy));
+        HRESULT hr = m_d2dRenderTarget->Resize(size);
+        if (FAILED(hr)) {
+          DiscardD2DResources();
+        }
+        m_sceneInvalid = true;
+      } else {
+        // D2D creation failed — fall back to GDI
+        m_useD2D = false;
+        RecreateBackBuffer(cx, cy);
+      }
+    } else {
+      RecreateBackBuffer(cx, cy);
+    }
   }
 }
 
@@ -1473,6 +1592,26 @@ void AeSysView::OnViewWireframe() {
   m_ViewWireframe = !m_ViewWireframe;
   InvalidateScene();
 }
+
+void AeSysView::OnViewDirect2D() {
+  m_useD2D = !m_useD2D;
+  if (m_useD2D) {
+    CreateD2DRenderTarget();
+    if (!m_d2dRenderTarget) {
+      // Failed to create render target — fall back to GDI
+      m_useD2D = false;
+    }
+  } else {
+    DiscardD2DResources();
+    // Re-create GDI back buffer for the current client area
+    CRect clientRect;
+    GetClientRect(&clientRect);
+    RecreateBackBuffer(clientRect.Width(), clientRect.Height());
+  }
+  InvalidateScene();
+}
+
+void AeSysView::OnUpdateViewDirect2D(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_useD2D); }
 
 void AeSysView::OnViewWindowKeyplan() {
   EoDlgActiveViewKeyplan dlg(this);
@@ -2375,6 +2514,12 @@ void AeSysView::OnEditFind() { ATLTRACE2(traceGeneral, 1, L"AeSysView::OnEditFin
 
 void AeSysView::RubberBandingDisable() {
   if (m_rubberbandType != None) {
+    if (m_useD2D) {
+      // D2D path: just clear the type — next OnDraw omits the rubberband overlay
+      m_rubberbandType = None;
+      InvalidateScene();
+      return;
+    }
     auto* deviceContext = GetDC();
     int drawMode = deviceContext->SetROP2(R2_XORPEN);
     CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);

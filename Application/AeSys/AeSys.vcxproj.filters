@@ -3486,6 +3486,9 @@
     <ClCompile Include="EoGsVertexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EoGsRenderDeviceDirect2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\AeSys.rc2">
@@ -8036,6 +8039,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EoGsVertexBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EoGsRenderDeviceDirect2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

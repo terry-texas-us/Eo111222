@@ -65,12 +65,11 @@ EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbSpline::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
   std::int16_t lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, deviceContext, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
+  renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   polyline::BeginLineStrip();
   GenPts(orderOfTheSpline, m_pts);

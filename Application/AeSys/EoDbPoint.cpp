@@ -87,7 +87,6 @@ EoDbPrimitive*& EoDbPoint::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbPoint::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  auto* context = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
 
   COLORREF hotPenColor = app.PenColorsGetHot(color);
@@ -114,7 +113,7 @@ void EoDbPoint::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   switch (m_pointStyle & 0x0F) {  // Low nibble defines basic shape
 
     case 0:  // single pixel
-      context->SetPixel(clientPoint, hotPenColor);
+      renderDevice->SetPixel(clientPoint, hotPenColor);
       break;
 
     case 1:  // no visible mark
@@ -122,36 +121,35 @@ void EoDbPoint::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
 
     case 2:  // small +
       for (i = -pixelSize; i <= pixelSize; i++) {
-        context->SetPixel(clientPoint.x + i, clientPoint.y, hotPenColor);
-        context->SetPixel(clientPoint.x, clientPoint.y + i, hotPenColor);
+        renderDevice->SetPixel(clientPoint.x + i, clientPoint.y, hotPenColor);
+        renderDevice->SetPixel(clientPoint.x, clientPoint.y + i, hotPenColor);
       }
       break;
 
     case 4:  // small |
-      for (i = -pixelSize; i <= pixelSize; i++) { context->SetPixel(clientPoint.x, clientPoint.y + i, hotPenColor); }
+      for (i = -pixelSize; i <= pixelSize; i++) { renderDevice->SetPixel(clientPoint.x, clientPoint.y + i, hotPenColor); }
       break;
 
     default:  // small X
       for (i = -pixelSize; i <= pixelSize; i++) {
-        context->SetPixel(clientPoint.x + i, clientPoint.y - i, hotPenColor);
-        context->SetPixel(clientPoint.x + i, clientPoint.y + i, hotPenColor);
+        renderDevice->SetPixel(clientPoint.x + i, clientPoint.y - i, hotPenColor);
+        renderDevice->SetPixel(clientPoint.x + i, clientPoint.y + i, hotPenColor);
       }
   }
   if (m_pointStyle & 0x20) {  // bit 5 set, draw a circle around the basic shape
-    CPen pen(PS_SOLID, 1, hotPenColor);
-    CPen* oldPen = context->SelectObject(&pen);
-    auto* oldBrush = static_cast<CBrush*>(context->SelectStockObject(NULL_BRUSH));
-    context->Ellipse(
+    renderDevice->SelectPen(PS_SOLID, 1, hotPenColor);
+    renderDevice->SelectNullBrush();
+    renderDevice->Ellipse(
         clientPoint.x - pixelSize, clientPoint.y - pixelSize, clientPoint.x + pixelSize, clientPoint.y + pixelSize);
-    context->SelectObject(oldPen);
-    context->SelectObject(oldBrush);
+    renderDevice->RestoreBrush();
+    renderDevice->RestorePen();
   }
   if (m_pointStyle & 0x40) {  // bit 6 set, draw a square around the basic shape
     for (i = -pixelSize; i <= pixelSize; i++) {
-      context->SetPixel(clientPoint.x + i, clientPoint.y - pixelSize, hotPenColor);
-      context->SetPixel(clientPoint.x + i, clientPoint.y + pixelSize, hotPenColor);
-      context->SetPixel(clientPoint.x - pixelSize, clientPoint.y + i, hotPenColor);
-      context->SetPixel(clientPoint.x + pixelSize, clientPoint.y + i, hotPenColor);
+      renderDevice->SetPixel(clientPoint.x + i, clientPoint.y - pixelSize, hotPenColor);
+      renderDevice->SetPixel(clientPoint.x + i, clientPoint.y + pixelSize, hotPenColor);
+      renderDevice->SetPixel(clientPoint.x - pixelSize, clientPoint.y + i, hotPenColor);
+      renderDevice->SetPixel(clientPoint.x + pixelSize, clientPoint.y + i, hotPenColor);
     }
   }
 }

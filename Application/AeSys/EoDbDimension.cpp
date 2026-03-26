@@ -119,19 +119,18 @@ void EoDbDimension::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 }
 
 void EoDbDimension::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
-  renderState.SetPen(view, deviceContext, color, LogicalLineType(), LogicalLineTypeName(), m_lineWeight, m_lineTypeScale);
+  renderState.SetPen(view, renderDevice, color, LogicalLineType(), LogicalLineTypeName(), m_lineWeight, m_lineTypeScale);
   m_line.Display(view, renderDevice);
 
-  renderState.SetColor(deviceContext, m_textColor);
+  renderState.SetColor(renderDevice, m_textColor);
 
   std::int16_t LineType = renderState.LineTypeIndex();
-  renderState.SetLineType(deviceContext, 1);
+  renderState.SetLineType(renderDevice, 1);
 
   DisplayText(view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_text);
 
-  renderState.SetLineType(deviceContext, LineType);
+  renderState.SetLineType(renderDevice, LineType);
 }
 
 void EoDbDimension::AddReportToMessageList(const EoGePoint3d& point) {

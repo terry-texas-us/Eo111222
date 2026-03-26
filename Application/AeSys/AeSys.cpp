@@ -196,6 +196,14 @@ BOOL AeSys::InitInstance() {
     AddStringToMessageList(L"Failed to set shadow folder path.");
   }
 
+  // Create Direct2D and DirectWrite factory singletons (Phase 6)
+  HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, m_d2dFactory.GetAddressOf());
+  if (FAILED(hr)) { ATLTRACE2(traceGeneral, 0, L"D2D1CreateFactory failed: 0x%08X\n", hr); }
+
+  hr = DWriteCreateFactory(
+      DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
+  if (FAILED(hr)) { ATLTRACE2(traceGeneral, 0, L"DWriteCreateFactory failed: 0x%08X\n", hr); }
+
   CString resourceFolder = App::ResourceFolderPath();
   LoadSimplexStrokeFont(resourceFolder + Eo::defaultStrokeFont);
   LoadHatchesFromFile(resourceFolder + L"Hatches\\DefaultSet.txt");

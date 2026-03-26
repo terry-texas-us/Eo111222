@@ -8,6 +8,7 @@
 #include "Eo.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbPrimitive.h"
+#include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 #include "Resource.h"
 
@@ -23,6 +24,24 @@ void EoGsRenderState::Restore(CDC* deviceContext, int iSaveId) {
     m_fontDefinition = psSav[iSaveId]->m_fontDefinition;
 
     SetAlignment(deviceContext, m_fontDefinition.HorizontalAlignment(), m_fontDefinition.VerticalAlignment());
+
+    SetPolygonIntStyle(psSav[iSaveId]->PolygonIntStyle());
+    SetPolygonIntStyleId(psSav[iSaveId]->PolygonIntStyleId());
+
+    delete psSav[iSaveId];
+    psSav[iSaveId] = 0;
+  }
+}
+
+void EoGsRenderState::Restore(EoGsRenderDevice* renderDevice, int iSaveId) {
+  if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
+
+  if (psSav[iSaveId] != 0) {
+    SetPen(nullptr, renderDevice, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex());
+
+    m_fontDefinition = psSav[iSaveId]->m_fontDefinition;
+
+    SetAlignment(renderDevice, m_fontDefinition.HorizontalAlignment(), m_fontDefinition.VerticalAlignment());
 
     SetPolygonIntStyle(psSav[iSaveId]->PolygonIntStyle());
     SetPolygonIntStyleId(psSav[iSaveId]->PolygonIntStyleId());
@@ -101,6 +120,57 @@ void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t c
   if (deviceContext) { ManagePenResources(deviceContext, color, int(logicalWidth), lineTypeIndex); }
 }
 
+void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color, std::int16_t lineTypeIndex) {
+  SetPen(view, renderDevice, color, lineTypeIndex, std::wstring{});
+}
+
+void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color, std::int16_t lineTypeIndex,
+    const std::wstring& lineTypeName) {
+  SetPen(view, renderDevice, color, lineTypeIndex, lineTypeName, EoDxfLineWeights::LineWeight::kLnWtByLwDefault, 1.0);
+}
+
+void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color, std::int16_t lineTypeIndex,
+    const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight, double lineTypeScale) {
+  if (EoDbPrimitive::SpecialColor() != 0) { color = EoDbPrimitive::SpecialColor(); }
+  if (color == EoDbPrimitive::COLOR_BYLAYER) { color = EoDbPrimitive::LayerColor(); }
+  if (lineTypeIndex == EoDbPrimitive::LINETYPE_BYLAYER) {
+    lineTypeIndex = EoDbPrimitive::LayerLineTypeIndex();
+    m_lineTypeName = EoDbPrimitive::LayerLineTypeName();
+  } else {
+    m_lineTypeName = lineTypeName;
+  }
+
+  // Resolve ByLayer line weight to the current layer's line weight
+  if (lineWeight == EoDxfLineWeights::LineWeight::kLnWtByLayer) {
+    lineWeight = EoDbPrimitive::LayerLineWeight();
+  }
+
+  // Resolve ByLwDefault to the system default (0.25 mm)
+  if (lineWeight == EoDxfLineWeights::LineWeight::kLnWtByLwDefault) {
+    lineWeight = EoDxfLineWeights::LineWeight::kLnWt025;
+  }
+
+  // Resolve ByLayer linetype scale to the current layer's linetype scale
+  if (lineTypeScale <= 0.0) { lineTypeScale = EoDbPrimitive::LayerLineTypeScale(); }
+
+  m_color = color;
+  m_LineTypeIndex = lineTypeIndex;
+  m_lineTypeScale = lineTypeScale;
+
+  double logicalWidth = 0.;
+
+  if (view && view->PenWidthsOn()) {
+    auto const logicalPixelsX = static_cast<double>(renderDevice->GetDeviceCaps(LOGPIXELSX));
+
+    auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
+    if (dxfCode > 0) {
+      logicalWidth = dxfCode * (0.01 / 25.4) * logicalPixelsX;
+    }
+    logicalWidth = Eo::Round(logicalWidth);
+  }
+  if (renderDevice) { ManagePenResources(renderDevice, color, int(logicalWidth), lineTypeIndex); }
+}
+
 void EoGsRenderState::ManagePenResources(
     CDC* deviceContext, std::int16_t penColor, int penWidth, std::int16_t lineType) {
   static const int NumberOfPens = 8;
@@ -158,14 +228,53 @@ void EoGsRenderState::ManagePenResources(
   }
 }
 
+void EoGsRenderState::ManagePenResources(
+    EoGsRenderDevice* renderDevice, std::int16_t penColor, int penWidth, std::int16_t lineType) {
+  // Map internal lineType index to GDI pen style constant
+  int penStyle;
+  switch (lineType) {
+    case 0:
+      penStyle = PS_NULL;
+      break;
+    case 2:
+      penStyle = PS_DOT;
+      break;
+    case 3:
+      penStyle = PS_DASH;
+      break;
+    case 6:
+      penStyle = PS_DASHDOT;
+      break;
+    case 7:
+      penStyle = PS_DASHDOTDOT;
+      break;
+    default:
+      penStyle = PS_SOLID;
+  }
+  if (renderDevice) {
+    renderDevice->SetTextColor(pColTbl[penColor]);
+    renderDevice->SelectPen(penStyle, penWidth, pColTbl[penColor]);
+  }
+}
+
 void EoGsRenderState::SetColor(CDC* deviceContext, std::int16_t color) {
   m_color = color;
   if (deviceContext) { ManagePenResources(deviceContext, color, 0, m_LineTypeIndex); }
 }
 
+void EoGsRenderState::SetColor(EoGsRenderDevice* renderDevice, std::int16_t color) {
+  m_color = color;
+  if (renderDevice) { ManagePenResources(renderDevice, color, 0, m_LineTypeIndex); }
+}
+
 void EoGsRenderState::SetLineType(CDC* deviceContext, std::int16_t lineTypeIndex) {
   m_LineTypeIndex = lineTypeIndex;
   if (deviceContext) { ManagePenResources(deviceContext, m_color, 0, lineTypeIndex); }
+}
+
+void EoGsRenderState::SetLineType(EoGsRenderDevice* renderDevice, std::int16_t lineTypeIndex) {
+  m_LineTypeIndex = lineTypeIndex;
+  if (renderDevice) { ManagePenResources(renderDevice, m_color, 0, lineTypeIndex); }
 }
 
 /** @brief Sets the current foreground mix mode. GDI uses the foreground mix mode to combine pens and
@@ -192,6 +301,17 @@ int EoGsRenderState::SetROP2(CDC* deviceContext, int drawMode) {
   return deviceContext->SetROP2(drawMode);
 }
 
+int EoGsRenderState::SetROP2(EoGsRenderDevice* renderDevice, int drawMode) {
+  if (Eo::ColorPalette[0] == Eo::colorBlack) {
+    return renderDevice->SetROP2(drawMode);
+  } else if (Eo::ColorPalette[0] == Eo::colorWhite) {
+    if (drawMode == R2_XORPEN) { drawMode = R2_NOTXORPEN; }
+  } else {
+    if (drawMode == R2_XORPEN || drawMode == R2_NOTXORPEN) { drawMode = R2_COPYPEN; }
+  }
+  return renderDevice->SetROP2(drawMode);
+}
+
 void EoGsRenderState::SetAlignment(
     CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
   m_fontDefinition.SetAlignment(horizontalAlignment, verticalAlignment);
@@ -199,7 +319,19 @@ void EoGsRenderState::SetAlignment(
   deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);
 }
 
+void EoGsRenderState::SetAlignment(
+    EoGsRenderDevice* renderDevice, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
+  m_fontDefinition.SetAlignment(horizontalAlignment, verticalAlignment);
+
+  renderDevice->SetTextAlign(TA_LEFT | TA_BASELINE);
+}
+
 void EoGsRenderState::SetFontDefinition(CDC* deviceContext, const EoDbFontDefinition& fd) {
   m_fontDefinition = fd;
   SetAlignment(deviceContext, m_fontDefinition.HorizontalAlignment(), m_fontDefinition.VerticalAlignment());
+}
+
+void EoGsRenderState::SetFontDefinition(EoGsRenderDevice* renderDevice, const EoDbFontDefinition& fd) {
+  m_fontDefinition = fd;
+  SetAlignment(renderDevice, m_fontDefinition.HorizontalAlignment(), m_fontDefinition.VerticalAlignment());
 }

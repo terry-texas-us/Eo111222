@@ -431,11 +431,10 @@ void EoDbConic::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   // Skip if major axis is degenerate
   if (m_majorAxis.Length() < Eo::geometricTolerance) { return; }
 
-  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, deviceContext, LogicalColor(), lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
+  renderState.SetPen(view, renderDevice, LogicalColor(), lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   polyline::BeginLineStrip();
   GenerateApproximationVertices(m_center, m_majorAxis);

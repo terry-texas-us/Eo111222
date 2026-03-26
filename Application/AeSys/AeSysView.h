@@ -5,6 +5,9 @@
 #include <memory>
 #include <stack>
 
+#include <d2d1.h>
+#include <wrl/client.h>
+
 #include "Eo.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
@@ -92,6 +95,10 @@ class AeSysView : public CView {
   CBitmap m_backBuffer;
   CSize m_backBufferSize{0, 0};
   bool m_sceneInvalid{true};
+
+  // Direct2D render target (Phase 6)
+  Microsoft::WRL::ComPtr<ID2D1HwndRenderTarget> m_d2dRenderTarget;
+  bool m_useD2D{true};
 
   CBitmap m_backgroundImageBitmap;
   CPalette m_backgroundImagePalette;
@@ -320,12 +327,9 @@ class AeSysView : public CView {
   CPoint m_rubberbandLogicalEnd;
 
   /** @brief Disables rubber banding by erasing the current rubber band from the view.
-   * @note This function checks if rubber banding is currently active (i.e., m_rubberbandType is not None).
-   * If it is active, it retrieves the device context for the view and sets the drawing mode to R2_XORPEN,
-   * which allows for erasing the rubber band by drawing it again. Depending on the type of rubber band (Lines or
-   * Rectangles), it either draws a line or a rectangle using the logical begin and end points of the rubber band. After
-   * erasing the rubber band, it restores the original drawing mode and releases the device context. Finally, it sets
-   * m_rubberbandType to None to indicate that rubber banding is no longer active.
+   * @note When Direct2D is active, simply clears the rubberband type and invalidates the scene — the next
+   * OnDraw omits the rubberband overlay. When GDI is active, erases the rubber band using R2_XORPEN by
+   * redrawing it. Sets m_rubberbandType to None in both cases.
    */
   void RubberBandingDisable();
   /** @brief Initializes rubber banding for a given point and type.
@@ -417,6 +421,12 @@ class AeSysView : public CView {
  private:
   /// @brief Recreates the off-screen back buffer to match the given dimensions.
   void RecreateBackBuffer(int width, int height);
+
+  /// @brief Creates (or recreates) the Direct2D HWND render target for this view.
+  void CreateD2DRenderTarget();
+
+  /// @brief Releases the Direct2D render target and all device-dependent resources.
+  void DiscardD2DResources();
 
  public:
   /// <summary> Deletes last group detectable in the this view.</summary>
@@ -1046,6 +1056,7 @@ class AeSysView : public CView {
   afx_msg void OnUpdateViewPenwidths(CCmdUI* pCmdUI);
   afx_msg void OnUpdateViewRendered(CCmdUI* pCmdUI);
   afx_msg void OnUpdateViewWireframe(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateViewDirect2D(CCmdUI* pCmdUI);
   afx_msg void OnViewBackgroundImage();
   afx_msg void OnViewTrueTypeFonts();
   afx_msg void OnViewPenWidths();
@@ -1057,6 +1068,7 @@ class AeSysView : public CView {
   afx_msg void OnViewRendered();
   afx_msg void OnViewWindowKeyplan();
   afx_msg void OnViewWireframe();
+  afx_msg void OnViewDirect2D();
   afx_msg void OnWindowZoomSpecial();
   afx_msg void OnWindowNormal();
   afx_msg void OnWindowBest();

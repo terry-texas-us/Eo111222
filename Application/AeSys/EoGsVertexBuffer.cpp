@@ -125,18 +125,15 @@ void EoGsVertexBuffer::DisplayDashPattern(
 
 void EoGsVertexBuffer::End(
     AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t lineTypeIndex, const std::wstring& lineTypeName) {
-  // Transitional: renderState still uses CDC* for pen style changes
-  auto* deviceContext = renderDevice->GetCDC();
-
   // Try name-based lookup first for non-Continuous linetypes
   if (!lineTypeName.empty() && _wcsicmp(lineTypeName.c_str(), L"CONTINUOUS") != 0
       && _wcsicmp(lineTypeName.c_str(), L"ByLayer") != 0 && _wcsicmp(lineTypeName.c_str(), L"ByBlock") != 0) {
     auto* lineTypeTable = AeSysDoc::GetDoc()->LineTypeTable();
     EoDbLineType* lineType{};
     if (lineTypeTable->Lookup(CString(lineTypeName.c_str()), lineType) && lineType->GetNumberOfDashes() > 0) {
-      renderState.SetLineType(deviceContext, 1);
+      renderState.SetLineType(renderDevice, 1);
       DisplayDashPattern(view, renderDevice, m_points, lineType);
-      renderState.SetLineType(deviceContext, lineTypeIndex);
+      renderState.SetLineType(renderDevice, lineTypeIndex);
       return;
     }
   }
@@ -169,9 +166,9 @@ void EoGsVertexBuffer::End(
 
     EoDbLineType* lineType{};
     if (!lineTypeTable->LookupUsingLegacyIndex(static_cast<std::uint16_t>(lineTypeIndex), lineType)) { return; }
-    renderState.SetLineType(deviceContext, 1);
+    renderState.SetLineType(renderDevice, 1);
     DisplayDashPattern(view, renderDevice, m_points, lineType);
-    renderState.SetLineType(deviceContext, lineTypeIndex);
+    renderState.SetLineType(renderDevice, lineTypeIndex);
   }
 }
 

@@ -9,6 +9,7 @@
 #include "EoDxfLineWeights.h"
 
 class AeSysView;
+class EoGsRenderDevice;
 
 class EoGsRenderState {
   EoDbFontDefinition m_fontDefinition{};
@@ -33,6 +34,7 @@ class EoGsRenderState {
 
  public:
   void Restore(CDC* deviceContext, int saveIndex);
+  void Restore(EoGsRenderDevice* renderDevice, int saveIndex);
   int Save();
 
   /** @brief This function is responsible for managing the resources associated with pen definitions,
@@ -45,16 +47,27 @@ class EoGsRenderState {
    */
   void ManagePenResources(CDC* deviceContext, std::int16_t color, int width, std::int16_t lineType);
 
+  /// @brief Backend-agnostic overload — routes through EoGsRenderDevice::SelectPen.
+  void ManagePenResources(EoGsRenderDevice* renderDevice, std::int16_t color, int width, std::int16_t lineType);
+
   void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType);
   void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType,
       const std::wstring& lineTypeName);
   void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType,
       const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight, double lineTypeScale);
 
+  void SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t penColor, std::int16_t lineType);
+  void SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t penColor, std::int16_t lineType,
+      const std::wstring& lineTypeName);
+  void SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t penColor, std::int16_t lineType,
+      const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight, double lineTypeScale);
+
   void SetColor(CDC* deviceContext, std::int16_t color);
+  void SetColor(EoGsRenderDevice* renderDevice, std::int16_t color);
   [[nodiscard]] std::int16_t Color() const { return m_color; }
 
   void SetLineType(CDC* deviceContext, std::int16_t lineType);
+  void SetLineType(EoGsRenderDevice* renderDevice, std::int16_t lineType);
   [[nodiscard]] std::int16_t LineTypeIndex() const { return m_LineTypeIndex; }
 
   void SetLineTypeName(std::wstring name) { m_lineTypeName = std::move(name); }
@@ -66,6 +79,7 @@ class EoGsRenderState {
     m_characterCellDefinition = characterCellDefinition;
   }
   void SetFontDefinition(CDC* deviceContext, const EoDbFontDefinition& fontDefinition);
+  void SetFontDefinition(EoGsRenderDevice* renderDevice, const EoDbFontDefinition& fontDefinition);
   [[nodiscard]] EoDbCharacterCellDefinition CharacterCellDefinition() const noexcept {
     return m_characterCellDefinition;
   }
@@ -88,8 +102,11 @@ class EoGsRenderState {
    * @note This function is typically used to change the drawing mode for a specific device context.
    */
   int SetROP2(CDC* deviceContext, int drawMode);
+  int SetROP2(EoGsRenderDevice* renderDevice, int drawMode);
 
   void SetAlignment(
       CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment);
+  void SetAlignment(
+      EoGsRenderDevice* renderDevice, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment);
 };
 extern EoGsRenderState renderState;

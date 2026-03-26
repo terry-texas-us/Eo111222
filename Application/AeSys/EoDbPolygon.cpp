@@ -48,7 +48,6 @@ typedef struct tagFilAreaEdgLis {
 
 void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTransformMatrix& transformMatrix, const int iSets,
     const int* iPtLstsId, EoGePoint3d* pta) {
-  auto* deviceContext = renderDevice->GetCDC();
   double dCurStrLen{};
   double dEps1{};
   double dMaxY{};
@@ -77,11 +76,11 @@ void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTr
   std::int16_t color = renderState.Color();
   std::int16_t lineType = renderState.LineTypeIndex();
 
-  renderState.SetLineType(deviceContext, 1);
+  renderState.SetLineType(renderDevice, 1);
 
   const int fillStyleIndex = renderState.PolygonIntStyleId();
   if (fillStyleIndex < 0 || fillStyleIndex >= hatch::maxPatterns || hatch::tableOffset[fillStyleIndex] == 0) {
-    renderState.SetPen(view, deviceContext, color, lineType);
+    renderState.SetPen(view, renderDevice, color, lineType);
     return;  // Out-of-range or uninitialized hatch table entry — nothing to draw
   }
 
@@ -236,7 +235,7 @@ void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTr
               view->ModelViewTransformPoint(ndcPoint);
               if (ndcPoint.IsInView()) {
                 auto clientPoint = view->ProjectToClient(ndcPoint);
-                deviceContext->SetPixel(clientPoint, pColTbl[color]);
+                renderDevice->SetPixel(clientPoint, pColTbl[color]);
               }
             } else {
               ln = tmInv * lnS;
@@ -263,10 +262,10 @@ void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTr
     }
     transformMatrix = savedMatrix;  // exact restore — no accumulated FP error
   }
-  renderState.SetPen(view, deviceContext, color, lineType);
+  renderState.SetPen(view, renderDevice, color, lineType);
 }
 
-void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& ndcPoints) {
+void Polygon_Display(AeSysView* view, EoGsRenderDevice* renderDevice, EoGePoint4dArray& ndcPoints) {
   int numberOfPoints = static_cast<int>(ndcPoints.GetSize());
   if (numberOfPoints < 2) { return; }
 
@@ -275,16 +274,15 @@ void Polygon_Display(AeSysView* view, CDC* deviceContext, EoGePoint4dArray& ndcP
   view->ProjectToClient(clientPoints.data(), ndcPoints);
 
   if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Solid) {
-    CBrush brush(pColTbl[renderState.Color()]);
-    auto* oldBrush = deviceContext->SelectObject(&brush);
-    deviceContext->Polygon(clientPoints.data(), numberOfPoints);
-    deviceContext->SelectObject(oldBrush);
+    renderDevice->SelectSolidBrush(pColTbl[renderState.Color()]);
+    renderDevice->Polygon(clientPoints.data(), numberOfPoints);
+    renderDevice->RestoreBrush();
   } else if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Hollow) {
-    auto* oldBrush = (CBrush*)deviceContext->SelectStockObject(NULL_BRUSH);
-    deviceContext->Polygon(clientPoints.data(), numberOfPoints);
-    deviceContext->SelectObject(oldBrush);
+    renderDevice->SelectNullBrush();
+    renderDevice->Polygon(clientPoints.data(), numberOfPoints);
+    renderDevice->RestoreBrush();
   } else {
-    deviceContext->Polygon(clientPoints.data(), numberOfPoints);
+    renderDevice->Polygon(clientPoints.data(), numberOfPoints);
   }
 }
 /** @brief Reverse-maps an AeSys fill style index to its DXF hatch pattern name.
@@ -467,10 +465,9 @@ EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbPolygon::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  auto* deviceContext = renderDevice->GetCDC();
   std::int16_t color = LogicalColor();
 
-  renderState.SetColor(deviceContext, color);
+  renderState.SetColor(renderDevice, color);
   EoDb::PolygonStyle polygonStyle =
       sm_SpecialPolygonStyle == EoDb::PolygonStyle::Special ? m_polygonStyle : sm_SpecialPolygonStyle;
   renderState.SetPolygonIntStyle(polygonStyle);  // hollow, solid, pattern, hatch
@@ -489,7 +486,7 @@ void EoDbPolygon::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
     for (auto i = 0; i < m_numberOfVertices; i++) { PointsArray[i] = EoGePoint4d(m_vertices[i]); }
     view->ModelViewTransformPoints(PointsArray);
     EoGePoint4d::ClipPolygon(PointsArray);
-    Polygon_Display(view, deviceContext, PointsArray);
+    Polygon_Display(view, renderDevice, PointsArray);
   }
 }
 

@@ -693,7 +693,6 @@ int AeSysDoc::NumberOfGroupsInActiveLayers() {
 }
 
 void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  auto* deviceContext = renderDevice->GetCDC();
   ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view, renderDevice);
 
   try {
@@ -701,8 +700,7 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice)
 
     RemoveAllGroupsFromAllViews();
 
-    auto backgroundColor = deviceContext->GetBkColor();
-    deviceContext->SetBkColor(Eo::ViewBackgroundColor);
+    auto backgroundColor = renderDevice->SetBkColor(Eo::ViewBackgroundColor);
 
     EoDbPolygon::SetSpecialPolygonStyle(
         view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);
@@ -716,10 +714,10 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice)
     // When in paper space, render model-space entities through each viewport
     if (m_activeSpace == EoDxf::Space::PaperSpace) { DisplayModelSpaceThroughViewports(view, renderDevice); }
 
-    renderState.Restore(deviceContext, savedRenderState);
+    renderState.Restore(renderDevice, savedRenderState);
     EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
 
-    deviceContext->SetBkColor(backgroundColor);
+    renderDevice->SetBkColor(backgroundColor);
   } catch (CException* e) { e->Delete(); }
 }
 
@@ -732,7 +730,6 @@ void AeSysDoc::DisplayModelSpaceLayers(AeSysView* view, EoGsRenderDevice* render
 }
 
 void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  auto* deviceContext = renderDevice->GetCDC();
   // Walk paper-space layers to find EoDbViewport primitives
   auto& paperLayers = m_paperSpaceLayers;
 
@@ -786,8 +783,7 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
         if (clipRight <= clipLeft || clipBottom <= clipTop) { continue; }
 
         // Save DC state (includes clip region) and apply viewport clip
-        const int savedDC = deviceContext->SaveDC();
-        deviceContext->IntersectClipRect(clipLeft, clipTop, clipRight, clipBottom);
+        renderDevice->PushClipRect(clipLeft, clipTop, clipRight, clipBottom);
 
         // Save the current view transform and configure for this viewport's model-space view
         view->PushViewTransform();
@@ -832,13 +828,13 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
         // Render model-space layers through this viewport
         int savedModelRenderState = renderState.Save();
         DisplayModelSpaceLayers(view, renderDevice);
-        renderState.Restore(deviceContext, savedModelRenderState);
+        renderState.Restore(renderDevice, savedModelRenderState);
 
         // Restore the previous view transform
         view->PopViewTransform();
 
         // Restore the DC (removes the clip region)
-        deviceContext->RestoreDC(savedDC);
+        renderDevice->PopClipRect();
       }
     }
   }
@@ -1880,7 +1876,7 @@ void AeSysDoc::OnSetupPenColor() {
   Dialog.m_ColorIndex = static_cast<std::uint16_t>(renderState.Color());
 
   if (Dialog.DoModal() == IDOK) {
-    renderState.SetColor(nullptr, static_cast<std::int16_t>(Dialog.m_ColorIndex));
+    renderState.SetColor(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(Dialog.m_ColorIndex));
 
     AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Pen);
   }
@@ -1933,7 +1929,7 @@ void AeSysDoc::OnSetupLineType() {
     }
   }
 
-  renderState.SetLineType(nullptr, static_cast<std::int16_t>(selectedLineType->Index()));
+  renderState.SetLineType(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(selectedLineType->Index()));
   renderState.SetLineTypeName(std::wstring(selectedLineType->Name()));
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
 }
