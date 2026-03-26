@@ -24,7 +24,7 @@ bool EoDxfWrite::WriteTables() {
   WriteCodeString(0, L"TABLE");
   WriteCodeString(2, L"VPORT");
 
-  WriteCodeString(5, L"8");
+  WriteCodeString(5, ToHexString(EoDxf::Handles::VPortTable));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"0"); }
   WriteCodeString(100, L"AcDbSymbolTable");
 
@@ -42,7 +42,7 @@ bool EoDxfWrite::WriteTables() {
   WriteCodeString(0, L"TABLE");
   WriteCodeString(2, L"LTYPE");
 
-  WriteCodeString(5, L"5");
+  WriteCodeString(5, ToHexString(EoDxf::Handles::LTypeTable));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"0"); }
   WriteCodeString(100, L"AcDbSymbolTable");
 
@@ -50,8 +50,8 @@ bool EoDxfWrite::WriteTables() {
   // Mandatory linetypes
   WriteCodeString(0, L"LTYPE");
 
-  WriteCodeString(5, L"14");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"5"); }
+  WriteCodeString(5, ToHexString(EoDxf::Handles::ByBlockLinetype));
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::LTypeTable)); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbLinetypeTableRecord");
   WriteCodeString(2, L"ByBlock");
@@ -64,8 +64,8 @@ bool EoDxfWrite::WriteTables() {
 
   WriteCodeString(0, L"LTYPE");
 
-  WriteCodeString(5, L"15");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"5"); }
+  WriteCodeString(5, ToHexString(EoDxf::Handles::ByLayerLinetype));
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::LTypeTable)); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbLinetypeTableRecord");
   WriteCodeString(2, L"ByLayer");
@@ -78,8 +78,8 @@ bool EoDxfWrite::WriteTables() {
 
   WriteCodeString(0, L"LTYPE");
 
-  WriteCodeString(5, L"16");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"5"); }
+  WriteCodeString(5, ToHexString(EoDxf::Handles::ContinuousLinetype));
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::LTypeTable)); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbLinetypeTableRecord");
   WriteCodeString(2, L"CONTINUOUS");
@@ -96,7 +96,7 @@ bool EoDxfWrite::WriteTables() {
   WriteCodeString(0, L"TABLE");
   WriteCodeString(2, L"LAYER");
 
-  WriteCodeString(5, L"2");
+  WriteCodeString(5, ToHexString(EoDxf::Handles::LayerTable));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"0"); }
   WriteCodeString(100, L"AcDbSymbolTable");
 
@@ -113,7 +113,7 @@ bool EoDxfWrite::WriteTables() {
   WriteCodeString(0, L"TABLE");
   WriteCodeString(2, L"STYLE");
 
-  WriteCodeString(5, L"3");
+  WriteCodeString(5, ToHexString(EoDxf::Handles::StyleTable));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"0"); }
   WriteCodeString(100, L"AcDbSymbolTable");
 
@@ -130,7 +130,7 @@ bool EoDxfWrite::WriteTables() {
   WriteCodeString(0, L"TABLE");
   WriteCodeString(2, L"VIEW");
 
-  WriteCodeString(5, L"6");
+  WriteCodeString(5, ToHexString(EoDxf::Handles::ViewTable));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"0"); }
   WriteCodeString(100, L"AcDbSymbolTable");
 
@@ -140,7 +140,7 @@ bool EoDxfWrite::WriteTables() {
   WriteCodeString(0, L"TABLE");
   WriteCodeString(2, L"UCS");
 
-  WriteCodeString(5, L"7");
+  WriteCodeString(5, ToHexString(EoDxf::Handles::UcsTable));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"0"); }
   WriteCodeString(100, L"AcDbSymbolTable");
 
@@ -150,15 +150,15 @@ bool EoDxfWrite::WriteTables() {
   WriteCodeString(0, L"TABLE");
   WriteCodeString(2, L"APPID");
 
-  WriteCodeString(5, L"9");
+  WriteCodeString(5, ToHexString(EoDxf::Handles::AppIdTable));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"0"); }
   WriteCodeString(100, L"AcDbSymbolTable");
 
   WriteCodeInt16(70, 1);  // end table def
   WriteCodeString(0, L"APPID");
 
-  WriteCodeString(5, L"12");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"9"); }
+  WriteCodeString(5, ToHexString(EoDxf::Handles::AcadAppId));
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::AppIdTable)); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbRegAppTableRecord");
 
@@ -170,7 +170,7 @@ bool EoDxfWrite::WriteTables() {
   WriteCodeString(0, L"TABLE");
   WriteCodeString(2, L"DIMSTYLE");
 
-  WriteCodeString(5, L"A");
+  WriteCodeString(5, ToHexString(EoDxf::Handles::DimStyleTable));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"0"); }
   WriteCodeString(100, L"AcDbSymbolTable");
 
@@ -190,13 +190,13 @@ bool EoDxfWrite::WriteTables() {
 
   WriteCodeString(0, L"TABLE");
   WriteCodeString(2, L"BLOCK_RECORD");
-  WriteCodeString(5, L"1");
+  WriteCodeString(5, ToHexString(EoDxf::Handles::BlockRecordTable));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"0"); }
   WriteCodeString(100, L"AcDbSymbolTable");
   WriteCodeInt16(70, 2);  // end table def
   WriteCodeString(0, L"BLOCK_RECORD");
-  WriteCodeString(5, L"1F");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1"); }
+  WriteCodeString(5, ToHexString(EoDxf::Handles::ModelSpaceBlockRecord));
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::BlockRecordTable)); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbBlockTableRecord");
   WriteCodeString(2, L"*Model_Space");
@@ -207,8 +207,8 @@ bool EoDxfWrite::WriteTables() {
     WriteCodeInt16(281, 0);
   }
   WriteCodeString(0, L"BLOCK_RECORD");
-  WriteCodeString(5, L"1E");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1"); }
+  WriteCodeString(5, ToHexString(EoDxf::Handles::PaperSpaceBlockRecord));
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::BlockRecordTable)); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbBlockTableRecord");
   WriteCodeString(2, L"*Paper_Space");
@@ -237,7 +237,7 @@ bool EoDxfWrite::WriteAppId(EoDxfAppId* appId) {
   } else {
     WriteCodeString(5, ToHexString(++m_entityCount));
   }
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"9"); }
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::AppIdTable)); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbRegAppTableRecord");
   WriteCodeWideString(2, appId->m_tableName);
@@ -258,7 +258,7 @@ bool EoDxfWrite::WriteDimStyle(EoDxfDimensionStyle* dimensionStyle) {
     WriteCodeString(105, ToHexString(++m_entityCount));
   }
 
-  WriteCodeString(330, L"A");
+  WriteCodeString(330, ToHexString(EoDxf::Handles::DimStyleTable));
 
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbDimStyleTableRecord");
@@ -362,14 +362,14 @@ bool EoDxfWrite::WriteLayer(EoDxfLayer* layer) {
   WriteCodeString(0, L"LAYER");
   if (!wlayer0 && layer->m_tableName == L"0") {
     wlayer0 = true;
-    WriteCodeString(5, L"10");
+    WriteCodeString(5, ToHexString(EoDxf::Handles::DefaultLayer));
   } else if (layer->m_handle != EoDxf::NoHandle) {
     if (layer->m_handle >= m_entityCount) { m_entityCount = layer->m_handle; }
     WriteCodeString(5, ToHexString(layer->m_handle));
   } else {
     WriteCodeString(5, ToHexString(++m_entityCount));
   }
-  WriteCodeString(330, L"2");
+  WriteCodeString(330, ToHexString(EoDxf::Handles::LayerTable));
 
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbLayerTableRecord");
@@ -400,7 +400,7 @@ bool EoDxfWrite::WriteLinetype(EoDxfLinetype* lineType) {
   } else {
     WriteCodeString(5, ToHexString(++m_entityCount));
   }
-  WriteCodeString(330, L"5");
+  WriteCodeString(330, ToHexString(EoDxf::Handles::LTypeTable));
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbLinetypeTableRecord");
   WriteCodeWideString(2, lineType->m_tableName);
@@ -431,7 +431,7 @@ bool EoDxfWrite::WriteTextstyle(EoDxfTextStyle* textStyle) {
     WriteCodeString(5, ToHexString(++m_entityCount));
   }
 
-  WriteCodeString(330, L"3");
+  WriteCodeString(330, ToHexString(EoDxf::Handles::StyleTable));
 
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbTextStyleTableRecord");
@@ -463,7 +463,7 @@ bool EoDxfWrite::WriteVport(EoDxfVPort* viewport) {
   } else {
     WriteCodeString(5, ToHexString(++m_entityCount));
   }
-  WriteCodeString(330, L"8");
+  WriteCodeString(330, ToHexString(EoDxf::Handles::VPortTable));
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbViewportTableRecord");
   WriteCodeWideString(2, viewport->m_tableName);

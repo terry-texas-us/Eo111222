@@ -17,7 +17,6 @@
 
 namespace {
 constexpr std::wstring_view EODXFLIB_VERSION{L"0.1"};
-constexpr std::uint64_t FIRSTHANDLE{48};
 
 [[nodiscard]] std::wstring GetRequestedCodePage(const EoDxfHeader& header) {
   if (!header.GetCodePageToken().empty()) { return header.GetCodePageToken(); }
@@ -108,11 +107,13 @@ bool EoDxfWrite::Write(EoDxfInterface* interface_, EoDxf::Version version, bool 
     WriteCodeString(999, comment);
   }
 
-  // Initialize the entity handle counter above both the hardcoded infrastructure range
-  // (FIRSTHANDLE = 48) and any handles already assigned by the application's handle manager.
+  // Initialize the entity handle counter above both the hardcoded infrastructure range (Handles::FirstUserHandle) and
+  // any handles already assigned by the application's handle manager.
   // This prevents collisions between table object handles and preserved entity handles.
   const auto interfaceHandleSeed = m_interface != nullptr ? m_interface->GetHandleSeed() : std::uint64_t{0};
-  m_entityCount = interfaceHandleSeed > FIRSTHANDLE ? interfaceHandleSeed : FIRSTHANDLE;
+  m_entityCount =
+      interfaceHandleSeed > EoDxf::Handles::FirstUserHandle ? interfaceHandleSeed : EoDxf::Handles::FirstUserHandle;
+  
   WriteCodeString(0, L"SECTION");
   header.Write(m_writer, m_version);
   TrackStreamState(filestr);
@@ -205,9 +206,9 @@ bool EoDxfWrite::WriteEntity(EoDxfGraphic* entity) {
     if (m_writingBlock) {
       WriteCodeString(330, ToHexString(m_currentHandle));
     } else if (entity->m_space == EoDxf::Space::PaperSpace) {
-      WriteCodeString(330, L"1E");
+      WriteCodeString(330, ToHexString(EoDxf::Handles::PaperSpaceBlockRecord));
     } else {
-      WriteCodeString(330, L"1F");
+      WriteCodeString(330, ToHexString(EoDxf::Handles::ModelSpaceBlockRecord));
     }
   }
   WriteCodeString(100, L"AcDbEntity");
@@ -399,7 +400,7 @@ bool EoDxfWrite::WriteBlockRecord(std::wstring_view name, std::uint64_t handle) 
     m_blockMap.emplace(name, m_entityCount);
   }
   m_entityCount = 2 + m_entityCount;  // reserve 2 for BLOCK & ENDBLK
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1"); }
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::BlockRecordTable)); }
   WriteCodeString(100, L"AcDbSymbolTableRecord");
   WriteCodeString(100, L"AcDbBlockTableRecord");
   WriteCodeWideString(2, name);
@@ -459,8 +460,8 @@ bool EoDxfWrite::WriteBlock(EoDxfBlock* block) {
 bool EoDxfWrite::WriteBlocks() {
   WriteCodeString(0, L"BLOCK");
 
-  WriteCodeString(5, L"20");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1F"); }
+  WriteCodeString(5, ToHexString(EoDxf::Handles::ModelSpaceBlock));
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::ModelSpaceBlockRecord)); }
   WriteCodeString(100, L"AcDbEntity");
 
   WriteCodeString(8, L"0");
@@ -478,16 +479,16 @@ bool EoDxfWrite::WriteBlocks() {
   WriteCodeString(1, L"");
   WriteCodeString(0, L"ENDBLK");
 
-  WriteCodeString(5, L"21");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1F"); }
+  WriteCodeString(5, ToHexString(EoDxf::Handles::ModelSpaceEndBlk));
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::ModelSpaceBlockRecord)); }
   WriteCodeString(100, L"AcDbEntity");
 
   WriteCodeString(8, L"0");
   WriteCodeString(100, L"AcDbBlockEnd");
   WriteCodeString(0, L"BLOCK");
 
-  WriteCodeString(5, L"1C");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1E"); }
+  WriteCodeString(5, ToHexString(EoDxf::Handles::PaperSpaceBlock));
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::PaperSpaceBlockRecord)); }
   WriteCodeString(100, L"AcDbEntity");
 
   WriteCodeString(8, L"0");
@@ -505,8 +506,8 @@ bool EoDxfWrite::WriteBlocks() {
   WriteCodeString(1, L"");
   WriteCodeString(0, L"ENDBLK");
 
-  WriteCodeString(5, L"1D");
-  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"1E"); }
+  WriteCodeString(5, ToHexString(EoDxf::Handles::PaperSpaceEndBlk));
+  if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, ToHexString(EoDxf::Handles::PaperSpaceBlockRecord)); }
   WriteCodeString(100, L"AcDbEntity");
 
   WriteCodeString(8, L"0");
@@ -546,20 +547,20 @@ bool EoDxfWrite::WriteObjects() {
   // No imported objects — write minimal hardcoded dictionaries for new drawings
   WriteCodeString(0, L"DICTIONARY");
   std::wstring imgDictH;
-  WriteCodeString(5, L"C");
+  WriteCodeString(5, ToHexString(EoDxf::Handles::RootDictionary));
   if (m_version > EoDxf::Version::AC1014) { WriteCodeString(330, L"0"); }
   WriteCodeString(100, L"AcDbDictionary");
   WriteCodeInt16(281, 1);
   WriteCodeString(3, L"ACAD_GROUP");
-  WriteCodeString(350, L"D");
+  WriteCodeString(350, ToHexString(EoDxf::Handles::AcadGroupDictionary));
   if (m_imageDef.size() != 0) {
     WriteCodeString(3, L"ACAD_IMAGE_DICT");
     imgDictH = ToHexString(++m_entityCount);
     WriteCodeString(350, imgDictH);
   }
   WriteCodeString(0, L"DICTIONARY");
-  WriteCodeString(5, L"D");
-  WriteCodeString(330, L"C");
+  WriteCodeString(5, ToHexString(EoDxf::Handles::AcadGroupDictionary));
+  WriteCodeString(330, ToHexString(EoDxf::Handles::RootDictionary));
   WriteCodeString(100, L"AcDbDictionary");
   WriteCodeInt16(281, 1);
   // write IMAGEDEF_REACTOR
@@ -578,7 +579,7 @@ bool EoDxfWrite::WriteObjects() {
   if (m_imageDef.size() != 0) {
     WriteCodeString(0, L"DICTIONARY");
     WriteCodeString(5, imgDictH);
-    WriteCodeString(330, L"C");
+    WriteCodeString(330, ToHexString(EoDxf::Handles::RootDictionary));
     WriteCodeString(100, L"AcDbDictionary");
     WriteCodeInt16(281, 1);
     for (unsigned int i = 0; i < m_imageDef.size(); i++) {

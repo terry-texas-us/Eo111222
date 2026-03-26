@@ -21,6 +21,72 @@ inline constexpr std::uint64_t NoHandle{};
 inline constexpr std::int16_t colorByBlock{0};  /// Color inherited from block insert context (code 62 = 0)
 inline constexpr std::int16_t colorByLayer{256};  /// Color inherited from layer definition  (code 62 = 256)
 
+/// @brief Fixed AutoCAD infrastructure handle allocations present in every valid AC1015+ DXF file.
+///
+/// These are the canonical, non-negotiable handle values that form the non-graphical skeleton:
+/// symbol tables, their mandatory entries, the two built-in block definitions, and the root
+/// OBJECTS-section dictionaries.
+///
+/// All user entity and table-entry handles must be assigned at or above @c FirstUserHandle (0x30),
+/// which is enforced by the writer's initial entity-counter seed.
+///
+/// Layout (hex):
+/// @code
+///   0x00  (database root — owner of all top-level tables and root dictionary)
+///   ├─ 0x01  BLOCK_RECORD table
+///   │   ├─ 0x1E  *Paper_Space block record
+///   │   └─ 0x1F  *Model_Space block record
+///   ├─ 0x02  LAYER table  → 0x10 layer "0"
+///   ├─ 0x03  STYLE table
+///   ├─ 0x05  LTYPE table  → 0x14 ByBlock, 0x15 ByLayer, 0x16 Continuous
+///   ├─ 0x06  VIEW table
+///   ├─ 0x07  UCS table
+///   ├─ 0x08  VPORT table
+///   ├─ 0x09  APPID table  → 0x12 ACAD
+///   ├─ 0x0A  DIMSTYLE table
+///   └─ 0x0C  root DICTIONARY → 0x0D ACAD_GROUP
+///   BLOCKS section:
+///   *Paper_Space: BLOCK=0x1C  ENDBLK=0x1D
+///   *Model_Space: BLOCK=0x20  ENDBLK=0x21
+/// @endcode
+namespace Handles {
+// ── Symbol tables ─────────────────────────────────────────────────────────────
+inline constexpr std::uint64_t BlockRecordTable{0x01};
+inline constexpr std::uint64_t LayerTable{0x02};
+inline constexpr std::uint64_t StyleTable{0x03};
+inline constexpr std::uint64_t LTypeTable{0x05};
+inline constexpr std::uint64_t ViewTable{0x06};
+inline constexpr std::uint64_t UcsTable{0x07};
+inline constexpr std::uint64_t VPortTable{0x08};
+inline constexpr std::uint64_t AppIdTable{0x09};
+inline constexpr std::uint64_t DimStyleTable{0x0A};
+
+// ── OBJECTS section root ──────────────────────────────────────────────────────
+inline constexpr std::uint64_t RootDictionary{0x0C};
+inline constexpr std::uint64_t AcadGroupDictionary{0x0D};
+
+// ── Mandatory table entries ───────────────────────────────────────────────────
+inline constexpr std::uint64_t DefaultLayer{0x10};        ///< layer "0"
+inline constexpr std::uint64_t AcadAppId{0x12};           ///< ACAD APPID entry
+inline constexpr std::uint64_t ByBlockLinetype{0x14};     ///< ByBlock linetype entry
+inline constexpr std::uint64_t ByLayerLinetype{0x15};     ///< ByLayer linetype entry
+inline constexpr std::uint64_t ContinuousLinetype{0x16};  ///< Continuous linetype entry
+
+// ── *Paper_Space built-in block ───────────────────────────────────────────────
+inline constexpr std::uint64_t PaperSpaceBlock{0x1C};        ///< *Paper_Space BLOCK entity
+inline constexpr std::uint64_t PaperSpaceEndBlk{0x1D};       ///< *Paper_Space ENDBLK entity
+inline constexpr std::uint64_t PaperSpaceBlockRecord{0x1E};  ///< *Paper_Space BLOCK_RECORD entry
+
+// ── *Model_Space built-in block ───────────────────────────────────────────────
+inline constexpr std::uint64_t ModelSpaceBlockRecord{0x1F};  ///< *Model_Space BLOCK_RECORD entry
+inline constexpr std::uint64_t ModelSpaceBlock{0x20};        ///< *Model_Space BLOCK entity
+inline constexpr std::uint64_t ModelSpaceEndBlk{0x21};       ///< *Model_Space ENDBLK entity
+
+// ── First handle safe for user allocation ─────────────────────────────────────
+/// Exceeds all infrastructure handles above, with reserved headroom for future additions.
+inline constexpr std::uint64_t FirstUserHandle{0x30};  ///< = 48 decimal
+}  // namespace Handles
+
 /** @brief Canonical AutoCAD Color Index (ACI) RGB lookup table — 256 entries, DXF spec-faithful.
  *
  *  Maps each ACI value (1–255) to its standard {R, G, B} triple as defined by the AutoCAD DXF/DWG specification.
