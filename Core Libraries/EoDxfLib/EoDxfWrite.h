@@ -184,6 +184,14 @@ class EoDxfWrite {
   }
   bool WriteCodeBool(int code, bool value) { return TrackWriteResult(m_writer != nullptr && m_writer->WriteBool(code, value)); }
 
+  /** @brief Writes the common entity data for a given EoDxfGraphic entity to the DXF file. This includes handling of
+   * handles, layers, line types, colors, and other properties that are shared across all graphic entities. The method
+   * also manages the writing of application-defined groups (code 102) for reactors and extension dictionaries, as well
+   * as optional fields based on the DXF version. The specific geometric data for each entity type is handled in their
+   * respective Write methods, which call this method to write the common entity data.
+   * @param entity A pointer to the EoDxfGraphic entity whose data is to be written to the DXF file.
+   * @return true if the entity data was successfully written; false if an error occurred during writing.
+   */
   bool WriteEntity(EoDxfGraphic* entity);
 
   bool WriteTables();

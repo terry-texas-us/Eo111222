@@ -172,9 +172,6 @@ bool EoDxfWrite::WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData
 }
 
 bool EoDxfWrite::WriteEntity(EoDxfGraphic* entity) {
-  // P2.1 — Handle preservation: if the entity already carries a valid handle
-  // (imported from DXF or assigned by HandleManager), keep it and advance the
-  // counter past it to prevent future collisions.  Otherwise allocate a new one.
   if (entity->m_handle == EoDxf::NoHandle) {
     entity->m_handle = ++m_entityCount;
   } else {
@@ -196,12 +193,6 @@ bool EoDxfWrite::WriteEntity(EoDxfGraphic* entity) {
     WriteCodeString(102, L"}");
   }
 
-  // P3.1 — Owner handle derivation: every AC1015+ entity must have an owner.
-  // The owner is derived from the current export context rather than preserved
-  // from import, because table object handles are regenerated on export.
-  //   - Inside a named block definition → owner is the block record handle
-  //   - Paper-space entity → owner is *Paper_Space block record (0x1E)
-  //   - Model-space entity → owner is *Model_Space block record (0x1F)
   if (m_version > EoDxf::Version::AC1014) {
     if (m_writingBlock) {
       WriteCodeString(330, ToHexString(m_currentHandle));
@@ -429,8 +420,7 @@ bool EoDxfWrite::WriteBlock(EoDxfBlock* block) {
   WriteCodeString(0, L"BLOCK");
 
   m_currentHandle = (*(m_blockMap.find(block->m_blockName))).second;
-  // P3.4 — BLOCK entity handle preservation: use the imported handle if
-  // available, otherwise fall back to the block record handle + 1 convention.
+
   if (block->m_handle != EoDxf::NoHandle) {
     if (block->m_handle >= m_entityCount) { m_entityCount = block->m_handle; }
     WriteCodeString(5, ToHexString(block->m_handle));
