@@ -42,9 +42,9 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "EoGsModelTransform.h"
-#include "EoGsRenderState.h"
-#include "EoGsRenderDeviceGdi.h"
 #include "EoGsRenderDeviceDirect2D.h"
+#include "EoGsRenderDeviceGdi.h"
+#include "EoGsRenderState.h"
 #include "EoGsViewTransform.h"
 #include "MainFrm.h"
 #include "Resource.h"
@@ -243,6 +243,7 @@ ON_COMMAND(ID_VIEW_TRUETYPEFONTS, OnViewTrueTypeFonts)
 ON_COMMAND(ID_VIEW_WINDOW, OnViewWindow)
 ON_COMMAND(ID_VIEW_WIREFRAME, OnViewWireframe)
 ON_COMMAND(ID_VIEW_DIRECT2D, OnViewDirect2D)
+ON_COMMAND(ID_VIEW_ALIASED, OnViewAliased)
 ON_COMMAND(ID_WINDOW_BEST, OnWindowBest)
 ON_COMMAND(ID_WINDOW_NORMAL, OnWindowNormal)
 ON_COMMAND(ID_WINDOW_LAST, OnWindowLast)
@@ -268,6 +269,7 @@ ON_UPDATE_COMMAND_UI(ID_VIEW_STATEINFORMATION, OnUpdateViewStateinformation)
 ON_UPDATE_COMMAND_UI(ID_VIEW_TRUETYPEFONTS, OnUpdateViewTrueTypeFonts)
 ON_UPDATE_COMMAND_UI(ID_VIEW_WIREFRAME, OnUpdateViewWireframe)
 ON_UPDATE_COMMAND_UI(ID_VIEW_DIRECT2D, OnUpdateViewDirect2D)
+ON_UPDATE_COMMAND_UI(ID_VIEW_ALIASED, OnUpdateViewAliased)
 #if defined(USING_STATE_PATTERN)
 ON_COMMAND_RANGE(ID_DRAW_MODE_OPTIONS, ID_DRAW_MODE_SHIFT_RETURN, &AeSysView::OnDrawCommand)
 #endif
@@ -593,6 +595,9 @@ void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deacti
         0) {  // Accelerator table was destroyed when keyboard focus was killed - reload resource
       app.BuildModifiedAcceleratorTable();
     }
+    // D2D HWND render targets retain their last frame, but the window content may have been
+    // obscured by MFC tab/MDI child switching. Force a full re-render so the view repaints.
+    if (m_useD2D) { InvalidateScene(); }
   }
   CMFCPropertyGridProperty& ActiveViewScaleProperty = MainFrame->GetPropertiesPane().GetActiveViewScaleProperty();
   ActiveViewScaleProperty.SetValue(m_WorldScale);
@@ -657,6 +662,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
   if (m_useD2D && m_d2dRenderTarget) {
     if (m_sceneInvalid) {
       m_d2dRenderTarget->BeginDraw();
+      m_d2dRenderTarget->SetAntialiasMode(
+          m_d2dAliased ? D2D1_ANTIALIAS_MODE_ALIASED : D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
       auto bkColor = D2D1::ColorF(
           GetRValue(Eo::ViewBackgroundColor) / 255.0f,
           GetGValue(Eo::ViewBackgroundColor) / 255.0f,
@@ -766,10 +773,112 @@ void AeSysView::OnInitialUpdate() {
   SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(Eo::ViewBackgroundColor));
 
   CView::OnInitialUpdate();
+
+  ApplyActiveViewport();
+
 #if defined(USING_STATE_PATTERN)
   PushState(std::make_unique<IdleState>());
 #endif
   OnModeDraw();
+}
+
+void AeSysView::ApplyActiveViewport() {
+  auto* document = GetDocument();
+  if (document == nullptr) { return; }
+
+  const auto* activeVPort = document->FindActiveVPort();
+  if (activeVPort == nullptr) { return; }
+
+  // viewHeight must be positive for a meaningful viewport
+  if (activeVPort->m_viewHeight <= Eo::geometricTolerance) { return; }
+
+  // --- Camera setup ---
+  // DXF VPORT viewTargetPoint is in WCS. viewDirection is target→camera (WCS).
+  auto targetPoint = EoGePoint3d(
+      activeVPort->m_viewTargetPoint.x, activeVPort->m_viewTargetPoint.y, activeVPort->m_viewTargetPoint.z);
+  auto viewDirection = activeVPort->m_viewDirection;
+
+  m_ViewTransform.SetLensLength(activeVPort->m_lensLength);
+  m_ViewTransform.SetTarget(targetPoint);
+  m_ViewTransform.SetPosition(viewDirection);  // SetPosition(vector) computes target + direction * lensLength
+  m_ViewTransform.SetDirection(viewDirection);
+
+  // View up: for standard top-down (direction ≈ +Z), up = +Y.
+  // For general 3D views, compute up from twist angle.
+  if (std::abs(activeVPort->m_viewTwistAngle) > Eo::geometricTolerance) {
+    // Twist rotates the view around the view direction. Construct the up vector
+    // by rotating +Y (or the appropriate perpendicular) by the twist angle around the view direction.
+    auto n = viewDirection;
+    n.Unitize();
+    auto arbitraryUp = (std::abs(n.z) < 0.99) ? EoGeVector3d::positiveUnitZ : EoGeVector3d::positiveUnitY;
+    auto u = CrossProduct(arbitraryUp, n);
+    u.Unitize();
+    auto v = CrossProduct(n, u);
+    v.Unitize();
+    // Rotate v by -twistAngle around n (DXF twist is CW when looking along the view direction)
+    auto cosT = std::cos(-activeVPort->m_viewTwistAngle);
+    auto sinT = std::sin(-activeVPort->m_viewTwistAngle);
+    auto viewUp = EoGeVector3d(u.x * sinT + v.x * cosT, u.y * sinT + v.y * cosT, u.z * sinT + v.z * cosT);
+    viewUp.Unitize();
+    m_ViewTransform.SetViewUp(viewUp);
+  } else {
+    // No twist — use standard up vector based on view direction
+    auto n = viewDirection;
+    n.Unitize();
+    if (std::abs(n.z) > 0.99) {
+      // Top or bottom view — up is +Y
+      m_ViewTransform.SetViewUp(n.z > 0.0 ? EoGeVector3d::positiveUnitY : EoGeVector3d::positiveUnitY);
+    } else {
+      // General 3D — up is derived from crossing direction with Z, then back
+      auto u = CrossProduct(EoGeVector3d::positiveUnitZ, n);
+      u.Unitize();
+      auto viewUp = CrossProduct(n, u);
+      viewUp.Unitize();
+      m_ViewTransform.SetViewUp(viewUp);
+    }
+  }
+
+  // --- Perspective mode ---
+  // DXF VIEWMODE bit 0 = perspective on
+  m_ViewTransform.EnablePerspective((activeVPort->m_viewMode & 1) != 0);
+
+  // --- Clip planes ---
+  m_ViewTransform.SetNearClipDistance(-100.0);
+  m_ViewTransform.SetFarClipDistance(100.0);
+
+  // --- Projection window ---
+  // DXF viewHeight is the visible height in drawing units.
+  // viewCenter (group 12/22) is the 2D offset from viewTargetPoint in DCS.
+  // For a standard 2D top-down view, DCS X = WCS X, DCS Y = WCS Y.
+  double viewHeight = activeVPort->m_viewHeight;
+  double viewWidth = viewHeight * activeVPort->m_viewAspectRatio;
+
+  // DCS view center offset from target
+  double dcsOffsetX = activeVPort->m_viewCenter.x;
+  double dcsOffsetY = activeVPort->m_viewCenter.y;
+
+  // Adjust for viewport device aspect ratio (the projection window may need
+  // expansion to fill the device viewport without distortion)
+  m_ViewTransform.SetCenteredWindow(m_Viewport, viewWidth, viewHeight);
+
+  // If viewCenter has a non-zero offset from target, shift the window
+  if (std::abs(dcsOffsetX) > Eo::geometricTolerance || std::abs(dcsOffsetY) > Eo::geometricTolerance) {
+    // viewCenter is the DCS location that should appear at the screen center.
+    // The target is at DCS origin. So the camera target in WCS should be
+    // shifted by the viewCenter offset (for standard 2D views).
+    targetPoint.x += dcsOffsetX;
+    targetPoint.y += dcsOffsetY;
+    m_ViewTransform.SetTarget(targetPoint);
+    m_ViewTransform.SetPosition(viewDirection);
+  }
+
+  m_ViewTransform.BuildTransformMatrix();
+  m_OverviewViewTransform = m_ViewTransform;
+
+  ATLTRACE2(traceGeneral, 1, L"AeSysView<%p>::ApplyActiveViewport() — "
+      L"target=(%.2f, %.2f, %.2f) height=%.2f width=%.2f aspect=%.4f\n",
+      this, targetPoint.x, targetPoint.y, targetPoint.z,
+      viewHeight, viewWidth, activeVPort->m_viewAspectRatio);
 }
 
 /** @brief Helper function to display content based on the provided hint, used by OnUpdate for delegation
@@ -1214,8 +1323,28 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>OnSize(%i, %i, %i)\n", this, type, cx, cy);
 
   if (cx && cy) {
+    double oldWidth = m_Viewport.Width();
+    double oldHeight = m_Viewport.Height();
+
     SetViewportSize(cx, cy);
-    m_ViewTransform.Initialize(m_Viewport);
+
+    if (oldWidth > 0.0 && oldHeight > 0.0) {
+      // Preserve current view center and zoom level — scale the window extents
+      // proportionally to the viewport dimension change (world units per pixel stays constant)
+      double scaleX = static_cast<double>(cx) / oldWidth;
+      double scaleY = static_cast<double>(cy) / oldHeight;
+
+      double centerU = (m_ViewTransform.UMin() + m_ViewTransform.UMax()) / 2.0;
+      double centerV = (m_ViewTransform.VMin() + m_ViewTransform.VMax()) / 2.0;
+      double halfUExtent = m_ViewTransform.UExtent() / 2.0 * scaleX;
+      double halfVExtent = m_ViewTransform.VExtent() / 2.0 * scaleY;
+
+      m_ViewTransform.SetWindow(
+          centerU - halfUExtent, centerV - halfVExtent, centerU + halfUExtent, centerV + halfVExtent);
+    } else {
+      // First OnSize — no prior viewport dimensions, initialize to default view
+      m_ViewTransform.Initialize(m_Viewport);
+    }
     m_OverviewViewTransform = m_ViewTransform;
 
     if (m_useD2D) {
@@ -1612,6 +1741,16 @@ void AeSysView::OnViewDirect2D() {
 }
 
 void AeSysView::OnUpdateViewDirect2D(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_useD2D); }
+
+void AeSysView::OnViewAliased() {
+  m_d2dAliased = !m_d2dAliased;
+  InvalidateScene();
+}
+
+void AeSysView::OnUpdateViewAliased(CCmdUI* pCmdUI) {
+  pCmdUI->Enable(m_useD2D);
+  pCmdUI->SetCheck(m_d2dAliased);
+}
 
 void AeSysView::OnViewWindowKeyplan() {
   EoDlgActiveViewKeyplan dlg(this);

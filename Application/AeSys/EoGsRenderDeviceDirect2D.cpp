@@ -10,7 +10,6 @@ EoGsRenderDeviceDirect2D::EoGsRenderDeviceDirect2D(
     ID2D1RenderTarget* renderTarget, ID2D1Factory* d2dFactory, IDWriteFactory* dwriteFactory)
     : m_renderTarget(renderTarget), m_d2dFactory(d2dFactory), m_dwriteFactory(dwriteFactory) {
   if (m_renderTarget != nullptr) {
-    m_renderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
     m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &m_brush);
     m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &m_fillBrush);
   }
@@ -66,16 +65,25 @@ void EoGsRenderDeviceDirect2D::EnsureFillBrush(const D2D1_COLOR_F& color) {
   }
 }
 
+/// @brief Converts an integer pixel coordinate to a D2D point aligned on pixel centers.
+/// GDI integer coordinates address pixel top-left corners. D2D integer coordinates fall on
+/// pixel *boundaries* (between adjacent pixels). A 1px line at an integer boundary straddles
+/// two pixel rows, causing inconsistent rasterization on diagonals in aliased mode.
+/// Adding 0.5 centers the line on the pixel, matching GDI's coordinate convention.
+static D2D1_POINT_2F PixelCenterPoint(int x, int y) noexcept {
+  return D2D1::Point2F(static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f);
+}
+
 // ── Line Drawing ────────────────────────────────────────────────────────
 
 void EoGsRenderDeviceDirect2D::MoveTo(int x, int y) {
-  m_currentPosition = D2D1::Point2F(static_cast<float>(x), static_cast<float>(y));
+  m_currentPosition = PixelCenterPoint(x, y);
 }
 
 void EoGsRenderDeviceDirect2D::LineTo(int x, int y) {
   if (m_renderTarget == nullptr || m_penStyle == PS_NULL) { return; }
 
-  auto endPoint = D2D1::Point2F(static_cast<float>(x), static_cast<float>(y));
+  auto endPoint = PixelCenterPoint(x, y);
   EnsureBrush(m_penColor);
   m_renderTarget->DrawLine(m_currentPosition, endPoint, m_brush.Get(), m_penWidth, m_strokeStyle.Get());
   m_currentPosition = endPoint;
@@ -86,14 +94,36 @@ void EoGsRenderDeviceDirect2D::Polyline(const POINT* points, int count) {
 
   EnsureBrush(m_penColor);
 
-  for (int i = 0; i < count - 1; ++i) {
-    auto p0 = D2D1::Point2F(static_cast<float>(points[i].x), static_cast<float>(points[i].y));
-    auto p1 = D2D1::Point2F(static_cast<float>(points[i + 1].x), static_cast<float>(points[i + 1].y));
+  // Two-point case: simple DrawLine (no joins needed — used by DisplayDashPattern)
+  if (count == 2) {
+    auto p0 = PixelCenterPoint(points[0].x, points[0].y);
+    auto p1 = PixelCenterPoint(points[1].x, points[1].y);
     m_renderTarget->DrawLine(p0, p1, m_brush.Get(), m_penWidth, m_strokeStyle.Get());
+    m_currentPosition = p1;
+    return;
   }
 
-  m_currentPosition =
-      D2D1::Point2F(static_cast<float>(points[count - 1].x), static_cast<float>(points[count - 1].y));
+  // Multi-point case: path geometry for proper line joins (eliminates 45° diagonal gaps)
+  if (m_d2dFactory == nullptr) { return; }
+
+  ComPtr<ID2D1PathGeometry> path;
+  if (FAILED(m_d2dFactory->CreatePathGeometry(&path))) { return; }
+
+  ComPtr<ID2D1GeometrySink> sink;
+  if (FAILED(path->Open(&sink))) { return; }
+
+  sink->BeginFigure(PixelCenterPoint(points[0].x, points[0].y), D2D1_FIGURE_BEGIN_HOLLOW);
+
+  for (int i = 1; i < count; ++i) {
+    sink->AddLine(PixelCenterPoint(points[i].x, points[i].y));
+  }
+
+  sink->EndFigure(D2D1_FIGURE_END_OPEN);
+  if (FAILED(sink->Close())) { return; }
+
+  m_renderTarget->DrawGeometry(path.Get(), m_brush.Get(), m_penWidth, m_strokeStyle.Get());
+
+  m_currentPosition = PixelCenterPoint(points[count - 1].x, points[count - 1].y);
 }
 
 // ── Filled Shapes ───────────────────────────────────────────────────────

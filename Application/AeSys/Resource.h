@@ -614,6 +614,7 @@
 #define ID_VIEW_APPLOOK_WINDOWS_7       4810
 #define ID_VIEW_MODELSPACE              4811
 #define ID_VIEW_DIRECT2D                4812
+#define ID_VIEW_ALIASED                 4813
 #define ID_VIEW_WINDOW_KEYPLAN          4901
 #define ID_WINDOW_ZOOMSPECIAL           4902
 #define ID_SETUP_POINTSTYLE             4903

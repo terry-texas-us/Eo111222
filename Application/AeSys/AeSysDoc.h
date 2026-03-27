@@ -352,6 +352,15 @@ class AeSysDoc : public CDocument {
   void AddVPortTableEntry(EoDbVPortTableEntry&& entry) { m_vportTable.push_back(std::move(entry)); }
   void ClearVPortTable() noexcept { m_vportTable.clear(); }
 
+  /// @brief Finds the *ACTIVE VPORT table entry (case-insensitive).
+  /// @return Pointer to the active entry, or nullptr if not found.
+  [[nodiscard]] const EoDbVPortTableEntry* FindActiveVPort() const noexcept {
+    for (const auto& entry : m_vportTable) {
+      if (_wcsicmp(entry.m_name.c_str(), L"*ACTIVE") == 0) { return &entry; }
+    }
+    return nullptr;
+  }
+
   // AppId Table interface (round-trip passthrough)
   [[nodiscard]] auto& AppIdTable() noexcept { return m_appIdTable; }
   [[nodiscard]] const auto& AppIdTable() const noexcept { return m_appIdTable; }

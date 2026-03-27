@@ -63,6 +63,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\AcadEntityObjectHierarchy.md = Documentation\AcadEntityObjectHierarchy.md
 		Documentation\autocad_2012_pdf_dxf-reference_enu.pdf = Documentation\autocad_2012_pdf_dxf-reference_enu.pdf
 		Documentation\Dde Description and Few Uses.md = Documentation\Dde Description and Few Uses.md
+		Documentation\Direct2D_Test_Regimen.md = Documentation\Direct2D_Test_Regimen.md
 		Documentation\DXF - Storage of String Values.md = Documentation\DXF - Storage of String Values.md
 		Documentation\dxf header.md = Documentation\dxf header.md
 		Documentation\ezdxf class structure diagram.md = Documentation\ezdxf class structure diagram.md

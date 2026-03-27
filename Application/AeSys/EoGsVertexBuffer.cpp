@@ -145,18 +145,15 @@ void EoGsVertexBuffer::End(
       view->ModelViewTransformPoints(m_points);
 
       if (AnyPointsInView(m_points)) {
-        CPoint clientPoint;
-        clientPoint = view->ProjectToClient(m_points[0]);
-        renderDevice->MoveTo(clientPoint.x, clientPoint.y);
+        auto totalPoints = static_cast<size_t>(m_isLoop ? size + 1 : size);
+        std::vector<CPoint> clientPoints(totalPoints);
 
-        for (INT_PTR i = 1; i < size; i++) {
-          clientPoint = view->ProjectToClient(m_points[i]);
-          renderDevice->LineTo(clientPoint.x, clientPoint.y);
+        for (INT_PTR i = 0; i < size; i++) {
+          clientPoints[static_cast<size_t>(i)] = view->ProjectToClient(m_points[i]);
         }
-        if (m_isLoop) {
-          clientPoint = view->ProjectToClient(m_points[0]);
-          renderDevice->LineTo(clientPoint.x, clientPoint.y);
-        }
+        if (m_isLoop) { clientPoints[static_cast<size_t>(size)] = clientPoints[0]; }
+
+        renderDevice->Polyline(clientPoints.data(), static_cast<int>(totalPoints));
         return;
       }
     }

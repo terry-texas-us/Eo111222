@@ -99,6 +99,7 @@ class AeSysView : public CView {
   // Direct2D render target (Phase 6)
   Microsoft::WRL::ComPtr<ID2D1HwndRenderTarget> m_d2dRenderTarget;
   bool m_useD2D{true};
+  bool m_d2dAliased{};
 
   CBitmap m_backgroundImageBitmap;
   CPalette m_backgroundImagePalette;
@@ -196,6 +197,18 @@ class AeSysView : public CView {
   bool GridSnap() const;
   void EnableGridSnap(bool snap);
   void ViewZoomExtents() {}
+
+  /** @brief Applies the *ACTIVE VPORT table entry to the view transform.
+   *
+   * Maps the DXF VPORT fields (viewCenter, viewHeight, viewDirection, viewTargetPoint,
+   * lensLength, viewTwistAngle, viewMode) onto EoGsViewTransform, establishing the
+   * camera position, projection window, and perspective mode so the view matches
+   * the saved viewport configuration without requiring a manual zoom-to-extents.
+   *
+   * Called from OnInitialUpdate() after the viewport device dimensions are established.
+   * No-op if the document has no *ACTIVE VPORT entry or if viewHeight is non-positive.
+   */
+  void ApplyActiveViewport();
 
  public:
   AeSysDoc* GetDocument() const;
@@ -1057,6 +1070,7 @@ class AeSysView : public CView {
   afx_msg void OnUpdateViewRendered(CCmdUI* pCmdUI);
   afx_msg void OnUpdateViewWireframe(CCmdUI* pCmdUI);
   afx_msg void OnUpdateViewDirect2D(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateViewAliased(CCmdUI* pCmdUI);
   afx_msg void OnViewBackgroundImage();
   afx_msg void OnViewTrueTypeFonts();
   afx_msg void OnViewPenWidths();
@@ -1069,6 +1083,7 @@ class AeSysView : public CView {
   afx_msg void OnViewWindowKeyplan();
   afx_msg void OnViewWireframe();
   afx_msg void OnViewDirect2D();
+  afx_msg void OnViewAliased();
   afx_msg void OnWindowZoomSpecial();
   afx_msg void OnWindowNormal();
   afx_msg void OnWindowBest();
