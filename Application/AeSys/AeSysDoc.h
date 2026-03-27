@@ -333,6 +333,15 @@ class AeSysDoc : public CDocument {
   void AddDimStyleEntry(EoDbDimStyle&& entry) { m_dimStyleTable.push_back(std::move(entry)); }
   void ClearDimStyleTable() noexcept { m_dimStyleTable.clear(); }
 
+  /// @brief Finds a dimension style by name (case-insensitive).
+  /// @return Pointer to the matching entry, or nullptr if not found.
+  [[nodiscard]] const EoDbDimStyle* FindDimStyle(const std::wstring& name) const noexcept {
+    for (const auto& style : m_dimStyleTable) {
+      if (_wcsicmp(style.m_name.c_str(), name.c_str()) == 0) { return &style; }
+    }
+    return nullptr;
+  }
+
   // Text Style Table interface
   [[nodiscard]] auto& TextStyleTable() noexcept { return m_textStyleTable; }
   [[nodiscard]] const auto& TextStyleTable() const noexcept { return m_textStyleTable; }

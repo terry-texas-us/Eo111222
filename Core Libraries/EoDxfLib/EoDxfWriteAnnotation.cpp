@@ -10,20 +10,20 @@ bool EoDxfWrite::WriteDimension(const EoDxfDimension& dimension) {
   WriteCodeString(0, L"DIMENSION");
   WriteEntity(dimension);
   WriteCodeString(100, L"AcDbDimension");
-  if (!dimension.getName().empty()) { WriteCodeWideString(2, dimension.getName()); }
+  if (!dimension.GetBlockName().empty()) { WriteCodeWideString(2, dimension.GetBlockName()); }
   WriteCodeDouble(10, dimension.GetDefinitionPoint().x);
   WriteCodeDouble(20, dimension.GetDefinitionPoint().y);
   WriteCodeDouble(30, dimension.GetDefinitionPoint().z);
-  WriteCodeDouble(11, dimension.getTextPoint().x);
-  WriteCodeDouble(21, dimension.getTextPoint().y);
-  WriteCodeDouble(31, dimension.getTextPoint().z);
+  WriteCodeDouble(11, dimension.GetTextPoint().x);
+  WriteCodeDouble(21, dimension.GetTextPoint().y);
+  WriteCodeDouble(31, dimension.GetTextPoint().z);
 
   auto dimensionType = dimension.m_dimensionType;
   if (!(dimensionType & 32)) { dimensionType = dimensionType + 32; }
   WriteCodeInt16(70, dimensionType);
 
   WriteCodeInt16(71, dimension.GetAttachmentPoint());
-  if (dimension.getTextLineStyle() != 1) { WriteCodeInt16(72, dimension.getTextLineStyle()); }
+  if (dimension.GetTextLineSpacingStyle() != 1) { WriteCodeInt16(72, dimension.GetTextLineSpacingStyle()); }
 
   if (dimension.GetDimensionTextLineSpacingFactor() != 1) {
     WriteCodeDouble(41, dimension.GetDimensionTextLineSpacingFactor());
@@ -52,86 +52,79 @@ bool EoDxfWrite::WriteDimension(const EoDxfDimension& dimension) {
   switch (dimension.m_entityType) {
     case EoDxf::DIMALIGNED:
     case EoDxf::DIMLINEAR: {
-      auto* alignedDimension = dynamic_cast<const EoDxfAlignedDimension*>(&dimension);
       WriteCodeString(100, L"AcDbAlignedDimension");
-      auto crd = alignedDimension->getClonepoint();
-      if (crd.x != 0 || crd.y != 0 || crd.z != 0) {
-        WriteCodeDouble(12, crd.x);
-        WriteCodeDouble(22, crd.y);
-        WriteCodeDouble(32, crd.z);
+      auto clonePoint = dimension.GetClonePoint();
+      if (clonePoint.x != 0 || clonePoint.y != 0 || clonePoint.z != 0) {
+        WriteCodeDouble(12, clonePoint.x);
+        WriteCodeDouble(22, clonePoint.y);
+        WriteCodeDouble(32, clonePoint.z);
       }
-      WriteCodeDouble(13, alignedDimension->m_firstDefinitinPointForLinearAndAngularDimensions.x);
-      WriteCodeDouble(23, alignedDimension->m_firstDefinitinPointForLinearAndAngularDimensions.y);
-      WriteCodeDouble(33, alignedDimension->m_firstDefinitinPointForLinearAndAngularDimensions.z);
-      WriteCodeDouble(14, alignedDimension->m_secondDefinitinPointForLinearAndAngularDimensions.x);
-      WriteCodeDouble(24, alignedDimension->m_secondDefinitinPointForLinearAndAngularDimensions.y);
-      WriteCodeDouble(34, alignedDimension->m_secondDefinitinPointForLinearAndAngularDimensions.z);
+      WriteCodeDouble(13, dimension.GetExtensionLinePoint1().x);
+      WriteCodeDouble(23, dimension.GetExtensionLinePoint1().y);
+      WriteCodeDouble(33, dimension.GetExtensionLinePoint1().z);
+      WriteCodeDouble(14, dimension.GetExtensionLinePoint2().x);
+      WriteCodeDouble(24, dimension.GetExtensionLinePoint2().y);
+      WriteCodeDouble(34, dimension.GetExtensionLinePoint2().z);
       if (dimension.m_entityType == EoDxf::DIMLINEAR) {
-        auto* dl = dynamic_cast<const EoDxfDimLinear*>(&dimension);
-        if (dl->getAngle() != 0) { WriteCodeDouble(50, dl->getAngle()); }
-        if (dl->getOblique() != 0) { WriteCodeDouble(52, dl->getOblique()); }
+        if (dimension.GetRotationAngle() != 0) { WriteCodeDouble(50, dimension.GetRotationAngle()); }
+        if (dimension.GetObliqueAngle() != 0) { WriteCodeDouble(52, dimension.GetObliqueAngle()); }
         WriteCodeString(100, L"AcDbRotatedDimension");
       }
       break;
     }
     case EoDxf::DIMRADIAL: {
-      auto* radialDimension = dynamic_cast<const EoDxfRadialDimension*>(&dimension);
       WriteCodeString(100, L"AcDbRadialDimension");
-      WriteCodeDouble(15, radialDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.x);
-      WriteCodeDouble(25, radialDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.y);
-      WriteCodeDouble(35, radialDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.z);
-      WriteCodeDouble(40, radialDimension->m_leaderLengthForRadiusAndDiameterDimensions);
+      WriteCodeDouble(15, dimension.GetRadiusDiameterPoint().x);
+      WriteCodeDouble(25, dimension.GetRadiusDiameterPoint().y);
+      WriteCodeDouble(35, dimension.GetRadiusDiameterPoint().z);
+      WriteCodeDouble(40, dimension.GetLeaderLength());
       break;
     }
     case EoDxf::DIMDIAMETRIC: {
-      auto* diametricDimension = dynamic_cast<const EoDxfDiametricDimension*>(&dimension);
       WriteCodeString(100, L"AcDbDiametricDimension");
-      WriteCodeDouble(15, diametricDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.x);
-      WriteCodeDouble(25, diametricDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.y);
-      WriteCodeDouble(35, diametricDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.z);
-      WriteCodeDouble(40, diametricDimension->m_leaderLengthForRadiusAndDiameterDimensions);
+      WriteCodeDouble(15, dimension.GetRadiusDiameterPoint().x);
+      WriteCodeDouble(25, dimension.GetRadiusDiameterPoint().y);
+      WriteCodeDouble(35, dimension.GetRadiusDiameterPoint().z);
+      WriteCodeDouble(40, dimension.GetLeaderLength());
       break;
     }
     case EoDxf::DIMANGULAR: {
-      auto* _2LineAngularDimension = dynamic_cast<const EoDxf2LineAngularDimension*>(&dimension);
       WriteCodeString(100, L"AcDb2LineAngularDimension");
-      WriteCodeDouble(13, _2LineAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.x);
-      WriteCodeDouble(23, _2LineAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.y);
-      WriteCodeDouble(33, _2LineAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.z);
-      WriteCodeDouble(14, _2LineAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.x);
-      WriteCodeDouble(24, _2LineAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.y);
-      WriteCodeDouble(34, _2LineAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.z);
-      WriteCodeDouble(15, _2LineAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.x);
-      WriteCodeDouble(25, _2LineAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.y);
-      WriteCodeDouble(35, _2LineAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.z);
-      WriteCodeDouble(16, _2LineAngularDimension->m_pointDefiningDimensionArcForAngularDimensions.x);
-      WriteCodeDouble(26, _2LineAngularDimension->m_pointDefiningDimensionArcForAngularDimensions.y);
-      WriteCodeDouble(36, _2LineAngularDimension->m_pointDefiningDimensionArcForAngularDimensions.z);
+      WriteCodeDouble(13, dimension.GetExtensionLinePoint1().x);
+      WriteCodeDouble(23, dimension.GetExtensionLinePoint1().y);
+      WriteCodeDouble(33, dimension.GetExtensionLinePoint1().z);
+      WriteCodeDouble(14, dimension.GetExtensionLinePoint2().x);
+      WriteCodeDouble(24, dimension.GetExtensionLinePoint2().y);
+      WriteCodeDouble(34, dimension.GetExtensionLinePoint2().z);
+      WriteCodeDouble(15, dimension.GetRadiusDiameterPoint().x);
+      WriteCodeDouble(25, dimension.GetRadiusDiameterPoint().y);
+      WriteCodeDouble(35, dimension.GetRadiusDiameterPoint().z);
+      WriteCodeDouble(16, dimension.GetArcDefinitionPoint().x);
+      WriteCodeDouble(26, dimension.GetArcDefinitionPoint().y);
+      WriteCodeDouble(36, dimension.GetArcDefinitionPoint().z);
       break;
     }
     case EoDxf::DIMANGULAR3P: {
-      auto* _3PointAngularDimension = dynamic_cast<const EoDxf3PointAngularDimension*>(&dimension);
       WriteCodeString(100, L"AcDb3PointAngularDimension");
-      WriteCodeDouble(13, _3PointAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.x);
-      WriteCodeDouble(23, _3PointAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.y);
-      WriteCodeDouble(33, _3PointAngularDimension->m_firstDefinitinPointForLinearAndAngularDimensions.z);
-      WriteCodeDouble(14, _3PointAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.x);
-      WriteCodeDouble(24, _3PointAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.y);
-      WriteCodeDouble(34, _3PointAngularDimension->m_secondDefinitinPointForLinearAndAngularDimensions.z);
-      WriteCodeDouble(15, _3PointAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.x);
-      WriteCodeDouble(25, _3PointAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.y);
-      WriteCodeDouble(35, _3PointAngularDimension->m_definitionPointForDiameterRadiusAndAngularDimensions.z);
+      WriteCodeDouble(13, dimension.GetExtensionLinePoint1().x);
+      WriteCodeDouble(23, dimension.GetExtensionLinePoint1().y);
+      WriteCodeDouble(33, dimension.GetExtensionLinePoint1().z);
+      WriteCodeDouble(14, dimension.GetExtensionLinePoint2().x);
+      WriteCodeDouble(24, dimension.GetExtensionLinePoint2().y);
+      WriteCodeDouble(34, dimension.GetExtensionLinePoint2().z);
+      WriteCodeDouble(15, dimension.GetRadiusDiameterPoint().x);
+      WriteCodeDouble(25, dimension.GetRadiusDiameterPoint().y);
+      WriteCodeDouble(35, dimension.GetRadiusDiameterPoint().z);
       break;
     }
     case EoDxf::DIMORDINATE: {
-      auto* ordinateDimension = dynamic_cast<const EoDxfOrdinateDimension*>(&dimension);
       WriteCodeString(100, L"AcDbOrdinateDimension");
-      WriteCodeDouble(13, ordinateDimension->m_firstDefinitinPointForLinearAndAngularDimensions.x);
-      WriteCodeDouble(23, ordinateDimension->m_firstDefinitinPointForLinearAndAngularDimensions.y);
-      WriteCodeDouble(33, ordinateDimension->m_firstDefinitinPointForLinearAndAngularDimensions.z);
-      WriteCodeDouble(14, ordinateDimension->m_secondDefinitinPointForLinearAndAngularDimensions.x);
-      WriteCodeDouble(24, ordinateDimension->m_secondDefinitinPointForLinearAndAngularDimensions.y);
-      WriteCodeDouble(34, ordinateDimension->m_secondDefinitinPointForLinearAndAngularDimensions.z);
+      WriteCodeDouble(13, dimension.GetExtensionLinePoint1().x);
+      WriteCodeDouble(23, dimension.GetExtensionLinePoint1().y);
+      WriteCodeDouble(33, dimension.GetExtensionLinePoint1().z);
+      WriteCodeDouble(14, dimension.GetExtensionLinePoint2().x);
+      WriteCodeDouble(24, dimension.GetExtensionLinePoint2().y);
+      WriteCodeDouble(34, dimension.GetExtensionLinePoint2().z);
       break;
     }
     default:

@@ -45,58 +45,62 @@ void EoDxfDimension::ParseCode(int code, EoDxfReader& reader) {
       m_middlePointOfDimensionText.z = reader.GetDouble();
       break;
     case 12:
-      clonePoint.x = reader.GetDouble();
+      m_clonePoint.x = reader.GetDouble();
       break;
     case 22:
-      clonePoint.y = reader.GetDouble();
+      m_clonePoint.y = reader.GetDouble();
       break;
     case 32:
-      clonePoint.z = reader.GetDouble();
+      m_clonePoint.z = reader.GetDouble();
       break;
-/*
+    // Subtype-specific accumulator codes — parsed here for all subtypes.
+    // Only the codes relevant to the actual subtype (determined later by code 70)
+    // will contain meaningful values.
     case 13:
-      def1.x = reader.GetDouble();
+      m_extensionLinePoint1.x = reader.GetDouble();
       break;
     case 23:
-      def1.y = reader.GetDouble();
+      m_extensionLinePoint1.y = reader.GetDouble();
       break;
     case 33:
-      def1.z = reader.GetDouble();
+      m_extensionLinePoint1.z = reader.GetDouble();
       break;
-*/
-/*
     case 14:
-      def2.x = reader.GetDouble();
+      m_extensionLinePoint2.x = reader.GetDouble();
       break;
     case 24:
-      def2.y = reader.GetDouble();
+      m_extensionLinePoint2.y = reader.GetDouble();
       break;
     case 34:
-      def2.z = reader.GetDouble();
+      m_extensionLinePoint2.z = reader.GetDouble();
       break;
-*/
-/*
     case 15:
-      circlePoint.x = reader.GetDouble();
+      m_radiusDiameterPoint.x = reader.GetDouble();
       break;
     case 25:
-      circlePoint.y = reader.GetDouble();
+      m_radiusDiameterPoint.y = reader.GetDouble();
       break;
     case 35:
-      circlePoint.z = reader.GetDouble();
+      m_radiusDiameterPoint.z = reader.GetDouble();
       break;
-*/
-/*
     case 16:
-      arcPoint.x = reader.GetDouble();
+      m_arcDefinitionPoint.x = reader.GetDouble();
       break;
     case 26:
-      arcPoint.y = reader.GetDouble();
+      m_arcDefinitionPoint.y = reader.GetDouble();
       break;
     case 36:
-      arcPoint.z = reader.GetDouble();
+      m_arcDefinitionPoint.z = reader.GetDouble();
       break;
-*/
+    case 40:
+      m_leaderLength = reader.GetDouble();
+      break;
+    case 50:
+      m_rotationAngle = reader.GetDouble();
+      break;
+    case 52:
+      m_obliqueAngle = reader.GetDouble();
+      break;
     case 41:
       m_dimensionTextLineSpacingFactor = reader.GetDouble();
       break;
@@ -108,218 +112,6 @@ void EoDxfDimension::ParseCode(int code, EoDxfReader& reader) {
       break;
     default:
       EoDxfGraphic::ParseCode(code, reader);
-      break;
-  }
-}
-
-void EoDxfAlignedDimension::ParseCode(int code, EoDxfReader& reader) {
-  switch (code) {
-    case 13:
-      m_firstDefinitinPointForLinearAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 23:
-      m_firstDefinitinPointForLinearAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 33:
-      m_firstDefinitinPointForLinearAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 14:
-      m_secondDefinitinPointForLinearAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 24:
-      m_secondDefinitinPointForLinearAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 34:
-      m_secondDefinitinPointForLinearAndAngularDimensions.z = reader.GetDouble();
-      break;
-    default:
-      EoDxfDimension::ParseCode(code, reader);
-      break;
-  }
-}
-
-void EoDxfDimLinear::ParseCode(int code, EoDxfReader& reader) {
-  switch (code) {
-    case 13:
-      m_firstDefinitinPointForLinearAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 23:
-      m_firstDefinitinPointForLinearAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 33:
-      m_firstDefinitinPointForLinearAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 14:
-      m_secondDefinitinPointForLinearAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 24:
-      m_secondDefinitinPointForLinearAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 34:
-      m_secondDefinitinPointForLinearAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 50:
-      m_angleOfRotatedHorizontalOrVerticalDimensions = reader.GetDouble();
-      break;
-    case 52:
-      m_angleOfExtensionLines = reader.GetDouble();
-      break;
-    default:
-      EoDxfDimension::ParseCode(code, reader);
-      break;
-  }
-}
-
-void EoDxfRadialDimension::ParseCode(int code, EoDxfReader& reader) {
-  switch (code) {
-    case 15:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 25:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 35:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 40:
-      m_leaderLengthForRadiusAndDiameterDimensions = reader.GetDouble();
-      break;
-    default:
-      EoDxfDimension::ParseCode(code, reader);
-      break;
-  }
-}
-
-void EoDxfDiametricDimension::ParseCode(int code, EoDxfReader& reader) {
-  switch (code) {
-    case 15:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 25:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 35:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 40:
-      m_leaderLengthForRadiusAndDiameterDimensions = reader.GetDouble();
-      break;
-    default:
-      EoDxfDimension::ParseCode(code, reader);
-      break;
-  }
-}
-
-void EoDxf2LineAngularDimension::ParseCode(int code, EoDxfReader& reader) {
-  switch (code) {
-    case 13:
-      m_firstDefinitinPointForLinearAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 23:
-      m_firstDefinitinPointForLinearAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 33:
-      m_firstDefinitinPointForLinearAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 14:
-      m_secondDefinitinPointForLinearAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 24:
-      m_secondDefinitinPointForLinearAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 34:
-      m_secondDefinitinPointForLinearAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 15:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 25:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 35:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 16:
-      m_pointDefiningDimensionArcForAngularDimensions.x = reader.GetDouble();
-      break;
-    case 26:
-      m_pointDefiningDimensionArcForAngularDimensions.y = reader.GetDouble();
-      break;
-    case 36:
-      m_pointDefiningDimensionArcForAngularDimensions.z = reader.GetDouble();
-      break;
-    default:
-      EoDxfDimension::ParseCode(code, reader);
-      break;
-  }
-}
-
-void EoDxf3PointAngularDimension::ParseCode(int code, EoDxfReader& reader) {
-  switch (code) {
-    case 13:
-      m_firstDefinitinPointForLinearAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 23:
-      m_firstDefinitinPointForLinearAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 33:
-      m_firstDefinitinPointForLinearAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 14:
-      m_secondDefinitinPointForLinearAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 24:
-      m_secondDefinitinPointForLinearAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 34:
-      m_secondDefinitinPointForLinearAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 15:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 25:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 35:
-      m_definitionPointForDiameterRadiusAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 16:
-      m_pointDefiningDimensionArcForAngularDimensions.x = reader.GetDouble();
-      break;
-    case 26:
-      m_pointDefiningDimensionArcForAngularDimensions.y = reader.GetDouble();
-      break;
-    case 36:
-      m_pointDefiningDimensionArcForAngularDimensions.z = reader.GetDouble();
-      break;
-    default:
-      EoDxfDimension::ParseCode(code, reader);
-      break;
-  }
-}
-
-void EoDxfOrdinateDimension::ParseCode(int code, EoDxfReader& reader) {
-  switch (code) {
-    case 13:
-      m_firstDefinitinPointForLinearAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 23:
-      m_firstDefinitinPointForLinearAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 33:
-      m_firstDefinitinPointForLinearAndAngularDimensions.z = reader.GetDouble();
-      break;
-    case 14:
-      m_secondDefinitinPointForLinearAndAngularDimensions.x = reader.GetDouble();
-      break;
-    case 24:
-      m_secondDefinitinPointForLinearAndAngularDimensions.y = reader.GetDouble();
-      break;
-    case 34:
-      m_secondDefinitinPointForLinearAndAngularDimensions.z = reader.GetDouble();
-      break;
-    default:
-      EoDxfDimension::ParseCode(code, reader);
       break;
   }
 }

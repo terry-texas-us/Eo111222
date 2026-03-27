@@ -164,7 +164,10 @@ class EoDbDxfInterface : public EoDxfInterface {
     countOfDimAngular3P--;
   }
 
-  void AddDimLinear([[maybe_unused]] const EoDxfDimLinear* dimLinear) override { countOfDimLinear--; }
+  void AddDimLinear(const EoDxfDimLinear* dimLinear) override {
+    countOfDimLinear++;
+    ConvertDimLinearEntity(*dimLinear, m_document);
+  }
   void AddDimOrdinate([[maybe_unused]] const EoDxfOrdinateDimension* dimOrdinate) override { countOfDimOrdinate--; }
 
   void AddDimRadial([[maybe_unused]] const EoDxfRadialDimension* dimRadial) override { countOfDimRadial--; }
@@ -786,6 +789,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_unused]] AeSysDoc* document);
   EoDbText* ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document);
   void ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document);
+  void ConvertDimLinearEntity(const EoDxfDimLinear& dimension, AeSysDoc* document);
   void ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document);
   void ConvertHatchEntity(const EoDxfHatch& hatch, [[maybe_unused]] AeSysDoc* document);
   EoDbBlockReference* ConvertInsertEntity(const EoDxfInsert& insert, AeSysDoc* document);
