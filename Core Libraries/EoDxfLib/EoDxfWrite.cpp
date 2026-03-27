@@ -171,56 +171,57 @@ bool EoDxfWrite::WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData
   return m_writeOk;
 }
 
-bool EoDxfWrite::WriteEntity(EoDxfGraphic* entity) {
-  if (entity->m_handle == EoDxf::NoHandle) {
-    entity->m_handle = ++m_entityCount;
+bool EoDxfWrite::WriteEntity(const EoDxfGraphic& entity) {
+  if (entity.m_handle == EoDxf::NoHandle) {
+    m_lastWrittenEntityHandle = ++m_entityCount;
   } else {
-    if (entity->m_handle >= m_entityCount) { m_entityCount = entity->m_handle; }
+    if (entity.m_handle >= m_entityCount) { m_entityCount = entity.m_handle; }
+    m_lastWrittenEntityHandle = entity.m_handle;
   }
-  WriteCodeString(5, ToHexString(entity->m_handle));
+  WriteCodeString(5, ToHexString(m_lastWrittenEntityHandle));
 
   // Write reactor handles (102 {ACAD_REACTORS ... }) — DXF spec places these between code 5 and code 100.
-  if (!entity->m_reactorHandles.empty()) {
+  if (!entity.m_reactorHandles.empty()) {
     WriteCodeString(102, L"{ACAD_REACTORS");
-    for (const auto reactorHandle : entity->m_reactorHandles) { WriteCodeString(330, ToHexString(reactorHandle)); }
+    for (const auto reactorHandle : entity.m_reactorHandles) { WriteCodeString(330, ToHexString(reactorHandle)); }
     WriteCodeString(102, L"}");
   }
 
   // Write extension dictionary handle (102 {ACAD_XDICTIONARY ... })
-  if (entity->m_extensionDictionaryHandle != EoDxf::NoHandle) {
+  if (entity.m_extensionDictionaryHandle != EoDxf::NoHandle) {
     WriteCodeString(102, L"{ACAD_XDICTIONARY");
-    WriteCodeString(360, ToHexString(entity->m_extensionDictionaryHandle));
+    WriteCodeString(360, ToHexString(entity.m_extensionDictionaryHandle));
     WriteCodeString(102, L"}");
   }
 
   if (m_version > EoDxf::Version::AC1014) {
     if (m_writingBlock) {
       WriteCodeString(330, ToHexString(m_currentHandle));
-    } else if (entity->m_space == EoDxf::Space::PaperSpace) {
+    } else if (m_currentExportSpace == EoDxf::Space::PaperSpace) {
       WriteCodeString(330, ToHexString(EoDxf::Handles::PaperSpaceBlockRecord));
     } else {
       WriteCodeString(330, ToHexString(EoDxf::Handles::ModelSpaceBlockRecord));
     }
   }
   WriteCodeString(100, L"AcDbEntity");
-  if (entity->m_space == EoDxf::Space::PaperSpace) { WriteCodeInt16(67, 1); }
+  if (m_currentExportSpace == EoDxf::Space::PaperSpace) { WriteCodeInt16(67, 1); }
 
-  WriteCodeWideString(8, entity->m_layer);
-  if (entity->m_lineType != L"BYLAYER") {
-    WriteCodeWideString(6, entity->m_lineType);
+  WriteCodeWideString(8, entity.m_layer);
+  if (entity.m_lineType != L"BYLAYER") {
+    WriteCodeWideString(6, entity.m_lineType);
     // code 347 is for the line type's object handle, but until AeSys supports custom line types, skip
   }
-  if (entity->m_color != 256) { WriteCodeInt16(62, entity->m_color); }
+  if (entity.m_color != 256) { WriteCodeInt16(62, entity.m_color); }
   if (m_version > EoDxf::Version::AC1014) {
-    WriteCodeInt16(370, EoDxfLineWeights::LineWeightToDxfIndex(entity->m_lineWeight));
+    WriteCodeInt16(370, EoDxfLineWeights::LineWeightToDxfIndex(entity.m_lineWeight));
   }
 
   // Optional code 92 Number of bytes in the proxy entity graphics in the 310 groups, which are binary chunk records
   // Optional code 310 Proxy entity graphics data (multiple lines; 256 characters max. per line) (optional)
 
-  if (m_version > EoDxf::Version::AC1015 && entity->m_color24 >= 0) { WriteCodeInt32(420, entity->m_color24); }
-  if (m_version > EoDxf::Version::AC1015 && !entity->m_colorName.empty()) {
-    WriteCodeWideString(430, entity->m_colorName);
+  if (m_version > EoDxf::Version::AC1015 && entity.m_color24 >= 0) { WriteCodeInt32(420, entity.m_color24); }
+  if (m_version > EoDxf::Version::AC1015 && !entity.m_colorName.empty()) {
+    WriteCodeWideString(430, entity.m_colorName);
   }
   // code 440 is for transparency, but until AeSys supports transparency, skip
 
@@ -228,109 +229,109 @@ bool EoDxfWrite::WriteEntity(EoDxfGraphic* entity) {
 
   // code 284 is for Shadow mode, it is obsolete now and not supported by AeSys, so skip
 
-  if (!entity->m_appData.empty()) { WriteAppData(entity->m_appData); }
-  if (!entity->m_extendedData.empty()) { WriteExtData(entity->m_extendedData); }
+  if (!entity.m_appData.empty()) { WriteAppData(entity.m_appData); }
+  if (!entity.m_extendedData.empty()) { WriteExtData(entity.m_extendedData); }
   return m_writeOk;
 }
 
-bool EoDxfWrite::WriteAcadProxyEntity(EoDxfAcadProxyEntity* proxyEntity) {
+bool EoDxfWrite::WriteAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity) {
   WriteCodeString(0, L"ACAD_PROXY_ENTITY");
   WriteEntity(proxyEntity);
   WriteCodeString(100, L"AcDbProxyEntity");
 
-  WriteCodeInt32(90, proxyEntity->m_proxyEntityClassId);
-  WriteCodeInt32(91, proxyEntity->m_applicationEntityClassId);
+  WriteCodeInt32(90, proxyEntity.m_proxyEntityClassId);
+  WriteCodeInt32(91, proxyEntity.m_applicationEntityClassId);
 
   // Graphics data: size followed by binary chunk records
-  WriteCodeInt32(92, proxyEntity->m_graphicsDataSizeInBytes);
-  for (const auto& chunk : proxyEntity->m_graphicsDataChunks) { WriteCodeWideString(310, chunk); }
+  WriteCodeInt32(92, proxyEntity.m_graphicsDataSizeInBytes);
+  for (const auto& chunk : proxyEntity.m_graphicsDataChunks) { WriteCodeWideString(310, chunk); }
 
   // Entity data: size (in bits) followed by binary chunk records
-  WriteCodeInt32(93, proxyEntity->m_entityDataSizeInBits);
-  for (const auto& chunk : proxyEntity->m_entityDataChunks) { WriteCodeWideString(310, chunk); }
+  WriteCodeInt32(93, proxyEntity.m_entityDataSizeInBits);
+  for (const auto& chunk : proxyEntity.m_entityDataChunks) { WriteCodeWideString(310, chunk); }
 
   // Object ID handle references
-  for (const auto handle : proxyEntity->m_softPointerHandles) { WriteCodeString(330, ToHexString(handle)); }
-  for (const auto handle : proxyEntity->m_hardPointerHandles) { WriteCodeString(340, ToHexString(handle)); }
-  for (const auto handle : proxyEntity->m_softOwnerHandles) { WriteCodeString(350, ToHexString(handle)); }
-  for (const auto handle : proxyEntity->m_hardOwnerHandles) { WriteCodeString(360, ToHexString(handle)); }
+  for (const auto handle : proxyEntity.m_softPointerHandles) { WriteCodeString(330, ToHexString(handle)); }
+  for (const auto handle : proxyEntity.m_hardPointerHandles) { WriteCodeString(340, ToHexString(handle)); }
+  for (const auto handle : proxyEntity.m_softOwnerHandles) { WriteCodeString(350, ToHexString(handle)); }
+  for (const auto handle : proxyEntity.m_hardOwnerHandles) { WriteCodeString(360, ToHexString(handle)); }
 
-  WriteCodeInt32(94, proxyEntity->m_objectIdSectionEnd);
-  WriteCodeInt32(95, proxyEntity->m_objectDrawingFormat);
-  WriteCodeInt16(70, proxyEntity->m_originalDataFormatFlag);
+  WriteCodeInt32(94, proxyEntity.m_objectIdSectionEnd);
+  WriteCodeInt32(95, proxyEntity.m_objectDrawingFormat);
+  WriteCodeInt16(70, proxyEntity.m_originalDataFormatFlag);
 
   return m_writeOk;
 }
 
-bool EoDxfWrite::WriteInsert(EoDxfInsert* blockReference) {
+bool EoDxfWrite::WriteInsert(const EoDxfInsert& blockReference) {
   WriteCodeString(0, L"INSERT");
   WriteEntity(blockReference);
 
   WriteCodeString(100, L"AcDbBlockReference");
-  WriteCodeWideString(2, blockReference->m_blockName);
+  WriteCodeWideString(2, blockReference.m_blockName);
 
-  WriteCodeDouble(10, blockReference->m_insertionPoint.x);
-  WriteCodeDouble(20, blockReference->m_insertionPoint.y);
-  WriteCodeDouble(30, blockReference->m_insertionPoint.z);
-  WriteCodeDouble(41, blockReference->m_xScaleFactor);
-  WriteCodeDouble(42, blockReference->m_yScaleFactor);
-  WriteCodeDouble(43, blockReference->m_zScaleFactor);
+  WriteCodeDouble(10, blockReference.m_insertionPoint.x);
+  WriteCodeDouble(20, blockReference.m_insertionPoint.y);
+  WriteCodeDouble(30, blockReference.m_insertionPoint.z);
+  WriteCodeDouble(41, blockReference.m_xScaleFactor);
+  WriteCodeDouble(42, blockReference.m_yScaleFactor);
+  WriteCodeDouble(43, blockReference.m_zScaleFactor);
   WriteCodeDouble(
-      50, (blockReference->m_rotationAngle) * EoDxf::RadiansToDegrees);  // in dxf angle is written in degrees
-  WriteCodeInt16(70, blockReference->m_columnCount);
-  WriteCodeInt16(71, blockReference->m_rowCount);
-  WriteCodeDouble(44, blockReference->m_columnSpacing);
-  WriteCodeDouble(45, blockReference->m_rowSpacing);
-  WriteExtrusionDirection(*blockReference);
+      50, (blockReference.m_rotationAngle) * EoDxf::RadiansToDegrees);  // in dxf angle is written in degrees
+  WriteCodeInt16(70, blockReference.m_columnCount);
+  WriteCodeInt16(71, blockReference.m_rowCount);
+  WriteCodeDouble(44, blockReference.m_columnSpacing);
+  WriteCodeDouble(45, blockReference.m_rowSpacing);
+  WriteExtrusionDirection(blockReference);
   return m_writeOk;
 }
 
-bool EoDxfWrite::WriteViewport(EoDxfViewport* viewport) {
+bool EoDxfWrite::WriteViewport(const EoDxfViewport& viewport) {
   WriteCodeString(0, L"VIEWPORT");
   WriteEntity(viewport);
   WriteCodeString(100, L"AcDbViewport");
-  WriteCodeDouble(10, viewport->m_centerPoint.x);
-  WriteCodeDouble(20, viewport->m_centerPoint.y);
-  if (std::abs(viewport->m_centerPoint.z) > EoDxf::geometricTolerance) {
-    WriteCodeDouble(30, viewport->m_centerPoint.z);
+  WriteCodeDouble(10, viewport.m_centerPoint.x);
+  WriteCodeDouble(20, viewport.m_centerPoint.y);
+  if (std::abs(viewport.m_centerPoint.z) > EoDxf::geometricTolerance) {
+    WriteCodeDouble(30, viewport.m_centerPoint.z);
   }
-  WriteCodeDouble(40, viewport->m_width);
-  WriteCodeDouble(41, viewport->m_height);
-  if (viewport->m_viewportStatus != 0) { WriteCodeInt16(68, viewport->m_viewportStatus); }
-  if (viewport->m_viewportId != 0) { WriteCodeInt16(69, viewport->m_viewportId); }
+  WriteCodeDouble(40, viewport.m_width);
+  WriteCodeDouble(41, viewport.m_height);
+  if (viewport.m_viewportStatus != 0) { WriteCodeInt16(68, viewport.m_viewportStatus); }
+  if (viewport.m_viewportId != 0) { WriteCodeInt16(69, viewport.m_viewportId); }
 
-  if (!viewport->m_viewCenter.IsZero()) {
-    WriteCodeDouble(12, viewport->m_viewCenter.x);
-    WriteCodeDouble(22, viewport->m_viewCenter.y);
+  if (!viewport.m_viewCenter.IsZero()) {
+    WriteCodeDouble(12, viewport.m_viewCenter.x);
+    WriteCodeDouble(22, viewport.m_viewCenter.y);
   }
-  if (!viewport->m_snapBasePoint.IsZero()) {
-    WriteCodeDouble(13, viewport->m_snapBasePoint.x);
-    WriteCodeDouble(23, viewport->m_snapBasePoint.y);
+  if (!viewport.m_snapBasePoint.IsZero()) {
+    WriteCodeDouble(13, viewport.m_snapBasePoint.x);
+    WriteCodeDouble(23, viewport.m_snapBasePoint.y);
   }
-  if (!viewport->m_snapSpacing.IsZero()) {
-    WriteCodeDouble(14, viewport->m_snapSpacing.x);
-    WriteCodeDouble(24, viewport->m_snapSpacing.y);
+  if (!viewport.m_snapSpacing.IsZero()) {
+    WriteCodeDouble(14, viewport.m_snapSpacing.x);
+    WriteCodeDouble(24, viewport.m_snapSpacing.y);
   }
-  if (!viewport->m_gridSpacing.IsZero()) {
-    WriteCodeDouble(15, viewport->m_gridSpacing.x);
-    WriteCodeDouble(25, viewport->m_gridSpacing.y);
+  if (!viewport.m_gridSpacing.IsZero()) {
+    WriteCodeDouble(15, viewport.m_gridSpacing.x);
+    WriteCodeDouble(25, viewport.m_gridSpacing.y);
   }
-  if (!viewport->m_viewDirection.IsDefaultNormal()) {
-    WriteCodeDouble(16, viewport->m_viewDirection.x);
-    WriteCodeDouble(26, viewport->m_viewDirection.y);
-    WriteCodeDouble(36, viewport->m_viewDirection.z);
+  if (!viewport.m_viewDirection.IsDefaultNormal()) {
+    WriteCodeDouble(16, viewport.m_viewDirection.x);
+    WriteCodeDouble(26, viewport.m_viewDirection.y);
+    WriteCodeDouble(36, viewport.m_viewDirection.z);
   }
-  if (!viewport->m_viewTargetPoint.IsZero()) {
-    WriteCodeDouble(17, viewport->m_viewTargetPoint.x);
-    WriteCodeDouble(27, viewport->m_viewTargetPoint.y);
-    WriteCodeDouble(37, viewport->m_viewTargetPoint.z);
+  if (!viewport.m_viewTargetPoint.IsZero()) {
+    WriteCodeDouble(17, viewport.m_viewTargetPoint.x);
+    WriteCodeDouble(27, viewport.m_viewTargetPoint.y);
+    WriteCodeDouble(37, viewport.m_viewTargetPoint.z);
   }
-  if (viewport->m_lensLength != 0.0) { WriteCodeDouble(42, viewport->m_lensLength); }
-  if (viewport->m_frontClipPlane != 0.0) { WriteCodeDouble(43, viewport->m_frontClipPlane); }
-  if (viewport->m_backClipPlane != 0.0) { WriteCodeDouble(44, viewport->m_backClipPlane); }
-  if (viewport->m_viewHeight != 0.0) { WriteCodeDouble(45, viewport->m_viewHeight); }
-  if (viewport->m_snapAngle != 0.0) { WriteCodeDouble(50, viewport->m_snapAngle); }
-  if (viewport->m_twistAngle != 0.0) { WriteCodeDouble(51, viewport->m_twistAngle); }
+  if (viewport.m_lensLength != 0.0) { WriteCodeDouble(42, viewport.m_lensLength); }
+  if (viewport.m_frontClipPlane != 0.0) { WriteCodeDouble(43, viewport.m_frontClipPlane); }
+  if (viewport.m_backClipPlane != 0.0) { WriteCodeDouble(44, viewport.m_backClipPlane); }
+  if (viewport.m_viewHeight != 0.0) { WriteCodeDouble(45, viewport.m_viewHeight); }
+  if (viewport.m_snapAngle != 0.0) { WriteCodeDouble(50, viewport.m_snapAngle); }
+  if (viewport.m_twistAngle != 0.0) { WriteCodeDouble(51, viewport.m_twistAngle); }
   return m_writeOk;
 }
 
@@ -352,7 +353,7 @@ EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstri
   std::wstring idReactor = ToHexString(++m_entityCount);
 
   WriteCodeString(0, L"IMAGE");
-  WriteEntity(rasterImage);
+  WriteEntity(*rasterImage);
   WriteCodeString(100, L"AcDbRasterImage");
   WriteCodeDouble(10, rasterImage->m_insertionPoint.x);
   WriteCodeDouble(20, rasterImage->m_insertionPoint.y);
@@ -372,7 +373,7 @@ EoDxfImageDefinition* EoDxfWrite::WriteImage(EoDxfImage* rasterImage, std::wstri
   WriteCodeInt16(282, rasterImage->m_contrastValue);
   WriteCodeInt16(283, rasterImage->m_fadeValue);
   WriteCodeString(360, idReactor);
-  id->reactors[idReactor] = ToHexString(rasterImage->m_handle);
+  id->reactors[idReactor] = ToHexString(m_lastWrittenEntityHandle);
   return id;
 }
 
@@ -405,7 +406,7 @@ bool EoDxfWrite::WriteBlockRecord(std::wstring_view name, std::uint64_t handle) 
   return m_writeOk;
 }
 
-bool EoDxfWrite::WriteBlock(EoDxfBlock* block) {
+bool EoDxfWrite::WriteBlock(const EoDxfBlock& block) {
   if (m_writingBlock) {
     WriteCodeString(0, L"ENDBLK");
 
@@ -419,11 +420,11 @@ bool EoDxfWrite::WriteBlock(EoDxfBlock* block) {
   m_writingBlock = true;
   WriteCodeString(0, L"BLOCK");
 
-  m_currentHandle = (*(m_blockMap.find(block->m_blockName))).second;
+  m_currentHandle = (*(m_blockMap.find(block.m_blockName))).second;
 
-  if (block->m_handle != EoDxf::NoHandle) {
-    if (block->m_handle >= m_entityCount) { m_entityCount = block->m_handle; }
-    WriteCodeString(5, ToHexString(block->m_handle));
+  if (block.m_handle != EoDxf::NoHandle) {
+    if (block.m_handle >= m_entityCount) { m_entityCount = block.m_handle; }
+    WriteCodeString(5, ToHexString(block.m_handle));
   } else {
     WriteCodeString(5, ToHexString(m_currentHandle + 1));
   }
@@ -433,14 +434,14 @@ bool EoDxfWrite::WriteBlock(EoDxfBlock* block) {
   WriteCodeString(8, L"0");
 
   WriteCodeString(100, L"AcDbBlockBegin");
-  WriteCodeWideString(2, block->m_blockName);
+  WriteCodeWideString(2, block.m_blockName);
 
-  WriteCodeInt16(70, block->m_blockTypeFlags);
-  WriteCodeDouble(10, block->m_basePoint.x);
-  WriteCodeDouble(20, block->m_basePoint.y);
-  if (std::abs(block->m_basePoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, block->m_basePoint.z); }
+  WriteCodeInt16(70, block.m_blockTypeFlags);
+  WriteCodeDouble(10, block.m_basePoint.x);
+  WriteCodeDouble(20, block.m_basePoint.y);
+  if (std::abs(block.m_basePoint.z) > EoDxf::geometricTolerance) { WriteCodeDouble(30, block.m_basePoint.z); }
 
-  WriteCodeWideString(3, block->m_blockName);
+  WriteCodeWideString(3, block.m_blockName);
 
   WriteCodeString(1, L"");
 

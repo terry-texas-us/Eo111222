@@ -44,6 +44,10 @@ class EoDxfWrite {
   bool WriteVport(EoDxfVPort* viewport);
   bool WriteAppId(EoDxfAppId* appId);
 
+  /// @brief Sets the current export space for subsequent WriteEntity calls.
+  /// WriteEntity derives the owner handle from this instead of reading entity->m_space.
+  void SetCurrentExportSpace(EoDxf::Space space) noexcept { m_currentExportSpace = space; }
+
   void WriteCodePoint3d(int code, const EoDxfGeometryBase3d& point);
   void WriteCodeVector3d(int code, const EoDxfGeometryBase3d& vector);
 
@@ -71,7 +75,7 @@ class EoDxfWrite {
    */
   void WriteThickness(const EoDxfGraphic& entity);
 
-  bool Write3dFace(EoDxf3dFace* _3dFace);
+  bool Write3dFace(const EoDxf3dFace& _3dFace);
 
   /** @brief Writes an ACAD_PROXY_ENTITY to the DXF file.
    *
@@ -79,13 +83,13 @@ class EoDxfWrite {
    *  not loaded. The method writes the class IDs, graphics and entity binary chunk data (code 310), object-ID handle
    *  references, and the original data format flag.
    *
-   *  @param proxyEntity A pointer to the EoDxfAcadProxyEntity object containing the proxy entity's properties.
+   *  @param proxyEntity A const reference to the EoDxfAcadProxyEntity object containing the proxy entity's properties.
    *  @return true if the entity was successfully written; otherwise, false.
    */
-  bool WriteAcadProxyEntity(EoDxfAcadProxyEntity* proxyEntity);
+  bool WriteAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity);
 
-  bool WriteArc(EoDxfArc* arc);
-  bool WriteCircle(EoDxfCircle* circle);
+  bool WriteArc(const EoDxfArc& arc);
+  bool WriteCircle(const EoDxfCircle& circle);
  
   /** @brief Writes a DIMENSION entity to the DXF file.
    *
@@ -94,17 +98,17 @@ class EoDxfWrite {
    * dimension correctly according to the DXF specification. It also takes into account the specific properties of the
    * dimension, such as its type, measurement points, and associated styles.
    *
-   * @param dimension A pointer to the EoDxfDimension object containing the properties of the dimension to be written.
+   * @param dimension A const reference to the EoDxfDimension object containing the properties of the dimension to be written.
    * @return true if the dimension was successfully written; otherwise, false.
    */
-  bool WriteDimension(EoDxfDimension* dimension);
+  bool WriteDimension(const EoDxfDimension& dimension);
 
-  bool WriteEllipse(EoDxfEllipse* ellipse);
-  bool WriteHatch(EoDxfHatch* hatch);
-  bool WriteInsert(EoDxfInsert* blockReference);
-  bool WriteLeader(EoDxfLeader* leader);
-  bool WriteLine(EoDxfLine* line);
-  bool WriteLWPolyline(EoDxfLwPolyline* polyline);
+  bool WriteEllipse(const EoDxfEllipse& ellipse);
+  bool WriteHatch(const EoDxfHatch& hatch);
+  bool WriteInsert(const EoDxfInsert& blockReference);
+  bool WriteLeader(const EoDxfLeader& leader);
+  bool WriteLine(const EoDxfLine& line);
+  bool WriteLWPolyline(const EoDxfLwPolyline& polyline);
  
  /** @brief Writes an MLEADER entity to the DXF file.
    *
@@ -114,14 +118,14 @@ class EoDxfWrite {
    * specific properties of the MLEADER, such as its leader type, line color, line type, content type, and other
    * attributes that define its appearance and behavior in the drawing.
    *
-   * @param mLeader A pointer to the EoDxfMLeader object containing the properties of the MLEADER to be written.
+   * @param mLeader A const reference to the EoDxfMLeader object containing the properties of the MLEADER to be written.
    * @return true if the MLEADER was successfully written; otherwise, false.
    */
-  bool WriteMLeader(EoDxfMLeader* mLeader);
+  bool WriteMLeader(const EoDxfMLeader& mLeader);
 
-  bool WriteMText(EoDxfMText* mText);
-  bool WritePoint(EoDxfPoint* point);
-  bool WritePolyline(EoDxfPolyline* polyline);
+  bool WriteMText(const EoDxfMText& mText);
+  bool WritePoint(const EoDxfPoint& point);
+  bool WritePolyline(const EoDxfPolyline& polyline);
 
   /** @brief Writes a RAY entity to the DXF file (AC1012+).
    *
@@ -129,16 +133,16 @@ class EoDxfWrite {
    * of the RAY, which is normalized to ensure it represents only the direction without affecting the length. The method
    * writes the necessary DXF group codes and values to represent the RAY entity correctly in the DXF format.
    *
-   * @param ray A pointer to the EoDxfRay object containing the RAY's properties.
+   * @param ray A const reference to the EoDxfRay object containing the RAY's properties.
    * @return true if the RAY was successfully written; otherwise, false.
    */
-  bool WriteRay(EoDxfRay* ray);
+  bool WriteRay(const EoDxfRay& ray);
 
-  bool WriteSolid(EoDxfSolid* solid);
-  bool WriteSpline(EoDxfSpline* spline);
-  bool WriteText(EoDxfText* text);
-  bool WriteTrace(EoDxfTrace* trace);
-  bool WriteViewport(EoDxfViewport* viewport);
+  bool WriteSolid(const EoDxfSolid& solid);
+  bool WriteSpline(const EoDxfSpline& spline);
+  bool WriteText(const EoDxfText& text);
+  bool WriteTrace(const EoDxfTrace& trace);
+  bool WriteViewport(const EoDxfViewport& viewport);
 
   /** @brief Writes an XLINE entity to the DXF file.
    *
@@ -147,13 +151,13 @@ class EoDxfWrite {
    * affecting the length. The method writes the necessary DXF group codes and values to represent the XLINE entity
    * correctly in the DXF format.
    *
-   * @param xline A pointer to the EoDxfXline object containing the XLINE's properties.
+   * @param xline A const reference to the EoDxfXline object containing the XLINE's properties.
    * @return true if the XLINE was successfully written; otherwise, false.
    */
-  bool WriteXline(EoDxfXline* xline);
+  bool WriteXline(const EoDxfXline& xline);
 
   bool WriteBlockRecord(std::wstring_view name, std::uint64_t handle = EoDxf::NoHandle);
-  bool WriteBlock(EoDxfBlock* block);
+  bool WriteBlock(const EoDxfBlock& block);
   void AddImageDefinition(const EoDxfImageDefinition& imageDefinition);
   bool WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData);
   EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::wstring_view name);
@@ -189,10 +193,10 @@ class EoDxfWrite {
    * also manages the writing of application-defined groups (code 102) for reactors and extension dictionaries, as well
    * as optional fields based on the DXF version. The specific geometric data for each entity type is handled in their
    * respective Write methods, which call this method to write the common entity data.
-   * @param entity A pointer to the EoDxfGraphic entity whose data is to be written to the DXF file.
+   * @param entity A const reference to the EoDxfGraphic entity whose data is to be written to the DXF file.
    * @return true if the entity data was successfully written; false if an error occurred during writing.
    */
-  bool WriteEntity(EoDxfGraphic* entity);
+  bool WriteEntity(const EoDxfGraphic& entity);
 
   bool WriteTables();
   bool WriteBlocks();
@@ -214,6 +218,8 @@ class EoDxfWrite {
   EoDxfWriter* m_writer;
   EoDxfInterface* m_interface{};
   std::uint64_t m_entityCount{};
+  EoDxf::Space m_currentExportSpace{EoDxf::Space::ModelSpace};
+  std::uint64_t m_lastWrittenEntityHandle{};
   EoDxf::Version m_version{};
   std::uint64_t m_currentHandle{};
   bool wlayer0{};

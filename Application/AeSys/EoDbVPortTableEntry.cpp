@@ -4,6 +4,9 @@
 #include "EoDbVPortTableEntry.h"
 
 void EoDbVPortTableEntry::Read(CFile& file) {
+  m_handle = EoDb::ReadUInt64(file);
+  m_ownerHandle = EoDb::ReadUInt64(file);
+
   CString name;
   EoDb::Read(file, name);
   m_name = std::wstring(name.GetString());
@@ -37,6 +40,9 @@ void EoDbVPortTableEntry::Read(CFile& file) {
 }
 
 void EoDbVPortTableEntry::Write(CFile& file) const {
+  EoDb::WriteUInt64(file, m_handle);
+  EoDb::WriteUInt64(file, m_ownerHandle);
+
   EoDb::Write(file, CString(m_name.c_str()));
 
   m_lowerLeftCorner.Write(file);

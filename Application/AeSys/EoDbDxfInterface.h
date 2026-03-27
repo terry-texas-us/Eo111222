@@ -117,9 +117,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddArc(const EoDxfArc& arc) override {
     if (m_dxfWriter) {
-      auto mutableArc = arc;
-      mutableArc.m_space = m_currentExportSpace;
-      m_dxfWriter->WriteArc(&mutableArc);
+      m_dxfWriter->WriteArc(arc);
       return;
     }
     countOfArc++;
@@ -145,9 +143,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddCircle(const EoDxfCircle& circle) override {
     if (m_dxfWriter) {
-      auto mutableCircle = circle;
-      mutableCircle.m_space = m_currentExportSpace;
-      m_dxfWriter->WriteCircle(&mutableCircle);
+      m_dxfWriter->WriteCircle(circle);
       return;
     }
     countOfCircle++;
@@ -177,9 +173,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddEllipse(const EoDxfEllipse& ellipse) override {
     if (m_dxfWriter) {
-      auto mutableEllipse = ellipse;
-      mutableEllipse.m_space = m_currentExportSpace;
-      m_dxfWriter->WriteEllipse(&mutableEllipse);
+      m_dxfWriter->WriteEllipse(ellipse);
       return;
     }
     countOfEllipse++;
@@ -193,8 +187,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddHatch(const EoDxfHatch& hatch) override {
     if (m_dxfWriter) {
-      const_cast<EoDxfHatch&>(hatch).m_space = m_currentExportSpace;
-      m_dxfWriter->WriteHatch(const_cast<EoDxfHatch*>(&hatch));
+      m_dxfWriter->WriteHatch(hatch);
       return;
     }
     countOfHatch++;
@@ -210,9 +203,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddInsert(const EoDxfInsert& blockReference) override {
     if (m_dxfWriter) {
-      auto mutableInsert = blockReference;
-      mutableInsert.m_space = m_currentExportSpace;
-      m_dxfWriter->WriteInsert(&mutableInsert);
+      m_dxfWriter->WriteInsert(blockReference);
       return;
     }
     countOfInsert++;
@@ -228,9 +219,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddLine(const EoDxfLine& line) override {
     if (m_dxfWriter) {
-      auto mutableLine = line;
-      mutableLine.m_space = m_currentExportSpace;
-      m_dxfWriter->WriteLine(&mutableLine);
+      m_dxfWriter->WriteLine(line);
       return;
     }
     countOfLine++;
@@ -244,9 +233,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddLWPolyline(const EoDxfLwPolyline& polyline) override {
     if (m_dxfWriter) {
-      auto mutablePolyline = polyline;
-      mutablePolyline.m_space = m_currentExportSpace;
-      m_dxfWriter->WriteLWPolyline(&mutablePolyline);
+      m_dxfWriter->WriteLWPolyline(polyline);
       return;
     }
     countOfLWPolyline++;
@@ -262,9 +249,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddMText(const EoDxfMText& mText) override {
     if (m_dxfWriter) {
-      auto mutableMText = mText;
-      mutableMText.m_space = m_currentExportSpace;
-      m_dxfWriter->WriteMText(&mutableMText);
+      m_dxfWriter->WriteMText(mText);
       return;
     }
     countOfMText++;
@@ -278,9 +263,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddPoint(const EoDxfPoint& point) override {
     if (m_dxfWriter) {
-      auto mutablePoint = point;
-      mutablePoint.m_space = m_currentExportSpace;
-      m_dxfWriter->WritePoint(&mutablePoint);
+      m_dxfWriter->WritePoint(point);
       return;
     }
     countOfPoint++;
@@ -294,11 +277,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddPolyline(const EoDxfPolyline& polyline) override {
     if (m_dxfWriter) {
-      // EoDxfPolyline has deleted copy ctor (owns raw vertex pointers) — const_cast is safe here
-      // because ExportToDxf constructs the object and m_space is a plain enum member.
-      auto& mutablePolyline = const_cast<EoDxfPolyline&>(polyline);
-      mutablePolyline.m_space = m_currentExportSpace;
-      m_dxfWriter->WritePolyline(&mutablePolyline);
+      m_dxfWriter->WritePolyline(polyline);
       return;
     }
     const auto flag = polyline.m_polylineFlag;
@@ -336,8 +315,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddSpline(const EoDxfSpline& spline) override {
     if (m_dxfWriter) {
-      const_cast<EoDxfSpline&>(spline).m_space = m_currentExportSpace;
-      m_dxfWriter->WriteSpline(const_cast<EoDxfSpline*>(&spline));
+      m_dxfWriter->WriteSpline(spline);
       return;
     }
     countOfSpline++;
@@ -351,9 +329,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddText(const EoDxfText& text) override {
     if (m_dxfWriter) {
-      auto mutableText = text;
-      mutableText.m_space = m_currentExportSpace;
-      m_dxfWriter->WriteText(&mutableText);
+      m_dxfWriter->WriteText(text);
       return;
     }
     countOfText++;
@@ -369,9 +345,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   void AddViewport(const EoDxfViewport& viewport) override {
     if (m_dxfWriter) {
-      auto mutableViewport = viewport;
-      mutableViewport.m_space = m_currentExportSpace;
-      m_dxfWriter->WriteViewport(&mutableViewport);
+      m_dxfWriter->WriteViewport(viewport);
       return;
     }
     countOfViewport++;
@@ -431,7 +405,7 @@ class EoDbDxfInterface : public EoDxfInterface {
       dxfBlock.m_handle = block->Handle();
       auto basePoint = block->BasePoint();
       dxfBlock.m_basePoint = {basePoint.x, basePoint.y, basePoint.z};
-      m_dxfWriter->WriteBlock(&dxfBlock);
+      m_dxfWriter->WriteBlock(dxfBlock);
 
       // Write block content entities (primitives stored directly in EoDbBlock)
       auto primitivePosition = block->GetHeadPosition();
@@ -546,7 +520,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
 
     // Export model-space entities
-    m_currentExportSpace = EoDxf::Space::ModelSpace;
+    m_dxfWriter->SetCurrentExportSpace(EoDxf::Space::ModelSpace);
     auto& modelLayers = m_document->SpaceLayers(EoDxf::Space::ModelSpace);
     for (INT_PTR i = 0; i < modelLayers.GetSize(); i++) {
       auto* layer = modelLayers.GetAt(i);
@@ -567,7 +541,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
 
     // Export paper-space entities
-    m_currentExportSpace = EoDxf::Space::PaperSpace;
+    m_dxfWriter->SetCurrentExportSpace(EoDxf::Space::PaperSpace);
     auto& paperLayers = m_document->SpaceLayers(EoDxf::Space::PaperSpace);
     for (INT_PTR i = 0; i < paperLayers.GetSize(); i++) {
       auto* layer = paperLayers.GetAt(i);
@@ -587,7 +561,7 @@ class EoDbDxfInterface : public EoDxfInterface {
       }
     }
 
-    m_currentExportSpace = EoDxf::Space::ModelSpace;
+    m_dxfWriter->SetCurrentExportSpace(EoDxf::Space::ModelSpace);
   };
   [[nodiscard]] std::uint64_t GetHandleSeed() const override {
     return m_document != nullptr ? m_document->HandleManager().NextHandleValue() : 0;
@@ -705,6 +679,8 @@ class EoDbDxfInterface : public EoDxfInterface {
 
     for (const auto& entry : m_document->VPortTable()) {
       EoDxfVPort dxfVPort;
+      dxfVPort.m_handle = entry.m_handle;
+      dxfVPort.m_ownerHandle = entry.m_ownerHandle;
       dxfVPort.m_tableName = entry.m_name;
       dxfVPort.m_lowerLeftCorner = {entry.m_lowerLeftCorner.x, entry.m_lowerLeftCorner.y};
       dxfVPort.m_upperRightCorner = {entry.m_upperRightCorner.x, entry.m_upperRightCorner.y};
@@ -829,9 +805,8 @@ class EoDbDxfInterface : public EoDxfInterface {
   std::wstring m_blockName{};
   bool m_inBlockDefinition{};
   EoDbBlock* m_currentOpenBlockDefinition{};
-  EoDxf::Space m_currentExportSpace{EoDxf::Space::ModelSpace};
 
-  /// Non-owning pointer to the most recently created EoDbBlockReference from AddInsert.
+  /// Non-owning pointer
   /// Set during DXF import so that subsequent AddAttrib calls can link ATTRIB handles
   /// to their parent INSERT. Cleared when the next non-ATTRIB entity is processed.
   EoDbBlockReference* m_currentInsertPrimitive{};

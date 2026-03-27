@@ -344,6 +344,8 @@ void EoDbDxfInterface::ConvertVPortTable(const EoDxfVPort& viewport, AeSysDoc* d
   ATLTRACE2(traceGeneral, 3, L"Viewport - Name: %s\n", viewportName.c_str());
 
   EoDbVPortTableEntry entry;
+  entry.m_handle = viewport.m_handle;
+  entry.m_ownerHandle = viewport.m_ownerHandle;
   entry.m_name = viewportName;
   entry.m_lowerLeftCorner.Set(viewport.m_lowerLeftCorner.x, viewport.m_lowerLeftCorner.y, 0.0);
   entry.m_upperRightCorner.Set(viewport.m_upperRightCorner.x, viewport.m_upperRightCorner.y, 0.0);

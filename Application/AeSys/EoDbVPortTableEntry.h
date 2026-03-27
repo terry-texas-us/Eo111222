@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 
+#include "EoDb.h"
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
 
@@ -13,6 +14,8 @@
  * the DXF VPORT table entry (AcDbViewportTableRecord) group codes.
  *
  * On-disk PEG V2 layout (inside kViewPortTable):
+ *   handle (uint64)
+ *   ownerHandle (uint64)
  *   name (tab-terminated string)
  *   lowerLeftCorner (Point3d — z ignored, stored as 0)
  *   upperRightCorner (Point3d — z ignored, stored as 0)
@@ -42,6 +45,12 @@
 class EoDbVPortTableEntry {
  public:
   EoDbVPortTableEntry() = default;
+
+  /// @brief DXF entity handle (group code 5). Zero = no handle assigned.
+  std::uint64_t m_handle{};
+
+  /// @brief DXF owner handle (group code 330). Zero = no owner assigned.
+  std::uint64_t m_ownerHandle{};
 
   /// @brief Viewport name — typically "*ACTIVE" for the active model-space viewport.
   std::wstring m_name{L"*ACTIVE"};
