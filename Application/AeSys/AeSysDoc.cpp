@@ -163,6 +163,45 @@ ON_COMMAND(ID_VIEW_MODELSPACE, OnViewModelSpace)
 ON_UPDATE_COMMAND_UI(ID_VIEW_MODELSPACE, OnUpdateViewModelSpace)
 END_MESSAGE_MAP()
 
+namespace {
+void ReportDxfImportStatistics(EoDbDxfInterface& dxfInterface) {
+  app.AddStringToReportsList(std::format(L"3dFace: {}", dxfInterface.countOf3dFace));
+  app.AddStringToReportsList(std::format(L"AcadProxyEntity: {}", dxfInterface.countOfAcadProxyEntity));
+  app.AddStringToReportsList(std::format(L"Arc: {}", dxfInterface.countOfArc));
+  app.AddStringToReportsList(std::format(L"AttDef: {}", dxfInterface.countOfAttDef));
+  app.AddStringToReportsList(std::format(L"Attrib: {}", dxfInterface.countOfAttrib));
+  app.AddStringToReportsList(std::format(L"Circle: {}", dxfInterface.countOfCircle));
+  app.AddStringToReportsList(std::format(L"DimAlign: {}", dxfInterface.countOfDimAlign));
+  app.AddStringToReportsList(std::format(L"DimLinear: {}", dxfInterface.countOfDimLinear));
+  app.AddStringToReportsList(std::format(L"DimAngular: {}", dxfInterface.countOfDimAngular));
+  app.AddStringToReportsList(std::format(L"DimAngular3P: {}", dxfInterface.countOfDimAngular3P));
+  app.AddStringToReportsList(std::format(L"DimDiametric: {}", dxfInterface.countOfDimDiametric));
+  app.AddStringToReportsList(std::format(L"DimOrdinate: {}", dxfInterface.countOfDimOrdinate));
+  app.AddStringToReportsList(std::format(L"DimRadial: {}", dxfInterface.countOfDimRadial));
+  app.AddStringToReportsList(std::format(L"Ellipse: {}", dxfInterface.countOfEllipse));
+  app.AddStringToReportsList(std::format(L"Hatch: {}", dxfInterface.countOfHatch));
+  app.AddStringToReportsList(std::format(L"Image: {}", dxfInterface.countOfImage));
+  app.AddStringToReportsList(std::format(L"Insert: {}", dxfInterface.countOfInsert));
+  app.AddStringToReportsList(std::format(L"Knot: {}", dxfInterface.countOfKnot));
+  app.AddStringToReportsList(std::format(L"Line: {}", dxfInterface.countOfLine));
+  app.AddStringToReportsList(std::format(L"LWPolyline: {}", dxfInterface.countOfLWPolyline));
+  app.AddStringToReportsList(std::format(L"MText: {}", dxfInterface.countOfMText));
+  app.AddStringToReportsList(std::format(L"Point: {}", dxfInterface.countOfPoint));
+  app.AddStringToReportsList(std::format(L"PolygonMesh: {}", dxfInterface.countOfPolygonMesh));
+  app.AddStringToReportsList(std::format(L"PolylineMesh: {}", dxfInterface.countOfPolylineMesh));
+  app.AddStringToReportsList(std::format(L"2DPolyline: {}", dxfInterface.countOf2DPolyline));
+  app.AddStringToReportsList(std::format(L"3DPolyline: {}", dxfInterface.countOf3DPolyline));
+  app.AddStringToReportsList(std::format(L"Ray: {}", dxfInterface.countOfRay));
+  app.AddStringToReportsList(std::format(L"Solid: {}", dxfInterface.countOfSolid));
+  app.AddStringToReportsList(std::format(L"Spline: {}", dxfInterface.countOfSpline));
+  app.AddStringToReportsList(std::format(L"Text: {}", dxfInterface.countOfText));
+  app.AddStringToReportsList(std::format(L"Trace: {}", dxfInterface.countOfTrace));
+  app.AddStringToReportsList(std::format(L"Viewport: {}", dxfInterface.countOfViewport));
+}
+
+}
+
+
 AeSysDoc::AeSysDoc() { EoDbPrimitive::SetHandleManager(&m_handleManager); }
 
 AeSysDoc::~AeSysDoc() {}
@@ -519,6 +558,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
           break;
         }
         app.AddStringToReportsList(std::format(L"DWG opened via ODAFileConverter: {}", pathName));
+        ReportDxfImportStatistics(dxfInterface);
       }
       EoOdaConverter::DeleteTempFolder(tempDwgFolder);
       EoOdaConverter::DeleteTempFolder(tempDxfFolder);
@@ -534,38 +574,8 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       SetCommonTableEntries();
       bool success = dxfReader.Read(&dxfInterface, true);  // true for verbose output, false for silent
       if (success) {
-        app.AddStringToReportsList(std::format(L"3dFace: {}", dxfInterface.countOf3dFace));
-        app.AddStringToReportsList(std::format(L"AcadProxyEntity: {}", dxfInterface.countOfAcadProxyEntity));
-        app.AddStringToReportsList(std::format(L"Arc: {}", dxfInterface.countOfArc));
-        app.AddStringToReportsList(std::format(L"AttDef: {}", dxfInterface.countOfAttDef));
-        app.AddStringToReportsList(std::format(L"Attrib: {}", dxfInterface.countOfAttrib));
-        app.AddStringToReportsList(std::format(L"Circle: {}", dxfInterface.countOfCircle));
-        app.AddStringToReportsList(std::format(L"DimAlign: {}", dxfInterface.countOfDimAlign));
-        app.AddStringToReportsList(std::format(L"DimLinear: {}", dxfInterface.countOfDimLinear));
-        app.AddStringToReportsList(std::format(L"DimAngular: {}", dxfInterface.countOfDimAngular));
-        app.AddStringToReportsList(std::format(L"DimAngular3P: {}", dxfInterface.countOfDimAngular3P));
-        app.AddStringToReportsList(std::format(L"DimDiametric: {}", dxfInterface.countOfDimDiametric));
-        app.AddStringToReportsList(std::format(L"DimOrdinate: {}", dxfInterface.countOfDimOrdinate));
-        app.AddStringToReportsList(std::format(L"DimRadial: {}", dxfInterface.countOfDimRadial));
-        app.AddStringToReportsList(std::format(L"Ellipse: {}", dxfInterface.countOfEllipse));
-        app.AddStringToReportsList(std::format(L"Hatch: {}", dxfInterface.countOfHatch));
-        app.AddStringToReportsList(std::format(L"Image: {}", dxfInterface.countOfImage));
-        app.AddStringToReportsList(std::format(L"Insert: {}", dxfInterface.countOfInsert));
-        app.AddStringToReportsList(std::format(L"Knot: {}", dxfInterface.countOfKnot));
-        app.AddStringToReportsList(std::format(L"Line: {}", dxfInterface.countOfLine));
-        app.AddStringToReportsList(std::format(L"LWPolyline: {}", dxfInterface.countOfLWPolyline));
-        app.AddStringToReportsList(std::format(L"MText: {}", dxfInterface.countOfMText));
-        app.AddStringToReportsList(std::format(L"Point: {}", dxfInterface.countOfPoint));
-        app.AddStringToReportsList(std::format(L"PolygonMesh: {}", dxfInterface.countOfPolygonMesh));
-        app.AddStringToReportsList(std::format(L"PolylineMesh: {}", dxfInterface.countOfPolylineMesh));
-        app.AddStringToReportsList(std::format(L"2DPolyline: {}", dxfInterface.countOf2DPolyline));
-        app.AddStringToReportsList(std::format(L"3DPolyline: {}", dxfInterface.countOf3DPolyline));
-        app.AddStringToReportsList(std::format(L"Ray: {}", dxfInterface.countOfRay));
-        app.AddStringToReportsList(std::format(L"Solid: {}", dxfInterface.countOfSolid));
-        app.AddStringToReportsList(std::format(L"Spline: {}", dxfInterface.countOfSpline));
-        app.AddStringToReportsList(std::format(L"Text: {}", dxfInterface.countOfText));
-        app.AddStringToReportsList(std::format(L"Trace: {}", dxfInterface.countOfTrace));
-        app.AddStringToReportsList(std::format(L"Viewport: {}", dxfInterface.countOfViewport));
+        app.AddStringToReportsList(std::format(L"DXF opened via ODAFileConverter: {}", pathName));
+        ReportDxfImportStatistics(dxfInterface);
       } else {
         app.AddStringToReportsList(L"Error loading DXF file.");
       }
