@@ -69,6 +69,7 @@ class AeSysDoc : public CDocument {
   double m_pointSize{};  // in drawing units when greater than zero; in pixels when less than zero; default otherwise
   EoDb::FileTypes m_saveAsType{EoDb::FileTypes::Unknown};
   EoDxf::Version m_dxfVersion{EoDxf::Version::AC1032};
+  std::wstring m_originalDwgPath{};  ///< Original .dwg path when opened via ODAFileConverter; empty otherwise
   EoDbHandleManager m_handleManager{};
   std::unordered_map<std::uint64_t, HandleObject> m_handleMap{};
 
@@ -272,6 +273,9 @@ class AeSysDoc : public CDocument {
 
   /// @brief Returns the active drawing space.
   [[nodiscard]] EoDxf::Space ActiveSpace() const noexcept { return m_activeSpace; }
+
+  /// @brief Returns the original .dwg path when the document was opened via ODAFileConverter.
+  [[nodiscard]] const std::wstring& OriginalDwgPath() const noexcept { return m_originalDwgPath; }
 
   /** @brief Retrieves a layer from the active space layer table by name.
    * This method searches the layer table for a layer with the specified name and returns a pointer to it.

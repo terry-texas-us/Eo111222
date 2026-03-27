@@ -290,6 +290,7 @@
     <ClInclude Include="EoGsViewTransform.h" />
     <ClInclude Include="EoMfOutputDockablePane.h" />
     <ClInclude Include="EoMfPropertiesDockablePane.h" />
+    <ClInclude Include="EoOdaConverter.h" />
     <ClInclude Include="Hatch.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="IdleState.h" />

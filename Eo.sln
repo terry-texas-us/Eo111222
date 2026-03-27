@@ -90,6 +90,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Header Tests by Version", "
 		DXF Test Files\AC1027 - 2013\AC1027 - Empty-1layout.dxf = DXF Test Files\AC1027 - 2013\AC1027 - Empty-1layout.dxf
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DWG Test Files", "DWG Test Files", "{39993552-4907-4518-AE8D-72FBD3A69AE4}"
+	ProjectSection(SolutionItems) = preProject
+		DWG Test Files\architectural_-_annotation_scaling_and_multileaders.dwg = DWG Test Files\architectural_-_annotation_scaling_and_multileaders.dwg
+		DWG Test Files\architectural_example-imperial.dwg = DWG Test Files\architectural_example-imperial.dwg
+		DWG Test Files\blocks_and_tables_-_imperial.dwg = DWG Test Files\blocks_and_tables_-_imperial.dwg
+		DWG Test Files\civil_example-imperial.dwg = DWG Test Files\civil_example-imperial.dwg
+		DWG Test Files\colorwh.dwg = DWG Test Files\colorwh.dwg
+		DWG Test Files\lineweights.dwg = DWG Test Files\lineweights.dwg
+		DWG Test Files\mechanical_example-imperial.dwg = DWG Test Files\mechanical_example-imperial.dwg
+		DWG Test Files\plot_screening_and_fill_patterns.dwg = DWG Test Files\plot_screening_and_fill_patterns.dwg
+		DWG Test Files\tablet.dwg = DWG Test Files\tablet.dwg
+		DWG Test Files\title_block-arch.dwg = DWG Test Files\title_block-arch.dwg
+		DWG Test Files\truetype.dwg = DWG Test Files\truetype.dwg
+		DWG Test Files\visualization_-_aerial.dwg = DWG Test Files\visualization_-_aerial.dwg
+		DWG Test Files\visualization_-_condominium_with_skylight.dwg = DWG Test Files\visualization_-_condominium_with_skylight.dwg
+		DWG Test Files\visualization_-_conference_room.dwg = DWG Test Files\visualization_-_conference_room.dwg
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32

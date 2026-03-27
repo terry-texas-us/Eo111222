@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <format>
 #include <new>
 #include <stdexcept>
@@ -60,6 +61,7 @@
 #include "EoGsRenderDevice.h"
 #include "EoGsRenderDeviceGdi.h"
 #include "EoGsRenderState.h"
+#include "EoOdaConverter.h"
 #include "Hatch.h"
 #include "Lex.h"
 #include "Resource.h"
@@ -242,6 +244,7 @@ void AeSysDoc::UnregisterGroupHandles(EoDbGroup* group) {
 void AeSysDoc::DeleteContents() {
   m_handleManager.Reset();
   m_handleMap.clear();
+  m_originalDwgPath.clear();
   ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::DeleteContents() - BlockTableSize: %d\n", this, BlockTableSize());
 
   // @todo Release EoDbDxfInterface resources if any
@@ -485,10 +488,45 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
   ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::OnOpenDocument(%s)\n", this, pathName);
 
   switch (App::FileTypeFromPath(pathName)) {
-    case EoDb::FileTypes::Dwg:
-      /// @todo Implement DWG support by using ODA_Converter to convert DWG to DXF in memory and then fallthrough to
-      /// EoDbDxfInterface to read the DXF data into the document.
-      break;
+    case EoDb::FileTypes::Dwg: {
+      auto tempDwgFolder = EoOdaConverter::CreateTempFolder(L"_dwg");
+      if (tempDwgFolder.empty()) {
+        app.AddStringToMessageList(L"Failed to create temporary DWG folder for conversion.");
+        break;
+      }
+      auto tempDxfFolder = EoOdaConverter::CreateTempFolder(L"_dxf");
+      if (tempDxfFolder.empty()) {
+        app.AddStringToMessageList(L"Failed to create temporary DXF folder for conversion.");
+        EoOdaConverter::DeleteTempFolder(tempDwgFolder);
+        break;
+      }
+      auto dxfPath = EoOdaConverter::ConvertDwgToDxf(pathName, tempDwgFolder, tempDxfFolder);
+      if (dxfPath.empty()) {
+        EoOdaConverter::DeleteTempFolder(tempDwgFolder);
+        EoOdaConverter::DeleteTempFolder(tempDxfFolder);
+        app.AddStringToMessageList(L"ODA File Converter failed to convert DWG to DXF.");
+        break;
+      }
+      {
+        EoDbDxfInterface dxfInterface(this);
+        EoDxfRead dxfReader(dxfPath.c_str());
+        SetCommonTableEntries();
+        bool success = dxfReader.Read(&dxfInterface, true);
+        if (!success) {
+          EoOdaConverter::DeleteTempFolder(tempDwgFolder);
+          EoOdaConverter::DeleteTempFolder(tempDxfFolder);
+          app.AddStringToReportsList(L"Error loading converted DXF file.");
+          break;
+        }
+        app.AddStringToReportsList(std::format(L"DWG opened via ODAFileConverter: {}", pathName));
+      }
+      EoOdaConverter::DeleteTempFolder(tempDwgFolder);
+      EoOdaConverter::DeleteTempFolder(tempDxfFolder);
+      m_originalDwgPath = pathName;
+      m_saveAsType = EoDb::FileTypes::Dwg;
+      SetWorkLayer(GetLayerTableLayerAt(0));
+      InitializeGroupAndPrimitiveEdit();
+    } break;
     case EoDb::FileTypes::Dxf:
     case EoDb::FileTypes::Dxb: {
       EoDbDxfInterface dxfInterface(this);
@@ -607,7 +645,42 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
       }
       break;
     }
-    case EoDb::FileTypes::Dwg:
+    case EoDb::FileTypes::Dwg: {
+      // Export as DXF to a temp folder, then convert to DWG via ODAFileConverter
+      auto tempFolder = EoOdaConverter::CreateTempFolder();
+      if (tempFolder.empty()) {
+        app.AddStringToMessageList(L"Failed to create temporary folder for DWG export.");
+        break;
+      }
+      // Derive the .dxf file name from the target .dwg path
+      std::filesystem::path dwgTarget{pathName};
+      auto dxfFileName = dwgTarget.stem().wstring() + L".dxf";
+      auto dxfPath = std::filesystem::path(tempFolder) / dxfFileName;
+
+      {
+        const bool isBinaryDxf = false;
+        EoDbDxfInterface dxfInterface(this);
+        EoDxfWrite dxfWriter(dxfPath.c_str());
+        dxfInterface.SetDxfWriter(&dxfWriter);
+        if (!dxfWriter.Write(&dxfInterface, m_dxfVersion, isBinaryDxf)) {
+          EoOdaConverter::DeleteTempFolder(tempFolder);
+          app.WarningMessageBox(IDS_MSG_DXF_SAVE_FAILURE, pathName);
+          break;
+        }
+      }
+
+      auto dwgOutputFolder = dwgTarget.parent_path().wstring();
+      auto resultPath = EoOdaConverter::ConvertDxfToDwg(tempFolder, dxfFileName, dwgOutputFolder);
+      EoOdaConverter::DeleteTempFolder(tempFolder);
+
+      if (resultPath.empty()) {
+        app.AddStringToMessageList(L"ODA File Converter failed to convert DXF to DWG.");
+        break;
+      }
+      m_originalDwgPath = pathName;
+      app.AddStringToMessageList(IDS_MSG_DWG_SAVE_SUCCESS, pathName);
+      returnStatus = TRUE;
+    } break;
     case EoDb::FileTypes::Dxf:
     case EoDb::FileTypes::Dxb: {
       const bool isBinaryDxf = (m_saveAsType == EoDb::FileTypes::Dxb);
@@ -1446,7 +1519,8 @@ void AeSysDoc::OnPrimBreak() {
         group->AddTail(line);
       }
       if (polyline->IsLooped()) {
-        auto* line = EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeIndex);
+        auto* line =
+            EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeIndex);
         RegisterHandle(line);
         group->AddTail(line);
       }

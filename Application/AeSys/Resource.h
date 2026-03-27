@@ -375,6 +375,7 @@
 #define IDS_MSG_PEGFILE_OPEN_FAILURE    3851
 #define IDS_MSG_DXF_SAVE_SUCCESS        3852
 #define IDS_MSG_DXF_SAVE_FAILURE        3853
+#define IDS_MSG_DWG_SAVE_SUCCESS        3854
 #define ID_OP0                          4112
 #define ID_OP1                          4113
 #define ID_OP2                          4114
