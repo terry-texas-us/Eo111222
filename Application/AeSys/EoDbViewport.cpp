@@ -77,15 +77,12 @@ void EoDbViewport::AddReportToMessageList(const EoGePoint3d& point) {
   app.AddStringToMessageList(L"<Viewport>");
   EoDbPrimitive::AddReportToMessageList(point);
   CString message;
-  message.Format(L"  Id: %d  Center: (%.4f, %.4f, %.4f)  Size: %.4f x %.4f", m_viewportId, m_centerPoint.x, m_centerPoint.y,
-      m_centerPoint.z, m_width, m_height);
+  message.Format(L"  Id: %d  Center: (%.4f, %.4f, %.4f)  Size: %.4f x %.4f", m_viewportId, m_centerPoint.x,
+      m_centerPoint.y, m_centerPoint.z, m_width, m_height);
   app.AddStringToMessageList(message);
 }
 
-void EoDbViewport::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label{L"<Viewport>"};
-  tvAddItem(tree, parent, label.GetBuffer(), this);
-}
+void EoDbViewport::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Viewport>", this); }
 
 EoDbPrimitive*& EoDbViewport::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbViewport(*this);
@@ -178,13 +175,13 @@ void EoDbViewport::GetExtents(
 bool EoDbViewport::Identical(EoDbPrimitive* primitive) {
   auto* other = static_cast<EoDbViewport*>(primitive);
   return m_centerPoint == other->m_centerPoint && m_width == other->m_width && m_height == other->m_height &&
-         m_viewportStatus == other->m_viewportStatus && m_viewportId == other->m_viewportId &&
-         m_viewCenter == other->m_viewCenter && m_snapBasePoint == other->m_snapBasePoint &&
-         m_snapSpacing == other->m_snapSpacing && m_gridSpacing == other->m_gridSpacing &&
-         m_viewDirection == other->m_viewDirection && m_viewTargetPoint == other->m_viewTargetPoint &&
-         m_lensLength == other->m_lensLength && m_frontClipPlane == other->m_frontClipPlane &&
-         m_backClipPlane == other->m_backClipPlane && m_viewHeight == other->m_viewHeight &&
-         m_snapAngle == other->m_snapAngle && m_twistAngle == other->m_twistAngle;
+      m_viewportStatus == other->m_viewportStatus && m_viewportId == other->m_viewportId &&
+      m_viewCenter == other->m_viewCenter && m_snapBasePoint == other->m_snapBasePoint &&
+      m_snapSpacing == other->m_snapSpacing && m_gridSpacing == other->m_gridSpacing &&
+      m_viewDirection == other->m_viewDirection && m_viewTargetPoint == other->m_viewTargetPoint &&
+      m_lensLength == other->m_lensLength && m_frontClipPlane == other->m_frontClipPlane &&
+      m_backClipPlane == other->m_backClipPlane && m_viewHeight == other->m_viewHeight &&
+      m_snapAngle == other->m_snapAngle && m_twistAngle == other->m_twistAngle;
 }
 
 bool EoDbViewport::IsInView(AeSysView* view) {
@@ -295,7 +292,7 @@ bool EoDbViewport::SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeft, 
   view->ModelViewTransformPoint(ndcCenter);
 
   return ndcCenter.x >= lowerLeft.x && ndcCenter.x <= upperRight.x && ndcCenter.y >= lowerLeft.y &&
-         ndcCenter.y <= upperRight.y;
+      ndcCenter.y <= upperRight.y;
 }
 
 void EoDbViewport::Transform(const EoGeTransformMatrix& transformMatrix) {

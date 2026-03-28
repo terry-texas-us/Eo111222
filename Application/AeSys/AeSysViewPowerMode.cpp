@@ -112,6 +112,7 @@ void AeSysView::OnPowerModeHome() {
 }
 
 void AeSysView::DoPowerModeMouseMove() {
+  const EoDbHandleSuppressionScope suppressHandles;
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
   auto numberOfPoints = pts.GetSize();

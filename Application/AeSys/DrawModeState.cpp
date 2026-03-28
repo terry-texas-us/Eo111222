@@ -71,6 +71,7 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
 }
 
 void DrawModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
+  const EoDbHandleSuppressionScope suppressHandles;
   ATLTRACE2(traceGeneral, 2, L"DrawModeState::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
   EoGePoint3d cursorPos = context->GetCursorPosition();
   auto* doc = context->GetDocument();

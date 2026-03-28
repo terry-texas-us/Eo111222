@@ -294,6 +294,7 @@ void AeSysView::OnDrawCommand(UINT command) {
 }
 #endif
 void AeSysView::DoDrawModeMouseMove() {
+  const EoDbHandleSuppressionScope suppressHandles;
   auto cursorPosition = GetCursorPosition();
   auto numberOfPoints = pts.GetSize();
 

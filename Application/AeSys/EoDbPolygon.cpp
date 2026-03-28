@@ -46,8 +46,8 @@ typedef struct tagFilAreaEdgLis {
   };
 } pFilAreaEdgLis;
 
-void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTransformMatrix& transformMatrix, const int iSets,
-    const int* iPtLstsId, EoGePoint3d* pta) {
+void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTransformMatrix& transformMatrix,
+    const int iSets, const int* iPtLstsId, EoGePoint3d* pta) {
   double dCurStrLen{};
   double dEps1{};
   double dMaxY{};
@@ -301,9 +301,9 @@ std::wstring MapFillStyleIndexToPatternName(std::int16_t fillStyleIndex) {
       {7, L"ANSI34"}, {8, L"ANSI35"}, {9, L"ANSI36"}, {10, L"ANSI37"}, {11, L"ANSI38"}, {12, L"BOX"}, {13, L"BRICK"},
       {14, L"CLAY"}, {15, L"CORK"}, {16, L"CROSS"}, {17, L"DASH"}, {18, L"DOLMIT"}, {19, L"DOTS"}, {20, L"EARTH"},
       {21, L"ESCHER"}, {22, L"FLEX"}, {23, L"GRASS"}, {24, L"GRATE"}, {25, L"HEX"}, {26, L"HONEY"}, {27, L"HOUND"},
-      {28, L"INSUL"}, {29, L"MUDST"}, {30, L"NET3"}, {31, L"PLAST"}, {32, L"PLASTI"}, {33, L"SACNCR"},
-      {34, L"SQUARE"}, {35, L"STARS"}, {36, L"SWAMP"}, {37, L"TRANS"}, {38, L"TRIAN"}, {39, L"ZIGZAG"},
-      {40, L"AR-CONC"}, {41, L"AR-SAND"}};
+      {28, L"INSUL"}, {29, L"MUDST"}, {30, L"NET3"}, {31, L"PLAST"}, {32, L"PLASTI"}, {33, L"SACNCR"}, {34, L"SQUARE"},
+      {35, L"STARS"}, {36, L"SWAMP"}, {37, L"TRANS"}, {38, L"TRIAN"}, {39, L"ZIGZAG"}, {40, L"AR-CONC"},
+      {41, L"AR-SAND"}};
 
   for (const auto& entry : patternTable) {
     if (entry.index == fillStyleIndex) { return entry.name; }
@@ -454,10 +454,7 @@ const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& other) {
 
 EoDbPolygon::~EoDbPolygon() { delete[] m_vertices; }
 
-void EoDbPolygon::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label{L"<Polygon>"};
-  tvAddItem(tree, parent, label.GetBuffer(), this);
-}
+void EoDbPolygon::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Polygon>", this); }
 
 EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPolygon(*this);
@@ -603,8 +600,8 @@ CString EoDbPolygon::FormatIntStyle() {
   CString strStyle[] = {L"Hollow", L"Solid", L"Pattern", L"Hatch"};
 
   CString str = (m_polygonStyle >= EoDb::PolygonStyle::Hollow && m_polygonStyle <= EoDb::PolygonStyle::Hatch)
-                    ? strStyle[static_cast<int>(m_polygonStyle)]
-                    : CString(L"Invalid!");
+      ? strStyle[static_cast<int>(m_polygonStyle)]
+      : CString(L"Invalid!");
 
   return str;
 }

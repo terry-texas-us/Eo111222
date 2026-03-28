@@ -11,7 +11,7 @@
 #include "EoGePoint4d.h"
 #include "EoGeVector3d.h"
 
-HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR pszText, LPCVOID object);
+HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, const wchar_t* text, LPCVOID object);
 
 class AeSysDoc;
 class AeSysView;
@@ -178,4 +178,25 @@ class EoDbPrimitive : public CObject {
   /// Called once from the AeSysDoc constructor so that every subsequently-created
   /// primitive receives a unique handle via AssignHandle().
   static void SetHandleManager(EoDbHandleManager* handleManager) noexcept;
+
+  /// @brief Saves the current handle manager and sets it to nullptr, suppressing handle
+  /// assignment in subsequently constructed primitives.  Returns the saved pointer
+  /// for later restoration via ResumeHandleAssignment().
+  [[nodiscard]] static EoDbHandleManager* SuspendHandleAssignment() noexcept;
+
+  /// @brief Restores a previously saved handle manager, re-enabling handle assignment.
+  static void ResumeHandleAssignment(EoDbHandleManager* saved) noexcept;
+};
+
+/// @brief RAII guard that suppresses handle assignment for ephemeral/preview primitives.
+/// While active, newly constructed EoDbPrimitive instances receive handle 0 (kNoHandle)
+/// and the handle counter does not advance.  Nest-safe: inner scopes are no-ops.
+class EoDbHandleSuppressionScope {
+  EoDbHandleManager* m_saved;
+
+ public:
+  EoDbHandleSuppressionScope() noexcept : m_saved(EoDbPrimitive::SuspendHandleAssignment()) {}
+  ~EoDbHandleSuppressionScope() noexcept { EoDbPrimitive::ResumeHandleAssignment(m_saved); }
+  EoDbHandleSuppressionScope(const EoDbHandleSuppressionScope&) = delete;
+  EoDbHandleSuppressionScope& operator=(const EoDbHandleSuppressionScope&) = delete;
 };

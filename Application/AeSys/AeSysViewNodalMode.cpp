@@ -316,6 +316,7 @@ void AeSysView::OnNodalModeEscape() {
   }
 }
 void AeSysView::DoNodalModeMouseMove() {
+  const EoDbHandleSuppressionScope suppressHandles;
   auto cursorPosition = GetCursorPosition();
   auto numberOfPoints = pts.GetSize();
   auto* document = GetDocument();
@@ -371,6 +372,7 @@ void AeSysView::DoNodalModeMouseMove() {
 }
 
 void AeSysView::ConstructPreviewGroup() {
+  const EoDbHandleSuppressionScope suppressHandles;
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
   auto* document = GetDocument();
@@ -387,6 +389,7 @@ void AeSysView::ConstructPreviewGroup() {
   }
 }
 void AeSysView::ConstructPreviewGroupForNodalGroups() {
+  const EoDbHandleSuppressionScope suppressHandles;
   auto* document = GetDocument();
   auto GroupPosition = document->GetFirstNodalGroupPosition();
   while (GroupPosition != nullptr) {

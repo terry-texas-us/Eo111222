@@ -340,6 +340,7 @@ void AeSysView::OnLpdModeEscape() {
 }
 
 void AeSysView::DoDuctModeMouseMove() {
+  const EoDbHandleSuppressionScope suppressHandles;
   if (m_PreviousOp == 0) {
     m_OriginalPreviousGroupDisplayed = true;
     return;

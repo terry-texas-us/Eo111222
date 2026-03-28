@@ -58,8 +58,7 @@ EoDbLabeledLine::EoDbLabeledLine(EoGeLine line, const EoDbFontDefinition& fontDe
       m_textColor{textColor} {}
 
 void EoDbLabeledLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label{L"<LabeledLine>"};
-  tvAddItem(tree, parent, label.GetBuffer(), this);
+  tvAddItem(tree, parent, L"<LabeledLine>", this);
 }
 EoDbPrimitive*& EoDbLabeledLine::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbLabeledLine(*this);
@@ -120,7 +119,8 @@ void EoDbLabeledLine::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 
 void EoDbLabeledLine::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   std::int16_t color = LogicalColor();
-  renderState.SetPen(view, renderDevice, color, LogicalLineType(), LogicalLineTypeName(), m_lineWeight, m_lineTypeScale);
+  renderState.SetPen(
+      view, renderDevice, color, LogicalLineType(), LogicalLineTypeName(), m_lineWeight, m_lineTypeScale);
   m_line.Display(view, renderDevice);
 
   renderState.SetColor(renderDevice, m_textColor);

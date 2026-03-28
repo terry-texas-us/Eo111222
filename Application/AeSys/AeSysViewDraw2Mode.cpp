@@ -248,6 +248,7 @@ bool AeSysView::StartAssemblyFromLine() {
 }
 
 void AeSysView::DoDraw2ModeMouseMove() {
+  const EoDbHandleSuppressionScope suppressHandles;
   static EoGePoint3d cursorPosition = EoGePoint3d();
 
   if (m_PreviousOp == 0) {

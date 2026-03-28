@@ -629,6 +629,7 @@ void AeSysView::OnPipeModeEscape() {
 }
 
 void AeSysView::DoPipeModeMouseMove() {
+  const EoDbHandleSuppressionScope suppressHandles;
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
   auto numberOfPoints = pts.GetSize();

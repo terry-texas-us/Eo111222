@@ -8,7 +8,7 @@
 #include "EoDlgEditTrapCommandsQuery.h"
 #include "Resource.h"
 
-HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, LPWSTR text, LPCVOID object) {
+HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, const wchar_t* text, LPCVOID object) {
   TV_INSERTSTRUCT tvIS{};
   tvIS.hParent = parent;
   tvIS.hInsertAfter = TVI_LAST;
@@ -41,8 +41,7 @@ BOOL EoDlgEditTrapCommandsQuery::OnInitDialog() {
 
   auto groupTreeWindow = ::GetDlgItem(this->GetSafeHwnd(), IDC_GROUP_TREE);
   auto* groupsInTrap = AeSysDoc::GetDoc()->GroupsInTrap();
-  CString label{L"<Groups>"};
-  auto groupListTreeItem = tvAddItem(groupTreeWindow, TVI_ROOT, label.GetBuffer(), groupsInTrap);
+  auto groupListTreeItem = tvAddItem(groupTreeWindow, TVI_ROOT, L"<Groups>", groupsInTrap);
   groupsInTrap->AddToTreeViewControl(groupTreeWindow, groupListTreeItem);
 
   const auto oneInchWidth = static_cast<int>(GetDpiForSystem());

@@ -76,10 +76,7 @@ const EoDbPoint& EoDbPoint::operator=(const EoDbPoint& src) {
   for (std::uint16_t n = 0; n < m_numberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
   return (*this);
 }
-void EoDbPoint::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label{L"<Point>"};
-  tvAddItem(tree, parent, label.GetBuffer(), this);
-}
+void EoDbPoint::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Point>", this); }
 
 EoDbPrimitive*& EoDbPoint::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPoint(*this);
@@ -127,7 +124,9 @@ void EoDbPoint::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
       break;
 
     case 4:  // small |
-      for (i = -pixelSize; i <= pixelSize; i++) { renderDevice->SetPixel(clientPoint.x, clientPoint.y + i, hotPenColor); }
+      for (i = -pixelSize; i <= pixelSize; i++) {
+        renderDevice->SetPixel(clientPoint.x, clientPoint.y + i, hotPenColor);
+      }
       break;
 
     default:  // small X

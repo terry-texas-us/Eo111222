@@ -43,10 +43,7 @@ const EoDbLine& EoDbLine::operator=(const EoDbLine& other) {
   return (*this);
 }
 
-void EoDbLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label{L"<Line>"};
-  tvAddItem(tree, parent, label.GetBuffer(), this);
-}
+void EoDbLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Line>", this); }
 
 EoDbPrimitive*& EoDbLine::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbLine(*this);
@@ -339,7 +336,7 @@ EoDbLine* EoDbLine::ReadFromPeg(CFile& file) {
   auto lineTypeIndex = EoDb::ReadInt16(file);
   auto begin = EoDb::ReadPoint3d(file);
   auto end = EoDb::ReadPoint3d(file);
-  
+
   auto* line = new EoDbLine(begin, end);
   line->SetColor(color);
   line->SetLineTypeIndex(lineTypeIndex);

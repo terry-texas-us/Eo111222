@@ -101,57 +101,57 @@ class AeSysView : public CView {
   bool m_useD2D{true};
   bool m_d2dAliased{};
 
-  CBitmap m_backgroundImageBitmap;
-  CPalette m_backgroundImagePalette;
-  EoDbPrimitive* m_EngagedPrimitive;
-  EoDbGroup* m_EngagedGroup;
-  std::uint16_t m_OpHighlighted;
-  EoGsViewTransform m_OverviewViewTransform;
-  bool m_Plot;
-  double m_PlotScaleFactor;
-  EoDbGroup m_PreviewGroup;
-  EoGsViewTransform m_PreviousViewTransform;
-  std::uint16_t m_PreviousOp;
-  EoGePoint3d m_PreviousPnt;
-  double m_SelectApertureSize;
-  bool m_viewBackgroundImage;
-  bool m_ViewOdometer;
-  bool m_ViewPenWidths;
-  CViewports m_Viewports;
-  bool m_ViewRendered;
-  EoGsViewTransforms m_ViewTransforms;
-  bool m_ViewTrueTypeFonts;
-  bool m_ViewWireframe;
-  EoDbGroupList m_VisibleGroupList;
-  double m_WorldScale;
+  CBitmap m_backgroundImageBitmap{};
+  CPalette m_backgroundImagePalette{};
+  EoDbPrimitive* m_EngagedPrimitive{};
+  EoDbGroup* m_EngagedGroup{};
+  std::uint16_t m_OpHighlighted{};
+  EoGsViewTransform m_OverviewViewTransform{};
+  bool m_Plot{};
+  double m_PlotScaleFactor{1.0};
+  EoDbGroup m_PreviewGroup{};
+  EoGsViewTransform m_PreviousViewTransform{};
+  std::uint16_t m_PreviousOp{0};
+  EoGePoint3d m_PreviousPnt{};
+  double m_SelectApertureSize{0.005};
+  bool m_viewBackgroundImage{};
+  bool m_ViewOdometer{true};
+  bool m_ViewPenWidths{};
+  CViewports m_Viewports{};
+  bool m_ViewRendered{};
+  EoGsViewTransforms m_ViewTransforms{};
+  bool m_ViewTrueTypeFonts{true};
+  bool m_ViewWireframe{};
+  EoDbGroupList m_VisibleGroupList{};
+  double m_WorldScale{1.0};
 
-  EoGePoint3d m_ptDet;
+  EoGePoint3d m_ptDet{};
 
-  EoGeVector3d m_vRelPos;
+  EoGeVector3d m_vRelPos{};
 
   EoGePoint3dArray pts;
 
  private:  // grid and axis constraints
-  EoGePoint3d m_GridOrigin;
-  int m_MaximumDotsPerLine;
+  EoGePoint3d m_GridOrigin{};
+  int m_MaximumDotsPerLine{64};
 
-  double m_XGridLineSpacing;
-  double m_YGridLineSpacing;
-  double m_ZGridLineSpacing;
+  double m_XGridLineSpacing{12.0};
+  double m_YGridLineSpacing{12.0};
+  double m_ZGridLineSpacing{12.0};
 
-  double m_XGridSnapSpacing;
-  double m_YGridSnapSpacing;
-  double m_ZGridSnapSpacing;
+  double m_XGridSnapSpacing{1.0};
+  double m_YGridSnapSpacing{1.0};
+  double m_ZGridSnapSpacing{1.0};
 
-  double m_XGridPointSpacing;
-  double m_YGridPointSpacing;
-  double m_ZGridPointSpacing;
+  double m_XGridPointSpacing{3.0};
+  double m_YGridPointSpacing{3.0};
+  double m_ZGridPointSpacing{};
 
-  double m_AxisConstraintInfluenceAngle;
-  double m_AxisConstraintOffsetAngle;
-  bool m_DisplayGridWithLines;
-  bool m_DisplayGridWithPoints;
-  bool m_GridSnap;
+  double m_AxisConstraintInfluenceAngle{5.0};
+  double m_AxisConstraintOffsetAngle{};
+  bool m_DisplayGridWithLines{};
+  bool m_DisplayGridWithPoints{};
+  bool m_GridSnap{};
 
  public:
   double AxisConstraintInfluenceAngle() const;
@@ -328,16 +328,16 @@ class AeSysView : public CView {
 
   void VerifyFindString(CMFCToolBarComboBoxButton* findCombo, CString& findText);
 
-  bool m_ViewStateInformation;
+  bool m_ViewStateInformation{true};
   void UpdateStateInformation(EStateInformationItem item);
 
-  CPoint m_middleButtonPanStartPoint;
-  bool m_middleButtonPanInProgress;
+  CPoint m_middleButtonPanStartPoint{};
+  bool m_middleButtonPanInProgress{};
 
-  ERubs m_rubberbandType;
-  EoGePoint3d m_rubberbandBegin;
-  CPoint m_rubberbandLogicalBegin;
-  CPoint m_rubberbandLogicalEnd;
+  ERubs m_rubberbandType{None};
+  EoGePoint3d m_rubberbandBegin{};
+  CPoint m_rubberbandLogicalBegin{};
+  CPoint m_rubberbandLogicalEnd{};
 
   /** @brief Disables rubber banding by erasing the current rubber band from the view.
    * @note When Direct2D is active, simply clears the rubberband type and invalidates the scene — the next
@@ -355,8 +355,8 @@ class AeSysView : public CView {
    */
   void RubberBandingStartAtEnable(EoGePoint3d point, ERubs type);
 
-  EoGePoint3d m_ptCursorPosDev;
-  EoGePoint3d m_ptCursorPosWorld;
+  EoGePoint3d m_ptCursorPosDev{};
+  EoGePoint3d m_ptCursorPosWorld{};
 
   /** @brief Retrieves the current cursor position in world coordinates.
    * @return The current cursor position world coordinates.
@@ -539,11 +539,11 @@ class AeSysView : public CView {
   void SetDeviceWidthInInches(double width) { m_Viewport.SetDeviceWidthInInches(width); }
 
  public:  // Group and Primitive operations
-  EoDbGroup* m_SubModeEditGroup;
-  EoDbPrimitive* m_SubModeEditPrimitive;
-  EoGePoint3d m_SubModeEditBeginPoint;
-  EoGePoint3d m_SubModeEditEndPoint;
-  EoGeTransformMatrix m_tmEditSeg;
+  EoDbGroup* m_SubModeEditGroup{};
+  EoDbPrimitive* m_SubModeEditPrimitive{};
+  EoGePoint3d m_SubModeEditBeginPoint{};
+  EoGePoint3d m_SubModeEditEndPoint{};
+  EoGeTransformMatrix m_tmEditSeg{};
 
   void InitializeGroupAndPrimitiveEdit();
   void DoEditGroupCopy();
@@ -555,10 +555,10 @@ class AeSysView : public CView {
   void PreviewPrimitiveEdit();
   void PreviewGroupEdit();
 
-  EoGePoint3d m_MendPrimitiveBegin;
-  DWORD m_MendPrimitiveVertexIndex;
-  EoDbPrimitive* m_PrimitiveToMend;
-  EoDbPrimitive* m_PrimitiveToMendCopy;
+  EoGePoint3d m_MendPrimitiveBegin{};
+  DWORD m_MendPrimitiveVertexIndex{};
+  EoDbPrimitive* m_PrimitiveToMend{};
+  EoDbPrimitive* m_PrimitiveToMendCopy{};
 
   void PreviewMendPrimitive();
   void MendPrimitiveEscape();
@@ -566,13 +566,13 @@ class AeSysView : public CView {
 
   /// Annotate Mode Interface ///////////////////////////////////////////////////
  private:  // Annotate and Dimension interface
-  double m_GapSpaceFactor;  // Edge space factor 25 percent of character height
-  double m_CircleRadius;
-  int m_EndItemType;
-  double m_EndItemSize;
-  double m_BubbleRadius;
-  int m_NumberOfSides;  // Number of sides on bubble (0 indicating circle)
-  CString m_DefaultText;
+  double m_GapSpaceFactor{0.5};  // Edge space factor 25 percent of character height
+  double m_CircleRadius{0.03125};
+  int m_EndItemType{1};
+  double m_EndItemSize{0.1};
+  double m_BubbleRadius{0.125};
+  int m_NumberOfSides{};  // Number of sides on bubble (0 indicating circle)
+  CString m_DefaultText{};
 
  public:
   [[nodiscard]] double BubbleRadius() const { return m_BubbleRadius; }
@@ -639,18 +639,18 @@ class AeSysView : public CView {
   /// Draw Mode2 Interface //////////////////////////////////////////////////////
 
  private:
-  double m_centerLineEccentricity;  // Center line eccentricity for parallel lines
-  bool m_continuingCorner;
-  double m_distanceBetweenLines;
-  EoGeLine m_currentLeftLine;
-  EoGeLine m_currentRightLine;
-  EoGeLine m_previousReferenceLine;  // Previous line used as reference for parallel line and corner construction
-  EoGeLine m_currentReferenceLine;  // Current line used as reference for parallel line and corner construction
-  EoDbGroup* m_assemblyGroup;
-  EoDbGroup* m_endSectionGroup;
-  EoDbGroup* m_beginSectionGroup;
-  EoDbLine* m_beginSectionLinePrimitive;
-  EoDbLine* m_endSectionLinePrimitive;
+  double m_centerLineEccentricity{0.5};  // Center line eccentricity for parallel lines
+  bool m_continuingCorner{};
+  double m_distanceBetweenLines{0.0625};
+  EoGeLine m_currentLeftLine{};
+  EoGeLine m_currentRightLine{};
+  EoGeLine m_previousReferenceLine{};  // Previous line used as reference for parallel line and corner construction
+  EoGeLine m_currentReferenceLine{};  // Current line used as reference for parallel line and corner construction
+  EoDbGroup* m_assemblyGroup{};
+  EoDbGroup* m_endSectionGroup{};
+  EoDbGroup* m_beginSectionGroup{};
+  EoDbLine* m_beginSectionLinePrimitive{};
+  EoDbLine* m_endSectionLinePrimitive{};
 
  public:
   void DoDraw2ModeMouseMove();
@@ -682,8 +682,8 @@ class AeSysView : public CView {
   afx_msg void OnDimensionModeReturn();
   afx_msg void OnDimensionModeEscape();
 
-  double m_FixupModeAxisTolerance;
-  double m_FixupModeCornerSize;
+  double m_FixupModeAxisTolerance{2.0};
+  double m_FixupModeCornerSize{0.25};
 
   afx_msg void OnFixupModeOptions();
   afx_msg void OnFixupModeReference();
@@ -735,9 +735,9 @@ class AeSysView : public CView {
   afx_msg void OnCutModeEscape();
 
  public:  // Edit mode interface
-  EoGeVector3d m_EditModeMirrorScale;
-  EoGeVector3d m_editModeRotationAngles;
-  EoGeVector3d m_EditModeScale;
+  EoGeVector3d m_EditModeMirrorScale{-1.0, 1.0, 1.0};
+  EoGeVector3d m_editModeRotationAngles{0.0, 0.0, 45.0};
+  EoGeVector3d m_EditModeScale{2.0, 2.0, 2.0};
 
   [[nodiscard]] EoGeVector3d EditModeRotationAngles() const { return m_editModeRotationAngles; }
   EoGeTransformMatrix EditModeInvertedRotationTMat() const {
@@ -808,23 +808,23 @@ class AeSysView : public CView {
   afx_msg void OnTraprModeEscape();
 
  private:  // Low Pressure Duct (retangular) interface
-  double m_InsideRadiusFactor;
-  double m_DuctSeamSize;
-  double m_DuctTapSize;
-  bool m_GenerateTurningVanes;
-  EElbow m_ElbowType;
-  EJust m_DuctJustification;
-  double m_TransitionSlope;
-  bool m_BeginWithTransition;
-  bool m_ContinueSection;
-  int m_EndCapLocation;
-  EoDbPoint* m_EndCapPoint;
-  EoDbGroup* m_EndCapGroup;
-  bool m_OriginalPreviousGroupDisplayed;
-  EoDbGroup* m_OriginalPreviousGroup;
+  double m_InsideRadiusFactor{1.5};
+  double m_DuctSeamSize{0.03125};
+  double m_DuctTapSize{0.09375};
+  bool m_GenerateTurningVanes{true};
+  EElbow m_ElbowType{Mittered};
+  EJust m_DuctJustification{Center};
+  double m_TransitionSlope{4.0};
+  bool m_BeginWithTransition{};
+  bool m_ContinueSection{};
+  int m_EndCapLocation{0};
+  EoDbPoint* m_EndCapPoint{};
+  EoDbGroup* m_EndCapGroup{};
+  bool m_OriginalPreviousGroupDisplayed{true};
+  EoDbGroup* m_OriginalPreviousGroup{};
 
-  Section m_PreviousSection;
-  Section m_CurrentSection;
+  Section m_PreviousSection{0.125, 0.0625, Section::Rectangular};
+  Section m_CurrentSection{0.125, 0.0625, Section::Rectangular};
 
  public:
   void DoDuctModeMouseMove();
@@ -944,9 +944,9 @@ class AeSysView : public CView {
       EJust justification, double slope, Section previousSection, Section currentSection);
 
  private:  // Pipe mode interface
-  int m_CurrentPipeSymbolIndex;
-  double m_PipeTicSize;
-  double m_PipeRiseDropRadius;
+  int m_CurrentPipeSymbolIndex{};
+  double m_PipeTicSize{0.03125};
+  double m_PipeRiseDropRadius{0.03125};
 
   /// <summary>Adds a fitting indication to horizontal pipe section as required by previous fitting type.</summary>
   void GenerateLineWithFittings(
@@ -980,11 +980,11 @@ class AeSysView : public CView {
   afx_msg void OnPipeModeEscape();
 
  private:  // Power mode interface
-  bool m_PowerArrow;
-  bool m_PowerConductor;
-  double m_PowerConductorSpacing;
-  EoGePoint3d m_CircuitEndPoint;
-  double m_PreviousRadius;
+  bool m_PowerArrow{};
+  bool m_PowerConductor{};
+  double m_PowerConductorSpacing{0.04};
+  EoGePoint3d m_CircuitEndPoint{};
+  double m_PreviousRadius{};
 
  public:
   void DoPowerModeMouseMove();

@@ -55,10 +55,7 @@ EoDbSpline& EoDbSpline::operator=(const EoDbSpline& src) {
   return *this;
 }
 
-void EoDbSpline::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label{L"<BSpline>"};
-  tvAddItem(tree, parent, label.GetBuffer(), this);
-}
+void EoDbSpline::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Spline>", this); }
 
 EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbSpline(*this);
@@ -110,9 +107,7 @@ void EoDbSpline::ExportToDxf(EoDxfInterface* writer) const {
   }
 
   // Export weights for rational splines (NURBS).
-  if (!m_weights.empty()) {
-    spline.m_weightValues = m_weights;
-  }
+  if (!m_weights.empty()) { spline.m_weightValues = m_weights; }
 
   spline.m_numberOfFitPoints = 0;
 
@@ -144,9 +139,8 @@ void EoDbSpline::FormatGeometry(CString& str) {
 
 void EoDbSpline::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
-  str.AppendFormat(L"\tDegree;%d\tFlags;0x%04X\tControl Points;%d\tKnots;%zu\tWeights;%zu",
-      static_cast<int>(m_degree), static_cast<int>(m_flags), static_cast<int>(m_pts.GetSize()), m_knots.size(),
-      m_weights.size());
+  str.AppendFormat(L"\tDegree;%d\tFlags;0x%04X\tControl Points;%d\tKnots;%zu\tWeights;%zu", static_cast<int>(m_degree),
+      static_cast<int>(m_flags), static_cast<int>(m_pts.GetSize()), m_knots.size(), m_weights.size());
   str += L'\t';
 }
 

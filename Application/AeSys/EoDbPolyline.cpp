@@ -92,10 +92,7 @@ const EoDbPolyline& EoDbPolyline::operator=(const EoDbPolyline& other) {
   return (*this);
 }
 
-void EoDbPolyline::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label{L"<Polyline>"};
-  tvAddItem(tree, parent, label.GetBuffer(), this);
-}
+void EoDbPolyline::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Polyline>", this); }
 
 EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPolyline(*this);
@@ -149,8 +146,8 @@ void EoDbPolyline::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
     // For closed polylines, the closing segment (last → first) also carries a bulge
     if (IsClosed()) {
       const double closingBulge = (static_cast<size_t>(numberOfVertices - 1) < m_bulges.size())
-                                      ? m_bulges[static_cast<size_t>(numberOfVertices - 1)]
-                                      : 0.0;
+          ? m_bulges[static_cast<size_t>(numberOfVertices - 1)]
+          : 0.0;
       if (Eo::IsGeometricallyNonZero(closingBulge)) {
         polyline::TessellateArcSegment(m_pts[numberOfVertices - 1], m_pts[0], closingBulge, arcPoints);
         // Emit all but the last point (which is m_pts[0], already handled by BeginLineLoop)
@@ -219,16 +216,14 @@ void EoDbPolyline::DisplayWidthFill(AeSysView* view, EoGsRenderDevice* renderDev
 
     // Resolve effective width: per-vertex vector → constant width fallback
     const double segStartWidth = (segIdx < m_startWidths.size() && Eo::IsGeometricallyNonZero(m_startWidths[segIdx]))
-                                     ? m_startWidths[segIdx]
-                                     : constantFallback;
+        ? m_startWidths[segIdx]
+        : constantFallback;
     const double segEndWidth = (segIdx < m_endWidths.size() && Eo::IsGeometricallyNonZero(m_endWidths[segIdx]))
-                                   ? m_endWidths[segIdx]
-                                   : constantFallback;
+        ? m_endWidths[segIdx]
+        : constantFallback;
 
     // Skip degenerate zero-width segments — no visible fill to render
-    if (Eo::IsGeometricallyZero(segStartWidth) && Eo::IsGeometricallyZero(segEndWidth)) {
-      continue;
-    }
+    if (Eo::IsGeometricallyZero(segStartWidth) && Eo::IsGeometricallyZero(segEndWidth)) { continue; }
 
     const double bulge = (HasBulge() && segIdx < m_bulges.size()) ? m_bulges[segIdx] : 0.0;
 
@@ -393,8 +388,8 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
 
   // Check if this edge has a non-zero bulge
   const double bulge = (HasBulge() && static_cast<size_t>(beginVertexIndex) < m_bulges.size())
-                           ? m_bulges[static_cast<size_t>(beginVertexIndex)]
-                           : 0.0;
+      ? m_bulges[static_cast<size_t>(beginVertexIndex)]
+      : 0.0;
 
   if (Eo::IsGeometricallyNonZero(bulge)) {
     // Arc segment: compute arc length = radius × |includedAngle|
@@ -885,8 +880,8 @@ void EoDbPolyline::BuildTessellatedPoints(EoGePoint3dArray& tessellatedPoints) c
 
     if (IsClosed()) {
       const double closingBulge = (static_cast<size_t>(numberOfVertices - 1) < m_bulges.size())
-                                      ? m_bulges[static_cast<size_t>(numberOfVertices - 1)]
-                                      : 0.0;
+          ? m_bulges[static_cast<size_t>(numberOfVertices - 1)]
+          : 0.0;
       polyline::TessellateArcSegment(m_pts[numberOfVertices - 1], m_pts[0], closingBulge, arcPoints);
       for (const auto& point : arcPoints) { tessellatedPoints.Add(point); }
     }

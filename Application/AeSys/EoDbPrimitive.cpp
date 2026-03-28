@@ -217,3 +217,11 @@ double& EoDbPrimitive::Rel() noexcept { return sm_RelationshipOfPoint; }
 std::int16_t EoDbPrimitive::SpecialColor() noexcept { return sm_specialColor; }
 void EoDbPrimitive::SetSpecialColor(std::int16_t specialColor) noexcept { sm_specialColor = specialColor; }
 void EoDbPrimitive::SetHandleManager(EoDbHandleManager* handleManager) noexcept { sm_handleManager = handleManager; }
+
+EoDbHandleManager* EoDbPrimitive::SuspendHandleAssignment() noexcept {
+  auto* saved = sm_handleManager;
+  sm_handleManager = nullptr;
+  return saved;
+}
+
+void EoDbPrimitive::ResumeHandleAssignment(EoDbHandleManager* saved) noexcept { sm_handleManager = saved; }

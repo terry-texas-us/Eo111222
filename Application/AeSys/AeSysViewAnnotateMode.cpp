@@ -398,6 +398,7 @@ bool AeSysView::CorrectLeaderEndpoints(
   }
 }
 void AeSysView::DoAnnotateModeMouseMove() {
+  const EoDbHandleSuppressionScope suppressHandles;
   auto cursorPosition = GetCursorPosition();
   auto numberOfPoints = pts.GetSize();
   pts.Add(cursorPosition);

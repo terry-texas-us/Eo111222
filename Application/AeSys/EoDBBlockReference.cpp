@@ -92,8 +92,7 @@ void EoDbBlockReference::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   EoDbBlock* Block{};
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return; }
 
-  CString label{L"<BlockReference>"};
-  auto hti = tvAddItem(tree, parent, label.GetBuffer(), this);
+  auto hti = tvAddItem(tree, parent, L"<BlockReference>", this);
 
   ((EoDbGroup*)Block)->AddPrimsToTreeViewControl(tree, hti);
 }

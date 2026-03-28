@@ -330,10 +330,7 @@ const EoDbEllipse& EoDbEllipse::operator=(const EoDbEllipse& other) {
   return (*this);
 }
 
-void EoDbEllipse::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label{L"<Arc>"};
-  tvAddItem(tree, parent, label.GetBuffer(), this);
-}
+void EoDbEllipse::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Ellipse>", this); }
 
 EoDbPrimitive*& EoDbEllipse::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbEllipse(*this);

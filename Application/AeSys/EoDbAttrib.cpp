@@ -46,7 +46,7 @@ void EoDbAttrib::AddReportToMessageList(const EoGePoint3d& point) {
 void EoDbAttrib::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   CString label;
   label.Format(L"<Attrib: %s>", m_tagString.c_str());
-  tvAddItem(tree, parent, label.GetBuffer(), this);
+  tvAddItem(tree, parent, label, this);
 }
 
 EoDbPrimitive*& EoDbAttrib::Copy(EoDbPrimitive*& primitive) {

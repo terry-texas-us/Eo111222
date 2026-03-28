@@ -60,8 +60,7 @@ void EoDbGroup::AddPrimsToTreeViewControl(HWND tree, HTREEITEM parent) {
 }
 
 HTREEITEM EoDbGroup::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label{L"<Group>"};
-  auto treeItem = tvAddItem(tree, parent, label.GetBuffer(), this);
+  auto treeItem = tvAddItem(tree, parent, L"<Group>", this);
   AddPrimsToTreeViewControl(tree, treeItem);
   return treeItem;
 }

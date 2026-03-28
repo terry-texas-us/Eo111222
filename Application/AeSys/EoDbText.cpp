@@ -104,10 +104,7 @@ const EoDbText& EoDbText::operator=(const EoDbText& other) {
   return (*this);
 }
 
-void EoDbText::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label{L"<Text>"};
-  tvAddItem(tree, parent, label.GetBuffer(), this);
-}
+void EoDbText::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Text>", this); }
 
 EoDbPrimitive*& EoDbText::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbText(*this);
@@ -212,7 +209,7 @@ void EoDbText::ExportToDxf(EoDxfInterface* writer) const {
 
   // DXF TEXT: Left+Baseline uses first alignment point; all other alignments use second alignment point
   const bool isDefaultAlignment = (text.m_horizontalAlignment == EoDxfText::HorizontalAlignment::Left &&
-                                   text.m_verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
+      text.m_verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
   if (isDefaultAlignment) {
     text.m_firstAlignmentPoint = {origin.x, origin.y, origin.z};
   } else {
@@ -262,15 +259,16 @@ void EoDbText::AddReportToMessageList(const EoGePoint3d& point) {
   EoDbPrimitive::AddReportToMessageList(point);
 
   CString message;
-  message = L"  Font: " + m_fontDefinition.FontName() + L" Precision: " +
-        m_fontDefinition.FormatPrecision() + L" Path: " + m_fontDefinition.FormatPath() + L" Alignment: (" +
-        m_fontDefinition.FormatHorizontalAlignment() + L"," + m_fontDefinition.FormatVerticalAlignment() + L")";
+  message = L"  Font: " + m_fontDefinition.FontName() + L" Precision: " + m_fontDefinition.FormatPrecision() +
+      L" Path: " + m_fontDefinition.FormatPath() + L" Alignment: (" + m_fontDefinition.FormatHorizontalAlignment() +
+      L"," + m_fontDefinition.FormatVerticalAlignment() + L")";
   app.AddStringToMessageList(message);
 
   if (m_mtextProperties.has_value()) {
     const auto& properties = *m_mtextProperties;
     CString mtextMessage;
-    mtextMessage.Format(L"  MTEXT: AttachmentPoint=%d  DrawingDirection=%d  LineSpacing=%.3f (style %d)  RectWidth=%.4f",
+    mtextMessage.Format(
+        L"  MTEXT: AttachmentPoint=%d  DrawingDirection=%d  LineSpacing=%.3f (style %d)  RectWidth=%.4f",
         properties.attachmentPoint, properties.drawingDirection, properties.lineSpacingFactor,
         properties.lineSpacingStyle, properties.referenceRectangleWidth);
     app.AddStringToMessageList(mtextMessage);
@@ -435,8 +433,8 @@ bool EoDbText::Write(CFile& file) {
   return true;
 }
 
-void DisplayText(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem,
-    const CString& text) {
+void DisplayText(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem, const CString& text) {
   if (text.IsEmpty()) { return; }
 
   if (HasFormattingCharacters(text)) {
@@ -495,8 +493,9 @@ void DisplayTextSegment(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFon
   }
   DisplayTextSegmentUsingStrokeFont(view, renderDevice, fd, referenceSystem, startPosition, numberOfCharacters, text);
 }
-void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fontDefinition,
-    EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text) {
+void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters,
+    const CString& text) {
   if (numberOfCharacters == 0) { return; }
 
   auto* fontData = reinterpret_cast<long*>(app.SimplexStrokeFont());
@@ -505,7 +504,8 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* render
   EoGeTransformMatrix transformMatrix(referenceSystem.TransformMatrix());
   transformMatrix.Inverse();
 
-  // Resolve font layout based on version (v1 = legacy 96-entry header, v2 = extended with advance widths and left bearings)
+  // Resolve font layout based on version (v1 = legacy 96-entry header, v2 = extended with advance widths and left
+  // bearings)
   long* offsetTable;
   long* advanceWidthTable;
   long* leftBearingTable;
@@ -593,8 +593,9 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* render
   }
 }
 
-bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fontDefinition,
-    EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text) {
+bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters,
+    const CString& text) {
   if (numberOfCharacters <= 0) { return true; }
 
   EoGeTransformMatrix transformMatrix(referenceSystem.TransformMatrix());
@@ -671,8 +672,7 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* rend
       c = text[CurrentPosition];
       if (c == 'P') {  // Hard line bresk
         if (CurrentPosition < text.GetLength()) {
-          DisplayTextSegment(
-              view, renderDevice, fd, ReferenceSystem, StartPosition, NumberOfCharactersToDisplay, text);
+          DisplayTextSegment(view, renderDevice, fd, ReferenceSystem, StartPosition, NumberOfCharactersToDisplay, text);
 
           ReferenceSystem.SetOrigin(BottomLeftCorner);
           ReferenceSystem.SetOrigin(text_GetNewLinePos(fd, ReferenceSystem, 1.0, 0));
@@ -871,7 +871,6 @@ static double ComputeStrokeFontTextExtent(const EoDbFontDefinition& fontDefiniti
 void GetBottomLeftCorner(EoDbFontDefinition& fd, const CString& text, EoGePoint3d& pt) {
   double dTxtExt = ComputeStrokeFontTextExtent(fd, text);
   if (dTxtExt > 0.0) {
-
     if (fd.Path() == EoDb::Path::Right || fd.Path() == EoDb::Path::Left) {
       if (fd.Path() == EoDb::Path::Right) {
         if (fd.HorizontalAlignment() == EoDb::HorizontalAlignment::Left) {
@@ -932,8 +931,8 @@ void GetBottomLeftCorner(EoDbFontDefinition& fd, const CString& text, EoGePoint3
   pt.z = 0.;
 }
 
-void text_GetBoundingBox(EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem,
-    const CString& text, double spaceFactor, EoGePoint3dArray& ptsBox) {
+void text_GetBoundingBox(EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem, const CString& text,
+    double spaceFactor, EoGePoint3dArray& ptsBox) {
   ptsBox.SetSize(4);
 
   double textExtent = ComputeStrokeFontTextExtent(fontDefinition, text);

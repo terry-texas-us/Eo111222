@@ -312,8 +312,7 @@ void EoDbConic::AddReportToMessageList(const EoGePoint3d& point) {
 }
 
 void EoDbConic::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label = SubClassName(m_ratio, m_startAngle, m_endAngle);
-  tvAddItem(tree, parent, label.GetBuffer(), this);
+  tvAddItem(tree, parent, SubClassName(m_ratio, m_startAngle, m_endAngle), this);
 }
 
 EoDbPrimitive*& EoDbConic::Copy(EoDbPrimitive*& primitive) {
