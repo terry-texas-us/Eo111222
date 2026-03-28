@@ -22,8 +22,8 @@ class EoDbJobFile {
     m_PrimBuf = new std::uint8_t[EoDbPrimitive::BUFFER_SIZE];
   }
   virtual ~EoDbJobFile() { delete[] m_PrimBuf; }
-  /// <summary>Reads document data from a memory file and adds all groups to the trap with a translation. This is a data
-  /// stream retrieved from the clipboard.</summary>
+  /// @brief Reads document data from a memory file and adds all groups to the trap with a translation. This is a data
+  /// stream retrieved from the clipboard.
   void ReadMemFile(CFile& file, EoGeVector3d translateVector);
   void ReadHeader(CFile& file);
   void ReadLayer(CFile& file, EoDbLayer* layer);
@@ -50,7 +50,7 @@ class EoDbJobFile {
   EoDbPrimitive* ConvertVersion1LinePrimitive();
   EoDbPrimitive* ConvertVersion1PointPrimitive();
 
-  /// <summary> Converts a deprecated version 1 CSpline to a BSpline</summary>
+  /// @brief Converts a deprecated version 1 CSpline to a BSpline
   void ConvertCSplineToBSpline();
   void ConvertTagToPoint();
 };

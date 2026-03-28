@@ -2,7 +2,7 @@
 
 using namespace dde;
 
-//<summary>Add a conversation to our list.</summary>
+// @brief Add a conversation to our list.
 bool dde::ConversationAdd(HCONV hConv, HSZ hszTopic) {
   auto pCI = new CONVERSATIONINFO{};
   if (!pCI) { return false; }
@@ -13,7 +13,7 @@ bool dde::ConversationAdd(HCONV hConv, HSZ hszTopic) {
   ServerInfo.pConvList = pCI;
   return true;
 }
-/// <summary>Find the first occurence of a topic conversation in our list</summary>
+/// @brief Find the first occurence of a topic conversation in our list
 PCONVERSATIONINFO dde::ConversationFind(HSZ hszTopic) {
   PCONVERSATIONINFO pCI = ServerInfo.pConvList;
 
@@ -24,7 +24,7 @@ PCONVERSATIONINFO dde::ConversationFind(HSZ hszTopic) {
   }
   return 0;
 }
-//<summary>Remove a conversation from our list.</summary>
+// @brief Remove a conversation from our list.
 bool dde::ConversationRemove(HCONV hConv, HSZ hszTopic) {
   PCONVERSATIONINFO pCI = ServerInfo.pConvList;
   PCONVERSATIONINFO pPrevCI = 0;

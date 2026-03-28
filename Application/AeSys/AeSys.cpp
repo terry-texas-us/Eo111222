@@ -557,7 +557,7 @@ void AeSys::LoadModeResources(int mode, AeSysView* targetView) {
 ///
 /// v1: 16384 bytes, 96-entry offset table (chars 32-126 + sentinel), stroke data at int32[96].
 /// v2: 16384 bytes, magic (-2) at int32[0], 225-entry offset table at int32[1],
-///     224-entry advance width table at int32[226], stroke data at int32[450].
+///    224-entry advance width table at int32[226], stroke data at int32[450].
 /// </remarks>
 void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
   HANDLE OpenHandle = CreateFile(pathName, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);

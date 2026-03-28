@@ -159,8 +159,8 @@ class AeSysView : public CView {
   double AxisConstraintOffsetAngle() const;
   void SetAxisConstraintOffsetAngle(double angle);
   void InitializeConstraints();
-  /// <summary>Generates a point display centered about the user origin in one or more of the three orthogonal planes
-  /// for the current user grid.</summary>
+  /// @brief Generates a point display centered about the user origin in one or more of the three orthogonal planes
+  /// for the current user grid.
   void DisplayGrid(CDC* deviceContext);
   EoGePoint3d GridOrign() const;
   void GridOrign(const EoGePoint3d& origin);
@@ -323,7 +323,7 @@ class AeSysView : public CView {
   afx_msg void OnUpdateViewStateinformation(CCmdUI* pCmdUI);
 
  public:  // Operations
-  /// <summary>Returns a pointer to the currently active view.</summary>
+  /// @brief Returns a pointer to the currently active view.
   static AeSysView* GetActiveView();
 
   void VerifyFindString(CMFCToolBarComboBoxButton* findCombo, CString& findText);
@@ -442,7 +442,7 @@ class AeSysView : public CView {
   void DiscardD2DResources();
 
  public:
-  /// <summary> Deletes last group detectable in the this view.</summary>
+  /// @brief Deletes last group detectable in the this view.
   void DeleteLastGroup();
   auto GetFirstVisibleGroupPosition() const { return m_VisibleGroupList.GetHeadPosition(); }
   auto GetLastGroupPosition() const { return m_VisibleGroupList.GetTailPosition(); }
@@ -511,7 +511,7 @@ class AeSysView : public CView {
   void SetCameraTarget(const EoGePoint3d& target);
   void SetViewWindow(double uMin, double vMin, double uMax, double vMax);
 
-  /// <summary>Determines the number of pages for 1 to 1 print</summary>
+  /// @brief Determines the number of pages for 1 to 1 print
   UINT NumPages(CDC* deviceContext, double dScaleFactor, UINT& nHorzPages, UINT& nVertPages);
 
   [[nodiscard]] double OverviewUExt() { return m_OverviewViewTransform.UExtent(); }
@@ -605,12 +605,12 @@ class AeSysView : public CView {
   afx_msg void OnAnnotateModeReturn();
   afx_msg void OnAnnotateModeEscape();
 
-  /// <summary>Generates arrow heads for annotation mode.</summary>
-  /// <param name="type">type of end item</param>
-  /// <param name="size">size of end item</param>
-  /// <param name="beginPoint">tail of line segment defining arrow head</param>
-  /// <param name="endPoint">head of line segment defining arrow head</param>
-  /// <param name="group">group where primitives are placed</param>
+  /// @brief Generates arrow heads for annotation mode.
+  /// type type of end item
+  /// size size of end item
+  /// beginPoint tail of line segment defining arrow head
+  /// endPoint head of line segment defining arrow head
+  /// group group where primitives are placed
   void GenerateLineEndItem(
       int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group) const;
   bool CorrectLeaderEndpoints(int beginType, int endType, EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const;
@@ -656,7 +656,7 @@ class AeSysView : public CView {
   void DoDraw2ModeMouseMove();
 
   afx_msg void OnDraw2ModeOptions();
-  /// <summary>Searches for an existing wall side or endcap</summary>
+  /// @brief Searches for an existing wall side or endcap
   afx_msg void OnDraw2ModeJoin();
   afx_msg void OnDraw2ModeWall();
   afx_msg void OnDraw2ModeReturn();
@@ -702,7 +702,7 @@ class AeSysView : public CView {
   afx_msg void OnNodalModePoint();
   afx_msg void OnNodalModeLine();
   afx_msg void OnNodalModeArea();
-  /// <summary>Translate all control points identified</summary>
+  /// @brief Translate all control points identified
   afx_msg void OnNodalModeMove();
   afx_msg void OnNodalModeCopy();
   afx_msg void OnNodalModeToLine();
@@ -719,13 +719,13 @@ class AeSysView : public CView {
 
  public:  // Cut mode interface
   afx_msg void OnCutModeOptions();
-  /// <summary>Cuts a primative at cursor position.</summary>
+  /// @brief Cuts a primative at cursor position.
   afx_msg void OnCutModeTorch();
-  /// <summary>Cuts all primatives which intersect with line defined by two points.</summary>
+  /// @brief Cuts all primatives which intersect with line defined by two points.
   // Notes: Colinear fill area edges are not considered to intersect.
   afx_msg void OnCutModeSlice();
   afx_msg void OnCutModeField();
-  /// <summary>Cuts a primative at two pnts and puts non-null middle piece in trap.</summary>
+  /// @brief Cuts a primative at two pnts and puts non-null middle piece in trap.
   // Notes:	Accuracy of arc section cuts diminishes with high
   //			eccentricities. if two cut points are coincident
   //			nothing happens.
@@ -780,12 +780,12 @@ class AeSysView : public CView {
 
   afx_msg void OnTrapModeRemoveAdd();
   afx_msg void OnTrapModePoint();
-  /// <summary>Identifies groups which intersect with a line and adds them to the trap.</summary>
+  /// @brief Identifies groups which intersect with a line and adds them to the trap.
   afx_msg void OnTrapModeStitch();
-  /// <summary>Identifies groups which lie wholly or partially within a rectangular area.</summary>
+  /// @brief Identifies groups which lie wholly or partially within a rectangular area.
   /// <remarks>Needs to be generalized to quad.</remarks>
   afx_msg void OnTrapModeField();
-  /// <summary>Adds last detectable group which is not already in trap to trap</summary>
+  /// @brief Adds last detectable group which is not already in trap to trap
   afx_msg void OnTrapModeLast();
   afx_msg void OnTrapModeEngage();
   afx_msg void OnTrapModeMenu();
@@ -794,9 +794,9 @@ class AeSysView : public CView {
 
   afx_msg void OnTraprModeRemoveAdd();
   afx_msg void OnTraprModePoint();
-  /// <summary>Identifies groups which intersect with a line and removes them from the trap.</summary>
+  /// @brief Identifies groups which intersect with a line and removes them from the trap.
   afx_msg void OnTraprModeStitch();
-  /// <summary>Identifies groups which lie wholly or partially within a orthoganal rectangular area.</summary>
+  /// @brief Identifies groups which lie wholly or partially within a orthogonal rectangular area.
   // Notes: This routine fails in all but top view. !!
   // Parameters:	pt1 	one corner of the area
   //				pt2 	other corner of the area
@@ -866,37 +866,37 @@ class AeSysView : public CView {
    */
   bool Find2LinesUsingLineEndpoints(
       EoDbLine* testLinePrimitive, double angularTolerance, EoGeLine& leftLine, EoGeLine& rightLine);
-  /// <summary>Generates an end-cap.</summary>
+  /// @brief Generates an end-cap.
   /// <remarks>
   /// End-caps are groups containing a line and a point.  The line defines the orientation of the end-cap.
   /// The point contains information about the cross-section (width, depth)
   /// and optionally a number which might be used for something like cfm.
   /// </remarks>
-  /// <param name="beginPoint">begin point of the line</param>
-  /// <param name="endPoint">end point of the line</param>
-  /// <param name="section">width and depth data</param>
-  /// <param name="group"></param>
+  /// beginPoint begin point of the line
+  /// endPoint end point of the line
+  /// section width and depth data
+  /// group 
   void GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, Section section, EoDbGroup* group);
-  /// <summary>Generates rise or drop fitting.</summary>
-  /// <param name="riseDropIndicator">	rise or drop indicator; 1 rise, 2 drop</param>
-  /// <param name="section">horizontal section width and depth</param>
+  /// @brief Generates rise or drop fitting.
+  /// riseDropIndicator 	rise or drop indicator; 1 rise, 2 drop
+  /// section horizontal section width and depth
   void GenerateRiseDrop(std::uint16_t riseDropIndicator, Section section, EoGeLine& referenceLine, EoDbGroup* group);
-  /// <summary>Generates rectangular section using a set of parallel lines.</summary>
-  /// <param name="section">width and depth of section</param>
-  /// <param name="group"></param>
+  /// @brief Generates rectangular section using a set of parallel lines.
+  /// section width and depth of section
+  /// group 
   void GenerateRectangularSection(EoGeLine& referenceLine, double eccentricity, Section section, EoDbGroup* group);
-  /// <summary> Generates text segment representing width and depth of a piece of duct. </summary>
+  /// @brief Generates text segment representing width and depth of a piece of duct.
   void GenSizeNote(EoGePoint3d, double angle, Section section);
-  /// <param name="previousReferenceLine"></param>
-  /// <param name="previousSection"></param>
-  /// <param name="currentReferenceLine">on exit the begin point is the same as the point on the endcap</param>
-  /// <param name="currentSection"></param>
-  /// <param name="group"></param>
+  /// previousReferenceLine 
+  /// previousSection 
+  /// currentReferenceLine on exit the begin point is the same as the point on the endcap
+  /// currentSection 
+  /// group 
   void GenerateRectangularElbow(EoGeLine& previousReferenceLine, Section previousSection,
       EoGeLine& currentReferenceLine, Section currentSection, EoDbGroup* group);
-  /// <summary>Generates rectangular tap fitting.</summary>
-  /// <param name="justification"></param>
-  /// <param name="section"></param>
+  /// @brief Generates rectangular tap fitting.
+  /// justification 
+  /// section 
   bool GenerateRectangularTap(EJust justification, Section section);
 
   /** @brief Generates a mitered bullhead tee fitting. (placeholder)
@@ -922,24 +922,24 @@ class AeSysView : public CView {
   void GenerateFullElbowTakeoff(
       EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine, Section existingSection, EoDbGroup* group);
 
-  /// <summary>Generates section which transitions from one rectangle to another</summary>
-  /// <param name="referenceLine">line defining the begin point and direction of the transition</param>
-  /// <param name="eccentricity"></param>
-  /// <param name="justification"></param>
-  /// <param name="slope">slope of the transition</param>
-  /// <param name="previousSection">width and depth at begin of the transition</param>
-  /// <param name="currentSection">width and depth at end of the transition</param>
-  /// <param name="group">group receiving the primitives</param>
+  /// @brief Generates section which transitions from one rectangle to another
+  /// @param referenceLine line defining the begin point and direction of the transition
+  /// @param eccentricity 
+  /// @param justification 
+  /// @param slope slope of the transition
+  /// @param previousSection width and depth at begin of the transition
+  /// @param currentSection width and depth at end of the transition
+  /// group group receiving the primitives
   void GenerateTransition(EoGeLine& referenceLine, double eccentricity, EJust justification, double slope,
       Section previousSection, Section currentSection, EoDbGroup* group);
-  /// <summary>Sets the width and depth of ductwork.</summary>
+  /// @brief Sets the width and depth of ductwork.
   void SetDuctOptions(Section& section);
-  /// <summary>Determines the total length required to transition duct from one size to another</summary>
-  /// <param name="justification">justification: 0 centered, %gt 0 taper to right, %lt 0 taper to left</param>
-  /// <param name="slope">slope of the section sides</param>
-  /// <param name="previousSection">width and depth of begin section</param>
-  /// <param name="currentSection">width and depth of end section</param>
-  /// <returns>length of the transition</returns>
+  /// @brief Determines the total length required to transition duct from one size to another
+  /// @param justification justification: 0 centered, %gt 0 taper to right, %lt 0 taper to left
+  /// @param slope slope of the section sides
+  /// @param previousSection width and depth of begin section
+  /// @param currentSection width and depth of end section
+  /// @return length of the transition
   [[nodiscard]] double LengthOfTransition(
       EJust justification, double slope, Section previousSection, Section currentSection);
 
@@ -948,7 +948,7 @@ class AeSysView : public CView {
   double m_PipeTicSize{0.03125};
   double m_PipeRiseDropRadius{0.03125};
 
-  /// <summary>Adds a fitting indication to horizontal pipe section as required by previous fitting type.</summary>
+  /// @brief Adds a fitting indication to horizontal pipe section as required by previous fitting type.
   void GenerateLineWithFittings(
       int beginType, const EoGePoint3d& beginPoint, int endType, const EoGePoint3d& endPoint, EoDbGroup* group);
 
@@ -973,7 +973,7 @@ class AeSysView : public CView {
   afx_msg void OnPipeModeFitting();
   afx_msg void OnPipeModeRise();
   afx_msg void OnPipeModeDrop();
-  /// <summary>Generates a piping symbol at point specified if pipe section located.</summary>
+  /// @brief Generates a piping symbol at point specified if pipe section located.
   afx_msg void OnPipeModeSymbol();
   afx_msg void OnPipeModeWye();
   afx_msg void OnPipeModeReturn();

@@ -2,7 +2,7 @@
 
 using namespace dde;
 
-/// <summary>Return the Help info</summary>
+/// @brief Return the Help info
 HDDEDATA dde::SysReqHelp(UINT wFmt, HSZ, HSZ hszItem) {
   static wchar_t sz[] =
       L"DDE Help for the AeSys Service.\r\n\t"
@@ -11,7 +11,7 @@ HDDEDATA dde::SysReqHelp(UINT wFmt, HSZ, HSZ hszItem) {
 
   return MakeCFText(wFmt, sz, hszItem);
 }
-/// <summary>Return the system item list.</summary>
+/// @brief Return the system item list.
 HDDEDATA dde::SysReqItems(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
   // The data is returned as a tab delimited list of names.
   int cb;

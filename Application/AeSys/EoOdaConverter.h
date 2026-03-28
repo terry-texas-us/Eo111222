@@ -5,12 +5,12 @@
 ///
 /// ODA File Converter operates on *folders*, not individual files.  Every conversion
 /// therefore follows the same pattern:
-///   1. Create an isolated temporary folder.
-///   2. Place the single input file in that folder (copy or export).
-///   3. Run ODAFileConverter with source-folder = temp-folder, output-folder = temp-folder
-///      (or a separate target folder for the final result).
-///   4. Read the converted file.
-///   5. Delete the temporary folder.
+///  1. Create an isolated temporary folder.
+///  2. Place the single input file in that folder (copy or export).
+///  3. Run ODAFileConverter with source-folder = temp-folder, output-folder = temp-folder
+///     (or a separate target folder for the final result).
+///  4. Read the converted file.
+///  5. Delete the temporary folder.
 ///
 /// All file-system operations (folder creation, file copy, recursive delete) are
 /// sub-millisecond for the single-file case.
@@ -21,9 +21,9 @@ namespace EoOdaConverter {
 
 /// @brief Creates a uniquely named temporary folder under %TEMP%.
 /// @param suffix  Optional suffix appended to the folder name (e.g. L"_dwg", L"_dxf")
-///               for human-readable disambiguation when creating folder pairs.
+///              for human-readable disambiguation when creating folder pairs.
 /// @return Full path of the created folder (e.g. "C:\Users\…\Temp\AeSys_DWG_<qpc>_dwg").
-///         Empty string on failure.
+///        Empty string on failure.
 [[nodiscard]] std::wstring CreateTempFolder(const std::wstring& suffix = L"");
 
 /// @brief Recursively deletes a folder and all of its contents.

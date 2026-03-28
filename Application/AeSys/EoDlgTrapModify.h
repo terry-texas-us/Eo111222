@@ -1,8 +1,8 @@
 ﻿#pragma once
 #include "Resource.h"
 
-/// <summary>Modifies attributes of all group primatives in current trap to current settings.</summary>
-/// <remarks>Trap color index is not modified.</remarks>
+/// @brief Modifies attributes of all group primatives in current trap to current settings.
+/// @note Trap color index is not modified.
 class EoDlgTrapModify : public CDialog {
  public:
   EoDlgTrapModify(CWnd* parent = nullptr);

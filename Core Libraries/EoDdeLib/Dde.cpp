@@ -18,13 +18,13 @@ std::uint16_t dde::MyFormats[] = {CF_UNICODETEXT, 0};
 // DDE Instance value
 DWORD dde::dwInstance = 0;
 
-/// <summary>Initialize DDE server infrastructure: DDEML, service name, and system topic.
-/// App-specific topic/item/command registrations should be done by the caller after this returns true.</summary>
-/// <param name="serviceName">The DDE service name to register.</param>
-/// <param name="pfnInitError">Callback invoked on initialization failure (may be nullptr to silently fail).</param>
-/// <param name="hMainWindow">Main window handle passed to pfnInitError for fatal shutdown.</param>
-/// <param name="pfnFallbackExec">Fallback handler for execute transactions on topics with no exec function and no command list (may be nullptr).</param>
-/// <returns>true if initialization succeeded, false on DDEML error.</returns>
+/// @brief Initialize DDE server infrastructure: DDEML, service name, and system topic.
+/// App-specific topic/item/command registrations should be done by the caller after this returns true.
+/// @param serviceName The DDE service name to register.
+/// @param pfnInitError Callback invoked on initialization failure (may be nullptr to silently fail).
+/// @param hMainWindow Main window handle passed to pfnInitError for fatal shutdown.
+/// @param pfnFallbackExec Fallback handler for execute transactions on topics with no exec function and no command list (may be nullptr).
+/// @return true if initialization succeeded, false on DDEML error.
 bool dde::Initialize(
     LPCWSTR serviceName, PINITERRORFN pfnInitError, HWND hMainWindow, PFALLBACKEXECFN pfnFallbackExec) {
   ServerInfo.pfnStdCallback = reinterpret_cast<PFNCALLBACK>(StdCallback);
@@ -56,7 +56,7 @@ bool dde::Initialize(
 
   return true;
 }
-/// <summary>Tidy up and close down DDEML.</summary>
+/// @brief Tidy up and close down DDEML.
 void dde::Uninitialize() {
   // Unregister the service name
   DdeNameService(ServerInfo.dwInstance, ServerInfo.hszServiceName, 0, DNS_UNREGISTER);
@@ -115,7 +115,7 @@ HDDEDATA WINAPI dde::StdCallback(
   }
   return (HDDEDATA)0;
 }
-//<summary>Process a generic callback.</summary>
+// @brief Process a generic callback.
 bool dde::DoCallback(
     UINT wType, UINT wFmt, HCONV hConv, HSZ hszTopic, HSZ hszItem, HDDEDATA hData, HDDEDATA* phReturnData) {
   PTOPICINFO pTopic = TopicFind(hszTopic);
@@ -216,7 +216,7 @@ bool dde::DoCallback(
   // Say we processed the transaction in some way
   return true;
 }
-/// <summary>Add a list of formats to main list ensuring that each item only exists in the list once.</summary>
+/// @brief Add a list of formats to main list ensuring that each item only exists in the list once.
 void dde::AddFormatsToList(LPWORD pMain, int iMax, LPWORD pList) {
   LPWORD pFmt;
 
@@ -246,12 +246,12 @@ void dde::AddFormatsToList(LPWORD pMain, int iMax, LPWORD pList) {
   }
   *pLast = 0;  // Stick a null on the end to terminate the list
 }
-/// <summary>
+/// @brief 
 /// Process a wild connect request. Since we only support one service, this is much simpler.
 /// If hszTopic is 0 we supply a list of all the topics we currently support.  If it's not 0,
 /// we supply a list of topics (zero or one items) which match the requested topic.
 /// The list is terminated by a 0 entry.
-/// </summary>
+/// 
 HDDEDATA dde::DoWildConnect(HSZ hszTopic) {
   PTOPICINFO pTopic;
   HDDEDATA hData;
@@ -347,7 +347,7 @@ PEXECCMDFNINFO dde::ExecCmdAdd(
   }
   return pCmd;
 }
-/// <summary>Find a DDE execute command from its string name.</summary>
+/// @brief Find a DDE execute command from its string name.
 PEXECCMDFNINFO dde::ExecCmdFind(PTOPICINFO pTopic, LPCTSTR lpszCmd) {
   PEXECCMDFNINFO pCmd = pTopic->pCmdList;
 
@@ -385,7 +385,7 @@ bool dde::ExecCmdRemove(LPCTSTR pszTopic, LPCTSTR pszCmdName) {
   }
   return false;  // We don't have that one
 }
-/// <summary>Get the text name of a Clipboard format from its id</summary>
+/// @brief Get the text name of a Clipboard format from its id
 LPTSTR dde::GetCFNameFromId(std::uint16_t wFmt, LPTSTR lpBuf, int iSize) {
   PCFTAGNAME pCTN = CFNames;
 
@@ -411,7 +411,7 @@ HDDEDATA dde::MakeCFText(UINT wFmt, LPTSTR lpszStr, HSZ hszItem) {
   return (DdeCreateDataHandle(
       dwInstance, (LPBYTE)lpszStr, (lstrlen(lpszStr) + 1) * sizeof(wchar_t), 0, hszItem, CF_UNICODETEXT, 0));
 }
-/// <summary>Create a data item containing the names of all the formats supplied in a list.</summary>
+/// @brief Create a data item containing the names of all the formats supplied in a list.
 // Returns: A DDE data handle to a list of the format names.
 HDDEDATA dde::MakeDataFromFormatList(LPWORD pFmt, std::uint16_t wFmt, HSZ hszItem) {
   int cb;
@@ -434,7 +434,7 @@ HDDEDATA dde::MakeDataFromFormatList(LPWORD pFmt, std::uint16_t wFmt, HSZ hszIte
   DdeAddData(hData, (LPBYTE)L"", sizeof(wchar_t), cbOffset);  // Put a null terminator on the end
   return hData;
 }
-/// <summary>Post an advise request about an item</summary>
+/// @brief Post an advise request about an item
 void dde::PostAdvise(PITEMINFO pItemInfo) {
   if (pItemInfo && pItemInfo->pTopic) {
     DdePostAdvise(ServerInfo.dwInstance, pItemInfo->pTopic->hszTopicName, pItemInfo->hszItemName);
@@ -442,7 +442,7 @@ void dde::PostAdvise(PITEMINFO pItemInfo) {
 }
 // DDE Execute command parser
 
-/// <summary>Process a DDE execute command line.</summary>
+/// @brief Process a DDE execute command line.
 // Notes:\tSupport for the 'Execute Control 1' protocol is provided allowing
 //\t\treturn information to be sent back to the caller.
 // Returns: true if no errors occur in parsing or executing the commands.
@@ -520,7 +520,7 @@ PER_exit:
 
   return bResult;
 }
-/// <summary>Parses a single command.</summary>
+/// @brief Parses a single command.
 // Notes:\tError information may be set in the error return buffer.
 // Returns: true if there are no errors, else it is false.
 //\tppszCmdLine\tPointer to the a pointer which addresses the command line to be parsed.
@@ -587,7 +587,7 @@ bool dde::ParseCmd(
 
   return true;
 }
-/// <summary>Process a DDE Execute 'Result' command.</summary>
+/// @brief Process a DDE Execute 'Result' command.
 // Notes:\tThis command creates a temporary item under the current topic
 //\t\twhich will contain the result of the next command to be executed.
 // Returns: true if the command executes with no errors, otherwise it is false.
@@ -612,7 +612,7 @@ bool dde::SysResultExecCmd(PTOPICINFO pTopic, LPTSTR, UINT, UINT, LPTSTR* ppArgs
 
   return true;
 }
-/// <summary>Return the 'result' info for a given item and delete the item.</summary>
+/// @brief Return the 'result' info for a given item and delete the item.
 // Notes:\tThe item is deleted after the data is returned.
 // Returns: A DDE data handle to an object containing the return string.
 HDDEDATA dde::SysReqResultInfo(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
@@ -629,7 +629,7 @@ HDDEDATA dde::SysReqResultInfo(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
 
   return hData;
 }
-/// <summary>Scan for a valid comamnd.</summary>
+/// @brief Scan for a valid command.
 // Notes:\tIf found, the scan pointer is updated.
 // Returns: Pointer to the command info if found, 0 if not.
 //\tpCmdInfo\tPointer to the current command list.

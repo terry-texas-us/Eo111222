@@ -15,7 +15,7 @@
 
 using namespace dde;
 
-/// <summary>Sets the Text Height.</summary>
+/// @brief Sets the Text Height.
 bool dde::ExecNoteHT(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[32]{};
   _tcsncpy_s(szBuf, 32, ppArgs[0], sizeof(szBuf) - 1);
@@ -24,21 +24,21 @@ bool dde::ExecNoteHT(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   renderState.SetCharacterCellDefinition(characterCellDefinition);
   return true;
 }
-/// <summary>Sets the Fill.</summary>
+/// @brief Sets the Fill.
 bool dde::ExecFill(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[8]{};
   _tcsncpy_s(szBuf, 8, ppArgs[0], sizeof(szBuf) - 1);
   renderState.SetPolygonIntStyleId(std::uint16_t(_wtoi(szBuf)));
   return true;
 }
-/// <summary>Sets the Scale.</summary>
+/// @brief Sets the Scale.
 bool dde::ExecScale(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[32]{};
   _tcsncpy_s(szBuf, 32, ppArgs[0], sizeof(szBuf) - 1);
   AeSysView::GetActiveView()->SetWorldScale(_wtof(szBuf));
   return true;
 }
-/// <summary>Sets the Diamond Length.</summary>
+/// @brief Sets the Diamond Length.
 bool dde::ExecDL(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[32]{};
   _tcsncpy_s(szBuf, 32, ppArgs[0], sizeof(szBuf) - 1);
@@ -46,7 +46,7 @@ bool dde::ExecDL(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::DimLen);
   return true;
 }
-/// <summary>Sets the Diamond Angle.</summary>
+/// @brief Sets the Diamond Angle.
 bool dde::ExecDA(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[32]{};
   _tcsncpy_s(szBuf, 32, ppArgs[0], sizeof(szBuf) - 1);
@@ -54,7 +54,7 @@ bool dde::ExecDA(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::DimAng);
   return true;
 }
-/// <summary></summary>
+/// @brief 
 bool dde::ExecTracingBlank(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArgs) {
   int PathKey = uiNargs - 1;
 
@@ -63,7 +63,7 @@ bool dde::ExecTracingBlank(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArg
 
   return true;
 }
-/// <summary>Maps a tracing file.</summary>
+/// @brief Maps a tracing file.
 bool dde::ExecTracingMap(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArgs) {
   int PathKey = uiNargs - 1;
 
@@ -72,7 +72,7 @@ bool dde::ExecTracingMap(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArgs)
 
   return true;
 }
-/// <summary>Opens a tracing file.</summary>
+/// @brief Opens a tracing file.
 bool dde::ExecTracingOpen(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArgs) {
   int PathKey = uiNargs - 1;
 
@@ -81,7 +81,7 @@ bool dde::ExecTracingOpen(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArgs
 
   return true;
 }
-/// <summary>Views a tracing file.</summary>
+/// @brief Views a tracing file.
 bool dde::ExecTracingView(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArgs) {
   int PathKey = uiNargs - 1;
 
@@ -90,7 +90,7 @@ bool dde::ExecTracingView(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArgs
 
   return true;
 }
-/// <summary>Gets a tracing file.</summary>
+/// @brief Gets a tracing file.
 bool dde::ExecFileGet(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArgs) {
   CString PathName(ppArgs[uiNargs - 1]);
 
@@ -116,7 +116,7 @@ bool dde::ExecFileGet(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArgs) {
   document->TranslateTrappedGroups(EoGeVector3d(EoGePoint3d::kOrigin, PivotPoint));
   return true;
 }
-/// <summary>Set the position of the cursor.</summary>
+/// @brief Set the position of the cursor.
 bool dde::ExecGotoPoint(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[8]{};
 
@@ -127,7 +127,7 @@ bool dde::ExecGotoPoint(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
 
   return true;
 }
-/// <summary>Sets the pen color.</summary>
+/// @brief Sets the pen color.
 bool dde::ExecPen(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[8]{};
 
@@ -139,7 +139,7 @@ bool dde::ExecPen(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
 
   return true;
 }
-/// <summary>Sets the line type</summary>
+/// @brief Sets the line type
 bool dde::ExecLine(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[8]{};
 
@@ -151,7 +151,7 @@ bool dde::ExecLine(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
 
   return true;
 }
-/// <summary>Adds a note the drawing at the current cursor position.</summary>
+/// @brief Adds a note the drawing at the current cursor position.
 bool dde::ExecNote(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   auto *document = AeSysDoc::GetDoc();
 
@@ -171,7 +171,7 @@ bool dde::ExecNote(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
 
   return true;
 }
-/// <summary>Posts message to force key driven action.</summary>
+/// @brief Posts message to force key driven action.
 bool dde::ExecSend(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   HWND hWndTarget = GetFocus();
   LPTSTR pIdx = (LPTSTR)ppArgs[0];
@@ -188,7 +188,7 @@ bool dde::ExecSend(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   }
   return true;
 }
-/// <summary>Sets a home point.</summary>
+/// @brief Sets a home point.
 bool dde::ExecSetPoint(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[8]{};
 

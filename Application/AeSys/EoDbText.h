@@ -118,20 +118,20 @@ void DisplayText(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefini
     const CString& text);
 void DisplayTextSegment(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text);
-/// <summary> Displays a text string using a stroke font.</summary>
+/// @brief Displays a text string using a stroke font.
 void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text);
-/// <summary> Attempts to display text is using true type font.</summary>
+/// @brief Attempts to display text is using true type font.
 bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text);
 void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, const CString& text);
-/// <summary> Determines the count of characters in string excluding formatting characters.</summary>
+/// @brief Determines the count of characters in string excluding formatting characters.
 int LengthSansFormattingCharacters(const CString& text);
-/// <summary> Determines the offset to the bottom left alignment position of a text string
-/// using per-character advance widths (v2) or fixed cell width (v1) in the z=0 plane.</summary>
+/// @brief Determines the offset to the bottom left alignment position of a text string
+/// using per-character advance widths (v2) or fixed cell width (v1) in the z=0 plane.
 void GetBottomLeftCorner(EoDbFontDefinition& fd, const CString& text, EoGePoint3d& pt);
-/// <summary>Returns the region boundaries of a text string applying an optional inflation factor.</summary>
+/// @brief Returns the region boundaries of a text string applying an optional inflation factor.
 void text_GetBoundingBox(
     EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text, double spaceFactor, EoGePoint3dArray& ptsBox);
 EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontdefinition, EoGeReferenceSystem& referenceSystem,

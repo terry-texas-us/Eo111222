@@ -32,22 +32,22 @@ inline constexpr std::int16_t colorByLayer{256};  /// Color inherited from layer
 ///
 /// Layout (hex):
 /// @code
-///   0x00  (database root — owner of all top-level tables and root dictionary)
-///   ├─ 0x01  BLOCK_RECORD table
-///   │   ├─ 0x1E  *Paper_Space block record
-///   │   └─ 0x1F  *Model_Space block record
-///   ├─ 0x02  LAYER table  → 0x10 layer "0"
-///   ├─ 0x03  STYLE table
-///   ├─ 0x05  LTYPE table  → 0x14 ByBlock, 0x15 ByLayer, 0x16 Continuous
-///   ├─ 0x06  VIEW table
-///   ├─ 0x07  UCS table
-///   ├─ 0x08  VPORT table
-///   ├─ 0x09  APPID table  → 0x12 ACAD
-///   ├─ 0x0A  DIMSTYLE table
-///   └─ 0x0C  root DICTIONARY → 0x0D ACAD_GROUP
-///   BLOCKS section:
-///   *Paper_Space: BLOCK=0x1C  ENDBLK=0x1D
-///   *Model_Space: BLOCK=0x20  ENDBLK=0x21
+///  0x00  (database root — owner of all top-level tables and root dictionary)
+///  ├─ 0x01  BLOCK_RECORD table
+///  │   ├─ 0x1E  *Paper_Space block record
+///  │   └─ 0x1F  *Model_Space block record
+///  ├─ 0x02  LAYER table  → 0x10 layer "0"
+///  ├─ 0x03  STYLE table
+///  ├─ 0x05  LTYPE table  → 0x14 ByBlock, 0x15 ByLayer, 0x16 Continuous
+///  ├─ 0x06  VIEW table
+///  ├─ 0x07  UCS table
+///  ├─ 0x08  VPORT table
+///  ├─ 0x09  APPID table  → 0x12 ACAD
+///  ├─ 0x0A  DIMSTYLE table
+///  └─ 0x0C  root DICTIONARY → 0x0D ACAD_GROUP
+///  BLOCKS section:
+///  *Paper_Space: BLOCK=0x1C  ENDBLK=0x1D
+///  *Model_Space: BLOCK=0x20  ENDBLK=0x21
 /// @endcode
 namespace Handles {
 // ── Symbol tables ─────────────────────────────────────────────────────────────

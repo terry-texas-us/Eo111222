@@ -82,10 +82,10 @@ class EoDbEllipse : public EoDbPrimitive {
   void CutAt2Points(
       const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
 
-  /// <summary>Generates a set of points which may be used to represent a arc using a double angle algorithm.</summary>
+  /// @brief Generates a set of points which may be used to represent a arc using a double angle algorithm.
   void GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) const;
   EoGePoint3d PointAtStartAngle();
-  /// <summary>Determines the bounding region. This is always a quad, but it may not be xy oriented.</summary>
+  /// @brief Determines the bounding region. This is always a quad, but it may not be xy oriented.
   void GetBoundingBox(EoGePoint3dArray&);
   EoGePoint3d PointAtEndAngle();
   [[nodiscard]] const EoGeVector3d& MajorAxis() const noexcept { return m_majorAxis; }

@@ -82,7 +82,7 @@ class EoDbGroup : public CObList {
   void RemoveDuplicatePrimitives();
   int RemoveEmptyNotesAndDelete();
   EoDbPrimitive* SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d&, EoGePoint3d*);
-  /// <summary>Picks a prim if close enough to point.  Working in view space.</summary>
+  /// @brief Picks a prim if close enough to point.  Working in view space.
   EoDbPrimitive* SelPrimUsingPoint(AeSysView* view, const EoGePoint4d&, double&, EoGePoint3d&);
   bool SelectUsingLine(AeSysView* view, const EoGePoint3d& pt1, const EoGePoint3d& pt2);
   bool SelectUsingPoint_(AeSysView* view, EoGePoint4d pt);

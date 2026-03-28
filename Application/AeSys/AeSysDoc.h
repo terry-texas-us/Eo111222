@@ -227,13 +227,13 @@ class AeSysDoc : public CDocument {
   }
 
   void LayerBlank(const CString& strName);
-  /// <summary>A layer is converted to a tracing or a job file</summary>
+  /// @brief A layer is converted to a tracing or a job file
   bool LayerMelt(CString& strName);
 
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&);
   int NumberOfGroupsInWorkLayer();
   int NumberOfGroupsInActiveLayers();
-  /// <summary>Displays drawing and determines which groups are detectable.</summary>
+  /// @brief Displays drawing and determines which groups are detectable.
   void DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice);
 
   /** @brief Renders model-space entities through each paper-space viewport.
@@ -439,7 +439,7 @@ class AeSysDoc : public CDocument {
   EoDbGroup* DeletedGroupsRemoveHead() { return (m_DeletedGroupList.RemoveHead()); }
   void DeletedGroupsRemoveGroups() { m_DeletedGroupList.DeleteGroupsAndRemoveAll(); }
   EoDbGroup* DeletedGroupsRemoveTail() { return (m_DeletedGroupList.RemoveTail()); }
-  /// <summary>Restores the last group added to the deleted group list.</summary>
+  /// @brief Restores the last group added to the deleted group list.
   void DeletedGroupsRestore();
 
  public:  // trap interface
@@ -501,7 +501,7 @@ class AeSysDoc : public CDocument {
 
   // Nodal list interface (includes list of groups, primitives and unique points)
   void DeleteNodalResources();
-  /// <summary>Maintains a list of the primatives with at least one identified node.</summary>
+  /// @brief Maintains a list of the primatives with at least one identified node.
   void UpdateNodalList(EoDbGroup* group, EoDbPrimitive* primitive, DWORD mask, int bit, EoGePoint3d point);
 
   auto AddNodalGroup(EoDbGroup* group) { return m_NodalGroupList.AddTail(group); }
@@ -540,15 +540,15 @@ class AeSysDoc : public CDocument {
   afx_msg void OnClearMappedTracings();
   afx_msg void OnClearViewedTracings();
   afx_msg void OnClearWorkingLayer();
-  /// <summary>The current view is copied to the clipboard as an enhanced metafile.</summary>
+  /// @brief The current view is copied to the clipboard as an enhanced metafile.
   afx_msg void OnEditImageToClipboard();
   afx_msg void OnEditSegToWork();
-  /// <summary>Pastes clipboard to drawing. Only EoGroups format handled and no translation is performed.</summary>
+  /// @brief Pastes clipboard to drawing. Only EoGroups format handled and no translation is performed.
   afx_msg void OnEditTrace();
   afx_msg void OnEditTrapCopy();
   afx_msg void OnEditTrapCut();
   afx_msg void OnEditTrapDelete();
-  /// <summary>Initializes current trap and all trap component lists.</summary>
+  /// @brief Initializes current trap and all trap component lists.
   afx_msg void OnEditTrapQuit();
 
   /** @brief Pastes the contents of the clipboard into the current drawing.
@@ -559,9 +559,9 @@ class AeSysDoc : public CDocument {
    */
   afx_msg void OnEditTrapPaste();
 
-  /// <summary>Adds all groups in the work layer to the trap.</summary>
+  /// @brief Adds all groups in the work layer to the trap.
   afx_msg void OnEditTrapWork();
-  /// <summary>Add all groups in all work and active layers to the trap.</summary>
+  /// @brief Add all groups in all work and active layers to the trap.
   afx_msg void OnEditTrapWorkAndActive();
   afx_msg void OnFile();
   afx_msg void OnFileManage();
@@ -587,16 +587,16 @@ class AeSysDoc : public CDocument {
   afx_msg void OnPensLoadColors();
   afx_msg void OnPensRemoveUnusedStyles();
   afx_msg void OnPensTranslate();
-  /// <summary>Breaks a primitive into a simpler set of primitives.</summary>
+  /// @brief Breaks a primitive into a simpler set of primitives.
   afx_msg void OnPrimBreak();
-  /// <summary>Searches for closest detectible primitive. If found, primitive is lifted from its group, inserted into a
-  /// new group which is added to deleted group list. The primitive resources are not freed.</summary>
+  /// @brief Searches for closest detectible primitive. If found, primitive is lifted from its group, inserted into a
+  /// new group which is added to deleted group list. The primitive resources are not freed.
   afx_msg void OnToolsPrimitiveDelete();
   afx_msg void OnPrimExtractNum();
   afx_msg void OnPrimExtractStr();
-  /// <summary>Positions the cursor at a "control" point on the current engaged group.</summary>
+  /// @brief Positions the cursor at a "control" point on the current engaged group.
   afx_msg void OnPrimGotoCenterPoint();
-  /// <summary>Picks a primative and modifies its attributes to current settings.</summary>
+  /// @brief Picks a primative and modifies its attributes to current settings.
   afx_msg void OnPrimModifyAttributes();
 
   /** @brief Snaps the cursor to the nearest endpoint of a primitive in the active view.
@@ -610,7 +610,7 @@ class AeSysDoc : public CDocument {
    * position accordingly. Finally, it resets any ignored primitive state.
    */
   afx_msg void OnToolsPrimitiveSnaptoendpoint();
-  /// <summary>Reduces complex primitives and group references to a simpler form</summary>
+  /// @brief Reduces complex primitives and group references to a simpler form
   afx_msg void OnToolsGroupBreak();
 
   /** @brief Handles the deletion of a group in the active view.
@@ -623,7 +623,7 @@ class AeSysDoc : public CDocument {
   */
   afx_msg void OnToolsGroupDelete();
   afx_msg void OnToolsGroupDeletelast();
-  /// <summary>Exchanges the first and last groups on the deleted group list.</summary>
+  /// @brief Exchanges the first and last groups on the deleted group list.
   afx_msg void OnToolsGroupExchange();
   afx_msg void OnToolsGroupUndelete();
   afx_msg void OnSetupFillHatch();

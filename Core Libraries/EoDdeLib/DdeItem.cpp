@@ -38,7 +38,7 @@ PITEMINFO dde::ItemAdd(LPCWSTR lpszTopic, LPCWSTR lpszItem, LPWORD lpFormatList,
   }
   return pItem;
 }
-/// <summary>Find an item by its name in a topic </summary>
+/// @brief Find an item by its name in a topic 
 PITEMINFO dde::ItemFind(PTOPICINFO pTopic, LPCWSTR lpszItem) {
   PITEMINFO pItem = pTopic->pItemList;
   while (pItem) {
@@ -48,7 +48,7 @@ PITEMINFO dde::ItemFind(PTOPICINFO pTopic, LPCWSTR lpszItem) {
   }
   return pItem;
 }
-/// <summary>Find an item by its HSZ in a topic </summary>
+/// @brief Find an item by its HSZ in a topic 
 PITEMINFO dde::ItemFind(PTOPICINFO pTopic, HSZ hszItem) {
   PITEMINFO pItem = pTopic->pItemList;
   while (pItem) {

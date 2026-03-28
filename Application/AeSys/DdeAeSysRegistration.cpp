@@ -14,20 +14,20 @@ void RegisterAeSysTopics();
 
 using namespace dde;
 
-/// <summary>Error callback for DDE initialization failure — displays a warning and destroys the main window.</summary>
+/// @brief Error callback for DDE initialization failure — displays a warning and destroys the main window.
 static void OnDdeInitError(LPCWSTR serviceNameForDisplay, HWND hMainWindow) {
   app.WarningMessageBox(IDS_MSG_DDE_INIT_FAILURE, serviceNameForDisplay);
   if (hMainWindow) { ::DestroyWindow(hMainWindow); }
 }
 
-/// <summary>Fallback exec handler — posts the first character of the DDE data as a WM_CHAR message.</summary>
+/// @brief Fallback exec handler — posts the first character of the DDE data as a WM_CHAR message.
 static void OnDdeFallbackExec(HDDEDATA hData) {
   char sz[32]{};
   DdeGetData(hData, (LPBYTE)sz, (DWORD)sizeof(sz), (DWORD)0);
   ::PostMessage(app.GetSafeHwnd(), WM_CHAR, (WPARAM)sz[0], (LPARAM)1);
 }
 
-/// <summary>Initialize DDE and register all AeSys-specific topics, items, and commands.</summary>
+/// @brief Initialize DDE and register all AeSys-specific topics, items, and commands.
 void dde::RegisterAeSysTopics() {
   if (!dde::Initialize(L"AeSys", OnDdeInitError, app.GetSafeHwnd(), OnDdeFallbackExec)) { return; }
 

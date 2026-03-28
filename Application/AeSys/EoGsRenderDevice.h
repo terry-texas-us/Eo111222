@@ -8,11 +8,11 @@
 /// Phase 2 provides the concrete GDI backend (EoGsRenderDeviceGdi).
 ///
 /// Design principles:
-///  - Methods accept arrays/spans, not single points — batch-oriented.
-///  - Color as COLORREF — no GDI object handles cross the interface boundary.
-///  - No SelectObject/CreatePen semantics leak through.
-///  - Clip regions via PushClipRect/PopClipRect.
-///  - Text via DrawText with font descriptor, not HFONT.
+/// - Methods accept arrays/spans, not single points — batch-oriented.
+/// - Color as COLORREF — no GDI object handles cross the interface boundary.
+/// - No SelectObject/CreatePen semantics leak through.
+/// - Clip regions via PushClipRect/PopClipRect.
+/// - Text via DrawText with font descriptor, not HFONT.
 
 #include <cstdint>
 

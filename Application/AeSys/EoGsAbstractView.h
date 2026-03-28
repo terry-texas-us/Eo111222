@@ -73,7 +73,7 @@ class EoGsAbstractView {
   void EnableFarClipping(bool enabled);
   void EnableNearClipping(bool enabled);
   void EnablePerspective(bool enabled);
-  /// <summary> Returns the far (back) clip distance from the target of this Viewport object.</summary>
+  /// @brief Returns the far (back) clip distance from the target of this Viewport object.
   double FarClipDistance() const;
   double Height() const;
   bool IsFarClipOn() const;

@@ -59,7 +59,7 @@ class EoDlgFileManage : public CDialog {
   afx_msg void OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT drawItemStruct);
 
   afx_msg void OnBnClickedLayerRename();
-  /// <summary>Selected layer is converted to a tracing.</summary>
+  /// @brief Selected layer is converted to a tracing.
   afx_msg void OnBnClickedLayerMelt();
   afx_msg void OnBnClickedTracingOpen();
   afx_msg void OnBnClickedTracingMap();
@@ -78,7 +78,7 @@ class EoDlgFileManage : public CDialog {
    */
   afx_msg void OnBnClickedMfcbuttonNew();
 
-  /// <summary>Selected layer is deleted.</summary>
+  /// @brief Selected layer is deleted.
   /// <remarks>Hot layer must be warm'ed before it may be deleted. Layer "0" may never be deleted.</remarks>
   afx_msg void OnBnClickedMfcbuttonDel();
   afx_msg void OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESULT* pResult);

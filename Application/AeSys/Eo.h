@@ -66,7 +66,7 @@ constexpr double defaultCharacterCellAspectRatio = 0.6;  // Width to height rati
 /// Stroke font file format constants.
 /// v1: 96 offset entries (chars 32-126 + sentinel), stroke data at int32[96], 16384 bytes total.
 /// v2: magic at int32[0], 225 offset entries at int32[1], 224 advance widths at int32[226],
-///     224 left bearings at int32[450], stroke data at int32[674].
+///    224 left bearings at int32[450], stroke data at int32[674].
 constexpr int strokeFontFileSizeInBytes = 16384;
 constexpr int strokeFontV1OffsetTableSize = 96;
 constexpr int strokeFontV1MaxCharacterCode = 126;

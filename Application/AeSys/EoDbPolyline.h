@@ -20,18 +20,18 @@
 ///
 /// PEG serialization format (type code 0x2002):
 /// @code
-///   Type code <0x2002>   uint16_t
-///   Pen color            uint16_t
-///   Line type            uint16_t
-///   Flags                uint16_t   (sm_Closed | sm_HasBulge | sm_HasWidth | sm_Plinegen | sm_Is3D)
-///   Constant width       double     (DXF group code 43; 0.0 when not set)
-///   Number of vertices   uint16_t
-///   {vertices}           point3d[]
-///   if (flags & sm_HasBulge):
-///     {bulge values}     double[]   (one per vertex)
-///   if (flags & sm_HasWidth):
-///     {start widths}     double[]   (one per vertex)
-///     {end widths}       double[]   (one per vertex)
+///  Type code <0x2002>   uint16_t
+///  Pen color            uint16_t
+///  Line type            uint16_t
+///  Flags                uint16_t   (sm_Closed | sm_HasBulge | sm_HasWidth | sm_Plinegen | sm_Is3D)
+///  Constant width       double     (DXF group code 43; 0.0 when not set)
+///  Number of vertices   uint16_t
+///  {vertices}           point3d[]
+///  if (flags & sm_HasBulge):
+///    {bulge values}     double[]   (one per vertex)
+///  if (flags & sm_HasWidth):
+///    {start widths}     double[]   (one per vertex)
+///    {end widths}       double[]   (one per vertex)
 /// @endcode
 class EoDbPolyline : public EoDbPrimitive {
   static std::uint16_t sm_EdgeToEvaluate;

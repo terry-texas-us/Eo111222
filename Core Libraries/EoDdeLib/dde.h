@@ -93,14 +93,14 @@ typedef struct _TOPICINFO {
 typedef void *POP;
 typedef POP *PPOP;
 
-/// <summary>Callback invoked when DDE initialization fails.</summary>
-/// <param name="serviceNameForDisplay">The service name string for display in the error message.</param>
-/// <param name="hMainWindow">The main window handle to destroy on fatal failure, or nullptr.</param>
+/// @brief Callback invoked when DDE initialization fails.
+/// serviceNameForDisplay The service name string for display in the error message.
+/// hMainWindow The main window handle to destroy on fatal failure, or nullptr.
 typedef void(INITERRORFN)(LPCWSTR serviceNameForDisplay, HWND hMainWindow);
 typedef INITERRORFN *PINITERRORFN;
 
-/// <summary>Fallback callback invoked when a topic has no exec function and no command list.</summary>
-/// <param name="hData">The DDE data handle from the execute transaction.</param>
+/// @brief Fallback callback invoked when a topic has no exec function and no command list.
+/// hData The DDE data handle from the execute transaction.
 typedef void(FALLBACKEXECFN)(HDDEDATA hData);
 typedef FALLBACKEXECFN *PFALLBACKEXECFN;
 

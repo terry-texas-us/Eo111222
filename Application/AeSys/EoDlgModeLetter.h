@@ -20,7 +20,7 @@ class EoDlgModeLetter : public CDialog {
 
  public:
   CEdit m_TextEditControl;
-  /// <summary> Effectively resizes the edit control to use the entire client area of the dialog.</summary>
+  /// @brief Effectively resizes the edit control to use the entire client area of the dialog.
   /// <remarks> OnSize can be called before OnInitialUpdate so check is made for valid control window.</remarks>
   afx_msg void OnSize(UINT nType, int cx, int cy);
 

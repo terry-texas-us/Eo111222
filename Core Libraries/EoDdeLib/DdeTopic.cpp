@@ -2,7 +2,7 @@
 
 using namespace dde;
 
-/// <summary>Add a new topic and default processing for its item list and formats</summary>
+/// @brief Add a new topic and default processing for its item list and formats
 PTOPICINFO dde::TopicAdd(LPCWSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnRequest, PPOKEFN pfnPoke) {
   PTOPICINFO pTopic = TopicFind(lpszTopic);
 
@@ -31,7 +31,7 @@ PTOPICINFO dde::TopicAdd(LPCWSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnReque
   }
   return pTopic;
 }
-/// <summary>Find a topic by its name</summary>
+/// @brief Find a topic by its name
 PTOPICINFO dde::TopicFind(LPCWSTR lpszName) {
   PTOPICINFO pTopic = ServerInfo.pTopicList;
 
@@ -42,7 +42,7 @@ PTOPICINFO dde::TopicFind(LPCWSTR lpszName) {
   }
   return pTopic;
 }
-/// <summary>Find a topic by its HSZ</summary>
+/// @brief Find a topic by its HSZ
 PTOPICINFO dde::TopicFind(HSZ hszName) {
   PTOPICINFO pTopic = ServerInfo.pTopicList;
 
@@ -53,9 +53,9 @@ PTOPICINFO dde::TopicFind(HSZ hszName) {
   }
   return pTopic;
 }
-/// <summary>
+/// @brief 
 // Remove a topic and all its items.  If there is an active conversation on the topic then disconnect it.
-/// </summary>
+/// 
 bool dde::TopicRemove(LPCWSTR lpszTopic) {
   PTOPICINFO pTopic = ServerInfo.pTopicList;
   PTOPICINFO pPrevTopic = 0;
@@ -108,7 +108,7 @@ bool dde::TopicRemove(LPCWSTR lpszTopic) {
   // We don't have this topic
   return false;
 }
-/// <summary>Process a request for the list of formats supported for a given topic.</summary>
+/// @brief Process a request for the list of formats supported for a given topic.
 // Notes:	Typically the data is returned in CF_TEXT format as a tab
 //			delimited list of names.  The Format list is the union of all
 //			formats supported for all topics of the service.

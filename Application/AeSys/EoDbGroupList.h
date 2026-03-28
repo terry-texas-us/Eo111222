@@ -36,7 +36,7 @@ class EoDbGroupList : public CObList {
   void ExplodeBlockReferences();
   
   int GetBlockRefCount(const CString& name);
-  /// <summary>Determines the extent of all groups in list.</summary>
+  /// @brief Determines the extent of all groups in list.
   void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, EoGeTransformMatrix& transformMatrix);
   int GetLineTypeRefCount(std::int16_t lineType);
 

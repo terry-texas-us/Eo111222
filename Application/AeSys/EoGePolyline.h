@@ -61,7 +61,7 @@ void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, Eo
 /// @param startPoint   The first endpoint of the segment (already emitted by caller).
 /// @param endPoint     The second endpoint of the segment.
 /// @param bulge        Bulge value at startPoint: tan(θ/4) where θ is the included arc angle.
-///                     Positive = CCW arc, negative = CW arc, 0 = straight (returns endPoint only).
+///                    Positive = CCW arc, negative = CW arc, 0 = straight (returns endPoint only).
 /// @param[out] arcPoints  Output vector receiving the tessellated arc points (cleared on entry).
 void TessellateArcSegment(
     const EoGePoint3d& startPoint, const EoGePoint3d& endPoint, double bulge, std::vector<EoGePoint3d>& arcPoints);

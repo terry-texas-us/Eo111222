@@ -64,7 +64,7 @@ class EoDbLineTypeTable {
   int ReferenceCount(std::int16_t lineType);
 
   int Size() { return (int)m_MapLineTypes.GetSize(); }
-  /// <summary>Loads the Line Type table.</summary>
+  /// @brief Loads the Line Type table.
   void LoadLineTypesFromTxtFile(const CString& pathName);
   void RemoveAll();
   void RemoveUnused();

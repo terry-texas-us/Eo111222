@@ -329,7 +329,7 @@ class EoDbConic : public EoDbPrimitive {
    */
   bool WriteLegacyEllipse(CFile& file);
 
-  /// <summary>Determines the bounding region. This is always a quad, but it may not be xy oriented.</summary>
+  /// @brief Determines the bounding region. This is always a quad, but it may not be xy oriented.
   void GetBoundingBox(EoGePoint3dArray&);
 
   void GetXYExtents(EoGePoint3d, EoGePoint3d, EoGePoint3d*, EoGePoint3d*) const;
