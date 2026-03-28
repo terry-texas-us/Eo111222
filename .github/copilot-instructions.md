@@ -26,7 +26,7 @@ You can assume I know the code base very well and should have little trouble wit
 - Architecture & patterns: MFC document/view pattern (classes: `AeSysDoc`, `AeSysView`) – suggestions should maintain MFC idioms where applicable.
 - Geometric primitives implement a common base (`EoDbPrimitive`) with virtuals for drawing, selection, transform, serialization – preserve virtual contract and ABI when changing signatures.
 - Use `Peg & Tra File Formats.md` to help understand the legacy file structure.
-- **vcxproj wildcard**: `AeSys.vcxproj` uses `<ClCompile Include="*.cpp" Exclude="...">` — ALL `.cpp` files in the `AeSys\` directory are compiled automatically. **Never add new `.cpp` files to the project explicitly.** Only new `.h` files require an explicit `<ClInclude>` entry in both `AeSys.vcxproj` and `AeSys.vcxproj.filters`.
+- **vcxproj wildcard**: `AeSys.vcxproj` uses `<ClCompile Include="*.cpp" Exclude="...">` — **never explicitly add new `.cpp` files to the project**. Only new `.h` files require an explicit `<ClInclude>` entry in both `AeSys.vcxproj` and `AeSys.vcxproj.filters`.
 
 ## Code Style, Linters & Formatting
 - Repository contains `.clang-format` and `.clang-tidy` at root – prefer those settings for formatting and static-analysis suggestions.
@@ -228,9 +228,7 @@ Every `EoDbPrimitive` carries a unique, non-zero `m_handle` (`std::uint64_t`) as
 - Export: non-zero handles preserved; new handles allocated only for handle-zero entities. Owner handle derived from export context (block record / `*Model_Space` 0x1F / `*Paper_Space` 0x1E).
 - Table object handles (Layer, Linetype, TextStyle, DimStyle, AppId, VPort, BlockRecord, BLOCK entity) all survive DXF round-trip.
 
-### DXF Ownership Hierarchy (Hardcoded Infrastructure Handles)
-```
-0x00  (root)
+### DXF Ownership Hierarchy (Hardcoded Infrastructure Handles)0x00  (root)
 ├── 0x01  BLOCK_RECORD table → block records (owner=1)
 │   ├── 0x1E  *Paper_Space block record → paper-space entities (owner=1E)
 │   ├── 0x1F  *Model_Space block record → model-space entities (owner=1F)
@@ -242,8 +240,6 @@ Every `EoDbPrimitive` carries a unique, non-zero `m_handle` (`std::uint64_t`) as
 ├── 0x09  APPID table → app entries (owner=9)
 ├── 0x0A  DIMSTYLE table → dimstyle entries (owner=A)
 └── 0x0C  root dictionary
-```
-
 ### Handle → Object Reverse Lookup Map
 `AeSysDoc` maintains `std::unordered_map<std::uint64_t, HandleObject> m_handleMap` for O(1) lookup. `HandleObject` is `std::variant<EoDbPrimitive*, EoDbLayer*, EoDbLineType*, EoDbBlock*>` — covers all heap-allocated, pointer-stable handle-bearing types. Value-type entries (`EoDbTextStyle`, `EoDbDimStyle`, `EoDbAppIdEntry`) deferred until migrated to pointer-stable containers.
 
