@@ -32,6 +32,10 @@ class EoDbLayer : public EoDbGroupList {
   EoDbLineType* m_lineType;
   EoDxfLineWeights::LineWeight m_lineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
   double m_lineTypeScale{1.0};
+  bool m_isFrozen{};
+  bool m_isLocked{};
+  bool m_plottingFlag{true};
+  std::int32_t m_color24{-1};  ///< DXF group code 420; -1 means not set (use ACI color)
   std::uint64_t m_handle{};
   std::uint64_t m_ownerHandle{};
 
@@ -87,6 +91,18 @@ class EoDbLayer : public EoDbGroupList {
 
   [[nodiscard]] double LineTypeScale() const noexcept { return m_lineTypeScale; }
   void SetLineTypeScale(double lineTypeScale) noexcept { m_lineTypeScale = lineTypeScale; }
+
+  [[nodiscard]] bool IsFrozen() const noexcept { return m_isFrozen; }
+  void SetFrozen(bool frozen) noexcept { m_isFrozen = frozen; }
+
+  [[nodiscard]] bool IsLocked() const noexcept { return m_isLocked; }
+  void SetLocked(bool locked) noexcept { m_isLocked = locked; }
+
+  [[nodiscard]] bool PlottingFlag() const noexcept { return m_plottingFlag; }
+  void SetPlottingFlag(bool plottingFlag) noexcept { m_plottingFlag = plottingFlag; }
+
+  [[nodiscard]] std::int32_t Color24() const noexcept { return m_color24; }
+  void SetColor24(std::int32_t color24) noexcept { m_color24 = color24; }
   void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
 
   [[nodiscard]] CString Name() const { return m_name; }

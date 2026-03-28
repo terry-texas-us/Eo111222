@@ -243,8 +243,15 @@ void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* docu
     newLayer->SetColorIndex(static_cast<std::int16_t>(abs(layer.m_colorNumber)));
     if (layer.m_colorNumber < 0) { newLayer->SetStateOff(); }
     if (lineType != nullptr) { newLayer->SetLineType(lineType); }
-    if (isFrozen) { newLayer->SetStateOff(); }
+    // Frozen layers are displayed as off, but the frozen state is preserved separately for export
+    if (isFrozen) {
+      newLayer->SetStateOff();
+      newLayer->SetFrozen(true);
+    }
+    newLayer->SetLocked(isLocked);
     newLayer->SetLineWeight(layer.m_lineweightEnumValue);
+    newLayer->SetPlottingFlag(layer.m_plottingFlag);
+    newLayer->SetColor24(layer.color24);
   };
 
   // Create / configure the layer in model space if not already present
@@ -1324,7 +1331,25 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
   const auto defPt = dimension.GetDefinitionPoint();      // On the dimension line (WCS)
   const auto extPt1 = dimension.GetExtensionLinePoint1();  // Feature point 1 (WCS)
   const auto extPt2 = dimension.GetExtensionLinePoint2();  // Feature point 2 (WCS)
-  const auto textPt = dimension.GetTextPoint();             // Text midpoint (OCS, treat as WCS for now)
+  const auto textPtOcs = dimension.GetTextPoint();          // Text midpoint (OCS per DXF spec)
+
+  // Transform text midpoint from OCS → WCS using the entity's extrusion direction.
+  // DXF DIMENSION group codes 11/21/31 are in OCS; other definition points (10,13,14) are WCS.
+  const EoGeVector3d dimExtrusionDirection{
+      dimension.m_extrusionDirection.x, dimension.m_extrusionDirection.y, dimension.m_extrusionDirection.z};
+  const bool dimNeedsOcsTransform = Eo::IsGeometricallyNonZero(dimExtrusionDirection.x) ||
+      Eo::IsGeometricallyNonZero(dimExtrusionDirection.y) ||
+      Eo::IsGeometricallyNonZero(dimExtrusionDirection.z - 1.0);
+
+  EoDxfGeometryBase3d textPt = textPtOcs;
+  if (dimNeedsOcsTransform) {
+    EoGeOcsTransform dimOcsTransform{dimExtrusionDirection};
+    auto transformedTextPt = EoGePoint3d{textPtOcs.x, textPtOcs.y, textPtOcs.z};
+    transformedTextPt = dimOcsTransform * transformedTextPt;
+    textPt.x = transformedTextPt.x;
+    textPt.y = transformedTextPt.y;
+    textPt.z = transformedTextPt.z;
+  }
 
   // --- Build measurement direction from rotation angle ---
   const double rotationRadians = Eo::DegreeToRadian(dimension.GetRotationAngle());
@@ -2490,9 +2515,11 @@ void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* doc
  *    closure.
  *
  *  ## Limitations
- *  - DXF knot vectors, degree, weights, and tolerances are not preserved in `EoDbSpline`.
  *  - Rational splines (NURBS with non-unit weights) are rendered as non-rational approximations.
- *  - OCS → WCS transform is applied to control/fit points via `EoGeOcsTransform`.
+ *
+ *  ## Coordinate System
+ *  - DXF SPLINE control/fit points are in WCS (same as ELLIPSE). `ApplyExtrusion()` is a no-op.
+ *  - No OCS → WCS transform is needed or applied.
  *
  *  @param spline The parsed DXF spline entity.
  *  @param document The AeSys document receiving the created primitive.
@@ -2529,39 +2556,37 @@ void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* 
         traceGeneral, 2, L"  Spline: using %d fit points as control points (no control points defined)\n", pointCount);
   }
 
-  // Resolve extrusion direction for OCS → WCS transform
-  EoGeVector3d extrusionDirection{spline.m_normalVector.x, spline.m_normalVector.y, spline.m_normalVector.z};
-  if (extrusionDirection.IsNearNull()) {
-    // Fall back to base class extrusion direction
-    extrusionDirection =
-        EoGeVector3d{spline.m_extrusionDirection.x, spline.m_extrusionDirection.y, spline.m_extrusionDirection.z};
-    if (extrusionDirection.IsNearNull()) { extrusionDirection = EoGeVector3d::positiveUnitZ; }
-  }
-
-  // Determine if OCS → WCS transform is needed (non-default extrusion)
-  const bool needsOcsTransform = Eo::IsGeometricallyNonZero(extrusionDirection.x) ||
-      Eo::IsGeometricallyNonZero(extrusionDirection.y) || Eo::IsGeometricallyNonZero(extrusionDirection.z - 1.0);
-
-  EoGeOcsTransform transformOcs{extrusionDirection};
-
-  // Build the EoGePoint3dArray from the source points, applying OCS → WCS if needed
+  // DXF SPLINE control/fit points are in WCS (same as ELLIPSE) — no OCS transform needed.
   EoGePoint3dArray points;
   points.SetSize(pointCount);
 
   for (std::uint16_t i = 0; i < pointCount; ++i) {
     const auto* sourcePoint = sourcePoints[i];
-    auto point = EoGePoint3d{sourcePoint->x, sourcePoint->y, sourcePoint->z};
-
-    if (needsOcsTransform) { point = transformOcs * point; }
-
-    points[i] = point;
+    points[i] = EoGePoint3d{sourcePoint->x, sourcePoint->y, sourcePoint->z};
   }
 
   auto* splinePrimitive = new EoDbSpline(points);
   splinePrimitive->SetBaseProperties(&spline, document);
+
+  // Preserve DXF spline properties for faithful round-trip export and correct-degree rendering.
+  splinePrimitive->SetDegree(spline.m_degreeOfTheSplineCurve > 0 ? spline.m_degreeOfTheSplineCurve
+                                                                  : static_cast<std::int16_t>(3));
+  splinePrimitive->SetFlags(spline.m_splineFlag);
+
+  // Import knot vector when control points are used (knots are meaningless with fit-point fallback).
+  if (haveControlPoints && !spline.m_knotValues.empty()) {
+    splinePrimitive->SetKnots(std::vector<double>(spline.m_knotValues.begin(), spline.m_knotValues.end()));
+  }
+
+  // Import weights for rational splines (NURBS).
+  if (haveControlPoints && spline.IsRational() && !spline.m_weightValues.empty()) {
+    splinePrimitive->SetWeights(std::vector<double>(spline.m_weightValues.begin(), spline.m_weightValues.end()));
+  }
+
   AddToDocument(splinePrimitive, document, spline.m_space);
 
-  ATLTRACE2(traceGeneral, 2, L"  Spline → EoDbSpline with %d control points\n", pointCount);
+  ATLTRACE2(traceGeneral, 2, L"  Spline → EoDbSpline with %d control points (degree=%d, flags=0x%04X, knots=%zu)\n",
+      pointCount, splinePrimitive->Degree(), splinePrimitive->Flags(), splinePrimitive->Knots().size());
 }
 
 void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document) {

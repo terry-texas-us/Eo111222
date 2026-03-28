@@ -34,17 +34,11 @@
 ### 2.1 ~~ARC/CIRCLE center exported as WCS instead of OCS for non-default extrusion~~ ✅ RESOLVED
 - **Fix applied**: `EoDbConic::ExportToDxf()` transforms center WCS→OCS via `EoGeOcsTransform::CreateWcsToOcs(m_extrusion) * m_center` before writing Circle and RadialArc entities. Ellipse export correctly writes WCS directly (per DXF spec). ARC start/end angles remain in radians internally; `EoDxfWrite::WriteArc` converts to degrees via `* EoDxf::RadiansToDegrees`.
 
-### 2.2 SPLINE degree, knot vector, and weights discarded at import — always re-exported as uniform cubic
-- **Read**: `ConvertSplineEntity` copies only control points (or fit points as fallback). Degree, knots, weights, flags, and tangents are all discarded. OCS→WCS transform is applied to control points.
-- **Write**: `EoDbSpline::ExportToDxf()` hard-codes `degree = 3`, generates a uniform knot vector, sets flag `0x08` (planar), writes no weights. The `EoDxfWrite::WriteSpline` method itself fully supports degree/knots/weights/fit points — the limitation is in the `EoDbSpline` data model.
-- **Impact**: Non-cubic splines (degree 2, 5, etc.), NURBS with non-uniform knots or rational weights, and splines with tangent constraints all change shape on roundtrip.
-- **Fix** (multi-phase):
-  1. Add `m_degree` member to `EoDbSpline`; import degree from DXF.
-  2. Add `m_knots` (`std::vector<double>`) and `m_weights` (`std::vector<double>`) members.
-  3. Store flags (closed/periodic/rational) for export.
-  4. Update `ExportToDxf` to use stored degree/knots/weights.
-  5. Update `GenPts` to accept stored knots when available.
-  6. Update PEG V2 serialization per the V2 spline record design in copilot-instructions.
+### 2.2 ~~SPLINE degree, knot vector, and weights discarded at import — always re-exported as uniform cubic~~ ✅ PARTIALLY RESOLVED
+- **Fix applied**: `EoDbSpline` now stores `m_degree`, `m_flags`, `m_knots` (knot vector), and `m_weights` (NURBS weights). `ConvertSplineEntity` imports all four from the parsed `EoDxfSpline`. `Display()` and `SelectUsingPoint()` use `m_degree + 1` as the spline order. `ExportToDxf()` uses stored degree/flags and exports stored knot vector and weights when available; generates uniform clamped knots as fallback for PEG-loaded or interactively created splines.
+- **Also fixed**: Removed spurious OCS→WCS transform in `ConvertSplineEntity` — SPLINE control/fit points are WCS per DXF spec (`ApplyExtrusion()` is a no-op). The transform corrupted geometry for non-default extrusion vectors.
+- **Remaining**: `GenPts` tessellation always uses a regenerated uniform knot vector internally (does not consume stored knots). This means display of imported non-uniform splines is still approximate, but the stored knots survive DXF round-trip faithfully. Full fidelity requires modifying `GenPts` to use `m_knots` when non-empty.
+- **PEG V2**: Degree/knots/weights are session-only — not yet persisted in PEG files. PEG V2 spline record format is specified in copilot-instructions but deferred.
 
 ### 2.3 ~~Heavy POLYLINE always downgraded to LWPOLYLINE on export~~ ✅ PARTIALLY RESOLVED
 - **3D polylines** ✅: `ConvertPolyline3DEntity` sets `Is3D(true)`. `EoDbPolyline::ExportToDxf()` dispatches on `Is3D()` — when true, creates `EoDxfPolyline` with flag `0x08` (3D polyline), emits vertices with flag `0x20` (3dPolylineVertex), and writes via `WritePolyline` (heavy POLYLINE + VERTEX + SEQEND). Per-vertex Z coordinates are preserved.
@@ -121,11 +115,9 @@
 - **Impact**: Text using DXF Aligned, Fit, or Middle horizontal alignment will have different alignment semantics after roundtrip. Visual position may shift depending on text string length.
 - **Note**: This is partially by design — AeSys does not implement Aligned/Fit text stretching.
 
-### 3.11 Layer properties partially lost on export (NEW)
-- **Read**: `ConvertLayerTable` reads all layer properties: name, color, frozen (→ `SetStateOff`), locked (logged only), linetype, lineweight (logged only). Layers are created in the correct space (model/paper) using `AddLayerToSpace`.
-- **Write**: `WriteLayers` exports: name, color, off state, linetype name, plotting flag. **Not exported**: frozen flag, locked flag, lineweight, layer handle.
-- **Impact**: Frozen layers become off (state is preserved but semantics differ — frozen layers exclude from regeneration). Locked layers lose their locked state. Lineweight is lost. Handle graph for layers is not maintained.
-- **Fix**: Map off/frozen states separately in `WriteLayers`. Add locked flag and lineweight output.
+### 3.11 ~~Layer properties partially lost on export~~ ✅ RESOLVED
+- **Fix applied**: `EoDbLayer` now stores `m_isFrozen`, `m_isLocked`, `m_plottingFlag`, and `m_color24` members. `ConvertLayerTable` stores frozen (separately from off display state), locked, plotting flag, and 24-bit true color from the DXF layer. `WriteLayers` reconstructs DXF flag bits (`0x01` frozen, `0x04` locked), passes `color24`, actual plotting flag, and lineweight. Lineweight was already round-tripping correctly.
+- **PEG V2**: All four properties serialized in AE2026 layer records via a `uint16` property flags bitfield (bit 0=frozen, bit 1=locked, bit 2=plotting) and `int32` color24.
 
 ### 3.12 3DFACE invisible edge flags not preserved (NEW)
 - **Read**: `Convert3dFaceEntity` logs invisible edge flags (group 70) but does not store them in the resulting `EoDbPolyline`.
@@ -170,7 +162,7 @@ These entity types are parsed from DXF but have no internal representation or ex
 | IMAGE | Skipped (logged) | N/A | No internal type; `AddImage` is no-op |
 | LEADER | Parsed → not stored | Writer exists (`WriteLeader`) | No internal `EoDbLeader` type; `AddLeader` is no-op |
 | MLEADER | Parsed → not stored | Writer exists (`WriteMLeader`) | No internal `EoDbMLeader` type; `AddMLeader` is no-op |
-| DIMENSION (7 types) | Parsed → not stored | Writer exists (`WriteDimension`) | No internal `EoDbDimension` type; `AddDimAlign` etc. decrement counter only |
+| DIMENSION (7 types) | Linear→geometry | Standalone lines/text | ⚠️ No DIMENSION export | 🟡 Medium | Text midpoint OCS→WCS ✅; linear only; other subtypes → skip |
 | Polyface mesh | Skipped (logged) | N/A | `AddPolyline` flag `0x40` → skip + log |
 | Polygon mesh | Skipped (logged) | N/A | `AddPolyline` flag `0x10` → skip + log |
 | ATTDEF | Parsed + counted | No export | Template only — rendering would overlap ATTRIBs |
@@ -197,7 +189,7 @@ These entity types are parsed from DXF but have no internal representation or ex
 | LWPOLYLINE | ✅ Full | `EoDbPolyline` | ✅ Full | 🟢 **Good** | Elevation ✅ plinegen ✅ width ✅ bulge ✅ |
 | POLYLINE 2D | ✅ OCS→WCS | `EoDbPolyline` | ⚠️ → LWPOLYLINE | 🟡 Medium | Curve-fit/spline-fit data lost §2.3; basic 2D OK |
 | POLYLINE 3D | ✅ Full | `EoDbPolyline` | ✅ Heavy POLYLINE | 🟢 **Good** | `Is3D()` dispatch → `WritePolyline` ✅ |
-| SPLINE | ⚠️ Lossy | `EoDbSpline` | ⚠️ Uniform cubic | 🟠 High gap | Degree/knots/weights discarded §2.2 |
+| SPLINE | ✅ Full (degree/knots/wt) | `EoDbSpline` | ✅ Stored props | 🟢 **Good** (export) / 🟡 Medium (display) | Display uses uniform knots; export round-trips stored knots §2.2 |
 | HATCH | ✅ Full | `EoDbPolygon` | ✅ Full (single loop) | 🟡 Medium | Multi-loop topology lost §2.8; single-loop OK |
 | VIEWPORT | ✅ Full | `EoDbViewport` | ✅ Full | 🟢 **Good** | All 17 view params + forces PaperSpace |
 | POINT | ✅ Full | `EoDbPoint` | ✅ Full | 🟢 **Good** | — |
@@ -224,7 +216,7 @@ These entity types are parsed from DXF but have no internal representation or ex
 | ~~4~~ | ~~2D POLYLINE OCS→WCS transform at import~~ | ~~M~~ | | ✅ Resolved |
 | ~~5~~ | ~~Preserve LWPOLYLINE elevation on export~~ | ~~S~~ | | ✅ Resolved |
 | ~~6~~ | ~~Heavy POLYLINE export (3D via `WritePolyline`)~~ | ~~M~~ | | ✅ Resolved |
-| 7 | Store spline degree at import; use in export | M | `EoDbSpline.h`, `EoDbSpline.cpp`, `EoDbDxfInterface.cpp` | Open |
+| ~~7~~ | ~~Store spline degree at import; use in export~~ | ~~M~~ | ~~`EoDbSpline.h`, `EoDbSpline.cpp`, `EoDbDxfInterface.cpp`~~ | ✅ Resolved |
 | 8 | 3DFACE → preserve entity type or set `Is3D()` for Z preservation | M | `EoDbDxfInterface.cpp`, `EoDbPolyline.cpp` | Open (NEW) |
 | 9 | HATCH multi-loop: store all boundary loops in single `EoDbPolygon` | L | `EoDbPolygon.h`, `EoDbPolygon.cpp`, `EoDbDxfInterface.cpp` | Open (NEW) |
 | 10 | 2D heavy POLYLINE: track curve-fit/spline-fit for heavy export | M | `EoDbPolyline.h`, `EoDbPolyline.cpp`, `EoDbDxfInterface.cpp` | Open |
@@ -239,7 +231,7 @@ These entity types are parsed from DXF but have no internal representation or ex
 | ~~14~~ | ~~Entity thickness passthrough via base class~~ | ~~M~~ | | ✅ Resolved |
 | ~~15~~ | ~~HATCH pattern definition line export~~ | ~~M~~ | | ✅ Resolved |
 | ~~16~~ | ~~LWPOLYLINE plinegen flag bit translation on export~~ | ~~S~~ | | ✅ Resolved |
-| 17 | Layer export: frozen/locked/lineweight/handle | M | `EoDbDxfInterface.h` (`WriteLayers`) | Open (NEW) |
+| ~~17~~ | ~~Layer export: frozen/locked/lineweight/handle~~ | ~~M~~ | ~~`EoDbLayer.h`, `EoDbDxfInterface.h`, `EoDbDxfInterface.cpp`, `EoDbPegFile.cpp`~~ | ✅ Resolved |
 | 18 | 3DFACE invisible edge flags | S | `EoDbDxfInterface.cpp`, `EoDbPolyline.h` | Open (NEW) |
 
 ### ~~Phase 4 — Table/Section Round-Trip~~ ✅ ALL RESOLVED
@@ -256,7 +248,7 @@ These entity types are parsed from DXF but have no internal representation or ex
 
 | # | Item | Effort | Files | Status |
 |---|------|--------|-------|--------|
-| 24 | Full spline knot/weight storage (V2 PEG) | L | `EoDbSpline.h/.cpp`, PEG serialization | Open |
+| ~~24~~ | ~~Full spline knot/weight storage~~ (PEG V2 serialization deferred) | ~~L~~ | ~~`EoDbSpline.h/.cpp`, PEG serialization~~ | ✅ Resolved (session) / Open (PEG V2) |
 | 25 | ATTRIB→INSERT structural link (V2 handle architecture) | XL | New primitive type, PEG V2 | Open |
 | 26 | MTEXT reconstitution from multiline `EoDbText` | L | `EoDbText`, `EoDbDxfInterface` | Open |
 | 27 | OBJECTS/DICTIONARY/LAYOUT passthrough | XL | `EoDbDxfInterface.h`, `AeSysDoc` | Open |
@@ -288,7 +280,7 @@ These entity types are parsed from DXF but have no internal representation or ex
 - **ACAD_PROXY_ENTITY**: Full binary passthrough — AcGi graphics data, entity data, handles all preserved. Full AcGi metafile parser supports types 1–33 (line, polyline, circle, arc, text, shell, xline, ray, mesh, etc.).
 
 ### Table/Section Roundtrip
-- **Layer table**: Full roundtrip on read — name, color, frozen (→ off), linetype. Write: name, color, off, linetype, plotting flag. (Frozen/locked/lineweight gap noted in §3.11.)
+- **Layer table**: Full roundtrip — name, color (ACI + 24-bit true color), frozen flag, locked flag, off state, linetype, lineweight, plotting flag. Frozen layers display as off but frozen state preserved separately for DXF export.
 - **Linetype table**: Full roundtrip — name, pattern length, dash elements.
 - **Text style table**: Full roundtrip — font name, height, width factor, oblique angle (deg↔rad conversion), generation flags, last height used.
 - **VPORT table**: Full roundtrip — ~25 properties including center, height, direction, target, lens length, front/back clip, render mode, UCS data.
@@ -353,9 +345,9 @@ DXF(degrees) → ParseCode(stored as degrees) → EoDxfInsert.m_rotationAngle(de
 |----------|-------|----------|------|
 | 🔴 Critical | 2 | 2 | **0** |
 | 🟠 High | 8 | 3 | **5** |
-| 🟡 Medium | 12 | 9 | **3** |
+| 🟡 Medium | 12 | 10 | **2** |
 | 🔵 Low | 8 | 5 | **3** |
-| **Total** | **30** | **19** | **11** |
+| **Total** | **30** | **20** | **10** |
 
 ### Open Items by Priority
 
@@ -367,8 +359,7 @@ DXF(degrees) → ParseCode(stored as degrees) → EoDxfInsert.m_rotationAngle(de
 | 4 | 🟠 HIGH | 3DFACE → LWPOLYLINE entity type change | §2.7 |
 | 5 | 🟠 HIGH | HATCH multi-loop topology lost | §2.8 |
 | 6 | 🟡 MEDIUM | POINT display mode per-entity | §3.9 |
-| 7 | 🟡 MEDIUM | Layer export: frozen/locked/lineweight | §3.11 |
-| 8 | 🟡 MEDIUM | 3DFACE invisible edge flags | §3.12 |
-| 9 | 🔵 LOW | OBJECTS section not written | §4.4 |
-| 10 | 🔵 LOW | Block record table incomplete | §4.6 |
-| 11 | 🔵 LOW | Read-only entity types | §4.7 |
+| 7 | 🟡 MEDIUM | 3DFACE invisible edge flags | §3.12 |
+| 8 | 🔵 LOW | OBJECTS section not written | §4.4 |
+| 9 | 🔵 LOW | Block record table incomplete | §4.6 |
+| 10 | 🔵 LOW | Read-only entity types | §4.7 |

@@ -290,12 +290,21 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVe
     std::uint64_t layerOwnerHandle{};
     EoDxfLineWeights::LineWeight layerLineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
     double layerLineTypeScale{1.0};
+    bool isFrozen{};
+    bool isLocked{};
+    bool plottingFlag{true};
+    std::int32_t color24{-1};
     if (fileVersion == EoDb::PegFileVersion::AE2026) {
       layerHandle = EoDb::ReadUInt64(*this);
       layerOwnerHandle = EoDb::ReadUInt64(*this);
       auto lineWeightDxfCode = EoDb::ReadInt16(*this);
       layerLineWeight = EoDxfLineWeights::DxfIndexToLineWeight(lineWeightDxfCode);
       layerLineTypeScale = EoDb::ReadDouble(*this);
+      auto layerPropertyFlags = EoDb::ReadUInt16(*this);
+      isFrozen = (layerPropertyFlags & 0x01) != 0;
+      isLocked = (layerPropertyFlags & 0x02) != 0;
+      plottingFlag = (layerPropertyFlags & 0x04) != 0;
+      color24 = EoDb::ReadInt32(*this);
     }
 
     if (document->FindLayerTableLayer(layerName) < 0) {
@@ -309,6 +318,10 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVe
       layer->SetOwnerHandle(layerOwnerHandle);
       layer->SetLineWeight(layerLineWeight);
       layer->SetLineTypeScale(layerLineTypeScale);
+      layer->SetFrozen(isFrozen);
+      layer->SetLocked(isLocked);
+      layer->SetPlottingFlag(plottingFlag);
+      layer->SetColor24(color24);
 
       EoDbLineType* lineType{};
       if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) {
@@ -700,6 +713,12 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileV
         EoDb::WriteUInt64(*this, layer->OwnerHandle());
         EoDb::WriteInt16(*this, EoDxfLineWeights::LineWeightToDxfIndex(layer->LineWeight()));
         EoDb::WriteDouble(*this, layer->LineTypeScale());
+        std::uint16_t layerPropertyFlags{};
+        if (layer->IsFrozen()) { layerPropertyFlags |= 0x01; }
+        if (layer->IsLocked()) { layerPropertyFlags |= 0x02; }
+        if (layer->PlottingFlag()) { layerPropertyFlags |= 0x04; }
+        EoDb::WriteUInt16(*this, layerPropertyFlags);
+        EoDb::WriteInt32(*this, layer->Color24());
       }
     } else {
       numberOfLayers--;
@@ -844,6 +863,12 @@ void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersio
         EoDb::WriteUInt64(*this, layer->OwnerHandle());
         EoDb::WriteInt16(*this, EoDxfLineWeights::LineWeightToDxfIndex(layer->LineWeight()));
         EoDb::WriteDouble(*this, layer->LineTypeScale());
+        std::uint16_t layerPropertyFlags{};
+        if (layer->IsFrozen()) { layerPropertyFlags |= 0x01; }
+        if (layer->IsLocked()) { layerPropertyFlags |= 0x02; }
+        if (layer->PlottingFlag()) { layerPropertyFlags |= 0x04; }
+        EoDb::WriteUInt16(*this, layerPropertyFlags);
+        EoDb::WriteInt32(*this, layer->Color24());
       }
     } else {
       numberOfLayers--;

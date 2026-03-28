@@ -622,10 +622,19 @@ class EoDbDxfInterface : public EoDxfInterface {
         EoDxfLayer dxfLayer;
         dxfLayer.m_tableName = std::wstring(layer->Name());
         dxfLayer.m_handle = layer->Handle();
+
+        // Reconstruct DXF flag bits from stored layer state
+        std::int16_t flagValues{};
+        if (layer->IsFrozen()) { flagValues |= 0x01; }
+        if (layer->IsLocked()) { flagValues |= 0x04; }
+        dxfLayer.m_flagValues = flagValues;
+
+        // Color: negative when layer is off (DXF convention)
         dxfLayer.m_colorNumber = layer->IsOff() ? static_cast<std::int16_t>(-std::abs(layer->ColorIndex()))
                                                 : static_cast<std::int16_t>(std::abs(layer->ColorIndex()));
+        dxfLayer.color24 = layer->Color24();
         dxfLayer.m_linetypeName = layer->LineType() != nullptr ? std::wstring(layer->LineTypeName()) : L"CONTINUOUS";
-        dxfLayer.m_plottingFlag = true;
+        dxfLayer.m_plottingFlag = layer->PlottingFlag();
         dxfLayer.m_lineweightEnumValue = layer->LineWeight();
         m_dxfWriter->WriteLayer(&dxfLayer);
       }

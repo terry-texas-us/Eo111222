@@ -15,6 +15,10 @@ DXF reading via `EoDxfLib` is operational for core entity types (LINE, ARC, CIRC
 
 The PEG V2 handle architecture is **implemented**: `EoDbPrimitive` carries `m_handle`/`m_ownerHandle` (`std::uint64_t`), assigned via `EoDbHandleManager`. Entity→layer/linetype handle linkage covers current import/export needs. Extension dictionaries are **deferred** — see the **Handle Architecture** section below.
 
+## PEG File Compatibility
+- **AE2011** (V1): The only backward-compatible format. All V1 read/write paths must be preserved.
+- **AE2026** (V2): Experimental — writes are discarded after debug review until a milestone is reached. New fields can be added freely without versioning guards. Do not add backward-compatibility complexity for AE2026.
+
 You can assume I know the code base very well and should have little trouble with modern versions of C++. Provide suggestions detailing the code modernization.
 
 ## General Guidelines
@@ -176,47 +180,21 @@ The following must remain `= 0`: `Display`, `Copy`, `Assign`, `Transform`/`Trans
 
 ## Handle Architecture
 
-### Phase 1 Complete ✅ — Make Internal Handles Consistently Valid (Foundation)
-Every `EoDbPrimitive` now carries a unique, non-zero `m_handle` regardless of origin:
-
-| Sub-item | What changed | Key files |
-|----------|-------------|-----------|
-| **P1.1 — Auto-assign in constructors** | `EoDbPrimitive` holds a `static EoDbHandleManager*` (`sm_handleManager`), wired by `AeSysDoc` constructor and reset in `DeleteContents()`. All three base constructors (default, copy, parameterized) call `AssignHandle()` when the manager is set. | `EoDbPrimitive.h/.cpp`, `AeSysDoc.cpp`, `EoDbHandleManager.h` |
-| **P1.2 — Copy = fresh handle** | Copy constructor assigns a fresh handle (new entity identity). `operator=` preserves the target's existing handle. `EoDbViewport::swap()` skips `m_handle`. | `EoDbPrimitive.h/.cpp`, `EoDbViewport.cpp` |
-| **P1.3 — AccommodateHandle on import** | `SetBaseProperties()` calls `AccommodateHandle(m_handle)` after importing the DXF entity's handle, advancing the counter past any handle above `$HANDSEED`. Defensive against malformed DXF files. | `EoDbPrimitive.cpp` |
-| **P1.4 — V1 PEG migration** | Automatically solved by P1.1 — V1 entities get auto-assigned handles through the base constructor on load. |  |
+### Overview
+Every `EoDbPrimitive` carries a unique, non-zero `m_handle` (`std::uint64_t`) assigned via `EoDbHandleManager`. `AeSysDoc` holds one instance; seed is set from `$HANDSEED`.
 
 ### Three Handle Pipelines
 | Pipeline | Handle source | Mechanism |
 |----------|--------------|-----------|
-| **DXF import** | Entity's DXF handle | `SetBaseProperties()` overwrites the auto-assigned handle with the DXF value, then `AccommodateHandle()` advances the counter. |
-| **PEG V2 load** | Persisted handle | `SetHandle()` overwrites the auto-assigned handle with the stored value. |
-| **Interactive / PEG V1** | Auto-assigned | Constructor's `AssignHandle()` value persists — no overwrite. |
+| **DXF import** | Entity's DXF handle | `SetBaseProperties()` overwrites auto-assigned handle, then `AccommodateHandle()` advances counter. |
+| **PEG V2 load** | Persisted handle | `SetHandle()` overwrites auto-assigned handle. |
+| **Interactive / PEG V1** | Auto-assigned | Constructor's `AssignHandle()` persists. |
 
-### Implementation Details
-- `EoDbPrimitive::m_handle` / `m_ownerHandle` — `std::uint64_t`, zero-initialized (zero = no handle).
-- `EoDbHandleManager` (`EoDbHandleManager.h`) — `AssignHandle()` increments and returns `m_nextHandle`; `AccommodateHandle(h)` advances the counter past any pre-existing handle; `Reset()` reinitializes to 1. `AeSysDoc` holds one instance; its seed is set from the DXF `$HANDSEED` header variable.
-- `SetBaseProperties(EoDxfGraphic*, AeSysDoc*)` propagates `m_handle`, `m_ownerHandle`, layer name, linetype, and thickness from the parsed DXF entity into the primitive, then accommodates the imported handle.
-
-### Type Decision
-`std::uint64_t` is preferred over a `using EoDbHandle = std::uint64_t` alias. Handle arithmetic (increment, comparison, hex formatting) is intentional — the transparent type correctly communicates that handles are integers. A strong-typedef wrapper would require `explicit` construction and operator overloads with no practical benefit in this codebase.
-
-### Phase 2 Complete ✅ — DXF Export Handle Unification
-Entity handles survive the import→export round-trip, and the writer's handle counter is seeded from the application's handle manager:
-
-| Sub-item | What changed | Key files |
-|----------|-------------|-----------|
-| **P2.1 — Handle preservation in `WriteEntity()`** | Non-zero entity handles are preserved on export; new handles allocated only for `NoHandle` entities. Counter advances past preserved handles to prevent collisions. | `EoDxfWrite.cpp` |
-| **P2.2 — Type widening + seed initialization** | `m_entityCount` widened from `int` to `std::uint64_t`. `m_blockMap` value type widened to `std::uint64_t`. `FIRSTHANDLE` typed as `std::uint64_t`. Counter initialized from `max(FIRSTHANDLE, interface->GetHandleSeed())`. | `EoDxfWrite.h`, `EoDxfWrite.cpp` |
-| **P2.3 — `$HANDSEED` in header** | `WriteHeader()` appends `$HANDSEED` from `HandleManager().NextHandleValue()` after populating all header variables. `GetHandleSeed()` virtual added to `EoDxfInterface`. | `EoDbDxfInterface.h`, `EoDxfInterface.h` |
-
-### Phase 3.1 Complete ✅ — Owner Handles on Export
-Every AC1015+ entity now gets a DXF-compliant owner handle derived from the export context:
-
-| Sub-item | What changed | Key files |
-|----------|-------------|-----------|
-| **P3.1a — Owner derivation in `WriteEntity()`** | Owner handle is always derived from export context instead of relying on `m_ownerHandle`: block entity → `m_currentHandle` (block record); paper-space entity → `0x1E` (`*Paper_Space` block record); model-space entity → `0x1F` (`*Model_Space` block record). | `EoDxfWrite.cpp` |
-| **P3.1b — Table owner bug fixes** | Fixed 4 incorrect hardcoded owner handles: `WriteTextstyle` `"2"→"3"` (STYLE table), `WriteVport` `"2"→"8"` (VPORT table), `*Paper_Space` BLOCK `"1B"→"1E"` (block record), `*Paper_Space` ENDBLK `"1F"→"1E"` (block record). | `EoDxfWriteTables.cpp`, `EoDxfWrite.cpp` |
+### Key Design Rules
+- Copy constructor assigns a **fresh handle** (new identity). `operator=` preserves target's existing handle.
+- `std::uint64_t` preferred over alias — handle arithmetic is intentional.
+- Export: non-zero handles preserved; new handles allocated only for handle-zero entities. Owner handle derived from export context (block record / `*Model_Space` 0x1F / `*Paper_Space` 0x1E).
+- Table object handles (Layer, Linetype, TextStyle, DimStyle, AppId, VPort, BlockRecord, BLOCK entity) all survive DXF round-trip.
 
 ### DXF Ownership Hierarchy (Hardcoded Infrastructure Handles)
 ```
@@ -234,107 +212,22 @@ Every AC1015+ entity now gets a DXF-compliant owner handle derived from the expo
 └── 0x0C  root dictionary
 ```
 
-### Phase 3.2+3.3 Complete ✅ — Table Object Handle Preservation
-Imported table entry handles now survive the DXF round-trip. Two-part fix: propagate handles from internal objects into DXF structures (`EoDbDxfInterface.h`), then preserve non-zero handles in the writer (`EoDxfWriteTables.cpp`) using the same conditional pattern as `WriteEntity()`.
-
-| Sub-item | What changed | Key files |
-|----------|-------------|-----------|
-| **P3.2 — Layer handle propagation** | `WriteLayers` lambda sets `dxfLayer.m_handle = layer->Handle()`. `WriteLayer` preserves non-zero handle; layer `"0"` always gets hardcoded `0x10`. | `EoDbDxfInterface.h`, `EoDxfWriteTables.cpp` |
-| **P3.3a — Linetype handle propagation** | `WriteLTypes` sets `dxfLinetype.m_handle = lineType->Handle()`. `WriteLinetype` preserves non-zero handle (skips ByLayer/ByBlock/Continuous which have hardcoded handles). | `EoDbDxfInterface.h`, `EoDxfWriteTables.cpp` |
-| **P3.3b — TextStyle handle propagation** | `WriteTextstyles` sets `dxfTextStyle.m_handle = entry.m_handle`. `WriteTextstyle` preserves non-zero handle. | `EoDbDxfInterface.h`, `EoDxfWriteTables.cpp` |
-| **P3.3c — DimStyle handle propagation** | `WriteDimstyles` sets `dxfDimStyle.m_handle = entry.m_handle`. `WriteDimStyle` preserves non-zero handle via group code `105` (not `5`). | `EoDbDxfInterface.h`, `EoDxfWriteTables.cpp` |
-| **P3.3d — AppId + VPort handle preservation** | `WriteAppId` and `WriteVport` also preserve non-zero handles for completeness (no import propagation yet — VPorts lack internal handle members). | `EoDxfWriteTables.cpp` |
-
-All four internal table object types (`EoDbLayer`, `EoDbLineType`, `EoDbTextStyle`, `EoDbDimStyle`) already had `m_handle`/`m_ownerHandle` members with getters/setters and import-side propagation from prior work — the gap was entirely on the export path.
-
-### Phase 3.4 Complete ✅ — Block Record Handle Preservation
-Imported block record and BLOCK entity handles now survive the DXF round-trip. `WriteBlockRecord` accepts an optional handle parameter and uses the same preservation pattern as `WriteEntity()` and the table write functions. `WriteBlock` preserves the BLOCK entity handle when available; ENDBLK retains the record+2 convention.
-
-| Sub-item | What changed | Key files |
-|----------|-------------|-----------|
-| **P3.4a — Block record handle propagation** | `WriteBlockRecords` passes `block->OwnerHandle()` (= imported BLOCK_RECORD handle). `WriteBlockRecord` preserves non-zero handle; otherwise allocates sequentially. Stored in `m_blockMap` for entity ownership derivation. | `EoDbDxfInterface.h`, `EoDxfWrite.h`, `EoDxfWrite.cpp` |
-| **P3.4b — BLOCK entity handle propagation** | `WriteBlocks` sets `dxfBlock.m_handle = block->Handle()`. `WriteBlock` preserves non-zero BLOCK entity handle; otherwise falls back to record+1 convention. ENDBLK stays at record+2 (handle not stored separately in `EoDbBlock`). | `EoDbDxfInterface.h`, `EoDxfWrite.cpp` |
-
-The complete BLOCK_RECORD → BLOCK → entities → ENDBLK handle chain is now preserved on round-trip: block record handle feeds into `m_blockMap` → `m_currentHandle` → entity owner handles (via `WriteEntity` P3.1), BLOCK entity handle preserved directly, ENDBLK derived as record+2.
-
-### Phase 4 Complete ✅ — Handle → Object Reverse Lookup Map
-`AeSysDoc` maintains a non-owning `std::unordered_map<std::uint64_t, HandleObject> m_handleMap` for O(1) handle-to-object lookup across both spaces, the block table, layer tables, and linetype table. `HandleObject` is `std::variant<EoDbPrimitive*, EoDbLayer*, EoDbLineType*, EoDbBlock*>`, covering all heap-allocated, pointer-stable handle-bearing types.
-
-| Sub-item | What changed | Key files |
-|----------|-------------|-----------|
-| **P4.1 — Map infrastructure** | `m_handleMap` member + 5 methods: `RegisterHandle`, `UnregisterHandle`, `FindPrimitiveByHandle`, `RegisterGroupHandles`, `UnregisterGroupHandles`. `DeleteContents()` bulk-clears with `m_handleMap.clear()`. | `AeSysDoc.h`, `AeSysDoc.cpp` |
-| **P4.1 — Registration at import/load** | `RegisterHandle(primitive)` called in `AddToDocument` (DXF import), `ReadEntitiesSection`/`ReadPaperSpaceSection`/`ReadBlocksSection` (PEG load). | `EoDbDxfInterface.cpp`, `EoDbPegFile.cpp` |
-| **P4.1 — Registration at interactive add** | `RegisterGroupHandles(group)` called in `AddWorkLayerGroup` and `AddWorkLayerGroups` — covers paste, undelete, expand, compress, text add. | `AeSysDoc.cpp` |
-| **P4.1 — Unregistration at hard-delete** | `UnregisterGroupHandles` called in `DeleteAllTrappedGroups`, `InitializeWorkLayer`, `RemoveLayerTableLayerAt`. | `EoDbTrappedGroups.cpp`, `AeSysDoc.cpp` |
-| **P4.2 — Mutation consistency** | All primitive-destroying mutation paths now maintain the map: `OnPrimBreak` (unregister old + register new), `BreakPolylines`/`ExplodeBlockReferences` (via `AeSysDoc::GetDoc()`), `RemoveEmptyNotesAndDelete`/`RemoveDuplicatePrimitives` (unregister before delete), `RemoveUnusedBlocks`/`InsertBlock` (unregister before block destroy), `OnClearActiveLayers`/`OnClearAllLayers`/`OnClearAllTracings` (unregister before `DeleteGroupsAndRemoveAll`). | `AeSysDoc.cpp`, `EoDbGroup.cpp`, `EoDbPegBlockTable.cpp`, `AeSysDoc.h` |
-| **P4.3 — Full object graph** | Map widened from `EoDbPrimitive*` to `HandleObject` variant. 4 `RegisterHandle` overloads (Primitive, Layer, LineType, Block). `FindObjectByHandle` returns `const HandleObject*`; typed finders `FindPrimitiveByHandle`, `FindLayerByHandle`, `FindLineTypeByHandle`, `FindBlockByHandle` extract via `std::get_if`. Registration at all creation points: `AddLayerTableLayer`/`AddLayerToSpace` (layers), `ConvertLinetypesTable`/PEG load (linetypes), `InsertBlock` (blocks). Unregistration at all destruction points: `RemoveAllLayerTableLayers`/`RemoveLayerTableLayerAt`/`RemoveEmptyLayers` (layers), `RemoveAllBlocks`/`RemoveUnusedBlocks`/`InsertBlock` replacement (blocks). | `AeSysDoc.h`, `AeSysDoc.cpp`, `EoDbDxfInterface.cpp`, `EoDbPegFile.cpp`, `EoDbPegBlockTable.cpp` |
-
-### HandleObject Variant Type
-- `using HandleObject = std::variant<EoDbPrimitive*, EoDbLayer*, EoDbLineType*, EoDbBlock*>` — defined before `AeSysDoc` class in `AeSysDoc.h`.
-- Covers all **heap-allocated, pointer-stable** handle-bearing types. Value-type table entries (`EoDbTextStyle`, `EoDbDimStyle`, `EoDbAppIdEntry`) are deferred until migrated to pointer-stable containers — their `std::vector` storage invalidates pointers on reallocation.
-- `EoDbVPortTableEntry` has no handle members and is excluded.
+### Handle → Object Reverse Lookup Map
+`AeSysDoc` maintains `std::unordered_map<std::uint64_t, HandleObject> m_handleMap` for O(1) lookup. `HandleObject` is `std::variant<EoDbPrimitive*, EoDbLayer*, EoDbLineType*, EoDbBlock*>` — covers all heap-allocated, pointer-stable handle-bearing types. Value-type entries (`EoDbTextStyle`, `EoDbDimStyle`, `EoDbAppIdEntry`) deferred until migrated to pointer-stable containers.
 
 ### Handle Map Invariants
-- **Registration is idempotent**: re-registering the same handle overwrites with the same variant value.
-- **Soft-delete preserves registration**: moving primitives to the deleted-groups list keeps pointers valid — no map update needed.
-- **Hard-delete requires unregistration**: any path calling `delete` on a handle-bearing object must call `UnregisterHandle(object->Handle())` first.
-- **`EoDbGroup.cpp` document access**: Group-level methods use `AeSysDoc::GetDoc()` (static) to reach the handle map.
-- **Bulk clear covers teardown ordering**: `DeleteContents()` calls `m_handleMap.clear()` before destroying linetypes, blocks, and layers — so their destructors don't need individual unregistration.
-- **Linetype unregistration**: No independent linetype removal path exists outside `DeleteContents` — `RemoveUnused()` is a no-op. The bulk clear covers all linetype handles.
+- Registration is idempotent; soft-delete preserves registration; hard-delete requires `UnregisterHandle()`.
+- `DeleteContents()` calls `m_handleMap.clear()` before destroying objects — individual unregistration not needed in teardown.
+- `EoDbGroup.cpp` uses `AeSysDoc::GetDoc()` (static) to reach the handle map.
 
-### Next Phases (Deferred)
-- **Phase 5 — Structural Links**: ~~ATTRIB→INSERT~~, ~~MTEXT identity preservation~~, ~~OBJECTS section round-trip~~.
-- **Extension dictionaries** (XDICT, ACAD_REACTORS): not needed for current entity→layer/linetype linkage.
-- **PEG V2 handle serialization**: handles will be written alongside entity records when V2 binary format is defined per primitive type.
+### Structural Links (Session-Only — PEG V2 Serialization Deferred)
+- **ATTRIB→INSERT**: `EoDbBlockReference::m_attributeHandles` populated during DXF import. `m_currentInsertPrimitive` in `EoDbDxfInterface` tracks the active INSERT. Invisible/zero-height/empty ATTRIBs skipped (not linked). Resolvable via `FindPrimitiveByHandle()`.
+- **MTEXT identity**: `EoDbText::m_mtextProperties` (`std::optional<EoDbMTextProperties>`) preserves attachment point, drawing direction, line spacing, rectangle width. `ExportToDxf` dispatches to `ExportAsMText()` when present. MTEXT group code 50 is in **radians** (TEXT is degrees).
+- **OBJECTS section**: `HasUnsupportedObjects()` virtual gates `WriteObjects()` to emit imported objects on round-trip or hardcoded minimal dicts for new drawings. Eliminates duplicate-dictionary bug.
 
-### Phase 5.1 Complete ✅ — ATTRIB→INSERT Structural Linking
-Each `EoDbBlockReference` now owns a list of ATTRIB primitive handles, populated during DXF import when `ProcessInsertAttribs` delivers ATTRIBs sequentially after the parent INSERT.
-
-| Sub-item | What changed | Key files |
-|----------|-------------|-----------|
-| **P5.1a — Attribute handle storage** | `EoDbBlockReference` gains `std::vector<std::uint64_t> m_attributeHandles` with `AddAttributeHandle()`, `AttributeHandles()`, `ClearAttributeHandles()` API. Copy constructor and `operator=` propagate attribute handles. | `EoDbBlockReference.h`, `EoDbBlockReference.cpp` |
-| **P5.1b — INSERT tracking state** | `EoDbDxfInterface` gains `EoDbBlockReference* m_currentInsertPrimitive{}` — set by `AddInsert`, consumed by `AddAttrib`. Mirrors the `m_currentOpenBlockDefinition` pattern for block definitions. | `EoDbDxfInterface.h` |
-| **P5.1c — Return-value plumbing** | `ConvertInsertEntity` returns `EoDbBlockReference*` (was `void`). `ConvertAttribEntity` returns `EoDbText*` (was `void`), with early returns yielding `nullptr` for skipped ATTRIBs. | `EoDbDxfInterface.h`, `EoDbDxfInterface.cpp` |
-| **P5.1d — Handle linking in AddAttrib** | `AddAttrib` body moved to `.cpp` (avoids circular include). After `ConvertAttribEntity` returns, appends `textPrimitive->Handle()` to `m_currentInsertPrimitive->AddAttributeHandle()` when both are non-null. | `EoDbDxfInterface.cpp` |
-| **P5.1e — Reporting** | `FormatExtra` appends `Attributes;N` count field. `AddReportToMessageList` lists individual ATTRIB handles when present. | `EoDbBlockReference.cpp` |
-
-#### Design Notes
-- **Lifetime**: `m_currentInsertPrimitive` is set in `AddInsert` and consumed by subsequent `AddAttrib` calls. It is naturally superseded by the next `AddInsert` call. The DXF parser flow (`ProcessInsert` → `ProcessInsertAttribs` → SEQEND) guarantees ATTRIBs arrive immediately after their parent INSERT.
-- **Skipped ATTRIBs**: Invisible attributes (flag bit 0), zero-height, and empty-value ATTRIBs are skipped by `ConvertAttribEntity` (returns `nullptr`). Their handles are NOT linked to the parent INSERT — they have no corresponding `EoDbText` primitive.
-- **Handle resolution**: ATTRIB handles stored in `m_attributeHandles` can be resolved to `EoDbText*` via `AeSysDoc::FindPrimitiveByHandle()` (Phase 4 infrastructure).
-- **PEG V2 serialization**: Attribute handle list is not yet persisted — deferred to PEG V2 per-primitive binary format definition. Currently survives only within a single session (DXF import → memory → DXF export is possible via handle lookup; PEG save/load loses the link).
-
-### Phase 5.2 Complete ✅ — MTEXT Identity Preservation
-Each `EoDbText` that originated from a DXF MTEXT entity now carries an `EoDbMTextProperties` struct preserving MTEXT-specific DXF properties. `ExportToDxf` dispatches to MTEXT export (instead of TEXT) when these properties are present, enabling correct DXF round-trip.
-
-| Sub-item | What changed | Key files |
-|----------|-------------|----------|
-| **P5.2a — Property struct** | `EoDbMTextProperties` struct with 5 fields: `attachmentPoint`, `drawingDirection`, `lineSpacingStyle`, `lineSpacingFactor`, `referenceRectangleWidth`. `std::optional<EoDbMTextProperties> m_mtextProperties` member on `EoDbText`. API: `SetMTextProperties()`, `IsFromMText()`, `MTextProperties()`. | `EoDbText.h` |
-| **P5.2b — Copy/assign propagation** | Copy constructor and `operator=` propagate `m_mtextProperties`. | `EoDbText.cpp` |
-| **P5.2c — Import-side storage** | `ConvertMTextEntity` populates `EoDbMTextProperties` from the parsed `EoDxfMText` and calls `SetMTextProperties()` on the created `EoDbText`. | `EoDbDxfInterface.cpp` |
-| **P5.2d — Export dispatch** | `ExportToDxf` checks `m_mtextProperties.has_value()` and delegates to `ExportAsMText()` which populates `EoDxfMText` from the reference system (height, rotation in radians, insertion point) plus stored MTEXT properties and calls `writer->AddMText()`. TEXT-origin primitives use the existing `AddText()` path. | `EoDbText.cpp` |
-| **P5.2e — Reporting** | `FormatExtra` includes `Source;MTEXT` or `Source;TEXT` field. `AddReportToMessageList` shows `<Text (MTEXT)>` header and a detail line with attachment point, drawing direction, line spacing, and rectangle width. | `EoDbText.cpp` |
-
-#### Design Notes
-- **Single-primitive model**: MTEXT is stored as a single `EoDbText` with `\P` paragraph breaks preserved in the text string. The renderer `DisplayTextWithFormattingCharacters()` handles `\P` splitting at display time. This is more efficient than splitting into multiple primitives and naturally round-trips through the single-MTEXT export path.
-- **DXF TEXT vs MTEXT export**: The presence or absence of `m_mtextProperties` is the sole discriminator. Text primitives created interactively or loaded from PEG files have `m_mtextProperties == std::nullopt` and export as TEXT. Text primitives created by `ConvertMTextEntity` have the struct populated and export as MTEXT.
-- **Rotation angle units**: MTEXT group code 50 is in **radians** (unlike TEXT group code 50 which is in degrees). `ExportAsMText` passes `std::atan2` result directly without degree conversion.
-- **PEG V2 serialization**: `m_mtextProperties` is not yet persisted — deferred to PEG V2 per-primitive binary format definition. Currently survives only within a single session (DXF import → memory → DXF export preserves MTEXT identity; PEG save/load loses it and re-exports as TEXT).
-
-### Phase 5.3 Complete ✅ — OBJECTS Section Round-Trip
-The OBJECTS section now survives DXF round-trip. All non-graphical objects (DICTIONARY, LAYOUT, PLOTSETTINGS, MLINESTYLE, MATERIAL, VISUALSTYLE, etc.) captured during import are written back on export, eliminating the duplicate-dictionary bug.
-
-| Sub-item | What changed | Key files |
-|----------|-------------|----------|
-| **P5.3a — HasUnsupportedObjects() virtual** | `EoDxfInterface` gains `HasUnsupportedObjects()` virtual (default `false`). Provides the conditional gate for the writer to distinguish round-trip exports from new-drawing exports. | `EoDxfInterface.h` |
-| **P5.3b — Interface override** | `EoDbDxfInterface` overrides `HasUnsupportedObjects()` to query `!m_document->UnsupportedObjects().empty()`. | `EoDbDxfInterface.h` |
-| **P5.3c — Conditional WriteObjects()** | `EoDxfWrite::WriteObjects()` checks `HasUnsupportedObjects()`. When true: writes imported objects via `WriteUnsupportedObjects()` and returns (skips hardcoded dicts). When false: writes minimal hardcoded root dict C + ACAD_GROUP D + image definitions (existing behavior for new drawings). | `EoDxfWrite.cpp` |
-
-#### Design Notes
-- **Duplicate-dictionary bug**: Previously, `WriteObjects()` always wrote hardcoded root dict (handle C) and ACAD_GROUP (handle D), then `WriteUnsupportedObjects()` wrote all imported objects which included the original C and D — producing invalid DXF with duplicate dictionaries. The conditional branch eliminates this.
-- **Image definitions**: When the imported-objects path is taken, `m_imageDef` is cleaned up but not written — AeSys does not accumulate image definitions during import (`LinkImage` is a no-op). Image data is preserved in the unsupported objects collection if it was in the source DXF.
-- **Handle preservation**: OBJECTS section handles are within the `$HANDSEED` range from DXF import, so no handle collision risk. The unsupported objects store raw group code data including their original handles.
-- **New-drawing fallback**: When `HasUnsupportedObjects()` returns false (new drawing, PEG import, or no OBJECTS section in source), the original hardcoded minimal-dictionary path runs unchanged.
+### Deferred
+- Extension dictionaries (XDICT, ACAD_REACTORS): not needed for current linkage.
+- PEG V2 handle serialization per primitive type.
 
 ## User-Specific Notes
 - User may rename `EoDbDimension` to `EoDbLabeledLine` in the future — it's a labeled line primitive, not a true DXF dimension.
@@ -501,7 +394,7 @@ These UI elements create their own `CPen` objects directly:
   - **Ellipse/EllipticalArc** → `EoDxfEllipse`: center, majorAxis, extrusion, ratio, start/end params.
 - `WriteArc` converts angles rad→deg (DXF ARC group 50/51 are in degrees).
 - `WriteEllipse` calls `CorrectAxis()` to validate ratio/axis before output.
-- **Known gap**: ARC/CIRCLE export writes `m_center` (WCS) directly as DXF code 10/20/30, which should be OCS for non-default extrusion. For extrusion `[0,0,1]` (default) WCS = OCS so this is transparent. A WCS→OCS reverse transform is needed for correct round-trip with non-default extrusion.
+- ARC/CIRCLE export performs WCS→OCS reverse transform for the center point when extrusion is non-default.
 
 ### Test Files
 - `DXF Test Files/Ellipse_NegZ_CW_Test.dxf` — 24-entity test: 6 ellipticals (E1–E6) + 6 radials (R1–R6) with both `[0,0,1]` and `[0,0,-1]` extrusion, plus default-extrusion baselines.
@@ -583,7 +476,6 @@ else         → 2D polyline   → ConvertPolyline2DEntity
 ### Known Limitations and Deferred Work
 | Item | Notes |
 |------|-------|
-| 2D POLYLINE OCS→WCS | `ConvertPolyline2DEntity` stores OCS coordinates directly; non-default extrusion needs transform |
 | Non-uniform scale + bulge | Bulge is dimensionless; non-uniform BLOCK INSERT scales distort arcs (matches AutoCAD behavior) |
 | Break bulge arcs | Decomposing individual bulge arcs to `EoDbConic` for editing is deferred |
 
@@ -594,58 +486,38 @@ else         → 2D polyline   → ConvertPolyline2DEntity
 | `DXF Test Files/Heavy_Polyline_Subtypes.dxf` | 13 heavy POLYLINE cases: 3D open/closed, 2D basic/closed/elevation, bulge (±/mixed/closed), per-vertex width, default width, bulge+width, plinegen (open/closed) |
 | `DXF Test Files/GenerateHeavyPolylineTest.ps1` | PowerShell generator for `Heavy_Polyline_Subtypes.dxf` using StringBuilder + helper functions |
 
-## EoDbSpline ↔ DXF SPLINE Mapping and V2 .PEG Generalization
+## EoDbSpline ↔ DXF SPLINE Mapping
 
-### Current State (V1 .PEG)
-- `EoDbSpline` stores **only** control points (`EoGePoint3dArray m_pts`), color, and line type.
-- `Display()` calls `GenPts(orderOfTheSpline, m_pts)` where `orderOfTheSpline` is a file-scope `constexpr std::int16_t{4}` (cubic, degree 3).
-- `GenPts` implements Cox–de Boor B-spline tessellation with a **uniform knot vector** regenerated at render time. The knot vector, degree, weights, and flags from DXF are discarded at import.
-- V1 .PEG serialization: `kSplinePrimitive → color → lineTypeIndex → uint16(pointCount) → points[]`
-- All splines in a drawing render identically as uniform cubic B-splines regardless of their DXF source degree.
+### Internal Representation
+- `EoDbSpline` stores: `m_pts` (control points), `m_degree` (int16, default 3), `m_flags` (int16, DXF flag bits), `m_knots` (vector\<double\>), `m_weights` (vector\<double\>).
+- `Display()` calls `GenPts(m_degree + 1, m_pts)` — degree-aware rendering.
+- `GenPts` implements Cox–de Boor B-spline tessellation. Currently always regenerates a uniform knot vector at render time (stored knots used only for export fidelity).
 
-### DXF → EoDbSpline Import (Lossy Mapping)
+### DXF → EoDbSpline Import
 | DXF Property | Group Codes | Preserved | Notes |
 |---|---|---|---|
-| Control points | 10/20/30 | ✅ | OCS → WCS transform applied |
+| Control points | 10/20/30 | ✅ | Stored directly (no OCS transform — splines are WCS) |
 | Fit points (fallback) | 11/21/31 | ✅ as control points | Used only when no control points |
-| Degree | 71 | ❌ | All render as cubic (order 4) |
-| Knot vector | 40 | ❌ | Regenerated as uniform |
-| Weights (NURBS) | 41 | ❌ | Treated as non-rational |
-| Flags (closed/periodic) | 70 | ❌ | Closure encoded in control point wrap |
+| Degree | 71 | ✅ | Stored in `m_degree` |
+| Knot vector | 40 | ✅ | Stored in `m_knots` (used on export; display uses uniform) |
+| Weights (NURBS) | 41 | ✅ | Stored in `m_weights` when rational flag set |
+| Flags | 70 | ✅ | Stored in `m_flags` (closed/periodic/rational/planar/linear) |
 | Start/end tangents | 12-13/22-23/32-33 | ❌ | Ignored |
 
-### EoDxfSpline Parser Notes
-- `EoDxfSpline::ParseCode()` accumulates control/fit points via heap-allocated `EoDxfGeometryBase3d*`. **Future**: migrate to `std::vector<EoDxfGeometryBase3d>` (value semantics — the type is a trivial POD of 3 doubles).
-- `m_numberOfKnots`, `m_numberOfControlPoints`, `m_numberOfFitPoints` are declared counts (group codes 72/73/74) parsed independently from the actual vectors. The write path iterates declared counts — a count/vector size mismatch from a malformed DXF can cause `std::out_of_range`. Add validation after parse completes.
-- Spline flag bits: `0x01` = Closed, `0x02` = Periodic, `0x04` = Rational, `0x08` = Planar, `0x10` = Linear.
-- `IsTangentValid()` checks whether start/end tangent vectors are non-zero (tangent group codes are optional in DXF, not gated by any flag bit).
+### DXF Export
+- `ExportToDxf()` populates `EoDxfSpline` from stored members: degree, flags, knots, weights, control points.
+- Stored knot vector and weights round-trip through DXF correctly.
 
-### V2 .PEG Spline Record Design
-To preserve DXF fidelity through save/reload, the V2 spline record adds degree, knot vector, and optional weights:
-```
-kSplinePrimitive → color → lineTypeIndex → flags(uint16) → degree(int16)
-  → numKnots(uint16) → numControlPoints(uint16)
-  → knots[numKnots] (double[])
-  → weights[numControlPoints] (double[], only if Rational flag set)
-  → controlPoints[numControlPoints] (EoGePoint3d[])
-```
-
-- `Display()` calls `GenPts(degree + 1, m_pts)` using stored degree instead of file-scope constant.
-- If the stored knot vector is non-empty, `GenPts` should use it instead of regenerating a uniform one.
-- Rational flag (bit 0x04): when set, weight values are stored and applied during tessellation (NURBS). When clear, weight values are omitted and all weights are implicitly 1.0.
-- Closed flag (bit 0x01): the control point array already encodes closure through wrapping (AutoCAD convention). The flag is informational for editing/export but does not affect `GenPts` directly.
-- Backward compatibility: V1 spline records (no degree/knots) default to `degree = 3`, uniform knots, non-rational — identical to current behavior.
+### PEG Serialization
+- **V1** (AE2011): `kSplinePrimitive → color → lineTypeIndex → uint16(pointCount) → points[]` — degree defaults to 3 on reload.
+- **V2** (AE2026): Adds `flags(uint16) → degree(int16) → numKnots(uint16) → numControlPoints(uint16) → knots[] → weights[] (if rational) → controlPoints[]`.
 
 ### GenPts Tessellation Algorithm
-- Implements Cox–de Boor B-spline recursion with `order = degree + 1`.
-- Uses 2D weight array with `stride = order + 1` (rows = knot span count, columns = recursion levels).
+- Cox–de Boor B-spline recursion with `order = degree + 1`.
 - Tessellation density: `8 × numberOfControlPoints` segments.
-- Dynamic `std::vector<double>` allocation (was fixed 65×66 prior to overflow fix).
-- When `order > numberOfControlPoints`, falls back to a single line segment from first to last control point.
+- When `order > numberOfControlPoints`, falls back to a single line segment.
 
 ### Known Deferred Work
-- `SelectUsingRectangle` tests the raw **control polygon**, not the tessellated curve (inconsistent with `SelectUsingPoint` which tessellates first). For V2, both should operate on tessellated points.
-- `GetControlPoint()`, `GoToNextControlPoint()`, `IsInView()` lack empty-array guards — add early returns for `m_pts.GetSize() == 0`.
-- `operator=` should add a self-assignment guard for `CArray::Copy` safety.
-- Per-spline degree storage in `EoDbSpline` as an `m_degree` member is the minimum V2 change. Knot/weight storage follows when NURBS round-trip is needed.
-- The `.PEG V2` handle architecture (entity → table/header handles) provides a natural hook for spline style tables if multiple drawings need shared tessellation parameters.
+- `SelectUsingRectangle` tests the raw control polygon, not the tessellated curve.
+- `GetControlPoint()`, `GoToNextControlPoint()`, `IsInView()` lack empty-array guards.
+- Display uses uniform knots regardless of stored knots — NURBS rendering fidelity is deferred.

@@ -13,16 +13,11 @@
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
-#include "EoGsRenderDevice.h"
 #include "EoGePolyline.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
-#include "Resource.h"
-
-namespace {
-constexpr std::int16_t orderOfTheSpline{4}; // this is a 3rd degree cubic spline)
-}
 
 EoDbSpline::EoDbSpline(std::uint16_t wPts, EoGePoint3d* pt) {
   m_color = renderState.Color();
@@ -40,18 +35,24 @@ EoDbSpline::EoDbSpline(std::int16_t penColor, std::int16_t lineType, EoGePoint3d
   m_lineTypeIndex = lineType;
   m_pts.Copy(points);
 }
-EoDbSpline::EoDbSpline(const EoDbSpline& src) {
-  m_color = src.m_color;
-  m_lineTypeIndex = src.m_lineTypeIndex;
+EoDbSpline::EoDbSpline(const EoDbSpline& src) : EoDbPrimitive(src) {
+  m_degree = src.m_degree;
+  m_flags = src.m_flags;
   m_pts.Copy(src.m_pts);
+  m_knots = src.m_knots;
+  m_weights = src.m_weights;
 }
 
-const EoDbSpline& EoDbSpline::operator=(const EoDbSpline& src) {
-  m_color = src.m_color;
-  m_lineTypeIndex = src.m_lineTypeIndex;
-  m_pts.Copy(src.m_pts);
-
-  return (*this);
+EoDbSpline& EoDbSpline::operator=(const EoDbSpline& src) {
+  if (this != &src) {
+    EoDbPrimitive::operator=(src);
+    m_degree = src.m_degree;
+    m_flags = src.m_flags;
+    m_pts.Copy(src.m_pts);
+    m_knots = src.m_knots;
+    m_weights = src.m_weights;
+  }
+  return *this;
 }
 
 void EoDbSpline::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
@@ -72,7 +73,7 @@ void EoDbSpline::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   polyline::BeginLineStrip();
-  GenPts(orderOfTheSpline, m_pts);
+  GenPts(static_cast<std::int16_t>(m_degree + 1), m_pts);
   polyline::End(view, renderDevice, lineType, lineTypeName);
 }
 
@@ -83,24 +84,34 @@ void EoDbSpline::ExportToDxf(EoDxfInterface* writer) const {
   EoDxfSpline spline;
   PopulateDxfBaseProperties(&spline);
 
-  constexpr std::int16_t degree = 3;
-  const std::int16_t order = degree + 1;
+  const std::int16_t degree = m_degree;
+  const std::int16_t order = static_cast<std::int16_t>(degree + 1);
   spline.m_degreeOfTheSplineCurve = degree;
-  spline.m_splineFlag = 0x08;  // planar
+  spline.m_splineFlag = m_flags != 0 ? m_flags : static_cast<std::int16_t>(0x08);  // preserve flags; default planar
   spline.m_numberOfControlPoints = numberOfControlPoints;
 
-  // Generate uniform knot vector: order zeros, 1..n-order, order (n-order+1)s
-  const std::int16_t numberOfKnots = numberOfControlPoints + order;
-  spline.m_numberOfKnots = numberOfKnots;
-  spline.m_knotValues.reserve(static_cast<size_t>(numberOfKnots));
-  for (std::int16_t i = 0; i < numberOfKnots; ++i) {
-    if (i < order) {
-      spline.m_knotValues.push_back(0.0);
-    } else if (i > numberOfControlPoints) {
-      spline.m_knotValues.push_back(static_cast<double>(numberOfControlPoints - degree));
-    } else {
-      spline.m_knotValues.push_back(static_cast<double>(i - degree));
+  // Use stored knot vector when available; otherwise generate a uniform clamped knot vector.
+  if (!m_knots.empty()) {
+    spline.m_knotValues = m_knots;
+    spline.m_numberOfKnots = static_cast<std::int16_t>(m_knots.size());
+  } else {
+    const std::int16_t numberOfKnots = static_cast<std::int16_t>(numberOfControlPoints + order);
+    spline.m_numberOfKnots = numberOfKnots;
+    spline.m_knotValues.reserve(static_cast<size_t>(numberOfKnots));
+    for (std::int16_t i = 0; i < numberOfKnots; ++i) {
+      if (i < order) {
+        spline.m_knotValues.push_back(0.0);
+      } else if (i > numberOfControlPoints) {
+        spline.m_knotValues.push_back(static_cast<double>(numberOfControlPoints - degree));
+      } else {
+        spline.m_knotValues.push_back(static_cast<double>(i - degree));
+      }
     }
+  }
+
+  // Export weights for rational splines (NURBS).
+  if (!m_weights.empty()) {
+    spline.m_weightValues = m_weights;
   }
 
   spline.m_numberOfFitPoints = 0;
@@ -119,6 +130,12 @@ void EoDbSpline::ExportToDxf(EoDxfInterface* writer) const {
 void EoDbSpline::AddReportToMessageList(const EoGePoint3d& point) {
   app.AddStringToMessageList(CString(L"<Spline>"));
   EoDbPrimitive::AddReportToMessageList(point);
+
+  CString detailLine;
+  detailLine.Format(L"  Degree: %d  Flags: 0x%04X  Control Points: %d  Knots: %zu  Weights: %zu",
+      static_cast<int>(m_degree), static_cast<int>(m_flags), static_cast<int>(m_pts.GetSize()), m_knots.size(),
+      m_weights.size());
+  app.AddStringToMessageList(detailLine);
 }
 
 void EoDbSpline::FormatGeometry(CString& str) {
@@ -127,7 +144,9 @@ void EoDbSpline::FormatGeometry(CString& str) {
 
 void EoDbSpline::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
-  str.AppendFormat(L"\tControl Points;%d", static_cast<int>(m_pts.GetSize()));
+  str.AppendFormat(L"\tDegree;%d\tFlags;0x%04X\tControl Points;%d\tKnots;%zu\tWeights;%zu",
+      static_cast<int>(m_degree), static_cast<int>(m_flags), static_cast<int>(m_pts.GetSize()), m_knots.size(),
+      m_weights.size());
   str += L'\t';
 }
 
@@ -211,7 +230,7 @@ bool EoDbSpline::SelectUsingLine(
 bool EoDbSpline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   polyline::BeginLineStrip();
 
-  GenPts(orderOfTheSpline, m_pts);
+  GenPts(static_cast<std::int16_t>(m_degree + 1), m_pts);
 
   return (polyline::SelectUsingPoint(view, point, sm_RelationshipOfPoint, ptProj));
 }

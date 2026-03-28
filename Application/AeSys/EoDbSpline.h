@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <cstdint>
+#include <vector>
 
 #include "AeSysView.h"
 #include "EoDb.h"
@@ -12,7 +13,11 @@
 #include "EoGeVector3d.h"
 
 class EoDbSpline : public EoDbPrimitive {
-  EoGePoint3dArray m_pts;
+  std::int16_t m_degree{3};           ///< Spline degree (default 3 = cubic). Order = degree + 1.
+  std::int16_t m_flags{};             ///< DXF spline flags (0x01=Closed, 0x02=Periodic, 0x04=Rational, 0x08=Planar).
+  EoGePoint3dArray m_pts;             ///< Control points (WCS).
+  std::vector<double> m_knots;        ///< Knot vector. Empty = uniform (regenerated at render/export time).
+  std::vector<double> m_weights;      ///< Per-control-point weights. Empty = non-rational (all weights 1.0).
 
  public:  // Constructors and destructor
   EoDbSpline() {}
@@ -24,7 +29,7 @@ class EoDbSpline : public EoDbPrimitive {
 
   ~EoDbSpline() override = default;
 
-  const EoDbSpline& operator=(const EoDbSpline&);
+  EoDbSpline& operator=(const EoDbSpline&);
 
   void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
@@ -56,6 +61,27 @@ class EoDbSpline : public EoDbPrimitive {
   /// @param file The CFile object representing the PEG file to read from.
   /// @return A pointer to the constructed EoDbSpline.
   static EoDbSpline* ReadFromPeg(CFile& file);
+
+  // --- DXF spline property accessors ---
+
+  [[nodiscard]] std::int16_t Degree() const noexcept { return m_degree; }
+  void SetDegree(std::int16_t degree) noexcept { m_degree = degree; }
+
+  [[nodiscard]] std::int16_t Flags() const noexcept { return m_flags; }
+  void SetFlags(std::int16_t flags) noexcept { m_flags = flags; }
+
+  [[nodiscard]] const std::vector<double>& Knots() const noexcept { return m_knots; }
+  void SetKnots(std::vector<double>&& knots) noexcept { m_knots = std::move(knots); }
+  void SetKnots(const std::vector<double>& knots) { m_knots = knots; }
+
+  [[nodiscard]] const std::vector<double>& Weights() const noexcept { return m_weights; }
+  void SetWeights(std::vector<double>&& weights) noexcept { m_weights = std::move(weights); }
+  void SetWeights(const std::vector<double>& weights) { m_weights = weights; }
+
+  [[nodiscard]] bool IsClosed() const noexcept { return (m_flags & 0x01) != 0; }
+  [[nodiscard]] bool IsPeriodic() const noexcept { return (m_flags & 0x02) != 0; }
+  [[nodiscard]] bool IsRational() const noexcept { return (m_flags & 0x04) != 0; }
+  [[nodiscard]] bool IsPlanar() const noexcept { return (m_flags & 0x08) != 0; }
 
   /** @brief Generates a set of points along the spline curve based on the control points and the specified order.
    * @param order The order of the spline (degree + 1).
