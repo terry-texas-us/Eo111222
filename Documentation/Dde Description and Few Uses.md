@@ -57,7 +57,7 @@ Standard DDEML system topic with items: `SysItems`, `Formats`, `Help`, `Topics`,
 |------|---------|------|--------------|
 | `DimAngZ` | Current dimensioned angle (Z) | ✔ | `AeSysView` |
 | `DimLen` | Current dimensioned length | ✔ | `AeSysView` |
-| `EngAngZ` | Engaged angle (Z) | — | `EoDbLine`, `EoDbDimension`, `EoDbPolygon`, `EoDbPolyline` |
+| `EngAngZ` | Engaged angle (Z) | — | `EoDbLine`, `EoDbLabeledLine`, `EoDbPolygon`, `EoDbPolyline` |
 | `EngLen` | Engaged length | — | Same as `EngAngZ` |
 | `ExtNum` | External number | — | `AeSysDoc` |
 | `ExtStr` | External string | — | `AeSysDoc` |

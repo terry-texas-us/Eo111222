@@ -230,7 +230,7 @@ Every `EoDbPrimitive` carries a unique, non-zero `m_handle` (`std::uint64_t`) as
 - PEG V2 handle serialization per primitive type.
 
 ## User-Specific Notes
-- User may rename `EoDbDimension` to `EoDbLabeledLine` in the future — it's a labeled line primitive, not a true DXF dimension.
+- User may rename `EoDbLabeledLine` to `EoDbLabeledLine` in the future — it's a labeled line primitive, not a true DXF dimension.
 
 ## Pen Render Pipeline
 

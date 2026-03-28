@@ -1,4 +1,5 @@
-﻿#pragma once
+#pragma once
+#pragma once
 
 #include <cstdint>
 
@@ -15,7 +16,7 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 
-class EoDbDimension : public EoDbPrimitive {
+class EoDbLabeledLine : public EoDbPrimitive {
   EoGeLine m_line;
   EoDbFontDefinition m_fontDefinition;
   EoGeReferenceSystem m_ReferenceSystem;
@@ -23,22 +24,22 @@ class EoDbDimension : public EoDbPrimitive {
   std::int16_t m_textColor{5};
 
  public:
-  EoDbDimension() = default;
+  EoDbLabeledLine() = default;
 
-  EoDbDimension(const EoDbDimension& other);
+  EoDbLabeledLine(const EoDbLabeledLine& other);
 
-  const EoDbDimension& operator=(const EoDbDimension& other);
+  const EoDbLabeledLine& operator=(const EoDbLabeledLine& other);
 
-  ~EoDbDimension() override = default;
+  ~EoDbLabeledLine() override = default;
 
-  EoDbDimension(EoGeLine line, const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
+  EoDbLabeledLine(EoGeLine line, const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
       const CString& text, std::int16_t textColor);
 
-  EoDbDimension(std::uint8_t* buffer);
+  EoDbLabeledLine(std::uint8_t* buffer);
 
   void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;
-  void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbDimension*>(primitive); }
+  void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbLabeledLine*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, EoGsRenderDevice* renderDevice) override;
   void FormatExtra(CString& str) override;
@@ -63,8 +64,8 @@ class EoDbDimension : public EoDbPrimitive {
 
   /// @brief Reads a dimension primitive from a PEG file stream (type code kDimensionPrimitive).
   /// @param file The CFile object representing the PEG file to read from.
-  /// @return A pointer to the constructed EoDbDimension.
-  static EoDbDimension* ReadFromPeg(CFile& file);
+  /// @return A pointer to the constructed EoDbLabeledLine.
+  static EoDbLabeledLine* ReadFromPeg(CFile& file);
 
   void CutAt2Points(
       const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;

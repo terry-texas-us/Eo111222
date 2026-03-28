@@ -9,7 +9,7 @@
 #include "EoDb.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbConic.h"
-#include "EoDbDimension.h"
+#include "EoDbLabeledLine.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbLine.h"
@@ -70,7 +70,7 @@ EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
       if (primitive->Is(EoDb::kLinePrimitive)) {
         line = static_cast<EoDbLine*>(primitive)->Line();
       } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
-        line = static_cast<EoDbDimension*>(primitive)->Line();
+        line = static_cast<EoDbLabeledLine*>(primitive)->Line();
       } else {
         continue;
       }
@@ -112,7 +112,7 @@ void AeSysView::OnDimensionModeArrow() {
         auto* LinePrimitive = static_cast<EoDbLine*>(primitive);
         testLine = LinePrimitive->Line();
       } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
-        auto* DimensionPrimitive = static_cast<EoDbDimension*>(primitive);
+        auto* DimensionPrimitive = static_cast<EoDbLabeledLine*>(primitive);
         testLine = DimensionPrimitive->Line();
       } else {
         continue;
@@ -176,7 +176,7 @@ void AeSysView::OnDimensionModeDLine() {
         ModeLineUnhighlightOp(PreviousDimensionCommand);
         PreviousDimensionCommand = ModeLineHighlightOp(ID_OP3);
       }
-      auto* linearDimension = new EoDbDimension();
+      auto* linearDimension = new EoDbLabeledLine();
 
       linearDimension->SetColor(1);
       linearDimension->SetLineTypeIndex(1);
@@ -222,7 +222,7 @@ void AeSysView::OnDimensionModeDLine2() {
         ModeLineUnhighlightOp(PreviousDimensionCommand);
         PreviousDimensionCommand = ModeLineHighlightOp(ID_OP4);
       }
-      auto* linearDimension = new EoDbDimension();
+      auto* linearDimension = new EoDbLabeledLine();
 
       linearDimension->SetColor(1);
       linearDimension->SetLineTypeIndex(1);
@@ -288,7 +288,7 @@ void AeSysView::OnDimensionModeRadius() {
 
       auto* group = new EoDbGroup;
 
-      auto* radialDimension = new EoDbDimension();
+      auto* radialDimension = new EoDbLabeledLine();
 
       radialDimension->SetColor(1);
       radialDimension->SetLineTypeIndex(1);
@@ -330,7 +330,7 @@ void AeSysView::OnDimensionModeDiameter() {
 
       GenerateLineEndItem(1, 0.1, end, begin, group);
 
-      auto* diametricDimension = new EoDbDimension();
+      auto* diametricDimension = new EoDbLabeledLine();
 
       diametricDimension->SetColor(1);
       diametricDimension->SetLineTypeIndex(1);
@@ -474,7 +474,7 @@ void AeSysView::OnDimensionModeConvert() {
       if (primitive->SelectUsingPoint(this, ptView, ptProj)) {
         if (primitive->Is(EoDb::kLinePrimitive)) {
           EoDbLine* line = static_cast<EoDbLine*>(primitive);
-          auto* dimension = new EoDbDimension();
+          auto* dimension = new EoDbLabeledLine();
 
           dimension->SetColor(line->Color());
           dimension->SetLineTypeIndex(line->LineTypeIndex());
@@ -492,7 +492,7 @@ void AeSysView::OnDimensionModeConvert() {
           PreviousDimensionCursorPosition = ptProj;
           return;
         } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
-          EoDbDimension* pPrimDim = static_cast<EoDbDimension*>(primitive);
+          EoDbLabeledLine* pPrimDim = static_cast<EoDbLabeledLine*>(primitive);
           EoGeReferenceSystem ReferenceSystem = pPrimDim->ReferenceSystem();
 
           auto* linePrimitive =

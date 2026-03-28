@@ -13,7 +13,7 @@
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
 #include "EoDbConic.h"
-#include "EoDbDimension.h"
+#include "EoDbLabeledLine.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbHeaderSection.h"
@@ -950,7 +950,7 @@ bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive, EoDb::PegFileVersion fil
       primitive = EoDbText::ReadFromPeg(file);
       break;
     case EoDb::kDimensionPrimitive:
-      primitive = EoDbDimension::ReadFromPeg(file);
+      primitive = EoDbLabeledLine::ReadFromPeg(file);
       break;
     case EoDb::kTagPrimitive:
       primitive = EoDbPoint::ReadFromLegacyTagPeg(file);

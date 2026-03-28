@@ -181,7 +181,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <!-- Everything else in the folder (99% of your files) -->
-    <ClCompile Include="*.cpp" Exclude="Stdafx.cpp;lex.yy.cpp;MainFrm.cpp" />
+	<ClCompile Include="*.cpp" Exclude="Stdafx.cpp;lex.yy.cpp;MainFrm.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc" />
@@ -208,7 +208,6 @@
     <ClInclude Include="EoDbCharacterCellDefinition.h" />
     <ClInclude Include="EoDbClassEntry.h" />
     <ClInclude Include="EoDbConic.h" />
-    <ClInclude Include="EoDbDimension.h" />
     <ClInclude Include="EoDbDimStyle.h" />
     <ClInclude Include="EoDbDxfInterface.h" />
     <ClInclude Include="EoDbEllipse.h" />
@@ -218,6 +217,7 @@
     <ClInclude Include="EoDbHandleManager.h" />
     <ClInclude Include="EoDbHeaderSection.h" />
     <ClInclude Include="EoDbJobFile.h" />
+    <ClInclude Include="EoDbLabeledLine.h" />
     <ClInclude Include="EoDbLayer.h" />
     <ClInclude Include="EoDbLine.h" />
     <ClInclude Include="EoDbLineType.h" />

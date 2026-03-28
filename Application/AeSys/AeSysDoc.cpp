@@ -19,7 +19,7 @@
 #include "EoDbBlockFile.h"
 #include "EoDbBlockReference.h"
 #include "EoDbCharacterCellDefinition.h"
-#include "EoDbDimension.h"
+#include "EoDbLabeledLine.h"
 #include "EoDbDxfInterface.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
@@ -2341,7 +2341,7 @@ void AeSysDoc::OnPrimExtractNum() {
     if (primitive->Is(EoDb::kTextPrimitive)) {
       number = static_cast<EoDbText*>(primitive)->Text();
     } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
-      number = static_cast<EoDbDimension*>(primitive)->Text();
+      number = static_cast<EoDbLabeledLine*>(primitive)->Text();
     } else {
       return;
     }
@@ -2386,7 +2386,7 @@ void AeSysDoc::OnPrimExtractStr() {
     if (primitive->Is(EoDb::kTextPrimitive)) {
       String = static_cast<EoDbText*>(primitive)->Text();
     } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
-      String = static_cast<EoDbDimension*>(primitive)->Text();
+      String = static_cast<EoDbLabeledLine*>(primitive)->Text();
     } else {
       return;
     }

@@ -52,7 +52,7 @@ Implement `EoGsRenderDeviceDirect2D` as a concrete backend for the `EoGsRenderDe
 | `EoDbPolyline.cpp` | `renderState.SetPen()` + `DisplayWidthFill` | Same + width fill via D2D `Polygon()` |
 | `EoDbSpline.cpp` | `renderState.SetPen()` | Same |
 | `EoDbText.cpp` (×3) | `renderState.SetPen()` + TrueType font | Phase 6.5: DirectWrite for TrueType |
-| `EoDbDimension.cpp` | `renderState.SetPen()` + `renderState.SetColor()` | Same |
+| `EoDbLabeledLine.cpp` | `renderState.SetPen()` + `renderState.SetColor()` | Same |
 | `EoDbViewport.cpp` | `CPen` for dotted boundary | Phase 6.4: D2D `SelectPen(PS_DOT, ...)` |
 | `AeSysDoc.cpp` (×2) | `renderState.Save()/Restore()` + `renderState.SetROP2()` | Phase 6.6: ROP2 emulation |
 | `EoGsVertexBuffer.cpp` | `renderState.SetLineType()` for dash patterns | Phase 6.3: Route through `EoGsRenderDevice*` |
@@ -259,7 +259,7 @@ fontStyle = logFont->lfItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NOR
 | `EoDbPolyline.cpp` | Same |
 | `EoDbSpline.cpp` | Same |
 | `EoDbText.cpp` (×3) | Same |
-| `EoDbDimension.cpp` | Same |
+| `EoDbLabeledLine.cpp` | Same |
 | `EoDbViewport.cpp` | Same |
 | `AeSysDoc.cpp` (×2) | Same |
 | `EoGsVertexBuffer.cpp` | Same |

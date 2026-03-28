@@ -13,7 +13,7 @@
 #include "Eo.h"
 #include "EoDb.h"
 #include "EoDbConic.h"
-#include "EoDbDimension.h"
+#include "EoDbLabeledLine.h"
 #include "EoDbEllipse.h"
 #include "EoDbGroup.h"
 #include "EoDbJobFile.h"
@@ -324,7 +324,7 @@ void EoDbJobFile::ConstructPrimitive(EoDbPrimitive*& primitive, std::int16_t Pri
       static_cast<EoDbText*>(primitive)->ConvertFormattingCharacters();
       break;
     case EoDb::kDimensionPrimitive:
-      primitive = new EoDbDimension(m_PrimBuf);
+      primitive = new EoDbLabeledLine(m_PrimBuf);
       break;
 
     default:
@@ -478,7 +478,7 @@ void EoDbJobFile::ConvertTagToPoint() {
   *((std::uint16_t*)&m_PrimBuf[4]) = EoDb::kPointPrimitive;
   ::ZeroMemory(&m_PrimBuf[20], 12);
 }
-EoDbDimension::EoDbDimension(std::uint8_t* buffer) {
+EoDbLabeledLine::EoDbLabeledLine(std::uint8_t* buffer) {
   m_color = std::int16_t(buffer[6]);
   m_lineTypeIndex = std::int16_t(buffer[7]);
 
@@ -732,7 +732,7 @@ void EoDbEllipse::Write(CFile& file, std::uint8_t* buffer) {
 
   file.Write(buffer, 64);
 }
-void EoDbDimension::Write(CFile& file, std::uint8_t* buffer) {
+void EoDbLabeledLine::Write(CFile& file, std::uint8_t* buffer) {
   std::uint16_t TextLength = std::uint16_t(m_text.GetLength());
 
   buffer[3] = std::uint8_t((118 + TextLength) / 32);

@@ -7,13 +7,12 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDb.h"
-#include "EoDbDimension.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
+#include "EoDbLabeledLine.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
-#include "EoGsRenderDevice.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -21,15 +20,16 @@
 #include "EoGeReferenceSystem.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
 #if defined(USING_DDE)
 #include "ddeGItms.h"
 #endif
 
-std::uint16_t EoDbDimension::sm_flags{};
+std::uint16_t EoDbLabeledLine::sm_flags{};
 
-EoDbDimension::EoDbDimension(const EoDbDimension& other)
+EoDbLabeledLine::EoDbLabeledLine(const EoDbLabeledLine& other)
     : EoDbPrimitive(other),
       m_line{other.m_line},
       m_fontDefinition{other.m_fontDefinition},
@@ -37,7 +37,7 @@ EoDbDimension::EoDbDimension(const EoDbDimension& other)
       m_text{other.m_text},
       m_textColor{other.m_textColor} {}
 
-const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& other) {
+const EoDbLabeledLine& EoDbLabeledLine::operator=(const EoDbLabeledLine& other) {
   if (this == &other) { return (*this); }
   EoDbPrimitive::operator=(other);
   m_line = other.m_line;
@@ -49,7 +49,7 @@ const EoDbDimension& EoDbDimension::operator=(const EoDbDimension& other) {
   return (*this);
 }
 
-EoDbDimension::EoDbDimension(EoGeLine line, const EoDbFontDefinition& fontDefinition,
+EoDbLabeledLine::EoDbLabeledLine(EoGeLine line, const EoDbFontDefinition& fontDefinition,
     const EoGeReferenceSystem& referenceSystem, const CString& text, std::int16_t textColor)
     : m_line{line},
       m_fontDefinition{fontDefinition},
@@ -57,34 +57,34 @@ EoDbDimension::EoDbDimension(EoGeLine line, const EoDbFontDefinition& fontDefini
       m_text{text},
       m_textColor{textColor} {}
 
-void EoDbDimension::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+void EoDbLabeledLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   CString label{L"<Dim>"};
   tvAddItem(tree, parent, label.GetBuffer(), this);
 }
-EoDbPrimitive*& EoDbDimension::Copy(EoDbPrimitive*& primitive) {
-  primitive = new EoDbDimension(*this);
+EoDbPrimitive*& EoDbLabeledLine::Copy(EoDbPrimitive*& primitive) {
+  primitive = new EoDbLabeledLine(*this);
   return primitive;
 }
 
-void EoDbDimension::CutAt2Points(
+void EoDbLabeledLine::CutAt2Points(
     const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
   double dRel[2]{};
   if (!m_line.ComputeParametricRelation(firstPoint, dRel[0])) { return; }
   if (!m_line.ComputeParametricRelation(secondPoint, dRel[1])) { return; }
 
-  EoDbDimension* dimension{};
+  EoDbLabeledLine* dimension{};
   if (dRel[0] < Eo::geometricTolerance && dRel[1] >= 1.0 - Eo::geometricTolerance) {
     // Put entire dimension in trap
     dimension = this;
   } else {  // Something gets cut
-    dimension = new EoDbDimension(*this);
+    dimension = new EoDbLabeledLine(*this);
     if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
       dimension->SetBeginPoint(secondPoint);
       dimension->SetDefaultNote();
 
       groups->AddTail(new EoDbGroup(dimension));
 
-      dimension = new EoDbDimension(*this);
+      dimension = new EoDbLabeledLine(*this);
 
       dimension->SetPoints(firstPoint, secondPoint);
 
@@ -105,11 +105,11 @@ void EoDbDimension::CutAt2Points(
   newGroups->AddTail(new EoDbGroup(dimension));
 }
 
-void EoDbDimension::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
+void EoDbLabeledLine::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   EoGeLine line;
 
   if (m_line.CutAtPoint(point, line) != 0) {
-    EoDbDimension* DimensionPrimitive = new EoDbDimension(*this);
+    EoDbLabeledLine* DimensionPrimitive = new EoDbLabeledLine(*this);
 
     DimensionPrimitive->m_line = line;
     DimensionPrimitive->SetDefaultNote();
@@ -118,7 +118,7 @@ void EoDbDimension::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   SetDefaultNote();
 }
 
-void EoDbDimension::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
+void EoDbLabeledLine::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   std::int16_t color = LogicalColor();
   renderState.SetPen(view, renderDevice, color, LogicalLineType(), LogicalLineTypeName(), m_lineWeight, m_lineTypeScale);
   m_line.Display(view, renderDevice);
@@ -133,7 +133,7 @@ void EoDbDimension::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   renderState.SetLineType(renderDevice, LineType);
 }
 
-void EoDbDimension::AddReportToMessageList(const EoGePoint3d& point) {
+void EoDbLabeledLine::AddReportToMessageList(const EoGePoint3d& point) {
   app.AddStringToMessageList(CString(L"<Dimension>"));
   EoDbPrimitive::AddReportToMessageList(point);
 
@@ -155,24 +155,24 @@ void EoDbDimension::AddReportToMessageList(const EoGePoint3d& point) {
 #endif
 }
 
-void EoDbDimension::FormatExtra(CString& str) {
+void EoDbLabeledLine::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
   str += L'\t';
 }
-void EoDbDimension::FormatGeometry(CString& str) {
+void EoDbLabeledLine::FormatGeometry(CString& str) {
   str += L"Begin Point;" + m_line.begin.ToString();
   str += L"End Point;" + m_line.end.ToString();
 }
-void EoDbDimension::GetAllPoints(EoGePoint3dArray& points) {
+void EoDbLabeledLine::GetAllPoints(EoGePoint3dArray& points) {
   points.SetSize(0);
   points.Add(m_line.begin);
   points.Add(m_line.end);
 }
 // Determination of text extent.
-void EoDbDimension::GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac) {
+void EoDbLabeledLine::GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac) {
   text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_text, dSpacFac, ptsBox);
 }
-void EoDbDimension::GetExtents(
+void EoDbLabeledLine::GetExtents(
     AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt[2] = {m_line.begin, m_line.end};
 
@@ -184,7 +184,7 @@ void EoDbDimension::GetExtents(
   }
 }
 
-EoGePoint3d EoDbDimension::GoToNextControlPoint() {
+EoGePoint3d EoDbLabeledLine::GoToNextControlPoint() {
   if (sm_controlPointIndex == 0) {
     sm_controlPointIndex = 1;
   } else if (sm_controlPointIndex == 1) {
@@ -205,14 +205,14 @@ EoGePoint3d EoDbDimension::GoToNextControlPoint() {
   }
   return (sm_controlPointIndex == 0 ? m_line.begin : m_line.end);
 }
-bool EoDbDimension::IsInView(AeSysView* view) {
+bool EoDbLabeledLine::IsInView(AeSysView* view) {
   EoGePoint4d pt[] = {EoGePoint4d(m_line.begin), EoGePoint4d(m_line.end)};
 
   view->ModelViewTransformPoints(2, &pt[0]);
 
   return (EoGePoint4d::ClipLine(pt[0], pt[1]));
 }
-bool EoDbDimension::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
+bool EoDbLabeledLine::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
   EoGePoint4d pt;
 
   for (auto i = 0; i < 2; i++) {
@@ -224,19 +224,19 @@ bool EoDbDimension::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& po
   return false;
 }
 
-void EoDbDimension::ModifyState() {
+void EoDbLabeledLine::ModifyState() {
   if ((sm_flags & 0x0001) != 0) { EoDbPrimitive::ModifyState(); }
 
   if ((sm_flags & 0x0002) != 0) { m_fontDefinition = renderState.FontDefinition(); }
 }
 
-double EoDbDimension::RelOfPt(const EoGePoint3d& point) {
+double EoDbLabeledLine::RelOfPt(const EoGePoint3d& point) {
   double relation{};
   (void)m_line.ComputeParametricRelation(point, relation);
   return relation;
 }
 
-EoGePoint3d EoDbDimension::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
+EoGePoint3d EoDbLabeledLine::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
   sm_controlPointIndex = SHRT_MAX;
 
   double dAPert = sm_SelectApertureSize;
@@ -254,7 +254,7 @@ EoGePoint3d EoDbDimension::SelectAtControlPoint(AeSysView* view, const EoGePoint
   }
   return (sm_controlPointIndex == SHRT_MAX) ? EoGePoint3d::kOrigin : m_line[sm_controlPointIndex];
 }
-bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
+bool EoDbLabeledLine::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   sm_flags &= ~0x0003;
 
   EoGePoint4d pt[4]{};
@@ -286,14 +286,14 @@ bool EoDbDimension::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoi
   sm_flags |= 0x0002;
   return true;
 }
-bool EoDbDimension::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) {
+bool EoDbLabeledLine::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) {
   polyline::BeginLineStrip();
   polyline::SetVertex(m_line.begin);
   polyline::SetVertex(m_line.end);
 
   return polyline::SelectUsingLine(view, line, intersections);
 }
-bool EoDbDimension::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
+bool EoDbLabeledLine::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
   polyline::BeginLineStrip();
   polyline::SetVertex(m_line.begin);
   polyline::SetVertex(m_line.end);
@@ -306,7 +306,7 @@ bool EoDbDimension::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGeP
   return true;
 }
 
-void EoDbDimension::SetDefaultNote() {
+void EoDbLabeledLine::SetDefaultNote() {
   auto* activeView = AeSysView::GetActiveView();
 
   m_ReferenceSystem.SetOrigin(m_line.Midpoint());
@@ -343,14 +343,14 @@ void EoDbDimension::SetDefaultNote() {
   if (cText0 == 'R' || cText0 == 'D') { m_text = cText0 + m_text; }
 }
 
-void EoDbDimension::SetBeginPoint(const EoGePoint3d& begin) { m_line.begin = begin; }
-void EoDbDimension::SetEndPoint(const EoGePoint3d& end) { m_line.end = end; }
-void EoDbDimension::SetPoints(const EoGePoint3d& begin, const EoGePoint3d& end) {
+void EoDbLabeledLine::SetBeginPoint(const EoGePoint3d& begin) { m_line.begin = begin; }
+void EoDbLabeledLine::SetEndPoint(const EoGePoint3d& end) { m_line.end = end; }
+void EoDbLabeledLine::SetPoints(const EoGePoint3d& begin, const EoGePoint3d& end) {
   m_line.begin = begin;
   m_line.end = end;
 }
 
-void EoDbDimension::Transform(const EoGeTransformMatrix& transformMatrix) {
+void EoDbLabeledLine::Transform(const EoGeTransformMatrix& transformMatrix) {
   if ((sm_flags & 0x0001) != 0) {
     m_line.begin = transformMatrix * m_line.begin;
     m_line.end = transformMatrix * m_line.end;
@@ -358,18 +358,18 @@ void EoDbDimension::Transform(const EoGeTransformMatrix& transformMatrix) {
   if ((sm_flags & 0x0002) != 0) { m_ReferenceSystem.Transform(transformMatrix); }
 }
 
-void EoDbDimension::Translate(const EoGeVector3d& v) {
+void EoDbLabeledLine::Translate(const EoGeVector3d& v) {
   m_line += v;
   m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v);
 }
-void EoDbDimension::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
+void EoDbLabeledLine::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if ((mask & 1) == 1) { m_line.begin += v; }
 
   if ((mask & 2) == 2) { m_line.end += v; }
 
   SetDefaultNote();
 }
-EoDbDimension* EoDbDimension::ReadFromPeg(CFile& file) {
+EoDbLabeledLine* EoDbLabeledLine::ReadFromPeg(CFile& file) {
   auto color = EoDb::ReadInt16(file);
   auto lineType = EoDb::ReadInt16(file);
   auto beginPoint = EoDb::ReadPoint3d(file);
@@ -383,13 +383,13 @@ EoDbDimension* EoDbDimension::ReadFromPeg(CFile& file) {
   EoDb::Read(file, text);
 
   auto* dimension =
-      new EoDbDimension(EoGeLine(beginPoint, endPoint), fontDefinition, referenceSystem, text, textColor);
+      new EoDbLabeledLine(EoGeLine(beginPoint, endPoint), fontDefinition, referenceSystem, text, textColor);
   dimension->SetColor(color);
   dimension->SetLineTypeIndex(lineType);
   return dimension;
 }
 
-bool EoDbDimension::Write(CFile& file) {
+bool EoDbLabeledLine::Write(CFile& file) {
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kDimensionPrimitive));
 
   EoDb::WriteInt16(file, m_color);

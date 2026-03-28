@@ -126,7 +126,7 @@ Use the DXF test files listed below. For each entity type, **compare D2D vs GDI*
 | 3.9.2 | Scaled insert | Same file (X-scale 1.5 instance) | Block geometry scaled non-uniformly |
 | 3.9.3 | Block with attributes | Same file | ATTRIB text values positioned correctly within block |
 
-### 3.10 Dimensions (`EoDbDimension`)
+### 3.10 Dimensions (`EoDbLabeledLine`)
 
 | # | Test | File | Expected |
 |---|------|------|----------|
