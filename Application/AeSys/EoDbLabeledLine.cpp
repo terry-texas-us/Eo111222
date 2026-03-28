@@ -58,7 +58,7 @@ EoDbLabeledLine::EoDbLabeledLine(EoGeLine line, const EoDbFontDefinition& fontDe
       m_textColor{textColor} {}
 
 void EoDbLabeledLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  CString label{L"<Dim>"};
+  CString label{L"<LabeledLine>"};
   tvAddItem(tree, parent, label.GetBuffer(), this);
 }
 EoDbPrimitive*& EoDbLabeledLine::Copy(EoDbPrimitive*& primitive) {
@@ -134,7 +134,7 @@ void EoDbLabeledLine::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
 }
 
 void EoDbLabeledLine::AddReportToMessageList(const EoGePoint3d& point) {
-  app.AddStringToMessageList(CString(L"<Dimension>"));
+  app.AddStringToMessageList(CString(L"<LabeledLine>"));
   EoDbPrimitive::AddReportToMessageList(point);
 
   double length = Length();

@@ -168,6 +168,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
+    <ClCompile Include="AeSysViewCamera.cpp" />
+    <ClCompile Include="AeSysViewCommands.cpp" />
+    <ClCompile Include="AeSysViewInput.cpp" />
+    <ClCompile Include="AeSysViewRender.cpp" />
+    <ClCompile Include="AeSysViewSelection.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -184,6 +189,23 @@
     <ClCompile Include="AeSys.cpp" />
     <ClCompile Include="AeSysDoc.cpp" />
     <ClCompile Include="AeSysView.cpp" />
+    <ClCompile Include="AeSysViewAnnotateMode.cpp" />
+    <ClCompile Include="AeSysViewConstraints.cpp" />
+    <ClCompile Include="AeSysViewCutMode.cpp" />
+    <ClCompile Include="AeSysViewDimensionMode.cpp" />
+    <ClCompile Include="AeSysViewDraw2Mode.cpp" />
+    <ClCompile Include="AeSysViewDrawMode.cpp" />
+    <ClCompile Include="AeSysViewEditMode.cpp" />
+    <ClCompile Include="AeSysViewFixupMode.cpp" />
+    <ClCompile Include="AeSysViewGroupSubModeEdit.cpp" />
+    <ClCompile Include="AeSysViewLPDMode.cpp" />
+    <ClCompile Include="AeSysViewModelView.cpp" />
+    <ClCompile Include="AeSysViewNodalMode.cpp" />
+    <ClCompile Include="AeSysViewPipeMode.cpp" />
+    <ClCompile Include="AeSysViewPowerMode.cpp" />
+    <ClCompile Include="AeSysViewPrimitiveSubModeEdit.cpp" />
+    <ClCompile Include="AeSysViewPrimitiveSubModeMend.cpp" />
+    <ClCompile Include="AeSysViewTrapMode.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="DdeAeSysRegistration.cpp" />
     <ClCompile Include="DdeCmds.cpp" />
@@ -283,23 +305,6 @@
     <ClCompile Include="EoMfOutputDockablePane.cpp" />
     <ClCompile Include="EoMfPropertiesDockablePane.cpp" />
     <ClCompile Include="EoOdaConverter.cpp" />
-    <ClCompile Include="EoViAnnotateMode.cpp" />
-    <ClCompile Include="EoViConstraints.cpp" />
-    <ClCompile Include="EoViCutMode.cpp" />
-    <ClCompile Include="EoViDimensionMode.cpp" />
-    <ClCompile Include="EoViDraw2Mode.cpp" />
-    <ClCompile Include="EoViDrawMode.cpp" />
-    <ClCompile Include="EoViEditMode.cpp" />
-    <ClCompile Include="EoViFixupMode.cpp" />
-    <ClCompile Include="EoViGroupSubModeEdit.cpp" />
-    <ClCompile Include="EoViLPDMode.cpp" />
-    <ClCompile Include="EoViModelView.cpp" />
-    <ClCompile Include="EoViNodalMode.cpp" />
-    <ClCompile Include="EoViPipeMode.cpp" />
-    <ClCompile Include="EoViPowerMode.cpp" />
-    <ClCompile Include="EoViPrimitiveSubModeEdit.cpp" />
-    <ClCompile Include="EoViPrimitiveSubModeMend.cpp" />
-    <ClCompile Include="EoViTrapMode.cpp" />
     <ClCompile Include="IdleState.cpp" />
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="ModeLine.cpp" />

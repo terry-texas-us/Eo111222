@@ -26,7 +26,7 @@ You can assume I know the code base very well and should have little trouble wit
 - Architecture & patterns: MFC document/view pattern (classes: `AeSysDoc`, `AeSysView`) – suggestions should maintain MFC idioms where applicable.
 - Geometric primitives implement a common base (`EoDbPrimitive`) with virtuals for drawing, selection, transform, serialization – preserve virtual contract and ABI when changing signatures.
 - Use `Peg & Tra File Formats.md` to help understand the legacy file structure.
-- **vcxproj wildcard**: `AeSys.vcxproj` uses `<ClCompile Include="*.cpp" Exclude="...">` — **never explicitly add new `.cpp` files to the project**. Only new `.h` files require an explicit `<ClInclude>` entry in both `AeSys.vcxproj` and `AeSys.vcxproj.filters`.
+- **vcxproj explicit listing**: `AeSys.vcxproj` no longer uses a wildcard `<ClCompile Include="*.cpp" ...>`. All `.cpp` files are now listed explicitly in alphabetical order under the `<!-- Everything else in the folder -->` comment, except for the three special-case entries (`Stdafx.cpp` with Create PCH, `lex.yy.cpp` with NotUsing PCH + Level3, `MainFrm.cpp` with Use PCH). When adding a new `.cpp` file, insert it in the correct alphabetical position in that explicit list. Do NOT use or restore a wildcard include for ClCompile.
 
 ## Code Style, Linters & Formatting
 - Repository contains `.clang-format` and `.clang-tidy` at root – prefer those settings for formatting and static-analysis suggestions.
