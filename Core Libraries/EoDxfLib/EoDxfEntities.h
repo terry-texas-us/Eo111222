@@ -518,7 +518,9 @@ class EoDxfInsert : public EoDxfGraphic {
  protected:
   void ParseCode(int code, EoDxfReader& reader);
 
-   [[nodiscard]] bool HasAttributesFollow() const noexcept { return m_attributesFollow; }
+ public:
+  [[nodiscard]] bool HasAttributesFollow() const noexcept { return m_attributesFollow; }
+  void SetAttributesFollow(bool follow) noexcept { m_attributesFollow = follow; }
 
   public:
    std::wstring m_blockName;  // Group code 2
@@ -532,9 +534,18 @@ class EoDxfInsert : public EoDxfGraphic {
    double m_columnSpacing{};  // Group code 44
    double m_rowSpacing{};  // Group code 45
 
-  private:
-   bool m_attributesFollow{};  // Group code 66 (1 = ATTRIB entities follow until SEQEND)
- };
+     private:
+      bool m_attributesFollow{};  // Group code 66 (1 = ATTRIB entities follow until SEQEND)
+    };
+
+  /** @brief Concrete entity for SEQEND — terminates an ATTRIB sequence following an INSERT.
+   *  Carries only the common EoDxfGraphic properties (handle, owner, layer).
+   */
+  class EoDxfSeqend : public EoDxfGraphic {
+   public:
+    EoDxfSeqend() noexcept : EoDxfGraphic{EoDxf::SEQEND} {}
+    void ApplyExtrusion() override {}
+  };
 
 /** @brief Class to handle lightweight polyline entity
  *

@@ -242,6 +242,7 @@ bool EoDbJobFile::IsValidPrimitive(std::int16_t primitiveType) {
     case EoDb::kSplinePrimitive:  // 0x2000
     case EoDb::kCSplinePrimitive:  // 0x2001
     case EoDb::kTextPrimitive:  // 0x4000
+    case EoDb::kAttribPrimitive:  // 0x4001
     case EoDb::kTagPrimitive:  // 0x4100
     case EoDb::kDimensionPrimitive:  // 0x4200
       return true;
@@ -320,6 +321,7 @@ void EoDbJobFile::ConstructPrimitive(EoDbPrimitive*& primitive, std::int16_t Pri
       primitive = new EoDbSpline(m_PrimBuf, 3);
       break;
     case EoDb::kTextPrimitive:
+    case EoDb::kAttribPrimitive:
       primitive = new EoDbText(m_PrimBuf, 3);
       static_cast<EoDbText*>(primitive)->ConvertFormattingCharacters();
       break;

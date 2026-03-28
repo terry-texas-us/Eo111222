@@ -26,6 +26,7 @@ You can assume I know the code base very well and should have little trouble wit
 - Architecture & patterns: MFC document/view pattern (classes: `AeSysDoc`, `AeSysView`) – suggestions should maintain MFC idioms where applicable.
 - Geometric primitives implement a common base (`EoDbPrimitive`) with virtuals for drawing, selection, transform, serialization – preserve virtual contract and ABI when changing signatures.
 - Use `Peg & Tra File Formats.md` to help understand the legacy file structure.
+- **vcxproj wildcard**: `AeSys.vcxproj` uses `<ClCompile Include="*.cpp" Exclude="...">` — ALL `.cpp` files in the `AeSys\` directory are compiled automatically. **Never add new `.cpp` files to the project explicitly.** Only new `.h` files require an explicit `<ClInclude>` entry in both `AeSys.vcxproj` and `AeSys.vcxproj.filters`.
 
 ## Code Style, Linters & Formatting
 - Repository contains `.clang-format` and `.clang-tidy` at root – prefer those settings for formatting and static-analysis suggestions.
@@ -86,19 +87,50 @@ To recover DXF properties from the reference system:
 
 ## BLOCK / ATTDEF / INSERT / ATTRIB — Current State and Direction
 
-### Current Implementation (DXF Import Only)
-- **ATTDEF** (`ConvertAttDefEntity`): Parsed and counted but **not rendered**. ATTDEFs are block-definition templates; rendering them would produce overlapping text with ATTRIB values at the same transformed position.
-- **ATTRIB** (`ConvertAttribEntity`): Fully converted to `EoDbText` primitives using the same pipeline as `ConvertTextEntity` (OCS→WCS transform, alignment point selection, justification mapping, oblique angle). Added to model-space groups on the entity's layer via `AddToDocument`.
-- **INSERT** (`ConvertInsertEntity`): Creates `EoDbBlockReference` with scale/rotation/normal. The DXF reader calls `AddInsert` first, then `ProcessInsertAttribs` delivers each ATTRIB sequentially — they become separate `EoDbGroup` entries on the layer.
-- **Block geometry** (LINE, ARC, etc. inside BLOCK definitions): Converted normally and stored in `EoDbBlock` via `m_currentOpenBlockDefinition->AddTail()`.
+### Class Roles
+| Class | Role | Serialization |
+|-------|------|---------------|
+| `EoDbBlock` | Block definition container; holds geometry (`EoDbGroup`) + `std::vector<EoDxfAttDef>` ATTDEF catalog | DXF BLOCK/ENDBLK + ATTDEFs; PEG block table |
+| `EoDbBlockReference` | INSERT instance; carries scale/rotation/normal + `m_attributeHandles` (owned ATTRIB handles) | PEG kInsertPrimitive; DXF INSERT+SEQEND |
+| `EoDbAttrib` | ATTRIB instance; `EoDbText` subclass adding `m_tagString`, `m_attributeFlags`, `m_insertHandle` | PEG V1: written as kTextPrimitive (identity lost); PEG V2: kAttribPrimitive with tag/flags/insertHandle extension |
+| `EoDxfAttDef` | ATTDEF template stored raw in `EoDbBlock::m_attributeDefinitions`; not converted to a primitive | DXF round-trip only; used as template for interactive insertion prompting |
 
-### Structural Limitation
-- ATTRIBs become standalone `EoDbText` with no structural link to their parent INSERT or ATTDEF tag. In .PEG V1, they serialize as ordinary text primitives — the attribute identity (tag name, block association) is lost on save.
-- `EoDbBlock::HasAttributes()` (flag bit 1) is preserved from the DXF block flags but is not currently used during rendering or editing.
+### Implemented (Phases 1–6 Complete)
+- **ATTDEF storage** (`ConvertAttDefEntity`): Parsed `EoDxfAttDef` stored directly in `EoDbBlock::m_attributeDefinitions` (not rendered — avoids overlapping INSERT ATTRIB text). Full DXF property set preserved for round-trip export.
+- **ATTRIB import** (`ConvertAttribEntity`): Converted to `EoDbAttrib` (not plain `EoDbText`) via the same OCS→WCS/alignment pipeline as TEXT. Linked to parent INSERT via `m_insertHandle`/`m_ownerHandle`; INSERT owns the handle in `m_attributeHandles`. ATTRIBs are added to the INSERT's `EoDbGroup` (not a separate group).
+- **INSERT import** (`ConvertInsertEntity`): Creates `EoDbBlockReference` + captures the group via `m_currentInsertGroup`. Subsequent `AddAttrib` calls add to that group before `AddToDocument`.
+- **Interactive attribute prompting** (`EoDlgBlockInsert::OnOK`): When inserting a block with ATTDEFs, iterates `EoDbBlock::AttributeDefinitions()`, skips constant (flag 2) and invisible (flag 1), uses default without prompting for preset (flag 8), otherwise shows `EoDlgAttributePrompt` for each tag. `CreateAttribFromAttDef` builds the reference system from ATTDEF properties in block space, then calls `attrib->Transform(insertTransform)` to position in WCS. Handle linking (`SetInsertHandle`/`AddAttributeHandle`) matches the DXF import pattern.
+- **DXF export**: INSERT → ATTRIB → SEQEND sequence written by `EoDbBlockReference::ExportToDxf`.
+- **Explode**: `EoDbGroup::ExplodeBlockReferences` converts `EoDbAttrib` → `EoDbText` (attribute identity discarded).
 
-### Future Direction (.PEG V2)
-- The BLOCK/ATTDEF/INSERT/ATTRIB relationship is a strong forcing function for the .PEG V2 handle architecture: block references owning attribute handles, ATTDEFs persisting in block definitions, tag-based attribute editing across inserts.
-- Interactive attribute prompting (iterate ATTDEFs on block insertion, prompt for values, create positioned ATTRIBs) is deferred until the handle architecture can preserve the tag association on save.
+### ATTRIB Flag Semantics (DXF group code 70)
+| Bit | Meaning | Prompting behavior |
+|-----|---------|-------------------|
+| 1 | Invisible | Skip — not rendered, not prompted |
+| 2 | Constant | Skip — value is fixed in block definition |
+| 4 | Verify | Prompt and re-prompt until confirmed (currently treated same as normal) |
+| 8 | Preset | Use default value silently without prompting |
+
+### Structural Constraints
+- ATTRIBs have no structural link in PEG V1 — written as `kTextPrimitive`, tag name and block association are lost on V1 save. V2 extension (`kAttribPrimitive`) preserves `m_tagString`, `m_attributeFlags`, `m_insertHandle`.
+- Interactively-created ATTRIBs (`CreateAttribFromAttDef`) do not call `SetBaseProperties` — layer name is empty (group is on the work layer). DXF export of those ATTRIBs will write an empty layer string. This is consistent with the parent `EoDbBlockReference` behavior.
+- `EoDbBlock::HasAttributes()` (flag bit 1) is preserved from DXF block flags; not yet used during rendering or editing.
+
+### Deferred
+- **Edit attributes command**: select INSERT, enumerate `m_attributeHandles` via `FindPrimitiveByHandle`, prompt for new values per tag.
+- **PEG V2 load-time handle resolution**: after reading kAttribPrimitive, resolve `m_insertHandle` → `EoDbBlockReference*` pointer.
+- **Layer propagation for interactive ATTRIBs**: inherit INSERT's layer name in `CreateAttribFromAttDef`.
+- **ATTDEF `Verify` flag**: re-prompt loop until user confirms the entered value.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\EoDbBlock.h/.cpp` | Block definition; `m_attributeDefinitions`; `BasePoint()`, `HasAttributes()`, `AttributeDefinitions()` |
+| `AeSys\EoDbBlockReference.h/.cpp` | INSERT primitive; `BuildTransformMatrix(basePoint)`; `AddAttributeHandle`; `ExportToDxf` writes SEQEND |
+| `AeSys\EoDbAttrib.h/.cpp` | ATTRIB primitive; `m_tagString`, `m_attributeFlags`, `m_insertHandle`; V1 writes as kTextPrimitive |
+| `AeSys\EoDlgBlockInsert.cpp` | Interactive insertion; `CreateAttribFromAttDef` helper; prompting loop in `OnOK` |
+| `AeSys\EoDlgAttributePrompt.h/.cpp` | Single-attribute prompt dialog (IDD=343); inputs: blockName/tagName/promptString/defaultValue; output: enteredValue |
+| `AeSys\EoDbDxfInterface.cpp` | `ConvertAttDefEntity`, `ConvertAttribEntity`, `ConvertInsertEntity`, `AddAttrib` |
 
 ### Test File
 - `DXF Test Files/RoomNumber_Block_Insert.dxf` — 4×3 rectangle block with centered NUMBER ATTDEF, three INSERT instances with ATTRIB values (101, 102, CONF-A), one with X-scale 1.5.

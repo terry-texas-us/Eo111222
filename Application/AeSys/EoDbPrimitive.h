@@ -96,6 +96,12 @@ class EoDbPrimitive : public CObject {
   virtual bool Write(CFile& file) = 0;
   virtual void Write(CFile& file, std::uint8_t* buffer) = 0;
 
+  /// @brief Writes per-primitive AE2026 V2 extension data after the generic V2 block.
+  /// Default is no-op. Override for primitives that carry V2-specific relationships (e.g., attribute handles).
+  virtual void WriteV2Extension(CFile& file) const;
+  /// @brief Reads per-primitive AE2026 V2 extension data after the generic V2 block.
+  virtual void ReadV2Extension(CFile& file);
+
   virtual void CutAt2Points(
       const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*);
   virtual void CutAtPoint(const EoGePoint3d& point, EoDbGroup*);

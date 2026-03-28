@@ -2,6 +2,7 @@
 
 #include "EoDxfWrite.h"
 
+#include "EoDxfAttributes.h"
 #include "EoDxfBase.h"
 #include "EoDxfEntities.h"
 #include "EoDxfMLeader.h"
@@ -400,5 +401,57 @@ bool EoDxfWrite::WriteText(const EoDxfText& text) {
   if (text.m_verticalAlignment != EoDxfText::VerticalAlignment::BaseLine) {
     WriteCodeInt16(73, static_cast<std::int16_t>(text.m_verticalAlignment));
   }
+  return m_writeOk;
+}
+
+bool EoDxfWrite::WriteAttrib(const EoDxfAttrib& attrib) {
+  WriteCodeString(0, L"ATTRIB");
+  WriteEntity(attrib);
+
+  // AcDbText subclass — text properties
+  WriteCodeString(100, L"AcDbText");
+  WriteThickness(attrib);
+  WriteCodeDouble(10, attrib.m_firstAlignmentPoint.x);
+  WriteCodeDouble(20, attrib.m_firstAlignmentPoint.y);
+  WriteCodeDouble(30, attrib.m_firstAlignmentPoint.z);
+  WriteCodeDouble(40, attrib.m_textHeight);
+  WriteCodeWideString(1, attrib.m_attributeValue);
+  if (std::abs(attrib.m_textRotation) > EoDxf::geometricTolerance) {
+    WriteCodeDouble(50, attrib.m_textRotation);
+  }
+  if (std::abs(attrib.m_relativeXScaleFactor - 1.0) > EoDxf::numericEpsilon) {
+    WriteCodeDouble(41, attrib.m_relativeXScaleFactor);
+  }
+  if (std::abs(attrib.m_obliqueAngle) > EoDxf::geometricTolerance) {
+    WriteCodeDouble(51, attrib.m_obliqueAngle);
+  }
+  WriteCodeWideString(7, attrib.m_textStyleName);
+  if (attrib.m_textGenerationFlags != 0) {
+    WriteCodeInt16(71, attrib.m_textGenerationFlags);
+  }
+  if (attrib.m_horizontalTextJustification != 0) {
+    WriteCodeInt16(72, attrib.m_horizontalTextJustification);
+  }
+  if (attrib.m_horizontalTextJustification != 0 || attrib.m_verticalTextJustification != 0) {
+    WriteCodeDouble(11, attrib.m_secondAlignmentPoint.x);
+    WriteCodeDouble(21, attrib.m_secondAlignmentPoint.y);
+    WriteCodeDouble(31, attrib.m_secondAlignmentPoint.z);
+  }
+
+  // AcDbAttribute subclass — attribute-specific fields
+  WriteCodeString(100, L"AcDbAttribute");
+  if (attrib.m_versionNumber != 0) {
+    WriteCodeInt16(280, attrib.m_versionNumber);
+  }
+  WriteCodeWideString(2, attrib.m_tagString);
+  if (attrib.m_attributeFlags != 0) {
+    WriteCodeInt16(70, attrib.m_attributeFlags);
+  }
+  if (attrib.m_verticalTextJustification != 0) {
+    WriteCodeInt16(74, attrib.m_verticalTextJustification);
+  }
+
+  WriteExtrusionDirection(attrib);
+
   return m_writeOk;
 }

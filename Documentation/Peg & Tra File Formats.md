@@ -133,6 +133,11 @@
       Column spacing         double
       Row spacing            double
 
+      AE2026 V2 per-primitive extension (written/read via WriteV2Extension/ReadV2Extension,
+      after the generic V2 block of handle, ownerHandle, lineWeight, lineTypeScale):
+      Attribute handle count uint16_t  (number of owned ATTRIB primitives)
+      {attribute handles}    uint64_t[] (handles of EoDbAttrib primitives linked to this INSERT)
+
 #### Line primitive
       Type code <0x0200>     uint16_t  [0-1]
       Pen color              uint16_t  [2-3]
@@ -221,6 +226,20 @@ Handles both DXF LWPOLYLINE and 2D/3D POLYLINE entities.
       Local reference x-axis vector3d
       Local reference y-axis vector3d
       Text ('\t' terminated) string
+
+#### Attrib primitive (AE2026 V2 only — written as kTextPrimitive in AE2011 V1 with attribute identity lost)
+      Type code <0x4001>     uint16_t  [0-1]
+      Pen color              int16_t
+      Line type              int16_t
+      Font definition        (same layout as Text primitive)
+      Reference system       (same layout as Text primitive)
+      Text ('\t' terminated) string    (attribute value)
+      Tag  ('\t' terminated) string    (attribute tag name, DXF group code 2)
+      Attribute flags        int16_t   (DXF group code 70: 1=Invisible, 2=Constant, 4=Verify, 8=Preset)
+      Insert handle          uint64_t  (handle of parent INSERT / EoDbBlockReference)
+
+      Note: The V2 extension block (handle, ownerHandle, lineWeight, lineTypeScale) written
+      by EoDbGroup::Write() follows after this primitive data, same as all other V2 primitives.
 
 #### Tag primitive (This primitive may still exist in some files and is readable but is converted on the read to a Point primitive and is never written to file.)
       Type code <0x4100>     uint16_t  [0-1]

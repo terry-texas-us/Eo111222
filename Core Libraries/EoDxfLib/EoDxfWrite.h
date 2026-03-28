@@ -105,8 +105,16 @@ class EoDxfWrite {
 
   bool WriteEllipse(const EoDxfEllipse& ellipse);
   bool WriteHatch(const EoDxfHatch& hatch);
+  bool WriteAttrib(const EoDxfAttrib& attrib);
   bool WriteInsert(const EoDxfInsert& blockReference);
   bool WriteLeader(const EoDxfLeader& leader);
+
+  /** @brief Writes a SEQEND entity to the DXF file.
+   *  SEQEND terminates a sequence of ATTRIB entities following an INSERT with group code 66 = 1.
+   *  @param seqend A const reference to an EoDxfGraphic containing the owner handle and layer.
+   *  @return true if the SEQEND was successfully written; otherwise, false.
+   */
+  bool WriteSeqend(const EoDxfSeqend& seqend);
   bool WriteLine(const EoDxfLine& line);
   bool WriteLWPolyline(const EoDxfLwPolyline& polyline);
  

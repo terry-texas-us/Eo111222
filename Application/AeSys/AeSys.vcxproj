@@ -181,7 +181,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <!-- Everything else in the folder (99% of your files) -->
-	<ClCompile Include="*.cpp" Exclude="Stdafx.cpp;lex.yy.cpp;MainFrm.cpp" />
+    <ClCompile Include="*.cpp" Exclude="Stdafx.cpp;lex.yy.cpp;MainFrm.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AeSys.rc" />
@@ -201,6 +201,7 @@
     <ClInclude Include="EoCtrlFindComboBox.h" />
     <ClInclude Include="EoDb.h" />
     <ClInclude Include="EoDbAppIdEntry.h" />
+    <ClInclude Include="EoDbAttrib.h" />
     <ClInclude Include="EoDbBitmapFile.h" />
     <ClInclude Include="EoDbBlock.h" />
     <ClInclude Include="EoDbBlockFile.h" />
@@ -236,6 +237,7 @@
     <ClInclude Include="EoDbVPortTableEntry.h" />
     <ClInclude Include="EoDlgActiveViewKeyplan.h" />
     <ClInclude Include="EoDlgAnnotateOptions.h" />
+    <ClInclude Include="EoDlgAttributePrompt.h" />
     <ClInclude Include="EoDlgBlockInsert.h" />
     <ClInclude Include="EoDlgDrawOptions.h" />
     <ClInclude Include="EoDlgEditOptions.h" />

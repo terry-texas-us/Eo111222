@@ -173,6 +173,9 @@ void EoDlgTrapFilter::FilterByPrimitiveType(const EoDb::PrimitiveTypes primitive
         case EoDb::kTextPrimitive:  // 0x4000
           filter = primitive->Is(EoDb::kTextPrimitive);
           break;
+        case EoDb::kAttribPrimitive:  // 0x4001
+          filter = primitive->Is(EoDb::kAttribPrimitive);
+          break;
         case EoDb::kTagPrimitive:  // 0x4100
           break;
         case EoDb::kDimensionPrimitive:  // 0x4200

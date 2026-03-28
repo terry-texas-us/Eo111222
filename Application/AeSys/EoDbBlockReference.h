@@ -66,6 +66,9 @@ class EoDbBlockReference : public EoDbPrimitive {
   bool Write(CFile& file) override;
   void Write([[maybe_unused]] CFile& file, [[maybe_unused]] std::uint8_t* buffer) override {};
 
+  void WriteV2Extension(CFile& file) const override;
+  void ReadV2Extension(CFile& file) override;
+
   /// @brief Reads a block reference primitive from a PEG file stream.
   /// @param file The CFile object representing the PEG file to read from.
   /// @return A pointer to the constructed EoDbBlockReference.

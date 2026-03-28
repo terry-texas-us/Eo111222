@@ -89,7 +89,7 @@ class EoDbText : public EoDbPrimitive {
   void GetBoundingBox(EoGePoint3dArray&, double);
   void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fontDefinition; }
   void GetRefSys(EoGeReferenceSystem& referenceSystem) const { referenceSystem = m_ReferenceSystem; }
-  const CString& Text() { return m_strText; }
+  const CString& Text() const { return m_strText; }
 
   EoGeVector3d RefNorm() { return m_ReferenceSystem.UnitNormal(); }
 

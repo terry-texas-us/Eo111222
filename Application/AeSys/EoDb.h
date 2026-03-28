@@ -46,6 +46,7 @@ enum PrimitiveTypes {
   kCSplinePrimitive = 0x2001,
   kPolylinePrimitive = 0x2002,
   kTextPrimitive = 0x4000,
+  kAttribPrimitive = 0x4001,
   kTagPrimitive = 0x4100,
   kDimensionPrimitive = 0x4200,
   kViewportPrimitive = 0x8000

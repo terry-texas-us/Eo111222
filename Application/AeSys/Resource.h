@@ -93,6 +93,7 @@
 #define IDB_LAYER_STATES_HC             289
 #define IDD_ACTIVE_VIEW_KEYPLAN         338
 #define IDD_LINE_TYPES_DIALOG           342
+#define IDD_ATTRIBUTE_PROMPT            343
 #define IDC_ARCHITECTURAL               1000
 #define IDC_ENGINEERING                 1001
 #define IDC_FEET                        1002
@@ -305,6 +306,10 @@
 #define IDC_EDIT_POINT_SIZE             1457
 #define IDC_FILE_LINE_TYPES_LIST        1458
 #define IDC_LOAD_LINE_TYPES_FILE        1459
+#define IDC_ATTRIB_BLOCK_NAME           1460
+#define IDC_ATTRIB_TAG                  1461
+#define IDC_ATTRIB_PROMPT               1462
+#define IDC_ATTRIB_VALUE                1463
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783

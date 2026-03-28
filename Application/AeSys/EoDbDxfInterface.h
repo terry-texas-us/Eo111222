@@ -20,6 +20,7 @@
 
 #include "EoDxfWrite.h"
 
+class EoDbAttrib;
 class EoDbBlockReference;
 class EoDbText;
 
@@ -216,6 +217,12 @@ class EoDbDxfInterface : public EoDxfInterface {
       ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddInsert - entities section\n");
     }
     m_currentInsertPrimitive = ConvertInsertEntity(blockReference, m_document);
+  }
+
+  void AddSeqend(const EoDxfSeqend& seqend) override {
+    if (m_dxfWriter) {
+      m_dxfWriter->WriteSeqend(seqend);
+    }
   }
 
   void AddLeader([[maybe_unused]] const EoDxfLeader* leader) override {countOfLeader--;}
@@ -790,13 +797,13 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertBlockSet(const int handle, AeSysDoc* document);
   void ConvertBlockEnd(AeSysDoc* document);
 
-  void AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space);
+  EoDbGroup* AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space);
 
   void Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc* document);
   void ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity, AeSysDoc* document);
   void ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document);
   void ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_unused]] AeSysDoc* document);
-  EoDbText* ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document);
+  EoDbAttrib* ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document);
   void ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document);
   void ConvertDimLinearEntity(const EoDxfDimLinear& dimension, AeSysDoc* document);
   void ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document);
@@ -823,6 +830,11 @@ class EoDbDxfInterface : public EoDxfInterface {
   /// Set during DXF import so that subsequent AddAttrib calls can link ATTRIB handles
   /// to their parent INSERT. Cleared when the next non-ATTRIB entity is processed.
   EoDbBlockReference* m_currentInsertPrimitive{};
+
+  /// Non-owning pointer to the EoDbGroup that contains the current INSERT primitive.
+  /// Set by AddInsert so that subsequent AddAttrib calls can add ATTRIBs to the same
+  /// group instead of creating separate groups.
+  EoDbGroup* m_currentInsertGroup{};
 
  public:
   std::int16_t countOf3dFace{};

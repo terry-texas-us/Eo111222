@@ -268,6 +268,9 @@ bool EoDxfWrite::WriteInsert(const EoDxfInsert& blockReference) {
   WriteEntity(blockReference);
 
   WriteCodeString(100, L"AcDbBlockReference");
+  if (blockReference.HasAttributesFollow()) {
+    WriteCodeInt16(66, 1);
+  }
   WriteCodeWideString(2, blockReference.m_blockName);
 
   WriteCodeDouble(10, blockReference.m_insertionPoint.x);
@@ -283,6 +286,12 @@ bool EoDxfWrite::WriteInsert(const EoDxfInsert& blockReference) {
   WriteCodeDouble(44, blockReference.m_columnSpacing);
   WriteCodeDouble(45, blockReference.m_rowSpacing);
   WriteExtrusionDirection(blockReference);
+  return m_writeOk;
+}
+
+bool EoDxfWrite::WriteSeqend(const EoDxfSeqend& seqend) {
+  WriteCodeString(0, L"SEQEND");
+  WriteEntity(seqend);
   return m_writeOk;
 }
 

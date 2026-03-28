@@ -185,7 +185,26 @@ void EoDbBlockReference::ExportToDxf(EoDxfInterface* writer) const {
   insert.m_columnSpacing = m_columnSpacing;
   insert.m_rowSpacing = m_rowSpacing;
 
+  if (!m_attributeHandles.empty()) {
+    insert.SetAttributesFollow(true);
+  }
   writer->AddInsert(insert);
+
+  // Emit ATTRIB entities owned by this INSERT, then SEQEND
+  if (!m_attributeHandles.empty()) {
+    auto* document = AeSysDoc::GetDoc();
+    for (const auto attribHandle : m_attributeHandles) {
+      auto* primitive = document->FindPrimitiveByHandle(attribHandle);
+      if (primitive != nullptr) {
+        primitive->ExportToDxf(writer);
+      }
+    }
+    // SEQEND terminates the ATTRIB sequence; its owner handle points to the INSERT
+    EoDxfSeqend seqend;
+    seqend.m_layer = insert.m_layer;
+    seqend.m_ownerHandle = insert.m_handle;
+    writer->AddSeqend(seqend);
+  }
 }
 void EoDbBlockReference::AddReportToMessageList(const EoGePoint3d& point) {
   app.AddStringToMessageList(L"<BlockReference>");
@@ -403,4 +422,20 @@ bool EoDbBlockReference::Write(CFile& file) {
   EoDb::WriteDouble(file, m_columnSpacing);
   EoDb::WriteDouble(file, m_rowSpacing);
   return true;
+}
+
+void EoDbBlockReference::WriteV2Extension(CFile& file) const {
+  EoDb::WriteUInt16(file, static_cast<std::uint16_t>(m_attributeHandles.size()));
+  for (auto handle : m_attributeHandles) {
+    EoDb::WriteUInt64(file, handle);
+  }
+}
+
+void EoDbBlockReference::ReadV2Extension(CFile& file) {
+  auto count = EoDb::ReadUInt16(file);
+  m_attributeHandles.clear();
+  m_attributeHandles.reserve(count);
+  for (std::uint16_t i = 0; i < count; ++i) {
+    m_attributeHandles.push_back(EoDb::ReadUInt64(file));
+  }
 }

@@ -7,6 +7,7 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "EoDb.h"
+#include "EoDbAttrib.h"
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
 #include "EoDbCharacterCellDefinition.h"
@@ -116,10 +117,42 @@ void EoDbGroup::ExplodeBlockReferences() {
         EoDbBlock* block{};
         if (document->LookupBlock(static_cast<EoDbBlockReference*>(primitive)->BlockName(), block) != 0) {
           numberOfGroupReferences++;
+          auto* blockReference = static_cast<EoDbBlockReference*>(primitive);
+
+          // Convert in-group ATTRIBs to plain EoDbText primitives
+          for (const auto attribHandle : blockReference->AttributeHandles()) {
+            auto attribPos = Find(document->FindPrimitiveByHandle(attribHandle));
+            if (attribPos != nullptr) {
+              auto* attribPrimitive = static_cast<EoDbAttrib*>(GetAt(attribPos));
+
+              // Build a plain EoDbText with the same visual properties
+              EoDbFontDefinition fontDef;
+              attribPrimitive->GetFontDef(fontDef);
+              EoGeReferenceSystem refSys;
+              attribPrimitive->GetRefSys(refSys);
+              auto* textPrimitive = new EoDbText(fontDef, refSys, attribPrimitive->Text());
+              textPrimitive->SetColor(attribPrimitive->Color());
+              textPrimitive->SetLineTypeIndex(attribPrimitive->LineTypeIndex());
+              textPrimitive->SetLineTypeName(attribPrimitive->LineTypeName());
+              textPrimitive->SetLayerName(attribPrimitive->LayerName());
+              textPrimitive->SetLineWeight(attribPrimitive->LineWeight());
+              textPrimitive->SetLineTypeScale(attribPrimitive->LineTypeScale());
+              textPrimitive->SetTextGenerationFlags(attribPrimitive->TextGenerationFlags());
+              textPrimitive->SetExtrusion(attribPrimitive->Extrusion());
+              if (attribPrimitive->IsFromMText()) {
+                textPrimitive->SetMTextProperties(*attribPrimitive->MTextProperties());
+              }
+
+              document->RegisterHandle(textPrimitive);
+              CObList::SetAt(attribPos, textPrimitive);
+              document->UnregisterHandle(attribPrimitive->Handle());
+              delete attribPrimitive;
+            }
+          }
+
           auto* temporaryGroupTransformed = new EoDbGroup(*block);
           auto basePoint = block->BasePoint();
-          EoGeTransformMatrix transformMatrix =
-              static_cast<EoDbBlockReference*>(primitive)->BuildTransformMatrix(basePoint);
+          EoGeTransformMatrix transformMatrix = blockReference->BuildTransformMatrix(basePoint);
           temporaryGroupTransformed->Transform(transformMatrix);
           document->RegisterGroupHandles(temporaryGroupTransformed);
           this->InsertBefore(primitivePosition, temporaryGroupTransformed);
@@ -443,6 +476,7 @@ void EoDbGroup::Write(CFile& file, EoDb::PegFileVersion fileVersion) {
       EoDb::WriteUInt64(file, primitive->OwnerHandle());
       EoDb::WriteInt16(file, EoDxfLineWeights::LineWeightToDxfIndex(primitive->LineWeight()));
       EoDb::WriteDouble(file, primitive->LineTypeScale());
+      primitive->WriteV2Extension(file);
     }
   }
 }

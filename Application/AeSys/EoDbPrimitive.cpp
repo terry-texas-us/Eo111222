@@ -175,6 +175,9 @@ void EoDbPrimitive::PopulateDxfBaseProperties(EoDxfGraphic* entity) const {
 
 void EoDbPrimitive::ExportToDxf([[maybe_unused]] EoDxfInterface* writer) const {}
 
+void EoDbPrimitive::WriteV2Extension([[maybe_unused]] CFile& file) const {}
+void EoDbPrimitive::ReadV2Extension([[maybe_unused]] CFile& file) {}
+
 void EoDbPrimitive::ModifyState() {
   m_color = renderState.Color();
   m_lineTypeIndex = renderState.LineTypeIndex();

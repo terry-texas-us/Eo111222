@@ -156,6 +156,11 @@ class EoDxfInterface {
   /** Called for every xline */
   virtual void AddXline(const EoDxfXline& xline) = 0;
 
+  /** Called to write a SEQEND entity terminating an ATTRIB sequence.
+   *  Default no-op — only the export path needs this.
+   */
+  virtual void AddSeqend(const EoDxfSeqend& /*seqend*/) {}
+
   /**
    * Called for every image definition.
    */

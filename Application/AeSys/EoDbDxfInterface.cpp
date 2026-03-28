@@ -13,6 +13,7 @@
 
 #include "AeSysDoc.h"
 #include "Eo.h"
+#include "EoDbAttrib.h"
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
 #include "EoDbConic.h"
@@ -458,11 +459,29 @@ class EoGeVertex2D {
 }  // namespace
 
 void EoDbDxfInterface::AddAttrib(const EoDxfAttrib& attrib) {
+  if (m_dxfWriter) {
+    m_dxfWriter->WriteAttrib(attrib);
+    return;
+  }
   countOfAttrib++;
   ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddAttrib - entities section\n");
-  auto* textPrimitive = ConvertAttribEntity(attrib, m_document);
-  if (textPrimitive != nullptr && m_currentInsertPrimitive != nullptr) {
-    m_currentInsertPrimitive->AddAttributeHandle(textPrimitive->Handle());
+  auto* attribPrimitive = ConvertAttribEntity(attrib, m_document);
+  if (attribPrimitive == nullptr) { return; }
+
+  if (m_currentInsertPrimitive != nullptr) {
+    auto insertHandle = m_currentInsertPrimitive->Handle();
+    attribPrimitive->SetInsertHandle(insertHandle);
+    attribPrimitive->SetOwnerHandle(insertHandle);
+    m_currentInsertPrimitive->AddAttributeHandle(attribPrimitive->Handle());
+  }
+
+  // Add to the same group as the parent INSERT when available
+  if (m_currentInsertGroup != nullptr) {
+    m_document->RegisterHandle(attribPrimitive);
+    m_currentInsertGroup->AddTail(attribPrimitive);
+  } else {
+    // Orphan ATTRIB or block-definition context — fall back to AddToDocument
+    AddToDocument(attribPrimitive, m_document, attrib.m_space);
   }
 }
 
@@ -472,13 +491,13 @@ void EoDbDxfInterface::AddAttrib(const EoDxfAttrib& attrib) {
  * @param document Pointer to the AeSysDoc where the primitive will be added.
  * @param space The DXF space (model or paper) in which the entity resides.
  */
-void EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space) {
+EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space) {
   auto layerName = primitive->LayerName().c_str();
   auto* layer = document->FindLayerInSpace(layerName, space);
   if (layer == nullptr) {
     ATLTRACE2(traceGeneral, 3, L"Warning: Layer '%s' not found.\n", layerName);
     delete primitive;
-    return;
+    return nullptr;
   }
 
   ATLTRACE2(traceGeneral, 3, L"AddToDocument: primitive=%p, inBlock=%d, currentBlock=%p, layer='%s'\n", primitive,
@@ -493,11 +512,12 @@ void EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* documen
 
     group->AddTail(primitive);
     layer->AddTail(group);
-    return;
+    return group;
   }
   ATLTRACE2(traceGeneral, 3, L"  -> Adding to BLOCK at %p\n", m_currentOpenBlockDefinition);
 
   m_currentOpenBlockDefinition->AddTail(primitive);
+  return nullptr;
 }
 
 /** @brief Converts a DXF 3DFACE entity to an AeSys closed EoDbPolyline primitive.
@@ -2107,7 +2127,7 @@ EoDbBlockReference* EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blo
   insertPrimitive->SetRows(blockReference.m_rowCount);
   insertPrimitive->SetRowSpacing(blockReference.m_rowSpacing);
 
-  AddToDocument(insertPrimitive, document, blockReference.m_space);
+  m_currentInsertGroup = AddToDocument(insertPrimitive, document, blockReference.m_space);
   return insertPrimitive;
 }
 
@@ -2756,12 +2776,23 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
 void EoDbDxfInterface::ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_unused]] AeSysDoc* document) {
   // ATTDEFs define attribute templates inside block definitions. In AutoCAD they are NOT rendered
   // in entity references — only ATTRIBs following INSERT entities are rendered. Skipping conversion
-  // prevents the default value from overlapping with the actual ATTRIB text at the same position.
-  ATLTRACE2(traceGeneral, 2, L"AttDef entity skipped (tag='%s', default='%s', prompt='%s') — template only\n",
-      attdef.m_tagString.c_str(), attdef.m_defaultValue.c_str(), attdef.m_promptString.c_str());
+  // to EoDbPrimitive prevents the default value from overlapping with the actual ATTRIB text at the
+  // same position.
+  //
+  // When inside a block definition, store the parsed EoDxfAttDef directly in the block so that
+  // the full entity property set (handle, owner, layer, color, linetype, etc.) is preserved for
+  // DXF round-trip export and future interactive attribute prompting.
+  if (m_currentOpenBlockDefinition != nullptr) {
+    m_currentOpenBlockDefinition->AddAttributeDefinition(attdef);
+    ATLTRACE2(traceGeneral, 2, L"AttDef stored in block (tag='%s', default='%s', prompt='%s')\n",
+        attdef.m_tagString.c_str(), attdef.m_defaultValue.c_str(), attdef.m_promptString.c_str());
+  } else {
+    ATLTRACE2(traceGeneral, 2, L"AttDef entity skipped — not inside block (tag='%s', default='%s')\n",
+        attdef.m_tagString.c_str(), attdef.m_defaultValue.c_str());
+  }
 }
 
-EoDbText* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document) {
+EoDbAttrib* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document) {
   ATLTRACE2(traceGeneral, 2, L"Attrib entity conversion (tag='%s', value='%s')\n", attrib.m_tagString.c_str(),
       attrib.m_attributeValue.c_str());
 
@@ -2890,13 +2921,12 @@ EoDbText* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSys
     }
   }
 
-  auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, string);
-  textPrimitive->SetBaseProperties(&attrib, document);
-  textPrimitive->SetTextGenerationFlags(attrib.m_textGenerationFlags);
-  textPrimitive->SetExtrusion(extrusionDirection);
+  auto* attribPrimitive = new EoDbAttrib(fontDefinition, referenceSystem, string, attrib.m_tagString, attrib.m_attributeFlags);
+  attribPrimitive->SetBaseProperties(&attrib, document);
+  attribPrimitive->SetTextGenerationFlags(attrib.m_textGenerationFlags);
+  attribPrimitive->SetExtrusion(extrusionDirection);
 
-  AddToDocument(textPrimitive, document, attrib.m_space);
-  return textPrimitive;
+  return attribPrimitive;
 }
 
 void EoDbDxfInterface::ConvertViewportEntity(const EoDxfViewport& viewport, AeSysDoc* document) {
