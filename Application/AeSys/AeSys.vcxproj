@@ -168,11 +168,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
-    <ClCompile Include="AeSysViewCamera.cpp" />
-    <ClCompile Include="AeSysViewCommands.cpp" />
-    <ClCompile Include="AeSysViewInput.cpp" />
-    <ClCompile Include="AeSysViewRender.cpp" />
-    <ClCompile Include="AeSysViewSelection.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -188,8 +183,15 @@
     <!-- Everything else in the folder (99% of your files) -->
     <ClCompile Include="AeSys.cpp" />
     <ClCompile Include="AeSysDoc.cpp" />
+    <ClCompile Include="AeSysDocCommands.cpp" />
+    <ClCompile Include="AeSysDocDisplay.cpp" />
+    <ClCompile Include="AeSysDocFileIO.cpp" />
+    <ClCompile Include="AeSysDocLayers.cpp" />
+    <ClCompile Include="AeSysDocNodal.cpp" />
     <ClCompile Include="AeSysView.cpp" />
     <ClCompile Include="AeSysViewAnnotateMode.cpp" />
+    <ClCompile Include="AeSysViewCamera.cpp" />
+    <ClCompile Include="AeSysViewCommands.cpp" />
     <ClCompile Include="AeSysViewConstraints.cpp" />
     <ClCompile Include="AeSysViewCutMode.cpp" />
     <ClCompile Include="AeSysViewDimensionMode.cpp" />
@@ -198,6 +200,7 @@
     <ClCompile Include="AeSysViewEditMode.cpp" />
     <ClCompile Include="AeSysViewFixupMode.cpp" />
     <ClCompile Include="AeSysViewGroupSubModeEdit.cpp" />
+    <ClCompile Include="AeSysViewInput.cpp" />
     <ClCompile Include="AeSysViewLPDMode.cpp" />
     <ClCompile Include="AeSysViewModelView.cpp" />
     <ClCompile Include="AeSysViewNodalMode.cpp" />
@@ -205,6 +208,8 @@
     <ClCompile Include="AeSysViewPowerMode.cpp" />
     <ClCompile Include="AeSysViewPrimitiveSubModeEdit.cpp" />
     <ClCompile Include="AeSysViewPrimitiveSubModeMend.cpp" />
+    <ClCompile Include="AeSysViewRender.cpp" />
+    <ClCompile Include="AeSysViewSelection.cpp" />
     <ClCompile Include="AeSysViewTrapMode.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="DdeAeSysRegistration.cpp" />
