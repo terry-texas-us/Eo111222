@@ -9,6 +9,7 @@
 #include "Eo.h"
 #include "EoDbConic.h"
 #include "EoDbDxfInterface.h"
+#include "EoDbFace.h"
 #include "EoDbLine.h"
 #include "EoDbPolyline.h"
 #include "EoDbPrimitive.h"
@@ -17,7 +18,7 @@
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
 
-/** @brief Converts a DXF 3DFACE entity to an AeSys closed EoDbPolyline primitive.
+/** @brief Converts a DXF 3DFACE entity to an AeSys EoDbFace primitive.
  *
  *  A 3DFACE is a three- or four-sided planar surface defined by corner points in WCS (no OCS
  *  transform needed — 3DFACE has no extrusion direction). When the fourth corner coincides with
@@ -25,14 +26,8 @@
  *
  *  ## Mapping Strategy
  *  - Corners are stored directly in WCS — no OCS→WCS transform is required.
- *  - The face is represented as a closed `EoDbPolyline` (wireframe outline).
- *  - Invisible edge flags (group code 70) are logged but not preserved — `EoDbPolyline` does not
- *    support per-edge visibility. All edges of the resulting polyline are visible.
- *
- *  ## Limitations
- *  - Per-edge visibility (invisible edge flags) is lost. In DXF meshes built from 3DFACEs,
- *    interior edges are typically marked invisible; those will appear in AeSys.
- *  - Fill/shading is not represented — the face renders as wireframe only.
+ *  - The face is represented as an `EoDbFace` with `SourceType::Face3d`.
+ *  - Per-edge invisible flags (group code 70) are preserved via `EoDbFace::EdgeFlags`.
  *
  *  @param _3dFace The parsed DXF 3DFACE entity.
  *  @param document The AeSys document receiving the created primitive.
@@ -51,31 +46,97 @@ void EoDbDxfInterface::Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc*
     return;
   }
 
+  // Build WCS vertex points
+  const EoGePoint3d v0{firstCorner.x, firstCorner.y, firstCorner.z};
+  const EoGePoint3d v1{secondCorner.x, secondCorner.y, secondCorner.z};
+  const EoGePoint3d v2{thirdCorner.x, thirdCorner.y, thirdCorner.z};
+
+  const auto edgeFlags = static_cast<std::uint8_t>(_3dFace.m_invisibleFlag);
+
   // Determine triangle vs quadrilateral: 4th corner == 3rd corner means triangle
   const bool isTriangle = thirdCorner.IsEqualTo(fourthCorner);
-  const auto vertexCount = isTriangle ? 3 : 4;
 
-  // Build point array — 3DFACE corners are already in WCS (no OCS transform)
-  EoGePoint3dArray points;
-  points.SetSize(vertexCount);
-  points[0] = EoGePoint3d{firstCorner.x, firstCorner.y, firstCorner.z};
-  points[1] = EoGePoint3d{secondCorner.x, secondCorner.y, secondCorner.z};
-  points[2] = EoGePoint3d{thirdCorner.x, thirdCorner.y, thirdCorner.z};
-  if (!isTriangle) { points[3] = EoGePoint3d{fourthCorner.x, fourthCorner.y, fourthCorner.z}; }
-
-  auto* polylinePrimitive = new EoDbPolyline(points);
-  polylinePrimitive->SetBaseProperties(&_3dFace, document);
-  polylinePrimitive->SetFlag(EoDbPolyline::sm_Closed);
-
-  if (_3dFace.m_invisibleFlag != 0) {
-    ATLTRACE2(traceGeneral, 2,
-        L"  3DFACE invisible edge flags=0x%02X (not preserved — EoDbPolyline has no per-edge visibility)\n",
-        _3dFace.m_invisibleFlag);
+  EoDbFace* facePrimitive{};
+  if (isTriangle) {
+    facePrimitive = EoDbFace::CreateTriangleFrom3dFace(v0, v1, v2, edgeFlags);
+  } else {
+    const EoGePoint3d v3{fourthCorner.x, fourthCorner.y, fourthCorner.z};
+    facePrimitive = EoDbFace::CreateFrom3dFace(v0, v1, v2, v3, edgeFlags);
   }
+  facePrimitive->SetBaseProperties(&_3dFace, document);
 
-  AddToDocument(polylinePrimitive, document, _3dFace.m_space);
+  AddToDocument(facePrimitive, document, _3dFace.m_space);
 
-  ATLTRACE2(traceGeneral, 3, L"  3DFACE → closed EoDbPolyline with %d vertices\n", vertexCount);
+  ATLTRACE2(traceGeneral, 3, L"  3DFACE → EoDbFace with %d vertices, edge flags=0x%02X\n",
+      isTriangle ? 3 : 4, edgeFlags);
+}
+
+/** @brief Converts a DXF SOLID entity to an AeSys EoDbFace primitive.
+ *
+ *  A SOLID is a filled four-sided planar surface defined by corner points in OCS with bowtie
+ *  vertex order. The DXF parser's ApplyExtrusion() has already transformed OCS→WCS by the time
+ *  this function is called. The bowtie vertex order (DXF codes 10,11,12,13 → vertices 0,1,3,2)
+ *  is reordered to sequential CCW (0,1,2,3) for internal storage.
+ *
+ *  When the third and fourth corners coincide, the SOLID is a triangle.
+ *
+ *  @param solid The parsed DXF SOLID entity (coordinates already in WCS after ApplyExtrusion).
+ *  @param document The AeSys document receiving the created primitive.
+ */
+void EoDbDxfInterface::ConvertSolidEntity(const EoDxfSolid& solid, AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 2, L"SOLID entity conversion\n");
+
+  // DXF bowtie order: codes 10,11,12,13 → corners 0,1,3,2
+  // Reorder to sequential: 10→v0, 11→v1, 13→v2, 12→v3
+  const EoGePoint3d v0{solid.m_firstCorner.x, solid.m_firstCorner.y, solid.m_firstCorner.z};
+  const EoGePoint3d v1{solid.m_secondCorner.x, solid.m_secondCorner.y, solid.m_secondCorner.z};
+  const EoGePoint3d v2{solid.m_fourthCorner.x, solid.m_fourthCorner.y, solid.m_fourthCorner.z};
+  const EoGePoint3d v3{solid.m_thirdCorner.x, solid.m_thirdCorner.y, solid.m_thirdCorner.z};
+
+  const EoGeVector3d extrusion{solid.m_extrusionDirection.x, solid.m_extrusionDirection.y, solid.m_extrusionDirection.z};
+
+  const bool isTriangle = solid.m_thirdCorner.IsEqualTo(solid.m_fourthCorner);
+
+  EoDbFace* facePrimitive{};
+  if (isTriangle) {
+    facePrimitive = EoDbFace::CreateTriangleFromSolid(v0, v1, v2, extrusion);
+  } else {
+    facePrimitive = EoDbFace::CreateFromSolid(v0, v1, v2, v3, extrusion);
+  }
+  facePrimitive->SetBaseProperties(&solid, document);
+
+  AddToDocument(facePrimitive, document, solid.m_space);
+
+  ATLTRACE2(traceGeneral, 3, L"  SOLID → EoDbFace with %d vertices\n", isTriangle ? 3 : 4);
+}
+
+/** @brief Converts a DXF TRACE entity to an AeSys EoDbFace primitive.
+ *
+ *  A TRACE is identical in structure to SOLID (same AcDbTrace subclass, same bowtie vertex
+ *  order, same OCS coordinate system). The only difference is the DXF entity name. TRACE is
+ *  always a quadrilateral (no triangle variant in practice, but the degenerate case is handled).
+ *
+ *  @param trace The parsed DXF TRACE entity (coordinates already in WCS after ApplyExtrusion).
+ *  @param document The AeSys document receiving the created primitive.
+ */
+void EoDbDxfInterface::ConvertTraceEntity(const EoDxfTrace& trace, AeSysDoc* document) {
+  ATLTRACE2(traceGeneral, 2, L"TRACE entity conversion\n");
+
+  // DXF bowtie order: codes 10,11,12,13 → corners 0,1,3,2
+  // Reorder to sequential: 10→v0, 11→v1, 13→v2, 12→v3
+  const EoGePoint3d v0{trace.m_firstCorner.x, trace.m_firstCorner.y, trace.m_firstCorner.z};
+  const EoGePoint3d v1{trace.m_secondCorner.x, trace.m_secondCorner.y, trace.m_secondCorner.z};
+  const EoGePoint3d v2{trace.m_fourthCorner.x, trace.m_fourthCorner.y, trace.m_fourthCorner.z};
+  const EoGePoint3d v3{trace.m_thirdCorner.x, trace.m_thirdCorner.y, trace.m_thirdCorner.z};
+
+  const EoGeVector3d extrusion{trace.m_extrusionDirection.x, trace.m_extrusionDirection.y, trace.m_extrusionDirection.z};
+
+  auto* facePrimitive = EoDbFace::CreateFromTrace(v0, v1, v2, v3, extrusion);
+  facePrimitive->SetBaseProperties(&trace, document);
+
+  AddToDocument(facePrimitive, document, trace.m_space);
+
+  ATLTRACE2(traceGeneral, 3, L"  TRACE → EoDbFace with 4 vertices\n");
 }
 
 /** @brief Parses an AcGi proxy graphics metafile stream and creates AeSys primitives.

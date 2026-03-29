@@ -238,6 +238,7 @@ bool EoDbJobFile::IsValidPrimitive(std::int16_t primitiveType) {
     case EoDb::kPointPrimitive:  // 0x0100
     case EoDb::kLinePrimitive:  // 0x0200
     case EoDb::kPolygonPrimitive:  // 0x0400
+    case EoDb::kFacePrimitive:  // 0x0500
     case EoDb::kEllipsePrimitive:  // 0x1003
     case EoDb::kSplinePrimitive:  // 0x2000
     case EoDb::kCSplinePrimitive:  // 0x2001

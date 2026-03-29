@@ -10,14 +10,15 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "EoDb.h"
+#include "EoDbAttrib.h"
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
-#include "EoDbAttrib.h"
 #include "EoDbConic.h"
-#include "EoDbLabeledLine.h"
+#include "EoDbFace.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbHeaderSection.h"
+#include "EoDbLabeledLine.h"
 #include "EoDbLayer.h"
 #include "EoDbLine.h"
 #include "EoDbLineType.h"
@@ -29,8 +30,8 @@
 #include "EoDbPrimitive.h"
 #include "EoDbSpline.h"
 #include "EoDbText.h"
-#include "EoDbViewport.h"
 #include "EoDbVPortTableEntry.h"
+#include "EoDbViewport.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGeReferenceSystem.h"
@@ -931,6 +932,9 @@ bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive, EoDb::PegFileVersion fil
       break;
     case EoDb::kPolygonPrimitive:
       primitive = EoDbPolygon::ReadFromPeg(file);
+      break;
+    case EoDb::kFacePrimitive:
+      primitive = EoDbFace::ReadFromPeg(file);
       break;
     case EoDb::kEllipsePrimitive:
       primitive = EoDbConic::ReadFromLegacyEllipsePeg(file);

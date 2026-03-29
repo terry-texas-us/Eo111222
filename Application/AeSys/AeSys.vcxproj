@@ -233,6 +233,7 @@
     <ClCompile Include="EoDbDxfInterfaceTables.cpp" />
     <ClCompile Include="EoDbDxfInterfaceText.cpp" />
     <ClCompile Include="EoDbEllipse.cpp" />
+    <ClCompile Include="EoDbFace.cpp" />
     <ClCompile Include="EoDbFontDefinition.cpp" />
     <ClCompile Include="EoDbGroup.cpp" />
     <ClCompile Include="EoDbGroupList.cpp" />
@@ -347,6 +348,7 @@
     <ClInclude Include="EoDbDimStyle.h" />
     <ClInclude Include="EoDbDxfInterface.h" />
     <ClInclude Include="EoDbEllipse.h" />
+    <ClInclude Include="EoDbFace.h" />
     <ClInclude Include="EoDbFontDefinition.h" />
     <ClInclude Include="EoDbGroup.h" />
     <ClInclude Include="EoDbGroupList.h" />

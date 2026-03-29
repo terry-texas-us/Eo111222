@@ -108,3 +108,9 @@ class EoDbPolygon : public EoDbPrimitive {
   static std::uint16_t& EdgeToEvaluate() { return sm_EdgeToEvaluate; }
   static std::uint16_t& Edge() { return sm_Edge; }
 };
+
+/// @brief Renders a clipped polygon using the current polygon interior style.
+/// @param view The active view for client-space projection.
+/// @param renderDevice The GDI render device.
+/// @param ndcPoints NDC-space polygon vertices (already model-view transformed and clipped).
+void Polygon_Display(AeSysView* view, EoGsRenderDevice* renderDevice, EoGePoint4dArray& ndcPoints);

@@ -139,6 +139,8 @@
     <ClCompile Include="AeSysDocFileIO.cpp" />
     <ClCompile Include="AeSysDocLayers.cpp" />
     <ClCompile Include="AeSysDocNodal.cpp" />
+    <ClCompile Include="AeSys.cpp" />
+    <ClCompile Include="EoDbFace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -258,6 +260,7 @@
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="WndProcPreview.h" />
     <ClInclude Include="EoDbLabeledLine.h" />
+    <ClInclude Include="EoDbFace.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />
@@ -374,9 +377,45 @@
     <None Include="res\*.ico" />
     <None Include="res\*.ico" />
     <None Include="res\*.ico" />
+    <None Include="res\*.bmp" />
+    <None Include="res\*.bmp" />
+    <None Include="res\*.bmp" />
+    <None Include="res\*.bmp" />
+    <None Include="res\*.bmp" />
+    <None Include="res\*.bmp" />
+    <None Include="res\*.bmp" />
+    <None Include="res\*.bmp" />
+    <None Include="res\*.bmp" />
+    <None Include="res\*.bmp" />
+    <None Include="res\*.bmp" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.cur" />
+    <None Include="res\*.ico" />
+    <None Include="res\*.ico" />
+    <None Include="res\*.ico" />
+    <None Include="res\*.ico" />
+    <None Include="res\*.ico" />
+    <None Include="res\*.ico" />
+    <None Include="res\*.ico" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\Hatches\DefaultSet.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />

@@ -265,6 +265,8 @@ void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTr
   renderState.SetPen(view, renderDevice, color, lineType);
 }
 
+}  // anonymous namespace
+
 void Polygon_Display(AeSysView* view, EoGsRenderDevice* renderDevice, EoGePoint4dArray& ndcPoints) {
   int numberOfPoints = static_cast<int>(ndcPoints.GetSize());
   if (numberOfPoints < 2) { return; }
@@ -285,6 +287,9 @@ void Polygon_Display(AeSysView* view, EoGsRenderDevice* renderDevice, EoGePoint4
     renderDevice->Polygon(clientPoints.data(), numberOfPoints);
   }
 }
+
+namespace {
+
 /** @brief Reverse-maps an AeSys fill style index to its DXF hatch pattern name.
  *
  * This is the inverse of MapHatchPatternNameToIndex in EoDbDxfInterface.cpp.

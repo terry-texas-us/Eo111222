@@ -96,6 +96,10 @@ class EoDbDxfInterface : public EoDxfInterface {
   // https://help.autodesk.com/view/OARX/2026/ENU/?guid=GUID-235B22E0-A567-4CF6-92D3-38A2306D73F3
 
   void Add3dFace(const EoDxf3dFace& _3dFace) override {
+    if (m_dxfWriter) {
+      m_dxfWriter->Write3dFace(_3dFace);
+      return;
+    }
     countOf3dFace++;
     if (m_inBlockDefinition) {
       ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::Add3dFace - block <%s>\n", m_blockName.c_str());
@@ -321,7 +325,19 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
   void AddRay([[maybe_unused]] const EoDxfRay& ray) override { countOfRay--; }
 
-  void AddSolid([[maybe_unused]] const EoDxfSolid& solid) override { countOfSolid--; }
+  void AddSolid(const EoDxfSolid& solid) override {
+    if (m_dxfWriter) {
+      m_dxfWriter->WriteSolid(solid);
+      return;
+    }
+    countOfSolid++;
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddSolid - block <%s>\n", m_blockName.c_str());
+    } else {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddSolid - entities section\n");
+    }
+    ConvertSolidEntity(solid, m_document);
+  }
 
   void AddSpline(const EoDxfSpline& spline) override {
     if (m_dxfWriter) {
@@ -351,7 +367,19 @@ class EoDbDxfInterface : public EoDxfInterface {
     ConvertTextEntity(text, m_document);
   }
 
-  void AddTrace([[maybe_unused]] const EoDxfTrace& trace) override { countOfTrace--; }
+  void AddTrace(const EoDxfTrace& trace) override {
+    if (m_dxfWriter) {
+      m_dxfWriter->WriteTrace(trace);
+      return;
+    }
+    countOfTrace++;
+    if (m_inBlockDefinition) {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddTrace - block <%s>\n", m_blockName.c_str());
+    } else {
+      ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddTrace - entities section\n");
+    }
+    ConvertTraceEntity(trace, m_document);
+  }
 
   void AddViewport(const EoDxfViewport& viewport) override {
     if (m_dxfWriter) {
@@ -815,8 +843,10 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document);
   void ConvertPolyline2DEntity(const EoDxfPolyline& polyline, AeSysDoc* document);
   void ConvertPolyline3DEntity(const EoDxfPolyline& polyline, AeSysDoc* document);
+  void ConvertSolidEntity(const EoDxfSolid& solid, AeSysDoc* document);
   void ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* document);
   void ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document);
+  void ConvertTraceEntity(const EoDxfTrace& trace, AeSysDoc* document);
   void ConvertViewportEntity(const EoDxfViewport& viewport, AeSysDoc* document);
 
  private:
