@@ -84,6 +84,9 @@ class AeSysView : public CView {
    * @return A pointer to the current state, or nullptr if the stack is empty.
    */
   AeSysState* GetCurrentState() const;
+
+  /// Accessor for state classes that need the preview group.
+  [[nodiscard]] EoDbGroup& PreviewGroup() noexcept { return m_PreviewGroup; }
 #endif
  private:
   EoGsModelTransform m_ModelTransform;

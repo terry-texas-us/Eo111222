@@ -12,6 +12,7 @@
 #include "EoDbPolyline.h"
 #include "EoGePoint3d.h"
 #include "EoGsRenderState.h"  // state if global; consider migrating to member
+#include "EoGsRenderDeviceGdi.h"
 #include "Resource.h"  // For command IDs
 
 void DrawModeState::OnEnter(AeSysView* context) {
@@ -24,8 +25,8 @@ void DrawModeState::OnEnter(AeSysView* context) {
 
 void DrawModeState::OnExit(AeSysView* context) {
   ATLTRACE2(traceGeneral, 2, L"DrawModeState::OnExit\n");
-  context->m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-  context->GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &context->m_PreviewGroup);
+  context->PreviewGroup().DeletePrimitivesAndRemoveAll();
+  context->GetDocument()->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &context->PreviewGroup());
   m_pts.RemoveAll();
   // ModeLineUnhighlightOp(m_PreviousDrawCommand);
 }
@@ -58,7 +59,7 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
         document->AddWorkLayerGroup(group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
         m_pts[0] = cursorPosition;  // Chain for next segment
-        context->m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+        context->PreviewGroup().DeletePrimitivesAndRemoveAll();
       }
       break;
     // Migrate others: Polygon, Arc, etc. For DXF: Map to EoDxf entities with handles
@@ -78,13 +79,13 @@ void DrawModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT flags,
 
   if (m_previousDrawCommand == ID_OP2 && m_pts.GetSize() > 0) {  // Line preview
     cursorPos = context->SnapPointToAxis(m_pts[0], cursorPos);
-    doc->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &context->m_PreviewGroup);
-    context->m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    doc->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &context->PreviewGroup());
+    context->PreviewGroup().DeletePrimitivesAndRemoveAll();
     EoGePoint3dArray previewPts;
     previewPts.Copy(m_pts);
     previewPts.Add(cursorPos);
-    context->m_PreviewGroup.AddTail(new EoDbPolyline(previewPts));  // Temp preview
-    doc->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &context->m_PreviewGroup);
+    context->PreviewGroup().AddTail(new EoDbPolyline(previewPts));  // Temp preview
+    doc->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &context->PreviewGroup());
   }
   // Add cases for other primitives (e.g., arc preview with handles for future DXF)
 }
@@ -100,7 +101,8 @@ void DrawModeState::OnLButtonDown(
 void DrawModeState::OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]] CDC* deviceContext) {
   ATLTRACE2(traceGeneral, 2, L"DrawModeState::OnDraw\n");
   auto* document = context->GetDocument();
-  document->DisplayAllLayers(context, deviceContext);
+  EoGsRenderDeviceGdi renderDevice(deviceContext);
+  document->DisplayAllLayers(context, &renderDevice);
   document->DisplayUniquePoints();
 
   // @todo add mode-specific overlays (e.g., rubber-band preview)
@@ -109,7 +111,7 @@ void DrawModeState::OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]]
 
 bool DrawModeState::OnUpdate(AeSysView* context, [[maybe_unused]] CView* sender, LPARAM hint, CObject* objectHint) {
   ATLTRACE2(traceGeneral, 2, L"DrawModeState::OnUpdate\n");
-  if ((hint & EoDb::kGroupEraseSafe) == EoDb::kGroupEraseSafe && objectHint == &context->m_PreviewGroup) {
+  if ((hint & EoDb::kGroupEraseSafe) == EoDb::kGroupEraseSafe && objectHint == &context->PreviewGroup()) {
     return true;
   }
   // Add other draw-specific hints (e.g., for new points/lines)

@@ -3,13 +3,14 @@
 #include "AeSysDoc.h"  // If needed for document access
 #include "AeSysView.h"
 #include "EoGePoint3d.h"
+#include "EoGsRenderDeviceGdi.h"
 #include "IdleState.h"
 
 void IdleState::OnEnter(AeSysView* context) {
   // Setup: e.g., set default cursor (IDC_CROSS), clear previews
   ATLTRACE2(traceGeneral, 2, L"IdleState::OnEnter\n");
   context->SetModeCursor(0);
-  context->m_PreviewGroup.DeletePrimitivesAndRemoveAll();  // Clear any leftovers
+  context->PreviewGroup().DeletePrimitivesAndRemoveAll();  // Clear any leftovers
                                                            // ModeLineDisplay("Idle Mode");  // If you have mode line UI
 }
 
@@ -30,7 +31,8 @@ void IdleState::OnDraw(AeSysView* context, CDC* deviceContext) {
   ATLTRACE2(traceGeneral, 2, L"IdleState::OnDraw\n");
   // Idle state also needs to display document content
   auto* document = context->GetDocument();
-  document->DisplayAllLayers(context, deviceContext);
+  EoGsRenderDeviceGdi renderDevice(deviceContext);
+  document->DisplayAllLayers(context, &renderDevice);
   document->DisplayUniquePoints();
 }
 

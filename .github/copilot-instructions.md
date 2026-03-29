@@ -11,15 +11,13 @@ You are running in full autonomous Agent mode with Planning enabled.
 ## General Context
 The local project repo is in a folder called `D:\Projects\Eo111222`.
 
-DXF reading via `EoDxfLib` is operational for core entity types (LINE, ARC, CIRCLE, ELLIPSE, TEXT, MTEXT, ATTRIB, INSERT, LWPOLYLINE, POLYLINE, SPLINE, HATCH, VIEWPORT), following the ezdxf architecture model. Parsed entities are converted to `EoDbPrimitive`-derived objects and stored in `AeSysDoc` layers. See `Peg & Tra File Formats.md` for the legacy file structure.
+DXF reading via `EoDxfLib` is operational for core entity types (3DFACE, ARC, ATTRIB, CIRCLE, ELLIPSE, HATCH, MTEXT, INSERT, LINE, LWPOLYLINE, POLYLINE, SOLID, SPLINE, TEXT, TRACE, VIEWPORT), following the ezdxf architecture model. Parsed entities are converted to `EoDbPrimitive`-derived objects and stored in `AeSysDoc` layers. See `Peg & Tra File Formats.md` for the legacy file structure.
 
-The PEG V2 handle architecture is **implemented**: `EoDbPrimitive` carries `m_handle`/`m_ownerHandle` (`std::uint64_t`), assigned via `EoDbHandleManager`. Entity→layer/linetype handle linkage covers current import/export needs. Extension dictionaries are **deferred** — see the **Handle Architecture** section below.
+The AE2026 (V2) handle architecture is **implemented**: `EoDbPrimitive` carries `m_handle`/`m_ownerHandle` (`std::uint64_t`), assigned via `EoDbHandleManager`. Entity→layer/linetype handle linkage covers current import/export needs. Extension dictionaries are **deferred** — see the **Handle Architecture** section below.
 
 ## PEG File Compatibility
 - **AE2011** (V1): The only backward-compatible format. All V1 read/write paths must be preserved.
-- **AE2026** (V2): Experimental — writes are discarded after debug review until a milestone is reached. New fields can be added freely without versioning guards. Do not add backward-compatibility complexity for AE2026.
-
-You can assume I know the code base very well and should have little trouble with modern versions of C++. Provide suggestions detailing the code modernization.
+- **AE2026** (V2): Experimental — writes are discarded after debug review until a milestone is reached. New fields can be added freely without versioning guards.
 
 ## General Guidelines
 - Purpose: Native MFC/C++ CAD/graphics application (AeSys). Keep suggestions compatible with the existing MFC architecture and on-disk file formats.
@@ -30,11 +28,10 @@ You can assume I know the code base very well and should have little trouble wit
 
 ## Code Style, Linters & Formatting
 - Repository contains `.clang-format` and `.clang-tidy` at root – prefer those settings for formatting and static-analysis suggestions.
-- For Visual Studio-specific formatting preferences, reference __Tools > Options > Text Editor > C/C++ > Formatting__.
 - Minimize raw `new`/`delete`.
 - Be conservative in migration from `CString` to `std::wstring` – prefer consistent conversions and avoid unnecessary copies. Prefer `std::wstring` as the only internal text API and avoid `std::string` except at unavoidable external byte boundaries.
 - Step away from MFC `CObject`; minimize dynamic runtime features; avoid file serialization.
-- Prefer camelCase for local variables; convert PascalCase local variables to camelCase when requested.
+- Prefer camelCase for local variables.
 - Prefer marking simple geometric operations and getters `noexcept` when possible.
 - Prefer `[[nodiscard]]` for getters when possible.
 - Use verbose naming for variables and functions to enhance self-documentation. Aim for clarity over terseness, and include comments where necessary to explain complex logic. Favor explicit formatting/parsing options when behavior is intended to be self-documenting.
@@ -424,10 +421,6 @@ These UI elements create their own `CPen` objects directly:
 - `WriteEllipse` calls `CorrectAxis()` to validate ratio/axis before output.
 - ARC/CIRCLE export performs WCS→OCS reverse transform for the center point when extrusion is non-default.
 
-### Test Files
-- `DXF Test Files/Ellipse_NegZ_CW_Test.dxf` — 24-entity test: 6 ellipticals (E1–E6) + 6 radials (R1–R6) with both `[0,0,1]` and `[0,0,-1]` extrusion, plus default-extrusion baselines.
-- `DXF Test Files/GenerateEllipseTest.ps1` — PowerShell generator using AC1021 skeleton injection.
-
 ## EoDbPolyline ↔ DXF LWPOLYLINE / POLYLINE Mapping
 
 ### Internal Representation
@@ -506,13 +499,6 @@ else         → 2D polyline   → ConvertPolyline2DEntity
 |------|-------|
 | Non-uniform scale + bulge | Bulge is dimensionless; non-uniform BLOCK INSERT scales distort arcs (matches AutoCAD behavior) |
 | Break bulge arcs | Decomposing individual bulge arcs to `EoDbConic` for editing is deferred |
-
-### Test Files
-| File | Contents |
-|------|----------|
-| `DXF Test Files/LWPolyline_Bulge_Test.dxf` | 21 LWPOLYLINE cases: open/closed, positive/negative/mixed bulge, semicircle, closed diamond |
-| `DXF Test Files/Heavy_Polyline_Subtypes.dxf` | 13 heavy POLYLINE cases: 3D open/closed, 2D basic/closed/elevation, bulge (±/mixed/closed), per-vertex width, default width, bulge+width, plinegen (open/closed) |
-| `DXF Test Files/GenerateHeavyPolylineTest.ps1` | PowerShell generator for `Heavy_Polyline_Subtypes.dxf` using StringBuilder + helper functions |
 
 ## EoDbSpline ↔ DXF SPLINE Mapping
 
