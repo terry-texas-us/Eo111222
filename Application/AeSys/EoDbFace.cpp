@@ -243,8 +243,13 @@ void EoDbFace::ExportToDxf(EoDxfInterface* writer) const {
       // Sequential → bowtie reorder: internal [0,1,2,3] → DXF codes 10,11,13,12
       trace.m_firstCorner = {m_vertices[0].x, m_vertices[0].y, m_vertices[0].z};
       trace.m_secondCorner = {m_vertices[1].x, m_vertices[1].y, m_vertices[1].z};
-      trace.m_thirdCorner = {m_vertices[3].x, m_vertices[3].y, m_vertices[3].z};
-      trace.m_fourthCorner = {m_vertices[2].x, m_vertices[2].y, m_vertices[2].z};
+      if (m_vertexCount == 4) {
+        trace.m_thirdCorner = {m_vertices[3].x, m_vertices[3].y, m_vertices[3].z};
+        trace.m_fourthCorner = {m_vertices[2].x, m_vertices[2].y, m_vertices[2].z};
+      } else {
+        trace.m_thirdCorner = {m_vertices[2].x, m_vertices[2].y, m_vertices[2].z};
+        trace.m_fourthCorner = trace.m_thirdCorner;
+      }
       trace.m_extrusionDirection = {m_extrusion.x, m_extrusion.y, m_extrusion.z};
       trace.m_haveExtrusion = !(m_extrusion == EoGeVector3d::positiveUnitZ);
       writer->AddTrace(trace);
@@ -325,6 +330,8 @@ EoGePoint3d EoDbFace::GoToNextControlPoint() {
 bool EoDbFace::Identical(EoDbPrimitive* primitive) {
   auto* other = static_cast<EoDbFace*>(primitive);
   if (m_vertexCount != other->m_vertexCount || m_sourceType != other->m_sourceType) { return false; }
+  if (m_edgeFlags != other->m_edgeFlags) { return false; }
+  if (!(m_extrusion == other->m_extrusion)) { return false; }
   for (int i = 0; i < m_vertexCount; ++i) {
     if (m_vertices[i] != other->m_vertices[i]) { return false; }
   }
