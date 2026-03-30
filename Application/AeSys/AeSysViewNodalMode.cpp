@@ -293,9 +293,11 @@ void AeSysView::OnNodalModeReturn() {
       return;
   }
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+  InvalidateScene();
   pts.RemoveAll();
   RubberBandingDisable();
   ModeLineUnhighlightOp(PreviousNodalCommand);
+  PreviousNodalCommand = 0;
 }
 void AeSysView::OnNodalModeEscape() {
   auto* document = GetDocument();
@@ -304,15 +306,15 @@ void AeSysView::OnNodalModeEscape() {
     document->DeleteNodalResources();
   } else {
     RubberBandingDisable();
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
-
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    InvalidateOverlay();
     ConstructPreviewGroup();
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
     pts.RemoveAll();
 
     ModeLineUnhighlightOp(PreviousNodalCommand);
+    PreviousNodalCommand = 0;
   }
 }
 void AeSysView::DoNodalModeMouseMove() {
@@ -331,7 +333,6 @@ void AeSysView::DoNodalModeMouseMove() {
 
         EoGeVector3d Translate(pts[0], cursorPosition);
 
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         auto MaskedPrimitivePosition = document->GetFirstMaskedPrimitivePosition();
@@ -348,7 +349,7 @@ void AeSysView::DoNodalModeMouseMove() {
           EoGePoint3d Point = (UniquePoint->m_Point) + Translate;
           m_PreviewGroup.AddTail(new EoDbPoint(252, 8, Point));
         }
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        InvalidateOverlay();
       }
       break;
 
@@ -360,11 +361,10 @@ void AeSysView::DoNodalModeMouseMove() {
 
         EoGeVector3d Translate(pts[0], cursorPosition);
 
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
         ConstructPreviewGroupForNodalGroups();
         m_PreviewGroup.Translate(Translate);
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        InvalidateOverlay();
       }
       break;
   }

@@ -72,8 +72,8 @@ void AeSysView::OnPipeModeLine() {
     cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
     auto* document = GetDocument();
 
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    InvalidateOverlay();
 
     auto* group = new EoDbGroup;
     document->AddWorkLayerGroup(group);
@@ -140,8 +140,8 @@ void AeSysView::OnPipeModeFitting() {
       } else {
         cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
 
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+        InvalidateOverlay();
 
         group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, cursorPosition, group);
@@ -184,8 +184,8 @@ void AeSysView::OnPipeModeRise() {
         pts.Add(cursorPosition);
         m_PreviousOp = ModeLineHighlightOp(ID_OP4);
       } else {  // Rising into an existing vertical pipe section
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+        InvalidateOverlay();
         group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP5, cursorPosition, group);
         document->AddWorkLayerGroup(group);
@@ -193,8 +193,8 @@ void AeSysView::OnPipeModeRise() {
         OnPipeModeEscape();
       }
     } else {
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+      InvalidateOverlay();
 
       if (pts.IsEmpty()) {
         pts.Add(cursorPosition);
@@ -245,8 +245,8 @@ void AeSysView::OnPipeModeDrop() {
         pts.Add(cursorPosition);
         m_PreviousOp = ModeLineHighlightOp(ID_OP5);
       } else {  // Dropping into an existing vertical pipe section
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+        InvalidateOverlay();
         group = new EoDbGroup;
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP4, cursorPosition, group);
         document->AddWorkLayerGroup(group);
@@ -254,8 +254,8 @@ void AeSysView::OnPipeModeDrop() {
         OnPipeModeEscape();
       }
     } else {
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+      InvalidateOverlay();
 
       if (pts.IsEmpty()) {
         pts.Add(cursorPosition);
@@ -556,8 +556,8 @@ void AeSysView::OnPipeModeWye() {
   double DistanceToSection = EoGeVector3d(pts[0], BeginPointProjectedToSection).Length();
 
   if (DistanceToSection >= 0.25) {
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    InvalidateOverlay();
     EoGePoint3d begin = horizontalSection->Begin();
     EoGePoint3d EndPoint = horizontalSection->End();
 
@@ -619,9 +619,8 @@ void AeSysView::OnPipeModeWye() {
 void AeSysView::OnPipeModeReturn() { OnPipeModeEscape(); }
 
 void AeSysView::OnPipeModeEscape() {
-  auto* document = GetDocument();
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+  InvalidateOverlay();
   pts.RemoveAll();
 
   ModeLineUnhighlightOp(m_PreviousOp);
@@ -630,7 +629,6 @@ void AeSysView::OnPipeModeEscape() {
 
 void AeSysView::DoPipeModeMouseMove() {
   const EoDbHandleSuppressionScope suppressHandles;
-  auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
   auto numberOfPoints = pts.GetSize();
   if (numberOfPoints == 0) { return; }
@@ -641,11 +639,10 @@ void AeSysView::DoPipeModeMouseMove() {
         cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
         pts.Add(cursorPosition);
 
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP2, cursorPosition, &m_PreviewGroup);
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        InvalidateOverlay();
       }
       break;
 
@@ -654,11 +651,10 @@ void AeSysView::DoPipeModeMouseMove() {
         cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
         pts.Add(cursorPosition);
 
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, cursorPosition, &m_PreviewGroup);
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        InvalidateOverlay();
       }
       break;
 
@@ -668,11 +664,10 @@ void AeSysView::DoPipeModeMouseMove() {
       cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
       pts.Add(cursorPosition);
 
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
       GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, cursorPosition, &m_PreviewGroup);
-      document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+      InvalidateOverlay();
       break;
     }
   }

@@ -98,6 +98,7 @@ class AeSysView : public CView {
   CBitmap m_backBuffer;
   CSize m_backBufferSize{0, 0};
   bool m_sceneInvalid{true};
+  bool m_overlayDirty{};
 
   // Direct2D render target (Phase 6)
   Microsoft::WRL::ComPtr<ID2D1HwndRenderTarget> m_d2dRenderTarget;
@@ -423,6 +424,9 @@ class AeSysView : public CView {
 
   /// @brief Marks the off-screen scene buffer as invalid, triggering a full re-render on the next paint.
   void InvalidateScene();
+
+  /// @brief Marks the overlay (preview group) as dirty, triggering a repaint without re-rendering the scene.
+  void InvalidateOverlay();
 
   bool PenWidthsOn() const { return m_ViewPenWidths; }
   [[nodiscard]] double GetWorldScale() const { return m_WorldScale; }

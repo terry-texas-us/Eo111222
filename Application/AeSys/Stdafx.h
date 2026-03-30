@@ -56,7 +56,7 @@ UINT AFXAPI HashKey(CString& str);
 // #define LEGACY_ODOMETER
 
 #define AESYS_USE_CONIC_PRIMITIVE
-#define USING_STATE_PATTERN
+// #define USING_STATE_PATTERN  // Deactivated: experimental state pattern to be restarted after preview group overlay
 //#define USING_DDE
 
 #if defined(USING_DDE)

@@ -51,8 +51,8 @@ void AeSysView::OnDraw2ModeWall() {
   if (document == nullptr) { return; }
 
   if (m_PreviousOp != 0) {
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    InvalidateOverlay();
   }
   if (m_endSectionGroup == nullptr) {
     if (m_PreviousOp != 0) {
@@ -150,13 +150,11 @@ void AeSysView::OnDraw2ModeReturn() {
 }
 
 void AeSysView::OnDraw2ModeEscape() {
-  auto* document = GetDocument();
-  if (document == nullptr) { return; }
-
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+  InvalidateOverlay();
 
   ModeLineUnhighlightOp(m_PreviousOp);
+  m_PreviousOp = 0;
 
   m_continuingCorner = false;
   m_assemblyGroup = nullptr;
@@ -254,10 +252,6 @@ void AeSysView::DoDraw2ModeMouseMove() {
   if (m_PreviousOp == 0) {
     cursorPosition = GetCursorPosition();
   } else if (m_PreviousOp == ID_OP1 || m_PreviousOp == ID_OP2) {
-    auto* document = GetDocument();
-    if (document == nullptr) { return; }
-
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
     cursorPosition = GetCursorPosition();
@@ -284,6 +278,6 @@ void AeSysView::DoDraw2ModeMouseMove() {
     EoGeLine endCap{previewLines[1].end, previewLines[0].end};
     auto* endCapLine = EoDbLine::CreateLine(endCap)->WithProperties(renderState.Color(), renderState.LineTypeIndex());
     m_PreviewGroup.AddTail(endCapLine);
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    InvalidateOverlay();
   }
 }

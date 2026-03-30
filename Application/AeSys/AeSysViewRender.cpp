@@ -93,7 +93,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
   // Direct2D rendering path — the HWND render target is inherently double-buffered
   if (m_useD2D && m_d2dRenderTarget) {
-    if (m_sceneInvalid) {
+    if (m_sceneInvalid || m_overlayDirty) {
       m_d2dRenderTarget->BeginDraw();
       m_d2dRenderTarget->SetAntialiasMode(
           m_d2dAliased ? D2D1_ANTIALIAS_MODE_ALIASED : D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
@@ -108,6 +108,13 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
       document->DisplayAllLayers(this, &renderDevice);
       document->DisplayUniquePoints();
+
+      // Preview group overlay — rendered on top of the committed scene
+      if (!m_PreviewGroup.IsEmpty()) {
+        auto savedState = renderState.Save();
+        m_PreviewGroup.Display(this, &renderDevice);
+        renderState.Restore(&renderDevice, savedState);
+      }
 
       // Draw rubberband overlay after the scene
       if (m_rubberbandType != None) {
@@ -137,6 +144,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         return;
       }
       m_sceneInvalid = false;
+      m_overlayDirty = false;
     }
     UpdateStateInformation(All);
     ModeLineDisplay();
@@ -193,6 +201,16 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         document->DisplayUniquePoints();
       }
     }
+
+    // Preview group overlay — rendered on the screen DC, not into the back buffer,
+    // so it does not require a full scene re-render on each mouse move.
+    if (!m_PreviewGroup.IsEmpty()) {
+      auto savedState = renderState.Save();
+      EoGsRenderDeviceGdi overlayDevice(deviceContext);
+      m_PreviewGroup.Display(this, &overlayDevice);
+      renderState.Restore(&overlayDevice, savedState);
+    }
+    m_overlayDirty = false;
 
     UpdateStateInformation(All);
     ModeLineDisplay();
@@ -526,6 +544,11 @@ void AeSysView::RecreateBackBuffer(int width, int height) {
 
 void AeSysView::InvalidateScene() {
   m_sceneInvalid = true;
+  InvalidateRect(nullptr, FALSE);
+}
+
+void AeSysView::InvalidateOverlay() {
+  m_overlayDirty = true;
   InvalidateRect(nullptr, FALSE);
 }
 

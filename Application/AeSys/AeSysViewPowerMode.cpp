@@ -42,6 +42,7 @@ void AeSysView::OnPowerModeCircuit() {
       EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
       EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], CurrentRadius);
       Group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+      InvalidateScene();
       pts[0] = cursorPosition;
     }
     m_PreviousRadius = CurrentRadius;
@@ -56,6 +57,7 @@ void AeSysView::OnPowerModeCircuit() {
       EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
       EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], 0.0);
       Group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+      InvalidateScene();
 
       pts[0] = cursorPosition;
     }
@@ -73,7 +75,6 @@ void AeSysView::OnPowerModeSwitch() { DoPowerModeConductor(ID_OP6); }
 void AeSysView::OnPowerModeNeutral() { DoPowerModeConductor(ID_OP7); }
 
 void AeSysView::OnPowerModeHome() {
-  auto* document = GetDocument();
   static EoGePoint3d PointOnCircuit;
 
   auto cursorPosition = GetCursorPosition();
@@ -81,8 +82,8 @@ void AeSysView::OnPowerModeHome() {
   m_PowerConductor = false;
   m_PreviousOp = 0;
 
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+  InvalidateOverlay();
 
   if (!m_PowerArrow || (PointOnCircuit != cursorPosition)) {
     m_PowerArrow = false;
@@ -113,14 +114,12 @@ void AeSysView::OnPowerModeHome() {
 
 void AeSysView::DoPowerModeMouseMove() {
   const EoDbHandleSuppressionScope suppressHandles;
-  auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
   auto numberOfPoints = pts.GetSize();
 
   switch (m_PreviousOp) {
     case ID_OP2:
       if (pts[0] != cursorPosition) {
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         EoDbConic* circle{};
@@ -135,7 +134,7 @@ void AeSysView::DoPowerModeMouseMove() {
         auto pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
         m_PreviewGroup.AddTail(EoDbLine::CreateLine(pt1, cursorPosition)
                 ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+        InvalidateOverlay();
       }
       break;
   }
@@ -143,7 +142,6 @@ void AeSysView::DoPowerModeMouseMove() {
 }
 
 void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
-  auto* document = GetDocument();
   static EoGePoint3d PointOnCircuit;
 
   EoGePoint3d cursorPosition = GetCursorPosition();
@@ -151,8 +149,8 @@ void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
   m_PowerArrow = false;
   m_PreviousOp = 0;
 
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+  InvalidateOverlay();
 
   if (!m_PowerConductor || PointOnCircuit != cursorPosition) {
     m_PowerConductor = false;
@@ -187,7 +185,6 @@ void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
 void AeSysView::OnPowerModeReturn() { OnPowerModeEscape(); }
 
 void AeSysView::OnPowerModeEscape() {
-  auto* document = GetDocument();
   m_PowerArrow = false;
   m_PowerConductor = false;
 
@@ -196,8 +193,8 @@ void AeSysView::OnPowerModeEscape() {
   ModeLineUnhighlightOp(m_PreviousOp);
   m_PreviousOp = 0;
 
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+  InvalidateOverlay();
 }
 
 void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const {

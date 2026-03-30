@@ -86,8 +86,8 @@ void AeSysView::OnAnnotateModeBubble() {
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    InvalidateOverlay();
 
     EoGePoint3d pt(cursorPosition);
 
@@ -144,8 +144,8 @@ void AeSysView::OnAnnotateModeHook() {
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    InvalidateOverlay();
 
     EoGePoint3d pt(cursorPosition);
 
@@ -176,8 +176,9 @@ void AeSysView::OnAnnotateModeUnderline() {
 
   if (m_PreviousOp != 0) {
     ModeLineUnhighlightOp(m_PreviousOp);
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+    m_PreviousOp = 0;
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    InvalidateOverlay();
   }
   EoDbText* pText = SelectTextUsingPoint(cursorPosition);
   if (pText != 0) {
@@ -252,6 +253,7 @@ void AeSysView::OnAnnotateModeBox() {
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
     ModeLineUnhighlightOp(m_PreviousOp);
+    m_PreviousOp = 0;
   }
 }
 
@@ -351,6 +353,7 @@ void AeSysView::OnAnnotateModeConstructionLine() {
     auto* Group = new EoDbGroup(EoDbLine::CreateLine(pts[1], pts[2])->WithProperties(15, 2));
     document->AddWorkLayerGroup(Group);
     ModeLineUnhighlightOp(m_PreviousOp);
+    m_PreviousOp = 0;
     pts.RemoveAll();
     m_PreviewGroup.RemoveAll();
   }
@@ -361,12 +364,11 @@ void AeSysView::OnAnnotateModeReturn() {
 }
 
 void AeSysView::OnAnnotateModeEscape() {
-  auto* document = GetDocument();
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
-
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+  InvalidateOverlay();
   pts.RemoveAll();
   ModeLineUnhighlightOp(m_PreviousOp);
+  m_PreviousOp = 0;
 }
 
 bool AeSysView::CorrectLeaderEndpoints(
@@ -402,8 +404,6 @@ void AeSysView::DoAnnotateModeMouseMove() {
   auto cursorPosition = GetCursorPosition();
   auto numberOfPoints = pts.GetSize();
   pts.Add(cursorPosition);
-  auto* document = GetDocument();
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
   switch (m_PreviousOp) {
@@ -414,7 +414,6 @@ void AeSysView::DoAnnotateModeMouseMove() {
           GenerateLineEndItem(EndItemType(), EndItemSize(), cursorPosition, pts[0], &m_PreviewGroup);
         }
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;
 
@@ -423,7 +422,6 @@ void AeSysView::DoAnnotateModeMouseMove() {
       m_PreviousPnt = pts[0];
       if (CorrectLeaderEndpoints(m_PreviousOp, 0, pts[0], pts[1])) {
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       pts[0] = m_PreviousPnt;
       break;
@@ -436,10 +434,10 @@ void AeSysView::DoAnnotateModeMouseMove() {
         pts.Add(pts[2].ProjectToward(pts[0], 96.0));
 
         m_PreviewGroup.AddTail(new EoDbGroup(EoDbLine::CreateLine(pts[2], pts[3])->WithProperties(15, 2)));
-        document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
       }
       break;
   }
+  InvalidateOverlay();
   pts.SetSize(numberOfPoints);
 }
 

@@ -141,8 +141,8 @@ void AeSysView::OnLpdModeTap() {
 
   auto* document = GetDocument();
   if (m_PreviousOp != 0) {
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    InvalidateOverlay();
   }
   EoDbLine* LinePrimitive{};
   auto* group = SelectLineUsingPoint(cursorPosition, LinePrimitive);
@@ -198,8 +198,8 @@ void AeSysView::OnLpdModeEll() {
   auto cursorPosition = GetCursorPosition();
 
   if (m_PreviousOp != 0) {
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    InvalidateOverlay();
   }
   if (m_PreviousOp == ID_OP2) {
     EoDbPoint* EndPointPrimitive{};
@@ -246,9 +246,8 @@ void AeSysView::OnLpdModeTee() {
   // EoGePoint3d CurrentPnt = GetCursorPosition();
 
   if (m_PreviousOp != 0) {
-    auto* document = GetDocument();
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    InvalidateOverlay();
   }
   // m_PreviousPnt = GenerateBullheadTee(this, m_PreviousPnt, CurrentPnt, m_PreviousSection);
 
@@ -326,14 +325,15 @@ void AeSysView::OnLpdModeReturn() {
 
 void AeSysView::OnLpdModeEscape() {
   auto* document = GetDocument();
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+  InvalidateOverlay();
 
   if (!m_OriginalPreviousGroupDisplayed) {
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, m_OriginalPreviousGroup);
     m_OriginalPreviousGroupDisplayed = true;
   }
   ModeLineUnhighlightOp(m_PreviousOp);
+  m_PreviousOp = 0;
   m_ContinueSection = false;
   m_EndCapGroup = 0;
   m_EndCapPoint = 0;
@@ -348,7 +348,6 @@ void AeSysView::DoDuctModeMouseMove() {
   if (m_PreviousOp != ID_OP2) { return; }
 
   auto* document = GetDocument();
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
   auto cursorPosition = GetCursorPosition();
@@ -424,7 +423,7 @@ void AeSysView::DoDuctModeMouseMove() {
     }
   }
   m_PreviewGroup.RemoveDuplicatePrimitives();
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &m_PreviewGroup);
+  InvalidateOverlay();
 }
 
 void AeSysView::GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, Section section, EoDbGroup* group) {

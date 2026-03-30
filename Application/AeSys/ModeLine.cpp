@@ -98,7 +98,6 @@ static void DrawPaneTextInView(
 
 void AeSysView::ModeLineDisplay() {
   if (app.CurrentMode() == 0) { return; }
-  m_OpHighlighted = 0;
 
   auto modeInformation = App::LoadStringResource(UINT(app.CurrentMode()));
 
@@ -115,8 +114,13 @@ void AeSysView::ModeLineDisplay() {
     GetStatusBar().SetPaneText(::statusOp0 + i, paneText);
     GetStatusBar().SetTipText(::statusOp0 + i, L"Mode Command Tip Text");
 
+    bool isHighlighted = (m_OpHighlighted != 0 && static_cast<std::uint16_t>(ID_OP0 + i) == m_OpHighlighted);
+    COLORREF textColor = isHighlighted ? Eo::colorRed : App::ViewTextColor();
+
+    GetStatusBar().SetPaneTextColor(::statusOp0 + i, isHighlighted ? Eo::colorRed : COLORREF(-1));
+
     if (app.ModeInformationOverView()) {
-      DrawPaneTextInView(context, GetActiveView(), i, paneText, DEFAULT_GUI_FONT, App::ViewTextColor());
+      DrawPaneTextInView(context, GetActiveView(), i, paneText, DEFAULT_GUI_FONT, textColor);
     }
   }
   ReleaseDC(context);
