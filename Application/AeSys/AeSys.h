@@ -39,7 +39,11 @@ namespace App {
 
 [[nodiscard]] CString ResourceFolderPath();
 
-[[nodiscard]] inline COLORREF ViewTextColor() { return (~(Eo::ViewBackgroundColor | 0xff000000)); }
+/// @brief Returns a text color that contrasts with the active model-space background.
+[[nodiscard]] inline COLORREF ViewTextColor() {
+  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  return (~(colors.modelSpaceBackground | 0xff000000));
+}
 }  // namespace App
 
 class AeSys : public CWinAppEx {

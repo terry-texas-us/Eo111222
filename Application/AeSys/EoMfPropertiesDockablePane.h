@@ -56,4 +56,7 @@ class EoMfPropertiesDockablePane : public CDockablePane {
  public:  // Operations
   CMFCPropertyGridCtrl& GetPropertyGridCtrl() { return m_PropertyGrid; }
   CMFCPropertyGridProperty& GetActiveViewScaleProperty() { return *m_PropertyGrid.FindItemByData(kActiveViewScale); }
+
+  /// @brief Applies the active color scheme to the property grid and combo box.
+  void ApplyColorScheme();
 };

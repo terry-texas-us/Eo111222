@@ -5,6 +5,7 @@
 
 #include "AeSys.h"
 #include "AeSysView.h"
+#include "Eo.h"
 #include "EoApOptions.h"
 #include "EoMfPropertiesDockablePane.h"
 #include "Resource.h"
@@ -37,6 +38,13 @@ END_MESSAGE_MAP()
 
 EoMfPropertiesDockablePane::EoMfPropertiesDockablePane() {}
 EoMfPropertiesDockablePane::~EoMfPropertiesDockablePane() {}
+void EoMfPropertiesDockablePane::ApplyColorScheme() {
+  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  m_PropertyGrid.SetCustomColors(colors.paneBackground, colors.paneText, colors.paneGroupBackground,
+      colors.paneGroupText, colors.paneDescriptionBackground, colors.paneDescriptionText, colors.paneLine);
+  m_wndObjectCombo.Invalidate();
+  m_PropertyGrid.Invalidate();
+}
 int EoMfPropertiesDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   if (CDockablePane::OnCreate(createStruct) == -1) { return -1; }
   CRect EmptyRect;

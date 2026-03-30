@@ -1091,6 +1091,10 @@ class AeSysView : public CView {
   afx_msg void OnViewWireframe();
   afx_msg void OnViewDirect2D();
   afx_msg void OnViewAliased();
+  afx_msg void OnViewColorSchemeDark();
+  afx_msg void OnViewColorSchemeLight();
+  afx_msg void OnUpdateViewColorSchemeDark(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateViewColorSchemeLight(CCmdUI* pCmdUI);
   afx_msg void OnWindowZoomSpecial();
   afx_msg void OnWindowNormal();
   afx_msg void OnWindowBest();

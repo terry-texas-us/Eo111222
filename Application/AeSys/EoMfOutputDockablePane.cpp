@@ -5,6 +5,7 @@
 #include <wchar.h>
 
 #include "AeSys.h"
+#include "Eo.h"
 #include "EoMfOutputDockablePane.h"
 #include "Resource.h"
 
@@ -57,13 +58,31 @@ void EoMfOutputDockablePane::OnSize(UINT type, int cx, int cy) {
   // Tab control should cover the whole client area:
   m_wndTabs.SetWindowPos(nullptr, -1, -1, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
 }
+void EoMfOutputDockablePane::ApplyColorScheme() {
+  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  m_OutputMessagesList.SetColors(colors.paneBackground, colors.paneText);
+  m_OutputReportsList.SetColors(colors.paneBackground, colors.paneText);
+}
 EoMfOutputListBox::EoMfOutputListBox() {}
 EoMfOutputListBox::~EoMfOutputListBox() {}
+void EoMfOutputListBox::SetColors(COLORREF background, COLORREF text) {
+  m_textColor = text;
+  m_backgroundBrush.DeleteObject();
+  m_backgroundBrush.CreateSolidBrush(background);
+  Invalidate();
+}
+HBRUSH EoMfOutputListBox::CtlColor(CDC* deviceContext, UINT /*ctlColor*/) {
+  if (m_backgroundBrush.m_hObject == nullptr) { return nullptr; }
+  deviceContext->SetTextColor(m_textColor);
+  deviceContext->SetBkMode(TRANSPARENT);
+  return static_cast<HBRUSH>(m_backgroundBrush.GetSafeHandle());
+}
 BEGIN_MESSAGE_MAP(EoMfOutputListBox, CListBox)
 #pragma warning(push)
 #pragma warning(disable : 4191)
 ON_WM_CONTEXTMENU()
 ON_WM_WINDOWPOSCHANGING()
+ON_WM_CTLCOLOR_REFLECT()
 #pragma warning(pop)
 ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)

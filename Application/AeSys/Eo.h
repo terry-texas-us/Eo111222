@@ -6,7 +6,94 @@
 
 namespace Eo {
 
+/// @brief Identifies the active UI color scheme for the drawing views.
+enum class ColorScheme { Dark, Light };
+
+/// @brief Holds all scheme-dependent colors used by the rendering pipeline and UI chrome.
+struct ColorSchemeColors {
+  COLORREF modelSpaceBackground;   ///< Background for model-space views
+  COLORREF paperSpaceBackground;   ///< Background for paper-space layout views
+  COLORREF rubberband;             ///< Rubberband / selection feedback color
+  COLORREF gridDot;                ///< Grid dot/line color
+  // Docking pane / property grid colors
+  COLORREF paneBackground;         ///< Background for property grid and output list boxes
+  COLORREF paneText;               ///< Text color for property grid and output list boxes
+  COLORREF paneGroupBackground;    ///< Property grid group-row background
+  COLORREF paneGroupText;          ///< Property grid group-row text
+  COLORREF paneLine;               ///< Property grid separator line color
+  COLORREF paneDescriptionBackground; ///< Property grid description area background
+  COLORREF paneDescriptionText;    ///< Property grid description area text
+};
+
+/// @brief Dark scheme — dark background, matches original hardcoded appearance.
+inline constexpr ColorSchemeColors darkSchemeColors{
+    RGB(33, 40, 47),       // modelSpaceBackground
+    RGB(255, 255, 255),    // paperSpaceBackground (white, like AutoCAD)
+    RGB(102, 102, 102),    // rubberband
+    RGB(80, 80, 80),       // gridDot
+    RGB(37, 37, 38),       // paneBackground (VS-dark-like)
+    RGB(220, 220, 220),    // paneText
+    RGB(45, 45, 48),       // paneGroupBackground
+    RGB(0, 151, 251),      // paneGroupText (accent blue)
+    RGB(63, 63, 70),       // paneLine
+    RGB(45, 45, 48),       // paneDescriptionBackground
+    RGB(180, 180, 180),    // paneDescriptionText
+};
+
+/// @brief Light scheme — white/light background, similar to AutoCAD 2D Drafting light.
+inline constexpr ColorSchemeColors lightSchemeColors{
+    RGB(255, 255, 255),    // modelSpaceBackground
+    RGB(255, 255, 255),    // paperSpaceBackground
+    RGB(140, 140, 140),    // rubberband
+    RGB(200, 200, 200),    // gridDot
+    RGB(255, 255, 255),    // paneBackground
+    RGB(30, 30, 30),       // paneText
+    RGB(240, 240, 240),    // paneGroupBackground
+    RGB(0, 102, 204),      // paneGroupText (accent blue)
+    RGB(210, 210, 210),    // paneLine
+    RGB(245, 245, 245),    // paneDescriptionBackground
+    RGB(80, 80, 80),       // paneDescriptionText
+};
+
+/// @brief Returns the color set for the given scheme.
+[[nodiscard]] inline constexpr const ColorSchemeColors& SchemeColors(ColorScheme scheme) noexcept {
+  return (scheme == ColorScheme::Light) ? lightSchemeColors : darkSchemeColors;
+}
+
+/// @brief The application-wide active color scheme, persisted via EoApOptions.
+inline ColorScheme activeColorScheme = ColorScheme::Dark;
+
+/// @brief Convenience accessor — returns the active scheme's model-space background.
+[[nodiscard]] inline COLORREF ModelSpaceBackgroundColor() noexcept {
+  return SchemeColors(activeColorScheme).modelSpaceBackground;
+}
+
+/// @brief Convenience accessor — returns the active scheme's paper-space background.
+[[nodiscard]] inline COLORREF PaperSpaceBackgroundColor() noexcept {
+  return SchemeColors(activeColorScheme).paperSpaceBackground;
+}
+
+/// @brief Returns the appropriate view background color for the given drawing space.
+/// @param isPaperSpace true for paper-space layout views, false for model-space.
+[[nodiscard]] inline COLORREF ViewBackgroundColorForSpace(bool isPaperSpace) noexcept {
+  const auto& colors = SchemeColors(activeColorScheme);
+  return isPaperSpace ? colors.paperSpaceBackground : colors.modelSpaceBackground;
+}
+
+/// @brief Returns the rubberband color for the active scheme.
+[[nodiscard]] inline COLORREF RubberbandColor() noexcept {
+  return SchemeColors(activeColorScheme).rubberband;
+}
+
+/// @brief Legacy mutable alias — kept for callers that read the background color
+/// without knowing the active space. Synchronized via SyncViewBackgroundColor().
 inline COLORREF ViewBackgroundColor = RGB(33, 0x28, 47);
+
+/// @brief Synchronizes the legacy ViewBackgroundColor global with the active scheme's model-space background.
+/// Must be called after changing activeColorScheme.
+inline void SyncViewBackgroundColor() noexcept {
+  ViewBackgroundColor = SchemeColors(activeColorScheme).modelSpaceBackground;
+}
 
 inline COLORREF GrayPalette[16] = {RGB(255, 255, 255), RGB(140, 140, 140), RGB(0xbe, 0xbe, 0xbe), RGB(0xdc, 0xdc, 0xdc),
     RGB(0xf0, 0xf0, 0xf0), RGB(0x8d, 0x8d, 0x8d), RGB(191, 191, 191), RGB(0xdd, 0xdd, 0xdd), RGB(0xf1, 0xf1, 0xf1),

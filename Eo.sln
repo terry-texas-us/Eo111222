@@ -75,6 +75,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\Peg & Tra File Formats.md = Documentation\Peg & Tra File Formats.md
 		Documentation\Phase6_Direct2D_Backend_Plan.md = Documentation\Phase6_Direct2D_Backend_Plan.md
 		Documentation\Simplex PSF Format.md = Documentation\Simplex PSF Format.md
+		VS2026 - UI Shell Background Colors.md = VS2026 - UI Shell Background Colors.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Header Tests by Version", "Header Tests by Version", "{2ADADC69-8FC1-4F37-BC59-9EB19F00E673}"

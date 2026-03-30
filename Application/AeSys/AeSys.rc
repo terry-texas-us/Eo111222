@@ -183,14 +183,6 @@ BEGIN
             MENUITEM "<placeholder>",               ID_VIEW_TOOLBARS
         END
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
-        POPUP "&Application Look"
-        BEGIN
-            MENUITEM "&Blue Style (Office 2007)",   ID_VIEW_APPLOOK_OFF_2007_BLUE
-            MENUITEM "B&lack Style (Office 2007)",  ID_VIEW_APPLOOK_OFF_2007_BLACK
-            MENUITEM "&Aqua Style (Office 2007)",   ID_VIEW_APPLOOK_OFF_2007_AQUA
-            MENUITEM "&Silver Style (Office 2007)", ID_VIEW_APPLOOK_OFF_2007_SILVER
-            MENUITEM "Windows &7",                  ID_VIEW_APPLOOK_WINDOWS_7
-        END
     END
     POPUP "&Help"
     BEGIN
@@ -348,6 +340,11 @@ BEGIN
         MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
         MENUITEM "Use &Direct2D",               ID_VIEW_DIRECT2D
         MENUITEM "&Aliased Rendering",            ID_VIEW_ALIASED
+        POPUP "Color &Scheme"
+        BEGIN
+            MENUITEM "&Dark",                      ID_VIEW_COLORSCHEME_DARK
+            MENUITEM "&Light",                     ID_VIEW_COLORSCHEME_LIGHT
+        END
         MENUITEM SEPARATOR
         POPUP "&Window\t="
         BEGIN
@@ -628,6 +625,11 @@ BEGIN
         MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
         MENUITEM "Use &Direct2D",               ID_VIEW_DIRECT2D
         MENUITEM "&Aliased Rendering",            ID_VIEW_ALIASED
+        POPUP "Color &Scheme"
+        BEGIN
+            MENUITEM "&Dark",                      ID_VIEW_COLORSCHEME_DARK
+            MENUITEM "&Light",                     ID_VIEW_COLORSCHEME_LIGHT
+        END
         MENUITEM SEPARATOR
         POPUP "&Window\t="
         BEGIN
@@ -3312,20 +3314,6 @@ BEGIN
     ID_SETUP_CONSTRAINTS    "Setup the point and axis constraints for the current view."
     ID_VIEW_STATEINFORMATION 
                             "Show or hide state/mode information\nToggle State Information"
-END
-
-STRINGTABLE
-BEGIN
-    ID_VIEW_APPLOOK_OFF_2007_BLUE 
-                            "Activate Office 2007 application look\nOffice 2007 Look - Blue"
-    ID_VIEW_APPLOOK_OFF_2007_BLACK 
-                            "Activate Office 2007 application look\nOffice 2007 Look - Black"
-    ID_VIEW_APPLOOK_OFF_2007_AQUA 
-                            "Activate Office 2007 application look\nOffice 2007 Look - Aqua"
-    ID_VIEW_APPLOOK_OFF_2007_SILVER 
-                            "Activate Office 2007 application look\nOffice 2007 Look - Silver"
-    ID_VIEW_APPLOOK_WINDOWS_7 
-                            "Activate Windows 7 application look\nWindows 7 Look"
 END
 
 STRINGTABLE

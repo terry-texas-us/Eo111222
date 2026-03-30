@@ -97,14 +97,16 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       m_d2dRenderTarget->BeginDraw();
       m_d2dRenderTarget->SetAntialiasMode(
           m_d2dAliased ? D2D1_ANTIALIAS_MODE_ALIASED : D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-      auto bkColor = D2D1::ColorF(
-          GetRValue(Eo::ViewBackgroundColor) / 255.0f,
-          GetGValue(Eo::ViewBackgroundColor) / 255.0f,
-          GetBValue(Eo::ViewBackgroundColor) / 255.0f);
-      m_d2dRenderTarget->Clear(bkColor);
 
       auto* document = GetDocument();
       assert(document != nullptr);
+      const bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
+      const auto bgColor = Eo::ViewBackgroundColorForSpace(isPaperSpace);
+      auto bkColor = D2D1::ColorF(
+          GetRValue(bgColor) / 255.0f,
+          GetGValue(bgColor) / 255.0f,
+          GetBValue(bgColor) / 255.0f);
+      m_d2dRenderTarget->Clear(bkColor);
       EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
       document->DisplayAllLayers(this, &renderDevice);
       document->DisplayUniquePoints();
@@ -119,7 +121,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       // Draw rubberband overlay after the scene
       if (m_rubberbandType != None) {
         Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> rubberbandBrush;
-        constexpr auto cr = Eo::colorRubberband;
+        const auto cr = Eo::RubberbandColor();
         auto rubberbandColor = D2D1::ColorF(
             (cr & 0xFF) / 255.0f, ((cr >> 8) & 0xFF) / 255.0f, ((cr >> 16) & 0xFF) / 255.0f);
         m_d2dRenderTarget->CreateSolidColorBrush(rubberbandColor, &rubberbandBrush);
@@ -164,8 +166,9 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
     // If back buffer exists and scene is dirty, re-render the entire scene into the back buffer
     if (m_backBufferDC.GetSafeHdc() != nullptr && m_sceneInvalid) {
+      const bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
       CRect bufferRect(0, 0, m_backBufferSize.cx, m_backBufferSize.cy);
-      m_backBufferDC.FillSolidRect(bufferRect, Eo::ViewBackgroundColor);
+      m_backBufferDC.FillSolidRect(bufferRect, Eo::ViewBackgroundColorForSpace(isPaperSpace));
 
       if (!m_ViewRendered) {
         BackgroundImageDisplay(&m_backBufferDC);
@@ -401,7 +404,9 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   }
 
   auto backgroundColor = targetDC->GetBkColor();
-  targetDC->SetBkColor(Eo::ViewBackgroundColor);
+  const auto* updateDoc = GetDocument();
+  const bool isPaperSpaceUpdate = updateDoc != nullptr && updateDoc->ActiveSpace() == EoDxf::Space::PaperSpace;
+  targetDC->SetBkColor(Eo::ViewBackgroundColorForSpace(isPaperSpaceUpdate));
   int savedRenderState{};
   int drawMode{};
   if ((hint & EoDb::kSafe) == EoDb::kSafe) { savedRenderState = renderState.Save(); }

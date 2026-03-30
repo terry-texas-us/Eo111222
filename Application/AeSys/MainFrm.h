@@ -11,7 +11,6 @@ class CMainFrame : public CMDIFrameWndEx {
   CMainFrame& operator=(const CMainFrame&) = delete;
   // Attributes
  private:
-  UINT m_applicationLook;
   int m_currentProgress;
   bool m_inProgress;
 
@@ -45,8 +44,6 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg void OnViewCustomize();
   afx_msg void OnViewFullScreen();
   afx_msg LRESULT OnToolbarContextMenu(WPARAM, LPARAM);
-  afx_msg void OnApplicationLook(UINT id);
-  afx_msg void OnUpdateApplicationLook(CCmdUI* pCmdUI);
 
   afx_msg LRESULT OnGetTabToolTip(WPARAM wp, LPARAM lp);
   afx_msg void OnTimer(UINT_PTR nIDEvent);
@@ -75,4 +72,7 @@ class CMainFrame : public CMDIFrameWndEx {
   CMFCStatusBar& GetStatusBar() { return m_statusBar; }
   EoMfOutputDockablePane& GetOutputPane() { return m_outputPane; }
   EoMfPropertiesDockablePane& GetPropertiesPane() { return m_propertiesPane; }
+
+  /// @brief Propagates the active color scheme to docking panes and chrome.
+  void ApplyColorScheme();
 };

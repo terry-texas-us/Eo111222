@@ -10,13 +10,21 @@ class EoMfOutputListBox : public CListBox {
  public:  // Implementation
   virtual ~EoMfOutputListBox();
 
+  /// @brief Sets the background and text colors used by this list box.
+  void SetColors(COLORREF background, COLORREF text);
+
  protected:
   afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
   afx_msg void OnEditCopy();
   afx_msg void OnEditClear();
   afx_msg void OnViewOutput();
+  afx_msg HBRUSH CtlColor(CDC* deviceContext, UINT ctlColor);
 
   DECLARE_MESSAGE_MAP()
+
+ private:
+  CBrush m_backgroundBrush;
+  COLORREF m_textColor{RGB(0, 0, 0)};
 };
 
 class EoMfOutputDockablePane : public CDockablePane {
@@ -35,9 +43,12 @@ class EoMfOutputDockablePane : public CDockablePane {
  public:  // Implementation
   virtual ~EoMfOutputDockablePane();
   void ModifyCaption(const CString& string) { SetWindowTextW(string); }
-  
+
   void AddStringToMessageList(const std::wstring& message) { m_OutputMessagesList.AddString(message.c_str()); }
   void AddStringToReportsList(const std::wstring& message) { m_OutputReportsList.AddString(message.c_str()); }
+
+  /// @brief Applies the active color scheme to both output list boxes.
+  void ApplyColorScheme();
 
  protected:
   afx_msg int OnCreate(LPCREATESTRUCT createStruct);

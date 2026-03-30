@@ -254,6 +254,70 @@ Every `EoDbPrimitive` carries a unique, non-zero `m_handle` (`std::uint64_t`) as
 - Extension dictionaries (XDICT, ACAD_REACTORS): not needed for current linkage.
 - PEG V2 handle serialization per primitive type.
 
+## Color Scheme (Dark / Light)
+
+### Architecture Overview
+AeSys has a two-scheme color system (Dark, Light) controlled by `Eo::activeColorScheme` and persisted via `EoApOptions::m_colorScheme` in the Windows registry. The MFC visual manager is hardcoded to `CMFCVisualManagerOffice2007::Office2007_ObsidianBlack` (set once in `CMainFrame::OnCreate`) and is **not** user-selectable — the old `Application Look` menu and registry key have been removed.
+
+### Where All Scheme Colors Live
+Every scheme-dependent color is a named field in `Eo::ColorSchemeColors` (`Eo.h`). Two `inline constexpr` instances define the palettes:
+
+| Instance | Constant | Purpose |
+|----------|----------|---------|
+| `Eo::darkSchemeColors` | `inline constexpr` | Dark scheme palette |
+| `Eo::lightSchemeColors` | `inline constexpr` | Light scheme palette |
+
+`Eo::SchemeColors(scheme)` returns a `const ColorSchemeColors&` for any scheme. All runtime accessors (`ModelSpaceBackgroundColor()`, `RubberbandColor()`, etc.) delegate to `SchemeColors(Eo::activeColorScheme)`.
+
+### Current Color Fields
+| Field | Dark RGB | Light RGB | Used by |
+|-------|----------|-----------|---------|
+| `modelSpaceBackground` | (33, 40, 47) | (255, 255, 255) | View background (model space), `App::ViewTextColor()` inversion |
+| `paperSpaceBackground` | (255, 255, 255) | (255, 255, 255) | View background (paper space) — always white |
+| `rubberband` | (102, 102, 102) | (140, 140, 140) | Rubberband / selection feedback lines |
+| `gridDot` | (80, 80, 80) | (200, 200, 200) | Grid dot rendering |
+| `paneBackground` | (37, 37, 38) | (255, 255, 255) | Property grid + output list box background |
+| `paneText` | (220, 220, 220) | (30, 30, 30) | Property grid + output list box text |
+| `paneGroupBackground` | (45, 45, 48) | (240, 240, 240) | Property grid group-row background |
+| `paneGroupText` | (0, 151, 251) | (0, 102, 204) | Property grid group-row text (accent blue) |
+| `paneLine` | (63, 63, 70) | (210, 210, 210) | Property grid separator lines |
+| `paneDescriptionBackground` | (45, 45, 48) | (245, 245, 245) | Property grid description area background |
+| `paneDescriptionText` | (180, 180, 180) | (80, 80, 80) | Property grid description area text |
+
+### How to Tweak a Color
+1. **Locate the field** in `Eo::ColorSchemeColors` (`Eo.h`, near the top of the `Eo` namespace).
+2. **Edit the `RGB(...)` value** in `darkSchemeColors` and/or `lightSchemeColors`. Both are `inline constexpr` — changes take effect at compile time with zero runtime cost.
+3. **Build.** Because `Eo.h` is included transitively by almost every translation unit (via `AeSys.h`), a full rebuild is triggered. No other files need editing unless you are adding a *new* color field.
+4. **Reference palette**: See `VS2026 - UI Shell Background Colors.md` in the repo root for the Visual Studio 2026 dark/light shell colors that the current values are modeled after.
+
+### How to Add a New Scheme Color
+1. Add a new `COLORREF` field to `ColorSchemeColors` (with a Doxygen `///<` comment).
+2. Append a value to **both** `darkSchemeColors` and `lightSchemeColors` (positional — order must match the struct).
+3. Add a convenience accessor in the `Eo` namespace if the color is read from multiple call sites (follow the `RubberbandColor()` pattern).
+4. In the UI element code, call `Eo::SchemeColors(Eo::activeColorScheme).yourNewField` (or the accessor).
+5. If the UI element needs runtime refresh on scheme change, add a call in `CMainFrame::ApplyColorScheme()` (or in the element's own `ApplyColorScheme()` method if it has one).
+
+### Propagation on Scheme Switch
+When the user switches schemes (View → Color Scheme → Dark/Light):
+1. `AeSysView::OnViewColorSchemeDark/Light()` sets `Eo::activeColorScheme`, calls `Eo::SyncViewBackgroundColor()`, persists to registry, updates the window class brush, and calls `InvalidateScene()`.
+2. It then calls `CMainFrame::ApplyColorScheme()`, which propagates to:
+   - `EoMfPropertiesDockablePane::ApplyColorScheme()` — calls `CMFCPropertyGridCtrl::SetCustomColors()`.
+   - `EoMfOutputDockablePane::ApplyColorScheme()` — calls `SetColors()` on each `EoMfOutputListBox` (reflected `WM_CTLCOLOR`).
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\Eo.h` | `ColorScheme` enum, `ColorSchemeColors` struct, `darkSchemeColors`, `lightSchemeColors`, accessor functions |
+| `AeSys\EoApOptions.h/.cpp` | `m_colorScheme` persistence (registry Load/Save) |
+| `AeSys\AeSysViewCommands.cpp` | `OnViewColorSchemeDark/Light` command handlers |
+| `AeSys\MainFrm.cpp` | `ApplyColorScheme()` propagation; hardcoded `Office2007_ObsidianBlack` in `OnCreate` |
+| `AeSys\EoMfPropertiesDockablePane.cpp` | `ApplyColorScheme()` — property grid custom colors |
+| `AeSys\EoMfOutputDockablePane.cpp` | `ApplyColorScheme()` — output list box colors via reflected `CtlColor` |
+| `AeSys\AeSys.h` | `App::ViewTextColor()` — derives text color from scheme's model-space background |
+
+### Deferred — "Use System Setting" (Auto Dark/Light)
+A third option (`ColorScheme::System`) could detect the OS dark/light preference at startup and on `WM_SETTINGCHANGE`. On Windows, this reads `HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize\AppsUseLightTheme` (DWORD: 0 = dark, 1 = light). This is a simple boolean — the OS provides no custom color configuration beyond dark vs. light. Implementation would add a `System` enumerator, a registry-reading helper, and a `WM_SETTINGCHANGE` handler that re-evaluates and calls the existing `ApplyColorScheme()` chain. This is deferred until the two explicit schemes are fully validated.
+
 ## User-Specific Notes
 - User may rename `EoDbLabeledLine` to `EoDbLabeledLine` in the future — it's a labeled line primitive, not a true DXF dimension.
 

@@ -39,6 +39,8 @@ void EoApOptions::Load() {
 
   m_tabsContextMenu = app.GetInt(L"TabsContextMenu", TRUE);
   m_disableSetRedraw = app.GetInt(L"DisableSetRedraw", TRUE);
+
+  m_colorScheme = static_cast<Eo::ColorScheme>(app.GetInt(L"ColorScheme", static_cast<int>(Eo::ColorScheme::Dark)));
 }
 void EoApOptions::Save() const {
   app.WriteInt(L"TabsStyle", m_tabsStyle);
@@ -57,4 +59,6 @@ void EoApOptions::Save() const {
 
   app.WriteInt(L"TabsContextMenu", m_tabsContextMenu);
   app.WriteInt(L"DisableSetRedraw", m_disableSetRedraw);
+
+  app.WriteInt(L"ColorScheme", static_cast<int>(m_colorScheme));
 }

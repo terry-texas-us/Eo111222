@@ -56,10 +56,6 @@ ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullScreen)
 ON_COMMAND(ID_WINDOW_MANAGER, &CMainFrame::OnWindowManager)
 #pragma warning(push)
 #pragma warning(disable : 4191)
-ON_COMMAND_RANGE(ID_VIEW_APPLOOK_OFF_2007_BLUE, ID_VIEW_APPLOOK_WINDOWS_7, OnApplicationLook)
-#pragma warning(pop)
-#pragma warning(push)
-#pragma warning(disable : 4191)
 ON_REGISTERED_MESSAGE(AFX_WM_TOOLBARMENU, OnToolbarContextMenu)
 ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
 ON_REGISTERED_MESSAGE(AFX_WM_ON_GET_TAB_TOOLTIP, OnGetTabToolTip)
@@ -68,18 +64,16 @@ ON_REGISTERED_MESSAGE(AFX_WM_RESETTOOLBAR, OnToolbarReset)
 #pragma warning(push)
 #pragma warning(disable : 4191)
 ON_UPDATE_COMMAND_UI(ID_MDI_TABBED, OnUpdateMdiTabbed)
-ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_APPLOOK_OFF_2007_BLUE, ID_VIEW_APPLOOK_WINDOWS_7, OnUpdateApplicationLook)
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
-CMainFrame::CMainFrame() : m_currentProgress(0), m_inProgress(false) {
-  m_applicationLook = static_cast<UINT>(app.GetInt(L"ApplicationLook", ID_VIEW_APPLOOK_OFF_2007_BLACK));
-}
+CMainFrame::CMainFrame() : m_currentProgress(0), m_inProgress(false) {}
 CMainFrame::~CMainFrame() {}
 int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   if (CMDIFrameWndEx::OnCreate(createStruct) == -1) { return -1; }
 
-  OnApplicationLook(m_applicationLook);
+  CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_ObsidianBlack);
+  CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOffice2007));
   UpdateMDITabs(FALSE);
 
   if (!m_menuBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE)) {
@@ -126,6 +120,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   DockPane(&m_standardToolBar);
   DockPane(&m_propertiesPane);
   DockPane(&m_outputPane);
+
+  ApplyColorScheme();
 
   EnableAutoHidePanes(CBRS_ALIGN_ANY);
 
@@ -229,46 +225,6 @@ LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
   }
   return 0;
 }
-void CMainFrame::OnApplicationLook(UINT look) {
-  m_applicationLook = look;
-
-  switch (m_applicationLook) {
-    case ID_VIEW_APPLOOK_WINDOWS_7:
-      CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows7));
-      break;
-
-    default:
-      switch (m_applicationLook) {
-        case ID_VIEW_APPLOOK_OFF_2007_BLUE:
-          CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_LunaBlue);
-          break;
-
-        case ID_VIEW_APPLOOK_OFF_2007_BLACK:
-          CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_ObsidianBlack);
-          break;
-
-        case ID_VIEW_APPLOOK_OFF_2007_AQUA:
-          CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_Aqua);
-          break;
-
-        case ID_VIEW_APPLOOK_OFF_2007_SILVER:
-          CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_Silver);
-          break;
-      }
-      CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOffice2007));
-  }
-  auto* dockingManager = GetDockingManager();
-  assert(dockingManager != nullptr);
-
-  dockingManager->AdjustPaneFrames();
-  dockingManager->SetDockingMode(DT_SMART);
-
-  RecalcLayout();
-  RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_FRAME | RDW_ERASE | RDW_UPDATENOW);
-
-  app.WriteInt(L"ApplicationLook", static_cast<int>(m_applicationLook));
-}
-void CMainFrame::OnUpdateApplicationLook(CCmdUI* pCmdUI) { pCmdUI->SetRadio(m_applicationLook == pCmdUI->m_nID); }
 BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWindow, CCreateContext* createContext) {
   if (!CMDIFrameWndEx::LoadFrame(resourceId, defaultStyle, parentWindow, createContext)) { return FALSE; }
 
@@ -519,4 +475,8 @@ CMFCToolBarComboBoxButton* CMainFrame::GetFindCombo() {
     }
   }
   return FoundCombo;
+}
+void CMainFrame::ApplyColorScheme() {
+  m_propertiesPane.ApplyColorScheme();
+  m_outputPane.ApplyColorScheme();
 }

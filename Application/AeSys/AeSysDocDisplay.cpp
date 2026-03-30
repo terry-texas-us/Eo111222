@@ -25,7 +25,8 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice)
 
     RemoveAllGroupsFromAllViews();
 
-    auto backgroundColor = renderDevice->SetBkColor(Eo::ViewBackgroundColor);
+    const bool isPaperSpace = m_activeSpace == EoDxf::Space::PaperSpace;
+    auto backgroundColor = renderDevice->SetBkColor(Eo::ViewBackgroundColorForSpace(isPaperSpace));
 
     EoDbPolygon::SetSpecialPolygonStyle(
         view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);

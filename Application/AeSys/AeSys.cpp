@@ -126,6 +126,10 @@ BOOL AeSys::InitInstance() {
 
   m_Options.Load();
 
+  // Apply persisted color scheme to the global state
+  Eo::activeColorScheme = m_Options.m_colorScheme;
+  Eo::SyncViewBackgroundColor();
+
   // Initialize managers
   InitContextMenuManager();
   InitKeyboardManager();

@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "Eo.h"
+
 class EoApOptions {
  public:
   EoApOptions();
@@ -12,6 +14,9 @@ class EoApOptions {
 
   BOOL m_tabsContextMenu;
   BOOL m_disableSetRedraw;
+
+  /// @brief Active view color scheme (Dark or Light). Persisted to the registry.
+  Eo::ColorScheme m_colorScheme{Eo::ColorScheme::Dark};
 
  public:
   void Load();

@@ -138,6 +138,40 @@ void AeSysView::OnUpdateViewAliased(CCmdUI* pCmdUI) {
   pCmdUI->SetCheck(m_d2dAliased);
 }
 
+void AeSysView::OnViewColorSchemeDark() {
+  Eo::activeColorScheme = Eo::ColorScheme::Dark;
+  Eo::SyncViewBackgroundColor();
+  app.m_Options.m_colorScheme = Eo::ColorScheme::Dark;
+  app.m_Options.Save();
+  auto previousBrush = reinterpret_cast<HBRUSH>(
+      SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(Eo::ViewBackgroundColor)));
+  if (previousBrush != nullptr) { ::DeleteObject(previousBrush); }
+  auto* mainFrame = dynamic_cast<CMainFrame*>(AfxGetMainWnd());
+  if (mainFrame != nullptr) { mainFrame->ApplyColorScheme(); }
+  InvalidateScene();
+}
+
+void AeSysView::OnViewColorSchemeLight() {
+  Eo::activeColorScheme = Eo::ColorScheme::Light;
+  Eo::SyncViewBackgroundColor();
+  app.m_Options.m_colorScheme = Eo::ColorScheme::Light;
+  app.m_Options.Save();
+  auto previousBrush = reinterpret_cast<HBRUSH>(
+      SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(Eo::ViewBackgroundColor)));
+  if (previousBrush != nullptr) { ::DeleteObject(previousBrush); }
+  auto* mainFrame = dynamic_cast<CMainFrame*>(AfxGetMainWnd());
+  if (mainFrame != nullptr) { mainFrame->ApplyColorScheme(); }
+  InvalidateScene();
+}
+
+void AeSysView::OnUpdateViewColorSchemeDark(CCmdUI* pCmdUI) {
+  pCmdUI->SetRadio(Eo::activeColorScheme == Eo::ColorScheme::Dark);
+}
+
+void AeSysView::OnUpdateViewColorSchemeLight(CCmdUI* pCmdUI) {
+  pCmdUI->SetRadio(Eo::activeColorScheme == Eo::ColorScheme::Light);
+}
+
 void AeSysView::OnViewWindowKeyplan() {
   EoDlgActiveViewKeyplan dlg(this);
   dlg.m_dRatio = m_Viewport.WidthInInches() / m_ViewTransform.UExtent();

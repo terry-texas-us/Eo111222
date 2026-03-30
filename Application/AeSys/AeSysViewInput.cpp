@@ -167,7 +167,7 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
     } else if (m_rubberbandType == Lines) {
       auto* deviceContext = GetDC();
       auto drawMode = deviceContext->SetROP2(R2_XORPEN);
-      CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
+      CPen grayPen(PS_SOLID, 0, Eo::RubberbandColor());
       auto* pen = deviceContext->SelectObject(&grayPen);
 
       deviceContext->MoveTo(m_rubberbandLogicalBegin);
@@ -182,7 +182,7 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
     } else {  // Rectangles, GDI path
       auto* deviceContext = GetDC();
       auto drawMode = deviceContext->SetROP2(R2_XORPEN);
-      CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
+      CPen grayPen(PS_SOLID, 0, Eo::RubberbandColor());
       auto* pen = deviceContext->SelectObject(&grayPen);
       auto* brush = deviceContext->SelectStockObject(NULL_BRUSH);
 
@@ -221,7 +221,7 @@ void AeSysView::RubberBandingDisable() {
     }
     auto* deviceContext = GetDC();
     int drawMode = deviceContext->SetROP2(R2_XORPEN);
-    CPen grayPen(PS_SOLID, 0, Eo::colorRubberband);
+    CPen grayPen(PS_SOLID, 0, Eo::RubberbandColor());
     auto* pen = deviceContext->SelectObject(&grayPen);
 
     if (m_rubberbandType == Lines) {
