@@ -71,19 +71,17 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\AeSys.ico"
+IDR_MAINFRAME           ICON                    "res\\Icons\\AeSys.ico"
 
-IDR_PEGTYPE             ICON                    "res\\AeSys.ico"
+IDR_PEGTYPE             ICON                    "res\\Icons\\AeSys.ico"
 
-IDR_TRATYPE             ICON                    "res\\AeSys_Gold.ico"
+IDR_TRATYPE             ICON                    "res\\Icons\\AeSys_Gold.ico"
+IDI_OUTPUT_WND          ICON                    "res\\Icons\\output_wnd.ico"
 
-IDI_OUTPUT_WND          ICON                    "res\\output_wnd.ico"
+IDI_OUTPUT_WND_HC       ICON                    "res\\Icons\\output_wnd_hc.ico"
 
-IDI_OUTPUT_WND_HC       ICON                    "res\\output_wnd_hc.ico"
-
-IDI_PROPERTIES_WND      ICON                    "res\\properties_wnd.ico"
-
-IDI_PROPERTIES_WND_HC   ICON                    "res\\properties_wnd_hc.ico"
+IDI_PROPERTIES_WND      ICON                    "res\\Icons\\properties_wnd.ico"
+IDI_PROPERTIES_WND_HC   ICON                    "res\\Icons\\properties_wnd_hc.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -91,19 +89,18 @@ IDI_PROPERTIES_WND_HC   ICON                    "res\\properties_wnd_hc.ico"
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar Bitmaps\\Toolbar.bmp"
 
-IDR_MAINFRAME_256       BITMAP                  "res\\Toolbar256.bmp"
+IDR_MAINFRAME_256       BITMAP                  "res\\Toolbar Bitmaps\\Toolbar256.bmp"
 
-IDR_PROPERTIES          BITMAP                  "res\\properties.bmp"
+IDR_PROPERTIES          BITMAP                  "res\\Toolbar Bitmaps\\properties.bmp"
+IDB_PROPERTIES_HC       BITMAP                  "res\\Toolbar Bitmaps\\properties_hc.bmp"
 
-IDB_PROPERTIES_HC       BITMAP                  "res\\properties_hc.bmp"
+IDB_LAYER_FILTERS       BITMAP                  "res\\Toolbar Bitmaps\\layer_filters.bmp"
 
-IDB_LAYER_FILTERS       BITMAP                  "res\\layer_filters.bmp"
+IDB_LAYER_STATES        BITMAP                  "res\\Toolbar Bitmaps\\LayerStates.bmp"
 
-IDB_LAYER_STATES        BITMAP                  "res\\LayerStates.bmp"
-
-IDB_LAYER_STATES_HC     BITMAP                  "res\\LayerStates_hc.bmp"
+IDB_LAYER_STATES_HC     BITMAP                  "res\\Toolbar Bitmaps\\LayerStates_hc.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2916,34 +2913,31 @@ END
 // Cursor
 //
 
-IDR_ANNOTATE_MODE       CURSOR                  "res\\AnnotateMode.cur"
+IDR_ANNOTATE_MODE       CURSOR                  "res\\Cursors\\AnnotateMode.cur"
 
-IDR_CUT_MODE            CURSOR                  "res\\CutMode.cur"
+IDR_CUT_MODE            CURSOR                  "res\\Cursors\\CutMode.cur"
 
-IDR_DIMENSION_MODE      CURSOR                  "res\\DimensionMode.cur"
+IDR_DIMENSION_MODE      CURSOR                  "res\\Cursors\\DimensionMode.cur"
 
-IDR_DRAW2_MODE          CURSOR                  "res\\Draw2Mode.cur"
+IDR_DRAW2_MODE          CURSOR                  "res\\Cursors\\Draw2Mode.cur"
 
-IDR_DRAW_MODE           CURSOR                  "res\\DrawMode.cur"
+IDR_DRAW_MODE           CURSOR                  "res\\Cursors\\DrawMode.cur"
 
-IDR_EDIT_MODE           CURSOR                  "res\\EditMode.cur"
+IDR_EDIT_MODE           CURSOR                  "res\\Cursors\\EditMode.cur"
 
-IDR_FIXUP_MODE          CURSOR                  "res\\FixupMode.cur"
+IDR_FIXUP_MODE          CURSOR                  "res\\Cursors\\FixupMode.cur"
+IDR_LPD_MODE            CURSOR                  "res\\Cursors\\LowPressureDuct.cur"
 
-IDR_LPD_MODE            CURSOR                  "res\\LowPressureDuct.cur"
+IDR_NODAL_MODE          CURSOR                  "res\\Cursors\\NodalMode.cur"
 
-IDR_NODAL_MODE          CURSOR                  "res\\NodalMode.cur"
+IDR_NODALR_MODE         CURSOR                  "res\\Cursors\\NodalRMode.cur"
 
-IDR_NODALR_MODE         CURSOR                  "res\\NodalRMode.cur"
+IDR_PIPE_MODE           CURSOR                  "res\\Cursors\\PipeMode.cur"
 
-IDR_PIPE_MODE           CURSOR                  "res\\PipeMode.cur"
+IDR_POWER_MODE          CURSOR                  "res\\Cursors\\PowerMode.cur"
+IDR_TRAP_MODE           CURSOR                  "res\\Cursors\\TrapMode.cur"
 
-IDR_POWER_MODE          CURSOR                  "res\\PowerMode.cur"
-
-IDR_TRAP_MODE           CURSOR                  "res\\TrapMode.cur"
-
-IDR_TRAPR_MODE          CURSOR                  "res\\TrapRMode.cur"
-
+IDR_TRAPR_MODE          CURSOR                  "res\\Cursors\\TrapRMode.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //

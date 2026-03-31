@@ -455,9 +455,9 @@
     <None Include="Markdowns\Job File Format.md" />
     <None Include="Markdowns\Peg &amp; Tra File Formats.md" />
     <!-- All resources (icons, cursors, bitmaps, psf, rc2, etc.) -->
-    <None Include="res\*.bmp" />
-    <None Include="res\*.cur" />
-    <None Include="res\*.ico" />
+    <None Include="res\Toolbar Bitmaps\AutoCad.bmp" />
+    <None Include="res\Cursors\AnnotateMode.cur" />
+    <None Include="res\Icons\AeSys_Gold.ico" />
     <None Include="res\Hatches\acad.pat" />
     <None Include="res\Simplex.psf" />
     <None Include="res\AeSys.rc2" />
