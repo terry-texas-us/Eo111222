@@ -2,25 +2,46 @@
 #include "StdAfx.h"
 
 #include <cassert>
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
 
 #include "AeSys.h"
 #include "EoApOptions.h"
 #include "EoCtrlFindComboBox.h"
+#include "EoMfVisualManager.h"
 #include "MainFrm.h"
 #include "Resource.h"
 
 namespace {
-constexpr int statusIcon = 0;
-constexpr int statusInfo = 1;
-constexpr int statusProgress = 2;
+
+/// @brief Applies the DWM immersive dark mode attribute to the window title bar.
+/// Requires Windows 10 1809+ (build 17763). Silently ignored on older Windows.
+/// On Windows 11 (build 22000+), also sets a custom caption color for warm tinting.
+void ApplyDwmDarkMode(HWND hwnd, bool darkMode) {
+  // DWMWA_USE_IMMERSIVE_DARK_MODE = 20 (Windows 10 20H1+; 19 on older insider builds)
+  constexpr DWORD dwmwaUseImmersiveDarkMode = 20;
+  BOOL useDarkMode = darkMode ? TRUE : FALSE;
+  ::DwmSetWindowAttribute(hwnd, dwmwaUseImmersiveDarkMode, &useDarkMode, sizeof(useDarkMode));
+
+  // DWMWA_CAPTION_COLOR = 35 (Windows 11 build 22000+). Sets a custom title bar background color.
+  // Silently fails on Windows 10 where the attribute is not supported.
+  constexpr DWORD dwmwaCaptionColor = 35;
+  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  COLORREF captionColor = colors.toolbarBackground;
+  ::DwmSetWindowAttribute(hwnd, dwmwaCaptionColor, &captionColor, sizeof(captionColor));
+}
+
+constexpr int statusInfo = 0;
+constexpr int statusLength = 1;
+constexpr int statusAngle = 2;
 constexpr int maxUserToolbars = 10;
 constexpr unsigned int firstUserToolBarId = AFX_IDW_CONTROLBAR_FIRST + 40;
 constexpr unsigned int lastUserToolBarId = firstUserToolBarId + maxUserToolbars - 1;
 constexpr unsigned int indicators[] = {
-    ID_INDICATOR_ICON,
-    ID_SEPARATOR,
-    ID_INDICATOR_PROGRESS,
-    ID_OP0,
+    ID_SEPARATOR,           // 0: message pane (fixed ~36 characters)
+    ID_INDICATOR_LENGTH,    // 1: dimension length display
+    ID_INDICATOR_ANGLE,     // 2: dimension angle display
+    ID_OP0,                 // 3–12: mode key-command help panes
     ID_OP1,
     ID_OP2,
     ID_OP3,
@@ -30,6 +51,7 @@ constexpr unsigned int indicators[] = {
     ID_OP7,
     ID_OP8,
     ID_OP9,
+    ID_SEPARATOR,           // 13: stretch filler — absorbs remaining space after mode panes
 };
 }  // namespace
 
@@ -44,7 +66,6 @@ ON_WM_DESTROY()
 #pragma warning(push)
 #pragma warning(disable : 4191)
 ON_WM_MDIACTIVATE()
-ON_WM_TIMER()
 #pragma warning(pop)
 ON_COMMAND(ID_CONTEXT_HELP, &CMDIFrameWndEx::OnContextHelp)
 ON_COMMAND(ID_DEFAULT_HELP, &CMDIFrameWndEx::OnHelpFinder)
@@ -67,14 +88,29 @@ ON_UPDATE_COMMAND_UI(ID_MDI_TABBED, OnUpdateMdiTabbed)
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
-CMainFrame::CMainFrame() : m_currentProgress(0), m_inProgress(false) {}
+CMainFrame::CMainFrame() {}
 CMainFrame::~CMainFrame() {}
 int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   if (CMDIFrameWndEx::OnCreate(createStruct) == -1) { return -1; }
 
-  CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_ObsidianBlack);
-  CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOffice2007));
-  UpdateMDITabs(FALSE);
+  CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(EoMfVisualManager));
+
+  // Configure MDI tabbed groups with hardcoded settings (no longer user-configurable)
+  {
+    CMDITabInfo tabInfo;
+    tabInfo.m_tabLocation = CMFCTabCtrl::LOCATION_TOP;
+    tabInfo.m_style = CMFCTabCtrl::STYLE_3D;
+    tabInfo.m_bTabIcons = FALSE;
+    tabInfo.m_bTabCloseButton = FALSE;
+    tabInfo.m_bTabCustomTooltips = TRUE;
+    tabInfo.m_bAutoColor = FALSE;
+    tabInfo.m_bDocumentMenu = TRUE;
+    tabInfo.m_bEnableTabSwap = TRUE;
+    tabInfo.m_bFlatFrame = TRUE;
+    tabInfo.m_bActiveTabCloseButton = TRUE;
+    tabInfo.m_nTabBorderSize = 0;
+    EnableMDITabbedGroups(TRUE, tabInfo);
+  }
 
   if (!m_menuBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create menubar\n");
@@ -84,7 +120,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
 
   // Prevent the menu bar from taking the focus on activation
   CMFCPopupMenu::SetForceMenuFocus(FALSE);
-  DWORD Style(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+  DWORD Style(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
   if (!m_standardToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
       !m_standardToolBar.LoadToolBar(static_cast<UINT>(app.HighColorMode() ? IDR_MAINFRAME_256 : IDR_MAINFRAME))) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create toolbar\n");
@@ -99,11 +135,19 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create status bar\n");
     return -1;
   }
+  // Remove the size gripper — modern apps allow resizing from any window edge/corner
+  m_statusBar.ModifyStyle(SBARS_SIZEGRIP, 0);
   m_statusBar.SetIndicators(indicators, sizeof(indicators) / sizeof(unsigned int));
 
-  m_statusBar.SetPaneStyle(statusIcon, SBPS_NOBORDERS);
-  m_statusBar.SetPaneStyle(statusInfo, SBPS_STRETCH | SBPS_NOBORDERS);
-  m_statusBar.SetPaneWidth(statusProgress, 80);
+  // Message pane: fixed width (~36 characters at default font size)
+  m_statusBar.SetPaneInfo(statusInfo, ID_SEPARATOR, SBPS_NOBORDERS, 288);
+
+  // Length and Angle panes: fixed width for dimension display
+  m_statusBar.SetPaneInfo(statusLength, ID_INDICATOR_LENGTH, SBPS_NOBORDERS, 120);
+  m_statusBar.SetPaneInfo(statusAngle, ID_INDICATOR_ANGLE, SBPS_NOBORDERS, 100);
+
+  // Trailing stretch filler: absorbs remaining space after mode panes
+  m_statusBar.SetPaneStyle(13, SBPS_STRETCH | SBPS_NOBORDERS);
 
   if (!CreateDockablePanes()) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create dockable panes\n");
@@ -143,6 +187,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   }
   // Shows the document name after thumbnail before the application name in a frame window title.
   ModifyStyle(0, FWS_PREFIXTITLE);
+
+  ApplyDwmDarkMode(GetSafeHwnd(), Eo::activeColorScheme == Eo::ColorScheme::Dark);
 
   return 0;
 }
@@ -294,50 +340,6 @@ BOOL CMainFrame::OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) {
 }
 
 void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
-  switch (app.m_Options.m_tabsStyle) {
-    case EoApOptions::None: {
-      int MDITabsType;
-
-      if (AreMDITabs(&MDITabsType)) {
-        if (MDITabsType == 1) {
-          EnableMDITabs(FALSE);
-        } else if (MDITabsType == 2) {
-          CMDITabInfo TabInfo;  // ignored when tabbed groups are disabled
-
-          EnableMDITabbedGroups(FALSE, TabInfo);
-        }
-      } else {
-        HWND ActiveWnd = (HWND)m_wndClientArea.SendMessage(WM_MDIGETACTIVE);
-        m_wndClientArea.PostMessage(WM_MDICASCADE);
-        ::BringWindowToTop(ActiveWnd);
-      }
-      break;
-    }
-    case EoApOptions::Standard: {
-      HWND ActiveWnd = (HWND)m_wndClientArea.SendMessage(WM_MDIGETACTIVE);
-      m_wndClientArea.PostMessageW(WM_MDIMAXIMIZE, WPARAM(ActiveWnd), 0L);
-      ::BringWindowToTop(ActiveWnd);
-
-      EnableMDITabs(TRUE, app.m_Options.m_mdiTabInfo.m_bTabIcons, app.m_Options.m_mdiTabInfo.m_tabLocation,
-          app.m_Options.m_mdiTabInfo.m_bTabCloseButton, app.m_Options.m_mdiTabInfo.m_style,
-          app.m_Options.m_mdiTabInfo.m_bTabCustomTooltips, app.m_Options.m_mdiTabInfo.m_bActiveTabCloseButton);
-
-      GetMDITabs().EnableAutoColor(app.m_Options.m_mdiTabInfo.m_bAutoColor);
-      GetMDITabs().EnableTabDocumentsMenu(app.m_Options.m_mdiTabInfo.m_bDocumentMenu);
-      GetMDITabs().EnableTabSwap(app.m_Options.m_mdiTabInfo.m_bEnableTabSwap);
-      GetMDITabs().SetTabBorderSize(app.m_Options.m_mdiTabInfo.m_nTabBorderSize);
-      GetMDITabs().SetFlatFrame(app.m_Options.m_mdiTabInfo.m_bFlatFrame);
-      break;
-    }
-    case EoApOptions::Grouped: {
-      HWND ActiveWnd = (HWND)m_wndClientArea.SendMessage(WM_MDIGETACTIVE);
-      m_wndClientArea.PostMessage(WM_MDIMAXIMIZE, WPARAM(ActiveWnd), 0L);
-      ::BringWindowToTop(ActiveWnd);
-
-      EnableMDITabbedGroups(TRUE, app.m_Options.m_mdiTabInfo);
-      break;
-    }
-  }
   CList<UINT, UINT> lstCommands;
   if (AreMDITabs(nullptr)) {
     lstCommands.AddTail(ID_WINDOW_ARRANGE);
@@ -347,44 +349,29 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
   }
   CMFCToolBar::SetNonPermittedCommands(lstCommands);
   if (resetMDIChild) {
-    BOOL bMaximize = app.m_Options.m_tabsStyle != EoApOptions::None;
-
     HWND hwndT = ::GetWindow(m_hWndMDIClient, GW_CHILD);
     while (hwndT != nullptr) {
       CMDIChildWndEx* frame = DYNAMIC_DOWNCAST(CMDIChildWndEx, CWnd::FromHandle(hwndT));
       if (frame != nullptr) {
-        if (bMaximize) {
-          frame->ModifyStyle(WS_SYSMENU, 0);
-        } else {
-          frame->ModifyStyle(0, WS_SYSMENU);
-          frame->ShowWindow(SW_RESTORE);
-
-          // Force a resize to happen on all the "restored" MDI child windows
-          CRect rectFrame;
-          frame->GetWindowRect(rectFrame);
-          frame->SetWindowPos(
-              nullptr, -1, -1, rectFrame.Width() + 1, rectFrame.Height(), SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
-          frame->SetWindowPos(
-              nullptr, -1, -1, rectFrame.Width(), rectFrame.Height(), SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
-        }
+        frame->ModifyStyle(WS_SYSMENU, 0);
       }
       hwndT = ::GetWindow(hwndT, GW_HWNDNEXT);
     }
-    if (bMaximize) { m_menuBar.SetMaximizeMode(FALSE); }
+    m_menuBar.SetMaximizeMode(FALSE);
   }
   if (m_propertiesPane.IsAutoHideMode()) {
     m_propertiesPane.BringWindowToTop();
     auto* divider = m_propertiesPane.GetDefaultPaneDivider();
     if (divider != nullptr) { divider->BringWindowToTop(); }
   }
-  CMDIFrameWndEx::m_bDisableSetRedraw = app.m_Options.m_disableSetRedraw;
+  CMDIFrameWndEx::m_bDisableSetRedraw = TRUE;
 
   RecalcLayout();
   RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 }
 
 BOOL CMainFrame::OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOOL bDrop) {
-  if (bDrop || !app.m_Options.m_tabsContextMenu) { return FALSE; }
+  if (bDrop) { return FALSE; }
   CMenu menu;
   VERIFY(menu.LoadMenu(IDR_POPUP_MDITABS));
 
@@ -434,33 +421,8 @@ void CMainFrame::SetPaneInfo(int index, UINT newId, UINT style, int width) {
 BOOL CMainFrame::SetPaneText(int index, LPCWSTR newText) { return m_statusBar.SetPaneText(index, newText); }
 void CMainFrame::SetPaneStyle(int index, UINT style) { m_statusBar.SetPaneStyle(index, style); }
 void CMainFrame::SetPaneTextColor(int index, COLORREF textColor) { m_statusBar.SetPaneTextColor(index, textColor); }
-static UINT_PTR TimerId = 2;
-
-void CMainFrame::OnStartProgress() {
-  if (m_inProgress) {
-    KillTimer(TimerId);
-    m_statusBar.EnablePaneProgressBar(statusProgress, -1);
-
-    m_inProgress = false;
-
-    return;
-  }
-  m_statusBar.EnablePaneProgressBar(statusProgress, 100);
-
-  m_currentProgress = 0;
-  m_inProgress = true;
-
-  TimerId = SetTimer(2, 1, nullptr);
-}
-void CMainFrame::OnTimer(UINT_PTR nIDEvent) {
-  ATLTRACE2(traceGeneral, 3, L"CMainFrame::OnTimer(%i)\n", nIDEvent);
-
-  if (nIDEvent == TimerId) {
-    m_currentProgress += 10;
-
-    if (m_currentProgress > 100) { m_currentProgress = 0; }
-    m_statusBar.SetPaneProgress(statusProgress, m_currentProgress);
-  }
+void CMainFrame::SetPaneBackgroundColor(int index, COLORREF backgroundColor) {
+  m_statusBar.SetPaneBackgroundColor(index, backgroundColor);
 }
 void CMainFrame::OnViewFullScreen() { ShowFullScreen(); }
 CMFCToolBarComboBoxButton* CMainFrame::GetFindCombo() {
@@ -477,6 +439,46 @@ CMFCToolBarComboBoxButton* CMainFrame::GetFindCombo() {
   return FoundCombo;
 }
 void CMainFrame::ApplyColorScheme() {
+  auto* visualManager = dynamic_cast<EoMfVisualManager*>(CMFCVisualManager::GetInstance());
+  if (visualManager != nullptr) {
+    visualManager->RefreshColors();
+  }
+  ApplyDwmDarkMode(GetSafeHwnd(), Eo::activeColorScheme == Eo::ColorScheme::Dark);
+
+  // Refresh Windows dark mode state for common controls (scroll bars, context menus)
+  HMODULE uxThemeModule = ::GetModuleHandleW(L"uxtheme.dll");
+  if (uxThemeModule != nullptr) {
+    // SetPreferredAppMode (ordinal 135): 2=ForceDark, 3=ForceLight
+    using SetPreferredAppMode_t = DWORD(WINAPI*)(int);
+    auto setPreferredAppMode =
+        reinterpret_cast<SetPreferredAppMode_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(135)));
+    if (setPreferredAppMode != nullptr) {
+      setPreferredAppMode(Eo::activeColorScheme == Eo::ColorScheme::Dark ? 2 : 3);
+    }
+    // FlushMenuThemes (ordinal 136): forces menus to re-read theme data
+    using FlushMenuThemes_t = void(WINAPI*)();
+    auto flushMenuThemes =
+        reinterpret_cast<FlushMenuThemes_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(136)));
+    if (flushMenuThemes != nullptr) {
+      flushMenuThemes();
+    }
+    // RefreshImmersiveColorPolicyState (ordinal 104): refreshes dark/light policy
+    using RefreshPolicy_t = void(WINAPI*)();
+    auto refreshPolicy =
+        reinterpret_cast<RefreshPolicy_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(104)));
+    if (refreshPolicy != nullptr) {
+      refreshPolicy();
+    }
+  }
+
+  // Set status bar text color for all panes to match the active scheme
+  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
+  int paneCount = m_statusBar.GetCount();
+  for (int i = 0; i < paneCount; i++) {
+    m_statusBar.SetPaneTextColor(i, schemeColors.statusBarText, FALSE);
+  }
+
   m_propertiesPane.ApplyColorScheme();
   m_outputPane.ApplyColorScheme();
+  RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 }

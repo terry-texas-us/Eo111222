@@ -21,10 +21,9 @@ class EoMfPropertiesDockablePane : public CDockablePane {
  protected:  // Attributes
   CMFCPropertyGridCtrl m_PropertyGrid;
   CFont m_PropertyGridFont;
-  CComboBox m_wndObjectCombo;
   EoMfPropertiesMFCToolBar m_PropertiesToolBar;
 
-  enum WorkspaceTabsSubItems { kTabsStyle, kTabLocation, kTabsAutoColor, kTabIcons, kTabBorderSize, kActiveViewScale };
+  enum PropertyDataTag { kActiveViewScale = 100 };
 
  public:  // Overrides
  public:  // Implementation
@@ -51,12 +50,11 @@ class EoMfPropertiesDockablePane : public CDockablePane {
   void AdjustLayout() override;
   void InitializePropertyGrid();
   void SetPropertyGridFont();
-  void SetWorkspaceTabsSubItemsState();
 
  public:  // Operations
   CMFCPropertyGridCtrl& GetPropertyGridCtrl() { return m_PropertyGrid; }
   CMFCPropertyGridProperty& GetActiveViewScaleProperty() { return *m_PropertyGrid.FindItemByData(kActiveViewScale); }
 
-  /// @brief Applies the active color scheme to the property grid and combo box.
+  /// @brief Applies the active color scheme to the property grid.
   void ApplyColorScheme();
 };

@@ -2,6 +2,7 @@
 
 #include "EoMfOutputDockablePane.h"
 #include "EoMfPropertiesDockablePane.h"
+#include "EoMfStatusBar.h"
 
 class CMainFrame : public CMDIFrameWndEx {
   DECLARE_DYNAMIC(CMainFrame)
@@ -9,10 +10,6 @@ class CMainFrame : public CMDIFrameWndEx {
   CMainFrame();
   CMainFrame(const CMainFrame&) = delete;
   CMainFrame& operator=(const CMainFrame&) = delete;
-  // Attributes
- private:
-  int m_currentProgress;
-  bool m_inProgress;
 
   // Operations
  public:
@@ -30,7 +27,7 @@ class CMainFrame : public CMDIFrameWndEx {
  protected:  // control bar embedded members
   CMFCMenuBar m_menuBar;
   CMFCToolBar m_standardToolBar;
-  CMFCStatusBar m_statusBar;
+  EoMfStatusBar m_statusBar;
   EoMfOutputDockablePane m_outputPane;
   EoMfPropertiesDockablePane m_propertiesPane;
   CMFCToolBarImages m_userImages;
@@ -46,7 +43,6 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg LRESULT OnToolbarContextMenu(WPARAM, LPARAM);
 
   afx_msg LRESULT OnGetTabToolTip(WPARAM wp, LPARAM lp);
-  afx_msg void OnTimer(UINT_PTR nIDEvent);
   afx_msg LRESULT OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam);
   afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);
 
@@ -67,9 +63,9 @@ class CMainFrame : public CMDIFrameWndEx {
   BOOL SetPaneText(int index, LPCWSTR newText);
   void SetPaneStyle(int index, UINT style);
   void SetPaneTextColor(int index, COLORREF textColor = COLORREF(-1));
-  void OnStartProgress();
+  void SetPaneBackgroundColor(int index, COLORREF backgroundColor = COLORREF(-1));
 
-  CMFCStatusBar& GetStatusBar() { return m_statusBar; }
+  EoMfStatusBar& GetStatusBar() { return m_statusBar; }
   EoMfOutputDockablePane& GetOutputPane() { return m_outputPane; }
   EoMfPropertiesDockablePane& GetPropertiesPane() { return m_propertiesPane; }
 

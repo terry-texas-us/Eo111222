@@ -257,32 +257,121 @@ Every `EoDbPrimitive` carries a unique, non-zero `m_handle` (`std::uint64_t`) as
 ## Color Scheme (Dark / Light)
 
 ### Architecture Overview
-AeSys has a two-scheme color system (Dark, Light) controlled by `Eo::activeColorScheme` and persisted via `EoApOptions::m_colorScheme` in the Windows registry. The MFC visual manager is hardcoded to `CMFCVisualManagerOffice2007::Office2007_ObsidianBlack` (set once in `CMainFrame::OnCreate`) and is **not** user-selectable — the old `Application Look` menu and registry key have been removed.
+AeSys has a full dark/light theme system controlled by `Eo::activeColorScheme` and persisted via `EoApOptions::m_colorScheme` in the Windows registry. A custom `EoMfVisualManager` (subclass of `CMFCVisualManagerOffice2007`) owns all chrome rendering — toolbars, tabs, menus, status bar, captions, pane borders, separators, and button glyphs. The base Office2007 `ObsidianBlack` style is loaded in the constructor solely for resource initialization; all visible drawing is overridden.
+
+### EoMfVisualManager — Custom Visual Manager
+`EoMfVisualManager` (`EoMfVisualManager.h/.cpp`) is `DECLARE_DYNCREATE` and set as the default manager in `CMainFrame::OnCreate` via `CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(EoMfVisualManager))`.
+
+**Cached GDI resources**: Brushes and pens are created from `Eo::ColorSchemeColors` in `RefreshColors()` and reused across paint cycles. `RefreshColors()` is called from the constructor and from `CMainFrame::ApplyColorScheme()` on scheme switch.
+
+**Drawing overrides** (~22 methods):
+| Category | Overrides |
+|----------|-----------|
+| Bar/toolbar background | `OnFillBarBackground`, `OnDrawBarGripper` (no-op) |
+| Tabs (MDI + pane) | `OnEraseTabsArea`, `OnEraseTabsFrame`, `OnDrawTab`, `OnFillTab`, `OnDrawTabCloseButton`, `GetTabTextColor` |
+| MDI client area | `OnEraseMDIClientArea`, `GetMDITabsBordersSize` (returns 0 — flat) |
+| Docking pane caption | `OnDrawPaneCaption` |
+| Toolbar buttons | `OnFillButtonInterior`, `OnDrawButtonBorder`, `OnDrawCaptionButton`, `GetToolbarButtonTextColor` |
+| Menu | `OnDrawMenuBorder`, `OnFillMenuImageRect`, `OnHighlightMenuItem`, `OnDrawMenuLabel`, `GetMenuItemTextColor` |
+| Status bar | `OnDrawStatusBarPaneBorder` |
+| Separators | `OnDrawSeparator` |
+| Pane borders/dividers | `OnDrawPaneBorder`, `OnDrawPaneDivider` |
+
+**Design rules for new overrides**:
+- Read colors from `Eo::SchemeColors(Eo::activeColorScheme)` at paint time for fields not cached as brushes/pens.
+- Use cached `m_toolbarBackgroundBrush`, `m_menuBackgroundBrush`, etc. for high-frequency fills.
+- DPI-aware glyph strokes: use `GetDpiForWindow()` → `penWidth = max(1, dpi/96)`.
+- Active tab gets a 2px accent bottom border (`captionActiveBackground` color).
+- `OnDrawBarGripper` is a no-op — toolbar gripper dots are suppressed.
+- `GetMDITabsBordersSize()` returns 0 — suppresses the default 3D sunken edge around MDI tab content.
+
+### Color Hierarchy (Depth-Based Tiers)
+Both schemes use a layered depth model where deeper/overlay surfaces are progressively lighter (dark) or darker (light):
+
+**Dark scheme** — warm charcoal foundation `RGB(40, 40, 36)` with warm bias (R ≥ G > B):
+| Tier | Surface | Dark RGB | Role |
+|------|---------|----------|------|
+| Deepest | Popup menus | (28, 28, 25) | `menuBackground` — overlay depth |
+| Panel | Pane background, inactive tabs | (32, 32, 29) | `paneBackground`, `tabInactiveBackground` |
+| Chrome | Title bar, toolbar, menu bar, status bar | (40, 40, 36) | `toolbarBackground`, `captionBackground`, `statusBarBackground` |
+| Elevated | Group rows, description area | (44, 44, 40) | `paneGroupBackground`, `paneDescriptionBackground` |
+| Tab active | Active MDI tab | (54, 54, 48) | `tabActiveBackground` |
+
+**Light scheme** — warm white foundation with subtle warm tint (R ≥ G > B):
+| Tier | Surface | Light RGB | Role |
+|------|---------|-----------|------|
+| Chrome | Title bar, toolbar, menu bar, status bar, separators | (240, 239, 236) | `toolbarBackground`, `captionBackground` |
+| Panel groups | Group rows | (242, 241, 238) | `paneGroupBackground` |
+| Panel | Description, inactive tabs | (246, 245, 242) | `paneDescriptionBackground`, `tabInactiveBackground` |
+| Menu | Popup dropdown background | (248, 247, 244) | `menuBackground` |
+| Content | Pane background | (253, 252, 249) | `paneBackground` |
+| Active tab | Active MDI tab | (255, 254, 251) | `tabActiveBackground` |
+| Document | Model-space background | (255, 255, 255) | Pure white for ACI clarity |
 
 ### Where All Scheme Colors Live
 Every scheme-dependent color is a named field in `Eo::ColorSchemeColors` (`Eo.h`). Two `inline constexpr` instances define the palettes:
 
 | Instance | Constant | Purpose |
 |----------|----------|---------|
-| `Eo::darkSchemeColors` | `inline constexpr` | Dark scheme palette |
-| `Eo::lightSchemeColors` | `inline constexpr` | Light scheme palette |
+| `Eo::darkSchemeColors` | `inline constexpr` | Dark scheme palette (28 fields) |
+| `Eo::lightSchemeColors` | `inline constexpr` | Light scheme palette (28 fields) |
 
 `Eo::SchemeColors(scheme)` returns a `const ColorSchemeColors&` for any scheme. All runtime accessors (`ModelSpaceBackgroundColor()`, `RubberbandColor()`, etc.) delegate to `SchemeColors(Eo::activeColorScheme)`.
 
 ### Current Color Fields
 | Field | Dark RGB | Light RGB | Used by |
 |-------|----------|-----------|---------|
-| `modelSpaceBackground` | (33, 40, 47) | (255, 255, 255) | View background (model space), `App::ViewTextColor()` inversion |
+| `modelSpaceBackground` | (40, 40, 36) | (255, 255, 255) | View background (model space), `App::ViewTextColor()` inversion |
 | `paperSpaceBackground` | (255, 255, 255) | (255, 255, 255) | View background (paper space) — always white |
-| `rubberband` | (102, 102, 102) | (140, 140, 140) | Rubberband / selection feedback lines |
-| `gridDot` | (80, 80, 80) | (200, 200, 200) | Grid dot rendering |
-| `paneBackground` | (37, 37, 38) | (255, 255, 255) | Property grid + output list box background |
-| `paneText` | (220, 220, 220) | (30, 30, 30) | Property grid + output list box text |
-| `paneGroupBackground` | (45, 45, 48) | (240, 240, 240) | Property grid group-row background |
-| `paneGroupText` | (0, 151, 251) | (0, 102, 204) | Property grid group-row text (accent blue) |
-| `paneLine` | (63, 63, 70) | (210, 210, 210) | Property grid separator lines |
-| `paneDescriptionBackground` | (45, 45, 48) | (245, 245, 245) | Property grid description area background |
-| `paneDescriptionText` | (180, 180, 180) | (80, 80, 80) | Property grid description area text |
+| `rubberband` | (120, 118, 112) | (142, 140, 136) | Rubberband / selection feedback lines |
+| `gridDot` | (68, 68, 62) | (202, 200, 196) | Grid dot rendering |
+| `paneBackground` | (32, 32, 29) | (253, 252, 249) | Property grid + output list box background |
+| `paneText` | (214, 212, 207) | (34, 33, 30) | Property grid + output list box text |
+| `paneGroupBackground` | (44, 44, 40) | (242, 241, 238) | Property grid group-row background |
+| `paneGroupText` | (176, 174, 169) | (120, 118, 114) | Property grid group-row text |
+| `paneLine` | (56, 56, 51) | (214, 213, 209) | Property grid separator lines |
+| `paneDescriptionBackground` | (44, 44, 40) | (246, 245, 242) | Property grid description area background |
+| `paneDescriptionText` | (176, 174, 169) | (84, 82, 78) | Property grid description area text |
+| `captionBackground` | (40, 40, 36) | (240, 239, 236) | Docking pane caption (inactive) |
+| `captionText` | (150, 148, 143) | (72, 70, 66) | Docking pane caption text (inactive) |
+| `captionActiveBackground` | (0, 122, 204) | (0, 122, 204) | Active caption + active tab accent (VS blue) |
+| `captionActiveText` | (255, 255, 255) | (255, 255, 255) | Active caption text |
+| `toolbarBackground` | (40, 40, 36) | (240, 239, 236) | Toolbar, menu bar, tab area, DWM title bar |
+| `menuBackground` | (28, 28, 25) | (248, 247, 244) | Popup dropdown menus |
+| `menuText` | (230, 228, 222) | (34, 33, 30) | Menu item text |
+| `menuHighlightBackground` | (52, 52, 47) | (220, 230, 240) | Menu/toolbar hover fill |
+| `menuHighlightBorder` | (0, 122, 204) | (0, 122, 204) | Menu/toolbar hover border (VS blue) |
+| `statusBarBackground` | (40, 40, 36) | (240, 239, 236) | Status bar background |
+| `statusBarText` | (214, 212, 207) | (34, 33, 30) | Status bar text |
+| `tabActiveBackground` | (54, 54, 48) | (255, 254, 251) | Active MDI/pane tab fill |
+| `tabActiveText` | (214, 212, 207) | (34, 33, 30) | Active tab text |
+| `tabInactiveBackground` | (32, 32, 29) | (246, 245, 242) | Inactive MDI/pane tab fill |
+| `tabInactiveText` | (150, 148, 143) | (72, 70, 66) | Inactive tab text |
+| `separatorColor` | (48, 48, 43) | (240, 239, 236) | Toolbar separators and dividers |
+| `borderColor` | (56, 56, 51) | (214, 213, 209) | Pane and toolbar borders |
+
+### Windows Dark Mode Integration
+Dark scroll bars, context menus, and title bar rendering require Windows 10+ undocumented uxtheme APIs:
+
+| API | Ordinal | Purpose | Called from |
+|-----|---------|---------|------------|
+| `SetPreferredAppMode` | 135 | Forces dark/light scroll bars and context menus (2=ForceDark, 3=ForceLight) | `AeSys::InitInstance()` (startup), `CMainFrame::ApplyColorScheme()` (switch) |
+| `FlushMenuThemes` | 136 | Forces menus to re-read theme data after mode change | `CMainFrame::ApplyColorScheme()` |
+| `RefreshImmersiveColorPolicyState` | 104 | Refreshes dark/light policy state | `CMainFrame::ApplyColorScheme()` |
+| `DWMWA_USE_IMMERSIVE_DARK_MODE` | DWM attr 20 | Dark title bar on Windows 10 20H1+ | `ApplyDwmDarkMode()` in `MainFrm.cpp` |
+| `DWMWA_CAPTION_COLOR` | DWM attr 35 | Custom title bar background color on Windows 11 | `ApplyDwmDarkMode()` in `MainFrm.cpp` |
+| `SetWindowTheme("DarkMode_Explorer")` | UxTheme | Dark scroll bars on individual HWNDs | `ApplyColorScheme()` in Properties/Output panes |
+
+### MDI Tab Configuration
+MDI tabbed groups are hardcoded in `CMainFrame::OnCreate` — no longer user-configurable:
+- `STYLE_3D`, `LOCATION_TOP`, `m_bActiveTabCloseButton = TRUE`, `m_nTabBorderSize = 0`
+- `m_bTabIcons = FALSE`, `m_bFlatFrame = TRUE`, `m_bEnableTabSwap = TRUE`
+- `EoApOptions` retains only `m_colorScheme` — all tab-style, context-menu, and `DisableSetRedraw` registry keys have been removed.
+
+### Flat Document View
+- `AeSysView::PreCreateWindow` strips `WS_EX_CLIENTEDGE` for a borderless document area.
+- `EoMfVisualManager::GetMDITabsBordersSize()` returns 0, suppressing the default 3D sunken edge that MFC draws around the MDI tab content area.
+- `CChildFrame::PreCreateWindow` always strips `WS_SYSMENU` (tabbed-group mode only).
 
 ### How to Tweak a Color
 1. **Locate the field** in `Eo::ColorSchemeColors` (`Eo.h`, near the top of the `Eo` namespace).
@@ -294,29 +383,111 @@ Every scheme-dependent color is a named field in `Eo::ColorSchemeColors` (`Eo.h`
 1. Add a new `COLORREF` field to `ColorSchemeColors` (with a Doxygen `///<` comment).
 2. Append a value to **both** `darkSchemeColors` and `lightSchemeColors` (positional — order must match the struct).
 3. Add a convenience accessor in the `Eo` namespace if the color is read from multiple call sites (follow the `RubberbandColor()` pattern).
-4. In the UI element code, call `Eo::SchemeColors(Eo::activeColorScheme).yourNewField` (or the accessor).
-5. If the UI element needs runtime refresh on scheme change, add a call in `CMainFrame::ApplyColorScheme()` (or in the element's own `ApplyColorScheme()` method if it has one).
+4. If the visual manager uses the color frequently, add a cached `CBrush` or `CPen` member to `EoMfVisualManager`, create it in `RefreshColors()`, and use it in the drawing override.
+5. In the UI element code, call `Eo::SchemeColors(Eo::activeColorScheme).yourNewField` (or the accessor).
+6. If the UI element needs runtime refresh on scheme change, add a call in `CMainFrame::ApplyColorScheme()` (or in the element's own `ApplyColorScheme()` method if it has one).
 
 ### Propagation on Scheme Switch
 When the user switches schemes (View → Color Scheme → Dark/Light):
 1. `AeSysView::OnViewColorSchemeDark/Light()` sets `Eo::activeColorScheme`, calls `Eo::SyncViewBackgroundColor()`, persists to registry, updates the window class brush, and calls `InvalidateScene()`.
-2. It then calls `CMainFrame::ApplyColorScheme()`, which propagates to:
-   - `EoMfPropertiesDockablePane::ApplyColorScheme()` — calls `CMFCPropertyGridCtrl::SetCustomColors()`.
-   - `EoMfOutputDockablePane::ApplyColorScheme()` — calls `SetColors()` on each `EoMfOutputListBox` (reflected `WM_CTLCOLOR`).
+2. It then calls `CMainFrame::ApplyColorScheme()`, which:
+   - Calls `EoMfVisualManager::RefreshColors()` to rebuild cached brushes/pens.
+   - Calls `ApplyDwmDarkMode()` for title bar dark mode attribute.
+   - Refreshes uxtheme dark mode state (ordinals 135, 136, 104) for scroll bars and context menus.
+   - Propagates to child panes:
+     - `EoMfPropertiesDockablePane::ApplyColorScheme()` — calls `CMFCPropertyGridCtrl::SetCustomColors()` + `SetWindowTheme("DarkMode_Explorer"/"Explorer")` on the grid and its children.
+     - `EoMfOutputDockablePane::ApplyColorScheme()` — calls `SetColors()` on each `EoMfOutputListBox` + `SetWindowTheme()` on list boxes and tab control.
+   - Calls `RedrawWindow(RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE)` to force a full repaint.
 
 ### Key Files
 | File | Role |
 |------|------|
-| `AeSys\Eo.h` | `ColorScheme` enum, `ColorSchemeColors` struct, `darkSchemeColors`, `lightSchemeColors`, accessor functions |
-| `AeSys\EoApOptions.h/.cpp` | `m_colorScheme` persistence (registry Load/Save) |
+| `AeSys\Eo.h` | `ColorScheme` enum, `ColorSchemeColors` struct (28 fields), `darkSchemeColors`, `lightSchemeColors`, accessor functions |
+| `AeSys\EoMfVisualManager.h/.cpp` | Custom visual manager — all chrome drawing overrides, cached brushes/pens, `RefreshColors()` |
+| `AeSys\EoApOptions.h/.cpp` | `m_colorScheme` persistence (registry Load/Save) — only member remaining |
 | `AeSys\AeSysViewCommands.cpp` | `OnViewColorSchemeDark/Light` command handlers |
-| `AeSys\MainFrm.cpp` | `ApplyColorScheme()` propagation; hardcoded `Office2007_ObsidianBlack` in `OnCreate` |
-| `AeSys\EoMfPropertiesDockablePane.cpp` | `ApplyColorScheme()` — property grid custom colors |
-| `AeSys\EoMfOutputDockablePane.cpp` | `ApplyColorScheme()` — output list box colors via reflected `CtlColor` |
+| `AeSys\MainFrm.cpp` | `ApplyColorScheme()` propagation; `ApplyDwmDarkMode()`; hardcoded MDI tab config in `OnCreate` |
+| `AeSys\AeSys.cpp` | `InitInstance()` — startup `SetPreferredAppMode` for dark scroll bars |
+| `AeSys\AeSysView.cpp` | `PreCreateWindow` — strips `WS_EX_CLIENTEDGE` for flat document view |
+| `AeSys\EoMfPropertiesDockablePane.cpp` | `ApplyColorScheme()` — property grid custom colors + dark scroll bar theme |
+| `AeSys\EoMfOutputDockablePane.cpp` | `ApplyColorScheme()` — output list box colors + dark scroll bar theme |
 | `AeSys\AeSys.h` | `App::ViewTextColor()` — derives text color from scheme's model-space background |
 
 ### Deferred — "Use System Setting" (Auto Dark/Light)
 A third option (`ColorScheme::System`) could detect the OS dark/light preference at startup and on `WM_SETTINGCHANGE`. On Windows, this reads `HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize\AppsUseLightTheme` (DWORD: 0 = dark, 1 = light). This is a simple boolean — the OS provides no custom color configuration beyond dark vs. light. Implementation would add a `System` enumerator, a registry-reading helper, and a `WM_SETTINGCHANGE` handler that re-evaluates and calls the existing `ApplyColorScheme()` chain. This is deferred until the two explicit schemes are fully validated.
+
+## Status Bar
+
+### Layout
+`EoMfStatusBar m_statusBar` in `CMainFrame` with 14 panes defined in the `indicators[]` array:
+
+| Index | ID | Width | Purpose |
+|-------|-----|-------|---------|
+| 0 | `ID_SEPARATOR` | 288px fixed | Message pane (~36 characters) |
+| 1 | `ID_INDICATOR_LENGTH` | 120px fixed | Dimension length display |
+| 2 | `ID_INDICATOR_ANGLE` | 100px fixed | Dimension angle display |
+| 3–12 | `ID_OP0`–`ID_OP9` | Dynamic (text extent) | Mode key-command help panes |
+| 13 | `ID_SEPARATOR` | `SBPS_STRETCH` | Trailing stretch filler — absorbs remaining space |
+
+The `statusInfo` constant (= 0), `statusLength` (= 1), `statusAngle` (= 2) are in `MainFrm.cpp`. `statusOp0` constant (= 3, in `ModeLine.cpp`) indexes the first mode pane.
+
+The trailing stretch filler (index 13) must be **after** the mode panes — `CMFCStatusBar` only lays out non-stretch panes correctly when the stretch pane doesn't precede them.
+
+The size gripper is removed (`SBARS_SIZEGRIP` stripped via `ModifyStyle` after creation) — modern apps allow resizing from any window edge/corner.
+
+### Length and Angle Display
+`UpdateStateInformation()` in `AeSysViewRender.cpp` routes `DimLen`/`DimAng` changes to both the view overlay (existing) and status bar panes 1 and 2. The view overlay is retained for testing while the status bar display is validated.
+
+### Mode Pane Highlighting
+Active mode key panes use **accent blue background** (`captionActiveBackground`) with white text (`captionActiveText`) instead of the legacy red text approach:
+- `ModeLineHighlightOp(command)` → `SetPaneBackgroundColor(index, captionActiveBackground)` + `SetPaneTextColor(index, captionActiveText)`
+- `ModeLineUnhighlightOp(command)` → `SetPaneBackgroundColor(index)` (reset) + `SetPaneTextColor(index, statusBarText)`
+- `ModeLineDisplay()` loops all 10 panes, applying highlight or normal state per-pane.
+
+**Visual Manager constraint**: `EoMfVisualManager::OnDrawStatusBarPaneBorder` is a **no-op**. MFC's `DoPaint` paints per-pane `clrBackground` (from `SetPaneBackgroundColor`) *before* calling `OnDrawStatusBarPaneBorder`. Any fill in the border override would erase the per-pane background, breaking accent blue highlighting. The base status bar color is painted by `OnFillBarBackground`.
+
+### Text Color on Scheme Switch
+`CMainFrame::ApplyColorScheme()` iterates all status bar panes and sets `SetPaneTextColor(i, statusBarText)` to ensure text switches from light to dark (or vice versa) when the scheme changes.
+
+### View Overlay
+`DrawPaneTextInView()` in `ModeLine.cpp` optionally draws mode key text as an overlay on the document view (enabled by `app.ModeInformationOverView()`). This duplicates the status bar content for full-screen visibility.
+
+### Length Pane Edit-in-Place
+`EoMfStatusBar` (custom `CMFCStatusBar` subclass) provides interactive edit-in-place for the Length pane (index 1):
+- **Double-click** on the Length pane creates an inline `CEdit` control positioned over the pane, pre-filled with the current formatted dimension length.
+- **Enter** commits: parses via `app.ParseLength(app.GetUnits(), buffer)`, applies via `app.SetDimensionLength()`, then calls `UpdateStateInformation(DimLen)` to refresh both the status bar pane and the view overlay.
+- **Escape** or **focus loss** cancels without changing the value.
+- The `CEdit` control (ID 1001) is created once and reused; font matches the status bar font.
+- This supplements (does not replace) the existing `.` accelerator → `EoDlgSetLength` dialog path.
+
+### Angle Pane Edit-in-Place
+Double-clicking the Angle pane (index 2) shows the same shared `CEdit` control for direct angle entry in degrees:
+- Pre-filled with the current dimension angle formatted as `%.3f` degrees.
+- **Enter** commits: parses via `_wtof()`, clamps to [-360, 360], applies via `app.SetDimensionAngle()`, then calls `UpdateStateInformation(DimAng)`.
+- **Escape** or **focus loss** cancels.
+- Supplements (does not replace) the existing `EoDlgSetAngle` dialog path.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\EoMfStatusBar.h/.cpp` | Custom status bar — edit-in-place for Length pane (index 1) and Angle pane (index 2), `WM_LBUTTONDBLCLK` hit-test, `PreTranslateMessage` for Enter/Escape |
+| `AeSys\MainFrm.cpp` | `indicators[]`, status bar creation, `ApplyColorScheme()` text color loop, `SetPaneBackgroundColor` wrapper |
+| `AeSys\MainFrm.h` | `EoMfStatusBar m_statusBar`, pane API wrappers |
+| `AeSys\ModeLine.cpp` | `statusOp0` constant, `ModeLineDisplay`, `ModeLineHighlightOp`, `ModeLineUnhighlightOp`, `DrawPaneTextInView` |
+| `AeSys\AeSysViewRender.cpp` | `UpdateStateInformation` routes DimLen/DimAng to status bar panes 1/2 |
+
+### Deferred
+- **DPI-aware fixed widths**: The 288px/120px/100px pane widths could be DPI-scaled.
+
+## Properties Pane
+
+### Layout
+`EoMfPropertiesDockablePane` contains a toolbar (`EoMfPropertiesMFCToolBar`) and a property grid (`CMFCPropertyGridCtrl`). The former "Application"/"Persistant" combo box dropdown has been removed — all items are now directly in the property grid.
+
+`AdjustLayout()` stacks toolbar then property grid vertically to fill the pane client area.
+
+### Dark Theme Toolbar Images
+The Properties toolbar buttons (Expand All, Sort, Properties1) use `properties.bmp` / `properties_hc.bmp` with dark glyphs — invisible on dark background. At creation time and in `ApplyColorScheme()`, the locked toolbar images are reloaded from the original bitmap, then adapted via `CMFCToolBarImages::AdaptColors(RGB(0,0,0), RGB(200,200,200))` in dark mode to shift black glyphs to light gray. Light mode uses the original unmodified bitmap.
 
 ## User-Specific Notes
 - User may rename `EoDbLabeledLine` to `EoDbLabeledLine` in the future — it's a labeled line primitive, not a true DXF dimension.

@@ -11,8 +11,8 @@
 #define IDR_LAYER                       106
 #define IDR_WINDOW                      107
 #define IDR_TRAP                        118
-#define ID_INDICATOR_ICON               119
-#define ID_INDICATOR_PROGRESS           120
+#define ID_INDICATOR_LENGTH             119
+#define ID_INDICATOR_ANGLE              120
 #define IDD_SETUP_COLOR                 121
 #define ID_VIEW_PROPERTIESWND           122
 #define IDD_UNITS                       123

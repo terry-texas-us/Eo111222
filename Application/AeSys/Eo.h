@@ -23,36 +23,94 @@ struct ColorSchemeColors {
   COLORREF paneLine;               ///< Property grid separator line color
   COLORREF paneDescriptionBackground; ///< Property grid description area background
   COLORREF paneDescriptionText;    ///< Property grid description area text
+  // Chrome colors (visual manager)
+  COLORREF captionBackground;      ///< Docking pane caption bar background
+  COLORREF captionText;            ///< Docking pane caption bar text
+  COLORREF captionActiveBackground; ///< Active docking pane caption bar background
+  COLORREF captionActiveText;      ///< Active docking pane caption bar text
+  COLORREF toolbarBackground;      ///< Toolbar / command bar fill
+  COLORREF menuBackground;         ///< Menu bar and dropdown background
+  COLORREF menuText;               ///< Menu bar and dropdown text
+  COLORREF menuHighlightBackground; ///< Menu item highlight/hover background
+  COLORREF menuHighlightBorder;    ///< Menu item highlight/hover border
+  COLORREF statusBarBackground;    ///< Status bar background
+  COLORREF statusBarText;          ///< Status bar text
+  COLORREF tabActiveBackground;    ///< Active MDI/pane tab background
+  COLORREF tabActiveText;          ///< Active MDI/pane tab text
+  COLORREF tabInactiveBackground;  ///< Inactive MDI/pane tab background
+  COLORREF tabInactiveText;        ///< Inactive MDI/pane tab text
+  COLORREF separatorColor;         ///< Toolbar separators and divider lines
+  COLORREF borderColor;            ///< Pane and toolbar borders
 };
 
-/// @brief Dark scheme — dark background, matches original hardcoded appearance.
+/// @brief Dark scheme — warm charcoal optimized for ACI color palette visibility.
+/// Foundation: RGB(40, 40, 36) — warm dark gray at AutoCAD luminance (~39).
+/// Warm bias (R ≥ G > B) improves Blue ACI #5 contrast while remaining perceptually neutral.
 inline constexpr ColorSchemeColors darkSchemeColors{
-    RGB(33, 40, 47),       // modelSpaceBackground
-    RGB(255, 255, 255),    // paperSpaceBackground (white, like AutoCAD)
-    RGB(102, 102, 102),    // rubberband
-    RGB(80, 80, 80),       // gridDot
-    RGB(37, 37, 38),       // paneBackground (VS-dark-like)
-    RGB(220, 220, 220),    // paneText
-    RGB(45, 45, 48),       // paneGroupBackground
-    RGB(0, 151, 251),      // paneGroupText (accent blue)
-    RGB(63, 63, 70),       // paneLine
-    RGB(45, 45, 48),       // paneDescriptionBackground
-    RGB(180, 180, 180),    // paneDescriptionText
+    RGB(40, 40, 36),       // modelSpaceBackground — warm charcoal, ACI-optimized
+    RGB(255, 255, 255),    // paperSpaceBackground (always white for print fidelity)
+    RGB(120, 118, 112),    // rubberband — warm mid-gray
+    RGB(68, 68, 62),       // gridDot — warm, subtle grid overlay
+    RGB(32, 32, 29),       // paneBackground — warm dark panel
+    RGB(214, 212, 207),    // paneText — warm primary text
+    RGB(44, 44, 40),       // paneGroupBackground — elevated within panel
+    RGB(176, 174, 169),    // paneGroupText — warm secondary text
+    RGB(56, 56, 51),       // paneLine — warm structural divider
+    RGB(44, 44, 40),       // paneDescriptionBackground — elevated within panel
+    RGB(176, 174, 169),    // paneDescriptionText — warm secondary text
+    // Chrome colors
+    RGB(40, 40, 36),       // captionBackground — unified with chrome
+    RGB(150, 148, 143),    // captionText — warm tertiary text
+    RGB(0, 122, 204),      // captionActiveBackground (VS accent blue)
+    RGB(255, 255, 255),    // captionActiveText
+    RGB(40, 40, 36),       // toolbarBackground — warm chrome tier
+    RGB(28, 28, 25),       // menuBackground — deepest tier
+    RGB(230, 228, 222),    // menuText — warm bright text (avoid grayed-out look)
+    RGB(52, 52, 47),       // menuHighlightBackground — warm subtle hover
+    RGB(0, 122, 204),      // menuHighlightBorder (VS accent blue)
+    RGB(40, 40, 36),       // statusBarBackground — match chrome
+    RGB(214, 212, 207),    // statusBarText — warm primary text
+    RGB(54, 54, 48),       // tabActiveBackground — elevated above chrome for clear distinction
+    RGB(214, 212, 207),    // tabActiveText — warm primary text
+    RGB(32, 32, 29),       // tabInactiveBackground — panel tier
+    RGB(150, 148, 143),    // tabInactiveText — warm tertiary text
+    RGB(48, 48, 43),       // separatorColor — warm divider
+    RGB(56, 56, 51),       // borderColor — warm structural border
 };
 
-/// @brief Light scheme — white/light background, similar to AutoCAD 2D Drafting light.
+/// @brief Light scheme — warm white optimized for ACI color palette visibility.
+/// Model-space background stays pure white for maximum ACI clarity.
+/// Chrome surfaces carry a subtle warm tint (R ≥ G > B) for visual harmony.
 inline constexpr ColorSchemeColors lightSchemeColors{
-    RGB(255, 255, 255),    // modelSpaceBackground
+    RGB(255, 255, 255),    // modelSpaceBackground — pure white for ACI clarity
     RGB(255, 255, 255),    // paperSpaceBackground
-    RGB(140, 140, 140),    // rubberband
-    RGB(200, 200, 200),    // gridDot
-    RGB(255, 255, 255),    // paneBackground
-    RGB(30, 30, 30),       // paneText
-    RGB(240, 240, 240),    // paneGroupBackground
-    RGB(0, 102, 204),      // paneGroupText (accent blue)
-    RGB(210, 210, 210),    // paneLine
-    RGB(245, 245, 245),    // paneDescriptionBackground
-    RGB(80, 80, 80),       // paneDescriptionText
+    RGB(142, 140, 136),    // rubberband — warm mid-gray
+    RGB(202, 200, 196),    // gridDot — warm subtle grid
+    RGB(253, 252, 249),    // paneBackground — warm near-white
+    RGB(34, 33, 30),       // paneText — warm near-black
+    RGB(242, 241, 238),    // paneGroupBackground — warm light panel
+    RGB(120, 118, 114),    // paneGroupText — warm secondary text
+    RGB(214, 213, 209),    // paneLine — warm light divider
+    RGB(246, 245, 242),    // paneDescriptionBackground — warm light
+    RGB(84, 82, 78),       // paneDescriptionText — warm dark gray
+    // Chrome colors
+    RGB(240, 239, 236),    // captionBackground — warm light chrome
+    RGB(72, 70, 66),       // captionText — warm dark text
+    RGB(0, 122, 204),      // captionActiveBackground (VS accent blue)
+    RGB(255, 255, 255),    // captionActiveText
+    RGB(240, 239, 236),    // toolbarBackground — warm light chrome
+    RGB(248, 247, 244),    // menuBackground — warm lightest tier
+    RGB(34, 33, 30),       // menuText — warm near-black
+    RGB(220, 230, 240),    // menuHighlightBackground — soft warm-blue hover
+    RGB(0, 122, 204),      // menuHighlightBorder (VS accent blue)
+    RGB(240, 239, 236),    // statusBarBackground — warm chrome
+    RGB(34, 33, 30),       // statusBarText — warm near-black
+    RGB(255, 254, 251),    // tabActiveBackground — warm white
+    RGB(34, 33, 30),       // tabActiveText — warm near-black
+    RGB(246, 245, 242),    // tabInactiveBackground — warm off-white
+    RGB(72, 70, 66),       // tabInactiveText — warm dark text
+    RGB(240, 239, 236),    // separatorColor — warm chrome tier
+    RGB(214, 213, 209),    // borderColor — warm light border
 };
 
 /// @brief Returns the color set for the given scheme.
@@ -87,7 +145,7 @@ inline ColorScheme activeColorScheme = ColorScheme::Dark;
 
 /// @brief Legacy mutable alias — kept for callers that read the background color
 /// without knowing the active space. Synchronized via SyncViewBackgroundColor().
-inline COLORREF ViewBackgroundColor = RGB(33, 0x28, 47);
+inline COLORREF ViewBackgroundColor = RGB(40, 40, 36);
 
 /// @brief Synchronizes the legacy ViewBackgroundColor global with the active scheme's model-space background.
 /// Must be called after changing activeColorScheme.
@@ -173,8 +231,8 @@ constexpr COLORREF colorWhite = RGB(255, 255, 255);  // ACI 7
 constexpr COLORREF colorGray = RGB(128, 128, 128);  // ACI 8
 constexpr COLORREF colorNavy = RGB(0, 0, 128);
 
-constexpr COLORREF colorRubberband = RGB(102, 102, 102);
-constexpr COLORREF colorViewBackground = RGB(33, 40, 47);
+constexpr COLORREF colorRubberband = RGB(120, 118, 112);
+constexpr COLORREF colorViewBackground = RGB(40, 40, 36);
 
 constexpr double MmPerInch = 25.4;
 

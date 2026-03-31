@@ -2,7 +2,6 @@
 
 #include "AeSys.h"
 #include "ChildFrm.h"
-#include "EoApOptions.h"
 
 IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWndEx)
 
@@ -36,7 +35,8 @@ BOOL CChildFrame::DestroyWindow() {
 BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs) {
   if (!CMDIChildWndEx::PreCreateWindow(cs)) { return FALSE; }
 
-  if (app.m_Options.m_tabsStyle != EoApOptions::None) { cs.style &= ~WS_SYSMENU; }
+  // Always running in tabbed groups — hide the per-child system menu
+  cs.style &= ~WS_SYSMENU;
   return TRUE;
 }
 

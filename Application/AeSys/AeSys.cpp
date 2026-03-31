@@ -130,6 +130,22 @@ BOOL AeSys::InitInstance() {
   Eo::activeColorScheme = m_Options.m_colorScheme;
   Eo::SyncViewBackgroundColor();
 
+  // Enable Windows dark mode for common controls (scroll bars, context menus, etc.)
+  // Uses undocumented but widely-adopted uxtheme ordinals (available since Windows 10 1903).
+  {
+    HMODULE uxThemeModule = ::LoadLibraryExW(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+    if (uxThemeModule != nullptr) {
+      // SetPreferredAppMode (ordinal 135): 0=Default, 1=AllowDark, 2=ForceDark, 3=ForceLight
+      using SetPreferredAppMode_t = DWORD(WINAPI*)(int);
+      auto setPreferredAppMode =
+          reinterpret_cast<SetPreferredAppMode_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(135)));
+      if (setPreferredAppMode != nullptr) {
+        setPreferredAppMode(Eo::activeColorScheme == Eo::ColorScheme::Dark ? 2 : 3);
+      }
+      // uxtheme.dll stays loaded for the process lifetime — do not FreeLibrary
+    }
+  }
+
   // Initialize managers
   InitContextMenuManager();
   InitKeyboardManager();
@@ -264,20 +280,20 @@ void AeSys::AddStringToMessageList(const std::wstring& message) {
   auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
 
   mainFrame->GetOutputPane().AddStringToMessageList(message);
-  if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message.c_str()); }
+  if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(0, message.c_str()); }
 }
 void AeSys::AddStringToMessageList(const wchar_t* message) {
   auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
 
   mainFrame->GetOutputPane().AddStringToMessageList(std::wstring(message));
-  if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message); }
+  if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(0, message); }
 }
 
 void AeSys::AddStringToReportsList(const std::wstring& message) {
   auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
 
   mainFrame->GetOutputPane().AddStringToReportsList(message);
-  if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(1, message.c_str()); }
+  if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(0, message.c_str()); }
 }
 
 void AeSys::AddModeInformationToMessageList() {

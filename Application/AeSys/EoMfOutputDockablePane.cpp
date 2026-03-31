@@ -1,5 +1,8 @@
 ﻿#include "Stdafx.h"
 
+#include <Uxtheme.h>
+#pragma comment(lib, "UxTheme.lib")
+
 #include <cassert>
 #include <vector>
 #include <wchar.h>
@@ -26,7 +29,9 @@ int EoMfOutputDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
 
   const CRect emptyRect{};
 
-  if (!m_wndTabs.Create(CMFCTabCtrl::STYLE_FLAT, emptyRect, this, 1, CMFCTabCtrl::LOCATION_BOTTOM)) {
+  // STYLE_3D instead of STYLE_FLAT — removes the |◀◀▶▶| scroll buttons that are unnecessary
+  // with only two tabs.  Our visual manager draws the tab appearance regardless of style.
+  if (!m_wndTabs.Create(CMFCTabCtrl::STYLE_3D, emptyRect, this, 1, CMFCTabCtrl::LOCATION_BOTTOM)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create output tab window\n");
     return -1;
   }
@@ -49,6 +54,14 @@ int EoMfOutputDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   m_OutputMessagesList.AddString(L"Message output is being displayed here.");
   m_OutputReportsList.AddString(L"Reports output is being displayed here.");
 
+  // Apply dark scroll bar theme at creation time
+  if (Eo::activeColorScheme == Eo::ColorScheme::Dark) {
+    ::SetWindowTheme(m_OutputMessagesList.GetSafeHwnd(), L"DarkMode_Explorer", nullptr);
+    ::SetWindowTheme(m_OutputReportsList.GetSafeHwnd(), L"DarkMode_Explorer", nullptr);
+    ::SetWindowTheme(m_wndTabs.GetSafeHwnd(), L"DarkMode_Explorer", nullptr);
+    ::SetWindowTheme(GetSafeHwnd(), L"DarkMode_Explorer", nullptr);
+  }
+
   return 0;
 }
 
@@ -62,6 +75,13 @@ void EoMfOutputDockablePane::ApplyColorScheme() {
   const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
   m_OutputMessagesList.SetColors(colors.paneBackground, colors.paneText);
   m_OutputReportsList.SetColors(colors.paneBackground, colors.paneText);
+
+  // Apply dark/light scroll bar theme to child controls
+  const wchar_t* themeName = (Eo::activeColorScheme == Eo::ColorScheme::Dark) ? L"DarkMode_Explorer" : L"Explorer";
+  ::SetWindowTheme(m_OutputMessagesList.GetSafeHwnd(), themeName, nullptr);
+  ::SetWindowTheme(m_OutputReportsList.GetSafeHwnd(), themeName, nullptr);
+  ::SetWindowTheme(m_wndTabs.GetSafeHwnd(), themeName, nullptr);
+  ::SetWindowTheme(GetSafeHwnd(), themeName, nullptr);
 }
 EoMfOutputListBox::EoMfOutputListBox() {}
 EoMfOutputListBox::~EoMfOutputListBox() {}

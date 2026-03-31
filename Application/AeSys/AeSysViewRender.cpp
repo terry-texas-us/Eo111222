@@ -723,7 +723,7 @@ void AeSysView::DisplayOdometer() {
       Position.Append(L" [" + lengthText.TrimLeft() + L" @ " + angle + L"]");
     }
     auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    mainFrame->SetPaneText(1, Position);
+    mainFrame->SetPaneText(0, Position);
 #if defined(LEGACY_ODOMETER)
     DrawOdometerInView(this, GetDC(), units, m_vRelPos);
 #endif
@@ -816,6 +816,14 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     LengthAndAngle.Append(L" @ " + Angle);
     deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, LengthAndAngle,
         static_cast<UINT>(LengthAndAngle.GetLength()), 0);
+
+    // Also display in status bar panes (Length = pane 1, Angle = pane 2)
+    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+    CString lengthText;
+    app.FormatLength(lengthText, app.GetUnits(), app.DimensionLength());
+    lengthText.TrimLeft();
+    mainFrame->SetPaneText(1, lengthText);
+    mainFrame->SetPaneText(2, Angle);
   }
   deviceContext->SetBkColor(oldBkColor);
   deviceContext->SetTextColor(oldTextColor);

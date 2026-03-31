@@ -399,7 +399,8 @@ void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deacti
 BOOL AeSysView::PreCreateWindow(CREATESTRUCT& createStructure) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::PreCreateWindow(%08.8lx) ", this, createStructure);
 
-  // @todo Modify the Window class or styles here by modifying the CREATESTRUCT
+  // Remove the sunken 3D client edge — gives a flat, modern border-less document view
+  createStructure.dwExStyle &= ~WS_EX_CLIENTEDGE;
   return CView::PreCreateWindow(createStructure);
 }
 

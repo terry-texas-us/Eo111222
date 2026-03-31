@@ -168,6 +168,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
+    <ClCompile Include="EoMfStatusBar.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -310,6 +311,7 @@
     <ClCompile Include="EoGsViewTransform.cpp" />
     <ClCompile Include="EoMfOutputDockablePane.cpp" />
     <ClCompile Include="EoMfPropertiesDockablePane.cpp" />
+    <ClCompile Include="EoMfVisualManager.cpp" />
     <ClCompile Include="EoOdaConverter.cpp" />
     <ClCompile Include="IdleState.cpp" />
     <ClCompile Include="Lex.cpp" />
@@ -429,6 +431,8 @@
     <ClInclude Include="EoGsViewTransform.h" />
     <ClInclude Include="EoMfOutputDockablePane.h" />
     <ClInclude Include="EoMfPropertiesDockablePane.h" />
+    <ClInclude Include="EoMfStatusBar.h" />
+    <ClInclude Include="EoMfVisualManager.h" />
     <ClInclude Include="EoOdaConverter.h" />
     <ClInclude Include="Hatch.h" />
     <ClInclude Include="Header.h" />

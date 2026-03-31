@@ -3000,8 +3000,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_INDICATOR_ICON       " <icon>"
-    ID_INDICATOR_PROGRESS   " <progress>"
     ID_VIEW_PROPERTIESWND   "Show or hide the properties bar\nToggle Properities"
 END
 
@@ -3266,6 +3264,8 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_INDICATOR_LENGTH     "Length"
+    ID_INDICATOR_ANGLE      "Angle"
     ID_OP0                  "0"
     ID_OP1                  "1"
     ID_OP2                  "2"
