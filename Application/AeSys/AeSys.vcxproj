@@ -455,7 +455,6 @@
     <None Include="Markdowns\Job File Format.md" />
     <None Include="Markdowns\Peg &amp; Tra File Formats.md" />
     <!-- All resources (icons, cursors, bitmaps, psf, rc2, etc.) -->
-    <None Include="res\Toolbar Bitmaps\AutoCad.bmp" />
     <None Include="res\Cursors\AnnotateMode.cur" />
     <None Include="res\Icons\AeSys_Gold.ico" />
     <None Include="res\Hatches\acad.pat" />
@@ -487,6 +486,18 @@
     <ProjectReference Include="..\..\Core Libraries\EoDdeLib\EoDdeLib.vcxproj">
       <Project>{b8f5e3a1-7c2d-4e9f-a6d8-3f1b5c8e2d4a}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\Toolbar Bitmaps\LayerStates.bmp" />
+    <Image Include="res\Toolbar Bitmaps\LayerStates_hc.bmp" />
+    <Image Include="res\Toolbar Bitmaps\layer_filters.bmp" />
+    <Image Include="res\Toolbar Bitmaps\menuimages.bmp" />
+    <Image Include="res\Toolbar Bitmaps\menuimages_hc.bmp" />
+    <Image Include="res\Toolbar Bitmaps\properties.bmp" />
+    <Image Include="res\Toolbar Bitmaps\properties_hc.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar256.bmp" />
+    <Image Include="res\Toolbar Bitmaps\UserImages.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="CopyResources" AfterTargets="Build">
