@@ -7,6 +7,7 @@
 
 #include "AeSys.h"
 #include "EoApOptions.h"
+#include "EoCtrlColorComboBox.h"
 #include "EoCtrlFindComboBox.h"
 #include "EoMfVisualManager.h"
 #include "MainFrm.h"
@@ -34,6 +35,8 @@ void ApplyDwmDarkMode(HWND hwnd, bool darkMode) {
 constexpr int statusInfo = 0;
 constexpr int statusLength = 1;
 constexpr int statusAngle = 2;
+constexpr int statusScale = 13;
+constexpr int statusZoom = 14;
 constexpr int maxUserToolbars = 10;
 constexpr unsigned int firstUserToolBarId = AFX_IDW_CONTROLBAR_FIRST + 40;
 constexpr unsigned int lastUserToolBarId = firstUserToolBarId + maxUserToolbars - 1;
@@ -51,7 +54,9 @@ constexpr unsigned int indicators[] = {
     ID_OP7,
     ID_OP8,
     ID_OP9,
-    ID_SEPARATOR,           // 13: stretch filler — absorbs remaining space after mode panes
+    ID_INDICATOR_SCALE,     // 13: world scale display
+    ID_INDICATOR_ZOOM,      // 14: zoom ratio display
+    ID_SEPARATOR,           // 15: stretch filler — absorbs remaining space
 };
 }  // namespace
 
@@ -85,6 +90,7 @@ ON_REGISTERED_MESSAGE(AFX_WM_RESETTOOLBAR, OnToolbarReset)
 #pragma warning(push)
 #pragma warning(disable : 4191)
 ON_UPDATE_COMMAND_UI(ID_MDI_TABBED, OnUpdateMdiTabbed)
+ON_UPDATE_COMMAND_UI(ID_PENCOLOR_COMBO, OnUpdatePenColorCombo)
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
@@ -146,8 +152,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_statusBar.SetPaneInfo(statusLength, ID_INDICATOR_LENGTH, SBPS_NOBORDERS, 120);
   m_statusBar.SetPaneInfo(statusAngle, ID_INDICATOR_ANGLE, SBPS_NOBORDERS, 100);
 
-  // Trailing stretch filler: absorbs remaining space after mode panes
-  m_statusBar.SetPaneStyle(13, SBPS_STRETCH | SBPS_NOBORDERS);
+  // World Scale and Zoom Ratio panes: fixed width, placed after mode panes
+  m_statusBar.SetPaneInfo(statusScale, ID_INDICATOR_SCALE, SBPS_NOBORDERS, 120);
+  m_statusBar.SetPaneInfo(statusZoom, ID_INDICATOR_ZOOM, SBPS_NOBORDERS, 100);
+
+  // Trailing stretch filler: absorbs remaining space after all fixed panes
+  m_statusBar.SetPaneStyle(15, SBPS_STRETCH | SBPS_NOBORDERS);
 
   if (!CreateDockablePanes()) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create dockable panes\n");
@@ -264,6 +274,7 @@ LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
     case IDR_MAINFRAME:
     case IDR_MAINFRAME_256: {
       m_standardToolBar.ReplaceButton(ID_EDIT_FIND, EoCtrlFindComboBox(), FALSE);
+      m_standardToolBar.ReplaceButton(ID_PENCOLOR_COMBO, EoCtrlColorComboBox(), FALSE);
       break;
     }
     case IDR_PROPERTIES:
@@ -481,4 +492,19 @@ void CMainFrame::ApplyColorScheme() {
   m_propertiesPane.ApplyColorScheme();
   m_outputPane.ApplyColorScheme();
   RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
+}
+
+void CMainFrame::OnUpdatePenColorCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
+
+void CMainFrame::SyncColorCombo(std::int16_t aciIndex) {
+  CObList buttonsList;
+  if (CMFCToolBar::GetCommandButtons(ID_PENCOLOR_COMBO, buttonsList) > 0) {
+    for (auto pos = buttonsList.GetHeadPosition(); pos != nullptr;) {
+      auto* button = DYNAMIC_DOWNCAST(EoCtrlColorComboBox, buttonsList.GetNext(pos));
+      if (button != nullptr) {
+        button->SetCurrentColor(aciIndex);
+        break;
+      }
+    }
+  }
 }

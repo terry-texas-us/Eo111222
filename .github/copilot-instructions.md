@@ -419,7 +419,7 @@ A third option (`ColorScheme::System`) could detect the OS dark/light preference
 ## Status Bar
 
 ### Layout
-`EoMfStatusBar m_statusBar` in `CMainFrame` with 14 panes defined in the `indicators[]` array:
+`EoMfStatusBar m_statusBar` in `CMainFrame` with 16 panes defined in the `indicators[]` array:
 
 | Index | ID | Width | Purpose |
 |-------|-----|-------|---------|
@@ -427,11 +427,13 @@ A third option (`ColorScheme::System`) could detect the OS dark/light preference
 | 1 | `ID_INDICATOR_LENGTH` | 120px fixed | Dimension length display |
 | 2 | `ID_INDICATOR_ANGLE` | 100px fixed | Dimension angle display |
 | 3–12 | `ID_OP0`–`ID_OP9` | Dynamic (text extent) | Mode key-command help panes |
-| 13 | `ID_SEPARATOR` | `SBPS_STRETCH` | Trailing stretch filler — absorbs remaining space |
+| 13 | `ID_INDICATOR_SCALE` | 120px fixed | World Scale display (1:nnn.nn) |
+| 14 | `ID_INDICATOR_ZOOM` | 100px fixed | Zoom ratio display (nnn.nnn) |
+| 15 | `ID_SEPARATOR` | `SBPS_STRETCH` | Trailing stretch filler — absorbs remaining space |
 
-The `statusInfo` constant (= 0), `statusLength` (= 1), `statusAngle` (= 2) are in `MainFrm.cpp`. `statusOp0` constant (= 3, in `ModeLine.cpp`) indexes the first mode pane.
+The `statusInfo` constant (= 0), `statusLength` (= 1), `statusAngle` (= 2), `statusScale` (= 13), `statusZoom` (= 14) are in `MainFrm.cpp`. `statusOp0` constant (= 3, in `ModeLine.cpp`) indexes the first mode pane.
 
-The trailing stretch filler (index 13) must be **after** the mode panes — `CMFCStatusBar` only lays out non-stretch panes correctly when the stretch pane doesn't precede them.
+The trailing stretch filler (index 15) must be **after** all fixed panes — `CMFCStatusBar` only lays out non-stretch panes correctly when the stretch pane doesn't precede them.
 
 The size gripper is removed (`SBARS_SIZEGRIP` stripped via `ModifyStyle` after creation) — modern apps allow resizing from any window edge/corner.
 
@@ -467,17 +469,60 @@ Double-clicking the Angle pane (index 2) shows the same shared `CEdit` control f
 - **Escape** or **focus loss** cancels.
 - Supplements (does not replace) the existing `EoDlgSetAngle` dialog path.
 
+### World Scale Pane Edit-in-Place
+Double-clicking the World Scale pane (index 13) shows the shared `CEdit` control for direct scale entry:
+- Pre-filled with the current world scale formatted as `%.2f`.
+- **Enter** commits: parses via `_wtof()`, validates > 0, applies via `AeSysView::SetWorldScale()`, then calls `UpdateStateInformation(Scale)` and updates the Properties pane `kActiveViewScale` property.
+- **Escape** or **focus loss** cancels.
+- The `Scale` flag in `UpdateStateInformation` routes the formatted value to status bar pane 13.
+
+### Zoom Ratio Pane Edit-in-Place
+Double-clicking the Zoom Ratio pane (index 14) shows the shared `CEdit` control for direct zoom entry:
+- Pre-filled with the current zoom ratio formatted as `%.3f`.
+- **Enter** commits: parses and applies the new zoom ratio to the active view.
+- **Escape** or **focus loss** cancels.
+- The `WndRatio` flag in `UpdateStateInformation` routes the formatted value to status bar pane 14.
+
+### View Overlay Migration Status
+The view overlay (`DrawPaneTextInView` in `ModeLine.cpp`, enabled by `app.ModeInformationOverView()`) is being progressively migrated to the status bar and toolbars:
+
+| Overlay Item | Flag | Target | Status |
+|---|---|---|---|
+| Pen Color | `Pen` | Toolbar color combo | ✅ Implemented |
+| Dim Length | `DimLen` | Status bar pane 1 | ✅ Implemented |
+| Dim Angle | `DimAng` | Status bar pane 2 | ✅ Implemented |
+| World Scale | `Scale` | Status bar pane 13 | ✅ Implemented |
+| Zoom Ratio | `WndRatio` | Status bar pane 14 | ✅ Implemented |
+| Line Type | `Line` | Properties toolbar combo | Deferred |
+| Text Height | `TextHeight` | Properties toolbar or pane | Deferred |
+| Work Count | `WorkCount` | Status bar message pane | Deferred |
+| Trap Count | `TrapCount` | Status bar message pane | Deferred |
+
 ### Key Files
 | File | Role |
 |------|------|
-| `AeSys\EoMfStatusBar.h/.cpp` | Custom status bar — edit-in-place for Length pane (index 1) and Angle pane (index 2), `WM_LBUTTONDBLCLK` hit-test, `PreTranslateMessage` for Enter/Escape |
+| `AeSys\EoMfStatusBar.h/.cpp` | Custom status bar — edit-in-place for Length (1), Angle (2), World Scale (13), Zoom Ratio (14); `WM_LBUTTONDBLCLK` hit-test, `PreTranslateMessage` for Enter/Escape |
 | `AeSys\MainFrm.cpp` | `indicators[]`, status bar creation, `ApplyColorScheme()` text color loop, `SetPaneBackgroundColor` wrapper |
 | `AeSys\MainFrm.h` | `EoMfStatusBar m_statusBar`, pane API wrappers |
 | `AeSys\ModeLine.cpp` | `statusOp0` constant, `ModeLineDisplay`, `ModeLineHighlightOp`, `ModeLineUnhighlightOp`, `DrawPaneTextInView` |
-| `AeSys\AeSysViewRender.cpp` | `UpdateStateInformation` routes DimLen/DimAng to status bar panes 1/2 |
+| `AeSys\AeSysViewRender.cpp` | `UpdateStateInformation` routes DimLen/DimAng to panes 1/2, Scale to pane 13, WndRatio to pane 14 |
 
 ### Deferred
-- **DPI-aware fixed widths**: The 288px/120px/100px pane widths could be DPI-scaled.
+- **DPI-aware fixed widths**: The 288px/120px/100px/120px/100px pane widths could be DPI-scaled.
+- **Zoom-extent buttons**: Quick-action buttons (Zoom Extents, Zoom In, Zoom Out) adjacent to the Zoom Ratio pane.
+
+## Toolbar Controls
+
+### Standard Toolbar (`IDR_MAINFRAME_256`)
+File (New, Open, Save, Save All) | Edit (Cut, Copy, Paste) | Print, About, Help | Find combo (`EoCtrlFindComboBox`) | Color combo (`EoCtrlColorComboBox`)
+
+### Color Combo (`EoCtrlColorComboBox`)
+Owner-draw ACI color selection combo embedded in the standard toolbar. Dark-theme-aware with color swatches, named colors (1–7), By Layer, By Block, dynamic custom entries (ACI 8–255), and "More Colors..." fallback to `EoDlgSetupColor`. Custom `Serialize` override (`VERSIONABLE_SCHEMA | 2`) bypasses `CMFCToolBarComboBoxButton::Serialize` to avoid DWORD_PTR truncation and item duplication on toolbar state restore. See `Documentation/MFC Custom Color Selection Control.md` for full architecture.
+
+Key files: `EoCtrlColorComboBox.h/.cpp`, `EoMfVisualManager.h/.cpp` (combo border/dropdown overrides), `MainFrm.cpp` (`OnToolbarReset`, `SyncColorCombo`).
+
+### Planned: Properties Toolbar
+A separate dockable toolbar for primitive render-state properties: **Color** (move from standard toolbar), **Line Style**, **Line Weight**. These form a logical group (like AutoCAD's Properties toolbar). Isolating them avoids crowding the standard toolbar with multiple combos and limits serialization blast radius. Implementation deferred until status bar migration is complete.
 
 ## Properties Pane
 

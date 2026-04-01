@@ -393,6 +393,15 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
     return;
   }
 
+  // GDI path: XOR erasure (R2_XORPEN) produces black artifacts on non-black
+  // backgrounds (e.g., dark theme charcoal RGB(40,40,36)). XOR only erases
+  // correctly when color XOR color = 0 = background, which requires black.
+  // Invalidate the scene to trigger a full re-render instead.
+  if ((hint & EoDb::kErase) == EoDb::kErase) {
+    InvalidateScene();
+    return;
+  }
+
   // Choose the target DC: back buffer if available, otherwise screen DC
   CDC* targetDC{};
   CDC* screenDC{};
@@ -408,9 +417,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   const bool isPaperSpaceUpdate = updateDoc != nullptr && updateDoc->ActiveSpace() == EoDxf::Space::PaperSpace;
   targetDC->SetBkColor(Eo::ViewBackgroundColorForSpace(isPaperSpaceUpdate));
   int savedRenderState{};
-  int drawMode{};
   if ((hint & EoDb::kSafe) == EoDb::kSafe) { savedRenderState = renderState.Save(); }
-  if ((hint & EoDb::kErase) == EoDb::kErase) { drawMode = renderState.SetROP2(targetDC, R2_XORPEN); }
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor()); }
 
   EoGsRenderDeviceGdi renderDevice(targetDC);
@@ -422,7 +429,6 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   if (!isHandledByState) { DisplayUsingHint(sender, hint, hintObject, &renderDevice); }
 
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(0); }
-  if ((hint & EoDb::kErase) == EoDb::kErase) { renderState.SetROP2(targetDC, drawMode); }
   if ((hint & EoDb::kSafe) == EoDb::kSafe) { renderState.Restore(targetDC, savedRenderState); }
   targetDC->SetBkColor(backgroundColor);
 
@@ -777,6 +783,8 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     swprintf_s(szBuf, 32, L"P%-4i", renderState.Color());
     deviceContext->ExtTextOutW(
         rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
+    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+    if (mainFrame != nullptr) { mainFrame->SyncColorCombo(renderState.Color()); }
   }
   if ((item & Line) == Line) {
     rectangle.SetRect(22 * averageCharacterWidth, top, 28 * averageCharacterWidth, top + height);
@@ -796,6 +804,13 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     swprintf_s(szBuf, 32, L"1:%-6.2f", GetWorldScale());
     deviceContext->ExtTextOutW(
         rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
+
+    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+    if (mainFrame != nullptr) {
+      CString scaleText;
+      scaleText.Format(L"1:%.2f", GetWorldScale());
+      mainFrame->SetPaneText(13, scaleText);
+    }
   }
   if ((item & WndRatio) == WndRatio) {
     rectangle.SetRect(48 * averageCharacterWidth, top, 58 * averageCharacterWidth, top + height);
@@ -804,6 +819,13 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     RatioAsString.Format(L"=%-8.3f", Ratio);
     deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, RatioAsString,
         static_cast<UINT>(RatioAsString.GetLength()), 0);
+
+    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+    if (mainFrame != nullptr) {
+      CString zoomText;
+      zoomText.Format(L"%.3f", Ratio);
+      mainFrame->SetPaneText(14, zoomText);
+    }
   }
   if ((item & DimLen) == DimLen || (item & DimAng) == DimAng) {
     rectangle.SetRect(58 * averageCharacterWidth, top, 90 * averageCharacterWidth, top + height);

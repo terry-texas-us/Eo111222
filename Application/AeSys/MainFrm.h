@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <cstdint>
+
 #include "EoMfOutputDockablePane.h"
 #include "EoMfPropertiesDockablePane.h"
 #include "EoMfStatusBar.h"
@@ -40,6 +42,7 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg void OnUpdateMdiTabbed(CCmdUI* pCmdUI);
   afx_msg void OnViewCustomize();
   afx_msg void OnViewFullScreen();
+  afx_msg void OnUpdatePenColorCombo(CCmdUI* pCmdUI);
   afx_msg LRESULT OnToolbarContextMenu(WPARAM, LPARAM);
 
   afx_msg LRESULT OnGetTabToolTip(WPARAM wp, LPARAM lp);
@@ -71,4 +74,7 @@ class CMainFrame : public CMDIFrameWndEx {
 
   /// @brief Propagates the active color scheme to docking panes and chrome.
   void ApplyColorScheme();
+
+  /// @brief Synchronizes the toolbar pen-color combo box with the current ACI index.
+  void SyncColorCombo(std::int16_t aciIndex);
 };

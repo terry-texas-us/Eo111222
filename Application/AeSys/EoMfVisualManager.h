@@ -50,6 +50,12 @@ class EoMfVisualManager : public CMFCVisualManagerOffice2007 {
   void OnDrawCaptionButton(CDC* deviceContext, CMFCCaptionButton* button, BOOL active, BOOL isHorz,
       BOOL isMaximized, BOOL isDisabled, int imageId = -1) override;
 
+  // --- Toolbar combo boxes ---
+  void OnDrawComboBorder(CDC* deviceContext, CRect rect, BOOL isDisabled, BOOL isDropped,
+      BOOL isHighlighted, CMFCToolBarComboBoxButton* button) override;
+  void OnDrawComboDropButton(CDC* deviceContext, CRect rect, BOOL isDisabled, BOOL isDropped,
+      BOOL isHighlighted, CMFCToolBarComboBoxButton* button) override;
+
   // --- Menu ---
   COLORREF GetMenuItemTextColor(CMFCToolBarMenuButton* button, BOOL isHighlighted, BOOL isDisabled) override;
 

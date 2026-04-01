@@ -168,6 +168,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
+    <ClCompile Include="EoCtrlColorComboBox.cpp" />
     <ClCompile Include="EoMfStatusBar.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -335,6 +336,7 @@
     <ClInclude Include="DrawModeState.h" />
     <ClInclude Include="Eo.h" />
     <ClInclude Include="EoApOptions.h" />
+    <ClInclude Include="EoCtrlColorComboBox.h" />
     <ClInclude Include="EoCtrlColorsButton.h" />
     <ClInclude Include="EoCtrlFindComboBox.h" />
     <ClInclude Include="EoDb.h" />
@@ -495,6 +497,7 @@
     <Image Include="res\Toolbar Bitmaps\menuimages_hc.bmp" />
     <Image Include="res\Toolbar Bitmaps\properties.bmp" />
     <Image Include="res\Toolbar Bitmaps\properties_hc.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar-light.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar256.bmp" />
     <Image Include="res\Toolbar Bitmaps\UserImages.bmp" />

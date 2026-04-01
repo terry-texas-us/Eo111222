@@ -330,6 +330,53 @@ void EoMfVisualManager::OnDrawCaptionButton(CDC* deviceContext, CMFCCaptionButto
   deviceContext->SelectObject(previousPen);
 }
 
+// --- Toolbar combo boxes ---
+
+void EoMfVisualManager::OnDrawComboBorder(CDC* deviceContext, CRect rect, BOOL /*isDisabled*/,
+    BOOL /*isDropped*/, BOOL /*isHighlighted*/, CMFCToolBarComboBoxButton* /*button*/) {
+  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+
+  // Fill entire combo button area with paneBackground for a flat, dark appearance.
+  CBrush fillBrush(colors.paneBackground);
+  deviceContext->FillRect(rect, &fillBrush);
+
+  // Draw subtle 1px border matching the scheme's structural border color.
+  CPen* previousPen = deviceContext->SelectObject(&m_borderPen);
+  CBrush* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
+  deviceContext->Rectangle(rect);
+  deviceContext->SelectObject(previousBrush);
+  deviceContext->SelectObject(previousPen);
+}
+
+void EoMfVisualManager::OnDrawComboDropButton(CDC* deviceContext, CRect rect, BOOL /*isDisabled*/,
+    BOOL /*isDropped*/, BOOL /*isHighlighted*/, CMFCToolBarComboBoxButton* /*button*/) {
+  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+
+  // Fill with paneBackground — flat, no 3D effect.
+  CBrush fillBrush(colors.paneBackground);
+  deviceContext->FillRect(rect, &fillBrush);
+
+  // DPI-aware downward-pointing arrow glyph.
+  UINT dpi = ::GetDpiForSystem();
+  int arrowWidth = ::MulDiv(7, dpi, 96) | 1;  // Ensure odd for centered tip
+  int arrowHeight = ::MulDiv(4, dpi, 96);
+  if (arrowHeight < 3) { arrowHeight = 3; }
+
+  int centerX = (rect.left + rect.right) / 2;
+  int centerY = (rect.top + rect.bottom) / 2;
+  int left = centerX - arrowWidth / 2;
+  int top = centerY - arrowHeight / 2;
+
+  POINT points[3] = {{left, top}, {left + arrowWidth, top}, {centerX, top + arrowHeight}};
+  CBrush arrowBrush(colors.menuText);
+  CPen arrowPen(PS_SOLID, 1, colors.menuText);
+  auto* oldBrush = deviceContext->SelectObject(&arrowBrush);
+  auto* oldPen = deviceContext->SelectObject(&arrowPen);
+  deviceContext->Polygon(points, 3);
+  deviceContext->SelectObject(oldBrush);
+  deviceContext->SelectObject(oldPen);
+}
+
 // --- Status bar ---
 
 void EoMfVisualManager::OnDrawStatusBarPaneBorder(

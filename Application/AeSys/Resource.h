@@ -10,6 +10,8 @@
 #define IDR_TRATYPE                     104
 #define IDR_LAYER                       106
 #define IDR_WINDOW                      107
+#define ID_INDICATOR_SCALE              115
+#define ID_INDICATOR_ZOOM               116
 #define IDR_TRAP                        118
 #define ID_INDICATOR_LENGTH             119
 #define ID_INDICATOR_ANGLE              120
@@ -613,6 +615,8 @@
 #define ID_VIEW_USER_TOOLBAR10          4700
 #define ID_SETUP_LAYERPROPERTIES        4733
 #define ID_EDIT_FIND_COMBO              4763
+#define ID_PENCOLOR_COMBO               4764
+#define ID_PENCOLOR_MORE                4765
 #define ID_VIEW_MODELSPACE              4811
 #define ID_VIEW_DIRECT2D                4812
 #define ID_VIEW_ALIASED                 4813
@@ -796,7 +800,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        345
-#define _APS_NEXT_COMMAND_VALUE         4904
+#define _APS_NEXT_COMMAND_VALUE         4906
 #define _APS_NEXT_CONTROL_VALUE         1460
 #define _APS_NEXT_SYMED_VALUE           500
 #endif
