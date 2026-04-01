@@ -514,15 +514,19 @@ The view overlay (`DrawPaneTextInView` in `ModeLine.cpp`, enabled by `app.ModeIn
 ## Toolbar Controls
 
 ### Standard Toolbar (`IDR_MAINFRAME_256`)
-File (New, Open, Save, Save All) | Edit (Cut, Copy, Paste) | Print, About, Help | Find combo (`EoCtrlFindComboBox`) | Color combo (`EoCtrlColorComboBox`)
+File (New, Open, Save, Save All) | Edit (Cut, Copy, Paste) | Print, About, Help | Find combo (`EoCtrlFindComboBox`)
+
+### Render Properties Toolbar (`IDR_RENDER_PROPERTIES`)
+A separate dockable toolbar for primitive render-state properties. Isolates combo serialization from the standard toolbar, limiting the blast radius of any registry corruption.
+
+Currently contains: **Color combo** (`EoCtrlColorComboBox`). Future additions: **Line Style**, **Line Weight**.
+
+`IDR_RENDER_PROPERTIES` (190) is a single-button toolbar resource. `OnToolbarReset` replaces the placeholder with `EoCtrlColorComboBox()`. The toolbar has its own serialization stream — the standard toolbar no longer carries the color combo state.
 
 ### Color Combo (`EoCtrlColorComboBox`)
-Owner-draw ACI color selection combo embedded in the standard toolbar. Dark-theme-aware with color swatches, named colors (1–7), By Layer, By Block, dynamic custom entries (ACI 8–255), and "More Colors..." fallback to `EoDlgSetupColor`. Custom `Serialize` override (`VERSIONABLE_SCHEMA | 2`) bypasses `CMFCToolBarComboBoxButton::Serialize` to avoid DWORD_PTR truncation and item duplication on toolbar state restore. See `Documentation/MFC Custom Color Selection Control.md` for full architecture.
+Owner-draw ACI color selection combo embedded in the render properties toolbar. Dark-theme-aware with color swatches, named colors (1–7), By Layer, By Block, dynamic custom entries (ACI 8–255), and "More Colors..." fallback to `EoDlgSetupColor`. Custom `Serialize` override (`VERSIONABLE_SCHEMA | 2`) bypasses `CMFCToolBarComboBoxButton::Serialize` to avoid DWORD_PTR truncation and item duplication on toolbar state restore. See `Documentation/MFC Custom Color Selection Control.md` for full architecture.
 
 Key files: `EoCtrlColorComboBox.h/.cpp`, `EoMfVisualManager.h/.cpp` (combo border/dropdown overrides), `MainFrm.cpp` (`OnToolbarReset`, `SyncColorCombo`).
-
-### Planned: Properties Toolbar
-A separate dockable toolbar for primitive render-state properties: **Color** (move from standard toolbar), **Line Style**, **Line Weight**. These form a logical group (like AutoCAD's Properties toolbar). Isolating them avoids crowding the standard toolbar with multiple combos and limits serialization blast radius. Implementation deferred until status bar migration is complete.
 
 ## Properties Pane
 

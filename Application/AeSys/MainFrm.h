@@ -29,6 +29,7 @@ class CMainFrame : public CMDIFrameWndEx {
  protected:  // control bar embedded members
   CMFCMenuBar m_menuBar;
   CMFCToolBar m_standardToolBar;
+  CMFCToolBar m_renderPropertiesToolBar;  ///< Properties toolbar (Color, future LineStyle/LineWeight)
   EoMfStatusBar m_statusBar;
   EoMfOutputDockablePane m_outputPane;
   EoMfPropertiesDockablePane m_propertiesPane;
@@ -43,6 +44,7 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg void OnViewCustomize();
   afx_msg void OnViewFullScreen();
   afx_msg void OnUpdatePenColorCombo(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateLineTypeCombo(CCmdUI* pCmdUI);
   afx_msg LRESULT OnToolbarContextMenu(WPARAM, LPARAM);
 
   afx_msg LRESULT OnGetTabToolTip(WPARAM wp, LPARAM lp);
@@ -77,4 +79,7 @@ class CMainFrame : public CMDIFrameWndEx {
 
   /// @brief Synchronizes the toolbar pen-color combo box with the current ACI index.
   void SyncColorCombo(std::int16_t aciIndex);
+
+  /// @brief Synchronizes the toolbar line-type combo box with the current line type.
+  void SyncLineTypeCombo(std::int16_t lineTypeIndex, const std::wstring& lineTypeName);
 };

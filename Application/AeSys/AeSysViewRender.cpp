@@ -791,6 +791,8 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     swprintf_s(szBuf, 32, L"L%-4i", renderState.LineTypeIndex());
     deviceContext->ExtTextOutW(
         rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
+    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+    if (mainFrame != nullptr) { mainFrame->SyncLineTypeCombo(renderState.LineTypeIndex(), renderState.LineTypeName()); }
   }
   if ((item & TextHeight) == TextHeight) {
     auto characterCellDefinition = renderState.CharacterCellDefinition();

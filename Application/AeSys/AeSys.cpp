@@ -261,6 +261,14 @@ int AeSys::ExitInstance() {
 void AeSys::PreLoadState() {
   GetContextMenuManager()->AddMenu(L"My menu", IDR_CONTEXT_MENU);
 
+  // One-time migration (v3): line-type combo added to Properties toolbar.
+  // Clear stale workspace state so MFC resets all toolbars from resource definitions.
+  constexpr int kToolbarLayoutVersion = 3;
+  if (GetProfileIntW(L"Migrations", L"ToolbarLayout", 0) < kToolbarLayoutVersion) {
+    CleanState();
+    WriteProfileInt(L"Migrations", L"ToolbarLayout", kToolbarLayoutVersion);
+  }
+
   // @todo add another context menus here
 }
 

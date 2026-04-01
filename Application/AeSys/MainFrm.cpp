@@ -9,6 +9,7 @@
 #include "EoApOptions.h"
 #include "EoCtrlColorComboBox.h"
 #include "EoCtrlFindComboBox.h"
+#include "EoCtrlLineTypeComboBox.h"
 #include "EoMfVisualManager.h"
 #include "MainFrm.h"
 #include "Resource.h"
@@ -91,6 +92,7 @@ ON_REGISTERED_MESSAGE(AFX_WM_RESETTOOLBAR, OnToolbarReset)
 #pragma warning(disable : 4191)
 ON_UPDATE_COMMAND_UI(ID_MDI_TABBED, OnUpdateMdiTabbed)
 ON_UPDATE_COMMAND_UI(ID_PENCOLOR_COMBO, OnUpdatePenColorCombo)
+ON_UPDATE_COMMAND_UI(ID_LINETYPE_COMBO, OnUpdateLineTypeCombo)
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
@@ -135,6 +137,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_standardToolBar.SetWindowTextW(L"Standard");
   m_standardToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, L"Customize...");
 
+  if (!m_renderPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
+      !m_renderPropertiesToolBar.LoadToolBar(IDR_RENDER_PROPERTIES)) {
+    ATLTRACE2(traceGeneral, 3, L"Failed to create render properties toolbar\n");
+    return -1;
+  }
+  m_renderPropertiesToolBar.SetWindowTextW(L"Properties");
+  m_renderPropertiesToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, L"Customize...");
+
   InitUserToolbars(nullptr, firstUserToolBarId, lastUserToolBarId);
 
   if (!m_statusBar.Create(this)) {
@@ -165,6 +175,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   }
   m_menuBar.EnableDocking(CBRS_ALIGN_ANY);
   m_standardToolBar.EnableDocking(CBRS_ALIGN_ANY);
+  m_renderPropertiesToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_propertiesPane.EnableDocking(CBRS_ALIGN_ANY);
   m_outputPane.EnableDocking(CBRS_ALIGN_ANY);
 
@@ -172,6 +183,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
 
   DockPane(&m_menuBar);
   DockPane(&m_standardToolBar);
+  DockPane(&m_renderPropertiesToolBar);
   DockPane(&m_propertiesPane);
   DockPane(&m_outputPane);
 
@@ -274,7 +286,11 @@ LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
     case IDR_MAINFRAME:
     case IDR_MAINFRAME_256: {
       m_standardToolBar.ReplaceButton(ID_EDIT_FIND, EoCtrlFindComboBox(), FALSE);
-      m_standardToolBar.ReplaceButton(ID_PENCOLOR_COMBO, EoCtrlColorComboBox(), FALSE);
+      break;
+    }
+    case IDR_RENDER_PROPERTIES: {
+      m_renderPropertiesToolBar.ReplaceButton(ID_PENCOLOR_COMBO, EoCtrlColorComboBox(), FALSE);
+      m_renderPropertiesToolBar.ReplaceButton(ID_LINETYPE_COMBO, EoCtrlLineTypeComboBox(), FALSE);
       break;
     }
     case IDR_PROPERTIES:
@@ -503,6 +519,21 @@ void CMainFrame::SyncColorCombo(std::int16_t aciIndex) {
       auto* button = DYNAMIC_DOWNCAST(EoCtrlColorComboBox, buttonsList.GetNext(pos));
       if (button != nullptr) {
         button->SetCurrentColor(aciIndex);
+        break;
+      }
+    }
+  }
+}
+
+void CMainFrame::OnUpdateLineTypeCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
+
+void CMainFrame::SyncLineTypeCombo(std::int16_t lineTypeIndex, const std::wstring& lineTypeName) {
+  CObList buttonsList;
+  if (CMFCToolBar::GetCommandButtons(ID_LINETYPE_COMBO, buttonsList) > 0) {
+    for (auto pos = buttonsList.GetHeadPosition(); pos != nullptr;) {
+      auto* button = DYNAMIC_DOWNCAST(EoCtrlLineTypeComboBox, buttonsList.GetNext(pos));
+      if (button != nullptr) {
+        button->SetCurrentLineType(lineTypeIndex, lineTypeName);
         break;
       }
     }

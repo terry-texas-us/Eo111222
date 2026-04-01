@@ -222,6 +222,7 @@
     <ClCompile Include="EoApOptions.cpp" />
     <ClCompile Include="EoCtrlColorsButton.cpp" />
     <ClCompile Include="EoCtrlFindComboBox.cpp" />
+    <ClCompile Include="EoCtrlLineTypeComboBox.cpp" />
     <ClCompile Include="EoDbAttrib.cpp" />
     <ClCompile Include="EoDbBitmapFile.cpp" />
     <ClCompile Include="EoDbBlock.cpp" />
@@ -339,6 +340,7 @@
     <ClInclude Include="EoCtrlColorComboBox.h" />
     <ClInclude Include="EoCtrlColorsButton.h" />
     <ClInclude Include="EoCtrlFindComboBox.h" />
+    <ClInclude Include="EoCtrlLineTypeComboBox.h" />
     <ClInclude Include="EoDb.h" />
     <ClInclude Include="EoDbAppIdEntry.h" />
     <ClInclude Include="EoDbAttrib.h" />

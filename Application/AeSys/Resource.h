@@ -63,6 +63,7 @@
 #define IDR_TRACING                     187
 #define IDR_OUTPUT_POPUP                188
 #define IDR_CONTEXT_MENU                189
+#define IDR_RENDER_PROPERTIES           190
 #define IDR_POPUP_TOOLBAR               191
 #define IDR_POPUP_MDITABS               194
 #define IDR_PROPERTIES                  195
@@ -617,6 +618,7 @@
 #define ID_EDIT_FIND_COMBO              4763
 #define ID_PENCOLOR_COMBO               4764
 #define ID_PENCOLOR_MORE                4765
+#define ID_LINETYPE_COMBO               4766
 #define ID_VIEW_MODELSPACE              4811
 #define ID_VIEW_DIRECT2D                4812
 #define ID_VIEW_ALIASED                 4813

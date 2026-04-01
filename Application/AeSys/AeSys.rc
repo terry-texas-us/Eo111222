@@ -102,6 +102,8 @@ IDB_LAYER_STATES        BITMAP                  "res\\Toolbar Bitmaps\\LayerStat
 
 IDB_LAYER_STATES_HC     BITMAP                  "res\\Toolbar Bitmaps\\LayerStates_hc.bmp"
 
+IDR_RENDER_PROPERTIES   BITMAP                  "res\\Toolbar Bitmaps\\RenderProperties.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -123,8 +125,6 @@ BEGIN
     BUTTON      ID_CONTEXT_HELP
     BUTTON      ID_APP_ABOUT
     BUTTON      ID_EDIT_FIND
-    SEPARATOR
-    BUTTON      ID_PENCOLOR_COMBO
 END
 
 IDR_MAINFRAME_256 TOOLBAR 16, 16
@@ -142,8 +142,12 @@ BEGIN
     BUTTON      ID_APP_ABOUT
     BUTTON      ID_CONTEXT_HELP
     BUTTON      ID_EDIT_FIND
-    SEPARATOR
+END
+
+IDR_RENDER_PROPERTIES TOOLBAR 16, 16
+BEGIN
     BUTTON      ID_PENCOLOR_COMBO
+    BUTTON      ID_LINETYPE_COMBO
 END
 
 IDR_PROPERTIES TOOLBAR 16, 16
