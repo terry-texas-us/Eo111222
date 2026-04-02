@@ -57,15 +57,13 @@ void EoDlgTrapFilter::OnOK() {
     FilterByColor(color);
   }
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_LINE)) {
-    std::int16_t LineTypeIndex = SHRT_MAX;
     wchar_t szBuf[32]{};
 
     if (GetDlgItemTextW(IDC_TRAP_FILTER_LINE_LIST, (LPTSTR)szBuf, sizeof(szBuf) / sizeof(wchar_t))) {
       EoDbLineTypeTable* LineTypeTable = m_Document->LineTypeTable();
       EoDbLineType* LineType;
-      if (LineTypeTable->Lookup(szBuf, LineType)) { LineTypeIndex = LineType->Index(); }
+      if (LineTypeTable->Lookup(szBuf, LineType)) { FilterByLineType(std::wstring(szBuf)); }
     }
-    if (LineTypeIndex != SHRT_MAX) { FilterByLineType(LineTypeIndex); }
   }
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_ELEMENT)) {
     switch (m_FilterPrimitiveTypeListBoxControl.GetCurSel()) {
@@ -112,7 +110,7 @@ void EoDlgTrapFilter::FilterByColor(std::int16_t colorIndex) {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::TrapCount);
 }
 
-void EoDlgTrapFilter::FilterByLineType(int lineType) {
+void EoDlgTrapFilter::FilterByLineType(const std::wstring& lineTypeName) {
   auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
   while (GroupPosition != nullptr) {
     auto* group = m_Document->GetNextTrappedGroup(GroupPosition);
@@ -120,7 +118,7 @@ void EoDlgTrapFilter::FilterByLineType(int lineType) {
     auto PrimitivePosition = group->GetHeadPosition();
     while (PrimitivePosition != nullptr) {
       auto* primitive = group->GetNext(PrimitivePosition);
-      if (primitive->LineTypeIndex() == lineType) {
+      if (_wcsicmp(primitive->LineTypeName().c_str(), lineTypeName.c_str()) == 0) {
         m_Document->RemoveTrappedGroup(group);
         m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
         break;

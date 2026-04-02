@@ -6,6 +6,7 @@
 #include "AeSys.h"
 #include "AeSysView.h"
 #include "EoDb.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 #include "EoDbSpline.h"
 #include "EoDxfInterface.h"
@@ -21,18 +22,18 @@
 
 EoDbSpline::EoDbSpline(std::uint16_t wPts, EoGePoint3d* pt) {
   m_color = renderState.Color();
-  m_lineTypeIndex = renderState.LineTypeIndex();
+  SetLineTypeName(renderState.LineTypeName());
 
   for (auto i = 0; i < wPts; i++) { m_pts.Add(pt[i]); }
 }
 EoDbSpline::EoDbSpline(EoGePoint3dArray& points) {
   m_color = renderState.Color();
-  m_lineTypeIndex = renderState.LineTypeIndex();
+  SetLineTypeName(renderState.LineTypeName());
   m_pts.Copy(points);
 }
 EoDbSpline::EoDbSpline(std::int16_t penColor, std::int16_t lineType, EoGePoint3dArray& points) {
   m_color = penColor;
-  m_lineTypeIndex = lineType;
+  SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(lineType));
   m_pts.Copy(points);
 }
 EoDbSpline::EoDbSpline(const EoDbSpline& src) : EoDbPrimitive(src) {
@@ -259,7 +260,7 @@ EoDbSpline* EoDbSpline::ReadFromPeg(CFile& file) {
 bool EoDbSpline::Write(CFile& file) {
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kSplinePrimitive));
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   EoDb::WriteUInt16(file, std::uint16_t(m_pts.GetSize()));
 
   for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i].Write(file); }

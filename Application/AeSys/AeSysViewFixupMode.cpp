@@ -168,7 +168,7 @@ void AeSysView::OnFixupModeReference() {
         line->SetBeginPoint(previousLine.begin);
         line->SetEndPoint(previousLine.end);
         previousGroup->AddTail(EoDbLine::CreateLine(previousLine.end, referenceLine.begin)
-                ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+                ->WithProperties(renderState.Color(), renderState.LineTypeName()));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
     } else if (previousCommand == ID_OP4) {
@@ -203,7 +203,7 @@ void AeSysView::OnFixupModeReference() {
 
           auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
           radialArc->SetColor(line->Color());
-          radialArc->SetLineTypeIndex(line->LineTypeIndex());
+          radialArc->SetLineTypeName(line->LineTypeName());
 
           auto* group = new EoDbGroup(radialArc);
           document->AddWorkLayerGroup(group);
@@ -281,7 +281,7 @@ void AeSysView::OnFixupModeMend() {
         pLine->SetBeginPoint(previousLine.begin);
         pLine->SetEndPoint(previousLine.end);
         previousGroup->AddTail(EoDbLine::CreateLine(previousLine.end, currentLine.begin)
-                ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+                ->WithProperties(renderState.Color(), renderState.LineTypeName()));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
       }
     } else if (previousCommand == ID_OP4) {
@@ -313,7 +313,7 @@ void AeSysView::OnFixupModeMend() {
 
           auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
           radialArc->SetColor(renderState.Color());
-          radialArc->SetLineTypeIndex(renderState.LineTypeIndex());
+          radialArc->SetLineTypeName(renderState.LineTypeName());
 
           previousGroup->AddTail(radialArc);
           document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
@@ -392,7 +392,7 @@ void AeSysView::OnFixupModeChamfer() {
       linePrimitive->SetEndPoint(currentLine.end);
 
       currentGroup->AddTail(EoDbLine::CreateLine(previousLine.end, currentLine.begin)
-              ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+              ->WithProperties(renderState.Color(), renderState.LineTypeName()));
 
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);
     }
@@ -473,7 +473,7 @@ void AeSysView::OnFixupModeFillet() {
         // auto* radialArc = EoDbConic::CreateRadialArc(center, normal, majorAxis.Length(), 0.0, angle);
         auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
         radialArc->SetColor(linePrimitive->Color());
-        radialArc->SetLineTypeIndex(linePrimitive->LineTypeIndex());
+        radialArc->SetLineTypeName(linePrimitive->LineTypeName());
 
         currentGroup->AddTail(radialArc);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, currentGroup);

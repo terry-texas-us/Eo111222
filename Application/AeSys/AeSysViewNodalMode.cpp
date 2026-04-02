@@ -145,7 +145,7 @@ void AeSysView::OnNodalModeToLine() {
       while (PointPosition != 0) {
         EoGeUniquePoint* UniquePoint = document->GetNextUniquePoint(PointPosition);
         auto* line = EoDbLine::CreateLine(UniquePoint->m_Point, UniquePoint->m_Point + Translate)
-                         ->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+                         ->WithProperties(renderState.Color(), renderState.LineTypeName());
         group->AddTail(line);
       }
       document->AddWorkLayerGroup(group);

@@ -41,7 +41,7 @@ void AeSysView::OnAnnotateModeLine() {
       document->AddWorkLayerGroup(Group);
 
       if (m_PreviousOp == ID_OP3) { GenerateLineEndItem(EndItemType(), EndItemSize(), cursorPosition, pts[0], Group); }
-      Group->AddTail(EoDbLine::CreateLine(pts[0], cursorPosition)->WithProperties(1, 1));
+      Group->AddTail(EoDbLine::CreateLine(pts[0], cursorPosition)->WithProperties(1, L"CONTINUOUS"));
       pts[0] = cursorPosition;
       m_PreviewGroup.DeletePrimitivesAndRemoveAll();
     }
@@ -60,7 +60,7 @@ void AeSysView::OnAnnotateModeArrow() {
       auto* group = new EoDbGroup;
 
       if (m_PreviousOp == ID_OP3) { GenerateLineEndItem(EndItemType(), EndItemSize(), cursorPosition, pts[0], group); }
-      group->AddTail(EoDbLine::CreateLine(pts[0], cursorPosition)->WithProperties(1, 1));
+      group->AddTail(EoDbLine::CreateLine(pts[0], cursorPosition)->WithProperties(1, L"CONTINUOUS"));
       GenerateLineEndItem(EndItemType(), EndItemSize(), pts[0], cursorPosition, group);
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
@@ -93,7 +93,7 @@ void AeSysView::OnAnnotateModeBubble() {
 
     if (CorrectLeaderEndpoints(m_PreviousOp, ID_OP4, pts[0], pt)) {
       if (m_PreviousOp == ID_OP3) { GenerateLineEndItem(EndItemType(), EndItemSize(), cursorPosition, pts[0], group); }
-      group->AddTail(EoDbLine::CreateLine(pts[0], pt)->WithProperties(1, 1));
+      group->AddTail(EoDbLine::CreateLine(pts[0], pt)->WithProperties(1, L"CONTINUOUS"));
     }
   }
   m_PreviousOp = ModeLineHighlightOp(ID_OP4);
@@ -126,7 +126,7 @@ void AeSysView::OnAnnotateModeBubble() {
   if (NumberOfSides() == 0) {
     auto circle = EoDbConic::CreateCircleInView(cursorPosition, BubbleRadius());
     circle->SetColor(1);
-    circle->SetLineTypeIndex(1);
+    circle->SetLineTypeName(L"CONTINUOUS");
 
     group->AddTail(circle);
   } else {
@@ -152,14 +152,14 @@ void AeSysView::OnAnnotateModeHook() {
     if (CorrectLeaderEndpoints(m_PreviousOp, ID_OP5, pts[0], pt)) {
       if (m_PreviousOp == ID_OP3) { GenerateLineEndItem(EndItemType(), EndItemSize(), cursorPosition, pts[0], group); }
 
-      group->AddTail(EoDbLine::CreateLine(pts[0], pt)->WithProperties(1, 1));
+      group->AddTail(EoDbLine::CreateLine(pts[0], pt)->WithProperties(1, L"CONTINUOUS"));
     }
   }
   m_PreviousOp = ModeLineHighlightOp(ID_OP5);
 
   auto circle = EoDbConic::CreateCircleInView(cursorPosition, CircleRadius());
   circle->SetColor(1);
-  circle->SetLineTypeIndex(1);
+  circle->SetLineTypeName(L"CONTINUOUS");
 
   group->AddTail(circle);
 
@@ -185,7 +185,7 @@ void AeSysView::OnAnnotateModeUnderline() {
     pText->GetBoundingBox(pts, GapSpaceFactor());
 
     auto* Group = new EoDbGroup;
-    Group->AddTail(EoDbLine::CreateLine(pts[0], pts[1])->WithProperties(renderState.Color(), 1));
+    Group->AddTail(EoDbLine::CreateLine(pts[0], pts[1])->WithProperties(renderState.Color(), L"CONTINUOUS"));
     document->AddWorkLayerGroup(Group);
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
@@ -243,7 +243,7 @@ void AeSysView::OnAnnotateModeBox() {
       auto* Group = new EoDbGroup;
 
       for (int i = 0; i < 4; i++) {
-        Group->AddTail(EoDbLine::CreateLine(pts[i], pts[(i + 1) % 4])->WithProperties(1, 1));
+        Group->AddTail(EoDbLine::CreateLine(pts[i], pts[(i + 1) % 4])->WithProperties(1, L"CONTINUOUS"));
       }
 
       pts.RemoveAll();
@@ -350,7 +350,7 @@ void AeSysView::OnAnnotateModeConstructionLine() {
     pts.Add(pts[0].ProjectToward(cursorPosition, 48.0));
     pts.Add(pts[1].ProjectToward(pts[0], 96.0));
 
-    auto* Group = new EoDbGroup(EoDbLine::CreateLine(pts[1], pts[2])->WithProperties(15, 2));
+    auto* Group = new EoDbGroup(EoDbLine::CreateLine(pts[1], pts[2])->WithProperties(15, L"Dash2"));
     document->AddWorkLayerGroup(Group);
     ModeLineUnhighlightOp(m_PreviousOp);
     m_PreviousOp = 0;
@@ -420,9 +420,7 @@ void AeSysView::DoAnnotateModeMouseMove() {
     case ID_OP4:
     case ID_OP5: {
       m_PreviousPnt = pts[0];
-      if (CorrectLeaderEndpoints(m_PreviousOp, 0, pts[0], pts[1])) {
-        m_PreviewGroup.AddTail(new EoDbPolyline(pts));
-      }
+      if (CorrectLeaderEndpoints(m_PreviousOp, 0, pts[0], pts[1])) { m_PreviewGroup.AddTail(new EoDbPolyline(pts)); }
       pts[0] = m_PreviousPnt;
       break;
     }
@@ -433,7 +431,7 @@ void AeSysView::DoAnnotateModeMouseMove() {
         pts.Add(pts[0].ProjectToward(cursorPosition, 48.0));
         pts.Add(pts[2].ProjectToward(pts[0], 96.0));
 
-        m_PreviewGroup.AddTail(new EoDbGroup(EoDbLine::CreateLine(pts[2], pts[3])->WithProperties(15, 2)));
+        m_PreviewGroup.AddTail(new EoDbGroup(EoDbLine::CreateLine(pts[2], pts[3])->WithProperties(15, L"Dash2")));
       }
       break;
   }

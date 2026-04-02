@@ -33,8 +33,7 @@ class EoDbPrimitive : public CObject {
 
  protected:
   std::int16_t m_color{COLOR_BYLAYER};
-  std::int16_t m_lineTypeIndex{LINETYPE_BYLAYER};
-  std::wstring m_lineTypeName{};
+  std::wstring m_lineType{L"ByLayer"};
   std::wstring m_layerName{};
   std::uint64_t m_handle{};
   std::uint64_t m_ownerHandle{};
@@ -44,7 +43,7 @@ class EoDbPrimitive : public CObject {
 
   static std::int16_t sm_layerColor;
   static std::int16_t sm_layerLineTypeIndex;
-  static std::wstring sm_layerLineTypeName;
+  static std::wstring sm_layerLineType;
   static EoDxfLineWeights::LineWeight sm_layerLineWeight;
   static double sm_layerLineTypeScale;
 
@@ -124,39 +123,43 @@ class EoDbPrimitive : public CObject {
   CString FormatPenColor() const;
   CString FormatLineType() const;
   std::int16_t LogicalColor() const noexcept;
-  std::int16_t LogicalLineType() const noexcept;
+  std::int16_t LogicalLineType() const;
   [[nodiscard]] const std::wstring& LogicalLineTypeName() const;
 
   [[nodiscard]] std::int16_t Color() const noexcept { return m_color; }
   [[nodiscard]] std::uint64_t Handle() const noexcept { return m_handle; }
   [[nodiscard]] const std::wstring& LayerName() const noexcept { return m_layerName; }
-  [[nodiscard]] std::int16_t LineTypeIndex() const noexcept { return m_lineTypeIndex; }
-  [[nodiscard]] const std::wstring& LineTypeName() const noexcept { return m_lineTypeName; }
+  [[nodiscard]] const std::wstring& LineTypeName() const noexcept { return m_lineType; }
   [[nodiscard]] double LineTypeScale() const noexcept { return m_lineTypeScale; }
   [[nodiscard]] EoDxfLineWeights::LineWeight LineWeight() const noexcept { return m_lineWeight; }
   [[nodiscard]] std::uint64_t OwnerHandle() const noexcept { return m_ownerHandle; }
   [[nodiscard]] double Thickness() const noexcept { return m_thickness; }
 
+  /// @brief Tests whether this primitive's line type is ByLayer (case-insensitive).
+  /// Empty name is treated as ByLayer for backward compatibility with legacy default initialization.
+  [[nodiscard]] bool IsLineTypeByLayer() const noexcept {
+    return m_lineType.empty() || _wcsicmp(m_lineType.c_str(), L"ByLayer") == 0;
+  }
+  /// @brief Tests whether this primitive's line type is ByBlock (case-insensitive).
+  [[nodiscard]] bool IsLineTypeByBlock() const noexcept {
+    return _wcsicmp(m_lineType.c_str(), L"ByBlock") == 0;
+  }
+
   void SetColor(std::int16_t color) noexcept { m_color = color; }
   void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
-  void SetLineTypeIndex(std::int16_t lineTypeIndex) noexcept { m_lineTypeIndex = lineTypeIndex; }
-  void SetLineTypeName(std::wstring name) noexcept { m_lineTypeName = std::move(name); }
+  void SetLineTypeName(std::wstring name);
   void SetLineTypeScale(double scale) noexcept { m_lineTypeScale = scale; }
   void SetLineWeight(EoDxfLineWeights::LineWeight lineWeight) noexcept { m_lineWeight = lineWeight; }
   void SetLayerName(std::wstring name) noexcept { m_layerName = std::move(name); }
   void SetOwnerHandle(std::uint64_t ownerHandle) noexcept { m_ownerHandle = ownerHandle; }
   void SetThickness(double thickness) noexcept { m_thickness = thickness; }
 
-  void SetProperties(std::int16_t color, std::int16_t lineTypeIndex) noexcept {
-    m_color = color;
-    m_lineTypeIndex = lineTypeIndex;
-  }
-
-  [[nodiscard]] EoDbPrimitive* WithProperties(std::int16_t color, std::int16_t lineTypeIndex) noexcept {
-    m_color = color;
-    m_lineTypeIndex = lineTypeIndex;
-    return this;
-  }
+  /// @brief Fluent setter for color and line type name.
+  /// The legacy line type index is derived internally from the name.
+  /// @param color The color index for the primitive.
+  /// @param lineTypeName The line type name (e.g., "CONTINUOUS", "ByLayer", "DASHED").
+  /// @return Pointer to this primitive for method chaining.
+  [[nodiscard]] EoDbPrimitive* WithProperties(std::int16_t color, const std::wstring& lineTypeName);
 
   static int ControlPointIndex() noexcept;
   static bool IsSupportedTyp(int type) noexcept;

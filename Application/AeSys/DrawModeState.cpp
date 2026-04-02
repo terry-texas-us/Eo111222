@@ -54,7 +54,7 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
       } else {  // Complete line
         cursorPosition = context->SnapPointToAxis(m_pts[0], cursorPosition);
         auto* line = EoDbLine::CreateLine(m_pts[0], cursorPosition)
-                         ->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+                         ->WithProperties(renderState.Color(), renderState.LineTypeName());
         auto* group = new EoDbGroup(line);
         document->AddWorkLayerGroup(group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);

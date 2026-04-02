@@ -15,11 +15,11 @@
 #include "EoDbBlockFile.h"
 #include "EoDbBlockReference.h"
 #include "EoDbCharacterCellDefinition.h"
-#include "EoDbLabeledLine.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbJobFile.h"
+#include "EoDbLabeledLine.h"
 #include "EoDbLayer.h"
 #include "EoDbLine.h"
 #include "EoDbLineType.h"
@@ -161,16 +161,16 @@ void AeSysDoc::OnPrimBreak() {
       polyline->GetAllPoints(points);
 
       auto color = primitive->Color();
-      auto lineTypeIndex = primitive->LineTypeIndex();
+      const auto& lineTypeName = primitive->LineTypeName();
 
       for (auto i = 0; i < points.GetSize() - 1; i++) {
-        auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeIndex);
+        auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeName);
         RegisterHandle(line);
         group->AddTail(line);
       }
       if (polyline->IsLooped()) {
         auto* line =
-            EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeIndex);
+            EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeName);
         RegisterHandle(line);
         group->AddTail(line);
       }

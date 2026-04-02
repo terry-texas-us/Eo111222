@@ -45,7 +45,7 @@ void GetReferenceAxesForCharacterCell(EoDbCharacterCellDefinition& characterCell
   yAxisReference = CrossProduct(normal, xAxisReference);
 
   xAxisReference *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height() *
-                    characterCellDefinition.ExpansionFactor();
+      characterCellDefinition.ExpansionFactor();
 
   yAxisReference.RotateAboutArbitraryAxis(normal, characterCellDefinition.SlantAngle());
   yAxisReference *= characterCellDefinition.Height();
@@ -153,8 +153,8 @@ void AeSysView::OnDimensionModeLine() {
   } else {
     cursorPosition = SnapPointToAxis(PreviousDimensionCursorPosition, cursorPosition);
     if (PreviousDimensionCursorPosition != cursorPosition) {
-      auto* Group =
-          new EoDbGroup(EoDbLine::CreateLine(PreviousDimensionCursorPosition, cursorPosition)->WithProperties(1, 1));
+      auto* Group = new EoDbGroup(
+          EoDbLine::CreateLine(PreviousDimensionCursorPosition, cursorPosition)->WithProperties(1, L"CONTINUOUS"));
       document->AddWorkLayerGroup(Group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
@@ -179,7 +179,7 @@ void AeSysView::OnDimensionModeDLine() {
       auto* linearDimension = new EoDbLabeledLine();
 
       linearDimension->SetColor(1);
-      linearDimension->SetLineTypeIndex(1);
+      linearDimension->SetLineTypeName(L"CONTINUOUS");
 
       linearDimension->SetBeginPoint(PreviousDimensionCursorPosition);
       linearDimension->SetEndPoint(cursorPosition);
@@ -225,7 +225,7 @@ void AeSysView::OnDimensionModeDLine2() {
       auto* linearDimension = new EoDbLabeledLine();
 
       linearDimension->SetColor(1);
-      linearDimension->SetLineTypeIndex(1);
+      linearDimension->SetLineTypeName(L"CONTINUOUS");
 
       linearDimension->SetBeginPoint(PreviousDimensionCursorPosition);
       linearDimension->SetEndPoint(cursorPosition);
@@ -264,8 +264,8 @@ void AeSysView::OnDimensionModeExten() {
       cursorPosition = cursorPosition.ProjectToward(PreviousDimensionCursorPosition, -0.1875);
       PreviousDimensionCursorPosition = PreviousDimensionCursorPosition.ProjectToward(cursorPosition, 0.0625);
 
-      auto* Group =
-          new EoDbGroup(EoDbLine::CreateLine(PreviousDimensionCursorPosition, cursorPosition)->WithProperties(1, 1));
+      auto* Group = new EoDbGroup(
+          EoDbLine::CreateLine(PreviousDimensionCursorPosition, cursorPosition)->WithProperties(1, L"CONTINUOUS"));
       document->AddWorkLayerGroup(Group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
     }
@@ -291,7 +291,7 @@ void AeSysView::OnDimensionModeRadius() {
       auto* radialDimension = new EoDbLabeledLine();
 
       radialDimension->SetColor(1);
-      radialDimension->SetLineTypeIndex(1);
+      radialDimension->SetLineTypeName(L"CONTINUOUS");
 
       radialDimension->SetBeginPoint(center);
       radialDimension->SetEndPoint(ptEnd);
@@ -333,7 +333,7 @@ void AeSysView::OnDimensionModeDiameter() {
       auto* diametricDimension = new EoDbLabeledLine();
 
       diametricDimension->SetColor(1);
-      diametricDimension->SetLineTypeIndex(1);
+      diametricDimension->SetLineTypeName(L"CONTINUOUS");
 
       diametricDimension->SetBeginPoint(begin);
       diametricDimension->SetEndPoint(end);
@@ -412,7 +412,7 @@ void AeSysView::OnDimensionModeAngle() {
 
         auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, vXAx, vYAx, sweepAngle);
         radialArc->SetColor(1);
-        radialArc->SetLineTypeIndex(1);
+        radialArc->SetLineTypeName(L"CONTINUOUS");
         Group->AddTail(radialArc);
 
         ptArrow = line.begin.RotateAboutAxis(center, normal, sweepAngle - Eo::Radian);
@@ -477,7 +477,7 @@ void AeSysView::OnDimensionModeConvert() {
           auto* dimension = new EoDbLabeledLine();
 
           dimension->SetColor(line->Color());
-          dimension->SetLineTypeIndex(line->LineTypeIndex());
+          dimension->SetLineTypeName(line->LineTypeName());
 
           dimension->SetBeginPoint(line->Begin());
           dimension->SetEndPoint(line->End());
@@ -496,7 +496,7 @@ void AeSysView::OnDimensionModeConvert() {
           EoGeReferenceSystem ReferenceSystem = pPrimDim->ReferenceSystem();
 
           auto* linePrimitive =
-              EoDbLine::CreateLine(pPrimDim->Line())->WithProperties(primitive->Color(), primitive->LineTypeIndex());
+              EoDbLine::CreateLine(pPrimDim->Line())->WithProperties(primitive->Color(), primitive->LineTypeName());
 
           EoDbText* pPrimText = new EoDbText(pPrimDim->FontDefinition(), ReferenceSystem, pPrimDim->Text());
           pPrimText->SetColor(pPrimDim->TextColor());

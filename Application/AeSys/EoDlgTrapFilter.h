@@ -24,7 +24,7 @@ class EoDlgTrapFilter : public CDialog {
   CListBox m_FilterPrimitiveTypeListBoxControl;
 
   void FilterByColor(std::int16_t colorIndex);
-  void FilterByLineType(int lineType);
+  void FilterByLineType(const std::wstring& lineTypeName);
 
   /**
    * Filters trapped groups by the specified primitive type.

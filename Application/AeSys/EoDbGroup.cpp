@@ -73,20 +73,21 @@ void EoDbGroup::BreakPolylines() {
     auto* primitive = GetNext(position);
     if (primitive->Is(EoDb::kPolylinePrimitive)) {
       auto color = primitive->Color();
-      auto lineTypeIndex = primitive->LineTypeIndex();
+      const auto& lineTypeName = primitive->LineTypeName();
 
       EoGePoint3dArray points;
       static_cast<EoDbPolyline*>(primitive)->GetAllPoints(points);
 
       if (points.GetSize() >= 2) {
         for (auto i = 0; i < points.GetSize() - 1; i++) {
-          auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeIndex);
+          auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeName);
           document->RegisterHandle(line);
           CObList::InsertBefore(PrimitivePosition, line);
         }
 
         if (static_cast<EoDbPolyline*>(primitive)->IsLooped()) {
-          auto* line = EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeIndex);
+          auto* line =
+              EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeName);
           document->RegisterHandle(line);
           CObList::InsertBefore(PrimitivePosition, line);
         }
@@ -131,7 +132,6 @@ void EoDbGroup::ExplodeBlockReferences() {
               attribPrimitive->GetRefSys(refSys);
               auto* textPrimitive = new EoDbText(fontDef, refSys, attribPrimitive->Text());
               textPrimitive->SetColor(attribPrimitive->Color());
-              textPrimitive->SetLineTypeIndex(attribPrimitive->LineTypeIndex());
               textPrimitive->SetLineTypeName(attribPrimitive->LineTypeName());
               textPrimitive->SetLayerName(attribPrimitive->LayerName());
               textPrimitive->SetLineWeight(attribPrimitive->LineWeight());
@@ -224,14 +224,14 @@ void EoDbGroup::GetExtents(
   }
 }
 
-int EoDbGroup::GetLineTypeRefCount(std::int16_t lineType) {
+int EoDbGroup::GetLineTypeRefCount(const std::wstring& lineTypeName) {
   int count{};
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
 
-    if (primitive->LineTypeIndex() == lineType) { count++; }
+    if (_wcsicmp(primitive->LineTypeName().c_str(), lineTypeName.c_str()) == 0) { count++; }
   }
   return count;
 }
@@ -290,11 +290,11 @@ void EoDbGroup::ModifyColor(std::int16_t color) {
     primitive->SetColor(color);
   }
 }
-void EoDbGroup::ModifyLineType(std::int16_t lineType) {
+void EoDbGroup::ModifyLineType(const std::wstring& lineTypeName) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
-    primitive->SetLineTypeIndex(lineType);
+    primitive->SetLineTypeName(lineTypeName);
   }
 }
 void EoDbGroup::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {

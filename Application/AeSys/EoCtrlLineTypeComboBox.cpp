@@ -1,6 +1,9 @@
 #include "Stdafx.h"
 
+#include <algorithm>
 #include <cstdint>
+#include <utility>
+#include <vector>
 #include <uxtheme.h>
 
 #include "AeSys.h"
@@ -85,24 +88,37 @@ void EoCtrlLineTypeComboBox::SetCurrentLineType(
 void EoCtrlLineTypeComboBox::BuildItemList() {
   RemoveAllItems();
 
-  // Fixed entries — always present
+  // Fixed entries — always present in this order
   AddItem(L"ByLayer", static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYLAYER));
   AddItem(L"ByBlock", static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK));
 
-  // Document line types from the active document's table
+  // Document line types from the active document's table.
+  // CONTINUOUS is added as a fixed third entry; remaining names are sorted alphabetically.
   auto* document = AeSysDoc::GetDoc();
   if (document != nullptr) {
     auto* lineTypeTable = document->LineTypeTable();
     if (lineTypeTable != nullptr && !lineTypeTable->IsEmpty()) {
+      // Add CONTINUOUS first (if present in the table) so it follows ByLayer/ByBlock
+      EoDbLineType* continuousLineType{};
+      if (lineTypeTable->Lookup(L"CONTINUOUS", continuousLineType) && continuousLineType != nullptr) {
+        AddItem(continuousLineType->Name(), reinterpret_cast<DWORD_PTR>(continuousLineType));
+      }
+
+      // Collect remaining names, sort alphabetically, then add
+      std::vector<std::pair<CString, EoDbLineType*>> sortedEntries;
       POSITION position = lineTypeTable->GetStartPosition();
       while (position != nullptr) {
         CString name;
         EoDbLineType* lineType{};
         lineTypeTable->GetNextAssoc(position, name, lineType);
-        if (lineType != nullptr) {
-          // Store the EoDbLineType pointer as item data for preview drawing
-          AddItem(lineType->Name(), reinterpret_cast<DWORD_PTR>(lineType));
+        if (lineType != nullptr && name.CompareNoCase(L"CONTINUOUS") != 0) {
+          sortedEntries.emplace_back(name, lineType);
         }
+      }
+      std::sort(sortedEntries.begin(), sortedEntries.end(),
+          [](const auto& a, const auto& b) { return a.first.CompareNoCase(b.first) < 0; });
+      for (const auto& [name, lineType] : sortedEntries) {
+        AddItem(lineType->Name(), reinterpret_cast<DWORD_PTR>(lineType));
       }
     }
   }
@@ -277,21 +293,32 @@ void EoCtrlLineTypeComboBox::DrawDashPreview(
     deviceContext->MoveTo(static_cast<int>(xStart), yCenter);
     deviceContext->LineTo(static_cast<int>(xEnd), yCenter);
   } else {
-    auto dpi = static_cast<double>(::GetDpiForSystem());
-    if (dpi < 1.0) { dpi = 96.0; }
     const auto& dashElements = lineType->DashElements();
-    double x = xStart;
+    double availableWidth = xEnd - xStart;
 
+    // Compute total pattern length from absolute dash/gap values.
+    double patternLength = lineType->GetPatternLength();
+    if (patternLength < Eo::geometricTolerance) { patternLength = 1.0; }
+
+    // Scale the pattern so it repeats ~3 times across the preview width.
+    // This produces a consistent preview regardless of the drawing-unit scale
+    // of the linetype definition (AeSys native vs DXF standard).
+    constexpr double targetRepetitions = 3.0;
+    double scale = availableWidth / (patternLength * targetRepetitions);
+
+    double x = xStart;
     while (x < xEnd) {
       for (double len : dashElements) {
+        double pixelLen = std::abs(len) * scale;
+        if (pixelLen < 1.0) { pixelLen = 1.0; }
         if (len > 0.0) {
           deviceContext->MoveTo(static_cast<int>(x), yCenter);
-          x += len * dpi;
+          x += pixelLen;
           deviceContext->LineTo(static_cast<int>(std::min(x, xEnd)), yCenter);
         } else if (len < 0.0) {
-          x += std::abs(len) * dpi;
+          x += pixelLen;
         } else {
-          // Dot
+          // Dot — zero-length element
           deviceContext->SetPixel(static_cast<int>(x), yCenter, lineColor);
           x += 1.0;
         }

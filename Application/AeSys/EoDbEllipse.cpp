@@ -12,8 +12,8 @@
 #include "EoDbEllipse.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
-#include "EoGsRenderDevice.h"
 #include "EoDxfEntities.h"
 #include "EoDxfInterface.h"
 #include "EoGeLine.h"
@@ -22,6 +22,7 @@
 #include "EoGePolyline.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
 #if defined(USING_DDE)
@@ -88,11 +89,10 @@ double EoDbEllipse::NormalizeTo2Pi(double angle) {
  */
 EoDbEllipse::EoDbEllipse(
     const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle)
-    : EoDbPrimitive(renderState.Color(), renderState.LineTypeIndex()),
-      m_center(center),
-      m_majorAxis(majorAxis),
-      m_minorAxis(minorAxis),
-      m_sweepAngle(sweepAngle) {}
+    : m_center(center), m_majorAxis(majorAxis), m_minorAxis(minorAxis), m_sweepAngle(sweepAngle) {
+  m_color = renderState.Color();
+  SetLineTypeName(renderState.LineTypeName());
+}
 
 /**
  * @brief Constructs a circle (as ellipse) primitive defined by a center point and radius in the current view.
@@ -156,7 +156,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
   auto* activeView = AeSysView::GetActiveView();
 
   m_color = renderState.Color();
-  m_lineTypeIndex = renderState.LineTypeIndex();
+  SetLineTypeName(renderState.LineTypeName());
 
   auto cameraDirection = activeView->CameraDirection();
 
@@ -189,7 +189,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
  */
 EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end) {
   m_color = renderState.Color();
-  m_lineTypeIndex = renderState.LineTypeIndex();
+  SetLineTypeName(renderState.LineTypeName());
 
   m_sweepAngle = 0.0;
 
@@ -311,9 +311,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVecto
   m_sweepAngle = sweepAngle;
 }
 
-EoDbEllipse::EoDbEllipse(const EoDbEllipse& other) {
-  m_color = other.m_color;
-  m_lineTypeIndex = other.m_lineTypeIndex;
+EoDbEllipse::EoDbEllipse(const EoDbEllipse& other) : EoDbPrimitive(other) {
   m_center = other.m_center;
   m_majorAxis = other.m_majorAxis;
   m_minorAxis = other.m_minorAxis;
@@ -321,8 +319,7 @@ EoDbEllipse::EoDbEllipse(const EoDbEllipse& other) {
 }
 
 const EoDbEllipse& EoDbEllipse::operator=(const EoDbEllipse& other) {
-  m_color = other.m_color;
-  m_lineTypeIndex = other.m_lineTypeIndex;
+  EoDbPrimitive::operator=(other);
   m_center = other.m_center;
   m_majorAxis = other.m_majorAxis;
   m_minorAxis = other.m_minorAxis;
@@ -898,7 +895,7 @@ void EoDbEllipse::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 bool EoDbEllipse::Write(CFile& file) {
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kEllipsePrimitive));
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   m_center.Write(file);
   m_majorAxis.Write(file);
   m_minorAxis.Write(file);

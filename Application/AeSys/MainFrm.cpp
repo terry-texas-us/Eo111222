@@ -8,13 +8,13 @@
 #include "AeSys.h"
 #include "EoApOptions.h"
 #include "EoCtrlColorComboBox.h"
-#include "EoCtrlFindComboBox.h"
 #include "EoCtrlLineTypeComboBox.h"
 #include "EoMfVisualManager.h"
 #include "MainFrm.h"
 #include "Resource.h"
 
 namespace {
+constexpr int highDpiThreshold = 144;
 
 /// @brief Applies the DWM immersive dark mode attribute to the window title bar.
 /// Requires Windows 10 1809+ (build 17763). Silently ignored on older Windows.
@@ -42,22 +42,14 @@ constexpr int maxUserToolbars = 10;
 constexpr unsigned int firstUserToolBarId = AFX_IDW_CONTROLBAR_FIRST + 40;
 constexpr unsigned int lastUserToolBarId = firstUserToolBarId + maxUserToolbars - 1;
 constexpr unsigned int indicators[] = {
-    ID_SEPARATOR,           // 0: message pane (fixed ~36 characters)
-    ID_INDICATOR_LENGTH,    // 1: dimension length display
-    ID_INDICATOR_ANGLE,     // 2: dimension angle display
-    ID_OP0,                 // 3–12: mode key-command help panes
-    ID_OP1,
-    ID_OP2,
-    ID_OP3,
-    ID_OP4,
-    ID_OP5,
-    ID_OP6,
-    ID_OP7,
-    ID_OP8,
-    ID_OP9,
-    ID_INDICATOR_SCALE,     // 13: world scale display
-    ID_INDICATOR_ZOOM,      // 14: zoom ratio display
-    ID_SEPARATOR,           // 15: stretch filler — absorbs remaining space
+    ID_SEPARATOR,  // 0: message pane (fixed ~36 characters)
+    ID_INDICATOR_LENGTH,  // 1: dimension length display
+    ID_INDICATOR_ANGLE,  // 2: dimension angle display
+    ID_OP0,  // 3–12: mode key-command help panes
+    ID_OP1, ID_OP2, ID_OP3, ID_OP4, ID_OP5, ID_OP6, ID_OP7, ID_OP8, ID_OP9,
+    ID_INDICATOR_SCALE,  // 13: world scale display
+    ID_INDICATOR_ZOOM,  // 14: zoom ratio display
+    ID_SEPARATOR,  // 15: stretch filler — absorbs remaining space
 };
 }  // namespace
 
@@ -129,21 +121,39 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   // Prevent the menu bar from taking the focus on activation
   CMFCPopupMenu::SetForceMenuFocus(FALSE);
   DWORD Style(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+
+  // Use 32x32 Segoe Fluent icons at above 150% DPI (144) ; 24x24 otherwise.
+  m_useHighDpiToolbar = (::GetDpiForSystem() > highDpiThreshold);
+
+  if (m_useHighDpiToolbar) {
+    m_standardToolBar.SetSizes(CSize(40, 40), CSize(32, 32));
+  } else {
+    m_standardToolBar.SetSizes(CSize(32, 32), CSize(24, 24));
+  }
+  const UINT standardToolBarId = m_useHighDpiToolbar ? IDR_MAINFRAME_32 : IDR_MAINFRAME_24;
+
   if (!m_standardToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
-      !m_standardToolBar.LoadToolBar(static_cast<UINT>(app.HighColorMode() ? IDR_MAINFRAME_256 : IDR_MAINFRAME))) {
+      !m_standardToolBar.LoadToolBar(standardToolBarId, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create toolbar\n");
     return -1;
   }
   m_standardToolBar.SetWindowTextW(L"Standard");
-  m_standardToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, L"Customize...");
 
   if (!m_renderPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
-      !m_renderPropertiesToolBar.LoadToolBar(IDR_RENDER_PROPERTIES)) {
+      !m_renderPropertiesToolBar.LoadToolBar(IDR_RENDER_PROPERTIES, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create render properties toolbar\n");
     return -1;
   }
+  // Match cell height to the standard toolbar so both report the same row height
+  // to the docking manager. Without this, the properties toolbar defaults to the
+  // 16px cell from IDR_RENDER_PROPERTIES TOOLBAR 16,16, and combo boxes end up
+  // with a different vertical midpoint than the standard toolbar's icons.
+  if (m_useHighDpiToolbar) {
+    m_renderPropertiesToolBar.SetSizes(CSize(40, 40), CSize(32, 32));
+  } else {
+    m_renderPropertiesToolBar.SetSizes(CSize(32, 32), CSize(24, 24));
+  }
   m_renderPropertiesToolBar.SetWindowTextW(L"Properties");
-  m_renderPropertiesToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, L"Customize...");
 
   InitUserToolbars(nullptr, firstUserToolBarId, lastUserToolBarId);
 
@@ -182,8 +192,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   EnableDocking(CBRS_ALIGN_ANY);
 
   DockPane(&m_menuBar);
-  DockPane(&m_standardToolBar);
   DockPane(&m_renderPropertiesToolBar);
+  DockPaneLeftOf(&m_standardToolBar, &m_renderPropertiesToolBar);
   DockPane(&m_propertiesPane);
   DockPane(&m_outputPane);
 
@@ -260,10 +270,6 @@ void CMainFrame::OnWindowManager() { ShowWindowsDialog(); }
 void CMainFrame::OnViewCustomize() {
   CMFCToolBarsCustomizeDialog* Dialog = new CMFCToolBarsCustomizeDialog(this, TRUE);
   Dialog->EnableUserDefinedToolbars();
-
-  // Setup combobox:
-  Dialog->ReplaceButton(ID_EDIT_FIND, EoCtrlFindComboBox());
-
   Dialog->Create();
 }
 
@@ -284,10 +290,8 @@ LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
 
   switch (toolbarResourceId) {
     case IDR_MAINFRAME:
-    case IDR_MAINFRAME_256: {
-      m_standardToolBar.ReplaceButton(ID_EDIT_FIND, EoCtrlFindComboBox(), FALSE);
+    case IDR_MAINFRAME_256:
       break;
-    }
     case IDR_RENDER_PROPERTIES: {
       m_renderPropertiesToolBar.ReplaceButton(ID_PENCOLOR_COMBO, EoCtrlColorComboBox(), FALSE);
       m_renderPropertiesToolBar.ReplaceButton(ID_LINETYPE_COMBO, EoCtrlLineTypeComboBox(), FALSE);
@@ -321,9 +325,8 @@ BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWind
     Tool4->SetCommand(L"http://www.fanningfanning.com");
   }
 
-  // Enable customization button for all user toolbars
+  // Enable customization button for user toolbars (standard and render properties are locked)
   auto Customize = App::LoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
-
   for (int i = 0; i < maxUserToolbars; i++) {
     CMFCToolBar* UserToolbar = GetUserToolBarByIndex(i);
     if (UserToolbar != nullptr) { UserToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, Customize); }
@@ -379,9 +382,7 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
     HWND hwndT = ::GetWindow(m_hWndMDIClient, GW_CHILD);
     while (hwndT != nullptr) {
       CMDIChildWndEx* frame = DYNAMIC_DOWNCAST(CMDIChildWndEx, CWnd::FromHandle(hwndT));
-      if (frame != nullptr) {
-        frame->ModifyStyle(WS_SYSMENU, 0);
-      }
+      if (frame != nullptr) { frame->ModifyStyle(WS_SYSMENU, 0); }
       hwndT = ::GetWindow(hwndT, GW_HWNDNEXT);
     }
     m_menuBar.SetMaximizeMode(FALSE);
@@ -452,24 +453,9 @@ void CMainFrame::SetPaneBackgroundColor(int index, COLORREF backgroundColor) {
   m_statusBar.SetPaneBackgroundColor(index, backgroundColor);
 }
 void CMainFrame::OnViewFullScreen() { ShowFullScreen(); }
-CMFCToolBarComboBoxButton* CMainFrame::GetFindCombo() {
-  CMFCToolBarComboBoxButton* FoundCombo = nullptr;
-
-  CObList ButtonsList;
-  if (CMFCToolBar::GetCommandButtons(ID_EDIT_FIND_COMBO, ButtonsList) > 0) {
-    for (auto Position = ButtonsList.GetHeadPosition(); FoundCombo == nullptr && Position != nullptr;) {
-      CMFCToolBarComboBoxButton* Combo = DYNAMIC_DOWNCAST(CMFCToolBarComboBoxButton, ButtonsList.GetNext(Position));
-
-      if (Combo != nullptr && Combo->GetEditCtrl()->GetSafeHwnd() == ::GetFocus()) { FoundCombo = Combo; }
-    }
-  }
-  return FoundCombo;
-}
 void CMainFrame::ApplyColorScheme() {
   auto* visualManager = dynamic_cast<EoMfVisualManager*>(CMFCVisualManager::GetInstance());
-  if (visualManager != nullptr) {
-    visualManager->RefreshColors();
-  }
+  if (visualManager != nullptr) { visualManager->RefreshColors(); }
   ApplyDwmDarkMode(GetSafeHwnd(), Eo::activeColorScheme == Eo::ColorScheme::Dark);
 
   // Refresh Windows dark mode state for common controls (scroll bars, context menus)
@@ -479,34 +465,44 @@ void CMainFrame::ApplyColorScheme() {
     using SetPreferredAppMode_t = DWORD(WINAPI*)(int);
     auto setPreferredAppMode =
         reinterpret_cast<SetPreferredAppMode_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(135)));
-    if (setPreferredAppMode != nullptr) {
-      setPreferredAppMode(Eo::activeColorScheme == Eo::ColorScheme::Dark ? 2 : 3);
-    }
+    if (setPreferredAppMode != nullptr) { setPreferredAppMode(Eo::activeColorScheme == Eo::ColorScheme::Dark ? 2 : 3); }
     // FlushMenuThemes (ordinal 136): forces menus to re-read theme data
     using FlushMenuThemes_t = void(WINAPI*)();
-    auto flushMenuThemes =
-        reinterpret_cast<FlushMenuThemes_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(136)));
-    if (flushMenuThemes != nullptr) {
-      flushMenuThemes();
-    }
+    auto flushMenuThemes = reinterpret_cast<FlushMenuThemes_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(136)));
+    if (flushMenuThemes != nullptr) { flushMenuThemes(); }
     // RefreshImmersiveColorPolicyState (ordinal 104): refreshes dark/light policy
     using RefreshPolicy_t = void(WINAPI*)();
-    auto refreshPolicy =
-        reinterpret_cast<RefreshPolicy_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(104)));
-    if (refreshPolicy != nullptr) {
-      refreshPolicy();
-    }
+    auto refreshPolicy = reinterpret_cast<RefreshPolicy_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(104)));
+    if (refreshPolicy != nullptr) { refreshPolicy(); }
   }
 
   // Set status bar text color for all panes to match the active scheme
   const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
   int paneCount = m_statusBar.GetCount();
-  for (int i = 0; i < paneCount; i++) {
-    m_statusBar.SetPaneTextColor(i, schemeColors.statusBarText, FALSE);
-  }
+  for (int i = 0; i < paneCount; i++) { m_statusBar.SetPaneTextColor(i, schemeColors.statusBarText, FALSE); }
 
   m_propertiesPane.ApplyColorScheme();
   m_outputPane.ApplyColorScheme();
+
+  // Swap the toolbar bitmap for the active color scheme.
+  // LoadToolBar(id, ..., bLocked=TRUE) stores the initial light-scheme bitmap in
+  // m_ImagesLocked. CMFCToolBar renders from m_Images when non-empty and falls back
+  // to m_ImagesLocked otherwise. The strategy:
+  //   1. Clear m_Images so a failed LoadBitmap leaves the slot empty (not stale).
+  //   2. LoadBitmap(id) writes to m_Images (bLocked=FALSE, the default).
+  // Dark bitmaps (BITMAP-only resources): Load succeeds → m_Images takes priority.
+  // Light bitmaps (shared TOOLBAR+BITMAP): Load may silently fail on some MFC builds
+  //   → m_Images stays empty after Clear → falls back to m_ImagesLocked (correct).
+  {
+    const UINT imageId = m_useHighDpiToolbar
+        ? (Eo::activeColorScheme == Eo::ColorScheme::Dark ? IDR_MAINFRAME_32_DARK : IDR_MAINFRAME_32)
+        : (Eo::activeColorScheme == Eo::ColorScheme::Dark ? IDR_MAINFRAME_24_DARK : IDR_MAINFRAME_24);
+    m_standardToolBar.GetImages()->Clear();
+
+    if (!m_standardToolBar.LoadBitmap(imageId)) {
+      ATLTRACE2(traceGeneral, 1, L"Failed to load toolbar bitmap %u\n", imageId);
+    }
+  }
   RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 }
 

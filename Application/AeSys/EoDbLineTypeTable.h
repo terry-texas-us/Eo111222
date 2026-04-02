@@ -31,8 +31,26 @@ class EoDbLineTypeTable {
   }
   bool IsEmpty() { return m_MapLineTypes.IsEmpty(); }
 
-  std::int16_t LegacyLineTypeIndex(CString& name);
-  std::int16_t LegacyLineTypeIndex(std::wstring& name);
+  /** @brief Converts a line type name to its corresponding legacy line type index.
+   * If the name matches "ByBlock" or "ByLayer", returns the special sentinel indices.
+   * Otherwise, searches the legacy line types array (DXF name then display name) for a
+   * case-insensitive match and returns its index.
+   * If no match is found, returns 1 (the index for "CONTINUOUS").
+   * @param name The line type name to convert.
+   * @return The corresponding legacy line type index, or 1 if not found.
+   */
+  static std::int16_t LegacyLineTypeIndex(const CString& name);
+
+  static std::int16_t LegacyLineTypeIndex(const std::wstring& name);
+
+  /**
+   * Retrieves the legacy line type name corresponding to a given index.
+   * If the index is within the range of defined legacy line types, returns the associated name.
+   * Otherwise, returns "CONTINUOUS" as a default.
+   * @param index The index of the legacy line type.
+   * @return The name of the legacy line type as a std::wstring.
+   */
+  [[nodiscard]] static std::wstring LegacyLineTypeName(std::int16_t index) noexcept;
 
   /** @brief Looks up a line type by its name (case-insensitive).
    *
@@ -58,10 +76,10 @@ class EoDbLineTypeTable {
   void SetAt(const CString& name, EoDbLineType* lineType) { m_MapLineTypes.SetAt(name, lineType); }
 
   /** @brief Counts the number of references to a specific line type in the document.
-   * @param lineType The line type index to count references for.
+   * @param lineTypeName The line type name to count references for.
    * @return The number of references to the specified line type.
    */
-  int ReferenceCount(std::int16_t lineType);
+  static int ReferenceCount(const std::wstring& lineTypeName);
 
   int Size() { return (int)m_MapLineTypes.GetSize(); }
   /// @brief Loads the Line Type table.

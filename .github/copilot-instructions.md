@@ -541,6 +541,50 @@ The Properties toolbar buttons (Expand All, Sort, Properties1) use `properties.b
 ## User-Specific Notes
 - User may rename `EoDbLabeledLine` to `EoDbLabeledLine` in the future — it's a labeled line primitive, not a true DXF dimension.
 
+## Line Type Architecture
+
+### Entity-Level: Name-Authoritative (Phases A–D Complete)
+`EoDbPrimitive` stores line type as `m_lineTypeName` (`std::wstring`). The legacy `m_lineTypeIndex` field has been **removed**. All entity-level operations use the name:
+
+| Operation | Mechanism |
+|-----------|-----------|
+| **Internal storage** | `m_lineTypeName` — `L"ByLayer"`, `L"ByBlock"`, or a DXF linetype name (e.g. `L"DASHED"`) |
+| **Default** | `{L"ByLayer"}` — matches legacy default behavior |
+| **Sentinel tests** | `IsLineTypeByLayer()` / `IsLineTypeByBlock()` — case-insensitive via `_wcsicmp` |
+| **DXF import** | `SetBaseProperties()` copies `entity->m_lineType` directly into `m_lineTypeName` |
+| **PEG V1 read** | `ReadFromPeg` reads `int16_t` → converts via `LegacyLineTypeName()` → `SetLineTypeName()` |
+| **PEG V1 write** | `Write(CFile&)` derives index at write time via `LegacyLineTypeIndex(m_lineTypeName)` |
+| **PEG V1 buffer write** | `Write(CFile&, uint8_t*)` same pattern with `IsLineTypeByLayer()` → `sm_layerLineTypeIndex` fallback |
+| **Render boundary** | `LogicalLineType()` derives `int16_t` from name on-the-fly for `SetPen()` |
+| **Modify state** | `ModifyState()` copies `renderState.LineTypeName()` into `m_lineTypeName` |
+
+### Removed API (formerly on `EoDbPrimitive`)
+- `m_lineTypeIndex` field — removed
+- `LineTypeIndex()` getter — removed (zero callers)
+- `SetLineTypeIndex()` — removed (zero callers)
+- `SetProperties(color, lineTypeIndex)` — removed (zero callers, superseded by `WithProperties`)
+
+### Retained API
+- `LINETYPE_BYLAYER` (32767) / `LINETYPE_BYBLOCK` (32766) constants — still used by render pipeline, combo box, and conversion functions
+- `sm_layerLineTypeIndex` / `LayerLineTypeIndex()` / `SetLayerLineTypeIndex()` — layer-level statics for ByLayer resolution during rendering
+- `LegacyLineTypeIndex(name)` / `LegacyLineTypeName(index)` — bidirectional conversion on `EoDbLineTypeTable`
+
+### Render-Level: Index-Based (Phase E — Deferred)
+`EoGsRenderState` retains its own `m_LineTypeIndex` (`int16_t`). This is the *resolved, ready-to-render* index after ByLayer substitution. It feeds `ManagePenResources` (GDI pen style selection) and `EoGsVertexBuffer::DisplayDashPattern` (dash pattern lookup via `LookupUsingLegacyIndex`). The entity→render boundary (`LogicalLineType()` + `LogicalLineTypeName()`) derives the index from the name, so the render pipeline sees no change.
+
+**Phase E is deferred** because:
+1. The render pipeline is performance-critical (every entity, every frame)
+2. `ManagePenResources` and `DisplayDashPattern` require integer dispatch
+3. The entity→render boundary is already clean (name→index derived at the boundary)
+4. UI combo boxes use `DWORD_PTR` item data keyed to integer sentinel values
+
+### Key Conversion Functions
+| Function | Location | Direction |
+|----------|----------|-----------|
+| `LegacyLineTypeIndex(CString&)` | `EoDbLineTypeTable` | name → `int16_t` (case-insensitive, ByLayer→32767, ByBlock→32766) |
+| `LegacyLineTypeIndex(wstring&)` | `EoDbLineTypeTable` | delegates to `CString` overload |
+| `LegacyLineTypeName(int16_t)` | `EoDbLineTypeTable` | `int16_t` → `std::wstring` (32767→`L"ByLayer"`, 32766→`L"ByBlock"`) |
+
 ## Pen Render Pipeline
 
 ### Architecture Overview

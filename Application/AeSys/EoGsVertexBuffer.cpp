@@ -71,6 +71,13 @@ void EoGsVertexBuffer::DisplayDashPattern(
   std::vector<double> dashElements(numberOfDashElements);
   lineType->GetDashElements(dashElements.data());
 
+  // Apply the entity's linetype scale (DXF group code 48, resolved through ByLayer/defaults).
+  // This multiplies each dash/gap length so the pattern appears proportionally larger or smaller.
+  const double lineTypeScale = renderState.LineTypeScale();
+  if (lineTypeScale != 1.0) {
+    for (auto& element : dashElements) { element *= lineTypeScale; }
+  }
+
   const double dpi = static_cast<double>(std::max(defaultDpi, GetDpiForSystem()));
   const double pixelSize = 1.0 / dpi;  // Used for dots where dash element length is 0.0
 

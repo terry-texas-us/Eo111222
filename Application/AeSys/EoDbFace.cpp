@@ -10,6 +10,7 @@
 #include "Eo.h"
 #include "EoDb.h"
 #include "EoDbFace.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
 #include "EoDxfEntities.h"
@@ -419,7 +420,7 @@ EoDbFace* EoDbFace::ReadFromPeg(CFile& file) {
 
   auto* face = new EoDbFace();
   face->SetColor(color);
-  face->SetLineTypeIndex(lineTypeIndex);
+  face->SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex));
   face->m_sourceType = sourceType;
   face->m_edgeFlags = edgeFlags;
   face->m_vertexCount = std::min(vertexCount, static_cast<std::uint8_t>(4));
@@ -433,7 +434,7 @@ EoDbFace* EoDbFace::ReadFromPeg(CFile& file) {
 bool EoDbFace::Write(CFile& file) {
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kFacePrimitive));
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   EoDb::WriteInt8(file, static_cast<std::int8_t>(m_sourceType));
   EoDb::WriteInt8(file, static_cast<std::int8_t>(m_edgeFlags));
   EoDb::WriteInt8(file, static_cast<std::int8_t>(m_vertexCount));

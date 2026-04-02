@@ -401,6 +401,7 @@ void EoDxfLinetype::Reset() {
   desc = L"";
   m_numberOfLinetypeElements = 0;
   length = 0.0;
+  path.clear();
   pathIdx = 0;
   EoDxfTableEntry::Reset();
 }

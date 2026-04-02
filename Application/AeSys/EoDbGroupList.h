@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <cstdint>
+#include <string>
 
 class EoDbCharacterCellDefinition;
 class EoDbGroup;
@@ -38,7 +39,7 @@ class EoDbGroupList : public CObList {
   int GetBlockRefCount(const CString& name);
   /// @brief Determines the extent of all groups in list.
   void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, EoGeTransformMatrix& transformMatrix);
-  int GetLineTypeRefCount(std::int16_t lineType);
+  int GetLineTypeRefCount(const std::wstring& lineTypeName);
 
   /** Modifies the notes of all groups in the list using the specified font definition, character cell definition and
    * attributes.
@@ -50,7 +51,7 @@ class EoDbGroupList : public CObList {
   void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,
       int attributes = 0);
   void ModifyColor(std::int16_t color);
-  void ModifyLineType(std::int16_t lineType);
+  void ModifyLineType(const std::wstring& lineTypeName);
   void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
   int RemoveEmptyNotesAndDelete();
   int RemoveEmptyGroups();

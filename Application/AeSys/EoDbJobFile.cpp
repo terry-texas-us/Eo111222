@@ -13,12 +13,13 @@
 #include "Eo.h"
 #include "EoDb.h"
 #include "EoDbConic.h"
-#include "EoDbLabeledLine.h"
 #include "EoDbEllipse.h"
 #include "EoDbGroup.h"
 #include "EoDbJobFile.h"
+#include "EoDbLabeledLine.h"
 #include "EoDbLayer.h"
 #include "EoDbLine.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPoint.h"
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
@@ -379,7 +380,7 @@ EoDbPrimitive* EoDbJobFile::ConvertEllipsePrimitive() {
   auto* conic = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
   if (conic == nullptr) { throw std::runtime_error("Error creating Conic."); }
   conic->SetColor(color);
-  conic->SetLineTypeIndex(lineTypeIndex);
+  conic->SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex));
 
   return conic;
 }
@@ -392,7 +393,7 @@ EoDbPrimitive* EoDbJobFile::ConvertLinePrimitive() {
   line.begin = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
   line.end = ((CVaxPnt*)&m_PrimBuf[20])->Convert();
 
-  return EoDbLine::CreateLine(line)->WithProperties(color, lineTypeIndex);
+  return EoDbLine::CreateLine(line)->WithProperties(color, EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex));
 }
 
 EoDbPrimitive* EoDbJobFile::ConvertPointPrimitive() {
@@ -437,7 +438,7 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
   auto* conic = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
   if (conic != nullptr) {
     conic->SetColor(color);
-    conic->SetLineTypeIndex(lineTypeIndex);
+    conic->SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex));
   }
   return conic;
 }
@@ -445,12 +446,13 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
 EoDbPrimitive* EoDbJobFile::ConvertVersion1LinePrimitive() {
   std::int16_t color = std::int16_t(m_PrimBuf[4] & 0x000f);
   std::int16_t lineTypeIndex = std::int16_t((m_PrimBuf[4] & 0x00ff) >> 4);
+  const std::wstring lineTypeName = EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex);
 
   EoGeLine line;
   line.begin = ((CVaxPnt*)&m_PrimBuf[8])->Convert() * 1.e-3;
   line.end = ((CVaxPnt*)&m_PrimBuf[20])->Convert() * 1.e-3;
 
-  return EoDbLine::CreateLine(line)->WithProperties(color, lineTypeIndex);
+  return EoDbLine::CreateLine(line)->WithProperties(color, lineTypeName);
 }
 
 EoDbPrimitive* EoDbJobFile::ConvertVersion1PointPrimitive() {
@@ -483,7 +485,7 @@ void EoDbJobFile::ConvertTagToPoint() {
 }
 EoDbLabeledLine::EoDbLabeledLine(std::uint8_t* buffer) {
   m_color = std::int16_t(buffer[6]);
-  m_lineTypeIndex = std::int16_t(buffer[7]);
+  SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(std::int16_t(buffer[7])));
 
   m_line.begin = ((CVaxPnt*)&buffer[8])->Convert();
   m_line.end = ((CVaxPnt*)&buffer[20])->Convert();
@@ -523,8 +525,7 @@ EoDbPolygon::EoDbPolygon(std::uint8_t* buffer, int version) {
         m_positiveX.z = 0.0;
         m_positiveY.z = 0.0;
 
-        if (Eo::IsGeometricallyNonZero(dXScal) &&
-            Eo::IsGeometricallyNonZero(dYScal)) {  // Have 2 hatch lines
+        if (Eo::IsGeometricallyNonZero(dXScal) && Eo::IsGeometricallyNonZero(dYScal)) {  // Have 2 hatch lines
           m_fillStyleIndex = 2;
           m_positiveX.x = std::cos(dAng);
           m_positiveX.y = std::sin(dAng);
@@ -600,7 +601,7 @@ EoDbPolygon::EoDbPolygon(std::uint8_t* buffer, int version) {
 EoDbSpline::EoDbSpline(std::uint8_t* buffer, int version) {
   if (version == 1) {
     m_color = std::int16_t(buffer[4] & 0x000f);
-    m_lineTypeIndex = std::int16_t((buffer[4] & 0x00ff) >> 4);
+    SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(std::int16_t((buffer[4] & 0x00ff) >> 4)));
 
     std::uint16_t wPts = std::uint16_t(((CVaxFloat*)&buffer[8])->Convert());
 
@@ -613,7 +614,7 @@ EoDbSpline::EoDbSpline(std::uint8_t* buffer, int version) {
     }
   } else {
     m_color = std::int16_t(buffer[6]);
-    m_lineTypeIndex = std::int16_t(buffer[7]);
+    SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(std::int16_t(buffer[7])));
 
     std::uint16_t wPts = static_cast<std::uint16_t>(*((std::int16_t*)&buffer[8]));
 
@@ -710,7 +711,8 @@ void EoDbConic::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = 2;
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kConicPrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
+  auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
+  buffer[7] = static_cast<std::uint8_t>(IsLineTypeByLayer() ? sm_layerLineTypeIndex : lineTypeIdx);
   if (buffer[7] >= 16) { buffer[7] = 2; }
 
   ((CVaxPnt*)&buffer[8])->Convert(m_center);
@@ -725,7 +727,8 @@ void EoDbEllipse::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = 2;
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kEllipsePrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
+  auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
+  buffer[7] = static_cast<std::uint8_t>(IsLineTypeByLayer() ? sm_layerLineTypeIndex : lineTypeIdx);
   if (buffer[7] >= 16) { buffer[7] = 2; }
 
   ((CVaxPnt*)&buffer[8])->Convert(m_center);
@@ -741,7 +744,8 @@ void EoDbLabeledLine::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = std::uint8_t((118 + TextLength) / 32);
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kDimensionPrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
+  auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
+  buffer[7] = static_cast<std::uint8_t>(IsLineTypeByLayer() ? sm_layerLineTypeIndex : lineTypeIdx);
   if (buffer[7] >= 16) { buffer[7] = 2; }
 
   ((CVaxPnt*)&buffer[8])->Convert(m_line.begin);
@@ -770,7 +774,8 @@ void EoDbLine::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = 1;
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kLinePrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
+  auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
+  buffer[7] = static_cast<std::uint8_t>(IsLineTypeByLayer() ? sm_layerLineTypeIndex : lineTypeIdx);
   if (buffer[7] >= 16) { buffer[7] = 2; }
 
   ((CVaxPnt*)&buffer[8])->Convert(m_line.begin);
@@ -823,7 +828,8 @@ void EoDbSpline::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = static_cast<std::uint8_t>((2 + m_pts.GetSize() * 3) / 8 + 1);
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kSplinePrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  buffer[7] = static_cast<std::uint8_t>(m_lineTypeIndex == LINETYPE_BYLAYER ? sm_layerLineTypeIndex : m_lineTypeIndex);
+  auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
+  buffer[7] = static_cast<std::uint8_t>(IsLineTypeByLayer() ? sm_layerLineTypeIndex : lineTypeIdx);
 
   *((std::int16_t*)&buffer[8]) = (std::int16_t)m_pts.GetSize();
 

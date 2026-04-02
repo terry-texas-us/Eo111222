@@ -23,17 +23,17 @@ class CMainFrame : public CMDIFrameWndEx {
       CWnd* pParentWnd = nullptr, CCreateContext* pContext = nullptr) override;
 
  public:
-  static CMFCToolBarComboBoxButton* GetFindCombo();
   ~CMainFrame() override;
 
  protected:  // control bar embedded members
   CMFCMenuBar m_menuBar;
   CMFCToolBar m_standardToolBar;
-  CMFCToolBar m_renderPropertiesToolBar;  ///< Properties toolbar (Color, future LineStyle/LineWeight)
+  CMFCToolBar m_renderPropertiesToolBar;  // Properties toolbar (Color, future LineStyle/LineWeight)
   EoMfStatusBar m_statusBar;
   EoMfOutputDockablePane m_outputPane;
   EoMfPropertiesDockablePane m_propertiesPane;
   CMFCToolBarImages m_userImages;
+  bool m_useHighDpiToolbar{false};  // True when 32x32 icons are loaded (DPI > 144); false for 24x24
 
  protected:
   afx_msg int OnCreate(LPCREATESTRUCT createStruct);

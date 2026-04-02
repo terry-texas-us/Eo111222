@@ -108,15 +108,17 @@ void AeSysView::OnDraw(CDC* deviceContext) {
           GetBValue(bgColor) / 255.0f);
       m_d2dRenderTarget->Clear(bkColor);
       EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
+
+      // Save the user's current render state (linetype name, color, etc.) before entity
+      // rendering, which mutates renderState via SetPen calls. Restore afterward so that
+      // UpdateStateInformation reads the user's selection, not the last-rendered entity's state.
+      auto savedUserState = renderState.Save();
       document->DisplayAllLayers(this, &renderDevice);
       document->DisplayUniquePoints();
 
       // Preview group overlay — rendered on top of the committed scene
-      if (!m_PreviewGroup.IsEmpty()) {
-        auto savedState = renderState.Save();
-        m_PreviewGroup.Display(this, &renderDevice);
-        renderState.Restore(&renderDevice, savedState);
-      }
+      if (!m_PreviewGroup.IsEmpty()) { m_PreviewGroup.Display(this, &renderDevice); }
+      renderState.Restore(&renderDevice, savedUserState);
 
       // Draw rubberband overlay after the scene
       if (m_rubberbandType != None) {
@@ -164,6 +166,11 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     auto* document = GetDocument();
     assert(document != nullptr);
 
+    // Save the user's current render state before entity rendering, which mutates
+    // renderState via SetPen calls. Restore afterward so that UpdateStateInformation
+    // reads the user's selection, not the last-rendered entity's state.
+    auto savedUserState = renderState.Save();
+
     // If back buffer exists and scene is dirty, re-render the entire scene into the back buffer
     if (m_backBufferDC.GetSafeHdc() != nullptr && m_sceneInvalid) {
       const bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
@@ -208,11 +215,11 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     // Preview group overlay — rendered on the screen DC, not into the back buffer,
     // so it does not require a full scene re-render on each mouse move.
     if (!m_PreviewGroup.IsEmpty()) {
-      auto savedState = renderState.Save();
       EoGsRenderDeviceGdi overlayDevice(deviceContext);
       m_PreviewGroup.Display(this, &overlayDevice);
-      renderState.Restore(&overlayDevice, savedState);
     }
+
+    renderState.Restore(deviceContext, savedUserState);
     m_overlayDirty = false;
 
     UpdateStateInformation(All);

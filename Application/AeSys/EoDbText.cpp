@@ -10,12 +10,12 @@
 #include "EoDb.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbFontDefinition.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
-#include "EoDxfInterface.h"
-#include "EoGsRenderDevice.h"
-#include "EoDxfText.h"
 #include "EoDlgTrapModify.h"
+#include "EoDxfInterface.h"
+#include "EoDxfText.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -23,6 +23,7 @@
 #include "EoGeReferenceSystem.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
 namespace {
@@ -425,7 +426,7 @@ EoDbText* EoDbText::ReadFromPeg(CFile& file) {
 bool EoDbText::Write(CFile& file) {
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kTextPrimitive));
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   m_fontDefinition.Write(file);
   m_ReferenceSystem.Write(file);
   EoDb::Write(file, m_strText);

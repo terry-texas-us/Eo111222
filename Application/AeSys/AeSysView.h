@@ -330,8 +330,6 @@ class AeSysView : public CView {
   /// @brief Returns a pointer to the currently active view.
   static AeSysView* GetActiveView();
 
-  void VerifyFindString(CMFCToolBarComboBoxButton* findCombo, CString& findText);
-
   bool m_ViewStateInformation{true};
   void UpdateStateInformation(EStateInformationItem item);
 
@@ -882,28 +880,37 @@ class AeSysView : public CView {
   /// beginPoint begin point of the line
   /// endPoint end point of the line
   /// section width and depth data
-  /// group 
+  /// group
   void GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, Section section, EoDbGroup* group);
-  /// @brief Generates rise or drop fitting.
-  /// riseDropIndicator 	rise or drop indicator; 1 rise, 2 drop
-  /// section horizontal section width and depth
-  void GenerateRiseDrop(std::uint16_t riseDropIndicator, Section section, EoGeLine& referenceLine, EoDbGroup* group);
+
+  /** @brief Generates the rise/drop lines and the associated section for a vertical section.
+   * @param indicatorLineTypeName is the line type name for the rise/drop lines which are generated as a separate
+   * group to allow for different line types.
+   * @param section section for which rise/drop is being generated (used for width and depth)
+   * @param referenceLine centerline of the rise/drop. Rise/drop indicator lines will be generated perpendicular to this
+   * line. This line will be shortened by m_DuctSeamSize at the end if it is long enough to accommodate the seam.
+   * @param group group to which primitives will be added
+   * @note need to allow continuation perpendicular to vertical section ?
+   *      need to add end-cap if rise/drop line is long enough ?
+   */
+  void GenerateRiseDrop(
+      const std::wstring& indicatorLineTypeName, Section section, EoGeLine& referenceLine, EoDbGroup* group);
   /// @brief Generates rectangular section using a set of parallel lines.
   /// section width and depth of section
-  /// group 
+  /// group
   void GenerateRectangularSection(EoGeLine& referenceLine, double eccentricity, Section section, EoDbGroup* group);
   /// @brief Generates text segment representing width and depth of a piece of duct.
   void GenSizeNote(EoGePoint3d, double angle, Section section);
-  /// previousReferenceLine 
-  /// previousSection 
+  /// previousReferenceLine
+  /// previousSection
   /// currentReferenceLine on exit the begin point is the same as the point on the endcap
-  /// currentSection 
-  /// group 
+  /// currentSection
+  /// group
   void GenerateRectangularElbow(EoGeLine& previousReferenceLine, Section previousSection,
       EoGeLine& currentReferenceLine, Section currentSection, EoDbGroup* group);
   /// @brief Generates rectangular tap fitting.
-  /// justification 
-  /// section 
+  /// justification
+  /// section
   bool GenerateRectangularTap(EJust justification, Section section);
 
   /** @brief Generates a mitered bullhead tee fitting. (placeholder)
@@ -931,8 +938,8 @@ class AeSysView : public CView {
 
   /// @brief Generates section which transitions from one rectangle to another
   /// @param referenceLine line defining the begin point and direction of the transition
-  /// @param eccentricity 
-  /// @param justification 
+  /// @param eccentricity
+  /// @param justification
   /// @param slope slope of the transition
   /// @param previousSection width and depth at begin of the transition
   /// @param currentSection width and depth at end of the transition
@@ -1038,7 +1045,6 @@ class AeSysView : public CView {
   afx_msg void OnFilePlotFull();
   afx_msg void OnFilePlotQuarter();
   afx_msg void OnFilePrint();
-  afx_msg void OnFind();
   afx_msg void On3dViewsBack();
   afx_msg void On3dViewsBottom();
   afx_msg void On3dViewsFront();
@@ -1132,7 +1138,6 @@ class AeSysView : public CView {
   afx_msg void OnOp8();
   afx_msg void OnReturn();
   afx_msg void OnEscape();
-  afx_msg void OnEditFind();
 
  protected:
   DECLARE_MESSAGE_MAP()

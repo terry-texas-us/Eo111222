@@ -8,6 +8,7 @@
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbHandleManager.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 #include "EoDxfEntities.h"
 #include "EoGePoint3d.h"
@@ -16,7 +17,7 @@
 
 std::int16_t EoDbPrimitive::sm_layerColor{COLOR_BYLAYER};
 std::int16_t EoDbPrimitive::sm_layerLineTypeIndex{LINETYPE_BYLAYER};
-std::wstring EoDbPrimitive::sm_layerLineTypeName{};
+std::wstring EoDbPrimitive::sm_layerLineType{};
 EoDxfLineWeights::LineWeight EoDbPrimitive::sm_layerLineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
 double EoDbPrimitive::sm_layerLineTypeScale{1.0};
 std::int16_t EoDbPrimitive::sm_specialColor{};
@@ -32,8 +33,7 @@ EoDbPrimitive::EoDbPrimitive() {
 
 EoDbPrimitive::EoDbPrimitive(const EoDbPrimitive& other)
     : m_color(other.m_color),
-      m_lineTypeIndex(other.m_lineTypeIndex),
-      m_lineTypeName(other.m_lineTypeName),
+      m_lineType(other.m_lineType),
       m_layerName(other.m_layerName),
       m_ownerHandle(other.m_ownerHandle),
       m_thickness(other.m_thickness),
@@ -45,8 +45,7 @@ EoDbPrimitive::EoDbPrimitive(const EoDbPrimitive& other)
   EoDbPrimitive& EoDbPrimitive::operator=(const EoDbPrimitive& other) {
   if (this != &other) {
     m_color = other.m_color;
-    m_lineTypeIndex = other.m_lineTypeIndex;
-    m_lineTypeName = other.m_lineTypeName;
+    m_lineType = other.m_lineType;
     m_layerName = other.m_layerName;
     // m_handle is intentionally NOT copied — entity identity is preserved
     m_ownerHandle = other.m_ownerHandle;
@@ -58,12 +57,22 @@ EoDbPrimitive::EoDbPrimitive(const EoDbPrimitive& other)
 }
 
 EoDbPrimitive::EoDbPrimitive(std::int16_t color, std::int16_t lineTypeIndex)
-    : m_color(color), m_lineTypeIndex(lineTypeIndex) {
+    : m_color(color), m_lineType(EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex)) {
   if (sm_handleManager != nullptr) { m_handle = sm_handleManager->AssignHandle(); }
   ATLTRACE2(traceGeneral, 3, L"EoDbPrimitive(color, lineTypeIndex) CTOR: this=%p, vtable=%p\n", this, *(void**)this);
 }
 
 EoDbPrimitive::~EoDbPrimitive() {}
+
+EoDbPrimitive* EoDbPrimitive::WithProperties(std::int16_t color, const std::wstring& lineTypeName) {
+  m_color = color;
+  SetLineTypeName(lineTypeName);
+  return this;
+}
+
+void EoDbPrimitive::SetLineTypeName(std::wstring name) {
+  m_lineType = std::move(name);
+}
 
 void EoDbPrimitive::CutAt2Points([[maybe_unused]] const EoGePoint3d& firstPoint,
     [[maybe_unused]] const EoGePoint3d& secondPoint, [[maybe_unused]] EoDbGroupList*, [[maybe_unused]] EoDbGroupList*) {
@@ -72,9 +81,9 @@ void EoDbPrimitive::CutAtPoint([[maybe_unused]] const EoGePoint3d& point, [[mayb
 int EoDbPrimitive::IsWithinArea(const EoGePoint3d&, const EoGePoint3d&, EoGePoint3d*) { return 0; }
 bool EoDbPrimitive::PivotOnControlPoint(AeSysView*, const EoGePoint4d&) { return false; }
 
-void EoDbPrimitive::SetBaseProperties(const EoDxfGraphic* entity, AeSysDoc* document) {
+void EoDbPrimitive::SetBaseProperties(const EoDxfGraphic* entity, [[maybe_unused]] AeSysDoc* document) {
   m_color = static_cast<std::int16_t>(entity->m_color);
-  m_lineTypeName = entity->m_lineType.c_str();
+  m_lineType = entity->m_lineType.c_str();
   m_layerName = entity->m_layer.c_str();
 
   // Determine actual PenColor and LineType and where to do substitution
@@ -87,9 +96,6 @@ void EoDbPrimitive::SetBaseProperties(const EoDxfGraphic* entity, AeSysDoc* docu
   // get linetype from parent Layer
   // for linetypeName ByBlock
   // get lineType from parent Block;
-
-  auto* linetypeTable = document->LineTypeTable();
-  m_lineTypeIndex = linetypeTable->LegacyLineTypeIndex(m_lineTypeName);
 
   m_handle = entity->m_handle;
   if (sm_handleManager != nullptr) { sm_handleManager->AccommodateHandle(m_handle); }
@@ -114,14 +120,12 @@ CString EoDbPrimitive::FormatPenColor() const {
 }
 CString EoDbPrimitive::FormatLineType() const {
   CString str;
-  if (m_lineTypeIndex == LINETYPE_BYLAYER) {
+  if (IsLineTypeByLayer()) {
     str = L"ByLayer";
-  } else if (m_lineTypeIndex == LINETYPE_BYBLOCK) {
+  } else if (IsLineTypeByBlock()) {
     str = L"ByBlock";
   } else {
-    wchar_t szBuf[16]{};
-    _itow_s(m_lineTypeIndex, szBuf, 16, 10);
-    str = szBuf;
+    str = m_lineType.c_str();
   }
   return str;
 }
@@ -138,21 +142,19 @@ std::int16_t EoDbPrimitive::LogicalColor() const noexcept {
   return color;
 }
 
-std::int16_t EoDbPrimitive::LogicalLineType() const noexcept {
-  std::int16_t lineTypeIndex = m_lineTypeIndex;
-
-  if (lineTypeIndex == LINETYPE_BYLAYER) {
-    lineTypeIndex = sm_layerLineTypeIndex;
-  } else if (lineTypeIndex == LINETYPE_BYBLOCK) {
-    lineTypeIndex = 1;
+std::int16_t EoDbPrimitive::LogicalLineType() const {
+  if (IsLineTypeByLayer()) {
+    return sm_layerLineTypeIndex;
   }
-
-  return lineTypeIndex;
+  if (IsLineTypeByBlock()) {
+    return 1;  // CONTINUOUS
+  }
+  return EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
 }
 
 const std::wstring& EoDbPrimitive::LogicalLineTypeName() const {
-  if (m_lineTypeIndex == LINETYPE_BYLAYER) { return sm_layerLineTypeName; }
-  return m_lineTypeName;
+  if (IsLineTypeByLayer()) { return sm_layerLineType; }
+  return m_lineType;
 }
 
 void EoDbPrimitive::PopulateDxfBaseProperties(EoDxfGraphic* entity) const {
@@ -161,12 +163,12 @@ void EoDbPrimitive::PopulateDxfBaseProperties(EoDxfGraphic* entity) const {
   entity->m_handle = m_handle;
   entity->m_ownerHandle = m_ownerHandle;
 
-  if (m_lineTypeIndex == LINETYPE_BYLAYER) {
+  if (IsLineTypeByLayer()) {
     entity->m_lineType = L"BYLAYER";
-  } else if (m_lineTypeIndex == LINETYPE_BYBLOCK) {
+  } else if (IsLineTypeByBlock()) {
     entity->m_lineType = L"BYBLOCK";
-  } else if (!m_lineTypeName.empty()) {
-    entity->m_lineType = m_lineTypeName;
+  } else if (!m_lineType.empty()) {
+    entity->m_lineType = m_lineType;
   }
   entity->m_thickness = m_thickness;
   entity->m_lineWeight = m_lineWeight;
@@ -180,7 +182,7 @@ void EoDbPrimitive::ReadV2Extension([[maybe_unused]] CFile& file) {}
 
 void EoDbPrimitive::ModifyState() {
   m_color = renderState.Color();
-  m_lineTypeIndex = renderState.LineTypeIndex();
+  SetLineTypeName(renderState.LineTypeName());
 }
 
 void EoDbPrimitive::FormatExtra(CString& extra) {
@@ -205,8 +207,8 @@ std::int16_t EoDbPrimitive::LayerLineTypeIndex() noexcept { return sm_layerLineT
 void EoDbPrimitive::SetLayerLineTypeIndex(std::int16_t lineTypeIndex) noexcept {
   sm_layerLineTypeIndex = lineTypeIndex;
 }
-const std::wstring& EoDbPrimitive::LayerLineTypeName() noexcept { return sm_layerLineTypeName; }
-void EoDbPrimitive::SetLayerLineTypeName(const std::wstring& lineTypeName) { sm_layerLineTypeName = lineTypeName; }
+const std::wstring& EoDbPrimitive::LayerLineTypeName() noexcept { return sm_layerLineType; }
+void EoDbPrimitive::SetLayerLineTypeName(const std::wstring& lineTypeName) { sm_layerLineType = lineTypeName; }
 EoDxfLineWeights::LineWeight EoDbPrimitive::LayerLineWeight() noexcept { return sm_layerLineWeight; }
 void EoDbPrimitive::SetLayerLineWeight(EoDxfLineWeights::LineWeight lineWeight) noexcept {
   sm_layerLineWeight = lineWeight;

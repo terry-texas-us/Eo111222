@@ -9,6 +9,7 @@
 #include "Eo.h"
 #include "EoDb.h"
 #include "EoDbAttrib.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
 #include "EoDxfAttributes.h"
@@ -168,7 +169,7 @@ bool EoDbAttrib::Write(CFile& file) {
   // the ReadFromPeg can reuse the same field parsing.
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kAttribPrimitive));
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
 
   // Font definition and reference system — delegating to the same serialization as EoDbText
   EoDbFontDefinition fontDefinition;

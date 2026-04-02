@@ -9,14 +9,15 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDb.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbViewport.h"
 #include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
-#include "EoGsRenderDevice.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
 
 EoDbViewport::EoDbViewport(const EoDbViewport& other)
     : EoDbPrimitive(other),
@@ -47,8 +48,7 @@ void EoDbViewport::swap(EoDbViewport& other) noexcept {
   using std::swap;
   // Base class protected members (m_handle intentionally excluded — entity identity is preserved)
   swap(m_color, other.m_color);
-  swap(m_lineTypeIndex, other.m_lineTypeIndex);
-  swap(m_lineTypeName, other.m_lineTypeName);
+  swap(m_lineType, other.m_lineType);
   swap(m_layerName, other.m_layerName);
   swap(m_ownerHandle, other.m_ownerHandle);
   // Paper-space geometry
@@ -308,7 +308,8 @@ void EoDbViewport::TranslateUsingMask(EoGeVector3d translateVector, const DWORD 
 EoDbViewport* EoDbViewport::ReadFromPeg(CFile& file) {
   auto* viewport = new EoDbViewport();
   viewport->SetColor(EoDb::ReadInt16(file));
-  viewport->SetLineTypeIndex(EoDb::ReadInt16(file));
+  auto lineTypeIndex = EoDb::ReadInt16(file);
+  viewport->SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex));
   viewport->m_centerPoint = EoDb::ReadPoint3d(file);
   EoDb::Read(file, viewport->m_width);
   EoDb::Read(file, viewport->m_height);
@@ -332,7 +333,7 @@ EoDbViewport* EoDbViewport::ReadFromPeg(CFile& file) {
 bool EoDbViewport::Write(CFile& file) {
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kViewportPrimitive));
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   m_centerPoint.Write(file);
   EoDb::WriteDouble(file, m_width);
   EoDb::WriteDouble(file, m_height);

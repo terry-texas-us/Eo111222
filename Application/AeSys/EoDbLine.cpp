@@ -8,10 +8,10 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDb.h"
-#include "EoGsRenderDevice.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbLine.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 #include "EoDxfEntities.h"
 #include "EoDxfInterface.h"
@@ -21,6 +21,7 @@
 #include "EoGePolyline.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
 #if defined(USING_DDE)
@@ -92,7 +93,7 @@ void EoDbLine::CutAt2Points(
 void EoDbLine::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   EoGeLine line{};
   if (m_line.CutAtPoint(point, line) != 0) {
-    group->AddTail(EoDbLine::CreateLine(line)->WithProperties(m_color, m_lineTypeIndex));
+    group->AddTail(EoDbLine::CreateLine(line)->WithProperties(m_color, m_lineType));
   }
 }
 
@@ -339,7 +340,7 @@ EoDbLine* EoDbLine::ReadFromPeg(CFile& file) {
 
   auto* line = new EoDbLine(begin, end);
   line->SetColor(color);
-  line->SetLineTypeIndex(lineTypeIndex);
+  line->SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex));
   return line;
 }
 
@@ -347,7 +348,7 @@ bool EoDbLine::Write(CFile& file) {
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kLinePrimitive));
 
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   m_line.Write(file);
 
   return true;

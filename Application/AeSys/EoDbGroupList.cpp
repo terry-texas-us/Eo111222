@@ -72,13 +72,13 @@ void EoDbGroupList::GetExtents(
     group->GetExtents(view, ptMin, ptMax, transformMatrix);
   }
 }
-int EoDbGroupList::GetLineTypeRefCount(std::int16_t lineType) {
+int EoDbGroupList::GetLineTypeRefCount(const std::wstring& lineTypeName) {
   int count{};
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    count += group->GetLineTypeRefCount(lineType);
+    count += group->GetLineTypeRefCount(lineTypeName);
   }
   return count;
 }
@@ -90,9 +90,9 @@ void EoDbGroupList::ModifyColor(std::int16_t color) {
   }
 }
 
-void EoDbGroupList::ModifyLineType(std::int16_t nStyle) {
+void EoDbGroupList::ModifyLineType(const std::wstring& lineTypeName) {
   auto position = GetHeadPosition();
-  while (position != nullptr) { (GetNext(position))->ModifyLineType(nStyle); }
+  while (position != nullptr) { (GetNext(position))->ModifyLineType(lineTypeName); }
 }
 
 void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition,

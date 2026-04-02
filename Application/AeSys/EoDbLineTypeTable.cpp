@@ -91,22 +91,32 @@ int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
   return (static_cast<int>(m_MapLineTypes.GetSize()));
 }
 
-std::int16_t EoDbLineTypeTable::LegacyLineTypeIndex(CString& name) {
-  std::int16_t index{};
-  if (name.CompareNoCase(L"ByBlock") == 0) {
-    index = EoDbPrimitive::LINETYPE_BYBLOCK;
-  } else if (name.CompareNoCase(L"ByLayer") == 0) {
-    index = EoDbPrimitive::LINETYPE_BYLAYER;
-  } else {
-    while (index < numberOfLegacyLineTypes && name.CompareNoCase(legacyLineTypes[index].second) != 0) { index++; }
-    if (index < numberOfLegacyLineTypes) { return index; }
+std::int16_t EoDbLineTypeTable::LegacyLineTypeIndex(const CString& name) {
+  if (name.CompareNoCase(L"ByBlock") == 0) { return EoDbPrimitive::LINETYPE_BYBLOCK; }
+  if (name.CompareNoCase(L"ByLayer") == 0) { return EoDbPrimitive::LINETYPE_BYLAYER; }
+
+  // Search by DXF / numeric name (second element of legacy pair)
+  for (std::int16_t index = 0; index < numberOfLegacyLineTypes; ++index) {
+    if (name.CompareNoCase(legacyLineTypes[index].second) == 0) { return index; }
   }
+
+  // Fallback: search by display name (first element of legacy pair)
+  for (std::int16_t index = 0; index < numberOfLegacyLineTypes; ++index) {
+    if (name.CompareNoCase(legacyLineTypes[index].first) == 0) { return index; }
+  }
+
   return 1;
 }
 
-std::int16_t EoDbLineTypeTable::LegacyLineTypeIndex(std::wstring& name) {
+std::int16_t EoDbLineTypeTable::LegacyLineTypeIndex(const std::wstring& name) {
   CString cstrName(name.c_str());
   return LegacyLineTypeIndex(cstrName);
+}
+std::wstring EoDbLineTypeTable::LegacyLineTypeName(std::int16_t index) noexcept {
+  if (index == EoDbPrimitive::LINETYPE_BYLAYER) { return L"ByLayer"; }
+  if (index == EoDbPrimitive::LINETYPE_BYBLOCK) { return L"ByBlock"; }
+  if (index >= 0 && index < numberOfLegacyLineTypes) { return std::wstring(legacyLineTypes[index].second); }
+  return L"CONTINUOUS";
 }
 
 bool EoDbLineTypeTable::Lookup(const CString& name, EoDbLineType*& lineType) {
@@ -131,17 +141,17 @@ bool EoDbLineTypeTable::LookupUsingLegacyIndex(std::uint16_t index, EoDbLineType
 
 /**
  * Counts the number of references to a specific line type in the document.
- * @param lineType The line type index to count references for.
+ * @param lineTypeName The line type name to count references for.
  * @return The number of references to the specified line type.
  */
-int EoDbLineTypeTable::ReferenceCount(std::int16_t lineType) {
+int EoDbLineTypeTable::ReferenceCount(const std::wstring& lineTypeName) {
   auto* document = AeSysDoc::GetDoc();
 
   int count{};
 
   for (auto i = 0; i < document->GetLayerTableSize(); i++) {
     auto* layer = document->GetLayerTableLayerAt(i);
-    count += layer->GetLineTypeRefCount(lineType);
+    count += layer->GetLineTypeRefCount(lineTypeName);
   }
 
   CString key;
@@ -151,7 +161,7 @@ int EoDbLineTypeTable::ReferenceCount(std::int16_t lineType) {
   auto position = BlocksTable->GetStartPosition();
   while (position != nullptr) {
     BlocksTable->GetNextAssoc(position, key, block);
-    count += block->GetLineTypeRefCount(lineType);
+    count += block->GetLineTypeRefCount(lineTypeName);
   }
   return count;
 }

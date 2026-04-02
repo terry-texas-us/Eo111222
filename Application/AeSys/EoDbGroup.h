@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <cstdint>
+#include <string>
 
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -66,13 +67,13 @@ class EoDbGroup : public CObList {
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&);
   EoDbPrimitive* GetNext(POSITION& position) const { return ((EoDbPrimitive*)CObList::GetNext(position)); }
   EoDbPoint* GetFirstDifferentPoint(EoDbPoint* pointPrimitive);
-  int GetLineTypeRefCount(std::int16_t lineType);
+  int GetLineTypeRefCount(const std::wstring& lineTypeName);
   void InsertBefore(POSITION position, EoDbGroup* group);
   bool IsInView(AeSysView* view);
   void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,
       int attributes = 0);
   void ModifyColor(std::int16_t color);
-  void ModifyLineType(std::int16_t lineType);
+  void ModifyLineType(const std::wstring& lineTypeName);
   void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
 
   /** @brief Removes duplicate primitives from the group.  Two primitives are considered duplicates if their

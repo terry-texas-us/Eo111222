@@ -485,7 +485,7 @@ class AeSysDoc : public CDocument {
   EoGePoint3d GetTrapPivotPoint() const { return m_trapPivotPoint; }
   BOOL IsTrapEmpty() const { return m_trappedGroups.IsEmpty(); }
   void ModifyTrappedGroupsColor(std::int16_t color) { m_trappedGroups.ModifyColor(color); }
-  void ModifyTrappedGroupsLineType(std::int16_t lineType) { m_trappedGroups.ModifyLineType(lineType); }
+  void ModifyTrappedGroupsLineType(const std::wstring& lineTypeName) { m_trappedGroups.ModifyLineType(lineTypeName); }
   void ModifyTrappedGroupsNoteAttributes(const EoDbFontDefinition& fontDefinition,
       const EoDbCharacterCellDefinition& characterCellDefinition, int attributes);
   void RemoveAllTrappedGroups();

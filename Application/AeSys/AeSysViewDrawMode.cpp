@@ -45,7 +45,7 @@ void AeSysView::OnDrawModeLine() {
     cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
 
     auto* group = new EoDbGroup(
-        EoDbLine::CreateLine(pts[0], cursorPosition)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+        EoDbLine::CreateLine(pts[0], cursorPosition)->WithProperties(renderState.Color(), renderState.LineTypeName()));
     document->AddWorkLayerGroup(group);
     pts[0] = cursorPosition;
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -152,7 +152,7 @@ void AeSysView::OnDrawModeReturn() {
     case ID_OP2:
       cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
       group = new EoDbGroup(EoDbLine::CreateLine(pts[0], cursorPosition)
-              ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+              ->WithProperties(renderState.Color(), renderState.LineTypeName()));
       break;
 
     case ID_OP3:
@@ -183,9 +183,8 @@ void AeSysView::OnDrawModeReturn() {
 
       for (int i = 0; i < 4; i++) {
         group->AddTail(EoDbLine::CreateLine(pts[i], pts[(i + 1) % 4])
-                ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+                ->WithProperties(renderState.Color(), renderState.LineTypeName()));
       }
-
       break;
 
     case ID_OP5: {
@@ -205,7 +204,7 @@ void AeSysView::OnDrawModeReturn() {
         return;
       }
       radialArc->SetColor(renderState.Color());
-      radialArc->SetLineTypeIndex(renderState.LineTypeIndex());
+      radialArc->SetLineTypeName(renderState.LineTypeName());
 
       if (std::abs(radialArc->SweepAngle()) < Eo::geometricTolerance) {
         delete radialArc;
@@ -251,7 +250,7 @@ void AeSysView::OnDrawModeReturn() {
       double ratio = minorAxis.Length() / majorAxis.Length();
       auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
       ellipse->SetColor(renderState.Color());
-      ellipse->SetLineTypeIndex(renderState.LineTypeIndex());
+      ellipse->SetLineTypeName(renderState.LineTypeName());
 
       group = new EoDbGroup(ellipse);
 
@@ -355,7 +354,7 @@ void AeSysView::DoDrawModeMouseMove() {
         if (radialArc == nullptr) { break; }
 
         radialArc->SetColor(renderState.Color());
-        radialArc->SetLineTypeIndex(renderState.LineTypeIndex());
+        radialArc->SetLineTypeName(renderState.LineTypeName());
         m_PreviewGroup.AddTail(radialArc);
       }
       InvalidateOverlay();
@@ -394,7 +393,7 @@ void AeSysView::DoDrawModeMouseMove() {
         double ratio = minorAxis.Length() / majorAxis.Length();
         auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
         ellipse->SetColor(renderState.Color());
-        ellipse->SetLineTypeIndex(renderState.LineTypeIndex());
+        ellipse->SetLineTypeName(renderState.LineTypeName());
 
         m_PreviewGroup.AddTail(ellipse);
       }

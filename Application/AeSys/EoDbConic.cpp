@@ -13,8 +13,8 @@
 #include "EoDb.h"
 #include "EoDbConic.h"
 #include "EoDbGroup.h"
-#include "EoGsRenderDevice.h"
 #include "EoDbGroupList.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
@@ -22,6 +22,7 @@
 #include "EoGePolyline.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
 #if defined(USING_DDE)
@@ -924,7 +925,7 @@ EoDbConic* EoDbConic::ReadFromPeg(CFile& file) {
 
   auto* conic = new EoDbConic(center, extrusion, majorAxis, ratio, startAngle, endAngle);
   conic->SetColor(color);
-  conic->SetLineTypeIndex(lineTypeIndex);
+  conic->SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex));
 
   return conic;
 }
@@ -940,7 +941,7 @@ EoDbConic* EoDbConic::ReadFromLegacyEllipsePeg(CFile& file) {
 
   auto* conic = CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
   conic->SetColor(color);
-  conic->SetLineTypeIndex(lineTypeIndex);
+  conic->SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex));
 
   return conic;
 }
@@ -948,7 +949,7 @@ EoDbConic* EoDbConic::ReadFromLegacyEllipsePeg(CFile& file) {
 bool EoDbConic::Write(CFile& file) {
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kConicPrimitive));
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   m_center.Write(file);
   m_majorAxis.Write(file);
   m_extrusion.Write(file);
@@ -976,7 +977,7 @@ bool EoDbConic::WriteLegacyEllipse(CFile& file) {
 
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kEllipsePrimitive));
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   m_center.Write(file);
   rotatedMajorAxis.Write(file);
   rotatedMinorAxis.Write(file);

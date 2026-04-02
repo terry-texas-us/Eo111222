@@ -41,7 +41,7 @@ void AeSysView::OnPowerModeCircuit() {
       document->AddWorkLayerGroup(Group);
       EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
       EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], CurrentRadius);
-      Group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+      Group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(renderState.Color(), renderState.LineTypeName()));
       InvalidateScene();
       pts[0] = cursorPosition;
     }
@@ -56,7 +56,7 @@ void AeSysView::OnPowerModeCircuit() {
       document->AddWorkLayerGroup(Group);
       EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
       EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], 0.0);
-      Group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+      Group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(renderState.Color(), renderState.LineTypeName()));
       InvalidateScene();
 
       pts[0] = cursorPosition;
@@ -132,8 +132,8 @@ void AeSysView::DoPowerModeMouseMove() {
           cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
         }
         auto pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
-        m_PreviewGroup.AddTail(EoDbLine::CreateLine(pt1, cursorPosition)
-                ->WithProperties(renderState.Color(), renderState.LineTypeIndex()));
+        m_PreviewGroup.AddTail(
+            EoDbLine::CreateLine(pt1, cursorPosition)->WithProperties(renderState.Color(), renderState.LineTypeName()));
         InvalidateOverlay();
       }
       break;
@@ -229,11 +229,11 @@ void AeSysView::GeneratePowerConductorSymbol(
       Circuit.ProjPtFrom_xy(0.0, -0.1, &Points[0]);
       Circuit.ProjPtFrom_xy(0.0, 0.075, &Points[1]);
       Circuit.ProjPtFrom_xy(0.0, 0.0875, &Points[2]);
-      group->AddTail(EoDbLine::CreateLine(Points[0], Points[1])->WithProperties(1, 1));
+      group->AddTail(EoDbLine::CreateLine(Points[0], Points[1])->WithProperties(1, L"CONTINUOUS"));
 
       auto* circle = EoDbConic::CreateCircleInView(Points[2], 0.0125);
       circle->SetColor(1);
-      circle->SetLineTypeIndex(1);
+      circle->SetLineTypeName(L"CONTINUOUS");
 
       group->AddTail(circle);
     } break;
@@ -241,7 +241,7 @@ void AeSysView::GeneratePowerConductorSymbol(
     case ID_OP5:
       Circuit.ProjPtFrom_xy(0.0, -0.1, &Points[0]);
       Circuit.ProjPtFrom_xy(0.0, 0.1, &Points[1]);
-      group->AddTail(EoDbLine::CreateLine(Points[0], Points[1])->WithProperties(1, 1));
+      group->AddTail(EoDbLine::CreateLine(Points[0], Points[1])->WithProperties(1, L"CONTINUOUS"));
       break;
 
     case ID_OP6:
@@ -252,15 +252,15 @@ void AeSysView::GeneratePowerConductorSymbol(
 
       EoGeLine(Points[2], endPoint).ProjPtFrom_xy(0.0, 0.075, &Points[3]);
       EoGeLine(pointOnCircuit, endPoint).ProjPtFrom_xy(0.0, 0.1, &Points[4]);
-      group->AddTail(EoDbLine::CreateLine(Points[0], Points[1])->WithProperties(1, 1));
-      group->AddTail(EoDbLine::CreateLine(Points[1], Points[3])->WithProperties(1, 1));
-      group->AddTail(EoDbLine::CreateLine(Points[3], Points[4])->WithProperties(1, 1));
+      group->AddTail(EoDbLine::CreateLine(Points[0], Points[1])->WithProperties(1, L"CONTINUOUS"));
+      group->AddTail(EoDbLine::CreateLine(Points[1], Points[3])->WithProperties(1, L"CONTINUOUS"));
+      group->AddTail(EoDbLine::CreateLine(Points[3], Points[4])->WithProperties(1, L"CONTINUOUS"));
       break;
 
     case ID_OP7:
       Circuit.ProjPtFrom_xy(0.0, -0.05, &Points[0]);
       Circuit.ProjPtFrom_xy(0.0, 0.05, &Points[1]);
-      group->AddTail(EoDbLine::CreateLine(Points[0], Points[1])->WithProperties(1, 1));
+      group->AddTail(EoDbLine::CreateLine(Points[0], Points[1])->WithProperties(1, L"CONTINUOUS"));
       break;
 
     default:

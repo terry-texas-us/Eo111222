@@ -19,7 +19,8 @@ void EoGsRenderState::Restore(CDC* deviceContext, int iSaveId) {
   if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
 
   if (psSav[iSaveId] != 0) {
-    SetPen(nullptr, deviceContext, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex());
+    SetPen(nullptr, deviceContext, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex(),
+        psSav[iSaveId]->LineTypeName());
 
     m_fontDefinition = psSav[iSaveId]->m_fontDefinition;
 
@@ -37,7 +38,8 @@ void EoGsRenderState::Restore(EoGsRenderDevice* renderDevice, int iSaveId) {
   if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
 
   if (psSav[iSaveId] != 0) {
-    SetPen(nullptr, renderDevice, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex());
+    SetPen(nullptr, renderDevice, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex(),
+        psSav[iSaveId]->LineTypeName());
 
     m_fontDefinition = psSav[iSaveId]->m_fontDefinition;
 
@@ -88,9 +90,7 @@ void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t c
   }
 
   // Resolve ByLayer line weight to the current layer's line weight
-  if (lineWeight == EoDxfLineWeights::LineWeight::kLnWtByLayer) {
-    lineWeight = EoDbPrimitive::LayerLineWeight();
-  }
+  if (lineWeight == EoDxfLineWeights::LineWeight::kLnWtByLayer) { lineWeight = EoDbPrimitive::LayerLineWeight(); }
 
   // Resolve ByLwDefault to the system default (0.25 mm)
   if (lineWeight == EoDxfLineWeights::LineWeight::kLnWtByLwDefault) {
@@ -112,25 +112,25 @@ void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t c
     // Convert resolved line weight from DXF 0.01 mm units to screen pixels.
     // Zoom-independent — matches AutoCAD "Display Lineweight" model-space behavior.
     auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
-    if (dxfCode > 0) {
-      logicalWidth = dxfCode * (0.01 / 25.4) * logicalPixelsX;
-    }
+    if (dxfCode > 0) { logicalWidth = dxfCode * (0.01 / 25.4) * logicalPixelsX; }
     logicalWidth = Eo::Round(logicalWidth);
   }
   if (deviceContext) { ManagePenResources(deviceContext, color, int(logicalWidth), lineTypeIndex); }
 }
 
-void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color, std::int16_t lineTypeIndex) {
+void EoGsRenderState::SetPen(
+    AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color, std::int16_t lineTypeIndex) {
   SetPen(view, renderDevice, color, lineTypeIndex, std::wstring{});
 }
 
-void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color, std::int16_t lineTypeIndex,
-    const std::wstring& lineTypeName) {
+void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color,
+    std::int16_t lineTypeIndex, const std::wstring& lineTypeName) {
   SetPen(view, renderDevice, color, lineTypeIndex, lineTypeName, EoDxfLineWeights::LineWeight::kLnWtByLwDefault, 1.0);
 }
 
-void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color, std::int16_t lineTypeIndex,
-    const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight, double lineTypeScale) {
+void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color,
+    std::int16_t lineTypeIndex, const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight,
+    double lineTypeScale) {
   if (EoDbPrimitive::SpecialColor() != 0) { color = EoDbPrimitive::SpecialColor(); }
   if (color == EoDbPrimitive::COLOR_BYLAYER) { color = EoDbPrimitive::LayerColor(); }
   if (lineTypeIndex == EoDbPrimitive::LINETYPE_BYLAYER) {
@@ -141,9 +141,7 @@ void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, st
   }
 
   // Resolve ByLayer line weight to the current layer's line weight
-  if (lineWeight == EoDxfLineWeights::LineWeight::kLnWtByLayer) {
-    lineWeight = EoDbPrimitive::LayerLineWeight();
-  }
+  if (lineWeight == EoDxfLineWeights::LineWeight::kLnWtByLayer) { lineWeight = EoDbPrimitive::LayerLineWeight(); }
 
   // Resolve ByLwDefault to the system default (0.25 mm)
   if (lineWeight == EoDxfLineWeights::LineWeight::kLnWtByLwDefault) {
@@ -163,9 +161,7 @@ void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, st
     auto const logicalPixelsX = static_cast<double>(renderDevice->GetDeviceCaps(LOGPIXELSX));
 
     auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
-    if (dxfCode > 0) {
-      logicalWidth = dxfCode * (0.01 / 25.4) * logicalPixelsX;
-    }
+    if (dxfCode > 0) { logicalWidth = dxfCode * (0.01 / 25.4) * logicalPixelsX; }
     logicalWidth = Eo::Round(logicalWidth);
   }
   if (renderDevice) { ManagePenResources(renderDevice, color, int(logicalWidth), lineTypeIndex); }
@@ -319,8 +315,8 @@ void EoGsRenderState::SetAlignment(
   deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);
 }
 
-void EoGsRenderState::SetAlignment(
-    EoGsRenderDevice* renderDevice, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
+void EoGsRenderState::SetAlignment(EoGsRenderDevice* renderDevice, EoDb::HorizontalAlignment horizontalAlignment,
+    EoDb::VerticalAlignment verticalAlignment) {
   m_fontDefinition.SetAlignment(horizontalAlignment, verticalAlignment);
 
   renderDevice->SetTextAlign(TA_LEFT | TA_BASELINE);

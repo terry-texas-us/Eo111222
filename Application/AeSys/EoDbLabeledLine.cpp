@@ -11,6 +11,7 @@
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbLabeledLine.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
 #include "EoGeLine.h"
@@ -385,7 +386,7 @@ EoDbLabeledLine* EoDbLabeledLine::ReadFromPeg(CFile& file) {
   auto* dimension =
       new EoDbLabeledLine(EoGeLine(beginPoint, endPoint), fontDefinition, referenceSystem, text, textColor);
   dimension->SetColor(color);
-  dimension->SetLineTypeIndex(lineType);
+  dimension->SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(lineType));
   return dimension;
 }
 
@@ -393,7 +394,7 @@ bool EoDbLabeledLine::Write(CFile& file) {
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kDimensionPrimitive));
 
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   m_line.Write(file);
 
   EoDb::WriteInt16(file, m_textColor);

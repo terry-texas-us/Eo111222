@@ -6,6 +6,7 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDb.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPolyline.h"
 #include "EoDbPrimitive.h"
 #include "EoDxfEntities.h"
@@ -62,14 +63,12 @@ EoDbPolyline::EoDbPolyline(std::int16_t penColor, std::int16_t lineType, EoGePoi
 }
 EoDbPolyline::EoDbPolyline(EoGePoint3dArray& pts) {
   m_color = renderState.Color();
-  m_lineTypeIndex = renderState.LineTypeIndex();
+  SetLineTypeName(renderState.LineTypeName());
 
   m_flags = 0;
   m_pts.Copy(pts);
 }
-EoDbPolyline::EoDbPolyline(const EoDbPolyline& other) {
-  m_color = other.m_color;
-  m_lineTypeIndex = other.m_lineTypeIndex;
+EoDbPolyline::EoDbPolyline(const EoDbPolyline& other) : EoDbPrimitive(other) {
   m_flags = other.m_flags;
   m_pts.Copy(other.m_pts);
   m_bulges = other.m_bulges;
@@ -80,8 +79,7 @@ EoDbPolyline::EoDbPolyline(const EoDbPolyline& other) {
 
 const EoDbPolyline& EoDbPolyline::operator=(const EoDbPolyline& other) {
   if (this != &other) {
-    m_color = other.m_color;
-    m_lineTypeIndex = other.m_lineTypeIndex;
+    EoDbPrimitive::operator=(other);
     m_flags = other.m_flags;
     m_pts.Copy(other.m_pts);
     m_bulges = other.m_bulges;
@@ -829,7 +827,7 @@ EoDbPolyline* EoDbPolyline::ReadFromCSplinePeg(CFile& file) {
 bool EoDbPolyline::Write(CFile& file) {
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kPolylinePrimitive));
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   EoDb::WriteUInt16(file, static_cast<std::uint16_t>(m_flags));
   EoDb::WriteDouble(file, m_constantWidth);
   const auto numberOfVertices = static_cast<std::uint16_t>(m_pts.GetSize());

@@ -11,11 +11,25 @@
 namespace {
 constexpr int lineTypePreviewColumnIndex = 2;
 
+/// @brief Returns a sort priority for special linetype names.
+/// Lower values sort first: ByBlock=0, ByLayer=1, CONTINUOUS=2, everything else=3.
+int LineTypeSortPriority(const CString& name) {
+  if (name.CompareNoCase(L"ByBlock") == 0) { return 0; }
+  if (name.CompareNoCase(L"ByLayer") == 0) { return 1; }
+  if (name.CompareNoCase(L"CONTINUOUS") == 0) { return 2; }
+  return 3;
+}
+
 /// @brief Case-insensitive comparison callback for SortItems.
+/// ByBlock, ByLayer, and CONTINUOUS always sort before other entries;
+/// remaining entries are sorted alphabetically.
 int CALLBACK CompareLineTypeNames(LPARAM lParam1, LPARAM lParam2, LPARAM /*lParamSort*/) {
   auto* lineType1 = reinterpret_cast<EoDbLineType*>(lParam1);
   auto* lineType2 = reinterpret_cast<EoDbLineType*>(lParam2);
   if (lineType1 == nullptr || lineType2 == nullptr) { return 0; }
+  int priority1 = LineTypeSortPriority(lineType1->Name());
+  int priority2 = LineTypeSortPriority(lineType2->Name());
+  if (priority1 != priority2) { return priority1 - priority2; }
   return lineType1->Name().CompareNoCase(lineType2->Name());
 }
 }  // namespace
@@ -224,8 +238,6 @@ void EoDlgLineTypesSelection::DrawLineTypePreview(
           controlContext.Attach(listViewCustomDraw->nmcd.hdc);
           CRect controlRect(listViewCustomDraw->nmcd.rc);
 
-          auto dpi = static_cast<double>(GetDpiForSystem());
-
           auto state = listControl.GetItemState(item, LVIS_SELECTED);
           COLORREF backgroundColor =
               (state & LVIS_SELECTED) ? GetSysColor(COLOR_HIGHLIGHT) : GetSysColor(COLOR_WINDOW);
@@ -235,20 +247,32 @@ void EoDlgLineTypesSelection::DrawLineTypePreview(
 
           if (!dashElements.empty()) {
             int yCenter = controlRect.top + controlRect.Height() / 2;
-            double x = controlRect.left + 4.0;
+            double xStart = controlRect.left + 4.0;
             double xEnd = controlRect.right - 4.0;
+            double availableWidth = xEnd - xStart;
+
+            // Compute total pattern length from absolute dash/gap values.
+            double patternLength = lineType->GetPatternLength();
+            if (patternLength < Eo::geometricTolerance) { patternLength = 1.0; }
+
+            // Scale the pattern so it repeats ~3 times across the preview width.
+            constexpr double targetRepetitions = 3.0;
+            double scale = availableWidth / (patternLength * targetRepetitions);
 
             CPen pen(PS_SOLID, 1, Eo::colorBlack);
             CPen* oldPen = controlContext.SelectObject(&pen);
 
+            double x = xStart;
             while (x < xEnd) {
               for (double len : dashElements) {
+                double pixelLen = std::abs(len) * scale;
+                if (pixelLen < 1.0) { pixelLen = 1.0; }
                 if (len > 0.0) {
                   controlContext.MoveTo(static_cast<int>(x), yCenter);
-                  x += len * dpi;
+                  x += pixelLen;
                   controlContext.LineTo(static_cast<int>(std::min(x, xEnd)), yCenter);
                 } else if (len < 0.0) {
-                  x -= std::min(xEnd, len * dpi);
+                  x += pixelLen;
                 } else {
                   controlContext.SetPixel(static_cast<int>(x), yCenter, Eo::colorBlack);
                   x += 1.0;

@@ -73,15 +73,15 @@ void AeSysView::OnDraw2ModeWall() {
         document->AddWorkLayerGroup(m_assemblyGroup);
 
         auto* beginCapLine = EoDbLine::CreateLine(m_currentLeftLine.begin, m_currentRightLine.begin)
-                                 ->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+                                 ->WithProperties(renderState.Color(), renderState.LineTypeName());
         m_assemblyGroup->AddTail(beginCapLine);
       }
       auto* leftLine =
-          EoDbLine::CreateLine(m_currentLeftLine)->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+          EoDbLine::CreateLine(m_currentLeftLine)->WithProperties(renderState.Color(), renderState.LineTypeName());
       auto* rightLine =
-          EoDbLine::CreateLine(m_currentRightLine)->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+          EoDbLine::CreateLine(m_currentRightLine)->WithProperties(renderState.Color(), renderState.LineTypeName());
       auto* endCapLine = EoDbLine::CreateLine(m_currentRightLine.end, m_currentLeftLine.end)
-                             ->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+                             ->WithProperties(renderState.Color(), renderState.LineTypeName());
 
       m_assemblyGroup->AddTail(leftLine);
       m_assemblyGroup->AddTail(rightLine);
@@ -109,13 +109,13 @@ void AeSysView::OnDraw2ModeWall() {
       document->AddWorkLayerGroup(m_assemblyGroup);
       EoGeLine beginCap{m_currentLeftLine.begin, m_currentRightLine.begin};
       auto* beginCapLine =
-          EoDbLine::CreateLine(beginCap)->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+          EoDbLine::CreateLine(beginCap)->WithProperties(renderState.Color(), renderState.LineTypeName());
       m_assemblyGroup->AddTail(beginCapLine);
     }
     auto* leftLine =
-        EoDbLine::CreateLine(m_currentLeftLine)->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+        EoDbLine::CreateLine(m_currentLeftLine)->WithProperties(renderState.Color(), renderState.LineTypeName());
     auto* rightLine =
-        EoDbLine::CreateLine(m_currentRightLine)->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+        EoDbLine::CreateLine(m_currentRightLine)->WithProperties(renderState.Color(), renderState.LineTypeName());
     m_assemblyGroup->AddTail(leftLine);
     m_assemblyGroup->AddTail(rightLine);
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_assemblyGroup);
@@ -265,18 +265,18 @@ void AeSysView::DoDraw2ModeMouseMove() {
 
     EoGeLine beginCap{previewLines[0].begin, previewLines[1].begin};
     auto* beginCapLine =
-        EoDbLine::CreateLine(beginCap)->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+        EoDbLine::CreateLine(beginCap)->WithProperties(renderState.Color(), renderState.LineTypeName());
     m_PreviewGroup.AddTail(beginCapLine);
 
     auto* leftLine =
-        EoDbLine::CreateLine(previewLines[0])->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+        EoDbLine::CreateLine(previewLines[0])->WithProperties(renderState.Color(), renderState.LineTypeName());
     auto* rightLine =
-        EoDbLine::CreateLine(previewLines[1])->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+        EoDbLine::CreateLine(previewLines[1])->WithProperties(renderState.Color(), renderState.LineTypeName());
 
     m_PreviewGroup.AddTail(leftLine);
     m_PreviewGroup.AddTail(rightLine);
     EoGeLine endCap{previewLines[1].end, previewLines[0].end};
-    auto* endCapLine = EoDbLine::CreateLine(endCap)->WithProperties(renderState.Color(), renderState.LineTypeIndex());
+    auto* endCapLine = EoDbLine::CreateLine(endCap)->WithProperties(renderState.Color(), renderState.LineTypeName());
     m_PreviewGroup.AddTail(endCapLine);
     InvalidateOverlay();
   }

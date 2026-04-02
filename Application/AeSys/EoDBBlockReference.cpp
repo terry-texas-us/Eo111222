@@ -10,6 +10,7 @@
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
 #include "EoDbGroup.h"
+#include "EoDbLineTypeTable.h"
 #include "EoDbPrimitive.h"
 #include "EoDxfEntities.h"
 #include "EoDxfInterface.h"
@@ -43,10 +44,7 @@ EoDbBlockReference::EoDbBlockReference(const CString& name, const EoGePoint3d& i
   m_rowSpacing = 0.0;
 }
 
-EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) {
-  m_color = other.m_color;
-  m_lineTypeIndex = other.m_lineTypeIndex;
-  m_layerName = other.m_layerName;
+EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) : EoDbPrimitive(other) {
   m_blockName = other.m_blockName;
   m_insertionPoint = other.m_insertionPoint;
   m_normal = other.m_normal;
@@ -62,7 +60,7 @@ EoDbBlockReference::EoDbBlockReference(std::uint16_t color, std::uint16_t lineTy
     const EoGePoint3d& point, const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation)
     : m_blockName(name), m_insertionPoint(point), m_normal(normal), m_scaleFactors(scaleFactors) {
   m_color = static_cast<std::int16_t>(color);
-  m_lineTypeIndex = static_cast<std::int16_t>(lineType);
+  SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(static_cast<std::int16_t>(lineType)));
 
   m_rotation = rotation;
   m_columnCount = 1;
@@ -72,9 +70,7 @@ EoDbBlockReference::EoDbBlockReference(std::uint16_t color, std::uint16_t lineTy
 }
 const EoDbBlockReference& EoDbBlockReference::operator=(const EoDbBlockReference& other) {
   if (this != &other) {
-    m_color = other.m_color;
-    m_lineTypeIndex = other.m_lineTypeIndex;
-    m_layerName = other.m_layerName;
+    EoDbPrimitive::operator=(other);
     m_blockName = other.m_blockName;
     m_insertionPoint = other.m_insertionPoint;
     m_normal = other.m_normal;
@@ -410,7 +406,7 @@ EoDbBlockReference* EoDbBlockReference::ReadFromPeg(CFile& file) {
 bool EoDbBlockReference::Write(CFile& file) {
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kGroupReferencePrimitive));
   EoDb::WriteInt16(file, m_color);
-  EoDb::WriteInt16(file, m_lineTypeIndex);
+  EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   EoDb::Write(file, m_blockName);
   m_insertionPoint.Write(file);
   m_normal.Write(file);
