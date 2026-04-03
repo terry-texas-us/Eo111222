@@ -337,8 +337,6 @@ BEGIN
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM "&True Type Fonts\tF2",        ID_VIEW_TRUETYPEFONTS, CHECKED
         MENUITEM "&State Information\tF3",      ID_VIEW_STATEINFORMATION, CHECKED
-        MENUITEM "&Mode Information",           ID_VIEW_MODEINFORMATION
-        MENUITEM "&Odometer\tF4",               ID_VIEW_ODOMETER
         MENUITEM "Re&fresh\tF5",                ID_VIEW_REFRESH
         MENUITEM "P&en Widths",                 ID_VIEW_PENWIDTHS
         MENUITEM "&Background Image",           ID_VIEW_BACKGROUNDIMAGE
@@ -622,8 +620,6 @@ BEGIN
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM "&True Type Fonts\tF2",        ID_VIEW_TRUETYPEFONTS, CHECKED
         MENUITEM "&State Information\tF3",      ID_VIEW_STATEINFORMATION, CHECKED
-        MENUITEM "&Mode Information",           ID_VIEW_MODEINFORMATION
-        MENUITEM "&Odometer\tF4",               ID_VIEW_ODOMETER
         MENUITEM "Re&fresh\tF5",                ID_VIEW_REFRESH
         MENUITEM "P&en Widths",                 ID_VIEW_PENWIDTHS
         MENUITEM "&Background Image",           ID_VIEW_BACKGROUNDIMAGE
@@ -1061,7 +1057,6 @@ BEGIN
     VK_DELETE,      ID_TOOLS_PRIMITVE_DELETE, VIRTKEY, SHIFT, NOINVERT
     "H",            ID_TRAPCOMMANDS_HIGHLIGHT, VIRTKEY, CONTROL, NOINVERT
     VK_RETURN,      ID_VIEW_FULLSCREEN,     VIRTKEY, SHIFT, ALT, NOINVERT
-    VK_F4,          ID_VIEW_ODOMETER,       VIRTKEY, NOINVERT
     VK_F5,          ID_VIEW_REFRESH,        VIRTKEY, NOINVERT
     VK_F3,          ID_VIEW_STATEINFORMATION, VIRTKEY, NOINVERT
     VK_F2,          ID_VIEW_TRUETYPEFONTS,  VIRTKEY, NOINVERT
@@ -3292,7 +3287,6 @@ END
 STRINGTABLE
 BEGIN
     ID_FILE_PRINTCURRENTVIEW "Print the active view\nPrint Active View"
-    ID_VIEW_ODOMETER        "Show or hide odometer\nToggle Odometer"
 END
 
 STRINGTABLE

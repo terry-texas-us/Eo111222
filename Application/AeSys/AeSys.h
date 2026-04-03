@@ -95,7 +95,6 @@ class AeSys : public CWinAppEx {
   bool m_TrapHighlighted{};
   bool m_TrapModeAddGroups{true};
   bool m_HighColorMode{};
-  bool m_ModeInformationOverView{};
 
   // Direct2D / DirectWrite factory singletons (Phase 6)
   Microsoft::WRL::ComPtr<ID2D1Factory> m_d2dFactory;
@@ -225,7 +224,6 @@ class AeSys : public CWinAppEx {
   [[nodiscard]] bool IsTrapHighlighted() const { return m_TrapHighlighted; }
   void LoadModeResources(int mode, AeSysView* targetView = nullptr);
   void LoadSimplexStrokeFont(const CString& pathName);
-  bool ModeInformationOverView() const { return m_ModeInformationOverView; }
   [[nodiscard]] double ParseLength(wchar_t* lengthAsString);
   [[nodiscard]] double ParseLength(Eo::Units units, wchar_t* inputLine);
   [[nodiscard]] auto PenColorsGetHot(std::int16_t color) { return (Eo::ColorPalette[color]); }
@@ -284,8 +282,6 @@ class AeSys : public CWinAppEx {
   afx_msg void OnModeLetter();
   afx_msg void OnModeRevise();
   afx_msg void OnTrapCommandsHighlight();
-  afx_msg void OnUpdateViewModeinformation(CCmdUI* pCmdUI);
-  afx_msg void OnViewModeInformation();
 #if defined(USING_DDE)
   double ExtractedNumber() { return m_ExtractedNumber; }
   void SetExtractedNumber(double number) { m_ExtractedNumber = number; }

@@ -181,11 +181,6 @@ void AeSysView::OnViewWindowKeyplan() {
   if (dlg.DoModal() == IDOK) { InvalidateScene(); }
 }
 
-void AeSysView::OnViewOdometer() {
-  m_ViewOdometer = !m_ViewOdometer;
-  InvalidateScene();
-}
-
 void AeSysView::OnViewRefresh() { InvalidateScene(); }
 
 void AeSysView::OnUpdateViewRendered(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewRendered); }
@@ -427,8 +422,6 @@ AeSysView* AeSysView::GetActiveView() {
 #endif
   return activeView;
 }
-
-void AeSysView::OnUpdateViewOdometer(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewOdometer); }
 
 void AeSysView::OnUpdateViewTrueTypeFonts(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewTrueTypeFonts); }
 

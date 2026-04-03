@@ -13,10 +13,10 @@
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
-#include "EoGsRenderDeviceGdi.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDeviceGdi.h"
 #include "EoGsRenderState.h"
 
 POSITION AeSysDoc::AddGroupToTrap(EoDbGroup* group) {

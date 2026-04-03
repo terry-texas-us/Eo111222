@@ -35,50 +35,6 @@
 #include "DdeGItms.h"
 #endif
 
-namespace {
-
-#if defined(LEGACY_ODOMETER)
-/** @deprecated This code is only used for the legacy odometer display, which draws the odometer values directly in the
- view. The current implementation displays the odometer values in the status bar, so this code is no longer needed.*/
-void DrawOdometerInView(AeSysView* view, CDC* context, Eo::Units Units, EoGeVector3d& position) {
-  auto* oldFont = static_cast<CFont*>(context->SelectStockObject(DEFAULT_GUI_FONT));
-  auto oldTextAlign = context->SetTextAlign(TA_LEFT | TA_TOP);
-  auto oldTextColor = context->SetTextColor(App::ViewTextColor());
-  auto oldBackgroundColor = context->SetBkColor(~App::ViewTextColor() & 0x00ffffff);
-
-  CRect clientArea;
-  view->GetClientRect(&clientArea);
-  TEXTMETRIC metrics;
-  context->GetTextMetrics(&metrics);
-
-  CString length;
-
-  int left = clientArea.right - 16 * metrics.tmAveCharWidth;
-
-  CRect rc(left, clientArea.top, clientArea.right, clientArea.top + metrics.tmHeight);
-  app.FormatLength(length, Units, position.x);
-  length.TrimLeft();
-  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
-
-  rc.SetRect(left, clientArea.top + 1 * metrics.tmHeight, clientArea.right, clientArea.top + 2 * metrics.tmHeight);
-  app.FormatLength(length, Units, position.y);
-  length.TrimLeft();
-  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
-
-  rc.SetRect(left, clientArea.top + 2 * metrics.tmHeight, clientArea.right, clientArea.top + 3 * metrics.tmHeight);
-  app.FormatLength(length, Units, position.z);
-  length.TrimLeft();
-  context->ExtTextOutW(rc.left, rc.top, ETO_CLIPPED | ETO_OPAQUE, &rc, length, (UINT)length.GetLength(), 0);
-
-  context->SetBkColor(oldBackgroundColor);
-  context->SetTextColor(oldTextColor);
-  context->SetTextAlign(oldTextAlign);
-  context->SelectObject(oldFont);
-}
-#endif
-
-}  // namespace
-
 void AeSysView::OnDraw(CDC* deviceContext) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnDraw(%08.8lx) +", this, deviceContext);
 
@@ -102,10 +58,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       assert(document != nullptr);
       const bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
       const auto bgColor = Eo::ViewBackgroundColorForSpace(isPaperSpace);
-      auto bkColor = D2D1::ColorF(
-          GetRValue(bgColor) / 255.0f,
-          GetGValue(bgColor) / 255.0f,
-          GetBValue(bgColor) / 255.0f);
+      auto bkColor =
+          D2D1::ColorF(GetRValue(bgColor) / 255.0f, GetGValue(bgColor) / 255.0f, GetBValue(bgColor) / 255.0f);
       m_d2dRenderTarget->Clear(bkColor);
       EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
 
@@ -124,14 +78,14 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       if (m_rubberbandType != None) {
         Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> rubberbandBrush;
         const auto cr = Eo::RubberbandColor();
-        auto rubberbandColor = D2D1::ColorF(
-            (cr & 0xFF) / 255.0f, ((cr >> 8) & 0xFF) / 255.0f, ((cr >> 16) & 0xFF) / 255.0f);
+        auto rubberbandColor =
+            D2D1::ColorF((cr & 0xFF) / 255.0f, ((cr >> 8) & 0xFF) / 255.0f, ((cr >> 16) & 0xFF) / 255.0f);
         m_d2dRenderTarget->CreateSolidColorBrush(rubberbandColor, &rubberbandBrush);
         if (rubberbandBrush) {
           auto begin = D2D1::Point2F(
               static_cast<float>(m_rubberbandLogicalBegin.x), static_cast<float>(m_rubberbandLogicalBegin.y));
-          auto end = D2D1::Point2F(
-              static_cast<float>(m_rubberbandLogicalEnd.x), static_cast<float>(m_rubberbandLogicalEnd.y));
+          auto end =
+              D2D1::Point2F(static_cast<float>(m_rubberbandLogicalEnd.x), static_cast<float>(m_rubberbandLogicalEnd.y));
           if (m_rubberbandType == Lines) {
             m_d2dRenderTarget->DrawLine(begin, end, rubberbandBrush.Get(), 1.0f);
           } else if (m_rubberbandType == Rectangles) {
@@ -158,7 +112,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
   CRect clipRect;
   deviceContext->GetClipBox(clipRect);
-  ATLTRACE2(traceGeneral, 3, L" ClipBox(%i, %i, %i, %i)\n", clipRect.left, clipRect.top, clipRect.right, clipRect.bottom);
+  ATLTRACE2(
+      traceGeneral, 3, L" ClipBox(%i, %i, %i, %i)\n", clipRect.left, clipRect.top, clipRect.right, clipRect.bottom);
 
   if (clipRect.IsRectEmpty()) { return; }
 
@@ -200,7 +155,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     // Blit back buffer to screen (or fall back to direct rendering if no back buffer yet)
     if (m_backBufferDC.GetSafeHdc() != nullptr) {
       deviceContext->BitBlt(clipRect.left, clipRect.top, clipRect.Width(), clipRect.Height(), &m_backBufferDC,
-                            clipRect.left, clipRect.top, SRCCOPY);
+          clipRect.left, clipRect.top, SRCCOPY);
     } else {
       // Fallback: direct rendering before first OnSize delivers a back buffer
       if (!m_ViewRendered) {
@@ -255,8 +210,8 @@ void AeSysView::ApplyActiveViewport() {
 
   // --- Camera setup ---
   // DXF VPORT viewTargetPoint is in WCS. viewDirection is target→camera (WCS).
-  auto targetPoint = EoGePoint3d(
-      activeVPort->m_viewTargetPoint.x, activeVPort->m_viewTargetPoint.y, activeVPort->m_viewTargetPoint.z);
+  auto targetPoint =
+      EoGePoint3d(activeVPort->m_viewTargetPoint.x, activeVPort->m_viewTargetPoint.y, activeVPort->m_viewTargetPoint.z);
   auto viewDirection = activeVPort->m_viewDirection;
 
   m_ViewTransform.SetLensLength(activeVPort->m_lensLength);
@@ -336,10 +291,10 @@ void AeSysView::ApplyActiveViewport() {
   m_ViewTransform.BuildTransformMatrix();
   m_OverviewViewTransform = m_ViewTransform;
 
-  ATLTRACE2(traceGeneral, 1, L"AeSysView<%p>::ApplyActiveViewport() — "
+  ATLTRACE2(traceGeneral, 1,
+      L"AeSysView<%p>::ApplyActiveViewport() — "
       L"target=(%.2f, %.2f, %.2f) height=%.2f width=%.2f aspect=%.4f\n",
-      this, targetPoint.x, targetPoint.y, targetPoint.z,
-      viewHeight, viewWidth, activeVPort->m_viewAspectRatio);
+      this, targetPoint.x, targetPoint.y, targetPoint.z, viewHeight, viewWidth, activeVPort->m_viewAspectRatio);
 }
 
 /** @brief Helper function to display content based on the provided hint, used by OnUpdate for delegation
@@ -594,9 +549,7 @@ void AeSysView::CreateD2DRenderTarget() {
   }
 }
 
-void AeSysView::DiscardD2DResources() {
-  m_d2dRenderTarget.Reset();
-}
+void AeSysView::DiscardD2DResources() { m_d2dRenderTarget.Reset(); }
 
 void AeSysView::OnSize(UINT type, int cx, int cy) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>OnSize(%i, %i, %i)\n", this, type, cx, cy);
@@ -631,9 +584,7 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
       if (m_d2dRenderTarget) {
         D2D1_SIZE_U size = D2D1::SizeU(static_cast<UINT32>(cx), static_cast<UINT32>(cy));
         HRESULT hr = m_d2dRenderTarget->Resize(size);
-        if (FAILED(hr)) {
-          DiscardD2DResources();
-        }
+        if (FAILED(hr)) { DiscardD2DResources(); }
         m_sceneInvalid = true;
       } else {
         // D2D creation failed — fall back to GDI
@@ -711,36 +662,30 @@ void AeSysView::DisplayOdometer() {
 
   m_vRelPos = cursorPosition - GridOrign();
 
-  if (m_ViewOdometer) {
-    auto units = app.GetUnits();
+  auto units = app.GetUnits();
 
-    CString lengthText;
+  CString lengthText;
 
-    app.FormatLength(lengthText, units, m_vRelPos.x);
-    CString Position = lengthText.TrimLeft();
-    app.FormatLength(lengthText, units, m_vRelPos.y);
-    Position.Append(L", " + lengthText.TrimLeft());
-    app.FormatLength(lengthText, units, m_vRelPos.z);
-    Position.Append(L", " + lengthText.TrimLeft());
+  app.FormatLength(lengthText, units, m_vRelPos.x);
+  CString Position = lengthText.TrimLeft();
+  app.FormatLength(lengthText, units, m_vRelPos.y);
+  Position.Append(L", " + lengthText.TrimLeft());
+  app.FormatLength(lengthText, units, m_vRelPos.z);
+  Position.Append(L", " + lengthText.TrimLeft());
 
-    if (m_rubberbandType == Lines) {
-      EoGeLine line(m_rubberbandBegin, cursorPosition);
+  if (m_rubberbandType == Lines) {
+    EoGeLine line(m_rubberbandBegin, cursorPosition);
 
-      auto lineLength = line.Length();
-      auto angleInXYPlane = line.AngleFromXAxisXY();
-      app.FormatLength(lengthText, units, lineLength);
+    auto lineLength = line.Length();
+    auto angleInXYPlane = line.AngleFromXAxisXY();
+    app.FormatLength(lengthText, units, lineLength);
 
-      CString angle;
-      app.FormatAngle(angle, angleInXYPlane, 8, 3);
-      angle.ReleaseBuffer();
-      Position.Append(L" [" + lengthText.TrimLeft() + L" @ " + angle + L"]");
-    }
-    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    mainFrame->SetPaneText(0, Position);
-#if defined(LEGACY_ODOMETER)
-    DrawOdometerInView(this, GetDC(), units, m_vRelPos);
-#endif
+    CString angle;
+    app.FormatAngle(angle, angleInXYPlane, 8, 3);
+    Position.Append(L" [" + lengthText.TrimLeft() + L" @ " + angle + L"]");
   }
+  if (auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd())) { mainFrame->SetPaneText(0, Position); }
+
 #if defined(USING_DDE)
   dde::PostAdvise(dde::RelPosXInfo);
   dde::PostAdvise(dde::RelPosYInfo);
@@ -802,7 +747,9 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     deviceContext->ExtTextOutW(
         rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
     auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    if (mainFrame != nullptr) { mainFrame->SyncLineTypeCombo(Gs::renderState.LineTypeIndex(), Gs::renderState.LineTypeName()); }
+    if (mainFrame != nullptr) {
+      mainFrame->SyncLineTypeCombo(Gs::renderState.LineTypeIndex(), Gs::renderState.LineTypeName());
+    }
   }
   if ((item & TextHeight) == TextHeight) {
     auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
@@ -846,18 +793,19 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     LengthAndAngle.TrimLeft();
     CString Angle;
     app.FormatAngle(Angle, Eo::DegreeToRadian(app.DimensionAngle()), 8, 3);
-    Angle.ReleaseBuffer();
     LengthAndAngle.Append(L" @ " + Angle);
     deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, LengthAndAngle,
         static_cast<UINT>(LengthAndAngle.GetLength()), 0);
 
     // Also display in status bar panes (Length = pane 1, Angle = pane 2)
     auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    CString lengthText;
-    app.FormatLength(lengthText, app.GetUnits(), app.DimensionLength());
-    lengthText.TrimLeft();
-    mainFrame->SetPaneText(1, lengthText);
-    mainFrame->SetPaneText(2, Angle);
+    if (mainFrame != nullptr) {
+      CString lengthText;
+      app.FormatLength(lengthText, app.GetUnits(), app.DimensionLength());
+      lengthText.TrimLeft();
+      mainFrame->SetPaneText(1, lengthText);
+      mainFrame->SetPaneText(2, Angle);
+    }
   }
   deviceContext->SetBkColor(oldBkColor);
   deviceContext->SetTextColor(oldTextColor);

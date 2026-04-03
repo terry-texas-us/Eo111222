@@ -451,9 +451,6 @@ Active mode key panes use **accent blue background** (`captionActiveBackground`)
 ### Text Color on Scheme Switch
 `CMainFrame::ApplyColorScheme()` iterates all status bar panes and sets `SetPaneTextColor(i, statusBarText)` to ensure text switches from light to dark (or vice versa) when the scheme changes.
 
-### View Overlay
-`DrawPaneTextInView()` in `ModeLine.cpp` optionally draws mode key text as an overlay on the document view (enabled by `app.ModeInformationOverView()`). This duplicates the status bar content for full-screen visibility.
-
 ### Length Pane Edit-in-Place
 `EoMfStatusBar` (custom `CMFCStatusBar` subclass) provides interactive edit-in-place for the Length pane (index 1):
 - **Double-click** on the Length pane creates an inline `CEdit` control positioned over the pane, pre-filled with the current formatted dimension length.
@@ -484,7 +481,6 @@ Double-clicking the Zoom Ratio pane (index 14) shows the shared `CEdit` control 
 - The `WndRatio` flag in `UpdateStateInformation` routes the formatted value to status bar pane 14.
 
 ### View Overlay Migration Status
-The view overlay (`DrawPaneTextInView` in `ModeLine.cpp`, enabled by `app.ModeInformationOverView()`) is being progressively migrated to the status bar and toolbars:
 
 | Overlay Item | Flag | Target | Status |
 |---|---|---|---|
@@ -504,7 +500,7 @@ The view overlay (`DrawPaneTextInView` in `ModeLine.cpp`, enabled by `app.ModeIn
 | `AeSys\EoMfStatusBar.h/.cpp` | Custom status bar — edit-in-place for Length (1), Angle (2), World Scale (13), Zoom Ratio (14); `WM_LBUTTONDBLCLK` hit-test, `PreTranslateMessage` for Enter/Escape |
 | `AeSys\MainFrm.cpp` | `indicators[]`, status bar creation, `ApplyColorScheme()` text color loop, `SetPaneBackgroundColor` wrapper |
 | `AeSys\MainFrm.h` | `EoMfStatusBar m_statusBar`, pane API wrappers |
-| `AeSys\ModeLine.cpp` | `statusOp0` constant, `ModeLineDisplay`, `ModeLineHighlightOp`, `ModeLineUnhighlightOp`, `DrawPaneTextInView` |
+| `AeSys\ModeLine.cpp` | `statusOp0` constant, `ModeLineDisplay`, `ModeLineHighlightOp`, `ModeLineUnhighlightOp` |
 | `AeSys\AeSysViewRender.cpp` | `UpdateStateInformation` routes DimLen/DimAng to panes 1/2, Scale to pane 13, WndRatio to pane 14 |
 
 ### Deferred

@@ -95,13 +95,11 @@ ON_COMMAND(ID_MODE_LETTER, &AeSys::OnModeLetter)
 ON_COMMAND(ID_MODE_REVISE, &AeSys::OnModeRevise)
 
 ON_COMMAND(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnTrapCommandsHighlight)
-ON_COMMAND(ID_VIEW_MODEINFORMATION, &AeSys::OnViewModeInformation)
 #pragma warning(push)
 #pragma warning(disable : 4191)
 ON_UPDATE_COMMAND_UI(ID_EDIT_CF_GROUPS, &AeSys::OnUpdateEditCfGroups)
 ON_UPDATE_COMMAND_UI(ID_EDIT_CF_IMAGE, &AeSys::OnUpdateEditCfImage)
 ON_UPDATE_COMMAND_UI(ID_EDIT_CF_TEXT, &AeSys::OnUpdateEditCfText)
-ON_UPDATE_COMMAND_UI(ID_VIEW_MODEINFORMATION, &AeSys::OnUpdateViewModeinformation)
 ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_ADDGROUPS, &AeSys::OnUpdateTrapcommandsAddgroups)
 ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnUpdateTrapcommandsHighlight)
 #pragma warning(pop)
@@ -221,8 +219,8 @@ BOOL AeSys::InitInstance() {
   HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, m_d2dFactory.GetAddressOf());
   if (FAILED(hr)) { ATLTRACE2(traceGeneral, 0, L"D2D1CreateFactory failed: 0x%08X\n", hr); }
 
-  hr = DWriteCreateFactory(
-      DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
+  hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+      reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
   if (FAILED(hr)) { ATLTRACE2(traceGeneral, 0, L"DWriteCreateFactory failed: 0x%08X\n", hr); }
 
   CString resourceFolder = App::ResourceFolderPath();
@@ -615,16 +613,11 @@ void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
 void AeSys::ReleaseSimplexStrokeFont() {
   if (m_SimplexStrokeFont != 0) { delete[] m_SimplexStrokeFont; }
 }
-void AeSys::OnViewModeInformation() {
-  m_ModeInformationOverView = !m_ModeInformationOverView;
-  AeSysDoc::GetDoc()->UpdateAllViews(nullptr, 0L, nullptr);
-}
 void AeSys::OnUpdateEditCfGroups(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataEoGroups); }
 void AeSys::OnUpdateEditCfImage(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataImage); }
 void AeSys::OnUpdateEditCfText(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataText); }
 void AeSys::OnUpdateTrapcommandsAddgroups(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_TrapModeAddGroups); }
 void AeSys::OnUpdateTrapcommandsHighlight(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_TrapHighlighted); }
-void AeSys::OnUpdateViewModeinformation(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ModeInformationOverView); }
 
 // Modifies the base accelerator table by defining the mode specific keys.
 void AeSys::BuildModifiedAcceleratorTable() {

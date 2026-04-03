@@ -61,7 +61,6 @@
 #define ID_BACKGROUNDIMAGE_LOAD         177
 #define ID_BACKGROUNDIMAGE_REMOVE       178
 #define ID_VIEW_BACKGROUNDIMAGE         182
-#define ID_VIEW_MODEINFORMATION         183
 #define IDD_PRINT_EX                    184
 #define IDR_TRACING                     187
 #define IDR_OUTPUT_POPUP                188
@@ -482,7 +481,6 @@
 #define ID_PRIM_MODIFY_ATTRIBUTES       4338
 #define ID_HELP_KEY                     4339
 #define ID_FILE_PRINTCURRENTVIEW        4341
-#define ID_VIEW_ODOMETER                4342
 #define ID_3DVIEWS_TOP                  4344
 #define ID_3DVIEWS_BOTTOM               4345
 #define ID_3DVIEWS_FRONT                4346

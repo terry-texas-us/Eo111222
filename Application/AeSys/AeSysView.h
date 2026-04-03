@@ -119,7 +119,6 @@ class AeSysView : public CView {
   EoGePoint3d m_PreviousPnt{};
   double m_SelectApertureSize{0.005};
   bool m_viewBackgroundImage{};
-  bool m_ViewOdometer{true};
   bool m_ViewPenWidths{};
   CViewports m_Viewports{};
   bool m_ViewRendered{};
@@ -1074,7 +1073,6 @@ class AeSysView : public CView {
   afx_msg void OnRelativeMovesDownRotate();
   afx_msg void OnSetupScale();
   afx_msg void OnToolsPrimitiveSnapto();
-  afx_msg void OnUpdateViewOdometer(CCmdUI* pCmdUI);
   afx_msg void OnUpdateViewTrueTypeFonts(CCmdUI* pCmdUI);
   afx_msg void OnUpdateViewBackgroundImage(CCmdUI* pCmdUI);
   afx_msg void OnUpdateBackgroundimageLoad(CCmdUI* pCmdUI);
@@ -1087,7 +1085,6 @@ class AeSysView : public CView {
   afx_msg void OnViewBackgroundImage();
   afx_msg void OnViewTrueTypeFonts();
   afx_msg void OnViewPenWidths();
-  afx_msg void OnViewOdometer();
   afx_msg void OnViewRefresh();
   afx_msg void OnViewParameters();
   afx_msg void OnViewLighting();

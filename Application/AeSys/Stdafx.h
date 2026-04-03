@@ -50,11 +50,6 @@ const int traceGeneral = static_cast<int>(atlTraceGeneral);
 
 UINT AFXAPI HashKey(CString& str);
 
-// Define this to enable the deprecated odometer display overlayed in the view.
-// The preferred odometer implementation is in the status bar.
-// It may be removed in the future if it proves to be more trouble than it's worth.
-// #define LEGACY_ODOMETER
-
 #define AESYS_USE_CONIC_PRIMITIVE
 // #define USING_STATE_PATTERN  // Deactivated: experimental state pattern to be restarted after preview group overlay
 //#define USING_DDE
