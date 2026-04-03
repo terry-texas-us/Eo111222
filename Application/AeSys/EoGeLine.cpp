@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <algorithm>
 #include <cmath>
@@ -147,8 +147,8 @@ int EoGeLine::DirRelOfPt(EoGePoint3d pt) const {
 }
 
 void EoGeLine::Display(AeSysView* view, EoGsRenderDevice* renderDevice) const {
-  std::int16_t lineTypeIndex = renderState.LineTypeIndex();
-  const auto& lineTypeName = renderState.LineTypeName();
+  std::int16_t lineTypeIndex = Gs::renderState.LineTypeIndex();
+  const auto& lineTypeName = Gs::renderState.LineTypeName();
 
   if (EoDbPrimitive::IsSupportedTyp(lineTypeIndex) && lineTypeName.empty()) {
     EoGePoint4d ndcPoints[] = {EoGePoint4d(begin), EoGePoint4d(end)};

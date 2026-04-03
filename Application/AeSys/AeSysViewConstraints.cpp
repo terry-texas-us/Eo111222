@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include "AeSys.h"
 #include "AeSysView.h"
@@ -129,9 +129,9 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
       EoGsRenderDeviceGdi renderDevice(deviceContext);
 
       int i;
-      std::int16_t color = renderState.Color();
-      std::int16_t LineType = renderState.LineTypeIndex();
-      renderState.SetPen(this, deviceContext, 250, 1);
+      std::int16_t color = Gs::renderState.Color();
+      std::int16_t LineType = Gs::renderState.LineTypeIndex();
+      Gs::renderState.SetPen(this, deviceContext, 250, 1);
 
       ln.begin.x = m_GridOrigin.x - dHalfPts * m_XGridLineSpacing;
       ln.end.x = m_GridOrigin.x + dHalfPts * m_XGridLineSpacing;
@@ -150,7 +150,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
         ln.Display(this, &renderDevice);
         ln.begin.x += m_XGridLineSpacing;
       }
-      renderState.SetPen(this, deviceContext, color, LineType);
+      Gs::renderState.SetPen(this, deviceContext, color, LineType);
     }
   }
 }

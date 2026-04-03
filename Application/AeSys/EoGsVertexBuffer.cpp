@@ -73,7 +73,7 @@ void EoGsVertexBuffer::DisplayDashPattern(
 
   // Apply the entity's linetype scale (DXF group code 48, resolved through ByLayer/defaults).
   // This multiplies each dash/gap length so the pattern appears proportionally larger or smaller.
-  const double lineTypeScale = renderState.LineTypeScale();
+  const double lineTypeScale = Gs::renderState.LineTypeScale();
   if (lineTypeScale != 1.0) {
     for (auto& element : dashElements) { element *= lineTypeScale; }
   }
@@ -138,9 +138,9 @@ void EoGsVertexBuffer::End(
     auto* lineTypeTable = AeSysDoc::GetDoc()->LineTypeTable();
     EoDbLineType* lineType{};
     if (lineTypeTable->Lookup(CString(lineTypeName.c_str()), lineType) && lineType->GetNumberOfDashes() > 0) {
-      renderState.SetLineType(renderDevice, 1);
+      Gs::renderState.SetLineType(renderDevice, 1);
       DisplayDashPattern(view, renderDevice, m_points, lineType);
-      renderState.SetLineType(renderDevice, lineTypeIndex);
+      Gs::renderState.SetLineType(renderDevice, lineTypeIndex);
       return;
     }
   }
@@ -170,9 +170,9 @@ void EoGsVertexBuffer::End(
 
     EoDbLineType* lineType{};
     if (!lineTypeTable->LookupUsingLegacyIndex(static_cast<std::uint16_t>(lineTypeIndex), lineType)) { return; }
-    renderState.SetLineType(renderDevice, 1);
+    Gs::renderState.SetLineType(renderDevice, 1);
     DisplayDashPattern(view, renderDevice, m_points, lineType);
-    renderState.SetLineType(renderDevice, lineTypeIndex);
+    Gs::renderState.SetLineType(renderDevice, lineTypeIndex);
   }
 }
 

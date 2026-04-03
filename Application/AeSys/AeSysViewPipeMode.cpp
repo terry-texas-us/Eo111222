@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <cstdlib>
 #include <iterator>
@@ -26,12 +26,11 @@ constexpr double tickDistance[] = {0.125, 0.125, 0.125, 0.125, 0.15625, 0.15625,
     0.15625, 0.15625, 0.15625, 0.15625, 0.15625, 0.03125, 0.03125, 0.125};
 
 void AddLineToGroup(EoDbGroup* group, const EoGePoint3d& begin, const EoGePoint3d& end) {
-  group->AddTail(EoDbLine::CreateLine(begin, end)->WithProperties(renderState.Color(), renderState.LineTypeName()));
+  group->AddTail(EoDbLine::CreateLine(begin, end)->WithProperties(Gs::renderState));
 }
 
 void AddCircleToGroup(EoDbGroup* group, const EoGePoint3d& center, double radius) {
-  group->AddTail(
-      EoDbConic::CreateCircleInView(center, radius)->WithProperties(renderState.Color(), renderState.LineTypeName()));
+  group->AddTail(EoDbConic::CreateCircleInView(center, radius)->WithProperties(Gs::renderState));
 }
 
 void CreateGateValve(EoDbGroup* group, const EoGeLine& beginSection, const EoGeLine& endSection, double size) {
@@ -98,7 +97,8 @@ void AeSysView::OnPipeModeFitting() {
     cursorPosition = horizontalSection->ProjectPointToLine(cursorPosition);
     horizontalSection->SetEndPoint(cursorPosition);
     group->AddTail(EoDbLine::CreateLine(cursorPosition, end)
-            ->WithProperties(horizontalSection->Color(), horizontalSection->LineTypeName()));
+            ->WithProperties(
+                horizontalSection->Color(), horizontalSection->LineTypeName(), horizontalSection->LineWeight()));
 
     group = new EoDbGroup;
     GenerateTickMark(cursorPosition, begin, m_PipeRiseDropRadius, group);
@@ -313,7 +313,8 @@ void AeSysView::OnPipeModeSymbol() {
   horizontalSection->SetEndPoint(SymbolBeginPoint);
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, horizontalSection);
   group = new EoDbGroup(EoDbLine::CreateLine(SymbolEndPoint, end)
-          ->WithProperties(horizontalSection->Color(), horizontalSection->LineTypeName()));
+          ->WithProperties(
+              horizontalSection->Color(), horizontalSection->LineTypeName(), horizontalSection->LineWeight()));
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
@@ -570,7 +571,8 @@ void AeSysView::OnPipeModeWye() {
       PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, DistanceToSection);
       horizontalSection->SetEndPoint(PointOnSection);
       group = new EoDbGroup(EoDbLine::CreateLine(PointOnSection, EndPoint)
-              ->WithProperties(horizontalSection->Color(), horizontalSection->LineTypeName()));
+              ->WithProperties(
+                  horizontalSection->Color(), horizontalSection->LineTypeName(), horizontalSection->LineWeight()));
       document->AddWorkLayerGroup(group);
 
       group = new EoDbGroup;
@@ -603,7 +605,8 @@ void AeSysView::OnPipeModeWye() {
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       group = new EoDbGroup(EoDbLine::CreateLine(PointOnSection, EndPoint)
-              ->WithProperties(horizontalSection->Color(), horizontalSection->LineTypeName()));
+              ->WithProperties(
+                  horizontalSection->Color(), horizontalSection->LineTypeName(), horizontalSection->LineWeight()));
       document->AddWorkLayerGroup(group);
       group = new EoDbGroup;
       GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, PointAtBend, group);
@@ -702,7 +705,7 @@ void AeSysView::GenerateLineWithFittings(
     pt2 = end.ProjectToward(begin, m_PipeRiseDropRadius);
     GenerateTickMark(end, begin, 2.0 * m_PipeRiseDropRadius, group);
   }
-  group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(renderState.Color(), renderState.LineTypeName()));
+  group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(Gs::renderState));
 }
 
 void AeSysView::DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) {
@@ -715,7 +718,8 @@ void AeSysView::DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, Eo
   auto cutPoint = point.ProjectToward(begin, m_PipeRiseDropRadius);
   section->SetEndPoint(cutPoint);
   cutPoint = point.ProjectToward(end, m_PipeRiseDropRadius);
-  group->AddTail(EoDbLine::CreateLine(cutPoint, end)->WithProperties(section->Color(), section->LineTypeName()));
+  group->AddTail(EoDbLine::CreateLine(cutPoint, end)
+          ->WithProperties(section->Color(), section->LineTypeName(), section->LineWeight()));
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
   group = new EoDbGroup;
@@ -735,7 +739,8 @@ void AeSysView::DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, Eo
   EoGePoint3d end = section->End();
 
   section->SetEndPoint(point);
-  group->AddTail(EoDbLine::CreateLine(point, end)->WithProperties(section->Color(), section->LineTypeName()));
+  group->AddTail(EoDbLine::CreateLine(point, end)
+          ->WithProperties(section->Color(), section->LineTypeName(), section->LineWeight()));
 
   group = new EoDbGroup{};
   GenerateTickMark(point, begin, 2.0 * m_PipeRiseDropRadius, group);

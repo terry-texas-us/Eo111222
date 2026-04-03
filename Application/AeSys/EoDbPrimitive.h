@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -10,6 +10,7 @@
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderState.h"
 
 HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, const wchar_t* text, LPCVOID object);
 
@@ -141,9 +142,7 @@ class EoDbPrimitive : public CObject {
     return m_lineType.empty() || _wcsicmp(m_lineType.c_str(), L"ByLayer") == 0;
   }
   /// @brief Tests whether this primitive's line type is ByBlock (case-insensitive).
-  [[nodiscard]] bool IsLineTypeByBlock() const noexcept {
-    return _wcsicmp(m_lineType.c_str(), L"ByBlock") == 0;
-  }
+  [[nodiscard]] bool IsLineTypeByBlock() const noexcept { return _wcsicmp(m_lineType.c_str(), L"ByBlock") == 0; }
 
   void SetColor(std::int16_t color) noexcept { m_color = color; }
   void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
@@ -154,12 +153,30 @@ class EoDbPrimitive : public CObject {
   void SetOwnerHandle(std::uint64_t ownerHandle) noexcept { m_ownerHandle = ownerHandle; }
   void SetThickness(double thickness) noexcept { m_thickness = thickness; }
 
-  /// @brief Fluent setter for color and line type name.
-  /// The legacy line type index is derived internally from the name.
-  /// @param color The color index for the primitive.
-  /// @param lineTypeName The line type name (e.g., "CONTINUOUS", "ByLayer", "DASHED").
-  /// @return Pointer to this primitive for method chaining.
-  [[nodiscard]] EoDbPrimitive* WithProperties(std::int16_t color, const std::wstring& lineTypeName);
+  /** @brief Fluent setter for properties from a render state.
+   *
+   * This method allows chaining by returning a pointer to this instance after applying the properties.
+   * It extracts color, line type name, line weight, and line type scale from the provided render state
+   * and applies them to this primitive.  The legacy line type index is derived internally from the name.
+   *
+   * @param renderState The render state containing the properties to apply.
+   * @return Pointer to this primitive for method chaining.
+   */
+  [[nodiscard]] EoDbPrimitive* WithProperties(const EoGsRenderState& renderState);
+
+  /** @brief Fluent setter for properties from explicit parameters.
+  * 
+   * This method allows chaining by returning a pointer to this instance after applying the properties.
+   * It applies the provided color, line type name, and line weight to this primitive.
+   * The legacy line type index is derived internally from the name.
+   *
+   * @param color The color index for the primitive.
+   * @param lineTypeName The line type name (e.g., "CONTINUOUS", "ByLayer", "DASHED").
+   * @param lineWeight The line weight enum value (e.g., kLnWtByLayer, kLnWt025).
+   * @return Pointer to this primitive for method chaining.
+   */
+  [[nodiscard]] EoDbPrimitive* WithProperties(std::int16_t color, const std::wstring& lineTypeName,
+      EoDxfLineWeights::LineWeight lineWeight = EoDxfLineWeights::LineWeight::kLnWtByLwDefault);
 
   static int ControlPointIndex() noexcept;
   static bool IsSupportedTyp(int type) noexcept;

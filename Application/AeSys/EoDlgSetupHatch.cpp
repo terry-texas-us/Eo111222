@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include "EoDlgSetupHatch.h"
 #include "EoGsRenderState.h"
@@ -16,12 +16,12 @@ void EoDlgSetupHatch::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgSetupHatch::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  SetDlgItemInt(IDC_FIL_AREA_HAT_ID, static_cast<UINT>(renderState.PolygonIntStyleId()), FALSE);
+  SetDlgItemInt(IDC_FIL_AREA_HAT_ID, static_cast<UINT>(Gs::renderState.PolygonIntStyleId()), FALSE);
 
   return TRUE;
 }
 void EoDlgSetupHatch::OnOK() {
-  renderState.SetPolygonIntStyleId(std::int16_t(GetDlgItemInt(IDC_FIL_AREA_HAT_ID, 0, FALSE)));
+  Gs::renderState.SetPolygonIntStyleId(std::int16_t(GetDlgItemInt(IDC_FIL_AREA_HAT_ID, 0, FALSE)));
 
   CDialog::OnOK();
 }

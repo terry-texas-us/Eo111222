@@ -28,7 +28,7 @@ void EoCtrlLineTypeComboBox::PopulateItems() {
   BuildItemList();
 
   // Select item matching current render state
-  const auto& currentName = renderState.LineTypeName();
+  const auto& currentName = Gs::renderState.LineTypeName();
   if (!currentName.empty()) {
     for (int i = 0; i < GetCount(); i++) {
       auto data = GetItemData(i);
@@ -211,13 +211,13 @@ void EoCtrlLineTypeComboBox::OnSelectionChanged() {
       EoDlgLineTypesSelection dialog(*(document->LineTypeTable()));
 
       EoDbLineType* currentLineType{};
-      const auto& currentName = renderState.LineTypeName();
+      const auto& currentName = Gs::renderState.LineTypeName();
       if (!currentName.empty()) {
         (void)document->LineTypeTable()->Lookup(CString(currentName.c_str()), currentLineType);
       }
       if (currentLineType == nullptr) {
         document->LineTypeTable()->LookupUsingLegacyIndex(
-            static_cast<std::uint16_t>(renderState.LineTypeIndex()), currentLineType);
+            static_cast<std::uint16_t>(Gs::renderState.LineTypeIndex()), currentLineType);
       }
       dialog.SetSelectedLineType(currentLineType);
 
@@ -235,29 +235,29 @@ void EoCtrlLineTypeComboBox::OnSelectionChanged() {
               selectedLineType = existingLineType;
             }
           }
-          renderState.SetLineType(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(selectedLineType->Index()));
-          renderState.SetLineTypeName(std::wstring(selectedLineType->Name()));
+          Gs::renderState.SetLineType(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(selectedLineType->Index()));
+          Gs::renderState.SetLineTypeName(std::wstring(selectedLineType->Name()));
           auto* activeView = AeSysView::GetActiveView();
           if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Line); }
         }
       }
     }
     // Rebuild and restore selection to current render state (not "Load Line Types...")
-    SetCurrentLineType(renderState.LineTypeIndex(), renderState.LineTypeName());
+    SetCurrentLineType(Gs::renderState.LineTypeIndex(), Gs::renderState.LineTypeName());
     return;
   }
 
   // ByLayer / ByBlock
   if (data == static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYLAYER)) {
-    renderState.SetLineType(static_cast<CDC*>(nullptr), EoDbPrimitive::LINETYPE_BYLAYER);
-    renderState.SetLineTypeName(L"ByLayer");
+    Gs::renderState.SetLineType(static_cast<CDC*>(nullptr), EoDbPrimitive::LINETYPE_BYLAYER);
+    Gs::renderState.SetLineTypeName(L"ByLayer");
     auto* activeView = AeSysView::GetActiveView();
     if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Line); }
     return;
   }
   if (data == static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK)) {
-    renderState.SetLineType(static_cast<CDC*>(nullptr), EoDbPrimitive::LINETYPE_BYBLOCK);
-    renderState.SetLineTypeName(L"ByBlock");
+    Gs::renderState.SetLineType(static_cast<CDC*>(nullptr), EoDbPrimitive::LINETYPE_BYBLOCK);
+    Gs::renderState.SetLineTypeName(L"ByBlock");
     auto* activeView = AeSysView::GetActiveView();
     if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Line); }
     return;
@@ -267,8 +267,8 @@ void EoCtrlLineTypeComboBox::OnSelectionChanged() {
   if (AeSysDoc::GetDoc() == nullptr) { return; }
   auto* lineType = reinterpret_cast<EoDbLineType*>(data);
   if (lineType != nullptr) {
-    renderState.SetLineType(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(lineType->Index()));
-    renderState.SetLineTypeName(std::wstring(lineType->Name()));
+    Gs::renderState.SetLineType(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(lineType->Index()));
+    Gs::renderState.SetLineTypeName(std::wstring(lineType->Name()));
     auto* activeView = AeSysView::GetActiveView();
     if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Line); }
   }

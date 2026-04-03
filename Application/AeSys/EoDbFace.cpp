@@ -173,8 +173,8 @@ void EoDbFace::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
 
   if (IsFilled()) {
     // SOLID/TRACE: render as filled polygon
-    renderState.SetColor(renderDevice, color);
-    renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Solid);
+    Gs::renderState.SetColor(renderDevice, color);
+    Gs::renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Solid);
 
     EoGePoint4dArray pointsArray;
     pointsArray.SetSize(m_vertexCount);
@@ -184,7 +184,7 @@ void EoDbFace::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
     Polygon_Display(view, renderDevice, pointsArray);
   } else {
     // 3DFACE: render visible edges as wireframe
-    renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
+    Gs::renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
     for (int i = 0; i < m_vertexCount; ++i) {
       if (!IsEdgeVisible(i)) { continue; }

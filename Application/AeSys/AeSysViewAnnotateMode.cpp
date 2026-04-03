@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <algorithm>
 
@@ -109,18 +109,18 @@ void AeSysView::OnAnnotateModeBubble() {
     minorAxis *= 0.1;
     EoGeReferenceSystem referenceSystem(cursorPosition, majorAxis, minorAxis);
 
-    int savedRenderState = renderState.Save();
-    renderState.SetColor(deviceContext, 2);
+    int savedRenderState = Gs::renderState.Save();
+    Gs::renderState.SetColor(deviceContext, 2);
 
-    EoDbFontDefinition fontDefinition = renderState.FontDefinition();
+    EoDbFontDefinition fontDefinition = Gs::renderState.FontDefinition();
     fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::VerticalAlignment::Middle);
 
-    auto characterCellDefinition = renderState.CharacterCellDefinition();
+    auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
     characterCellDefinition.SetRotationAngle(0.0);
-    renderState.SetCharacterCellDefinition(characterCellDefinition);
+    Gs::renderState.SetCharacterCellDefinition(characterCellDefinition);
 
     group->AddTail(new EoDbText(fontDefinition, referenceSystem, CurrentText));
-    renderState.Restore(deviceContext, savedRenderState);
+    Gs::renderState.Restore(deviceContext, savedRenderState);
     ReleaseDC(deviceContext);
   }
   if (NumberOfSides() == 0) {
@@ -185,7 +185,7 @@ void AeSysView::OnAnnotateModeUnderline() {
     pText->GetBoundingBox(pts, GapSpaceFactor());
 
     auto* Group = new EoDbGroup;
-    Group->AddTail(EoDbLine::CreateLine(pts[0], pts[1])->WithProperties(renderState.Color(), L"CONTINUOUS"));
+    Group->AddTail(EoDbLine::CreateLine(pts[0], pts[1])->WithProperties(Gs::renderState.Color(), L"CONTINUOUS"));
     document->AddWorkLayerGroup(Group);
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
 
@@ -277,7 +277,7 @@ void AeSysView::OnAnnotateModeCutIn() {
     if (dlg.DoModal() == IDOK) { CurrentText = dlg.m_sText; }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
 
-    int savedRenderState = renderState.Save();
+    int savedRenderState = Gs::renderState.Save();
 
     if (!CurrentText.IsEmpty()) {
       EoGeLine Line = pLine->Line();
@@ -292,18 +292,18 @@ void AeSysView::OnAnnotateModeCutIn() {
       minorAxis *= 0.1;
       EoGeReferenceSystem referenceSystem(cursorPosition, majorAxis, minorAxis);
 
-      auto color = renderState.Color();
-      renderState.SetColor(deviceContext, 2);
+      auto color = Gs::renderState.Color();
+      Gs::renderState.SetColor(deviceContext, 2);
 
-      EoDbFontDefinition fontDefinition = renderState.FontDefinition();
+      EoDbFontDefinition fontDefinition = Gs::renderState.FontDefinition();
       fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::VerticalAlignment::Middle);
 
-      auto characterCellDefinition = renderState.CharacterCellDefinition();
+      auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
       characterCellDefinition.SetRotationAngle(0.0);
-      renderState.SetCharacterCellDefinition(characterCellDefinition);
+      Gs::renderState.SetCharacterCellDefinition(characterCellDefinition);
 
       auto* text = new EoDbText(fontDefinition, referenceSystem, CurrentText);
-      renderState.SetColor(deviceContext, color);
+      Gs::renderState.SetColor(deviceContext, color);
 
       group->AddTail(text);
 
@@ -332,7 +332,7 @@ void AeSysView::OnAnnotateModeCutIn() {
       }
     }
     document->UpdateAllViews(nullptr, EoDb::kGroup, group);
-    renderState.Restore(deviceContext, savedRenderState);
+    Gs::renderState.Restore(deviceContext, savedRenderState);
   }
   ReleaseDC(deviceContext);
 }

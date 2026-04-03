@@ -74,20 +74,21 @@ void EoDbGroup::BreakPolylines() {
     if (primitive->Is(EoDb::kPolylinePrimitive)) {
       auto color = primitive->Color();
       const auto& lineTypeName = primitive->LineTypeName();
+      auto lineWeight = primitive->LineWeight();
 
       EoGePoint3dArray points;
       static_cast<EoDbPolyline*>(primitive)->GetAllPoints(points);
 
       if (points.GetSize() >= 2) {
         for (auto i = 0; i < points.GetSize() - 1; i++) {
-          auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeName);
+          auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeName, lineWeight);
           document->RegisterHandle(line);
           CObList::InsertBefore(PrimitivePosition, line);
         }
 
         if (static_cast<EoDbPolyline*>(primitive)->IsLooped()) {
           auto* line =
-              EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeName);
+              EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeName, lineWeight);
           document->RegisterHandle(line);
           CObList::InsertBefore(PrimitivePosition, line);
         }

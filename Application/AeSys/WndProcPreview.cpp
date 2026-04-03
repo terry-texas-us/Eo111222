@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include "AeSysView.h"
 #include "Eo.h"
@@ -76,14 +76,14 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   activeView->SetCameraTarget(ptTarget);
   activeView->SetCameraPosition(activeView->CameraDirection());
 
-  int savedRenderState = renderState.Save();
+  int savedRenderState = Gs::renderState.Save();
   EoGsRenderDeviceGdi renderDevice(&memoryContext);
   block->Display(activeView, &renderDevice);
 
   activeView->PopViewTransform();
   activeView->ViewportPopActive();
 
-  renderState.Restore(&memoryContext, savedRenderState);
+  Gs::renderState.Restore(&memoryContext, savedRenderState);
   memoryContext.SelectObject(Bitmap);
   InvalidateRect(previewWindow, 0, TRUE);
 }
@@ -126,10 +126,10 @@ void WndProcPreviewUpdateLayer(HWND previewWindow, EoDbGroupList* groups) {
   activeView->SetCameraTarget(ptTarget);
   activeView->SetCameraPosition(activeView->CameraDirection());
 
-  int savedRenderState = renderState.Save();
+  int savedRenderState = Gs::renderState.Save();
   EoGsRenderDeviceGdi renderDevice(&memoryContext);
   groups->Display(activeView, &renderDevice);
-  renderState.Restore(&memoryContext, savedRenderState);
+  Gs::renderState.Restore(&memoryContext, savedRenderState);
 
   activeView->PopViewTransform();
   activeView->ViewportPopActive();

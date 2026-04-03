@@ -141,6 +141,7 @@ void AeSysView::OnUpdateViewAliased(CCmdUI* pCmdUI) {
 void AeSysView::OnViewColorSchemeDark() {
   Eo::activeColorScheme = Eo::ColorScheme::Dark;
   Eo::SyncViewBackgroundColor();
+  Eo::SyncAci7WithBackground();
   app.m_Options.m_colorScheme = Eo::ColorScheme::Dark;
   app.m_Options.Save();
   auto previousBrush = reinterpret_cast<HBRUSH>(
@@ -154,6 +155,7 @@ void AeSysView::OnViewColorSchemeDark() {
 void AeSysView::OnViewColorSchemeLight() {
   Eo::activeColorScheme = Eo::ColorScheme::Light;
   Eo::SyncViewBackgroundColor();
+  Eo::SyncAci7WithBackground();
   app.m_Options.m_colorScheme = Eo::ColorScheme::Light;
   app.m_Options.Save();
   auto previousBrush = reinterpret_cast<HBRUSH>(

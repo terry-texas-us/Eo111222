@@ -30,7 +30,7 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice)
 
     EoDbPolygon::SetSpecialPolygonStyle(
         view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);
-    int savedRenderState = renderState.Save();
+    int savedRenderState = Gs::renderState.Save();
 
     for (int i = 0; i < GetLayerTableSize(); i++) {
       auto* layer = GetLayerTableLayerAt(i);
@@ -40,7 +40,7 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice)
     // When in paper space, render model-space entities through each viewport
     if (m_activeSpace == EoDxf::Space::PaperSpace) { DisplayModelSpaceThroughViewports(view, renderDevice); }
 
-    renderState.Restore(renderDevice, savedRenderState);
+    Gs::renderState.Restore(renderDevice, savedRenderState);
     EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
 
     renderDevice->SetBkColor(backgroundColor);
@@ -152,9 +152,9 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
             windowCenterV + halfExtentV);
 
         // Render model-space layers through this viewport
-        int savedModelRenderState = renderState.Save();
+        int savedModelRenderState = Gs::renderState.Save();
         DisplayModelSpaceLayers(view, renderDevice);
-        renderState.Restore(renderDevice, savedModelRenderState);
+        Gs::renderState.Restore(renderDevice, savedModelRenderState);
 
         // Restore the previous view transform
         view->PopViewTransform();

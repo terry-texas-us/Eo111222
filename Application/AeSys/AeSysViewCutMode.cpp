@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <algorithm>
 
@@ -140,8 +140,8 @@ void AeSysView::OnCutModeField() {
 
     auto* document = GetDocument();
 
-    auto color = renderState.Color();
-    auto lineType = renderState.LineTypeIndex();
+    auto color = Gs::renderState.Color();
+    auto lineType = Gs::renderState.LineTypeIndex();
 
     EoDbGroupList* GroupsOut = new EoDbGroupList;
     EoDbGroupList* GroupsIn = new EoDbGroupList;
@@ -186,7 +186,7 @@ void AeSysView::OnCutModeField() {
 
     auto* deviceContext = GetDC();
     if (!deviceContext) { return; }
-    renderState.SetPen(this, deviceContext, color, lineType);
+    Gs::renderState.SetPen(this, deviceContext, color, lineType);
     ReleaseDC(deviceContext);
 
     UpdateStateInformation(BothCounts);
@@ -209,8 +209,8 @@ void AeSysView::OnCutModeClip() {
     double dRel[2]{};
     EoGePoint3d ptCut[2]{};
 
-    std::int16_t color = renderState.Color();
-    std::int16_t LineType = renderState.LineTypeIndex();
+    std::int16_t color = Gs::renderState.Color();
+    std::int16_t LineType = Gs::renderState.LineTypeIndex();
 
     auto* document = GetDocument();
 
@@ -274,7 +274,7 @@ void AeSysView::OnCutModeClip() {
 
     auto* deviceContext = GetDC();
     if (!deviceContext) { return; }
-    renderState.SetPen(this, deviceContext, color, LineType);
+    Gs::renderState.SetPen(this, deviceContext, color, LineType);
     ReleaseDC(deviceContext);
 
     UpdateStateInformation(BothCounts);

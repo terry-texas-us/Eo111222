@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <cmath>
 #include <cstdint>
@@ -28,7 +28,7 @@ void AeSysView::OnDrawModeOptions() { AeSysDoc::GetDoc()->OnSetupOptionsDraw(); 
 void AeSysView::OnDrawModePoint() {
   auto cursorPosition = GetCursorPosition();
 
-  auto* group = new EoDbGroup(new EoDbPoint(renderState.Color(), renderState.PointStyle(), cursorPosition));
+  auto* group = new EoDbGroup(new EoDbPoint(Gs::renderState.Color(), Gs::renderState.PointStyle(), cursorPosition));
   auto* document = GetDocument();
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
@@ -44,8 +44,7 @@ void AeSysView::OnDrawModeLine() {
     auto* document = GetDocument();
     cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
 
-    auto* group = new EoDbGroup(
-        EoDbLine::CreateLine(pts[0], cursorPosition)->WithProperties(renderState.Color(), renderState.LineTypeName()));
+    auto* group = new EoDbGroup(EoDbLine::CreateLine(pts[0], cursorPosition)->WithProperties(Gs::renderState));
     document->AddWorkLayerGroup(group);
     pts[0] = cursorPosition;
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -151,8 +150,7 @@ void AeSysView::OnDrawModeReturn() {
   switch (previousDrawCommand) {
     case ID_OP2:
       cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
-      group = new EoDbGroup(EoDbLine::CreateLine(pts[0], cursorPosition)
-              ->WithProperties(renderState.Color(), renderState.LineTypeName()));
+      group = new EoDbGroup(EoDbLine::CreateLine(pts[0], cursorPosition)->WithProperties(Gs::renderState));
       break;
 
     case ID_OP3:
@@ -182,8 +180,7 @@ void AeSysView::OnDrawModeReturn() {
       group = new EoDbGroup;
 
       for (int i = 0; i < 4; i++) {
-        group->AddTail(EoDbLine::CreateLine(pts[i], pts[(i + 1) % 4])
-                ->WithProperties(renderState.Color(), renderState.LineTypeName()));
+        group->AddTail(EoDbLine::CreateLine(pts[i], pts[(i + 1) % 4])->WithProperties(Gs::renderState));
       }
       break;
 
@@ -203,8 +200,8 @@ void AeSysView::OnDrawModeReturn() {
         app.AddStringToMessageList(IDS_MSG_PTS_COLINEAR);
         return;
       }
-      radialArc->SetColor(renderState.Color());
-      radialArc->SetLineTypeName(renderState.LineTypeName());
+      radialArc->SetColor(Gs::renderState.Color());
+      radialArc->SetLineTypeName(Gs::renderState.LineTypeName());
 
       if (std::abs(radialArc->SweepAngle()) < Eo::geometricTolerance) {
         delete radialArc;
@@ -249,8 +246,8 @@ void AeSysView::OnDrawModeReturn() {
       extrusion.Unitize();
       double ratio = minorAxis.Length() / majorAxis.Length();
       auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
-      ellipse->SetColor(renderState.Color());
-      ellipse->SetLineTypeName(renderState.LineTypeName());
+      ellipse->SetColor(Gs::renderState.Color());
+      ellipse->SetLineTypeName(Gs::renderState.LineTypeName());
 
       group = new EoDbGroup(ellipse);
 
@@ -353,8 +350,8 @@ void AeSysView::DoDrawModeMouseMove() {
         auto radialArc = EoDbConic::CreateRadialArcFrom3Points(start, intermediate, cursorPosition);
         if (radialArc == nullptr) { break; }
 
-        radialArc->SetColor(renderState.Color());
-        radialArc->SetLineTypeName(renderState.LineTypeName());
+        radialArc->SetColor(Gs::renderState.Color());
+        radialArc->SetLineTypeName(Gs::renderState.LineTypeName());
         m_PreviewGroup.AddTail(radialArc);
       }
       InvalidateOverlay();
@@ -392,8 +389,8 @@ void AeSysView::DoDrawModeMouseMove() {
         extrusion.Unitize();
         double ratio = minorAxis.Length() / majorAxis.Length();
         auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
-        ellipse->SetColor(renderState.Color());
-        ellipse->SetLineTypeName(renderState.LineTypeName());
+        ellipse->SetColor(Gs::renderState.Color());
+        ellipse->SetLineTypeName(Gs::renderState.LineTypeName());
 
         m_PreviewGroup.AddTail(ellipse);
       }

@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include "AeSysDoc.h"
 #include "EoDbGroup.h"
@@ -16,11 +16,11 @@ EoDlgTrapModify::~EoDlgTrapModify() {}
 void EoDlgTrapModify::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoDataExchange(dataExchange); }
 
 void EoDlgTrapModify::OnOK() {
-  if (IsDlgButtonChecked(IDC_MOD_PEN)) { m_Document->ModifyTrappedGroupsColor(renderState.Color()); }
-  if (IsDlgButtonChecked(IDC_MOD_LINE)) { m_Document->ModifyTrappedGroupsLineType(renderState.LineTypeName()); }
+  if (IsDlgButtonChecked(IDC_MOD_PEN)) { m_Document->ModifyTrappedGroupsColor(Gs::renderState.Color()); }
+  if (IsDlgButtonChecked(IDC_MOD_LINE)) { m_Document->ModifyTrappedGroupsLineType(Gs::renderState.LineTypeName()); }
   if (IsDlgButtonChecked(IDC_MOD_FILL)) { ModifyPolygons(); }
-  auto characterCellDefinition = renderState.CharacterCellDefinition();
-  const auto& fontDefinition = renderState.FontDefinition();
+  auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
+  const auto& fontDefinition = Gs::renderState.FontDefinition();
 
   if (IsDlgButtonChecked(IDC_MOD_NOTE)) {
     m_Document->ModifyTrappedGroupsNoteAttributes(fontDefinition, characterCellDefinition, TM_TEXT_ALL);
@@ -43,8 +43,8 @@ void EoDlgTrapModify::ModifyPolygons() {
 
       if (primitive->Is(EoDb::kPolygonPrimitive)) {
         auto* polygon = static_cast<EoDbPolygon*>(primitive);
-        polygon->SetPolygonStyle(renderState.PolygonIntStyle());
-        polygon->SetFillStyleIndex(renderState.PolygonIntStyleId());
+        polygon->SetPolygonStyle(Gs::renderState.PolygonIntStyle());
+        polygon->SetFillStyleIndex(Gs::renderState.PolygonIntStyleId());
         polygon->SetHatRefVecs(hatch::dOffAng, hatch::dXAxRefVecScal, hatch::dYAxRefVecScal);
       }
     }

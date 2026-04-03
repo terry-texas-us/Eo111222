@@ -36,7 +36,6 @@
     <ClCompile Include="Eo.cpp" />
     <ClCompile Include="EoApOptions.cpp" />
     <ClCompile Include="EoCtrlColorsButton.cpp" />
-    <ClCompile Include="EoCtrlFindComboBox.cpp" />
     <ClCompile Include="EoDbAttrib.cpp" />
     <ClCompile Include="EoDbBitmapFile.cpp" />
     <ClCompile Include="EoDbBlock.cpp" />
@@ -142,6 +141,10 @@
     <ClCompile Include="AeSys.cpp" />
     <ClCompile Include="EoDbFace.cpp" />
     <ClCompile Include="EoMfVisualManager.cpp" />
+    <ClCompile Include="EoCtrlColorComboBox.cpp" />
+    <ClCompile Include="EoMfStatusBar.cpp" />
+    <ClCompile Include="EoCtrlLineTypeComboBox.cpp" />
+    <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -155,7 +158,6 @@
     <ClInclude Include="Eo.h" />
     <ClInclude Include="EoApOptions.h" />
     <ClInclude Include="EoCtrlColorsButton.h" />
-    <ClInclude Include="EoCtrlFindComboBox.h" />
     <ClInclude Include="EoDb.h" />
     <ClInclude Include="EoDbAppIdEntry.h" />
     <ClInclude Include="EoDbAttrib.h" />
@@ -263,6 +265,10 @@
     <ClInclude Include="EoDbLabeledLine.h" />
     <ClInclude Include="EoDbFace.h" />
     <ClInclude Include="EoMfVisualManager.h" />
+    <ClInclude Include="EoCtrlColorComboBox.h" />
+    <ClInclude Include="EoCtrlLineTypeComboBox.h" />
+    <ClInclude Include="EoMfStatusBar.h" />
+    <ClInclude Include="EoCtrlLineWeightComboBox.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />
@@ -443,6 +449,8 @@
     <None Include="res\*.ico" />
     <None Include="res\*.ico" />
     <None Include="res\*.ico" />
+    <None Include="res\Cursors\AnnotateMode.cur" />
+    <None Include="res\Icons\AeSys_Gold.ico" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\Hatches\DefaultSet.txt" />
@@ -467,5 +475,22 @@
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\Toolbar Bitmaps\LayerStates.bmp" />
+    <Image Include="res\Toolbar Bitmaps\LayerStates_hc.bmp" />
+    <Image Include="res\Toolbar Bitmaps\layer_filters.bmp" />
+    <Image Include="res\Toolbar Bitmaps\menuimages.bmp" />
+    <Image Include="res\Toolbar Bitmaps\menuimages_hc.bmp" />
+    <Image Include="res\Toolbar Bitmaps\properties.bmp" />
+    <Image Include="res\Toolbar Bitmaps\properties_hc.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar-light.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar256.bmp" />
+    <Image Include="res\Toolbar Bitmaps\UserImages.bmp" />
   </ItemGroup>
 </Project>

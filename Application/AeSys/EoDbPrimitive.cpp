@@ -64,9 +64,18 @@ EoDbPrimitive::EoDbPrimitive(std::int16_t color, std::int16_t lineTypeIndex)
 
 EoDbPrimitive::~EoDbPrimitive() {}
 
-EoDbPrimitive* EoDbPrimitive::WithProperties(std::int16_t color, const std::wstring& lineTypeName) {
+EoDbPrimitive* EoDbPrimitive::WithProperties(const EoGsRenderState& renderState) {
+  m_color = renderState.Color();
+  SetLineTypeName(renderState.LineTypeName());
+  m_lineWeight = renderState.LineWeight();
+  return this;
+}
+
+EoDbPrimitive* EoDbPrimitive::WithProperties(
+    std::int16_t color, const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight) {
   m_color = color;
   SetLineTypeName(lineTypeName);
+  m_lineWeight = lineWeight;
   return this;
 }
 
@@ -181,8 +190,9 @@ void EoDbPrimitive::WriteV2Extension([[maybe_unused]] CFile& file) const {}
 void EoDbPrimitive::ReadV2Extension([[maybe_unused]] CFile& file) {}
 
 void EoDbPrimitive::ModifyState() {
-  m_color = renderState.Color();
-  SetLineTypeName(renderState.LineTypeName());
+  m_color = Gs::renderState.Color();
+  SetLineTypeName(Gs::renderState.LineTypeName());
+  m_lineWeight = Gs::renderState.LineWeight();
 }
 
 void EoDbPrimitive::FormatExtra(CString& extra) {

@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <algorithm>
 #include <climits>
@@ -434,7 +434,7 @@ void EoDbConic::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   std::int16_t lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, renderDevice, LogicalColor(), lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
+  Gs::renderState.SetPen(view, renderDevice, LogicalColor(), lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   polyline::BeginLineStrip();
   GenerateApproximationVertices(m_center, m_majorAxis);

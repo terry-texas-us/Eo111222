@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -145,7 +145,7 @@ void AeSysView::OnNodalModeToLine() {
       while (PointPosition != 0) {
         EoGeUniquePoint* UniquePoint = document->GetNextUniquePoint(PointPosition);
         auto* line = EoDbLine::CreateLine(UniquePoint->m_Point, UniquePoint->m_Point + Translate)
-                         ->WithProperties(renderState.Color(), renderState.LineTypeName());
+                         ->WithProperties(Gs::renderState);
         group->AddTail(line);
       }
       document->AddWorkLayerGroup(group);
@@ -176,7 +176,7 @@ void AeSysView::OnNodalModeToPolygon() {
     pts.SetSize(4);
 
     auto* deviceContext = GetDC();
-    int savedRenderState = renderState.Save();
+    int savedRenderState = Gs::renderState.Save();
 
     auto* document = GetDocument();
     auto groupPosition = document->GetFirstNodalGroupPosition();
@@ -221,7 +221,7 @@ void AeSysView::OnNodalModeToPolygon() {
         }
       }
     }
-    renderState.Restore(deviceContext, savedRenderState);
+    Gs::renderState.Restore(deviceContext, savedRenderState);
 
     pts.SetSize(0);
 

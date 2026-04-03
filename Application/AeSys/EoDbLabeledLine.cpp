@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <climits>
 #include <cmath>
@@ -120,18 +120,18 @@ void EoDbLabeledLine::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 
 void EoDbLabeledLine::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   std::int16_t color = LogicalColor();
-  renderState.SetPen(
+  Gs::renderState.SetPen(
       view, renderDevice, color, LogicalLineType(), LogicalLineTypeName(), m_lineWeight, m_lineTypeScale);
   m_line.Display(view, renderDevice);
 
-  renderState.SetColor(renderDevice, m_textColor);
+  Gs::renderState.SetColor(renderDevice, m_textColor);
 
-  std::int16_t LineType = renderState.LineTypeIndex();
-  renderState.SetLineType(renderDevice, 1);
+  std::int16_t LineType = Gs::renderState.LineTypeIndex();
+  Gs::renderState.SetLineType(renderDevice, 1);
 
   DisplayText(view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_text);
 
-  renderState.SetLineType(renderDevice, LineType);
+  Gs::renderState.SetLineType(renderDevice, LineType);
 }
 
 void EoDbLabeledLine::AddReportToMessageList(const EoGePoint3d& point) {
@@ -228,7 +228,7 @@ bool EoDbLabeledLine::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& 
 void EoDbLabeledLine::ModifyState() {
   if ((sm_flags & 0x0001) != 0) { EoDbPrimitive::ModifyState(); }
 
-  if ((sm_flags & 0x0002) != 0) { m_fontDefinition = renderState.FontDefinition(); }
+  if ((sm_flags & 0x0002) != 0) { m_fontDefinition = Gs::renderState.FontDefinition(); }
 }
 
 double EoDbLabeledLine::RelOfPt(const EoGePoint3d& point) {

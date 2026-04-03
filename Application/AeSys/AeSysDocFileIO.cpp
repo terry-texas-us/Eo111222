@@ -242,10 +242,12 @@ void AeSysDoc::SetCommonTableEntries() {
       EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive;
 
   m_workLayer = new EoDbLayer(L"0", commonState);
+  m_workLayer->SetColorIndex(7);  // ACI 7 — white on dark background, black on light background
   m_workLayer->SetLineType(lineType);
   AddLayerToSpace(m_workLayer, EoDxf::Space::ModelSpace);
 
   auto* paperSpaceLayer0 = new EoDbLayer(L"0", commonState);
+  paperSpaceLayer0->SetColorIndex(7);
   paperSpaceLayer0->SetLineType(lineType);
   AddLayerToSpace(paperSpaceLayer0, EoDxf::Space::PaperSpace);
 

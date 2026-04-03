@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <algorithm>
 #include <climits>
@@ -90,8 +90,8 @@ double EoDbEllipse::NormalizeTo2Pi(double angle) {
 EoDbEllipse::EoDbEllipse(
     const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle)
     : m_center(center), m_majorAxis(majorAxis), m_minorAxis(minorAxis), m_sweepAngle(sweepAngle) {
-  m_color = renderState.Color();
-  SetLineTypeName(renderState.LineTypeName());
+  m_color = Gs::renderState.Color();
+  SetLineTypeName(Gs::renderState.LineTypeName());
 }
 
 /**
@@ -155,8 +155,8 @@ EoDbEllipse::EoDbEllipse(
 EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
   auto* activeView = AeSysView::GetActiveView();
 
-  m_color = renderState.Color();
-  SetLineTypeName(renderState.LineTypeName());
+  m_color = Gs::renderState.Color();
+  SetLineTypeName(Gs::renderState.LineTypeName());
 
   auto cameraDirection = activeView->CameraDirection();
 
@@ -188,8 +188,8 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
  * @param endPoint The ending point of the elliptical arc.
  */
 EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end) {
-  m_color = renderState.Color();
-  SetLineTypeName(renderState.LineTypeName());
+  m_color = Gs::renderState.Color();
+  SetLineTypeName(Gs::renderState.LineTypeName());
 
   m_sweepAngle = 0.0;
 
@@ -438,7 +438,7 @@ void EoDbEllipse::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   auto lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
+  Gs::renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   polyline::BeginLineStrip();
   GenPts(m_center, m_majorAxis, m_minorAxis, m_sweepAngle);

@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #if defined(USING_DDE)
 #include "AeSys.h"
@@ -19,16 +19,16 @@ using namespace dde;
 bool dde::ExecNoteHT(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[32]{};
   _tcsncpy_s(szBuf, 32, ppArgs[0], sizeof(szBuf) - 1);
-  EoDbCharacterCellDefinition characterCellDefinition = renderState.CharacterCellDefinition();
+  EoDbCharacterCellDefinition characterCellDefinition = Gs::renderState.CharacterCellDefinition();
   characterCellDefinition.SetHeight(_wtof(szBuf));
-  renderState.SetCharacterCellDefinition(characterCellDefinition);
+  Gs::renderState.SetCharacterCellDefinition(characterCellDefinition);
   return true;
 }
 /// @brief Sets the Fill.
 bool dde::ExecFill(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   wchar_t szBuf[8]{};
   _tcsncpy_s(szBuf, 8, ppArgs[0], sizeof(szBuf) - 1);
-  renderState.SetPolygonIntStyleId(std::uint16_t(_wtoi(szBuf)));
+  Gs::renderState.SetPolygonIntStyleId(std::uint16_t(_wtoi(szBuf)));
   return true;
 }
 /// @brief Sets the Scale.
@@ -134,7 +134,7 @@ bool dde::ExecPen(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   _tcsncpy_s(szBuf, 8, ppArgs[0], sizeof(szBuf) - 1);
 
   // TODO: left broken while moving device context get out of SetPenColor
-  // renderState.SetPenColor(DeviceContext, std::int16_t(_wtoi(szBuf)));
+  // Gs::renderState.SetPenColor(DeviceContext, std::int16_t(_wtoi(szBuf)));
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Pen);
 
   return true;
@@ -146,7 +146,7 @@ bool dde::ExecLine(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   _tcsncpy_s(szBuf, 8, ppArgs[0], sizeof(szBuf) - 1);
 
   // TODO: left broken while moving device context get out of SetLineType
-  // renderState.SetLineType(DeviceContext, std::int16_t(_wtoi(szBuf)));
+  // Gs::renderState.SetLineType(DeviceContext, std::int16_t(_wtoi(szBuf)));
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
 
   return true;
@@ -157,8 +157,8 @@ bool dde::ExecNote(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
 
   EoGePoint3d ptPvt = app.GetCursorPosition();
 
-  EoDbFontDefinition fd = renderState.FontDefinition();
-  EoDbCharacterCellDefinition characterCellDefinition = renderState.CharacterCellDefinition();
+  EoDbFontDefinition fd = Gs::renderState.FontDefinition();
+  EoDbCharacterCellDefinition characterCellDefinition = Gs::renderState.CharacterCellDefinition();
 
   EoGeReferenceSystem referenceSystem(ptPvt, characterCellDefinition);
 

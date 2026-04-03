@@ -27,7 +27,7 @@ class EoGsRenderDevice;
 /// Vertices are accumulated via BeginLineStrip/Loop() + SetVertex() pairs,
 /// then either rendered via End() or queried via SelectUsing*() methods.
 /// The rendering path uses EoGsRenderDevice* for all drawing calls;
-/// renderState (still CDC*-based) is accessed via GetCDC() transitionally.
+/// Gs::renderState (still CDC*-based) is accessed via GetCDC() transitionally.
 class EoGsVertexBuffer {
  public:
   EoGsVertexBuffer() = default;

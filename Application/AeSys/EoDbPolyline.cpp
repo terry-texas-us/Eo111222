@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <climits>
 
@@ -62,8 +62,8 @@ EoDbPolyline::EoDbPolyline(std::int16_t penColor, std::int16_t lineType, EoGePoi
   m_pts.Copy(pts);
 }
 EoDbPolyline::EoDbPolyline(EoGePoint3dArray& pts) {
-  m_color = renderState.Color();
-  SetLineTypeName(renderState.LineTypeName());
+  m_color = Gs::renderState.Color();
+  SetLineTypeName(Gs::renderState.LineTypeName());
 
   m_flags = 0;
   m_pts.Copy(pts);
@@ -116,7 +116,7 @@ void EoDbPolyline::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   std::int16_t lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
+  Gs::renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   // Render filled width outline underneath the centerline when width data is present.
   // HasWidth() covers per-vertex vectors; m_constantWidth covers the global-width-only case.

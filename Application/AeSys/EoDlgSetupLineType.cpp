@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include "AeSysView.h"
 #include "EoDbLineType.h"
@@ -87,7 +87,7 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
 
           m_LineTypesListControl.GetSubItemRect(Item, Appearance, LVIR_LABEL, subItemRectangle);
 
-          renderState.SetPen(nullptr, &deviceContext, 0, static_cast<std::int16_t>(lineType->Index()));
+          Gs::renderState.SetPen(nullptr, &deviceContext, 0, static_cast<std::int16_t>(lineType->Index()));
 
           auto* activeView = AeSysView::GetActiveView();
 

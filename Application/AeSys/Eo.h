@@ -234,6 +234,31 @@ constexpr COLORREF colorNavy = RGB(0, 0, 128);
 constexpr COLORREF colorRubberband = RGB(120, 118, 112);
 constexpr COLORREF colorViewBackground = RGB(40, 40, 36);
 
+constexpr std::int16_t defaultColor = 7;
+
+/// @brief Synchronizes ACI 7 and ACI 0 palette entries with the model-space background brightness.
+/// ACI 7 displays as white on dark backgrounds and black on light backgrounds (AutoCAD convention).
+/// ACI 0 is swapped complementarily for XOR drawing mode correctness (see SetROP2).
+/// Must be called after changing activeColorScheme, typically alongside SyncViewBackgroundColor().
+inline void SyncAci7WithBackground() noexcept {
+  const auto& colors = SchemeColors(activeColorScheme);
+  const int luminance = GetRValue(colors.modelSpaceBackground) + GetGValue(colors.modelSpaceBackground) +
+                        GetBValue(colors.modelSpaceBackground);
+  if (luminance > 384) {
+    // Light background — ACI 7 = black, ACI 0 = white
+    ColorPalette[7] = colorBlack;
+    ColorPalette[0] = colorWhite;
+    GrayPalette[7] = RGB(0x22, 0x22, 0x22);
+    GrayPalette[0] = RGB(0xdd, 0xdd, 0xdd);
+  } else {
+    // Dark background — ACI 7 = white, ACI 0 = black (factory default)
+    ColorPalette[7] = colorWhite;
+    ColorPalette[0] = colorBlack;
+    GrayPalette[7] = RGB(0xdd, 0xdd, 0xdd);
+    GrayPalette[0] = RGB(0xff, 0xff, 0xff);
+  }
+}
+
 constexpr double MmPerInch = 25.4;
 
 constexpr double Pi = std::numbers::pi;

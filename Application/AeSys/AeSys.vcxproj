@@ -169,6 +169,7 @@
   <ItemGroup>
     <!-- Creates the PCH -->
     <ClCompile Include="EoCtrlColorComboBox.cpp" />
+    <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
     <ClCompile Include="EoMfStatusBar.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -339,6 +340,7 @@
     <ClInclude Include="EoCtrlColorComboBox.h" />
     <ClInclude Include="EoCtrlColorsButton.h" />
     <ClInclude Include="EoCtrlLineTypeComboBox.h" />
+    <ClInclude Include="EoCtrlLineWeightComboBox.h" />
     <ClInclude Include="EoDb.h" />
     <ClInclude Include="EoDbAppIdEntry.h" />
     <ClInclude Include="EoDbAttrib.h" />

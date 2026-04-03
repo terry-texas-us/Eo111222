@@ -162,15 +162,16 @@ void AeSysDoc::OnPrimBreak() {
 
       auto color = primitive->Color();
       const auto& lineTypeName = primitive->LineTypeName();
+      auto lineWeight = primitive->LineWeight();
 
       for (auto i = 0; i < points.GetSize() - 1; i++) {
-        auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeName);
+        auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeName, lineWeight);
         RegisterHandle(line);
         group->AddTail(line);
       }
       if (polyline->IsLooped()) {
         auto* line =
-            EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeName);
+            EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeName, lineWeight);
         RegisterHandle(line);
         group->AddTail(line);
       }
@@ -597,10 +598,10 @@ void AeSysDoc::OnTrapCommandsBlock() {
 void AeSysDoc::OnTrapCommandsUnblock() { m_trappedGroups.ExplodeBlockReferences(); }
 void AeSysDoc::OnSetupPenColor() {
   EoDlgSetupColor Dialog;
-  Dialog.m_ColorIndex = static_cast<std::uint16_t>(renderState.Color());
+  Dialog.m_ColorIndex = static_cast<std::uint16_t>(Gs::renderState.Color());
 
   if (Dialog.DoModal() == IDOK) {
-    renderState.SetColor(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(Dialog.m_ColorIndex));
+    Gs::renderState.SetColor(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(Dialog.m_ColorIndex));
 
     AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Pen);
   }
@@ -623,12 +624,12 @@ void AeSysDoc::OnSetupLineType() {
   EoDbLineType* currentLineType{};
 
   // Prefer name-based lookup when a linetype name is set on the render state
-  const auto& currentName = renderState.LineTypeName();
+  const auto& currentName = Gs::renderState.LineTypeName();
   if (!currentName.empty()) {
     [[maybe_unused]] const auto found = m_LineTypeTable.Lookup(CString(currentName.c_str()), currentLineType);
   }
   if (currentLineType == nullptr) {
-    m_LineTypeTable.LookupUsingLegacyIndex(static_cast<std::uint16_t>(renderState.LineTypeIndex()), currentLineType);
+    m_LineTypeTable.LookupUsingLegacyIndex(static_cast<std::uint16_t>(Gs::renderState.LineTypeIndex()), currentLineType);
   }
   dialog.SetSelectedLineType(currentLineType);
 
@@ -653,13 +654,13 @@ void AeSysDoc::OnSetupLineType() {
     }
   }
 
-  renderState.SetLineType(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(selectedLineType->Index()));
-  renderState.SetLineTypeName(std::wstring(selectedLineType->Name()));
+  Gs::renderState.SetLineType(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(selectedLineType->Index()));
+  Gs::renderState.SetLineTypeName(std::wstring(selectedLineType->Name()));
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
 }
 
-void AeSysDoc::OnSetupFillHollow() { renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow); }
-void AeSysDoc::OnSetupFillSolid() { renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Solid); }
+void AeSysDoc::OnSetupFillHollow() { Gs::renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow); }
+void AeSysDoc::OnSetupFillSolid() { Gs::renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Solid); }
 void AeSysDoc::OnSetupFillPattern() {}
 void AeSysDoc::OnSetupFillHatch() {
   EoDlgSetupHatch Dialog;
@@ -668,7 +669,7 @@ void AeSysDoc::OnSetupFillHatch() {
   Dialog.m_HatchRotationAngle = Eo::RadianToDegree(hatch::dOffAng);
 
   if (Dialog.DoModal() == IDOK) {
-    renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hatch);
+    Gs::renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hatch);
     hatch::dXAxRefVecScal = std::max(0.01, Dialog.m_HatchXScaleFactor);
     hatch::dYAxRefVecScal = std::max(0.01, Dialog.m_HatchYScaleFactor);
     hatch::dOffAng = Eo::DegreeToRadian(Dialog.m_HatchRotationAngle);
@@ -676,11 +677,11 @@ void AeSysDoc::OnSetupFillHatch() {
 }
 
 void AeSysDoc::OnSetupNote() {
-  EoDbFontDefinition fontDefinition = renderState.FontDefinition();
+  EoDbFontDefinition fontDefinition = Gs::renderState.FontDefinition();
 
   EoDlgSetupNote Dialog(&fontDefinition);
 
-  auto characterCellDefinition = renderState.CharacterCellDefinition();
+  auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
 
   Dialog.m_height = characterCellDefinition.Height();
   Dialog.m_rotationAngle = Eo::RadianToDegree(characterCellDefinition.RotationAngle());
@@ -692,24 +693,24 @@ void AeSysDoc::OnSetupNote() {
     characterCellDefinition.SetRotationAngle(Eo::DegreeToRadian(Dialog.m_rotationAngle));
     characterCellDefinition.SetExpansionFactor(Dialog.m_expansionFactor);
     characterCellDefinition.SetSlantAngle(Eo::DegreeToRadian(Dialog.m_slantAngle));
-    renderState.SetCharacterCellDefinition(characterCellDefinition);
+    Gs::renderState.SetCharacterCellDefinition(characterCellDefinition);
 
     auto* activeView = AeSysView::GetActiveView();
     CDC* DeviceContext = (activeView == nullptr) ? nullptr : activeView->GetDC();
 
-    renderState.SetFontDefinition(DeviceContext, fontDefinition);
+    Gs::renderState.SetFontDefinition(DeviceContext, fontDefinition);
   }
 }
 
 void AeSysDoc::OnSetupPointStyle() {
   CDlgSetPointStyle dlg;
   // Preload dialog from global state and document
-  dlg.m_pointStyle = renderState.PointStyle();
+  dlg.m_pointStyle = Gs::renderState.PointStyle();
   dlg.m_pointSize = GetPointSize();
 
   if (dlg.DoModal() == IDOK) {
     // Apply to global primitive state
-    renderState.SetPointStyle(static_cast<short>(dlg.m_pointStyle));
+    Gs::renderState.SetPointStyle(static_cast<short>(dlg.m_pointStyle));
     // Store into document
     SetPointSize(dlg.m_pointSize);
 

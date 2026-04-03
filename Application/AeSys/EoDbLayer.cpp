@@ -11,10 +11,14 @@
 #include "EoDbPrimitive.h"
 
 EoDbLayer::EoDbLayer(const CString& name, State state)
-    : m_name{name}, m_state{static_cast<std::uint16_t>(state)}, m_tracingState{}, m_color{1}, m_lineType{} {}
+    : m_name{name},
+      m_state{static_cast<std::uint16_t>(state)},
+      m_tracingState{},
+      m_color{Eo::defaultColor},
+      m_lineType{} {}
 
 EoDbLayer::EoDbLayer(const CString& name, std::uint16_t state)
-    : m_name{name}, m_state{state}, m_tracingState{}, m_color{1}, m_lineType{} {}
+    : m_name{name}, m_state{state}, m_tracingState{}, m_color{Eo::defaultColor}, m_lineType{} {}
 
 void EoDbLayer::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   EoDbPrimitive::SetLayerColor(ColorIndex());

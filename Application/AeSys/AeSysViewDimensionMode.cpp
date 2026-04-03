@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <string>
 
@@ -419,16 +419,16 @@ void AeSysView::OnDimensionModeAngle() {
         GenerateLineEndItem(1, 0.1, ptArrow, line.end, Group);
 
         auto* deviceContext = GetDC();
-        int savedRenderState = renderState.Save();
+        int savedRenderState = Gs::renderState.Save();
 
-        EoDbFontDefinition fontDefinition = renderState.FontDefinition();
+        EoDbFontDefinition fontDefinition = Gs::renderState.FontDefinition();
         fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::VerticalAlignment::Middle);
-        renderState.SetFontDefinition(deviceContext, fontDefinition);
+        Gs::renderState.SetFontDefinition(deviceContext, fontDefinition);
 
-        auto characterCellDefinition = renderState.CharacterCellDefinition();
+        auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
         characterCellDefinition.SetRotationAngle(0.0);
         characterCellDefinition.SetHeight(0.1);
-        renderState.SetCharacterCellDefinition(characterCellDefinition);
+        Gs::renderState.SetCharacterCellDefinition(characterCellDefinition);
 
         EoGePoint3d origin = cursorPosition.ProjectToward(center, -0.25);
         GetReferenceAxesForCharacterCell(characterCellDefinition, normal, vXAx, vYAx);
@@ -438,7 +438,7 @@ void AeSysView::OnDimensionModeAngle() {
         Group->AddTail(new EoDbText(fontDefinition, ReferenceSystem, Note));
         document->AddWorkLayerGroup(Group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
-        renderState.Restore(deviceContext, savedRenderState);
+        Gs::renderState.Restore(deviceContext, savedRenderState);
         ReleaseDC(deviceContext);
       }
       ModeLineUnhighlightOp(PreviousDimensionCommand);
@@ -496,7 +496,7 @@ void AeSysView::OnDimensionModeConvert() {
           EoGeReferenceSystem ReferenceSystem = pPrimDim->ReferenceSystem();
 
           auto* linePrimitive =
-              EoDbLine::CreateLine(pPrimDim->Line())->WithProperties(primitive->Color(), primitive->LineTypeName());
+              EoDbLine::CreateLine(pPrimDim->Line())->WithProperties(primitive->Color(), primitive->LineTypeName(), primitive->LineWeight());
 
           EoDbText* pPrimText = new EoDbText(pPrimDim->FontDefinition(), ReferenceSystem, pPrimDim->Text());
           pPrimText->SetColor(pPrimDim->TextColor());

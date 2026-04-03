@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <algorithm>
 #include <cassert>
@@ -75,7 +75,7 @@ float tableValue[maxTableValues]{};
 
 auto* pColTbl = Eo::ColorPalette;
 
-EoGsRenderState renderState;
+EoGsRenderState Gs::renderState;
 
 BEGIN_MESSAGE_MAP(AeSys, CWinAppEx)
 ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)
@@ -129,8 +129,9 @@ BOOL AeSys::InitInstance() {
   // Apply persisted color scheme to the global state
   Eo::activeColorScheme = m_Options.m_colorScheme;
   Eo::SyncViewBackgroundColor();
+  Eo::SyncAci7WithBackground();
 
-  // Enable Windows dark mode for common controls (scroll bars, context menus, etc.)
+  // Enable Windows dark mode for common controls
   // Uses undocumented but widely-adopted uxtheme ordinals (available since Windows 10 1903).
   {
     HMODULE uxThemeModule = ::LoadLibraryExW(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
@@ -494,19 +495,19 @@ void AeSys::HomePointSave(int i, const EoGePoint3d& pt) {
 
 // Initializes all peg global sections to their default (startup) values.
 void AeSys::InitGbls(CDC* deviceContext) {
-  renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow);
+  Gs::renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow);
 
-  renderState.SetPolygonIntStyleId(1);
+  Gs::renderState.SetPolygonIntStyleId(1);
 
   hatch::dXAxRefVecScal = 0.1;
   hatch::dYAxRefVecScal = 0.1;
   hatch::dOffAng = 0.0;
 
   EoDbCharacterCellDefinition characterCellDefinition{};
-  renderState.SetCharacterCellDefinition(characterCellDefinition);
+  Gs::renderState.SetCharacterCellDefinition(characterCellDefinition);
 
   EoDbFontDefinition fontDefinition;
-  renderState.SetFontDefinition(deviceContext, fontDefinition);
+  Gs::renderState.SetFontDefinition(deviceContext, fontDefinition);
 
   SetUnits(Eo::Units::Inches);
   SetArchitecturalUnitsFractionPrecision(8);
@@ -516,18 +517,17 @@ void AeSys::InitGbls(CDC* deviceContext) {
   m_TrapHighlighted = true;
   m_TrapHighlightColor = 15;
 
-  // Document->InitializeGroupAndPrimitiveEdit();
-  renderState.SetPen(nullptr, deviceContext, 1, 1);
-  renderState.SetPointStyle(0);
+  Gs::renderState.SetPen(nullptr, deviceContext, Eo::defaultColor, 1);
+  Gs::renderState.SetPointStyle(0);
 }
 void AeSys::EditColorPalette() {
   CHOOSECOLOR cc{};
   cc.lStructSize = sizeof(CHOOSECOLOR);
-  cc.rgbResult = Eo::ColorPalette[renderState.Color()];
+  cc.rgbResult = Eo::ColorPalette[Gs::renderState.Color()];
   cc.lpCustColors = Eo::ColorPalette;
   cc.Flags = CC_FULLOPEN | CC_RGBINIT | CC_SOLIDCOLOR;
   ::ChooseColor(&cc);
-  cc.rgbResult = Eo::GrayPalette[renderState.Color()];
+  cc.rgbResult = Eo::GrayPalette[Gs::renderState.Color()];
   cc.lpCustColors = Eo::GrayPalette;
   ::ChooseColor(&cc);
 

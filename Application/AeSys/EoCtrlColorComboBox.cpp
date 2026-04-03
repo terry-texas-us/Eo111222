@@ -20,8 +20,8 @@ EoCtrlColorComboBox::EoCtrlColorComboBox()
 }
 
 void EoCtrlColorComboBox::PopulateItems() {
-  BuildItemList(renderState.Color());
-  SelectItem(static_cast<DWORD_PTR>(renderState.Color()));
+  BuildItemList(Gs::renderState.Color());
+  SelectItem(static_cast<DWORD_PTR>(Gs::renderState.Color()));
 }
 
 void EoCtrlColorComboBox::SetCurrentColor(std::int16_t aciIndex) {
@@ -87,7 +87,7 @@ void EoCtrlColorComboBox::Serialize(CArchive& ar) {
 
     // Save only the selected ACI color — items are rebuilt on load.
     int curSel = CMFCToolBarComboBoxButton::GetCurSel();
-    auto selectedColor = static_cast<std::int32_t>(renderState.Color());
+    auto selectedColor = static_cast<std::int32_t>(Gs::renderState.Color());
     if (curSel >= 0) {
       auto itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
       if (itemData != kMoreColors) {
@@ -97,7 +97,7 @@ void EoCtrlColorComboBox::Serialize(CArchive& ar) {
     ar << selectedColor;
   } else {
     UINT schema = ar.GetObjectSchema();
-    std::int16_t activeColor = renderState.Color();
+    std::int16_t activeColor = Gs::renderState.Color();
 
     if (schema <= 1) {
       // Old format written by CMFCToolBarComboBoxButton::Serialize.
@@ -167,20 +167,20 @@ void EoCtrlColorComboBox::OnSelectionChanged() {
   if (data == kMoreColors) {
     // Open the full color selection dialog
     EoDlgSetupColor dialog;
-    dialog.m_ColorIndex = static_cast<std::uint16_t>(renderState.Color());
+    dialog.m_ColorIndex = static_cast<std::uint16_t>(Gs::renderState.Color());
     if (dialog.DoModal() == IDOK) {
       auto newColor = static_cast<std::int16_t>(dialog.m_ColorIndex);
-      renderState.SetColor(static_cast<CDC*>(nullptr), newColor);
+      Gs::renderState.SetColor(static_cast<CDC*>(nullptr), newColor);
       auto* activeView = AeSysView::GetActiveView();
       if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Pen); }
     }
     // Restore combo selection to actual current color (not "More Colors...")
-    SetCurrentColor(renderState.Color());
+    SetCurrentColor(Gs::renderState.Color());
     return;
   }
 
   auto newColor = static_cast<std::int16_t>(data);
-  renderState.SetColor(static_cast<CDC*>(nullptr), newColor);
+  Gs::renderState.SetColor(static_cast<CDC*>(nullptr), newColor);
   auto* activeView = AeSysView::GetActiveView();
   if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Pen); }
 }

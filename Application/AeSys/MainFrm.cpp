@@ -9,6 +9,7 @@
 #include "EoApOptions.h"
 #include "EoCtrlColorComboBox.h"
 #include "EoCtrlLineTypeComboBox.h"
+#include "EoCtrlLineWeightComboBox.h"
 #include "EoMfVisualManager.h"
 #include "MainFrm.h"
 #include "Resource.h"
@@ -85,6 +86,7 @@ ON_REGISTERED_MESSAGE(AFX_WM_RESETTOOLBAR, OnToolbarReset)
 ON_UPDATE_COMMAND_UI(ID_MDI_TABBED, OnUpdateMdiTabbed)
 ON_UPDATE_COMMAND_UI(ID_PENCOLOR_COMBO, OnUpdatePenColorCombo)
 ON_UPDATE_COMMAND_UI(ID_LINETYPE_COMBO, OnUpdateLineTypeCombo)
+ON_UPDATE_COMMAND_UI(ID_LINEWEIGHT_COMBO, OnUpdateLineWeightCombo)
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
@@ -292,6 +294,7 @@ LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
     case IDR_RENDER_PROPERTIES: {
       m_renderPropertiesToolBar.ReplaceButton(ID_PENCOLOR_COMBO, EoCtrlColorComboBox(), FALSE);
       m_renderPropertiesToolBar.ReplaceButton(ID_LINETYPE_COMBO, EoCtrlLineTypeComboBox(), FALSE);
+      m_renderPropertiesToolBar.ReplaceButton(ID_LINEWEIGHT_COMBO, EoCtrlLineWeightComboBox(), FALSE);
       break;
     }
     case IDR_PROPERTIES:
@@ -527,6 +530,21 @@ void CMainFrame::SyncLineTypeCombo(std::int16_t lineTypeIndex, const std::wstrin
       auto* button = DYNAMIC_DOWNCAST(EoCtrlLineTypeComboBox, buttonsList.GetNext(pos));
       if (button != nullptr) {
         button->SetCurrentLineType(lineTypeIndex, lineTypeName);
+        break;
+      }
+    }
+  }
+}
+
+void CMainFrame::OnUpdateLineWeightCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
+
+void CMainFrame::SyncLineWeightCombo(EoDxfLineWeights::LineWeight lineWeight) {
+  CObList buttonsList;
+  if (CMFCToolBar::GetCommandButtons(ID_LINEWEIGHT_COMBO, buttonsList) > 0) {
+    for (auto pos = buttonsList.GetHeadPosition(); pos != nullptr;) {
+      auto* button = DYNAMIC_DOWNCAST(EoCtrlLineWeightComboBox, buttonsList.GetNext(pos));
+      if (button != nullptr) {
+        button->SetCurrentLineWeight(lineWeight);
         break;
       }
     }

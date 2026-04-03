@@ -224,8 +224,8 @@ void AeSysDoc::DeleteContents() {
 void AeSysDoc::AddTextBlock(LPWSTR textBlock) {
   auto cursorPosition = app.GetCursorPosition();
 
-  const auto& fontDefinition = renderState.FontDefinition();
-  auto characterCellDefinition = renderState.CharacterCellDefinition();
+  const auto& fontDefinition = Gs::renderState.FontDefinition();
+  auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
 
   EoGeReferenceSystem ReferenceSystem(cursorPosition, characterCellDefinition);
 

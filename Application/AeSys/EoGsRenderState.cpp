@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -20,7 +20,7 @@ void EoGsRenderState::Restore(CDC* deviceContext, int iSaveId) {
 
   if (psSav[iSaveId] != 0) {
     SetPen(nullptr, deviceContext, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex(),
-        psSav[iSaveId]->LineTypeName());
+        psSav[iSaveId]->LineTypeName(), psSav[iSaveId]->LineWeight(), psSav[iSaveId]->LineTypeScale());
 
     m_fontDefinition = psSav[iSaveId]->m_fontDefinition;
 
@@ -39,7 +39,7 @@ void EoGsRenderState::Restore(EoGsRenderDevice* renderDevice, int iSaveId) {
 
   if (psSav[iSaveId] != 0) {
     SetPen(nullptr, renderDevice, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex(),
-        psSav[iSaveId]->LineTypeName());
+        psSav[iSaveId]->LineTypeName(), psSav[iSaveId]->LineWeight(), psSav[iSaveId]->LineTypeScale());
 
     m_fontDefinition = psSav[iSaveId]->m_fontDefinition;
 
@@ -61,9 +61,9 @@ int EoGsRenderState::Save() {
   if (iSaveId < 0) {
     app.WarningMessageBox(IDS_MSG_SAVE_STATE_LIST_ERROR);
   } else {
-    SetPolygonIntStyle(renderState.PolygonIntStyle());
+    SetPolygonIntStyle(Gs::renderState.PolygonIntStyle());
     psSav[iSaveId] = new EoGsRenderState;
-    *psSav[iSaveId] = renderState;
+    *psSav[iSaveId] = Gs::renderState;
   }
   // return id to use for restore reference
   return iSaveId;
@@ -80,6 +80,7 @@ void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t c
 
 void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t color, std::int16_t lineTypeIndex,
     const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight, double lineTypeScale) {
+  m_lineWeight = lineWeight;  // Store unresolved for UI readback
   if (EoDbPrimitive::SpecialColor() != 0) { color = EoDbPrimitive::SpecialColor(); }
   if (color == EoDbPrimitive::COLOR_BYLAYER) { color = EoDbPrimitive::LayerColor(); }
   if (lineTypeIndex == EoDbPrimitive::LINETYPE_BYLAYER) {
@@ -131,6 +132,7 @@ void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, st
 void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color,
     std::int16_t lineTypeIndex, const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight,
     double lineTypeScale) {
+  m_lineWeight = lineWeight;  // Store unresolved for UI readback
   if (EoDbPrimitive::SpecialColor() != 0) { color = EoDbPrimitive::SpecialColor(); }
   if (color == EoDbPrimitive::COLOR_BYLAYER) { color = EoDbPrimitive::LayerColor(); }
   if (lineTypeIndex == EoDbPrimitive::LINETYPE_BYLAYER) {

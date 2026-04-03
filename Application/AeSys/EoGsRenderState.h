@@ -21,6 +21,7 @@ class EoGsRenderState {
   EoDb::PolygonStyle m_PolygonStyle{EoDb::PolygonStyle::Hollow};
   std::int16_t m_PolygonInteriorStyleIndex{};
   double m_lineTypeScale{1.0};
+  EoDxfLineWeights::LineWeight m_lineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
 
  public:
   EoGsRenderState() = default;
@@ -75,6 +76,9 @@ class EoGsRenderState {
 
   [[nodiscard]] double LineTypeScale() const noexcept { return m_lineTypeScale; }
 
+  void SetLineWeight(EoDxfLineWeights::LineWeight lineWeight) noexcept { m_lineWeight = lineWeight; }
+  [[nodiscard]] EoDxfLineWeights::LineWeight LineWeight() const noexcept { return m_lineWeight; }
+
   void SetCharacterCellDefinition(EoDbCharacterCellDefinition& characterCellDefinition) {
     m_characterCellDefinition = characterCellDefinition;
   }
@@ -109,4 +113,9 @@ class EoGsRenderState {
   void SetAlignment(
       EoGsRenderDevice* renderDevice, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment);
 };
+
+/// @brief Graphics State — application-wide singletons for the Gs rendering layer.
+namespace Gs {
+/// @brief The application-wide render state singleton (color, line type, line weight, font).
 extern EoGsRenderState renderState;
+}  // namespace Gs

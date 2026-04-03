@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <climits>
 #include <vector>
@@ -21,14 +21,14 @@
 #include "EoGsRenderState.h"
 
 EoDbSpline::EoDbSpline(std::uint16_t wPts, EoGePoint3d* pt) {
-  m_color = renderState.Color();
-  SetLineTypeName(renderState.LineTypeName());
+  m_color = Gs::renderState.Color();
+  SetLineTypeName(Gs::renderState.LineTypeName());
 
   for (auto i = 0; i < wPts; i++) { m_pts.Add(pt[i]); }
 }
 EoDbSpline::EoDbSpline(EoGePoint3dArray& points) {
-  m_color = renderState.Color();
-  SetLineTypeName(renderState.LineTypeName());
+  m_color = Gs::renderState.Color();
+  SetLineTypeName(Gs::renderState.LineTypeName());
   m_pts.Copy(points);
 }
 EoDbSpline::EoDbSpline(std::int16_t penColor, std::int16_t lineType, EoGePoint3dArray& points) {
@@ -68,7 +68,7 @@ void EoDbSpline::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   std::int16_t lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
+  Gs::renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   polyline::BeginLineStrip();
   GenPts(static_cast<std::int16_t>(m_degree + 1), m_pts);

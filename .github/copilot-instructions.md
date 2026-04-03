@@ -519,14 +519,41 @@ File (New, Open, Save, Save All) | Edit (Cut, Copy, Paste) | Print, About, Help 
 ### Render Properties Toolbar (`IDR_RENDER_PROPERTIES`)
 A separate dockable toolbar for primitive render-state properties. Isolates combo serialization from the standard toolbar, limiting the blast radius of any registry corruption.
 
-Currently contains: **Color combo** (`EoCtrlColorComboBox`). Future additions: **Line Style**, **Line Weight**.
+Contains three combos: **Color** (`EoCtrlColorComboBox`), **Line Type** (`EoCtrlLineTypeComboBox`), **Line Weight** (`EoCtrlLineWeightComboBox`). Future additions: **Line Style** (dash pattern selection).
 
-`IDR_RENDER_PROPERTIES` (190) is a single-button toolbar resource. `OnToolbarReset` replaces the placeholder with `EoCtrlColorComboBox()`. The toolbar has its own serialization stream — the standard toolbar no longer carries the color combo state.
+`IDR_RENDER_PROPERTIES` (190) is a three-button toolbar resource. `OnToolbarReset` replaces each placeholder with its combo class via `ReplaceButton()`. The toolbar has its own serialization stream — the standard toolbar no longer carries combo state.
 
 ### Color Combo (`EoCtrlColorComboBox`)
 Owner-draw ACI color selection combo embedded in the render properties toolbar. Dark-theme-aware with color swatches, named colors (1–7), By Layer, By Block, dynamic custom entries (ACI 8–255), and "More Colors..." fallback to `EoDlgSetupColor`. Custom `Serialize` override (`VERSIONABLE_SCHEMA | 2`) bypasses `CMFCToolBarComboBoxButton::Serialize` to avoid DWORD_PTR truncation and item duplication on toolbar state restore. See `Documentation/MFC Custom Color Selection Control.md` for full architecture.
 
 Key files: `EoCtrlColorComboBox.h/.cpp`, `EoMfVisualManager.h/.cpp` (combo border/dropdown overrides), `MainFrm.cpp` (`OnToolbarReset`, `SyncColorCombo`).
+
+### Line Type Combo (`EoCtrlLineTypeComboBox`)
+Owner-draw line type selection combo. Follows the same `CMFCToolBarComboBoxButton` subclass + `CComboBox` owner-draw subclass pattern as Color Combo. Dark-theme-aware. Custom `Serialize` override (`VERSIONABLE_SCHEMA`) bypasses base serialization.
+
+Key files: `EoCtrlLineTypeComboBox.h/.cpp`, `MainFrm.cpp` (`OnToolbarReset`, `SyncLineTypeCombo`).
+
+### Line Weight Combo (`EoCtrlLineWeightComboBox`)
+Owner-draw DXF line weight selection combo embedded in the render properties toolbar. Follows the same `CMFCToolBarComboBoxButton` subclass + `CComboBox` owner-draw subclass pattern as Color and Line Type combos.
+
+**Items**: 3 special entries (ByLayer, ByBlock, Default) + 24 standard DXF line weights (0.00–2.11 mm) with `"X.XX mm"` labels. Items carry `DWORD_PTR` data set to `EoDxfLineWeights::LineWeight` enum values.
+
+**Owner-draw preview**: Each item renders a thickness-proportional line preview alongside the text label. `DrawWeightPreview()` computes pixel thickness as `max(1, MulDiv(dxfCode, dpi, 96 * 30))` — produces 1–8px across the 0.00–2.11 mm range. Special values (ByLayer/ByBlock/Default) draw as 1px.
+
+**Serialization**: `VERSIONABLE_SCHEMA | 1`. Custom `Serialize` override saves/restores a single `int32_t` weight enum value; items are rebuilt from `BuildItemList()` on load (not serialized individually).
+
+**Render state integration**: `OnSelectionChanged()` → `renderState.SetLineWeight(newWeight)`. `EoGsRenderState::m_lineWeight` stores the **unresolved** enum value (ByLayer/ByBlock/ByLwDefault/concrete) **before** the ByLayer→concrete resolution chain in `SetPen`, so the UI can read back the user's setting.
+
+**Sync chain**: `UpdateStateInformation(Pen)` → `CMainFrame::SyncLineWeightCombo(weight)` → `GetCommandButtons(ID_LINEWEIGHT_COMBO)` → `DYNAMIC_DOWNCAST(EoCtrlLineWeightComboBox)` → `SetCurrentLineWeight(weight)` → `SelectItem(DWORD_PTR(enum))`.
+
+**ModifyState**: `EoDbPrimitive::ModifyState()` copies `renderState.LineWeight()` into `m_lineWeight` alongside color and lineTypeName, completing the property trio.
+
+**WithProperties**: `EoDbPrimitive::WithProperties(color, lineTypeName, lineWeight)` — the fluent creation API used by all interactive draw modes. All three render properties are explicit parameters — no hidden reads from `renderState`. Call sites fall into three categories:
+- **Interactive creation** (majority): `->WithProperties(renderState.Color(), renderState.LineTypeName(), renderState.LineWeight())`
+- **Primitive copy** (explode, cut, split): `->WithProperties(source->Color(), source->LineTypeName(), source->LineWeight())`
+- **Legacy file import** (PEG V1): `->WithProperties(color, lineTypeName, EoDxfLineWeights::LineWeight::kLnWtByLwDefault)` (format has no lineWeight)
+
+Key files: `EoCtrlLineWeightComboBox.h/.cpp`, `EoGsRenderState.h/.cpp` (`m_lineWeight` member, stored in `SetPen`), `EoDbPrimitive.cpp` (`ModifyState`, `WithProperties`), `MainFrm.cpp` (`OnToolbarReset`, `SyncLineWeightCombo`).
 
 ## Properties Pane
 

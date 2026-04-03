@@ -110,15 +110,15 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
 
       // Save the user's current render state (linetype name, color, etc.) before entity
-      // rendering, which mutates renderState via SetPen calls. Restore afterward so that
+      // rendering, which mutates Gs::renderState via SetPen calls. Restore afterward so that
       // UpdateStateInformation reads the user's selection, not the last-rendered entity's state.
-      auto savedUserState = renderState.Save();
+      auto savedUserState = Gs::renderState.Save();
       document->DisplayAllLayers(this, &renderDevice);
       document->DisplayUniquePoints();
 
       // Preview group overlay — rendered on top of the committed scene
       if (!m_PreviewGroup.IsEmpty()) { m_PreviewGroup.Display(this, &renderDevice); }
-      renderState.Restore(&renderDevice, savedUserState);
+      Gs::renderState.Restore(&renderDevice, savedUserState);
 
       // Draw rubberband overlay after the scene
       if (m_rubberbandType != None) {
@@ -167,9 +167,9 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     assert(document != nullptr);
 
     // Save the user's current render state before entity rendering, which mutates
-    // renderState via SetPen calls. Restore afterward so that UpdateStateInformation
+    // Gs::renderState via SetPen calls. Restore afterward so that UpdateStateInformation
     // reads the user's selection, not the last-rendered entity's state.
-    auto savedUserState = renderState.Save();
+    auto savedUserState = Gs::renderState.Save();
 
     // If back buffer exists and scene is dirty, re-render the entire scene into the back buffer
     if (m_backBufferDC.GetSafeHdc() != nullptr && m_sceneInvalid) {
@@ -219,7 +219,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       m_PreviewGroup.Display(this, &overlayDevice);
     }
 
-    renderState.Restore(deviceContext, savedUserState);
+    Gs::renderState.Restore(deviceContext, savedUserState);
     m_overlayDirty = false;
 
     UpdateStateInformation(All);
@@ -424,7 +424,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   const bool isPaperSpaceUpdate = updateDoc != nullptr && updateDoc->ActiveSpace() == EoDxf::Space::PaperSpace;
   targetDC->SetBkColor(Eo::ViewBackgroundColorForSpace(isPaperSpaceUpdate));
   int savedRenderState{};
-  if ((hint & EoDb::kSafe) == EoDb::kSafe) { savedRenderState = renderState.Save(); }
+  if ((hint & EoDb::kSafe) == EoDb::kSafe) { savedRenderState = Gs::renderState.Save(); }
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor()); }
 
   EoGsRenderDeviceGdi renderDevice(targetDC);
@@ -436,7 +436,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   if (!isHandledByState) { DisplayUsingHint(sender, hint, hintObject, &renderDevice); }
 
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(0); }
-  if ((hint & EoDb::kSafe) == EoDb::kSafe) { renderState.Restore(targetDC, savedRenderState); }
+  if ((hint & EoDb::kSafe) == EoDb::kSafe) { Gs::renderState.Restore(targetDC, savedRenderState); }
   targetDC->SetBkColor(backgroundColor);
 
   if (screenDC != nullptr) {
@@ -787,22 +787,25 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
   }
   if ((item & Pen) == Pen) {
     rectangle.SetRect(16 * averageCharacterWidth, top, 22 * averageCharacterWidth, top + height);
-    swprintf_s(szBuf, 32, L"P%-4i", renderState.Color());
+    swprintf_s(szBuf, 32, L"P%-4i", Gs::renderState.Color());
     deviceContext->ExtTextOutW(
         rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
     auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    if (mainFrame != nullptr) { mainFrame->SyncColorCombo(renderState.Color()); }
+    if (mainFrame != nullptr) {
+      mainFrame->SyncColorCombo(Gs::renderState.Color());
+      mainFrame->SyncLineWeightCombo(Gs::renderState.LineWeight());
+    }
   }
   if ((item & Line) == Line) {
     rectangle.SetRect(22 * averageCharacterWidth, top, 28 * averageCharacterWidth, top + height);
-    swprintf_s(szBuf, 32, L"L%-4i", renderState.LineTypeIndex());
+    swprintf_s(szBuf, 32, L"L%-4i", Gs::renderState.LineTypeIndex());
     deviceContext->ExtTextOutW(
         rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
     auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    if (mainFrame != nullptr) { mainFrame->SyncLineTypeCombo(renderState.LineTypeIndex(), renderState.LineTypeName()); }
+    if (mainFrame != nullptr) { mainFrame->SyncLineTypeCombo(Gs::renderState.LineTypeIndex(), Gs::renderState.LineTypeName()); }
   }
   if ((item & TextHeight) == TextHeight) {
-    auto characterCellDefinition = renderState.CharacterCellDefinition();
+    auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
     rectangle.SetRect(28 * averageCharacterWidth, top, 38 * averageCharacterWidth, top + height);
     swprintf_s(szBuf, 32, L"T%-6.2f", characterCellDefinition.Height());
     deviceContext->ExtTextOutW(

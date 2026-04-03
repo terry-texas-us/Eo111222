@@ -41,7 +41,7 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
       document->OnSetupOptionsDraw();
       break;
     case ID_DRAW_MODE_POINT: {
-      auto* pointPrimitive = new EoDbPoint(renderState.Color(), renderState.PointStyle(), cursorPosition);
+      auto* pointPrimitive = new EoDbPoint(Gs::renderState.Color(), Gs::renderState.PointStyle(), cursorPosition);
       auto* group = new EoDbGroup(pointPrimitive);
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
@@ -53,8 +53,7 @@ void DrawModeState::HandleCommand(AeSysView* context, UINT command) {
         m_previousDrawCommand = context->ModeLineHighlightOp(ID_OP2);
       } else {  // Complete line
         cursorPosition = context->SnapPointToAxis(m_pts[0], cursorPosition);
-        auto* line = EoDbLine::CreateLine(m_pts[0], cursorPosition)
-                         ->WithProperties(renderState.Color(), renderState.LineTypeName());
+        auto* line = EoDbLine::CreateLine(m_pts[0], cursorPosition)->WithProperties(Gs::renderState);
         auto* group = new EoDbGroup(line);
         document->AddWorkLayerGroup(group);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);

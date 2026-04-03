@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <algorithm>
 #include <climits>
@@ -73,14 +73,14 @@ void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTr
   EoGeLine lnS;
   EoGeVector3d vEdg;
 
-  std::int16_t color = renderState.Color();
-  std::int16_t lineType = renderState.LineTypeIndex();
+  std::int16_t color = Gs::renderState.Color();
+  std::int16_t lineType = Gs::renderState.LineTypeIndex();
 
-  renderState.SetLineType(renderDevice, 1);
+  Gs::renderState.SetLineType(renderDevice, 1);
 
-  const int fillStyleIndex = renderState.PolygonIntStyleId();
+  const int fillStyleIndex = Gs::renderState.PolygonIntStyleId();
   if (fillStyleIndex < 0 || fillStyleIndex >= hatch::maxPatterns || hatch::tableOffset[fillStyleIndex] == 0) {
-    renderState.SetPen(view, renderDevice, color, lineType);
+    Gs::renderState.SetPen(view, renderDevice, color, lineType);
     return;  // Out-of-range or uninitialized hatch table entry — nothing to draw
   }
 
@@ -262,7 +262,7 @@ void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTr
     }
     transformMatrix = savedMatrix;  // exact restore — no accumulated FP error
   }
-  renderState.SetPen(view, renderDevice, color, lineType);
+  Gs::renderState.SetPen(view, renderDevice, color, lineType);
 }
 
 }  // anonymous namespace
@@ -275,11 +275,11 @@ void Polygon_Display(AeSysView* view, EoGsRenderDevice* renderDevice, EoGePoint4
 
   view->ProjectToClient(clientPoints.data(), ndcPoints);
 
-  if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Solid) {
-    renderDevice->SelectSolidBrush(pColTbl[renderState.Color()]);
+  if (Gs::renderState.PolygonIntStyle() == EoDb::PolygonStyle::Solid) {
+    renderDevice->SelectSolidBrush(pColTbl[Gs::renderState.Color()]);
     renderDevice->Polygon(clientPoints.data(), numberOfPoints);
     renderDevice->RestoreBrush();
-  } else if (renderState.PolygonIntStyle() == EoDb::PolygonStyle::Hollow) {
+  } else if (Gs::renderState.PolygonIntStyle() == EoDb::PolygonStyle::Hollow) {
     renderDevice->SelectNullBrush();
     renderDevice->Polygon(clientPoints.data(), numberOfPoints);
     renderDevice->RestoreBrush();
@@ -327,9 +327,9 @@ EoDbPolygon::EoDbPolygon()
       m_numberOfVertices{} {}
 
 EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
-  m_color = renderState.Color();
-  m_polygonStyle = renderState.PolygonIntStyle();
-  m_fillStyleIndex = renderState.PolygonIntStyleId();
+  m_color = Gs::renderState.Color();
+  m_polygonStyle = Gs::renderState.PolygonIntStyle();
+  m_fillStyleIndex = Gs::renderState.PolygonIntStyleId();
 
   m_numberOfVertices = std::uint16_t(points.GetSize());
 
@@ -382,9 +382,9 @@ EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices, EoGePoint3d* pt) {
 }
 EoDbPolygon::EoDbPolygon(
     std::uint16_t numberOfVertices, EoGePoint3d origin, EoGeVector3d vXAx, EoGeVector3d vYAx, const EoGePoint3d* ppt) {
-  m_color = renderState.Color();
-  m_polygonStyle = renderState.PolygonIntStyle();
-  m_fillStyleIndex = renderState.PolygonIntStyleId();
+  m_color = Gs::renderState.Color();
+  m_polygonStyle = Gs::renderState.PolygonIntStyle();
+  m_fillStyleIndex = Gs::renderState.PolygonIntStyleId();
   m_numberOfVertices = numberOfVertices;
   m_hatchOrigin = origin;
   m_positiveX = vXAx;
@@ -396,9 +396,9 @@ EoDbPolygon::EoDbPolygon(
 
 EoDbPolygon::EoDbPolygon(
     const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts) {
-  m_color = renderState.Color();
-  m_polygonStyle = renderState.PolygonIntStyle();
-  m_fillStyleIndex = renderState.PolygonIntStyleId();
+  m_color = Gs::renderState.Color();
+  m_polygonStyle = Gs::renderState.PolygonIntStyle();
+  m_fillStyleIndex = Gs::renderState.PolygonIntStyleId();
   m_numberOfVertices = std::uint16_t(pts.GetSize());
   m_hatchOrigin = origin;
   m_positiveX = xAxis;
@@ -469,11 +469,11 @@ EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
 void EoDbPolygon::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   std::int16_t color = LogicalColor();
 
-  renderState.SetColor(renderDevice, color);
+  Gs::renderState.SetColor(renderDevice, color);
   EoDb::PolygonStyle polygonStyle =
       sm_SpecialPolygonStyle == EoDb::PolygonStyle::Special ? m_polygonStyle : sm_SpecialPolygonStyle;
-  renderState.SetPolygonIntStyle(polygonStyle);  // hollow, solid, pattern, hatch
-  renderState.SetPolygonIntStyleId(m_fillStyleIndex);
+  Gs::renderState.SetPolygonIntStyle(polygonStyle);  // hollow, solid, pattern, hatch
+  Gs::renderState.SetPolygonIntStyleId(m_fillStyleIndex);
 
   int iPtLstsId = m_numberOfVertices;
 
@@ -706,8 +706,8 @@ bool EoDbPolygon::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoi
 void EoDbPolygon::ModifyState() {
   EoDbPrimitive::ModifyState();
 
-  m_polygonStyle = renderState.PolygonIntStyle();
-  m_fillStyleIndex = renderState.PolygonIntStyleId();
+  m_polygonStyle = Gs::renderState.PolygonIntStyle();
+  m_fillStyleIndex = Gs::renderState.PolygonIntStyleId();
 }
 bool EoDbPolygon::PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) {
   if (sm_pivotVertex >= m_numberOfVertices) { return false; }

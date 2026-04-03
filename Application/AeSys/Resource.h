@@ -620,6 +620,7 @@
 #define ID_PENCOLOR_COMBO               4764
 #define ID_PENCOLOR_MORE                4765
 #define ID_LINETYPE_COMBO               4766
+#define ID_LINEWEIGHT_COMBO             4767
 #define ID_VIEW_MODELSPACE              4811
 #define ID_VIEW_DIRECT2D                4812
 #define ID_VIEW_ALIASED                 4813

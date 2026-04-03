@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <algorithm>
 #include <climits>
@@ -75,12 +75,12 @@ bool HasFormattingCharacters(const CString& text) {
 
 EoDbText::EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text)
     : EoDbPrimitive(), m_fontDefinition{fd}, m_ReferenceSystem{referenceSystem}, m_strText{text} {
-  m_color = renderState.Color();
+  m_color = Gs::renderState.Color();
 }
 
 EoDbText::EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const std::wstring& text)
     : EoDbPrimitive(), m_fontDefinition{fd}, m_ReferenceSystem{referenceSystem}, m_strText{text.c_str()} {
-  m_color = renderState.Color();
+  m_color = Gs::renderState.Color();
 }
 
 EoDbText::EoDbText(const EoDbText& other) {
@@ -132,13 +132,13 @@ void EoDbText::ConvertFormattingCharacters() {
 
 void EoDbText::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   std::int16_t color = LogicalColor();
-  renderState.SetColor(renderDevice, color);
+  Gs::renderState.SetColor(renderDevice, color);
 
-  std::int16_t lineTypeIndex = renderState.LineTypeIndex();
-  renderState.SetLineType(renderDevice, 1);
+  std::int16_t lineTypeIndex = Gs::renderState.LineTypeIndex();
+  Gs::renderState.SetLineType(renderDevice, 1);
 
   DisplayText(view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_strText);
-  renderState.SetLineType(renderDevice, lineTypeIndex);
+  Gs::renderState.SetLineType(renderDevice, lineTypeIndex);
 }
 
 void EoDbText::ExportToDxf(EoDxfInterface* writer) const {
@@ -350,15 +350,15 @@ bool EoDbText::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) 
 void EoDbText::ModifyState() {
   EoDbPrimitive::ModifyState();
 
-  m_fontDefinition = renderState.FontDefinition();
-  auto characterCellDefinition = renderState.CharacterCellDefinition();
+  m_fontDefinition = Gs::renderState.FontDefinition();
+  auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
   m_ReferenceSystem.Rescale(characterCellDefinition);
 }
 
 void EoDbText::ModifyNotes(const EoDbFontDefinition& fontDefinition,
     const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
   if (attributes == TM_TEXT_ALL) {
-    m_color = renderState.Color();
+    m_color = Gs::renderState.Color();
     m_fontDefinition = fontDefinition;
     m_ReferenceSystem.Rescale(characterCellDefinition);
   } else if (attributes == TM_TEXT_FONT) {

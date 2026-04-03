@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -32,10 +32,10 @@ BOOL EoDlgModeLetter::OnInitDialog() {
   return TRUE;
 }
 void EoDlgModeLetter::OnOK() {
-  auto characterCellDefinition = renderState.CharacterCellDefinition();
+  auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
   EoGeReferenceSystem ReferenceSystem(m_Point, characterCellDefinition);
 
-  const auto& fontDefinition = renderState.FontDefinition();
+  const auto& fontDefinition = Gs::renderState.FontDefinition();
 
   if (m_TextEditControl.GetWindowTextLengthW() != 0) {
     CString Text;

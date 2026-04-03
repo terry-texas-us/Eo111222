@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <climits>
 #include <cmath>
@@ -93,7 +93,7 @@ void EoDbLine::CutAt2Points(
 void EoDbLine::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   EoGeLine line{};
   if (m_line.CutAtPoint(point, line) != 0) {
-    group->AddTail(EoDbLine::CreateLine(line)->WithProperties(m_color, m_lineType));
+    group->AddTail(EoDbLine::CreateLine(line)->WithProperties(m_color, m_lineType, m_lineWeight));
   }
 }
 
@@ -102,7 +102,7 @@ void EoDbLine::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   std::int16_t lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
-  renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
+  Gs::renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
 
   polyline::BeginLineStrip();
   polyline::SetVertex(m_line.begin);

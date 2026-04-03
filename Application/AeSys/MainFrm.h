@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "EoDxfLineWeights.h"
 #include "EoMfOutputDockablePane.h"
 #include "EoMfPropertiesDockablePane.h"
 #include "EoMfStatusBar.h"
@@ -28,7 +29,7 @@ class CMainFrame : public CMDIFrameWndEx {
  protected:  // control bar embedded members
   CMFCMenuBar m_menuBar;
   CMFCToolBar m_standardToolBar;
-  CMFCToolBar m_renderPropertiesToolBar;  // Properties toolbar (Color, future LineStyle/LineWeight)
+  CMFCToolBar m_renderPropertiesToolBar;  // Properties toolbar (Color, LineType, LineWeight)
   EoMfStatusBar m_statusBar;
   EoMfOutputDockablePane m_outputPane;
   EoMfPropertiesDockablePane m_propertiesPane;
@@ -45,6 +46,7 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg void OnViewFullScreen();
   afx_msg void OnUpdatePenColorCombo(CCmdUI* pCmdUI);
   afx_msg void OnUpdateLineTypeCombo(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateLineWeightCombo(CCmdUI* pCmdUI);
   afx_msg LRESULT OnToolbarContextMenu(WPARAM, LPARAM);
 
   afx_msg LRESULT OnGetTabToolTip(WPARAM wp, LPARAM lp);
@@ -82,4 +84,7 @@ class CMainFrame : public CMDIFrameWndEx {
 
   /// @brief Synchronizes the toolbar line-type combo box with the current line type.
   void SyncLineTypeCombo(std::int16_t lineTypeIndex, const std::wstring& lineTypeName);
+
+  /// @brief Synchronizes the toolbar line-weight combo box with the current line weight.
+  void SyncLineWeightCombo(EoDxfLineWeights::LineWeight lineWeight);
 };

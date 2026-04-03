@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include <corecrt.h>
 #include <cstdint>
@@ -115,7 +115,8 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
     }
   }
   if (app.IsClipboardDataImage()) {
-    int savedRenderState = renderState.Save();
+    auto* originalContext = view->GetDC();
+    int savedRenderState = Gs::renderState.Save();
 
     auto enhancedMetafileContext = ::CreateEnhMetaFileW(0, 0, 0, 0);
     CDC* emfDC = CDC::FromHandle(enhancedMetafileContext);
@@ -124,7 +125,8 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
     auto enhancedMetafileHandle = ::CloseEnhMetaFile(enhancedMetafileContext);
     ::SetClipboardData(CF_ENHMETAFILE, enhancedMetafileHandle);
 
-    renderState.Restore(CDC::FromHandle(enhancedMetafileContext), savedRenderState);
+    Gs::renderState.Restore(originalContext, savedRenderState);
+    view->ReleaseDC(originalContext);
   }
   if (app.IsClipboardDataGroups()) {
     EoGePoint3d minPoint(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
