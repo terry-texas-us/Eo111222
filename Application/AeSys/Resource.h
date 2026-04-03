@@ -5,7 +5,6 @@
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
 #define IDR_MAINFRAME                   101
-#define IDR_MAINFRAME_256               102
 #define IDR_PEGTYPE                     103
 #define IDR_TRATYPE                     104
 #define IDR_MAINFRAME_32                108
@@ -95,8 +94,6 @@
 #define IDR_NODALR_MODE                 279
 #define IDR_LPD_MODE                    280
 #define IDD_LAYER_PROPERTIES_MANAGER    286
-#define IDB_LAYER_FILTERS               287
-#define IDB_LAYER_STATES                288
 #define IDB_LAYER_STATES_HC             289
 #define IDD_ACTIVE_VIEW_KEYPLAN         338
 #define IDD_LINE_TYPES_DIALOG           342

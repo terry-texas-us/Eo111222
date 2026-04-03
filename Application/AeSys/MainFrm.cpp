@@ -289,9 +289,6 @@ LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
   ATLTRACE2(traceGeneral, 3, L"CMainFrame::OnToolbarReset(%i, %i)\n", toolbarResourceId, lparam);
 
   switch (toolbarResourceId) {
-    case IDR_MAINFRAME:
-    case IDR_MAINFRAME_256:
-      break;
     case IDR_RENDER_PROPERTIES: {
       m_renderPropertiesToolBar.ReplaceButton(ID_PENCOLOR_COMBO, EoCtrlColorComboBox(), FALSE);
       m_renderPropertiesToolBar.ReplaceButton(ID_LINETYPE_COMBO, EoCtrlLineTypeComboBox(), FALSE);

@@ -20,8 +20,7 @@
 IMPLEMENT_SERIAL(EoCtrlLineTypeComboBox, CMFCToolBarComboBoxButton, VERSIONABLE_SCHEMA | 1)
 
 EoCtrlLineTypeComboBox::EoCtrlLineTypeComboBox()
-    : CMFCToolBarComboBoxButton(
-          ID_LINETYPE_COMBO, -1, CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS, 250) {
+    : CMFCToolBarComboBoxButton(ID_LINETYPE_COMBO, -1, CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS, 250) {
   PopulateItems();
 }
 
@@ -45,8 +44,7 @@ void EoCtrlLineTypeComboBox::PopulateItems() {
   if (GetCount() > 2) { SelectItem(2); }
 }
 
-void EoCtrlLineTypeComboBox::SetCurrentLineType(
-    std::int16_t lineTypeIndex, const std::wstring& lineTypeName) {
+void EoCtrlLineTypeComboBox::SetCurrentLineType(std::int16_t lineTypeIndex, const std::wstring& lineTypeName) {
   // Try to find by name first
   if (!lineTypeName.empty()) {
     for (int i = 0; i < GetCount(); i++) {
@@ -176,8 +174,7 @@ void EoCtrlLineTypeComboBox::Serialize(CArchive& ar) {
 
 CComboBox* EoCtrlLineTypeComboBox::CreateCombo(CWnd* parentWindow, const CRect& rect) {
   auto* combo = new EoCtrlLineTypeOwnerDrawCombo;
-  if (!combo->Create(
-          m_dwStyle | WS_CHILD | WS_VISIBLE | WS_VSCROLL, rect, parentWindow, m_nID)) {
+  if (!combo->Create(m_dwStyle | WS_CHILD | WS_VISIBLE | WS_VSCROLL, rect, parentWindow, m_nID)) {
     delete combo;
     return nullptr;
   }
@@ -238,8 +235,7 @@ void EoCtrlLineTypeComboBox::OnSelectionChanged() {
               selectedLineType = existingLineType;
             }
           }
-          renderState.SetLineType(
-              static_cast<CDC*>(nullptr), static_cast<std::int16_t>(selectedLineType->Index()));
+          renderState.SetLineType(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(selectedLineType->Index()));
           renderState.SetLineTypeName(std::wstring(selectedLineType->Name()));
           auto* activeView = AeSysView::GetActiveView();
           if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Line); }
@@ -267,11 +263,11 @@ void EoCtrlLineTypeComboBox::OnSelectionChanged() {
     return;
   }
 
-  // Named line type — data is EoDbLineType*
+  // Named line type — data is EoDbLineType* (only valid while a document is open)
+  if (AeSysDoc::GetDoc() == nullptr) { return; }
   auto* lineType = reinterpret_cast<EoDbLineType*>(data);
   if (lineType != nullptr) {
-    renderState.SetLineType(
-        static_cast<CDC*>(nullptr), static_cast<std::int16_t>(lineType->Index()));
+    renderState.SetLineType(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(lineType->Index()));
     renderState.SetLineTypeName(std::wstring(lineType->Name()));
     auto* activeView = AeSysView::GetActiveView();
     if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Line); }
@@ -329,18 +325,15 @@ void EoCtrlLineTypeComboBox::DrawDashPreview(
   deviceContext->SelectObject(oldPen);
 }
 
-void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect,
-    CMFCToolBarImages* images, BOOL isHorz, BOOL isCustomizeMode, BOOL isHighlighted,
-    BOOL drawBorder, BOOL grayDisabledButtons) {
+void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz,
+    BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder, BOOL grayDisabledButtons) {
   if (m_pWndCombo == nullptr || m_pWndCombo->GetSafeHwnd() == nullptr || !isHorz) {
     CMFCToolBarButton::OnDraw(
-        deviceContext, rect, images, isHorz, isCustomizeMode, isHighlighted, drawBorder,
-        grayDisabledButtons);
+        deviceContext, rect, images, isHorz, isCustomizeMode, isHighlighted, drawBorder, grayDisabledButtons);
     return;
   }
 
-  BOOL isDisabled =
-      (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
+  BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
 
   if (m_bFlat) {
     if (m_bIsHotEdit) { isHighlighted = TRUE; }
@@ -358,8 +351,7 @@ void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect,
 
     if (rectButton.left > rectCombo.left + 1) {
       CMFCVisualManager::GetInstance()->OnDrawComboDropButton(
-          deviceContext, rectButton, isDisabled, m_pWndCombo->GetDroppedState(), isHighlighted,
-          this);
+          deviceContext, rectButton, isDisabled, m_pWndCombo->GetDroppedState(), isHighlighted, this);
     }
 
     int curSel = CMFCToolBarComboBoxButton::GetCurSel();
@@ -385,16 +377,16 @@ void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect,
         }
         CRect previewRect(rectContent.left + 2, rectContent.top, previewRight, rectContent.bottom);
 
-        // Determine the line type pointer
+        // Determine the line type pointer — only dereference when a document is open
+        // (item data stores raw EoDbLineType* that becomes stale when the document closes)
         const EoDbLineType* lineType = nullptr;
         if (itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYLAYER) &&
-            itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK)) {
+            itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK) && AeSysDoc::GetDoc() != nullptr) {
           lineType = reinterpret_cast<const EoDbLineType*>(itemData);
         }
         DrawDashPreview(deviceContext, previewRect, lineType, schemeColors.menuText);
 
-        CRect textRect(previewRight + 4, rectContent.top, rectContent.right - 1,
-            rectContent.bottom);
+        CRect textRect(previewRight + 4, rectContent.top, rectContent.right - 1, rectContent.bottom);
 
         CFont* oldFont = nullptr;
         if (m_pWndCombo != nullptr) {
@@ -407,8 +399,7 @@ void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect,
         if (oldFont != nullptr) { deviceContext->SelectObject(oldFont); }
       } else {
         // "Load Line Types..." — text only
-        CRect textRect(rectContent.left + 3, rectContent.top, rectContent.right - 1,
-            rectContent.bottom);
+        CRect textRect(rectContent.left + 3, rectContent.top, rectContent.right - 1, rectContent.bottom);
         CFont* oldFont = nullptr;
         if (m_pWndCombo != nullptr) {
           CFont* comboFont = m_pWndCombo->GetFont();
@@ -444,8 +435,7 @@ HBRUSH EoCtrlLineTypeOwnerDrawCombo::OnCtlColor(CDC* deviceContext, CWnd* contro
   return CComboBox::OnCtlColor(deviceContext, control, ctlColor);
 }
 
-void EoCtrlLineTypeOwnerDrawCombo::OnNcCalcSize(
-    BOOL /*calcValidRects*/, NCCALCSIZE_PARAMS* /*params*/) {
+void EoCtrlLineTypeOwnerDrawCombo::OnNcCalcSize(BOOL /*calcValidRects*/, NCCALCSIZE_PARAMS* /*params*/) {
   // Forces entire window to client area for custom flat painting.
 }
 
@@ -484,8 +474,7 @@ void EoCtrlLineTypeOwnerDrawCombo::OnNcPaint() {
 
 BOOL EoCtrlLineTypeOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }
 
-void EoCtrlLineTypeOwnerDrawCombo::DrawDropdownArrow(
-    CDC* deviceContext, const CRect& rect, COLORREF arrowColor) {
+void EoCtrlLineTypeOwnerDrawCombo::DrawDropdownArrow(CDC* deviceContext, const CRect& rect, COLORREF arrowColor) {
   UINT dpi = ::GetDpiForWindow(m_hWnd);
   if (dpi == 0) { dpi = 96; }
   int arrowWidth = ::MulDiv(7, dpi, 96) | 1;
@@ -554,9 +543,11 @@ void EoCtrlLineTypeOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
     if (previewRight > itemRect.right - 40) { previewRight = itemRect.right - 40; }
     CRect previewRect(itemRect.left + 2, itemRect.top, previewRight, itemRect.bottom);
 
+    // Only dereference EoDbLineType* when a document is open — item data stores
+    // raw pointers that become stale when the document closes.
     const EoDbLineType* lineType = nullptr;
     if (itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYLAYER) &&
-        itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK)) {
+        itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK) && AeSysDoc::GetDoc() != nullptr) {
       lineType = reinterpret_cast<const EoDbLineType*>(itemData);
     }
 
