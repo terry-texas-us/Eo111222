@@ -256,6 +256,11 @@ void AeSysDoc::SetCommonTableEntries() {
     m_vportTable.emplace_back();  // EoDbVPortTableEntry defaults to *ACTIVE with sensible values
   }
 
+  // Create the default "Standard" text style if none exists
+  if (m_textStyleTable.empty()) {
+    m_textStyleTable.emplace_back();  // EoDbTextStyle defaults to "Standard" with DXF-compatible values
+  }
+
   auto applicationPath = App::PathFromCommandLine();
 
   // @todo Peg uses index for line types, need to map names to indexes (index 0 to 41 have been hard coded in Peg).
