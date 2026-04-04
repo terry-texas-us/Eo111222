@@ -10,6 +10,8 @@
 #include "EoCtrlColorComboBox.h"
 #include "EoCtrlLineTypeComboBox.h"
 #include "EoCtrlLineWeightComboBox.h"
+#include "EoCtrlTextStyleComboBox.h"
+#include "EoDlgTextStyleManager.h"
 #include "EoMfVisualManager.h"
 #include "MainFrm.h"
 #include "Resource.h"
@@ -74,6 +76,7 @@ ON_COMMAND(ID_MDI_TABBED, OnMdiTabbed)
 ON_COMMAND(ID_VIEW_CUSTOMIZE, &CMainFrame::OnViewCustomize)
 ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullScreen)
 ON_COMMAND(ID_WINDOW_MANAGER, &CMainFrame::OnWindowManager)
+ON_COMMAND(ID_TEXTSTYLE_BUTTON, &CMainFrame::OnTextStyleManager)
 #pragma warning(push)
 #pragma warning(disable : 4191)
 ON_REGISTERED_MESSAGE(AFX_WM_TOOLBARMENU, OnToolbarContextMenu)
@@ -87,6 +90,7 @@ ON_UPDATE_COMMAND_UI(ID_MDI_TABBED, OnUpdateMdiTabbed)
 ON_UPDATE_COMMAND_UI(ID_PENCOLOR_COMBO, OnUpdatePenColorCombo)
 ON_UPDATE_COMMAND_UI(ID_LINETYPE_COMBO, OnUpdateLineTypeCombo)
 ON_UPDATE_COMMAND_UI(ID_LINEWEIGHT_COMBO, OnUpdateLineWeightCombo)
+ON_UPDATE_COMMAND_UI(ID_TEXTSTYLE_COMBO, OnUpdateTextStyleCombo)
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
@@ -134,7 +138,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   }
   const UINT standardToolBarId = m_useHighDpiToolbar ? IDR_MAINFRAME_32 : IDR_MAINFRAME_24;
 
-  if (!m_standardToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
+  // Use IDR_MAINFRAME_24 as a stable pane ID regardless of which DPI-specific
+  // resource provides the toolbar bitmap. MFC's CDockingManager persists pane IDs
+  // in the registry; a DPI-dependent ID causes the docking state blob to become
+  // stale when DPI changes between sessions, hiding the toolbar on next launch.
+  if (!m_standardToolBar.CreateEx(this, TBSTYLE_FLAT, Style, CRect(1, 1, 1, 1), IDR_MAINFRAME_24) ||
       !m_standardToolBar.LoadToolBar(standardToolBarId, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create toolbar\n");
     return -1;
@@ -156,6 +164,26 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
     m_renderPropertiesToolBar.SetSizes(CSize(32, 32), CSize(24, 24));
   }
   m_renderPropertiesToolBar.SetWindowTextW(L"Properties");
+
+  if (!m_stylesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
+      !m_stylesToolBar.LoadToolBar(IDR_STYLES, 0, 0, TRUE)) {
+    ATLTRACE2(traceGeneral, 3, L"Failed to create styles toolbar\n");
+    return -1;
+  }
+  // Match cell height to the standard toolbar
+  if (m_useHighDpiToolbar) {
+    m_stylesToolBar.SetSizes(CSize(40, 40), CSize(32, 32));
+  } else {
+    m_stylesToolBar.SetSizes(CSize(32, 32), CSize(24, 24));
+  }
+  m_stylesToolBar.SetWindowTextW(L"Styles");
+
+  // In dark theme, adapt styles toolbar button glyph from black to light gray for visibility
+  if (Eo::activeColorScheme == Eo::ColorScheme::Dark) {
+    if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
+      lockedImages->AdaptColors(RGB(0, 0, 0), RGB(200, 200, 200));
+    }
+  }
 
   InitUserToolbars(nullptr, firstUserToolBarId, lastUserToolBarId);
 
@@ -188,6 +216,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_menuBar.EnableDocking(CBRS_ALIGN_ANY);
   m_standardToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_renderPropertiesToolBar.EnableDocking(CBRS_ALIGN_ANY);
+  m_stylesToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_propertiesPane.EnableDocking(CBRS_ALIGN_ANY);
   m_outputPane.EnableDocking(CBRS_ALIGN_ANY);
 
@@ -196,6 +225,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   DockPane(&m_menuBar);
   DockPane(&m_renderPropertiesToolBar);
   DockPaneLeftOf(&m_standardToolBar, &m_renderPropertiesToolBar);
+  DockPane(&m_stylesToolBar);
   DockPane(&m_propertiesPane);
   DockPane(&m_outputPane);
 
@@ -295,6 +325,10 @@ LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
       m_renderPropertiesToolBar.ReplaceButton(ID_PENCOLOR_COMBO, EoCtrlColorComboBox(), FALSE);
       m_renderPropertiesToolBar.ReplaceButton(ID_LINETYPE_COMBO, EoCtrlLineTypeComboBox(), FALSE);
       m_renderPropertiesToolBar.ReplaceButton(ID_LINEWEIGHT_COMBO, EoCtrlLineWeightComboBox(), FALSE);
+      break;
+    }
+    case IDR_STYLES: {
+      m_stylesToolBar.ReplaceButton(ID_TEXTSTYLE_COMBO, EoCtrlTextStyleComboBox(), FALSE);
       break;
     }
     case IDR_PROPERTIES:
@@ -453,6 +487,21 @@ void CMainFrame::SetPaneBackgroundColor(int index, COLORREF backgroundColor) {
   m_statusBar.SetPaneBackgroundColor(index, backgroundColor);
 }
 void CMainFrame::OnViewFullScreen() { ShowFullScreen(); }
+void CMainFrame::EnsureToolbarsVisible() {
+  // Safety net: after LoadMDIState() restores docking state from the registry,
+  // verify that all application toolbars are visible. A stale or corrupted blob
+  // (e.g. from a DPI change or structural toolbar change) can leave toolbars hidden.
+  CMFCToolBar* toolbars[] = {&m_standardToolBar, &m_renderPropertiesToolBar, &m_stylesToolBar};
+  for (auto* toolbar : toolbars) {
+    if (!toolbar->IsVisible()) {
+      toolbar->ShowPane(TRUE, FALSE, TRUE);
+      CString name;
+      toolbar->GetWindowText(name);
+      ATLTRACE2(traceGeneral, 1, L"EnsureToolbarsVisible: forced toolbar '%s' visible\n",
+          static_cast<LPCWSTR>(name));
+    }
+  }
+}
 void CMainFrame::ApplyColorScheme() {
   auto* visualManager = dynamic_cast<EoMfVisualManager*>(CMFCVisualManager::GetInstance());
   if (visualManager != nullptr) { visualManager->RefreshColors(); }
@@ -483,6 +532,15 @@ void CMainFrame::ApplyColorScheme() {
 
   m_propertiesPane.ApplyColorScheme();
   m_outputPane.ApplyColorScheme();
+
+  // Reload and adapt styles toolbar bitmap for the active color scheme
+  m_stylesToolBar.CleanUpLockedImages();
+  m_stylesToolBar.LoadBitmap(IDR_STYLES, 0U, 0U, TRUE, 0U, 0U);
+  if (Eo::activeColorScheme == Eo::ColorScheme::Dark) {
+    if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
+      lockedImages->AdaptColors(RGB(0, 0, 0), RGB(200, 200, 200));
+    }
+  }
 
   // Swap the toolbar bitmap for the active color scheme.
   // LoadToolBar(id, ..., bLocked=TRUE) stores the initial light-scheme bitmap in
@@ -545,6 +603,38 @@ void CMainFrame::SyncLineWeightCombo(EoDxfLineWeights::LineWeight lineWeight) {
       auto* button = DYNAMIC_DOWNCAST(EoCtrlLineWeightComboBox, buttonsList.GetNext(pos));
       if (button != nullptr) {
         button->SetCurrentLineWeight(lineWeight);
+        break;
+      }
+    }
+  }
+}
+
+void CMainFrame::OnUpdateTextStyleCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
+
+void CMainFrame::SyncTextStyleCombo(const std::wstring& textStyleName) {
+  CObList buttonsList;
+  if (CMFCToolBar::GetCommandButtons(ID_TEXTSTYLE_COMBO, buttonsList) > 0) {
+    for (auto pos = buttonsList.GetHeadPosition(); pos != nullptr;) {
+      auto* button = DYNAMIC_DOWNCAST(EoCtrlTextStyleComboBox, buttonsList.GetNext(pos));
+      if (button != nullptr) {
+        button->SetCurrentTextStyle(textStyleName);
+        break;
+      }
+    }
+  }
+}
+
+void CMainFrame::OnTextStyleManager() {
+  EoDlgTextStyleManager dialog(this);
+  dialog.DoModal();
+
+  // After the dialog closes, refresh the text style combo in case styles changed
+  CObList buttonsList;
+  if (CMFCToolBar::GetCommandButtons(ID_TEXTSTYLE_COMBO, buttonsList) > 0) {
+    for (auto pos = buttonsList.GetHeadPosition(); pos != nullptr;) {
+      auto* button = DYNAMIC_DOWNCAST(EoCtrlTextStyleComboBox, buttonsList.GetNext(pos));
+      if (button != nullptr) {
+        button->PopulateItems();
         break;
       }
     }

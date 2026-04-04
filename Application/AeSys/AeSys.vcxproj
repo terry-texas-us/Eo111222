@@ -170,6 +170,8 @@
     <!-- Creates the PCH -->
     <ClCompile Include="EoCtrlColorComboBox.cpp" />
     <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
+    <ClCompile Include="EoCtrlTextStyleComboBox.cpp" />
+    <ClCompile Include="EoDlgTextStyleManager.cpp" />
     <ClCompile Include="EoMfStatusBar.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -341,6 +343,7 @@
     <ClInclude Include="EoCtrlColorsButton.h" />
     <ClInclude Include="EoCtrlLineTypeComboBox.h" />
     <ClInclude Include="EoCtrlLineWeightComboBox.h" />
+    <ClInclude Include="EoCtrlTextStyleComboBox.h" />
     <ClInclude Include="EoDb.h" />
     <ClInclude Include="EoDbAppIdEntry.h" />
     <ClInclude Include="EoDbAttrib.h" />
@@ -409,6 +412,7 @@
     <ClInclude Include="EoDlgSetupLineType.h" />
     <ClInclude Include="EoDlgSetupNote.h" />
     <ClInclude Include="EoDlgSetupPointStyle.h" />
+    <ClInclude Include="EoDlgTextStyleManager.h" />
     <ClInclude Include="EoDlgTrapFilter.h" />
     <ClInclude Include="EoDlgTrapModify.h" />
     <ClInclude Include="EoDlgViewParameters.h" />
@@ -499,9 +503,12 @@
     <Image Include="res\Toolbar Bitmaps\menuimages_hc.bmp" />
     <Image Include="res\Toolbar Bitmaps\properties.bmp" />
     <Image Include="res\Toolbar Bitmaps\properties_hc.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Styles.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar-dark-24.png" />
     <Image Include="res\Toolbar Bitmaps\Toolbar-light.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar256.bmp" />
+    <Image Include="res\Toolbar Bitmaps\twodoctest.png" />
     <Image Include="res\Toolbar Bitmaps\UserImages.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

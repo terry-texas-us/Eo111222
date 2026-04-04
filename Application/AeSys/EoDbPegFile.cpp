@@ -30,6 +30,7 @@
 #include "EoDbPrimitive.h"
 #include "EoDbSpline.h"
 #include "EoDbText.h"
+#include "EoDbTextStyle.h"
 #include "EoDbVPortTableEntry.h"
 #include "EoDbViewport.h"
 #include "EoGeLine.h"
@@ -167,6 +168,7 @@ void EoDbPegFile::ReadTablesSection(AeSysDoc* document, EoDb::PegFileVersion fil
   ReadViewportTable(document, fileVersion);
   ReadLinetypesTable(document, fileVersion);
   ReadLayerTable(document, fileVersion);
+  if (fileVersion == EoDb::PegFileVersion::AE2026) { ReadTextStyleTable(document, fileVersion); }
 
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.");
@@ -641,6 +643,7 @@ void EoDbPegFile::WriteTablesSection(AeSysDoc* document, EoDb::PegFileVersion fi
   WriteVPortTable(document, fileVersion);
   WriteLinetypeTable(document, fileVersion);
   WriteLayerTable(document, fileVersion);
+  if (fileVersion == EoDb::PegFileVersion::AE2026) { WriteTextStyleTable(document, fileVersion); }
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
@@ -734,6 +737,71 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileV
     EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
     CFile::Seek(static_cast<LONGLONG>(currentFilePosition), CFile::begin);
   }
+}
+
+/**
+ * Reads the text style table from the PEG V2 file into the document's text style table.
+ * @param document Pointer to the AeSysDoc object where the text style table will be populated.
+ * @throws std::runtime_error if the expected sentinel or end-of-table sentinel is not found.
+ */
+void EoDbPegFile::ReadTextStyleTable(AeSysDoc* document, [[maybe_unused]] EoDb::PegFileVersion fileVersion) {
+  if (EoDb::ReadUInt16(*this) != EoDb::kTextStyleTable) {
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kTextStyleTable.");
+  }
+  const auto count = EoDb::ReadUInt16(*this);
+  if (count > 0) {
+    auto& textStyleTable = document->TextStyleTable();
+    textStyleTable.clear();
+    for (std::uint16_t n = 0; n < count; n++) {
+      EoDbTextStyle style;
+      CString name;
+      EoDb::Read(*this, name);
+      style.m_name = name.GetString();
+      style.m_height = EoDb::ReadDouble(*this);
+      style.m_widthFactor = EoDb::ReadDouble(*this);
+      style.m_obliqueAngle = EoDb::ReadDouble(*this);
+      CString font;
+      EoDb::Read(*this, font);
+      style.m_font = font.GetString();
+      style.m_flagValues = EoDb::ReadInt16(*this);
+      style.m_handle = EoDb::ReadUInt64(*this);
+      style.m_ownerHandle = EoDb::ReadUInt64(*this);
+      textStyleTable.push_back(std::move(style));
+    }
+  }
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable.");
+  }
+}
+
+/**
+ * Writes the text style table to the PEG V2 file from the document's text style table.
+ * Shape file entries (flag 0x01) are excluded. All remaining entries are written with name,
+ * height, widthFactor, obliqueAngle, font, flagValues, handle, and ownerHandle.
+ * @param document Pointer to the AeSysDoc that owns the text style table.
+ */
+void EoDbPegFile::WriteTextStyleTable(AeSysDoc* document, [[maybe_unused]] EoDb::PegFileVersion fileVersion) {
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kTextStyleTable));
+
+  const auto& textStyleTable = document->TextStyleTable();
+  std::uint16_t count = 0;
+  for (const auto& style : textStyleTable) {
+    if (!(style.m_flagValues & 0x01)) { ++count; }
+  }
+  EoDb::WriteUInt16(*this, count);
+
+  for (const auto& style : textStyleTable) {
+    if (style.m_flagValues & 0x01) { continue; }
+    EoDb::Write(*this, CString(style.m_name.c_str()));
+    EoDb::WriteDouble(*this, style.m_height);
+    EoDb::WriteDouble(*this, style.m_widthFactor);
+    EoDb::WriteDouble(*this, style.m_obliqueAngle);
+    EoDb::Write(*this, CString(style.m_font.c_str()));
+    EoDb::WriteInt16(*this, style.m_flagValues);
+    EoDb::WriteUInt64(*this, style.m_handle);
+    EoDb::WriteUInt64(*this, style.m_ownerHandle);
+  }
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 }
 
 void EoDbPegFile::WriteBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {

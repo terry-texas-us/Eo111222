@@ -97,6 +97,8 @@
 #define IDD_ACTIVE_VIEW_KEYPLAN         338
 #define IDD_LINE_TYPES_DIALOG           342
 #define IDD_ATTRIBUTE_PROMPT            343
+#define IDD_TEXT_STYLE_MANAGER          344
+#define IDR_STYLES                      345
 #define IDC_ARCHITECTURAL               1000
 #define IDC_ENGINEERING                 1001
 #define IDC_FEET                        1002
@@ -313,6 +315,7 @@
 #define IDC_ATTRIB_TAG                  1461
 #define IDC_ATTRIB_PROMPT               1462
 #define IDC_ATTRIB_VALUE                1463
+#define IDC_TEXTSTYLE_LIST              1464
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -619,6 +622,8 @@
 #define ID_PENCOLOR_MORE                4765
 #define ID_LINETYPE_COMBO               4766
 #define ID_LINEWEIGHT_COMBO             4767
+#define ID_TEXTSTYLE_COMBO              4768
+#define ID_TEXTSTYLE_BUTTON             4769
 #define ID_VIEW_MODELSPACE              4811
 #define ID_VIEW_DIRECT2D                4812
 #define ID_VIEW_ALIASED                 4813
@@ -801,9 +806,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        345
+#define _APS_NEXT_RESOURCE_VALUE        346
 #define _APS_NEXT_COMMAND_VALUE         4906
-#define _APS_NEXT_CONTROL_VALUE         1460
+#define _APS_NEXT_CONTROL_VALUE         1465
 #define _APS_NEXT_SYMED_VALUE           500
 #endif
 #endif

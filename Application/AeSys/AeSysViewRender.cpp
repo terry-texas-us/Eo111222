@@ -757,6 +757,10 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     swprintf_s(szBuf, 32, L"T%-6.2f", characterCellDefinition.Height());
     deviceContext->ExtTextOutW(
         rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
+    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+    if (mainFrame != nullptr) {
+      mainFrame->SyncTextStyleCombo(Gs::renderState.TextStyleName());
+    }
   }
   if ((item & Scale) == Scale) {
     rectangle.SetRect(38 * averageCharacterWidth, top, 48 * averageCharacterWidth, top + height);

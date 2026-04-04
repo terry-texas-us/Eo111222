@@ -206,6 +206,9 @@ BOOL AeSys::InitInstance() {
   } else {
     if (!ProcessShellCommand(commandLineInfo)) { return FALSE; }
   }
+  // Safety net: ensure all toolbars are visible after restoring docking state.
+  // A stale registry blob (DPI change, structural change) can leave toolbars hidden.
+  mainFrame->EnsureToolbarsVisible();
   m_MainFrameMenuHandle = LoadMenuW(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME));
 
   if (!RegisterKeyPlanWindowClass(AeSys::GetInstance())) { return FALSE; }
@@ -260,9 +263,10 @@ int AeSys::ExitInstance() {
 void AeSys::PreLoadState() {
   GetContextMenuManager()->AddMenu(L"My menu", IDR_CONTEXT_MENU);
 
-  // One-time migration (v3): line-type combo added to Properties toolbar.
-  // Clear stale workspace state so MFC resets all toolbars from resource definitions.
-  constexpr int kToolbarLayoutVersion = 3;
+  // One-time migration (v4): standard toolbar pane ID stabilized to IDR_MAINFRAME_24.
+  // Prior sessions may have saved a DPI-dependent pane ID (IDR_MAINFRAME_32 vs _24)
+  // that hides the toolbar on launch when DPI differs. Clear stale workspace state.
+  constexpr int kToolbarLayoutVersion = 4;
   if (GetProfileIntW(L"Migrations", L"ToolbarLayout", 0) < kToolbarLayoutVersion) {
     CleanState();
     WriteProfileInt(L"Migrations", L"ToolbarLayout", kToolbarLayoutVersion);

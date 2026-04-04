@@ -145,6 +145,8 @@
     <ClCompile Include="EoMfStatusBar.cpp" />
     <ClCompile Include="EoCtrlLineTypeComboBox.cpp" />
     <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
+    <ClCompile Include="EoCtrlTextStyleComboBox.cpp" />
+    <ClCompile Include="EoDlgTextStyleManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -269,6 +271,8 @@
     <ClInclude Include="EoCtrlLineTypeComboBox.h" />
     <ClInclude Include="EoMfStatusBar.h" />
     <ClInclude Include="EoCtrlLineWeightComboBox.h" />
+    <ClInclude Include="EoCtrlTextStyleComboBox.h" />
+    <ClInclude Include="EoDlgTextStyleManager.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />
@@ -492,5 +496,8 @@
     <Image Include="res\Toolbar Bitmaps\Toolbar.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar256.bmp" />
     <Image Include="res\Toolbar Bitmaps\UserImages.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Styles.bmp" />
+    <Image Include="res\Toolbar Bitmaps\twodoctest.png" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar-dark-24.png" />
   </ItemGroup>
 </Project>

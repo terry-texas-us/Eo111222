@@ -84,6 +84,7 @@ enum Sentinels {
   kViewPortTable = 0x0201,
   kLinetypeTable = 0x0202,
   kLayerTable = 0x0203,
+  kTextStyleTable = 0x0204,
   kEndOfTable = 0x02ff
 };
 enum class PolygonStyle { Hollow, Solid, Pattern, Hatch, Special = -1 };

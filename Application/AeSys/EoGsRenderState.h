@@ -22,6 +22,7 @@ class EoGsRenderState {
   std::int16_t m_PolygonInteriorStyleIndex{};
   double m_lineTypeScale{1.0};
   EoDxfLineWeights::LineWeight m_lineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
+  std::wstring m_textStyleName{L"Standard"};
 
  public:
   EoGsRenderState() = default;
@@ -78,6 +79,9 @@ class EoGsRenderState {
 
   void SetLineWeight(EoDxfLineWeights::LineWeight lineWeight) noexcept { m_lineWeight = lineWeight; }
   [[nodiscard]] EoDxfLineWeights::LineWeight LineWeight() const noexcept { return m_lineWeight; }
+
+  void SetTextStyleName(std::wstring name) { m_textStyleName = std::move(name); }
+  [[nodiscard]] const std::wstring& TextStyleName() const { return m_textStyleName; }
 
   void SetCharacterCellDefinition(EoDbCharacterCellDefinition& characterCellDefinition) {
     m_characterCellDefinition = characterCellDefinition;

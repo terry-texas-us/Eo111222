@@ -30,6 +30,7 @@ class CMainFrame : public CMDIFrameWndEx {
   CMFCMenuBar m_menuBar;
   CMFCToolBar m_standardToolBar;
   CMFCToolBar m_renderPropertiesToolBar;  // Properties toolbar (Color, LineType, LineWeight)
+  CMFCToolBar m_stylesToolBar;  // Styles toolbar (Text Style)
   EoMfStatusBar m_statusBar;
   EoMfOutputDockablePane m_outputPane;
   EoMfPropertiesDockablePane m_propertiesPane;
@@ -47,6 +48,8 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg void OnUpdatePenColorCombo(CCmdUI* pCmdUI);
   afx_msg void OnUpdateLineTypeCombo(CCmdUI* pCmdUI);
   afx_msg void OnUpdateLineWeightCombo(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateTextStyleCombo(CCmdUI* pCmdUI);
+  afx_msg void OnTextStyleManager();
   afx_msg LRESULT OnToolbarContextMenu(WPARAM, LPARAM);
 
   afx_msg LRESULT OnGetTabToolTip(WPARAM wp, LPARAM lp);
@@ -79,6 +82,10 @@ class CMainFrame : public CMDIFrameWndEx {
   /// @brief Propagates the active color scheme to docking panes and chrome.
   void ApplyColorScheme();
 
+  /// @brief Ensures all application toolbars are visible after docking state restore.
+  /// Safety net against corrupted or stale registry docking state blobs.
+  void EnsureToolbarsVisible();
+
   /// @brief Synchronizes the toolbar pen-color combo box with the current ACI index.
   void SyncColorCombo(std::int16_t aciIndex);
 
@@ -87,4 +94,7 @@ class CMainFrame : public CMDIFrameWndEx {
 
   /// @brief Synchronizes the toolbar line-weight combo box with the current line weight.
   void SyncLineWeightCombo(EoDxfLineWeights::LineWeight lineWeight);
+
+  /// @brief Synchronizes the toolbar text-style combo box with the given text style name.
+  void SyncTextStyleCombo(const std::wstring& textStyleName);
 };
