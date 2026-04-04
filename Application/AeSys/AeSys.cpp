@@ -263,10 +263,10 @@ int AeSys::ExitInstance() {
 void AeSys::PreLoadState() {
   GetContextMenuManager()->AddMenu(L"My menu", IDR_CONTEXT_MENU);
 
-  // One-time migration (v4): standard toolbar pane ID stabilized to IDR_MAINFRAME_24.
-  // Prior sessions may have saved a DPI-dependent pane ID (IDR_MAINFRAME_32 vs _24)
-  // that hides the toolbar on launch when DPI differs. Clear stale workspace state.
-  constexpr int kToolbarLayoutVersion = 4;
+  // One-time migration (v5): standard toolbar now uses EoMfStandardToolBar which
+  // skips button state serialization. Clear stale workspace state that may contain
+  // corrupted button-image mappings from previous sessions.
+  constexpr int kToolbarLayoutVersion = 5;
   if (GetProfileIntW(L"Migrations", L"ToolbarLayout", 0) < kToolbarLayoutVersion) {
     CleanState();
     WriteProfileInt(L"Migrations", L"ToolbarLayout", kToolbarLayoutVersion);

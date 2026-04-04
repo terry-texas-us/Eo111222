@@ -7,6 +7,21 @@
 #include "EoMfPropertiesDockablePane.h"
 #include "EoMfStatusBar.h"
 
+/// @brief Standard toolbar that skips button state serialization.
+/// The standard toolbar has only icon buttons (no combo boxes or stateful elements).
+/// Bypassing SaveState/LoadState prevents stale registry data from replacing
+/// resource-loaded icons with text labels on subsequent launches.
+/// Docking position is unaffected (managed separately by CDockingManager).
+class EoMfStandardToolBar : public CMFCToolBar {
+ public:
+  BOOL LoadState(LPCTSTR /*lpszProfileName*/ = nullptr, int /*nIndex*/ = -1, UINT /*uiID*/ = (UINT)-1) override {
+    return TRUE;
+  }
+  BOOL SaveState(LPCTSTR /*lpszProfileName*/ = nullptr, int /*nIndex*/ = -1, UINT /*uiID*/ = (UINT)-1) override {
+    return TRUE;
+  }
+};
+
 class CMainFrame : public CMDIFrameWndEx {
   DECLARE_DYNAMIC(CMainFrame)
  public:
@@ -28,7 +43,7 @@ class CMainFrame : public CMDIFrameWndEx {
 
  protected:  // control bar embedded members
   CMFCMenuBar m_menuBar;
-  CMFCToolBar m_standardToolBar;
+  EoMfStandardToolBar m_standardToolBar;
   CMFCToolBar m_renderPropertiesToolBar;  // Properties toolbar (Color, LineType, LineWeight)
   CMFCToolBar m_stylesToolBar;  // Styles toolbar (Text Style)
   EoMfStatusBar m_statusBar;

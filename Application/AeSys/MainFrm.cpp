@@ -223,11 +223,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   EnableDocking(CBRS_ALIGN_ANY);
 
   DockPane(&m_menuBar);
-  DockPane(&m_renderPropertiesToolBar);
-  DockPaneLeftOf(&m_standardToolBar, &m_renderPropertiesToolBar);
+  // Top toolbar row: Standard | Properties | Styles
   DockPane(&m_stylesToolBar);
-  DockPane(&m_propertiesPane);
-  DockPane(&m_outputPane);
+  DockPaneLeftOf(&m_renderPropertiesToolBar, &m_stylesToolBar);
+  DockPaneLeftOf(&m_standardToolBar, &m_renderPropertiesToolBar);
+  DockPane(&m_propertiesPane, AFX_IDW_DOCKBAR_LEFT);
+  DockPane(&m_outputPane,AFX_IDW_DOCKBAR_BOTTOM);
 
   ApplyColorScheme();
 
