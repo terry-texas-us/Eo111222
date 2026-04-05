@@ -555,7 +555,6 @@
 #define ID_VIEW_PENWIDTHS               4594
 #define ID_SETUP_CONSTRAINTS            4600
 #define ID_VIEW_TRUETYPEFONTS           4605
-#define ID_VIEW_STATEINFORMATION        4606
 #define ID_CLEAR_ACTIVELAYERS           4607
 #define ID_CLEAR_ALLLAYERS              4608
 #define ID_CLEAR_ALLTRACINGS            4609

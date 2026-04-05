@@ -344,7 +344,6 @@ BEGIN
         END
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM "&True Type Fonts\tF2",        ID_VIEW_TRUETYPEFONTS, CHECKED
-        MENUITEM "&State Information\tF3",      ID_VIEW_STATEINFORMATION, CHECKED
         MENUITEM "Re&fresh\tF5",                ID_VIEW_REFRESH
         MENUITEM "P&en Widths",                 ID_VIEW_PENWIDTHS
         MENUITEM "&Background Image",           ID_VIEW_BACKGROUNDIMAGE
@@ -627,7 +626,6 @@ BEGIN
         END
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM "&True Type Fonts\tF2",        ID_VIEW_TRUETYPEFONTS, CHECKED
-        MENUITEM "&State Information\tF3",      ID_VIEW_STATEINFORMATION, CHECKED
         MENUITEM "Re&fresh\tF5",                ID_VIEW_REFRESH
         MENUITEM "P&en Widths",                 ID_VIEW_PENWIDTHS
         MENUITEM "&Background Image",           ID_VIEW_BACKGROUNDIMAGE
@@ -1066,7 +1064,6 @@ BEGIN
     "H",            ID_TRAPCOMMANDS_HIGHLIGHT, VIRTKEY, CONTROL, NOINVERT
     VK_RETURN,      ID_VIEW_FULLSCREEN,     VIRTKEY, SHIFT, ALT, NOINVERT
     VK_F5,          ID_VIEW_REFRESH,        VIRTKEY, NOINVERT
-    VK_F3,          ID_VIEW_STATEINFORMATION, VIRTKEY, NOINVERT
     VK_F2,          ID_VIEW_TRUETYPEFONTS,  VIRTKEY, NOINVERT
     "w",            ID_VIEW_WINDOW,         ASCII,  ALT, NOINVERT
     "=",            ID_VIEW_WINDOW,         ASCII,  NOINVERT
@@ -3336,8 +3333,6 @@ END
 STRINGTABLE
 BEGIN
     ID_SETUP_CONSTRAINTS    "Setup the point and axis constraints for the current view."
-    ID_VIEW_STATEINFORMATION 
-                            "Show or hide state/mode information\nToggle State Information"
 END
 
 STRINGTABLE

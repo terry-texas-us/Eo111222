@@ -7,6 +7,7 @@
 #include <cassert>
 
 #include "AeSys.h"
+#include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoMfPropertiesDockablePane.h"
@@ -182,6 +183,26 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   auto* activeView = AeSysView::GetActiveView();
   double scale = (activeView == nullptr) ? 1.0 : activeView->GetWorldScale();
 
+  // --- Document Statistics group (first in the grid) ---
+  auto* document = AeSysDoc::GetDoc();
+  int workCount = (document != nullptr)
+      ? document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers()
+      : 0;
+  int trapCount = (document != nullptr) ? static_cast<int>(document->TrapGroupCount()) : 0;
+
+  auto* documentStatisticsGroup = new CMFCPropertyGridProperty(L"Document Statistics");
+  auto* workCountProperty = new CMFCPropertyGridProperty(
+      L"Active Groups", (_variant_t)static_cast<long>(workCount),
+      L"Number of groups in work and active layers", kWorkGroupCount);
+  workCountProperty->Enable(FALSE);
+  documentStatisticsGroup->AddSubItem(workCountProperty);
+  auto* trapCountProperty = new CMFCPropertyGridProperty(
+      L"Trap Groups", (_variant_t)static_cast<long>(trapCount),
+      L"Number of groups in the trap", kTrapGroupCount);
+  trapCountProperty->Enable(FALSE);
+  documentStatisticsGroup->AddSubItem(trapCountProperty);
+  m_PropertyGrid.AddProperty(documentStatisticsGroup);
+
   auto* activeViewGroup = new CMFCPropertyGridProperty(L"Active View");
   auto* worldScaleProperty = new CMFCPropertyGridProperty(
       L"World Scale", (_variant_t)scale, L"Specifies the world scale used in the Active View", kActiveViewScale);
@@ -192,9 +213,6 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   worldScaleProperty->Enable(activeView != nullptr);
 
   auto* appearanceGroup = new CMFCPropertyGridProperty(L"Appearance");
-
-  appearanceGroup->AddSubItem(new CMFCPropertyGridProperty(L"3D Look", (_variant_t) false,
-      L"Specifies the window's font will be non-bold and controls will have a 3D border"));
 
   auto* lengthUnits =
       new CMFCPropertyGridProperty(L"Length Units", L"Engineering", L"Specifies the units used to display lengths");
@@ -290,6 +308,24 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
   miscGroup->AddSubItem(new CMFCPropertyGridFileProperty(L"Shadow Folder Path", app.ShadowFolderPath(), 0, nullptr));
 
   m_PropertyGrid.AddProperty(miscGroup);
+}
+
+void EoMfPropertiesDockablePane::UpdateDocumentStatistics() {
+  auto* document = AeSysDoc::GetDoc();
+
+  int workCount = (document != nullptr)
+      ? document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers()
+      : 0;
+  int trapCount = (document != nullptr) ? static_cast<int>(document->TrapGroupCount()) : 0;
+
+  auto* workCountProperty = m_PropertyGrid.FindItemByData(kWorkGroupCount);
+  if (workCountProperty != nullptr) {
+    workCountProperty->SetValue((_variant_t)static_cast<long>(workCount));
+  }
+  auto* trapCountProperty = m_PropertyGrid.FindItemByData(kTrapGroupCount);
+  if (trapCountProperty != nullptr) {
+    trapCountProperty->SetValue((_variant_t)static_cast<long>(trapCount));
+  }
 }
 
 void EoMfPropertiesDockablePane::SetPropertyGridFont() {

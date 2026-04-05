@@ -90,8 +90,8 @@ void EoMfStatusBar::BeginLengthEdit() {
 void EoMfStatusBar::CommitLengthEdit() {
   CString editText;
   m_edit.GetWindowTextW(editText);
-  m_edit.ShowWindow(SW_HIDE);
   m_editingPane = -1;
+  m_edit.ShowWindow(SW_HIDE);
 
   if (editText.IsEmpty()) { return; }
 
@@ -101,9 +101,7 @@ void EoMfStatusBar::CommitLengthEdit() {
   app.SetDimensionLength(newLength);
 
   auto* activeView = AeSysView::GetActiveView();
-  if (activeView != nullptr) {
-    activeView->UpdateStateInformation(AeSysView::DimLen);
-  }
+  if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::DimLen); }
 }
 
 void EoMfStatusBar::BeginAngleEdit() {
@@ -135,21 +133,21 @@ void EoMfStatusBar::BeginAngleEdit() {
 void EoMfStatusBar::CommitAngleEdit() {
   CString editText;
   m_edit.GetWindowTextW(editText);
-  m_edit.ShowWindow(SW_HIDE);
   m_editingPane = -1;
+  m_edit.ShowWindow(SW_HIDE);
 
   if (editText.IsEmpty()) { return; }
 
-  // Parse angle in degrees (same as EoDlgSetAngle: DDX_Text with double, range -360..360)
-  double newAngle = _wtof(editText.GetString());
+  wchar_t* endPtr{};
+  double newAngle = wcstod(editText.GetString(), &endPtr);
+  if (endPtr == editText.GetString()) { return; }  // No valid conversion
+
   if (newAngle < -360.0) { newAngle = -360.0; }
   if (newAngle > 360.0) { newAngle = 360.0; }
   app.SetDimensionAngle(newAngle);
 
   auto* activeView = AeSysView::GetActiveView();
-  if (activeView != nullptr) {
-    activeView->UpdateStateInformation(AeSysView::DimAng);
-  }
+  if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::DimAng); }
 }
 
 void EoMfStatusBar::BeginScaleEdit() {
@@ -182,8 +180,8 @@ void EoMfStatusBar::BeginScaleEdit() {
 void EoMfStatusBar::CommitScaleEdit() {
   CString editText;
   m_edit.GetWindowTextW(editText);
-  m_edit.ShowWindow(SW_HIDE);
   m_editingPane = -1;
+  m_edit.ShowWindow(SW_HIDE);
 
   if (editText.IsEmpty()) { return; }
 
@@ -191,9 +189,7 @@ void EoMfStatusBar::CommitScaleEdit() {
   if (newScale <= 0.0) { return; }
 
   auto* activeView = AeSysView::GetActiveView();
-  if (activeView != nullptr) {
-    activeView->SetWorldScale(newScale);
-  }
+  if (activeView != nullptr) { activeView->SetWorldScale(newScale); }
 }
 
 void EoMfStatusBar::BeginZoomEdit() {
@@ -214,9 +210,7 @@ void EoMfStatusBar::BeginZoomEdit() {
   double zoomRatio = 1.0;
   if (activeView != nullptr) {
     double uExtent = activeView->UExtent();
-    if (uExtent > 0.0) {
-      zoomRatio = activeView->WidthInInches() / uExtent;
-    }
+    if (uExtent > 0.0) { zoomRatio = activeView->WidthInInches() / uExtent; }
   }
   CString zoomText;
   zoomText.Format(L"%.3f", zoomRatio);
@@ -232,31 +226,32 @@ void EoMfStatusBar::BeginZoomEdit() {
 void EoMfStatusBar::CommitZoomEdit() {
   CString editText;
   m_edit.GetWindowTextW(editText);
-  m_edit.ShowWindow(SW_HIDE);
   m_editingPane = -1;
+  m_edit.ShowWindow(SW_HIDE);
 
   if (editText.IsEmpty()) { return; }
 
-  double newZoomRatio = _wtof(editText.GetString());
-  if (newZoomRatio <= 0.0) { return; }
+  const auto newZoomRatio = _wtof(editText.GetString());
+  if (newZoomRatio <= Eo::geometricTolerance) { return; }
 
   auto* activeView = AeSysView::GetActiveView();
-  if (activeView != nullptr) {
-    // Zoom ratio = WidthInInches / UExtent → UExtent = WidthInInches / ratio
-    double widthInInches = activeView->WidthInInches();
-    if (widthInInches > 0.0) {
-      double newUExtent = widthInInches / newZoomRatio;
-      double aspectRatio = activeView->VExtent() / activeView->UExtent();
-      double newVExtent = newUExtent * aspectRatio;
-      double centerU = (activeView->UMin() + activeView->UMax()) * 0.5;
-      double centerV = (activeView->VMin() + activeView->VMax()) * 0.5;
-      activeView->SetViewWindow(
-          centerU - newUExtent * 0.5, centerV - newVExtent * 0.5,
-          centerU + newUExtent * 0.5, centerV + newVExtent * 0.5);
-      activeView->InvalidateScene();
-      activeView->UpdateStateInformation(AeSysView::WndRatio);
-    }
-  }
+  if (activeView == nullptr) { return; }
+  const auto widthInInches = activeView->WidthInInches();
+  const auto uExtent = activeView->UExtent();
+
+  if (widthInInches <= Eo::geometricTolerance || uExtent <= Eo::geometricTolerance) { return; }
+  /** Only apply the new zoom ratio if it results in a significant change to the view window.
+   * This prevents unnecessary updates when the user enters a value very close to the current zoom ratio.
+   */
+  const auto newUExtent = widthInInches / newZoomRatio;
+  const auto aspectRatio = activeView->VExtent() / uExtent;
+  const auto newVExtent = newUExtent * aspectRatio;
+  const auto centerU = (activeView->UMin() + activeView->UMax()) * 0.5;
+  const auto centerV = (activeView->VMin() + activeView->VMax()) * 0.5;
+  activeView->SetViewWindow(
+      centerU - newUExtent * 0.5, centerV - newVExtent * 0.5, centerU + newUExtent * 0.5, centerV + newVExtent * 0.5);
+  activeView->InvalidateScene();
+  activeView->UpdateStateInformation(AeSysView::WndRatio);
 }
 
 void EoMfStatusBar::CommitEdit() {

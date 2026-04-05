@@ -239,6 +239,21 @@ class AeSysView : public CView {
   void OnPrepareDC(CDC* deviceContext, CPrintInfo* printInformation) override;
   void OnEndPrinting(CDC* deviceContext, CPrintInfo* printInformation) override;
 
+  /** @brief Display the view using hint information to optimize rendering.
+   * This method is called by the MFC framework when the document or other views call UpdateAllViews with a hint
+   * parameter. The hint and hintObject parameters can be used to determine what type of update occurred and optimize
+   * the rendering accordingly. For example, if only a specific primitive was updated, the view can choose to redraw
+   * only that primitive instead of the entire scene.
+   * @param sender The view that sent the update notification, or nullptr if the document sent the notification.
+   * @param hint An application-defined value that indicates the type of update. This can be used to optimize the
+   * response.
+   * @param hintObject An optional pointer to an object that provides additional information about the update. The
+   * interpretation of this pointer depends on the value of hint.
+   * @param renderDevice A pointer to the rendering device context, which can be used for drawing operations.
+   * @note Override this function to handle specific update notifications and refresh only the necessary parts of the
+   * view. If you do not handle a particular hint, call the base class implementation to ensure default processing
+   * occurs.
+   */
   void DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject, EoGsRenderDevice* renderDevice);
 
   /** @brief Respond to updates from the document or other views.
@@ -257,11 +272,9 @@ class AeSysView : public CView {
  public:
   virtual ~AeSysView();
 
- protected:  // Windows messages
+ protected:
   afx_msg void OnContextMenu(CWnd*, CPoint point);
   afx_msg void OnTimer(UINT_PTR nIDEvent);
-
-  // Mode command handlers
 
   afx_msg void OnModeAnnotate();
   afx_msg void OnModeCut();
@@ -277,8 +290,6 @@ class AeSysView : public CView {
   afx_msg void OnModeTrap();
 
   afx_msg void OnTrapCommandsAddGroups();
-
-  // Update UI handlers
 
   afx_msg void OnUpdateModeAnnotate(CCmdUI* pCmdUI);
   afx_msg void OnUpdateModeCut(CCmdUI* pCmdUI);
@@ -322,14 +333,10 @@ class AeSysView : public CView {
   afx_msg void OnRButtonUp(UINT nFlags, CPoint pnt);
   afx_msg void OnSetFocus(CWnd* oldWindow);
   afx_msg void OnSize(UINT type, int cx, int cy);
-  afx_msg void OnViewStateInformation();
-  afx_msg void OnUpdateViewStateinformation(CCmdUI* pCmdUI);
 
- public:  // Operations
   /// @brief Returns a pointer to the currently active view.
   static AeSysView* GetActiveView();
 
-  bool m_ViewStateInformation{true};
   void UpdateStateInformation(EStateInformationItem item);
 
   CPoint m_middleButtonPanStartPoint{};

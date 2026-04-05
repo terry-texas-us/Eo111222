@@ -612,15 +612,6 @@ void AeSysView::SetWorldScale(double scale) {
   }
 }
 
-void AeSysView::OnViewStateInformation() {
-  m_ViewStateInformation = !m_ViewStateInformation;
-  AeSysDoc::GetDoc()->UpdateAllViews(nullptr, 0L, nullptr);
-}
-
-void AeSysView::OnUpdateViewStateinformation(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewStateInformation); }
-
-// Mode switching commands (moved from AeSys.cpp for proper command routing)
-
 void AeSysView::OnModeAnnotate() {
   app.SetModeResourceIdentifier(IDR_ANNOTATE_MODE);
   app.SetPrimaryMode(ID_MODE_ANNOTATE);

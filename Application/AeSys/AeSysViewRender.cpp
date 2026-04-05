@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <cmath>
-#include <memory>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -17,7 +16,6 @@
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
-#include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "EoGsRenderDeviceDirect2D.h"
 #include "EoGsRenderDeviceGdi.h"
@@ -297,14 +295,6 @@ void AeSysView::ApplyActiveViewport() {
       this, targetPoint.x, targetPoint.y, targetPoint.z, viewHeight, viewWidth, activeVPort->m_viewAspectRatio);
 }
 
-/** @brief Helper function to display content based on the provided hint, used by OnUpdate for delegation
- * This centralizes the logic for interpreting hints and displaying the appropriate content, allowing OnUpdate to focus
- * on setup/delegation/cleanup
- * @param sender The view that sent the update notification
- * @param hint A bitmask hint indicating what type of content needs to be updated (e.g., primitive, group, layer)
- * @param hintObject The specific object related to the hint (e.g., the primitive or group that changed)
- * @param deviceContext The device context to use for drawing
- */
 void AeSysView::DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject, EoGsRenderDevice* renderDevice) {
   switch (hint) {
     case EoDb::kPrimitive:
@@ -485,9 +475,6 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
   }
 }
 
-// Window messages ////////////////////////////////////////////////////////////
-void AeSysView::OnContextMenu(CWnd*, CPoint point) { app.ShowPopupMenu(IDR_CONTEXT_MENU, point, this); }
-
 BOOL AeSysView::OnEraseBkgnd([[maybe_unused]] CDC* deviceContext) {
   // Suppress GDI background erase — the off-screen back buffer covers the entire client area via BitBlt.
   return TRUE;
@@ -550,6 +537,8 @@ void AeSysView::CreateD2DRenderTarget() {
 }
 
 void AeSysView::DiscardD2DResources() { m_d2dRenderTarget.Reset(); }
+
+void AeSysView::OnContextMenu(CWnd*, CPoint point) { app.ShowPopupMenu(IDR_CONTEXT_MENU, point, this); }
 
 void AeSysView::OnSize(UINT type, int cx, int cy) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>OnSize(%i, %i, %i)\n", this, type, cx, cy);
@@ -647,7 +636,6 @@ void AeSysView::ViewportPopActive() {
 }
 
 void AeSysView::ViewportPushActive() { m_Viewports.AddTail(m_Viewport); }
-// AeSysView printing
 
 void AeSysView::DisplayPixel(CDC* deviceContext, COLORREF cr, const EoGePoint3d& point) {
   EoGePoint4d ndcPoint(point);
@@ -694,126 +682,42 @@ void AeSysView::DisplayOdometer() {
 }
 
 void AeSysView::UpdateStateInformation(EStateInformationItem item) {
-  if (!m_ViewStateInformation) { return; }
+  auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+  if (mainFrame == nullptr) { return; }
 
-  auto* document = AeSysDoc::GetDoc();
-  auto* deviceContext = GetDC();
+  if ((item & BothCounts) != 0) { mainFrame->GetPropertiesPane().UpdateDocumentStatistics(); }
 
-  auto oldFont = deviceContext->SelectStockObject(DEFAULT_GUI_FONT);
-  auto oldTextAlign = deviceContext->SetTextAlign(TA_LEFT | TA_TOP);
-  auto oldTextColor = deviceContext->SetTextColor(App::ViewTextColor());
-  auto oldBkColor = deviceContext->SetBkColor(~App::ViewTextColor() & 0x00ffffff);
-
-  TEXTMETRIC textMetric{};
-  deviceContext->GetTextMetrics(&textMetric);
-  auto averageCharacterWidth = textMetric.tmAveCharWidth;
-  auto height = textMetric.tmHeight;
-
-  CRect clientRect{};
-  GetClientRect(&clientRect);
-  auto top = clientRect.top;
-
-  CRect rectangle{};
-  constexpr UINT options = ETO_CLIPPED | ETO_OPAQUE;
-  wchar_t szBuf[32]{};
-
-  if ((item & WorkCount) == WorkCount) {
-    rectangle.SetRect(0, top, 8 * averageCharacterWidth, top + height);
-    swprintf_s(szBuf, 32, L"%-4i", document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers());
-    deviceContext->ExtTextOutW(
-        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
-  }
-  if ((item & TrapCount) == TrapCount) {
-    rectangle.SetRect(8 * averageCharacterWidth, top, 16 * averageCharacterWidth, top + height);
-    long trapCount = static_cast<long>(document->TrapGroupCount());
-    swprintf_s(szBuf, 32, L"%-4ld", trapCount);
-    deviceContext->ExtTextOutW(
-        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
-  }
   if ((item & Pen) == Pen) {
-    rectangle.SetRect(16 * averageCharacterWidth, top, 22 * averageCharacterWidth, top + height);
-    swprintf_s(szBuf, 32, L"P%-4i", Gs::renderState.Color());
-    deviceContext->ExtTextOutW(
-        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
-    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    if (mainFrame != nullptr) {
-      mainFrame->SyncColorCombo(Gs::renderState.Color());
-      mainFrame->SyncLineWeightCombo(Gs::renderState.LineWeight());
-    }
+    mainFrame->SyncColorCombo(Gs::renderState.Color());
+    mainFrame->SyncLineWeightCombo(Gs::renderState.LineWeight());
   }
   if ((item & Line) == Line) {
-    rectangle.SetRect(22 * averageCharacterWidth, top, 28 * averageCharacterWidth, top + height);
-    swprintf_s(szBuf, 32, L"L%-4i", Gs::renderState.LineTypeIndex());
-    deviceContext->ExtTextOutW(
-        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
-    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    if (mainFrame != nullptr) {
-      mainFrame->SyncLineTypeCombo(Gs::renderState.LineTypeIndex(), Gs::renderState.LineTypeName());
-    }
+    mainFrame->SyncLineTypeCombo(Gs::renderState.LineTypeIndex(), Gs::renderState.LineTypeName());
   }
-  if ((item & TextHeight) == TextHeight) {
-    auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
-    rectangle.SetRect(28 * averageCharacterWidth, top, 38 * averageCharacterWidth, top + height);
-    swprintf_s(szBuf, 32, L"T%-6.2f", characterCellDefinition.Height());
-    deviceContext->ExtTextOutW(
-        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
-    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    if (mainFrame != nullptr) {
-      mainFrame->SyncTextStyleCombo(Gs::renderState.TextStyleName());
-    }
-  }
+  if ((item & TextHeight) == TextHeight) { mainFrame->SyncTextStyleCombo(Gs::renderState.TextStyleName()); }
   if ((item & Scale) == Scale) {
-    rectangle.SetRect(38 * averageCharacterWidth, top, 48 * averageCharacterWidth, top + height);
-    swprintf_s(szBuf, 32, L"1:%-6.2f", GetWorldScale());
-    deviceContext->ExtTextOutW(
-        rectangle.left, rectangle.top, options, &rectangle, szBuf, static_cast<UINT>(wcslen(szBuf)), 0);
-
-    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    if (mainFrame != nullptr) {
-      CString scaleText;
-      scaleText.Format(L"1:%.2f", GetWorldScale());
-      mainFrame->SetPaneText(13, scaleText);
-    }
+    CString scaleText;
+    scaleText.Format(L"1:%.2f", GetWorldScale());
+    mainFrame->SetPaneText(13, scaleText);
   }
   if ((item & WndRatio) == WndRatio) {
-    rectangle.SetRect(48 * averageCharacterWidth, top, 58 * averageCharacterWidth, top + height);
-    double Ratio = WidthInInches() / UExtent();
-    CString RatioAsString;
-    RatioAsString.Format(L"=%-8.3f", Ratio);
-    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, RatioAsString,
-        static_cast<UINT>(RatioAsString.GetLength()), 0);
-
-    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    if (mainFrame != nullptr) {
-      CString zoomText;
-      zoomText.Format(L"%.3f", Ratio);
-      mainFrame->SetPaneText(14, zoomText);
+    const double widthInInches = WidthInInches();
+    const double uExtent = UExtent();
+    CString zoomText{L"---"};
+    if (widthInInches > Eo::geometricTolerance && uExtent > Eo::geometricTolerance) {
+      zoomText.Format(L"%.3f", widthInInches / uExtent);
     }
+    mainFrame->SetPaneText(14, zoomText);
   }
-  if ((item & DimLen) == DimLen || (item & DimAng) == DimAng) {
-    rectangle.SetRect(58 * averageCharacterWidth, top, 90 * averageCharacterWidth, top + height);
-    CString LengthAndAngle;
-    app.FormatLength(LengthAndAngle, app.GetUnits(), app.DimensionLength());
-    LengthAndAngle.TrimLeft();
-    CString Angle;
-    app.FormatAngle(Angle, Eo::DegreeToRadian(app.DimensionAngle()), 8, 3);
-    LengthAndAngle.Append(L" @ " + Angle);
-    deviceContext->ExtTextOutW(rectangle.left, rectangle.top, options, &rectangle, LengthAndAngle,
-        static_cast<UINT>(LengthAndAngle.GetLength()), 0);
-
-    // Also display in status bar panes (Length = pane 1, Angle = pane 2)
-    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-    if (mainFrame != nullptr) {
-      CString lengthText;
-      app.FormatLength(lengthText, app.GetUnits(), app.DimensionLength());
-      lengthText.TrimLeft();
-      mainFrame->SetPaneText(1, lengthText);
-      mainFrame->SetPaneText(2, Angle);
-    }
+  if ((item & DimAng) == DimAng) {
+    CString angle;
+    app.FormatAngle(angle, Eo::DegreeToRadian(app.DimensionAngle()), 8, 3);
+    mainFrame->SetPaneText(2, angle);
   }
-  deviceContext->SetBkColor(oldBkColor);
-  deviceContext->SetTextColor(oldTextColor);
-  deviceContext->SetTextAlign(oldTextAlign);
-  deviceContext->SelectObject(oldFont);
-  ReleaseDC(deviceContext);
+  if ((item & DimLen) == DimLen) {
+    CString lengthText;
+    app.FormatLength(lengthText, app.GetUnits(), app.DimensionLength());
+    lengthText.TrimLeft();
+    mainFrame->SetPaneText(1, lengthText);
+  }
 }

@@ -23,7 +23,7 @@ class EoMfPropertiesDockablePane : public CDockablePane {
   CFont m_PropertyGridFont;
   EoMfPropertiesMFCToolBar m_PropertiesToolBar;
 
-  enum PropertyDataTag { kActiveViewScale = 100 };
+  enum PropertyDataTag { kActiveViewScale = 100, kWorkGroupCount = 200, kTrapGroupCount = 201 };
 
  public:  // Overrides
  public:  // Implementation
@@ -54,6 +54,9 @@ class EoMfPropertiesDockablePane : public CDockablePane {
  public:  // Operations
   CMFCPropertyGridCtrl& GetPropertyGridCtrl() { return m_PropertyGrid; }
   CMFCPropertyGridProperty& GetActiveViewScaleProperty() { return *m_PropertyGrid.FindItemByData(kActiveViewScale); }
+
+  /// @brief Updates the Document Statistics group with current work and trap group counts.
+  void UpdateDocumentStatistics();
 
   /// @brief Applies the active color scheme to the property grid.
   void ApplyColorScheme();
