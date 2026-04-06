@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <cstdint>
 
@@ -7,18 +7,32 @@
 #include "EoMfPropertiesDockablePane.h"
 #include "EoMfStatusBar.h"
 
-/// @brief Standard toolbar that skips button state serialization.
-/// The standard toolbar has only icon buttons (no combo boxes or stateful elements).
-/// Bypassing SaveState/LoadState prevents stale registry data from replacing
-/// resource-loaded icons with text labels on subsequent launches.
-/// Docking position is unaffected (managed separately by CDockingManager).
-class EoMfStandardToolBar : public CMFCToolBar {
+/// @brief Toolbar subclass that skips button state serialization.
+/// MFC's CMFCToolBar::SaveState/LoadState persists button images, combo items,
+/// and custom button state as opaque binary blobs in the registry. Any mismatch
+/// between saved and runtime state (schema change, DPI change, metric override)
+/// causes cascading corruption — lost icons, text-only labels, duplicated items.
+/// This subclass returns TRUE from both methods so MFC considers state handled
+/// but no registry I/O occurs. Buttons are rebuilt from resources and OnToolbarReset
+/// on every launch. Docking position is unaffected (managed by CDockingManager).
+class EoMfStatelessToolBar : public CMFCToolBar {
  public:
   BOOL LoadState(LPCTSTR /*lpszProfileName*/ = nullptr, int /*nIndex*/ = -1, UINT /*uiID*/ = (UINT)-1) override {
     return TRUE;
   }
   BOOL SaveState(LPCTSTR /*lpszProfileName*/ = nullptr, int /*nIndex*/ = -1, UINT /*uiID*/ = (UINT)-1) override {
     return TRUE;
+  }
+
+  /// @brief Sets button and image sizes for both regular and locked modes.
+  /// CMFCToolBar::SetSizes() updates only m_sizeButton.
+  /// CMFCToolBar::GetButtonSize() returns m_sizeButtonLocked when m_bLocked is TRUE
+  /// (set by LoadToolBar with bLocked=TRUE), so SetSizes() alone has no effect on
+  /// locked toolbars. This method updates both so the size takes effect regardless
+  /// of locked state. bDontAdjust=TRUE defers layout to the caller's RecalcLayout.
+  void SetSizesAll(const CSize& buttonSize, const CSize& imageSize) {
+    SetSizes(buttonSize, imageSize);
+    SetLockedSizes(buttonSize, imageSize, TRUE);
   }
 };
 
@@ -43,14 +57,13 @@ class CMainFrame : public CMDIFrameWndEx {
 
  protected:  // control bar embedded members
   CMFCMenuBar m_menuBar;
-  EoMfStandardToolBar m_standardToolBar;
-  CMFCToolBar m_renderPropertiesToolBar;  // Properties toolbar (Color, LineType, LineWeight)
-  CMFCToolBar m_stylesToolBar;  // Styles toolbar (Text Style)
+  EoMfStatelessToolBar m_standardToolBar;
+  EoMfStatelessToolBar m_renderPropertiesToolBar;  // Properties toolbar (Color, LineType, LineWeight)
+  EoMfStatelessToolBar m_stylesToolBar;  // Styles toolbar (Text Style)
   EoMfStatusBar m_statusBar;
   EoMfOutputDockablePane m_outputPane;
   EoMfPropertiesDockablePane m_propertiesPane;
   CMFCToolBarImages m_userImages;
-  bool m_useHighDpiToolbar{false};  // True when 32x32 icons are loaded (DPI > 144); false for 24x24
 
  protected:
   afx_msg int OnCreate(LPCREATESTRUCT createStruct);
@@ -81,6 +94,12 @@ class CMainFrame : public CMDIFrameWndEx {
    */
   BOOL CreateDockablePanes();
   void SetDockablePanesIcons(bool highColorMode);
+
+  /// @brief Measures the combo HWND closed height and re-applies SetSizes on all
+  /// application toolbars so icon-only and combo-containing toolbars report identical
+  /// row heights. Must be called after any operation that can reset button sizes
+  /// (LoadBitmap, LoadToolBar, docking state restore).
+  void AdjustToolbarSizesToMatchCombos();
 
  public:
   CString GetPaneText(int index);

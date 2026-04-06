@@ -299,7 +299,7 @@ Both schemes use a layered depth model where deeper/overlay surfaces are progres
 
 **Light scheme** — warm white foundation with subtle warm tint (R ≥ G > B):
 | Tier | Surface | Light RGB | Role |
-|------|---------|-----------|------|
+|------|---------|-----------|---------|
 | Chrome | Title bar, toolbar, menu bar, status bar, separators | (240, 239, 236) | `toolbarBackground`, `captionBackground` |
 | Panel groups | Group rows | (242, 241, 238) | `paneGroupBackground` |
 | Panel | Description, inactive tabs | (246, 245, 242) | `paneDescriptionBackground`, `tabInactiveBackground` |
@@ -522,12 +522,8 @@ Contains three combos: **Color** (`EoCtrlColorComboBox`), **Line Type** (`EoCtrl
 ### Color Combo (`EoCtrlColorComboBox`)
 Owner-draw ACI color selection combo embedded in the render properties toolbar. Dark-theme-aware with color swatches, named colors (1–7), By Layer, By Block, dynamic custom entries (ACI 8–255), and "More Colors..." fallback to `EoDlgSetupColor`. Custom `Serialize` override (`VERSIONABLE_SCHEMA | 2`) bypasses `CMFCToolBarComboBoxButton::Serialize` to avoid DWORD_PTR truncation and item duplication on toolbar state restore. See `Documentation/MFC Custom Color Selection Control.md` for full architecture.
 
-Key files: `EoCtrlColorComboBox.h/.cpp`, `EoMfVisualManager.h/.cpp` (combo border/dropdown overrides), `MainFrm.cpp` (`OnToolbarReset`, `SyncColorCombo`).
-
 ### Line Type Combo (`EoCtrlLineTypeComboBox`)
 Owner-draw line type selection combo. Follows the same `CMFCToolBarComboBoxButton` subclass + `CComboBox` owner-draw subclass pattern as Color Combo. Dark-theme-aware. Custom `Serialize` override (`VERSIONABLE_SCHEMA`) bypasses base serialization.
-
-Key files: `EoCtrlLineTypeComboBox.h/.cpp`, `MainFrm.cpp` (`OnToolbarReset`, `SyncLineTypeCombo`).
 
 ### Line Weight Combo (`EoCtrlLineWeightComboBox`)
 Owner-draw DXF line weight selection combo embedded in the render properties toolbar. Follows the same `CMFCToolBarComboBoxButton` subclass + `CComboBox` owner-draw subclass pattern as Color and Line Type combos.
@@ -540,7 +536,7 @@ Owner-draw DXF line weight selection combo embedded in the render properties too
 
 **Render state integration**: `OnSelectionChanged()` → `renderState.SetLineWeight(newWeight)`. `EoGsRenderState::m_lineWeight` stores the **unresolved** enum value (ByLayer/ByBlock/ByLwDefault/concrete) **before** the ByLayer→concrete resolution chain in `SetPen`, so the UI can read back the user's setting.
 
-**Sync chain**: `UpdateStateInformation(Pen)` → `CMainFrame::SyncLineWeightCombo(weight)` → `GetCommandButtons(ID_LINEWEIGHT_COMBO)` → `DYNAMIC_DOWNCAST(EoCtrlLineWeightComboBox)` → `SetCurrentLineWeight(weight)` → `SelectItem(DWORD_PTR(enum))`.
+**Sync chain**: `UpdateStateInformation(Pen)` → `CMainFrame::SyncLineWeightCombo(weight)` → `GetCommandButtons(ID_LINEWEIGHT_COMBO)` → `DYNAMIC_DOWNCAST(EoCtrlLineWeightComboBox>` → `SetCurrentLineWeight(weight)` → `SelectItem(DWORD_PTR(enum))`.
 
 **ModifyState**: `EoDbPrimitive::ModifyState()` copies `renderState.LineWeight()` into `m_lineWeight` alongside color and lineTypeName, completing the property trio.
 
@@ -549,7 +545,62 @@ Owner-draw DXF line weight selection combo embedded in the render properties too
 - **Primitive copy** (explode, cut, split): `->WithProperties(source->Color(), source->LineTypeName(), source->LineWeight())`
 - **Legacy file import** (PEG V1): `->WithProperties(color, lineTypeName, EoDxfLineWeights::LineWeight::kLnWtByLwDefault)` (format has no lineWeight)
 
-Key files: `EoCtrlLineWeightComboBox.h/.cpp`, `EoGsRenderState.h/.cpp` (`m_lineWeight` member, stored in `SetPen`), `EoDbPrimitive.cpp` (`ModifyState`, `WithProperties`), `MainFrm.cpp` (`OnToolbarReset`, `SyncLineWeightCombo`).
+### Key Files
+| File | Role |
+|------|------|
+| `EoCtrlColorComboBox.h/.cpp` | Color combo control implementation |
+| `EoCtrlLineTypeComboBox.h/.cpp` | Line type combo control implementation |
+| `EoCtrlLineWeightComboBox.h/.cpp` | Line weight combo control implementation |
+| `EoGsRenderState.h/.cpp` | Render state management for line weight |
+| `MainFrm.cpp` | Toolbar setup and synchronization logic |
+
+### Toolbar Button Sizing — MFC Render Path
+
+Understanding the two separate height pipelines is essential for any future sizing work.
+
+#### Icon Button Pipeline (`CMFCToolBar`)
+1. `LoadToolBar(id, ..., bLocked=TRUE)` — sets `m_bLocked=TRUE`, stores the resource-derived button size in `m_sizeButtonLocked` via `SetLockedSizes()`.
+2. `GetButtonSize()` — returns **`m_sizeButtonLocked`** when `m_bLocked=TRUE` (not `m_sizeButton`). Calling `SetSizes()` only updates `m_sizeButton` — **silently ignored for locked toolbars**.
+3. `AdjustLocations()` — divides the band into equal button rects using `m_sizeButtonLocked.cy` as the row height.
+4. `EoMfVisualManager::OnFillButtonInterior()` — fills the button rect (inset 1px chrome). At a 41 px band the visual background appears ~36 px due to the 2–3 px top/bottom chrome inset drawn by the default visual manager.
+
+**Rule**: For locked toolbars always call `EoMfStatelessToolBar::SetSizesAll(buttonSize, imageSize)`, which calls both `SetSizes()` (updates `m_sizeButton`) and `SetLockedSizes(buttonSize, imageSize, TRUE)` (updates `m_sizeButtonLocked`, `bDontAdjust=TRUE` defers `AdjustLayout` to the caller).
+
+`LoadBitmap(bLocked=TRUE)` resets `m_sizeButtonLocked` from the bitmap dimensions — `AdjustToolbarSizesToMatchCombos()` must be called **after** every `LoadBitmap` path to re-apply the desired sizes.
+
+#### Combo Button Pipeline (`CMFCToolBarComboBoxButton`)
+1. `OnCalculateSize()` — returns `max(GetButtonSize().cy, m_nComboHeight + 2 * m_nVertMargin)`. `m_nVertMargin = 4` is **hardcoded** in `CMFCToolBarComboBoxButton`.
+2. `OnMove()` — positions the combo HWND via `m_rect.DeflateRect(0, m_nVertMargin)`. With a 41 px band and `m_nVertMargin=4`, the HWND height = 41 − 8 = **33 px**, which renders as ~32 px visible.
+
+#### Why a ~4 px Gap Remains
+At 100 % DPI with the equalized 41 px band:
+- Icon button visual background ≈ **36 px** (41 px minus ~2–3 px top/bottom chrome).
+- Combo HWND = 41 − 2 × 4 = **33 px** ≈ 32 px visible.
+
+Closing this gap would require subclassing `CMFCToolBarComboBoxButton` to reduce `m_nVertMargin` (or override `OnCalculateSize`/`OnMove`). That is a **regression risk** — not pursued. The current 1 px visual offset is accepted.
+
+#### `AdjustToolbarSizesToMatchCombos()` — Guard Logic
+Measures the `ID_PENCOLOR_COMBO` HWND closed height at runtime, computes `targetHeight = max(32, comboHeight + 2 * 4)`, then calls `SetSizesAll(CSize(targetHeight, targetHeight), CSize(24, 24))` on all three toolbars (`m_standardToolBar`, `m_renderPropertiesToolBar`, `m_stylesToolBar`) followed by `RecalcLayout()`. Call sites:
+- End of `OnCreate` — after `ApplyColorScheme()` which calls `LoadBitmap`.
+- End of `ApplyColorScheme()` — after all `LoadBitmap` calls (scheme switch resets `m_sizeButtonLocked`).
+- Inside `LoadFrame()` — after `EnsureToolbarsVisible()`, guards against stale docking-state restore.
+
+### Known Issues — Registry Serialization
+
+#### Button-State Blobs (Suppressed)
+`CMFCToolBar::SaveState`/`LoadState` write opaque binary blobs to `HKCU\SOFTWARE\Engineers Office\AeSys`. Each blob encodes button images, combo item lists, and custom button state. Any mismatch between saved and runtime state (schema change, DPI change, metric override, `ReplaceButton` order change) causes cascading corruption: lost icons, text-only labels, duplicated combo items.
+
+`EoMfStatelessToolBar` suppresses this by overriding both methods to return `TRUE` without performing any registry I/O. Buttons are rebuilt from resources and `OnToolbarReset` on every launch.
+
+#### Docking Layout (Still Serialized)
+CDockingManager docking position (which bar, which side, float vs docked) **is still serialized** separately by MFC — `EoMfStatelessToolBar` does not suppress this. If a stale docking blob hides a toolbar after upgrade:
+- `EnsureToolbarsVisible()` in `LoadFrame()` iterates all toolbars and calls `ShowControlBar(..., TRUE)` as a safety net.
+- `AdjustToolbarSizesToMatchCombos()` follows immediately to re-apply sizes after any layout restore.
+
+#### Per-Control Custom `Serialize` Overrides
+`EoCtrlColorComboBox`, `EoCtrlLineTypeComboBox`, `EoCtrlLineWeightComboBox`, and `EoCtrlTextStyleComboBox` each carry a `VERSIONABLE_SCHEMA` `Serialize` override that bypasses `CMFCToolBarComboBoxButton::Serialize` entirely. This prevents `DWORD_PTR` truncation (32-bit read of 64-bit item data) and item duplication on toolbar state restore. Items are always rebuilt from `BuildItemList()` at runtime — never read from the registry blob.
+
+This is the least-bad mitigation available without abandoning `CMFCToolBarComboBoxButton` as the base class. The user considers MFC's black-box toolbar state persistence a fundamental limitation.
 
 ## Properties Pane
 
@@ -560,329 +611,3 @@ Key files: `EoCtrlLineWeightComboBox.h/.cpp`, `EoGsRenderState.h/.cpp` (`m_lineW
 
 ### Dark Theme Toolbar Images
 The Properties toolbar buttons (Expand All, Sort, Properties1) use `properties.bmp` / `properties_hc.bmp` with dark glyphs — invisible on dark background. At creation time and in `ApplyColorScheme()`, the locked toolbar images are reloaded from the original bitmap, then adapted via `CMFCToolBarImages::AdaptColors(RGB(0,0,0), RGB(200,200,200))` in dark mode to shift black glyphs to light gray. Light mode uses the original unmodified bitmap.
-
-## User-Specific Notes
-- User may rename `EoDbLabeledLine` to `EoDbLabeledLine` in the future — it's a labeled line primitive, not a true DXF dimension.
-
-## Line Type Architecture
-
-### Entity-Level: Name-Authoritative (Phases A–D Complete)
-`EoDbPrimitive` stores line type as `m_lineTypeName` (`std::wstring`). The legacy `m_lineTypeIndex` field has been **removed**. All entity-level operations use the name:
-
-| Operation | Mechanism |
-|-----------|-----------|
-| **Internal storage** | `m_lineTypeName` — `L"ByLayer"`, `L"ByBlock"`, or a DXF linetype name (e.g. `L"DASHED"`) |
-| **Default** | `{L"ByLayer"}` — matches legacy default behavior |
-| **Sentinel tests** | `IsLineTypeByLayer()` / `IsLineTypeByBlock()` — case-insensitive via `_wcsicmp` |
-| **DXF import** | `SetBaseProperties()` copies `entity->m_lineType` directly into `m_lineTypeName` |
-| **PEG V1 read** | `ReadFromPeg` reads `int16_t` → converts via `LegacyLineTypeName()` → `SetLineTypeName()` |
-| **PEG V1 write** | `Write(CFile&)` derives index at write time via `LegacyLineTypeIndex(m_lineTypeName)` |
-| **PEG V1 buffer write** | `Write(CFile&, uint8_t*)` same pattern with `IsLineTypeByLayer()` → `sm_layerLineTypeIndex` fallback |
-| **Render boundary** | `LogicalLineType()` derives `int16_t` from name on-the-fly for `SetPen()` |
-| **Modify state** | `ModifyState()` copies `renderState.LineTypeName()` into `m_lineTypeName` |
-
-### Removed API (formerly on `EoDbPrimitive`)
-- `m_lineTypeIndex` field — removed
-- `LineTypeIndex()` getter — removed (zero callers)
-- `SetLineTypeIndex()` — removed (zero callers)
-- `SetProperties(color, lineTypeIndex)` — removed (zero callers, superseded by `WithProperties`)
-
-### Retained API
-- `LINETYPE_BYLAYER` (32767) / `LINETYPE_BYBLOCK` (32766) constants — still used by render pipeline, combo box, and conversion functions
-- `sm_layerLineTypeIndex` / `LayerLineTypeIndex()` / `SetLayerLineTypeIndex()` — layer-level statics for ByLayer resolution during rendering
-- `LegacyLineTypeIndex(name)` / `LegacyLineTypeName(index)` — bidirectional conversion on `EoDbLineTypeTable`
-
-### Render-Level: Index-Based (Phase E — Deferred)
-`EoGsRenderState` retains its own `m_LineTypeIndex` (`int16_t`). This is the *resolved, ready-to-render* index after ByLayer substitution. It feeds `ManagePenResources` (GDI pen style selection) and `EoGsVertexBuffer::DisplayDashPattern` (dash pattern lookup via `LookupUsingLegacyIndex`). The entity→render boundary (`LogicalLineType()` + `LogicalLineTypeName()`) derives the index from the name, so the render pipeline sees no change.
-
-**Phase E is deferred** because:
-1. The render pipeline is performance-critical (every entity, every frame)
-2. `ManagePenResources` and `DisplayDashPattern` require integer dispatch
-3. The entity→render boundary is already clean (name→index derived at the boundary)
-4. UI combo boxes use `DWORD_PTR` item data keyed to integer sentinel values
-
-### Key Conversion Functions
-| Function | Location | Direction |
-|----------|----------|-----------|
-| `LegacyLineTypeIndex(CString&)` | `EoDbLineTypeTable` | name → `int16_t` (case-insensitive, ByLayer→32767, ByBlock→32766) |
-| `LegacyLineTypeIndex(wstring&)` | `EoDbLineTypeTable` | delegates to `CString` overload |
-| `LegacyLineTypeName(int16_t)` | `EoDbLineTypeTable` | `int16_t` → `std::wstring` (32767→`L"ByLayer"`, 32766→`L"ByBlock"`) |
-
-## Pen Render Pipeline
-
-### Architecture Overview
-The pen render pipeline converts entity display properties (color, line type, line weight) into GDI pen resources for on-screen rendering. The pipeline has three layers:
-
-1. **Property resolution** (`EoGsRenderState::SetPen`) — resolves ByLayer/ByBlock/ByLwDefault indirection
-2. **GDI pen management** (`ManagePenResources`) — 8-slot LRU pen cache with `::CreatePen()`
-3. **Linetype rendering** (`polyline::__End` / `polyline::__Display`) — AeSys's own dash pattern engine
-
-### Line Weight Resolution Chain
-`SetPen` (7-arg overload) resolves entity line weight to a concrete pixel width:
-
-| Entity weight | Resolution | Source |
-|--------------|------------|--------|
-| Explicit (enum 0–23) | DXF code → mm → pixels | `LineWeightToDxfIndex` → `dxfCode * (0.01/25.4) * DPI` |
-| `kLnWtByLayer` | → layer's `m_lineWeight` → resolve again | `EoDbPrimitive::LayerLineWeight()` |
-| `kLnWtByLwDefault` | → `kLnWt025` (0.25 mm system default) | Hardcoded in `SetPen` |
-| `kLnWtByBlock` | → `kLnWt025` (same as ByLwDefault) | Passes through ByLwDefault resolution |
-
-- **Zoom-independent**: All line weights render at fixed screen pixel widths regardless of view scale. This matches AutoCAD's "Display Lineweight" model-space behavior.
-- **DPI-aware**: Uses `GetDeviceCaps(LOGPIXELSX)` for the mm-to-pixel conversion.
-- **Toggle**: `View > Pen Widths` (`AeSysView::PenWidthsOn()`) enables/disables width rendering. When off, all pens render at 1px (GDI default width 0).
-
-### Layer Display Properties
-`EoDbLayer` carries display properties set before rendering its groups:
-
-| Property | Member | Static resolver | Set in `Display()` |
-|----------|--------|----------------|-------------------|
-| Color | `m_color` | `EoDbPrimitive::sm_layerColor` | `SetLayerColor()` |
-| LineType index | via `m_lineType->Index()` | `sm_layerLineTypeIndex` | `SetLayerLineTypeIndex()` |
-| LineType name | via `m_lineType->Name()` | `sm_layerLineTypeName` | `SetLayerLineTypeName()` |
-| Line weight | `m_lineWeight` | `sm_layerLineWeight` | `SetLayerLineWeight()` |
-| LineType scale | `m_lineTypeScale` | `sm_layerLineTypeScale` | `SetLayerLineTypeScale()` |
-
-Layer line weight defaults to `kLnWtByLwDefault`. DXF import propagates `EoDxfLayer::m_lineweightEnumValue` (group code 370). DXF export writes it back via `EoDxfLineWeights::LineWeightToDxfIndex()`. PEG V2 serializes it as int16 DXF code after layer handle/ownerHandle.
-
-### GDI Pen Style Mapping (`ManagePenResources`)
-`ManagePenResources` maps the internal `lineTypeIndex` to a GDI pen style:
-
-| Index | GDI Style | Used in practice? |
-|-------|-----------|------------------|
-| 0 | `PS_NULL` | ✅ Invisible entities |
-| 2 | `PS_DOT` | ❌ Dead code for entities — AeSys renders its own patterns |
-| 3 | `PS_DASH` | ❌ Dead code |
-| 6 | `PS_DASHDOT` | ❌ Dead code |
-| 7 | `PS_DASHDOTDOT` | ❌ Dead code |
-| default | `PS_SOLID` | ✅ All visible entity rendering |
-
-**Why the non-SOLID GDI styles are dead code**: Entity linetype rendering is handled by `EoGsVertexBuffer::DisplayDashPattern()`, which reads dash/gap patterns from `EoDbLineType` objects and draws individual line segments with a PS_SOLID pen. The `End` function temporarily switches to `PS_SOLID` (via `renderState.SetLineType(deviceContext, 1)`) before calling `DisplayDashPattern`, then restores the original lineTypeIndex. The GDI PS_DOT/PS_DASH patterns in `ManagePenResources` are never visible during entity display.
-
-### Non-Entity Pen Usage (Bypasses `ManagePenResources`)
-These UI elements create their own `CPen` objects directly:
-
-| Element | Pen style | Location |
-|---------|-----------|----------|
-| Rubberband lines | `PS_SOLID` + `Eo::colorRubberband` | `AeSysView::OnMouseMove` |
-| Rubberband rectangles | `PS_SOLID` + `Eo::colorRubberband` | `AeSysView::OnMouseMove` |
-| Viewport boundary | `PS_DOT` + entity color | `EoDbViewport::Display` |
-| Point circles | `PS_SOLID` + entity color | `EoDbPoint::Display` |
-
-### Legacy Color-Based Weight Table
-`penWidths[16]` in `AeSys.cpp` (accessed via `app.LineWeight(colorIndex)`) is a legacy relic from the 4-pen plotter era. It maps 16 color indices to pen widths in inches (4 distinct values: 0.0, 0.0075, 0.015, 0.02, 0.03). This table is **no longer used** by the entity display pipeline — all line weight rendering now uses the DXF line weight enum resolution chain. The table remains for potential future plotter/print output use.
-
-### Key Files
-| File | Role |
-|------|------|
-| `EoGsRenderState.cpp` | `SetPen` (resolution + width calc), `ManagePenResources` (GDI pen cache) |
-| `EoGsRenderState.h` | Render state members (`m_color`, `m_LineTypeIndex`, `m_lineTypeName`, `m_lineTypeScale`) |
-| `EoDbLayer.h/.cpp` | Layer display properties (`m_lineWeight`, `m_lineTypeScale`), static setter calls in `Display()` |
-| `EoDbPrimitive.h/.cpp` | Static layer resolution members (`sm_layerLineWeight`, `sm_layerLineTypeScale`) |
-| `EoGePolyline.h/.cpp` | `polyline::` thin wrappers delegating to global `EoGsVertexBuffer` instance |
-| `EoDxfLineWeights.h` | `LineWeight` enum, `LineWeightToDxfIndex`/`DxfIndexToLineWeight` converters |
-
-## Documentation
-- Utilize Doxygen for automated documentation generation. Ensure that comments are clear and descriptive, and consider the balance between verbosity and clarity to maintain readability.
-
-## Simplex PSF Stroke Font (v2 Format)
-
-### Format Overview
-- `Simplex.psf` is a 16384-byte binary stroke font derived from the Hershey simplex font set.
-- **v1** (legacy): 96-entry offset table for ASCII 32–126, stroke data at `int32[96]`, all characters use a fixed advance width of 1.0 normalized units.
-- **v2** (current): magic `−2` at `int32[0]`, 225-entry offset table at `int32[1]`, 224-entry advance width table at `int32[226]`, 224-entry left bearing table at `int32[450]`, stroke data at `int32[674]`. Supports character codes 32–255 (CP1252).
-- Full format specification: `Documentation/Simplex PSF Format.md`.
-
-### Stroke Encoding
-- Each stroke is a packed 32-bit integer: bits 0–11 Y displacement (sign-magnitude), bits 12–23 X displacement (sign-magnitude), bits 24–31 opcode (5 = MOVE, else DRAW).
-- Hershey origin mapping: `psf_x = hershey_x × 3.75 + 50`. All characters begin with a MOVE to raw X ≈ 50.
-
-### Normalized Coordinate System
-- X displacements are scaled by `0.01 / Eo::defaultCharacterCellAspectRatio` (= 0.01/0.6 ≈ 0.01667).
-- Y displacements are scaled by `0.01`.
-- A full Hershey cell (raw 0–100) spans **1.667** in normalized X and **1.0** in normalized Y.
-- The `EoGeReferenceSystem` transform matrix maps normalized coordinates to world coordinates.
-
-### Per-Character Advance Widths (v2)
-- Each character's advance width is stored in raw stroke X-units in the advance width table.
-- Normalized cell width: `rawAdvanceWidth × 0.01 / 0.6`.
-- Character advance in renderer: `cellWidth + interCharacterGap`, where `interCharacterGap = (0.32 + spacing) / 0.6`.
-- To adjust a character's proportional width, edit only the **advance width table** (`int32[226..449]`).
-
-### Left Bearing Table (v2)
-- Each character's left bearing shifts strokes leftward so they are left-aligned within their proportional cell.
-- Applied before the stroke loop: `ptStroke.x −= rawLeftBearing × 0.01 / 0.6`.
-- Formula used during conversion: `leftBearing = max(0, minCumulativeX − 6)`, where 6 raw units provides a consistent left margin.
-
-### Text Alignment (Center/Middle Justification)
-- `GetBottomLeftCorner()` and `text_GetBoundingBox()` compute text extent using `ComputeStrokeFontTextExtent()`, which sums per-character v2 advance widths (or falls back to fixed 1.0 for v1).
-- `ComputeStrokeFontTextExtent()` skips formatting characters (`\P`, `\A`, `\S` sequences), mirroring `LengthSansFormattingCharacters()` logic.
-- Both functions accept `const CString& text` (not `int` character count) so they can look up per-character advance widths.
-- `CharacterCellWidth()` is a file-local helper that returns the normalized cell width for a single character code.
-
-### Tooling (Round-Trip `.psf` ↔ `.psf.txt`)
-| Tool | Purpose |
-|------|---------|
-| `Tools/ConvertPsfToText.ps1` | Decompiles binary `.psf` → human-readable `.psf.txt` (tab-separated) |
-| `Tools/ConvertTextToPsf.ps1` | Compiles `.psf.txt` → v2 binary `.psf` |
-| `Tools/ConvertStrokeFontV1ToV2.ps1` | One-time v1 → v2 binary migration with advance width and left bearing computation |
-
-- Round-trip is **byte-for-byte identical**: `.psf` → `.psf.txt` → `.psf`.
-- The `.psf.txt` format uses `CHAR` lines with fields: `code`, `label`, `advanceWidth`, `leftBearing`, followed by indented `M` (move) and `D` (draw) stroke lines with raw X, Y values.
-
-### Key Constants (`Eo.h`)
-| Constant | Value | Purpose |
-|----------|-------|---------|
-| `strokeFontFileSizeInBytes` | 16384 | Fixed file size for both v1 and v2 |
-| `strokeFontV2MagicNumber` | −2 | Identifies v2 format at `int32[0]` |
-| `strokeFontV2AdvanceWidthTableStart` | 226 | Advance width table begins at `int32[226]` |
-| `strokeFontV2LeftBearingTableStart` | 450 | Left bearing table begins at `int32[450]` |
-| `strokeFontV2StrokeDataStart` | 674 | Stroke data begins at `int32[674]` |
-| `defaultCharacterCellAspectRatio` | 0.6 | Width-to-height ratio of the character cell |
-
-## EoDbConic ↔ DXF Conic Pipeline (ARC, CIRCLE, ELLIPSE)
-
-### Internal Representation
-- `EoDbConic` stores: `m_center` (WCS), `m_majorAxis` (WCS vector), `m_extrusion` (unit normal), `m_ratio` (minor/major, 0 < r ≤ 1), `m_startAngle`, `m_endAngle` (radians).
-- `MinorAxis()` = `CrossProduct(m_extrusion, m_majorAxis) × m_ratio` — derived at render time, not stored.
-- `Subclass()` classifies: `Circle` (ratio ≈ 1, full), `RadialArc` (ratio ≈ 1, partial), `Ellipse` (ratio < 1, full), `EllipticalArc` (ratio < 1, partial).
-
-### DXF Read Pipeline
-
-| Entity | Coord System | ApplyExtrusion | Converter | Factory | Notes |
-|--------|-------------|----------------|-----------|---------|-------|
-| CIRCLE | OCS | `ExtrudePointInPlace(center)` | `ConvertCircleEntity` | `CreateCircle` | majorAxis = `ComputeArbitraryAxis(ext) × radius` |
-| ARC | OCS | `ExtrudePointInPlace(center)` | `ConvertArcEntity` | `CreateRadialArc` | majorAxis = `ComputeArbitraryAxis(ext) × radius`; angles: deg→rad in parser, OCS pass-through |
-| ELLIPSE | **WCS** | **No-op** | `ConvertEllipseEntity` | `CreateConic` | majorAxis from DXF code 11/21/31; angles in radians |
-
-- ARC/CIRCLE: `ApplyExtrusion` transforms center from OCS→WCS. `ComputeArbitraryAxis` reconstructs the OCS X-axis direction as the major axis, encoding the directional flip for negative-Z extrusion.
-- ELLIPSE: Coordinates are already WCS per DXF spec. `ApplyExtrusion()` is intentionally a no-op. Extrusion is used only by `MinorAxis()`.
-
-### Render Pipeline
-- `Display()` → `GenerateApproximationVertices(m_center, m_majorAxis)`
-- Computes `minorAxis = MinorAxis()`, builds `EoGeTransformMatrix(center, majorAxis, minorAxis)`, inverts it.
-- Sweeps unit circle from `m_startAngle` through `(m_endAngle − m_startAngle)` with adaptive tessellation.
-- Transform maps `(cos θ, sin θ, 0)` → WCS points via `transformMatrix * point`.
-
-### DXF Write Pipeline
-- `ExportToDxf()` dispatches on `Subclass()`:
-  - **Circle** → `EoDxfCircle`: center, extrusion, radius.
-  - **RadialArc** → `EoDxfArc`: center, extrusion, radius, start/end angles.
-  - **Ellipse/EllipticalArc** → `EoDxfEllipse`: center, majorAxis, extrusion, ratio, start/end params.
-- `WriteArc` converts angles rad→deg (DXF ARC group 50/51 are in degrees).
-- `WriteEllipse` calls `CorrectAxis()` to validate ratio/axis before output.
-- ARC/CIRCLE export performs WCS→OCS reverse transform for the center point when extrusion is non-default.
-
-## EoDbPolyline ↔ DXF LWPOLYLINE / POLYLINE Mapping
-
-### Internal Representation
-- `EoDbPolyline` is the generalized polyline primitive handling both DXF LWPOLYLINE and heavy 2D/3D POLYLINE entities.
-- Core members: `m_flags` (int16), `m_pts` (EoGePoint3dArray), `m_bulges` (vector\<double\>), `m_startWidths` / `m_endWidths` (vector\<double\>), `m_constantWidth` (double).
-- Parallel vectors (`m_bulges`, `m_startWidths`, `m_endWidths`) remain **empty** for simple polylines — zero overhead until DXF import populates them.
-
-### Flag Bit Constants
-| Constant | Value | Meaning |
-|----------|-------|---------|
-| `sm_Closed` | `0x0001` | Last vertex connects back to first |
-| `sm_HasBulge` | `0x0002` | `m_bulges` contains per-vertex bulge values |
-| `sm_HasWidth` | `0x0004` | `m_startWidths` / `m_endWidths` are populated |
-| `sm_Plinegen` | `0x0008` | Generate linetype pattern across vertices |
-
-### PEG Serialization (type code `kPolylinePrimitive` = 0x2002)Type code <0x2002>   uint16_t
-Pen color            int16_t
-Line type            int16_t
-Flags                uint16_t   (sm_Closed | sm_HasBulge | sm_HasWidth | sm_Plinegen)
-Constant width       double     (DXF group code 43; 0.0 when not set)
-Number of vertices   uint16_t
-{vertices}           point3d[]
-if (flags & sm_HasBulge):
-  {bulge values}     double[]   (one per vertex)
-if (flags & sm_HasWidth):
-  {start widths}     double[]   (one per vertex)
-  {end widths}       double[]   (one per vertex)
-### DXF Read Pipeline
-
-| DXF Entity | Parser | Processor | Callback | Converter | Notes |
-|-----------|--------|-----------|----------|-----------|-------|
-| LWPOLYLINE | `EoDxfLwPolyline::ParseCode` | `ProcessLWPolyline` | `AddLWPolyline` | `ConvertLWPolylineEntity` | Lightweight; vertices in OCS with `z` from elevation |
-| POLYLINE (3D) | `EoDxfPolyline::ParseCode` + `EoDxfVertex::ParseCode` | `ProcessPolyline` + `ProcessVertex` | `AddPolyline` (flag `0x08`) | `ConvertPolyline3DEntity` | Full 3D vertex coordinates |
-| POLYLINE (2D) | Same as 3D | Same as 3D | `AddPolyline` (no 0x08/0x10/0x40) | `ConvertPolyline2DEntity` | OCS x,y + polyline elevation z; bulge/width per vertex |
-| POLYLINE (mesh) | Same as 3D | Same as 3D | `AddPolyline` (flag `0x40` or `0x10`) | **Skipped** | Polyface mesh / polygon mesh not mappable |
-
-### AddPolyline Subtype Discrimination (`EoDbDxfInterface.h`)flag & 0x40  → polyface mesh → skip + log
-flag & 0x10  → polygon mesh  → skip + log
-flag & 0x08  → 3D polyline   → ConvertPolyline3DEntity
-else         → 2D polyline   → ConvertPolyline2DEntity
-### DXF → EoDbPolyline Property Mapping (LWPOLYLINE)
-| DXF Property | Group Code | EoDbPolyline Member/Method | Notes |
-|---|---|---|---|
-| Vertices (x,y) | 10/20 | `SetVertexFromLwVertex()` | Z from elevation (group 38) via `EoDxfPolylineVertex2d.z` |
-| Closed | flag 0x01 | `SetClosed(true)` | |
-| Plinegen | flag 0x80 | `SetPlinegen(true)` | DXF uses 0x80; PEG uses sm_Plinegen=0x0008 |
-| Constant width | 43 | `SetConstantWidth()` | Expanded to per-vertex widths if no per-vertex data |
-| Per-vertex bulge | per vertex | `SetBulges(vector&&)` | Only populated when any vertex has non-zero bulge |
-| Per-vertex widths | 40/41 per vertex | `SetWidths(vector&&, vector&&)` | Only populated when any vertex has non-zero width |
-
-### DXF → EoDbPolyline Property Mapping (Heavy 2D POLYLINE)
-| DXF Property | Source | EoDbPolyline Member/Method | Notes |
-|---|---|---|---|
-| Vertex x,y | `EoDxfVertex::m_locationPoint` | `SetVertex()` | Z = polyline elevation (`m_polylineElevation.z`) |
-| Closed | POLYLINE flag 0x01 | `SetClosed(true)` | |
-| Plinegen | POLYLINE flag 0x80 | `SetPlinegen(true)` | |
-| Per-vertex bulge | `EoDxfVertex::m_bulge` | `SetBulges(vector&&)` | |
-| Per-vertex widths | `EoDxfVertex::m_startingWidth/m_endingWidth` | `SetWidths(vector&&, vector&&)` | Falls back to `m_defaultStartWidth/m_defaultEndWidth` |
-| Curve-fit / spline-fit | flags 0x02/0x04 | All vertices kept | Structure lost but rendered geometry preserved |
-
-### Bulge Arc Tessellation (`polyline::TessellateArcSegment`)
-- Bulge = `tan(θ/4)` where θ is the included angle of the arc. Positive = CCW, negative = CW.
-- Algorithm: compute center from chord midpoint + perpendicular offset, then direct 2D rotation of the center→start direction vector.
-- Adaptive tessellation: `ceil(|sweepAngle| / 2π × segmentsPerFullCircle)` with minimum 2 segments.
-- Last tessellated point is snapped to the exact endpoint to avoid floating-point drift.
-- Constants: `Eo::arcTessellationSegmentsPerFullCircle = 72`, `Eo::arcTessellationMinimumSegments = 2`.
-
-### Display Pipeline
-- `Display()` → `polyline::BeginLineLoop/Strip` → emit vertices with `polyline::SetVertex` → `polyline::End`.
-- Bulge-aware: each edge tessellated via `TessellateArcSegment`. Closing segment for closed polylines respects its bulge.
-- Selection/extents use `BuildTessellatedPoints()` (private helper) which produces a flattened point array with arcs expanded.
-- **Width rendering**: `DisplayWidthFill()` renders per-segment filled trapezoids (GDI `Polygon`) with linearly interpolated widths. Arc segments are tessellated first, then each sub-segment gets a radially-offset quad. Called from `Display()` when width data is present.
-
-### Known Limitations and Deferred Work
-| Item | Notes |
-|------|-------|
-| Non-uniform scale + bulge | Bulge is dimensionless; non-uniform BLOCK INSERT scales distort arcs (matches AutoCAD behavior) |
-| Break bulge arcs | Decomposing individual bulge arcs to `EoDbConic` for editing is deferred |
-
-## EoDbSpline ↔ DXF SPLINE Mapping
-
-### Internal Representation
-- `EoDbSpline` stores: `m_pts` (control points), `m_degree` (int16, default 3), `m_flags` (int16, DXF flag bits), `m_knots` (vector\<double\>), `m_weights` (vector\<double\>).
-- `Display()` calls `GenPts(m_degree + 1, m_pts)` — degree-aware rendering.
-- `GenPts` implements Cox–de Boor B-spline tessellation. Currently always regenerates a uniform knot vector at render time (stored knots used only for export fidelity).
-
-### DXF → EoDbSpline Import
-| DXF Property | Group Codes | Preserved | Notes |
-|---|---|---|---|
-| Control points | 10/20/30 | ✅ | Stored directly (no OCS transform — splines are WCS) |
-| Fit points (fallback) | 11/21/31 | ✅ as control points | Used only when no control points |
-| Degree | 71 | ✅ | Stored in `m_degree` |
-| Knot vector | 40 | ✅ | Stored in `m_knots` (used on export; display uses uniform) |
-| Weights (NURBS) | 41 | ✅ | Stored in `m_weights` when rational flag set |
-| Flags | 70 | ✅ | Stored in `m_flags` (closed/periodic/rational/planar/linear) |
-| Start/end tangents | 12-13/22-23/32-33 | ❌ | Ignored |
-
-### DXF Export
-- `ExportToDxf()` populates `EoDxfSpline` from stored members: degree, flags, knots, weights, control points.
-- Stored knot vector and weights round-trip through DXF correctly.
-
-### PEG Serialization
-- **V1** (AE2011): `kSplinePrimitive → color → lineTypeIndex → uint16(pointCount) → points[]` — degree defaults to 3 on reload.
-- **V2** (AE2026): Adds `flags(uint16) → degree(int16) → numKnots(uint16) → numControlPoints(uint16) → knots[] → weights[] (if rational) → controlPoints[]`.
-
-### GenPts Tessellation Algorithm
-- Cox–de Boor B-spline recursion with `order = degree + 1`.
-- Tessellation density: `8 × numberOfControlPoints` segments.
-- When `order > numberOfControlPoints`, falls back to a single line segment.
-
-### Known Deferred Work
-- `SelectUsingRectangle` tests the raw control polygon, not the tessellated curve.
-- `GetControlPoint()`, `GoToNextControlPoint()`, `IsInView()` lack empty-array guards.
-- Display uses uniform knots regardless of stored knots — NURBS rendering fidelity is deferred.

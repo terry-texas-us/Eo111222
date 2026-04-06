@@ -76,11 +76,13 @@ IDR_MAINFRAME           ICON                    "res\\Icons\\AeSys.ico"
 IDR_PEGTYPE             ICON                    "res\\Icons\\AeSys.ico"
 
 IDR_TRATYPE             ICON                    "res\\Icons\\AeSys_Gold.ico"
+
 IDI_OUTPUT_WND          ICON                    "res\\Icons\\output_wnd.ico"
 
 IDI_OUTPUT_WND_HC       ICON                    "res\\Icons\\output_wnd_hc.ico"
 
 IDI_PROPERTIES_WND      ICON                    "res\\Icons\\properties_wnd.ico"
+
 IDI_PROPERTIES_WND_HC   ICON                    "res\\Icons\\properties_wnd_hc.ico"
 
 
@@ -105,7 +107,7 @@ IDB_LAYER_STATES_HC     BITMAP                  "res\\Toolbar Bitmaps\\LayerStat
 
 IDR_RENDER_PROPERTIES   BITMAP                  "res\\Toolbar Bitmaps\\RenderProperties.bmp"
 
-IDR_STYLES              BITMAP                  "res\\Toolbar Bitmaps\\Styles.bmp"
+IDR_STYLES              BITMAP                  "res\\Toolbar Bitmaps\\Styles_T-More-dark-24.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -113,8 +115,8 @@ IDR_STYLES              BITMAP                  "res\\Toolbar Bitmaps\\Styles.bm
 // Toolbar
 //
 
-IDR_MAINFRAME_24 TOOLBAR 24, 24 
-BEGIN 
+IDR_MAINFRAME_24 TOOLBAR 24, 24
+BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
     BUTTON      ID_FILE_SAVE
@@ -145,14 +147,14 @@ BEGIN
     BUTTON      ID_CONTEXT_HELP
 END
 
-IDR_RENDER_PROPERTIES TOOLBAR 16, 16
+IDR_RENDER_PROPERTIES TOOLBAR 24, 24
 BEGIN
     BUTTON      ID_PENCOLOR_COMBO
     BUTTON      ID_LINETYPE_COMBO
     BUTTON      ID_LINEWEIGHT_COMBO
 END
 
-IDR_STYLES TOOLBAR 16, 16
+IDR_STYLES TOOLBAR 24, 24
 BEGIN
     BUTTON      ID_TEXTSTYLE_BUTTON
     BUTTON      ID_TEXTSTYLE_COMBO
@@ -349,11 +351,11 @@ BEGIN
         MENUITEM "&Background Image",           ID_VIEW_BACKGROUNDIMAGE
         MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
         MENUITEM "Use &Direct2D",               ID_VIEW_DIRECT2D
-        MENUITEM "&Aliased Rendering",            ID_VIEW_ALIASED
+        MENUITEM "&Aliased Rendering",          ID_VIEW_ALIASED
         POPUP "Color &Scheme"
         BEGIN
-            MENUITEM "&Dark",                      ID_VIEW_COLORSCHEME_DARK
-            MENUITEM "&Light",                     ID_VIEW_COLORSCHEME_LIGHT
+            MENUITEM "&Dark",                       ID_VIEW_COLORSCHEME_DARK
+            MENUITEM "&Light",                      ID_VIEW_COLORSCHEME_LIGHT
         END
         MENUITEM SEPARATOR
         POPUP "&Window\t="
@@ -631,11 +633,11 @@ BEGIN
         MENUITEM "&Background Image",           ID_VIEW_BACKGROUNDIMAGE
         MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
         MENUITEM "Use &Direct2D",               ID_VIEW_DIRECT2D
-        MENUITEM "&Aliased Rendering",            ID_VIEW_ALIASED
+        MENUITEM "&Aliased Rendering",          ID_VIEW_ALIASED
         POPUP "Color &Scheme"
         BEGIN
-            MENUITEM "&Dark",                      ID_VIEW_COLORSCHEME_DARK
-            MENUITEM "&Light",                     ID_VIEW_COLORSCHEME_LIGHT
+            MENUITEM "&Dark",                       ID_VIEW_COLORSCHEME_DARK
+            MENUITEM "&Light",                      ID_VIEW_COLORSCHEME_LIGHT
         END
         MENUITEM SEPARATOR
         POPUP "&Window\t="
@@ -2952,6 +2954,7 @@ IDR_DRAW_MODE           CURSOR                  "res\\Cursors\\DrawMode.cur"
 IDR_EDIT_MODE           CURSOR                  "res\\Cursors\\EditMode.cur"
 
 IDR_FIXUP_MODE          CURSOR                  "res\\Cursors\\FixupMode.cur"
+
 IDR_LPD_MODE            CURSOR                  "res\\Cursors\\LowPressureDuct.cur"
 
 IDR_NODAL_MODE          CURSOR                  "res\\Cursors\\NodalMode.cur"
@@ -2961,9 +2964,11 @@ IDR_NODALR_MODE         CURSOR                  "res\\Cursors\\NodalRMode.cur"
 IDR_PIPE_MODE           CURSOR                  "res\\Cursors\\PipeMode.cur"
 
 IDR_POWER_MODE          CURSOR                  "res\\Cursors\\PowerMode.cur"
+
 IDR_TRAP_MODE           CURSOR                  "res\\Cursors\\TrapMode.cur"
 
 IDR_TRAPR_MODE          CURSOR                  "res\\Cursors\\TrapRMode.cur"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3020,6 +3025,10 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_INDICATOR_SCALE      "Scale"
+    ID_INDICATOR_ZOOM       "Zoom"
+    ID_INDICATOR_LENGTH     "Length"
+    ID_INDICATOR_ANGLE      "Angle"
     ID_VIEW_PROPERTIESWND   "Show or hide the properties bar\nToggle Properities"
 END
 
@@ -3240,8 +3249,8 @@ BEGIN
     IDS_MSG_NO_LINETYPES_DEFINED "Current drawing has no line types defined."
     IDS_MSG_PEGFILE_OPEN_FAILURE "Peg file open failure."
     IDS_MSG_DXF_SAVE_SUCCESS "Success saving drawing in DXF format as %s."
-    IDS_MSG_DWG_SAVE_SUCCESS "Success saving drawing in DWG format as %s."
     IDS_MSG_DXF_SAVE_FAILURE "Failed to save drawing in DXF format as %s."
+    IDS_MSG_DWG_SAVE_SUCCESS "Success saving drawing in DWG format as %s."
 END
 
 STRINGTABLE
@@ -3284,10 +3293,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_INDICATOR_LENGTH     "Length"
-    ID_INDICATOR_ANGLE      "Angle"
-    ID_INDICATOR_SCALE      "Scale"
-    ID_INDICATOR_ZOOM       "Zoom"
     ID_OP0                  "0"
     ID_OP1                  "1"
     ID_OP2                  "2"

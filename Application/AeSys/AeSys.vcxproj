@@ -464,6 +464,19 @@
     <None Include="Markdowns\Peg &amp; Tra File Formats.md" />
     <!-- All resources (icons, cursors, bitmaps, psf, rc2, etc.) -->
     <None Include="res\Cursors\AnnotateMode.cur" />
+    <None Include="res\Cursors\CutMode.cur" />
+    <None Include="res\Cursors\DimensionMode.cur" />
+    <None Include="res\Cursors\Draw2Mode.cur" />
+    <None Include="res\Cursors\DrawMode.cur" />
+    <None Include="res\Cursors\EditMode.cur" />
+    <None Include="res\Cursors\FixupMode.cur" />
+    <None Include="res\Cursors\LowPressureDuct.cur" />
+    <None Include="res\Cursors\NodalMode.cur" />
+    <None Include="res\Cursors\NodalRMode.cur" />
+    <None Include="res\Cursors\PipeMode.cur" />
+    <None Include="res\Cursors\PowerMode.cur" />
+    <None Include="res\Cursors\TrapMode.cur" />
+    <None Include="res\Cursors\TrapRMode.cur" />
     <None Include="res\Icons\AeSys_Gold.ico" />
     <None Include="res\Hatches\acad.pat" />
     <None Include="res\Simplex.psf" />
@@ -496,6 +509,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\Icons\AeSys.ico" />
+    <Image Include="res\Icons\output_wnd.ico" />
+    <Image Include="res\Icons\output_wnd_hc.ico" />
+    <Image Include="res\Icons\properties_wnd.ico" />
+    <Image Include="res\Icons\properties_wnd_hc.ico" />
     <Image Include="res\Toolbar Bitmaps\LayerStates.bmp" />
     <Image Include="res\Toolbar Bitmaps\LayerStates_hc.bmp" />
     <Image Include="res\Toolbar Bitmaps\layer_filters.bmp" />
@@ -503,8 +521,14 @@
     <Image Include="res\Toolbar Bitmaps\menuimages_hc.bmp" />
     <Image Include="res\Toolbar Bitmaps\properties.bmp" />
     <Image Include="res\Toolbar Bitmaps\properties_hc.bmp" />
+    <Image Include="res\Toolbar Bitmaps\RenderProperties.bmp" />
     <Image Include="res\Toolbar Bitmaps\Styles.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Styles_T-More-dark-24.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar-dark-24.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar-dark-24.png" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar-dark-32.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar-light-24.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar-light-32.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar-light.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar256.bmp" />

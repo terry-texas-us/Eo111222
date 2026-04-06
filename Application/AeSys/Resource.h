@@ -7,12 +7,12 @@
 #define IDR_MAINFRAME                   101
 #define IDR_PEGTYPE                     103
 #define IDR_TRATYPE                     104
+#define IDR_LAYER                       106
+#define IDR_WINDOW                      107
 #define IDR_MAINFRAME_32                108
 #define IDR_MAINFRAME_32_DARK           109
 #define IDR_MAINFRAME_24                110
 #define IDR_MAINFRAME_24_DARK           111
-#define IDR_LAYER                       106
-#define IDR_WINDOW                      107
 #define ID_INDICATOR_SCALE              115
 #define ID_INDICATOR_ZOOM               116
 #define IDR_TRAP                        118
@@ -616,9 +616,7 @@
 #define ID_VIEW_USER_TOOLBAR9           4699
 #define ID_VIEW_USER_TOOLBAR10          4700
 #define ID_SETUP_LAYERPROPERTIES        4733
-#define ID_EDIT_FIND_COMBO              4763
 #define ID_PENCOLOR_COMBO               4764
-#define ID_PENCOLOR_MORE                4765
 #define ID_LINETYPE_COMBO               4766
 #define ID_LINEWEIGHT_COMBO             4767
 #define ID_TEXTSTYLE_COMBO              4768

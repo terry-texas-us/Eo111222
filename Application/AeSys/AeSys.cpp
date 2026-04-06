@@ -263,10 +263,9 @@ int AeSys::ExitInstance() {
 void AeSys::PreLoadState() {
   GetContextMenuManager()->AddMenu(L"My menu", IDR_CONTEXT_MENU);
 
-  // One-time migration (v5): standard toolbar now uses EoMfStandardToolBar which
-  // skips button state serialization. Clear stale workspace state that may contain
-  // corrupted button-image mappings from previous sessions.
-  constexpr int kToolbarLayoutVersion = 5;
+  // One-time migration (v7): IDR_RENDER_PROPERTIES cell size changed from 16×16 to 24×24.
+  // Clear stale workspace state so MFC rebuilds toolbar image lists at the new size.
+  constexpr int kToolbarLayoutVersion = 7;
   if (GetProfileIntW(L"Migrations", L"ToolbarLayout", 0) < kToolbarLayoutVersion) {
     CleanState();
     WriteProfileInt(L"Migrations", L"ToolbarLayout", kToolbarLayoutVersion);

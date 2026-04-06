@@ -15,9 +15,13 @@
 #include "EoMfVisualManager.h"
 #include "MainFrm.h"
 #include "Resource.h"
+#include <algorithm>
 
 namespace {
-constexpr int highDpiThreshold = 144;
+
+/// @brief Pixel (0,0) background key color of the IDR_STYLES toolbar bitmap.
+/// Must match the background fill color in res/Toolbar Bitmaps/Styles_T-More-dark-24.bmp.
+constexpr COLORREF kStylesToolbarBitmapKey = RGB(55, 55, 50);
 
 /// @brief Applies the DWM immersive dark mode attribute to the window title bar.
 /// Requires Windows 10 1809+ (build 17763). Silently ignored on older Windows.
@@ -128,25 +132,22 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   CMFCPopupMenu::SetForceMenuFocus(FALSE);
   DWORD Style(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 
-  // Use 32x32 Segoe Fluent icons at above 150% DPI (144) ; 24x24 otherwise.
-  m_useHighDpiToolbar = (::GetDpiForSystem() > highDpiThreshold);
+  // Default button/image sizes for initial toolbar creation. The actual button height
+  // is adjusted after the first RecalcLayout, which creates the combo HWNDs via
+  // OnShow → CreateCombo. At that point we measure the real combo closed height and
+  // set all toolbars to match, ensuring icon-only and combo-containing toolbars
+  // report identical row heights to the docking manager.
+  const CSize imageSize(24, 24);
+  const CSize buttonSize(32, 32);
 
-  if (m_useHighDpiToolbar) {
-    m_standardToolBar.SetSizes(CSize(40, 40), CSize(32, 32));
-  } else {
-    m_standardToolBar.SetSizes(CSize(32, 32), CSize(24, 24));
-  }
-  const UINT standardToolBarId = m_useHighDpiToolbar ? IDR_MAINFRAME_32 : IDR_MAINFRAME_24;
-
-  // Use IDR_MAINFRAME_24 as a stable pane ID regardless of which DPI-specific
-  // resource provides the toolbar bitmap. MFC's CDockingManager persists pane IDs
-  // in the registry; a DPI-dependent ID causes the docking state blob to become
-  // stale when DPI changes between sessions, hiding the toolbar on next launch.
   if (!m_standardToolBar.CreateEx(this, TBSTYLE_FLAT, Style, CRect(1, 1, 1, 1), IDR_MAINFRAME_24) ||
-      !m_standardToolBar.LoadToolBar(standardToolBarId, 0, 0, TRUE)) {
+      !m_standardToolBar.LoadToolBar(IDR_MAINFRAME_24, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create toolbar\n");
     return -1;
   }
+  // SetSizes must be called AFTER LoadToolBar — LoadToolBar with bLocked=TRUE
+  // recalculates m_sizeButton from resource dimensions, overriding any pre-set sizes.
+  m_standardToolBar.SetSizes(buttonSize, imageSize);
   m_standardToolBar.SetWindowTextW(L"Standard");
 
   if (!m_renderPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
@@ -154,15 +155,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create render properties toolbar\n");
     return -1;
   }
-  // Match cell height to the standard toolbar so both report the same row height
-  // to the docking manager. Without this, the properties toolbar defaults to the
-  // 16px cell from IDR_RENDER_PROPERTIES TOOLBAR 16,16, and combo boxes end up
-  // with a different vertical midpoint than the standard toolbar's icons.
-  if (m_useHighDpiToolbar) {
-    m_renderPropertiesToolBar.SetSizes(CSize(40, 40), CSize(32, 32));
-  } else {
-    m_renderPropertiesToolBar.SetSizes(CSize(32, 32), CSize(24, 24));
-  }
+  // Match cell height to the standard toolbar so all toolbars on the same docking row
+  // report identical height to the docking manager.
+  m_renderPropertiesToolBar.SetSizes(buttonSize, imageSize);
   m_renderPropertiesToolBar.SetWindowTextW(L"Properties");
 
   if (!m_stylesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
@@ -171,18 +166,16 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
     return -1;
   }
   // Match cell height to the standard toolbar
-  if (m_useHighDpiToolbar) {
-    m_stylesToolBar.SetSizes(CSize(40, 40), CSize(32, 32));
-  } else {
-    m_stylesToolBar.SetSizes(CSize(32, 32), CSize(24, 24));
-  }
+  m_stylesToolBar.SetSizes(buttonSize, imageSize);
   m_stylesToolBar.SetWindowTextW(L"Styles");
 
-  // In dark theme, adapt styles toolbar button glyph from black to light gray for visibility
-  if (Eo::activeColorScheme == Eo::ColorScheme::Dark) {
-    if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
-      lockedImages->AdaptColors(RGB(0, 0, 0), RGB(200, 200, 200));
-    }
+  // Replace the bitmap background-key pixels with the current scheme's toolbarBackground,
+  // then disable transparency. MFC's DrawEx composites onto a white-initialized intermediate
+  // bitmap before SRCCOPY-ing to the target — disabling transparency eliminates that path
+  // entirely, so background pixels paint as exactly toolbarBackground and blend seamlessly.
+  if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
+    lockedImages->AdaptColors(kStylesToolbarBitmapKey, Eo::SchemeColors(Eo::activeColorScheme).toolbarBackground);
+    lockedImages->SetTransparentColor(static_cast<COLORREF>(-1));
   }
 
   InitUserToolbars(nullptr, firstUserToolBarId, lastUserToolBarId);
@@ -223,6 +216,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   EnableDocking(CBRS_ALIGN_ANY);
 
   DockPane(&m_menuBar);
+  m_menuBar.SetExclusiveRowMode(TRUE);
+
   // Top toolbar row: Standard | Properties | Styles
   DockPane(&m_stylesToolBar);
   DockPaneLeftOf(&m_renderPropertiesToolBar, &m_stylesToolBar);
@@ -230,7 +225,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   DockPane(&m_propertiesPane, AFX_IDW_DOCKBAR_LEFT);
   DockPane(&m_outputPane,AFX_IDW_DOCKBAR_BOTTOM);
 
+  RecalcLayout();
+
+  EnsureToolbarsVisible();
+
   ApplyColorScheme();
+
+  // ApplyColorScheme calls LoadBitmap which can reset button sizes.
+  // Re-apply combo-derived sizes after all bitmap loading is complete.
+  AdjustToolbarSizesToMatchCombos();
 
   EnableAutoHidePanes(CBRS_ALIGN_ANY);
 
@@ -366,6 +369,16 @@ BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWind
     CMFCToolBar* UserToolbar = GetUserToolBarByIndex(i);
     if (UserToolbar != nullptr) { UserToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, Customize); }
   }
+
+  // Re-apply toolbar sizing after CDockingManager::LoadState restores docking layout
+  // from the registry. LoadState (called from CMDIFrameWndEx::LoadFrame → LoadMDIState)
+  // restores toolbar HWND positions and sizes from a previous session, overriding the
+  // SetSizes values applied in OnCreate. EnsureToolbarsVisible catches toolbars hidden
+  // by stale registry state. RecalcLayout forces the docking manager to re-query each
+  // toolbar's preferred height (based on the still-valid button sizes from OnCreate).
+  EnsureToolbarsVisible();
+  AdjustToolbarSizesToMatchCombos();
+
   return TRUE;
 }
 LRESULT CMainFrame::OnToolbarContextMenu(WPARAM, LPARAM point) {
@@ -503,6 +516,33 @@ void CMainFrame::EnsureToolbarsVisible() {
     }
   }
 }
+void CMainFrame::AdjustToolbarSizesToMatchCombos() {
+  // Measure the actual combo HWND closed height and set all toolbar button sizes
+  // to match. This ensures icon-only and combo-containing toolbars report identical
+  // row heights to the docking manager. Must be called after any operation that can
+  // reset m_sizeButton (LoadBitmap, LoadToolBar, docking state restore).
+  const CSize kImageSize(24, 24);
+  CObList buttons;
+  if (CMFCToolBar::GetCommandButtons(ID_PENCOLOR_COMBO, buttons) > 0) {
+    auto* comboButton = DYNAMIC_DOWNCAST(CMFCToolBarComboBoxButton, buttons.GetHead());
+    if (comboButton != nullptr) {
+      auto* combo = comboButton->GetComboBox();
+      if (combo != nullptr && combo->GetSafeHwnd() != nullptr) {
+        CRect comboRect;
+        combo->GetWindowRect(&comboRect);
+        constexpr int comboVertMargin = 4;  // CMFCToolBarComboBoxButton::m_nVertMargin
+        const int targetHeight = std::max(32, static_cast<int>(comboRect.Height()) + 2 * comboVertMargin);
+        const CSize adjustedSize(std::max(32, targetHeight), targetHeight);
+        ATLTRACE2(traceGeneral, 1, L"AdjustToolbarSizesToMatchCombos: combo=%d, button=%dx%d\n",
+            comboRect.Height(), adjustedSize.cx, adjustedSize.cy);
+        m_standardToolBar.SetSizesAll(adjustedSize, kImageSize);
+        m_renderPropertiesToolBar.SetSizesAll(adjustedSize, kImageSize);
+        m_stylesToolBar.SetSizesAll(adjustedSize, kImageSize);
+        RecalcLayout();
+      }
+    }
+  }
+}
 void CMainFrame::ApplyColorScheme() {
   auto* visualManager = dynamic_cast<EoMfVisualManager*>(CMFCVisualManager::GetInstance());
   if (visualManager != nullptr) { visualManager->RefreshColors(); }
@@ -534,13 +574,12 @@ void CMainFrame::ApplyColorScheme() {
   m_propertiesPane.ApplyColorScheme();
   m_outputPane.ApplyColorScheme();
 
-  // Reload and adapt styles toolbar bitmap for the active color scheme
+  // Reload and adapt styles toolbar bitmap for the active color scheme.
   m_stylesToolBar.CleanUpLockedImages();
   m_stylesToolBar.LoadBitmap(IDR_STYLES, 0U, 0U, TRUE, 0U, 0U);
-  if (Eo::activeColorScheme == Eo::ColorScheme::Dark) {
-    if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
-      lockedImages->AdaptColors(RGB(0, 0, 0), RGB(200, 200, 200));
-    }
+  if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
+    lockedImages->AdaptColors(kStylesToolbarBitmapKey, Eo::SchemeColors(Eo::activeColorScheme).toolbarBackground);
+    lockedImages->SetTransparentColor(static_cast<COLORREF>(-1));
   }
 
   // Swap the toolbar bitmap for the active color scheme.
@@ -553,15 +592,18 @@ void CMainFrame::ApplyColorScheme() {
   // Light bitmaps (shared TOOLBAR+BITMAP): Load may silently fail on some MFC builds
   //   → m_Images stays empty after Clear → falls back to m_ImagesLocked (correct).
   {
-    const UINT imageId = m_useHighDpiToolbar
-        ? (Eo::activeColorScheme == Eo::ColorScheme::Dark ? IDR_MAINFRAME_32_DARK : IDR_MAINFRAME_32)
-        : (Eo::activeColorScheme == Eo::ColorScheme::Dark ? IDR_MAINFRAME_24_DARK : IDR_MAINFRAME_24);
+    const UINT imageId =
+        Eo::activeColorScheme == Eo::ColorScheme::Dark ? IDR_MAINFRAME_24_DARK : IDR_MAINFRAME_24;
     m_standardToolBar.GetImages()->Clear();
 
     if (!m_standardToolBar.LoadBitmap(imageId)) {
       ATLTRACE2(traceGeneral, 1, L"Failed to load toolbar bitmap %u\n", imageId);
     }
   }
+
+  // LoadBitmap can reset button sizes. Re-apply combo-derived sizes.
+  AdjustToolbarSizesToMatchCombos();
+
   RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 }
 
