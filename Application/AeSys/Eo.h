@@ -46,73 +46,78 @@ struct ColorSchemeColors {
 /// @brief Dark scheme — warm charcoal optimized for ACI color palette visibility.
 /// Foundation: RGB(40, 40, 36) — warm dark gray at AutoCAD luminance (~39).
 /// Warm bias (R ≥ G > B) improves Blue ACI #5 contrast while remaining perceptually neutral.
+/// Chrome brightened +~10 from original for softer transition to white model-space views.
 inline constexpr ColorSchemeColors darkSchemeColors{
     RGB(40, 40, 36),  // modelSpaceBackground — warm charcoal, ACI-optimized
     RGB(255, 255, 255),  // paperSpaceBackground (always white for print fidelity)
     RGB(120, 118, 112),  // rubberband — warm mid-gray
     RGB(68, 68, 62),  // gridDot — warm, subtle grid overlay
+
     // Docking pane / property grid colors – sits comfortably between model space and chrome
-    RGB(55, 55, 50),  // paneBackground — warm dark panel
+    RGB(63, 62, 57),  // paneBackground — warm dark panel
     RGB(214, 212, 207),  // paneText — warm primary text
-    RGB(66, 65, 59),  // paneGroupBackground
+    RGB(76, 75, 69),  // paneGroupBackground
     RGB(176, 174, 169),  // paneGroupText — warm secondary text
-    RGB(56, 56, 51),  // paneLine — warm structural divider
-    RGB(66, 65, 59),  // paneDescriptionBackground — elevated within panel
+    RGB(64, 63, 58),  // paneLine — warm structural divider
+    RGB(76, 75, 69),  // paneDescriptionBackground — elevated within panel
     RGB(176, 174, 169),  // paneDescriptionText — warm secondary text
-    // Chrome-colors – three-tier - all brighter than main view RGB(40,40,36))
-    RGB(66, 65, 59),  // captionBackground – Tier 2 base chrome
+    // Chrome colors – three-tier – all brighter than main view RGB(40,40,36)
+    RGB(76, 75, 69),  // captionBackground – Tier 2 base chrome
     RGB(150, 148, 143),  // captionText – warm tertiary text
     RGB(0, 122, 204),  // captionActiveBackground (VS accent blue)
     RGB(255, 255, 255),  // captionActiveText
-    RGB(66, 65, 59),  // toolbarBackground – Tier 2 base chrome
-    RGB(52, 52, 47),  // menuBackground – Tier 1 recessed
+    RGB(76, 75, 69),  // toolbarBackground – Tier 2 base chrome
+    RGB(60, 59, 54),  // menuBackground – Tier 1 recessed
     RGB(230, 228, 222),  // menuText – warm bright text
-    RGB(79, 77, 70),  // menuHighlightBackground – Tier 3 elevated hover
+    RGB(88, 86, 79),  // menuHighlightBackground – Tier 3 elevated hover
     RGB(0, 122, 204),  // menuHighlightBorder (VS accent blue)
-    RGB(66, 65, 59),  // statusBarBackground – Tier 2 base chrome
+    RGB(76, 75, 69),  // statusBarBackground – Tier 2 base chrome
     RGB(214, 212, 207),  // statusBarText – warm primary text
-    RGB(79, 77, 70),  // tabActiveBackground – Tier 3 elevated for clear distinction
+    RGB(88, 86, 79),  // tabActiveBackground – Tier 3 elevated for clear distinction
     RGB(214, 212, 207),  // tabActiveText – warm primary text
-    RGB(52, 52, 47),  // tabInactiveBackground – Tier 1 recessed
+    RGB(60, 59, 54),  // tabInactiveBackground – Tier 1 recessed
     RGB(150, 148, 143),  // tabInactiveText – warm tertiary text
-    RGB(56, 56, 51),  // separatorColor – warm divider
-    RGB(56, 56, 51),  // borderColor – warm structural border
+    RGB(64, 63, 58),  // separatorColor – warm divider
+    RGB(64, 63, 58),  // borderColor – warm structural border
 };
 
 /// @brief Light scheme — warm white optimized for ACI color palette visibility.
 /// Model-space background stays pure white for maximum ACI clarity.
-/// Chrome surfaces carry a subtle warm tint (R ≥ G > B) for visual harmony.
+/// Chrome uses a warm three-tier structure mirroring the dark scheme:
+///   Tier 1 recessed (menus, inactive tabs) → Tier 2 base chrome → Tier 3 elevated (hover, active tab).
+/// Chrome darkened -~6 from original for softer transition to dark model-space views.
 inline constexpr ColorSchemeColors lightSchemeColors{
     RGB(255, 255, 255),  // modelSpaceBackground — pure white for ACI clarity
     RGB(255, 255, 255),  // paperSpaceBackground
-    RGB(142, 140, 136),  // rubberband — warm mid-gray
+    RGB(130, 128, 124),  // rubberband — warm mid-gray
     RGB(202, 200, 196),  // gridDot — warm subtle grid
-    // Docking pane / property grid colors
-    RGB(253, 252, 249),  // paneBackground — warm near-white
-    RGB(34, 33, 30),  // paneText — warm near-black
-    RGB(242, 241, 238),  // paneGroupBackground — warm light panel
-    RGB(120, 118, 114),  // paneGroupText — warm secondary text
-    RGB(214, 213, 209),  // paneLine — warm light divider
-    RGB(246, 245, 242),  // paneDescriptionBackground — warm light
-    RGB(84, 82, 78),  // paneDescriptionText — warm dark gray
-    // Chrome colors
-    RGB(240, 239, 236),  // captionBackground — warm light chrome
-    RGB(72, 70, 66),  // captionText — warm dark text
+
+    // Docking pane / property grid colors — content panels between model-space and chrome
+    RGB(247, 246, 243),  // paneBackground — warm near-white content
+    RGB(28, 27, 24),  // paneText — warm near-black (high contrast)
+    RGB(237, 236, 233),  // paneGroupBackground — warm within-panel elevation
+    RGB(100, 98, 94),  // paneGroupText — warm secondary text
+    RGB(214, 213, 209),  // paneLine — warm structural divider
+    RGB(241, 240, 237),  // paneDescriptionBackground — warm within-panel
+    RGB(78, 76, 72),  // paneDescriptionText — warm dark gray
+    // Chrome colors — three-tier warm light, darkened for depth contrast
+    RGB(229, 228, 224),  // captionBackground — Tier 2 base chrome
+    RGB(64, 62, 58),  // captionText — warm dark text
     RGB(0, 122, 204),  // captionActiveBackground (VS accent blue)
     RGB(255, 255, 255),  // captionActiveText
-    RGB(240, 239, 236),  // toolbarBackground — warm light chrome
-    RGB(248, 247, 244),  // menuBackground — warm lightest tier
-    RGB(34, 33, 30),  // menuText — warm near-black
+    RGB(229, 228, 224),  // toolbarBackground — Tier 2 base chrome
+    RGB(238, 237, 233),  // menuBackground — Tier 1 recessed
+    RGB(28, 27, 24),  // menuText — warm near-black
     RGB(220, 230, 240),  // menuHighlightBackground — soft warm-blue hover
     RGB(0, 122, 204),  // menuHighlightBorder (VS accent blue)
-    RGB(240, 239, 236),  // statusBarBackground — warm chrome
-    RGB(34, 33, 30),  // statusBarText — warm near-black
-    RGB(255, 254, 251),  // tabActiveBackground — warm white
-    RGB(34, 33, 30),  // tabActiveText — warm near-black
-    RGB(246, 245, 242),  // tabInactiveBackground — warm off-white
-    RGB(72, 70, 66),  // tabInactiveText — warm dark text
-    RGB(240, 239, 236),  // separatorColor — warm chrome tier
-    RGB(214, 213, 209),  // borderColor — warm light border
+    RGB(229, 228, 224),  // statusBarBackground — Tier 2 base chrome
+    RGB(28, 27, 24),  // statusBarText — warm near-black
+    RGB(247, 246, 243),  // tabActiveBackground — warm content (merges with pane)
+    RGB(28, 27, 24),  // tabActiveText — warm near-black
+    RGB(238, 237, 233),  // tabInactiveBackground — Tier 1 recessed
+    RGB(64, 62, 58),  // tabInactiveText — warm dark text
+    RGB(229, 228, 224),  // separatorColor — Tier 2 chrome
+    RGB(214, 213, 209),  // borderColor — warm structural border
 };
 
 /// @brief Returns the color set for the given scheme.

@@ -193,7 +193,6 @@ BOOL AeSys::InitInstance() {
   m_DeviceHeightInPixels = static_cast<double>(DeviceContext->GetDeviceCaps(VERTRES));
   m_DeviceWidthInMillimeters = static_cast<double>(DeviceContext->GetDeviceCaps(HORZSIZE));
   m_DeviceHeightInMillimeters = static_cast<double>(DeviceContext->GetDeviceCaps(VERTSIZE));
-  m_HighColorMode = DeviceContext->GetDeviceCaps(BITSPIXEL) > 8;
   InitGbls(DeviceContext);
   mainFrame->ReleaseDC(DeviceContext);
 
@@ -262,14 +261,6 @@ int AeSys::ExitInstance() {
 /// </remarks>
 void AeSys::PreLoadState() {
   GetContextMenuManager()->AddMenu(L"My menu", IDR_CONTEXT_MENU);
-
-  // One-time migration (v7): IDR_RENDER_PROPERTIES cell size changed from 16×16 to 24×24.
-  // Clear stale workspace state so MFC rebuilds toolbar image lists at the new size.
-  constexpr int kToolbarLayoutVersion = 7;
-  if (GetProfileIntW(L"Migrations", L"ToolbarLayout", 0) < kToolbarLayoutVersion) {
-    CleanState();
-    WriteProfileInt(L"Migrations", L"ToolbarLayout", kToolbarLayoutVersion);
-  }
 
   // @todo add another context menus here
 }

@@ -52,8 +52,7 @@ void EoMfPropertiesDockablePane::ApplyColorScheme() {
 
   // Reload toolbar images from the original bitmap, then adapt for dark theme if needed
   m_PropertiesToolBar.CleanUpLockedImages();
-  m_PropertiesToolBar.LoadBitmap(
-      static_cast<UINT>(app.HighColorMode() ? IDB_PROPERTIES_HC : IDR_PROPERTIES), 0U, 0U, TRUE, 0U, 0U);
+  m_PropertiesToolBar.LoadBitmap(IDB_PROPERTIES_HC, 0U, 0U, TRUE, 0U, 0U);
   if (Eo::activeColorScheme == Eo::ColorScheme::Dark) {
     if (auto* lockedImages = m_PropertiesToolBar.GetLockedImages()) {
       lockedImages->AdaptColors(RGB(0, 0, 0), RGB(200, 200, 200));
@@ -82,8 +81,7 @@ int EoMfPropertiesDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   m_PropertiesToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_PROPERTIES);
   m_PropertiesToolBar.LoadToolBar(IDR_PROPERTIES, 0, 0, TRUE, 0, 0, 0);
   m_PropertiesToolBar.CleanUpLockedImages();
-  m_PropertiesToolBar.LoadBitmap(
-      static_cast<UINT>(app.HighColorMode() ? IDB_PROPERTIES_HC : IDR_PROPERTIES), 0U, 0U, TRUE, 0U, 0U);
+  m_PropertiesToolBar.LoadBitmap(IDB_PROPERTIES_HC, 0U, 0U, TRUE, 0U, 0U);
 
   // In dark theme, adapt toolbar button images from dark glyphs to light for visibility
   if (Eo::activeColorScheme == Eo::ColorScheme::Dark) {

@@ -9,8 +9,8 @@
     color for each color scheme so that anti-aliased glyph edges blend seamlessly
     with no "halo" artifact.
 
-    Dark  variant: light glyphs RGB(214,212,207) on dark  bg RGB(40,40,36)
-    Light variant: dark  glyphs RGB(34,33,30)   on light bg RGB(240,239,236)
+    Dark  variant: light glyphs RGB(214,212,207) on dark  bg RGB(76,75,69)
+    Light variant: dark  glyphs RGB(34,33,30)   on light bg RGB(229,228,224)
 
     Both background colors are used as the MFC transparent (mask) color so the
     bitmap background disappears during toolbar rendering.
@@ -48,7 +48,7 @@ Add-Type -AssemblyName System.Drawing
 # Configuration
 # ---------------------------------------------------------------------------
 
-$iconSize  = 32   # pixels per icon cell (square)
+$iconSize  = 24   # pixels per icon cell (square)
 $outDir    = Join-Path $PSScriptRoot "..\Application\AeSys\res\Toolbar Bitmaps"
 
 # Button definitions — Unicode PUA codepoints for Segoe Fluent Icons / MDL2 Assets.
@@ -71,14 +71,14 @@ $schemes = @(
     @{
         Name      = 'dark'
         GlyphRgb  = [System.Drawing.Color]::FromArgb(214, 212, 207)   # darkSchemeColors.paneText
-        BgRgb     = [System.Drawing.Color]::FromArgb(40,  40,  36)    # darkSchemeColors.toolbarBackground (= transparent key)
-        OutFile   = 'Toolbar-dark-32.bmp'
+        BgRgb     = [System.Drawing.Color]::FromArgb(76,  75,  69)    # darkSchemeColors.toolbarBackground (= transparent key)
+        OutFile   = 'Toolbar-dark-24.bmp'
     },
     @{
         Name      = 'light'
         GlyphRgb  = [System.Drawing.Color]::FromArgb(34,  33,  30)    # lightSchemeColors.paneText
-        BgRgb     = [System.Drawing.Color]::FromArgb(240, 239, 236)   # lightSchemeColors.toolbarBackground (= transparent key)
-        OutFile   = 'Toolbar-light-32.bmp'
+        BgRgb     = [System.Drawing.Color]::FromArgb(229, 228, 224)   # lightSchemeColors.toolbarBackground (= transparent key)
+        OutFile   = 'Toolbar-light-24.bmp'
     }
 )
 

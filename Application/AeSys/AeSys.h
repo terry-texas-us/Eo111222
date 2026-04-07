@@ -94,7 +94,6 @@ class AeSys : public CWinAppEx {
   bool m_ClipboardDataText{true};
   bool m_TrapHighlighted{};
   bool m_TrapModeAddGroups{true};
-  bool m_HighColorMode{};
 
   // Direct2D / DirectWrite factory singletons (Phase 6)
   Microsoft::WRL::ComPtr<ID2D1Factory> m_d2dFactory;
@@ -210,8 +209,6 @@ class AeSys : public CWinAppEx {
    * @param fileName The path to the file containing hatch pattern definitions.
    */
   void LoadHatchesFromFile(const CString& strFileName);
-  [[nodiscard]] bool HighColorMode() const { return m_HighColorMode; }
-
   /// @brief Returns the process-wide Direct2D factory (single-threaded).
   [[nodiscard]] ID2D1Factory* D2DFactory() const { return m_d2dFactory.Get(); }
 

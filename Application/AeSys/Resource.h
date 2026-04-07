@@ -9,8 +9,6 @@
 #define IDR_TRATYPE                     104
 #define IDR_LAYER                       106
 #define IDR_WINDOW                      107
-#define IDR_MAINFRAME_32                108
-#define IDR_MAINFRAME_32_DARK           109
 #define IDR_MAINFRAME_24                110
 #define IDR_MAINFRAME_24_DARK           111
 #define ID_INDICATOR_SCALE              115

@@ -286,27 +286,25 @@ AeSys has a full dark/light theme system controlled by `Eo::activeColorScheme` a
 - `GetMDITabsBordersSize()` returns 0 — suppresses the default 3D sunken edge around MDI tab content.
 
 ### Color Hierarchy (Depth-Based Tiers)
-Both schemes use a layered depth model where deeper/overlay surfaces are progressively lighter (dark) or darker (light):
+Both schemes use a layered depth model. Dark: deeper surfaces are darker; chrome tiers are brighter. Light: chrome is slightly darker than content; tiers mirror the dark structure.
 
-**Dark scheme** — warm charcoal foundation `RGB(40, 40, 36)` with warm bias (R ≥ G > B):
+**Dark scheme** — warm charcoal foundation `RGB(40, 40, 36)` with warm bias (R ≥ G > B), chrome brightened +~10 for softer cross-scheme viewing:
 | Tier | Surface | Dark RGB | Role |
 |------|---------|----------|------|
-| Deepest | Popup menus | (28, 28, 25) | `menuBackground` — overlay depth |
-| Panel | Pane background, inactive tabs | (32, 32, 29) | `paneBackground`, `tabInactiveBackground` |
-| Chrome | Title bar, toolbar, menu bar, status bar | (40, 40, 36) | `toolbarBackground`, `captionBackground`, `statusBarBackground` |
-| Elevated | Group rows, description area | (44, 44, 40) | `paneGroupBackground`, `paneDescriptionBackground` |
-| Tab active | Active MDI tab | (54, 54, 48) | `tabActiveBackground` |
+| Recessed (Tier 1) | Popup menus, inactive tabs | (60, 59, 54) | `menuBackground`, `tabInactiveBackground` |
+| Panel | Pane background | (63, 62, 57) | `paneBackground` |
+| Base chrome (Tier 2) | Toolbar, caption, status bar, separators | (76, 75, 69) | `toolbarBackground`, `captionBackground`, `statusBarBackground` |
+| Elevated (Tier 3) | Hover, active tab | (88, 86, 79) | `menuHighlightBackground`, `tabActiveBackground` |
+| Model space | Drawing view background | (40, 40, 36) | `modelSpaceBackground` |
 
-**Light scheme** — warm white foundation with subtle warm tint (R ≥ G > B):
+**Light scheme** — pure white model-space, warm three-tier chrome (R ≥ G > B), chrome darkened -~6 for softer cross-scheme viewing:
 | Tier | Surface | Light RGB | Role |
-|------|---------|-----------|---------|
-| Chrome | Title bar, toolbar, menu bar, status bar, separators | (240, 239, 236) | `toolbarBackground`, `captionBackground` |
-| Panel groups | Group rows | (242, 241, 238) | `paneGroupBackground` |
-| Panel | Description, inactive tabs | (246, 245, 242) | `paneDescriptionBackground`, `tabInactiveBackground` |
-| Menu | Popup dropdown background | (248, 247, 244) | `menuBackground` |
-| Content | Pane background | (253, 252, 249) | `paneBackground` |
-| Active tab | Active MDI tab | (255, 254, 251) | `tabActiveBackground` |
+|------|---------|-----------|------|
 | Document | Model-space background | (255, 255, 255) | Pure white for ACI clarity |
+| Content | Pane background, active tab | (247, 246, 243) | `paneBackground`, `tabActiveBackground` |
+| Panel | Description, group rows | (241, 240, 237) / (237, 236, 233) | `paneDescriptionBackground`, `paneGroupBackground` |
+| Recessed (Tier 1) | Popup menus, inactive tabs | (238, 237, 233) | `menuBackground`, `tabInactiveBackground` |
+| Base chrome (Tier 2) | Toolbar, caption, status bar, separators | (229, 228, 224) | `toolbarBackground`, `captionBackground`, `statusBarBackground` |
 
 ### Where All Scheme Colors Live
 Every scheme-dependent color is a named field in `Eo::ColorSchemeColors` (`Eo.h`). Two `inline constexpr` instances define the palettes:
@@ -323,32 +321,32 @@ Every scheme-dependent color is a named field in `Eo::ColorSchemeColors` (`Eo.h`
 |-------|----------|-----------|---------|
 | `modelSpaceBackground` | (40, 40, 36) | (255, 255, 255) | View background (model space), `App::ViewTextColor()` inversion |
 | `paperSpaceBackground` | (255, 255, 255) | (255, 255, 255) | View background (paper space) — always white |
-| `rubberband` | (120, 118, 112) | (142, 140, 136) | Rubberband / selection feedback lines |
+| `rubberband` | (120, 118, 112) | (130, 128, 124) | Rubberband / selection feedback lines |
 | `gridDot` | (68, 68, 62) | (202, 200, 196) | Grid dot rendering |
-| `paneBackground` | (32, 32, 29) | (253, 252, 249) | Property grid + output list box background |
-| `paneText` | (214, 212, 207) | (34, 33, 30) | Property grid + output list box text |
-| `paneGroupBackground` | (44, 44, 40) | (242, 241, 238) | Property grid group-row background |
-| `paneGroupText` | (176, 174, 169) | (120, 118, 114) | Property grid group-row text |
-| `paneLine` | (56, 56, 51) | (214, 213, 209) | Property grid separator lines |
-| `paneDescriptionBackground` | (44, 44, 40) | (246, 245, 242) | Property grid description area background |
-| `paneDescriptionText` | (176, 174, 169) | (84, 82, 78) | Property grid description area text |
-| `captionBackground` | (40, 40, 36) | (240, 239, 236) | Docking pane caption (inactive) |
-| `captionText` | (150, 148, 143) | (72, 70, 66) | Docking pane caption text (inactive) |
+| `paneBackground` | (63, 62, 57) | (247, 246, 243) | Property grid + output list box background |
+| `paneText` | (214, 212, 207) | (28, 27, 24) | Property grid + output list box text |
+| `paneGroupBackground` | (76, 75, 69) | (237, 236, 233) | Property grid group-row background |
+| `paneGroupText` | (176, 174, 169) | (100, 98, 94) | Property grid group-row text |
+| `paneLine` | (64, 63, 58) | (214, 213, 209) | Property grid separator lines |
+| `paneDescriptionBackground` | (76, 75, 69) | (241, 240, 237) | Property grid description area background |
+| `paneDescriptionText` | (176, 174, 169) | (78, 76, 72) | Property grid description area text |
+| `captionBackground` | (76, 75, 69) | (229, 228, 224) | Docking pane caption (inactive) |
+| `captionText` | (150, 148, 143) | (64, 62, 58) | Docking pane caption text (inactive) |
 | `captionActiveBackground` | (0, 122, 204) | (0, 122, 204) | Active caption + active tab accent (VS blue) |
 | `captionActiveText` | (255, 255, 255) | (255, 255, 255) | Active caption text |
-| `toolbarBackground` | (40, 40, 36) | (240, 239, 236) | Toolbar, menu bar, tab area, DWM title bar |
-| `menuBackground` | (28, 28, 25) | (248, 247, 244) | Popup dropdown menus |
-| `menuText` | (230, 228, 222) | (34, 33, 30) | Menu item text |
-| `menuHighlightBackground` | (52, 52, 47) | (220, 230, 240) | Menu/toolbar hover fill |
+| `toolbarBackground` | (76, 75, 69) | (229, 228, 224) | Toolbar, menu bar, tab area, DWM title bar |
+| `menuBackground` | (60, 59, 54) | (238, 237, 233) | Popup dropdown menus |
+| `menuText` | (230, 228, 222) | (28, 27, 24) | Menu item text |
+| `menuHighlightBackground` | (88, 86, 79) | (220, 230, 240) | Menu/toolbar hover fill |
 | `menuHighlightBorder` | (0, 122, 204) | (0, 122, 204) | Menu/toolbar hover border (VS blue) |
-| `statusBarBackground` | (40, 40, 36) | (240, 239, 236) | Status bar background |
-| `statusBarText` | (214, 212, 207) | (34, 33, 30) | Status bar text |
-| `tabActiveBackground` | (54, 54, 48) | (255, 254, 251) | Active MDI/pane tab fill |
-| `tabActiveText` | (214, 212, 207) | (34, 33, 30) | Active tab text |
-| `tabInactiveBackground` | (32, 32, 29) | (246, 245, 242) | Inactive MDI/pane tab fill |
-| `tabInactiveText` | (150, 148, 143) | (72, 70, 66) | Inactive tab text |
-| `separatorColor` | (48, 48, 43) | (240, 239, 236) | Toolbar separators and dividers |
-| `borderColor` | (56, 56, 51) | (214, 213, 209) | Pane and toolbar borders |
+| `statusBarBackground` | (76, 75, 69) | (229, 228, 224) | Status bar background |
+| `statusBarText` | (214, 212, 207) | (28, 27, 24) | Status bar text |
+| `tabActiveBackground` | (88, 86, 79) | (247, 246, 243) | Active MDI/pane tab fill |
+| `tabActiveText` | (214, 212, 207) | (28, 27, 24) | Active tab text |
+| `tabInactiveBackground` | (60, 59, 54) | (238, 237, 233) | Inactive MDI/pane tab fill |
+| `tabInactiveText` | (150, 148, 143) | (64, 62, 58) | Inactive tab text |
+| `separatorColor` | (64, 63, 58) | (229, 228, 224) | Toolbar separators and dividers |
+| `borderColor` | (64, 63, 58) | (214, 213, 209) | Pane and toolbar borders |
 
 ### Windows Dark Mode Integration
 Dark scroll bars, context menus, and title bar rendering require Windows 10+ undocumented uxtheme APIs:
@@ -610,4 +608,4 @@ This is the least-bad mitigation available without abandoning `CMFCToolBarComboB
 `AdjustLayout()` stacks toolbar then property grid vertically to fill the pane client area.
 
 ### Dark Theme Toolbar Images
-The Properties toolbar buttons (Expand All, Sort, Properties1) use `properties.bmp` / `properties_hc.bmp` with dark glyphs — invisible on dark background. At creation time and in `ApplyColorScheme()`, the locked toolbar images are reloaded from the original bitmap, then adapted via `CMFCToolBarImages::AdaptColors(RGB(0,0,0), RGB(200,200,200))` in dark mode to shift black glyphs to light gray. Light mode uses the original unmodified bitmap.
+The Properties toolbar buttons (Expand All, Sort, Properties1) always load from `properties_hc.bmp` (high-color variant). In dark mode, `AdaptColors(RGB(0,0,0), RGB(200,200,200))` shifts the dark glyphs to light gray for visibility. Light mode uses the unmodified bitmap.

@@ -93,7 +93,7 @@ class CMainFrame : public CMDIFrameWndEx {
    *  @return TRUE if successful, FALSE otherwise.
    */
   BOOL CreateDockablePanes();
-  void SetDockablePanesIcons(bool highColorMode);
+  void SetDockablePanesIcons();
 
   /// @brief Measures the combo HWND closed height and re-applies SetSizes on all
   /// application toolbars so icon-only and combo-containing toolbars report identical

@@ -160,8 +160,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_renderPropertiesToolBar.SetSizes(buttonSize, imageSize);
   m_renderPropertiesToolBar.SetWindowTextW(L"Properties");
 
-  if (!m_stylesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
-      !m_stylesToolBar.LoadToolBar(IDR_STYLES, 0, 0, TRUE)) {
+  if (!m_stylesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) || !m_stylesToolBar.LoadToolBar(IDR_STYLES, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create styles toolbar\n");
     return -1;
   }
@@ -215,15 +214,16 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
 
   EnableDocking(CBRS_ALIGN_ANY);
 
-  DockPane(&m_menuBar);
-  m_menuBar.SetExclusiveRowMode(TRUE);
-
-  // Top toolbar row: Standard | Properties | Styles
+  // Single shared row: [MenuBar][Standard][RenderProps][Styles]
+  // DockPane inserts at row 0, so dock the rightmost toolbar first,
+  // then build leftward with DockPaneLeftOf, ending with the menu bar.
+  m_menuBar.SetExclusiveRowMode(FALSE);
   DockPane(&m_stylesToolBar);
   DockPaneLeftOf(&m_renderPropertiesToolBar, &m_stylesToolBar);
   DockPaneLeftOf(&m_standardToolBar, &m_renderPropertiesToolBar);
+  DockPaneLeftOf(&m_menuBar, &m_standardToolBar);
   DockPane(&m_propertiesPane, AFX_IDW_DOCKBAR_LEFT);
-  DockPane(&m_outputPane,AFX_IDW_DOCKBAR_BOTTOM);
+  DockPane(&m_outputPane, AFX_IDW_DOCKBAR_BOTTOM);
 
   RecalcLayout();
 
@@ -281,22 +281,20 @@ BOOL CMainFrame::CreateDockablePanes() {
     ATLTRACE2(traceGeneral, 3, L"Failed to create Properties pane\n");
     return FALSE;
   }
-  SetDockablePanesIcons(app.HighColorMode());
+  SetDockablePanesIcons();
   return TRUE;
 }
 
-void CMainFrame::SetDockablePanesIcons(bool highColorMode) {
+void CMainFrame::SetDockablePanesIcons() {
   CSize smallIconSize(::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON));
   HINSTANCE resourceHandle(::AfxGetResourceHandle());
 
-  HICON propertiesPaneIcon = static_cast<HICON>(
-      LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_PROPERTIES_WND_HC : IDI_PROPERTIES_WND),
-          IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
+  HICON propertiesPaneIcon = static_cast<HICON>(LoadImageW(
+      resourceHandle, MAKEINTRESOURCE(IDI_PROPERTIES_WND_HC), IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
   m_propertiesPane.SetIcon(propertiesPaneIcon, FALSE);
 
-  HICON outputPaneIcon =
-      static_cast<HICON>(LoadImageW(resourceHandle, MAKEINTRESOURCE(highColorMode ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND),
-          IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
+  HICON outputPaneIcon = static_cast<HICON>(LoadImageW(
+      resourceHandle, MAKEINTRESOURCE(IDI_OUTPUT_WND_HC), IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
   m_outputPane.SetIcon(outputPaneIcon, FALSE);
 
   UpdateMDITabbedBarsIcons();
@@ -344,30 +342,30 @@ BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWind
   if (!CMDIFrameWndEx::LoadFrame(resourceId, defaultStyle, parentWindow, createContext)) { return FALSE; }
 
   // Add some tools for example....
-  CUserToolsManager* UserToolsManager = app.GetUserToolsManager();
+  auto* UserToolsManager = app.GetUserToolsManager();
   if (UserToolsManager != nullptr && UserToolsManager->GetUserTools().IsEmpty()) {
-    CUserTool* Tool1 = UserToolsManager->CreateNewTool();
-    Tool1->m_strLabel = L"&Notepad";
-    Tool1->SetCommand(L"notepad.exe");
+    auto* tool1 = UserToolsManager->CreateNewTool();
+    tool1->m_strLabel = L"&Notepad";
+    tool1->SetCommand(L"notepad.exe");
 
-    CUserTool* Tool2 = UserToolsManager->CreateNewTool();
-    Tool2->m_strLabel = L"Paint &Brush";
-    Tool2->SetCommand(L"mspaint.exe");
+    auto* tool2 = UserToolsManager->CreateNewTool();
+    tool2->m_strLabel = L"Paint &Brush";
+    tool2->SetCommand(L"mspaint.exe");
 
-    CUserTool* Tool3 = UserToolsManager->CreateNewTool();
-    Tool3->m_strLabel = L"&Windows Explorer";
-    Tool3->SetCommand(L"explorer.exe");
+    auto* tool3 = UserToolsManager->CreateNewTool();
+    tool3->m_strLabel = L"&File Explorer";
+    tool3->SetCommand(L"explorer.exe");
 
-    CUserTool* Tool4 = UserToolsManager->CreateNewTool();
-    Tool4->m_strLabel = L"Fanning, Fanning & Associates On-&Line";
-    Tool4->SetCommand(L"http://www.fanningfanning.com");
+    auto* tool4 = UserToolsManager->CreateNewTool();
+    tool4->m_strLabel = L"Fanning, Fanning & Associates On-Line";
+    tool4->SetCommand(L"http://www.fanningfanning.com");
   }
 
   // Enable customization button for user toolbars (standard and render properties are locked)
-  auto Customize = App::LoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
+  auto customize = App::LoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
   for (int i = 0; i < maxUserToolbars; i++) {
-    CMFCToolBar* UserToolbar = GetUserToolBarByIndex(i);
-    if (UserToolbar != nullptr) { UserToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, Customize); }
+    auto* userToolbar = GetUserToolBarByIndex(i);
+    if (userToolbar != nullptr) { userToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, customize); }
   }
 
   // Re-apply toolbar sizing after CDockingManager::LoadState restores docking layout
@@ -511,8 +509,7 @@ void CMainFrame::EnsureToolbarsVisible() {
       toolbar->ShowPane(TRUE, FALSE, TRUE);
       CString name;
       toolbar->GetWindowText(name);
-      ATLTRACE2(traceGeneral, 1, L"EnsureToolbarsVisible: forced toolbar '%s' visible\n",
-          static_cast<LPCWSTR>(name));
+      ATLTRACE2(traceGeneral, 1, L"EnsureToolbarsVisible: forced toolbar '%s' visible\n", static_cast<LPCWSTR>(name));
     }
   }
 }
@@ -533,8 +530,8 @@ void CMainFrame::AdjustToolbarSizesToMatchCombos() {
         constexpr int comboVertMargin = 4;  // CMFCToolBarComboBoxButton::m_nVertMargin
         const int targetHeight = std::max(32, static_cast<int>(comboRect.Height()) + 2 * comboVertMargin);
         const CSize adjustedSize(std::max(32, targetHeight), targetHeight);
-        ATLTRACE2(traceGeneral, 1, L"AdjustToolbarSizesToMatchCombos: combo=%d, button=%dx%d\n",
-            comboRect.Height(), adjustedSize.cx, adjustedSize.cy);
+        ATLTRACE2(traceGeneral, 1, L"AdjustToolbarSizesToMatchCombos: combo=%d, button=%dx%d\n", comboRect.Height(),
+            adjustedSize.cx, adjustedSize.cy);
         m_standardToolBar.SetSizesAll(adjustedSize, kImageSize);
         m_renderPropertiesToolBar.SetSizesAll(adjustedSize, kImageSize);
         m_stylesToolBar.SetSizesAll(adjustedSize, kImageSize);
@@ -592,8 +589,7 @@ void CMainFrame::ApplyColorScheme() {
   // Light bitmaps (shared TOOLBAR+BITMAP): Load may silently fail on some MFC builds
   //   → m_Images stays empty after Clear → falls back to m_ImagesLocked (correct).
   {
-    const UINT imageId =
-        Eo::activeColorScheme == Eo::ColorScheme::Dark ? IDR_MAINFRAME_24_DARK : IDR_MAINFRAME_24;
+    const UINT imageId = Eo::activeColorScheme == Eo::ColorScheme::Dark ? IDR_MAINFRAME_24_DARK : IDR_MAINFRAME_24;
     m_standardToolBar.GetImages()->Clear();
 
     if (!m_standardToolBar.LoadBitmap(imageId)) {
