@@ -467,7 +467,6 @@
     <None Include="res\Cursors\CutMode.cur" />
     <None Include="res\Cursors\DimensionMode.cur" />
     <None Include="res\Cursors\Draw2Mode.cur" />
-    <None Include="res\Cursors\DrawMode - white.cur" />
     <None Include="res\Cursors\DrawMode.cur" />
     <None Include="res\Cursors\EditMode.cur" />
     <None Include="res\Cursors\FixupMode.cur" />

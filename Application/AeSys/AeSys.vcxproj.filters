@@ -468,7 +468,6 @@
     <None Include="res\Cursors\PowerMode.cur" />
     <None Include="res\Cursors\TrapMode.cur" />
     <None Include="res\Cursors\TrapRMode.cur" />
-    <None Include="res\Cursors\DrawMode - white.cur" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\Hatches\DefaultSet.txt" />

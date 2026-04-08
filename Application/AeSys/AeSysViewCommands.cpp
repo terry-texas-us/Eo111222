@@ -149,6 +149,12 @@ void AeSysView::OnViewBackgroundToggle() {
       SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(Eo::ViewBackgroundColor)));
   if (previousBrush != nullptr) { ::DeleteObject(previousBrush); }
   InvalidateScene();
+
+  // Refresh chrome: status bar text, styles toolbar bitmap, docking panes
+  if (auto* mainFrame = dynamic_cast<CMainFrame*>(AfxGetMainWnd())) { mainFrame->ApplyColorScheme(); }
+
+  // Refresh mode cursor for the new background setting
+  SetModeCursor(app.CurrentMode());
 }
 
 void AeSysView::OnUpdateViewBackgroundToggle(CCmdUI* pCmdUI) {

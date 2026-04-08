@@ -150,13 +150,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_stylesToolBar.SetSizes(buttonSize, imageSize);
   m_stylesToolBar.SetWindowTextW(L"Styles");
 
-  // Replace the bitmap background-key pixels with the chrome toolbarBackground,
-  // then disable transparency. MFC's DrawEx composites onto a white-initialized intermediate
-  // bitmap before SRCCOPY-ing to the target — disabling transparency eliminates that path
-  // entirely, so background pixels paint as exactly toolbarBackground and blend seamlessly.
+  // Reload locked images with bAdd=FALSE to store the DIB directly, bypassing the
+  // DDB conversion that LoadToolBar's bAdd=TRUE path causes via AddImage/CreateCompatibleBitmap.
+  // Then replace the bitmap background-key pixels with the chrome toolbarBackground.
   if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
+    lockedImages->Load(IDR_STYLES);
     lockedImages->AdaptColors(kStylesToolbarBitmapKey, Eo::chromeColors.toolbarBackground);
-    lockedImages->SetTransparentColor(static_cast<COLORREF>(-1));
   }
 
   InitUserToolbars(nullptr, firstUserToolBarId, lastUserToolBarId);
@@ -533,11 +532,11 @@ void CMainFrame::ApplyColorScheme() {
   m_outputPane.ApplyColorScheme();
 
   // Reload and adapt styles toolbar bitmap for the chrome color.
-  m_stylesToolBar.CleanUpLockedImages();
-  m_stylesToolBar.LoadBitmap(IDR_STYLES, 0U, 0U, TRUE, 0U, 0U);
+  // Use Load(bAdd=FALSE) directly on locked images to avoid the DDB conversion
+  // that LoadBitmap's bAdd=TRUE path causes through AddImage/CreateCompatibleBitmap.
   if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
+    lockedImages->Load(IDR_STYLES);
     lockedImages->AdaptColors(kStylesToolbarBitmapKey, Eo::chromeColors.toolbarBackground);
-    lockedImages->SetTransparentColor(static_cast<COLORREF>(-1));
   }
 
   // LoadBitmap can reset button sizes. Re-apply combo-derived sizes.
