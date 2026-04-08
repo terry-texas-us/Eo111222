@@ -199,7 +199,7 @@ void EoCtrlLineWeightComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMF
         deviceContext, rectCombo, isDisabled, m_pWndCombo->GetDroppedState(), isHighlighted, this);
 
     rectCombo.DeflateRect(2, 2);
-    const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
+    const auto& schemeColors = Eo::chromeColors;
     deviceContext->FillSolidRect(rectCombo, schemeColors.paneBackground);
 
     CRect rectButton = m_rectButton;
@@ -260,10 +260,9 @@ END_MESSAGE_MAP()
 
 HBRUSH EoCtrlLineWeightOwnerDrawCombo::OnCtlColor(CDC* deviceContext, CWnd* control, UINT ctlColor) {
   if (ctlColor == CTLCOLOR_LISTBOX) {
-    const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
     m_dropdownBackgroundBrush.DeleteObject();
-    m_dropdownBackgroundBrush.CreateSolidBrush(schemeColors.menuBackground);
-    deviceContext->SetBkColor(schemeColors.menuBackground);
+    m_dropdownBackgroundBrush.CreateSolidBrush(Eo::chromeColors.menuBackground);
+    deviceContext->SetBkColor(Eo::chromeColors.menuBackground);
     return static_cast<HBRUSH>(m_dropdownBackgroundBrush);
   }
   return CComboBox::OnCtlColor(deviceContext, control, ctlColor);
@@ -278,8 +277,7 @@ void EoCtrlLineWeightOwnerDrawCombo::OnPaint() {
   CRect clientRect;
   GetClientRect(&clientRect);
 
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
-  dc.FillSolidRect(&clientRect, schemeColors.paneBackground);
+  dc.FillSolidRect(&clientRect, Eo::chromeColors.paneBackground);
 
   int curSel = GetCurSel();
   if (curSel != CB_ERR) {
@@ -302,8 +300,7 @@ void EoCtrlLineWeightOwnerDrawCombo::OnNcPaint() {
   CRect windowRect;
   GetWindowRect(&windowRect);
   windowRect.OffsetRect(-windowRect.left, -windowRect.top);
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
-  dc.FillSolidRect(&windowRect, schemeColors.paneBackground);
+  dc.FillSolidRect(&windowRect, Eo::chromeColors.paneBackground);
 }
 
 BOOL EoCtrlLineWeightOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }
@@ -346,7 +343,7 @@ void EoCtrlLineWeightOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   auto itemData = drawItemStruct->itemData;
   UINT itemState = drawItemStruct->itemState;
 
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& schemeColors = Eo::chromeColors;
 
   COLORREF backgroundColor;
   COLORREF textColor;

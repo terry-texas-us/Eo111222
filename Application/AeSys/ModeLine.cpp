@@ -17,7 +17,7 @@ void AeSysView::ModeLineDisplay() {
   CString paneText;
 
   auto* context = GetDC();
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& schemeColors = Eo::chromeColors;
 
   for (int i = 0; i < 10; i++) {
     AfxExtractSubString(paneText, modeInformation, i + 1, '\n');
@@ -49,7 +49,7 @@ std::uint16_t AeSysView::ModeLineHighlightOp(std::uint16_t command) {
   if (command == 0) { return 0; }
   int paneIndex = ::statusOp0 + m_OpHighlighted - ID_OP0;
 
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& schemeColors = Eo::chromeColors;
   GetStatusBar().SetPaneBackgroundColor(paneIndex, schemeColors.captionActiveBackground);
   GetStatusBar().SetPaneTextColor(paneIndex, schemeColors.captionActiveText);
 
@@ -60,7 +60,7 @@ void AeSysView::ModeLineUnhighlightOp(std::uint16_t& command) {
   if (command == 0 || m_OpHighlighted == 0) { return; }
   int paneIndex = ::statusOp0 + m_OpHighlighted - ID_OP0;
 
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& schemeColors = Eo::chromeColors;
   GetStatusBar().SetPaneBackgroundColor(paneIndex);
   GetStatusBar().SetPaneTextColor(paneIndex, schemeColors.statusBarText);
 

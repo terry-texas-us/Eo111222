@@ -1,8 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Uxtheme.h>
-#pragma comment(lib, "UxTheme.lib")
-
 #include <cassert>
 #include <vector>
 #include <wchar.h>
@@ -54,14 +51,6 @@ int EoMfOutputDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   m_OutputMessagesList.AddString(L"Message output is being displayed here.");
   m_OutputReportsList.AddString(L"Reports output is being displayed here.");
 
-  // Apply dark scroll bar theme at creation time
-  if (Eo::activeColorScheme == Eo::ColorScheme::Dark) {
-    ::SetWindowTheme(m_OutputMessagesList.GetSafeHwnd(), L"DarkMode_Explorer", nullptr);
-    ::SetWindowTheme(m_OutputReportsList.GetSafeHwnd(), L"DarkMode_Explorer", nullptr);
-    ::SetWindowTheme(m_wndTabs.GetSafeHwnd(), L"DarkMode_Explorer", nullptr);
-    ::SetWindowTheme(GetSafeHwnd(), L"DarkMode_Explorer", nullptr);
-  }
-
   return 0;
 }
 
@@ -72,16 +61,8 @@ void EoMfOutputDockablePane::OnSize(UINT type, int cx, int cy) {
   m_wndTabs.SetWindowPos(nullptr, -1, -1, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
 }
 void EoMfOutputDockablePane::ApplyColorScheme() {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
-  m_OutputMessagesList.SetColors(colors.paneBackground, colors.paneText);
-  m_OutputReportsList.SetColors(colors.paneBackground, colors.paneText);
-
-  // Apply dark/light scroll bar theme to child controls
-  const wchar_t* themeName = (Eo::activeColorScheme == Eo::ColorScheme::Dark) ? L"DarkMode_Explorer" : L"Explorer";
-  ::SetWindowTheme(m_OutputMessagesList.GetSafeHwnd(), themeName, nullptr);
-  ::SetWindowTheme(m_OutputReportsList.GetSafeHwnd(), themeName, nullptr);
-  ::SetWindowTheme(m_wndTabs.GetSafeHwnd(), themeName, nullptr);
-  ::SetWindowTheme(GetSafeHwnd(), themeName, nullptr);
+  m_OutputMessagesList.SetColors(Eo::chromeColors.paneBackground, Eo::chromeColors.paneText);
+  m_OutputReportsList.SetColors(Eo::chromeColors.paneBackground, Eo::chromeColors.paneText);
 }
 EoMfOutputListBox::EoMfOutputListBox() {}
 EoMfOutputListBox::~EoMfOutputListBox() {}

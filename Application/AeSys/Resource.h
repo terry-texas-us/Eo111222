@@ -10,7 +10,6 @@
 #define IDR_LAYER                       106
 #define IDR_WINDOW                      107
 #define IDR_MAINFRAME_24                110
-#define IDR_MAINFRAME_24_DARK           111
 #define ID_INDICATOR_SCALE              115
 #define ID_INDICATOR_ZOOM               116
 #define IDR_TRAP                        118
@@ -622,8 +621,7 @@
 #define ID_VIEW_MODELSPACE              4811
 #define ID_VIEW_DIRECT2D                4812
 #define ID_VIEW_ALIASED                 4813
-#define ID_VIEW_COLORSCHEME_DARK        4814
-#define ID_VIEW_COLORSCHEME_LIGHT       4815
+#define ID_VIEW_BACKGROUND_TOGGLE       4814
 #define ID_VIEW_WINDOW_KEYPLAN          4901
 #define ID_WINDOW_ZOOMSPECIAL           4902
 #define ID_SETUP_POINTSTYLE             4903

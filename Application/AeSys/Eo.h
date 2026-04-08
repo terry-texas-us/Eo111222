@@ -6,157 +6,88 @@
 
 namespace Eo {
 
-/// @brief Identifies the active UI color scheme for the drawing views.
-enum class ColorScheme { Dark, Light };
+/// @brief Identifies the drawing view background preference (model space only).
+/// Paper space is always white. Chrome is always light.
+enum class ViewBackground { Dark, White };
 
-/// @brief Holds all scheme-dependent colors used by the rendering pipeline and UI chrome.
-struct ColorSchemeColors {
-  COLORREF modelSpaceBackground;  ///< Background for model-space views
-  COLORREF paperSpaceBackground;  ///< Background for paper-space layout views
-  COLORREF rubberband;  ///< Rubberband / selection feedback color
-  COLORREF gridDot;  ///< Grid dot/line color
-  // Docking pane / property grid colors
-  COLORREF paneBackground;  ///< Background for property grid and output list boxes
-  COLORREF paneText;  ///< Text color for property grid and output list boxes
-  COLORREF paneGroupBackground;  ///< Property grid group-row background
-  COLORREF paneGroupText;  ///< Property grid group-row text
-  COLORREF paneLine;  ///< Property grid separator line color
-  COLORREF paneDescriptionBackground;  ///< Property grid description area background
-  COLORREF paneDescriptionText;  ///< Property grid description area text
-  // Chrome colors (visual manager)
-  COLORREF captionBackground;  ///< Docking pane caption bar background
-  COLORREF captionText;  ///< Docking pane caption bar text
-  COLORREF captionActiveBackground;  ///< Active docking pane caption bar background
-  COLORREF captionActiveText;  ///< Active docking pane caption bar text
-  COLORREF toolbarBackground;  ///< Toolbar / command bar fill
-  COLORREF menuBackground;  ///< Menu bar and dropdown background
-  COLORREF menuText;  ///< Menu bar and dropdown text
-  COLORREF menuHighlightBackground;  ///< Menu item highlight/hover background
-  COLORREF menuHighlightBorder;  ///< Menu item highlight/hover border
-  COLORREF statusBarBackground;  ///< Status bar background
-  COLORREF statusBarText;  ///< Status bar text
-  COLORREF tabActiveBackground;  ///< Active MDI/pane tab background
-  COLORREF tabActiveText;  ///< Active MDI/pane tab text
-  COLORREF tabInactiveBackground;  ///< Inactive MDI/pane tab background
-  COLORREF tabInactiveText;  ///< Inactive MDI/pane tab text
-  COLORREF separatorColor;  ///< Toolbar separators and divider lines
-  COLORREF borderColor;  ///< Pane and toolbar borders
+/// @brief Holds all chrome colors used by the visual manager and docking panes.
+/// Single light-chrome palette. View-dependent colors (model-space background,
+/// rubberband, grid) are handled separately via ViewBackground and standalone
+/// constexpr values below.
+struct ChromeColors {
+  // Docking pane / property grid colors — content panels between model-space and chrome
+  COLORREF paneBackground = RGB(247, 246, 243);  ///< Background for property grid and output list boxes
+  COLORREF paneText = RGB(28, 27, 24);  ///< Text color for property grid and output list boxes
+  COLORREF paneGroupBackground = RGB(237, 236, 233);  ///< Property grid group-row background
+  COLORREF paneGroupText = RGB(100, 98, 94);  ///< Property grid group-row text
+  COLORREF paneLine = RGB(214, 213, 209);  ///< Property grid separator line color
+  COLORREF paneDescriptionBackground = RGB(241, 240, 237);  ///< Property grid description area background
+  COLORREF paneDescriptionText = RGB(78, 76, 72);  ///< Property grid description area text
+  // Chrome colors (visual manager) — three-tier warm light, darkened for depth contrast
+  COLORREF captionBackground = RGB(229, 228, 224);  ///< Docking pane caption bar background (Tier 2)
+  COLORREF captionText = RGB(64, 62, 58);  ///< Docking pane caption bar text
+  COLORREF captionActiveBackground = RGB(0, 122, 204);  ///< Active caption bar background (VS accent blue)
+  COLORREF captionActiveText = RGB(255, 255, 255);  ///< Active caption bar text
+  COLORREF toolbarBackground = RGB(229, 228, 224);  ///< Toolbar / command bar fill (Tier 2)
+  COLORREF menuBackground = RGB(238, 237, 233);  ///< Menu bar and dropdown background (Tier 1)
+  COLORREF menuText = RGB(28, 27, 24);  ///< Menu bar and dropdown text
+  COLORREF menuHighlightBackground = RGB(220, 230, 240);  ///< Menu item highlight/hover background
+  COLORREF menuHighlightBorder = RGB(0, 122, 204);  ///< Menu item highlight/hover border (VS accent blue)
+  COLORREF statusBarBackground = RGB(229, 228, 224);  ///< Status bar background (Tier 2)
+  COLORREF statusBarText = RGB(28, 27, 24);  ///< Status bar text
+  COLORREF tabActiveBackground = RGB(247, 246, 243);  ///< Active MDI/pane tab background
+  COLORREF tabActiveText = RGB(28, 27, 24);  ///< Active MDI/pane tab text
+  COLORREF tabInactiveBackground = RGB(238, 237, 233);  ///< Inactive MDI/pane tab background (Tier 1)
+  COLORREF tabInactiveText = RGB(64, 62, 58);  ///< Inactive MDI/pane tab text
+  COLORREF separatorColor = RGB(229, 228, 224);  ///< Toolbar separators and divider lines (Tier 2)
+  COLORREF borderColor = RGB(214, 213, 209);  ///< Pane and toolbar borders
 };
 
-/// @brief Dark scheme — warm charcoal optimized for ACI color palette visibility.
-/// Foundation: RGB(40, 40, 36) — warm dark gray at AutoCAD luminance (~39).
-/// Warm bias (R ≥ G > B) improves Blue ACI #5 contrast while remaining perceptually neutral.
-/// Chrome brightened +~10 from original for softer transition to white model-space views.
-inline constexpr ColorSchemeColors darkSchemeColors{
-    RGB(40, 40, 36),  // modelSpaceBackground — warm charcoal, ACI-optimized
-    RGB(255, 255, 255),  // paperSpaceBackground (always white for print fidelity)
-    RGB(120, 118, 112),  // rubberband — warm mid-gray
-    RGB(68, 68, 62),  // gridDot — warm, subtle grid overlay
+inline constexpr ChromeColors chromeColors;
 
-    // Docking pane / property grid colors – sits comfortably between model space and chrome
-    RGB(63, 62, 57),  // paneBackground — warm dark panel
-    RGB(214, 212, 207),  // paneText — warm primary text
-    RGB(76, 75, 69),  // paneGroupBackground
-    RGB(176, 174, 169),  // paneGroupText — warm secondary text
-    RGB(64, 63, 58),  // paneLine — warm structural divider
-    RGB(76, 75, 69),  // paneDescriptionBackground — elevated within panel
-    RGB(176, 174, 169),  // paneDescriptionText — warm secondary text
-    // Chrome colors – three-tier – all brighter than main view RGB(40,40,36)
-    RGB(76, 75, 69),  // captionBackground – Tier 2 base chrome
-    RGB(150, 148, 143),  // captionText – warm tertiary text
-    RGB(0, 122, 204),  // captionActiveBackground (VS accent blue)
-    RGB(255, 255, 255),  // captionActiveText
-    RGB(76, 75, 69),  // toolbarBackground – Tier 2 base chrome
-    RGB(60, 59, 54),  // menuBackground – Tier 1 recessed
-    RGB(230, 228, 222),  // menuText – warm bright text
-    RGB(88, 86, 79),  // menuHighlightBackground – Tier 3 elevated hover
-    RGB(0, 122, 204),  // menuHighlightBorder (VS accent blue)
-    RGB(76, 75, 69),  // statusBarBackground – Tier 2 base chrome
-    RGB(214, 212, 207),  // statusBarText – warm primary text
-    RGB(88, 86, 79),  // tabActiveBackground – Tier 3 elevated for clear distinction
-    RGB(214, 212, 207),  // tabActiveText – warm primary text
-    RGB(60, 59, 54),  // tabInactiveBackground – Tier 1 recessed
-    RGB(150, 148, 143),  // tabInactiveText – warm tertiary text
-    RGB(64, 63, 58),  // separatorColor – warm divider
-    RGB(64, 63, 58),  // borderColor – warm structural border
-};
+/// @brief The application-wide view background preference, persisted via EoApOptions.
+inline ViewBackground activeViewBackground = ViewBackground::Dark;
 
-/// @brief Light scheme — warm white optimized for ACI color palette visibility.
-/// Model-space background stays pure white for maximum ACI clarity.
-/// Chrome uses a warm three-tier structure mirroring the dark scheme:
-///   Tier 1 recessed (menus, inactive tabs) → Tier 2 base chrome → Tier 3 elevated (hover, active tab).
-/// Chrome darkened -~6 from original for softer transition to dark model-space views.
-inline constexpr ColorSchemeColors lightSchemeColors{
-    RGB(255, 255, 255),  // modelSpaceBackground — pure white for ACI clarity
-    RGB(255, 255, 255),  // paperSpaceBackground
-    RGB(130, 128, 124),  // rubberband — warm mid-gray
-    RGB(202, 200, 196),  // gridDot — warm subtle grid
+constexpr COLORREF colorBlack = RGB(0, 0, 0);
+constexpr COLORREF colorRed = RGB(255, 0, 0);  // ACI 1
+constexpr COLORREF colorWhite = RGB(255, 255, 255);  // ACI 7
+constexpr COLORREF colorGray = RGB(128, 128, 128);  // ACI 8
+constexpr COLORREF colorNavy = RGB(0, 0, 128);
 
-    // Docking pane / property grid colors — content panels between model-space and chrome
-    RGB(247, 246, 243),  // paneBackground — warm near-white content
-    RGB(28, 27, 24),  // paneText — warm near-black (high contrast)
-    RGB(237, 236, 233),  // paneGroupBackground — warm within-panel elevation
-    RGB(100, 98, 94),  // paneGroupText — warm secondary text
-    RGB(214, 213, 209),  // paneLine — warm structural divider
-    RGB(241, 240, 237),  // paneDescriptionBackground — warm within-panel
-    RGB(78, 76, 72),  // paneDescriptionText — warm dark gray
-    // Chrome colors — three-tier warm light, darkened for depth contrast
-    RGB(229, 228, 224),  // captionBackground — Tier 2 base chrome
-    RGB(64, 62, 58),  // captionText — warm dark text
-    RGB(0, 122, 204),  // captionActiveBackground (VS accent blue)
-    RGB(255, 255, 255),  // captionActiveText
-    RGB(229, 228, 224),  // toolbarBackground — Tier 2 base chrome
-    RGB(238, 237, 233),  // menuBackground — Tier 1 recessed
-    RGB(28, 27, 24),  // menuText — warm near-black
-    RGB(220, 230, 240),  // menuHighlightBackground — soft warm-blue hover
-    RGB(0, 122, 204),  // menuHighlightBorder (VS accent blue)
-    RGB(229, 228, 224),  // statusBarBackground — Tier 2 base chrome
-    RGB(28, 27, 24),  // statusBarText — warm near-black
-    RGB(247, 246, 243),  // tabActiveBackground — warm content (merges with pane)
-    RGB(28, 27, 24),  // tabActiveText — warm near-black
-    RGB(238, 237, 233),  // tabInactiveBackground — Tier 1 recessed
-    RGB(64, 62, 58),  // tabInactiveText — warm dark text
-    RGB(229, 228, 224),  // separatorColor — Tier 2 chrome
-    RGB(214, 213, 209),  // borderColor — warm structural border
-};
+constexpr COLORREF colorRubberband = RGB(120, 118, 112);
+constexpr COLORREF colorViewBackground = RGB(40, 40, 36);
 
-/// @brief Returns the color set for the given scheme.
-[[nodiscard]] inline constexpr const ColorSchemeColors& SchemeColors(ColorScheme scheme) noexcept {
-  return (scheme == ColorScheme::Light) ? lightSchemeColors : darkSchemeColors;
-}
-
-/// @brief The application-wide active color scheme, persisted via EoApOptions.
-inline ColorScheme activeColorScheme = ColorScheme::Dark;
-
-/// @brief Convenience accessor — returns the active scheme's model-space background.
+/// @brief Returns the model-space background color for the active view background setting.
 [[nodiscard]] inline COLORREF ModelSpaceBackgroundColor() noexcept {
-  return SchemeColors(activeColorScheme).modelSpaceBackground;
+  return (activeViewBackground == ViewBackground::Dark) ? colorViewBackground : colorWhite;
 }
 
-/// @brief Convenience accessor — returns the active scheme's paper-space background.
-[[nodiscard]] inline COLORREF PaperSpaceBackgroundColor() noexcept {
-  return SchemeColors(activeColorScheme).paperSpaceBackground;
-}
+/// @brief Paper space is always white regardless of the view background setting.
+[[nodiscard]] inline constexpr COLORREF PaperSpaceBackgroundColor() noexcept { return colorWhite; }
 
 /// @brief Returns the appropriate view background color for the given drawing space.
 /// @param isPaperSpace true for paper-space layout views, false for model-space.
 [[nodiscard]] inline COLORREF ViewBackgroundColorForSpace(bool isPaperSpace) noexcept {
-  const auto& colors = SchemeColors(activeColorScheme);
-  return isPaperSpace ? colors.paperSpaceBackground : colors.modelSpaceBackground;
+  return isPaperSpace ? colorWhite : ModelSpaceBackgroundColor();
 }
 
-/// @brief Returns the rubberband color for the active scheme.
-[[nodiscard]] inline COLORREF RubberbandColor() noexcept { return SchemeColors(activeColorScheme).rubberband; }
+/// @brief Returns the rubberband color appropriate for the active view background.
+[[nodiscard]] inline COLORREF RubberbandColor() noexcept {
+  return (activeViewBackground == ViewBackground::Dark) ? colorRubberband : RGB(130, 128, 124);
+}
+
+/// @brief Returns the grid dot color appropriate for the active view background.
+[[nodiscard]] inline COLORREF GridDotColor() noexcept {
+  return (activeViewBackground == ViewBackground::Dark) ? RGB(68, 68, 62) : RGB(202, 200, 196);
+}
 
 /// @brief Legacy mutable alias — kept for callers that read the background color
 /// without knowing the active space. Synchronized via SyncViewBackgroundColor().
 inline COLORREF ViewBackgroundColor = RGB(40, 40, 36);
 
-/// @brief Synchronizes the legacy ViewBackgroundColor global with the active scheme's model-space background.
-/// Must be called after changing activeColorScheme.
-inline void SyncViewBackgroundColor() noexcept {
-  ViewBackgroundColor = SchemeColors(activeColorScheme).modelSpaceBackground;
-}
+/// @brief Synchronizes the legacy ViewBackgroundColor global with the active view background setting.
+/// Must be called after changing activeViewBackground.
+inline void SyncViewBackgroundColor() noexcept { ViewBackgroundColor = ModelSpaceBackgroundColor(); }
 
 inline COLORREF GrayPalette[16] = {RGB(255, 255, 255), RGB(140, 140, 140), RGB(0xbe, 0xbe, 0xbe), RGB(0xdc, 0xdc, 0xdc),
     RGB(0xf0, 0xf0, 0xf0), RGB(0x8d, 0x8d, 0x8d), RGB(191, 191, 191), RGB(0xdd, 0xdd, 0xdd), RGB(0xf1, 0xf1, 0xf1),
@@ -230,25 +161,15 @@ constexpr int strokeFontV2MaxCharacterCode = 255;
 
 constexpr std::int16_t continuousLineTypeIndex{1};
 
-constexpr COLORREF colorBlack = RGB(0, 0, 0);
-constexpr COLORREF colorRed = RGB(255, 0, 0);  // ACI 1
-constexpr COLORREF colorWhite = RGB(255, 255, 255);  // ACI 7
-constexpr COLORREF colorGray = RGB(128, 128, 128);  // ACI 8
-constexpr COLORREF colorNavy = RGB(0, 0, 128);
-
-constexpr COLORREF colorRubberband = RGB(120, 118, 112);
-constexpr COLORREF colorViewBackground = RGB(40, 40, 36);
-
 constexpr std::int16_t defaultColor = 7;
 
 /// @brief Synchronizes ACI 7 and ACI 0 palette entries with the model-space background brightness.
 /// ACI 7 displays as white on dark backgrounds and black on light backgrounds (AutoCAD convention).
 /// ACI 0 is swapped complementarily for XOR drawing mode correctness (see SetROP2).
-/// Must be called after changing activeColorScheme, typically alongside SyncViewBackgroundColor().
+/// Must be called after changing activeViewBackground, typically alongside SyncViewBackgroundColor().
 inline void SyncAci7WithBackground() noexcept {
-  const auto& colors = SchemeColors(activeColorScheme);
-  const int luminance = GetRValue(colors.modelSpaceBackground) + GetGValue(colors.modelSpaceBackground) +
-      GetBValue(colors.modelSpaceBackground);
+  const COLORREF background = ModelSpaceBackgroundColor();
+  const int luminance = GetRValue(background) + GetGValue(background) + GetBValue(background);
   if (luminance > 384) {
     // Light background — ACI 7 = black, ACI 0 = white
     ColorPalette[7] = colorBlack;

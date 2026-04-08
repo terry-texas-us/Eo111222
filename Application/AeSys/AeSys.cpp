@@ -124,26 +124,10 @@ BOOL AeSys::InitInstance() {
 
   m_Options.Load();
 
-  // Apply persisted color scheme to the global state
-  Eo::activeColorScheme = m_Options.m_colorScheme;
+  // Apply persisted view background preference to the global state
+  Eo::activeViewBackground = m_Options.m_viewBackground;
   Eo::SyncViewBackgroundColor();
   Eo::SyncAci7WithBackground();
-
-  // Enable Windows dark mode for common controls
-  // Uses undocumented but widely-adopted uxtheme ordinals (available since Windows 10 1903).
-  {
-    HMODULE uxThemeModule = ::LoadLibraryExW(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-    if (uxThemeModule != nullptr) {
-      // SetPreferredAppMode (ordinal 135): 0=Default, 1=AllowDark, 2=ForceDark, 3=ForceLight
-      using SetPreferredAppMode_t = DWORD(WINAPI*)(int);
-      auto setPreferredAppMode =
-          reinterpret_cast<SetPreferredAppMode_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(135)));
-      if (setPreferredAppMode != nullptr) {
-        setPreferredAppMode(Eo::activeColorScheme == Eo::ColorScheme::Dark ? 2 : 3);
-      }
-      // uxtheme.dll stays loaded for the process lifetime — do not FreeLibrary
-    }
-  }
 
   // Initialize managers
   InitContextMenuManager();

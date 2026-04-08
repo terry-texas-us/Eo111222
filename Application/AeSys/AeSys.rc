@@ -93,17 +93,13 @@ IDI_PROPERTIES_WND_HC   ICON                    "res\\Icons\\properties_wnd_hc.i
 
 IDR_MAINFRAME_24        BITMAP                  "res\\Toolbar Bitmaps\\Toolbar-light-24.bmp"
 
-IDR_MAINFRAME_24_DARK   BITMAP                  "res\\Toolbar Bitmaps\\Toolbar-dark-24.bmp"
-
-IDR_PROPERTIES          BITMAP                  "res\\Toolbar Bitmaps\\properties.bmp"
-
 IDB_PROPERTIES_HC       BITMAP                  "res\\Toolbar Bitmaps\\properties_hc.bmp"
 
 IDB_LAYER_STATES_HC     BITMAP                  "res\\Toolbar Bitmaps\\LayerStates_hc.bmp"
 
 IDR_RENDER_PROPERTIES   BITMAP                  "res\\Toolbar Bitmaps\\RenderProperties.bmp"
 
-IDR_STYLES              BITMAP                  "res\\Toolbar Bitmaps\\Styles_T-More-dark-24.bmp"
+IDR_STYLES              BITMAP                  "res\\Toolbar Bitmaps\\Styles toolbar.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -332,11 +328,7 @@ BEGIN
         MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
         MENUITEM "Use &Direct2D",               ID_VIEW_DIRECT2D
         MENUITEM "&Aliased Rendering",          ID_VIEW_ALIASED
-        POPUP "Color &Scheme"
-        BEGIN
-            MENUITEM "&Dark",                       ID_VIEW_COLORSCHEME_DARK
-            MENUITEM "&Light",                      ID_VIEW_COLORSCHEME_LIGHT
-        END
+        MENUITEM "Dark &Background",              ID_VIEW_BACKGROUND_TOGGLE
         MENUITEM SEPARATOR
         POPUP "&Window\t="
         BEGIN
@@ -614,11 +606,7 @@ BEGIN
         MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
         MENUITEM "Use &Direct2D",               ID_VIEW_DIRECT2D
         MENUITEM "&Aliased Rendering",          ID_VIEW_ALIASED
-        POPUP "Color &Scheme"
-        BEGIN
-            MENUITEM "&Dark",                       ID_VIEW_COLORSCHEME_DARK
-            MENUITEM "&Light",                      ID_VIEW_COLORSCHEME_LIGHT
-        END
+        MENUITEM "Dark &Background",              ID_VIEW_BACKGROUND_TOGGLE
         MENUITEM SEPARATOR
         POPUP "&Window\t="
         BEGIN

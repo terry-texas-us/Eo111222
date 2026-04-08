@@ -57,7 +57,7 @@ class CMainFrame : public CMDIFrameWndEx {
 
  protected:  // control bar embedded members
   CMFCMenuBar m_menuBar;
-  EoMfStatelessToolBar m_standardToolBar;
+  CMFCToolBar m_standardToolBar;  // Standard toolbar (no custom controls — plain CMFCToolBar)
   EoMfStatelessToolBar m_renderPropertiesToolBar;  // Properties toolbar (Color, LineType, LineWeight)
   EoMfStatelessToolBar m_stylesToolBar;  // Styles toolbar (Text Style)
   EoMfStatusBar m_statusBar;
@@ -78,6 +78,7 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg void OnUpdateLineWeightCombo(CCmdUI* pCmdUI);
   afx_msg void OnUpdateTextStyleCombo(CCmdUI* pCmdUI);
   afx_msg void OnTextStyleManager();
+  afx_msg void OnUpdateTextStyleButton(CCmdUI* pCmdUI);
   afx_msg LRESULT OnToolbarContextMenu(WPARAM, LPARAM);
 
   afx_msg LRESULT OnGetTabToolTip(WPARAM wp, LPARAM lp);

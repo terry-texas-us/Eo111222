@@ -200,6 +200,7 @@ void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
   if (m_bFlat) {
     if (m_bIsHotEdit) { isHighlighted = TRUE; }
 
+    const auto& schemeColors = Eo::chromeColors;
     CRect rectCombo = m_rectCombo;
 
     // Border — delegates to our OnDrawComboBorder override in EoMfVisualManager.
@@ -208,8 +209,7 @@ void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
 
     // Fill interior with scheme-aware paneBackground instead of clrWindow (white).
     rectCombo.DeflateRect(2, 2);
-    const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
-    deviceContext->FillSolidRect(rectCombo, schemeColors.paneBackground);
+    deviceContext->FillSolidRect(rectCombo, Eo::chromeColors.paneBackground);
 
     // Drop-down button.
     CRect rectButton = m_rectButton;
@@ -284,10 +284,9 @@ END_MESSAGE_MAP()
 
 HBRUSH EoCtrlColorOwnerDrawCombo::OnCtlColor(CDC* deviceContext, CWnd* control, UINT ctlColor) {
   if (ctlColor == CTLCOLOR_LISTBOX) {
-    const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
     m_dropdownBackgroundBrush.DeleteObject();
-    m_dropdownBackgroundBrush.CreateSolidBrush(schemeColors.menuBackground);
-    deviceContext->SetBkColor(schemeColors.menuBackground);
+    m_dropdownBackgroundBrush.CreateSolidBrush(Eo::chromeColors.menuBackground);
+    deviceContext->SetBkColor(Eo::chromeColors.menuBackground);
     return static_cast<HBRUSH>(m_dropdownBackgroundBrush);
   }
   return CComboBox::OnCtlColor(deviceContext, control, ctlColor);
@@ -305,7 +304,7 @@ void EoCtrlColorOwnerDrawCombo::OnPaint() {
   CRect clientRect;
   GetClientRect(&clientRect);
 
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& schemeColors = Eo::chromeColors;
 
   // Fill entire client area with paneBackground (dark: 32,32,29; light: 253,252,249).
   dc.FillSolidRect(&clientRect, schemeColors.paneBackground);
@@ -334,8 +333,7 @@ void EoCtrlColorOwnerDrawCombo::OnNcPaint() {
   CRect windowRect;
   GetWindowRect(&windowRect);
   windowRect.OffsetRect(-windowRect.left, -windowRect.top);
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
-  dc.FillSolidRect(&windowRect, schemeColors.paneBackground);
+  dc.FillSolidRect(&windowRect, Eo::chromeColors.paneBackground);
 }
 
 BOOL EoCtrlColorOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }
@@ -379,7 +377,7 @@ void EoCtrlColorOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   auto itemData = drawItemStruct->itemData;
   UINT itemState = drawItemStruct->itemState;
 
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& schemeColors = Eo::chromeColors;
 
   // Background and text colors — theme-aware
   COLORREF backgroundColor;

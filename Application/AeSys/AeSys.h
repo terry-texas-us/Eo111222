@@ -41,8 +41,7 @@ namespace App {
 
 /// @brief Returns a text color that contrasts with the active model-space background.
 [[nodiscard]] inline COLORREF ViewTextColor() {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
-  return (~(colors.modelSpaceBackground | 0xff000000));
+  return (~(Eo::ModelSpaceBackgroundColor() | 0xff000000));
 }
 }  // namespace App
 

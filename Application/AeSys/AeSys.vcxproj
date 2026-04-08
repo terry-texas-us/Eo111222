@@ -467,6 +467,7 @@
     <None Include="res\Cursors\CutMode.cur" />
     <None Include="res\Cursors\DimensionMode.cur" />
     <None Include="res\Cursors\Draw2Mode.cur" />
+    <None Include="res\Cursors\DrawMode - white.cur" />
     <None Include="res\Cursors\DrawMode.cur" />
     <None Include="res\Cursors\EditMode.cur" />
     <None Include="res\Cursors\FixupMode.cur" />
@@ -522,8 +523,7 @@
     <Image Include="res\Toolbar Bitmaps\properties.bmp" />
     <Image Include="res\Toolbar Bitmaps\properties_hc.bmp" />
     <Image Include="res\Toolbar Bitmaps\RenderProperties.bmp" />
-    <Image Include="res\Toolbar Bitmaps\Styles.bmp" />
-    <Image Include="res\Toolbar Bitmaps\Styles_T-More-dark-24.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Styles toolbar.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar-dark-24.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar-dark-24.png" />
     <Image Include="res\Toolbar Bitmaps\Toolbar-dark-32.bmp" />

@@ -1,8 +1,5 @@
 ﻿#include "Stdafx.h"
 
-#include <Uxtheme.h>
-#pragma comment(lib, "UxTheme.lib")
-
 #include <algorithm>
 #include <cassert>
 
@@ -38,32 +35,15 @@ END_MESSAGE_MAP()
 
 EoMfPropertiesDockablePane::EoMfPropertiesDockablePane() {}
 EoMfPropertiesDockablePane::~EoMfPropertiesDockablePane() {}
-/// @brief Callback for EnumChildWindows — applies SetWindowTheme to each child HWND.
-static BOOL CALLBACK ApplyThemeToChildWindows(HWND childHwnd, LPARAM lParam) {
-  auto* themeName = reinterpret_cast<const wchar_t*>(lParam);
-  ::SetWindowTheme(childHwnd, themeName, nullptr);
-  return TRUE;
-}
 
 void EoMfPropertiesDockablePane::ApplyColorScheme() {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
   m_PropertyGrid.SetCustomColors(colors.paneBackground, colors.paneText, colors.paneGroupBackground,
       colors.paneGroupText, colors.paneDescriptionBackground, colors.paneDescriptionText, colors.paneLine);
 
   // Reload toolbar images from the original bitmap, then adapt for dark theme if needed
   m_PropertiesToolBar.CleanUpLockedImages();
   m_PropertiesToolBar.LoadBitmap(IDB_PROPERTIES_HC, 0U, 0U, TRUE, 0U, 0U);
-  if (Eo::activeColorScheme == Eo::ColorScheme::Dark) {
-    if (auto* lockedImages = m_PropertiesToolBar.GetLockedImages()) {
-      lockedImages->AdaptColors(RGB(0, 0, 0), RGB(200, 200, 200));
-    }
-  }
-
-  // Apply dark/light scroll bar theme to the property grid and all its children (internal scrollbar)
-  const wchar_t* themeName = (Eo::activeColorScheme == Eo::ColorScheme::Dark) ? L"DarkMode_Explorer" : L"Explorer";
-  ::SetWindowTheme(m_PropertyGrid.GetSafeHwnd(), themeName, nullptr);
-  ::EnumChildWindows(m_PropertyGrid.GetSafeHwnd(), ApplyThemeToChildWindows, reinterpret_cast<LPARAM>(themeName));
-  ::SetWindowTheme(GetSafeHwnd(), themeName, nullptr);
 
   m_PropertyGrid.Invalidate();
 }
@@ -83,13 +63,6 @@ int EoMfPropertiesDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   m_PropertiesToolBar.CleanUpLockedImages();
   m_PropertiesToolBar.LoadBitmap(IDB_PROPERTIES_HC, 0U, 0U, TRUE, 0U, 0U);
 
-  // In dark theme, adapt toolbar button images from dark glyphs to light for visibility
-  if (Eo::activeColorScheme == Eo::ColorScheme::Dark) {
-    if (auto* lockedImages = m_PropertiesToolBar.GetLockedImages()) {
-      lockedImages->AdaptColors(RGB(0, 0, 0), RGB(200, 200, 200));
-    }
-  }
-
   m_PropertiesToolBar.SetPaneStyle(m_PropertiesToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
   m_PropertiesToolBar.SetPaneStyle(
       m_PropertiesToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM |
@@ -98,14 +71,6 @@ int EoMfPropertiesDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
 
   // All commands will be routed via this control , not via the parent frame:
   m_PropertiesToolBar.SetRouteCommandsViaFrame(FALSE);
-
-  // Apply dark scroll bar theme at creation time (including property grid internal scrollbar)
-  if (Eo::activeColorScheme == Eo::ColorScheme::Dark) {
-    ::SetWindowTheme(m_PropertyGrid.GetSafeHwnd(), L"DarkMode_Explorer", nullptr);
-    ::EnumChildWindows(
-        m_PropertyGrid.GetSafeHwnd(), ApplyThemeToChildWindows, reinterpret_cast<LPARAM>(L"DarkMode_Explorer"));
-    ::SetWindowTheme(GetSafeHwnd(), L"DarkMode_Explorer", nullptr);
-  }
 
   AdjustLayout();
   return 0;

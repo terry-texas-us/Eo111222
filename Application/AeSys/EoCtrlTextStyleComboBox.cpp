@@ -193,7 +193,7 @@ void EoCtrlTextStyleComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFC
         deviceContext, rectCombo, isDisabled, m_pWndCombo->GetDroppedState(), isHighlighted, this);
 
     rectCombo.DeflateRect(2, 2);
-    const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
+    const auto& schemeColors = Eo::chromeColors;
     deviceContext->FillSolidRect(rectCombo, schemeColors.paneBackground);
 
     CRect rectButton = m_rectButton;
@@ -239,12 +239,11 @@ END_MESSAGE_MAP()
 
 HBRUSH EoCtrlTextStyleThemedCombo::OnCtlColor(CDC* deviceContext, CWnd* /*control*/, UINT ctlColor) {
   if (ctlColor == CTLCOLOR_LISTBOX || ctlColor == CTLCOLOR_STATIC) {
-    const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
-    COLORREF bgColor = (ctlColor == CTLCOLOR_LISTBOX) ? schemeColors.menuBackground : schemeColors.paneBackground;
+    COLORREF bgColor = (ctlColor == CTLCOLOR_LISTBOX) ? Eo::chromeColors.menuBackground : Eo::chromeColors.paneBackground;
     m_dropdownBackgroundBrush.DeleteObject();
     m_dropdownBackgroundBrush.CreateSolidBrush(bgColor);
     deviceContext->SetBkColor(bgColor);
-    deviceContext->SetTextColor(schemeColors.menuText);
+    deviceContext->SetTextColor(Eo::chromeColors.menuText);
     return static_cast<HBRUSH>(m_dropdownBackgroundBrush);
   }
   return CComboBox::OnCtlColor(deviceContext, nullptr, ctlColor);
@@ -259,7 +258,7 @@ void EoCtrlTextStyleThemedCombo::OnPaint() {
   CRect clientRect;
   GetClientRect(&clientRect);
 
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& schemeColors = Eo::chromeColors;
   dc.FillSolidRect(&clientRect, schemeColors.paneBackground);
 
   int curSel = GetCurSel();
@@ -283,8 +282,7 @@ void EoCtrlTextStyleThemedCombo::OnNcPaint() {
   CRect windowRect;
   GetWindowRect(&windowRect);
   windowRect.OffsetRect(-windowRect.left, -windowRect.top);
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
-  dc.FillSolidRect(&windowRect, schemeColors.paneBackground);
+  dc.FillSolidRect(&windowRect, Eo::chromeColors.paneBackground);
 }
 
 BOOL EoCtrlTextStyleThemedCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }

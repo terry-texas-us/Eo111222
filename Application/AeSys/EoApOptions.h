@@ -7,8 +7,8 @@ class EoApOptions {
   EoApOptions();
   ~EoApOptions();
 
-  /// @brief Active view color scheme (Dark or Light). Persisted to the registry.
-  Eo::ColorScheme m_colorScheme{Eo::ColorScheme::Dark};
+  /// @brief Active view background preference (Dark or White). Persisted to the registry.
+  Eo::ViewBackground m_viewBackground{Eo::ViewBackground::Dark};
 
  public:
   void Load();

@@ -2,8 +2,6 @@
 #include "StdAfx.h"
 
 #include <cassert>
-#include <dwmapi.h>
-#pragma comment(lib, "dwmapi.lib")
 
 #include "AeSys.h"
 #include "EoApOptions.h"
@@ -19,26 +17,9 @@
 
 namespace {
 
-/// @brief Pixel (0,0) background key color of the IDR_STYLES toolbar bitmap.
-/// Must match the background fill color in res/Toolbar Bitmaps/Styles_T-More-dark-24.bmp.
-constexpr COLORREF kStylesToolbarBitmapKey = RGB(55, 55, 50);
-
-/// @brief Applies the DWM immersive dark mode attribute to the window title bar.
-/// Requires Windows 10 1809+ (build 17763). Silently ignored on older Windows.
-/// On Windows 11 (build 22000+), also sets a custom caption color for warm tinting.
-void ApplyDwmDarkMode(HWND hwnd, bool darkMode) {
-  // DWMWA_USE_IMMERSIVE_DARK_MODE = 20 (Windows 10 20H1+; 19 on older insider builds)
-  constexpr DWORD dwmwaUseImmersiveDarkMode = 20;
-  BOOL useDarkMode = darkMode ? TRUE : FALSE;
-  ::DwmSetWindowAttribute(hwnd, dwmwaUseImmersiveDarkMode, &useDarkMode, sizeof(useDarkMode));
-
-  // DWMWA_CAPTION_COLOR = 35 (Windows 11 build 22000+). Sets a custom title bar background color.
-  // Silently fails on Windows 10 where the attribute is not supported.
-  constexpr DWORD dwmwaCaptionColor = 35;
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
-  COLORREF captionColor = colors.toolbarBackground;
-  ::DwmSetWindowAttribute(hwnd, dwmwaCaptionColor, &captionColor, sizeof(captionColor));
-}
+/// @brief Background key color of the IDR_STYLES toolbar bitmap (white).
+/// AdaptColors replaces these pixels with the chrome toolbarBackground before drawing.
+constexpr COLORREF kStylesToolbarBitmapKey = RGB(255, 255, 255);
 
 constexpr int statusInfo = 0;
 constexpr int statusLength = 1;
@@ -95,6 +76,7 @@ ON_UPDATE_COMMAND_UI(ID_PENCOLOR_COMBO, OnUpdatePenColorCombo)
 ON_UPDATE_COMMAND_UI(ID_LINETYPE_COMBO, OnUpdateLineTypeCombo)
 ON_UPDATE_COMMAND_UI(ID_LINEWEIGHT_COMBO, OnUpdateLineWeightCombo)
 ON_UPDATE_COMMAND_UI(ID_TEXTSTYLE_COMBO, OnUpdateTextStyleCombo)
+ON_UPDATE_COMMAND_UI(ID_TEXTSTYLE_BUTTON, OnUpdateTextStyleButton)
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
@@ -168,12 +150,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_stylesToolBar.SetSizes(buttonSize, imageSize);
   m_stylesToolBar.SetWindowTextW(L"Styles");
 
-  // Replace the bitmap background-key pixels with the current scheme's toolbarBackground,
+  // Replace the bitmap background-key pixels with the chrome toolbarBackground,
   // then disable transparency. MFC's DrawEx composites onto a white-initialized intermediate
   // bitmap before SRCCOPY-ing to the target — disabling transparency eliminates that path
   // entirely, so background pixels paint as exactly toolbarBackground and blend seamlessly.
   if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
-    lockedImages->AdaptColors(kStylesToolbarBitmapKey, Eo::SchemeColors(Eo::activeColorScheme).toolbarBackground);
+    lockedImages->AdaptColors(kStylesToolbarBitmapKey, Eo::chromeColors.toolbarBackground);
     lockedImages->SetTransparentColor(static_cast<COLORREF>(-1));
   }
 
@@ -255,8 +237,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   }
   // Shows the document name after thumbnail before the application name in a frame window title.
   ModifyStyle(0, FWS_PREFIXTITLE);
-
-  ApplyDwmDarkMode(GetSafeHwnd(), Eo::activeColorScheme == Eo::ColorScheme::Dark);
 
   return 0;
 }
@@ -532,7 +512,8 @@ void CMainFrame::AdjustToolbarSizesToMatchCombos() {
         const CSize adjustedSize(std::max(32, targetHeight), targetHeight);
         ATLTRACE2(traceGeneral, 1, L"AdjustToolbarSizesToMatchCombos: combo=%d, button=%dx%d\n", comboRect.Height(),
             adjustedSize.cx, adjustedSize.cy);
-        m_standardToolBar.SetSizesAll(adjustedSize, kImageSize);
+        m_standardToolBar.SetSizes(adjustedSize, kImageSize);
+        m_standardToolBar.SetLockedSizes(adjustedSize, kImageSize, TRUE);
         m_renderPropertiesToolBar.SetSizesAll(adjustedSize, kImageSize);
         m_stylesToolBar.SetSizesAll(adjustedSize, kImageSize);
         RecalcLayout();
@@ -543,58 +524,20 @@ void CMainFrame::AdjustToolbarSizesToMatchCombos() {
 void CMainFrame::ApplyColorScheme() {
   auto* visualManager = dynamic_cast<EoMfVisualManager*>(CMFCVisualManager::GetInstance());
   if (visualManager != nullptr) { visualManager->RefreshColors(); }
-  ApplyDwmDarkMode(GetSafeHwnd(), Eo::activeColorScheme == Eo::ColorScheme::Dark);
 
-  // Refresh Windows dark mode state for common controls (scroll bars, context menus)
-  HMODULE uxThemeModule = ::GetModuleHandleW(L"uxtheme.dll");
-  if (uxThemeModule != nullptr) {
-    // SetPreferredAppMode (ordinal 135): 2=ForceDark, 3=ForceLight
-    using SetPreferredAppMode_t = DWORD(WINAPI*)(int);
-    auto setPreferredAppMode =
-        reinterpret_cast<SetPreferredAppMode_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(135)));
-    if (setPreferredAppMode != nullptr) { setPreferredAppMode(Eo::activeColorScheme == Eo::ColorScheme::Dark ? 2 : 3); }
-    // FlushMenuThemes (ordinal 136): forces menus to re-read theme data
-    using FlushMenuThemes_t = void(WINAPI*)();
-    auto flushMenuThemes = reinterpret_cast<FlushMenuThemes_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(136)));
-    if (flushMenuThemes != nullptr) { flushMenuThemes(); }
-    // RefreshImmersiveColorPolicyState (ordinal 104): refreshes dark/light policy
-    using RefreshPolicy_t = void(WINAPI*)();
-    auto refreshPolicy = reinterpret_cast<RefreshPolicy_t>(::GetProcAddress(uxThemeModule, MAKEINTRESOURCEA(104)));
-    if (refreshPolicy != nullptr) { refreshPolicy(); }
-  }
-
-  // Set status bar text color for all panes to match the active scheme
-  const auto& schemeColors = Eo::SchemeColors(Eo::activeColorScheme);
+  // Set status bar text color for all panes
   int paneCount = m_statusBar.GetCount();
-  for (int i = 0; i < paneCount; i++) { m_statusBar.SetPaneTextColor(i, schemeColors.statusBarText, FALSE); }
+  for (int i = 0; i < paneCount; i++) { m_statusBar.SetPaneTextColor(i, Eo::chromeColors.statusBarText, FALSE); }
 
   m_propertiesPane.ApplyColorScheme();
   m_outputPane.ApplyColorScheme();
 
-  // Reload and adapt styles toolbar bitmap for the active color scheme.
+  // Reload and adapt styles toolbar bitmap for the chrome color.
   m_stylesToolBar.CleanUpLockedImages();
   m_stylesToolBar.LoadBitmap(IDR_STYLES, 0U, 0U, TRUE, 0U, 0U);
   if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
-    lockedImages->AdaptColors(kStylesToolbarBitmapKey, Eo::SchemeColors(Eo::activeColorScheme).toolbarBackground);
+    lockedImages->AdaptColors(kStylesToolbarBitmapKey, Eo::chromeColors.toolbarBackground);
     lockedImages->SetTransparentColor(static_cast<COLORREF>(-1));
-  }
-
-  // Swap the toolbar bitmap for the active color scheme.
-  // LoadToolBar(id, ..., bLocked=TRUE) stores the initial light-scheme bitmap in
-  // m_ImagesLocked. CMFCToolBar renders from m_Images when non-empty and falls back
-  // to m_ImagesLocked otherwise. The strategy:
-  //   1. Clear m_Images so a failed LoadBitmap leaves the slot empty (not stale).
-  //   2. LoadBitmap(id) writes to m_Images (bLocked=FALSE, the default).
-  // Dark bitmaps (BITMAP-only resources): Load succeeds → m_Images takes priority.
-  // Light bitmaps (shared TOOLBAR+BITMAP): Load may silently fail on some MFC builds
-  //   → m_Images stays empty after Clear → falls back to m_ImagesLocked (correct).
-  {
-    const UINT imageId = Eo::activeColorScheme == Eo::ColorScheme::Dark ? IDR_MAINFRAME_24_DARK : IDR_MAINFRAME_24;
-    m_standardToolBar.GetImages()->Clear();
-
-    if (!m_standardToolBar.LoadBitmap(imageId)) {
-      ATLTRACE2(traceGeneral, 1, L"Failed to load toolbar bitmap %u\n", imageId);
-    }
   }
 
   // LoadBitmap can reset button sizes. Re-apply combo-derived sizes.
@@ -649,6 +592,7 @@ void CMainFrame::SyncLineWeightCombo(EoDxfLineWeights::LineWeight lineWeight) {
 }
 
 void CMainFrame::OnUpdateTextStyleCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
+void CMainFrame::OnUpdateTextStyleButton(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
 
 void CMainFrame::SyncTextStyleCombo(const std::wstring& textStyleName) {
   CObList buttonsList;

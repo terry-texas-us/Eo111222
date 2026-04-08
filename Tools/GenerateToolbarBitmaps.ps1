@@ -180,6 +180,47 @@ function New-ToolbarBitmap {
 }
 
 # ---------------------------------------------------------------------------
+# ConvertPngToToolbarBmp
+# ---------------------------------------------------------------------------
+# Converts a transparent-background PNG to a toolbar-ready BMP by compositing
+# it against the specified toolbar background colour.  Eliminates the white-halo
+# artefact that results when Paint composites PNGs over a white canvas.
+#
+# Usage (from the repository root):
+#   ConvertPngToToolbarBmp `
+#       -inputPng  'path\to\icon.png' `
+#       -outputBmp 'Application\AeSys\res\Toolbar Bitmaps\Styles toolbar.bmp'
+#
+# The -bgColor parameter defaults to lightSchemeColors.toolbarBackground RGB(229,228,224).
+# Pass -bgColor to override for other target backgrounds.
+# ---------------------------------------------------------------------------
+function ConvertPngToToolbarBmp {
+    param(
+        [Parameter(Mandatory)][string] $inputPng,
+        [Parameter(Mandatory)][string] $outputBmp,
+        [System.Drawing.Color] $bgColor = [System.Drawing.Color]::FromArgb(229, 228, 224)
+    )
+    $resolvedIn = (Resolve-Path $inputPng).Path
+    $src = [System.Drawing.Image]::FromFile($resolvedIn)
+    $bmpOut = New-Object System.Drawing.Bitmap(
+        $src.Width, $src.Height,
+        [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+    $g = [System.Drawing.Graphics]::FromImage($bmpOut)
+    $g.Clear($bgColor)
+    $g.InterpolationMode  = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+    $g.SmoothingMode      = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+    $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
+    $g.DrawImage($src, 0, 0, $src.Width, $src.Height)
+    $g.Dispose()
+    $src.Dispose()
+    $outDir = Split-Path $outputBmp -Parent
+    if ($outDir -and -not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir | Out-Null }
+    $bmpOut.Save($outputBmp, [System.Drawing.Imaging.ImageFormat]::Bmp)
+    $bmpOut.Dispose()
+    Write-Host "  Converted: $resolvedIn -> $outputBmp"
+}
+
+# ---------------------------------------------------------------------------
 # Generate
 # ---------------------------------------------------------------------------
 

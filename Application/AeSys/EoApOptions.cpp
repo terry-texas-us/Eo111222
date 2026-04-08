@@ -6,8 +6,8 @@
 EoApOptions::EoApOptions() {}
 EoApOptions::~EoApOptions() {}
 void EoApOptions::Load() {
-  m_colorScheme = static_cast<Eo::ColorScheme>(app.GetInt(L"ColorScheme", static_cast<int>(Eo::ColorScheme::Dark)));
+  m_viewBackground = static_cast<Eo::ViewBackground>(app.GetInt(L"ViewBackground", static_cast<int>(Eo::ViewBackground::Dark)));
 }
 void EoApOptions::Save() const {
-  app.WriteInt(L"ColorScheme", static_cast<int>(m_colorScheme));
+  app.WriteInt(L"ViewBackground", static_cast<int>(m_viewBackground));
 }

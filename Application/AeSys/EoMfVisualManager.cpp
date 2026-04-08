@@ -17,7 +17,7 @@ EoMfVisualManager::EoMfVisualManager() {
 EoMfVisualManager::~EoMfVisualManager() {}
 
 void EoMfVisualManager::RefreshColors() {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
 
   // Recreate cached brushes
   m_toolbarBackgroundBrush.DeleteObject();
@@ -104,7 +104,7 @@ int EoMfVisualManager::GetMDITabsBordersSize() {
 
 COLORREF EoMfVisualManager::OnDrawPaneCaption(
     CDC* deviceContext, CDockablePane* /*bar*/, BOOL active, CRect rectCaption, CRect /*rectButtons*/) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
 
   // Active captions use warm elevated color (not accent blue) to avoid jarring flash on focus change
   CBrush& brush = active ? m_tabActiveBrush : m_captionBrush;
@@ -117,7 +117,7 @@ COLORREF EoMfVisualManager::OnDrawPaneCaption(
 
 void EoMfVisualManager::OnDrawTab(CDC* deviceContext, CRect rectTab, int tabIndex, BOOL isActive,
     const CMFCBaseTabCtrl* tabWnd) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
 
   // Clip to tab bounds to prevent bleeding into adjacent tabs
   int savedDC = deviceContext->SaveDC();
@@ -182,7 +182,7 @@ void EoMfVisualManager::OnFillTab(CDC* deviceContext, CRect rectFill, CBrush* /*
 
 void EoMfVisualManager::OnDrawTabCloseButton(CDC* deviceContext, CRect rect,
     const CMFCBaseTabCtrl* /*tabWnd*/, BOOL isHighlighted, BOOL isPressed, BOOL /*isDisabled*/) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
 
   // Fill button background on hover/press
   if (isPressed) {
@@ -219,7 +219,7 @@ void EoMfVisualManager::OnDrawTabCloseButton(CDC* deviceContext, CRect rect,
 
 COLORREF EoMfVisualManager::GetTabTextColor(
     const CMFCBaseTabCtrl* /*tabWnd*/, int /*tabIndex*/, BOOL isActive) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
   return isActive ? colors.tabActiveText : colors.tabInactiveText;
 }
 
@@ -227,7 +227,7 @@ COLORREF EoMfVisualManager::GetTabTextColor(
 
 COLORREF EoMfVisualManager::GetToolbarButtonTextColor(
     CMFCToolBarButton* button, CMFCVisualManager::AFX_BUTTON_STATE /*state*/) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
 
   if (button != nullptr && button->IsKindOf(RUNTIME_CLASS(CMFCToolBarMenuButton))) {
     // Menu bar top-level items use menu text color
@@ -240,7 +240,7 @@ COLORREF EoMfVisualManager::GetToolbarButtonTextColor(
 
 void EoMfVisualManager::OnFillButtonInterior(CDC* deviceContext, CMFCToolBarButton* /*button*/, CRect rect,
     CMFCVisualManager::AFX_BUTTON_STATE state) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
 
   if (state == ButtonsIsPressed) {
     CBrush pressBrush(colors.menuHighlightBackground);
@@ -254,7 +254,7 @@ void EoMfVisualManager::OnFillButtonInterior(CDC* deviceContext, CMFCToolBarButt
 
 void EoMfVisualManager::OnDrawButtonBorder(CDC* deviceContext, CMFCToolBarButton* /*button*/, CRect rect,
     CMFCVisualManager::AFX_BUTTON_STATE state) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
 
   if (state == ButtonsIsHighlighted || state == ButtonsIsPressed) {
     CPen borderPen(PS_SOLID, 1, colors.menuHighlightBorder);
@@ -264,12 +264,12 @@ void EoMfVisualManager::OnDrawButtonBorder(CDC* deviceContext, CMFCToolBarButton
     deviceContext->SelectObject(previousBrush);
     deviceContext->SelectObject(previousPen);
   }
-  // Normal state: no border
+  // Normal state: no border — MFC's default disabled image rendering handles dimming.
 }
 
 void EoMfVisualManager::OnDrawCaptionButton(CDC* deviceContext, CMFCCaptionButton* button, BOOL /*active*/,
     BOOL /*isHorz*/, BOOL /*isMaximized*/, BOOL isDisabled, int /*imageId*/) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
 
   CRect rect = button->GetRect();
 
@@ -334,7 +334,7 @@ void EoMfVisualManager::OnDrawCaptionButton(CDC* deviceContext, CMFCCaptionButto
 
 void EoMfVisualManager::OnDrawComboBorder(CDC* deviceContext, CRect rect, BOOL /*isDisabled*/,
     BOOL /*isDropped*/, BOOL /*isHighlighted*/, CMFCToolBarComboBoxButton* /*button*/) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
 
   // Fill entire combo button area with paneBackground for a flat, dark appearance.
   CBrush fillBrush(colors.paneBackground);
@@ -350,7 +350,7 @@ void EoMfVisualManager::OnDrawComboBorder(CDC* deviceContext, CRect rect, BOOL /
 
 void EoMfVisualManager::OnDrawComboDropButton(CDC* deviceContext, CRect rect, BOOL /*isDisabled*/,
     BOOL /*isDropped*/, BOOL /*isHighlighted*/, CMFCToolBarComboBoxButton* /*button*/) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
 
   // Fill with paneBackground — flat, no 3D effect.
   CBrush fillBrush(colors.paneBackground);
@@ -421,7 +421,7 @@ void EoMfVisualManager::OnFillMenuImageRect(
 
 void EoMfVisualManager::OnHighlightMenuItem(
     CDC* deviceContext, CMFCToolBarMenuButton* /*button*/, CRect rect, COLORREF& highlightTextColor) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
+  const auto& colors = Eo::chromeColors;
 
   deviceContext->FillRect(rect, &m_menuHighlightBrush);
 
@@ -436,18 +436,16 @@ void EoMfVisualManager::OnHighlightMenuItem(
 }
 
 COLORREF EoMfVisualManager::OnDrawMenuLabel(CDC* deviceContext, CRect rect) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
   deviceContext->FillRect(rect, &m_menuBackgroundBrush);
-  return colors.menuText;
+  return Eo::chromeColors.menuText;
 }
 
 COLORREF EoMfVisualManager::GetMenuItemTextColor(
     [[maybe_unused]] CMFCToolBarMenuButton* button, [[maybe_unused]] BOOL isHighlighted, BOOL isDisabled) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
   if (isDisabled) {
-    return colors.captionText;  // tertiary text for disabled items
+    return Eo::chromeColors.captionText;  // tertiary text for disabled items
   }
-  return colors.menuText;
+  return Eo::chromeColors.menuText;
 }
 
 // --- Pane borders and dividers ---
@@ -462,7 +460,6 @@ void EoMfVisualManager::OnDrawPaneBorder(CDC* deviceContext, CBasePane* /*bar*/,
 
 void EoMfVisualManager::OnDrawPaneDivider(
     CDC* deviceContext, CPaneDivider* /*divider*/, CRect rect, BOOL /*autoHideMode*/) {
-  const auto& colors = Eo::SchemeColors(Eo::activeColorScheme);
-  CBrush borderBrush(colors.borderColor);
+  CBrush borderBrush(Eo::chromeColors.borderColor);
   deviceContext->FillRect(rect, &borderBrush);
 }
