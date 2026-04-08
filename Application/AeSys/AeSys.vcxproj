@@ -534,6 +534,9 @@
     <Image Include="res\Toolbar Bitmaps\twodoctest.png" />
     <Image Include="res\Toolbar Bitmaps\UserImages.bmp" />
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="AeSys.manifest" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="CopyResources" AfterTargets="Build">
     <Copy SourceFiles="$(ProjectDir)res\LineTypes\LineTypes.txt" DestinationFolder="$(OutDir)res\LineTypes\" SkipUnchangedFiles="true" />

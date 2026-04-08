@@ -527,4 +527,7 @@
     <Image Include="res\Toolbar Bitmaps\Toolbar-light-32.bmp" />
     <Image Include="res\Toolbar Bitmaps\Styles toolbar.bmp" />
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="AeSys.manifest" />
+  </ItemGroup>
 </Project>

@@ -82,6 +82,7 @@ ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)
 // Standard file based document commands
 ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
 ON_COMMAND(ID_FILE_OPEN, &AeSys::OnFileOpen)
+ON_COMMAND(ID_FILE_SAVE_ALL, &AeSys::OnFileSaveAll)
 // Standard print setup command
 ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinAppEx::OnFilePrintSetup)
 
@@ -622,6 +623,18 @@ void AeSys::BuildModifiedAcceleratorTable() {
       ::CreateAcceleratorTable(ModifiedAcceleratorTable, AcceleratorTableEntries + ModeAcceleratorTableEntries);
 
   delete[] ModifiedAcceleratorTable;
+}
+
+void AeSys::OnFileSaveAll() {
+  POSITION templatePosition = GetFirstDocTemplatePosition();
+  while (templatePosition != nullptr) {
+    auto* docTemplate = GetNextDocTemplate(templatePosition);
+    POSITION docPosition = docTemplate->GetFirstDocPosition();
+    while (docPosition != nullptr) {
+      auto* document = docTemplate->GetNextDoc(docPosition);
+      if (document->IsModified()) { document->DoFileSave(); }
+    }
+  }
 }
 
 void AeSys::OnFileOpen() {

@@ -93,9 +93,9 @@ IDI_PROPERTIES_WND_HC   ICON                    "res\\Icons\\properties_wnd_hc.i
 
 IDR_MAINFRAME_24        BITMAP                  "res\\Toolbar Bitmaps\\Toolbar-light-24.bmp"
 
-IDB_PROPERTIES_HC       BITMAP                  "res\\Toolbar Bitmaps\\properties_hc.bmp"
+IDB_PROPERTIES          BITMAP                  "res\\Toolbar Bitmaps\\properties_hc.bmp"
 
-IDB_LAYER_STATES_HC     BITMAP                  "res\\Toolbar Bitmaps\\LayerStates_hc.bmp"
+IDB_LAYER_STATES        BITMAP                  "res\\Toolbar Bitmaps\\LayerStates_hc.bmp"
 
 IDR_RENDER_PROPERTIES   BITMAP                  "res\\Toolbar Bitmaps\\RenderProperties.bmp"
 
@@ -2910,33 +2910,46 @@ END
 //
 
 IDR_ANNOTATE_MODE       CURSOR                  "res\\Cursors\\AnnotateMode.cur"
+IDR_ANNOTATE_MODE_WHITE CURSOR                  "res\\Cursors\\AnnotateModeWhite.cur"
 
 IDR_CUT_MODE            CURSOR                  "res\\Cursors\\CutMode.cur"
+IDR_CUT_MODE_WHITE      CURSOR                  "res\\Cursors\\CutModeWhite.cur"
 
 IDR_DIMENSION_MODE      CURSOR                  "res\\Cursors\\DimensionMode.cur"
-
-IDR_DRAW2_MODE          CURSOR                  "res\\Cursors\\Draw2Mode.cur"
+IDR_DIMENSION_MODE_WHITE CURSOR                  "res\\Cursors\\DimensionModeWhite.cur"
 
 IDR_DRAW_MODE           CURSOR                  "res\\Cursors\\DrawMode.cur"
+IDR_DRAW_MODE_WHITE     CURSOR                  "res\\Cursors\\DrawModeWhite.cur"
+
+IDR_DRAW2_MODE          CURSOR                  "res\\Cursors\\Draw2Mode.cur"
+IDR_DRAW2_MODE_WHITE    CURSOR                  "res\\Cursors\\Draw2ModeWhite.cur"
 
 IDR_EDIT_MODE           CURSOR                  "res\\Cursors\\EditMode.cur"
+IDR_EDIT_MODE_WHITE     CURSOR                  "res\\Cursors\\EditModeWhite.cur" 
 
 IDR_FIXUP_MODE          CURSOR                  "res\\Cursors\\FixupMode.cur"
+IDR_FIXUP_MODE_WHITE    CURSOR                  "res\\Cursors\\FixupModeWhite.cur"
 
 IDR_LPD_MODE            CURSOR                  "res\\Cursors\\LowPressureDuct.cur"
+IDR_LPD_MODE_WHITE      CURSOR                  "res\\Cursors\\LowPressureDuctWhite.cur"
 
 IDR_NODAL_MODE          CURSOR                  "res\\Cursors\\NodalMode.cur"
+IDR_NODAL_MODE_WHITE    CURSOR                  "res\\Cursors\\NodalModeWhite.cur"
 
 IDR_NODALR_MODE         CURSOR                  "res\\Cursors\\NodalRMode.cur"
+IDR_NODALR_MODE_WHITE   CURSOR                  "res\\Cursors\\NodalRModeWhite.cur"
 
 IDR_PIPE_MODE           CURSOR                  "res\\Cursors\\PipeMode.cur"
+IDR_PIPE_MODE_WHITE     CURSOR                  "res\\Cursors\\PipeModeWhite.cur"
 
 IDR_POWER_MODE          CURSOR                  "res\\Cursors\\PowerMode.cur"
+IDR_POWER_MODE_WHITE    CURSOR                  "res\\Cursors\\PowerModeWhite.cur"
 
 IDR_TRAP_MODE           CURSOR                  "res\\Cursors\\TrapMode.cur"
+IDR_TRAP_MODE_WHITE     CURSOR                  "res\\Cursors\\TrapModeWhite.cur"
 
 IDR_TRAPR_MODE          CURSOR                  "res\\Cursors\\TrapRMode.cur"
-
+IDR_TRAPR_MODE_WHITE    CURSOR                  "res\\Cursors\\TrapRModeWhite.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //

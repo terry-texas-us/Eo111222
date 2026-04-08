@@ -273,6 +273,7 @@ class AeSys : public CWinAppEx {
  public:
   afx_msg void OnAppAbout();
   afx_msg void OnFileOpen();
+  afx_msg void OnFileSaveAll();
   afx_msg void OnFileRun();
   afx_msg void OnHelpContents();
   afx_msg void OnModeLetter();

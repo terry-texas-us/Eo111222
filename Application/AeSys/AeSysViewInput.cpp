@@ -6,9 +6,9 @@
 #include "Eo.h"
 #include "EoDbLine.h"
 #include "EoDbPolygon.h"
+#include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
-#include "EoGeLine.h"
 #include "EoGsRenderState.h"
 #include "Resource.h"
 
@@ -201,7 +201,7 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
 }
 
 BOOL AeSysView::OnMouseWheel(UINT flags, std::int16_t zDelta, CPoint point) {
-  ATLTRACE2(traceGeneral, 1, L"AeSysView<%p>OnMouseWheel(%i, %i, %08.8lx)\n", this, flags, zDelta, point);
+  ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>OnMouseWheel(%i, %i, %08.8lx)\n", this, flags, zDelta, point);
 
   if (zDelta > 0) {
     OnWindowZoomIn();
@@ -300,63 +300,67 @@ void AeSysView::SetCursorPosition(const EoGePoint3d& position) {
 }
 
 void AeSysView::SetModeCursor(int mode) {
-  std::uint16_t ResourceIdentifier;
+  ATLTRACE2(
+      traceGeneral, 1, L"AeSysView::SetModeCursor(Mode: %i, Cursor Size: %i)\n", mode, GetSystemMetrics(SM_CXCURSOR));
+
+  auto isWhiteBackground = Eo::activeViewBackground == Eo::ViewBackground::White;
+  std::uint16_t resourceIdentifier{};
 
   switch (mode) {
     case ID_MODE_ANNOTATE:
-      ResourceIdentifier = IDR_ANNOTATE_MODE;
+      resourceIdentifier = IDR_ANNOTATE_MODE;
       break;
 
     case ID_MODE_CUT:
-      ResourceIdentifier = IDR_CUT_MODE;
+      resourceIdentifier = IDR_CUT_MODE;
       break;
 
     case ID_MODE_DIMENSION:
-      ResourceIdentifier = IDR_DIMENSION_MODE;
+      resourceIdentifier = IDR_DIMENSION_MODE;
       break;
 
     case ID_MODE_DRAW:
-      ResourceIdentifier = IDR_DRAW_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_DRAW_MODE_WHITE : IDR_DRAW_MODE;
       break;
 
     case ID_MODE_LPD:
-      ResourceIdentifier = IDR_LPD_MODE;
+      resourceIdentifier = IDR_LPD_MODE;
       break;
 
     case ID_MODE_PIPE:
-      ResourceIdentifier = IDR_PIPE_MODE;
+      resourceIdentifier = IDR_PIPE_MODE;
       break;
 
     case ID_MODE_POWER:
-      ResourceIdentifier = IDR_POWER_MODE;
+      resourceIdentifier = IDR_POWER_MODE;
       break;
 
     case ID_MODE_DRAW2:
-      ResourceIdentifier = IDR_DRAW2_MODE;
+      resourceIdentifier = IDR_DRAW2_MODE;
       break;
 
     case ID_MODE_EDIT:
-      ResourceIdentifier = IDR_EDIT_MODE;
+      resourceIdentifier = IDR_EDIT_MODE;
       break;
 
     case ID_MODE_FIXUP:
-      ResourceIdentifier = IDR_FIXUP_MODE;
+      resourceIdentifier = IDR_FIXUP_MODE;
       break;
 
     case ID_MODE_NODAL:
-      ResourceIdentifier = IDR_NODAL_MODE;
+      resourceIdentifier = IDR_NODAL_MODE;
       break;
 
     case ID_MODE_NODALR:
-      ResourceIdentifier = IDR_NODALR_MODE;
+      resourceIdentifier = IDR_NODALR_MODE;
       break;
 
     case ID_MODE_TRAP:
-      ResourceIdentifier = IDR_TRAP_MODE;
+      resourceIdentifier = IDR_TRAP_MODE;
       break;
 
     case ID_MODE_TRAPR:
-      ResourceIdentifier = IDR_TRAPR_MODE;
+      resourceIdentifier = IDR_TRAPR_MODE;
       break;
 
     default:
@@ -364,8 +368,9 @@ void AeSysView::SetModeCursor(int mode) {
       return;
   }
   auto cursorHandle = static_cast<HCURSOR>(
-      LoadImageW(AeSys::GetInstance(), MAKEINTRESOURCE(ResourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+      LoadImageW(AeSys::GetInstance(), MAKEINTRESOURCE(resourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
   VERIFY(cursorHandle);
   SetCursor(cursorHandle);
+
   SetClassLongPtr(this->GetSafeHwnd(), GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursorHandle));
 }

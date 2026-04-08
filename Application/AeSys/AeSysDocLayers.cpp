@@ -474,7 +474,15 @@ bool AeSysDoc::TracingOpen(const CString& pathName) {
   }
   layer->SetTracingState(static_cast<std::uint16_t>(EoDbLayer::TracingState::isOpened));
 
-  m_saveAsType = EoDb::FileTypes::Tracing;
+  // Only adopt Tracing as the document save type when the document has no other
+  // committed type (e.g. opened standalone via File > Open). When TracingOpen is
+  // called as an overlay command on an existing .peg/.peg11 document, preserve
+  // the original type so Ctrl+S / Save All continue to save the host document
+  // correctly.
+  if (m_saveAsType == EoDb::FileTypes::Unknown || m_saveAsType == EoDb::FileTypes::Tracing ||
+      m_saveAsType == EoDb::FileTypes::Job) {
+    m_saveAsType = EoDb::FileTypes::Tracing;
+  }
   SetWorkLayer(layer);
 
   UpdateAllViews(nullptr, 0L, nullptr);

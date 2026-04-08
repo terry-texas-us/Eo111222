@@ -425,6 +425,7 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
 void AeSysView::OnEndPrinting([[maybe_unused]] CDC* deviceContext, [[maybe_unused]] CPrintInfo* printInformation) {
   PopViewTransform();
   ViewportPopActive();
+  InvalidateScene();
 }
 
 BOOL AeSysView::OnPreparePrinting(CPrintInfo* pInfo) {
