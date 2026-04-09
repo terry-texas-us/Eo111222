@@ -40,8 +40,26 @@ void AeSysView::OnDraw(CDC* deviceContext) {
   if (deviceContext->IsPrinting()) {
     auto* document = GetDocument();
     assert(document != nullptr);
+
+    // Printer paper is white — force ACI 7 to black and ACI 0 to white so that
+    // entities using the default color (including COLOR_BYBLOCK → 7) are visible.
+    // Without this, the dark-scheme palette has ACI 7 = white → invisible on paper.
+    const COLORREF savedAci0 = Eo::ColorPalette[0];
+    const COLORREF savedAci7 = Eo::ColorPalette[7];
+    const COLORREF savedGray0 = Eo::GrayPalette[0];
+    const COLORREF savedGray7 = Eo::GrayPalette[7];
+    Eo::ColorPalette[7] = Eo::colorBlack;
+    Eo::ColorPalette[0] = Eo::colorWhite;
+    Eo::GrayPalette[7] = RGB(0x22, 0x22, 0x22);
+    Eo::GrayPalette[0] = RGB(0xdd, 0xdd, 0xdd);
+
     EoGsRenderDeviceGdi renderDevice(deviceContext);
     document->DisplayAllLayers(this, &renderDevice);
+
+    Eo::ColorPalette[0] = savedAci0;
+    Eo::ColorPalette[7] = savedAci7;
+    Eo::GrayPalette[0] = savedGray0;
+    Eo::GrayPalette[7] = savedGray7;
     return;
   }
 
