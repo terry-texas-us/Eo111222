@@ -102,10 +102,8 @@ void EoDbViewport::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
       {m_centerPoint.x - halfWidth, m_centerPoint.y + halfHeight, m_centerPoint.z},
   };
 
-  const std::int16_t color = LogicalColor();
-  const COLORREF hotPenColor = app.PenColorsGetHot(color);
-
-  renderDevice->SelectPen(PS_DOT, 1, hotPenColor);
+  // Hardcoded teal — always visible on white paper-space background
+  renderDevice->SelectPen(PS_DASH, 1, RGB(0, 128, 128));
 
   EoGePoint4d ndcCorners[4];
   CPoint clientCorners[4];

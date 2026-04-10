@@ -112,6 +112,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DWG Test Files", "DWG Test 
 		DWG Test Files\visualization_-_conference_room.dwg = DWG Test Files\visualization_-_conference_room.dwg
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PEG Test Files", "PEG Test Files", "{04F28335-E088-43C9-9295-9602D9CE66AD}"
+	ProjectSection(SolutionItems) = preProject
+		PEG Test Files\Testing PDF out of Peg Sheets sample.pdf = PEG Test Files\Testing PDF out of Peg Sheets sample.pdf
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32

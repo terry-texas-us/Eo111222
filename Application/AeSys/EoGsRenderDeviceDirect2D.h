@@ -33,6 +33,7 @@ class EoGsRenderDeviceDirect2D : public EoGsRenderDevice {
   // Pen state tracking
   D2D1_COLOR_F m_penColor{};
   float m_penWidth{1.0f};
+  float m_penWidthScale{1.0f};  ///< Multiplier for pen width (>1 for printer DPI scaling)
   int m_penStyle{PS_SOLID};
   Microsoft::WRL::ComPtr<ID2D1StrokeStyle> m_strokeStyle;  // null = solid
 
@@ -75,6 +76,10 @@ class EoGsRenderDeviceDirect2D : public EoGsRenderDevice {
   EoGsRenderDeviceDirect2D(ID2D1RenderTarget* renderTarget, ID2D1Factory* d2dFactory, IDWriteFactory* dwriteFactory);
 
   ~EoGsRenderDeviceDirect2D() override;
+
+  /// @brief Sets the pen-width scale factor for printer DPI compensation.
+  /// @param scale  Typically printerDPI / 96.0f (1.0 for screen rendering).
+  void SetPenWidthScale(float scale) noexcept { m_penWidthScale = scale; }
 
   EoGsRenderDeviceDirect2D(const EoGsRenderDeviceDirect2D&) = delete;
   EoGsRenderDeviceDirect2D& operator=(const EoGsRenderDeviceDirect2D&) = delete;

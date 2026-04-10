@@ -110,6 +110,7 @@
 #define IDD_ATTRIBUTE_PROMPT            343
 #define IDD_TEXT_STYLE_MANAGER          344
 #define IDR_STYLES                      345
+#define IDD_SHEET_SETUP_FORM_FACTOR     346
 #define IDC_ARCHITECTURAL               1000
 #define IDC_ENGINEERING                 1001
 #define IDC_FEET                        1002
@@ -327,6 +328,9 @@
 #define IDC_ATTRIB_PROMPT               1462
 #define IDC_ATTRIB_VALUE                1463
 #define IDC_TEXTSTYLE_LIST              1464
+#define IDC_SHEET_DESIGNATION           1465
+#define IDC_ORIENTATION_LANDSCAPE       1466
+#define IDC_ORIENTATION_PORTRAIT        1467
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -813,7 +817,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        346
+#define _APS_NEXT_RESOURCE_VALUE        347
 #define _APS_NEXT_COMMAND_VALUE         4906
 #define _APS_NEXT_CONTROL_VALUE         1465
 #define _APS_NEXT_SYMED_VALUE           500

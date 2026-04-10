@@ -303,7 +303,10 @@ void AeSysView::SetModeCursor(int mode) {
   ATLTRACE2(
       traceGeneral, 1, L"AeSysView::SetModeCursor(Mode: %i, Cursor Size: %i)\n", mode, GetSystemMetrics(SM_CXCURSOR));
 
-  auto isWhiteBackground = Eo::activeViewBackground == Eo::ViewBackground::White;
+  // Paper space is always white — cursor must use white-background variant
+  auto* document = GetDocument();
+  auto isWhiteBackground = (Eo::activeViewBackground == Eo::ViewBackground::White) ||
+      (document != nullptr && document->ActiveSpace() == EoDxf::Space::PaperSpace);
   std::uint16_t resourceIdentifier{};
 
   switch (mode) {

@@ -251,6 +251,19 @@ class AeSysDoc : public CDocument {
    */
   void DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevice* renderDevice);
 
+  /** @brief Creates a default paper-space viewport if none exists.
+   *
+   *  When a PEG file (or any document) has model-space content but no paper-space
+   *  viewport primitives with a valid model-space view (ID > 1, viewHeight > 0),
+   *  this method creates one. The viewport is sized to encompass the full
+   *  model-space extents at 1:1 scale, producing a layout equivalent to the
+   *  DXF paper-space structure. This unifies the plot pipeline: both DXF and PEG
+   *  documents go through the same paper-space → viewport → model-space rendering.
+   *
+   *  @param view  The active AeSysView (needed for model-space extent computation).
+   */
+  void CreateDefaultPaperSpaceViewport(AeSysView* view);
+
   /** @brief Renders model-space layers directly (bypasses active-space routing).
    *
    *  Used internally by DisplayModelSpaceThroughViewports to draw model-space content
@@ -273,6 +286,9 @@ class AeSysDoc : public CDocument {
 
   /// @brief Returns the active drawing space.
   [[nodiscard]] EoDxf::Space ActiveSpace() const noexcept { return m_activeSpace; }
+
+  /// @brief Sets the active drawing space (model or paper).
+  void SetActiveSpace(EoDxf::Space space) noexcept { m_activeSpace = space; }
 
   /// @brief Returns the original .dwg path when the document was opened via ODAFileConverter.
   [[nodiscard]] const std::wstring& OriginalDwgPath() const noexcept { return m_originalDwgPath; }
@@ -308,6 +324,9 @@ class AeSysDoc : public CDocument {
    * @return Pointer to the layer if found; nullptr otherwise.
    */
   [[nodiscard]] EoDbLayer* FindLayerInSpace(const CString& name, EoDxf::Space space);
+
+  CLayers& PaperSpaceLayers() { return m_paperSpaceLayers; }
+  const CLayers& PaperSpaceLayers() const { return m_paperSpaceLayers; }
 
   EoDbLayer* LayersSelUsingPoint(const EoGePoint3d&);
 

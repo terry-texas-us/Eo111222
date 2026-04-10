@@ -147,6 +147,7 @@
     <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
     <ClCompile Include="EoCtrlTextStyleComboBox.cpp" />
     <ClCompile Include="EoDlgTextStyleManager.cpp" />
+    <ClCompile Include="EoDlgSheetSetupFormFactor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -273,6 +274,7 @@
     <ClInclude Include="EoCtrlLineWeightComboBox.h" />
     <ClInclude Include="EoCtrlTextStyleComboBox.h" />
     <ClInclude Include="EoDlgTextStyleManager.h" />
+    <ClInclude Include="EoDlgSheetSetupFormFactor.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />
@@ -471,6 +473,10 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\Hatches\DefaultSet.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />

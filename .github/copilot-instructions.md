@@ -254,6 +254,73 @@ Every `EoDbPrimitive` carries a unique, non-zero `m_handle` (`std::uint64_t`) as
 - Extension dictionaries (XDICT, ACAD_REACTORS): not needed for current linkage.
 - PEG V2 handle serialization per primitive type.
 
+## Plot Pipeline — Unified Layout Rendering (DXF == PEG)
+
+### Architecture Overview
+Both DXF and PEG files use the same paper-space → viewport → model-space rendering pipeline for plotting. DXF files bring their own paper-space viewports from the file. PEG files get a synthetic default viewport created by `CreateDefaultPaperSpaceViewport()` on first view initialization.
+
+The key principle is **"DXF == PEG for plot render"**: plot output always renders through the paper-space layout pipeline, regardless of file origin. This eliminates separate code paths for DXF (which has native layouts) and PEG (which historically had none).
+
+### Paper-Space Rendering Pipeline
+`DisplayAllLayers()` checks `m_activeSpace`:
+- **ModelSpace**: Iterates model-space layers, renders geometry directly.
+- **PaperSpace**: Iterates paper-space layers (rendering annotations, title blocks, viewport frames), then calls `DisplayModelSpaceThroughViewports()`.
+
+`DisplayModelSpaceThroughViewports()`:
+1. Scans paper-space layers for `EoDbViewport` primitives (skips viewport ID 1 — the overall paper boundary).
+2. For each viewport (ID ≥ 2): computes a GDI clip rect from paper-space geometry, pushes a view transform, configures camera/window from viewport's model-space view parameters (viewCenter, viewDirection, viewHeight, etc.), renders all model-space layers within the clip, then restores.
+3. Off-center projection math: `halfExtentU = viewWidth × deviceWidth / (2 × clipWidth)`, `windowCenterU = halfExtentU × (1 − 2×clipCenterX/deviceWidth)` — maps model-space view area exactly to the GDI clip region.
+
+### Default Paper-Space Viewport (PEG Files)
+`AeSysDoc::CreateDefaultPaperSpaceViewport(AeSysView* view)` is called from `OnInitialUpdate()` after `ApplyActiveViewport()`. It:
+1. Scans paper-space layers for existing viewports (ID > 1 with viewHeight > tolerance) — exits early if found (idempotent for DXF files).
+2. Computes model-space extents via `layer->GetExtents(view, ...)`.
+3. Creates `EoDbViewport` ID 2 with paper-space sheet sized 1:1 to model extents + 5% margin.
+4. Configures viewport model-space view: viewCenter at model centroid, viewHeight = model height, viewDirection = (0,0,1) top view.
+5. Places the viewport group on paper-space layer "0".
+6. Handle auto-assigned by `EoDbPrimitive` constructor, registered via `RegisterHandle()`.
+
+### EoDbViewport Primitive Fields
+| Category | Fields | Purpose |
+|----------|--------|---------|
+| Paper-space geometry | `centerPoint`, `width`, `height` | Position/size of viewport rectangle on the paper sheet |
+| Identity | `viewportStatus`, `viewportId` | Status flags; ID 1 = overall paper (skipped), ID ≥ 2 = model windows |
+| Model-space view | `viewCenter`, `viewDirection`, `viewTargetPoint`, `viewHeight`, `lensLength`, `twistAngle` | Camera configuration for model-space rendering inside viewport |
+
+### Plot Command Flow
+1. `OnFilePlotFull/Half/Quarter()` → sets `m_Plot = true`, `m_PlotScaleFactor`, calls `CView::OnFilePrint()`.
+2. `OnBeginPrinting()` → saves `m_activeSpace` to `m_savedActiveSpaceForPlot` (unconditionally — handles edge case of non-plot print from PaperSpace), switches to `PaperSpace` when `m_Plot`, caches paper-space extents in `m_plotExtentMin`/`m_plotExtentMax`, computes page count via `NumPages()`.
+3. Per-page: `OnPrepareDC()` → tiles across paper-space sheet using cached extents and `m_PlotScaleFactor`.
+4. Per-page: `OnDraw()` → `DisplayAllLayers()` with PaperSpace active → renders paper-space layers → `DisplayModelSpaceThroughViewports()` renders model-space through each viewport.
+5. `OnEndPrinting()` → restores saved active space, resets `m_Plot`.
+
+### MFC Print Lifecycle Timing
+`OnPreparePrinting` → `OnBeginPrinting` → per-page(`OnPrepareDC` → `OnDraw`) → `OnEndPrinting`.
+
+The space switch happens in `OnBeginPrinting`, so `OnPreparePrinting`'s initial page count estimate uses pre-switch extents. This is acceptable — `OnBeginPrinting` overrides with the correct count. Paper-space extents are ~5% larger than model-space (due to the margin) — the difference is negligible for initial estimates.
+
+### Key Design Decisions
+- Active space is always saved/restored in `OnBeginPrinting`/`OnEndPrinting` (not just for plot) to handle non-plot print from PaperSpace correctly.
+- `OnFilePrint()` (non-plot) renders whatever the current active space is — no space switching.
+- `CreateDefaultPaperSpaceViewport` is idempotent — safe to call on every `OnInitialUpdate`.
+- Tiling math in `OnPrepareDC` is space-agnostic — works against whatever extents are cached in `m_plotExtentMin`/`m_plotExtentMax`.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysDocDisplay.cpp` | `CreateDefaultPaperSpaceViewport`, `DisplayModelSpaceThroughViewports`, `DisplayAllLayers` |
+| `AeSys\AeSysDoc.h` | `SetActiveSpace()`, `ActiveSpace()`, `m_activeSpace`, `m_paperSpaceLayers` |
+| `AeSys\AeSysViewRender.cpp` | Print lifecycle (`OnBeginPrinting`/`OnPrepareDC`/`OnDraw`/`OnEndPrinting`), `OnInitialUpdate` |
+| `AeSys\AeSysView.h` | `m_savedActiveSpaceForPlot`, `m_plotExtentMin/Max`, `m_Plot`, `m_PlotScaleFactor` |
+| `AeSys\AeSysViewCommands.cpp` | `NumPages()`, `OnFilePlotFull/Half/Quarter()` plot command handlers |
+| `AeSys\EoDbViewport.h` | Viewport primitive — paper-space geometry + model-space view params |
+
+### Deferred
+- **Multi-viewport layouts**: Current PEG default creates a single full-sheet viewport. Future work could support multiple viewports with different scales/views.
+- **Paper-space annotations**: Title blocks, borders, dimension text in paper-space layers are rendered but not yet created programmatically for PEG files.
+- **Named layouts**: DXF supports multiple named layouts; currently only the default `*Paper_Space` is used.
+- **Viewport clipping in D2D**: `DisplayModelSpaceThroughViewports` uses GDI `IntersectClipRect`; the D2D path needs equivalent `PushAxisAlignedClip` for proper viewport boundary enforcement.
+
 ## Color Scheme (Dark / Light)
 
 ### Architecture Overview

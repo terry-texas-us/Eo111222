@@ -474,12 +474,16 @@ void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion
       std::uint64_t layerOwnerHandle{};
       EoDxfLineWeights::LineWeight layerLineWeight{EoDxfLineWeights::LineWeight::kLnWtByLwDefault};
       double layerLineTypeScale{1.0};
+      std::uint16_t layerPropertyFlags{};
+      std::int32_t layerColor24{};
       if (fileVersion == EoDb::PegFileVersion::AE2026) {
         layerHandle = EoDb::ReadUInt64(*this);
         layerOwnerHandle = EoDb::ReadUInt64(*this);
         auto lineWeightDxfCode = EoDb::ReadInt16(*this);
         layerLineWeight = EoDxfLineWeights::DxfIndexToLineWeight(lineWeightDxfCode);
         layerLineTypeScale = EoDb::ReadDouble(*this);
+        layerPropertyFlags = EoDb::ReadUInt16(*this);
+        layerColor24 = EoDb::ReadInt32(*this);
       }
 
       if (document->FindLayerInSpace(layerName, EoDxf::Space::PaperSpace) == nullptr) {
@@ -490,6 +494,10 @@ void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion
         layer->SetOwnerHandle(layerOwnerHandle);
         layer->SetLineWeight(layerLineWeight);
         layer->SetLineTypeScale(layerLineTypeScale);
+        layer->SetFrozen((layerPropertyFlags & 0x01) != 0);
+        layer->SetLocked((layerPropertyFlags & 0x02) != 0);
+        layer->SetPlottingFlag((layerPropertyFlags & 0x04) != 0);
+        layer->SetColor24(layerColor24);
 
         EoDbLineType* lineType{};
         if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) { layer->SetLineType(lineType); }

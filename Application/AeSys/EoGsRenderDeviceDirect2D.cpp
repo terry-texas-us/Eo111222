@@ -213,7 +213,7 @@ void EoGsRenderDeviceDirect2D::SelectPen(int style, int width, COLORREF color) {
   m_hasSavedPen = true;
 
   m_penColor = ColorRefToD2D(color);
-  m_penWidth = (width > 0) ? static_cast<float>(width) : 1.0f;
+  m_penWidth = ((width > 0) ? static_cast<float>(width) : 1.0f) * m_penWidthScale;
   m_penStyle = style;
   m_strokeStyle = CreateStrokeStyleForPenStyle(style);
 }

@@ -62,11 +62,21 @@ UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizonta
 
   document->GetExtents(this, ptMin, ptMax, transformMatrix);
 
+  // Guard against empty document or degenerate extents
+  if (ptMax.x <= ptMin.x || ptMax.y <= ptMin.y) {
+    horizontalPages = 1;
+    verticalPages = 1;
+    return 1;
+  }
+
   double HorizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch;
   double VerticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch;
 
   horizontalPages = static_cast<UINT>(Eo::Round(((ptMax.x - ptMin.x) * scaleFactor / HorizontalSizeInInches) + 0.5f));
   verticalPages = static_cast<UINT>(Eo::Round(((ptMax.y - ptMin.y) * scaleFactor / VerticalSizeInInches) + 0.5f));
+
+  if (horizontalPages < 1) { horizontalPages = 1; }
+  if (verticalPages < 1) { verticalPages = 1; }
 
   return horizontalPages * verticalPages;
 }

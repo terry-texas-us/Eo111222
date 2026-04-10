@@ -171,6 +171,7 @@
     <ClCompile Include="EoCtrlColorComboBox.cpp" />
     <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
     <ClCompile Include="EoCtrlTextStyleComboBox.cpp" />
+    <ClCompile Include="EoDlgSheetSetupFormFactor.cpp" />
     <ClCompile Include="EoDlgTextStyleManager.cpp" />
     <ClCompile Include="EoMfStatusBar.cpp" />
     <ClCompile Include="Stdafx.cpp">
@@ -412,6 +413,7 @@
     <ClInclude Include="EoDlgSetupLineType.h" />
     <ClInclude Include="EoDlgSetupNote.h" />
     <ClInclude Include="EoDlgSetupPointStyle.h" />
+    <ClInclude Include="EoDlgSheetSetupFormFactor.h" />
     <ClInclude Include="EoDlgTextStyleManager.h" />
     <ClInclude Include="EoDlgTrapFilter.h" />
     <ClInclude Include="EoDlgTrapModify.h" />

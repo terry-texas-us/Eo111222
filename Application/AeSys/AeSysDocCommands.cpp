@@ -1066,6 +1066,15 @@ void AeSysDoc::OnViewModelSpace() {
   auto* layer0 = GetLayerTableLayer(L"0");
   if (layer0 != nullptr) { SetWorkLayer(layer0); }
 
+  // Ensure a default paper-space viewport exists when switching to PaperSpace
+  if (m_activeSpace == EoDxf::Space::PaperSpace) {
+    auto viewPosition = GetFirstViewPosition();
+    if (viewPosition != nullptr) {
+      auto* view = static_cast<AeSysView*>(GetNextView(viewPosition));
+      CreateDefaultPaperSpaceViewport(view);
+    }
+  }
+
   UpdateAllViews(nullptr, 0L, nullptr);
 }
 

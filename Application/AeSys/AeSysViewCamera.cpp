@@ -6,13 +6,17 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
+#include "EoDb.h"
+#include "EoDbLayer.h"
+#include "EoDbViewport.h"
+#include "EoDlgSelectIsometricView.h"
+#include "EoDlgSheetSetupFormFactor.h"
+#include "EoDlgViewParameters.h"
+#include "EoDlgViewZoom.h"
+#include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
-#include "EoGeLine.h"
-#include "EoDlgSelectIsometricView.h"
-#include "EoDlgViewParameters.h"
-#include "EoDlgViewZoom.h"
 #include "MainFrm.h"
 #include "Resource.h"
 
@@ -283,6 +287,91 @@ void AeSysView::OnWindowLast() {
 
 void AeSysView::OnWindowSheet() {
   ModelViewInitialize();
+  InvalidateScene();
+}
+
+void AeSysView::OnSheetSetupFormFactor() {
+  EoDlgSheetSetupFormFactor dialog(this);
+
+  if (dialog.DoModal() != IDOK) { return; }
+
+  const double sheetWidth = dialog.SheetWidth();
+  const double sheetHeight = dialog.SheetHeight();
+
+  auto* document = GetDocument();
+  if (document == nullptr) { return; }
+
+  // Find existing paper-space viewport (ID >= 2) or create one
+  EoDbViewport* viewport = nullptr;
+  auto& paperLayers = document->PaperSpaceLayers();
+  for (INT_PTR layerIndex = 0; layerIndex < paperLayers.GetSize(); layerIndex++) {
+    auto* layer = paperLayers.GetAt(layerIndex);
+    if (layer == nullptr) { continue; }
+
+    auto position = layer->GetHeadPosition();
+    while (position != nullptr) {
+      auto* group = layer->GetNext(position);
+      if (group == nullptr) { continue; }
+
+      auto primitivePosition = group->GetHeadPosition();
+      while (primitivePosition != nullptr) {
+        auto* primitive = group->GetNext(primitivePosition);
+        if (primitive != nullptr && primitive->Is(EoDb::kViewportPrimitive)) {
+          auto* candidate = static_cast<EoDbViewport*>(primitive);
+          if (candidate->ViewportId() >= 2) {
+            viewport = candidate;
+            break;
+          }
+        }
+      }
+      if (viewport != nullptr) { break; }
+    }
+    if (viewport != nullptr) { break; }
+  }
+
+  if (viewport != nullptr) {
+    // Update existing viewport — paper-space geometry and model-space view
+    viewport->SetWidth(sheetWidth);
+    viewport->SetHeight(sheetHeight);
+
+    // Keep the model-space view center but adjust viewHeight to match new sheet aspect
+    const double currentViewHeight = viewport->ViewHeight();
+
+    // Scale model-space view to fit the new sheet proportions
+    viewport->SetViewHeight(currentViewHeight);
+  } else {
+    // No viewport exists — create one (same pattern as CreateDefaultPaperSpaceViewport)
+    const auto viewCenter = CameraTarget();
+
+    viewport = new EoDbViewport();
+    viewport->SetCenterPoint(EoGePoint3d{viewCenter.x, viewCenter.y, 0.0});
+    viewport->SetWidth(sheetWidth);
+    viewport->SetHeight(sheetHeight);
+    viewport->SetViewportStatus(1);
+    viewport->SetViewportId(2);
+    viewport->SetViewCenter(EoGePoint3d{viewCenter.x, viewCenter.y, 0.0});
+    viewport->SetViewDirection(EoGePoint3d{0.0, 0.0, 1.0});
+    viewport->SetViewTargetPoint(EoGePoint3d{viewCenter.x, viewCenter.y, 0.0});
+    viewport->SetViewHeight(sheetHeight);
+    viewport->SetLensLength(50.0);
+    viewport->SetTwistAngle(0.0);
+
+    document->RegisterHandle(viewport);
+
+    auto* viewportGroup = new EoDbGroup();
+    viewportGroup->AddTail(viewport);
+
+    auto* paperLayer0 = document->FindLayerInSpace(L"0", EoDxf::Space::PaperSpace);
+    if (paperLayer0 == nullptr) {
+      constexpr auto layerState = static_cast<std::uint16_t>(
+          std::to_underlying(EoDbLayer::State::isResident) | std::to_underlying(EoDbLayer::State::isInternal));
+      paperLayer0 = new EoDbLayer(L"0", layerState);
+      document->AddLayerToSpace(paperLayer0, EoDxf::Space::PaperSpace);
+    }
+    paperLayer0->AddTail(viewportGroup);
+  }
+
+  document->SetModifiedFlag(TRUE);
   InvalidateScene();
 }
 

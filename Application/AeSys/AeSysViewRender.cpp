@@ -53,8 +53,47 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     Eo::GrayPalette[7] = RGB(0x22, 0x22, 0x22);
     Eo::GrayPalette[0] = RGB(0xdd, 0xdd, 0xdd);
 
-    EoGsRenderDeviceGdi renderDevice(deviceContext);
-    document->DisplayAllLayers(this, &renderDevice);
+    // Phase 7: D2D DC render target for anti-aliased hard copy output
+    bool renderedWithD2D{};
+    auto* factory = app.D2DFactory();
+    if (m_useD2DForPrint && factory != nullptr) {
+      const auto dpiX = static_cast<float>(deviceContext->GetDeviceCaps(LOGPIXELSX));
+      const auto dpiY = static_cast<float>(deviceContext->GetDeviceCaps(LOGPIXELSY));
+      const int horzRes = deviceContext->GetDeviceCaps(HORZRES);
+      const int vertRes = deviceContext->GetDeviceCaps(VERTRES);
+
+      D2D1_RENDER_TARGET_PROPERTIES rtProps = D2D1::RenderTargetProperties(
+          D2D1_RENDER_TARGET_TYPE_DEFAULT,
+          D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE), dpiX, dpiY);
+
+      Microsoft::WRL::ComPtr<ID2D1DCRenderTarget> dcTarget;
+      HRESULT hr = factory->CreateDCRenderTarget(&rtProps, &dcTarget);
+      if (SUCCEEDED(hr)) {
+        const RECT bindRect{0, 0, horzRes, vertRes};
+        hr = dcTarget->BindDC(deviceContext->GetSafeHdc(), &bindRect);
+      }
+      if (SUCCEEDED(hr)) {
+        dcTarget->BeginDraw();
+        dcTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+
+        EoGsRenderDeviceDirect2D renderDevice(dcTarget.Get(), factory, app.DWriteFactory());
+        renderDevice.SetPenWidthScale(dpiX / 96.0f);
+        document->DisplayAllLayers(this, &renderDevice);
+
+        hr = dcTarget->EndDraw();
+        renderedWithD2D = SUCCEEDED(hr);
+      }
+      if (!renderedWithD2D) {
+        ATLTRACE2(traceGeneral, 0, L"AeSysView<%p>::OnDraw — D2D print failed hr=0x%08X, falling back to GDI\n",
+            this, hr);
+      }
+    }
+
+    // GDI fallback if D2D is disabled or failed
+    if (!renderedWithD2D) {
+      EoGsRenderDeviceGdi renderDevice(deviceContext);
+      document->DisplayAllLayers(this, &renderDevice);
+    }
 
     Eo::ColorPalette[0] = savedAci0;
     Eo::ColorPalette[7] = savedAci7;
@@ -79,6 +118,20 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       m_d2dRenderTarget->Clear(bkColor);
       EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
 
+      // Paper space is always white — force ACI 7→black so entities using the
+      // default color are visible, matching the print-path behavior.
+      COLORREF savedAci0{}, savedAci7{}, savedGray0{}, savedGray7{};
+      if (isPaperSpace) {
+        savedAci0 = Eo::ColorPalette[0];
+        savedAci7 = Eo::ColorPalette[7];
+        savedGray0 = Eo::GrayPalette[0];
+        savedGray7 = Eo::GrayPalette[7];
+        Eo::ColorPalette[7] = Eo::colorBlack;
+        Eo::ColorPalette[0] = Eo::colorWhite;
+        Eo::GrayPalette[7] = RGB(0x22, 0x22, 0x22);
+        Eo::GrayPalette[0] = RGB(0xdd, 0xdd, 0xdd);
+      }
+
       // Save the user's current render state (linetype name, color, etc.) before entity
       // rendering, which mutates Gs::renderState via SetPen calls. Restore afterward so that
       // UpdateStateInformation reads the user's selection, not the last-rendered entity's state.
@@ -89,6 +142,13 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       // Preview group overlay — rendered on top of the committed scene
       if (!m_PreviewGroup.IsEmpty()) { m_PreviewGroup.Display(this, &renderDevice); }
       Gs::renderState.Restore(&renderDevice, savedUserState);
+
+      if (isPaperSpace) {
+        Eo::ColorPalette[0] = savedAci0;
+        Eo::ColorPalette[7] = savedAci7;
+        Eo::GrayPalette[0] = savedGray0;
+        Eo::GrayPalette[7] = savedGray7;
+      }
 
       // Draw rubberband overlay after the scene
       if (m_rubberbandType != None) {
@@ -148,6 +208,20 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       CRect bufferRect(0, 0, m_backBufferSize.cx, m_backBufferSize.cy);
       m_backBufferDC.FillSolidRect(bufferRect, Eo::ViewBackgroundColorForSpace(isPaperSpace));
 
+      // Paper space is always white — force ACI 7→black so entities using the
+      // default color are visible, matching the print-path behavior.
+      COLORREF savedAci0{}, savedAci7{}, savedGray0{}, savedGray7{};
+      if (isPaperSpace) {
+        savedAci0 = Eo::ColorPalette[0];
+        savedAci7 = Eo::ColorPalette[7];
+        savedGray0 = Eo::GrayPalette[0];
+        savedGray7 = Eo::GrayPalette[7];
+        Eo::ColorPalette[7] = Eo::colorBlack;
+        Eo::ColorPalette[0] = Eo::colorWhite;
+        Eo::GrayPalette[7] = RGB(0x22, 0x22, 0x22);
+        Eo::GrayPalette[0] = RGB(0xdd, 0xdd, 0xdd);
+      }
+
       if (!m_ViewRendered) {
         BackgroundImageDisplay(&m_backBufferDC);
         DisplayGrid(&m_backBufferDC);
@@ -165,6 +239,13 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         document->DisplayUniquePoints();
 #endif
       }
+
+      if (isPaperSpace) {
+        Eo::ColorPalette[0] = savedAci0;
+        Eo::ColorPalette[7] = savedAci7;
+        Eo::GrayPalette[0] = savedGray0;
+        Eo::GrayPalette[7] = savedGray7;
+      }
       m_sceneInvalid = false;
     }
 
@@ -175,11 +256,29 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     } else {
       // Fallback: direct rendering before first OnSize delivers a back buffer
       if (!m_ViewRendered) {
+        const bool isPaper = document->ActiveSpace() == EoDxf::Space::PaperSpace;
+        COLORREF sAci0{}, sAci7{}, sGray0{}, sGray7{};
+        if (isPaper) {
+          sAci0 = Eo::ColorPalette[0];
+          sAci7 = Eo::ColorPalette[7];
+          sGray0 = Eo::GrayPalette[0];
+          sGray7 = Eo::GrayPalette[7];
+          Eo::ColorPalette[7] = Eo::colorBlack;
+          Eo::ColorPalette[0] = Eo::colorWhite;
+          Eo::GrayPalette[7] = RGB(0x22, 0x22, 0x22);
+          Eo::GrayPalette[0] = RGB(0xdd, 0xdd, 0xdd);
+        }
         BackgroundImageDisplay(deviceContext);
         DisplayGrid(deviceContext);
         EoGsRenderDeviceGdi renderDevice(deviceContext);
         document->DisplayAllLayers(this, &renderDevice);
         document->DisplayUniquePoints();
+        if (isPaper) {
+          Eo::ColorPalette[0] = sAci0;
+          Eo::ColorPalette[7] = sAci7;
+          Eo::GrayPalette[0] = sGray0;
+          Eo::GrayPalette[7] = sGray7;
+        }
       }
     }
 
@@ -207,6 +306,10 @@ void AeSysView::OnInitialUpdate() {
   CView::OnInitialUpdate();
 
   ApplyActiveViewport();
+
+  // Ensure PEG files (and any document without paper-space viewports) get a default
+  // layout viewport so the plot pipeline can use the same paper-space rendering path.
+  if (auto* document = GetDocument()) { document->CreateDefaultPaperSpaceViewport(this); }
 
 #if defined(USING_STATE_PATTERN)
   PushState(std::make_unique<IdleState>());

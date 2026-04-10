@@ -104,6 +104,7 @@ class AeSysView : public CView {
   Microsoft::WRL::ComPtr<ID2D1HwndRenderTarget> m_d2dRenderTarget;
   bool m_useD2D{true};
   bool m_d2dAliased{};
+  bool m_useD2DForPrint{true};  ///< Phase 7: use D2D DC render target for printing (GDI fallback if false)
 
   CBitmap m_backgroundImageBitmap{};
   CPalette m_backgroundImagePalette{};
@@ -1079,6 +1080,7 @@ class AeSysView : public CView {
   afx_msg void OnRelativeMovesLeftRotate();
   afx_msg void OnRelativeMovesDownRotate();
   afx_msg void OnSetupScale();
+  afx_msg void OnSheetSetupFormFactor();
   afx_msg void OnToolsPrimitiveSnapto();
   afx_msg void OnUpdateViewTrueTypeFonts(CCmdUI* pCmdUI);
   afx_msg void OnUpdateViewBackgroundImage(CCmdUI* pCmdUI);
