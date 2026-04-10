@@ -91,6 +91,7 @@ class EoDxfRead {
   bool ProcessViewport();
   bool ProcessImage();
   bool ProcessImageDef();
+  bool ProcessLayout();
   bool ProcessUnsupportedObject();
   bool ProcessDimension();
   bool ProcessLeader();

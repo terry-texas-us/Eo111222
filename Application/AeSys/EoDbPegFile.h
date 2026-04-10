@@ -16,6 +16,7 @@ class EoDbPegFile : public CFile {
   void ReadEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void ReadHeaderSection(AeSysDoc* document);
   void ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
+  void ReadLayoutTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void ReadLinetypesTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void ReadLinetypeDefinition(
       std::vector<double>& dashLength, CString& name, CString& description, std::uint16_t& definitionLength);
@@ -28,6 +29,7 @@ class EoDbPegFile : public CFile {
   void WriteEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void WriteHeaderSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
+  void WriteLayoutTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void WriteLinetypeTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void WriteTablesSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);

@@ -83,8 +83,6 @@ ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)
 ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
 ON_COMMAND(ID_FILE_OPEN, &AeSys::OnFileOpen)
 ON_COMMAND(ID_FILE_SAVE_ALL, &AeSys::OnFileSaveAll)
-// Standard print setup command
-ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinAppEx::OnFilePrintSetup)
 
 ON_COMMAND(ID_EDIT_CF_GROUPS, &AeSys::OnEditCfGroups)
 ON_COMMAND(ID_EDIT_CF_IMAGE, &AeSys::OnEditCfImage)

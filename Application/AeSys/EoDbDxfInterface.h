@@ -400,6 +400,14 @@ class EoDbDxfInterface : public EoDxfInterface {
     m_document->AddUnsupportedObject(objectData);
   }
 
+  void AddLayout(const EoDxfLayout& layout) override {
+    if (m_dxfWriter) {
+      m_dxfWriter->WriteLayout(layout);
+      return;
+    }
+    m_document->AddLayout(layout);
+  }
+
   // Others
   void AddComment(std::wstring_view comment) override {
     ATLTRACE2(traceGeneral, 2, L"EoDxfInterface::AddComment(%.*s)\n", static_cast<int>(comment.size()), comment.data());
@@ -638,12 +646,15 @@ class EoDbDxfInterface : public EoDxfInterface {
           };
   void WriteObjects() override {};
   [[nodiscard]] bool HasUnsupportedObjects() const override {
-    return m_document != nullptr && !m_document->UnsupportedObjects().empty();
+    return m_document != nullptr && (!m_document->UnsupportedObjects().empty() || !m_document->Layouts().empty());
   }
   void WriteUnsupportedObjects() override {
     if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
     for (const auto& object : m_document->UnsupportedObjects()) {
       m_dxfWriter->WriteUnsupportedObject(object);
+    }
+    for (const auto& layout : m_document->Layouts()) {
+      m_dxfWriter->WriteLayout(layout);
     }
   };
   void WriteLayers() override {

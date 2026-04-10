@@ -168,8 +168,9 @@ class EoDxfWrite {
   bool WriteBlock(const EoDxfBlock& block);
   void AddImageDefinition(const EoDxfImageDefinition& imageDefinition);
   bool WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData);
+  bool WriteLayout(const EoDxfLayout& layout);
   EoDxfImageDefinition* WriteImage(EoDxfImage* image, std::wstring_view name);
- 
+
  private:
   bool TrackWriteResult(bool isOk) noexcept {
     m_writeOk = m_writeOk && isOk;

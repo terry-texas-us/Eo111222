@@ -205,6 +205,7 @@ void AeSysDoc::DeleteContents() {
   m_dimStyleTable.clear();
   m_textStyleTable.clear();
   m_unsupportedObjects.clear();
+  m_layouts.clear();
   m_vportTable.clear();
 
   RemoveAllBlocks();

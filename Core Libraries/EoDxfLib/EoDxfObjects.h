@@ -84,3 +84,107 @@ class EoDxfUnsupportedObject {
   std::wstring m_objectType;
   std::vector<EoDxfGroupCodeValuesVariant> m_values;
 };
+
+/** @brief Structured representation of a DXF LAYOUT object (OBJECTS section).
+ *
+ *  A LAYOUT object carries two subclass sections:
+ *  - **AcDbPlotSettings**: paper size, margins, plotter configuration, scale, plot area type, etc.
+ *  - **AcDbLayout**: layout name, tab order, paper-space limits/extents, UCS definition, and
+ *    the handle link to the associated BLOCK_RECORD.
+ *
+ *  Group codes 1, 70, 76, and 330 appear in both subclasses with different meanings.
+ *  `m_currentSubclass` tracks the active subclass marker (code 100) to disambiguate.
+ *
+ *  The Model layout (tab order 0) links to *Model_Space block record (typically handle 0x1F).
+ *  Paper-space layouts link to *Paper_Space or named block records.
+ *
+ *  ## Handle Identity
+ *  Inherits `m_handle` and `m_ownerHandle` from `EoDxfObjectEntry` → `EoDxfEntity`.
+ *  The owner is typically the ACAD_LAYOUT dictionary.
+ */
+class EoDxfLayout : public EoDxfObjectEntry {
+  friend class EoDxfRead;
+  friend class EoDxfWrite;
+
+ public:
+  EoDxfLayout() { Reset(); }
+
+  /// @brief Writes the LAYOUT object to a DXF writer in the standard group-code order.
+  void Write(EoDxfWriter* writer) const;
+
+  /// @brief Returns true if this layout represents the Model tab (tab order 0, name "Model").
+  [[nodiscard]] bool IsModelLayout() const noexcept { return m_tabOrder == 0; }
+
+ protected:
+  void ParseCode(int code, EoDxfReader& reader);
+  void Reset();
+
+ private:
+  /// Tracks which AcDb subclass section the parser is currently in.
+  enum class Subclass { None, PlotSettings, Layout };
+  Subclass m_currentSubclass{Subclass::None};
+
+ public:
+  // ── AcDbPlotSettings ─────────────────────────────────────────────────────────
+  std::wstring m_pageSetupName;          ///< Code 1: Page/plot setup name
+  std::wstring m_plotConfigName;         ///< Code 2: Plotter configuration name (e.g. "none_device")
+  std::wstring m_paperSizeName;          ///< Code 4: Paper size name (e.g. "ISO_A4_(210.00_x_297.00_MM)")
+  std::wstring m_plotViewName;           ///< Code 6: Plot view name (empty = no named view)
+  double m_leftMargin{};                 ///< Code 40: Left unprintable margin (mm)
+  double m_bottomMargin{};               ///< Code 41: Bottom unprintable margin (mm)
+  double m_rightMargin{};                ///< Code 42: Right unprintable margin (mm)
+  double m_topMargin{};                  ///< Code 43: Top unprintable margin (mm)
+  double m_paperWidth{};                 ///< Code 44: Paper width (mm)
+  double m_paperHeight{};                ///< Code 45: Paper height (mm)
+  double m_plotOriginX{};                ///< Code 46: Plot origin X offset (mm)
+  double m_plotOriginY{};                ///< Code 47: Plot origin Y offset (mm)
+  double m_plotWindowLowerLeftX{};       ///< Code 48: Plot window area lower-left X
+  double m_plotWindowLowerLeftY{};       ///< Code 49: Plot window area lower-left Y
+  double m_plotWindowUpperRightX{};      ///< Code 140: Plot window area upper-right X
+  double m_plotWindowUpperRightY{};      ///< Code 141: Plot window area upper-right Y
+  double m_customScaleNumerator{1.0};    ///< Code 142: Numerator of custom print scale
+  double m_customScaleDenominator{1.0};  ///< Code 143: Denominator of custom print scale
+  std::int16_t m_plotLayoutFlags{};      ///< Code 70: Plot layout flags (bitfield)
+  std::int16_t m_plotPaperUnits{};       ///< Code 72: 0=inches, 1=mm, 2=pixels
+  std::int16_t m_plotRotation{};         ///< Code 73: 0=none, 1=90°CCW, 2=180°, 3=90°CW
+  std::int16_t m_plotType{};             ///< Code 74: 0=last, 1=extents, 2=limits, 3=view, 4=window, 5=layout
+  std::wstring m_currentStyleSheet;      ///< Code 7: Current plot style sheet name
+  std::int16_t m_standardScaleType{};    ///< Code 75: Standard scale type (0=scaled to fit, 16=1:1, etc.)
+  std::int16_t m_shadePlotMode{};        ///< Code 76 (PlotSettings): Shade plot mode
+  std::int16_t m_shadePlotResLevel{};    ///< Code 77: Shade plot resolution level
+  std::int16_t m_shadePlotCustomDpi{};   ///< Code 78: Shade plot custom DPI
+  double m_scaleFactor{1.0};             ///< Code 147: Scale factor (paper units / drawing units)
+  double m_paperImageOriginX{};          ///< Code 148: Paper image origin X
+  double m_paperImageOriginY{};          ///< Code 149: Paper image origin Y
+
+  // ── AcDbLayout ───────────────────────────────────────────────────────────────
+  std::wstring m_layoutName;             ///< Code 1: Layout name (e.g. "Model", "Layout1")
+  std::int16_t m_layoutFlags{};          ///< Code 70: Layout flags (bit 1 = PSLTSCALE)
+  std::int16_t m_tabOrder{};             ///< Code 71: Tab order (0 = Model)
+  double m_limminX{};                    ///< Code 10: Minimum limits X
+  double m_limminY{};                    ///< Code 20: Minimum limits Y
+  double m_limmaxX{};                    ///< Code 11: Maximum limits X
+  double m_limmaxY{};                    ///< Code 21: Maximum limits Y
+  double m_insertBaseX{};                ///< Code 12: Insert base point X
+  double m_insertBaseY{};                ///< Code 22: Insert base point Y
+  double m_insertBaseZ{};                ///< Code 32: Insert base point Z
+  double m_extminX{};                    ///< Code 14: Minimum extents X
+  double m_extminY{};                    ///< Code 24: Minimum extents Y
+  double m_extminZ{};                    ///< Code 34: Minimum extents Z
+  double m_extmaxX{};                    ///< Code 15: Maximum extents X
+  double m_extmaxY{};                    ///< Code 25: Maximum extents Y
+  double m_extmaxZ{};                    ///< Code 35: Maximum extents Z
+  double m_elevation{};                  ///< Code 146: Elevation
+  double m_ucsOriginX{};                 ///< Code 13: UCS origin X
+  double m_ucsOriginY{};                 ///< Code 23: UCS origin Y
+  double m_ucsOriginZ{};                 ///< Code 33: UCS origin Z
+  double m_ucsXAxisX{1.0};              ///< Code 16: UCS X-axis direction X
+  double m_ucsXAxisY{};                  ///< Code 26: UCS X-axis direction Y
+  double m_ucsXAxisZ{};                  ///< Code 36: UCS X-axis direction Z
+  double m_ucsYAxisX{};                  ///< Code 17: UCS Y-axis direction X
+  double m_ucsYAxisY{1.0};              ///< Code 27: UCS Y-axis direction Y
+  double m_ucsYAxisZ{};                  ///< Code 37: UCS Y-axis direction Z
+  std::int16_t m_ucsOrthoType{};         ///< Code 76 (Layout): UCS orthographic type
+  std::uint64_t m_blockRecordHandle{EoDxf::NoHandle};  ///< Code 330 (Layout): Associated block record handle
+  std::uint64_t m_lastActiveViewportHandle{EoDxf::NoHandle};  ///< Code 331: Last active viewport handle
+};

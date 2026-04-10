@@ -20,6 +20,8 @@
 #include "MainFrm.h"
 #include "Resource.h"
 
+#include <winspool.h>
+
 #if defined(USING_STATE_PATTERN)
 #include "AeSysState.h"
 #include "DrawModeState.h"
@@ -29,6 +31,99 @@
 #include "Dde.h"
 #include "DdeGItms.h"
 #endif
+
+void AeSysView::OnFilePlot() {
+  EoDlgPlot dialog(this);
+  dialog.SetInitialSettings(m_plotSettings);
+
+  if (dialog.DoModal() != IDOK) { return; }
+
+  m_plotSettings = dialog.Settings();
+
+  // Apply printer and paper selection to the app's DEVMODE.
+  // Build fresh DEVMODE/DEVNAMES directly from the selected printer —
+  // avoids CPrintDialog whose destructor would GlobalFree the app's
+  // shared handles via GetPrinterDeviceDefaults.
+  {
+    HANDLE hPrinter{};
+    if (::OpenPrinterW(const_cast<wchar_t*>(m_plotSettings.printerName.c_str()), &hPrinter, nullptr)) {
+      DWORD needed = ::DocumentPropertiesW(GetSafeHwnd(), hPrinter, const_cast<wchar_t*>(m_plotSettings.printerName.c_str()), nullptr, nullptr, 0);
+      if (needed > 0) {
+        HGLOBAL hDevMode = ::GlobalAlloc(GHND, needed);
+        if (hDevMode != nullptr) {
+          auto* devMode = static_cast<DEVMODE*>(::GlobalLock(hDevMode));
+          if (devMode != nullptr) {
+            ::DocumentPropertiesW(GetSafeHwnd(), hPrinter, const_cast<wchar_t*>(m_plotSettings.printerName.c_str()), devMode, nullptr, DM_OUT_BUFFER);
+
+            // Apply orientation
+            devMode->dmFields |= DM_ORIENTATION;
+            devMode->dmOrientation = m_plotSettings.landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
+
+            // Apply paper size
+            if (m_plotSettings.dmPaperSize > 0) {
+              devMode->dmFields |= DM_PAPERSIZE;
+              devMode->dmPaperSize = m_plotSettings.dmPaperSize;
+            }
+
+            // Apply copies
+            devMode->dmFields |= DM_COPIES;
+            devMode->dmCopies = static_cast<short>(m_plotSettings.copies);
+
+            ::GlobalUnlock(hDevMode);
+          }
+
+          // Build DEVNAMES
+          const auto& printerName = m_plotSettings.printerName;
+          size_t devNamesSize = sizeof(DEVNAMES) + (printerName.size() + 1) * sizeof(wchar_t) * 3;
+          HGLOBAL hDevNames = ::GlobalAlloc(GHND, devNamesSize);
+          if (hDevNames != nullptr) {
+            auto* devNames = static_cast<DEVNAMES*>(::GlobalLock(hDevNames));
+            if (devNames != nullptr) {
+              auto* base = reinterpret_cast<wchar_t*>(devNames);
+              WORD offset = sizeof(DEVNAMES) / sizeof(wchar_t);
+
+              // Driver name (empty)
+              devNames->wDriverOffset = offset;
+              base[offset] = L'\0';
+              offset += 1;
+
+              // Device name
+              devNames->wDeviceOffset = offset;
+              wcscpy_s(base + offset, printerName.size() + 1, printerName.c_str());
+              offset += static_cast<WORD>(printerName.size() + 1);
+
+              // Output port (empty)
+              devNames->wOutputOffset = offset;
+              base[offset] = L'\0';
+
+              devNames->wDefault = 0;
+              ::GlobalUnlock(hDevNames);
+            }
+          }
+
+          // SelectPrinter(bFreeOld=TRUE) safely frees the app's old handles
+          // and takes ownership of the new ones.
+          AfxGetApp()->SelectPrinter(hDevNames, hDevMode);
+        }
+      }
+      ::ClosePrinter(hPrinter);
+    }
+  }
+
+  // Configure the plot pipeline.
+  // When fitToPaper is true, set a temporary scale of 1.0 — the actual
+  // fit-to-paper scale is computed in OnBeginPrinting once the real
+  // printer DC (and its paper dimensions) are available.
+  m_Plot = true;
+  if (m_plotSettings.fitToPaper) {
+    m_PlotScaleFactor = 1.0;
+  } else {
+    m_PlotScaleFactor = m_plotSettings.EffectiveScaleFactor();
+    if (m_PlotScaleFactor <= 0.0) { m_PlotScaleFactor = 1.0; }
+  }
+
+  CView::OnFilePrint();
+}
 
 void AeSysView::OnFilePlotFull() {
   m_Plot = true;

@@ -39,7 +39,19 @@
           Number of layers (resident only) uint16_t
           {0 or more layer definitions}
       EoDb::kEndOfTable sentinel           uint16_t 0x02ff
-  
+
+      (AE2026 V2 only — optional, peek-ahead for backward compatibility)
+      EoDb::kTextStyleTable sentinel       uint16_t 0x0204
+          Number of text styles            uint16_t
+          {0 or more text style definitions}
+      EoDb::kEndOfTable sentinel           uint16_t 0x02ff
+
+      (AE2026 V2 only — optional, peek-ahead for backward compatibility)
+      EoDb::kLayoutTable sentinel          uint16_t 0x0205
+          Number of layouts                uint16_t
+          {0 or more layout definitions}
+      EoDb::kEndOfTable sentinel           uint16_t 0x02ff
+
   EoDb::kEndOfSection sentinel             uint16_t 0x01ff
 
   EoDb::kBlocksSection sentinel            uint16_t 0x0103
@@ -266,3 +278,75 @@ Handles both DXF LWPOLYLINE and 2D/3D POLYLINE entities.
       Local reference x-axis vector3d
       Local reference y-axis vector3d
       Text ('\t' terminated) string
+
+### Layout definition (AE2026 V2 only)
+Persists DXF LAYOUT objects from the OBJECTS section for lossless DXF → PEG V2 → DXF round-trip.
+
+      Handle                   uint64_t
+      Owner handle             uint64_t
+      Extension dictionary handle uint64_t
+      Reactor handle count     uint16_t
+      {reactor handles}        uint64_t[]
+
+      -- AcDbPlotSettings --
+      Page setup name          string
+      Plot config name         string
+      Paper size name          string
+      Plot view name           string
+      Current style sheet      string
+      Left margin              double    (mm)
+      Bottom margin            double    (mm)
+      Right margin             double    (mm)
+      Top margin               double    (mm)
+      Paper width              double    (mm)
+      Paper height             double    (mm)
+      Plot origin X            double    (mm)
+      Plot origin Y            double    (mm)
+      Plot window LL X         double
+      Plot window LL Y         double
+      Plot window UR X         double
+      Plot window UR Y         double
+      Custom scale numerator   double
+      Custom scale denominator double
+      Plot layout flags        int16_t   (bitfield)
+      Plot paper units         int16_t   (0=in, 1=mm, 2=px)
+      Plot rotation            int16_t   (0=none, 1=90°CCW, 2=180°, 3=90°CW)
+      Plot type                int16_t   (0=last, 1=extents, 2=limits, 3=view, 4=window, 5=layout)
+      Standard scale type      int16_t
+      Shade plot mode          int16_t
+      Shade plot res level     int16_t
+      Shade plot custom DPI    int16_t
+      Scale factor             double
+      Paper image origin X     double
+      Paper image origin Y     double
+
+      -- AcDbLayout --
+      Layout name              string    (e.g. "Model", "Layout1")
+      Layout flags             int16_t
+      Tab order                int16_t   (0 = Model)
+      Limits min X             double
+      Limits min Y             double
+      Limits max X             double
+      Limits max Y             double
+      Insert base X            double
+      Insert base Y            double
+      Insert base Z            double
+      Extents min X            double
+      Extents min Y            double
+      Extents min Z            double
+      Extents max X            double
+      Extents max Y            double
+      Extents max Z            double
+      Elevation                double
+      UCS origin X             double
+      UCS origin Y             double
+      UCS origin Z             double
+      UCS X-axis X             double
+      UCS X-axis Y             double
+      UCS X-axis Z             double
+      UCS Y-axis X             double
+      UCS Y-axis Y             double
+      UCS Y-axis Z             double
+      UCS ortho type           int16_t
+      Block record handle      uint64_t
+      Last active viewport handle uint64_t

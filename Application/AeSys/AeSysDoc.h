@@ -52,6 +52,7 @@ class AeSysDoc : public CDocument {
   std::vector<EoDbDimStyle> m_dimStyleTable{};
   std::vector<EoDbTextStyle> m_textStyleTable{};
   std::vector<EoDxfUnsupportedObject> m_unsupportedObjects{};
+  std::vector<EoDxfLayout> m_layouts{};
   std::vector<EoDbVPortTableEntry> m_vportTable{};
   EoDbBlocks m_BlocksTable{};
   EoDbGroupList m_DeletedGroupList{};
@@ -406,6 +407,13 @@ class AeSysDoc : public CDocument {
   void AddUnsupportedObject(const EoDxfUnsupportedObject& object) { m_unsupportedObjects.push_back(object); }
   void AddUnsupportedObject(EoDxfUnsupportedObject&& object) { m_unsupportedObjects.push_back(std::move(object)); }
   void ClearUnsupportedObjects() noexcept { m_unsupportedObjects.clear(); }
+
+  // Layout storage (structured DXF LAYOUT objects)
+  [[nodiscard]] auto& Layouts() noexcept { return m_layouts; }
+  [[nodiscard]] const auto& Layouts() const noexcept { return m_layouts; }
+  void AddLayout(const EoDxfLayout& layout) { m_layouts.push_back(layout); }
+  void AddLayout(EoDxfLayout&& layout) { m_layouts.push_back(std::move(layout)); }
+  void ClearLayouts() noexcept { m_layouts.clear(); }
 
   void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
 

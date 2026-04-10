@@ -111,6 +111,7 @@
 #define IDD_TEXT_STYLE_MANAGER          344
 #define IDR_STYLES                      345
 #define IDD_SHEET_SETUP_FORM_FACTOR     346
+#define IDD_PLOT                        347
 #define IDC_ARCHITECTURAL               1000
 #define IDC_ENGINEERING                 1001
 #define IDC_FEET                        1002
@@ -331,6 +332,27 @@
 #define IDC_SHEET_DESIGNATION           1465
 #define IDC_ORIENTATION_LANDSCAPE       1466
 #define IDC_ORIENTATION_PORTRAIT        1467
+#define IDC_PLOT_PRINTER_COMBO          1468
+#define IDC_PLOT_PRINTER_PROPERTIES     1469
+#define IDC_PLOT_PRINT_TO_FILE          1470
+#define IDC_PLOT_PAPER_SIZE_COMBO       1471
+#define IDC_PLOT_ORIENTATION_LANDSCAPE  1472
+#define IDC_PLOT_ORIENTATION_PORTRAIT   1473
+#define IDC_PLOT_AREA_LAYOUT            1474
+#define IDC_PLOT_AREA_EXTENTS           1475
+#define IDC_PLOT_AREA_DISPLAY           1476
+#define IDC_PLOT_AREA_WINDOW            1477
+#define IDC_PLOT_CENTER_PLOT            1478
+#define IDC_PLOT_OFFSET_X               1479
+#define IDC_PLOT_OFFSET_Y               1480
+#define IDC_PLOT_FIT_TO_PAPER           1481
+#define IDC_PLOT_SCALE_COMBO            1482
+#define IDC_PLOT_CUSTOM_SCALE_EDIT      1483
+#define IDC_PLOT_CUSTOM_UNITS_EDIT      1484
+#define IDC_PLOT_COPIES                 1485
+#define IDC_PLOT_PREVIEW_AREA           1486
+#define IDC_PLOT_PRINTABLE_AREA         1487
+#define IDC_PLOT_SCALE_LINEWEIGHTS      1488
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -551,6 +573,7 @@
 #define ID_EDIT_TRAPQUIT                4569
 #define ID_FILE_PLOT_FULL               4570
 #define ID_FILE_PLOT_HALF               4571
+#define ID_FILE_PLOT                    4906
 #define ID_EDIT_TRAPWORK                4572
 #define ID_EDIT_TRAPWORKANDACTIVE       4574
 #define ID_TRAPCOMMANDS_ADDGROUPS       4575
@@ -817,9 +840,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        347
-#define _APS_NEXT_COMMAND_VALUE         4906
-#define _APS_NEXT_CONTROL_VALUE         1465
+#define _APS_NEXT_RESOURCE_VALUE        348
+#define _APS_NEXT_COMMAND_VALUE         4907
+#define _APS_NEXT_CONTROL_VALUE         1489
 #define _APS_NEXT_SYMED_VALUE           500
 #endif
 #endif

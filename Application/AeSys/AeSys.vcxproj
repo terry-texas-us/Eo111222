@@ -276,6 +276,7 @@
     <ClCompile Include="EoDlgModeRevise.cpp" />
     <ClCompile Include="EoDlgPipeOptions.cpp" />
     <ClCompile Include="EoDlgPipeSymbol.cpp" />
+    <ClCompile Include="EoDlgPlot.cpp" />
     <ClCompile Include="EoDlgSelectGotoHomePoint.cpp" />
     <ClCompile Include="EoDlgSelectIsometricView.cpp" />
     <ClCompile Include="EoDlgSetAngle.cpp" />
@@ -397,6 +398,7 @@
     <ClInclude Include="EoDlgModeRevise.h" />
     <ClInclude Include="EoDlgPipeOptions.h" />
     <ClInclude Include="EoDlgPipeSymbol.h" />
+    <ClInclude Include="EoDlgPlot.h" />
     <ClInclude Include="EoDlgSelectGotoHomePoint.h" />
     <ClInclude Include="EoDlgSelectIsometricView.h" />
     <ClInclude Include="EoDlgSetAngle.h" />

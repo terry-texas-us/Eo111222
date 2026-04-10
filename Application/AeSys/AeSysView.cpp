@@ -102,11 +102,13 @@ ON_COMMAND(ID_CAMERA_ROTATEDOWN, OnCameraRotateDown)
 ON_COMMAND(ID_FILE_PLOT_QUARTER, OnFilePlotQuarter)
 ON_COMMAND(ID_FILE_PLOT_HALF, OnFilePlotHalf)
 ON_COMMAND(ID_FILE_PLOT_FULL, OnFilePlotFull)
-// Standard printing commands
-ON_COMMAND(ID_FILE_PRINT, OnFilePrint)
-ON_COMMAND(ID_FILE_PRINT_DIRECT, OnFilePrint)
+// Unified plot dialog — replaces Print Setup, Print, Plot submenu, and Print Preview
+ON_COMMAND(ID_FILE_PLOT, OnFilePlot)
+// Legacy print commands redirect to the unified plot dialog
+ON_COMMAND(ID_FILE_PRINT, OnFilePlot)
+ON_COMMAND(ID_FILE_PRINT_DIRECT, OnFilePlot)
 ON_COMMAND(ID_FILE_PRINT_PREVIEW, CView::OnFilePrintPreview)
-ON_COMMAND(ID_FILE_PRINTCURRENTVIEW, OnFilePrint)
+ON_COMMAND(ID_FILE_PRINTCURRENTVIEW, OnFilePlot)
 ON_COMMAND(ID_HELP_KEY, OnHelpKey)
 ON_COMMAND(ID_MODE_GROUP_EDIT, OnModeGroupEdit)
 ON_COMMAND(ID_MODE_PRIMITIVE_EDIT, OnModePrimitiveEdit)

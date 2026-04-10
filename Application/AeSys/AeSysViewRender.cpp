@@ -535,6 +535,29 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
   SetDeviceHeightInInches(VerticalSize / Eo::MmPerInch);
 
   if (m_Plot) {
+    // When fit-to-paper is active, compute the scale that maps the entire
+    // drawing onto a single page of the actual printer paper.
+    if (m_plotSettings.fitToPaper) {
+      auto* document = GetDocument();
+      EoGePoint3d ptMin;
+      EoGePoint3d ptMax;
+      EoGeTransformMatrix transformMatrix;
+      document->GetExtents(this, ptMin, ptMax, transformMatrix);
+
+      double extentWidth = ptMax.x - ptMin.x;
+      double extentHeight = ptMax.y - ptMin.y;
+
+      double paperWidthInches = HorizontalSize / Eo::MmPerInch;
+      double paperHeightInches = VerticalSize / Eo::MmPerInch;
+
+      if (extentWidth > Eo::geometricTolerance && extentHeight > Eo::geometricTolerance
+          && paperWidthInches > Eo::geometricTolerance && paperHeightInches > Eo::geometricTolerance) {
+        m_PlotScaleFactor = std::min(paperWidthInches / extentWidth, paperHeightInches / extentHeight);
+      } else {
+        m_PlotScaleFactor = 1.0;
+      }
+    }
+
     UINT HorizontalPages;
     UINT VerticalPages;
     pInfo->SetMaxPage(NumPages(deviceContext, m_PlotScaleFactor, HorizontalPages, VerticalPages));
@@ -551,10 +574,30 @@ void AeSysView::OnEndPrinting([[maybe_unused]] CDC* deviceContext, [[maybe_unuse
 
 BOOL AeSysView::OnPreparePrinting(CPrintInfo* pInfo) {
   if (m_Plot) {
-    CPrintInfo pi;
-    if (AfxGetApp()->GetPrinterDeviceDefaults(&pi.m_pPD->m_pd)) {
-      HDC hDC = pi.m_pPD->m_pd.hDC;
-      if (hDC == nullptr) { hDC = pi.m_pPD->CreatePrinterDC(); }
+    // The Plot dialog already collected printer/paper/scale settings and
+    // OnFilePlot applied them to the app's DEVMODE via SelectPrinter.
+    // Skip the Windows Print dialog — print directly.
+    pInfo->m_bDirect = TRUE;
+
+    // Estimate page count for the framework.  When fit-to-paper is active
+    // this uses the temporary m_PlotScaleFactor (1.0) — OnBeginPrinting
+    // recomputes the actual scale once the real printer DC is available.
+    PRINTDLG pd{};
+    pd.lStructSize = sizeof(pd);
+    if (AfxGetApp()->GetPrinterDeviceDefaults(&pd)) {
+      HDC hDC{};
+      if (pd.hDevNames != nullptr && pd.hDevMode != nullptr) {
+        auto* devNames = static_cast<DEVNAMES*>(::GlobalLock(pd.hDevNames));
+        auto* devMode = static_cast<DEVMODE*>(::GlobalLock(pd.hDevMode));
+        if (devNames != nullptr && devMode != nullptr) {
+          auto* driverName = reinterpret_cast<const wchar_t*>(devNames) + devNames->wDriverOffset;
+          auto* deviceName = reinterpret_cast<const wchar_t*>(devNames) + devNames->wDeviceOffset;
+          auto* outputName = reinterpret_cast<const wchar_t*>(devNames) + devNames->wOutputOffset;
+          hDC = ::CreateDCW(driverName, deviceName, outputName, devMode);
+        }
+        if (pd.hDevMode != nullptr) { ::GlobalUnlock(pd.hDevMode); }
+        if (pd.hDevNames != nullptr) { ::GlobalUnlock(pd.hDevNames); }
+      }
       if (hDC != nullptr) {
         UINT nHorzPages;
         UINT nVertPages;

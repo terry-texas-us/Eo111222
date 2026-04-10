@@ -170,6 +170,20 @@ void EoDbPegFile::ReadTablesSection(AeSysDoc* document, EoDb::PegFileVersion fil
   ReadLayerTable(document, fileVersion);
   if (fileVersion == EoDb::PegFileVersion::AE2026) { ReadTextStyleTable(document, fileVersion); }
 
+  // Layout table is optional in V2 — peek to check if present before kEndOfSection.
+  if (fileVersion == EoDb::PegFileVersion::AE2026) {
+    auto peekPosition = CFile::GetPosition();
+    auto peekedSentinel = EoDb::ReadUInt16(*this);
+    if (peekedSentinel == EoDb::kLayoutTable) {
+      // Rewind past the sentinel so ReadLayoutTable can consume it.
+      CFile::Seek(static_cast<LONGLONG>(peekPosition), CFile::begin);
+      ReadLayoutTable(document, fileVersion);
+    } else {
+      // Not a layout table — rewind and let the kEndOfSection check handle it.
+      CFile::Seek(static_cast<LONGLONG>(peekPosition), CFile::begin);
+    }
+  }
+
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.");
   }
@@ -652,6 +666,7 @@ void EoDbPegFile::WriteTablesSection(AeSysDoc* document, EoDb::PegFileVersion fi
   WriteLinetypeTable(document, fileVersion);
   WriteLayerTable(document, fileVersion);
   if (fileVersion == EoDb::PegFileVersion::AE2026) { WriteTextStyleTable(document, fileVersion); }
+  if (fileVersion == EoDb::PegFileVersion::AE2026) { WriteLayoutTable(document, fileVersion); }
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
@@ -783,6 +798,118 @@ void EoDbPegFile::ReadTextStyleTable(AeSysDoc* document, [[maybe_unused]] EoDb::
 }
 
 /**
+ * Reads the layout table from the PEG V2 file into the document's layout collection.
+ *
+ * Reconstructs each EoDxfLayout with its full AcDbPlotSettings + AcDbLayout property set,
+ * including handle identity, reactor handles, and extension dictionary handle, enabling
+ * lossless DXF → PEG V2 → DXF round-trip for LAYOUT objects.
+ *
+ * @param document Pointer to the AeSysDoc where the layouts will be populated.
+ * @param fileVersion The PEG file version being read (must be AE2026).
+ * @throws std::runtime_error if the expected sentinels are not found.
+ */
+void EoDbPegFile::ReadLayoutTable(AeSysDoc* document, [[maybe_unused]] EoDb::PegFileVersion fileVersion) {
+  if (EoDb::ReadUInt16(*this) != EoDb::kLayoutTable) {
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kLayoutTable.");
+  }
+  const auto count = EoDb::ReadUInt16(*this);
+
+  document->ClearLayouts();
+
+  for (std::uint16_t n = 0; n < count; n++) {
+    EoDxfLayout layout;
+
+    // Entity header: handle, owner, extension dictionary
+    layout.m_handle = EoDb::ReadUInt64(*this);
+    layout.m_ownerHandle = EoDb::ReadUInt64(*this);
+    layout.m_extensionDictionaryHandle = EoDb::ReadUInt64(*this);
+
+    // Reactor handles
+    const auto reactorCount = EoDb::ReadUInt16(*this);
+    layout.m_reactorHandles.clear();
+    for (std::uint16_t r = 0; r < reactorCount; r++) {
+      layout.m_reactorHandles.push_back(EoDb::ReadUInt64(*this));
+    }
+
+    // AcDbPlotSettings
+    CString tempString;
+    EoDb::Read(*this, tempString);
+    layout.m_pageSetupName = tempString.GetString();
+    EoDb::Read(*this, tempString);
+    layout.m_plotConfigName = tempString.GetString();
+    EoDb::Read(*this, tempString);
+    layout.m_paperSizeName = tempString.GetString();
+    EoDb::Read(*this, tempString);
+    layout.m_plotViewName = tempString.GetString();
+    EoDb::Read(*this, tempString);
+    layout.m_currentStyleSheet = tempString.GetString();
+    layout.m_leftMargin = EoDb::ReadDouble(*this);
+    layout.m_bottomMargin = EoDb::ReadDouble(*this);
+    layout.m_rightMargin = EoDb::ReadDouble(*this);
+    layout.m_topMargin = EoDb::ReadDouble(*this);
+    layout.m_paperWidth = EoDb::ReadDouble(*this);
+    layout.m_paperHeight = EoDb::ReadDouble(*this);
+    layout.m_plotOriginX = EoDb::ReadDouble(*this);
+    layout.m_plotOriginY = EoDb::ReadDouble(*this);
+    layout.m_plotWindowLowerLeftX = EoDb::ReadDouble(*this);
+    layout.m_plotWindowLowerLeftY = EoDb::ReadDouble(*this);
+    layout.m_plotWindowUpperRightX = EoDb::ReadDouble(*this);
+    layout.m_plotWindowUpperRightY = EoDb::ReadDouble(*this);
+    layout.m_customScaleNumerator = EoDb::ReadDouble(*this);
+    layout.m_customScaleDenominator = EoDb::ReadDouble(*this);
+    layout.m_plotLayoutFlags = EoDb::ReadInt16(*this);
+    layout.m_plotPaperUnits = EoDb::ReadInt16(*this);
+    layout.m_plotRotation = EoDb::ReadInt16(*this);
+    layout.m_plotType = EoDb::ReadInt16(*this);
+    layout.m_standardScaleType = EoDb::ReadInt16(*this);
+    layout.m_shadePlotMode = EoDb::ReadInt16(*this);
+    layout.m_shadePlotResLevel = EoDb::ReadInt16(*this);
+    layout.m_shadePlotCustomDpi = EoDb::ReadInt16(*this);
+    layout.m_scaleFactor = EoDb::ReadDouble(*this);
+    layout.m_paperImageOriginX = EoDb::ReadDouble(*this);
+    layout.m_paperImageOriginY = EoDb::ReadDouble(*this);
+
+    // AcDbLayout
+    EoDb::Read(*this, tempString);
+    layout.m_layoutName = tempString.GetString();
+    layout.m_layoutFlags = EoDb::ReadInt16(*this);
+    layout.m_tabOrder = EoDb::ReadInt16(*this);
+    layout.m_limminX = EoDb::ReadDouble(*this);
+    layout.m_limminY = EoDb::ReadDouble(*this);
+    layout.m_limmaxX = EoDb::ReadDouble(*this);
+    layout.m_limmaxY = EoDb::ReadDouble(*this);
+    layout.m_insertBaseX = EoDb::ReadDouble(*this);
+    layout.m_insertBaseY = EoDb::ReadDouble(*this);
+    layout.m_insertBaseZ = EoDb::ReadDouble(*this);
+    layout.m_extminX = EoDb::ReadDouble(*this);
+    layout.m_extminY = EoDb::ReadDouble(*this);
+    layout.m_extminZ = EoDb::ReadDouble(*this);
+    layout.m_extmaxX = EoDb::ReadDouble(*this);
+    layout.m_extmaxY = EoDb::ReadDouble(*this);
+    layout.m_extmaxZ = EoDb::ReadDouble(*this);
+    layout.m_elevation = EoDb::ReadDouble(*this);
+    layout.m_ucsOriginX = EoDb::ReadDouble(*this);
+    layout.m_ucsOriginY = EoDb::ReadDouble(*this);
+    layout.m_ucsOriginZ = EoDb::ReadDouble(*this);
+    layout.m_ucsXAxisX = EoDb::ReadDouble(*this);
+    layout.m_ucsXAxisY = EoDb::ReadDouble(*this);
+    layout.m_ucsXAxisZ = EoDb::ReadDouble(*this);
+    layout.m_ucsYAxisX = EoDb::ReadDouble(*this);
+    layout.m_ucsYAxisY = EoDb::ReadDouble(*this);
+    layout.m_ucsYAxisZ = EoDb::ReadDouble(*this);
+    layout.m_ucsOrthoType = EoDb::ReadInt16(*this);
+    layout.m_blockRecordHandle = EoDb::ReadUInt64(*this);
+    layout.m_lastActiveViewportHandle = EoDb::ReadUInt64(*this);
+
+    document->AddLayout(std::move(layout));
+  }
+
+  if (EoDb::ReadUInt16(*this) != EoDb::kEndOfTable) {
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable after layout table.");
+  }
+}
+
+/**
  * Writes the text style table to the PEG V2 file from the document's text style table.
  * Shape file entries (flag 0x01) are excluded. All remaining entries are written with name,
  * height, widthFactor, obliqueAngle, font, flagValues, handle, and ownerHandle.
@@ -809,6 +936,112 @@ void EoDbPegFile::WriteTextStyleTable(AeSysDoc* document, [[maybe_unused]] EoDb:
     EoDb::WriteUInt64(*this, style.m_handle);
     EoDb::WriteUInt64(*this, style.m_ownerHandle);
   }
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
+}
+
+/**
+ * Writes the layout table to the PEG V2 file from the document's layout collection.
+ *
+ * Each EoDxfLayout is serialized with its full AcDbPlotSettings + AcDbLayout property set,
+ * including handle identity, reactor handles, and extension dictionary handle. This enables
+ * lossless DXF → PEG V2 → DXF round-trip for LAYOUT objects in the OBJECTS section.
+ *
+ * Layout:
+ *   kLayoutTable sentinel
+ *   count (uint16_t)
+ *   { for each layout:
+ *       handle, ownerHandle, extensionDictionaryHandle
+ *       reactorHandleCount, { reactorHandles }
+ *       AcDbPlotSettings fields (strings + doubles + int16s)
+ *       AcDbLayout fields (strings + doubles + int16s + handles)
+ *   }
+ *   kEndOfTable sentinel
+ *
+ * @param document Pointer to the AeSysDoc that owns the layout collection.
+ * @param fileVersion The PEG file version being written (must be AE2026).
+ */
+void EoDbPegFile::WriteLayoutTable(AeSysDoc* document, [[maybe_unused]] EoDb::PegFileVersion fileVersion) {
+  EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kLayoutTable));
+
+  const auto& layouts = document->Layouts();
+  EoDb::WriteUInt16(*this, static_cast<std::uint16_t>(layouts.size()));
+
+  for (const auto& layout : layouts) {
+    // Entity header: handle, owner, extension dictionary
+    EoDb::WriteUInt64(*this, layout.m_handle);
+    EoDb::WriteUInt64(*this, layout.m_ownerHandle);
+    EoDb::WriteUInt64(*this, layout.m_extensionDictionaryHandle);
+
+    // Reactor handles
+    EoDb::WriteUInt16(*this, static_cast<std::uint16_t>(layout.m_reactorHandles.size()));
+    for (const auto reactorHandle : layout.m_reactorHandles) {
+      EoDb::WriteUInt64(*this, reactorHandle);
+    }
+
+    // AcDbPlotSettings
+    EoDb::Write(*this, CString(layout.m_pageSetupName.c_str()));
+    EoDb::Write(*this, CString(layout.m_plotConfigName.c_str()));
+    EoDb::Write(*this, CString(layout.m_paperSizeName.c_str()));
+    EoDb::Write(*this, CString(layout.m_plotViewName.c_str()));
+    EoDb::Write(*this, CString(layout.m_currentStyleSheet.c_str()));
+    EoDb::WriteDouble(*this, layout.m_leftMargin);
+    EoDb::WriteDouble(*this, layout.m_bottomMargin);
+    EoDb::WriteDouble(*this, layout.m_rightMargin);
+    EoDb::WriteDouble(*this, layout.m_topMargin);
+    EoDb::WriteDouble(*this, layout.m_paperWidth);
+    EoDb::WriteDouble(*this, layout.m_paperHeight);
+    EoDb::WriteDouble(*this, layout.m_plotOriginX);
+    EoDb::WriteDouble(*this, layout.m_plotOriginY);
+    EoDb::WriteDouble(*this, layout.m_plotWindowLowerLeftX);
+    EoDb::WriteDouble(*this, layout.m_plotWindowLowerLeftY);
+    EoDb::WriteDouble(*this, layout.m_plotWindowUpperRightX);
+    EoDb::WriteDouble(*this, layout.m_plotWindowUpperRightY);
+    EoDb::WriteDouble(*this, layout.m_customScaleNumerator);
+    EoDb::WriteDouble(*this, layout.m_customScaleDenominator);
+    EoDb::WriteInt16(*this, layout.m_plotLayoutFlags);
+    EoDb::WriteInt16(*this, layout.m_plotPaperUnits);
+    EoDb::WriteInt16(*this, layout.m_plotRotation);
+    EoDb::WriteInt16(*this, layout.m_plotType);
+    EoDb::WriteInt16(*this, layout.m_standardScaleType);
+    EoDb::WriteInt16(*this, layout.m_shadePlotMode);
+    EoDb::WriteInt16(*this, layout.m_shadePlotResLevel);
+    EoDb::WriteInt16(*this, layout.m_shadePlotCustomDpi);
+    EoDb::WriteDouble(*this, layout.m_scaleFactor);
+    EoDb::WriteDouble(*this, layout.m_paperImageOriginX);
+    EoDb::WriteDouble(*this, layout.m_paperImageOriginY);
+
+    // AcDbLayout
+    EoDb::Write(*this, CString(layout.m_layoutName.c_str()));
+    EoDb::WriteInt16(*this, layout.m_layoutFlags);
+    EoDb::WriteInt16(*this, layout.m_tabOrder);
+    EoDb::WriteDouble(*this, layout.m_limminX);
+    EoDb::WriteDouble(*this, layout.m_limminY);
+    EoDb::WriteDouble(*this, layout.m_limmaxX);
+    EoDb::WriteDouble(*this, layout.m_limmaxY);
+    EoDb::WriteDouble(*this, layout.m_insertBaseX);
+    EoDb::WriteDouble(*this, layout.m_insertBaseY);
+    EoDb::WriteDouble(*this, layout.m_insertBaseZ);
+    EoDb::WriteDouble(*this, layout.m_extminX);
+    EoDb::WriteDouble(*this, layout.m_extminY);
+    EoDb::WriteDouble(*this, layout.m_extminZ);
+    EoDb::WriteDouble(*this, layout.m_extmaxX);
+    EoDb::WriteDouble(*this, layout.m_extmaxY);
+    EoDb::WriteDouble(*this, layout.m_extmaxZ);
+    EoDb::WriteDouble(*this, layout.m_elevation);
+    EoDb::WriteDouble(*this, layout.m_ucsOriginX);
+    EoDb::WriteDouble(*this, layout.m_ucsOriginY);
+    EoDb::WriteDouble(*this, layout.m_ucsOriginZ);
+    EoDb::WriteDouble(*this, layout.m_ucsXAxisX);
+    EoDb::WriteDouble(*this, layout.m_ucsXAxisY);
+    EoDb::WriteDouble(*this, layout.m_ucsXAxisZ);
+    EoDb::WriteDouble(*this, layout.m_ucsYAxisX);
+    EoDb::WriteDouble(*this, layout.m_ucsYAxisY);
+    EoDb::WriteDouble(*this, layout.m_ucsYAxisZ);
+    EoDb::WriteInt16(*this, layout.m_ucsOrthoType);
+    EoDb::WriteUInt64(*this, layout.m_blockRecordHandle);
+    EoDb::WriteUInt64(*this, layout.m_lastActiveViewportHandle);
+  }
+
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 }
 

@@ -22,6 +22,7 @@
 #include "EoGsModelTransform.h"
 #include "EoGsViewTransform.h"
 #include "EoGsViewport.h"
+#include "EoDlgPlot.h"
 #include "Section.h"
 
 #if defined(USING_STATE_PATTERN)
@@ -114,6 +115,7 @@ class AeSysView : public CView {
   EoGsViewTransform m_OverviewViewTransform{};
   bool m_Plot{};
   double m_PlotScaleFactor{1.0};
+  PlotSettings m_plotSettings;  ///< Last-used plot dialog output; consumed by the print lifecycle.
   EoDbGroup m_PreviewGroup{};
   EoGsViewTransform m_PreviousViewTransform{};
   std::uint16_t m_PreviousOp{0};
@@ -1048,6 +1050,7 @@ class AeSysView : public CView {
  public:
   afx_msg void OnBackgroundImageLoad();
   afx_msg void OnBackgroundImageRemove();
+  afx_msg void OnFilePlot();
   afx_msg void OnFilePlotHalf();
   afx_msg void OnFilePlotFull();
   afx_msg void OnFilePlotQuarter();

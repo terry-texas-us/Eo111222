@@ -171,6 +171,11 @@ bool EoDxfWrite::WriteUnsupportedObject(const EoDxfUnsupportedObject& objectData
   return m_writeOk;
 }
 
+bool EoDxfWrite::WriteLayout(const EoDxfLayout& layout) {
+  layout.Write(m_writer);
+  return m_writeOk;
+}
+
 bool EoDxfWrite::WriteEntity(const EoDxfGraphic& entity) {
   if (entity.m_handle == EoDxf::NoHandle) {
     m_lastWrittenEntityHandle = ++m_entityCount;

@@ -37,6 +37,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DXF Test FIles", "DXF Test 
 	ProjectSection(SolutionItems) = preProject
 		DXF Test Files\3dFace_Test.dxf = DXF Test Files\3dFace_Test.dxf
 		DXF Test Files\AcadProxyEntity_Test.dxf = DXF Test Files\AcadProxyEntity_Test.dxf
+		DXF Test Files\AEC_Bldg_Plan_Sample-(2010)-1-rt.dxf = DXF Test Files\AEC_Bldg_Plan_Sample-(2010)-1-rt.dxf
 		DXF Test Files\AEC_Bldg_Plan_Sample-(2010)-1.dxf = DXF Test Files\AEC_Bldg_Plan_Sample-(2010)-1.dxf
 		DXF Test Files\Ellipse_And_EllipticalArc_Test.dxf = DXF Test Files\Ellipse_And_EllipticalArc_Test.dxf
 		DXF Test Files\Ellipse_NegZ_CW_Test.dxf = DXF Test Files\Ellipse_NegZ_CW_Test.dxf

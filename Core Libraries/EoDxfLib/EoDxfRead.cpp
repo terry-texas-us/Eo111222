@@ -1098,6 +1098,8 @@ bool EoDxfRead::ProcessObjects() {
       return true;  // found ENDSEC terminate
     } else if (m_nextEntity == L"IMAGEDEF") {
       ProcessImageDef();
+    } else if (m_nextEntity == L"LAYOUT") {
+      ProcessLayout();
     } else {
       ProcessUnsupportedObject();
     }
@@ -1116,6 +1118,25 @@ bool EoDxfRead::ProcessImageDef() {
       }
       default:
         imageDefinition.ParseCode(code, *m_reader);
+        break;
+    }
+  }
+  return true;
+}
+
+bool EoDxfRead::ProcessLayout() {
+  int code;
+  EoDxfLayout layout;
+
+  while (m_reader->ReadRec(&code)) {
+    switch (code) {
+      case 0: {
+        m_nextEntity = m_reader->GetWideString();
+        m_interface->AddLayout(layout);
+        return true;
+      }
+      default:
+        layout.ParseCode(code, *m_reader);
         break;
     }
   }

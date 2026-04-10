@@ -160,7 +160,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Tracing...",                 ID_FILE_TRACING
         MENUITEM SEPARATOR
-        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM "P&lot...",                    ID_FILE_PLOT
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
@@ -253,15 +253,7 @@ BEGIN
             END
             MENUITEM "&Form Factor...",             ID_SHEETSETUP_FORMFACTOR
         END
-        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
-        MENUITEM "Print",                       ID_FILE_PRINT
-        POPUP "P&lot"
-        BEGIN
-            MENUITEM "Fu&ll Size",                  ID_FILE_PLOT_FULL
-            MENUITEM "&Half Size",                  ID_FILE_PLOT_HALF
-            MENUITEM "&Quarter Size",               ID_FILE_PLOT_QUARTER
-        END
-        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        MENUITEM "P&lot...\tCtrl+P",            ID_FILE_PLOT
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
@@ -542,15 +534,7 @@ BEGIN
         END
         MENUITEM "&Tracing...",                 ID_FILE_TRACING
         MENUITEM SEPARATOR
-        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
-        MENUITEM "Print",                       ID_FILE_PRINT
-        POPUP "P&lot"
-        BEGIN
-            MENUITEM "Fu&ll Size",                  ID_FILE_PLOT_FULL
-            MENUITEM "&Half Size",                  ID_FILE_PLOT_HALF
-            MENUITEM "&Quarter Size",               ID_FILE_PLOT_QUARTER
-        END
-        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        MENUITEM "P&lot...\tCtrl+P",            ID_FILE_PLOT
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
@@ -1827,6 +1811,62 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,143,89,50,14
 END
 
+IDD_PLOT DIALOGEX 0, 0, 370, 340
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Plot"
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Printer/Plotter",IDC_STATIC,7,7,356,50
+    LTEXT           "&Name:",IDC_STATIC,14,21,22,8
+    COMBOBOX        IDC_PLOT_PRINTER_COMBO,40,19,248,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "P&roperties...",IDC_PLOT_PRINTER_PROPERTIES,296,18,60,14
+    CONTROL         "Plot to fi&le",IDC_PLOT_PRINT_TO_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,40,56,10
+
+    GROUPBOX        "Paper Size",IDC_STATIC,7,60,200,48
+    COMBOBOX        IDC_PLOT_PAPER_SIZE_COMBO,14,73,186,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_PLOT_PRINTABLE_AREA,14,91,186,8
+
+    GROUPBOX        "Drawing Orientation",IDC_STATIC,214,60,149,48
+    CONTROL         "&Landscape",IDC_PLOT_ORIENTATION_LANDSCAPE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,222,75,52,10
+    CONTROL         "P&ortrait",IDC_PLOT_ORIENTATION_PORTRAIT,"Button",BS_AUTORADIOBUTTON,222,89,42,10
+
+    GROUPBOX        "Plot Area",IDC_STATIC,7,112,200,60
+    CONTROL         "&Layout",IDC_PLOT_AREA_LAYOUT,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,126,38,10
+    CONTROL         "&Extents",IDC_PLOT_AREA_EXTENTS,"Button",BS_AUTORADIOBUTTON,14,140,42,10
+    CONTROL         "&Display",IDC_PLOT_AREA_DISPLAY,"Button",BS_AUTORADIOBUTTON,14,154,42,10
+    CONTROL         "&Window",IDC_PLOT_AREA_WINDOW,"Button",BS_AUTORADIOBUTTON,100,126,42,10
+
+    GROUPBOX        "Plot Offset",IDC_STATIC,214,112,149,60
+    CONTROL         "&Center the plot",IDC_PLOT_CENTER_PLOT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,222,126,64,10
+    LTEXT           "X:",IDC_STATIC,222,142,8,8
+    EDITTEXT        IDC_PLOT_OFFSET_X,232,140,48,12,ES_AUTOHSCROLL
+    LTEXT           "Y:",IDC_STATIC,290,142,8,8
+    EDITTEXT        IDC_PLOT_OFFSET_Y,300,140,48,12,ES_AUTOHSCROLL
+    LTEXT           "inches",IDC_STATIC,222,156,22,8
+
+    GROUPBOX        "Plot Scale",IDC_STATIC,7,176,200,64
+    CONTROL         "&Fit to paper",IDC_PLOT_FIT_TO_PAPER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,190,56,10
+    LTEXT           "Scale:",IDC_STATIC,14,206,20,8
+    COMBOBOX        IDC_PLOT_SCALE_COMBO,40,204,100,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Custom:",IDC_STATIC,14,224,26,8
+    EDITTEXT        IDC_PLOT_CUSTOM_SCALE_EDIT,44,222,36,12,ES_AUTOHSCROLL
+    LTEXT           "inch(es) =",IDC_STATIC,84,224,38,8
+    EDITTEXT        IDC_PLOT_CUSTOM_UNITS_EDIT,126,222,36,12,ES_AUTOHSCROLL
+    LTEXT           "units",IDC_STATIC,166,224,18,8
+    CONTROL         "Scale &lineweights",IDC_PLOT_SCALE_LINEWEIGHTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,112,190,74,10
+
+    GROUPBOX        "Copies",IDC_STATIC,214,176,149,32
+    LTEXT           "&Number of copies:",IDC_STATIC,222,192,60,8
+    EDITTEXT        IDC_PLOT_COPIES,290,190,32,12,ES_NUMBER
+
+    GROUPBOX        "Preview",IDC_STATIC,214,212,149,88
+    CONTROL         "",IDC_PLOT_PREVIEW_AREA,"Static",SS_BLACKFRAME,222,225,133,68
+
+    DEFPUSHBUTTON   "OK",IDOK,200,312,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,256,312,50,14
+    PUSHBUTTON      "Pre&view",IDC_APPLY,312,312,50,14
+END
+
 IDD_FILE_BLOCK DIALOGEX 8, 8, 393, 143
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
@@ -2288,6 +2328,14 @@ BEGIN
         RIGHTMARGIN, 193
         TOPMARGIN, 7
         BOTTOMMARGIN, 103
+    END
+
+    IDD_PLOT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 363
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 333
     END
 
     IDD_FILE_BLOCK, DIALOG
@@ -3322,6 +3370,7 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_FILE_PLOT            "Configure and plot the active drawing\\nPlot"
     ID_FILE_PLOT_FULL       "Plot active drawing"
     ID_FILE_PLOT_HALF       "Plot active drawing"
 END

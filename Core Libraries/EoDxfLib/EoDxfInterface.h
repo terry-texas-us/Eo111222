@@ -171,6 +171,11 @@ class EoDxfInterface {
    */
   virtual void AddUnsupportedObject(const EoDxfUnsupportedObject& objectData) = 0;
 
+  /** Called for every LAYOUT object in the OBJECTS section.
+   *  Default no-op — override to capture structured layout data.
+   */
+  virtual void AddLayout(const EoDxfLayout& /*layout*/) {}
+
   /**
    * Called for every comment in the DXF file (code 999).
    */
